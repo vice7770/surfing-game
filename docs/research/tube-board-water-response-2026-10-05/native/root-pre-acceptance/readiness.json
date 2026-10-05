@@ -1,0 +1,171 @@
+{
+  "schema": "board-rhs-components-preparation-readiness/v1",
+  "complete": false,
+  "frozen": false,
+  "preparationFrozen": true,
+  "status": "pending-actual-root-build-and-helper-receipts",
+  "sourceOnly": true,
+  "work": "/private/tmp/tube-board-rhs-components-native-20261005",
+  "buildId": "tube-board-rhs-components-20261005",
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-readiness.json",
+    "bytes": 3132,
+    "sha256": "efbb90b04977651f55409ea81c7990f40445aa565db7a26b90d41bfb00e67065"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-pins.json",
+    "bytes": 19316,
+    "sha256": "d935056172cd15bd296b7693f72793965480d63b5a8693b4013ae20deb2dfcf6"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceOrBuildWrittenByHelper": false,
+  "actualAppBuildAccepted": false,
+  "actualDiagnosticBuildAccepted": false,
+  "helperAcceptance": false,
+  "executableChecksAccepted": false,
+  "actualNative": false,
+  "sourcePreparationCount": 588,
+  "unchangedParentInputs": 586,
+  "completeBuildSourceCount": 587,
+  "completeBuildAssetCount": 49,
+  "diagnosticModuleInputs": 74,
+  "diagnosticCandidateSourceInputs": 71,
+  "compilerConfigurationInputCount": 1,
+  "compilerWatchedInputCount": 75,
+  "observerFields": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-board-rhs-components-observer-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8",
+    "policy": "exact-literal-frozen143-field-copy"
+  },
+  "oldFields": 102,
+  "newScalarCopies": 41,
+  "availabilityMarker": "standingTrialAvailable",
+  "totalFields": 143,
+  "markerZeroInvalidatesStaleWords": true,
+  "markerOneOnlyMeansCoupledTrialCaptured": true,
+  "waterRadiationAndEntrainmentRemainMixed": true,
+  "separateHydrodynamicAttributionAvailable": false,
+  "ordinaryRun": {
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "finiteOwner": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "internalNativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "startupWaitMilliseconds": 180000,
+    "rootSealSchema": "board-rhs-components-root-seal/v1",
+    "nativeSchema": "board-rhs-components-native/v1",
+    "ports": [
+      4301,
+      9711
+    ],
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    }
+  },
+  "movieCapBehavior": {
+    "movingAdvances": 240,
+    "requests": 241,
+    "movieStopsAtCap": true,
+    "ordinaryPhysicsContinues": true,
+    "replayStopUnchanged": true
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-immediate102-parent74-input-graph-against-board-rhs-components-source",
+  "diagnosticRetentionPolicy": "Source graph74/71 includes both runtimes; diagnostic lexical count0 allowed; both actual WorkerSurfZone/surfZoneWorker assets must retain143; full actual report samples must be finite143.",
+  "generatedOutputPolicy": "Prebuild source-readiness remains frozen. Actual completeBuild builtAssetPins21 plus generatedOutputPins cache1 are separate outputs; postbuild W/source610=588inputs+22outputs.",
+  "actualObserverCPUAuthorityKeys": [
+    "rootObserverChecks",
+    "rootCPUResult"
+  ],
+  "prior102CPUOrBuildAcceptanceInherited": false,
+  "executableChecks": {
+    "sourceHelperCheck": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "metadataCheck": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "nativeSyntax": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "diagnosticWrapperSyntax": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "sourceOnlyOwner": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "applicationBuild": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "diagnosticBuild": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    },
+    "native": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    }
+  },
+  "claims": {
+    "actualNative": false,
+    "exactInitialReplay": false,
+    "nativeCauseOrFixAccepted": false,
+    "ordinaryStandingAccepted": false,
+    "bodyPassageAccepted": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "priorTrialBalanceReadiness": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+    "bytes": 8829,
+    "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+  },
+  "priorTrialBalanceOwner": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.json",
+    "bytes": 3486,
+    "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875"
+  },
+  "priorTrialBalanceReport": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+    "bytes": 13122643,
+    "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+  },
+  "rootSuppliedReceipts": {
+    "rootCompleteBuild": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-complete-build-result.json",
+      "bytes": 187850,
+      "sha256": "c30e1d87d417745faf1dc3b20d30a6b45838531ab974b8ff863252141335ed11"
+    }
+  },
+  "suppliedReceiptPinsAreHelperAcceptance": false
+}

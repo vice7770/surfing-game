@@ -1,0 +1,53 @@
+{
+  "schema": "board-water-assembly-source-review-freeze/v1",
+  "directory": "/private/tmp/tube-board-water-assembly-source-review-20261005",
+  "sourceRoot": "/private/tmp/tube-board-rhs-components-native-20261005/source",
+  "sourceInspectionOnly": true,
+  "nativeDataReadOrProcessed": false,
+  "sourceRuntimeEdited": false,
+  "observerImplemented": false,
+  "physicsOrControlsChanged": false,
+  "executableChecksRun": false,
+  "numericalProbesRun": false,
+  "resourcesUsed": false,
+  "nativeCauseEstablished": false,
+  "correctionProposedBeforeData": false,
+  "scope": "Existing added-mass/radiation/entry assembly operands, history/flow/wetting/projection conditions, applied reporting/reaction ledger and conditional frozen-direction momentum bookkeeping",
+  "sourcePins": {
+    "file": "/private/tmp/tube-board-water-assembly-source-review-20261005/child-read-pins.json",
+    "bytes": 2403,
+    "sha256": "ebbf158db9b1533b221fecb8f8865806a5f4a76995dec74d689fefcf3d3fecaa",
+    "key": "readSourcePins",
+    "count": 8
+  },
+  "artifacts": [
+    {
+      "file": "/private/tmp/tube-board-water-assembly-source-review-20261005/REVIEW.md",
+      "bytes": 7776,
+      "sha256": "942defd79ef1c426b6b6d0258c0800c5350236e6d239a1cd6f603c1512ebc171"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-assembly-source-review-20261005/postsolve-and-reactions.md",
+      "bytes": 5639,
+      "sha256": "ae8c389e72be51661e006ab2842ffac560ab2c2114a452e9e1e4a6b43ad5771d"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-assembly-source-review-20261005/child-water-assembly-note.md",
+      "bytes": 7808,
+      "sha256": "66ba1cdd0512df326cc957a7f5af350038c1976a32a02b873da038e935313e43"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-assembly-source-review-20261005/child-read-pins.json",
+      "bytes": 2403,
+      "sha256": "ebbf158db9b1533b221fecb8f8865806a5f4a76995dec74d689fefcf3d3fecaa"
+    }
+  ],
+  "limitations": [
+    "Eight-group native results are root-owned and were not inspected; combined-water contribution alone cannot identify its internal mechanism.",
+    "The potential extra -E*delta-u term is conditional on A meaning total associated mass with frozen direction/arm/flow; rotating, projected, changing-flow and authored entry modelling require interpretation.",
+    "Post-solve means use the applied board change after possible coupled-trial fallback and are not separate pre-RHS component copies.",
+    "Old previousAddedMass is overwritten at BoardBody line844; old surface direction/flow are not cached.",
+    "Depth-averaged water applies horizontal opposite impulse only where receiving cells are wet; vertical impulse is merely tallied.",
+    "Any later passive observer needs independent root state/query/reaction parity, source/build and actual native gates."
+  ]
+}

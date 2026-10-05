@@ -1,0 +1,90 @@
+{
+  "schema": "board-rhs-components-actual-review-freeze/v1",
+  "complete": false,
+  "preparationFrozen": true,
+  "sourceOnly": true,
+  "status": "pending all root executable gates and actual audit",
+  "actual143TraceRead": false,
+  "actual143OwnerOrReportRead": false,
+  "numericExecution": false,
+  "analyzerExecuted": false,
+  "parserExecuted": false,
+  "testsExecuted": false,
+  "buildExecuted": false,
+  "nativeExecuted": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "actualAuditAccepted": false,
+  "ownedPreparationFileCount": 8,
+  "futureRootFilesExcluded": true,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/analyze.py",
+      "bytes": 20851,
+      "sha256": "22639af9af6016687ce2fcea5acb2c20245ea64afc2622e753ce7f6888656d42"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/authority.py",
+      "bytes": 8089,
+      "sha256": "0b2082ad1a8600c982daa6f901af06d676b3d22c0d93333e41620a11e4aafa8b"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/balance.py",
+      "bytes": 15928,
+      "sha256": "711e3e852dcafef4fd849706c47dc2ea85a03da38f8c2abf533c83583e0eb4d0"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/audit-contract.json",
+      "bytes": 7827,
+      "sha256": "2cc85b9492d9450347a9f1e3a50d96443d7eef24c4e13da488e76e59f40d66b6"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/README.md",
+      "bytes": 5105,
+      "sha256": "6311088856731dbe5e6b96573652ff53ec6e3bfe7053c4133b0908115cdc7e37"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/readiness.json",
+      "bytes": 2235,
+      "sha256": "00db8a0eaa24891c8be64cf64b3a3e23575f47de9d91fe51c28cd2ac25c280ba"
+    }
+  ],
+  "sourceDependencies": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/authority.py",
+      "bytes": 18253,
+      "sha256": "19ab3931ca5e119f2b4f311c09ad647f1e10c97551edc09d49a5eb938055816e"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-balance.py",
+      "bytes": 8133,
+      "sha256": "df93e70e3dafb59140a4d6033340f0abff27468dd092bdefe931045c6ab02143"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-transition.py",
+      "bytes": 3530,
+      "sha256": "a04f033cf0bf3c6e3eb784f2f5134c362eef5dadca3236767ea349cadd33073b"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55693,
+      "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 159692,
+      "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+    }
+  ],
+  "rootOwnedOutputPolicy": "Only root may run the analyzer and create a fresh first-only output subdirectory. This preparation freeze never inventories or pins future root-* files or actual numerical outputs."
+}

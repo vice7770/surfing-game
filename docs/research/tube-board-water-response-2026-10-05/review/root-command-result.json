@@ -1,0 +1,132 @@
+{
+  "schema": "board-rhs-components-root-audit-command/v1",
+  "terminal": true,
+  "complete": true,
+  "exitCode": 0,
+  "elapsedSeconds": 19.754448332998436,
+  "argv": [
+    "python3",
+    "/private/tmp/tube-board-rhs-components-actual-review-20261005/analyze.py",
+    "--root-authorized-terminal",
+    "--expected-seal-sha256",
+    "67cbea5e0dcccbfa70b27ac20be62230d7108626707c43ca4d8e58896b5edc48",
+    "--expected-report-sha256",
+    "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a",
+    "--expected-wrapper-sha256",
+    "66e857eb3ea4f4381c8e446811260fe5236f977b3fd8de12d05b8b7fb27c2af7",
+    "--expected-wrapper-file",
+    "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs",
+    "--expected-rider-mass",
+    "73",
+    "--output",
+    "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review"
+  ],
+  "log": {
+    "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-analysis.log",
+    "bytes": 346,
+    "sha256": "b7f655e2da5c486e481a402cd4c7acf45c0b555fd926d8eeba39fdce0886749d"
+  },
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/analyze.py",
+      "bytes": 20851,
+      "sha256": "22639af9af6016687ce2fcea5acb2c20245ea64afc2622e753ce7f6888656d42"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/authority.py",
+      "bytes": 8089,
+      "sha256": "0b2082ad1a8600c982daa6f901af06d676b3d22c0d93333e41620a11e4aafa8b"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/balance.py",
+      "bytes": 15928,
+      "sha256": "711e3e852dcafef4fd849706c47dc2ea85a03da38f8c2abf533c83583e0eb4d0"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/audit-contract.json",
+      "bytes": 7827,
+      "sha256": "2cc85b9492d9450347a9f1e3a50d96443d7eef24c4e13da488e76e59f40d66b6"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/README.md",
+      "bytes": 5105,
+      "sha256": "6311088856731dbe5e6b96573652ff53ec6e3bfe7053c4133b0908115cdc7e37"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/readiness.json",
+      "bytes": 2235,
+      "sha256": "00db8a0eaa24891c8be64cf64b3a3e23575f47de9d91fe51c28cd2ac25c280ba"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/authority.py",
+      "bytes": 18253,
+      "sha256": "19ab3931ca5e119f2b4f311c09ad647f1e10c97551edc09d49a5eb938055816e"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-balance.py",
+      "bytes": 8133,
+      "sha256": "df93e70e3dafb59140a4d6033340f0abff27468dd092bdefe931045c6ab02143"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-transition.py",
+      "bytes": 3530,
+      "sha256": "a04f033cf0bf3c6e3eb784f2f5134c362eef5dadca3236767ea349cadd33073b"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55693,
+      "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 159692,
+      "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/freeze.json",
+      "bytes": 3648,
+      "sha256": "e4fa6ea1d09bc6c51c8d6f878874fd1a680b0693fac92827a83f16bb6c56b42d"
+    }
+  ],
+  "actualOwner": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first-owner.json",
+    "bytes": 3491,
+    "sha256": "d8564a3ae6500aa7b29d5b3461333beb712dad5600bd11323da8413c6c3a8aaf"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/seal.json",
+    "bytes": 199554,
+    "sha256": "67cbea5e0dcccbfa70b27ac20be62230d7108626707c43ca4d8e58896b5edc48"
+  },
+  "report": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+    "bytes": 13390085,
+    "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+  },
+  "wrapper": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs",
+    "bytes": 14954,
+    "sha256": "66e857eb3ea4f4381c8e446811260fe5236f977b3fd8de12d05b8b7fb27c2af7"
+  },
+  "sourceMass": {
+    "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-mass-source.json",
+    "bytes": 1089,
+    "sha256": "cdfac14ef3b83af2cbd878b9025d06c0139de35a63108401bdad47ceb21da14c"
+  },
+  "sourcePostUnchanged": true,
+  "analysis": {
+    "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/analysis.json",
+    "bytes": 19072,
+    "sha256": "afbbcc1497328061ebfea553f72df33cd5395736a5e7172d67d04b0322bd4f62"
+  }
+}

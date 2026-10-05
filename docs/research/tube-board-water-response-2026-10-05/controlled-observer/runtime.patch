@@ -1,0 +1,171 @@
+--- a/src/physics/BoardBody.ts
++++ b/src/physics/BoardBody.ts
+@@ -899,6 +899,16 @@
+         for (let j = 0; j < 6; j += 1) s8[i * 8 + j] = system[i * 6 + j];
+         r8[i] = rhs[i];
+       }
++      // Observer-only copies of existing aggregate primitives; no additional force calculations.
++      rider.observeBoardRhsComponents(
++        totals.bx, totals.by, totals.bz, totals.btx, totals.bty, totals.btz,
++        totals.px, totals.py, totals.pz, totals.ptx, totals.pty, totals.ptz,
++        totals.fx, totals.fy, totals.fz, totals.ftx, totals.fty, totals.ftz,
++        ft[0], ft[1], ft[2], ft[3], ft[4], ft[5],
++        ft[6], ft[7], ft[8], ft[9], ft[10], ft[11],
++        gyro[0], gyro[1], gyro[2], weight, h,
++        waterX, waterY, waterZ, waterTx, waterTy, waterTz,
++      );
+       rider.coupleStanding(s8, r8, h);
+       solveLinear(s8, r8, 8);
+       if (rider.settleStanding(r8, h, this)) {
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -747,10 +747,53 @@
+   trialBoardDeltaSpinZ: number;
+   /** 1 after this prepare/substep reached trial settlement; 0 otherwise. */
+   standingTrialAvailable: number;
++  /** Existing aggregate board RHS primitives; invalid whenever standingTrialAvailable is 0. */
++  boardPreBuoyancyForceX: number;
++  boardPreBuoyancyForceY: number;
++  boardPreBuoyancyForceZ: number;
++  boardPreBuoyancyTorqueX: number;
++  boardPreBuoyancyTorqueY: number;
++  boardPreBuoyancyTorqueZ: number;
++  boardPrePressureForceX: number;
++  boardPrePressureForceY: number;
++  boardPrePressureForceZ: number;
++  boardPrePressureTorqueX: number;
++  boardPrePressureTorqueY: number;
++  boardPrePressureTorqueZ: number;
++  boardPreFrictionForceX: number;
++  boardPreFrictionForceY: number;
++  boardPreFrictionForceZ: number;
++  boardPreFrictionTorqueX: number;
++  boardPreFrictionTorqueY: number;
++  boardPreFrictionTorqueZ: number;
++  boardPreFinForceX: number;
++  boardPreFinForceY: number;
++  boardPreFinForceZ: number;
++  boardPreFinTorqueX: number;
++  boardPreFinTorqueY: number;
++  boardPreFinTorqueZ: number;
++  boardPreRailForceX: number;
++  boardPreRailForceY: number;
++  boardPreRailForceZ: number;
++  boardPreRailTorqueX: number;
++  boardPreRailTorqueY: number;
++  boardPreRailTorqueZ: number;
++  boardPreGyroX: number;
++  boardPreGyroY: number;
++  boardPreGyroZ: number;
++  boardPreWeight: number;
++  boardPreStepSeconds: number;
++  boardPreWaterImpulseX: number;
++  boardPreWaterImpulseY: number;
++  boardPreWaterImpulseZ: number;
++  boardPreWaterTorqueImpulseX: number;
++  boardPreWaterTorqueImpulseY: number;
++  boardPreWaterTorqueImpulseZ: number;
+ }
+ function landingDemandOperands(): LandingDemandOperands {
+   return { projectLocalX: 0, projectLocalY: 0, projectLocalZ: 0, projectDeckY: 0, projectHeight: 0, demandLocalX: 0, demandLocalY: 0, demandLocalZ: 0, legHeight: 0, legLoad: 0, legStiffness: 0, legDamping: 0, legForce: 0, legRateAfter: 0, specificForceX: 0, specificForceY: 0, specificForceZ: 0, postureRateX: 0, postureRateY: 0, postureRateZ: 0, driveX: 0, driveY: 0, driveZ: 0, carriedRelativeX: 0, carriedRelativeY: 0, carriedRelativeZ: 0, demandPositionX: 0, demandPositionY: 0, demandPositionZ: 0, demandVelocityX: 0, demandVelocityY: 0, demandVelocityZ: 0, demandTargetX: 0, demandTargetY: 0, demandTargetZ: 0, demandUpX: 0, demandUpY: 0, demandUpZ: 0,
+-    boardPreMatrix00: 0, boardPreMatrix01: 0, boardPreMatrix02: 0, boardPreMatrix03: 0, boardPreMatrix04: 0, boardPreMatrix05: 0, boardPreMatrix10: 0, boardPreMatrix11: 0, boardPreMatrix12: 0, boardPreMatrix13: 0, boardPreMatrix14: 0, boardPreMatrix15: 0, boardPreMatrix20: 0, boardPreMatrix21: 0, boardPreMatrix22: 0, boardPreMatrix23: 0, boardPreMatrix24: 0, boardPreMatrix25: 0, boardPreMatrix30: 0, boardPreMatrix31: 0, boardPreMatrix32: 0, boardPreMatrix33: 0, boardPreMatrix34: 0, boardPreMatrix35: 0, boardPreMatrix40: 0, boardPreMatrix41: 0, boardPreMatrix42: 0, boardPreMatrix43: 0, boardPreMatrix44: 0, boardPreMatrix45: 0, boardPreMatrix50: 0, boardPreMatrix51: 0, boardPreMatrix52: 0, boardPreMatrix53: 0, boardPreMatrix54: 0, boardPreMatrix55: 0, boardPreRhs0: 0, boardPreRhs1: 0, boardPreRhs2: 0, boardPreRhs3: 0, boardPreRhs4: 0, boardPreRhs5: 0, preparedBoardVelocityX: 0, preparedBoardVelocityY: 0, preparedBoardVelocityZ: 0, preparedBoardSpinX: 0, preparedBoardSpinY: 0, preparedBoardSpinZ: 0, riderExternalX: 0, riderExternalY: 0, riderExternalZ: 0, forceArmX: 0, forceArmY: 0, forceArmZ: 0, carriedArmX: 0, carriedArmY: 0, carriedArmZ: 0, trialBoardDeltaVelocityX: 0, trialBoardDeltaVelocityY: 0, trialBoardDeltaVelocityZ: 0, trialBoardDeltaSpinX: 0, trialBoardDeltaSpinY: 0, trialBoardDeltaSpinZ: 0, standingTrialAvailable: 0 };
++    boardPreMatrix00: 0, boardPreMatrix01: 0, boardPreMatrix02: 0, boardPreMatrix03: 0, boardPreMatrix04: 0, boardPreMatrix05: 0, boardPreMatrix10: 0, boardPreMatrix11: 0, boardPreMatrix12: 0, boardPreMatrix13: 0, boardPreMatrix14: 0, boardPreMatrix15: 0, boardPreMatrix20: 0, boardPreMatrix21: 0, boardPreMatrix22: 0, boardPreMatrix23: 0, boardPreMatrix24: 0, boardPreMatrix25: 0, boardPreMatrix30: 0, boardPreMatrix31: 0, boardPreMatrix32: 0, boardPreMatrix33: 0, boardPreMatrix34: 0, boardPreMatrix35: 0, boardPreMatrix40: 0, boardPreMatrix41: 0, boardPreMatrix42: 0, boardPreMatrix43: 0, boardPreMatrix44: 0, boardPreMatrix45: 0, boardPreMatrix50: 0, boardPreMatrix51: 0, boardPreMatrix52: 0, boardPreMatrix53: 0, boardPreMatrix54: 0, boardPreMatrix55: 0, boardPreRhs0: 0, boardPreRhs1: 0, boardPreRhs2: 0, boardPreRhs3: 0, boardPreRhs4: 0, boardPreRhs5: 0, preparedBoardVelocityX: 0, preparedBoardVelocityY: 0, preparedBoardVelocityZ: 0, preparedBoardSpinX: 0, preparedBoardSpinY: 0, preparedBoardSpinZ: 0, riderExternalX: 0, riderExternalY: 0, riderExternalZ: 0, forceArmX: 0, forceArmY: 0, forceArmZ: 0, carriedArmX: 0, carriedArmY: 0, carriedArmZ: 0, trialBoardDeltaVelocityX: 0, trialBoardDeltaVelocityY: 0, trialBoardDeltaVelocityZ: 0, trialBoardDeltaSpinX: 0, trialBoardDeltaSpinY: 0, trialBoardDeltaSpinZ: 0, standingTrialAvailable: 0,
++    boardPreBuoyancyForceX: 0, boardPreBuoyancyForceY: 0, boardPreBuoyancyForceZ: 0, boardPreBuoyancyTorqueX: 0, boardPreBuoyancyTorqueY: 0, boardPreBuoyancyTorqueZ: 0, boardPrePressureForceX: 0, boardPrePressureForceY: 0, boardPrePressureForceZ: 0, boardPrePressureTorqueX: 0, boardPrePressureTorqueY: 0, boardPrePressureTorqueZ: 0, boardPreFrictionForceX: 0, boardPreFrictionForceY: 0, boardPreFrictionForceZ: 0, boardPreFrictionTorqueX: 0, boardPreFrictionTorqueY: 0, boardPreFrictionTorqueZ: 0, boardPreFinForceX: 0, boardPreFinForceY: 0, boardPreFinForceZ: 0, boardPreFinTorqueX: 0, boardPreFinTorqueY: 0, boardPreFinTorqueZ: 0, boardPreRailForceX: 0, boardPreRailForceY: 0, boardPreRailForceZ: 0, boardPreRailTorqueX: 0, boardPreRailTorqueY: 0, boardPreRailTorqueZ: 0, boardPreGyroX: 0, boardPreGyroY: 0, boardPreGyroZ: 0, boardPreWeight: 0, boardPreStepSeconds: 0, boardPreWaterImpulseX: 0, boardPreWaterImpulseY: 0, boardPreWaterImpulseZ: 0, boardPreWaterTorqueImpulseX: 0, boardPreWaterTorqueImpulseY: 0, boardPreWaterTorqueImpulseZ: 0 };
+ }
+ 
+ export interface RiderContactSample extends LandingDemandOperands {
+@@ -2124,6 +2167,94 @@
+     return this.feasible;
+   }
+ 
++  /** Scalar-only observation of the already assembled board RHS terms, before rider augmentation. */
++  observeBoardRhsComponents(
++    boardPreBuoyancyForceX: number,
++    boardPreBuoyancyForceY: number,
++    boardPreBuoyancyForceZ: number,
++    boardPreBuoyancyTorqueX: number,
++    boardPreBuoyancyTorqueY: number,
++    boardPreBuoyancyTorqueZ: number,
++    boardPrePressureForceX: number,
++    boardPrePressureForceY: number,
++    boardPrePressureForceZ: number,
++    boardPrePressureTorqueX: number,
++    boardPrePressureTorqueY: number,
++    boardPrePressureTorqueZ: number,
++    boardPreFrictionForceX: number,
++    boardPreFrictionForceY: number,
++    boardPreFrictionForceZ: number,
++    boardPreFrictionTorqueX: number,
++    boardPreFrictionTorqueY: number,
++    boardPreFrictionTorqueZ: number,
++    boardPreFinForceX: number,
++    boardPreFinForceY: number,
++    boardPreFinForceZ: number,
++    boardPreFinTorqueX: number,
++    boardPreFinTorqueY: number,
++    boardPreFinTorqueZ: number,
++    boardPreRailForceX: number,
++    boardPreRailForceY: number,
++    boardPreRailForceZ: number,
++    boardPreRailTorqueX: number,
++    boardPreRailTorqueY: number,
++    boardPreRailTorqueZ: number,
++    boardPreGyroX: number,
++    boardPreGyroY: number,
++    boardPreGyroZ: number,
++    boardPreWeight: number,
++    boardPreStepSeconds: number,
++    boardPreWaterImpulseX: number,
++    boardPreWaterImpulseY: number,
++    boardPreWaterImpulseZ: number,
++    boardPreWaterTorqueImpulseX: number,
++    boardPreWaterTorqueImpulseY: number,
++    boardPreWaterTorqueImpulseZ: number,
++  ): void {
++    const observer = this.landingDemand;
++    observer.boardPreBuoyancyForceX = boardPreBuoyancyForceX;
++    observer.boardPreBuoyancyForceY = boardPreBuoyancyForceY;
++    observer.boardPreBuoyancyForceZ = boardPreBuoyancyForceZ;
++    observer.boardPreBuoyancyTorqueX = boardPreBuoyancyTorqueX;
++    observer.boardPreBuoyancyTorqueY = boardPreBuoyancyTorqueY;
++    observer.boardPreBuoyancyTorqueZ = boardPreBuoyancyTorqueZ;
++    observer.boardPrePressureForceX = boardPrePressureForceX;
++    observer.boardPrePressureForceY = boardPrePressureForceY;
++    observer.boardPrePressureForceZ = boardPrePressureForceZ;
++    observer.boardPrePressureTorqueX = boardPrePressureTorqueX;
++    observer.boardPrePressureTorqueY = boardPrePressureTorqueY;
++    observer.boardPrePressureTorqueZ = boardPrePressureTorqueZ;
++    observer.boardPreFrictionForceX = boardPreFrictionForceX;
++    observer.boardPreFrictionForceY = boardPreFrictionForceY;
++    observer.boardPreFrictionForceZ = boardPreFrictionForceZ;
++    observer.boardPreFrictionTorqueX = boardPreFrictionTorqueX;
++    observer.boardPreFrictionTorqueY = boardPreFrictionTorqueY;
++    observer.boardPreFrictionTorqueZ = boardPreFrictionTorqueZ;
++    observer.boardPreFinForceX = boardPreFinForceX;
++    observer.boardPreFinForceY = boardPreFinForceY;
++    observer.boardPreFinForceZ = boardPreFinForceZ;
++    observer.boardPreFinTorqueX = boardPreFinTorqueX;
++    observer.boardPreFinTorqueY = boardPreFinTorqueY;
++    observer.boardPreFinTorqueZ = boardPreFinTorqueZ;
++    observer.boardPreRailForceX = boardPreRailForceX;
++    observer.boardPreRailForceY = boardPreRailForceY;
++    observer.boardPreRailForceZ = boardPreRailForceZ;
++    observer.boardPreRailTorqueX = boardPreRailTorqueX;
++    observer.boardPreRailTorqueY = boardPreRailTorqueY;
++    observer.boardPreRailTorqueZ = boardPreRailTorqueZ;
++    observer.boardPreGyroX = boardPreGyroX;
++    observer.boardPreGyroY = boardPreGyroY;
++    observer.boardPreGyroZ = boardPreGyroZ;
++    observer.boardPreWeight = boardPreWeight;
++    observer.boardPreStepSeconds = boardPreStepSeconds;
++    observer.boardPreWaterImpulseX = boardPreWaterImpulseX;
++    observer.boardPreWaterImpulseY = boardPreWaterImpulseY;
++    observer.boardPreWaterImpulseZ = boardPreWaterImpulseZ;
++    observer.boardPreWaterTorqueImpulseX = boardPreWaterTorqueImpulseX;
++    observer.boardPreWaterTorqueImpulseY = boardPreWaterTorqueImpulseY;
++    observer.boardPreWaterTorqueImpulseZ = boardPreWaterTorqueImpulseZ;
++  }
++
+   /**
+    * Standing: `couple` on an 8 x 8 system over (v, w, s', u'), the seventh unknown
+    * the leg's rate and the eighth the bank's, the body's speed across the leg.

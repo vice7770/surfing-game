@@ -1,0 +1,574 @@
+--- /private/tmp/tube-native-trial-balance-native-20261005/run.py
++++ /private/tmp/tube-board-rhs-components-native-20261005/run.py
+@@ -2,8 +2,8 @@
+ """Finite root-armed owner. No source-only path opens/probes a port or launches Chrome."""
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+-import argparse,datetime,hashlib,json,os,selectors,signal,socket,subprocess,threading,time,shutil,math,base64,struct
+-WORK=Path('/private/tmp/tube-native-trial-balance-native-20261005');PORTS=(4301,9711);USERS=(4310,4311,4312,4313)
++import argparse,datetime,hashlib,json,os,selectors,signal,socket,subprocess,threading,time,shutil,math,base64,struct,re
++WORK=Path('/private/tmp/tube-board-rhs-components-native-20261005');PORTS=(4301,9711);USERS=(4310,4311,4312,4313)
+ CANDIDATE_DIST=WORK/'candidate-complete-dist';BUILD_MANIFEST=CANDIDATE_DIST.parent/'root-complete-build-result.json'
+ def pin(p):
+  file=Path(p['file']);assert file.is_file(),'Missing sealed file '+str(file)
+@@ -11,40 +11,76 @@
+  return b
+ def verify_source_authority(q):
+  assert q['file']==str(WORK/'source-readiness.json')
+- authority=json.loads(pin(q))
+- assert authority['schema']=='trial-balance-source-readiness/v1' and authority['complete'] is True and authority['frozen'] is True
+- assert authority['sourceDirectory']==str(WORK/'source') and authority['sourceCount']==588 and authority['applicationSourceCount']==587 and authority['unchangedParentInputs']==587
+- assert authority['buildId']=='tube-native-trial-balance-20261005' and authority['runtimeChangedPaths']==['src/physics/AttachedRider.ts']
++ authority=json.loads(pin(q));C=Path('/private/tmp/tube-board-rhs-components-observer-20261005');P=Path('/private/tmp/tube-native-trial-balance-native-20261005')
++ changed=['src/physics/AttachedRider.ts','src/physics/BoardBody.ts']
++ assert authority['schema']=='board-rhs-components-source-readiness/v1' and authority['complete'] is True and authority['frozen'] is True
++ assert authority['sourceDirectory']==str(WORK/'source') and authority['sourceCount']==588 and authority['applicationSourceCount']==587 and authority['unchangedParentInputs']==586
++ assert authority['buildId']=='tube-board-rhs-components-20261005' and authority['runtimeChangedPaths']==changed
++ assert authority['parentManifest']['file']==str(P/'source-pins.json')
++ manifest=json.loads(pin(authority['sourcePinsManifest']));delta=json.loads(pin(authority['sourceDelta']));parent=json.loads(pin(authority['parentManifest']))
++ assert manifest['schema']=='board-rhs-components-source-pins/v1' and manifest['count']==len(manifest['pins'])==588
++ assert parent['schema']=='trial-balance-source-pins/v1' and parent['count']==len(parent['pins'])==588
++ rows={r['path']:r for r in manifest['pins']};old={r['path']:r for r in parent['pins']};assert len(rows)==len(old)==588 and set(rows)==set(old)
++ assert delta['schema']=='board-rhs-components-source-delta/v1' and delta['source']==str(WORK/'source') and delta['sourceCount']==588 and delta['unchangedParentInputs']==586 and delta['parentManifest']==authority['parentManifest']
++ assert [r for r in sorted(rows) if rows[r]!=old[r]]==changed
++ expectedBefore={'src/physics/AttachedRider.ts':(153209,'1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4'),'src/physics/BoardBody.ts':(55109,'7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4')}
++ expectedAfter={'src/physics/AttachedRider.ts':(159692,'85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1'),'src/physics/BoardBody.ts':(55693,'eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917')}
++ assert sorted(delta['overrides'],key=lambda r:r['path'])==[{'path':r,'before':old[r],'after':rows[r]}for r in changed]
++ for relative,r in rows.items():
++  assert not Path(relative).is_absolute() and '..' not in Path(relative).parts
++  pin({'file':str(WORK/'source'/relative),'bytes':r['bytes'],'sha256':r['sha256']})
++  pin({'file':str(P/'source'/relative),'bytes':old[relative]['bytes'],'sha256':old[relative]['sha256']})
++ for relative in changed:
++  assert (old[relative]['bytes'],old[relative]['sha256'])==expectedBefore[relative]
++  assert (rows[relative]['bytes'],rows[relative]['sha256'])==expectedAfter[relative]
++ actualRuntime={str(Path(r['file']).relative_to(WORK/'source')):r for r in authority['candidateRuntimePins']}
++ preparationMetadata=json.loads((C/'observer-fields.json').read_text())
++ preparationRuntime={str(Path(r['file']).relative_to(C/'source')):r for r in preparationMetadata['candidateRuntimePins']}
++ assert sorted(actualRuntime)==sorted(preparationRuntime)==changed
++ for relative in changed:
++  for record in (actualRuntime[relative],preparationRuntime[relative]):
++   pin(record);assert (record['bytes'],record['sha256'])==expectedAfter[relative]
++ assert authority['candidatePreparation']['file']==str(C/'readiness.json');pin(authority['candidatePreparation'])
++ assert authority['observerFields']['file']==str(WORK/'observer-fields.json');pin(authority['observerFields'])
++ pin(authority['candidatePatch']);pin(authority['rootBaseCopy'])
++ metadata=json.loads((WORK/'observer-fields.json').read_text());assert len(metadata['oldFields'])==102 and len(metadata['newFields'])==41 and len(metadata['allFields'])==len(set(metadata['allFields']))==143
++ assert metadata['allFields']==metadata['oldFields']+metadata['newFields'] and metadata['availabilityMarker']=='standingTrialAvailable'
++ assert (WORK/'observer-fields.json').read_bytes()==(C/'observer-fields.json').read_bytes()
++ assert metadata['oldFields']==json.loads((P/'observer-fields.json').read_text())['allFields']
+  assert authority['rootObserverChecks']==authority['rootCPUResult']
+- cpu=json.loads(pin(authority['rootObserverChecks']));pin(authority['rootCPUResult'])
+- assert cpu['complete'] is True and cpu['checks'] and all(check['exitCode']==0 for check in cpu['checks'])
+- manifest=json.loads(pin(authority['sourcePinsManifest']));delta=json.loads(pin(authority['sourceDelta']));parent=json.loads(pin(authority['parentManifest']))
+- assert manifest['schema']=='trial-balance-source-pins/v1' and manifest['count']==len(manifest['pins'])==588
+- rows={r['path']:r for r in manifest['pins']};assert len(rows)==588
+- assert delta['schema']=='trial-balance-source-delta/v1' and delta['source']==str(WORK/'source') and delta['sourceCount']==588 and delta['unchangedParentInputs']==587
+- assert delta['parentManifest']==authority['parentManifest'] and len(delta['overrides'])==1
+- assert authority['parentManifest']['file']=='/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-manifest.json'
+- old={}
+- for item in parent['files']:
+-  relative=item['path'];p=item['after'];pin(p)
+-  assert relative not in old;old[relative]={'path':relative,'bytes':p['bytes'],'sha256':p['sha256']}
+- assert len(old)==588 and set(old)==set(rows)
+- runtime='src/physics/AttachedRider.ts';override=delta['overrides'][0]
+- assert override['path']==runtime and override['before']==old[runtime] and override['after']==rows[runtime]
+- assert (old[runtime]['bytes'],old[runtime]['sha256'])==(146425,'d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31')
+- assert (rows[runtime]['bytes'],rows[runtime]['sha256'])==(153209,'1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4')
+- assert [relative for relative in sorted(rows) if rows[relative]!=old[relative]]==[runtime]
+- pin(authority['candidateRuntime']);assert (authority['candidateRuntime']['bytes'],authority['candidateRuntime']['sha256'])==(rows[runtime]['bytes'],rows[runtime]['sha256'])
+- for relative,r in rows.items():
+-  assert Path(relative).is_absolute() is False and '..' not in Path(relative).parts
+-  pin({'file':str(WORK/'source'/relative),'bytes':r['bytes'],'sha256':r['sha256']})
+- metadata=json.loads((WORK/'observer-fields.json').read_text());assert len(metadata['allFields'])==len(set(metadata['allFields']))==102 and len(metadata['originalFields'])==38 and len(metadata['newFields'])==63
+- assert metadata['availabilityMarker']=='standingTrialAvailable'
+- assert (WORK/'observer-fields.json').read_bytes()==Path('/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json').read_bytes()
++ assert authority['rootCPUResult']['file']==str(C/'root-checks/result.json')
++ cpu=json.loads(pin(authority['rootCPUResult']));pin(authority['rootObserverChecks'])
++ assert cpu['schema']=='board-rhs-components-root-cpu-checks/v1' and cpu['complete'] is True and cpu['sourcePostUnchanged'] is True and cpu['sourceCount']==588
++ checks={r['name']:r for r in cpu['checks']};assert {'strict','parity'}<=set(checks) and all(r['exitCode']==0 and r['timedOut'] is False for r in cpu['checks'])
++ parity=checks['parity'];assert parity['success'] is True and parity['passed']==parity['total']==2 and parity['failed']==0 and parity['wholeSteps']==552
++ for check in cpu['checks']:
++  pin(check['log'])
++  if 'report' in check:pin(check['report'])
++ for key,expected in [('sourceInputs',rows),('oracleInputs',old)]:
++  inputs=cpu[key];assert len(inputs)==len({r['file']for r in inputs})==588;matched={}
++  for record in inputs:
++   pin(record);matches=[relative for relative in expected if record['file'].endswith('/'+relative)];assert len(matches)==1
++   relative=matches[0];assert relative not in matched and (record['bytes'],record['sha256'])==(expected[relative]['bytes'],expected[relative]['sha256']);matched[relative]=record
++  assert set(matched)==set(expected)
++ for record in cpu['checkInputs']:pin(record)
++ # This is frozen prebuild authority: only588 declared inputs, never a full postbuild file-count assumption.
+  return authority,rows
++
++def verify_worker_field_retention(build):
++ metadata=json.loads((WORK/'observer-fields.json').read_text());fields=metadata['allFields'];assert len(fields)==143
++ retained=[]
++ for prefix in ['WorkerSurfZone-','surfZoneWorker-']:
++  matches=[q for q in build['assetPins'] if Path(q['file']).name.startswith(prefix) and q['file'].endswith('.js')];assert len(matches)==1
++  q=matches[0];text=pin(q).decode();present=[field for field in fields if re.search(r'(?<![\w$])'+re.escape(field)+r'(?![\w$])',text)]
++  assert len(present)==143,'All143 observer words must exist in each actual pinned app worker asset'
++  retained.append({'asset':q,'requiredFields':143,'presentFields':len(present)})
++ return retained
+ def verify_complete_build(build,dist):
+- assert build['schema']=='trial-balance-root-complete-build/v1' and build['terminal'] is True and build['exitCode']==0
+- assert build['source']==str(WORK/'source') and build['sourceUnchangedAfterBuild'] is True and build['buildId']=='tube-native-trial-balance-20261005'
++ assert build['schema']=='board-rhs-components-root-complete-build/v1' and build['terminal'] is True and build['exitCode']==0
++ assert build['source']==str(WORK/'source') and build['sourceUnchangedAfterBuild'] is True and build['buildId']=='tube-board-rhs-components-20261005'
++ command=json.loads(pin(build['rootApplicationCommand']))
++ assert command['schema']=='board-rhs-components-root-application-command/v1' and command['complete'] is True and command['terminal'] is True and command['exitCode']==0 and command['sourceUnchanged'] is True
++ commandChecks={q['name']:q for q in command['checks']};assert {'strict-build','application'}<=set(commandChecks) and all(q['exitCode']==0 for q in command['checks'])
+  authority,rows=verify_source_authority(build['readiness'])
+  extra='docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json'
+  expected=[{'file':str(WORK/'source'/relative),'bytes':r['bytes'],'sha256':r['sha256']} for relative,r in sorted(rows.items()) if relative!=extra]
+@@ -72,12 +108,20 @@
+   else:assert r['relative'] in built
+  assert len(built)==comp['newBuildAssets'] and len(additional)==comp['additionalStaticAssets'] and set(assets)==built|additional
+  assert json.loads(pin(assets['build.json']))['build']==build['buildId']
++ assert len(build['sourcePins'])==587 and len(build['assetPins'])==49
++ assert len(build['builtAssetPins'])==21 and len(build['generatedOutputPins'])==1
++ expectedFiles={str(WORK/'source'/relative)for relative in rows}
++ for record in build['builtAssetPins']+build['generatedOutputPins']:
++  pin(record);assert Path(record['file']).is_relative_to(WORK/'source') and record['file'] not in expectedFiles;expectedFiles.add(record['file'])
++ actualFiles={str(p)for p in (WORK/'source').rglob('*') if p.is_file()}
++ assert len(expectedFiles)==610 and actualFiles==expectedFiles,'Source588 inputs plus pinned21 dist outputs and1 cache output only'
++ verify_worker_field_retention(build)
+  return True
+ def verify_diagnostic_reference(s,build):
+  assert s['rootDiagnosticBuild']['file']==str(WORK/'root-diagnostic-build-result.json')
+- assert s['diagnosticModuleReferencePolicy']=='root-rebuilt-original74-input-graph-against-trial-balance-observer-source'
++ assert s['diagnosticModuleReferencePolicy']=='root-rebuilt-immediate102-parent74-input-graph-against-board-rhs-components-source'
+  pin(s['priorV4Readiness']);pin(s['priorV4Owner']);pin(s['priorV4Report']);pin(s['priorV6Readiness']);pin(s['priorV6Owner']);pin(s['priorV6Report'])
+- diagnostic=json.loads(pin(s['rootDiagnosticBuild']));assert diagnostic['schema']=='trial-balance-diagnostic-root-build/v1' and diagnostic['terminal'] is True and diagnostic['exitCode']==0 and diagnostic['module']==s['diagnosticModule']
++ diagnostic=json.loads(pin(s['rootDiagnosticBuild']));assert diagnostic['schema']=='board-rhs-components-diagnostic-root-build/v1' and diagnostic['terminal'] is True and diagnostic['exitCode']==0 and diagnostic['module']==s['diagnosticModule']
+  original=json.loads(pin(diagnostic['originalDiagnosticBuild']));assert diagnostic['originalDiagnosticBuild']['file']=='/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/root-diagnostic-build-result.json'
+  assert diagnostic['source']==build['source'] and diagnostic['entry']['file']==str(WORK/'autopilot-entry.ts') and diagnostic['module']['file']==str(WORK/'diagnostic-autopilot.mjs')
+  assert diagnostic['originalEntry']==original['entry'] and diagnostic['completeBuildAssetCountUnchanged']==49 and diagnostic['sourceOrCompleteDistModified'] is False and diagnostic['separateDiagnosticRoute']=='/diagnostic-autopilot.mjs'
+@@ -96,16 +140,22 @@
+   assert p==source[str(Path(build['source'])/'tsconfig.json')];pin(p)
+  pin(diagnostic['originalFailedCompilation'])
+  assert diagnostic['sourceReadiness']==s['sourceReadiness'] and diagnostic['actualNewDiagnosticSourceCompiled'] is True and diagnostic['diagnosticModuleCopiedFromPrior'] is False
+- assert diagnostic['changedSourceInputsAgainstV8']==['src/physics/AttachedRider.ts'] and diagnostic['attachedRiderReachable'] is True
++ assert diagnostic['changedSourceInputsAgainstImmediateParent']==['src/physics/AttachedRider.ts','src/physics/BoardBody.ts'] and diagnostic['attachedRiderReachable'] is True and diagnostic['boardBodyReachable'] is True
+  assert sorted(diagnostic['moduleExports'])==['Autopilot','autopilotView','riderPartVolumes']
+  assert str(WORK/'source/src/physics/AttachedRider.ts') in {p['file'] for p in diagnostic['sourceInputs']}
+- assert diagnostic['parentV8DiagnosticBuild']['file']=='/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result.json';pin(diagnostic['parentV8DiagnosticBuild'])
+- assert diagnostic['observerFields']=={'file':str(WORK/'observer-fields.json'),'bytes':8731,'sha256':'19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a'};pin(diagnostic['observerFields'])
+- assert diagnostic['observerFieldCount']==102 and diagnostic['originalObserverFieldCount']==38 and diagnostic['newObserverScalarCount']==63
++ assert diagnostic['parentTrialBalanceDiagnosticBuild']['file']=='/private/tmp/tube-native-trial-balance-native-20261005/root-diagnostic-build-result.json';pin(diagnostic['parentTrialBalanceDiagnosticBuild'])
++ assert diagnostic['observerFields']=={'file':str(WORK/'observer-fields.json'),'bytes':17859,'sha256':'e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8'};pin(diagnostic['observerFields'])
++ assert diagnostic['observerFieldCount']==143 and diagnostic['oldObserverFieldCount']==102 and diagnostic['newObserverScalarCount']==41
++ assert str(WORK/'source/src/physics/BoardBody.ts') in {p['file']for p in diagnostic['sourceInputs']}
++ fields=json.loads((WORK/'observer-fields.json').read_text())['allFields'];moduleText=pin(diagnostic['module']).decode()
++ lexical=sum(bool(re.search(r'(?<![\w$])'+re.escape(field)+r'(?![\w$])',moduleText))for field in fields)
++ assert diagnostic['diagnosticLexicalObserverFieldCount']==lexical and 0<=lexical<=143
++ assert diagnostic['observerRetentionPolicy']=='source-graph-reachability-and-both-actual-app-workers;diagnostic-class-fields-may-be-tree-shaken'
++ verify_worker_field_retention(build)
+  return diagnostic
+ def sealed(arm):
+  body=(WORK/'seal.json').read_bytes();assert len(body)<=1024*1024;s=json.loads(body)
+- assert s['schema']=='trial-balance-root-seal/v1' and s['complete'] is True and arm=='candidate'
++ assert s['schema']=='board-rhs-components-root-seal/v1' and s['complete'] is True and arm=='candidate'
+  a=s['arms'][arm];assert a['rootAuthorized'] is True and Path(a['dist'])==CANDIDATE_DIST
+  build=json.loads(pin(a['rootBuildManifest']));assert a['rootBuildManifest']['file']==str(BUILD_MANIFEST)
+  assert verify_complete_build(build,CANDIDATE_DIST) and len(build['sourcePins'])==587 and len(build['assetPins'])==49
+@@ -114,15 +164,17 @@
+  ready=json.loads(pin(s['helperReadiness']));assert ready['complete'] is True and ready['frozen'] is True and ready['resourcesStarted'] is False and ready['actualAppBuildAccepted'] is True and ready['actualDiagnosticBuildAccepted'] is True and ready['helperAcceptance'] is True
+  assert ready['sourceReadiness']==s['sourceReadiness'] and s['sourceReadiness']['file']==str(WORK/'source-readiness.json')
+  verify_source_authority(s['sourceReadiness'])
+- assert ready['schema']=='trial-balance-preparation-readiness/v1' and ready['executableChecksAccepted'] is True
+- rootChecks=json.loads(pin(ready['rootHelperChecks']));assert rootChecks['schema']=='trial-balance-root-helper-checks/v1' and rootChecks['complete'] is True
++ assert ready['schema']=='board-rhs-components-preparation-readiness/v1' and ready['executableChecksAccepted'] is True
++ rootChecks=json.loads(pin(ready['rootHelperChecks']));assert rootChecks['schema']=='board-rhs-components-root-helper-checks/v1' and rootChecks['complete'] is True
+  for name in ['nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner']:
+   check=rootChecks[name];assert check['run'] is True and check['exitCode']==0;pin(check['log'])
+- manifest=json.loads(pin(s['helperPinsManifest']));assert manifest['schema']=='trial-balance-helper-pins/v1'
++ manifest=json.loads(pin(s['helperPinsManifest']));assert manifest['schema']=='board-rhs-components-helper-pins/v1'
+  assert s['helperPins']==manifest['pins']
+  assert {Path(p['file']).name for p in s['helperPins']} >= {'run.py','native.mjs','native-owned.mjs','rider-driver.mjs','control-policy.mjs','menu-startup.mjs','loft-snapshot-tools.mjs','body-witnesses.mjs','cdp.mjs','follower-camera.mjs','contact-retention.mjs','check-source.py'}
+  for p in s['helperPins']:pin(p)
+  verify_diagnostic_reference(s,build)
++ for key,name in [('priorTrialBalanceReadiness','readiness.json'),('priorTrialBalanceOwner','candidate-first-owner.json'),('priorTrialBalanceReport','candidate-first/report.json')]:
++  assert s[key]['file']==str(Path('/private/tmp/tube-native-trial-balance-native-20261005')/name);pin(s[key])
+  for key,name in [('priorV8Readiness','readiness-built.json'),('priorV8Owner','candidate-first-owner.json'),('priorV8Report','candidate-first/report.json')]:
+   assert s[key]['file']==str(Path('/private/tmp/tube-pop-up-contact-operands-native-v8-20261005')/name);pin(s[key])
+  for key,name in [('priorV9Readiness','readiness.json'),('priorV9Owner','candidate-first-owner.json'),('priorV9Report','candidate-first/report.json')]:
+@@ -183,7 +235,7 @@
+  else:assert n.get('firstContactLoss') is None
+  return True
+ def validate_native(n,out,sealsha):
+- assert n['schema']=='trial-balance-native/v1' and n['complete'] is True and n['firstFailure'] is None and n['chromeClosed'] is True and n['sealSha256']==sealsha
++ assert n['schema']=='board-rhs-components-native/v1' and n['complete'] is True and n['firstFailure'] is None and n['chromeClosed'] is True and n['sealSha256']==sealsha
+  assert n['initial']['menuEvidence']['actualDomStartup'] is True and n['initial']['menuEvidence']['normalSpawnPreserved'] is True and n['initial']['menuEvidence']['rideObserved'] is True and n['initial']['menuEvidence']['selectedChoices']==['Padang Padang','Big','Mid','Calm','Midday']
+  assert n['initial']['menuEvidence']['normalHudPaused'] is True and n['initial']['menuEvidence']['activeLabDisabled'] is True
+  assert n['knownFailureReplay'] is True and n['normalMenuAcceptance'] is False and n['overrides']=={'seed':6238,'componentCount':64,'dx':2,'fineSpacing':1}
+@@ -254,7 +306,7 @@
+  except (AssertionError,KeyError,FileNotFoundError,json.JSONDecodeError) as e:print(json.dumps({'resourcesStarted':False,'portsProbed':False,'sealFailure':str(e)}));return 2
+  if args.check_seal:print(json.dumps({'sealValid':True,'resourcesStarted':False,'portsProbed':False,'arm':args.arm,'sealSha256':sealsha}));return 0
+  start=time.monotonic();out=WORK/(args.arm+'-first');owner=WORK/(args.arm+'-first-owner.json');log=WORK/(args.arm+'-first-owner.log');assert not out.exists() and not owner.exists() and not log.exists(),'First-only arm: preserve unsuccessful invocation, no overwrite/retry'
+- report={'schema':'trial-balance-finite-owner/v1','arm':args.arm,'complete':False,'firstFailure':None,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sealSha256':sealsha,'wholeSeconds':660,'commandSeconds':648,'cleanupSeconds':7,'ports':PORTS,'protectedPorts':USERS,'dist':str(DIST),'served':{},'logBytes':0,'nativeGroup':None,'physicalGeometryEqualityClaim':False,'bodyEntryClaim':False}
++ report={'schema':'board-rhs-components-finite-owner/v1','arm':args.arm,'complete':False,'firstFailure':None,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sealSha256':sealsha,'wholeSeconds':660,'commandSeconds':648,'cleanupSeconds':7,'ports':PORTS,'protectedPorts':USERS,'dist':str(DIST),'served':{},'logBytes':0,'nativeGroup':None,'physicalGeometryEqualityClaim':False,'bodyEntryClaim':False}
+  lock=threading.Lock();server=None;proc=None;sel=selectors.DefaultSelector()
+  def save():
+   with lock:b=json.dumps(report,separators=(',',':')).encode()
+--- /private/tmp/tube-native-trial-balance-native-20261005/native.mjs
++++ /private/tmp/tube-board-rhs-components-native-20261005/native.mjs
+@@ -11,9 +11,9 @@
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { retainContactDiagnostics } from '/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs';
+ import { installFollowerCamera } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs';
+-const OPERAND_METADATA=JSON.parse(readFileSync('/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json'));const OPERAND_FIELDS=OPERAND_METADATA.allFields;
+-assert.equal(OPERAND_FIELDS.length,102);assert.equal(OPERAND_METADATA.originalFields.length,38);assert.equal(OPERAND_METADATA.newFields.length,63);assert.equal(OPERAND_METADATA.availabilityMarker,'standingTrialAvailable');
+-const WORK='/private/tmp/tube-native-trial-balance-native-20261005',PORT=4301,CDP=9711,DT=1/60;
++const OPERAND_METADATA=JSON.parse(readFileSync('/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json'));const OPERAND_FIELDS=OPERAND_METADATA.allFields;
++assert.equal(OPERAND_FIELDS.length,143);assert.equal(OPERAND_METADATA.oldFields.length,102);assert.equal(OPERAND_METADATA.newFields.length,41);assert.equal(OPERAND_METADATA.availabilityMarker,'standingTrialAvailable');
++const WORK='/private/tmp/tube-board-rhs-components-native-20261005',PORT=4301,CDP=9711,DT=1/60;
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const i=a.indexOf('=');assert(a.startsWith('--')&&i>2);return[a.slice(2,i),a.slice(i+1)];}));
+ assert.equal(args.run,'true','Only the bounded Python owner may arm');assert.equal(args.arm,'candidate');assert.equal(process.env.BOUNDED_C_OWNER_ARM,'candidate');const seal=JSON.parse(readFileSync(WORK+'/seal.json'));assert.equal(process.env.BOUNDED_C_OWNER_SEAL_SHA,createHash('sha256').update(readFileSync(WORK+'/seal.json')).digest('hex')); 
+ assert.equal(args.url,`http://127.0.0.1:${PORT}/?diagnostics`);
+@@ -27,7 +27,7 @@
+ const GRAPHICS={preset:'custom',renderScale:1,nativePixelDensity:true,frameLimit:60,waterSimulation:'accurate',seaDetail:'rich',
+  caustics:true,sprayMist:true,oceanView:'far',foam:'detailed',waterLook:'rich',particles:'high'};
+ const POLICY={style:'line',waitOutside:5,rise:1,lineDegrees:60,giveUp:30,stall:false};
+-const report={schema:'trial-balance-native/v1',priorFailedMenuReport:seal.priorFailedReport,priorV2FailedMenuReport:seal.priorV2FailedReport,menuRepair:'Unchanged V4 actual menu/HUD startup followed by explicitly declared public seeded restart for diagnostic comparison',priorV4Report:seal.priorV4Report,priorV6Report:seal.priorV6Report,normalFollowerCameraContract:'Passive public authored follower mirror after normal HUD pause; no manual pose/fly ownership; mirror repeats ordinary height reads',sealSha256:process.env.BOUNDED_C_OWNER_SEAL_SHA,arm:args.arm,complete:false,firstFailure:null,settings:SETTINGS,overrides:REPLAY_OVERRIDES,knownFailureReplay:true,normalMenuAcceptance:false,expectedConfig:EXPECTED_CONFIG,seedPolicy:'One predeclared public replay of observed V4 seed6238 with explicit component64/dx2/fine1 overrides from pinned V4 config; no seed search or exact startup claim',
++const report={schema:'board-rhs-components-native/v1',priorFailedMenuReport:seal.priorFailedReport,priorV2FailedMenuReport:seal.priorV2FailedReport,menuRepair:'Unchanged V4 actual menu/HUD startup followed by explicitly declared public seeded restart for diagnostic comparison',priorV4Report:seal.priorV4Report,priorV6Report:seal.priorV6Report,normalFollowerCameraContract:'Passive public authored follower mirror after normal HUD pause; no manual pose/fly ownership; mirror repeats ordinary height reads',sealSha256:process.env.BOUNDED_C_OWNER_SEAL_SHA,arm:args.arm,complete:false,firstFailure:null,settings:SETTINGS,overrides:REPLAY_OVERRIDES,knownFailureReplay:true,normalMenuAcceptance:false,expectedConfig:EXPECTED_CONFIG,seedPolicy:'One predeclared public replay of observed V4 seed6238 with explicit component64/dx2/fine1 overrides from pinned V4 config; no seed search or exact startup claim',
+  graphics:GRAPHICS,policy:{...POLICY,trial:'Declared observer-only trial-balance capture on successful V11 controls; original solver and control policy retained, causal explanation unproved',standingSteering:{maximumAbsolute:.2,slewRatePerSecond:.4,initialInput:0},standingInputOverlay:{crouch:1,compress:1},cue:'One ordinary pulse on first actual positive cue while prone; no fixed83/manual telemetry/pilot-go gate',proneInput:'paddle true, steer zero'},
+  source:seal.arms.candidate,diagnosticModule:seal.diagnosticModule,rootCompleteBuild:seal.arms.candidate.rootBuildManifest,helperReadiness:seal.helperReadiness,schedule:{maxSteps:2160,maxPhysicalSeconds:2160/60,fixedStepSeconds:DT,
+  stop:'First published fall/separation/reset increase, or finite2160step cap; one ordinary fixed step and update(1/60) each iteration',noSettle:true,noPlacements:true,noReset:true,noRetries:true},videoContract:{start:'First actual output push phase (ordinary first-cue pop-up), with no tube-proximity requirement',initialRequestBeforeAwaitStart:true,maximumMovingSteps:240,maximumBytes:16*1024*1024,maximumRequests:241,ordinaryStepsOnly:true,fpsClaim:false,wallTimeEncoding:true},
+@@ -43,13 +43,14 @@
+  'Visible skinned extents use the drawn/interpolated clock; trajectory body points use the current worker clock. PNGs use the root-frozen stable-X C loft and coherent startup candidate; no experimental curl geometry is injected.',
+  'Initial warmed snapshot/PNG and trace counters are evidence, not causal proof of the prior missing-front failure.',
+  'No FPS, full-body collision, visual acceptance or adoption pass is inferred.']};
+-report.operandObservation={fields:OPERAND_FIELDS,originalFields:OPERAND_METADATA.originalFields,newFields:OPERAND_METADATA.newFields,availabilityMarker:OPERAND_METADATA.availabilityMarker,availabilitySemantics:OPERAND_METADATA.availabilitySemantics,assemblyAttribution:OPERAND_METADATA.assemblyAttribution,sourceOnlyObserver:true,allFullSamplesChecked:true,compactProneSummaryUnchanged:true,causalClaim:false};
++report.operandObservation={fields:OPERAND_FIELDS,oldFields:OPERAND_METADATA.oldFields,newFields:OPERAND_METADATA.newFields,availabilityMarker:OPERAND_METADATA.availabilityMarker,availabilitySemantics:OPERAND_METADATA.availabilitySemantics,assemblyAttribution:OPERAND_METADATA.mixedWaterSemantics,sourceOnlyObserver:true,allFullSamplesChecked:true,compactProneSummaryUnchanged:true,causalClaim:false};
+ report.startupPolicy={ridePauseWaitMilliseconds:180000,priorRidePauseWaitMilliseconds:90000,actualFailureSnapshot:true,failureSnapshotMilliseconds:3500,failureScreenshotMilliseconds:4000,noMenuControlChange:true,noMenuPhysicsChange:true};
+ report.priorV8StartupAttempt={readiness:seal.priorV8Readiness,owner:seal.priorV8Owner,report:seal.priorV8Report,noStepEvidence:true};
+ report.priorV9BudgetAttempt={readiness:seal.priorV9Readiness,owner:seal.priorV9Owner,report:seal.priorV9Report,startupSucceeded:true,capturedPronePrefixSteps:1213,landingForceEvidence:false};
+ report.priorV10StartupAttempt={readiness:seal.priorV10Readiness,owner:seal.priorV10Owner,report:seal.priorV10Report,capturedSteps:0,landingForceEvidence:false,lateUiStatusRetained:true};
+ report.priorV11SuccessfulBaseline={readiness:seal.priorV11Readiness,owner:seal.priorV11Owner,report:seal.priorV11Report,ordinarySteps:1366,exitCode:0,causalFixEvidence:false};
+-report.trialBalanceObserver={sourceReadiness:seal.sourceReadiness,observerOnly:true,originalFields:38,newScalarCopies:63,availabilityMarker:'standingTrialAvailable',markerZeroInvalidatesStaleWords:true,markerOneOnlyMeansCoupledTrialCaptured:true,trialMayBeRejectedAndDifferFromRealizedMotion:true,separateHydrodynamicAttributionAvailable:false,causalExplanationAccepted:false,oneRuntimeChanged:'src/physics/AttachedRider.ts'};
++report.boardRhsComponentsObserver={sourceReadiness:seal.sourceReadiness,observerOnly:true,oldFields:102,newAggregateCopies:41,totalFields:143,availabilityMarker:'standingTrialAvailable',markerZeroInvalidatesStaleWords:true,markerOneOnlyMeansCoupledTrialCaptured:true,trialMayBeRejectedAndDifferFromRealizedMotion:true,waterAggregateCombinesRadiationAndEntrainment:true,separateHydrodynamicAttributionAvailable:false,causalExplanationAccepted:false,twoRuntimeChanged:['src/physics/AttachedRider.ts','src/physics/BoardBody.ts']};
++report.priorTrialBalanceSuccessfulBaseline={readiness:seal.priorTrialBalanceReadiness,owner:seal.priorTrialBalanceOwner,report:seal.priorTrialBalanceReport,oldFields:102,sourceAndHelperLineageOnly:true,new143AcceptanceInherited:false};
+ report.movieCapBehavior={movingAdvances:240,requests:241,movieStopsAtCap:true,ordinaryPhysicsContinues:true,replayStopUnchanged:true};
+ report.firstContactLoss=null;
+ let ndjsonBytes=0,lastComponent=null,residence=null,consecutive=0,entryOccurred=false,wasContained=false;
+--- /private/tmp/tube-native-trial-balance-native-20261005/check-source.py
++++ /private/tmp/tube-board-rhs-components-native-20261005/check-source.py
+@@ -1,10 +1,10 @@
+-"""Root-run source/adapter check only; never executes native code, tests, builds, or port probes."""
++"""Root-run source/adapter check only; never executes native code, CPU fixtures, builds or probes."""
+ from pathlib import Path
+ import ast,hashlib,importlib.util,json,sys
+ sys.dont_write_bytecode=True
+ W=Path(__file__).resolve().parent
+-P=Path('/private/tmp/tube-landing-longitudinal-native-20261005')
+-V11=Path('/private/tmp/tube-pop-up-contact-operands-native-v11-20261005')
++P=Path('/private/tmp/tube-native-trial-balance-native-20261005')
++C=Path('/private/tmp/tube-board-rhs-components-observer-20261005')
+ def pin(path):
+  p=Path(path);b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def function(source,name):
+@@ -18,16 +18,14 @@
+  for token in ["',PORT=4301,CDP=9711,DT=1/60;",'ridePauseWaitMilliseconds:180000','635000','for(let i=0;i<2160;i++)','if(row.step-videoStartStep>=240)await finishClip();']:assert token in native,token
+  current=(W/'run.py').read_text();parent=(P/'run.py').read_text()
+  for name in ['validate_camera','validate_rows','validate_native','terminal_owner_limits','protected_match','tcp','members','main']:
+-  text=function(current,name).replace('trial-balance-native/v1','pop-up-contact-longitudinal-native/v1').replace('trial-balance-finite-owner/v1','pop-up-contact-longitudinal-finite-owner/v1')
+-  text=text.replace("json.loads((WORK/'observer-fields.json').read_text())['allFields']","json.loads((WORK/'observer-fields.json').read_text())")
++  text=function(current,name).replace('board-rhs-components-native/v1','trial-balance-native/v1').replace('board-rhs-components-finite-owner/v1','trial-balance-finite-owner/v1')
+   assert text==function(parent,name),name
+- metadata=json.loads((W/'observer-fields.json').read_text())
+- assert (W/'observer-fields.json').read_bytes()==Path('/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json').read_bytes()
+- assert len(metadata['allFields'])==len(set(metadata['allFields']))==102 and len(metadata['originalFields'])==38 and len(metadata['newFields'])==63
+- assert metadata['originalFields']==json.loads(Path('/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json').read_text())
+- spec=importlib.util.spec_from_file_location('trial_balance_owner_source_check',W/'run.py');owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
++ metadata=json.loads((W/'observer-fields.json').read_text());assert (W/'observer-fields.json').read_bytes()==(C/'observer-fields.json').read_bytes()
++ assert len(metadata['allFields'])==len(set(metadata['allFields']))==143 and len(metadata['oldFields'])==102 and len(metadata['newFields'])==41
++ assert metadata['oldFields']==json.loads((P/'observer-fields.json').read_text())['allFields']
++ spec=importlib.util.spec_from_file_location('board_rhs_components_owner_source_check',W/'run.py');owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
+  authority,rows=owner.verify_source_authority(pin(W/'source-readiness.json'))
+- borrowed=json.loads((V11/'source-helper-checks.json').read_text())['borrowedHelpers'];assert len(borrowed)==9
++ borrowed=json.loads((P/'source-helper-checks.json').read_text())['borrowedHelpers'];assert len(borrowed)==9
+  for q in borrowed:assert pin(q['file'])==q
+- record={'schema':'trial-balance-source-helper-checks/v1','complete':True,'sourceOnly':True,'resourcesStarted':False,'portsProbed':False,'numericalExecution':False,'buildExecuted':False,'nativeExecuted':False,'sourceReadiness':pin(W/'source-readiness.json'),'candidateRuntime':authority['candidateRuntime'],'sourcePreparationCount':588,'applicationSourceCount':587,'oneObserverRuntimeChanged':'src/physics/AttachedRider.ts','originalFields':38,'newScalarCopies':63,'availabilityMarker':1,'totalFields':102,'executableReplayStartupMovieTailAndControlsUnchanged':True,'borrowedHelpers':borrowed,'actualAppBuildAccepted':False,'actualDiagnosticBuildAccepted':False,'helperAcceptance':False}
++ record={'schema':'board-rhs-components-source-helper-checks/v1','complete':True,'sourceOnly':True,'resourcesStarted':False,'portsProbed':False,'numericalExecution':False,'buildExecuted':False,'nativeExecuted':False,'sourceReadiness':pin(W/'source-readiness.json'),'candidateRuntimePins':authority['candidateRuntimePins'],'sourcePreparationCount':588,'applicationSourceCount':587,'unchangedParentInputs':586,'observerRuntimeChanged':['src/physics/AttachedRider.ts','src/physics/BoardBody.ts'],'oldFields':102,'newScalarCopies':41,'availabilityMarker':'standingTrialAvailable','totalFields':143,'executableReplayStartupMovieTailAndControlsUnchanged':True,'borrowedHelpers':borrowed,'actualAppBuildAccepted':False,'actualDiagnosticBuildAccepted':False,'helperAcceptance':False}
+  (W/'source-helper-checks.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
+--- /private/tmp/tube-native-trial-balance-native-20261005/metadata-check.py
++++ /private/tmp/tube-board-rhs-components-native-20261005/metadata-check.py
+@@ -1,16 +1,18 @@
+-"""Root-run literal metadata check; no source, physics, build, native or resource operation."""
++"""Root-run literal metadata check; no physics, build, native or resource operation."""
+ from pathlib import Path
+ import hashlib,json
+ W=Path(__file__).resolve().parent
+-O=Path('/private/tmp/tube-native-trial-balance-observer-20261005')
++C=Path('/private/tmp/tube-board-rhs-components-observer-20261005')
++P=Path('/private/tmp/tube-native-trial-balance-native-20261005')
+ def pin(path):
+  p=Path(path);b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ if __name__=='__main__':
+- p=W/'observer-fields.json';assert p.is_file() and not p.is_symlink() and p.read_bytes()==(O/'observer-fields.json').read_bytes()
+- q=pin(p);assert q['bytes']==8731 and q['sha256']=='19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a'
+- d=json.loads(p.read_text());assert len(d['allFields'])==len(set(d['allFields']))==102 and len(d['originalFields'])==38 and len(d['newFields'])==63
+- assert d['allFields']==d['originalFields']+d['newFields']+[d['availabilityMarker']] and d['availabilityMarker']=='standingTrialAvailable'
++ p=W/'observer-fields.json';assert p.is_file() and not p.is_symlink() and p.read_bytes()==(C/'observer-fields.json').read_bytes()
++ q=pin(p);assert q['bytes']==17859 and q['sha256']=='e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8'
++ d=json.loads(p.read_text());assert len(d['allFields'])==len(set(d['allFields']))==143 and len(d['oldFields'])==102 and len(d['newFields'])==41
++ assert d['allFields']==d['oldFields']+d['newFields'] and d['availabilityMarker']=='standingTrialAvailable' and d['availabilityMarker'] in d['oldFields']
++ assert d['oldFields']==json.loads((P/'observer-fields.json').read_text())['allFields']
+  assert "json.loads((WORK/'observer-fields.json').read_text())['allFields']" in (W/'run.py').read_text()
+  assert 'const OPERAND_FIELDS=OPERAND_METADATA.allFields;' in (W/'native.mjs').read_text()
+- record={'schema':'trial-balance-helper-metadata-check/v1','complete':True,'sourceOnly':True,'resourcesStarted':False,'portsProbed':False,'original':pin(O/'observer-fields.json'),'copy':q,'originalFields':38,'newScalarCopies':63,'availabilityMarker':1,'fields':102,'literalCopyNotSymlink':True,'markerOneOnlyMeansTrialCaptured':True,'separateHydrodynamicAttributionAvailable':False}
++ record={'schema':'board-rhs-components-helper-metadata-check/v1','complete':True,'sourceOnly':True,'resourcesStarted':False,'portsProbed':False,'original':pin(C/'observer-fields.json'),'copy':q,'oldFields':102,'newScalarCopies':41,'availabilityMarker':'standingTrialAvailable','fields':143,'literalCopyNotSymlink':True,'markerZeroInvalidatesStaleWords':True,'markerOneOnlyMeansTrialCaptured':True,'waterRadiationAndEntrainmentRemainMixed':True,'separateHydrodynamicAttributionAvailable':False}
+  (W/'metadata-check.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record))
+--- /private/tmp/tube-native-trial-balance-native-20261005/freeze.py
++++ /private/tmp/tube-board-rhs-components-native-20261005/freeze.py
+@@ -1,14 +1,12 @@
+-"""Writes helper metadata only. Default is pending; explicit root receipt acceptance never launches or seals."""
++"""Root-run helper metadata only. Default remains pending; explicit acceptance never builds, seals or launches."""
+ from pathlib import Path
+ import argparse,hashlib,importlib.util,json,sys
+ sys.dont_write_bytecode=True
+ W=Path(__file__).resolve().parent
+-P=Path('/private/tmp/tube-pop-up-contact-operands-native-v11-20261005')
+-V7=Path('/private/tmp/tube-pop-up-contact-native-v7-20261005')
+-V8=Path('/private/tmp/tube-pop-up-contact-operands-native-v8-20261005')
+-O=Path('/private/tmp/tube-native-trial-balance-observer-20261005')
+-B=Path('/private/tmp/tube-native-trial-balance-build-20261005')
+-BUILD_ID='tube-native-trial-balance-20261005'
++P=Path('/private/tmp/tube-native-trial-balance-native-20261005')
++C=Path('/private/tmp/tube-board-rhs-components-observer-20261005')
++BUILD_ID='tube-board-rhs-components-20261005'
++POLICY='root-rebuilt-immediate102-parent74-input-graph-against-board-rhs-components-source'
+ def pin(path):
+  p=Path(path);b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def save(name,value):(W/name).write_text(json.dumps(value,indent=2)+'\n')
+@@ -16,49 +14,47 @@
+  parser=argparse.ArgumentParser();parser.add_argument('--accept-root-authority',action='store_true');args=parser.parse_args()
+  inherited=json.loads((P/'seal.json').read_text())
+  history={key:value for key,value in inherited.items() if key.startswith('prior') and isinstance(value,dict) and 'file' in value}
+- for prefix,base in [('priorV11',P),('priorV7',V7)]:
+-  for suffix,name in [('Readiness','readiness.json'),('Owner','candidate-first-owner.json'),('Report','candidate-first/report.json')]:history[prefix+suffix]=pin(base/name)
++ for suffix,name in [('Readiness','readiness.json'),('Owner','candidate-first-owner.json'),('Report','candidate-first/report.json')]:history['priorTrialBalance'+suffix]=pin(P/name)
+  authorityPin=pin(W/'source-readiness.json') if (W/'source-readiness.json').exists() else None
+  history['sourceReadiness']=authorityPin
+  appPath=W/'root-complete-build-result.json';diagPath=W/'root-diagnostic-build-result.json';rootChecksPath=W/'root-helper-checks.json'
+- accepted=False;build=diagnostic=None;authority=None;checkPin=None
++ supplied={name:pin(path)for name,path in [('rootCompleteBuild',appPath),('rootDiagnosticBuild',diagPath)]if path.is_file()}
++ accepted=False;diagnostic=None;authority=None;rootChecks=None
+  if args.accept_root_authority:
+-  spec=importlib.util.spec_from_file_location('trial_balance_owner_freeze',W/'run.py');owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
++  spec=importlib.util.spec_from_file_location('board_rhs_components_owner_freeze',W/'run.py');owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
+   authority,rows=owner.verify_source_authority(authorityPin)
+   checks=json.loads((W/'source-helper-checks.json').read_text());metadata=json.loads((W/'metadata-check.json').read_text())
+-  assert checks['schema']=='trial-balance-source-helper-checks/v1' and checks['complete'] is True and checks['totalFields']==102
+-  assert metadata['schema']=='trial-balance-helper-metadata-check/v1' and metadata['complete'] is True and metadata['fields']==102
+-  rootChecks=json.loads(rootChecksPath.read_text());assert rootChecks['schema']=='trial-balance-root-helper-checks/v1' and rootChecks['complete'] is True
++  assert checks['schema']=='board-rhs-components-source-helper-checks/v1' and checks['complete'] is True and checks['totalFields']==143
++  assert metadata['schema']=='board-rhs-components-helper-metadata-check/v1' and metadata['complete'] is True and metadata['fields']==143
++  rootChecks=json.loads(rootChecksPath.read_text());assert rootChecks['schema']=='board-rhs-components-root-helper-checks/v1' and rootChecks['complete'] is True
+   for name in ['nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner']:
+-   check=rootChecks[name];assert check['run'] is True and check['exitCode']==0;assert pin(check['log']['file'])==check['log']
+-  checkPin=pin(rootChecksPath)
+-  build=json.loads(appPath.read_text());assert owner.verify_complete_build(build,W/'candidate-complete-dist') and len(build['sourcePins'])==587 and len(build['assetPins'])==49
+-  candidate=json.loads(diagPath.read_text())
+-  s=dict(history,rootDiagnosticBuild=pin(diagPath),diagnosticModule=candidate['module'],diagnosticModuleReferencePolicy='root-rebuilt-original74-input-graph-against-trial-balance-observer-source')
++   check=rootChecks[name];assert check['run'] is True and check['exitCode']==0 and pin(check['log']['file'])==check['log']
++  build=json.loads(appPath.read_text());assert owner.verify_complete_build(build,W/'candidate-complete-dist')
++  candidate=json.loads(diagPath.read_text());s=dict(history,rootDiagnosticBuild=pin(diagPath),diagnosticModule=candidate['module'],diagnosticModuleReferencePolicy=POLICY)
+   diagnostic=owner.verify_diagnostic_reference(s,build);accepted=True
+  borrowed=json.loads((P/'source-helper-checks.json').read_text())['borrowedHelpers']
+- owned=['run.py','native.mjs','check-source.py','metadata-check.py','freeze.py','observer-fields.json','adapter.patch','README.md','source-helper-checks.json','metadata-check.json']
+- refs=[pin(P/'seal.json'),pin(V8/'source-manifest.json'),pin(O/'observer-fields.json'),pin(O/'freeze.json'),pin(B/'build-diagnostic.mjs'),pin(Path('/private/tmp/tube-landing-longitudinal-native-20261005/run.py')),pin(Path('/private/tmp/tube-landing-longitudinal-native-20261005/native.mjs'))]+[value for value in history.values() if value]
++ owned=['run.py','native.mjs','check-source.py','metadata-check.py','freeze.py','build-diagnostic.mjs','observer-fields.json','adapter.patch','README.md','source-helper-checks.json','metadata-check.json']
++ for optional in ['independent-helper-review.md','independent-helper-review-pins.json']:
++  if (W/optional).is_file():owned.append(optional)
++ refs=[pin(P/name)for name in ['seal.json','source-pins.json','run.py','native.mjs','root-diagnostic-build-result.json']]
++ refs += [pin(C/name)for name in ['observer-fields.json','readiness.json','freeze.json','runtime.patch']]+[q for q in history.values()if q]+list(supplied.values())
+  if authorityPin:
+-  declaration=json.loads((W/'source-readiness.json').read_text())
+-  refs.extend(declaration[key] for key in ['sourcePinsManifest','sourceDelta','candidateRuntime','rootObserverChecks','rootCPUResult'])
+- if accepted:refs.extend([pin(appPath),pin(diagPath),diagnostic['entry'],diagnostic['module'],checkPin])
++  declaration=json.loads((W/'source-readiness.json').read_text());refs += [declaration[key]for key in ['sourcePinsManifest','sourceDelta','candidatePreparation','candidatePatch','observerFields','rootCPUResult','rootObserverChecks','rootBaseCopy']]+declaration['candidateRuntimePins']
++ if accepted:refs += [pin(appPath),pin(diagPath),diagnostic['entry'],diagnostic['module'],pin(rootChecksPath)]
+  pins=list({q['file']:q for q in [pin(W/name)for name in owned]+refs+borrowed}.values())
+- alias={'file':str(W/'observer-fields.json'),'target':str(O/'observer-fields.json'),'bytes':8731,'sha256':'19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a','policy':'exact-literal-frozen-observer-metadata-copy'}
+- save('helper-pins.json',{'schema':'trial-balance-helper-pins/v1','pins':pins,'helperMetadataCopies':[alias],'adapterTextLineage':{'pins':[pin(Path('/private/tmp/tube-landing-longitudinal-native-20261005/run.py')),pin(Path('/private/tmp/tube-landing-longitudinal-native-20261005/native.mjs'))],'scope':'text normalization only; no rejected source or build authority inherited'},'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted})
+- pending={name:{'run':False,'passed':False,'status':'pending root acceptance'} for name in ['sourceHelperCheck','metadataCheck','nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner','applicationBuild','diagnosticBuild','native']}
++ alias={'file':str(W/'observer-fields.json'),'target':str(C/'observer-fields.json'),'bytes':17859,'sha256':'e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8','policy':'exact-literal-frozen143-field-copy'}
++ save('helper-pins.json',{'schema':'board-rhs-components-helper-pins/v1','pins':pins,'helperMetadataCopies':[alias],'adapterTextLineage':{'pins':[pin(P/'run.py'),pin(P/'native.mjs')],'scope':'Exact successful102 helper/control lineage; no102 CPU/build acceptance inherited for143.'},'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted})
++ pending={name:{'run':False,'passed':False,'status':'pending root acceptance'}for name in ['sourceHelperCheck','metadataCheck','nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner','applicationBuild','diagnosticBuild','native']}
+  if accepted:
+   for name in ['nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner']:pending[name]=dict(rootChecks[name],passed=True)
+-  pending['sourceHelperCheck']={'run':True,'passed':True,'receipt':pin(W/'source-helper-checks.json')}
+-  pending['metadataCheck']={'run':True,'passed':True,'receipt':pin(W/'metadata-check.json')}
+-  pending['applicationBuild']={'run':True,'passed':True,'exitCode':0,'receipt':pin(appPath)}
+-  pending['diagnosticBuild']={'run':True,'passed':True,'exitCode':0,'receipt':pin(diagPath)}
+- readiness={'schema':'trial-balance-preparation-readiness/v1','complete':accepted,'frozen':accepted,'preparationFrozen':True,'status':'frozen-actual-root-authority-verified' if accepted else 'pending-actual-root-source-build-and-helper-receipts','sourceOnly':True,'work':str(W),'buildId':BUILD_ID,'sourceReadiness':authorityPin,'helperPinsManifest':pin(W/'helper-pins.json'),'resourcesStarted':False,'portsProbed':False,'sourceOrBuildWrittenByHelper':False,'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted,'executableChecksAccepted':accepted,'actualNative':False,'sourcePreparationCount':588,'completeBuildSourceCount':587,'completeBuildAssetCount':49,'diagnosticModuleInputs':74,'diagnosticCandidateSourceInputs':71,'compilerConfigurationInputCount':1,'compilerWatchedInputCount':75,'observerFields':alias,'originalFields':38,'newScalarCopies':63,'availabilityMarker':'standingTrialAvailable','totalFields':102,'markerZeroInvalidatesStaleWords':True,'markerOneOnlyMeansCoupledTrialCaptured':True,'separateHydrodynamicAttributionAvailable':False,'minimalAdapterChanges':'Workspace/schema/source and receipt authority, field metadata reader and descriptive report metadata only; replay/menu/cue/control/camera/timing/media/sidecar/selection tail unchanged.','ordinaryRun':{'publicReplayOverrides':{'seed':6238,'componentCount':64,'dx':2,'fineSpacing':1},'maxSteps':2160,'secondsPerStep':1/60,'noPlacementForcedCueSeedSearchOrRetries':True},'finiteOwner':{'wholeSeconds':660,'commandSeconds':648,'internalNativeSeconds':635,'cleanupSeconds':7,'startupWaitMilliseconds':180000,'rootSealSchema':'trial-balance-root-seal/v1','nativeSchema':'trial-balance-native/v1','ports':[4301,9711],'protectedStatesInitially':{'4310':True,'4311':True,'4312':False,'4313':False}},'movieCapBehavior':{'movingAdvances':240,'requests':241,'movieStopsAtCap':True,'ordinaryPhysicsContinues':True,'replayStopUnchanged':True},'diagnosticModuleReferencePolicy':'root-rebuilt-original74-input-graph-against-trial-balance-observer-source','executableChecks':pending,'claims':{key:False for key in ['actualNative','exactV11InitialReplay','nativeCauseOrFixAccepted','ordinaryStandingAccepted','bodyPassageAccepted','visualAcceptance','FPS','productionAdoption']},'priorV11Readiness':history['priorV11Readiness'],'priorV11Owner':history['priorV11Owner'],'priorV11Report':history['priorV11Report'],'priorV7Readiness':history['priorV7Readiness'],'priorV7Owner':history['priorV7Owner'],'priorV7Report':history['priorV7Report']}
+- readiness.update(actualObserverCPUAuthorityKeys=['rootObserverChecks','rootCPUResult'],originalOrFailedFixturePassInherited=False)
+- if accepted:readiness.update(rootCompleteBuild=pin(appPath),rootDiagnosticBuild=pin(diagPath),diagnosticModule=diagnostic['module'],rootHelperChecks=checkPin)
++  for name,file in [('sourceHelperCheck','source-helper-checks.json'),('metadataCheck','metadata-check.json')]:pending[name]={'run':True,'passed':True,'receipt':pin(W/file)}
++  for name,path in [('applicationBuild',appPath),('diagnosticBuild',diagPath)]:pending[name]={'run':True,'passed':True,'exitCode':0,'receipt':pin(path)}
++ readiness={'schema':'board-rhs-components-preparation-readiness/v1','complete':accepted,'frozen':accepted,'preparationFrozen':True,'status':'frozen-actual-root-authority-verified'if accepted else'pending-actual-root-build-and-helper-receipts','sourceOnly':True,'work':str(W),'buildId':BUILD_ID,'sourceReadiness':authorityPin,'helperPinsManifest':pin(W/'helper-pins.json'),'resourcesStarted':False,'portsProbed':False,'sourceOrBuildWrittenByHelper':False,'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted,'executableChecksAccepted':accepted,'actualNative':False,'sourcePreparationCount':588,'unchangedParentInputs':586,'completeBuildSourceCount':587,'completeBuildAssetCount':49,'diagnosticModuleInputs':74,'diagnosticCandidateSourceInputs':71,'compilerConfigurationInputCount':1,'compilerWatchedInputCount':75,'observerFields':alias,'oldFields':102,'newScalarCopies':41,'availabilityMarker':'standingTrialAvailable','totalFields':143,'markerZeroInvalidatesStaleWords':True,'markerOneOnlyMeansCoupledTrialCaptured':True,'waterRadiationAndEntrainmentRemainMixed':True,'separateHydrodynamicAttributionAvailable':False,'ordinaryRun':{'publicReplayOverrides':{'seed':6238,'componentCount':64,'dx':2,'fineSpacing':1},'maxSteps':2160,'secondsPerStep':1/60,'noPlacementForcedCueSeedSearchOrRetries':True},'finiteOwner':{'wholeSeconds':660,'commandSeconds':648,'internalNativeSeconds':635,'cleanupSeconds':7,'startupWaitMilliseconds':180000,'rootSealSchema':'board-rhs-components-root-seal/v1','nativeSchema':'board-rhs-components-native/v1','ports':[4301,9711],'protectedStatesInitially':{'4310':True,'4311':True,'4312':False,'4313':False}},'movieCapBehavior':{'movingAdvances':240,'requests':241,'movieStopsAtCap':True,'ordinaryPhysicsContinues':True,'replayStopUnchanged':True},'diagnosticModuleReferencePolicy':POLICY,'diagnosticRetentionPolicy':'Source graph74/71 includes both runtimes; diagnostic lexical count0 allowed; both actual WorkerSurfZone/surfZoneWorker assets must retain143; full actual report samples must be finite143.','generatedOutputPolicy':'Prebuild source-readiness remains frozen. Actual completeBuild builtAssetPins21 plus generatedOutputPins cache1 are separate outputs; postbuild W/source610=588inputs+22outputs.','actualObserverCPUAuthorityKeys':['rootObserverChecks','rootCPUResult'],'prior102CPUOrBuildAcceptanceInherited':False,'executableChecks':pending,'claims':{key:False for key in ['actualNative','exactInitialReplay','nativeCauseOrFixAccepted','ordinaryStandingAccepted','bodyPassageAccepted','visualAcceptance','FPS','productionAdoption']},'priorTrialBalanceReadiness':history['priorTrialBalanceReadiness'],'priorTrialBalanceOwner':history['priorTrialBalanceOwner'],'priorTrialBalanceReport':history['priorTrialBalanceReport']}
++ if accepted:readiness.update(rootCompleteBuild=pin(appPath),rootDiagnosticBuild=pin(diagPath),diagnosticModule=diagnostic['module'],rootHelperChecks=pin(rootChecksPath))
++ readiness['rootSuppliedReceipts']=supplied
++ readiness['suppliedReceiptPinsAreHelperAcceptance']=False
+  save('readiness.json',readiness)
+- handoff={'schema':'trial-balance-root-seal-handoff/v1','sourceOnly':True,'rootSealRequired':True,'rootSealCreated':False,'status':readiness['status'],'newSealPath':str(W/'seal.json'),'newSealSchema':'trial-balance-root-seal/v1','helperReadiness':pin(W/'readiness.json'),'helperPinsManifest':pin(W/'helper-pins.json'),'expectedRootCompleteBuild':{'file':str(appPath),'schema':'trial-balance-root-complete-build/v1','source':str(W/'source'),'buildId':BUILD_ID,'sourceInputs':587,'completeAssets':49},'expectedRootDiagnosticBuild':{'file':str(diagPath),'schema':'trial-balance-diagnostic-root-build/v1','entry':str(W/'autopilot-entry.ts'),'module':str(W/'diagnostic-autopilot.mjs'),'inputs':74,'sourceInputs':71,'compilerConfigurationInputs':1,'compilerWatchedInputs':75,'exports':['Autopilot','autopilotView','riderPartVolumes'],'mustCompileFresh':True,'AttachedRiderMustBeReachable':True,'observerFields':alias},'expectedRootHelperChecks':{'file':str(rootChecksPath),'schema':'trial-balance-root-helper-checks/v1','complete':True,'requiredChecks':['nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner'],'eachCheck':{'run':True,'exitCode':0,'log':'file/bytes/sha256 pin'},'sourceHelperCheck':str(W/'source-helper-checks.json'),'metadataCheck':str(W/'metadata-check.json')},'candidateDist':str(W/'candidate-complete-dist'),'inheritSealHistoryFieldsFromV11':pin(P/'seal.json'),'addRequiredSealFields':history,'diagnosticModuleReferencePolicy':readiness['diagnosticModuleReferencePolicy'],'literalOperandMetadataCopy':alias,'movieCapBehavior':readiness['movieCapBehavior'],'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted,'actualNative':False}
+- handoff['expectedRootSourceAuthorityCPU']={'keys':['rootObserverChecks','rootCPUResult'],'identicalPinsRequired':True,'result':{'complete':True,'checks':'nonempty; all exitCode0'},'failedFixtureReceiptsAccepted':False}
++ handoff={'schema':'board-rhs-components-root-seal-handoff/v1','sourceOnly':True,'rootSealRequired':True,'rootSealCreated':False,'newSealPath':str(W/'seal.json'),'newSealSchema':'board-rhs-components-root-seal/v1','status':readiness['status'],'helperReadiness':pin(W/'readiness.json'),'helperPinsManifest':pin(W/'helper-pins.json'),'candidateDist':str(W/'candidate-complete-dist'),'inheritHistoryFromImmediate102Seal':pin(P/'seal.json'),'addRequiredSealFields':history,'diagnosticModuleReferencePolicy':POLICY,'literalOperandMetadataCopy':alias,'movieCapBehavior':readiness['movieCapBehavior'],'expectedRootCompleteBuild':{'file':str(appPath),'schema':'board-rhs-components-root-complete-build/v1','buildId':BUILD_ID,'source':str(W/'source'),'sourceInputs':587,'assets':49,'rootApplicationCommand':'Direct pinned board-rhs-components-root-application-command/v1; complete/terminal true exit0; strict-build/application exit0; sourceUnchanged true','builtAssetPins':21,'generatedOutputPins':1},'expectedRootDiagnosticBuild':{'file':str(diagPath),'schema':'board-rhs-components-diagnostic-root-build/v1','entry':str(W/'autopilot-entry.ts'),'module':str(W/'diagnostic-autopilot.mjs'),'inputs':74,'sourceInputs':71,'compilerConfigurationInputs':1,'watchedInputs':75,'exports':['Autopilot','autopilotView','riderPartVolumes'],'freshCompile':True,'AttachedRiderAndBoardBodyReachable':True,'diagnosticLexicalCount0Allowed':True,'bothAppWorkerAssetsRetain':143,'fullActualSamplesFinite':143},'expectedRootHelperChecks':{'file':str(rootChecksPath),'schema':'board-rhs-components-root-helper-checks/v1','complete':True,'checks':['nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner'],'each':'run true exitCode0 log pin','sourceHelperCheck':str(W/'source-helper-checks.json'),'metadataCheck':str(W/'metadata-check.json')},'expectedRootCPU':{'path':str(C/'root-checks/result.json'),'schema':'board-rhs-components-root-cpu-checks/v1','keys':['rootObserverChecks','rootCPUResult'],'identicalDirectPins':True,'strictAndParityExit0':True,'parityPassed':2,'parityTotal':2,'parityFailed':0,'wholeSteps':552,'sourcePostUnchanged':True,'sourceOracleCheckInputsAndLogsPinned':True},'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted,'actualNative':False}
+  save('seal-handoff.json',handoff)
+- save('freeze.json',{'schema':'trial-balance-helper-freeze/v1','complete':accepted,'frozen':accepted,'preparationFrozen':True,'status':readiness['status'],'pins':[pin(W/name)for name in ['readiness.json','helper-pins.json','seal-handoff.json','source-helper-checks.json','metadata-check.json','adapter.patch']],'helperPinsCount':len(pins),'resourcesStarted':False,'portsProbed':False,'rootSealCreated':False,'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted,'actualNative':False})
++ save('freeze.json',{'schema':'board-rhs-components-helper-freeze/v1','complete':accepted,'frozen':accepted,'preparationFrozen':True,'status':readiness['status'],'pins':[pin(W/name)for name in ['readiness.json','helper-pins.json','seal-handoff.json','source-helper-checks.json','metadata-check.json','adapter.patch']],'helperPinsCount':len(pins),'resourcesStarted':False,'portsProbed':False,'rootSealCreated':False,'actualAppBuildAccepted':accepted,'actualDiagnosticBuildAccepted':accepted,'helperAcceptance':accepted,'actualNative':False})
+  print(json.dumps({'status':readiness['status'],'readiness':pin(W/'readiness.json'),'helperPins':pin(W/'helper-pins.json'),'freeze':pin(W/'freeze.json'),'handoff':pin(W/'seal-handoff.json'),'helperPinsCount':len(pins),'accepted':accepted,'resourcesStarted':False,'portsProbed':False}))
+--- /private/tmp/tube-native-trial-balance-build-20261005/build-diagnostic.mjs
++++ /private/tmp/tube-board-rhs-components-native-20261005/build-diagnostic.mjs
+@@ -1,63 +1,98 @@
++// Proposed root-run wrapper only: root owns entry, actual compilation/module/receipt, and every output.
+ import assert from 'node:assert/strict';
+ import {createHash} from 'node:crypto';
+-import {readFileSync,writeFileSync,existsSync,realpathSync} from 'node:fs';
+-import {join} from 'node:path';
++import {readFileSync,writeFileSync,existsSync,realpathSync,readdirSync} from 'node:fs';
++import {join,basename} from 'node:path';
+ import {rolldown} from '/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs';
+-const W='/private/tmp/tube-native-trial-balance-native-20261005';
+-const S='/private/tmp/tube-native-trial-balance-native-20261005/source';
+-const P='/private/tmp/tube-stable-x-ordinary-rider-prep-20261005';
++const W='/private/tmp/tube-board-rhs-components-native-20261005',S=join(W,'source');
++const C='/private/tmp/tube-board-rhs-components-observer-20261005';
++const P='/private/tmp/tube-native-trial-balance-native-20261005';
++const ORIGINAL='/private/tmp/tube-stable-x-ordinary-rider-prep-20261005';
+ const OLD='/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source';
++const CHANGED=['src/physics/AttachedRider.ts','src/physics/BoardBody.ts'];
++const BUILD_ID='tube-board-rhs-components-20261005';
+ function pin(file){file=realpathSync(file);const b=readFileSync(file);return{file,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')};}
+ function verify(q){assert.deepEqual(pin(q.file),q);}
+-const originalDiagnosticBuild=pin(join(P,'root-diagnostic-build-result.json'));
+-const old=JSON.parse(readFileSync(originalDiagnosticBuild.file));
+-for(const q of old.inputs)verify(q);
++function sameWords(q,r){assert.equal(q.bytes,r.bytes);assert.equal(q.sha256,r.sha256);}
++const originalDiagnosticBuild=pin(join(ORIGINAL,'root-diagnostic-build-result.json'));
++const old=JSON.parse(readFileSync(originalDiagnosticBuild.file));for(const q of old.inputs)verify(q);
++const parentTrialBalanceDiagnosticBuild=pin(join(P,'root-diagnostic-build-result.json'));
++const parentDiagnostic=JSON.parse(readFileSync(parentTrialBalanceDiagnosticBuild.file));for(const q of parentDiagnostic.inputs)verify(q);
+ const build=JSON.parse(readFileSync(join(W,'root-complete-build-result.json')));
+-assert.equal(build.schema,'trial-balance-root-complete-build/v1');assert.equal(build.terminal,true);assert.equal(build.exitCode,0);assert.equal(build.source,S);assert.equal(build.buildId,'tube-native-trial-balance-20261005');assert.equal(build.sourcePins.length,587);assert.equal(build.assetPins.length,49);
+-const sourceReadiness=pin(join(W,'source-readiness.json'));const authority=JSON.parse(readFileSync(sourceReadiness.file));
+-assert.equal(authority.schema,'trial-balance-source-readiness/v1');assert.equal(authority.complete,true);assert.equal(authority.frozen,true);assert.equal(authority.sourceDirectory,S);assert.equal(authority.sourceCount,588);assert.equal(authority.applicationSourceCount,587);assert.equal(authority.unchangedParentInputs,587);assert.equal(authority.buildId,'tube-native-trial-balance-20261005');assert.deepEqual(authority.runtimeChangedPaths,['src/physics/AttachedRider.ts']);
+-assert.deepEqual(authority.rootObserverChecks,authority.rootCPUResult);verify(authority.rootObserverChecks);verify(authority.rootCPUResult);const rootCPU=JSON.parse(readFileSync(authority.rootCPUResult.file));assert.equal(rootCPU.complete,true);assert(rootCPU.checks.length>0&&rootCPU.checks.every(q=>q.exitCode===0));
+-verify(authority.sourcePinsManifest);verify(authority.sourceDelta);verify(authority.parentManifest);verify(authority.candidateRuntime);
+-assert.equal(authority.candidateRuntime.bytes,153209);assert.equal(authority.candidateRuntime.sha256,'1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4');assert.deepEqual(pin(join(S,'src/physics/AttachedRider.ts')),{...authority.candidateRuntime,file:join(S,'src/physics/AttachedRider.ts')});
+-const sourceManifest=JSON.parse(readFileSync(authority.sourcePinsManifest.file)),delta=JSON.parse(readFileSync(authority.sourceDelta.file)),parentSourceManifest=JSON.parse(readFileSync(authority.parentManifest.file));
+-assert.equal(sourceManifest.schema,'trial-balance-source-pins/v1');assert.equal(sourceManifest.count,588);assert.equal(sourceManifest.pins.length,588);assert.equal(delta.schema,'trial-balance-source-delta/v1');assert.equal(delta.source,S);assert.equal(delta.sourceCount,588);assert.equal(delta.unchangedParentInputs,587);assert.deepEqual(delta.parentManifest,authority.parentManifest);assert.equal(delta.overrides.length,1);
+-assert.equal(authority.parentManifest.file,'/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-manifest.json');assert.equal(parentSourceManifest.files.length,588);
+-const sourceRows=new Map(sourceManifest.pins.map(q=>[q.path,q])),parentRows=new Map(parentSourceManifest.files.map(q=>[q.path,{path:q.path,bytes:q.after.bytes,sha256:q.after.sha256}]));assert.equal(sourceRows.size,588);assert.equal(parentRows.size,588);
+-const sourceDifferences=[];for(const [relative,q]of sourceRows){assert.equal(relative.startsWith('/'),false);assert.equal(relative.split('/').includes('..'),false);verify({file:join(S,relative),bytes:q.bytes,sha256:q.sha256});const prior=parentRows.get(relative);assert(prior);if(q.bytes!==prior.bytes||q.sha256!==prior.sha256)sourceDifferences.push(relative);}assert.deepEqual(sourceDifferences.sort(),['src/physics/AttachedRider.ts']);
+-const override=delta.overrides[0];assert.equal(override.path,'src/physics/AttachedRider.ts');assert.deepEqual(override.before,parentRows.get(override.path));assert.deepEqual(override.after,sourceRows.get(override.path));assert.equal(override.before.bytes,146425);assert.equal(override.before.sha256,'d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31');
+-const observerFields=pin(join(W,'observer-fields.json'));assert.equal(observerFields.bytes,8731);assert.equal(observerFields.sha256,'19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a');const operandMetadata=JSON.parse(readFileSync(observerFields.file));assert.equal(operandMetadata.allFields.length,102);assert.equal(operandMetadata.originalFields.length,38);assert.equal(operandMetadata.newFields.length,63);assert.equal(operandMetadata.availabilityMarker,'standingTrialAvailable');
+-const parentV8DiagnosticBuild=pin('/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result.json');const parentV8=JSON.parse(readFileSync(parentV8DiagnosticBuild.file));assert.equal(parentV8.sourceInputs.length,71);for(const q of parentV8.inputs)verify(q);
+-for(const q of [...build.sourcePins,...build.assetPins])verify(q);
++assert.equal(build.schema,'board-rhs-components-root-complete-build/v1');assert.equal(build.terminal,true);assert.equal(build.exitCode,0);
++assert.equal(build.source,S);assert.equal(build.buildId,BUILD_ID);assert.equal(build.sourcePins.length,587);assert.equal(build.assetPins.length,49);
++verify(build.rootApplicationCommand);const command=JSON.parse(readFileSync(build.rootApplicationCommand.file));assert.equal(command.schema,'board-rhs-components-root-application-command/v1');assert.equal(command.complete,true);assert.equal(command.terminal,true);assert.equal(command.exitCode,0);assert.equal(command.sourceUnchanged,true);
++assert(command.checks.some(q=>q.name==='strict-build')&&command.checks.some(q=>q.name==='application')&&command.checks.every(q=>q.exitCode===0));
++const sourceReadiness=pin(join(W,'source-readiness.json')),authority=JSON.parse(readFileSync(sourceReadiness.file));
++assert.equal(authority.schema,'board-rhs-components-source-readiness/v1');assert.equal(authority.complete,true);assert.equal(authority.frozen,true);
++assert.equal(authority.sourceDirectory,S);assert.equal(authority.sourceCount,588);assert.equal(authority.applicationSourceCount,587);assert.equal(authority.unchangedParentInputs,586);
++assert.equal(authority.buildId,BUILD_ID);assert.deepEqual(authority.runtimeChangedPaths,CHANGED);
++verify(authority.sourcePinsManifest);verify(authority.sourceDelta);verify(authority.parentManifest);
++assert.equal(authority.parentManifest.file,join(P,'source-pins.json'));
++const manifest=JSON.parse(readFileSync(authority.sourcePinsManifest.file)),delta=JSON.parse(readFileSync(authority.sourceDelta.file)),parent=JSON.parse(readFileSync(authority.parentManifest.file));
++assert.equal(manifest.schema,'board-rhs-components-source-pins/v1');assert.equal(manifest.count,588);assert.equal(manifest.pins.length,588);
++assert.equal(parent.schema,'trial-balance-source-pins/v1');assert.equal(parent.count,588);assert.equal(parent.pins.length,588);
++const rows=new Map(manifest.pins.map(q=>[q.path,q])),priorRows=new Map(parent.pins.map(q=>[q.path,q]));assert.equal(rows.size,588);assert.equal(priorRows.size,588);
++const before={'src/physics/AttachedRider.ts':[153209,'1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4'],'src/physics/BoardBody.ts':[55109,'7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4']};
++const after={'src/physics/AttachedRider.ts':[159692,'85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1'],'src/physics/BoardBody.ts':[55693,'eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917']};
++const sourceDifferences=[];
++for(const [relative,q]of rows){assert.equal(relative.startsWith('/'),false);assert.equal(relative.split('/').includes('..'),false);const prior=priorRows.get(relative);assert(prior);
++ verify({file:join(S,relative),bytes:q.bytes,sha256:q.sha256});verify({file:join(P,'source',relative),bytes:prior.bytes,sha256:prior.sha256});if(q.bytes!==prior.bytes||q.sha256!==prior.sha256)sourceDifferences.push(relative);}
++assert.deepEqual(sourceDifferences.sort(),CHANGED);assert.equal(delta.schema,'board-rhs-components-source-delta/v1');assert.equal(delta.source,S);assert.equal(delta.sourceCount,588);assert.equal(delta.unchangedParentInputs,586);
++assert.deepEqual(delta.parentManifest,authority.parentManifest);assert.deepEqual([...delta.overrides].sort((a,b)=>a.path.localeCompare(b.path)),CHANGED.map(path=>({path,before:priorRows.get(path),after:rows.get(path)})));
++const preparationMetadata=JSON.parse(readFileSync(join(C,'observer-fields.json')));
++assert.equal(authority.candidateRuntimePins.length,2);assert.equal(preparationMetadata.candidateRuntimePins.length,2);
++for(const relative of CHANGED){assert.deepEqual([priorRows.get(relative).bytes,priorRows.get(relative).sha256],before[relative]);assert.deepEqual([rows.get(relative).bytes,rows.get(relative).sha256],after[relative]);
++ const actual=authority.candidateRuntimePins.find(q=>q.file===join(S,relative)),prepared=preparationMetadata.candidateRuntimePins.find(q=>q.file===join(C,'source',relative));assert(actual&&prepared);verify(actual);verify(prepared);sameWords(actual,prepared);sameWords(actual,rows.get(relative));}
++verify(authority.candidatePreparation);assert.equal(authority.candidatePreparation.file,join(C,'readiness.json'));verify(authority.observerFields);assert.equal(authority.observerFields.file,join(W,'observer-fields.json'));verify(authority.candidatePatch);verify(authority.rootBaseCopy);
++assert.deepEqual(authority.rootObserverChecks,authority.rootCPUResult);verify(authority.rootCPUResult);assert.equal(authority.rootCPUResult.file,join(C,'root-checks/result.json'));
++const cpu=JSON.parse(readFileSync(authority.rootCPUResult.file));assert.equal(cpu.schema,'board-rhs-components-root-cpu-checks/v1');assert.equal(cpu.complete,true);assert.equal(cpu.sourcePostUnchanged,true);assert.equal(cpu.sourceCount,588);
++const strict=cpu.checks.find(q=>q.name==='strict'),parity=cpu.checks.find(q=>q.name==='parity');assert(strict&&parity);assert(cpu.checks.every(q=>q.exitCode===0&&q.timedOut===false));
++assert.equal(parity.success,true);assert.equal(parity.passed,2);assert.equal(parity.total,2);assert.equal(parity.failed,0);assert.equal(parity.wholeSteps,552);
++for(const q of cpu.checks){verify(q.log);if(q.report)verify(q.report);}
++for(const [key,expected]of [['sourceInputs',rows],['oracleInputs',priorRows]]){assert.equal(cpu[key].length,588);const matched=new Set();
++ for(const q of cpu[key]){verify(q);const matches=[...expected.keys()].filter(path=>q.file.endsWith('/'+path));assert.equal(matches.length,1);assert(!matched.has(matches[0]));matched.add(matches[0]);sameWords(q,expected.get(matches[0]));}assert.equal(matched.size,588);}
++for(const q of cpu.checkInputs)verify(q);
++// Source authority is frozen prebuild. Allowed postbuild outputs come only from the actual complete-build receipt.
++assert.equal(build.builtAssetPins.length,21);assert.equal(build.generatedOutputPins.length,1);
++const expectedSourceFiles=new Set([...rows.keys()].map(relative=>join(S,relative)));
++for(const q of [...build.builtAssetPins,...build.generatedOutputPins]){verify(q);assert(q.file.startsWith(S+'/'));assert(!expectedSourceFiles.has(q.file));expectedSourceFiles.add(q.file);}
++function sourceFiles(root){const files=[];for(const q of readdirSync(root,{withFileTypes:true})){const path=join(root,q.name);if(q.isFile())files.push(path);else if(q.isDirectory())files.push(...sourceFiles(path));}return files;}
++assert.equal(expectedSourceFiles.size,610);assert.deepEqual(sourceFiles(S).sort(),[...expectedSourceFiles].sort());
++const observerFields=pin(join(W,'observer-fields.json'));assert.equal(observerFields.bytes,17859);assert.equal(observerFields.sha256,'e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8');
++const metadata=JSON.parse(readFileSync(observerFields.file));assert.equal(metadata.oldFields.length,102);assert.equal(metadata.newFields.length,41);assert.equal(metadata.allFields.length,143);assert.equal(new Set(metadata.allFields).size,143);
++assert.deepEqual(metadata.allFields,[...metadata.oldFields,...metadata.newFields]);assert.deepEqual(metadata.oldFields,JSON.parse(readFileSync(join(P,'observer-fields.json'))).allFields);assert.equal(metadata.availabilityMarker,'standingTrialAvailable');
++assert.equal(readFileSync(observerFields.file).equals(readFileSync(join(C,'observer-fields.json'))),true);
++for(const q of [...build.sourcePins,...build.assetPins,...build.builtAssetPins,...build.generatedOutputPins])verify(q);
++const appWorkerObserverRetention=[];
++for(const prefix of ['WorkerSurfZone-','surfZoneWorker-']){const assets=build.assetPins.filter(q=>basename(q.file).startsWith(prefix)&&q.file.endsWith('.js'));assert.equal(assets.length,1);const asset=assets[0],text=readFileSync(asset.file,'utf8');
++ const present=metadata.allFields.filter(field=>new RegExp('(?<![\\w$])'+field+'(?![\\w$])').test(text));assert.equal(present.length,143);appWorkerObserverRetention.push({asset,requiredFields:143,presentFields:present.length});}
+ const entry=join(W,'autopilot-entry.ts'),module=join(W,'diagnostic-autopilot.mjs'),receipt=join(W,'root-diagnostic-build-result.json');
+-for(const f of [module,receipt])assert.equal(existsSync(f),false,'Preserve root first diagnostic output '+f);
+-const text=readFileSync(old.entry.file,'utf8');assert.equal(text.includes(OLD),true);
+-assert.equal(readFileSync(entry,'utf8'),text.replaceAll(OLD,S),'Prepared entry exactly maps original');
++for(const file of [module,receipt])assert.equal(existsSync(file),false,'Preserve root first diagnostic output '+file);
++assert.equal(readFileSync(entry,'utf8'),readFileSync(old.entry.file,'utf8').replaceAll(OLD,S),'Root-prepared entry exactly maps original');
+ const bundle=await rolldown({input:entry,cwd:'/Users/regina/Desktop/Projects/surfing-game',treeshake:true});
+-const {output}=await bundle.write({file:module,format:'esm'});
+-const files=(await bundle.watchFiles).map(p=>realpathSync(p));
+-await bundle.close();
+-assert.equal(output.length,1);assert.equal(output[0].type,'chunk');
+-assert.deepEqual([...output[0].exports].sort(),['Autopilot','autopilotView','riderPartVolumes']);
+-const watchedFiles=[...new Set(files)].sort();
+-const compilerConfigurationInputs=watchedFiles.filter(p=>p===join(S,'tsconfig.json')).map(pin);
+-assert.equal(compilerConfigurationInputs.length,1);assert.equal(watchedFiles.length,75);
+-const inputFiles=watchedFiles.filter(p=>p!==join(S,'tsconfig.json'));
+-const mapped=old.inputs.map(q=>q.file===old.entry.file?entry:q.file.startsWith(OLD+'/')?S+q.file.slice(OLD.length):q.file).map(p=>realpathSync(p)).sort();
+-assert.deepEqual(inputFiles,mapped,'Exact original graph mapped to new actual source');
+-const inputs=inputFiles.map(pin),sourceInputs=inputs.filter(q=>q.file.startsWith(S+'/'));
+-assert.equal(inputs.length,74);assert.equal(sourceInputs.length,71);assert.equal(sourceInputs.some(q=>q.file===join(S,'src/physics/AttachedRider.ts')),true,'Candidate physics must be in actual rebuilt diagnostic graph');
+-const changedSourceInputsAgainstV8=[];for(const q of parentV8.sourceInputs){const relative=q.file.slice(parentV8.source.length+1);const next=pin(join(S,relative));if(q.bytes!==next.bytes||q.sha256!==next.sha256)changedSourceInputsAgainstV8.push(relative);}assert.deepEqual(changedSourceInputsAgainstV8,['src/physics/AttachedRider.ts']);
+-const changedSourceInputs=[];
+-for(const q of old.sourceInputs){const next=pin(S+q.file.slice(OLD.length));if(q.bytes!==next.bytes||q.sha256!==next.sha256)changedSourceInputs.push(q.file.slice(OLD.length+1));}
+-for(const q of [...build.sourcePins,...build.assetPins])verify(q);
+-const result={schema:'trial-balance-diagnostic-root-build/v1',terminal:true,exitCode:0,
+- originalFailedCompilation:pin('/private/tmp/tube-pop-up-contact-build-20261005/diagnostic-first-attempt/failure.json'),
+- compilerConfigurationInputs,compilerWatchedInputCount:watchedFiles.length,
+- inputDefinition:'Imported module graph; source tsconfig.json is separately pinned as a compiler configuration input',
+- source:S,originalDiagnosticBuild,originalEntry:old.entry,entry:pin(entry),module:pin(module),inputs,sourceInputs,
+- actualCompiler:'Installed rolldown from the application dependency tree',compilerEntry:pin('/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs'),
+- moduleExports:[...output[0].exports],originalGraphMappedExactly:true,changedSourceInputsAgainstOriginalStableX:changedSourceInputs,
+- sourceReadiness,observerFields,observerFieldCount:102,originalObserverFieldCount:38,newObserverScalarCount:63,parentV8DiagnosticBuild,changedSourceInputsAgainstV8,attachedRiderReachable:true,sourceOrCompleteDistModified:false,separateDiagnosticRoute:'/diagnostic-autopilot.mjs',completeBuildAssetCountUnchanged:build.assetPins.length,
+- rootCompleteBuild:pin(join(W,'root-complete-build-result.json')),actualNewDiagnosticSourceCompiled:true,diagnosticModuleCopiedFromPrior:false};
++const {output}=await bundle.write({file:module,format:'esm'}),files=(await bundle.watchFiles).map(file=>realpathSync(file));await bundle.close();
++assert.equal(output.length,1);assert.equal(output[0].type,'chunk');assert.deepEqual([...output[0].exports].sort(),['Autopilot','autopilotView','riderPartVolumes']);
++const watchedFiles=[...new Set(files)].sort(),compilerConfigurationInputs=watchedFiles.filter(file=>file===join(S,'tsconfig.json')).map(pin);
++assert.equal(watchedFiles.length,75);assert.equal(compilerConfigurationInputs.length,1);
++const inputFiles=watchedFiles.filter(file=>file!==join(S,'tsconfig.json'));
++const mapped=old.inputs.map(q=>q.file===old.entry.file?entry:q.file.startsWith(OLD+'/')?S+q.file.slice(OLD.length):q.file).map(file=>realpathSync(file)).sort();assert.deepEqual(inputFiles,mapped);
++const inputs=inputFiles.map(pin),sourceInputs=inputs.filter(q=>q.file.startsWith(S+'/'));assert.equal(inputs.length,74);assert.equal(sourceInputs.length,71);
++for(const relative of CHANGED)assert(sourceInputs.some(q=>q.file===join(S,relative)),'Both candidate runtimes must be reachable in source graph');
++const changedSourceInputsAgainstImmediateParent=[];
++for(const q of parentDiagnostic.sourceInputs){const relative=q.file.slice(parentDiagnostic.source.length+1),next=pin(join(S,relative));if(q.bytes!==next.bytes||q.sha256!==next.sha256)changedSourceInputsAgainstImmediateParent.push(relative);}
++assert.deepEqual(changedSourceInputsAgainstImmediateParent.sort(),CHANGED);
++const changedSourceInputsAgainstOriginalStableX=old.sourceInputs.filter(q=>{const next=pin(S+q.file.slice(OLD.length));return q.bytes!==next.bytes||q.sha256!==next.sha256;}).map(q=>q.file.slice(OLD.length+1));
++const moduleText=readFileSync(module,'utf8'),diagnosticLexicalObserverFieldCount=metadata.allFields.filter(field=>new RegExp('(?<![\\w$])'+field+'(?![\\w$])').test(moduleText)).length;
++for(const q of [...build.sourcePins,...build.assetPins,...build.builtAssetPins,...build.generatedOutputPins])verify(q);
++const result={schema:'board-rhs-components-diagnostic-root-build/v1',terminal:true,exitCode:0,source:S,sourceReadiness,
++ originalFailedCompilation:pin('/private/tmp/tube-pop-up-contact-build-20261005/diagnostic-first-attempt/failure.json'),originalDiagnosticBuild,originalEntry:old.entry,entry:pin(entry),module:pin(module),inputs,sourceInputs,
++ compilerConfigurationInputs,compilerWatchedInputCount:watchedFiles.length,inputDefinition:'Original imported74 graph plus separately pinned source tsconfig; both changed runtimes reachable; tree-shaken field count is not retention authority',
++ actualCompiler:'Installed rolldown from application dependency tree',compilerEntry:pin('/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs'),moduleExports:[...output[0].exports],originalGraphMappedExactly:true,
++ changedSourceInputsAgainstOriginalStableX,parentTrialBalanceDiagnosticBuild,changedSourceInputsAgainstImmediateParent,attachedRiderReachable:true,boardBodyReachable:true,
++ observerFields,observerFieldCount:143,oldObserverFieldCount:102,newObserverScalarCount:41,diagnosticLexicalObserverFieldCount,
++ observerRetentionPolicy:'source-graph-reachability-and-both-actual-app-workers;diagnostic-class-fields-may-be-tree-shaken',appWorkerObserverRetention,
++ sourceOrCompleteDistModified:false,separateDiagnosticRoute:'/diagnostic-autopilot.mjs',completeBuildAssetCountUnchanged:49,rootCompleteBuild:pin(join(W,'root-complete-build-result.json')),
++ actualNewDiagnosticSourceCompiled:true,diagnosticModuleCopiedFromPrior:false};
+ writeFileSync(receipt,JSON.stringify(result,null,2)+'\n');
+-console.log(JSON.stringify({complete:true,inputs:inputs.length,sourceInputs:sourceInputs.length,module:result.module,receipt:pin(receipt),changedSourceInputs}));
++console.log(JSON.stringify({complete:true,receipt:pin(receipt),module:result.module,inputs:inputs.length,sourceInputs:sourceInputs.length,diagnosticLexicalObserverFieldCount,appWorkerObserverRetention}));

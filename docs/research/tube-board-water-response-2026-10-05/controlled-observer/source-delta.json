@@ -1,0 +1,49 @@
+{
+  "schema": "board-rhs-components-source-delta/v1",
+  "sourceDirectory": "/private/tmp/tube-board-rhs-components-observer-20261005/source",
+  "parentSourceDirectory": "/private/tmp/tube-native-trial-balance-native-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 586,
+  "parentSourceManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/parent-source-pins.json",
+    "bytes": 96402,
+    "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+  },
+  "sourceInputsOnly": true,
+  "generatedParentOutputsCopied": false,
+  "overrides": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "before": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 153209,
+        "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+      },
+      "after": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 159692,
+        "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+      }
+    },
+    {
+      "path": "src/physics/BoardBody.ts",
+      "before": {
+        "path": "src/physics/BoardBody.ts",
+        "bytes": 55109,
+        "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+      },
+      "after": {
+        "path": "src/physics/BoardBody.ts",
+        "bytes": 55693,
+        "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+      }
+    }
+  ],
+  "runtimePatch": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/runtime.patch",
+    "bytes": 11485,
+    "sha256": "ec213b0fbd25a469f13699aa735e64867acf71693fd9cb10581f298fd644456d"
+  },
+  "intendedDifference": "41 direct scalar diagnostic copies only; existing102, marker, physics math/solve/query/control paths retained by source review. Executable parity remains pending."
+}

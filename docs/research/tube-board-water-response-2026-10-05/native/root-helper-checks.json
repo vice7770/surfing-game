@@ -1,0 +1,80 @@
+{
+  "sourceHelper": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-board-rhs-components-native-20261005/check-source.py"
+    ],
+    "elapsedSeconds": 0.5515051659895107,
+    "log": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/sourceHelper.log",
+      "bytes": 2916,
+      "sha256": "9a930c54875823493c1eb08c1c19024fd27dffdadfdaa356708772046d6d26f6"
+    }
+  },
+  "metadata": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-board-rhs-components-native-20261005/metadata-check.py"
+    ],
+    "elapsedSeconds": 0.0738698749919422,
+    "log": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/metadata.log",
+      "bytes": 852,
+      "sha256": "91c1fe9eefdb56b5ab15b68e271078e626b33edccb74c60601bd69494c91bdde"
+    }
+  },
+  "nativeSyntax": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "/opt/homebrew/bin/node",
+      "--check",
+      "/private/tmp/tube-board-rhs-components-native-20261005/native.mjs"
+    ],
+    "elapsedSeconds": 0.04013812495395541,
+    "log": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/nativeSyntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "diagnosticWrapperSyntax": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "/opt/homebrew/bin/node",
+      "--check",
+      "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs"
+    ],
+    "elapsedSeconds": 0.03758783300872892,
+    "log": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/diagnosticWrapperSyntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "sourceOnlyOwner": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-board-rhs-components-native-20261005/run.py",
+      "--arm",
+      "candidate"
+    ],
+    "elapsedSeconds": 0.12766658404143527,
+    "log": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+      "bytes": 495,
+      "sha256": "bbe9edbca8dab356a8cca1f5017a59053cc7e5eee1ec78f935c9c1ec7662cf4a"
+    }
+  },
+  "schema": "board-rhs-components-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false
+}

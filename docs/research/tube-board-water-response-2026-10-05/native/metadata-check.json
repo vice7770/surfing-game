@@ -1,0 +1,26 @@
+{
+  "schema": "board-rhs-components-helper-metadata-check/v1",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "original": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "copy": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "oldFields": 102,
+  "newScalarCopies": 41,
+  "availabilityMarker": "standingTrialAvailable",
+  "fields": 143,
+  "literalCopyNotSymlink": true,
+  "markerZeroInvalidatesStaleWords": true,
+  "markerOneOnlyMeansTrialCaptured": true,
+  "waterRadiationAndEntrainmentRemainMixed": true,
+  "separateHydrodynamicAttributionAvailable": false
+}

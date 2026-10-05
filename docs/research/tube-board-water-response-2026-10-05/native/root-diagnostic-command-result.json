@@ -1,0 +1,35 @@
+{
+  "schema": "board-rhs-components-root-diagnostic-command/v1",
+  "complete": true,
+  "terminal": true,
+  "exitCode": 0,
+  "actualCommand": [
+    "/opt/homebrew/bin/node",
+    "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs"
+  ],
+  "actualToolChunk": "f9fbb1",
+  "actualWallSeconds": 0.895949541,
+  "wrapper": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs",
+    "bytes": 14954,
+    "sha256": "66e857eb3ea4f4381c8e446811260fe5236f977b3fd8de12d05b8b7fb27c2af7"
+  },
+  "receipt": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 38052,
+    "sha256": "3a936ad08d69953a40bffec93916a1c3507d7311357ef29c08ca2216b0fd146d"
+  },
+  "module": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348650,
+    "sha256": "3d503ef75acd9bf15b04040ea2444cb13e827251873bdebf30473ec3228a2e99"
+  },
+  "priorTerminalAttempt": {
+    "session": 29432,
+    "exitCode": 1,
+    "chunk": "e0d886",
+    "canonicalAliasPathStringMismatch": true,
+    "compilerStarted": false
+  },
+  "firstAttemptAndOriginalPreparationPreserved": true
+}

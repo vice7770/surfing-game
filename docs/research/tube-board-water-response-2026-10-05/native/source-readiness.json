@@ -1,0 +1,79 @@
+{
+  "schema": "board-rhs-components-source-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "sourceDirectory": "/private/tmp/tube-board-rhs-components-native-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 586,
+  "runtimeChangedPaths": [
+    "src/physics/AttachedRider.ts",
+    "src/physics/BoardBody.ts"
+  ],
+  "parentManifest": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-pins.json",
+    "bytes": 96402,
+    "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-delta.json",
+    "bytes": 1394,
+    "sha256": "5ada890b11e68d6e6fc919a5999817014b64a12f3c24c77ed128e82bcbf64b16"
+  },
+  "candidatePreparation": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/readiness.json",
+    "bytes": 5810,
+    "sha256": "f0ea3c4aecc916cd856a35d5f41a30866f95f59f8f22cbf73edd94837b58e913"
+  },
+  "candidateRuntimePins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 159692,
+      "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55693,
+      "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+    }
+  ],
+  "candidatePatch": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/runtime.patch",
+    "bytes": 11485,
+    "sha256": "ec213b0fbd25a469f13699aa735e64867acf71693fd9cb10581f298fd644456d"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "rootCPUResult": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/root-checks/result.json",
+    "bytes": 272096,
+    "sha256": "35e06c82bcb1e685faef6a2481bd38153ca61e1187a619dd202b8d625e326b10"
+  },
+  "rootObserverChecks": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/root-checks/result.json",
+    "bytes": 272096,
+    "sha256": "35e06c82bcb1e685faef6a2481bd38153ca61e1187a619dd202b8d625e326b10"
+  },
+  "rootBaseCopy": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-base-copy.json",
+    "bytes": 96905,
+    "sha256": "ecb1fe87fa801e770ad3b7b2ef2e70849915bbab892146e6959c8af0a075edf8"
+  },
+  "buildId": "tube-board-rhs-components-20261005",
+  "resourcesStarted": false,
+  "applicationBuildPerformed": false,
+  "diagnosticBuildPerformed": false,
+  "nativeRun": false,
+  "nativeCauseOrFixAccepted": false,
+  "ordinaryStandingAccepted": false,
+  "bodyPassageAccepted": false,
+  "productionAdoption": false
+}

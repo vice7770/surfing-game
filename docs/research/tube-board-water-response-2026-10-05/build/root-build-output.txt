@@ -1,0 +1,71 @@
+
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 255 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/build.json                           0.04 kB │ gzip:   0.06 kB
+dist/index.html                           1.62 kB │ gzip:   0.62 kB
+dist/assets/surfZoneWorker-GxSA4-Zn.js  496.22 kB
+dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+dist/assets/devStepping-DycSQEPv.js       0.32 kB │ gzip:   0.25 kB
+dist/assets/particleBench-DCMpVRq2.js    10.70 kB │ gzip:   4.44 kB
+dist/assets/waterSheet-Cka5NMRv.js       11.68 kB │ gzip:   5.35 kB
+dist/assets/jevRecorder-CGeKBEfP.js      15.91 kB │ gzip:   6.65 kB
+dist/assets/rideRecorder-CG8b_7Wu.js     41.10 kB │ gzip:  13.40 kB
+dist/assets/index-I457Bp0R.js           582.40 kB │ gzip: 160.74 kB
+dist/assets/WorkerSurfZone-BihFnXEJ.js  915.05 kB │ gzip: 283.87 kB
+
+✓ built in 563ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+{
+  "schema": "board-rhs-components-root-application-command/v1",
+  "terminal": true,
+  "exitCode": 0,
+  "complete": true,
+  "sourceUnchanged": true,
+  "prebuild": {
+    "file": "/private/tmp/tube-board-rhs-components-build-20261005/root-prebuild.json",
+    "bytes": 133301,
+    "sha256": "55c4ad40170045601489b22d790f2275410671cb22c63c2696f23dcbf63f44c9"
+  },
+  "checks": [
+    {
+      "name": "strict-build",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "-b"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 15.514973291021306,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-build-20261005/strict-build.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "application",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 0.823143000015989,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-build-20261005/application.log",
+        "bytes": 1276,
+        "sha256": "f17e90c295d132fbd51c47da00520d4b0bafa4ca0520823c6b63704e24db559a"
+      }
+    }
+  ]
+}

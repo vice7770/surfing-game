@@ -1,0 +1,70 @@
+{
+  "schema": "board-rhs-components-parent-input-pins/v1",
+  "parentSource": "/private/tmp/tube-native-trial-balance-native-20261005/source",
+  "parentSourceInputCount": 588,
+  "parentObserverFieldCount": 102,
+  "fixtureAuthority": "Exact successful root native-isDeepStrictEqual bounded graph fixture; the candidate fixture is prospective only.",
+  "sourceProofScope": "Current102 source input manifest only; generated outputs are excluded.",
+  "pins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-pins.json",
+      "bytes": 96402,
+      "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-readiness.json",
+      "bytes": 2889,
+      "sha256": "41942c6127a4607d26ea926e66827ce43cb26984202c97ed507a31a294cd9b6b"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-delta.json",
+      "bytes": 1010,
+      "sha256": "9054d4e2396788ed6b7093eedc5dfd8dcb353f1fafd636e055bc0f766a864847"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 153209,
+      "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-bounded-graph.test.ts",
+      "bytes": 14519,
+      "sha256": "31903fc7c6e88873e867c9d4dc7fbf08d173e7d0c9e6181aca908f019355695f"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/vitest.config.mts",
+      "bytes": 241,
+      "sha256": "8530b1a2b368daf517eb4ce45edc6537d44b5041f30731fc749f54c831260f0c"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/tsconfig.json",
+      "bytes": 303,
+      "sha256": "ffa5d3b5b0c64f4f38f1a72b19c7471dc45378bdffbb9ba04155c84b813081ee"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/result.json",
+      "bytes": 276681,
+      "sha256": "cf1dca6f5983b28e2eb0c525780be5f1546b568129feeb32b9b31f2570e68a86"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-source-assessment-20261005/ASSESSMENT.md",
+      "bytes": 8534,
+      "sha256": "c5d0fc929f459fb7b2ce33cdf2be943f5c5d63d3dca37055f64c708b6e50d91b"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-source-assessment-20261005/pins.json",
+      "bytes": 2307,
+      "sha256": "9a80651d6f112646865b99519a9cb8ceefd23c07d4a872886214b146e04f7fb8"
+    }
+  ]
+}

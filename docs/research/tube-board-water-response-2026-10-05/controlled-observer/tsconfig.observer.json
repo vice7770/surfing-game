@@ -1,0 +1,12 @@
+{
+  "extends": "./source/tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "source/src",
+    "tests/trialBalance.components-parity.test.ts",
+    "vitest.config.mts"
+  ]
+}

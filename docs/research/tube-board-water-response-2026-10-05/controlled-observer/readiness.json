@@ -1,0 +1,133 @@
+{
+  "schema": "board-rhs-components-observer-preparation-readiness/v1",
+  "complete": true,
+  "preparationComplete": true,
+  "frozen": true,
+  "sourceDirectory": "/private/tmp/tube-board-rhs-components-observer-20261005/source",
+  "sourceInputCount": 588,
+  "applicationSourceInputCount": 587,
+  "unchangedParentInputs": 586,
+  "runtimeChangedPaths": [
+    "src/physics/AttachedRider.ts",
+    "src/physics/BoardBody.ts"
+  ],
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source-delta.json",
+    "bytes": 1884,
+    "sha256": "289ee962a47d8ecd1dc5a02e35b80c02390e2b8c9fb08f540514573084c76cc6"
+  },
+  "parentSourcePinsManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/parent-source-pins.json",
+    "bytes": 96402,
+    "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+  },
+  "parentSourceReadiness": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/parent-source-readiness.json",
+    "bytes": 2889,
+    "sha256": "41942c6127a4607d26ea926e66827ce43cb26984202c97ed507a31a294cd9b6b"
+  },
+  "parentInputPins": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/parent-input-pins.json",
+    "bytes": 3082,
+    "sha256": "b0c3e6aa33bc2de483fb9b7484c9f5493fe06d88ade56147e52b7ac450a92d5a"
+  },
+  "dependencyPins": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/dependency-pins.json",
+    "bytes": 3567,
+    "sha256": "b1b1e610c0a8da9f2597d5107423efb6801af7d8fb2fb8fd3899fcff3c10fda0"
+  },
+  "runtimePatch": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/runtime.patch",
+    "bytes": 11485,
+    "sha256": "ec213b0fbd25a469f13699aa735e64867acf71693fd9cb10581f298fd644456d"
+  },
+  "candidateRuntimePins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 159692,
+      "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55693,
+      "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+    }
+  ],
+  "observerFields": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "fieldCounts": {
+    "old": 102,
+    "added": 41,
+    "total": 143,
+    "newAvailabilityMarkers": 0
+  },
+  "existingAvailabilityMarker": "standingTrialAvailable",
+  "markerSemantics": "0 invalidates new41 including stale words;1 means captured attempted coupled trial before projection/fallback, not feasibility or applied motion.",
+  "prospectiveFixture": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/tests/trialBalance.components-parity.test.ts",
+    "bytes": 17780,
+    "sha256": "41c51e589836aa827a62be90b43b9b8d24447672eaae17da4af430357469310f"
+  },
+  "prospectiveStrictConfig": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/tsconfig.observer.json",
+    "bytes": 226,
+    "sha256": "9fc2d4913eb2229a2fd18b158b678f41ea0be3ecc3a40981bf23f4c1e1dd31e3"
+  },
+  "prospectiveVitestConfig": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/vitest.config.mts",
+    "bytes": 271,
+    "sha256": "30336c46fc8eb964cb75755085706d84b72fcaef35656ff8f7b62a42136e1d0b"
+  },
+  "fixtureDesign": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/fixture-design.md",
+    "bytes": 6326,
+    "sha256": "f24a893a5de0b37a6e334307a720a971223dac75ef2fa3a29c1b85917be7dd27"
+  },
+  "independentSourceReview": {
+    "file": "/private/tmp/tube-board-rhs-components-observer-20261005/independent-source-review.md",
+    "bytes": 4587,
+    "sha256": "b4835711c9747de0a9c61426fd3443891cac1ce788c3cdafd0a8dcef919e6cfb"
+  },
+  "independentReviewBySourceOnly": true,
+  "prospectiveCases": 2,
+  "prospectiveWholeStepsPerCase": 276,
+  "prospectiveTotalWholeSteps": 552,
+  "prospectiveCaseBudgetMs": 120000,
+  "fixtureFilter": "Only exact41 new names, only from full old102 observer records; old102/marker and all private own graphs, aliases/descriptors/symbols/typed bytes/water calls/stages/detachedness retained.",
+  "textAndByteInventoryCompleted": true,
+  "candidateExecutableChecks": {
+    "typescriptRun": false,
+    "parserRun": false,
+    "parityRun": false,
+    "testsPassed": false,
+    "sourcePhysicsEqualityProven": false,
+    "applicationBuildRun": false,
+    "diagnosticBuildRun": false,
+    "nativeRun": false,
+    "resourceProbesRun": false
+  },
+  "rootObserverChecks": null,
+  "rootCPUResult": null,
+  "rootAcceptancePending": true,
+  "runtimeParityAccepted": false,
+  "nativeBenefitAccepted": false,
+  "nativeCauseAccepted": false,
+  "ordinaryStandingAccepted": false,
+  "bodyPassageAccepted": false,
+  "tubeQualityAccepted": false,
+  "performanceAccepted": false,
+  "productionAdoption": false,
+  "resourcesStarted": false,
+  "gitChanged": false,
+  "sourceInputPolicy": "588 immediate-parent manifest inputs only. Explicit generated outputs were not copied; later root outputs must remain separately pinned and excluded from input count.",
+  "copyScope": "Existing41 numeric aggregate primitives only; no radiation/entrainment split, arithmetic/query/solve/control changes or retained references.",
+  "dependencies": "Existing exact node_modules symlink; package availability explicitly recorded. No install/runtime dependency check."
+}

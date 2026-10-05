@@ -1,0 +1,85 @@
+{
+  "schema": "board-rhs-components-dependency-pins/v1",
+  "nodeModulesSymlink": {
+    "path": "/private/tmp/tube-board-rhs-components-observer-20261005/source/node_modules",
+    "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+    "sameAsParent": true
+  },
+  "dependencyAuthority": "Pinned available package metadata and source lockfile; no dependency installation or runtime/version command performed.",
+  "rootPackageManifestStatus": [
+    {
+      "package": "three",
+      "rootPackageManifest": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "present": true
+    },
+    {
+      "package": "vitest",
+      "rootPackageManifest": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/package.json",
+      "present": true
+    },
+    {
+      "package": "typescript",
+      "rootPackageManifest": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "present": true
+    },
+    {
+      "package": "esbuild",
+      "rootPackageManifest": "/Users/regina/Desktop/Projects/surfing-game/node_modules/esbuild/package.json",
+      "present": false
+    },
+    {
+      "package": "@types/three",
+      "rootPackageManifest": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@types/three/package.json",
+      "present": true
+    }
+  ],
+  "nodeRuntimeAuthority": "Root must choose and record actual execution runtime for future checks.",
+  "compilerAuthority": "Root must pin any separately selected diagnostic/build compiler; no absent root package is claimed installed.",
+  "pins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "packageName": "surfing-game",
+      "packageVersion": "0.1.0"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/package-lock.json",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209",
+      "packageName": "surfing-game",
+      "packageVersion": "0.1.0"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "bytes": 3672,
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de",
+      "packageName": "three",
+      "packageVersion": "0.186.1"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/package.json",
+      "bytes": 5445,
+      "sha256": "bb27a3b3f172321701a7b1f1d90a59e5c9596673176f553a91c1e93b9667abfa",
+      "packageName": "vitest",
+      "packageVersion": "5.0.1"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "packageName": "typescript",
+      "packageVersion": "5.9.3"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@types/three/package.json",
+      "bytes": 1708,
+      "sha256": "b0253caeb8b99b6a64150e6279cc4bbf30e61610683bdf39f8db2667d6103626",
+      "packageName": "@types/three",
+      "packageVersion": "0.186.0"
+    }
+  ],
+  "dependencyInstallPerformed": false,
+  "dependencyRuntimeChecksPerformed": false,
+  "preparationNote": "Initial filesystem metadata collection found no root esbuild/package.json; it did not run a compiler or candidate code. This manifest records package availability explicitly."
+}

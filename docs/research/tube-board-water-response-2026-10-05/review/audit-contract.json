@@ -1,0 +1,93 @@
+{
+  "schema": "board-rhs-components-actual-review-contract/v1",
+  "sourceOnly": true,
+  "numericExecution": false,
+  "actualAuditAccepted": false,
+  "candidate": "/private/tmp/tube-board-rhs-components-native-20261005",
+  "baseline": "/private/tmp/tube-native-trial-balance-native-20261005",
+  "status": "pending root terminal native capture, source review and execution",
+  "futureRootProvidedHashes": {
+    "seal": null,
+    "report": null,
+    "compilerWrapper": null,
+    "workerReadOrVerifiedActual": false
+  },
+  "preReadGate": [
+    "explicit --root-authorized-terminal",
+    "root-provided actual seal/report/wrapper SHA-256 arguments and canonical wrapper file",
+    "positive finite root expected source/config rider mass",
+    "fresh first-only root output subdirectory inside this preparation",
+    "new143 owner complete / exitCode0 / firstFailure null / recorded resource closure and protected states",
+    "root-authorized new complete seal before candidate report/trace/sidecars/media are read",
+    "no polling, retries, native helpers, resource probes or launches"
+  ],
+  "comparison": {
+    "rawArchives": "Every recursive trace/report/owner difference, added/removed words and missing/null distinction; full sidecar raw differences and every changed typed-array/front-packet word are retained.",
+    "old102AndMarkerPreserved": true,
+    "onlyObserverExclusion": "Exactly41 newFields; remove only in dictionaries containing all143 frozen observer field names. No old102/marker/contactDiagnostics/landingDemand/report/provenance/config/public optical removal.",
+    "scalarExactness": "Same successful source comparator: type and signed zero retained; duplicate sample identities checked with that same comparator.",
+    "approvedNondeterministicSuffixes": [
+      ".workerStepMs",
+      ".detector.elapsedMilliseconds",
+      ".detector.cumulativeMilliseconds",
+      ".cameraFollower.calls",
+      ".cameraFollower.zeroDtCalls",
+      ".cameraFollower.positiveDtCalls",
+      ".clocks.surfaceRevision"
+    ],
+    "approvedNormalizationScopes": ["each whole trace row", "initialBody only"],
+    "allApprovedDifferencesRetainedRaw": true,
+    "checkpoints": "Same labels, full raw objects, exact step and camera comparison; no checkpoint normalization or inferred epoch equality.",
+    "sidecars": "Both sides exact37 array inventory, all descriptors and active bytes, complete rawFrontPacket, all scalar optical and epoch metadata. Only exact epoch.surfaceRevision is reported separately, with signed candidate-minus-baseline delta.",
+    "publicRows": "Whole recursive rows preserve actor/body/board/rider/camera/controls/selection/config/seaTime/front/ride/locked station and optical fields; extra/missing rows retained."
+  },
+  "authority": {
+    "sourceInputs": 588,
+    "sameImmediate102ParentInputs": 586,
+    "changedRuntimePaths": ["src/physics/AttachedRider.ts", "src/physics/BoardBody.ts"],
+    "applicationInputs": 587,
+    "completeAssets": 49,
+    "generatedOutputs": "Exactly21 actual builtAssetPins and1 actual generatedOutputPins cache; frozen prebuild input authority remains588; postbuild source inventory610.",
+    "fresh143CPU": "Direct pinned new board-rhs-components-root-cpu-checks/v1: strict and parity exit0; parity2/2,failed0,552 steps,source unchanged; no102 acceptance inheritance.",
+    "guardReuse": "Import only the current run.py whose complete literal pin is in the actual seal helper manifest; call only resource-free authority/build/diagnostic/retention functions. Prior102 authority source is exact pinned successful root-audit-v3 authority.py.",
+    "applicationCommand": "Direct actual rootApplicationCommand complete/terminal/exit0,strict-build/application exit0,source unchanged.",
+    "diagnostic": {
+      "inputs": 74,
+      "sourceInputs": 71,
+      "compilerConfigurationInputs": 1,
+      "watchedInputs": 75,
+      "bothChangedRuntimesReachable": true,
+      "freshCompiledModuleRequired": true,
+      "diagnosticLexicalFieldCount0Allowed": true,
+      "bothExactPinnedApplicationWorkerAssetsRequireAll143": true,
+      "compilerWrapperRevision": "node-alias-v2",
+      "compilerWrapperExplicitRootHashRequired": true,
+      "historicalAliasException": {
+        "file": "/opt/homebrew/bin/node",
+        "bytes": 61838736,
+        "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e",
+        "validation": "Actual recordedPin must equal this exact historical pin; current literal bytes and current canonical pin bytes/SHA plus alias realpath must match receipt. No process.execPath or current process executable proof."
+      }
+    },
+    "helpers": "All actual current helper pins unique and recomputed; count reported rather than inherited from102 parent. New helper readiness accepted only from actual root receipts.",
+    "served": "Recorded served byte/SHA values match current sealed assets and separately root-compiled diagnostic module; no HTTP requests.",
+    "media": "Every artifact/sidecar pin and all capture directory files hashed; declared/actual PNG and sidecar counts checked; extra files retained.",
+    "closure": "Recorded owned4301/9711 closed, no remaining owned PIDs, protected4310/4311 closed and4312/4313 open, whole660s and cleanup7s; no fresh probes."
+  },
+  "rhsAndAllocation": {
+    "expectedAvailableLandingSamples": 46,
+    "availability": "Use only marker1 plus phase landing; save all unavailable/stale records without using their words in equations.",
+    "groups": ["gravity", "buoyancy", "pressure", "friction", "fin", "rail", "gyro", "waterCombined"],
+    "firstGate": "Reconstruct all6 preRhs channels in exact BoardBody source order: weight first inY; positive gyro subtracted from angular source sum; multiply h after source sum; water impulses added outside h. Retain exact source-order residual and separately bounded IEEE group-reassociation residual.",
+    "rhsGroupRoundoffBound": "Per channel64*binary64epsilon*max(1,abs(preRhs),sum(abs(groupContributions))). This is offline arithmetic closure, not a gameplay threshold.",
+    "missingOrFailedSamples": "Write closure evidence then stop before decomposition if46 samples, exact source-order closure, grouped closure or requested1356/sub32 and1357/sub1 are missing/invalid. No fallback or forced cause.",
+    "mass": "Conditional m=legLoad/(specificForce dot demandUp), positive well-conditioned same prepared basis; cross-check explicit root source/config mass. Unavailable conditioning stops inference.",
+    "equations": "Reuse exact root-balance.py7x7/Schur/implicit-force/prepared-rate allocation and root-transition.py chosen-B partial-pivot inverse conventions.",
+    "transition": "K_B inverse*(deltaRhs-deltaK*X_A), eight board RHS group responses plus board matrix/rider RHS/rider matrix; retain captured row residual correction separately.",
+    "losses": "Retain all published loss representations and available loss sample decompositions; unavailable losses stay raw.",
+    "counterfactuals": "Board-only same captured B/q and removal of one board RHS group under the same full7x7 assembly, with complete solutions/pivots/residuals; offline hypotheses only.",
+    "limits": "Board RHS aggregates are not per-hydrodynamic matrix/contact/inertia loads. Combined water mixes radiation and entrainment. Reduced7x7 leaves independent twist/bank state uncaptured; zero-extra-torque and measured captured-row residuals are explicit. Allocation is algebra, not unique native causation."
+  },
+  "noClaims": ["native benefit", "causal fix", "private whole-solver equality", "hidden water cause", "visual quality", "tube passage", "FPS", "adoption"],
+  "preparationExecution": {"analyzer": false, "parser": false, "tests": false, "build": false, "native": false, "numericProbe": false, "portProbe": false, "actual143TraceRead": false}
+}

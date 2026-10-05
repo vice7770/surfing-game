@@ -1,0 +1,47 @@
+{
+  "schema": "board-rhs-components-helper-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "preparationFrozen": true,
+  "status": "frozen-actual-root-authority-verified",
+  "pins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/readiness.json",
+      "bytes": 9099,
+      "sha256": "b6086d0f4a044487aefbba1e2d6460c965c0e2a2d047146adbc11d594badc713"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-pins.json",
+      "bytes": 22244,
+      "sha256": "6d24d34b5fafefedf84eedd796895bac33d6dccc76f87f630cd23311ba9f5d01"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/seal-handoff.json",
+      "bytes": 15587,
+      "sha256": "f8d3deea8edebd1fdc227cf3629354c80b2feddfe101df623870a0cc790e9816"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-helper-checks.json",
+      "bytes": 3308,
+      "sha256": "bf2c1663f7e23660188340008c28d1ff18029a4b640c44186bcc99912a526f85"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/metadata-check.json",
+      "bytes": 918,
+      "sha256": "81d722d8d1e0a603484d655d397d6d022d6b471a2e73ce04621e8bf5c3d05aba"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/adapter.patch",
+      "bytes": 84328,
+      "sha256": "79f23bc7a239a4cf47f954c39f00038e52ce3697f4a6c9673f56379f4889ac5d"
+    }
+  ],
+  "helperPinsCount": 99,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "rootSealCreated": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "helperAcceptance": true,
+  "actualNative": false
+}

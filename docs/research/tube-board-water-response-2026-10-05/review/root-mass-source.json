@@ -1,0 +1,24 @@
+{
+  "schema": "board-rhs-components-root-source-mass/v1",
+  "sourceRead": true,
+  "expectedRiderMassKg": 73,
+  "sourcePins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 159692,
+      "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/RideSession.ts",
+      "bytes": 13831,
+      "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+    }
+  ],
+  "reason": "RideSession constructs AttachedRider with stance only; AttachedRider defaults options.mass to REFERENCE_RIDER.mass; reference mass is73. Native driver reads the ordinary host rider and performs no construction/mass override.",
+  "nativeMassInferenceVerified": false
+}

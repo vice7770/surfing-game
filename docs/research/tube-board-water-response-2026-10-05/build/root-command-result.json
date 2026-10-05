@@ -1,0 +1,46 @@
+{
+  "schema": "board-rhs-components-root-application-command/v1",
+  "terminal": true,
+  "exitCode": 0,
+  "complete": true,
+  "sourceUnchanged": true,
+  "prebuild": {
+    "file": "/private/tmp/tube-board-rhs-components-build-20261005/root-prebuild.json",
+    "bytes": 133301,
+    "sha256": "55c4ad40170045601489b22d790f2275410671cb22c63c2696f23dcbf63f44c9"
+  },
+  "checks": [
+    {
+      "name": "strict-build",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "-b"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 15.514973291021306,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-build-20261005/strict-build.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "application",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 0.823143000015989,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-build-20261005/application.log",
+        "bytes": 1276,
+        "sha256": "f17e90c295d132fbd51c47da00520d4b0bafa4ca0520823c6b63704e24db559a"
+      }
+    }
+  ]
+}

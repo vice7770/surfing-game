@@ -1,0 +1,427 @@
+{
+  "schema": "board-rhs-components-actual-readonly-review/v1",
+  "complete": true,
+  "numericExecution": true,
+  "rootExplicitTerminalAuthorization": true,
+  "candidate": "/private/tmp/tube-board-rhs-components-native-20261005",
+  "baseline": "/private/tmp/tube-native-trial-balance-native-20261005",
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first-owner.json",
+      "bytes": 3491,
+      "sha256": "d8564a3ae6500aa7b29d5b3461333beb712dad5600bd11323da8413c6c3a8aaf"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+      "bytes": 13390085,
+      "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 13116163,
+      "sha256": "b2fba2c5c6384a43fae9b0f80bffd80eb7d4d3ed426431bf31c9927391ccbfde"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/seal.json",
+      "bytes": 199554,
+      "sha256": "67cbea5e0dcccbfa70b27ac20be62230d7108626707c43ca4d8e58896b5edc48"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/readiness.json",
+      "bytes": 9099,
+      "sha256": "b6086d0f4a044487aefbba1e2d6460c965c0e2a2d047146adbc11d594badc713"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.json",
+      "bytes": 3486,
+      "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+      "bytes": 13122643,
+      "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 12856827,
+      "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/seal.json",
+      "bytes": 194155,
+      "sha256": "19847d2bf1af8944a28f841a13fde0f88d688f271376842363d1a70605a4c549"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+      "bytes": 8829,
+      "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/analyze.py",
+      "bytes": 20851,
+      "sha256": "22639af9af6016687ce2fcea5acb2c20245ea64afc2622e753ce7f6888656d42"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/authority.py",
+      "bytes": 8089,
+      "sha256": "0b2082ad1a8600c982daa6f901af06d676b3d22c0d93333e41620a11e4aafa8b"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/balance.py",
+      "bytes": 15928,
+      "sha256": "711e3e852dcafef4fd849706c47dc2ea85a03da38f8c2abf533c83583e0eb4d0"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/audit-contract.json",
+      "bytes": 7827,
+      "sha256": "2cc85b9492d9450347a9f1e3a50d96443d7eef24c4e13da488e76e59f40d66b6"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/README.md",
+      "bytes": 5105,
+      "sha256": "6311088856731dbe5e6b96573652ff53ec6e3bfe7053c4133b0908115cdc7e37"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/readiness.json",
+      "bytes": 2235,
+      "sha256": "00db8a0eaa24891c8be64cf64b3a3e23575f47de9d91fe51c28cd2ac25c280ba"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/freeze.json",
+      "bytes": 3648,
+      "sha256": "e4fa6ea1d09bc6c51c8d6f878874fd1a680b0693fac92827a83f16bb6c56b42d"
+    }
+  ],
+  "mediaPins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/00-initial.png",
+      "bytes": 2444798,
+      "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/01-first-pop-up.png",
+      "bytes": 1963811,
+      "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/02-first-landing.png",
+      "bytes": 1903210,
+      "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/03-terminal.png",
+      "bytes": 1961115,
+      "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/pop-up-motion.webm",
+      "bytes": 877710,
+      "sha256": "fe8a37570e0ac2936604e8c860936a303046abac5cfb28bbe5d30e2402592707"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 13116163,
+      "sha256": "b2fba2c5c6384a43fae9b0f80bffd80eb7d4d3ed426431bf31c9927391ccbfde"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/00-initial.png",
+      "bytes": 2444829,
+      "sha256": "f9ad89a4b21d00236c1be596de695d8c9713fb2ee5b9f65fbd947fef57c10d8c"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/01-first-pop-up.png",
+      "bytes": 1963811,
+      "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/02-first-landing.png",
+      "bytes": 1903210,
+      "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/03-terminal.png",
+      "bytes": 1961115,
+      "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/pop-up-motion.webm",
+      "bytes": 878096,
+      "sha256": "e023c8180a095414c02738aefb4088ec3ddcb128f48be9cabfe69822fe9f2bfb"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 12856827,
+      "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+    }
+  ],
+  "captureInventories": [
+    {
+      "work": "/private/tmp/tube-board-rhs-components-native-20261005",
+      "declaredCoreFiles": 11,
+      "actualFiles": 12,
+      "additionalFilesNotInArtifactOrSidecarDeclarations": [
+        "launcher.json"
+      ],
+      "allActualFilePins": [
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-initial.json",
+          "bytes": 1099036,
+          "sha256": "1797f8a985ffcb18e606fc62ec32024cf4050c356110346d205032f32731edf0"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/launcher.json",
+          "bytes": 12997,
+          "sha256": "ca6bd428a62d2f9c58421d36bd179956f5822040458bd986c156dd5a5c672cce"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+          "bytes": 13390085,
+          "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/00-initial.png",
+          "bytes": 2444798,
+          "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/03-terminal.png",
+          "bytes": 1961115,
+          "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/02-first-landing.png",
+          "bytes": 1903210,
+          "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/01-first-pop-up.png",
+          "bytes": 1963811,
+          "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/steps.ndjson",
+          "bytes": 13116163,
+          "sha256": "b2fba2c5c6384a43fae9b0f80bffd80eb7d4d3ed426431bf31c9927391ccbfde"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-first-pop-up.json",
+          "bytes": 1073481,
+          "sha256": "c765973bee261604da6bf3a03c1c228f215547f56378b491a6f6c359700bd97b"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-first-landing.json",
+          "bytes": 1496463,
+          "sha256": "a3188fb4e5e88ba78b95f5d81f39f8be0c621368d6ee93c0116ad02456ecb27c"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-terminal.json",
+          "bytes": 1420830,
+          "sha256": "3af7e202255b6db1a0890c5e0a52904d051a0dccc949f6f3368b5ddfa5fc5eb6"
+        },
+        {
+          "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/pop-up-motion.webm",
+          "bytes": 877710,
+          "sha256": "fe8a37570e0ac2936604e8c860936a303046abac5cfb28bbe5d30e2402592707"
+        }
+      ],
+      "pngDeclared": 4,
+      "pngActual": 4,
+      "sidecarsDeclared": 4,
+      "sidecarsActual": 4
+    },
+    {
+      "work": "/private/tmp/tube-native-trial-balance-native-20261005",
+      "declaredCoreFiles": 11,
+      "actualFiles": 12,
+      "additionalFilesNotInArtifactOrSidecarDeclarations": [
+        "launcher.json"
+      ],
+      "allActualFilePins": [
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-initial.json",
+          "bytes": 1099036,
+          "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/launcher.json",
+          "bytes": 11964,
+          "sha256": "413ca9b297ac5c417011a58bc50d2d788a22097e18b567cae92c08a9d5e598a2"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+          "bytes": 13122643,
+          "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/00-initial.png",
+          "bytes": 2444829,
+          "sha256": "f9ad89a4b21d00236c1be596de695d8c9713fb2ee5b9f65fbd947fef57c10d8c"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/03-terminal.png",
+          "bytes": 1961115,
+          "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/02-first-landing.png",
+          "bytes": 1903210,
+          "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/01-first-pop-up.png",
+          "bytes": 1963811,
+          "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+          "bytes": 12856827,
+          "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-first-pop-up.json",
+          "bytes": 1073481,
+          "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-first-landing.json",
+          "bytes": 1496463,
+          "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-terminal.json",
+          "bytes": 1420830,
+          "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/pop-up-motion.webm",
+          "bytes": 878096,
+          "sha256": "e023c8180a095414c02738aefb4088ec3ddcb128f48be9cabfe69822fe9f2bfb"
+        }
+      ],
+      "pngDeclared": 4,
+      "pngActual": 4,
+      "sidecarsDeclared": 4,
+      "sidecarsActual": 4
+    }
+  ],
+  "rawDifferenceCounts": {
+    "trace:priorRecordedTimingFollowerOrRedrawCategory": 6824,
+    "trace:newObserverWordRetainedRaw": 8159,
+    "reportOther:nonapprovedRecordedDifference": 1047,
+    "reportOther:newObserverWordRetainedRaw": 123,
+    "owner:nonapprovedRecordedDifference": 18
+  },
+  "candidateRows": 1366,
+  "baseline102Rows": 1366,
+  "allOriginalPublishedRowsEqualAfterOnlyApprovedExclusions": true,
+  "allOld102AndMarkerRetained": true,
+  "new41ExcludedOnlyInFull143ObserverRecords": true,
+  "wholeReportOrContactDiagnosticsExcluded": false,
+  "rawDifferenceArchive": {
+    "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/all-raw-differences.ndjson",
+    "bytes": 4417250,
+    "sha256": "90daabab04437b250371d296240b809e63af2e6a1987d14189b2f7db36a5333f"
+  },
+  "sidecarRawDifferenceArchive": {
+    "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/sidecar-all-raw-differences.ndjson",
+    "bytes": 718,
+    "sha256": "a7aa0d49674d45e2d391b77b1d4174d1289a4e932ea3672b7d31dc4f9cb91627"
+  },
+  "sidecarWordDifferenceArchive": {
+    "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/sidecar-word-differences.ndjson",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "artifacts": {
+    "rows": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/original-published-row-comparison.json",
+      "bytes": 312653,
+      "sha256": "9759905d5685f0c57378c0304513ea9d8c867b7ca7273f93ad6c5c5fdbb72486"
+    },
+    "sidecars": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/full-sidecar-comparison.json",
+      "bytes": 67305,
+      "sha256": "e282a14f2d1f7911fe3955f9cf7e823844e3617c9aeb3f5565d3db6c8c4a58b1"
+    },
+    "samples": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/all-full-observer-records.json",
+      "bytes": 1489893,
+      "sha256": "720c61e434762be73d535f9c481127f2383ab9df77db03b89b7ded9086520b76"
+    },
+    "authority": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/postcapture-authority.json",
+      "bytes": 19151,
+      "sha256": "4038ad2408d027c1c7891cfcf05d626ea42e1e875b4bd79ec23218c6e963e65f"
+    },
+    "baselineAuthority": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/baseline102-postcapture-authority.json",
+      "bytes": 1260110,
+      "sha256": "5bee9175496768128070e747d855fd20e4efbd622db45ea5818cc911cc8b0c13"
+    },
+    "numerical": {
+      "rhsClosure": {
+        "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/board-rhs-group-closure.json",
+        "bytes": 141366,
+        "sha256": "04189b0027d0cdfa0b5ba22ce1ad7486b2bc0de81e68bea71478cbd17d5329c3"
+      },
+      "unavailable": {
+        "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/unavailable-observer-records.json",
+        "bytes": 358889,
+        "sha256": "998d83d9b2bb104a9a5dccb66e171dcc582745c9f2a748a7ceb0ba0b529b12f7"
+      },
+      "allSamples": {
+        "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/all-landing-balance-samples.json",
+        "bytes": 1126225,
+        "sha256": "58e143ffcab2c30db6366e340a5b39746012dc46d4c7b4f2965416a01686bdd8"
+      },
+      "transition": {
+        "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/transition1356-32-to1357-1.json",
+        "bytes": 13989,
+        "sha256": "7da8512080ed6a3c05dbbaa129217331773b01167e262118d48bd4ab880e4fbf"
+      },
+      "losses": {
+        "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/all-available-loss-samples.json",
+        "bytes": 53052,
+        "sha256": "7b7e5b0ef674cd9fc8a255835bafdcc96537f61c95c38a9aba499589c5ba9056"
+      },
+      "summary": {
+        "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/numerical-analysis.json",
+        "bytes": 2947,
+        "sha256": "b4dad3d5001ee058101b1e51b0ae46d20ca16ec5304e6540f969421fb3073746"
+      }
+    }
+  },
+  "limits": [
+    "Recorded public equality does not establish private whole-solver equality.",
+    "Only retained observer records are available; intermediate trial states may be unpublished.",
+    "Board RHS aggregates separate eight assembly terms; combined water still mixes radiation and entrainment, and the board matrix remains a combined assembly.",
+    "Movie recording stops at240 moving advances; ordinary physics continues under the unchanged replay stop policy."
+  ],
+  "claims": {
+    "nativeBenefit": false,
+    "causalFix": false,
+    "hiddenHydrodynamicCause": false,
+    "visualQuality": false,
+    "tubePassage": false,
+    "FPS": false,
+    "adoption": false
+  },
+  "resourcesStarted": false,
+  "portsOrPidsProbed": false,
+  "testsOrBuildsRun": false
+}

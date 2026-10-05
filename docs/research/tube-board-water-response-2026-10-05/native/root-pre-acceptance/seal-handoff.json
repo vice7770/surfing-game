@@ -1,0 +1,346 @@
+{
+  "schema": "board-rhs-components-root-seal-handoff/v1",
+  "sourceOnly": true,
+  "rootSealRequired": true,
+  "rootSealCreated": false,
+  "newSealPath": "/private/tmp/tube-board-rhs-components-native-20261005/seal.json",
+  "newSealSchema": "board-rhs-components-root-seal/v1",
+  "status": "pending-actual-root-build-and-helper-receipts",
+  "helperReadiness": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/readiness.json",
+    "bytes": 5837,
+    "sha256": "a856063fdc80e4e10374aa5995a6df457bb0d9e0f98ead187f4ace9b81fcc6ce"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-pins.json",
+    "bytes": 19316,
+    "sha256": "d935056172cd15bd296b7693f72793965480d63b5a8693b4013ae20deb2dfcf6"
+  },
+  "candidateDist": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist",
+  "inheritHistoryFromImmediate102Seal": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/seal.json",
+    "bytes": 194155,
+    "sha256": "19847d2bf1af8944a28f841a13fde0f88d688f271376842363d1a70605a4c549"
+  },
+  "addRequiredSealFields": {
+    "priorPreparationReadiness": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/readiness.json",
+      "bytes": 5169,
+      "sha256": "ae396c0f31a170ad4aa860d5c1876f8faa9dabd1e56a460ecc36f547ba32d94a"
+    },
+    "priorFailedOwner": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/candidate-first-owner.json",
+      "bytes": 2995,
+      "sha256": "b14d4a2d4c9265af79e2d1db4fe6a4216e177a5bbf285db35baafdce8106f370"
+    },
+    "priorFailedReport": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/candidate-first/report.json",
+      "bytes": 127457,
+      "sha256": "924d970b3ceaf35d661e05f0629fb91038dbd7a0085a8100627eeb4d489cf0ec"
+    },
+    "priorV2PreparationReadiness": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v2-20261005/readiness.json",
+      "bytes": 10206,
+      "sha256": "58449817cf13de6fbde7ef6c1ba5f7ed20ecbf876f15ea3600746897dcbb7b45"
+    },
+    "priorV2FailedOwner": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v2-20261005/candidate-first-owner.json",
+      "bytes": 2501,
+      "sha256": "b34b71039423ecd0a0cbac44df8fe7e85e7e7d1caceab0d4542d6843fe27ffb3"
+    },
+    "priorV2FailedReport": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v2-20261005/candidate-first/report.json",
+      "bytes": 132324,
+      "sha256": "6a1c5c4dbc36a60d7b3db07ab523382857b1f0610fba780766f59e648f398dad"
+    },
+    "priorV3PreparationReadiness": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/readiness.json",
+      "bytes": 10934,
+      "sha256": "e8cf141f1194cf140f98816c453ac6e679f9e85527d7bed1439bcc60c69310e0"
+    },
+    "priorV3Owner": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/candidate-first-owner.json",
+      "bytes": 3439,
+      "sha256": "03a3c7567010e66aa650cada74316dd924d117808378f85f01631f541d2c29d6"
+    },
+    "priorV3Report": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/candidate-first/report.json",
+      "bytes": 3740690,
+      "sha256": "74d6425fdd10514943f1a5404c276e1ca984aa510990c9c79f2de3b6d27ed8e5"
+    },
+    "priorV3EvidenceReview": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-evidence-review-20261005/readiness.json",
+      "bytes": 7621,
+      "sha256": "583bedcc8b0ee5d9390fa7407335f6876026050f208a7cd841b5ee6c49548e96"
+    },
+    "priorV3EvidenceReviewReport": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-evidence-review-20261005/report.json",
+      "bytes": 131280,
+      "sha256": "28017f92c814994197727b954a2307ade3076c45b4da6c125ebb8eac7580a8dc"
+    },
+    "priorV3RootPixelInspection": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/root-pixel-inspection.json",
+      "bytes": 1336,
+      "sha256": "fa3f8eeeb8588804cc204c11e875dfad45c8a03c1a712e6198de13ab5d90197a"
+    },
+    "priorV4Seal": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/seal.json",
+      "bytes": 164954,
+      "sha256": "47966a7f5f7c02f39ca6e8220c4b4461af1ac580743069c8d15563a972c15dce"
+    },
+    "priorV4Readiness": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/readiness.json",
+      "bytes": 12549,
+      "sha256": "b69df89fd02a7760aa3d3756ef259316612c8b22068e720fcbabe369c2daa464"
+    },
+    "priorV4Owner": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first-owner.json",
+      "bytes": 3440,
+      "sha256": "806d8f550c2a26eb8c310de7d59f3c1170d372962f8bfb79418c30fdb84a0a2c"
+    },
+    "priorV4Report": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first/report.json",
+      "bytes": 10218530,
+      "sha256": "c411763b4b4c1fb6ff3c592085926f2ddba84e0bd0c2cddb0e4d471255048ead"
+    },
+    "priorV5Seal": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/seal.json",
+      "bytes": 171732,
+      "sha256": "d87daae056e58accb831289886b8b1834ceffce5d1f007d4090bc8cc261e2fb4"
+    },
+    "priorV5Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/readiness.json",
+      "bytes": 8599,
+      "sha256": "d833920a3d09763c52553a2097d257c0476d9701c08b8e2cb3071dc42293b138"
+    },
+    "priorV5Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first-owner.json",
+      "bytes": 3489,
+      "sha256": "424b0013050fdfccd86ee6a1f457e458946cb0dcd8541beebb4306e59359acc6"
+    },
+    "priorV5Report": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first/report.json",
+      "bytes": 11648573,
+      "sha256": "f2260f0889e3e9657778dfa4a95913db440b34e7b4f8b4b3be83c4a6662e3239"
+    },
+    "priorV6Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/readiness.json",
+      "bytes": 9713,
+      "sha256": "601d870c3c1a97f838f5693e706122c8e6aef96a9dfd0ab8e2dde832972a9780"
+    },
+    "priorV6Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first-owner.json",
+      "bytes": 3481,
+      "sha256": "b6ebaf9afd303f9dbbe577f53ba2e2701408f545b6107e2b3a1900ffc8f95d91"
+    },
+    "priorV6Report": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json",
+      "bytes": 12502746,
+      "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+    },
+    "priorV6Seal": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/seal.json",
+      "bytes": 173338,
+      "sha256": "11577f905c1ea0215fed9711224733aed74dabc556314a0035e8eb581ecef2e0"
+    },
+    "priorV8Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/readiness-built.json",
+      "bytes": 14567,
+      "sha256": "7771da5422d8b116e906f6ab092e6b64d2bf8dfad3103bf1cb9c48e433f56902"
+    },
+    "priorV8Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first-owner.json",
+      "bytes": 3364,
+      "sha256": "566f699f2102d6d8c019df31ead75c27304a95d11932007d92041c1ea1b79282"
+    },
+    "priorV8Report": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first/report.json",
+      "bytes": 144538,
+      "sha256": "83f3865a9460059dd49af635b29875fcc08043824e7dde6f69aa78e3a1572de7"
+    },
+    "priorV8Seal": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/seal.json",
+      "bytes": 186144,
+      "sha256": "616220b2a7cdc6bcbf3180414d1a0ff8aabfabb792e9e5f80fa52519c397c7ce"
+    },
+    "priorV9Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/readiness.json",
+      "bytes": 17028,
+      "sha256": "7fe4d863db9459a4009b225fd4d163ad03012ab87a4f4e08bc050582f5b476f6"
+    },
+    "priorV9Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first-owner.json",
+      "bytes": 3514,
+      "sha256": "0f34819f55708ae1a9faf85d563b9b317f1f1d888279610ca83c46d97ac2b686"
+    },
+    "priorV9Report": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first/report.json",
+      "bytes": 10904369,
+      "sha256": "0cee6b0fd9419973dc3f00f791226af106fd39c803a3235f2511df74ceeef1cf"
+    },
+    "priorV9Seal": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/seal.json",
+      "bytes": 182029,
+      "sha256": "3dbf5b754c9c104e48062810578952251824bebaddbbf12cd673a891c0a21d24"
+    },
+    "priorV9PrefixReview": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/prior-v9-prefix-review.json",
+      "bytes": 4274,
+      "sha256": "7f8dce789354b8e7a52657303952631616b22c1724ef0dd59f5665eb13ee0e25"
+    },
+    "priorV10Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/readiness.json",
+      "bytes": 19126,
+      "sha256": "3c57111b1b0ef177709d9a16437afecf24124cd45c25df2e368ccdf0dfc7efb4"
+    },
+    "priorV10Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first-owner.json",
+      "bytes": 3366,
+      "sha256": "46d0e3d94054b407844b03c24df058f853d8d2ab70d2f313ef37335ec91b9508"
+    },
+    "priorV10Report": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first/report.json",
+      "bytes": 153690,
+      "sha256": "e2788eb4f5d66a3040f1646c0487a1a3994136066911a72cbef913ecb6246648"
+    },
+    "priorV10Seal": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/seal.json",
+      "bytes": 184725,
+      "sha256": "7ec1285c5717dd0b5098dd3aa5bbef257dc8d4b4e9d032ffae12b95c2c355e0e"
+    },
+    "priorV11Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+      "bytes": 22364,
+      "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+    },
+    "priorV11Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+      "bytes": 3508,
+      "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+    },
+    "priorV11Report": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+      "bytes": 12753137,
+      "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+    },
+    "priorV7Readiness": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/readiness.json",
+      "bytes": 11256,
+      "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+    },
+    "priorV7Owner": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+      "bytes": 3482,
+      "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+    },
+    "priorV7Report": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+      "bytes": 12501789,
+      "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+    },
+    "priorV11Seal": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/seal.json",
+      "bytes": 188041,
+      "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0"
+    },
+    "priorTrialBalanceReadiness": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+      "bytes": 8829,
+      "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+    },
+    "priorTrialBalanceOwner": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.json",
+      "bytes": 3486,
+      "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875"
+    },
+    "priorTrialBalanceReport": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+      "bytes": 13122643,
+      "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+    },
+    "sourceReadiness": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-readiness.json",
+      "bytes": 3132,
+      "sha256": "efbb90b04977651f55409ea81c7990f40445aa565db7a26b90d41bfb00e67065"
+    }
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-immediate102-parent74-input-graph-against-board-rhs-components-source",
+  "literalOperandMetadataCopy": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-board-rhs-components-observer-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8",
+    "policy": "exact-literal-frozen143-field-copy"
+  },
+  "movieCapBehavior": {
+    "movingAdvances": 240,
+    "requests": 241,
+    "movieStopsAtCap": true,
+    "ordinaryPhysicsContinues": true,
+    "replayStopUnchanged": true
+  },
+  "expectedRootCompleteBuild": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-complete-build-result.json",
+    "schema": "board-rhs-components-root-complete-build/v1",
+    "buildId": "tube-board-rhs-components-20261005",
+    "source": "/private/tmp/tube-board-rhs-components-native-20261005/source",
+    "sourceInputs": 587,
+    "assets": 49,
+    "rootApplicationCommand": "Direct pinned board-rhs-components-root-application-command/v1; complete/terminal true exit0; strict-build/application exit0; sourceUnchanged true",
+    "builtAssetPins": 21,
+    "generatedOutputPins": 1
+  },
+  "expectedRootDiagnosticBuild": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-diagnostic-build-result.json",
+    "schema": "board-rhs-components-diagnostic-root-build/v1",
+    "entry": "/private/tmp/tube-board-rhs-components-native-20261005/autopilot-entry.ts",
+    "module": "/private/tmp/tube-board-rhs-components-native-20261005/diagnostic-autopilot.mjs",
+    "inputs": 74,
+    "sourceInputs": 71,
+    "compilerConfigurationInputs": 1,
+    "watchedInputs": 75,
+    "exports": [
+      "Autopilot",
+      "autopilotView",
+      "riderPartVolumes"
+    ],
+    "freshCompile": true,
+    "AttachedRiderAndBoardBodyReachable": true,
+    "diagnosticLexicalCount0Allowed": true,
+    "bothAppWorkerAssetsRetain": 143,
+    "fullActualSamplesFinite": 143
+  },
+  "expectedRootHelperChecks": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-checks.json",
+    "schema": "board-rhs-components-root-helper-checks/v1",
+    "complete": true,
+    "checks": [
+      "nativeSyntax",
+      "diagnosticWrapperSyntax",
+      "sourceOnlyOwner"
+    ],
+    "each": "run true exitCode0 log pin",
+    "sourceHelperCheck": "/private/tmp/tube-board-rhs-components-native-20261005/source-helper-checks.json",
+    "metadataCheck": "/private/tmp/tube-board-rhs-components-native-20261005/metadata-check.json"
+  },
+  "expectedRootCPU": {
+    "path": "/private/tmp/tube-board-rhs-components-observer-20261005/root-checks/result.json",
+    "schema": "board-rhs-components-root-cpu-checks/v1",
+    "keys": [
+      "rootObserverChecks",
+      "rootCPUResult"
+    ],
+    "identicalDirectPins": true,
+    "strictAndParityExit0": true,
+    "parityPassed": 2,
+    "parityTotal": 2,
+    "parityFailed": 0,
+    "wholeSteps": 552,
+    "sourcePostUnchanged": true,
+    "sourceOracleCheckInputsAndLogsPinned": true
+  },
+  "actualAppBuildAccepted": false,
+  "actualDiagnosticBuildAccepted": false,
+  "helperAcceptance": false,
+  "actualNative": false
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "board-rhs-components-root-numerical-decomposition/v1",
+  "uniqueObserverRecords": 100,
+  "retainedRepresentations": 202,
+  "availableLandingRecords": 46,
+  "allRhsGroupsClosedBeforeDecomposition": true,
+  "maximumResiduals": {
+    "unitNormal": 0,
+    "mismatchAlternative": 5.551115123125783e-17,
+    "preparedRateFromRelative": 0.0,
+    "preparedForce": 0.0,
+    "axialImpulseRow": 2.0761170560490427e-14,
+    "attemptedImpulse": 1.936228954946273e-13,
+    "implicitAxialForce": 4.092726157978177e-11,
+    "uAfterAllocation": 4.440892098500626e-16,
+    "boardOnlySolve": 7.105427357601002e-15,
+    "fullZeroTorqueSolve": 2.020605904817785e-14,
+    "fullCapturedRow": 8.526512829121202e-14,
+    "completeBoardTorqueBalance": 8.348877145181177e-14
+  },
+  "zeroExtraTorqueBasis": "Same neutral landing witness before any standing; reduced7x7 retains measured extra-torque/captured-row residuals rather than discarding them.",
+  "limitations": [
+    "Only published/latch samples; every internal substep is not captured.",
+    "Gravity/buoyancy/pressure/friction/fin/rail/gyro/water are captured board RHS aggregates; board matrix/inertia/contact/rider external remain combined assemblies.",
+    "Water aggregate combines radiation and entrainment; its algebraic contribution is not proof of either mechanism.",
+    "Reduced7x7 zero-extra-torque hypotheses do not capture an independent twist/bank row. Captured row residual correction is shown separately.",
+    "Chosen inverse allocations and same-assembly group-removal solves are offline algebra, not native reruns or unique causation."
+  ],
+  "artifacts": {
+    "rhsClosure": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/board-rhs-group-closure.json",
+      "bytes": 141366,
+      "sha256": "04189b0027d0cdfa0b5ba22ce1ad7486b2bc0de81e68bea71478cbd17d5329c3"
+    },
+    "unavailable": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/unavailable-observer-records.json",
+      "bytes": 358889,
+      "sha256": "998d83d9b2bb104a9a5dccb66e171dcc582745c9f2a748a7ceb0ba0b529b12f7"
+    },
+    "allSamples": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/all-landing-balance-samples.json",
+      "bytes": 1126225,
+      "sha256": "58e143ffcab2c30db6366e340a5b39746012dc46d4c7b4f2965416a01686bdd8"
+    },
+    "transition": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/transition1356-32-to1357-1.json",
+      "bytes": 13989,
+      "sha256": "7da8512080ed6a3c05dbbaa129217331773b01167e262118d48bd4ab880e4fbf"
+    },
+    "losses": {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/root-numeric-review/all-available-loss-samples.json",
+      "bytes": 53052,
+      "sha256": "7b7e5b0ef674cd9fc8a255835bafdcc96537f61c95c38a9aba499589c5ba9056"
+    }
+  }
+}

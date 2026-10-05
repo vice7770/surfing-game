@@ -1,0 +1,56 @@
+{
+  "schema": "board-water-assembly-child-source-review/v1",
+  "sourceInspectionOnly": true,
+  "executableChecksRun": false,
+  "actual4030Read": false,
+  "nativeMechanismEstablished": false,
+  "runtimeEdited": false,
+  "scope": "added-mass/radiation/entrained assembly, scalar history, wetting/projection/flow branches, prospective primitive-copy inventory",
+  "note": {
+    "file": "/private/tmp/tube-board-water-assembly-source-review-20261005/child-water-assembly-note.md",
+    "bytes": 7808,
+    "sha256": "66ba1cdd0512df326cc957a7f5af350038c1976a32a02b873da038e935313e43"
+  },
+  "readSourcePins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55693,
+      "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/wave/barrel/sweptContact.ts",
+      "bytes": 30393,
+      "sha256": "ba216e86040a5b82b79f898373ed78073f1905fb0078e9ead0093b9a3b3c7d4e"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/wave/SurfZoneRunner.ts",
+      "bytes": 40862,
+      "sha256": "da95505036f34caf0ba1ab1db026414add85f4185a8d5927db7dca8f11740c4f"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/RideSession.ts",
+      "bytes": 13831,
+      "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+    }
+  ]
+}

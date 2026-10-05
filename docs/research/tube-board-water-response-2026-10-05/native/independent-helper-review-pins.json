@@ -1,0 +1,84 @@
+{
+  "schema": "board-rhs-components-independent-helper-source-review/v1",
+  "sourceReviewComplete": true,
+  "sourceOnly": true,
+  "executedChecks": [],
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "actualCPUResultRead": false,
+  "actualBuildResultRead": false,
+  "actualNativeOutputRead": false,
+  "rootSealCreated": false,
+  "actualHelperAcceptance": false,
+  "actualNativeAcceptance": false,
+  "unresolvedConcreteSourceDefects": [],
+  "oldFields": 102,
+  "newFields": 41,
+  "allFields": 143,
+  "availabilityMarker": "standingTrialAvailable",
+  "sourceInputs": 588,
+  "unchangedImmediateParentInputs": 586,
+  "runtimeOverrides": 2,
+  "scope": "Final stable helper source and frozen prebuild source-authority interface; pending metadata flags read only. Mutable future acceptance metadata and root outputs excluded from these pins.",
+  "resolvedInterfaceIssues": [
+    "observerFields authority path now names the native literal copy, with preparation byte equality retained",
+    "preparation runtime pins now come from the pinned-equal metadata instead of an absent authority property"
+  ],
+  "pins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/independent-helper-review.md",
+      "bytes": 10032,
+      "sha256": "018cd9f3d7fc29cb1627d6746601655dc653d275737aef39bc37b8be6b363987"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/run.py",
+      "bytes": 37396,
+      "sha256": "3c1e8a493cee0919538d7b21cea0147988d1edaaa317610a537603c0e62bc208"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/build-diagnostic.mjs",
+      "bytes": 14067,
+      "sha256": "324d884256dcb812744717e03973e10a6334046f0d6d9b5f712a2417a6b42fba"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/native.mjs",
+      "bytes": 30105,
+      "sha256": "62050707718086c8c7a30b2964377a41f345a5fd362de562c2e9e5627a06421e"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/check-source.py",
+      "bytes": 3453,
+      "sha256": "d326f4e35b5a40ede0d85bfbedb446161d12bff84c12a958149f0ee6271952f8"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/metadata-check.py",
+      "bytes": 1871,
+      "sha256": "1155fef74f8da79c1cc13b1f28e9c4a1887b23c1e79335ab3afafc6f6e1c409f"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/freeze.py",
+      "bytes": 11861,
+      "sha256": "fcdc65956a76c85e6cca35b89734522e308b751c20ef647e34b3e1f18bbbcae7"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-readiness.json",
+      "bytes": 3132,
+      "sha256": "efbb90b04977651f55409ea81c7990f40445aa565db7a26b90d41bfb00e67065"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/run.py",
+      "bytes": 32114,
+      "sha256": "594a71faae887e82554fa9f23209fc2dd5f1f573756443bcdb8d388b29f5a95d"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/native.mjs",
+      "bytes": 29775,
+      "sha256": "6ce785fe8edf4bf42905f9b8d0f81a8b46da1918ec380d97d1dc3b50345ffc87"
+    }
+  ]
+}

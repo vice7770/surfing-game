@@ -1,0 +1,31 @@
+--- /private/tmp/tube-board-rhs-components-native-20261005/build-diagnostic.mjs
++++ /private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs
+@@ -12,7 +12,19 @@
+ const CHANGED=['src/physics/AttachedRider.ts','src/physics/BoardBody.ts'];
+ const BUILD_ID='tube-board-rhs-components-20261005';
+ function pin(file){file=realpathSync(file);const b=readFileSync(file);return{file,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')};}
+-function verify(q){assert.deepEqual(pin(q.file),q);}
++let historicalNodeAliasVerification=null;
++function verify(q){
++ if(q.file==='/opt/homebrew/bin/node'){
++  assert.deepEqual(q,{file:'/opt/homebrew/bin/node',bytes:61838736,sha256:'dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e'});
++  const bytes=readFileSync(q.file),literal={file:q.file,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
++  assert.deepEqual(literal,q);
++  const canonical=pin(q.file);sameWords(canonical,q);
++  const aliasRealpath=realpathSync(q.file);assert.equal(canonical.file,aliasRealpath);
++  historicalNodeAliasVerification={recordedPin:{...q},canonicalPin:canonical,aliasRealpath,exactHistoricalAliasOnly:true,recordedBytesAndShaVerified:true};
++  return;
++ }
++ assert.deepEqual(pin(q.file),q);
++}
+ function sameWords(q,r){assert.equal(q.bytes,r.bytes);assert.equal(q.sha256,r.sha256);}
+ const originalDiagnosticBuild=pin(join(ORIGINAL,'root-diagnostic-build-result.json'));
+ const old=JSON.parse(readFileSync(originalDiagnosticBuild.file));for(const q of old.inputs)verify(q);
+@@ -89,6 +101,7 @@
+  originalFailedCompilation:pin('/private/tmp/tube-pop-up-contact-build-20261005/diagnostic-first-attempt/failure.json'),originalDiagnosticBuild,originalEntry:old.entry,entry:pin(entry),module:pin(module),inputs,sourceInputs,
+  compilerConfigurationInputs,compilerWatchedInputCount:watchedFiles.length,inputDefinition:'Original imported74 graph plus separately pinned source tsconfig; both changed runtimes reachable; tree-shaken field count is not retention authority',
+  actualCompiler:'Installed rolldown from application dependency tree',compilerEntry:pin('/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs'),moduleExports:[...output[0].exports],originalGraphMappedExactly:true,
++ compilerWrapper:pin(new URL(import.meta.url)),compilerWrapperRevision:'node-alias-v2',historicalAliasResolutions:historicalNodeAliasVerification?[historicalNodeAliasVerification]:[],
+  changedSourceInputsAgainstOriginalStableX,parentTrialBalanceDiagnosticBuild,changedSourceInputsAgainstImmediateParent,attachedRiderReachable:true,boardBodyReachable:true,
+  observerFields,observerFieldCount:143,oldObserverFieldCount:102,newObserverScalarCount:41,diagnosticLexicalObserverFieldCount,
+  observerRetentionPolicy:'source-graph-reachability-and-both-actual-app-workers;diagnostic-class-fields-may-be-tree-shaken',appWorkerObserverRetention,

@@ -1,0 +1,486 @@
+{
+  "seal": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/seal.json",
+    "bytes": 199554,
+    "sha256": "67cbea5e0dcccbfa70b27ac20be62230d7108626707c43ca4d8e58896b5edc48"
+  },
+  "source": {
+    "schema": "board-rhs-components-source-readiness/v1",
+    "complete": true,
+    "frozen": true,
+    "sourceDirectory": "/private/tmp/tube-board-rhs-components-native-20261005/source",
+    "sourceCount": 588,
+    "applicationSourceCount": 587,
+    "unchangedParentInputs": 586,
+    "runtimeChangedPaths": [
+      "src/physics/AttachedRider.ts",
+      "src/physics/BoardBody.ts"
+    ],
+    "parentManifest": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-pins.json",
+      "bytes": 96402,
+      "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+    },
+    "sourcePinsManifest": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+      "bytes": 96409,
+      "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+    },
+    "sourceDelta": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-delta.json",
+      "bytes": 1394,
+      "sha256": "5ada890b11e68d6e6fc919a5999817014b64a12f3c24c77ed128e82bcbf64b16"
+    },
+    "candidatePreparation": {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/readiness.json",
+      "bytes": 5810,
+      "sha256": "f0ea3c4aecc916cd856a35d5f41a30866f95f59f8f22cbf73edd94837b58e913"
+    },
+    "candidateRuntimePins": [
+      {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/AttachedRider.ts",
+        "bytes": 159692,
+        "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+      },
+      {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/src/physics/BoardBody.ts",
+        "bytes": 55693,
+        "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+      }
+    ],
+    "candidatePatch": {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/runtime.patch",
+      "bytes": 11485,
+      "sha256": "ec213b0fbd25a469f13699aa735e64867acf71693fd9cb10581f298fd644456d"
+    },
+    "observerFields": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    "rootCPUResult": {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/root-checks/result.json",
+      "bytes": 272096,
+      "sha256": "35e06c82bcb1e685faef6a2481bd38153ca61e1187a619dd202b8d625e326b10"
+    },
+    "rootObserverChecks": {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/root-checks/result.json",
+      "bytes": 272096,
+      "sha256": "35e06c82bcb1e685faef6a2481bd38153ca61e1187a619dd202b8d625e326b10"
+    },
+    "rootBaseCopy": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-base-copy.json",
+      "bytes": 96905,
+      "sha256": "ecb1fe87fa801e770ad3b7b2ef2e70849915bbab892146e6959c8af0a075edf8"
+    },
+    "buildId": "tube-board-rhs-components-20261005",
+    "resourcesStarted": false,
+    "applicationBuildPerformed": false,
+    "diagnosticBuildPerformed": false,
+    "nativeRun": false,
+    "nativeCauseOrFixAccepted": false,
+    "ordinaryStandingAccepted": false,
+    "bodyPassageAccepted": false,
+    "productionAdoption": false
+  },
+  "sourceInputs": 588,
+  "applicationInputs": 587,
+  "assets": 49,
+  "generatedOutputs": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/WorkerSurfZone-BihFnXEJ.js",
+      "bytes": 915054,
+      "sha256": "6b54ad58a55aa712cf240bef1143350077c9c269e8e6213e6c57ea680fb0a255"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/devStepping-DycSQEPv.js",
+      "bytes": 320,
+      "sha256": "4c5ceea2f746fe39f7c8ee018fa69248653ec931a149dd6d3dbdb506b41a0a77"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/index-I457Bp0R.js",
+      "bytes": 582400,
+      "sha256": "315fe3e2138bef346b8133c69fba4534daa10a93c4e531973672d21dd5f77081"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/jevRecorder-CGeKBEfP.js",
+      "bytes": 15917,
+      "sha256": "034c5e74d7904ca3aedc4dae538602ebe9755da51c65925347cd8ab50b3d2f8a"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/particleBench-DCMpVRq2.js",
+      "bytes": 10708,
+      "sha256": "90eced38a51a9d23853f1f083d560774c6319e69b224f9ebc81b4ee12858c0ed"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/rideRecorder-CG8b_7Wu.js",
+      "bytes": 41108,
+      "sha256": "cbdf86093c8cc1be62b028cef2884103fd0d5e02ad3c4182df744c6912ccd046"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/skies/skies.json",
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/surfZoneWorker-GxSA4-Zn.js",
+      "bytes": 496223,
+      "sha256": "9b792afad83dc17a6542d10256be462fc02f3ba957589dcfeb6eeb5d64326f28"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/surfers/surfers.json",
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/assets/waterSheet-Cka5NMRv.js",
+      "bytes": 11689,
+      "sha256": "6cba26d291f090919b1136ea84497c1b9f33efa2a5dc100a7bfb05fe82311d57"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/build.json",
+      "bytes": 46,
+      "sha256": "3ca43f735368f2e2e9c06b11b06f756632ffe9cdbe434096f22c693bab942898"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/dist/index.html",
+      "bytes": 1626,
+      "sha256": "759ad69b75d18be0a0a5f9f1ddb57413f4eab79744ecf2151ef1eb4bd583e48c"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/source/tsconfig.tsbuildinfo",
+      "bytes": 19039,
+      "sha256": "d99be9805531c7633ac853a6fa5631fe710566d9b0b7a828cb93cb6ca1313299"
+    }
+  ],
+  "frozenPrebuildInputs": 588,
+  "postbuildFiles": 610,
+  "generatedOutputCount": 22,
+  "diagnosticInputs": 74,
+  "diagnosticSourceInputs": 71,
+  "diagnosticWatchedInputs": 75,
+  "diagnosticLexicalIdentifiers": [],
+  "bothActualWorkerRetention": [
+    {
+      "asset": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/WorkerSurfZone-BihFnXEJ.js",
+        "bytes": 915054,
+        "sha256": "6b54ad58a55aa712cf240bef1143350077c9c269e8e6213e6c57ea680fb0a255"
+      },
+      "requiredFields": 143,
+      "presentFields": 143
+    },
+    {
+      "asset": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/surfZoneWorker-GxSA4-Zn.js",
+        "bytes": 496223,
+        "sha256": "9b792afad83dc17a6542d10256be462fc02f3ba957589dcfeb6eeb5d64326f28"
+      },
+      "requiredFields": 143,
+      "presentFields": 143
+    }
+  ],
+  "wrapperAuthority": {
+    "compilerWrapper": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs",
+      "bytes": 14954,
+      "sha256": "66e857eb3ea4f4381c8e446811260fe5236f977b3fd8de12d05b8b7fb27c2af7"
+    },
+    "revision": "node-alias-v2",
+    "historicalAliasResolutions": [
+      {
+        "recordedPin": {
+          "file": "/opt/homebrew/bin/node",
+          "bytes": 61838736,
+          "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e"
+        },
+        "canonicalPin": {
+          "file": "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+          "bytes": 61838736,
+          "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e"
+        },
+        "aliasRealpath": "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+        "exactHistoricalAliasOnly": true,
+        "recordedBytesAndShaVerified": true
+      }
+    ],
+    "historicalAliasRecordsValidated": 1,
+    "canonicalIdentityVerifiedAgainstRecordedAlias": true,
+    "currentProcessExecutableIdentityClaim": false
+  },
+  "helperPinsActual": 99,
+  "helperPinCountNotInherited": true,
+  "served": [
+    {
+      "relative": "index.html",
+      "receipt": {
+        "bytes": 1626,
+        "sha256": "759ad69b75d18be0a0a5f9f1ddb57413f4eab79744ecf2151ef1eb4bd583e48c"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/index.html",
+        "bytes": 1626,
+        "sha256": "759ad69b75d18be0a0a5f9f1ddb57413f4eab79744ecf2151ef1eb4bd583e48c"
+      }
+    },
+    {
+      "relative": "assets/index-DA8NEfOT.css",
+      "receipt": {
+        "bytes": 33213,
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/index-DA8NEfOT.css",
+        "bytes": 33213,
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      }
+    },
+    {
+      "relative": "assets/index-I457Bp0R.js",
+      "receipt": {
+        "bytes": 582400,
+        "sha256": "315fe3e2138bef346b8133c69fba4534daa10a93c4e531973672d21dd5f77081"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/index-I457Bp0R.js",
+        "bytes": 582400,
+        "sha256": "315fe3e2138bef346b8133c69fba4534daa10a93c4e531973672d21dd5f77081"
+      }
+    },
+    {
+      "relative": "assets/WorkerSurfZone-BihFnXEJ.js",
+      "receipt": {
+        "bytes": 915054,
+        "sha256": "6b54ad58a55aa712cf240bef1143350077c9c269e8e6213e6c57ea680fb0a255"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/WorkerSurfZone-BihFnXEJ.js",
+        "bytes": 915054,
+        "sha256": "6b54ad58a55aa712cf240bef1143350077c9c269e8e6213e6c57ea680fb0a255"
+      }
+    },
+    {
+      "relative": "assets/skies/skies.json",
+      "receipt": {
+        "bytes": 2266,
+        "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/skies/skies.json",
+        "bytes": 2266,
+        "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+      }
+    },
+    {
+      "relative": "assets/surfers/surfer1.glb",
+      "receipt": {
+        "bytes": 1007368,
+        "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/surfers/surfer1.glb",
+        "bytes": 1007368,
+        "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+      }
+    },
+    {
+      "relative": "assets/surfZoneWorker-GxSA4-Zn.js",
+      "receipt": {
+        "bytes": 496223,
+        "sha256": "9b792afad83dc17a6542d10256be462fc02f3ba957589dcfeb6eeb5d64326f28"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/surfZoneWorker-GxSA4-Zn.js",
+        "bytes": 496223,
+        "sha256": "9b792afad83dc17a6542d10256be462fc02f3ba957589dcfeb6eeb5d64326f28"
+      }
+    },
+    {
+      "relative": "assets/skies/qwantani_sunset_puresky.jpg",
+      "receipt": {
+        "bytes": 372349,
+        "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/skies/qwantani_sunset_puresky.jpg",
+        "bytes": 372349,
+        "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+      }
+    },
+    {
+      "relative": "assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "receipt": {
+        "bytes": 2097202,
+        "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+      }
+    },
+    {
+      "relative": "barrels/pad19-a20-l12.bin",
+      "receipt": {
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/barrels/pad19-a20-l12.bin",
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      }
+    },
+    {
+      "relative": "barrels/pad19-a30-l12.bin",
+      "receipt": {
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/barrels/pad19-a30-l12.bin",
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      }
+    },
+    {
+      "relative": "barrels/pad19-a45-l12.bin",
+      "receipt": {
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/barrels/pad19-a45-l12.bin",
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      }
+    },
+    {
+      "relative": "barrels/periodic-padang19s-l12.bin",
+      "receipt": {
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/barrels/periodic-padang19s-l12.bin",
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      }
+    },
+    {
+      "relative": "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "receipt": {
+        "bytes": 681062,
+        "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+        "bytes": 681062,
+        "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+      }
+    },
+    {
+      "relative": "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "receipt": {
+        "bytes": 2097202,
+        "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-complete-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+      }
+    },
+    {
+      "relative": "diagnostic-autopilot.mjs",
+      "receipt": {
+        "bytes": 348650,
+        "sha256": "3d503ef75acd9bf15b04040ea2444cb13e827251873bdebf30473ec3228a2e99",
+        "separateDiagnosticRoute": true
+      },
+      "currentPin": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/diagnostic-autopilot.mjs",
+        "bytes": 348650,
+        "sha256": "3d503ef75acd9bf15b04040ea2444cb13e827251873bdebf30473ec3228a2e99"
+      }
+    }
+  ],
+  "closure": {
+    "complete": true,
+    "exitCode": 0,
+    "sourceBuildHelpersPostUnchanged": true,
+    "independentClosureValid": true,
+    "protectedPortsPreserved": true,
+    "remainingOwnedPids": [],
+    "closedPorts": {
+      "4301": true,
+      "9711": true
+    },
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedStatesFinally": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedPortsStillOpen": {
+      "4310": false,
+      "4311": false,
+      "4312": true,
+      "4313": true
+    },
+    "elapsedSeconds": 320.492294708034,
+    "cleanupElapsedSeconds": 0.2173402089974843
+  },
+  "portsOrPidsProbedByAudit": false
+}

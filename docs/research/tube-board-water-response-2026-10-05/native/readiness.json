@@ -1,0 +1,248 @@
+{
+  "schema": "board-rhs-components-preparation-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "preparationFrozen": true,
+  "status": "frozen-actual-root-authority-verified",
+  "sourceOnly": true,
+  "work": "/private/tmp/tube-board-rhs-components-native-20261005",
+  "buildId": "tube-board-rhs-components-20261005",
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-readiness.json",
+    "bytes": 3132,
+    "sha256": "efbb90b04977651f55409ea81c7990f40445aa565db7a26b90d41bfb00e67065"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-pins.json",
+    "bytes": 22244,
+    "sha256": "6d24d34b5fafefedf84eedd796895bac33d6dccc76f87f630cd23311ba9f5d01"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceOrBuildWrittenByHelper": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "helperAcceptance": true,
+  "executableChecksAccepted": true,
+  "actualNative": false,
+  "sourcePreparationCount": 588,
+  "unchangedParentInputs": 586,
+  "completeBuildSourceCount": 587,
+  "completeBuildAssetCount": 49,
+  "diagnosticModuleInputs": 74,
+  "diagnosticCandidateSourceInputs": 71,
+  "compilerConfigurationInputCount": 1,
+  "compilerWatchedInputCount": 75,
+  "observerFields": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-board-rhs-components-observer-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8",
+    "policy": "exact-literal-frozen143-field-copy"
+  },
+  "oldFields": 102,
+  "newScalarCopies": 41,
+  "availabilityMarker": "standingTrialAvailable",
+  "totalFields": 143,
+  "markerZeroInvalidatesStaleWords": true,
+  "markerOneOnlyMeansCoupledTrialCaptured": true,
+  "waterRadiationAndEntrainmentRemainMixed": true,
+  "separateHydrodynamicAttributionAvailable": false,
+  "ordinaryRun": {
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "finiteOwner": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "internalNativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "startupWaitMilliseconds": 180000,
+    "rootSealSchema": "board-rhs-components-root-seal/v1",
+    "nativeSchema": "board-rhs-components-native/v1",
+    "ports": [
+      4301,
+      9711
+    ],
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    }
+  },
+  "movieCapBehavior": {
+    "movingAdvances": 240,
+    "requests": 241,
+    "movieStopsAtCap": true,
+    "ordinaryPhysicsContinues": true,
+    "replayStopUnchanged": true
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-immediate102-parent74-input-graph-against-board-rhs-components-source",
+  "diagnosticRetentionPolicy": "Source graph74/71 includes both runtimes; diagnostic lexical count0 allowed; both actual WorkerSurfZone/surfZoneWorker assets must retain143; full actual report samples must be finite143.",
+  "generatedOutputPolicy": "Prebuild source-readiness remains frozen. Actual completeBuild builtAssetPins21 plus generatedOutputPins cache1 are separate outputs; postbuild W/source610=588inputs+22outputs.",
+  "actualObserverCPUAuthorityKeys": [
+    "rootObserverChecks",
+    "rootCPUResult"
+  ],
+  "prior102CPUOrBuildAcceptanceInherited": false,
+  "executableChecks": {
+    "sourceHelperCheck": {
+      "run": true,
+      "passed": true,
+      "receipt": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-helper-checks.json",
+        "bytes": 3308,
+        "sha256": "bf2c1663f7e23660188340008c28d1ff18029a4b640c44186bcc99912a526f85"
+      }
+    },
+    "metadataCheck": {
+      "run": true,
+      "passed": true,
+      "receipt": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/metadata-check.json",
+        "bytes": 918,
+        "sha256": "81d722d8d1e0a603484d655d397d6d022d6b471a2e73ce04621e8bf5c3d05aba"
+      }
+    },
+    "nativeSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-board-rhs-components-native-20261005/native.mjs"
+      ],
+      "elapsedSeconds": 0.04013812495395541,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    "diagnosticWrapperSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs"
+      ],
+      "elapsedSeconds": 0.03758783300872892,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/diagnosticWrapperSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "python3",
+        "/private/tmp/tube-board-rhs-components-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "elapsedSeconds": 0.12766658404143527,
+      "log": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 495,
+        "sha256": "bbe9edbca8dab356a8cca1f5017a59053cc7e5eee1ec78f935c9c1ec7662cf4a"
+      },
+      "passed": true
+    },
+    "applicationBuild": {
+      "run": true,
+      "passed": true,
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-complete-build-result.json",
+        "bytes": 187850,
+        "sha256": "c30e1d87d417745faf1dc3b20d30a6b45838531ab974b8ff863252141335ed11"
+      }
+    },
+    "diagnosticBuild": {
+      "run": true,
+      "passed": true,
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-diagnostic-build-result.json",
+        "bytes": 38052,
+        "sha256": "3a936ad08d69953a40bffec93916a1c3507d7311357ef29c08ca2216b0fd146d"
+      }
+    },
+    "native": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    }
+  },
+  "claims": {
+    "actualNative": false,
+    "exactInitialReplay": false,
+    "nativeCauseOrFixAccepted": false,
+    "ordinaryStandingAccepted": false,
+    "bodyPassageAccepted": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "priorTrialBalanceReadiness": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+    "bytes": 8829,
+    "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+  },
+  "priorTrialBalanceOwner": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.json",
+    "bytes": 3486,
+    "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875"
+  },
+  "priorTrialBalanceReport": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+    "bytes": 13122643,
+    "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-complete-build-result.json",
+    "bytes": 187850,
+    "sha256": "c30e1d87d417745faf1dc3b20d30a6b45838531ab974b8ff863252141335ed11"
+  },
+  "rootDiagnosticBuild": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 38052,
+    "sha256": "3a936ad08d69953a40bffec93916a1c3507d7311357ef29c08ca2216b0fd146d"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348650,
+    "sha256": "3d503ef75acd9bf15b04040ea2444cb13e827251873bdebf30473ec3228a2e99"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-helper-checks.json",
+    "bytes": 2516,
+    "sha256": "9958d07688bc3118531aabfc9c0fff9ecc368090a3f785c0f25affafca0cfdf4"
+  },
+  "rootSuppliedReceipts": {
+    "rootCompleteBuild": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-complete-build-result.json",
+      "bytes": 187850,
+      "sha256": "c30e1d87d417745faf1dc3b20d30a6b45838531ab974b8ff863252141335ed11"
+    },
+    "rootDiagnosticBuild": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-diagnostic-build-result.json",
+      "bytes": 38052,
+      "sha256": "3a936ad08d69953a40bffec93916a1c3507d7311357ef29c08ca2216b0fd146d"
+    }
+  },
+  "suppliedReceiptPinsAreHelperAcceptance": false
+}
