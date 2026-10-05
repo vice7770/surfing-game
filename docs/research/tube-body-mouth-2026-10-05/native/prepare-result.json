@@ -1,0 +1,23 @@
+{
+  "schema": "open-mouth-preparation-result-body-clearance/v1",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/build.json",
+    "bytes": 15415,
+    "sha256": "ac805e45f7681858a44c11632887452db97c0bb2e1753eaf9fbfa2fea0d18843"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source-freeze.json",
+    "bytes": 4961,
+    "sha256": "539cb7465a25693cc21598fd4775ac66690a131ab9cc234c2a6d746fe7f43366"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/seal.json",
+    "bytes": 6217,
+    "sha256": "f2361a4bb7f5224be009811d461944adf0d9ae9481dae6056f645115df7a8681"
+  },
+  "sources": 8,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedTestsOrBuilds": false
+}

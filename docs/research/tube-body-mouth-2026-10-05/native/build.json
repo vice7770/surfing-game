@@ -1,0 +1,341 @@
+{
+  "schema": "open-mouth-build-body-clearance/v1",
+  "build": "tube-open-mouth-body-clearance-20261005",
+  "assets": [
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/WorkerSurfZone-jZqTuRtl.js",
+      "bytes": 905676,
+      "sha256": "4653035fd30a841927da350227970a18c4b1b883fe57ffb8f39ed773cbed3f51"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/bubbles-1.m4a",
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/bubbles-2.m4a",
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/distant-1.m4a",
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/distant-2.m4a",
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/lipJet-1.m4a",
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/lipJet-2.m4a",
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/lipRoller-1.m4a",
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/lipRoller-2.m4a",
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/paddle-1.m4a",
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/paddle-2.m4a",
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/plunge-1.m4a",
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/plunge-2.m4a",
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/roar-1.m4a",
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/roar-2.m4a",
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/audio/sounds.json",
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/devStepping-DBZySszL.js",
+      "bytes": 320,
+      "sha256": "3236e09c0e4311f7b15550e600837ecd54bca34da64ca7761686e368607a72d0"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/index-DKP3pbSO.js",
+      "bytes": 582405,
+      "sha256": "b2bfb707d09efac667c2917af9accfc37f06eac0bd690f9c3ae21e4aaf9bbd3d"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/jevRecorder-nR_eNrcm.js",
+      "bytes": 15917,
+      "sha256": "4052a10b997f351839e25d68f10ec9a08a1766a555d0d723868bfa55c0947da2"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/particleBench-DIfNdoTo.js",
+      "bytes": 10708,
+      "sha256": "d9544f0ace4e59f1cdef20ec8b134d989c683a603a0a65b7670c32316d30106e"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/rideRecorder-70J8SJ-X.js",
+      "bytes": 41108,
+      "sha256": "93a458d965ec3539d137ced416510937c8b3a9e8f3c31a540caf0249cffe860b"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/qwantani_sunrise_puresky.jpg",
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/qwantani_sunset_puresky.jpg",
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/skies/skies.json",
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/surfZoneWorker-CPObWnMN.js",
+      "bytes": 485307,
+      "sha256": "49f264416f7285cbb63cee1ff65753eaf5a8a7b934c7854916277b4aab24f6d5"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/surfers/surfer1.glb",
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/surfers/surfer2.glb",
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/surfers/surfer3.glb",
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/surfers/surfer4.glb",
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/surfers/surfers.json",
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/assets/waterSheet-29cIFEYS.js",
+      "bytes": 11689,
+      "sha256": "55ca8fa08c283cb26f560c6ca0d9bbc2658f75eed9769973fae1e9f82d68508c"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/build.json",
+      "bytes": 51,
+      "sha256": "5c3543ec48d437f60bdb55790e2de5430ff1c620ddb121a46b39e5ffc6909912"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/index.html",
+      "bytes": 1626,
+      "sha256": "621aca6ef7a4cb2b1802883e9be4e23e26ca49b2af0c3e82455fb02930d23dca"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/lessons/pool-s2-caught.sea",
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/lessons/pool-s2-pocket.sea",
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/dist/lessons/pool-s2-waiting.sea",
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    }
+  ],
+  "sources": [
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 32142,
+      "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18493,
+      "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80797,
+      "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/sheetExitNormals.test.ts",
+      "bytes": 6599,
+      "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 26095,
+      "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "bytes": 10279,
+      "sha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    }
+  ],
+  "liveSources": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 32142,
+      "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18493,
+      "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80797,
+      "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sheetExitNormals.test.ts",
+      "bytes": 6599,
+      "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 26095,
+      "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "bytes": 10279,
+      "sha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    }
+  ],
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source-freeze.json",
+    "bytes": 4961,
+    "sha256": "539cb7465a25693cc21598fd4775ac66690a131ab9cc234c2a6d746fe7f43366"
+  },
+  "buildOperation": "Copy only of root-built dist; no runtime build or source mutation."
+}

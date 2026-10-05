@@ -69,11 +69,28 @@ describe('parameter-first shared library authority',()=>{
    }
   }
  });
- it('resolves both exact retained v1 retirement failures through current shared contour',()=>{
-  const point=new Float64Array(2),out=new Float32Array(256);
+ it('retains both exact historical old-clock v1 queries and checks the current provider retirement separately',()=>{
+  const point=new Float64Array(2),out=new Float32Array(256),carrier=new Float32Array(256),raw=new ProfileLibrary(cases);
+  // Exact historical failure inputs stay fixed. Enlarging the mouth changes actual impact/retirement;
+  // these timestamps no longer assert that the current coefficient experiment has already retired.
   for(const query of [{slope:.0526316,footHeight:1.4000000000000001,footDepth:7,seconds:.8498481232858845},{slope:.0526316,footHeight:Math.fround(1.4),footDepth:7,seconds:.8498481438477785}]){
-   const lookup=library.profileAt(query,out);expect(out.every(Number.isFinite)).toBe(true);expect(lookup.analytic!.sheetExists).toBe(false);expect(lookup.analytic!.precisionEnvelopeBound).toBeLessThanOrEqual(lookup.analytic!.precisionEnvelopeBudget);
+   const times=library.profileTimes(query),retired=times.touchdownSeconds+times.collapseSeconds;
+   const lookup=library.profileAt(query,out);expect(out.every(Number.isFinite)).toBe(true);
+   expect(lookup.analytic!.precisionEnvelopeBound).toBeLessThanOrEqual(lookup.analytic!.precisionEnvelopeBudget);
+   raw.profileAt({...query,hold:'drawing'},carrier);
+   const original=crossings(carrier);expect([...crossings(out)].filter(key=>!original.has(key))).toEqual([]);
+   expect(query.seconds).toBeLessThan(retired);expect(lookup.analytic!.sheetExists).toBe(true);
    expect(()=>library.pointAt(query,32,point)).not.toThrow();expect(point.every(Number.isFinite)).toBe(true);
+   for(const seconds of [times.touchdownSeconds+.5*times.collapseSeconds,retired,retired+.01*times.collapseSeconds]){
+    const current=library.profileAt({...query,seconds},out);expect(out.every(Number.isFinite)).toBe(true);
+    expect([...crossings(out)].filter(key=>!original.has(key))).toEqual([]);
+    expect(current.analytic!.precisionEnvelopeBound).toBeLessThanOrEqual(current.analytic!.precisionEnvelopeBudget);
+    if(seconds<retired){expect(current.analytic!.sheetExists).toBe(true);expect(current.analytic!.thickness).toBeGreaterThan(0);}
+    else{
+     expect(current.analytic!.sheetExists).toBe(false);expect(current.analytic!.thickness).toBe(0);
+     for(let i=61;i<=106;i++){expect(out[2*i]).toBe(out[120]);expect(out[2*i+1]).toBe(out[121]);}
+    }
+   }
   }
  });
  it('preserved-anchor queries use exact carrier without constructing retirement loops',()=>{

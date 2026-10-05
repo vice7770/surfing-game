@@ -25,7 +25,7 @@ export interface BoundedCMetadata {
 }
 const KAPPA=4/3*Math.tan(Math.PI/8);
 /** Fractions of the actual crest-to-toe height, not the input foot crest height. */
-const LIP_OPEN_HEIGHT=.60,LIP_FALL_HEIGHT=.80;
+const LIP_OPEN_HEIGHT=.45,LIP_FALL_HEIGHT=.60;
 const add=(a:Vec2,b:Vec2):Vec2=>[a[0]+b[0],a[1]+b[1]];
 const sub=(a:Vec2,b:Vec2):Vec2=>[a[0]-b[0],a[1]-b[1]];
 const mul=(a:Vec2,b:number):Vec2=>[a[0]*b,a[1]*b];

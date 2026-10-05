@@ -1,0 +1,13 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/wave/barrel/boundedCConsumers.test.ts src/wave/barrel/boundedCOpenMouth.test.ts src/scene/barrel/SweptBarrelMesh.test.ts
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  3 passed (3)
+      Tests  26 passed (26)
+   Start at  14:31:04
+   Duration  17.36s (tests 92%, transform 5%, import 3%)
+

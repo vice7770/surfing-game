@@ -182,13 +182,11 @@ describe('bounded-C derived consumers', () => {
   it('preserves a positive F32 pre-impact gap through a curved water projection and end blend', () => {
     const c = cases.find(c => c.id === 'periodic-point21-a23-l12')!;
     const query = { slope: c.slope, footHeight: Math.fround(c.nonlinearity * 7), footDepth: 7 };
-    const impact = library.profileTimes(query).touchdownSeconds;
-    const age = new Float32Array([impact]), words = new Uint32Array(age.buffer);
-    if (age[0] >= impact) words[0] -= 1;
-    const data = records(query.footHeight, () => age[0]), before = data.slice();
+    const impact = library.profileTimes({ ...query, footHeight: c.nonlinearity * 7 }).touchdownSeconds;
+    const data = records(query.footHeight, () => impact), before = data.slice();
     const profile = new Float32Array(2 * PROFILE_POINTS);
     library.profileAt({ ...query, seconds: data[FRONT_FIELD.tau] }, profile);
-    // The last packet age strictly before actual impact retains a tiny air gap and separate cap/floor XZ.
+    // This carrier's mathematical impact rounds to a still-airborne packet with separate cap/floor XZ.
     expect(profile[2 * LANDMARK.lip + 1] - profile[2 * 104 + 1]).toBeGreaterThan(0);
     expect(profile[2 * LANDMARK.lip + 1] - profile[2 * 104 + 1]).toBeLessThan(1e-6);
     expect(profile[2 * LANDMARK.lip]).not.toBe(profile[2 * 104]);

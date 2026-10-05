@@ -4,7 +4,7 @@ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import { LOFT, LOFT_SAMPLES, SweptLoft, collapseFade, type LoftResult } from './sweptLoft';
 const cases=readBarrelCases().map(decodeCase), c=cases.find(c=>c.id==='pad19-a30-l12')!, library=new ProfileLibrary(cases,{geometry:'bounded-C'});
 const foot=Math.fround(c.nonlinearity*7), times=library.profileTimes({slope:c.slope,footHeight:foot,footDepth:7}), retired=times.touchdownSeconds+times.collapseSeconds;
 type PacketRow={x:number;z:number;front:number;sigma:number;tau:number;footHeight:number;footDepth:number;throwZ:number|null;pace:number|null};
@@ -30,14 +30,30 @@ function normalizedNormal(l:LoftResult,s:number,j:number,back:{positions:Float32
  const n=[ay*bz-az*by,az*bx-ax*bz,ax*by-ay*bx],length=Math.hypot(...n);return length>1e-12?n.map(v=>Math.fround(v/length)):[0,1,0];
 }
 describe('sampled C intrinsic retirement closure on ordinary water',()=>{
- it('keeps the original X16.25 bracket on intrinsic phase2 fade without changing captured packet words',()=>{
+ it('retains exact historical old-clock packets at X16.25 while current-provider phase2 fade keeps live/dead closure',()=>{
   const results=[];
   for(const epoch of fixture.epochs){const r=measured(epoch.packetRows),before=r.slice(),l=build(r);expect(r).toEqual(before);expect(epoch.locked.stationX).toBe(16.25);
-   const rows=[16,16.5].map(x=>{const s=rowAt(l,x),native=epoch.selectedNativeRows.find(q=>q.crest[0]===x)!;expect(l.sliceJoined[s]).toBe(1);expect(l.slicePhase[s]).toBe(2);expect(l.sliceOverturned[s]).toBe(1);expect(l.sliceFade[s]).toBe(native.sliceFade);expect(l.sliceTau[s]).toBe(native.sliceTau);expect(l.sliceWeight[s]).toBe(native.sliceFade);expect(l.sliceWeight[s]).toBeGreaterThan(native.sliceWeight);return{x,tau:l.sliceTau[s],intrinsicWeight:l.sliceWeight[s],capturedSealWeight:native.sliceWeight,crestY:l.positions[3*(s*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest)+1]};});
+   const rows=[16,16.5].map(x=>{
+    const s=rowAt(l,x),native=epoch.selectedNativeRows.find(q=>q.crest[0]===x)!;
+    // Interpolate the preserved packet's two physical X controls for this retained station.
+    // Native fade remains historical metadata; the current event clock comes from the current provider.
+    let high=1;while(r[high*FRONT_STRIDE+FRONT_FIELD.x]<x)high++;
+    const low=high-1,t=(x-r[low*FRONT_STRIDE+FRONT_FIELD.x])/(r[high*FRONT_STRIDE+FRONT_FIELD.x]-r[low*FRONT_STRIDE+FRONT_FIELD.x]);
+    const at=(key:keyof typeof FRONT_FIELD)=>r[low*FRONT_STRIDE+FRONT_FIELD[key]]+t*(r[high*FRONT_STRIDE+FRONT_FIELD[key]]-r[low*FRONT_STRIDE+FRONT_FIELD[key]]);
+    const current=library.profileTimes({slope:c.slope,footHeight:at('footHeight'),footDepth:at('footDepth')});
+    const expected=Math.fround(collapseFade(at('tau'),current.touchdownSeconds,current.collapseSeconds));
+    expect(l.sliceJoined[s]).toBe(1);expect(l.slicePhase[s]).toBe(2);expect(l.sliceOverturned[s]).toBe(1);
+    expect(l.sliceTau[s]).toBe(native.sliceTau);expect(l.sliceTau[s]).toBe(Math.fround(at('tau')));
+    expect(l.sliceFade[s]).toBe(expected);expect(l.sliceWeight[s]).toBe(l.sliceFade[s]);
+    expect(l.sliceWeight[s]).toBeGreaterThan(native.sliceWeight);
+    return{x,tau:l.sliceTau[s],intrinsicWeight:l.sliceWeight[s],historicalNativeFade:native.sliceFade,capturedSealWeight:native.sliceWeight,crestY:l.positions[3*(s*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest)+1]};
+   });
    const first=Array.from(l.sliceJoined.subarray(0,l.sliceCount)).findIndex(Boolean);flatSupport(l,first,()=>0);expect(l.sliceFade[first+1]).toBeGreaterThan(0);honestTopology(l);results.push({movingStep:epoch.movingStep,firstSupportX:xAt(l,first),nextLiveX:xAt(l,first+1),rows,fixedX16_25Weight:(rows[0].intrinsicWeight+rows[1].intrinsicWeight)/2,diagnostics:l.cSampling});
   }
-  expect(results[1].rows[0].intrinsicWeight-results[0].rows[0].intrinsicWeight).toBe(-0.05141317844390869);expect(results[1].rows[1].intrinsicWeight-results[0].rows[1].intrinsicWeight).toBe(-0.05139702558517456);
-
+  // These exact deltas document the old captured clock, not a frozen runtime coefficient contract.
+  expect(results[1].rows[0].historicalNativeFade-results[0].rows[0].historicalNativeFade).toBe(-0.05141317844390869);
+  expect(results[1].rows[1].historicalNativeFade-results[0].rows[1].historicalNativeFade).toBe(-0.05139702558517456);
+  for(let row=0;row<2;row++)expect(results[1].rows[row].intrinsicWeight).toBeLessThan(results[0].rows[row].intrinsicWeight);
  });
  it('keeps a dying raw knot at its original F32 X and preserves the next live row and one-sided normal',()=>{
   let above=Math.fround(retired);if(above<retired)above=nextWord(above,1);const below=nextWord(above,-1);expect(below).toBeLessThan(retired);expect(above).toBeGreaterThanOrEqual(retired);

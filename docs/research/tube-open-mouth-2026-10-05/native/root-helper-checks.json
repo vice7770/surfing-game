@@ -1,0 +1,56 @@
+{
+  "schema": "open-mouth-root-helper-checks/v1",
+  "complete": true,
+  "observedBy": "root actual tool terminal syntax checks",
+  "checks": [
+    {
+      "command": "node --check /private/tmp/tube-open-mouth-native-20261005/native.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check /private/tmp/tube-open-mouth-native-20261005/mature-mouth.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check /private/tmp/tube-open-mouth-native-20261005/inspection-bridge.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "Python ast.parse(prepare.py, run.py)",
+      "exitCode": 0
+    }
+  ],
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/prepare.py",
+      "bytes": 4376,
+      "sha256": "4045c174f52fc553916ef0a72bb00239b438f5597bec0edee064fb9bc69f7683"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/run.py",
+      "bytes": 11518,
+      "sha256": "0484acfbc9cbd010b311be3d91e414bfacc44759d0078f0b88e47d571e506ef9"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/native.mjs",
+      "bytes": 18935,
+      "sha256": "1058946f93bdb4a20994039ec9e12a65e62feccc964cc7c8f268122b32cfa44f"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/mature-mouth.mjs",
+      "bytes": 27525,
+      "sha256": "8497dacff2b5954625d89de76138f78e54096ca7fa50507cd01ff0f4dc43660f"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/inspection-bridge.mjs",
+      "bytes": 6350,
+      "sha256": "06d7eca6fa2197e0aa469280bdb82ceeaacbb02b9153ab60dbd7eb4eb2535aad"
+    }
+  ],
+  "preparation": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/prepare-result.json",
+    "bytes": 755,
+    "sha256": "18d671eeac79bd3063bc755e94cdcf01d3aeccfddd0b95e4cfa29acb63acc932"
+  },
+  "nativeExecutedByReceipt": false
+}

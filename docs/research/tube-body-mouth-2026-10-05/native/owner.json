@@ -1,0 +1,93 @@
+{
+  "schema": "open-mouth-owner-body-clearance/v1",
+  "complete": true,
+  "firstFailure": null,
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "build": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/build.json",
+    "bytes": 15415,
+    "sha256": "ac805e45f7681858a44c11632887452db97c0bb2e1753eaf9fbfa2fea0d18843"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source-freeze.json",
+    "bytes": 4961,
+    "sha256": "539cb7465a25693cc21598fd4775ac66690a131ab9cc234c2a6d746fe7f43366"
+  },
+  "sealSha256": "f2361a4bb7f5224be009811d461944adf0d9ae9481dae6056f645115df7a8681",
+  "cleanupFailures": [],
+  "preExecutionPinsVerified": true,
+  "postExecutionPinsVerified": true,
+  "copiedAndLiveSourcePinsPostVerified": true,
+  "limits": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "nativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "hudReadyWaitMilliseconds": 180000,
+    "steps": 360,
+    "physicalSeconds": 6,
+    "inspectionCadence": 30,
+    "reportBytes": 33554432,
+    "traceBytes": 25165824,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "sidecarCount": 1,
+    "sidecarBytesEach": 6291456,
+    "sidecarRawBytes": 4194304,
+    "movieCount": 0,
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedOpenPorts": [
+      4312,
+      4313,
+      4314
+    ]
+  },
+  "scope": "Independent bytes, bounds, original-state restoration and resources. No geometry, visual-quality or exposed run-end acceptance.",
+  "pid": 86017,
+  "ownedProcessGroup": 86017,
+  "exitCode": 0,
+  "observation": {
+    "inspectionAvailable": true,
+    "stepCount": 0,
+    "pngCount": 4,
+    "pngBytes": 6925173,
+    "currentFull37AndRawFrontEncodingVerified": true,
+    "perViewPublicGuardsVerified": true,
+    "bothRowSampledMouthGapsAtLeast1p20Verified": true,
+    "geometryQualityOrExposedRunEndAcceptance": false
+  },
+  "ownedMembersBeforeCleanup": [],
+  "ownedMembersAfterCleanup": [],
+  "protectedAfter": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protectedPreserved": true,
+  "closedPorts": {
+    "4301": true,
+    "9711": true
+  },
+  "cleanupElapsedSeconds": 0.5726513750269078,
+  "elapsedSeconds": 217.45847487496212
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "body-mouth-renderer-root-checks/v1",
+  "complete": true,
+  "observedBy": "root actual tool terminal outcome",
+  "command": "npm test -- src/scene/barrel/SweptBarrelMesh.test.ts",
+  "sessionId": 4210,
+  "exitCode": 0,
+  "filesPassed": 1,
+  "testsPassed": 14,
+  "log": {
+    "file": "/private/tmp/tube-open-mouth-crossing-20261005/body-clearance-renderer-tests.log",
+    "bytes": 277,
+    "sha256": "e101abe184a2a5938fcb8357bf51cfd7826653f080e201b7bf4facf595b46a04"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "schema": "open-mouth-archive-summary/v1",
+  "complete": true,
+  "checks": {
+    "focusedTests": 26,
+    "barrelFiles": 34,
+    "barrelTests": 340,
+    "buildId": "tube-open-mouth-20261005"
+  },
+  "native": {
+    "steps": 0,
+    "pngCount": 4,
+    "maximumMatureMouthGap": 0.922486424446106,
+    "selectedMouthGap": 0.03685230016708374,
+    "ownerElapsedSeconds": 123.8136265000212,
+    "protectedListenerIdentitiesPreserved": true,
+    "sourcePostUnchanged": true,
+    "fixedInteriorReferenceComparison": {
+      "poseAndProjectionExact": true,
+      "geometryEqualityAsserted": false,
+      "epochEqualityAsserted": false,
+      "selectorEqualityAsserted": false,
+      "currentFull37AndRawFrontWordsCaptured": true,
+      "pairedCloneCameraUnchanged": true,
+      "fullSolverOrPixelEqualityClaim": false
+    },
+    "sideMouthCameraDerivation": {
+      "eye": [
+        73.52763922512531,
+        0.23575127124786377,
+        -67.98816771805286
+      ],
+      "target": [
+        73.5,
+        0.23575127124786377,
+        -68.0471313983202
+      ],
+      "observedPoints": [
+        {
+          "world": [
+            73.52763922512531,
+            0.23575127124786377,
+            -67.98816771805286
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            73.5,
+            0.23575127124786377,
+            -68.0471313983202
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            73.51381961256266,
+            0.23575127124786377,
+            -68.01764955818653
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            73.39938354093871,
+            0.18697801239127762,
+            -68.0384890976346
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": true,
+          "rendererBelowSurface": true
+        },
+        {
+          "world": [
+            73.39938354093871,
+            0.2845245301044499,
+            -68.0384890976346
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": true,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            73.57100813406578,
+            0.18697801239127762,
+            -68.11893812566291
+          ],
+          "selectedStripAir": {
+            "floorY": 0.21731982641364836,
+            "innerRoofY": 0.8242380365063019,
+            "clearance": 0.6069182100926536,
+            "containsPoint": false
+          },
+          "wholeDrawnLoftWaterAt": true,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            73.57100813406578,
+            0.2845245301044499,
+            -68.11893812566291
+          ],
+          "selectedStripAir": {
+            "floorY": 0.21731982641364836,
+            "innerRoofY": 0.8242380365063019,
+            "clearance": 0.6069182100926536,
+            "containsPoint": true
+          },
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        }
+      ],
+      "nearCorners": [
+        [
+          73.39938354093871,
+          0.18697801239127762,
+          -68.0384890976346
+        ],
+        [
+          73.39938354093871,
+          0.2845245301044499,
+          -68.0384890976346
+        ],
+        [
+          73.57100813406578,
+          0.18697801239127762,
+          -68.11893812566291
+        ],
+        [
+          73.57100813406578,
+          0.2845245301044499,
+          -68.11893812566291
+        ]
+      ],
+      "eyeToTargetActiveTriangleObstruction": null,
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "quaternion": [
+        0,
+        0.21741787419749534,
+        0,
+        0.9760786177247416
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1,
+      "cameraAirAcceptance": false,
+      "exposedRunEndMouthAcceptance": false,
+      "fullFrustumOrPixelIdentityClaim": false,
+      "policy": "first-mature-row/cap64-floor104/shoreward-ray1.25-tangent0.75-target-ray-minus0.35/inherited-perspective/v1",
+      "row": 37,
+      "inwardRow": 38,
+      "capProfileIndex": 64,
+      "floorProfileIndex": 104,
+      "cap": [
+        73.5,
+        0.25417742133140564,
+        -68.03423309326172
+      ],
+      "floor": [
+        73.5,
+        0.2173251211643219,
+        -68.03423309326172
+      ],
+      "clearance": 0.03685230016708374,
+      "mouthCentre": [
+        73.5,
+        0.23575127124786377,
+        -68.03423309326172
+      ],
+      "capFloorHorizontalDifference": [
+        0,
+        0
+      ],
+      "ray": [
+        0,
+        1
+      ],
+      "tangent": [
+        1,
+        0
+      ],
+      "tangentAlignmentBeforeSign": -0.25,
+      "tangentSignPolicy": "Perpendicular [-rayZ,rayX], flipped only when it points away from the selected joined mature neighbor; exact zero retains canonical sign.",
+      "offsetsInClearanceUnits": {
+        "eyeShorewardRay": 1.25,
+        "eyeTowardNeighborTangent": 0.75,
+        "targetRay": -0.35,
+        "eyeAndTargetHeightAboveFloor": 0.5
+      },
+      "actorOrMeshPlacement": false,
+      "cameraOrEpochSearch": false,
+      "limits": [
+        "Side view is a declared cap/floor profile inspection; it does not certify an exposed run end.",
+        "The eye and rays can encounter other sheets; passive classifier observations do not certify an unobstructed mouth.",
+        "No body passage, full-profile framing or visual-quality acceptance."
+      ]
+    }
+  },
+  "acceptance": {
+    "controlledOneMetreBoxCorridor": true,
+    "sourceGeometryTests": true,
+    "nativeVisualQuality": false,
+    "ordinaryRide": false,
+    "referenceAxialMouth": false,
+    "performance": false
+  }
+}

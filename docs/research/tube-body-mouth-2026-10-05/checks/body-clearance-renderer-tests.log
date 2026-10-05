@@ -1,0 +1,13 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/scene/barrel/SweptBarrelMesh.test.ts
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  14:55:32
+   Duration  1.77s (tests 51%, transform 30%, import 19%)
+

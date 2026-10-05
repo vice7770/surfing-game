@@ -1,0 +1,54 @@
+{
+  "schema": "body-mouth-root-checks/v1",
+  "complete": true,
+  "observedBy": "root actual terminal tool outcomes",
+  "checks": [
+    {
+      "command": "npm test -- src/wave/barrel",
+      "sessionId": 55818,
+      "exitCode": 0,
+      "filesPassed": 34,
+      "testsPassed": 340,
+      "log": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/body-clearance-barrel-tests.log",
+        "bytes": 266,
+        "sha256": "3ea3294af5b114bfa1221c65ebd6d2c7e7667297f01444782b99f719e42bd135"
+      }
+    },
+    {
+      "command": "BUILD_ID=tube-open-mouth-body-clearance-20261005 npm run build",
+      "sessionId": 38896,
+      "exitCode": 0,
+      "buildId": "tube-open-mouth-body-clearance-20261005",
+      "log": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/body-clearance-build.log",
+        "bytes": 1328,
+        "sha256": "a0ce268681e1336349e7c5244e7c3cdd5fe58bbe0289551d1bf143795ee73c03"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18493,
+      "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80797,
+      "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "bytes": 10279,
+      "sha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90"
+    }
+  ],
+  "ordinaryRideAccepted": false,
+  "nativeExecutedByThisReceipt": false
+}

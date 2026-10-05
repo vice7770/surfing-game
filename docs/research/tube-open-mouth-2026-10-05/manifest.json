@@ -1,0 +1,366 @@
+{
+  "schema": "open-mouth-curated-archive/v1",
+  "complete": true,
+  "files": [
+    {
+      "path": "checks/root-checks.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/root-checks.json",
+        "bytes": 2325,
+        "sha256": "a5a3d3aa9b20cdec15ef53988f4c61e4940d1a2b9679977bfd3cbd825ac9202c"
+      },
+      "encoding": "identity",
+      "archivedBytes": 2325,
+      "archivedSha256": "a5a3d3aa9b20cdec15ef53988f4c61e4940d1a2b9679977bfd3cbd825ac9202c",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "checks/regression-tests.log",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/regression-tests.log",
+        "bytes": 360,
+        "sha256": "8162b0f555f40f83d8340b55eec34a09b5417622fd220e86f16081e584a97a28"
+      },
+      "encoding": "identity",
+      "archivedBytes": 360,
+      "archivedSha256": "8162b0f555f40f83d8340b55eec34a09b5417622fd220e86f16081e584a97a28",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "checks/barrel-final-tests.log",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/barrel-final-tests.log",
+        "bytes": 266,
+        "sha256": "205915ca033057272ed62702f22cfc00ddb034975e4dd432fb820dcfa61e2cf1"
+      },
+      "encoding": "identity",
+      "archivedBytes": 266,
+      "archivedSha256": "205915ca033057272ed62702f22cfc00ddb034975e4dd432fb820dcfa61e2cf1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "checks/build.log",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/build.log",
+        "bytes": 1328,
+        "sha256": "2390179aa168cb7e94c9a2d68ef517e7c558d32b2803586199eaddf2ba34e86b"
+      },
+      "encoding": "identity",
+      "archivedBytes": 1328,
+      "archivedSha256": "2390179aa168cb7e94c9a2d68ef517e7c558d32b2803586199eaddf2ba34e86b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "checks/root-final-build.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/root-final-build.json",
+        "bytes": 481,
+        "sha256": "4410f041aa4fff65e05fc7218f2e681f1812449311b06b499f8b3f8bba08c8a5"
+      },
+      "encoding": "identity",
+      "archivedBytes": 481,
+      "archivedSha256": "4410f041aa4fff65e05fc7218f2e681f1812449311b06b499f8b3f8bba08c8a5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "checks/build-final.log",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/build-final.log",
+        "bytes": 1328,
+        "sha256": "34c9eba6d099b590844ed019ce8d84d9a23e968c16b4c4586bc1e1e30405fab1"
+      },
+      "encoding": "identity",
+      "archivedBytes": 1328,
+      "archivedSha256": "34c9eba6d099b590844ed019ce8d84d9a23e968c16b4c4586bc1e1e30405fab1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "source/boundedCProfile.ts",
+      "original": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 18493,
+        "sha256": "a298204dbf63b61faad16cf351cad3980e0925678029ef5f3d802e323163babd"
+      },
+      "encoding": "identity",
+      "archivedBytes": 18493,
+      "archivedSha256": "a298204dbf63b61faad16cf351cad3980e0925678029ef5f3d802e323163babd",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "source/sweptLoft.ts",
+      "original": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+        "bytes": 80797,
+        "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+      },
+      "encoding": "identity",
+      "archivedBytes": 80797,
+      "archivedSha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "source/boundedCConsumers.test.ts",
+      "original": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16439,
+        "sha256": "5f642ef0500916d043664132c886caff88465c66679d4b17baefc65de97911fc"
+      },
+      "encoding": "identity",
+      "archivedBytes": 16439,
+      "archivedSha256": "5f642ef0500916d043664132c886caff88465c66679d4b17baefc65de97911fc",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "source/boundedCOpenMouth.test.ts",
+      "original": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCOpenMouth.test.ts",
+        "bytes": 10231,
+        "sha256": "ca17fae72ce43bb3b063a26106c2dadb786701b5423e44a3766510b1a41a4729"
+      },
+      "encoding": "identity",
+      "archivedBytes": 10231,
+      "archivedSha256": "ca17fae72ce43bb3b063a26106c2dadb786701b5423e44a3766510b1a41a4729",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/prepare.py",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/prepare.py",
+        "bytes": 4376,
+        "sha256": "4045c174f52fc553916ef0a72bb00239b438f5597bec0edee064fb9bc69f7683"
+      },
+      "encoding": "identity",
+      "archivedBytes": 4376,
+      "archivedSha256": "4045c174f52fc553916ef0a72bb00239b438f5597bec0edee064fb9bc69f7683",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/run.py",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/run.py",
+        "bytes": 11518,
+        "sha256": "0484acfbc9cbd010b311be3d91e414bfacc44759d0078f0b88e47d571e506ef9"
+      },
+      "encoding": "identity",
+      "archivedBytes": 11518,
+      "archivedSha256": "0484acfbc9cbd010b311be3d91e414bfacc44759d0078f0b88e47d571e506ef9",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/native.mjs",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/native.mjs",
+        "bytes": 18935,
+        "sha256": "1058946f93bdb4a20994039ec9e12a65e62feccc964cc7c8f268122b32cfa44f"
+      },
+      "encoding": "identity",
+      "archivedBytes": 18935,
+      "archivedSha256": "1058946f93bdb4a20994039ec9e12a65e62feccc964cc7c8f268122b32cfa44f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/mature-mouth.mjs",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/mature-mouth.mjs",
+        "bytes": 27525,
+        "sha256": "8497dacff2b5954625d89de76138f78e54096ca7fa50507cd01ff0f4dc43660f"
+      },
+      "encoding": "identity",
+      "archivedBytes": 27525,
+      "archivedSha256": "8497dacff2b5954625d89de76138f78e54096ca7fa50507cd01ff0f4dc43660f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/inspection-bridge.mjs",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/inspection-bridge.mjs",
+        "bytes": 6350,
+        "sha256": "06d7eca6fa2197e0aa469280bdb82ceeaacbb02b9153ab60dbd7eb4eb2535aad"
+      },
+      "encoding": "identity",
+      "archivedBytes": 6350,
+      "archivedSha256": "06d7eca6fa2197e0aa469280bdb82ceeaacbb02b9153ab60dbd7eb4eb2535aad",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/inputs.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/inputs.json",
+        "bytes": 3816,
+        "sha256": "ffd61f1c028505eb19095840c3ff8c44a5530f471b676357b2ddf3965f03def6"
+      },
+      "encoding": "identity",
+      "archivedBytes": 3816,
+      "archivedSha256": "ffd61f1c028505eb19095840c3ff8c44a5530f471b676357b2ddf3965f03def6",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/source-freeze.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source-freeze.json",
+        "bytes": 4811,
+        "sha256": "7fcbf7b8effdb500ec575c4cec779a4a98ffa28574685605fea6434dbdf84dc5"
+      },
+      "encoding": "identity",
+      "archivedBytes": 4811,
+      "archivedSha256": "7fcbf7b8effdb500ec575c4cec779a4a98ffa28574685605fea6434dbdf84dc5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/build.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/build.json",
+        "bytes": 14515,
+        "sha256": "a01ac22b32c2c3677af314d75845d5e76b94b5957d7761ec7c52ee3c8e784291"
+      },
+      "encoding": "identity",
+      "archivedBytes": 14515,
+      "archivedSha256": "a01ac22b32c2c3677af314d75845d5e76b94b5957d7761ec7c52ee3c8e784291",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/seal.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/seal.json",
+        "bytes": 5958,
+        "sha256": "df1853dfb1b1dca7edf0b33bad423e075250ccc9be1c688feea3963526401995"
+      },
+      "encoding": "identity",
+      "archivedBytes": 5958,
+      "archivedSha256": "df1853dfb1b1dca7edf0b33bad423e075250ccc9be1c688feea3963526401995",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/prepare-result.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/prepare-result.json",
+        "bytes": 755,
+        "sha256": "18d671eeac79bd3063bc755e94cdcf01d3aeccfddd0b95e4cfa29acb63acc932"
+      },
+      "encoding": "identity",
+      "archivedBytes": 755,
+      "archivedSha256": "18d671eeac79bd3063bc755e94cdcf01d3aeccfddd0b95e4cfa29acb63acc932",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/root-helper-checks.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/root-helper-checks.json",
+        "bytes": 1845,
+        "sha256": "610670794e0b814666c4b12d4fdbcbb9273a0d40a2925b9b765fca44ce879cab"
+      },
+      "encoding": "identity",
+      "archivedBytes": 1845,
+      "archivedSha256": "610670794e0b814666c4b12d4fdbcbb9273a0d40a2925b9b765fca44ce879cab",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/normal.png",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/candidate-first/normal.png",
+        "bytes": 2444868,
+        "sha256": "62bd135da5f4983b06faba61f5485bc9a7e2489017050c050c54c8c3f6f0b783"
+      },
+      "encoding": "identity",
+      "archivedBytes": 2444868,
+      "archivedSha256": "62bd135da5f4983b06faba61f5485bc9a7e2489017050c050c54c8c3f6f0b783",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/mature-core.png",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/candidate-first/mature-core.png",
+        "bytes": 2152322,
+        "sha256": "e367e81341858a3448abea69395d177b4a1da4e0e60f646cc8b621a4ba6b6ae8"
+      },
+      "encoding": "identity",
+      "archivedBytes": 2152322,
+      "archivedSha256": "e367e81341858a3448abea69395d177b4a1da4e0e60f646cc8b621a4ba6b6ae8",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/mature-region.png",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/candidate-first/mature-region.png",
+        "bytes": 801482,
+        "sha256": "9053fb244eaa4bccd559a84ae24b42766bfe194ff23f882b943ca3425b0ca32b"
+      },
+      "encoding": "identity",
+      "archivedBytes": 801482,
+      "archivedSha256": "9053fb244eaa4bccd559a84ae24b42766bfe194ff23f882b943ca3425b0ca32b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/side-mouth.png",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/candidate-first/side-mouth.png",
+        "bytes": 1838235,
+        "sha256": "998bb1e25cefe3b10baa42f2840f4ef17ca0e1289fe670e1a8febb569e150402"
+      },
+      "encoding": "identity",
+      "archivedBytes": 1838235,
+      "archivedSha256": "998bb1e25cefe3b10baa42f2840f4ef17ca0e1289fe670e1a8febb569e150402",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/loft-terminal.json.gz",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1129187,
+        "sha256": "49ae9d22d50ef73722daced5247282eb8720fc9bae45e5bf2e92cf4f4ce38345"
+      },
+      "encoding": "gzip",
+      "archivedBytes": 240627,
+      "archivedSha256": "dcd1e17ac2037b5747adc9db0e961de78ae9f96f628037d35fe089c17fa0287e",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/clearance-roster.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/clearance-roster.json",
+        "bytes": 8046,
+        "sha256": "fcbacc7b2c25aad9088f6d17d1cb3cca066ef573ec9186274da6ecd90f204aa7"
+      },
+      "encoding": "identity",
+      "archivedBytes": 8046,
+      "archivedSha256": "fcbacc7b2c25aad9088f6d17d1cb3cca066ef573ec9186274da6ecd90f204aa7",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "native/owner.json",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/owner.json",
+        "bytes": 3211,
+        "sha256": "3c06c852c79e0f02771393f594a249912a23dc0982ba55518893520502ae7505"
+      },
+      "encoding": "identity",
+      "archivedBytes": 3211,
+      "archivedSha256": "3c06c852c79e0f02771393f594a249912a23dc0982ba55518893520502ae7505",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "capture/report.json.gz",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/candidate-first/report.json",
+        "bytes": 47020,
+        "sha256": "32edf2b80dc130c1329e5b8fab0ecc4f0d72055831f3406e1f4a3bb5791b8dbd"
+      },
+      "encoding": "gzip",
+      "archivedBytes": 10294,
+      "archivedSha256": "f94403189db06e197de7342fa149d88b92e8d556f8068d49958c1a781d709b32",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "archive-builder.py",
+      "original": {
+        "file": "/private/tmp/tube-open-mouth-archive-20261005/build.py",
+        "bytes": 18393,
+        "sha256": "f9546f36ffca80a4ba3c8a7fa7ccf4481e4c59d699e2c1edc72fae1476b4baf9"
+      },
+      "encoding": "identity",
+      "archivedBytes": 18393,
+      "archivedSha256": "f9546f36ffca80a4ba3c8a7fa7ccf4481e4c59d699e2c1edc72fae1476b4baf9",
+      "decompressedBytesVerified": true
+    }
+  ]
+}

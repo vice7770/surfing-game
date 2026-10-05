@@ -1,0 +1,23 @@
+{
+  "schema": "open-mouth-preparation-result/v1",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/build.json",
+    "bytes": 14515,
+    "sha256": "a01ac22b32c2c3677af314d75845d5e76b94b5957d7761ec7c52ee3c8e784291"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/source-freeze.json",
+    "bytes": 4811,
+    "sha256": "7fcbf7b8effdb500ec575c4cec779a4a98ffa28574685605fea6434dbdf84dc5"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/seal.json",
+    "bytes": 5958,
+    "sha256": "df1853dfb1b1dca7edf0b33bad423e075250ccc9be1c688feea3963526401995"
+  },
+  "sources": 8,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedTestsOrBuilds": false
+}

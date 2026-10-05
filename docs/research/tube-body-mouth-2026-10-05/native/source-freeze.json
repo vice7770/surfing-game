@@ -1,0 +1,113 @@
+{
+  "schema": "open-mouth-source-freeze-body-clearance/v1",
+  "complete": true,
+  "buildId": "tube-open-mouth-body-clearance-20261005",
+  "freezeTiming": "Actual root preparation after root-reported terminal tsc/vite build; no build is executed by this producer.",
+  "files": [
+    {
+      "relative": "src/wave/barrel/lipSheet.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/SweptBarrelMesh.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32142,
+        "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32142,
+        "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 18493,
+        "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 18493,
+        "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sweptLoft.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+        "bytes": 80797,
+        "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 80797,
+        "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sheetExitNormals.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sheetExitNormals.test.ts",
+        "bytes": 6599,
+        "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/sheetExitNormals.test.ts",
+        "bytes": 6599,
+        "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 26095,
+        "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 26095,
+        "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCOpenMouth.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCOpenMouth.test.ts",
+        "bytes": 10279,
+        "sha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/boundedCOpenMouth.test.ts",
+        "bytes": 10279,
+        "sha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCConsumers.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      }
+    }
+  ],
+  "sourceBuildIdentityScope": "Exact selected dist and current source bytes. Root owns compile command/result evidence; byte binding is not geometry, optics or quality acceptance."
+}

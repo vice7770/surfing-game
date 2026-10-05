@@ -1,0 +1,15 @@
+{
+  "schema": "open-mouth-final-build/v1",
+  "complete": true,
+  "command": "BUILD_ID=tube-open-mouth-20261005 npm run build",
+  "sessionId": 76820,
+  "exitCode": 0,
+  "buildId": "tube-open-mouth-20261005",
+  "log": {
+    "file": "/private/tmp/tube-open-mouth-crossing-20261005/build-final.log",
+    "bytes": 1328,
+    "sha256": "34c9eba6d099b590844ed019ce8d84d9a23e968c16b4c4586bc1e1e30405fab1"
+  },
+  "coversHistoricalFixtureTestEdits": true,
+  "visualOrRideAcceptance": false
+}

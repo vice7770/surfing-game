@@ -1,0 +1,113 @@
+{
+  "schema": "open-mouth-source-freeze/v1",
+  "complete": true,
+  "buildId": "tube-open-mouth-20261005",
+  "freezeTiming": "Actual root preparation after root-reported terminal tsc/vite build; no build is executed by this producer.",
+  "files": [
+    {
+      "relative": "src/wave/barrel/lipSheet.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/SweptBarrelMesh.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32142,
+        "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32142,
+        "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 18493,
+        "sha256": "a298204dbf63b61faad16cf351cad3980e0925678029ef5f3d802e323163babd"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 18493,
+        "sha256": "a298204dbf63b61faad16cf351cad3980e0925678029ef5f3d802e323163babd"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sweptLoft.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+        "bytes": 80797,
+        "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 80797,
+        "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sheetExitNormals.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sheetExitNormals.test.ts",
+        "bytes": 6599,
+        "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/wave/barrel/sheetExitNormals.test.ts",
+        "bytes": 6599,
+        "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 26095,
+        "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 26095,
+        "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCOpenMouth.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCOpenMouth.test.ts",
+        "bytes": 10231,
+        "sha256": "ca17fae72ce43bb3b063a26106c2dadb786701b5423e44a3766510b1a41a4729"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/wave/barrel/boundedCOpenMouth.test.ts",
+        "bytes": 10231,
+        "sha256": "ca17fae72ce43bb3b063a26106c2dadb786701b5423e44a3766510b1a41a4729"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCConsumers.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16439,
+        "sha256": "5f642ef0500916d043664132c886caff88465c66679d4b17baefc65de97911fc"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-open-mouth-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16439,
+        "sha256": "5f642ef0500916d043664132c886caff88465c66679d4b17baefc65de97911fc"
+      }
+    }
+  ],
+  "sourceBuildIdentityScope": "Exact selected dist and current source bytes. Root owns compile command/result evidence; byte binding is not geometry, optics or quality acceptance."
+}

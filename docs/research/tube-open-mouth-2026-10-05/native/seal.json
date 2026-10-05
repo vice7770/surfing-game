@@ -1,0 +1,160 @@
+{
+  "schema": "open-mouth-capture/v1",
+  "rootAuthorized": true,
+  "complete": true,
+  "limits": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "nativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "hudReadyWaitMilliseconds": 180000,
+    "steps": 360,
+    "physicalSeconds": 6,
+    "inspectionCadence": 30,
+    "reportBytes": 33554432,
+    "traceBytes": 25165824,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "sidecarCount": 1,
+    "sidecarBytesEach": 6291456,
+    "sidecarRawBytes": 4194304,
+    "movieCount": 0,
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedOpenPorts": [
+      4312,
+      4313,
+      4314
+    ]
+  },
+  "approvedApplicationBuild": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/build.json",
+    "bytes": 14515,
+    "sha256": "a01ac22b32c2c3677af314d75845d5e76b94b5957d7761ec7c52ee3c8e784291"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/source-freeze.json",
+    "bytes": 4811,
+    "sha256": "7fcbf7b8effdb500ec575c4cec779a4a98ffa28574685605fea6434dbdf84dc5"
+  },
+  "approvedDiagnosticBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 35375,
+    "sha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348510,
+    "sha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/prepare.py",
+      "bytes": 4376,
+      "sha256": "4045c174f52fc553916ef0a72bb00239b438f5597bec0edee064fb9bc69f7683"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/run.py",
+      "bytes": 11518,
+      "sha256": "0484acfbc9cbd010b311be3d91e414bfacc44759d0078f0b88e47d571e506ef9"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/native.mjs",
+      "bytes": 18935,
+      "sha256": "1058946f93bdb4a20994039ec9e12a65e62feccc964cc7c8f268122b32cfa44f"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/mature-mouth.mjs",
+      "bytes": 27525,
+      "sha256": "8497dacff2b5954625d89de76138f78e54096ca7fa50507cd01ff0f4dc43660f"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/inspection-bridge.mjs",
+      "bytes": 6350,
+      "sha256": "06d7eca6fa2197e0aa469280bdb82ceeaacbb02b9153ab60dbd7eb4eb2535aad"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/inputs.json",
+      "bytes": 3816,
+      "sha256": "ffd61f1c028505eb19095840c3ff8c44a5530f471b676357b2ddf3965f03def6"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-native-20261005/README.md",
+      "bytes": 3503,
+      "sha256": "2218fa9aae9fde069bae983d531d28af50b8572ff7b026d9c2cb56e614b37f5f"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "referencePins": [
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+      "bytes": 18331566,
+      "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+      "bytes": 3457,
+      "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/report.json",
+      "bytes": 41583,
+      "sha256": "47c4c82ba86de60adede064625d34a0ef109b81b6c897324eaa00f7e9f548685"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-owner.json",
+      "bytes": 5312,
+      "sha256": "c6c5b449b36a3d0cb866deb49c4dfbf6e5f446a39769a359b1a3437761c027fb"
+    }
+  ],
+  "comparison": "Current first mature geometry recorded anew. Prior report supplies fixed interior pose/projection only; no prior geometry/epoch/selector equality. Separate declared current cap64/floor104 side view. No exposed run-end mouth, playability or quality acceptance."
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "open-mouth-root-checks/v1",
+  "complete": true,
+  "observedBy": "root tool terminal outcomes",
+  "checks": [
+    {
+      "command": "npm test -- src/wave/barrel/boundedCConsumers.test.ts src/wave/barrel/boundedCOpenMouth.test.ts src/scene/barrel/SweptBarrelMesh.test.ts",
+      "sessionId": 5236,
+      "exitCode": 0,
+      "filesPassed": 3,
+      "testsPassed": 26,
+      "log": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/regression-tests.log",
+        "bytes": 360,
+        "sha256": "8162b0f555f40f83d8340b55eec34a09b5417622fd220e86f16081e584a97a28"
+      }
+    },
+    {
+      "command": "npm test -- src/wave/barrel",
+      "sessionId": 33395,
+      "exitCode": 0,
+      "filesPassed": 34,
+      "testsPassed": 340,
+      "log": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/barrel-final-tests.log",
+        "bytes": 266,
+        "sha256": "205915ca033057272ed62702f22cfc00ddb034975e4dd432fb820dcfa61e2cf1"
+      }
+    },
+    {
+      "command": "BUILD_ID=tube-open-mouth-20261005 npm run build",
+      "sessionId": 12649,
+      "exitCode": 0,
+      "buildId": "tube-open-mouth-20261005",
+      "log": {
+        "file": "/private/tmp/tube-open-mouth-crossing-20261005/build.log",
+        "bytes": 1328,
+        "sha256": "2390179aa168cb7e94c9a2d68ef517e7c558d32b2803586199eaddf2ba34e86b"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18493,
+      "sha256": "a298204dbf63b61faad16cf351cad3980e0925678029ef5f3d802e323163babd"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80797,
+      "sha256": "788262b80bdb41da549f41d753b69b074a057f2d6d944e4739a3f8cece5560b3"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16439,
+      "sha256": "5f642ef0500916d043664132c886caff88465c66679d4b17baefc65de97911fc"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "bytes": 10231,
+      "sha256": "ca17fae72ce43bb3b063a26106c2dadb786701b5423e44a3766510b1a41a4729"
+    }
+  ],
+  "nativeExecutedByThisReceipt": false,
+  "ordinaryRideAccepted": false
+}

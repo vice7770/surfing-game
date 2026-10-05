@@ -158,8 +158,10 @@ function indexedCrossings(loft: LoftResult, x: number, z: number) {
 }
 
 describe('real Padang C retirement contact boundary', () => {
-  for (const input of [{ label: 'controlled-real-provider', records: controlled() },
-    ...captured.epochs.map(epoch => ({ label: `actual-packet-step-${epoch.movingStep}`, records: packet(epoch.packetRows) }))]) {
+  // The controlled fixture uses current impact/retirement. Historical old-clock packet inputs stay exact;
+  // they still must satisfy every eager/lazy/full-scan and indexed parity assertion below.
+  for (const input of [{ label: 'current-provider-retirement-closure', records: controlled() },
+    ...captured.epochs.map(epoch => ({ label: `historical-old-clock-packet-step-${epoch.movingStep}`, records: packet(epoch.packetRows) }))]) {
     it(`${input.label}: rejects exact zero closure rays before nudge and keeps positive indexed interiors eager/lazy/full-scan exact`, () => {
       const before = input.records.slice(), pair = contactPair(input.records), loft = pair.eager.last!;
       const rows = ghostToLive(loft);

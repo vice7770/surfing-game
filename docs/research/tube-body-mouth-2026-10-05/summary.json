@@ -1,0 +1,269 @@
+{
+  "schema": "body-mouth-archive-summary/v1",
+  "complete": true,
+  "checks": [
+    {
+      "command": "npm test -- src/wave/barrel",
+      "filesPassed": 34,
+      "testsPassed": 340,
+      "exitCode": 0
+    },
+    {
+      "command": "BUILD_ID=tube-open-mouth-body-clearance-20261005 npm run build",
+      "filesPassed": null,
+      "testsPassed": null,
+      "exitCode": 0
+    },
+    {
+      "command": "npm test -- src/scene/barrel/SweptBarrelMesh.test.ts",
+      "filesPassed": 1,
+      "testsPassed": 14,
+      "exitCode": 0
+    }
+  ],
+  "buildId": "tube-open-mouth-body-clearance-20261005",
+  "priorArchive": {
+    "manifest": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-open-mouth-2026-10-05/manifest.json",
+      "bytes": 14151,
+      "sha256": "952f8018152f9b745e936dc29e3fe2cb50e0a22bba9c9a39e659f732e6679d21"
+    },
+    "link": "../tube-open-mouth-2026-10-05/manifest.json",
+    "copyOrRecursiveTraversal": false
+  },
+  "native": {
+    "steps": 0,
+    "pngCount": 4,
+    "sampledMouthGaps": [
+      1.2025576084852219,
+      1.2042677849531174
+    ],
+    "minimumDeclaredGap": 1.2,
+    "ownerElapsedSeconds": 217.45847487496212,
+    "sourcePostUnchanged": true,
+    "protectedListenerIdentitiesPreserved": true,
+    "fixedInteriorReferenceComparison": {
+      "poseAndProjectionExact": true,
+      "geometryEqualityAsserted": false,
+      "epochEqualityAsserted": false,
+      "selectorEqualityAsserted": false,
+      "currentFull37AndRawFrontWordsCaptured": true,
+      "pairedCloneCameraUnchanged": true,
+      "fullSolverOrPixelEqualityClaim": false
+    },
+    "sideMouthCameraDerivation": {
+      "eye": [
+        75.65191820636392,
+        0.8180906549096107,
+        -66.22397584095597
+      ],
+      "target": [
+        74.75,
+        0.8180906549096107,
+        -68.14806801453233
+      ],
+      "observedPoints": [
+        {
+          "world": [
+            75.65191820636392,
+            0.8180906549096107,
+            -66.22397584095597
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            74.75,
+            0.8180906549096107,
+            -68.14806801453233
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            75.20095910318196,
+            0.8180906549096107,
+            -67.18602192774415
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            75.52366252217732,
+            0.7693173960530246,
+            -66.2742972205377
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            75.52366252217732,
+            0.8668639137661969,
+            -66.2742972205377
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            75.69528711530437,
+            0.7693173960530246,
+            -66.35474624856602
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        },
+        {
+          "world": [
+            75.69528711530437,
+            0.8668639137661969,
+            -66.35474624856602
+          ],
+          "selectedStripAir": null,
+          "wholeDrawnLoftWaterAt": false,
+          "rendererBelowSurface": false
+        }
+      ],
+      "nearCorners": [
+        [
+          75.52366252217732,
+          0.7693173960530246,
+          -66.2742972205377
+        ],
+        [
+          75.52366252217732,
+          0.8668639137661969,
+          -66.2742972205377
+        ],
+        [
+          75.69528711530437,
+          0.7693173960530246,
+          -66.35474624856602
+        ],
+        [
+          75.69528711530437,
+          0.8668639137661969,
+          -66.35474624856602
+        ]
+      ],
+      "eyeToTargetActiveTriangleObstruction": null,
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "quaternion": [
+        0,
+        0.21741787419751346,
+        0,
+        0.9760786177247376
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1,
+      "cameraAirAcceptance": false,
+      "exposedRunEndMouthAcceptance": false,
+      "fullFrustumOrPixelIdentityClaim": false,
+      "policy": "first-eligible-mature-joined-pair/both-mouth-gaps-at-least1.20m/cap64-floor104/shoreward-ray1.25-tangent0.75-target-ray-minus0.35/inherited-perspective/v1",
+      "row": 42,
+      "inwardRow": 43,
+      "minimumMouthClearance": 1.2,
+      "primaryInspection": true,
+      "fullBodyContainmentCertification": false,
+      "capProfileIndex": 64,
+      "floorProfileIndex": 104,
+      "cap": [
+        74.75,
+        1.4193694591522217,
+        -67.7271728515625
+      ],
+      "floor": [
+        74.75,
+        0.21681185066699982,
+        -67.7271728515625
+      ],
+      "clearance": 1.2025576084852219,
+      "mouthCentre": [
+        74.75,
+        0.8180906549096107,
+        -67.7271728515625
+      ],
+      "capFloorHorizontalDifference": [
+        0,
+        0
+      ],
+      "ray": [
+        0,
+        1
+      ],
+      "tangent": [
+        1,
+        0
+      ],
+      "tangentAlignmentBeforeSign": -0.25,
+      "tangentSignPolicy": "Perpendicular [-rayZ,rayX], flipped only when it points away from the selected joined mature neighbor; exact zero retains canonical sign.",
+      "offsetsInClearanceUnits": {
+        "eyeShorewardRay": 1.25,
+        "eyeTowardNeighborTangent": 0.75,
+        "targetRay": -0.35,
+        "eyeAndTargetHeightAboveFloor": 0.5
+      },
+      "actorOrMeshPlacement": false,
+      "cameraOrEpochSearch": false,
+      "limits": [
+        "Primary side view is selected by two sampled1.20m cap/floor gaps; it does not certify full-body clearance, a traversable swept path or an exposed run end.",
+        "The eye and rays can encounter other sheets; passive classifier observations do not certify an unobstructed mouth.",
+        "No body passage, full-profile framing or visual-quality acceptance."
+      ]
+    }
+  },
+  "acceptance": {
+    "controlledStaticBodyEnvelope": true,
+    "sourceGeometryTests": true,
+    "nativeTwoSampledMouthGapsAtLeast1p20": true,
+    "actualRiderPostureContainment": false,
+    "ordinaryRide": false,
+    "nativeVisualQuality": false,
+    "referenceAxialMouth": false,
+    "performance": false
+  },
+  "visualObservation": {
+    "reviewedByRoot": [
+      "side-mouth.png",
+      "mature-core.png"
+    ],
+    "sideMouth": "Larger exposed cavity; angular lip corner and white/dithered roof cuts remain.",
+    "fixedInterior": "Cloud transmission is visible; a prominent diagonal black strip and angular sheet cuts remain.",
+    "referenceQualityAchieved": false
+  }
+}

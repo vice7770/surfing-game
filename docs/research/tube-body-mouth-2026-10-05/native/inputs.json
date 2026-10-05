@@ -1,0 +1,98 @@
+{
+  "approvedDiagnosticBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 35375,
+    "sha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348510,
+    "sha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055"
+  },
+  "knownCReport": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+    "bytes": 18331566,
+    "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+  },
+  "knownCOwner": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+    "bytes": 3457,
+    "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "approvedMatureReport": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/report.json",
+    "bytes": 41583,
+    "sha256": "47c4c82ba86de60adede064625d34a0ef109b81b6c897324eaa00f7e9f548685"
+  },
+  "approvedMatureOwner": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-owner.json",
+    "bytes": 5312,
+    "sha256": "c6c5b449b36a3d0cb866deb49c4dfbf6e5f446a39769a359b1a3437761c027fb"
+  },
+  "schema": "open-mouth-native-inputs-body-clearance/v1",
+  "buildId": "tube-open-mouth-body-clearance-20261005",
+  "currentRepository": "/Users/regina/Desktop/Projects/surfing-game",
+  "sourceFreezeAtRootPreparation": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "authorityPolicy": "Current root-built application and root-time eight-source freeze. Direct approved known public C seed replay/module/helper interfaces. Prior mature report supplies only the declared fixed interior camera pose/projection; no prior geometry, selector or epoch equality assertion.",
+  "bodyGapEligibility": {
+    "minimumBothRowCap64Floor104GapMetres": 1.2,
+    "storedRowOrder": "ascending; neighbor higher then lower",
+    "sameFrontJoinedMaturePairRequired": true,
+    "positiveMeasuredThreeCrossingRowAirRequired": true,
+    "exactStoredCapFloorXZAlignmentRequired": true,
+    "primaryView": "side-mouth",
+    "secondaryView": "fixed-prior-interior",
+    "fullBodyContainmentCertification": false,
+    "exposedRunEndEntranceCertification": false
+  }
+}

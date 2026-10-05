@@ -1,0 +1,92 @@
+{
+  "schema": "open-mouth-owner/v1",
+  "complete": true,
+  "firstFailure": null,
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "build": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/build.json",
+    "bytes": 14515,
+    "sha256": "a01ac22b32c2c3677af314d75845d5e76b94b5957d7761ec7c52ee3c8e784291"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-open-mouth-native-20261005/source-freeze.json",
+    "bytes": 4811,
+    "sha256": "7fcbf7b8effdb500ec575c4cec779a4a98ffa28574685605fea6434dbdf84dc5"
+  },
+  "sealSha256": "df1853dfb1b1dca7edf0b33bad423e075250ccc9be1c688feea3963526401995",
+  "cleanupFailures": [],
+  "preExecutionPinsVerified": true,
+  "postExecutionPinsVerified": true,
+  "copiedAndLiveSourcePinsPostVerified": true,
+  "limits": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "nativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "hudReadyWaitMilliseconds": 180000,
+    "steps": 360,
+    "physicalSeconds": 6,
+    "inspectionCadence": 30,
+    "reportBytes": 33554432,
+    "traceBytes": 25165824,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "sidecarCount": 1,
+    "sidecarBytesEach": 6291456,
+    "sidecarRawBytes": 4194304,
+    "movieCount": 0,
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedOpenPorts": [
+      4312,
+      4313,
+      4314
+    ]
+  },
+  "scope": "Independent bytes, bounds, original-state restoration and resources. No geometry, visual-quality or exposed run-end acceptance.",
+  "pid": 83115,
+  "ownedProcessGroup": 83115,
+  "exitCode": 0,
+  "observation": {
+    "inspectionAvailable": true,
+    "stepCount": 0,
+    "pngCount": 4,
+    "pngBytes": 7236907,
+    "currentFull37AndRawFrontEncodingVerified": true,
+    "perViewPublicGuardsVerified": true,
+    "geometryQualityOrExposedRunEndAcceptance": false
+  },
+  "ownedMembersBeforeCleanup": [],
+  "ownedMembersAfterCleanup": [],
+  "protectedAfter": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protectedPreserved": true,
+  "closedPorts": {
+    "4301": true,
+    "9711": true
+  },
+  "cleanupElapsedSeconds": 0.6590746669680811,
+  "elapsedSeconds": 123.8136265000212
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "open-mouth-root-helper-checks/v1",
+  "complete": true,
+  "observedBy": "root actual tool terminal syntax checks",
+  "checks": [
+    {
+      "command": "node --check /private/tmp/tube-open-mouth-body-clearance-native-20261005/native.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check /private/tmp/tube-open-mouth-body-clearance-native-20261005/mature-mouth.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check /private/tmp/tube-open-mouth-body-clearance-native-20261005/inspection-bridge.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "Python ast.parse(prepare.py, run.py)",
+      "exitCode": 0
+    }
+  ],
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/prepare.py",
+      "bytes": 4575,
+      "sha256": "5522dd13a5aceb535007534895218a5612722e2622062c8606f720cd3f56de9a"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/run.py",
+      "bytes": 12762,
+      "sha256": "067072ca17939e4084aaa64dbefdadfc8b05a56605e08b9313fe54505090e3ab"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/native.mjs",
+      "bytes": 19676,
+      "sha256": "37e593ae77b331508b3a8cc3a4714afe0c5daab1e8dd0a6ddd79fedaa9b20399"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/mature-mouth.mjs",
+      "bytes": 29030,
+      "sha256": "bb5642ed6f4f3a6bcc178d04542b8fd1f9134de5b44f51b01dea4710478399a9"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/inspection-bridge.mjs",
+      "bytes": 6350,
+      "sha256": "06d7eca6fa2197e0aa469280bdb82ceeaacbb02b9153ab60dbd7eb4eb2535aad"
+    }
+  ],
+  "preparation": {
+    "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/prepare-result.json",
+    "bytes": 815,
+    "sha256": "81abe8d09402f12b654179d0a71b7ab29c46454ee904ab9cb67a848e35c8cdb5"
+  },
+  "nativeExecutedByReceipt": false
+}
