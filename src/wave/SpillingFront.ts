@@ -25,7 +25,7 @@ export interface SpillingFrontOptions {
   lineShare: number;
   /** Onsets within this along-shore distance of a wave's broken extent join that wave, m. */
   joinReach: number;
-  /** A cell whose break began this long before a wave's first onset still belongs to it, s. */
+  /** A cell whose break began this long before its column's onset still belongs to that onset's wave, s. */
   ownershipSlack: number;
   /** Waves tracked at once; the oldest is dropped (its cells pass ungated as if long broken). */
   maxWaves: number;
@@ -43,7 +43,7 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   lineShare: 0.35,
   joinReach: 6,
   ownershipSlack: 0.4,
-  maxWaves: 4,
+  maxWaves: 8,
   lifetime: 45,
 };
 
@@ -69,8 +69,8 @@ export interface SpillingWave {
   backX: number;
   /** When the front reached each column (NaN until it does), s. */
   readonly reached: Float64Array;
-  /** Whether each column has had its onset in this wave. */
-  readonly joined: Uint8Array;
+  /** When each column had its onset in this wave (NaN: not yet), s. */
+  readonly joinedAt: Float64Array;
   /** Last time an onset joined this wave, s. */
   lastJoin: number;
 }
@@ -105,11 +105,11 @@ export class SpillingFront {
     const { joinReach } = this.options;
     for (let k = this.waves.length - 1; k >= 0; k -= 1) {
       const wave = this.waves[k];
-      if (wave.joined[column]) continue;
+      if (!Number.isNaN(wave.joinedAt[column])) continue;
       const low = Math.min(wave.backX, wave.tipX) - joinReach;
       const high = Math.max(wave.backX, wave.tipX) + joinReach;
       if (x < low || x > high) continue;
-      wave.joined[column] = 1;
+      wave.joinedAt[column] = time;
       wave.lastJoin = time;
       if (this.ahead(x, wave.tipX)) wave.tipX = x;
       if (this.ahead(wave.backX, x)) wave.backX = x;
@@ -118,9 +118,9 @@ export class SpillingFront {
     const nx = this.grid.nx;
     const wave: SpillingWave = {
       onset: time, startX: x, frontX: x, tipX: x, backX: x,
-      reached: new Float64Array(nx).fill(Number.NaN), joined: new Uint8Array(nx), lastJoin: time,
+      reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN), lastJoin: time,
     };
-    wave.joined[column] = 1;
+    wave.joinedAt[column] = time;
     wave.reached[column] = time;
     this.waves.push(wave);
     this.started += 1;
@@ -167,12 +167,16 @@ export class SpillingFront {
           continue;
         }
         const began = time - age[i];
-        // The newest wave whose first onset this cell's break does not predate: its owner. None: an older bore.
+        // Its owner: of the waves that started breaking in this column, the latest whose onset there this cell's
+        // break does not predate. None: a bore no tracked onset started (an older wave's, or one that never jumped
+        // seaward), left as the solver has it.
         let owner = -1;
-        for (let k = count - 1; k >= 0; k -= 1) {
-          if (began >= waves[k].onset - options.ownershipSlack) {
+        let latest = -Infinity;
+        for (let k = 0; k < count; k += 1) {
+          const joined = waves[k].joinedAt[ix];
+          if (joined <= began + options.ownershipSlack && joined > latest) {
+            latest = joined;
             owner = k;
-            break;
           }
         }
         if (owner < 0) {

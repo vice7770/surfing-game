@@ -126,6 +126,25 @@ describe('SpillingFront', () => {
     expect(front.started).toBe(2);
   });
 
+  it('keeps a wave\'s cells its own when another wave starts elsewhere along the crest meanwhile', () => {
+    const g = grid();
+    const front = new SpillingFront(g, { rampSeconds: 0.001 });
+    const size = g.nx * g.nz;
+    const strength = new Float64Array(size);
+    const age = new Float64Array(size);
+    const out = new Float64Array(size);
+    // The peeling wave breaks from −20 to 0 at once; a second, small break starts at x = 15 a second later.
+    for (let x = -20; x <= 0; x += 1) front.observeOnset(column(g, x), 0);
+    front.observeOnset(column(g, 15), 1);
+    expect(front.waves).toHaveLength(2);
+    // The first wave's crest keeps breaking toward 0 (cells begun after the second wave's onset); its front is at −18.
+    breakBand(g, strength, age, 1, 0.9, -20, 0, -2, 2);
+    front.update(1, 1, 2, strength, age, out);
+    expect(front.waves[0].frontX).toBeCloseTo(-18, 6);
+    expect(sum(out, g, -5)).toBe(0);
+    expect(sum(out, g, -19)).toBeGreaterThan(0);
+  });
+
   it('runs toward −x when the spot peels that way', () => {
     const g = grid();
     const front = new SpillingFront(g, { direction: -1, rampSeconds: 0.001 });

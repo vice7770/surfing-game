@@ -188,7 +188,7 @@ export function padangReefAt(x: number): boolean {
 export const CANYON = {
   axisX: -80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250,
   shelfDepth: 2.4, shoreSlope: 1 / 25, crestDepth: 1.3, edgeSlope: 1 / 20,
-  peakX: -40, peakZ: -140, angle: 55, fadeWidth: 25,
+  peakX: -40, peakZ: -140, angle: 62, fadeWidth: 25,
 };
 
 /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */

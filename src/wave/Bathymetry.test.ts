@@ -328,7 +328,7 @@ describe('surf spot bathymetry', () => {
     expect(canyonBreakLineZ(CANYON.peakX + 20) - canyonBreakLineZ(CANYON.peakX)).toBeCloseTo(20 * Math.tan((CANYON.angle * Math.PI) / 180), 6);
     // On it the terrace is crestDepth deep, under the shelf; seaward of it the shelf; upcoast of the peak no terrace
     // (clear of the canyon's flank, which deepens the bed a little near the peak).
-    for (const x of [10, 30]) {
+    for (const x of [5, 10]) {
       expect(canyon.depthAt(x, canyonBreakLineZ(x) + 2)).toBeCloseTo(CANYON.crestDepth, 2);
       expect(canyon.depthAt(x, canyonBreakLineZ(x) - 50)).toBeCloseTo(CANYON.shelfDepth, 2);
     }
