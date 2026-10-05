@@ -1,0 +1,41 @@
+{
+  "schema": "c-mature-region-root-syntax-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourcePostUnchanged": true,
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/mature-mouth.mjs",
+      "bytes": 22397,
+      "sha256": "445008ae495e54bb370400f46ccaf6975446d3f1f6efcd39365fe7b0343ecb44"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/inspection-bridge.mjs",
+      "bytes": 6320,
+      "sha256": "868f566ac68b4ed18286d7940bda34f44f2db0a4a500b73a19599da6862bfe40"
+    }
+  ],
+  "checks": [
+    {
+      "name": "mature-mouth.mjs",
+      "run": true,
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-c-mature-region-native-20261005/root-helper-logs/mature-mouth.mjs.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "inspection-bridge.mjs",
+      "run": true,
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-c-mature-region-native-20261005/root-helper-logs/inspection-bridge.mjs.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}

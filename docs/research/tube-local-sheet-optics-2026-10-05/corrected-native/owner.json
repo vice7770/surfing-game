@@ -1,0 +1,40 @@
+{
+  "complete": true,
+  "firstFailure": null,
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "build": {
+    "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/build.json",
+    "bytes": 12292,
+    "sha256": "f4e4c7592bad8ba21244006192eb5ad4e676ec217446105caf428ce1d8c6d966"
+  },
+  "sealSha256": "ba6f6c51c1505939127517bc19686c9205f6455cf375a68d5fb73f0fb9da7640",
+  "pid": 76066,
+  "exitCode": 0,
+  "protectedAfter": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "closedPorts": {
+    "4301": true,
+    "9711": true
+  },
+  "protectedPreserved": true,
+  "elapsedSeconds": 165.60853620799026
+}

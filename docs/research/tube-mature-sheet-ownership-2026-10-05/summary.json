@@ -1,0 +1,117 @@
+{
+  "schema": "mature-sheet-ownership-summary/v1",
+  "complete": true,
+  "stepCount": 0,
+  "traceRows": 0,
+  "capturedPngCount": 3,
+  "newArchivedPngCount": 1,
+  "ownerElapsedSeconds": 140.500937875011,
+  "protectedListenerIdentitiesPreserved": true,
+  "canonicalMatureReferenceMatch": {
+    "selectorExact": true,
+    "epochAndStepExact": true,
+    "cameraDerivationExact": true,
+    "activeFull37AndRawFrontWordsExact": true,
+    "pairedCloneCameraUnchanged": true,
+    "fullSolverOrPixelEqualityClaim": false
+  },
+  "region": {
+    "complete": true,
+    "kind": "fixed-canonical-camera-loft-region-colour-only",
+    "seaTime": 276.3293560552737,
+    "camera": {
+      "position": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "quaternion": [
+        0.006600678893715275,
+        -0.7881247536647293,
+        0.008452992668955604,
+        0.6154220914250564
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    },
+    "sameCanonicalCamera": true,
+    "cloneCameraWordsCompared": true,
+    "originalView": "ordinary-colour",
+    "originalViewRestored": true,
+    "selectorRerun": false,
+    "cameraDerivedAgain": false,
+    "geometryOrQualityAcceptance": false,
+    "interpretation": "Bright region colour identifies surviving loft fragments only. Unchanged pixels may belong to other surfaces or background; this pass does not determine their physical identity.",
+    "artifact": {
+      "file": "mature-region.png",
+      "bytes": 492898,
+      "sha256": "0133e27251ae5a57549b59f96b3120024f92f3b002c3052cc8db803594a676ac"
+    }
+  },
+  "nonmutation": {
+    "checked": true,
+    "unchanged": true,
+    "failures": [],
+    "checkedLoftArrays": 37,
+    "checkedRawFrontWords": 351,
+    "checkedBoardWords": 8,
+    "checkedRiderWords": 33,
+    "exactActiveByteComparison": true,
+    "originalCameraPoseAndProjectionChecked": true,
+    "originalBarrelViewSheetAndWindingChecked": true,
+    "rendererOwnedStateScope": "Alternate renderer patch/underwater/caustic state restored by the normal render; no renderer-internal byte-equality claim",
+    "inspectionRenderAttempted": true,
+    "normalRenderRestored": true,
+    "normalRenderRestoreFailure": null
+  },
+  "newImage": {
+    "file": "mature-region.png",
+    "bytes": 492898,
+    "sha256": "0133e27251ae5a57549b59f96b3120024f92f3b002c3052cc8db803594a676ac"
+  },
+  "colourMappingSource": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+    "bytes": 30437,
+    "sha256": "3f232ce4e085ee62570daad821b777702394fbe5b772c3feda0c046f4b7489d8"
+  },
+  "rootVisualObservation": "The dark right wedge and apparent sky/reflection above it turn red; the left wall/floor are blue, with green transitions. Red identifies surviving loft-sheet pixels.",
+  "acceptance": {
+    "survivingLoftSheetPixelOwnership": true,
+    "exactTriangleOrProvenance": false,
+    "geometryCorrectness": false,
+    "physicalBlockage": false,
+    "shaderCause": false,
+    "visualQuality": false,
+    "tubePassage": false,
+    "performance": false
+  },
+  "pendingRayAuditRetained": false,
+  "runtimeChanged": false,
+  "duplicatedMaturePngOrLoftPayloads": false
+}

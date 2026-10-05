@@ -1,0 +1,506 @@
+{
+  "schema": "local-sheet-optics-curated-archive/v1",
+  "complete": true,
+  "output": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-local-sheet-optics-2026-10-05",
+  "files": [
+    {
+      "path": "ray/analysis-first.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 190888,
+        "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/analysis-first.json",
+        "sha256": "cb5ca1262e5d57c2f03fc9eea42e27731d9d3e1917aef72fbb0ed0f62d801dd6"
+      },
+      "archivedBytes": 27604,
+      "archivedSha256": "b5cf98fa0e4184689e3f967cd8f38220c60abddb4deb5b891fc83477f6d72133",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "ray/ray-audit.py",
+      "encoding": "identity",
+      "original": {
+        "bytes": 29493,
+        "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/ray-audit.py",
+        "sha256": "03526ce68bf95fab1d97dfec03f6a021ad583d1ebc9bfee2842eac86bcdbb4c4"
+      },
+      "archivedBytes": 29493,
+      "archivedSha256": "03526ce68bf95fab1d97dfec03f6a021ad583d1ebc9bfee2842eac86bcdbb4c4",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "ray/inputs.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 31544,
+        "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/inputs.json",
+        "sha256": "10a3cea7cd5a51c626b16c2b6c4b10e5194c47bc93b6073a6d2db5230d4aea38"
+      },
+      "archivedBytes": 6136,
+      "archivedSha256": "7316de6a27ec44571cbcc5886d858caa698399df788e1d79078d21657e4a566b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "ray/source-freeze.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 1047,
+        "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/source-freeze.json",
+        "sha256": "e831da6fadd812ef70da6a26ed18993dde16d8d6c77a48273f8623d3d7d91c51"
+      },
+      "archivedBytes": 1047,
+      "archivedSha256": "e831da6fadd812ef70da6a26ed18993dde16d8d6c77a48273f8623d3d7d91c51",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "refraction/analysis-first.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 195253,
+        "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/analysis-first.json",
+        "sha256": "a78f0f21a6f27f368839c7ab8c7806a46399f72912b361ba7ef2cd3df8312e22"
+      },
+      "archivedBytes": 32287,
+      "archivedSha256": "1d1f73e55de7e6f77fa30832d75a46a3c6c52739fead3817f65936938af8e88f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "refraction/refraction-audit.py",
+      "encoding": "identity",
+      "original": {
+        "bytes": 30027,
+        "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/refraction-audit.py",
+        "sha256": "56f9033b1fc3f3e8067304c40793390c27dc24fbf28f5669f63f02047278e3c5"
+      },
+      "archivedBytes": 30027,
+      "archivedSha256": "56f9033b1fc3f3e8067304c40793390c27dc24fbf28f5669f63f02047278e3c5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "refraction/inputs.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 17216,
+        "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/inputs.json",
+        "sha256": "4d6261f17693047c90436e19efec72df98d1e220999c2f4aebf3eaf19a211417"
+      },
+      "archivedBytes": 4721,
+      "archivedSha256": "2637b27eb63d4063248af70b7179bdba32b6bf6566bcbac6ca319afba1fd3ef2",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "refraction/source-freeze.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 1072,
+        "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/source-freeze.json",
+        "sha256": "47562262d10e2a6f9704cc8dcd01b2fffe64af3d03ac751f65c512de0d4bad93"
+      },
+      "archivedBytes": 1072,
+      "archivedSha256": "47562262d10e2a6f9704cc8dcd01b2fffe64af3d03ac751f65c512de0d4bad93",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "refraction/README.txt",
+      "encoding": "identity",
+      "original": {
+        "bytes": 4444,
+        "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/README.txt",
+        "sha256": "7cd64a10be9c89664ed17acf2630c7dc01f0a09f53fccfa3f18cfabe6e313a71"
+      },
+      "archivedBytes": 4444,
+      "archivedSha256": "7cd64a10be9c89664ed17acf2630c7dc01f0a09f53fccfa3f18cfabe6e313a71",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "default-stance/report.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 16607197,
+        "file": "/private/tmp/tube-c-default-stance-native-20261005/candidate-first/report.json",
+        "sha256": "296917c7334c4552ea477b224def7eb9b4881ed5b995ab6994846e6a441990fb"
+      },
+      "archivedBytes": 2706762,
+      "archivedSha256": "32db447b568351205dad3c3ff467cb12f187f6ee539accd2bc87eb7fbd2d43c2",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "default-stance/owner.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 3608,
+        "file": "/private/tmp/tube-c-default-stance-native-20261005/candidate-first-owner.json",
+        "sha256": "f3b0d132c96753312bc649be429e05f2a45fd873bfbfda72a232d9a359b2cd1f"
+      },
+      "archivedBytes": 3608,
+      "archivedSha256": "f3b0d132c96753312bc649be429e05f2a45fd873bfbfda72a232d9a359b2cd1f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "default-stance/terminal.png",
+      "encoding": "identity",
+      "original": {
+        "bytes": 2139527,
+        "file": "/private/tmp/tube-c-default-stance-native-20261005/candidate-first/03-terminal.png",
+        "sha256": "869352b12fb9be83b7dd281cc4a01f1052678ddb0eb175b37b11ac3445d05e3e"
+      },
+      "archivedBytes": 2139527,
+      "archivedSha256": "869352b12fb9be83b7dd281cc4a01f1052678ddb0eb175b37b11ac3445d05e3e",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "first-shader-capture-failed/owner.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 1670,
+        "file": "/private/tmp/tube-local-sheet-capture-20261005/owner.json",
+        "sha256": "32d73fe12f82a07a59e672ab127951c66df0b12b5485d59df17a335d0f8fd76c"
+      },
+      "archivedBytes": 1670,
+      "archivedSha256": "32d73fe12f82a07a59e672ab127951c66df0b12b5485d59df17a335d0f8fd76c",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "first-shader-capture-failed/report.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 22080,
+        "file": "/private/tmp/tube-local-sheet-capture-20261005/candidate-first/report.json",
+        "sha256": "4b174a141e3e4ff570e9b1a3521a3a75109888e1d1320040f96be533fe884b65"
+      },
+      "archivedBytes": 3750,
+      "archivedSha256": "39e7372b1eba2cfe272c78b8b6b5898e12ee508fa08a13bf4c8f68a4401ecdfb",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "first-shader-capture-failed/native.log",
+      "encoding": "identity",
+      "original": {
+        "bytes": 409,
+        "file": "/private/tmp/tube-local-sheet-capture-20261005/native.log",
+        "sha256": "c0c7fab5bcb1f83716f36978856d77ab298a600f67dc38bf4a2164bd5fdfa937"
+      },
+      "archivedBytes": 409,
+      "archivedSha256": "c0c7fab5bcb1f83716f36978856d77ab298a600f67dc38bf4a2164bd5fdfa937",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/owner.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 1675,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/owner.json",
+        "sha256": "9ad374bcec79b263a5f2ab167488ecbdc8b8640a466b453ae2dd3a8c7cdca4fc"
+      },
+      "archivedBytes": 1675,
+      "archivedSha256": "9ad374bcec79b263a5f2ab167488ecbdc8b8640a466b453ae2dd3a8c7cdca4fc",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/report.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 43553,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/candidate-first/report.json",
+        "sha256": "9b73e41f796b628772cf33a0a7cac689d2b8c6c1a8b31a285ef5d5d95aea1323"
+      },
+      "archivedBytes": 9674,
+      "archivedSha256": "2cdabd853b8da700b6ad8e87abb24f2c5857a0a7c3c54632646c4ab4d0c6b629",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/producer/native.mjs",
+      "encoding": "identity",
+      "original": {
+        "bytes": 18449,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/native.mjs",
+        "sha256": "d2f672f1dd42f833f7649d4ace399340436f7470e7e1a303721dca9c6f00da12"
+      },
+      "archivedBytes": 18449,
+      "archivedSha256": "d2f672f1dd42f833f7649d4ace399340436f7470e7e1a303721dca9c6f00da12",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/native.log",
+      "encoding": "identity",
+      "original": {
+        "bytes": 126,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/native.log",
+        "sha256": "1fa2116e575a343563273cef48fccdb7462e0ba46c2ae4f919ae0b2adc4a9c81"
+      },
+      "archivedBytes": 126,
+      "archivedSha256": "1fa2116e575a343563273cef48fccdb7462e0ba46c2ae4f919ae0b2adc4a9c81",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/producer/prepare.py",
+      "encoding": "identity",
+      "original": {
+        "bytes": 2452,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/prepare.py",
+        "sha256": "d093c6e0a9fe17949fd5fee362c302bc4fc384483d94d7c9abd792bcd10770c8"
+      },
+      "archivedBytes": 2452,
+      "archivedSha256": "d093c6e0a9fe17949fd5fee362c302bc4fc384483d94d7c9abd792bcd10770c8",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/producer/run.py",
+      "encoding": "identity",
+      "original": {
+        "bytes": 4398,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/run.py",
+        "sha256": "88957cb144ff61f6d9bf77c32347806b2a91d561b82c744c70560a4288cddca7"
+      },
+      "archivedBytes": 4398,
+      "archivedSha256": "88957cb144ff61f6d9bf77c32347806b2a91d561b82c744c70560a4288cddca7",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/producer/inputs.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "bytes": 5443,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/inputs.json",
+        "sha256": "2d75bcebe23d7826c75e2cc4cc05306d3304e9eeb880b912b9956e8e686d2ed4"
+      },
+      "archivedBytes": 1867,
+      "archivedSha256": "6ce78536c84736b8ffd20d1b1948f19a22db8ea8870fcbd35dc0f202bbfb4693",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/producer/mature-mouth.mjs",
+      "encoding": "identity",
+      "original": {
+        "bytes": 22397,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/mature-mouth.mjs",
+        "sha256": "445008ae495e54bb370400f46ccaf6975446d3f1f6efcd39365fe7b0343ecb44"
+      },
+      "archivedBytes": 22397,
+      "archivedSha256": "445008ae495e54bb370400f46ccaf6975446d3f1f6efcd39365fe7b0343ecb44",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/producer/inspection-bridge.mjs",
+      "encoding": "identity",
+      "original": {
+        "bytes": 6320,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/inspection-bridge.mjs",
+        "sha256": "868f566ac68b4ed18286d7940bda34f44f2db0a4a500b73a19599da6862bfe40"
+      },
+      "archivedBytes": 6320,
+      "archivedSha256": "868f566ac68b4ed18286d7940bda34f44f2db0a4a500b73a19599da6862bfe40",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/build.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 12292,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/build.json",
+        "sha256": "f4e4c7592bad8ba21244006192eb5ad4e676ec217446105caf428ce1d8c6d966"
+      },
+      "archivedBytes": 12292,
+      "archivedSha256": "f4e4c7592bad8ba21244006192eb5ad4e676ec217446105caf428ce1d8c6d966",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/seal.json",
+      "encoding": "identity",
+      "original": {
+        "bytes": 4233,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/seal.json",
+        "sha256": "ba6f6c51c1505939127517bc19686c9205f6455cf375a68d5fb73f0fb9da7640"
+      },
+      "archivedBytes": 4233,
+      "archivedSha256": "ba6f6c51c1505939127517bc19686c9205f6455cf375a68d5fb73f0fb9da7640",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/mature-core.png",
+      "encoding": "identity",
+      "original": {
+        "bytes": 1783695,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/candidate-first/mature-core.png",
+        "sha256": "a849849a5a840faec80d49b292456b86f31e8ed8e915f6a3cbe306d5ab311588"
+      },
+      "archivedBytes": 1783695,
+      "archivedSha256": "a849849a5a840faec80d49b292456b86f31e8ed8e915f6a3cbe306d5ab311588",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/source/src/wave/barrel/lipSheet.ts",
+      "encoding": "identity",
+      "original": {
+        "bytes": 19136,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/source/src/wave/barrel/lipSheet.ts",
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "archivedBytes": 19136,
+      "archivedSha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/source/src/wave/barrel/sheetExitNormals.test.ts",
+      "encoding": "identity",
+      "original": {
+        "bytes": 6599,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/source/src/wave/barrel/sheetExitNormals.test.ts",
+        "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+      },
+      "archivedBytes": 6599,
+      "archivedSha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "encoding": "identity",
+      "original": {
+        "bytes": 32142,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "sha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915"
+      },
+      "archivedBytes": 32142,
+      "archivedSha256": "d6390abedac07df4fbac5435dba82e2a5d67fd34943ce3d8a00e714e05981915",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "corrected-native/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "encoding": "identity",
+      "original": {
+        "bytes": 26095,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "sha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d"
+      },
+      "archivedBytes": 26095,
+      "archivedSha256": "0c99d965030a5aa752c9bc9f518a042f4dfaf82fe816242530674a95bdd69c5d",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "root-checks/optical-build.log",
+      "encoding": "identity",
+      "original": {
+        "bytes": 1328,
+        "file": "/private/tmp/tube-local-sheet-capture-20261005/build.log",
+        "sha256": "dc86b2754b74cd2c439ec55a1d4e99a9f3b3128eb4e290e47591ad4cb0a63605"
+      },
+      "archivedBytes": 1328,
+      "archivedSha256": "dc86b2754b74cd2c439ec55a1d4e99a9f3b3128eb4e290e47591ad4cb0a63605",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "root-checks/broad-geometry-336-of-339.log",
+      "encoding": "identity",
+      "original": {
+        "bytes": 2833,
+        "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/barrel-tests.log",
+        "sha256": "02942c28422ded7901dea5b16be0446a0227d5e88d258657b9d3b272d709e38b"
+      },
+      "archivedBytes": 2833,
+      "archivedSha256": "02942c28422ded7901dea5b16be0446a0227d5e88d258657b9d3b272d709e38b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "archive-builder.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-optics-and-open-mouth-archive-20261005/build.py",
+        "bytes": 35146,
+        "sha256": "6463671b04e7468a7664673c5abbb8359c19007597a05fa1773ff007db53f208"
+      },
+      "archivedBytes": 35146,
+      "archivedSha256": "6463671b04e7468a7664673c5abbb8359c19007597a05fa1773ff007db53f208",
+      "decompressedBytesVerified": true
+    }
+  ],
+  "derived": {
+    "README.md": {
+      "bytes": 4484,
+      "sha256": "7882c740accee625672de38fb2469fdbb3ef24ecaba0304327f31a49c007cb6a"
+    },
+    "summary.json": {
+      "bytes": 6625,
+      "sha256": "8effd787323b0fd86d0d7d25c7ab98b720b3275538bcec8e8526abeff8da847f"
+    }
+  },
+  "externalReferences": [
+    {
+      "original": {
+        "bytes": 41583,
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/report.json",
+        "sha256": "47c4c82ba86de60adede064625d34a0ef109b81b6c897324eaa00f7e9f548685"
+      },
+      "archive": "../tube-mature-interior-and-steering-2026-10-05/mature-interior/capture/report.json.gz",
+      "encoding": "gzip",
+      "archivedBytes": 9093,
+      "archivedSha256": "6dac9e0b1ae1df3bd0cc3a51bc3ed4bca0ba66e646ee5a9eb19ee4d1eaad4e07",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1099037,
+        "sha256": "da9eb21977cfd84e2ee3c972633bc47330a99cea91afdc5021e08e424c517b14"
+      },
+      "archive": "../tube-mature-interior-and-steering-2026-10-05/mature-interior/capture/loft-terminal.json.gz",
+      "encoding": "gzip",
+      "archivedBytes": 231491,
+      "archivedSha256": "4fda6bafa133d58ada670e17d29b9d8ee4185de0ace417991f865fdb369c1c84",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "bytes": 2444798,
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/normal.png",
+        "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+      },
+      "archive": "../tube-mature-interior-and-steering-2026-10-05/mature-interior/capture/normal.png",
+      "encoding": "identity",
+      "archivedBytes": 2444798,
+      "archivedSha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "bytes": 1583143,
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/mature-core.png",
+        "sha256": "92f15efc11cfe98bdf961f44721dd24ee6f0261cb9019dc8cc520ce59518a479"
+      },
+      "archive": "../tube-mature-interior-and-steering-2026-10-05/mature-interior/capture/mature-core.png",
+      "encoding": "identity",
+      "archivedBytes": 1583143,
+      "archivedSha256": "92f15efc11cfe98bdf961f44721dd24ee6f0261cb9019dc8cc520ce59518a479",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "bytes": 492898,
+        "file": "/private/tmp/tube-c-mature-region-native-20261005/candidate-first/mature-region.png",
+        "sha256": "0133e27251ae5a57549b59f96b3120024f92f3b002c3052cc8db803594a676ac"
+      },
+      "archive": "../tube-mature-sheet-ownership-2026-10-05/capture/mature-region.png",
+      "encoding": "identity",
+      "archivedBytes": 492898,
+      "archivedSha256": "0133e27251ae5a57549b59f96b3120024f92f3b002c3052cc8db803594a676ac",
+      "decompressedBytesVerified": true
+    }
+  ],
+  "directArchiveManifests": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-mature-interior-and-steering-2026-10-05/manifest.json",
+      "bytes": 57587,
+      "sha256": "0b4ae579db0ec34d77ded87a49a1b87df78e5b31dbcb69e2c47cf80c9ba93e33"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-mature-sheet-ownership-2026-10-05/manifest.json",
+      "bytes": 26153,
+      "sha256": "2b2999facae5042ec88d38d8674b53014da8f199e13cc6efc726725dfa235a18"
+    }
+  ],
+  "runtimeCopied": false,
+  "dependenciesCopied": false,
+  "assetsCopied": false,
+  "oldMediaDuplicated": false,
+  "unfinishedCaptureRetained": false,
+  "shaderCauseAccepted": false,
+  "geometryCandidateAccepted": false
+}

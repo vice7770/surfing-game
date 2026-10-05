@@ -1,0 +1,87 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/wave/barrel
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+ ❯ src/wave/barrel/retirementBoundary.test.ts (7 tests | 1 failed) 5650ms
+   ❯ sampled C intrinsic retirement closure on ordinary water (7)
+     × keeps the original X16.25 bracket on intrinsic phase2 fade without changing captured packet words 593ms
+ ❯ src/wave/barrel/boundedCProfile.test.ts (10 tests | 1 failed) 22174ms
+   ❯ parameter-first shared library authority (7)
+     × resolves both exact retained v1 retirement failures through current shared contour 15ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (5 tests | 1 failed) 31034ms
+   ❯ bounded-C derived consumers (5)
+     × keeps final core contours clear across formation, sealing and retirement with live water and end weights 6361ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > keeps final core contours clear across formation, sealing and retirement with live water and end weights
+AssertionError: expected [ { …(5) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "age": 0.8847727911330044,
++     "case": "periodic-point21-a23-l12",
++     "count": 4,
++     "first": {
++       "row": 5,
++       "segments": [
++         63,
++         104,
++       ],
++     },
++     "waterIndex": 2,
++   },
++ ]
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:101:22
+     99|       }
+    100|     }
+    101|     expect(failures).toEqual([]);
+       |                      ^
+    102|   }, 30000);
+    103|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/wave/barrel/boundedCProfile.test.ts > parameter-first shared library authority > resolves both exact retained v1 retirement failures through current shared contour
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/wave/barrel/boundedCProfile.test.ts:75:129
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/wave/barrel/retirementBoundary.test.ts > sampled C intrinsic retirement closure on ordinary water > keeps the original X16.25 bracket on intrinsic phase2 fade without changing captured packet words
+AssertionError: expected 0.5559813380241394 to be 0.40243619680404663 // Object.is equality
+
+- Expected
++ Received
+
+- 0.40243619680404663
++ 0.5559813380241394
+
+ ❯ src/wave/barrel/retirementBoundary.test.ts:36:234
+
+ ❯ src/wave/barrel/retirementBoundary.test.ts:36:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 31 passed (34)
+      Tests  3 failed | 336 passed (339)
+   Start at  14:20:28
+   Duration  37.88s (tests 87%, transform 9%, import 4%, worker 1%)
+

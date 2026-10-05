@@ -1,0 +1,28 @@
+{
+  "schema": "c-mature-fixed-sheet-ray-source-freeze/v1",
+  "unexecutedAtPreparation": true,
+  "rootExecutionPending": true,
+  "sourceOnlyReviewComplete": true,
+  "syntaxChecked": false,
+  "analysisExecuted": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/inputs.json",
+      "bytes": 31544,
+      "sha256": "10a3cea7cd5a51c626b16c2b6c4b10e5194c47bc93b6073a6d2db5230d4aea38"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/ray-audit.py",
+      "bytes": 29493,
+      "sha256": "03526ce68bf95fab1d97dfec03f6a021ad583d1ebc9bfee2842eac86bcdbb4c4"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-sheet-ray-audit-20261005/README.txt",
+      "bytes": 6983,
+      "sha256": "7c95273e196fcdb7c1b63367f7c1dab780ca55fa12004ec2fb2308e1f10385c3"
+    }
+  ],
+  "independentReview": "region_source_review read-only source review found no blocking logic defect; corrected mesh-transform preservation wording before freeze"
+}

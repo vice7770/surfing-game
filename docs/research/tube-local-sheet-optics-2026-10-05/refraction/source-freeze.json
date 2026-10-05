@@ -1,0 +1,27 @@
+{
+  "schema": "c-fixed-sheet-refraction-source-freeze/v1",
+  "unexecutedAtPreparation": true,
+  "rootExecutionPending": true,
+  "syntaxChecked": false,
+  "analysisExecuted": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/inputs.json",
+      "bytes": 17216,
+      "sha256": "4d6261f17693047c90436e19efec72df98d1e220999c2f4aebf3eaf19a211417"
+    },
+    {
+      "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/refraction-audit.py",
+      "bytes": 30027,
+      "sha256": "56f9033b1fc3f3e8067304c40793390c27dc24fbf28f5669f63f02047278e3c5"
+    },
+    {
+      "file": "/private/tmp/tube-c-sheet-refraction-audit-20261005/README.txt",
+      "bytes": 4444,
+      "sha256": "7cd64a10be9c89664ed17acf2630c7dc01f0a09f53fccfa3f18cfabe6e313a71"
+    }
+  ],
+  "sourceReview": "Read-only frozen-source API review confirmed nearest-opposite-run versus conditional shared datum versus shader chord distinctions and exact eta/sign/gate rules. Root final script review pending."
+}

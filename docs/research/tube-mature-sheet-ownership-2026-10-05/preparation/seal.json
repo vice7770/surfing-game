@@ -1,0 +1,222 @@
+{
+  "schema": "c-mature-region-root-seal/v1",
+  "complete": true,
+  "rootAuthorized": true,
+  "limits": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "nativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "hudReadyWaitMilliseconds": 180000,
+    "steps": 360,
+    "physicalSeconds": 6,
+    "inspectionCadence": 30,
+    "reportBytes": 33554432,
+    "traceBytes": 25165824,
+    "pngCount": 3,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 37748736,
+    "sidecarCount": 1,
+    "sidecarBytesEach": 6291456,
+    "sidecarRawBytes": 4194304,
+    "movieCount": 0,
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedOpenPorts": [
+      4312,
+      4313,
+      4314
+    ]
+  },
+  "preparationInputs": {
+    "file": "/private/tmp/tube-c-mature-region-native-20261005/inputs.json",
+    "bytes": 5443,
+    "sha256": "2d75bcebe23d7826c75e2cc4cc05306d3304e9eeb880b912b9956e8e686d2ed4"
+  },
+  "preparationFreeze": {
+    "file": "/private/tmp/tube-c-mature-region-native-20261005/source-freeze.json",
+    "bytes": 2393,
+    "sha256": "e2a96fd9e54dbb6d879686daa1a4c33a28572f1b4ff50955d1333b7dc96f7f30"
+  },
+  "helperPins": [
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/inputs.json",
+      "bytes": 5443,
+      "sha256": "2d75bcebe23d7826c75e2cc4cc05306d3304e9eeb880b912b9956e8e686d2ed4"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/authority.py",
+      "bytes": 9297,
+      "sha256": "dd1cde99af2305ffbdbe3a4da7a1833f966b14bba7e3dfecbe6a70613fb10432"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/native.mjs",
+      "bytes": 18477,
+      "sha256": "95cb3256337ba5f94b2036ea797e190fc4ee51c6547f90161cc4ef43bc0ae1e1"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/run.py",
+      "bytes": 20259,
+      "sha256": "4106b59047dc0baab3668ec10cd7397f38cac97eeb4b59061cbef097dc164967"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/readiness.json",
+      "bytes": 1621,
+      "sha256": "f41d9b328121191da7fdf74d8893ee834c82458d1c44ec30b8b5d543542fe9b6"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/README.txt",
+      "bytes": 7984,
+      "sha256": "8676040ce872d2ec8fab5f3667f08bd94a1303b0052b0bf3ed6d347d5069a45f"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/mature-mouth.mjs",
+      "bytes": 22397,
+      "sha256": "445008ae495e54bb370400f46ccaf6975446d3f1f6efcd39365fe7b0343ecb44"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/inspection-bridge.mjs",
+      "bytes": 6320,
+      "sha256": "868f566ac68b4ed18286d7940bda34f44f2db0a4a500b73a19599da6862bfe40"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/source-freeze.json",
+      "bytes": 2393,
+      "sha256": "e2a96fd9e54dbb6d879686daa1a4c33a28572f1b4ff50955d1333b7dc96f7f30"
+    }
+  ],
+  "helperReadiness": {
+    "file": "/private/tmp/tube-c-mature-region-native-20261005/readiness.json",
+    "bytes": 1621,
+    "sha256": "f41d9b328121191da7fdf74d8893ee834c82458d1c44ec30b8b5d543542fe9b6"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "environment": {
+    "node": {
+      "file": "/opt/homebrew/bin/node",
+      "bytes": 61838736,
+      "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e"
+    },
+    "chrome": {
+      "file": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "bytes": 367696,
+      "sha256": "b4a14b08946ab78756169696fd272d6c3040a22df52da4f83f665225685f4c10"
+    }
+  },
+  "rootCameraSyntaxChecks": {
+    "file": "/private/tmp/tube-c-mature-region-native-20261005/root-camera-syntax-checks.json",
+    "bytes": 1258,
+    "sha256": "e68bb33632242698b63ea9d6b38a6e7e9e01b8b739550dd800afb8ff2fefc73b"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-c-mature-region-native-20261005/root-helper-checks.json",
+    "bytes": 796,
+    "sha256": "fcd18c707d2147fa9d45b7b7a3137a6eda319bb0d55c838d7de14c164c294e9f"
+  },
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "visualAcceptance": false,
+  "approvedCandidateSeal": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/seal.json",
+    "bytes": 178692,
+    "sha256": "fd75570dfbb7224eb4b7b648fcd41c6759c7eb5e94d7e81ed7b5c988edbd6090"
+  },
+  "approvedApplicationBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-complete-build-result.json",
+    "bytes": 181652,
+    "sha256": "f82a41adb1f2f48006587a1cad912d2243d1a4bed93fc28d08dc79a336a6d8f7"
+  },
+  "approvedDiagnosticBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 35375,
+    "sha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348510,
+    "sha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055"
+  },
+  "knownCReport": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+    "bytes": 18331566,
+    "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+  },
+  "knownCOwner": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+    "bytes": 3457,
+    "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+  },
+  "approvedMatureSeal": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/seal.json",
+    "bytes": 7409,
+    "sha256": "cd0c60471faed114b9841cb2eb78f23b64ab4de145a04d0d8bafcd80d7394323"
+  },
+  "approvedMatureReport": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/report.json",
+    "bytes": 41583,
+    "sha256": "47c4c82ba86de60adede064625d34a0ef109b81b6c897324eaa00f7e9f548685"
+  },
+  "approvedMatureOwner": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-owner.json",
+    "bytes": 5312,
+    "sha256": "c6c5b449b36a3d0cb866deb49c4dfbf6e5f446a39769a359b1a3437761c027fb"
+  },
+  "approvedMatureSidecar": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1099037,
+    "sha256": "da9eb21977cfd84e2ee3c972633bc47330a99cea91afdc5021e08e424c517b14"
+  },
+  "matureParentSourceFreeze": {
+    "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/source-freeze.json",
+    "bytes": 2109,
+    "sha256": "317967b5300f87ea9a5a74ef91a3ef33c7bbf3436d0fdb30be648749f1c28c0b"
+  }
+}

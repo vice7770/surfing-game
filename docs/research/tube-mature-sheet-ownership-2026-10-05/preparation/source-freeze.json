@@ -1,0 +1,62 @@
+{
+  "schema": "c-mature-region-native-source-freeze/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "checksRun": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "scope": "Eight fresh helper/metadata files only. Root owns every later check, seal, native process/resource and receipt. No production runtime/source/build or preview changes.",
+  "pins": [
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/inputs.json",
+      "bytes": 5443,
+      "sha256": "2d75bcebe23d7826c75e2cc4cc05306d3304e9eeb880b912b9956e8e686d2ed4"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/authority.py",
+      "bytes": 9297,
+      "sha256": "dd1cde99af2305ffbdbe3a4da7a1833f966b14bba7e3dfecbe6a70613fb10432"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/native.mjs",
+      "bytes": 18477,
+      "sha256": "95cb3256337ba5f94b2036ea797e190fc4ee51c6547f90161cc4ef43bc0ae1e1"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/run.py",
+      "bytes": 20259,
+      "sha256": "4106b59047dc0baab3668ec10cd7397f38cac97eeb4b59061cbef097dc164967"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/readiness.json",
+      "bytes": 1621,
+      "sha256": "f41d9b328121191da7fdf74d8893ee834c82458d1c44ec30b8b5d543542fe9b6"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/README.txt",
+      "bytes": 7984,
+      "sha256": "8676040ce872d2ec8fab5f3667f08bd94a1303b0052b0bf3ed6d347d5069a45f"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/mature-mouth.mjs",
+      "bytes": 22397,
+      "sha256": "445008ae495e54bb370400f46ccaf6975446d3f1f6efcd39365fe7b0343ecb44"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-region-native-20261005/inspection-bridge.mjs",
+      "bytes": 6320,
+      "sha256": "868f566ac68b4ed18286d7940bda34f44f2db0a4a500b73a19599da6862bfe40"
+    }
+  ],
+  "runtimeOrSourceCopied": false,
+  "buildPerformed": false,
+  "nativeExecuted": false,
+  "qualityAccepted": false,
+  "tubePassageAccepted": false,
+  "review": {
+    "sourceOnlyIndependentReview": true,
+    "blockingSourceMismatchFound": false,
+    "actualSyntaxAcceptancePending": true,
+    "scope": "Callback injection, one clone, full37/rawfront/parent field comparison, PNG count and cleanup; read-only review only."
+  }
+}

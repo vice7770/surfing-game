@@ -1,0 +1,230 @@
+{
+  "schema": "local-sheet-optics-checkpoint-summary/v1",
+  "complete": true,
+  "offlineRays": [
+    {
+      "name": "center",
+      "pixel": [
+        854,
+        439
+      ],
+      "entryTriangleOrdinal": 12118,
+      "entryRows": [
+        47,
+        48
+      ],
+      "entryFronts": [
+        41
+      ],
+      "sheetWeight": 1.0,
+      "baseViewCosine": 0.3482654343581628,
+      "meanChordTir": true,
+      "meanBaseTransmission": false,
+      "localBaseTransmission": true,
+      "nearestCandidateBaseTransmission": true,
+      "actualShaderCauseAccepted": false
+    },
+    {
+      "name": "right-center",
+      "pixel": [
+        1281,
+        439
+      ],
+      "entryTriangleOrdinal": 10522,
+      "entryRows": [
+        41,
+        42
+      ],
+      "entryFronts": [
+        41
+      ],
+      "sheetWeight": 1.0,
+      "baseViewCosine": 0.7294346619836464,
+      "meanChordTir": true,
+      "meanBaseTransmission": false,
+      "localBaseTransmission": true,
+      "nearestCandidateBaseTransmission": true,
+      "actualShaderCauseAccepted": false
+    },
+    {
+      "name": "lower-right",
+      "pixel": [
+        1494,
+        703
+      ],
+      "entryTriangleOrdinal": 10519,
+      "entryRows": [
+        41,
+        42
+      ],
+      "entryFronts": [
+        41
+      ],
+      "sheetWeight": 1.0,
+      "baseViewCosine": 0.7065365809366481,
+      "meanChordTir": true,
+      "meanBaseTransmission": false,
+      "localBaseTransmission": true,
+      "nearestCandidateBaseTransmission": true,
+      "actualShaderCauseAccepted": false
+    },
+    {
+      "name": "top-right",
+      "pixel": [
+        1494,
+        131
+      ],
+      "entryTriangleOrdinal": 9994,
+      "entryRows": [
+        39,
+        40
+      ],
+      "entryFronts": [
+        41
+      ],
+      "sheetWeight": 1.0,
+      "baseViewCosine": 0.5906692929059195,
+      "meanChordTir": false,
+      "meanBaseTransmission": true,
+      "localBaseTransmission": true,
+      "nearestCandidateBaseTransmission": true,
+      "actualShaderCauseAccepted": false
+    },
+    {
+      "name": "left-center",
+      "pixel": [
+        427,
+        439
+      ],
+      "entryTriangleOrdinal": 13226,
+      "entryRows": [
+        51,
+        52
+      ],
+      "entryFronts": [
+        41
+      ],
+      "sheetWeight": 0.0,
+      "baseViewCosine": 0.9339452864941777,
+      "meanChordTir": true,
+      "meanBaseTransmission": false,
+      "localBaseTransmission": null,
+      "nearestCandidateBaseTransmission": null,
+      "actualShaderCauseAccepted": false
+    }
+  ],
+  "offlineRayProducerElapsedSeconds": 0.4862310419557616,
+  "offlineRefractionProducerElapsedSeconds": 0.8721314580179751,
+  "defaultStance": {
+    "steps": 1457,
+    "standingSteps": 85,
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    },
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 1457,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "standingInputOverlay": {
+      "crouch": 0,
+      "compress": 0,
+      "previousCrouch": 1,
+      "previousCompress": 1,
+      "policy": "Public line defaults after first output standing; paired forced posture overlay removed"
+    },
+    "ownerElapsedSeconds": 365.35355762497056,
+    "tubeEntryAccepted": false
+  },
+  "firstShaderCaptureFailure": {
+    "exitCode": 1,
+    "firstFailure": "Error: Error: Published bounded contact diagnostics required\n    at retainContactDiagnostics (<anonymous>:377:80)\n    at Object.current (<anonymous>:20:9)\n    at <anonymous>:1:16\n    at Page.eval (file:///private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs:101:33)\n    at async file:///private/tmp/tube-local-sheet-capture-20261005/native.mjs:86:20",
+    "stepCount": 0,
+    "pngCount": 0,
+    "ownerElapsedSeconds": 147.8430679999874,
+    "ownedPortsClosed": {
+      "4301": true,
+      "9711": true
+    },
+    "previewListenerIdentitiesPreserved": true,
+    "passiveTelemetryMissing": true,
+    "shaderResultAccepted": false
+  },
+  "correctedNative": {
+    "complete": true,
+    "exitCode": 0,
+    "steps": 0,
+    "ownerElapsedSeconds": 165.60853620799026,
+    "canonicalComparison": {
+      "selectorExact": true,
+      "epochAndStepExact": true,
+      "cameraDerivationExact": true,
+      "activeFull37AndRawFrontWordsExact": true,
+      "pairedCloneCameraUnchanged": true,
+      "fullSolverOrPixelEqualityClaim": false
+    },
+    "capturedGeometrySourcePin": {
+      "file": "/private/tmp/tube-local-sheet-capture-v2-20261005/source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18088,
+      "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+    },
+    "currentWorktreeGeometryCandidateIncluded": false,
+    "newCoreImage": {
+      "file": "mature-core.png",
+      "bytes": 1783695,
+      "sha256": "a849849a5a840faec80d49b292456b86f31e8ed8e915f6a3cbe306d5ab311588"
+    },
+    "normalRegionFull37PayloadsDuplicated": false,
+    "rootVisualObservation": "Large black wedge replaced by directional cloud/sky transmission on the water sheet; a narrow black strip remains at bottom right.",
+    "exposedMouthReferenceQualityOrRideAccepted": false
+  },
+  "rootChecks": {
+    "focusedOpticalTests": {
+      "source": "Root tool observation: exec session69297 terminal0",
+      "testFilesPassed": 3,
+      "testsPassed": 23,
+      "durationSeconds": 2.12,
+      "rawTestStdoutRetained": false,
+      "shaderQualityAcceptance": false
+    },
+    "buildLogRetained": true,
+    "broadGeometryTests": {
+      "passed": 336,
+      "total": 339,
+      "failed": 3,
+      "logRetained": true,
+      "allGreen": false,
+      "opticsOrPendingGeometryAcceptance": false
+    }
+  },
+  "checkpointPending": {
+    "correctedNativeCaptureRetained": true,
+    "correctedNativeFixedPoseComparisonComplete": true,
+    "geometryCandidateOutcomeAccepted": false
+  },
+  "acceptance": {
+    "baseNormalThreeRayMeanChordDiscrepancyRecorded": true,
+    "actualShaderCause": false,
+    "fixedPoseLocalOpticalEffectObserved": true,
+    "waterVolumeOrRasterSurvival": false,
+    "visualQuality": false,
+    "tubeEntry": false,
+    "bodyPassage": false,
+    "performance": false,
+    "geometryCandidate": false
+  },
+  "retainedOriginalFiles": 34,
+  "directExternalReferences": 5,
+  "runtimeOrDepsOrAssetsCopied": false,
+  "oldMediaCopied": false,
+  "unfinishedCaptureReadOrArchived": false
+}
