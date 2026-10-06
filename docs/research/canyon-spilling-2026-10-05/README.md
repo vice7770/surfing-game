@@ -115,7 +115,7 @@ The cost is one pass over the grid per step, with at most 8 waves per breaking c
 - **`scripts/canyon-peel-report.ts`** prints the peel per period and the front's state, and sweeps `CANYON`:
   - Build and run: `rolldown scripts/canyon-peel-report.ts -o dist/scripts/canyon-peel-report.mjs --format esm --platform node && node dist/scripts/canyon-peel-report.mjs --hs 1.4 --tp 11 --seeds 3 --periods 14 [--verbose] [--canyon angle=60,...]`.
 - **`scripts/browser/canyon-peel-shots.mjs`** drives the water sheet and shoots a sequence, one second apart, from the beach, a cliff and overhead. Start `npx vite --port 5199` first.
-  - Run: `CHROME=/opt/pw-browsers/chromium node scripts/browser/canyon-peel-shots.mjs <dir> --frames=30 --headless`.
+  - Run: `CHROME=<path to a Chromium binary> node scripts/browser/canyon-peel-shots.mjs <dir> --frames=30 --headless`.
   - It runs its own upload receiver on port 5299.
 - **The water sheet** (`src/dev/waterSheet.ts`):
   - takes `&spot=canyon`, `&direction=`, `&spreading=` and `&spillingFront=0`;
@@ -124,15 +124,31 @@ The cost is one pass over the grid per step, with at most 8 waves per breaking c
 
 ## Screenshots
 
-These are headless Chromium shots (SwiftShader), Rich look, at midday: Medium, 0°, s = 150, CPU solver, one second apart. Run 1 starts 45 s into the sea. SwiftShader washes the colours out compared with a GPU.
+These are headless Chromium shots (SwiftShader), Rich look, at midday: Medium, 0°, s = 150, CPU solver, with the final build (the band-owned front and the 1:12 terrace edge, commit `9e044c33`). SwiftShader washes the colours out compared with a GPU.
 
-**Overhead** (sea at the top, +x to the right, the 160 m window), frames 47, 50, 53, 56 and 59 s:
+Each view is 8 frames, 2 s apart: frames 14, 16 … 28 of one sequence shot a second apart. The water sheet settles the sea for at least 30 s before the first frame; the frames' sea times were not kept. Each contact sheet reads left to right: frames 14–20 on the top row, 22–28 below.
 
-![overhead strip](img/run1-overhead-strip.jpg)
+**From the beach** (looking out to sea, +x to the right):
 
-Each wave's whitewater starts at its peak, left of centre, as a thin streak on the crest. It grows into a white wedge whose leading edge moves right along the crest, while the crest ahead of it stays green. Two waves are peeling at once, each with its own front. The single frames are `img/run1-overhead-14.jpg` … `-28.jpg`, at 45 … 59 s.
+![beach sheet](img/final-beach-sheet.jpg)
 
-RUN2_PLACEHOLDER
+On the outer crest, a thin bright line of foam sits left of centre, at the peak. On the wave inside it, the foam has grown down the face into a white band. The band's right end moves right from frame to frame, and the crest beyond it stays green. By frame 28 that wave's foam has spread into a wide lacy patch inshore, and the crest outside it carries a thin line at the peak again. The single frames are `img/final-beach-14.jpg` … `-28.jpg`.
+
+**From a cliff** (higher up, looking the same way; the canyon is the deep blue water on the left):
+
+![cliff sheet](img/final-cliff-sheet.jpg)
+
+The same set from higher up. In frame 14 both crests carry only a thin line left of centre. The inner wave's band then widens down the face, and its right end moves from left of centre to right of centre by frame 28, while the shoulder ahead of it stays clean. Behind the band the foam spreads and thins as the bore runs inshore. The single frames are `img/final-cliff-14.jpg` … `-28.jpg`.
+
+**Overhead** (sea at the top, +x to the right):
+
+![overhead sheet](img/final-overhead-sheet.jpg)
+
+Two waves are peeling at once, each with its own front. Each wave's whitewater starts at its peak, left of centre, as a short white streak on the crest. It grows into a white wedge whose point runs right along the crest, while the crest ahead of the point stays green. In frame 28 the next crest starts its own streak at the peak. The single frames are `img/final-overhead-14.jpg` … `-28.jpg`.
+
+The straight seams in the water (the dashed lines overhead) stay put from frame to frame; they are not foam.
+
+**Earlier runs.** Runs 1–3 (commits `ee5d2b59`, `85a059f0` and `c107a3a6`) were shot with the first front. It owned cells by the solver's breaking age, so it gated almost nothing (§3): run 2, with that front on, and run 3, with the front off, came out the same. Commit `9e044c33` replaced them with the sequences above. There is no front-off sequence of the final build. So these frames show the front and the solver's own spilling together, and in run 3 the solver's whitewater alone already formed wedges peeling toward +x.
 
 ## Rideability
 
