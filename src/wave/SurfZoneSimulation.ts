@@ -805,6 +805,10 @@ export class SurfZoneSimulation {
     this.lip.importState(state.lip);
     // A donor without a front (an older build) hands over none: this one starts afresh.
     this.front?.importState(state.front ?? { nextId: 0, nextFront: 0, points: [], held: [], tracks: [] });
+    // A spilling spot's front and roller lenses (S3) do not travel in the sea's state yet: they start afresh, their
+    // waves and lenses coming back with the next onsets (the roller plan's §5 for a donor without them).
+    this.spilling?.reset();
+    this.roller?.reset();
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 

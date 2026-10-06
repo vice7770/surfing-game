@@ -1641,4 +1641,17 @@ describe('the Canyon roller lens (S3)', () => {
     }
     expect(on.stepCosts.roller).toBe(0);
   });
+
+  it('starts the Canyon\'s front and roller afresh in a sea taken over without them (the plan\'s §5: a donor without them)', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm');
+    const state = simulation.exportState();
+    // A front wave and a lens left from a sea this one ran before.
+    simulation.spilling!.observeOnset(3, 1, -60);
+    simulation.roller!.table.fill(0.5);
+    simulation.importState(state);
+    expect(simulation.spilling!.waves).toHaveLength(0);
+    expect(simulation.spilling!.started).toBe(0);
+    expect(simulation.roller!.table.every((value) => value === 0)).toBe(true);
+    expect(simulation.roller!.riseAt(0, -60)).toBe(0);
+  });
 });

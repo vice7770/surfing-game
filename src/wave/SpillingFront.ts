@@ -262,6 +262,18 @@ export class SpillingFront {
     }
   }
 
+  /**
+   * No waves, numbered from 0 again: a sea taken over without the front's state starts it afresh (the roller lens's
+   * plan, §5: a donor without it leaves a fresh front, whose waves come back with the next onsets).
+   */
+  reset(): void {
+    this.waves.length = 0;
+    this.started = 0;
+    this.gated = 0;
+    this.ramped = 0;
+    this.crestZ.fill(Number.NaN);
+  }
+
   /** A one-line state for reports. */
   describe(): string {
     return this.waves.map((wave) => `[${wave.startX.toFixed(0)}→${wave.frontX.toFixed(0)}/${wave.tipX.toFixed(0)}]`).join(' ');

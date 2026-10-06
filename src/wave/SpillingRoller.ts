@@ -209,6 +209,14 @@ const NONE = 0;
 const ACTIVE = 1;
 const SHEDDING = 2;
 
+/** The table's offsets, as plain numbers for the per-point reads. */
+const CREST = ROLLER_FIELD.crest;
+const LENGTH = ROLLER_FIELD.length;
+const SCALE = ROLLER_FIELD.scale;
+const THICKNESS = ROLLER_FIELD.thickness;
+const FLOW_X = ROLLER_FIELD.flowX;
+const FLOW_Z = ROLLER_FIELD.flowZ;
+
 /** The lens's development φ: its travel over growthDepths breaker depths, at most 1 (Svendsen 1984). */
 export function development(travel: number, breakerDepth: number, options: Pick<RollerOptions, 'growthDepths'>): number {
   const span = options.growthDepths * breakerDepth;
@@ -686,9 +694,19 @@ export class SpillingRoller implements RollerLens {
     this.writeTable(time, front, first, last);
   }
 
+  /**
+   * No lenses and an empty table: a sea taken over without the roller's state starts it afresh (the plan's §5: a donor
+   * without it leaves no lenses; they come back with the next onsets). The counts run on.
+   */
+  reset(): void {
+    for (let lens = 0; lens < this.state.length; lens += 1) this.clearLens(lens);
+    this.table.fill(0);
+    this.tableWaves.fill(-1);
+  }
+
   /** The drawn-and-felt lens at (x, z): the thickest of the slots, cut to half the water's depth (the swash's rule). */
   lensAt(x: number, z: number, out: LensPoint): boolean {
-    const thickness = this.thicknessAt(x, z);
+    const thickness = this.thicknessAt(x, z, true);
     if (!(thickness > 0)) {
       out.thickness = 0;
       out.rise = 0;
@@ -706,7 +724,7 @@ export class SpillingRoller implements RollerLens {
   }
 
   riseAt(x: number, z: number): number {
-    const thickness = this.thicknessAt(x, z);
+    const thickness = this.thicknessAt(x, z, false);
     return thickness > 0 ? this.options.voidMean * thickness : 0;
   }
 
@@ -941,43 +959,53 @@ export class SpillingRoller implements RollerLens {
     }
   }
 
-  /** The thickest slot's lens at (x, z), cut to half the depth; its scale and flow in pickG and pickFlow. */
-  private thicknessAt(x: number, z: number): number {
-    const { grid, table, options } = this;
-    const { nx, xCenters, dx } = grid;
-    const gx = (x - xCenters[0]) / dx;
+  /**
+   * The thickest slot's lens at (x, z), cut to half the depth; its scale in pickG and, with `flow`, its water's velocity
+   * in pickFlow. A point outside a lens's crest-to-toe span leaves after reading its crest and length.
+   */
+  private thicknessAt(x: number, z: number, flow: boolean): number {
+    const { grid, table } = this;
+    const { nx, dx } = grid;
+    const gx = (x - grid.xCenters[0]) / dx;
     if (!(gx >= 0 && gx <= nx - 1) || nx < 2) return 0;
     const i0 = Math.min(nx - 2, Math.floor(gx));
     const tx = gx - i0;
+    const taper = this.options.rearTaper;
     let best = 0;
+    let picked = -1;
+    let pickedW0 = 0;
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       const o0 = (slot * nx + i0) * ROLLER_STRIDE;
       const o1 = o0 + ROLLER_STRIDE;
-      const g0 = table[o0 + ROLLER_FIELD.scale];
-      const g1 = table[o1 + ROLLER_FIELD.scale];
+      const g0 = table[o0 + SCALE];
+      const g1 = table[o1 + SCALE];
       const live0 = g0 > 0;
       const live1 = g1 > 0;
       if (!live0 && !live1) continue;
       // An empty neighbour gives no scale and the live column's geometry.
       const w0 = live0 ? (live1 ? 1 - tx : 1) : 0;
       const w1 = 1 - w0;
-      const g = (1 - tx) * (live0 ? g0 : 0) + tx * (live1 ? g1 : 0);
-      const crest = w0 * table[o0 + ROLLER_FIELD.crest] + w1 * table[o1 + ROLLER_FIELD.crest];
-      const length = w0 * table[o0 + ROLLER_FIELD.length] + w1 * table[o1 + ROLLER_FIELD.length];
+      const length = w0 * table[o0 + LENGTH] + w1 * table[o1 + LENGTH];
       if (!(length > 0)) continue;
-      const thickness = lensThickness((z - crest) / length, w0 * table[o0 + ROLLER_FIELD.thickness] + w1 * table[o1 + ROLLER_FIELD.thickness], g, options.rearTaper);
+      const xi = (z - (w0 * table[o0 + CREST] + w1 * table[o1 + CREST])) / length;
+      if (!(xi > -taper && xi < 1)) continue;
+      const g = (1 - tx) * (live0 ? g0 : 0) + tx * (live1 ? g1 : 0);
+      const thickness = lensThickness(xi, w0 * table[o0 + THICKNESS] + w1 * table[o1 + THICKNESS], g, taper);
       if (thickness > best) {
         best = thickness;
+        picked = o0;
+        pickedW0 = w0;
         this.pickG = g;
-        this.pickFlowX = w0 * table[o0 + ROLLER_FIELD.flowX] + w1 * table[o1 + ROLLER_FIELD.flowX];
-        this.pickFlowZ = w0 * table[o0 + ROLLER_FIELD.flowZ] + w1 * table[o1 + ROLLER_FIELD.flowZ];
       }
     }
-    if (best > 0) {
-      const half = 0.5 * this.depthAt(x, z);
-      if (best > half) best = half > 0 ? half : 0;
+    if (!(best > 0)) return 0;
+    if (flow) {
+      const o1 = picked + ROLLER_STRIDE;
+      this.pickFlowX = pickedW0 * table[picked + FLOW_X] + (1 - pickedW0) * table[o1 + FLOW_X];
+      this.pickFlowZ = pickedW0 * table[picked + FLOW_Z] + (1 - pickedW0) * table[o1 + FLOW_Z];
     }
-    return best;
+    const half = 0.5 * this.depthAt(x, z);
+    return best > half ? (half > 0 ? half : 0) : best;
   }
 
   /** The water's depth at (x, z): the solver's depth, bilinear between cell centres. */
