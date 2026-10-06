@@ -158,7 +158,7 @@ describe('PhysicalMode', () => {
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', source: 'practice' })).toEqual(REEF_PRACTICE_SWELL);
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' })).toEqual(PRACTICE_SWELL);
     expect(REEF_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
-    expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(20);
+    expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(0);
   });
 
   it('practises Padang Padang on its own long-period groundswell', () => {

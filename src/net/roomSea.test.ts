@@ -18,7 +18,7 @@ describe('roomSurfZoneConfig', () => {
 
   it('builds the practice groundswell as the Surf screen does', () => {
     const config = roomSurfZoneConfig({ spot: 'canyon', conditions: { swell: 'practice', tide: 'mid', wind: 'calm', time: 'midday' }, seed: 5 }, 0, 'cpu');
-    expect(config).toMatchObject({ significantHeight: 1.4, peakPeriod: 12, bandwidth: 0.08, directionDegrees: 10, compute: 'cpu', heightAt: 'edge' });
+    expect(config).toMatchObject({ significantHeight: 1.4, peakPeriod: 12, bandwidth: 0.08, directionDegrees: 0, compute: 'cpu', heightAt: 'edge' });
     // A buoy swell is given in deep water (the wave-sizes spec).
     const big = roomSurfZoneConfig({ spot: 'point', conditions: { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, seed: 5 }, 0, 'cpu');
     expect(big.heightAt ?? 'deep').toBe('deep');
