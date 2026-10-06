@@ -672,11 +672,14 @@ export class SpillingRoller implements RollerLens {
     for (let lens = 0; lens < this.state.length; lens += 1) {
       if (this.state[lens] !== NONE && this.found[lens] === 0) this.nextCrest[lens] = this.crest[lens] + this.speed[lens] * step;
     }
+    // Every normal from this step's crests first, so no lens's fate this step turns its neighbours'.
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      for (let column = first; column < last; column += 1) if (this.state[slot * nx + column] !== NONE) this.normal(slot, column, first, last);
+    }
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = first; column < last; column += 1) {
         const lens = slot * nx + column;
         if (this.state[lens] === NONE) continue;
-        this.normal(slot, column, first, last);
         if (this.advance(lens, column, slot, time, step, breakerDepth)) this.shape(lens, step, breakerDepth);
       }
     }
