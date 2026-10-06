@@ -300,8 +300,8 @@ const TWIST_GRIP_RADIUS = 0.15;
  * bank reference, scaled by Compress. It leads the body's lean, which it
  * leans in.
  *
- * On flat water at 7 m/s this brings the bottom turn round 90° in 1.0 s,
- * either side, keeping about 0.6 of the speed (0.36 before; 0.9 with
+ * On flat water at 7 m/s this brings the bottom turn round 90° in 1.02–1.03 s,
+ * either side, keeping 0.56–0.58 of the speed (0.36 before; 0.87 with
  * CARVE_CARRY). At 0.7 a rider compressing from standing fell after 100°.
  * Riding straight it does nothing.
  */
@@ -313,6 +313,22 @@ const COMPRESS_PULL = 0.5;
  * kept tipping the body in (70° against 15° asked) until it fell.
  */
 const PULL_OVERLEAN = (10 * Math.PI) / 180;
+/**
+ * Nor may the pull lean the body in where the feet can no longer catch it. They catch a body falling into the turn
+ * by rolling the board further onto its rail, and past the rail's bite they no longer can (RAIL_BITE, RAIL_EASE).
+ * So the pull eases off over the last RAIL_EASE before the bite, judged where the rail will be PULL_LOOKAHEAD, s, on
+ * at its roll rate: about as long as the turn takes to answer the lean (the rail in 0.05 s and its pull 0.04 s
+ * after it: `docs/research/rail-control-study.md`, from the carve lab's plant).
+ *
+ * Compress taken mid-turn on flat water, where the held turn's feet already brake near their edges, rolled the rail
+ * past its bite at 7–8 m/s (to 85° and 87°) and the rider fell into the turn at 0.87 and 0.75 s; at 10 m/s the yaw
+ * rate swung 1.60 rad/s. Compressing into the turn from the start fell at 8 m/s too (0.9 s). Eased, those turns keep
+ * the rail under 49° and the lean under 45°, and 10 m/s swings 1.32 rad/s; the bottom turn still comes round 90° in
+ * 1.03 s either side. Judged where the rail is, the rail ran on to 57° and the lean to 63° at 7 m/s; 0.05 s ahead
+ * left 10 m/s swinging 1.46 rad/s; 0.08–0.12 s all hold; from 0.15 s the rail change's riders fall
+ * (`leanOut.test.ts`) and a late projection costs too little (`projectionLean.test.ts`).
+ */
+const PULL_LOOKAHEAD = 0.1;
 /**
  * The carve's carry (the movement-flow spec's Q4 and Q16, a gameplay rule,
  * not physics), under the same gate as COMPRESS_PULL. A real bottom turn or
@@ -326,10 +342,11 @@ const PULL_OVERLEAN = (10 * Math.PI) / 180;
  * feet: they pass on only the board's share.
  *
  * In the stances spec's bottom turn (flat water at 7 m/s, compressed over the
- * crouch) 90° then comes in 1.02 s keeping 0.90–0.91 of the speed, either side
- * (0.60–0.62 without; 0.86–0.87 at 0.35, 1.0 at 0.5); compressed alone, 0.83 in
- * 0.95 s. Riding straight the same board keeps 0.63 after 1 s: on flat water
- * the carry gives back the planing drag a wave's face would feed.
+ * crouch) 90° then comes in 1.03 s keeping 0.87 of the speed, either side
+ * (0.56–0.58 without; 0.83–0.84 at 0.35, 0.96 at 0.5); compressed alone, 0.79 in
+ * 1.0 s. These were 0.90–0.91 and 0.83 before the pull eased short of the rail's
+ * bite (PULL_LOOKAHEAD). Riding straight the same board keeps 0.63 after 1 s: on
+ * flat water the carry gives back the planing drag a wave's face would feed.
  */
 const CARVE_CARRY = 0.4;
 const PULL_FULL_SPEED = 5;
@@ -919,6 +936,8 @@ export class AttachedRider {
   private planing = false;
   private banked = false;
   private ankleRest = 0;
+  /** The board's roll toward the lean asked for, PULL_LOOKAHEAD on at its present roll rate, rad (COMPRESS_PULL's bite). */
+  private railAhead = 0;
   private ankleTorque = 0;
   protected swingTorque = 0;
   /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
@@ -1119,6 +1138,7 @@ export class AttachedRider {
     this.planing = false;
     this.banked = false;
     this.ankleRest = 0;
+    this.railAhead = 0;
     this.ankleTorque = 0;
     this.swingTorque = 0;
     this.swing.angle = 0;
@@ -1543,6 +1563,8 @@ export class AttachedRider {
     // Past the rail's bite the feet no longer roll the board further onto it.
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
     const reach = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const leanSide = Math.sign(this.bankReference);
+    this.railAhead = leanSide * roll + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
     const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;
@@ -1616,7 +1638,8 @@ export class AttachedRider {
     const lean = Math.min(Math.abs(this.bankReference), MAX_BANK);
     const past = Math.max(0, this.bank.angle * Math.sign(this.bankReference) - lean);
     const speedFade = Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
-    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade;
+    const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
+    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
     this.assistForce.crossVectors(Y, along)
       .multiplyScalar(Math.sign(this.bankReference) * fade * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
