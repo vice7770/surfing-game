@@ -168,33 +168,66 @@ export function padangReefAt(x: number): boolean {
 }
 
 /**
- * The Canyon (the canyon spilling prototype, docs/research/canyon-spilling-2026-10-05): a spilling wave that peels left
- * to right seen from the beach (toward +x), on a square (0°), narrow groundswell.
+ * The Canyon (the straight-crest bed, docs/research/canyon-spilling-2026-10-05 §1): a spilling wave that peels left to
+ * right seen from the beach (toward +x) along one oblique break line, which straight crests square to the beach meet,
+ * as at the Wave Pool (`POOL`).
  *
- * A canyon cut through the shelf runs along the window's −x open edge (x = −80, half the 160 m window), level across
- * the boundary. Over its axis the swell runs ahead, so the crests on its flank turn toward +x, away from it; the
- * crests reach the break already angled, and break first toward −x. With the canyon on the +x edge (until
- * 2026-10-05) they turned the other way and peeled both ways by the swell's sets (a median 14°, two of six clean
- * waves toward +x; docs/research/canyon-spilling-2026-10-05). On a canyon wall crossing an edge the edge cells ran
- * unstable until the dispersive terms carried the surface's curvature across open edges.
+ * The simulated bed has no canyon any more. The canyon that ran along the −x open edge turned the crests on its flank,
+ * so they wrapped in from that corner (the owner, 2026-10-06). Seaward of the break line the bed is level along shore,
+ * so the crests stay straight up to it.
  *
- * Inshore of the canyon's head lies a level sand shelf `shelfDepth` deep and a planar beach face; on the shelf, a
- * terrace `crestDepth` deep, its seaward edge (the break line) running at `angle` degrees to the shore from its peak
- * (peakX, peakZ) toward +x and the beach, rising from the shelf at `edgeSlope` across it. Its slope along the waves'
- * path is gentle (the edge's slope times cos `angle`, 1:26), so they spill (local Iribarren number under 0.4 for the
- * breakers the shelf holds). Upcoast of
- * the peak the terrace fades out over `fadeWidth` m, so the bed is level along shore at both open edges.
+ * The tank's edge is 5 m deep (`OFFSHORE_DEPTH.canyon`). A blend `blendLength` m long takes the bed from there to a
+ * level sand shelf `shelfDepth` deep, and the solver's 1 m cells start at the relaxation zone (`zoneInner`), so the
+ * shoaling waves are resolved: on the old tank's 4 m cells over the blend they lost a third of their height without
+ * breaking, and with the canyon gone nothing broke at all. At 3.6 m the shelf keeps the swell's crests beside the arm
+ * flatter than on a 2.8 m one, where a break at the peak ran along them both ways (the breaking age's sideways spread).
+ *
+ * On the shelf stands a terrace, the arm, `crestDepth` deep. Its seaward edge, the break line, runs at `angle` degrees
+ * to the shore from its peak (peakX, peakZ) toward +x and the beach, across the whole window. Its face climbs at
+ * `pathSlope` along the waves' path, so they spill (an Iribarren number under 0.4 at the take-off). Upcoast of the
+ * peak the arm ends in a face along +z that falls at `endSlope` across x, so every depth's contour is furthest out at
+ * the peak and each wave starts breaking there. That end lies 10 m inside the −x open edge's levelling
+ * (`OPEN_EDGE_RAMP`), so the edge copies plain shelf. A planar beach face caps it all.
  * Mutable for the design sweep (`scripts/canyon-peel-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
-  axisX: -80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250,
-  shelfDepth: 2.4, shoreSlope: 1 / 25, crestDepth: 1.3, edgeSlope: 1 / 12,
-  peakX: -40, peakZ: -140, angle: 62, fadeWidth: 25,
+  shelfDepth: 3.6, shoreSlope: 1 / 25, crestDepth: 1,
+  /** The arm's face along the waves' path (+z), and its upcoast end across x. */
+  pathSlope: 1 / 30, endSlope: 1 / 4,
+  peakX: -48, peakZ: -236, angle: 62,
+  /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking. */
+  takeOffX: -40,
+  /** The tank: the relaxation zone's inner edge, where the 1 m cells start, and the blend onto the shelf, m. */
+  zoneInner: -396, blendLength: 60,
 };
 
 /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
 export function canyonBreakLineZ(x: number): number {
   return CANYON.peakZ + (x - CANYON.peakX) * Math.tan((CANYON.angle * Math.PI) / 180);
+}
+
+/** Where the Canyon's break line runs onto the beach face (its crest depth on the beach face), along shore, m. */
+export function canyonArmEndX(): number {
+  const c = CANYON;
+  return c.peakX + (-c.crestDepth / c.shoreSlope - c.peakZ) / Math.tan((c.angle * Math.PI) / 180);
+}
+
+/** Whether the Canyon's arm is ridden at along-shore position x: from its peak (and the end beside it) to where it meets the beach face. */
+export function canyonArmAt(x: number): boolean {
+  const c = CANYON;
+  return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonArmEndX();
+}
+
+/**
+ * The Canyon's terrace at (x, z), m deep: its face climbing at `pathSlope` along the waves' path to the break line, its
+ * top behind the line, and its upcoast end falling at `endSlope` across x upcoast of the peak, so every depth's contour
+ * is furthest out where it turns from the line into the end.
+ */
+export function canyonTerraceDepth(x: number, z: number): number {
+  const c = CANYON;
+  const face = c.crestDepth + Math.max(0, canyonBreakLineZ(x) - z) * c.pathSlope;
+  const end = c.crestDepth + Math.max(0, c.peakX - x) * c.endSlope;
+  return Math.max(face, end);
 }
 
 function beach(seed: number): SurfSpot {
@@ -324,14 +357,8 @@ function canyon(): SurfSpot {
     depthAt(x, z) {
       const offshore = -z;
       if (offshore <= 0) return offshore * 0.06;
-      const along = smoothstep(c.head, c.fullAt, offshore) * (1 - smoothstep(c.fadeStart, c.fadeEnd, offshore));
-      const cut = c.depth * Math.exp(-(((x - c.axisX) / c.halfWidth) ** 2)) * along;
-      // The shelf and the beach face, the terrace on them where it is shallower, faded out upcoast of its peak.
-      const base = Math.min(c.shelfDepth, offshore * c.shoreSlope);
-      const seaward = Math.max(0, (canyonBreakLineZ(x) - z) * Math.cos((c.angle * Math.PI) / 180));
-      const terrace = c.crestDepth + seaward * c.edgeSlope;
-      const weight = smoothstep(c.peakX - c.fadeWidth, c.peakX, x);
-      return base - Math.max(0, base - terrace) * weight + cut;
+      // The shelf and the beach face, the terrace on them where it is shallower.
+      return Math.min(c.shelfDepth, offshore * c.shoreSlope, canyonTerraceDepth(x, z));
     },
   };
 }
