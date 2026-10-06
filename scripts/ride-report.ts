@@ -88,6 +88,8 @@ const WIND_DOWN = 2;
 interface Ride {
   seconds: number;
   distance: number;
+  /** Along shore from the ride's start to its end, m: positive toward +x. */
+  along: number;
   meanSpeed: number;
   topSpeed: number;
   /** The old label, |board velocity|, including vertical motion. */
@@ -335,7 +337,7 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
           const finite = (key: 'crest' | 'required' | 'face' | 'ahead' | 'height') => trace.map((s) => s[key]).filter(Number.isFinite);
           const ratios = trace.filter((s) => Number.isFinite(s.required) && s.required > 0).map((s) => s.speed / s.required);
           rides.push({
-            seconds: trace.length * SURF_ZONE_STEP, distance,
+            seconds: trace.length * SURF_ZONE_STEP, distance, along: trace[trace.length - 1].x - trace[0].x,
             meanSpeed: mean(trace.map((s) => s.speed)), topSpeed: Math.max(...trace.map((s) => s.speed)),
             meanLabel: mean(trace.map((s) => s.label)), topLabel: Math.max(...trace.map((s) => s.label)),
             crestSpeed: mean(finite('crest')), required: mean(finite('required')), ratio: mean(ratios),
@@ -440,7 +442,7 @@ for (const spot of spots) {
     return `| ${where} | ${fixed(values.length * SURF_ZONE_STEP)} | ${fixed(mean(values), 2)} | ${fixed(quantile(values, 0.1), 2)}–${fixed(quantile(values, 0.9), 2)} | ${fixed(mean(feet), 2)} | ${fixed(quantile(feet, 0.1), 2)}–${fixed(quantile(feet, 0.9), 2)} | ${WEIGHT_TARGETS[where]} |`;
   });
   const weightTable = `The physics' weight on the board (the riding-body plan, step 6), every standing step of the closed rides, by the analyzer's manoeuvres and, outside them, by the board's climb (past ±${CLIMB} m/s), beside the stance map's targets: its pelvis point between the rear foot (0) and the front foot (1), as the stance map reads it, and the feet's own pressure there (the contact's centre of pressure, the share on the front foot):\n\n| Where | Seconds | Pelvis mean | Pelvis p10–p90 | Feet's pressure mean | Feet's p10–p90 | The map's target |\n|---|---:|---:|---:|---:|---:|---|\n${weightRows.join('\n')}`;
-  sections.push(`### ${spot}\n\n${turnTables(all)}\n\n${weightTable}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome | Turns | Score |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} | ${r.analysis ? r.analysis.maneuvers.length : '—'} | ${r.analysis ? fixed(scoreRide(r.analysis).score) : '—'} |`).join('\n') || '| — | | | | | | | | | | no ride | | |'}`);
+  sections.push(`### ${spot}\n\n${turnTables(all)}\n\n${weightTable}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Along shore m (+x) | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome | Turns | Score |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.along, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} | ${r.analysis ? r.analysis.maneuvers.length : '—'} | ${r.analysis ? fixed(scoreRide(r.analysis).score) : '—'} |`).join('\n') || '| — | | | | | | | | | | | no ride | | |'}`);
 }
 
 const report = `# Ride report

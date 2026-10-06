@@ -8,7 +8,9 @@ Three things were built:
 - no lip and no tube at the Canyon;
 - a **spilling front** that holds the whitewater back ahead of each wave's peel.
 
-Branch `claude/canyon-spilling-wip`.
+Built on `claude/canyon-spilling-wip`, merged into `claude/canyon-spilling`.
+
+**Status (owner, 2026-10-06).** After seeing the screenshots below, the owner ruled that the wave forms from a corner, in a strange shape. Waves must form straight to the beach. Their timing may be irregular, but waves must never come from more than one side, and never at the same time. The bed in §1 is therefore **the corner-canyon bed, being replaced for straight crests (owner, 2026-10-06)**: the branch `claude/canyon-straight` redesigns it, with the peel coming from an oblique break line. Every Canyon number in this note is the corner-canyon bed's, and its peel is not accepted. Its crest angles are in `docs/research/crest-angle-2026-10-05.md`.
 
 ## Direction convention
 
@@ -165,7 +167,7 @@ TESTS_PLACEHOLDER
 - **The front's waves are not handed over online.** A late joiner's sea (`SurfZoneState`) carries the foam but not the front's waves. Until the next onsets its whitewater is the solver's, ungated, for about a period.
 - **Small days barely break on the terrace** (1.3 m deep). The surf moves to the shore break.
 - **Without the canyon, the bed ran flat or unstable** in two sweeps. The canyon on the −x edge is load-bearing.
-- **The spot's descriptions still say "median 58°".** That is `SurfConditions.ts`, which the parallel agent owns. The Canyon's swell itself (0°, s = 150) is also theirs; these measurements override the config to it.
+- **The spot's description still says "median 58°"** (`SurfConditions.ts`, the old bed's). It is left as it is until the straight-crest bed is measured, since it changes again with that bed (owner, 2026-10-06). The Canyon's swell (0°, s = 150) has been its default since the drift fix merged, so the reports no longer need an override to get it.
 
 ## Next step: S3, a roller lens the rider hits
 
