@@ -56,14 +56,19 @@ const PARAMETERS = new URLSearchParams(window.location.search);
 const SPOT = (['reef', 'beach', 'padang', 'canyon'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
 /**
  * `&direction=<degrees>&spreading=<s>`: the swell's direction and cos-2s spreading in place of the settings' (the Canyon's
- * spilling prototype runs a square, narrow groundswell: `&spot=canyon&swell=medium&direction=0&spreading=150`), and
- * `&spillingFront=0` turns its spilling front off.
+ * spilling prototype runs a square, narrow groundswell: `&spot=canyon&swell=medium&direction=0&spreading=150`),
+ * `&spillingFront=0` turns its spilling front off, `&roller=0` its roller lens (S3), and `&rollerMask=solver` draws and
+ * feels the lens wherever the solver breaks rather than behind the visible front.
  */
 const SWELL_OVERRIDES: Partial<SurfZoneConfig> = {
   ...(PARAMETERS.has('direction') ? { directionDegrees: Number(PARAMETERS.get('direction')) } : {}),
   ...(PARAMETERS.has('spreading') ? { spreading: Number(PARAMETERS.get('spreading')) } : {}),
   // `&spillingFront=0`: a spilling spot's foam is the solver's own breaking, without its spilling front (before and after).
   ...(PARAMETERS.get('spillingFront') === '0' ? { spillingFront: false } : {}),
+  // `&roller=0`: no roller lens on a spilling spot's broken faces (the P11 push instead); `&rollerMask=solver|front`.
+  ...(PARAMETERS.get('roller') === '0' ? { roller: false } : {}),
+  ...(PARAMETERS.get('rollerMask') === 'solver' || PARAMETERS.get('rollerMask') === 'front'
+    ? { rollerMask: PARAMETERS.get('rollerMask') as 'solver' | 'front' } : {}),
 };
 /** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
 const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));

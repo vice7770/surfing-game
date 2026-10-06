@@ -30,6 +30,7 @@ import { SweptCrash } from './barrel/SweptCrash';
 import { CarrierSupport } from './barrel/carrierSupport';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
+import { SpillingRoller } from './SpillingRoller';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -113,6 +114,16 @@ export interface SurfZoneConfig {
    * on by default there; off feeds the foam the solver's own breaking (the before-and-after probes).
    */
   spillingFront?: boolean;
+  /**
+   * Whether a spilling spot's broken faces carry the roller lens (the Canyon roller lens, S3, `SpillingRoller`): on by
+   * default wherever the spilling front runs; off (or the front off) brings back the P11 roller push.
+   */
+  roller?: boolean;
+  /**
+   * Where the roller is drawn and felt, and where the rider's water breaks: behind the visible front ('front', the
+   * default, the advisor's Q1) or wherever the solver breaks ('solver', Q1's evidence).
+   */
+  rollerMask?: 'front' | 'solver';
 }
 
 /**
@@ -556,10 +567,19 @@ export class SurfZoneSimulation {
   /** The spilling front, at a spilling spot (`SPILLING_SPOTS`): it holds the whitewater back ahead of each wave's peel. */
   readonly spilling?: SpillingFront;
   /**
+   * The roller lens on each wave's broken face, wherever the spilling front runs unless the config turns it off (the
+   * Canyon roller lens, S3). It reads the water and the front, never writes them; the rider's water reads it.
+   */
+  readonly roller?: SpillingRoller;
+  /**
    * The breaking the whitewater sees at a swept spot with the crash (withheld over open curls, `SweptCrash`), or at a
    * spilling spot (withheld ahead of the spilling front and grown down the face behind it, `SpillingFront`).
    */
   private readonly whitewater?: Float64Array;
+  /** The breaking the rider feels with the roller behind the front (Q1): the solver's behind each front, none ahead. */
+  private readonly felt?: Float64Array;
+  /** Scratch for the roller's reach across shore in the snapshot. */
+  private readonly rollerExtent = { low: 0, high: 0 };
   private readonly crestSamples: CrestSample[] = [];
   /** When a front's lips throw after the solver's onset: the spot's barrel transect, its foot at the tide (BARREL_SPOTS). */
   private readonly onsetTiming?: OnsetTiming;
@@ -567,7 +587,7 @@ export class SurfZoneSimulation {
   private readonly frontFrom: number;
   lastStepMs = 0;
   /** Latest step's wall time by stage, including the device readback wait in `water`. */
-  readonly stepCosts = { water: 0, breaking: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
+  readonly stepCosts = { water: 0, breaking: 0, roller: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
   /** The first pass records the warm field's bores; onsets count from the next step. */
@@ -678,6 +698,11 @@ export class SurfZoneSimulation {
     if (spillingFrontOn(config) && !this.crash) {
       this.spilling = new SpillingFront(this.solver, SPILLING_FRONT[config.spot]);
       this.whitewater = new Float64Array(this.solver.h.length);
+      if (config.roller !== false) {
+        const mask = config.rollerMask ?? 'front';
+        this.roller = new SpillingRoller(this.solver, { mask });
+        if (mask === 'front') this.felt = new Float64Array(this.solver.h.length);
+      }
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -891,9 +916,14 @@ export class SurfZoneSimulation {
     this.breaking.update(dt);
     this.markBreakingOnsets();
     // A spilling spot's whitewater follows its front (`SpillingFront`): it reads the breaking, never writes it.
-    this.spilling?.update(this.solver.time, dt, this.breakerCelerity(), this.breaking.strength, this.whitewater!);
+    this.spilling?.update(this.solver.time, dt, this.breakerCelerity(), this.breaking.strength, this.whitewater!, this.felt);
     let end = performance.now();
     this.stepCosts.breaking = end - phase;
+    phase = end;
+    // Its roller lenses (S3) read the water and the front, after the front's step.
+    if (this.roller) this.roller.update(this.solver.time, dt, this.spilling!, this.breaking.strength, this.breakerDepth());
+    end = performance.now();
+    this.stepCosts.roller = end - phase;
     phase = end;
     this.advanceFront();
     end = performance.now();
@@ -944,6 +974,16 @@ export class SurfZoneSimulation {
    */
   get whitewaterStrength(): Float64Array {
     return this.whitewater ?? this.breaking.strength;
+  }
+
+  /**
+   * The breaking the rider's water reports (the Canyon roller lens, S3, the advisor's Q1): with the roller drawn and
+   * felt behind the visible front, the solver's breaking behind each front and where no wave owns a cell, none ahead,
+   * so the hold-down, the curl readers and the duck-dive goal follow the visible front too. Anywhere else, and with the
+   * roller off or on the solver's mask, the solver's own.
+   */
+  get feltBreaking(): Float64Array {
+    return this.felt ?? this.breaking.strength;
   }
 
   /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */
@@ -1187,9 +1227,10 @@ export class SurfZoneSimulation {
     return this.solver.dx;
   }
 
-  /** Water surface elevation, m; on dry land this is the bed. */
+  /** Water surface elevation, m, with any roller lens's top (S3); on dry land this is the bed. */
   heightAt(x: number, z: number): number {
-    return this.lip.carve(x, z, this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z));
+    const surface = this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z);
+    return this.lip.carve(x, z, this.roller ? surface + this.roller.riseAt(x, z) : surface);
   }
 
   bedAt(x: number, z: number): number {
@@ -1240,9 +1281,13 @@ export class SurfZoneSimulation {
       w![i] = wet ? qz[i] / h[i] : 0;
       fraction![i] = this.aeration.voidFraction(i);
     }
+    const { roller } = this;
+    const lenses = this.rollerReach();
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
+      const z = grid.zMin + r * grid.spacing;
+      const lensRow = z >= lenses.low && z <= lenses.high;
       for (let c = 0; c < grid.nx; c += 1) {
         const i = row + columns[c];
         const tx = columnWeights[c];
@@ -1254,6 +1299,8 @@ export class SurfZoneSimulation {
         const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
         const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
         surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
+        // A roller lens's top (S3): what is drawn is what the rider hits (`PhysicalSurfWater`'s node heights).
+        if (lensRow && depth > WET) surface[o] = depth + bottom + roller!.riseAt(grid.xMin + c * grid.spacing, z);
         surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
           + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
         flow[o] = depth > WET ? u![i] * w00 + u![i + 1] * w10 + u![i + nx] * w01 + u![i + nx + 1] * w11 : 0;
@@ -1312,9 +1359,13 @@ export class SurfZoneSimulation {
         if (aeration) fraction![i] = this.aeration.voidFraction(i);
       }
     }
+    const { roller } = this;
+    const lenses = this.rollerReach();
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
+      const z = grid.zMin + r * grid.spacing;
+      const lensRow = surface !== undefined && z >= lenses.low && z <= lenses.high;
       for (let c = 0; c < grid.nx; c += 1) {
         const i = row + columns[c];
         const tx = columnWeights[c];
@@ -1327,6 +1378,7 @@ export class SurfZoneSimulation {
         if (surface) {
           const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
           surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
+          if (lensRow && depth > WET) surface[o] = depth + bottom + roller!.riseAt(grid.xMin + c * grid.spacing, z);
           surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
             + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
         }
@@ -1340,6 +1392,15 @@ export class SurfZoneSimulation {
         }
       }
     }
+  }
+
+  /** The roller's lenses' reach across shore for a pass over the render nodes; none without a roller. */
+  private rollerReach(): { low: number; high: number } {
+    const reach = this.rollerExtent;
+    if (this.roller) return this.roller.extentZ(reach);
+    reach.low = Number.POSITIVE_INFINITY;
+    reach.high = Number.NEGATIVE_INFINITY;
+    return reach;
   }
 
   /** Resample the bed elevation to one value per render node, with the same interpolation as `writeUniformSurface`. */

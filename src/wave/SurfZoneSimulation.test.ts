@@ -1549,3 +1549,96 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
     expect(simulation.lip.sourceShare).toBe(SOURCE_SHARE);
   }, 240_000);
 });
+
+// The Canyon roller lens (S3, docs/superpowers/plans/2026-10-06-canyon-roller-s3.md, Task 2).
+describe('the Canyon roller lens (S3)', () => {
+  /** The test "spills at the Canyon at every size"'s Medium sea: Hs 1.4 m, Tp 11 s, 0°, s = 150, 160 m. */
+  const canyon: SurfZoneConfig = {
+    ...small, spot: 'canyon', significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: 160,
+    dx: 1, fineSpacing: 1,
+  };
+
+  it('grows lenses on the Canyon\'s waves, draws them only where their front has reached, and raises the node heights by their tops', () => {
+    const simulation = new SurfZoneSimulation(canyon);
+    // The same sea without the roller: it never writes the water, so the two stay bit for bit the same.
+    const plain = new SurfZoneSimulation({ ...canyon, roller: false });
+    const roller = simulation.roller!;
+    const front = simulation.spilling!;
+    const grid = simulation.renderGrid(1);
+    const withRoller = snapshotOutputs(grid);
+    const without = snapshotOutputs(grid);
+    const extent = { low: 0, high: 0 };
+    let drawn = 0;
+    let nodes = 0;
+    let highest = 0;
+    for (let frame = 1; frame <= 3 * 11 * 30; frame += 1) {
+      simulation.step(1 / 30);
+      plain.step(1 / 30);
+      if (frame % 15 !== 0) continue;
+      let differ = 0;
+      for (let i = 0; i < simulation.solver.h.length; i += 1) {
+        if (!Object.is(simulation.solver.h[i], plain.solver.h[i]) || !Object.is(simulation.solver.qz[i], plain.solver.qz[i])) differ += 1;
+      }
+      expect(differ).toBe(0);
+      // The rider feels the solver's breaking behind each front and where no wave owns a cell, none ahead.
+      const felt = simulation.feltBreaking;
+      const strength = simulation.breaking.strength;
+      for (let i = 0; i < felt.length; i += 1) if (felt[i] !== 0) expect(felt[i]).toBe(strength[i]);
+      // Every drawn lens's front has reached its column, and ahead of every front its wave has none.
+      for (let column = 0; column < simulation.solver.nx; column += 1) {
+        for (let slot = 0; slot < 2; slot += 1) {
+          const id = roller.tableWave(column, slot);
+          if (id < 0) continue;
+          const wave = front.waves.find((candidate) => candidate.id === id);
+          if (wave) expect(Number.isNaN(wave.reached[column])).toBe(false);
+          drawn += 1;
+        }
+        for (const wave of front.waves) {
+          if (!Number.isNaN(wave.reached[column])) continue;
+          for (let slot = 0; slot < 2; slot += 1) expect(roller.tableWave(column, slot)).not.toBe(wave.id);
+        }
+      }
+      // The node heights: with the roller less without it is each node's rise, to float32 precision.
+      roller.extentZ(extent);
+      if (!(extent.high > extent.low)) continue;
+      simulation.writeUniformSnapshot(withRoller[0], withRoller[1], withRoller[2], grid);
+      plain.writeUniformSnapshot(without[0], without[1], without[2], grid);
+      for (let r = 0; r < grid.nz; r += 1) {
+        const z = grid.zMin + r * grid.spacing;
+        for (let c = 0; c < grid.nx; c += 1) {
+          const o = (r * grid.nx + c) * 2;
+          const x = grid.xMin + c * grid.spacing;
+          const surface = without[0][o];
+          const wet = surface > simulation.bedAt(x, z) - 0.04;
+          const rise = wet ? roller.riseAt(x, z) : 0;
+          expect(Math.abs(withRoller[0][o] - surface - rise)).toBeLessThanOrEqual(4e-7 * Math.max(1, Math.abs(surface)));
+          expect(withRoller[0][o + 1]).toBe(without[0][o + 1]);
+          highest = Math.max(highest, rise);
+          nodes += 1;
+        }
+      }
+    }
+    expect(roller.counts.born).toBeGreaterThan(0);
+    expect(drawn).toBeGreaterThan(0);
+    expect(nodes).toBeGreaterThan(0);
+    expect(highest).toBeGreaterThan(0.01);
+  }, 900_000);
+
+  it('runs at the Canyon only, and not with it or the front off: the rider then feels the solver\'s breaking (Review Focus 4)', () => {
+    const on = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm');
+    expect(on.roller).toBeDefined();
+    expect(on.roller!.options.mask).toBe('front');
+    expect(on.feltBreaking).not.toBe(on.breaking.strength);
+    const solver = new SurfZoneSimulation({ ...small, spot: 'canyon', rollerMask: 'solver' }, 'warm');
+    expect(solver.roller!.options.mask).toBe('solver');
+    expect(solver.feltBreaking).toBe(solver.breaking.strength);
+    for (const config of [
+      { ...small, spot: 'canyon', roller: false }, { ...small, spot: 'canyon', spillingFront: false }, { ...small, spot: 'beach' },
+    ] as SurfZoneConfig[]) {
+      const off = new SurfZoneSimulation(config, 'warm');
+      expect(off.roller).toBeUndefined();
+      expect(off.feltBreaking).toBe(off.breaking.strength);
+    }
+    expect(on.stepCosts.roller).toBe(0);
+  });
+});
