@@ -9,6 +9,10 @@
  * strength the foam, the aeration and the roar are fed (`SurfZoneSimulation.whitewaterStrength`): the solver's
  * breaking, its dissipation and the rider's water are untouched. Like the swept barrel's gate (`SweptCrash.gate`),
  * it only ever lowers the whitewater.
+ *
+ * For the roller lens (S3, `SpillingRoller`) it also gives each wave's crest per column (`crestAt`) and the breaking
+ * the rider feels (`update`'s `felt`: the solver's behind each front and where no wave owns a cell, none ahead).
+ * Its decision paths use only + − × ÷ and min/max (the roller's online rule, R3 §3.4): its sine is a series.
  */
 
 export interface SpillingFrontOptions {
@@ -52,6 +56,29 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   lifetime: 45,
 };
 
+/** Terms of `seriesSine`'s Taylor series: on [−π/2, π/2] the first one left out is below 1e-20. */
+const SINE_TERMS = 12;
+
+/**
+ * sin x from its Taylor series, with + − × ÷ and floor only: engines may approximate `Math.sin` differently
+ * (ECMA-262), and the front's speed cap decides which columns its front reaches (the roller's online rule, R3 §3.4).
+ * x is folded into [−π/2, π/2] first.
+ */
+export function seriesSine(x: number): number {
+  const turn = 2 * Math.PI;
+  let a = x - turn * Math.floor((x + Math.PI) / turn);
+  if (a > Math.PI / 2) a = Math.PI - a;
+  else if (a < -Math.PI / 2) a = -Math.PI - a;
+  const square = a * a;
+  let term = a;
+  let sum = a;
+  for (let n = 1; n <= SINE_TERMS; n += 1) {
+    term = (-term * square) / ((2 * n) * (2 * n + 1));
+    sum += term;
+  }
+  return sum;
+}
+
 /** The grid the front works on: the solver's cell centres (row-major, iz * nx + ix; z grows toward the beach). */
 export interface SpillingGrid {
   readonly nx: number;
@@ -62,6 +89,8 @@ export interface SpillingGrid {
 
 /** One wave's front along its crest. */
 export interface SpillingWave {
+  /** The wave's number: how many waves the front had started before it (its roller's slot is id mod 2). */
+  readonly id: number;
   /** Solver time of the wave's first onset, s. */
   readonly onset: number;
   /** Along-shore position of its first onset (the peak), m. */
@@ -98,7 +127,17 @@ export class SpillingFront {
 
   /** Along-shore speed cap for a breaker celerity c_b, m/s: c_b / sin α. */
   speedCap(breakerCelerity: number): number {
-    return breakerCelerity / Math.sin((this.options.peelAngleDegrees * Math.PI) / 180);
+    return breakerCelerity / seriesSine((this.options.peelAngleDegrees * Math.PI) / 180);
+  }
+
+  /**
+   * Where wave `wave` (its index in `waves`) broke first across shore in `column` at the last update: the most seaward
+   * breaking cell it owns there, whether or not its front has reached the column, z; NaN if it owns none. Valid until
+   * the next `observeOnset` or `update`, which may renumber the waves.
+   */
+  crestAt(wave: number, column: number): number {
+    if (!(wave >= 0 && wave < this.options.maxWaves && column >= 0 && column < this.grid.nx)) return Number.NaN;
+    return this.crestZ[wave * this.grid.nx + column];
   }
 
   /**
@@ -124,7 +163,7 @@ export class SpillingFront {
     }
     const nx = this.grid.nx;
     const wave: SpillingWave = {
-      onset: time, startX: x, frontX: x, tipX: x, backX: x,
+      id: this.started, onset: time, startX: x, frontX: x, tipX: x, backX: x,
       reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN),
       joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time,
     };
@@ -147,8 +186,12 @@ export class SpillingFront {
    * A breaking cell belongs to the newest wave that started breaking in its column whose band holds it: from
    * crestMargin seaward of where it started there to bandWidth shoreward of where its crest has since run at the
    * breaker celerity. Cells no wave's band holds (older bores) keep the solver's strength.
+   *
+   * `felt` (the roller lens, S3, Q1): the breaking the rider feels, the solver's behind each front and in cells no
+   * wave owns, 0 ahead of the fronts, with no ramp. Each wave's crest per column (`crestAt`) is recorded whether or not
+   * its front has reached the column.
    */
-  update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array): void {
+  update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array, felt?: Float64Array): void {
     const { grid, options } = this;
     const { nx, nz, xCenters, zCenters } = grid;
     const { direction } = options;
@@ -176,6 +219,7 @@ export class SpillingFront {
         const b = strength[i];
         if (!(b > 0)) {
           out[i] = 0;
+          if (felt) felt[i] = 0;
           continue;
         }
         let owner = -1;
@@ -190,18 +234,21 @@ export class SpillingFront {
         }
         if (owner < 0) {
           out[i] = b;
+          if (felt) felt[i] = b;
           continue;
         }
+        // Rows run seaward to shoreward, so the first owned cell met in a column is the wave's crest there, gated or not.
+        const slot = owner * nx + ix;
+        if (Number.isNaN(crestZ[slot])) crestZ[slot] = z;
         const wave = waves[owner];
         const reached = wave.reached[ix];
         if (Number.isNaN(reached)) {
           out[i] = 0;
+          if (felt) felt[i] = 0;
           this.gated += 1;
           continue;
         }
-        // Rows run seaward to shoreward, so the first owned cell met in a column is the wave's crest there.
-        const slot = owner * nx + ix;
-        if (Number.isNaN(crestZ[slot])) crestZ[slot] = z;
+        if (felt) felt[i] = b;
         const local = time - Math.max(reached, latest);
         if (local >= options.rampSeconds) {
           out[i] = b;
