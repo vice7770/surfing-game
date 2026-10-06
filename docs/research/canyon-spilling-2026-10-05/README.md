@@ -40,7 +40,7 @@ Sweeps with these designs (the bar at 55–75°, shelves 2.4–3.5 m) gave media
 
 - **The canyon on the −x open edge** (`axisX: −80`). It is level across the boundary, as before. The swell runs ahead over the canyon's axis, so on its flank the crests turn toward +x. They reach the break already angled, which is the "oblique swell" a real point break gets from its wrap.
 - **A level sand shelf**, `shelfDepth` 2.4 m, then a planar beach face at 1:25.
-- **An oblique terrace** on the shelf, `crestDepth` 1.3 m deep. Its seaward edge is the break line. It runs at `angle` 62° to the shore from its peak (`peakX` −40, `peakZ` −140) toward +x and the beach. It rises from the shelf at `edgeSlope` 1:20 across the line, which is 1:43 along the waves' path, so the breakers spill: the readout's Iribarren number is 0.25 at the take-off. Upcoast of the peak the terrace fades out over `fadeWidth` 25 m, so the bed is level along shore at both open edges.
+- **An oblique terrace** on the shelf, `crestDepth` 1.3 m deep. Its seaward edge is the break line. It runs at `angle` 62° to the shore from its peak (`peakX` −40, `peakZ` −140) toward +x and the beach. It rises from the shelf at `edgeSlope` 1:12 across the line, which is 1:26 along the waves' path, so the breakers spill: the readout's Iribarren number is 0.35 at the take-off, and ξ < 0.4 for the breakers the shelf holds (γ·h = 1.9 m). A 1:20 edge also spilled (ξ 0.25), but its median peel was the same 45° over 3 seeds and 51° on seed 1, against 54° for 1:12 on seed 1. Upcoast of the peak the terrace fades out over `fadeWidth` 25 m, so the bed is level along shore at both open edges.
 
 All the values are in `CANYON` and can be changed for the sweep (`scripts/canyon-peel-report.ts --canyon key=value,...`).
 
@@ -49,20 +49,27 @@ All the values are in `CANYON` and can be changed for the sweep (`scripts/canyon
 | | Before (old bed, lip on) | After (new bed, no lip, front on) |
 | --- | --- | --- |
 | Clean waves (onset fit r² ≥ 0.3) | 25 | 34 |
-| Toward +x / toward −x | 12 / 13 | **31 / 3** |
-| Median peel angle (PeelTracker, sin α = c_b·\|dt/dx\|/stretch) | 17° | **45°** (seed 1 alone: 51°, 10 of 10 toward +x) |
+| Toward +x / toward −x | 12 / 13 | **33 / 1** |
+| Median peel angle (PeelTracker, sin α = c_b·\|dt/dx\|/stretch) | 17° | **45°** (seed 1 alone: 54°, 10 of 10 toward +x) |
 | Median peel speed along the break line | 15.8 m/s | **6.6 m/s** |
 | Lip jets thrown | 235 | **0** |
-| Breaker readout at the take-off | spilling, ξ 0.20 | spilling, ξ 0.25 |
+| Breaker readout at the take-off | spilling, ξ 0.20 | spilling, ξ 0.35 |
 
 Other sizes, 1 seed each:
 
-- **Big** (Hs 2.4 m, Tp 14 s): 8 of 9 clean waves toward +x, a median of 37°, 9.6 m/s.
+- **Big** (Hs 2.4 m, Tp 14 s): 8 of 9 clean waves toward +x, a median of 35°, 10.0 m/s.
 - **Small** (Hs 0.9 m, Tp 9 s): few onsets. Most waves are too small to break on the 1.3 m terrace and break at the shore instead, so the peel is unmeasured.
 
-The solver's own peel is 45° at the median. That is below the owner's 50–60°, but it now runs one way and is slow enough to ride. The visible peel is held at 55° by the spilling front (§3).
+The solver's own peel is 45° at the median. That is below the owner's 50–60°, but it now runs one way and is slow enough to ride.
 
-**Take-off.** `TAKE_OFF.canyon` stays `'focus'`. On a 0° swell, the rays from the −x canyon gather at x ≈ 11, z ≈ −82, just downstream of where the breaks start (x ≈ −20…20) and on the +x line of the peel. If the swell's direction changes, re-check it.
+- Half the clean waves peel at 45–76°.
+- The rest peel at 10–44°, where two sets of crests overlap or a set runs ahead.
+
+The spilling front (§3) holds the visible peel at 55° or slower.
+
+**Take-off.** `TAKE_OFF.canyon` stays `'focus'` along shore. On a 0° swell, the rays from the −x canyon gather at x ≈ 13, just downstream of where the breaks start (x ≈ −20…20). If the swell's direction changes, re-check it.
+
+Across shore, the shoaled-breaker estimate put the take-off 15–20 m inside the measured breaks, on the terrace's flank. The Canyon's take-off now sits where the terrace has risen `CANYON_TAKE_OFF_RISE` = 0.05 m above the shelf, which is where its waves were measured breaking (`takeOffPoint`).
 
 ### 2. No lip, no tube at the Canyon (`src/wave/SurfZoneSimulation.ts`)
 
