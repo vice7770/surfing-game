@@ -29,6 +29,7 @@ import { inTakeOffWindow } from '../src/physics/takeOffCue';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { applyPadangShape } from './padangShape';
+import { applyCanyonShape } from './canyonShape';
 import { applyReefShape } from './reefShape';
 import { chosenSwell, swellSizeOption } from './spotSwell';
 import { alongShift } from './botSpots';
@@ -47,6 +48,8 @@ const minutes = argument('minutes', 3);
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
 applyPadangShape(option('padang'));
+// Reshape the Canyon for this run: `--canyon edgeSlope=0.08` (the canyon spilling prototype's sweep).
+applyCanyonShape(option('canyon'));
 /** `--swell small|medium|big`: each spot's own buoy swell for that size. */
 const swellSize = swellSizeOption(option('swell'));
 const spots = (option('spots')?.split(',') ?? ['point', 'reef']) as SpotName[];

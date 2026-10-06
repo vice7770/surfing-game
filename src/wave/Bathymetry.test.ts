@@ -333,13 +333,14 @@ describe('surf spot bathymetry', () => {
       expect(canyon.depthAt(x, canyonBreakLineZ(x) - 50)).toBeCloseTo(CANYON.shelfDepth, 2);
     }
     expect(canyon.depthAt(CANYON.peakX - CANYON.fadeWidth - 1, -CANYON.head)).toBeCloseTo(CANYON.shelfDepth, 6);
-    // Gentle along the waves' path (+z) across the terrace's edge: a spilling slope (ξ < 0.4 for a 1.3 m breaker at 11 s).
+    // Gentle along the waves' path (+z) across the terrace's edge: a spilling slope (ξ < 0.4 for the breaker the shelf
+    // holds, γ h at its depth, at 11 s).
     const x = 10;
     const zLine = canyonBreakLineZ(x);
     const pathSlope = (canyon.depthAt(x, zLine - 6) - canyon.depthAt(x, zLine)) / 6;
     expect(pathSlope).toBeGreaterThan(0);
     const deepWavelength = (9.81 * 11 ** 2) / (2 * Math.PI);
-    expect(pathSlope / Math.sqrt(1.3 / deepWavelength)).toBeLessThan(0.4);
+    expect(pathSlope / Math.sqrt((0.78 * CANYON.shelfDepth) / deepWavelength)).toBeLessThan(0.4);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

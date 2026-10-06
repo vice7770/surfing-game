@@ -394,7 +394,8 @@ describe('PhysicalMode', () => {
     expect(value('SOLVER')).toMatch(/cells · \d+\.\d ms\/step$/);
     expect(value('NEXT SET')).toBe('in 25 s');
     expect(value('BREAKER')).toMatch(/^ξ \d+\.\d\d · (SPILLING|PLUNGING|SURGING)$/);
-    expect(value('PEEL')).toBe('waiting for a break');
+    // The Canyon's terrace (the canyon spilling prototype) may already have broken a wave during the spin-up.
+    expect(value('PEEL')).toMatch(/^waiting for a break$|^.+ · \d+° \(needs ≥ \d+°\)$/);
     expect(value('WIND')).toBe('calm');
     expect(value('BREAKING')).toMatch(/^\d+ % of the surf zone$/);
     expect(value('STORM')).toBeUndefined();

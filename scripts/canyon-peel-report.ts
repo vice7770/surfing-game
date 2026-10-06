@@ -9,7 +9,7 @@
  */
 import { MIXED_PEAK_FIT } from '../src/wave/Breaking';
 import { SurfZoneSimulation, takeOffPoint, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
-import { CANYON } from '../src/wave/Bathymetry';
+import { applyCanyonShape } from './canyonShape';
 
 const option = (name: string): string | undefined => {
   const index = process.argv.indexOf(`--${name}`);
@@ -22,10 +22,7 @@ const periods = number('periods', 16);
 const seeds = number('seeds', 2);
 const direction = number('direction', 0);
 const spreading = number('spreading', 150);
-for (const pair of option('canyon')?.split(',') ?? []) {
-  const [key, value] = pair.split('=');
-  (CANYON as Record<string, number>)[key] = Number(value);
-}
+applyCanyonShape(option('canyon'));
 
 const angles: number[] = [];
 const directions: number[] = [];

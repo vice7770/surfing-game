@@ -181,13 +181,14 @@ export function padangReefAt(x: number): boolean {
  * Inshore of the canyon's head lies a level sand shelf `shelfDepth` deep and a planar beach face; on the shelf, a
  * terrace `crestDepth` deep, its seaward edge (the break line) running at `angle` degrees to the shore from its peak
  * (peakX, peakZ) toward +x and the beach, rising from the shelf at `edgeSlope` across it. Its slope along the waves'
- * path is gentle (the edge's slope times cos `angle`), so they spill (local Iribarren number under 0.4). Upcoast of
+ * path is gentle (the edge's slope times cos `angle`, 1:26), so they spill (local Iribarren number under 0.4 for the
+ * breakers the shelf holds). Upcoast of
  * the peak the terrace fades out over `fadeWidth` m, so the bed is level along shore at both open edges.
  * Mutable for the design sweep (`scripts/canyon-peel-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
   axisX: -80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250,
-  shelfDepth: 2.4, shoreSlope: 1 / 25, crestDepth: 1.3, edgeSlope: 1 / 20,
+  shelfDepth: 2.4, shoreSlope: 1 / 25, crestDepth: 1.3, edgeSlope: 1 / 12,
   peakX: -40, peakZ: -140, angle: 62, fadeWidth: 25,
 };
 
