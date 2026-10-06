@@ -712,10 +712,11 @@ describe('SurfZoneSimulation', () => {
   it('spills at the Canyon at every size: no lip, no tube, and its foam follows the spilling front', () => {
     for (const [significantHeight, peakPeriod] of [[1.4, 11], [3, 14]]) {
       const simulation = new SurfZoneSimulation({
-        ...small, spot: 'canyon', significantHeight, peakPeriod, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: 120,
+        ...small, spot: 'canyon', significantHeight, peakPeriod, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: 160,
+        dx: 1, fineSpacing: 1,
       });
       let broke = 0;
-      for (let frame = 0; frame < 20 * 30; frame += 1) {
+      for (let frame = 0; frame < 30 * 30; frame += 1) {
         simulation.step(1 / 30);
         if (simulation.breakingFraction() > 0) broke += 1;
       }
@@ -794,10 +795,11 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('seats the Canyon take-off where its bed gathers the swell, from either side', () => {
+  it('seats the Canyon take-off where its bed gathers the swell, square and from either side', () => {
     const canyon = createSpot('canyon', 1);
     const bed = (x: number, z: number) => tankDepth(canyon, OFFSHORE_DEPTH.canyon, x, z);
-    for (const directionDegrees of [-10, 10, 25]) {
+    // The canyon runs along the −x edge (the canyon spilling prototype): a swell from far over on +x (25°) gathers past the window.
+    for (const directionDegrees of [-10, 0, 10]) {
       const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, peakPeriod: 10, directionDegrees };
       const point = takeOffPoint(config);
       const swell = { period: 10, direction: (directionDegrees * Math.PI) / 180 };

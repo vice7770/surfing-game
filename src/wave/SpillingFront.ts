@@ -5,10 +5,10 @@
  * shoulder stays clean and the peel steady from wave to wave; behind it the foam starts as a thin line at the crest
  * and grows down the face as the local break ages.
  *
- * It reads the solver's breaking (strength and age) and the onsets the simulation measures, and writes only the
- * whitewater strength the foam, the aeration and the roar are fed (`SurfZoneSimulation.whitewaterStrength`): the
- * solver's breaking, its dissipation and the rider's water are untouched. Like the swept barrel's gate
- * (`SweptCrash.gate`), it only ever lowers the whitewater.
+ * It reads the solver's breaking strength and the onsets the simulation measures, and writes only the whitewater
+ * strength the foam, the aeration and the roar are fed (`SurfZoneSimulation.whitewaterStrength`): the solver's
+ * breaking, its dissipation and the rider's water are untouched. Like the swept barrel's gate (`SweptCrash.gate`),
+ * it only ever lowers the whitewater.
  */
 
 export interface SpillingFrontOptions {
@@ -25,8 +25,12 @@ export interface SpillingFrontOptions {
   lineShare: number;
   /** Onsets within this along-shore distance of a wave's broken extent join that wave, m. */
   joinReach: number;
-  /** A cell whose break began this long before its column's onset still belongs to that onset's wave, s. */
-  ownershipSlack: number;
+  /**
+   * A wave's breaking in a column: from `crestMargin` m seaward of where it started breaking there to `bandWidth` m
+   * shoreward of where its crest has since run at the breaker celerity. Older waves' bores lie a wavelength inshore.
+   */
+  crestMargin: number;
+  bandWidth: number;
   /** Waves tracked at once; the oldest is dropped (its cells pass ungated as if long broken). */
   maxWaves: number;
   /** A wave is dropped this many seconds after its first onset. */
@@ -42,7 +46,8 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   growth: 5,
   lineShare: 0.35,
   joinReach: 6,
-  ownershipSlack: 0.4,
+  crestMargin: 6,
+  bandWidth: 20,
   maxWaves: 8,
   lifetime: 45,
 };
@@ -69,8 +74,9 @@ export interface SpillingWave {
   backX: number;
   /** When the front reached each column (NaN until it does), s. */
   readonly reached: Float64Array;
-  /** When each column had its onset in this wave (NaN: not yet), s. */
+  /** When each column had its onset in this wave (NaN: not yet), s, and where across shore it started breaking, z. */
   readonly joinedAt: Float64Array;
+  readonly joinedZ: Float64Array;
   /** Last time an onset joined this wave, s. */
   lastJoin: number;
 }
@@ -96,11 +102,11 @@ export class SpillingFront {
   }
 
   /**
-   * A new wave started breaking in `column` at `time` (the simulation's onset: its outermost breaking cell jumped
-   * seaward). It joins the wave whose broken extent it touches, if that wave has not broken there yet and is still
-   * spreading; otherwise it starts a wave of its own, the front at its peak.
+   * A new wave started breaking in `column` at `time`, its outermost breaking cell at `z` (the simulation's onset: that
+   * cell jumped seaward). It joins the wave whose broken extent it touches, if that wave has not broken there yet;
+   * otherwise it starts a wave of its own, the front at its peak.
    */
-  observeOnset(column: number, time: number): void {
+  observeOnset(column: number, time: number, z: number): void {
     const x = this.grid.xCenters[column];
     const { joinReach } = this.options;
     for (let k = this.waves.length - 1; k >= 0; k -= 1) {
@@ -110,6 +116,7 @@ export class SpillingFront {
       const high = Math.max(wave.backX, wave.tipX) + joinReach;
       if (x < low || x > high) continue;
       wave.joinedAt[column] = time;
+      wave.joinedZ[column] = z;
       wave.lastJoin = time;
       if (this.ahead(x, wave.tipX)) wave.tipX = x;
       if (this.ahead(wave.backX, x)) wave.backX = x;
@@ -118,9 +125,11 @@ export class SpillingFront {
     const nx = this.grid.nx;
     const wave: SpillingWave = {
       onset: time, startX: x, frontX: x, tipX: x, backX: x,
-      reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN), lastJoin: time,
+      reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN),
+      joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time,
     };
     wave.joinedAt[column] = time;
+    wave.joinedZ[column] = z;
     wave.reached[column] = time;
     this.waves.push(wave);
     this.started += 1;
@@ -133,18 +142,21 @@ export class SpillingFront {
   }
 
   /**
-   * Advance the fronts by `dt` at no more than `speedCap` m/s toward their solver tips, then write the whitewater:
-   * the solver's `strength` behind each front (thinned to a line at the crest while young), 0 ahead of it.
-   * `age` is the solver's breaking age (seconds since the bore covering each cell began breaking).
+   * Advance the fronts by `dt` at no more than `speedCap(breakerCelerity)` toward their solver tips, then write the
+   * whitewater: the solver's `strength` behind each front (thinned to a line at the crest while young), 0 ahead of it.
+   * A breaking cell belongs to the newest wave that started breaking in its column whose band holds it: from
+   * crestMargin seaward of where it started there to bandWidth shoreward of where its crest has since run at the
+   * breaker celerity. Cells no wave's band holds (older bores) keep the solver's strength.
    */
-  update(time: number, dt: number, speedCap: number, strength: ArrayLike<number>, age: ArrayLike<number>, out: Float64Array): void {
+  update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array): void {
     const { grid, options } = this;
     const { nx, nz, xCenters, zCenters } = grid;
     const { direction } = options;
+    const cap = this.speedCap(breakerCelerity);
     while (this.waves.length > 0 && time - this.waves[0].onset > options.lifetime) this.waves.shift();
     for (const wave of this.waves) {
       const room = direction * (wave.tipX - wave.frontX);
-      if (room > 0) wave.frontX += direction * Math.min(room, speedCap * Math.max(0, dt));
+      if (room > 0) wave.frontX += direction * Math.min(room, cap * Math.max(0, dt));
       for (let column = 0; column < nx; column += 1) {
         if (!Number.isNaN(wave.reached[column])) continue;
         // Behind the front (and anything upstream of the peak, which the solver may break on its own): reached now.
@@ -166,18 +178,15 @@ export class SpillingFront {
           out[i] = 0;
           continue;
         }
-        const began = time - age[i];
-        // Its owner: of the waves that started breaking in this column, the latest whose onset there this cell's
-        // break does not predate. None: a bore no tracked onset started (an older wave's, or one that never jumped
-        // seaward), left as the solver has it.
         let owner = -1;
         let latest = -Infinity;
         for (let k = 0; k < count; k += 1) {
           const joined = waves[k].joinedAt[ix];
-          if (joined <= began + options.ownershipSlack && joined > latest) {
-            latest = joined;
-            owner = k;
-          }
+          if (!(joined > latest)) continue;
+          const start = waves[k].joinedZ[ix];
+          if (z < start - options.crestMargin || z > start + breakerCelerity * (time - joined) + options.bandWidth) continue;
+          latest = joined;
+          owner = k;
         }
         if (owner < 0) {
           out[i] = b;
@@ -193,18 +202,14 @@ export class SpillingFront {
         // Rows run seaward to shoreward, so the first owned cell met in a column is the wave's crest there.
         const slot = owner * nx + ix;
         if (Number.isNaN(crestZ[slot])) crestZ[slot] = z;
-        const local = time - Math.max(reached, began);
+        const local = time - Math.max(reached, latest);
         if (local >= options.rampSeconds) {
           out[i] = b;
           continue;
         }
         const grown = Math.max(0, local) / options.rampSeconds;
         const width = options.lineWidth + options.growth * Math.max(0, local);
-        if (z - crestZ[slot] > width) {
-          out[i] = 0;
-        } else {
-          out[i] = b * (options.lineShare + (1 - options.lineShare) * grown);
-        }
+        out[i] = z - crestZ[slot] > width ? 0 : b * (options.lineShare + (1 - options.lineShare) * grown);
         this.ramped += 1;
       }
     }

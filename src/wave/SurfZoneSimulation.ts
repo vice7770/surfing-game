@@ -1,4 +1,4 @@
-import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { CANYON, PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -441,6 +441,9 @@ export function peakTakeOffX(spot: SpotName): number {
   return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : REEF.takeOffX;
 }
 
+/** The Canyon's take-off: where its terrace has risen this far above the shelf, m (`takeOffPoint`). */
+export const CANYON_TAKE_OFF_RISE = 0.05;
+
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
 
@@ -459,7 +462,11 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
     : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
   // The Wave Pool's regular wave first breaks where its arm is poolBreakDepth deep (the size probe): the shoaled-breaker
   // estimate from its Hs put the take-off 14 m seaward of the break, and 1.5 H put it 13–23 m inside it.
-  const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2) : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
+  // The Canyon's waves break where its terrace rises from the shelf (the canyon spilling prototype): the shoaled-breaker
+  // estimate put the take-off 15–20 m inside the measured breaks, on the terrace's flank.
+  const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
+    : config.spot === 'canyon' ? CANYON.shelfDepth - CANYON_TAKE_OFF_RISE + config.tide
+      : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
@@ -884,7 +891,7 @@ export class SurfZoneSimulation {
     this.breaking.update(dt);
     this.markBreakingOnsets();
     // A spilling spot's whitewater follows its front (`SpillingFront`): it reads the breaking, never writes it.
-    this.spilling?.update(this.solver.time, dt, this.spilling.speedCap(this.breakerCelerity()), this.breaking.strength, this.breaking.age, this.whitewater!);
+    this.spilling?.update(this.solver.time, dt, this.breakerCelerity(), this.breaking.strength, this.whitewater!);
     let end = performance.now();
     this.stepCosts.breaking = end - phase;
     phase = end;
@@ -1003,7 +1010,7 @@ export class SurfZoneSimulation {
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
         this.peel.markOnset(column, solver.time, outer);
-        this.spilling?.observeOnset(column, solver.time);
+        this.spilling?.observeOnset(column, solver.time, outer);
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }
