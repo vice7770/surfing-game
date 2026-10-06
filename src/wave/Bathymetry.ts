@@ -168,16 +168,34 @@ export function padangReefAt(x: number): boolean {
 }
 
 /**
- * A canyon cut through the shelf. It bends the swell off its axis, leaving a
- * shadow over it, and gathers it on its flank: 60–130 m from the axis at the
- * break line, by the swell's direction and period. The axis runs along the
- * window's open edge (x = 80, half the 160 m window), so the window holds the
- * focusing flank and the bed is level across the boundary. On the centreline
- * the focus fell on the open edges and the break line was all shadow; with a
- * canyon wall crossing an edge, the edge cells ran unstable until the
- * dispersive terms carried the surface's curvature across open edges.
+ * The Canyon (the canyon spilling prototype, docs/research/canyon-spilling-2026-10-05): a spilling wave that peels left
+ * to right seen from the beach (toward +x), on a square (0°), narrow groundswell.
+ *
+ * A canyon cut through the shelf runs along the window's −x open edge (x = −80, half the 160 m window), level across
+ * the boundary. Over its axis the swell runs ahead, so the crests on its flank turn toward +x, away from it; the
+ * crests reach the break already angled, and break first toward −x. With the canyon on the +x edge (until
+ * 2026-10-05) they turned the other way and peeled both ways by the swell's sets (a median 14°, two of six clean
+ * waves toward +x; docs/research/canyon-spilling-2026-10-05). On a canyon wall crossing an edge the edge cells ran
+ * unstable until the dispersive terms carried the surface's curvature across open edges.
+ *
+ * Inshore of the canyon's head lies a level sand shelf `shelfDepth` deep and a planar beach face; on the shelf, a
+ * terrace `crestDepth` deep, its seaward edge (the break line) running at `angle` degrees to the shore from its peak
+ * (peakX, peakZ) toward +x and the beach, rising from the shelf at `edgeSlope` across it. Its slope along the waves'
+ * path is gentle (the edge's slope times cos `angle`, 1:26), so they spill (local Iribarren number under 0.4 for the
+ * breakers the shelf holds). Upcoast of
+ * the peak the terrace fades out over `fadeWidth` m, so the bed is level along shore at both open edges.
+ * Mutable for the design sweep (`scripts/canyon-peel-report.ts --canyon key=value,...`).
  */
-export const CANYON = { axisX: 80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
+export const CANYON = {
+  axisX: -80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250,
+  shelfDepth: 2.4, shoreSlope: 1 / 25, crestDepth: 1.3, edgeSlope: 1 / 12,
+  peakX: -40, peakZ: -140, angle: 62, fadeWidth: 25,
+};
+
+/** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
+export function canyonBreakLineZ(x: number): number {
+  return CANYON.peakZ + (x - CANYON.peakX) * Math.tan((CANYON.angle * Math.PI) / 180);
+}
 
 function beach(seed: number): SurfSpot {
   const random = seededRandom(seed, 0xbeac4);
@@ -300,12 +318,20 @@ function padang(): SurfSpot {
 }
 
 function canyon(): SurfSpot {
+  const c = CANYON;
   return {
     name: 'canyon',
     depthAt(x, z) {
       const offshore = -z;
-      const along = smoothstep(CANYON.head, CANYON.fullAt, offshore) * (1 - smoothstep(CANYON.fadeStart, CANYON.fadeEnd, offshore));
-      return deanDepth(offshore) + CANYON.depth * Math.exp(-(((x - CANYON.axisX) / CANYON.halfWidth) ** 2)) * along;
+      if (offshore <= 0) return offshore * 0.06;
+      const along = smoothstep(c.head, c.fullAt, offshore) * (1 - smoothstep(c.fadeStart, c.fadeEnd, offshore));
+      const cut = c.depth * Math.exp(-(((x - c.axisX) / c.halfWidth) ** 2)) * along;
+      // The shelf and the beach face, the terrace on them where it is shallower, faded out upcoast of its peak.
+      const base = Math.min(c.shelfDepth, offshore * c.shoreSlope);
+      const seaward = Math.max(0, (canyonBreakLineZ(x) - z) * Math.cos((c.angle * Math.PI) / 180));
+      const terrace = c.crestDepth + seaward * c.edgeSlope;
+      const weight = smoothstep(c.peakX - c.fadeWidth, c.peakX, x);
+      return base - Math.max(0, base - terrace) * weight + cut;
     },
   };
 }

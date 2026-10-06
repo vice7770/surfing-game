@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
+import { CANYON, PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  CANYON_TAKE_OFF_RISE, FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
@@ -709,6 +709,29 @@ describe('SurfZoneSimulation', () => {
     expect(beach.simulation.lipRollers).toBeGreaterThan(0);
   }, 60_000);
 
+  it('spills at the Canyon at every size: no lip, no tube, and its foam follows the spilling front', () => {
+    for (const [significantHeight, peakPeriod] of [[1.4, 11], [3, 14]]) {
+      const simulation = new SurfZoneSimulation({
+        ...small, spot: 'canyon', significantHeight, peakPeriod, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: 160,
+        dx: 1, fineSpacing: 1,
+      });
+      let broke = 0;
+      for (let frame = 0; frame < 30 * 30; frame += 1) {
+        simulation.step(1 / 30);
+        if (simulation.breakingFraction() > 0) broke += 1;
+      }
+      expect(broke).toBeGreaterThan(0);
+      expect(simulation.lipRollers).toBeGreaterThan(0);
+      expect(simulation.lipJets).toBe(0);
+      expect(simulation.lipLaunches).toBe(0);
+      expect(simulation.lip.landings).toBe(0);
+      expect(simulation.spilling!.started).toBeGreaterThan(0);
+      // The whitewater only ever lowers the solver's breaking.
+      const { whitewaterStrength, breaking } = simulation;
+      for (let i = 0; i < whitewaterStrength.length; i += 1) expect(whitewaterStrength[i]).toBeLessThanOrEqual(breaking.strength[i]);
+    }
+  }, 120_000);
+
   it('throws each jet ahead of its crest, 1.15-1.8 times its speed, as measured jets leave (P7)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
     const launches: { speed: number; crest: number }[] = [];
@@ -772,16 +795,18 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('seats the Canyon take-off where its bed gathers the swell, from either side', () => {
+  it('seats the Canyon take-off where its bed gathers the swell, square and from either side', () => {
     const canyon = createSpot('canyon', 1);
     const bed = (x: number, z: number) => tankDepth(canyon, OFFSHORE_DEPTH.canyon, x, z);
-    for (const directionDegrees of [-10, 0, 10, 25]) {
+    // The canyon runs along the −x edge (the canyon spilling prototype): a swell from far over on +x (25°) gathers past the window.
+    for (const directionDegrees of [-10, 0, 10]) {
       const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, peakPeriod: 10, directionDegrees };
       const point = takeOffPoint(config);
       const swell = { period: 10, direction: (directionDegrees * Math.PI) / 180 };
       expect(Math.abs(point.x)).toBeLessThanOrEqual(80 - TAKE_OFF_EDGE_MARGIN);
       expect(rayConcentration(bed, swell, TANK.zoneInner, point.z, [point.x], 10)[0]).toBeGreaterThan(1.3);
-      expect(bed(point.x, point.z)).toBeCloseTo(breakerDepthFor(1.4, OFFSHORE_DEPTH.canyon), 1);
+      // Where the terrace rises from the shelf, where its waves were measured breaking.
+      expect(bed(point.x, point.z)).toBeCloseTo(CANYON.shelfDepth - CANYON_TAKE_OFF_RISE, 1);
     }
   });
 
@@ -1330,9 +1355,15 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
     expect(alone.whitewaterStrength).toBe(alone.breaking.strength);
     const off = new SurfZoneSimulation(padang({ sweptCrash: false }), 'warm', libraryFromBytes(readBarrelCases('padang')));
     expect(off.crash).toBeUndefined();
+    // The Canyon has no crash: its foam follows its spilling front (the canyon spilling prototype), or, with the front
+    // off, the solver's own breaking.
     const canyon = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm', libraryFromBytes(readBarrelCases('padang')));
     expect(canyon.crash).toBeUndefined();
-    expect(canyon.whitewaterStrength).toBe(canyon.breaking.strength);
+    expect(canyon.spilling).toBeDefined();
+    expect(canyon.whitewaterStrength).not.toBe(canyon.breaking.strength);
+    const plain = new SurfZoneSimulation({ ...small, spot: 'canyon', spillingFront: false }, 'warm');
+    expect(plain.spilling).toBeUndefined();
+    expect(plain.whitewaterStrength).toBe(plain.breaking.strength);
     const on = new SurfZoneSimulation(padang(), 'warm', libraryFromBytes(readBarrelCases('padang')));
     expect(on.crash).toBeDefined();
     expect(on.whitewaterStrength).not.toBe(on.breaking.strength);

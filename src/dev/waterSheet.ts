@@ -53,7 +53,18 @@ interface Shot { name: string; eye: Vector3; target: Vector3 }
 
 const PARAMETERS = new URLSearchParams(window.location.search);
 /** `?waterSheet&spot=reef` or `padang` (G9): the practice Reef or Padang Padang, held on an open tube, with tube shots in place of the face and bore. */
-const SPOT = (['reef', 'beach', 'padang'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
+const SPOT = (['reef', 'beach', 'padang', 'canyon'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
+/**
+ * `&direction=<degrees>&spreading=<s>`: the swell's direction and cos-2s spreading in place of the settings' (the Canyon's
+ * spilling prototype runs a square, narrow groundswell: `&spot=canyon&swell=medium&direction=0&spreading=150`), and
+ * `&spillingFront=0` turns its spilling front off.
+ */
+const SWELL_OVERRIDES: Partial<SurfZoneConfig> = {
+  ...(PARAMETERS.has('direction') ? { directionDegrees: Number(PARAMETERS.get('direction')) } : {}),
+  ...(PARAMETERS.has('spreading') ? { spreading: Number(PARAMETERS.get('spreading')) } : {}),
+  // `&spillingFront=0`: a spilling spot's foam is the solver's own breaking, without its spilling front (before and after).
+  ...(PARAMETERS.get('spillingFront') === '0' ? { spillingFront: false } : {}),
+};
 /** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
 const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));
 /** Reef breaks: the sheet holds them on an open tube. */
@@ -277,7 +288,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   const settings: PhysicalSettings = SWELL
     ? { ...DEFAULT_PHYSICAL_SETTINGS, ...swellChoice(SPOT, SWELL), spot: SPOT, source: 'buoy', compute }
     : { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute };
-  await hooks.start(settings, COMPONENTS ? { componentCount: COMPONENTS } : undefined);
+  await hooks.start(settings, { ...(COMPONENTS ? { componentCount: COMPONENTS } : {}), ...SWELL_OVERRIDES });
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
   let simulated = 0;
@@ -570,7 +581,15 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     Object.assign(window, { waterSheetShots: shots });
     return shots.map((shot) => shot.name);
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh });
+  /** Steps the sea on by `seconds` exactly, with no hold (for shooting a sequence, e.g. a spilling wave's peel). */
+  const waterSheetStep = async (seconds: number) => {
+    const steps = Math.max(1, Math.round(seconds / STEP));
+    await advance(hooks, steps, idle);
+    simulated += steps * STEP;
+    hooks.render(0);
+    return simulated;
+  };
+  Object.assign(window, { waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

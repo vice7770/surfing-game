@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, canyonBreakLineZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -311,12 +311,37 @@ describe('surf spot bathymetry', () => {
     expect(Math.abs(canyon.depthAt(CANYON.axisX, -270) - canyon.depthAt(CANYON.axisX + 120, -270))).toBeLessThan(0.05);
   });
 
-  it('runs the canyon along the window\'s open edge, so the bed is level across the boundary', () => {
+  it('runs the canyon along the window\'s −x open edge, so the bed is level across both open edges', () => {
     // An open edge copies its neighbours: a bed sloping across it drove the edge cells unstable.
     const canyon = createSpot('canyon', 1);
     const edge = ALONG_SHORE / 2;
-    for (let z = -260; z <= -40; z += 20) expect(Math.abs(gradientX(canyon, edge, z))).toBeLessThan(1e-3);
-    expect(canyon.depthAt(edge, -200) - canyon.depthAt(0, -200)).toBeGreaterThan(8);
+    expect(CANYON.axisX).toBe(-edge);
+    for (let z = -260; z <= -10; z += 10) {
+      expect(Math.abs(gradientX(canyon, -edge, z))).toBeLessThan(1e-3);
+      expect(Math.abs(gradientX(canyon, edge, z))).toBeLessThan(1e-3);
+    }
+    expect(canyon.depthAt(-edge, -200) - canyon.depthAt(0, -200)).toBeGreaterThan(8);
+  });
+
+  it('lays the Canyon\'s terrace edge obliquely, breaking first toward −x and running shoreward toward +x', () => {
+    const canyon = createSpot('canyon', 1);
+    // The break line runs from its peak toward +x and the beach at the design angle.
+    expect(canyonBreakLineZ(CANYON.peakX + 20) - canyonBreakLineZ(CANYON.peakX)).toBeCloseTo(20 * Math.tan((CANYON.angle * Math.PI) / 180), 6);
+    // On it the terrace is crestDepth deep, under the shelf; seaward of it the shelf; upcoast of the peak no terrace
+    // (clear of the canyon's flank, which deepens the bed a little near the peak).
+    for (const x of [5, 10]) {
+      expect(canyon.depthAt(x, canyonBreakLineZ(x) + 2)).toBeCloseTo(CANYON.crestDepth, 2);
+      expect(canyon.depthAt(x, canyonBreakLineZ(x) - 50)).toBeCloseTo(CANYON.shelfDepth, 2);
+    }
+    expect(canyon.depthAt(CANYON.peakX - CANYON.fadeWidth - 1, -CANYON.head)).toBeCloseTo(CANYON.shelfDepth, 6);
+    // Gentle along the waves' path (+z) across the terrace's edge: a spilling slope (ξ < 0.4 for the breaker the shelf
+    // holds, γ h at its depth, at 11 s).
+    const x = 10;
+    const zLine = canyonBreakLineZ(x);
+    const pathSlope = (canyon.depthAt(x, zLine - 6) - canyon.depthAt(x, zLine)) / 6;
+    expect(pathSlope).toBeGreaterThan(0);
+    const deepWavelength = (9.81 * 11 ** 2) / (2 * Math.PI);
+    expect(pathSlope / Math.sqrt((0.78 * CANYON.shelfDepth) / deepWavelength)).toBeLessThan(0.4);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {
