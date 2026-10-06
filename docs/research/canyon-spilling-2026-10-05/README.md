@@ -155,7 +155,12 @@ TESTS_PLACEHOLDER
 
 Build the roller (`docs/research/water-physics/roller.md`, `roller-build.md`) **standalone**, as a lens riding on the spilling front's broken crest, not on the barrel's loft:
 
-- **Birth and shape.** Born where the front has reached a column and B ≥ 0.3 with bore Froude number Fr₁ ≥ 1.45 (shed below 1.3). It is about 2.1 H long at onset, growing to 2.5–3.5 H over 5–8 breaker depths, and 0.25–0.5 H thick at the crest, tapering to the toe. It holds 0.33–0.36 H² of water at a void fraction of 0.25.
+- **Birth and shape.** Born where the front has reached a column and B ≥ 0.3 with bore Froude number Fr₁ ≥ 1.45 (shed below 1.3). It is about 2.1 H long at onset, growing to 2.5–3.5 H over 5–8 breaker depths, and tapers from the crest to the toe. It holds 0.33–0.36 H² of water at a void fraction of 0.25.
+- **Its thickness at the crest is provisional** (the advisor's Q2, 2026-10-06). Both figures are inferred from the same water, not measured:
+  - 0.20–0.27 H for the recipe's quarter ellipse, which S3 builds (0.27 H at birth, 0.20 H developed);
+  - 0.26–0.44 H for a wedge holding the same water (from 3.5 H long down to 2.1 H).
+
+  The earlier 0.25–0.5 H came from LiDAR-fitted areas at lighter densities. Our own Basilisk runs will settle the shape.
 - **What it does to the rider.** It changes only what the water sample returns (its top, its air and its flow), so a board bogs in its top and is pushed at about 330·H Pa. It replaces the P11 `ROLLER_SHARE` push.
 - **How it is drawn.** As its own white band from crest to toe, with a fingered toe, brightest at the crest; the foam field takes over behind it.
 - **Where it starts.** The spilling front's crest rows per column (`crestZ`) and its local age (`time − reached`) already give where and how old each roller slice is, so S3 can start from `SpillingFront`'s state.
