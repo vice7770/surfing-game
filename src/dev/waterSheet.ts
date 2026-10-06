@@ -56,11 +56,14 @@ const PARAMETERS = new URLSearchParams(window.location.search);
 const SPOT = (['reef', 'beach', 'padang', 'canyon'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
 /**
  * `&direction=<degrees>&spreading=<s>`: the swell's direction and cos-2s spreading in place of the settings' (the Canyon's
- * spilling prototype runs a square, narrow groundswell: `&spot=canyon&swell=medium&direction=0&spreading=150`).
+ * spilling prototype runs a square, narrow groundswell: `&spot=canyon&swell=medium&direction=0&spreading=150`), and
+ * `&spillingFront=0` turns its spilling front off.
  */
 const SWELL_OVERRIDES: Partial<SurfZoneConfig> = {
   ...(PARAMETERS.has('direction') ? { directionDegrees: Number(PARAMETERS.get('direction')) } : {}),
   ...(PARAMETERS.has('spreading') ? { spreading: Number(PARAMETERS.get('spreading')) } : {}),
+  // `&spillingFront=0`: a spilling spot's foam is the solver's own breaking, without its spilling front (before and after).
+  ...(PARAMETERS.get('spillingFront') === '0' ? { spillingFront: false } : {}),
 };
 /** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
 const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));

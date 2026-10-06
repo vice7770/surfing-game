@@ -22,12 +22,19 @@ const time = args.time ?? 'midday';
 const receiverPort = 5299;
 let prefix = 'frame';
 const server = createServer((request, response) => {
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': '*' };
+  // The page's PNG posts are preflighted (their content type is not a simple one).
+  if (request.method === 'OPTIONS') {
+    response.writeHead(204, cors);
+    response.end();
+    return;
+  }
   const chunks = [];
   request.on('data', (chunk) => chunks.push(chunk));
   request.on('end', () => {
     const name = new URL(request.url, 'http://localhost').searchParams.get('name') ?? 'upload.png';
     writeFileSync(join(out, `${prefix}-${name}`), Buffer.concat(chunks));
-    response.writeHead(200, { 'Access-Control-Allow-Origin': '*' });
+    response.writeHead(200, cors);
     response.end('ok');
   });
 });
