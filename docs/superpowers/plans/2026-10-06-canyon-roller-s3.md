@@ -510,3 +510,30 @@ Reported, never a gate.
 
 **Q8. Should the P11 push stay at the other spots?**
 - **Recommendation:** keep it at the Beach, the Point, the Reef, Padang and the Pool until their rollers exist (S4). Removing it now would stop broken water carrying boards there (the ROADMAP numbers in Q1).
+
+## 9. The advisor's rulings (2026-10-06)
+
+The plan is approved with these answers to §8.
+
+- **Q1, the push's source: the front's owned cells.**
+  - The rider meets what is drawn: the push, the bog, the raised top and the band appear together, behind the visible front.
+  - At spilling spots only, the rider's water sample also takes its `breaking` from the same mask, so the hold-down, the curl and broken-water readers and the duck-dive goal follow the visible front.
+  - The solver is never written.
+  - Task 6 measures catches and rides both ways (the solver's breaking, and the front's mask), and both sets of numbers go to the owner. The old P11 push carried most of the Canyon's catches, so a change there is the owner's to judge.
+- **Q2, the thickness:** build the recipe's quarter ellipse.
+  - Both thickness figures are inferred: `roller.md`'s 0.25–0.5 H from LiDAR-fitted areas, and the recipe's 0.20–0.27 H from the same water at a quarter-ellipse shape. Mark the thickness provisional, and correct the brief in the Canyon README to say so.
+  - If the measured push comes out under the 330·H Pa band, try the wedge (0.26–0.44 H, the same water) before touching the air fraction.
+  - Our own Basilisk runs settle the shape later.
+- **Q3, shedding on the terrace:** keep Fr₁ 1.45 to be born and 1.3 to shed, with the 0.2 s hold.
+  - Report Fr₁ and B at every shedding.
+  - Only if lenses shed while the solver still breaks (B ≥ 0.3), lower the shedding line toward 1.2, the edge of the recipe's ±0.1. Never lower it below that.
+  - Measure on the Canyon's new bed: it is being rebuilt for straight crests (below), and its bores will differ.
+- **Q4:** the 330·H Pa check is a prone rider drifting with the current below as the lens overtakes it. Report the held-still and free-carry cases beside it.
+- **Q5:** no roughness on the surface the board rides in S3; it is drawn only. It gets its own measured step, or S4.
+- **Q6:** sections along each column, projected on the crest normal, are good for S3. The owner now requires straight crests, which keeps the projection's error small.
+- **Q7:** keep the recipe's blend. Report L_r·tanθ against H, and raise faces outside 16–25° as a solver issue rather than clamping the lens.
+- **Q8:** the P11 push stays at the Beach, the Point, the Reef, Padang Padang and the Pool until S4.
+
+**Sequencing.** The owner asked on 2026-10-06 for waves straight to the beach. The Canyon's corner canyon, which bent the crests, is being replaced by a single oblique arm on `claude/canyon-straight`.
+- Tasks 1–3 (the model, the wiring, the rider's water) can be built now, with fast unit tests on synthetic bores. They don't depend on the bed.
+- Task 0's baselines, and every game-size measurement, wait for the new bed. They run on the merged branch.
