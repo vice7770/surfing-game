@@ -8,8 +8,9 @@ import { FRONT_FIELD, FRONT_STRIDE } from '../wave/barrel/frontRecords';
 import { ProfileLibrary } from '../wave/barrel/ProfileLibrary';
 import { createContactHit, SweptContact } from '../wave/barrel/sweptContact';
 import { tubeCase } from '../wave/barrel/toyCase';
-import { SEAWATER_DENSITY, PhysicalSurfWater, catmullRomWeights } from './PhysicalSurfWater';
+import { SEAWATER_DENSITY, PhysicalSurfWater, catmullRomWeights, lensFlowShare, lensVoidFraction } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
+import { ROLLER_DEFAULTS, ROLLER_FIELD, ROLLER_STRIDE, SpillingRoller, createLensPoint, crestThickness } from '../wave/SpillingRoller';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 20, spreading: 24, tide: 0,
@@ -504,5 +505,194 @@ describe('the swept contact through the water (Padang Padang, Part B, PR 4)', ()
     expect(sample.covered).toBeUndefined();
     expect(sample.tube).toBeUndefined();
     expect(sample.surfaceY).toBe(water.plainSurfaceAt(0, 9.5));
+  });
+});
+
+/**
+ * The still 3 m channel with a roller lens along it (the Canyon roller lens, S3, Task 3): a hand-written table puts a
+ * developed lens's crest at z = −2, 4 m long and 1.5 m high, its water moving at (0.5, 5) m/s, at scale `scale`.
+ */
+function rollerChannel(scale = 1, current = 1) {
+  const { solver, breaking } = channel(3, current);
+  const roller = new SpillingRoller(solver, { edgeColumns: 0 });
+  const thickness = crestThickness(1.5, 4, ROLLER_DEFAULTS);
+  for (let column = 0; column < solver.nx; column += 1) {
+    const o = column * ROLLER_STRIDE;
+    roller.table[o + ROLLER_FIELD.crest] = -2;
+    roller.table[o + ROLLER_FIELD.length] = 4;
+    roller.table[o + ROLLER_FIELD.scale] = scale;
+    roller.table[o + ROLLER_FIELD.thickness] = thickness;
+    roller.table[o + ROLLER_FIELD.flowX] = 0.5;
+    roller.table[o + ROLLER_FIELD.flowZ] = 5;
+  }
+  // A whitewater plume 0.6 m deep at a void fraction of 0.15 everywhere.
+  const aeration = { voidFraction: () => 0.15, depth: new Float64Array(solver.h.length).fill(0.6) };
+  const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, roller, aeration });
+  const plain = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, aeration });
+  return { solver, breaking, roller, water, plain, thickness };
+}
+
+/** The lens at (x, z) in the channel: its top (the sampled surface), thickness and underside. */
+function lensHere(water: PhysicalSurfWater, roller: SpillingRoller, x: number, z: number) {
+  const lens = createLensPoint();
+  expect(roller.lensAt(x, z, lens)).toBe(true);
+  const top = water.sampleAt(x, 5, z, createWaterSample()).surfaceY;
+  return { lens, top, underside: top - lens.thickness };
+}
+
+describe('PhysicalSurfWater with a roller lens (the Canyon roller lens, S3)', () => {
+  it('stands the lens\'s top on the solver\'s surface at the render nodes, and samples the surface it draws', () => {
+    const { solver, roller, water, thickness } = rollerChannel();
+    const out = createWaterSample();
+    for (let x = -8; x <= 8; x += 1) {
+      for (let z = -3; z <= 3; z += 1) {
+        const eta = solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
+        expect(water.surfaceAt(x, z)).toBeCloseTo(eta + roller.riseAt(x, z), 12);
+      }
+    }
+    expect(roller.riseAt(0, -2)).toBeCloseTo(0.25 * thickness, 12);
+    expect(water.surfaceAt(0, -2) - water.surfaceAt(0, 5)).toBeCloseTo(0.25 * thickness, 12);
+    for (const [x, z] of [[0.3, -1.7], [-2.6, 0.45], [4.1, -2.9]]) {
+      expect(water.sampleAt(x, 0, z, out).surfaceY).toBe(water.surfaceAt(x, z));
+    }
+  });
+
+  it('gives the lens\'s air by height, 0.9 ζ^2.6, the more of it and the plume\'s, and the plume\'s alone below it', () => {
+    const { roller, water } = rollerChannel();
+    const out = createWaterSample();
+    const { lens, top, underside } = lensHere(water, roller, 0.3, -1);
+    expect(lens.thickness).toBeGreaterThan(0.2);
+    for (const zeta of [0.2, 0.5, 0.64, 0.8, 1]) {
+      const air = water.sampleAt(0.3, underside + zeta * lens.thickness, -1, out).voidFraction!;
+      expect(air).toBeCloseTo(Math.max(0.15, 0.9 * zeta ** 2.6), 12);
+    }
+    expect(water.sampleAt(0.3, underside - 0.05, -1, out).voidFraction).toBeCloseTo(0.15, 12);
+    expect(water.sampleAt(0.3, top - 1, -1, out).voidFraction).toBe(0);
+    // Above the plume's 0.2, nothing caps the lens's air: its top is 0.9.
+    expect(water.sampleAt(0.3, top, -1, out).voidFraction).toBeCloseTo(0.9, 12);
+  });
+
+  it('floats nothing above 0.638 of the lens\'s height on a 30 L board (α > 0.28), and holds a mean void fraction of 0.25', () => {
+    expect(lensVoidFraction(0.6375, 0.25)).toBeLessThan(0.28);
+    expect(lensVoidFraction(0.6390, 0.25)).toBeGreaterThan(0.28);
+    const steps = 100000;
+    let sum = 0;
+    for (let k = 0; k < steps; k += 1) sum += lensVoidFraction((k + 0.5) / steps, 0.25);
+    expect(Math.abs(sum / steps - 0.25)).toBeLessThan(0.005);
+    expect(lensVoidFraction(-0.1, 0.25)).toBe(0);
+    expect(lensVoidFraction(1.2, 0.25)).toBeCloseTo(0.9, 12);
+  });
+
+  it('moves the lens\'s water at its speed above its shear layer and the current under it, keeping the vertical flow', () => {
+    for (const scale of [1, 0.5]) {
+      const { roller, water, plain, solver } = rollerChannel(scale);
+      // Water piles up at 0.2 m/s: a vertical flow to keep.
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        for (let ix = 0; ix < solver.nx; ix += 1) solver.qx[iz * solver.nx + ix] = 3 - 0.2 * solver.xCenters[ix];
+      }
+      const x = 0.3;
+      const z = -1;
+      const current = solver.sampleCentered(solver.qx, x, z) / solver.sampleCentered(solver.h, x, z);
+      const { lens, underside } = lensHere(water, roller, x, z);
+      expect(lens.g).toBeCloseTo(scale, 12);
+      const out = createWaterSample();
+      for (const zeta of [0.3, 0.6, 1]) {
+        const y = underside + zeta * lens.thickness;
+        water.sampleAt(x, y, z, out);
+        expect(out.regime).toBe('bore');
+        expect(out.flowX).toBeCloseTo(current + scale * (0.5 - current), 9);
+        expect(out.flowZ).toBeCloseTo(scale * 5, 9);
+        expect(out.flowY).toBeCloseTo(plain.sampleAt(x, y, z, createWaterSample()).flowY, 12);
+        expect(Math.abs(out.flowY)).toBeGreaterThan(0.05);
+      }
+      // The shear layer: half way at 0.15 of the lens's height, none at its underside.
+      water.sampleAt(x, underside + 0.15 * lens.thickness, z, out);
+      expect(out.flowZ).toBeCloseTo(0.5 * scale * 5, 9);
+      for (const y of [underside, underside - 0.5, solver.bed[0] + 0.2]) {
+        water.sampleAt(x, y, z, out);
+        expect(out.flowX).toBeCloseTo(current, 9);
+        expect(out.flowZ).toBeCloseTo(0, 9);
+      }
+      expect(lensFlowShare(0)).toBe(0);
+      expect(lensFlowShare(0.3)).toBe(1);
+    }
+  });
+
+  it('carries no P11 roller push outside the lenses where the water has a roller', () => {
+    const { water, breaking, solver } = rollerChannel(0);
+    // Test 277's bore: 0.6 m over 3 m of still water, 1 m/s shoreward depth-averaged, breaking fully.
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = 3.6;
+      solver.qx[i] = 0;
+      solver.qz[i] = 3.6;
+    }
+    breaking.fill(1);
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    water.sampleAt(0.2, surface, 0.3, out);
+    expect(out.regime).toBe('bore');
+    expect(out.flowZ).toBeCloseTo(1, 9);
+    expect(out.flowX).toBeCloseTo(0, 9);
+  });
+});
+
+/** A Canyon sea, warm-started, with a lens written along its whole window: crest at z = −100, 5 m long, 0.4 m thick. */
+function canyonWithLens(overrides: Partial<SurfZoneConfig> = {}) {
+  const simulation = new SurfZoneSimulation({ ...config, spot: 'canyon', ...overrides }, 'warm');
+  const roller = simulation.roller!;
+  for (let column = 0; column < simulation.solver.nx; column += 1) {
+    const o = column * ROLLER_STRIDE;
+    roller.table[o + ROLLER_FIELD.crest] = -100;
+    roller.table[o + ROLLER_FIELD.length] = 5;
+    roller.table[o + ROLLER_FIELD.scale] = 1;
+    roller.table[o + ROLLER_FIELD.thickness] = 0.4;
+    roller.table[o + ROLLER_FIELD.flowZ] = 5;
+  }
+  return { simulation, roller };
+}
+
+describe('PhysicalSurfWater at the Canyon (the Canyon roller lens, S3)', () => {
+  it('samples the node heights the snapshot draws, the lens\'s tops on them, at render spacings of 1 m and 2 m (Review Focus 5)', () => {
+    const { simulation, roller } = canyonWithLens();
+    for (const spacing of [1, 2]) {
+      const water = PhysicalSurfWater.forSimulation(simulation, undefined, spacing);
+      const grid = simulation.renderGrid(spacing);
+      const render = new Float32Array(grid.nx * grid.nz * 2);
+      simulation.writeUniformSurface(render, grid);
+      let lifted = 0;
+      for (let r = 0; r < grid.nz; r += 1) {
+        const z = grid.zMin + r * spacing;
+        if (z < -110 || z > -90) continue;
+        for (let c = 0; c < grid.nx; c += 1) {
+          const x = grid.xMin + c * spacing;
+          expect(water.surfaceAt(x, z)).toBeCloseTo(render[(r * grid.nx + c) * 2], 5);
+          if (roller.riseAt(x, z) > 0.05) lifted += 1;
+        }
+      }
+      expect(lifted).toBeGreaterThan(10);
+    }
+  });
+
+  it('brings the P11 roller push back with the Canyon\'s spilling front or roller off, and has none with its roller (Review Focus 4)', () => {
+    const carry = (overrides: Partial<SurfZoneConfig>) => {
+      const simulation = new SurfZoneSimulation({ ...config, spot: 'canyon', ...overrides }, 'warm');
+      const { solver } = simulation;
+      // Test 277's bore: 0.6 m over 3 m of still water, 1 m/s shoreward depth-averaged, breaking fully.
+      solver.bed.fill(-3);
+      solver.h.fill(3.6);
+      solver.qx.fill(0);
+      solver.qz.fill(3.6);
+      simulation.breaking.strength.fill(1);
+      const water = PhysicalSurfWater.forSimulation(simulation);
+      const out = createWaterSample();
+      const surface = water.sampleAt(0.2, 5, -60.3, out).surfaceY;
+      water.sampleAt(0.2, surface, -60.3, out);
+      expect(out.regime).toBe('bore');
+      return out.flowZ;
+    };
+    expect(carry({ spillingFront: false })).toBeCloseTo(Math.sqrt(9.81 * 3.6), 1);
+    expect(carry({ roller: false })).toBeCloseTo(Math.sqrt(9.81 * 3.6), 1);
+    // On the solver's mask the rider feels the solver's B = 1 here, and no push outside a lens.
+    expect(carry({ rollerMask: 'solver' })).toBeCloseTo(1, 9);
   });
 });

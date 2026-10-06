@@ -2,6 +2,7 @@ import type { BedMaterial } from '../wave/Bathymetry';
 import { createContactHit, tubeState, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
 import { waveNumber } from '../wave/dispersion';
 import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
+import type { LensPoint, RollerLens } from '../wave/SpillingRoller';
 import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
 import type { SurfWater, WaterSample } from './SurfWater';
 
@@ -39,6 +40,49 @@ const GRAVITY = 9.81;
 const MIN_NORMAL_Y = 0.5;
 /** The steepest slope the clamp allows: tan of its tilt. */
 const STEEPEST = Math.sqrt(1 - MIN_NORMAL_Y * MIN_NORMAL_Y) / MIN_NORMAL_Y;
+/**
+ * A roller lens's air at its top, C = 0.9: its drawn and hit top is the C = 0.9 level, Chanson's Y₉₀ (Shi et al. 2023b's
+ * near-toe profile; R3 §2.1, docs/research/water-physics/notes/round3-whitewater-build/roller-build.md).
+ */
+const LENS_TOP_VOID = 0.9;
+/** A roller lens's shear layer: its water reaches the lens's own flow by this share of its height (Misra et al. 2008; R3 §3.2). */
+const LENS_SHEAR = 0.3;
+
+/**
+ * A roller lens's void fraction at height ζ within it (0 at its underside, 1 at its top): 0.9·ζ^N with N = 0.9/ᾱ − 1,
+ * whose mean over the lens is ᾱ (Shi et al. 2023b; R3 §2.1). Above 0.638 of the lens (ᾱ 0.25) a prone rider on a 30 L
+ * board cannot float (α > 0.28): the board bogs. Felt only on the rider's own machine, so `Math.pow` is fine here.
+ */
+export function lensVoidFraction(zeta: number, voidMean: number): number {
+  if (!(zeta > 0)) return 0;
+  return LENS_TOP_VOID * Math.pow(Math.min(1, zeta), LENS_TOP_VOID / voidMean - 1);
+}
+
+/** The share of a roller lens's own flow at height ζ within it: smoothstep(0, 0.3, ζ), the shear layer below (R3 §3.2). */
+export function lensFlowShare(zeta: number): number {
+  const s = Math.min(1, Math.max(0, zeta / LENS_SHEAR));
+  return s * s * (3 - 2 * s);
+}
+
+/**
+ * The water at height `y` in a column a roller lens covers (the Canyon roller lens, S3; R3 §3.2–3.3), on a sample
+ * whose surface is the lens's top: the underside lies `lens.thickness` below it. The column is broken water, its flow
+ * the depth-averaged current (u, w); inside the lens it is carried toward the lens's own, ū + S(ζ)·g·(c·n̂ − ū), and its
+ * air is the more of the lens's and the plume's (they describe the same air; the lens's is better resolved). The
+ * vertical flow is left as it is.
+ */
+export function applyLens(out: WaterSample, y: number, lens: LensPoint, voidMean: number, u: number, w: number): void {
+  out.regime = 'bore';
+  out.flowX = u;
+  out.flowZ = w;
+  const underside = out.surfaceY - lens.thickness;
+  if (!(lens.thickness > 0) || y < underside) return;
+  const zeta = (y - underside) / lens.thickness;
+  out.voidFraction = Math.max(out.voidFraction ?? 0, lensVoidFraction(zeta, voidMean));
+  const share = lensFlowShare(zeta) * lens.g;
+  out.flowX = u + share * (lens.flowX - u);
+  out.flowZ = w + share * (lens.flowZ - w);
+}
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
 export function catmullRomWeights(t: number): [number, number, number, number] {
@@ -74,6 +118,11 @@ export interface PhysicalSurfWaterOptions {
    * curl's layers and the lip's flow, in place of a carve.
    */
   swept?: SweptSurfaceQueries;
+  /**
+   * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
+   * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
+   */
+  roller?: RollerLens;
 }
 
 /** Only numeric state read by the existing plain-height sampler; no complete solver facade. */
@@ -99,7 +148,7 @@ class PlainHeightSurface {
   private surfaceCacheLastZ = -1;
 
   constructor(private readonly heightState: PlainHeightState, protected readonly spacing: number,
-    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve'> = {}, owned = false) {
+    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve' | 'roller'> = {}, owned = false) {
     this.surfaceCacheActive = owned;
   }
 
@@ -141,12 +190,16 @@ class PlainHeightSurface {
     return value;
   }
 
-  /** Height at a render node (the renderer's `writeUniformSurface` convention: dry nodes 5 cm under the bed). */
+  /**
+   * Height at a render node (the renderer's `writeUniformSurface` convention: dry nodes 5 cm under the bed), with any
+   * roller lens's top on wet ones, as the snapshot's nodes have it (S3: what is drawn is what is hit).
+   */
   private nodeHeight(x: number, z: number): number {
     const { heightState: solver } = this;
+    const { roller } = this.heightOptions;
     const depth = solver.sampleCentered(solver.h, x, z);
     const bottom = solver.sampleCentered(solver.bed, x, z);
-    const height = depth > WET ? depth + bottom : bottom - 0.05;
+    const height = depth > WET ? (roller ? depth + bottom + roller.riseAt(x, z) : depth + bottom) : bottom - 0.05;
     return this.heightOptions.carve ? this.heightOptions.carve(x, z, height) : height;
   }
 
@@ -264,20 +317,24 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private readonly cells = new Int32Array(4);
   private readonly weights = new Float64Array(4);
   private readonly hit = createContactHit();
-
+  private readonly lens: LensPoint = { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0 };
 
   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
     super(solver, options.nodeSpacing ?? 1, options);
     this.omega = (2 * Math.PI) / options.peakPeriod;
   }
 
-  /** The simulation's water; with the swept barrel's contact, that in place of the lip's carve (Part B, PR 4). */
+  /**
+   * The simulation's water; with the swept barrel's contact, that in place of the lip's carve (Part B, PR 4). At a
+   * spilling spot, its roller lenses (S3), and the breaking the rider feels behind the visible front (the advisor's Q1).
+   */
   static forSimulation(simulation: SurfZoneSimulation, swept?: SweptSurfaceQueries, nodeSpacing = 1): PhysicalSurfWater {
-    const { lip } = simulation;
+    const { lip, roller } = simulation;
     return new PhysicalSurfWater(simulation.solver, {
-      peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, nodeSpacing,
+      peakPeriod: simulation.config.peakPeriod, breaking: simulation.feltBreaking, nodeSpacing,
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
+      ...(roller ? { roller } : {}),
     });
   }
 
@@ -341,11 +398,13 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const kh = waveNumber(this.omega, depth) * depth;
     let horizontal = 1;
     let vertical = height / depth;
+    const { roller } = this.options;
     if (out.breaking > BORE) {
       out.regime = 'bore';
       const current = Math.hypot(u, w);
       const thickness = ROLLER_SHARE * Math.max(0, out.surfaceY - solver.restLevel);
-      if (current > MIN_ROLLER_FLOW && thickness > 0 && w > ROLLER_SHOREWARD * current) {
+      // With a roller (S3), its lenses carry the broken water in place of the P11 push.
+      if (!roller && current > MIN_ROLLER_FLOW && thickness > 0 && w > ROLLER_SHOREWARD * current) {
         const share = Math.max(0, 1 - Math.max(0, out.surfaceY - y) / thickness);
         const carried = out.breaking * Math.sqrt(GRAVITY * depth);
         horizontal = 1 + Math.max(0, carried / current - 1) * share;
@@ -361,6 +420,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.flowX = u * horizontal;
     out.flowZ = w * horizontal;
     out.flowY = rise * vertical;
+    if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w);
     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
     return out;
   }
