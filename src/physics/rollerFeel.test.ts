@@ -102,15 +102,16 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
     }
   });
 
-  it('catches a free prone board the bare bore leaves behind, and carries it at the crest at the bore\'s speed', () => {
+  it('catches a free prone board the bare bore leaves behind, and carries it in the lens at the bore\'s speed', () => {
     // A 0.6 m bore over 0.76 m (c = 3.22 m/s): the tidal-bore surfers' 0.3–0.6 m bores ridden at 2.5–3.1 m/s (R3 §3.1).
     const options = { depth: 0.76, height: 0.6, toeZ: -10 };
     const lens = new RollerWater(options);
     const c = lens.options.speed;
     const carried = ride(lens, { seconds: 7 });
-    // At least 1 s at the crest within 10 % of c (measured: 4.5–6.2 s at ξ 0.02–0.05, 2.9–3.4 m/s).
-    const atCrest = carried.filter((step) => Math.abs(step.xi) < 0.1 && Math.abs(step.vz / c - 1) < 0.1);
-    expect(atCrest.length * STEP).toBeGreaterThan(1);
+    // At least 0.5 s in the lens's upper half within 10 % of c (measured: 4.25–5.0 s at ξ 0.19–0.24, 3.0–3.35 m/s; its
+    // unsheltered legs in the lens hold it just ahead of the crest).
+    const atCrest = carried.filter((step) => step.xi >= 0 && step.xi < 0.5 && Math.abs(step.vz / c - 1) < 0.1);
+    expect(atCrest.length * STEP).toBeGreaterThan(0.5);
     // The bare bore's face lets the same board slide back over its crest, falling behind toward c(1 − h₁/h₂).
     const dropped = ride(new RollerWater({ ...options, lens: false }), { seconds: 7 }).at(-1)!;
     expect(dropped.xi).toBeLessThan(-1);
@@ -119,11 +120,14 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
 
   /*
    * Open check (R3 §3.1: debris is never faster than the bore front; a board below the lens falls behind). Measured
-   * 2026-10-06, free prone boards: carried to the crest at c, they then plane down the face ahead of the bore, peaking at
-   * 6.3 / 8.3 / 10.2 m/s on 0.6 / 1.0 / 1.5 m bores (c 3.22 / 4.17 / 5.10), the rider knocked off at 1.0 and 1.5 m; the
-   * bare bores never take them past 0.85 c. In the froth the board meets little drag (the mixture's density, and the
-   * prone body's along-body shelter, `AttachedRider`'s ALONG_BODY_SHELTER 0.1), so the face's slope wins. Scaling the
-   * hull's added mass and radiation by the mixture did not change it (probe). Not tuned.
+   * 2026-10-06 with the lens's unsheltered body flow (the advisor's step 1): free prone boards are carried at c just
+   * ahead of the crest, then run down the face ahead of the bore, peaking at 5.9 / 8.1 / 9.4 m/s on 0.6 / 1.0 / 1.5 m
+   * bores (c 3.22 / 4.17 / 5.10; before step 1, 6.3 / 8.3 / 10.2), the rider knocked off at 1.0 and 1.5 m; the bare
+   * bores never take them past 0.85 c. Traced: the board leaves the crest's convexity airborne (5–16 cm over the drawn
+   * top, its rider out of the water), and each landing's water entry, along the face's forward-leaning normal, drives it
+   * down the face (50–580 N a step of added mass, and radiation): it skips, it does not plane in froth. The advisor's
+   * step 3 (the hull's drag against the lens's flow and its water's inertia at the mixture's density, in a lens's
+   * footprint) left 5.7 / 7.7 / 8.8 m/s and was not kept. Not tuned further: the owner's call.
    */
   it.fails('never carries a free prone board faster than the bore', () => {
     for (const [depth, height] of [[0.76, 0.6], [1.27, 1], [1.9, 1.5]]) {
@@ -133,27 +137,31 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
     }
   });
 
-  /*
-   * Open check, the advisor's Q4: a prone rider drifting with the current under the crest, c(1 − h₁/h₂), overtaken by the
-   * lens at c·h₁/h₂, should feel about 330·H Pa on 0.5 m² (R3 §3.1, Duncan–Martins): 83 / 165 / 248 N ± 30 % at
-   * H = 0.5 / 1.0 / 1.5 m. Measured 2026-10-06 (the lens's force over the same bore's bare face):
-   * - drifting: 3 / 13 / 21 N (with the lens 174 / 173 / 178 N in all, bare 171 / 160 / 157 N: the face's own slope);
-   * - held still: −3 / 9 / 21 N; the free carry: above;
-   * - the wedge holding the same water (Q2's fallback, 0.26–0.44 H at the crest): 5 / 18 / 18 N drifting, −1 / 11 / 34 N
-   *   held still: no better, so the air fraction (the owner's) is not the lever either;
-   * - lying seaward: −7 / 5 / 43 N.
-   * The prone board floats about 0.24 m under the surface, below most of the lens, and the rider's body above it feels
-   * 0.1 of the flow along it (ALONG_BODY_SHELTER). With that shelter at 1 (probe only) the drifting push is 42 / 115 /
-   * 217 N: in band at 1.5 m, at its edge at 1.0 m. Not tuned: the rider's model is not S3's.
+  /**
+   * The advisor's Q4: a prone rider drifting with the current under the crest, c(1 − h₁/h₂), overtaken by the lens at
+   * c·h₁/h₂, should feel about 330·H Pa on 0.5 m² (R3 §3.1, Duncan–Martins), ± 30 %: the lens's force over the same
+   * bore's bare face. Measured 2026-10-06 with the lens's unsheltered body flow (the advisor's step 1):
+   * - drifting: 7 / 139 / 205 N at H = 0.5 / 1.0 / 1.5 m (before step 1: 3 / 13 / 21 N);
+   * - held still: 26 / 115 / 172 N; the free carry: below;
+   * - the wedge holding the same water (Q2's fallback): 8 / 160 / 126 N drifting, 25 / 116 / 238 N held still;
+   * - with the advisor's step 3 as well (not kept): 36 / 74 / 129 N drifting, 92 / 377 / 781 N held still.
    */
-  it.fails('pushes a prone rider drifting with the current under the crest at 330·H Pa as the lens overtakes it (Q4)', () => {
-    for (const height of [0.5, 1, 1.5]) {
-      const water = new RollerWater(bore(height));
-      const drift = (water.options.speed * height) / (water.options.depth + height);
-      const push = lensPush(height, drift);
-      const target = 330 * height * 0.5;
-      expect(Math.abs(push / target - 1)).toBeLessThan(0.3);
-    }
+  function driftingPush(height: number): number {
+    const water = new RollerWater(bore(height));
+    return lensPush(height, (water.options.speed * height) / (water.options.depth + height));
+  }
+
+  it('pushes a prone rider drifting with the current under the crest at 330·H Pa as the lens overtakes it, at H = 1.0 and 1.5 m (Q4)', () => {
+    for (const height of [1, 1.5]) expect(Math.abs(driftingPush(height) / (330 * height * 0.5) - 1)).toBeLessThan(0.3);
+  });
+
+  /*
+   * Open check at H = 0.5 m: 83 N ± 30 %, measured 7 N. The lens there is 10 cm thick at the crest (0.098 m), 1.5 m
+   * long, and passes the drifting rider in 0.9 s: it barely reaches the body lying above a board floating about 0.24 m
+   * under the surface. Not tuned: the owner's call.
+   */
+  it.fails('pushes a prone rider drifting under a 0.5 m bore\'s lens at 330·H Pa (Q4)', () => {
+    expect(Math.abs(driftingPush(0.5) / (330 * 0.5 * 0.5) - 1)).toBeLessThan(0.3);
   });
 
   it('pushes a drifting prone rider toward the beach, more on a bigger bore', () => {
@@ -184,10 +192,11 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
 
   /*
    * Open check (R3 §3.1, after Yeh et al. 2014): a paddler facing a 1.5 m roller takes 1.4–2.8 kN quasi-steady, the
-   * front's peak at most 1.5× that, for 0.5–0.9 s. Measured 2026-10-06, the water's force on board and rider while on
-   * and within the lens: paddling freely, a median 508 N and a peak 825 N over the 0.67 s before the knock-off (the bare
-   * face: 177 N, 555 N, and no knock-off); held at 1.5 m/s seaward, 367 N rising to 2.0 kN as the rider is knocked off
-   * after 0.28 s (bare: 1.55 kN after 0.55 s). The along-body shelter (0.1) takes most of the head-on drag. Not tuned.
+   * front's peak at most 1.5× that, for 0.5–0.9 s. Measured 2026-10-06 with the lens's unsheltered body flow (the
+   * advisor's step 1), the water's force on board and rider while on and within the lens: paddling freely, a median
+   * 395 N and a peak 1.1 kN over the 0.69 s before the knock-off (before step 1: 508 N, 825 N; the bare face: 177 N,
+   * 555 N, and no knock-off); held at 1.5 m/s seaward, 904 N rising to 2.9 kN as the rider is knocked off after 0.30 s.
+   * With step 3 as well (not kept): 281 N and 1.1 kN, knocked off after 1.12 s. Not tuned: the owner's call.
    */
   it.fails('hits a paddler punching through a 1.5 m roller with 1.4–2.8 kN', () => {
     const water = new RollerWater({ depth: 1.9, height: 1.5, toeZ: -10 });

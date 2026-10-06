@@ -43,6 +43,11 @@ export interface WaterSample {
   voidFraction?: number;
   /** The turbulent kinetic energy at the point, m²/s² (the wipeout spec, Part B); absent is calm. */
   turbulence?: number;
+  /**
+   * Inside a roller lens (the Canyon roller lens, S3): the share of the lens's own flow in the flow here, S(ζ)·g, 0–1
+   * (the flow is ū + share·(c·n̂ − ū)). Absent outside a lens, and wherever the water has none.
+   */
+  lensShare?: number;
   /** The seabed's unit normal (up on a flat bed), and what it is made of (the Teahupo'o Reef, Part C; absent: sand). */
   bedNormalX: number;
   bedNormalY: number;
@@ -70,7 +75,7 @@ export function createWaterSample(): WaterSample {
   return {
     surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
     normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
-    bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand',
+    bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand', lensShare: undefined,
     waterFloorY: undefined, ceilingY: undefined, ceilingTopY: undefined, covered: undefined, clearance: undefined, tube: undefined,
   };
 }

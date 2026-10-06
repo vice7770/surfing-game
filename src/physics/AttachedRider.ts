@@ -1835,7 +1835,13 @@ export class AttachedRider {
     this.buoyancy.add(force);
     const relative = this.flow.set(sample.flowX, sample.flowY, sample.flowZ).sub(this.partVelocity);
     const drag = 0.5 * mixture * dragArea * wet * relative.length();
-    force.addScaledVector(relative, drag).addScaledVector(this.bodyAxis, -drag * (1 - shelter) * relative.dot(this.bodyAxis));
+    // Inside a roller lens (the Canyon roller lens, S3; the advisor's ruling of 2026-10-06, provisional): the shelter
+    // models streamlined ambient flow along a paddling body, but a roller overruns a prone rider from behind and strikes
+    // its feet, legs and tail as bluff bodies. Where the lens's own flow is (its share, S(ζ)·g), none of it is sheltered;
+    // everywhere else, as before.
+    const lens = sample.lensShare;
+    const along = lens !== undefined && lens > 0 ? shelter + (1 - shelter) * lens : shelter;
+    force.addScaledVector(relative, drag).addScaledVector(this.bodyAxis, -drag * (1 - along) * relative.dot(this.bodyAxis));
     if (slot >= RIDER_PARTS.length) {
       const limit = HAND_FORCE_LIMIT * this.mass * WATER.gravity;
       const magnitude = force.length();

@@ -82,6 +82,7 @@ export function applyLens(out: WaterSample, y: number, lens: LensPoint, voidMean
   const share = lensFlowShare(zeta) * lens.g;
   out.flowX = u + share * (lens.flowX - u);
   out.flowZ = w + share * (lens.flowZ - w);
+  out.lensShare = share;
 }
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
@@ -353,6 +354,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const { solver } = this;
     const { swept } = this.options;
     if (swept) this.clearLayers(out);
+    // A reused sample leaves the lens of its last point behind: only a lens here sets it again.
+    if (this.options.roller) out.lensShare = undefined;
     if (this.outside(x, z)) return this.flatSea(out);
     const { h, bed, qx, qz } = solver;
     this.cellWeights(x, z);
