@@ -134,13 +134,14 @@ describe('surf spot bathymetry', () => {
     });
 
     it('is designed to peel fast but makeable on the Small swell (phase matching)', () => {
+      // Square to the beach since 2026-10-05 (docs/research/crest-angle-2026-10-05.md): 13.6 m/s, against 11.4 m/s from 20°.
       const small = REEF_SWELLS.small;
       const peel = ledgePeel({
         period: small.peakPeriod, deepDepth: REEF.deep, shelfDepth: REEF.shelfDepth,
         breakDepth: breakerDepthFor(small.significantHeight, REEF.deep), swellDegrees: small.directionDegrees ?? 0, ledgeDegrees: REEF.angle,
       });
       expect(peel.peelSpeed).toBeGreaterThanOrEqual(10);
-      expect(peel.peelSpeed).toBeLessThanOrEqual(13);
+      expect(peel.peelSpeed).toBeLessThanOrEqual(14);
     });
   });
 
