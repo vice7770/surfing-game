@@ -824,8 +824,8 @@ describe('lean, trim, crouch and heading hold', () => {
     expect((rider.leg.height + rider.leg.extension) / standing).toBeGreaterThan(0.97);
   });
 
-  // Compress (the stances spec): the bottom turn's stance, full crouch depth with the weight over the front foot
-  // (de Sousa 2022: knees and hips at or under 90°, the trunk over the front foot while flexed).
+  // Compress (the stances spec, its weight and depth as the movement-flow spec replaced them): the sharp turn's stance,
+  // at full depth (de Sousa 2022: knees and hips at or under 90°), the weight where W/S put it.
   describe('Compress', () => {
     const height = (rider: AttachedRider) => rider.leg.height + rider.leg.extension;
     const settled = () => {
@@ -856,12 +856,22 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(over.rider.attached).toBe(true);
     });
 
-    it('puts the weight over the front foot', () => {
-      const { board, rider, water } = settled();
-      const before = rider.contact.centreOfPressure.z;
-      rider.compress = 1;
-      run(board, water, 0.8);
-      expect(rider.contact.centreOfPressure.z).toBeGreaterThan(before + 0.05);
+    // The movement-flow spec (Q3) replaced the forward weight: W/S set it in every stance, centred by default. Lower,
+    // the body presses about 0.05 m further forward on this accelerating face than standing (the old forward weight
+    // took it 0.10 m); W and S under Compress move it 0.16–0.17 m either way, about as far as standing (0.13–0.18 m).
+    it('leaves the weight where W/S put it: over the front foot with W, the back foot with S', () => {
+      const pressure = (compress: number, trim: number) => {
+        const { board, rider, water } = settled();
+        rider.compress = compress;
+        rider.trim = trim;
+        run(board, water, 0.8);
+        expect(rider.attached).toBe(true);
+        return rider.contact.centreOfPressure.z;
+      };
+      const centred = pressure(1, 0);
+      expect(Math.abs(centred - pressure(0, 0))).toBeLessThan(0.07);
+      expect(pressure(1, 1)).toBeGreaterThan(centred + 0.1);
+      expect(pressure(1, -1)).toBeLessThan(centred - 0.1);
     });
 
     // The inside hand (de Sousa 2022): the body leans into the curve until the inside hand nears the water,
@@ -1257,22 +1267,24 @@ describe('lean, trim, crouch and heading hold', () => {
     });
 
     // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
-    // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
-    // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 71°, Shift's crouch 66°,
-    // Compress over it 61° (62° backside), keeping 0.54–0.67 of their speed (the top-turn plan; 75°, 69° and 62° while
-    // the feet still rolled the board away from the lean). A carve at a 40–48° rail sheds about 0.45 g, and
-    // the lean the turn can hold (TURN_RADIUS) falls with the speed. Forsyth's turns were on waves, whose water feeds them.
-    it.fails('makes a deep U at the bottom of the face', () => {
+    // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. The physics alone does not meet it on
+    // still water (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yawed 71°, Shift's
+    // crouch 66°, Compress over it 61°, keeping 0.54–0.67 of their speed. A carve at a 40–48° rail sheds about 0.45 g,
+    // and Forsyth's turns were on waves, whose water feeds them. The movement-flow spec's gameplay rules stand in for
+    // that: with COMPRESS_PULL and CARVE_CARRY, Compress over the crouch comes round 90° in 1.02 s keeping 0.91 of its
+    // speed.
+    it('makes a deep U at the bottom of the face', () => {
       const turn = bottomTurn(-1);
       expect(turn.attached).toBe(true);
       expect(turn.reached).toBeDefined();
       expect(turn.reached!.speed).toBeGreaterThanOrEqual(0.85 * turn.entry);
     });
 
-    // The stances spec says compressed and leaning turns hard; here Compress over the crouch turns less than the crouch
-    // alone (61° against 66°, the keyboard's full crouch 57°) and keeps less of its speed: the forward weight costs
-    // about 6°, the depth the rest. Pinned for the user's decision, not tuned (the compress plan's findings).
-    it.fails('turns at least as hard compressed as crouched, keeping as much speed', () => {
+    // The stances spec says compressed and leaning turns hard. Compress over the crouch once turned less than the
+    // crouch alone (61° against 66° in 1.2 s) and kept less of its speed: the forward weight cost about 6°, the depth
+    // the rest (the compress plan's findings). Under the movement-flow spec (the weight on W/S, COMPRESS_PULL and
+    // CARVE_CARRY) it turns 114° against the crouch's 68° and leaves at 5.8 m/s against 4.6.
+    it('turns at least as hard compressed as crouched, keeping as much speed', () => {
       const crouched = bottomTurn(-1, 90, 1.2, 'regular', 0.6, 0);
       const compressed = bottomTurn(-1);
       expect(compressed.turned).toBeGreaterThanOrEqual(crouched.turned);
