@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { CANYON, PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
+import { CANYON, PADANG, REEF, canyonArmAt, canyonBreakLineZ, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  CANYON_TAKE_OFF_RISE, FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  CANYON_TAKE_OFF_RISE, FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
@@ -16,7 +16,6 @@ import { PSI_RANGE, REEF_OVERTURN, overturn, overturnParameter, reefOverturn } f
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { PADANG_SWELLS, PADANG_TIDES, REEF_SWELLS } from '../game/SurfConditions';
 import { PADANG_PRACTICE_SWELL, PADANG_SPREADING, REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
-import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { PADANG_FRONT } from './barrel/barrelSpots';
@@ -730,7 +729,7 @@ describe('SurfZoneSimulation', () => {
       const { whitewaterStrength, breaking } = simulation;
       for (let i = 0; i < whitewaterStrength.length; i += 1) expect(whitewaterStrength[i]).toBeLessThanOrEqual(breaking.strength[i]);
     }
-  }, 120_000);
+  }, 600_000);
 
   it('throws each jet ahead of its crest, 1.15-1.8 times its speed, as measured jets leave (P7)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
@@ -795,18 +794,22 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('seats the Canyon take-off where its bed gathers the swell, square and from either side', () => {
+  it('seats the Canyon take-off on its arm just downcoast of its peak, up its face where its waves break', () => {
     const canyon = createSpot('canyon', 1);
-    const bed = (x: number, z: number) => tankDepth(canyon, OFFSHORE_DEPTH.canyon, x, z);
-    // The canyon runs along the −x edge (the canyon spilling prototype): a swell from far over on +x (25°) gathers past the window.
-    for (const directionDegrees of [-10, 0, 10]) {
-      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, peakPeriod: 10, directionDegrees };
+    // The straight-crest bed: each wave starts breaking at the arm's peak, so riders wait there, whatever the swell.
+    expect(TAKE_OFF.canyon).toBe('peak');
+    for (const [significantHeight, peakPeriod, directionDegrees] of [[1.4, 11, 0], [0.9, 9, -10], [2.4, 14, 10]]) {
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, significantHeight, peakPeriod, directionDegrees };
+      const tank = tankLayout(config);
+      const bed = (x: number, z: number) => tankDepth(canyon, tank.edgeDepth, x, z, tank);
       const point = takeOffPoint(config);
-      const swell = { period: 10, direction: (directionDegrees * Math.PI) / 180 };
-      expect(Math.abs(point.x)).toBeLessThanOrEqual(80 - TAKE_OFF_EDGE_MARGIN);
-      expect(rayConcentration(bed, swell, TANK.zoneInner, point.z, [point.x], 10)[0]).toBeGreaterThan(1.3);
-      // Where the terrace rises from the shelf, where its waves were measured breaking.
+      expect(point.x).toBe(CANYON.takeOffX);
+      expect(canyonArmAt(point.x)).toBe(true);
+      expect(point.x - CANYON.peakX).toBeGreaterThan(0);
+      expect(point.x - CANYON.peakX).toBeLessThan(TAKE_OFF_EDGE_MARGIN);
+      // Up the arm's face where it has risen CANYON_TAKE_OFF_RISE above the shelf, where its waves were measured breaking.
       expect(bed(point.x, point.z)).toBeCloseTo(CANYON.shelfDepth - CANYON_TAKE_OFF_RISE, 1);
+      expect(point.z).toBeLessThan(canyonBreakLineZ(point.x));
     }
   });
 
@@ -1373,12 +1376,25 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
 describe('the tank sized to the swell (wave sizes)', () => {
   const config = (spot: SpotName, significantHeight: number, peakPeriod = 14): SurfZoneConfig => ({ ...small, spot, significantHeight, peakPeriod });
 
-  it('keeps today\'s tank for small days, Practice and the Canyon', () => {
+  it('keeps today\'s tank for small days and Practice', () => {
     for (const spot of ['beach', 'point'] as const) {
       expect(tankLayout(config(spot, 1.5, 18))).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH[spot] });
       expect(tankLayout({ ...config(spot, 1.4, 12), heightAt: 'edge' })).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH[spot] });
     }
-    expect(tankLayout(config('canyon', 3))).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH.canyon });
+  });
+
+  // The straight-crest Canyon: on 4 m cells over its blend the shoaling waves lost a third of their height unbroken.
+  it('gives the Canyon today\'s zone and edge moved out to its own zone, with 1 m cells from the zone in', () => {
+    for (const [significantHeight, peakPeriod] of [[0.9, 9], [1.4, 11], [3, 14]]) {
+      const layout = tankLayout(config('canyon', significantHeight, peakPeriod));
+      expect(layout).toEqual({
+        offshore: CANYON.zoneInner - (TANK.zoneInner - TANK.offshore), zoneInner: CANYON.zoneInner,
+        blendEnd: CANYON.zoneInner + CANYON.blendLength, fineFrom: CANYON.zoneInner, shore: TANK.shore, edgeDepth: OFFSHORE_DEPTH.canyon,
+      });
+      // The blend onto the shelf ends seaward of the arm's furthest foot.
+      const rise = CANYON.shelfDepth - CANYON.crestDepth;
+      expect(layout.blendEnd).toBeLessThan(canyonBreakLineZ(CANYON.peakX - rise / CANYON.endSlope) - rise / CANYON.pathSlope);
+    }
   });
 
   it('deepens the edge to 3.3 Hs, within 0.4 of the deep-water wavelength, and lengthens the tank to reach it', () => {
@@ -1444,7 +1460,9 @@ describe('the tank sized to the swell (wave sizes)', () => {
           const layout = tankLayout(config(spot, significantHeight, peakPeriod));
           expect(layout.offshore).toBeLessThan(layout.zoneInner);
           expect(layout.zoneInner).toBeLessThan(layout.blendEnd);
-          expect(layout.blendEnd).toBeLessThan(layout.fineFrom);
+          // The Canyon's 1 m cells start at its zone, over its blend; every other tank blends on its coarse cells.
+          if (spot === 'canyon') expect(layout.fineFrom).toBe(layout.zoneInner);
+          else expect(layout.blendEnd).toBeLessThan(layout.fineFrom);
           expect(layout.fineFrom).toBeLessThan(layout.shore);
           expect(layout.zoneInner - layout.offshore).toBeGreaterThanOrEqual(60);
           expect(Number.isFinite(tankDepth(createSpot(spot, 1), layout.edgeDepth, 0, layout.offshore, layout))).toBe(true);

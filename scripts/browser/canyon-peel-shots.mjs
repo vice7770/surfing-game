@@ -3,7 +3,11 @@
 // from the beach looking out to sea and from overhead. Start `npx vite --port 5199` first.
 //
 //   CHROME=/opt/pw-browsers/chromium node scripts/browser/canyon-peel-shots.mjs <out dir> [--frames=24] [--every=1]
-//     [--url=http://localhost:5199/] [--query=...] [--look=rich] [--time=midday] [--headless]
+//     [--skip=0] [--url=http://localhost:5199/] [--query=...] [--look=rich] [--time=midday] [--views=<json>]
+//     [--headless | --gpu]
+//
+// `--skip` steps the sea that many seconds before the first frame. `--headless` renders on SwiftShader; `--gpu` runs
+// headless on the machine's GPU (Metal through ANGLE, WebGPU allowed), whose colours SwiftShader washes out.
 import { createServer } from 'node:http';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -42,10 +46,9 @@ await new Promise((resolve) => server.listen(receiverPort, resolve));
 
 const base = args.url ?? 'http://localhost:5199/';
 const query = args.query ?? `inpage&waterSheet&spot=canyon&swell=medium&direction=0&spreading=150&compute=cpu&receiver=http://localhost:${receiverPort}`;
-const page = await launch({
-  url: `${base}?${query}`, width: 1280, height: 720,
-  args: ['--mute-audio', ...(args.headless ? ['--headless=new', '--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--no-sandbox'] : [])],
-});
+const headless = args.gpu ? ['--headless=new', '--enable-unsafe-webgpu', '--use-angle=metal']
+  : args.headless ? ['--headless=new', '--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--no-sandbox'] : [];
+const page = await launch({ url: `${base}?${query}`, width: 1280, height: 720, args: ['--mute-audio', ...headless] });
 try {
   prefix = 'sheet';
   await page.waitFor('window.waterSheetReady === true', 1800000);
@@ -54,6 +57,7 @@ try {
     beach: { eye: [-5, 9, 15], target: [-5, 0, -110] },
     overhead: { eye: [-5, 170, -55], target: [-5, 0, -95] },
   }));
+  if (Number(args.skip ?? 0) > 0) console.log(`skipped to ${Number(await page.eval(`window.waterSheetStep(${Number(args.skip)})`)).toFixed(1)} s`);
   for (let frame = 0; frame < frames; frame += 1) {
     const seconds = await page.eval(`window.waterSheetStep(${every})`);
     for (const [name, view] of Object.entries(views)) {

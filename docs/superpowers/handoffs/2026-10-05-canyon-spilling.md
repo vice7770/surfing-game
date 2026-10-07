@@ -28,6 +28,7 @@ Start here to continue this work on your own machine. Branch: `claude/canyon-spi
 
 - [x] Crest-angle probe, plus the narrow, square swells (work branch `claude/drift-fix`; results in `docs/research/crest-angle-2026-10-05.md`).
 - [x] Canyon spilling wave: the bed, no lip, `SpillingFront`, crest foam (work branch `claude/canyon-spilling-wip`; results in `docs/research/canyon-spilling-2026-10-05/README.md`). Its bed, the corner-canyon bed, is being replaced for straight crests (owner, 2026-10-06) on `claude/canyon-straight`.
+- [x] The Canyon's straight-crest bed (work branch `claude/canyon-straight`; results in the Canyon note's §1).
 - [ ] Merged into `claude/canyon-spilling`, tests green. Merged; the tests are not green: 28 failures, the same tests that fail on the base `1fc91b36`, so none comes from this round (the Canyon note's Tests section).
 
 When a box is unticked, check the work branch for partial commits: `git log origin/claude/canyon-spilling..origin/<work branch>`.
@@ -60,6 +61,31 @@ When a box is unticked, check the work branch for partial commits: `git log orig
   - find why the Canyon's riders fall (their weight sits far forward, 0.87 riding level against a trim of 0.50–0.62; not diagnosed);
   - the 21 pre-existing test failures beyond AttachedRider's: check whether the AttachedRider fix also clears the 17 in the rider's body and pumping, and give the other 4 an owner;
   - S3, the roller.
+
+**2026-10-07, the straight-crest bed** (`claude/canyon-straight`):
+
+- **The owner's decisions, 2026-10-07.**
+  - The peel: the solver's peel accepted by the owner, 2026-10-07: drawn and felt at 55° by the spilling front. The solver peels at 31° on the tracker (42° by each wave's own fit); rule A and the peel meter stay as they are.
+  - The upcoast haze: held back. The spilling front also withholds whitewater upcoast (−x) of each crest's first onset, beyond a margin of a few metres. It only lowers the gated whitewater: the solver is never written, and other spots don't change.
+- **The upcoast gate: done.** `upcoastMargin` = 6 m (provisional: the front's join reach) in `SpillingFront.ts`.
+  - Crests whose foam showed more than 12 m upcoast of the peak went from 5 of 40 to 1; none reaches past x −70 (before: 4, out to the window's edge).
+  - The solver's own break is unchanged.
+  - Measured with `scripts/canyon-haze-report.ts`, tested in `SpillingFront.test.ts`; the overhead sheet is retaken (Canyon note, §3).
+- **The bed:** one oblique arm (62°) on a level 3.6 m shelf, no canyon, the tank's 1 m cells from its zone in (running flat without the canyon was the old tank's 4 m cells).
+- **Against the bars** (Medium, 0°, s = 150):
+  - crests 0.5° and 0.7° at the mean, 2.7° and 3.3° mean |angle| (the Beach: 4.3° and 4.4°);
+  - 38 of 40 waves start within ±10 m of x −50;
+  - 40 of 40 clean waves peel toward +x;
+  - the peel at 31° (accepted);
+  - stable for 600 s;
+  - pictures `straight-*`.
+- **Rideability: catch it, yes; the shoulder, not yet.**
+  - The catch report: 41 cues, 41 stood, 25 rides of 3 s or more, longest 7.5 s.
+  - The ride report: 30 stands, 3 rides of 3 s or more, best 4.4 s and 12.4 m along shore.
+  - Every cue lit within 20 m of the peak. The bots down the arm wait 52–117 m outside the break, their rows running parallel to the beach.
+- **What's left:**
+  - where the bots wait: the owner's next ruling;
+  - the beach close-out upcoast of the peak: not ruled.
 
 ## How to pick it up locally
 
