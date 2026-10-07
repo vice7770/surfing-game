@@ -2,7 +2,7 @@ import { t } from '../ui/strings';
 import { describeSurf, type SurfWords } from '../ui/surfHeight';
 import type { SpotName } from '../wave/Bathymetry';
 import { PRACTICE_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
-import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, type PhysicalSettings } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, REFRACTED_SPREADING, type PhysicalSettings } from './PhysicalMode';
 import { solverStage } from '../wave/SurfZoneSimulation';
 import { POOL, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolSize } from '../wave/pool';
 
@@ -49,12 +49,15 @@ export const DEFAULT_CONDITIONS: SurfConditions = { swell: 'practice', tide: 'mi
 /**
  * Buoy values for the swell sizes, on the Wave Lab's sliders (spread 0 is a clean
  * groundswell). Initial choices, tuned by riding each spot: only this table changes.
+ * The spread is the buoy's; the tank's edge takes the swell refracted, square to the
+ * beach and narrowed to REFRACTED_SPREADING, so crests stay parallel to the beach
+ * through a session (they came from 10° at s = 14–17 until 2026-10-05).
  */
-export const SWELLS = {
-  small: { significantHeight: 0.9, peakPeriod: 9, spread: 0.3 },
-  medium: { significantHeight: 1.4, peakPeriod: 11, spread: 0.3 },
-  big: { significantHeight: 2.4, peakPeriod: 14, spread: 0.2 },
-} as const;
+export const SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
+  small: { significantHeight: 0.9, peakPeriod: 9, spread: 0.3, spreading: REFRACTED_SPREADING, directionDegrees: 0 },
+  medium: { significantHeight: 1.4, peakPeriod: 11, spread: 0.3, spreading: REFRACTED_SPREADING, directionDegrees: 0 },
+  big: { significantHeight: 2.4, peakPeriod: 14, spread: 0.2, spreading: REFRACTED_SPREADING, directionDegrees: 0 },
+};
 
 /** A swell choice: buoy values, and a direction for spots whose swell comes from one side. */
 export interface SwellChoice {
@@ -68,13 +71,14 @@ export interface SwellChoice {
 
 /**
  * The Reef's own swells (the Teahupo'o Reef spec, decision 4): long-period groundswells
- * (Teahupo'o's are 2–5 m at 14–20 s, Shand 2024) from the peak's side, for faces of
- * 2–3 / 3–4 / 5–6 m. Provisional until the size report calibrates them.
+ * (Teahupo'o's are 2–5 m at 14–20 s, Shand 2024), for faces of 2–3 / 3–4 / 5–6 m. Refracted
+ * as the shared swells, square to the beach: the ledge's angle carries the obliquity (they
+ * came from the peak's side, 20°, until 2026-10-05). Provisional until the size report calibrates them.
  */
 export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
-  small: { significantHeight: 1.3, peakPeriod: 15, spread: 0.2, directionDegrees: 20 },
-  medium: { significantHeight: 1.9, peakPeriod: 16, spread: 0.2, directionDegrees: 20 },
-  big: { significantHeight: 3, peakPeriod: 17, spread: 0.15, directionDegrees: 20 },
+  small: { significantHeight: 1.3, peakPeriod: 15, spread: 0.2, spreading: REFRACTED_SPREADING, directionDegrees: 0 },
+  medium: { significantHeight: 1.9, peakPeriod: 16, spread: 0.2, spreading: REFRACTED_SPREADING, directionDegrees: 0 },
+  big: { significantHeight: 3, peakPeriod: 17, spread: 0.15, spreading: REFRACTED_SPREADING, directionDegrees: 0 },
 };
 
 /**

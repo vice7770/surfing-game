@@ -18,12 +18,12 @@ const SEAS: Partial<Record<SpotName, Omit<SurfZoneConfig, 'spot'>>> = {
   // The shared Practice swell (PhysicalMode's PRACTICE_SWELL), given at the edge, on a small window of the game's 1 m
   // cells: on 2 m cells the solver breaks the Point's crests only at the shore (today's lip throws none there either).
   point: {
-    seed: 1, significantHeight: 1.4, peakPeriod: 12, directionDegrees: 10, spreading: 40, bandwidth: 0.08, heightAt: 'edge', tide: 0,
+    seed: 1, significantHeight: 1.4, peakPeriod: 12, directionDegrees: 0, spreading: 150, bandwidth: 0.08, heightAt: 'edge', tide: 0,
     componentCount: 12, alongShore: 40, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
   },
   // The Reef's Practice groundswell (PhysicalMode's REEF_PRACTICE_SWELL), given at the edge, on a small window.
   reef: {
-    seed: 1, significantHeight: 1, peakPeriod: 14, directionDegrees: 20, spreading: 40, bandwidth: 0.08, heightAt: 'edge', tide: 0,
+    seed: 1, significantHeight: 1, peakPeriod: 14, directionDegrees: 0, spreading: 150, bandwidth: 0.08, heightAt: 'edge', tide: 0,
     componentCount: 12, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
   },
 };

@@ -26,6 +26,7 @@ import { RideSession } from '../src/physics/RideSession';
 import type { SurfWater } from '../src/physics/SurfWater';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { applyPadangShape } from './padangShape';
+import { applyCanyonShape } from './canyonShape';
 import { applyReefShape } from './reefShape';
 import { chosenSwell, swellSizeOption } from './spotSwell';
 import { alongShift } from './botSpots';
@@ -74,6 +75,8 @@ const offsets = ghosts ? [-8, -4, 0, 4, 8, 12] : [argument('offset', 3)];
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
 applyPadangShape(option('padang'));
+// Reshape the Canyon for this run: `--canyon edgeSlope=0.08` (the canyon spilling prototype's sweep).
+applyCanyonShape(option('canyon'));
 /** `--swell small|medium|big`: each spot's own buoy swell for that size, in place of `--hs`/`--tp`. */
 const swellSize = swellSizeOption(option('swell'));
 const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon', 'padang']) as SpotName[];
@@ -86,7 +89,11 @@ const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' a
   spread: argument('spread', DEFAULT_PHYSICAL_SETTINGS.spread),
 };
 /** Each spot's swell: its own Practice when practising (the Reef and Padang Padang have one), or its own buoy swell for `--swell`. */
-const swellAt = (spot: SpotName) => (swellSize && !practice ? chosenSwell(spot, swellSize) : swellFor({ ...settings, spot }));
+const swellAt = (spot: SpotName) => ({
+  ...(swellSize && !practice ? chosenSwell(spot, swellSize) : swellFor({ ...settings, spot })),
+  // `--spreading <s>`: the cos-2s exponent itself (the Canyon's spilling prototype runs s = 150).
+  ...(option('spreading') !== undefined ? { spreading: Number(option('spreading')) } : {}),
+});
 /** The swell's direction, or `--direction` (the Reef's design sweep). */
 const directionAt = (spot: SpotName) => option('direction') !== undefined ? Number(option('direction')) : swellAt(spot).directionDegrees ?? settings.directionDegrees;
 

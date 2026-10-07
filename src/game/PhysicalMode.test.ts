@@ -158,7 +158,7 @@ describe('PhysicalMode', () => {
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', source: 'practice' })).toEqual(REEF_PRACTICE_SWELL);
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' })).toEqual(PRACTICE_SWELL);
     expect(REEF_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
-    expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(20);
+    expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(0);
   });
 
   it('practises Padang Padang on its own long-period groundswell', () => {
@@ -394,7 +394,8 @@ describe('PhysicalMode', () => {
     expect(value('SOLVER')).toMatch(/cells · \d+\.\d ms\/step$/);
     expect(value('NEXT SET')).toBe('in 25 s');
     expect(value('BREAKER')).toMatch(/^ξ \d+\.\d\d · (SPILLING|PLUNGING|SURGING)$/);
-    expect(value('PEEL')).toBe('waiting for a break');
+    // The Canyon's terrace (the canyon spilling prototype) may already have broken a wave during the spin-up.
+    expect(value('PEEL')).toMatch(/^waiting for a break$|^.+ · \d+° \(needs ≥ \d+°\)$/);
     expect(value('WIND')).toBe('calm');
     expect(value('BREAKING')).toMatch(/^\d+ % of the surf zone$/);
     expect(value('STORM')).toBeUndefined();
