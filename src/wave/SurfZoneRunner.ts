@@ -1,3 +1,4 @@
+import { ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
 import { STRIP_PARCELS } from './PlungingLip';
 import { Vector3 } from 'three';
 import { withPocketReflex } from '../game/pocketReflex';
@@ -286,6 +287,12 @@ export interface SurfZoneBuffers {
   /** The swept barrel's front points (the Padang Padang spec, Part B, PR 3): `FRONT_STRIDE` floats each. */
   front: Float32Array;
   frontCount: number;
+  /**
+   * The roller lenses' table at a spilling spot (the Canyon roller lens, S3): `ROLLER_FIELD`, slot-major, 2 slots ×
+   * `rollerCount` solver columns × 8; empty at every other spot.
+   */
+  roller: Float32Array;
+  rollerCount: number;
 }
 
 /**
@@ -754,6 +761,8 @@ export class SurfZoneRunner {
       reaction: new Float64Array(REACTION_STRIDE),
       front: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE),
       frontCount: 0,
+      roller: new Float32Array(this.simulation.rollerColumns * ROLLER_SLOTS * ROLLER_STRIDE),
+      rollerCount: 0,
     };
   }
 
@@ -765,6 +774,7 @@ export class SurfZoneRunner {
     simulation.writeUniformSnapshot(buffers.surface, buffers.flow, buffers.aeration, grid);
     this.snapshotFieldsMs = performance.now() - start;
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
+    buffers.rollerCount = buffers.roller.length > 0 ? simulation.writeRoller(buffers.roller) : 0;
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {
       if (parcels >= PARCEL_CAPACITY) return;

@@ -7,6 +7,8 @@ import { BoussinesqSolver } from '../wave/BoussinesqSolver';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from './PhysicalMode';
+import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 
 const config: SurfZoneConfig = {
   spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -164,5 +166,42 @@ describe('SnapshotSurfZone at a swept spot (Padang Padang, Part B, PR 3)', () =>
     expect(Array.from(data)).toEqual(Array.from(surface));
     expect(swept.writeTubes(new Float32Array(2 * TUBE_STRIDE))).toBe(0);
     expect(new SnapshotSurfZone(host).writeTubes(new Float32Array(2 * TUBE_STRIDE))).toBe(1);
+  });
+});
+
+// The Canyon roller lens (S3, Task 4): the roller's table travels in the snapshot for both looks to draw the band.
+describe('the roller lens in the snapshot', () => {
+  it('carries the Canyon\'s roller table to the page, where the water\'s source offers it with its columns', async () => {
+    const host = new LocalSurfZone({ ...config, spot: 'canyon' });
+    await host.ready;
+    const roller = host.runner.simulation.roller!;
+    const { nx, dx, xCenters } = host.runner.simulation.solver;
+    // A lens written into the table, as the roller's update would.
+    roller.table[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.scale] = 0.75;
+    roller.table[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.crest] = -60.25;
+    host.refresh();
+    const { snapshot } = host;
+    expect(snapshot.roller).toHaveLength(ROLLER_SLOTS * nx * ROLLER_STRIDE);
+    expect(snapshot.rollerCount).toBe(nx);
+    expect(Array.from(snapshot.roller)).toEqual(Array.from(roller.table, (value) => Math.fround(value)));
+    const surface = new SnapshotSurfZone(host);
+    const source = new PhysicalSurfaceSource(surface, host.init.grid.spacing);
+    expect(source.rollerColumns).toBe(nx);
+    expect(source.rollerColumn0).toBeCloseTo(xCenters[0], 9);
+    expect(source.rollerColumnWidth).toBe(dx);
+    const into = new Float32Array(ROLLER_SLOTS * nx * ROLLER_STRIDE);
+    expect(source.writeRoller!(into)).toBe(nx);
+    expect(into[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.scale]).toBe(0.75);
+    expect(into[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.crest]).toBe(-60.25);
+  });
+
+  it('offers no roller where the sea has none', async () => {
+    const host = new LocalSurfZone(config);
+    await host.ready;
+    expect(host.snapshot.roller).toHaveLength(0);
+    expect(host.snapshot.rollerCount).toBe(0);
+    const source = new PhysicalSurfaceSource(new SnapshotSurfZone(host), host.init.grid.spacing);
+    expect(source.writeRoller).toBeUndefined();
+    expect(source.rollerColumns).toBeUndefined();
   });
 });

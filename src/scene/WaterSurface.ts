@@ -206,6 +206,14 @@ export interface SurfaceSource {
   readonly tubeColumnWidth?: number;
   /** G9: the air breaking drove in, interleaved (void fraction, plume depth, m) per grid node, for the Rich water. */
   writeAeration?(data: Float32Array): void;
+  /**
+   * S3: the roller lenses' table at a spilling spot (`ROLLER_FIELD`, slot-major, 2 × `rollerColumns` × 8), for both
+   * looks to draw the band; returns its columns. With it come the first column's centre x and the columns' width, m.
+   */
+  writeRoller?(into: Float32Array): number;
+  readonly rollerColumns?: number;
+  readonly rollerColumn0?: number;
+  readonly rollerColumnWidth?: number;
   /** Changes whenever `writeBed` would write different values. */
   readonly bedRevision: number;
   /** Bed elevation per grid node, m (negative below datum). */

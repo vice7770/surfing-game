@@ -1244,6 +1244,26 @@ export class SurfZoneSimulation {
     return this.solver.dx;
   }
 
+  /** S3: the solver columns the roller's table spans (0 without a roller), the first one's centre x and their width, m. */
+  get rollerColumns(): number {
+    return this.roller ? this.solver.nx : 0;
+  }
+
+  get rollerColumn0(): number {
+    return this.solver.xCenters[0];
+  }
+
+  get rollerColumnWidth(): number {
+    return this.solver.dx;
+  }
+
+  /** S3: the roller's table (`ROLLER_FIELD`, slot-major) as float32, for both looks to draw the band; returns its columns. */
+  writeRoller(into: Float32Array): number {
+    if (!this.roller) return 0;
+    into.set(this.roller.table);
+    return this.solver.nx;
+  }
+
   /** Water surface elevation, m, with any roller lens's top (S3); on dry land this is the bed. */
   heightAt(x: number, z: number): number {
     const surface = this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z);

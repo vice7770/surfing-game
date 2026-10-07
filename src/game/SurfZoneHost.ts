@@ -6,6 +6,7 @@ import type { ParticleLevel } from '../wave/particleBudget';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import { TUBE_STRIDE, carveAt, carveGrid } from '../wave/tubeTable';
+import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
 export interface SurfZoneInit {
@@ -184,6 +185,26 @@ export class SnapshotSurfZone implements RenderableSurfZone {
 
   writeUniformAeration(data: Float32Array): void {
     data.set(this.host.snapshot.aeration);
+  }
+
+  /** S3: the solver columns the snapshot's roller table spans (0 at a spot without one), from its fixed size. */
+  get rollerColumns(): number {
+    return (this.host.snapshot.roller?.length ?? 0) / (ROLLER_SLOTS * ROLLER_STRIDE);
+  }
+
+  /** The first solver column's centre x, m, and the columns' width. */
+  get rollerColumn0(): number {
+    return this.host.init.windowXMin + 0.5 * this.host.init.dx;
+  }
+
+  get rollerColumnWidth(): number {
+    return this.host.init.dx;
+  }
+
+  writeRoller(into: Float32Array): number {
+    const { roller, rollerCount } = this.host.snapshot;
+    into.set(roller.subarray(0, Math.min(roller.length, into.length)));
+    return rollerCount;
   }
 
   writeUniformBed(data: Float32Array): void {

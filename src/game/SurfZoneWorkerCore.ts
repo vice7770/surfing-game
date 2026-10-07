@@ -30,6 +30,7 @@ export function transferables(buffers: SurfZoneBuffers): Transferable[] {
   return [
     buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
     buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.tubes.buffer, buffers.reaction.buffer, buffers.aeration.buffer, buffers.front.buffer,
+    buffers.roller.buffer,
   ];
 }
 

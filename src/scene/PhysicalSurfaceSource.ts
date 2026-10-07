@@ -14,6 +14,14 @@ export interface RenderableSurfZone {
   readonly tubeColumnWidth?: number;
   /** G9: the aeration, (void fraction, plume depth) per render node. */
   writeUniformAeration?(data: Float32Array, grid: SurfaceGrid): void;
+  /**
+   * S3: the roller lenses' table (`ROLLER_FIELD`, slot-major, 2 × columns × 8) at a spilling spot; returns its columns.
+   * `rollerColumns` is 0 where the sea has no roller; the first column's centre x and the columns' width, m.
+   */
+  writeRoller?(into: Float32Array): number;
+  readonly rollerColumns?: number;
+  readonly rollerColumn0?: number;
+  readonly rollerColumnWidth?: number;
   writeUniformBed(data: Float32Array, grid: SurfaceGrid): void;
   writeUniformFlow(data: Float32Array, grid: SurfaceGrid): void;
 }
@@ -33,12 +41,21 @@ export class PhysicalSurfaceSource implements SurfaceSource {
   readonly tubeColumnWidth?: number;
   /** G9: the air breaking drove in, when the surf zone offers it. */
   readonly writeAeration?: (data: Float32Array) => void;
+  /** S3: the roller lenses' table, when the surf zone has a roller, for both looks to draw the band. */
+  readonly writeRoller?: (into: Float32Array) => number;
+  readonly rollerColumns?: number;
+  private readonly rollerSource?: RenderableSurfZone;
 
   constructor(private readonly simulation: RenderableSurfZone, spacing = 1) {
     this.grid = simulation.renderGrid(spacing);
     if (simulation.writeTubes) {
       this.writeTubes = (into) => simulation.writeTubes!(into);
       this.tubeColumnWidth = simulation.tubeColumnWidth;
+    }
+    if (simulation.writeRoller && (simulation.rollerColumns ?? 0) > 0) {
+      this.writeRoller = (into) => simulation.writeRoller!(into);
+      this.rollerColumns = simulation.rollerColumns;
+      this.rollerSource = simulation;
     }
     if (simulation.writeUniformAeration) {
       this.writeAeration = (data) => {
@@ -50,6 +67,15 @@ export class PhysicalSurfaceSource implements SurfaceSource {
 
   get time(): number {
     return this.simulation.seaTime;
+  }
+
+  /** S3: the roller table's first column's centre x and the columns' width, m; absent without a roller. */
+  get rollerColumn0(): number | undefined {
+    return this.rollerSource?.rollerColumn0;
+  }
+
+  get rollerColumnWidth(): number | undefined {
+    return this.rollerSource?.rollerColumnWidth;
   }
 
   get revision(): unknown {
