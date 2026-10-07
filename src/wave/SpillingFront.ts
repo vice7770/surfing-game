@@ -30,6 +30,12 @@ export interface SpillingFrontOptions {
   /** Onsets within this along-shore distance of a wave's broken extent join that wave, m. */
   joinReach: number;
   /**
+   * ...and only within this distance across shore of that wave's crest beside them, m: one crest breaking on along the
+   * peel, not the next crest in (or out), a wavelength away. One wave id then keeps one crest, so the roller's crests
+   * and normals are per wave by construction.
+   */
+  crestReach: number;
+  /**
    * A wave's breaking in a column: from `crestMargin` m seaward of where it started breaking there to `bandWidth` m
    * shoreward of where its crest has since run at the breaker celerity. Older waves' bores lie a wavelength inshore.
    */
@@ -64,6 +70,12 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   growth: 5,
   lineShare: 0.35,
   joinReach: 6,
+  /**
+   * 10 m, provisional: about a lens length (the Canyon's run 4–8 m across shore). At the Canyon (Medium, seed 1, 120 s)
+   * an onset joining its own crest lies a median 1 m from that crest in the nearest column (90 % within 3 m); the 61 of
+   * 1092 that joined across a crest lay 24–130 m away, and 4 lay between 10 and 20 m.
+   */
+  crestReach: 10,
   crestMargin: 6,
   bandWidth: 20,
   maxWaves: 8,
@@ -134,6 +146,8 @@ export interface SpillingWave {
   readonly joinedZ: Float64Array;
   /** Last time an onset joined this wave, s. */
   lastJoin: number;
+  /** Its crest per column at the last update: the most seaward breaking cell it owned there, z (NaN: none). */
+  readonly crest: Float64Array;
 }
 
 export class SpillingFront {
@@ -144,13 +158,11 @@ export class SpillingFront {
   ramped = 0;
   /** Waves started so far. */
   started = 0;
-  private readonly crestZ: Float64Array;
   /** The breaker celerity of the latest update, m/s: how far a wave's band has run since its onset. */
   private celerity = 0;
 
   constructor(private readonly grid: SpillingGrid, options: Partial<SpillingFrontOptions> = {}) {
     this.options = { ...SPILLING_FRONT_DEFAULTS, ...options };
-    this.crestZ = new Float64Array(grid.nx * this.options.maxWaves);
   }
 
   /** Along-shore speed cap for a breaker celerity c_b, m/s: c_b / sin α. */
@@ -164,8 +176,8 @@ export class SpillingFront {
    * the next `observeOnset` or `update`, which may renumber the waves.
    */
   crestAt(wave: number, column: number): number {
-    if (!(wave >= 0 && wave < this.options.maxWaves && column >= 0 && column < this.grid.nx)) return Number.NaN;
-    return this.crestZ[wave * this.grid.nx + column];
+    if (!(wave >= 0 && wave < this.waves.length && column >= 0 && column < this.grid.nx)) return Number.NaN;
+    return this.waves[wave].crest[column];
   }
 
   /**
@@ -182,6 +194,7 @@ export class SpillingFront {
       const low = Math.min(wave.backX, wave.tipX) - joinReach;
       const high = Math.max(wave.backX, wave.tipX) + joinReach;
       if (x < low || x > high) continue;
+      if (!this.onCrest(wave, column, time, z)) continue;
       wave.joinedAt[column] = time;
       wave.joinedZ[column] = z;
       wave.lastJoin = time;
@@ -204,7 +217,7 @@ export class SpillingFront {
     const wave: SpillingWave = {
       id: this.started, onset: time, startX: x, startZ: z, crestX, frontX: x, tipX: x, backX: x,
       reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN),
-      joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time,
+      joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time, crest: new Float64Array(nx).fill(Number.NaN),
     };
     wave.joinedAt[column] = time;
     wave.joinedZ[column] = z;
@@ -212,6 +225,30 @@ export class SpillingFront {
     this.waves.push(wave);
     this.started += 1;
     if (this.waves.length > this.options.maxWaves) this.waves.shift();
+  }
+
+  /**
+   * Whether an onset at z in `column` lies on `wave`'s crest: within crestReach of its crest in the nearest column it
+   * has one (at the last update), or, nearer, of where it started breaking in a column it joined, run on since then at
+   * the breaker celerity (up to CREST_SPEED_SPAN times it).
+   */
+  private onCrest(wave: SpillingWave, column: number, time: number, z: number): boolean {
+    const { nx } = this.grid;
+    const reach = this.options.crestReach;
+    for (let d = 1; d < nx; d += 1) {
+      for (let side = -1; side <= 1; side += 2) {
+        const c = column + side * d;
+        if (c < 0 || c >= nx) continue;
+        const crest = wave.crest[c];
+        if (crest === crest) return Math.max(z - crest, crest - z) <= reach;
+        const joined = wave.joinedAt[c];
+        if (!(joined <= time)) continue;
+        const run = this.celerity * (time - joined);
+        const start = wave.joinedZ[c];
+        return z >= start + run - reach && z <= start + CREST_SPEED_SPAN * run + reach;
+      }
+    }
+    return true;
   }
 
   /** Whether along-shore position `a` lies ahead of `b` in the peel's direction. */
@@ -256,8 +293,7 @@ export class SpillingFront {
     }
     const waves = this.waves;
     const count = waves.length;
-    const crestZ = this.crestZ;
-    crestZ.fill(Number.NaN, 0, nx * options.maxWaves);
+    for (const wave of waves) wave.crest.fill(Number.NaN);
     this.gated = 0;
     this.ramped = 0;
     for (let iz = 0; iz < nz; iz += 1) {
@@ -286,9 +322,8 @@ export class SpillingFront {
           continue;
         }
         // Rows run seaward to shoreward, so the first owned cell met in a column is the wave's crest there, gated or not.
-        const slot = owner * nx + ix;
-        if (Number.isNaN(crestZ[slot])) crestZ[slot] = z;
         const wave = waves[owner];
+        if (Number.isNaN(wave.crest[ix])) wave.crest[ix] = z;
         const reached = wave.reached[ix];
         if (Number.isNaN(reached)) {
           out[i] = 0;
@@ -304,7 +339,7 @@ export class SpillingFront {
         }
         const grown = Math.max(0, local) / options.rampSeconds;
         const width = options.lineWidth + options.growth * Math.max(0, local);
-        out[i] = z - crestZ[slot] > width ? 0 : b * (options.lineShare + (1 - options.lineShare) * grown);
+        out[i] = z - wave.crest[ix] > width ? 0 : b * (options.lineShare + (1 - options.lineShare) * grown);
         this.ramped += 1;
       }
     }
@@ -320,7 +355,6 @@ export class SpillingFront {
     this.celerity = 0;
     this.gated = 0;
     this.ramped = 0;
-    this.crestZ.fill(Number.NaN);
   }
 
   /** A one-line state for reports. */

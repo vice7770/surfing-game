@@ -86,6 +86,8 @@ interface RunOptions {
   front?: Partial<SpillingFrontOptions>;
   /** Columns' onsets in this order (the first is the wave's peak); all columns, left to right, by default. */
   onsetOrder?: number[];
+  /** Extra offset of each column's front from the start, onsets included, m. */
+  skew?: (column: number) => number;
 }
 
 /** A straight bore running up the grid, its front's wave started across every column at t = 0, and the roller on it. */
@@ -95,7 +97,7 @@ class Run {
   readonly roller: SpillingRoller;
   readonly strength: Float64Array;
   readonly whitewater: Float64Array;
-  readonly options: Required<Omit<RunOptions, 'roller' | 'front' | 'onsetOrder'>>;
+  readonly options: Required<Omit<RunOptions, 'roller' | 'front' | 'onsetOrder' | 'skew'>>;
   time = 0;
   /** Extra offset of each column's front, m (an oblique crest). */
   skew = (_column: number) => 0;
@@ -110,6 +112,7 @@ class Run {
     this.strength = new Float64Array(this.g.nx * this.g.nz);
     this.whitewater = new Float64Array(this.g.nx * this.g.nz);
     const order = options.onsetOrder ?? Array.from({ length: nx }, (_, i) => i);
+    if (options.skew) this.skew = options.skew;
     this.write();
     for (const column of order) this.front.observeOnset(column, 0, this.frontAt(column) + boreShape().crest);
   }
@@ -372,6 +375,21 @@ describe('SpillingRoller: along the crest', () => {
     expect(scale(other.entries, 13)).toBe(0);
   });
 
+  it('closes no gap across a crest jump over crestJump: the runs are on different crests', () => {
+    const jumped = slot([...range(2, 11), ...range(15, 25)]);
+    for (const column of range(15, 25)) jumped.entries[column * ROLLER_STRIDE + ROLLER_FIELD.crest] += 60;
+    alongCrest(jumped.entries, 0, jumped.waves, nx, 1, ROLLER_DEFAULTS);
+    for (const column of [12, 13, 14]) {
+      expect(jumped.waves[column]).toBe(-1);
+      expect(scale(jumped.entries, column)).toBe(0);
+    }
+    // Within it, the gap closes as before.
+    const near = slot([...range(2, 11), ...range(15, 25)]);
+    for (const column of range(15, 25)) near.entries[column * ROLLER_STRIDE + ROLLER_FIELD.crest] += ROLLER_DEFAULTS.crestJump - 2;
+    alongCrest(near.entries, 0, near.waves, nx, 1, ROLLER_DEFAULTS);
+    for (const column of [12, 13, 14]) expect(near.waves[column]).toBe(5);
+  });
+
   it('draws no run under 4 m', () => {
     const short = slot([...range(2, 4), ...range(10, 13)]);
     alongCrest(short.entries, 0, short.waves, nx, 1, ROLLER_DEFAULTS);
@@ -602,6 +620,35 @@ describe('SpillingRoller: the crest normal', () => {
     // The lens's extent across shore is its length over its normal's n̂_z.
     const lens = run.roller.lens(10, 0)!;
     expect(run.entry(10, 0, ROLLER_FIELD.length)).toBeCloseTo((lens.length * Math.hypot(flowX, flowZ)) / flowZ, 9);
+  });
+});
+
+describe('SpillingRoller: one crest per wave (the far-crest join)', () => {
+  // A crest that steps 30 m inshore past column 10: two crests, a wavelength's fraction apart along shore.
+  const step = (column: number) => (column > 10 ? 30 : 0);
+
+  it('takes a crest a step away as another wave\'s, in the other slot, with neither normal tipped', () => {
+    const run = new Run({ nx: 21, speed: 4, roller: { mask: 'solver' }, skew: step });
+    run.steps(1.5);
+    expect(run.front.waves.map((wave) => wave.id)).toEqual([0, 1]);
+    for (const column of [6, 8, 10]) expect(run.entry(column, 0, ROLLER_FIELD.scale)).toBeGreaterThan(0);
+    for (const column of [12, 14, 16]) expect(run.entry(column, 1, ROLLER_FIELD.scale)).toBeGreaterThan(0);
+    for (const [column, slot] of [[9, 0], [10, 0], [11, 1], [12, 1]]) {
+      const flowZ = run.entry(column, slot, ROLLER_FIELD.flowZ);
+      expect(Math.abs(run.entry(column, slot, ROLLER_FIELD.flowX) / flowZ)).toBeLessThan(0.05);
+      expect(run.entry(column, slot, ROLLER_FIELD.length)).toBeLessThan(10);
+    }
+  });
+
+  it('stops a normal\'s fit at the step even when one wave holds both crests (the guard)', () => {
+    const run = new Run({ nx: 21, speed: 4, roller: { mask: 'solver' }, front: { crestReach: Infinity }, skew: step });
+    run.steps(1.5);
+    expect(run.front.waves).toHaveLength(1);
+    for (const column of [9, 10, 11, 12]) {
+      const flowZ = run.entry(column, 0, ROLLER_FIELD.flowZ);
+      expect(Math.abs(run.entry(column, 0, ROLLER_FIELD.flowX) / flowZ)).toBeLessThan(0.05);
+      expect(run.entry(column, 0, ROLLER_FIELD.length)).toBeLessThan(10);
+    }
   });
 });
 

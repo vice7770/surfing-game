@@ -281,6 +281,36 @@ describe('SpillingFront for the roller (S3)', () => {
     expect(front.crestAt(0, column(g, 0))).toBeNaN();
   });
 
+  it('keeps one crest per wave: an onset beside a wave but a crest away starts its own (S3, the far-crest join)', () => {
+    const { g, front, strength, out } = setup();
+    for (let ix = 0; ix <= 5; ix += 1) front.observeOnset(ix, 10, -15);
+    breakBand(g, strength, -20, -15, -15, -11);
+    front.update(10.1, 0.1, 2, strength, out);
+    expect(front.crestAt(0, 5)).toBe(-15);
+    // Beside the wave's broken extent along shore, but 30 m inshore of its crest: another crest, a new wave.
+    front.observeOnset(6, 10.2, 15);
+    expect(front.waves.map((wave) => wave.id)).toEqual([0, 1]);
+    expect(front.waves[0].joinedAt[6]).toBeNaN();
+    // On its crest, 1 m off, the next column joins it: measured from its crest two columns back.
+    front.observeOnset(7, 10.3, -14);
+    expect(front.waves[0].joinedAt[7]).toBe(10.3);
+    expect(front.waves[1].joinedAt[7]).toBeNaN();
+  });
+
+  it('keeps one crest per wave before any update too, from where its columns started breaking', () => {
+    const { front } = setup();
+    front.observeOnset(0, 10, -15);
+    front.observeOnset(1, 10, 15);
+    front.observeOnset(2, 10, -15);
+    expect(front.waves.map((wave) => wave.id)).toEqual([0, 1]);
+    expect(Array.from(front.waves[0].joinedAt.subarray(0, 3))).toEqual([10, Number.NaN, 10]);
+    expect(Array.from(front.waves[1].joinedAt.subarray(0, 3))).toEqual([Number.NaN, 10, Number.NaN]);
+    // With no reach across shore, as before the fix, one wave takes both crests.
+    const { front: before } = setup({ crestReach: Infinity });
+    for (const [ix, z] of [[0, -15], [1, 15], [2, -15]]) before.observeOnset(ix, 10, z);
+    expect(before.waves).toHaveLength(1);
+  });
+
   it('caps the peel with a series sine that matches Math.sin to 1e-12 from 30° to 90°', () => {
     for (let degrees = 30; degrees <= 90; degrees += 0.25) {
       const radians = (degrees * Math.PI) / 180;

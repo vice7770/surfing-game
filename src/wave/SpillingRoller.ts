@@ -83,6 +83,11 @@ export interface RollerOptions {
   gap: number;
   /** Its scale changes by at most this per metre along the crest (R3 §1.6: 0.1 per 0.5 m slice). */
   shoulderSlope: number;
+  /**
+   * One crest: neighbouring columns' crests further apart than this, m, are not one crest's, so a normal's fit and a gap's
+   * fill stop there (P: about a lens length, as the front's `crestReach`; the next crest lies a wavelength away).
+   */
+  crestJump: number;
   /** A tracked crest is the nearest maximum within this of where it should have moved, m (P). */
   trackWindow: number;
   /** The swash: a trough shallower than this, m, or a dry toe (P, R3 §1.4). */
@@ -115,6 +120,7 @@ export const ROLLER_DEFAULTS: RollerOptions = {
   relax: 0.3,
   gap: 4,
   shoulderSlope: 0.2,
+  crestJump: 10,
   trackWindow: 2,
   swashDepth: 0.1,
   stallSpeed: 0.5,
@@ -480,11 +486,12 @@ export class SectionReader {
 /**
  * Along the crest, one slot's entries from `offset` in `table`, with each column's wave (−1: empty), in place (R3 §1.6):
  * - two waves' lenses never touch: at a seam the older wave's column is emptied, so nothing between columns mixes them;
- * - gaps under `gap` between runs of one wave are closed from the runs' ends, and runs under `gap` are dropped;
+ * - gaps under `gap` between runs of one wave are closed from the runs' ends where their crests lie within crestJump,
+ *   and runs under `gap` are dropped;
  * - the scale changes by at most shoulderSlope per metre, from 0 outside the runs, so every run fades in at its ends.
  */
 export function alongCrest(table: Float64Array, offset: number, waves: Int32Array, nx: number, dx: number,
-  options: Pick<RollerOptions, 'gap' | 'shoulderSlope'>): void {
+  options: Pick<RollerOptions, 'gap' | 'shoulderSlope' | 'crestJump'>): void {
   const stride = ROLLER_STRIDE;
   const clear = (column: number) => {
     waves[column] = -1;
@@ -499,7 +506,9 @@ export function alongCrest(table: Float64Array, offset: number, waves: Int32Arra
   let end = -1;
   for (let column = 0; column < nx; column += 1) {
     if (waves[column] < 0) continue;
-    if (end >= 0 && column - end > 1 && waves[column] === waves[end] && (column - end - 1) * dx < options.gap) {
+    const jump = end >= 0 ? table[offset + column * stride + ROLLER_FIELD.crest] - table[offset + end * stride + ROLLER_FIELD.crest] : 0;
+    if (end >= 0 && column - end > 1 && waves[column] === waves[end] && (column - end - 1) * dx < options.gap
+      && jump <= options.crestJump && -jump <= options.crestJump) {
       for (let m = end + 1; m < column; m += 1) {
         const t = (m - end) / (column - end);
         for (let f = 0; f < stride; f += 1) {
@@ -803,16 +812,23 @@ export class SpillingRoller implements RollerLens {
 
   /**
    * The crest's normal n̂ (toward the beach) from this step's crests of the same wave in up to NORMAL_REACH columns
-   * each side: the least-squares slope of z_c along x, so one column's crest error barely turns it.
+   * each side, as far as they run on without a jump over crestJump: the least-squares slope of z_c along x, so one
+   * column's crest error barely turns it.
    */
   private normal(slot: number, column: number, first: number, last: number): void {
     const { nx, dx } = this.grid;
     const lens = slot * nx + column;
     const id = this.wave[lens];
+    const crestJump = this.options.crestJump;
+    // Whether the lens beside `inner` (one column further out) is the same wave's, on the same crest.
+    const joins = (inner: number, outer: number) => {
+      const jump = this.nextCrest[outer] - this.nextCrest[inner];
+      return this.state[outer] !== NONE && this.wave[outer] === id && jump <= crestJump && -jump <= crestJump;
+    };
     let from = column;
     let to = column;
-    while (from > first && column - from < NORMAL_REACH && this.state[lens - (column - from) - 1] !== NONE && this.wave[lens - (column - from) - 1] === id) from -= 1;
-    while (to < last - 1 && to - column < NORMAL_REACH && this.state[lens + (to - column) + 1] !== NONE && this.wave[lens + (to - column) + 1] === id) to += 1;
+    while (from > first && column - from < NORMAL_REACH && joins(lens - (column - from), lens - (column - from) - 1)) from -= 1;
+    while (to < last - 1 && to - column < NORMAL_REACH && joins(lens + (to - column), lens + (to - column) + 1)) to += 1;
     let slope = 0;
     if (to > from) {
       const count = to - from + 1;
