@@ -195,6 +195,11 @@ Spot by spot, after the change (edge line first, take-off line in brackets):
   The take-off line (z = −248) crosses the reef's peak. It is 4.0 m deep at x = −60, beneath the peak at (−60, −170), against 6.6 m away from it. Whether the chevrons are crests refracting over that shoal or the bigger sets breaking on it was not isolated.
 - **Wave Pool: the same wave every time.** All 60 crests on both lines fit at 0.0°, ten seconds apart. Each is the machine's A-frame: a chevron whose halves lean −6.2° / +6.2° on the edge line (−5.3° / +5.3° on the take-off line), its middle seaward of its arms. Its bend, 11.4° (9.5°), sits at the reference's 90th percentile. Its halves stay inside the reference's ±10.6°, so no crest counts as running two ways at once. It is one wave with two arms, by design (`src/wave/pool.ts`).
 
+**Why the Reef and Padang Padang bend** (2026-10-07, `docs/research/crest-bends-2026-10-07/`):
+
+- Padang Padang's chevrons are a wake from the tank's side feed. Its linear target holds crests back at the window's sides, and they vanish with the feed off.
+- The Reef's bends come from the swell's spread and the reef's own reflections, on long, flat-topped crests. Measured at the crest's centroid, the Reef's edge line bends no more than the Beach's, and no crest runs two ways at once.
+
 **Does every spot meet the criterion?**
 
 - **Yes, within the swell's own spread:** the Beach, the Point (at its steady wrap) and the Wave Pool.
