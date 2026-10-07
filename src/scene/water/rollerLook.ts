@@ -27,6 +27,13 @@ export const ROLLER_LOOK = {
   toeShort: 1,
   toeLong: 7.5,
   /**
+   * Their weights: the lower octave dominant, so the toe runs in lobes rather than icicles (the ruling of 2026-10-07,
+   * after the first shots; P: the owner judges it on film). From above (h₁ 1.5 m, d′max 0.4 m) the fingers on the lobes
+   * stand 1.0–1.1 m wide at half height, 0.24–0.39 m proud of the toe's 3 m mean; the equal weights' stood 0.35–0.49 m.
+   */
+  toeShortWeight: 0.5,
+  toeLongWeight: 1,
+  /**
    * Fingers live 0.4–0.6 s at h₁ = 1.5 m (Wüthrich, Shi & Chanson's lab lifetimes Froude-scaled, R3 §2.4; the middle, P),
    * longer with √h₁; the toe moves at 0.4× the surface's rate (Wang, Leng & Chanson 2017).
    */
@@ -41,10 +48,10 @@ export const ROLLER_LOOK = {
   referenceDepth: 1.5,
   minDepth: 0.2,
   /**
-   * The two octaves' sum over its standard deviation (measured over 10⁶ samples): the toe's offset then has a standard
-   * deviation of toeAmplitude·d′max.
+   * The two octaves' weighted sum over its standard deviation (measured over 10⁶ samples along 2.7 km: 0.50; the equal
+   * weights' was 0.63): the toe's offset then has a standard deviation of toeAmplitude·d′max.
    */
-  toeNoiseSpread: 0.63,
+  toeNoiseSpread: 0.5,
 } as const;
 
 /** pcg3d (Jarzynski & Olano 2020, JCGT 9(3)): three 32-bit words from three, exact in JS as in GLSL's wrapping uint. */
@@ -108,12 +115,13 @@ function lifetime(life: number, troughDepth: number): number {
 
 /**
  * How far the toe has wandered toward the beach at along-shore x and time t, m: two octaves at 1 and 7.5 trough depths,
- * scaled to a standard deviation of 1.5 d′max, moving at 0.4× the fingers' rate.
+ * the longer dominant, scaled to a standard deviation of 1.5 d′max, moving at 0.4× the fingers' rate.
  */
 export function toeOffset(x: number, time: number, troughDepth: number, roughness: number): number {
   const h1 = Math.max(ROLLER_LOOK.minDepth, troughDepth);
   const t = (time * ROLLER_LOOK.toeRate) / lifetime(ROLLER_LOOK.fingerLife, troughDepth);
-  const n = rollerNoise2(x / (ROLLER_LOOK.toeShort * h1), t, 1) + rollerNoise2(x / (ROLLER_LOOK.toeLong * h1), t, 2);
+  const n = ROLLER_LOOK.toeShortWeight * rollerNoise2(x / (ROLLER_LOOK.toeShort * h1), t, 1)
+    + ROLLER_LOOK.toeLongWeight * rollerNoise2(x / (ROLLER_LOOK.toeLong * h1), t, 2);
   return (ROLLER_LOOK.toeAmplitude * roughness * n) / ROLLER_LOOK.toeNoiseSpread;
 }
 

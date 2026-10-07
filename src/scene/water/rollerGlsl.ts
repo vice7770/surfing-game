@@ -64,7 +64,8 @@ float waterRollerLife( float life, float depth ) {
 float waterRollerToe( float x, float time, float depth, float roughness ) {
   float h1 = max( ${f(ROLLER_LOOK.minDepth)}, depth );
   float t = time * ${f(ROLLER_LOOK.toeRate)} / waterRollerLife( ${f(ROLLER_LOOK.fingerLife)}, depth );
-  float n = waterRollerNoise2( vec2( x / ( ${f(ROLLER_LOOK.toeShort)} * h1 ), t ), 1 ) + waterRollerNoise2( vec2( x / ( ${f(ROLLER_LOOK.toeLong)} * h1 ), t ), 2 );
+  float n = ${f(ROLLER_LOOK.toeShortWeight)} * waterRollerNoise2( vec2( x / ( ${f(ROLLER_LOOK.toeShort)} * h1 ), t ), 1 )
+    + ${f(ROLLER_LOOK.toeLongWeight)} * waterRollerNoise2( vec2( x / ( ${f(ROLLER_LOOK.toeLong)} * h1 ), t ), 2 );
   return ${f(ROLLER_LOOK.toeAmplitude)} * roughness * n / ${f(ROLLER_LOOK.toeNoiseSpread)};
 }
 void waterRollerAt( vec2 xz, float time ) {

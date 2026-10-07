@@ -86,6 +86,25 @@ describe('the roller look\'s noises', () => {
     expect(rollerNoise2(3, 5, 2)).toBeCloseTo(2 * (pcg3d(3, 5, 2)[0] / 4294967296) - 1, 12);
   });
 
+  it('run the toe in lobes: most of its wander along the lower octave, the fingers on them small', () => {
+    expect(ROLLER_LOOK.toeLongWeight).toBeGreaterThan(ROLLER_LOOK.toeShortWeight);
+    const roughness = 0.4;
+    const step = 0.05;
+    const toe: number[] = [];
+    for (let i = 0; i < 8000; i += 1) toe.push(toeOffset(i * step, 3, 1.5, roughness));
+    const mean = toe.reduce((a, b) => a + b, 0) / toe.length;
+    const total = Math.sqrt(toe.reduce((a, v) => a + (v - mean) ** 2, 0) / toe.length);
+    // The wander left about the toe's 3 m running mean: the fingers.
+    let residual = 0;
+    for (let i = 30; i < toe.length - 30; i += 1) {
+      let local = 0;
+      for (let j = i - 30; j <= i + 30; j += 1) local += toe[j];
+      residual += (toe[i] - local / 61) ** 2;
+    }
+    const fingers = Math.sqrt(residual / (toe.length - 60));
+    expect(fingers / total).toBeLessThan(0.35);
+  });
+
   it('wander the toe by 1–2 d′max (Wang, Leng & Chanson 2017), never past the cull\'s four spreads', () => {
     const roughness = 0.3;
     let sum = 0;

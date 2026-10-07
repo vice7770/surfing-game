@@ -1111,8 +1111,9 @@ float waterRollerLife( float life, float depth ) {
 float waterRollerToe( float x, float time, float depth, float roughness ) {
   float h1 = max( 0.2, depth );
   float t = time * 0.4 / waterRollerLife( 0.5, depth );
-  float n = waterRollerNoise2( vec2( x / ( 1.0 * h1 ), t ), 1 ) + waterRollerNoise2( vec2( x / ( 7.5 * h1 ), t ), 2 );
-  return 1.5 * roughness * n / 0.63;
+  float n = 0.5 * waterRollerNoise2( vec2( x / ( 1.0 * h1 ), t ), 1 )
+    + 1.0 * waterRollerNoise2( vec2( x / ( 7.5 * h1 ), t ), 2 );
+  return 1.5 * roughness * n / 0.5;
 }
 void waterRollerAt( vec2 xz, float time ) {
   waterRollerCover = 0.0;
