@@ -128,6 +128,8 @@ The cost is one pass over the grid per step, with at most 8 waves per breaking c
 
 These are headless Chromium shots (SwiftShader), Rich look, at midday: Medium, 0°, s = 150, CPU solver, with the final build (the band-owned front and the 1:12 terrace edge, commit `9e044c33`). SwiftShader washes the colours out compared with a GPU.
 
+These sequences are the ones the owner saw on 2026-10-06 before ruling that the wave forms from a corner (the status note at the top). The crest-angle probe measures that corner: across the edge line, the crests' −x half leans −30.7° and their +x half −7.0° (`docs/research/crest-angle-2026-10-05.md`).
+
 Each view is 8 frames, 2 s apart: frames 14, 16 … 28 of one sequence shot a second apart. The water sheet settles the sea for at least 30 s before the first frame; the frames' sea times were not kept. Each contact sheet reads left to right: frames 14–20 on the top row, 22–28 below.
 
 **From the beach** (looking out to sea, +x to the right):
@@ -154,7 +156,63 @@ The straight seams in the water (the dashed lines overhead) stay put from frame 
 
 ## Rideability
 
-CATCH_PLACEHOLDER
+The owner's criterion is that a surfer can catch the wave and ride the shoulder. It was measured on 2026-10-07 on **the corner-canyon bed, being replaced for straight crests (owner, 2026-10-06)**, with these settings:
+
+- Medium: Hs 1.4 m, Tp 11 s, 0°, s = 150 (the Canyon's default swell since the drift fix);
+- tide 0 m, calm wind;
+- seeds 1 and 2, 3 minutes each, stage 2 on the CPU.
+
+**On this bed, riders catch the wave but nobody rides the shoulder.** Cues light and riders stand, but every stand ends within 4.6 s, almost always in a fall from balance. The riding-the-wave spec's done criteria ask for a median ride of 10 s or more and a best of 15–20 s.
+
+### Catch report
+
+30 ghost bots wait prone, at −45, −25, −5, +15 and +35 m along shore from the break point and −8 to +12 m outside the break line. Each one:
+
+- paddles when a crest rises behind it;
+- pops up on the cue;
+- rides straight in with no steering.
+
+```sh
+npx rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node
+node dist/scripts/catch-report.mjs --spots canyon --swell medium --spreading 150 --direction 0 --seeds 2 --minutes 3 --ghosts --out <report.md> --attempts <attempts.json>
+```
+
+| Attempts | Cue lit | Pop-ups | Stood | Rides ≥ 3 s | Median ride | 90th percentile | Longest | Top speed |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 831 | 19 | 19 | 16 | 3 | 2.0 s | 4.2 s | 4.6 s | 9.1 m/s |
+
+- **All 16 riders who stood fell (balance),** after 1.1–4.6 s.
+- **Of the other attempts,** 807 saw no cue, 3 popped up but could not stand (balance), and 5 lost the board while prone.
+- **By seed:** seed 1 had 5 cues and 5 stood; seed 2 had 14 cues and 11 stood.
+- **Cues lit only near the peak.** They lit only for the bots 25 m (15 cues, 12 stood) and 5 m (4 cues, 4 stood) to the −x side of the break point; none lit at −45, +15 or +35 m. The bots wait in a row parallel to the beach, but the terrace's edge runs at 62° to the shore. Across the row's 80 m it moves about 150 m across shore (80 × tan 62°), so the bots at +15 and +35 m wait far outside where the waves break there. This report therefore samples the take-off only near the peak, and it never rides along the shoulder.
+
+### Ride report
+
+The runner's own rider and 6 ghosts wait 5 m outside the break line, at −45 to +45 m along shore from the break point. An autopilot rides each one:
+
+- it paddles for a rising crest and pops up on the cue;
+- it holds a line 60° from the wave's travel toward the peel;
+- it turns up the face below 35 % of its height and down above 75 %.
+
+```sh
+npx rolldown scripts/ride-report.ts -o dist/scripts/ride-report.mjs --format esm --platform node
+node dist/scripts/ride-report.mjs --spots canyon --swell medium --spreading 150 --direction 0 --seeds 2 --minutes 3 --ghosts --out <report.md>
+```
+
+| Attempts | Stands | Rides ≥ 3 s | Median ride | Best ride | Near the curl |
+|---:|---:|---:|---:|---:|---:|
+| 187 | 23 | 0 | 0.7 s | 3.0 s | 8 % |
+
+- **Outcomes:** 154 missed the wave, 22 fell (balance), 2 fell (lost board) and 3 were kicked out.
+- **How long and how far the 23 stands went:**
+  - riding 0.8 s at the median and 3.0 s at most;
+  - along shore, 0.6 m at the median, from 3.2 m toward −x to 8.7 m toward +x (the peel's way);
+  - a path of 2.0 m at the median and 20.0 m at most.
+
+  No rider travelled along the shoulder.
+- **The riders' weight sat far forward while standing.** Over the 27 s they stood in all, the physics' weight (the pelvis point, from the rear foot at 0 to the front foot at 1) averaged 0.87 riding level, against the stance map's trim of 0.50–0.62. It averaged 0.98 going down the face. Whether that is why they fall was not diagnosed.
+
+The report lists rides of 3 s or more one by one, with how far each went along shore. None reached 3 s, so the report (`scripts/ride-report.ts`) now also sums up every stand of any length, which gave the figures above. The run was otherwise identical to the first one, before that line was added.
 
 ## Tests
 
@@ -163,6 +221,7 @@ TESTS_PLACEHOLDER
 ## Known issues
 
 - **The solver peels at 45°, not 55°.** The front holds the visible peel at 55°. On waves where the solver breaks faster than the front, the water just ahead of the visible front is already breaking in the solver. The rider feels `breaking.strength` there (bore push, the wipeout's checks) while the foam is still hidden. On the slow waves (about half of them, at 47–60°) the two agree. On the fast ones (15–30°) the lag can reach tens of metres.
+  - **Accepted by the owner, 2026-10-06,** as a known issue of the spilling front, with S3 (the roller) next. That day the owner first accepted the round as it stood: the solver's median 45° and the front's 55°. After seeing the screenshots, the owner withdrew that acceptance for the bed (see the status note at the top): the peel numbers here are the corner-canyon bed's, which is being replaced for straight crests, and its peel is not accepted. The gap is to be measured again on the new bed.
 - **Some waves still go the other way.** 3 of 34 clean waves peeled toward −x (seed 2), and some periods mix two peaks. The front only acts toward +x, so foam on a −x arm shows as the solver has it.
 - **The front's waves are not handed over online.** A late joiner's sea (`SurfZoneState`) carries the foam but not the front's waves. Until the next onsets its whitewater is the solver's, ungated, for about a period.
 - **Small days barely break on the terrace** (1.3 m deep). The surf moves to the shore break.
