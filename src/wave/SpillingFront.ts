@@ -78,7 +78,12 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   crestReach: 10,
   crestMargin: 6,
   bandWidth: 20,
-  maxWaves: 8,
+  /**
+   * 24, provisional: enough to keep each wave its 45 s. With one crest per wave the Canyon starts about one wave every
+   * 2 s (Medium, seed 1: 65 in the first 98 s after the spin-up), so 8 dropped each after about 20 s, and an inshore
+   * crest's lenses could no longer be seeded; with 24, at most 20 were tracked at once.
+   */
+  maxWaves: 24,
   lifetime: 45,
   /**
    * 6 m, provisional: the front's own join reach. At the Canyon the arm's end puts each break contour's most seaward
@@ -146,8 +151,14 @@ export interface SpillingWave {
   readonly joinedZ: Float64Array;
   /** Last time an onset joined this wave, s. */
   lastJoin: number;
-  /** Its crest per column at the last update: the most seaward breaking cell it owned there, z (NaN: none). */
+  /**
+   * Its crest per column at the last update, z (NaN: none): the most seaward breaking cell it owned there on its own
+   * crest (`SpillingFront.ownCrest`). Its band can hold a younger crest seaward; that one is not its crest.
+   */
   readonly crest: Float64Array;
+  /** Where its crest was last recorded in each column, z, and when, s (NaN: never). */
+  readonly seen: Float64Array;
+  readonly seenAt: Float64Array;
 }
 
 export class SpillingFront {
@@ -218,6 +229,7 @@ export class SpillingFront {
       id: this.started, onset: time, startX: x, startZ: z, crestX, frontX: x, tipX: x, backX: x,
       reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN),
       joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time, crest: new Float64Array(nx).fill(Number.NaN),
+      seen: new Float64Array(nx).fill(Number.NaN), seenAt: new Float64Array(nx).fill(Number.NaN),
     };
     wave.joinedAt[column] = time;
     wave.joinedZ[column] = z;
@@ -249,6 +261,20 @@ export class SpillingFront {
       }
     }
     return true;
+  }
+
+  /**
+   * Whether a breaking cell at z that `wave` owns in column ix lies on its own crest: from crestReach seaward of where
+   * its crest was last recorded there (or, never recorded, where it started breaking there) to as far shoreward as it
+   * can have run since, at up to CREST_SPEED_SPAN times the breaker celerity, and crestReach beyond. A crest never runs
+   * back out to sea, but slows inshore; a younger crest lies a wavelength seaward.
+   */
+  private ownCrest(wave: SpillingWave, ix: number, time: number, z: number): boolean {
+    const reach = this.options.crestReach;
+    const seen = wave.seen[ix];
+    const from = seen === seen ? seen : wave.joinedZ[ix];
+    const since = time - (seen === seen ? wave.seenAt[ix] : wave.joinedAt[ix]);
+    return z >= from - reach && z <= from + CREST_SPEED_SPAN * this.celerity * since + reach;
   }
 
   /** Whether along-shore position `a` lies ahead of `b` in the peel's direction. */
@@ -321,9 +347,14 @@ export class SpillingFront {
           if (felt) felt[i] = b;
           continue;
         }
-        // Rows run seaward to shoreward, so the first owned cell met in a column is the wave's crest there, gated or not.
+        // Rows run seaward to shoreward, so the first owned cell met in a column on its own crest is the wave's crest
+        // there, gated or not.
         const wave = waves[owner];
-        if (Number.isNaN(wave.crest[ix])) wave.crest[ix] = z;
+        if (Number.isNaN(wave.crest[ix]) && this.ownCrest(wave, ix, time, z)) {
+          wave.crest[ix] = z;
+          wave.seen[ix] = z;
+          wave.seenAt[ix] = time;
+        }
         const reached = wave.reached[ix];
         if (Number.isNaN(reached)) {
           out[i] = 0;

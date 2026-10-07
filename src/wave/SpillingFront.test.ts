@@ -297,6 +297,28 @@ describe('SpillingFront for the roller (S3)', () => {
     expect(front.waves[1].joinedAt[7]).toBeNaN();
   });
 
+  it('records a wave\'s crest on its own crest, not a younger one its band holds seaward', () => {
+    const { g, front, strength, out } = setup();
+    for (let ix = 0; ix <= 5; ix += 1) front.observeOnset(ix, 0, -18);
+    // Twenty seconds on at 1 m/s its crest has run to z 2, while its band reaches back to 6 m seaward of where it started.
+    breakBand(g, strength, -20, -15, 2, 4);
+    front.update(19.9, 0.1, 1, strength, out);
+    expect(front.crestAt(0, 3)).toBe(2);
+    // A younger crest breaks 18 m seaward of it, in columns no younger wave has joined: inside the old wave's band.
+    breakBand(g, strength, -20, -15, -16, -14);
+    front.update(20, 0.1, 1, strength, out);
+    expect(front.crestAt(0, 3)).toBe(2);
+    expect(front.waves[0].seen[3]).toBe(2);
+    expect(front.waves[0].seenAt[3]).toBe(20);
+    // A crest slowed inshore, out of sight for a while, is still its own when it breaks again.
+    strength.fill(0);
+    front.update(25, 0.1, 1, strength, out);
+    expect(front.crestAt(0, 3)).toBeNaN();
+    breakBand(g, strength, -20, -15, 4, 5);
+    front.update(30, 0.1, 1, strength, out);
+    expect(front.crestAt(0, 3)).toBe(4);
+  });
+
   it('keeps one crest per wave before any update too, from where its columns started breaking', () => {
     const { front } = setup();
     front.observeOnset(0, 10, -15);
