@@ -71,7 +71,7 @@ For a surfer facing the beach, +x is on their left: the Reef and Padang Padang, 
 | 2. Over 600 s (seed 1) | ±10 m | Median x 43; 6 of 25 (24 %) | **Median x −50; 49 of 50 (98 %)** |
 | 3. One way: clean waves toward +x (canyon-peel-report, 3 seeds × 14 periods; the after's on the arm, the before's across the window) | ≥ 90 % | 33 of 34 (97 %) | **40 of 40 (100 %)**; each crest's own onsets: 40 of 40 |
 | 3. Over 600 s (seed 1, the same tracker) | ≥ 90 % | 20 of 29 (69 %) | **52 of 53 (98 %)** |
-| 4. Peel angle: canyon-peel-report's median, 3 seeds × 14 periods | 45–60° | 45° | **31°: not met** (each wave's own fit along the arm: a median of 42°, against 45° before) |
+| 4. Peel angle: canyon-peel-report's median, 3 seeds × 14 periods | 45–60° | 45° | **31°, accepted by the owner, 2026-10-07: drawn and felt at 55° by the spilling front** (each wave's own fit along the arm: a median of 42°, against 45° before) |
 | 5. Stable for 600 s (seed 1) | No running flat, no blow-ups | Stable: fastest water 3.2 m/s, no Froude caps, volume within 1.6 %. But its breaking dwindled: 79–557 onsets per 100 s | **Stable: fastest water 5.4 m/s (3.7 m/s typical over 10 s), no Froude caps, volume within 2 %; 890–1,060 onsets per 100 s throughout** |
 | 6. Pictures | Straight crests and the peel | `img/final-*` | **`img/straight-*`** (below) |
 | Spilling: the readout at the take-off | ξ < 0.4 | 0.35 | 0.35 |
@@ -86,7 +86,9 @@ For a surfer facing the beach, +x is on their left: the Reef and Padang Padang, 
 - **The direction.** Every clean wave peeled toward +x. In about a quarter of the waves, mostly the big ones, the break also spread upcoast of the peak (more than two onsets over 5 m upcoast within 3 s): typically 5 m, at worst 20–48 m. That is the breaking age's sideways spread (below). The prototype did the same in a similar share (8 of 31 waves).
 - **The peel.** See the next part.
 
-**The peel bar is not met, and on today's meter no bed can meet it.** The water-physics advisor's consult (2026-10-06, `docs/research/water-physics/consult-log.md`) found two limits.
+**The peel: the solver's peel accepted by the owner, 2026-10-07: drawn and felt at 55° by the spilling front.** The front draws the visible peel at 55°, and once S3's roller rides on it the rider feels it at 55° too. Rule A and the peel meter stay as they are.
+
+Why the solver reads 31°, and why on today's meter no bed could reach 45–60°: the water-physics advisor's consult (2026-10-06, `docs/research/water-physics/consult-log.md`) found two limits.
 
 - **The breaking age's sideways spread.**
   - Kennedy's threshold falls from 0.65√(gh) to 0.15√(gh) as a break ages. The age passes to the cell behind a face and to its two diagonals (`breakingAge.ts`, rule A), so it moves one column along the crest for each row the face advances: along the crest, at the crest's own speed.
@@ -102,10 +104,10 @@ For a surfer facing the beach, +x is on their left: the Reef and Padang Padang, 
   - The prototype read 45° because its damped waves were small and slow: the damping, not the bed, kept its tracker reading high.
   - Hutt's peel angle uses the crest's own speed (Walker & Palmer, via Scarfe et al. 2009). On a meter with c_b = √(2 g H_b) = 5.8 m/s, an arm at 60–66° reads 53–57° and the spread 41° (the advisor's table). That meter is the owner's decision of 2026-09-29, still unbuilt.
 - **Why the tracker and each wave's fit differ** (31° and 42°). The tracker samples once a period: it fits the latest onsets of the longest run of columns within 1.1 s of each other. With three waves on the 230 m arm at once, that run is often a stretch of the fast spread. Each wave's fit spans its whole ride, the arm's slower stretches included.
-- **For the owner:**
-  - Is 50–60° meant on the crest-speed meter?
-  - Should rule A change, at every spot?
-  - Should the beach close out beside the arm, upcoast of the peak?
+- **The owner's rulings, 2026-10-07:**
+  - the peel accepted, as above; rule A and the peel meter left alone;
+  - the upcoast haze held back: the spilling front also withholds whitewater upcoast of each wave's first onset, beyond a margin (§3).
+  - Still open: whether the beach should close out beside the arm, upcoast of the peak.
 
 **The sweep.** One seed (1), 8 periods each, unless noted. The peel is the tracker's median, on the arm only from row 3 on. "Starts" counts each crest's first onset within ±10 m of their median, out of the waves tracked. "Upcoast" counts waves whose break also ran over 5 m upcoast of their start within 3 s.
 
