@@ -15,12 +15,29 @@
  *
  * Each crest's two halves along shore (split at its middle point) are also fitted on their own: their angles' difference,
  * the bend, shows a crest that runs two ways at once (an A-frame, or a crest turned by one side of the bed).
+ *
+ * For finding where and why crests bend (diagnostics; none changes the game):
+ * - `--points`: each crest's followed points in the JSON (`points`: x0, z0, x1, z1, …, m);
+ * - `--lines z,z,…`: more watched lines, at these z (named `z<value>`);
+ * - `--x-ref <x>`: the reference column's x (the take-off's by default); `--follow <x0>,<x1>`: follow crests only there;
+ * - `--crest-point centroid`: a column's crest is the centroid of the crest's top fifth, not its highest row (a long,
+ *   flat-topped swell's highest row moves by metres for centimetres of other water);
+ * - `--snapshots <file>`: the surface (η above still water, m, over every column, from 60 m seaward of the most seaward
+ *   line to 60 m shoreward of the most shoreward one) whenever a crest runs two ways at once (opposite halves, each
+ *   past `--snap-degrees`, 10° by default; on `--snap-line <name>` only, if given), at most `--snap-max` (6) of them, and at
+ *   the sea times `--snap-times t,t,…`;
+ * - `--reef`, `--padang`, `--canyon key=value,…`: reshape a spot's bed for the run (`scripts/*Shape.ts`);
+ * - `--no-side-feed`: Padang Padang's open sides with no side feed; `--side-feed <spot,…>`: these spots' sides fed too;
+ *   `--along-shore <m>`: the window's width.
  */
 import { writeFileSync } from 'node:fs';
 import { GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../src/game/SurfConditions';
 import type { SpotName } from '../src/wave/Bathymetry';
-import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
+import { SIDE_FEED_SPOTS, SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
+import { applyCanyonShape } from './canyonShape';
+import { applyPadangShape } from './padangShape';
+import { applyReefShape } from './reefShape';
 
 const option = (name: string): string | undefined => {
   const index = process.argv.indexOf(`--${name}`);
@@ -33,6 +50,22 @@ const seed = Number(option('seed') ?? 1);
 const seconds = Number(option('seconds') ?? 600);
 const offset = Number(option('offset') ?? 30);
 const quiet = process.argv.includes('--quiet');
+const withPoints = process.argv.includes('--points');
+const extraLines = (option('lines') ?? '').split(',').filter((value) => value.trim() !== '').map(Number);
+const snapshotFile = option('snapshots');
+const snapDegrees = Number(option('snap-degrees') ?? 10);
+const snapMax = Number(option('snap-max') ?? 6);
+const snapTimes = (option('snap-times') ?? '').split(',').filter((value) => value.trim() !== '').map(Number);
+const snapLine = option('snap-line');
+const followRange = option('follow')?.split(',').map(Number);
+/** Where a column's crest is: its highest row ('max', refined by a parabola) or the centroid of its top ('centroid'). */
+const crestPoint = option('crest-point') === 'centroid' ? 'centroid' : 'max';
+// Diagnostic beds and tanks, applied before the spot is built.
+applyReefShape(option('reef'));
+applyPadangShape(option('padang'));
+applyCanyonShape(option('canyon'));
+if (process.argv.includes('--no-side-feed')) (SIDE_FEED_SPOTS as SpotName[]).splice(0);
+for (const fed of option('side-feed')?.split(',') ?? []) if (!SIDE_FEED_SPOTS.includes(fed as SpotName)) (SIDE_FEED_SPOTS as SpotName[]).push(fed as SpotName);
 
 /** The worker's step, s. */
 const STEP = 1 / 30;
@@ -50,6 +83,9 @@ const MIN_COVERAGE = 0.5;
 const FIRST_WAVES = 3;
 /** A crest's half shorter than this along shore, m, gives no angle of its own. */
 const MIN_HALF_SPAN = 20;
+/** `--crest-point centroid`: the share of the crest's height above still water its centroid is taken over, and how far, m. */
+const CENTROID_SHARE = 0.2;
+const CENTROID_REACH = 30;
 
 const settings = physicalSettingsFor(spot, { swell: swellSize, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
 const swell = swellFor(settings);
@@ -62,22 +98,26 @@ const config: SurfZoneConfig = {
   tide: settings.tide, windSpeed: settings.windSpeed, stage: 2, compute: 'cpu',
   ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
   componentCount: numberOption('components') ?? GPU_TIER_COMPONENTS,
+  ...(numberOption('along-shore') !== undefined ? { alongShore: numberOption('along-shore') } : {}),
 };
 
 /**
  * A crest's fit. `left` and `right` are its −x and +x halves' own angles, degrees (NaN for a half under MIN_HALF_SPAN);
- * the bend is right − left.
+ * the bend is right − left. With `--points`, `points` holds the followed crest, x0, z0, x1, z1, … (m, sorted along x).
  */
-interface Crest { line: string; t: number; angle: number; residual: number; coverage: number; height: number; left: number; right: number }
+interface Crest {
+  line: string; t: number; angle: number; residual: number; coverage: number; height: number; left: number; right: number;
+  points?: number[];
+}
 
 const started = Date.now();
 const simulation = new SurfZoneSimulation(config);
 const { solver } = simulation;
 const takeOff = simulation.breakPoint();
 const columnAt = (x: number) => Math.min(solver.nx - 1, Math.max(0, Math.round((x - solver.xCenters[0]) / solver.dx)));
-const firstColumn = columnAt(simulation.windowXMin + EDGE_MARGIN);
-const lastColumn = columnAt(simulation.windowXMin + solver.nx * solver.dx - EDGE_MARGIN);
-const referenceColumn = columnAt(Math.min(solver.xCenters[lastColumn], Math.max(solver.xCenters[firstColumn], takeOff.x)));
+const firstColumn = columnAt(Math.max(simulation.windowXMin + EDGE_MARGIN, followRange?.[0] ?? -Infinity));
+const lastColumn = columnAt(Math.min(simulation.windowXMin + solver.nx * solver.dx - EDGE_MARGIN, followRange?.[1] ?? Infinity));
+const referenceColumn = columnAt(Math.min(solver.xCenters[lastColumn], Math.max(solver.xCenters[firstColumn], numberOption('x-ref') ?? takeOff.x)));
 const rowAt = (z: number) => {
   let best = 0;
   for (let row = 1; row < solver.nz; row += 1) if (Math.abs(solver.zCenters[row] - z) < Math.abs(solver.zCenters[best] - z)) best = row;
@@ -102,6 +142,25 @@ function crestIn(column: number, near: number, reach: number): { z: number; eta:
     }
   }
   if (best < 0 || !Number.isFinite(bestEta)) return undefined;
+  if (crestPoint === 'centroid' && bestEta - still > 0) {
+    // The crest's top CENTROID_SHARE of its height above still water, contiguous across shore from its highest row
+    // (within CENTROID_REACH m), weighted by how far each row stands above that floor: steadier than the highest row
+    // on a long, flat-topped crest, whose highest row a few centimetres of other water can move by metres.
+    const floor = bestEta - CENTROID_SHARE * (bestEta - still);
+    let sum = 0;
+    let weighted = 0;
+    for (const step of [-1, 1]) {
+      for (let row = step < 0 ? best : best + 1; row >= 1 && row < solver.nz - 1; row += step) {
+        if (Math.abs(solver.zCenters[row] - solver.zCenters[best]) > CENTROID_REACH) break;
+        const eta = surface(row, column);
+        if (!(eta > floor)) break;
+        const spacing = 0.5 * (solver.zCenters[Math.min(solver.nz - 1, row + 1)] - solver.zCenters[Math.max(0, row - 1)]);
+        sum += (eta - floor) * spacing;
+        weighted += (eta - floor) * spacing * solver.zCenters[row];
+      }
+    }
+    if (sum > 0) return { z: weighted / sum, eta: bestEta };
+  }
   const a = surface(best - 1, column);
   const c = surface(best + 1, column);
   if (!Number.isFinite(a) || !Number.isFinite(c)) return { z: solver.zCenters[best], eta: bestEta };
@@ -139,6 +198,7 @@ function fitCrest(line: string, z: number): Crest | 'short' | undefined {
   return {
     line, t: simulation.seaTime, angle: (Math.atan(slope) * 180) / Math.PI, residual, coverage, height: start.eta - still,
     left: halfAngle(points.slice(0, middle + 1)), right: halfAngle(points.slice(middle)),
+    ...(withPoints ? { points: points.flatMap((p) => [Math.round(p.x * 100) / 100, Math.round(p.z * 100) / 100]) } : {}),
   };
 }
 
@@ -188,17 +248,54 @@ class Watch {
   }
 }
 
-const watches = [new Watch('edge', simulation.tank.fineFrom + 5), new Watch('take-off', takeOff.z - offset)];
+const watches = [
+  new Watch('edge', simulation.tank.fineFrom + 5), new Watch('take-off', takeOff.z - offset),
+  ...extraLines.map((z) => new Watch(`z${z}`, z)),
+];
 console.log(`Crest angles: ${spot}, ${swellSize} (Hs ${config.significantHeight} m, Tp ${config.peakPeriod} s, ${config.directionDegrees}°, s ${config.spreading.toFixed(0)}), `
   + `seed ${seed}, ${config.componentCount} components, ${seconds} s. Take-off (${takeOff.x.toFixed(0)}, ${takeOff.z.toFixed(0)}); `
-  + `lines z = ${watches.map((w) => solver.zCenters[w.row].toFixed(0)).join(', ')}; crests followed over x ${solver.xCenters[firstColumn].toFixed(0)}…${solver.xCenters[lastColumn].toFixed(0)}.`);
+  + `lines z = ${watches.map((w) => solver.zCenters[w.row].toFixed(0)).join(', ')}; crests followed over x ${solver.xCenters[firstColumn].toFixed(0)}…${solver.xCenters[lastColumn].toFixed(0)} `
+  + `from x ${solver.xCenters[referenceColumn].toFixed(0)}.`);
+
+/** `--snapshots`: the surface over every column, on the rows around the watched lines, at a sea time. */
+interface Snapshot { t: number; reason: string; x0: number; dx: number; nx: number; z: number[]; eta: (number | null)[] }
+const snapshots: Snapshot[] = [];
+const snapRows: number[] = [];
+{
+  const zs = watches.map((w) => solver.zCenters[w.row]);
+  for (let row = 0; row < solver.nz; row += 1) {
+    if (solver.zCenters[row] >= Math.min(...zs) - 60 && solver.zCenters[row] <= Math.max(...zs) + 60) snapRows.push(row);
+  }
+}
+const pendingTimes = [...snapTimes].sort((a, b) => a - b);
+function snapshot(reason: string): void {
+  const eta: (number | null)[] = [];
+  for (const row of snapRows) {
+    for (let column = 0; column < solver.nx; column += 1) {
+      const value = surface(row, column);
+      eta.push(Number.isFinite(value) ? Math.round((value - still) * 100) / 100 : null);
+    }
+  }
+  snapshots.push({
+    t: simulation.seaTime, reason, x0: solver.xCenters[0], dx: solver.dx, nx: solver.nx,
+    z: snapRows.map((row) => Math.round(solver.zCenters[row] * 100) / 100), eta,
+  });
+}
 
 const crests: Crest[] = [];
 const start = simulation.seaTime;
 const steps = Math.round(seconds / STEP);
 for (let step = 0; step < steps; step += 1) {
   simulation.step(STEP);
+  const before = crests.length;
   for (const watch of watches) watch.sample(crests);
+  if (!snapshotFile) continue;
+  const twoWays = crests.slice(before).find((crest) => (!snapLine || crest.line === snapLine) && Math.sign(crest.left) !== Math.sign(crest.right)
+    && Math.abs(crest.left) >= snapDegrees && Math.abs(crest.right) >= snapDegrees);
+  if (twoWays && snapshots.filter((s) => s.reason.startsWith('two ways')).length < snapMax) {
+    snapshot(`two ways on ${twoWays.line}: ${twoWays.left.toFixed(1)}° / ${twoWays.right.toFixed(1)}°`);
+  }
+  while (pendingTimes.length && simulation.seaTime >= pendingTimes[0]) snapshot(`at ${pendingTimes.shift()} s`);
 }
 
 const mean = (values: number[]) => (values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : Number.NaN);
@@ -208,6 +305,8 @@ interface Summary {
   firstAbs: number; laterAbs: number; straightness: number;
   /** Over the crests whose halves both gave an angle: how many, and their bend's mean and largest |right − left|, degrees. */
   halved: number; meanBend: number; maxBend: number;
+  /** Their halves' mean angles, degrees: −x half and +x half (a systematic chevron leans them opposite ways). */
+  meanLeft: number; meanRight: number;
   /** Each 100 s: the crests' mean |angle| and mean angle (signed), degrees. */
   bins: { from: number; meanAbs: number; mean: number; crests: number }[];
 }
@@ -221,24 +320,37 @@ const summaries: Summary[] = watches.map(({ name, short }) => {
     bins.push({ from, meanAbs: mean(binned.map(Math.abs)), mean: mean(binned), crests: binned.length });
   }
   const bends = mine.map((crest) => Math.abs(crest.right - crest.left)).filter(Number.isFinite);
+  const halved = mine.filter((crest) => Number.isFinite(crest.left) && Number.isFinite(crest.right));
   return {
     line: name, crests: mine.length, short, meanAngle: mean(angles), meanAbs: mean(abs), maxAbs: abs.length ? Math.max(...abs) : Number.NaN,
     std: std(angles), firstAbs: mean(abs.slice(0, FIRST_WAVES)), laterAbs: mean(abs.slice(FIRST_WAVES)),
     straightness: mean(mine.map((crest) => crest.residual)),
-    halved: bends.length, meanBend: mean(bends), maxBend: bends.length ? Math.max(...bends) : Number.NaN, bins,
+    halved: bends.length, meanBend: mean(bends), maxBend: bends.length ? Math.max(...bends) : Number.NaN,
+    meanLeft: mean(halved.map((crest) => crest.left)), meanRight: mean(halved.map((crest) => crest.right)), bins,
   };
 });
 const f = (value: number, digits = 1) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
 console.log(`\n${((Date.now() - started) / 1000).toFixed(0)} s elapsed.`);
 console.log('| Line | Crests (short) | Mean angle ° | Mean \\|angle\\| ° | Max \\|angle\\| ° | Std ° | First 3 \\|angle\\| ° | Later \\|angle\\| ° | Straightness m | \\|angle\\| per 100 s ° '
-  + '| Bend mean / max \\|right − left\\| ° (crests) | Mean angle per 100 s ° |');
-console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
+  + '| Bend mean / max \\|right − left\\| ° (crests) | Mean angle per 100 s ° | Halves mean −x / +x ° |');
+console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
 for (const s of summaries) {
   console.log(`| ${s.line} | ${s.crests} (${s.short}) | ${f(s.meanAngle)} | ${f(s.meanAbs)} | ${f(s.maxAbs)} | ${f(s.std)} | ${f(s.firstAbs)} | ${f(s.laterAbs)} | ${f(s.straightness, 2)} | ${s.bins.map((b) => f(b.meanAbs)).join(' · ')} `
-    + `| ${f(s.meanBend)} / ${f(s.maxBend)} (${s.halved}) | ${s.bins.map((b) => f(b.mean)).join(' · ')} |`);
+    + `| ${f(s.meanBend)} / ${f(s.maxBend)} (${s.halved}) | ${s.bins.map((b) => f(b.mean)).join(' · ')} | ${f(s.meanLeft)} / ${f(s.meanRight)} |`);
 }
+/** The run's diagnostic settings, so a JSON says what it measured. */
+const diagnostics = {
+  reef: option('reef'), padang: option('padang'), canyon: option('canyon'), noSideFeed: process.argv.includes('--no-side-feed'),
+  sideFeed: [...SIDE_FEED_SPOTS],
+  follow: [solver.xCenters[firstColumn], solver.xCenters[lastColumn]], xRef: solver.xCenters[referenceColumn], crestPoint,
+  lines: watches.map((w) => ({ name: w.name, z: solver.zCenters[w.row] })),
+};
 const json = option('json');
 if (json) {
-  writeFileSync(json, JSON.stringify({ spot, swell: swellSize, seed, seconds, config: { ...config }, takeOff, summaries, crests }, null, 1));
+  writeFileSync(json, JSON.stringify({ spot, swell: swellSize, seed, seconds, config: { ...config }, diagnostics, takeOff, summaries, crests }, null, 1));
   console.log(`Wrote ${json}.`);
+}
+if (snapshotFile) {
+  writeFileSync(snapshotFile, JSON.stringify({ spot, seed, config: { ...config }, diagnostics, snapshots }));
+  console.log(`Wrote ${snapshots.length} snapshot(s) to ${snapshotFile}.`);
 }
