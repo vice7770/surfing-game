@@ -177,6 +177,16 @@ export interface RollerLensState {
   froude2: number;
 }
 
+/**
+ * The roller as data (the plan's §5: the sea handover): its live lenses, each with its place and everything its next
+ * step reads (its last section's H, h₁ and F too: they set its tracking window and its shedding while its crest is lost);
+ * L_r null while unset. Its normals, sections and table are made afresh by its next step.
+ */
+export interface SpillingRollerState {
+  columns: number;
+  lenses: (Omit<RollerLensState, 'length'> & { column: number; slot: number; length: number | null })[];
+}
+
 /** A lens starting to shed (the advisor's Q3: Fr₁ and B are reported at every shedding). */
 export interface RollerShed {
   time: number;
@@ -711,6 +721,45 @@ export class SpillingRoller implements RollerLens {
     for (let lens = 0; lens < this.state.length; lens += 1) this.clearLens(lens);
     this.table.fill(0);
     this.tableWaves.fill(-1);
+  }
+
+  /** The live lenses as data, exact (see `SpillingRollerState`). */
+  exportState(): SpillingRollerState {
+    const { nx } = this.grid;
+    const lenses: SpillingRollerState['lenses'] = [];
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      for (let column = 0; column < nx; column += 1) {
+        const lens = this.lens(column, slot);
+        if (lens) lenses.push({ ...lens, column, slot, length: lens.length === lens.length ? lens.length : null });
+      }
+    }
+    return { columns: nx, lenses };
+  }
+
+  /**
+   * Takes over another roller's lenses (`exportState`), on the same grid with the same options: its next step goes on
+   * as the donor's does. Until then its table is empty.
+   */
+  importState(state: SpillingRollerState): void {
+    const { nx } = this.grid;
+    if (state.columns !== nx) throw new Error(`A roller from another tank (${state.columns} columns, not ${nx})`);
+    this.reset();
+    for (const lens of state.lenses) {
+      if (!(lens.column >= 0 && lens.column < nx && lens.slot >= 0 && lens.slot < ROLLER_SLOTS)) throw new Error('A roller lens off the grid');
+      const i = lens.slot * nx + lens.column;
+      this.state[i] = lens.state === 'active' ? ACTIVE : SHEDDING;
+      this.wave[i] = lens.wave;
+      this.birth[i] = lens.birth;
+      this.travel[i] = lens.travel;
+      this.hold[i] = lens.hold;
+      this.scale[i] = lens.g;
+      this.speed[i] = lens.c;
+      this.length[i] = lens.length ?? Number.NaN;
+      this.crest[i] = lens.crest;
+      this.height[i] = lens.height;
+      this.troughDepth[i] = lens.troughDepth;
+      this.froude2[i] = lens.froude2;
+    }
   }
 
   /** The drawn-and-felt lens at (x, z): the thickest of the slots, cut to half the water's depth (the swash's rule). */

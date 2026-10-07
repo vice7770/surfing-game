@@ -161,6 +161,45 @@ export interface SpillingWave {
   readonly seenAt: Float64Array;
 }
 
+/** A per-column array as JSON numbers, NaN as null (as `LipState` and `FrontState` carry theirs). */
+export type ColumnValues = (number | null)[];
+
+/** One wave as data (the roller plan's §5: the sea handover). */
+export interface SpillingWaveState {
+  id: number;
+  onset: number;
+  startX: number;
+  startZ: number;
+  crestX: number;
+  frontX: number;
+  tipX: number;
+  backX: number;
+  lastJoin: number;
+  reached: ColumnValues;
+  joinedAt: ColumnValues;
+  joinedZ: ColumnValues;
+  crest: ColumnValues;
+  seen: ColumnValues;
+  seenAt: ColumnValues;
+}
+
+/**
+ * The front as data: the waves started so far, the breaker celerity of its last update (the next onsets' joins read it,
+ * before the next update), and its waves, crests included (the same).
+ */
+export interface SpillingFrontState {
+  started: number;
+  celerity: number;
+  waves: SpillingWaveState[];
+}
+
+const toValues = (values: Float64Array): ColumnValues => Array.from(values, (value) => (value === value ? value : null));
+function fromValues(values: ColumnValues, out: Float64Array): Float64Array {
+  if (values.length !== out.length) throw new Error(`A spilling front from another tank (${values.length} columns, not ${out.length})`);
+  for (let i = 0; i < out.length; i += 1) out[i] = values[i] ?? Number.NaN;
+  return out;
+}
+
 export class SpillingFront {
   readonly options: SpillingFrontOptions;
   readonly waves: SpillingWave[] = [];
@@ -386,6 +425,37 @@ export class SpillingFront {
     this.celerity = 0;
     this.gated = 0;
     this.ramped = 0;
+  }
+
+  /** The front as data, exact: a front built on the same grid and given it with `importState` steps on as this one does. */
+  exportState(): SpillingFrontState {
+    return {
+      started: this.started,
+      celerity: this.celerity,
+      waves: this.waves.map((wave) => ({
+        id: wave.id, onset: wave.onset, startX: wave.startX, startZ: wave.startZ, crestX: wave.crestX, frontX: wave.frontX,
+        tipX: wave.tipX, backX: wave.backX, lastJoin: wave.lastJoin,
+        reached: toValues(wave.reached), joinedAt: toValues(wave.joinedAt), joinedZ: toValues(wave.joinedZ), crest: toValues(wave.crest),
+        seen: toValues(wave.seen), seenAt: toValues(wave.seenAt),
+      })),
+    };
+  }
+
+  /** Takes over another front (`exportState`), built on the same grid with the same options. */
+  importState(state: SpillingFrontState): void {
+    const { nx } = this.grid;
+    this.reset();
+    this.started = state.started;
+    this.celerity = state.celerity;
+    for (const wave of state.waves) {
+      this.waves.push({
+        id: wave.id, onset: wave.onset, startX: wave.startX, startZ: wave.startZ, crestX: wave.crestX, frontX: wave.frontX,
+        tipX: wave.tipX, backX: wave.backX, lastJoin: wave.lastJoin,
+        reached: fromValues(wave.reached, new Float64Array(nx)), joinedAt: fromValues(wave.joinedAt, new Float64Array(nx)),
+        joinedZ: fromValues(wave.joinedZ, new Float64Array(nx)), crest: fromValues(wave.crest, new Float64Array(nx)),
+        seen: fromValues(wave.seen, new Float64Array(nx)), seenAt: fromValues(wave.seenAt, new Float64Array(nx)),
+      });
+    }
   }
 
   /** A one-line state for reports. */

@@ -1,5 +1,7 @@
 import type { LipState } from './PlungingLip';
 import type { FrontState } from './barrel/BreakingFront';
+import type { SpillingFrontState } from './SpillingFront';
+import type { SpillingRollerState } from './SpillingRoller';
 
 /**
  * A running sea as data (spec N1: the sea handover): its grid (to check it
@@ -17,6 +19,11 @@ export interface SurfZoneState {
   lip: LipState;
   /** The swept barrel's breaking front, on the spots that run it (the Padang Padang spec, Part B). */
   front?: FrontState;
+  /**
+   * A spilling spot's front and its roller lenses (the Canyon roller lens, S3, §5), exact: their decisions compare
+   * times and crests, so they ride in the header, not the 32-bit arrays. Absent from older states: a fresh front, no lenses.
+   */
+  spilling?: { front: SpillingFrontState; roller?: SpillingRollerState };
 }
 
 const MAGIC = 0x53455431; // "SET1"
@@ -32,6 +39,7 @@ export function encodeSurfZoneState(state: SurfZoneState): Uint8Array {
   const names = Object.keys(state.arrays);
   const header = new TextEncoder().encode(JSON.stringify({
     nx: state.nx, nz: state.nz, solverTime: state.solverTime, seaTimeOffset: state.seaTimeOffset, counters: state.counters, lip: state.lip, front: state.front,
+    spilling: state.spilling,
     arrays: names.map((name) => [name, state.arrays[name].length]),
   }));
   const start = 8 + Math.ceil(header.length / 4) * 4;

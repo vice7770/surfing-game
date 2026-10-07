@@ -1664,6 +1664,8 @@ describe('the Canyon roller lens (S3)', () => {
   it('starts the Canyon\'s front and roller afresh in a sea taken over without them (the plan\'s §5: a donor without them)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm');
     const state = simulation.exportState();
+    // A donor without them: an older build, or a stored lesson sea.
+    delete state.spilling;
     // A front wave and a lens left from a sea this one ran before.
     simulation.spilling!.observeOnset(3, 1, -60);
     simulation.roller!.table.fill(0.5);
