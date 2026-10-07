@@ -31,6 +31,9 @@ import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './wat
 import { waterStreakPars } from './water/streaks';
 import { packTubeTextures, tubeColumnCount, waterTubePars } from './water/tubeCarve';
 import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
+import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
+import { classicRollerFoam, richRollerFoam, richRollerNormal, rollerCrestLight, rollerNormal, waterRollerPars } from './water/rollerGlsl';
+import { rollerDrawnExtent } from './water/rollerLook';
 import { WATER_BARREL_DISCARD, WATER_BARREL_FALLBACK_DISCARD, waterBarrelMaskPars } from './barrel/barrelMaskGlsl';
 import { BARREL_FALLBACK_ORDER, configureBarrelCoverage, configureBarrelFallback } from './barrel/barrelFallback';
 import { CoarseFallbackRows } from './barrel/fallbackRows';
@@ -38,7 +41,7 @@ import { causticLookupPars, createCausticUniforms, type CausticSource, type Caus
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
-  WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
+  CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
 export interface SurfaceGrid {
@@ -271,6 +274,15 @@ export class WaterSurface {
   private maskGrid: SurfaceGrid;
   private barrelMaskData: Uint8Array;
   private barrelMaskTexture: DataTexture;
+  /**
+   * S3: the roller lenses' table at a spilling spot, uploaded as is (`ROLLER_FIELD`: one row per slot, two RGBA texels
+   * per column), in both looks; the band's chunk is compiled in only where the source has one, so every other spot's
+   * program is today's byte for byte.
+   */
+  private rollerEnabled = false;
+  private rollerData = new Float32Array(ROLLER_SLOTS * ROLLER_STRIDE);
+  private rollerTexture = new DataTexture(this.rollerData, ROLLER_STRIDE / 4, ROLLER_SLOTS, RGBAFormat, FloatType);
+  private readonly rollerExtent = { low: 1, high: 0 };
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
 
@@ -318,6 +330,11 @@ export class WaterSurface {
       waterBarrelScreenFallback: { value: 0 },
       waterBarrelGrid: { value: new Vector4(this.maskGrid.xMin, this.maskGrid.zMin, this.maskGrid.spacing, 0) },
       waterBarrelGridSize: { value: new Vector2(this.maskGrid.nx, this.maskGrid.nz) },
+      waterRoller: { value: this.rollerTexture },
+      waterRollerColumns: { value: 0 },
+      waterRollerColumn0: { value: 0 },
+      waterRollerColumnWidth: { value: 1 },
+      waterRollerExtent: { value: new Vector2(1, 0) },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -331,7 +348,10 @@ export class WaterSurface {
     configureBarrelCoverage(material);
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
+      // The roller's band, only at a spilling spot (S3), so every other spot's program is today's byte for byte.
+      const roller = this.rollerEnabled;
       if (this.effectiveLook === 'rich') {
+        const richNormal = richNormalFragment({ ripples: true, churn: true, vertexNormals: this.vertexNormals });
         const slopePars = this.vertexNormals ? `\n${richVertexSlopePars}` : '';
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
@@ -339,13 +359,13 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
-          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true, vertexNormals: this.vertexNormals }))
+          .replace('#include <normal_fragment_begin>', roller ? richRollerNormal(richNormal) : richNormal)
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
+          .replace('#include <emissivemap_fragment>', roller ? rollerCrestLight(waterBodyFragment(true, true, richRollerFoam(RICH_FOAM))) : waterBodyFragment(true, true, RICH_FOAM))
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
         return;
       }
@@ -354,10 +374,10 @@ export class WaterSurface {
         .replace('#include <beginnormal_vertex>', waterBeginNormal)
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\n${waterFragmentPars}`)
-        .replace('#include <normal_fragment_begin>', waterChopNormal)
+        .replace('#include <common>', `#include <common>\n${waterFragmentPars}${roller ? `\n${waterRollerPars}` : ''}`)
+        .replace('#include <normal_fragment_begin>', roller ? rollerNormal(waterChopNormal) : waterChopNormal)
         .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
+        .replace('#include <emissivemap_fragment>', roller ? rollerCrestLight(waterBodyFragment(true, true, classicRollerFoam(CLASSIC_FOAM))) : waterBodyFragment(true, true));
       // The swept barrel's seam, only at a swept spot, so every other spot's program is today's byte for byte.
       if (this.barrelEnabled) {
         shader.fragmentShader = shader.fragmentShader
@@ -365,9 +385,10 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}`;
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.refreshTubeColumns();
+    this.refreshRoller();
     this.mesh.frustumCulled = false;
     this.patch = new Mesh(createPatchGeometry(PATCH_SIZE, PATCH_SPACING), material);
     this.patch.frustumCulled = false;
@@ -400,6 +421,7 @@ export class WaterSurface {
   }
 
   update(): void {
+    this.refreshRoller();
     const source = this.source;
     const grid = source.grid;
     const revision = source.revision;
@@ -412,6 +434,7 @@ export class WaterSurface {
       // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
       source.write(this.surfaceData, !(this.effectiveLook === 'rich' && source.writeTubes));
       this.updateTubes();
+      this.updateRoller();
       if (this.effectiveLook === 'rich' && source.writeAeration) {
         source.writeAeration(this.aerationData);
         this.aerationTexture.needsUpdate = true;
@@ -466,6 +489,42 @@ export class WaterSurface {
     uniforms.waterTubeColumnWidth.value = width;
     this.tubeTexture.needsUpdate = true;
     this.tubeColumnTexture.needsUpdate = true;
+  }
+
+  /** S3: the roller's table as drawn, in both looks: its columns, their place, and the rows the band can cover. */
+  private updateRoller(): void {
+    const { source, uniforms } = this;
+    if (!this.rollerEnabled || !source.writeRoller) {
+      uniforms.waterRollerColumns.value = 0;
+      return;
+    }
+    const columns = source.writeRoller(this.rollerData);
+    rollerDrawnExtent(this.rollerData, columns, this.rollerExtent);
+    uniforms.waterRollerColumns.value = columns;
+    uniforms.waterRollerColumn0.value = source.rollerColumn0 ?? 0;
+    uniforms.waterRollerColumnWidth.value = source.rollerColumnWidth ?? 1;
+    (uniforms.waterRollerExtent.value as Vector2).set(this.rollerExtent.low, this.rollerExtent.high);
+    this.rollerTexture.needsUpdate = true;
+  }
+
+  /** The band's chunk follows the source's roller (a program switch), and its texture the table's columns. */
+  private refreshRoller(): void {
+    const columns = this.source.writeRoller ? this.source.rollerColumns ?? 0 : 0;
+    const on = columns >= 2;
+    if (on !== this.rollerEnabled) {
+      this.rollerEnabled = on;
+      this.mesh.material.needsUpdate = true;
+      this.uniforms.waterRollerColumns.value = 0;
+      // Upload the table on this frame, not the next snapshot's.
+      this.written = undefined;
+    }
+    const size = Math.max(1, columns) * ROLLER_SLOTS * ROLLER_STRIDE;
+    if (this.rollerData.length === size) return;
+    this.rollerData = new Float32Array(size);
+    this.rollerTexture.dispose();
+    this.rollerTexture = new DataTexture(this.rollerData, (Math.max(1, columns) * ROLLER_STRIDE) / 4, ROLLER_SLOTS, RGBAFormat, FloatType);
+    this.uniforms.waterRoller.value = this.rollerTexture;
+    this.uniforms.waterRollerColumns.value = 0;
   }
 
   /** The column index spans the grid's columns: rebuilt when the grid or the column width changes. */
@@ -677,6 +736,7 @@ export class WaterSurface {
     if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
     this.refreshLook();
     this.refreshTubeColumns();
+    this.refreshRoller();
     const grid = source.grid;
     this.refreshBarrelMaskGrid();
     if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
@@ -713,6 +773,7 @@ export class WaterSurface {
     this.tubeTexture.dispose();
     this.tubeColumnTexture.dispose();
     this.barrelMaskTexture.dispose();
+    this.rollerTexture.dispose();
     this.mesh.material.dispose();
     // The coarse repair view aliases original GPU attributes/index, never copies vertex buffers.
     this.fallbackRows?.dispose();

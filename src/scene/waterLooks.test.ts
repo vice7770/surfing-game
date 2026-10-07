@@ -12,6 +12,7 @@ import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
 import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
 import { mirrorsBarrelDither } from './barrel/barrelMaskGlsl';
+import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -380,5 +381,67 @@ describe('the swept barrel’s seam in the water (Padang Padang, Part B, PR 3)',
     expect(water.barrelMaskActive).toBe(true);
     water.setBarrelMask(null);
     expect(water.barrelMaskActive).toBe(false);
+  });
+});
+
+/** A spilling spot's source: four roller columns from x = 0.5 m, 1 m apart (the table's contents don't change the program). */
+const rollerSource: SurfaceSource = {
+  ...source, rollerColumns: 4, rollerColumn0: 0.5, rollerColumnWidth: 1,
+  writeRoller: (into) => { into.fill(0, 0, ROLLER_SLOTS * 4 * ROLLER_STRIDE); return 4; },
+};
+
+describe('the roller lens\'s band in the water (the Canyon roller lens, S3, Task 4)', () => {
+  it('draws the band in Classic at a spilling spot only: a program of its own, today\'s everywhere else', () => {
+    const plain = compiled(new WaterSurface(source).mesh.material);
+    const water = new WaterSurface(rollerSource);
+    expect(water.mesh.material.customProgramCacheKey()).toBe('breakline-water-surface-classic-roller');
+    const drawn = compiled(water.mesh.material);
+    // The Classic program at the Canyon changes on purpose, and only in its fragment.
+    expect(drawn).toMatchSnapshot();
+    expect(drawn.vertex).toBe(plain.vertex);
+    expect(drawn.fragment).toContain('waterRollerAt( vWaterWorld.xz, waterTime );');
+    expect(drawn.fragment).toContain('waterCover = max( waterCover, waterRollerCover );');
+    expect(drawn.fragment).toContain('waterFoamColor * mix( 1.0, waterRollerBright, waterRollerCover / max( waterCover, 1e-4 ) )');
+    expect(drawn.fragment).toContain('( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind');
+    // The band is evaluated before the normal and body chunks read it.
+    expect(drawn.fragment.indexOf('waterRollerAt( vWaterWorld.xz, waterTime );')).toBeLessThan(drawn.fragment.indexOf('waterCover = max( waterCover, waterRollerCover );'));
+    // Back to a spot without one, the program is today's again.
+    water.setSource(source);
+    expect(water.mesh.material.customProgramCacheKey()).toBe('breakline-water-surface-classic');
+    expect(compiled(water.mesh.material)).toEqual(plain);
+    // The far ocean's foam, which shares Classic's composition, is untouched.
+    expect(CLASSIC_FOAM).not.toContain('waterRoller');
+    expect(compiled(new FarFieldOcean().mesh.material).fragment).not.toContain('waterRoller');
+  });
+
+  it('draws the band in Rich as fresh whitewater carried with the lens, and leaves Rich elsewhere as it was', () => {
+    const cubic = { ...source, cubic: true };
+    const plainWater = new WaterSurface(cubic);
+    plainWater.setLook('rich');
+    const plain = compiled(plainWater.mesh.material);
+    const water = new WaterSurface({ ...rollerSource, cubic: true });
+    water.setLook('rich');
+    expect(water.mesh.material.customProgramCacheKey()).toBe('breakline-water-surface-rich-roller');
+    const drawn = compiled(water.mesh.material);
+    expect(drawn.vertex).toBe(plain.vertex);
+    expect(plain.fragment).not.toContain('waterRoller');
+    expect(drawn.fragment).toContain('waterRollerAt( vWaterWorld.xz, waterTime );');
+    expect(drawn.fragment).toContain('waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) )');
+    expect(drawn.fragment).toContain('float waterFresh = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( 0.25 ) ) * waterFoamPattern;');
+    expect(drawn.fragment).toContain('waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) )');
+    expect(drawn.fragment).toContain('waterCover = max( waterCover, waterRollerCover );');
+    expect(drawn.fragment).toContain('( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind');
+    const declaration = /\b(?:float|int|bool|void|[iu]?vec[234]|mat[234]|sampler2D)\s+([A-Za-z_]\w*)/g;
+    const names = new Set([...drawn.fragment.matchAll(declaration)].map((match) => match[1]));
+    expect([...names].filter((name) => GLSL_RESERVED.has(name))).toEqual([]);
+  });
+
+  it('keeps the band with the swept barrel\'s seam when a spot has both', () => {
+    const water = new WaterSurface(rollerSource);
+    water.setBarrelEnabled(true);
+    expect(water.mesh.material.customProgramCacheKey()).toBe('breakline-water-surface-classic-barrel-roller');
+    const { fragment } = compiled(water.mesh.material);
+    expect(mirrorsBarrelDither(fragment)).toBe(true);
+    expect(fragment).toContain('waterRollerAt( vWaterWorld.xz, waterTime );');
   });
 });

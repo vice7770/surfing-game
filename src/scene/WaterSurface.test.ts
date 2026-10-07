@@ -4,6 +4,8 @@ import { WaterSurface, sampleSurfaceBed } from './WaterSurface';
 import { FlatSurfaceSource } from './FlatSurfaceSource';
 import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
 import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
+import type { SurfaceSource } from './WaterSurface';
 
 describe('WaterSurface GPU displacement data', () => {
   it('keeps a 1 m barrel seam grid independent of coarse water textures and follows its world window', () => {
@@ -389,5 +391,94 @@ describe('late barrel water fallback', () => {
     expect(repairDispose).toHaveBeenCalledTimes(1); expect(normalDispose).toHaveBeenCalledTimes(1);
     expect(repair.parent).toBeNull(); expect(patch.parent).toBeNull();
     expect(water.barrelFallback).toBeUndefined();
+  });
+});
+
+describe('the roller lens\'s table on the GPU (S3, Task 4)', () => {
+  const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
+  const columns = 5;
+  function rollerSource(cubic: boolean) {
+    const table = new Float32Array(ROLLER_SLOTS * columns * ROLLER_STRIDE);
+    const lens = (slot: number, column: number, crest: number, length: number, roughness: number) => {
+      const o = (slot * columns + column) * ROLLER_STRIDE;
+      table[o + ROLLER_FIELD.crest] = crest;
+      table[o + ROLLER_FIELD.length] = length;
+      table[o + ROLLER_FIELD.scale] = 0.5;
+      table[o + ROLLER_FIELD.roughness] = roughness;
+    };
+    lens(0, 1, -40, 10, 0.2);
+    lens(1, 3, -20, 6, 0.1);
+    let revision = 0;
+    const source: SurfaceSource & { table: Float32Array; bump(): void } = {
+      grid, time: 0, bedRevision: 0, cubic, table,
+      get revision() { return revision; },
+      bump() { revision += 1; },
+      write: () => {}, writeBed: () => {},
+      rollerColumns: columns, rollerColumn0: -1.5, rollerColumnWidth: 2,
+      writeRoller: vi.fn((into: Float32Array) => { into.set(table); return columns; }),
+    };
+    return source;
+  }
+
+  for (const look of ['classic', 'rich'] as const) {
+    it(`uploads the table as is in ${look}: one row per slot, two RGBA texels per column, and the rows the band reaches`, () => {
+      const source = rollerSource(look === 'rich');
+      const water = new WaterSurface(source);
+      water.setLook(look);
+      water.update();
+      expect(water.drawnLook).toBe(look);
+      const uniforms = water.materialUniforms;
+      const texture = uniforms.waterRoller.value as DataTexture;
+      expect(texture.image.width).toBe(2 * columns);
+      expect(texture.image.height).toBe(ROLLER_SLOTS);
+      expect(Array.from(texture.image.data as Float32Array)).toEqual(Array.from(source.table));
+      expect(uniforms.waterRollerColumns.value).toBe(columns);
+      expect(uniforms.waterRollerColumn0.value).toBe(-1.5);
+      expect(uniforms.waterRollerColumnWidth.value).toBe(2);
+      // From the rear lens's rear taper (−40 − 0.3·10) to the front lens's toe and four of its wander's spreads.
+      const extent = uniforms.waterRollerExtent.value as { x: number; y: number };
+      expect(extent.x).toBeCloseTo(-43, 6);
+      expect(extent.y).toBeCloseTo(-20 + 6 + 4 * 1.5 * 0.1, 6);
+      // Each new snapshot uploads it again.
+      source.table[(columns + 3) * ROLLER_STRIDE + ROLLER_FIELD.crest] = -18;
+      source.bump();
+      const version = texture.version;
+      water.update();
+      expect(texture.version).toBeGreaterThan(version);
+      expect((texture.image.data as Float32Array)[(columns + 3) * ROLLER_STRIDE + ROLLER_FIELD.crest]).toBe(-18);
+    });
+  }
+
+  it('leaves every row at once with no lens, and has no roller for a source without one', () => {
+    const source = rollerSource(false);
+    source.table.fill(0);
+    const water = new WaterSurface(source);
+    water.update();
+    const extent = water.materialUniforms.waterRollerExtent.value as { x: number; y: number };
+    expect(extent.x).toBeGreaterThan(extent.y);
+    const plain = new WaterSurface({ grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} });
+    plain.update();
+    expect(plain.materialUniforms.waterRollerColumns.value).toBe(0);
+    expect(plain.mesh.material.customProgramCacheKey()).not.toContain('roller');
+    water.setSource({ grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} });
+    water.update();
+    expect(water.materialUniforms.waterRollerColumns.value).toBe(0);
+    expect(water.mesh.material.customProgramCacheKey()).not.toContain('roller');
+  });
+
+  it('draws the Canyon\'s own roller through its physical source, and no roller at the Reef', () => {
+    const small = {
+      seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 0, spreading: 12, tide: 0,
+      componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+    };
+    const canyon = new SurfZoneSimulation({ ...small, spot: 'canyon' });
+    const water = new WaterSurface(new PhysicalSurfaceSource(canyon, 2));
+    water.update();
+    expect(water.mesh.material.customProgramCacheKey()).toContain('-roller');
+    expect(water.materialUniforms.waterRollerColumns.value).toBe(canyon.solver.nx);
+    expect(water.materialUniforms.waterRollerColumn0.value).toBeCloseTo(canyon.solver.xCenters[0], 9);
+    water.setSource(new PhysicalSurfaceSource(new SurfZoneSimulation({ ...small, spot: 'reef' }), 2));
+    water.update();
+    expect(water.mesh.material.customProgramCacheKey()).not.toContain('roller');
   });
 });

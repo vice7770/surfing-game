@@ -1,3 +1,4 @@
+import { ROLLER_DEFAULTS } from '../../wave/SpillingRoller';
 import { ROLLER_LOOK } from './rollerLook';
 
 /** A number as a GLSL float literal. */
@@ -115,3 +116,54 @@ void waterRollerAt( vec2 xz, float time ) {
   }
 }
 `;
+
+/** Replace `target` once in `glsl`, or throw: each hook must find, once, the chunk line it changes. */
+function hook(glsl: string, target: string, replacement: string): string {
+  if (glsl.split(target).length !== 2) throw new Error(`Roller hook expects one "${target}"`);
+  return glsl.split(target).join(replacement);
+}
+
+/** The foam colour under the band: the crest-bright ramp, as far as the band is what covers (1 where it is the most). */
+const BAND_FOAM = 'mix( 1.0, waterRollerBright, waterRollerCover / max( waterCover, 1e-4 ) )';
+
+/** Any `<normal_fragment_begin>` chunk with the band evaluated first, for the normal and the body chunks after it. */
+export function rollerNormal(normal: string): string {
+  return hook(normal, '#include <normal_fragment_begin>\n', '#include <normal_fragment_begin>\nwaterRollerAt( vWaterWorld.xz, waterTime );\n');
+}
+
+/**
+ * The Rich normal chunk: the churn's micro-normals stand on the lens as on fresh whitewater (its air at the top taken as
+ * the lens's mean, ᾱ, which already saturates the freshness), carried with the lens's water, c·n̂ (R3 §4).
+ */
+export function richRollerNormal(normal: string): string {
+  return hook(rollerNormal(normal),
+    'float waterFreshNormal = waterFreshness( vWaterAir ) * waterFoamPattern;\n  if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );',
+    `float waterFreshNormal = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) ) * waterFoamPattern;
+  if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) );`);
+}
+
+/** Classic foam (`CLASSIC_FOAM`, copied, never changed in place): cover = max(cover, the band's), in its colour ramp (plan §4). */
+export function classicRollerFoam(foam: string): string {
+  return hook(foam, 'diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );',
+    `waterCover = max( waterCover, waterRollerCover );
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor * ${BAND_FOAM}, waterCover );`);
+}
+
+/**
+ * Rich foam (`RICH_FOAM`, copied): the same cover and ramp; the lens is fresh whitewater (its churn, crease and backlit
+ * glow, through `waterFreshness` with ᾱ), its churn carried with the lens's water, c·n̂, so it travels with the roller.
+ */
+export function richRollerFoam(foam: string): string {
+  let out = hook(foam, 'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );',
+    'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) );');
+  out = hook(out, 'float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;',
+    `float waterFresh = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) ) * waterFoamPattern;`);
+  return hook(out, 'diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );',
+    `waterCover = max( waterCover, waterRollerCover );
+  diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease * ${BAND_FOAM}, waterCover );`);
+}
+
+/** The body chunk's crest light dims under the band as under foam (plan §4). */
+export function rollerCrestLight(body: string): string {
+  return hook(body, '( 1.0 - vWaterFoam ) * waterBehind', '( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind');
+}

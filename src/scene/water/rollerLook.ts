@@ -184,3 +184,25 @@ export function rollerLookAt(table: ArrayLike<number>, columns: number, column0:
   }
   return out;
 }
+
+/**
+ * The rows across shore the band can cover, m, from the table as drawn (the page's copy of `SpillingRoller.extentZ`):
+ * from each lens's rear taper to its toe's furthest wander (four of its spreads, the band's own cut). Interpolated
+ * columns stay inside it, since the band's ends are linear in each column's values. With no lens, low > high, so the
+ * shader leaves every row at once.
+ */
+export function rollerDrawnExtent(table: ArrayLike<number>, columns: number, out: { low: number; high: number }): { low: number; high: number } {
+  let low = Number.POSITIVE_INFINITY;
+  let high = Number.NEGATIVE_INFINITY;
+  const end = Math.min(table.length, ROLLER_SLOTS * columns * ROLLER_STRIDE);
+  for (let o = 0; o < end; o += ROLLER_STRIDE) {
+    if (!(table[o + ROLLER_FIELD.scale] > 0)) continue;
+    const crest = table[o + ROLLER_FIELD.crest];
+    const length = table[o + ROLLER_FIELD.length];
+    low = Math.min(low, crest - ROLLER_LOOK.rear * length);
+    high = Math.max(high, crest + length + 4 * ROLLER_LOOK.toeAmplitude * table[o + ROLLER_FIELD.roughness]);
+  }
+  out.low = low <= high ? low : 1;
+  out.high = low <= high ? high : 0;
+  return out;
+}
