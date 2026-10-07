@@ -216,7 +216,42 @@ The report lists rides of 3 s or more one by one, with how far each went along s
 
 ## Tests
 
-TESTS_PLACEHOLDER
+Run on 2026-10-07 on an 8 GB M1, detached (`nohup caffeinate -i`), on `claude/canyon-spilling`. Since the merge (`ef6b37b1`), only scripts and notes have changed, no game code.
+
+**In all, 2,428 tests passed and 28 failed.** Another 15 were expected to fail and did, and 30 were skipped. **Every failure is pre-existing:** the same 28 tests fail on the branch's base, `1fc91b36`, and none fails only on this branch.
+
+**The two slow files** (`npx vitest run src/wave/SurfZoneSimulation.test.ts src/wave/SurfZoneRunner.test.ts`):
+
+- `SurfZoneRunner.test.ts`: 43 of 43 passed, in 98.9 s.
+- `SurfZoneSimulation.test.ts`: 86 of 87 passed. The two files took 7,272 s (121 min), most of it in Padang Padang's robustness runs. The one failure is listed with the others below.
+
+**Every other `src` test file** (`npx vitest run src --exclude src/wave/SurfZoneSimulation.test.ts --exclude src/wave/SurfZoneRunner.test.ts`, 293 files, 459 s on 2 workers). With the run above, every `src` test ran once.
+
+- Tests: 2,299 passed and 27 failed; 15 expected to fail did fail, and 30 were skipped.
+- Files: 13 failed and 26 were skipped.
+
+`npx vitest run --dir src` finds no test file here, because the config's include globs (`src/**/*.test.ts`) are read relative to `--dir`. The filter form `npx vitest run src` finds all 295.
+
+**The 28 failures.** The 13 failing files of the second run were run on a snapshot of the base `1fc91b36`, with this worktree's dependencies, and so was the simulation file's failing test. The same tests failed there. This round's changes touch none of these tests or the code they test.
+
+- **The 7 known AttachedRider failures** (`src/physics/AttachedRider.test.ts`, being fixed on another branch). They are in "lean, trim, crouch and heading hold":
+  - Compress puts the weight over the front foot;
+  - the banked body holds Compress taken mid-turn on flat water at 7, at 8 and at 10 m/s (three tests);
+  - it holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan;
+  - it makes a deep U at the bottom of the face;
+  - it turns at least as hard compressed as crouched, keeping as much speed.
+
+  The last two are expected failures (`it.fails`) that now pass.
+- **17 more in the rider's body and pumping**, the same ground (crouch, Compress, pumping):
+  - `pumping.test.ts`, 6: gains speed over bumps when timed with the load; over a pump track, timed pumps keep over 0.2 m/s a pump more than the best steady stance, and the track keeps nothing where the path hardly swings the load; through rail changes, down a 15° still face from 6 m/s and down a 12° still face from 7 m/s; and keeps nothing on flat water;
+  - `bodyFilm.test.ts`, 3: blends the switches of pumping into a fall out; films pumping, chop and a paddle then a glide, riding throughout; another player's surfer blends the switches out as the local body does;
+  - `stanceMotion.test.ts`, 2: keeps the drawn feet with the rig's through a pump; trails the free hands below the shoulders as the body rises in a pump;
+  - one each in `faceTrim.test.ts` (a pumping rider planing on the 14° face for 10 s), `ridingPoses.test.ts` (crouches deeper for the drop than in trim, deepest in Compress), `stanceTargets.test.ts` (meets every target the drawn pose owns), `HumanoidRig.test.ts` (bends the knees crouched), `stanceBlend.test.ts` (reads how deep the crouch is) and `stanceExtremities.test.ts` (lifts the heel past the ankle's reach).
+- **4 others:**
+  - `SurfZoneSimulation.test.ts`, "the tank sized to the swell": "places a big day's take-off by the spot's calibrated breaker index, and today's tanks as before" expects `TAKE_OFF_INDEX` to list five spots, but it lists the Wave Pool too (`pool: BREAKER_INDEX`);
+  - `LogbookScreen.test.ts` expects five spots, without the Wave Pool;
+  - `schoolModel.test.ts` expects "Bend your knees" on a lesson card;
+  - `tierParity.test.ts`: "TierRecorder reads a surf zone as the page and worker run it" read 0 where it expected 36.
 
 ## Known issues
 
