@@ -10,10 +10,14 @@ import { PlaneWater } from './PlaneWater';
 import { deckHeight, stanceFeet } from './riderPosture';
 import { SwellWater } from './SwellWater';
 import type { SurfWater, WaterSample } from './SurfWater';
+import { CoveredWater } from './testing/CoveredWater';
 
 const STEP = 1 / 60;
-/** About 0.195 m of lowering: the pumping posture that full manual crouch used to select. */
-const PUMPING_CROUCH = 0.72;
+/**
+ * Full manual crouch: the pumping posture, about 0.195 m of lowering. 422d8d51 moved these fixtures to 0.72, which
+ * gave that depth under its deep tuck; the tuck now opens only under a tube's curl (the owner's decision of 2026-10-06).
+ */
+const PUMPING_CROUCH = 1;
 
 /** A board level at the surface (lowest bottom point at `bottomY`) with a rider mounted in `phase`. */
 function mounted(phase: 'standing' | 'prone' = 'standing', bottomY = 0) {
@@ -708,8 +712,8 @@ class FaceToFlat implements SurfWater {
  * flat full lean and Compress (steer −1 leans toward the board's −x, Regular's toes: frontside). For `seconds` after the
  * lean: the yaw, the entry speed, and the speed and time when the yaw reached `yaw` degrees.
  */
-function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6, compress = 1) {
-  const water = new FaceToFlat();
+function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6, compress = 1, covered = false) {
+  const water: SurfWater = covered ? new CoveredWater(new FaceToFlat()) : new FaceToFlat();
   const angle = Math.atan(FaceToFlat.SLOPE);
   const normal = new Vector3(0, 1, FaceToFlat.SLOPE).normalize();
   const fall = new Vector3(0, -Math.sin(angle), Math.cos(angle));
@@ -808,8 +812,11 @@ describe('lean, trim, crouch and heading hold', () => {
     expect(ahead.pitch).toBeLessThan(neutral.pitch);
   });
 
-  it('tucks deeper than Compress and stands back up', () => {
-    const { board, rider, water } = acrossFace(0, 6);
+  // The deep tuck is for tube clearance: it opens only under a tube's curl (the owner's decision of 2026-10-06).
+  it('tucks deeper than Compress under a tube\'s curl and stands back up', () => {
+    const ride = acrossFace(0, 6);
+    const { board, rider } = ride;
+    const water = new CoveredWater(ride.water);
     run(board, water, 1);
     const standing = rider.leg.height + rider.leg.extension;
     rider.crouch = 1;
@@ -828,14 +835,16 @@ describe('lean, trim, crouch and heading hold', () => {
   // at full depth (de Sousa 2022: knees and hips at or under 90°), the weight where W/S put it.
   describe('Compress', () => {
     const height = (rider: AttachedRider) => rider.leg.height + rider.leg.extension;
-    const settled = () => {
+    /** Settled riding across the face for a second: under a tube's curl if `covered`. */
+    const settled = (covered = false) => {
       const ride = acrossFace(0, 6);
-      run(ride.board, ride.water, 1);
-      return ride;
+      const water: SurfWater = covered ? new CoveredWater(ride.water) : ride.water;
+      run(ride.board, water, 1);
+      return { ...ride, water };
     };
 
-    it('keeps Compress shallower than the manual tuck, deepens the pumping crouch, and releases back to it', () => {
-      const full = settled();
+    it('keeps Compress shallower than the manual tuck under a tube\'s curl, deepens the pumping crouch, and releases back to it', () => {
+      const full = settled(true);
       full.rider.crouch = 1;
       run(full.board, full.water, 1);
       const alone = settled();
@@ -1306,8 +1315,8 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(turn.turned).toBeGreaterThan(55);
     });
 
-    it('keeps standing and turns through ninety degrees after a deep manual tuck', () => {
-      const turn = bottomTurn(-1, 90, 1.2, 'regular', 1);
+    it('keeps standing and turns through ninety degrees after a deep manual tuck under a tube\'s curl', () => {
+      const turn = bottomTurn(-1, 90, 1.2, 'regular', 1, 1, true);
       expect(turn.attached).toBe(true);
       expect(turn.reached).toBeDefined();
       expect(turn.exit).toBeGreaterThan(0.7 * turn.entry);
@@ -1717,9 +1726,10 @@ describe('a hand in the face', () => {
     expect(withHand.ledger).toBeLessThan(0.02);
   });
 
+  // Under a tube's curl, where the deep tuck opens (the owner's decision of 2026-10-06).
   it('retains a braking and steering hand in the deeper tube tuck', () => {
-    const without = pocket(false, undefined, 1);
-    const withHand = pocket(true, undefined, 1);
+    const without = pocket(false, new CoveredWater(new WallWater(0.35, 0.35)), 1);
+    const withHand = pocket(true, new CoveredWater(new WallWater(0.35, 0.35)), 1);
     expect(withHand.rider.attached).toBe(true);
     expect(withHand.deceleration).toBeGreaterThan(without.deceleration);
     expect(withHand.turn).toBeGreaterThan(without.turn);

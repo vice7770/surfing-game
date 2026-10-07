@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { PlaneWater } from '../../physics/PlaneWater';
+import { CoveredWater } from '../../physics/testing/CoveredWater';
 import { RideSession, type RideInput } from '../../physics/RideSession';
 import { readGlbSkeleton } from './glbSkeleton';
 import { BONES } from './humanoidBones';
@@ -21,7 +22,8 @@ function ridePose(id: string, input: RideInput) {
   const motion = new RiderMotion();
   const state = createRiderVisualState();
   const session = new RideSession();
-  const water = new PlaneWater();
+  // Under a tube's curl: the deep tuck is for tube clearance only (the owner's decision of 2026-10-06).
+  const water = new CoveredWater(new PlaneWater());
   session.place({ x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' }, water);
   const samples: {
     publishedPelvis: number; publishedHead: number; drawnHips: number; drawnNeck: number; drawnHead: number;

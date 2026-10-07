@@ -5,13 +5,17 @@ import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
 import { RideSession } from './RideSession';
 import { deckHeight, stanceFeet } from './riderPosture';
+import { CoveredWater } from './testing/CoveredWater';
 
 const STEP = 1 / 60;
 const idle = { paddle: false, popUp: false, steer: 0 };
 
-/** One ordinary placement, then unforced board/rider dynamics on flat water. */
-function prepared(speed = 8) {
-  const water = new PlaneWater();
+/**
+ * One ordinary placement, then unforced board/rider dynamics on flat water: under a tube's curl unless `covered` is
+ * false. The deep tuck is for tube clearance only (the owner's decision of 2026-10-06).
+ */
+function prepared(speed = 8, covered = true) {
+  const water = covered ? new CoveredWater(new PlaneWater()) : new PlaneWater();
   const session = new RideSession();
   session.place({ x: 0, z: 0, heading: 0, speed, phase: 'standing' }, water);
   for (let tick = 0; tick < 30; tick += 1) session.step(STEP, water, idle);
@@ -133,5 +137,47 @@ describe('manual tube tuck', () => {
     expect(session.rider.leg.rest).toBeCloseTo(0, 3);
     expect(headHeight(session, false)).toBeGreaterThan(1.4);
     expect(headHeight(session, true)).toBeCloseTo(headHeight(session, false), 3);
+  });
+});
+
+// The owner's decision of 2026-10-06: the deep tuck is for tube clearance. Full manual crouch keeps the pumping
+// crouch's depth from before the tuck everywhere but under a tube's curl (the swept contact's `covered`).
+describe('the tube tuck\'s gate', () => {
+  it('keeps full manual crouch at the pumping depth on open water', () => {
+    const { session, water } = prepared(8, false);
+    for (let tick = 0; tick < 60; tick += 1) session.step(STEP, water, { ...idle, crouch: 1 });
+    expect(session.phase).toBe('standing');
+    expect(session.rider.covered).toBe(false);
+    expect(session.rider.leg.rest).toBeCloseTo(-CROUCH_SHARE * CROUCH_DEPTH, 3);
+  });
+
+  it('folds full manual crouch into the deep tuck under a tube\'s curl', () => {
+    const { session, water } = prepared(8, true);
+    for (let tick = 0; tick < 60; tick += 1) session.step(STEP, water, { ...idle, crouch: 1 });
+    expect(session.phase).toBe('standing');
+    expect(session.rider.covered).toBe(true);
+    expect(session.rider.leg.rest).toBeCloseTo(-MANUAL_CROUCH_DEPTH, 3);
+  });
+
+  it('rises back to the pumping depth through normal dynamics once the curl no longer covers it', () => {
+    let over = true;
+    const water = new CoveredWater(new PlaneWater(), () => over);
+    const session = new RideSession();
+    session.place({ x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' }, water);
+    for (let tick = 0; tick < 30; tick += 1) session.step(STEP, water, idle);
+    for (let tick = 0; tick < 60; tick += 1) session.step(STEP, water, { ...idle, crouch: 1 });
+    expect(session.rider.leg.rest).toBeCloseTo(-MANUAL_CROUCH_DEPTH, 3);
+    over = false;
+    let fastestRest = 0;
+    for (let tick = 0; tick < 60; tick += 1) {
+      const previousRest = session.rider.leg.rest;
+      session.step(STEP, water, { ...idle, crouch: 1 });
+      expect(session.phase).toBe('standing');
+      expect(session.rider.inContact).toBe(true);
+      fastestRest = Math.max(fastestRest, Math.abs(session.rider.leg.rest - previousRest) / STEP);
+    }
+    expect(session.rider.covered).toBe(false);
+    expect(fastestRest).toBeLessThanOrEqual(2.5);
+    expect(session.rider.leg.rest).toBeCloseTo(-CROUCH_SHARE * CROUCH_DEPTH, 3);
   });
 });

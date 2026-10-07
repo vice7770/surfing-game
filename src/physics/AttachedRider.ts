@@ -454,11 +454,14 @@ const STEER_DEADBAND = 0.05;
 const TRIM_SHIFT = 0.25;
 /**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
- * and a deeper manual tuck for a tube. Compress shortens the leg by up to
- * CROUCH_DEPTH, m. Through manual input 0.6 the pumping crouch keeps its
- * CROUCH_SHARE of that depth; further input adds a smooth tuck, reaching
- * MANUAL_CROUCH_DEPTH at 1. Compress fades out this extra tuck to keep its
- * existing sharp-turn stance. These are provisional posture targets. The leg
+ * and, under a tube's curl, a deeper manual tuck. Compress shortens the leg by up
+ * to CROUCH_DEPTH, m, and full manual crouch by CROUCH_SHARE of it (the pumping
+ * crouch). Under a tube's curl (`covered`) manual input keeps that share through
+ * 0.6, and further input adds a smooth tuck, reaching MANUAL_CROUCH_DEPTH at 1;
+ * Compress fades out this extra tuck to keep its sharp-turn stance. The deep tuck
+ * is for tube clearance only (the owner's decision of 2026-10-06): everywhere
+ * else full manual crouch keeps the pumping crouch's depth, as it had before the
+ * tuck. These are provisional posture targets. The leg
  * moves at most MAX_LEG_SPEED, m/s (a
  * countermovement jump's take-off speed, so a jump stays possible), and softens
  * toward the legs-bent 22 kN/m (provisional). The weight stays the trim's in
@@ -736,6 +739,11 @@ export class AttachedRider {
   flightTime = 0;
   /** Distance of the centre of mass from where the posture puts it, m. */
   postureError = 0;
+  /**
+   * A tube's curl covers the rider: a body point sampled this step lies in the tube's air under the curl, before it
+   * touches down (the swept contact's `covered`). Only then does full manual crouch fold into the deep tuck.
+   */
+  covered = false;
   readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
@@ -762,7 +770,7 @@ export class AttachedRider {
   private readonly ducks: Record<StanceName, { press: Float64Array; knee: Float64Array; support: SupportRegion; shiftPress: Vector3; shiftKnee: Vector3 }>;
   /** Standing, weight along the board: −1 (back, on the tail) to 1 (forward). */
   trim = 0;
-  /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
+  /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest: the pumping crouch, or under a tube's curl the deep tuck). */
   crouch = 0;
   /** Standing, Compress: 0 (none) to 1 (full depth; the weight stays the trim's), taken alone or over the crouch. */
   compress = 0;
@@ -1139,6 +1147,7 @@ export class AttachedRider {
     this.banked = false;
     this.ankleRest = 0;
     this.railAhead = 0;
+    this.covered = false;
     this.ankleTorque = 0;
     this.swingTorque = 0;
     this.swing.angle = 0;
@@ -1679,7 +1688,8 @@ export class AttachedRider {
     // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
-    const crouch = manualCrouchShare(this.crouch, this.compress);
+    // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
+    const crouch = this.covered ? manualCrouchShare(this.crouch, this.compress) : CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
     const rest = -Math.max(crouch, compress) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
@@ -1726,6 +1736,7 @@ export class AttachedRider {
     this.waterForce.set(0, 0, 0);
     this.waterMoment.set(0, 0, 0);
     this.buoyancy.set(0, 0, 0);
+    this.covered = false;
     const frame = this.upright ? this.bodyFrame : board.orientation;
     this.bodyAxis.set(0, 0, 1).applyQuaternion(board.orientation);
     const shelter = this.upright ? 1 : ALONG_BODY_SHELTER;
@@ -1826,6 +1837,7 @@ export class AttachedRider {
   private applyWater(slot: number, water: SurfWater, radius: number, volume: number, dragArea: number, h: number, shelter: number, deckY = -Infinity): void {
     const p = this.partWorld;
     const sample = water.sampleAt(p.x, p.y, p.z, this.sample);
+    if (sample.covered && slot < RIDER_PARTS.length) this.covered = true;
     if (!sample.wet || sample.outsideDomain) return;
     // Wet between the surface and what lies under the part: the deck it rests on, or the curl's underside where the
     // part is in the curl's water (the swept barrel, the Padang Padang spec, Part B, PR 4).
