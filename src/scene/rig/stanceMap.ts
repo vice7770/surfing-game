@@ -334,7 +334,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'extension-frontside',
     name: 'Extension up the face, frontside',
-    reach: 'Compress, frontside, then releasing: Compress and the crouch let go, the steer easing to 0.3 on the toes\' rail, trim −0.5, read 0.3 s on: the thesis\'s final phase (phase standing).',
+    reach: 'Compress, frontside, then released as the movement-flow spec\'s projection: Compress and the crouch let go, tall and centred, no steer, holding that heading, read 0.3 s on (phase standing).',
     sides: 'frontside',
     targets: {
       kneeFront: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium', note: '150° or more' },
@@ -352,7 +352,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'extension-backside',
     name: 'Extension up the face, backside',
-    reach: 'Compress, backside, then releasing onto a heels\' rail easing to 0.3, trim −0.5, read 0.3 s on (phase standing).',
+    reach: 'Compress, backside, then released as the spec\'s projection: tall and centred, no steer, read 0.3 s on (phase standing).',
     sides: 'backside',
     targets: {
       kneeFront: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium' },

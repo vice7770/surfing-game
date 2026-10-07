@@ -60,12 +60,14 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   drop: standing([{ at: 0, crouch: 1 }], 1, { water: 'face', speed: 5 }),
   'compress-frontside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }], 1.1),
   'compress-backside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }], 1.1),
-  // The bottom turn's release up the face (the thesis's final phase): the rail easing, the legs extending, the weight back.
+  // The bottom turn's release: the movement-flow spec's projection, Compress let go tall and centred, holding that
+  // heading (no steer: the flow autopilot's projection; the owner's ruling of 2026-10-07). It eased the steer to 0.3
+  // with the weight back (trim −0.5), the thesis's final phase, until then.
   'extension-frontside': standing([
-    { at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0.3, trim: -0.5 },
+    { at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0, trim: 0 },
   ], 1.4),
   'extension-backside': standing([
-    { at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: -0.3, trim: -0.5 },
+    { at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0, trim: 0 },
   ], 1.4),
   'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1),
   'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1),
