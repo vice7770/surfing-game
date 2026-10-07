@@ -1372,8 +1372,9 @@ describe('the tank sized to the swell (wave sizes)', () => {
     const todays: SurfZoneConfig = { ...small, spot: 'point', alongShore: 160 };
     expect(tankDepth(createSpot('point', 1), OFFSHORE_DEPTH.point, 0, takeOffPoint(todays).z))
       .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH.point), 0);
-    // Only a swell-sized tank uses the calibrated index.
-    expect(Object.keys(TAKE_OFF_INDEX).sort()).toEqual(['beach', 'canyon', 'padang', 'point', 'reef']);
+    // Only a swell-sized tank uses the calibrated index. Every spot has one, the Wave Pool too (the movement-flow spec's
+    // sixth spot, f79c9ecd).
+    expect(Object.keys(TAKE_OFF_INDEX).sort()).toEqual(['beach', 'canyon', 'padang', 'point', 'pool', 'reef']);
   });
 
   it('reaches a 13.2 m edge for a 4 m Beach swell on its deepened outer shelf', () => {
