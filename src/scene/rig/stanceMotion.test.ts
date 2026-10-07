@@ -188,7 +188,8 @@ describe('the arms swing with the body (step 4; Pontzer et al. 2009)', () => {
 
   // While Compress's pull leant the body in past what the feet could catch (the movement-flow spec), the compressed
   // bottom turn's lower hand never dropped a reach's fade below the hips, so no frame held it to its point; with the
-  // pull eased short of the rail's bite (PULL_LOOKAHEAD), 26 frames do on either side.
+  // pull eased short of the rail's bite (PULL_LOOKAHEAD) and within a real bottom turn's pull (TURN_PULL_LIMIT), 27
+  // frames do on either side.
   it('never moves a hand in the water or the face off where the rig holds it', () => {
     for (const id of ['compress-frontside', 'hand-in-face']) {
       for (const side of ['regular', 'goofy'] as const) {

@@ -71,13 +71,15 @@ function letGo(lean: number, speed: number, steer: number, stance: 'regular' | '
 // before the body is back up. On the Wave Pool the projections that peaked at a 20–31° lean kept 0.57–0.78 of their
 // speed and those that peaked at 14–17° kept 0.84–0.98 (the pool flow probe at 10ddd20).
 describe('the projection\'s cost (the movement-flow spec)', () => {
-  it.each([['regular', -1], ['goofy', 1]] as const)('let go at a 12° lean keeps over 0.83 of its speed back to upright, at 25° under 0.72 (%s)', (stance, steer) => {
+  // The owner's decision of 2026-10-07: within a real bottom turn's pull (TURN_PULL_LIMIT) the lean-in at 8.5 m/s pulls
+  // less, and a late let-go keeps 0.731 of its speed (0.704 before, under 0.72): it still costs over a quarter.
+  it.each([['regular', -1], ['goofy', 1]] as const)('let go at a 12° lean keeps over 0.83 of its speed back to upright, at 25° under 0.74 (%s)', (stance, steer) => {
     for (const speed of [7.3, 8.5]) {
       const early = letGo(12, speed, steer, stance);
       const late = letGo(25, speed, steer, stance);
       expect(early.attached).toBe(true);
       expect(early.kept).toBeGreaterThan(0.83);
-      expect(late.kept).toBeLessThan(0.72);
+      expect(late.kept).toBeLessThan(0.74);
     }
   });
 });

@@ -300,10 +300,10 @@ const TWIST_GRIP_RADIUS = 0.15;
  * bank reference, scaled by Compress. It leads the body's lean, which it
  * leans in.
  *
- * On flat water at 7 m/s this brings the bottom turn round 90° in 1.02–1.03 s,
- * either side, keeping 0.56–0.58 of the speed (0.36 before; 0.87 with
- * CARVE_CARRY). At 0.7 a rider compressing from standing fell after 100°.
- * Riding straight it does nothing.
+ * On flat water at 7 m/s this brings the bottom turn round 90° in 1.02 s,
+ * either side, keeping 0.57 of the speed (0.36 before; with CARVE_CARRY, 1.12–
+ * 1.15 s keeping 0.91). At 0.7 a rider compressing from standing fell after
+ * 100°. Riding straight it does nothing.
  */
 const COMPRESS_PULL = 0.5;
 /**
@@ -322,13 +322,29 @@ const PULL_OVERLEAN = (10 * Math.PI) / 180;
  *
  * Compress taken mid-turn on flat water, where the held turn's feet already brake near their edges, rolled the rail
  * past its bite at 7–8 m/s (to 85° and 87°) and the rider fell into the turn at 0.87 and 0.75 s; at 10 m/s the yaw
- * rate swung 1.60 rad/s. Compressing into the turn from the start fell at 8 m/s too (0.9 s). Eased, those turns keep
- * the rail under 49° and the lean under 45°, and 10 m/s swings 1.32 rad/s; the bottom turn still comes round 90° in
- * 1.03 s either side. Judged where the rail is, the rail ran on to 57° and the lean to 63° at 7 m/s; 0.05 s ahead
- * left 10 m/s swinging 1.46 rad/s; 0.08–0.12 s all hold; from 0.15 s the rail change's riders fall
- * (`leanOut.test.ts`) and a late projection costs too little (`projectionLean.test.ts`).
+ * rate swung 1.60 rad/s. Compressing into the turn from the start fell at 8 m/s too (0.9 s). Eased, and within
+ * TURN_PULL_LIMIT, those turns keep the rail under 49° and the rider on, and 10 m/s swings 1.05 rad/s. Judged where
+ * the rail is (no look-ahead), the rail ran on to 57° and the lean to 63° at 7 m/s; and TURN_PULL_LIMIT alone,
+ * without this ease, let that rider fall again: at a 40–45° lean asked for the limit barely bites. Before the limit,
+ * 0.08–0.12 s ahead held 7–10 m/s (0.05 s left 10 m/s swinging 1.46 rad/s; from 0.15 s the rail change's riders
+ * fell); with it 0.07 s holds them all, and brings the backside bar to 1.15 s where 0.1 s left it at 1.167 s (the
+ * owner's decision of 2026-10-07).
  */
-const PULL_LOOKAHEAD = 0.1;
+const PULL_LOOKAHEAD = 0.07;
+/**
+ * And it may not pull a turn harder than a real bottom turn pulls: the compressed turn's whole sideways pull, what the
+ * lean asked for balances (g tan of it) and COMPRESS_PULL's on top, stays within TURN_PULL_LIMIT g. Forsyth et al.
+ * 2024's bottom turns peak at 1.41 g, as do the game's own on waves (1.42 g; `docs/research/bottom-turn-entry-
+ * study.md`). It binds above about 43° asked: at speed the lean asked for is RAIL_RANGE's 50° (1.19 g), and the pull
+ * falls from 0.6 to 0.22 g. Uncapped, Compress taken mid-turn at 11 m/s tightened the turn by about 1.1 rad/s and it
+ * rang at about 3 Hz, its yaw rate swinging 1.27 rad/s against the guard's 0.87; capped, 0.83.
+ *
+ * The owner's decision of 2026-10-07 (option (ii), with PULL_LOOKAHEAD at 0.07 s): the still-water bar then comes
+ * round 90° in 1.117 s frontside and 1.15 s backside (1.03 s before), keeping 0.913 and 0.910 of its speed (0.87
+ * before), accepted as the spec's "about 1 s"; and a late projection costs a little less (0.731 of the speed kept
+ * against 0.704, `projectionLean.test.ts`).
+ */
+const TURN_PULL_LIMIT = 1.41;
 /**
  * The carve's carry (the movement-flow spec's Q4 and Q16, a gameplay rule,
  * not physics), under the same gate as COMPRESS_PULL. A real bottom turn or
@@ -342,11 +358,11 @@ const PULL_LOOKAHEAD = 0.1;
  * feet: they pass on only the board's share.
  *
  * In the stances spec's bottom turn (flat water at 7 m/s, compressed over the
- * crouch) 90° then comes in 1.03 s keeping 0.87 of the speed, either side
- * (0.56–0.58 without; 0.83–0.84 at 0.35, 0.96 at 0.5); compressed alone, 0.79 in
- * 1.0 s. These were 0.90–0.91 and 0.83 before the pull eased short of the rail's
- * bite (PULL_LOOKAHEAD). Riding straight the same board keeps 0.63 after 1 s: on
- * flat water the carry gives back the planing drag a wave's face would feed.
+ * crouch) 90° then comes in 1.12 s frontside and 1.15 s backside, keeping 0.91
+ * of the speed (0.57 without; 0.85–0.87 at 0.35, 1.0 at 0.5); compressed alone,
+ * 0.80 in 1.07 s (with TURN_PULL_LIMIT). Riding straight the same board keeps
+ * 0.63 after 1 s: on flat water the carry gives back the planing drag a wave's
+ * face would feed.
  */
 const CARVE_CARRY = 0.4;
 const PULL_FULL_SPEED = 5;
@@ -1650,7 +1666,8 @@ export class AttachedRider {
     const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
     const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
     this.assistForce.crossVectors(Y, along)
-      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
+      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
+        * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
     this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.

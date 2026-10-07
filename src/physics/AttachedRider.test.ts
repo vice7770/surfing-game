@@ -1232,7 +1232,7 @@ describe('lean, trim, crouch and heading hold', () => {
     // turn with or without Compress, so the window is the bottom turn's second. COMPRESS_PULL (the movement-flow spec)
     // then leant the body in harder than the feet could catch: at 7–8 m/s the rail rolled past its bite and the rider
     // fell, and at 10 m/s the yaw rate swung 1.6 rad/s, until the pull eased off short of the rail's bite
-    // (PULL_LOOKAHEAD).
+    // (PULL_LOOKAHEAD) and stayed within a real bottom turn's pull (TURN_PULL_LIMIT).
     const midTurn = (speed: number, compress: number) => {
       const board = new BoardBody();
       board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
@@ -1268,8 +1268,9 @@ describe('lean, trim, crouch and heading hold', () => {
     it.each([[7, 60], [8, 60], [10, 55]])('holds Compress taken mid-turn on flat water at %i m/s', compressMidTurn);
     // Since the feet no longer roll the board away from the lean asked for (the top-turn plan), the held turn at 11 m/s
     // no longer swings at all (0.99 rad/s before); Compress then still swung 0.71 rad/s (0.87 before). Pinned, not
-    // tuned, and guarded beside the pin: no worse than before the plan. With COMPRESS_PULL the turn tightens by about
-    // 1.1 rad/s and then rings at about 3 Hz, swinging 1.27 rad/s: the guard fails, left for the owner's decision.
+    // tuned, and guarded beside the pin: no worse than before the plan. Uncapped, COMPRESS_PULL tightened the turn by
+    // about 1.1 rad/s and it rang at about 3 Hz, swinging 1.27 rad/s; within a real bottom turn's pull
+    // (TURN_PULL_LIMIT, the owner's decision of 2026-10-07) it swings 0.83.
     it.fails('holds Compress taken mid-turn on flat water at 11 m/s', () => compressMidTurn(11, 45));
     it('holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan', () => {
       const compressed = midTurn(11, 1);
@@ -1284,8 +1285,8 @@ describe('lean, trim, crouch and heading hold', () => {
     // still water (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yawed 71°, Shift's
     // crouch 66°, Compress over it 61°, keeping 0.54–0.67 of their speed. A carve at a 40–48° rail sheds about 0.45 g,
     // and Forsyth's turns were on waves, whose water feeds them. The movement-flow spec's gameplay rules stand in for
-    // that: with COMPRESS_PULL and CARVE_CARRY, Compress over the crouch comes round 90° in 1.03 s keeping 0.87 of its
-    // speed.
+    // that: with COMPRESS_PULL, within TURN_PULL_LIMIT, and CARVE_CARRY, Compress over the crouch comes round 90° in
+    // 1.12 s keeping 0.91 of its speed.
     it('makes a deep U at the bottom of the face', () => {
       const turn = bottomTurn(-1);
       expect(turn.attached).toBe(true);
@@ -1296,7 +1297,7 @@ describe('lean, trim, crouch and heading hold', () => {
     // The stances spec says compressed and leaning turns hard. Compress over the crouch once turned less than the
     // crouch alone (61° against 66° in 1.2 s) and kept less of its speed: the forward weight cost about 6°, the depth
     // the rest (the compress plan's findings). Under the movement-flow spec (the weight on W/S, COMPRESS_PULL and
-    // CARVE_CARRY) it turns 107° against the crouch's 68° and leaves at 5.6 m/s against 4.6.
+    // CARVE_CARRY) it turns 100° against the crouch's 68° and leaves at 6.3 m/s against 4.6.
     it('turns at least as hard compressed as crouched, keeping as much speed', () => {
       const crouched = bottomTurn(-1, 90, 1.2, 'regular', 0.6, 0);
       const compressed = bottomTurn(-1);
