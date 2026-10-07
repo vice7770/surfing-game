@@ -106,7 +106,7 @@ Why the solver reads 31°, and why on today's meter no bed could reach 45–60°
 - **Why the tracker and each wave's fit differ** (31° and 42°). The tracker samples once a period: it fits the latest onsets of the longest run of columns within 1.1 s of each other. With three waves on the 230 m arm at once, that run is often a stretch of the fast spread. Each wave's fit spans its whole ride, the arm's slower stretches included.
 - **The owner's rulings, 2026-10-07:**
   - the peel accepted, as above; rule A and the peel meter left alone;
-  - the upcoast haze held back: the spilling front also withholds whitewater upcoast of each wave's first onset, beyond a margin (§3).
+  - the upcoast haze held back: the spilling front also withholds whitewater upcoast of each crest's first onset, beyond 6 m (§3). Crests showing foam over 12 m upcoast of the peak went from 5 of 40 to 1.
   - Still open: whether the beach should close out beside the arm, upcoast of the peak.
 
 **The sweep.** One seed (1), 8 periods each, unless noted. The peel is the tracker's median, on the arm only from row 3 on. "Starts" counts each crest's first onset within ±10 m of their median, out of the waves tracked. "Upcoast" counts waves whose break also ran over 5 m upcoast of their start within 3 s.
@@ -125,10 +125,11 @@ Why the solver reads 31°, and why on today's meter no bed could reach 45–60°
 
 **Pictures.** Headless Chrome on the M1's GPU (`--gpu`: Metal through ANGLE), Rich look, midday; Medium, 0°, s = 150, CPU solver, frames 1 s apart from 33 s into the sea, with every fourth shown (44–72 s).
 
-- **Overhead** (sea at the top, +x to the right; the window is the strip between the far field's bands): `img/straight-overhead-sheet.jpg`, frames `img/straight-overhead-11.jpg` … `-39.jpg`.
+- **Overhead** (sea at the top, +x to the right; the window is the strip between the far field's bands), retaken with the upcoast gate (§3) on 2026-10-07: `img/straight-overhead-sheet.jpg`, frames `img/straight-overhead-11.jpg` … `-39.jpg`.
   - Seaward of the arm the crests are straight and square to the beach.
   - Each wave breaks first at the peak (top left). Its whitewater grows down the arm toward +x and the beach while the crest beside it stays green. Two or three waves are on the arm at once.
-  - Upcoast of the peak a haze of foam marks the breaks that also spread that way.
+  - The same sea without the gate, where a haze of foam spread upcoast of the peak: `img/straight-nogate-overhead-sheet.jpg`.
+  - Upcoast of the peak, zoomed: `img/straight-gate-compare.jpg`. At 68 and 72 s, a wedge of foam upcoast of the peak without the gate; with it, the foam starts at the peak and runs only toward +x. Some older foam still drifts upcoast at 60–64 s.
 
 ![overhead](img/straight-overhead-sheet.jpg)
 
@@ -210,11 +211,33 @@ Spray and bubbles come from the foam's sources, so they follow the front too.
   - A first version owned cells by their breaking age instead. That failed: the solver's age is inherited along the crest as well as across it, so almost no cell had an owner and nothing was gated (`scripts/canyon-gate-probe.ts`).
 - **Ahead of the owner's front** the whitewater is 0: the green shoulder stays clean.
 - **Behind it**, during the first `rampSeconds` = 1.5 s after the front reached the column, the foam starts as a thin line at the crest: `lineWidth` 1.5 m down the face at `lineShare` 35 % strength. It grows down the face at `growth` 5 m/s while its strength ramps to full. After that the solver's own strength passes through, and the existing foam field (spreading, lace and decay) takes over.
+- **Upcoast of the peak beyond `upcoastMargin` = 6 m the whitewater is 0 (the upcoast gate; the owner, 2026-10-07: hold the upcoast haze back).**
+  - **Why:** the solver's break can spread along the crest both ways from the peak (the breaking age's sideways spread, §1), and that foam showed as a haze upcoast of the peak.
+  - **Where it counts from:** each wave keeps where its crest first broke (`crestX`). A break further along the same crest, where an older wave's crest has since run, keeps that crest's start; the next crest, a period behind, starts its own. The gate counts from the most upcoast crest start among the live waves, so a break that starts mid-arm never gates the arm behind it.
+  - **The margin, 6 m, provisional:** the front's own `joinReach`. The arm's end puts each break contour's most seaward point up to 5.6 m upcoast of the peak at the measured break depths. Before the gate, half the crests' foam reached no further than 6 m upcoast of their first onset.
+  - **Like the rest of the front, it only lowers the whitewater.** It acts on the cells a wave owns, so breaking in a column where no onset registered still shows.
+  - **Measured** (`scripts/canyon-haze-report.ts`; Medium, 0°, s = 150, 3 seeds × 14 periods, 40 crests; each crest's foam over 0.3 in its band, for 5 s after its first onset):
+
+    | | Before the gate | With the gate (6 m) |
+    |---|---:|---:|
+    | Crests whose foam showed upcoast of x −60 (12 m upcoast of the peak) | 5 | **1** |
+    | … upcoast of x −70 | 4 (out to the window's edge, −80) | **0** |
+    | Foam's reach upcoast of each crest's first onset: median / 90th percentile | 6 m / 28 m | 6 m / 11 m |
+    | The solver's breaking upcoast of x −60 (unchanged) | 8 crests | 8 crests |
+    | Whitewater let through, as a share of the solver's breaking, x −80…−65 seaward of z −120 | 0.85–0.88 | 0.16–0.31 |
+    | The same, x −55 and downcoast | 0.64–0.97 | identical |
+
+    The two crests whose foam still reaches 63 and 67 m back from their first onset started mid-arm (x 11 and 15). Their foam lies on the arm, downcoast of the peak.
+  - **Pictures:** the overhead sheet retaken with the gate (§1, Pictures), and the upcoast side zoomed, without and with it, on the same sea:
+
+    ![the upcoast gate, off and on](img/straight-gate-compare.jpg)
+
+  - **Tests:** `SpillingFront.test.ts`. Whitewater upcoast beyond the margin is withheld; within it, and all of it downcoast, matches the front without the gate. The gate counts from the crest's first onset when the crest breaks again further along. A later break that no older crest's run holds leaves the arm behind it alone. The next crest starts its own count. It mirrors for a spot peeling toward −x.
 
 **Parameters and where they live:**
 
 - `SPILLING_FRONT_DEFAULTS` in `SpillingFront.ts`;
-- per spot, `SPILLING_FRONT.canyon = { direction: 1, peelAngleDegrees: 55 }` in `SurfZoneSimulation.ts`;
+- per spot, `SPILLING_FRONT.canyon = { direction: 1, peelAngleDegrees: 55 }` in `SurfZoneSimulation.ts` (the upcoast gate's 6 m margin is the default's);
 - the config switch `spillingFront: false` turns it off, and so does `&spillingFront=0` in the water sheet.
 
 The cost is one pass over the grid per step, with at most 8 waves per breaking cell.
@@ -254,7 +277,9 @@ TESTS_PLACEHOLDER
 ## Known issues
 
 - **The solver peels at 31° on the tracker, not 55°** (the straight-crest bed, §1: the breaking age's sideways spread and the tracker's celerity). The front holds the visible peel at 55°. On waves where the solver breaks faster than the front, the water just ahead of the visible front is already breaking in the solver. The rider feels `breaking.strength` there (bore push, the wipeout's checks) while the foam is still hidden.
-- **Some breaks also spread upcoast of the peak.** On the straight-crest bed every clean wave peels toward +x (40 of 40), but in about a quarter of the waves, mostly the big ones, the break also runs upcoast of the peak: typically 5 m, at worst 20–48 m (§1). The front only acts toward +x, so that foam shows as the solver has it.
+- **Some breaks also spread upcoast of the peak.** On the straight-crest bed every clean wave peels toward +x (40 of 40). But in about a quarter of the waves, mostly the big ones, the solver's break also runs upcoast of the peak: typically 5 m, at worst 20–48 m (§1).
+  - The upcoast gate (§3) now withholds that foam beyond 6 m. The rider can still meet breaking water there, as ahead of the visible front.
+  - Breaking in a column where no onset registered is not withheld: 1 crest in 40 still showed foam out to x −70.
 - **The front's waves are not handed over online.** A late joiner's sea (`SurfZoneState`) carries the foam but not the front's waves. Until the next onsets its whitewater is the solver's, ungated, for about a period.
 - **Small days are not re-measured on the straight-crest bed.** On the prototype's 1.3 m terrace they barely broke; the arm's crest is now 1.0 m deep.
 - **Running flat without the canyon was the tank's grid** (§1): its 4 m cells damped the shoaling waves. The Canyon's tank now has 1 m cells from its zone in, and the straight-crest bed runs 600 s without the canyon.

@@ -66,7 +66,11 @@ When a box is unticked, check the work branch for partial commits: `git log orig
 
 - **The owner's decisions, 2026-10-07.**
   - The peel: the solver's peel accepted by the owner, 2026-10-07: drawn and felt at 55° by the spilling front. The solver peels at 31° on the tracker (42° by each wave's own fit); rule A and the peel meter stay as they are.
-  - The upcoast haze: held back. The spilling front also withholds whitewater upcoast (−x) of each wave's first onset, beyond a margin of a few metres. It only lowers the gated whitewater: the solver is never written, and other spots don't change.
+  - The upcoast haze: held back. The spilling front also withholds whitewater upcoast (−x) of each crest's first onset, beyond a margin of a few metres. It only lowers the gated whitewater: the solver is never written, and other spots don't change.
+- **The upcoast gate: done.** `upcoastMargin` = 6 m (provisional: the front's join reach) in `SpillingFront.ts`.
+  - Crests whose foam showed more than 12 m upcoast of the peak went from 5 of 40 to 1; none reaches past x −70 (before: 4, out to the window's edge).
+  - The solver's own break is unchanged.
+  - Measured with `scripts/canyon-haze-report.ts`, tested in `SpillingFront.test.ts`; the overhead sheet is retaken (Canyon note, §3).
 - **The bed:** one oblique arm (62°) on a level 3.6 m shelf, no canyon, the tank's 1 m cells from its zone in (running flat without the canyon was the old tank's 4 m cells).
 - **Against the bars** (Medium, 0°, s = 150):
   - crests 0.5° and 0.7° at the mean, 2.7° and 3.3° mean |angle| (the Beach: 4.3° and 4.4°);
@@ -81,7 +85,6 @@ When a box is unticked, check the work branch for partial commits: `git log orig
   - Every cue lit within 20 m of the peak. The bots down the arm wait 52–117 m outside the break, their rows running parallel to the beach.
 - **What's left:**
   - where the bots wait: the owner's next ruling;
-  - the upcoast gate: measure the haze before and after, test it, and retake the overhead sheet;
   - the beach close-out upcoast of the peak: not ruled.
 
 ## How to pick it up locally
