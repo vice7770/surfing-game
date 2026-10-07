@@ -75,6 +75,9 @@ export function applyLens(out: WaterSample, y: number, lens: LensPoint, voidMean
   out.regime = 'bore';
   out.flowX = u;
   out.flowZ = w;
+  out.lensFlowX = u + lens.g * (lens.flowX - u);
+  out.lensFlowZ = w + lens.g * (lens.flowZ - w);
+  out.lensScale = lens.g;
   const underside = out.surfaceY - lens.thickness;
   if (!(lens.thickness > 0) || y < underside) return;
   const zeta = (y - underside) / lens.thickness;
@@ -355,7 +358,12 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const { swept } = this.options;
     if (swept) this.clearLayers(out);
     // A reused sample leaves the lens of its last point behind: only a lens here sets it again.
-    if (this.options.roller) out.lensShare = undefined;
+    if (this.options.roller) {
+      out.lensShare = undefined;
+      out.lensFlowX = undefined;
+      out.lensFlowZ = undefined;
+      out.lensScale = undefined;
+    }
     if (this.outside(x, z)) return this.flatSea(out);
     const { h, bed, qx, qz } = solver;
     this.cellWeights(x, z);

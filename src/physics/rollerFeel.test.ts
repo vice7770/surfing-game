@@ -121,25 +121,13 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
   /** The owner's bar for a board carried by a developed roller (2026-10-07): no faster than about 1.2 c. */
   const CARRY_BAR = 1.2;
 
-  /*
-   * Open check (R3 §3.1: debris is never faster than the bore front; a board below the lens falls behind), its limit
-   * re-pinned from c to the owner's 1.2 c (2026-10-07). Measured with the lens's unsheltered body flow (the advisor's
-   * step 1): free prone boards are carried at c just ahead of the crest, then run down the face ahead of the bore,
-   * peaking at 5.9 / 8.1 / 9.4 m/s on 0.6 / 1.0 / 1.5 m bores (1.82 / 1.94 / 1.84 c; c 3.22 / 4.17 / 5.10), while still
-   * within the lens; the bare bores never take them past 0.85 c. Traced: the board leaves the crest's convexity airborne
-   * (5–16 cm over the drawn top, its rider out of the water), and each landing's water entry, along the face's
-   * forward-leaning normal, drives it down the face (50–580 N a step of added mass, and radiation): it skips.
-   * Tried, not kept (2026-10-06/07, each a lens-scoped patch outside the repo):
-   * - the hull's drag against the lens's flow (the advisor's step 3): 1.77 / 1.85 / 1.73 c;
-   * - water entry against the lens's own surface water at the mixture's density: 1.43 / 1.47 / 1.50 c, the 1.5 m push
-   *   over its band (398 N) and the knock-off late (1.62 s);
-   * - the owner's froth drag against the lens's flow (2026-10-07), alone: symmetric, it breaks the push and the
-   *   knock-off before it caps the carry (quadratic 1: 1.43 / 0.91 / 1.17 c, the paddler off before the toe); held to a
-   *   board outrunning the lens's water, it leaves the push and the hit as they are but stays at 1.66 / 1.73 / 1.71 c
-   *   (linear 500 N·s/m³) and 1.02 / 1.37 / 1.23 c even at 10,000; with the water entry above as well, 1.10 / 1.11 /
-   *   1.10 c, with that entry's push and knock-off misses.
+  /**
+   * R3 §3.1: debris is never faster than the bore front, and a board below the lens falls behind; the limit is the
+   * owner's 1.2 c (2026-10-07). Measured 2026-10-07: peaks of 1.10 / 1.11 / 1.10 c on 0.6 / 1.0 / 1.5 m bores (c 3.22 /
+   * 4.17 / 5.10 m/s). Without the hull's lens-scoped water entry and froth drag (the owner's option B, `BoardBody`) the
+   * boards left the crest airborne and were slammed down the face by each landing's water entry, to 1.82 / 1.94 / 1.84 c.
    */
-  it.fails('never carries a free prone board faster than about 1.2 c, the owner\'s bar', () => {
+  it('never carries a free prone board faster than about 1.2 c, the owner\'s bar', () => {
     for (const [depth, height] of [[0.76, 0.6], [1.27, 1], [1.9, 1.5]]) {
       const water = new RollerWater({ depth, height, toeZ: -10 });
       const fastest = Math.max(...ride(water, { seconds: 12 }).map((step) => step.vz));
@@ -150,24 +138,33 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
   /**
    * The advisor's Q4: a prone rider drifting with the current under the crest, c(1 − h₁/h₂), overtaken by the lens at
    * c·h₁/h₂, should feel about 330·H Pa on 0.5 m² (R3 §3.1, Duncan–Martins), ± 30 %: the lens's force over the same
-   * bore's bare face. Measured 2026-10-06 with the lens's unsheltered body flow (the advisor's step 1):
-   * - drifting: 7 / 139 / 205 N at H = 0.5 / 1.0 / 1.5 m (before step 1: 3 / 13 / 21 N);
-   * - held still: 26 / 115 / 172 N; the free carry: below;
-   * - the wedge holding the same water (Q2's fallback): 8 / 160 / 126 N drifting, 25 / 116 / 238 N held still;
-   * - with the advisor's step 3 as well (not kept): 36 / 74 / 129 N drifting, 92 / 377 / 781 N held still.
+   * bore's bare face. Measured 2026-10-07, with the lens's unsheltered body flow and the hull's lens-scoped water entry
+   * and froth drag (the owner's option B):
+   * - drifting: 34 / 149 / 398 N at H = 0.5 / 1.0 / 1.5 m (with the body flow alone, 7 / 139 / 205 N; before it,
+   *   3 / 13 / 21 N);
+   * - held still: 22 / 141 / 188 N; the free carry: above.
    */
   function driftingPush(height: number): number {
     const water = new RollerWater(bore(height));
     return lensPush(height, (water.options.speed * height) / (water.options.depth + height));
   }
 
-  it('pushes a prone rider drifting with the current under the crest at 330·H Pa as the lens overtakes it, at H = 1.0 and 1.5 m (Q4)', () => {
-    for (const height of [1, 1.5]) expect(Math.abs(driftingPush(height) / (330 * height * 0.5) - 1)).toBeLessThan(0.3);
+  it('pushes a prone rider drifting with the current under the crest at 330·H Pa as the lens overtakes it, at H = 1.0 m (Q4)', () => {
+    expect(Math.abs(driftingPush(1) / (330 * 1 * 0.5) - 1)).toBeLessThan(0.3);
+  });
+
+  /*
+   * Open check at H = 1.5 m, a known miss against an estimated target, kept by the owner, 2026-10-07: 248 N ± 30 %
+   * (174–322 N), measured 398 N. It was 205 N before the hull's lens-scoped water entry (the owner's option B): a board
+   * meeting the roller's own moving water at entry rides higher in the lens, where its flow is fastest.
+   */
+  it.fails('pushes a prone rider drifting under a 1.5 m bore\'s lens at 330·H Pa (Q4)', () => {
+    expect(Math.abs(driftingPush(1.5) / (330 * 1.5 * 0.5) - 1)).toBeLessThan(0.3);
   });
 
   /*
    * Open check at H = 0.5 m, a known miss against an estimated target, kept by the owner, 2026-10-07: 83 N ± 30 %,
-   * measured 7 N. The lens there is 10 cm thick at the crest (0.098 m), 1.5 m long, and passes the drifting rider in
+   * measured 34 N (7 N before the owner's option B). The lens there is 10 cm thick at the crest (0.098 m), 1.5 m long, and passes the drifting rider in
    * 0.9 s: it barely reaches the body lying above a board floating about 0.24 m under the surface.
    */
   it.fails('pushes a prone rider drifting under a 0.5 m bore\'s lens at 330·H Pa (Q4)', () => {
@@ -184,30 +181,38 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
     expect(pushes[1]).toBeGreaterThan(pushes[0]);
   });
 
-  it('knocks a paddler punching through a 1.5 m roller off the board within 0.5–0.9 s, where the bare face lets it through', () => {
-    const paddle = (lens: boolean) => {
-      const water = new RollerWater({ depth: 1.9, height: 1.5, toeZ: -10, lens });
-      const steps = ride(water, { heading: Math.PI, paddle: true, seconds: 5 });
-      const reached = steps.findIndex((step) => step.inside);
-      const off = steps.findIndex((step) => !step.attached);
-      return { reached, off };
-    };
-    const hit = paddle(true);
+  /** A paddler heading out into a 1.5 m roller: the step its board reaches the lens, and the step it is knocked off (−1: never). */
+  function paddleInto(lens: boolean): { reached: number; off: number } {
+    const water = new RollerWater({ depth: 1.9, height: 1.5, toeZ: -10, lens });
+    const steps = ride(water, { heading: Math.PI, paddle: true, seconds: 5 });
+    return { reached: steps.findIndex((step) => step.inside), off: steps.findIndex((step) => !step.attached) };
+  }
+
+  it('knocks a paddler punching through a 1.5 m roller off the board, where the bare face lets it through', () => {
+    const hit = paddleInto(true);
     expect(hit.off).toBeGreaterThan(hit.reached);
+    expect(paddleInto(false).off).toBe(-1);
+  });
+
+  /*
+   * Open check, a known miss against an estimated target, kept by the owner, 2026-10-07: the hit lasts 0.5–0.9 s
+   * (R3 §3.1), so the knock-off comes within it. Measured: 1.62 s after the board reaches the lens (0.69 s before the
+   * hull's lens-scoped water entry and froth drag, the owner's option B).
+   */
+  it.fails('knocks the paddler off within 0.5–0.9 s of the roller reaching it', () => {
+    const hit = paddleInto(true);
     const lasted = (hit.off - hit.reached) * STEP;
     expect(lasted).toBeGreaterThanOrEqual(0.5);
     expect(lasted).toBeLessThanOrEqual(0.9);
-    expect(paddle(false).off).toBe(-1);
   });
 
   /*
    * Open check, a known miss against an estimated target, kept by the owner, 2026-10-07 (R3 §3.1, after Yeh et al.
    * 2014): a paddler facing a 1.5 m roller takes 1.4–2.8 kN quasi-steady, the front's peak at most 1.5× that, for
-   * 0.5–0.9 s. Its knock-off's timing, which the player feels, passes (above). Measured with the lens's unsheltered body
-   * flow (the advisor's step 1), the water's force on board and rider while on and within the lens: paddling freely, a
-   * median 395 N and a peak 1.1 kN over the 0.69 s before the knock-off (before step 1: 508 N, 825 N; the bare face:
-   * 177 N, 555 N, and no knock-off); held at 1.5 m/s seaward, 904 N rising to 2.9 kN as the rider is knocked off after
-   * 0.30 s.
+   * 0.5–0.9 s. Measured 2026-10-07 (the owner's option B), the water's force on board and rider while on and within the
+   * lens: paddling freely, a median 131 N and a peak 1.1 kN over the 1.62 s before the knock-off (with the body flow
+   * alone, 395 N and 1.1 kN; the bare face: 177 N, 555 N, and no knock-off); held at 1.5 m/s seaward, 1.25 kN rising to
+   * 2.3 kN as the rider is knocked off after 0.35 s.
    */
   it.fails('hits a paddler punching through a 1.5 m roller with 1.4–2.8 kN', () => {
     const water = new RollerWater({ depth: 1.9, height: 1.5, toeZ: -10 });

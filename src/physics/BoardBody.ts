@@ -30,7 +30,16 @@ export interface BoardWork {
   /** Done by the water on the fins and on the rails' side faces. */
   fins: number;
   rails: number;
+  /** Done by a roller's froth on the hull (the Canyon roller lens, S3): a stand-in for its turbulence; 0 elsewhere. */
+  froth: number;
 }
+
+/**
+ * The froth drag in a roller lens's footprint (the Canyon roller lens, S3; the owner's decision of 2026-10-07,
+ * provisional), N·s/m³: per square metre of wetted hull, per unit of the lens's development, per m/s by which the board
+ * outruns the lens's water. Sized so a board in a developed roller rides at no more than about 1.2 c (measured 1.10 c).
+ */
+const FROTH_DRAG = 500;
 
 export interface BoardBodyOptions {
   shape?: BoardShape;
@@ -197,13 +206,13 @@ export class BoardBody implements BoardContactBody {
   readonly velocity = new Vector3();
   /** World frame, rad/s. */
   readonly angularVelocity = new Vector3();
-  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0 };
+  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0, froth: 0 };
   /** The rider standing or lying on the board, coupled through its contacts. */
   rider?: AttachedRider;
   /** Mean forces over the latest step, N. */
   readonly forces = {
     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
-    fins: new Vector3(), rails: new Vector3(),
+    fins: new Vector3(), rails: new Vector3(), froth: new Vector3(),
   };
   /** Hull volume under water and wetted bottom area at the latest substep. */
   submergedVolume = 0;
@@ -749,6 +758,12 @@ export class BoardBody implements BoardContactBody {
     const { system, rhs, force, patch } = this;
     system.fill(0);
     const totals = { bx: 0, by: 0, bz: 0, btx: 0, bty: 0, btz: 0, px: 0, py: 0, pz: 0, ptx: 0, pty: 0, ptz: 0, fx: 0, fy: 0, fz: 0, ftx: 0, fty: 0, ftz: 0 };
+    // A roller's froth on the hull (below): its own ledger, 0 outside a lens.
+    let frothX = 0;
+    let frothZ = 0;
+    let frothTx = 0;
+    let frothTy = 0;
+    let frothTz = 0;
     let submerged = 0;
     let wetted = 0;
     let waterX = 0;
@@ -807,6 +822,34 @@ export class BoardBody implements BoardContactBody {
       this.reaction[k * 3] += (b.x + p.x + f.x) * h;
       this.reaction[k * 3 + 1] += (b.y + p.y + f.y) * h;
       this.reaction[k * 3 + 2] += (b.z + p.z + f.z) * h;
+      // Froth drag, its own ledger (`forces.froth`, `work.froth`): in a roller lens's footprint only (the Canyon roller
+      // lens, S3; the owner's decision of 2026-10-07, option B; provisional). A stand-in for the turbulence the thin lens
+      // cannot represent: a board in whitewater is surrounded by turbulent, aerated water travelling with the bore, and
+      // that froth holds back a board that outruns it. It is one-sided (the advisor, 2026-10-07): a board slower than the
+      // roller's water is already pushed by the lens's unsheltered flow on the body and by the hull's forces, so a
+      // symmetric drag would count that push twice. So only the board's speed past the lens's water, along its flow, is
+      // dragged, linearly, scaled by the lens's development and the wetted hull. Nothing outside a lens.
+      if (sample.lensScale !== undefined && sample.lensScale > 0) {
+        const wettedHere = force.wettedArea + force.deckWettedArea;
+        const flow = Math.sqrt(sample.lensFlowX! * sample.lensFlowX! + sample.lensFlowZ! * sample.lensFlowZ!);
+        const ex = flow > 0 ? sample.lensFlowX! / flow : 0;
+        const ez = flow > 0 ? sample.lensFlowZ! / flow : 0;
+        const ahead = Math.max(0, (relative.x + sample.flowX - sample.lensFlowX!) * ex + (relative.z + sample.flowZ - sample.lensFlowZ!) * ez);
+        const dx = ahead * ex;
+        const dz = ahead * ez;
+        const drag = FROTH_DRAG * sample.lensScale * wettedHere;
+        if (drag > 0 && ahead > 0) {
+          const fx = -drag * dx;
+          const fz = -drag * dz;
+          frothX += fx;
+          frothZ += fz;
+          frothTx += ry * fz;
+          frothTy += rz * fx - rx * fz;
+          frothTz += -ry * fx;
+          this.reaction[k * 3] += fx * h;
+          this.reaction[k * 3 + 2] += fz * h;
+        }
+      }
       this.meanPosition[k * 2] += patch.position.x * h;
       this.meanPosition[k * 2 + 1] += patch.position.z * h;
       // Planing pressure acts along the normal (generalized direction [n, r × n]),
@@ -836,9 +879,21 @@ export class BoardBody implements BoardContactBody {
       this.surfaceNormal[k * 3 + 1] = uy;
       this.surfaceNormal[k * 3 + 2] = uz;
       const projection = Math.abs(nx * ux + ny * uy + nz * uz);
-      const addedMass = this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection;
-      const radiation = this.radiationPerArea[k] * force.wettedArea * projection;
-      const intoSurface = relative.x * ux + relative.y * uy + relative.z * uz;
+      // Water entry in a roller lens's footprint (the Canyon roller lens, S3; the owner's decision of 2026-10-07,
+      // option B; provisional): a board landing on the roller meets aerated water travelling with the bore, not still
+      // green water, so its entry and radiation are taken against the lens's own surface water (its flow along the
+      // shore and across it; its vertical, the water's own less g of it), at the mixture's density, (1 − α)ρ, where the
+      // hull enters. Anywhere else, as before.
+      const entryLens = sample.lensScale !== undefined;
+      const froth = entryLens ? 1 - (sample.voidFraction ?? 0) : 1;
+      const addedMass = entryLens
+        ? froth * this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection
+        : this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection;
+      const radiation = entryLens ? froth * this.radiationPerArea[k] * force.wettedArea * projection : this.radiationPerArea[k] * force.wettedArea * projection;
+      const intoSurface = entryLens
+        ? (relative.x + sample.flowX - sample.lensFlowX!) * ux + (relative.y + sample.lensScale! * sample.flowY) * uy
+          + (relative.z + sample.flowZ - sample.lensFlowZ!) * uz
+        : relative.x * ux + relative.y * uy + relative.z * uz;
       // Water entry (von Kármán): added mass gained this substep meets the patch inelastically.
       const entrained = Math.max(0, addedMass - this.previousAddedMass[k]);
       this.previousAddedMass[k] = addedMass;
@@ -883,6 +938,13 @@ export class BoardBody implements BoardContactBody {
     rhs[3] = h * (totals.btx + totals.ptx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
     rhs[4] = h * (totals.bty + totals.pty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
     rhs[5] = h * (totals.btz + totals.ptz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
+    if (frothX !== 0 || frothZ !== 0) {
+      rhs[0] += h * frothX;
+      rhs[2] += h * frothZ;
+      rhs[3] += h * frothTx;
+      rhs[4] += h * frothTy;
+      rhs[5] += h * frothTz;
+    }
     for (let i = 0; i < 3; i += 1) {
       system[i * 6 + i] += this.mass;
       for (let j = 0; j < 3; j += 1) system[(i + 3) * 6 + j + 3] += I[i * 3 + j];
@@ -991,6 +1053,11 @@ export class BoardBody implements BoardContactBody {
     this.forces.friction.x += h * totals.fx;
     this.forces.friction.y += h * totals.fy;
     this.forces.friction.z += h * totals.fz;
+    if (frothX !== 0 || frothZ !== 0) {
+      this.work.froth += h * (frothX * avx + frothZ * avz + frothTx * awx + frothTy * awy + frothTz * awz);
+      this.forces.froth.x += h * frothX;
+      this.forces.froth.z += h * frothZ;
+    }
     v.x += dvx;
     v.y += dvy;
     v.z += dvz;

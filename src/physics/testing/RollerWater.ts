@@ -134,7 +134,7 @@ export class RollerWater implements SurfWater {
       bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand' as const, wet: true, outsideDomain: false,
       slopeX: 0, slopeZ, normalX: 0, normalY: 1 / norm, normalZ: -slopeZ / norm,
       flowX: 0, flowY: rising * (height / column), flowZ: current, regime: rise > 0 ? 'bore' : 'profile',
-      breaking: thickness > 0 ? 1 : 0, voidFraction: 0, turbulence: 0, lensShare: undefined,
+      breaking: thickness > 0 ? 1 : 0, voidFraction: 0, turbulence: 0, lensShare: undefined, lensFlowX: undefined, lensFlowZ: undefined, lensScale: undefined,
     });
     if (thickness > 0) {
       const { lens } = this;

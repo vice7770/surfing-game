@@ -48,6 +48,13 @@ export interface WaterSample {
    * (the flow is ū + share·(c·n̂ − ū)). Absent outside a lens, and wherever the water has none.
    */
   lensShare?: number;
+  /**
+   * In a roller lens's footprint, at any depth (S3): the lens's own water velocity along the shore and across it,
+   * ū + g·(c·n̂ − ū), m/s, and its scale g. Absent outside a lens's footprint, and wherever the water has none.
+   */
+  lensFlowX?: number;
+  lensFlowZ?: number;
+  lensScale?: number;
   /** The seabed's unit normal (up on a flat bed), and what it is made of (the Teahupo'o Reef, Part C; absent: sand). */
   bedNormalX: number;
   bedNormalY: number;
@@ -75,7 +82,7 @@ export function createWaterSample(): WaterSample {
   return {
     surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
     normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
-    bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand', lensShare: undefined,
+    bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand', lensShare: undefined, lensFlowX: undefined, lensFlowZ: undefined, lensScale: undefined,
     waterFloorY: undefined, ceilingY: undefined, ceilingTopY: undefined, covered: undefined, clearance: undefined, tube: undefined,
   };
 }
