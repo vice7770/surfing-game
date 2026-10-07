@@ -38,8 +38,9 @@ describe('the body film', () => {
   };
   it.each(['pop-up and landing', 'pop-up crouched', 'a fall', 'pumping into a fall'])('blends the switches of %s out', blendsOut);
   // The movement-flow spec's Compress pulls the body into its lean (COMPRESS_PULL) and drops at the crouch's pace: taken
-  // mid-turn at 10 m/s, the inside hand's jump to the water is bigger than the smoothing blends (4.4 for 2). Pinned.
-  it.fails('blends the switches of compress mid-turn, the hand reaching out', () => blendsOut('compress mid-turn, the hand reaching'));
+  // mid-turn at 10 m/s, the inside hand's jump to the water was bigger than the smoothing blends (4.4, then 3.1–4.1, for
+  // 2). Within a real bottom turn's pull (TURN_PULL_LIMIT, the owner's decision of 2026-10-07) it blends: 1.55–1.63.
+  it('blends the switches of compress mid-turn, the hand reaching out', () => blendsOut('compress mid-turn, the hand reaching'));
   // Lying down: 0.23 s into the lie-down the left knee swung through at up to 10 m/s (3.3 m/s over its neighbours, 3.8
   // at 120 Hz). Lying, the legs' side was the deck's down, along the standing leg at the switch, so the knee turned to
   // whichever side, and swung back over as the leg straightened.

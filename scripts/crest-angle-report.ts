@@ -12,6 +12,9 @@
  * `--swell practice|small|medium|big`, `--seed`, `--seconds` (600), `--spreading` and `--direction` (override the
  * swell's), `--components` (64, the GPU tier's; 24 is the CPU tier's), `--offset` (30 m seaward of the take-off),
  * `--quiet` (no per-crest lines), `--json <file>` (the crests and summary).
+ *
+ * Each crest's two halves along shore (split at its middle point) are also fitted on their own: their angles' difference,
+ * the bend, shows a crest that runs two ways at once (an A-frame, or a crest turned by one side of the bed).
  */
 import { writeFileSync } from 'node:fs';
 import { GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
@@ -45,6 +48,8 @@ const LOST_SHARE = 0.35;
 const MIN_COVERAGE = 0.5;
 /** Waves counted as the session's opening set run. */
 const FIRST_WAVES = 3;
+/** A crest's half shorter than this along shore, m, gives no angle of its own. */
+const MIN_HALF_SPAN = 20;
 
 const settings = physicalSettingsFor(spot, { swell: swellSize, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
 const swell = swellFor(settings);
@@ -59,7 +64,11 @@ const config: SurfZoneConfig = {
   componentCount: numberOption('components') ?? GPU_TIER_COMPONENTS,
 };
 
-interface Crest { line: string; t: number; angle: number; residual: number; coverage: number; height: number }
+/**
+ * A crest's fit. `left` and `right` are its −x and +x halves' own angles, degrees (NaN for a half under MIN_HALF_SPAN);
+ * the bend is right − left.
+ */
+interface Crest { line: string; t: number; angle: number; residual: number; coverage: number; height: number; left: number; right: number }
 
 const started = Date.now();
 const simulation = new SurfZoneSimulation(config);
@@ -119,6 +128,23 @@ function fitCrest(line: string, z: number): Crest | 'short' | undefined {
   const coverage = (points.length - 1) / (lastColumn - firstColumn);
   if (coverage < MIN_COVERAGE) return 'short';
   const n = points.length;
+  const { slope, mx, mz } = lineFit(points);
+  const residual = Math.sqrt(points.reduce((sum, p) => sum + (p.z - (mz + slope * (p.x - mx))) ** 2, 0) / n);
+  // The halves: the points sorted along shore, split at the middle one (which both share).
+  points.sort((a, b) => a.x - b.x);
+  const middle = Math.floor(n / 2);
+  const halfAngle = (half: { x: number; z: number }[]) => (half[half.length - 1].x - half[0].x < MIN_HALF_SPAN
+    ? Number.NaN
+    : (Math.atan(lineFit(half).slope) * 180) / Math.PI);
+  return {
+    line, t: simulation.seaTime, angle: (Math.atan(slope) * 180) / Math.PI, residual, coverage, height: start.eta - still,
+    left: halfAngle(points.slice(0, middle + 1)), right: halfAngle(points.slice(middle)),
+  };
+}
+
+/** The least-squares line z = mz + slope (x − mx) through the points. */
+function lineFit(points: readonly { x: number; z: number }[]): { slope: number; mx: number; mz: number } {
+  const n = points.length;
   const mx = points.reduce((sum, p) => sum + p.x, 0) / n;
   const mz = points.reduce((sum, p) => sum + p.z, 0) / n;
   let sxx = 0;
@@ -127,9 +153,7 @@ function fitCrest(line: string, z: number): Crest | 'short' | undefined {
     sxx += (p.x - mx) ** 2;
     sxz += (p.x - mx) * (p.z - mz);
   }
-  const slope = sxz / sxx;
-  const residual = Math.sqrt(points.reduce((sum, p) => sum + (p.z - (mz + slope * (p.x - mx))) ** 2, 0) / n);
-  return { line, t: simulation.seaTime, angle: (Math.atan(slope) * 180) / Math.PI, residual, coverage, height: start.eta - still };
+  return { slope: sxz / sxx, mx, mz };
 }
 
 /** A watched line: a crest passes when the reference column's surface there peaks in time above the crest share. */
@@ -158,7 +182,8 @@ class Watch {
     crests.push(crest);
     if (!quiet) {
       console.log(`  ${crest.line.padEnd(8)} t ${crest.t.toFixed(1).padStart(6)} s  angle ${crest.angle.toFixed(1).padStart(6)}°  `
-        + `straightness ${crest.residual.toFixed(2)} m  coverage ${(100 * crest.coverage).toFixed(0)}%  η ${crest.height.toFixed(2)} m`);
+        + `straightness ${crest.residual.toFixed(2)} m  coverage ${(100 * crest.coverage).toFixed(0)}%  η ${crest.height.toFixed(2)} m  `
+        + `halves ${crest.left.toFixed(1)}° / ${crest.right.toFixed(1)}°`);
     }
   }
 }
@@ -180,7 +205,11 @@ const mean = (values: number[]) => (values.length ? values.reduce((sum, v) => su
 const std = (values: number[]) => Math.sqrt(mean(values.map((v) => (v - mean(values)) ** 2)));
 interface Summary {
   line: string; crests: number; short: number; meanAngle: number; meanAbs: number; maxAbs: number; std: number;
-  firstAbs: number; laterAbs: number; straightness: number; bins: { from: number; meanAbs: number; crests: number }[];
+  firstAbs: number; laterAbs: number; straightness: number;
+  /** Over the crests whose halves both gave an angle: how many, and their bend's mean and largest |right − left|, degrees. */
+  halved: number; meanBend: number; maxBend: number;
+  /** Each 100 s: the crests' mean |angle| and mean angle (signed), degrees. */
+  bins: { from: number; meanAbs: number; mean: number; crests: number }[];
 }
 const summaries: Summary[] = watches.map(({ name, short }) => {
   const mine = crests.filter((crest) => crest.line === name);
@@ -188,21 +217,25 @@ const summaries: Summary[] = watches.map(({ name, short }) => {
   const abs = angles.map(Math.abs);
   const bins: Summary['bins'] = [];
   for (let from = 0; from < seconds; from += 100) {
-    const binned = mine.filter((crest) => crest.t - start >= from && crest.t - start < from + 100).map((crest) => Math.abs(crest.angle));
-    bins.push({ from, meanAbs: mean(binned), crests: binned.length });
+    const binned = mine.filter((crest) => crest.t - start >= from && crest.t - start < from + 100).map((crest) => crest.angle);
+    bins.push({ from, meanAbs: mean(binned.map(Math.abs)), mean: mean(binned), crests: binned.length });
   }
+  const bends = mine.map((crest) => Math.abs(crest.right - crest.left)).filter(Number.isFinite);
   return {
     line: name, crests: mine.length, short, meanAngle: mean(angles), meanAbs: mean(abs), maxAbs: abs.length ? Math.max(...abs) : Number.NaN,
     std: std(angles), firstAbs: mean(abs.slice(0, FIRST_WAVES)), laterAbs: mean(abs.slice(FIRST_WAVES)),
-    straightness: mean(mine.map((crest) => crest.residual)), bins,
+    straightness: mean(mine.map((crest) => crest.residual)),
+    halved: bends.length, meanBend: mean(bends), maxBend: bends.length ? Math.max(...bends) : Number.NaN, bins,
   };
 });
 const f = (value: number, digits = 1) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
 console.log(`\n${((Date.now() - started) / 1000).toFixed(0)} s elapsed.`);
-console.log('| Line | Crests (short) | Mean angle ° | Mean \\|angle\\| ° | Max \\|angle\\| ° | Std ° | First 3 \\|angle\\| ° | Later \\|angle\\| ° | Straightness m | \\|angle\\| per 100 s ° |');
-console.log('|---|---|---|---|---|---|---|---|---|---|');
+console.log('| Line | Crests (short) | Mean angle ° | Mean \\|angle\\| ° | Max \\|angle\\| ° | Std ° | First 3 \\|angle\\| ° | Later \\|angle\\| ° | Straightness m | \\|angle\\| per 100 s ° '
+  + '| Bend mean / max \\|right − left\\| ° (crests) | Mean angle per 100 s ° |');
+console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
 for (const s of summaries) {
-  console.log(`| ${s.line} | ${s.crests} (${s.short}) | ${f(s.meanAngle)} | ${f(s.meanAbs)} | ${f(s.maxAbs)} | ${f(s.std)} | ${f(s.firstAbs)} | ${f(s.laterAbs)} | ${f(s.straightness, 2)} | ${s.bins.map((b) => f(b.meanAbs)).join(' · ')} |`);
+  console.log(`| ${s.line} | ${s.crests} (${s.short}) | ${f(s.meanAngle)} | ${f(s.meanAbs)} | ${f(s.maxAbs)} | ${f(s.std)} | ${f(s.firstAbs)} | ${f(s.laterAbs)} | ${f(s.straightness, 2)} | ${s.bins.map((b) => f(b.meanAbs)).join(' · ')} `
+    + `| ${f(s.meanBend)} / ${f(s.maxBend)} (${s.halved}) | ${s.bins.map((b) => f(b.mean)).join(' · ')} |`);
 }
 const json = option('json');
 if (json) {

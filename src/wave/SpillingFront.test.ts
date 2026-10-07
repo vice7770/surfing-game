@@ -136,9 +136,97 @@ describe('SpillingFront', () => {
     expect(sum(out, g, 0)).toBe(0);
   });
 
-  it('defaults to the Canyon: left to right seen from the beach, at 55°', () => {
+  /** A wave whose break starts at x = 0 and spreads both ways along its crest (the breaking age's sideways spread). */
+  function spreadingWave(options: ConstructorParameters<typeof SpillingFront>[1]) {
+    const { g, front, strength, out } = setup({ rampSeconds: 0.001, ...options });
+    front.observeOnset(column(g, 0), 0, 0);
+    for (let x = 1; x <= 10; x += 1) {
+      front.observeOnset(column(g, -x), 0.1 * x, 0);
+      front.observeOnset(column(g, x), 0.1 * x, 0);
+    }
+    breakBand(g, strength, -10, 10, 0, 2);
+    for (let t = 1; t <= 20; t += 1) front.update(t, 1, 2, strength, out);
+    return { g, front, strength, out };
+  }
+
+  // The owner, 2026-10-07: the upcoast haze held back.
+  it('withholds the whitewater upcoast of a wave\'s first onset beyond the margin', () => {
+    const { g, front, strength, out } = spreadingWave({ upcoastMargin: 5 });
+    expect(front.waves).toHaveLength(1);
+    expect(front.waves[0].startX).toBe(0);
+    expect(front.waves[0].backX).toBe(-10);
+    // Upcoast it shows within 5 m of the start and not beyond; downcoast the front has run to the solver's tip.
+    expect(sum(out, g, -5)).toBeGreaterThan(0);
+    expect(sum(out, g, -6)).toBe(0);
+    expect(sum(out, g, -10)).toBe(0);
+    expect(sum(out, g, 10)).toBeGreaterThan(0);
+    expect(front.gated).toBeGreaterThan(0);
+    // The solver's breaking is only read: the whitewater never exceeds it.
+    for (let i = 0; i < out.length; i += 1) expect(out[i]).toBeLessThanOrEqual(strength[i]);
+  });
+
+  it('leaves the whitewater within the margin upcoast, and all of it downcoast, as without the gate', () => {
+    const gated = spreadingWave({ upcoastMargin: 5 });
+    const open = spreadingWave({ upcoastMargin: Infinity });
+    for (let x = -5; x <= 20; x += 1) expect(sum(gated.out, gated.g, x)).toBe(sum(open.out, open.g, x));
+    // Without the gate the whole upcoast spread shows, as before the owner's ruling.
+    expect(sum(open.out, open.g, -10)).toBeGreaterThan(0);
+  });
+
+  it('counts the gate from the crest\'s first onset when the crest breaks again further along', () => {
+    const { g, front, strength, out } = setup({ rampSeconds: 0.001, upcoastMargin: 5 });
+    front.observeOnset(column(g, -15), 0, 0);
+    for (let t = 1; t <= 3; t += 1) front.update(t, 1, 2, strength, out);
+    // Three seconds on, the crest (run 6 m) breaks again 25 m along, and that break spreads back toward the peak.
+    front.observeOnset(column(g, 10), 3, 6);
+    for (let x = 9; x >= -5; x -= 1) front.observeOnset(column(g, x), 3 + 0.1 * (10 - x), 6);
+    expect(front.waves).toHaveLength(2);
+    expect(front.waves[1].startX).toBe(10);
+    expect(front.waves[1].crestX).toBe(-15);
+    breakBand(g, strength, -5, 10, 6, 8);
+    for (let t = 4; t <= 20; t += 1) front.update(t, 1, 2, strength, out);
+    // Its spread back lies upcoast of its own start but downcoast of the crest's first onset: it shows.
+    expect(sum(out, g, -2)).toBeGreaterThan(0);
+    expect(sum(out, g, -5)).toBeGreaterThan(0);
+  });
+
+  it('leaves the arm behind a later break alone when no older crest\'s run holds it', () => {
+    const { g, front, strength, out } = setup({ rampSeconds: 0.001, upcoastMargin: 5 });
+    front.observeOnset(column(g, -15), 0, 0);
+    for (let t = 1; t <= 3; t += 1) front.update(t, 1, 2, strength, out);
+    // A break 25 m along, far seaward of where the first crest has run: its own crest start, at x = 10.
+    front.observeOnset(column(g, 10), 3, -19);
+    for (let x = 9; x >= -5; x -= 1) front.observeOnset(column(g, x), 3 + 0.1 * (10 - x), -19);
+    expect(front.waves[1].crestX).toBe(10);
+    breakBand(g, strength, -5, 10, -19, -17);
+    for (let t = 4; t <= 20; t += 1) front.update(t, 1, 2, strength, out);
+    // The gate counts from the live crests' most upcoast start, −15: the stretch back to x = −5 shows.
+    expect(sum(out, g, -2)).toBeGreaterThan(0);
+    expect(sum(out, g, -5)).toBeGreaterThan(0);
+  });
+
+  it('starts the next crest\'s own count, a period behind, where the last one broke', () => {
+    const { g, front, strength, out } = setup({ rampSeconds: 0.001, upcoastMargin: 5 });
+    front.observeOnset(column(g, -15), 0, -10);
+    for (let t = 1; t <= 11; t += 1) front.update(t, 1, 2, strength, out);
+    // A period later the next crest breaks where the first one did; the first crest has run 22 m inshore meanwhile.
+    front.observeOnset(column(g, 0), 11, -10);
+    // …and the first crest breaks again further along, where it has run.
+    front.observeOnset(column(g, 18), 11, 12);
+    expect(front.waves.map((wave) => wave.crestX)).toEqual([-15, 0, -15]);
+  });
+
+  it('holds the haze back on the +x side when the spot peels toward −x', () => {
+    const { g, out } = spreadingWave({ direction: -1, upcoastMargin: 5 });
+    expect(sum(out, g, -10)).toBeGreaterThan(0);
+    expect(sum(out, g, 5)).toBeGreaterThan(0);
+    expect(sum(out, g, 6)).toBe(0);
+  });
+
+  it('defaults to the Canyon: left to right seen from the beach, at 55°, its upcoast haze held back', () => {
     expect(SPILLING_FRONT_DEFAULTS.direction).toBe(1);
     expect(SPILLING_FRONT_DEFAULTS.peelAngleDegrees).toBe(55);
+    expect(SPILLING_FRONT_DEFAULTS.upcoastMargin).toBe(6);
   });
 });
 

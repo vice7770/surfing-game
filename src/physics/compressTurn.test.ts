@@ -83,7 +83,9 @@ describe('the compressed turn (the movement-flow spec)', () => {
     const turn = bottomTurn(steer as number, 0.6, 1);
     expect(turn.attached).toBe(true);
     expect(turn.reached).toBeDefined();
-    expect(turn.reached!.time).toBeLessThan(1.1);
+    // The owner's decision of 2026-10-07: within a real bottom turn's pull (TURN_PULL_LIMIT, 1.41 g) the turn comes
+    // round in 1.117 s frontside and 1.15 s backside, accepted as the spec's "about 1 s" (under 1.1 s before).
+    expect(turn.reached!.time).toBeLessThanOrEqual(1.15);
     expect(turn.reached!.speed).toBeGreaterThan(0.85);
     expect(turn.carry).toBeGreaterThan(0);
   });

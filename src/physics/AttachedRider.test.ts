@@ -10,10 +10,14 @@ import { PlaneWater } from './PlaneWater';
 import { deckHeight, stanceFeet } from './riderPosture';
 import { SwellWater } from './SwellWater';
 import type { SurfWater, WaterSample } from './SurfWater';
+import { CoveredWater } from './testing/CoveredWater';
 
 const STEP = 1 / 60;
-/** About 0.195 m of lowering: the pumping posture that full manual crouch used to select. */
-const PUMPING_CROUCH = 0.72;
+/**
+ * Full manual crouch: the pumping posture, about 0.195 m of lowering. 422d8d51 moved these fixtures to 0.72, which
+ * gave that depth under its deep tuck; the tuck now opens only under a tube's curl (the owner's decision of 2026-10-06).
+ */
+const PUMPING_CROUCH = 1;
 
 /** A board level at the surface (lowest bottom point at `bottomY`) with a rider mounted in `phase`. */
 function mounted(phase: 'standing' | 'prone' = 'standing', bottomY = 0) {
@@ -708,8 +712,8 @@ class FaceToFlat implements SurfWater {
  * flat full lean and Compress (steer −1 leans toward the board's −x, Regular's toes: frontside). For `seconds` after the
  * lean: the yaw, the entry speed, and the speed and time when the yaw reached `yaw` degrees.
  */
-function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6, compress = 1) {
-  const water = new FaceToFlat();
+function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6, compress = 1, covered = false) {
+  const water: SurfWater = covered ? new CoveredWater(new FaceToFlat()) : new FaceToFlat();
   const angle = Math.atan(FaceToFlat.SLOPE);
   const normal = new Vector3(0, 1, FaceToFlat.SLOPE).normalize();
   const fall = new Vector3(0, -Math.sin(angle), Math.cos(angle));
@@ -808,8 +812,11 @@ describe('lean, trim, crouch and heading hold', () => {
     expect(ahead.pitch).toBeLessThan(neutral.pitch);
   });
 
-  it('tucks deeper than Compress and stands back up', () => {
-    const { board, rider, water } = acrossFace(0, 6);
+  // The deep tuck is for tube clearance: it opens only under a tube's curl (the owner's decision of 2026-10-06).
+  it('tucks deeper than Compress under a tube\'s curl and stands back up', () => {
+    const ride = acrossFace(0, 6);
+    const { board, rider } = ride;
+    const water = new CoveredWater(ride.water);
     run(board, water, 1);
     const standing = rider.leg.height + rider.leg.extension;
     rider.crouch = 1;
@@ -824,18 +831,20 @@ describe('lean, trim, crouch and heading hold', () => {
     expect((rider.leg.height + rider.leg.extension) / standing).toBeGreaterThan(0.97);
   });
 
-  // Compress (the stances spec): the bottom turn's stance, full crouch depth with the weight over the front foot
-  // (de Sousa 2022: knees and hips at or under 90°, the trunk over the front foot while flexed).
+  // Compress (the stances spec, its weight and depth as the movement-flow spec replaced them): the sharp turn's stance,
+  // at full depth (de Sousa 2022: knees and hips at or under 90°), the weight where W/S put it.
   describe('Compress', () => {
     const height = (rider: AttachedRider) => rider.leg.height + rider.leg.extension;
-    const settled = () => {
+    /** Settled riding across the face for a second: under a tube's curl if `covered`. */
+    const settled = (covered = false) => {
       const ride = acrossFace(0, 6);
-      run(ride.board, ride.water, 1);
-      return ride;
+      const water: SurfWater = covered ? new CoveredWater(ride.water) : ride.water;
+      run(ride.board, water, 1);
+      return { ...ride, water };
     };
 
-    it('keeps Compress shallower than the manual tuck, deepens the pumping crouch, and releases back to it', () => {
-      const full = settled();
+    it('keeps Compress shallower than the manual tuck under a tube\'s curl, deepens the pumping crouch, and releases back to it', () => {
+      const full = settled(true);
       full.rider.crouch = 1;
       run(full.board, full.water, 1);
       const alone = settled();
@@ -856,12 +865,22 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(over.rider.attached).toBe(true);
     });
 
-    it('puts the weight over the front foot', () => {
-      const { board, rider, water } = settled();
-      const before = rider.contact.centreOfPressure.z;
-      rider.compress = 1;
-      run(board, water, 0.8);
-      expect(rider.contact.centreOfPressure.z).toBeGreaterThan(before + 0.05);
+    // The movement-flow spec (Q3) replaced the forward weight: W/S set it in every stance, centred by default. Lower,
+    // the body presses about 0.05 m further forward on this accelerating face than standing (the old forward weight
+    // took it 0.10 m); W and S under Compress move it 0.16–0.17 m either way, about as far as standing (0.13–0.18 m).
+    it('leaves the weight where W/S put it: over the front foot with W, the back foot with S', () => {
+      const pressure = (compress: number, trim: number) => {
+        const { board, rider, water } = settled();
+        rider.compress = compress;
+        rider.trim = trim;
+        run(board, water, 0.8);
+        expect(rider.attached).toBe(true);
+        return rider.contact.centreOfPressure.z;
+      };
+      const centred = pressure(1, 0);
+      expect(Math.abs(centred - pressure(0, 0))).toBeLessThan(0.07);
+      expect(pressure(1, 1)).toBeGreaterThan(centred + 0.1);
+      expect(pressure(1, -1)).toBeLessThan(centred - 0.1);
     });
 
     // The inside hand (de Sousa 2022): the body leans into the curve until the inside hand nears the water,
@@ -1210,7 +1229,10 @@ describe('lean, trim, crouch and heading hold', () => {
     // the base of a bottom turn (the stances spec). A full-steer turn at 10–11 m/s already swings its yaw rate by up
     // to 0.7–1.0 rad/s; taken with the crouch's hold, the deepening swung it 1.9–2.3 rad/s, 2.3–2.6 times the held
     // turn's. Held past about 2 s at full steer on flat water the board bleeds its speed and the rider falls into the
-    // turn with or without Compress, so the window is the bottom turn's second.
+    // turn with or without Compress, so the window is the bottom turn's second. COMPRESS_PULL (the movement-flow spec)
+    // then leant the body in harder than the feet could catch: at 7–8 m/s the rail rolled past its bite and the rider
+    // fell, and at 10 m/s the yaw rate swung 1.6 rad/s, until the pull eased off short of the rail's bite
+    // (PULL_LOOKAHEAD) and stayed within a real bottom turn's pull (TURN_PULL_LIMIT).
     const midTurn = (speed: number, compress: number) => {
       const board = new BoardBody();
       board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
@@ -1245,8 +1267,10 @@ describe('lean, trim, crouch and heading hold', () => {
     };
     it.each([[7, 60], [8, 60], [10, 55]])('holds Compress taken mid-turn on flat water at %i m/s', compressMidTurn);
     // Since the feet no longer roll the board away from the lean asked for (the top-turn plan), the held turn at 11 m/s
-    // no longer swings at all (0.99 rad/s before); Compress still swings 0.71 rad/s (0.87 before). Pinned, not tuned,
-    // and guarded beside the pin: no worse than before the plan.
+    // no longer swings at all (0.99 rad/s before); Compress then still swung 0.71 rad/s (0.87 before). Pinned, not
+    // tuned, and guarded beside the pin: no worse than before the plan. Uncapped, COMPRESS_PULL tightened the turn by
+    // about 1.1 rad/s and it rang at about 3 Hz, swinging 1.27 rad/s; within a real bottom turn's pull
+    // (TURN_PULL_LIMIT, the owner's decision of 2026-10-07) it swings 0.83.
     it.fails('holds Compress taken mid-turn on flat water at 11 m/s', () => compressMidTurn(11, 45));
     it('holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan', () => {
       const compressed = midTurn(11, 1);
@@ -1257,22 +1281,24 @@ describe('lean, trim, crouch and heading hold', () => {
     });
 
     // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
-    // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
-    // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 71°, Shift's crouch 66°,
-    // Compress over it 61° (62° backside), keeping 0.54–0.67 of their speed (the top-turn plan; 75°, 69° and 62° while
-    // the feet still rolled the board away from the lean). A carve at a 40–48° rail sheds about 0.45 g, and
-    // the lean the turn can hold (TURN_RADIUS) falls with the speed. Forsyth's turns were on waves, whose water feeds them.
-    it.fails('makes a deep U at the bottom of the face', () => {
+    // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. The physics alone does not meet it on
+    // still water (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yawed 71°, Shift's
+    // crouch 66°, Compress over it 61°, keeping 0.54–0.67 of their speed. A carve at a 40–48° rail sheds about 0.45 g,
+    // and Forsyth's turns were on waves, whose water feeds them. The movement-flow spec's gameplay rules stand in for
+    // that: with COMPRESS_PULL, within TURN_PULL_LIMIT, and CARVE_CARRY, Compress over the crouch comes round 90° in
+    // 1.12 s keeping 0.91 of its speed.
+    it('makes a deep U at the bottom of the face', () => {
       const turn = bottomTurn(-1);
       expect(turn.attached).toBe(true);
       expect(turn.reached).toBeDefined();
       expect(turn.reached!.speed).toBeGreaterThanOrEqual(0.85 * turn.entry);
     });
 
-    // The stances spec says compressed and leaning turns hard; here Compress over the crouch turns less than the crouch
-    // alone (61° against 66°, the keyboard's full crouch 57°) and keeps less of its speed: the forward weight costs
-    // about 6°, the depth the rest. Pinned for the user's decision, not tuned (the compress plan's findings).
-    it.fails('turns at least as hard compressed as crouched, keeping as much speed', () => {
+    // The stances spec says compressed and leaning turns hard. Compress over the crouch once turned less than the
+    // crouch alone (61° against 66° in 1.2 s) and kept less of its speed: the forward weight cost about 6°, the depth
+    // the rest (the compress plan's findings). Under the movement-flow spec (the weight on W/S, COMPRESS_PULL and
+    // CARVE_CARRY) it turns 100° against the crouch's 68° and leaves at 6.3 m/s against 4.6.
+    it('turns at least as hard compressed as crouched, keeping as much speed', () => {
       const crouched = bottomTurn(-1, 90, 1.2, 'regular', 0.6, 0);
       const compressed = bottomTurn(-1);
       expect(compressed.turned).toBeGreaterThanOrEqual(crouched.turned);
@@ -1290,8 +1316,8 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(turn.turned).toBeGreaterThan(55);
     });
 
-    it('keeps standing and turns through ninety degrees after a deep manual tuck', () => {
-      const turn = bottomTurn(-1, 90, 1.2, 'regular', 1);
+    it('keeps standing and turns through ninety degrees after a deep manual tuck under a tube\'s curl', () => {
+      const turn = bottomTurn(-1, 90, 1.2, 'regular', 1, 1, true);
       expect(turn.attached).toBe(true);
       expect(turn.reached).toBeDefined();
       expect(turn.exit).toBeGreaterThan(0.7 * turn.entry);
@@ -1701,9 +1727,10 @@ describe('a hand in the face', () => {
     expect(withHand.ledger).toBeLessThan(0.02);
   });
 
+  // Under a tube's curl, where the deep tuck opens (the owner's decision of 2026-10-06).
   it('retains a braking and steering hand in the deeper tube tuck', () => {
-    const without = pocket(false, undefined, 1);
-    const withHand = pocket(true, undefined, 1);
+    const without = pocket(false, new CoveredWater(new WallWater(0.35, 0.35)), 1);
+    const withHand = pocket(true, new CoveredWater(new WallWater(0.35, 0.35)), 1);
     expect(withHand.rider.attached).toBe(true);
     expect(withHand.deceleration).toBeGreaterThan(without.deceleration);
     expect(withHand.turn).toBeGreaterThan(without.turn);

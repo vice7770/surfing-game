@@ -11,8 +11,10 @@ export const SURF_SPOTS: readonly SpotName[] = ['pool', 'beach', 'point', 'reef'
 /**
  * Where a new player paddles out: the Wave Pool (the movement-flow spec), whose
  * machine sends the same A-frame every ten seconds to practise on. Before it the
- * Canyon, whose bed gathers the swell so its waves peel (median 58°) and catch
- * best; the Beach, Point and Reef mostly close out (median 12–15°).
+ * Canyon was the default: its old bed gathered the swell so its waves peeled (median
+ * 58°) and caught best, while the Beach, Point and Reef mostly closed out (median
+ * 12–15°, measured before their swells came in square). Since 2026-10-07 the Canyon
+ * is a spilling wave breaking along an oblique sandbar, drawn and felt peeling at 55°.
  */
 export const DEFAULT_SPOT: SpotName = 'pool';
 

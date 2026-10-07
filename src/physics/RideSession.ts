@@ -23,7 +23,7 @@ export interface RideInput {
   steer: number;
   /** Standing, weight along the board: −1 back to 1 forward (spec P9). */
   trim?: number;
-  /** Standing: 0 riding stance, a pumping crouch through 0.6, and a deeper tube tuck toward 1. */
+  /** Standing: 0 riding stance to 1, the pumping crouch; under a tube's curl, past 0.6 a deeper tuck toward 1. */
   crouch?: number;
   /** Standing, Compress selects the sharp-turn stance, easing out a deeper tube tuck; weight stays the trim's. */
   compress?: number;

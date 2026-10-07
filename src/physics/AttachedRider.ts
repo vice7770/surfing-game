@@ -300,10 +300,10 @@ const TWIST_GRIP_RADIUS = 0.15;
  * bank reference, scaled by Compress. It leads the body's lean, which it
  * leans in.
  *
- * On flat water at 7 m/s this brings the bottom turn round 90° in 1.0 s,
- * either side, keeping about 0.6 of the speed (0.36 before; 0.9 with
- * CARVE_CARRY). At 0.7 a rider compressing from standing fell after 100°.
- * Riding straight it does nothing.
+ * On flat water at 7 m/s this brings the bottom turn round 90° in 1.02 s,
+ * either side, keeping 0.57 of the speed (0.36 before; with CARVE_CARRY, 1.12–
+ * 1.15 s keeping 0.91). At 0.7 a rider compressing from standing fell after
+ * 100°. Riding straight it does nothing.
  */
 const COMPRESS_PULL = 0.5;
 /**
@@ -313,6 +313,38 @@ const COMPRESS_PULL = 0.5;
  * kept tipping the body in (70° against 15° asked) until it fell.
  */
 const PULL_OVERLEAN = (10 * Math.PI) / 180;
+/**
+ * Nor may the pull lean the body in where the feet can no longer catch it. They catch a body falling into the turn
+ * by rolling the board further onto its rail, and past the rail's bite they no longer can (RAIL_BITE, RAIL_EASE).
+ * So the pull eases off over the last RAIL_EASE before the bite, judged where the rail will be PULL_LOOKAHEAD, s, on
+ * at its roll rate: about as long as the turn takes to answer the lean (the rail in 0.05 s and its pull 0.04 s
+ * after it: `docs/research/rail-control-study.md`, from the carve lab's plant).
+ *
+ * Compress taken mid-turn on flat water, where the held turn's feet already brake near their edges, rolled the rail
+ * past its bite at 7–8 m/s (to 85° and 87°) and the rider fell into the turn at 0.87 and 0.75 s; at 10 m/s the yaw
+ * rate swung 1.60 rad/s. Compressing into the turn from the start fell at 8 m/s too (0.9 s). Eased, and within
+ * TURN_PULL_LIMIT, those turns keep the rail under 49° and the rider on, and 10 m/s swings 1.05 rad/s. Judged where
+ * the rail is (no look-ahead), the rail ran on to 57° and the lean to 63° at 7 m/s; and TURN_PULL_LIMIT alone,
+ * without this ease, let that rider fall again: at a 40–45° lean asked for the limit barely bites. Before the limit,
+ * 0.08–0.12 s ahead held 7–10 m/s (0.05 s left 10 m/s swinging 1.46 rad/s; from 0.15 s the rail change's riders
+ * fell); with it 0.07 s holds them all, and brings the backside bar to 1.15 s where 0.1 s left it at 1.167 s (the
+ * owner's decision of 2026-10-07).
+ */
+const PULL_LOOKAHEAD = 0.07;
+/**
+ * And it may not pull a turn harder than a real bottom turn pulls: the compressed turn's whole sideways pull, what the
+ * lean asked for balances (g tan of it) and COMPRESS_PULL's on top, stays within TURN_PULL_LIMIT g. Forsyth et al.
+ * 2024's bottom turns peak at 1.41 g, as do the game's own on waves (1.42 g; `docs/research/bottom-turn-entry-
+ * study.md`). It binds above about 43° asked: at speed the lean asked for is RAIL_RANGE's 50° (1.19 g), and the pull
+ * falls from 0.6 to 0.22 g. Uncapped, Compress taken mid-turn at 11 m/s tightened the turn by about 1.1 rad/s and it
+ * rang at about 3 Hz, its yaw rate swinging 1.27 rad/s against the guard's 0.87; capped, 0.83.
+ *
+ * The owner's decision of 2026-10-07 (option (ii), with PULL_LOOKAHEAD at 0.07 s): the still-water bar then comes
+ * round 90° in 1.117 s frontside and 1.15 s backside (1.03 s before), keeping 0.913 and 0.910 of its speed (0.87
+ * before), accepted as the spec's "about 1 s"; and a late projection costs a little less (0.731 of the speed kept
+ * against 0.704, `projectionLean.test.ts`).
+ */
+const TURN_PULL_LIMIT = 1.41;
 /**
  * The carve's carry (the movement-flow spec's Q4 and Q16, a gameplay rule,
  * not physics), under the same gate as COMPRESS_PULL. A real bottom turn or
@@ -326,10 +358,11 @@ const PULL_OVERLEAN = (10 * Math.PI) / 180;
  * feet: they pass on only the board's share.
  *
  * In the stances spec's bottom turn (flat water at 7 m/s, compressed over the
- * crouch) 90° then comes in 1.02 s keeping 0.90–0.91 of the speed, either side
- * (0.60–0.62 without; 0.86–0.87 at 0.35, 1.0 at 0.5); compressed alone, 0.83 in
- * 0.95 s. Riding straight the same board keeps 0.63 after 1 s: on flat water
- * the carry gives back the planing drag a wave's face would feed.
+ * crouch) 90° then comes in 1.12 s frontside and 1.15 s backside, keeping 0.91
+ * of the speed (0.57 without; 0.85–0.87 at 0.35, 1.0 at 0.5); compressed alone,
+ * 0.80 in 1.07 s (with TURN_PULL_LIMIT). Riding straight the same board keeps
+ * 0.63 after 1 s: on flat water the carry gives back the planing drag a wave's
+ * face would feed.
  */
 const CARVE_CARRY = 0.4;
 const PULL_FULL_SPEED = 5;
@@ -437,11 +470,14 @@ const STEER_DEADBAND = 0.05;
 const TRIM_SHIFT = 0.25;
 /**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
- * and a deeper manual tuck for a tube. Compress shortens the leg by up to
- * CROUCH_DEPTH, m. Through manual input 0.6 the pumping crouch keeps its
- * CROUCH_SHARE of that depth; further input adds a smooth tuck, reaching
- * MANUAL_CROUCH_DEPTH at 1. Compress fades out this extra tuck to keep its
- * existing sharp-turn stance. These are provisional posture targets. The leg
+ * and, under a tube's curl, a deeper manual tuck. Compress shortens the leg by up
+ * to CROUCH_DEPTH, m, and full manual crouch by CROUCH_SHARE of it (the pumping
+ * crouch). Under a tube's curl (`covered`) manual input keeps that share through
+ * 0.6, and further input adds a smooth tuck, reaching MANUAL_CROUCH_DEPTH at 1;
+ * Compress fades out this extra tuck to keep its sharp-turn stance. The deep tuck
+ * is for tube clearance only (the owner's decision of 2026-10-06): everywhere
+ * else full manual crouch keeps the pumping crouch's depth, as it had before the
+ * tuck. These are provisional posture targets. The leg
  * moves at most MAX_LEG_SPEED, m/s (a
  * countermovement jump's take-off speed, so a jump stays possible), and softens
  * toward the legs-bent 22 kN/m (provisional). The weight stays the trim's in
@@ -719,6 +755,11 @@ export class AttachedRider {
   flightTime = 0;
   /** Distance of the centre of mass from where the posture puts it, m. */
   postureError = 0;
+  /**
+   * A tube's curl covers the rider: a body point sampled this step lies in the tube's air under the curl, before it
+   * touches down (the swept contact's `covered`). Only then does full manual crouch fold into the deep tuck.
+   */
+  covered = false;
   readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
@@ -745,7 +786,7 @@ export class AttachedRider {
   private readonly ducks: Record<StanceName, { press: Float64Array; knee: Float64Array; support: SupportRegion; shiftPress: Vector3; shiftKnee: Vector3 }>;
   /** Standing, weight along the board: −1 (back, on the tail) to 1 (forward). */
   trim = 0;
-  /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
+  /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest: the pumping crouch, or under a tube's curl the deep tuck). */
   crouch = 0;
   /** Standing, Compress: 0 (none) to 1 (full depth; the weight stays the trim's), taken alone or over the crouch. */
   compress = 0;
@@ -919,6 +960,8 @@ export class AttachedRider {
   private planing = false;
   private banked = false;
   private ankleRest = 0;
+  /** The board's roll toward the lean asked for, PULL_LOOKAHEAD on at its present roll rate, rad (COMPRESS_PULL's bite). */
+  private railAhead = 0;
   private ankleTorque = 0;
   protected swingTorque = 0;
   /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
@@ -1119,6 +1162,8 @@ export class AttachedRider {
     this.planing = false;
     this.banked = false;
     this.ankleRest = 0;
+    this.railAhead = 0;
+    this.covered = false;
     this.ankleTorque = 0;
     this.swingTorque = 0;
     this.swing.angle = 0;
@@ -1543,6 +1588,8 @@ export class AttachedRider {
     // Past the rail's bite the feet no longer roll the board further onto it.
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
     const reach = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const leanSide = Math.sign(this.bankReference);
+    this.railAhead = leanSide * roll + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
     const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;
@@ -1616,9 +1663,11 @@ export class AttachedRider {
     const lean = Math.min(Math.abs(this.bankReference), MAX_BANK);
     const past = Math.max(0, this.bank.angle * Math.sign(this.bankReference) - lean);
     const speedFade = Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
-    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade;
+    const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
+    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
     this.assistForce.crossVectors(Y, along)
-      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
+      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
+        * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
     this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
@@ -1656,7 +1705,8 @@ export class AttachedRider {
     // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
-    const crouch = manualCrouchShare(this.crouch, this.compress);
+    // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
+    const crouch = this.covered ? manualCrouchShare(this.crouch, this.compress) : CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
     const rest = -Math.max(crouch, compress) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
@@ -1703,6 +1753,7 @@ export class AttachedRider {
     this.waterForce.set(0, 0, 0);
     this.waterMoment.set(0, 0, 0);
     this.buoyancy.set(0, 0, 0);
+    this.covered = false;
     const frame = this.upright ? this.bodyFrame : board.orientation;
     this.bodyAxis.set(0, 0, 1).applyQuaternion(board.orientation);
     const shelter = this.upright ? 1 : ALONG_BODY_SHELTER;
@@ -1803,6 +1854,7 @@ export class AttachedRider {
   private applyWater(slot: number, water: SurfWater, radius: number, volume: number, dragArea: number, h: number, shelter: number, deckY = -Infinity): void {
     const p = this.partWorld;
     const sample = water.sampleAt(p.x, p.y, p.z, this.sample);
+    if (sample.covered && slot < RIDER_PARTS.length) this.covered = true;
     if (!sample.wet || sample.outsideDomain) return;
     // Wet between the surface and what lies under the part: the deck it rests on, or the curl's underside where the
     // part is in the curl's water (the swept barrel, the Padang Padang spec, Part B, PR 4).

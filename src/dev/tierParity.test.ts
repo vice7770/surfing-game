@@ -103,14 +103,18 @@ describe('TierRecorder', () => {
       spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
       alongShore: 40, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8,
     });
+    // Built spun up, the zone has thrown already (its spin-up advances the lip, as the page's and worker's do since
+    // c9fb6a59): the recorder counts from where it starts. One peak period's run holds a break (the next set comes
+    // about 2.4 s after the spin-up).
     const recorder = new TierRecorder(simulation);
+    const launches = simulation.lipLaunches;
     const landings = simulation.lip.landings;
-    for (let frame = 0; frame < 45; frame += 1) {
+    for (let frame = 0; frame < 300; frame += 1) {
       simulation.step(1 / 30);
       recorder.record(1 / 30);
     }
     const { activity } = recorder;
-    expect(activity.throws).toBe(simulation.lipLaunches);
+    expect(activity.throws).toBe(simulation.lipLaunches - launches);
     expect(activity.throws).toBeGreaterThan(0);
     expect(activity.jetLandings + activity.splashLandings).toBe(simulation.lip.landings - landings);
     expect(activity.tubesPeak).toBeGreaterThan(0);

@@ -3,12 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { AttachedRider, CROUCH_DEPTH, CROUCH_SHARE, MANUAL_CROUCH_DEPTH } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { PlaneWater } from './PlaneWater';
+import type { SurfWater } from './SurfWater';
+import { CoveredWater } from './testing/CoveredWater';
 
 const STEP = 1 / 60;
 
-/** A standing rider gliding at 6 m/s on flat, still water, with `set` applied from the start; `seconds` later, or at each step. */
-function glide(set: (rider: AttachedRider) => void, seconds: number, each?: (rider: AttachedRider, board: BoardBody, time: number) => void) {
-  const water = new PlaneWater();
+/**
+ * A standing rider gliding at 6 m/s on flat, still water (under a tube's curl if `covered`), with `set` applied from the
+ * start; `seconds` later, or at each step.
+ */
+function glide(set: (rider: AttachedRider) => void, seconds: number, each?: (rider: AttachedRider, board: BoardBody, time: number) => void, covered = false) {
+  const water: SurfWater = covered ? new CoveredWater(new PlaneWater()) : new PlaneWater();
   const board = new BoardBody();
   board.place(new Vector3(0, board.shape.centerOfMass.y, 0), undefined, new Vector3(0, 0, 6));
   const rider = new AttachedRider(board.shape, { phase: 'standing' });
@@ -34,13 +39,17 @@ function frontShare(set: (rider: AttachedRider) => void, seconds: number): numbe
 }
 
 describe('the height ladder (the movement-flow spec)', () => {
-  it('keeps the pumping depth, tucks deeper manually, and retains the Compress depth', () => {
+  // The deep tuck is for tube clearance: on open water full manual crouch keeps the pumping crouch's share of the
+  // depth, as before the tuck, and only under a tube's curl does it fold deeper (the owner's decision of 2026-10-06).
+  it('keeps the pumping depth, tucks deeper manually only under a tube\'s curl, and retains the Compress depth', () => {
     const pumping = glide((rider) => { rider.crouch = 0.6; }, 1.5).rider;
     const crouched = glide((rider) => { rider.crouch = 1; }, 1.5).rider;
+    const tucked = glide((rider) => { rider.crouch = 1; }, 1.5, undefined, true).rider;
     const compressed = glide((rider) => { rider.compress = 1; }, 1.5).rider;
-    expect(pumping.attached && crouched.attached && compressed.attached).toBe(true);
+    expect(pumping.attached && crouched.attached && tucked.attached && compressed.attached).toBe(true);
     expect(pumping.leg.rest).toBeCloseTo(-0.6 * CROUCH_SHARE * CROUCH_DEPTH, 2);
-    expect(crouched.leg.rest).toBeCloseTo(-MANUAL_CROUCH_DEPTH, 2);
+    expect(crouched.leg.rest).toBeCloseTo(-CROUCH_SHARE * CROUCH_DEPTH, 2);
+    expect(tucked.leg.rest).toBeCloseTo(-MANUAL_CROUCH_DEPTH, 2);
     expect(compressed.leg.rest).toBeCloseTo(-CROUCH_DEPTH, 2);
   });
 

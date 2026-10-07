@@ -434,9 +434,10 @@ describe('SpillingRoller: the front\'s mask', () => {
   });
 
   it('grows the band down the face from S2\'s line: 1.5 m + 5 m/s·a long, its share 0.35 → 1 over 1.5 s', () => {
-    // The wave's peak is the right-hand column, so the front reaches every column at once (all lie upstream of it).
+    // The wave's peak is the right-hand column, so the front reaches every column at once (all lie upstream of it; no
+    // upcoast gate here).
     const nx = 21;
-    const run = new Run({ nx, onsetOrder: Array.from({ length: nx }, (_, i) => nx - 1 - i) });
+    const run = new Run({ nx, front: { upcoastMargin: Infinity }, onsetOrder: Array.from({ length: nx }, (_, i) => nx - 1 - i) });
     for (const a of [0.2, 0.5, 1.0, 1.4, 1.6]) {
       run.steps(a - run.time + 1 / 60);
       const age = run.time - run.front.waves[0].reached[10];
@@ -451,8 +452,9 @@ describe('SpillingRoller: the front\'s mask', () => {
 
 describe('SpillingRoller: the review focus', () => {
   it('keeps drawing a lens whose wave the front has dropped (Review Focus 1)', () => {
-    // The wave peaks at the right-hand column, so its front reaches every column at once; it is dropped at 2.5 s.
-    const run = new Run({ front: { lifetime: 2.5 }, onsetOrder: Array.from({ length: 21 }, (_, i) => 20 - i) });
+    // The wave peaks at the right-hand column, so its front reaches every column at once (no upcoast gate here); it is
+    // dropped at 2.5 s.
+    const run = new Run({ front: { lifetime: 2.5, upcoastMargin: Infinity }, onsetOrder: Array.from({ length: 21 }, (_, i) => 20 - i) });
     run.steps(2.4);
     const before = run.entry(10, 0, ROLLER_FIELD.scale);
     expect(before).toBeGreaterThan(0.2);

@@ -1,4 +1,4 @@
-import { CANYON, PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { CANYON, PADANG, REEF, canyonArmAt, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -248,7 +248,7 @@ const FLAT_REACH = 300;
 const FLAT_RISE = 0.1;
 
 /**
- * The tank for a swell (the wave-sizes spec): today's for small days, Practice and the Canyon; for a big day,
+ * The tank for a swell (the wave-sizes spec): today's for small days and Practice, the Canyon's own; for a big day,
  * its edge where the take-off transect's bed first reaches the edge depth (or levels off short of it), and far
  * enough out that the blend onto the spot's bed lies 20 m seaward of the fine zone, which starts 40 m seaward
  * of where the sets break (Komar–Gaughan's H1/10 over the breaker index). The relaxation zone is at least 60 m
@@ -256,7 +256,12 @@ const FLAT_RISE = 0.1;
  */
 export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
-  if (config.spot === 'canyon') return today;
+  // The Canyon (its straight-crest bed): today's zone and 5 m edge, moved out to CANYON.zoneInner, with 1 m cells from the
+  // zone in, so the waves shoaling onto its shelf are resolved (on 4 m cells they lost a third of their height unbroken).
+  if (config.spot === 'canyon') {
+    const zoneInner = CANYON.zoneInner;
+    return { offshore: zoneInner - (TANK.zoneInner - TANK.offshore), zoneInner, blendEnd: zoneInner + CANYON.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: today.edgeDepth };
+  }
   // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
   if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore), edgeDepth: today.edgeDepth };
   // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
@@ -423,11 +428,13 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
 
 /**
  * How each spot finds its take-off transect: straight out from the window's
- * centre, or where its bed gathers the swell. A canyon's peak sits beside the
- * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
- * and moves with the swell's direction and period.
+ * centre, where its bed gathers the swell (a canyon's peak sits beside the
+ * shadow it casts, as measured over the Scripps canyon, Magne et al. 2007, and
+ * moves with the swell's direction and period), or at the spot's own peak. The
+ * Canyon's straight-crest bed has no canyon: its waves start breaking at its
+ * arm's peak, so its riders wait there.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak', pool: 'peak' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'peak', padang: 'peak', pool: 'peak' };
 
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
@@ -447,13 +454,17 @@ export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.
  */
 export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
-/** Where a peak take-off waits along shore: at the Reef's or Padang Padang's own peak. */
+/** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak. */
 export function peakTakeOffX(spot: SpotName): number {
-  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : REEF.takeOffX;
+  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : spot === 'canyon' ? CANYON.takeOffX : REEF.takeOffX;
 }
 
-/** The Canyon's take-off: where its terrace has risen this far above the shelf, m (`takeOffPoint`). */
-export const CANYON_TAKE_OFF_RISE = 0.05;
+/**
+ * The Canyon's take-off: where its arm has risen this far above the shelf, m (`takeOffPoint`). On the straight-crest
+ * bed the waves started breaking at a median 1.9 m deep beside the take-off (the onsets 4–12 m down the arm from its
+ * peak, Medium, seed 1, 600 s), 1.7 m up from the 3.6 m shelf. Re-measure if the shelf or the swell changes.
+ */
+export const CANYON_TAKE_OFF_RISE = 1.7;
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
@@ -473,8 +484,8 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
     : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
   // The Wave Pool's regular wave first breaks where its arm is poolBreakDepth deep (the size probe): the shoaled-breaker
   // estimate from its Hs put the take-off 14 m seaward of the break, and 1.5 H put it 13–23 m inside it.
-  // The Canyon's waves break where its terrace rises from the shelf (the canyon spilling prototype): the shoaled-breaker
-  // estimate put the take-off 15–20 m inside the measured breaks, on the terrace's flank.
+  // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
+  // inside the measured breaks.
   const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
     : config.spot === 'canyon' ? CANYON.shelfDepth - CANYON_TAKE_OFF_RISE + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
@@ -487,7 +498,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   };
   const reach = Math.max(0, alongShoreOf(config) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
-  // The Reef's and Padang Padang's riders wait at their peak, where each wave first breaks.
+  // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
     const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot)));
     return { x, z: breakZ(x) };
@@ -654,9 +665,11 @@ export class SurfZoneSimulation {
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
     // Padang Padang's is its reef's, from the peak to the channel. The Wave Pool's A-frame peels both ways alike, so a
-    // fit across both arms reads as a close-out: its peel is the right arm's, where riders wait.
+    // fit across both arms reads as a close-out: its peel is the right arm's, where riders wait. The Canyon's is its
+    // arm's, from the peak to the beach face: upcoast of the peak the square crests close out on the beach.
     const xCenters = this.solver.xCenters;
-    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt : undefined;
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt
+      : config.spot === 'canyon' ? canyonArmAt : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);

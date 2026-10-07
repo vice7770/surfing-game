@@ -39,7 +39,21 @@ export interface SpillingFrontOptions {
   maxWaves: number;
   /** A wave is dropped this many seconds after its first onset. */
   lifetime: number;
+  /**
+   * The upcoast gate (the owner, 2026-10-07: hold the upcoast haze back): upcoast (against the peel) of the most
+   * upcoast crest start among the live waves (`SpillingWave.crestX`: where each crest first broke), beyond this many
+   * metres, the waves' whitewater is withheld for good. The solver's break can spread along the crest both ways from
+   * the peak (the breaking age's sideways spread); the foam shows it only within the margin. Infinity: no gate.
+   */
+  upcoastMargin: number;
 }
+
+/**
+ * How much faster than the breaker celerity a crest may have run since its first onset, for a later break to count as
+ * the same crest's: the Canyon's crests run at about 6.3 m/s on its shelf (H ≥ 1.2 m, measured), 1.35 times its c_b of
+ * 4.65 m/s at Medium. Slower crests (about 4 m/s over its terrace) fall within `bandWidth` behind for some 30 s.
+ */
+const CREST_SPEED_SPAN = 1.5;
 
 /** Defaults for the Canyon: a 55° visible peel (the owner's 50–60°), foam grown down the face over 1.5 s. */
 export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
@@ -54,6 +68,12 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   bandWidth: 20,
   maxWaves: 8,
   lifetime: 45,
+  /**
+   * 6 m, provisional: the front's own join reach. At the Canyon the arm's end puts each break contour's most seaward
+   * point up to 5.6 m upcoast of its peak at the measured break depths, and before the gate half its crests' foam reached
+   * no further than 6 m upcoast of their first onset (`scripts/canyon-haze-report.ts`, Medium, 3 seeds × 14 periods).
+   */
+  upcoastMargin: 6,
 };
 
 /** Terms of `seriesSine`'s Taylor series: on [−π/2, π/2] the first one left out is below 1e-20. */
@@ -93,8 +113,14 @@ export interface SpillingWave {
   readonly id: number;
   /** Solver time of the wave's first onset, s. */
   readonly onset: number;
-  /** Along-shore position of its first onset (the peak), m. */
+  /** Along-shore position of its first onset (the peak), m, and where across shore it started breaking there, z. */
   readonly startX: number;
+  readonly startZ: number;
+  /**
+   * Where its crest first broke along shore, m: its own start, or, when it started inside a live older wave's band (one
+   * crest breaking again further along, or spreading back), that wave's crest start. The upcoast gate counts from here.
+   */
+  readonly crestX: number;
   /** Where the visible front is along shore, m. */
   frontX: number;
   /** How far along the peel the solver has broken this wave, m (the front never passes it). */
@@ -119,6 +145,8 @@ export class SpillingFront {
   /** Waves started so far. */
   started = 0;
   private readonly crestZ: Float64Array;
+  /** The breaker celerity of the latest update, m/s: how far a wave's band has run since its onset. */
+  private celerity = 0;
 
   constructor(private readonly grid: SpillingGrid, options: Partial<SpillingFrontOptions> = {}) {
     this.options = { ...SPILLING_FRONT_DEFAULTS, ...options };
@@ -161,9 +189,20 @@ export class SpillingFront {
       if (this.ahead(wave.backX, x)) wave.backX = x;
       return;
     }
+    // One crest breaking again further along, or spreading back, breaks where an older wave's crest has since run: it
+    // keeps that crest's start for the upcoast gate. The next crest, a wavelength behind, does not: it starts its own.
+    let crestX = x;
+    for (let k = this.waves.length - 1; k >= 0; k -= 1) {
+      const older = this.waves[k];
+      const run = this.celerity * (time - older.onset);
+      const { bandWidth } = this.options;
+      if (z < older.startZ + run - bandWidth || z > older.startZ + CREST_SPEED_SPAN * run + bandWidth) continue;
+      crestX = older.crestX;
+      break;
+    }
     const nx = this.grid.nx;
     const wave: SpillingWave = {
-      id: this.started, onset: time, startX: x, frontX: x, tipX: x, backX: x,
+      id: this.started, onset: time, startX: x, startZ: z, crestX, frontX: x, tipX: x, backX: x,
       reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN),
       joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time,
     };
@@ -182,7 +221,8 @@ export class SpillingFront {
 
   /**
    * Advance the fronts by `dt` at no more than `speedCap(breakerCelerity)` toward their solver tips, then write the
-   * whitewater: the solver's `strength` behind each front (thinned to a line at the crest while young), 0 ahead of it.
+   * whitewater: the solver's `strength` behind each front (thinned to a line at the crest while young), 0 ahead of it,
+   * and 0 upcoast of the live crests' first onset beyond `upcoastMargin`.
    * A breaking cell belongs to the newest wave that started breaking in its column whose band holds it: from
    * crestMargin seaward of where it started there to bandWidth shoreward of where its crest has since run at the
    * breaker celerity. Cells no wave's band holds (older bores) keep the solver's strength.
@@ -196,14 +236,22 @@ export class SpillingFront {
     const { nx, nz, xCenters, zCenters } = grid;
     const { direction } = options;
     const cap = this.speedCap(breakerCelerity);
+    this.celerity = breakerCelerity;
     while (this.waves.length > 0 && time - this.waves[0].onset > options.lifetime) this.waves.shift();
+    // The upcoast gate counts from the most upcoast crest start among the live waves: a break further along a crest
+    // that no older crest's run holds keeps the gate where its crest first broke, and leaves the arm behind it alone.
+    let gateFrom = Infinity;
+    for (const wave of this.waves) gateFrom = Math.min(gateFrom, direction * wave.crestX);
     for (const wave of this.waves) {
       const room = direction * (wave.tipX - wave.frontX);
       if (room > 0) wave.frontX += direction * Math.min(room, cap * Math.max(0, dt));
       for (let column = 0; column < nx; column += 1) {
         if (!Number.isNaN(wave.reached[column])) continue;
-        // Behind the front (and anything upstream of the peak, which the solver may break on its own): reached now.
-        if (!this.ahead(xCenters[column], wave.frontX)) wave.reached[column] = time;
+        const x = xCenters[column];
+        // Upcoast of the crests' first onset beyond the margin: never reached, so the whitewater there stays withheld.
+        if (gateFrom - direction * x > options.upcoastMargin) continue;
+        // Behind the front (and upstream of the peak within the margin, which the solver may break on its own): reached now.
+        if (!this.ahead(x, wave.frontX)) wave.reached[column] = time;
       }
     }
     const waves = this.waves;
@@ -269,6 +317,7 @@ export class SpillingFront {
   reset(): void {
     this.waves.length = 0;
     this.started = 0;
+    this.celerity = 0;
     this.gated = 0;
     this.ramped = 0;
     this.crestZ.fill(Number.NaN);

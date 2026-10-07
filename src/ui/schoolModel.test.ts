@@ -29,7 +29,8 @@ describe('school models', () => {
   it('puts the explanation, the diagram and the keys on the card', () => {
     const card = lessonCardModel(lessonById('crouch'), label);
     expect(card).toMatchObject({ number: 3, title: 'Crouch and extend', keys: 'Shift', diagram: 'crouch' });
-    expect(card.explain).toContain('Bend your knees');
+    // Crouch and extend teaches the pump's timing (the movement-flow spec's Surf School; its words since 9d491971).
+    expect(card.explain).toContain('Stand tall as the board drops down the face');
   });
 
   it('prompts during an attempt with the goal’s count', () => {

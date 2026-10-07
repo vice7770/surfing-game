@@ -17,14 +17,15 @@ import { compareStance, type StanceReading } from './stanceReport';
  */
 const KNOWN_MISSES: Record<string, string> = {
   'trim.kneeFront': 'the physics sits the hips forward (its weight 0.64, over 0.50–0.62): the front knee bends for it (step 6)',
-  'compress-frontside.hipFront': 'the movement-flow spec took Compress\'s forward weight away (W/S set it): the trunk no longer folds over the front hip (102° for 60–90), as the thesis\'s weight-forward fundamental did',
+  'compress-frontside.kneeFront': 'the front knee closes a hair past the thesis\'s 70° (69.7–69.8°): since the compressed turn\'s pull eased short of the rail\'s bite and within a real bottom turn\'s pull (371fda18, 51d0d8e5), the body leans 54° rather than 62° and the trunk folds over the front hip again (76°, met)',
   'compress-frontside.hipRear': 'the hinge brings the hips\' mean to the depth\'s angle (84° at the physics\' Compress depth, 0.87) and meets it; the rear thigh, more upright, leaves its hip at about 95°: one angle for both hips, the rig\'s mapping (it could reach this)',
   'compress-frontside.lowHand': 'the drawn hand still blending down to the physics\' (0.12 m) 0.4 s into Compress: step 1\'s point blend carries the switch',
   'compress-backside.hipFront': 'backside the hinge stops at Hobgood\'s upright trunk so the heel-side hand reaches the water: the thesis\'s hips cannot fold with it',
   'compress-backside.hipRear': 'as the front hip: the upright backside trunk',
   'compress-backside.lowHand': 'the drawn hand still blending down to the physics\' (0.18 m): step 1\'s point blend',
+  'extension-frontside.kneeFront': 'let go tall and centred (the spec\'s projection) on flat water, the turn bleeds its speed (7.6 to 5.3 m/s in 0.3 s) and the slowing board rides 17° nose-up under the upright body, its whole load on the front foot: the front knee bends to 100–101°. The spec\'s projection carries the board up a face, which flat water lacks',
   'extension-frontside.kneeRear': 'the physics\' pelvis still rising 0.3 s after Compress, from its deeper ladder (the movement-flow spec)',
-  'extension-backside.kneeRear': 'as frontside: the physics\' pelvis still rising',
+  'extension-backside.kneeFront': 'as frontside: the board 17° nose-up under the body, the front knee at 102–103° (the rear one met, 158°)',
   'landing.stanceWidth': 'the drawn feet still gliding apart at the landing\'s end: the physics jumps them from the lying legs (step 6), step 1 blends the jump',
   'landing.weight': 'as the width: the front foot not yet arrived',
 };
