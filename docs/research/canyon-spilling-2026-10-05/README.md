@@ -18,58 +18,131 @@ For a surfer facing the beach, +x is on their left: the Reef and Padang Padang, 
 
 ## What was built
 
-### 1. The bed (`src/wave/Bathymetry.ts`, `CANYON`, `canyon()`, `canyonBreakLineZ()`)
+### 1. The bed (`src/wave/Bathymetry.ts`: `CANYON`, `canyonTerraceDepth()`, `canyonBreakLineZ()`, `canyonArmAt()`; the tank in `tankLayout`)
 
-**Measured first.** The old Canyon had its canyon axis on the +x edge (x = 80) and a Dean beach. Under the owner's swell it did not peel one way. That swell is direction 0°, spreading s = 150 (`PADANG_SPREADING`), Medium (Hs 1.4 m at the edge, Tp 11 s), measured over 3 seeds × 14 periods:
+#### The straight-crest bed (2026-10-06)
 
-- a median peel angle of 17°;
-- 12 of 25 clean waves toward +x and 13 toward −x;
-- a median peel speed of 15.8 m/s;
-- 235 lip jets.
+**The owner's requirement.** On the prototype's screenshots the owner saw that "the wave formation comes from a corner forming a strange shape". The waves must form straight to the beach. The timing of the sets may vary, but waves may not come from more than one side, much less at the same time.
 
-The canyon's flank focus makes an A-frame whose arms take turns. Moving the canyon alone to the other edge was also mixed: 1 seed, with clean waves both ways.
+**Why the prototype's crests bent.** Its canyon ran along the −x open edge (see "The prototype's bed" below). The swell ran ahead over the canyon's axis, so on its flank the crests turned toward +x and wrapped in from that corner. On the crest-angle report its crests stood at a mean −20° on both watched lines, against 0.8° at the plain Beach under the same swell (the table below).
 
-**What failed, and why.** A square swell meeting an oblique break line peels at sin α = (c_b / c_shelf) · sin φ by phase matching (`ledgePeel.ts`). Here c_b is the breaker celerity, c_shelf the crest speed on the shelf where the crest meets the line, and φ the line's angle to the crest.
+**Why the sea ran flat without the canyon.** The prototype's session found that removing the canyon "ran the sea flat by about 45 s". The cause is the tank's grid, not the bed:
 
-- On a deep shelf the angle stays small.
-- A long shallow bar acts as a lens. The crests wrap onto it and the break runs along it at 20–30 m/s.
+- The tank had 4 m cells from its relaxation zone to z = −150, and 1 m cells only inshore of that. The shelf (2.4 m) began at z = −190, so the swell shoaled from the 5 m edge onto it on the 4 m cells.
+- Steepening there, the waves lost a third of their height without breaking: H1/3 was 1.64 m at the zone and 0.95 m on the shelf, and no cell broke anywhere seaward of the shore (seed 1, 40–150 s).
+- On the 1.3 m terrace those waves were too small to reach Kennedy's onset. Once the warm start's set had passed, nothing broke but the shore break.
+- The canyon had hidden this: over its deep third of the window the waves kept their height, and its flank focused them onto the terrace.
+- With 1 m cells everywhere the same bed kept the waves' height (H1/3 1.8–1.95 m at the blend's end), and they broke on the terrace again. On 2 m cells they still lost a third on the shelf.
 
-Sweeps with these designs (the bar at 55–75°, shelves 2.4–3.5 m) gave medians of 8–15° with both directions. Removing the canyon outright twice ran the sea flat by about 45 s, probably unstable; that was not chased.
+**The fix: 1 m cells from the zone in** (`tankLayout`). The Canyon's tank keeps today's 5 m edge and 60 m relaxation zone, moved out to `CANYON.zoneInner` = −396 so the whole arm fits. Its 1 m cells start at the zone, so the shoaling is resolved. It has 449 × 160 = 71,840 cells, against 37,280 before, but no 16 m canyon in its 1 m cells, so its stable step is longer. On the M1's CPU (64 components, seed 1, 40 s, run back to back on a shared machine) it took 1,288 ms per simulated second, against 1,168 ms for the prototype: about 10 % more.
 
-**What works.** The final design has three parts:
+**Resolved, the swell is bigger on a shallow shelf.**
 
-- **The canyon on the −x open edge** (`axisX: −80`). It is level across the boundary, as before. The swell runs ahead over the canyon's axis, so on its flank the crests turn toward +x. They reach the break already angled, which is the "oblique swell" a real point break gets from its wrap.
-- **A level sand shelf**, `shelfDepth` 2.4 m, then a planar beach face at 1:25.
-- **An oblique terrace** on the shelf, `crestDepth` 1.3 m deep. Its seaward edge is the break line. It runs at `angle` 62° to the shore from its peak (`peakX` −40, `peakZ` −140) toward +x and the beach. It rises from the shelf at `edgeSlope` 1:12 across the line, which is 1:26 along the waves' path, so the breakers spill: the readout's Iribarren number is 0.35 at the take-off, and ξ < 0.4 for the breakers the shelf holds (γ·h = 1.9 m). A 1:20 edge also spilled (ξ 0.25), but its median peel was the same 45° over 3 seeds and 51° on seed 1, against 54° for 1:12 on seed 1. Upcoast of the peak the terrace fades out over `fadeWidth` 25 m, so the bed is level along shore at both open edges.
+- With no terrace, a 2.4 m shelf closed it out: 150 onsets on the shelf in 160 s. A 2.8 m shelf held it: none.
+- But once a wave broke at the arm's peak, the break ran along its crest both ways at 45°, onto the level shelf ahead of the arm and upcoast of the peak. On 2.8 m the crests stood at η_t/√(gh) 0.14–0.37 for H ≥ 1 m. That is above 0.15, which the breaking age lowers Kennedy's threshold to (the peel bar, below).
+- On 3.6 m the crests are flatter, and the starts and the direction became consistent (the sweep, below).
 
-All the values are in `CANYON` and can be changed for the sweep (`scripts/canyon-peel-report.ts --canyon key=value,...`).
+**The bed** (`CANYON`):
 
-**After**, under the same swell and seeds (`canyon-peel-report`, 3 seeds × 14 periods):
+- **The shelf.** A 60 m blend takes the bed from the 5 m edge to a level sand shelf `shelfDepth` = 3.6 m deep. Seaward of the arm the bed is level along shore, so the crests reach it straight.
+- **The arm.** A terrace `crestDepth` = 1.0 m deep stands on the shelf.
+  - Its seaward edge, the break line, runs at `angle` = 62° to the shore from its peak (`peakX` −48, `peakZ` −236) toward +x and the beach.
+  - It meets the beach face at x = 64, inside the +x edge's margin, so it spans the window, and no beach section beside it closes out downcoast. Shorter arms left one, whose waves started a second break where the arm met the beach face.
+- **Its face.** It climbs at `pathSlope` = 1:30 along the waves' path (1:14 across the line). The readout's Iribarren number at the take-off is 0.35, spilling, as before.
+- **Its upcoast end.** Upcoast of the peak the arm ends in a face along +z, falling at `endSlope` = 1:4 across x.
+  - Every depth's contour is therefore furthest out at the peak, or within 10 m upcoast of it where the end reaches that depth, so each wave starts breaking there.
+  - Nothing upcoast faces the swell.
+  - The end lies 10 m inside the −x open edge's 20 m levelling (`OPEN_EDGE_RAMP`), so the edge copies plain shelf. In the sweep, ends inside the levelling left a shoal along the edge, and the waves broke on it.
+- **The beach face.** Planar at 1:25, as before.
 
-| | Before (old bed, lip on) | After (new bed, no lip, front on) |
-| --- | --- | --- |
-| Clean waves (onset fit r² ≥ 0.3) | 25 | 34 |
-| Toward +x / toward −x | 12 / 13 | **33 / 1** |
-| Median peel angle (PeelTracker, sin α = c_b·\|dt/dx\|/stretch) | 17° | **45°** (seed 1 alone: 54°, 10 of 10 toward +x) |
-| Median peel speed along the break line | 15.8 m/s | **6.6 m/s** |
-| Lip jets thrown | 235 | **0** |
-| Breaker readout at the take-off | spilling, ξ 0.20 | spilling, ξ 0.35 |
+**The take-off** (`takeOffPoint`).
 
-Other sizes, 1 seed each:
+- **Along shore.** The 'focus' rule found no canyon to gather the swell: the ray concentration at its seat fell to 0.75 for one of the test's swells. The Canyon's riders now wait at its peak, like the Reef's, Padang Padang's and the Pool's: `TAKE_OFF.canyon` = 'peak', at `CANYON.takeOffX` = −40, 8 m down the arm from its peak.
+- **Across shore.** The rule is unchanged: riders wait where the arm has risen `CANYON_TAKE_OFF_RISE` above the shelf. That is now 1.7 m (1.9 m deep), where the waves 4–12 m down the arm were measured starting to break (a median of 1.9 m; Medium, seed 1, 600 s).
 
-- **Big** (Hs 2.4 m, Tp 14 s): 8 of 9 clean waves toward +x, a median of 35°, 10.0 m/s.
-- **Small** (Hs 0.9 m, Tp 9 s): few onsets. Most waves are too small to break on the 1.3 m terrace and break at the shore instead, so the peel is unmeasured.
+**The peel is the arm's** (`canyonArmAt`), as at the Reef, Padang Padang and the Pool: from the arm's end beside the peak (x −58) to the beach face. Upcoast of that, the square crests close out on the beach face in the window's −x strip.
 
-The solver's own peel is 45° at the median. That is below the owner's 50–60°, but it now runs one way and is slow enough to ride.
+**Before and after.** The owner's swell is Medium: Hs 1.4 m at the edge, Tp 11 s, 0°, s = 150 (`REFRACTED_SPREADING`). The before is the prototype's bed below. The bars are the owner's requirement, made measurable.
 
-- Half the clean waves peel at 45–76°.
-- The rest peel at 10–44°, where two sets of crests overlap or a set runs ahead.
+| Bar | Target | Before: the prototype (canyon on the −x edge) | After: the straight-crest arm |
+| --- | --- | --- | --- |
+| 1. Straight crests (crest-angle report, seed 1, 600 s, 64 components): mean angle, mean \|angle\|, max \|angle\| | Mean near 0, no sign; mean \|angle\| within about 2° of the Beach's (edge 4.3°, take-off line 4.4°; mean 0.8° on both) | Edge −20.0°, 20.0°, 40.2°; take-off line −19.8°, 20.1°, 38.8° | **Edge 0.5°, 2.7°, 19.1°; take-off line 0.7°, 3.3°, 12.7°** |
+| 2. The same start: each crest's first onset along shore, 3 seeds × 14 periods | ±10 m | Median x −18; 24 of 31 waves (77 %) within ±10 m; 10–90 % range −23…43 | **Median x −50; 38 of 40 (95 %) within ±10 m; 10–90 % range −52…−45** |
+| 2. Over 600 s (seed 1) | ±10 m | Median x 43; 6 of 25 (24 %) | **Median x −50; 49 of 50 (98 %)** |
+| 3. One way: clean waves toward +x (canyon-peel-report, 3 seeds × 14 periods; the after's on the arm, the before's across the window) | ≥ 90 % | 33 of 34 (97 %) | **40 of 40 (100 %)**; each crest's own onsets: 40 of 40 |
+| 3. Over 600 s (seed 1, the same tracker) | ≥ 90 % | 20 of 29 (69 %) | **52 of 53 (98 %)** |
+| 4. Peel angle: canyon-peel-report's median, 3 seeds × 14 periods | 45–60° | 45° | **31°: not met** (each wave's own fit along the arm: a median of 42°, against 45° before) |
+| 5. Stable for 600 s (seed 1) | No running flat, no blow-ups | Stable: fastest water 3.2 m/s, no Froude caps, volume within 1.6 %. But its breaking dwindled: 79–557 onsets per 100 s | **Stable: fastest water 5.4 m/s (3.7 m/s typical over 10 s), no Froude caps, volume within 2 %; 890–1,060 onsets per 100 s throughout** |
+| 6. Pictures | Straight crests and the peel | `img/final-*` | **`img/straight-*`** (below) |
+| Spilling: the readout at the take-off | ξ < 0.4 | 0.35 | 0.35 |
+| Lip jets | 0 | 0 | 0 |
 
-The spilling front (§3) holds the visible peel at 55° or slower.
+**What the numbers mean.**
 
-**Take-off.** `TAKE_OFF.canyon` stays `'focus'` along shore. On a 0° swell, the rays from the −x canyon gather at x ≈ 13, just downstream of where the breaks start (x ≈ −20…20). If the swell's direction changes, re-check it.
+- **The crests.** They are now as straight as the Beach's, slightly straighter: the Beach's bars and rips turn its crests a little.
+- **The start.** Each wave starts breaking at the arm's peak: 38 of 40 waves start between x −56 and −41.
+  - The two outliers were small waves. One, a 1.0 m face, first broke on the terrace's top behind the line at x −29. The other broke over a short stretch of the face mid-arm (x 11–20).
+  - The prototype's starts wandered between its terrace and the beach. Over 600 s on seed 1 they wandered further (median x 43).
+- **The direction.** Every clean wave peeled toward +x. In about a quarter of the waves, mostly the big ones, the break also spread upcoast of the peak (more than two onsets over 5 m upcoast within 3 s): typically 5 m, at worst 20–48 m. That is the breaking age's sideways spread (below). The prototype did the same in a similar share (8 of 31 waves).
+- **The peel.** See the next part.
 
-Across shore, the shoaled-breaker estimate put the take-off 15–20 m inside the measured breaks, on the terrace's flank. The Canyon's take-off now sits where the terrace has risen `CANYON_TAKE_OFF_RISE` = 0.05 m above the shelf, which is where its waves were measured breaking (`takeOffPoint`).
+**The peel bar is not met, and on today's meter no bed can meet it.** The water-physics advisor's consult (2026-10-06, `docs/research/water-physics/consult-log.md`) found two limits.
+
+- **The breaking age's sideways spread.**
+  - Kennedy's threshold falls from 0.65√(gh) to 0.15√(gh) as a break ages. The age passes to the cell behind a face and to its two diagonals (`breakingAge.ts`, rule A), so it moves one column along the crest for each row the face advances: along the crest, at the crest's own speed.
+  - On this swell's crests (0.15–0.37√(gh) on a 2.8–4 m shelf) a break at the peak runs along the crest at that speed, ahead of the arm's own peel. The tracker reads that as asin(4.65 / (√2 · c)): 31° at c = 6.3 m/s, the after's median.
+  - In nature each part of a crest breaks at its own threshold:
+    - Dally (1990): on straight contours the break point simply moves along the bottom contour.
+    - Goda (1992) modelled a sideways spread of 0.30 C_b on average.
+    - Surf Ranch measured 0.48 C (Feddersen et al. 2023).
+  - The advisor's inferred fix: take the age only from the parent nearest the up-ray (−∇η), or a 0.35√(gh) threshold for joining through the diagonals. It revisits rule A (PR #76), so every spot's peel moves.
+- **The meter's celerity.**
+  - The tracker's sin α = c_b · |dt/dx| / stretch uses c_b = √(g h_b) = 4.65 m/s, from the shoaled-breaker estimate.
+  - The break point can't move slower than a straight crest, so sin α ≤ (4.65 / c_s) · sin φ, where c_s is the crests' speed on the shelf. With crests at 6.3 m/s (H ≥ 1.2 m on a 2.8–4 m shelf, measured) that tops out at 47.6°, and 45° needs φ ≥ 73.5° with no spread.
+  - The prototype read 45° because its damped waves were small and slow: the damping, not the bed, kept its tracker reading high.
+  - Hutt's peel angle uses the crest's own speed (Walker & Palmer, via Scarfe et al. 2009). On a meter with c_b = √(2 g H_b) = 5.8 m/s, an arm at 60–66° reads 53–57° and the spread 41° (the advisor's table). That meter is the owner's decision of 2026-09-29, still unbuilt.
+- **Why the tracker and each wave's fit differ** (31° and 42°). The tracker samples once a period: it fits the latest onsets of the longest run of columns within 1.1 s of each other. With three waves on the 230 m arm at once, that run is often a stretch of the fast spread. Each wave's fit spans its whole ride, the arm's slower stretches included.
+- **For the owner:**
+  - Is 50–60° meant on the crest-speed meter?
+  - Should rule A change, at every spot?
+  - Should the beach close out beside the arm, upcoast of the peak?
+
+**The sweep.** One seed (1), 8 periods each, unless noted. The peel is the tracker's median, on the arm only from row 3 on. "Starts" counts each crest's first onset within ±10 m of their median, out of the waves tracked. "Upcoast" counts waves whose break also ran over 5 m upcoast of their start within 3 s.
+
+| Design | Peel | Starts | Toward +x | Upcoast | What happened |
+| --- | --- | --- | --- | --- | --- |
+| The prototype without its canyon, old tank | — | — | — | — | Nothing broke after 40 s: the coarse grid (above) |
+| Short arm on the old tank: 2.4 m shelf, 1.0 m crest, 62°, peak (−48, −140) | 46° | Two places | 6 of 6 | — | Its damped waves started at the peak or where the arm met the beach face (x ≈ 0) |
+| Short arm, 1 m cells: 2.8 m shelf, 66°, peak (−48, −156) | 40° | Scattered | 5 of 6 | — | Breaks ran both ways along the crests; the beach downcoast closed out |
+| Long arm, 62°, peak (−48, −236), 1.3 m crest, face 1:26 along the path: 2.8 m shelf | 30° | 6 of 8 | 7 of 8 | 4 | The spread ran over the shelf |
+| The same, 3.6 m shelf | 36° | 8 of 8 | 8 of 8 | 2 | |
+| The same, 4.4 m shelf | 31° | 7 of 7 | 6 of 7 | 2 | Faster crests |
+| Long arm, 3.6 m shelf, 70°, peak (−48, −330) | 38° | 8 of 8 | 8 of 8 | 4 | Over 3 seeds × 14 periods: 36°, 39 of 40 toward +x, starts 36 of 38, each wave's fit 44°; 85,280 cells |
+| **Long arm, 3.6 m shelf, 62°, 1.0 m crest** | 36° | 7 of 7 | 7 of 7 | 3 | **Kept**, with its face at 1:30 along the path (ξ 0.35) |
+| Short arm, 5 m shelf, 72° | 15° | Scattered | 5 of 5 | — | The beach face beside it closed out |
+
+**Pictures.** Headless Chrome on the M1's GPU (`--gpu`: Metal through ANGLE), Rich look, midday; Medium, 0°, s = 150, CPU solver, frames 1 s apart from 33 s into the sea, with every fourth shown (44–72 s).
+
+- **Overhead** (sea at the top, +x to the right; the window is the strip between the far field's bands): `img/straight-overhead-sheet.jpg`, frames `img/straight-overhead-11.jpg` … `-39.jpg`.
+  - Seaward of the arm the crests are straight and square to the beach.
+  - Each wave breaks first at the peak (top left). Its whitewater grows down the arm toward +x and the beach while the crest beside it stays green. Two or three waves are on the arm at once.
+  - Upcoast of the peak a haze of foam marks the breaks that also spread that way.
+
+![overhead](img/straight-overhead-sheet.jpg)
+
+- **From the beach** (24 m up behind the shore, looking out past the peak; +x is screen-right): `img/straight-beach-sheet.jpg`, frames `img/straight-beach-11.jpg` … `-39.jpg`. The peak breaks at the horizon, and the whitewater runs toward the right along the arm, over the pale terrace.
+
+![beach](img/straight-beach-sheet.jpg)
+
+#### The prototype's bed (2026-10-05)
+
+The prototype's bed had three parts:
+
+- **A canyon on the −x open edge** (axis x = −80, 14 m deep, level across the boundary). It turned the crests toward +x.
+- **A level sand shelf** 2.4 m deep, then a planar beach face at 1:25.
+- **An oblique terrace** 1.3 m deep. Its break line ran at 62° from its peak (−40, −140), rising at 1:12 across the line (1:26 along the path). It faded out upcoast of the peak over 25 m.
+
+Before it, with the canyon on the +x edge and a Dean beach, the swell peeled both ways: a median of 17°, and 12 of 25 clean waves toward +x. That session's bars and shelves at 55–75° without the canyon gave medians of 8–15°, peeling both ways, and then ran the sea flat (the coarse grid, above).
 
 ### 2. No lip, no tube at the Canyon (`src/wave/SurfZoneSimulation.ts`)
 
@@ -115,7 +188,7 @@ The cost is one pass over the grid per step, with at most 8 waves per breaking c
 - **`scripts/canyon-peel-report.ts`** prints the peel per period and the front's state, and sweeps `CANYON`:
   - Build and run: `rolldown scripts/canyon-peel-report.ts -o dist/scripts/canyon-peel-report.mjs --format esm --platform node && node dist/scripts/canyon-peel-report.mjs --hs 1.4 --tp 11 --seeds 3 --periods 14 [--verbose] [--canyon angle=60,...]`.
 - **`scripts/browser/canyon-peel-shots.mjs`** drives the water sheet and shoots a sequence, one second apart, from the beach, a cliff and overhead. Start `npx vite --port 5199` first.
-  - Run: `CHROME=/opt/pw-browsers/chromium node scripts/browser/canyon-peel-shots.mjs <dir> --frames=30 --headless`.
+  - Run: `CHROME=/opt/pw-browsers/chromium node scripts/browser/canyon-peel-shots.mjs <dir> --frames=30 --headless`, or `--gpu` to render headless on the machine's GPU (Metal through ANGLE, WebGPU allowed), whose colours SwiftShader washes out. `--views` takes the views as JSON, and `--skip` steps the sea before the first frame.
   - It runs its own upload receiver on port 5299.
 - **The water sheet** (`src/dev/waterSheet.ts`):
   - takes `&spot=canyon`, `&direction=`, `&spreading=` and `&spillingFront=0`;
@@ -144,11 +217,11 @@ TESTS_PLACEHOLDER
 
 ## Known issues
 
-- **The solver peels at 45°, not 55°.** The front holds the visible peel at 55°. On waves where the solver breaks faster than the front, the water just ahead of the visible front is already breaking in the solver. The rider feels `breaking.strength` there (bore push, the wipeout's checks) while the foam is still hidden. On the slow waves (about half of them, at 47–60°) the two agree. On the fast ones (15–30°) the lag can reach tens of metres.
-- **Some waves still go the other way.** 3 of 34 clean waves peeled toward −x (seed 2), and some periods mix two peaks. The front only acts toward +x, so foam on a −x arm shows as the solver has it.
+- **The solver peels at 31° on the tracker, not 55°** (the straight-crest bed, §1: the breaking age's sideways spread and the tracker's celerity). The front holds the visible peel at 55°. On waves where the solver breaks faster than the front, the water just ahead of the visible front is already breaking in the solver. The rider feels `breaking.strength` there (bore push, the wipeout's checks) while the foam is still hidden.
+- **Some breaks also spread upcoast of the peak.** On the straight-crest bed every clean wave peels toward +x (40 of 40), but in about a quarter of the waves, mostly the big ones, the break also runs upcoast of the peak: typically 5 m, at worst 20–48 m (§1). The front only acts toward +x, so that foam shows as the solver has it.
 - **The front's waves are not handed over online.** A late joiner's sea (`SurfZoneState`) carries the foam but not the front's waves. Until the next onsets its whitewater is the solver's, ungated, for about a period.
-- **Small days barely break on the terrace** (1.3 m deep). The surf moves to the shore break.
-- **Without the canyon, the bed ran flat or unstable** in two sweeps. The canyon on the −x edge is load-bearing.
+- **Small days are not re-measured on the straight-crest bed.** On the prototype's 1.3 m terrace they barely broke; the arm's crest is now 1.0 m deep.
+- **Running flat without the canyon was the tank's grid** (§1): its 4 m cells damped the shoaling waves. The Canyon's tank now has 1 m cells from its zone in, and the straight-crest bed runs 600 s without the canyon.
 - **The spot's descriptions still say "median 58°".** That is `SurfConditions.ts`, which the parallel agent owns. The Canyon's swell itself (0°, s = 150) is also theirs; these measurements override the config to it.
 
 ## Next step: S3, a roller lens the rider hits
