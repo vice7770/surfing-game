@@ -401,7 +401,8 @@ describe('the roller lens\'s band in the water (the Canyon roller lens, S3, Task
     expect(drawn.vertex).toBe(plain.vertex);
     expect(drawn.fragment).toContain('waterRollerAt( vWaterWorld.xz, waterTime );');
     expect(drawn.fragment).toContain('waterCover = max( waterCover, waterRollerCover );');
-    expect(drawn.fragment).toContain('waterFoamColor * mix( 1.0, waterRollerBright, waterRollerCover / max( waterCover, 1e-4 ) )');
+    expect(drawn.fragment).toContain('mix( waterFoamColor, waterBandAlbedo, waterBandShare )');
+    expect(drawn.fragment).toContain('* waterSunRadiance * RECIPROCAL_PI');
     expect(drawn.fragment).toContain('( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind');
     // The band is evaluated before the normal and body chunks read it.
     expect(drawn.fragment.indexOf('waterRollerAt( vWaterWorld.xz, waterTime );')).toBeLessThan(drawn.fragment.indexOf('waterCover = max( waterCover, waterRollerCover );'));

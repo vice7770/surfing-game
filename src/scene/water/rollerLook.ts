@@ -11,9 +11,16 @@ export const ROLLER_LOOK = {
   rear: 0.3,
   /** Coverage falls from 1 to 0 from this share of the length to the (wandering) toe: smoothstep(1, 0.75, ξ) (R3 §4). */
   edge: 0.75,
-  /** The toe's brightness over the crest's: 0.40/0.55 (Dierssen 2019's 0.40–0.55 of foam albedo; the linear ramp after
-   * Haller & Catalán 2009 is P). */
-  toeBright: 0.4 / 0.55,
+  /**
+   * The band reads white (the coordinator's ruling, 2026-10-07): the roller is the freshest, most aerated whitewater,
+   * the brightest foam class (the knowledge base's foam-and-whitewater page), and never shows darker than the foam it
+   * covers. At the crest its albedo is fresh whitewater's: flat across the visible (Koepke 1984; Dierssen 2019), at the
+   * foam colour's brightest channel, so no channel falls below the foam's; down the band it falls linearly (after
+   * Haller & Catalán 2009; P) to the surrounding foam's colour at the toe. It is lit as a volume scatterer: the sky's
+   * light as the surface takes it, and the sun wrapped round the face, (N·L + w)/(1 + w) (Green 2004, GPU Gems ch. 16;
+   * w = 1 is P), never below the surface's N·L. No glow.
+   */
+  wrap: 1,
   /** The toe wanders by this many d′max (1–2 d′max, Wang, Leng & Chanson 2017; the middle, P). */
   toeAmplitude: 1.5,
   /** Its two octaves' wavelengths along the crest, trough depths h₁ (1 and 5–10 h₁, Wang, Leng & Chanson 2017; P). */
@@ -110,17 +117,20 @@ export function toeOffset(x: number, time: number, troughDepth: number, roughnes
   return (ROLLER_LOOK.toeAmplitude * roughness * n) / ROLLER_LOOK.toeNoiseSpread;
 }
 
-/** What the band shows at a point: its coverage, its brightness over the foam's, how much of a lens lies here and its water's velocity. */
+/**
+ * What the band shows at a point: its coverage, how fresh its whitewater is (1 at the crest, 0 at the toe: the share of
+ * fresh whitewater's albedo over the surrounding foam's), how much of a lens lies here and its water's velocity.
+ */
 export interface RollerLook {
   cover: number;
-  bright: number;
+  fresh: number;
   presence: number;
   flowX: number;
   flowZ: number;
 }
 
 export function createRollerLook(): RollerLook {
-  return { cover: 0, bright: 1, presence: 0, flowX: 0, flowZ: 0 };
+  return { cover: 0, fresh: 1, presence: 0, flowX: 0, flowZ: 0 };
 }
 
 const smoothstep = (edge0: number, edge1: number, x: number) => {
@@ -136,7 +146,7 @@ const smoothstep = (edge0: number, edge1: number, x: number) => {
 export function rollerLookAt(table: ArrayLike<number>, columns: number, column0: number, width: number,
   x: number, z: number, time: number, out: RollerLook): RollerLook {
   out.cover = 0;
-  out.bright = 1;
+  out.fresh = 1;
   out.presence = 0;
   out.flowX = 0;
   out.flowZ = 0;
@@ -177,7 +187,7 @@ export function rollerLookAt(table: ArrayLike<number>, columns: number, column0:
     const cover = g * band;
     if (!(cover > out.cover)) continue;
     out.cover = cover;
-    out.bright = xi > 0 ? 1 - (1 - ROLLER_LOOK.toeBright) * Math.min(1, xi) : 1;
+    out.fresh = xi > 0 ? 1 - Math.min(1, xi) : 1;
     out.presence = g * (xi < 0 ? smoothstep(-ROLLER_LOOK.rear, 0, xi) : 1 - smoothstep(1, 1.3, xi));
     out.flowX = w0 * table[o0 + ROLLER_FIELD.flowX] + w1 * table[o1 + ROLLER_FIELD.flowX];
     out.flowZ = w0 * table[o0 + ROLLER_FIELD.flowZ] + w1 * table[o1 + ROLLER_FIELD.flowZ];

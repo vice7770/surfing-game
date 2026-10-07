@@ -18,7 +18,7 @@ uniform float waterRollerColumn0;
 uniform float waterRollerColumnWidth;
 uniform vec2 waterRollerExtent;
 float waterRollerCover;
-float waterRollerBright;
+float waterRollerFresh;
 float waterRollerPresence;
 vec2 waterRollerFlow;
 uvec3 waterPcg3d( uvec3 v ) {
@@ -69,7 +69,7 @@ float waterRollerToe( float x, float time, float depth, float roughness ) {
 }
 void waterRollerAt( vec2 xz, float time ) {
   waterRollerCover = 0.0;
-  waterRollerBright = 1.0;
+  waterRollerFresh = 1.0;
   waterRollerPresence = 0.0;
   waterRollerFlow = vec2( 0.0 );
   if ( xz.y < waterRollerExtent.x || xz.y > waterRollerExtent.y ) return;
@@ -110,7 +110,7 @@ void waterRollerAt( vec2 xz, float time ) {
     float cover = g * band;
     if ( !( cover > waterRollerCover ) ) continue;
     waterRollerCover = cover;
-    waterRollerBright = xi > 0.0 ? 1.0 - ( 1.0 - ${f(ROLLER_LOOK.toeBright)} ) * min( 1.0, xi ) : 1.0;
+    waterRollerFresh = xi > 0.0 ? 1.0 - min( 1.0, xi ) : 1.0;
     waterRollerPresence = g * ( xi < 0.0 ? smoothstep( -${f(ROLLER_LOOK.rear)}, 0.0, xi ) : 1.0 - smoothstep( 1.0, 1.3, xi ) );
     waterRollerFlow = w0 * b0.xy + w1 * b1.xy;
   }
@@ -123,8 +123,21 @@ function hook(glsl: string, target: string, replacement: string): string {
   return glsl.split(target).join(replacement);
 }
 
-/** The foam colour under the band: the crest-bright ramp, as far as the band is what covers (1 where it is the most). */
-const BAND_FOAM = 'mix( 1.0, waterRollerBright, waterRollerCover / max( waterCover, 1e-4 ) )';
+/**
+ * The band's albedo (ROLLER_LOOK.wrap's comment): fresh whitewater's at the crest, flat across the visible at the foam
+ * colour's brightest channel, falling to the foam colour at the toe; and the foam drawn, the band's as far as the band
+ * is what covers (all of it where it covers the most).
+ */
+const BAND_ALBEDO = `  vec3 waterBandAlbedo = mix( waterFoamColor, vec3( max( waterFoamColor.r, max( waterFoamColor.g, waterFoamColor.b ) ) ), waterRollerFresh );
+  float waterBandShare = waterRollerCover / max( waterCover, 1e-4 );`;
+
+/**
+ * The band lit as a volume scatterer: what the sun gives it beyond the surface's N·L, wrapped round the face (never
+ * negative, so the band never shows darker than the surface-lit foam), as three's direct diffuse, E·albedo/π.
+ */
+const BAND_VOLUME = `  float waterBandSun = dot( waterN, waterSunDirection );
+  totalEmissiveRadiance += step( 0.0, faceDirection ) * waterRollerCover * waterBandAlbedo * waterSunRadiance * RECIPROCAL_PI
+    * ( max( 0.0, ( waterBandSun + ${f(ROLLER_LOOK.wrap)} ) / ${f(1 + ROLLER_LOOK.wrap)} ) - max( 0.0, waterBandSun ) );`;
 
 /** Any `<normal_fragment_begin>` chunk with the band evaluated first, for the normal and the body chunks after it. */
 export function rollerNormal(normal: string): string {
@@ -142,25 +155,35 @@ export function richRollerNormal(normal: string): string {
   if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) );`);
 }
 
-/** Classic foam (`CLASSIC_FOAM`, copied, never changed in place): cover = max(cover, the band's), in its colour ramp (plan §4). */
+/**
+ * Classic foam (`CLASSIC_FOAM`, copied, never changed in place): cover = max(cover, the band's), the band in its own
+ * albedo (plan §4, the ruling of 2026-10-07), matte as foam, lit as a volume.
+ */
 export function classicRollerFoam(foam: string): string {
-  return hook(foam, 'diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );',
+  const drawn = hook(foam, 'diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );',
     `waterCover = max( waterCover, waterRollerCover );
-  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor * ${BAND_FOAM}, waterCover );`);
+${BAND_ALBEDO}
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, mix( waterFoamColor, waterBandAlbedo, waterBandShare ), waterCover );`);
+  return hook(drawn, 'roughnessFactor = mix( roughnessFactor, 0.9, waterCover );', `roughnessFactor = mix( roughnessFactor, 0.9, waterCover );
+${BAND_VOLUME}`);
 }
 
 /**
- * Rich foam (`RICH_FOAM`, copied): the same cover and ramp; the lens is fresh whitewater (its churn, crease and backlit
- * glow, through `waterFreshness` with ᾱ), its churn carried with the lens's water, c·n̂, so it travels with the roller.
+ * Rich foam (`RICH_FOAM`, copied): the same cover, albedo and light (the band's albedo is uncreased, so the churn's
+ * crease never greys it); the lens is fresh whitewater (its churn, micro-normals and backlit glow, through
+ * `waterFreshness` with ᾱ), its churn carried with the lens's water, c·n̂, so it travels with the roller.
  */
 export function richRollerFoam(foam: string): string {
   let out = hook(foam, 'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );',
     'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) );');
   out = hook(out, 'float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;',
     `float waterFresh = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) ) * waterFoamPattern;`);
-  return hook(out, 'diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );',
+  out = hook(out, 'diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );',
     `waterCover = max( waterCover, waterRollerCover );
-  diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease * ${BAND_FOAM}, waterCover );`);
+${BAND_ALBEDO}
+  diffuseColor.rgb = mix( waterUnder, mix( waterFoamColor * waterCrease, waterBandAlbedo, waterBandShare ), waterCover );`);
+  return hook(out, 'roughnessFactor = mix( roughnessFactor, 0.7, waterCover );', `roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
+${BAND_VOLUME}`);
 }
 
 /** The body chunk's crest light dims under the band as under foam (plan §4). */

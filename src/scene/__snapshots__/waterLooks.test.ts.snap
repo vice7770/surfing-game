@@ -1065,7 +1065,7 @@ uniform float waterRollerColumn0;
 uniform float waterRollerColumnWidth;
 uniform vec2 waterRollerExtent;
 float waterRollerCover;
-float waterRollerBright;
+float waterRollerFresh;
 float waterRollerPresence;
 vec2 waterRollerFlow;
 uvec3 waterPcg3d( uvec3 v ) {
@@ -1116,7 +1116,7 @@ float waterRollerToe( float x, float time, float depth, float roughness ) {
 }
 void waterRollerAt( vec2 xz, float time ) {
   waterRollerCover = 0.0;
-  waterRollerBright = 1.0;
+  waterRollerFresh = 1.0;
   waterRollerPresence = 0.0;
   waterRollerFlow = vec2( 0.0 );
   if ( xz.y < waterRollerExtent.x || xz.y > waterRollerExtent.y ) return;
@@ -1157,7 +1157,7 @@ void waterRollerAt( vec2 xz, float time ) {
     float cover = g * band;
     if ( !( cover > waterRollerCover ) ) continue;
     waterRollerCover = cover;
-    waterRollerBright = xi > 0.0 ? 1.0 - ( 1.0 - 0.7272727272727273 ) * min( 1.0, xi ) : 1.0;
+    waterRollerFresh = xi > 0.0 ? 1.0 - min( 1.0, xi ) : 1.0;
     waterRollerPresence = g * ( xi < 0.0 ? smoothstep( -0.3, 0.0, xi ) : 1.0 - smoothstep( 1.0, 1.3, xi ) );
     waterRollerFlow = w0 * b0.xy + w1 * b1.xy;
   }
@@ -1242,8 +1242,13 @@ waterRollerAt( vWaterWorld.xz, waterTime );
   vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
   waterCover = max( waterCover, waterRollerCover );
-  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor * mix( 1.0, waterRollerBright, waterRollerCover / max( waterCover, 1e-4 ) ), waterCover );
+  vec3 waterBandAlbedo = mix( waterFoamColor, vec3( max( waterFoamColor.r, max( waterFoamColor.g, waterFoamColor.b ) ) ), waterRollerFresh );
+  float waterBandShare = waterRollerCover / max( waterCover, 1e-4 );
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, mix( waterFoamColor, waterBandAlbedo, waterBandShare ), waterCover );
   roughnessFactor = mix( roughnessFactor, 0.9, waterCover );
+  float waterBandSun = dot( waterN, waterSunDirection );
+  totalEmissiveRadiance += step( 0.0, faceDirection ) * waterRollerCover * waterBandAlbedo * waterSunRadiance * RECIPROCAL_PI
+    * ( max( 0.0, ( waterBandSun + 1.0 ) / 2.0 ) - max( 0.0, waterBandSun ) );
 }
 
 	#include <lights_physical_fragment>

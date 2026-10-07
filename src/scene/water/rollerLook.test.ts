@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../../wave/SpillingRoller';
-import { waterRollerPars } from './rollerGlsl';
+import { classicRollerFoam, richRollerFoam, waterRollerPars } from './rollerGlsl';
+import { RICH_FOAM } from './richWaterGlsl';
+import { CLASSIC_FOAM } from '../waterOptics';
 import { createRollerLook, pcg3d, rollerLookAt, rollerNoise2, rollerNoise3, ROLLER_LOOK, toeOffset } from './rollerLook';
 
 /** pcg3d in BigInt arithmetic modulo 2³², the reference the 32-bit version must match word for word. */
@@ -158,17 +160,16 @@ describe('the roller band (rollerLookAt)', () => {
     expect(holed).toBeGreaterThan(0);
   });
 
-  it('is brightest at the crest and falls linearly to 0.40/0.55 of it at the toe (Dierssen 2019)', () => {
-    expect(ROLLER_LOOK.toeBright).toBeCloseTo(0.727, 3);
+  it('is fresh whitewater at the crest, falling linearly to the surrounding foam at the toe and none past it', () => {
     const rows = table(4, steady({ crest: 10, length: 8, scale: 1, roughness: 0.5 }));
-    expect(rollerLookAt(rows, 4, 0, 1, 1, 10, 0, look).bright).toBe(1);
-    expect(rollerLookAt(rows, 4, 0, 1, 1, 9, 0, look).bright).toBe(1);
-    expect(rollerLookAt(rows, 4, 0, 1, 1, 14, 0, look).bright).toBeCloseTo(1 - (1 - ROLLER_LOOK.toeBright) * 0.5, 12);
+    expect(rollerLookAt(rows, 4, 0, 1, 1, 10, 0, look).fresh).toBe(1);
+    expect(rollerLookAt(rows, 4, 0, 1, 1, 9, 0, look).fresh).toBe(1);
+    expect(rollerLookAt(rows, 4, 0, 1, 1, 14, 0, look).fresh).toBeCloseTo(0.5, 12);
     let reached = false;
     for (let x = 0; x <= 3; x += 0.05) {
       const at = rollerLookAt(rows, 4, 0, 1, x, 10 + 8 * 1.05, 0, look);
       if (at.cover > 0) {
-        expect(at.bright).toBeCloseTo(ROLLER_LOOK.toeBright, 12);
+        expect(at.fresh).toBe(0);
         reached = true;
       }
     }
@@ -199,6 +200,33 @@ describe('the roller band (rollerLookAt)', () => {
   });
 });
 
+describe('the band\'s light (the ruling of 2026-10-07: it reads white)', () => {
+  it('is fresh whitewater\'s albedo at the crest, flat at the foam colour\'s brightest channel, falling to the foam\'s', () => {
+    for (const foam of [classicRollerFoam(CLASSIC_FOAM), richRollerFoam(RICH_FOAM)]) {
+      expect(foam).toContain('vec3 waterBandAlbedo = mix( waterFoamColor, vec3( max( waterFoamColor.r, max( waterFoamColor.g, waterFoamColor.b ) ) ), waterRollerFresh );');
+      expect(foam).toContain('waterCover = max( waterCover, waterRollerCover );');
+    }
+    // Never darker than the foam it covers: the albedo is the foam colour or above in every channel, all down the band.
+    const foamColour = [0.69, 0.89, 0.82];
+    const fresh = Math.max(...foamColour);
+    for (const share of [0, 0.25, 0.5, 1]) for (const c of foamColour) expect(c + (fresh - c) * share).toBeGreaterThanOrEqual(c);
+    // Rich's crease greys the churn, never the band.
+    expect(richRollerFoam(RICH_FOAM)).toContain('mix( waterFoamColor * waterCrease, waterBandAlbedo, waterBandShare )');
+  });
+
+  it('lights it as a volume: the sun wrapped round the face, never below the surface\'s N·L, and no glow', () => {
+    for (const foam of [classicRollerFoam(CLASSIC_FOAM), richRollerFoam(RICH_FOAM)]) {
+      expect(foam).toContain(`( max( 0.0, ( waterBandSun + ${ROLLER_LOOK.wrap}.0 ) / ${1 + ROLLER_LOOK.wrap}.0 ) - max( 0.0, waterBandSun ) )`);
+      expect(foam).toContain('step( 0.0, faceDirection ) * waterRollerCover * waterBandAlbedo * waterSunRadiance * RECIPROCAL_PI');
+    }
+    const wrap = ROLLER_LOOK.wrap;
+    for (let cos = -1; cos <= 1; cos += 0.05) expect(Math.max(0, (cos + wrap) / (1 + wrap)) - Math.max(0, cos)).toBeGreaterThanOrEqual(-1e-12);
+    // A face turned 90° from the sun still takes half its light; one facing it, all of it.
+    expect(Math.max(0, (0 + wrap) / (1 + wrap))).toBe(0.5);
+    expect(Math.max(0, (1 + wrap) / (1 + wrap))).toBe(1);
+  });
+});
+
 describe('waterRollerPars (the GLSL twin)', () => {
   it('reads the 2·columns × 2 table texel by texel, both halves of each column', () => {
     expect(waterRollerPars).toContain('uniform highp sampler2D waterRoller;');
@@ -211,7 +239,7 @@ describe('waterRollerPars (the GLSL twin)', () => {
   it('hashes with pcg3d\'s constants and carries the look\'s numbers', () => {
     expect(waterRollerPars).toContain('v = v * 1664525u + 1013904223u;');
     expect(waterRollerPars).toContain(`/ ${ROLLER_LOOK.toeNoiseSpread};`);
-    expect(waterRollerPars).toContain(`1.0 - ( 1.0 - ${ROLLER_LOOK.toeBright} ) * min( 1.0, xi )`);
+    expect(waterRollerPars).toContain('waterRollerFresh = xi > 0.0 ? 1.0 - min( 1.0, xi ) : 1.0;');
     expect(waterRollerPars).toContain(`band = 1.0 - smoothstep( ${ROLLER_LOOK.edge}, 1.0, toe );`);
     expect(waterRollerPars).toContain(`band = smoothstep( -${ROLLER_LOOK.rear}, 0.0, xi );`);
     // No smoothstep with its edges reversed (undefined in GLSL).
