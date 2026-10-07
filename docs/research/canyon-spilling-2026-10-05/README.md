@@ -134,6 +134,40 @@ For a surfer facing the beach, +x is on their left: the Reef and Padang Padang, 
 
 ![beach](img/straight-beach-sheet.jpg)
 
+**Rideability on the straight-crest bed (2026-10-07).** The owner's criterion is that a surfer can catch the wave and ride the shoulder. It was measured as on the prototype's bed (see Rideability, below), on the same swell: Medium, 0°, s = 150, tide 0 m, calm wind, seeds 1 and 2, 3 minutes each, stage 2 on the CPU.
+
+- **The catch report** (`node dist/scripts/catch-report.mjs --spots canyon --swell medium --spreading 150 --direction 0 --seeds 2 --minutes 3 --ghosts`). 30 ghost bots wait prone at −45, −25, −5, +15 and +35 m along shore from the break point and −8 to +12 m outside it, and ride straight in.
+
+  | Bed | Attempts | Cue lit | Stood | Rides ≥ 3 s | Median ride | Longest |
+  |---|---:|---:|---:|---:|---:|---:|
+  | Prototype (corner canyon) | 831 | 19 | 16 | 3 | 2.0 s | 4.6 s |
+  | **Straight-crest arm** | 980 | 41 | 41 | 25 | 3.3 s | 7.5 s |
+
+  - **Cues lit only near the peak**, as before. They lit for the bots at x −49.5, at the peak (34 cues, 34 stood), and x −29.5, 20 m down the arm (7 and 7).
+  - **None lit at x −69.5, −9.5 or 10.5** (573 attempts). The row slid 15.5 m along shore to keep inside the window's edge margin.
+  - **Outcomes:** 39 fell riding (balance), 2 fell riding (lost board), 20 lost the board before standing, and 919 saw no cue.
+- **The ride report** (`node dist/scripts/ride-report.mjs --spots canyon --swell medium --spreading 150 --direction 0 --seeds 2 --minutes 3 --ghosts`). The runner's own rider waits at the take-off and 6 ghosts at x −69.5, −49.5, −36.5, −12.5, 0.5 and 20.5, all 6 m seaward of it. An autopilot holds a line toward the peel and turns on the face.
+
+  | Bed | Attempts | Stands | Rides ≥ 3 s | Stand: median / longest | Along shore toward +x: median / most | Path: median / most |
+  |---|---:|---:|---:|---:|---:|---:|
+  | Prototype | 187 | 23 | 0 | 0.8 s / 3.0 s | 0.6 m / 8.7 m | 2.0 m / 20.0 m |
+  | **Straight-crest arm** | 223 | 30 | 3 | 1.1 s / 4.4 s | −0.2 m / 12.4 m | 7.4 m / 30.6 m |
+
+  - **The three rides of 3 s or more:**
+    - 3.4 s, 12 m toward +x, ended by a fall (lost board);
+    - 3.6 s, 7 m toward −x, kicked out;
+    - 4.4 s, 9 m toward +x, ended by a fall (balance).
+  - **Outcomes:** 167 missed the wave, 25 fell (lost board), 22 fell (balance) and 1 was kicked out.
+  - **The weight sits nearer trim** while standing: 0.69 riding level and 0.58 going down the face, against 0.87 and 0.98 on the prototype's bed (the stance map's trim is 0.50–0.62).
+- **Where the bots wait against the break line.** Both rows run parallel to the beach, while the break runs at 62°. At each bot's x, against where the waves started breaking there (the median onset, 3 seeds × 14 periods):
+  - near the peak (x −49.5 to −29.5) the bots wait from 5 m inside to 10 m outside the break;
+  - down the arm (x −12.5 to 20.5) they wait 52–117 m seaward of it;
+  - upcoast (x −69.5) they wait on the shelf, where the upcoast spread breaks.
+- **What the numbers say.**
+  - **More riders catch it and stand, but nobody rides the shoulder yet.** The best stand rode 4.4 s, and the furthest 12.4 m along shore toward +x.
+  - **Waiting along the arm is one gap.** Every cue lit within 20 m of the peak; the bots further down the arm wait 52–117 m outside the break and never see a breaking crest. So the reports sample the take-off only at the peak, where the break spreads both ways, and never the arm's shoulder.
+  - **The autopilot's riders, who catch it near the peak, fall within 4.4 s,** mostly losing the board or on balance. The catch report's riders, riding straight in, last up to 7.5 s. Whether bots waiting along the arm, in front of its slower, bed-controlled break, would ride the shoulder is the next ruling: where the bots wait.
+
 #### The prototype's bed (2026-10-05)
 
 The prototype's bed had three parts:
