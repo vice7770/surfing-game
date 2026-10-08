@@ -116,6 +116,8 @@ Phase matching gives V ≈ 12.7 m/s at the peak: α 33–35° geometric, 26.9° 
 
 ## The side feed: Padang Padang only (the owner, 2026-09-30)
 
+**Switched off on 2026-10-07 (the owner).** The feed shed two-way crests behind big sets and spun up a shelf current, while Padang Padang's open sides held their height over 20 minutes (`docs/research/padang-side-feed-2026-10-08.md`, `docs/research/crest-bends-2026-10-07/`). The code stays behind `SurfZoneConfig.sideFeed`. What follows is its history.
+
 Part A carries the wave-sizes work's side feed (the incoming sea relaxed into the window's open sides), which has no PR of its own. Merged for every spot it ran the Reef's Big swell to 64 m/s on the test's 40 m window (9.8 m/s with it off, as on main) and moved every spot's take-off. The owner's call: it feeds Padang Padang's sides only (`SIDE_FEED_SPOTS`), whose 320 m window and peak are laid out around it; every other spot keeps main's open sides, take-offs and handover. The feed's own rollout comes later.
 
 ## Sizes (Task 8, 2026-09-30)

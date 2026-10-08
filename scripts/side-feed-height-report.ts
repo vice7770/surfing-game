@@ -44,9 +44,8 @@ const seconds = Number(option('seconds') ?? 1200);
 const bin = Number(option('bin') ?? 100);
 const strip = Number(option('strip') ?? 30);
 const middle = Number(option('middle') ?? 60);
+/** `--side-feed` / `--no-side-feed`: the run's `SurfZoneConfig.sideFeed`; neither, the spot's default (`SIDE_FEED_SPOTS`). */
 const feed = process.argv.includes('--no-side-feed') ? 'off' : process.argv.includes('--side-feed') ? 'on' : 'default';
-if (feed === 'off') (SIDE_FEED_SPOTS as SpotName[]).splice(0);
-if (feed === 'on' && !SIDE_FEED_SPOTS.includes(spot)) (SIDE_FEED_SPOTS as SpotName[]).push(spot);
 
 const STEP = 1 / 30;
 /** The fastest water and the mean levels are sampled every this many steps. */
@@ -72,13 +71,14 @@ const config: SurfZoneConfig = {
   tide: settings.tide, windSpeed: settings.windSpeed, stage: 2, compute: 'cpu',
   ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
   componentCount: Number(option('components') ?? GPU_TIER_COMPONENTS),
+  ...(feed === 'default' ? {} : { sideFeed: feed === 'on' }),
 };
 
 const started = Date.now();
 const simulation = new SurfZoneSimulation(config);
 const { solver, tank } = simulation;
-// As the simulation decides it (its constructor feeds the sides of the spots in SIDE_FEED_SPOTS).
-const fed = SIDE_FEED_SPOTS.includes(spot);
+// As the simulation decides it: the config's say, else SIDE_FEED_SPOTS.
+const fed = config.sideFeed ?? SIDE_FEED_SPOTS.includes(spot);
 const takeOff = simulation.breakPoint();
 const still = config.tide;
 const rowAt = (z: number) => {

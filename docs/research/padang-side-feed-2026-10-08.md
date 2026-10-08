@@ -136,7 +136,22 @@ The shelf column is its mean over the whole width (z −364 to −247). Its midd
 - the Froude caps are 0–1,292 per 100 s, none in water over 5 cm deep;
 - both runs stay finite throughout.
 
-## What this means for the ruling
+## The ruling (2026-10-08)
+
+**The side feed is off at Padang Padang**, as the owner decided on 2026-10-07, now that these runs clear it.
+
+- `SIDE_FEED_SPOTS` is empty, and no spot's sides are fed by default.
+- The feed's code stays, behind a config switch, `SurfZoneConfig.sideFeed`, for a sea that needs it: a spread, oblique sea on a narrow window, the case its own test still covers (`SideFeed.test.ts`).
+- Its GPU packing tests and its handover test run with the switch on.
+
+**Why the free sides near the reef stand lower than the fed ones** (0.79–1.00 of them at z −360 to −218, against 0.92–1.07 offshore): the feed held its strips to the linear sea. That sea is shoaled and refracted along each side column (WKB), with its height capped only at 0.78 of the depth, so it neither breaks nor loses height as the solver's waves do over the ramp and the reef's flank.
+
+- With the feed on, the strips at the take-off line stood 1.03–1.43 of the middle.
+- Free, the sides break and lose height like the water beside them (1.01–1.30 of the middle).
+
+The fed strips were the ones out of line, not the free sides. They also kept the strips' crests 15–28 m behind the solver's, which is where the two-way crests came from.
+
+## What this meant for the ruling
 
 - **The feed was not keeping the sides from draining.** That failure belonged to a spread, oblique sea on a narrow window, not Padang Padang's.
 - **There is no level drift to rule on.**
