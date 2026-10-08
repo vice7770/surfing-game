@@ -146,14 +146,14 @@ export function rollerNormal(normal: string): string {
 }
 
 /**
- * The Rich normal chunk: the churn's micro-normals stand on the lens as on fresh whitewater (its air at the top taken as
+ * The Rich normal chunk: the churn's micro-normals stand on the band as on fresh whitewater (its air at the top taken as
  * the lens's mean, ᾱ, which already saturates the freshness), carried with the lens's water, c·n̂ (R3 §4).
  */
 export function richRollerNormal(normal: string): string {
   return hook(rollerNormal(normal),
     'float waterFreshNormal = waterFreshness( vWaterAir ) * waterFoamPattern;\n  if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );',
-    `float waterFreshNormal = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) ) * waterFoamPattern;
-  if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) );`);
+    `float waterFreshNormal = max( waterFreshness( vWaterAir ), waterRollerCover * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) ) * waterFoamPattern;
+  if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerCover ) );`);
 }
 
 /**
@@ -171,14 +171,17 @@ ${BAND_VOLUME}`);
 
 /**
  * Rich foam (`RICH_FOAM`, copied): the same cover, albedo and light (the band's albedo is uncreased, so the churn's
- * crease never greys it); the lens is fresh whitewater (its churn, micro-normals and backlit glow, through
- * `waterFreshness` with ᾱ), its churn carried with the lens's water, c·n̂, so it travels with the roller.
+ * crease never greys it). Where the band covers, its whitewater is fresh (its churn and micro-normals, through
+ * `waterFreshness` with ᾱ), the churn carried with the lens's water, c·n̂, so it travels with the roller. Only the band
+ * does this, not the rest of the lens beyond its toe, and the field's own crease and backlit glow stay the field's: so
+ * the lens never greys the foam it lies on (the ruling of 2026-10-07).
  */
 export function richRollerFoam(foam: string): string {
   let out = hook(foam, 'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );',
-    'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) );');
-  out = hook(out, 'float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;',
-    `float waterFresh = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) ) * waterFoamPattern;`);
+    'vec2 waterChurn = waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerCover ) );');
+  out = hook(out, 'float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );',
+    `float waterLensFresh = max( waterFresh, waterRollerCover * waterFreshness( ${f(ROLLER_DEFAULTS.voidMean)} ) * waterFoamPattern );
+  float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterLensFresh );`);
   out = hook(out, 'diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );',
     `waterCover = max( waterCover, waterRollerCover );
 ${BAND_ALBEDO}

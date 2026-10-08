@@ -427,9 +427,13 @@ describe('the roller lens\'s band in the water (the Canyon roller lens, S3, Task
     expect(drawn.vertex).toBe(plain.vertex);
     expect(plain.fragment).not.toContain('waterRoller');
     expect(drawn.fragment).toContain('waterRollerAt( vWaterWorld.xz, waterTime );');
-    expect(drawn.fragment).toContain('waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) )');
-    expect(drawn.fragment).toContain('float waterFresh = max( waterFreshness( vWaterAir ), waterRollerPresence * waterFreshness( 0.25 ) ) * waterFoamPattern;');
-    expect(drawn.fragment).toContain('waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerPresence ) )');
+    expect(drawn.fragment).toContain('waterChurnAt( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerCover ) )');
+    expect(drawn.fragment).toContain('float waterLensFresh = max( waterFresh, waterRollerCover * waterFreshness( 0.25 ) * waterFoamPattern );');
+    expect(drawn.fragment).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterLensFresh );');
+    expect(drawn.fragment).toContain('waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerCover ) )');
+    // The field's crease and backlit glow keep the field's own freshness: the lens never greys the foam it lies on.
+    expect(drawn.fragment).toContain('float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;');
+    expect(drawn.fragment).toContain('float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );');
     expect(drawn.fragment).toContain('waterCover = max( waterCover, waterRollerCover );');
     expect(drawn.fragment).toContain('( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind');
     const declaration = /\b(?:float|int|bool|void|[iu]?vec[234]|mat[234]|sampler2D)\s+([A-Za-z_]\w*)/g;
