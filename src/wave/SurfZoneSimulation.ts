@@ -124,6 +124,11 @@ export interface SurfZoneConfig {
    * default, the advisor's Q1) or wherever the solver breaks ('solver', Q1's evidence).
    */
   rollerMask?: 'front' | 'solver';
+  /**
+   * Whether the tank's open sides relax toward the incoming sea (`SideFeed`, the wave-sizes work): the config's say,
+   * else `SIDE_FEED_SPOTS` (none since 2026-10-07).
+   */
+  sideFeed?: boolean;
 }
 
 /**
@@ -166,7 +171,7 @@ const REEF_PATH_REACH = 400;
 /** Along-shore window width unless the config or the spot says otherwise, m. */
 export const ALONG_SHORE = 160;
 
-/** The window's along-shore width, m: the config's, else Padang Padang's own (its peak clear of the side feed), else ALONG_SHORE. */
+/** The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), else ALONG_SHORE. */
 export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>): number {
   return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? POOL.alongShore : ALONG_SHORE);
 }
@@ -318,12 +323,18 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
 }
 
 /**
- * Spots whose tank sides are fed with the incoming sea (the wave-sizes work: open sides drained a directional sea).
- * Padang Padang only, for now (the owner, 2026-09-30): its 320 m window and its peak are laid out around the feed, and
- * on the other spots the feed is not finished (on a 40 m window it ran the Reef's Big swell to 64 m/s, and it moves
- * their take-offs), so they keep main's open sides until the feed's own rollout.
+ * Spots whose tank sides are fed with the incoming sea by default (`SideFeed`, the wave-sizes work: open sides drained
+ * a directional, oblique sea on a 160 m window). None, by the owner's decision of 2026-10-07: Padang Padang's feed,
+ * its only user since 2026-09-30, is off.
+ * - With it on, its linear target lagged the solver's crests by 15–28 m at the sides, so each big set shed a wake from
+ *   both sides that met mid-window as a crest running two ways (docs/research/crest-bends-2026-10-07/). Over 20
+ *   minutes it also spun up a shelf current (0.07 to 0.15 m/s) with 2–3 m/s along the +x beach.
+ * - With it off, over the same 20 minutes, the sides held (0.92–1.38 of the middle per 100 s) and the level did not
+ *   drift (docs/research/padang-side-feed-2026-10-08.md). Padang Padang's square, narrow swell (s = 150) on its 320 m
+ *   window loses little through open sides.
+ * The feed stays for a sea that needs it (`SurfZoneConfig.sideFeed`).
  */
-export const SIDE_FEED_SPOTS: readonly SpotName[] = ['padang'];
+export const SIDE_FEED_SPOTS: readonly SpotName[] = [];
 
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
 export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65, padang: 0.65, pool: 0.65 };
@@ -655,7 +666,7 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(tank.zoneInner, tank.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
-    if (SIDE_FEED_SPOTS.includes(config.spot)) {
+    if (config.sideFeed ?? SIDE_FEED_SPOTS.includes(config.spot)) {
       this.sideFeed = new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset });
       this.solver.addRelaxationZone(this.sideFeed);
     }

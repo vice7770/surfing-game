@@ -86,7 +86,7 @@ export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
 /**
  * Padang Padang's own swells (the Padang Padang spec, decision 4): long-period SSW–SW groundswells (periods
  * often over 16 s) for faces of 2.5–3.5 / 3.5–4.5 / 4.5–6 m. They arrive square to the tank, already wrapped by
- * the Bukit's terrace; the reef's angle carries the obliquity, so nothing drifts in from the side feed (the
+ * the Bukit's terrace; the reef's angle carries the obliquity, so nothing drifts in through the tank's sides (the
  * advisor's ruling, 2026-09-29). Heights calibrated to the faces at the take-off by the size report (Task 8; round 1:
  * Small 1.6 → 1.4 m, Big 3 → 3.8 m, Big then 4.6–4.8 m; round 2: Small → 1.2 m). The faces grow only as about
  * Hs^0.2–0.4 here, since only a small swell's biggest waves break at the take-off; provisional.

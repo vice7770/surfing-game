@@ -95,7 +95,7 @@ export function reefSeaward(x: number, z: number): number {
  * bed is the bare ramp, level along shore, at the window's −x open edge (an open edge copies its neighbours: a bed
  * sloping across it ran the Reef's Big swell to NaN); a channel runs along the +x open edge, level across its axis,
  * where the left ends, `kneeDepth` deep shoreward of `channelFrom`. A planar beach face caps it all. The window is
- * `alongShore` m wide, so the peak stands clear of the −x side feed. Sources and provisional values: docs/research/padang-padang-sources.md.
+ * `alongShore` m wide, so the peak stands well inside the −x open side. Sources and provisional values: docs/research/padang-padang-sources.md.
  * Mutable for the design sweep (`scripts/padangShape.ts`).
  */
 export const PADANG = {
