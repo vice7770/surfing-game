@@ -391,12 +391,18 @@ Run on 2026-10-07 on an 8 GB M1, detached (`nohup caffeinate -i`), on `claude/ca
 - **Some breaks also spread upcoast of the peak.** On the straight-crest bed every clean wave peels toward +x (40 of 40). But in about a quarter of the waves, mostly the big ones, the solver's break also runs upcoast of the peak: typically 5 m, at worst 20–48 m (§1).
   - The upcoast gate (§3) now withholds that foam beyond 6 m. The rider can still meet breaking water there, as ahead of the visible front.
   - Breaking in a column where no onset registered is not withheld: 1 crest in 40 still showed foam out to x −70.
-- **The front's waves are not handed over online.** A late joiner's sea (`SurfZoneState`) carries the foam but not the front's waves. Until the next onsets its whitewater is the solver's, ungated, for about a period.
+- **The front's waves are handed over online since S3** (Task 5, below): a late joiner's sea carries the front's waves and the roller's lenses exactly. A sea from an older build still leaves a fresh front, whose waves come back with the next onsets.
 - **Small days are not re-measured on the straight-crest bed.** On the prototype's 1.3 m terrace they barely broke; the arm's crest is now 1.0 m deep.
 - **Running flat without the canyon was the tank's grid** (§1): its 4 m cells damped the shoaling waves. The Canyon's tank now has 1 m cells from its zone in, and the straight-crest bed runs 600 s without the canyon.
 - **The spot's descriptions still say "median 58°".** That is `SurfConditions.ts`, which the parallel agent owns. The Canyon's swell itself (0°, s = 150) is also theirs; these measurements override the config to it.
 
-## Next step: S3, a roller lens the rider hits
+## S3: the roller lens the rider hits (2026-10-06 to 2026-10-08)
+
+Built on `claude/canyon-roller` to the plan `docs/superpowers/plans/2026-10-06-canyon-roller-s3.md`. Each broken face at the Canyon now carries a light lens of aerated water from its crest to its toe. The rider meets it in the water sample, both looks draw it as a white band, and it travels online.
+
+**The owner, after playing the build (2026-10-08):** the Canyon can be ridden on a diagonal. "It's ok for now, it requires more work after but for now I'm happy."
+
+### The brief
 
 Build the roller (`docs/research/water-physics/roller.md`, `roller-build.md`) **standalone**, as a lens riding on the spilling front's broken crest, not on the barrel's loft:
 
@@ -409,3 +415,64 @@ Build the roller (`docs/research/water-physics/roller.md`, `roller-build.md`) **
 - **What it does to the rider.** It changes only what the water sample returns (its top, its air and its flow), so a board bogs in its top and is pushed at about 330·H Pa. It replaces the P11 `ROLLER_SHARE` push.
 - **How it is drawn.** As its own white band from crest to toe, with a fingered toe, brightest at the crest; the foam field takes over behind it.
 - **Where it starts.** The spilling front's crest rows per column (`crestZ`) and its local age (`time − reached`) already give where and how old each roller slice is, so S3 can start from `SpillingFront`'s state.
+
+### What was built
+
+1. **The model** (`src/wave/SpillingRoller.ts`). Each column holds up to two lenses, one per wave in a row (the slot is the wave's id mod 2). A lens is seeded where its wave first breaks in the column, then follows its own crest. Each step a section along the column gives its crest, trough, toe, H and the bore's Froude number. It is born where B ≥ 0.3 and Fr₁ ≥ 1.45, grows over 6.5 breaker depths of travel, and sheds once Fr₁ < 1.3, B < 0.1 or a lost crest has held 0.2 s. Its table (crest, length across shore, scale g, thickness, the water's velocity c·n̂, the trough depth h₁ and the toe's roughness d′max) is what is drawn and felt. Its decision paths use only + − × ÷, √, floor, min and max, so every client keeps the same lenses.
+2. **In the simulation** (`SurfZoneSimulation.ts`). The roller runs after the spilling front, which masks it: a lens is drawn and felt only behind its wave's visible front. Its top rises the node heights, so both looks, the host's `heightAt` and remote boards sit on it. It never writes the water: a sea with the roller steps bit for bit as one without.
+3. **The rider's water** (`PhysicalSurfWater.ts`, `BoardBody.ts`, `AttachedRider.ts`). Inside a lens the water sample returns its top, its air and its flow, and the rider's along-body shelter is lifted. The owner's option B (2026-10-07): a one-sided linear froth drag (500 N·s/m, provisional) and lens-scoped water entry. Outside a lens nothing changes: `rollerScope.test.ts` pins five riders' trajectories bit for bit.
+4. **The drawing** (`src/scene/water/rollerGlsl.ts`, `rollerLook.ts`, `WaterSurface.ts`).
+   - The table travels in the snapshot and is uploaded as an RGBA32F texture, two texels per column and one row per slot, in both looks. Rows outside the lenses' reach across shore leave the band's chunk at once.
+   - The band covers from the crest to a fingered toe: two octaves of pcg3d value noise at 11.25 m (dominant) and 1.5 m (7.5 and 1 reference trough depths), wandering by 1.5 d′max, with holes in the toe half. The noises' lattice and clock are the reference depth's: scaled by the local h₁, which varies along the crest, they turned several times faster than their lattice and drew the toe as icicles in the first shots. The GLSL matches its TypeScript twin to 10⁻⁴ on the GPU.
+   - It reads white (the ruling of 2026-10-07): fresh whitewater's albedo at the crest, flat at the foam colour's brightest channel, falling to the surrounding foam's colour at the toe; lit as a volume scatterer, the surface's light plus the sun wrapped round the face ((N·L + 1)/2, provisional). It never shows darker than the foam it covers. In Rich, where the band covers, the churn is fresh and carried with the lens's water.
+   - The band's chunk is compiled in only at a spot with a roller: every other spot's programs are as before, and only the Canyon's Classic look snapshot is new.
+5. **One crest per wave** (`SpillingFront.ts`). The first shots showed streaks: the front had joined onsets a wavelength apart into one wave, so its lenses' crest normals lay along shore and their length across shore reached 69 m. Now an onset joins a wave only within 10 m of that wave's crest beside it; each wave's crest is recorded only on its own crest; the front tracks 24 waves (each keeps its 45 s); and the roller's normal fit and gap fill stop at a crest jump over 10 m. On the shot frame (108 s): lenses with n̂_z < 0.5 went from 11 to 0 and the longest L_eff/n̂_z from 68.8 m to 12.0 m. Over 120 s (Medium, seed 1): adjacent crest jumps 279 → 1, tipped lenses 508 → 21 over 50 samples. The upcoast gate is unchanged.
+6. **Online** (`surfZoneState.ts`). The front (its waves, their crests and joins per column) and the live lenses travel in the sea state's header as exact doubles. A Canyon handed over in-process steps on bit for bit; over the 32-bit wire its drawn lens columns are within 2 of the donor's and their crests within 0.5 m. A state without them leaves a fresh front, as before.
+
+**The feel checks** (`src/physics/rollerFeel.test.ts`, unit tests on a synthetic lens; as of `dd1f6c1e`):
+
+- the free carry stays under 1.2 c (1.10, 1.11 and 1.10 c);
+- open checks, each a known miss against an estimated target, kept by the owner (2026-10-07): the push at 0.5 m (34 N against 58–108 N), the push at 1.5 m (398 N against 174–322 N), the paddler's knock-off (1.62 s against 0.5–0.9 s) and the hit force (median 131 N against 1.4–2.8 kN).
+
+The owner's rule drops the riding measurements (the plan's catch, ride and duck-dive reports): the owner rides and records the videos.
+
+### The cost
+
+On the 8 GB M1 under load, the Canyon at Medium (0°, s = 150), 1280 × 720, headless on the GPU (Metal through ANGLE). The GPU's cost is the median frame with the band against the same frame with its rows emptied, on the busiest table seen (about 210 live lenses):
+
+| | Classic | Rich |
+| --- | --- | --- |
+| GPU, from the beach | 0–0.4 ms | 0.7–0.8 ms |
+| GPU, overhead | within noise | 0.9 ms |
+| Worker, the roller's step | 0.32 ms mean, 4.2 ms at most | same |
+| Worker, the front's step (with the breaking) | 0.66 ms mean | same |
+| Snapshot | 10 KB a frame (160 columns × 2 slots × 8 float32) | same |
+
+### Pictures
+
+The same frame, 108 s into the water sheet's Canyon (Medium, 0°, s = 150), on the GPU. Overhead, sea at the top, +x to the right; the first band (left), with its grey crest strips and the streaks of crest normals along shore, and the final one (right):
+
+![first band, overhead](img/s3-first-overhead-classic.jpg) ![final band, overhead](img/s3-overhead-classic.jpg)
+
+Close up on one lens (x ≈ 67 m), the first band, grey, its toe in icicles (left), and the final, white, its toe in lobes (right), in Classic:
+
+![first band, close](img/s3-first-close-classic.jpg) ![final band, close](img/s3-close-classic.jpg)
+
+In Rich, the band (left) against the same frame with it emptied (right):
+
+![band, close, Rich](img/s3-close-rich.jpg) ![no band, close, Rich](img/s3-close-rich-emptied.jpg)
+
+From the beach and overhead in Rich: `img/s3-beach-rich.jpg`, `img/s3-overhead-rich.jpg`.
+
+Against the emptied frame, the band now only brightens: in Classic no pixel darker in any view; in Rich 64 of 12,693 changed pixels from the beach, none overhead, and 2,342 of 109,991 close up (the churn's pattern inside the band).
+
+### Open
+
+- **The toe's look is provisional**, for the owner to judge on film: its octaves' weights, the holes' threshold and the fade from 0.75 to 1 of the lens's length (R3 §4).
+- **A tan crescent at the tank's +x edge** (top right of the close-ups) is the seabed seen through the seam between the tank's water and the far ocean, where the Canyon's breaking crest stands above the far ocean's linear swell. The water there is 2.4–3.7 m deep: not the bar drying. Not fixed: closing the seam (a curtain along the tank's open edges, from its edge heights down to just under the far ocean, `FarFieldProfile.elevation`) changes every spot.
+- **The feel checks above stay open**, as the owner kept them.
+- **The roller's step** costs about 0.3 ms, four times the plan's estimate (0.07 ms).
+
+### Tests
+
+`SpillingRoller.test.ts`, `SpillingFront.test.ts`, `rollerLook.test.ts`, `waterLooks.test.ts`, `WaterSurface.test.ts`, `SurfZoneHost.test.ts`, `WorkerSurfZone.test.ts`, `PhysicalSurfWater.test.ts`, `rollerScope.test.ts` and `rollerFeel.test.ts`, with `surfZoneState.test.ts`'s handover and `SurfZoneSimulation.test.ts`'s Canyon tests.

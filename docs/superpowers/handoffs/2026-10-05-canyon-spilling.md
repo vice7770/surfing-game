@@ -87,6 +87,24 @@ When a box is unticked, check the work branch for partial commits: `git log orig
   - where the bots wait: the owner's next ruling;
   - the beach close-out upcoast of the peak: not ruled.
 
+**2026-10-08, S3: the roller lens** (`claude/canyon-roller`, to the plan `docs/superpowers/plans/2026-10-06-canyon-roller-s3.md`; the details, the cost and the pictures are in the Canyon note's S3 section):
+
+- **The owner's decisions.**
+  - 2026-10-07: option B for the rider's water (a one-sided froth drag and lens-scoped water entry); the free carry held under 1.2 c; four feel checks kept open as known misses against estimated targets (the pushes at 0.5 and 1.5 m, the paddler's knock-off and the hit force).
+  - 2026-10-07, on the first shots of the band: fix the far-crest join at its root, with two guards; the band reads white, never darker than the foam it covers; the toe in lobes, not icicles.
+  - 2026-10-08, after playing the build: the Canyon can be ridden on a diagonal. "It's ok for now, it requires more work after but for now I'm happy."
+  - The owner's rule drops the riding measurements (catch, ride and duck-dive reports): the owner rides and records the videos.
+- **Done:**
+  - the roller model, in the simulation, the rider's water, both looks' band, and online (Tasks 1–5);
+  - one crest per wave in the spilling front (an onset joins only its own crest; each wave's crest recorded on its own crest; 24 waves tracked), with the roller's two guards: on the shot frame, lenses leaning past 60° 11 → 0, the longest across shore 68.8 m → 12.0 m;
+  - the band white in both looks, its toe in lobes (the noises on a fixed lattice);
+  - the docs (Task 6).
+- **What's left:**
+  - the seam at the tank's open edges, where the seabed shows through between the tank's water and the far ocean (a tan crescent at the Canyon's +x edge): a curtain along the edges would close it, at every spot;
+  - the four open feel checks;
+  - the roller's step, about 0.3 ms against the plan's 0.07 ms;
+  - the toe's look, provisional, for the owner on film.
+
 ## How to pick it up locally
 
 ```sh
