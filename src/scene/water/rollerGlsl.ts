@@ -58,12 +58,9 @@ float waterRollerNoise3( vec3 p ) {
     mix( waterRollerHash( c + ivec3( 0, 1, 1 ) ), waterRollerHash( c + ivec3( 1, 1, 1 ) ), u.x ), u.y );
   return mix( near, far, u.z );
 }
-float waterRollerLife( float life, float depth ) {
-  return life * sqrt( max( ${f(ROLLER_LOOK.minDepth)}, depth ) / ${f(ROLLER_LOOK.referenceDepth)} );
-}
-float waterRollerToe( float x, float time, float depth, float roughness ) {
-  float h1 = max( ${f(ROLLER_LOOK.minDepth)}, depth );
-  float t = time * ${f(ROLLER_LOOK.toeRate)} / waterRollerLife( ${f(ROLLER_LOOK.fingerLife)}, depth );
+float waterRollerToe( float x, float time, float roughness ) {
+  float h1 = ${f(ROLLER_LOOK.referenceDepth)};
+  float t = time * ${f(ROLLER_LOOK.toeRate)} / ${f(ROLLER_LOOK.fingerLife)};
   float n = ${f(ROLLER_LOOK.toeShortWeight)} * waterRollerNoise2( vec2( x / ( ${f(ROLLER_LOOK.toeShort)} * h1 ), t ), 1 )
     + ${f(ROLLER_LOOK.toeLongWeight)} * waterRollerNoise2( vec2( x / ( ${f(ROLLER_LOOK.toeLong)} * h1 ), t ), 2 );
   return ${f(ROLLER_LOOK.toeAmplitude)} * roughness * n / ${f(ROLLER_LOOK.toeNoiseSpread)};
@@ -95,16 +92,15 @@ void waterRollerAt( vec2 xz, float time ) {
     float roughness = w0 * b0.w + w1 * b1.w;
     if ( xi < -${f(ROLLER_LOOK.rear)} || xi > 1.0 + 4.0 * ${f(ROLLER_LOOK.toeAmplitude)} * roughness / len ) continue;
     float g = ( 1.0 - tx ) * ( live0 ? a0.z : 0.0 ) + tx * ( live1 ? a1.z : 0.0 );
-    float depth = w0 * b0.z + w1 * b1.z;
     float band;
     if ( xi < 0.0 ) {
       band = smoothstep( -${f(ROLLER_LOOK.rear)}, 0.0, xi );
     } else {
-      float toe = xi - waterRollerToe( xz.x, time, depth, roughness ) / len;
+      float toe = xi - waterRollerToe( xz.x, time, roughness ) / len;
       band = 1.0 - smoothstep( ${f(ROLLER_LOOK.edge)}, 1.0, toe );
       if ( xi > ${f(ROLLER_LOOK.holeFrom)} ) {
-        float scale = ${f(ROLLER_LOOK.holeScale)} * max( ${f(ROLLER_LOOK.minDepth)}, depth );
-        float hole = waterRollerNoise3( vec3( xz.x / scale, xi * len / scale, time / waterRollerLife( ${f(ROLLER_LOOK.holeLife)}, depth ) ) );
+        float scale = ${f(ROLLER_LOOK.holeScale * ROLLER_LOOK.referenceDepth)};
+        float hole = waterRollerNoise3( vec3( xz.x / scale, xi * len / scale, time / ${f(ROLLER_LOOK.holeLife)} ) );
         band *= 1.0 - smoothstep( 0.62, 0.8, hole ) * smoothstep( ${f(ROLLER_LOOK.holeFrom)}, 0.8, xi );
       }
     }

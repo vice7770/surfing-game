@@ -23,7 +23,12 @@ export const ROLLER_LOOK = {
   wrap: 1,
   /** The toe wanders by this many d′max (1–2 d′max, Wang, Leng & Chanson 2017; the middle, P). */
   toeAmplitude: 1.5,
-  /** Its two octaves' wavelengths along the crest, trough depths h₁ (1 and 5–10 h₁, Wang, Leng & Chanson 2017; P). */
+  /**
+   * Its two octaves' wavelengths along the crest, in reference trough depths (1 and 5–10 h₁, Wang, Leng & Chanson 2017;
+   * P): 1.5 m and 11.25 m. Not the local h₁: it varies along the crest, and a lattice scaled by it turned the noise's
+   * coordinates several times faster than the lattice at large x and t (up to 0.06 a metre changed 1.8 turns of the toe
+   * a metre against 0.6), drawing the toe as icicles in the first shots.
+   */
   toeShort: 1,
   toeLong: 7.5,
   /**
@@ -34,19 +39,18 @@ export const ROLLER_LOOK = {
   toeShortWeight: 0.5,
   toeLongWeight: 1,
   /**
-   * Fingers live 0.4–0.6 s at h₁ = 1.5 m (Wüthrich, Shi & Chanson's lab lifetimes Froude-scaled, R3 §2.4; the middle, P),
-   * longer with √h₁; the toe moves at 0.4× the surface's rate (Wang, Leng & Chanson 2017).
+   * Fingers live 0.4–0.6 s at h₁ = 1.5 m (Wüthrich, Shi & Chanson's lab lifetimes Froude-scaled, R3 §2.4; the middle, P);
+   * the toe moves at 0.4× the surface's rate (Wang, Leng & Chanson 2017). At the reference depth, for the same reason.
    */
   fingerLife: 0.5,
   toeRate: 0.4,
-  /** Holes live 0.3–0.4 s at h₁ = 1.5 m (the same scaling; the middle, P), half a trough depth across (P). */
+  /** Holes live 0.3–0.4 s (the same scaling; the middle, P), half the reference trough depth across (P). */
   holeLife: 0.35,
   holeScale: 0.5,
   /** Holes open only in the toe half (ξ from 0.5), where the lab sees them (Wüthrich et al. 2022). */
   holeFrom: 0.5,
-  /** The noises' reference trough depth, m, and the least they take (P), so a swash lens keeps finite scales. */
+  /** The noises' reference trough depth, m: the sources' lab and field depths Froude-scaled to the Canyon's (P). */
   referenceDepth: 1.5,
-  minDepth: 0.2,
   /**
    * The two octaves' weighted sum over its standard deviation (measured over 10⁶ samples along 2.7 km: 0.50; the equal
    * weights' was 0.63): the toe's offset then has a standard deviation of toeAmplitude·d′max.
@@ -108,18 +112,13 @@ export function rollerNoise3(x: number, y: number, z: number): number {
   return lerp(face(k), face(k + 1), w);
 }
 
-/** The noises' time scale for a trough depth h₁, s: their lifetime at the reference depth, Froude-scaled by √h₁. */
-function lifetime(life: number, troughDepth: number): number {
-  return life * Math.sqrt(Math.max(ROLLER_LOOK.minDepth, troughDepth) / ROLLER_LOOK.referenceDepth);
-}
-
 /**
  * How far the toe has wandered toward the beach at along-shore x and time t, m: two octaves at 1 and 7.5 trough depths,
  * the longer dominant, scaled to a standard deviation of 1.5 d′max, moving at 0.4× the fingers' rate.
  */
-export function toeOffset(x: number, time: number, troughDepth: number, roughness: number): number {
-  const h1 = Math.max(ROLLER_LOOK.minDepth, troughDepth);
-  const t = (time * ROLLER_LOOK.toeRate) / lifetime(ROLLER_LOOK.fingerLife, troughDepth);
+export function toeOffset(x: number, time: number, roughness: number): number {
+  const h1 = ROLLER_LOOK.referenceDepth;
+  const t = (time * ROLLER_LOOK.toeRate) / ROLLER_LOOK.fingerLife;
   const n = ROLLER_LOOK.toeShortWeight * rollerNoise2(x / (ROLLER_LOOK.toeShort * h1), t, 1)
     + ROLLER_LOOK.toeLongWeight * rollerNoise2(x / (ROLLER_LOOK.toeLong * h1), t, 2);
   return (ROLLER_LOOK.toeAmplitude * roughness * n) / ROLLER_LOOK.toeNoiseSpread;
@@ -179,16 +178,15 @@ export function rollerLookAt(table: ArrayLike<number>, columns: number, column0:
     // The toe can wander past ξ = 1 by its offset: four standard deviations, before any noise is evaluated.
     if (xi < -ROLLER_LOOK.rear || xi > 1 + (4 * ROLLER_LOOK.toeAmplitude * roughness) / length) continue;
     const g = (1 - tx) * (live0 ? g0 : 0) + tx * (live1 ? g1 : 0);
-    const troughDepth = w0 * table[o0 + ROLLER_FIELD.troughDepth] + w1 * table[o1 + ROLLER_FIELD.troughDepth];
     let band: number;
     if (xi < 0) {
       band = smoothstep(-ROLLER_LOOK.rear, 0, xi);
     } else {
-      const toe = xi - toeOffset(x, time, troughDepth, roughness) / length;
+      const toe = xi - toeOffset(x, time, roughness) / length;
       band = 1 - smoothstep(ROLLER_LOOK.edge, 1, toe);
       if (xi > ROLLER_LOOK.holeFrom) {
-        const scale = ROLLER_LOOK.holeScale * Math.max(ROLLER_LOOK.minDepth, troughDepth);
-        const hole = rollerNoise3(x / scale, (xi * length) / scale, time / lifetime(ROLLER_LOOK.holeLife, troughDepth));
+        const scale = ROLLER_LOOK.holeScale * ROLLER_LOOK.referenceDepth;
+        const hole = rollerNoise3(x / scale, (xi * length) / scale, time / ROLLER_LOOK.holeLife);
         band *= 1 - smoothstep(0.62, 0.8, hole) * smoothstep(ROLLER_LOOK.holeFrom, 0.8, xi);
       }
     }

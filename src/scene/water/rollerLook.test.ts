@@ -91,7 +91,7 @@ describe('the roller look\'s noises', () => {
     const roughness = 0.4;
     const step = 0.05;
     const toe: number[] = [];
-    for (let i = 0; i < 8000; i += 1) toe.push(toeOffset(i * step, 3, 1.5, roughness));
+    for (let i = 0; i < 8000; i += 1) toe.push(toeOffset(i * step, 3, roughness));
     const mean = toe.reduce((a, b) => a + b, 0) / toe.length;
     const total = Math.sqrt(toe.reduce((a, v) => a + (v - mean) ** 2, 0) / toe.length);
     // The wander left about the toe's 3 m running mean: the fingers.
@@ -113,7 +113,7 @@ describe('the roller look\'s noises', () => {
     let count = 0;
     for (let i = 0; i < 400; i += 1) {
       for (let j = 0; j < 100; j += 1) {
-        const offset = toeOffset(i * 0.73, j * 0.91, 1.5, roughness);
+        const offset = toeOffset(i * 0.73, j * 0.91, roughness);
         sum += offset;
         squares += offset * offset;
         widest = Math.max(widest, Math.abs(offset));
@@ -166,6 +166,20 @@ describe('the roller band (rollerLookAt)', () => {
     }
     expect(covered).toBeGreaterThan(0);
     expect(bare).toBeGreaterThan(0);
+  });
+
+  it('draws the same toe and holes whatever the trough depth, so a depth varying along the crest never streaks them', () => {
+    const columns = 40;
+    const at = (depth: (column: number) => number) => table(columns, Array.from({ length: columns }, (_, i) => ({
+      crest: 10, length: 7, scale: 1, roughness: 0.4, troughDepth: depth(i),
+    })));
+    const level = at(() => 1.5);
+    const sloped = at((i) => 1.2 + 0.06 * i);
+    for (let x = 0; x <= columns - 1; x += 0.07) {
+      for (const z of [14, 15.5, 16.5, 17.2]) {
+        expect(rollerLookAt(sloped, columns, 0, 1, x, z, 108, look).cover).toBe(rollerLookAt(level, columns, 0, 1, x, z, 108, look).cover);
+      }
+    }
   });
 
   it('opens holes only in the toe half', () => {

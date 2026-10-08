@@ -1105,12 +1105,9 @@ float waterRollerNoise3( vec3 p ) {
     mix( waterRollerHash( c + ivec3( 0, 1, 1 ) ), waterRollerHash( c + ivec3( 1, 1, 1 ) ), u.x ), u.y );
   return mix( near, far, u.z );
 }
-float waterRollerLife( float life, float depth ) {
-  return life * sqrt( max( 0.2, depth ) / 1.5 );
-}
-float waterRollerToe( float x, float time, float depth, float roughness ) {
-  float h1 = max( 0.2, depth );
-  float t = time * 0.4 / waterRollerLife( 0.5, depth );
+float waterRollerToe( float x, float time, float roughness ) {
+  float h1 = 1.5;
+  float t = time * 0.4 / 0.5;
   float n = 0.5 * waterRollerNoise2( vec2( x / ( 1.0 * h1 ), t ), 1 )
     + 1.0 * waterRollerNoise2( vec2( x / ( 7.5 * h1 ), t ), 2 );
   return 1.5 * roughness * n / 0.5;
@@ -1142,16 +1139,15 @@ void waterRollerAt( vec2 xz, float time ) {
     float roughness = w0 * b0.w + w1 * b1.w;
     if ( xi < -0.3 || xi > 1.0 + 4.0 * 1.5 * roughness / len ) continue;
     float g = ( 1.0 - tx ) * ( live0 ? a0.z : 0.0 ) + tx * ( live1 ? a1.z : 0.0 );
-    float depth = w0 * b0.z + w1 * b1.z;
     float band;
     if ( xi < 0.0 ) {
       band = smoothstep( -0.3, 0.0, xi );
     } else {
-      float toe = xi - waterRollerToe( xz.x, time, depth, roughness ) / len;
+      float toe = xi - waterRollerToe( xz.x, time, roughness ) / len;
       band = 1.0 - smoothstep( 0.75, 1.0, toe );
       if ( xi > 0.5 ) {
-        float scale = 0.5 * max( 0.2, depth );
-        float hole = waterRollerNoise3( vec3( xz.x / scale, xi * len / scale, time / waterRollerLife( 0.35, depth ) ) );
+        float scale = 0.75;
+        float hole = waterRollerNoise3( vec3( xz.x / scale, xi * len / scale, time / 0.35 ) );
         band *= 1.0 - smoothstep( 0.62, 0.8, hole ) * smoothstep( 0.5, 0.8, xi );
       }
     }
