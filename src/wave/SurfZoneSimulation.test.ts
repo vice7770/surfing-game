@@ -190,9 +190,8 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('feeds Padang Padang\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
-    expect(SIDE_FEED_SPOTS).toEqual(['padang']);
-    const simulation = new SurfZoneSimulation(small_(), 'warm');
+  it('feeds a sea\'s sides with the incoming sea when its config asks, on the clock of a handed-over sea (wave sizes)', () => {
+    const simulation = new SurfZoneSimulation({ ...small_(), sideFeed: true }, 'warm');
     const feed = simulation.solver.relaxationZones.find((zone) => zone instanceof SideFeed) as SideFeed | undefined;
     expect(feed).toBeDefined();
     const donor = new SurfZoneSimulation({ ...small_(), startSeaTime: 500 }, 'warm');
@@ -201,11 +200,13 @@ describe('SurfZoneSimulation', () => {
     expect(feed!.timeOffset).toBe(state.seaTimeOffset);
   });
 
-  // Every other spot keeps main's open sides until the feed's own rollout (the owner, 2026-09-30).
-  it('feeds no other spot\'s sides', () => {
-    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
-      const simulation = new SurfZoneSimulation({ ...small, spot }, 'warm');
-      expect(simulation.solver.relaxationZones.some((zone) => zone instanceof SideFeed)).toBe(false);
+  // No spot's sides are fed by default (the owner, 2026-10-07: Padang Padang's feed shed two-way crests and spun up a
+  // current, while its open sides held their height: docs/research/padang-side-feed-2026-10-08.md).
+  it('feeds no spot\'s sides by default, Padang Padang\'s included', () => {
+    expect(SIDE_FEED_SPOTS).toEqual([]);
+    for (const config of [...(['beach', 'point', 'reef', 'canyon'] as const).map((spot) => ({ ...small, spot })), small_()]) {
+      const simulation = new SurfZoneSimulation(config, 'warm');
+      expect(simulation.solver.relaxationZones.some((zone) => zone instanceof SideFeed), config.spot).toBe(false);
     }
   });
 

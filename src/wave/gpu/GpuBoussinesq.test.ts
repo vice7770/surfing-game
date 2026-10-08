@@ -12,8 +12,8 @@ import {
 
 const quick = { spot: 'point' as const, seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
   alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
-/** A fed sea: only Padang Padang's sides are fed (SIDE_FEED_SPOTS), warm-built, since packing reads no stepped water. */
-const fed = () => new SurfZoneSimulation({ ...quick, spot: 'padang', significantHeight: 1.2, peakPeriod: 16 }, 'warm');
+/** A fed sea: Padang Padang with its sides fed by the config (no spot is fed by default since 2026-10-07), warm-built, since packing reads no stepped water. */
+const fed = () => new SurfZoneSimulation({ ...quick, spot: 'padang', significantHeight: 1.2, peakPeriod: 16, sideFeed: true }, 'warm');
 
 /**
  * A stand-in for the GPU (plan P6): a second solver, stepped on the CPU, is the device's memory, and each frame it
