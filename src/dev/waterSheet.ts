@@ -53,7 +53,7 @@ interface Shot { name: string; eye: Vector3; target: Vector3 }
 
 const PARAMETERS = new URLSearchParams(window.location.search);
 /** `?waterSheet&spot=reef` or `padang` (G9): the practice Reef or Padang Padang, held on an open tube, with tube shots in place of the face and bore. */
-const SPOT = (['reef', 'beach', 'padang', 'canyon'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
+const SPOT = (['reef', 'beach', 'padang', 'canyon', 'pool'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
 /**
  * `&direction=<degrees>&spreading=<s>`: the swell's direction and cos-2s spreading in place of the settings' (the Canyon's
  * spilling prototype runs a square, narrow groundswell: `&spot=canyon&swell=medium&direction=0&spreading=150`),

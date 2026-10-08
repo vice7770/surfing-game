@@ -260,6 +260,11 @@ export class FarFieldOcean {
   }
 
   /** Advance to sea time t: each component's ωt is reduced mod 2π in double precision. */
+  /** The sea time its waves were last drawn at, s (NaN before the first). */
+  get time(): number {
+    return this.drawnTime;
+  }
+
   update(seaTime: number): void {
     const profile = this.profile;
     if (!profile || seaTime === this.drawnTime) return;

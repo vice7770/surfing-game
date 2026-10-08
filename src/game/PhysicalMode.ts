@@ -11,6 +11,7 @@ import { RiderMotion } from '../scene/rig/riderMotion';
 import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
+import { EdgeCurtain } from '../scene/EdgeCurtain';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -327,6 +328,8 @@ export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
+  /** The seam to the far ocean along the tank's open edges, made at the first start (it shares the water's shading). */
+  private edgeCurtain?: EdgeCurtain;
   /** The Wave Pool's walls, deck and machine hall (the movement-flow spec); the open ocean stays hidden there. */
   readonly poolScenery = new PoolScenery();
   private atPool = false;
@@ -612,6 +615,9 @@ export class PhysicalMode {
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
+    // The seam where the tank's water meets the far ocean (the owner, 2026-10-08): none at the Wave Pool, walled in.
+    this.edgeCurtain ??= new EdgeCurtain(water);
+    this.edgeCurtain.setFar(this.atPool ? undefined : { profile, centerX: 0.5 * (hole.xMin + hole.xMax) });
     this.chosenView = this.defaultView;
     this.camera.setView(this.homeView);
     return true;
@@ -770,6 +776,20 @@ export class PhysicalMode {
     } else {
       this.riderMotion.reset();
     }
+  }
+
+  /**
+   * The curtain along the tank's open edges, closing the seam to the far ocean (the owner, 2026-10-08), at the far
+   * ocean's drawn time; call once the water has uploaded this frame's heights. Hidden with the far ocean.
+   */
+  drawCurtain(): void {
+    const curtain = this.edgeCurtain;
+    if (!curtain) return;
+    if (!this.host || !this.shown || !this.farField.mesh.visible || !(this.farField.time === this.farField.time)) {
+      curtain.mesh.visible = false;
+      return;
+    }
+    curtain.update(this.farField.time);
   }
 
   /**
