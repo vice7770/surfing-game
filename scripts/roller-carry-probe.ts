@@ -5,7 +5,8 @@
  *   components on the GPU tier), stepped on the CPU at the game's 1/60 s with the water first, then the body;
  * - after its spin-up (and `--wait` more seconds), the longest run of developed lenses (g ≥ 0.95) along a crest is
  *   picked, and a prone board, rider on, nose to the beach, is placed `--ahead` m ahead of the toe in its middle column;
- * - no paddling and no input: the board is only pushed and carried (it may start at `--speed`). No bots ride.
+ * - no input but `--paddle` (the rider paddles, prone, all along): the board is pushed and carried (it may start at
+ *   `--speed`). No bots ride.
  *
  * Every `--every` steps it prints the board's speed across shore against the speed c of the lens it was placed ahead of
  * (its wave's lens in the board's column), where it lies in that lens (ξ: 0 at the crest, 1 at the toe), whether a lens
@@ -20,8 +21,8 @@
  * Options: --seed (1), --wait (0 s), --seconds (12), --ahead (1 m), --components (64), --every (15 steps), --pick fastest
  * or thickest (the developed run with the fastest or thickest lens, not the longest), --speed (0 m/s: the board's start
  * along its heading, over the water's; the owner's readout climbed from 2), --column C --wave W (pinned: wave W's developed
- * lens in column C, for a run before and after a change), --bare (the same sea with no lens felt, and no P11 push: the
- * difference the lens makes).
+ * lens in column C, for a run before and after a change), --paddle, --bare (the same sea with no lens felt, and no P11
+ * push: the difference the lens makes).
  */
 import type { Vector3 } from 'three';
 import { PhysicalSurfWater } from '../src/physics/PhysicalSurfWater';
@@ -97,7 +98,8 @@ const x0 = solver.xCenters[pick.column];
 const crest0 = entry(pick.slot, pick.column, ROLLER_FIELD.crest);
 const length0 = entry(pick.slot, pick.column, ROLLER_FIELD.length);
 const z0 = crest0 + length0 + option('ahead', 1);
-const lens0 = roller.lens(pick.column, pick.slot)!;
+// Its state: the table's slot need not be the slot the lens is kept in.
+const lens0 = Array.from({ length: ROLLER_SLOTS }, (_, slot) => roller.lens(pick!.column, slot)).find((lens) => lens?.wave === wave)!;
 console.log(`Canyon Medium, seed ${config.seed}, ${config.componentCount} components; t = ${start.toFixed(2)} s: wave ${wave}'s lens in column ${pick.column} `
   + `(x ${x0.toFixed(1)} m; a run of ${pick.run}): crest ${crest0.toFixed(2)} m, length ${length0.toFixed(2)} m, t_c ${entry(pick.slot, pick.column, ROLLER_FIELD.thickness).toFixed(3)} m, `
   + `H ${lens0.height.toFixed(2)} m, h1 ${lens0.troughDepth.toFixed(2)} m, Fr1 ${Math.sqrt(lens0.froude2).toFixed(2)}, c ${lens0.c.toFixed(2)} m/s; the board at z ${z0.toFixed(2)} m`);
@@ -152,7 +154,7 @@ let released: string | undefined;
 let wasInside = false;
 for (let n = 1; n <= Math.round(option('seconds', 12) / STEP); n += 1) {
   simulation.step(STEP);
-  session.step(STEP, water, { paddle: false, popUp: false, steer: 0 });
+  session.step(STEP, water, { paddle: flag('paddle'), popUp: false, steer: 0 });
   const t = n * STEP;
   const p = board.position;
   const column = Math.min(nx - 1, Math.max(0, Math.round((p.x - solver.xCenters[0]) / solver.dx)));
