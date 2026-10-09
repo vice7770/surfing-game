@@ -1,0 +1,134 @@
+import { describe, expect, it } from 'vitest';
+import { DRY_DEPTH, DRY_DROP, DRY_MARGIN, ShorelineFill, innerDepth } from './shoreline';
+
+/** The surf zone's render convention (`writeUniformSurface`): wet over 1 cm deep, else 5 cm under the bed. */
+const WET = 0.01;
+
+/** Still water at level 0 over a planar beach rising at `slope` toward +z, its shore oblique to the grid. */
+function stillBeach(nx: number, nz: number, slope: number, skew: number, level = 0) {
+  const bed = new Float32Array(nx * nz);
+  const data = new Float32Array(nx * nz * 2);
+  for (let r = 0; r < nz; r += 1) {
+    for (let c = 0; c < nx; c += 1) {
+      const k = r * nx + c;
+      bed[k] = slope * (r - 10 + skew * c);
+      const depth = level - bed[k];
+      data[2 * k] = depth > WET ? level : bed[k] - DRY_DROP;
+      data[2 * k + 1] = depth > WET ? 0.25 : 0;
+    }
+  }
+  return { bed, data };
+}
+
+/** Where each column's drawn water meets its bed, from the linear run of (height − bed) between its nodes, rows. */
+function crossings(data: Float32Array, bed: Float32Array, nx: number, nz: number): number[] {
+  const out: number[] = [];
+  for (let c = 0; c < nx; c += 1) {
+    for (let r = 0; r + 1 < nz; r += 1) {
+      const a = data[2 * (r * nx + c)] - bed[r * nx + c];
+      const b = data[2 * ((r + 1) * nx + c)] - bed[(r + 1) * nx + c];
+      if (a > 0 && b <= 0) {
+        out.push(r + a / (a - b));
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+describe('the waterline (ShorelineFill)', () => {
+  it('draws a straight shore along its true line, where the nodes stepped it a metre at a time', () => {
+    const nx = 24;
+    const nz = 24;
+    const slope = 0.06;
+    const skew = 0.37;
+    const { bed, data } = stillBeach(nx, nz, slope, skew);
+    // The true shore: bed = 0, at row 10 − skew·c.
+    const error = (rows: number[]) => Math.max(...rows.map((row, c) => Math.abs(row - (10 - skew * c))));
+    const before = error(crossings(data, bed, nx, nz));
+    new ShorelineFill().fill(data, bed, nx, nz);
+    const after = error(crossings(data, bed, nx, nz));
+    expect(before).toBeGreaterThan(0.4);
+    // On the true line, every column, to float precision.
+    expect(after).toBeLessThan(1e-3);
+  });
+
+  it('moves only the two rings of dry nodes beside the water, the outer one under its bed, and leaves the foam', () => {
+    const nx = 16;
+    const nz = 20;
+    const { bed, data } = stillBeach(nx, nz, 0.08, 0.25);
+    const original = data.slice();
+    const moved = new ShorelineFill().fill(data, bed, nx, nz);
+    expect(moved).toBeGreaterThan(2 * nx - 2);
+    const wet = (k: number) => original[2 * k] > bed[k];
+    /** How many nodes node k lies from the nearest wet node (8-neighbour steps), up to 3. */
+    const reach = (k: number) => {
+      const c = k % nx;
+      const r = (k - c) / nx;
+      let best = 3;
+      for (let dr = -2; dr <= 2; dr += 1) {
+        for (let dc = -2; dc <= 2; dc += 1) {
+          const rr = r + dr;
+          const cc = c + dc;
+          if (rr >= 0 && rr < nz && cc >= 0 && cc < nx && wet(rr * nx + cc)) best = Math.min(best, Math.max(Math.abs(dr), Math.abs(dc)));
+        }
+      }
+      return best;
+    };
+    // Every dry node within two of the water, and none further.
+    let within = 0;
+    for (let k = 0; k < nx * nz; k += 1) if (!wet(k) && reach(k) <= 2) within += 1;
+    expect(moved).toBe(within);
+    let changed = 0;
+    for (let k = 0; k < nx * nz; k += 1) {
+      expect(data[2 * k + 1]).toBe(original[2 * k + 1]);
+      if (data[2 * k] === original[2 * k]) continue;
+      changed += 1;
+      expect(original[2 * k]).toBeCloseTo(bed[k] - DRY_DROP, 6);
+      const ring = reach(k);
+      expect(ring).toBeLessThanOrEqual(2);
+      // The first ring no deeper than the dry threshold over its bed, the second under it by the margin.
+      expect(data[2 * k] - bed[k]).toBeLessThanOrEqual((ring === 1 ? DRY_DEPTH : -DRY_MARGIN) + 1e-6);
+    }
+    expect(changed).toBe(moved);
+  });
+
+  it('folds an extrapolation past the dry threshold back under the bed, continuously', () => {
+    expect(innerDepth(-0.2)).toBe(-0.2);
+    expect(innerDepth(DRY_DEPTH)).toBeCloseTo(DRY_DEPTH, 9);
+    expect(innerDepth(DRY_DEPTH + 1e-6)).toBeCloseTo(DRY_DEPTH, 5);
+    // A reef's step: the depth below it extrapolated onto its dry top.
+    expect(innerDepth(0.8)).toBe(-DRY_MARGIN);
+  });
+
+  it('keeps a bore’s tip in its own cell as it runs up the dry beach', () => {
+    // One column: a 30 cm bore whose face falls 15 cm a node onto a 1:20 beach, dry beyond row 12.
+    const nx = 1;
+    const nz = 20;
+    const bed = new Float32Array(nz);
+    const data = new Float32Array(nz * 2);
+    for (let r = 0; r < nz; r += 1) {
+      bed[r] = 0.05 * (r - 10);
+      const depth = r <= 10 ? 0.3 : r === 11 ? 0.15 : r === 12 ? 0.02 : 0;
+      data[2 * r] = depth > WET ? bed[r] + depth : bed[r] - DRY_DROP;
+    }
+    new ShorelineFill().fill(data, bed, nx, nz);
+    const [tip] = crossings(data, bed, nx, nz);
+    // The run of depth 0.15 → 0.02 reaches zero 0.15 of a node past row 12; the level would have carried it on.
+    expect(tip).toBeGreaterThan(12);
+    expect(tip).toBeLessThan(12.2);
+  });
+
+  it('leaves water with no shore, and a grid with no water, as they were', () => {
+    const fill = new ShorelineFill();
+    const bed = new Float32Array(9).fill(-3);
+    const sea = new Float32Array(18).fill(0.4);
+    expect(fill.fill(sea, bed, 3, 3)).toBe(0);
+    expect(Array.from(sea)).toEqual(new Array(18).fill(0.4).map((v) => Math.fround(v)));
+    const land = new Float32Array(18);
+    for (let k = 0; k < 9; k += 1) land[2 * k] = 2 - DRY_DROP;
+    const sand = new Float32Array(9).fill(2);
+    expect(fill.fill(land, sand, 3, 3)).toBe(0);
+    for (let k = 0; k < 9; k += 1) expect(land[2 * k]).toBeCloseTo(2 - DRY_DROP, 6);
+  });
+});

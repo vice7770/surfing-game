@@ -38,6 +38,7 @@ import { WATER_BARREL_DISCARD, WATER_BARREL_FALLBACK_DISCARD, waterBarrelMaskPar
 import { BARREL_FALLBACK_ORDER, configureBarrelCoverage, configureBarrelFallback } from './barrel/barrelFallback';
 import { CoarseFallbackRows } from './barrel/fallbackRows';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
+import { ShorelineFill } from './water/shoreline';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
@@ -285,6 +286,8 @@ export class WaterSurface {
   private readonly rollerExtent = { low: 1, high: 0 };
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
+  /** The waterline's fill of the dry nodes beside the water (shoreline.ts). */
+  private readonly shoreline = new ShorelineFill();
 
   constructor(private source: SurfaceSource) {
     const grid = source.grid;
@@ -431,8 +434,17 @@ export class WaterSurface {
       || was.xMin !== grid.xMin || was.zMin !== grid.zMin || was.spacing !== grid.spacing
       || was.nx !== grid.nx || was.nz !== grid.nz || was.tubeWidth !== source.tubeColumnWidth;
     if (changed) {
+      if (source !== this.bedSource || source.bedRevision !== this.bedRevision) {
+        source.writeBed(this.bedData);
+        this.bedSource = source;
+        this.bedRevision = source.bedRevision;
+        this.bedTexture.needsUpdate = true;
+      }
       // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
       source.write(this.surfaceData, !(this.effectiveLook === 'rich' && source.writeTubes));
+      // The waterline: the dry nodes beside the water carry its depth on, so its edge meets the sand along the shore's
+      // own line, not the nodes' staircase (drawing only; see shoreline.ts).
+      this.shoreline.fill(this.surfaceData, this.bedData, grid.nx, grid.nz);
       this.updateTubes();
       this.updateRoller();
       if (this.effectiveLook === 'rich' && source.writeAeration) {
@@ -444,12 +456,6 @@ export class WaterSurface {
       this.uniforms.waterTime.value = source.time;
       this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
       this.texture.needsUpdate = true;
-      if (source !== this.bedSource || source.bedRevision !== this.bedRevision) {
-        source.writeBed(this.bedData);
-        this.bedSource = source;
-        this.bedRevision = source.bedRevision;
-        this.bedTexture.needsUpdate = true;
-      }
       this.dataRevision += 1;
       this.written = {
         source, revision, time: source.time, bedRevision: source.bedRevision, look: this.effectiveLook,

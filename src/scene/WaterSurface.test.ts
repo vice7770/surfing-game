@@ -133,23 +133,48 @@ describe('WaterSurface GPU displacement data', () => {
       spot: 'reef', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 0, spreading: 12, tide: 0,
       componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
     });
-    surface.setSource(new PhysicalSurfaceSource(simulation, 2));
+    const source = new PhysicalSurfaceSource(simulation, 2);
+    surface.setSource(source);
     surface.update();
     const check = () => {
+      // The surf zone's own heights; the drawn ones differ only on the waterline's two rings (shoreline.ts).
+      const raw = new Float32Array(surface.surfaceData.length);
+      source.write(raw);
+      const { nx, nz } = surface.grid;
+      const nearWater = (k: number) => {
+        const c = k % nx;
+        const r = (k - c) / nx;
+        for (let dr = -2; dr <= 2; dr += 1) {
+          for (let dc = -2; dc <= 2; dc += 1) {
+            const j = (r + dr) * nx + c + dc;
+            if (r + dr >= 0 && r + dr < nz && c + dc >= 0 && c + dc < nx && raw[2 * j] > surface.bedData[j]) return true;
+          }
+        }
+        return false;
+      };
       let dry = 0;
       let wet = 0;
+      let rings = 0;
       for (let k = 0; k < surface.bedData.length; k += 1) {
-        const depth = surface.surfaceData[k * 2] - surface.bedData[k];
+        const depth = raw[k * 2] - surface.bedData[k];
+        const drawn = surface.surfaceData[k * 2] - surface.bedData[k];
         if (depth < 0) {
           expect(depth).toBeCloseTo(-0.05, 5);
           dry += 1;
+          if (drawn !== depth) {
+            expect(nearWater(k)).toBe(true);
+            expect(drawn).toBeLessThanOrEqual(0.01 + 1e-6);
+            rings += 1;
+          }
         } else {
           expect(depth).toBeGreaterThan(0.009);
+          expect(drawn).toBe(depth);
           wet += 1;
         }
       }
       expect(dry).toBeGreaterThan(0);
       expect(wet).toBeGreaterThan(0);
+      expect(rings).toBeGreaterThan(0);
     };
     check();
     const x = surface.grid.xMin + 4;
