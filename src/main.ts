@@ -952,8 +952,8 @@ class SurfGame {
   /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
   private drawPhysical(view: PerspectiveCamera): void {
     this.water.update();
-    // The seam to the far ocean, on the heights the water just uploaded (the edge curtain).
-    this.physicalMode.drawCurtain();
+    // Past the open sides, the tank's own water on the heights it just uploaded (the edge band).
+    this.physicalMode.drawEdgeBand();
     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
     this.physicalMode.drawBarrel();
     this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
