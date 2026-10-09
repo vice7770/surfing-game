@@ -31,6 +31,11 @@ export function heldDownNotice(rescues: number, seen: number): { seen: number; t
   return rescues > seen ? { seen: rescues, text: t('hud.heldDown').toUpperCase() } : { seen: rescues };
 }
 
+/** "Edge of the break", once each time the rider is held at the window's bounds (`seen` counts the holds already told). */
+export function edgeNotice(holds: number, seen: number): { seen: number; text?: string } {
+  return holds > seen ? { seen: holds, text: t('hud.edge').toUpperCase() } : { seen: holds };
+}
+
 /**
  * The callout for the ride's latest manoeuvre (P9): its name, the first time it is
  * seen (`key` names the one shown last); nothing between rides, which forgets it.
@@ -88,6 +93,7 @@ export class RideHud {
   private readonly breathFill = el('div', { class: 'hud-balance-fill' });
   private readonly vignette = el('div', { class: 'hud-vignette', attrs: { 'aria-hidden': 'true' } });
   private rescuesSeen = -1;
+  private edgeHoldsSeen = -1;
   /** The stance readout (the movement-flow spec): the height, and the weight and rotation as a dot on a track. */
   private readonly stance = el('div', { class: 'hud-stance', attrs: { role: 'group', 'aria-label': t('hud.stance') } });
   private readonly stanceLevel = el('span', { class: 'hud-stance-level' });
@@ -148,6 +154,11 @@ export class RideHud {
     const notice = this.rescuesSeen < 0 ? { seen: rescues } : heldDownNotice(rescues, this.rescuesSeen);
     this.rescuesSeen = notice.seen;
     if (notice.text) callout.text = notice.text;
+    // Held at the window's bounds (the rider's bounds): the hint to head back in, where the manoeuvres are called.
+    const holds = ride?.edgeHolds ?? 0;
+    const edge = this.edgeHoldsSeen < 0 ? { seen: holds } : edgeNotice(holds, this.edgeHoldsSeen);
+    this.edgeHoldsSeen = edge.seen;
+    if (edge.text) callout.text = edge.text;
     if (callout.text) {
       // Restart the fade for each new manoeuvre.
       this.callout.textContent = callout.text;

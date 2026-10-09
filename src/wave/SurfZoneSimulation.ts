@@ -18,7 +18,8 @@ import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
 import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
-import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
+import { OPEN_EDGE_RAMP, OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
+import { riderBounds, sideMargin, type RiderBounds } from '../physics/riderBounds';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
@@ -320,6 +321,22 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   const edgeDepth = Math.min(depth(zoneInner), EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength);
   const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, edgeDepth).wavelength);
   return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth };
+}
+
+/**
+ * Where a rider is held in this tank (the rider's bounds, the owner's 2026-10-09 playtest), m:
+ * - along shore, a cell past the edge ramp inside each open side edge (21 m at 1 m cells, 22 m at Padang Padang's 2 m);
+ * - offshore, a coarse cell inside the relaxation zone's inner edge (seaward of it the water is held to the incoming sea);
+ * - at the beach, the open edges' stencil reach of fine cells short of the shore wall.
+ */
+export function tankRiderBounds(config: SurfZoneConfig): RiderBounds {
+  const tank = tankLayout(config);
+  const half = alongShoreOf(config) / 2;
+  return riderBounds({ xMin: -half, xMax: half, zoneInner: tank.zoneInner, shore: tank.shore }, {
+    side: sideMargin(OPEN_EDGE_RAMP, config.dx ?? 1),
+    offshore: config.coarseSpacing ?? 4,
+    shore: OPEN_EDGE_REACH * (config.fineSpacing ?? 1),
+  });
 }
 
 /**
