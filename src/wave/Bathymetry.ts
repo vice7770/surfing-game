@@ -173,32 +173,60 @@ export function padangReefAt(x: number): boolean {
  * as at the Wave Pool (`POOL`).
  *
  * The simulated bed has no canyon any more. The canyon that ran along the −x open edge turned the crests on its flank,
- * so they wrapped in from that corner (the owner, 2026-10-06). Seaward of the break line the bed is level along shore,
- * so the crests stay straight up to it.
+ * so they wrapped in from that corner (the owner, 2026-10-06). Seaward of the arm the bed is level along shore, so the
+ * crests stay straight up to it.
  *
- * The tank's edge is 5 m deep (`OFFSHORE_DEPTH.canyon`). A blend `blendLength` m long takes the bed from there to a
- * level sand shelf `shelfDepth` deep, and the solver's 1 m cells start at the relaxation zone (`zoneInner`), so the
- * shoaling waves are resolved: on the old tank's 4 m cells over the blend they lost a third of their height without
- * breaking, and with the canyon gone nothing broke at all. At 3.6 m the shelf keeps the swell's crests beside the arm
- * flatter than on a 2.8 m one, where a break at the peak ran along them both ways (the breaking age's sideways spread).
+ * Every size breaks on the arm (the canyon-big redesign, 2026-10-09). On a 3.6 m shelf Big's waves broke on the shelf
+ * and the blend before they reached the arm, closing out across the window or breaking toward −x: a platform caps the
+ * waves a spot can take (Mead 2000). So the tank's edge is `edgeDepth` deep (3.3 Big Hs, the wave-sizes spec's rule),
+ * its sizes given at the old 5 m edge (`CANYON_SWELL_DEPTH`), and a blend `blendLength` m long takes the bed to a level
+ * sand platform `shelfDepth` deep, where Big stands as Medium did on 3.6 m (Hs/h about 0.4). The solver's 1 m cells
+ * start at the relaxation zone (`zoneInner`), so the shoaling waves are resolved (on 4 m cells they lost a third of
+ * their height unbroken).
  *
- * On the shelf stands a terrace, the arm, `crestDepth` deep. Its seaward edge, the break line, runs at `angle` degrees
- * to the shore from its peak (peakX, peakZ) toward +x and the beach, across the whole window. Its face climbs at
- * `pathSlope` along the waves' path, so they spill (an Iribarren number under 0.4 at the take-off). Upcoast of the
- * peak the arm ends in a face along +z that falls at `endSlope` across x, so every depth's contour is furthest out at
- * the peak and each wave starts breaking there. That end lies 10 m inside the −x open edge's levelling
- * (`OPEN_EDGE_RAMP`), so the edge copies plain shelf. A planar beach face caps it all.
- * Mutable for the design sweep (`scripts/canyon-peel-report.ts --canyon key=value,...`).
+ * On the platform stands a terrace, the arm, `crestDepth` deep. Its seaward edge, the break line, runs at `angle` degrees
+ * to the shore from its peak (peakX, peakZ) toward +x and the beach, across the whole window. Its face is a fan (`fan`):
+ * the deep contours, where Big breaks, run less obliquely than the shallow ones, where Medium and Small break, so each
+ * size meets contours matched to how far it has already refracted crossing the deep ones (the water-physics advisor,
+ * 2026-10-09, after Mead's refraction compensation). A planar face from a deep platform refracted Medium's crests toward
+ * the line and sped its peel. Below the hinge the face climbs at `pathSlope` along the waves' path, and above it more
+ * gently downcoast, so they spill (an Iribarren number under 0.4 at the take-off). Upcoast of the peak the arm ends in
+ * a face along +z that falls at `endSlope` across x, so every depth's contour is furthest out at the peak and each wave
+ * starts breaking there. That end stays clear of the −x open edge's levelling (`OPEN_EDGE_RAMP`), so the edge copies
+ * plain platform. Behind the line the top is level for `flatWidth` m, then falls to a trough `lagoonDepth` deep, so
+ * bores that crossed the line do not re-break along shore all at once; past the arm's end on the beach face the terrace
+ * tapers into the platform (`endTaper`), so the +x open edge copies plain beach face. A planar beach face caps it all.
+ * Mutable for the design sweep (`scripts/canyon-size-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
-  shelfDepth: 3.6, shoreSlope: 1 / 25, crestDepth: 1,
-  /** The arm's face along the waves' path (+z), and its upcoast end across x. */
+  shelfDepth: 6, shoreSlope: 1 / 25, crestDepth: 1,
+  /** The arm's face along the waves' path (+z) below the fan's hinge, and its upcoast end across x. */
   pathSlope: 1 / 30, endSlope: 1 / 4,
-  peakX: -48, peakZ: -236, angle: 62,
+  peakX: -38, peakZ: -305, angle: 70,
   /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking. */
-  takeOffX: -40,
-  /** The tank: the relaxation zone's inner edge, where the 1 m cells start, and the blend onto the shelf, m. */
-  zoneInner: -396, blendLength: 60,
+  takeOffX: -30,
+  /** The tank: the relaxation zone's inner edge, where the 1 m cells start, and the blend onto the platform, m. */
+  zoneInner: -575, blendLength: 60,
+  /** The tank's edge under the relaxation zone, m deep, and the zone's length, m (at least 0.75 of Big's wavelength there). */
+  edgeDepth: 7.9, zoneLength: 90,
+  /**
+   * The fan: below its hinge, `hingeDepth` deep, the arm's face runs `fan` degrees less oblique than its crest line. The
+   * face climbs at `pathSlope` along the waves' path to a hinge line at `angle − fan` degrees through the point where
+   * a single face would be `hingeDepth` deep below the peak; between the hinge line and the crest line the depth runs
+   * linearly, so downcoast, where the two lines part, the shallow face is gentler and its contours more oblique than the
+   * deep ones. Upcoast of the peak the hinge line runs parallel to the crest line. The hinge is rounded over
+   * ±`hingeRounding` m across shore. `fan` 0: one planar face.
+   */
+  fan: 15, hingeDepth: 2.8, hingeRounding: 8,
+  /** Past the arm's end on the beach face the terrace tapers into the platform over this many metres along shore, m. */
+  endTaper: 12,
+  /**
+   * Behind the break line the terrace's top is `crestDepth` deep for `flatWidth` m, then deepens at `pathSlope` toward
+   * the beach to a trough `lagoonDepth` deep, which the beach face closes (`lagoonDepth` = `crestDepth`: a level top, as
+   * before 2026-10-09). On a level 1 m top, wider behind a 70° line, bores re-broke along shore all at once: Small's readout
+   * read toward −x (as the Wave Pool's reef, `POOL.flatWidth` and `lagoonDepth`).
+   */
+  flatWidth: 10, lagoonDepth: 2,
 };
 
 /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
@@ -219,15 +247,48 @@ export function canyonArmAt(x: number): boolean {
 }
 
 /**
- * The Canyon's terrace at (x, z), m deep: its face climbing at `pathSlope` along the waves' path to the break line, its
- * top behind the line, and its upcoast end falling at `endSlope` across x upcoast of the peak, so every depth's contour
- * is furthest out where it turns from the line into the end.
+ * The Canyon's terrace at (x, z), m deep: its fan face climbing to the break line (at `pathSlope` along the waves' path
+ * below the hinge, linearly from the hinge line to the break line above it), its top behind the line (level, then down to
+ * the trough), and its upcoast end falling at `endSlope` across x upcoast of the peak, so every depth's contour is
+ * furthest out where it turns from the line into the end; past the arm's end it tapers into the platform over `endTaper` m.
  */
 export function canyonTerraceDepth(x: number, z: number): number {
   const c = CANYON;
-  const face = c.crestDepth + Math.max(0, canyonBreakLineZ(x) - z) * c.pathSlope;
+  const line = canyonBreakLineZ(x);
+  const seaward = Math.max(0, line - z);
+  // The fan's shallow face from the crest line to the hinge line, then pathSlope below the hinge (one face when fan is 0).
+  const width = line - canyonHingeZ(x);
+  const shallow = (c.hingeDepth - c.crestDepth) / width;
+  // Behind the line, the top: level for flatWidth, then down to the trough.
+  const top = Math.min(c.lagoonDepth, c.crestDepth + Math.max(0, z - line - c.flatWidth) * c.pathSlope);
+  const face = z > line ? Math.max(c.crestDepth, top)
+    : c.crestDepth + shallow * seaward + (c.pathSlope - shallow) * rounded(seaward - width, c.hingeRounding);
   const end = c.crestDepth + Math.max(0, c.peakX - x) * c.endSlope;
-  return Math.max(face, end);
+  // Past the arm's end the fan's gentle downcoast face would run on as a shoal across the +x open edge: it tapers away,
+  // so the edge copies plain beach face.
+  const terrace = Math.max(face, end);
+  const armEnd = canyonArmEndX();
+  return terrace + (c.shelfDepth - terrace) * smoothstep(armEnd, armEnd + c.endTaper, x);
+}
+
+/** Where the Canyon's hinge line (the fan's, `hingeDepth` deep) crosses along-shore position x. */
+export function canyonHingeZ(x: number): number {
+  const c = CANYON;
+  const atPeak = c.peakZ - (c.hingeDepth - c.crestDepth) / c.pathSlope;
+  const angle = x >= c.peakX ? c.angle - c.fan : c.angle;
+  return atPeak + (x - c.peakX) * Math.tan((angle * Math.PI) / 180);
+}
+
+/**
+ * The Canyon's arm's furthest foot seaward, z: where its face reaches the shelf at the bottom of its end, upcoast of the
+ * peak (the hinge's rounding aside).
+ */
+export function canyonFootZ(): number {
+  const c = CANYON;
+  const x = c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope;
+  return c.shelfDepth > c.hingeDepth
+    ? canyonHingeZ(x) - (c.shelfDepth - c.hingeDepth) / c.pathSlope
+    : canyonBreakLineZ(x) - (c.shelfDepth - c.crestDepth) / c.pathSlope;
 }
 
 function beach(seed: number): SurfSpot {
