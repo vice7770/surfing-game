@@ -451,6 +451,11 @@ export class WaterSurface {
       // The waterline: the dry nodes beside the water carry its depth on, so its edge meets the sand along the shore's
       // own line, not the nodes' staircase (drawing only; see shoreline.ts).
       this.shoreline.fill(this.surfaceData, this.bedData, grid.nx, grid.nz);
+      // The wet sand stays on its sand when the window slides along the shore.
+      if (was && was.source === source && was.xMin !== grid.xMin && was.spacing === grid.spacing && was.nx === grid.nx && was.nz === grid.nz) {
+        this.wetSand.shift(Math.round((grid.xMin - was.xMin) / grid.spacing), grid.nx);
+        this.wetSandTexture.needsUpdate = true;
+      }
       if (this.wetSand.update(this.surfaceData, this.bedData, source.time)) this.wetSandTexture.needsUpdate = true;
       this.updateTubes();
       this.updateRoller();

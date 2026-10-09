@@ -211,6 +211,30 @@ describe('WaterSurface GPU displacement data', () => {
     water.dispose();
   });
 
+  it('keeps the wet sand on its sand as the window slides along the shore', () => {
+    // A flat beach at bed 0; the swash wets world x = 4 only, then leaves.
+    let time = 0;
+    let wetX: number | undefined = 4;
+    const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 1 };
+    const source: SurfaceSource = {
+      grid, get time() { return time; }, bedRevision: 0,
+      write: (into) => { for (let c = 0; c < 8; c += 1) into[2 * c] = grid.xMin + c === wetX ? 0.05 : -0.05; },
+      writeBed: (into) => into.fill(0),
+    };
+    const water = new WaterSurface(source);
+    const texture = water.materialUniforms.waterWetSand.value as DataTexture;
+    const bytes = () => Array.from(texture.image.data as Uint8Array);
+    expect(bytes()[4]).toBe(255);
+    // The window slides 3 m toward +x as the sand dries: world x = 4 is now its node 1.
+    wetX = undefined;
+    grid.xMin = 3;
+    time = 1;
+    water.update();
+    expect(bytes().indexOf(Math.max(...bytes()))).toBe(1);
+    expect(bytes()[1]).toBeGreaterThan(240);
+    water.dispose();
+  });
+
   it('rebuilds its mesh and texture for a differently sized physical source', () => {
     const surface = new WaterSurface(new FlatSurfaceSource());
     const simulation = new SurfZoneSimulation({

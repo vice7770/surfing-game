@@ -222,6 +222,25 @@ describe('the wet sand (WetSandMemory)', () => {
     expect(Array.from(sand.bytes)).toEqual([0, 255, 0, 0]);
   });
 
+  it('moves the sand’s memory with the window as it slides along the shore', () => {
+    const sand = new WetSandMemory();
+    // Two rows of four nodes; the swash wetted the second node of each.
+    const data = new Float32Array(16).fill(-DRY_DROP);
+    data[2] = 0.05;
+    data[10] = 0.05;
+    sand.update(data, new Float32Array(8), 0);
+    expect(Array.from(sand.bytes)).toEqual([0, 255, 0, 0, 0, 255, 0, 0]);
+    // The window slides a node toward +x: that sand is now its first node.
+    sand.shift(1, 4);
+    expect(Array.from(sand.bytes)).toEqual([255, 0, 0, 0, 255, 0, 0, 0]);
+    expect(Array.from(sand.memory)).toEqual([1, 0, 0, 0, 1, 0, 0, 0]);
+    // And back two: it is the third, and the columns coming in start dry.
+    sand.shift(-2, 4);
+    expect(Array.from(sand.bytes)).toEqual([0, 0, 255, 0, 0, 0, 255, 0]);
+    sand.shift(5, 4);
+    expect(Array.from(sand.bytes)).toEqual(new Array(8).fill(0));
+  });
+
   it('starts afresh on a new sea: a jump in sea time, or back', () => {
     const sand = new WetSandMemory();
     sand.update(row(4), bed, 100);

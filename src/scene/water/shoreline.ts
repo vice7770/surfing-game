@@ -263,6 +263,31 @@ export class WetSandMemory {
   }
 
   /**
+   * The window slid along the shore by `columns` nodes of its `nx` a row (positive toward +x): each row's memory moves
+   * with its sand, and the columns coming in start dry.
+   */
+  shift(columns: number, nx: number): void {
+    if (columns === 0) return;
+    const { memory, bytes } = this;
+    if (Math.abs(columns) >= nx) {
+      memory.fill(0);
+      bytes.fill(0);
+      return;
+    }
+    for (let row = 0; row < memory.length; row += nx) {
+      for (const values of [memory, bytes]) {
+        if (columns > 0) {
+          values.copyWithin(row, row + columns, row + nx);
+          values.fill(0, row + nx - columns, row + nx);
+        } else {
+          values.copyWithin(row - columns, row, row + nx + columns);
+          values.fill(0, row, row - columns);
+        }
+      }
+    }
+  }
+
+  /**
    * Fold in the water as drawn at sea `time` (interleaved (height, foam) `data` over `bed`): a node whose surface stands
    * over its bed is wet now. Returns whether `bytes` changed (at most once every `WET_SAND_STEP` of sea time).
    */
