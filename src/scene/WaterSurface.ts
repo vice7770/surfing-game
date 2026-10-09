@@ -746,8 +746,9 @@ export class WaterSurface {
     const wasLook = this.effectiveLook;
     this.source = source;
     this.written = undefined;
-    // A new sea: its sand has not been wetted yet.
+    // A new sea: its sand has not been wetted yet, and its shore is anywhere.
     this.wetSand.reset();
+    this.shoreline.reset();
     if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
     this.refreshLook();
     this.refreshTubeColumns();

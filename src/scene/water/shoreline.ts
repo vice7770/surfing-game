@@ -20,6 +20,13 @@ export const DRY_DEPTH = 0.01;
 export const DRY_MARGIN = 0.01;
 /** A node within this of `bed − DRY_DROP` is dry; a wet node stands at least `DRY_DEPTH` over its bed, m. */
 const DRY_MATCH = 1e-3;
+/**
+ * Between full scans, `fill` classifies only the rows of the last band of dry rows and this many either side: a
+ * waterline moves a small part of a row a snapshot. Dry rows reaching the window's edge send it to a full scan.
+ */
+const SCAN_MARGIN = 4;
+/** Every this many snapshots `fill` scans every row, for dry ground appearing away from the beach (a reef in a trough). */
+export const FULL_SCAN_EVERY = 16;
 
 const WET = 0;
 const DRY = 1;
@@ -42,12 +49,27 @@ export class ShorelineFill {
   private ring = new Int32Array(0);
   private next = new Int32Array(0);
   private depths = new Float32Array(0);
+  /** The last band of rows holding dry nodes (none: -1), on this grid, and the snapshots since the last full scan. */
+  private bandLow = -1;
+  private bandHigh = -1;
+  private grid = { nx: 0, nz: 0 };
+  private sinceFull = 0;
+  /** The last full scan found no dry node (a walled pool, a sea with no shore): nothing to do until the next one. */
+  private shoreless = false;
+
+  /** Scan every row on the next `fill` (a new sea). */
+  reset(): void {
+    this.bandLow = -1;
+    this.bandHigh = -1;
+    this.shoreless = false;
+  }
 
   /**
    * Move the two rings of dry nodes beside the water in interleaved (height, foam) `data` to the depth extrapolated
    * to them from the nodes already known (wet, or the ring before), edges weighted 1 and corners ½, over `bed` (one
    * elevation per node): the first ring by `innerDepth`, the second at least `DRY_MARGIN` under its bed. Returns how
-   * many nodes it moved.
+   * many nodes it moved. It scans the last band of dry rows and their margin, and every row every `FULL_SCAN_EVERY`
+   * snapshots or whenever the band may have left that window.
    */
   fill(data: Float32Array, bed: Float32Array, nx: number, nz: number): number {
     const count = nx * nz;
@@ -59,23 +81,34 @@ export class ShorelineFill {
       this.depths = new Float32Array(count);
     }
     const { state, near } = this;
-    // Which nodes are dry, and the band of rows that holds them (the beach's few rows, in a grid of hundreds).
-    let dry = 0;
-    let low = nz;
-    let high = -1;
-    for (let r = 0; r < nz; r += 1) {
-      const before = dry;
-      for (let k = r * nx; k < (r + 1) * nx; k += 1) {
-        const offset = data[2 * k] - bed[k] + DRY_DROP;
-        const isDry = offset < DRY_MATCH && offset > -DRY_MATCH;
-        state[k] = isDry ? DRY : WET;
-        if (isDry) dry += 1;
-      }
-      if (dry > before) {
-        if (r < low) low = r;
-        high = r;
-      }
+    if (this.grid.nx !== nx || this.grid.nz !== nz) {
+      this.grid = { nx, nz };
+      this.reset();
     }
+    if (this.shoreless && this.sinceFull < FULL_SCAN_EVERY - 1) {
+      this.sinceFull += 1;
+      return 0;
+    }
+    // Which nodes are dry, and the band of rows that holds them (the beach's few rows, in a grid of hundreds): over the
+    // last band's window, unless that cannot be trusted.
+    let first = 0;
+    let last = nz - 1;
+    let partial = this.bandLow >= 0 && this.sinceFull < FULL_SCAN_EVERY - 1;
+    if (partial) {
+      first = Math.max(0, this.bandLow - SCAN_MARGIN);
+      last = Math.min(nz - 1, this.bandHigh + SCAN_MARGIN);
+    }
+    let found = this.classify(data, bed, nx, first, last);
+    // The rings read two rows beyond the band: a band at the window's edge may run on past it, or have moved out.
+    if (partial && (found.dry === 0 || (found.low < first + 3 && first > 0) || (found.high > last - 3 && last < nz - 1))) {
+      partial = false;
+      found = this.classify(data, bed, nx, 0, nz - 1);
+    }
+    this.sinceFull = partial ? this.sinceFull + 1 : 0;
+    const { dry, low, high } = found;
+    this.bandLow = dry > 0 ? low : -1;
+    this.bandHigh = dry > 0 ? high : -1;
+    this.shoreless = dry === 0;
     if (dry === 0 || dry === count) return 0;
     // The first ring: the dry nodes with a wet node among their 8 neighbours, through each row's wet nodes widened by
     // a column either side (`near`), over the band and a row beyond it.
@@ -134,6 +167,30 @@ export class ShorelineFill {
       size = nextSize;
     }
     return moved;
+  }
+
+  /** Mark rows `first`–`last` wet or dry; how many are dry, and the first and last rows holding any. */
+  private classify(data: Float32Array, bed: Float32Array, nx: number, first: number, last: number): { dry: number; low: number; high: number } {
+    const { state } = this;
+    let dry = 0;
+    let low = -1;
+    let high = -1;
+    for (let r = first; r <= last; r += 1) {
+      let rowDry = 0;
+      const end = (r + 1) * nx;
+      for (let k = r * nx; k < end; k += 1) {
+        const offset = data[2 * k] - bed[k] + DRY_DROP;
+        const isDry = offset < DRY_MATCH && offset > -DRY_MATCH ? DRY : WET;
+        state[k] = isDry;
+        rowDry += isDry;
+      }
+      if (rowDry > 0) {
+        dry += rowDry;
+        if (low < 0) low = r;
+        high = r;
+      }
+    }
+    return { dry, low, high };
   }
 
   /** The depth at node k from each known 8-neighbour j: 2 d_j − d_i with the known node i beyond it, else j's level. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DRY_DEPTH, DRY_DROP, DRY_MARGIN, ShorelineFill, WET_SAND_DRYING, WET_SAND_STEP, WET_SAND_SUBMERGED, WetSandMemory, innerDepth,
+  DRY_DEPTH, DRY_DROP, DRY_MARGIN, FULL_SCAN_EVERY, ShorelineFill, WET_SAND_DRYING, WET_SAND_STEP, WET_SAND_SUBMERGED, WetSandMemory, innerDepth,
 } from './shoreline';
 
 /** The surf zone's render convention (`writeUniformSurface`): wet over 1 cm deep, else 5 cm under the bed. */
@@ -119,6 +119,60 @@ describe('the waterline (ShorelineFill)', () => {
     // The run of depth 0.15 → 0.02 reaches zero 0.15 of a node past row 12; the level would have carried it on.
     expect(tip).toBeGreaterThan(12);
     expect(tip).toBeLessThan(12.2);
+  });
+
+  it('scans the beach’s band between full scans and draws exactly what a full scan would, finding new dry ground in time', () => {
+    const nx = 30;
+    const nz = 120;
+    const bed = new Float32Array(nx * nz);
+    for (let r = 0; r < nz; r += 1) for (let c = 0; c < nx; c += 1) bed[r * nx + c] = 0.06 * (r - 100 + 0.3 * c);
+    const frame = (t: number, reefTop: boolean) => {
+      const data = new Float32Array(nx * nz * 2);
+      for (let r = 0; r < nz; r += 1) {
+        for (let c = 0; c < nx; c += 1) {
+          const k = r * nx + c;
+          // A swash running up and down the beach, and from frame 20 a reef top drying far offshore (rows 20–22).
+          const level = 0.4 * Math.sin(t / 6 + c / 9);
+          const ground = reefTop && r >= 20 && r <= 22 && c >= 10 && c <= 14 ? level + 0.5 : bed[k];
+          bed[k] = ground === bed[k] ? bed[k] : ground;
+          data[2 * k] = level - bed[k] > 0.01 ? level : bed[k] - DRY_DROP;
+        }
+      }
+      return data;
+    };
+    const banded = new ShorelineFill();
+    let caught = -1;
+    for (let t = 0; t < 60; t += 1) {
+      const reef = t >= 20;
+      const data = frame(t, reef);
+      const oracle = data.slice();
+      new ShorelineFill().fill(oracle, bed, nx, nz);
+      banded.fill(data, bed, nx, nz);
+      const reefMissed = data[2 * (21 * nx + 9)] !== oracle[2 * (21 * nx + 9)] || data[2 * (21 * nx + 12)] !== oracle[2 * (21 * nx + 12)];
+      if (reef && caught < 0 && !reefMissed) caught = t;
+      // Away from a reef the band has not found yet, the same heights a full scan gives.
+      for (let k = 0; k < nx * nz; k += 1) if (Math.floor(k / nx) > 30) expect(data[2 * k]).toBe(oracle[2 * k]);
+      if (caught >= 0) expect(Array.from(data)).toEqual(Array.from(oracle));
+    }
+    expect(caught).toBeGreaterThanOrEqual(20);
+    expect(caught).toBeLessThan(20 + FULL_SCAN_EVERY);
+  });
+
+  it('looks for a shore in a sea without one only every FULL_SCAN_EVERY snapshots', () => {
+    const nx = 8;
+    const nz = 8;
+    const bed = new Float32Array(nx * nz).fill(-2);
+    const sea = new Float32Array(nx * nz * 2).fill(0.3);
+    const fill = new ShorelineFill();
+    expect(fill.fill(sea, bed, nx, nz)).toBe(0);
+    // The tide drops off a sandbar at node 27; the next full scan finds it, no later.
+    bed[27] = 1;
+    sea[54] = 1 - DRY_DROP;
+    let found = -1;
+    for (let n = 1; n <= FULL_SCAN_EVERY && found < 0; n += 1) if (fill.fill(sea.slice(), bed, nx, nz) > 0) found = n;
+    expect(found).toBe(FULL_SCAN_EVERY);
+    fill.reset();
+    expect(fill.fill(sea.slice(), bed, nx, nz)).toBeGreaterThan(0);
   });
 
   it('leaves water with no shore, and a grid with no water, as they were', () => {
