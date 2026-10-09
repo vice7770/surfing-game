@@ -71,6 +71,9 @@ void waterRollerAt( vec2 xz, float time ) {
   waterRollerPresence = 0.0;
   waterRollerFlow = vec2( 0.0 );
   if ( xz.y < waterRollerExtent.x || xz.y > waterRollerExtent.y ) return;
+  // Past a side edge the water is the tank's mirror image (waterFoldXZ): so is its roller, running the other way.
+  float mirrored = waterFoldSign( ( xz.x - waterGrid.x ) / waterGrid.z );
+  xz = waterFoldXZ( xz );
   float gx = ( xz.x - waterRollerColumn0 ) / waterRollerColumnWidth;
   if ( !( waterRollerColumns >= 2.0 && gx >= 0.0 && gx <= waterRollerColumns - 1.0 ) ) return;
   float i0 = min( waterRollerColumns - 2.0, floor( gx ) );
@@ -109,7 +112,7 @@ void waterRollerAt( vec2 xz, float time ) {
     waterRollerCover = cover;
     waterRollerFresh = xi > 0.0 ? 1.0 - min( 1.0, xi ) : 1.0;
     waterRollerPresence = g * ( xi < 0.0 ? smoothstep( -${f(ROLLER_LOOK.rear)}, 0.0, xi ) : 1.0 - smoothstep( 1.0, 1.3, xi ) );
-    waterRollerFlow = w0 * b0.xy + w1 * b1.xy;
+    waterRollerFlow = ( w0 * b0.xy + w1 * b1.xy ) * vec2( mirrored, 1.0 );
   }
 }
 `;

@@ -20,6 +20,7 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
+import { foldGridX, waterFoldPars } from './water/waterFold';
 import { devParam } from '../devTools';
 import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richBeginVertexNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, richVertexSlopePars, waterCubicPars } from './water/richWaterGlsl';
 import {
@@ -44,6 +45,8 @@ import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
+export { foldGridX, foldSignX, waterFoldPars } from './water/waterFold';
+
 export interface SurfaceGrid {
   xMin: number;
   zMin: number;
@@ -55,13 +58,15 @@ export interface SurfaceGrid {
 /**
  * CPU mirror of `waterHeightAt` in the vertex shader. `data` holds (height, foam)
  * pairs per grid node, and the lookup repeats InteractiveWaterField's bilinear
- * sampling, so the displaced mesh matches the height the board samples.
+ * sampling, so the displaced mesh matches the height the board samples. Across
+ * shore it is 0 off the grid; along shore the grid is mirrored past its side
+ * edges (`foldGridX`), as the drawn water continues there.
  */
 export function sampleSurfaceHeight(data: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
-  const gx = (x - grid.xMin) / grid.spacing;
+  const gx = foldGridX((x - grid.xMin) / grid.spacing, grid.nx);
   const gz = (z - grid.zMin) / grid.spacing;
-  if (gx < 0 || gz < 0 || gx >= grid.nx - 1 || gz >= grid.nz - 1) return 0;
-  const x0 = Math.floor(gx);
+  if (gz < 0 || gz >= grid.nz - 1) return 0;
+  const x0 = Math.min(grid.nx - 2, Math.floor(gx));
   const z0 = Math.floor(gz);
   const tx = gx - x0;
   const tz = gz - z0;
@@ -72,12 +77,12 @@ export function sampleSurfaceHeight(data: Float32Array, grid: SurfaceGrid, x: nu
   return top * (1 - tz) + bottom * tz;
 }
 
-/** The foam channel of the same (height, foam) pairs, bilinear, 0 outside the grid (the lab's Follow, spec L1). */
+/** The foam channel of the same (height, foam) pairs, bilinear, 0 off the grid across shore and mirrored along it (the lab's Follow, spec L1). */
 export function sampleSurfaceFoam(data: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
-  const gx = (x - grid.xMin) / grid.spacing;
+  const gx = foldGridX((x - grid.xMin) / grid.spacing, grid.nx);
   const gz = (z - grid.zMin) / grid.spacing;
-  if (gx < 0 || gz < 0 || gx >= grid.nx - 1 || gz >= grid.nz - 1) return 0;
-  const x0 = Math.floor(gx);
+  if (gz < 0 || gz >= grid.nz - 1) return 0;
+  const x0 = Math.min(grid.nx - 2, Math.floor(gx));
   const z0 = Math.floor(gz);
   const tx = gx - x0;
   const tz = gz - z0;
@@ -88,9 +93,9 @@ export function sampleSurfaceFoam(data: Float32Array, grid: SurfaceGrid, x: numb
   return top * (1 - tz) + bottom * tz;
 }
 
-/** CPU mirror of `waterBedAt` in the vertex shader: bilinear bed elevation from one value per node, clamped to the grid. */
+/** CPU mirror of `waterBedAt` in the vertex shader: bilinear bed elevation from one value per node, clamped to the grid across shore and mirrored along it. */
 export function sampleSurfaceBed(bed: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
-  const gx = Math.min(grid.nx - 1, Math.max(0, (x - grid.xMin) / grid.spacing));
+  const gx = foldGridX((x - grid.xMin) / grid.spacing, grid.nx);
   const gz = Math.min(grid.nz - 1, Math.max(0, (z - grid.zMin) / grid.spacing));
   const x0 = Math.min(grid.nx - 2, Math.floor(gx));
   const z0 = Math.min(grid.nz - 2, Math.floor(gz));
@@ -115,11 +120,13 @@ export const waterHeightPars = /* glsl */ `
 uniform sampler2D waterSurface;
 uniform vec4 waterGrid;
 uniform vec2 waterGridSize;
-
+${waterFoldPars}
 float waterHeightAt( vec2 xz ) {
   vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
-  if ( g.x < 0.0 || g.y < 0.0 || g.x >= waterGridSize.x - 1.0 || g.y >= waterGridSize.y - 1.0 ) return 0.0;
+  g.x = waterFoldX( g.x );
+  if ( g.y < 0.0 || g.y >= waterGridSize.y - 1.0 ) return 0.0;
   ivec2 c = ivec2( floor( g ) );
+  c.x = min( c.x, int( waterGridSize.x ) - 2 );
   vec2 t = g - vec2( c );
   float top = mix( texelFetch( waterSurface, c, 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).r, t.x );
   float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).r, t.x );
@@ -137,7 +144,8 @@ varying vec2 vWaterFlow;
 varying vec3 vWaterWorld;
 
 float waterFoamAt( vec2 xz ) {
-  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  g = clamp( vec2( waterFoldX( g.x ), g.y ), vec2( 0.0 ), waterGridSize - 1.0 );
   ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
   vec2 t = g - vec2( c );
   float top = mix( texelFetch( waterSurface, c, 0 ).g, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).g, t.x );
@@ -146,17 +154,21 @@ float waterFoamAt( vec2 xz ) {
 }
 
 vec2 waterFlowAt( vec2 xz ) {
-  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  // Mirrored water runs the other way along shore.
+  float mirrored = waterFoldSign( g.x );
+  g = clamp( vec2( waterFoldX( g.x ), g.y ), vec2( 0.0 ), waterGridSize - 1.0 );
   ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
   vec2 t = g - vec2( c );
   vec2 top = mix( texelFetch( waterFlow, c, 0 ).rg, texelFetch( waterFlow, c + ivec2( 1, 0 ), 0 ).rg, t.x );
   vec2 bottom = mix( texelFetch( waterFlow, c + ivec2( 0, 1 ), 0 ).rg, texelFetch( waterFlow, c + ivec2( 1, 1 ), 0 ).rg, t.x );
-  return mix( top, bottom, t.y );
+  return mix( top, bottom, t.y ) * vec2( mirrored, 1.0 );
 }
 
 // sampleSurfaceBed() in WaterSurface.ts.
 float waterBedAt( vec2 xz ) {
-  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  g = clamp( vec2( waterFoldX( g.x ), g.y ), vec2( 0.0 ), waterGridSize - 1.0 );
   ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
   vec2 t = g - vec2( c );
   float top = mix( texelFetch( waterBed, c, 0 ).r, texelFetch( waterBed, c + ivec2( 1, 0 ), 0 ).r, t.x );

@@ -37,7 +37,8 @@ uniform sampler2D waterAeration;
 varying float vWaterAir;
 varying float vWaterPlumeDepth;
 vec2 waterAerationAt( vec2 xz ) {
-  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  g = clamp( vec2( waterFoldX( g.x ), g.y ), vec2( 0.0 ), waterGridSize - 1.0 );
   ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
   vec2 t = g - vec2( c );
   vec2 top = mix( texelFetch( waterAeration, c, 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 0 ), 0 ).rg, t.x );
