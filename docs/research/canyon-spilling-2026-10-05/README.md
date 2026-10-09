@@ -12,6 +12,8 @@ Built on `claude/canyon-spilling-wip`, merged into `claude/canyon-spilling`.
 
 **Status (owner, 2026-10-06).** After seeing the screenshots below, the owner ruled that the wave forms from a corner, in a strange shape. Waves must form straight to the beach. Their timing may be irregular, but waves must never come from more than one side, and never at the same time. The bed in §1 is therefore **the corner-canyon bed, being replaced for straight crests (owner, 2026-10-06)**: the branch `claude/canyon-straight` redesigns it, with the peel coming from an oblique break line. Every Canyon number in this note is the corner-canyon bed's, and its peel is not accepted. Its crest angles are in `docs/research/crest-angle-2026-10-05.md`.
 
+**Status (2026-10-09).** The owner found Big unsurfable. Big broke on the level shelf, before the arm, and closed out. The bed is now a deep platform with a fan-faced arm and a trough behind its line, so every size breaks on the arm and peels toward +x (§1, "Every size on the arm"). The straight-crest bed's numbers below are kept as the before.
+
 ## Direction convention
 
 `+z` points toward the beach and `+x` runs along shore (`src/wave/Bathymetry.ts`). The game's cameras use world coordinates directly. The beach-side views (`SpectatorCamera` front, overview and cinematic views) look toward −z with +y up, so **+x is screen-right**.
@@ -20,9 +22,187 @@ For a surfer facing the beach, +x is on their left: the Reef and Padang Padang, 
 
 ## What was built
 
-### 1. The bed (`src/wave/Bathymetry.ts`: `CANYON`, `canyonTerraceDepth()`, `canyonBreakLineZ()`, `canyonArmAt()`; the tank in `tankLayout`)
+### 1. The bed (`src/wave/Bathymetry.ts`: `CANYON`, `canyonTerraceDepth()`, `canyonBreakLineZ()`, `canyonHingeZ()`, `canyonFootZ()`, `canyonArmAt()`; the tank in `tankLayout`, the swell in `edgeHeight`, the take-off in `canyonTakeOffDepth`)
+
+#### Every size on the arm: the deep platform and the fan face (2026-10-09)
+
+**The owner's report.** The owner played the Canyon at Big and found it unsurfable. The readout flipped between "closes out", "a right at 32° · fast" and "a left at 45°", with surf 3.3–3.7 m. Only Medium had been measured; Small and Big never had.
+
+**How it was measured.** Wave only: no riders, and no catch or ride reports (the owner's rule). The tool is `scripts/canyon-size-report.ts`. Each size's own swell was used (`SWELLS`: Small Hs 0.9 m and Tp 9 s, Medium 1.4 m and 11 s, Big 2.4 m and 14 s), square to the beach with s = 150, tide 0 and calm wind, over 3 seeds × 14 periods. The report gives:
+
+- **The tracker**, sampled once a period as the peel report samples it. Its readout words follow `waveInfo`: "closes out" under 27°, "a left" toward +x, "a right" toward −x.
+- **The readout as the player sees it.** The game reads the tracker on every status update, so the report replays the tracker every second from the same onsets. The replay agrees with the run's own samples to within 2–4°.
+- **Each crest.** The simulation's onsets are grouped into crests by phase: the onset's time less the crest's travel time down its column from the relaxation zone. Each onset joins the nearest peak of the phases' density. For each crest the report gives:
+  - its start, its first onset, along shore and across, and the bed there;
+  - whether it closed out, meaning it broke over 40 m or more of shore within 2 s of its start;
+  - whether it also ran upcoast (more than two onsets over 5 m upcoast within 3 s, the straight-crest bed's count below);
+  - its own fit along the arm.
+  On the old bed this grouping reproduces the straight-crest bed's Medium figures below: 40 crests, 38 of them within ±10 m of x −50.
+- **Where every onset lies.** The blend, the level shelf, the arm's face or upcoast end, its top behind the line, or the beach face.
+
+**Before: the straight-crest bed of 2026-10-07** (3.6 m shelf, 5 m edge, a 62° arm on a single 1:30 face).
+
+| | Small | Medium | Big |
+| --- | --- | --- | --- |
+| Tracker: clean samples toward +x | 36 of 36 | 40 of 40 | 38 of 40 |
+| Tracker: median peel | 29° | 31° | 41° |
+| Readout every second: closes out / a left / a right | 49 % / 51 % / 0 % | 43 % / 57 % / 0 % | 27 % / 71 % / 2 % |
+| Readout every second: clean reads toward +x | 323 of 325 | 420 of 420 | 486 of 531 (92 %) |
+| Crests | 40 | 40 | 51 |
+| Starts within ±10 m of their median (median x; 10–90 %) | 35 (x −48; −50…−36) | 38 (x −50; −52…−46) | **32** (x −51; −58…15) |
+| Where the crests start | arm face 14, arm top 13, arm end 13 | arm end 27, arm face 10, arm top 3 | arm end 29, arm face 11, **blend 8, shelf 3** |
+| Close-outs: crests breaking over ≥ 40 m within 2 s | 0 | 0 | **7** (up to 82 m) |
+| Crests also running upcoast | 0 | 10 | 27 |
+| Each crest's own fit: toward +x; median | 34 of 34; 38° | 38 of 38; 41° | 42 of 43; 44° |
+| Onsets on the level shelf or the blend | 0 % | 5.6 % | **46 %** (2,256 + 257 of 5,507) |
+| Onsets' median depth | 1.26 m | 1.94 m | 3.28 m |
+
+**Why Big closed out or went both ways.** Big broke on the level shelf before it reached the arm.
+
+- **Its breaking depth was the shelf's.** The shoaled-breaker estimate puts Big's breaking depth at 3.39 m, against the shelf's 3.6 m. At the 5 m edge, Big's Hs/h was 0.48, past the flat-bed decay line for the significant height (Goda 2010: about 0.45). About 7 % of its waves exceed 0.55 h there (the water-physics advisor, 2026-10-09).
+- **So its waves broke where the bed is level along shore.** 46 % of Big's onsets lay on the shelf and the blend, at a median depth of 3.28 m. Medium had 5.6 % there.
+- **Those crests broke along shore all at once.** 11 of Big's 51 crests started on the shelf or in the blend, away from the arm. 7 broke over 40–82 m of shore within 2 s: the readout's "closes out".
+- **And some ran back upcoast.** A break that started downcoast on the shelf ran back toward −x. The tracker read that 3 times in 41 samples (at 2–10°), and 2 % of the time when read every second: the owner's "a right".
+- **The arm could not catch them.** It offered oblique contours only down to 3.6 m, so Big's larger waves met no oblique line at their breaking depth.
+- **Mead's platform limit.** Mead (2000) found the same on Bingin's reef: a platform caps the wave height a spot can take, and bigger waves close out on it.
+
+**Small and Medium** broke on the arm and peeled toward +x. Small's crests are often too low for the face: 13 of 40 started behind the line, on the 1 m top. Its readout sits on the 27° line (29°), so half its readings said "closes out".
+
+**The redesign** (`CANYON`, `CANYON_SWELL_DEPTH`, `canyonTakeOffDepth`). The water-physics advisor was consulted (`docs/research/water-physics/consult-log.md`, 2026-10-09).
+
+- **A deep platform.** A 60 m blend takes the bed from the edge to a level sand platform 6 m deep (`shelfDepth`).
+  - By Froude similarity, Big on 5.7–6 m stands as Medium did on 3.6 m: Hs/h about 0.4, kh 0.35.
+  - So Big's waves reach the arm unbroken.
+- **A deeper edge.**
+  - The tank's edge is 7.9 m deep (`edgeDepth`): 3.3 Big Hs, the wave-sizes spec's rule for a big day's edge.
+  - Its relaxation zone is 90 m long (`zoneLength`), 0.75 of Big's wavelength there.
+  - The zone forces the solver's own (Madsen–Sørensen) wave numbers, as other deep tanks do.
+- **The sizes keep their meaning.**
+  - Each size's Hs is given at the old 5 m edge (`CANYON_SWELL_DEPTH`) and de-shoaled by linear theory to the deeper edge. At 7.9 m, Small, Medium and Big enter at 0.83, 1.28 and 2.17 m, so the same waves reach 5 m depth as before.
+  - Hs·D^¼ hardly changes, so the tracker's c_b moves by under 1 %: 4.69 m/s at Medium (was 4.65), 5.80 m/s at Big (was 5.77).
+  - Whether the sizes should instead be given at the new edge is the owner's call (the advisor's question 1).
+- **The arm.**
+  - The crest is 1.0 m deep, as before.
+  - The break line runs at 70° from its peak at (−38, −305) toward +x and the beach. It meets the beach face at x = 64, as before, so it spans the window.
+  - The peak is 69 m further seaward and 10 m further downcoast, so the arm's end (still 1:4 across x) reaches the platform at x −58, clear of the −x edge's levelling.
+- **A fan face** (`fan` 15°, `hingeDepth` 2.8 m, `hingeRounding` 8 m).
+  - Below the hinge, the face climbs at 1:30 along the waves' path to a hinge line at 55°.
+  - Between the hinge line and the break line the depth runs linearly. The shallow face is therefore 1:30 at the peak and gentler downcoast: 1:58 at x 0 and 1:95 at x 50.
+  - So its shallow contours, where Small and Medium break, run more obliquely than its deep ones, where Big breaks.
+  - Each size meets contours matched to how far it has already refracted crossing the deep ones (the advisor, after Mead's refraction compensation).
+  - Every depth's contour from 1.5 m to 5 m is furthest out at the arm's end, at x −40 to −54, so every size starts there.
+- **A trough behind the line** (`flatWidth` 10 m, `lagoonDepth` 2 m).
+  - Behind the line the top is 1 m deep for 10 m, then falls at 1:30 to 2 m until the beach face closes it, as at the Wave Pool's reef.
+  - At 70°, the level 1 m top was 45 % wider than at 62°, and bores re-broke across it along shore all at once: Small's readout pointed toward −x.
+- **A taper.** Past the arm's end the terrace tapers into the platform over 12 m (`endTaper`), so the +x open edge copies plain beach face.
+- **The take-off.** Riders wait where the arm's face is as deep as their size's waves start breaking: `canyonTakeOffDepth(Hs)` = 0.96 + 0.65 Hs m, a least-squares line through each size's median start depth on the arm (Small 1.49 m, Medium 1.96 m, Big 2.50 m). The old rule, 1.7 m above the shelf, would have seated Big's riders about 45 m inside its break. It still waits at x −30, 8 m down the arm from the peak.
+- **Spilling.** The readout's Iribarren number at the take-off is 0.28–0.30 at every size (was 0.34–0.36).
+
+**The sweep.** All runs use the deep platform (6 m), the 7.9 m edge with Hs given at 5 m, and a peak at x −38. The first runs are 1 seed × 8 periods. The finalists were then run at 3 seeds × 14 periods, and the readout (read every second) and the starts on the arm decided between them.
+
+| Design | Runs | Big | Medium | What happened |
+| --- | --- | --- | --- | --- |
+| Today's bed, for scale | 1 × 8 | tracker 6 of 8 toward +x, 37°; starts 2 of 10 within ±10 m; 2 close-outs | tracker 7 of 7, 32° | Big broke on the shelf and the blend |
+| Planar face, 62°, peak (−38, −217) | 1 × 8 | 7 of 7, 33°; 5 of 7; 1 close-out | 6 of 6, 31°; starts 8 of 11 | Big still started 69 m out, near the platform |
+| Planar face, 70°, peak (−38, −305) | 1 × 8 | 8 of 8, 40°; 10 of 10; none | 5 of 6, 32°; 7 of 8 | Half of Medium's onsets were bores re-breaking on the wide 1 m top |
+| Fan 10° (deep contours at 60°) | 1 × 8 | 7 of 7, 35°; 9 of 10; none | 5 of 6, 31°; 9 of 9 | |
+| Fan 15° (deep contours at 55°) | 1 × 8, then 3 × 14 | 3 × 14: 40 of 40, 33°; 43 of 46; none | 3 × 14: 33 of 36, 26°; starts on the arm 91 %; 5 % of reads "a right" | Small's readout: 74 % "closes out", 8 % "a right" (re-breaks on the top) |
+| **Fan 15° + the trough** | 3 × 14 | the table below | readout 44 % / 55 % / 1 %; starts on the arm 87 % | **Kept** |
+| Fan 15° + trough, the fan's width capped at 100 m | 3 × 8 | — | — | Small: 63 % "closes out", 4 % "a right", worse than the trough alone |
+| Planar 70° + the trough | 3 × 14 | — | 33 of 35, 32°; starts on the arm 72 % (15 mid-arm); 4 % "a right" | Without the fan, many more crests broke first mid-arm |
+| Fan 20° + trough | 3 × 14 | — | 36 of 37, 33°; readout 40 % / 58 % / 2 %; starts on the arm 87 % | Within the noise of fan 15° |
+| Fan 15°, hinge 3.5 m, + trough | 3 × 14 | — | 37 of 38, 29°; readout 46 % / 53 % / 1 %; starts on the arm 91 % | Within the noise of fan 15° |
+
+Rejected without a run:
+
+- **A seaward extension of the line with a crest deepening seaward** (the Pool's ramped crest). The contour of depth h on the arm runs at dz/dx = tan(angle) − r/pathSlope, where r is the crest's rise per metre along shore.
+  - A gentle ramp makes each wave start where the crest is its own breaking depth, so Medium's starts would spread along the arm with each wave's height.
+  - A steep one (r > 0.063) turns the contours back, an A-frame.
+  - It would still need the deep platform: downcoast, Big's crests would close out on a 3.6 m shelf.
+- **A two-slope face** (1:10 below 3.6 m). Snell refraction is the same over a step as over a slope, so it saves nothing for Medium. And Big would break on the steep part with ξ about 1.0: it would plunge.
+
+**After: the deep platform, the fan face and the trough** (3 seeds × 14 periods).
+
+| | Small | Medium | Big |
+| --- | --- | --- | --- |
+| Tracker: clean samples toward +x | 29 of 30 | 35 of 35 | **40 of 40** |
+| Tracker: median peel | 29° | 30° | **31°** |
+| Readout every second: closes out / a left / a right | 70 % / 30 % / 1 % | 44 % / 55 % / 1 % | 41 % / 59 % / **0 %** |
+| Readout every second: clean reads toward +x; median | 241 of 247 (98 %); 23° | 355 of 362 (98 %); 32° | **523 of 525 (99.6 %)**; 31° |
+| Crests | 40 | 50 | 49 |
+| Starts within ±10 m of their median (median x; 10–90 %) | 29 (x −33; −40…21) | 41 (x −37; −42…5) | **43** (x −43; −47…−32) |
+| Where the crests start | **arm face 32, arm end 6**, arm top 2 | arm face 28, arm end 16, arm top 3, edge strip 2, beach face 1 | **arm end 38, arm face 9**, beach face 1, edge strip 1 |
+| Close-outs: crests breaking over ≥ 40 m within 2 s | 0 | 1 (in the +x edge strip, below) | **1**, at the threshold (below) |
+| Crests also running upcoast | 5 | 8 | 19 |
+| Each crest's own fit: toward +x; median | 35 of 36; 40° | 45 of 45; 44° | 39 of 39; 42° |
+| Onsets on the level platform or the blend | 0 % | 0.8 % | **5.3 %** |
+| Onsets' median depth | 1.41 m | 1.87 m | 2.87 m |
+
+**Stable for 600 s** (seed 1; Medium 55 periods, Big 43; `--stability`: the fastest water is |q|/h where h > 5 cm, every 10 steps).
+
+| | Medium | Big |
+| --- | --- | --- |
+| Fastest water | 6.15 m/s (5.4 m/s on the old bed) | 8.40 m/s |
+| Froude caps | 0 | 0 |
+| Volume | within 0.36 % | within 0.41 % |
+| Onsets per 100 s, throughout | 657–889 | 695–857 |
+| Tracker: clean samples toward +x; median | 44 of 45; 30° | 40 of 41; 32° |
+| Readout every second: closes out / a left / a right | 45 % / 53 % / 2 % | 38 % / 60 % / 2 % |
+| Starts within ±10 m of their median | 53 of 57 | 43 of 48 |
+| Close-outs | 0 | 1 (below) |
+| Each crest's own fit: toward +x; median | 52 of 52; 48° | 41 of 41; 46° |
+
+**Straight crests** (the crest-angle report, Medium, seed 1, 600 s, 64 components; mean angle, mean |angle|, max |angle|).
+
+| Line | The old bed | The new bed | The Beach (mean \|angle\|) |
+| --- | --- | --- | --- |
+| The fine zone's edge | 0.5°, 2.7°, 19.1° | **0.4°, 2.7°, 9.1°** (43 crests) | 4.3° |
+| 30 m seaward of the take-off | 0.7°, 3.3°, 12.7° | 5.3°, 6.5°, 15.0° (30 crests; 28 more broke before they could be followed across half the window) | 4.4° |
+
+**The cost.**
+
+- **The tank.** 160 × 636 = 101,760 cells, against 160 × 449 = 71,840 (+42 %).
+- **The CPU.** On the M1, back to back (Medium, seed 1, 64 components, 40 s each, load 1.3–2), the new tank took 1,368–1,378 ms per simulated second against 947–965 ms (+43 %).
+
+**What the numbers mean.**
+
+- **Big now breaks on the arm and peels one way.**
+  - 47 of its 49 crests start on the arm, 43 of them within ±10 m of x −43 (the other two: a shore break upcoast of the arm and one in the +x edge strip).
+  - Every clean tracker sample peels toward +x, and so do 523 of the 525 clean reads every second. None reads "a right".
+  - It starts breaking 43 m seaward of the line, at a median 2.5 m deep on the arm. Only 5.3 % of its onsets lie on the platform (46 % before).
+  - Its peel is at least as slow as Medium's by the same tracker: 31° against Medium's 30° on this bed (Medium read 31° on the old bed).
+  - **Close-outs: one in 49, and one in 48 over 600 s, against 7 in 51 before.**
+    - In the 3 × 14 runs, one crest broke over exactly 40 m within 2 s, the threshold: a 3.2 m face that started at the arm's end and peeled toward +x at 25° on its own fit, a fast section of the biggest wave.
+    - Over 600 s one crest, a 3.0 m face, broke on the deep face beside the peak, 3.4 m deep and 85 m outside the line, over 46 m within 2 s both ways.
+    - Before, 7 crests in 51 broke over 41–82 m from the shelf and the blend. "No close-outs" is therefore nearly met, not strictly.
+  - **The readout no longer says "a right"** (0 % of the reads every second, 2 % before), but it says "closes out" more often than before: 41 % of the reads against 27 %.
+    - Before, the shelf took the biggest waves' height, and the waves that reached the arm broke slower there.
+    - Now Big's full-size waves reach the arm, and the tracker's sideways spread runs along their faster crests, reading 29–31°.
+    - These are clean +x peels just under 27°, the meter's sideways spread (the straight-crest bed's peel, below). Medium's own readout does the same 43–45 % of the time, which the owner left alone on 2026-10-07.
+  - Crests still run upcoast in 19 of 49, a median of 6 m (at most 26 m). The spilling front's upcoast gate (§3) withholds their foam beyond 6 m.
+
+- **Medium keeps its bars, but a little looser.**
+  - Toward +x: every clean tracker sample, and 98 % of the clean reads every second. Its readout is as before: "closes out" 44 % of the time against 43 %, "a right" 1 % against 0 %, median 32° against 30°.
+  - Each crest's own fit is slower than before: 44° against 41°.
+  - **Starts:** 41 of 50 crests start within ±10 m of x −37, at the arm's end.
+    - Three of the nine others are not the arm's: two in the +x edge strip and one shore break upcoast of the arm. The solver copies the arm's profile at x = 60 across the 20 m strip, so a short shoal breaks there; the one "close-out" is a grouping of that strip's onsets.
+    - The other six broke first mid-arm (x −16 to 28) and peeled toward +x from there. That is 87 % of the crests on the arm, against 95 % (38 of 40) on the old bed.
+    - On the 3.6 m shelf Medium's biggest waves were depth-limited, which evened out the crests' heights along shore. On the 6 m platform a crest keeps its along-shore swell, and a taller stretch mid-arm sometimes breaks first.
+    - The fan holds this down: the planar 70° face had 15 mid-arm starts in 54, the fans 4–6 (the sweep).
+  - **The crests' straightness.**
+    - They reach the arm as straight as before: on the fine zone's edge the mean |angle| is 2.7°, as before, against the Beach's 4.3°.
+    - 30 m seaward of the take-off they lean 5.3° on average (mean |angle| 6.5°, against the Beach's 4.4° there: just past "within about 2°").
+    - The old bed's line there lay mostly on the level shelf. The new one crosses the arm's face for x < 39, where the crests bend toward its oblique contours as they climb it. That is the refraction that sets the peel, not a corner wrap.
+- **Small now breaks on the arm.**
+  - 38 of its 40 crests start on the arm's face or end, against 27 before; only 2 start on the top behind the line, against 13.
+  - Each crest's own fit runs toward +x (35 of 36, 40°), and so do 98 % of the clean reads every second.
+  - Its starts spread more: 29 of 40 within ±10 m of x −33 (35 of 40 before), with 11 breaking first mid-arm.
+  - Its readout says "closes out" more often: 70 % of the reads against 49 %, median 23°. Its +x reads over 27° have a median of 39°. Small's crests are low and slow, so its peel sits near the 27° line on either bed.
+  - Without the trough, bores re-breaking on the top made its readout point toward −x 8 % of the time; with it, 1 %.
 
 #### The straight-crest bed (2026-10-06)
+
+*The bed of 2026-10-07 to 2026-10-09, now the "before" of "Every size on the arm" above: its shelf, edge, angle and face have changed since.*
 
 **The owner's requirement.** On the prototype's screenshots the owner saw that "the wave formation comes from a corner forming a strange shape". The waves must form straight to the beach. The timing of the sets may vary, but waves may not come from more than one side, much less at the same time.
 
@@ -246,6 +426,10 @@ The cost is one pass over the grid per step, with at most 8 waves per breaking c
 
 ### Tools
 
+- **`scripts/canyon-size-report.ts`** measures one swell size, wave only (§1, "Every size on the arm"). It reports the tracker per period, the readout replayed every second, each crest's start, close-out and own fit, and where every onset lies. With `--stability` it adds the session's health.
+  - Build and run: `rolldown scripts/canyon-size-report.ts -o dist/scripts/canyon-size-report.mjs --format esm --platform node && node dist/scripts/canyon-size-report.mjs --size big --seeds 3 --periods 14 [--canyon key=value,...] [--json <file>]`.
+  - `--from <file>` re-reads a run's onsets without running the sea.
+- **`scripts/crest-angle-report.ts`** takes `--canyon key=value,...` as well.
 - **`scripts/canyon-peel-report.ts`** prints the peel per period and the front's state, and sweeps `CANYON`:
   - Build and run: `rolldown scripts/canyon-peel-report.ts -o dist/scripts/canyon-peel-report.mjs --format esm --platform node && node dist/scripts/canyon-peel-report.mjs --hs 1.4 --tp 11 --seeds 3 --periods 14 [--verbose] [--canyon angle=60,...]`.
 - **`scripts/browser/canyon-peel-shots.mjs`** drives the water sheet and shoots a sequence, one second apart, from the beach, a cliff and overhead. Start `npx vite --port 5199` first.
@@ -392,7 +576,9 @@ Run on 2026-10-07 on an 8 GB M1, detached (`nohup caffeinate -i`), on `claude/ca
   - The upcoast gate (§3) now withholds that foam beyond 6 m. The rider can still meet breaking water there, as ahead of the visible front.
   - Breaking in a column where no onset registered is not withheld: 1 crest in 40 still showed foam out to x −70.
 - **The front's waves are handed over online since S3** (Task 5, below): a late joiner's sea carries the front's waves and the roller's lenses exactly. A sea from an older build still leaves a fresh front, whose waves come back with the next onsets.
-- **Small days are not re-measured on the straight-crest bed.** On the prototype's 1.3 m terrace they barely broke; the arm's crest is now 1.0 m deep.
+- **Every size is measured since 2026-10-09** (§1, "Every size on the arm"). Every size's readout still says "closes out" for part of its reads (Big 41 %, Medium 44 %, Small 70 %) while its crests peel one way: the tracker's sideways spread dipping under 27°.
+- **Medium's starts are a little looser on the deep platform:** 87 % of the crests on the arm start within ±10 m of the peak, against 95 % on the 3.6 m shelf. The rest break first mid-arm and peel toward +x from there.
+- **The +x open edge copies the arm's profile at x = 60** across its 20 m strip, so a short shoal breaks there at every size. It is outside the tracker's margins, but the size report counts its breaks as crests (1–2 per size).
 - **Running flat without the canyon was the tank's grid** (§1): its 4 m cells damped the shoaling waves. The Canyon's tank now has 1 m cells from its zone in, and the straight-crest bed runs 600 s without the canyon.
 - **The spot's descriptions still say "median 58°".** That is `SurfConditions.ts`, which the parallel agent owns. The Canyon's swell itself (0°, s = 150) is also theirs; these measurements override the config to it.
 
