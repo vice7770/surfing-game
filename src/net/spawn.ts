@@ -1,11 +1,17 @@
+import { sideMargin } from '../physics/riderBounds';
+import { OPEN_EDGE_RAMP } from '../wave/ShallowWaterSolver';
+
 /** A spawn keeps at least this far from other surfers when the lineup allows, m (spec N1). */
 export const SPAWN_CLEARANCE = 3;
 /** Spawns lie this far seaward of the break line, m: from where catches happen out to where a paddler waits for sets. */
 const OUT = { near: 6, far: 30 };
 /** Along shore, within this of the take-off, m. */
 const ALONG = 30;
-/** And this far inside the window's open edges, m. */
-const EDGE_MARGIN = 10;
+/**
+ * And this far inside the window's open edges, m: inside the rider's bounds (`tankRiderBounds`) at any spot's cells, so a
+ * spawn never starts past them (the edge ramp and one 2 m cell, Padang Padang's).
+ */
+export const EDGE_MARGIN = sideMargin(OPEN_EDGE_RAMP, 2);
 /** Spacing of the spots tried, m. */
 const GRID = { along: 3, out: 4 };
 /** Spawns choose among this many clear spots nearest the take-off. */

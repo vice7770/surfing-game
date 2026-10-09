@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { SPAWN_CLEARANCE, chooseSpawn } from './spawn';
+import { EDGE_MARGIN, SPAWN_CLEARANCE, chooseSpawn } from './spawn';
+import { sideMargin } from '../physics/riderBounds';
+import { OPEN_EDGE_RAMP } from '../wave/ShallowWaterSolver';
 
 const area = { focusX: 20, focusZ: -100, xMin: -80, xMax: 80 };
 
@@ -19,10 +21,11 @@ describe('chooseSpawn', () => {
     }
   });
 
-  it('stays inside the window', () => {
+  it('stays inside the window, within the rider’s bounds', () => {
     for (const r of [0, 0.5, 0.99]) {
       const spot = chooseSpawn({ ...area, focusX: 78 }, [], () => r);
-      expect(spot.x).toBeLessThanOrEqual(70);
+      expect(spot.x).toBeLessThanOrEqual(80 - EDGE_MARGIN);
+      expect(80 - spot.x).toBeGreaterThanOrEqual(sideMargin(OPEN_EDGE_RAMP, 2));
     }
   });
 
