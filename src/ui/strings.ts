@@ -329,6 +329,7 @@ export const EN = {
   'settings.breathMeter.never': 'Never',
   'hud.breath': 'Breath',
   'hud.heldDown': 'Held down too long',
+  'hud.edge': 'Edge of the break, head back in',
   'settings.pocketReflex': 'Stay near the curl',
   'settings.pocketReflex.practice': 'Practice',
   'settings.pocketReflex.always': 'Always',

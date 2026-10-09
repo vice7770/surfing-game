@@ -11,7 +11,9 @@ import { RiderMotion } from '../scene/rig/riderMotion';
 import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
-import { EdgeCurtain } from '../scene/EdgeCurtain';
+import { EdgeBand } from '../scene/EdgeBand';
+import { EdgeWhitewater } from '../scene/EdgeWhitewater';
+import { EDGE_BAND, bandBedWeight, mirrorX } from '../scene/water/edgeBandGlsl';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -328,8 +330,8 @@ export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
-  /** The seam to the far ocean along the tank's open edges, made at the first start (it shares the water's shading). */
-  private edgeCurtain?: EdgeCurtain;
+  /** The tank's own water past its open sides, handed over to the far ocean, made at the first start (it shares the water's shading). */
+  private edgeBand?: EdgeBand;
   /** The Wave Pool's walls, deck and machine hall (the movement-flow spec); the open ocean stays hidden there. */
   readonly poolScenery = new PoolScenery();
   private atPool = false;
@@ -339,6 +341,8 @@ export class PhysicalMode {
   readonly bubbles = new BubblePoints();
   /** Spray and mist thrown up by lip impacts, bores and offshore wind (G6). */
   readonly spray = new SprayPoints();
+  /** The lip sheets and spray mirrored past the open sides, with the edge band's water. */
+  private readonly edgeWhitewater = new EdgeWhitewater([this.lipSheet.mesh, this.spray.mesh]);
   /** The physical board, drawn at the snapshot's pose. */
   private readonly boardShape = buildBoardShape();
   readonly board = createBoardMesh(this.boardShape);
@@ -455,7 +459,7 @@ export class PhysicalMode {
 
   constructor(scene: Scene) {
     this.scene = scene;
-    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group, this.leash.object);
+    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object);
     this.leash.object.visible = false;
     this.board.visible = false;
     this.surfer.group.visible = false;
@@ -580,14 +584,21 @@ export class PhysicalMode {
     const windowMax = windowMin + (init.grid.nx - 1) * init.grid.spacing;
     const leftX = windowMin + init.dx / 2;
     const rightX = windowMax - init.dx / 2;
-    // Beyond the window the world continues each edge column's seabed; offshore it deepens to FAR_DEPTH.
+    // Beyond the window the world continues each edge column's seabed; offshore it deepens to FAR_DEPTH. Over the edge
+    // band (open sides), the window's own bed mirrored across the edge gives way to the edge column's, as its water does.
     const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(tank.offshore, tank.offshore - FAR_SLOPE_LENGTH, z);
+    const band = config.spot === 'pool' ? 0 : EDGE_BAND.fade;
     const bedDepth = (x: number, z: number) => {
       if (z < tank.offshore) return offshoreBed(z);
-      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z, tank);
+      const edge = tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z, tank);
+      if ((x >= windowMin && x <= windowMax) || band === 0) return edge;
+      const share = bandBedWeight(x, { xMin: windowMin, xMax: windowMax });
+      const mirrored = tankDepth(spot, offshoreDepth, mirrorX(x, windowMin, windowMax), z, tank);
+      return mirrored + (edge - mirrored) * share;
     };
     this.focus = { ...init.focus };
-    const hole = { xMin: windowMin, xMax: windowMax, zMin: tank.offshore, zMax: tank.shore };
+    // The far ocean's hole takes in the edge band past each side edge.
+    const hole = { xMin: windowMin - band, xMax: windowMax + band, zMin: tank.offshore, zMax: tank.shore };
     // The Wave Pool: walls and a deck around the window, no open ocean beyond, and a painted concrete floor.
     this.atPool = config.spot === 'pool';
     if (this.atPool) {
@@ -600,7 +611,7 @@ export class PhysicalMode {
     this.farField.mesh.visible = this.shown && !this.atPool;
     this.seabed.setDepthOnGrid(
       bedDepth,
-      gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
+      gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin - band, windowMax + band, 2, 30),
       gradedAxis(Math.min(-900, tank.offshore - 300), tank.shore + 30, tank.offshore, tank.shore, 2, 30),
     );
     const profile = new FarFieldProfile(surfZoneSea(config), {
@@ -615,9 +626,11 @@ export class PhysicalMode {
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
-    // The seam where the tank's water meets the far ocean (the owner, 2026-10-08): none at the Wave Pool, walled in.
-    this.edgeCurtain ??= new EdgeCurtain(water);
-    this.edgeCurtain.setFar(this.atPool ? undefined : { profile, centerX: 0.5 * (hole.xMin + hole.xMax) });
+    // The edge band (the owner, 2026-10-09): past the open sides the tank's own waves, mirrored, handed over to the far
+    // ocean, whose rim holds on the drawn tank offshore. None at the Wave Pool, walled in.
+    this.edgeBand ??= new EdgeBand(water, this.farField);
+    this.farField.attachRim(this.edgeBand.rimUniforms);
+    this.edgeBand.setSpot(this.atPool ? undefined : { zone: tank.zoneInner - tank.offshore });
     this.chosenView = this.defaultView;
     this.camera.setView(this.homeView);
     return true;
@@ -751,6 +764,8 @@ export class PhysicalMode {
       this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
       // Surface foam and spray show the swept whitewater; opaque foam balls obscure its opening.
       this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount }, !this.swept);
+      // Mirrored past the open sides with the edge band's water (none at the Wave Pool).
+      this.edgeWhitewater.update(this.edgeBand?.layout);
       this.visualHost = host;
       this.visualStatus = status;
       this.visualSprayLook = this.spray.look;
@@ -779,17 +794,15 @@ export class PhysicalMode {
   }
 
   /**
-   * The curtain along the tank's open edges, closing the seam to the far ocean (the owner, 2026-10-08), at the far
-   * ocean's drawn time; call once the water has uploaded this frame's heights. Hidden with the far ocean.
+   * The edge band past the tank's open sides (the owner, 2026-10-09), and the far ocean's rim held on the drawn tank:
+   * call once the water has uploaded this frame's heights. Hidden with the far ocean.
    */
-  drawCurtain(): void {
-    const curtain = this.edgeCurtain;
-    if (!curtain) return;
-    if (!this.host || !this.shown || !this.farField.mesh.visible || !(this.farField.time === this.farField.time)) {
-      curtain.mesh.visible = false;
-      return;
-    }
-    curtain.update(this.farField.time);
+  drawEdgeBand(): void {
+    const band = this.edgeBand;
+    if (!band) return;
+    const shown = Boolean(this.host) && this.shown && this.farField.mesh.visible && this.farField.time === this.farField.time;
+    band.update(shown);
+    this.edgeWhitewater.group.visible = band.mesh.visible;
   }
 
   /**

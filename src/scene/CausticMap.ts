@@ -4,6 +4,7 @@ import {
 } from 'three';
 import { chopFieldUniforms, waterChopPars } from './waterChop';
 import { WATER_IOR } from './waterOptics';
+import { waterFoldPars } from './water/waterFold';
 
 /**
  * The map covers a square of CAUSTIC_WINDOW metres around the view, refracted through
@@ -69,11 +70,14 @@ varying vec2 vLit;
 varying float vSunlit;
 ${waterChopPars}
 
-// The water mesh's bilinear lookups (WaterSurface.ts).
+// The water mesh's bilinear lookups (WaterSurface.ts), mirrored past the side edges as the water is drawn there.
+${waterFoldPars}
 float heightAt( vec2 xz ) {
   vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
-  if ( g.x < 0.0 || g.y < 0.0 || g.x >= waterGridSize.x - 1.0 || g.y >= waterGridSize.y - 1.0 ) return 0.0;
+  g.x = waterFoldX( g.x );
+  if ( g.y < 0.0 || g.y >= waterGridSize.y - 1.0 ) return 0.0;
   ivec2 c = ivec2( floor( g ) );
+  c.x = min( c.x, int( waterGridSize.x ) - 2 );
   vec2 t = g - vec2( c );
   float top = mix( texelFetch( waterSurface, c, 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).r, t.x );
   float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).r, t.x );
@@ -81,7 +85,8 @@ float heightAt( vec2 xz ) {
 }
 
 float bedAt( vec2 xz ) {
-  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  g = clamp( vec2( waterFoldX( g.x ), g.y ), vec2( 0.0 ), waterGridSize - 1.0 );
   ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
   vec2 t = g - vec2( c );
   float top = mix( texelFetch( waterBed, c, 0 ).r, texelFetch( waterBed, c + ivec2( 1, 0 ), 0 ).r, t.x );

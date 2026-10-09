@@ -65,8 +65,8 @@ export function packTubeTextures(
 
 /**
  * GLSL (G9): a surface cut by the flying tubes, as `carveAt` cuts it on the
- * CPU (`float waterCarve( vec2 xz, float surface )`). Needs `waterGrid` only
- * through its callers; the tube uniforms are its own.
+ * CPU (`float waterCarve( vec2 xz, float surface )`). Needs `waterFoldPars`
+ * (past a side edge it cuts the tank's tubes mirrored); the tube uniforms are its own.
  */
 export const waterTubeCarvePars = /* glsl */ `
 uniform sampler2D waterTubeMap;
@@ -127,6 +127,8 @@ float waterColumnCarve( float column, vec2 xz, float surface ) {
 }
 float waterCarve( vec2 xz, float surface ) {
   if ( waterTubeCount < 0.5 ) return surface;
+  // Past a side edge the water is the tank's mirror image (waterFoldXZ): so are its tubes.
+  xz = waterFoldXZ( xz );
   float u = xz.x / waterTubeColumnWidth - 0.5;
   float c0 = floor( u );
   float t = u - c0;

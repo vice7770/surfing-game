@@ -36,15 +36,21 @@ describe('the drawn Catmull-Rom surface', () => {
     expect(checked).toBeGreaterThan(150);
   });
 
-  it('clamps nodes at the grid’s edges as the physics does', () => {
+  it('mirrors nodes past the side edges, as the water is drawn there, and clamps them across shore', () => {
     const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 4, nz: 4 };
     const data = new Float32Array(32);
     for (let i = 0; i < 16; i += 1) data[i * 2] = i % 4; // height = column index
-    // Nodes −1, 0, 1, 2 clamp to heights 0, 0, 1, 2: Catmull-Rom at t = ½ gives 9/16 − 2/16.
-    expect(sampleCubicSurface(data, grid, 0.5, 1).height).toBeCloseTo(0.4375, 6);
+    // Nodes −1, 0, 1, 2 mirror to heights 1, 0, 1, 2: Catmull-Rom at t = ½ gives (9 − 1 − 2)/16.
+    expect(sampleCubicSurface(data, grid, 0.5, 1).height).toBeCloseTo(0.375, 6);
     expect(sampleCubicSurface(data, grid, 1.5, 1).height).toBeCloseTo(1.5, 6);
     expect(sampleCubicSurface(data, grid, 1.5, 1).slopeX).toBeCloseTo(1, 6);
-    expect(sampleCubicSurface(data, grid, -3, 1).height).toBeCloseTo(0, 6);
+    // The surface past the −x edge is its mirror image, level across the edge itself.
+    expect(sampleCubicSurface(data, grid, -0.5, 1).height).toBeCloseTo(0.375, 6);
+    expect(sampleCubicSurface(data, grid, 0, 1).slopeX).toBeCloseTo(0, 6);
+    expect(sampleCubicSurface(data, grid, -3, 1).height).toBeCloseTo(3, 6);
+    expect(sampleCubicSurface(data, grid, 4.5, 1).height).toBeCloseTo(sampleCubicSurface(data, grid, 1.5, 1).height, 6);
+    // Across shore the nodes clamp: rows past the edge repeat the edge row's heights.
+    expect(sampleCubicSurface(data, grid, 1.5, -2).height).toBeCloseTo(1.5, 6);
   });
 
   it('flips the per-pixel normal for the underside and writes it in view space', () => {

@@ -23,7 +23,8 @@ import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } fro
 import { cloneTubeApproachObservation, createTubeApproachObservation,
   type TubeApproachCue, type TubeApproachRequest, type TubeBodyPoint, type TubeApproachObservation } from './barrel/tubeApproach';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
-import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import { SurfZoneSimulation, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import type { RiderBounds } from '../physics/riderBounds';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
 
@@ -104,6 +105,11 @@ const LINEUP_OFFSET = 25;
  * the waves pass before a paddler can reach the peak.
  */
 const RIDE_LINEUP_OFFSET = 6;
+
+/** The edge hint (the rider's bounds): shown once the rider is this far past them, m, again every so many seconds held there, s, and cleared within the last, m. */
+const EDGE_HINT_DEPTH = 0.5;
+const EDGE_HINT_REPEAT = 4;
+const EDGE_HINT_CLEAR = 0.1;
 
 export interface SurfZoneRunnerOptions {
   /** Carry a riderless board on the water (P4c). */
@@ -246,6 +252,8 @@ export interface SurfZoneStatus {
     /** The breath held, 1 full to 0 (Part B), and how often a rider held down too long was rescued. */
     breath: number;
     rescues: number;
+    /** How often the rider has been held at the window's bounds (`SurfZoneRunner.bounds`): the HUD hints at each new one. */
+    edgeHolds?: number;
   };
 }
 
@@ -338,6 +346,10 @@ export class SurfZoneRunner {
   private knock = 0;
   /** Riders held down too long and rescued to the lineup (Part B). */
   private rescues = 0;
+  /** Where the rider is held (`tankRiderBounds`), and how often it has been held at them (for the HUD's hint). */
+  readonly bounds: RiderBounds;
+  private edgeHolds = 0;
+  private heldAtEdge = 0;
   private snapshotKnock = 0;
   private boardMs = 0;
   private bubbleMs = 0;
@@ -393,6 +405,7 @@ export class SurfZoneRunner {
       }
     }
     this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contactQueries, renderSpacing);
+    this.bounds = tankRiderBounds(this.simulation.config);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
     if (options.rider) {
@@ -576,6 +589,8 @@ export class SurfZoneRunner {
       // where nothing is drawn (the advisor's ruling 4).
       if (!this.contactQueries) session.strike(this.simulation.lip);
       if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
+      // The rider stays in the simulated window (the owner, 2026-10-09): past the bounds it is slowed and drawn back.
+      this.noteEdge(session.holdInside(this.bounds, SURF_ZONE_STEP));
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
         || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
@@ -607,6 +622,22 @@ export class SurfZoneRunner {
     phase = end;
     this.collectSounds();
     this.soundMs = performance.now() - phase;
+  }
+
+  /**
+   * The HUD's edge hint: counted when the rider goes EDGE_HINT_DEPTH past the bounds, and again every EDGE_HINT_REPEAT
+   * seconds it is held there; it clears once the rider is back within EDGE_HINT_CLEAR of them.
+   */
+  private noteEdge(depth: number): void {
+    if (depth >= EDGE_HINT_DEPTH) {
+      if (this.heldAtEdge === 0 || this.heldAtEdge >= EDGE_HINT_REPEAT) {
+        this.edgeHolds += 1;
+        this.heldAtEdge = 0;
+      }
+      this.heldAtEdge += SURF_ZONE_STEP;
+    } else if (depth <= EDGE_HINT_CLEAR) {
+      this.heldAtEdge = 0;
+    }
   }
 
   /** Each step's lip landings and paddle strokes, kept for the next snapshot's sound (S1). */
@@ -898,6 +929,7 @@ export class SurfZoneRunner {
         knock: this.snapshotKnock,
         breath: this.session.breath.level,
         rescues: this.rescues,
+        edgeHolds: this.edgeHolds,
       } : undefined,
     };
     const summary = performance.now() - start;

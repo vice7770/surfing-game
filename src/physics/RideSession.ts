@@ -5,6 +5,7 @@ import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
 import { BREATH, Breath } from './Breath';
 import { Leash } from './Leash';
+import { boundsPush, type RiderBounds } from './riderBounds';
 import { RIDER_PARTS, deckHeight, type StanceName } from './riderPosture';
 import { createWaterSample, type SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
@@ -97,6 +98,9 @@ export class RideSession {
   private readonly plug = new Vector3();
   private readonly pelvis = new Vector3();
   private readonly spinPart = new Vector3();
+  private readonly held = { x: 0, z: 0 };
+  private readonly heldCenter = new Vector3();
+  private readonly heldMomentum = new Vector3();
   private readonly sample = createWaterSample();
   /** The state the fall body started from, at the latest separation. */
   readonly handoff = { center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3() };
@@ -242,6 +246,33 @@ export class RideSession {
       if (this.recovery.state !== 'free' && this.recovery.step(dt, board) === 'prone-ready') this.climbOn();
     }
     if (wasAttached && !rider.attached) this.reefCause();
+  }
+
+  /**
+   * Hold the board, the rider on it and the fallen surfer inside `bounds` after a step of `dt` (the rider's bounds, the
+   * owner's 2026-10-09 playtest): each body past them is slowed and drawn back as a whole (`boundsPush`), the board and
+   * its rider by one velocity change, the surfer's nodes by another, so none is moved and none pulls on another. Returns
+   * how far past the bounds the rider is, m (the board while it is ridden, the surfer once fallen; 0 inside).
+   */
+  holdInside(bounds: RiderBounds, dt: number): number {
+    const { board, rider, surfer, held } = this;
+    const boardDepth = boundsPush(board.position.x, board.position.z, board.velocity.x, board.velocity.z, bounds, dt, held);
+    board.velocity.x += held.x;
+    board.velocity.z += held.z;
+    if (rider.attached) {
+      rider.velocity.x += held.x;
+      rider.velocity.z += held.z;
+      return boardDepth;
+    }
+    if (!surfer.active) return boardDepth;
+    const center = surfer.centerOfMass(this.heldCenter);
+    const momentum = surfer.linearMomentum(this.heldMomentum);
+    const depth = boundsPush(center.x, center.z, momentum.x / surfer.mass, momentum.z / surfer.mass, bounds, dt, held);
+    for (const node of surfer.nodes) {
+      node.velocity.x += held.x;
+      node.velocity.z += held.z;
+    }
+    return depth;
   }
 
   /**
