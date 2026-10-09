@@ -8,9 +8,8 @@
  *   readout's words: "closes out" (under 27°), "mixed peaks" (fit < 0.3), "a left" (+x) or "a right" (−x);
  * - **each crest**, from the simulation's onsets (a column's outermost breaking cell jumping seaward). Onsets are
  *   grouped into crests by their phase: the onset's time less its crest's travel time from the relaxation zone down its
- *   column at √(g h) over the still bed (the crests' measured speed: 6.3 m/s at Medium and 5.7 m/s at Big over the
- *   3.6 m shelf), split where the phase jumps by more than GAP of a period, and a group spanning over SPLIT of a period
- *   split at its widest jump. Crests already breaking when the record starts (a first onset within WARM s of it) and
+ *   column at √(g (h + κ min(h, Hs))) over the still depth h (`--kappa`, 0.3: bores on the terrace's top run faster
+ *   than √(g h)); each onset joins the nearest peak of the phases' density, one peak per crest. Crests already breaking when the record starts (a first onset within WARM s of it) and
  *   those starting too late to be read are left out. For each crest: its start (first onset) along shore and across, the
  *   bed part and depth there, how far along shore it broke within CLOSE_SECONDS of its start (a close-out breaks over
  *   CLOSE_SPAN m or more at once), whether it also ran upcoast (more than two onsets over 5 m upcoast within 3 s, as
@@ -18,6 +17,8 @@
  *   its onsets on the arm);
  * - **where the waves break**: every onset and every start by bed part (the blend, the level shelf, the arm's face,
  *   its upcoast end, its top, the beach face), with depth and distance seaward of the break line;
+ * - **the readout as the player sees it**: the tracker replayed from the same onsets every READOUT_EVERY s (the game
+ *   reads it on every status update), its words' shares;
  * - with `--stability`, the session's health: the fastest water (|q|/h where h > 5 cm, every 10 steps), the Froude
  *   caps and the volume's drift, and the onsets per 100 s.
  *
@@ -30,7 +31,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { SWELLS } from '../src/game/SurfConditions';
 import { CANYON, canyonArmAt, canyonBreakLineZ, canyonTerraceDepth, createSpot } from '../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
-import { MIXED_PEAK_FIT, skillForPeel } from '../src/wave/Breaking';
+import { MIXED_PEAK_FIT, PeelTracker, skillForPeel } from '../src/wave/Breaking';
 import { GRAVITY } from '../src/wave/dispersion';
 import { SurfZoneSimulation, tankDepth, tankLayout, type SurfZoneConfig, type TankLayout } from '../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from './canyonShape';
@@ -42,10 +43,9 @@ const option = (name: string): string | undefined => {
 const number = (name: string, fallback: number) => Number(option(name) ?? fallback);
 const verbose = process.argv.includes('--verbose');
 
-/** Onsets whose phase jumps by more than this share of a period start a new crest. */
-const GAP = 0.25;
-/** A group whose phases span more than this share of a period is split at its widest jump. */
-const SPLIT = 0.7;
+/** The phases' density is smoothed over this share of a period; its peaks, at least SEPARATION of a period apart, are the crests. */
+const SIGMA = 0.1;
+const SEPARATION = 0.5;
 /** Crests whose first onset comes within this many seconds of the record's start were already breaking. */
 const WARM = 2;
 /** A crest breaking over this many metres along shore within CLOSE_SECONDS of its start closes out. */
@@ -57,8 +57,12 @@ const UPCOAST_ONSETS = 2;
 const UPCOAST_SECONDS = 3;
 /** A crest's own fit needs this many onsets on the arm. */
 const FIT_ONSETS = 8;
+/** The readout's replay samples the tracker this often, s: the game reads it on every status update. */
+const READOUT_EVERY = 1;
 /** Starts count as one place within this many metres of their median, along shore (the owner's bar: ±10 m). */
 const SAME_START = 10;
+/** The crests' celerity for the phase: √(g (h + KAPPA·min(h, Hs))) over the still depth h (a bore runs faster than √(g h)). */
+const KAPPA = number('kappa', 0.3);
 
 interface Onset { seed: number; t: number; x: number; z: number; face: number; depth: number }
 interface Sample { seed: number; t: number; angle: number; direction: number; fit: number; speed: number; words: string }
@@ -175,12 +179,37 @@ const tally = (values: string[]) => {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(', ');
 };
 
-/** Split a phase-ordered group at its widest jump until none spans more than `limit` s. */
-function splitWide(group: (Onset & { phase: number })[], limit: number): (Onset & { phase: number })[][] {
-  if (group.length < 2 || group[group.length - 1].phase - group[0].phase <= limit) return [group];
-  let widest = 1;
-  for (let k = 2; k < group.length; k += 1) if (group[k].phase - group[k - 1].phase > group[widest].phase - group[widest - 1].phase) widest = k;
-  return [...splitWide(group.slice(0, widest), limit), ...splitWide(group.slice(widest), limit)];
+type Phased = Onset & { phase: number };
+
+/**
+ * Group phase-ordered onsets into crests: the phases' density (Gaussian, σ = SIGMA of a period) peaks once per crest; peaks
+ * closer than SEPARATION of a period keep the taller, and each onset joins the nearest peak within half a period.
+ */
+function crestsByDensity(onsets: Phased[], tp: number): Phased[][] {
+  if (!onsets.length) return [];
+  const sigma = SIGMA * tp;
+  const step = 0.1;
+  const lo = onsets[0].phase - 3 * sigma;
+  const n = Math.ceil((onsets[onsets.length - 1].phase + 3 * sigma - lo) / step) + 1;
+  const density = new Float64Array(n);
+  for (const o of onsets) {
+    const k0 = Math.max(0, Math.floor((o.phase - 3 * sigma - lo) / step));
+    const k1 = Math.min(n - 1, Math.ceil((o.phase + 3 * sigma - lo) / step));
+    for (let k = k0; k <= k1; k += 1) density[k] += Math.exp(-0.5 * ((lo + k * step - o.phase) / sigma) ** 2);
+  }
+  const peaks: { phase: number; height: number }[] = [];
+  for (let k = 1; k < n - 1; k += 1) if (density[k] > density[k - 1] && density[k] >= density[k + 1]) peaks.push({ phase: lo + k * step, height: density[k] });
+  peaks.sort((a, b) => b.height - a.height);
+  const kept: number[] = [];
+  for (const peak of peaks) if (kept.every((q) => Math.abs(q - peak.phase) >= SEPARATION * tp)) kept.push(peak.phase);
+  kept.sort((a, b) => a - b);
+  const groups = kept.map(() => [] as Phased[]);
+  for (const o of onsets) {
+    let best = -1;
+    for (let k = 0; k < kept.length; k += 1) if (best < 0 || Math.abs(kept[k] - o.phase) < Math.abs(kept[best] - o.phase)) best = k;
+    if (best >= 0 && Math.abs(kept[best] - o.phase) <= 0.5 * tp) groups[best].push(o);
+  }
+  return groups.filter((g) => g.length);
 }
 
 function analyse(run: Run): void {
@@ -198,7 +227,7 @@ function analyse(run: Run): void {
     let tau = 0;
     for (let r = 1; r < rows; r += 1) {
       const depth = Math.max(0.2, tankDepth(spot, tank.edgeDepth, xMin + c, tank.zoneInner + r - 0.5, tank));
-      tau += 1 / Math.sqrt(GRAVITY * depth);
+      tau += 1 / Math.sqrt(GRAVITY * (depth + KAPPA * Math.min(depth, hs)));
       travel[c * rows + r] = tau;
     }
   }
@@ -213,13 +242,7 @@ function analyse(run: Run): void {
     const mine = run.onsets.filter((o) => o.seed === record.seed && o.t > record.start).map((o) => ({ ...o, phase: phaseOf(o) }));
     recorded.push(...mine);
     mine.sort((a, b) => a.phase - b.phase);
-    const groups: (Onset & { phase: number })[][] = [];
-    for (const onset of mine) {
-      const last = groups[groups.length - 1];
-      if (last && onset.phase - last[last.length - 1].phase <= GAP * tp) last.push(onset);
-      else groups.push([onset]);
-    }
-    for (const group of groups.flatMap((g) => splitWide(g, SPLIT * tp))) {
+    for (const group of crestsByDensity(mine, tp)) {
       if (group.length < 3) continue;
       const first = group.reduce((a, b) => (b.t < a.t ? b : a));
       if (first.t < record.start + WARM || first.t + UPCOAST_SECONDS > record.end) continue;
@@ -265,6 +288,41 @@ function analyse(run: Run): void {
       }
     }
   }
+  // The readout as the player sees it: the tracker replayed from the same onsets, read every READOUT_EVERY s (the game
+  // reads it on every status update; the run's own samples come once a period). Checked against the run's samples.
+  const xs = Array.from({ length: 160 }, (_, i) => -79.5 + i);
+  const readout: Sample[] = [];
+  let replayError = 0;
+  for (const record of run.records) {
+    const tracker = new PeelTracker(xs, tp, undefined, (column) => canyonArmAt(xs[column]));
+    const mine = run.onsets.filter((o) => o.seed === record.seed).sort((a, b) => a.t - b.t);
+    const checks = run.samples.filter((s) => s.seed === record.seed);
+    let k = 0;
+    const read = (time: number) => {
+      while (k < mine.length && mine[k].t <= time + 1e-9) {
+        tracker.markOnset(Math.min(159, Math.max(0, Math.round(mine[k].x + 79.5))), mine[k].t, mine[k].z);
+        k += 1;
+      }
+      return tracker.estimate(time, celerity);
+    };
+    const times = [...checks.map((c) => c.t)];
+    for (let time = record.start + tp; time <= record.end; time += READOUT_EVERY) times.push(time);
+    times.sort((a, b) => a - b);
+    for (const time of times) {
+      const estimate = read(time);
+      const check = checks.find((c) => c.t === time);
+      if (check) {
+        replayError = Math.max(replayError, Math.abs((estimate?.angleDegrees ?? Number.NaN) - check.angle));
+        continue;
+      }
+      if (!estimate) continue;
+      const words = skillForPeel(estimate.angleDegrees) === 'closeout' ? 'closes out'
+        : estimate.fit < MIXED_PEAK_FIT ? 'mixed' : estimate.direction > 0 ? 'left (+x)' : 'right (−x)';
+      readout.push({ seed: record.seed, t: time, angle: estimate.angleDegrees, direction: estimate.direction, fit: estimate.fit, speed: estimate.peelSpeed, words });
+    }
+  }
+  const readClean = readout.filter((s) => s.fit >= MIXED_PEAK_FIT);
+  const share = (n: number) => `${n} (${f((100 * n) / Math.max(1, readout.length))} %)`;
   const { samples } = run;
   const clean = samples.filter((s) => s.fit >= MIXED_PEAK_FIT);
   const plus = clean.filter((s) => s.direction > 0).length;
@@ -287,6 +345,11 @@ function analyse(run: Run): void {
     + `median ${f(median(fitted.map((c) => c.fit!.angle)))}°, speed ${f(median(fitted.map((c) => c.fit!.speed)), 1)} m/s`);
   console.log(`onsets: ${recorded.length}; by bed part: ${tally(recorded.map((o) => bedPart(o.x, o.z, tank)))}; depth median ${f(median(recorded.map((o) => o.depth)), 2)} m, `
     + `10–90 % ${f(quantile(recorded.map((o) => o.depth), 0.1), 2)}…${f(quantile(recorded.map((o) => o.depth), 0.9), 2)} m`);
+  console.log(`readout every ${READOUT_EVERY} s (the tracker replayed; largest error against the run's samples ${f(replayError, 2)}°): ${readout.length} reads; `
+    + `closes out ${share(readout.filter((s) => s.words === 'closes out').length)}, left (+x) ${share(readout.filter((s) => s.words === 'left (+x)').length)}, `
+    + `right (−x) ${share(readout.filter((s) => s.words === 'right (−x)').length)}, mixed ${share(readout.filter((s) => s.words === 'mixed').length)}; `
+    + `clean toward +x ${readClean.filter((s) => s.direction > 0).length} of ${readClean.length}; median angle ${f(median(readClean.map((s) => s.angle)))}°, `
+    + `angle of the +x reads ≥ 27°: median ${f(median(readout.filter((s) => s.words === 'left (+x)').map((s) => s.angle)))}°`);
   for (const h of run.health) {
     console.log(`health seed ${h.seed}: fastest ${h.fastest.toFixed(2)} m/s, Froude caps ${h.caps} (${h.capsInWater} in water), volume ${(100 * h.volumeDrift).toFixed(2)} %, `
       + `finite ${h.finite}; onsets per 100 s ${h.onsetsPer100.join(' ')}`);
