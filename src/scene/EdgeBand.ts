@@ -1,7 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, Mesh, ShaderChunk, Uint8BufferAttribute, type MeshPhysicalMaterial } from 'three';
 import { farSeaPars, type FarFieldOcean } from './FarFieldOcean';
-import { EDGE_BAND, applyEdgeBandLayout, createEdgeBandUniforms, edgeBandPars, type EdgeBandLayout } from './water/edgeBandGlsl';
-import type { SurfaceGrid, WaterSurface } from './WaterSurface';
+import { EDGE_BAND, applyEdgeBandLayout, createEdgeBandUniforms, edgeBandPars, edgeBandUncutPars, type EdgeBandLayout } from './water/edgeBandGlsl';
+import { waterHeightPars, type SurfaceGrid, type WaterSurface } from './WaterSurface';
 
 /** The band's columns run at the grid's spacing for this far past the edge, m, then widen to BAND_COARSE. */
 const BAND_FINE = 8;
@@ -127,6 +127,7 @@ export const BAND_NORMAL_BEGIN = ShaderChunk.normal_fragment_begin.replace(
 const bandVertexPars = /* glsl */ `
 ${farSeaPars}
 ${edgeBandPars}
+${edgeBandUncutPars}
 attribute float waterBandEdge;
 varying vec3 vWaterFar;
 varying float vWaterBandSkirt;
@@ -165,6 +166,7 @@ vWaterBandSlope = -objectNormal.xz / objectNormal.y;
 /** The band's fragment pars: its weight, the far sea at the fragment, and the blends its prototypes declare. */
 const bandFragmentPars = /* glsl */ `
 ${edgeBandPars}
+${edgeBandUncutPars}
 varying vec3 vWaterFar;
 varying float vWaterBandSkirt;
 varying vec2 vWaterBandSlope;
@@ -197,6 +199,46 @@ float waterBandInside( vec2 xz ) {
 }
 void main() {`;
 
+const HEIGHT_HEADER = 'float waterHeightAt( vec2 xz ) {';
+const CARVE_HEADER = 'float waterCarve( vec2 xz, float surface ) {';
+const CARVED_CUBIC_HEADER = 'vec3 waterCarvedCubic( vec2 xz ) {';
+
+/** The water's height lookup, reading the uncut heights (`WaterSurface.keepRawHeights`): its own text, renamed. */
+function rawHeightLookup(): string {
+  const start = waterHeightPars.indexOf(HEIGHT_HEADER);
+  const end = waterHeightPars.indexOf('\n}\n', start) + 3;
+  return waterHeightPars.slice(start, end)
+    .replace(HEIGHT_HEADER, 'float waterHeightAtUncut( vec2 xz ) {')
+    .split('texelFetch( waterSurface, ').join('texelFetch( waterSurfaceRaw, ');
+}
+
+/**
+ * Past the mirrored lips' reach the band draws the tank's crests uncut (`EDGE_BAND.uncut`). Classic: the heights cut on
+ * the CPU give way to the uncut ones kept beside them. Rich: its own tube cut eases out.
+ */
+function uncutBeyondLips(source: string, rich: boolean): string {
+  if (rich) {
+    if (!source.includes(CARVE_HEADER)) return source;
+    let out = once(source, CARVE_HEADER, 'float waterCarveTank( vec2 xz, float surface ) {');
+    out = once(out, CARVED_CUBIC_HEADER, `float waterCarve( vec2 xz, float surface ) {
+  float uncut = waterBandUncut( xz );
+  return uncut >= 1.0 ? surface : mix( waterCarveTank( xz, surface ), surface, uncut );
+}
+${CARVED_CUBIC_HEADER}`);
+    return out;
+  }
+  let out = once(source, HEIGHT_HEADER, 'float waterHeightAtDrawn( vec2 xz ) {');
+  const start = out.indexOf('float waterHeightAtDrawn( vec2 xz ) {');
+  const end = out.indexOf('\n}\n', start) + 3;
+  return `${out.slice(0, end)}uniform sampler2D waterSurfaceRaw;
+${rawHeightLookup()}float waterHeightAt( vec2 xz ) {
+  float uncut = waterBandUncut( xz );
+  float drawn = uncut >= 1.0 ? 0.0 : waterHeightAtDrawn( xz );
+  return uncut <= 0.0 ? drawn : mix( drawn, waterHeightAtUncut( xz ), uncut );
+}
+${out.slice(end)}`;
+}
+
 /** The water's program, made the band's: the shader texts `onBeforeCompile` hands it, changed in place. */
 export function bandShaders(vertex: string, fragment: string): { vertex: string; fragment: string } {
   const rich = vertex.includes('vWaterAir = ');
@@ -228,7 +270,8 @@ export function bandShaders(vertex: string, fragment: string): { vertex: string;
   f = f.split('waterBarrelMaskAt( vWaterWorld.xz )').join('( waterBandInside( vWaterWorld.xz ) * waterBarrelMaskAt( vWaterWorld.xz ) )');
   if (ShaderChunk.normal_fragment_begin.split(FACE).length !== 2) throw new Error('The edge band needs three\'s one face line');
   f = once(f, '#include <normal_fragment_begin>', BAND_NORMAL_BEGIN);
-  return { vertex: v, fragment: f };
+  const cubic = vertex.includes('waterCarvedCubic( waterXZ )');
+  return { vertex: uncutBeyondLips(v, cubic), fragment: uncutBeyondLips(f, cubic) };
 }
 
 /**
@@ -288,6 +331,8 @@ export class EdgeBand {
   /** The band at a spot with open sides and a far ocean (its relaxation zone's length, m), or none (the Wave Pool's walls). */
   setSpot(spot: { zone: number } | undefined): void {
     this.zone = spot?.zone;
+    // Past the mirrored lips the band draws the crests uncut: the water keeps them beside the cut ones.
+    this.water.keepRawHeights(spot !== undefined);
     this.rimUniforms.farRim.value = 0;
     this.mesh.visible = false;
   }

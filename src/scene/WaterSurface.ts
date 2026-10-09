@@ -31,7 +31,7 @@ import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTe
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
 import { packTubeTextures, tubeColumnCount, waterTubePars } from './water/tubeCarve';
-import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
+import { TUBE_CAPACITY, TUBE_STRIDE, carveGrid } from '../wave/tubeTable';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import { classicRollerFoam, richRollerFoam, richRollerNormal, rollerCrestLight, rollerNormal, waterRollerPars } from './water/rollerGlsl';
 import { rollerDrawnExtent } from './water/rollerLook';
@@ -250,6 +250,13 @@ export class WaterSurface {
   /** Interleaved surface current (u, w) per grid node for the foam pattern; zero for sources without one. */
   flowData: Float32Array;
   private texture: DataTexture;
+  /**
+   * The heights before the tubes cut them, for the edge band (`keepRawHeights`): kept only where the water is carved on
+   * the CPU (Classic) and a tube is in the table; otherwise `waterSurfaceRaw` is the drawn texture itself.
+   */
+  private keepRaw = false;
+  private rawData = new Float32Array(1);
+  private rawTexture = WaterSurface.createBedTexture(this.rawData, { xMin: 0, zMin: 0, spacing: 1, nx: 1, nz: 1 });
   private bedTexture: DataTexture;
   private flowTexture: DataTexture;
   /** G9: (void fraction, plume depth) per grid node, for the Rich churn and plume. */
@@ -313,6 +320,7 @@ export class WaterSurface {
     this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, this.maskGrid);
     this.uniforms = {
       waterSurface: { value: this.texture },
+      waterSurfaceRaw: { value: this.texture },
       waterBed: { value: this.bedTexture },
       waterFlow: { value: this.flowTexture },
       waterFoamTile: { value: foamTileTexture() },
@@ -444,7 +452,7 @@ export class WaterSurface {
       || was.nx !== grid.nx || was.nz !== grid.nz || was.tubeWidth !== source.tubeColumnWidth;
     if (changed) {
       // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
-      source.write(this.surfaceData, !(this.effectiveLook === 'rich' && source.writeTubes));
+      this.writeSurface(source, !(this.effectiveLook === 'rich' && source.writeTubes));
       this.updateTubes();
       this.updateRoller();
       if (this.effectiveLook === 'rich' && source.writeAeration) {
@@ -484,6 +492,44 @@ export class WaterSurface {
     this.refreshFoamPattern();
     this.patch.receiveShadow = this.mesh.receiveShadow;
     this.syncBarrelFallback();
+  }
+
+  /**
+   * Keep the heights before the tubes cut them as well (`waterSurfaceRaw`), for the edge band: past its mirror's reach it
+   * draws the tank's crests uncut, as no mirrored lip covers their voids there.
+   */
+  keepRawHeights(on: boolean): void {
+    if (on === this.keepRaw) return;
+    this.keepRaw = on;
+    this.uniforms.waterSurfaceRaw.value = this.texture;
+    this.written = undefined;
+  }
+
+  /** The source's heights, cut by its tubes with `carve`; with `keepRawHeights`, the uncut heights kept beside them. */
+  private writeSurface(source: SurfaceSource, carve: boolean): void {
+    if (!(carve && this.keepRaw && source.writeTubes)) {
+      source.write(this.surfaceData, carve);
+      this.uniforms.waterSurfaceRaw.value = this.texture;
+      return;
+    }
+    // The source's own carve, done here (`carveGrid`, as the source cuts them) so the uncut heights can be kept.
+    source.write(this.surfaceData, false);
+    const count = source.writeTubes(this.tubeTable);
+    if (count === 0) {
+      this.uniforms.waterSurfaceRaw.value = this.texture;
+      return;
+    }
+    const grid = source.grid;
+    const nodes = grid.nx * grid.nz;
+    if (this.rawData.length !== nodes) {
+      this.rawData = new Float32Array(nodes);
+      this.rawTexture.dispose();
+      this.rawTexture = WaterSurface.createBedTexture(this.rawData, grid);
+    }
+    for (let i = 0; i < nodes; i += 1) this.rawData[i] = this.surfaceData[2 * i];
+    carveGrid(this.surfaceData, grid, this.tubeTable, count, source.tubeColumnWidth ?? grid.spacing);
+    this.rawTexture.needsUpdate = true;
+    this.uniforms.waterSurfaceRaw.value = this.rawTexture;
   }
 
   /** G9: lay the source's flying tubes out for the Rich shader, which cuts them itself; none otherwise. */
@@ -756,6 +802,7 @@ export class WaterSurface {
     this.texture.dispose();
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.uniforms.waterSurface.value = this.texture;
+    this.uniforms.waterSurfaceRaw.value = this.texture;
     this.bedData = new Float32Array(grid.nx * grid.nz);
     this.bedTexture.dispose();
     this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
@@ -779,6 +826,7 @@ export class WaterSurface {
     this.mesh.geometry.dispose();
     this.patch.geometry.dispose();
     this.texture.dispose();
+    this.rawTexture.dispose();
     this.bedTexture.dispose();
     this.flowTexture.dispose();
     this.aerationTexture.dispose();

@@ -330,7 +330,7 @@ export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
-  /** The seam to the far ocean along the tank's open edges, made at the first start (it shares the water's shading). */
+  /** The tank's own water past its open sides, handed over to the far ocean, made at the first start (it shares the water's shading). */
   private edgeBand?: EdgeBand;
   /** The Wave Pool's walls, deck and machine hall (the movement-flow spec); the open ocean stays hidden there. */
   readonly poolScenery = new PoolScenery();

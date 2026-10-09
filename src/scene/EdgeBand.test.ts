@@ -5,6 +5,7 @@ import { EdgeWhitewater, edgeIndex } from './EdgeWhitewater';
 import { BufferAttribute, BufferGeometry, Mesh, MeshBasicMaterial, Points, PointsMaterial, Vector3 } from 'three';
 import { FarFieldOcean } from './FarFieldOcean';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
+import { carveGrid } from '../wave/tubeTable';
 import { EDGE_BAND, bandBedWeight, bandWeight, mirrorX } from './water/edgeBandGlsl';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 
@@ -126,6 +127,54 @@ describe('the edge band', () => {
     water.setVertexNormals(true);
     const drawn = compiled(new EdgeBand(water, far).mesh.material);
     expect(drawn.vertex).toContain('vWaterSurfaceSlope = waterBandSlope;');
+  });
+
+  it('draws the crests uncut past the mirrored lips: Classic from the uncut heights, Rich easing its own cut out', () => {
+    const far = new FarFieldOcean();
+    const classic = compiled(new EdgeBand(new WaterSurface(source), far).mesh.material);
+    for (const stage of [classic.vertex, classic.fragment]) {
+      expect(stage).toContain('float waterHeightAtDrawn( vec2 xz ) {');
+      expect(stage).toContain('float waterHeightAtUncut( vec2 xz ) {');
+      expect(stage).toContain('texelFetch( waterSurfaceRaw, c, 0 ).r');
+      expect(stage).toContain('return uncut <= 0.0 ? drawn : mix( drawn, waterHeightAtUncut( xz ), uncut );');
+    }
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const rich = compiled(new EdgeBand(water, far).mesh.material);
+    for (const stage of [rich.vertex, rich.fragment]) {
+      expect(stage).toContain('float waterCarveTank( vec2 xz, float surface ) {');
+      expect(stage).toContain('return uncut >= 1.0 ? surface : mix( waterCarveTank( xz, surface ), surface, uncut );');
+      expect(stage).not.toContain('waterHeightAtUncut');
+    }
+  });
+
+  it('keeps the uncut heights beside the cut ones where the water is cut on the CPU, and a tube is in the table', () => {
+    const tube = [4.5, 3, 2, 0, 1, 3, 2, 0.8, 0.6, 4, 1, 0];
+    const small = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
+    const write = (data: Float32Array, carve = true) => {
+      for (let i = 0; i < small.nx * small.nz; i += 1) data[2 * i] = 2;
+      if (carve) carveGrid(data, small, tube, 1, 1);
+    };
+    const tubed: SurfaceSource = { grid: small, time: 0, bedRevision: 0, write, writeBed: () => {}, tubeColumnWidth: 1, writeTubes: (into) => (into.set(tube), 1) };
+    const expected = new Float32Array(small.nx * small.nz * 2);
+    write(expected);
+    expect(Math.min(...expected.filter((_, k) => k % 2 === 0))).toBeLessThan(2);
+    const water = new WaterSurface(tubed);
+    const uniforms = water.materialUniforms;
+    water.update();
+    expect(uniforms.waterSurfaceRaw.value).toBe(uniforms.waterSurface.value);
+    water.keepRawHeights(true);
+    water.update();
+    // The drawn heights are cut exactly as the source cuts them; the uncut ones go to their own texture.
+    expect(Array.from(water.surfaceData)).toEqual(Array.from(expected));
+    const raw = uniforms.waterSurfaceRaw.value as { image: { data: Float32Array } };
+    expect(raw).not.toBe(uniforms.waterSurface.value);
+    expect(Array.from(raw.image.data).every((height) => height === 2)).toBe(true);
+    // Rich cuts the tubes itself: its heights are uncut already.
+    water.setSource({ ...tubed, cubic: true });
+    water.setLook('rich');
+    water.update();
+    expect(uniforms.waterSurfaceRaw.value).toBe(uniforms.waterSurface.value);
   });
 
   it('refuses a water program without the lines it changes', () => {

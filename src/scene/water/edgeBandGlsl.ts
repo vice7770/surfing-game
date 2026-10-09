@@ -14,8 +14,10 @@ import { Vector3, Vector4 } from 'three';
  *   the band's offshore rim is the far ocean's (the far ocean's rim follows the tank's offshore row, `FAR_RIM_FADE`).
  * - `skirt` 0.3 m: the strip hung under the band's outer rims, closing the hairline gaps where the far ocean's coarser
  *   rim vertices (3–4 m) cut its linear sea straight between them.
+ * - `uncut` 8 m: the tank's lips are drawn mirrored out to `pure` (`EdgeWhitewater`), so its tubes' voids are cut only
+ *   that far; over the last `uncut` metres before it the cut eases out, and beyond it the crests are drawn whole.
  */
-export const EDGE_BAND = { pure: 40, fade: 120, corner: 12, skirt: 0.3 } as const;
+export const EDGE_BAND = { pure: 40, fade: 120, corner: 12, skirt: 0.3, uncut: 8 } as const;
 
 /** Where the band lies: the tank's side edges, its offshore edge and its relaxation zone's length, m. */
 export interface EdgeBandLayout {
@@ -72,6 +74,14 @@ export function applyEdgeBandLayout(uniforms: ReturnType<typeof createEdgeBandUn
   uniforms.waterBand.value.set(layout.xMin, layout.xMax, layout.pure ?? EDGE_BAND.pure, layout.fade ?? EDGE_BAND.fade);
   uniforms.waterBandZ.value.set(layout.zMin, Math.max(1e-3, layout.zone), layout.corner ?? EDGE_BAND.corner);
 }
+
+/** The band's own: 0 where the tank's tubes cut its water (within the mirrored lips' reach), easing to 1 (uncut) by `pure`. Needs `edgeBandPars`. */
+export const edgeBandUncutPars = /* glsl */ `
+float waterBandUncut( vec2 xz ) {
+  float d = max( max( waterBand.x - xz.x, xz.x - waterBand.y ), 0.0 );
+  return smoothstep( waterBand.z - ${EDGE_BAND.uncut.toFixed(1)}, waterBand.z, d );
+}
+`;
 
 /** GLSL twin of `bandWeight`, and its gradient (central differences over half a metre). */
 export const edgeBandPars = /* glsl */ `
