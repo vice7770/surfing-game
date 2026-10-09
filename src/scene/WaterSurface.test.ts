@@ -184,6 +184,33 @@ describe('WaterSurface GPU displacement data', () => {
     check();
   });
 
+  it('keeps the sand the water wetted lately for the seabed, drying it slowly, and forgets it for a new sea', () => {
+    // One row up a 1:10 beach (bed 0.1 a node), the surf zone's convention: dry nodes 5 cm under their bed.
+    let level = 0.15;
+    let time = 10;
+    const source: SurfaceSource = {
+      grid: { xMin: 0, zMin: 0, spacing: 1, nx: 6, nz: 1 }, get time() { return time; }, bedRevision: 0,
+      write: (into) => { for (let k = 0; k < 6; k += 1) into[2 * k] = level - 0.1 * k > 0.01 ? level : 0.1 * k - 0.05; },
+      writeBed: (into) => { for (let k = 0; k < 6; k += 1) into[k] = 0.1 * k; },
+    };
+    const water = new WaterSurface(source);
+    const texture = water.materialUniforms.waterWetSand.value as DataTexture;
+    const bytes = () => Array.from(texture.image.data as Uint8Array);
+    // Node 0 is the sea's bed (15 cm under), node 1 a 5 cm swash: wet; nodes 3 on, dry sand.
+    expect(bytes()[0]).toBe(0);
+    expect(bytes()[1]).toBe(255);
+    expect(bytes().slice(3)).toEqual([0, 0, 0]);
+    // The swash runs back: node 1 dries over WET_SAND_DRYING, not at once.
+    level = 0.05;
+    for (time = 11; time <= 20; time += 1) water.update();
+    expect(bytes()[1]).toBeLessThan(255);
+    expect(bytes()[1]).toBeGreaterThan(180);
+    water.setSource({ ...source, write: source.write, writeBed: source.writeBed, get time() { return 0; } });
+    water.update();
+    expect(bytes()[1]).toBe(0);
+    water.dispose();
+  });
+
   it('rebuilds its mesh and texture for a differently sized physical source', () => {
     const surface = new WaterSurface(new FlatSurfaceSource());
     const simulation = new SurfZoneSimulation({

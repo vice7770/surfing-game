@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { DRY_DEPTH, DRY_DROP, DRY_MARGIN, ShorelineFill, innerDepth } from './shoreline';
+import {
+  DRY_DEPTH, DRY_DROP, DRY_MARGIN, ShorelineFill, WET_SAND_DRYING, WET_SAND_STEP, WET_SAND_SUBMERGED, WetSandMemory, innerDepth,
+} from './shoreline';
 
 /** The surf zone's render convention (`writeUniformSurface`): wet over 1 cm deep, else 5 cm under the bed. */
 const WET = 0.01;
@@ -130,5 +132,49 @@ describe('the waterline (ShorelineFill)', () => {
     const sand = new Float32Array(9).fill(2);
     expect(fill.fill(land, sand, 3, 3)).toBe(0);
     for (let k = 0; k < 9; k += 1) expect(land[2 * k]).toBeCloseTo(2 - DRY_DROP, 6);
+  });
+});
+
+describe('the wet sand (WetSandMemory)', () => {
+  /** One row of four nodes on a beach at bed 0: a 5 cm swash over the first `wet` of them. */
+  const row = (wet: number) => {
+    const data = new Float32Array(8);
+    for (let k = 0; k < 4; k += 1) data[2 * k] = k < wet ? 0.05 : -DRY_DROP;
+    return data;
+  };
+  const bed = new Float32Array(4);
+
+  it('holds the sand the water covers fully wet, and dries the sand it left over WET_SAND_DRYING', () => {
+    const sand = new WetSandMemory();
+    expect(sand.update(row(3), bed, 10)).toBe(true);
+    expect(Array.from(sand.bytes)).toEqual([255, 255, 255, 0]);
+    // Within a step, nothing moves.
+    expect(sand.update(row(1), bed, 10 + WET_SAND_STEP / 2)).toBe(false);
+    // The swash runs back to the first node; a second at a time (as the water sheet draws), for a quarter of the drying.
+    for (let t = 11; t <= 10 + WET_SAND_DRYING / 4; t += 1) expect(sand.update(row(1), bed, t)).toBe(true);
+    expect(sand.bytes[0]).toBe(255);
+    expect(sand.memory[1]).toBeCloseTo(Math.exp(-0.25), 5);
+    expect(sand.memory[2]).toBeCloseTo(Math.exp(-0.25), 5);
+    expect(sand.bytes[3]).toBe(0);
+    for (let t = 11 + WET_SAND_DRYING / 4; t <= 10 + WET_SAND_DRYING; t += 1) sand.update(row(1), bed, t);
+    expect(sand.memory[1]).toBeCloseTo(Math.exp(-1), 4);
+  });
+
+  it('leaves the sea’s bed alone: nothing under more than WET_SAND_SUBMERGED of water', () => {
+    const sand = new WetSandMemory();
+    const data = new Float32Array([0.5, 0, WET_SAND_SUBMERGED / 2, 0, -DRY_DROP, 0, -DRY_DROP, 0]);
+    sand.update(data, bed, 0);
+    expect(Array.from(sand.memory)).toEqual([1, 1, 0, 0]);
+    expect(Array.from(sand.bytes)).toEqual([0, 255, 0, 0]);
+  });
+
+  it('starts afresh on a new sea: a jump in sea time, or back', () => {
+    const sand = new WetSandMemory();
+    sand.update(row(4), bed, 100);
+    sand.update(row(1), bed, 100 + 60);
+    expect(Array.from(sand.bytes)).toEqual([255, 0, 0, 0]);
+    sand.update(row(4), bed, 200);
+    sand.update(row(2), bed, 3);
+    expect(Array.from(sand.bytes)).toEqual([255, 255, 0, 0]);
   });
 });

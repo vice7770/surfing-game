@@ -2,6 +2,8 @@ import { ShaderLib, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { createCausticUniforms } from './CausticMap';
 import { SpotSeabed } from './SpotSeabed';
+import { WaterSurface } from './WaterSurface';
+import { WET_SAND_DARKENING, WET_SAND_SUBMERGED } from './water/shoreline';
 
 describe('SpotSeabed', () => {
   it('places every vertex on the spot bed', () => {
@@ -30,6 +32,27 @@ describe('SpotSeabed', () => {
     expect(shader.fragmentShader).toContain('exp( -waterAttenuation');
     expect(shader.uniforms.causticMap).toBe(caustics.causticMap);
     expect(shader.uniforms.waterAttenuation).toBe(water.waterAttenuation);
+    // Without the water's surface and memory, no wet sand.
+    expect(shader.fragmentShader).not.toContain('waterWetSand');
+    expect(seabed.mesh.material.customProgramCacheKey()).toBe('breakline-spot-seabed-caustics');
+  });
+
+  it('darkens the sand the swash wetted lately, only where it stands above the water (the shoreline fix)', () => {
+    const seabed = new SpotSeabed();
+    const water = new WaterSurface({ grid: { xMin: 0, zMin: 0, spacing: 1, nx: 4, nz: 4 }, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} });
+    const uniforms = water.materialUniforms;
+    seabed.useCaustics(water.causticUniforms, water.causticSource as never);
+    const shader = { uniforms: {} as Record<string, unknown>, vertexShader: ShaderLib.basic.vertexShader, fragmentShader: ShaderLib.basic.fragmentShader };
+    seabed.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    expect(shader.fragmentShader).toContain('uniform sampler2D waterWetSand;');
+    expect(shader.fragmentShader).toContain(`vSeabedWorld.y > waterHeightAt( vSeabedWorld.xz ) - ${WET_SAND_SUBMERGED.toFixed(2)}`);
+    expect(shader.fragmentShader).toContain(`diffuseColor.rgb *= 1.0 - ${WET_SAND_DARKENING.toFixed(2)} * wetSand;`);
+    // After the caustics, on the same colour.
+    expect(shader.fragmentShader.indexOf('wetSand')).toBeGreaterThan(shader.fragmentShader.indexOf('causticLightAt( vSeabedWorld.xz )'));
+    // The water's own uniform objects, so a resized grid's new textures reach the sand.
+    for (const name of ['waterSurface', 'waterGrid', 'waterGridSize', 'waterWetSand']) expect(shader.uniforms[name]).toBe(uniforms[name]);
+    expect(seabed.mesh.material.customProgramCacheKey()).toBe('breakline-spot-seabed-caustics-wet-sand');
+    water.dispose();
   });
 });
 

@@ -164,3 +164,83 @@ export class ShorelineFill {
     return sum / weight;
   }
 }
+
+/**
+ * How long wet sand takes to dry, s: the e-folding time of its darkness once the swash has left it (a rendering choice,
+ * long enough to keep the swash zone dark between sets, as a beach is below its last high runup).
+ */
+export const WET_SAND_DRYING = 40;
+/** How often the memory folds in the water, in sea time, s: a swash covers its sand for longer than this. */
+export const WET_SAND_STEP = 0.1;
+/** A jump in sea time longer than this, s (or backward), is a new sea: the memory starts afresh. */
+const WET_SAND_GAP = 5;
+/**
+ * How much of its colour saturated sand loses: water around the grains lets more light into them, to be absorbed, so
+ * wet sand is markedly darker than dry (Twomey, Bohren & Mergenthaler 1986, Applied Optics 25, 431). Here it keeps 0.6
+ * (a rendering choice).
+ */
+export const WET_SAND_DARKENING = 0.4;
+/** Sand under this much drawn water or more is the sea's bed, not the beach: it keeps the water's look, m. */
+export const WET_SAND_SUBMERGED = 0.1;
+
+/**
+ * Which sand the water wetted lately (the shoreline fix): 1 where the drawn water covers a node now, falling as
+ * e^{−t/WET_SAND_DRYING} once it has left, kept per render node and packed to bytes for a linear-filtered texture.
+ * The bytes are 0 under more than `WET_SAND_SUBMERGED` of water, so the seabed looks only at its beach.
+ */
+export class WetSandMemory {
+  memory = new Float32Array(0);
+  bytes = new Uint8Array(0);
+  private time = Number.NaN;
+
+  /** Forget the sand's past (a new sea, or a new grid of `count` nodes). */
+  reset(count = this.memory.length): void {
+    if (this.memory.length !== count) {
+      this.memory = new Float32Array(count);
+      this.bytes = new Uint8Array(count);
+    } else {
+      this.memory.fill(0);
+      this.bytes.fill(0);
+    }
+    this.time = Number.NaN;
+  }
+
+  /**
+   * Fold in the water as drawn at sea `time` (interleaved (height, foam) `data` over `bed`): a node whose surface stands
+   * over its bed is wet now. Returns whether `bytes` changed (at most once every `WET_SAND_STEP` of sea time).
+   */
+  update(data: Float32Array, bed: Float32Array, time: number): boolean {
+    const count = bed.length;
+    if (this.memory.length !== count) this.reset(count);
+    const elapsed = time - this.time;
+    if (elapsed >= 0 && elapsed < WET_SAND_STEP) return false;
+    const fade = elapsed >= 0 && elapsed <= WET_SAND_GAP ? Math.exp(-elapsed / WET_SAND_DRYING) : 0;
+    const { memory, bytes } = this;
+    for (let k = 0; k < count; k += 1) {
+      const depth = data[2 * k] - bed[k];
+      const wet = depth > 0 ? 1 : memory[k] * fade;
+      memory[k] = wet;
+      bytes[k] = depth > WET_SAND_SUBMERGED ? 0 : (wet * 255 + 0.5) | 0;
+    }
+    this.time = time;
+    return true;
+  }
+}
+
+/** Seabed GLSL pars for the wet sand: the memory's texture on the water's grid. Needs `waterHeightPars` before it. */
+export const wetSandPars = /* glsl */ `
+uniform sampler2D waterWetSand;
+`;
+
+/**
+ * Seabed GLSL after its colour (`vSeabedWorld`, `diffuseColor`): the sand the swash wetted lately, darker, wherever it
+ * stands above the drawn water (under it, it is the sea's bed, seen from below as before).
+ */
+export const wetSandFragment = /* glsl */ `
+{
+  float wetSand = texture2D( waterWetSand, ( ( vSeabedWorld.xz - waterGrid.xy ) / waterGrid.z + 0.5 ) / waterGridSize ).r;
+  if ( wetSand > 0.0 && vSeabedWorld.y > waterHeightAt( vSeabedWorld.xz ) - ${WET_SAND_SUBMERGED.toFixed(2)} ) {
+    diffuseColor.rgb *= 1.0 - ${WET_SAND_DARKENING.toFixed(2)} * wetSand;
+  }
+}
+`;

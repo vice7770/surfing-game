@@ -2,9 +2,21 @@ import { BufferAttribute, BufferGeometry, Color, Mesh, MeshBasicMaterial } from 
 import { causticLookupPars, type CausticUniforms } from './CausticMap';
 import { buildGridGeometry } from './gridGeometry';
 import { WATER_IOR } from './waterOptics';
+import { waterHeightPars } from './WaterSurface';
+import { wetSandFragment, wetSandPars } from './water/shoreline';
 
 /** Share of the sand's light that is direct sun, which the caustics gather and spread (a rendering choice). */
 const DIRECT_SHARE = 0.6;
+
+/** The water's uniforms the seabed reads: its sun and clarity, and (for the wet sand) its surface, grid and memory. */
+export interface SeabedWater {
+  waterAttenuation: { value: unknown };
+  waterSunDirection: { value: unknown };
+  waterSurface?: { value: unknown };
+  waterGrid?: { value: unknown };
+  waterGridSize?: { value: unknown };
+  waterWetSand?: { value: unknown };
+}
 
 /** Static seabed of a physical spot, shaded from pale sand in the shallows to deep blue-green. */
 export class SpotSeabed {
@@ -27,12 +39,16 @@ export class SpotSeabed {
   /**
    * Light the sand with a caustic map (G5): the direct sun's share of its colour
    * follows the map, faded per channel by Beer–Lambert along the refracted sun
-   * path, e^{−c·depth/cos θ_w}; under flat water it is unchanged.
+   * path, e^{−c·depth/cos θ_w}; under flat water it is unchanged. Given the water's
+   * surface, grid and wet-sand memory too, the sand the swash wetted lately is
+   * darker where it stands above the water (the shoreline fix, shoreline.ts).
    */
-  useCaustics(caustics: CausticUniforms, water: { waterAttenuation: { value: unknown }; waterSunDirection: { value: unknown } }): void {
+  useCaustics(caustics: CausticUniforms, water: SeabedWater): void {
     const material = this.mesh.material;
+    const { waterSurface, waterGrid, waterGridSize, waterWetSand } = water;
+    const wet = waterSurface && waterGrid && waterGridSize && waterWetSand ? { waterSurface, waterGrid, waterGridSize, waterWetSand } : undefined;
     material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, caustics, { waterAttenuation: water.waterAttenuation, waterSunDirection: water.waterSunDirection });
+      Object.assign(shader.uniforms, caustics, { waterAttenuation: water.waterAttenuation, waterSunDirection: water.waterSunDirection }, wet);
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vSeabedWorld;')
         .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSeabedWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
@@ -41,7 +57,7 @@ export class SpotSeabed {
 varying vec3 vSeabedWorld;
 uniform vec3 waterAttenuation;
 uniform vec3 waterSunDirection;
-${causticLookupPars}`)
+${causticLookupPars}${wet ? `${waterHeightPars}${wetSandPars}` : ''}`)
         .replace('#include <color_fragment>', `#include <color_fragment>
 {
   float seabedSun = clamp( waterSunDirection.y, 0.05, 1.0 );
@@ -49,9 +65,9 @@ ${causticLookupPars}`)
   vec3 seabedReach = exp( -waterAttenuation * max( 0.0, -vSeabedWorld.y ) / seabedCos );
   float seabedLight = causticLightAt( vSeabedWorld.xz );
   diffuseColor.rgb *= mix( vec3( 1.0 ), vec3( seabedLight ), ${DIRECT_SHARE.toFixed(2)} * seabedReach );
-}`);
+}${wet ? wetSandFragment : ''}`);
     };
-    material.customProgramCacheKey = () => 'breakline-spot-seabed-caustics';
+    material.customProgramCacheKey = () => `breakline-spot-seabed-caustics${wet ? '-wet-sand' : ''}`;
     material.needsUpdate = true;
   }
 

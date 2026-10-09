@@ -38,7 +38,7 @@ import { WATER_BARREL_DISCARD, WATER_BARREL_FALLBACK_DISCARD, waterBarrelMaskPar
 import { BARREL_FALLBACK_ORDER, configureBarrelCoverage, configureBarrelFallback } from './barrel/barrelFallback';
 import { CoarseFallbackRows } from './barrel/fallbackRows';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
-import { ShorelineFill } from './water/shoreline';
+import { ShorelineFill, WetSandMemory } from './water/shoreline';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
@@ -288,6 +288,9 @@ export class WaterSurface {
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
   /** The waterline's fill of the dry nodes beside the water (shoreline.ts). */
   private readonly shoreline = new ShorelineFill();
+  /** The sand the water wetted lately, per node, for the seabed to darken above the water (shoreline.ts). */
+  private readonly wetSand = new WetSandMemory();
+  private wetSandTexture: DataTexture;
 
   constructor(private source: SurfaceSource) {
     const grid = source.grid;
@@ -299,6 +302,8 @@ export class WaterSurface {
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
     this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
+    this.wetSand.reset(grid.nx * grid.nz);
+    this.wetSandTexture = WaterSurface.createWetSandTexture(this.wetSand.bytes, grid);
     this.maskGrid = WaterSurface.createMaskGrid(grid);
     this.barrelMaskData = new Uint8Array(this.maskGrid.nx * this.maskGrid.nz);
     this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, this.maskGrid);
@@ -327,6 +332,7 @@ export class WaterSurface {
       waterTubeColumnWidth: { value: 1 },
       waterTubeCount: { value: 0 },
       waterAeration: { value: this.aerationTexture },
+      waterWetSand: { value: this.wetSandTexture },
       waterReflection: { value: RICH_WATER.reflection },
       waterBarrelMask: { value: this.barrelMaskTexture },
       waterBarrelMaskActive: { value: 0 },
@@ -445,6 +451,7 @@ export class WaterSurface {
       // The waterline: the dry nodes beside the water carry its depth on, so its edge meets the sand along the shore's
       // own line, not the nodes' staircase (drawing only; see shoreline.ts).
       this.shoreline.fill(this.surfaceData, this.bedData, grid.nx, grid.nz);
+      if (this.wetSand.update(this.surfaceData, this.bedData, source.time)) this.wetSandTexture.needsUpdate = true;
       this.updateTubes();
       this.updateRoller();
       if (this.effectiveLook === 'rich' && source.writeAeration) {
@@ -739,6 +746,8 @@ export class WaterSurface {
     const wasLook = this.effectiveLook;
     this.source = source;
     this.written = undefined;
+    // A new sea: its sand has not been wetted yet.
+    this.wetSand.reset();
     if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
     this.refreshLook();
     this.refreshTubeColumns();
@@ -762,6 +771,10 @@ export class WaterSurface {
     this.aerationTexture.dispose();
     this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
     this.uniforms.waterAeration.value = this.aerationTexture;
+    this.wetSand.reset(grid.nx * grid.nz);
+    this.wetSandTexture.dispose();
+    this.wetSandTexture = WaterSurface.createWetSandTexture(this.wetSand.bytes, grid);
+    this.uniforms.waterWetSand.value = this.wetSandTexture;
     this.flowSource = undefined;
     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
     this.mesh.geometry.dispose();
@@ -776,6 +789,7 @@ export class WaterSurface {
     this.bedTexture.dispose();
     this.flowTexture.dispose();
     this.aerationTexture.dispose();
+    this.wetSandTexture.dispose();
     this.tubeTexture.dispose();
     this.tubeColumnTexture.dispose();
     this.barrelMaskTexture.dispose();
@@ -842,6 +856,16 @@ export class WaterSurface {
     texture.magFilter = LinearFilter;
     texture.minFilter = LinearFilter;
     texture.generateMipmaps = false;
+    return texture;
+  }
+
+  /** The wet sand, 0–255 per node, filtered linearly so the band fades between nodes (the seabed reads it). */
+  private static createWetSandTexture(data: Uint8Array, grid: SurfaceGrid): DataTexture {
+    const texture = new DataTexture(data, grid.nx, grid.nz, RedFormat, UnsignedByteType);
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearFilter;
+    texture.generateMipmaps = false;
+    texture.needsUpdate = true;
     return texture;
   }
 
