@@ -1,4 +1,4 @@
-import { ROLLER_DEFAULTS } from '../../wave/SpillingRoller';
+import { ROLLER_DEFAULTS, ROLLER_SLOTS } from '../../wave/SpillingRoller';
 import { ROLLER_LOOK } from './rollerLook';
 
 /** A number as a GLSL float literal. */
@@ -76,7 +76,7 @@ void waterRollerAt( vec2 xz, float time ) {
   float i0 = min( waterRollerColumns - 2.0, floor( gx ) );
   float tx = gx - i0;
   int c0 = 2 * int( i0 );
-  for ( int slot = 0; slot < 2; slot++ ) {
+  for ( int slot = 0; slot < ${ROLLER_SLOTS}; slot++ ) {
     vec4 a0 = texelFetch( waterRoller, ivec2( c0, slot ), 0 );
     vec4 a1 = texelFetch( waterRoller, ivec2( c0 + 2, slot ), 0 );
     bool live0 = a0.z > 0.0;

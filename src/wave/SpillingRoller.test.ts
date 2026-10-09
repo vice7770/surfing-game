@@ -517,26 +517,32 @@ describe('SpillingRoller: the review focus', () => {
     expect(run.roller.lens(10, 0)!.c).toBeLessThan(0.5);
   });
 
-  it('gives two waves in one column two slots; a third counts an overflow, and the oldest yields', () => {
-    // Three bores in one band of columns: an old one inshore, the next 30 m out, the newest 60 m out.
-    const g = sea(9, -80, 40);
+  /**
+   * Bores side by side in one band of columns, 30 m apart: the oldest inshore, each next one further out, each a wave
+   * the front starts across every column when it is observed. `breaking[k]` is bore k's solver breaking on its face.
+   */
+  function bores(count: number) {
+    const g = sea(9, -170, 60);
     const front = new SpillingFront(g, { peelAngleDegrees: 90, crestMargin: 6, bandWidth: 20 });
     const roller = new SpillingRoller(g, { edgeColumns: 0, mask: 'solver' });
     const strength = new Float64Array(g.nx * g.nz);
     const whitewater = new Float64Array(g.nx * g.nz);
-    const fronts = [20, -10, -40];
+    const fronts = Array.from({ length: count }, (_, k) => 40 - 30 * k);
+    const breaking = fronts.map(() => 1);
     const depth = 2;
     const shape = boreShape();
-    const write = (count: number) => {
+    let observed = 0;
+    let time = 0;
+    const write = () => {
       for (let iz = 0; iz < g.nz; iz += 1) {
         const z = g.zCenters[iz];
         // Each bore's η, laid side by side: its own within 12 m of its front.
         let eta = 0;
         let b = 0;
-        for (let k = 0; k < count; k += 1) {
+        for (let k = 0; k < observed; k += 1) {
           if (Math.abs(z - fronts[k]) > 12) continue;
           eta = boreEta(z, fronts[k]) - boreEta(fronts[k] + 12, fronts[k]);
-          if (z - fronts[k] >= shape.crest - 0.5 && z - fronts[k] <= shape.toe + 0.5) b = 1;
+          if (z - fronts[k] >= shape.crest - 0.5 && z - fronts[k] <= shape.toe + 0.5) b = breaking[k];
         }
         for (let ix = 0; ix < g.nx; ix += 1) {
           g.bed[iz * g.nx + ix] = -depth;
@@ -545,27 +551,118 @@ describe('SpillingRoller: the review focus', () => {
         }
       }
     };
-    let time = 0;
-    const step = (count: number) => {
-      time += 1 / 60;
-      write(count);
-      front.update(time, 1 / 60, 0.01, strength, whitewater);
-      roller.update(time, 1 / 60, front, strength, 1);
+    return {
+      g, front, roller, breaking,
+      /** The next bore breaks: its wave starts across every column, where it now is. */
+      observe() {
+        for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, time, fronts[observed] + shape.crest);
+        observed += 1;
+      },
+      /** `count` steps of the water, the front and the roller, and of any `others` beside it. */
+      steps(count: number, ...others: SpillingRoller[]) {
+        for (let n = 0; n < count; n += 1) {
+          time += 1 / 60;
+          write();
+          front.update(time, 1 / 60, 0.01, strength, whitewater);
+          for (const each of [roller, ...others]) each.update(time, 1 / 60, front, strength, 1);
+        }
+      },
+      /** The waves of column `column`'s lenses, slot by slot (−1: none). */
+      waves(column: number) {
+        return Array.from({ length: ROLLER_SLOTS }, (_, slot) => roller.lens(column, slot)?.wave ?? -1);
+      },
     };
-    // Waves 0 and 1 broke a period apart, each where its bore now is.
-    for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, 0, fronts[0] + shape.crest);
-    for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, 0.1, fronts[1] + shape.crest);
-    expect(front.waves.map((wave) => wave.id)).toEqual([0, 1]);
-    for (let n = 0; n < 10; n += 1) step(2);
-    expect(roller.lens(4, 0)!.wave).toBe(0);
-    expect(roller.lens(4, 1)!.wave).toBe(1);
-    expect(roller.counts.overflow).toBe(0);
-    // Wave 2 breaks outside them: it takes its own slot (2 mod 2 = 0) from wave 0, the oldest.
-    for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, time, fronts[2] + shape.crest);
-    for (let n = 0; n < 10; n += 1) step(3);
-    expect(roller.lens(4, 0)!.wave).toBe(2);
-    expect(roller.lens(4, 1)!.wave).toBe(1);
-    expect(roller.counts.overflow).toBe(g.nx);
+  }
+
+  it('gives each wave breaking in a column a free slot, so a wave breaking further out never takes a live lens inshore', () => {
+    // The owner's playtest (2026-10-09): with two slots, wave 2 (2 mod 2 = 0) took wave 0's live lens inshore from
+    // under the rider it carried, who then slid down the bare face to about 1.4 c.
+    const run = bores(4);
+    run.observe();
+    run.observe();
+    expect(run.front.waves.map((wave) => wave.id)).toEqual([0, 1]);
+    run.steps(10);
+    expect(run.waves(4)).toEqual([0, 1, -1, -1]);
+    run.observe();
+    run.steps(10);
+    run.observe();
+    run.steps(10);
+    for (let column = 0; column < run.g.nx; column += 1) expect(run.waves(column)).toEqual([0, 1, 2, 3]);
+    expect(run.roller.counts.overflow).toBe(0);
+  });
+
+  it('makes a lens yield only in a full column, to a newer wave than all its lenses: a shedding one first, then the oldest', () => {
+    const run = bores(6);
+    for (let k = 0; k < 4; k += 1) {
+      run.observe();
+      run.steps(10);
+    }
+    // Bore 2 stops breaking: its lens sheds.
+    run.breaking[2] = 0;
+    run.steps(20);
+    expect(run.roller.lens(4, 2)!.state).toBe('shedding');
+    // Wave 4 breaks in the full column: the shedding lens yields, not the oldest.
+    run.observe();
+    run.steps(10);
+    expect(run.waves(4)).toEqual([0, 1, 4, 3]);
+    expect(run.roller.counts.overflow).toBe(run.g.nx);
+    // Wave 5 breaks: all are active, so the oldest yields; wave 2 never takes a place back while the column is full.
+    run.breaking[2] = 1;
+    run.observe();
+    run.steps(10);
+    expect(run.waves(4)).toEqual([5, 1, 4, 3]);
+    expect(run.roller.counts.overflow).toBe(2 * run.g.nx);
+  });
+
+  it('draws each wave\'s run along its crest in one table slot, whatever slots its lenses are kept in', () => {
+    const run = bores(2);
+    run.observe();
+    run.observe();
+    run.steps(10);
+    // The same lenses, kept in other slots from column 4 on: wave 0's in slot 3, wave 1's in slot 0.
+    const state = run.roller.exportState();
+    const kept = new SpillingRoller(run.g, run.roller.options);
+    kept.importState(state);
+    const shuffled = new SpillingRoller(run.g, run.roller.options);
+    shuffled.importState({ ...state, lenses: state.lenses.map((lens) => (lens.column < 4 ? lens : { ...lens, slot: lens.wave === 0 ? 3 : 0 })) });
+    run.steps(10, kept, shuffled);
+    expect(shuffled.lens(6, 3)!.wave).toBe(0);
+    expect(shuffled.lens(6, 0)!.wave).toBe(1);
+    // Each wave's run lies in one slot, wave 0's in slot 0 and wave 1's in slot 1, as if never moved: the table, what is
+    // drawn and felt, is the same bit for bit.
+    for (let column = 0; column < run.g.nx; column += 1) {
+      expect([0, 1, 2, 3].map((slot) => shuffled.tableWave(column, slot))).toEqual([0, 1, -1, -1]);
+    }
+    expect(Array.from(kept.table)).toEqual(Array.from(run.roller.table));
+    expect(Array.from(shuffled.table)).toEqual(Array.from(kept.table));
+  });
+
+  it('seats no run too short to draw, so it never cuts a column off a neighbour\'s run at a seam', () => {
+    // Developed lenses, still: waves 0–2 across all nine columns, wave 3 over columns 0–5 and wave 4 over 6–7 (2 m,
+    // under the 4 m a run needs to be drawn), all kept in a full column's slots.
+    const g = sea(9, -20, 20);
+    for (let i = 0; i < g.h.length; i += 1) {
+      g.bed[i] = -2;
+      g.h[i] = 2;
+    }
+    const lens = (wave: number, column: number, slot: number) => ({
+      column, slot, state: 'active' as const, wave, birth: 0, travel: 100, hold: 0, g: 1, c: 0, length: 4, crest: 0, height: 1,
+      troughDepth: 2, froude2: 4,
+    });
+    const lenses = [];
+    for (let column = 0; column < 9; column += 1) {
+      for (const wave of [0, 1, 2]) lenses.push(lens(wave, column, wave));
+      if (column <= 5) lenses.push(lens(3, column, 3));
+      if (column === 6 || column === 7) lenses.push(lens(4, column, 3));
+    }
+    const roller = new SpillingRoller(g, { edgeColumns: 0, mask: 'solver' });
+    roller.importState({ columns: 9, lenses });
+    roller.update(1 / 60, 1 / 60, new SpillingFront(g), new Float64Array(g.nx * g.nz), 1);
+    const drawn = (column: number) => [0, 1, 2, 3].map((slot) => roller.tableWave(column, slot)).sort((a, b) => a - b);
+    // Seated beside wave 3's run, wave 4's would have met it at a seam, where the older wave's column is emptied.
+    for (let column = 0; column <= 5; column += 1) expect(drawn(column)).toEqual([0, 1, 2, 3]);
+    for (let column = 6; column < 9; column += 1) expect(drawn(column)).toEqual([-1, 0, 1, 2]);
+    expect(roller.counts.crowded).toBe(0);
   });
 
   it('has no lens in the open edges\' columns', () => {
@@ -653,11 +750,11 @@ describe('SpillingRoller: one crest per wave (the far-crest join)', () => {
 });
 
 describe('SpillingRoller: its slots and table', () => {
-  it('keeps 8 values for each of 2 slots in every column', () => {
-    expect(ROLLER_SLOTS).toBe(2);
+  it('keeps 8 values for each of 4 slots in every column', () => {
+    expect(ROLLER_SLOTS).toBe(4);
     expect(ROLLER_STRIDE).toBe(8);
     const g = sea(7, -10, 10);
-    expect(new SpillingRoller(g).table).toHaveLength(2 * 7 * 8);
+    expect(new SpillingRoller(g).table).toHaveLength(4 * 7 * 8);
   });
 });
 

@@ -69,6 +69,12 @@
 **Where a lens lives.**
 - Each column holds up to two lenses.
 - The slot is the front wave's `id` mod 2 (P). One wave then keeps the same slot all along its crest, and two waves in a row never collide.
+- **Amended 2026-10-09** (the owner's playtest: a carried board outran the bore). The game's Canyon holds up to three broken crests' lenses in a column, and its front numbers a wave per onset, so a newer wave took the slot of a live lens under a rider. Now:
+  - each column holds up to four lenses, in any free slot;
+  - only a full column makes a lens yield;
+  - the table seats each wave's run along its crest in one slot each step.
+
+  See the Canyon README's "The carry in the game".
 - **Seeding.** A lens is seeded from that wave's crest in that column: `SpillingFront.crestAt(k, column)`, the first breaking cell the wave owns there, whether or not its front has reached the column.
 - **Tracking.** After seeding, the lens follows its own crest: the nearest η maximum within ±2 m (P) of z_c + c·dt. It therefore outlives the front's 20 m band.
 
