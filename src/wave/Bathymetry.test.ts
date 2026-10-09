@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, canyonArmAt, canyonArmEndX, canyonBreakLineZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, canyonArmAt, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonHingeZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -312,8 +312,7 @@ describe('surf spot bathymetry', () => {
     const edge = ALONG_SHORE / 2;
     // Seaward of the arm's furthest foot, at the bottom of its end just upcoast of the peak, the bed is the plain shelf
     // everywhere along shore.
-    const rise = CANYON.shelfDepth - CANYON.crestDepth;
-    const foot = canyonBreakLineZ(CANYON.peakX - rise / CANYON.endSlope) - rise / CANYON.pathSlope;
+    const foot = canyonFootZ();
     for (let x = -edge; x <= edge; x += 5) {
       for (let z = foot - 1; z >= CANYON.zoneInner + CANYON.blendLength; z -= 10) expect(canyon.depthAt(x, z)).toBe(CANYON.shelfDepth);
     }
@@ -332,12 +331,24 @@ describe('surf spot bathymetry', () => {
     expect(canyonArmEndX()).toBeGreaterThan(ALONG_SHORE / 2 - 20);
     // Behind the line the terrace's top is crestDepth deep; seaward of its face the shelf.
     for (const x of [-30, 0, 30]) {
-      expect(canyon.depthAt(x, canyonBreakLineZ(x) + 2)).toBeCloseTo(CANYON.crestDepth, 6);
-      expect(canyon.depthAt(x, canyonBreakLineZ(x) - 100)).toBeCloseTo(CANYON.shelfDepth, 6);
-      // Its face climbs at pathSlope along the waves' path (+z): a spilling slope (ξ < 0.4 for the breaker the shelf
-      // holds, γ h at its depth, at 11 s; the readout's own check is the take-off's, in SurfZoneSimulation.test.ts).
       const zLine = canyonBreakLineZ(x);
-      expect((canyon.depthAt(x, zLine - 20) - canyon.depthAt(x, zLine - 10)) / 10).toBeCloseTo(CANYON.pathSlope, 9);
+      const zHinge = canyonHingeZ(x);
+      expect(canyon.depthAt(x, zLine + 2)).toBeCloseTo(CANYON.crestDepth, 6);
+      // Behind the line the top is level for flatWidth, then falls at pathSlope to the trough, which the beach face closes.
+      expect(canyon.depthAt(x, zLine + CANYON.flatWidth - 1)).toBeCloseTo(CANYON.crestDepth, 6);
+      const trough = zLine + CANYON.flatWidth + (CANYON.lagoonDepth - CANYON.crestDepth) / CANYON.pathSlope + 1;
+      expect(-trough * CANYON.shoreSlope).toBeGreaterThan(CANYON.lagoonDepth);
+      expect(canyon.depthAt(x, trough)).toBeCloseTo(CANYON.lagoonDepth, 6);
+      expect(canyon.depthAt(x, zHinge - (CANYON.shelfDepth - CANYON.hingeDepth) / CANYON.pathSlope - 2)).toBeCloseTo(CANYON.shelfDepth, 6);
+      // Below the hinge its face climbs at pathSlope along the waves' path (+z): a spilling slope (ξ < 0.4 for the breaker
+      // the shelf holds, γ h at its depth, at 11 s; the readout's own check is the take-off's, in SurfZoneSimulation.test.ts).
+      const below = zHinge - CANYON.hingeRounding - 5;
+      expect((canyon.depthAt(x, below - 10) - canyon.depthAt(x, below)) / 10).toBeCloseTo(CANYON.pathSlope, 9);
+      // Above it the fan's shallow face runs linearly from the crest line to the hinge line: never steeper than pathSlope,
+      // gentler downcoast as the two lines part.
+      const shallow = (CANYON.hingeDepth - CANYON.crestDepth) / (zLine - zHinge);
+      expect(shallow).toBeLessThanOrEqual(CANYON.pathSlope + 1e-12);
+      expect((canyon.depthAt(x, zLine - 10) - canyon.depthAt(x, zLine - 2)) / 8).toBeCloseTo(shallow, 9);
     }
     const deepWavelength = (9.81 * 11 ** 2) / (2 * Math.PI);
     expect(CANYON.pathSlope / Math.sqrt((0.78 * CANYON.shelfDepth) / deepWavelength)).toBeLessThan(0.4);
@@ -345,7 +356,7 @@ describe('surf spot bathymetry', () => {
 
   it('puts every depth\'s contour furthest out at the Canyon\'s peak, so each wave starts breaking there', () => {
     const canyon = createSpot('canyon', 1);
-    for (const depth of [1.5, 2, 2.5, 3, 3.5]) {
+    for (let depth = 1.5; depth < CANYON.shelfDepth - 0.05; depth += 0.5) {
       // Each along-shore column's most seaward point this shallow, and the column where it lies furthest out.
       let best = { x: Number.NaN, z: Infinity };
       for (let x = -70; x <= 70; x += 0.5) {

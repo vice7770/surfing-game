@@ -223,7 +223,11 @@ export interface RenderGrid {
 /** Wave-tank layout across shore, m (z increases toward the beach). */
 export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom: -150, shore: 30 };
 
-/** Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is the deep water beyond its forereef, read live for the sweep. */
+/**
+ * Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is the deep water beyond its forereef, read
+ * live for the sweep. The Canyon's 5 m is where its swells are given (`CANYON_SWELL_DEPTH`); its tank's own edge is
+ * `CANYON.edgeDepth`, deeper, so its zone forces the solver's own (Madsen–Sørensen) wave numbers.
+ */
 export const OFFSHORE_DEPTH: Record<SpotName, number> = {
   beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; }, get pool() { return POOL.feedDepth; },
 };
@@ -261,11 +265,12 @@ const FLAT_RISE = 0.1;
  */
 export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
-  // The Canyon (its straight-crest bed): today's zone and 5 m edge, moved out to CANYON.zoneInner, with 1 m cells from the
-  // zone in, so the waves shoaling onto its shelf are resolved (on 4 m cells they lost a third of their height unbroken).
+  // The Canyon (its straight-crest bed): its own zone and edge (CANYON.edgeDepth, deep enough for Big since the canyon-big
+  // redesign), with 1 m cells from the zone in, so the waves shoaling onto its platform are resolved (on 4 m cells they
+  // lost a third of their height unbroken).
   if (config.spot === 'canyon') {
     const zoneInner = CANYON.zoneInner;
-    return { offshore: zoneInner - (TANK.zoneInner - TANK.offshore), zoneInner, blendEnd: zoneInner + CANYON.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: today.edgeDepth };
+    return { offshore: zoneInner - CANYON.zoneLength, zoneInner, blendEnd: zoneInner + CANYON.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: CANYON.edgeDepth };
   }
   // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
   if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore), edgeDepth: today.edgeDepth };
@@ -403,13 +408,25 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
 }
 
 /**
- * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Canyon (its seas are the
- * riding reference and Surf School's). The Reef's 30 m edge takes the buoy's deep-water swell shoaled to it.
+ * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Wave Pool's machine, and the Canyon
+ * (its seas are the riding reference and Surf School's), whose heights are given at its old 5 m edge
+ * (`CANYON_SWELL_DEPTH`). The Reef's 30 m edge takes the buoy's deep-water swell shoaled to it.
  */
 const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon', 'pool'];
 
+/**
+ * The depth the Canyon's swell heights are given at, m: its tank's edge before Big needed a deeper one (the canyon-big
+ * redesign, docs/research/canyon-spilling-2026-10-05 §1). A deeper edge takes the same sea de-shoaled to it by linear
+ * theory, so each size's waves reach this depth as they did.
+ */
+export const CANYON_SWELL_DEPTH = 5;
+
 /** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
 export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
+  if (config.spot === 'canyon') {
+    return config.significantHeight * shoalingCoefficient(config.peakPeriod, edgeDepth + config.tide)
+      / shoalingCoefficient(config.peakPeriod, CANYON_SWELL_DEPTH + config.tide);
+  }
   if (EDGE_SWELL_SPOTS.includes(config.spot) || config.heightAt === 'edge') return config.significantHeight;
   return config.significantHeight * shoalingCoefficient(config.peakPeriod, edgeDepth + config.tide);
 }
@@ -471,11 +488,17 @@ export function peakTakeOffX(spot: SpotName): number {
 }
 
 /**
- * The Canyon's take-off: where its arm has risen this far above the shelf, m (`takeOffPoint`). On the straight-crest
- * bed the waves started breaking at a median 1.9 m deep beside the take-off (the onsets 4–12 m down the arm from its
- * peak, Medium, seed 1, 600 s), 1.7 m up from the 3.6 m shelf. Re-measure if the shelf or the swell changes.
+ * Where the Canyon's waves start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
+ * line through each size's median first onset on its arm, 1.49, 1.96 and 2.50 m for Small, Medium and Big (canyon-big,
+ * 3 seeds × 14 periods each; within 0.1 m of the line). Riders wait where the arm's face is this deep (`takeOffPoint`),
+ * so at Big they wait where Big breaks, not tens of metres inside it. Re-measure if the arm or the swells change.
  */
-export const CANYON_TAKE_OFF_RISE = 1.7;
+export const CANYON_TAKE_OFF_DEPTH = { base: 0.96, perMetre: 0.65 } as const;
+
+/** How deep the Canyon's waves of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`). */
+export function canyonTakeOffDepth(significantHeight: number): number {
+  return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
+}
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
@@ -498,7 +521,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
   // inside the measured breaks.
   const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
-    : config.spot === 'canyon' ? CANYON.shelfDepth - CANYON_TAKE_OFF_RISE + config.tide
+    : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
