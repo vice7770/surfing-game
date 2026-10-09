@@ -637,6 +637,34 @@ describe('SpillingRoller: the review focus', () => {
     expect(Array.from(shuffled.table)).toEqual(Array.from(kept.table));
   });
 
+  it('seats no run too short to draw, so it never cuts a column off a neighbour\'s run at a seam', () => {
+    // Developed lenses, still: waves 0–2 across all nine columns, wave 3 over columns 0–5 and wave 4 over 6–7 (2 m,
+    // under the 4 m a run needs to be drawn), all kept in a full column's slots.
+    const g = sea(9, -20, 20);
+    for (let i = 0; i < g.h.length; i += 1) {
+      g.bed[i] = -2;
+      g.h[i] = 2;
+    }
+    const lens = (wave: number, column: number, slot: number) => ({
+      column, slot, state: 'active' as const, wave, birth: 0, travel: 100, hold: 0, g: 1, c: 0, length: 4, crest: 0, height: 1,
+      troughDepth: 2, froude2: 4,
+    });
+    const lenses = [];
+    for (let column = 0; column < 9; column += 1) {
+      for (const wave of [0, 1, 2]) lenses.push(lens(wave, column, wave));
+      if (column <= 5) lenses.push(lens(3, column, 3));
+      if (column === 6 || column === 7) lenses.push(lens(4, column, 3));
+    }
+    const roller = new SpillingRoller(g, { edgeColumns: 0, mask: 'solver' });
+    roller.importState({ columns: 9, lenses });
+    roller.update(1 / 60, 1 / 60, new SpillingFront(g), new Float64Array(g.nx * g.nz), 1);
+    const drawn = (column: number) => [0, 1, 2, 3].map((slot) => roller.tableWave(column, slot)).sort((a, b) => a - b);
+    // Seated beside wave 3's run, wave 4's would have met it at a seam, where the older wave's column is emptied.
+    for (let column = 0; column <= 5; column += 1) expect(drawn(column)).toEqual([0, 1, 2, 3]);
+    for (let column = 6; column < 9; column += 1) expect(drawn(column)).toEqual([-1, 0, 1, 2]);
+    expect(roller.counts.crowded).toBe(0);
+  });
+
   it('has no lens in the open edges\' columns', () => {
     const run = new Run({ nx: 21, roller: { edgeColumns: 2, mask: 'solver' } });
     run.steps(0.5);

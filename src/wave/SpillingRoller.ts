@@ -224,6 +224,8 @@ const DRY = 0.01;
 const HOLD_SLACK = 1e-9;
 /** The crest's normal fits the crests of up to this many columns each side. */
 const NORMAL_REACH = 2;
+/** The table's slot for a run too short to be drawn (`writeTable`); −1 is a run no slot was left for. */
+const SHORT = -2;
 /**
  * The toe's roughness d′max over h₁ (the look's, §4): 0.155 at Fr₁ 1.5 and 0.35 at 1.9, linear between, held within
  * 0.13–0.4 (Wang, Leng & Chanson 2017's mid-ranges; the owner ruled mid-range).
@@ -1124,8 +1126,13 @@ export class SpillingRoller implements RollerLens {
       }
     }
     // Each run in a slot, in the order they start (interval colouring: four slots seat any four runs a column overlaps).
+    // A run shorter than `gap` takes none: alongCrest drops it, and seated it could only cut a column off a neighbour.
     slotEnd.fill(-2);
     for (let run = 0; run < runs; run += 1) {
+      if ((runEnd[run] - runStart[run] + 1) * dx < options.gap) {
+        runSlot[run] = SHORT;
+        continue;
+      }
       let seat = -1;
       for (let slot = 0; slot < ROLLER_SLOTS && seat < 0; slot += 1) if (slotEnd[slot] < runStart[run] - 1) seat = slot;
       for (let slot = 0; slot < ROLLER_SLOTS && seat < 0; slot += 1) if (slotEnd[slot] < runStart[run]) seat = slot;
@@ -1140,7 +1147,7 @@ export class SpillingRoller implements RollerLens {
         if (!(drawnScale[lens] >= 0)) continue;
         const seat = runSlot[lensRun[lens]];
         if (seat < 0) {
-          this.counts.crowded += 1;
+          if (seat !== SHORT) this.counts.crowded += 1;
           continue;
         }
         const at = seat * nx + column;
