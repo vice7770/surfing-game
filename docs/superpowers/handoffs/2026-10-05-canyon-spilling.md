@@ -105,6 +105,16 @@ When a box is unticked, check the work branch for partial commits: `git log orig
   - the roller's step, about 0.3 ms against the plan's 0.07 ms;
   - the toe's look, provisional, for the owner on film.
 
+**2026-10-09, the carry in the game** (`claude/roller-speed`; the details are in the Canyon note's "The carry in the game"):
+
+- **The owner's playtest:** a prone board in the whitewater climbed to about 9 m/s on a 5 m/s bore. "Goes too fast, breaking the wave, making the wave not surfable."
+- **The cause:** a lens under a carried board was taken from its column. There were two slots per column, by wave id mod 2, and the oldest lens yielded. The Canyon holds up to three broken crests' lenses in a column, and its front numbers a wave per onset, so a newer wave breaking further out evicted it. Released high on the bare face, the board slid down it to 1.37 c (the probe, `scripts/roller-carry-probe.ts`).
+- **Done:** four slots, any free one taken; only a full column makes a lens yield. The table seats each wave's run in one slot. The same board is now carried at 1.10 c or less, and over 38 s no live lens is taken (before: 159 and 43 overflows on seeds 1 and 2).
+- **What's left:**
+  - the owner's 9 m/s (about 1.8 c) is not reproduced exactly;
+  - the GPU cost of four slots is not measured;
+  - the owner's playtest of the fix.
+
 ## How to pick it up locally
 
 ```sh

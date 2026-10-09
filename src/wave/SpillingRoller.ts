@@ -24,12 +24,13 @@ import { OPEN_EDGE_REACH } from './ShallowWaterSolver';
 import type { SpillingFront } from './SpillingFront';
 
 /**
- * Lenses per column, and the table's slots. The plan's §2 gave two, one per wave in a row, but the Canyon at Medium
- * holds three or four broken crests in a column at once (measured 2026-10-09 with room for eight: 1–3 live lenses per
- * column, 4 at times, 5 in under 0.1 % of columns), and its front numbers a wave per onset, several per crest. With two,
- * a wave breaking further out took the slot of a live lens inshore, under a rider it was carrying (the owner's
- * playtest of 2026-10-09): released at the bore's speed high on its face, the board slid down it to about 1.4 c.
- * Four is the measured need (provisional).
+ * Lenses per column, and the table's slots. The plan's §2 gave two, one per wave in a row (the slot its id mod 2), but
+ * the Canyon at Medium holds up to three broken crests' lenses in a column (measured 2026-10-09 with room for eight,
+ * seed 1: three in 10 % of columns and four in 0.08 % on the 24-component sea; with four on the 64-component sea, seeds
+ * 1–2: three in 0.8–3.6 %, four in under 0.3 %), and its front numbers a wave per onset, several per crest, so even two
+ * crests often share a parity. With two, a wave breaking further out took the slot of a live lens inshore, under a
+ * rider it was carrying (the owner's playtest of 2026-10-09): released at the bore's speed high on its face, the board
+ * slid down it to 1.37 c. Four leaves room over the measured need (provisional).
  */
 export const ROLLER_SLOTS = 4;
 /** Values per slot and column in the table: two RGBA texels. */

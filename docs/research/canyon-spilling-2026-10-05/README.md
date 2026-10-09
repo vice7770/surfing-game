@@ -418,7 +418,7 @@ Build the roller (`docs/research/water-physics/roller.md`, `roller-build.md`) **
 
 ### What was built
 
-1. **The model** (`src/wave/SpillingRoller.ts`). Each column holds up to two lenses, one per wave in a row (the slot is the wave's id mod 2). A lens is seeded where its wave first breaks in the column, then follows its own crest. Each step a section along the column gives its crest, trough, toe, H and the bore's Froude number. It is born where B ≥ 0.3 and Fr₁ ≥ 1.45, grows over 6.5 breaker depths of travel, and sheds once Fr₁ < 1.3, B < 0.1 or a lost crest has held 0.2 s. Its table (crest, length across shore, scale g, thickness, the water's velocity c·n̂, the trough depth h₁ and the toe's roughness d′max) is what is drawn and felt. Its decision paths use only + − × ÷, √, floor, min and max, so every client keeps the same lenses.
+1. **The model** (`src/wave/SpillingRoller.ts`). Each column holds up to four lenses, one per wave broken there (two until 2026-10-09; see "The carry in the game" below). A lens is seeded in a free slot where its wave first breaks in the column, then follows its own crest. Each step a section along the column gives its crest, trough, toe, H and the bore's Froude number. It is born where B ≥ 0.3 and Fr₁ ≥ 1.45, grows over 6.5 breaker depths of travel, and sheds once Fr₁ < 1.3, B < 0.1 or a lost crest has held 0.2 s. Its table (crest, length across shore, scale g, thickness, the water's velocity c·n̂, the trough depth h₁ and the toe's roughness d′max) is what is drawn and felt. Its decision paths use only + − × ÷, √, floor, min and max, so every client keeps the same lenses.
 2. **In the simulation** (`SurfZoneSimulation.ts`). The roller runs after the spilling front, which masks it: a lens is drawn and felt only behind its wave's visible front. Its top rises the node heights, so both looks, the host's `heightAt` and remote boards sit on it. It never writes the water: a sea with the roller steps bit for bit as one without.
 3. **The rider's water** (`PhysicalSurfWater.ts`, `BoardBody.ts`, `AttachedRider.ts`). Inside a lens the water sample returns its top, its air and its flow, and the rider's along-body shelter is lifted. The owner's option B (2026-10-07): a one-sided linear froth drag (500 N·s/m, provisional) and lens-scoped water entry. Outside a lens nothing changes: `rollerScope.test.ts` pins five riders' trajectories bit for bit.
 4. **The drawing** (`src/scene/water/rollerGlsl.ts`, `rollerLook.ts`, `WaterSurface.ts`).
@@ -446,7 +446,9 @@ On the 8 GB M1 under load, the Canyon at Medium (0°, s = 150), 1280 × 720, hea
 | GPU, overhead | within noise | 0.9 ms |
 | Worker, the roller's step | 0.32 ms mean, 4.2 ms at most | same |
 | Worker, the front's step (with the breaking) | 0.66 ms mean | same |
-| Snapshot | 10 KB a frame (160 columns × 2 slots × 8 float32) | same |
+| Snapshot | 10 KB a frame (160 columns × 2 slots × 8 float32); 20 KB with four slots (2026-10-09) | same |
+
+These were measured with two slots. Four slots (2026-10-09) double the snapshot and the band's slot loop in the shader, where an empty slot costs two texel fetches; the GPU cost was not re-measured.
 
 ### Pictures
 
@@ -472,6 +474,60 @@ Against the emptied frame, the band now only brightens: in Classic no pixel dark
 - **A tan crescent at the tank's +x edge** (top right of the close-ups) is the seabed seen through the seam between the tank's water and the far ocean, where the Canyon's breaking crest stands above the far ocean's linear swell. The water there is 2.4–3.7 m deep: not the bar drying. Not fixed: closing the seam (a curtain along the tank's open edges, from its edge heights down to just under the far ocean, `FarFieldProfile.elevation`) changes every spot.
 - **The feel checks above stay open**, as the owner kept them.
 - **The roller's step** costs about 0.3 ms, four times the plan's estimate (0.07 ms).
+
+### The carry in the game (2026-10-09)
+
+**The owner's playtest (2026-10-09):** "The roller spilling wave has some shape now and pushes the board a lot. Looks realistic from the physics part, but goes too fast, breaking the wave, making the wave not surfable." In the videos a prone board in the whitewater climbed from 2 to about 9 m/s on a bore running at about 5. The fixture (`RollerWater`) held the carry to 1.10 c.
+
+**The probe** (`scripts/roller-carry-probe.ts`, opt-in: about 40 s a run on an idle M1, too slow for a test):
+- the Canyon at Medium (0°, s = 150, mid tide, calm), built as the game builds it;
+- stepped at 1/60 s, water first;
+- a prone board placed 1 m ahead of a developed lens's toe, with no bots riding.
+
+It prints the board's speed against the lens's c, where it lies in the lens, its draft and wetted area, and the forces on hull and rider. At the end it names how the lens let go.
+
+**Reproduced** on seed 1 with the 24-component sea at 22 s. The lens: wave 5's in column 49, H 1.22 m over h₁ 1.00 m, Fr₁ 2.08, c 5.6 m/s, t_c 0.13 m, L_r 6.6 m.
+- **For 2.8 s the lens carried the board** at up to 1.06 c (5.85 m/s), riding at ξ 0.5–0.8, as in the fixture.
+- **Then its lens was taken from under it.** Wave 15 is the next crest, 46 m further out, and has the same slot (15 mod 2 = 1). It broke in the board's column and took the slot from the live lens: "the oldest yields". The neighbouring columns went a step earlier, so `alongCrest`'s shoulder had already brought g at the board down to 0.2.
+- **Released high on the bare broken face** (slope −0.3), with no froth drag and no lens-scoped entry, the board slid down it. Gravity along the face pushed about 200 N. On each landing, the water entry outside a lens slammed it forward, up to 230 N along +z, with its wetted area at 0 between landings. It reached 7.67 m/s = 1.37 c, ran out ahead of the bore onto flat water, and slowed.
+- **With a 2 m/s start:** 7.30 m/s, 1.30 c. **Paddling:** 6.67 m/s, 1.19 c, released the same way.
+
+**Why the fixture differs.** It has one bore, with one lens that never goes away. The game's Canyon holds up to three broken crests' lenses in a column:
+- on the 24-component sea (seed 1, counted with room for eight lenses), three in 10 % of columns, four in 0.08 %, five never;
+- on the 64-component sea (seeds 1 and 2), with four slots, three in 0.8–3.6 %, four in under 0.3 %.
+
+Its front also starts a wave per onset, several per crest, so even two crests in a column often share a parity. So the plan's §2 rule failed: two slots, the slot the wave's id mod 2, the oldest yielding. Over 38 s (seed 1, 64 components) the roller overflowed 159 times, and 127 lens-columns developed to g ≥ 0.9 were taken while active. The brief's hypotheses:
+- **"The board leaves the footprint and planes down the face":** the other way round. The footprint left the board, and the board then planed on the solver's water outside any lens.
+- **"The game's lens is thinner or shorter":** it is thinner. The game's lenses are 0.04–0.13 m at the crest, against 0.2–0.3 m in the fixture, because the measured H is 0.5–1.2 m. Thin ones fail the other way: the board falls behind them, at 0.5–0.9 c. While a lens lives on a bore of 3 m/s or more, it holds the carry at or under 1.12 c.
+- **"The push builds over a longer time":** no. The lens brings the board to c within 2 s.
+
+**The fix** (`SpillingRoller`; nothing outside a lens changes):
+- **Four slots.** A column keeps up to four lenses (`ROLLER_SLOTS`), and a new lens takes any free slot.
+- **Yielding.** Only a full column makes a lens yield, and only to a wave newer than all the column's lenses: a shedding lens first, then the oldest. A wave that lost its place never takes another's back.
+- **The table.** Each step it seats each wave's run along its crest in one slot (interval colouring). `alongCrest`, the readers' interpolation and the band then see whole runs, whatever slots the lenses are kept in. Runs too short to draw take no slot.
+- **The normal.** The crest normal fits the same wave's lenses in any slot.
+- **The band.** The GLSL loops over four slots.
+
+**After**, the same lens, pinned:
+
+| The 24-component case | Before | After |
+| --- | --- | --- |
+| From rest | 7.67 m/s = 1.37 c, released at 2.9 s | 5.48 m/s = 1.10 c, carried 11.8 s of 12, never released |
+| From 2 m/s | 7.30 m/s = 1.30 c | 5.30 m/s = 1.06 c |
+| Paddling, from 2 m/s | 6.67 m/s = 1.19 c, released at 3.1 s | 5.52 m/s = 1.04 c, carried 8.5 s |
+
+- With room for eight lenses, the same board was carried 20 s and 93 m inshore at 0.92–1.12 c.
+- **Over 38 s** (64 components), the roller overflowed 159 times on seed 1 and 43 on seed 2, and took 127 and 21 developed lens-columns while active. Now it overflows 0 times, takes no live lens, and leaves no run unseated (`counts.crowded` 0).
+- **On the 64-component sea**, the owner's GPU tier, thirteen placements were run: seeds 1–3 at three start times from 2 m/s, three paddling, and one pinned. None went over 1.2 c, before or after. No eviction fell on a carried board. Before and after matched, except one swash lens's board (seed 1 at 30 s), carried 0.4 s longer after.
+- One board was pinned on a lens that was evicted (seed 2, wave 7, column 121). Before, its lens was taken from under it at 4.3 s, but on a gentler face, so it peaked at 1.03 c. After, it is carried 7.5 s at up to 1.08 c.
+- The release needs a carried board and a tall, steep face. The fix removes the release.
+- The fixture's checks pass (`rollerFeel`), and `rollerScope`'s outside-lens fingerprints are unchanged.
+
+**Cost.** The roller's step went from 0.60 to 0.77 ms mean on seed 1, and from 0.50 to 0.61 ms on seed 2 (64 components, the M1 under other agents' load, so noisy). The snapshot went from 10 to 20 KB a frame. The GPU was not re-measured.
+
+**Open.**
+- The owner's 9 m/s (about 1.8 c) is beyond the 1.37 c reproduced here. The fixture's boards reached 1.8–1.9 c in the same outside-lens slam before the owner's option B, so a release on a taller face fits it, but the probe has not found that case.
+- The probe's lens c is the tracked crest's, relaxed over 0.3 s. A scratch survey put a board ahead of every developed run every 8 s, on seeds 1–3 at 64 components, before and after: 29 boards, none faster than 4.6 m/s. Its ratios over 1.2 c came only where a lens had slowed near the beach: two boards at 2.2–2.3 m/s read 1.2–1.7 c inside their lenses, and one at 0.8 m/s read 5.7 c on a stalled lens.
 
 ### Tests
 
