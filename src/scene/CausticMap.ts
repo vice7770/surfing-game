@@ -66,7 +66,7 @@ uniform vec3 waterSunDirection;
 uniform vec4 causticDomain;
 varying vec2 vFlat;
 varying vec2 vLit;
-varying float vWet;
+varying float vSunlit;
 ${waterChopPars}
 
 // The water mesh's bilinear lookups (WaterSurface.ts).
@@ -107,7 +107,9 @@ void main() {
   // causticMath.bedHit: across the water to the bed below the entry point.
   vLit = xz + ray.xz * ( below / max( 1e-3, -ray.y ) );
   vFlat = xz + flatRay.xz * ( below / max( 1e-3, -flatRay.y ) );
-  vWet = depth > 0.02 && incident.y < 0.0 ? 1.0 : 0.0;
+  // Dry land and the thinnest water pass the sun straight down, as flat water would (light 1): they once drew no
+  // light at all, which blacked the water's edge and dimmed the beach inside the window (the shoreline fix).
+  vSunlit = incident.y < 0.0 ? 1.0 : 0.0;
   gl_Position = vec4( ( vLit - causticDomain.xy ) / causticDomain.zw * 2.0 - 1.0, 0.0, 1.0 );
 }
 `;
@@ -115,7 +117,7 @@ void main() {
 const fragmentShader = /* glsl */ `
 varying vec2 vFlat;
 varying vec2 vLit;
-varying float vWet;
+varying float vSunlit;
 
 void main() {
   // A patch's area under flat water over its area now (causticMath.causticProfile), summed by blending.
@@ -125,7 +127,7 @@ void main() {
   vec2 ly = dFdy( vLit );
   float flatArea = abs( fx.x * fy.y - fx.y * fy.x );
   float litArea = abs( lx.x * ly.y - lx.y * ly.x );
-  gl_FragColor = vec4( vWet * flatArea / max( litArea, flatArea / ${CAUSTIC_PEAK.toFixed(1)} ), 0.0, 0.0, 1.0 );
+  gl_FragColor = vec4( vSunlit * flatArea / max( litArea, flatArea / ${CAUSTIC_PEAK.toFixed(1)} ), 0.0, 0.0, 1.0 );
 }
 `;
 
