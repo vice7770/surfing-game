@@ -5,7 +5,7 @@
  *   components on the GPU tier), stepped on the CPU at the game's 1/60 s with the water first, then the body;
  * - after its spin-up (and `--wait` more seconds), the longest run of developed lenses (g ≥ 0.95) along a crest is
  *   picked, and a prone board, rider on, nose to the beach, is placed `--ahead` m ahead of the toe in its middle column;
- * - no paddling and no input: the board is only pushed and carried. No bots ride.
+ * - no paddling and no input: the board is only pushed and carried (it may start at `--speed`). No bots ride.
  *
  * Every `--every` steps it prints the board's speed across shore against the speed c of the lens it was placed ahead of
  * (its wave's lens in the board's column), where it lies in that lens (ξ: 0 at the crest, 1 at the toe), whether a lens
@@ -18,11 +18,12 @@
  *     && node dist/scripts/roller-carry-probe.mjs --seed 1 --seconds 12
  *
  * Options: --seed (1), --wait (0 s), --seconds (12), --ahead (1 m), --components (64), --every (15 steps), --pick fastest
- * or thickest (the developed run with the fastest or thickest lens, not the longest), --column C --wave W (pinned: wave W's developed
+ * or thickest (the developed run with the fastest or thickest lens, not the longest), --speed (0 m/s: the board's start
+ * along its heading, over the water's; the owner's readout climbed from 2), --column C --wave W (pinned: wave W's developed
  * lens in column C, for a run before and after a change), --bare (the same sea with no lens felt, and no P11 push: the
  * difference the lens makes).
  */
-import { Vector3 } from 'three';
+import type { Vector3 } from 'three';
 import { PhysicalSurfWater } from '../src/physics/PhysicalSurfWater';
 import { RideSession } from '../src/physics/RideSession';
 import { createWaterSample } from '../src/physics/SurfWater';
@@ -117,7 +118,8 @@ const water = flag('bare')
   })
   : PhysicalSurfWater.forSimulation(simulation, undefined, 1);
 const session = new RideSession();
-session.reset(new Vector3(x0, 0, z0), 0, water);
+// As `RideSession.reset` places it, at rest on the water (moving with it), or `--speed` m/s faster along its heading.
+session.place({ x: x0, z: z0, heading: 0, speed: option('speed', 0), phase: 'prone' }, water);
 const { board } = session;
 // The rider's water force and the hull's samples are private: read for the report only.
 const rider = session.rider as unknown as { waterForce: Vector3; mass: number; attached: boolean };
@@ -143,7 +145,9 @@ console.log('    t       z     xi     vz      c   vz/c lens  draft  wet m²  slo
 let fastest = { ratio: 0, speed: 0, at: 0, c: Number.NaN, inside: false };
 let carried = 0;
 let lastC = lens0.c;
-let lastState: 'active' | 'shedding' | undefined = 'active';
+/** The tracked wave's lens in each column at the last step: 0 none, 1 active, 2 shedding. */
+const seen = new Uint8Array(nx);
+const seenNow = new Uint8Array(nx);
 let released: string | undefined;
 let wasInside = false;
 for (let n = 1; n <= Math.round(option('seconds', 12) / STEP); n += 1) {
@@ -152,6 +156,10 @@ for (let n = 1; n <= Math.round(option('seconds', 12) / STEP); n += 1) {
   const t = n * STEP;
   const p = board.position;
   const column = Math.min(nx - 1, Math.max(0, Math.round((p.x - solver.xCenters[0]) / solver.dx)));
+  for (let c = 0; c < nx; c += 1) {
+    const lens = tracked(c).state;
+    seenNow[c] = !lens ? 0 : lens.state === 'active' ? 1 : 2;
+  }
   const { state, slot } = tracked(column);
   if (state) lastC = state.c;
   const c = lastC;
@@ -161,14 +169,15 @@ for (let n = 1; n <= Math.round(option('seconds', 12) / STEP); n += 1) {
   // Why the lens let go: the first step the board, carried, has no lens over it.
   if (wasInside && !inside && !released) {
     released = !state
-      ? (lastState === 'active' ? `its wave's live lens was taken from column ${column} (evicted)` : `its wave's lens shed out of column ${column}`)
+      ? (seen[column] === 1 ? `its wave's live lens was taken from column ${column} (evicted)`
+        : seen[column] === 2 ? `its wave's lens shed out of column ${column}` : `its wave has no lens in column ${column}`)
       : state.state === 'shedding' ? `its wave's lens is shedding (g ${state.g.toFixed(2)})`
         : slot < 0 ? 'its wave\'s lens is held out of the table (masked or smoothed away)'
           : xi > 1 ? `the board ran ahead of the toe (ξ ${xi.toFixed(2)})` : `the board fell behind the lens (ξ ${xi.toFixed(2)})`;
     released = `t ${t.toFixed(2)} s, z ${p.z.toFixed(1)} m: ${released}`;
   }
   wasInside = inside;
-  lastState = state?.state;
+  seen.set(seenNow);
   const ratio = board.velocity.z / c;
   if (ratio > fastest.ratio) fastest = { ratio, speed: board.velocity.z, at: t, c, inside };
   if (n % every !== 0) continue;
