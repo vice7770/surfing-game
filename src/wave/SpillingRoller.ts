@@ -5,24 +5,33 @@
  * meets it through the water sample (its top, its air and its flow) and both looks draw it.
  *
  * It reads the solver's surface and breaking and the spilling front, and never writes either (R3 §3.4): the water
- * never feels it. Per column it keeps up to two lenses, one per wave in a row (the slot is the front wave's id mod 2):
+ * never feels it. Per column it keeps up to ROLLER_SLOTS lenses, one per wave whose crest has broken there:
  * - a lens is seeded where its wave first breaks in the column (`SpillingFront.crestAt`), reached by the front or
- *   not, then follows its own crest, so it outlives the front's band;
+ *   not, in any free slot, then follows its own crest, so it outlives the front's band; a live lens keeps its slot
+ *   until it sheds, and only a full column makes an older wave's lens yield;
  * - each step a section along the column gives the crest, the trough, the toe, H and the bore's Froude number;
  * - its life follows the solver: born where B ≥ 0.3 and Fr₁ ≥ 1.45, grown over 6.5 breaker depths of travel, shed
  *   once Fr₁ < 1.3, B < 0.1 or a lost crest has held 0.2 s, and cut to the water in the swash;
  * - the front's mask decides where it is drawn and felt (Q1): behind the visible front, grown from S2's line.
  *
  * Its decision paths (thresholds, states and geometry) use only + − × ÷, √, floor, min and max (R3 §3.4), so every
- * client keeps the same lenses. Its table (`ROLLER_FIELD`) is what is drawn and felt, per slot and column.
+ * client keeps the same lenses. Its table (`ROLLER_FIELD`) is what is drawn and felt, per slot and column: there each
+ * wave's run of lenses along its crest lies in one slot, whatever slots its lenses are kept in.
  */
 import { AERATION } from './AerationField';
 import { GRAVITY } from './dispersion';
 import { OPEN_EDGE_REACH } from './ShallowWaterSolver';
 import type { SpillingFront } from './SpillingFront';
 
-/** Lenses per column: two waves in a row (the plan's §2). */
-export const ROLLER_SLOTS = 2;
+/**
+ * Lenses per column, and the table's slots. The plan's §2 gave two, one per wave in a row, but the Canyon at Medium
+ * holds three or four broken crests in a column at once (measured 2026-10-09 with room for eight: 1–3 live lenses per
+ * column, 4 at times, 5 in under 0.1 % of columns), and its front numbers a wave per onset, several per crest. With two,
+ * a wave breaking further out took the slot of a live lens inshore, under a rider it was carrying (the owner's
+ * playtest of 2026-10-09): released at the bore's speed high on its face, the board slid down it to about 1.4 c.
+ * Four is the measured need (provisional).
+ */
+export const ROLLER_SLOTS = 4;
 /** Values per slot and column in the table: two RGBA texels. */
 export const ROLLER_STRIDE = 8;
 /** Where each value sits in a table entry. An entry with no scale (0) is empty. */
@@ -567,11 +576,12 @@ export class SpillingRoller implements RollerLens {
   /** What is drawn and felt: ROLLER_SLOTS × nx entries of ROLLER_STRIDE values (`ROLLER_FIELD`), slot-major. */
   readonly table: Float64Array;
   /**
-   * Since the start: lenses born, lenses starting to shed, lenses that yielded their slot to a newer wave's, lens-steps
-   * the front's mask held back, and sections where the solver's breaking and the bore's Froude number disagree on
-   * breaking (R3 §1.5; outside the swash).
+   * Since the start: lenses born, lenses starting to shed, lenses that yielded their slot in a full column to a newer
+   * wave's, lens-steps the front's mask held back, sections where the solver's breaking and the bore's Froude number
+   * disagree on breaking (R3 §1.5; outside the swash), and lens-steps the table had no slot for (a wave's run along its
+   * crest overlapping ROLLER_SLOTS others').
    */
-  readonly counts = { born: 0, shed: 0, overflow: 0, masked: 0, disagree: 0 };
+  readonly counts = { born: 0, shed: 0, overflow: 0, masked: 0, disagree: 0, crowded: 0 };
   /** Called as each lens starts to shed (the advisor's Q3). */
   onShed?: (event: RollerShed) => void;
 
@@ -599,6 +609,20 @@ export class SpillingRoller implements RollerLens {
   private readonly normalZ: Float64Array;
   /** The table's wave per slot and column (−1: empty). */
   private readonly tableWaves: Int32Array;
+  // This step's table: each lens's drawn scale and length (scale −1: not drawn), and its run along its wave's crest;
+  // each run's columns and table slot, in the order they start; the waves with a run, and their latest.
+  private readonly drawnScale: Float64Array;
+  private readonly drawnLength: Float64Array;
+  private readonly lensRun: Int32Array;
+  private readonly runStart: Int32Array;
+  private readonly runEnd: Int32Array;
+  private readonly runSlot: Int32Array;
+  private readonly openWaves: Int32Array;
+  private readonly openRuns: Int32Array;
+  /** Wave `id`'s lenses in the columns about one, for its normal (`normal`). */
+  private readonly nearby = new Int32Array(2 * NORMAL_REACH + 1);
+  /** The last column each table slot holds this step. */
+  private readonly slotEnd = new Int32Array(ROLLER_SLOTS);
   private readonly reader = new SectionReader();
   private readonly section = createSection();
   /** The lens `thicknessAt` picked: its scale and its water's velocity. */
@@ -631,6 +655,14 @@ export class SpillingRoller implements RollerLens {
     this.normalX = new Float64Array(size);
     this.normalZ = new Float64Array(size).fill(1);
     this.tableWaves = new Int32Array(size).fill(-1);
+    this.drawnScale = new Float64Array(size);
+    this.drawnLength = new Float64Array(size);
+    this.lensRun = new Int32Array(size);
+    this.runStart = new Int32Array(size);
+    this.runEnd = new Int32Array(size);
+    this.runSlot = new Int32Array(size);
+    this.openWaves = new Int32Array(size);
+    this.openRuns = new Int32Array(size);
   }
 
   /**
@@ -659,18 +691,16 @@ export class SpillingRoller implements RollerLens {
       }
     }
     // Each of the front's waves seeds a lens where it breaks in a column it has none in: born where the solver's
-    // breaking and the bore's Froude number both say the bore breaks (R3 §1.4–1.5), in the wave's slot.
+    // breaking and the bore's Froude number both say the bore breaks (R3 §1.4–1.5), in a free slot (`room`).
     const reach = SECTION_REACH + options.trackWindow;
     for (let k = 0; k < front.waves.length; k += 1) {
       const id = front.waves[k].id;
-      const slot = id % ROLLER_SLOTS;
       for (let column = first; column < last; column += 1) {
         const seed = front.crestAt(k, column);
         if (!(seed === seed)) continue;
-        const lens = slot * nx + column;
         if (this.has(column, id)) continue;
-        // A newer wave's lens keeps the slot: the oldest yields.
-        if (this.state[lens] !== NONE && this.wave[lens] > id) continue;
+        const lens = this.room(column, id);
+        if (lens < 0) continue;
         if (!reader.read(grid, column, seed, 'seed', reach, reach, options.trackWindow, strength, section)) continue;
         const swash = section.troughDepth < options.swashDepth || section.dryToe;
         const kennedy = section.strength >= options.birthStrength;
@@ -701,7 +731,7 @@ export class SpillingRoller implements RollerLens {
     }
     // Every normal from this step's crests first, so no lens's fate this step turns its neighbours'.
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
-      for (let column = first; column < last; column += 1) if (this.state[slot * nx + column] !== NONE) this.normal(slot, column, first, last);
+      for (let column = first; column < last; column += 1) if (this.state[slot * nx + column] !== NONE) this.normal(slot * nx + column, column, first, last);
     }
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = first; column < last; column += 1) {
@@ -822,13 +852,46 @@ export class SpillingRoller implements RollerLens {
     return this.tableWaves[slot * this.grid.nx + column];
   }
 
-  /** Whether wave `id` has a lens in `column`, in either slot. */
+  /** Whether wave `id` has a lens in `column`, in any slot. */
   private has(column: number, id: number): boolean {
+    return this.find(column, id) >= 0;
+  }
+
+  /** Wave `id`'s lens in `column` (its index), or −1. */
+  private find(column: number, id: number): number {
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       const lens = slot * this.grid.nx + column;
-      if (this.state[lens] !== NONE && this.wave[lens] === id) return true;
+      if (this.state[lens] !== NONE && this.wave[lens] === id) return lens;
     }
-    return false;
+    return -1;
+  }
+
+  /**
+   * Where wave `id` seeds a lens in `column` (its index), or −1. A free slot, from its own (id mod ROLLER_SLOTS) on: a
+   * live lens is never taken while its column has room, so a lens carrying a rider stays until it sheds. In a full
+   * column only a wave newer than all its lenses makes one yield (an overflow), a shedding one before an active one,
+   * then the oldest; so a wave that lost its place never takes another's back.
+   */
+  private room(column: number, id: number): number {
+    const { nx } = this.grid;
+    const own = id % ROLLER_SLOTS;
+    for (let k = 0; k < ROLLER_SLOTS; k += 1) {
+      const lens = ((own + k) % ROLLER_SLOTS) * nx + column;
+      if (this.state[lens] === NONE) return lens;
+    }
+    let yields = -1;
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      const lens = slot * nx + column;
+      if (!(this.wave[lens] < id)) return -1;
+      if (yields < 0) {
+        yields = lens;
+        continue;
+      }
+      const shedding = this.state[lens] === SHEDDING;
+      const before = this.state[yields] === SHEDDING;
+      if (shedding !== before ? shedding : this.wave[lens] < this.wave[yields]) yields = lens;
+    }
+    return yields;
   }
 
   /** This step's section, for `lens`. */
@@ -860,24 +923,36 @@ export class SpillingRoller implements RollerLens {
   }
 
   /**
-   * The crest's normal n̂ (toward the beach) from this step's crests of the same wave in up to NORMAL_REACH columns
-   * each side, as far as they run on without a jump over crestJump: the least-squares slope of z_c along x, so one
-   * column's crest error barely turns it.
+   * The crest's normal n̂ (toward the beach) at `lens`, in `column`, from this step's crests of the same wave in up to
+   * NORMAL_REACH columns each side (in whatever slots), as far as they run on without a jump over crestJump: the
+   * least-squares slope of z_c along x, so one column's crest error barely turns it.
    */
-  private normal(slot: number, column: number, first: number, last: number): void {
-    const { nx, dx } = this.grid;
-    const lens = slot * nx + column;
+  private normal(lens: number, column: number, first: number, last: number): void {
+    const { dx } = this.grid;
+    const { nearby } = this;
     const id = this.wave[lens];
     const crestJump = this.options.crestJump;
-    // Whether the lens beside `inner` (one column further out) is the same wave's, on the same crest.
+    // Whether wave id's lens `outer`, one column further out than its lens `inner`, is on the same crest.
     const joins = (inner: number, outer: number) => {
+      if (outer < 0) return false;
       const jump = this.nextCrest[outer] - this.nextCrest[inner];
-      return this.state[outer] !== NONE && this.wave[outer] === id && jump <= crestJump && -jump <= crestJump;
+      return jump <= crestJump && -jump <= crestJump;
     };
+    nearby[NORMAL_REACH] = lens;
     let from = column;
     let to = column;
-    while (from > first && column - from < NORMAL_REACH && joins(lens - (column - from), lens - (column - from) - 1)) from -= 1;
-    while (to < last - 1 && to - column < NORMAL_REACH && joins(lens + (to - column), lens + (to - column) + 1)) to += 1;
+    while (from > first && column - from < NORMAL_REACH) {
+      const outer = this.find(from - 1, id);
+      if (!joins(nearby[from - column + NORMAL_REACH], outer)) break;
+      from -= 1;
+      nearby[from - column + NORMAL_REACH] = outer;
+    }
+    while (to < last - 1 && to - column < NORMAL_REACH) {
+      const outer = this.find(to + 1, id);
+      if (!joins(nearby[to - column + NORMAL_REACH], outer)) break;
+      to += 1;
+      nearby[to - column + NORMAL_REACH] = outer;
+    }
     let slope = 0;
     if (to > from) {
       const count = to - from + 1;
@@ -885,7 +960,7 @@ export class SpillingRoller implements RollerLens {
       let meanZ = 0;
       for (let c = from; c <= to; c += 1) {
         meanX += c * dx;
-        meanZ += this.nextCrest[slot * nx + c];
+        meanZ += this.nextCrest[nearby[c - column + NORMAL_REACH]];
       }
       meanX /= count;
       meanZ /= count;
@@ -893,7 +968,7 @@ export class SpillingRoller implements RollerLens {
       let spread = 0;
       for (let c = from; c <= to; c += 1) {
         const x = c * dx - meanX;
-        across += x * (this.nextCrest[slot * nx + c] - meanZ);
+        across += x * (this.nextCrest[nearby[c - column + NORMAL_REACH]] - meanZ);
         spread += x * x;
       }
       slope = across / spread;
@@ -972,15 +1047,22 @@ export class SpillingRoller implements RollerLens {
     this.length[lens] = this.fresh[lens] === 1 || !(length > 0) ? target : length + ((target - length) * step) / (options.relax + step);
   }
 
-  /** The table: each lens behind its front (or anywhere, with the solver's mask), smoothed along the crest. */
+  /**
+   * The table: each lens behind its front (or anywhere, with the solver's mask), smoothed along the crest. A wave's
+   * lenses lie in whatever slots their columns had free, so the table seats them afresh each step: each wave's lenses
+   * make runs along its crest (columns in a row, or across a gap `alongCrest` closes), and each run takes one slot,
+   * so `alongCrest` and the readers' interpolation between columns see the whole run. The runs are seated from the
+   * lowest column on (interval colouring), each in the lowest slot whose last run ends a column or more before it, so
+   * two waves never meet in a slot; else in one whose last run ends just before it (they meet at a seam, where
+   * `alongCrest` empties the older wave's column); else nowhere, undrawn and unfelt (`counts.crowded`).
+   */
   private writeTable(time: number, front: SpillingFront, first: number, last: number): void {
-    const { grid, options, table } = this;
-    const { nx } = grid;
-    table.fill(0);
-    this.tableWaves.fill(-1);
+    const { grid, options, table, drawnScale, drawnLength, lensRun, runStart, runEnd, runSlot, openWaves, openRuns, slotEnd } = this;
+    const { nx, dx } = grid;
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = first; column < last; column += 1) {
         const lens = slot * nx + column;
+        drawnScale[lens] = -1;
         if (this.state[lens] === NONE || !(this.length[lens] > 0)) continue;
         let g = this.scale[lens];
         let length = this.length[lens];
@@ -1006,17 +1088,73 @@ export class SpillingRoller implements RollerLens {
             }
           }
         }
-        const o = lens * ROLLER_STRIDE;
+        drawnScale[lens] = g;
+        drawnLength[lens] = length;
+      }
+    }
+    // Each wave's runs, from the lowest column on: a lens joins its wave's latest run in the next column, or across a
+    // gap alongCrest closes (under `gap`, its crest within crestJump of the run's last); else it starts a run.
+    let runs = 0;
+    let open = 0;
+    for (let column = first; column < last; column += 1) {
+      for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+        const lens = slot * nx + column;
+        if (!(drawnScale[lens] >= 0)) continue;
+        const id = this.wave[lens];
+        let k = 0;
+        while (k < open && openWaves[k] !== id) k += 1;
+        if (k < open) {
+          const run = openRuns[k];
+          const gap = column - runEnd[run] - 1;
+          const jump = gap > 0 ? this.crest[lens] - this.crest[this.find(runEnd[run], id)] : 0;
+          if (gap === 0 || (gap * dx < options.gap && jump <= options.crestJump && -jump <= options.crestJump)) {
+            runEnd[run] = column;
+            lensRun[lens] = run;
+            continue;
+          }
+        } else {
+          openWaves[open] = id;
+          open += 1;
+        }
+        openRuns[k] = runs;
+        runStart[runs] = column;
+        runEnd[runs] = column;
+        lensRun[lens] = runs;
+        runs += 1;
+      }
+    }
+    // Each run in a slot, in the order they start (interval colouring: four slots seat any four runs a column overlaps).
+    slotEnd.fill(-2);
+    for (let run = 0; run < runs; run += 1) {
+      let seat = -1;
+      for (let slot = 0; slot < ROLLER_SLOTS && seat < 0; slot += 1) if (slotEnd[slot] < runStart[run] - 1) seat = slot;
+      for (let slot = 0; slot < ROLLER_SLOTS && seat < 0; slot += 1) if (slotEnd[slot] < runStart[run]) seat = slot;
+      runSlot[run] = seat;
+      if (seat >= 0) slotEnd[seat] = runEnd[run];
+    }
+    table.fill(0);
+    this.tableWaves.fill(-1);
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      for (let column = first; column < last; column += 1) {
+        const lens = slot * nx + column;
+        if (!(drawnScale[lens] >= 0)) continue;
+        const seat = runSlot[lensRun[lens]];
+        if (seat < 0) {
+          this.counts.crowded += 1;
+          continue;
+        }
+        const at = seat * nx + column;
+        const o = at * ROLLER_STRIDE;
         const speed = this.speed[lens];
         table[o + ROLLER_FIELD.crest] = this.crest[lens];
-        table[o + ROLLER_FIELD.length] = length / this.normalZ[lens];
-        table[o + ROLLER_FIELD.scale] = g;
+        table[o + ROLLER_FIELD.length] = drawnLength[lens] / this.normalZ[lens];
+        table[o + ROLLER_FIELD.scale] = drawnScale[lens];
         table[o + ROLLER_FIELD.thickness] = crestThickness(this.height[lens], this.length[lens], options);
         table[o + ROLLER_FIELD.flowX] = speed * this.normalX[lens];
         table[o + ROLLER_FIELD.flowZ] = speed * this.normalZ[lens];
         table[o + ROLLER_FIELD.troughDepth] = this.troughDepth[lens];
         table[o + ROLLER_FIELD.roughness] = toeRoughness(this.froude2[lens], this.troughDepth[lens]);
-        this.tableWaves[lens] = this.wave[lens];
+        this.tableWaves[at] = this.wave[lens];
       }
     }
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
