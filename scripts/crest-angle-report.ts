@@ -11,7 +11,8 @@
  *
  * `--swell practice|small|medium|big`, `--seed`, `--seconds` (600), `--spreading` and `--direction` (override the
  * swell's), `--components` (64, the GPU tier's; 24 is the CPU tier's), `--offset` (30 m seaward of the take-off),
- * `--quiet` (no per-crest lines), `--json <file>` (the crests and summary).
+ * `--quiet` (no per-crest lines), `--json <file>` (the crests and summary), `--canyon key=value,...` (reshape the Canyon, as
+ * the canyon peel report's sweep).
  *
  * Each crest's two halves along shore (split at its middle point) are also fitted on their own: their angles' difference,
  * the bend, shows a crest that runs two ways at once (an A-frame, or a crest turned by one side of the bed).
@@ -21,6 +22,7 @@ import { GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../src/game/SurfConditions';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
+import { applyCanyonShape } from './canyonShape';
 
 const option = (name: string): string | undefined => {
   const index = process.argv.indexOf(`--${name}`);
@@ -33,6 +35,7 @@ const seed = Number(option('seed') ?? 1);
 const seconds = Number(option('seconds') ?? 600);
 const offset = Number(option('offset') ?? 30);
 const quiet = process.argv.includes('--quiet');
+applyCanyonShape(option('canyon'));
 
 /** The worker's step, s. */
 const STEP = 1 / 30;
