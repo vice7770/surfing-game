@@ -280,7 +280,7 @@ describe('SpillingFront for the roller (S3)', () => {
     const plain = run();
     // Half drawn below z = −13 while younger than 1 s, all of it from then on (a column's age is 2 s − its reach).
     const asked: number[] = [];
-    const look = { span: 1, share: (column: number, age: number, z: number) => {
+    const look = { span: 1, share: (_column: number, age: number, z: number) => {
       asked.push(age);
       return z > -13 ? 0.5 : 1;
     } };
