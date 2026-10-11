@@ -90,8 +90,12 @@ export class FoamField {
     this.residual[cell] = Math.min(this.residual[cell], 1 - this.dense[cell]);
   }
 
-  /** Advance by `dt` seconds with the breaking strength B per cell. */
-  update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil): void {
+  /**
+   * Advance by `dt` seconds with the breaking strength B per cell. `drawn` (the Canyon spilling lip's look): the
+   * breaking whose foam is drawn, at most `breaking` in every cell; the foam, its source and the visual clouds that read
+   * the source follow it, while the bore measurement the air reads (`breakingCells`, `dissipation`) stays `breaking`'s.
+   */
+  update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil, drawn?: ArrayLike<number>): void {
     if (!(dt > 0)) return;
     this.followWindow();
     this.advect(dt, stencil);
@@ -117,7 +121,8 @@ export class FoamField {
         this.breakingCells[this.breakingCount++] = i;
         this.dissipation[i] = strength * bore;
       }
-      const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
+      const shown = drawn ? drawn[i] : strength;
+      const rate = strength > 0 && shown > 0 ? (shown * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
       this.source[i] = rate;
       if (rate > 0) this.sourceCells[this.sourceCount++] = i;
       dense += rate * dt;

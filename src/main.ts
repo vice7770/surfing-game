@@ -957,6 +957,8 @@ class SurfGame {
     this.physicalMode.drawEdgeBand();
     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
     this.physicalMode.drawBarrel();
+    // The spilling lip's curls sit on the same heights (the Canyon spilling lip).
+    this.physicalMode.drawCurl();
     this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);

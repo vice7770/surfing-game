@@ -139,6 +139,37 @@ describe('FoamField', () => {
     expect(foam.breakingCount).toBe(0);
   });
 
+  it('draws foam from a drawn breaking (the Canyon spilling lip), while the bores the air reads stay the breaking\'s', () => {
+    const solver = flatSolver(uniformEdges(-40, 40, 80), 1);
+    const foam = new FoamField(solver, lasting);
+    const same = new FoamField(solver, lasting);
+    const breaking = new Float64Array(solver.h.length);
+    const drawn = new Float64Array(solver.h.length);
+    const held = 40 * solver.nx + 10;
+    const half = 40 * solver.nx + 30;
+    for (const cell of [held, half]) {
+      solver.h[cell] = 1.25;
+      breaking[cell] = 1;
+    }
+    drawn[half] = 0.5;
+    foam.update(0.1, breaking, undefined, drawn);
+    // Given the breaking itself as drawn, a field is bit for bit the one given none.
+    same.update(0.1, breaking, undefined, breaking);
+    const plain = new FoamField(solver, lasting);
+    plain.update(0.1, breaking);
+    expect(Array.from(same.dense)).toEqual(Array.from(plain.dense));
+    expect(Array.from(same.source)).toEqual(Array.from(plain.source));
+    // Held back: no foam and no source where none is drawn, half where half is.
+    expect(foam.dense[held]).toBe(0);
+    expect(foam.source[held]).toBe(0);
+    expect(foam.dense[half]).toBeCloseTo(0.5 * plain.dense[half], 12);
+    expect(Array.from(foam.sourceCells.subarray(0, foam.sourceCount))).toEqual([half]);
+    // The bore measurement the air reads is the breaking's, as without it.
+    expect(Array.from(foam.breakingCells.subarray(0, foam.breakingCount))).toEqual([held, half]);
+    expect(foam.dissipation[held]).toBe(plain.dissipation[held]);
+    expect(foam.dissipation[half]).toBe(plain.dissipation[half]);
+  });
+
   it('reindexes direct source edits into the same sorted active prefix', () => {
     const foam = new FoamField(flatSolver(), lasting);
     foam.source[500] = 2;
