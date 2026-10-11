@@ -444,7 +444,8 @@ class SurfGame {
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
-    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 10 + Math.random() * 15 };
+    // 15–30 m outside the break line: 5 m further out since the owner's playtest of 2026-10-11, as the solo start.
+    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 15 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
     // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).
