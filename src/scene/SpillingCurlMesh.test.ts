@@ -55,25 +55,25 @@ describe('the spilling lip\'s mesh', () => {
     expect(buildCurlRibbon(gap, 2, face, createCurlRibbon()).indexCount).toBe(2 * 2 * (CURL_POINTS - 1) * 6);
   });
 
-  it('stands its lip no more than 0.2 H over the crest, the void under it as high as the face allows, root and tip buried', () => {
+  it('stands its lip no more than 0.1 H over the crest, the void under it as high as the face allows, root and tip buried', () => {
     const ribbon = buildCurlRibbon(slices([0.33, 0.33]), 2, face, createCurlRibbon());
     // The first slice after the closing one.
     const height = (v: number) => ribbon.positions[3 * (CURL_POINTS + v) + 1];
     const z = (v: number) => ribbon.positions[3 * (CURL_POINTS + v) + 2];
     expect(height(0)).toBeLessThan(face(0, z(0)));
-    // Over the crest's top (1 m), at most 0.2 H (H 1 m here).
+    // Over the crest's top (1 m), at most 0.1 H (H 1 m here).
     let top = 0;
     for (let k = 0; k < CURL_POINTS; k += 1) top = Math.max(top, height(k) - 1);
-    expect(top).toBeLessThanOrEqual(0.2 + 1e-6);
-    expect(top).toBeGreaterThan(0.15);
+    expect(top).toBeLessThanOrEqual(0.1 + 1e-6);
+    expect(top).toBeGreaterThan(0.05);
     // The void: the underside over the face, as high as the face's drop allows under the lip, within W.
     let void_ = 0;
     for (let k = 1 + 9 + 2; k < CURL_POINTS - 1; k += 1) void_ = Math.max(void_, height(k) - face(0, z(k)));
-    expect(void_).toBeGreaterThan(0.15);
+    expect(void_).toBeGreaterThan(0.08);
     expect(void_).toBeLessThanOrEqual(0.33);
     // Buried: the root behind the crest, where it lands, the tip's foot and the void's back foot.
     const feet = ribbon.positions.filter((_, i) => i % 3 === 1).slice(CURL_POINTS, 2 * CURL_POINTS).filter((y, k) => y < face(0, z(k)) - 0.01);
-    expect(feet.length).toBe(4);
+    expect(feet.length).toBeGreaterThanOrEqual(4);
     // It lands about 0.6 H ahead of the crest (L cos θ), its overhang reaching no further than 1.15 times that.
     const landing = (0.33 / 0.37) * Math.cos((47 * Math.PI) / 180);
     expect(z(1 + 9)).toBeCloseTo(landing, 5);
@@ -106,10 +106,15 @@ describe('the spilling lip\'s mesh', () => {
     for (let v = 0; v < ribbon.vertexCount; v += 1) expect(Math.hypot(n[3 * v], n[3 * v + 1], n[3 * v + 2])).toBeCloseTo(1, 6);
   });
 
-  it('stays green and clear while it falls, and whitens from where it lands as its void fills', () => {
+  it('stays green and clear while it falls (but for froth on its very tip), and whitens from where it lands as its void fills', () => {
     const green = buildCurlRibbon(slices([0.3, 0.33]), 2, face, createCurlRibbon());
-    expect(Math.max(...green.foam.subarray(0, green.vertexCount))).toBe(0);
-    expect(Math.max(...green.sheetWeight.subarray(0, green.vertexCount))).toBe(1);
+    expect(Math.max(...green.foam.subarray(0, green.vertexCount))).toBeCloseTo(0.3, 6);
+    // Clear over its first four fifths, a thin sheet where it falls.
+    for (let v = 0; v < green.vertexCount; v += 1) {
+      const u = green.positions[3 * v + 2] / ((0.3 / 0.37) * Math.cos((47 * Math.PI) / 180));
+      if (u < 0.75) expect(green.foam[v]).toBe(0);
+    }
+    expect(Math.max(...green.sheetWeight.subarray(0, green.vertexCount))).toBeGreaterThan(0.9);
     // Lofted along shore in x order: half filled at x = 9 first, then filled at x = 10.
     const white = buildCurlRibbon(slices([0.1, 0.05], 1, [1, 0.5]), 2, face, createCurlRibbon());
     // The tip whitens first; filled, it is white where it lands, its sheet gone (after the closing slice).
@@ -120,12 +125,36 @@ describe('the spilling lip\'s mesh', () => {
     expect(white.sheetWeight[CURL_POINTS + tip]).toBe(0);
   });
 
+  it('fades into the crest where it grows from it, and out into its landing as it collapses, with no closed end', () => {
+    // A run from the front (x = 10, nothing) back to a half-filled column and a filled one (x = 7).
+    const ribbon = buildCurlRibbon(slices([0, 0.3, 0.2, 0.02], 1, [0, 0, 0.5, 1]), 4, face, createCurlRibbon());
+    const alpha = (slice: number, k: number) => ribbon.alpha[slice * CURL_POINTS + k];
+    // Lofted in x order: the old end's closing slice (x = 6.5), x = 7 (filled), 8 (half), 9 (whole), 10 (the front).
+    expect(ribbon.vertexCount).toBe(5 * CURL_POINTS);
+    // Whole: invisible at its root behind the crest, whole over the lip near it, translucent where it falls thin.
+    expect(alpha(3, 0)).toBe(0);
+    expect(alpha(3, 1 + 3)).toBe(1);
+    expect(alpha(3, 1 + 7)).toBeGreaterThan(0.7);
+    expect(alpha(3, 1 + 7)).toBeLessThan(1);
+    // Collapsing: half filled, partly faded; filled, and its closing slice, gone.
+    expect(alpha(2, 1 + 3)).toBeGreaterThan(0);
+    expect(alpha(2, 1 + 3)).toBeLessThan(1);
+    for (let k = 0; k < CURL_POINTS; k += 1) {
+      expect(alpha(1, k)).toBe(0);
+      expect(alpha(0, k)).toBe(0);
+    }
+  });
+
   it('shades its lip as the swept barrel\'s thin backlit sheet in both looks, on the water\'s uniforms, and hides with none', () => {
     const curl = new SpillingCurlMesh(new WaterSurface(source).materialUniforms);
     for (const look of ['classic', 'rich'] as const) {
       curl.setLook(look);
       const { vertex, fragment } = compiled(curl.mesh.material);
       expect(vertex).toContain('vWaterFoam = curlFoam;');
+      // The face's own column under it, and no dark rim at its silhouette.
+      expect(vertex).toContain('vWaterDepth = max( 0.0, waterHeightAt( position.xz ) - waterBedAt( position.xz ) );');
+      expect(fragment).toContain('float waterViewCos = max( 0.3, abs( dot( waterN, waterV ) ) );');
+      expect(fragment).toContain('diffuseColor.a *= vCurlAlpha;');
       expect(fragment).toContain(look === 'rich' ? RICH_SHEET_BODY + RICH_LIP_GLOW : SWEPT_SHEET_BODY);
       expect(curl.mesh.material.customProgramCacheKey()).toBe(`breakline-spilling-curl-${look}`);
     }

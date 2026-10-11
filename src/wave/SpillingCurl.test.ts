@@ -5,6 +5,7 @@ import {
   CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, SpillingCurl, curlSize, curlStage, drawnReach, impactTime, reachShare, type CurlGrid,
 } from './SpillingCurl';
 import { SpillingFront } from './SpillingFront';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, type SpillingRoller } from './SpillingRoller';
 import { SurfZoneSimulation } from './SurfZoneSimulation';
 
 /**
@@ -196,6 +197,51 @@ describe('the spilling lip on a spilling front', () => {
       }
     }
     expect(start).toBe(1);
+  });
+});
+
+describe('the spilling lip\'s band', () => {
+  it('draws no band before the curl lands, then a bright one from the landing line, growing to the lens\'s toe', () => {
+    const grid = tank();
+    const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+    for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+    const out = new Float64Array(grid.nx * grid.nz);
+    // One lens in column 20 (x = 0), slot 0: the felt table's, faint (its scale still growing with its travel).
+    const roller = { tableWave: (column: number, slot: number) => (column === 20 && slot === 0 ? front.waves[0].id : -1) } as unknown as SpillingRoller;
+    const felt = new Float32Array(ROLLER_SLOTS * grid.nx * ROLLER_STRIDE);
+    const o = 20 * ROLLER_STRIDE;
+    felt[o + ROLLER_FIELD.scale] = 0.2;
+    felt[o + ROLLER_FIELD.crest] = 0;
+    felt[o + ROLLER_FIELD.length] = 5;
+    const drawn = new Float32Array(felt.length);
+    const dt = 0.02;
+    let before = 0;
+    let after = 0;
+    for (let step = 1; step <= 600; step += 1) {
+      const time = step * dt;
+      front.update(time, dt, 2, grid.strength, out);
+      curl.update(time, front, undefined, grid.strength);
+      drawn.set(felt);
+      curl.drawBand(drawn, front, roller, time);
+      const reached = front.waves[0].reached[20];
+      if (!(reached === reached)) continue;
+      const since = time - reached - curl.impact[20];
+      if (since < -dt) {
+        expect(drawn[o + ROLLER_FIELD.scale]).toBe(0);
+        before += 1;
+      } else if (since > SPILLING_CURL.flashSeconds && since < SPILLING_CURL.toeSeconds) {
+        // Landed: white at full scale from the landing line (then the crest) down toward the toe.
+        expect(drawn[o + ROLLER_FIELD.scale]).toBe(1);
+        expect(drawn[o + ROLLER_FIELD.crest] + drawn[o + ROLLER_FIELD.length]).toBeLessThanOrEqual(5 + 1e-6);
+        if (since < 0.1 + SPILLING_CURL.flashSeconds) expect(drawn[o + ROLLER_FIELD.crest]).toBeGreaterThan(0.5 * curl.landing[20]);
+        after += 1;
+      }
+    }
+    expect(before).toBeGreaterThan(5);
+    expect(after).toBeGreaterThan(20);
+    // The felt table is never touched.
+    expect(felt[o + ROLLER_FIELD.scale]).toBe(Math.fround(0.2));
   });
 });
 

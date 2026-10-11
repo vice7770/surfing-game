@@ -12,7 +12,7 @@ It is **look only**. The water, the solver's breaking strength, the S2 whitewate
 
 ## The stills
 
-Canyon, Medium swell (Hs 1.4 m, Tp 11 s, 0°, s = 150), seed 1, in the page, at sea time 133.47 s: a set wave about 2 m high peeling toward +x at the take-off. They were shot from the dev water sheet (`?inpage&waterSheet&spot=canyon&swell=medium&direction=0&spreading=150`, with `&spillingCurl=0` for the before), midday, in the Rich look unless noted. The before and after show the same wave at the same moment: the switch changes nothing felt.
+Canyon, Medium swell (Hs 1.4 m, Tp 11 s, 0°, s = 150), seed 1, in the page, at sea time 133.47 s: a set wave about 2 m high peeling toward +x at the take-off. They were shot from the dev water sheet (`?inpage&waterSheet&spot=canyon&swell=medium&direction=0&spreading=150`, with `&spillingCurl=0` for the before), midday, in the Rich look unless noted. The before and after show the same wave at the same moment, from the same cameras: the switch changes nothing felt. The after stills are from the look pass after the coordinator's review (see below).
 
 | | Before (`spillingCurl` off) | After |
 | --- | --- | --- |
@@ -21,15 +21,22 @@ Canyon, Medium swell (Hs 1.4 m, Tp 11 s, 0°, s = 150), seed 1, in the page, at 
 
 - **From the beach** (after): ![](after-beach.jpg)
 - **Beside the curl, Classic look** (after): ![](after-beside-classic.jpg)
+- **Big, beside the curl** (after; `&swell=big`, sea time 201.8 s, a 1.5 m wave): ![](after-big-beside.jpg)
 
 **My read of the stills.**
 
 - **Before:** the face is white (S2's lace) right up to the front. There is no curl.
-- **After:**
-  - **The ordering reads.** Along the crest there is a clean green shoulder, then a small curl that grows from nothing at the front, then white behind it. The white starts where the curl has landed and spreads down the face.
-  - **The curl looks glassy.** It is smooth and translucent turquoise in Rich and matte teal in Classic, and reads more like a glass roll lying on the crest than a pouring lip.
-  - **From the beach it is small.** It sits on top of a gentle, solver-smooth face.
-  - **Old lace remains everywhere.** The residual lace from earlier waves' bores (the Canyon's lace lasts 15 s) still covers the water around the break. That lace predates this work and is not touched.
+- **After, Medium:**
+  - **The ordering reads.** From the lineup and beside the curl you see, along the crest: a clean green shoulder, then a small water-coloured lip growing from nothing at the front, then a bright white patch at the crest behind it where it has landed. The white spreads down the face from there.
+  - **The lip.** It now takes the face's turquoise and is translucent where it falls thin. Its tip carries a little froth and the bright edge. It fades into the crest, and into the white as it collapses. There is no dark rim and no glass end cap.
+  - **What is still off:**
+    - The lip is smooth and clean-edged: from beside it still reads as a glassy tongue lying on the crest more than as water pouring off it.
+    - In Classic it is a darker teal, with its inner side showing through the thin part.
+    - From the beach it is subtle: a thin translucent lip on the crest beside the white patch.
+- **After, Big:**
+  - The curl is barely visible beside the white patch.
+  - The leftover lace from earlier waves' bores covers the water ahead, so the shoulder is not clean there. That lace predates this work and is not touched: the Canyon's residual foam lasts 15 s, and Big breaks over a wide area.
+  - The dark dashes in the Big still are in the water without the curl too, so they are not the curl's.
 
 ## The numbers and their sources
 
@@ -49,31 +56,42 @@ Canyon, Medium swell (Hs 1.4 m, Tp 11 s, 0°, s = 150), seed 1, in the page, at 
   - A ribbon is lofted along each wave's crest from the snapshot's slices: up to 56 slices of 13 floats, 2.9 KB, carried through the snapshot so solo, worker and online clients all draw it.
   - Each slice is the curl at its column's age. It grows from nothing at the front to touchdown, then fills and whitens.
   - The lip's outer surface rises from the back of the crest, carries forward over the void, and falls onto the drawn face where Pick & Feddersen's lip lands. The face stands in for the void's lower branch.
-  - It is shaded as the swept barrel's thin backlit sheet, in both looks. It stays clear until it lands, then turns white from its tip as it fills.
+  - It stands no more than 0.1 H over the drawn crest. The solver's crest is rounder and its face gentler than a breaking crest's, so a higher lip read as a pod sitting on the crest.
+  - It is shaded on the water's own uniforms, with the column of water under it as its body, so it takes the face's colour.
+  - Its falling outer half is shaded as the swept barrel's thin backlit sheet: translucent, letting 30 % of the water behind show through, brightest toward its tip.
+  - It carries a little froth on its very tip.
+  - Its view cosine is held off grazing, which removes the dark rim.
+  - Its Rich roughness is 0.25 rather than the water's 0.08, which removes the plastic sheen.
+  - It is blended (alpha). It fades into the crest where it attaches (from 0.4 L behind the crest to 0.1 L ahead of it). Over its 0.5 s collapse (about 3 m of crest) it thins, whitens and fades out into its landing patch, so no end cap shows.
 - **The drawn white:**
   - S2 now writes a drawn whitewater beside the felt one. It is zero before touchdown, then runs from the landing line (the void filling up to the crest) down to a toe that reaches the foot 2 s later. The foam field takes its foam and source from this drawn whitewater; its bore measurement for the air is unchanged.
-  - The roller band's drawn copy (`writeRoller`) waits and grows the same way.
-  - The drawn air (Rich's churn and plume) shows only under drawn foam.
+  - The roller band's drawn copy (`writeRoller`) waits and grows the same way. Once its curl has landed it is drawn at full scale within 0.15 s: a bright white patch where the lip lands (fresh foam averages about 41 % reflectance over its first second; the advisor), brightest at the crest and fading toward the toe. The felt lens's scale grows with its travel over about 2.5 s, which drew the landing faint.
+  - The drawn air (Rich's churn and plume) shows only under drawn foam, and only in columns whose curl is still young. A developed bore draws its air as before.
   - S2's drawn whitewater also holds back the next crest's weak breaking before its onset joins it, which an older wave's band holds meanwhile. Before this change that breaking was drawn white ahead of the front.
 
 **Cost:**
 
 - The look's step: 0.015 ms per step.
 - The snapshot's slices: 0.026 ms (worker).
-- Building the ribbon on the page: 0.08 ms for 20 slices, 0.22 ms at the 56-slice maximum. These are node timings on this M1 Air. The ribbon is rebuilt once per snapshot, not per frame.
+- Building the ribbon on the page: 0.082 ms for 20 slices, 0.225 ms at the 56-slice maximum, the same as before the look pass (0.084 and 0.224 ms). These are node timings on this M1 Air. The ribbon is rebuilt once per snapshot, not per frame.
 - The GPU draws one mesh of at most 1,400 vertices with the water's sheet shading. GPU cost was not measured; I estimate it as negligible.
 
 ## What is provisional
 
 - **The shape.** Pick & Feddersen's potential-flow fits stand in for the Canyon's own break until the high-resolution Basilisk level-15 run.
-- **How the curl sits on the solver's face.** The solver's crest is rounder and its face gentler than a breaking crest's. A void W high over that face would stand the lip a third of the wave above the crest. So the lip rises at most 0.2 H over the drawn crest (`RISE`), and its void is as high as the face's drop allows: about 0.2 H on the stills' wave rather than Pick & Feddersen's 0.33 H.
-- **The light behind the lip.** It is shaded mostly against the wave's own water (`SKY_BEHIND` 0.1).
+- **How the curl sits on the solver's face.** The solver's crest is rounder and its face gentler than a breaking crest's. A void W high over that face would stand the lip a third of the wave above the crest, which read as a pod. So the lip rises at most 0.1 H over the drawn crest (`RISE`), and its void is as high as the face's drop allows: about 0.1 H rather than Pick & Feddersen's 0.23–0.33 H. The 0.2–0.35 H test holds for the overturn's size W, not for the drawn void.
+- **The look's game values.** These are all provisional, set by eye on these stills:
+  - the light behind the lip (`SKY_BEHIND` 0.1, plus up to 0.5 more toward the tip);
+  - its translucency (`THIN_SHOWS` 0.3) and its fades (`ROOT_FADE`, `COLLAPSE_FADE`);
+  - its tip froth (0.3) and its Rich roughness (0.25);
+  - the landing flash (0.15 s).
 - **The curl's direction.** It is held within 30° of the shore's normal.
 - **The air rule.** The drawn air reaches full strength under foam 0.5 thick.
 
 ## Open feel checks for the owner (no rider tests were run)
 
-- **Does the curl read as a separator?** It should be a small lip, clearly smaller than a tube, running just behind the front, with a clean shoulder ahead. Or does it look like glass sitting on the crest? The knobs are `RISE`, `SKY_BEHIND`, `BACK` and `OVER` in `SpillingCurlMesh.ts`.
+- **Does the curl read as a separator?** It should be a small lip, clearly smaller than a tube, running just behind the front, with a clean shoulder ahead. Or does it still look like a glassy tongue on the crest? The knobs are in `SpillingCurlMesh.ts`: `RISE`, `SKY_BEHIND`/`SKY_AT_TIP`, `THIN_SHOWS`, `TIP_FROTH`, `BACK` and `OVER`. Streaks or a broken-up surface on the falling sheet are the next step if it still reads too clean.
+- **The residual lace** from earlier bores covers the shoulder at Big. Shortening the Canyon's residual (15 s) is look only, but it changes the whole spot's foam, so it needs the owner's call.
 - **The white's pace.** Is 2 s from touchdown to the face's foot right, and is the white bright enough where the curl lands?
 - **Sizes and light.** Small and Big swells (the ψ0 hold keeps the curl at 0.23–0.33 H of each wave), dawn and sunset light, and the GPU tier.
 - **Nothing felt changed**, so the ride itself should feel exactly as before. Worth confirming on the board, since the white now arrives later than the push.

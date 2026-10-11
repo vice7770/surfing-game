@@ -1413,8 +1413,8 @@ export class SurfZoneSimulation {
       u![i] = wet ? qx[i] / h[i] : 0;
       w![i] = wet ? qz[i] / h[i] : 0;
       fraction![i] = this.aeration.voidFraction(i);
-      // With the spilling lip, the air is drawn where the drawn whitewater is: none under a curl yet to land.
-      if (this.curl) fraction![i] *= SpillingCurl.airShare(dense[i] + residual[i]);
+      // With the spilling lip, a young curl's column draws its air where the drawn whitewater is: none before it lands.
+      if (this.curl) fraction![i] *= this.curl.airShare(i, dense[i] + residual[i]);
     }
     const { roller } = this;
     const lenses = this.rollerReach();
@@ -1491,7 +1491,7 @@ export class SurfZoneSimulation {
           u![i] = wet ? qx[i] / h[i] : 0;
           w![i] = wet ? qz[i] / h[i] : 0;
         }
-        if (aeration) fraction![i] = this.curl ? this.aeration.voidFraction(i) * SpillingCurl.airShare(dense[i] + residual[i]) : this.aeration.voidFraction(i);
+        if (aeration) fraction![i] = this.curl ? this.aeration.voidFraction(i) * this.curl.airShare(i, dense[i] + residual[i]) : this.aeration.voidFraction(i);
       }
     }
     const { roller } = this;
