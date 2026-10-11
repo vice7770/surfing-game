@@ -1076,6 +1076,8 @@ export class SurfZoneSimulation {
       this.driftX = this.solver.xCenters[0];
       this.foam.setDrift(surfaceDrift(this.solver, this.breakerDepth()));
     }
+    // Cleared of the last waves' lace, and made none, on each unbroken shoulder ahead of a front (drawn only, round 3).
+    this.curl?.clearShoulder(this.foam, this.drawnWhitewater, this.spilling!, dt);
     this.foam.update(dt, this.whitewaterStrength, this.advectionStencil, this.drawnWhitewater);
     end = performance.now();
     this.stepCosts.foam = end - phase;

@@ -77,6 +77,27 @@ export const SPILLING_CURL = {
    * over the void's arc gives 0.036 H at 1:50 and 0.06 H at 1:30.
    */
   minLip: 0.052,
+  /**
+   * The unbroken shoulder ahead of each front is cleared of drawn lace (the owner, 2026-10-11: "the shoulder ahead stays
+   * clean green water, no foam at all"; the coordinator's ruling, round 3), as the breakers' shoreward surface drift
+   * clears a face in nature (Hansen & Svendsen 1984), which neither the depth-averaged foam nor its drift does at Big:
+   * - along the wave's crest line ahead of its front, `shoulderReach` m, fading in over `shoulderFade` m from the front;
+   * - across shore from `shoulderBack` m behind the crest to `shoulderAhead` m ahead of it (no less than
+   *   `shoulderAheadHeights` breaker heights: the face and the water ahead the crest is about to run over), fading over
+   *   `shoulderFade` m at both ends;
+   * - the lace there fades with an e-folding time of `shoulderClear` s, so it never pops or flickers.
+   * The crest line is followed column by column as the highest water within `shoulderTrack` m of the last column's,
+   * until the water there stands less than `shoulderCrest` of the front's crest above still water (the shoulder has
+   * ended). All P.
+   */
+  shoulderReach: 30,
+  shoulderFade: 3,
+  shoulderBack: 2,
+  shoulderAhead: 12,
+  shoulderAheadHeights: 5,
+  shoulderClear: 0.1,
+  shoulderTrack: 2,
+  shoulderCrest: 0.3,
 } as const;
 
 /**
@@ -191,6 +212,11 @@ export interface SpillingCurlOptions {
 
 /** No wave in a column. */
 const NONE = -1;
+
+const smooth = (edge0: number, edge1: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+};
 
 export class SpillingCurl implements SpillingDrawnLook {
   /** From this age on, s, every column's white is drawn as felt (the tallest wave's touchdown, the toe and its tail). */
@@ -476,6 +502,89 @@ export class SpillingCurl implements SpillingDrawnLook {
         0, 0, id, this.height[nearest], 0);
     }
     return count;
+  }
+
+  /**
+   * Clears the drawn lace on each wave's unbroken shoulder ahead of its front (`SPILLING_CURL.shoulder*`), in the drawn
+   * foam's own fields before their step, and holds back the drawn whitewater there (`drawn`: the solver's weak breaking
+   * ahead of a front that no onset has joined to a wave yet, which no band holds): never felt (the foam is drawn only, and
+   * the bores the air reads are not its values). Behind each front nothing changes, so the broken part's whitewater and
+   * its lace trail are as they were.
+   */
+  clearShoulder(foam: { readonly dense: Float64Array; readonly residual: Float64Array }, drawn: Float64Array | undefined,
+    front: SpillingFront, dt: number): void {
+    if (!(dt > 0)) return;
+    const { grid, first, last } = this;
+    const { nx, nz, dx, xCenters, zCenters, h, bed, restLevel } = grid;
+    const curl = SPILLING_CURL;
+    const height = this.options.breakerHeight;
+    const ahead = Math.max(curl.shoulderAhead, curl.shoulderAheadHeights * height);
+    const fade = curl.shoulderFade;
+    const clear = 1 - Math.exp(-dt / curl.shoulderClear);
+    const direction = front.options.direction;
+    const reach = Math.round(curl.shoulderReach / dx);
+    // The first row at or past z (a binary search: the rows stretch offshore).
+    const rowOf = (z: number) => {
+      let low = 0;
+      let high = nz - 1;
+      while (low < high) {
+        const middle = (low + high) >> 1;
+        if (zCenters[middle] < z) low = middle + 1;
+        else high = middle;
+      }
+      return low;
+    };
+    // The highest water within `window` m of z in column c, by rows (the rows are 1 m in the break zone): its z and level.
+    const highest = (c: number, z: number, window: number) => {
+      let best = -Infinity;
+      let at = Number.NaN;
+      for (let iz = rowOf(z - window); iz < nz; iz += 1) {
+        const zz = zCenters[iz];
+        if (zz > z + window) break;
+        const i = iz * nx + c;
+        const level = h[i] + bed[i];
+        if (level > best) {
+          best = level;
+          at = zz;
+        }
+      }
+      return { z: at, level: best };
+    };
+    for (const wave of front.waves) {
+      // The crest at the front: the wave's own crest in the last columns it has reached, the highest water near it.
+      const frontColumn = Math.round((wave.frontX - xCenters[0]) / dx);
+      let crestZ = Number.NaN;
+      let crestLevel = 0;
+      for (let d = 0; d <= 6 && !(crestZ === crestZ); d += 1) {
+        const c = frontColumn - direction * d;
+        if (c < 0 || c >= nx) continue;
+        const z = wave.crest[c];
+        if (!(z === z)) continue;
+        const found = highest(c, z, curl.shoulderTrack + 1);
+        crestZ = found.z;
+        crestLevel = Math.max(0.05, curl.shoulderCrest * (found.level - restLevel));
+      }
+      if (!(crestZ === crestZ)) continue;
+      for (let d = 1; d <= reach; d += 1) {
+        const c = frontColumn + direction * d;
+        if (c < first || c >= last) break;
+        const crest = highest(c, crestZ, curl.shoulderTrack);
+        if (!(crest.level - restLevel >= crestLevel)) break;
+        crestZ = crest.z;
+        const along = smooth(0, fade, Math.abs(xCenters[c] - wave.frontX));
+        const from = crestZ - curl.shoulderBack - fade;
+        const to = crestZ + ahead + fade;
+        for (let iz = rowOf(from); iz < nz && zCenters[iz] <= to; iz += 1) {
+          const z = zCenters[iz];
+          const shoulder = along * smooth(from, from + fade, z) * (1 - smooth(to - fade, to, z));
+          const keep = 1 - shoulder * clear;
+          const i = iz * nx + c;
+          foam.dense[i] *= keep;
+          foam.residual[i] *= keep;
+          if (drawn) drawn[i] *= 1 - shoulder;
+        }
+      }
+    }
   }
 
   /**
