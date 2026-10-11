@@ -161,6 +161,17 @@ export interface SpillingWave {
   readonly seenAt: Float64Array;
 }
 
+/**
+ * The drawn whitewater's look (the Canyon spilling lip, `SpillingCurl`): the share of a wave's whitewater drawn in
+ * `column`, `age` s after its front reached it (or its onset joined there, whichever came later), at z. Look only: the
+ * whitewater the foam's air and the roar are fed, and the breaking the rider feels, never read it.
+ */
+export interface SpillingDrawnLook {
+  /** From this age on, s, all of it is drawn. */
+  readonly span: number;
+  share(column: number, age: number, z: number): number;
+}
+
 /** A per-column array as JSON numbers, NaN as null (as `LipState` and `FrontState` carry theirs). */
 export type ColumnValues = (number | null)[];
 
@@ -332,8 +343,12 @@ export class SpillingFront {
    * `felt` (the roller lens, S3, Q1): the breaking the rider feels, the solver's behind each front and in cells no
    * wave owns, 0 ahead of the fronts, with no ramp. Each wave's crest per column (`crestAt`) is recorded whether or not
    * its front has reached the column.
+   *
+   * `drawn` with `look` (the Canyon spilling lip): the whitewater drawn, `out` times the look's share in each owned cell
+   * younger than its span, `out` everywhere else. It is written beside `out` and `felt`, which it never changes.
    */
-  update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array, felt?: Float64Array): void {
+  update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array, felt?: Float64Array,
+    drawn?: Float64Array, look?: SpillingDrawnLook): void {
     const { grid, options } = this;
     const { nx, nz, xCenters, zCenters } = grid;
     const { direction } = options;
@@ -369,6 +384,7 @@ export class SpillingFront {
         if (!(b > 0)) {
           out[i] = 0;
           if (felt) felt[i] = 0;
+          if (drawn) drawn[i] = 0;
           continue;
         }
         let owner = -1;
@@ -384,6 +400,7 @@ export class SpillingFront {
         if (owner < 0) {
           out[i] = b;
           if (felt) felt[i] = b;
+          if (drawn) drawn[i] = b;
           continue;
         }
         // Rows run seaward to shoreward, so the first owned cell met in a column on its own crest is the wave's crest
@@ -398,6 +415,7 @@ export class SpillingFront {
         if (Number.isNaN(reached)) {
           out[i] = 0;
           if (felt) felt[i] = 0;
+          if (drawn) drawn[i] = 0;
           this.gated += 1;
           continue;
         }
@@ -405,11 +423,13 @@ export class SpillingFront {
         const local = time - Math.max(reached, latest);
         if (local >= options.rampSeconds) {
           out[i] = b;
+          if (drawn) drawn[i] = look && local < look.span ? b * look.share(ix, local, z) : b;
           continue;
         }
         const grown = Math.max(0, local) / options.rampSeconds;
         const width = options.lineWidth + options.growth * Math.max(0, local);
         out[i] = z - wave.crest[ix] > width ? 0 : b * (options.lineShare + (1 - options.lineShare) * grown);
+        if (drawn) drawn[i] = look && local < look.span && out[i] > 0 ? out[i] * look.share(ix, local, z) : out[i];
         this.ramped += 1;
       }
     }
