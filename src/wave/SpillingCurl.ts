@@ -43,6 +43,11 @@ export const SPILLING_CURL = {
   toeSeconds: 2,
   /** Past the foot the toe runs on for this long, s, before the whole face is drawn as felt (P). */
   tailSeconds: 0.5,
+  /**
+   * The band lights up where the lip lands over this long, s, to its full drawn scale (P): a bright white patch on touchdown
+   * (fresh foam averages about 41 % reflectance over its first second; the advisor), not the felt lens's slow development.
+   */
+  flashSeconds: 0.15,
   /** The white's edges are drawn soft over this many metres: half the solver's 1 m rows, so a row takes it in (P). */
   soft: 0.5,
   /**
@@ -318,7 +323,9 @@ export class SpillingCurl implements SpillingDrawnLook {
   /**
    * The roller's band as drawn (S3's table, `ROLLER_FIELD`, in the copy the looks read; the felt table is never
    * touched): each lens younger than `span` behind its front shows from its curl's landing line, the void filling up to
-   * its crest, down to a toe that reaches the lens's own toe `toeSeconds` after touchdown; before touchdown, none.
+   * its crest, down to a toe that reaches the lens's own toe `toeSeconds` after touchdown; before touchdown, none. Once
+   * landed it is drawn at full scale (over `flashSeconds`): the felt lens's scale grows with its travel (over 6.5 h_b,
+   * about 2.5 s), which drew the landing faint; by `span` the felt scale has grown to it.
    */
   drawBand(table: Float32Array, front: SpillingFront, roller: SpillingRoller, time: number): void {
     const { nx } = this.grid;
@@ -345,6 +352,8 @@ export class SpillingCurl implements SpillingDrawnLook {
           table[o + ROLLER_FIELD.scale] = 0;
           continue;
         }
+        const flash = Math.min(1, since / SPILLING_CURL.flashSeconds);
+        if (table[o + ROLLER_FIELD.scale] < flash) table[o + ROLLER_FIELD.scale] = flash;
         if (since >= SPILLING_CURL.toeSeconds + SPILLING_CURL.tailSeconds) continue;
         const length = table[o + ROLLER_FIELD.length];
         const landing = own ? this.landing[column] : this.size(column, this.nominal).ahead;
@@ -415,8 +424,14 @@ export class SpillingCurl implements SpillingDrawnLook {
     return count;
   }
 
-  /** The drawn void fraction where the drawn foam covers `foam` of the surface: air shows only under drawn whitewater. */
-  static airShare(foam: number): number {
+  /**
+   * The share of cell `cell`'s air drawn where the drawn foam covers `foam` of the surface: in a column whose curl is
+   * young (younger than `span`), air shows only under drawn whitewater, none under a curl yet to land; elsewhere all of it,
+   * so a developed bore draws its air as before.
+   */
+  airShare(cell: number, foam: number): number {
+    const age = this.age[cell % this.grid.nx];
+    if (!(age === age)) return 1;
     return Math.min(1, Math.max(0, foam / SPILLING_CURL.airFoam));
   }
 }
