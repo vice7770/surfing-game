@@ -3,7 +3,7 @@ import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE } from '../wave/SpillingCurl';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
 import { waterRipplePars } from './water/rippleTexture';
-import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
+import { CLASSIC_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterChopNormal } from './waterChop';
 import { CLASSIC_FOAM, WATER_IOR, waterBodyFragment } from './waterOptics';
 import { waterFragmentPars, waterVertexPars } from './WaterSurface';
@@ -36,7 +36,7 @@ const WIDEST = 0.55;
  * and its face gentler than a breaking crest's, so a void W high over the face would stand the lip a third of the wave
  * above it, where a spilling crest only sharpens and pitches. The void is then as high as the face's drop allows.
  */
-const RISE = 0.2;
+const RISE = 0.1;
 /** Slices of one wave further apart than this along shore, m, are separate ribbons. */
 const JOIN = 1.6;
 /**
@@ -45,6 +45,25 @@ const JOIN = 1.6;
  * against the face, translucent green (provisional; the swept barrel's open lip has its own, larger share).
  */
 const SKY_BEHIND = 0.1;
+/** Toward its tip the lip's far side sees more sky: up to this much more, so its falling edge is its brightest part (P). */
+const SKY_AT_TIP = 0.5;
+/** The very tip's froth: the leading edge breaking up before it lands (P; the coordinator's ruling, 2026-10-11). */
+const TIP_FROTH = 0.3;
+/**
+ * Fades, as shares of the landing's distance a/L: the lip grows out of the crest's water from ROOT_FADE[0] behind the
+ * crest (invisible) to ROOT_FADE[1] (whole), so no seam shows where it attaches; the underside likewise out of the void's
+ * back. As its void fills it thins, whitens and fades out into its landing patch: gone by the time it has filled.
+ */
+const ROOT_FADE = [-0.4, 0.1] as const;
+const UNDER_FADE = [0.1, 0.35] as const;
+const COLLAPSE_FADE = [0.3, 1] as const;
+/** Where it falls as a thin sheet, this share of the water behind shows through it (P): translucent, not glass. */
+const THIN_SHOWS = 0.3;
+/**
+ * The Rich curl's roughness: a falling sheet is never mirror-still as the Rich water's base (0.08, broken up there by its
+ * ripples) would draw its smooth curve, a plastic sheen (P).
+ */
+const RICH_CURL_ROUGHNESS = 0.25;
 
 /** A cubic Bézier's point (and with `d`, its derivative) at s, one coordinate. */
 function bezier(p0: number, p1: number, p2: number, p3: number, s: number, d = false): number {
@@ -73,6 +92,8 @@ export interface CurlRibbon {
   wallNormal: Float32Array;
   /** The sheet's other side's normal at the same place (Rich's two-interface transmission). */
   exitNormal: Float32Array;
+  /** How much of the water behind shows through: 0 where it fades into the crest or out as it collapses, 1 whole. */
+  alpha: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -83,7 +104,7 @@ export function createCurlRibbon(): CurlRibbon {
     positions: new Float32Array(3 * CURL_VERTICES), normals: new Float32Array(3 * CURL_VERTICES), foam: new Float32Array(CURL_VERTICES),
     sheet: new Float32Array(CURL_VERTICES), sheetWeight: new Float32Array(CURL_VERTICES), sheetBack: new Float32Array(CURL_VERTICES),
     wall: new Float32Array(3 * CURL_VERTICES), wallNormal: new Float32Array(3 * CURL_VERTICES), exitNormal: new Float32Array(3 * CURL_VERTICES),
-    indices: new Uint32Array(INDICES), vertexCount: 0, indexCount: 0,
+    alpha: new Float32Array(CURL_VERTICES), indices: new Uint32Array(INDICES), vertexCount: 0, indexCount: 0,
   };
 }
 
@@ -153,8 +174,10 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
     const nz = lofted[o + CURL_FIELD.normalZ];
     const length = lofted[o + CURL_FIELD.length];
     const width = lofted[o + CURL_FIELD.width];
-    const thickness = lofted[o + CURL_FIELD.thickness];
     const white = lofted[o + CURL_FIELD.white];
+    // Collapsing, it thins as its void fills.
+    const thickness = lofted[o + CURL_FIELD.thickness] * (1 - 0.7 * white);
+    const fading = 1 - smooth(COLLAPSE_FADE[0], COLLAPSE_FADE[1], white);
     const landing = length * Math.cos(lofted[o + CURL_FIELD.tilt]);
     const crestY = heightAt(x, z);
     const face = (a: number) => heightAt(x + nx * a, z + nz * a) - crestY;
@@ -164,11 +187,13 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
     const back = -BACK * landing;
     const rise = RISE * lofted[o + CURL_FIELD.height];
     const apex = Math.max(thickness, Math.min(rise, width + thickness + face(WIDEST * landing))) / 0.75;
+    const backFace = face(back);
+    const landed = face(landing);
     const ax = [back, -0.1 * landing, OVER * landing, landing];
-    const ay = [face(back) - BURY, apex, apex, face(landing) - BURY];
+    const ay = [backFace - BURY, apex, apex, landed - BURY];
     let p = 0;
-    const point = (a: number, y: number, side: number, pair: number) => {
-      const f = face(a);
+    const point = (a: number, y: number, side: number, pair: number, known?: number) => {
+      const f = known ?? face(a);
       sectionA[p] = a;
       sectionY[p] = y;
       sectionU[p] = landing > 0 ? Math.min(1, Math.max(0, a / landing)) : 0;
@@ -177,13 +202,13 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
       sectionPair[p] = pair;
       p += 1;
     };
-    point(ax[0], ay[0], 0, -1);
+    point(ax[0], ay[0], 0, -1, backFace);
     for (const t of OUTER) {
       // Its partner across the lip, where the underside has one.
       const pair = UNDER.indexOf(t as (typeof UNDER)[number]);
       point(bezier(ax[0], ax[1], ax[2], ax[3], t), bezier(ay[0], ay[1], ay[2], ay[3], t), 1, pair < 0 ? -1 : 1 + OUTER.length + 2 + pair);
     }
-    point(ax[3], ay[3], 0, -1);
+    point(ax[3], ay[3], 0, -1, landed);
     // The underside: the outer surface less the lip's thickness along its normal, from the tip back under the crest.
     const underA = (t: number) => {
       const da = bezier(ax[0], ax[1], ax[2], ax[3], t, true);
@@ -192,15 +217,16 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
       return [bezier(ax[0], ax[1], ax[2], ax[3], t) + (thickness * dy) / norm, bezier(ay[0], ay[1], ay[2], ay[3], t) - (thickness * da) / norm];
     };
     const [tipA] = underA(UNDER[0]);
-    point(tipA, face(tipA) - BURY, 0, -1);
+    const tipFace = face(tipA);
+    point(tipA, tipFace - BURY, 0, -1, tipFace);
     UNDER.forEach((t) => {
       const [a, y] = underA(t);
       point(a, y, -1, 1 + OUTER.indexOf(t));
     });
     // The void's back: the face gone vertical under the crest, down into the water.
     const footA = sectionA[p - 1];
-    point(footA, face(footA) - BURY, 0, -1);
-    const landed = face(landing);
+    const footFace = face(footA);
+    point(footA, footFace - BURY, 0, -1, footFace);
     // Normals in the slice's plane: the loop runs clockwise (a right, y up), so outward is the tangent turned left.
     for (let k = 0; k < CURL_POINTS; k += 1) {
       const before = k > 0 ? k - 1 : k;
@@ -231,12 +257,18 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
       out.exitNormal[3 * v + 1] = sign * sectionNormalY[across];
       out.exitNormal[3 * v + 2] = sign * nz * sectionNormalA[across];
       const u = sectionU[k];
-      // White from where it lands (the tip first) back to the crest as its void fills; green and clear before.
-      out.foam[v] = Math.min(1, white * (0.6 + 0.8 * u));
+      const lip = sectionSide[k] !== 0;
+      // White from where it lands (the tip first) back to the crest as its void fills; clear before, but for a little
+      // froth on its very tip as it falls.
+      out.foam[v] = Math.min(1, Math.max(white * (0.6 + 0.8 * u), lip && length > 0 ? TIP_FROTH * smooth(0.82, 1, u) : 0));
       out.sheet[v] = Math.max(0.01, thickness);
-      // A sheet where it is the lip, over the void; the crest's own water behind is not.
-      out.sheetWeight[v] = sectionSide[k] === 0 ? 0 : (sectionSide[k] < 0 ? 1 : smooth(0.05, 0.35, u)) * (1 - out.foam[v]);
-      out.sheetBack[v] = SKY_BEHIND;
+      // A thin sheet where it falls, the outer half of the lip; nearer the crest it is the crest's water, shaded as the face.
+      out.sheetWeight[v] = lip ? smooth(0.45, 0.9, u) * (1 - out.foam[v]) : 0;
+      out.sheetBack[v] = SKY_BEHIND + SKY_AT_TIP * smooth(0.7, 1, u);
+      // Faded into the crest where it grows from it (and the underside into the void's back), and out as it collapses.
+      const attach = sectionSide[k] < 0 ? smooth(UNDER_FADE[0], UNDER_FADE[1], u)
+        : smooth(ROOT_FADE[0], ROOT_FADE[1], landing > 0 ? a / landing : 0);
+      out.alpha[v] = attach * fading * (1 - THIN_SHOWS * out.sheetWeight[v]);
       const wallA = Math.max(0, Math.min(a, landing));
       out.wall[3 * v] = x + nx * wallA;
       out.wall[3 * v + 1] = crestY + (wallA === a ? sectionFace[k] : face(wallA));
@@ -277,22 +309,27 @@ attribute float curlSheetBack;
 attribute vec3 curlWall;
 attribute vec3 curlWallNormal;
 attribute vec3 curlExitNormal;
+attribute float curlAlpha;
+varying float vCurlAlpha;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
 varying float vSweptWallDepth;
 varying vec3 vSweptWallNormal;
 varying vec3 vSweptExitNormal;`;
-const curlFragmentPars = /* glsl */ `varying float vSweptSheet;
+const curlFragmentPars = /* glsl */ `varying float vCurlAlpha;
+varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
 varying float vSweptWallDepth;
 varying vec3 vSweptWallNormal;
 varying vec3 vSweptExitNormal;`;
 // The curl's own foam (its whitening as it lands), not the water's under it: the falling lip carries no air until then.
+// Its body is the face's under it, the same column of water to the bed, so it takes the face's colour where it is no sheet.
 const curlBeginNormal = /* glsl */ `vec3 objectNormal = vec3( normal );
-vWaterDepth = max( 0.0, position.y - waterBedAt( position.xz ) );
+vWaterDepth = max( 0.0, waterHeightAt( position.xz ) - waterBedAt( position.xz ) );
 vWaterFoam = curlFoam;
+vCurlAlpha = curlAlpha;
 vWaterFlow = waterFlowAt( position.xz );
 vSweptSheet = curlSheet;
 vSweptSheetWeight = curlSheetWeight;
@@ -300,14 +337,24 @@ vSweptSheetBack = curlSheetBack;
 vSweptWallDepth = max( 0.0, curlWall.y - waterBedAt( curlWall.xz ) );
 vSweptWallNormal = curlWallNormal;
 vSweptExitNormal = curlExitNormal;`;
+/**
+ * The water's view cosine, held off grazing on the curl: a height field is never seen edge on, but the curl's silhouette
+ * is, where the body fell to the deep reflectance and the sheet's light to nothing behind a full Fresnel, drawing it a dark
+ * rim. Its edge shows as the face beside it at a slant.
+ */
+const VIEW_COS = 'float waterViewCos = dot( waterN, waterV );';
+const CURL_VIEW_COS = 'float waterViewCos = max( 0.3, abs( dot( waterN, waterV ) ) );';
 const curlBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
 
 /**
  * The spilling lip as drawn (the Canyon spilling lip): the curls' ribbon (`buildCurlRibbon`), shaded as the water is in
- * either look, on the water's own uniforms, its lip as a thin sheet lit from behind as the swept barrel's is
- * (`SWEPT_SHEET_BODY`, tube-colour-fix.md; Rich's two-interface transmission and the lip's glow): translucent green while
- * it falls, white as it lands. Opaque, look only: nothing collides with it.
+ * either look, on the water's own uniforms, with the face's column of water as its body, so it takes the face's colour;
+ * where it falls thin, its outer half, it is a sheet lit from behind as the swept barrel's lip is (`SWEPT_SHEET_BODY`,
+ * tube-colour-fix.md; Rich's two-interface transmission and the lip's glow), translucent and brightest toward its tip.
+ * Blended: it fades into the crest where it attaches and out into its landing as it collapses, white. Look only: nothing
+ * collides with it. The coordinator's review of the first stills (2026-10-11): no plastic sheen, no dark rim, no seam,
+ * no end cap.
  */
 export class SpillingCurlMesh {
   readonly mesh: Mesh<BufferGeometry, MeshPhysicalMaterial>;
@@ -329,12 +376,16 @@ export class SpillingCurlMesh {
       { name: 'curlWall', attribute: make(3), size: 3, from: (r) => r.wall },
       { name: 'curlWallNormal', attribute: make(3), size: 3, from: (r) => r.wallNormal },
       { name: 'curlExitNormal', attribute: make(3), size: 3, from: (r) => r.exitNormal },
+      { name: 'curlAlpha', attribute: make(1), size: 1, from: (r) => r.alpha },
     ];
     for (const { name, attribute } of this.attributes) geometry.setAttribute(name, attribute);
     this.index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
-    const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
+    // Blended where it fades into the crest and out as it collapses; it still writes depth, so it sorts with itself.
+    const material = new MeshPhysicalMaterial({
+      color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
+    });
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, uniforms);
       const rich = this.look === 'rich';
@@ -347,11 +398,11 @@ export class SpillingCurlMesh {
           ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${curlFragmentPars}`
           : `#include <common>\n${waterFragmentPars}\n${curlFragmentPars}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
-        .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', rich
+        .replace('#include <color_fragment>', 'diffuseColor.a *= vCurlAlpha;')
+        .replace('#include <emissivemap_fragment>', (rich
           ? waterBodyFragment(false, true, RICH_FAR_FOAM, RICH_SHEET_BODY + RICH_LIP_GLOW)
             .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
-          : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+          : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY)).replace(VIEW_COS, CURL_VIEW_COS))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
     };
     material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}`;
@@ -364,7 +415,7 @@ export class SpillingCurlMesh {
   setLook(look: WaterLook): void {
     if (look === this.look) return;
     this.look = look;
-    this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
+    this.mesh.material.roughness = look === 'rich' ? RICH_CURL_ROUGHNESS : CLASSIC_ROUGHNESS;
     this.mesh.material.needsUpdate = true;
   }
 
