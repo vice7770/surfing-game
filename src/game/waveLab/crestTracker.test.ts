@@ -52,6 +52,9 @@ describe('crest tracker', () => {
     const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 2, nz: 2 };
     const data = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1]);
     expect(sampleSurfaceFoam(data, grid, 0.5, 0.5)).toBeCloseTo(0.5, 6);
-    expect(sampleSurfaceFoam(data, grid, -1, 0)).toBe(0);
+    // Past a side edge it reads the water mirrored there, as the edge band draws it (2026-10-09); off the grid across
+    // shore it reads none.
+    expect(sampleSurfaceFoam(data, grid, -1, 0)).toBeCloseTo(sampleSurfaceFoam(data, grid, 1, 0), 6);
+    expect(sampleSurfaceFoam(data, grid, 0.5, -1)).toBe(0);
   });
 });
