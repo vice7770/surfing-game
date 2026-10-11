@@ -102,9 +102,11 @@ const LINEUP_OFFSET = 25;
 /**
  * The rider starts, and relaunches, this far seaward of the break line, m. In
  * the catch reports riders stood almost only from 4–8 m outside; from 25 m out
- * the waves pass before a paddler can reach the peak.
+ * the waves pass before a paddler can reach the peak. The owner's playtest
+ * (2026-10-11) found 6 m sat on top of the breaking at the Canyon, so every spot
+ * starts 5 m further out, to paddle into the wave before it breaks.
  */
-const RIDE_LINEUP_OFFSET = 6;
+const RIDE_LINEUP_OFFSET = 11;
 
 /** The edge hint (the rider's bounds): shown once the rider is this far past them, m, again every so many seconds held there, s, and cleared within the last, m. */
 const EDGE_HINT_DEPTH = 0.5;

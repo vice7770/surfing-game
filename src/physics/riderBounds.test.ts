@@ -4,6 +4,7 @@ import { RideSession } from './RideSession';
 import { practiceSwell } from '../game/PhysicalMode';
 import { swellChoice } from '../game/SurfConditions';
 import { OPEN_EDGE_RAMP } from '../wave/ShallowWaterSolver';
+import { SPAWN_OUT } from '../net/spawn';
 import { alongShoreOf, takeOffPoint, tankLayout, tankRiderBounds, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import type { SpotName } from '../wave/Bathymetry';
 
@@ -96,8 +97,8 @@ describe('the rider’s bounds', () => {
         expect(held.xMax - held.xMin).toBeCloseTo(alongShoreOf(config) - 2 * sideMargin(OPEN_EDGE_RAMP, config.dx ?? 1), 9);
         expect(held.zMin).toBeGreaterThan(layout.zoneInner);
         const takeOff = takeOffPoint(config);
-        // The take-off, and the lineup 25 m seaward of it, with room to paddle around them.
-        for (const z of [takeOff.z, takeOff.z - 25]) expect(boundsDepth(takeOff.x, z, held), `${spot} ${swell.significantHeight} m`).toBe(0);
+        // The take-off, the lineup 25 m seaward of it and the farthest online spawn, with room to paddle around them.
+        for (const z of [takeOff.z, takeOff.z - 25, takeOff.z - SPAWN_OUT.far]) expect(boundsDepth(takeOff.x, z, held), `${spot} ${swell.significantHeight} m`).toBe(0);
         expect(takeOff.x - held.xMin, spot).toBeGreaterThanOrEqual(8);
         expect(held.xMax - takeOff.x, spot).toBeGreaterThanOrEqual(8);
       }

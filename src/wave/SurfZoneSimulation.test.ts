@@ -813,9 +813,14 @@ describe('SurfZoneSimulation', () => {
       expect(canyonArmAt(point.x)).toBe(true);
       expect(point.x - CANYON.peakX).toBeGreaterThan(0);
       expect(point.x - CANYON.peakX).toBeLessThan(TAKE_OFF_EDGE_MARGIN);
-      // Up the arm's face where it is as deep as this size's waves were measured starting to break.
+      // Up the arm's face where it is as deep as this size's sets were measured starting to break.
       expect(bed(point.x, point.z)).toBeCloseTo(canyonTakeOffDepth(significantHeight), 1);
       expect(point.z).toBeLessThan(canyonBreakLineZ(point.x));
+    }
+    // Where nine in ten of each size's waves had started breaking in the take-off's column (canyon-big's final bed,
+    // 3 seeds × 14 periods): the sets, not the median wave (0.96 + 0.65 Hs until the owner's playtest of 2026-10-11).
+    for (const [significantHeight, ninetiethDepth] of [[0.9, 2.26], [1.4, 2.65], [2.4, 4.07]]) {
+      expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.15);
     }
   });
 
