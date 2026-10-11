@@ -122,6 +122,21 @@ describe('spray and mist', () => {
     expect(up / (SPLASH_UP.vertical * 4)).toBeLessThan(1.15);
   });
 
+  it('throws the drawn splashes (the Canyon spilling lip) as lip impacts in the look\'s way, apart from the impacts', () => {
+    const splash: LipImpact = { ...impact(0.1), whole: 0.1, kind: 1 };
+    const rich = new SprayCloud(3);
+    rich.update({ ...flatScene(), drawnImpacts: [splash] }, 1 / 60);
+    const asImpact = new SprayCloud(3);
+    asImpact.update(flatScene(0, [splash]), 1 / 60);
+    expect(rich.count).toBeGreaterThan(5);
+    expect(Array.from(rich.particles.subarray(0, rich.count * SPRAY_STRIDE))).toEqual(Array.from(asImpact.particles.subarray(0, asImpact.count * SPRAY_STRIDE)));
+    // Classic throws none from a splash-up, drawn or not.
+    const classic = new SprayCloud(3);
+    classic.look = 'classic';
+    classic.update({ ...flatScene(), drawnImpacts: [splash] }, 1 / 60);
+    expect(classic.count).toBe(0);
+  });
+
   it('splashes drops up from a lip impact in proportion to its energy, which fall back into the water', () => {
     const small = new SprayCloud(3);
     small.update(flatScene(0, [impact(0.05)]), 1 / 60);

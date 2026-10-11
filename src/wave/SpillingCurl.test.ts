@@ -125,7 +125,7 @@ describe('the spilling lip on a spilling front', () => {
       const time = step * dt;
       front.update(time, dt, 2, strength, mine.out, mine.felt, drawn, curl);
       plain.update(time, dt, 2, strength, theirs.out, theirs.felt);
-      curl.update(time, front, undefined, strength);
+      curl.update(time, dt, front, undefined, strength);
       // The front's own whitewater and the breaking felt are exactly as without the lip.
       for (let i = 0; i < drawn.length; i += 1) {
         expect(Object.is(mine.out[i], theirs.out[i])).toBe(true);
@@ -176,7 +176,7 @@ describe('the spilling lip on a spilling front', () => {
     for (let step = 1; step <= 40; step += 1) {
       const time = step * dt;
       front.update(time, dt, 2, grid.strength, mine.out, mine.felt, drawn, curl);
-      curl.update(time, front, undefined, grid.strength);
+      curl.update(time, dt, front, undefined, grid.strength);
     }
     const into = new Float32Array(CURL_CAPACITY * CURL_STRIDE);
     const count = curl.writeCurls(into, front, (_x, z) => 1 / Math.cosh(z / 3) ** 2);
@@ -221,7 +221,7 @@ describe('the spilling lip\'s band', () => {
     for (let step = 1; step <= 600; step += 1) {
       const time = step * dt;
       front.update(time, dt, 2, grid.strength, out);
-      curl.update(time, front, undefined, grid.strength);
+      curl.update(time, dt, front, undefined, grid.strength);
       drawn.set(felt);
       curl.drawBand(drawn, front, roller, time);
       const reached = front.waves[0].reached[20];
@@ -242,6 +242,42 @@ describe('the spilling lip\'s band', () => {
     expect(after).toBeGreaterThan(20);
     // The felt table is never touched.
     expect(felt[o + ROLLER_FIELD.scale]).toBe(Math.fround(0.2));
+  });
+});
+
+describe('the spilling lip\'s splash', () => {
+  it('splashes once per column as its curl lands, on at the breaker celerity and down, for the drawn spray', () => {
+    const grid = tank();
+    const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+    for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+    const out = new Float64Array(grid.nx * grid.nz);
+    const splashed = new Map<number, number>();
+    const dt = 0.02;
+    for (let step = 1; step <= 400; step += 1) {
+      const time = step * dt;
+      front.update(time, dt, 2, grid.strength, out);
+      curl.update(time, dt, front, undefined, grid.strength);
+      for (const splash of curl.splashes) {
+        const column = Math.round(splash.x - grid.xCenters[0]);
+        expect(splashed.has(column)).toBe(false);
+        splashed.set(column, time);
+        // At its touchdown, where its lip lands, a share of its jet, going on and down.
+        const since = time - front.waves[0].reached[column] - curl.impact[column];
+        expect(since).toBeGreaterThanOrEqual(0);
+        expect(since).toBeLessThan(dt + 1e-9);
+        expect(splash.z).toBeCloseTo(curl.crest[column] + curl.landing[column], 6);
+        expect(splash.kind).toBe(1);
+        expect(splash.vz).toBeCloseTo(Math.sqrt(9.81 * 2), 1);
+        expect(splash.vy).toBe(-SPILLING_CURL.splashFall);
+        const jet = curl.shapes[column].jetArea * curl.height[column] ** 2;
+        expect(splash.volume).toBeCloseTo(SPILLING_CURL.splashShare * jet, 9);
+      }
+    }
+    expect(splashed.size).toBeGreaterThan(10);
+    // A sea taken over rebuilds the curl without a step: no splash.
+    curl.update(8, 0, front, undefined, grid.strength);
+    expect(curl.splashes).toHaveLength(0);
   });
 });
 
@@ -266,5 +302,27 @@ describe('the spilling lip at the Canyon', () => {
       expect(curl.size(column, 1).width).toBeCloseTo(overturnSize(curl.shapes[column], 1).width, 12);
     }
     expect(arm).toBeGreaterThan(40);
+  });
+
+  it('scales the curl with H: at Big (H 2.5 m) 0.58–0.83 m high, landing 1.5 m ahead, its lip 0.13–0.15 m thick', () => {
+    const simulation = new SurfZoneSimulation({
+      spot: 'canyon', seed: 1, significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: 150, tide: 0,
+      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+    }, 'warm');
+    const curl = simulation.curl!;
+    const { xCenters, nx } = simulation.solver;
+    for (let column = 0; column < nx; column += 1) {
+      if (!canyonArmAt(xCenters[column])) continue;
+      for (const [height, high, ahead, thick] of [[2.5, [0.56, 0.84], 1.5, [0.13, 0.153]], [1.3, [0.29, 0.44], 0.78, [0.067, 0.08]]] as const) {
+        const size = curl.size(column, height);
+        expect(size.width).toBeGreaterThanOrEqual(high[0]);
+        expect(size.width).toBeLessThanOrEqual(high[1]);
+        expect(size.ahead).toBeCloseTo(ahead, 1);
+        expect(size.thickness).toBeGreaterThanOrEqual(thick[0]);
+        expect(size.thickness).toBeLessThanOrEqual(thick[1]);
+      }
+      // Its touchdown comes later on a bigger wave: about 0.95 s at Big.
+      expect(impactTime(2.5)).toBeCloseTo(0.95, 2);
+    }
   });
 });

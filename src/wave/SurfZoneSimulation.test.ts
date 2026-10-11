@@ -1690,6 +1690,7 @@ describe('the Canyon roller lens (S3)', () => {
     };
     let drawnDiffer = 0;
     let slices = 0;
+    let splashes = 0;
     // Medium, a few seconds of its peel, after its spin-up.
     for (let frame = 1; frame <= 5 * 30; frame += 1) {
       on.step(1 / 30);
@@ -1710,6 +1711,11 @@ describe('the Canyon roller lens (S3)', () => {
       expect(on.foam.breakingCount).toBe(off.foam.breakingCount);
       same('bores', on.foam.breakingCells, off.foam.breakingCells, on.foam.breakingCount);
       same('dissipation', on.foam.dissipation, off.foam.dissipation);
+      // The lip impacts the water, the foam's air and the sound take are the same; its splashes go to the drawn spray alone.
+      expect(on.lipImpacts).toEqual(off.lipImpacts);
+      expect(off.drawnImpacts).toHaveLength(0);
+      splashes += on.drawnImpacts.length;
+      // The drawn foam's shoreward drift never reaches the air: the air above rides the current's stencil.
       for (let i = 0; i < on.foam.dense.length; i += 1) if (on.foam.dense[i] !== off.foam.dense[i]) drawnDiffer += 1;
       if (frame % 15 !== 0) continue;
       // The heights drawn are the heights felt; the current too.
@@ -1721,10 +1727,65 @@ describe('the Canyon roller lens (S3)', () => {
       slices += on.writeCurls(curls);
       expect(off.writeCurls(curls)).toBe(0);
     }
-    // What is drawn does change: the curls, and the foam held back until they land.
+    // What is drawn does change: the curls, their splashes, and the foam held back until they land and drifting ashore.
     expect(slices).toBeGreaterThan(0);
+    expect(splashes).toBeGreaterThan(0);
     expect(drawnDiffer).toBeGreaterThan(0);
   }, 900_000);
+
+  /**
+   * The drawn foam on the unbroken shoulder ahead of each wave's front at the take-off: per front whose crest lies within
+   * 15 m of the size's take-off line, the mean over 3–15 m ahead along its crest, from 1 m behind the crest to 8 m ahead.
+   */
+  function shoulderFoam(simulation: SurfZoneSimulation): number[] {
+    const { solver, foam } = simulation;
+    const { nx, nz, xCenters, zCenters, h, bed, restLevel, dx } = solver;
+    const takeOff = takeOffPoint(simulation.config);
+    const out: number[] = [];
+    for (const wave of simulation.spilling!.waves) {
+      if (!(wave.frontX > -45 && wave.frontX < 0) || !canyonArmAt(wave.frontX)) continue;
+      const front = Math.round((wave.frontX - xCenters[0]) / dx);
+      let z = Number.NaN;
+      for (let d = 0; d <= 6 && !(z === z); d += 1) if (wave.crest[front - d] === wave.crest[front - d]) z = wave.crest[front - d];
+      const line = takeOff.z + (wave.frontX - takeOff.x) * Math.tan((CANYON.angle * Math.PI) / 180);
+      if (!(Math.abs(z - line) <= 15)) continue;
+      let sum = 0;
+      let n = 0;
+      for (let d = 1; d <= 15 && front + d < nx; d += 1) {
+        const c = front + d;
+        let best = -Infinity;
+        let at = z;
+        for (let iz = 0; iz < nz; iz += 1) {
+          if (Math.abs(zCenters[iz] - z) > 2) continue;
+          const level = h[iz * nx + c] + bed[iz * nx + c];
+          if (level > best) [best, at] = [level, zCenters[iz]];
+        }
+        if (best - restLevel < 0.2) break;
+        z = at;
+        if (d < 3) continue;
+        for (let iz = 0; iz < nz; iz += 1) {
+          if (zCenters[iz] < z - 1 || zCenters[iz] > z + 8) continue;
+          sum += foam.dense[iz * nx + c] + foam.residual[iz * nx + c];
+          n += 1;
+        }
+      }
+      if (n > 20) out.push(sum / n);
+    }
+    return out;
+  }
+
+  for (const [size, significantHeight, peakPeriod, least] of [['Medium', 1.4, 11, 40], ['Big', 2.4, 14, 15]] as const) {
+    it(`keeps the shoulder ahead of each front at the take-off clean green water at ${size}: its drawn foam at most 0.02`, () => {
+      const simulation = new SurfZoneSimulation({ ...canyon, significantHeight, peakPeriod });
+      const samples: number[] = [];
+      for (let frame = 1; frame <= 30 * 30; frame += 1) {
+        simulation.step(1 / 30);
+        if (frame % 8 === 0) samples.push(...shoulderFoam(simulation));
+      }
+      expect(samples.length).toBeGreaterThanOrEqual(least);
+      for (const foam of samples) expect(foam).toBeLessThanOrEqual(0.02);
+    }, 900_000);
+  }
 
   it('draws every other spot exactly as before: no spilling lip, its switch changes nothing', () => {
     for (const spot of ['beach', 'point', 'reef', 'pool'] as SpotName[]) {
