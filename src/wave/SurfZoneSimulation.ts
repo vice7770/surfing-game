@@ -505,14 +505,21 @@ export function peakTakeOffX(spot: SpotName): number {
 }
 
 /**
- * Where the Canyon's waves start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
- * line through each size's median first onset on its arm, 1.49, 1.96 and 2.50 m for Small, Medium and Big (canyon-big,
- * 3 seeds × 14 periods each; within 0.1 m of the line). Riders wait where the arm's face is this deep (`takeOffPoint`),
- * so at Big they wait where Big breaks, not tens of metres inside it. Re-measure if the arm or the swells change.
+ * Where the Canyon's sets start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
+ * line through the depth by which nine in ten of each size's waves have started breaking in the take-off's column
+ * (x −30 ± 4 m; each wave's most seaward onset there), 2.26, 2.65 and 4.07 m for Small, Medium and Big (canyon-big's
+ * final bed, 3 seeds × 14 periods each; within 0.14 m of the line). Riders wait where the arm's face is this deep
+ * (`takeOffPoint`), so the sets break at, not seaward of, the take-off.
+ * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs: 1.49, 1.96 and 2.50 m). On
+ *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
+ *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
+ *   blows right on top, without the chance to paddle to pick up speed". The rider starts `RIDE_LINEUP_OFFSET` further
+ *   out still.
+ * Re-measure if the arm or the swells change.
  */
-export const CANYON_TAKE_OFF_DEPTH = { base: 0.96, perMetre: 0.65 } as const;
+export const CANYON_TAKE_OFF_DEPTH = { base: 1.06, perMetre: 1.24 } as const;
 
-/** How deep the Canyon's waves of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`). */
+/** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`). */
 export function canyonTakeOffDepth(significantHeight: number): number {
   return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
 }
