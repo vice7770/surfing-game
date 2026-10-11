@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GRAVITY } from './dispersion';
 import { FOAM_SOURCE_RATE, FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { ShallowWaterSolver, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
+import { AdvectionStencil } from './AdvectionStencil';
 
 const lasting: FoamDecay = { dense: 1e9, residual: 1e9 };
 
@@ -168,6 +169,41 @@ describe('FoamField', () => {
     expect(Array.from(foam.breakingCells.subarray(0, foam.breakingCount))).toEqual([held, half]);
     expect(foam.dissipation[held]).toBe(plain.dissipation[held]);
     expect(foam.dissipation[half]).toBe(plain.dissipation[half]);
+  });
+
+  it('drifts shoreward on top of the current when given a drift (the Canyon spilling lip), the air\'s stencil left the current\'s', () => {
+    const solver = flatSolver();
+    setFlow(solver, 1, 0);
+    const plain = new FoamField(solver, lasting);
+    const drifting = new FoamField(solver, lasting);
+    drifting.setDrift(new Float64Array(solver.h.length).fill(0.4));
+    placeBlob(plain, solver, -10, 0);
+    placeBlob(drifting, solver, -10, 0);
+    const [a, b] = [new AdvectionStencil(), new AdvectionStencil()];
+    const calm = new Float64Array(solver.h.length);
+    const dt = 1 / 30;
+    for (let step = 0; step < 150; step += 1) {
+      plain.update(dt, calm, a);
+      drifting.update(dt, calm, b);
+      // The departure points the air reuses are the current's, drift or none.
+      expect(Array.from(b.indices)).toEqual(Array.from(a.indices));
+      expect(Array.from(b.values)).toEqual(Array.from(a.values));
+    }
+    // Five seconds on, the drifting foam lies 2 m further shoreward (+z), along shore with the other.
+    const [p, d] = [moments(plain, solver), moments(drifting, solver)];
+    expect(d.x).toBeCloseTo(p.x, 1);
+    expect(d.z - p.z).toBeCloseTo(2, 0);
+    expect(Math.abs(d.z - p.z - 2)).toBeLessThan(0.2);
+    // None given: bit for bit as before.
+    drifting.setDrift(undefined);
+    const again = new FoamField(solver, lasting);
+    placeBlob(again, solver, -10, 0);
+    const once = new FoamField(solver, lasting);
+    placeBlob(once, solver, -10, 0);
+    once.setDrift(new Float64Array(solver.h.length));
+    again.update(dt, calm);
+    once.update(dt, calm);
+    expect(Array.from(once.dense)).toEqual(Array.from(again.dense));
   });
 
   it('reindexes direct source edits into the same sorted active prefix', () => {

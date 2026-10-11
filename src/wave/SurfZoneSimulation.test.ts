@@ -1685,6 +1685,7 @@ describe('the Canyon roller lens (S3)', () => {
     };
     let drawnDiffer = 0;
     let slices = 0;
+    let splashes = 0;
     // Medium, a few seconds of its peel, after its spin-up.
     for (let frame = 1; frame <= 5 * 30; frame += 1) {
       on.step(1 / 30);
@@ -1705,6 +1706,11 @@ describe('the Canyon roller lens (S3)', () => {
       expect(on.foam.breakingCount).toBe(off.foam.breakingCount);
       same('bores', on.foam.breakingCells, off.foam.breakingCells, on.foam.breakingCount);
       same('dissipation', on.foam.dissipation, off.foam.dissipation);
+      // The lip impacts the water, the foam's air and the sound take are the same; its splashes go to the drawn spray alone.
+      expect(on.lipImpacts).toEqual(off.lipImpacts);
+      expect(off.drawnImpacts).toHaveLength(0);
+      splashes += on.drawnImpacts.length;
+      // The drawn foam's shoreward drift never reaches the air: the air above rides the current's stencil.
       for (let i = 0; i < on.foam.dense.length; i += 1) if (on.foam.dense[i] !== off.foam.dense[i]) drawnDiffer += 1;
       if (frame % 15 !== 0) continue;
       // The heights drawn are the heights felt; the current too.
@@ -1716,8 +1722,9 @@ describe('the Canyon roller lens (S3)', () => {
       slices += on.writeCurls(curls);
       expect(off.writeCurls(curls)).toBe(0);
     }
-    // What is drawn does change: the curls, and the foam held back until they land.
+    // What is drawn does change: the curls, their splashes, and the foam held back until they land and drifting ashore.
     expect(slices).toBeGreaterThan(0);
+    expect(splashes).toBeGreaterThan(0);
     expect(drawnDiffer).toBeGreaterThan(0);
   }, 900_000);
 
