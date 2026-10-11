@@ -1584,9 +1584,10 @@ describe('the Canyon roller lens (S3)', () => {
   };
 
   it('grows lenses on the Canyon\'s waves, draws them only where their front has reached, and raises the node heights by their tops', () => {
-    const simulation = new SurfZoneSimulation(canyon);
-    // The same sea without the roller: it never writes the water, so the two stay bit for bit the same.
-    const plain = new SurfZoneSimulation({ ...canyon, roller: false });
+    // The same sea without the roller: it never writes the water, so the two stay bit for bit the same. Both without the
+    // spilling lip, whose look reads the lenses (its own test below shows it changes nothing felt).
+    const simulation = new SurfZoneSimulation({ ...canyon, spillingCurl: false });
+    const plain = new SurfZoneSimulation({ ...canyon, roller: false, spillingCurl: false });
     const roller = simulation.roller!;
     const front = simulation.spilling!;
     const grid = simulation.renderGrid(1);
