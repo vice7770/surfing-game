@@ -32,6 +32,7 @@ import { CarrierSupport } from './barrel/carrierSupport';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { SpillingRoller } from './SpillingRoller';
+import { SpillingCurl } from './SpillingCurl';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -125,6 +126,12 @@ export interface SurfZoneConfig {
    * default, the advisor's Q1) or wherever the solver breaks ('solver', Q1's evidence).
    */
   rollerMask?: 'front' | 'solver';
+  /**
+   * Whether a spilling spot draws its spilling lip (the Canyon spilling lip, `SpillingCurl`): a small curl at each
+   * wave's front, and its white held back until the curl lands. On by default wherever the spilling front runs; off
+   * draws the front's whitewater as it is felt (the before-and-after stills). Look only: nothing felt changes.
+   */
+  spillingCurl?: boolean;
   /**
    * Whether the tank's open sides relax toward the incoming sea (`SideFeed`, the wave-sizes work): the config's say,
    * else `SIDE_FEED_SPOTS` (none since 2026-10-07).
@@ -634,6 +641,13 @@ export class SurfZoneSimulation {
    */
   readonly roller?: SpillingRoller;
   /**
+   * The spilling lip's look, wherever the spilling front runs unless the config turns it off (the Canyon spilling lip):
+   * it reads the front, the lenses and the water, and writes only what is drawn.
+   */
+  readonly curl?: SpillingCurl;
+  /** The whitewater whose foam is drawn with the spilling lip on: the front's, held back until each curl lands. */
+  private readonly drawnWhitewater?: Float64Array;
+  /**
    * The breaking the whitewater sees at a swept spot with the crash (withheld over open curls, `SweptCrash`), or at a
    * spilling spot (withheld ahead of the spilling front and grown down the face behind it, `SpillingFront`).
    */
@@ -767,6 +781,15 @@ export class SurfZoneSimulation {
         this.roller = new SpillingRoller(this.solver, { mask });
         if (mask === 'front') this.felt = new Float64Array(this.solver.h.length);
       }
+      if (config.spillingCurl !== false) {
+        const breakerDepth = this.breakerDepth();
+        this.curl = new SpillingCurl(this.solver, {
+          breakerDepth, breakerHeight: BREAKER_INDEX * breakerDepth,
+          // The overturn fits' H0/h0, as the plunging lip's: the incoming sea's height over the tank's offshore depth.
+          nonlinearity: edgeHeight(config, tank.edgeDepth) / (tank.edgeDepth + config.tide),
+        });
+        this.drawnWhitewater = new Float64Array(this.solver.h.length);
+      }
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -876,6 +899,8 @@ export class SurfZoneSimulation {
     else this.spilling?.reset();
     if (state.spilling?.roller) this.roller?.importState(state.spilling.roller);
     else this.roller?.reset();
+    // The spilling lip keeps nothing of its own: it is rebuilt from the front and lenses taken over, as the donor's was.
+    if (this.curl) this.curl.update(solver.time, this.spilling!, this.roller, this.breaking.strength);
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
@@ -986,13 +1011,16 @@ export class SurfZoneSimulation {
     this.stepCosts.water = phase - start;
     this.breaking.update(dt);
     this.markBreakingOnsets();
-    // A spilling spot's whitewater follows its front (`SpillingFront`): it reads the breaking, never writes it.
-    this.spilling?.update(this.solver.time, dt, this.breakerCelerity(), this.breaking.strength, this.whitewater!, this.felt);
+    // A spilling spot's whitewater follows its front (`SpillingFront`): it reads the breaking, never writes it. With the
+    // spilling lip, the whitewater drawn waits for each curl to land (the lip's look, from its last step's columns).
+    this.spilling?.update(this.solver.time, dt, this.breakerCelerity(), this.breaking.strength, this.whitewater!, this.felt, this.drawnWhitewater, this.curl);
     let end = performance.now();
     this.stepCosts.breaking = end - phase;
     phase = end;
     // Its roller lenses (S3) read the water and the front, after the front's step.
     if (this.roller) this.roller.update(this.solver.time, dt, this.spilling!, this.breaking.strength, this.breakerDepth());
+    // The spilling lip's columns, after the lenses' step: what the next step's drawn whitewater and the snapshot read.
+    this.curl?.update(this.solver.time, this.spilling!, this.roller, this.breaking.strength);
     end = performance.now();
     this.stepCosts.roller = end - phase;
     phase = end;
@@ -1004,7 +1032,8 @@ export class SurfZoneSimulation {
     end = performance.now();
     this.stepCosts.lip = end - phase;
     phase = end;
-    this.foam.update(dt, this.whitewaterStrength, this.advectionStencil);
+    // The foam drawn: with the spilling lip, made only once each curl has landed; its air's bores stay the felt whitewater's.
+    this.foam.update(dt, this.whitewaterStrength, this.advectionStencil, this.drawnWhitewater);
     end = performance.now();
     this.stepCosts.foam = end - phase;
     phase = end;
@@ -1311,12 +1340,25 @@ export class SurfZoneSimulation {
     return this.solver.dx;
   }
 
-  /** S3: the roller's table (`ROLLER_FIELD`, slot-major) as float32, for both looks to draw the band; returns its columns. */
+  /**
+   * S3: the roller's table (`ROLLER_FIELD`, slot-major) as float32, for both looks to draw the band; returns its columns.
+   * With the spilling lip, the copy's band waits for each curl to land and grows down from its landing line (the felt
+   * table is never touched).
+   */
   writeRoller(into: Float32Array): number {
     if (!this.roller) return 0;
     into.set(this.roller.table);
+    if (this.curl) this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time);
     return this.solver.nx;
   }
+
+  /** The spilling lip's curls as drawn (`CURL_FIELD`), at most `CURL_CAPACITY`; returns how many (none without it). */
+  writeCurls(into: Float32Array): number {
+    return this.curl ? this.curl.writeCurls(into, this.spilling!, this.drawnHeight) : 0;
+  }
+
+  /** The surface as drawn, for the curls' crests. */
+  private readonly drawnHeight = (x: number, z: number): number => this.heightAt(x, z);
 
   /** Water surface elevation, m, with any roller lens's top (S3); on dry land this is the bed. */
   heightAt(x: number, z: number): number {
@@ -1371,6 +1413,8 @@ export class SurfZoneSimulation {
       u![i] = wet ? qx[i] / h[i] : 0;
       w![i] = wet ? qz[i] / h[i] : 0;
       fraction![i] = this.aeration.voidFraction(i);
+      // With the spilling lip, the air is drawn where the drawn whitewater is: none under a curl yet to land.
+      if (this.curl) fraction![i] *= SpillingCurl.airShare(dense[i] + residual[i]);
     }
     const { roller } = this;
     const lenses = this.rollerReach();
@@ -1447,7 +1491,7 @@ export class SurfZoneSimulation {
           u![i] = wet ? qx[i] / h[i] : 0;
           w![i] = wet ? qz[i] / h[i] : 0;
         }
-        if (aeration) fraction![i] = this.aeration.voidFraction(i);
+        if (aeration) fraction![i] = this.curl ? this.aeration.voidFraction(i) * SpillingCurl.airShare(dense[i] + residual[i]) : this.aeration.voidFraction(i);
       }
     }
     const { roller } = this;
