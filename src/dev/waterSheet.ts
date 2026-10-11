@@ -69,6 +69,8 @@ const SWELL_OVERRIDES: Partial<SurfZoneConfig> = {
   ...(PARAMETERS.get('roller') === '0' ? { roller: false } : {}),
   ...(PARAMETERS.get('rollerMask') === 'solver' || PARAMETERS.get('rollerMask') === 'front'
     ? { rollerMask: PARAMETERS.get('rollerMask') as 'solver' | 'front' } : {}),
+  // `&spillingCurl=0`: the spilling front's whitewater drawn as felt, with no curl (the Canyon spilling lip's before).
+  ...(PARAMETERS.get('spillingCurl') === '0' ? { spillingCurl: false } : {}),
 };
 /** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
 const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));
@@ -594,7 +596,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     hooks.render(0);
     return simulated;
   };
-  Object.assign(window, { waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh });
+  // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
+  Object.assign(window, { waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

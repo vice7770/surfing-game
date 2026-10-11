@@ -60,8 +60,8 @@ export const SPILLING_CURL = {
   maxTurn: Math.PI / 6,
 } as const;
 
-/** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, several waves at once. */
-export const CURL_CAPACITY = 64;
+/** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, eight waves at once. */
+export const CURL_CAPACITY = 56;
 /** Floats per curl slice. */
 export const CURL_STRIDE = 13;
 /** Where each value sits in a curl slice (`writeCurls`). */
@@ -101,13 +101,14 @@ export interface CurlSize {
   width: number;
   /** How far ahead of the crest the lip lands, L cos θ, m. */
   ahead: number;
-  /** The lip's mean thickness: the jet's area A_J H² over the void's length, m. */
+  /** The lip's mean thickness: the jet's area A_J H² over the void's upper arc, about L + W long, m. */
   thickness: number;
 }
 
 export function curlSize(shape: OverturnShape, height: number): CurlSize {
   const { length, width } = overturnSize(shape, height);
-  return { length, width, ahead: length * Math.cos(shape.tilt), thickness: length > 0 ? (shape.jetArea * height * height) / length : 0 };
+  // The jet lies along the void's upper arc, about L + W: at 1:30 about 0.06 H thick (the advisor: about 0.05 H).
+  return { length, width, ahead: length * Math.cos(shape.tilt), thickness: length > 0 ? (shape.jetArea * height * height) / (length + width) : 0 };
 }
 
 /** The curl at age τ: its growth share s (0 at the front … 1 at touchdown), how far its void has filled, and its white. */
