@@ -300,6 +300,35 @@ describe('SpillingFront for the roller (S3)', () => {
     expect(asked.every((age) => age < 1)).toBe(true);
   });
 
+  it('draws none of the next crest breaking before its onset joins it, though an older wave\'s band holds it and it is felt', () => {
+    // (A cell no band holds is held back the same way when it lies crestReach seaward of every live wave's crest.)
+    const { g, front, strength, out } = setup({ rampSeconds: 0.001 });
+    const felt = new Float64Array(out.length);
+    const drawn = new Float64Array(out.length);
+    const look = { span: 0.5, share: () => 1 };
+    for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, 10, -15);
+    breakBand(g, strength, -20, 20, -15, -13);
+    front.update(12, 2, 2, strength, out, felt, drawn, look);
+    strength.fill(0);
+    breakBand(g, strength, -20, 20, -9, -7);
+    front.update(12.5, 0.5, 2, strength, out, felt, drawn, look);
+    // Half a second on its crest has run 4 m more; the next crest breaks weakly 15 m seaward of it (no onset yet).
+    strength.fill(0);
+    breakBand(g, strength, -20, 20, -5, -3);
+    breakBand(g, strength, -20, 20, -20, -20);
+    front.update(13, 0.5, 2, strength, out, felt, drawn, look);
+    const at = (values: Float64Array, x: number, z: number) => values[row(g, z) * g.nx + column(g, x)];
+    for (const x of [-20, -18]) {
+      // Its own crest: drawn as felt.
+      expect(at(drawn, x, -4)).toBe(at(out, x, -4));
+      expect(at(drawn, x, -4)).toBeGreaterThan(0);
+      // The next crest, inside the older wave's band (from −21): felt and fed to the air as before, not drawn.
+      expect(at(out, x, -20)).toBe(1);
+      expect(at(felt, x, -20)).toBe(1);
+      expect(at(drawn, x, -20)).toBe(0);
+    }
+  });
+
   it('records each wave\'s crest in every column it owns, reached or not', () => {
     const { g, front, strength, out } = setup({ rampSeconds: 0.001 });
     for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, 10, -3);
