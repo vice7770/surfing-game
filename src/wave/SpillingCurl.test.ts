@@ -108,6 +108,42 @@ describe('the spilling lip on a spilling front', () => {
     return { grid, front, plain, curl, mine: fields(), theirs: fields(), drawn: new Float64Array(size) };
   }
 
+  it('clears the lace off the shoulder ahead of a front, up to where another wave breaks further along the crest', () => {
+    const grid = tank();
+    const { nx, nz, xCenters } = grid;
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+    // One crest at z = 0: a wave broken up to x = −10 (its front), and another broken along it from x = 2 to its front at
+    // x = 10, the solver breaking it on to x = 18 (still withheld, its shoulder).
+    const crestOf = (from: number, to: number) => Float64Array.from(xCenters, (x) => (x >= from && x <= to ? 0 : Number.NaN));
+    const front = {
+      waves: [
+        { frontX: -10, crest: crestOf(-20, -10), reached: crestOf(-20, -10) },
+        { frontX: 10, crest: crestOf(2, 18), reached: crestOf(2, 10) },
+      ],
+      options: { direction: 1 },
+    } as unknown as SpillingFront;
+    const foam = { dense: new Float64Array(nx * nz).fill(1), residual: new Float64Array(nx * nz).fill(0.5) };
+    const drawn = new Float64Array(nx * nz).fill(1);
+    for (let step = 0; step < 20; step += 1) curl.clearShoulder(foam, drawn, front, 0.1);
+    const at = (x: number, z: number) => (z + 30) * nx + (x + 20);
+    // Ahead of the first front, on its crest and the water its crest will run over: the lace gone, no new lace drawn.
+    for (const x of [-4, 0, 1]) {
+      expect(foam.dense[at(x, 2)]).toBeLessThan(0.01);
+      expect(foam.residual[at(x, -1)]).toBeLessThan(0.01);
+      expect(drawn[at(x, 8)]).toBe(0);
+    }
+    // Fading in over its first 3 m from the front; behind it, and far seaward of the crest, as it was.
+    expect(foam.dense[at(-9, 2)]).toBeGreaterThan(0.01);
+    expect(foam.dense[at(-14, 2)]).toBe(1);
+    expect(foam.dense[at(-4, 25)]).toBe(1);
+    // The other wave's broken stretch is its own whitewater: untouched; past its front, its own shoulder is cleared.
+    for (const x of [2, 4, 10]) {
+      expect(foam.dense[at(x, 2)]).toBe(1);
+      expect(drawn[at(x, 2)]).toBe(1);
+    }
+    expect(foam.dense[at(16, 2)]).toBeLessThan(0.01);
+  });
+
   it('draws none ahead of the front or before its curl lands, reaches the face\'s foot 2 s after, and changes nothing felt', () => {
     const { grid, front, plain, curl, mine, theirs, drawn } = peel();
     const { nx, nz, zCenters, strength } = grid;

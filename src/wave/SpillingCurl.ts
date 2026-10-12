@@ -509,7 +509,7 @@ export class SpillingCurl implements SpillingDrawnLook {
    * foam's own fields before their step, and holds back the drawn whitewater there (`drawn`: the solver's weak breaking
    * ahead of a front that no onset has joined to a wave yet, which no band holds): never felt (the foam is drawn only, and
    * the bores the air reads are not its values). Behind each front nothing changes, so the broken part's whitewater and
-   * its lace trail are as they were.
+   * its lace trail are as they were; nor where another wave breaks further along the crest, which ends the shoulder.
    */
   clearShoulder(foam: { readonly dense: Float64Array; readonly residual: Float64Array }, drawn: Float64Array | undefined,
     front: SpillingFront, dt: number): void {
@@ -574,6 +574,11 @@ export class SpillingCurl implements SpillingDrawnLook {
         const along = smooth(0, fade, Math.abs(xCenters[c] - wave.frontX));
         const from = crestZ - curl.shoulderBack - fade;
         const to = crestZ + ahead + fade;
+        // Another wave broken on this stretch (a second break along the crest, its front past here): its own whitewater,
+        // so the shoulder ends here (round 4). Where another wave's break is still ahead of its own front, its white is
+        // withheld: shoulder still.
+        if (front.waves.some((other) => other !== wave && other.reached[c] === other.reached[c] && other.crest[c] >= from
+          && other.crest[c] <= to)) break;
         for (let iz = rowOf(from); iz < nz && zCenters[iz] <= to; iz += 1) {
           const z = zCenters[iz];
           const shoulder = along * smooth(from, from + fade, z) * (1 - smooth(to - fade, to, z));
