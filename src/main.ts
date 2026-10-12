@@ -255,6 +255,8 @@ class SurfGame {
     this.water.mesh.visible = false;
     this.scene.add(this.water.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
+    // Dev tools: the physical mode, for checks in the page (the spilling lip's in-game costs).
+    if (DEV_TOOLS) (globalThis as unknown as { breaklinePhysical?: PhysicalMode }).breaklinePhysical = this.physicalMode;
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
@@ -956,6 +958,8 @@ class SurfGame {
     this.physicalMode.drawEdgeBand();
     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
     this.physicalMode.drawBarrel();
+    // The spilling lip's curls sit on the same heights (the Canyon spilling lip).
+    this.physicalMode.drawCurl();
     this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);

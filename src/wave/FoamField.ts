@@ -62,6 +62,11 @@ export class FoamField {
   private readonly nextDense: Float64Array;
   private readonly nextResidual: Float64Array;
   private windowX: number;
+  /**
+   * A shoreward surface drift per cell, m/s (+z), the foam alone rides on top of the depth-averaged current (the Canyon
+   * spilling lip's look: `setDrift`); none by default. The advection stencil it records for the air stays the current's.
+   */
+  private drift?: Float64Array;
 
   constructor(private readonly solver: ShallowWaterSolver, readonly decay: FoamDecay) {
     const size = solver.nx * solver.nz;
@@ -74,6 +79,17 @@ export class FoamField {
     this.nextDense = new Float64Array(size);
     this.nextResidual = new Float64Array(size);
     this.windowX = solver.xCenters[0];
+  }
+
+  /**
+   * Foam drifts shoreward at `drift` m/s per cell on top of the current (the Canyon spilling lip, round 2): nature clears
+   * a shoulder of the last waves' foam by the breakers' shoreward surface drift (Hansen & Svendsen 1984), which a
+   * depth-averaged current lacks. Look only: the foam is drawn, never felt, and the stencil the air reuses keeps the
+   * current's own departure points. Undefined: none.
+   */
+  setDrift(drift: Float64Array | undefined): void {
+    if (drift && drift.length !== this.dense.length) throw new Error('A foam drift from another grid');
+    this.drift = drift;
   }
 
   totalAt(index: number): number {
@@ -90,8 +106,12 @@ export class FoamField {
     this.residual[cell] = Math.min(this.residual[cell], 1 - this.dense[cell]);
   }
 
-  /** Advance by `dt` seconds with the breaking strength B per cell. */
-  update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil): void {
+  /**
+   * Advance by `dt` seconds with the breaking strength B per cell. `drawn` (the Canyon spilling lip's look): the
+   * breaking whose foam is drawn, at most `breaking` in every cell; the foam, its source and the visual clouds that read
+   * the source follow it, while the bore measurement the air reads (`breakingCells`, `dissipation`) stays `breaking`'s.
+   */
+  update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil, drawn?: ArrayLike<number>): void {
     if (!(dt > 0)) return;
     this.followWindow();
     this.advect(dt, stencil);
@@ -117,7 +137,8 @@ export class FoamField {
         this.breakingCells[this.breakingCount++] = i;
         this.dissipation[i] = strength * bore;
       }
-      const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
+      const shown = drawn ? drawn[i] : strength;
+      const rate = strength > 0 && shown > 0 ? (shown * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
       this.source[i] = rate;
       if (rate > 0) this.sourceCells[this.sourceCount++] = i;
       dense += rate * dt;
@@ -138,6 +159,7 @@ export class FoamField {
   /** Semi-Lagrangian step: each cell takes the foam found upstream at x − u·dt. */
   private advect(dt: number, stencil?: AdvectionStencil): void {
     const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
+    const { drift } = this;
     stencil?.begin(this.solver, dt);
     const indices = stencil?.indices;
     const values = stencil?.values;
@@ -159,16 +181,26 @@ export class FoamField {
         while (row > 0 && zCenters[row] > z) row -= 1;
         while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
         const tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
-        const k = row * nx + column;
-        const w00 = (1 - tx) * (1 - tz);
-        const w10 = tx * (1 - tz);
-        const w01 = (1 - tx) * tz;
-        const w11 = tx * tz;
+        let k = row * nx + column;
         if (indices && values) {
           indices[i] = k;
           values[i * 2] = tx;
           values[i * 2 + 1] = tz;
         }
+        let tzd = tz;
+        const shift = drift ? drift[i] * dt : 0;
+        if (shift > 0) {
+          // The foam's own departure, further seaward by its drift: the stencil above keeps the current's.
+          const zd = z - shift;
+          let rowd = row;
+          while (rowd > 0 && zCenters[rowd] > zd) rowd -= 1;
+          tzd = Math.min(1, Math.max(0, (zd - zCenters[rowd]) / (zCenters[rowd + 1] - zCenters[rowd])));
+          k = rowd * nx + column;
+        }
+        const w00 = (1 - tx) * (1 - tzd);
+        const w10 = tx * (1 - tzd);
+        const w01 = (1 - tx) * tzd;
+        const w11 = tx * tzd;
         this.nextDense[i] = this.dense[k] * w00 + this.dense[k + 1] * w10 + this.dense[k + nx] * w01 + this.dense[k + nx + 1] * w11;
         this.nextResidual[i] = this.residual[k] * w00 + this.residual[k + 1] * w10 + this.residual[k + nx] * w01 + this.residual[k + nx + 1] * w11;
       }

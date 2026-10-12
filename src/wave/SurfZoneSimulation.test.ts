@@ -26,6 +26,7 @@ import { libraryFromBytes } from './barrel/barrelLibrary';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
 import type { FrontPoint } from './barrel/BreakingFront';
 import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
+import { CURL_CAPACITY, CURL_STRIDE } from './SpillingCurl';
 
 const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -1583,9 +1584,10 @@ describe('the Canyon roller lens (S3)', () => {
   };
 
   it('grows lenses on the Canyon\'s waves, draws them only where their front has reached, and raises the node heights by their tops', () => {
-    const simulation = new SurfZoneSimulation(canyon);
-    // The same sea without the roller: it never writes the water, so the two stay bit for bit the same.
-    const plain = new SurfZoneSimulation({ ...canyon, roller: false });
+    // The same sea without the roller: it never writes the water, so the two stay bit for bit the same. Both without the
+    // spilling lip, whose look reads the lenses (its own test below shows it changes nothing felt).
+    const simulation = new SurfZoneSimulation({ ...canyon, spillingCurl: false });
+    const plain = new SurfZoneSimulation({ ...canyon, roller: false, spillingCurl: false });
     const roller = simulation.roller!;
     const front = simulation.spilling!;
     const grid = simulation.renderGrid(1);
@@ -1665,6 +1667,142 @@ describe('the Canyon roller lens (S3)', () => {
     }
     expect(on.stepCosts.roller).toBe(0);
   });
+
+  // The Canyon spilling lip (docs/research/canyon-lip-2026-10-11): look only.
+  it('draws the spilling lip as a look only: everything felt is byte for byte the same with it on and off', () => {
+    const on = new SurfZoneSimulation(canyon);
+    const off = new SurfZoneSimulation({ ...canyon, spillingCurl: false });
+    expect(on.curl).toBeDefined();
+    expect(off.curl).toBeUndefined();
+    const grid = on.renderGrid(1);
+    const [onOut, offOut] = [snapshotOutputs(grid), snapshotOutputs(grid)];
+    const curls = new Float32Array(CURL_CAPACITY * CURL_STRIDE);
+    const same = (name: string, a: ArrayLike<number>, b: ArrayLike<number>, length = a.length) => {
+      expect(a.length, name).toBe(b.length);
+      let differ = 0;
+      for (let i = 0; i < length; i += 1) if (!Object.is(a[i], b[i])) differ += 1;
+      expect(differ, name).toBe(0);
+    };
+    let drawnDiffer = 0;
+    let slices = 0;
+    let splashes = 0;
+    // Medium, a few seconds of its peel, after its spin-up.
+    for (let frame = 1; frame <= 5 * 30; frame += 1) {
+      on.step(1 / 30);
+      off.step(1 / 30);
+      // The water and the breaking the solver uses; the whitewater the air and the roar are fed; the breaking felt.
+      same('h', on.solver.h, off.solver.h);
+      same('qx', on.solver.qx, off.solver.qx);
+      same('qz', on.solver.qz, off.solver.qz);
+      same('breaking', on.breaking.strength, off.breaking.strength);
+      same('whitewater', on.whitewaterStrength, off.whitewaterStrength);
+      same('felt', on.feltBreaking, off.feltBreaking);
+      // The roller's table (`writeTable`): its push, froth drag and water entry, and the lens's top.
+      same('roller', on.roller!.table, off.roller!.table);
+      // The air the rider floats in (`aerateBores` → `voidFraction`) and its turbulence, and the bores that drive it.
+      same('air', on.aeration.air, off.aeration.air);
+      same('plume', on.aeration.depth, off.aeration.depth);
+      same('turbulence', on.aeration.turbulence, off.aeration.turbulence);
+      expect(on.foam.breakingCount).toBe(off.foam.breakingCount);
+      same('bores', on.foam.breakingCells, off.foam.breakingCells, on.foam.breakingCount);
+      same('dissipation', on.foam.dissipation, off.foam.dissipation);
+      // The lip impacts the water, the foam's air and the sound take are the same; its splashes go to the drawn spray alone.
+      expect(on.lipImpacts).toEqual(off.lipImpacts);
+      expect(off.drawnImpacts).toHaveLength(0);
+      splashes += on.drawnImpacts.length;
+      // The drawn foam's shoreward drift never reaches the air: the air above rides the current's stencil.
+      for (let i = 0; i < on.foam.dense.length; i += 1) if (on.foam.dense[i] !== off.foam.dense[i]) drawnDiffer += 1;
+      if (frame % 15 !== 0) continue;
+      // The heights drawn are the heights felt; the current too.
+      on.writeUniformSnapshot(onOut[0], onOut[1], onOut[2], grid);
+      off.writeUniformSnapshot(offOut[0], offOut[1], offOut[2], grid);
+      for (let o = 0; o < onOut[0].length; o += 2) expect(onOut[0][o]).toBe(offOut[0][o]);
+      same('flow', onOut[1], offOut[1]);
+      for (const [x, z] of [[-30, -330], [0, -270], [20, -230]]) expect(on.heightAt(x, z)).toBe(off.heightAt(x, z));
+      slices += on.writeCurls(curls);
+      expect(off.writeCurls(curls)).toBe(0);
+    }
+    // What is drawn does change: the curls, their splashes, and the foam held back until they land and drifting ashore.
+    expect(slices).toBeGreaterThan(0);
+    expect(splashes).toBeGreaterThan(0);
+    expect(drawnDiffer).toBeGreaterThan(0);
+  }, 900_000);
+
+  /**
+   * The drawn foam on the unbroken shoulder ahead of each wave's front at the take-off: per front whose crest lies within
+   * 15 m of the size's take-off line, the mean over 3–15 m ahead along its crest, from 1 m behind the crest to 8 m ahead,
+   * up to where another wave has broken on that crest (its own whitewater: the shoulder ends there).
+   */
+  function shoulderFoam(simulation: SurfZoneSimulation): number[] {
+    const { solver, foam } = simulation;
+    const { nx, nz, xCenters, zCenters, h, bed, restLevel, dx } = solver;
+    const takeOff = takeOffPoint(simulation.config);
+    const out: number[] = [];
+    for (const wave of simulation.spilling!.waves) {
+      if (!(wave.frontX > -45 && wave.frontX < 0) || !canyonArmAt(wave.frontX)) continue;
+      const front = Math.round((wave.frontX - xCenters[0]) / dx);
+      let z = Number.NaN;
+      for (let d = 0; d <= 6 && !(z === z); d += 1) if (wave.crest[front - d] === wave.crest[front - d]) z = wave.crest[front - d];
+      const line = takeOff.z + (wave.frontX - takeOff.x) * Math.tan((CANYON.angle * Math.PI) / 180);
+      if (!(Math.abs(z - line) <= 15)) continue;
+      let sum = 0;
+      let n = 0;
+      for (let d = 1; d <= 15 && front + d < nx; d += 1) {
+        const c = front + d;
+        let best = -Infinity;
+        let at = z;
+        for (let iz = 0; iz < nz; iz += 1) {
+          if (Math.abs(zCenters[iz] - z) > 2) continue;
+          const level = h[iz * nx + c] + bed[iz * nx + c];
+          if (level > best) [best, at] = [level, zCenters[iz]];
+        }
+        if (best - restLevel < 0.2) break;
+        z = at;
+        if (simulation.spilling!.waves.some((other) => other !== wave && other.reached[c] === other.reached[c]
+          && other.crest[c] >= z - 1 && other.crest[c] <= z + 8)) break;
+        if (d < 3) continue;
+        for (let iz = 0; iz < nz; iz += 1) {
+          if (zCenters[iz] < z - 1 || zCenters[iz] > z + 8) continue;
+          sum += foam.dense[iz * nx + c] + foam.residual[iz * nx + c];
+          n += 1;
+        }
+      }
+      if (n > 20) out.push(sum / n);
+    }
+    return out;
+  }
+
+  for (const [size, significantHeight, peakPeriod, least] of [['Medium', 1.4, 11, 40], ['Big', 2.4, 14, 15]] as const) {
+    it(`keeps the shoulder ahead of each front at the take-off clean green water at ${size}: its drawn foam at most 0.02`, () => {
+      const simulation = new SurfZoneSimulation({ ...canyon, significantHeight, peakPeriod });
+      const samples: number[] = [];
+      for (let frame = 1; frame <= 30 * 30; frame += 1) {
+        simulation.step(1 / 30);
+        if (frame % 8 === 0) samples.push(...shoulderFoam(simulation));
+      }
+      expect(samples.length).toBeGreaterThanOrEqual(least);
+      for (const foam of samples) expect(foam).toBeLessThanOrEqual(0.02);
+    }, 900_000);
+  }
+
+  it('draws every other spot exactly as before: no spilling lip, its switch changes nothing', () => {
+    for (const spot of ['beach', 'point', 'reef', 'pool'] as SpotName[]) {
+      const config: SurfZoneConfig = { ...small, spot };
+      const asked = new SurfZoneSimulation({ ...config, spillingCurl: true }, 'warm');
+      const plain = new SurfZoneSimulation({ ...config, spillingCurl: false }, 'warm');
+      expect(asked.curl, spot).toBeUndefined();
+      const grid = asked.renderGrid(1);
+      const [a, b] = [snapshotOutputs(grid), snapshotOutputs(grid)];
+      for (let frame = 0; frame < 20; frame += 1) {
+        asked.step(1 / 30);
+        plain.step(1 / 30);
+      }
+      asked.writeUniformSnapshot(a[0], a[1], a[2], grid);
+      plain.writeUniformSnapshot(b[0], b[1], b[2], grid);
+      for (let k = 0; k < 3; k += 1) expect(Array.from(a[k]), spot).toEqual(Array.from(b[k]));
+      expect(asked.writeCurls(new Float32Array(CURL_STRIDE))).toBe(0);
+    }
+  }, 120_000);
 
   it('starts the Canyon\'s front and roller afresh in a sea taken over without them (the plan\'s §5: a donor without them)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm');

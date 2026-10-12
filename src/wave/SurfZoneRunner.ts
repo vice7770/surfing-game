@@ -1,4 +1,5 @@
 import { ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
+import { CURL_CAPACITY, CURL_STRIDE } from './SpillingCurl';
 import { STRIP_PARCELS } from './PlungingLip';
 import { Vector3 } from 'three';
 import { withPocketReflex } from '../game/pocketReflex';
@@ -301,6 +302,12 @@ export interface SurfZoneBuffers {
    */
   roller: Float32Array;
   rollerCount: number;
+  /**
+   * The spilling lip's curls at a spilling spot (the Canyon spilling lip): `CURL_FIELD`, `CURL_STRIDE` floats a slice,
+   * `curlCount` of them; empty at every other spot.
+   */
+  curl: Float32Array;
+  curlCount: number;
 }
 
 /**
@@ -442,7 +449,8 @@ export class SurfZoneRunner {
     // A detached rider's last strokes are stale: only an attached paddler splashes.
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
-      solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes,
+      solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, drawnImpacts: simulation.drawnImpacts,
+      windSpeed: this.config.windSpeed ?? 0, strokes,
       spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
     };
   }
@@ -794,6 +802,8 @@ export class SurfZoneRunner {
       frontCount: 0,
       roller: new Float32Array(this.simulation.rollerColumns * ROLLER_SLOTS * ROLLER_STRIDE),
       rollerCount: 0,
+      curl: new Float32Array(this.simulation.curl ? CURL_CAPACITY * CURL_STRIDE : 0),
+      curlCount: 0,
     };
   }
 
@@ -806,6 +816,7 @@ export class SurfZoneRunner {
     this.snapshotFieldsMs = performance.now() - start;
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
     buffers.rollerCount = buffers.roller.length > 0 ? simulation.writeRoller(buffers.roller) : 0;
+    buffers.curlCount = buffers.curl.length > 0 ? simulation.writeCurls(buffers.curl) : 0;
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {
       if (parcels >= PARCEL_CAPACITY) return;

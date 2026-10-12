@@ -60,6 +60,11 @@ export interface SprayScene {
   };
   readonly foam: ParticleSources;
   readonly lipImpacts: readonly LipImpact[];
+  /**
+   * Splashes drawn only (the Canyon spilling lip's touchdowns): thrown as lip impacts are, in the look's way (Classic
+   * throws none from a splash-up), but kept apart from `lipImpacts`, which the sound and the reports read.
+   */
+  readonly drawnImpacts?: readonly LipImpact[];
   /** Local wind at crest height, m/s: positive onshore (+z). */
   readonly windSpeed: number;
   /** The rider's hands pulling through the water this step. */
@@ -244,6 +249,7 @@ export class SprayCloud {
       this.tubeBurst(eruption.x, eruption.y, eruption.z, 0, eruption.speed, 0, eruption.airRate * dt, ERUPTION_MIST);
     }
     for (const impact of scene.lipImpacts) this.splash(scene, impact);
+    for (const impact of scene.drawnImpacts ?? []) this.splash(scene, impact);
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
     this.feather(scene, dt);
