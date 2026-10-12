@@ -1735,7 +1735,8 @@ describe('the Canyon roller lens (S3)', () => {
 
   /**
    * The drawn foam on the unbroken shoulder ahead of each wave's front at the take-off: per front whose crest lies within
-   * 15 m of the size's take-off line, the mean over 3–15 m ahead along its crest, from 1 m behind the crest to 8 m ahead.
+   * 15 m of the size's take-off line, the mean over 3–15 m ahead along its crest, from 1 m behind the crest to 8 m ahead,
+   * up to where another wave has broken on that crest (its own whitewater: the shoulder ends there).
    */
   function shoulderFoam(simulation: SurfZoneSimulation): number[] {
     const { solver, foam } = simulation;
@@ -1762,6 +1763,8 @@ describe('the Canyon roller lens (S3)', () => {
         }
         if (best - restLevel < 0.2) break;
         z = at;
+        if (simulation.spilling!.waves.some((other) => other !== wave && other.reached[c] === other.reached[c]
+          && other.crest[c] >= z - 1 && other.crest[c] <= z + 8)) break;
         if (d < 3) continue;
         for (let iz = 0; iz < nz; iz += 1) {
           if (zCenters[iz] < z - 1 || zCenters[iz] > z + 8) continue;

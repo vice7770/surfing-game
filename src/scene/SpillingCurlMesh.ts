@@ -1,5 +1,5 @@
-import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial } from 'three';
-import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, impactTime } from '../wave/SpillingCurl';
+import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial, Vector2, type Camera, type WebGLRenderer } from 'three';
+import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, impactTime } from '../wave/SpillingCurl';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
 import { waterRipplePars } from './water/rippleTexture';
@@ -40,8 +40,17 @@ const FLOOR_LIFT = 0.03;
  */
 const RISE = 0.1;
 const SHARPEN = 0.35;
-/** Slices of one wave further apart than this along shore, m, are separate ribbons. */
-const JOIN = 1.6;
+/**
+ * Slices of one wave further apart than this along shore, m, are separate ribbons: a single column missing from a wave's
+ * curl (an onset's patchy start, as at Small) is bridged, so it is not drawn as two pods (round 4).
+ */
+const JOIN = 2.6;
+/**
+ * A ribbon's end closed by a slice of nothing (a gap, or its old end; not its front, which pinches by itself) tapers to it
+ * over this far along shore, m: its curl shrinks and fades there rather than ending blunt, so a short run of a few columns
+ * reads as a small rise of the crest, not a glass pod (round 4, Small) (P).
+ */
+const END_TAPER = 2.5;
 /**
  * The light behind the lip: the share of its far side that sees the sky rather than the wave's own water
  * (`SWEPT_SHEET_BODY`'s F). Behind a small spilling curl lie its void and the crest's water, so it is shaded mostly
@@ -86,6 +95,18 @@ const STREAKS = { slow: 0.4, fast: 3.2, spacing: 0.3, length: 1.2, period: 0.45,
  * froth (up to `froth`) varied with the same noise.
  */
 const RAGGED = { period: 0.45, froth: 0.3 } as const;
+/**
+ * Readable at distance (round 4), the shape's rules unchanged: as the lip's nominal thickness (`SPILLING_CURL.minLip` H,
+ * or its own when thicker) shrinks on screen from `nearPixels` to `minPixels` (CSS px), the separator is drawn as a line
+ * (far, 0 → 1):
+ * - its two faces are pushed apart along their normals so it is never drawn thinner than `minPixels`;
+ * - its tip's froth line widens from its last fifth back to `frothFrom` of the lip, at `froth` rather than `RAGGED.froth`,
+ *   evenly, and its fingers (under a pixel there, a dotted edge) close;
+ * - its void darkens by up to `shade` more of its own darkening, never past `maxShade`, but not under its tip from
+ *   `litFrom` of the lip on, so its falling edge reads as a bright line over a dark one.
+ * Up close, the lip `nearPixels` or more thick on screen, nothing changes (P).
+ */
+const DISTANCE = { minPixels: 2, nearPixels: 5, frothFrom: 0.4, froth: 0.8, shade: 0.5, maxShade: 0.85, litFrom: 0.6 } as const;
 const smooth = (edge0: number, edge1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
   return t * t * (3 - 2 * t);
@@ -110,6 +131,8 @@ export interface CurlRibbon {
   alpha: Float32Array;
   /** Per vertex: its arc along the lip from the crest, m; where it lies along the lip, 0 crest … 1 tip; its darkening. */
   flow: Float32Array;
+  /** Per vertex: 1 on the lip's two faces (widened at distance), 0 off it; the lip's nominal thickness there, m (`DISTANCE`). */
+  lod: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -120,7 +143,7 @@ export function createCurlRibbon(): CurlRibbon {
     positions: new Float32Array(3 * CURL_VERTICES), normals: new Float32Array(3 * CURL_VERTICES), foam: new Float32Array(CURL_VERTICES),
     sheet: new Float32Array(CURL_VERTICES), sheetWeight: new Float32Array(CURL_VERTICES), sheetBack: new Float32Array(CURL_VERTICES),
     wall: new Float32Array(3 * CURL_VERTICES), wallNormal: new Float32Array(3 * CURL_VERTICES), exitNormal: new Float32Array(3 * CURL_VERTICES),
-    alpha: new Float32Array(CURL_VERTICES), flow: new Float32Array(3 * CURL_VERTICES), indices: new Uint32Array(INDICES), vertexCount: 0, indexCount: 0,
+    alpha: new Float32Array(CURL_VERTICES), flow: new Float32Array(3 * CURL_VERTICES), lod: new Float32Array(2 * CURL_VERTICES), indices: new Uint32Array(INDICES), vertexCount: 0, indexCount: 0,
   };
 }
 
@@ -144,6 +167,9 @@ const order = new Int32Array(CURL_CAPACITY);
 const lofted = new Float32Array(SLICES * CURL_STRIDE);
 /** Each lofted slice's run: only slices of one run are joined. */
 const runOf = new Int32Array(SLICES);
+/** Whether each lofted slice closes its run's end (a slice of nothing), and how far each is tapered toward such an end. */
+const capped = new Uint8Array(SLICES);
+const taperOf = new Float64Array(SLICES);
 
 /**
  * The curls' ribbon from a snapshot's slices (`CURL_FIELD`; `SpillingCurl.writeCurls`), each slice at its own age in the
@@ -170,6 +196,7 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
   const copy = (from: number, shift: number, closed: boolean) => {
     lofted.set(slices.subarray(from * CURL_STRIDE, (from + 1) * CURL_STRIDE), count2 * CURL_STRIDE);
     runOf[count2] = run;
+    capped[count2] = closed ? 1 : 0;
     if (closed) {
       const o = count2 * CURL_STRIDE;
       lofted[o + CURL_FIELD.x] += shift;
@@ -187,6 +214,18 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
     copy(s, 0, false);
     if (field(s, CURL_FIELD.length) > 0 && caps < CAPS && (k === sorted.length - 1 || !joins(s, sorted[k + 1]))) copy(s, 0.5, true);
   });
+  // Each run tapers toward its closed ends (END_TAPER).
+  for (let first = 0; first < count2;) {
+    let last = first;
+    while (last + 1 < count2 && runOf[last + 1] === runOf[first]) last += 1;
+    const start = capped[first] ? lofted[first * CURL_STRIDE + CURL_FIELD.x] : -Infinity;
+    const end = capped[last] ? lofted[last * CURL_STRIDE + CURL_FIELD.x] : Infinity;
+    for (let s = first; s <= last; s += 1) {
+      const x = lofted[s * CURL_STRIDE + CURL_FIELD.x];
+      taperOf[s] = smooth(0, END_TAPER, Math.min(x - start, end - x));
+    }
+    first = last + 1;
+  }
   let vertices = 0;
   let indices = 0;
   let previous = -1;
@@ -196,18 +235,20 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
     const z = lofted[o + CURL_FIELD.z];
     const nx = lofted[o + CURL_FIELD.normalX];
     const nz = lofted[o + CURL_FIELD.normalZ];
-    const landing = lofted[o + CURL_FIELD.length];
+    const taper = taperOf[s];
+    const landing = lofted[o + CURL_FIELD.length] * taper;
     const height = lofted[o + CURL_FIELD.height];
     const white = lofted[o + CURL_FIELD.white];
     const impact = impactTime(height);
     const flight = impact > 0 ? Math.min(1, Math.max(0, lofted[o + CURL_FIELD.age] / impact)) : 1;
     // The tip's reach, the crest's peak, the void's opening; collapsing, the lip settles, bulks white and fades.
     const reach = flight * landing;
-    const peak = RISE * height * smooth(0, SHARPEN, flight);
+    const peak = RISE * height * smooth(0, SHARPEN, flight) * taper;
     const open = smooth(0.4, 1, flight) * (1 - white);
     const settle = smooth(0, 1, white);
-    const thickness = lofted[o + CURL_FIELD.thickness] * (1 + 0.8 * smooth(0.2, 0.7, white));
+    const thickness = lofted[o + CURL_FIELD.thickness] * (1 + 0.8 * smooth(0.2, 0.7, white)) * taper;
     const fading = 1 - smooth(COLLAPSE_FADE[0], COLLAPSE_FADE[1], white);
+    const nominal = Math.max(lofted[o + CURL_FIELD.thickness], SPILLING_CURL.minLip * height);
     const crestY = heightAt(x, z);
     const face = (a: number) => heightAt(x + nx * a, z + nz * a) - crestY;
     const landed = landing > 0 ? face(landing) : 0;
@@ -316,10 +357,13 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
       // the floor a dark veil over the face as the void opens.
       const attach = kind === FLOORED ? FLOOR_ALPHA * open : kind === INSIDE ? smooth(UNDER_FADE[0], UNDER_FADE[1], along)
         : smooth(ROOT_FADE[0], ROOT_FADE[1], landing > 0 ? a / landing : 0);
-      out.alpha[v] = attach * fading * (1 - THIN_SHOWS * out.sheetWeight[v]);
+      out.alpha[v] = attach * fading * taper * (1 - THIN_SHOWS * out.sheetWeight[v]);
       out.flow[3 * v] = lip ? along * arc : 0;
       out.flow[3 * v + 1] = lip ? along : 0;
       out.flow[3 * v + 2] = kind === FLOORED ? FLOOR_SHADE * open : kind === INSIDE ? UNDER_SHADE * open : 0;
+      // Only a lip that has left the crest is widened: a ribbon's closing slices and its front pinch to nothing.
+      out.lod[2 * v] = lip && reach > 0 ? 1 : 0;
+      out.lod[2 * v + 1] = nominal;
       const wallA = Math.max(0, Math.min(a, landing));
       out.wall[3 * v] = x + nx * wallA;
       out.wall[3 * v + 1] = crestY + (wallA === a ? sectionFace[k] : wallA === 0 ? 0 : landed);
@@ -362,8 +406,11 @@ attribute vec3 curlWallNormal;
 attribute vec3 curlExitNormal;
 attribute float curlAlpha;
 attribute vec3 curlFlow;
+attribute vec2 curlLod;
+uniform float curlPixelScale;
 varying float vCurlAlpha;
 varying vec3 vCurlFlow;
+varying float vCurlFar;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -372,6 +419,7 @@ varying vec3 vSweptWallNormal;
 varying vec3 vSweptExitNormal;`;
 const curlFragmentPars = /* glsl */ `varying float vCurlAlpha;
 varying vec3 vCurlFlow;
+varying float vCurlFar;
 // Value noise for the lip's streaks and its ragged tip, on an integer hash.
 float curlHash( ivec2 c ) {
   uvec2 v = uvec2( c ) * uvec2( 1664525u, 22695477u ) + uvec2( 1013904223u, 1u );
@@ -417,15 +465,19 @@ const VIEW_COS = 'float waterViewCos = dot( waterN, waterV );';
 const CURL_VIEW_COS = 'float waterViewCos = max( 0.3, abs( dot( waterN, waterV ) ) );';
 /** A number as a GLSL float literal. */
 const f = (value: number) => (Number.isInteger(value) ? `${value}.0` : `${value}`);
-/** The ragged tip (`RAGGED`): fingers cut out of its last fifth, fixed in world x. */
+/** The ragged tip (`RAGGED`): fingers cut out of its last fifth, fixed in world x; closed at distance (`DISTANCE`). */
 const CURL_RAGGED_TIP = `
 if ( vCurlFlow.y > 0.8 ) {
   float curlCut = curlNoise( vec2( vWaterWorld.x / ${f(RAGGED.period)}, 11.3 ) );
-  if ( ( vCurlFlow.y - 0.8 ) / 0.2 > 0.25 + 0.75 * curlCut ) discard;
+  if ( ( vCurlFlow.y - 0.8 ) / 0.2 > 0.25 + 0.75 * curlCut + vCurlFar ) discard;
 }`;
-/** The tip's froth, varied in world x with the same noise as its fingers (`RAGGED`). */
-const CURL_FOAM = `float curlFoam = clamp( vWaterFoam + ${f(RAGGED.froth)} * smoothstep( 0.82, 1.0, vCurlFlow.y )
-  * ( 0.3 + 1.4 * curlNoise( vec2( vWaterWorld.x / ${f(RAGGED.period)}, 11.3 ) ) ), 0.0, 1.0 );
+/**
+ * The tip's froth, varied in world x with the same noise as its fingers (`RAGGED`); at distance a wider, whiter, even
+ * line (`DISTANCE`).
+ */
+const CURL_FOAM = `float curlFoam = clamp( vWaterFoam + mix( ${f(RAGGED.froth)}, ${f(DISTANCE.froth)}, vCurlFar )
+  * smoothstep( mix( 0.82, ${f(DISTANCE.frothFrom)}, vCurlFar ), 1.0, vCurlFlow.y )
+  * mix( 0.3 + 1.4 * curlNoise( vec2( vWaterWorld.x / ${f(RAGGED.period)}, 11.3 ) ), 1.0, vCurlFar ), 0.0, 1.0 );
 `;
 /** The falling sheet's streaks (`STREAKS`): Valve's two-layer flow map, along the lip's arc, in world x across it. */
 const CURL_STREAKS = `
@@ -438,11 +490,36 @@ const CURL_STREAKS = `
   float curlStreak = smoothstep( 0.5, 0.8, mix( curlA, curlB, abs( 1.0 - 2.0 * curlPhase ) ) );
   diffuseColor.rgb = mix( diffuseColor.rgb, waterFoamColor, ${f(STREAKS.strength)} * curlStreak * smoothstep( 0.3, 0.6, vCurlFlow.y ) * ( 1.0 - curlFoam ) );
 }`;
-/** The void's darkening (the contrast route): the light the lip hides from its underside and the face under it. */
-const CURL_SHADE = `outgoingLight *= 1.0 - vCurlFlow.z;
+/**
+ * The void's darkening (the contrast route): the light the lip hides from its underside and the face under it; darker at
+ * distance (`DISTANCE`).
+ */
+const CURL_SHADE = `outgoingLight *= 1.0 - min( ${f(DISTANCE.maxShade)}, vCurlFlow.z * ( 1.0 + ${f(DISTANCE.shade)} * vCurlFar )
+  * ( 1.0 - vCurlFar * smoothstep( ${f(DISTANCE.litFrom)}, 0.95, vCurlFlow.y ) ) );
 #include <opaque_fragment>`;
+/**
+ * At distance (`DISTANCE`): a pixel's size where the vertex lies (`curlPixelScale` × its depth), the lip's faces pushed
+ * apart to `minPixels` thick at least, and how far the lip is drawn as a line (vCurlFar).
+ */
 const curlBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
+float curlPixel = curlPixelScale * max( 0.0, -( modelViewMatrix * vec4( position, 1.0 ) ).z );
+transformed += normal * ( 0.5 * curlLod.x * max( 0.0, ${f(DISTANCE.minPixels)} * curlPixel - curlSheet ) );
+vCurlFar = curlPixel > 0.0 ? 1.0 - smoothstep( ${f(DISTANCE.minPixels)}, ${f(DISTANCE.nearPixels)}, curlLod.y / curlPixel ) : 0.0;
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
+
+/**
+ * World metres per screen pixel per metre of depth for a perspective camera, given the projection's [1][1] term
+ * (1 / tan(fov / 2)) and the view's height in pixels; 0 when either is unknown (no widening).
+ */
+export function curlPixelScale(projectionYY: number, heightPixels: number): number {
+  return projectionYY > 0 && heightPixels > 0 ? 2 / (projectionYY * heightPixels) : 0;
+}
+const viewSize = new Vector2();
+/** The pixels a render's view is tall: its target's, or the canvas's in CSS pixels. */
+function viewHeight(renderer: WebGLRenderer): number {
+  const target = renderer.getRenderTarget();
+  return target ? target.height : renderer.getSize(viewSize).y;
+}
 
 /**
  * The spilling lip as drawn (the Canyon spilling lip): the curls' ribbon (`buildCurlRibbon`), shaded as the water is in
@@ -459,6 +536,8 @@ export class SpillingCurlMesh {
   private readonly attributes: { name: string; attribute: BufferAttribute; size: number; from: (ribbon: CurlRibbon) => Float32Array }[];
   private readonly index: BufferAttribute;
   private look: WaterLook = 'classic';
+  /** World metres per pixel per metre of depth (`curlPixelScale`), for the view being drawn. */
+  readonly pixelScale = { value: 0 };
 
   constructor(uniforms: Record<string, { value: unknown }>) {
     const geometry = new BufferGeometry();
@@ -475,6 +554,7 @@ export class SpillingCurlMesh {
       { name: 'curlExitNormal', attribute: make(3), size: 3, from: (r) => r.exitNormal },
       { name: 'curlAlpha', attribute: make(1), size: 1, from: (r) => r.alpha },
       { name: 'curlFlow', attribute: make(3), size: 3, from: (r) => r.flow },
+      { name: 'curlLod', attribute: make(2), size: 2, from: (r) => r.lod },
     ];
     for (const { name, attribute } of this.attributes) geometry.setAttribute(name, attribute);
     this.index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
@@ -485,7 +565,7 @@ export class SpillingCurlMesh {
       color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
     });
     material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, uniforms);
+      Object.assign(shader.uniforms, uniforms, { curlPixelScale: this.pixelScale });
       const rich = this.look === 'rich';
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${curlVertexPars}`)
@@ -509,6 +589,14 @@ export class SpillingCurlMesh {
     this.mesh = new Mesh(geometry, material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
+    // A pixel's size for this render's camera and view (`DISTANCE`): set as the curl is drawn, in any view.
+    this.mesh.onBeforeRender = (renderer, _scene, camera) => this.setView(camera, viewHeight(renderer));
+  }
+
+  /** The camera and view height (px) the curl is drawn for next (`DISTANCE`): an orthographic view widens nothing. */
+  setView(camera: Camera, heightPixels: number): void {
+    const perspective = (camera as Camera & { isPerspectiveCamera?: boolean }).isPerspectiveCamera === true;
+    this.pixelScale.value = perspective ? curlPixelScale(camera.projectionMatrix.elements[5], heightPixels) : 0;
   }
 
   /** Graphics setting (G8): shaded as the Classic water, or the Rich. */
