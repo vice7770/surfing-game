@@ -255,6 +255,8 @@ class SurfGame {
     this.water.mesh.visible = false;
     this.scene.add(this.water.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
+    // Dev tools: the physical mode, for checks in the page (the spilling lip's in-game costs).
+    if (DEV_TOOLS) (globalThis as unknown as { breaklinePhysical?: PhysicalMode }).breaklinePhysical = this.physicalMode;
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);

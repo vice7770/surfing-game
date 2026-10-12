@@ -532,6 +532,8 @@ export class PhysicalMode {
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...(diagnosticDx > 0 && Number.isFinite(diagnosticDx) ? { dx: diagnosticDx } : {}),
       ...(diagnosticDz > 0 && Number.isFinite(diagnosticDz) ? { fineSpacing: diagnosticDz } : {}),
+      // `?spillingCurl=0`: the Canyon's spilling front drawn as felt, with no curl (a dev switch, for the lip's costs).
+      ...(devParam('spillingCurl') === '0' ? { spillingCurl: false } : {}),
       ...overrides,
     };
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
