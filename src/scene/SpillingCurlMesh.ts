@@ -4,7 +4,8 @@ import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
 import { waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, waterSpecularPars } from './water/specular';
-import { waterChopNormal } from './waterChop';
+import { waterChopMomentPars, waterChopNormal } from './waterChop';
+import { RICH_SHEET_GLITTER, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { CLASSIC_FOAM, WATER_IOR, waterBodyFragment } from './waterOptics';
 import { waterFragmentPars, waterVertexPars } from './WaterSurface';
 import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, SWEPT_SHEET_BODY } from './barrel/SweptBarrelMesh';
@@ -573,9 +574,9 @@ export class SpillingCurlMesh {
         .replace('#include <begin_vertex>', curlBeginVertex);
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${curlFragmentPars}`
+          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}\n${curlFragmentPars}`
           : `#include <common>\n${waterFragmentPars}\n${curlFragmentPars}`)
-        .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
+        .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>${CURL_RAGGED_TIP}`)
         .replace('#include <color_fragment>', 'diffuseColor.a *= vCurlAlpha;')
         .replace('#include <emissivemap_fragment>', CURL_FOAM + (rich
@@ -583,7 +584,9 @@ export class SpillingCurlMesh {
             .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
           : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY)).replace(VIEW_COS, CURL_VIEW_COS).split('vWaterFoam').join('curlFoam') + CURL_STREAKS)
         .replace('#include <opaque_fragment>', CURL_SHADE)
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
+        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>')
+        // The sun's glitter about the curl's own normal, from the screen-space term alone (web-ocean plan, item 5).
+        .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
     };
     material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}`;
     this.mesh = new Mesh(geometry, material);

@@ -4,6 +4,7 @@ import { CausticMap } from './CausticMap';
 import { EdgeBand } from './EdgeBand';
 import { FarFieldOcean } from './FarFieldOcean';
 import { LipSheetMesh } from './LipSheetMesh';
+import { SpillingCurlMesh } from './SpillingCurlMesh';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { SweptBarrelMesh } from './barrel/SweptBarrelMesh';
 import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
@@ -144,7 +145,7 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     expect(counts['edge band rich roller'].count).toBeLessThanOrEqual(UNITS);
   });
 
-  it('keeps the far ocean, the tube, the lip and the caustics within the units', () => {
+  it('keeps the far ocean, the tube, the spilling curl, the lip and the caustics within the units', () => {
     const programs: [string, { vertex: string; fragment: string }, boolean][] = [];
     for (const look of ['classic', 'rich'] as WaterLook[]) {
       const far = new FarFieldOcean();
@@ -158,6 +159,9 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
       const tube = new SweptBarrelMesh(water.materialUniforms);
       tube.setLook(look);
       programs.push([`swept barrel ${look}`, compiled(tube.mesh.material), true]);
+      const curl = new SpillingCurlMesh(water.materialUniforms);
+      curl.setLook(look);
+      programs.push([`spilling curl ${look}`, compiled(curl.mesh.material), true]);
     }
     const lip = new LipSheetMesh();
     programs.push(['lip rich', compiled(lip.richMaterial), true]);
