@@ -4,7 +4,7 @@ import { EdgeBand } from '../EdgeBand';
 import { FarFieldOcean } from '../FarFieldOcean';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { horizonHazeUniforms } from './horizonHaze';
-import { horizonLookOn } from './richHorizon';
+import { horizonHazeOn, horizonLookOn, horizonSkyOn } from './richHorizon';
 import { RICH_REFLECTION } from './richWaterGlsl';
 
 const grid = { xMin: -20, zMin: -40, spacing: 1, nx: 41, nz: 31 };
@@ -24,6 +24,13 @@ describe('the horizon look on the Rich water', () => {
     expect(horizonLookOn('')).toBe(true);
     expect(horizonLookOn('?horizon=off')).toBe(false);
     expect(horizonLookOn('?horizon=on')).toBe(true);
+  });
+
+  it('leaves out its sky mirror or its haze alone with a dev switch, for timing each', () => {
+    expect(horizonSkyOn('')).toBe(true);
+    expect(horizonSkyOn('?horizonSky=three')).toBe(false);
+    expect(horizonHazeOn('')).toBe(true);
+    expect(horizonHazeOn('?horizonHaze=off')).toBe(false);
   });
 
   it('hazes the tank, its edge band and the far ocean alike, through the same uniform objects', () => {
