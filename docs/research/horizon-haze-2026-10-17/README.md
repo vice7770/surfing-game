@@ -76,11 +76,11 @@ that was the horizon's own: it was the glitter's (`claude/chop-glitter`). With t
 program sat at a cliff where anything more cost several times its own instructions, the sky mirror among them. With
 the glitter rearranged (that branch's pass), the horizon look costs, against the Rich water before the horizon plan:
 
-| Shot | Medium (no glitter) | High (glitter on) |
-| --- | --- | --- |
-| lineup | +4 to +8 % (about +0.5–0.9 ms hidden) | +1 to +4 % |
-| face | ±1 % | ±3 % |
-| horizon | +1 to +3 % | −1 to −3 % |
+| Shot | Medium (no glitter) | High, glitter off | High, glitter on |
+| --- | --- | --- | --- |
+| lineup | +4 to +8 % (+0.5 to +0.9 ms hidden) | +4 to +5 % | +8 % |
+| face | ±1 % | ±1 % | −9 % |
+| horizon | +1 to +3 % | −2 % | −2 % |
 
 Apart (Medium, lineup): the sky mirror alone (`?horizonHaze=off`) +5 %, the haze alone (`?horizonSky=three`) +4 %;
 on the face and horizon shots the parts move by ±15 % each way and do not add, the tank's program being at that
