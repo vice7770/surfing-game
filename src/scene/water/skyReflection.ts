@@ -100,41 +100,36 @@ const f = (value: number) => value.toFixed(6);
  */
 export const waterSkyPars = /* glsl */ `
 uniform float waterSkyGain;
-#ifdef USE_ENVMAP
 vec2 waterSkyDfg = vec2( 0.0 );
-vec3 waterSkyRadiance( const in vec3 viewDir, const in vec3 normal, const in float roughness ) {
-#ifndef ENVMAP_TYPE_CUBE_UV
-  return getIBLRadiance( viewDir, normal, roughness );
-#else
-  vec3 V = normalize( inverseTransformDirection( viewDir, viewMatrix ) );
-  vec3 N = normalize( inverseTransformDirection( normal, viewMatrix ) );
+#if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+// One sky lookup either side: beneath (\`face\` < 0, where the water mirrors itself) three's own ray and blur.
+vec3 waterSkyRadiance( const in vec3 normal, const in float roughness, const in float face ) {
+  vec3 toEye = cameraPosition - vWaterWorld;
+  float eyeDistance = length( toEye );
+  vec3 V = toEye / max( eyeDistance, 1e-4 );
+  vec3 N = inverseTransformDirection( normal, viewMatrix );
   // The slope variance the pixel leaves unresolved: what its footprint spans, the ripples it filters, the faded chop.
   vec2 slope = N.xz / max( N.y, 0.1 );
   vec2 across = dFdx( slope );
   vec2 down = dFdy( slope );
   float footprint = min( 0.5 * ( dot( across, across ) + dot( down, down ) ), ${f(FOOTPRINT_VARIANCE_CAP)} );
-  float chopFade = exp( -length( vWaterWorld - cameraPosition ) / ${CHOP_FADE_DISTANCE.toFixed(1)} );
+  float chopFade = exp( -eyeDistance / ${CHOP_FADE_DISTANCE.toFixed(1)} );
   float chopLost = waterChop * waterChop * ${f(CHOP_MEAN_SQUARE_SLOPE)} * ( 1.0 - chopFade * chopFade );
-  float spread = waterRippleVariance + footprint + chopLost;
-  float sigma = sqrt( 0.5 * spread );
+  float sigma = sqrt( 0.5 * ( waterRippleVariance + footprint + chopLost ) );
   // Grazing: the facets in view lean toward the viewer, so the mirror sees higher sky (web-ocean, MIT).
-  float sine = sqrt( max( 1.0 - V.y * V.y, 1e-6 ) );
+  float sine = length( V.xz ) + 1e-5;
   float smith = max( V.y, 1e-3 ) / sine / ( 1.4142 * max( sigma, 1e-3 ) );
-  float tilt = ${f(GRAZING_TILT)} * sigma * ( 1.0 - smoothstep( 0.0, ${f(GRAZING_TILT_END)}, smith ) );
-  vec3 toward = normalize( vec3( V.x + 1e-5, 0.0, V.z ) );
-  vec3 facet = normalize( N + toward * tilt );
-  float blur = min( 1.0, sqrt( sqrt( pow4( roughness ) + 2.0 * ( footprint + chopLost ) ) ) );
-  vec3 ray = reflect( -V, facet );
-  ray = normalize( mix( ray, facet, pow4( blur ) ) );
+  float tilt = face > 0.0 ? ${f(GRAZING_TILT)} * sigma * ( 1.0 - smoothstep( 0.0, ${f(GRAZING_TILT_END)}, smith ) ) : 0.0;
+  vec3 facet = normalize( N + vec3( V.x, 0.0, V.z ) * ( tilt / sine ) );
+  float blur = face > 0.0 ? min( 1.0, sqrt( sqrt( pow4( roughness ) + 2.0 * ( footprint + chopLost ) ) ) ) : roughness;
+  vec3 ray = mix( reflect( -V, facet ), facet, pow4( blur ) );
   // A ray reflected below the horizon would read the photo's dark lower half: fold it back up (web-ocean, MIT).
-  ray.y = abs( ray.y ) * ${f(BELOW_HORIZON_FOLD)} + max( ray.y, 0.0 ) * ${f(1 - BELOW_HORIZON_FOLD)};
-  ray = normalize( ray );
+  if ( face > 0.0 ) ray.y = abs( ray.y ) * ${f(BELOW_HORIZON_FOLD)} + max( ray.y, 0.0 ) * ${f(1 - BELOW_HORIZON_FOLD)};
   // Fresnel from a normal blended toward up: the long waves' facet with the grazing statistics of the finer ones.
-  vec3 fresnelNormal = normalize( mix( N, vec3( 0.0, 1.0, 0.0 ), ${f(FRESNEL_UP_BLEND)} ) );
-  float grazing = pow( 1.0 - saturate( dot( fresnelNormal, V ) ), 5.0 );
+  vec3 fresnelNormal = mix( N, vec3( 0.0, 1.0, 0.0 ), ${f(FRESNEL_UP_BLEND)} );
+  float grazing = pow( 1.0 - saturate( dot( fresnelNormal, V ) * inversesqrt( dot( fresnelNormal, fresnelNormal ) ) ), 5.0 );
   waterSkyDfg = vec2( 1.0 - grazing, grazing );
-  return textureCubeUV( envMap, envMapRotation * ray, blur ).rgb * envMapIntensity;
-#endif
+  return textureCubeUV( envMap, envMapRotation * normalize( ray ), blur ).rgb * envMapIntensity;
 }
 #endif
 `;
@@ -145,22 +140,22 @@ const IBL_CALL = 'getIBLRadiance( geometryViewDir, geometryNormal, material.roug
  * The share of the sky the Rich water mirrors (on top of its Fresnel): the Rich look's own balance (`RICH_WATER`'s
  * reflection, tuned on views down into the water, where the body must show) giving way to the whole of it as the view
  * grazes, where a sea is its sky's mirror, and to the sky the player sees there (`gain`, `horizonGain`: the environment
- * lighting the scene is exposed apart from the background photo, up to 2.7 times brighter at the horizon at sunset); `grazing` is the Fresnel's (1 − c)⁵ (`skyFresnelTerms`): half-way at
- * about 7° above the water, 0.96 at 1°.
+ * lighting the scene is exposed apart from the background photo, up to 2.7 times brighter at the horizon at sunset).
+ * `grazing` is the Fresnel's (1 − c)⁵ (`skyFresnelTerms`): half-way at about 7° above the water, 0.96 at 1°.
  */
 export function skyMirrorShare(reflection: number, grazing: number, gain = 1): number {
   return reflection + (gain - reflection) * Math.min(1, Math.max(0, grazing));
 }
 
 /**
- * Rich <lights_fragment_maps>: three's own chunk with the sky read by `waterSkyRadiance` on the water's upper side
- * (three's lookup beneath it, where the water mirrors itself), its Fresnel for the environment's share, and the Rich
+ * Rich <lights_fragment_maps>: three's own chunk with the sky read by `waterSkyRadiance` (on the water's upper side;
+ * three's ray beneath it, where the water mirrors itself), its Fresnel for the environment's share, and the Rich
  * look's mirror balance (`waterReflection`, as `RICH_REFLECTION`) giving way at grazing (`skyMirrorShare`).
  */
 export function richSkyReflection(): string {
   const chunk = ShaderChunk.lights_fragment_maps;
   if (chunk.split(IBL_CALL).length !== 2) throw new Error('The sky reflection needs three\'s one image-based radiance call');
-  return `${chunk.replace(IBL_CALL, `( faceDirection > 0.0 ? waterSkyRadiance( geometryViewDir, geometryNormal, material.roughness ) : ${IBL_CALL} )`)}
+  return `${chunk.replace(IBL_CALL, 'waterSkyRadiance( geometryNormal, material.roughness, faceDirection )')}
 #if defined( RE_IndirectSpecular ) && defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
   if ( faceDirection > 0.0 ) {
     radiance *= mix( waterReflection, waterSkyGain, waterSkyDfg.y );

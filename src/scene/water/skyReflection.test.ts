@@ -106,8 +106,7 @@ describe('the Rich water’s mirror of the sky', () => {
   it('builds on three’s own chunk, swapping its one sky lookup on the upper side only', () => {
     const chunk = richSkyReflection();
     expect(ShaderChunk.lights_fragment_maps.length).toBeGreaterThan(0);
-    expect(chunk).toContain('waterSkyRadiance( geometryViewDir, geometryNormal, material.roughness )');
-    expect(chunk).toContain('faceDirection > 0.0 ?');
+    expect(chunk).toContain('waterSkyRadiance( geometryNormal, material.roughness, faceDirection )');
     expect(chunk).toContain('radiance *= mix( waterReflection, waterSkyGain, waterSkyDfg.y );');
     expect(chunk).toContain('material.dfg = waterSkyDfg;');
     // Beneath, the Rich balance as before.

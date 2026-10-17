@@ -17,7 +17,7 @@ function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWi
 }
 
 const HAZE_OUTPUT = 'gl_FragColor.rgb = mix( gl_FragColor.rgb, vWaterHaze.rgb, vWaterHaze.a );';
-const SKY = 'waterSkyRadiance( geometryViewDir, geometryNormal, material.roughness )';
+const SKY = 'waterSkyRadiance( geometryNormal, material.roughness, faceDirection )';
 
 describe('the horizon look on the Rich water', () => {
   it('is on unless the URL turns it off', () => {

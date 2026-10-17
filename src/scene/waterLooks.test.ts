@@ -276,7 +276,7 @@ describe('Classic water parity', () => {
       const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
       water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
       // The sky it mirrors (the horizon plan's `richSkyReflection`), at the Rich look's own balance.
-      expect(shader.fragmentShader).toContain('waterSkyRadiance( geometryViewDir, geometryNormal, material.roughness )');
+      expect(shader.fragmentShader).toContain('waterSkyRadiance( geometryNormal, material.roughness, faceDirection )');
       expect(shader.fragmentShader).toContain('radiance *= mix( waterReflection, waterSkyGain, waterSkyDfg.y );');
       const uniforms = shader.uniforms as Record<string, { value: unknown }>;
       expect(uniforms.waterReflection.value).toBe(RICH_WATER.reflection);
