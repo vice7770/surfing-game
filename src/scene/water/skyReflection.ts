@@ -99,6 +99,7 @@ const f = (value: number) => value.toFixed(6);
  * `waterRippleVariance`.
  */
 export const waterSkyPars = /* glsl */ `
+uniform float waterSkyGain;
 #ifdef USE_ENVMAP
 vec2 waterSkyDfg = vec2( 0.0 );
 vec3 waterSkyRadiance( const in vec3 viewDir, const in vec3 normal, const in float roughness ) {
@@ -141,19 +142,34 @@ vec3 waterSkyRadiance( const in vec3 viewDir, const in vec3 normal, const in flo
 const IBL_CALL = 'getIBLRadiance( geometryViewDir, geometryNormal, material.roughness )';
 
 /**
+ * The share of the sky the Rich water mirrors (on top of its Fresnel): the Rich look's own balance (`RICH_WATER`'s
+ * reflection, tuned on views down into the water, where the body must show) giving way to the whole of it as the view
+ * grazes, where a sea is its sky's mirror, and to the sky the player sees there (`gain`, `horizonGain`: the environment
+ * lighting the scene is exposed apart from the background photo, up to 2.7 times brighter at the horizon at sunset); `grazing` is the Fresnel's (1 − c)⁵ (`skyFresnelTerms`): half-way at
+ * about 7° above the water, 0.96 at 1°.
+ */
+export function skyMirrorShare(reflection: number, grazing: number, gain = 1): number {
+  return reflection + (gain - reflection) * Math.min(1, Math.max(0, grazing));
+}
+
+/**
  * Rich <lights_fragment_maps>: three's own chunk with the sky read by `waterSkyRadiance` on the water's upper side
  * (three's lookup beneath it, where the water mirrors itself), its Fresnel for the environment's share, and the Rich
- * look's mirror balance (`waterReflection`, as `RICH_REFLECTION`).
+ * look's mirror balance (`waterReflection`, as `RICH_REFLECTION`) giving way at grazing (`skyMirrorShare`).
  */
 export function richSkyReflection(): string {
   const chunk = ShaderChunk.lights_fragment_maps;
   if (chunk.split(IBL_CALL).length !== 2) throw new Error('The sky reflection needs three\'s one image-based radiance call');
   return `${chunk.replace(IBL_CALL, `( faceDirection > 0.0 ? waterSkyRadiance( geometryViewDir, geometryNormal, material.roughness ) : ${IBL_CALL} )`)}
-#if defined( RE_IndirectSpecular )
-  radiance *= waterReflection;
-#endif
 #if defined( RE_IndirectSpecular ) && defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
-  if ( faceDirection > 0.0 ) material.dfg = waterSkyDfg;
+  if ( faceDirection > 0.0 ) {
+    radiance *= mix( waterReflection, waterSkyGain, waterSkyDfg.y );
+    material.dfg = waterSkyDfg;
+  } else {
+    radiance *= waterReflection;
+  }
+#elif defined( RE_IndirectSpecular )
+  radiance *= waterReflection;
 #endif`;
 }
 

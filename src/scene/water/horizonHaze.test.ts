@@ -10,6 +10,8 @@ import {
   hazeExtinction,
   hazeTransmittance,
   horizonBandRows,
+  horizonGain,
+  ringLuminance,
   horizonHazeUniforms,
   horizonRing,
   ringColorAt,
@@ -120,21 +122,39 @@ describe('the ring of horizon colours', () => {
     expect(between(HAZE_RING_SIZE - 1)).toBeCloseTo((HAZE_RING_SIZE - 1) / 2, 4);
   });
 
+  it('decodes any channel encoding, as an HDR’s half floats', () => {
+    const rgba = new Float32Array(4 * HAZE_RING_SIZE).fill(2);
+    const ring = horizonRing(rgba, HAZE_RING_SIZE, 1, HAZE_RING_SIZE, (v) => v * 0.5);
+    expect(Array.from(ring).every((v) => v === 1)).toBe(true);
+  });
+
+  it('measures how much brighter the sky shown is than the sky that lights, at the horizon', () => {
+    const grey = (v: number) => new Float32Array(3 * HAZE_RING_SIZE).fill(v);
+    expect(ringLuminance(grey(0.3))).toBeCloseTo(0.3, 6);
+    expect(horizonGain(grey(0.3), grey(1), 0.6)).toBeCloseTo(0.5, 6);
+    expect(horizonGain(grey(0.3), grey(0), 0.6)).toBe(1);
+  });
+
   it('turns the haze on with a ring and off without one, keeping the photo’s turn', () => {
     const uniforms = {
       waterHazeRing: { value: new Float32Array(3 * HAZE_RING_SIZE) },
       waterHazeTurn: { value: horizonHazeUniforms.waterHazeTurn.value.clone() },
       waterHazeExtinction: { value: 0 },
+      waterSkyGain: { value: 1 },
     };
-    applyHorizonHaze(uniforms, indexRing(), 0.5, true);
+    applyHorizonHaze(uniforms, { ring: indexRing(), rotation: 0.5, gain: 0.4 }, true);
     expect(uniforms.waterHazeExtinction.value).toBe(HAZE_EXTINCTION);
     expect(uniforms.waterHazeRing.value[3 * 7]).toBe(7);
     expect(uniforms.waterHazeTurn.value.x).toBeCloseTo(Math.cos(0.5), 12);
     expect(uniforms.waterHazeTurn.value.y).toBeCloseTo(Math.sin(0.5), 12);
-    applyHorizonHaze(uniforms, indexRing(), 0.5, false);
+    expect(uniforms.waterSkyGain.value).toBe(0.4);
+    applyHorizonHaze(uniforms, { ring: indexRing(), rotation: 0.5, gain: 0.4 }, false);
     expect(uniforms.waterHazeExtinction.value).toBe(0);
-    applyHorizonHaze(uniforms, undefined, 0.5, true);
+    applyHorizonHaze(uniforms, { rotation: 0.5, gain: 0.4 }, true);
     expect(uniforms.waterHazeExtinction.value).toBe(0);
+    expect(uniforms.waterSkyGain.value).toBe(1);
     expect(uniforms.waterHazeRing.value[3 * 7]).toBe(7);
+    applyHorizonHaze(uniforms, { ring: indexRing(), rotation: 0, gain: Number.NaN }, true);
+    expect(uniforms.waterSkyGain.value).toBe(1);
   });
 });

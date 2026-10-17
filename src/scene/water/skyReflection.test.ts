@@ -8,6 +8,7 @@ import {
   fresnelCosine,
   richSkyReflection,
   skyFresnelTerms,
+  skyMirrorShare,
   skyReflectionRay,
   skyRoughness,
 } from './skyReflection';
@@ -90,12 +91,26 @@ describe('the Rich water’s mirror of the sky', () => {
     expect(WATER_F0 * skyFresnelTerms(1)[0] + skyFresnelTerms(1)[1]).toBeCloseTo(WATER_F0, 12);
   });
 
+  it('keeps the Rich mirror balance on views down into the water and gives way to the whole sky at grazing', () => {
+    const share = (cosine: number) => skyMirrorShare(0.5, skyFresnelTerms(cosine)[1]);
+    expect(share(1)).toBe(0.5);
+    expect(share(Math.cos((45 * Math.PI) / 180))).toBeLessThan(0.505);
+    expect(share(Math.sin((8 * Math.PI) / 180))).toBeCloseTo(0.75, 1);
+    expect(share(Math.sin((1 * Math.PI) / 180))).toBeGreaterThan(0.9);
+    expect(share(0)).toBe(1);
+    // At grazing it mirrors the sky the player sees: the environment scaled to the background's horizon.
+    expect(skyMirrorShare(0.5, 1, 0.37)).toBeCloseTo(0.37, 12);
+    expect(skyMirrorShare(0.5, 0, 0.37)).toBe(0.5);
+  });
+
   it('builds on three’s own chunk, swapping its one sky lookup on the upper side only', () => {
     const chunk = richSkyReflection();
     expect(ShaderChunk.lights_fragment_maps.length).toBeGreaterThan(0);
     expect(chunk).toContain('waterSkyRadiance( geometryViewDir, geometryNormal, material.roughness )');
     expect(chunk).toContain('faceDirection > 0.0 ?');
-    expect(chunk).toContain('radiance *= waterReflection;');
+    expect(chunk).toContain('radiance *= mix( waterReflection, waterSkyGain, waterSkyDfg.y );');
     expect(chunk).toContain('material.dfg = waterSkyDfg;');
+    // Beneath, the Rich balance as before.
+    expect(chunk).toContain('} else {\n    radiance *= waterReflection;');
   });
 });

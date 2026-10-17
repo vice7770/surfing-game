@@ -56,24 +56,29 @@ export function srgbToLinear(value: number): number {
   return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
+const SRGB_BYTES = Float32Array.from({ length: 256 }, (_, v) => srgbToLinear(v / 255));
+/** An sRGB byte (0–255) to linear. */
+export const srgbByteToLinear = (value: number): number => SRGB_BYTES[value];
+
 /**
  * The horizon's colour around the sky (linear RGB, HAZE_RING_SIZE × 3): the mean of each bin of columns of an
- * equirectangular photo's horizon band. `rgba` holds `rows` rows of `width` sRGB pixels (0–255) cut from the band.
+ * equirectangular photo's horizon band. `rgba` holds `rows` rows of `width` RGBA pixels cut from the band, each channel
+ * turned linear by `decode` (sRGB bytes by default; an HDR's half floats with `DataUtils.fromHalfFloat`).
  * Columns run as three samples an equirect map: column c lies at longitude ((c + ½)/width − ½)·2π, at
  * x = cos, z = sin (`directionAt` in scripts/assets/skyMath.ts), so bin k is centred on ((k + ½)/size − ½)·2π.
  */
-export function horizonRing(rgba: ArrayLike<number>, width: number, rows: number, size = HAZE_RING_SIZE): Float32Array {
+export function horizonRing(
+  rgba: ArrayLike<number>, width: number, rows: number, size = HAZE_RING_SIZE, decode: (value: number) => number = srgbByteToLinear,
+): Float32Array {
   const ring = new Float32Array(3 * size);
   const counts = new Float32Array(size);
-  const decode = new Float32Array(256);
-  for (let v = 0; v < 256; v += 1) decode[v] = srgbToLinear(v / 255);
   for (let row = 0; row < rows; row += 1) {
     for (let column = 0; column < width; column += 1) {
       const bin = Math.min(size - 1, Math.floor(((column + 0.5) / width) * size));
       const k = 4 * (row * width + column);
-      ring[3 * bin] += decode[rgba[k]];
-      ring[3 * bin + 1] += decode[rgba[k + 1]];
-      ring[3 * bin + 2] += decode[rgba[k + 2]];
+      ring[3 * bin] += decode(rgba[k]);
+      ring[3 * bin + 1] += decode(rgba[k + 1]);
+      ring[3 * bin + 2] += decode(rgba[k + 2]);
       counts[bin] += 1;
     }
   }
@@ -108,6 +113,24 @@ export function horizonRingFromImage(image: CanvasImageSource & { width: number;
   return horizonRing(context.getImageData(0, 0, image.width, count).data, image.width, count);
 }
 
+/** The ring's mean luminance (Rec. 709). */
+export function ringLuminance(ring: ArrayLike<number>): number {
+  let sum = 0;
+  for (let k = 0; k + 2 < ring.length; k += 3) sum += 0.2126 * ring[k] + 0.7152 * ring[k + 1] + 0.0722 * ring[k + 2];
+  return ring.length >= 3 ? sum / (ring.length / 3) : 0;
+}
+
+/**
+ * How much brighter the sky the player sees is than the sky that lights the scene, at the horizon: the background
+ * photo's ring over the environment's (its HDR's ring at the scene's exposure). The two come from one photo but are
+ * scaled apart (the background as Poly Haven tone-mapped it, the environment to `REFERENCE_LIGHT`): 1.25 at midday,
+ * 0.57 at dawn, 0.37 at sunset. The Rich water mirrors the sky the player sees at grazing (`skyMirrorShare`).
+ */
+export function horizonGain(background: ArrayLike<number>, environment: ArrayLike<number>, exposure: number): number {
+  const lit = ringLuminance(environment) * exposure;
+  return lit > 0 ? ringLuminance(background) / lit : 1;
+}
+
 /**
  * The ring's colour toward world direction (x, z) for a photo turned by `rotation` about +y (`PhotoSky.rotation`;
  * a turn θ adds θ to a direction's atan2(x, z), as `rotatedSun` does). CPU twin of the shader's `waterHazeColor`.
@@ -137,19 +160,27 @@ export const horizonHazeUniforms = {
   waterHazeRing: { value: new Float32Array(3 * HAZE_RING_SIZE) },
   waterHazeTurn: { value: new Vector2(1, 0) },
   waterHazeExtinction: { value: 0 },
+  /** The sky the player sees over the sky that lights the scene, at the horizon (`horizonGain`): the grazing mirror's. */
+  waterSkyGain: { value: 1 },
 };
 
-/** Point the haze at a sky's ring turned by `rotation`, or turn it off (no ring, or `on` false). */
-export function applyHorizonHaze(
-  uniforms: typeof horizonHazeUniforms,
-  ring: ArrayLike<number> | undefined,
-  rotation: number,
-  on: boolean,
-  extinction = HAZE_EXTINCTION,
-): void {
+/** What the haze and the grazing mirror take from a photographed sky. */
+export interface HorizonSky {
+  /** The background's ring (`horizonRing`), or none: the haze is then off. */
+  ring?: ArrayLike<number>;
+  /** The photo's turn about +y, radians (`PhotoSky.rotation`). */
+  rotation: number;
+  /** `horizonGain`, 1 without a measured sky. */
+  gain?: number;
+}
+
+/** Point the haze at a sky's ring turned with it, or turn it off (no ring, or `on` false: under water). */
+export function applyHorizonHaze(uniforms: typeof horizonHazeUniforms, sky: HorizonSky, on: boolean, extinction = HAZE_EXTINCTION): void {
+  const { ring, rotation, gain } = sky;
   if (ring && ring.length === uniforms.waterHazeRing.value.length) uniforms.waterHazeRing.value.set(ring);
   uniforms.waterHazeTurn.value.set(Math.cos(rotation), Math.sin(rotation));
   uniforms.waterHazeExtinction.value = on && ring ? extinction : 0;
+  uniforms.waterSkyGain.value = ring && gain !== undefined && Number.isFinite(gain) && gain > 0 ? gain : 1;
 }
 
 /**
