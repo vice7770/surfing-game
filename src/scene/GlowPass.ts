@@ -39,7 +39,9 @@ uniform float knee;
 varying vec2 vUv;
 
 vec3 tap( vec2 offset ) {
-  return min( texture2D( source, vUv + texel * offset ).rgb, vec3( 6.0e4 ) );
+  vec3 c = texture2D( source, vUv + texel * offset ).rgb;
+  // A broken pixel (NaN or infinite, see the composite) must not flood the glow: it adds nothing.
+  return any( isnan( c ) ) || any( isinf( c ) ) ? vec3( 0.0 ) : clamp( c, 0.0, 6.0e4 );
 }
 
 void main() {
@@ -130,6 +132,7 @@ const compositeFragment = /* glsl */ `
 uniform sampler2D sceneMap;
 uniform sampler2D bloomMap;
 uniform float bloomStrength;
+uniform vec2 sceneTexel;
 varying vec2 vUv;
 ${AGX_GLSL}
 // Jimenez's interleaved gradient noise.
@@ -137,8 +140,16 @@ float gradientNoise( vec2 p ) {
   return fract( 52.9829189 * fract( dot( p, vec2( 0.06711056, 0.00583715 ) ) ) );
 }
 
+bool broken( vec3 c ) {
+  return any( isnan( c ) ) || any( isinf( c ) );
+}
+
 void main() {
-  vec3 hdr = texture2D( sceneMap, vUv ).rgb + bloomStrength * texture2D( bloomMap, vUv ).rgb;
+  vec3 scene = texture2D( sceneMap, vUv ).rgb;
+  // The Rich water can leave a lone NaN pixel: the canvas drops it, a float target keeps it, so it takes its neighbour's colour.
+  if ( broken( scene ) ) scene = texture2D( sceneMap, vUv + vec2( sceneTexel.x, 0.0 ) ).rgb;
+  if ( broken( scene ) ) scene = vec3( 0.0 );
+  vec3 hdr = max( scene, 0.0 ) + bloomStrength * texture2D( bloomMap, vUv ).rgb;
   gl_FragColor = vec4( agxGrade( hdr ), 1.0 );
   #include <colorspace_fragment>
   // Triangular dither of up to one step of the 8-bit canvas, against banding in the sky.
@@ -161,7 +172,7 @@ export class GlowPass {
   private readonly down = postMaterial(downFragment, { source: { value: null }, texel: { value: new Vector2() }, threshold: { value: 1 }, knee: { value: 0.5 } });
   private readonly up = postMaterial(upFragment, { source: { value: null }, texel: { value: new Vector2() } }, { blending: AdditiveBlending, transparent: true });
   private readonly composite = postMaterial(compositeFragment, {
-    sceneMap: { value: null }, bloomMap: { value: null }, bloomStrength: { value: 0 }, exposure: { value: 1 }, lookPower: { value: 1 }, lookSaturation: { value: 1 },
+    sceneMap: { value: null }, bloomMap: { value: null }, bloomStrength: { value: 0 }, sceneTexel: { value: new Vector2() }, exposure: { value: 1 }, lookPower: { value: 1 }, lookSaturation: { value: 1 },
   });
   private readonly size = new Vector2();
   /** Full-screen draws the last frame made: the scene, the bloom's passes and the composite. */
@@ -211,6 +222,7 @@ export class GlowPass {
     renderer.autoClear = true;
     const uniforms = this.composite.uniforms;
     uniforms.sceneMap.value = target.texture;
+    (uniforms.sceneTexel.value as Vector2).set(1 / width, 1 / height);
     uniforms.bloomMap.value = this.mips[0]?.texture ?? null;
     uniforms.bloomStrength.value = this.mips.length > 0 ? this.settings.strength / this.mips.length : 0;
     uniforms.exposure.value = this.settings.exposure;
