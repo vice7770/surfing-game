@@ -344,7 +344,11 @@ function syntheticDrawing(iterations: number, width = 2048, height = 1280): () =
  * seconds per wall second, fresh snapshots per second, the worker's stage timings (p50 and p95) and the device's bytes,
  * maps and queue submissions per step. `&tier=0` builds Medium's sea (24 components) instead of High's 64; `&rider=0` leaves
  * the sea riderless, as the menu's is (`&size=practice` is the menu's swell); `&particles=medium` sets the Particles level;
+ * `&gpuLoad=600` draws a synthetic full-screen pass that deep on the same GPU meanwhile.
  * `&seconds=` and `&warm=` set the sample, `&seed=` the sea. The result is also left in `window.gpuCheck`.
+ * `&arms=both` builds two identical seas, one on the solo host (its water prefetch) and one on the ordinary device path
+ * (a host option turns the prefetch off), and drives them in turn for `&slot=` seconds each (default 2), so a busy
+ * machine's drift falls on both alike; `&arms=ordinary` runs the ordinary path alone.
  */
 async function pipeline(): Promise<void> {
   const params = new URLSearchParams(location.search);
@@ -357,53 +361,74 @@ async function pipeline(): Promise<void> {
   const gpuLoad = Number(params.get('gpuLoad') ?? 0);
   const rider = params.get('rider') !== '0';
   const particles = (params.get('particles') ?? 'high') as 'low' | 'medium' | 'high';
+  const slot = Number(params.get('slot') ?? 2) * 1000;
+  const armNames = params.get('arms') === 'both' ? ['solo', 'ordinary'] : params.get('arms') === 'ordinary' ? ['ordinary'] : ['solo'];
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
   const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
-  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, rider, particles, phase: 'spinning up' };
+  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, rider, particles, arms: armNames, phase: 'spinning up' };
   (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
-  say(`${spot} ${size}, ${config.componentCount ?? 24} components, ${rider ? 'ridden' : 'riderless'}, ${particles} particles, seed ${seed}: spinning up…`);
+  say(`${spot} ${size}, ${config.componentCount ?? 24} components, ${rider ? 'ridden' : 'riderless'}, ${particles} particles, seed ${seed}, ${armNames.join(' and ')}: spinning up…`);
   const built = performance.now();
-  const samples: { wall: number; seaTime: number; pipeline?: Pipeline; stepMs: number }[] = [];
-  let host: WorkerSurfZone | undefined;
+  type Sample = { wall: number; seaTime: number; pipeline?: Pipeline; fresh: boolean };
+  type Arm = { name: string; host: WorkerSurfZone; samples: Sample[]; sinceSwitch: number };
+  const arms: Arm[] = [];
+  let active = 0;
+  let sampleFrom = Infinity;
+  let switchAt = Infinity;
   let done!: () => void;
   const finished = new Promise<void>((resolve) => { done = resolve; });
-  let sampleFrom = Infinity;
   const idle = { paddle: false, popUp: false, steer: 0, retry: false };
-  const next = () => {
+  const next = (arm: Arm) => {
     if (hop > 0) {
       const until = performance.now() + hop;
       while (performance.now() < until) { /* the page's frame */ }
     }
-    host!.advance(1, idle);
+    arm.host.advance(1, idle);
   };
-  const port = new TimedPort(createSurfZoneWorker(), (reply) => {
-    if (reply.type !== 'snapshot' || !host) return;
+  const arrived = (arm: Arm) => {
     const wall = performance.now();
-    const { status } = host.snapshot;
-    if (wall >= sampleFrom) samples.push({ wall, seaTime: status.seaTime, pipeline: status.pipelineMs && { ...status.pipelineMs }, stepMs: status.stepMs });
-    if (wall >= sampleFrom + seconds * 1000) {
+    const { status } = arm.host.snapshot;
+    // The first steps after a turn may commit water prepared long before: they are left out of the timings.
+    if (wall >= sampleFrom) arm.samples.push({ wall, seaTime: status.seaTime, pipeline: status.pipelineMs && { ...status.pipelineMs }, fresh: arm.sinceSwitch >= 3 });
+    arm.sinceSwitch += 1;
+    if (wall >= sampleFrom + seconds * 1000 * arms.length) {
       done();
       return;
     }
-    next();
-  });
-  host = new WorkerSurfZone(config, port, { rider, ...(barrelCases ? { barrelCases } : {}) });
-  host.setParticleLevel(particles);
-  await host.ready;
-  const { status } = host.snapshot;
+    if (arms.length > 1 && wall >= switchAt) {
+      active = (active + 1) % arms.length;
+      switchAt = wall + slot;
+      const other = arms[active];
+      other.sinceSwitch = 0;
+      next(other);
+      return;
+    }
+    next(arm);
+  };
+  for (const name of armNames) {
+    const arm = { name, samples: [], sinceSwitch: 0 } as unknown as Arm;
+    const port = new TimedPort(createSurfZoneWorker(), (reply) => {
+      if (reply.type === 'snapshot' && arms[active] === arm) arrived(arm);
+    });
+    // A host option (any) keeps the ordinary device path: the solo prefetch is the default host's alone.
+    arm.host = new WorkerSurfZone(config, port, { rider, ...(barrelCases ? { barrelCases } : {}) }, name === 'ordinary' ? { maxBatchSteps: 1 } : {});
+    arm.host.setParticleLevel(particles);
+    arms.push(arm);
+  }
+  await Promise.all(arms.map((arm) => arm.host.ready));
+  const { status } = arms[0].host.snapshot;
   say(`  ready in ${((performance.now() - built) / 1000).toFixed(1)} s: ${status.compute.toUpperCase()}, ${status.cells.toLocaleString('en-US')} cells`);
   result.phase = 'sampling';
   const drawing = gpuLoad > 0 ? syntheticDrawing(gpuLoad) : undefined;
   sampleFrom = performance.now() + warm * 1000;
-  next();
+  switchAt = sampleFrom + slot;
+  next(arms[0]);
   await finished;
   const drawn = await drawing?.();
-  host.dispose();
-  const first = samples[0];
-  const last = samples.at(-1)!;
-  const wallSeconds = (last.wall - first.wall) / 1000;
+  arms.forEach((arm) => arm.host.dispose());
+  if (drawn) say(`  synthetic drawing (${gpuLoad} deep): ${drawn.framesPerSecond.toFixed(1)} frames/s, median interval ${drawn.frameMs.toFixed(1)} ms`);
   const quantile = (values: number[], q: number) => {
     const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
     return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : Number.NaN;
@@ -411,23 +436,39 @@ async function pipeline(): Promise<void> {
   const keys: (keyof Pipeline)[] = ['water', 'deviceMap', 'deviceUnpack', 'devicePack', 'deviceCfl', 'deviceEncode', 'deviceSubsteps',
     'breaking', 'front', 'lip', 'foam', 'aeration', 'board', 'contact', 'bubbles', 'spray', 'step', 'snapshot', 'total',
     'deviceUploadBytes', 'deviceReadbackBytes', 'deviceMaps', 'deviceSubmits'];
-  const stages: Record<string, { p50: number; p95: number; mean: number }> = {};
-  for (const key of keys) {
-    const values = samples.map((sample) => sample.pipeline?.[key] ?? Number.NaN);
-    const finite = values.filter(Number.isFinite);
-    stages[key] = { p50: quantile(values, 0.5), p95: quantile(values, 0.95), mean: finite.reduce((a, b) => a + b, 0) / Math.max(1, finite.length) };
+  const reports: Record<string, unknown> = {};
+  for (const arm of arms) {
+    // Rate over the steps inside each turn: sea time per wall time between consecutive timed snapshots.
+    let sea = 0;
+    let wall = 0;
+    const timed = arm.samples.filter((sample) => sample.fresh);
+    arm.samples.forEach((sample, k) => {
+      const previous = arm.samples[k - 1];
+      if (!sample.fresh || !previous?.fresh) return;
+      sea += sample.seaTime - previous.seaTime;
+      wall += sample.wall - previous.wall;
+    });
+    const stages: Record<string, { p50: number; p95: number; mean: number }> = {};
+    for (const key of keys) {
+      const values = timed.map((sample) => sample.pipeline?.[key] ?? Number.NaN);
+      const finite = values.filter(Number.isFinite);
+      stages[key] = { p50: quantile(values, 0.5), p95: quantile(values, 0.95), mean: finite.reduce((a, b) => a + b, 0) / Math.max(1, finite.length) };
+    }
+    const rate = sea / (wall / 1000);
+    const perSecond = timed.length / (wall / 1000);
+    reports[arm.name] = { rate, snapshotsPerSecond: perSecond, snapshots: timed.length, wallSeconds: wall / 1000, stages };
+    const ms = (key: keyof Pipeline) => `${stages[key].p50.toFixed(1)}/${stages[key].p95.toFixed(1)}`;
+    say(`  [${arm.name}] ${rate.toFixed(3)}× real time, ${perSecond.toFixed(1)} snapshots/s over ${(wall / 1000).toFixed(1)} s (hop ${hop} ms)`);
+    say(`  [${arm.name}] ms p50/p95: water ${ms('water')} (map ${ms('deviceMap')}, unpack ${ms('deviceUnpack')}, pack ${ms('devicePack')}, cfl ${ms('deviceCfl')}, encode ${ms('deviceEncode')}), step ${ms('step')}, snapshot ${ms('snapshot')}, total ${ms('total')}`);
+    say(`  [${arm.name}] ms p50: foam ${stages.foam.p50.toFixed(1)}, aeration ${stages.aeration.p50.toFixed(1)}, front ${stages.front.p50.toFixed(1)}, breaking ${stages.breaking.p50.toFixed(1)}, board ${stages.board.p50.toFixed(1)}, contact ${stages.contact.p50.toFixed(1)}, bubbles ${stages.bubbles.p50.toFixed(1)}, spray ${stages.spray.p50.toFixed(1)}`);
+    say(`  [${arm.name}] per step (mean): ${stages.deviceSubsteps.mean.toFixed(2)} substeps, ${(stages.deviceUploadBytes.mean / 1000).toFixed(0)} kB up, ${(stages.deviceReadbackBytes.mean / 1000).toFixed(0)} kB back, ${stages.deviceMaps.mean.toFixed(2)} maps, ${stages.deviceSubmits.mean.toFixed(2)} submits`);
   }
+  const solo = reports[arms[0].name] as { rate: number; snapshotsPerSecond: number; stages: unknown };
   Object.assign(result, {
-    phase: 'done', compute: status.compute, cells: status.cells, components: config.componentCount ?? 24,
-    snapshots: samples.length, wallSeconds, rate: (last.seaTime - first.seaTime) / wallSeconds,
-    snapshotsPerSecond: (samples.length - 1) / wallSeconds, stages, ...(drawn ? { drawing: drawn } : {}),
+    phase: 'done', compute: status.compute, cells: status.cells, components: config.componentCount ?? 24, reports,
+    // The first arm's, at the top level, as single-arm runs always reported.
+    rate: solo.rate, snapshotsPerSecond: solo.snapshotsPerSecond, stages: solo.stages, ...(drawn ? { drawing: drawn } : {}),
   });
-  const ms = (key: keyof Pipeline) => `${stages[key].p50.toFixed(1)}/${stages[key].p95.toFixed(1)}`;
-  say(`  ${(result.rate as number).toFixed(3)}× real time, ${(result.snapshotsPerSecond as number).toFixed(1)} snapshots/s over ${wallSeconds.toFixed(1)} s (hop ${hop} ms)`);
-  if (drawn) say(`  synthetic drawing (${gpuLoad} deep): ${drawn.framesPerSecond.toFixed(1)} frames/s, median interval ${drawn.frameMs.toFixed(1)} ms`);
-  say(`  ms p50/p95: water ${ms('water')} (map ${ms('deviceMap')}, unpack ${ms('deviceUnpack')}, pack ${ms('devicePack')}, cfl ${ms('deviceCfl')}, encode ${ms('deviceEncode')}), step ${ms('step')}, snapshot ${ms('snapshot')}, total ${ms('total')}`);
-  say(`  ms p50: foam ${stages.foam.p50.toFixed(1)}, aeration ${stages.aeration.p50.toFixed(1)}, front ${stages.front.p50.toFixed(1)}, breaking ${stages.breaking.p50.toFixed(1)}, board ${stages.board.p50.toFixed(1)}, contact ${stages.contact.p50.toFixed(1)}, bubbles ${stages.bubbles.p50.toFixed(1)}, spray ${stages.spray.p50.toFixed(1)}`);
-  say(`  per step (mean): ${stages.deviceSubsteps.mean.toFixed(2)} substeps, ${(stages.deviceUploadBytes.mean / 1000).toFixed(0)} kB up, ${(stages.deviceReadbackBytes.mean / 1000).toFixed(0)} kB back, ${stages.deviceMaps.mean.toFixed(2)} maps, ${stages.deviceSubmits.mean.toFixed(2)} submits`);
   say('DONE');
 }
 
