@@ -18,8 +18,12 @@ import { BoussinesqSolver } from './wave/BoussinesqSolver';
 import { GpuBoussinesq } from './wave/gpu/GpuBoussinesq';
 import { SURF_ZONE_STEP } from './wave/SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './wave/SurfZoneSimulation';
-import { createSurfZoneWorker } from './game/WorkerSurfZone';
-import { transferables } from './game/SurfZoneWorkerCore';
+import { WorkerSurfZone, createSurfZoneWorker, type WorkerPort } from './game/WorkerSurfZone';
+import { transferables, type SurfZoneReply, type SurfZoneRequest } from './game/SurfZoneWorkerCore';
+import { barrelCaseBytes, surfZoneConfigFor, webGpuAvailable } from './game/PhysicalMode';
+import { physicalSettingsFor, type SwellSize } from './game/SurfConditions';
+import { sweptBarrelOn } from './wave/SurfZoneSimulation';
+import type { SurfZoneStatus } from './wave/SurfZoneRunner';
 import { lipParity, probeParity } from './dev/tierParityPage';
 
 const log = document.querySelector<HTMLPreElement>('#log')!;
@@ -252,10 +256,183 @@ async function fine(): Promise<void> {
   device.dispose();
 }
 
+/** A worker port that also tells the page each reply, after the host has handled it. */
+class TimedPort implements WorkerPort {
+  onerror: ((event: ErrorEvent) => void) | null = null;
+  private handler: ((event: MessageEvent<SurfZoneReply>) => void) | null = null;
+  constructor(private readonly worker: WorkerPort, arrived: (reply: SurfZoneReply) => void) {
+    worker.onmessage = (event) => {
+      this.handler?.(event);
+      arrived(event.data);
+    };
+    worker.onerror = (event) => this.onerror?.(event);
+  }
+  get onmessage() { return this.handler; }
+  set onmessage(handler) { this.handler = handler; }
+  postMessage(request: SurfZoneRequest, transfer?: Transferable[]): void { this.worker.postMessage(request, transfer); }
+  terminate(): void { this.worker.terminate(); }
+}
+
+type Pipeline = NonNullable<SurfZoneStatus['pipelineMs']>;
+
+/**
+ * A stand-in for the game's drawing on the same GPU: a WebGL2 full-screen pass `iterations` deep, issued at most every
+ * 1/60 s and only once the previous one has finished (a fence), driven by messages so a hidden page still runs it.
+ * Returns a stop function that reports the frames it drew and their median GPU-bound interval.
+ */
+function syntheticDrawing(iterations: number, width = 2048, height = 1280): () => { framesPerSecond: number; frameMs: number } {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const gl = canvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: false })!;
+  const shader = (type: number, source: string) => {
+    const object = gl.createShader(type)!;
+    gl.shaderSource(object, source);
+    gl.compileShader(object);
+    return object;
+  };
+  const program = gl.createProgram()!;
+  gl.attachShader(program, shader(gl.VERTEX_SHADER, `#version 300 es
+    void main() { vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`));
+  gl.attachShader(program, shader(gl.FRAGMENT_SHADER, `#version 300 es
+    precision highp float; uniform float t; out vec4 colour;
+    void main() {
+      vec2 p = gl_FragCoord.xy * 0.001; float a = t;
+      for (int i = 0; i < ${Math.max(1, Math.round(iterations))}; i++) { a = sin(a + p.x) * cos(a - p.y) + 0.5 * a; }
+      colour = vec4(a, p, 1.0);
+    }`));
+  gl.linkProgram(program);
+  gl.useProgram(program);
+  const time = gl.getUniformLocation(program, 't');
+  const channel = new MessageChannel();
+  let sync: WebGLSync | null = null;
+  let last = 0;
+  let stopped = false;
+  const intervals: number[] = [];
+  let issued = 0;
+  const started = performance.now();
+  channel.port1.onmessage = () => {
+    if (stopped) return;
+    const now = performance.now();
+    if (sync && gl.getSyncParameter(sync, gl.SYNC_STATUS) !== gl.SIGNALED) {
+      channel.port2.postMessage(0);
+      return;
+    }
+    if (now - last >= 1000 / 60) {
+      if (sync) gl.deleteSync(sync);
+      if (last > 0) intervals.push(now - last);
+      last = now;
+      gl.uniform1f(time, now * 0.001);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+      gl.flush();
+      issued += 1;
+    }
+    channel.port2.postMessage(0);
+  };
+  channel.port2.postMessage(0);
+  return () => {
+    stopped = true;
+    const sorted = [...intervals].sort((a, b) => a - b);
+    return { framesPerSecond: issued / ((performance.now() - started) / 1000), frameMs: sorted[Math.floor(sorted.length / 2)] ?? Number.NaN };
+  };
+}
+
+/**
+ * The game's own sea in its worker, timed step by step (the M1 readback study, 2026-10-17):
+ * `?mode=pipeline&spot=canyon&size=medium`. The game's host (WorkerSurfZone) with an idle rider, one step per request
+ * as in play, asked for its next step as soon as a snapshot arrives; `&hop=8` first keeps the page busy that many ms,
+ * as a frame's drawing would. Message-driven, so a hidden page's timer throttling does not slow it. Reports simulated
+ * seconds per wall second, fresh snapshots per second, the worker's stage timings (p50 and p95) and the device's bytes,
+ * maps and queue submissions per step. `&tier=0` builds Medium's sea (24 components) instead of High's 64;
+ * `&seconds=` and `&warm=` set the sample, `&seed=` the sea. The result is also left in `window.gpuCheck`.
+ */
+async function pipeline(): Promise<void> {
+  const params = new URLSearchParams(location.search);
+  const spot = (params.get('spot') ?? 'canyon') as SurfZoneConfig['spot'];
+  const size = (params.get('size') ?? 'medium') as SwellSize;
+  const seconds = Number(params.get('seconds') ?? 12);
+  const warm = Number(params.get('warm') ?? 2);
+  const hop = Number(params.get('hop') ?? 0);
+  const seed = Number(params.get('seed') ?? 8761);
+  const gpuLoad = Number(params.get('gpuLoad') ?? 0);
+  const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+  const tier = params.get('tier') !== '0' && await webGpuAvailable();
+  const config = surfZoneConfigFor(settings, seed, tier);
+  const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
+  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, phase: 'spinning up' };
+  (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
+  say(`${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}: spinning up…`);
+  const built = performance.now();
+  const samples: { wall: number; seaTime: number; pipeline?: Pipeline; stepMs: number }[] = [];
+  let host: WorkerSurfZone | undefined;
+  let done!: () => void;
+  const finished = new Promise<void>((resolve) => { done = resolve; });
+  let sampleFrom = Infinity;
+  const idle = { paddle: false, popUp: false, steer: 0, retry: false };
+  const next = () => {
+    if (hop > 0) {
+      const until = performance.now() + hop;
+      while (performance.now() < until) { /* the page's frame */ }
+    }
+    host!.advance(1, idle);
+  };
+  const port = new TimedPort(createSurfZoneWorker(), (reply) => {
+    if (reply.type !== 'snapshot' || !host) return;
+    const wall = performance.now();
+    const { status } = host.snapshot;
+    if (wall >= sampleFrom) samples.push({ wall, seaTime: status.seaTime, pipeline: status.pipelineMs && { ...status.pipelineMs }, stepMs: status.stepMs });
+    if (wall >= sampleFrom + seconds * 1000) {
+      done();
+      return;
+    }
+    next();
+  });
+  host = new WorkerSurfZone(config, port, { rider: true, ...(barrelCases ? { barrelCases } : {}) });
+  await host.ready;
+  const { status } = host.snapshot;
+  say(`  ready in ${((performance.now() - built) / 1000).toFixed(1)} s: ${status.compute.toUpperCase()}, ${status.cells.toLocaleString('en-US')} cells`);
+  result.phase = 'sampling';
+  const drawing = gpuLoad > 0 ? syntheticDrawing(gpuLoad) : undefined;
+  sampleFrom = performance.now() + warm * 1000;
+  next();
+  await finished;
+  const drawn = drawing?.();
+  host.dispose();
+  const first = samples[0];
+  const last = samples.at(-1)!;
+  const wallSeconds = (last.wall - first.wall) / 1000;
+  const quantile = (values: number[], q: number) => {
+    const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+    return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : Number.NaN;
+  };
+  const keys: (keyof Pipeline)[] = ['water', 'deviceMap', 'deviceUnpack', 'devicePack', 'deviceCfl', 'deviceEncode', 'deviceSubsteps',
+    'breaking', 'front', 'lip', 'foam', 'aeration', 'board', 'contact', 'bubbles', 'spray', 'step', 'snapshot', 'total',
+    'deviceUploadBytes', 'deviceReadbackBytes', 'deviceMaps', 'deviceSubmits'];
+  const stages: Record<string, { p50: number; p95: number; mean: number }> = {};
+  for (const key of keys) {
+    const values = samples.map((sample) => sample.pipeline?.[key] ?? Number.NaN);
+    const finite = values.filter(Number.isFinite);
+    stages[key] = { p50: quantile(values, 0.5), p95: quantile(values, 0.95), mean: finite.reduce((a, b) => a + b, 0) / Math.max(1, finite.length) };
+  }
+  Object.assign(result, {
+    phase: 'done', compute: status.compute, cells: status.cells, components: config.componentCount ?? 24,
+    snapshots: samples.length, wallSeconds, rate: (last.seaTime - first.seaTime) / wallSeconds,
+    snapshotsPerSecond: (samples.length - 1) / wallSeconds, stages, ...(drawn ? { drawing: drawn } : {}),
+  });
+  const ms = (key: keyof Pipeline) => `${stages[key].p50.toFixed(1)}/${stages[key].p95.toFixed(1)}`;
+  say(`  ${(result.rate as number).toFixed(3)}× real time, ${(result.snapshotsPerSecond as number).toFixed(1)} snapshots/s over ${wallSeconds.toFixed(1)} s (hop ${hop} ms)`);
+  if (drawn) say(`  synthetic drawing (${gpuLoad} deep): ${drawn.framesPerSecond.toFixed(1)} frames/s, median interval ${drawn.frameMs.toFixed(1)} ms`);
+  say(`  ms p50/p95: water ${ms('water')} (map ${ms('deviceMap')}, unpack ${ms('deviceUnpack')}, pack ${ms('devicePack')}, cfl ${ms('deviceCfl')}, encode ${ms('deviceEncode')}), step ${ms('step')}, snapshot ${ms('snapshot')}, total ${ms('total')}`);
+  say(`  ms p50: foam ${stages.foam.p50.toFixed(1)}, aeration ${stages.aeration.p50.toFixed(1)}, front ${stages.front.p50.toFixed(1)}, breaking ${stages.breaking.p50.toFixed(1)}, board ${stages.board.p50.toFixed(1)}, contact ${stages.contact.p50.toFixed(1)}, bubbles ${stages.bubbles.p50.toFixed(1)}, spray ${stages.spray.p50.toFixed(1)}`);
+  say(`  per step (mean): ${stages.deviceSubsteps.mean.toFixed(2)} substeps, ${(stages.deviceUploadBytes.mean / 1000).toFixed(0)} kB up, ${(stages.deviceReadbackBytes.mean / 1000).toFixed(0)} kB back, ${stages.deviceMaps.mean.toFixed(2)} maps, ${stages.deviceSubmits.mean.toFixed(2)} submits`);
+  say('DONE');
+}
+
 const parameters = new URLSearchParams(location.search);
 const mode = parameters.get('mode');
 const checks: Record<string, () => Promise<void>> = {
-  worker: throughput, chop, fine,
+  worker: throughput, chop, fine, pipeline,
   lips: () => lipParity({ say, live }, parameters),
   probes: () => probeParity({ say, live }, parameters),
 };

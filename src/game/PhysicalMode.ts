@@ -295,6 +295,40 @@ export interface HostExtras {
   barrelCases?: readonly Uint8Array[];
 }
 
+/**
+ * The surf zone a start builds from these settings (`PhysicalMode.start`): `tier` is the GPU tier's richer sea, which
+ * the page decides. Shared with the dev pages that time the game's own seas (gpu-check's `?mode=pipeline`).
+ */
+export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier: boolean, overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig {
+  const swell = swellFor(settings);
+  const stage = solverStage(settings.spot, settings.stage);
+  const compute = stage !== settings.stage ? 'auto' : settings.compute;
+  const diagnosticDx = Number(devParam('physicsDx'));
+  const diagnosticDz = Number(devParam('physicsDz'));
+  return {
+    spot: settings.spot,
+    seed,
+    significantHeight: swell.significantHeight,
+    peakPeriod: swell.peakPeriod,
+    directionDegrees: swell.directionDegrees ?? settings.directionDegrees,
+    spreading: swell.spreading,
+    bandwidth: swell.bandwidth,
+    tide: settings.tide,
+    windSpeed: settings.windSpeed,
+    stage,
+    compute,
+    // Ordinary Padang seas halve alongshore work, keeping the original 1 m cross-shore grid.
+    // Supplied room/replay/report configurations retain their own grid, including legacy defaults.
+    ...(settings.spot === 'padang' && Object.keys(overrides).length === 0 ? { dx: 2, fineSpacing: 1 } : {}),
+    // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
+    ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
+    ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
+    ...(diagnosticDx > 0 && Number.isFinite(diagnosticDx) ? { dx: diagnosticDx } : {}),
+    ...(diagnosticDz > 0 && Number.isFinite(diagnosticDz) ? { fineSpacing: diagnosticDz } : {}),
+    ...overrides,
+  };
+}
+
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
 export const localSurfZone: SurfZoneHostFactory = (config, extra) => new LocalSurfZone(config, { rider: true, ...extra });
 
@@ -507,30 +541,7 @@ export class PhysicalMode {
     const stage = solverStage(settings.spot, settings.stage);
     const compute = stage !== settings.stage ? 'auto' : settings.compute;
     const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
-    const diagnosticDx = Number(devParam('physicsDx'));
-    const diagnosticDz = Number(devParam('physicsDz'));
-    const config: SurfZoneConfig = {
-      spot: settings.spot,
-      seed,
-      significantHeight: swell.significantHeight,
-      peakPeriod: swell.peakPeriod,
-      directionDegrees: swell.directionDegrees ?? settings.directionDegrees,
-      spreading: swell.spreading,
-      bandwidth: swell.bandwidth,
-      tide: settings.tide,
-      windSpeed: settings.windSpeed,
-      stage,
-      compute,
-      // Ordinary Padang seas halve alongshore work, keeping the original 1 m cross-shore grid.
-      // Supplied room/replay/report configurations retain their own grid, including legacy defaults.
-      ...(settings.spot === 'padang' && Object.keys(overrides).length === 0 ? { dx: 2, fineSpacing: 1 } : {}),
-      // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
-      ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
-      ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
-      ...(diagnosticDx > 0 && Number.isFinite(diagnosticDx) ? { dx: diagnosticDx } : {}),
-      ...(diagnosticDz > 0 && Number.isFinite(diagnosticDz) ? { fineSpacing: diagnosticDz } : {}),
-      ...overrides,
-    };
+    const config = surfZoneConfigFor(settings, seed, tier, overrides);
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
     if (start !== this.starts) return false;
     // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
