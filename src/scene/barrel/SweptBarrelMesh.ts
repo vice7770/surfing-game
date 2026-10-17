@@ -6,7 +6,8 @@ import type { WaterLook } from '../water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from '../water/richWaterGlsl';
 import { waterRipplePars } from '../water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
-import { waterChopNormal } from '../waterChop';
+import { waterChopMomentPars, waterChopNormal } from '../waterChop';
+import { RICH_SHEET_GLITTER, richGlitterLights, waterGlitterPars } from '../water/glitter';
 import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
@@ -363,16 +364,18 @@ export class SweptBarrelMesh {
         .replace('#include <begin_vertex>', sweptBeginVertex);
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
           : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
-        .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
+        .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', rich
           ? waterBodyFragment(false, true, RICH_FAR_FOAM, RICH_SHEET_BODY + RICH_LIP_GLOW)
             .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
           : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
+        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>')
+        // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).
+        .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
       const view = this.currentView;
       if (!view) return;
       shader.vertexShader = shader.vertexShader

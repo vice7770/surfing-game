@@ -965,10 +965,10 @@ class SurfGame {
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
-    // The WebGPU tier shades with the FFT chop; the others keep the procedural waves.
+    // The WebGPU tier shades with the FFT chop (Rich: its two cascades and their moments); the others keep the procedural waves.
     const host = this.physicalMode.host;
     if (host?.snapshot.status.compute === 'gpu' && this.graphics?.richSea !== false) {
-      this.fftChop.setWind(this.physicalSettings.windSpeed);
+      this.fftChop.setWind(this.physicalSettings.windSpeed, 1, this.water.look);
       this.fftChop.render(this.renderer, host.snapshot.status.seaTime);
     } else {
       this.fftChop.disable();

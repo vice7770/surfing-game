@@ -129,7 +129,8 @@ export function rippleTexture(seed = 1): DataTexture {
  * GLSL: the two ripple layers carried by the current in two flow-map phases
  * (as the foam lace), glassy on clean water and busier where there is foam.
  * Sets `waterRippleVariance` (declared in `richFragmentPars`), the slope
- * variance the footprint leaves unresolved, for the specular anti-aliasing.
+ * variance the footprint leaves unresolved, for the specular anti-aliasing,
+ * and `waterRippleCov`, the same per axis, for the sun's glitter.
  */
 export const waterRipplePars = /* glsl */ `
 uniform sampler2D waterRippleMap;
@@ -140,6 +141,9 @@ const float RIPPLE_TILE_1 = ${RIPPLE_TILES[1].toFixed(3)};
 float waterRippleFoamGain( float foam ) { return mix( 0.35, 1.0, clamp( foam * 3.0, 0.0, 1.0 ) ) * ( 1.0 - 0.75 * smoothstep( 0.3, 0.8, foam ) ); }
 vec4 waterRippleTap( vec2 p, float tile ) { return texture( waterRippleMap, p / tile ); }
 float waterRippleLayerVariance( vec4 t ) { return max( 0.0, t.z + t.w - dot( t.xy, t.xy ) ); }
+// Per axis, for the glitter's covariance (item 5); the ripple map keeps no cross moment, so none.
+vec3 waterRippleCov = vec3( 0.0 );
+vec3 waterRippleLayerCov( vec4 t ) { return vec3( max( t.zw - t.xy * t.xy, 0.0 ), 0.0 ); }
 vec2 waterRippleSlopeAt( vec2 p, vec2 flow ) {
   float a = fract( waterTime / RIPPLE_PERIOD );
   float b = fract( a + 0.5 );
@@ -156,6 +160,8 @@ vec2 waterRippleSlopeAt( vec2 p, vec2 flow ) {
     + ( 1.0 - w ) * ( waterRippleLayerVariance( b0 ) + 0.36 * waterRippleLayerVariance( b1 ) );
   float strength = waterRippleStrength * waterRippleFoamGain( vWaterFoam );
   waterRippleVariance = strength * strength * variance;
+  waterRippleCov = strength * strength * ( w * ( waterRippleLayerCov( a0 ) + 0.36 * waterRippleLayerCov( a1 ) )
+    + ( 1.0 - w ) * ( waterRippleLayerCov( b0 ) + 0.36 * waterRippleLayerCov( b1 ) ) );
   return strength * slope;
 }
 `;

@@ -5,7 +5,9 @@
 import { waterCubicPars } from './cubicSurface';
 import { PATCH_SKIRT } from './richPatch';
 import { RICH_SPECULAR } from './specular';
+import { RICH_GLITTER_SLOPE } from './glitter';
 import { CLASSIC_FOAM } from '../waterOptics';
+import { RICH_CHOP_STATS } from '../waterChop';
 
 export { waterCubicPars };
 
@@ -120,15 +122,20 @@ export const RICH_FAR_FOAM = CLASSIC_FOAM.replace(
   `${RICH_SPECULAR}\n  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`,
 );
 
-/** The far ocean's Rich <normal_fragment_begin>: its analytic normal and the chop, as Classic, plus the ripples on still water. */
+/**
+ * The far ocean's Rich <normal_fragment_begin>: its analytic normal and the chop, as Classic, plus the ripples on
+ * still water; and the glitter's slope and covariance (item 5).
+ */
 export const richFarNormal = /* glsl */ `
 #include <normal_fragment_begin>
 {
   float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
-  vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) + waterRippleSlopeAt( vWaterWorld.xz, vec2( 0.0 ) );
+  ${RICH_CHOP_STATS}
+  vec2 chopSlope = waterChop * chopFade * waterChopMean + waterRippleSlopeAt( vWaterWorld.xz, vec2( 0.0 ) );
   vec3 chopNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   chopNormal = normalize( chopNormal + vec3( -chopSlope.x, 0.0, -chopSlope.y ) );
   normal = normalize( ( viewMatrix * vec4( chopNormal, 0.0 ) ).xyz );
+  ${RICH_GLITTER_SLOPE}
 }
 `;
 
@@ -138,7 +145,8 @@ const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterAir ) * wat
 
 /**
  * Rich <normal_fragment_begin>: the Catmull-Rom normal per pixel, the wind chop
- * (and, from Task 5, the ripples), flipped for the underside and written in view space.
+ * (and, from Task 5, the ripples), flipped for the underside and written in view space;
+ * then the glitter's slope and covariance (web-ocean plan, item 5).
  */
 export function richNormalFragment(opts: { ripples: boolean; churn?: boolean; vertexNormals?: boolean }): string {
   const surface = opts.vertexNormals
@@ -152,11 +160,13 @@ export function richNormalFragment(opts: { ripples: boolean; churn?: boolean; ve
 {
   ${surface}
   float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
-  waterSlope += waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );
+  ${RICH_CHOP_STATS}
+  waterSlope += waterChop * chopFade * waterChopMean;
   ${opts.ripples ? 'waterSlope += waterRippleSlopeAt( vWaterWorld.xz, vWaterFlow );' : ''}
   ${opts.churn ? CHURN_RELIEF : ''}
   vec3 waterWorldNormal = normalize( vec3( -waterSlope.x, 1.0, -waterSlope.y ) ) * faceDirection;
   normal = normalize( ( viewMatrix * vec4( waterWorldNormal, 0.0 ) ).xyz );
+  ${RICH_GLITTER_SLOPE}
 }
 `;
 }

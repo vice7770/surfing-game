@@ -21,7 +21,8 @@ import { createEdgeBandUniforms, edgeBandPars } from './water/edgeBandGlsl';
 import { waterHeightPars } from './WaterSurface';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
-import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
+import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
+import { glitterUniforms, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
@@ -197,6 +198,7 @@ export class FarFieldOcean {
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
+      ...glitterUniforms,
       ...createOpticsUniforms(),
       // Rich only (G8): the tank's ripples, so the two meet without a step in gloss.
       waterRippleMap: { value: rippleTexture() },
@@ -221,12 +223,13 @@ export class FarFieldOcean {
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position.x + farShift.x, farHeight, position.z + farShift.y );\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}`
+          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}`
           : `#include <common>\n${farFragmentPars}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
         .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM) : waterBodyFragment(false))
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
+        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>')
+        .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(false) : '#include <lights_physical_pars_fragment>');
     };
     // The rim's uniforms are taken in at compile (`attachRim`): a new attachment compiles again.
     material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}${this.rimVersion > 0 ? `-rim${this.rimVersion}` : ''}`;

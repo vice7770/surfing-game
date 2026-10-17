@@ -41,7 +41,8 @@ import { CoarseFallbackRows } from './barrel/fallbackRows';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { ShorelineFill, WetSandMemory } from './water/shoreline';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
-import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
+import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
+import { glitterUniforms, richGlitterLights, waterGlitterPars } from './water/glitter';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
@@ -339,6 +340,7 @@ export class WaterSurface {
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
+      ...glitterUniforms,
       ...createOpticsUniforms(),
       ...this.causticUniforms,
       waterPatchRect: { value: new Vector4() },
@@ -388,14 +390,16 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
           .replace('#include <normal_fragment_begin>', roller ? richRollerNormal(richNormal) : richNormal)
           .replace('#include <color_fragment>', '')
           .replace('#include <emissivemap_fragment>', roller ? rollerCrestLight(waterBodyFragment(true, true, richRollerFoam(RICH_FOAM))) : waterBodyFragment(true, true, RICH_FOAM))
-          .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
+          .replace('#include <lights_fragment_maps>', RICH_REFLECTION)
+          // The sun's glitter (item 5): the direct lights' specular from the slopes' covariance.
+          .replace('#include <lights_physical_pars_fragment>', richGlitterLights(false));
         return;
       }
       shader.vertexShader = shader.vertexShader
