@@ -3,7 +3,7 @@ import { BoussinesqSolver } from '../BoussinesqSolver';
 import { SeaStateBoundary } from '../SeaStateBoundary';
 import { SideFeed } from '../SideFeed';
 import { calmTarget } from '../shallowWaterTestSupport';
-import { uniformEdges, type WaterTarget } from '../ShallowWaterSolver';
+import { cflSubsteps, uniformEdges, type WaterTarget } from '../ShallowWaterSolver';
 import { SurfZoneSimulation, type SolverDevice } from '../SurfZoneSimulation';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, boussinesqWgsl } from './boussinesqWgsl';
 import {
@@ -95,6 +95,97 @@ describe('GpuBoussinesq host', () => {
       expect(solver.time).toBe(2 / 60);
     } finally {
       now.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The M1 readback study (2026-10-17): a frame's CFL substeps went to the queue one submission each, and a GPU busy
+  // drawing the page schedules each submission separately. They now go in one, with each substep's Params at its own
+  // dynamic offset: the same kernels, parameters and order.
+  it('submits every substep of a frame in one command buffer, each pass reading its own Params block', async () => {
+    vi.stubGlobal('GPUBufferUsage', { STORAGE: 1, COPY_DST: 2, COPY_SRC: 4, MAP_READ: 8, UNIFORM: 16 });
+    vi.stubGlobal('GPUShaderStage', { COMPUTE: 1 });
+    vi.stubGlobal('GPUMapMode', { READ: 1 });
+    const writes: { buffer: { size: number; usage: number }; bytes: Uint8Array }[] = [];
+    const passes: { offsets: number[]; dispatches: number }[] = [];
+    const submissions: number[] = [];
+    let layoutEntries: GPUBindGroupLayoutEntry[] = [];
+    const bindings: GPUBindGroupEntry[][] = [];
+    const destroyed: number[] = [];
+    let buffers = 0;
+    const device = {
+      queue: {
+        writeBuffer: (buffer: { size: number; usage: number }, _offset: number, data: ArrayBuffer | Float32Array, dataOffset = 0, size?: number) => {
+          const bytes = data instanceof ArrayBuffer ? new Uint8Array(data, dataOffset, size) : new Uint8Array(data.buffer, data.byteOffset + dataOffset * 4, (size ?? data.length - dataOffset) * 4);
+          writes.push({ buffer, bytes: bytes.slice() });
+        },
+        submit: (commands: { passes: number }[]) => submissions.push(...commands.map((command) => command.passes)),
+        onSubmittedWorkDone: async () => {},
+      },
+      createBuffer: ({ size, usage }: { size: number; usage: number }) => {
+        const id = buffers++;
+        return { id, size, usage, mapAsync: async () => {}, getMappedRange: () => new ArrayBuffer(size), unmap: () => {}, destroy: () => destroyed.push(id) };
+      },
+      createBindGroupLayout: ({ entries }: GPUBindGroupLayoutDescriptor) => { layoutEntries = [...entries]; return {}; },
+      createPipelineLayout: () => ({}),
+      createBindGroup: ({ entries }: GPUBindGroupDescriptor) => { bindings.push([...entries]); return {}; },
+      createComputePipeline: () => ({}),
+      createShaderModule: () => ({ getCompilationInfo: async () => ({ messages: [] }) }),
+      createCommandEncoder: () => {
+        let count = 0;
+        return {
+          beginComputePass: () => {
+            const pass = { offsets: [] as number[], dispatches: 0 };
+            passes.push(pass);
+            count += 1;
+            return {
+              setBindGroup: (_index: number, _group: unknown, offsets: number[] = []) => { pass.offsets.push(...offsets); },
+              setPipeline: () => {}, dispatchWorkgroups: () => { pass.dispatches += 1; }, end: () => {},
+            };
+          },
+          copyBufferToBuffer: () => {}, finish: () => ({ passes: count }),
+        };
+      },
+      destroy: () => {},
+    };
+    const gpu = { requestAdapter: async () => ({ limits: { maxStorageBufferBindingSize: 1e9, maxBufferSize: 1e9 }, requestDevice: async () => device }) } as unknown as GPU;
+    try {
+      const solver = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(-8, 0, 8), xBoundary: 'open' }, () => 2);
+      const host = await GpuBoussinesq.create(solver, gpu);
+      if (!host) throw new Error('adapter missing');
+      expect(layoutEntries[3].buffer).toEqual({ type: 'uniform', hasDynamicOffset: true });
+      const isParams = (buffer: { usage: number }) => buffer.usage === (16 | 2);
+      // The stand-in maps back zeros, so only the first frame steps a wet tank: it takes many substeps, the next one.
+      const frames = [4, 1 / 60];
+      const most = cflSubsteps(frames[0], solver.maxStableStep());
+      expect(most).toBeGreaterThan(4);
+      for (const dt of frames) {
+        const substeps = cflSubsteps(dt, solver.maxStableStep());
+        const layout = solver.deviceLayout();
+        writes.length = 0;
+        passes.length = 0;
+        submissions.length = 0;
+        await host.step(dt);
+        expect(host.diagnostics.substeps).toBe(substeps);
+        expect(host.transfer.submits).toBe(1);
+        expect(submissions).toEqual([substeps]);
+        expect(passes.map((pass) => pass.offsets)).toEqual(Array.from({ length: substeps }, (_, s) => [s * 256]));
+        expect(new Set(passes.map((pass) => pass.dispatches)).size).toBe(1);
+        const blocks = writes.filter((write) => isParams(write.buffer));
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].bytes.length).toBe(substeps * 256);
+        for (let s = 0; s < substeps; s += 1) {
+          const expected = new ArrayBuffer(PARAM_WORDS * 4);
+          writeParams(solver, layout, undefined, dt / substeps, ((s + 1) * dt) / substeps, expected);
+          expect(blocks[0].bytes.subarray(s * 256, s * 256 + PARAM_WORDS * 4)).toEqual(new Uint8Array(expected));
+        }
+      }
+      // The first frame outgrew the four blocks a device starts with: the buffer was replaced and bound again.
+      expect(destroyed).toHaveLength(1);
+      expect(bindings).toHaveLength(2);
+      expect(bindings.at(-1)![3]).toMatchObject({ binding: 3, resource: { size: PARAM_WORDS * 4, buffer: { size: 4 * 2 ** Math.ceil(Math.log2(most / 4)) * 256 } } });
+      host.dispose();
+    } finally {
       vi.unstubAllGlobals();
     }
   });

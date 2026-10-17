@@ -202,6 +202,8 @@ export interface SurfZoneStatus {
     step: number; surface: number; snapshotAeration: number; flow: number; snapshotFields: number; snapshot: number; summary: number;
     batch: number; batchSteps: number; total: number;
     deviceSubsteps: number; devicePack: number; deviceCfl: number; deviceEncode: number; deviceMap: number; deviceUnpack: number;
+    /** The latest device step's traffic: bytes written to and read back from the GPU, readback maps and queue submissions. */
+    deviceUploadBytes: number; deviceReadbackBytes: number; deviceMaps: number; deviceSubmits: number;
   };
   /** Where the water steps: on the GPU (plan P6) or the CPU. */
   compute: 'gpu' | 'cpu';
@@ -337,6 +339,8 @@ export class SurfZoneRunner {
   readonly contact?: SweptContact;
   private readonly contactQueries?: SweptSurfaceQueries;
   private readonly ordinaryContactOwner?: OrdinaryContactOwner;
+  /** Built by `forWorker`: only the worker's own runner may take the solo water prefetch. */
+  private readonly workerOwned: boolean;
   /** The contact's last update, ms. */
   contactMs = 0;
   private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
@@ -391,6 +395,7 @@ export class SurfZoneRunner {
     const slope = BARREL_SLOPE[config.spot];
     const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
     this.simulation = new SurfZoneSimulation(config, start, library);
+    this.workerOwned = internal === WORKER_CONTACT_OWNER;
     const requestedGrid = this.simulation.renderGrid(options.renderSpacing ?? 1);
     // The broad Padang tank otherwise copies over 400,000 render nodes every 1/60 s.
     // Its swept tube retains a separate 1 m footprint mask and its own profile geometry.
@@ -497,9 +502,13 @@ export class SurfZoneRunner {
     this.batchSteps = steps;
   }
 
-  /** Internal initialization from the ordinary solo worker, never a graphics/user setting. */
+  /**
+   * Internal initialization from the ordinary solo worker, never a graphics/user setting: at every spot, ridden or not
+   * (the M1 readback study, 2026-10-17). The future step reads only committed water and is published only by the next
+   * requested step, so the sea steps exactly as without it.
+   */
   enableSoloWaterPrefetch(): boolean {
-    if (!this.ordinaryContactOwner || this.config.spot !== 'padang' || !this.simulation.device?.prepareStep) return false;
+    if (!this.workerOwned || !this.simulation.device?.prepareStep) return false;
     this.simulation.enableSoloWaterPrefetch();
     return true;
   }
@@ -947,6 +956,7 @@ export class SurfZoneRunner {
     };
     const summary = performance.now() - start;
     const device = simulation.device?.diagnostics;
+    const transfer = simulation.device?.transfer;
     status.pipelineMs = {
       ...simulation.stepCosts, board: this.boardMs, contact: this.contactMs,
       bubbles: this.bubbleMs, spray: this.sprayMs, sounds: this.soundMs, step: this.pipelineStepMs,
@@ -956,6 +966,8 @@ export class SurfZoneRunner {
       total: (this.batchMs + this.fillMs + summary) / Math.max(1, this.batchSteps),
       deviceSubsteps: device?.substeps ?? 0, devicePack: device?.pack ?? 0, deviceCfl: device?.cfl ?? 0,
       deviceEncode: device?.encode ?? 0, deviceMap: device?.map ?? 0, deviceUnpack: device?.unpack ?? 0,
+      deviceUploadBytes: transfer?.uploadBytes ?? 0, deviceReadbackBytes: transfer?.readbackBytes ?? 0,
+      deviceMaps: transfer?.maps ?? 0, deviceSubmits: transfer?.submits ?? 0,
     };
     return status;
   }

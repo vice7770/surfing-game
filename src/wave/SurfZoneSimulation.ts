@@ -251,7 +251,12 @@ export interface SolverDevice {
   prepareStep?(dt: number): Promise<PreparedWaterStep | undefined>;
   /** Optional timing of its latest step; hosts without a GPU can omit it. */
   readonly diagnostics?: { substeps: number; pack: number; cfl: number; encode: number; map: number; unpack: number };
+  /** Optional traffic of its latest step: bytes uploaded and read back, readback maps and queue submissions. */
+  readonly transfer?: DeviceTransfer;
 }
+
+/** What a device step moved between the CPU and the GPU, and how many round trips it took. */
+export interface DeviceTransfer { uploadBytes: number; readbackBytes: number; maps: number; submits: number }
 
 /** A surf zone built spun up (on the CPU, at once), or only warm-started, to spin up later on its device (`spinUp`). */
 export type SurfZoneStart = 'spun-up' | 'warm';

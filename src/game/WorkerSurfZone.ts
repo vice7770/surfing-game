@@ -115,11 +115,11 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
       };
     });
     const { sea } = host;
-    // Only the actual default offline one-step Padang host grants this internal capability.
+    // Only the default offline one-step host grants this internal capability, at every spot and with or without a rider
+    // (the M1 readback study, 2026-10-17): the worker starts the next water step on the GPU while it publishes this one.
     // Room catch-up and recorded seas supply host options and retain the ordinary device path.
     const soloOneStep = host.maxQueuedSteps === undefined && host.maxBatchSteps === undefined && sea === undefined
-      && config.spot === 'padang' && (config.compute ?? 'auto') === 'auto' && Boolean(options.barrelCases?.length)
-      && Boolean(options.rider || options.board || options.contact);
+      && (config.compute ?? 'auto') === 'auto';
     port.postMessage({ type: 'start', config, options, ...(sea ? { sea } : {}), ...(soloOneStep ? { soloOneStep: true as const } : {}) }, sea ? [sea.buffer] : []);
   }
 
