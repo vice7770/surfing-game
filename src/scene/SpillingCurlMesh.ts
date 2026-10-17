@@ -5,7 +5,7 @@ import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richRe
 import { waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterChopMomentPars, waterChopNormal } from './waterChop';
-import { RICH_SHEET_GLITTER, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { CLASSIC_FOAM, WATER_IOR, waterBodyFragment } from './waterOptics';
 import { waterFragmentPars, waterVertexPars } from './WaterSurface';
 import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, SWEPT_SHEET_BODY } from './barrel/SweptBarrelMesh';
@@ -588,7 +588,10 @@ export class SpillingCurlMesh {
         // The sun's glitter about the curl's own normal, from the screen-space term alone (web-ocean plan, item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
     };
-    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}`;
+    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}`;
+    onGlitterChange(() => {
+      if (this.look === 'rich') material.needsUpdate = true;
+    });
     this.mesh = new Mesh(geometry, material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
