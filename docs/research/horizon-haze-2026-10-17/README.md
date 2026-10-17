@@ -68,6 +68,32 @@ About +0.4 to +1.0 ms (6–13 %) at 720p. ALU: per water pixel, ~70 operations a
 lookup, as before; the first version sampled it twice, +1.4–1.8 ms); per vertex, an atan, an exp and two uniform-array
 reads for the haze. The far ocean adds its share function in both stages.
 
+## The shader-cost pass (2026-10-18)
+
+Timed on the merged playtest build, `&horizon=off` saved about 1.4 ms a frame on the M1 (shown pane, High). Taken
+apart on the GPU timer (pane hidden, the Canyon, 1280×720, arms alternated in one page, 7–10 rounds), almost none of
+that was the horizon's own: it was the glitter's (`claude/chop-glitter`). With the glitter lit per light, the tank's
+program sat at a cliff where anything more cost several times its own instructions, the sky mirror among them. With
+the glitter rearranged (that branch's pass), the horizon look costs, against the Rich water before the horizon plan:
+
+| Shot | Medium (no glitter) | High (glitter on) |
+| --- | --- | --- |
+| lineup | +4 to +8 % (about +0.5–0.9 ms hidden) | +1 to +4 % |
+| face | ±1 % | ±3 % |
+| horizon | +1 to +3 % | −1 to −3 % |
+
+Apart (Medium, lineup): the sky mirror alone (`?horizonHaze=off`) +5 %, the haze alone (`?horizonSky=three`) +4 %;
+on the face and horizon shots the parts move by ±15 % each way and do not add, the tank's program being at that
+cliff. Things tried and timed with no gain, so left as they were: the sky lookup written out instead of called, and
+`pow( x, 5.0 )` as products. The PMREM lookup stays one call (`textureCubeUV` at the slopes' blur).
+
+New dev switches, each leaving the other part in place: `?horizonSky=three` (three's sky lookup, the haze kept),
+`?horizonHaze=off` (no haze, the sky mirror kept); `?horizon=off` as before.
+
+Stills (before above, after below; High, the Canyon, the merged build before and after the cost pass): the look held.
+`cost-canyon-horizon-sunset-high.jpg` (the far horizon at sunset) and `cost-canyon-lineup-midday-high.jpg` (the
+lineup at midday, near and far water) are byte-identical JPEGs before and after.
+
 ## How to look again
 
 `http://localhost:<port>/?inpage&waterSheet&spot=canyon` (and `&horizon=off` for the old look); the sheet's
