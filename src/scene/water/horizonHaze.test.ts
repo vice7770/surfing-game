@@ -14,6 +14,7 @@ import {
   ringLuminance,
   horizonHazeUniforms,
   horizonRing,
+  mirrorGain,
   ringColorAt,
   srgbToLinear,
 } from './horizonHaze';
@@ -156,5 +157,11 @@ describe('the ring of horizon colours', () => {
     expect(uniforms.waterHazeRing.value[3 * 7]).toBe(7);
     applyHorizonHaze(uniforms, { ring: indexRing(), rotation: 0, gain: Number.NaN }, true);
     expect(uniforms.waterSkyGain.value).toBe(1);
+    // Never brightening the environment: a midday photo brighter than its HDR leaves the mirror at 1.
+    applyHorizonHaze(uniforms, { ring: indexRing(), rotation: 0, gain: 1.25 }, true);
+    expect(uniforms.waterSkyGain.value).toBe(1);
+    expect(mirrorGain(0.37)).toBe(0.37);
+    expect(mirrorGain(undefined)).toBe(1);
+    expect(mirrorGain(-2)).toBe(1);
   });
 });

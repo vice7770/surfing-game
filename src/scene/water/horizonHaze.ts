@@ -124,7 +124,7 @@ export function ringLuminance(ring: ArrayLike<number>): number {
  * How much brighter the sky the player sees is than the sky that lights the scene, at the horizon: the background
  * photo's ring over the environment's (its HDR's ring at the scene's exposure). The two come from one photo but are
  * scaled apart (the background as Poly Haven tone-mapped it, the environment to `REFERENCE_LIGHT`): 1.25 at midday,
- * 0.57 at dawn, 0.37 at sunset. The Rich water mirrors the sky the player sees at grazing (`skyMirrorShare`).
+ * 0.57 at dawn, 0.37 at sunset. The Rich water's grazing mirror takes it (`mirrorGain`, `skyMirrorShare`).
  */
 export function horizonGain(background: ArrayLike<number>, environment: ArrayLike<number>, exposure: number): number {
   const lit = ringLuminance(environment) * exposure;
@@ -160,7 +160,7 @@ export const horizonHazeUniforms = {
   waterHazeRing: { value: new Float32Array(3 * HAZE_RING_SIZE) },
   waterHazeTurn: { value: new Vector2(1, 0) },
   waterHazeExtinction: { value: 0 },
-  /** The sky the player sees over the sky that lights the scene, at the horizon (`horizonGain`): the grazing mirror's. */
+  /** The grazing mirror's gain on the environment (`mirrorGain`). */
   waterSkyGain: { value: 1 },
 };
 
@@ -174,13 +174,23 @@ export interface HorizonSky {
   gain?: number;
 }
 
+/**
+ * The gain the grazing mirror puts on the environment: `horizonGain` where the environment is the brighter (dawn,
+ * sunset: the water would outshine the sky it mirrors), never above 1. Where the photo is the brighter (midday), its
+ * clouds a few degrees up would make the far water, which mirrors the sky a few degrees up, brighter than the haze
+ * band on the horizon above it; the environment as it is keeps the sea a shade under its sky there.
+ */
+export function mirrorGain(gain: number | undefined): number {
+  return gain !== undefined && Number.isFinite(gain) && gain > 0 ? Math.min(1, gain) : 1;
+}
+
 /** Point the haze at a sky's ring turned with it, or turn it off (no ring, or `on` false: under water). */
 export function applyHorizonHaze(uniforms: typeof horizonHazeUniforms, sky: HorizonSky, on: boolean, extinction = HAZE_EXTINCTION): void {
   const { ring, rotation, gain } = sky;
   if (ring && ring.length === uniforms.waterHazeRing.value.length) uniforms.waterHazeRing.value.set(ring);
   uniforms.waterHazeTurn.value.set(Math.cos(rotation), Math.sin(rotation));
   uniforms.waterHazeExtinction.value = on && ring ? extinction : 0;
-  uniforms.waterSkyGain.value = ring && gain !== undefined && Number.isFinite(gain) && gain > 0 ? gain : 1;
+  uniforms.waterSkyGain.value = ring ? mirrorGain(gain) : 1;
 }
 
 /**

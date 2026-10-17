@@ -139,8 +139,8 @@ const IBL_CALL = 'getIBLRadiance( geometryViewDir, geometryNormal, material.roug
 /**
  * The share of the sky the Rich water mirrors (on top of its Fresnel): the Rich look's own balance (`RICH_WATER`'s
  * reflection, tuned on views down into the water, where the body must show) giving way to the whole of it as the view
- * grazes, where a sea is its sky's mirror, and to the sky the player sees there (`gain`, `horizonGain`: the environment
- * lighting the scene is exposed apart from the background photo, up to 2.7 times brighter at the horizon at sunset).
+ * grazes, where a sea is its sky's mirror, dimmed to the sky the player sees there (`gain`, `mirrorGain`: the
+ * environment lighting the scene is exposed apart from the background photo, 2.7 times brighter at the horizon at sunset).
  * `grazing` is the Fresnel's (1 − c)⁵ (`skyFresnelTerms`): half-way at about 7° above the water, 0.96 at 1°.
  */
 export function skyMirrorShare(reflection: number, grazing: number, gain = 1): number {
