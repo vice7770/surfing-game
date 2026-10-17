@@ -106,7 +106,7 @@ export class SurfZoneWorkerCore {
           runner.setSprayEnabled(this.sprayEnabled);
           runner.setParticleLevel(this.particleLevel);
           this.runner = runner;
-          if (request.soloOneStep && !sea && config.spot === 'padang' && runner.enableSoloWaterPrefetch()) this.soloRunner = runner;
+          if (request.soloOneStep && !sea && runner.enableSoloWaterPrefetch()) this.soloRunner = runner;
           this.ready(runner);
         })();
       }

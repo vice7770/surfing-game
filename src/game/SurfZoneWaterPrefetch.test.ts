@@ -119,19 +119,19 @@ class TransportDevice {
 }
 
 type Core = { handle(request: SurfZoneRequest): void | Promise<void> };
-async function arm(prefetched: boolean, seed = config.seed) {
+async function arm(prefetched: boolean, seed = config.seed, sea: SurfZoneConfig = config, opts: typeof options | { rider?: boolean; renderSpacing: number } = options) {
   const events: string[] = [], replies: SurfZoneReply[] = [], devices: TransportDevice[] = [];
   const create = async (solver: { readonly h: Float64Array }) => {
-    const memory = new SurfZoneSimulation({ ...config, seed }, 'warm').solver;
+    const memory = new SurfZoneSimulation({ ...sea, seed }, 'warm').solver;
     const d = new TransportDevice(solver as unknown as Solver, memory as unknown as Solver, events); devices.push(d); return d;
   };
   const post = (reply: SurfZoneReply) => { events.push(reply.type); replies.push(reply); };
   const core = new SurfZoneWorkerCore(post, create) as Core;
-  await core.handle({ type: 'start', config: { ...config, seed }, options, ...(prefetched ? { soloOneStep: true as const } : {}) });
+  await core.handle({ type: 'start', config: { ...sea, seed }, options: opts, ...(prefetched ? { soloOneStep: true as const } : {}) });
   const runner = (core as unknown as { runner: SurfZoneRunner }).runner;
   const device = devices[0];
   const buffer = runner.createBuffers();
-  const sessionCalls = vi.spyOn(runner.session!, 'step');
+  const sessionCalls = runner.session ? vi.spyOn(runner.session, 'step') : vi.fn();
   return { core, runner, device, devices, replies, events, buffer, sessionCalls };
 }
 type Arm = Awaited<ReturnType<typeof arm>>;
@@ -165,7 +165,7 @@ const idle: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false 
 afterEach(() => vi.restoreAllMocks());
 
 describe('ordinary solo water prefetch lifecycle', () => {
-  it('selects the private capability only for the default ordinary Padang host', () => {
+  it('selects the private capability for every default solo host (the M1 readback study), never for rooms, recordings or the CPU', () => {
     const starts = (host = {}, cfg = config, opt = options) => {
       const requests: SurfZoneRequest[] = [];
       const port: WorkerPort = { onmessage: null, onerror: null, postMessage: (r) => requests.push(r), terminate: vi.fn() };
@@ -177,9 +177,29 @@ describe('ordinary solo water prefetch lifecycle', () => {
     expect(starts({ maxBatchSteps: 1 }).soloOneStep).toBeUndefined();
     expect(starts({ sea: new Uint8Array(1) }).soloOneStep).toBeUndefined();
     expect(starts({}, { ...config, compute: 'cpu' }).soloOneStep).toBeUndefined();
-    expect(starts({}, { ...config, spot: 'point' }).soloOneStep).toBeUndefined();
-    expect(starts({}, config, { ...options, barrelCases: [] }).soloOneStep).toBeUndefined();
+    expect(starts({}, { ...config, spot: 'canyon' }).soloOneStep).toBe(true);
+    expect(starts({}, config, { ...options, barrelCases: [] }).soloOneStep).toBe(true);
+    expect(starts({}, config, { renderSpacing: 2 } as typeof options).soloOneStep).toBe(true);
   });
+
+  // The M1 readback study (2026-10-17): the prefetch moved from Padang's ridden sea to every default solo sea. Its step
+  // reads only committed water, so a sea without a swept barrel, ridden or not, steps exactly as on the ordinary path.
+  const canyon: SurfZoneConfig = { ...config, spot: 'canyon', seed: 5, peakPeriod: 11 };
+  for (const [label, opts] of [['ridden', { rider: true, renderSpacing: 2 }], ['riderless (the menu)', { renderSpacing: 2 }]] as const) {
+    it(`steps a ${label} Canyon sea exactly as the ordinary device path, publishing the future water only on the next step`, async () => {
+      const solo = await arm(true, canyon.seed, canyon, opts), generic = await arm(false, canyon.seed, canyon, opts);
+      expect(solo.runner.simulation.hasWaterPrefetch).toBe(false);
+      const inputs: RideRequest[] = [idle, { ...idle, paddle: true }, { ...idle, paddle: true, steer: 0.4 }, { ...idle, popUp: true }, idle, idle];
+      for (const input of inputs) {
+        await advance(generic, input); await advance(solo, input); sameState(solo, generic);
+        expect(solo.runner.simulation.hasWaterPrefetch).toBe(true);
+        expect(solo.events.slice(-2)).toEqual(['prepare', 'snapshot']);
+      }
+      expect(solo.device.normalSteps).toBe(1); expect(solo.device.commits).toBe(inputs.length - 1);
+      expect(generic.device.prepares).toBe(0); expect(generic.device.normalSteps).toBe(inputs.length);
+      await solo.runner.simulation.discardWaterPrefetch(); solo.device.dispose(); generic.device.dispose();
+    });
+  }
 
   it('publishes current state with latest controls and invalidates future water for remote, zero, multi and restore requests', async () => {
     const solo = await arm(true), generic = await arm(false);
