@@ -28,6 +28,11 @@ export const GLOW = {
   threshold: 1.2,
   knee: 0.6,
   strength: 0.06,
+  /**
+   * The sun disc's radiance per unit of the sun's intensity (scene units). The true sun's is its irradiance over its
+   * solid angle, about 15 000; a tenth keeps its halo light.
+   */
+  sunRadiance: 1500,
   /** Bloom mips, from half resolution down. */
   levels: 5,
   /** MSAA samples of the scene's HDR target (the canvas's own antialias draws 4). */

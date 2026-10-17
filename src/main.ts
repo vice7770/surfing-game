@@ -18,7 +18,7 @@ import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { advanceFrameClock, frameDue } from './game/frameLimit';
-import { ownSurferDetail, PRESETS, resolveGraphics, withPreset, type ResolvedGraphics } from './game/Graphics';
+import { ownSurferDetail, PRESETS, resolveGraphics, withGlowOverride, withPreset, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
 import type { StanceName } from './physics/riderPosture';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
@@ -49,6 +49,9 @@ import { Environment } from './scene/Environment';
 import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
+import { GlowPass } from './scene/GlowPass';
+import { SunDisc } from './scene/SunDisc';
+import { agxPreimage, type Rgb } from './scene/glowMath';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { FftChop } from './scene/FftChop';
 import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
@@ -68,6 +71,8 @@ import './ui/ui.css';
 
 /** `?demo`: a Surf ride the dev autopilot rides (`?demo=line` holds a line; otherwise S-turns). */
 const demoMode = devParam('demo');
+/** The water's colour seen from below: the underwater fog and background. */
+const UNDERWATER = '#367e83';
 /** The light before any scene sets its own: the menu's. */
 const START_SUN = TIMES[BACKDROP_TIME];
 /** Seconds the menu's waves run before holding still on the Low preset. */
@@ -165,8 +170,17 @@ class SurfGame {
   private demoDone = 0;
   private readonly fixedStep = 1 / 60;
   private isBelowSurface = false;
-  private readonly underwaterFog = new FogExp2('#367e83', 0.035);
-  private readonly underwaterColor = new Color('#367e83');
+  private readonly underwaterFog = new FogExp2(UNDERWATER, 0.035);
+  private readonly underwaterColor = new Color(UNDERWATER);
+  /**
+   * The glow and colour grade (the web-ocean plan, item 6), while it runs: the setting asks for it and the water
+   * drawn is Rich. Absent otherwise, with nothing allocated, so the scene draws straight to the canvas as before.
+   */
+  private glow?: GlowPass;
+  /** The sun's disc as HDR light, drawn while the glow runs. */
+  private sunDisc?: SunDisc;
+  private glowWanted = false;
+  private drawnLook?: WaterLook;
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
@@ -307,6 +321,12 @@ class SurfGame {
         this.drawPhysical(camera);
       },
       water: this.water,
+      /** The glow and colour grade on or off (still on the Rich look only), for A/B stills of one held sea; and the pass, to tune live. */
+      setGlow: (on: boolean) => {
+        this.glowWanted = on;
+        this.syncGlow();
+      },
+      glow: () => this.glow,
     };
   }
 
@@ -344,6 +364,7 @@ class SurfGame {
     const own = ownSurferDetail(resolved);
     this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
+    this.glowWanted = resolved.glow;
     this.applyWaterLook(resolved.waterLook);
   }
 
@@ -973,7 +994,16 @@ class SurfGame {
     const { board } = this.physicalMode;
     const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
     this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
-    this.renderer.render(this.scene, view);
+    if (this.glow) {
+      if (this.sunDisc) {
+        this.sunDisc.sprite.visible = this.photoSky.ready && !this.isBelowSurface;
+        this.sunDisc.setLight(this.photoSky.sunColor, this.photoSky.sunIntensity, this.glow.settings.sunRadiance);
+        this.sunDisc.place(view, this.photoSky.sunDirection);
+      }
+      this.glow.render(this.renderer, this.scene, view);
+    } else {
+      this.renderer.render(this.scene, view);
+    }
   }
 
   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
@@ -983,6 +1013,35 @@ class SurfGame {
     this.physicalMode.spray.setLook(look);
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
+    this.drawnLook = look;
+    this.syncGlow();
+  }
+
+  /**
+   * Start or stop the glow and colour grade as the setting and the water drawn ask. Stopping frees its targets and
+   * programs. Under the grade the fog is mixed before the tone mapping, not after as on the canvas, so the water seen
+   * from below takes the colour the grade turns into today's.
+   */
+  private syncGlow(): void {
+    const on = this.glowWanted && this.drawnLook === 'rich';
+    if (on === (this.glow !== undefined)) return;
+    this.needsRender = true;
+    const below = new Color(UNDERWATER);
+    if (on) {
+      this.glow = new GlowPass();
+      this.sunDisc = new SunDisc();
+      this.scene.add(this.sunDisc.sprite);
+      const { exposure, lookPower, lookSaturation } = this.glow.settings;
+      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
+    } else {
+      this.glow?.dispose();
+      this.glow = undefined;
+      if (this.sunDisc) this.scene.remove(this.sunDisc.sprite);
+      this.sunDisc?.dispose();
+      this.sunDisc = undefined;
+    }
+    this.underwaterFog.color.copy(below);
+    this.underwaterColor.copy(below);
   }
 
   /**
@@ -1110,9 +1169,10 @@ const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-r
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
 const graphicsPreset = Object.keys(PRESETS).find((preset) => preset === devParam('graphics')) as keyof typeof PRESETS | undefined;
-const applyGraphics = () => game.applyGraphics(resolveGraphics(
+/** `?glow=1|0` (dev): the glow and colour grade on or off for an A/B, without touching the saved setting. */
+const applyGraphics = () => game.applyGraphics(withGlowOverride(resolveGraphics(
   graphicsPreset ? withPreset(settings.value.graphics, graphicsPreset) : settings.value.graphics, settings.value.detected, window.devicePixelRatio,
-));
+), devParam('glow')));
 applyGraphics();
 game.setSurfer(settings.value.surfer);
 game.setNameTags(settings.value.gameplay.nameTags);
