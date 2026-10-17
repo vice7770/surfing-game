@@ -2,10 +2,10 @@ import { buttonLabel, keyLabel, type Action } from '../game/Bindings';
 import type { Controls } from '../game/Controls';
 import type { SteamControllerDriver } from '../game/steam/SteamControllerDriver';
 import { stickOf } from '../game/Sticks';
-import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../game/Graphics';
+import { AutoBenchmark, PRESETS, adapterName, needsDetection, withPreset } from '../game/Graphics';
 import { Logbook } from '../game/Logbook';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
-import type { SettingsStore } from '../game/Settings';
+import type { Detection, SettingsStore } from '../game/Settings';
 import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, ridesAsPractice, surfForecastText, type SurfConditions, type SwellSize } from '../game/SurfConditions';
 import { surferHeight } from '../game/SurferChoice';
 import type { SurfReading } from '../wave/SurfMeter';
@@ -62,7 +62,7 @@ import { OnlineController, type OnlineIntent } from '../net/OnlineController';
 import type { OnlinePhase } from '../game/OnlinePlay';
 import { DEFAULT_ROOM_SETTINGS, MAX_BOTS, type Refusal } from '../net/protocol';
 import { roomCodeFromSearch } from '../net/roomCode';
-import { devParam } from '../devTools';
+import { devFlag, devParam } from '../devTools';
 import { createMultiplayerScreen, type MultiplayerState } from './MultiplayerScreen';
 
 /** The Wave Lab as the menus drive it (spec L1; implemented in main.ts). */
@@ -171,7 +171,7 @@ export class App {
   /** Undo for the screen now shown (the Settings screen's store subscription). */
   private disposeScreen?: () => void;
   private readonly adapter: string;
-  private benchmark?: BenchmarkRecorder;
+  private benchmark?: AutoBenchmark;
   private warmup = 0;
   private notice?: HTMLElement;
   private readonly loading = document.getElementById('loading')!;
@@ -342,13 +342,24 @@ export class App {
       }));
       if (this.stack.current === 'pause') this.playersPanel?.update(playersModel(online.players(), online.you, online.creator));
     }
+    // Leaving the menu ends a High trial on Medium's verdict: no ride runs on values not yet seen to hold.
+    if (this.benchmark?.trying && this.stack.base !== 'menu') this.detect(this.benchmark.abandon()!);
     if (!this.benchmark || this.stack.base !== 'menu' || !this.backdropReady || !this.game.backdropRunning) return;
     if (this.warmup < BENCHMARK_WARMUP_FRAMES) {
       this.warmup += 1;
       return;
     }
-    this.benchmark.add(intervalMs, status?.stepMs, status?.compute === 'gpu');
-    if (this.benchmark.done) this.finishBenchmark();
+    const next = this.benchmark.add(intervalMs, status?.stepMs, status?.compute === 'gpu', status && { seaTime: status.seaTime, workerMs: status.pipelineMs?.total });
+    if (next && devFlag('diagnostics')) console.info('Auto benchmark', JSON.stringify({ ...next, seen: this.benchmark.seen }));
+    if (next && 'tryHigh' in next) {
+      // Medium held: High's own drawing on trial, after its own warm-up (a player who left Auto meanwhile keeps Medium's).
+      const { graphics } = this.settings.value;
+      if (graphics.preset !== 'auto') this.detect(this.benchmark.abandon()!);
+      else {
+        this.settings.update('graphics', withPreset(graphics, 'auto', { ...next.tryHigh, adapter: this.adapter }));
+        this.warmup = 0;
+      }
+    } else if (next) this.detect(next.verdict);
   }
 
   /** Forget the detection and benchmark again the next time the menu's waves run (Settings' Re-detect). */
@@ -1212,14 +1223,20 @@ export class App {
   private startBenchmarkIfNeeded(): void {
     const { graphics, detected } = this.settings.value;
     if (!this.benchmark && needsDetection(graphics, detected, this.adapter)) {
-      this.benchmark = new BenchmarkRecorder();
+      // Auto benchmarks on Medium's values (a first run's; a re-detect or a new adapter may hold another level's).
+      const medium = withPreset(graphics, 'auto');
+      if ((Object.keys(PRESETS.medium) as (keyof typeof PRESETS.medium)[]).some((key) => graphics[key] !== medium[key])) {
+        this.settings.update('graphics', medium);
+      }
+      this.benchmark = new AutoBenchmark();
       this.warmup = 0;
     }
   }
 
-  private finishBenchmark(): void {
-    const result = { ...this.benchmark!.result(), adapter: this.adapter };
+  /** Take the benchmark's verdict: Auto's values follow it. */
+  private detect(verdict: Omit<Detection, 'adapter'>): void {
     this.benchmark = undefined;
+    const result = { ...verdict, adapter: this.adapter };
     this.settings.setDetected(result);
     const { graphics } = this.settings.value;
     if (graphics.preset === 'auto') this.settings.update('graphics', withPreset(graphics, 'auto', result));

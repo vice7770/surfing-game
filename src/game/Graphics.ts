@@ -121,47 +121,193 @@ export const MAX_SAMPLE_INTERVAL_MS = 250;
 /** A frame this much longer than the display's refresh counts as late. */
 const LATE_FACTOR = 1.5;
 
+/** The worker's budget for one fixed 1/60 s water step, ms: a step that takes longer leaves the sea behind real time. */
+export const STEP_BUDGET_MS = 1000 / 60;
+/**
+ * Sea seconds per wall second under which the menu's own sea counts as falling behind (the M1 readback study,
+ * 2026-10-17). Its host drops the steps a slow worker cannot take, so a sea that keeps up advances at 1.0 to within a
+ * few per cent over the benchmark's 6 s, and one whose worker (or its share of the GPU) is short runs proportionally
+ * slower: 0.9 is a step of about 18.5 ms against the 16.7 ms budget.
+ */
+export const MIN_SEA_RATE = 0.9;
+/**
+ * A ride's worker step over the menu's riderless practice sea, on the same machine (the M1 readback study,
+ * 2026-10-17): the rider's board and body, a bigger swell's breaking, and High's 64-component sea. Measured on an M1
+ * as 16.4 ms (Canyon Medium, ridden, 64 components) against 13.7 ms (the menu's Canyon practice sea); see
+ * docs/research/m1-readback-2026-10-17/README.md. Padang Padang's swept-barrel contact costs far more than this.
+ */
+export const RIDE_WORKER_FACTOR = 1.2;
+
 function quantile(values: readonly number[], q: number): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   return sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
 }
 
+/** What the Auto benchmark saw of the menu's waves. */
+export interface BenchmarkSample {
+  frameIntervals: readonly number[];
+  /** The worker's water-and-board step, ms, per frame (`SurfZoneStatus.stepMs`). */
+  stepMs: readonly number[];
+  gpuCompute: boolean;
+  /** The worker's whole time per fresh step, ms (`pipelineMs.total`: the step, its snapshot and publication). */
+  workerMs?: readonly number[];
+  /** Sea seconds the menu's waves advanced per wall second over the counted frames. */
+  seaRate?: number;
+}
+
+/** The share of frames longer than LATE_FACTOR display refreshes (`refresh`, ms, else the fastest tenth's). */
+function lateShare(intervals: readonly number[], refresh = quantile(intervals, 0.1)): number {
+  return intervals.length === 0 ? 0 : intervals.filter((interval) => interval > LATE_FACTOR * refresh).length / intervals.length;
+}
+
+/** Whether the sea kept real time with room for a ride's step (the M1 readback study); true where the worker was not seen. */
+function seaKeepsUp(sample: BenchmarkSample): boolean {
+  if (sample.seaRate !== undefined && sample.seaRate < MIN_SEA_RATE) return false;
+  return !sample.workerMs?.length || RIDE_WORKER_FACTOR * quantile(sample.workerMs, 0.5) <= STEP_BUDGET_MS;
+}
+
 /**
  * The Auto decision (plan P8), which is also the CPU fallback decided on
  * 2026-09-26: stage 2 only when its steps keep real time. The display's refresh
  * is taken from the fastest frames; the share of late frames picks the preset.
+ *
+ * Frames alone overrated a GPU that the page's drawing and the water share: an M1 Air rated High drew 14 fps with its
+ * sea at a fifth of real time. So where the benchmark also saw the worker (the M1 readback study, 2026-10-17), the
+ * menu's sea must keep real time with room for a ride's step, or the verdict is Low; and a GPU verdict of High stands
+ * only once High's own drawing has been seen to hold (`highHolds`), else it is Medium.
  */
-export function choosePreset(sample: { frameIntervals: readonly number[]; stepMs: readonly number[]; gpuCompute: boolean }): Omit<Detection, 'adapter'> {
-  const refresh = quantile(sample.frameIntervals, 0.1);
-  const late = sample.frameIntervals.length === 0 ? 0
-    : sample.frameIntervals.filter((interval) => interval > LATE_FACTOR * refresh).length / sample.frameIntervals.length;
+export function choosePreset(sample: BenchmarkSample): Omit<Detection, 'adapter'> {
+  const late = lateShare(sample.frameIntervals);
   const water = sample.stepMs.length === 0 || quantile(sample.stepMs, 0.5) <= STAGE2_REALTIME_MS ? 'accurate' : 'fast';
-  const preset: ConcretePreset = late <= 0.05 ? (sample.gpuCompute ? 'high' : 'medium') : 'low';
+  // A stage 1 verdict times a sea the rides will not run: only stage 2's worker is judged.
+  const keepsUp = water === 'fast' || seaKeepsUp(sample);
+  const preset: ConcretePreset = late <= 0.05 && keepsUp ? (sample.gpuCompute ? 'high' : 'medium') : 'low';
   return { preset, water, lowPerformance: late > 0.25 };
 }
 
-/** Collects frame intervals and worker step times until `BENCHMARK_SECONDS` of real frames are seen. */
+/**
+ * The High trial (the M1 readback study, 2026-10-17): after Medium held, the menu runs on High's values and High is
+ * kept only if its frames stay on time against the display refresh seen on Medium (`refresh`, ms; a steady 30 fps is
+ * not on time) and its sea, now sharing the GPU with High's drawing, still keeps real time with room for a ride.
+ */
+export function highHolds(sample: BenchmarkSample, refresh: number): boolean {
+  return sample.frameIntervals.length > 0 && lateShare(sample.frameIntervals, refresh) <= 0.05 && seaKeepsUp(sample);
+}
+
+/** A sea-time jump past this between two frames is a new sea (or a restore), not progress. */
+const MAX_SEA_ADVANCE_S = 1;
+
+/**
+ * Collects frame intervals and worker step times until `BENCHMARK_SECONDS` of real frames are seen, and, given the
+ * sea's clock and the worker's time per step, how fast the menu's sea keeps up.
+ */
 export class BenchmarkRecorder {
   private readonly intervals: number[] = [];
   private readonly steps: number[] = [];
+  private readonly worker: number[] = [];
   private counted = 0;
   private gpu = false;
+  private seaTime?: number;
+  private seaAdvance = 0;
+  private seaWall = 0;
 
-  add(intervalMs: number, stepMs: number | undefined, gpuCompute: boolean): void {
-    if (!(intervalMs > 0) || intervalMs > MAX_SAMPLE_INTERVAL_MS) return;
+  add(intervalMs: number, stepMs: number | undefined, gpuCompute: boolean, sea?: { seaTime: number; workerMs?: number }): void {
+    if (!(intervalMs > 0) || intervalMs > MAX_SAMPLE_INTERVAL_MS) {
+      this.seaTime = undefined;
+      return;
+    }
     this.intervals.push(intervalMs);
     this.counted += intervalMs;
     if (stepMs !== undefined && Number.isFinite(stepMs) && stepMs > 0) this.steps.push(stepMs);
     this.gpu = gpuCompute;
+    if (!sea || !Number.isFinite(sea.seaTime)) return;
+    const advance = this.seaTime === undefined ? undefined : sea.seaTime - this.seaTime;
+    if (advance !== undefined && advance >= 0 && advance <= MAX_SEA_ADVANCE_S) {
+      this.seaAdvance += advance;
+      this.seaWall += intervalMs;
+      // A fresh snapshot carries its step's worker time; a repeated one says nothing new.
+      if (advance > 0 && sea.workerMs !== undefined && Number.isFinite(sea.workerMs) && sea.workerMs > 0) this.worker.push(sea.workerMs);
+    }
+    this.seaTime = sea.seaTime;
   }
 
   get done(): boolean {
     return this.counted >= BENCHMARK_SECONDS * 1000;
   }
 
+  /** Sea seconds per wall second over the frames that saw the sea, or undefined before any. */
+  get seaRate(): number | undefined {
+    return this.seaWall > 0 ? this.seaAdvance / (this.seaWall / 1000) : undefined;
+  }
+
+  /** Whether the sea's clock was seen: only then does a High verdict wait for its trial. */
+  get sawSea(): boolean {
+    return this.seaWall > 0;
+  }
+
+  /** The display's refresh as these frames show it, ms. */
+  get refresh(): number {
+    return quantile(this.intervals, 0.1);
+  }
+
+  sample(): BenchmarkSample {
+    return {
+      frameIntervals: this.intervals, stepMs: this.steps, gpuCompute: this.gpu,
+      ...(this.worker.length ? { workerMs: this.worker } : {}),
+      ...(this.seaRate !== undefined ? { seaRate: this.seaRate } : {}),
+    };
+  }
+
   result(): Omit<Detection, 'adapter'> {
-    return choosePreset({ frameIntervals: this.intervals, stepMs: this.steps, gpuCompute: this.gpu });
+    return choosePreset(this.sample());
+  }
+}
+
+/** What the Auto benchmark asks of the app after a frame: run on High's values for its trial, or take this verdict. */
+export type BenchmarkStep = { tryHigh: Omit<Detection, 'adapter'> } | { verdict: Omit<Detection, 'adapter'> } | undefined;
+
+/**
+ * The Auto benchmark (plan P8) as the app drives it: 6 s of the menu's waves on Medium's values, then, when Medium held
+ * on a GPU with the worker in view, 6 s on High's values, its trial (the M1 readback study, 2026-10-17). High is the
+ * verdict only once its own drawing has held (`highHolds`); a failed or abandoned trial leaves Medium.
+ */
+export class AutoBenchmark {
+  private recorder = new BenchmarkRecorder();
+  private trial?: { verdict: Omit<Detection, 'adapter'>; refresh: number };
+  /** What each part saw (for `?diagnostics`): its late share, sea rate and median worker step, ms. */
+  readonly seen: { values: 'medium' | 'high'; late: number; seaRate?: number; workerMs?: number }[] = [];
+
+  /** Whether High's values are on trial. */
+  get trying(): boolean {
+    return this.trial !== undefined;
+  }
+
+  add(intervalMs: number, stepMs: number | undefined, gpuCompute: boolean, sea?: { seaTime: number; workerMs?: number }): BenchmarkStep {
+    this.recorder.add(intervalMs, stepMs, gpuCompute, sea);
+    if (!this.recorder.done) return undefined;
+    const { trial, recorder } = this;
+    const sample = recorder.sample();
+    this.seen.push({
+      values: trial ? 'high' : 'medium', late: lateShare(sample.frameIntervals, trial?.refresh), seaRate: sample.seaRate,
+      workerMs: sample.workerMs && quantile(sample.workerMs, 0.5),
+    });
+    if (trial) {
+      this.trial = undefined;
+      return { verdict: highHolds(sample, trial.refresh) ? trial.verdict : { ...trial.verdict, preset: 'medium' } };
+    }
+    const verdict = recorder.result();
+    if (verdict.preset !== 'high' || !recorder.sawSea) return { verdict };
+    this.trial = { verdict, refresh: recorder.refresh };
+    this.recorder = new BenchmarkRecorder();
+    return { tryHigh: verdict };
+  }
+
+  /** The menu was left mid-trial: Medium's verdict, since High was not seen to hold; undefined outside a trial. */
+  abandon(): Omit<Detection, 'adapter'> | undefined {
+    const verdict = this.trial && { ...this.trial.verdict, preset: 'medium' as const };
+    this.trial = undefined;
+    return verdict;
   }
 }
 
