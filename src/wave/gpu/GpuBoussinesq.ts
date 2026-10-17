@@ -6,6 +6,8 @@ import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
 
 const WORKGROUP = 64;
+/** Params blocks a device starts with (frames with more substeps grow it). */
+const PARAM_SLOTS = 4;
 const TAU = 2 * Math.PI;
 /** Fields the CPU writes every frame (board reactions, lip landings), then reads back with the breaking and predictor state. */
 export const DEVICE_UPLOAD = [FIELD.H, FIELD.QX, FIELD.QZ] as const;
@@ -175,7 +177,11 @@ export class GpuBoussinesq {
   private readonly fields: GPUBuffer;
   private readonly grid: GPUBuffer;
   private readonly sea: GPUBuffer;
-  private readonly params: GPUBuffer;
+  /** One Params block per substep, each at its own dynamic offset, so a frame's substeps go in one submission. */
+  private params: GPUBuffer;
+  private paramSlots = 0;
+  private readonly paramStride: number;
+  private paramBlocks = new ArrayBuffer(0);
   private readonly staging: GPUBuffer;
   private readonly pipelines: Map<string, GPUComputePipeline>;
   private readonly paramBytes = new ArrayBuffer(PARAM_WORDS * 4);
@@ -222,7 +228,8 @@ export class GpuBoussinesq {
     const count = Math.max(1, this.zone?.boundary.sea.components.length ?? 0);
     this.components = new Float32Array(count * COMPONENT_STRIDE);
     this.sea = device.createBuffer({ size: this.components.byteLength, usage: storage });
-    this.params = device.createBuffer({ size: PARAM_WORDS * 4, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    this.paramStride = Math.max(PARAM_WORDS * 4, device.limits?.minUniformBufferOffsetAlignment ?? 256);
+    this.params = this.paramBuffer(PARAM_SLOTS);
     this.staging = device.createBuffer({ size: DEVICE_READBACK.length * this.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
     this.upload = new Float32Array(DEVICE_UPLOAD.length * this.n);
     this.field = new Float32Array(this.n);
@@ -231,7 +238,7 @@ export class GpuBoussinesq {
         { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } },
         { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } },
         { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } },
-        { binding: 3, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } },
+        { binding: 3, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform', hasDynamicOffset: true } },
         { binding: 4, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } },
       ],
     });
@@ -250,10 +257,28 @@ export class GpuBoussinesq {
         { binding: 0, resource: { buffer: this.fields } },
         { binding: 1, resource: { buffer: this.grid } },
         { binding: 2, resource: { buffer: this.sea } },
-        { binding: 3, resource: { buffer: this.params } },
+        { binding: 3, resource: { buffer: this.params, size: PARAM_WORDS * 4 } },
         { binding: 4, resource: { buffer: this.feedBuffer } },
       ],
     });
+  }
+
+  /** A Params buffer of `slots` blocks, and its CPU image. */
+  private paramBuffer(slots: number): GPUBuffer {
+    this.paramSlots = slots;
+    this.paramBlocks = new ArrayBuffer(slots * this.paramStride);
+    return this.device.createBuffer({ size: slots * this.paramStride, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  }
+
+  /** Room for `substeps` Params blocks: a frame with more substeps than ever before doubles it (and binds it again). */
+  private reserveParams(substeps: number): void {
+    if (substeps <= this.paramSlots) return;
+    let slots = this.paramSlots;
+    while (slots < substeps) slots *= 2;
+    // Work already submitted keeps the old buffer alive until it finishes; nothing submits with it again.
+    this.params.destroy();
+    this.params = this.paramBuffer(slots);
+    this.bindGroup = this.bind();
   }
 
   /** `queue.writeBuffer`, counted: a typed array's offset and size are in elements, an ArrayBuffer's in bytes. */
@@ -364,12 +389,20 @@ export class GpuBoussinesq {
       phase = end;
       const sub = dt / substeps;
       const cells = Math.ceil(n / WORKGROUP);
+      // Every substep's Params first, then all of the frame's substeps (and the readback copies) in one submission: the
+      // same kernels with the same parameters in the same order, but a single command buffer that a busy GPU (the
+      // page's drawing) schedules once per frame instead of once per substep.
+      this.reserveParams(substeps);
+      const blocks = new Uint8Array(this.paramBlocks);
       for (let s = 0; s < substeps; s += 1) {
         writeParams(solver, layout, this.zone, sub, (s + 1) * sub, this.paramBytes);
-        this.write(this.params, 0, this.paramBytes);
-        const encoder = device.createCommandEncoder();
+        blocks.set(new Uint8Array(this.paramBytes), s * this.paramStride);
+      }
+      this.write(this.params, 0, this.paramBlocks, 0, substeps * this.paramStride);
+      const encoder = device.createCommandEncoder();
+      for (let s = 0; s < substeps; s += 1) {
         const pass = encoder.beginComputePass();
-        pass.setBindGroup(0, this.bindGroup);
+        pass.setBindGroup(0, this.bindGroup, [s * this.paramStride]);
         for (const kernel of this.kernels) {
           if (kernel === 'relax' && !this.zone) continue;
           if (kernel === 'relaxSides' && !(this.feedSlots > 0)) continue;
@@ -382,12 +415,12 @@ export class GpuBoussinesq {
           pass.dispatchWorkgroups(groups);
         }
         pass.end();
-        if (s === substeps - 1 && readback) {
-          DEVICE_READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
-        }
-        device.queue.submit([encoder.finish()]);
-        transfer.submits += 1;
       }
+      if (readback) {
+        DEVICE_READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
+      }
+      device.queue.submit([encoder.finish()]);
+      transfer.submits += 1;
       if (!deferred) this.lastSubsteps = substeps;
       diagnostics.substeps = substeps;
       end = performance.now();
