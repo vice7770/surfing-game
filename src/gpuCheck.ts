@@ -259,14 +259,14 @@ async function chop(): Promise<void> {
   const cascades = chopCascades(wind, 1, n);
   const coarse = inverseFft2dRadix(slopeSpectrum(cascades.spectrum, time, n, cascades.patches[0], CHOP_LOOP, 0), n);
   const fine = inverseFft2dRadix(slopeSpectrum(cascades.spectrum, time, n, cascades.patches[1], CHOP_LOOP, n * n * 4), n);
-  // Every mip level the chop draws, read back as RGBA floats (three reads level 0 of the first target only).
+  // Every mip level of the moment array's layers, read back as RGBA floats (three cannot read a level of a layer).
   const gl = renderer.getContext() as WebGL2RenderingContext;
-  const textures = fft.momentGlTextures!;
-  const readLevel = (texture: WebGLTexture, level: number) => {
+  const array = fft.momentGlTexture!;
+  const readLevel = (layer: number, level: number) => {
     const side = n >> level;
     const framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, level);
+    gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, array, level, layer);
     const out = new Float32Array(side * side * 4);
     gl.readPixels(0, 0, side, side, gl.RGBA, gl.FLOAT, out);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -280,8 +280,8 @@ async function chop(): Promise<void> {
     const cascadeRms = Math.sqrt(sum / (n * n));
     const worst = [0, 0, 0];
     for (let level = 0; level <= CHOP_MOMENT_LEVELS; level += 1) {
-      const moments = readLevel(textures[index], level);
-      const cross = readLevel(textures[2], level);
+      const moments = readLevel(index, level);
+      const cross = readLevel(2, level);
       const expected = levels[level];
       for (let i = 0; i < expected.length / 5; i += 1) {
         worst[0] = Math.max(worst[0], Math.abs(moments[i * 4] - expected[i * 5]), Math.abs(moments[i * 4 + 1] - expected[i * 5 + 1]));

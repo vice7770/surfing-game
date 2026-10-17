@@ -111,7 +111,7 @@ describe('FFT chop snapshot reuse', () => {
     expect(stub.render).toHaveBeenCalledTimes(8);
     expect(chopFieldUniforms.waterChopFft.value).toBe(0);
     expect(chopFieldUniforms.waterChopCascades.value).toBe(0);
-    expect(fft.momentTextures).toBeUndefined();
+    expect(fft.momentTexture).toBeUndefined();
     // Back to Classic, the held Classic sea is drawn again (its spectrum was rebuilt).
     fft.setWind(5, 1, 'classic');
     fft.render(stub.renderer, CHOP_LOOP + 12.5);
@@ -131,7 +131,7 @@ describe('FFT chop snapshot reuse', () => {
     expect(randomDraws(() => { fft = new FftChop(); })).toBe(72);
     expect(randomDraws(() => fft.setWind(3))).toBe(8);
     expect(randomDraws(() => fft.setWind(3, 1, 'rich'))).toBe(8);
-    expect(fft.momentTextures).toBeUndefined();
+    expect(fft.momentTexture).toBeUndefined();
     fft.dispose();
   });
 });
