@@ -22,12 +22,12 @@ type Columns = readonly [Rgb, Rgb, Rgb];
  * (scene-linear, before exposure, on the brightest channel, softened over ±`knee`) and adds `strength` of it back.
  */
 export const GLOW = {
-  exposure: 1.3,
-  lookPower: 1.35,
-  lookSaturation: 1.2,
-  threshold: 1.2,
-  knee: 0.6,
-  strength: 0.06,
+  exposure: 2.4,
+  lookPower: 1.5,
+  lookSaturation: 1.5,
+  threshold: 1,
+  knee: 0.5,
+  strength: 0.1,
   /**
    * The sun disc's radiance per unit of the sun's intensity (scene units). The true sun's is its irradiance over its
    * solid angle, about 15 000; a tenth keeps its halo light.

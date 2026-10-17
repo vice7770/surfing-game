@@ -22,21 +22,20 @@ describe('the colour grade (AgX)', () => {
       previous = agxSigmoid(x);
     }
     let last = -1;
-    // Strictly up to the top of AgX's range (16 / exposure), flat past it.
+    // Strictly from where the look's toe leaves black to the top of AgX's range (16 / exposure), flat outside.
     for (let v = 1e-3; v < 100; v *= 1.2) {
       const out = luma(agx(grey(v)));
-      if (v < 10) expect(out).toBeGreaterThan(last);
+      if (v > 5e-3 && v < 6) expect(out).toBeGreaterThan(last);
       else expect(out).toBeGreaterThanOrEqual(last);
       last = out;
     }
     expect(luma(agx(grey(1e4)))).toBeGreaterThan(0.98);
   });
 
-  it("keeps today's middle grey and darks near Neutral's, and rolls the brights off later", () => {
+  it("keeps the mid-tones near Neutral's, and rolls the brights off later", () => {
     const encoded = (c: Rgb) => 255 * linearToSrgb(luma(c));
-    // Middle grey within 8 of 255; the water's darks within 15.
-    expect(Math.abs(encoded(agx(grey(0.18))) - encoded(neutral(grey(0.18))))).toBeLessThan(8);
-    expect(Math.abs(encoded(agx(grey(0.05))) - encoded(neutral(grey(0.05))))).toBeLessThan(15);
+    // The exposure matches the midday frames' mean: the water's and the sky's tones land within 15 of 255 of today's.
+    for (const v of [0.05, 0.1, 0.18, 0.3, 0.5]) expect(Math.abs(encoded(agx(grey(v))) - encoded(neutral(grey(v))))).toBeLessThan(15);
     // Above white Neutral has clipped; AgX still separates 2 from 8.
     expect(encoded(neutral(grey(8))) - encoded(neutral(grey(2)))).toBeLessThan(4);
     expect(encoded(agx(grey(8))) - encoded(agx(grey(2)))).toBeGreaterThan(15);
