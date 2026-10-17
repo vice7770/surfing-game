@@ -342,7 +342,8 @@ function syntheticDrawing(iterations: number, width = 2048, height = 1280): () =
  * as in play, asked for its next step as soon as a snapshot arrives; `&hop=8` first keeps the page busy that many ms,
  * as a frame's drawing would. Message-driven, so a hidden page's timer throttling does not slow it. Reports simulated
  * seconds per wall second, fresh snapshots per second, the worker's stage timings (p50 and p95) and the device's bytes,
- * maps and queue submissions per step. `&tier=0` builds Medium's sea (24 components) instead of High's 64;
+ * maps and queue submissions per step. `&tier=0` builds Medium's sea (24 components) instead of High's 64; `&rider=0` leaves
+ * the sea riderless, as the menu's is (`&size=practice` is the menu's swell);
  * `&seconds=` and `&warm=` set the sample, `&seed=` the sea. The result is also left in `window.gpuCheck`.
  */
 async function pipeline(): Promise<void> {
@@ -354,11 +355,12 @@ async function pipeline(): Promise<void> {
   const hop = Number(params.get('hop') ?? 0);
   const seed = Number(params.get('seed') ?? 8761);
   const gpuLoad = Number(params.get('gpuLoad') ?? 0);
+  const rider = params.get('rider') !== '0';
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
   const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
-  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, phase: 'spinning up' };
+  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, rider, phase: 'spinning up' };
   (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
   say(`${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}: spinning up…`);
   const built = performance.now();
@@ -386,7 +388,7 @@ async function pipeline(): Promise<void> {
     }
     next();
   });
-  host = new WorkerSurfZone(config, port, { rider: true, ...(barrelCases ? { barrelCases } : {}) });
+  host = new WorkerSurfZone(config, port, { rider, ...(barrelCases ? { barrelCases } : {}) });
   await host.ready;
   const { status } = host.snapshot;
   say(`  ready in ${((performance.now() - built) / 1000).toFixed(1)} s: ${status.compute.toUpperCase()}, ${status.cells.toLocaleString('en-US')} cells`);
@@ -462,9 +464,11 @@ async function replay(): Promise<void> {
   await runner.spinUp();
   if (prefetch && !runner.enableSoloWaterPrefetch()) say('  (no prefetch on this device)');
   result.phase = 'stepping';
+  const substeps: number[] = [];
   for (let frame = 0; frame < frames; frame += 1) {
     const paddle = frame >= frames / 3;
     await runner.advanceAsync(1, { paddle, popUp: false, steer: paddle ? 0.3 * Math.sin(frame / 20) : 0, retry: false });
+    substeps.push(runner.simulation.device?.diagnostics?.substeps ?? 0);
   }
   await runner.simulation.discardWaterPrefetch();
   const { solver } = runner.simulation;
@@ -478,7 +482,7 @@ async function replay(): Promise<void> {
   hashes.summary = await digest(new TextEncoder().encode(summary));
   runner.simulation.device?.dispose();
   Object.assign(result, { phase: 'done', time: solver.time, hashes });
-  say(`  sea time ${solver.time.toFixed(4)} s`);
+  say(`  sea time ${solver.time.toFixed(4)} s; frames with 2+ substeps ${substeps.filter((count) => count > 1).length}, most ${Math.max(...substeps)}`);
   for (const [name, hash] of Object.entries(hashes)) say(`  ${name.padEnd(20)} ${hash}`);
   say('DONE');
 }
