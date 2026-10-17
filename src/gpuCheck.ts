@@ -16,7 +16,7 @@ import { FftChop } from './scene/FftChop';
 import { chopSpectrum, inverseFft2d, slopeSpectrum } from './scene/fftChopMath';
 import { BoussinesqSolver } from './wave/BoussinesqSolver';
 import { GpuBoussinesq } from './wave/gpu/GpuBoussinesq';
-import { SURF_ZONE_STEP } from './wave/SurfZoneRunner';
+import { SURF_ZONE_STEP, SurfZoneRunner } from './wave/SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './wave/SurfZoneSimulation';
 import { WorkerSurfZone, createSurfZoneWorker, type WorkerPort } from './game/WorkerSurfZone';
 import { transferables, type SurfZoneReply, type SurfZoneRequest } from './game/SurfZoneWorkerCore';
@@ -427,10 +427,66 @@ async function pipeline(): Promise<void> {
   say('DONE');
 }
 
+/** SHA-256 of an array's bytes, hex, first 16 digits. */
+async function digest(values: ArrayBufferView): Promise<string> {
+  const bytes = new Uint8Array(values.buffer, values.byteOffset, values.byteLength).slice();
+  const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  return [...hash.slice(0, 8)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * The game's sea with an idle-then-paddling rider, stepped on this page's GPU for `&frames=` steps after its spin-up,
+ * then every array that carries it hashed (the M1 readback study, 2026-10-17): two builds that print the same hashes
+ * stepped the same water to the byte. `?mode=replay&spot=canyon&size=medium`; `&prefetch=1` runs the solo worker's
+ * water prefetch between steps, as the game's worker does.
+ */
+async function replay(): Promise<void> {
+  const params = new URLSearchParams(location.search);
+  const spot = (params.get('spot') ?? 'canyon') as SurfZoneConfig['spot'];
+  const size = (params.get('size') ?? 'medium') as SwellSize;
+  const frames = Number(params.get('frames') ?? 240);
+  const seed = Number(params.get('seed') ?? 8761);
+  const prefetch = params.get('prefetch') === '1';
+  const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+  const tier = params.get('tier') !== '0' && await webGpuAvailable();
+  const config = surfZoneConfigFor(settings, seed, tier);
+  const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
+  const result: Record<string, unknown> = { spot, size, tier, seed, frames, prefetch, phase: 'spinning up' };
+  (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
+  say(`replay ${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}, ${frames} frames${prefetch ? ', prefetched' : ''}: spinning up…`);
+  const runner = SurfZoneRunner.forWorker(config, { rider: true, ...(barrelCases ? { barrelCases } : {}) }, 'warm');
+  if (!(await runner.useDevice((solver) => GpuBoussinesq.create(solver)))) {
+    say('No WebGPU device for this sea.');
+    return;
+  }
+  await runner.spinUp();
+  if (prefetch && !runner.enableSoloWaterPrefetch()) say('  (no prefetch on this device)');
+  result.phase = 'stepping';
+  for (let frame = 0; frame < frames; frame += 1) {
+    const paddle = frame >= frames / 3;
+    await runner.advanceAsync(1, { paddle, popUp: false, steer: paddle ? 0.3 * Math.sin(frame / 20) : 0, retry: false });
+  }
+  await runner.simulation.discardWaterPrefetch();
+  const { solver } = runner.simulation;
+  const state = runner.simulation.exportState();
+  const arrays: Record<string, ArrayBufferView> = { ...state.arrays, riseRate: solver.surfaceRiseRate };
+  if (solver instanceof BoussinesqSolver) arrays.viscosity = solver.viscosity;
+  const hashes: Record<string, string> = {};
+  for (const [name, values] of Object.entries(arrays)) hashes[name] = await digest(values);
+  const board = runner.board?.position;
+  const summary = JSON.stringify({ time: solver.time, board: board && [board.x, board.y, board.z], lip: state.lip, front: state.front ?? null, counters: state.counters });
+  hashes.summary = await digest(new TextEncoder().encode(summary));
+  runner.simulation.device?.dispose();
+  Object.assign(result, { phase: 'done', time: solver.time, hashes });
+  say(`  sea time ${solver.time.toFixed(4)} s`);
+  for (const [name, hash] of Object.entries(hashes)) say(`  ${name.padEnd(20)} ${hash}`);
+  say('DONE');
+}
+
 const parameters = new URLSearchParams(location.search);
 const mode = parameters.get('mode');
 const checks: Record<string, () => Promise<void>> = {
-  worker: throughput, chop, fine, pipeline,
+  worker: throughput, chop, fine, pipeline, replay,
   lips: () => lipParity({ say, live }, parameters),
   probes: () => probeParity({ say, live }, parameters),
 };
