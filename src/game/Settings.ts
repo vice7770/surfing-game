@@ -68,6 +68,11 @@ export interface AdvancedGraphics {
 
 export interface GraphicsSettings extends AdvancedGraphics {
   preset: GraphicsPreset;
+  /**
+   * The glow and colour grade (the web-ocean plan, item 6): bloom of the brightest light and an AgX grade, on Rich
+   * water only. An A/B the owner is judging, so no preset sets it and choosing one keeps it; off by default.
+   */
+  glow: boolean;
 }
 
 export interface ControlSettings extends StickSettings {
@@ -130,7 +135,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', breathMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true, stanceReadout: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
-      preset: 'auto', ...PRESETS.medium,
+      preset: 'auto', ...PRESETS.medium, glow: false,
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 2 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
@@ -261,6 +266,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       foam: oneOf(graphics.foam, ['simple', 'detailed'] as const, g.foam),
       waterLook: oneOf(graphics.waterLook, ['classic', 'rich'] as const, presetLook),
       particles: oneOf(graphics.particles, PARTICLE_LEVELS, presetParticles),
+      glow: flag(graphics.glow, g.glow),
     },
     controls: {
       bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings, controls.padLayout !== 2),

@@ -110,7 +110,7 @@ describe('settingsModel', () => {
 describe('applyRow', () => {
   it('turns the preset to Custom for a hand-set value, and copies a chosen preset', () => {
     expect(applyRow(defaultSettings(), 'caustics', false)).toEqual({ tab: 'graphics', patch: expect.objectContaining({ preset: 'custom', caustics: false }) });
-    expect(applyRow(defaultSettings(), 'preset', 'low')).toEqual({ tab: 'graphics', patch: { preset: 'low', ...PRESETS.low } });
+    expect(applyRow(defaultSettings(), 'preset', 'low')).toEqual({ tab: 'graphics', patch: { preset: 'low', ...PRESETS.low, glow: false } });
     expect(applyRow(defaultSettings(), 'frameLimit', '30')).toEqual({ tab: 'graphics', patch: expect.objectContaining({ frameLimit: 30 }) });
   });
 
@@ -133,6 +133,18 @@ describe('applyRow', () => {
     const ids = rows.map((r) => r.id);
     expect(ids.indexOf('waterLook')).toBe(ids.indexOf('seaDetail') + 1);
     expect(applyRow(defaultSettings(), 'waterLook', 'classic')).toMatchObject({ tab: 'graphics', patch: { waterLook: 'classic' } });
+  });
+
+  // The web-ocean plan, item 6: the glow and colour grade, an A/B switch under the Rich look.
+  it('offers the glow and colour grade under the Rich look only, off by default, without making the preset Custom', () => {
+    const rows = settingsModel('graphics', defaultSettings(), context);
+    const ids = rows.map((r) => r.id);
+    expect(rows.find((r) => r.id === 'glow')).toMatchObject({ kind: 'toggle', value: false, label: 'Glow and colour grade' });
+    expect(ids.indexOf('glow')).toBe(ids.indexOf('waterLook') + 1);
+    const classic = { ...defaultSettings(), graphics: { ...defaultSettings().graphics, preset: 'low' as const, ...PRESETS.low } };
+    expect(settingsModel('graphics', classic, context).map((r) => r.id)).not.toContain('glow');
+    expect(applyRow(defaultSettings(), 'glow', true)).toEqual({ tab: 'graphics', patch: { glow: true } });
+    expect(applyRow(defaultSettings(), 'glow', false)).toEqual({ tab: 'graphics', patch: { glow: false } });
   });
 
   // The Particles setting, after Spray and mist; it applies at once, the running sea included.

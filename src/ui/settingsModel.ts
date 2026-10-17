@@ -52,6 +52,8 @@ function graphicsRows(settings: GameSettings, context: SettingsContext): Row[] {
     { kind: 'choice', id: 'waterSimulation', label: t('settings.waterSimulation'), value: g.waterSimulation, options: options('settings.water', ['auto', 'fast', 'accurate']), nextWave: nextWave('waterSimulation') },
     { kind: 'choice', id: 'seaDetail', label: t('settings.seaDetail'), value: g.seaDetail, options: options('settings.sea', ['standard', 'rich']), nextWave: nextWave('seaDetail') },
     { kind: 'choice', id: 'waterLook', label: t('settings.waterLook'), value: g.waterLook, options: options('settings.waterLook', ['classic', 'rich']) },
+    // The glow and colour grade, offered with the Rich look only.
+    ...(g.waterLook === 'rich' ? [{ kind: 'toggle' as const, id: 'glow', label: t('settings.glow'), value: g.glow }] : []),
     { kind: 'toggle', id: 'caustics', label: t('settings.caustics'), value: g.caustics },
     { kind: 'toggle', id: 'sprayMist', label: t('settings.sprayMist'), value: g.sprayMist },
     { kind: 'choice', id: 'particles', label: t('settings.particles'), help: t('settings.particles.help'), value: g.particles, options: options('settings.particles', ['low', 'medium', 'high']) },
@@ -148,6 +150,8 @@ export function applyRow(settings: GameSettings, id: string, value: string | num
   if (AUDIO.has(id)) return { tab: 'audio', patch: { [id]: value } };
   if (CONTROLS.has(id)) return { tab: 'controls', patch: { [id]: value } };
   if (id === 'preset') return { tab: 'graphics', patch: withPreset(settings.graphics, value as GraphicsPreset, settings.detected) };
+  // The glow is no preset's: it keeps the preset.
+  if (id === 'glow') return { tab: 'graphics', patch: { glow: value === true } };
   if ((ADVANCED as readonly string[]).includes(id)) {
     const typed = id === 'frameLimit' && value !== 'screen' ? Number(value) : value;
     return { tab: 'graphics', patch: withAdvanced(settings.graphics, { [id]: typed }) };

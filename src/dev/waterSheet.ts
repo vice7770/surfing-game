@@ -35,6 +35,7 @@ interface SheetHooks {
   setSun(sun: { sunHeight: number; sunDirection: number }): Promise<void>;
   renderView(camera: PerspectiveCamera): void;
   water: WaterSurface;
+  setGlow(on: boolean): void;
 }
 
 const TIMES: readonly TimeOfDay[] = ['dawn', 'midday', 'sunset'];
@@ -375,7 +376,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   closeUp.width = RENDER.width;
   closeUp.height = RENDER.height;
   type View = { eye: [number, number, number]; target: [number, number, number] };
-  const waterSheetShot = async (name: string | View, look: WaterLook, time: TimeOfDay) => {
+  /** `file` names the posted still (default water-shot.png); a .jpg one is posted as a JPEG. */
+  const waterSheetShot = async (name: string | View, look: WaterLook, time: TimeOfDay, file = 'water-shot.png') => {
     const shot = typeof name === 'string'
       ? shots.find((candidate) => candidate.name === name)
       : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
@@ -387,8 +389,46 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     camera.updateMatrixWorld();
     hooks.renderView(camera);
     closeUp.getContext('2d')!.drawImage(hooks.canvas, 0, 0, RENDER.width, RENDER.height);
-    await post(closeUp, 'water-shot.png');
+    await post(closeUp, file);
     return true;
+  };
+  /** The glow and colour grade on or off for the shots after (the web-ocean plan, item 6), on the same held sea. */
+  const waterSheetGlow = (on: boolean) => hooks.setGlow(on);
+  /**
+   * A shot's brightness as drawn: the mean relative luminance of its pixels (sRGB decoded), its 10th, 50th and 90th
+   * percentiles and the share of pixels at 250 or more in every channel (blown out), for matching the grade's exposure.
+   */
+  const waterSheetLuma = async (name: string | View, look: WaterLook, time: TimeOfDay) => {
+    const shot = typeof name === 'string'
+      ? shots.find((candidate) => candidate.name === name)
+      : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !gl) return undefined;
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    hooks.renderView(camera);
+    const { width, height } = hooks.canvas;
+    const pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const lumas = new Float32Array(width * height);
+    let sum = 0;
+    let blown = 0;
+    for (let p = 0; p < width * height; p += 1) {
+      const k = 4 * p;
+      lumas[p] = 0.2126 * linear(pixels[k]) + 0.7152 * linear(pixels[k + 1]) + 0.0722 * linear(pixels[k + 2]);
+      sum += lumas[p];
+      if (pixels[k] >= 250 && pixels[k + 1] >= 250 && pixels[k + 2] >= 250) blown += 1;
+    }
+    lumas.sort();
+    const at = (q: number) => +lumas[Math.floor(q * (lumas.length - 1))].toFixed(4);
+    return { mean: +(sum / lumas.length).toFixed(4), p10: at(0.1), p50: at(0.5), p90: at(0.9), p99: at(0.99), blown: +(blown / lumas.length).toFixed(4) };
   };
   /**
    * One shot's render cost, ms per frame (median and 90th percentile): each
@@ -597,11 +637,45 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     return simulated;
   };
   // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
-  Object.assign(window, { waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  /**
+   * A shot's GPU time, ms per frame (median and 90th percentile), from the GPU's own timer
+   * (EXT_disjoint_timer_query_webgl2) around each frame: unlike `waterSheetTime` it holds in a hidden page, whose
+   * throttling stretches wall-clock times but not the GPU's work.
+   */
+  const waterSheetGpuTime = async (name: string, look: WaterLook, frames = 60) => {
+    const shot = shots.find((candidate) => candidate.name === name);
+    const gl = hooks.canvas.getContext('webgl2');
+    const timer = gl?.getExtension('EXT_disjoint_timer_query_webgl2') as { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number } | null;
+    if (!shot || !gl || !timer) return undefined;
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const pending: WebGLQuery[] = [];
+    for (let k = 0; k < frames + 5; k += 1) {
+      const query = gl.createQuery()!;
+      gl.beginQuery(timer.TIME_ELAPSED_EXT, query);
+      hooks.renderView(camera);
+      gl.endQuery(timer.TIME_ELAPSED_EXT);
+      if (k >= 5) pending.push(query);
+      else gl.deleteQuery(query);
+      if (k % 5 === 4) await breathe();
+    }
+    const times: number[] = [];
+    for (const query of pending) {
+      while (!gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE)) await new Promise((resolve) => setTimeout(resolve, 5));
+      if (!gl.getParameter(timer.GPU_DISJOINT_EXT)) times.push(gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6);
+      gl.deleteQuery(query);
+    }
+    times.sort((a, b) => a - b);
+    return times.length ? { median: +times[Math.floor(times.length / 2)].toFixed(3), p90: +times[Math.floor(times.length * 0.9)].toFixed(3), frames: times.length } : undefined;
+  };
+  Object.assign(window, { waterSheetGpuTime, waterSheetGlow, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
 async function post(canvas: HTMLCanvasElement, name: string): Promise<void> {
-  const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+  const jpeg = /\.jpe?g$/.test(name);
+  const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, jpeg ? 'image/jpeg' : 'image/png', jpeg ? 0.82 : undefined));
   if (png) await fetch(`${RECEIVER}/upload?name=${name}`, { method: 'POST', body: png }).catch(() => undefined);
 }
