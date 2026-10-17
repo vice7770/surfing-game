@@ -343,7 +343,7 @@ function syntheticDrawing(iterations: number, width = 2048, height = 1280): () =
  * as a frame's drawing would. Message-driven, so a hidden page's timer throttling does not slow it. Reports simulated
  * seconds per wall second, fresh snapshots per second, the worker's stage timings (p50 and p95) and the device's bytes,
  * maps and queue submissions per step. `&tier=0` builds Medium's sea (24 components) instead of High's 64; `&rider=0` leaves
- * the sea riderless, as the menu's is (`&size=practice` is the menu's swell);
+ * the sea riderless, as the menu's is (`&size=practice` is the menu's swell); `&particles=medium` sets the Particles level;
  * `&seconds=` and `&warm=` set the sample, `&seed=` the sea. The result is also left in `window.gpuCheck`.
  */
 async function pipeline(): Promise<void> {
@@ -356,13 +356,14 @@ async function pipeline(): Promise<void> {
   const seed = Number(params.get('seed') ?? 8761);
   const gpuLoad = Number(params.get('gpuLoad') ?? 0);
   const rider = params.get('rider') !== '0';
+  const particles = (params.get('particles') ?? 'high') as 'low' | 'medium' | 'high';
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
   const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
-  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, rider, phase: 'spinning up' };
+  const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, rider, particles, phase: 'spinning up' };
   (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
-  say(`${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}: spinning up…`);
+  say(`${spot} ${size}, ${config.componentCount ?? 24} components, ${rider ? 'ridden' : 'riderless'}, ${particles} particles, seed ${seed}: spinning up…`);
   const built = performance.now();
   const samples: { wall: number; seaTime: number; pipeline?: Pipeline; stepMs: number }[] = [];
   let host: WorkerSurfZone | undefined;
@@ -389,6 +390,7 @@ async function pipeline(): Promise<void> {
     next();
   });
   host = new WorkerSurfZone(config, port, { rider, ...(barrelCases ? { barrelCases } : {}) });
+  host.setParticleLevel(particles);
   await host.ready;
   const { status } = host.snapshot;
   say(`  ready in ${((performance.now() - built) / 1000).toFixed(1)} s: ${status.compute.toUpperCase()}, ${status.cells.toLocaleString('en-US')} cells`);
