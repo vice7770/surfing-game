@@ -74,6 +74,27 @@ function activeSamplers(stage: string): Set<string> {
   return used;
 }
 
+/**
+ * The chop's and the glitter's names a program may only use where it declares them (the merged playtest build of
+ * 2026-10-17 drew a curl sheet whose Rich program took the far normal chunk without its pars, and did not compile).
+ */
+const DECLARED = [
+  ['waterChopStats', /\bvoid\s+waterChopStats\s*\(/],
+  ['waterGlitterScreen', /\bvec3\s+waterGlitterScreen\s*\(/],
+  ['waterGlitterCov', /\bvec3\s+waterGlitterCov\s*=/],
+  ['waterGlitterCover', /\bfloat\s+waterGlitterCover\s*=/],
+  ['waterGlitterOn', /\bfloat\s+waterGlitterOn\s*=/],
+  ['waterGlitterSlope', /\bvec2\s+waterGlitterSlope\s*=/],
+  ['waterRippleCov', /\bvec3\s+waterRippleCov\s*=/],
+  ['waterChopMoments', /\buniform\s+highp\s+sampler2DArray\s+waterChopMoments\s*;/],
+] as const;
+
+/** The names a fragment uses without declaring them. */
+function undeclared(fragment: string): string[] {
+  const source = stripComments(fragment);
+  return DECLARED.filter(([name, declaration]) => new RegExp(`\\b${name}\\b`).test(source) && !declaration.test(source)).map(([name]) => name);
+}
+
 /** A material's shaders after its `onBeforeCompile`, run on three's physical sources. */
 function compiled(material: Material): { vertex: string; fragment: string } {
   const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
@@ -133,10 +154,14 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     };
     expect(units(program, false).samplers).toEqual(['a', 'b']);
     expect(units(program, true).count).toBe(5);
+    expect(undeclared('void main() { waterGlitterCov += vec3( 1.0 ); }')).toEqual(['waterGlitterCov']);
+    expect(undeclared('vec3 waterGlitterCov = vec3( 0.0 );\nvoid main() { waterGlitterCov += vec3( 1.0 ); }')).toEqual([]);
   });
 
   it('keeps every tank and edge-band program, in either look, with every option a spot can turn on, within the units', () => {
-    const counts = Object.fromEntries(waterPrograms().map(({ name, program }) => [name, units(program, true)]));
+    const programs = waterPrograms();
+    expect(programs.map(({ name, program }) => [name, undeclared(program.fragment)]).filter(([, names]) => names.length > 0)).toEqual([]);
+    const counts = Object.fromEntries(programs.map(({ name, program }) => [name, units(program, true)]));
     const over = Object.entries(counts).filter(([, { count }]) => count > UNITS).map(([name, { count, samplers }]) => `${name}: ${count} (${samplers.join(', ')})`);
     expect(over).toEqual([]);
     // The Canyon's (the roller) and Padang Padang's (the swept barrel) Rich programs, the fullest.
@@ -164,6 +189,7 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     const caustics = new CausticMap(new WaterSurface(cubic).causticSource);
     const causticMaterial = (caustics as unknown as { mesh: { material: { vertexShader: string; fragmentShader: string } } }).mesh.material;
     programs.push(['caustics', { vertex: causticMaterial.vertexShader, fragment: causticMaterial.fragmentShader }, false]);
+    expect(programs.map(([name, program]) => [name, undeclared(program.fragment)]).filter(([, names]) => names.length > 0)).toEqual([]);
     const over = programs.map(([name, program, physical]) => [name, units(program, physical)] as const)
       .filter(([, { count }]) => count > UNITS).map(([name, { count, samplers }]) => `${name}: ${count} (${samplers.join(', ')})`);
     expect(over).toEqual([]);
