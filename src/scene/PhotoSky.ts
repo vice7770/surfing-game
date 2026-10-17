@@ -1,5 +1,6 @@
 import {
   Color,
+  DataUtils,
   EquirectangularReflectionMapping,
   PMREMGenerator,
   SRGBColorSpace,
@@ -12,6 +13,7 @@ import {
   type WebGLRenderTarget,
 } from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import { horizonBandRows, horizonGain, horizonRing, horizonRingFromImage } from './water/horizonHaze';
 
 export type TimeOfDay = 'dawn' | 'midday' | 'sunset';
 
@@ -86,6 +88,10 @@ export function skyExposure(entry: SkyEntry): { environment: number; sun: number
 export interface LoadedSky {
   environment: Texture;
   background: Texture;
+  /** The background's horizon colours around the sky (`horizonRing`), for the water's haze; none where unread. */
+  horizon?: Float32Array;
+  /** The environment's (its HDR's, before the scene's exposure), for `horizonGain`. */
+  environmentHorizon?: Float32Array;
   dispose(): void;
 }
 
@@ -93,6 +99,15 @@ export interface LoadedSky {
 export interface PhotoSkyLoads {
   manifest(): Promise<readonly SkyEntry[]>;
   sky(entry: SkyEntry): Promise<LoadedSky>;
+}
+
+/** The horizon ring of an HDR as three's loader leaves it: RGBA, half floats (its default) or floats. */
+function hdrHorizonRing(image: { width: number; height: number; data: ArrayLike<number> }): Float32Array | undefined {
+  const { width, height, data } = image;
+  if (!width || !height || data.length !== 4 * width * height) return undefined;
+  const { first, count } = horizonBandRows(height);
+  const band = Array.prototype.slice.call(data, 4 * width * first, 4 * width * (first + count)) as number[];
+  return horizonRing(band, width, count, undefined, data instanceof Uint16Array ? DataUtils.fromHalfFloat : (v) => v);
 }
 
 /** Loads over the network: the manifest, a PMREM environment from the 1k HDR, and the JPEG background. */
@@ -114,8 +129,16 @@ function webLoads(renderer: WebGLRenderer, baseUrl: string): PhotoSkyLoads {
       const pmrem = new PMREMGenerator(renderer);
       const target: WebGLRenderTarget = pmrem.fromEquirectangular(hdr);
       pmrem.dispose();
+      let horizon: Float32Array | undefined;
+      let environmentHorizon: Float32Array | undefined;
+      try {
+        horizon = horizonRingFromImage(background.image as HTMLImageElement);
+        environmentHorizon = hdrHorizonRing(hdr.image as { width: number; height: number; data: ArrayLike<number> });
+      } catch (error) {
+        console.warn('Sky horizon unreadable; the water goes without haze.', error);
+      }
       hdr.dispose();
-      return { environment: target.texture, background, dispose: () => { target.dispose(); background.dispose(); } };
+      return { environment: target.texture, background, horizon, environmentHorizon, dispose: () => { target.dispose(); background.dispose(); } };
     },
   };
 }
@@ -128,6 +151,10 @@ export class PhotoSky {
   environment?: Texture;
   background?: Texture;
   environmentIntensity = 1;
+  /** The background's horizon colours, in the photo's own frame (turn them by `rotation`), once read. */
+  horizon?: Float32Array;
+  /** The sky shown over the sky that lights, at the horizon (`horizonGain`); 1 until both are read. */
+  horizonGain = 1;
   /** The turn about +y applied to the photo, radians. */
   rotation = 0;
   private skies?: readonly SkyEntry[];
@@ -172,9 +199,11 @@ export class PhotoSky {
       this.loaded = loaded;
       this.environment = loaded.environment;
       this.background = loaded.background;
+      this.horizon = loaded.horizon;
       this.current = entry;
       const exposure = skyExposure(entry);
       this.environmentIntensity = exposure.environment;
+      this.horizonGain = loaded.horizon && loaded.environmentHorizon ? horizonGain(loaded.horizon, loaded.environmentHorizon, exposure.environment) : 1;
       this.sunIntensity = exposure.sun;
       this.sunColor.copy(exposure.sunColor);
     }
@@ -190,6 +219,8 @@ export class PhotoSky {
     this.loaded = undefined;
     this.environment = undefined;
     this.background = undefined;
+    this.horizon = undefined;
+    this.horizonGain = 1;
     this.current = undefined;
   }
 

@@ -27,6 +27,8 @@ import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
 import { churnTexture, waterChurnPars } from './water/churnTexture';
+import { horizonHazeUniforms } from './water/horizonHaze';
+import { withRichHorizon } from './water/richHorizon';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
@@ -366,6 +368,8 @@ export class WaterSurface {
       waterRollerColumn0: { value: 0 },
       waterRollerColumnWidth: { value: 1 },
       waterRollerExtent: { value: new Vector2(1, 0) },
+      // Rich (the horizon plan): the haze toward the horizon, the same objects in every water program.
+      ...horizonHazeUniforms,
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -400,6 +404,8 @@ export class WaterSurface {
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION)
           // The sun's glitter (item 5): the direct lights' specular from the slopes' covariance.
           .replace('#include <lights_physical_pars_fragment>', richGlitterLights(false));
+        // The horizon plan: the haze toward the horizon, and the sky mirrored from the slopes' spread.
+        withRichHorizon(shader);
         return;
       }
       shader.vertexShader = shader.vertexShader

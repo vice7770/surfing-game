@@ -47,6 +47,7 @@ import type { ListenerPose } from './audio/AudioEngine';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { Environment } from './scene/Environment';
 import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
+import { applyHorizonHaze, horizonHazeUniforms } from './scene/water/horizonHaze';
 import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
@@ -1021,7 +1022,17 @@ class SurfGame {
     this.reflectionMapTarget = undefined;
     this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material, this.physicalMode.lipSheet.richMaterial]);
     if (!this.isBelowSurface) this.scene.background = this.photoSky.background ?? this.skyColor;
+    this.refreshHaze();
     this.refreshSun();
+  }
+
+  /**
+   * The Rich water's haze toward the photographed sky's horizon, turned with it, and its grazing mirror matched to the
+   * sky shown; no haze under water or before the sky loads.
+   */
+  private refreshHaze(): void {
+    const { horizon: ring, rotation, horizonGain: gain } = this.photoSky;
+    applyHorizonHaze(horizonHazeUniforms, { ring, rotation, gain }, this.photoSky.ready && !this.isBelowSurface);
   }
 
   /** Toward the sun: the photographed sky's once loaded, else the painted one's. */
@@ -1083,6 +1094,7 @@ class SurfGame {
       this.scene.fog = below ? this.underwaterFog : null;
       this.scene.background = below ? this.underwaterColor : (this.photoSky.background ?? this.skyColor);
       this.environment.group.visible = !below;
+      this.refreshHaze();
     }
   }
 
