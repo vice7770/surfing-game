@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RICH_BASE_ROUGHNESS } from './specular';
 import {
-  GLITTER_BASE_VARIANCE, SCREEN_VARIANCE_CAP, glitter, glitterDistribution, richGlitterLights, screenCovariance, slopeDensity,
-  smithLambda, waterGlitterPars, type Covariance, type Vec3,
+  GLITTER_BASE_VARIANCE, GLITTER_UNRESOLVED, SCREEN_VARIANCE_CAP, glitter, glitterDistribution, glitterUniforms, richGlitterLights,
+  screenCovariance, slopeDensity, smithLambda, unresolvedVariance, waterGlitterPars, type Covariance, type Vec3,
 } from './glitter';
 
 const UP: Vec3 = [0, 1, 0];
@@ -123,6 +123,20 @@ describe('the sun glitter (item 5)', () => {
     const edge = screenCovariance([2, 0.5], [1, 0]);
     expect(Math.max(edge[0], edge[1])).toBeCloseTo(SCREEN_VARIANCE_CAP, 12);
     expect(edge[1] / edge[0]).toBeCloseTo((0.25) / 5, 9);
+  });
+
+  it('adds the water\'s unresolved slopes, growing with distance toward the far sheen; a sheet takes none', () => {
+    expect(unresolvedVariance(0)).toBeCloseTo(GLITTER_UNRESOLVED.constant, 12);
+    expect(unresolvedVariance(30)).toBeCloseTo(GLITTER_UNRESOLVED.constant, 12);
+    expect(unresolvedVariance(500)).toBeCloseTo(GLITTER_UNRESOLVED.constant + GLITTER_UNRESOLVED.far, 12);
+    let last = 0;
+    for (const distance of [0, 50, 100, 200, 400, 800]) {
+      expect(unresolvedVariance(distance)).toBeGreaterThanOrEqual(last);
+      last = unresolvedVariance(distance);
+    }
+    expect(glitterUniforms.waterGlitterUnresolved.value.toArray()).toEqual([GLITTER_UNRESOLVED.constant, GLITTER_UNRESOLVED.far]);
+    expect(richGlitterLights(false)).toContain('cov.xy += waterGlitterUnresolved.x + waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, length( geometryPosition ) );');
+    expect(richGlitterLights(true)).not.toContain('waterGlitterUnresolved');
   });
 
   it('has GLSL twins, and swaps three\'s direct light for the lobe only where it is on', () => {

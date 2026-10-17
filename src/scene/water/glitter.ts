@@ -16,6 +16,7 @@
  * faces are steep, so the light reflected per unit of horizontal area is
  * divided by the face's own projected area, (v·n)/n_y, not by v_y.
  */
+import { Vector2 } from 'three';
 import { RICH_BASE_ROUGHNESS } from './specular';
 
 /** Per-axis slope variance whose Gaussian peaks as three's GGX at the Rich base roughness: α = roughness², σ² = α²/2. */
@@ -26,6 +27,22 @@ export const SUN_DISC_VARIANCE = (0.00465 / 2) ** 2 / 4;
 export const GLITTER_FOAM_VARIANCE = 0.7 ** 4 / 2;
 /** The screen-space term's largest per-axis variance (web-ocean's cap): an edge never turns the sun into a sheet of light. */
 export const SCREEN_VARIANCE_CAP = 0.03;
+/**
+ * The water's slopes no layer resolves, per axis (web-ocean): a constant, and a growth with distance (from 30 to
+ * 500 m) toward Cox–Munk's totals in the far sheen.
+ */
+export const GLITTER_UNRESOLVED = { constant: 0.0024, far: 0.0035 } as const;
+
+/** The unresolved variance (constant, growth with distance), shared by the tank's and the far ocean's materials. */
+export const glitterUniforms = {
+  waterGlitterUnresolved: { value: new Vector2(GLITTER_UNRESOLVED.constant, GLITTER_UNRESOLVED.far) },
+};
+
+/** The unresolved per-axis variance at a distance, m: the GLSL's. */
+export function unresolvedVariance(distance: number, unresolved = GLITTER_UNRESOLVED): number {
+  const t = Math.min(1, Math.max(0, (distance - 30) / 470));
+  return unresolved.constant + unresolved.far * t * t * (3 - 2 * t);
+}
 
 export type Vec3 = readonly [number, number, number];
 /** A slope covariance: (xx, zz, xz). */
@@ -205,14 +222,18 @@ export function richGlitterLights(sheet: boolean): string {
     : `vec3 up = viewMatrix[ 1 ].xyz;
   vec3 tx = viewMatrix[ 0 ].xyz;
   vec3 tz = viewMatrix[ 2 ].xyz;`;
+  // The water's unresolved slopes (not a sheet's: it takes the screen-space term alone).
+  const unresolved = sheet ? '' : `
+  cov.xy += waterGlitterUnresolved.x + waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, length( geometryPosition ) );`;
   return /* glsl */ `#include <lights_physical_pars_fragment>
+${sheet ? '' : 'uniform vec2 waterGlitterUnresolved;'}
 void RE_Direct_WaterGlitter( const in IncidentLight directLight, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, const in PhysicalMaterial material, inout ReflectedLight reflectedLight ) {
   if ( waterGlitterOn < 0.5 ) {
     RE_Direct_Physical( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );
     return;
   }
   ${frame}
-  vec3 cov = waterGlitterCov + vec3( vec2( GLITTER_FLOOR + waterGlitterCover * GLITTER_FOAM ), 0.0 );
+  vec3 cov = waterGlitterCov + vec3( vec2( GLITTER_FLOOR + waterGlitterCover * GLITTER_FOAM ), 0.0 );${unresolved}
   vec3 halfDir = normalize( directLight.direction + geometryViewDir );
   vec3 F = F_Schlick( material.specularColorBlended, material.specularF90, saturate( dot( geometryViewDir, halfDir ) ) );
   float lobe = waterGlitter( directLight.direction, geometryViewDir, geometryNormal, up, tx, tz, waterGlitterSlope, cov );

@@ -42,7 +42,7 @@ import { causticLookupPars, createCausticUniforms, type CausticSource, type Caus
 import { ShorelineFill, WetSandMemory } from './water/shoreline';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
-import { richGlitterLights, waterGlitterPars } from './water/glitter';
+import { glitterUniforms, richGlitterLights, waterGlitterPars } from './water/glitter';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
@@ -340,6 +340,7 @@ export class WaterSurface {
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
+      ...glitterUniforms,
       ...createOpticsUniforms(),
       ...this.causticUniforms,
       waterPatchRect: { value: new Vector4() },

@@ -22,7 +22,7 @@ import { waterHeightPars } from './WaterSurface';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
-import { richGlitterLights, waterGlitterPars } from './water/glitter';
+import { glitterUniforms, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
@@ -198,6 +198,7 @@ export class FarFieldOcean {
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
+      ...glitterUniforms,
       ...createOpticsUniforms(),
       // Rich only (G8): the tank's ripples, so the two meet without a step in gloss.
       waterRippleMap: { value: rippleTexture() },
