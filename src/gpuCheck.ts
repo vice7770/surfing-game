@@ -276,66 +276,64 @@ class TimedPort implements WorkerPort {
 type Pipeline = NonNullable<SurfZoneStatus['pipelineMs']>;
 
 /**
- * A stand-in for the game's drawing on the same GPU: a WebGL2 full-screen pass `iterations` deep, issued at most every
- * 1/60 s and only once the previous one has finished (a fence), driven by messages so a hidden page still runs it.
- * Returns a stop function that reports the frames it drew and their median GPU-bound interval.
+ * A stand-in for the game's drawing on the same GPU: a WebGL2 full-screen pass `iterations` deep on an OffscreenCanvas
+ * in its own worker, issued at most every 1/60 s and only once the previous one has finished (a fence), on the worker's
+ * timers, which a hidden page does not throttle, and without busying the page. Returns a stop function that reports
+ * the frames it drew and their median interval.
  */
-function syntheticDrawing(iterations: number, width = 2048, height = 1280): () => { framesPerSecond: number; frameMs: number } {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const gl = canvas.getContext('webgl2', { antialias: false, preserveDrawingBuffer: false })!;
-  const shader = (type: number, source: string) => {
-    const object = gl.createShader(type)!;
-    gl.shaderSource(object, source);
-    gl.compileShader(object);
-    return object;
-  };
-  const program = gl.createProgram()!;
-  gl.attachShader(program, shader(gl.VERTEX_SHADER, `#version 300 es
-    void main() { vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`));
-  gl.attachShader(program, shader(gl.FRAGMENT_SHADER, `#version 300 es
-    precision highp float; uniform float t; out vec4 colour;
-    void main() {
-      vec2 p = gl_FragCoord.xy * 0.001; float a = t;
-      for (int i = 0; i < ${Math.max(1, Math.round(iterations))}; i++) { a = sin(a + p.x) * cos(a - p.y) + 0.5 * a; }
-      colour = vec4(a, p, 1.0);
-    }`));
-  gl.linkProgram(program);
-  gl.useProgram(program);
-  const time = gl.getUniformLocation(program, 't');
-  const channel = new MessageChannel();
-  let sync: WebGLSync | null = null;
-  let last = 0;
-  let stopped = false;
-  const intervals: number[] = [];
-  let issued = 0;
-  const started = performance.now();
-  channel.port1.onmessage = () => {
-    if (stopped) return;
-    const now = performance.now();
-    if (sync && gl.getSyncParameter(sync, gl.SYNC_STATUS) !== gl.SIGNALED) {
-      channel.port2.postMessage(0);
-      return;
-    }
-    if (now - last >= 1000 / 60) {
-      if (sync) gl.deleteSync(sync);
-      if (last > 0) intervals.push(now - last);
-      last = now;
-      gl.uniform1f(time, now * 0.001);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-      gl.flush();
-      issued += 1;
-    }
-    channel.port2.postMessage(0);
-  };
-  channel.port2.postMessage(0);
-  return () => {
-    stopped = true;
-    const sorted = [...intervals].sort((a, b) => a - b);
-    return { framesPerSecond: issued / ((performance.now() - started) / 1000), frameMs: sorted[Math.floor(sorted.length / 2)] ?? Number.NaN };
-  };
+function syntheticDrawing(iterations: number, width = 2048, height = 1280): () => Promise<{ framesPerSecond: number; frameMs: number }> {
+  const source = `
+    const canvas = new OffscreenCanvas(${width}, ${height});
+    const gl = canvas.getContext('webgl2', { antialias: false });
+    const shader = (type, text) => { const o = gl.createShader(type); gl.shaderSource(o, text); gl.compileShader(o); return o; };
+    const program = gl.createProgram();
+    gl.attachShader(program, shader(gl.VERTEX_SHADER, \`#version 300 es
+      void main() { vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2)); gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }\`));
+    gl.attachShader(program, shader(gl.FRAGMENT_SHADER, \`#version 300 es
+      precision highp float; uniform float t; out vec4 colour;
+      void main() {
+        vec2 p = gl_FragCoord.xy * 0.001; float a = t;
+        for (int i = 0; i < ${Math.max(1, Math.round(iterations))}; i++) { a = sin(a + p.x) * cos(a - p.y) + 0.5 * a; }
+        colour = vec4(a, p, 1.0);
+      }\`));
+    gl.linkProgram(program);
+    gl.useProgram(program);
+    const time = gl.getUniformLocation(program, 't');
+    let sync = null, last = 0, issued = 0, stopped = false;
+    const intervals = [];
+    const started = performance.now();
+    const tick = () => {
+      if (stopped) return;
+      const now = performance.now();
+      if (!(sync && gl.getSyncParameter(sync, gl.SYNC_STATUS) !== gl.SIGNALED) && now - last >= 1000 / 60) {
+        if (sync) gl.deleteSync(sync);
+        if (last > 0) intervals.push(now - last);
+        last = now;
+        gl.uniform1f(time, now * 0.001);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        gl.flush();
+        issued += 1;
+      }
+      setTimeout(tick, 2);
+    };
+    tick();
+    onmessage = () => {
+      stopped = true;
+      const sorted = intervals.slice().sort((a, b) => a - b);
+      postMessage({ framesPerSecond: issued / ((performance.now() - started) / 1000), frameMs: sorted[Math.floor(sorted.length / 2)] ?? NaN });
+    };
+  `;
+  const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+  const worker = new Worker(url);
+  return () => new Promise((resolve) => {
+    worker.onmessage = ({ data }) => {
+      worker.terminate();
+      URL.revokeObjectURL(url);
+      resolve(data);
+    };
+    worker.postMessage('stop');
+  });
 }
 
 /**
@@ -397,7 +395,7 @@ async function pipeline(): Promise<void> {
   sampleFrom = performance.now() + warm * 1000;
   next();
   await finished;
-  const drawn = drawing?.();
+  const drawn = await drawing?.();
   host.dispose();
   const first = samples[0];
   const last = samples.at(-1)!;
