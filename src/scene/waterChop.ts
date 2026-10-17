@@ -148,12 +148,56 @@ void waterChopStats( vec2 p, float t, vec2 dpdx, vec2 dpdy, out vec2 mean, out v
 }
 `;
 
+/** The analytic chop's six waves (direction x, z; wavelength, m), the GLSL's: steepness k·a = 2π·0.012 each. */
+export const ANALYTIC_CHOP_WAVES: readonly (readonly [number, number, number])[] = [
+  [0.94, 0.34, 1.9], [-0.50, 0.87, 1.3], [0.20, -0.98, 2.7], [0.77, 0.64, 0.85], [-0.90, -0.43, 3.4], [0.34, 0.94, 1.1],
+];
+
+/** The analytic chop's slope covariance (xx, zz, xz) at unit strength: each wave's (ka)²/2 along its direction. */
+export function analyticChopCovariance(): [number, number, number] {
+  const cov: [number, number, number] = [0, 0, 0];
+  for (const [x, z] of ANALYTIC_CHOP_WAVES) {
+    const square = 0.5 * (2 * Math.PI * 0.012) ** 2;
+    cov[0] += square * x * x;
+    cov[1] += square * z * z;
+    cov[2] += square * x * z;
+  }
+  return cov;
+}
+
 /**
- * Rich's normal chunks: the chop's statistics at the fragment, and the glitter's covariance from them: the chop's
- * own, and what the distance fade (`chopFade`) takes off its mean, which the footprint still holds as roughness.
- * Leaves `waterChopMean` for the chunk to add, faded, to its slope. Needs `waterChopMomentPars` and the glitter's pars.
+ * The chop's slope covariance the sun's lobe takes at a distance, m (`chopCovarianceGlsl`): the part of the whole
+ * patch's (`whole`, at unit strength) the distance fade, exp(−d/80), takes off the drawn slopes, (1 − fade²). Far off,
+ * the chop is all sheen; near, it is all drawn. It stands for the footprint's statistics on average (the shader-cost
+ * pass of 2026-10-18: read per pixel from the moments' mip levels, they cost the M1 too much).
+ */
+export function chopCovariance(distance: number, chop: number, whole: readonly [number, number, number]): [number, number, number] {
+  const fade = Math.exp(-Math.max(0, distance) / 80);
+  const share = chop * chop * (1 - fade * fade);
+  return [share * whole[0], share * whole[1], share * whole[2]];
+}
+
+const ANALYTIC_COV = analyticChopCovariance();
+
+/**
+ * GLSL: `chopCovariance` at the distance `distance` names (1 − fade² is 1 − e^(−d/40)), with each cascade's whole-patch
+ * covariance where the cascades run, the six analytic waves' elsewhere. An expression, written where it is used (the
+ * sun's glitter, `RICH_SUN_GLITTER`). Needs `waterChopPars` and `waterChopMomentPars`.
+ */
+export function chopCovarianceGlsl(distance: string): string {
+  return `waterChop * waterChop * ( 1.0 - exp( -${distance} / 40.0 ) ) * ( waterChopCascades > 0.5 ? waterChopCoarseCov + waterChopFineCov : vec3( ${ANALYTIC_COV.map((v) => v.toExponential(6)).join(', ')} ) )`;
+}
+
+/**
+ * Rich's normal chunks: the chop's mean slope over the pixel's footprint (`waterChopStats`), which they add, faded, to
+ * their slope. With the glitter off (`WATER_GLITTER` undefined: Medium), the chop's plain slope as before the glitter:
+ * the same statistics at a point (no footprint: the cascades' level 0 where they run, else the six analytic waves
+ * unfiltered, `waterChopSlope`'s), so the program still takes no unit for the Classic map. Needs `waterChopMomentPars`.
  */
 export const RICH_CHOP_STATS = /* glsl */ `vec2 waterChopMean;
   vec3 waterChopSpread;
+#ifdef WATER_GLITTER
   waterChopStats( vWaterWorld.xz, waterTime, dFdx( vWaterWorld.xz ), dFdy( vWaterWorld.xz ), waterChopMean, waterChopSpread );
-  waterGlitterCov = waterChop * waterChop * ( waterChopSpread + ( 1.0 - chopFade * chopFade ) * vec3( waterChopMean * waterChopMean, waterChopMean.x * waterChopMean.y ) );`;
+#else
+  waterChopStats( vWaterWorld.xz, waterTime, vec2( 0.0 ), vec2( 0.0 ), waterChopMean, waterChopSpread );
+#endif`;

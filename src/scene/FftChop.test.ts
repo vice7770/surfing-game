@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { FftChop, chopPassShaders } from './FftChop';
 import { CHOP_LOOP, chopCascades } from './fftChopMath';
 import { chopFieldUniforms, waterChopMomentPars } from './waterChop';
-import { RICH_GLITTER_SLOPE, RICH_SHEET_GLITTER, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { RICH_GLITTER_RIPPLES, RICH_SHEET_GLITTER, RICH_SUN_GLITTER, richGlitterLights, waterGlitterPars } from './water/glitter';
 
 function rendererStub() {
   const initial = {} as WebGLRenderTarget;
@@ -150,7 +150,8 @@ describe('the chop\'s and the glitter\'s GLSL', () => {
     const passes = chopPassShaders();
     const sources = [
       passes.first, passes.butterfly, passes.moment, passes.mip,
-      waterChopMomentPars, waterGlitterPars, RICH_GLITTER_SLOPE, RICH_SHEET_GLITTER, richGlitterLights(false), richGlitterLights(true),
+      waterChopMomentPars, waterGlitterPars, RICH_GLITTER_RIPPLES, RICH_SUN_GLITTER, RICH_SHEET_GLITTER,
+      richGlitterLights(false), richGlitterLights(true),
     ];
     const declaration = /\b(?:float|int|bool|void|[iu]?vec[234]|mat[234]|sampler2D)\s+([A-Za-z_]\w*)/g;
     const names = new Set(sources.flatMap((source) => [...source.matchAll(declaration)].map((match) => match[1])));

@@ -22,7 +22,7 @@ import { waterHeightPars } from './WaterSurface';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
-import { glitterUniforms, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
@@ -232,7 +232,10 @@ export class FarFieldOcean {
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(false) : '#include <lights_physical_pars_fragment>');
     };
     // The rim's uniforms are taken in at compile (`attachRim`): a new attachment compiles again.
-    material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}${this.rimVersion > 0 ? `-rim${this.rimVersion}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}${this.rimVersion > 0 ? `-rim${this.rimVersion}` : ''}${this.currentLook === 'rich' ? glitterProgramKey() : ''}`;
+    onGlitterChange(() => {
+      if (this.currentLook === 'rich') material.needsUpdate = true;
+    });
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
