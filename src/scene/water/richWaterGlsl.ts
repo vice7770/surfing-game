@@ -5,7 +5,7 @@
 import { waterCubicPars } from './cubicSurface';
 import { PATCH_SKIRT } from './richPatch';
 import { RICH_SPECULAR } from './specular';
-import { RICH_GLITTER_SLOPE } from './glitter';
+import { RICH_GLITTER_RIPPLES, RICH_SUN_GLITTER } from './glitter';
 import { CLASSIC_FOAM } from '../waterOptics';
 import { RICH_CHOP_STATS } from '../waterChop';
 
@@ -96,7 +96,7 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );
   diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );
   ${RICH_SPECULAR}
-  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
+  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );${RICH_SUN_GLITTER}
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
 
 /**
@@ -119,12 +119,12 @@ export const RICH_REFLECTION = `#include <lights_fragment_maps>
 /** The far ocean's Rich foam: Classic's composition with the Rich gloss (it has no churn or streaks). */
 export const RICH_FAR_FOAM = CLASSIC_FOAM.replace(
   'roughnessFactor = mix( roughnessFactor, 0.9, waterCover );',
-  `${RICH_SPECULAR}\n  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`,
+  `${RICH_SPECULAR}\n  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );${RICH_SUN_GLITTER}`,
 );
 
 /**
  * The far ocean's Rich <normal_fragment_begin>: its analytic normal and the chop, as Classic, plus the ripples on
- * still water; and the glitter's slope and covariance (item 5).
+ * still water; and the ripples' variance for the sun's glitter (item 5).
  */
 export const richFarNormal = /* glsl */ `
 #include <normal_fragment_begin>
@@ -135,7 +135,7 @@ export const richFarNormal = /* glsl */ `
   vec3 chopNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   chopNormal = normalize( chopNormal + vec3( -chopSlope.x, 0.0, -chopSlope.y ) );
   normal = normalize( ( viewMatrix * vec4( chopNormal, 0.0 ) ).xyz );
-  ${RICH_GLITTER_SLOPE}
+  ${RICH_GLITTER_RIPPLES}
 }
 `;
 
@@ -146,7 +146,7 @@ const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterAir ) * wat
 /**
  * Rich <normal_fragment_begin>: the Catmull-Rom normal per pixel, the wind chop
  * (and, from Task 5, the ripples), flipped for the underside and written in view space;
- * then the glitter's slope and covariance (web-ocean plan, item 5).
+ * then the ripples' variance for the sun's glitter (web-ocean plan, item 5).
  */
 export function richNormalFragment(opts: { ripples: boolean; churn?: boolean; vertexNormals?: boolean }): string {
   const surface = opts.vertexNormals
@@ -166,7 +166,7 @@ export function richNormalFragment(opts: { ripples: boolean; churn?: boolean; ve
   ${opts.churn ? CHURN_RELIEF : ''}
   vec3 waterWorldNormal = normalize( vec3( -waterSlope.x, 1.0, -waterSlope.y ) ) * faceDirection;
   normal = normalize( ( viewMatrix * vec4( waterWorldNormal, 0.0 ) ).xyz );
-  ${RICH_GLITTER_SLOPE}
+  ${RICH_GLITTER_RIPPLES}
 }
 `;
 }

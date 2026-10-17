@@ -87,6 +87,8 @@ const DECLARED = [
   ['waterGlitterOn', /\bfloat\s+waterGlitterOn\s*=/],
   ['waterGlitterSlope', /\bvec2\s+waterGlitterSlope\s*=/],
   ['waterRippleCov', /\bvec3\s+waterRippleCov\s*=/],
+  ['waterGlitterSun', /\bfloat\s+waterGlitterSun\s*=/],
+  ['waterGlitterRipple', /\bvec2\s+waterGlitterRipple\s*=/],
   ['waterChopMoments', /\buniform\s+highp\s+sampler2DArray\s+waterChopMoments\s*;/],
 ] as const;
 

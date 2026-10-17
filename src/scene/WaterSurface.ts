@@ -44,7 +44,7 @@ import { causticLookupPars, createCausticUniforms, type CausticSource, type Caus
 import { ShorelineFill, WetSandMemory } from './water/shoreline';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
-import { glitterUniforms, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
@@ -424,7 +424,11 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? glitterProgramKey() : ''}`;
+    // The glitter's mode (Sea detail, or a dev switch) changes the Rich program.
+    onGlitterChange(() => {
+      if (this.effectiveLook === 'rich') material.needsUpdate = true;
+    });
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.refreshTubeColumns();
     this.refreshRoller();

@@ -38,6 +38,7 @@ import { LocalSurfZone } from './game/SurfZoneHost';
 import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, ridesAsPractice, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
+import { setGlitterForGraphics } from './scene/water/glitter';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
 import type { SurfZoneConfig } from './wave/SurfZoneSimulation';
@@ -368,6 +369,8 @@ class SurfGame {
     this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.glowWanted = resolved.glow;
+    // The sun's glitter comes with the rich sea (High, Ultra); Medium keeps three's GGX (the M1's frame budget).
+    setGlitterForGraphics(resolved.richSea);
     this.applyWaterLook(resolved.waterLook);
   }
 

@@ -7,7 +7,7 @@ import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richRe
 import { waterRipplePars } from '../water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
 import { waterChopMomentPars, waterChopNormal } from '../waterChop';
-import { RICH_SHEET_GLITTER, richGlitterLights, waterGlitterPars } from '../water/glitter';
+import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from '../water/glitter';
 import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
@@ -385,7 +385,10 @@ export class SweptBarrelMesh {
         .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
         .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
     };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}`;
+    onGlitterChange(() => {
+      if (this.look === 'rich') material.needsUpdate = true;
+    });
     this.mesh = new Mesh(geometry, material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;

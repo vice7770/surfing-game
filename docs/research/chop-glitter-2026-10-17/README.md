@@ -167,3 +167,62 @@ Medium, which never runs the FFT chop: `richSea` is off there.
   the analytic waves instead of the FFT chop.
 - `FftChop` draws the moments' mip levels in raw WebGL2 and resets three's state afterwards. Without WebGL2, Rich
   falls back to the analytic chop.
+
+## The shader-cost pass (2026-10-18)
+
+The owner's rule: no slower on the M1 than today. Timed on the merged playtest build, the Rich water's new shading
+cost the M1 +2.9 to +4.0 ms a frame on Medium (the preset Auto picks there). Almost all of it was this glitter, and
+almost all of that was the tank's program: the far ocean's copy of the same code cost nothing.
+
+### What changed
+
+- **The sun's lobe is lit once per pixel** (`RICH_SUN_GLITTER`), for the sun, in the world's frame, at the end of
+  the water's body where the foam is known, and three's direct lights take it for the sun (`waterGlitterSun`). It was
+  lit per light inside three's loop, with its covariance and slope carried from the normal chunk. The other direct
+  light (the fill) keeps three's GGX: under a photographed sky its intensity is 0, so nothing drawn changes.
+- **Its maths are arranged for the GPU and written out**: no branches, the half vector's slope without normalizing,
+  one inverse square root for the Gaussian, both Smith Λs side by side and one division for the masking. `sunGlitter`
+  is the CPU twin; a test checks it against `glitter` (the per-light maths) to 6 digits on 400 random cases. The
+  same maths as GLSL functions (the lobe and the chop's covariance) timed 15–30 % of the frame slower on the tank,
+  so they are written out.
+- **The chop's covariance by distance** (`chopCovariance`): its whole patch's covariance (each cascade's, or the six
+  analytic waves') times 1 − fade², the part the distance fade takes off the drawn slopes. It replaces the moments'
+  mip levels read per pixel, which alone cost the tank as much as the lobe. The moments still give the chop's mean.
+- **Medium keeps three's GGX** (`setGlitterForGraphics`): the glitter comes with the Sea detail's rich sea (High and
+  Ultra). Even lean, it cost Medium +12 to +17 % (hidden pane), over the +1 ms budget. Medium also draws the chop's
+  plain slope (the same statistics at a point) as before the glitter, so its programs take no new texture unit.
+- **Dev switches**: `?glitter=off|on` (force it either way), `?glitterScreen=off`, `?glitterRipples=off`,
+  `?glitterChop=off`; in a page, `waterGlitter({ on, screen, ripples, chop })` recompiles the Rich programs.
+
+### Cost (GPU timer, M1, pane hidden)
+
+The Canyon, 1280×720, `?inpage&waterSheet&spot=canyon&compute=gpu&graphics=…`, rich look: the median of 7–10 rounds,
+each a 12-frame median, the arms alternated in one page (`waterSheetGpuTime`). The hidden pane runs the GPU slower
+than a shown one, so read the ratios; the owner's shown-pane timing is the one that counts. "Today" is the Rich
+shading before these branches (glitter off, three's sky, no haze).
+
+| Shot | Medium today | Medium as merged | Medium now | High today | High as merged | High now |
+| --- | --- | --- | --- | --- | --- | --- |
+| lineup | 10.9 ms | 15.8 (+45 %) | 11.6 (+4 to +8 %) | 12.4–12.7 ms | 19.7 (+53 %) | 14.1–14.5 (+15 to +17 %) |
+| face | 13.0 ms | 25.5 (+101 %) | ±1 % | 15.1–16.5 ms | 32.7 (+115 %) | 19.1–20.7 (+19 to +23 %) |
+| horizon | 21.6 ms | 34.1 (+58 %) | +2 % | 25.9–26.8 ms | 42.6 (+58 %) | 29.5–29.8 (+14 to +17 %) |
+
+Parts, from the switches on the new code (lineup / face / horizon, against today; the parts do not add: the tank's
+program sits at a cliff where a few more instructions cost far more than their own count):
+
+| Part | Medium | High |
+| --- | --- | --- |
+| The horizon look and the moments' mean, no glitter (`?glitter=off`) | +4–8 / ±1 / +2 % | +4 / ±3 / −3 % |
+| Glitter, isotropic floor only (`glitterScreen`, `Ripples`, `Chop` off) | – | +11 / +18 / +9 % |
+| Glitter without the screen term | – | +15 / +21 / +13 % |
+| The whole glitter (High's default) | +17 / +12–14 / +15–17 % (forced on) | +15–17 / +19–23 / +14–17 % |
+| As merged: the glitter per light, the moments' covariance | +40 / +90 / +45 % | +55 / +100 / +45 % |
+
+### Stills (`cost-*.jpg`, before above, after below)
+
+- `cost-canyon-sunset-road-high.jpg`, `cost-canyon-face-midday-high.jpg`: High, the glitter as merged against the new
+  arrangement. The same to the eye: 0.03 and 0.08 of 255 in mean, no pixel off by more than 16. The far horizon and
+  the midday lineup (no sun in view) are byte-identical JPEGs.
+- `cost-canyon-sunset-road-medium.jpg`, `cost-canyon-face-midday-medium.jpg`: what Medium gives back. The sunset road
+  keeps three's GGX column (thinner and shorter toward the camera, without the broken glints at its edges), and the
+  midday sun's highlight on the face is the smaller GGX blot (2.6 of 255 in mean).

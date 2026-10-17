@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { RICH_BASE_ROUGHNESS } from './specular';
 import {
-  GLITTER_BASE_VARIANCE, GLITTER_UNRESOLVED, SCREEN_VARIANCE_CAP, glitter, glitterDistribution, glitterUniforms, richGlitterLights,
-  screenCovariance, slopeDensity, smithLambda, unresolvedVariance, waterGlitterPars, type Covariance, type Vec3,
+  GLITTER_BASE_VARIANCE, GLITTER_UNRESOLVED, RICH_GLITTER_RIPPLES, RICH_SUN_GLITTER, SCREEN_VARIANCE_CAP, glitter, glitterDistribution,
+  glitterMode, glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, screenCovariance, setGlitter, setGlitterForGraphics,
+  slopeDensity, smithLambda, sunGlitter, unresolvedVariance, waterGlitterPars, type Covariance, type Vec3,
 } from './glitter';
+import { RICH_CHOP_STATS, analyticChopCovariance, chopCovariance, chopCovarianceGlsl } from '../waterChop';
 
 const UP: Vec3 = [0, 1, 0];
 const X: Vec3 = [1, 0, 0];
@@ -135,7 +137,7 @@ describe('the sun glitter (item 5)', () => {
       last = unresolvedVariance(distance);
     }
     expect(glitterUniforms.waterGlitterUnresolved.value.toArray()).toEqual([GLITTER_UNRESOLVED.constant, GLITTER_UNRESOLVED.far]);
-    expect(richGlitterLights(false)).toContain('cov.xy += waterGlitterUnresolved.x + waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, length( geometryPosition ) );');
+    expect(RICH_SUN_GLITTER).toContain('waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, glitterDistance )');
     expect(richGlitterLights(true)).not.toContain('waterGlitterUnresolved');
   });
 
@@ -148,7 +150,81 @@ describe('the sun glitter (item 5)', () => {
       expect(lights).toContain('RE_Direct_Physical( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );');
       expect(lights).toContain('#define RE_Direct RE_Direct_WaterGlitter');
     }
-    expect(richGlitterLights(false)).toContain('vec3 up = viewMatrix[ 1 ].xyz;');
+    // The water's sun takes its lobe lit once per pixel; a sheet lights it per light about its own normal.
+    expect(richGlitterLights(false)).toContain('float lobe = waterGlitterSun;');
+    expect(richGlitterLights(false)).toContain('#define WATER_SUN_GLITTER');
     expect(richGlitterLights(true)).toContain('vec3 up = geometryNormal;');
+    expect(richGlitterLights(true)).not.toContain('WATER_SUN_GLITTER');
+    expect(RICH_SUN_GLITTER).toContain('waterGlitterSun = faceDirection > 0.0 && waterN.y > 0.02');
+    expect(RICH_SUN_GLITTER).toContain(chopCovarianceGlsl('glitterDistance'));
+    expect(RICH_GLITTER_RIPPLES).toContain('waterGlitterRipple = waterRippleCov.xy;');
+  });
+
+  it('lights the sun\'s lobe once per pixel with the same maths as the per-light lobe, in the world\'s frame', () => {
+    let seed = 7;
+    const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    let compared = 0;
+    for (let k = 0; k < 400; k += 1) {
+      const n = normalOf(0.8 * (random() - 0.5), 0.8 * (random() - 0.5));
+      const v = unit([random() - 0.5, 0.05 + random(), random() - 0.5]);
+      const l = unit([random() - 0.5, 0.02 + random(), random() - 0.5]);
+      const xx = 0.002 + 0.03 * random();
+      const zz = 0.002 + 0.03 * random();
+      const covariance: Covariance = [xx, zz, 0.9 * (2 * random() - 1) * Math.sqrt(xx * zz)];
+      const mean: [number, number] = [-n[0] / n[1], -n[2] / n[1]];
+      const expected = glitter(l, v, n, UP, X, Z, mean, covariance);
+      const got = sunGlitter(l, v, n, covariance);
+      expect(got).toBeCloseTo(expected, 6);
+      if (expected > 1e-3) {
+        expect(got / expected).toBeCloseTo(1, 6);
+        compared += 1;
+      }
+    }
+    expect(compared).toBeGreaterThan(20);
+    // Below the water, or with the sun behind the face, nothing.
+    expect(sunGlitter([0, 1, 0], [0, -1, 0], UP, [0.01, 0.01, 0])).toBe(0);
+    expect(sunGlitter([0, -0.2, 1], [0, 1, 0], UP, [0.01, 0.01, 0])).toBe(0);
+  });
+
+  it('runs with the rich sea, compiles again when its mode changes, and leaves three\'s lighting where it is off', () => {
+    const was = { ...glitterMode };
+    let told = 0;
+    const stop = onGlitterChange(() => { told += 1; });
+    try {
+      setGlitterForGraphics(true);
+      const on = glitterProgramKey();
+      setGlitterForGraphics(true);
+      expect(told).toBe(0);
+      setGlitterForGraphics(false);
+      expect(told).toBe(1);
+      expect(glitterProgramKey()).not.toBe(on);
+      expect(richGlitterLights(false)).toBe('#include <lights_physical_pars_fragment>');
+      expect(richGlitterLights(true)).toBe('#include <lights_physical_pars_fragment>');
+      setGlitter({ on: true, screen: false });
+      expect(told).toBe(2);
+      expect(richGlitterLights(false)).not.toContain('WATER_GLITTER_SCREEN');
+      expect(richGlitterLights(false)).toContain('WATER_GLITTER_RIPPLES');
+    } finally {
+      stop();
+      setGlitter(was);
+    }
+  });
+
+  it('takes the chop\'s spread by distance: none drawn near, the whole patch\'s far off', () => {
+    const whole = analyticChopCovariance();
+    // Six waves of k·a = 2π·0.012, each (ka)²/2 along its direction (the table's directions are unit to 3 digits).
+    expect(whole[0] + whole[1]).toBeCloseTo(6 * 0.5 * (2 * Math.PI * 0.012) ** 2, 4);
+    expect(whole[0] * whole[1] - whole[2] * whole[2]).toBeGreaterThan(0);
+    expect(chopCovariance(0, 0.25, whole)).toEqual([0, 0, 0]);
+    const far = chopCovariance(2000, 0.25, whole);
+    far.forEach((value, i) => expect(value).toBeCloseTo(0.0625 * whole[i], 12));
+    const near = chopCovariance(40, 0.25, whole);
+    expect(near[0]).toBeCloseTo(0.0625 * (1 - Math.exp(-1)) * whole[0], 12);
+    expect(chopCovarianceGlsl('d')).toContain('( 1.0 - exp( -d / 40.0 ) )');
+    expect(chopCovarianceGlsl('d')).toContain(whole[0].toExponential(6));
+    // With the glitter off (Medium), the chop's plain slope, as before the glitter.
+    expect(RICH_CHOP_STATS).toContain('#ifdef WATER_GLITTER');
+    expect(RICH_CHOP_STATS).toContain('waterChopStats( vWaterWorld.xz, waterTime, vec2( 0.0 ), vec2( 0.0 ), waterChopMean, waterChopSpread );');
+    expect(RICH_CHOP_STATS).not.toContain('waterChopSlope');
   });
 });
