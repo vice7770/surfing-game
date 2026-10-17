@@ -50,16 +50,18 @@ export const DEFAULT_WATER_CHOP = 0.25;
  * The FFT chop's slope map, patch size and switch, shared by every water shader
  * (the same uniform objects in each material), so one FftChop render updates all.
  */
-/** One placeholder for every chop sampler until a transform runs (a texture's id draws on Math.random). */
+/** The Classic map's placeholder until a transform runs. */
 const placeholder = new DataTexture(new Float32Array(4), 1, 1, RGBAFormat, FloatType) as Texture;
 
 export const chopFieldUniforms = {
   waterChopMap: { value: placeholder },
   waterChopPatch: { value: 64 },
   waterChopFft: { value: 0 },
-  /** Rich's cascades (item 4): the fine patch's moments, both patches' cross moments, the two patches, m, and the switch. */
-  waterChopFineMap: { value: placeholder },
-  waterChopCrossMap: { value: placeholder },
+  /**
+   * Rich's cascades (item 4): their moments as one texture array (layers coarse, fine and cross; three binds its
+   * empty array until a transform runs), the two patches, m, and the switch.
+   */
+  waterChopMoments: { value: null as Texture | null },
   waterChopPatches: { value: new Vector2(64, 12.25) },
   waterChopCascades: { value: 0 },
   /** Each cascade's whole-patch slope covariance (xx, zz, xz) at unit strength: its statistics past its last mip level. */
@@ -73,17 +75,16 @@ export const CHOP_MOMENT_LEVELS = 4;
 const CHOP_TEXELS = 256;
 
 /**
- * Rich's fine cascade (item 4) for shaders that read the chop's slope only (the caustics): its slopes, which
- * `waterChopSlope` (the coarse patch's in Rich) leaves out; nothing without the cascades, so Classic is as it was.
- * Needs `waterChopPars`.
+ * Rich's cascades (item 4) for shaders that read the chop's slope only (the caustics): both cascades' slopes at level
+ * 0, from the moment array. Needs `waterChopPars`; its caller takes `waterChopSlope` where `waterChopCascades` is off.
  */
-export const waterChopFinePars = /* glsl */ `
-uniform sampler2D waterChopFineMap;
-uniform sampler2D waterChopCrossMap;
+export const waterChopCascadePars = /* glsl */ `
+uniform highp sampler2DArray waterChopMoments;
 uniform vec2 waterChopPatches;
 uniform float waterChopCascades;
-vec2 waterChopFineSlope( vec2 p ) {
-  return waterChopCascades > 0.5 ? texture2D( waterChopFineMap, p / waterChopPatches.y ).xy : vec2( 0.0 );
+vec2 waterChopCascadeSlope( vec2 p ) {
+  return textureLod( waterChopMoments, vec3( p / waterChopPatches.x, 0.0 ), 0.0 ).xy
+    + textureLod( waterChopMoments, vec3( p / waterChopPatches.y, 1.0 ), 0.0 ).xy;
 }
 `;
 
@@ -95,21 +96,21 @@ vec2 waterChopFineSlope( vec2 p ) {
  * Needs `waterChopPars`.
  */
 export const waterChopMomentPars = /* glsl */ `
-${waterChopFinePars}
+${waterChopCascadePars}
 uniform vec3 waterChopCoarseCov;
 uniform vec3 waterChopFineCov;
 // One cascade's mean slope and second moments (xx, zz, xz) over the footprint: its mip levels while the footprint is
 // within them, the whole patch's (mean nil) past them. Explicit gradients, so a fragment may skip the maps.
-void waterChopCascade( sampler2D map, float crossChannel, float side, vec3 whole, vec2 p, vec2 dpdx, vec2 dpdy, inout vec2 mean, inout vec3 second ) {
+void waterChopCascade( float layer, float side, vec3 whole, vec2 p, vec2 dpdx, vec2 dpdy, inout vec2 mean, inout vec3 second ) {
   float level = log2( max( max( length( dpdx ), length( dpdy ) ) * ${CHOP_TEXELS}.0 / side, 1e-6 ) );
   float far = smoothstep( ${CHOP_MOMENT_LEVELS}.0 - 0.5, ${CHOP_MOMENT_LEVELS}.0 + 0.5, level );
   second += far * whole;
   if ( far >= 1.0 ) return;
   vec2 uv = p / side;
-  vec4 moments = textureGrad( map, uv, dpdx / side, dpdy / side );
-  vec2 crossed = textureGrad( waterChopCrossMap, uv, dpdx / side, dpdy / side ).xy;
+  vec4 moments = textureGrad( waterChopMoments, vec3( uv, layer ), dpdx / side, dpdy / side );
+  vec2 crossed = textureGrad( waterChopMoments, vec3( uv, 2.0 ), dpdx / side, dpdy / side ).xy;
   mean += ( 1.0 - far ) * moments.xy;
-  second += ( 1.0 - far ) * vec3( moments.zw, crossChannel > 0.5 ? crossed.y : crossed.x );
+  second += ( 1.0 - far ) * vec3( moments.zw, layer > 0.5 ? crossed.y : crossed.x );
 }
 void waterChopStats( vec2 p, float t, vec2 dpdx, vec2 dpdy, out vec2 mean, out vec3 cov ) {
   if ( waterChopCascades > 0.5 ) {
@@ -117,8 +118,8 @@ void waterChopStats( vec2 p, float t, vec2 dpdx, vec2 dpdy, out vec2 mean, out v
     vec3 coarseSecond = vec3( 0.0 );
     vec2 fineMean = vec2( 0.0 );
     vec3 fineSecond = vec3( 0.0 );
-    waterChopCascade( waterChopMap, 0.0, waterChopPatches.x, waterChopCoarseCov, p, dpdx, dpdy, coarseMean, coarseSecond );
-    waterChopCascade( waterChopFineMap, 1.0, waterChopPatches.y, waterChopFineCov, p, dpdx, dpdy, fineMean, fineSecond );
+    waterChopCascade( 0.0, waterChopPatches.x, waterChopCoarseCov, p, dpdx, dpdy, coarseMean, coarseSecond );
+    waterChopCascade( 1.0, waterChopPatches.y, waterChopFineCov, p, dpdx, dpdy, fineMean, fineSecond );
     mean = coarseMean + fineMean;
     // Each cascade's covariance, E[s sᵀ] − E[s] E[s]ᵀ (independent cascades add).
     cov = coarseSecond - vec3( coarseMean * coarseMean, coarseMean.x * coarseMean.y )

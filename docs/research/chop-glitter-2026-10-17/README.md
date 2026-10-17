@@ -30,8 +30,9 @@ frequencies are exact. The second field in each texel is left empty.
 - Frequencies are rounded to a 600 s loop, and the clock wraps on that loop, so phases never lose float precision and
   nothing pops.
 
-**Slope moments.** The last pass writes three textures for each cascade: (sx, sz, sx², sz²) and the cross term sx·sz.
-They are immutable RGBA16F/RG16F textures with mip levels 0–4.
+**Slope moments.** The last pass writes each cascade's (sx, sz, sx², sz²) and both cascades' cross term sx·sz into
+the three layers of one immutable RGBA16F texture array, with mip levels 0–4. One array means one sampler: see
+"Texture units" below.
 
 - **Mip levels.** Four raw-GL box-filter passes draw levels 1–4. On the M1, `glGenerateMipmap` on three textures cost
   0.7–1.3 ms, against about 0.2 ms for these passes.
@@ -53,7 +54,7 @@ waves, each filtered by the pixel's footprint.
 | --- | --- | --- |
 | Before (both looks) | 17 (1 spectrum + 16 radix-2) | 3.5 MiB: ping and pong RGBA32F (2), slope map RGBA16F (0.5), h̃0 RGBA32F (1) |
 | After, Classic | 8 | 3.5 MiB, the same targets |
-| After, Rich | 8 + 4 mip levels | about 5.7 MiB: ping and pong (2), h̃0 for both patches 256×512 RGBA32F (2), moments 2 × 0.67 + 0.33 with levels |
+| After, Rich | 8 + 4 mip levels | about 6.0 MiB: ping and pong (2), h̃0 for both patches 256×512 RGBA32F (2), the moment array, 3 layers with levels (2.0) |
 
 The cache holds a sea for repeated display frames. It is keyed by renderer, spectrum (wind, seed and look) and sea
 time. A change of look rebuilds the spectrum, and the tests cover that, along with the allocation order: the
@@ -71,6 +72,33 @@ The page also compares the GPU against the TypeScript reference:
 
 - **Classic:** largest error 2.4e-4, 0.19 % of the rms, the same as before. This is half-float rounding.
 - **Rich, every moment level 0–4:** 3.4e-4 in slope (0.37 %), 9e-5 in squares and 3e-5 in sx·sz.
+
+### Texture units (follow-up, 2026-10-17)
+
+The merged playtest build showed the Canyon's Rich water asking for 17 texture units, and its edge band for 18, of
+the M1's 16; the program would not run. The moments first went to three textures, two more samplers than the one
+Classic map. They now share one `sampler2DArray`, so the Rich programs take no more units than before this branch.
+In Rich the Classic map is not drawn: `waterChopSlope` falls back to the analytic waves for any Classic program, and
+the caustics read the array.
+
+`src/scene/textureUnits.test.ts` builds every water program variant: the tank and its edge band in both looks, with
+the plain, cubic, tube and roller sources, the curl's seam and the vertex-normal path. It also builds the far ocean
+(with and without the rim), the tube, the Rich lip and the caustics. It counts the samplers each program's `main`
+reaches in either stage. Three's own `envMap`, `dfgLUT` and the sun's shadow map sit in chunks left as `#include`, so
+they are counted by rule: 3 for each physical material. On the code before this fix the test matches the playtest's
+count (Canyon tank 17, edge band 18).
+
+| Program | Before the fix | After |
+| --- | --- | --- |
+| Rich tank, Canyon (roller) | 17 | 15 |
+| Rich edge band, Canyon | 18 | 16 |
+| Rich tank, Padang Padang (curl seam) | 17 | 15 |
+| Rich edge band, Padang Padang | 18 | 16 |
+| Rich far ocean | 10 | 8 |
+| Rich tube | 13 | 11 |
+| Every Classic program | unchanged, 7–12 | unchanged |
+
+The edge bands sit exactly at 16, as they did before this branch.
 
 ## Item 5: the glitter (Rich only)
 
@@ -135,7 +163,7 @@ Medium, which never runs the FFT chop: `richSea` is off there.
 - The fine cascade's patch (12.25 m), the split (2 m) and the unresolved term were chosen by eye on two spots. The
   owner should playtest them.
 - The ripple map stores no cross moment, so its covariance is diagonal.
-- The Classic interface (`waterChopSlope`) reads only the coarse cascade in Rich. A Classic-drawn surface inside a
-  Rich session (a bilinear source) would therefore lose the fine chop.
+- In Rich the Classic map is not drawn, so a Classic-drawn surface inside a Rich session (a bilinear source) shows
+  the analytic waves instead of the FFT chop.
 - `FftChop` draws the moments' mip levels in raw WebGL2 and resets three's state afterwards. Without WebGL2, Rich
   falls back to the analytic chop.

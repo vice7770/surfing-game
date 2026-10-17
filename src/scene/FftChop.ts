@@ -94,8 +94,9 @@ void main() {
 `;
 
 /**
- * Rich's last pass (GLSL3, three targets): each cascade's slopes and second moments, (sx, sz, sx², sz²), and both
- * cascades' cross moments sx·sz, for the mip levels to box-filter into each footprint's mean and covariance.
+ * Rich's last pass (GLSL3, three targets: the moment array's three layers): each cascade's slopes and second moments,
+ * (sx, sz, sx², sz²), and both cascades' cross moments sx·sz, for the mip levels to box-filter into each footprint's
+ * mean and covariance.
  */
 const momentShader = (radix: number) => /* glsl */ `
 ${passPars}
@@ -114,8 +115,8 @@ void main() {
 `;
 
 /**
- * A mip level of all three moment maps from the level above (box filter), the level above being each map's base
- * level while it is drawn: raw WebGL2, as three cannot draw into a level of a multiple-target texture.
+ * A mip level of the moment array's three layers from the level above (box filter), the level above being the
+ * array's base level while it is drawn: raw WebGL2, as three cannot draw into a level of a texture array's layers.
  */
 const mipVertex = `#version 300 es
 void main() {
@@ -124,21 +125,19 @@ void main() {
 }`;
 const mipFragment = `#version 300 es
 precision highp float;
-precision highp sampler2D;
-uniform sampler2D coarseLevel;
-uniform sampler2D fineLevel;
-uniform sampler2D crossLevel;
+precision highp sampler2DArray;
+uniform sampler2DArray above;
 layout( location = 0 ) out vec4 coarseMoments;
 layout( location = 1 ) out vec4 fineMoments;
 layout( location = 2 ) out vec4 crossMoments;
-vec4 box( sampler2D level ) {
-  ivec2 p = ivec2( gl_FragCoord.xy ) * 2;
-  return 0.25 * ( texelFetch( level, p, 0 ) + texelFetch( level, p + ivec2( 1, 0 ), 0 ) + texelFetch( level, p + ivec2( 0, 1 ), 0 ) + texelFetch( level, p + ivec2( 1, 1 ), 0 ) );
+vec4 box( int layer ) {
+  ivec3 p = ivec3( ivec2( gl_FragCoord.xy ) * 2, layer );
+  return 0.25 * ( texelFetch( above, p, 0 ) + texelFetch( above, p + ivec3( 1, 0, 0 ), 0 ) + texelFetch( above, p + ivec3( 0, 1, 0 ), 0 ) + texelFetch( above, p + ivec3( 1, 1, 0 ), 0 ) );
 }
 void main() {
-  coarseMoments = box( coarseLevel );
-  fineMoments = box( fineLevel );
-  crossMoments = box( crossLevel );
+  coarseMoments = box( 0 );
+  fineMoments = box( 1 );
+  crossMoments = box( 2 );
 }`;
 
 /** Every pass shader's fragment source at a radix (for checks of the GLSL itself). */
@@ -147,20 +146,25 @@ export function chopPassShaders(radix = 4): { first: string; butterfly: string; 
 }
 
 /**
- * Rich's moment maps, the chop's own (raw WebGL2, for one context): immutable textures with storage for mip levels 0
- * to CHOP_MOMENT_LEVELS (glGenerateMipmap on three of them costs more on the M1 than drawing the levels, and three's
- * textures cannot be immutable), a framebuffer per level, the target three draws level 0 through, the maps as the
- * water shaders sample them, and the mip passes' program.
+ * Rich's moments, the chop's own (raw WebGL2, for one context): one immutable RGBA16F texture array of three layers,
+ * coarse, fine and cross (one sampler, so the Rich water takes no more texture units than with the one Classic map:
+ * the playtest of 2026-10-17 found the Canyon's at 17 of the M1's 16), with storage for mip levels 0 to
+ * CHOP_MOMENT_LEVELS (glGenerateMipmap costs more on the M1 than drawing the levels, and three's textures cannot be
+ * immutable); a framebuffer per level with the three layers attached; the target three draws level 0 through; the
+ * array as the water shaders sample it; and the mip passes' program.
  */
 interface MomentMaps {
   gl: WebGL2RenderingContext;
-  textures: WebGLTexture[];
+  texture: WebGLTexture;
   framebuffers: WebGLFramebuffer[];
   target: WebGLRenderTarget;
-  maps: ExternalTexture[];
+  map: ExternalTexture;
   program: WebGLProgram;
   vertexArray: WebGLVertexArrayObject;
 }
+
+/** The moment array's layers: each cascade's (sx, sz, sx², sz²), and (sx·sz coarse, sx·sz fine). */
+export const CHOP_MOMENT_LAYERS = 3;
 
 /** The chop's sea: which look it is drawn for, and its wind and seed. */
 interface Sea { wind: number; seed: number; look: WaterLook }
@@ -175,7 +179,8 @@ interface Sea { wind: number; seed: number; look: WaterLook }
  * Classic draws one 64 m patch of waves 0.5–6 m, the same sea as before (`chopSpectrum`, exact ω, the second field
  * empty). Rich draws the same wind sea as two cascades in the one transform, a 64 m patch of the waves longer than
  * about 2 m and a 12.25 m patch of the shorter (`chopCascades`), their frequencies on a 600 s loop, and writes each
- * cascade's slope moments, with mip levels to CHOP_MOMENT_LEVELS (`waterChopStats`): the glitter's covariance.
+ * cascade's slope moments into one texture array, with mip levels to CHOP_MOMENT_LEVELS (`waterChopStats`): the
+ * glitter's covariance.
  */
 export class FftChop {
   private readonly scene = new Scene();
@@ -188,7 +193,7 @@ export class FftChop {
   /** The Classic slope map: (sx, sz) per texel, repeating every patch. */
   readonly output: WebGLRenderTarget;
   readonly radix: number;
-  /** Rich's moments (made on its first use): coarse (sx, sz, sx², sz²), fine the same, and (sx·sz coarse, fine), with mip levels. */
+  /** Rich's moment array (made on its first use): coarse (sx, sz, sx², sz²), fine the same, and (sx·sz coarse, fine), with mip levels. */
   private moments?: MomentMaps;
   private momentMaterial?: ShaderMaterial;
   private spectrum?: DataTexture;
@@ -308,22 +313,21 @@ export class FftChop {
     if (this.moments?.gl === gl) return this.moments;
     if (!(typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext)) return undefined;
     const levels = CHOP_MOMENT_LEVELS + 1;
-    const textures = [gl.RGBA16F, gl.RGBA16F, gl.RG16F].map((format) => {
-      const texture = gl.createTexture()!;
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texStorage2D(gl.TEXTURE_2D, levels, format, this.size, this.size);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      return texture;
-    });
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    const texture = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGBA16F, this.size, this.size, CHOP_MOMENT_LAYERS);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
     const framebuffers: WebGLFramebuffer[] = [];
     for (let level = 0; level < levels; level += 1) {
       const framebuffer = gl.createFramebuffer()!;
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-      textures.forEach((texture, i) => gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, texture, level));
+      for (let layer = 0; layer < CHOP_MOMENT_LAYERS; layer += 1) {
+        gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + layer, texture, level, layer);
+      }
       gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
       framebuffers.push(framebuffer);
     }
@@ -340,28 +344,28 @@ export class FftChop {
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(`FftChop mip pass: ${gl.getProgramInfoLog(program)}`);
     gl.useProgram(program);
-    ['coarseLevel', 'fineLevel', 'crossLevel'].forEach((name, unit) => gl.uniform1i(gl.getUniformLocation(program, name), unit));
+    gl.uniform1i(gl.getUniformLocation(program, 'above'), 0);
     gl.useProgram(null);
     renderer.resetState();
-    // three draws the last pass into level 0 through the chop's framebuffer, and samples the maps as they are.
-    const target = new WebGLRenderTarget(this.size, this.size, { depthBuffer: false, count: 3 });
+    // three draws the last pass into level 0 through the chop's framebuffer, and samples the array as it is.
+    const target = new WebGLRenderTarget(this.size, this.size, { depthBuffer: false, count: CHOP_MOMENT_LAYERS });
     (renderer as unknown as { setRenderTargetFramebuffer(target: WebGLRenderTarget, framebuffer: WebGLFramebuffer): void })
       .setRenderTargetFramebuffer(target, framebuffers[0]);
-    const maps = textures.map((texture) => new ExternalTexture(texture));
+    const map = new ExternalTexture(texture);
     this.momentMaterial ??= new ShaderMaterial({
       uniforms: { field: { value: null }, size: { value: this.size }, span: { value: 1 }, alongRows: { value: 0 } },
       vertexShader, fragmentShader: momentShader(this.radix), glslVersion: GLSL3, depthTest: false, depthWrite: false,
     });
-    this.moments = { gl, textures, framebuffers, target, maps, program, vertexArray: gl.createVertexArray()! };
+    this.moments = { gl, texture, framebuffers, target, map, program, vertexArray: gl.createVertexArray()! };
     return this.moments;
   }
 
   /**
    * The moments' mip levels 1 to CHOP_MOMENT_LEVELS, each the box filter of the one above, in one raw-GL pass per
-   * level writing all three maps. Returns the passes drawn.
+   * level writing all three layers. Returns the passes drawn.
    */
   private drawMips(renderer: WebGLRenderer, moments: MomentMaps): number {
-    const { gl, textures, framebuffers, program, vertexArray } = moments;
+    const { gl, texture, framebuffers, program, vertexArray } = moments;
     gl.disable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
@@ -370,50 +374,45 @@ export class FftChop {
     gl.colorMask(true, true, true, true);
     gl.useProgram(program);
     gl.bindVertexArray(vertexArray);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
     for (let level = 1; level <= CHOP_MOMENT_LEVELS; level += 1) {
-      textures.forEach((texture, unit) => {
-        gl.activeTexture(gl.TEXTURE0 + unit);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        // Sample only the level above, so the level drawn, attached, is no feedback loop.
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_BASE_LEVEL, level - 1);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAX_LEVEL, level - 1);
-      });
+      // Sample only the level above, so the level drawn, attached, is no feedback loop.
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_BASE_LEVEL, level - 1);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAX_LEVEL, level - 1);
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[level]);
       gl.viewport(0, 0, this.size >> level, this.size >> level);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
-    textures.forEach((texture, unit) => {
-      gl.activeTexture(gl.TEXTURE0 + unit);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_BASE_LEVEL, 0);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAX_LEVEL, CHOP_MOMENT_LEVELS);
-    });
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_BASE_LEVEL, 0);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAX_LEVEL, CHOP_MOMENT_LEVELS);
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
     gl.bindVertexArray(null);
     // three's cached state no longer holds: it sets what it needs again.
     renderer.resetState();
     return CHOP_MOMENT_LEVELS;
   }
 
-  /** Rich's moments as the water shaders sample them: coarse, fine and cross, once a Rich transform has run. */
-  get momentTextures(): readonly Texture[] | undefined {
-    return this.moments?.maps;
+  /** Rich's moment array as the water shaders sample it (layers coarse, fine and cross), once a Rich transform has run. */
+  get momentTexture(): Texture | undefined {
+    return this.moments?.map;
   }
 
-  /** Rich's moments as WebGL textures (the GPU check reads their levels back). */
-  get momentGlTextures(): readonly WebGLTexture[] | undefined {
-    return this.moments?.textures;
+  /** Rich's moment array as a WebGL texture (the GPU check reads its levels back). */
+  get momentGlTexture(): WebGLTexture | undefined {
+    return this.moments?.texture;
   }
 
   private useOutput(): void {
     const rich = this.look === 'rich' && this.moments;
-    // The Classic interface (`waterChopSlope`, the caustics) reads xy of the coarse moments in Rich.
-    chopFieldUniforms.waterChopMap.value = rich ? this.moments!.maps[0] : this.output.texture;
+    // In Rich the Classic map is not drawn: the Classic interface (`waterChopSlope`) keeps the analytic waves for any
+    // Classic program still drawn, and the Rich ones and the caustics read the moment array.
+    chopFieldUniforms.waterChopMap.value = this.output.texture;
     chopFieldUniforms.waterChopPatch.value = this.patch;
-    chopFieldUniforms.waterChopFft.value = 1;
+    chopFieldUniforms.waterChopFft.value = rich ? 0 : 1;
     chopFieldUniforms.waterChopCascades.value = rich ? 1 : 0;
     if (rich) {
-      chopFieldUniforms.waterChopFineMap.value = this.moments!.maps[1];
-      chopFieldUniforms.waterChopCrossMap.value = this.moments!.maps[2];
+      chopFieldUniforms.waterChopMoments.value = this.moments!.map;
       chopFieldUniforms.waterChopPatches.value.set(this.patch, FINE_CHOP_PATCH);
     }
   }
@@ -435,13 +434,13 @@ export class FftChop {
     this.momentMaterial?.dispose();
     this.quad.geometry.dispose();
     if (this.moments) {
-      const { gl, textures, framebuffers, target, maps, program, vertexArray } = this.moments;
-      for (const texture of textures) gl.deleteTexture(texture);
+      const { gl, texture, framebuffers, target, map, program, vertexArray } = this.moments;
+      gl.deleteTexture(texture);
       for (const framebuffer of framebuffers) gl.deleteFramebuffer(framebuffer);
       gl.deleteProgram(program);
       gl.deleteVertexArray(vertexArray);
       target.dispose();
-      for (const map of maps) map.dispose();
+      map.dispose();
       this.moments = undefined;
     }
   }
