@@ -102,6 +102,33 @@ describe('water optics', () => {
     expect(crestThickness(ridge, back, towardSun)).toBe(OPAQUE);
   });
 
+  it('marches from the surface it marches, so a drawn surface a millimetre off it finds no crest in a trough (the pale stripes)', () => {
+    // A trough's floor falling gently toward the sun, 3 mm per metre; the drawn surface (here the Catmull-Rom over
+    // the bilinear field) sits a millimetre under the bilinear one the march reads.
+    const floor = (x: number) => -0.42 - 0.003 * x;
+    const towardSun = { x: 1, y: 0, z: 0 };
+    const drawn = { x: 0, y: floor(0) - 0.001, z: 0 };
+    // From 1 mm under, the old march found water at 0.25 m and none at 1 m: a 0.33 m "crest" lit at e^(−2.2 · 0.33).
+    let previous = 0;
+    let previousGap = 0;
+    let old = OPAQUE;
+    for (const distance of [0.25, 1, 2.5, 6]) {
+      const gap = floor(distance) - drawn.y;
+      if (gap <= 0) {
+        old = previousGap > 0 ? previous + ((distance - previous) * previousGap) / (previousGap - gap) : OPAQUE;
+        break;
+      }
+      [previous, previousGap] = [distance, gap];
+    }
+    expect(old).toBeCloseTo(1 / 3, 2);
+    expect(crestThickness((x) => floor(x), drawn, towardSun)).toBe(OPAQUE);
+    // A real crest still lights the same from on its surface, and from a drawn point just off it.
+    const ridge = (_x: number, z: number) => 1.5 * Math.exp(-((z / 0.8) ** 2));
+    const z = -0.8 * Math.sqrt(Math.log(1.5 / 1.3));
+    const onSurface = crestThickness(ridge, { x: 0, y: 1.3, z }, { x: 0, y: 0, z: 1 });
+    expect(crestThickness(ridge, { x: 0, y: 1.3 - 0.001, z }, { x: 0, y: 0, z: 1 })).toBe(onSurface);
+  });
+
   it('feeds the shader uniforms from the same model', () => {
     const uniforms = createOpticsUniforms();
     applyOptics(uniforms, SPOT_OPTICS.reef);
