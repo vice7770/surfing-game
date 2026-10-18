@@ -22,6 +22,42 @@ export function roofHeight(profile: Float32Array, x: number): number {
   return y;
 }
 
+/**
+ * `roofHeight` for one polygon at many x (the M1 CPU study, 2026-10-19): its facets are checked once, as `roofHeight`
+ * checks them on every call, and each x then reads only the facets that hold it. With the breakpoints in order, those
+ * are one run, found by bisection; the same facets give the same largest height. A polygon with a NaN breakpoint keeps
+ * `roofHeight`'s scan of every facet, as does a NaN x.
+ */
+function roofReader(profile: Float32Array): (x: number) => number {
+  let ordered = true;
+  for (let i = 32; i < 60; i += 1) {
+    const a = profile[2 * i], b = profile[2 * (i + 1)];
+    if (b < a) throw new Error('shared upper-root backward roof domain');
+    if (!(a <= b)) ordered = false;
+  }
+  if (!ordered) return (x) => roofHeight(profile, x);
+  return (x) => {
+    if (x !== x) return roofHeight(profile, x);
+    // The first facet whose end reaches x; the facets from there that start at or before x hold it.
+    let low = 32;
+    let high = 60;
+    while (low < high) {
+      const middle = (low + high) >> 1;
+      if (profile[2 * (middle + 1)] >= x) high = middle;
+      else low = middle + 1;
+    }
+    let y = -Infinity;
+    for (let i = low; i < 60; i += 1) {
+      const a = profile[2 * i], b = profile[2 * (i + 1)];
+      if (x < a) break;
+      const ay = profile[2 * i + 1], by = profile[2 * (i + 1) + 1];
+      y = Math.max(y, a === b ? Math.max(ay, by) : ay + (by - ay) * ((x - a) / (b - a)));
+    }
+    if (!Number.isFinite(y)) throw new Error('shared upper-root missing roof crossing');
+    return y;
+  };
+}
+
 /** Exact vertical graph difference on the overlapping domain, at the union of both polygons' breakpoints. */
 export function roofEnvelopeDifference(a: Float32Array, b: Float32Array): number {
   const left = Math.max(a[64], b[64]), right = Math.min(a[120], b[120]);
@@ -29,7 +65,14 @@ export function roofEnvelopeDifference(a: Float32Array, b: Float32Array): number
   let maximum = 0;
   const xs = [left, right];
   for (const p of [a, b]) for (let i = 32; i <= 60; i += 1) if (p[2 * i] >= left && p[2 * i] <= right) xs.push(p[2 * i]);
-  for (const x of xs) maximum = Math.max(maximum, Math.abs(roofHeight(a, x) - roofHeight(b, x)));
+  // Checked in the order `roofHeight` would meet them: a's at the first x, then b's.
+  const heightA = roofReader(a);
+  let heightB: ((x: number) => number) | undefined;
+  for (const x of xs) {
+    const ya = heightA(x);
+    heightB ??= roofReader(b);
+    maximum = Math.max(maximum, Math.abs(ya - heightB(x)));
+  }
   return maximum;
 }
 
@@ -45,10 +88,12 @@ export function pairInnerSheet(profile: Float32Array, _meta: BoundedCMetadata): 
   for (let i = 68; i < 88; i += 1) {
     if (original[2 * i] < original[2 * (i + 1)]) throw new Error('shared upper-root backward return domain');
   }
+  let height: ((x: number) => number) | undefined;
   const sample = (i: number, x: number) => {
     // Match the stored return X exactly before any later metric/world transform.
     profile[2 * i] = x;
-    profile[2 * i + 1] = roofHeight(original, profile[2 * i]);
+    height ??= roofReader(original);
+    profile[2 * i + 1] = height(profile[2 * i]);
   };
   for (let i = 33; i < 38; i += 1) sample(i, a + (left - a) * ((i - 32) / 6));
   let coalescedStations = 0;

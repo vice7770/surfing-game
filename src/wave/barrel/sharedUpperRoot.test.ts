@@ -93,6 +93,46 @@ describe('shared inner-sheet sampling', () => {
     expect(() => roofHeight(a, 14)).toThrow('backward roof domain');
   });
 
+  it('measures the same roof difference as reading each x through roofHeight, on ordered, vertical, NaN and backward roofs', () => {
+    /** The difference as it was measured, every x through `roofHeight` (before the M1 CPU study, 2026-10-19). */
+    const scanned = (a: Float32Array, b: Float32Array) => {
+      const left = Math.max(a[64], b[64]), right = Math.min(a[120], b[120]);
+      if (left > right) throw new Error('roof envelope lacks common domain');
+      let maximum = 0;
+      const xs = [left, right];
+      for (const p of [a, b]) for (let i = 32; i <= 60; i += 1) if (p[2 * i] >= left && p[2 * i] <= right) xs.push(p[2 * i]);
+      for (const x of xs) maximum = Math.max(maximum, Math.abs(roofHeight(a, x) - roofHeight(b, x)));
+      return maximum;
+    };
+    const outcome = (measure: () => number) => {
+      try { return measure(); } catch (error) { return (error as Error).message; }
+    };
+    let seed = 5;
+    const random = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    const roof = () => {
+      const p = new Float32Array(256);
+      let x = -2 + 4 * random();
+      for (let i = 32; i <= 60; i += 1) {
+        p[2 * i] = x;
+        p[2 * i + 1] = 10 * random();
+        // Vertical facets (repeated x) about one step in four.
+        if (random() > 0.25) x += 2 * random();
+      }
+      return p;
+    };
+    let measured = 0;
+    for (let n = 0; n < 3000; n += 1) {
+      const a = roof(), b = roof();
+      if (n % 50 === 7) a[2 * (32 + (n % 28))] = Number.NaN;
+      if (n % 50 === 9) b[2 * 45] = b[2 * 44] - 1;
+      if (n % 50 === 11) a.set(b);
+      const expected = outcome(() => scanned(a, b)), actual = outcome(() => roofEnvelopeDifference(a, b));
+      if (typeof expected === 'number') measured += 1;
+      expect(Object.is(actual, expected) || actual === expected).toBe(true);
+    }
+    expect(measured).toBeGreaterThan(1000);
+  });
+
   it('shares actual paired triangle footprints and deferred projected datum across straight/curved adjacent-age rows', () => {
     let pairedCells = 0;
     for (const c of cases) {
