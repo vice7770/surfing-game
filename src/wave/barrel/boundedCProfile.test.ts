@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, sampleBoundedC, type BoundedCParameters } from './boundedCProfile';
+import { arcBound, boundedCParameters, blendBoundedCParameters, boundedCLifecycle, sampleBoundedC, type BoundedCParameters, type Vec2 } from './boundedCProfile';
 import { decodeCase } from './profileFormat';
 import { readBarrelCases } from './nodeBarrelCases';
 import { libraryFromBytes } from './barrelLibrary';
@@ -119,5 +119,46 @@ describe('parameter-first shared library authority',()=>{
   for(const c of cases){const bound=library.crestReachBounds(c.slope),q={slope:c.slope,footHeight:c.nonlinearity*7,footDepth:7},times=library.profileTimes(q),out=new Float32Array(256);
    for(const age of [-.1,0,.1,.4,.8,1,1.15,1.5,1.9]){const lookup=library.profileAt({...q,seconds:age*c.touchdown*Math.sqrt(7/GRAVITY)},out);for(let i=0;i<128;i++){const x=(out[2*i]-out[64])/lookup.scale;expect(x).toBeGreaterThanOrEqual(bound[0]-1e-6);expect(x).toBeLessThanOrEqual(bound[1]+1e-6);}expect(times.collapseSeconds).toBeGreaterThan(0);}
   }
+ });
+});
+
+/** The root guard's arc bound as it was written on vectors (before the M1 CPU study, 2026-10-19): the exactness oracle. */
+const vectorArcBound=(()=>{
+ const add=(a:Vec2,b:Vec2):Vec2=>[a[0]+b[0],a[1]+b[1]],sub=(a:Vec2,b:Vec2):Vec2=>[a[0]-b[0],a[1]-b[1]],mul=(a:Vec2,b:number):Vec2=>[a[0]*b,a[1]*b];
+ const dot=(a:Vec2,b:Vec2)=>a[0]*b[0]+a[1]*b[1],cross=(a:Vec2,b:Vec2)=>a[0]*b[1]-a[1]*b[0];
+ function raySegment(O:Vec2,d:Vec2,P:Vec2,Q:Vec2):number{
+  const e=sub(Q,P),den=cross(d,e);if(Math.abs(den)<1e-18)return Infinity;const a=sub(P,O),r=cross(a,e)/den,t=cross(a,d)/den;return r>0&&t>=0&&t<=1?r:Infinity;
+ }
+ function roots(a:number,b:number,c:number):number[]{
+  if(Math.abs(a)<1e-18)return Math.abs(b)>1e-18&&-c/b>0?[-c/b]:[];const disc=b*b-4*a*c;if(disc<0)return [];const d=Math.sqrt(disc);return [(-b-d)/(2*a),(-b+d)/(2*a)].filter(r=>r>0);
+ }
+ function rotate(a:Vec2,t:number):Vec2{return [a[0]*Math.cos(t)-a[1]*Math.sin(t),a[0]*Math.sin(t)+a[1]*Math.cos(t)];}
+ function angleWithin(rad:Vec2,r0:Vec2,span:number):boolean{let a=Math.atan2(cross(r0,rad),dot(r0,rad));if(a<0)a+=2*Math.PI;return a<=span+1e-12||Math.abs(a-2*Math.PI)<1e-12;}
+ return function arcBound(O:Vec2,c:Vec2,r0:Vec2,span:number,P:Vec2,Q:Vec2):number{
+  if(!span)return Infinity;const candidates:number[]=[],e=sub(Q,P),ee=dot(e,e);
+  for(const X of [P,Q]){const x=sub(X,O);for(const R of roots(dot(c,c)-1,-2*dot(c,x),dot(x,x)))if(angleWithin(sub(mul(x,1/R),c),r0,span))candidates.push(R);}
+  if(ee>0){const n=mul([-e[1],e[0]],1/Math.sqrt(ee)),d=dot(n,sub(O,P)),nc=dot(n,c);for(const sign of [-1,1]){const den=nc-sign;if(Math.abs(den)>1e-18){const R=-d/den;if(R>0){const centre=add(O,mul(c,R)),X=sub(centre,mul(n,sign*R)),t=dot(sub(X,P),e)/ee;if(t>=0&&t<=1&&angleWithin(mul(sub(X,centre),1/R),r0,span))candidates.push(R);}}}}
+  for(const rad of [r0,rotate(r0,span)])candidates.push(raySegment(O,add(c,rad),P,Q));return Math.min(Infinity,...candidates);
+ };
+})();
+
+describe('the root guard\'s arc bound',()=>{
+ it('returns the vector form\'s bound bit for bit, over unit and longer centres, every span and degenerate segments',()=>{
+  let seed=11;
+  const random=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648;};
+  const point=():Vec2=>[-3+6*random(),-3+6*random()];
+  let finite=0;
+  for(let n=0;n<200000;n++){
+   const kind=n%4,angle=2*Math.PI*random(),turn=2*Math.PI*random();
+   // Unit centres (the upper turn's), exactly unit ones (its quadratic's lead vanishes) and longer ones (the lower turn's).
+   const c:Vec2=kind===0?[1,0]:kind===1?[Math.cos(angle),Math.sin(angle)]:[Math.cos(angle)+random(),Math.sin(angle)-random()];
+   const r0:Vec2=[Math.cos(turn),Math.sin(turn)];
+   const span=n%17===0?0:n%13===0?2*Math.PI:Math.PI*2*random();
+   const O=point(),P=point(),Q:Vec2=n%19===0?[P[0],P[1]]:n%23===0?[P[0]+1e-10,P[1]]:point();
+   const expected=vectorArcBound(O,c,r0,span,P,Q),actual=arcBound(O,c,r0,span,P,Q);
+   if(Number.isFinite(expected))finite++;
+   if(!Object.is(actual,expected))expect([n,actual]).toEqual([n,expected]);
+  }
+  expect(finite).toBeGreaterThan(50000);
  });
 });

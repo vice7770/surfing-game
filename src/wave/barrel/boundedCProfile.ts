@@ -109,16 +109,53 @@ function arcSample(points:Vec2[],count:number):Vec2[]{
 function raySegment(O:Vec2,d:Vec2,P:Vec2,Q:Vec2):number{
  const e=sub(Q,P),den=cross(d,e);if(Math.abs(den)<1e-18)return Infinity;const a=sub(P,O),r=cross(a,e)/den,t=cross(a,d)/den;return r>0&&t>=0&&t<=1?r:Infinity;
 }
-function roots(a:number,b:number,c:number):number[]{
- if(Math.abs(a)<1e-18)return Math.abs(b)>1e-18&&-c/b>0?[-c/b]:[];const disc=b*b-4*a*c;if(disc<0)return [];const d=Math.sqrt(disc);return [(-b-d)/(2*a),(-b+d)/(2*a)].filter(r=>r>0);
+/** Whether an arc from r0 turning through `span` holds the direction (rad0, rad1): its angle from r0 by atan2, in [0, 2π). */
+function withinSpan(rad0:number,rad1:number,r0:Vec2,span:number):boolean{
+ let a=Math.atan2(r0[0]*rad1-r0[1]*rad0,r0[0]*rad0+r0[1]*rad1);if(a<0)a+=2*Math.PI;return a<=span+1e-12||Math.abs(a-2*Math.PI)<1e-12;
 }
-function rotate(a:Vec2,t:number):Vec2{return [a[0]*Math.cos(t)-a[1]*Math.sin(t),a[0]*Math.sin(t)+a[1]*Math.cos(t)];}
-function angleWithin(rad:Vec2,r0:Vec2,span:number):boolean{let a=Math.atan2(cross(r0,rad),dot(r0,rad));if(a<0)a+=2*Math.PI;return a<=span+1e-12||Math.abs(a-2*Math.PI)<1e-12;}
-function arcBound(O:Vec2,c:Vec2,r0:Vec2,span:number,P:Vec2,Q:Vec2):number{
- if(!span)return Infinity;const candidates:number[]=[],e=sub(Q,P),ee=dot(e,e);
- for(const X of [P,Q]){const x=sub(X,O);for(const R of roots(dot(c,c)-1,-2*dot(c,x),dot(x,x)))if(angleWithin(sub(mul(x,1/R),c),r0,span))candidates.push(R);}
- if(ee>0){const n=mul([-e[1],e[0]],1/Math.sqrt(ee)),d=dot(n,sub(O,P)),nc=dot(n,c);for(const sign of [-1,1]){const den=nc-sign;if(Math.abs(den)>1e-18){const R=-d/den;if(R>0){const centre=add(O,mul(c,R)),X=sub(centre,mul(n,sign*R)),t=dot(sub(X,P),e)/ee;if(t>=0&&t<=1&&angleWithin(mul(sub(X,centre),1/R),r0,span))candidates.push(R);}}}}
- for(const rad of [r0,rotate(r0,span)])candidates.push(raySegment(O,add(c,rad),P,Q));return Math.min(Infinity,...candidates);
+/** `raySegment` from O along (d0, d1), on scalars. */
+function raySegmentAt(O:Vec2,d0:number,d1:number,P:Vec2,Q:Vec2):number{
+ const e0=Q[0]-P[0],e1=Q[1]-P[1],den=d0*e1-d1*e0;if(Math.abs(den)<1e-18)return Infinity;const a0=P[0]-O[0],a1=P[1]-O[1],r=(a0*e1-a1*e0)/den,t=(a0*d1-a1*d0)/den;return r>0&&t>=0&&t<=1?r:Infinity;
+}
+/**
+ * The smallest R at which the arc O + c·R + R·(r0 turned by up to `span`) touches segment PQ (Infinity if none): its
+ * endpoints on the circle, the circle tangent to the segment's line, and the arc's two end rays. The same operations,
+ * in the same order, as the vector form it replaces, on scalars (no arrays: the M1 CPU study, 2026-10-19). Exported for
+ * its exactness test.
+ */
+export function arcBound(O:Vec2,c:Vec2,r0:Vec2,span:number,P:Vec2,Q:Vec2):number{
+ if(!span)return Infinity;
+ const c0=c[0],c1=c[1],e0=Q[0]-P[0],e1=Q[1]-P[1],ee=e0*e0+e1*e1,qa=c0*c0+c1*c1-1;let best=Infinity;
+ for(let end=0;end<2;end++){
+  const X=end===0?P:Q,x0=X[0]-O[0],x1=X[1]-O[1],qb=-2*(c0*x0+c1*x1),qc=x0*x0+x1*x1;
+  // The circle's radii through X: qa·R² + qb·R + qc = 0's positive roots, (−qb − √disc)/2qa first.
+  if(Math.abs(qa)<1e-18){
+   if(Math.abs(qb)>1e-18&&-qc/qb>0){const R=-qc/qb,inv=1/R;if(withinSpan(x0*inv-c0,x1*inv-c1,r0,span))best=Math.min(best,R);}
+  }else{
+   const disc=qb*qb-4*qa*qc;
+   if(!(disc<0)){
+    const d=Math.sqrt(disc),first=(-qb-d)/(2*qa),second=(-qb+d)/(2*qa);
+    if(first>0){const inv=1/first;if(withinSpan(x0*inv-c0,x1*inv-c1,r0,span))best=Math.min(best,first);}
+    if(second>0){const inv=1/second;if(withinSpan(x0*inv-c0,x1*inv-c1,r0,span))best=Math.min(best,second);}
+   }
+  }
+ }
+ if(ee>0){
+  const s=1/Math.sqrt(ee),n0=-e1*s,n1=e0*s,d=n0*(O[0]-P[0])+n1*(O[1]-P[1]),nc=n0*c0+n1*c1;
+  for(let sign=-1;sign<=1;sign+=2){
+   const den=nc-sign;
+   if(Math.abs(den)>1e-18){
+    const R=-d/den;
+    if(R>0){
+     const k0=O[0]+c0*R,k1=O[1]+c1*R,sR=sign*R,X0=k0-n0*sR,X1=k1-n1*sR,t=((X0-P[0])*e0+(X1-P[1])*e1)/ee;
+     if(t>=0&&t<=1){const inv=1/R;if(withinSpan((X0-k0)*inv,(X1-k1)*inv,r0,span))best=Math.min(best,R);}
+    }
+   }
+  }
+ }
+ best=Math.min(best,raySegmentAt(O,c0+r0[0],c1+r0[1],P,Q));
+ const cs=Math.cos(span),sn=Math.sin(span),t0=r0[0]*cs-r0[1]*sn,t1=r0[0]*sn+r0[1]*cs;
+ return Math.min(best,raySegmentAt(O,c0+t0,c1+t1,P,Q));
 }
 function faceBound(J:Vec2,O:Vec2,dU:Vec2,cV:Vec2,P:Vec2,Q:Vec2):number{
  const candidates=[raySegment(J,dU,P,Q),raySegment(O,cV,P,Q)];if(Math.abs(dU[0])>1e-18)for(const X of [P,Q]){const R=(X[0]-J[0])/dU[0];if(R>0){const U=add(J,mul(dU,R)),V=add(O,mul(cV,R));if(V[1]<=X[1]&&X[1]<=U[1])candidates.push(R);}}return Math.min(...candidates);
