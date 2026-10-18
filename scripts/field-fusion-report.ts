@@ -39,13 +39,16 @@ export async function checkpointOracle() {
   return { before, dir, sources };
 }
 
-function fields(water: ShallowWaterSolver, constructors: Constructors, bubbles = false) {
+function fields(water: ShallowWaterSolver, constructors: Constructors, bubbles = false, sparse = false) {
   const foam = new constructors.FoamField(water, { dense: 3, residual: 20 });
   const air = new constructors.AerationField(water, { period: 18 });
   // Include exact trace thresholds, an empty plume with depth, and saturated destinations.
   const dense = [0, 0.999e-6, 1e-6, 1.001e-6, 0.13, 0.95, 1];
   const aerated = [0, 0.999e-7, 1e-7, 1.001e-7, 0.004, 0.03, 0.2];
   for (let i = 0; i < water.h.length; i += 1) {
+    // Sparse: the fields fill a band of rows only, so whole rows carry nothing (the M1 CPU study's quiet rows).
+    const row = Math.floor(i / water.nx);
+    if (sparse && (row < water.nz / 3 || row > water.nz / 2)) continue;
     foam.dense[i] = dense[i % dense.length];
     foam.residual[i] = Math.min(1 - foam.dense[i], dense[(i + 3) % dense.length] / 4);
     air.air[i] = aerated[i % aerated.length];
@@ -99,13 +102,16 @@ function boreSources(water: ShallowWaterSolver, state: Fields, breaking: Float64
   }
 }
 
-export type ReplayCase = 'uniform' | 'stretched' | 'boundary' | 'stale';
+export type ReplayCase = 'uniform' | 'stretched' | 'boundary' | 'stale' | 'sparse';
 /** Changes water and source inputs between steps; deliberately does not advance the solver clock. */
 export function differentialReplay(before: Constructors, scenario: ReplayCase, steps = 90) {
-  const water = new ShallowWaterSolver({ nx: 18, xMin: -9, dx: 1, zEdges: scenario === 'stretched' ? stretchedEdges(-30, 10, -5, 1, 4) : uniformEdges(-9, 9, 18), xBoundary: 'open' }, () => 2);
-  const old = fields(water, before, true), fused = fields(water, current, true);
+  const sparse = scenario === 'sparse';
+  const water = new ShallowWaterSolver({ nx: 18, xMin: -9, dx: 1, zEdges: scenario === 'stretched' || sparse ? stretchedEdges(-30, 10, -5, 1, 4) : uniformEdges(-9, 9, 18), xBoundary: 'open' }, () => 2);
+  const old = fields(water, before, true, sparse), fused = fields(water, current, true, sparse);
   const breaking = new Float64Array(water.h.length);
   let checks = 0;
+  /** Rows foam's stencil skipped (sparse rows with nothing to carry). */
+  let skipped = 0;
   for (let step = 0; step < steps; step += 1) {
     if (step === 20 || step === 40) water.shiftAlongShore(step === 20 ? 3 : -2);
     // Two legal solver shifts before field updates also exercise clearing a whole window.
@@ -114,19 +120,25 @@ export function differentialReplay(before: Constructors, scenario: ReplayCase, s
     for (let i = 0; i < water.h.length; i += 1) {
       water.h[i] = (i + step) % 17 === 0 ? [0, 0.005, 0.01, 0.0100001][step % 4] : 2.2 + 0.25 * Math.sin(i * 0.3 + step * 0.4);
       const extreme = scenario === 'boundary' && i % 3 === 0;
+      // Sparse: some rows' currents carry water several rows across shore in a step, the rest a fraction of one.
+      const row = Math.floor(i / water.nx);
+      const across = sparse ? (row % 7 === (step % 7) ? 20 * Math.cos(i + step) : 0.5 * Math.cos(i * 0.4 + step)) : 4 * Math.cos(i * 0.4 + step);
       water.qx[i] = water.h[i] * (extreme ? (i % 2 ? 1000 : -1000) : 3 * Math.sin(i * 0.2 + step));
-      water.qz[i] = water.h[i] * (extreme ? (i % 2 ? -1000 : 1000) : 4 * Math.cos(i * 0.4 + step));
+      water.qz[i] = water.h[i] * (extreme ? (i % 2 ? -1000 : 1000) : across);
       if (scenario === 'boundary' && i % 4 === 0) water.qx[i] = water.qz[i] = 0;
-      breaking[i] = (i + step) % 5 === 0 ? [0.4, 1, 4][step % 3] : 0;
+      // Sparse: bores in the band, and once in a row with nothing yet to carry.
+      const bores = !sparse || (row >= water.nz / 3 && row <= water.nz / 2) || (step === 45 && row === water.nz - 3);
+      breaking[i] = bores && (i + step) % 5 === 0 ? [0.4, 1, 4][step % 3] : 0;
     }
     const beforeAir: number[] = [];
     for (const state of [old, fused]) {
       // Sources follow moving windows before any update, matching lip/crash ordering.
-      const x = water.xCenters[3], z = water.zCenters[4];
+      const x = water.xCenters[3], z = water.zCenters[sparse ? Math.ceil(water.nz / 3) : 4];
       state.foam.addSplash(x, z, 0.02);
       state.air.addPlunge(x, z, 200, 0.6);
       state.air.addAir(x + 1, z + 1, 0.01, 0.7);
       state.foam.update(dt, breaking, scenario === 'uniform' ? undefined : state.stencil);
+      if (state === fused && dt > 0 && scenario !== 'uniform') skipped += state.stencil.recorded.filter((row) => row === 0).length;
       if (dt > 0) boreSources(water, state, breaking, dt);
       beforeAir.push(diagnostics(water, state).air);
     }
@@ -156,7 +168,7 @@ export function differentialReplay(before: Constructors, scenario: ReplayCase, s
     strictEqual(beforeAir[0] - diagnostics(water, old).air, beforeAir[1] - diagnostics(water, fused).air, `${scenario}: degas mass delta`);
     checks += 1;
   }
-  return { scenario, steps: checks, cells: water.h.length, diagnostics: diagnostics(water, fused), hashes: fused.arrays.map(hash) };
+  return { scenario, steps: checks, cells: water.h.length, skipped, diagnostics: diagnostics(water, fused), hashes: fused.arrays.map(hash) };
 }
 
 function defaultPadangGrid() {

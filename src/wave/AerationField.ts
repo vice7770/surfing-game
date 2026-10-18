@@ -1,6 +1,6 @@
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
-import type { AdvectionStencil } from './AdvectionStencil';
+import { DepartureRows, rowsWithField, type AdvectionStencil } from './AdvectionStencil';
 
 /**
  * The air breaking drives into the water (G9), from `docs/research/whitewater-sources.md`:
@@ -53,6 +53,9 @@ export class AerationField {
   private readonly nextTurbulence: Float64Array;
   /** Cells breaking stirred since the latest update: they hold their turbulence rather than fade. */
   private readonly stirred: Uint8Array;
+  /** The rows the departures read, when no shared stencil brings them, and which rows hold air (`rowsWithField`). */
+  private readonly rows = new DepartureRows();
+  private readonly aeratedRows: Int32Array;
   private windowX: number;
   private readonly period: number;
   private stirDt = Number.NaN;
@@ -68,6 +71,7 @@ export class AerationField {
     this.nextDepth = new Float64Array(size);
     this.nextTurbulence = new Float64Array(size);
     this.stirred = new Uint8Array(size);
+    this.aeratedRows = new Int32Array(solver.nz + 1);
     this.windowX = solver.xCenters[0];
     this.period = options.period ?? 10;
   }
@@ -125,27 +129,90 @@ export class AerationField {
     return depth > 0 ? Math.min(1, this.air[cell] / depth) : 0;
   }
 
-  /** Advance by `dt` s: carry with the current, and degas as the bubbles rise out of the plume. */
+  /**
+   * Advance by `dt` s: carry with the current, and degas as the bubbles rise out of the plume, in one pass over the
+   * cells (the M1 CPU study, 2026-10-19). Departures come from foam's stencil where it recorded them; a row whose
+   * departures read only rows with no air, plume or turbulence carries none and is cleared (`DepartureRows`).
+   */
   update(dt: number, stencil?: AdvectionStencil): void {
     if (!(dt > 0)) return;
     this.followWindow();
-    this.advect(dt, stencil?.take(this.solver, dt));
-    const { h } = this.solver;
+    const shared = stencil?.take(this.solver, dt);
+    const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
+    const rows = shared ? shared.rows : this.rows;
+    if (!shared) rows.begin(this.solver, dt);
+    const { air, depth: plume, turbulence, nextAir, nextDepth, nextTurbulence, stirred } = this;
+    const aerated = rowsWithField(nx, nz, this.aeratedRows, air, plume, turbulence);
+    const recorded = shared?.recorded;
+    const indices = shared?.indices;
+    const values = shared?.values;
     const fade = Math.exp(-dt / (TURBULENCE.decayShare * this.period));
-    for (let i = 0; i < h.length; i += 1) {
-      this.turbulence[i] = h[i] <= WET || this.turbulence[i] < TRACE ? 0 : this.turbulence[i] * (this.stirred[i] ? 1 : fade);
-      this.stirred[i] = 0;
-      if (h[i] <= WET || this.air[i] === 0) {
-        // Dry water holds no air, and water with none has nothing to degas.
-        this.air[i] = 0;
-        this.depth[i] = 0;
+    for (let iz = 0; iz < nz; iz += 1) {
+      const start = iz * nx;
+      const end = start + nx;
+      if (aerated[Math.min(nz, iz + 2)] - aerated[Math.max(0, iz - 1)] === 0 && rows.quiet(iz, aerated)) {
+        // Nothing to carry in: every cell, dry or wet, ends with none (as a carried 0 degasses to).
+        nextAir.fill(0, start, end);
+        nextDepth.fill(0, start, end);
+        nextTurbulence.fill(0, start, end);
+        stirred.fill(0, start, end);
         continue;
       }
-      const depth = Math.min(this.depth[i], h[i]);
-      const air = this.air[i] * Math.exp((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth));
-      this.air[i] = air < TRACE ? 0 : Math.min(air, AERATION.peak * depth);
-      this.depth[i] = this.air[i] > 0 ? depth : 0;
+      const lookup = recorded !== undefined && recorded[iz] === 1;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = start + ix;
+        const water = h[i];
+        if (water <= WET) {
+          nextAir[i] = 0;
+          nextDepth[i] = 0;
+          nextTurbulence[i] = 0;
+          stirred[i] = 0;
+          continue;
+        }
+        let k: number;
+        let tx: number;
+        let tz: number;
+        if (lookup) {
+          k = indices![i];
+          tx = values![i * 2];
+          tz = values![i * 2 + 1];
+        } else {
+          const x = xCenters[ix] - (qx[i] / water) * dt;
+          const z = zCenters[iz] - (qz[i] / water) * dt;
+          const gx = Math.min(nx - 1, Math.max(0, (x - xCenters[0]) / dx));
+          const column = Math.min(nx - 2, Math.floor(gx));
+          tx = gx - column;
+          let row = Math.min(iz, nz - 2);
+          while (row > 0 && zCenters[row] > z) row -= 1;
+          while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
+          tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
+          k = row * nx + column;
+        }
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const carriedAir = air[k] * w00 + air[k + 1] * w10 + air[k + nx] * w01 + air[k + nx + 1] * w11;
+        const carriedTurbulence = turbulence[k] * w00 + turbulence[k + 1] * w10 + turbulence[k + nx] * w01 + turbulence[k + nx + 1] * w11;
+        const carriedDepth = Math.max(plume[k] * (w00 > 0 ? 1 : 0), plume[k + 1] * (w10 > 0 ? 1 : 0), plume[k + nx] * (w01 > 0 ? 1 : 0), plume[k + nx + 1] * (w11 > 0 ? 1 : 0));
+        nextTurbulence[i] = carriedTurbulence < TRACE ? 0 : carriedTurbulence * (stirred[i] ? 1 : fade);
+        stirred[i] = 0;
+        if (carriedAir === 0) {
+          // Water with no air has nothing to degas.
+          nextAir[i] = 0;
+          nextDepth[i] = 0;
+          continue;
+        }
+        const reach = Math.min(carriedDepth, water);
+        const left = carriedAir * Math.exp((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, reach));
+        const kept = left < TRACE ? 0 : Math.min(left, AERATION.peak * reach);
+        nextAir[i] = kept;
+        nextDepth[i] = kept > 0 ? reach : 0;
+      }
     }
+    air.set(nextAir);
+    plume.set(nextDepth);
+    turbulence.set(nextTurbulence);
   }
 
   private reach(cell: number, penetration: number): number {
@@ -191,74 +258,6 @@ export class AerationField {
     const area = dx * dz[Math.floor(cell / nx)];
     this.depth[cell] = Math.max(this.depth[cell], reach);
     this.air[cell] = Math.min(AERATION.peak * this.depth[cell], this.air[cell] + volume / area);
-  }
-
-  /** Semi-Lagrangian step: each cell takes the air (and plume depth, and turbulence) found upstream at x − u·dt. */
-  private advect(dt: number, stencil?: AdvectionStencil): void {
-    if (stencil) {
-      this.advectStencil(stencil);
-      return;
-    }
-    const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
-    for (let iz = 0; iz < nz; iz += 1) {
-      for (let ix = 0; ix < nx; ix += 1) {
-        const i = iz * nx + ix;
-        const water = h[i];
-        if (water <= WET) {
-          this.nextAir[i] = 0;
-          this.nextDepth[i] = 0;
-          this.nextTurbulence[i] = 0;
-          continue;
-        }
-        const x = xCenters[ix] - (qx[i] / water) * dt;
-        const z = zCenters[iz] - (qz[i] / water) * dt;
-        const gx = Math.min(nx - 1, Math.max(0, (x - xCenters[0]) / dx));
-        const column = Math.min(nx - 2, Math.floor(gx));
-        const tx = gx - column;
-        let row = Math.min(iz, nz - 2);
-        while (row > 0 && zCenters[row] > z) row -= 1;
-        while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
-        const tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
-        const k = row * nx + column;
-        const w00 = (1 - tx) * (1 - tz);
-        const w10 = tx * (1 - tz);
-        const w01 = (1 - tx) * tz;
-        const w11 = tx * tz;
-        this.nextAir[i] = this.air[k] * w00 + this.air[k + 1] * w10 + this.air[k + nx] * w01 + this.air[k + nx + 1] * w11;
-        this.nextTurbulence[i] = this.turbulence[k] * w00 + this.turbulence[k + 1] * w10 + this.turbulence[k + nx] * w01 + this.turbulence[k + nx + 1] * w11;
-        this.nextDepth[i] = Math.max(this.depth[k] * (w00 > 0 ? 1 : 0), this.depth[k + 1] * (w10 > 0 ? 1 : 0), this.depth[k + nx] * (w01 > 0 ? 1 : 0), this.depth[k + nx + 1] * (w11 > 0 ? 1 : 0));
-      }
-    }
-    this.air.set(this.nextAir);
-    this.depth.set(this.nextDepth);
-    this.turbulence.set(this.nextTurbulence);
-  }
-
-  /** Same interpolation as `advect`; foam has already found the departures on this step's water. */
-  private advectStencil(stencil: AdvectionStencil): void {
-    const { h, nx } = this.solver;
-    const { indices, values } = stencil;
-    for (let i = 0; i < h.length; i += 1) {
-      if (h[i] <= WET) {
-        this.nextAir[i] = 0;
-        this.nextDepth[i] = 0;
-        this.nextTurbulence[i] = 0;
-        continue;
-      }
-      const k = indices[i];
-      const tx = values[i * 2];
-      const tz = values[i * 2 + 1];
-      const w00 = (1 - tx) * (1 - tz);
-      const w10 = tx * (1 - tz);
-      const w01 = (1 - tx) * tz;
-      const w11 = tx * tz;
-      this.nextAir[i] = this.air[k] * w00 + this.air[k + 1] * w10 + this.air[k + nx] * w01 + this.air[k + nx + 1] * w11;
-      this.nextTurbulence[i] = this.turbulence[k] * w00 + this.turbulence[k + 1] * w10 + this.turbulence[k + nx] * w01 + this.turbulence[k + nx + 1] * w11;
-      this.nextDepth[i] = Math.max(this.depth[k] * (w00 > 0 ? 1 : 0), this.depth[k + 1] * (w10 > 0 ? 1 : 0), this.depth[k + nx] * (w01 > 0 ? 1 : 0), this.depth[k + nx + 1] * (w11 > 0 ? 1 : 0));
-    }
-    this.air.set(this.nextAir);
-    this.depth.set(this.nextDepth);
-    this.turbulence.set(this.nextTurbulence);
   }
 
   /**

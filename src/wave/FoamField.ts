@@ -1,6 +1,6 @@
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
-import type { AdvectionStencil } from './AdvectionStencil';
+import { DepartureRows, rowsWithField, type AdvectionStencil } from './AdvectionStencil';
 
 /** Foam e-folding times, s: dense whitewater, and the residual lace it leaves. */
 export interface FoamDecay {
@@ -61,6 +61,9 @@ export class FoamField {
   breakingCount = 0;
   private readonly nextDense: Float64Array;
   private readonly nextResidual: Float64Array;
+  /** The rows the departures read, when no shared stencil brings them, and which rows hold foam (`rowsWithField`). */
+  private readonly rows = new DepartureRows();
+  private readonly foamedRows: Int32Array;
   private windowX: number;
 
   constructor(private readonly solver: ShallowWaterSolver, readonly decay: FoamDecay) {
@@ -73,6 +76,7 @@ export class FoamField {
     this.dissipation = new Float64Array(size);
     this.nextDense = new Float64Array(size);
     this.nextResidual = new Float64Array(size);
+    this.foamedRows = new Int32Array(solver.nz + 1);
     this.windowX = solver.xCenters[0];
   }
 
@@ -90,41 +94,110 @@ export class FoamField {
     this.residual[cell] = Math.min(this.residual[cell], 1 - this.dense[cell]);
   }
 
-  /** Advance by `dt` seconds with the breaking strength B per cell. */
+  /**
+   * Advance by `dt` seconds with the breaking strength B per cell: carry the foam semi-Lagrangian, decay it exactly and
+   * add the bores' foam, in one pass over the cells (the M1 CPU study, 2026-10-19). A row whose departures read only
+   * rows with no foam carries none and takes no departures (`DepartureRows`); its bores still add theirs.
+   */
   update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil): void {
     if (!(dt > 0)) return;
     this.followWindow();
-    this.advect(dt, stencil);
-    const { h, bed, restLevel } = this.solver;
+    const { nx, nz, h, qx, qz, xCenters, zCenters, dx, bed, restLevel } = this.solver;
+    stencil?.begin(this.solver, dt);
+    const rows = stencil ? stencil.rows : this.rows;
+    if (!stencil) rows.begin(this.solver, dt);
+    const { dense, residual, nextDense, nextResidual, source, sourceCells, breakingCells, dissipation } = this;
+    const foamed = rowsWithField(nx, nz, this.foamedRows, dense, residual);
+    const indices = stencil?.indices;
+    const values = stencil?.values;
     const keepDense = Math.exp(-dt / this.decay.dense);
     const keepLace = Math.exp(-dt / this.decay.residual);
-    this.sourceCount = 0;
-    this.breakingCount = 0;
-    for (let i = 0; i < h.length; i += 1) {
-      if (h[i] <= WET) {
-        this.dense[i] = 0;
-        this.residual[i] = 0;
-        this.source[i] = 0;
+    let sources = 0;
+    let breakers = 0;
+    for (let iz = 0; iz < nz; iz += 1) {
+      // Only rows next to foam-free rows can be quiet; the rest need not look.
+      const clear = foamed[Math.min(nz, iz + 2)] - foamed[Math.max(0, iz - 1)] === 0 && rows.quiet(iz, foamed);
+      if (clear) {
+        stencil?.skip(iz);
+        // Nothing carried in: a cell ends with foam only from its own bore (0·keep + 0 is +0, flushed as before).
+        const start = iz * nx;
+        const end = start + nx;
+        nextDense.fill(0, start, end);
+        nextResidual.fill(0, start, end);
+        source.fill(0, start, end);
+        for (let i = start; i < end; i += 1) {
+          const strength = breaking[i];
+          if (!(strength > 0) || h[i] <= WET) continue;
+          const bore = boreDissipation(restLevel - bed[i], h[i]);
+          breakingCells[breakers++] = i;
+          dissipation[i] = strength * bore;
+          const rate = (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION;
+          source[i] = rate;
+          if (rate > 0) sourceCells[sources++] = i;
+          const next = 0 + rate * dt;
+          const kept = next < TRACE ? 0 : Math.min(1, next);
+          nextDense[i] = kept;
+        }
         continue;
       }
-      const previous = this.dense[i];
-      let dense = previous * keepDense;
-      const lace = this.residual[i] * keepLace + LACE_SHARE * (previous - dense);
-      const strength = breaking[i];
-      let bore = 0;
-      if (strength > 0) {
-        bore = boreDissipation(restLevel - bed[i], h[i]);
-        this.breakingCells[this.breakingCount++] = i;
-        this.dissipation[i] = strength * bore;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = iz * nx + ix;
+        const depth = h[i];
+        if (depth <= WET) {
+          nextDense[i] = 0;
+          nextResidual[i] = 0;
+          source[i] = 0;
+          continue;
+        }
+        let previous = 0;
+        let carried = 0;
+        if (!clear) {
+          const x = xCenters[ix] - (qx[i] / depth) * dt;
+          const z = zCenters[iz] - (qz[i] / depth) * dt;
+          const gx = Math.min(nx - 1, Math.max(0, (x - xCenters[0]) / dx));
+          const column = Math.min(nx - 2, Math.floor(gx));
+          const tx = gx - column;
+          let row = Math.min(iz, nz - 2);
+          while (row > 0 && zCenters[row] > z) row -= 1;
+          while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
+          const tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
+          const k = row * nx + column;
+          const w00 = (1 - tx) * (1 - tz);
+          const w10 = tx * (1 - tz);
+          const w01 = (1 - tx) * tz;
+          const w11 = tx * tz;
+          if (indices && values) {
+            indices[i] = k;
+            values[i * 2] = tx;
+            values[i * 2 + 1] = tz;
+          }
+          previous = dense[k] * w00 + dense[k + 1] * w10 + dense[k + nx] * w01 + dense[k + nx + 1] * w11;
+          carried = residual[k] * w00 + residual[k + 1] * w10 + residual[k + nx] * w01 + residual[k + nx + 1] * w11;
+        }
+        let next = previous * keepDense;
+        const lace = carried * keepLace + LACE_SHARE * (previous - next);
+        const strength = breaking[i];
+        let bore = 0;
+        if (strength > 0) {
+          bore = boreDissipation(restLevel - bed[i], depth);
+          breakingCells[breakers++] = i;
+          dissipation[i] = strength * bore;
+        }
+        const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
+        source[i] = rate;
+        if (rate > 0) sourceCells[sources++] = i;
+        next += rate * dt;
+        // Flush traces the resampling spreads upstream; they would never show.
+        const kept = next < TRACE ? 0 : Math.min(1, next);
+        nextDense[i] = kept;
+        nextResidual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - kept);
       }
-      const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
-      this.source[i] = rate;
-      if (rate > 0) this.sourceCells[this.sourceCount++] = i;
-      dense += rate * dt;
-      // Flush traces the resampling spreads upstream; they would never show.
-      this.dense[i] = dense < TRACE ? 0 : Math.min(1, dense);
-      this.residual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - this.dense[i]);
     }
+    this.sourceCount = sources;
+    this.breakingCount = breakers;
+    dense.set(nextDense);
+    residual.set(nextResidual);
+    stencil?.commit();
   }
 
   /** Rebuild the derived index after a tool or test directly edits `source`; normal updates build it as they go. */
@@ -133,49 +206,6 @@ export class FoamField {
     for (let i = 0; i < this.source.length; i += 1) {
       if (this.source[i] > 0) this.sourceCells[this.sourceCount++] = i;
     }
-  }
-
-  /** Semi-Lagrangian step: each cell takes the foam found upstream at x − u·dt. */
-  private advect(dt: number, stencil?: AdvectionStencil): void {
-    const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
-    stencil?.begin(this.solver, dt);
-    const indices = stencil?.indices;
-    const values = stencil?.values;
-    for (let iz = 0; iz < nz; iz += 1) {
-      for (let ix = 0; ix < nx; ix += 1) {
-        const i = iz * nx + ix;
-        const depth = h[i];
-        if (depth <= WET) {
-          this.nextDense[i] = 0;
-          this.nextResidual[i] = 0;
-          continue;
-        }
-        const x = xCenters[ix] - (qx[i] / depth) * dt;
-        const z = zCenters[iz] - (qz[i] / depth) * dt;
-        const gx = Math.min(nx - 1, Math.max(0, (x - xCenters[0]) / dx));
-        const column = Math.min(nx - 2, Math.floor(gx));
-        const tx = gx - column;
-        let row = Math.min(iz, nz - 2);
-        while (row > 0 && zCenters[row] > z) row -= 1;
-        while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
-        const tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
-        const k = row * nx + column;
-        const w00 = (1 - tx) * (1 - tz);
-        const w10 = tx * (1 - tz);
-        const w01 = (1 - tx) * tz;
-        const w11 = tx * tz;
-        if (indices && values) {
-          indices[i] = k;
-          values[i * 2] = tx;
-          values[i * 2 + 1] = tz;
-        }
-        this.nextDense[i] = this.dense[k] * w00 + this.dense[k + 1] * w10 + this.dense[k + nx] * w01 + this.dense[k + nx + 1] * w11;
-        this.nextResidual[i] = this.residual[k] * w00 + this.residual[k + 1] * w10 + this.residual[k + nx] * w01 + this.residual[k + nx + 1] * w11;
-      }
-    }
-    this.dense.set(this.nextDense);
-    this.residual.set(this.nextResidual);
-    stencil?.commit();
   }
 
   /** Shift with the solver when its window slides, so foam stays on the same water; new columns start clean. */
