@@ -849,6 +849,44 @@ export class SpillingRoller implements RollerLens {
     return out;
   }
 
+  /**
+   * The across-shore span at `x` outside which `riseAt(x, z)` and `lensAt(x, z)` find no lens, for every z (empty:
+   * low +∞, high −∞): a pass over a row of points at fixed x (the render nodes' columns) asks only between. It spans
+   * every live slot's lens in the two columns `thicknessAt` reads at x, crest − taper·length to crest + length, which
+   * holds each slot's blend of them, widened far past rounding (the M1 CPU study, 2026-10-19).
+   */
+  reachAt(x: number, out: { low: number; high: number }): { low: number; high: number } {
+    const { grid, table } = this;
+    const { nx, dx } = grid;
+    out.low = Number.POSITIVE_INFINITY;
+    out.high = Number.NEGATIVE_INFINITY;
+    // As `thicknessAt` finds its columns.
+    const gx = (x - grid.xCenters[0]) / dx;
+    if (!(gx >= 0 && gx <= nx - 1) || nx < 2) return out;
+    const i0 = Math.min(nx - 2, Math.floor(gx));
+    let crestLow = Number.POSITIVE_INFINITY;
+    let crestHigh = Number.NEGATIVE_INFINITY;
+    let longest = 0;
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      for (let o = (slot * nx + i0) * ROLLER_STRIDE, end = o + 2 * ROLLER_STRIDE; o < end; o += ROLLER_STRIDE) {
+        // An empty entry adds nothing to a blend (its weight is 0), and a crest that is not finite never places a lens.
+        if (!(table[o + SCALE] > 0)) continue;
+        const crest = table[o + CREST];
+        if (!Number.isFinite(crest)) continue;
+        crestLow = Math.min(crestLow, crest);
+        crestHigh = Math.max(crestHigh, crest);
+        // A blend's length is at most its longest; one that is not positive places no lens.
+        if (table[o + LENGTH] > longest) longest = table[o + LENGTH];
+      }
+    }
+    if (!(longest > 0) || !(crestLow <= crestHigh)) return out;
+    const taper = Math.max(0, this.options.rearTaper);
+    const pad = 1e-3 + 1e-9 * (2 * Math.max(crestHigh, -crestHigh, crestLow, -crestLow) + longest);
+    out.low = crestLow - taper * longest - pad;
+    out.high = crestHigh + longest + pad;
+    return out;
+  }
+
   /** The wave whose lens the table holds in `column`'s `slot`, or −1. */
   tableWave(column: number, slot: number): number {
     if (!(column >= 0 && column < this.grid.nx && slot >= 0 && slot < ROLLER_SLOTS)) return -1;

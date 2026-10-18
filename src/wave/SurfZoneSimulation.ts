@@ -647,6 +647,9 @@ export class SurfZoneSimulation {
   private readonly felt?: Float64Array;
   /** Scratch for the roller's reach across shore in the snapshot. */
   private readonly rollerExtent = { low: 0, high: 0 };
+  /** Scratch for the snapshot's lens pass: each render column's lens reach across shore (`SpillingRoller.reachAt`). */
+  private lensLow?: Float64Array;
+  private lensHigh?: Float64Array;
   private readonly crestSamples: CrestSample[] = [];
   /** When a front's lips throw after the solver's onset: the spot's barrel transect, its foot at the tide (BARREL_SPOTS). */
   private readonly onsetTiming?: OnsetTiming;
@@ -1357,7 +1360,11 @@ export class SurfZoneSimulation {
     if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
   }
 
-  /** The worker's three visual fields share the same interpolation and one pass over the render nodes. */
+  /**
+   * The worker's three visual fields share the same interpolation and one pass over the render nodes. A roller's lens
+   * tops (S3) follow in a pass of their own over the rows they reach, asked only where `SpillingRoller.reachAt` puts a
+   * lens: the main pass then calls nothing per node (the M1 CPU study, 2026-10-19). The arithmetic is unchanged.
+   */
   writeUniformSnapshot(surface: Float32Array, flow: Float32Array, aeration: Float32Array, grid: RenderGrid): void {
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
     const { h, bed, qx, qz, nx } = this.solver;
@@ -1369,40 +1376,82 @@ export class SurfZoneSimulation {
     }
     if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
     const u = this.velocityX;
-    const w = this.velocityZ;
+    const w = this.velocityZ!;
     const fraction = this.voidFractions;
     for (let i = 0; i < h.length; i += 1) {
       const wet = h[i] > WET;
-      u![i] = wet ? qx[i] / h[i] : 0;
-      w![i] = wet ? qz[i] / h[i] : 0;
-      fraction![i] = this.aeration.voidFraction(i);
+      u[i] = wet ? qx[i] / h[i] : 0;
+      w[i] = wet ? qz[i] / h[i] : 0;
+      fraction[i] = this.aeration.voidFraction(i);
     }
-    const { roller } = this;
-    const lenses = this.rollerReach();
-    for (let r = 0; r < grid.nz; r += 1) {
+    const nodes = grid.nx;
+    const lines = grid.nz;
+    for (let r = 0; r < lines; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
-      const z = grid.zMin + r * grid.spacing;
-      const lensRow = z >= lenses.low && z <= lenses.high;
-      for (let c = 0; c < grid.nx; c += 1) {
+      const line = r * nodes;
+      for (let c = 0; c < nodes; c += 1) {
         const i = row + columns[c];
         const tx = columnWeights[c];
         const w00 = (1 - tx) * (1 - tz);
         const w10 = tx * (1 - tz);
         const w01 = (1 - tx) * tz;
         const w11 = tx * tz;
-        const o = (r * grid.nx + c) * 2;
+        const o = (line + c) * 2;
         const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
         const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
         surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
-        // A roller lens's top (S3): what is drawn is what the rider hits (`PhysicalSurfWater`'s node heights).
-        if (lensRow && depth > WET) surface[o] = depth + bottom + roller!.riseAt(grid.xMin + c * grid.spacing, z);
         surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
           + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
-        flow[o] = depth > WET ? u![i] * w00 + u![i + 1] * w10 + u![i + nx] * w01 + u![i + nx + 1] * w11 : 0;
-        flow[o + 1] = depth > WET ? w![i] * w00 + w![i + 1] * w10 + w![i + nx] * w01 + w![i + nx + 1] * w11 : 0;
-        aeration[o] = w00 * fraction![i] + w10 * fraction![i + 1] + w01 * fraction![i + nx] + w11 * fraction![i + nx + 1];
+        flow[o] = depth > WET ? u[i] * w00 + u[i + 1] * w10 + u[i + nx] * w01 + u[i + nx + 1] * w11 : 0;
+        flow[o + 1] = depth > WET ? w[i] * w00 + w[i + 1] * w10 + w[i + nx] * w01 + w[i + nx + 1] * w11 : 0;
+        aeration[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
         aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[i + nx] + w11 * plume[i + nx + 1];
+      }
+    }
+    this.writeLensTops(surface, grid);
+  }
+
+  /**
+   * A roller lens's top (S3) over the wet render nodes it covers: what is drawn is what the rider hits
+   * (`PhysicalSurfWater`'s node heights). Where `riseAt` finds no lens it adds 0, which leaves the main pass's height.
+   */
+  private writeLensTops(surface: Float32Array, grid: RenderGrid): void {
+    const { roller } = this;
+    const lenses = this.rollerReach();
+    if (!roller || !(lenses.low <= lenses.high)) return;
+    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
+    const { h, bed, nx } = this.solver;
+    const nodes = grid.nx;
+    if (!this.lensLow || this.lensLow.length !== nodes) {
+      this.lensLow = new Float64Array(nodes);
+      this.lensHigh = new Float64Array(nodes);
+    }
+    const low = this.lensLow;
+    const high = this.lensHigh!;
+    const reach = { low: 0, high: 0 };
+    for (let c = 0; c < nodes; c += 1) {
+      roller.reachAt(grid.xMin + c * grid.spacing, reach);
+      low[c] = reach.low;
+      high[c] = reach.high;
+    }
+    for (let r = 0; r < grid.nz; r += 1) {
+      const z = grid.zMin + r * grid.spacing;
+      if (!(z >= lenses.low && z <= lenses.high)) continue;
+      const row = rows[r] * nx;
+      const tz = rowWeights[r];
+      for (let c = 0; c < nodes; c += 1) {
+        if (!(z >= low[c] && z <= high[c])) continue;
+        const i = row + columns[c];
+        const tx = columnWeights[c];
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
+        if (!(depth > WET)) continue;
+        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
+        surface[(r * nodes + c) * 2] = depth + bottom + roller.riseAt(grid.xMin + c * grid.spacing, z);
       }
     }
   }

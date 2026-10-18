@@ -26,6 +26,7 @@ import { libraryFromBytes } from './barrel/barrelLibrary';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
 import type { FrontPoint } from './barrel/BreakingFront';
 import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
+import { ROLLER_FIELD, ROLLER_STRIDE } from './SpillingRoller';
 
 const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -99,6 +100,47 @@ describe('SurfZoneSimulation', () => {
       simulation.writeUniformSnapshot(together[0], together[1], together[2], grid);
       expect(together).toEqual([surface, flow, air]);
       expect(together.every((field) => field.every(Number.isFinite))).toBe(true);
+    }
+  });
+
+  it('writes a roller\'s lens tops in the worker snapshot exactly as the per-node writer does (the M1 CPU study)', () => {
+    const scene = new SurfZoneSimulation({ ...small, spot: 'canyon', alongShore: 40, dx: 1, fineSpacing: 1 }, 'warm');
+    const { solver } = scene;
+    const roller = scene.roller!;
+    expect(roller).toBeDefined();
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = i % 29 === 0 ? 0.005 : 0.5 + (i % 17) / 5;
+      solver.bed[i] = -solver.h[i] + 0.3 * Math.sin(i * 0.37);
+      scene.foam.dense[i] = (i % 7) / 10;
+      scene.aeration.depth[i] = (i % 5) / 10;
+      scene.aeration.air[i] = scene.aeration.depth[i] * (i % 3) / 10;
+    }
+    // Lenses in two slots of most columns, some empty or ending mid-table, across the fine zone.
+    const zone = solver.zCenters[solver.nz - 1] - solver.zCenters[0];
+    for (let column = 0; column < solver.nx; column += 1) {
+      for (let slot = 0; slot < 2; slot += 1) {
+        if ((column + slot) % 5 === 0) continue;
+        const o = (slot * solver.nx + column) * ROLLER_STRIDE;
+        roller.table[o + ROLLER_FIELD.crest] = solver.zCenters[0] + zone * (0.3 + 0.4 * slot) + 0.7 * Math.sin(column * 0.3);
+        roller.table[o + ROLLER_FIELD.length] = 3 + (column % 4);
+        roller.table[o + ROLLER_FIELD.scale] = 0.4 + 0.1 * (column % 6);
+        roller.table[o + ROLLER_FIELD.thickness] = 0.3;
+      }
+    }
+    const lenses = roller.table.slice();
+    for (const spacing of [1, 2, 0.5]) {
+      roller.table.set(lenses);
+      const grid = scene.renderGrid(spacing);
+      const separate = snapshotOutputs(grid);
+      const together = snapshotOutputs(grid);
+      snapshotInternals(scene).writeUniformFields(grid, ...separate);
+      scene.writeUniformSnapshot(...together, grid);
+      for (let k = 0; k < 3; k += 1) expectSnapshotBits(together[k], separate[k]);
+      const plain = snapshotOutputs(grid);
+      roller.table.fill(0);
+      scene.writeUniformSnapshot(...plain, grid);
+      // The lenses did raise some tops.
+      expect(plain[0].some((value, k) => value !== together[0][k])).toBe(true);
     }
   });
 

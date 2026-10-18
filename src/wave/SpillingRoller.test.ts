@@ -749,6 +749,49 @@ describe('SpillingRoller: one crest per wave (the far-crest join)', () => {
   });
 });
 
+describe('SpillingRoller: its reach at x', () => {
+  it('holds every point riseAt and lensAt find a lens at, over live, empty, negative and non-finite entries', () => {
+    const g = sea(9, -20, 20);
+    g.h.fill(6);
+    g.bed.fill(-6);
+    const roller = new SpillingRoller(g, { edgeColumns: 0 });
+    let seed = 7;
+    const random = () => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed / 2147483648;
+    };
+    const lens = createLensPoint();
+    const reach = { low: 0, high: 0 };
+    let inside = 0;
+    for (let trial = 0; trial < 40; trial += 1) {
+      roller.table.fill(0);
+      for (let o = 0; o < roller.table.length; o += ROLLER_STRIDE) {
+        const kind = random();
+        if (kind < 0.35) continue;
+        roller.table[o + ROLLER_FIELD.crest] = kind > 0.97 ? Number.NaN : -15 + 30 * random();
+        roller.table[o + ROLLER_FIELD.length] = kind > 0.94 && kind <= 0.97 ? -2 : 1 + 6 * random();
+        roller.table[o + ROLLER_FIELD.scale] = kind < 0.45 ? 0 : random();
+        roller.table[o + ROLLER_FIELD.thickness] = 0.2 + random();
+      }
+      for (let x = -5.5; x <= 5.5; x += 0.25) {
+        roller.reachAt(x, reach);
+        for (let z = -20; z <= 20; z += 0.05) {
+          const rise = roller.riseAt(x, z);
+          const found = roller.lensAt(x, z, lens);
+          if (z >= reach.low && z <= reach.high) {
+            if (found) inside += 1;
+            continue;
+          }
+          expect(Object.is(rise, 0)).toBe(true);
+          expect(found).toBe(false);
+        }
+      }
+    }
+    // The tables put lenses in reach often enough to test the span's edges.
+    expect(inside).toBeGreaterThan(1000);
+  });
+});
+
 describe('SpillingRoller: its slots and table', () => {
   it('keeps 8 values for each of 4 slots in every column', () => {
     expect(ROLLER_SLOTS).toBe(4);
