@@ -225,6 +225,9 @@ export interface CaseBlend {
   clamped: boolean;
 }
 
+/** Lifecycle clocks kept (`ProfileLibrary.analyticClocks`): well over the ~200 slices a Padang step asks for. */
+export const ANALYTIC_CLOCK_CAPACITY = 4096;
+
 export class ProfileLibrary {
   private readonly bySlope: BarrelCase[][];
   private readonly held = new Map<BarrelCase, HeldFrame>();
@@ -237,6 +240,11 @@ export class ProfileLibrary {
   private readonly analyticEarlier = new Float32Array(FLOATS);
   private readonly analyticLater = new Float32Array(FLOATS);
   private readonly analyticQueries = new Map<string, { profile: Float32Array; lookup: ProfileLookup }>();
+  /**
+   * Each slice's lifecycle clock, a pure function of its slope and foot (`analyticClock`). Padang Medium's front and
+   * contact ask for about 200 distinct slices a step, nearly the same ones step after step (the M1 CPU study,
+   * 2026-10-19): held to 64, the oldest were dropped before they came round again and every step rebuilt ~400 clocks.
+   */
   private readonly analyticClocks = new Map<string, { impact: number; retired: number; clear: number; event: BoundedCEvent }>();
 
   constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
@@ -509,7 +517,7 @@ export class ProfileLibrary {
       const parameters = this.analyticParameters({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
       const final = boundedCLifecycle(parameters);
       clock = { impact: final.impactTau, retired: final.retiredTau, clear: final.fullyFormedTau, event: final.impactEvent };
-      if (this.analyticClocks.size >= 64) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
+      if (this.analyticClocks.size >= ANALYTIC_CLOCK_CAPACITY) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
       this.analyticClocks.set(key, clock);
     }
     return clock;
