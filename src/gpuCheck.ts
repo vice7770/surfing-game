@@ -483,7 +483,8 @@ async function digest(values: ArrayBufferView): Promise<string> {
  * The game's sea with an idle-then-paddling rider, stepped on this page's GPU for `&frames=` steps after its spin-up,
  * then every array that carries it hashed (the M1 readback study, 2026-10-17): two builds that print the same hashes
  * stepped the same water to the byte. `?mode=replay&spot=canyon&size=medium`; `&prefetch=1` runs the solo worker's
- * water prefetch between steps, as the game's worker does.
+ * water prefetch between steps, as the game's worker does; `&fill=1` also fills a snapshot and its status after every
+ * step, as the worker replies, and hashes every snapshot's arrays and counts (`snapshots`).
  */
 async function replay(): Promise<void> {
   const params = new URLSearchParams(location.search);
@@ -492,13 +493,14 @@ async function replay(): Promise<void> {
   const frames = Number(params.get('frames') ?? 240);
   const seed = Number(params.get('seed') ?? 8761);
   const prefetch = params.get('prefetch') === '1';
+  const fill = params.get('fill') === '1';
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
   const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
-  const result: Record<string, unknown> = { spot, size, tier, seed, frames, prefetch, phase: 'spinning up' };
+  const result: Record<string, unknown> = { spot, size, tier, seed, frames, prefetch, fill, phase: 'spinning up' };
   (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
-  say(`replay ${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}, ${frames} frames${prefetch ? ', prefetched' : ''}: spinning up…`);
+  say(`replay ${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}, ${frames} frames${prefetch ? ', prefetched' : ''}${fill ? ', filled' : ''}: spinning up…`);
   const runner = SurfZoneRunner.forWorker(config, { rider: true, ...(barrelCases ? { barrelCases } : {}) }, 'warm');
   if (!(await runner.useDevice((solver) => GpuBoussinesq.create(solver)))) {
     say('No WebGPU device for this sea.');
@@ -508,10 +510,26 @@ async function replay(): Promise<void> {
   if (prefetch && !runner.enableSoloWaterPrefetch()) say('  (no prefetch on this device)');
   result.phase = 'stepping';
   const substeps: number[] = [];
+  const buffers = fill ? runner.createBuffers() : undefined;
+  const snapshotDigests: string[] = [];
   for (let frame = 0; frame < frames; frame += 1) {
     const paddle = frame >= frames / 3;
     await runner.advanceAsync(1, { paddle, popUp: false, steer: paddle ? 0.3 * Math.sin(frame / 20) : 0, retry: false });
     substeps.push(runner.simulation.device?.diagnostics?.substeps ?? 0);
+    if (buffers) {
+      runner.fill(buffers);
+      const status = runner.status();
+      const views = transferables(buffers).map((buffer) => new Uint8Array(buffer as ArrayBuffer));
+      const counts = new TextEncoder().encode(JSON.stringify([buffers.lipCount, buffers.tubeCount, buffers.bubbleCount, buffers.sprayCount,
+        buffers.lipHitCount, buffers.strokeHitCount, buffers.frontCount, buffers.rollerCount, status.breakingFraction, status.lipLaunches, status.spray]));
+      const joined = new Uint8Array(views.reduce((sum, view) => sum + view.length, counts.length));
+      let offset = 0;
+      for (const view of [...views, counts]) {
+        joined.set(view, offset);
+        offset += view.length;
+      }
+      snapshotDigests.push(await digest(joined));
+    }
   }
   await runner.simulation.discardWaterPrefetch();
   const { solver } = runner.simulation;
@@ -523,6 +541,7 @@ async function replay(): Promise<void> {
   const board = runner.board?.position;
   const summary = JSON.stringify({ time: solver.time, board: board && [board.x, board.y, board.z], lip: state.lip, front: state.front ?? null, counters: state.counters });
   hashes.summary = await digest(new TextEncoder().encode(summary));
+  if (fill) hashes.snapshots = await digest(new TextEncoder().encode(snapshotDigests.join()));
   runner.simulation.device?.dispose();
   Object.assign(result, { phase: 'done', time: solver.time, hashes });
   say(`  sea time ${solver.time.toFixed(4)} s; frames with 2+ substeps ${substeps.filter((count) => count > 1).length}, most ${Math.max(...substeps)}`);
