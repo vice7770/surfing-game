@@ -363,14 +363,14 @@ export class SpillingFront {
     this.ramped = 0;
     for (let iz = 0; iz < nz; iz += 1) {
       const z = zCenters[iz];
+      // Water not breaking has none to show or feel: cleared in a run (the M1 CPU study, 2026-10-19); every breaking
+      // cell below writes both.
+      out.fill(0, iz * nx, (iz + 1) * nx);
+      felt?.fill(0, iz * nx, (iz + 1) * nx);
       for (let ix = 0; ix < nx; ix += 1) {
         const i = iz * nx + ix;
         const b = strength[i];
-        if (!(b > 0)) {
-          out[i] = 0;
-          if (felt) felt[i] = 0;
-          continue;
-        }
+        if (!(b > 0)) continue;
         let owner = -1;
         let latest = -Infinity;
         for (let k = 0; k < count; k += 1) {
