@@ -106,3 +106,68 @@ describe('each column’s crests, their breaking and their U/C', () => {
     expect(out[0].row).toBe(35);
   });
 });
+
+describe('each column\'s crests, found row by row (the M1 CPU study, 2026-10-19)', () => {
+  /** The column-by-column scan as it was: the order and every value `columnCrests` must keep. */
+  function scanned(solver: BoussinesqSolver, strength: Float64Array, fromRow: number, minHeight: number): CrestSample[] {
+    const { nx, nz, h, bed, qx, qz, xCenters, zCenters, restLevel } = solver;
+    const rate = solver.surfaceRiseRate;
+    const out: CrestSample[] = [];
+    for (let ix = 0; ix < nx; ix += 1) {
+      for (let iz = Math.max(1, fromRow); iz < nz - 1; iz += 1) {
+        const i = iz * nx + ix;
+        if (!(h[i] > 0.05)) continue;
+        const eta = h[i] + bed[i];
+        if (!(eta - restLevel > minHeight) || !(eta > h[i - nx] + bed[i - nx]) || !(eta > h[i + nx] + bed[i + nx])) continue;
+        let peak = 0;
+        let rise = 0;
+        let trough = eta;
+        for (let row = iz; row < nz && zCenters[row] - zCenters[iz] <= 10; row += 1) {
+          const cell = row * nx + ix;
+          if (!(h[cell] > 0.05)) continue;
+          if (strength[cell] > peak) peak = strength[cell];
+          if (h[cell] + bed[cell] < trough) trough = h[cell] + bed[cell];
+          const fresh = rate[cell] / Math.sqrt(GRAVITY * Math.max(0.05, restLevel - bed[cell]));
+          if (fresh > rise) rise = fresh;
+        }
+        const found = crestMotion(solver, i);
+        const motion = found && found.speed >= 0.5 * Math.sqrt(GRAVITY * h[i]) ? found : undefined;
+        out.push({
+          column: ix, row: iz, x: xCenters[ix], z: zCenters[iz], eta: eta - restLevel, wave: eta - trough, strength: peak, rise,
+          depth: restLevel - bed[i], b: motion ? (qx[i] * motion.direction.x + qz[i] * motion.direction.z) / h[i] / motion.speed : NaN,
+          speed: motion ? motion.speed : 0,
+        });
+      }
+    }
+    return out;
+  }
+
+  it('gives the column scan\'s samples, in its order, on rough seas with dry and NaN cells', () => {
+    let seed = 3;
+    const random = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    const out: CrestSample[] = [];
+    let crests = 0;
+    for (let trial = 0; trial < 20; trial += 1) {
+      const { solver, breaking } = bumps([12 + 3 * random(), 31 + 5 * random(), 48]);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        solver.h[i] += 0.3 * (random() - 0.5);
+        solver.qx[i] = 2 * (random() - 0.5);
+        solver.surfaceRiseRate[i] += random() - 0.5;
+        breaking.strength[i] = random() > 0.7 ? random() : 0;
+        if (random() > 0.97) solver.h[i] = 0.01;
+        if (random() > 0.995) solver.h[i] = Number.NaN;
+      }
+      const fromRow = trial % 4;
+      const expected = scanned(solver, breaking.strength, fromRow, 0.05);
+      const count = columnCrests(solver, breaking, fromRow, 0.05, out);
+      expect(count).toBe(expected.length);
+      for (let n = 0; n < count; n += 1) {
+        for (const key of Object.keys(expected[n]) as (keyof CrestSample)[]) {
+          expect(Object.is(out[n][key], expected[n][key])).toBe(true);
+        }
+      }
+      crests += count;
+    }
+    expect(crests).toBeGreaterThan(1000);
+  });
+});

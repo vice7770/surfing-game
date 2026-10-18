@@ -57,40 +57,79 @@ export function columnCrests(
 ): number {
   const { nx, nz, h, bed, qx, qz, xCenters, zCenters, restLevel } = solver;
   const rate = solver.surfaceRiseRate;
+  // The crests are found row by row, as the arrays lie in memory, and then read column by column, rows seaward first
+  // (the M1 CPU study, 2026-10-19: down each column every read was a cache line of its own).
+  const crests = crestCells(solver, fromRow, minHeight);
   let count = 0;
-  for (let ix = 0; ix < nx; ix += 1) {
-    for (let iz = Math.max(1, fromRow); iz < nz - 1; iz += 1) {
+  for (let n = 0; n < crests.length; n += 1) {
+    const i = crests[n];
+    const ix = i % nx;
+    const iz = (i - ix) / nx;
+    const eta = h[i] + bed[i];
+    let strength = 0;
+    let rise = 0;
+    let trough = eta;
+    for (let row = iz; row < nz && zCenters[row] - zCenters[iz] <= FACE_REACH; row += 1) {
+      const cell = row * nx + ix;
+      if (!(h[cell] > WET)) continue;
+      if (breaking.strength[cell] > strength) strength = breaking.strength[cell];
+      if (h[cell] + bed[cell] < trough) trough = h[cell] + bed[cell];
+      const fresh = rate[cell] / Math.sqrt(GRAVITY * Math.max(RISE_DEPTH, restLevel - bed[cell]));
+      if (fresh > rise) rise = fresh;
+    }
+    const found = crestMotion(solver, i);
+    const motion = found && found.speed >= MIN_CREST_FROUDE * Math.sqrt(GRAVITY * h[i]) ? found : undefined;
+    const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, wave: 0, strength: 0, rise: 0, depth: 0, b: NaN, speed: 0 });
+    sample.column = ix;
+    sample.row = iz;
+    sample.x = xCenters[ix];
+    sample.z = zCenters[iz];
+    sample.eta = eta - restLevel;
+    sample.wave = eta - trough;
+    sample.strength = strength;
+    sample.rise = rise;
+    sample.depth = restLevel - bed[i];
+    sample.b = motion ? (qx[i] * motion.direction.x + qz[i] * motion.direction.z) / h[i] / motion.speed : NaN;
+    sample.speed = motion ? motion.speed : 0;
+    count += 1;
+  }
+  return count;
+}
+
+let crestScratch = new Int32Array(0);
+let crestOrder = new Int32Array(0);
+let crestColumns = new Int32Array(0);
+
+/**
+ * The cells `columnCrests` reads crests at (wet, over `minHeight`, above both neighbours across shore), from `fromRow`
+ * shoreward, in its order: columns in order, rows seaward first. A view of scratch, valid until the next call.
+ */
+function crestCells(solver: ShallowWaterSolver, fromRow: number, minHeight: number): Int32Array {
+  const { nx, nz, h, bed, restLevel } = solver;
+  if (crestColumns.length < nx + 1) crestColumns = new Int32Array(nx + 1);
+  crestColumns.fill(0, 0, nx + 1);
+  let found = 0;
+  for (let iz = Math.max(1, fromRow); iz < nz - 1; iz += 1) {
+    for (let ix = 0; ix < nx; ix += 1) {
       const i = iz * nx + ix;
       if (!(h[i] > WET)) continue;
       const eta = h[i] + bed[i];
       if (!(eta - restLevel > minHeight) || !(eta > h[i - nx] + bed[i - nx]) || !(eta > h[i + nx] + bed[i + nx])) continue;
-      let strength = 0;
-      let rise = 0;
-      let trough = eta;
-      for (let row = iz; row < nz && zCenters[row] - zCenters[iz] <= FACE_REACH; row += 1) {
-        const cell = row * nx + ix;
-        if (!(h[cell] > WET)) continue;
-        if (breaking.strength[cell] > strength) strength = breaking.strength[cell];
-        if (h[cell] + bed[cell] < trough) trough = h[cell] + bed[cell];
-        const fresh = rate[cell] / Math.sqrt(GRAVITY * Math.max(RISE_DEPTH, restLevel - bed[cell]));
-        if (fresh > rise) rise = fresh;
+      if (found === crestScratch.length) {
+        const grown = new Int32Array(Math.max(64, 2 * found));
+        grown.set(crestScratch);
+        crestScratch = grown;
       }
-      const found = crestMotion(solver, i);
-      const motion = found && found.speed >= MIN_CREST_FROUDE * Math.sqrt(GRAVITY * h[i]) ? found : undefined;
-      const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, wave: 0, strength: 0, rise: 0, depth: 0, b: NaN, speed: 0 });
-      sample.column = ix;
-      sample.row = iz;
-      sample.x = xCenters[ix];
-      sample.z = zCenters[iz];
-      sample.eta = eta - restLevel;
-      sample.wave = eta - trough;
-      sample.strength = strength;
-      sample.rise = rise;
-      sample.depth = restLevel - bed[i];
-      sample.b = motion ? (qx[i] * motion.direction.x + qz[i] * motion.direction.z) / h[i] / motion.speed : NaN;
-      sample.speed = motion ? motion.speed : 0;
-      count += 1;
+      crestScratch[found++] = i;
+      crestColumns[ix + 1] += 1;
     }
   }
-  return count;
+  // Each column's crests follow the columns before it; within a column they were found seaward first.
+  for (let ix = 0; ix < nx; ix += 1) crestColumns[ix + 1] += crestColumns[ix];
+  if (crestOrder.length < found) crestOrder = new Int32Array(crestScratch.length);
+  for (let n = 0; n < found; n += 1) {
+    const i = crestScratch[n];
+    crestOrder[crestColumns[i % nx]++] = i;
+  }
+  return crestOrder.subarray(0, found);
 }
