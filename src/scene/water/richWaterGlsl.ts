@@ -15,6 +15,21 @@ export { waterCubicPars };
  */
 export const PLUME_DENSITY = 15;
 
+/**
+ * CPU twin of the plume's whiteness in `RICH_FOAM`: how far down the air reaches (the plume's depth, at most the
+ * water's), m, and how white it turns the body, from the void fraction. Every input is ≥ 0 over a triangle, so the
+ * clamps change nothing there; they hold where 4× MSAA shades a sliver triangle at a pixel centre outside it (three
+ * interpolates at the centre): there the varyings run far out of range (depth −26 m, void fraction −0.66 was seen),
+ * `exp` of the negative path reached 1e20, and three's multiscattering overflowed that body colour into a NaN pixel.
+ */
+export function plumeReach(plumeDepth: number, depth: number): number {
+  return Math.max(0, Math.min(plumeDepth, depth));
+}
+
+export function plumeWhiteness(air: number, reach: number): number {
+  return 1 - Math.exp(Math.min(0, -PLUME_DENSITY * air * reach));
+}
+
 /** File-scope values the normal chunk computes and the body chunk reads (Rich fragment only). */
 export const richFragmentPars = /* glsl */ `
 vec2 waterSurfaceSlope;
@@ -89,8 +104,10 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
   waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
-  float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
-  float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
+  // Held in range off a sliver triangle's edge, where MSAA shades it (plumeReach, plumeWhiteness).
+  float waterPlumeReach = max( 0.0, min( vWaterPlumeDepth, vWaterDepth ) );
+  float waterPlume = 1.0 - exp( min( 0.0, -PLUME_DENSITY * vWaterAir * waterPlumeReach ) );
+  float waterPlumePath = faceDirection > 0.0 ? 0.5 * waterPlumeReach / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
   vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );
   diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );
   ${RICH_SPECULAR}
