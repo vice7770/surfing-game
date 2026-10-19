@@ -18,24 +18,26 @@ import { ShallowWaterSolver, stretchedEdges, uniformEdges } from '../src/wave/Sh
 import { alongShoreOf, tankDepth, tankLayout, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
 
 export const CHECKPOINT = '1bcc7c0c99943e81fdb5378e5a8a16af3f133f54';
+/** The Canyon spilling lip's foam (its drift and drawn source, two passes), as merged under the M1 CPU work. */
+export const LIP_CHECKPOINT = '78f5c2c988963062725a7ff02faaa321d57999d1';
 type Constructors = { FoamField: typeof FoamField; AerationField: typeof AerationField };
 const current: Constructors = { FoamField, AerationField };
 const hash = (values: ArrayBufferView) => createHash('sha256').update(Buffer.from(values.buffer, values.byteOffset, values.byteLength)).digest('hex');
 const bytes = (values: ArrayBufferView) => Buffer.from(values.buffer, values.byteOffset, values.byteLength);
 
 /** Compile the unchanged canonical classes in isolation, before invoking current classes. */
-export async function checkpointOracle() {
+export async function checkpointOracle(checkpoint = CHECKPOINT) {
   const dir = mkdtempSync(join(tmpdir(), 'foam-air-checkpoint-'));
   const sources: Record<string, string> = {};
   for (const name of ['FoamField', 'AerationField', 'dispersion']) {
-    const source = execFileSync('git', ['show', `${CHECKPOINT}:src/wave/${name}.ts`], { encoding: 'utf8' });
+    const source = execFileSync('git', ['show', `${checkpoint}:src/wave/${name}.ts`], { encoding: 'utf8' });
     sources[name] = createHash('sha256').update(source).digest('hex');
     writeFileSync(join(dir, `${name}.ts`), source);
   }
   writeFileSync(join(dir, 'entry.ts'), "export { FoamField } from './FoamField';\nexport { AerationField } from './AerationField';\n");
   execFileSync(resolve('node_modules/.bin/rolldown'), [join(dir, 'entry.ts'), '-o', join(dir, 'before.mjs'), '--format', 'esm', '--platform', 'node'], { stdio: 'pipe' });
   const before = await import(pathToFileURL(join(dir, 'before.mjs')).href) as Constructors;
-  writeFileSync(join(dir, 'checkpoint.json'), JSON.stringify({ checkpoint: CHECKPOINT, sources }, null, 2));
+  writeFileSync(join(dir, 'checkpoint.json'), JSON.stringify({ checkpoint, sources }, null, 2));
   return { before, dir, sources };
 }
 
@@ -102,13 +104,27 @@ function boreSources(water: ShallowWaterSolver, state: Fields, breaking: Float64
   }
 }
 
-export type ReplayCase = 'uniform' | 'stretched' | 'boundary' | 'stale' | 'sparse';
-/** Changes water and source inputs between steps; deliberately does not advance the solver clock. */
+export type ReplayCase = 'uniform' | 'stretched' | 'boundary' | 'stale' | 'sparse' | 'drift';
+/**
+ * Changes water and source inputs between steps; deliberately does not advance the solver clock. `drift` is `sparse`
+ * with the spilling lip's foam drift (fast, slow, none, NaN and negative by row, some carrying foam rows seaward in a
+ * step) and a drawn breaking below the felt one: its oracle must be `LIP_CHECKPOINT`'s.
+ */
 export function differentialReplay(before: Constructors, scenario: ReplayCase, steps = 90) {
-  const sparse = scenario === 'sparse';
+  const sparse = scenario === 'sparse' || scenario === 'drift';
+  const drifting = scenario === 'drift';
   const water = new ShallowWaterSolver({ nx: 18, xMin: -9, dx: 1, zEdges: scenario === 'stretched' || sparse ? stretchedEdges(-30, 10, -5, 1, 4) : uniformEdges(-9, 9, 18), xBoundary: 'open' }, () => 2);
   const old = fields(water, before, true, sparse), fused = fields(water, current, true, sparse);
   const breaking = new Float64Array(water.h.length);
+  const drawn = new Float64Array(water.h.length);
+  if (drifting) {
+    const drift = new Float64Array(water.h.length);
+    for (let i = 0; i < drift.length; i += 1) {
+      const row = Math.floor(i / water.nx);
+      drift[i] = [0, 12, i % 2 ? Number.NaN : -3, 0.4][row % 4];
+    }
+    for (const state of [old, fused]) (state.foam as unknown as { setDrift(drift: Float64Array): void }).setDrift(drift);
+  }
   let checks = 0;
   /** Rows foam's stencil skipped (sparse rows with nothing to carry). */
   let skipped = 0;
@@ -129,6 +145,7 @@ export function differentialReplay(before: Constructors, scenario: ReplayCase, s
       // Sparse: bores in the band, and once in a row with nothing yet to carry.
       const bores = !sparse || (row >= water.nz / 3 && row <= water.nz / 2) || (step === 45 && row === water.nz - 3);
       breaking[i] = bores && (i + step) % 5 === 0 ? [0.4, 1, 4][step % 3] : 0;
+      drawn[i] = breaking[i] * [0, 0.5, 1][i % 3];
     }
     const beforeAir: number[] = [];
     for (const state of [old, fused]) {
@@ -137,7 +154,8 @@ export function differentialReplay(before: Constructors, scenario: ReplayCase, s
       state.foam.addSplash(x, z, 0.02);
       state.air.addPlunge(x, z, 200, 0.6);
       state.air.addAir(x + 1, z + 1, 0.01, 0.7);
-      state.foam.update(dt, breaking, scenario === 'uniform' ? undefined : state.stencil);
+      if (drifting) (state.foam as unknown as { update(...args: unknown[]): void }).update(dt, breaking, state.stencil, drawn);
+      else state.foam.update(dt, breaking, scenario === 'uniform' ? undefined : state.stencil);
       if (state === fused && dt > 0 && scenario !== 'uniform') skipped += state.stencil.recorded.filter((row) => row === 0).length;
       if (dt > 0) boreSources(water, state, breaking, dt);
       beforeAir.push(diagnostics(water, state).air);
