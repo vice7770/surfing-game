@@ -387,7 +387,7 @@ class SurfGame {
     this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.glowWanted = resolved.glow;
-    // The sun's glitter comes with the rich sea (High, Ultra); Medium keeps three's GGX (the M1's frame budget).
+    // The sun's glitter comes with the rich sea (High, Ultra); Medium draws its road lite (the M1's frame budget).
     setGlitterForGraphics(resolved.richSea);
     // Aged foam's streaks (web-ocean plan, item 7) take the headroom the glitter leaves: Low and Medium only.
     setFoamStreaksForGraphics(resolved.richSea);
