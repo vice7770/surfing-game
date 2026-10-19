@@ -102,12 +102,6 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
   drawnEdges: false,
 };
 
-/** Whether a row of the drawn whitewater holds any. */
-function drawnRow(drawn: Float64Array, start: number, count: number): boolean {
-  for (let i = start; i < start + count; i += 1) if (drawn[i] > 0) return true;
-  return false;
-}
-
 /** Terms of `seriesSine`'s Taylor series: on [−π/2, π/2] the first one left out is below 1e-20. */
 const SINE_TERMS = 12;
 
@@ -238,6 +232,8 @@ export class SpillingFront {
   private celerity = 0;
   /** For the drawn whitewater: each column's most seaward crest any live wave last had there, z (NaN: none). */
   private seaward?: Float64Array;
+  /** For the drawn edges: the rows that drew white at the last update, in order. */
+  private drawnRows?: Int32Array;
 
   constructor(private readonly grid: SpillingGrid, options: Partial<SpillingFrontOptions> = {}) {
     this.options = { ...SPILLING_FRONT_DEFAULTS, ...options };
@@ -410,14 +406,11 @@ export class SpillingFront {
     this.ramped = 0;
     const fray = drawn !== undefined && options.drawnEdges;
     const dx = nx > 1 ? xCenters[1] - xCenters[0] : 1;
-    let firstDrawn = nz;
-    let lastDrawn = -1;
+    const drawnRows = fray ? (this.drawnRows ??= new Int32Array(nz)) : undefined;
+    let drawnRowCount = 0;
     for (let iz = 0; iz < nz; iz += 1) {
-      if (fray && iz > 0 && drawnRow(drawn!, (iz - 1) * nx, nx)) {
-        frayRow(drawn!, (iz - 1) * nx, nx, xCenters, dx, zCenters[iz - 1], time);
-        firstDrawn = Math.min(firstDrawn, iz - 1);
-        lastDrawn = iz - 1;
-      }
+      // With the drawn edges: whether this row draws any white, its run then frayed at its ends.
+      let rowDraws = false;
       const z = zCenters[iz];
       // Water not breaking has none to show, feel or draw: cleared in a run (the M1 CPU study, 2026-10-19); every
       // breaking cell below writes all three.
@@ -441,7 +434,10 @@ export class SpillingFront {
         if (owner < 0) {
           out[i] = b;
           if (felt) felt[i] = b;
-          if (drawn) drawn[i] = z < seaward![ix] - options.crestReach ? 0 : b;
+          if (drawn) {
+            drawn[i] = z < seaward![ix] - options.crestReach ? 0 : b;
+            if (drawn[i] > 0) rowDraws = true;
+          }
           continue;
         }
         // Rows run seaward to shoreward, so the first owned cell met in a column on its own crest is the wave's crest
@@ -466,22 +462,27 @@ export class SpillingFront {
         const local = time - Math.max(reached, latest);
         if (local >= options.rampSeconds) {
           out[i] = b;
-          if (drawn) drawn[i] = stray ? 0 : look && local < look.span ? b * look.share(ix, local, z) : b;
+          if (drawn) {
+            drawn[i] = stray ? 0 : look && local < look.span ? b * look.share(ix, local, z) : b;
+            if (drawn[i] > 0) rowDraws = true;
+          }
           continue;
         }
         const grown = Math.max(0, local) / options.rampSeconds;
         const width = options.lineWidth + options.growth * Math.max(0, local);
         out[i] = z - wave.crest[ix] > width ? 0 : b * (options.lineShare + (1 - options.lineShare) * grown);
-        if (drawn) drawn[i] = stray ? 0 : look && local < look.span && out[i] > 0 ? out[i] * look.share(ix, local, z) : out[i];
+        if (drawn) {
+          drawn[i] = stray ? 0 : look && local < look.span && out[i] > 0 ? out[i] * look.share(ix, local, z) : out[i];
+          if (drawn[i] > 0) rowDraws = true;
+        }
         this.ramped += 1;
       }
+      if (rowDraws && drawnRows) {
+        frayRow(drawn!, iz * nx, nx, xCenters, dx, z, time);
+        drawnRows[drawnRowCount++] = iz;
+      }
     }
-    if (fray && nz > 0 && drawnRow(drawn!, (nz - 1) * nx, nx)) {
-      frayRow(drawn!, (nz - 1) * nx, nx, xCenters, dx, zCenters[nz - 1], time);
-      firstDrawn = Math.min(firstDrawn, nz - 1);
-      lastDrawn = nz - 1;
-    }
-    if (fray && lastDrawn >= firstDrawn) frayToes(drawn!, nx, firstDrawn, lastDrawn, xCenters, zCenters, time);
+    if (drawnRows && drawnRowCount > 0) frayToes(drawn!, nx, drawnRows, drawnRowCount, xCenters, zCenters, time);
   }
 
   /**

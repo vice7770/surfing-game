@@ -74,7 +74,8 @@ describe('the drawn whitewater\'s edges (the foam look, item 4a)', () => {
     const g = grid();
     const values = new Float64Array(g.nx * g.nz);
     for (let iz = 15; iz <= 25; iz += 1) for (let ix = 0; ix < g.nx; ix += 1) values[iz * g.nx + ix] = 1;
-    frayToes(values, g.nx, 15, 25, g.xCenters, g.zCenters, 7.1);
+    const rows = Int32Array.from({ length: 11 }, (_, k) => 15 + k);
+    frayToes(values, g.nx, rows, rows.length, g.xCenters, g.zCenters, 7.1);
     const toes = new Set<number>();
     for (let ix = 0; ix < g.nx; ix += 1) {
       // The seaward half as it was; nothing outside.

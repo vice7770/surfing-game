@@ -16,9 +16,9 @@ export const DRAWN_EDGES = {
    * end frays into fingers a few metres long. A run shorter than (cut + fade) / `endShare` has both scaled down, so its
    * middle is always left whole.
    */
-  endCut: 5,
+  endCut: 4,
   endShare: 0.3,
-  endFade: 2.5,
+  endFade: 2,
   endWavelength: 3,
   endLife: 3,
   /** Runs this many metres apart or less along a row count as one: the solver's breaking is patchy within a crest. */
@@ -28,7 +28,7 @@ export const DRAWN_EDGES = {
    * noise along shore (`toeWavelength` m) and time (`toeLife` s), fading in over `toeFade` of its depth: the seaward half
    * is left whole.
    */
-  toeShare: 0.35,
+  toeShare: 0.3,
   toeFade: 0.15,
   toeWavelength: 4,
   toeLife: 2,
@@ -98,32 +98,32 @@ export function frayRow(values: Float64Array, start: number, count: number, xCen
 }
 
 /**
- * Frays each column's runs of drawn white at their shoreward end (the toe), rows `firstRow` to `lastRow`: `values` is
- * row-major, `nx` columns, rows at `zCenters`; x along shore at `xCenters`. Only lowers values.
+ * Frays each column's runs of drawn white at their shoreward end (the toe): `values` is row-major, `nx` columns, rows at
+ * `zCenters`; x along shore at `xCenters`. Only the `count` rows listed in `rows` (ascending) hold any white: a run is
+ * a stretch of consecutive listed rows. Only lowers values.
  */
-export function frayToes(values: Float64Array, nx: number, firstRow: number, lastRow: number, xCenters: ArrayLike<number>,
+export function frayToes(values: Float64Array, nx: number, rows: ArrayLike<number>, count: number, xCenters: ArrayLike<number>,
   zCenters: ArrayLike<number>, time: number): void {
   const { toeShare, toeFade, toeWavelength, toeLife } = DRAWN_EDGES;
   const ts = time / toeLife;
   for (let ix = 0; ix < nx; ix += 1) {
-    const xs = xCenters[ix] / toeWavelength;
-    let iz = firstRow;
-    while (iz <= lastRow) {
-      if (!(values[iz * nx + ix] > 0)) {
-        iz += 1;
+    const noise = toeShare * edgeNoise(xCenters[ix] / toeWavelength, ts, 104729);
+    let k = 0;
+    while (k < count) {
+      if (!(values[rows[k] * nx + ix] > 0)) {
+        k += 1;
         continue;
       }
-      let end = iz;
-      while (end + 1 <= lastRow && values[(end + 1) * nx + ix] > 0) end += 1;
-      if (end > iz) {
-        const seaward = zCenters[iz];
-        const toe = zCenters[end];
-        const depth = toe - seaward;
-        const cut = toeShare * depth * edgeNoise(xs, ts, 104729);
+      let end = k;
+      while (end + 1 < count && rows[end + 1] === rows[end] + 1 && values[rows[end + 1] * nx + ix] > 0) end += 1;
+      if (end > k) {
+        const toe = zCenters[rows[end]];
+        const depth = toe - zCenters[rows[k]];
+        const cut = noise * depth;
         const fade = toeFade * depth;
-        for (let k = iz; k <= end; k += 1) values[k * nx + ix] *= 1 - smoothstep(toe - cut - fade, toe - cut, zCenters[k]);
+        for (let j = k; j <= end; j += 1) values[rows[j] * nx + ix] *= 1 - smoothstep(toe - cut - fade, toe - cut, zCenters[rows[j]]);
       }
-      iz = end + 1;
+      k = end + 1;
     }
   }
 }
