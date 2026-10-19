@@ -2,7 +2,8 @@ import { ShaderLib, type Material, type WebGLProgramParametersWithUniforms } fro
 import { describe, expect, it } from 'vitest';
 import {
   AGED_OPACITY, AGED_STREAKS, BUBBLE_TINT, BUBBLE_TINT_GLSL, YOUTH_AIR, YOUTH_COVER, bubbleTint, foamEdge, foamOpacity, foamYouth,
-  foamFreshMode, foamRise, freshFoamCover, freshLace, setFoamFresh, softCoverage, waterFoamFreshPars,
+  foamFreshMode, foamFreshProgramKey, foamRise, freshFoamCover, freshLace, setFoamFresh, setFoamStreaksForGraphics, softCoverage,
+  waterFoamFreshPars,
 } from './foamFreshness';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../../wave/SpillingRoller';
@@ -242,6 +243,21 @@ describe('the foam freshness switch', () => {
         expect(off.rich.text).not.toContain('waterFoamYouth');
         expect(off.rich.text).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime');
       }
+    } finally {
+      setFoamFresh(was);
+    }
+  });
+
+  it('draws the streaks without the rich sea only (the glitter takes the headroom on High), and leaves the rest on', () => {
+    const was = { ...foamFreshMode };
+    try {
+      setFoamFresh({ on: true, streaks: true });
+      setFoamStreaksForGraphics(true);
+      expect(foamFreshMode).toEqual({ on: true, streaks: false });
+      expect(foamFreshProgramKey()).toBe('-foam-fresh-no-streaks');
+      setFoamStreaksForGraphics(false);
+      expect(foamFreshMode).toEqual({ on: true, streaks: true });
+      expect(foamFreshProgramKey()).toBe('');
     } finally {
       setFoamFresh(was);
     }

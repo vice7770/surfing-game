@@ -199,14 +199,16 @@ float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float tim
 export const BUBBLE_TINT_GLSL = `${f(BUBBLE_TINT)} * waterYouth * clamp( vWaterFoam, 0.0, 1.0 )`;
 
 /**
- * Whether the Rich foam ages, and with its streaks (dev: `?foamFresh=off` draws it as before, `?foamStreaks=off` without
- * the streaks; `window.waterFoamFresh(on)` or `waterFoamFresh({ on, streaks })` in a page).
+ * Whether the Rich foam ages, and with its streaks (dev: `?foamFresh=off` draws it as before; `?foamStreaks=on|off`
+ * forces the streaks either way, whatever the graphics say; `window.waterFoamFresh(on)` or
+ * `waterFoamFresh({ on, streaks })` in a page).
  */
 export interface FoamFreshMode {
   on: boolean;
   streaks: boolean;
 }
-export const foamFreshMode: FoamFreshMode = { on: devParam('foamFresh') !== 'off', streaks: devParam('foamStreaks') !== 'off' };
+const forcedStreaks = devParam('foamStreaks');
+export const foamFreshMode: FoamFreshMode = { on: devParam('foamFresh') !== 'off', streaks: forcedStreaks !== 'off' };
 const listeners = new Set<() => void>();
 
 /** Called whenever the switch changes: the Rich programs compile again. */
@@ -219,6 +221,16 @@ export function setFoamFresh(patch: boolean | Partial<FoamFreshMode>): void {
   const was = foamFreshProgramKey();
   Object.assign(foamFreshMode, typeof patch === 'boolean' ? { on: patch } : patch);
   if (foamFreshProgramKey() !== was) for (const listener of listeners) listener();
+}
+
+/**
+ * The graphics' choice: the streaks come without the Sea detail's rich sea (Low and Medium, the M1's Auto), unless
+ * `?foamStreaks=` forces them. High and Ultra spend the Rich tank's headroom on the sun's glitter: with it, the M1 timed
+ * the streaks' reads at +0.6 to +1.3 ms a frame on a foam-filled Canyon view (the cost pass, 2026-10-19), past the
+ * +0.5 ms budget, where Medium timed them within its noise. There aged foam gathers into its round patches.
+ */
+export function setFoamStreaksForGraphics(richSea: boolean): void {
+  setFoamFresh({ streaks: forcedStreaks === 'on' ? true : forcedStreaks === 'off' ? false : !richSea });
 }
 
 /** The Rich programs' cache-key part: none when the foam ages with its streaks (the default). */
