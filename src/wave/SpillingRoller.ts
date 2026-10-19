@@ -140,6 +140,23 @@ export const ROLLER_DEFAULTS: RollerOptions = {
   mask: 'front',
 };
 
+/** One wave's lens in a column as it stands, for the look (`SpillingCurl`, the Canyon spilling lip): read only. */
+export interface RollerLensView {
+  /** Its crest across shore, z_c (m), and its section's latest H (m). */
+  crest: number;
+  height: number;
+  /** Its length L_r along its normal, m (NaN while unset). */
+  length: number;
+  /** Its crest's normal n̂ (toward the beach) and its speed along it, m/s. */
+  normalX: number;
+  normalZ: number;
+  speed: number;
+}
+
+export function createLensView(): RollerLensView {
+  return { crest: Number.NaN, height: Number.NaN, length: Number.NaN, normalX: 0, normalZ: 1, speed: 0 };
+}
+
 /** The lens at a point: what the rider's water reads (`PhysicalSurfWater`). */
 export interface LensPoint {
   /** Its thickness there, t, m: the top stands ᾱ·t over the solver's surface, the underside (1 − ᾱ)·t under it. */
@@ -885,6 +902,23 @@ export class SpillingRoller implements RollerLens {
     out.low = crestLow - taper * longest - pad;
     out.high = crestHigh + longest + pad;
     return out;
+  }
+
+  /**
+   * Wave `id`'s lens in `column`, in whatever slot it is kept, as its last step left it (the Canyon spilling lip's look,
+   * `SpillingCurl`, reads it and never writes): false where the wave has none there.
+   */
+  lensOf(column: number, id: number, out: RollerLensView): boolean {
+    if (!(column >= 0 && column < this.grid.nx)) return false;
+    const lens = this.find(column, id);
+    if (lens < 0) return false;
+    out.crest = this.crest[lens];
+    out.height = this.height[lens];
+    out.length = this.length[lens];
+    out.normalX = this.normalX[lens];
+    out.normalZ = this.normalZ[lens];
+    out.speed = this.speed[lens];
+    return true;
   }
 
   /** The wave whose lens the table holds in `column`'s `slot`, or −1. */

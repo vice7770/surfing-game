@@ -13,31 +13,74 @@ export class DepartureRows {
   /** Per row, the lowest and highest row its departures read; low −1 when they cannot be bounded (a non-finite water). */
   private low = new Int32Array(0);
   private high = new Int32Array(0);
+  /** Per row, how far its departures reach across shore, m (`find`), and the lowest row they read with a drift. */
+  private reach = new Float64Array(0);
+  private drifted = new Int32Array(0);
   private found = new Uint8Array(0);
+  private foundDrifted = new Uint8Array(0);
   private solver?: ShallowWaterSolver;
   private dt = Number.NaN;
+  private drift?: Float64Array;
 
   begin(solver: ShallowWaterSolver, dt: number): void {
     const { nz } = solver;
     if (this.found.length !== nz) {
       this.low = new Int32Array(nz);
       this.high = new Int32Array(nz);
+      this.reach = new Float64Array(nz);
+      this.drifted = new Int32Array(nz);
       this.found = new Uint8Array(nz);
+      this.foundDrifted = new Uint8Array(nz);
     } else {
       this.found.fill(0);
+      this.foundDrifted.fill(0);
     }
     this.solver = solver;
     this.dt = dt;
+    this.drift = undefined;
   }
 
   /**
    * Whether every departure from row `iz` reads only rows with no field: `prefix[r]` counts the rows below r that hold
-   * some (length nz + 1).
+   * some (length nz + 1). With `drift` (the foam's shoreward surface drift, m/s per cell, `FoamField.setDrift`), each
+   * wet cell's departure may also lie its drift·dt further seaward, as the foam's own departures do: the rows read reach
+   * that much lower. One drift per step: the rows found with it are kept for it.
    */
-  quiet(iz: number, prefix: Int32Array): boolean {
+  quiet(iz: number, prefix: Int32Array, drift?: Float64Array): boolean {
     if (this.found[iz] === 0) this.find(iz);
-    const low = this.low[iz];
+    let low = this.low[iz];
+    if (low >= 0 && drift) {
+      if (this.drift !== drift) {
+        this.drift = drift;
+        this.foundDrifted.fill(0);
+      }
+      if (this.foundDrifted[iz] === 0) this.findDrifted(iz, drift);
+      low = this.drifted[iz];
+    }
     return low >= 0 && prefix[this.high[iz] + 1] - prefix[low] === 0;
+  }
+
+  /**
+   * The lowest row row `iz`'s drifted departures read: as `find`'s, from its reach plus the row's largest drift·dt over
+   * its wet cells (a cell's drift moves its departure only when drift·dt > 0, so NaN, 0 and negative drifts add none).
+   */
+  private findDrifted(iz: number, drift: Float64Array): void {
+    const { nx, nz, h, zCenters } = this.solver!;
+    this.foundDrifted[iz] = 1;
+    let farthest = 0;
+    for (let i = iz * nx, end = i + nx; i < end; i += 1) {
+      if (h[i] <= WET) continue;
+      const shift = drift[i] * this.dt;
+      if (shift > farthest) farthest = shift;
+    }
+    if (!(farthest > 0)) {
+      this.drifted[iz] = this.low[iz];
+      return;
+    }
+    // fl(z − shift) ≥ fl(z) − farthest less a rounding the pad far exceeds; the search walks down from z's row.
+    const centre = zCenters[iz];
+    const pad = 1e-6 * (1 + (centre < 0 ? -centre : centre) + farthest);
+    this.drifted[iz] = Math.min(this.low[iz], rowAt(zCenters, nz, centre - this.reach[iz] - farthest - pad, iz));
   }
 
   private find(iz: number): void {
@@ -64,11 +107,13 @@ export class DepartureRows {
       // No wet cell: nothing departs, and the row's fields are cleared.
       this.low[iz] = iz;
       this.high[iz] = iz - 1;
+      this.reach[iz] = 0;
       return;
     }
     // Rounding is monotonic, so |fl(fl(qz/h)·dt)| ≤ fl(fl(fastest/shallowest)·dt) in every cell; the pad is far past
     // the rounding of the departure's z.
     const reach = (fastest / shallowest) * this.dt;
+    this.reach[iz] = reach;
     const centre = zCenters[iz];
     const pad = 1e-6 * (1 + (centre < 0 ? -centre : centre));
     this.low[iz] = rowAt(zCenters, nz, centre - reach - pad, iz);

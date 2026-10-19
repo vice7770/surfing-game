@@ -25,7 +25,8 @@ import { SpotSeabed } from '../scene/SpotSeabed';
 import { PoolScenery } from '../scene/PoolScenery';
 import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
-import type { WaterSurface } from '../scene/WaterSurface';
+import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
+import { SpillingCurlMesh } from '../scene/SpillingCurlMesh';
 import type { WaterLook } from '../scene/water/waterLook';
 import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -325,6 +326,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
     ...(diagnosticDx > 0 && Number.isFinite(diagnosticDx) ? { dx: diagnosticDx } : {}),
     ...(diagnosticDz > 0 && Number.isFinite(diagnosticDz) ? { fineSpacing: diagnosticDz } : {}),
+    // `?spillingCurl=0`: the Canyon's spilling front drawn as felt, with no curl (a dev switch, for the lip's costs).
+    ...(devParam('spillingCurl') === '0' ? { spillingCurl: false } : {}),
     ...overrides,
   };
 }
@@ -442,6 +445,8 @@ export class PhysicalMode {
   /** The swept barrel (the Padang Padang spec, Part B, PR 3): built with the water on the first start, on at a swept spot. */
   private sweptBarrel?: SweptBarrel;
   private swept = false;
+  /** The spilling lip's curls (the Canyon spilling lip), built with the water on the first start; drawn wherever a sea has them. */
+  private spillingCurl?: { mesh: SpillingCurlMesh; water: WaterSurface; drawn?: { status: unknown; surface: number; look: WaterLook } };
   private readonly scene: Scene;
   /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
   private sprayShown = true;
@@ -582,6 +587,11 @@ export class PhysicalMode {
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept);
+    if (!this.spillingCurl) {
+      this.spillingCurl = { mesh: new SpillingCurlMesh(water.materialUniforms), water };
+      this.scene.add(this.spillingCurl.mesh.mesh);
+    }
+    this.spillingCurl.drawn = undefined;
     this.lipSheet.mesh.visible = this.shown;
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
@@ -828,6 +838,35 @@ export class PhysicalMode {
       return;
     }
     sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0, host.snapshot.status);
+  }
+
+  /**
+   * The spilling lip's curls (the Canyon spilling lip) over the heights the water just uploaded: the page calls this once
+   * the water has uploaded this frame's heights. Rebuilt only for a new snapshot, look or surface; none hidden.
+   */
+  drawCurl(): void {
+    const curl = this.spillingCurl;
+    if (!curl) return;
+    const { host } = this;
+    if (!host || !this.shown || host.snapshot.curlCount === 0) {
+      curl.mesh.update(host?.snapshot.curl ?? new Float32Array(0), 0, () => 0);
+      curl.drawn = undefined;
+      return;
+    }
+    const { water, mesh } = curl;
+    const look = water.drawnLook;
+    const { status } = host.snapshot;
+    const drawn = curl.drawn;
+    if (drawn && drawn.status === status && drawn.surface === water.surfaceRevision && drawn.look === look) return;
+    mesh.setLook(look);
+    const { grid, surfaceData } = water;
+    mesh.update(host.snapshot.curl, host.snapshot.curlCount, (x, z) => sampleSurfaceHeight(surfaceData, grid, x, z));
+    curl.drawn = { status, surface: water.surfaceRevision, look };
+  }
+
+  /** The spilling lip's mesh, once a sea has started (the water sheet's checks). */
+  get curlMesh(): SpillingCurlMesh | undefined {
+    return this.spillingCurl?.mesh;
   }
 
   /** The swept barrel's loft as last drawn, at a swept spot (the water sheet's curl shots). */

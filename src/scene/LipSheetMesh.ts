@@ -3,6 +3,7 @@ import { LINK_TIME } from '../wave/PlungingLip';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
 import { LIP_SUBDIVISIONS, RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
 import { RICH_WATER } from './water/richWaterGlsl';
+import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import type { WaterLook } from './water/waterLook';
 import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, type WaterOptics } from './waterOptics';
@@ -184,12 +185,18 @@ export class LipSheetMesh {
         .replace('#include <common>', `#include <common>\n${richLipVertexPars}`)
         .replace('#include <begin_vertex>', richLipBeginVertex);
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\n${richLipFragmentPars}`)
+        .replace('#include <common>', `#include <common>\n${richLipFragmentPars}\n${waterGlitterPars}`)
         .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', richLipBody)
-        .replace('#include <lights_fragment_maps>', RICH_LIP_REFLECTION);
+        // The sun's glitter about the lip's own normal, from the screen-space term alone, matte as it foams (item 5).
+        .replace('#include <normal_fragment_begin>', `#include <normal_fragment_begin>${RICH_SHEET_GLITTER}`)
+        .replace('#include <emissivemap_fragment>', `${richLipBody}\nwaterGlitterCover = vLipFoam;`)
+        .replace('#include <lights_fragment_maps>', RICH_LIP_REFLECTION)
+        .replace('#include <lights_physical_pars_fragment>', richGlitterLights(true));
     };
-    this.richMaterial.customProgramCacheKey = () => 'breakline-lip-rich';
+    this.richMaterial.customProgramCacheKey = () => `breakline-lip-rich${glitterProgramKey()}`;
+    onGlitterChange(() => {
+      this.richMaterial.needsUpdate = true;
+    });
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.frustumCulled = false;
   }

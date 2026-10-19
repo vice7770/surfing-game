@@ -9,6 +9,7 @@ import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHo
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from './PhysicalMode';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
+import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE } from '../wave/SpillingCurl';
 
 const config: SurfZoneConfig = {
   spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -203,5 +204,30 @@ describe('the roller lens in the snapshot', () => {
     const source = new PhysicalSurfaceSource(new SnapshotSurfZone(host), host.init.grid.spacing);
     expect(source.writeRoller).toBeUndefined();
     expect(source.rollerColumns).toBeUndefined();
+  });
+});
+
+// The Canyon spilling lip: its curls travel in the snapshot for the page to loft, solo, in the worker and online alike.
+describe('the spilling lip in the snapshot', () => {
+  it('carries the Canyon\'s curls to the page as the sea wrote them, and none where the sea has no lip', async () => {
+    const host = new LocalSurfZone({ ...config, spot: 'canyon' });
+    await host.ready;
+    const { simulation } = host.runner;
+    expect(host.snapshot.curl).toHaveLength(CURL_CAPACITY * CURL_STRIDE);
+    const into = new Float32Array(CURL_CAPACITY * CURL_STRIDE);
+    for (let batch = 0; batch < 8; batch += 1) {
+      host.advance(15);
+      const count = simulation.writeCurls(into);
+      expect(host.snapshot.curlCount).toBe(count);
+      expect(Array.from(host.snapshot.curl.subarray(0, count * CURL_STRIDE))).toEqual(Array.from(into.subarray(0, count * CURL_STRIDE)));
+      for (let s = 0; s < count; s += 1) expect(host.snapshot.curl[s * CURL_STRIDE + CURL_FIELD.width]).toBeGreaterThanOrEqual(0);
+    }
+    const plain = new LocalSurfZone(config);
+    await plain.ready;
+    expect(plain.snapshot.curl).toHaveLength(0);
+    expect(plain.snapshot.curlCount).toBe(0);
+    const off = new LocalSurfZone({ ...config, spot: 'canyon', spillingCurl: false });
+    await off.ready;
+    expect(off.snapshot.curl).toHaveLength(0);
   });
 });

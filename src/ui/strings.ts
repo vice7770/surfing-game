@@ -302,6 +302,7 @@ export const EN = {
   'settings.waterLook': 'Water look',
   'settings.waterLook.classic': 'Classic',
   'settings.waterLook.rich': 'Rich',
+  'settings.glow': 'Glow and colour grade',
   'settings.caustics': 'Caustics',
   'settings.sprayMist': 'Spray and mist',
   'settings.particles': 'Particles',

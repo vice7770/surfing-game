@@ -2,7 +2,7 @@ import {
   AdditiveBlending, Camera, Color, DoubleSide, HalfFloatType, Mesh, NoToneMapping, PlaneGeometry, RGBAFormat, Scene, ShaderMaterial, Vector4,
   WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
-import { chopFieldUniforms, waterChopPars } from './waterChop';
+import { chopFieldUniforms, waterChopCascadePars, waterChopPars } from './waterChop';
 import { WATER_IOR } from './waterOptics';
 import { waterFoldPars } from './water/waterFold';
 
@@ -69,6 +69,7 @@ varying vec2 vFlat;
 varying vec2 vLit;
 varying float vSunlit;
 ${waterChopPars}
+${waterChopCascadePars}
 
 // The water mesh's bilinear lookups (WaterSurface.ts), mirrored past the side edges as the water is drawn there.
 ${waterFoldPars}
@@ -103,7 +104,8 @@ void main() {
   float slopeX = ( heightAt( xz + stepX ) - heightAt( xz - stepX ) ) / ( 2.0 * waterGrid.z );
   float slopeZ = ( heightAt( xz + stepZ ) - heightAt( xz - stepZ ) ) / ( 2.0 * waterGrid.z );
   // The drawn surface's normal: the solver's waves and the shading chop together.
-  vec2 chop = waterChop * waterChopSlope( xz, waterTime );
+  // Rich's two cascades where they run; else the Classic patch or the analytic waves, as before.
+  vec2 chop = waterChop * ( waterChopCascades > 0.5 ? waterChopCascadeSlope( xz ) : waterChopSlope( xz, waterTime ) );
   vec3 normal = normalize( vec3( -slopeX - chop.x, 1.0, -slopeZ - chop.y ) );
   vec3 incident = -normalize( waterSunDirection );
   vec3 ray = refract( incident, normal, ${(1 / WATER_IOR).toFixed(6)} );

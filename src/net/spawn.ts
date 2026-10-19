@@ -3,8 +3,11 @@ import { OPEN_EDGE_RAMP } from '../wave/ShallowWaterSolver';
 
 /** A spawn keeps at least this far from other surfers when the lineup allows, m (spec N1). */
 export const SPAWN_CLEARANCE = 3;
-/** Spawns lie this far seaward of the break line, m: from where catches happen out to where a paddler waits for sets. */
-const OUT = { near: 6, far: 30 };
+/**
+ * Spawns lie this far seaward of the break line, m: from the ride's own start (`RIDE_LINEUP_OFFSET`, 5 m further out
+ * since the owner's playtest of 2026-10-11) out to where a paddler waits for sets.
+ */
+export const SPAWN_OUT = { near: 11, far: 35 } as const;
 /** Along shore, within this of the take-off, m. */
 const ALONG = 30;
 /**
@@ -39,11 +42,11 @@ export function chooseSpawn(area: SpawnArea, others: readonly { x: number; z: nu
   }
   const candidates: { x: number; z: number; clearance: number; distance: number }[] = [];
   for (const x of xs) {
-    for (let out = OUT.near; out <= OUT.far + 1e-9; out += GRID.out) {
+    for (let out = SPAWN_OUT.near; out <= SPAWN_OUT.far + 1e-9; out += GRID.out) {
       const z = area.focusZ - out;
       let clearance = CLEARANCE_CAP;
       for (const other of others) clearance = Math.min(clearance, Math.hypot(x - other.x, z - other.z));
-      candidates.push({ x, z, clearance, distance: Math.hypot(x - area.focusX, out - OUT.near) });
+      candidates.push({ x, z, clearance, distance: Math.hypot(x - area.focusX, out - SPAWN_OUT.near) });
     }
   }
   const clear = candidates.filter((candidate) => candidate.clearance >= SPAWN_CLEARANCE).sort((a, b) => a.distance - b.distance);

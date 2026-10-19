@@ -24,5 +24,10 @@ float richRoughness( float base, float variance ) {
 /** Classic's roughness, which the Rich water keeps on its underside. */
 export const CLASSIC_ROUGHNESS = 0.62;
 
-/** GLSL: the Rich gloss. From below, past the Snell window, the water reflects itself, not the sky: Classic's roughness keeps that dim. Needs `faceDirection`. */
-export const RICH_SPECULAR = `roughnessFactor = faceDirection > 0.0 ? richRoughness( roughnessFactor, waterRippleVariance ) : ${CLASSIC_ROUGHNESS.toFixed(3)};`;
+/**
+ * GLSL: the Rich gloss. From below, past the Snell window, the water reflects itself, not the sky: Classic's roughness
+ * keeps that dim. The sky's reflection takes this roughness; the sun's glitter (glitter.ts) takes the foam over the
+ * water as matte, from `waterCover`. Needs `faceDirection`, `waterCover` and `waterGlitterPars`.
+ */
+export const RICH_SPECULAR = `roughnessFactor = faceDirection > 0.0 ? richRoughness( roughnessFactor, waterRippleVariance ) : ${CLASSIC_ROUGHNESS.toFixed(3)};
+  waterGlitterCover = waterCover;`;

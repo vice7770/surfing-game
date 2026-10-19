@@ -18,7 +18,7 @@ import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { advanceFrameClock, frameDue } from './game/frameLimit';
-import { ownSurferDetail, PRESETS, resolveGraphics, withPreset, type ResolvedGraphics } from './game/Graphics';
+import { ownSurferDetail, PRESETS, resolveGraphics, withGlowOverride, withPreset, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
 import type { StanceName } from './physics/riderPosture';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
@@ -38,6 +38,7 @@ import { LocalSurfZone } from './game/SurfZoneHost';
 import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, ridesAsPractice, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
+import { setGlitterForGraphics } from './scene/water/glitter';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
 import type { SurfZoneConfig } from './wave/SurfZoneSimulation';
@@ -47,8 +48,12 @@ import type { ListenerPose } from './audio/AudioEngine';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { Environment } from './scene/Environment';
 import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
+import { applyHorizonHaze, horizonHazeUniforms } from './scene/water/horizonHaze';
 import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
+import { GlowPass } from './scene/GlowPass';
+import { SunDisc } from './scene/SunDisc';
+import { agxPreimage, type Rgb } from './scene/glowMath';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { FftChop } from './scene/FftChop';
 import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
@@ -68,6 +73,8 @@ import './ui/ui.css';
 
 /** `?demo`: a Surf ride the dev autopilot rides (`?demo=line` holds a line; otherwise S-turns). */
 const demoMode = devParam('demo');
+/** The water's colour seen from below: the underwater fog and background. */
+const UNDERWATER = '#367e83';
 /** The light before any scene sets its own: the menu's. */
 const START_SUN = TIMES[BACKDROP_TIME];
 /** Seconds the menu's waves run before holding still on the Low preset. */
@@ -165,8 +172,17 @@ class SurfGame {
   private demoDone = 0;
   private readonly fixedStep = 1 / 60;
   private isBelowSurface = false;
-  private readonly underwaterFog = new FogExp2('#367e83', 0.035);
-  private readonly underwaterColor = new Color('#367e83');
+  private readonly underwaterFog = new FogExp2(UNDERWATER, 0.035);
+  private readonly underwaterColor = new Color(UNDERWATER);
+  /**
+   * The glow and colour grade (the web-ocean plan, item 6), while it runs: the setting asks for it and the water
+   * drawn is Rich. Absent otherwise, with nothing allocated, so the scene draws straight to the canvas as before.
+   */
+  private glow?: GlowPass;
+  /** The sun's disc as HDR light, drawn while the glow runs. */
+  private sunDisc?: SunDisc;
+  private glowWanted = false;
+  private drawnLook?: WaterLook;
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
@@ -255,6 +271,8 @@ class SurfGame {
     this.water.mesh.visible = false;
     this.scene.add(this.water.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
+    // Dev tools: the physical mode, for checks in the page (the spilling lip's in-game costs).
+    if (DEV_TOOLS) (globalThis as unknown as { breaklinePhysical?: PhysicalMode }).breaklinePhysical = this.physicalMode;
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
@@ -307,6 +325,12 @@ class SurfGame {
         this.drawPhysical(camera);
       },
       water: this.water,
+      /** The glow and colour grade on or off (still on the Rich look only), for A/B stills of one held sea; and the pass, to tune live. */
+      setGlow: (on: boolean) => {
+        this.glowWanted = on;
+        this.syncGlow();
+      },
+      glow: () => this.glow,
     };
   }
 
@@ -344,6 +368,9 @@ class SurfGame {
     const own = ownSurferDetail(resolved);
     this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
+    this.glowWanted = resolved.glow;
+    // The sun's glitter comes with the rich sea (High, Ultra); Medium keeps three's GGX (the M1's frame budget).
+    setGlitterForGraphics(resolved.richSea);
     this.applyWaterLook(resolved.waterLook);
   }
 
@@ -444,7 +471,8 @@ class SurfGame {
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
-    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 10 + Math.random() * 15 };
+    // 15–30 m outside the break line: 5 m further out since the owner's playtest of 2026-10-11, as the solo start.
+    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 15 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
     // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).
@@ -956,14 +984,16 @@ class SurfGame {
     this.physicalMode.drawEdgeBand();
     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
     this.physicalMode.drawBarrel();
+    // The spilling lip's curls sit on the same heights (the Canyon spilling lip).
+    this.physicalMode.drawCurl();
     this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
-    // The WebGPU tier shades with the FFT chop; the others keep the procedural waves.
+    // The WebGPU tier shades with the FFT chop (Rich: its two cascades and their moments); the others keep the procedural waves.
     const host = this.physicalMode.host;
     if (host?.snapshot.status.compute === 'gpu' && this.graphics?.richSea !== false) {
-      this.fftChop.setWind(this.physicalSettings.windSpeed);
+      this.fftChop.setWind(this.physicalSettings.windSpeed, 1, this.water.look);
       this.fftChop.render(this.renderer, host.snapshot.status.seaTime);
     } else {
       this.fftChop.disable();
@@ -973,7 +1003,16 @@ class SurfGame {
     const { board } = this.physicalMode;
     const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
     this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
-    this.renderer.render(this.scene, view);
+    if (this.glow) {
+      if (this.sunDisc) {
+        this.sunDisc.sprite.visible = this.photoSky.ready && !this.isBelowSurface;
+        this.sunDisc.setLight(this.photoSky.sunColor, this.photoSky.sunIntensity, this.glow.settings.sunRadiance);
+        this.sunDisc.place(view, this.photoSky.sunDirection);
+      }
+      this.glow.render(this.renderer, this.scene, view);
+    } else {
+      this.renderer.render(this.scene, view);
+    }
   }
 
   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
@@ -983,6 +1022,35 @@ class SurfGame {
     this.physicalMode.spray.setLook(look);
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
+    this.drawnLook = look;
+    this.syncGlow();
+  }
+
+  /**
+   * Start or stop the glow and colour grade as the setting and the water drawn ask. Stopping frees its targets and
+   * programs. Under the grade the fog is mixed before the tone mapping, not after as on the canvas, so the water seen
+   * from below takes the colour the grade turns into today's.
+   */
+  private syncGlow(): void {
+    const on = this.glowWanted && this.drawnLook === 'rich';
+    if (on === (this.glow !== undefined)) return;
+    this.needsRender = true;
+    const below = new Color(UNDERWATER);
+    if (on) {
+      this.glow = new GlowPass();
+      this.sunDisc = new SunDisc();
+      this.scene.add(this.sunDisc.sprite);
+      const { exposure, lookPower, lookSaturation } = this.glow.settings;
+      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
+    } else {
+      this.glow?.dispose();
+      this.glow = undefined;
+      if (this.sunDisc) this.scene.remove(this.sunDisc.sprite);
+      this.sunDisc?.dispose();
+      this.sunDisc = undefined;
+    }
+    this.underwaterFog.color.copy(below);
+    this.underwaterColor.copy(below);
   }
 
   /**
@@ -1016,7 +1084,17 @@ class SurfGame {
     this.reflectionMapTarget = undefined;
     this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material, this.physicalMode.lipSheet.richMaterial]);
     if (!this.isBelowSurface) this.scene.background = this.photoSky.background ?? this.skyColor;
+    this.refreshHaze();
     this.refreshSun();
+  }
+
+  /**
+   * The Rich water's haze toward the photographed sky's horizon, turned with it, and its grazing mirror matched to the
+   * sky shown; no haze under water or before the sky loads.
+   */
+  private refreshHaze(): void {
+    const { horizon: ring, rotation, horizonGain: gain } = this.photoSky;
+    applyHorizonHaze(horizonHazeUniforms, { ring, rotation, gain }, this.photoSky.ready && !this.isBelowSurface);
   }
 
   /** Toward the sun: the photographed sky's once loaded, else the painted one's. */
@@ -1078,6 +1156,7 @@ class SurfGame {
       this.scene.fog = below ? this.underwaterFog : null;
       this.scene.background = below ? this.underwaterColor : (this.photoSky.background ?? this.skyColor);
       this.environment.group.visible = !below;
+      this.refreshHaze();
     }
   }
 
@@ -1110,9 +1189,10 @@ const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-r
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
 const graphicsPreset = Object.keys(PRESETS).find((preset) => preset === devParam('graphics')) as keyof typeof PRESETS | undefined;
-const applyGraphics = () => game.applyGraphics(resolveGraphics(
+/** `?glow=1|0` (dev): the glow and colour grade on or off for an A/B, without touching the saved setting. */
+const applyGraphics = () => game.applyGraphics(withGlowOverride(resolveGraphics(
   graphicsPreset ? withPreset(settings.value.graphics, graphicsPreset) : settings.value.graphics, settings.value.detected, window.devicePixelRatio,
-));
+), devParam('glow')));
 applyGraphics();
 game.setSurfer(settings.value.surfer);
 game.setNameTags(settings.value.gameplay.nameTags);

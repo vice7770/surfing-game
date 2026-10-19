@@ -41,6 +41,28 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('turns the Canyon\'s spilling lip off for `?spillingCurl=0` (a dev switch), and leaves it on otherwise', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    const capture = () => new Promise<SurfZoneConfig>((resolve) => {
+      void mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon' }, 5, water, {}, (config) => {
+        resolve(config);
+        return { config, ready: new Promise<void>(() => {}), dispose: () => {} } as unknown as SurfZoneHost;
+      });
+    });
+    try {
+      vi.stubGlobal('location', { search: '?spillingCurl=0' });
+      expect((await capture()).spillingCurl).toBe(false);
+      mode.cancel();
+      vi.stubGlobal('location', { search: '' });
+      expect((await capture()).spillingCurl).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+      mode.cancel();
+      water.dispose();
+    }
+  });
+
   it('uploads snapshot visuals once while the camera keeps moving, and refreshes same-time restores and settings', async () => {
     const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(new Scene());

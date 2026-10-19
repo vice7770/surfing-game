@@ -18,10 +18,13 @@ import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTe
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { createEdgeBandUniforms, edgeBandPars } from './water/edgeBandGlsl';
+import { horizonHazeUniforms } from './water/horizonHaze';
+import { horizonLookOn, withRichHorizon } from './water/richHorizon';
 import { waterHeightPars } from './WaterSurface';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
-import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
+import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
+import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
@@ -164,6 +167,28 @@ ${foamPatternPars}
 /** The fade into the sky as fractions of the extent: far to the horizon, or near for the Low preset. */
 const VIEW_FADE = { far: [0.66, 0.97], near: [0.3, 0.47] } as const;
 
+const FAR_ALPHA = 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );';
+/**
+ * Rich, with the horizon look (`withRichHorizon`): over the fade the far ocean's colour goes the rest of the way to the
+ * horizon's (the haze's `horizon` share), so it melts into the sky's own horizon. Its mesh ends at 1.5 km, where the
+ * sea's own horizon lies 4–14 km out from the game's eye heights: the fade stands for the sea between them. The share
+ * is the radial fade's, or, nearer the mesh's open edges (offshore it ends at a fixed z, as little as 1.2 km beyond a
+ * spot's break), as much again within the fade's width of them, so no edge shows.
+ */
+const FAR_HORIZON_SHARE = /* glsl */ `
+uniform vec3 farBounds;
+float farHorizonShare( vec2 xz ) {
+  float radial = smoothstep( farFade.x, farFade.y, length( xz - farFocus ) );
+  float edge = min( min( xz.x - farBounds.x, farBounds.y - xz.x ), xz.y - farBounds.z );
+  return max( radial, 1.0 - smoothstep( 0.0, farFade.y - farFade.x, edge ) );
+}
+`;
+/** The vertex stage's: the fade's uniforms (the fragment stage's pars declare them already) and the share. */
+const FAR_HORIZON_PARS = `\nuniform vec2 farFocus;\nuniform vec2 farFade;\n${FAR_HORIZON_SHARE}`;
+/** Where in its share of the way to the horizon the hazed far ocean starts to turn see-through: nearly the sky's colour. */
+export const FAR_HAZE_ALPHA = 0.5;
+const FAR_HAZE_ALPHA_GLSL = `diffuseColor.a *= vWaterHaze.a > 0.0 ? 1.0 - smoothstep( ${FAR_HAZE_ALPHA.toFixed(3)}, 1.0, farHorizonShare( vWaterWorld.xz ) ) : 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );`;
+
 const RIM_KEYS = ['farRim', 'waterSurface', 'waterGrid', 'waterGridSize', 'waterBand', 'waterBandZ'] as const;
 
 export class FarFieldOcean {
@@ -191,12 +216,15 @@ export class FarFieldOcean {
       farHole: { value: new Vector4() },
       farFocus: { value: new Vector2() },
       farFade: { value: new Vector2(1000, 1450) },
+      // The mesh's open edges (x either side, offshore z), for the Rich horizon's share (`farHorizonShare`).
+      farBounds: { value: new Vector3(-1500, 1500, -1500) },
       waterFoamColor: { value: new Color('#d8f2e9') },
       waterFoamTile: { value: foamTileTexture() },
       waterFoamPattern: { value: 1 },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
+      ...glitterUniforms,
       ...createOpticsUniforms(),
       // Rich only (G8): the tank's ripples, so the two meet without a step in gloss.
       waterRippleMap: { value: rippleTexture() },
@@ -208,6 +236,8 @@ export class FarFieldOcean {
       waterGrid: { value: new Vector4(0, 0, 1, 0) },
       waterGridSize: { value: new Vector2(2, 2) },
       ...createEdgeBandUniforms(),
+      // Rich (the horizon plan): the haze toward the horizon, the same objects as the tank's.
+      ...horizonHazeUniforms,
     };
     const material = new MeshPhysicalMaterial({
       color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
@@ -221,15 +251,26 @@ export class FarFieldOcean {
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position.x + farShift.x, farHeight, position.z + farShift.y );\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}`
+          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}`
           : `#include <common>\n${farFragmentPars}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
-        .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
+        .replace('#include <color_fragment>', FAR_ALPHA)
         .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM) : waterBodyFragment(false))
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
+        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>')
+        .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(false) : '#include <lights_physical_pars_fragment>');
+      // The horizon plan: hazed as the tank is, and the rest of the way to the horizon over its fade.
+      if (rich && horizonLookOn()) {
+        withRichHorizon(shader, 'farHorizonShare( vWaterWorld.xz )', FAR_HORIZON_PARS);
+        shader.fragmentShader = shader.fragmentShader
+          .replace('void main() {', `${FAR_HORIZON_SHARE}\nvoid main() {`)
+          .replace(FAR_ALPHA, FAR_HAZE_ALPHA_GLSL);
+      }
     };
     // The rim's uniforms are taken in at compile (`attachRim`): a new attachment compiles again.
-    material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}${this.rimVersion > 0 ? `-rim${this.rimVersion}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}${this.rimVersion > 0 ? `-rim${this.rimVersion}` : ''}${this.currentLook === 'rich' ? glitterProgramKey() : ''}`;
+    onGlitterChange(() => {
+      if (this.currentLook === 'rich') material.needsUpdate = true;
+    });
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
@@ -306,6 +347,7 @@ export class FarFieldOcean {
     this.uniforms.farCenterX.value = 0.5 * (hole.xMin + hole.xMax);
     (this.uniforms.farHole.value as Vector4).set(hole.xMin, hole.xMax, hole.zMin, hole.zMax);
     (this.uniforms.farFocus.value as Vector2).set(focus.x, focus.z);
+    (this.uniforms.farBounds.value as Vector3).set(focus.x - options.extent, focus.x + options.extent, profile.offshoreZ);
     this.extent = options.extent;
     this.applyFade();
     this.mesh.visible = true;

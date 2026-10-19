@@ -67,6 +67,22 @@ describe('SettingsStore', () => {
     expect(load({ ...oldCustom, particles: 'ultra' })).toBe('medium');
   });
 
+  // The web-ocean plan, item 6: the glow and colour grade's switch, off unless saved on.
+  it('keeps the glow off for a new or older save, saves it on, and keeps it across a preset change', () => {
+    expect(defaultSettings().graphics.glow).toBe(false);
+    const storage = memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: { preset: 'high', ...PRESETS.high } }) });
+    const store = new SettingsStore(storage);
+    expect(store.value.graphics.glow).toBe(false);
+    store.update('graphics', { glow: true });
+    expect(JSON.parse(storage.data.get(SETTINGS_KEY)!).graphics).toMatchObject({ preset: 'high', glow: true });
+    expect(new SettingsStore(storage).value.graphics.glow).toBe(true);
+    store.update('graphics', { preset: 'ultra', ...PRESETS.ultra });
+    expect(store.value.graphics).toMatchObject({ preset: 'ultra', glow: true });
+    expect(sanitizeSettings({ graphics: { glow: 'yes' } }, defaultSettings()).graphics.glow).toBe(false);
+    store.resetTab('graphics');
+    expect(store.value.graphics.glow).toBe(false);
+  });
+
   // C1: the stick settings, with their defaults and ranges.
   it('keeps the stick settings within their ranges', () => {
     expect(defaultSettings().controls).toMatchObject({ trimStick: 'right', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });

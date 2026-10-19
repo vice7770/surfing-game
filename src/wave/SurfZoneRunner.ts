@@ -1,4 +1,5 @@
 import { ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
+import { CURL_CAPACITY, CURL_STRIDE } from './SpillingCurl';
 import { STRIP_PARCELS } from './PlungingLip';
 import { Vector3 } from 'three';
 import { withPocketReflex } from '../game/pocketReflex';
@@ -102,9 +103,11 @@ const LINEUP_OFFSET = 25;
 /**
  * The rider starts, and relaunches, this far seaward of the break line, m. In
  * the catch reports riders stood almost only from 4–8 m outside; from 25 m out
- * the waves pass before a paddler can reach the peak.
+ * the waves pass before a paddler can reach the peak. The owner's playtest
+ * (2026-10-11) found 6 m sat on top of the breaking at the Canyon, so every spot
+ * starts 5 m further out, to paddle into the wave before it breaks.
  */
-const RIDE_LINEUP_OFFSET = 6;
+const RIDE_LINEUP_OFFSET = 11;
 
 /** The edge hint (the rider's bounds): shown once the rider is this far past them, m, again every so many seconds held there, s, and cleared within the last, m. */
 const EDGE_HINT_DEPTH = 0.5;
@@ -303,6 +306,12 @@ export interface SurfZoneBuffers {
    */
   roller: Float32Array;
   rollerCount: number;
+  /**
+   * The spilling lip's curls at a spilling spot (the Canyon spilling lip): `CURL_FIELD`, `CURL_STRIDE` floats a slice,
+   * `curlCount` of them; empty at every other spot.
+   */
+  curl: Float32Array;
+  curlCount: number;
 }
 
 /**
@@ -447,7 +456,8 @@ export class SurfZoneRunner {
     // A detached rider's last strokes are stale: only an attached paddler splashes.
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
-      solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes,
+      solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, drawnImpacts: simulation.drawnImpacts,
+      windSpeed: this.config.windSpeed ?? 0, strokes,
       spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
     };
   }
@@ -806,6 +816,8 @@ export class SurfZoneRunner {
       frontCount: 0,
       roller: new Float32Array(this.simulation.rollerColumns * ROLLER_SLOTS * ROLLER_STRIDE),
       rollerCount: 0,
+      curl: new Float32Array(this.simulation.curl ? CURL_CAPACITY * CURL_STRIDE : 0),
+      curlCount: 0,
     };
   }
 
@@ -818,6 +830,7 @@ export class SurfZoneRunner {
     this.snapshotFieldsMs = performance.now() - start;
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
     buffers.rollerCount = buffers.roller.length > 0 ? simulation.writeRoller(buffers.roller) : 0;
+    buffers.curlCount = buffers.curl.length > 0 ? simulation.writeCurls(buffers.curl) : 0;
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {
       if (parcels >= PARCEL_CAPACITY) return;

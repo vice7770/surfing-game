@@ -65,6 +65,11 @@ export class FoamField {
   private readonly rows = new DepartureRows();
   private readonly foamedRows: Int32Array;
   private windowX: number;
+  /**
+   * A shoreward surface drift per cell, m/s (+z), the foam alone rides on top of the depth-averaged current (the Canyon
+   * spilling lip's look: `setDrift`); none by default. The advection stencil it records for the air stays the current's.
+   */
+  private drift?: Float64Array;
 
   constructor(private readonly solver: ShallowWaterSolver, readonly decay: FoamDecay) {
     const size = solver.nx * solver.nz;
@@ -78,6 +83,17 @@ export class FoamField {
     this.nextResidual = new Float64Array(size);
     this.foamedRows = new Int32Array(solver.nz + 1);
     this.windowX = solver.xCenters[0];
+  }
+
+  /**
+   * Foam drifts shoreward at `drift` m/s per cell on top of the current (the Canyon spilling lip, round 2): nature clears
+   * a shoulder of the last waves' foam by the breakers' shoreward surface drift (Hansen & Svendsen 1984), which a
+   * depth-averaged current lacks. Look only: the foam is drawn, never felt, and the stencil the air reuses keeps the
+   * current's own departure points. Undefined: none.
+   */
+  setDrift(drift: Float64Array | undefined): void {
+    if (drift && drift.length !== this.dense.length) throw new Error('A foam drift from another grid');
+    this.drift = drift;
   }
 
   totalAt(index: number): number {
@@ -97,16 +113,19 @@ export class FoamField {
   /**
    * Advance by `dt` seconds with the breaking strength B per cell: carry the foam semi-Lagrangian, decay it exactly and
    * add the bores' foam, in one pass over the cells (the M1 CPU study, 2026-10-19). A row whose departures read only
-   * rows with no foam carries none and takes no departures (`DepartureRows`); its bores still add theirs.
+   * rows with no foam carries none and takes no departures (`DepartureRows`, widened by the drift); its bores still add
+   * theirs. `drawn` (the Canyon spilling lip's look): the breaking whose foam is drawn, at most `breaking` in every cell;
+   * the foam, its source and the visual clouds that read the source follow it, while the bore measurement the air reads
+   * (`breakingCells`, `dissipation`) stays `breaking`'s.
    */
-  update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil): void {
+  update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil, drawn?: ArrayLike<number>): void {
     if (!(dt > 0)) return;
     this.followWindow();
     const { nx, nz, h, qx, qz, xCenters, zCenters, dx, bed, restLevel } = this.solver;
     stencil?.begin(this.solver, dt);
     const rows = stencil ? stencil.rows : this.rows;
     if (!stencil) rows.begin(this.solver, dt);
-    const { dense, residual, nextDense, nextResidual, source, sourceCells, breakingCells, dissipation } = this;
+    const { dense, residual, nextDense, nextResidual, source, sourceCells, breakingCells, dissipation, drift } = this;
     const foamed = rowsWithField(nx, nz, this.foamedRows, dense, residual);
     const indices = stencil?.indices;
     const values = stencil?.values;
@@ -116,7 +135,7 @@ export class FoamField {
     let breakers = 0;
     for (let iz = 0; iz < nz; iz += 1) {
       // Only rows next to foam-free rows can be quiet; the rest need not look.
-      const clear = foamed[Math.min(nz, iz + 2)] - foamed[Math.max(0, iz - 1)] === 0 && rows.quiet(iz, foamed);
+      const clear = foamed[Math.min(nz, iz + 2)] - foamed[Math.max(0, iz - 1)] === 0 && rows.quiet(iz, foamed, drift);
       if (clear) {
         stencil?.skip(iz);
         // Nothing carried in: a cell ends with foam only from its own bore (0·keep + 0 is +0, flushed as before).
@@ -131,7 +150,8 @@ export class FoamField {
           const bore = boreDissipation(restLevel - bed[i], h[i]);
           breakingCells[breakers++] = i;
           dissipation[i] = strength * bore;
-          const rate = (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION;
+          const shown = drawn ? drawn[i] : strength;
+          const rate = shown > 0 ? (shown * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
           source[i] = rate;
           if (rate > 0) sourceCells[sources++] = i;
           const next = 0 + rate * dt;
@@ -161,16 +181,26 @@ export class FoamField {
           while (row > 0 && zCenters[row] > z) row -= 1;
           while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
           const tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
-          const k = row * nx + column;
-          const w00 = (1 - tx) * (1 - tz);
-          const w10 = tx * (1 - tz);
-          const w01 = (1 - tx) * tz;
-          const w11 = tx * tz;
+          let k = row * nx + column;
           if (indices && values) {
             indices[i] = k;
             values[i * 2] = tx;
             values[i * 2 + 1] = tz;
           }
+          let tzd = tz;
+          const shift = drift ? drift[i] * dt : 0;
+          if (shift > 0) {
+            // The foam's own departure, further seaward by its drift: the stencil above keeps the current's.
+            const zd = z - shift;
+            let rowd = row;
+            while (rowd > 0 && zCenters[rowd] > zd) rowd -= 1;
+            tzd = Math.min(1, Math.max(0, (zd - zCenters[rowd]) / (zCenters[rowd + 1] - zCenters[rowd])));
+            k = rowd * nx + column;
+          }
+          const w00 = (1 - tx) * (1 - tzd);
+          const w10 = tx * (1 - tzd);
+          const w01 = (1 - tx) * tzd;
+          const w11 = tx * tzd;
           previous = dense[k] * w00 + dense[k + 1] * w10 + dense[k + nx] * w01 + dense[k + nx + 1] * w11;
           carried = residual[k] * w00 + residual[k + 1] * w10 + residual[k + nx] * w01 + residual[k + nx + 1] * w11;
         }
@@ -183,7 +213,8 @@ export class FoamField {
           breakingCells[breakers++] = i;
           dissipation[i] = strength * bore;
         }
-        const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
+        const shown = drawn ? drawn[i] : strength;
+        const rate = strength > 0 && shown > 0 ? (shown * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
         source[i] = rate;
         if (rate > 0) sourceCells[sources++] = i;
         next += rate * dt;

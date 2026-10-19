@@ -4,6 +4,7 @@ import { LIP_HIT_STRIDE, LIP_STRIDE, STROKE_HIT_STRIDE, SURF_ZONE_STEP, type Sur
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
 import { FRONT_STRIDE } from '../wave/barrel/frontRecords';
 import { TUBE_STRIDE } from '../wave/tubeTable';
+import { CURL_STRIDE } from '../wave/SpillingCurl';
 import { decompress, encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, type SurfZoneSnapshot } from './SurfZoneHost';
 import { SurfZoneWorkerCore, type SurfZoneRequest, type SurfZoneReply } from './SurfZoneWorkerCore';
@@ -108,7 +109,7 @@ describe('SurfZoneWorkerCore', () => {
     expect(replies[1].transfer).toEqual([
       buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
       buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.tubes.buffer, buffers.reaction.buffer, buffers.aeration.buffer,
-      buffers.front.buffer, buffers.roller.buffer,
+      buffers.front.buffer, buffers.roller.buffer, buffers.curl.buffer,
     ]);
     // S1: the paddler's strokes reach the snapshot for sound, as the in-page surf zone reports them.
     expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);
@@ -226,6 +227,7 @@ describe('SurfZoneWorkerCore', () => {
       aeration: Array.from(snapshot.aeration),
       front: Array.from(snapshot.front.subarray(0, snapshot.frontCount * FRONT_STRIDE)),
       roller: Array.from(snapshot.roller),
+      curl: Array.from(snapshot.curl.subarray(0, snapshot.curlCount * CURL_STRIDE)),
       roar: Array.from(snapshot.roar),
     });
     const finalSingle = active(b.snapshot);
