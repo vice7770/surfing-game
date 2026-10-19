@@ -76,6 +76,11 @@ const SWELL_OVERRIDES: Partial<SurfZoneConfig> = {
 };
 /** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
 const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));
+/**
+ * `&height=<m>&period=<s>`: a buoy swell of this Hs and Tp, as the Wave Lab's sliders set it (its direction and spread
+ * the settings' 10° and 0.4 unless `&direction=` and `&spreading=` say otherwise), in place of the practice groundswell.
+ */
+const BUOY = { height: Number(PARAMETERS.get('height')) || undefined, period: Number(PARAMETERS.get('period')) || undefined };
 /** Reef breaks: the sheet holds them on an open tube. */
 const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
 /** Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube. */
@@ -296,7 +301,12 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   const compute = COMPUTE === 'cpu' ? 'cpu' : 'auto';
   const settings: PhysicalSettings = SWELL
     ? { ...DEFAULT_PHYSICAL_SETTINGS, ...swellChoice(SPOT, SWELL), spot: SPOT, source: 'buoy', compute }
-    : { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute };
+    : BUOY.height || BUOY.period
+      ? {
+        ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'buoy', compute,
+        significantHeight: BUOY.height ?? DEFAULT_PHYSICAL_SETTINGS.significantHeight, peakPeriod: BUOY.period ?? DEFAULT_PHYSICAL_SETTINGS.peakPeriod,
+      }
+      : { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute };
   await hooks.start(settings, { ...(COMPONENTS ? { componentCount: COMPONENTS } : {}), ...SWELL_OVERRIDES });
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
@@ -369,7 +379,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   // Which tier stepped the sea: asked for the GPU and given the CPU (no WebGPU) must not pass for the GPU's water.
   const stepped = hooks.mode.host?.snapshot.status.compute ?? 'cpu';
   const tier = `water on the ${stepped.toUpperCase()}, ${hooks.mode.config?.componentCount ?? SEA_COMPONENTS} components${COMPUTE === 'gpu' && stepped !== 'gpu' ? ' (ASKED FOR THE GPU)' : ''}`;
-  status.textContent = `Water sheet: ${SPOT} ${SWELL ?? 'practice'}${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
+  const swellLabel = SWELL ?? (settings.source === 'buoy' ? `buoy Hs ${settings.significantHeight} m, Tp ${settings.peakPeriod} s` : 'practice');
+  status.textContent = `Water sheet: ${SPOT} ${swellLabel}${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
   /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
