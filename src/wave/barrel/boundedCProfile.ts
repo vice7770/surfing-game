@@ -35,14 +35,16 @@ const sub=(a:Vec2,b:Vec2):Vec2=>[a[0]-b[0],a[1]-b[1]];
 const mul=(a:Vec2,b:number):Vec2=>[a[0]*b,a[1]*b];
 const dot=(a:Vec2,b:Vec2)=>a[0]*b[0]+a[1]*b[1];
 const cross=(a:Vec2,b:Vec2)=>a[0]*b[1]-a[1]*b[0];
-const norm=(a:Vec2)=>Math.hypot(...a);
-const unit=(a:Vec2):Vec2=>{const n=norm(a);if(!n)throw Error('zero tangent');return mul(a,1/n);};
-const mix=(a:Vec2,b:Vec2,t:number):Vec2=>add(mul(a,1-t),mul(b,t));
+// The helpers below build one array each, not one per operation (the M1 CPU study, 2026-10-19): the same operations
+// in the same order as add/sub/mul composed.
+const norm=(a:Vec2)=>Math.hypot(a[0],a[1]);
+const unit=(a:Vec2):Vec2=>{const n=Math.hypot(a[0],a[1]);if(!n)throw Error('zero tangent');const inverse=1/n;return [a[0]*inverse,a[1]*inverse];};
+const mix=(a:Vec2,b:Vec2,t:number):Vec2=>{const u=1-t;return [a[0]*u+b[0]*t,a[1]*u+b[1]*t];};
 const round=(a:Vec2):Vec2=>[Math.fround(a[0]),Math.fround(a[1])];
 const smooth=(x:number)=>{x=Math.min(1,Math.max(0,x));return x*x*(3-2*x);};
 type Cubic=[Vec2,Vec2,Vec2,Vec2];
-function bezier(c:Cubic,t:number):Vec2{const s=1-t;return add(add(mul(c[0],s*s*s),mul(c[1],3*s*s*t)),add(mul(c[2],3*s*t*t),mul(c[3],t*t*t)));}
-function derivative(c:Cubic,t:number):Vec2{const s=1-t;return mul(add(add(mul(sub(c[1],c[0]),s*s),mul(sub(c[2],c[1]),2*s*t)),mul(sub(c[3],c[2]),t*t)),3);}
+function bezier(c:Cubic,t:number):Vec2{const s=1-t,a=s*s*s,b=3*s*s*t,d=3*s*t*t,e=t*t*t,p=c[0],q=c[1],r=c[2],w=c[3];return [(p[0]*a+q[0]*b)+(r[0]*d+w[0]*e),(p[1]*a+q[1]*b)+(r[1]*d+w[1]*e)];}
+function derivative(c:Cubic,t:number):Vec2{const s=1-t,a=s*s,b=2*s*t,d=t*t,p=c[0],q=c[1],r=c[2],w=c[3];return [((q[0]-p[0])*a+(r[0]-q[0])*b+(w[0]-r[0])*d)*3,((q[1]-p[1])*a+(r[1]-q[1])*b+(w[1]-r[1])*d)*3];}
 const at=(p:Float32Array,i:number):Vec2=>[p[2*i],p[2*i+1]];
 export function boundedCParameters(profile:Float32Array,authoredTD:number,tau:number):BoundedCParameters{return {crest:at(profile,32),toe:at(profile,112),incoming:sub(at(profile,32),at(profile,31)),outgoing:sub(at(profile,113),at(profile,112)),authoredTD,tau};}
 export function blendBoundedCParameters(a:BoundedCParameters,b:BoundedCParameters,w:number):BoundedCParameters{return {crest:round(mix(a.crest,b.crest,w)),toe:round(mix(a.toe,b.toe,w)),incoming:round(mix(a.incoming,b.incoming,w)),outgoing:round(mix(a.outgoing,b.outgoing,w)),authoredTD:a.authoredTD+w*(b.authoredTD-a.authoredTD),tau:a.tau+w*(b.tau-a.tau),leafWidthDelta:(a.leafWidthDelta??0)+w*((b.leafWidthDelta??0)-(a.leafWidthDelta??0))};}
