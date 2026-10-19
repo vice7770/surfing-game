@@ -639,9 +639,79 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     hooks.render(0);
     return simulated;
   };
+  /** A shot by name, or a view given as its eye and target. */
+  const viewOf = (name: string | View) => typeof name === 'string'
+    ? shots.find((candidate) => candidate.name === name)
+    : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
+  /** Draw the camera's frame into `context` at (x, y), `width` × `height`, labelled. */
+  const drawFrame = (context: CanvasRenderingContext2D, label: string, x: number, y: number, width: number, height: number) => {
+    hooks.renderView(camera);
+    context.drawImage(hooks.canvas, x, y, width, height);
+    context.fillStyle = 'rgba(8, 24, 32, 0.6)';
+    context.fillRect(x, y, Math.max(120, 7 * label.length + 8), 18);
+    context.fillStyle = '#e8f4f2';
+    context.font = '12px ui-monospace, Menlo, monospace';
+    context.fillText(label, x + 4, y + 13);
+  };
+  /**
+   * One view under several arms (each `set` runs before its frame, e.g. a dev switch), stacked top to bottom at `scale`
+   * of the render's size and labelled, posted as `file`: before/after pairs from one held sea (the foam freshness,
+   * web-ocean plan item 7).
+   */
+  const waterSheetPair = async (name: string | View, look: WaterLook, time: TimeOfDay, arms: { label: string; set: () => unknown }[],
+    file = 'water-pair.jpg', scale = 1) => {
+    const shot = viewOf(name);
+    if (!shot) return false;
+    const [width, height] = [Math.round(RENDER.width * scale), Math.round(RENDER.height * scale)];
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height * arms.length;
+    const context = canvas.getContext('2d')!;
+    await hooks.setTimeOfDay(time);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    for (const [row, arm] of arms.entries()) {
+      await arm.set();
+      hooks.setWaterLook(look);
+      drawFrame(context, `${arm.label} · ${look} · ${time}`, 0, row * height, width, height);
+    }
+    await post(canvas, file);
+    return true;
+  };
+  /**
+   * A view's frames as the sea steps on, `seconds` apart (the first now), tiled `columns` across at `scale` and labelled
+   * with the time since the first, posted as `file`: e.g. fresh foam aging into lace. With `arms` (each `set` runs before
+   * its frame, e.g. a dev switch), every frame is drawn under each arm, the arms' rows stacked under each row of frames.
+   */
+  const waterSheetStrip = async (name: string | View, look: WaterLook, time: TimeOfDay, frames: number, seconds: number,
+    file = 'water-strip.jpg', columns = 3, scale = 0.5, arms: { label: string; set: () => unknown }[] = [{ label: '', set: () => undefined }]) => {
+    const shot = viewOf(name);
+    if (!shot) return false;
+    const [width, height] = [Math.round(RENDER.width * scale), Math.round(RENDER.height * scale)];
+    const canvas = document.createElement('canvas');
+    canvas.width = width * Math.min(columns, frames);
+    canvas.height = height * arms.length * Math.ceil(frames / columns);
+    const context = canvas.getContext('2d')!;
+    await hooks.setTimeOfDay(time);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    for (let frame = 0; frame < frames; frame += 1) {
+      if (frame > 0) await waterSheetStep(seconds);
+      for (const [row, arm] of arms.entries()) {
+        await arm.set();
+        hooks.setWaterLook(look);
+        const y = (Math.floor(frame / columns) * arms.length + row) * height;
+        drawFrame(context, `+${(frame * seconds).toFixed(1)} s${arm.label ? ` · ${arm.label}` : ''} · ${look} · ${time}`, (frame % columns) * width, y, width, height);
+      }
+    }
+    await post(canvas, file);
+    return simulated;
+  };
   // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
   /**
-   * A shot's GPU time, ms per frame (median and 90th percentile), from the GPU's own timer
+   * A shot's GPU time, ms per frame (median, 10th and 90th percentiles, fastest), from the GPU's own timer
    * (EXT_disjoint_timer_query_webgl2) around each frame: unlike `waterSheetTime` it holds in a hidden page, whose
    * throttling stretches wall-clock times but not the GPU's work.
    */
@@ -671,9 +741,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       gl.deleteQuery(query);
     }
     times.sort((a, b) => a - b);
-    return times.length ? { median: +times[Math.floor(times.length / 2)].toFixed(3), p90: +times[Math.floor(times.length * 0.9)].toFixed(3), frames: times.length } : undefined;
+    // The low end too: on a shared GPU other work lands inside some frames' queries, so the fastest frames are the cleanest.
+    return times.length ? {
+      median: +times[Math.floor(times.length / 2)].toFixed(3), p90: +times[Math.floor(times.length * 0.9)].toFixed(3),
+      p10: +times[Math.floor(times.length * 0.1)].toFixed(3), min: +times[0].toFixed(3), frames: times.length,
+    } : undefined;
   };
-  Object.assign(window, { waterSheetGpuTime, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

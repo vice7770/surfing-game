@@ -22,7 +22,7 @@ import {
 import type { WaterLook } from './water/waterLook';
 import { foldGridX, waterFoldPars } from './water/waterFold';
 import { devParam } from '../devTools';
-import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richBeginVertexNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, richVertexSlopePars, waterCubicPars } from './water/richWaterGlsl';
+import { RICH_FOAM, RICH_FOAM_FRESH, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richBeginVertexNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, richVertexSlopePars, waterCubicPars } from './water/richWaterGlsl';
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
@@ -45,6 +45,7 @@ import { ShorelineFill, WetSandMemory } from './water/shoreline';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
 import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
@@ -387,6 +388,9 @@ export class WaterSurface {
       const roller = this.rollerEnabled;
       if (this.effectiveLook === 'rich') {
         const richNormal = richNormalFragment({ ripples: true, churn: true, vertexNormals: this.vertexNormals });
+        // The foam's freshness (web-ocean plan, item 7); `?foamFresh=off` compiles today's foam, byte for byte.
+        const fresh = foamFreshMode.on;
+        const richFoam = fresh ? RICH_FOAM_FRESH : RICH_FOAM;
         const slopePars = this.vertexNormals ? `\n${richVertexSlopePars}` : '';
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
@@ -394,13 +398,13 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks)}` : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
           .replace('#include <normal_fragment_begin>', roller ? richRollerNormal(richNormal) : richNormal)
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', roller ? rollerCrestLight(waterBodyFragment(true, true, richRollerFoam(RICH_FOAM))) : waterBodyFragment(true, true, RICH_FOAM))
+          .replace('#include <emissivemap_fragment>', roller ? rollerCrestLight(waterBodyFragment(true, true, richRollerFoam(richFoam))) : waterBodyFragment(true, true, richFoam))
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION)
           // The sun's glitter (item 5): the direct lights' specular from the slopes' covariance.
           .replace('#include <lights_physical_pars_fragment>', richGlitterLights(false));
@@ -424,9 +428,12 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? glitterProgramKey() : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}` : ''}`;
     // The glitter's mode (Sea detail, or a dev switch) changes the Rich program.
     onGlitterChange(() => {
+      if (this.effectiveLook === 'rich') material.needsUpdate = true;
+    });
+    onFoamFreshChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
     });
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);

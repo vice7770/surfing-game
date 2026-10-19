@@ -25,8 +25,11 @@ const PATCH_CELLS = 8;
 /** Flow-map period, s: each phase drifts with the current for this long before it fades out. */
 export const FOAM_FLOW_PERIOD = 2;
 /** Half-width of the soft network edge, in cells. */
-const EDGE = 0.04;
-const LEVELS = 16;
+export const FOAM_EDGE = 0.04;
+const EDGE = FOAM_EDGE;
+/** Foam values the thresholds are measured at: 0, 1/16, …, 1. */
+export const FOAM_LEVELS = 16;
+const LEVELS = FOAM_LEVELS;
 
 export function pcg2d(ix: number, iz: number): [number, number] {
   let x = (Math.imul(ix >>> 0, 1664525) + 1013904223) >>> 0;
