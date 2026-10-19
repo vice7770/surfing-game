@@ -368,8 +368,10 @@ export const RICH_SUN_GLITTER = /* glsl */ `
 #ifdef WATER_SUN_LITE
   {
     // Medium's lite road (liteSunAlpha2): the glitter's spread without its screen-space term, isotropic, as the sun's α².
+    // The distance and its fade as the normal chunk writes them, so the compiler takes them from there.
     float liteDistance = length( vWaterWorld - cameraPosition );
-    vec3 liteChop = ${chopCovarianceGlsl('liteDistance')};
+    float liteFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
+    vec3 liteChop = ${chopCovarianceGlsl('liteDistance', 'liteFade')};
     waterGlitterLite = 2.0 * ( GLITTER_FLOOR + waterCover * GLITTER_FOAM + waterGlitterUnresolved.x
       + waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, liteDistance ) + 0.5 * ( liteChop.x + liteChop.y ) ) + waterRippleVariance;
   }
@@ -442,7 +444,10 @@ void RE_Direct_WaterGlitter( const in IncidentLight directLight, const in vec3 g
  * (`beckmann`) in place of GGX, whose long tails turned a wider road into a glow. The sun's α² is the lite road's
  * (`waterGlitterLite`, from the body: `liteSunAlpha2`); any other direct light (the fill, dark under a photographed sky)
  * keeps its material's. Masking is three's height-correlated Smith (`V_GGX_SmithCorrelated`) taken from α² directly.
- * No branches: on the M1 a light's branch cost Medium +1.5 ms a frame, and GGX kept beside it for the fill +0.1.
+ * No branches: on the M1 (hidden pane) a branch per light, as the glitter's, timed Medium +1.5 ms a frame on the face
+ * and the horizon, and three's GGX kept beside it for the fill +0.1 ms on the lineup. The tank's program sits at a
+ * cliff: the chop's spread taken with its own exp(−d/40), rather than from the normal chunk's fade, timed +1.6 to +2.6 ms
+ * on the face and horizon where this arrangement times below today's (docs/research/glitter-lite-2026-10-20).
  */
 export const RICH_SUN_LITE_LIGHTS = /* glsl */ `#include <lights_physical_pars_fragment>
 #define WATER_SUN_LITE

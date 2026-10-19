@@ -267,7 +267,10 @@ describe('the sun glitter (item 5)', () => {
 
   it('writes the lite road\'s GLSL as its CPU twins, with no branch, the fill keeping its material\'s spread', () => {
     expect(RICH_SUN_GLITTER).toContain('#ifdef WATER_SUN_LITE');
-    expect(RICH_SUN_GLITTER).toContain(`vec3 liteChop = ${chopCovarianceGlsl('liteDistance')};`);
+    expect(RICH_SUN_GLITTER).toContain(`vec3 liteChop = ${chopCovarianceGlsl('liteDistance', 'liteFade')};`);
+    // The fade as the normal chunks write it (richNormalFragment, richFarNormal), 1 − fade² = 1 − e^(−d/40).
+    expect(RICH_SUN_GLITTER).toContain('float liteFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );');
+    expect(chopCovarianceGlsl('d', 'f')).toContain('( 1.0 - f * f )');
     expect(RICH_SUN_GLITTER).toContain('waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, liteDistance )');
     expect(waterGlitterPars).toContain('float waterGlitterLite = 0.0;');
     expect(RICH_SUN_LITE_LIGHTS.startsWith('#include <lights_physical_pars_fragment>\n#define WATER_SUN_LITE')).toBe(true);
