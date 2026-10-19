@@ -1,0 +1,8 @@
+Crest angles: canyon, lab spread 0.5 (Hs 2.4 m, Tp 14 s, 0°, s 106), seed 1, 64 components, 300 s. Take-off (-30, -385); lines z = -571, -415; crests followed over x -60…61.
+
+2707 s elapsed. Bend p90 by line: edge 8.1°, take-off 9.5°. dx default
+| Line | Crests (short) | Mean angle ° | Mean \|angle\| ° | Max \|angle\| ° | Std ° | First 3 \|angle\| ° | Later \|angle\| ° | Straightness m | \|angle\| per 100 s ° | Bend mean / max \|right − left\| ° (crests) | Mean angle per 100 s ° |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| edge | 20 (0) | 1.4 | 3.6 | 12.2 | 4.5 | 2.4 | 3.8 | 0.67 | 2.5 · 3.7 · 4.3 | 3.4 / 19.5 (20) | 1.9 · 0.9 · 1.3 |
+| take-off | 18 (0) | 2.2 | 4.1 | 9.0 | 4.3 | 3.2 | 4.3 | 0.99 | 2.9 · 3.7 · 5.4 | 5.5 / 20.0 (18) | 2.6 · -0.7 · 3.9 |
+Wrote runs/canyon-lab-mixed-after.json.
