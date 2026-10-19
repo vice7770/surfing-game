@@ -182,10 +182,12 @@ const ANALYTIC_COV = analyticChopCovariance();
 /**
  * GLSL: `chopCovariance` at the distance `distance` names (1 − fade² is 1 − e^(−d/40)), with each cascade's whole-patch
  * covariance where the cascades run, the six analytic waves' elsewhere. An expression, written where it is used (the
- * sun's glitter, `RICH_SUN_GLITTER`). Needs `waterChopPars` and `waterChopMomentPars`.
+ * sun's glitter, `RICH_SUN_GLITTER`). With `fade` (an expression for the distance fade, e^(−d/80), that the normal chunk
+ * already computes), 1 − fade² from it. Needs `waterChopPars` and `waterChopMomentPars`.
  */
-export function chopCovarianceGlsl(distance: string): string {
-  return `waterChop * waterChop * ( 1.0 - exp( -${distance} / 40.0 ) ) * ( waterChopCascades > 0.5 ? waterChopCoarseCov + waterChopFineCov : vec3( ${ANALYTIC_COV.map((v) => v.toExponential(6)).join(', ')} ) )`;
+export function chopCovarianceGlsl(distance: string, fade?: string): string {
+  const lost = fade ? `( 1.0 - ${fade} * ${fade} )` : `( 1.0 - exp( -${distance} / 40.0 ) )`;
+  return `waterChop * waterChop * ${lost} * ( waterChopCascades > 0.5 ? waterChopCoarseCov + waterChopFineCov : vec3( ${ANALYTIC_COV.map((v) => v.toExponential(6)).join(', ')} ) )`;
 }
 
 /**

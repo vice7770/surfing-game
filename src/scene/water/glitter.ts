@@ -14,8 +14,10 @@
  * The water's lobe is lit once per pixel, for the sun, in the world's frame, at the end of the water's body
  * (`RICH_SUN_GLITTER`); three's direct lights then take it for the sun (the shader-cost pass of 2026-10-18: lit per
  * light in three's loop, with its covariance carried from the normal chunk, it cost the M1 more than the rest of the
- * Rich water's new shading together). It runs with the Sea detail's rich sea (High and Ultra); Medium keeps three's
- * GGX (`setGlitterForGraphics`).
+ * Rich water's new shading together). It runs with the Sea detail's rich sea (High and Ultra). Medium draws the sun's
+ * road lite (`RICH_SUN_LITE_LIGHTS`, the glitter-lite pass of 2026-10-20): three's lighting, the sun's lobe a Beckmann
+ * (the isotropic Gaussian of slopes) whose variance is the glitter's distance model, with no screen-space term or
+ * moments (`setGlitterForGraphics`).
  *
  * The lobe (slope-space Gaussian, Smith masking, Schlick F0 0.02) is adapted
  * from web-ocean, js/wgsl/ocean.js (MIT licence, © 2026 Maksymilian Dendura),
@@ -26,7 +28,7 @@
 import { Vector2 } from 'three';
 import { DEV_TOOLS, devParam } from '../../devTools';
 import { RICH_BASE_ROUGHNESS } from './specular';
-import { chopCovarianceGlsl } from '../waterChop';
+import { chopCovariance, chopCovarianceGlsl } from '../waterChop';
 
 /** Per-axis slope variance whose Gaussian peaks as three's GGX at the Rich base roughness: α = roughness², σ² = α²/2. */
 export const GLITTER_BASE_VARIANCE = RICH_BASE_ROUGHNESS ** 4 / 2;
@@ -48,12 +50,14 @@ export const glitterUniforms = {
 };
 
 /**
- * What the Rich water's glitter draws: on or off (off: three's GGX, the chop's plain slope), and its covariance's
- * parts, for timing each (dev: `?glitter=on|off` forces it whatever the graphics say; `?glitterScreen=off`,
+ * What the Rich water's glitter draws: on, lite (Medium's sun road) or off (three's GGX, the chop's plain slope), and its
+ * covariance's parts, for timing each (dev: `?glitter=on|lite|off` forces it whatever the graphics say; `?glitterScreen=off`,
  * `?glitterRipples=off`, `?glitterChop=off` leave a part out). `window.waterGlitter({ … })` changes it in a page.
  */
 export interface GlitterMode {
   on: boolean;
+  /** Where the glitter is off: the sun's road drawn lite (Medium; `RICH_SUN_LITE_LIGHTS`), or three's GGX as before. */
+  lite: boolean;
   screen: boolean;
   ripples: boolean;
   chop: boolean;
@@ -61,7 +65,8 @@ export interface GlitterMode {
 
 const forcedGlitter = devParam('glitter');
 export const glitterMode: GlitterMode = {
-  on: forcedGlitter !== 'off',
+  on: forcedGlitter !== 'off' && forcedGlitter !== 'lite',
+  lite: forcedGlitter !== 'off',
   screen: devParam('glitterScreen') !== 'off',
   ripples: devParam('glitterRipples') !== 'off',
   chop: devParam('glitterChop') !== 'off',
@@ -81,14 +86,18 @@ export function setGlitter(patch: Partial<GlitterMode>): void {
   if (glitterProgramKey() !== was) for (const listener of glitterListeners) listener();
 }
 
-/** The graphics' choice: the glitter comes with the Sea detail's rich sea (High and Ultra), unless `?glitter=` forces it. */
+/**
+ * The graphics' choice: the glitter comes with the Sea detail's rich sea (High and Ultra), the lite road without it
+ * (Medium), unless `?glitter=` forces one.
+ */
 export function setGlitterForGraphics(richSea: boolean): void {
-  setGlitter({ on: forcedGlitter === 'on' ? true : forcedGlitter === 'off' ? false : richSea });
+  setGlitter(forcedGlitter === 'on' ? { on: true } : forcedGlitter === 'off' ? { on: false, lite: false }
+    : forcedGlitter === 'lite' ? { on: false, lite: true } : { on: richSea, lite: true });
 }
 
 /** The Rich programs' cache-key part for the glitter's mode: none for the whole glitter, as before its switches. */
 export function glitterProgramKey(): string {
-  if (!glitterMode.on) return '-no-glitter';
+  if (!glitterMode.on) return glitterMode.lite ? '-glitter-lite' : '-no-glitter';
   return `${glitterMode.screen ? '' : '-glitter-no-screen'}${glitterMode.ripples ? '' : '-glitter-no-ripples'}${glitterMode.chop ? '' : '-glitter-no-chop'}`;
 }
 
@@ -98,6 +107,30 @@ if (DEV_TOOLS && typeof window !== 'undefined') Object.assign(window, { waterGli
 export function unresolvedVariance(distance: number, unresolved = GLITTER_UNRESOLVED): number {
   const t = Math.min(1, Math.max(0, (distance - 30) / 470));
   return unresolved.constant + unresolved.far * t * t * (3 - 2 * t);
+}
+
+/**
+ * Medium's lite road: the sun's α² (three's a², 2σ² for σ² the per-axis slope variance) the GLSL takes
+ * (`RICH_SUN_GLITTER`, `WATER_SUN_LITE`): the glitter's covariance without its screen-space term, made isotropic (the
+ * mean of its two axes): the floor, the foam's matte, the unresolved slopes, the chop's spread by distance
+ * (`chopCovariance`, at strength `chop` of the whole patch's `whole`) and the ripples' unresolved variance
+ * (`rippleVariance`, both axes' sum: `waterRippleVariance`).
+ */
+export function liteSunAlpha2(distance: number, cover: number, rippleVariance: number, chop: number, whole: Covariance,
+  unresolved = GLITTER_UNRESOLVED): number {
+  const spread = chopCovariance(distance, chop, whole);
+  return 2 * (GLITTER_BASE_VARIANCE + SUN_DISC_VARIANCE + cover * GLITTER_FOAM_VARIANCE + unresolvedVariance(distance, unresolved)
+    + 0.5 * (spread[0] + spread[1])) + rippleVariance;
+}
+
+/**
+ * Beckmann's distribution of normals at α², `cosine` the half vector's against the drawn normal: the isotropic Gaussian
+ * of slopes (variance α²/2 per axis) over cos⁴, `glitterDistribution` in the drawn normal's own frame. The GLSL's
+ * (`RICH_SUN_LITE_LIGHTS`).
+ */
+export function beckmann(alpha2: number, cosine: number): number {
+  const c2 = Math.max(cosine * cosine, 1e-4);
+  return Math.exp((c2 - 1) / (alpha2 * c2)) / (Math.PI * alpha2 * c2 * c2);
 }
 
 export type Vec3 = readonly [number, number, number];
@@ -231,6 +264,8 @@ float waterGlitterOn = 0.0;
 // unresolved variance, from the normal chunk.
 float waterGlitterSun = -1.0;
 vec2 waterGlitterRipple = vec2( 0.0 );
+// Medium's lite road: the sun's α², from the body chunk.
+float waterGlitterLite = 0.0;
 uniform vec2 waterGlitterUnresolved;
 const float GLITTER_FLOOR = ${f(GLITTER_BASE_VARIANCE + SUN_DISC_VARIANCE)};
 const float GLITTER_FOAM = ${f(GLITTER_FOAM_VARIANCE)};
@@ -285,7 +320,7 @@ export const RICH_GLITTER_RIPPLES = /* glsl */ `
 
 /**
  * GLSL at the end of the water's body (tank and far ocean; in `RICH_SPECULAR`'s place, where the foam over the water
- * is known): the sun's lobe, lit once per pixel in the world's frame, into `waterGlitterSun` for three's direct
+ * is known): on Medium, the lite road's α² (`liteSunAlpha2`) into `waterGlitterLite`; with the glitter on, the sun's lobe, lit once per pixel in the world's frame, into `waterGlitterSun` for three's direct
  * lights (−1 from below the water, where three's GGX lights it). Its mean is the drawn normal's slope; its covariance
  * the ripples' (from the normal chunk), the chop's spread by distance (`chopCovariance`), the screen-space term of the
  * slope, the floor, the foam's matte and the unresolved slopes. The lobe is `glitter`'s maths as `sunGlitter` arranges
@@ -329,6 +364,17 @@ export const RICH_SUN_GLITTER = /* glsl */ `
       ? glitterLit * glitterDensity * waterN.y * glitterQ.x * glitterQ.y / ( ( glitterQ.x * glitterQ.y + glitterP.x * glitterQ.y + glitterP.y * glitterQ.x ) * 4.0 * glitterC.x )
       : -1.0;
   }
+#endif
+#ifdef WATER_SUN_LITE
+  {
+    // Medium's lite road (liteSunAlpha2): the glitter's spread without its screen-space term, isotropic, as the sun's α².
+    // The distance and its fade as the normal chunk writes them, so the compiler takes them from there.
+    float liteDistance = length( vWaterWorld - cameraPosition );
+    float liteFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
+    vec3 liteChop = ${chopCovarianceGlsl('liteDistance', 'liteFade')};
+    waterGlitterLite = 2.0 * ( GLITTER_FLOOR + waterCover * GLITTER_FOAM + waterGlitterUnresolved.x
+      + waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, liteDistance ) + 0.5 * ( liteChop.x + liteChop.y ) ) + waterRippleVariance;
+  }
 #endif`;
 
 /**
@@ -352,10 +398,11 @@ export const RICH_SHEET_GLITTER = /* glsl */ `
  * chunks after, and the direct lights' specular through the glitter where it is on, three's own lighting elsewhere.
  * The water (`sheet` false) takes the sun's lobe lit once per pixel (`RICH_SUN_GLITTER`); its other direct lights
  * (the fill, dark under a photographed sky) keep three's GGX. A sheet (lips and tubes) lights the lobe per light, in
- * the frame of its own normal. With the glitter off, three's lighting.
+ * the frame of its own normal. With the glitter lite (Medium), the water's `RICH_SUN_LITE_LIGHTS`, and three's lighting
+ * on sheets; with it off, three's lighting.
  */
 export function richGlitterLights(sheet: boolean): string {
-  if (!glitterMode.on) return '#include <lights_physical_pars_fragment>';
+  if (!glitterMode.on) return glitterMode.lite && !sheet ? RICH_SUN_LITE_LIGHTS : '#include <lights_physical_pars_fragment>';
   // WATER_GLITTER: the chop's footprint statistics for its mean (`RICH_CHOP_STATS`); the water's lobe and its parts.
   const switches = ['WATER_GLITTER', ...(sheet ? [] : ['WATER_SUN_GLITTER', glitterMode.ripples && 'WATER_GLITTER_RIPPLES',
     glitterMode.chop && 'WATER_GLITTER_CHOP', glitterMode.screen && 'WATER_GLITTER_SCREEN'])].filter(Boolean).map((name) => `#define ${name}`).join('\n');
@@ -390,3 +437,34 @@ void RE_Direct_WaterGlitter( const in IncidentLight directLight, const in vec3 g
 #undef RE_Direct
 #define RE_Direct RE_Direct_WaterGlitter`;
 }
+
+/**
+ * Medium's sun road (the glitter-lite pass of 2026-10-20), for the water (tank, edge band, far ocean) in place of
+ * `#include <lights_physical_pars_fragment>`: three's direct lights with the specular lobe a Beckmann distribution
+ * (`beckmann`) in place of GGX, whose long tails turned a wider road into a glow. The sun's α² is the lite road's
+ * (`waterGlitterLite`, from the body: `liteSunAlpha2`); any other direct light (the fill, dark under a photographed sky)
+ * keeps its material's. Masking is three's height-correlated Smith (`V_GGX_SmithCorrelated`) taken from α² directly.
+ * No branches: on the M1 (hidden pane) a branch per light, as the glitter's, timed Medium +1.5 ms a frame on the face
+ * and the horizon, and three's GGX kept beside it for the fill +0.1 ms on the lineup. The tank's program sits at a
+ * cliff: the chop's spread taken with its own exp(−d/40), rather than from the normal chunk's fade, timed +1.6 to +2.6 ms
+ * on the face and horizon where this arrangement times below today's (docs/research/glitter-lite-2026-10-20).
+ */
+export const RICH_SUN_LITE_LIGHTS = /* glsl */ `#include <lights_physical_pars_fragment>
+#define WATER_SUN_LITE
+void RE_Direct_WaterLite( const in IncidentLight directLight, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, const in PhysicalMaterial material, inout ReflectedLight reflectedLight ) {
+  float alpha2 = mix( pow4( material.roughness ), waterGlitterLite, step( 0.9999, dot( directLight.direction, mat3( viewMatrix ) * waterSunDirection ) ) );
+  vec3 halfDir = normalize( directLight.direction + geometryViewDir );
+  float dotNL = saturate( dot( geometryNormal, directLight.direction ) );
+  float dotNV = saturate( dot( geometryNormal, geometryViewDir ) );
+  float dotNH = saturate( dot( geometryNormal, halfDir ) );
+  vec3 F = F_Schlick( material.specularColorBlended, material.specularF90, saturate( dot( geometryViewDir, halfDir ) ) );
+  float c2 = max( dotNH * dotNH, 1e-4 );
+  float D = exp( ( c2 - 1.0 ) / ( alpha2 * c2 ) ) / ( PI * alpha2 * c2 * c2 );
+  float gv = dotNL * sqrt( alpha2 + ( 1.0 - alpha2 ) * dotNV * dotNV );
+  float gl = dotNV * sqrt( alpha2 + ( 1.0 - alpha2 ) * dotNL * dotNL );
+  vec3 irradiance = dotNL * directLight.color;
+  reflectedLight.directSpecular += irradiance * F * ( 0.5 / max( gv + gl, EPSILON ) * D ) * material.multiScatteringCompensation;
+  reflectedLight.directDiffuse += irradiance * BRDF_Lambert( material.diffuseContribution ) * ( 1.0 - F );
+}
+#undef RE_Direct
+#define RE_Direct RE_Direct_WaterLite`;

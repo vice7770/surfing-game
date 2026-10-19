@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { RICH_BASE_ROUGHNESS } from './specular';
 import {
-  GLITTER_BASE_VARIANCE, GLITTER_UNRESOLVED, RICH_GLITTER_RIPPLES, RICH_SUN_GLITTER, SCREEN_VARIANCE_CAP, glitter, glitterDistribution,
-  glitterMode, glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, screenCovariance, setGlitter, setGlitterForGraphics,
-  slopeDensity, smithLambda, sunGlitter, unresolvedVariance, waterGlitterPars, type Covariance, type Vec3,
+  GLITTER_BASE_VARIANCE, GLITTER_FOAM_VARIANCE, GLITTER_UNRESOLVED, RICH_GLITTER_RIPPLES, RICH_SUN_GLITTER, RICH_SUN_LITE_LIGHTS,
+  SCREEN_VARIANCE_CAP, SUN_DISC_VARIANCE, beckmann, glitter, glitterDistribution, glitterMode, glitterProgramKey, glitterUniforms,
+  liteSunAlpha2, onGlitterChange, richGlitterLights, screenCovariance, setGlitter, setGlitterForGraphics, slopeDensity, smithLambda,
+  sunGlitter, unresolvedVariance, waterGlitterPars, type Covariance, type Vec3,
 } from './glitter';
 import { RICH_CHOP_STATS, analyticChopCovariance, chopCovariance, chopCovarianceGlsl } from '../waterChop';
 
@@ -192,16 +193,23 @@ describe('the sun glitter (item 5)', () => {
     const stop = onGlitterChange(() => { told += 1; });
     try {
       setGlitterForGraphics(true);
-      const on = glitterProgramKey();
+      expect(glitterProgramKey()).toBe('');
       setGlitterForGraphics(true);
       expect(told).toBe(0);
+      // Without the rich sea (Medium), the water's lite road; sheets keep three's lighting.
       setGlitterForGraphics(false);
       expect(told).toBe(1);
-      expect(glitterProgramKey()).not.toBe(on);
+      expect(glitterProgramKey()).toBe('-glitter-lite');
+      expect(richGlitterLights(false)).toBe(RICH_SUN_LITE_LIGHTS);
+      expect(richGlitterLights(true)).toBe('#include <lights_physical_pars_fragment>');
+      // Off (`?glitter=off`): three's lighting everywhere, today's Medium.
+      setGlitter({ lite: false });
+      expect(told).toBe(2);
+      expect(glitterProgramKey()).toBe('-no-glitter');
       expect(richGlitterLights(false)).toBe('#include <lights_physical_pars_fragment>');
       expect(richGlitterLights(true)).toBe('#include <lights_physical_pars_fragment>');
-      setGlitter({ on: true, screen: false });
-      expect(told).toBe(2);
+      setGlitter({ on: true, lite: true, screen: false });
+      expect(told).toBe(3);
       expect(richGlitterLights(false)).not.toContain('WATER_GLITTER_SCREEN');
       expect(richGlitterLights(false)).toContain('WATER_GLITTER_RIPPLES');
     } finally {
@@ -226,5 +234,58 @@ describe('the sun glitter (item 5)', () => {
     expect(RICH_CHOP_STATS).toContain('#ifdef WATER_GLITTER');
     expect(RICH_CHOP_STATS).toContain('waterChopStats( vWaterWorld.xz, waterTime, vec2( 0.0 ), vec2( 0.0 ), waterChopMean, waterChopSpread );');
     expect(RICH_CHOP_STATS).not.toContain('waterChopSlope');
+  });
+
+  it('draws Medium\'s lite road as a Beckmann lobe: the isotropic Gaussian of slopes about the drawn normal', () => {
+    let seed = 11;
+    const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let k = 0; k < 200; k += 1) {
+      const n = normalOf(0.8 * (random() - 0.5), 0.8 * (random() - 0.5));
+      const tx = unit([n[1], -n[0], 0]);
+      const tz: Vec3 = [n[1] * tx[2] - n[2] * tx[1], n[2] * tx[0] - n[0] * tx[2], n[0] * tx[1] - n[1] * tx[0]];
+      const h = unit([n[0] + 0.3 * (random() - 0.5), n[1], n[2] + 0.3 * (random() - 0.5)]);
+      const alpha2 = 0.002 + 0.03 * random();
+      const cosine = h[0] * n[0] + h[1] * n[1] + h[2] * n[2];
+      const gaussian = glitterDistribution(h, n, tx, tz, [0, 0], [alpha2 / 2, alpha2 / 2, 0]);
+      expect(beckmann(alpha2, cosine) / gaussian).toBeCloseTo(1, 6);
+    }
+  });
+
+  it('gives the lite road the glitter\'s spread without its screen-space term, made isotropic', () => {
+    const whole = analyticChopCovariance();
+    for (const [distance, cover, xx, zz] of [[5, 0, 0.001, 0.0005], [80, 0.3, 0.0002, 0.0004], [600, 0, 0, 0]]) {
+      const chop = chopCovariance(distance, 0.25, whole);
+      // The glitter's covariance (RICH_SUN_GLITTER, no screen-space term): its two axes' mean, times 2, is the lite α².
+      const covXX = GLITTER_BASE_VARIANCE + SUN_DISC_VARIANCE + cover * GLITTER_FOAM_VARIANCE + unresolvedVariance(distance) + xx + chop[0];
+      const covZZ = GLITTER_BASE_VARIANCE + SUN_DISC_VARIANCE + cover * GLITTER_FOAM_VARIANCE + unresolvedVariance(distance) + zz + chop[1];
+      expect(liteSunAlpha2(distance, cover, xx + zz, 0.25, whole)).toBeCloseTo(covXX + covZZ, 12);
+    }
+    // Wider than the gloss three's GGX drew on Medium (α² of roughness 0.08), and growing with distance.
+    expect(liteSunAlpha2(0, 0, 0, 0.25, whole)).toBeGreaterThan(50 * RICH_BASE_ROUGHNESS ** 4);
+    expect(liteSunAlpha2(500, 0, 0, 0.25, whole)).toBeGreaterThan(2 * liteSunAlpha2(20, 0, 0, 0.25, whole));
+  });
+
+  it('writes the lite road\'s GLSL as its CPU twins, with no branch, the fill keeping its material\'s spread', () => {
+    expect(RICH_SUN_GLITTER).toContain('#ifdef WATER_SUN_LITE');
+    expect(RICH_SUN_GLITTER).toContain(`vec3 liteChop = ${chopCovarianceGlsl('liteDistance', 'liteFade')};`);
+    // The fade as the normal chunks write it (richNormalFragment, richFarNormal), 1 − fade² = 1 − e^(−d/40).
+    expect(RICH_SUN_GLITTER).toContain('float liteFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );');
+    expect(chopCovarianceGlsl('d', 'f')).toContain('( 1.0 - f * f )');
+    expect(RICH_SUN_GLITTER).toContain('waterGlitterUnresolved.y * smoothstep( 30.0, 500.0, liteDistance )');
+    expect(waterGlitterPars).toContain('float waterGlitterLite = 0.0;');
+    expect(RICH_SUN_LITE_LIGHTS.startsWith('#include <lights_physical_pars_fragment>\n#define WATER_SUN_LITE')).toBe(true);
+    expect(RICH_SUN_LITE_LIGHTS).toContain('#define RE_Direct RE_Direct_WaterLite');
+    expect(RICH_SUN_LITE_LIGHTS).toContain('mix( pow4( material.roughness ), waterGlitterLite, step( 0.9999,');
+    expect(RICH_SUN_LITE_LIGHTS).toContain('exp( ( c2 - 1.0 ) / ( alpha2 * c2 ) ) / ( PI * alpha2 * c2 * c2 )');
+    expect(RICH_SUN_LITE_LIGHTS).not.toMatch(/\bif\s*\(|\?|RE_Direct_Physical\(|WATER_SUN_GLITTER|D_GGX/);
+    // The glitter's own programs never define the lite road.
+    const was = { ...glitterMode };
+    try {
+      setGlitter({ on: true });
+      expect(richGlitterLights(false)).not.toContain('WATER_SUN_LITE');
+      expect(richGlitterLights(true)).not.toContain('WATER_SUN_LITE');
+    } finally {
+      setGlitter(was);
+    }
   });
 });

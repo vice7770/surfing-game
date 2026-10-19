@@ -10,6 +10,7 @@ import { SweptBarrelMesh } from './barrel/SweptBarrelMesh';
 import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import type { WaterLook } from './water/waterLook';
+import { glitterMode, setGlitter } from './water/glitter';
 
 /**
  * The texture units each water program takes (the playtest of 2026-10-17: the Canyon's Rich water asked for 17 of
@@ -89,6 +90,7 @@ const DECLARED = [
   ['waterRippleCov', /\bvec3\s+waterRippleCov\s*=/],
   ['waterGlitterSun', /\bfloat\s+waterGlitterSun\s*=/],
   ['waterGlitterRipple', /\bvec2\s+waterGlitterRipple\s*=/],
+  ['waterGlitterLite', /\bfloat\s+waterGlitterLite\s*=/],
   ['waterChopMoments', /\buniform\s+highp\s+sampler2DArray\s+waterChopMoments\s*;/],
 ] as const;
 
@@ -199,5 +201,29 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     const over = programs.map(([name, program, physical]) => [name, units(program, physical)] as const)
       .filter(([, { count }]) => count > UNITS).map(([name, { count, samplers }]) => `${name}: ${count} (${samplers.join(', ')})`);
     expect(over).toEqual([]);
+  });
+
+  it('keeps Medium\'s lite sun road (and the glitter off) within the units, its names declared', () => {
+    const was = { ...glitterMode };
+    try {
+      for (const mode of [{ on: false, lite: true }, { on: false, lite: false }]) {
+        setGlitter(mode);
+        // A plain source draws Classic whatever the look (Rich takes the cubic surface): every program, so Classic's never lite.
+        const programs = waterPrograms();
+        const far = new FarFieldOcean();
+        far.setLook('rich');
+        programs.push({ name: 'far ocean rich', program: compiled(far.mesh.material) });
+        const label = mode.lite ? 'lite' : 'off';
+        expect(programs.map(({ name, program }) => [`${label} ${name}`, undeclared(program.fragment)]).filter(([, names]) => names.length > 0)).toEqual([]);
+        const over = programs.map(({ name, program }) => [`${label} ${name}`, units(program, true)] as const)
+          .filter(([, { count }]) => count > UNITS).map(([name, { count }]) => `${name}: ${count}`);
+        expect(over).toEqual([]);
+        const rich = (name: string) => name.includes('rich') && !name.includes('plain');
+        expect(programs.filter(({ name, program }) => program.fragment.includes('#define WATER_SUN_LITE') !== (mode.lite && rich(name)))
+          .map(({ name }) => name)).toEqual([]);
+      }
+    } finally {
+      setGlitter(was);
+    }
   });
 });
