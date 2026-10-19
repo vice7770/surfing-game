@@ -703,7 +703,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   };
   // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
   /**
-   * A shot's GPU time, ms per frame (median and 90th percentile), from the GPU's own timer
+   * A shot's GPU time, ms per frame (median, 10th and 90th percentiles, fastest), from the GPU's own timer
    * (EXT_disjoint_timer_query_webgl2) around each frame: unlike `waterSheetTime` it holds in a hidden page, whose
    * throttling stretches wall-clock times but not the GPU's work.
    */
@@ -733,7 +733,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       gl.deleteQuery(query);
     }
     times.sort((a, b) => a - b);
-    return times.length ? { median: +times[Math.floor(times.length / 2)].toFixed(3), p90: +times[Math.floor(times.length * 0.9)].toFixed(3), frames: times.length } : undefined;
+    // The low end too: on a shared GPU other work lands inside some frames' queries, so the fastest frames are the cleanest.
+    return times.length ? {
+      median: +times[Math.floor(times.length / 2)].toFixed(3), p90: +times[Math.floor(times.length * 0.9)].toFixed(3),
+      p10: +times[Math.floor(times.length * 0.1)].toFixed(3), min: +times[0].toFixed(3), frames: times.length,
+    } : undefined;
   };
   Object.assign(window, { waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);

@@ -11,15 +11,20 @@
  *
  * Ideas adapted from web-ocean, js/wgsl/ocean.js (MIT licence, © 2026 Maksymilian Dendura), rewritten for the foam
  * network of `foamPattern`:
- * - the cover's threshold softened by the pixel's footprint (`fwidth`), so distant lace does not crawl, and softer
- *   still as foam ages: fresh foam has crisp edges, aged foam a translucent margin;
+ * - the cover's threshold softened by the pixel's footprint (`fwidth`), so distant lace does not crawl, and a little
+ *   softer as foam ages: fresh foam has crisp edges, aged foam a translucent margin;
  * - aged foam breaking into streaks: its lace (as crisp as ever) gathers into patches stretched along the waves'
- *   travel, shore-normal (the axis an onshore or offshore wind shares, as web-ocean's streaks follow the wind);
+ *   travel, shore-normal (the axis an onshore or offshore wind shares, as web-ocean's streaks follow the wind), and
+ *   the streaks stay on in the distance, where the lace has faded to its mean;
  * - thin aged foam a translucent film, dense young foam opaque;
  * - the bubbles under young foam tinting the water beneath and between its lace.
  *
- * Dev: `?foamFresh=off` draws the foam as before (its program is today's, byte for byte); `window.waterFoamFresh(on)`
- * switches it in a page, for the A/B timing.
+ * What varies slowly is worked out per vertex (`waterFoamFreshVertexPars`, `RICH_FRESH_VERTEX`): the youth, the
+ * opacity, the tint and the streaks' patch value, which reads the lace's own tile (one texture unit for both stages).
+ * The pixel adds only the threshold's softening and the patches' blend (the M1's Rich tank sits at a cost cliff).
+ *
+ * Dev: `?foamFresh=off` draws the foam as before (its program is today's, byte for byte), `?foamStreaks=off` without
+ * the streaks; `window.waterFoamFresh(on)` or `waterFoamFresh({ on, streaks })` switches it in a page.
  */
 import { DEV_TOOLS, devParam } from '../../devTools';
 import { smoothstep } from '../../wave/Bathymetry';
@@ -57,6 +62,11 @@ export function foamOpacity(foam: number, youth: number): number {
   return aged + (1 - aged) * youth;
 }
 
+/** The share of the way the water under foam turns toward the foam's colour: young foam's bubbles, as far as it covers. */
+export function bubbleTint(foam: number, youth: number): number {
+  return BUBBLE_TINT * youth * Math.min(1, Math.max(0, foam));
+}
+
 /** The threshold's half-width, in cells: the network's own, the pixel's footprint (m) and aged foam's margin. */
 export function foamEdge(youth: number, footprint: number): number {
   return FOAM_EDGE + (FOOTPRINT_SOFTNESS * footprint) / FOAM_CELL + AGED_SOFTNESS * (1 - youth);
@@ -76,92 +86,152 @@ export function agedTileAt(x: number, z: number): [number, number] {
   return [(x * AGED_STREAKS.across) / FOAM_CELL + AGED_OFFSET[0] * FOAM_TILE, z / (FOAM_CELL * AGED_STREAKS.along) + AGED_OFFSET[1] * FOAM_TILE];
 }
 
-/** One flow-map phase's cover at world (x, z): the lace's network, in patches turning from round to streaks by age. */
-function phaseCover(foam: number, aged: number, edge: number, x: number, z: number): number {
-  const distance = sampleFoamTile(x / FOAM_CELL, z / FOAM_CELL, 0);
-  let patch = sampleFoamTile(x / FOAM_CELL, z / FOAM_CELL, 1);
-  if (aged > 0) {
-    const [u, v] = agedTileAt(x, z);
-    patch += (sampleFoamTile(u, v, 1) - patch) * aged;
-  }
+/** The flow map's two phases at `time`: their fractions of the period, phase A's weight, and phase B's offset scale. */
+function flowPhases(time: number, flowX: number, flowZ: number): { a: number; b: number; weight: number; offset: number } {
+  const a = time / FOAM_FLOW_PERIOD - Math.floor(time / FOAM_FLOW_PERIOD);
+  const b = a + 0.5 - Math.floor(a + 0.5);
+  return { a, b, weight: 1 - Math.abs(2 * a - 1), offset: smoothstep(0, 0.5, (Math.hypot(flowX, flowZ) * FOAM_FLOW_PERIOD) / FOAM_CELL) };
+}
+
+/** CPU mirror of `waterStreakPatch` (per vertex): the stretched patches' value at (x, z), carried by the current. */
+export function streakPatch(x: number, z: number, flowX: number, flowZ: number, time: number): number {
+  const { a, b, weight, offset } = flowPhases(time, flowX, flowZ);
+  const [ua, va] = agedTileAt(x - flowX * a * FOAM_FLOW_PERIOD, z - flowZ * a * FOAM_FLOW_PERIOD);
+  const [ub, vb] = agedTileAt(x - flowX * b * FOAM_FLOW_PERIOD + 17.3 * FOAM_CELL * offset, z - flowZ * b * FOAM_FLOW_PERIOD + 5.9 * FOAM_CELL * offset);
+  return weight * sampleFoamTile(ua, va, 1) + (1 - weight) * sampleFoamTile(ub, vb, 1);
+}
+
+/** The local foam value in a patch of value `patch`: `foamPattern`'s F·(1 + (2v − 1)(1 − F)), gathering harder with age. */
+function patchy(foam: number, patch: number, aged: number): number {
   const f = Math.min(1, foam);
-  const local = Math.min(1, Math.max(0, f * (1 + (2 * patch - 1) * (1 - f) * (1 + AGED_STREAKS.gather * aged))));
-  return softCoverage(local, distance, edge);
+  return Math.min(1, Math.max(0, f * (1 + (2 * patch - 1) * (1 - f) * (1 + AGED_STREAKS.gather * aged))));
+}
+
+/** The foam's freshness at a point, as the vertex works it out (`RICH_FRESH_VERTEX`). */
+export interface FoamFreshness {
+  youth: number;
+  /** The streaks' patch value (`streakPatch`); aged foam's lace gathers into it. */
+  streak: number;
 }
 
 /**
- * CPU mirror of `waterFreshFoamCover`: the foam's cover at world (x, z), m, with the current (m/s), its value, its youth
- * (`foamYouth`), the time (s) and the pixel's footprint (m). Young foam at a fine footprint is `foamCover` exactly.
+ * CPU mirror of `waterFreshFoamCover`: the foam's cover at world (x, z), m, with the current (m/s), its value, its
+ * freshness, the time (s) and the pixel's footprint (m). Young foam at a fine footprint is `foamCover` exactly.
  */
-export function freshFoamCover(x: number, z: number, flowX: number, flowZ: number, foam: number, youth: number, time: number, footprint = 0): number {
+export function freshFoamCover(x: number, z: number, flowX: number, flowZ: number, foam: number, fresh: FoamFreshness, time: number, footprint = 0): number {
   if (!(foam > 0.001)) return 0;
+  const { youth, streak } = fresh;
+  const aged = 1 - youth;
   const opacity = foamOpacity(foam, youth);
   const fade = smoothstep(0.25, 1, footprint / FOAM_CELL);
-  if (fade >= 1) return foam * opacity;
-  const aged = 1 - youth;
+  // In the distance, the lace's mean: its round patches average out, its streaks do not.
+  const mean = patchy(foam, 0.5 + (streak - 0.5) * aged, aged);
+  if (fade >= 1) return mean * opacity;
   const edge = foamEdge(youth, footprint);
-  const a = time / FOAM_FLOW_PERIOD - Math.floor(time / FOAM_FLOW_PERIOD);
-  const b = a + 0.5 - Math.floor(a + 0.5);
-  const weight = 1 - Math.abs(2 * a - 1);
-  const offset = smoothstep(0, 0.5, (Math.hypot(flowX, flowZ) * FOAM_FLOW_PERIOD) / FOAM_CELL);
-  const coverA = phaseCover(foam, aged, edge, x - flowX * a * FOAM_FLOW_PERIOD, z - flowZ * a * FOAM_FLOW_PERIOD);
-  const coverB = phaseCover(foam, aged, edge, x - flowX * b * FOAM_FLOW_PERIOD + 17.3 * FOAM_CELL * offset,
-    z - flowZ * b * FOAM_FLOW_PERIOD + 5.9 * FOAM_CELL * offset);
+  const { a, b, weight, offset } = flowPhases(time, flowX, flowZ);
+  const phase = (px: number, pz: number) => {
+    const round = sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 1);
+    return softCoverage(patchy(foam, round + (streak - round) * aged, aged), sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 0), edge);
+  };
+  const coverA = phase(x - flowX * a * FOAM_FLOW_PERIOD, z - flowZ * a * FOAM_FLOW_PERIOD);
+  const coverB = phase(x - flowX * b * FOAM_FLOW_PERIOD + 17.3 * FOAM_CELL * offset, z - flowZ * b * FOAM_FLOW_PERIOD + 5.9 * FOAM_CELL * offset);
   const cover = weight * coverA + (1 - weight) * coverB;
-  return (fade > 0 ? cover + (foam - cover) * fade : cover) * opacity;
+  return (fade > 0 ? cover + (mean - cover) * fade : cover) * opacity;
 }
 
-/** The share of the way the water under foam turns toward the foam's colour: young foam's bubbles, as far as it covers. */
-export function bubbleTint(foam: number, youth: number): number {
-  return BUBBLE_TINT * youth * Math.min(1, Math.max(0, foam));
+/** The freshness at a point with the current and time: what the vertex hands the pixel (`streaks` off: no streaks). */
+export function foamFreshness(x: number, z: number, flowX: number, flowZ: number, foam: number, air: number, time: number, streaks = true): FoamFreshness {
+  return { youth: foamYouth(air, foam), streak: streaks ? streakPatch(x, z, flowX, flowZ, time) : 0.5 };
 }
 
 const f = (value: number) => value.toFixed(4);
 
 /**
- * GLSL (Rich fragment): `waterFoamYouth`, `waterFreshFoamCover` and `waterBubbleTint`, the twins above. Needs
- * `foamPatternPars` (its tile, thresholds and flow period).
+ * GLSL (Rich vertex): the freshness per vertex, `vWaterFresh` = (youth, opacity, streaks' patch value, bubble tint), the
+ * twins above. The foam tile is the fragment's own sampler; the flow map's period and offsets are `foamPattern`'s.
  */
-export const waterFoamFreshPars = /* glsl */ `
-// Foam freshness (web-ocean plan, item 7): the cover's soft threshold, aged foam's streaks and film, young foam's
-// bubbles; adapted from web-ocean, js/wgsl/ocean.js (MIT licence, (c) 2026 Maksymilian Dendura).
+export function waterFoamFreshVertexPars(streaks = true): string {
+  return /* glsl */ `
+// Foam freshness (web-ocean plan, item 7): adapted from web-ocean, js/wgsl/ocean.js (MIT licence, (c) 2026 Maksymilian Dendura).
+uniform sampler2D waterFoamTile;
+uniform float waterTime;
+varying vec4 vWaterFresh;
 float waterFoamYouth( float air, float foam ) {
   return max( smoothstep( ${f(YOUTH_AIR[0])}, ${f(YOUTH_AIR[1])}, air ), smoothstep( ${f(YOUTH_COVER[0])}, ${f(YOUTH_COVER[1])}, foam ) );
 }
-float waterFreshPhase( float foam, float aged, float edge, vec2 p ) {
-  vec2 tile = texture( waterFoamTile, p / ( FOAM_CELL * FOAM_TILE ) ).rg;
-  if ( aged > 0.0 ) {
-    float streak = texture( waterFoamTile, p * vec2( ${f(AGED_STREAKS.across)}, ${f(1 / AGED_STREAKS.along)} ) / ( FOAM_CELL * FOAM_TILE ) + vec2( ${f(AGED_OFFSET[0])}, ${f(AGED_OFFSET[1])} ) ).g;
-    tile.g = mix( tile.g, streak, aged );
-  }
+${streaks ? `float waterStreakPatch( vec2 p, vec2 flow ) {
+  const float period = ${f(FOAM_FLOW_PERIOD)};
+  float a = fract( waterTime / period );
+  float b = fract( a + 0.5 );
+  float w = 1.0 - abs( 2.0 * a - 1.0 );
+  float offset = smoothstep( 0.0, 0.5, length( flow ) * period / ${f(FOAM_CELL)} );
+  const vec2 scale = vec2( ${f(AGED_STREAKS.across)}, ${f(1 / AGED_STREAKS.along)} ) / ${f(FOAM_CELL * FOAM_TILE)};
+  const vec2 shift = vec2( ${f(AGED_OFFSET[0])}, ${f(AGED_OFFSET[1])} );
+  float va = textureLod( waterFoamTile, ( p - flow * a * period ) * scale + shift, 0.0 ).g;
+  float vb = textureLod( waterFoamTile, ( p - flow * b * period + vec2( 17.3, 5.9 ) * ${f(FOAM_CELL)} * offset ) * scale + shift, 0.0 ).g;
+  return w * va + ( 1.0 - w ) * vb;
+}` : ''}
+`;
+}
+
+/** Rich `<begin_vertex>` addition, after the vertex's foam, air and current are set (and the edge band's blends). */
+export function richFreshVertex(streaks = true): string {
+  return /* glsl */ `
+{
+  float waterYouth = waterFoamYouth( vWaterAir, vWaterFoam );
+  float waterThin = ${f(AGED_OPACITY)} + ${f(1 - AGED_OPACITY)} * smoothstep( ${f(OPACITY_COVER[0])}, ${f(OPACITY_COVER[1])}, vWaterFoam );
+  vWaterFresh = vec4( waterYouth, mix( waterThin, 1.0, waterYouth ), ${streaks ? 'waterStreakPatch( vWaterWorld.xz, vWaterFlow )' : '0.5'},
+    ${f(BUBBLE_TINT)} * waterYouth * clamp( vWaterFoam, 0.0, 1.0 ) );
+}`;
+}
+
+/**
+ * GLSL (Rich fragment): `waterFreshFoamCover`, the twin of `freshFoamCover`, from the vertex's `vWaterFresh` (held in
+ * range: off a sliver triangle's edge, where MSAA shades it, varyings run far out). Needs `foamPatternPars`.
+ */
+export const waterFoamFreshPars = /* glsl */ `
+// Foam freshness (web-ocean plan, item 7): the cover's soft threshold, aged foam's streaks and film; adapted from
+// web-ocean, js/wgsl/ocean.js (MIT licence, (c) 2026 Maksymilian Dendura).
+varying vec4 vWaterFresh;
+float waterFreshPatchy( float foam, float value, float aged ) {
   float f = min( foam, 1.0 );
-  float local = clamp( f * ( 1.0 + ( 2.0 * tile.g - 1.0 ) * ( 1.0 - f ) * ( 1.0 + ${f(AGED_STREAKS.gather)} * aged ) ), 0.0, 1.0 );
+  return clamp( f * ( 1.0 + ( 2.0 * value - 1.0 ) * ( 1.0 - f ) * ( 1.0 + ${f(AGED_STREAKS.gather)} * aged ) ), 0.0, 1.0 );
+}
+float waterFreshPhase( float foam, float aged, float streak, float edge, vec2 p ) {
+  vec2 tile = texture( waterFoamTile, p / ( FOAM_CELL * FOAM_TILE ) ).rg;
+  float local = waterFreshPatchy( foam, mix( tile.g, streak, aged ), aged );
   if ( local <= 0.001 ) return 0.0;
   float s = local * ${FOAM_LEVELS.toFixed(1)};
   int k = min( ${FOAM_LEVELS - 1}, int( floor( s ) ) );
   float radius = mix( FOAM_THRESHOLDS[ k ], FOAM_THRESHOLDS[ k + 1 ], s - float( k ) );
   return 1.0 - smoothstep( radius - edge, radius + edge, tile.r );
 }
-float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float time, float footprint ) {
+float waterFreshFoamCover( vec2 p, vec2 flow, float foam, vec4 fresh, float time, float footprint ) {
   if ( foam <= 0.001 ) return 0.0;
-  float opacity = mix( ${f(AGED_OPACITY)} + ${f(1 - AGED_OPACITY)} * smoothstep( ${f(OPACITY_COVER[0])}, ${f(OPACITY_COVER[1])}, foam ), 1.0, youth );
+  float aged = 1.0 - fresh.x;
+  float mean = waterFreshPatchy( foam, mix( 0.5, fresh.z, aged ), aged );
   float fade = smoothstep( 0.25, 1.0, footprint / FOAM_CELL );
-  if ( fade >= 1.0 ) return foam * opacity;
-  float aged = 1.0 - youth;
+  if ( fade >= 1.0 ) return mean * fresh.y;
   float edge = ${f(FOAM_EDGE)} + ${f(FOOTPRINT_SOFTNESS)} * footprint / FOAM_CELL + ${f(AGED_SOFTNESS)} * aged;
   float a = fract( time / FOAM_FLOW_PERIOD );
   float b = fract( a + 0.5 );
   float weight = 1.0 - abs( 2.0 * a - 1.0 );
   float offset = smoothstep( 0.0, 0.5, length( flow ) * FOAM_FLOW_PERIOD / FOAM_CELL );
-  float coverA = waterFreshPhase( foam, aged, edge, p - flow * a * FOAM_FLOW_PERIOD );
-  float coverB = waterFreshPhase( foam, aged, edge, p - flow * b * FOAM_FLOW_PERIOD + vec2( 17.3, 5.9 ) * FOAM_CELL * offset );
-  return mix( weight * coverA + ( 1.0 - weight ) * coverB, foam, fade ) * opacity;
+  float coverA = waterFreshPhase( foam, aged, fresh.z, edge, p - flow * a * FOAM_FLOW_PERIOD );
+  float coverB = waterFreshPhase( foam, aged, fresh.z, edge, p - flow * b * FOAM_FLOW_PERIOD + vec2( 17.3, 5.9 ) * FOAM_CELL * offset );
+  return mix( weight * coverA + ( 1.0 - weight ) * coverB, mean, fade ) * fresh.y;
 }
-float waterBubbleTint( float foam, float youth ) { return ${f(BUBBLE_TINT)} * youth * clamp( foam, 0.0, 1.0 ); }
 `;
 
-/** Whether the Rich foam ages (dev: `?foamFresh=off` draws it as before; `window.waterFoamFresh(on)` in a page). */
-export const foamFreshMode = { on: devParam('foamFresh') !== 'off' };
+/**
+ * Whether the Rich foam ages, and with its streaks (dev: `?foamFresh=off` draws it as before, `?foamStreaks=off` without
+ * the streaks; `window.waterFoamFresh(on)` or `waterFoamFresh({ on, streaks })` in a page).
+ */
+export interface FoamFreshMode {
+  on: boolean;
+  streaks: boolean;
+}
+export const foamFreshMode: FoamFreshMode = { on: devParam('foamFresh') !== 'off', streaks: devParam('foamStreaks') !== 'off' };
 const listeners = new Set<() => void>();
 
 /** Called whenever the switch changes: the Rich programs compile again. */
@@ -170,15 +240,16 @@ export function onFoamFreshChange(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-export function setFoamFresh(on: boolean): void {
-  if (foamFreshMode.on === on) return;
-  foamFreshMode.on = on;
-  for (const listener of listeners) listener();
+export function setFoamFresh(patch: boolean | Partial<FoamFreshMode>): void {
+  const was = foamFreshProgramKey();
+  Object.assign(foamFreshMode, typeof patch === 'boolean' ? { on: patch } : patch);
+  if (foamFreshProgramKey() !== was) for (const listener of listeners) listener();
 }
 
-/** The Rich programs' cache-key part: none when the foam ages (the default). */
+/** The Rich programs' cache-key part: none when the foam ages with its streaks (the default). */
 export function foamFreshProgramKey(): string {
-  return foamFreshMode.on ? '' : '-no-foam-fresh';
+  if (!foamFreshMode.on) return '-no-foam-fresh';
+  return foamFreshMode.streaks ? '' : '-foam-fresh-no-streaks';
 }
 
 if (DEV_TOOLS && typeof window !== 'undefined') Object.assign(window, { waterFoamFresh: setFoamFresh });

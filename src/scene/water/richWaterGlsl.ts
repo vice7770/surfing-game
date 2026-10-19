@@ -126,16 +126,16 @@ function swapOnce(source: string, target: string, replacement: string): string {
 }
 
 /**
- * `RICH_FOAM` with the foam's freshness (web-ocean plan, item 7; `foamFreshness.ts`, which needs `waterFoamFreshPars`):
- * its youth from the plume's air and its cover; the lace's threshold softened by the footprint and, as it ages, morphing
- * into streaks and thinning to a film; and young foam's bubbles tinting the water beneath. Everything else, the churn,
- * the face streaks and the plume among it, is `RICH_FOAM`'s.
+ * `RICH_FOAM` with the foam's freshness (web-ocean plan, item 7; `foamFreshness.ts`: it needs `waterFoamFreshPars`
+ * and the vertex's `vWaterFresh`): the lace's threshold softened by the footprint and, as the foam ages, gathering into
+ * streaks and thinning to a film; and young foam's bubbles tinting the water beneath. Everything else, the churn, the
+ * face streaks and the plume among it, is `RICH_FOAM`'s.
  */
 export const RICH_FOAM_FRESH = swapOnce(
-  swapOnce(RICH_FOAM, LACE_LINE, `float waterYouth = waterFoamYouth( vWaterAir, vWaterFoam );
-  float waterLace = mix( vWaterFoam, waterFreshFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterYouth, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );`),
+  swapOnce(RICH_FOAM, LACE_LINE, `vec4 waterFresh4 = clamp( vWaterFresh, 0.0, 1.0 );
+  float waterLace = mix( vWaterFoam, waterFreshFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterFresh4, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );`),
   DRAWN_LINE,
-  `waterUnder = mix( waterUnder, waterFoamColor, waterFoamPattern * waterBubbleTint( vWaterFoam, waterYouth ) );
+  `waterUnder = mix( waterUnder, waterFoamColor, waterFoamPattern * waterFresh4.w );
   ${DRAWN_LINE}`,
 );
 
