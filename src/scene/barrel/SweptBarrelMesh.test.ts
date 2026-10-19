@@ -8,6 +8,10 @@ import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
 import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
 import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+import { hazeLandKey, hazeLandRoute } from '../water/hazeLand';
+
+/** The barrel's haze key in a look (the haze-land follow-up: Rich adds its route to the program's key). */
+const hazeKey = (look: 'rich' | 'classic') => hazeLandKey(hazeLandRoute('barrel', look));
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -57,7 +61,7 @@ describe('the swept barrel’s mesh', () => {
       expect(vertex).toContain('vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       expect(fragment).toContain(SWEPT_BARREL_DISCARD);
       expect(mirrorsBarrelDither(fragment)).toBe(true);
-      expect(swept.mesh.material.customProgramCacheKey()).toBe(`breakline-swept-barrel-authored-mask-${look}`);
+      expect(swept.mesh.material.customProgramCacheKey()).toBe(`breakline-swept-barrel-authored-mask-${look}${hazeKey(look)}`);
     }
   });
 
@@ -102,7 +106,7 @@ describe('the swept barrel’s mesh', () => {
         // Each stored attribute fits one location: 13 normally, 14 after a dev view, below WebGL2's minimum 16.
         expect(Object.keys(swept.mesh.geometry.attributes).length).toBeLessThanOrEqual(14);
         const key = swept.mesh.material.customProgramCacheKey();
-        expect(key).toBe(`breakline-swept-barrel-authored-mask-${look}${view ? `-view-${view}` : ''}`);
+        expect(key).toBe(`breakline-swept-barrel-authored-mask-${look}${view ? `-view-${view}` : hazeKey(look)}`);
         keys.add(key);
       }
     }
@@ -273,7 +277,7 @@ describe('the swept barrel’s mesh', () => {
     expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;');
     expect(fragment.indexOf(RICH_THROAT)).toBeGreaterThan(fragment.indexOf('radiance *= waterReflection;'));
     expect(fragment.indexOf(RICH_THROAT)).toBeLessThan(fragment.indexOf('#include <lights_fragment_end>'));
-    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-authored-mask-rich');
+    expect(swept.mesh.material.customProgramCacheKey()).toBe(`breakline-swept-barrel-authored-mask-rich${hazeKey('rich')}`);
   });
 
   it('copies the throat’s views per vertex, and each slice’s tip, mouth, ray and lip normal to its vertices, in the Rich look only', () => {
