@@ -593,7 +593,9 @@ export class SurfZoneRunner {
       }
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
-      session.step(SURF_ZONE_STEP, this.water, ridden);
+      // The bodies push only the water's discharge (and tally their reactions): its surface heights, bed, lenses and
+      // tubes hold through the step, so its render-node heights are found once each (the M1 CPU study, 2026-10-19).
+      this.water.withSurfaceNodeCache(() => session.step(SURF_ZONE_STEP, this.water, ridden));
       // At a swept spot the lip strikes through the contact; its parcels' strips are off, so they would strike from
       // where nothing is drawn (the advisor's ruling 4).
       if (!this.contactQueries) session.strike(this.simulation.lip);
@@ -700,7 +702,8 @@ export class SurfZoneRunner {
     const body = session.rider.attached ? session.board : undefined;
     const position = body ? body.centerOfMass : session.surfer.centerOfMass(this.point);
     const velocity = body ? body.velocity : session.surfer.linearMomentum(this.momentum).divideScalar(session.surfer.mass);
-    this.wave = gauge.update(this.water, position, velocity, SURF_ZONE_STEP, this.peelAngle);
+    // The gauge only reads the water: its ~185 surface queries share render nodes, found once each.
+    this.wave = this.water.withSurfaceNodeCache(() => gauge.update(this.water, position, velocity, SURF_ZONE_STEP, this.peelAngle));
     this.measureTubeApproach(tubeGuide);
     this.analyze(position, velocity);
   }
