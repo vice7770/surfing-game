@@ -173,7 +173,7 @@ function postMaterial(fragmentShader: string, uniforms: Record<string, { value: 
 
 export class GlowPass {
   /** The grade and glow in force; dev tools may tune them live. */
-  readonly settings: GlowSettings = { ...GLOW };
+  readonly settings: GlowSettings;
   private sceneTarget?: WebGLRenderTarget;
   private mips: WebGLRenderTarget[] = [];
   private readonly quad = new FullScreenQuad();
@@ -186,6 +186,11 @@ export class GlowPass {
   private readonly size = new Vector2();
   /** Full-screen draws the last frame made: the scene, the bloom's passes and the composite. */
   passes = 0;
+
+  /** `overrides`: settings in place of `GLOW`'s (the dev MSAA switch). */
+  constructor(overrides: Partial<GlowSettings> = {}) {
+    this.settings = { ...GLOW, ...overrides };
+  }
 
   /** The HDR scene and the bloom's mips, once drawn; for checks. */
   get targets(): { scene?: WebGLRenderTarget; mips: readonly WebGLRenderTarget[] } {

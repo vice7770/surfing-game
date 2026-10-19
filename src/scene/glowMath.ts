@@ -41,6 +41,11 @@ export const GLOW = {
 
 export type GlowSettings = { [K in keyof typeof GLOW]: number };
 
+/** `?glowMsaa=2` (dev): the HDR scene's MSAA samples for the owner's A/B of 2× against the default 4× (`4`, or anything else). */
+export function glowSamples(param: string | null | undefined): number {
+  return param === '2' ? 2 : GLOW.samples;
+}
+
 export const LINEAR_SRGB_TO_REC2020: Columns = [[0.6274, 0.0691, 0.0164], [0.3293, 0.9195, 0.0880], [0.0433, 0.0113, 0.8956]];
 export const REC2020_TO_LINEAR_SRGB: Columns = [[1.6605, -0.1246, -0.0182], [-0.5876, 1.1329, -0.1006], [-0.0728, -0.0083, 1.1187]];
 export const AGX_INSET: Columns = [

@@ -55,7 +55,7 @@ import { WaterSurface } from './scene/WaterSurface';
 import { GlowPass } from './scene/GlowPass';
 import { SunDisc } from './scene/SunDisc';
 import { PhotoBackground } from './scene/PhotoBackground';
-import { agxPreimage, agxPreimageRing, type Rgb } from './scene/glowMath';
+import { agxPreimage, agxPreimageRing, glowSamples, type Rgb } from './scene/glowMath';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { FftChop } from './scene/FftChop';
 import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
@@ -1070,7 +1070,8 @@ class SurfGame {
     this.needsRender = true;
     const below = new Color(UNDERWATER);
     if (on) {
-      this.glow = new GlowPass();
+      // `?glowMsaa=2` (dev): the HDR scene at 2× MSAA, for the owner's A/B against the default 4×.
+      this.glow = new GlowPass({ samples: glowSamples(devParam('glowMsaa')) });
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
       // The photo and the painted sky, which are already as the canvas shows them, as the light the grade turns back into them.

@@ -47,6 +47,15 @@ describe('the glow pass', () => {
     expect(glow.targets.scene).toBeUndefined();
   });
 
+  it('takes the dev switch\'s MSAA samples in place of the default 4', () => {
+    const glow = new GlowPass({ samples: 2 });
+    glow.render(rendererStub(1280, 800).renderer, new Scene(), new PerspectiveCamera());
+    expect(glow.targets.scene?.samples).toBe(2);
+    expect(glow.settings.exposure).toBe(GLOW.exposure);
+    glow.dispose();
+    expect(new GlowPass().settings.samples).toBe(4);
+  });
+
   it('follows the drawing buffer when the window or render scale changes', () => {
     const glow = new GlowPass();
     const stub = rendererStub(1280, 800);

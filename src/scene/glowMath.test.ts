@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  GLOW, PREIMAGE_TABLE_SIZE, agx, agxDecode, agxEncodedPreimage, agxPreimage, agxPreimageRing, agxPreimageTable, agxSigmoid, bloomSizes,
+  GLOW, PREIMAGE_TABLE_SIZE, agx, glowSamples, agxDecode, agxEncodedPreimage, agxPreimage, agxPreimageRing, agxPreimageTable, agxSigmoid, bloomSizes,
   glowMemory, glslMat3, linearToSrgb, neutral, photoBackgroundMemory, softThreshold, srgbToLinear, type Rgb,
 } from './glowMath';
 
@@ -159,6 +159,13 @@ describe('the bloom', () => {
     expect(at1280.bloom).toBe((640 * 400 + 320 * 200 + 160 * 100 + 80 * 50 + 40 * 25) * 8);
     expect(at1280.total / (1280 * 800)).toBeCloseTo(62.7, 1);
     expect(glowMemory(2048, 1280).total).toBe(2048 * 1280 * 60 + (1024 * 640 + 512 * 320 + 256 * 160 + 128 * 80 + 64 * 40) * 8);
+  });
+
+  it('runs the HDR scene at 4× MSAA unless the dev switch asks for 2×', () => {
+    expect(glowSamples(null)).toBe(4);
+    expect(glowSamples('4')).toBe(4);
+    expect(glowSamples('2')).toBe(2);
+    expect(glowSamples('8')).toBe(4);
   });
 
   it('writes matrices for GLSL column by column', () => {
