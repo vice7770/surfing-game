@@ -104,6 +104,8 @@ describe('the foam look: dense foam and the light through it (item 4b)', () => {
     expect(bandVolumeLight(-0.1, sunset)).toBeLessThan(0.2 * old(-0.1));
     expect(bandVolumeLight(-0.1, sunset, 1)).toBeCloseTo(old(-0.1), 12);
     expect(bandVolumeLight(-0.1, sunset, 0.5)).toBeGreaterThan(bandVolumeLight(-0.1, sunset));
+    // A sunlit face (front light) takes the sun directly: no wrap on top of it, its relief's shading whole.
+    expect(bandVolumeLight(0.35, sunset, 1)).toBe(0);
     // Never darker than three's own light on it, and as before where the wrap stays under the water's light.
     for (const nDotL of [-0.9, -0.3, 0, 0.2, 0.6, 1]) {
       for (const fresh of [0, 0.5, 1]) expect(bandVolumeLight(nDotL, sunset, fresh)).toBeGreaterThanOrEqual(0);
@@ -123,7 +125,8 @@ ${BAND_VOLUME}`;
     // The glow keeps the air's freshness, not the dense foam's.
     expect(lit).toContain('totalEmissiveRadiance += 0.18 * waterFreshness( vWaterAir ) * waterFoamPattern');
     expect(lit).toContain('smoothstep( 0.7000, 1.0000, vWaterFoam )');
-    expect(lit).toContain('max( max( 0.0, waterBandSun ), waterSunDirection.y ) ), max( 0.0, ( waterBandSun + 1.0 ) / 2.0 ), waterRollerFresh * waterRollerFresh )');
+    expect(lit).toContain('max( max( 0.0, waterBandSun ), waterSunDirection.y ) ), max( 0.0, ( waterBandSun + 1.0 ) / 2.0 ), waterRollerFresh * waterRollerFresh');
+    expect(lit).toContain('smoothstep( 0.0000, 0.3000, waterBandSun )');
     expect(() => withDenseChurn('nothing')).toThrow();
     expect(() => withFoamLight('nothing')).toThrow();
   });

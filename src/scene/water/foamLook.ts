@@ -9,10 +9,12 @@
  *   shade toward the sun and away from it under a low sun;
  * - **the light through foam** (item 4b): looking toward a low sun, two terms painted foam the sun's colour whatever
  *   way it faced, so a sheet read as one flat pink plane: the fresh foam's backlit glow, now kept to thin foam as its
- *   comment always said (a dense mat is opaque), and the roller band's wrapped sun, now shining through near the crest,
- *   where the band is thin and the sun enters it, and down the face no more than the light the band's own surface or
- *   level water around it takes (at sunset the wrap lit the whole face, turned from the sun, at half the sun's full
- *   beam, against a tenth on the water beside it). Faces turned from the sun are then lit by the sky.
+ *   comment always said (a dense mat is opaque), and the roller band's wrapped sun, now shining through only near the
+ *   crest of a band the sun is behind, where the band is thin and the sun enters it, and elsewhere no more than the
+ *   light the band's own surface or level water around it takes. At sunset the wrap lit the whole face at about half
+ *   the sun's full beam, against a tenth on the water beside it: turned from the sun it glowed, and turned toward it
+ *   its N·L was more than doubled, flattening the churn's relief by half. Faces turned from the sun are now lit by the
+ *   sky, and sunlit faces keep their relief.
  *
  * Nothing new is read or carried: the warp is arithmetic, the round patches are the lace tile's green channel the same
  * read already fetches, and the churn is the one the Rich foam already samples. The Rich tank sits at a cost cliff on the
@@ -115,15 +117,19 @@ export function thinGlow(foam: number): number {
   return 1 - (1 - GLOW_DENSE) * smoothstep(GLOW_THICK[0], GLOW_THICK[1], foam);
 }
 
+/** The band's N·L over which the sun stops shining through it: a face turned toward the sun takes it directly. */
+export const BAND_THROUGH = [0, 0.3] as const;
+
 /**
- * CPU twin of the roller band's wrapped sun with its cap: the wrap (N·L + w)/(1 + w) where the band is fresh at its crest
- * (`fresh` 1, `waterRollerFresh`), and down the face, as the band freshens less, toward the wrap held to no more than
- * the band's own N·L or level water's (the sun's height, L_y); less the N·L three's light already gives.
+ * CPU twin of the roller band's wrapped sun with its cap: the wrap (N·L + w)/(1 + w) held to no more than the band's own
+ * N·L or level water's (the sun's height, L_y), except where the sun shines through: near the crest (`fresh` 1,
+ * `waterRollerFresh`) of a face turned from it (`BAND_THROUGH`); less the N·L three's light already gives.
  */
 export function bandVolumeLight(nDotL: number, sunHeight: number, fresh = 0, wrap = 1): number {
   const wrapped = Math.max(0, (nDotL + wrap) / (1 + wrap));
   const capped = Math.min(wrapped, Math.max(Math.max(0, nDotL), sunHeight));
-  return capped + (wrapped - capped) * fresh * fresh - Math.max(0, nDotL);
+  const through = fresh * fresh * (1 - smoothstep(BAND_THROUGH[0], BAND_THROUGH[1], nDotL));
+  return capped + (wrapped - capped) * through - Math.max(0, nDotL);
 }
 
 const GLOW = 'totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow(';
@@ -140,7 +146,8 @@ export function withFoamLight(fragment: string): string {
   if (out.includes(BAND_VOLUME)) {
     if (!BAND_VOLUME.includes(WRAP)) throw new Error('The foam light needs the band\'s wrap');
     out = out.replace(BAND_VOLUME, BAND_VOLUME.replace(WRAP,
-      `mix( min( ${WRAP}, max( max( 0.0, waterBandSun ), waterSunDirection.y ) ), ${WRAP}, waterRollerFresh * waterRollerFresh )`));
+      `mix( min( ${WRAP}, max( max( 0.0, waterBandSun ), waterSunDirection.y ) ), ${WRAP}, waterRollerFresh * waterRollerFresh
+    * ( 1.0 - smoothstep( ${f(BAND_THROUGH[0])}, ${f(BAND_THROUGH[1])}, waterBandSun ) ) )`));
   }
   return out;
 }
