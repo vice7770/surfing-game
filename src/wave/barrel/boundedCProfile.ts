@@ -176,7 +176,9 @@ function root(J:Vec2,vr:Vec2,angle:number,qC:number,yC:number,T:number,P:Vec2[],
  for(let i=1;i<=8;i++)points.push(i===8&&sharedCrest!==undefined?U:add(J,mul([Math.sin(beta+spanU*i/8)-Math.sin(beta),-Math.cos(beta+spanU*i/8)+Math.cos(beta)],R)));
  for(let i=1;i<=4;i++)points.push(mix(U,V0,i/4));for(let i=1;i<=4;i++){const a=3*Math.PI/2+spanL*i/4;points.push(add(V0,mul([Math.sin(a)+1,-Math.cos(a)],R)));}return {points,E,R,D,domainRadius};
 }
-export function ulp32(v:number):number{const f=new Float32Array([v]),u=new Uint32Array(f.buffer);u[0]++;return f[0]-Math.fround(v);}
+const ulpFloat=new Float32Array(1),ulpBits=new Uint32Array(ulpFloat.buffer);
+/** The F32 step above fround(v), on shared scratch (the M1 CPU study, 2026-10-19: two typed arrays a call before). */
+export function ulp32(v:number):number{ulpFloat[0]=v;ulpBits[0]++;return ulpFloat[0]-Math.fround(v);}
 /** Exact event arithmetic only: clocks do not require the inner sheet, bounded root or floor contour. */
 export function boundedCLifecycle(z:BoundedCParameters):BoundedCLifecycle{
  const ev=event(ordinary(z)),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction;
