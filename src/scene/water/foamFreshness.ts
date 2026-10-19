@@ -49,7 +49,7 @@ export const FOOTPRINT_SOFTNESS = 0.35;
 export const AGED_OPACITY = 0.8;
 const OPACITY_COVER = [0.25, 0.8] as const;
 /** The bubble tint under young foam: at most this share of the way from the water's colour to the foam's. */
-export const BUBBLE_TINT = 0.22;
+export const BUBBLE_TINT = 0.15;
 
 /** Young foam (1) to aged (0), from the plume's void fraction and the foam's cover. */
 export function foamYouth(air: number, foam: number): number {
@@ -72,13 +72,22 @@ export function foamEdge(youth: number, footprint: number): number {
   return FOAM_EDGE + AGED_SOFTNESS * (1 - youth) + (FOOTPRINT_SOFTNESS * footprint) / FOAM_CELL;
 }
 
-/** `foamCoverage` with its edge half-width given, in cells. */
-export function softCoverage(foam: number, distance: number, edge: number): number {
+/** `foamCoverage` with its edge half-width given, in cells, and its threshold raised by `rise` cells. */
+export function softCoverage(foam: number, distance: number, edge: number, rise = 0): number {
   if (!(foam > 0.001)) return 0;
   const s = Math.min(1, foam) * FOAM_LEVELS;
   const k = Math.min(FOAM_LEVELS - 1, Math.floor(s));
-  const radius = FOAM_THRESHOLDS[k] + (FOAM_THRESHOLDS[k + 1] - FOAM_THRESHOLDS[k]) * (s - k);
+  const radius = FOAM_THRESHOLDS[k] + (FOAM_THRESHOLDS[k + 1] - FOAM_THRESHOLDS[k]) * (s - k) + rise;
   return 1 - smoothstep(radius - edge, radius + edge, distance);
+}
+
+/**
+ * How far the threshold rises for foam of value `foam` with an edge `edge` cells wide: dense foam's threshold sits near
+ * the network's widest gap, so an edge softer than the network's own would open faint holes in it; the threshold rises
+ * by the extra softness as the foam closes up, and dense foam stays white through.
+ */
+export function foamRise(foam: number, edge: number): number {
+  return (edge - FOAM_EDGE) * smoothstep(0.75, 1, foam);
 }
 
 /** Where aged foam's stretched patches are read, in tile cells, for world (x, z), m. */
@@ -119,6 +128,7 @@ export function freshFoamCover(x: number, z: number, flowX: number, flowZ: numbe
   const mean = Math.min(1, Math.max(0, base + 0.5 * gain + 0.5 * gather));
   if (fade >= 1) return mean * opacity;
   const edge = foamEdge(youth, footprint);
+  const rise = foamRise(foam, edge);
   const a = time / FOAM_FLOW_PERIOD - Math.floor(time / FOAM_FLOW_PERIOD);
   const b = a + 0.5 - Math.floor(a + 0.5);
   const weight = 1 - Math.abs(2 * a - 1);
@@ -126,7 +136,7 @@ export function freshFoamCover(x: number, z: number, flowX: number, flowZ: numbe
   const phase = (px: number, pz: number) => {
     const streak = streaks && gather > 0 ? streakAt(px, pz) : 0.5;
     const local = Math.min(1, Math.max(0, base + gain * sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 1) + gather * streak));
-    return softCoverage(local, sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 0), edge);
+    return softCoverage(local, sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 0), edge, rise);
   };
   const coverA = phase(x - flowX * a * FOAM_FLOW_PERIOD, z - flowZ * a * FOAM_FLOW_PERIOD);
   const coverB = phase(x - flowX * b * FOAM_FLOW_PERIOD + 17.3 * FOAM_CELL * offset, z - flowZ * b * FOAM_FLOW_PERIOD + 5.9 * FOAM_CELL * offset);
@@ -148,7 +158,7 @@ export function waterFoamFreshPars(streaks = true): string {
 float waterFoamYouth( float air, float foam ) {
   return max( smoothstep( ${f(YOUTH_AIR[0])}, ${f(YOUTH_AIR[1])}, air ), smoothstep( ${f(YOUTH_COVER[0])}, ${f(YOUTH_COVER[1])}, foam ) );
 }
-float waterFreshPhase( vec3 lace, float edge, vec2 p ) {
+float waterFreshPhase( vec3 lace, vec2 edge, vec2 p ) {
   vec2 tile = texture( waterFoamTile, p / ( FOAM_CELL * FOAM_TILE ) ).rg;
   float streak = 0.5;
   ${streaks ? `if ( lace.z > 0.0 ) streak = ${streak};` : ''}
@@ -156,8 +166,8 @@ float waterFreshPhase( vec3 lace, float edge, vec2 p ) {
   if ( local <= 0.001 ) return 0.0;
   float s = local * ${FOAM_LEVELS.toFixed(1)};
   int k = min( ${FOAM_LEVELS - 1}, int( floor( s ) ) );
-  float radius = mix( FOAM_THRESHOLDS[ k ], FOAM_THRESHOLDS[ k + 1 ], s - float( k ) );
-  return 1.0 - smoothstep( radius - edge, radius + edge, tile.r );
+  float radius = mix( FOAM_THRESHOLDS[ k ], FOAM_THRESHOLDS[ k + 1 ], s - float( k ) ) + edge.y;
+  return 1.0 - smoothstep( radius - edge.x, radius + edge.x, tile.r );
 }
 float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float time, float footprint ) {
   if ( foam <= 0.001 ) return 0.0;
@@ -169,7 +179,8 @@ float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float tim
   float fade = smoothstep( 0.25, 1.0, footprint / FOAM_CELL );
   float cover = clamp( lace.x + 0.5 * lace.y + 0.5 * lace.z, 0.0, 1.0 );
   if ( fade < 1.0 ) {
-    float edge = ${f(FOAM_EDGE)} + ${f(AGED_SOFTNESS)} * aged + ${f(FOOTPRINT_SOFTNESS)} * footprint / FOAM_CELL;
+    float soft = ${f(AGED_SOFTNESS)} * aged + ${f(FOOTPRINT_SOFTNESS)} * footprint / FOAM_CELL;
+    vec2 edge = vec2( ${f(FOAM_EDGE)} + soft, soft * smoothstep( 0.75, 1.0, f ) );
     float a = fract( time / FOAM_FLOW_PERIOD );
     float b = fract( a + 0.5 );
     float weight = 1.0 - abs( 2.0 * a - 1.0 );

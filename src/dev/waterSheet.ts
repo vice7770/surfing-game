@@ -678,25 +678,30 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   };
   /**
    * A view's frames as the sea steps on, `seconds` apart (the first now), tiled `columns` across at `scale` and labelled
-   * with the time since the first, posted as `file`: e.g. fresh foam aging into lace.
+   * with the time since the first, posted as `file`: e.g. fresh foam aging into lace. With `arms` (each `set` runs before
+   * its frame, e.g. a dev switch), every frame is drawn under each arm, the arms' rows stacked under each row of frames.
    */
   const waterSheetStrip = async (name: string | View, look: WaterLook, time: TimeOfDay, frames: number, seconds: number,
-    file = 'water-strip.jpg', columns = 3, scale = 0.5) => {
+    file = 'water-strip.jpg', columns = 3, scale = 0.5, arms: { label: string; set: () => unknown }[] = [{ label: '', set: () => undefined }]) => {
     const shot = viewOf(name);
     if (!shot) return false;
     const [width, height] = [Math.round(RENDER.width * scale), Math.round(RENDER.height * scale)];
     const canvas = document.createElement('canvas');
     canvas.width = width * Math.min(columns, frames);
-    canvas.height = height * Math.ceil(frames / columns);
+    canvas.height = height * arms.length * Math.ceil(frames / columns);
     const context = canvas.getContext('2d')!;
     await hooks.setTimeOfDay(time);
-    hooks.setWaterLook(look);
     camera.position.copy(shot.eye);
     camera.lookAt(shot.target);
     camera.updateMatrixWorld();
     for (let frame = 0; frame < frames; frame += 1) {
       if (frame > 0) await waterSheetStep(seconds);
-      drawFrame(context, `+${(frame * seconds).toFixed(1)} s · ${look} · ${time}`, (frame % columns) * width, Math.floor(frame / columns) * height, width, height);
+      for (const [row, arm] of arms.entries()) {
+        await arm.set();
+        hooks.setWaterLook(look);
+        const y = (Math.floor(frame / columns) * arms.length + row) * height;
+        drawFrame(context, `+${(frame * seconds).toFixed(1)} s${arm.label ? ` · ${arm.label}` : ''} · ${look} · ${time}`, (frame % columns) * width, y, width, height);
+      }
     }
     await post(canvas, file);
     return simulated;

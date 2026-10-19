@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AGED_OPACITY, AGED_STREAKS, BUBBLE_TINT, BUBBLE_TINT_GLSL, YOUTH_AIR, YOUTH_COVER, bubbleTint, foamEdge, foamOpacity, foamYouth,
-  freshFoamCover, freshLace, softCoverage, waterFoamFreshPars,
+  foamRise, freshFoamCover, freshLace, softCoverage, waterFoamFreshPars,
 } from './foamFreshness';
 import { FOAM_CELL, FOAM_EDGE, FOAM_FLOW_PERIOD, foamCover, foamCoverage, foamDistance } from '../foamPattern';
 import { RICH_FOAM, RICH_FOAM_FRESH } from './richWaterGlsl';
@@ -137,6 +137,25 @@ describe('foam freshness', () => {
     let radius = 0;
     for (let d = 0; d < 1; d += 0.0005) if (softCoverage(0.5, d, 0.0005) >= 0.5) radius = d;
     for (const edge of [0.01, 0.05, 0.1]) expect(softCoverage(0.5, radius, edge)).toBeCloseTo(0.5, 1);
+  });
+
+  it('keeps dense foam as white through as it was, however soft its edge', () => {
+    // Saturated foam's threshold sits at the network's widest gaps: a softer edge must open no more of them than before.
+    let opened = 0;
+    let mean = 0;
+    let count = 0;
+    for (let z = 0; z < 8; z += 0.13) {
+      for (let x = 0; x < 8; x += 0.11) {
+        const soft = freshFoamCover(x, z, 0, 0, 1, 0.5, 0.7, 0.2 * FOAM_CELL);
+        if (soft < foamCover(x, z, 0, 0, 1, 0.7) - 1e-12) opened += 1;
+        mean += soft;
+        count += 1;
+      }
+    }
+    expect(opened).toBe(0);
+    expect(mean / count).toBeGreaterThan(0.999);
+    expect(foamRise(0.4, 0.2)).toBe(0);
+    expect(foamRise(1, FOAM_EDGE)).toBe(0);
   });
 
   it('fades to the mean in the distance, aged foam as a film', () => {
