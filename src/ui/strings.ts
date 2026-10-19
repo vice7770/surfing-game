@@ -46,7 +46,7 @@ export const EN = {
   'lab.practiceNote': 'A steady {height} groundswell every {period} s, from {direction}°.',
   'lab.height': 'Height',
   'lab.period': 'Period',
-  'lab.spread': 'Spread',
+  'lab.spread': 'Spread at the break',
   'lab.spread.groundswell': 'Groundswell',
   'lab.spread.mixed': 'Mixed',
   'lab.spread.windswell': 'Windswell',

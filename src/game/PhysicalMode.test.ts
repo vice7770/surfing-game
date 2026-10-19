@@ -5,7 +5,12 @@ import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
 import { PARTICLE_BUDGETS } from '../wave/particleBudget';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
+import {
+  DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
+  REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
+  surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
+} from './PhysicalMode';
+import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
@@ -193,6 +198,109 @@ describe('PhysicalMode', () => {
   it('takes a spot’s own spreading when it sets one, and the spread slider’s otherwise', () => {
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'padang', source: 'buoy', spreading: 150 }).spreading).toBe(150);
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy' }).spreading).toBe(spreadingFor(DEFAULT_PHYSICAL_SETTINGS.spread));
+  });
+
+  // The 2026-10-21 playtest: the lab's buoy (s 8 from 10°) crossed the Canyon's crests in V's, and 4 m closed Padang Padang out.
+  describe('the Wave Lab’s sea', () => {
+    const lab: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', lab: true };
+    const storms = [
+      { stormWindSpeed: 18, stormFetchKm: 600, stormDurationHours: 36, stormDistanceKm: 3000 },
+      { stormWindSpeed: 28, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 200 },
+      { stormWindSpeed: 12, stormFetchKm: 100, stormDurationHours: 6, stormDistanceKm: 0 },
+      { stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 10000 },
+    ];
+
+    it('maps the spread at the break from the game’s refracted groundswell to the advisor’s floor', () => {
+      expect(labSpreadingFor(0)).toBe(REFRACTED_SPREADING);
+      expect(labSpreadingFor(0.5)).toBeCloseTo(150 / Math.SQRT2, 9);
+      expect(labSpreadingFor(1)).toBe(LAB_SPREADING_FLOOR);
+      expect(LAB_SPREADING_FLOOR).toBe(75);
+      expect(labSpreadingFor(-1)).toBe(150);
+      expect(labSpreadingFor(3)).toBe(75);
+    });
+
+    it('brings every buoy swell in square to the beach and long-crested, whatever the sliders say', () => {
+      for (const spot of SURF_SPOTS) {
+        for (const spread of [0, 0.3, 0.5, 0.6, 1]) {
+          for (const directionDegrees of [-40, -10, 0, 10, 40]) {
+            const settings = { ...lab, spot, spread, directionDegrees };
+            const sea = swellFor(settings, false);
+            expect(sea.directionDegrees).toBe(0);
+            expect(sea.spreading).toBeGreaterThanOrEqual(LAB_SPREADING_FLOOR);
+            expect(sea.spreading).toBeCloseTo(labSpreadingFor(spread), 12);
+            const config = surfZoneConfigFor(settings, 1, true);
+            expect(config.directionDegrees).toBe(0);
+            expect(config.spreading).toBeGreaterThanOrEqual(LAB_SPREADING_FLOOR);
+          }
+        }
+      }
+    });
+
+    it('brings every storm’s swell in square to the beach, no broader than the floor', () => {
+      for (const spot of SURF_SPOTS) {
+        for (const storm of storms) {
+          const settings: PhysicalSettings = { ...lab, spot, source: 'storm', directionDegrees: 25, ...storm };
+          const sea = swellFor(settings, false);
+          expect(sea.directionDegrees).toBe(0);
+          expect(sea.spreading).toBe(Math.max(LAB_SPREADING_FLOOR, sea.storm!.spreading));
+          expect(sea.spreading).toBeGreaterThanOrEqual(LAB_SPREADING_FLOOR);
+          expect(surfZoneConfigFor(settings, 1, false)).toMatchObject({ directionDegrees: 0, spreading: sea.spreading });
+        }
+      }
+    });
+
+    it('runs no bigger than each spot’s Big, a buoy’s height and a storm’s alike', () => {
+      for (const spot of SURF_SPOTS) {
+        const big = physicalSettingsFor(spot, { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }).significantHeight;
+        if (spot !== 'pool') expect(big).toBe(swellChoice(spot, 'big').significantHeight);
+        expect(labHeightLimit(spot)).toBeCloseTo(big, 12);
+        expect(labHeightLimit(spot)).toBeLessThanOrEqual(swellHeightLimit(spot));
+        expect(swellFor({ ...lab, spot, significantHeight: 4 }, false).significantHeight).toBeCloseTo(big, 12);
+        expect(swellFor({ ...lab, spot, significantHeight: 1 }, false).significantHeight).toBe(1);
+        expect(swellFor({ ...lab, spot, source: 'storm', ...storms[1] }, false).significantHeight).toBeCloseTo(big, 12);
+      }
+      expect(labHeightLimit('canyon')).toBe(2.4);
+      expect(labHeightLimit('padang')).toBe(3.8);
+    });
+
+    it('keeps the raw spread and direction behind the dev flag ?labRawSea=1', () => {
+      expect(labRawSea('?labRawSea=1')).toBe(true);
+      expect(labRawSea('')).toBe(false);
+      expect(labRawSea('?labRawSea=0')).toBe(false);
+      expect(labRawSea()).toBe(false);
+      const buoy = { ...lab, spot: 'canyon' as const, significantHeight: 4, spread: 0.6, directionDegrees: 10 };
+      expect(swellFor(buoy, true)).toEqual({ significantHeight: 2.4, peakPeriod: buoy.peakPeriod, spreading: spreadingFor(0.6) });
+      expect(surfZoneConfigFor(buoy, 1, false)).toMatchObject({ directionDegrees: 0, spreading: labSpreadingFor(0.6) });
+      const storm = { ...lab, source: 'storm' as const, ...storms[0] };
+      expect(swellFor(storm, true).spreading).toBe(swellFor(storm, true).storm!.spreading);
+      expect(swellFor(storm, true).directionDegrees).toBeUndefined();
+    });
+
+    it('leaves Surf’s and Practice’s seas exactly as they were', () => {
+      for (const spot of SURF_SPOTS) {
+        for (const size of ['practice', 'small', 'medium', 'big'] as const) {
+          const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+          expect(settings.lab).toBeUndefined();
+          const sea = swellFor(settings, false);
+          // Neither the lab nor its dev flag reaches them.
+          expect(swellFor(settings, true)).toEqual(sea);
+          const config = surfZoneConfigFor(settings, 1, true);
+          if (spot === 'pool') {
+            // The pool's machine wave (Practice rides Medium) takes the spread slider's old groundswell, as before.
+            expect(config).toMatchObject({ significantHeight: settings.significantHeight, spreading: spreadingFor(0), directionDegrees: 0 });
+          } else if (size === 'practice') {
+            expect(sea).toEqual(practiceSwell(spot));
+          } else {
+            const choice = swellChoice(spot, size);
+            expect(config).toMatchObject({
+              significantHeight: choice.significantHeight, peakPeriod: choice.peakPeriod, spreading: choice.spreading, directionDegrees: 0,
+            });
+          }
+        }
+      }
+      // Practice from the lab is Surf's practice.
+      expect(swellFor({ ...lab, spot: 'padang', source: 'practice' }, false)).toEqual(PADANG_PRACTICE_SWELL);
+    });
   });
 
   it('roughens the chop more under onshore than offshore wind', () => {

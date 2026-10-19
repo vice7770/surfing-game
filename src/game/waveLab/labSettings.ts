@@ -1,6 +1,6 @@
 import type { SpotName } from '../../wave/Bathymetry';
 import type { WaterLook } from '../../scene/water/waterLook';
-import { DEFAULT_PHYSICAL_SETTINGS, TANK_SWELL_LIMITS, type PhysicalSettings } from '../PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, TANK_SWELL_LIMITS, labHeightLimit, type PhysicalSettings } from '../PhysicalMode';
 import { SURF_SPOTS, TIMES, type TimeOfDay } from '../SurfConditions';
 
 /** The Wave Lab's settings (spec L1): the sea, the light and the water look, remembered between visits. */
@@ -21,7 +21,8 @@ export const LAB_KEY = 'breakline.wavelab.v1';
 
 export function defaultLabSettings(): WaveLabSettings {
   return {
-    physical: { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' },
+    // The lab's seas arrive as the game's own swells do: refracted, square to the beach, no bigger than the spot's Big.
+    physical: { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice', lab: true },
     water: 'graphics',
     ...TIMES.midday,
     waterLook: 'rich',
@@ -34,19 +35,24 @@ const oneOf = <T>(value: unknown, allowed: readonly T[], fallback: T): T => (all
 const within = (value: unknown, min: number, max: number, fallback: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
 
-/** Stored lab settings made safe: unknown choices fall back to the defaults, numbers stay on the sliders' ranges. */
+/**
+ * Stored lab settings made safe: unknown choices fall back to the defaults, numbers stay on the sliders' ranges, and
+ * the height under the spot's limit (its Big), so a sea saved bigger loads as the lab runs it.
+ */
 export function sanitizeLabSettings(value: unknown): WaveLabSettings {
   const base = defaultLabSettings();
   const raw = record(value);
   const p = record(raw.physical);
   const d = base.physical;
+  const spot = oneOf<SpotName>(p.spot, SURF_SPOTS, d.spot);
+  const heightLimit = labHeightLimit(spot);
   return {
     physical: {
-      spot: oneOf<SpotName>(p.spot, SURF_SPOTS, d.spot),
+      spot,
       stage: oneOf<1 | 2>(p.stage, [1, 2], d.stage),
       compute: oneOf<'auto' | 'cpu'>(p.compute, ['auto', 'cpu'], d.compute),
       source: oneOf<PhysicalSettings['source']>(p.source, ['buoy', 'storm', 'practice'], d.source),
-      significantHeight: within(p.significantHeight, TANK_SWELL_LIMITS.height.min, TANK_SWELL_LIMITS.height.max, d.significantHeight),
+      significantHeight: within(p.significantHeight, TANK_SWELL_LIMITS.height.min, heightLimit, Math.min(d.significantHeight, heightLimit)),
       peakPeriod: within(p.peakPeriod, TANK_SWELL_LIMITS.period.min, TANK_SWELL_LIMITS.period.max, d.peakPeriod),
       directionDegrees: within(p.directionDegrees, -40, 40, d.directionDegrees),
       spread: within(p.spread, 0, 1, d.spread),
@@ -56,6 +62,7 @@ export function sanitizeLabSettings(value: unknown): WaveLabSettings {
       stormFetchKm: within(p.stormFetchKm, 50, 2000, d.stormFetchKm),
       stormDurationHours: within(p.stormDurationHours, 3, 96, d.stormDurationHours),
       stormDistanceKm: within(p.stormDistanceKm, 0, 10000, d.stormDistanceKm),
+      lab: true,
     },
     water: oneOf<WaveLabSettings['water']>(raw.water, ['graphics', 'chosen'], base.water),
     sunHeight: within(raw.sunHeight, 0, 1, base.sunHeight),

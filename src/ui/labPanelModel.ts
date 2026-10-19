@@ -1,4 +1,4 @@
-import { practiceSwell, swellFor, swellHeightLimit, type PhysicalSettings } from '../game/PhysicalMode';
+import { labHeightLimit, labRawSea, practiceSwell, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
 import type { SpotName } from '../wave/Bathymetry';
 import { forecastSurf } from '../wave/surfForecast';
 import { t } from './strings';
@@ -47,20 +47,30 @@ export function practiceNote(units: Units, spot: SpotName): string {
   });
 }
 
+/** The buoy height the lab runs at the spot: the slider's, under the spot's limit (its Big). */
+function labHeight(physical: PhysicalSettings): number {
+  return Math.min(physical.significantHeight, labHeightLimit(physical.spot));
+}
+
 /** The surf a buoy swell will make at the spot (the wave-sizes spec), for the line under the swell sliders: "Surf 4.3–5.4 m (forecast)". */
 export function surfForecastNote(physical: PhysicalSettings, units: Units, scale: SurfScale): string {
-  const { typical, sets } = forecastSurf(physical.spot, physical.significantHeight, physical.peakPeriod);
+  const { typical, sets } = forecastSurf(physical.spot, labHeight(physical), physical.peakPeriod);
   return t('lab.surfForecast', { surf: formatSurfRange(typical, sets, units, scale) });
 }
 
-/** The sliders for these settings: the chosen swell source's own, the direction (fixed by Practice), tide and wind. */
-export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[] {
+/**
+ * The sliders for these settings: the chosen swell source's own, the direction, tide and wind. The height reaches the
+ * spot's Big; the direction stays at 0°, since the lab's swells arrive square to the beach as the game's own do
+ * (`rawSea`, the dev flag `?labRawSea=1`, frees it again for Buoy and Storm).
+ */
+export function labSliders(physical: PhysicalSettings, units: Units, rawSea = labRawSea()): LabSlider[] {
   const swell = (key: SliderKey, label: string, min: number, max: number, step: number, text: string): LabSlider =>
     ({ key, group: 'swell', label, min, max, step, value: physical[key], text });
   const sliders: LabSlider[] = [];
   if (physical.source === 'buoy') {
+    const height = labHeight(physical);
     sliders.push(
-      swell('significantHeight', t('lab.height'), 0.3, swellHeightLimit(physical.spot), 0.1, formatHeight(physical.significantHeight, units)),
+      { ...swell('significantHeight', t('lab.height'), 0.3, labHeightLimit(physical.spot), 0.1, formatHeight(height, units)), value: height },
       swell('peakPeriod', t('lab.period'), 6, 18, 0.5, `${physical.peakPeriod.toFixed(1)} s`),
       swell('spread', t('lab.spread'), 0, 1, 0.05, spreadName(physical.spread)),
     );
@@ -72,10 +82,11 @@ export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[
       swell('stormDistanceKm', t('lab.distance'), 0, 10000, 100, `${physical.stormDistanceKm} km`),
     );
   }
-  // Practice fixes the direction: show the one its swell really comes from (the Reef's is its own).
-  const practice = physical.source === 'practice';
-  const direction = practice ? practiceSwell(physical.spot).directionDegrees ?? physical.directionDegrees : physical.directionDegrees;
-  sliders.push({ ...swell('directionDegrees', t('lab.direction'), -40, 40, 5, `${direction}°`), value: direction, disabled: practice });
+  // Every source's swell comes in square to the beach: show the direction it really comes from (Practice's is its spot's own).
+  const free = rawSea && physical.source !== 'practice';
+  const direction = free ? physical.directionDegrees
+    : physical.source === 'practice' ? practiceSwell(physical.spot).directionDegrees ?? 0 : 0;
+  sliders.push({ ...swell('directionDegrees', t('lab.direction'), -40, 40, 5, `${direction}°`), value: direction, disabled: !free });
   sliders.push(
     { key: 'tide', group: 'conditions', label: t('lab.tide'), min: -1, max: 1, step: 0.1, value: physical.tide, text: formatHeight(physical.tide, units) },
     { key: 'windSpeed', group: 'conditions', label: t('lab.wind'), min: -12, max: 12, step: 1, value: physical.windSpeed, text: windWords(physical.windSpeed, units) },

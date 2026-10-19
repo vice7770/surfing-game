@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TIMES } from '../SurfConditions';
+import { labHeightLimit } from '../PhysicalMode';
+import { SURF_SPOTS, TIMES } from '../SurfConditions';
 import { LAB_KEY, LabStore, defaultLabSettings, labWater, needsRebuild, sanitizeLabSettings, timeOfDayFor } from './labSettings';
 
 const memory = () => {
@@ -8,8 +9,28 @@ const memory = () => {
 };
 
 describe('lab settings', () => {
-  it('keeps a saved 3.8 m swell, under the 4 m cap (wave sizes)', () => {
-    expect(sanitizeLabSettings({ physical: { significantHeight: 3.8 } }).physical.significantHeight).toBe(3.8);
+  it('keeps a saved 3.8 m swell at Padang Padang, its Big (wave sizes)', () => {
+    expect(sanitizeLabSettings({ physical: { spot: 'padang', significantHeight: 3.8 } }).physical.significantHeight).toBe(3.8);
+  });
+
+  // The 2026-10-21 playtest: the slider and forecast said 4.0 m at the Canyon, the run 3.0 m, and it broke in rows.
+  it('loads a sea saved above its spot’s limit clamped to it, the spot’s Big', () => {
+    for (const spot of SURF_SPOTS) {
+      expect(sanitizeLabSettings({ physical: { spot, significantHeight: 4 } }).physical.significantHeight).toBe(labHeightLimit(spot));
+    }
+    expect(sanitizeLabSettings({ physical: { spot: 'canyon', significantHeight: 4 } }).physical.significantHeight).toBe(2.4);
+    expect(sanitizeLabSettings({ physical: { spot: 'canyon', significantHeight: 3 } }).physical.significantHeight).toBe(2.4);
+    expect(sanitizeLabSettings({ physical: { spot: 'padang', significantHeight: 4 } }).physical.significantHeight).toBe(3.8);
+    expect(sanitizeLabSettings({ physical: { spot: 'canyon', significantHeight: 1.8 } }).physical.significantHeight).toBe(1.8);
+    const store = new LabStore(memory());
+    store.save({ ...defaultLabSettings(), physical: { ...defaultLabSettings().physical, spot: 'canyon', source: 'buoy', significantHeight: 4 } });
+    expect(store.value.physical.significantHeight).toBe(2.4);
+  });
+
+  it('marks every lab sea as the lab’s, so it arrives square to the beach', () => {
+    expect(defaultLabSettings().physical.lab).toBe(true);
+    expect(sanitizeLabSettings({ physical: { lab: false } }).physical.lab).toBe(true);
+    expect(sanitizeLabSettings(null).physical.lab).toBe(true);
   });
 
   it('starts at the Canyon on the practice swell at midday, in the Rich look', () => {
@@ -23,7 +44,7 @@ describe('lab settings', () => {
     const lab = sanitizeLabSettings({ physical: { spot: 'moon', source: 'storm', significantHeight: 99, tide: -7, stage: 3 }, sunHeight: 'x', waterLook: 'neon' });
     expect(lab.physical.spot).toBe('canyon');
     expect(lab.physical.source).toBe('storm');
-    expect(lab.physical.significantHeight).toBe(4);
+    expect(lab.physical.significantHeight).toBe(2.4);
     expect(lab.physical.tide).toBe(-1);
     expect(lab.physical.stage).toBe(2);
     expect(lab.sunHeight).toBe(defaultLabSettings().sunHeight);
