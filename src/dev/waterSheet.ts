@@ -753,7 +753,57 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       p10: +times[Math.floor(times.length * 0.1)].toFixed(3), min: +times[0].toFixed(3), frames: times.length,
     } : undefined;
   };
-  Object.assign(window, { waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  /**
+   * An A/B of dev arms on a shot's GPU time (the haze-land follow-up): the arms take turns frame by frame, each `set`
+   * run before its frame and the order turned every cycle, so a shared GPU's bursts of other work land on every arm
+   * alike. Per arm, ms per frame: the median, 10th percentile and fastest frame, and the median over cycles of its frame
+   * less the first arm's frame of the same cycle.
+   */
+  const waterSheetGpuAB = async (name: string | View, look: WaterLook, arms: { label: string; set: () => unknown }[], cycles = 40) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    const timer = gl?.getExtension('EXT_disjoint_timer_query_webgl2') as { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number } | null;
+    if (!shot || !gl || !timer || arms.length === 0) return undefined;
+    fit();
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    // Each arm's programs compiled before any frame is timed.
+    for (const arm of arms) {
+      await arm.set();
+      hooks.renderView(camera);
+      hooks.renderView(camera);
+    }
+    const pending: { arm: number; cycle: number; query: WebGLQuery }[] = [];
+    for (let cycle = 0; cycle < cycles; cycle += 1) {
+      for (let k = 0; k < arms.length; k += 1) {
+        const arm = (cycle + k) % arms.length;
+        await arms[arm].set();
+        const query = gl.createQuery()!;
+        gl.beginQuery(timer.TIME_ELAPSED_EXT, query);
+        hooks.renderView(camera);
+        gl.endQuery(timer.TIME_ELAPSED_EXT);
+        pending.push({ arm, cycle, query });
+      }
+      if (cycle % 2 === 1) await breathe();
+    }
+    const times = arms.map(() => new Array<number>(cycles).fill(Number.NaN));
+    for (const { arm, cycle, query } of pending) {
+      while (!gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE)) await new Promise((resolve) => setTimeout(resolve, 5));
+      if (!gl.getParameter(timer.GPU_DISJOINT_EXT)) times[arm][cycle] = gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6;
+      gl.deleteQuery(query);
+    }
+    const at = (values: number[], share: number) => {
+      const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+      return sorted.length ? +sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * share))].toFixed(3) : Number.NaN;
+    };
+    return Object.fromEntries(arms.map((arm, k) => [arm.label, {
+      median: at(times[k], 0.5), p10: at(times[k], 0.1), min: at(times[k], 0),
+      vsFirst: k === 0 ? 0 : at(times[k].map((t, cycle) => t - times[0][cycle]), 0.5),
+    }]));
+  };
+  Object.assign(window, { waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
