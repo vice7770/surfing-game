@@ -10,8 +10,8 @@ canvas shows it as shot: three draws an sRGB background without tone mapping.
 Under the glow it went into the HDR target as it was and AgX graded it again,
 so dawn and sunset lost their orange and every sky came out paler.
 
-**The fix (`src/scene/GlowSky.ts`).** While the glow runs, the photo is drawn
-by `GlowSky` in place of three's background (`scene.background` is set aside
+**The fix (`src/scene/PhotoBackground.ts`, first named GlowSky).** While the glow runs, the photo is drawn
+by `PhotoBackground` in place of three's background (`scene.background` is set aside
 for the glow's draw and put back after). For each pixel it reads the photo
 (three's equirect mapping and turn), looks the sRGB colour up in a 25³ table of
 its AgX preimage, stored in AgX's log encoding (`agxPreimageTable`), and decodes
@@ -37,10 +37,10 @@ lands within 0.75 of a step of 255 of the photo (0.1 on average).
   the beach, the step between sky and far water is the same size off and on
   (crops: no new edge).
 - **Sharpness.** Three samples the photo through a cube map it makes from it,
-  which comes out about ¾ of a mip softer. GlowSky samples the photo itself
-  and softens its lookup by the same amount (`SOFTEN`). At midday, pixels more
+  which comes out about ¾ of a mip softer. PhotoBackground samples the photo itself
+  and softens its lookup to match (first a constant ¾ mip, since fitted per pixel; see the follow-up). At midday, pixels more
   than 3 steps off (cloud edges) fall from 0.7 % to 0.15 %.
-- **Off is untouched.** GlowSky is created only with the glow. With the glow
+- **Off was untouched by this fix.** The graded sky was made only with the glow. With the glow
   off, all six Beach shots are byte-identical to the original code's stills.
   The first shot after the sheet differs a little from any later one, on
   either code; a repeat of it matches.
@@ -68,7 +68,7 @@ The water still goes through AgX, as before: paler sand, softer whites.
 background, three turns the 4096 × 2048 photo into a cube map with 2048² faces
 (RGBA8 with mips) and gives each face its own depth renderbuffer. That costs
 134 + 101 = **235 MB**, on top of the photo's own 45 MB
-(`photoBackgroundMemory`). GlowSky samples the photo directly, so with the
+(`photoBackgroundMemory`). PhotoBackground samples the photo directly, so with the
 glow on the cube is never made. Turning the glow on mid-game frees it
 (`texture.dispose()`; the photo uploads again on its next draw, and three
 rebuilds the cube if the glow is turned off).
@@ -160,20 +160,103 @@ Beach, and (−30, 1.7, −150) looking at (−30, 1.2, −500) on the Canyon.
 
 ## Still open
 
-- **Off, three's cube costs 235 MB for every player.** Drawing the photo the
-  GlowSky way with the glow off too (the identity in place of the table) would
-  free it. That changes the off path: about 0.2 % of the sky's pixels, at cloud
-  edges, move by more than 3 steps. It is a separate decision.
 - **The glow's +2.8 ms on the M1 is mostly the 4× MSAA HDR target.** At 2× it
-  would cost +0.75 ms and use 25 MB less at 1280 × 800 (63 MB less at
-  2048 × 1280), with softer edges than the canvas's 4×. That is for the owner
-  to judge.
+  costs +0.75 ms and uses 25 MB less at 1280 × 800 (63 MB less at
+  2048 × 1280), with softer edges than the canvas's 4×. `?glowMsaa=2` lets the
+  owner judge it (follow-up); the default stays 4×.
 - **Translucent things in front of the sky** (spray, mist) now blend over the
   sky's preimage in scene light rather than over the photo in display light.
   They look the same in these stills, but have not been checked in play.
-- **The painted fallback sky** shown before the photo loads is still graded
-  twice.
 - **Tuning the grade live** (`breaklineDiagnostics.glow().settings`) leaves the
   sky's table and the haze's ring on the old look until the glow is turned off
   and on again.
 - **The owner's playtest**, with the glow on at dawn and sunset.
+
+## Follow-up: the photo sky for everyone, the painted sky, `?glowMsaa=2`
+
+**The photo is drawn straight from the photo on every path** (all presets, both
+looks, glow on or off), so three never builds its cube. `PhotoBackground` draws
+the photo as shot with the glow off (sRGB on the canvas, no tone mapping, as
+three's background) and its preimage under the glow. `scene.background` keeps
+the photo for everything else and is set aside only for the draw. The PMREM
+environment for reflections is untouched. `waterSheetSkyFromPhoto(false)` (dev)
+draws three's background again, for A/Bs.
+
+**Against three's cube, glow off** (of 255; the sky is the top 300 rows,
+1280 × 720, High):
+
+| shot | mean | max | pixels changed | pixels > 3 off |
+|---|---|---|---|---|
+| Beach dawn lineup / from the beach | 0.07 / 0.06 | 1 / 2 | 14.1 / 11.7 % | 0 / 0 |
+| Beach midday lineup / from the beach | 0.20 / 0.18 | 12 / 9 | 36.9 / 32.8 % | 0.11 / 0.07 % |
+| Beach sunset lineup / from the beach | 0.08 / 0.06 | 2 / 1 | 16.4 / 12.8 % | 0 / 0 |
+| Canyon dawn lineup / from the beach | 0.07 / 0.06 | 1 / 2 | 14.1 / 11.7 % | 0 / 0 |
+| Canyon midday lineup / from the beach | 0.20 / 0.18 | 12 / 8 | 36.9 / 32.6 % | 0.11 / 0.07 % |
+| Canyon sunset lineup / from the beach | 0.08 / 0.06 | 2 / 1 | 16.4 / 12.8 % | 0 / 0 |
+
+- Dawn and sunset differ only by rounding. At midday the differences are at
+  cloud edges, where the two resamplings differ.
+- In the lineup frames one pixel just below the horizon differs by 30–35. It is
+  a gap where the sky shows between two meshes.
+- Underwater (the background is then the water's colour) is identical, with the
+  glow off and on.
+- The rows where the water's haze meets the sky are identical to 0.1 at dawn,
+  midday and sunset, so the haze still meets the sky as before.
+
+**The lookup's mip, fitted to three's cube.** A sharper sample does not close
+the gap: at 1280 wide, gradient scales of 1 and 1.41 leave 0.58 % and 0.26 % of
+pixels more than 3 off, against 0.15 % at 1.68. A constant 1.68 was also three
+times worse at 960 wide. The lookup now takes ¾ of a mip softer while the
+photo is magnified, capped at mip 0.4, and 0.4 softer once it is minified.
+Pixels more than 3 off at midday, by width:
+
+| width | per-pixel fit | constant 1.68 |
+|---|---|---|
+| 1920 | 0.14 % | 0.14 % |
+| 1280 | 0.11 % | 0.15 % |
+| 960 | 0.24 % | 0.77 % |
+| 640 | 0.70 % | 1.90 % |
+| 480 | 1.2 % | |
+
+Below about 960 wide the two mip chains differ too much to match closer.
+
+**Memory, glow off.**
+
+| | |
+|---|---|
+| counted | −235 MB: the cube's 134 MB of faces with mips and 101 MB of depth |
+| measured, browser GPU process, Beach High at 1280 × 720 | 742 → 415, 1215 → 890, 1178 → 854 MB: **−325 MB** each time |
+
+The cube's buffers evidently take more than counted. The photo itself (45 MB)
+stays either way.
+
+**GPU cost of the sky** (Canyon lineup, glow off, cube and photo alternated,
+median of 60 frames):
+
+| preset | cube | photo |
+|---|---|---|
+| High | 13.56, 13.40, 13.43, 13.36 ms | 13.40, 13.40, 13.34, 13.48 ms |
+| Medium | 11.81, 11.77, 11.70, 11.72 ms | 11.74, 11.77, 11.72, 11.74 ms |
+
+The two cost the same.
+
+**Checked:**
+- the Low menu's still backdrop (sunset), drawn from the photo;
+- a resize to 768 × 1024, which redraws it;
+- the High menu with `?glow=1&glowMsaa=2`: the HDR target has 2 samples;
+- no console errors.
+
+The Surfer preview has its own renderer and never sets a background, so it
+draws no sky.
+
+**The painted fallback sky** (Environment, shown until the photo loads) takes
+the same table under the glow. Its colour is written as sRGB on the canvas, so
+it is the table's index; it is drawn at alpha 0, and a plain colour background
+goes in as its preimage. With the painted sky shown at the Beach, glow off
+against on: mean 38.8 of 255 (max 74) before, 0.52 (max 3, the dither) after.
+
+**`?glowMsaa=2`** (dev) runs the HDR scene at 2× MSAA; `4` or nothing keeps the
+default 4×.
+
+Stills: `sky-beach-{dawn,midday,sunset}-beach-{cube,photo}.jpg`, the sky from
+the beach drawn through three's cube and from the photo, glow off.
