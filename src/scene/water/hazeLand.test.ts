@@ -8,10 +8,10 @@ import { SprayPoints } from '../SprayPoints';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { SweptBarrelMesh } from '../barrel/SweptBarrelMesh';
 import {
-  HAZE_ROUTES, VIEW_TOWARD, hazeLandLook, hazeLandMode, hazeLandOn, hazeLandPars, hazeLandRoute, hazeMaterial, onHazeLandChange,
+  HAZE_NEAR, HAZE_ROUTES, VIEW_TOWARD, hazeLandLook, hazeLandMode, hazeLandOn, hazeLandPars, hazeLandRoute, hazeMaterial, onHazeLandChange,
   setHazeLand, setHazeLandLook, withHazeLand,
 } from './hazeLand';
-import { hazeAmount, horizonHazeUniforms, ringColorAt, waterHazeColorPars, waterHazeUniformPars, waterHazeVertexPars } from './horizonHaze';
+import { hazeAmount, hazeTransmittance, horizonHazeUniforms, ringColorAt, waterHazeColorPars, waterHazeUniformPars, waterHazeVertexPars } from './horizonHaze';
 
 type Lib = keyof typeof ShaderLib;
 
@@ -73,7 +73,9 @@ describe('the horizon haze beyond the water', () => {
     withHazeLand(pixel, { route: 'pixel', pixelToward: 'vWorld - cameraPosition' });
     expect(pixel.vertexShader).toBe(ShaderLib.standard.vertexShader);
     expect(pixel.fragmentShader).not.toContain('vHazeLand');
-    expect(pixel.fragmentShader).toContain('vec4 hazeLand = hazeLandToward( vWorld - cameraPosition );');
+    expect(pixel.fragmentShader).toContain('vec3 hazeLandWay = vWorld - cameraPosition;\n  if ( dot( hazeLandWay, hazeLandWay ) > 625.0 ) {\n    vec4 hazeLand = hazeLandToward( hazeLandWay );');
+    // Nearer than HAZE_NEAR, none: under a level of 255.
+    expect(1 - hazeTransmittance(HAZE_NEAR)).toBeLessThan(1 / 120);
     expectMixedAfterToneMapping(pixel.fragmentShader, PIXEL_MIX);
     expect(() => withHazeLand({ vertexShader: 'void main() {}', fragmentShader: 'void main() {}' }, { route: 'vertex' })).toThrow(/project_vertex/);
   });
@@ -127,7 +129,7 @@ describe('the horizon haze beyond the water', () => {
     const rich = compiled(hazed, 'standard');
     expect(rich.key).toBe(`${before.key}-haze-land-pixel`);
     expectMixedAfterToneMapping(rich.fragment, PIXEL_MIX);
-    expect(rich.fragment).toContain(`hazeLandToward( ${VIEW_TOWARD} )`);
+    expect(rich.fragment).toContain(`vec3 hazeLandWay = ${VIEW_TOWARD};`);
     expect(rich.vertex).toBe(before.vertex);
     for (const name of Object.keys(horizonHazeUniforms) as (keyof typeof horizonHazeUniforms)[]) expect(rich.uniforms[name]).toBe(horizonHazeUniforms[name]);
     setHazeLandLook('rich');
@@ -176,7 +178,7 @@ describe('the horizon haze beyond the water', () => {
     setHazeLand('pixel');
     const pixel = compiled(seabed.mesh.material, 'basic');
     expectMixedAfterToneMapping(pixel.fragment, PIXEL_MIX);
-    expect(pixel.fragment).toContain('vec4 hazeLand = hazeLandToward( vSeabedWorld - cameraPosition );');
+    expect(pixel.fragment).toContain('vec3 hazeLandWay = vSeabedWorld - cameraPosition;');
     expect(pixel.vertex).not.toContain('vHazeLand');
     setHazeLand('vertex');
     expectMixedAfterToneMapping(compiled(seabed.mesh.material, 'basic').fragment, VERTEX_MIX);
@@ -210,9 +212,9 @@ describe('the horizon haze beyond the water', () => {
     expect(rich.uniforms.waterHazeExtinction).toBe(horizonHazeUniforms.waterHazeExtinction);
     // Both routes compile into each, from the world position each hands its fragments.
     setHazeLand('pixel');
-    expect(compiled(lip.richMaterial).fragment).toContain('hazeLandToward( vLipWorld - cameraPosition )');
-    expect(compiled(curl.mesh.material).fragment).toContain('hazeLandToward( vWaterWorld - cameraPosition )');
-    expect(compiled(barrel.mesh.material).fragment).toContain('hazeLandToward( vWaterWorld - cameraPosition )');
+    expect(compiled(lip.richMaterial).fragment).toContain('vec3 hazeLandWay = vLipWorld - cameraPosition;');
+    expect(compiled(curl.mesh.material).fragment).toContain('vec3 hazeLandWay = vWaterWorld - cameraPosition;');
+    expect(compiled(barrel.mesh.material).fragment).toContain('vec3 hazeLandWay = vWaterWorld - cameraPosition;');
     setHazeLand('off');
     for (const material of [lip.richMaterial, curl.mesh.material, barrel.mesh.material]) {
       const { fragment, key } = compiled(material);

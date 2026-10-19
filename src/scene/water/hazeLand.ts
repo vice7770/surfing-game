@@ -127,6 +127,13 @@ export const hazeLandPars = /* glsl */ `${waterHazeUniformPars}${waterHazeColorP
 }
 `;
 
+/**
+ * Nearer than this, m, the pixel route works out no haze: it would be under 0.82 % (e^{−β·25}), within a level of 255
+ * of none, and the riders, a curl at the face or a barrel from the inside, the pixel route's largest areas on screen, are
+ * mostly that near.
+ */
+export const HAZE_NEAR = 25;
+
 /** GLSL: from the eye to the vertex, world axes, after three's `<project_vertex>` (skinning and instancing in). */
 export const MV_TOWARD = '( vec4( mvPosition.xyz, 0.0 ) * viewMatrix ).xyz';
 /** GLSL: from the eye to the pixel, world axes, in a standard or physical material's fragment (its `vViewPosition`). */
@@ -180,8 +187,11 @@ export function withHazeLand(shader: { vertexShader: string; fragmentShader: str
   let fragment = declare(shader.fragmentShader, hazeLandPars, 'fragment');
   fragment = once(fragment, output, `${output}
 {
-  vec4 hazeLand = hazeLandToward( ${site.pixelToward} );
-  gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );
+  vec3 hazeLandWay = ${site.pixelToward};
+  if ( dot( hazeLandWay, hazeLandWay ) > ${(HAZE_NEAR * HAZE_NEAR).toFixed(1)} ) {
+    vec4 hazeLand = hazeLandToward( hazeLandWay );
+    gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );
+  }
 }`, 'fragment');
   shader.fragmentShader = fragment;
 }
