@@ -1,8 +1,11 @@
+import { ShaderLib, type Material, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import {
   AGED_OPACITY, AGED_STREAKS, BUBBLE_TINT, BUBBLE_TINT_GLSL, YOUTH_AIR, YOUTH_COVER, bubbleTint, foamEdge, foamOpacity, foamYouth,
-  foamRise, freshFoamCover, freshLace, softCoverage, waterFoamFreshPars,
+  foamFreshMode, foamRise, freshFoamCover, freshLace, setFoamFresh, softCoverage, waterFoamFreshPars,
 } from './foamFreshness';
+import { WaterSurface, type SurfaceSource } from '../WaterSurface';
+import { ROLLER_SLOTS, ROLLER_STRIDE } from '../../wave/SpillingRoller';
 import { FOAM_CELL, FOAM_EDGE, FOAM_FLOW_PERIOD, foamCover, foamCoverage, foamDistance } from '../foamPattern';
 import { RICH_FOAM, RICH_FOAM_FRESH } from './richWaterGlsl';
 import { richRollerFoam } from './rollerGlsl';
@@ -192,6 +195,55 @@ describe('foam freshness', () => {
     const reserved = ['patch', 'sample', 'input', 'output', 'filter', 'active', 'common', 'partition', 'resource', 'noperspective'];
     for (const glsl of [waterFoamFreshPars(), RICH_FOAM_FRESH]) {
       for (const word of reserved) expect(glsl.replace(/\/\/[^\n]*/g, '')).not.toMatch(new RegExp(`\\b${word}\\b`));
+    }
+  });
+});
+
+/** A material's shaders after its `onBeforeCompile`, on three's physical sources. */
+function programOf(material: Material): string {
+  const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+  material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+  return `${shader.vertexShader}\n${shader.fragmentShader}`;
+}
+
+describe('the foam freshness switch', () => {
+  const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
+  const plain: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
+  const cubic: SurfaceSource = { ...plain, cubic: true, writeAeration: () => {}, writeFlow: () => {} };
+  const roller: SurfaceSource = {
+    ...cubic, rollerColumns: 4, rollerColumn0: 0.5, rollerColumnWidth: 1,
+    writeRoller: (into) => { into.fill(0, 0, ROLLER_SLOTS * 4 * ROLLER_STRIDE); return 4; },
+  };
+
+  it('leaves Classic as it was and changes the Rich programs alone, by their key', () => {
+    const was = { ...foamFreshMode };
+    try {
+      for (const source of [plain, cubic, roller]) {
+        const water = new WaterSurface(source);
+        const programs = (on: boolean) => {
+          setFoamFresh({ on, streaks: true });
+          water.setLook('classic');
+          const classic = { text: programOf(water.mesh.material), key: water.mesh.material.customProgramCacheKey() };
+          water.setLook('rich');
+          return { classic, rich: { text: programOf(water.mesh.material), key: water.mesh.material.customProgramCacheKey() } };
+        };
+        const on = programs(true);
+        const off = programs(false);
+        expect(on.classic).toEqual(off.classic);
+        // A source with no Catmull-Rom surface draws Classic in either look.
+        if (!source.cubic) {
+          expect(on.rich).toEqual(off.rich);
+          continue;
+        }
+        expect(on.rich.key).not.toBe(off.rich.key);
+        expect(on.rich.text).toContain('waterFreshFoamCover(');
+        // Off, the Rich program is today's: the old lace, none of the new code.
+        expect(off.rich.text).not.toContain('waterFreshFoamCover');
+        expect(off.rich.text).not.toContain('waterFoamYouth');
+        expect(off.rich.text).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime');
+      }
+    } finally {
+      setFoamFresh(was);
     }
   });
 });
