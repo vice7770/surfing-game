@@ -434,7 +434,7 @@ async function pipeline(): Promise<void> {
     return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : Number.NaN;
   };
   const keys: (keyof Pipeline)[] = ['water', 'deviceMap', 'deviceUnpack', 'devicePack', 'deviceCfl', 'deviceEncode', 'deviceSubsteps',
-    'breaking', 'front', 'lip', 'foam', 'aeration', 'board', 'contact', 'bubbles', 'spray', 'step', 'snapshot', 'total',
+    'breaking', 'front', 'lip', 'foam', 'aeration', 'board', 'contact', 'bubbles', 'spray', 'step', 'snapshotFields', 'snapshot', 'summary', 'total',
     'deviceUploadBytes', 'deviceReadbackBytes', 'deviceMaps', 'deviceSubmits'];
   const reports: Record<string, unknown> = {};
   for (const arm of arms) {
@@ -459,8 +459,8 @@ async function pipeline(): Promise<void> {
     reports[arm.name] = { rate, snapshotsPerSecond: perSecond, snapshots: timed.length, wallSeconds: wall / 1000, stages };
     const ms = (key: keyof Pipeline) => `${stages[key].p50.toFixed(1)}/${stages[key].p95.toFixed(1)}`;
     say(`  [${arm.name}] ${rate.toFixed(3)}× real time, ${perSecond.toFixed(1)} snapshots/s over ${(wall / 1000).toFixed(1)} s (hop ${hop} ms)`);
-    say(`  [${arm.name}] ms p50/p95: water ${ms('water')} (map ${ms('deviceMap')}, unpack ${ms('deviceUnpack')}, pack ${ms('devicePack')}, cfl ${ms('deviceCfl')}, encode ${ms('deviceEncode')}), step ${ms('step')}, snapshot ${ms('snapshot')}, total ${ms('total')}`);
-    say(`  [${arm.name}] ms p50: foam ${stages.foam.p50.toFixed(1)}, aeration ${stages.aeration.p50.toFixed(1)}, front ${stages.front.p50.toFixed(1)}, breaking ${stages.breaking.p50.toFixed(1)}, board ${stages.board.p50.toFixed(1)}, contact ${stages.contact.p50.toFixed(1)}, bubbles ${stages.bubbles.p50.toFixed(1)}, spray ${stages.spray.p50.toFixed(1)}`);
+    say(`  [${arm.name}] ms p50/p95: water ${ms('water')} (map ${ms('deviceMap')}, unpack ${ms('deviceUnpack')}, pack ${ms('devicePack')}, cfl ${ms('deviceCfl')}, encode ${ms('deviceEncode')}), step ${ms('step')}, snapshot ${ms('snapshot')} (fields ${ms('snapshotFields')}), summary ${ms('summary')}, total ${ms('total')}`);
+    say(`  [${arm.name}] ms p50/p95: foam ${ms('foam')}, aeration ${ms('aeration')}, front ${ms('front')}, breaking ${ms('breaking')}, board ${ms('board')}, contact ${ms('contact')}, bubbles ${ms('bubbles')}, spray ${ms('spray')}`);
     say(`  [${arm.name}] per step (mean): ${stages.deviceSubsteps.mean.toFixed(2)} substeps, ${(stages.deviceUploadBytes.mean / 1000).toFixed(0)} kB up, ${(stages.deviceReadbackBytes.mean / 1000).toFixed(0)} kB back, ${stages.deviceMaps.mean.toFixed(2)} maps, ${stages.deviceSubmits.mean.toFixed(2)} submits`);
   }
   const solo = reports[arms[0].name] as { rate: number; snapshotsPerSecond: number; stages: unknown };
