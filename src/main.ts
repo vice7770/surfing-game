@@ -799,11 +799,14 @@ class SurfGame {
     };
   }
 
-  /** The lab's sea (spec L1): no rider; solver and compute as the graphics settings say, unless a developer chose them. */
+  /**
+   * The lab's sea (spec L1): no rider; solver and compute as the graphics settings say, unless a developer chose them;
+   * its swells arrive as the game's own do (PhysicalSettings' `lab`).
+   */
   private async enterLab(settings: WaveLabSettings): Promise<boolean> {
     this.leaveOnline();
     const graphics = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
-    const physical = { ...settings.physical, ...labWater(settings, graphics, DEV_TOOLS) };
+    const physical = { ...settings.physical, ...labWater(settings, graphics, DEV_TOOLS), lab: true };
     if (!(await this.startPhysical(this.seed, physical, { sun: settings, rider: false, lab: true }))) return false;
     this.waveLab.begin(this.physicalMode);
     this.applyWaterLook(settings.waterLook);

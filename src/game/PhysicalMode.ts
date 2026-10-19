@@ -62,6 +62,11 @@ export interface PhysicalSettings {
   spread: number;
   /** The cos-2s spreading exponent itself, when a spot's own swell sets it (Padang Padang's refracted groundswell); otherwise `spread` gives it. */
   spreading?: number;
+  /**
+   * The Wave Lab's sea: its buoy and storm swells arrive as the game's own do, refracted at the tank's edge and square
+   * to the beach, and no higher than the spot's Big (swellFor). Unset everywhere else.
+   */
+  lab?: boolean;
   tide: number;
   /** Local wind, m/s: positive onshore, negative offshore. */
   windSpeed: number;
@@ -165,6 +170,22 @@ export function swellHeightLimit(spot: SpotName): number {
   return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
 }
 
+/**
+ * Each spot's Big, Hs: SurfConditions' swellChoice(spot, 'big'), and the Wave Pool machine's Big wave. Written out
+ * here because SurfConditions imports this module; a test keeps them equal.
+ */
+const BIG_HEIGHTS: Record<SpotName, number> = {
+  pool: regularSignificantHeight(POOL_EDGE_HEIGHT.big), beach: 2.4, point: 2.4, reef: 3, canyon: 2.4, padang: 3.8,
+};
+
+/**
+ * The Wave Lab's largest swell at a spot: its Big, so the lab never offers a sea the game's own swells don't reach.
+ * Above them the 2026-10-21 playtest saw the Canyon break in four or five rows at Hs 3 m, and Padang Padang close out at 4 m.
+ */
+export function labHeightLimit(spot: SpotName): number {
+  return Math.min(swellHeightLimit(spot), BIG_HEIGHTS[spot]);
+}
+
 function clamp(value: number, range: { min: number; max: number }): number {
   return Math.min(range.max, Math.max(range.min, value));
 }
@@ -190,13 +211,45 @@ export function spreadingFor(spread: number): number {
   return 24 * Math.pow(4 / 24, t);
 }
 
-/** Buoy values as set, the practice groundswell, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS. */
-export function swellFor(settings: PhysicalSettings): SwellInput {
+/**
+ * The broadest spread a Wave Lab swell reaches the tank's edge with, the cos-2s exponent s: Goda's s_max for swell
+ * with a long decay distance, the water-physics advisor's floor for swell at a tank edge.
+ */
+export const LAB_SPREADING_FLOOR = 75;
+
+/**
+ * The Wave Lab's spread slider as the tank's edge takes it: s = 150 (REFRACTED_SPREADING, the game's own swells') for a
+ * groundswell, halving to 75 for a windswell (about 106 at Mixed). The tank's 160 m window has open, unfed sides, so a
+ * broader sea drains out of them and sheds wake wedges: at the buoy's s = 8 from 10° the Canyon's crests crossed in V's
+ * (a bend of 13–18° between a crest's halves, 2–5° at s = 150 from 0°; the 2026-10-21 playtest).
+ */
+export function labSpreadingFor(spread: number): number {
+  const t = Math.min(1, Math.max(0, spread));
+  return REFRACTED_SPREADING * Math.pow(LAB_SPREADING_FLOOR / REFRACTED_SPREADING, t);
+}
+
+/** `?labRawSea=1` (dev tools only): the Wave Lab's buoy and storm swells with their raw spread and direction, as before 2026-10-21. */
+export function labRawSea(search?: string): boolean {
+  return devParam('labRawSea', search) === '1';
+}
+
+/**
+ * Buoy values as set, the practice groundswell, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS.
+ * The Wave Lab's arrive as the game's own swells do, whatever the sliders say (waves form straight to the beach, from
+ * one side at most): refracted at the tank's edge (labSpreadingFor, a storm's no broader than LAB_SPREADING_FLOOR),
+ * square to the beach, and no higher than the spot's Big. `rawSea` (labRawSea) keeps the lab's raw spread and direction.
+ */
+export function swellFor(settings: PhysicalSettings, rawSea = labRawSea()): SwellInput {
   if (settings.source === 'practice') return { ...practiceSwell(settings.spot) };
+  const lab = settings.lab === true;
+  const straight = lab && !rawSea;
+  const heightLimit = lab ? labHeightLimit(settings.spot) : swellHeightLimit(settings.spot);
+  const square = straight ? { directionDegrees: 0 } : {};
   if (settings.source !== 'storm') {
     return {
-      significantHeight: Math.min(settings.significantHeight, swellHeightLimit(settings.spot)), peakPeriod: settings.peakPeriod,
-      spreading: settings.spreading ?? spreadingFor(settings.spread),
+      significantHeight: Math.min(settings.significantHeight, heightLimit), peakPeriod: settings.peakPeriod,
+      spreading: settings.spreading ?? (straight ? labSpreadingFor(settings.spread) : spreadingFor(settings.spread)),
+      ...square,
     };
   }
   const storm = stormSwell({
@@ -206,10 +259,11 @@ export function swellFor(settings: PhysicalSettings): SwellInput {
     distanceKm: settings.stormDistanceKm,
   });
   return {
-    significantHeight: clamp(storm.significantHeight, { min: TANK_SWELL_LIMITS.height.min, max: swellHeightLimit(settings.spot) }),
+    significantHeight: clamp(storm.significantHeight, { min: TANK_SWELL_LIMITS.height.min, max: heightLimit }),
     peakPeriod: clamp(storm.peakPeriod, TANK_SWELL_LIMITS.period),
-    spreading: storm.spreading,
+    spreading: straight ? Math.max(storm.spreading, LAB_SPREADING_FLOOR) : storm.spreading,
     bandwidth: storm.bandwidth,
+    ...square,
     storm,
   };
 }
