@@ -160,6 +160,10 @@ describe('foam freshness', () => {
 
   it('fades to the mean in the distance, aged foam as a film', () => {
     expect(freshFoamCover(3.1, 4.2, 0.5, 0, 0.4, 1, 1.2, 10 * FOAM_CELL)).toBeCloseTo(0.4, 14);
+    // Drawn foam above 1 (the Canyon lip's landing) keeps its excess there, as the lace always did.
+    for (const footprint of [0.5, 0.8, 10].map((share) => share * FOAM_CELL)) {
+      expect(freshFoamCover(3.1, 4.2, 0.5, 0, 1.3, 1, 1.2, footprint)).toBeCloseTo(foamCover(3.1, 4.2, 0.5, 0, 1.3, 1.2, footprint), 10);
+    }
     expect(freshFoamCover(3.1, 4.2, 0.5, 0, 0.4, 0, 1.2, 10 * FOAM_CELL)).toBeCloseTo(0.4 * foamOpacity(0.4, 0), 14);
   });
 

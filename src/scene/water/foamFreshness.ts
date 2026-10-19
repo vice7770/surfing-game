@@ -38,7 +38,7 @@ export const YOUTH_COVER = [0.7, 0.98] as const;
  * Aged foam gathers into streaks: the lace's patches read stretched along the waves' travel (+z), `along` times longer
  * and `across` times narrower than fresh foam's round ones (5.6 m across), and gathering harder (`gather` more).
  */
-export const AGED_STREAKS = { along: 3, across: 1.6, gather: 1 } as const;
+export const AGED_STREAKS = { along: 3, across: 1.6, gather: 1.5 } as const;
 /** Where the stretched patches are read: offset so they do not line up with the round ones. */
 const AGED_OFFSET = [0.37, 0.61] as const;
 /** Aged foam's extra edge half-width, in cells: a soft translucent margin. */
@@ -124,8 +124,9 @@ export function freshFoamCover(x: number, z: number, flowX: number, flowZ: numbe
   const [base, gain, gather] = freshLace(foam, youth);
   const opacity = foamOpacity(foam, youth);
   const fade = smoothstep(0.25, 1, footprint / FOAM_CELL);
-  // In the distance, the lace's mean: its patches average out (v = s = ½).
-  const mean = Math.min(1, Math.max(0, base + 0.5 * gain + 0.5 * gather));
+  // In the distance, the lace's mean: its patches average out (v = s = ½). Drawn foam above 1 (the Canyon lip's landing)
+  // keeps its excess there, as the lace always did: the landing's white stays as bright.
+  const mean = Math.min(1, Math.max(0, base + 0.5 * gain + 0.5 * gather)) + Math.max(0, foam - 1);
   if (fade >= 1) return mean * opacity;
   const edge = foamEdge(youth, footprint);
   const rise = foamRise(foam, edge);
@@ -177,7 +178,7 @@ float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float tim
   vec3 lace = vec3( f - spread, 2.0 * spread * youth, 2.0 * spread * aged );
   float opacity = mix( ${f(AGED_OPACITY)} + ${f(1 - AGED_OPACITY)} * smoothstep( ${f(OPACITY_COVER[0])}, ${f(OPACITY_COVER[1])}, foam ), 1.0, youth );
   float fade = smoothstep( 0.25, 1.0, footprint / FOAM_CELL );
-  float cover = clamp( lace.x + 0.5 * lace.y + 0.5 * lace.z, 0.0, 1.0 );
+  float cover = clamp( lace.x + 0.5 * lace.y + 0.5 * lace.z, 0.0, 1.0 ) + max( foam - 1.0, 0.0 );
   if ( fade < 1.0 ) {
     float soft = ${f(AGED_SOFTNESS)} * aged + ${f(FOOTPRINT_SOFTNESS)} * footprint / FOAM_CELL;
     vec2 edge = vec2( ${f(FOAM_EDGE)} + soft, soft * smoothstep( 0.75, 1.0, f ) );
