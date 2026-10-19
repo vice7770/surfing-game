@@ -115,3 +115,53 @@ First extract the baseline next to `src`: `git archive a999e3e2 src | (mkdir -p 
 - `gpu-check.html?mode=pipeline&spot=padang&size=medium&seconds=10`
 - `gpu-check.html?mode=replay&spot=canyon&size=medium&frames=240&prefetch=1&fill=1`. Expect `snapshots e2d8750d987da680`.
 - `gpu-check.html?mode=replay&spot=padang&size=medium&frames=300&prefetch=1&fill=1`. Expect `snapshots 4774f32b7106dc17`.
+
+## After merging the Canyon spilling lip (`claude/playtest-2026-10-17`)
+
+The merge commit is `bbd8c226`. The lip (#113) gives the drawn foam a shoreward surface drift on top of the current, at most 0.4 m/s. The drift moves the foam's own departure points only; the stencil the air reuses stays the current's. The lip also draws a whitewater of its own beside the felt one, sources the drawn foam from it, and clears each shoulder ahead of a front before the foam step.
+
+How each conflict was resolved:
+
+- **`FoamField.update`.** The lip's rules are folded into the one-pass update:
+  - After the stencil records the current's departure, the foam's own departure moves drift·dt further seaward wherever drift·dt > 0.
+  - The source follows the drawn breaking (a rate wherever strength > 0 and drawn > 0). The bore measurement still follows the felt breaking.
+  - `DepartureRows.quiet` takes the drift and widens a row's window downward by the row's largest drift·dt over its wet cells. The air keeps the current-only window.
+  - A new oracle case replays sparse fields against the lip's own two-pass foam (`78f5c2c9`). The drift varies by row: fast (some of it carries foam a row or more in a step), slow, zero, NaN and negative. The case also uses a drawn breaking. It is byte exact over 90 steps with rows skipped, and without the widening it fails at step 9.
+  - On the real Canyon sea the widening never changed a decision in 140 steps: 0.4 m/s moves a departure under 1 cm, and the window already reaches the next row down.
+- **`SpillingFront.update`.** Each row now clears the drawn whitewater with `fill`, beside the felt and whitewater rows. Every branch for a breaking cell writes all three, as before.
+- **`SpillingRoller`.** Both `reachAt` and `lensOf` are kept.
+- **The snapshot prepass.** It keeps the curl's air share.
+
+Identity against `claude/playtest-2026-10-17` itself:
+
+- **Node A/B.** The base tree comes from `git archive origin/claude/playtest-2026-10-17 src`, and both arms start from freshly spun-up seas. Canyon (320 steps) and Padang (260 steps) matched on every snapshot, including the curls, and on the final state.
+- **Device replay with `&fill=1`.** The base ran from a page served out of `.m1-cpu-base/`.
+  - Canyon, 240 frames: `h ec90a18d…`, summary `a012ccbf…`, snapshots `97c00275e82408b5`, the same on both trees.
+  - Padang, 300 frames: `h a3183978…`, summary `33a5d783…`, snapshots `d35276fb39b35270`, the same on both trees.
+- **Tests.** The lip's felt-identity and shoulder tests pass, as do the FoamField, SpillingFront, roller, stencil and oracle tests and the earlier focused set (17 files, 288 tests, plus 15 targeted simulation tests).
+
+Node A/B against the merged playtest tree (ms p50/p95, alternated in one process, under the suite's load):
+
+| Stage | Canyon Medium (300 steps) | Ratio | Padang Medium (240 steps) | Ratio |
+|---|---|---|---|---|
+| Foam | 2.94/3.22 → 1.88/2.09 | 0.64 | 2.68/2.92 → 1.63/1.77 | 0.61 |
+| Aeration | 1.55/1.70 → 0.96/1.08 | 0.62 | 1.63/1.77 → 1.04/1.25 | 0.64 |
+| Snapshot | 4.36/4.77 → 3.13/3.42 | 0.72 | 2.61/2.84 → 2.60/2.81 | 1.00 |
+| Board | 1.27/2.70 → 0.87/2.23 | 0.69 | 1.10/2.45 → 0.74/2.19 | 0.67 |
+| Breaking | 0.81/0.89 → 0.56/0.64 | 0.68 | 0.15 → 0.15 | 1.00 |
+| Contact | — | — | 18.79/21.99 → 3.20/4.87 | 0.17 |
+| Front | — | — | 6.12/7.41 → 2.11/3.17 | 0.34 |
+| **CPU stages** | **12.45/14.43 → 8.59/10.73** | **0.69** | **34.92/39.44 → 13.27/16.05** | **0.38** |
+
+In the page (hidden pane, `&arms=base` against the playtest worker, slow-state runs):
+
+- **Canyon Medium:** 0.953× vs 0.674× real time; worker total 17.2/18.9 vs 24.3/26.7 ms (0.71); foam 2.9 vs 4.8, aeration 1.7 vs 3.8, snapshot 6.4 vs 7.9.
+- **Padang Medium:** 0.692× vs 0.353× real time; total 23.4/31.8 vs 44.9/67.1 ms; contact 4.9/8.8 vs 21.3/35.0, front 2.5/6.2 vs 6.4/10.2. The new arm's sea took 1.60 substeps a step against 1.00.
+
+To run the replay on a base tree, extract it, then add a page and the barrel cases beside it:
+
+- `sed 's#/src/gpuCheck.ts#/.m1-cpu-base/src/gpuCheck.ts#' gpu-check.html > .m1-cpu-base/gpu-check.html`
+- `cp src/gpuCheck.ts .m1-cpu-base/src/`
+- `ln -s ../public/barrels .m1-cpu-base/barrels`
+
+Then open `/.m1-cpu-base/gpu-check.html?mode=replay&…`. `.m1-cpu-base/` is in `.gitignore`.
