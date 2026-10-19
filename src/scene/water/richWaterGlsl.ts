@@ -116,6 +116,29 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );${RICH_SUN_GLITTER}
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
 
+const LACE_LINE = 'float waterLace = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );';
+const DRAWN_LINE = 'diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );';
+
+/** Replace `target` in `source` exactly once, or throw. */
+function swapOnce(source: string, target: string, replacement: string): string {
+  if (source.split(target).length !== 2) throw new Error(`RICH_FOAM needs the line ${target} once`);
+  return source.replace(target, () => replacement);
+}
+
+/**
+ * `RICH_FOAM` with the foam's freshness (web-ocean plan, item 7; `foamFreshness.ts`, which needs `waterFoamFreshPars`):
+ * its youth from the plume's air and its cover; the lace's threshold softened by the footprint and, as it ages, morphing
+ * into streaks and thinning to a film; and young foam's bubbles tinting the water beneath. Everything else, the churn,
+ * the face streaks and the plume among it, is `RICH_FOAM`'s.
+ */
+export const RICH_FOAM_FRESH = swapOnce(
+  swapOnce(RICH_FOAM, LACE_LINE, `float waterYouth = waterFoamYouth( vWaterAir, vWaterFoam );
+  float waterLace = mix( vWaterFoam, waterFreshFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterYouth, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );`),
+  DRAWN_LINE,
+  `waterUnder = mix( waterUnder, waterFoamColor, waterFoamPattern * waterBubbleTint( vWaterFoam, waterYouth ) );
+  ${DRAWN_LINE}`,
+);
+
 /**
  * The Rich look's own balance (G8, tuned on the water sheet against the
  * reference stills): how much of the sky its glossy surface mirrors, and the
