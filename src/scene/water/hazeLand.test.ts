@@ -8,7 +8,7 @@ import { SprayPoints } from '../SprayPoints';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { SweptBarrelMesh } from '../barrel/SweptBarrelMesh';
 import {
-  LIP_HAZE_ROUTE, SEABED_HAZE_DEPTH, SHEET_HAZE_ROUTE, VIEW_TOWARD, hazeLandLook, hazeLandMode, hazeLandOn, hazeLandPars, hazeMaterial, hazeRoute, onHazeLandChange,
+  HAZE_ROUTES, VIEW_TOWARD, hazeLandLook, hazeLandMode, hazeLandOn, hazeLandPars, hazeLandRoute, hazeMaterial, onHazeLandChange,
   setHazeLand, setHazeLandLook, withHazeLand,
 } from './hazeLand';
 import { hazeAmount, horizonHazeUniforms, ringColorAt, waterHazeColorPars, waterHazeUniformPars, waterHazeVertexPars } from './horizonHaze';
@@ -24,6 +24,7 @@ function compiled(material: Material, lib: Lib = 'physical') {
 
 const VERTEX_MIX = 'gl_FragColor.rgb = mix( gl_FragColor.rgb, vHazeLand.rgb, vHazeLand.a );';
 const PIXEL_MIX = 'gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );';
+const MIX = { vertex: VERTEX_MIX, pixel: PIXEL_MIX } as const;
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const cubic: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {}, cubic: true };
 
@@ -35,7 +36,7 @@ function expectMixedAfterToneMapping(fragment: string, mix: string): void {
 }
 
 afterEach(() => {
-  setHazeLand({ on: true, route: undefined });
+  setHazeLand({ on: true, route: undefined, sites: undefined });
   setHazeLandLook('classic');
 });
 
@@ -84,8 +85,15 @@ describe('the horizon haze beyond the water', () => {
     expect(hazeLandOn('rich')).toBe(false);
     setHazeLand('pixel');
     expect(hazeLandOn('rich')).toBe(true);
-    expect(hazeRoute('vertex', true)).toBe('pixel');
-    expect(hazeRoute('vertex', false)).toBe('vertex');
+    expect(hazeLandRoute('spray', 'rich')).toBe('pixel');
+    expect(hazeLandRoute('spray', 'rich', false)).toBe('vertex');
+    expect(hazeLandRoute('spray', 'classic')).toBeUndefined();
+    // One drawing's route, or none, for timing it alone.
+    setHazeLand({ route: undefined, sites: { barrel: 'off', curl: 'vertex' } });
+    expect(hazeLandRoute('barrel', 'rich')).toBeUndefined();
+    expect(hazeLandRoute('curl', 'rich')).toBe('vertex');
+    expect(hazeLandRoute('lip', 'rich')).toBe(HAZE_ROUTES.lip);
+    setHazeLand({ sites: undefined });
     const location = globalThis.location;
     for (const search of ['?horizon=off', '?horizonHaze=off']) {
       Object.defineProperty(globalThis, 'location', { value: { search }, configurable: true });
@@ -160,17 +168,20 @@ describe('the horizon haze beyond the water', () => {
     expect(classic.fragment).not.toContain('vHazeLand');
     expect(classic.key).toBe('breakline-spot-seabed-caustics-wet-sand');
     setHazeLandLook('rich');
-    // Per pixel from its world position, and only above the depth the water always covers.
     const rich = compiled(seabed.mesh.material, 'basic');
-    expectMixedAfterToneMapping(rich.fragment, PIXEL_MIX);
-    expect(rich.fragment).toContain(`if ( vSeabedWorld.y > ${(-SEABED_HAZE_DEPTH).toFixed(1)} ) {\n  vec4 hazeLand = hazeLandToward( vSeabedWorld - cameraPosition );`);
-    expect(rich.vertex).not.toContain('vHazeLand');
-    expect(rich.key).toBe('breakline-spot-seabed-caustics-wet-sand-haze-land-pixel');
+    expectMixedAfterToneMapping(rich.fragment, MIX[HAZE_ROUTES.seabed]);
+    expect(rich.key).toBe(`breakline-spot-seabed-caustics-wet-sand-haze-land-${HAZE_ROUTES.seabed}`);
     expect(rich.uniforms.waterHazeRing).toBe(horizonHazeUniforms.waterHazeRing);
+    // Either route, the pixel's from the caustics' world position.
+    setHazeLand('pixel');
+    const pixel = compiled(seabed.mesh.material, 'basic');
+    expectMixedAfterToneMapping(pixel.fragment, PIXEL_MIX);
+    expect(pixel.fragment).toContain('vec4 hazeLand = hazeLandToward( vSeabedWorld - cameraPosition );');
+    expect(pixel.vertex).not.toContain('vHazeLand');
     setHazeLand('vertex');
     expectMixedAfterToneMapping(compiled(seabed.mesh.material, 'basic').fragment, VERTEX_MIX);
     // Before the caustics are in (no world position in its fragments), the sand is hazed per vertex.
-    setHazeLand({ on: true, route: undefined });
+    setHazeLand('pixel');
     expectMixedAfterToneMapping(compiled(new SpotSeabed().mesh.material, 'basic').fragment, VERTEX_MIX);
     water.dispose();
   });
@@ -183,19 +194,19 @@ describe('the horizon haze beyond the water', () => {
     for (const look of ['classic', 'rich'] as const) {
       curl.setLook(look);
       barrel.setLook(look);
-      for (const material of [curl.mesh.material, barrel.mesh.material]) {
+      for (const [site, material] of [['curl', curl.mesh.material], ['barrel', barrel.mesh.material]] as const) {
         const { vertex, fragment, uniforms, key } = compiled(material);
         expect(fragment.includes('vHazeLand') || fragment.includes('hazeLandToward')).toBe(look === 'rich');
         expect(key.includes('-haze-land-')).toBe(look === 'rich');
         if (look === 'rich') {
-          expectMixedAfterToneMapping(fragment, SHEET_HAZE_ROUTE === 'vertex' ? VERTEX_MIX : PIXEL_MIX);
-          expect(vertex.includes('vHazeLand')).toBe(SHEET_HAZE_ROUTE === 'vertex');
+          expectMixedAfterToneMapping(fragment, MIX[HAZE_ROUTES[site]]);
+          expect(vertex.includes('vHazeLand')).toBe(HAZE_ROUTES[site] === 'vertex');
           expect(uniforms.waterHazeRing).toBe(horizonHazeUniforms.waterHazeRing);
         }
       }
     }
     const rich = compiled(lip.richMaterial);
-    expectMixedAfterToneMapping(rich.fragment, LIP_HAZE_ROUTE === 'vertex' ? VERTEX_MIX : PIXEL_MIX);
+    expectMixedAfterToneMapping(rich.fragment, MIX[HAZE_ROUTES.lip]);
     expect(rich.uniforms.waterHazeExtinction).toBe(horizonHazeUniforms.waterHazeExtinction);
     // Both routes compile into each, from the world position each hands its fragments.
     setHazeLand('pixel');

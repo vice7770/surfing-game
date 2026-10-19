@@ -6,7 +6,7 @@ import { waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterChopMomentPars, waterChopNormal } from './waterChop';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
-import { SHEET_HAZE_ROUTE, hazeLandOn, hazeLandProgramKey, hazeRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { hazeLandKey, hazeLandRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
 import { horizonHazeUniforms } from './water/horizonHaze';
 import { CLASSIC_FOAM, WATER_IOR, waterBodyFragment } from './waterOptics';
 import { waterFragmentPars, waterVertexPars } from './WaterSurface';
@@ -590,12 +590,13 @@ export class SpillingCurlMesh {
         // The sun's glitter about the curl's own normal, from the screen-space term alone (web-ocean plan, item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
       // The horizon haze over the curl, as over the water it rides on (the haze-land follow-up).
-      if (hazeLandOn(this.look)) {
+      const haze = hazeLandRoute('curl', this.look);
+      if (haze) {
         Object.assign(shader.uniforms, horizonHazeUniforms);
-        withHazeLand(shader, { route: hazeRoute(SHEET_HAZE_ROUTE, true), pixelToward: 'vWaterWorld - cameraPosition' });
+        withHazeLand(shader, { route: haze, pixelToward: 'vWaterWorld - cameraPosition' });
       }
     };
-    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}${hazeLandProgramKey(this.look, hazeRoute(SHEET_HAZE_ROUTE, true))}`;
+    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}${hazeLandKey(hazeLandRoute('curl', this.look))}`;
     onGlitterChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });

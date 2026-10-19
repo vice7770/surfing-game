@@ -3,7 +3,7 @@ import { causticLookupPars, type CausticUniforms } from './CausticMap';
 import { buildGridGeometry } from './gridGeometry';
 import { WATER_IOR } from './waterOptics';
 import { waterHeightPars } from './WaterSurface';
-import { SEABED_HAZE_DEPTH, SEABED_HAZE_ROUTE, hazeLandLook, hazeLandOn, hazeLandProgramKey, hazeRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { hazeLandKey, hazeLandLook, hazeLandRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
 import { horizonHazeUniforms } from './water/horizonHaze';
 import { wetSandFragment, wetSandPars } from './water/shoreline';
 
@@ -47,22 +47,19 @@ export class SpotSeabed {
 
   /**
    * The horizon haze over the sand and the seabed in the Rich look (`hazeLand.ts`): the dry beach greys toward the
-   * horizon as the water beside it does. With the caustics' world position at hand (`world`), per pixel and only above
-   * `SEABED_HAZE_DEPTH` (the water's own haze covers what lies under it); before, per vertex. Under water (the camera)
-   * the haze is off, as the water's is.
+   * horizon as the water beside it does. The water is drawn before it (its material is the older) and hides by depth
+   * what lies under it, so only the sand in sight pays. With the caustics' world position at hand (`world`) it can take
+   * either route; before, per vertex. Under water (the camera) the haze is off, as the water's is.
    */
   private static haze(shader: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }, world: boolean): void {
-    if (!hazeLandOn(hazeLandLook())) return;
+    const route = hazeLandRoute('seabed', hazeLandLook(), world);
+    if (!route) return;
     Object.assign(shader.uniforms, horizonHazeUniforms);
-    withHazeLand(shader, {
-      route: world ? hazeRoute(SEABED_HAZE_ROUTE, true) : 'vertex',
-      pixelToward: 'vSeabedWorld - cameraPosition',
-      pixelWhere: `vSeabedWorld.y > ${(-SEABED_HAZE_DEPTH).toFixed(1)}`,
-    });
+    withHazeLand(shader, { route, pixelToward: 'vSeabedWorld - cameraPosition' });
   }
 
   private static hazeKey(world: boolean): string {
-    return hazeLandProgramKey(hazeLandLook(), world ? hazeRoute(SEABED_HAZE_ROUTE, true) : 'vertex');
+    return hazeLandKey(hazeLandRoute('seabed', hazeLandLook(), world));
   }
 
   /**

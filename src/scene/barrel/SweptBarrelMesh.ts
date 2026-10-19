@@ -8,7 +8,7 @@ import { waterRipplePars } from '../water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
 import { waterChopMomentPars, waterChopNormal } from '../waterChop';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from '../water/glitter';
-import { SHEET_HAZE_ROUTE, hazeLandOn, hazeLandProgramKey, hazeRoute, onHazeLandChange, withHazeLand } from '../water/hazeLand';
+import { hazeLandKey, hazeLandRoute, onHazeLandChange, withHazeLand } from '../water/hazeLand';
 import { horizonHazeUniforms } from '../water/horizonHaze';
 import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
@@ -379,9 +379,10 @@ export class SweptBarrelMesh {
         // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
       // The horizon haze over the barrel, as over the water it rises from (the haze-land follow-up).
-      if (hazeLandOn(this.look) && !this.currentView) {
+      const haze = this.currentView ? undefined : hazeLandRoute('barrel', this.look);
+      if (haze) {
         Object.assign(shader.uniforms, horizonHazeUniforms);
-        withHazeLand(shader, { route: hazeRoute(SHEET_HAZE_ROUTE, true), pixelToward: 'vWaterWorld - cameraPosition' });
+        withHazeLand(shader, { route: haze, pixelToward: 'vWaterWorld - cameraPosition' });
       }
       const view = this.currentView;
       if (!view) return;
@@ -392,7 +393,7 @@ export class SweptBarrelMesh {
         .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
         .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
     };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandProgramKey(this.look, hazeRoute(SHEET_HAZE_ROUTE, true))}`;
+    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
     onGlitterChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });

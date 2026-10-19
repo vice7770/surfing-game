@@ -23,11 +23,16 @@ import type { WaterLook } from './waterLook';
 /** Where the haze is worked out: per vertex (a varying), or per pixel (the ring's lookup in every pixel, no varying). */
 export type HazeRoute = 'vertex' | 'pixel';
 
+/** The drawings the land haze reaches; `scenery` is three's own materials (riders, boards, leash, bubbles, the pool's). */
+export type HazeSiteName = 'seabed' | 'lip' | 'curl' | 'barrel' | 'spray' | 'scenery';
+
 export interface HazeLandMode {
   /** Dev (`?hazeLand=off`, `window.waterHazeLand(false)`): nothing but the water hazed, as before. */
   on: boolean;
   /** Dev (`?hazeLand=vertex|pixel`): one route wherever a drawing can take either, for timing them. */
   route?: HazeRoute;
+  /** Dev (`window.waterHazeLand({ sites: { barrel: 'vertex', seabed: 'off' } })`): one drawing's route, or none. */
+  sites?: Partial<Record<HazeSiteName, HazeRoute | 'off'>>;
 }
 
 const param = devParam('hazeLand');
@@ -42,34 +47,38 @@ export function hazeLandOn(look: WaterLook): boolean {
   return look === 'rich' && hazeLandMode.on && horizonLookOn() && horizonHazeOn();
 }
 
-/** The route a drawing takes: its own (`preferred`), unless the dev switch forces one and it can take either. */
-export function hazeRoute(preferred: HazeRoute, either: boolean): HazeRoute {
-  return either && hazeLandMode.route ? hazeLandMode.route : preferred;
+/**
+ * Each drawing's route where it can take either (a world position in its fragments). Timed on the M1 (the haze-land
+ * notes): the seabed per vertex (its small program pays less for a varying than for the ring's lookup in each pixel:
+ * +0.3–0.7 ms against +0.8–1.6 ms with the whole seabed bared); the thin water sheets per pixel, from the world position
+ * the water's shading already hands them (a new varying in a big Rich program costs more than arithmetic, the foam
+ * work's lesson); three's lit materials per pixel from their view position, right over the Wave Pool's few big ground
+ * planes, whose vertices lie up to 1.5 km apart.
+ */
+export const HAZE_ROUTES: Record<HazeSiteName, HazeRoute> = {
+  seabed: 'vertex',
+  lip: 'pixel',
+  curl: 'pixel',
+  barrel: 'pixel',
+  spray: 'vertex',
+  scenery: 'pixel',
+};
+
+/**
+ * The route `site` takes in `look`, or none (no haze): its own (`HAZE_ROUTES`) unless a dev switch forces one. A drawing
+ * that cannot take the pixel route (`either` false: no world position in its fragments) goes per vertex.
+ */
+export function hazeLandRoute(site: HazeSiteName, look: WaterLook, either = true): HazeRoute | undefined {
+  if (!hazeLandOn(look)) return undefined;
+  const forced = hazeLandMode.sites?.[site];
+  if (forced === 'off') return undefined;
+  const route = forced ?? hazeLandMode.route ?? HAZE_ROUTES[site];
+  return either ? route : 'vertex';
 }
 
-/**
- * The lip sheet's route: per pixel, from the `vLipWorld` its Rich program already hands its fragments. As the foam
- * work found for the tank, a new varying in a big Rich program costs more than the ring's lookup in each pixel.
- */
-export const LIP_HAZE_ROUTE: HazeRoute = 'pixel';
-/** The spilling curl's and the swept barrel's route: per pixel, from the water's own `vWaterWorld` (as the lip's). */
-export const SHEET_HAZE_ROUTE: HazeRoute = 'pixel';
-/**
- * The seabed's route: per pixel, from its `vSeabedWorld`, and none below `SEABED_HAZE_DEPTH`. The Rich tank discards
- * pixels (its patch, the barrel's seam), so the GPU shades the seabed under it everywhere; per vertex, the haze's varying
- * was paid in every one of those hidden pixels.
- */
-export const SEABED_HAZE_ROUTE: HazeRoute = 'pixel';
-/**
- * Below this height, m, the seabed is always under water, whose own haze covers it: no haze worked out there. The
- * deepest troughs and the lowest tides (±1.2 m) stay well above it; were sand ever bared below it, it would lie at the
- * break, where the haze is a few per cent.
- */
-export const SEABED_HAZE_DEPTH = 5;
-
-/** The program cache key's part: none without the haze, else its route. */
-export function hazeLandProgramKey(look: WaterLook, route: HazeRoute): string {
-  return hazeLandOn(look) ? `-haze-land-${route}` : '';
+/** The program cache key's part for a route: none without the haze. */
+export function hazeLandKey(route: HazeRoute | undefined): string {
+  return route ? `-haze-land-${route}` : '';
 }
 
 /** Called whenever the switch or the scene's look changes: the hazed programs compile again. */
@@ -80,7 +89,7 @@ export function onHazeLandChange(listener: () => void): () => void {
 
 /** Tell the hazed programs when the switch, its route or the scene's look changed. */
 function changed(apply: () => void): void {
-  const state = () => `${hazeLandMode.on}|${hazeLandMode.route}|${sceneLook}`;
+  const state = () => `${hazeLandMode.on}|${hazeLandMode.route}|${JSON.stringify(hazeLandMode.sites ?? {})}|${sceneLook}`;
   const was = state();
   apply();
   if (state() !== was) for (const listener of listeners) listener();
@@ -135,8 +144,6 @@ export interface HazeSite {
   vertexToward?: string;
   /** Pixel route: GLSL from the eye to the pixel, world axes (a world position the fragment has, less `cameraPosition`). */
   pixelToward?: string;
-  /** Pixel route: GLSL, true where the haze is worked out (everywhere by default). */
-  pixelWhere?: string;
   /** The line after which the colour is final but for its encoding (three's `<tonemapping_fragment>` by default). */
   outputAnchor?: string;
 }
@@ -171,11 +178,10 @@ export function withHazeLand(shader: { vertexShader: string; fragmentShader: str
   }
   if (!site.pixelToward) throw new Error('The land haze per pixel needs the pixel\'s way from the eye');
   let fragment = declare(shader.fragmentShader, hazeLandPars, 'fragment');
-  const mix = `vec4 hazeLand = hazeLandToward( ${site.pixelToward} );
-  gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );`;
   fragment = once(fragment, output, `${output}
-${site.pixelWhere ? `if ( ${site.pixelWhere} ) {` : '{'}
-  ${mix}
+{
+  vec4 hazeLand = hazeLandToward( ${site.pixelToward} );
+  gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );
 }`, 'fragment');
   shader.fragmentShader = fragment;
 }
@@ -198,15 +204,15 @@ export function hazeMaterial<T extends Material>(material: T): T {
   // Standard and physical materials hand their fragments the view position: per pixel from it (no new varying, and
   // right over the Wave Pool's few big ground planes); the rest (points, basic) per vertex.
   const lit = (material as Material & { isMeshStandardMaterial?: boolean }).isMeshStandardMaterial === true;
-  const route = () => hazeRoute(lit ? 'pixel' : 'vertex', lit);
   material.onBeforeCompile = function hazedCompile(this: Material, shader: WebGLProgramParametersWithUniforms, renderer: WebGLRenderer) {
     before.call(this, shader, renderer);
-    if (!hazeLandOn(sceneLook)) return;
+    const route = hazeLandRoute('scenery', sceneLook, lit);
+    if (!route) return;
     Object.assign(shader.uniforms, horizonHazeUniforms);
-    withHazeLand(shader, { route: route(), pixelToward: VIEW_TOWARD });
+    withHazeLand(shader, { route, pixelToward: VIEW_TOWARD });
   };
   material.customProgramCacheKey = function hazedKey(this: Material) {
-    return `${own ?? ownKey.call(this)}${hazeLandProgramKey(sceneLook, route())}`;
+    return `${own ?? ownKey.call(this)}${hazeLandKey(hazeLandRoute('scenery', sceneLook, lit))}`;
   };
   // Held weakly: a body swapped for another is let go without being disposed.
   const held = new WeakRef(material);

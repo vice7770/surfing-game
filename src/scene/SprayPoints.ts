@@ -1,7 +1,7 @@
 import { BufferAttribute, BufferGeometry, Color, DynamicDrawUsage, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { churnTexture } from './water/churnTexture';
-import { hazeLandOn, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { hazeLandRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
 import { horizonHazeUniforms } from './water/horizonHaze';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
@@ -113,7 +113,8 @@ export class SprayPoints {
     const { material } = this.mesh;
     const rich = this.currentLook === 'rich';
     const shader = { vertexShader: rich ? richSprayVertex : vertexShader, fragmentShader: rich ? richSprayFragment : fragmentShader };
-    if (hazeLandOn(this.currentLook)) withHazeLand(shader, { route: 'vertex', vertexAnchor: 'vSprayWorld = world;', vertexToward: 'world - cameraPosition' });
+    const haze = hazeLandRoute('spray', this.currentLook, false);
+    if (haze) withHazeLand(shader, { route: haze, vertexAnchor: 'vSprayWorld = world;', vertexToward: 'world - cameraPosition' });
     if (shader.vertexShader === material.vertexShader && shader.fragmentShader === material.fragmentShader) return;
     material.vertexShader = shader.vertexShader;
     material.fragmentShader = shader.fragmentShader;
