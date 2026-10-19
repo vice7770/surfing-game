@@ -13,6 +13,7 @@ import {
   WebGLRenderTarget,
   Vector3,
   type Mesh,
+  type Texture,
 } from 'three';
 import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
@@ -53,7 +54,8 @@ import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
 import { GlowPass } from './scene/GlowPass';
 import { SunDisc } from './scene/SunDisc';
-import { agxPreimage, type Rgb } from './scene/glowMath';
+import { GlowSky } from './scene/GlowSky';
+import { agxPreimage, agxPreimageRing, type Rgb } from './scene/glowMath';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { FftChop } from './scene/FftChop';
 import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
@@ -181,6 +183,8 @@ class SurfGame {
   private glow?: GlowPass;
   /** The sun's disc as HDR light, drawn while the glow runs. */
   private sunDisc?: SunDisc;
+  /** The sky photo as the grade turns back into itself, drawn in place of three's background while the glow runs. */
+  private glowSky?: GlowSky;
   private glowWanted = false;
   private drawnLook?: WaterLook;
   private readonly skyColor = new Color('#b8e3e5');
@@ -1009,7 +1013,17 @@ class SurfGame {
         this.sunDisc.setLight(this.photoSky.sunColor, this.photoSky.sunIntensity, this.glow.settings.sunRadiance);
         this.sunDisc.place(view, this.photoSky.sunDirection);
       }
+      // The sky photo, already tone-mapped, through GlowSky rather than three's background (so it is not graded twice).
+      const background = this.scene.background;
+      const photo = (background as Texture | null)?.isTexture ? background as Texture : undefined;
+      if (photo) {
+        this.glowSky?.show(photo, this.scene.backgroundRotation, this.scene.backgroundIntensity);
+        this.scene.background = null;
+      } else {
+        this.glowSky?.hide();
+      }
       this.glow.render(this.renderer, this.scene, view);
+      if (photo) this.scene.background = photo;
     } else {
       this.renderer.render(this.scene, view);
     }
@@ -1040,6 +1054,12 @@ class SurfGame {
       this.glow = new GlowPass();
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
+      this.glowSky = new GlowSky(this.glow.settings);
+      this.scene.add(this.glowSky.mesh);
+      // The cube map three made of the photo for its background is not drawn under the glow: free it (235 MB for a
+      // 4096 × 2048 photo). The photo itself uploads again on its next draw, from GlowSky; three makes the cube again
+      // if the glow stops.
+      this.photoSky.background?.dispose();
       const { exposure, lookPower, lookSaturation } = this.glow.settings;
       below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
     } else {
@@ -1048,9 +1068,13 @@ class SurfGame {
       if (this.sunDisc) this.scene.remove(this.sunDisc.sprite);
       this.sunDisc?.dispose();
       this.sunDisc = undefined;
+      if (this.glowSky) this.scene.remove(this.glowSky.mesh);
+      this.glowSky?.dispose();
+      this.glowSky = undefined;
     }
     this.underwaterFog.color.copy(below);
     this.underwaterColor.copy(below);
+    this.refreshHaze();
   }
 
   /**
@@ -1093,7 +1117,10 @@ class SurfGame {
    * sky shown; no haze under water or before the sky loads.
    */
   private refreshHaze(): void {
-    const { horizon: ring, rotation, horizonGain: gain } = this.photoSky;
+    const { horizon, rotation, horizonGain: gain } = this.photoSky;
+    // Under the grade the haze is mixed before it, so it heads for the horizon's preimage, which grades to the sky shown.
+    const settings = this.glow?.settings;
+    const ring = horizon && settings ? agxPreimageRing(horizon, settings.exposure, settings.lookPower, settings.lookSaturation) : horizon;
     applyHorizonHaze(horizonHazeUniforms, { ring, rotation, gain }, this.photoSky.ready && !this.isBelowSurface);
   }
 

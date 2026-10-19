@@ -85,14 +85,27 @@ export function agxSigmoid(x: number): number {
   return AGX_SIGMOID.reduce((sum, coefficient) => sum * x + coefficient, 0);
 }
 
-/** A monotonic function's inverse on [lo, hi] by bisection. */
-function solve(f: (x: number) => number, target: number, lo: number, hi: number): number {
-  for (let k = 0; k < 60; k += 1) {
-    const mid = (lo + hi) / 2;
-    if (f(mid) < target) lo = mid;
-    else hi = mid;
+const SIGMOID_SLOPE = AGX_SIGMOID.slice(0, -1).map((coefficient, k) => coefficient * (AGX_SIGMOID.length - 1 - k));
+
+function agxSigmoidSlope(x: number): number {
+  return SIGMOID_SLOPE.reduce((sum, coefficient) => sum * x + coefficient, 0);
+}
+
+/**
+ * Where a function that crosses `target` once on [lo, hi], from below, meets it: Newton's steps (with `slope`, its
+ * derivative) kept inside a bracket that every step shrinks, bisecting where a step would leave it.
+ */
+function solve(f: (x: number) => number, slope: (x: number) => number, target: number, lo: number, hi: number): number {
+  let x = (lo + hi) / 2;
+  for (let k = 0; k < 60 && hi - lo > 1e-12; k += 1) {
+    const miss = f(x) - target;
+    if (Math.abs(miss) < 1e-13) return x;
+    if (miss < 0) lo = x;
+    else hi = x;
+    const step = x - miss / slope(x);
+    x = step > lo && step < hi ? step : (lo + hi) / 2;
   }
-  return (lo + hi) / 2;
+  return x;
 }
 
 /** The look on the sigmoid's output: power, then saturation about the luminance before it. */
@@ -114,21 +127,79 @@ const OUTSET_INVERSE = invert(AGX_OUTSET);
 const INSET_INVERSE = invert(AGX_INSET);
 const TO_REC2020_INVERSE = invert(REC2020_TO_LINEAR_SRGB);
 const FROM_REC2020_INVERSE = invert(LINEAR_SRGB_TO_REC2020);
+/** AgX's inset space back to linear sRGB (the inset's inverse, then Rec. 2020's): `agxDecode`'s matrix, for GLSL too. */
+export const AGX_DECODE: Columns = INSET_INVERSE.map((column) => apply(FROM_REC2020_INVERSE, column)) as unknown as Columns;
+
+/**
+ * The first half of `agxPreimage`: the colour in AgX's log encoding (each channel 0–1, before its sigmoid) that the
+ * composite draws as `display` (linear sRGB). It does not depend on the exposure, and changes smoothly with the
+ * display colour, so the sky's lookup table (`agxPreimageTable`) stores it.
+ */
+export function agxEncodedPreimage(display: Rgb, power: number = GLOW.lookPower, saturation: number = GLOW.lookSaturation): Rgb {
+  const shaped = apply(OUTSET_INVERSE, apply(TO_REC2020_INVERSE, display).map((c) => Math.max(0, c) ** (1 / 2.2)) as unknown as Rgb);
+  // The look: shaped = luma + s (v^p − luma), with luma = LUMA · v. Given luma, v^p = (shaped − (1 − s) luma) / s,
+  // so luma is the root of luma − LUMA · v(luma), found between 0 and 1.
+  const base = (c: number, luma: number) => Math.max(0, (c - (1 - saturation) * luma) / saturation);
+  const sigmoidAt = (luma: number) => shaped.map((c) => base(c, luma) ** (1 / power)) as unknown as Rgb;
+  const lumaSlope = (luma: number) => 1 + shaped.reduce((sum, c, k) => {
+    const b = base(c, luma);
+    return b > 0 ? sum + LUMA[k] * (1 / power) * b ** (1 / power - 1) * ((1 - saturation) / saturation) : sum;
+  }, 0);
+  const luma = solve((l) => l - dot(LUMA, sigmoidAt(l)), lumaSlope, 0, 0, 1);
+  return sigmoidAt(luma).map((c) => solve(agxSigmoid, agxSigmoidSlope, c, 0, 1)) as unknown as Rgb;
+}
+
+/** The second half: a colour in AgX's log encoding back to the scene-linear colour it encodes. */
+export function agxDecode(encoded: Rgb, exposure: number = GLOW.exposure): Rgb {
+  const inset = encoded.map((x) => 2 ** (x * (AGX_MAX_EV - AGX_MIN_EV) + AGX_MIN_EV)) as unknown as Rgb;
+  return apply(AGX_DECODE, inset).map((c) => c / exposure) as unknown as Rgb;
+}
 
 /**
  * The scene-linear colour the composite draws as `display` (linear sRGB): AgX run backwards. Fog and the
  * background are mixed in after the tone mapping on today's path, so under the grade they take this colour to
- * look the same. Valid for colours AgX reaches without clipping (every mid-tone).
+ * look the same. Valid for colours AgX reaches without clipping (every mid-tone, and the sky photos' saturated
+ * sunset yellows, whose preimage goes negative in blue: the scene's float target keeps that).
  */
 export function agxPreimage(display: Rgb, exposure: number = GLOW.exposure, power: number = GLOW.lookPower, saturation: number = GLOW.lookSaturation): Rgb {
-  const shaped = apply(OUTSET_INVERSE, apply(TO_REC2020_INVERSE, display).map((c) => Math.max(0, c) ** (1 / 2.2)) as unknown as Rgb);
-  // The look: shaped = luma + s (v^p − luma), with luma = LUMA · v. Given luma, v^p = (shaped − (1 − s) luma) / s,
-  // so luma is the root of LUMA · v(luma) − luma, found between 0 and 1.
-  const sigmoidAt = (luma: number) => shaped.map((c) => Math.max(0, (c - (1 - saturation) * luma) / saturation) ** (1 / power)) as unknown as Rgb;
-  const luma = solve((l) => l - dot(LUMA, sigmoidAt(l)), 0, 0, 1);
-  const encoded = sigmoidAt(luma).map((c) => solve(agxSigmoid, c, 0, 1));
-  const inset = encoded.map((x) => 2 ** (x * (AGX_MAX_EV - AGX_MIN_EV) + AGX_MIN_EV)) as unknown as Rgb;
-  return apply(FROM_REC2020_INVERSE, apply(INSET_INVERSE, inset)).map((c) => c / exposure) as unknown as Rgb;
+  return agxDecode(agxEncodedPreimage(display, power, saturation), exposure);
+}
+
+/**
+ * A ring of display colours (linear RGB triples, as `horizonRing` reads the sky photo's horizon) as their preimages:
+ * the water's haze heads for these under the grade, so far water still meets the sky shown without a step.
+ */
+export function agxPreimageRing(ring: ArrayLike<number>, exposure: number = GLOW.exposure, power: number = GLOW.lookPower, saturation: number = GLOW.lookSaturation): Float32Array {
+  const out = new Float32Array(ring.length);
+  for (let k = 0; k + 2 < ring.length; k += 3) {
+    out.set(agxPreimage([ring[k], ring[k + 1], ring[k + 2]], exposure, power, saturation), k);
+  }
+  return out;
+}
+
+/**
+ * Texels on a side of the sky's preimage table: 25 brings every pixel of the three sky photos back within 0.75 of a
+ * step of 255 (a tenth on average), and builds in under a tenth of a second.
+ */
+export const PREIMAGE_TABLE_SIZE = 25;
+
+/**
+ * The sky's lookup table under the grade: for sRGB-encoded display colours on a `size`³ grid (red fastest, the grid's
+ * ends at 0 and 1), their `agxEncodedPreimage`, as RGBA (alpha 1). Sampled trilinearly at a photo's sRGB colour and
+ * decoded (`AGX_DECODE`, the exposure), it gives the light the composite grades back to that colour.
+ */
+export function agxPreimageTable(size: number = PREIMAGE_TABLE_SIZE, power: number = GLOW.lookPower, saturation: number = GLOW.lookSaturation): Float32Array {
+  const table = new Float32Array(4 * size ** 3);
+  const level = Array.from({ length: size }, (_, k) => srgbToLinear(k / (size - 1)));
+  for (let b = 0; b < size; b += 1) {
+    for (let g = 0; g < size; g += 1) {
+      for (let r = 0; r < size; r += 1) {
+        const encoded = agxEncodedPreimage([level[r], level[g], level[b]], power, saturation);
+        table.set([encoded[0], encoded[1], encoded[2], 1], 4 * (r + size * (g + size * b)));
+      }
+    }
+  }
+  return table;
 }
 
 /** three's `NeutralToneMapping` (Khronos PBR Neutral), today's grade, for comparing the two. */
@@ -187,6 +258,19 @@ export function glowMemory(width: number, height: number, samples: number = GLOW
   const sceneResolve = pixels * (8 + 4);
   const bloom = bloomSizes(width, height, levels).reduce((sum, size) => sum + size.width * size.height * 8, 0);
   return { sceneSamples, sceneResolve, bloom, total: sceneSamples + sceneResolve + bloom };
+}
+
+/**
+ * The GPU memory the sky photo's background takes, bytes, as three 0.186 draws an equirect `scene.background`: the
+ * photo itself (RGBA8 with its mips, a third more), and the cube map it is turned into, one face as tall as the
+ * photo (RGBA8 with mips) with a depth renderbuffer for each of its six faces. Under the glow the sky is drawn from
+ * the photo itself (`GlowSky`), and the cube is never made.
+ */
+export function photoBackgroundMemory(width: number, height: number): { photo: number; cube: number; cubeDepth: number; total: number } {
+  const photo = Math.round(width * height * 4 * (4 / 3));
+  const cube = Math.round(6 * height * height * 4 * (4 / 3));
+  const cubeDepth = 6 * height * height * 4;
+  return { photo, cube, cubeDepth, total: photo + cube + cubeDepth };
 }
 
 /** A matrix as GLSL `mat3( vec3( … ), … )`, its columns in order. */

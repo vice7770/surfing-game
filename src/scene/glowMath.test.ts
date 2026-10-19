@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { GLOW, agx, agxPreimage, agxSigmoid, bloomSizes, glowMemory, glslMat3, linearToSrgb, neutral, softThreshold, srgbToLinear, type Rgb } from './glowMath';
+import {
+  GLOW, PREIMAGE_TABLE_SIZE, agx, agxDecode, agxEncodedPreimage, agxPreimage, agxPreimageRing, agxPreimageTable, agxSigmoid, bloomSizes,
+  glowMemory, glslMat3, linearToSrgb, neutral, photoBackgroundMemory, softThreshold, srgbToLinear, type Rgb,
+} from './glowMath';
 
 const grey = (v: number): Rgb => [v, v, v];
 const hex = (value: string): Rgb => [1, 3, 5].map((i) => srgbToLinear(parseInt(value.slice(i, i + 2), 16) / 255)) as unknown as Rgb;
@@ -50,6 +53,79 @@ describe('the colour grade (AgX)', () => {
     // A different exposure and look too.
     const display = hex('#367e83');
     agx(agxPreimage(display, 1, 1.2, 1.1), 1, 1.2, 1.1).forEach((c, i) => expect(c).toBeCloseTo(display[i], 4));
+  });
+});
+
+/** The table sampled as the GPU does, trilinearly, at an sRGB-encoded colour (texel centres at 0 and 1). */
+function sampleTable(table: Float32Array, size: number, srgb: Rgb): Rgb {
+  const at = srgb.map((c) => Math.min(size - 1 - 1e-9, Math.max(0, c * (size - 1))));
+  const base = at.map(Math.floor);
+  const t = at.map((c, k) => c - base[k]);
+  const out = [0, 0, 0];
+  for (let corner = 0; corner < 8; corner += 1) {
+    const step = [corner & 1, (corner >> 1) & 1, (corner >> 2) & 1];
+    const weight = step.reduce((w, s, k) => w * (s ? t[k] : 1 - t[k]), 1);
+    const index = 4 * ((base[0] + step[0]) + size * ((base[1] + step[1]) + size * (base[2] + step[2])));
+    for (let c = 0; c < 3; c += 1) out[c] += weight * table[index + c];
+  }
+  return out as unknown as Rgb;
+}
+
+const bytes = (rgb: readonly number[]): Rgb => rgb.map((c) => c / 255) as unknown as Rgb;
+
+describe('the sky under the grade (GlowSky)', () => {
+  it('splits the preimage into its log encoding and the decode', () => {
+    const display = hex('#c08060');
+    const scene = agxDecode(agxEncodedPreimage(display));
+    agxPreimage(display).forEach((c, i) => expect(scene[i]).toBeCloseTo(c, 10));
+  });
+
+  it("keeps a saturated sunset yellow, whose preimage is negative in blue", () => {
+    const yellow = bytes([255, 240, 100]).map(srgbToLinear) as unknown as Rgb;
+    const scene = agxPreimage(yellow);
+    expect(scene[2]).toBeLessThan(-0.3);
+    agx(scene).forEach((c, i) => expect(c).toBeCloseTo(yellow[i], 4));
+    // Clamped to black, the yellow would grade 70 steps of 255 paler in blue.
+    const clamped = agx(scene.map((c) => Math.max(0, c)) as unknown as Rgb);
+    expect(255 * (linearToSrgb(clamped[2]) - linearToSrgb(yellow[2]))).toBeGreaterThan(60);
+  });
+
+  it('looks the sky photos\' colours up within a step of 255', () => {
+    const table = agxPreimageTable();
+    expect(table).toHaveLength(4 * PREIMAGE_TABLE_SIZE ** 3);
+    // Dawn, midday and sunset colours from the photos, between the table's texels: blues, oranges, yellows, greys, clouds.
+    const colours = [[60, 74, 111], [118, 152, 204], [214, 160, 140], [255, 160, 80], [250, 120, 40], [255, 240, 100], [255, 228, 187],
+      [181, 190, 205], [233, 236, 240], [42, 60, 98], [200, 120, 150], [255, 253, 255]];
+    const miss = (colour: number[]) => {
+      const shown = agx(agxDecode(sampleTable(table, PREIMAGE_TABLE_SIZE, bytes(colour))));
+      return Math.max(...shown.map((c, i) => Math.abs(255 * linearToSrgb(c) - colour[i])));
+    };
+    for (const colour of colours) expect(miss(colour)).toBeLessThan(1);
+    // Next to black the table's first texels are coarse (the photos have no such sky): within three steps.
+    expect(miss([3, 4, 9])).toBeLessThan(3);
+  });
+
+  it('builds the table at its grid: black at the first texel, white (AgX\'s brightest) at the last', () => {
+    const size = 5;
+    const table = agxPreimageTable(size);
+    const last = 4 * (size ** 3 - 1);
+    expect([...table.slice(0, 4)]).toEqual([...agxEncodedPreimage([0, 0, 0]), 1].map((v) => expect.closeTo(v, 6)));
+    expect([...table.slice(last, last + 4)]).toEqual([...agxEncodedPreimage([1, 1, 1]), 1].map((v) => expect.closeTo(v, 6)));
+    // Red runs fastest.
+    expect([...table.slice(4, 7)]).toEqual([...agxEncodedPreimage([srgbToLinear(0.25), 0, 0])].map((v) => expect.closeTo(v, 6)));
+  });
+
+  it("turns the haze's ring of horizon colours into their preimages, triple by triple", () => {
+    const ring = new Float32Array([...hex('#b8e3e5'), ...hex('#c08060')]);
+    const out = agxPreimageRing(ring);
+    expect(out).toHaveLength(6);
+    agx([out[3], out[4], out[5]]).forEach((c, i) => expect(c).toBeCloseTo(ring[3 + i], 4));
+  });
+
+  it('costs three 235 MB for a 4096 × 2048 photo as a cube map, which the glow never makes', () => {
+    const memory = photoBackgroundMemory(4096, 2048);
+    expect(memory.photo / 2 ** 20).toBeCloseTo(42.7, 1);
+    expect((memory.cube + memory.cubeDepth) / 1e6).toBeCloseTo(234.9, 1);
   });
 });
 
