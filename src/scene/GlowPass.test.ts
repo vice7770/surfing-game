@@ -60,6 +60,15 @@ describe('the glow pass', () => {
     glow.dispose();
   });
 
+  it("leaves the sky (alpha 0) out of the bloom, and keeps only the sky's negative light", () => {
+    const glow = new GlowPass();
+    // Only the first downsample reads the scene, so only it weighs by alpha.
+    expect(glow['prefilter'].defines).toHaveProperty('PREFILTER');
+    expect(glow['prefilter'].fragmentShader).toMatch(/#ifdef PREFILTER[\s\S]*clamp\( c\.rgb, 0\.0, 6\.0e4 \) \* clamp\( c\.a, 0\.0, 1\.0 \)/);
+    expect(glow['composite'].fragmentShader).toContain('scene.rgb - clamp( scene.a, 0.0, 1.0 ) * min( scene.rgb, 0.0 )');
+    glow.dispose();
+  });
+
   it('grades with the constants glowMath checks', () => {
     expect(AGX_GLSL).toContain('-12.47393');
     expect(AGX_GLSL).toContain('0.856627153315983');
