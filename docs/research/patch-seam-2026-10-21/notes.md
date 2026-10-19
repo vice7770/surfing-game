@@ -35,6 +35,11 @@ against itself −0.008 ms. Within the noise; the frames ran 74–82 ms here, so
 Stills: `after-pool-sunset-crest-light.jpg` (same phase, the march still finds the regions, nothing drawn);
 `rich-backlit-old-fixed-off.jpg` (sun behind the waves: old, fixed, off).
 
+Checked: Ultra with the glow (Rich, Classic) and Medium without it (Rich, Classic) at the pool, and Medium Rich at the
+Beach (`pool-medium-glow-off-old-fixed-off.jpg`, `beach-medium-old-fixed-off.jpg`): the old code's pale regions are
+gone, and in calm water the fixed crest light adds nothing (8-bit diff against the crest light off: 0 to 0.03 % of
+the pixels). Classic's and Rich's programs change only in the crest lines (`waterLooks.test.ts` snapshots).
+
 ## The patch itself
 
 - Placement and discard were checked in every render of the game (a hook on both meshes and on `renderer.render`):
