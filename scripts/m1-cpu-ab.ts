@@ -5,7 +5,7 @@
  * does. Reports each stage's p50/p95 for both, their ratio and the paired median difference, and compares every step's
  * snapshot and the final state byte for byte.
  *
- *   git archive a999e3e2 src | (mkdir -p .m1-cpu-base && tar -x -C .m1-cpu-base)
+ *   git archive a999e3e2 src | (mkdir -p .m1-cpu-base && tar -x -C .m1-cpu-base)   # or any commit or branch
  *   rolldown scripts/m1-cpu-ab.ts -o /tmp/m1-cpu-ab.mjs --format esm --platform node
  *   node /tmp/m1-cpu-ab.mjs --spot canyon --steps 300 --state /tmp/m1-cpu-bench-canyon-medium-8761.sea
  *   rm -r .m1-cpu-base
@@ -45,11 +45,14 @@ async function make(Runner: Any, decode: Any): Promise<Any> {
   return runner;
 }
 
+const BUFFERS = ['surface', 'flow', 'aeration', 'lip', 'tubes', 'bubbles', 'spray', 'board', 'rider', 'lipHits', 'strokeHits', 'roar', 'reaction',
+  'front', 'roller', 'curl'];
+/** Every snapshot array either tree fills (the spilling lip's curls only where it has them). */
 function bufferList(b: Any): ArrayBufferView[] {
-  return [b.surface, b.flow, b.aeration, b.lip, b.tubes, b.bubbles, b.spray, b.board, b.rider, b.lipHits, b.strokeHits, b.roar, b.reaction, b.front, b.roller];
+  return BUFFERS.map((name) => b[name] ?? new Float32Array(0));
 }
 function counts(b: Any) {
-  return JSON.stringify([b.lipCount, b.tubeCount, b.bubbleCount, b.sprayCount, b.lipHitCount, b.strokeHitCount, b.frontCount, b.rollerCount]);
+  return JSON.stringify([b.lipCount, b.tubeCount, b.bubbleCount, b.sprayCount, b.lipHitCount, b.strokeHitCount, b.frontCount, b.rollerCount, b.curlCount]);
 }
 function same(a: ArrayBufferView, b: ArrayBufferView): boolean {
   if (a.byteLength !== b.byteLength) return false;
@@ -82,7 +85,7 @@ async function main(): Promise<void> {
       const [a, b] = arms;
       const la = bufferList(a.buffers);
       const lb = bufferList(b.buffers);
-      const names = ['surface', 'flow', 'aeration', 'lip', 'tubes', 'bubbles', 'spray', 'board', 'rider', 'lipHits', 'strokeHits', 'roar', 'reaction', 'front', 'roller'];
+      const names = BUFFERS;
       let ok = counts(a.buffers) === counts(b.buffers);
       if (!ok && firstMismatch.length < 5) firstMismatch.push('frame ' + frame + ' counts');
       for (let k = 0; k < la.length; k += 1) {

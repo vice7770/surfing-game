@@ -605,7 +605,8 @@ async function replay(): Promise<void> {
       const status = runner.status();
       const views = transferables(buffers).map((buffer) => new Uint8Array(buffer as ArrayBuffer));
       const counts = new TextEncoder().encode(JSON.stringify([buffers.lipCount, buffers.tubeCount, buffers.bubbleCount, buffers.sprayCount,
-        buffers.lipHitCount, buffers.strokeHitCount, buffers.frontCount, buffers.rollerCount, status.breakingFraction, status.lipLaunches, status.spray]));
+        buffers.lipHitCount, buffers.strokeHitCount, buffers.frontCount, buffers.rollerCount, buffers.curlCount, status.breakingFraction, status.lipLaunches,
+        status.spray]));
       const joined = new Uint8Array(views.reduce((sum, view) => sum + view.length, counts.length));
       let offset = 0;
       for (const view of [...views, counts]) {

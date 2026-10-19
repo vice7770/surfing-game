@@ -66,11 +66,11 @@ async function main(): Promise<void> {
     if (frame >= warm) samples.push({ ...status.pipelineMs! });
     if (hashing) {
       for (const array of [buffers.surface, buffers.flow, buffers.aeration, buffers.lip, buffers.tubes, buffers.bubbles, buffers.spray,
-        buffers.board, buffers.rider, buffers.lipHits, buffers.strokeHits, buffers.roar, buffers.reaction, buffers.front, buffers.roller]) {
+        buffers.board, buffers.rider, buffers.lipHits, buffers.strokeHits, buffers.roar, buffers.reaction, buffers.front, buffers.roller, buffers.curl]) {
         snapshotHash.update(new Uint8Array(array.buffer, array.byteOffset, array.byteLength));
       }
       snapshotHash.update(JSON.stringify([buffers.lipCount, buffers.tubeCount, buffers.bubbleCount, buffers.sprayCount, buffers.lipHitCount,
-        buffers.strokeHitCount, buffers.frontCount, buffers.rollerCount, status.breakingFraction, status.lipLaunches, status.spray]));
+        buffers.strokeHitCount, buffers.frontCount, buffers.rollerCount, buffers.curlCount, status.breakingFraction, status.lipLaunches, status.spray]));
     }
   }
   const quantile = (values: number[], q: number) => {
