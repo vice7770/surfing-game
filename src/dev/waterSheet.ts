@@ -725,6 +725,60 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     await post(canvas, file);
     return simulated;
   };
+  /**
+   * The foam's light in a view (the foam look, 2026-10-22): the pixels whose colour follows the foam's (found by drawing
+   * the foam magenta), their linear luminance's 10th, 50th and 90th percentiles and its spread (p90 over p10), and their
+   * mean linear colour with its red-over-blue ratio (a flat pink sheet: a narrow spread, a high ratio).
+   */
+  const waterSheetFoamLight = async (name: string | View, look: WaterLook, time: TimeOfDay) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !gl) return undefined;
+    fit();
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height } = hooks.canvas;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(width * height * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const drawn = frame();
+    const colour = hooks.water.materialUniforms.waterFoamColor.value as Color;
+    const was = colour.clone();
+    colour.setRGB(1, 0, 1);
+    const magenta = frame();
+    colour.copy(was);
+    hooks.renderView(camera);
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const lumas: number[] = [];
+    const sum = [0, 0, 0];
+    for (let p = 0; p < width * height; p += 1) {
+      const k = 4 * p;
+      // The foam's pixels: those the magenta foam turned green-less and redder or bluer by a margin.
+      if (drawn[k + 1] - magenta[k + 1] < 40) continue;
+      const [r, g, b] = [linear(drawn[k]), linear(drawn[k + 1]), linear(drawn[k + 2])];
+      lumas.push(0.2126 * r + 0.7152 * g + 0.0722 * b);
+      sum[0] += r;
+      sum[1] += g;
+      sum[2] += b;
+    }
+    if (!lumas.length) return { pixels: 0 };
+    lumas.sort((a, b) => a - b);
+    const at = (q: number) => lumas[Math.floor(q * (lumas.length - 1))];
+    const rgb = sum.map((c) => c / lumas.length);
+    return {
+      pixels: lumas.length, p10: +at(0.1).toFixed(4), p50: +at(0.5).toFixed(4), p90: +at(0.9).toFixed(4),
+      spread: +(at(0.9) / Math.max(at(0.1), 1e-4)).toFixed(3), rgb: rgb.map((c) => +c.toFixed(4)), redOverBlue: +(rgb[0] / rgb[2]).toFixed(3),
+    };
+  };
   // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
   /**
    * A shot's GPU time, ms per frame (median, 10th and 90th percentiles, fastest), from the GPU's own timer
@@ -814,7 +868,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       vsFirst: k === 0 ? 0 : at(times[k].map((t, cycle) => t - times[0][cycle]), 0.5),
     }]));
   };
-  Object.assign(window, { waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
