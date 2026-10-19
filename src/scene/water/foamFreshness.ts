@@ -29,6 +29,7 @@
 import { DEV_TOOLS, devParam } from '../../devTools';
 import { smoothstep } from '../../wave/Bathymetry';
 import { FOAM_CELL, FOAM_EDGE, FOAM_FLOW_PERIOD, FOAM_LEVELS, FOAM_THRESHOLDS, FOAM_TILE, sampleFoamTile } from '../foamPattern';
+import { laceStretch, laceWarp, waterLaceWarpGlsl } from './foamLook';
 
 /** Youth from the plume's void fraction: from first bubbles to well aerated (the churn's own, `FRESH_AIR`, is 0.02–0.15). */
 export const YOUTH_AIR = [0.004, 0.05] as const;
@@ -115,12 +116,15 @@ export function freshLace(foam: number, youth: number): [number, number, number]
 
 /**
  * CPU mirror of `waterFreshFoamCover`: the foam's cover at world (x, z), m, with the current (m/s), its value, its youth
- * (`foamYouth`), the time (s) and the pixel's footprint (m); `streaks` false leaves them out (aged foam gathers into its
- * round patches). Young foam at a fine footprint is `foamCover` to rounding.
+ * (`foamYouth`), the time (s) and the pixel's footprint (m); `streaks` false leaves them out. Young foam at a fine
+ * footprint is `foamCover` to rounding.
+ * `lace` (the foam look, item 3): the network is read through `laceWarp`, and without the streaks aged foam gathers
+ * into its round patches; without it, aged foam reads the patches' mean, an even network.
  */
 export function freshFoamCover(x: number, z: number, flowX: number, flowZ: number, foam: number, youth: number, time: number, footprint = 0,
-  streaks = true): number {
+  streaks = true, lace = false): number {
   if (!(foam > 0.001)) return 0;
+  if (lace) [x, z] = laceWarp(x, z);
   const [base, gain, gather] = freshLace(foam, youth);
   const opacity = foamOpacity(foam, youth);
   const fade = smoothstep(0.25, 1, footprint / FOAM_CELL);
@@ -135,7 +139,8 @@ export function freshFoamCover(x: number, z: number, flowX: number, flowZ: numbe
   const weight = 1 - Math.abs(2 * a - 1);
   const offset = smoothstep(0, 0.5, (Math.hypot(flowX, flowZ) * FOAM_FLOW_PERIOD) / FOAM_CELL);
   const phase = (px: number, pz: number) => {
-    const streak = streaks && gather > 0 ? streakAt(px, pz) : 0.5;
+    if (lace) [px, pz] = laceStretch(px, pz);
+    const streak = streaks && gather > 0 ? streakAt(px, pz) : lace ? sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 1) : 0.5;
     const local = Math.min(1, Math.max(0, base + gain * sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 1) + gather * streak));
     return softCoverage(local, sampleFoamTile(px / FOAM_CELL, pz / FOAM_CELL, 0), edge, rise);
   };
@@ -150,18 +155,20 @@ const f = (value: number) => value.toFixed(4);
 /**
  * GLSL (Rich fragment): `waterFoamYouth` and `waterFreshFoamCover`, the twins of `foamYouth` and `freshFoamCover`.
  * Needs `foamPatternPars` (its tile, thresholds and flow period). Without `streaks`, no stretched patches are read.
+ * With `lace` (the foam look, item 3) the network is read through the warp, and without the streaks aged foam
+ * gathers into the round patches its read already holds.
  */
-export function waterFoamFreshPars(streaks = true): string {
+export function waterFoamFreshPars(streaks = true, lace = false): string {
   const streak = `texture( waterFoamTile, p * vec2( ${f(AGED_STREAKS.across)}, ${f(1 / AGED_STREAKS.along)} ) / ( FOAM_CELL * FOAM_TILE ) + vec2( ${f(AGED_OFFSET[0])}, ${f(AGED_OFFSET[1])} ) ).g`;
   return /* glsl */ `
 // Foam freshness (web-ocean plan, item 7): the cover's soft threshold, aged foam's streaks and film, young foam's
-// bubbles; adapted from web-ocean, js/wgsl/ocean.js (MIT licence, (c) 2026 Maksymilian Dendura).
+// bubbles; adapted from web-ocean, js/wgsl/ocean.js (MIT licence, (c) 2026 Maksymilian Dendura).${lace ? waterLaceWarpGlsl : ''}
 float waterFoamYouth( float air, float foam ) {
   return max( smoothstep( ${f(YOUTH_AIR[0])}, ${f(YOUTH_AIR[1])}, air ), smoothstep( ${f(YOUTH_COVER[0])}, ${f(YOUTH_COVER[1])}, foam ) );
 }
-float waterFreshPhase( vec3 lace, vec2 edge, vec2 p ) {
+float waterFreshPhase( vec3 lace, vec2 edge, vec2 p ) {${lace ? '\n  p *= LACE_STRETCH;' : ''}
   vec2 tile = texture( waterFoamTile, p / ( FOAM_CELL * FOAM_TILE ) ).rg;
-  float streak = 0.5;
+  float streak = ${lace && !streaks ? 'tile.g' : '0.5'};
   ${streaks ? `if ( lace.z > 0.0 ) streak = ${streak};` : ''}
   float local = clamp( lace.x + lace.y * tile.g + lace.z * streak, 0.0, 1.0 );
   if ( local <= 0.001 ) return 0.0;
@@ -171,7 +178,7 @@ float waterFreshPhase( vec3 lace, vec2 edge, vec2 p ) {
   return 1.0 - smoothstep( radius - edge.x, radius + edge.x, tile.r );
 }
 float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float time, float footprint ) {
-  if ( foam <= 0.001 ) return 0.0;
+  if ( foam <= 0.001 ) return 0.0;${lace ? '\n  p = waterLaceWarp( p );' : ''}
   float aged = 1.0 - youth;
   float f = clamp( foam, 0.0, 1.0 );
   float spread = f * ( 1.0 - f ) * ( 1.0 + ${f(AGED_STREAKS.gather)} * aged );

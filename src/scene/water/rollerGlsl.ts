@@ -135,7 +135,7 @@ const BAND_ALBEDO = `  vec3 waterBandAlbedo = mix( waterFoamColor, vec3( max( wa
  * The band lit as a volume scatterer: what the sun gives it beyond the surface's N·L, wrapped round the face (never
  * negative, so the band never shows darker than the surface-lit foam), as three's direct diffuse, E·albedo/π.
  */
-const BAND_VOLUME = `  float waterBandSun = dot( waterN, waterSunDirection );
+export const BAND_VOLUME = `  float waterBandSun = dot( waterN, waterSunDirection );
   totalEmissiveRadiance += step( 0.0, faceDirection ) * waterRollerCover * waterBandAlbedo * waterSunRadiance * RECIPROCAL_PI
     * ( max( 0.0, ( waterBandSun + ${f(ROLLER_LOOK.wrap)} ) / ${f(1 + ROLLER_LOOK.wrap)} ) - max( 0.0, waterBandSun ) );`;
 

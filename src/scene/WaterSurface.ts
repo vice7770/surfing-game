@@ -46,6 +46,7 @@ import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
 import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
+import { denseLookOn, foamLookProgramKey, laceLookOn, lightLookOn, onFoamLookChange, waterChurnFreshGlsl, withDenseChurn, withFoamLight } from './water/foamLook';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
@@ -391,6 +392,8 @@ export class WaterSurface {
         // The foam's freshness (web-ocean plan, item 7); `?foamFresh=off` compiles today's foam, byte for byte.
         const fresh = foamFreshMode.on;
         const richFoam = fresh ? RICH_FOAM_FRESH : RICH_FOAM;
+        // The foam's look after the 2026-10-21 playtest (`foamLook.ts`); `?foamLook=off` compiles today's foam.
+        const dense = denseLookOn();
         const slopePars = this.vertexNormals ? `\n${richVertexSlopePars}` : '';
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
@@ -398,7 +401,7 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks)}` : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
@@ -408,6 +411,11 @@ export class WaterSurface {
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION)
           // The sun's glitter (item 5): the direct lights' specular from the slopes' covariance.
           .replace('#include <lights_physical_pars_fragment>', richGlitterLights(false));
+        // Dense foam churns as fresh whitewater does, its air gone or not (the foam look, item 4b).
+        if (dense) shader.fragmentShader = withDenseChurn(shader.fragmentShader);
+        // The light through foam kept to what the foam lets through (item 4b): after the dense churn, whose freshness
+        // the glow does not take.
+        if (lightLookOn()) shader.fragmentShader = withFoamLight(shader.fragmentShader);
         // The horizon plan: the haze toward the horizon, and the sky mirrored from the slopes' spread.
         withRichHorizon(shader);
         return;
@@ -428,12 +436,15 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}` : ''}`;
     // The glitter's mode (Sea detail, or a dev switch) changes the Rich program.
     onGlitterChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
     });
     onFoamFreshChange(() => {
+      if (this.effectiveLook === 'rich') material.needsUpdate = true;
+    });
+    onFoamLookChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
     });
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);

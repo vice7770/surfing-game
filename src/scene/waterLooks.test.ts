@@ -96,8 +96,9 @@ describe('Classic water parity', () => {
     const { vertex, fragment } = compiled(water.mesh.material);
     expect(vertex).toContain('waterCarvedCubic( waterXZ )');
     expect(fragment).toContain('waterCarvedCubic( vWaterWorld.xz )');
-    // G9: fresh churn shows where the plunge drove air in, from the aeration each snapshot carries.
-    expect(fragment).toContain('float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;');
+    // G9: fresh churn shows where the plunge drove air in, from the aeration each snapshot carries; and, with the foam
+    // look (item 4b), wherever the foam is held dense.
+    expect(fragment).toContain('float waterFresh = waterChurnFresh( vWaterAir, vWaterFoam ) * waterFoamPattern;');
     expect(vertex).toContain('vWaterAir = waterAerationAt( waterXZ ).x;');
     // The crest light marches through the carved surface: through a tube's void, not as if it were water.
     expect(fragment).toContain('float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;');
@@ -449,8 +450,10 @@ describe('the roller lens\'s band in the water (the Canyon roller lens, S3, Task
     expect(drawn.fragment).toContain('float waterLensFresh = max( waterFresh, waterRollerCover * waterFreshness( 0.25 ) * waterFoamPattern );');
     expect(drawn.fragment).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterLensFresh );');
     expect(drawn.fragment).toContain('waterChurnSlope( vWaterWorld.xz, mix( vWaterFlow, waterRollerFlow, waterRollerCover ) )');
-    // The field's crease and backlit glow keep the field's own freshness: the lens never greys the foam it lies on.
-    expect(drawn.fragment).toContain('float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;');
+    // The field's crease and backlit glow keep the field's own freshness: the lens never greys the foam it lies on. (The
+    // churn's is the air's or the dense foam's, with the foam look; the glow the air's alone.)
+    expect(drawn.fragment).toContain('float waterFresh = waterChurnFresh( vWaterAir, vWaterFoam ) * waterFoamPattern;');
+    expect(drawn.fragment).toContain('totalEmissiveRadiance += 0.18 * waterFreshness( vWaterAir ) * waterFoamPattern');
     expect(drawn.fragment).toContain('float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );');
     expect(drawn.fragment).toContain('waterCover = max( waterCover, waterRollerCover );');
     expect(drawn.fragment).toContain('( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind');
