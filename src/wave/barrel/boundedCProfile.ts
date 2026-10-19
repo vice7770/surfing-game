@@ -43,6 +43,8 @@ const mix=(a:Vec2,b:Vec2,t:number):Vec2=>{const u=1-t;return [a[0]*u+b[0]*t,a[1]
 const round=(a:Vec2):Vec2=>[Math.fround(a[0]),Math.fround(a[1])];
 const smooth=(x:number)=>{x=Math.min(1,Math.max(0,x));return x*x*(3-2*x);};
 type Cubic=[Vec2,Vec2,Vec2,Vec2];
+/** A contour point no part has placed (none in 33..111 today): (0, 0), as the contour's points started; never written. */
+const ORIGIN:Readonly<Vec2>=[0,0];
 function bezier(c:Cubic,t:number):Vec2{const s=1-t,a=s*s*s,b=3*s*s*t,d=3*s*t*t,e=t*t*t,p=c[0],q=c[1],r=c[2],w=c[3];return [(p[0]*a+q[0]*b)+(r[0]*d+w[0]*e),(p[1]*a+q[1]*b)+(r[1]*d+w[1]*e)];}
 function derivative(c:Cubic,t:number):Vec2{const s=1-t,a=s*s,b=2*s*t,d=t*t,p=c[0],q=c[1],r=c[2],w=c[3];return [((q[0]-p[0])*a+(r[0]-q[0])*b+(w[0]-r[0])*d)*3,((q[1]-p[1])*a+(r[1]-q[1])*b+(w[1]-r[1])*d)*3];}
 const at=(p:Float32Array,i:number):Vec2=>[p[2*i],p[2*i+1]];
@@ -202,7 +204,7 @@ export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocit
  const o=ordinary(z),ev=lifecycle ?? event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,retired=impact+.3*TD,post=z.tau>=impact;
  const g=smooth(z.tau/(.4*TD)),remaining=post?1-smooth((z.tau-impact)/(.3*TD)):1,s=post?ev.seal:smooth((z.tau-TD)/(.3*TD));
  const ulp=ulp32(Math.max(...z.crest.map(Math.abs),...z.toe.map(Math.abs))),requested=o.B*(post?remaining**2:g*g),loopScale=post?Math.min(remaining*o.W,remaining**2*o.H):Math.min(g*o.W,g*o.H),collapsed=requested<8*ulp||loopScale<=64*ulp,activeG=g,activeRemain=remaining,T=collapsed?0:Math.max(requested,8*ulp);
- const {P,c:currentRoof,last}=roof(o,post?1:activeG,s,T,post?ev.cap:undefined,activeRemain),target:Vec2[]=Array.from({length:113},()=>[0,0]);for(let i=0;i<=28;i++)target[32+i]=P[i];let R=0,D=0,envelopeBound=0,connectorLength=0,domainRadius:number|undefined;const envelopeBudget=.001*Math.max(o.W,o.H);
+ const {P,c:currentRoof,last}=roof(o,post?1:activeG,s,T,post?ev.cap:undefined,activeRemain),target:Vec2[]=new Array(113);for(let i=0;i<=28;i++)target[32+i]=P[i];let R=0,D=0,envelopeBound=0,connectorLength=0,domainRadius:number|undefined;const envelopeBudget=.001*Math.max(o.W,o.H);
  if(collapsed){
   const K=P[28],angle=post?0:(1-g)*Math.atan2(o.d0[1],o.d0[0]),pv:Vec2=[Math.cos(angle),Math.sin(angle)],slope=Math.tan(angle),yC=post?o.Toe[1]:(1-g)*o.K0[1]+g*o.Toe[1],C:Vec2=[K[0],yC];
   if(C[1]>K[1])throw Error('zero sheet connector not descending');
@@ -224,7 +226,7 @@ export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocit
   const F0:Vec2=[qC-T,yC-slope*T],F1:Vec2=[qC+T,yC+slope*T];if(!(rr.E[0]<=F0[0]&&F0[0]<F1[0]&&F1[0]<o.Toe[0]))throw Error('floor plateau domain');const chord=norm(sub(o.Toe,F1)),h0=(1-activeG)*o.he0+activeG*chord/3,h1=(1-activeG)*o.ht0+activeG*chord/3,fc=tail(F1,o.Toe,pv,o.tt,h0,h1);
   for(let i=97;i<=102;i++)target[i]=mix(rr.E,F0,(i-96)/6);for(let i=103;i<=106;i++)target[i]=mix(F0,F1,(i-102)/4);for(let i=107;i<=112;i++)target[i]=bezier(fc,(i-106)/6);
  }
- for(let i=33;i<112;i++){profile[2*i]=target[i][0];profile[2*i+1]=target[i][1];if(!Number.isFinite(profile[2*i]+profile[2*i+1]))throw Error('nonfinite profile');}
+ for(let i=33;i<112;i++){const point=target[i]??ORIGIN;profile[2*i]=point[0];profile[2*i+1]=point[1];if(!Number.isFinite(profile[2*i]+profile[2*i+1]))throw Error('nonfinite profile');}
  const cap=at(profile,64),flow=Math.sqrt(2*o.H),meta:BoundedCMetadata={model:'bounded-analytic-C/v4',impactEvent:ev,lengthScale:1,timeScale:1,formation:g,remaining,seal:s,authoredSealTau:TD,impactTau:impact,retiredTau:retired,fullyFormedTau:.4*TD,sheetExists:!collapsed,precisionCollapsed:collapsed&&requested>0,thickness:T,requestedThickness:requested,cap,impactCap:ev.cap,rootRadius:R,rootVerticalLeg:D,precisionEnvelopeBound:envelopeBound,precisionEnvelopeBudget:envelopeBudget,collapsedConnectorLength:connectorLength,capBoundaryVelocity:[0,0],fluidAlong:post?0:last[0]*flow,fluidUp:post?-flow:last[1]*flow,partRanges:{outer:[32,60],cap:[60,68],inner:[68,80],upperRoot:[80,88],face:[88,92],lowerRoot:[92,96],floor:[96,112]}};
  meta.rootRadiusMaximumFromSheetDomain=domainRadius;
  if(velocity){const dt=1e-5*TD,a=profile.slice(),b=profile.slice();sampleBoundedC({...z,tau:z.tau-dt},a,false,lifecycle,sharedRootDomain,preservedCarrierStart);sampleBoundedC({...z,tau:z.tau+dt},b,false,lifecycle,sharedRootDomain,preservedCarrierStart);meta.capBoundaryVelocity=[(b[128]-a[128])/(2*dt),(b[129]-a[129])/(2*dt)];}
