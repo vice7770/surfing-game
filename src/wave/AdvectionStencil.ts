@@ -52,14 +52,13 @@ export class DepartureRows {
       if (depth <= WET) continue;
       const along = qx[i];
       const across = qz[i];
-      if (!(depth < Number.POSITIVE_INFINITY && along > Number.NEGATIVE_INFINITY && along < Number.POSITIVE_INFINITY
-        && across > Number.NEGATIVE_INFINITY && across < Number.POSITIVE_INFINITY)) {
+      // x − x is 0 for a finite x, NaN for ±∞ or NaN.
+      if ((depth - depth) + (along - along) + (across - across) !== 0) {
         this.low[iz] = -1;
         return;
       }
-      if (depth < shallowest) shallowest = depth;
-      const speed = across < 0 ? -across : across;
-      if (speed > fastest) fastest = speed;
+      shallowest = Math.min(shallowest, depth);
+      fastest = Math.max(fastest, across < 0 ? -across : across);
     }
     if (shallowest === Number.POSITIVE_INFINITY) {
       // No wet cell: nothing departs, and the row's fields are cleared.
