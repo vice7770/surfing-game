@@ -15,6 +15,8 @@
  * Its decision paths use only + − × ÷ and min/max (the roller's online rule, R3 §3.4): its sine is a series.
  */
 
+import { frayRow, frayToes } from './drawnEdges';
+
 export interface SpillingFrontOptions {
   /** Which way the break peels along shore: +1 toward +x (left to right seen from the beach), −1 toward −x. */
   direction: 1 | -1;
@@ -52,6 +54,12 @@ export interface SpillingFrontOptions {
    * the peak (the breaking age's sideways spread); the foam shows it only within the margin. Infinity: no gate.
    */
   upcoastMargin: number;
+  /**
+   * Whether the drawn whitewater's runs fray at their ends along the crest and at their toe (the foam look, item 4a:
+   * `drawnEdges.ts`), so a straight crest's white is no rectangle; look only, the felt and the front's whitewater never
+   * read it. Off by default; the Canyon's front turns it on (`SPILLING_FRONT`).
+   */
+  drawnEdges: boolean;
 }
 
 /**
@@ -91,7 +99,14 @@ export const SPILLING_FRONT_DEFAULTS: SpillingFrontOptions = {
    * no further than 6 m upcoast of their first onset (`scripts/canyon-haze-report.ts`, Medium, 3 seeds × 14 periods).
    */
   upcoastMargin: 6,
+  drawnEdges: false,
 };
+
+/** Whether a row of the drawn whitewater holds any. */
+function drawnRow(drawn: Float64Array, start: number, count: number): boolean {
+  for (let i = start; i < start + count; i += 1) if (drawn[i] > 0) return true;
+  return false;
+}
 
 /** Terms of `seriesSine`'s Taylor series: on [−π/2, π/2] the first one left out is below 1e-20. */
 const SINE_TERMS = 12;
@@ -351,6 +366,7 @@ export class SpillingFront {
    * crest there (or, owned by none, of every live wave's), the next crest breaking weakly before its onset joins it to a
    * wave of its own (B ≤ 0.3, or less than 5 m out), which an older wave's band holds meanwhile. It is drawn once its
    * own wave's front has reached it and its curl has landed. Written beside `out` and `felt`, which it never changes.
+   * With `drawnEdges`, each row's run of it then frays at its ends along the crest and each column's at its toe.
    */
   update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array, felt?: Float64Array,
     drawn?: Float64Array, look?: SpillingDrawnLook): void {
@@ -392,7 +408,16 @@ export class SpillingFront {
     for (const wave of waves) wave.crest.fill(Number.NaN);
     this.gated = 0;
     this.ramped = 0;
+    const fray = drawn !== undefined && options.drawnEdges;
+    const dx = nx > 1 ? xCenters[1] - xCenters[0] : 1;
+    let firstDrawn = nz;
+    let lastDrawn = -1;
     for (let iz = 0; iz < nz; iz += 1) {
+      if (fray && iz > 0 && drawnRow(drawn!, (iz - 1) * nx, nx)) {
+        frayRow(drawn!, (iz - 1) * nx, nx, xCenters, dx, zCenters[iz - 1], time);
+        firstDrawn = Math.min(firstDrawn, iz - 1);
+        lastDrawn = iz - 1;
+      }
       const z = zCenters[iz];
       // Water not breaking has none to show, feel or draw: cleared in a run (the M1 CPU study, 2026-10-19); every
       // breaking cell below writes all three.
@@ -451,6 +476,12 @@ export class SpillingFront {
         this.ramped += 1;
       }
     }
+    if (fray && nz > 0 && drawnRow(drawn!, (nz - 1) * nx, nx)) {
+      frayRow(drawn!, (nz - 1) * nx, nx, xCenters, dx, zCenters[nz - 1], time);
+      firstDrawn = Math.min(firstDrawn, nz - 1);
+      lastDrawn = nz - 1;
+    }
+    if (fray && lastDrawn >= firstDrawn) frayToes(drawn!, nx, firstDrawn, lastDrawn, xCenters, zCenters, time);
   }
 
   /**

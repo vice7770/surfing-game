@@ -31,7 +31,8 @@ import { SweptCrash } from './barrel/SweptCrash';
 import { CarrierSupport } from './barrel/carrierSupport';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
-import { SpillingRoller } from './SpillingRoller';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
+import { frayBand } from './drawnEdges';
 import { SpillingCurl } from './SpillingCurl';
 
 /** No drawn splashes (`drawnImpacts` without a spilling lip). */
@@ -136,6 +137,12 @@ export interface SurfZoneConfig {
    */
   spillingCurl?: boolean;
   /**
+   * Whether a spilling spot's drawn whitewater and roller band fray at their ends and toe (the foam look, item 4a,
+   * `drawnEdges.ts`): on by default where the spot's front asks for it; false draws them square (the before stills).
+   * Look only: nothing felt changes.
+   */
+  drawnEdges?: boolean;
+  /**
    * Whether the tank's open sides relax toward the incoming sea (`SideFeed`, the wave-sizes work): the config's say,
    * else `SIDE_FEED_SPOTS` (none since 2026-10-07).
    */
@@ -151,7 +158,7 @@ export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
 
 /** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
 export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {
-  canyon: { direction: 1, peelAngleDegrees: 55 },
+  canyon: { direction: 1, peelAngleDegrees: 55, drawnEdges: true },
 };
 
 /**
@@ -827,7 +834,7 @@ export class SurfZoneSimulation {
       }
     }
     if (spillingFrontOn(config) && !this.crash) {
-      this.spilling = new SpillingFront(this.solver, SPILLING_FRONT[config.spot]);
+      this.spilling = new SpillingFront(this.solver, { ...SPILLING_FRONT[config.spot], ...(config.drawnEdges === false ? { drawnEdges: false } : {}) });
       this.whitewater = new Float64Array(this.solver.h.length);
       if (config.roller !== false) {
         const mask = config.rollerMask ?? 'front';
@@ -1408,7 +1415,11 @@ export class SurfZoneSimulation {
   writeRoller(into: Float32Array): number {
     if (!this.roller) return 0;
     into.set(this.roller.table);
-    if (this.curl) this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time);
+    if (this.curl) {
+      this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time);
+      // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a).
+      if (this.spilling!.options.drawnEdges) frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time);
+    }
     return this.solver.nx;
   }
 

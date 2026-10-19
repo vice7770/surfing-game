@@ -382,6 +382,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(diagnosticDz > 0 && Number.isFinite(diagnosticDz) ? { fineSpacing: diagnosticDz } : {}),
     // `?spillingCurl=0`: the Canyon's spilling front drawn as felt, with no curl (a dev switch, for the lip's costs).
     ...(devParam('spillingCurl') === '0' ? { spillingCurl: false } : {}),
+    // `?foamLook=off`: a spilling spot's drawn white with square edges, as before the foam look (item 4a).
+    ...(devParam('foamLook') === 'off' ? { drawnEdges: false } : {}),
     ...overrides,
   };
 }
