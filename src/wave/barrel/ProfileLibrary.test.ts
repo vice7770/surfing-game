@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase, encodeCase } from './profileFormat';
-import { CLEAR, heldFrame, LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
+import { CLEAR, heldFrame, LANDMARK, PROFILE_POINTS, ProfileLibrary, NumberKeyCache } from './ProfileLibrary';
 import { GRAVITY } from '../dispersion';
 import { toyCase, tubeCase } from './toyCase';
 
@@ -206,5 +206,25 @@ describe('the cases a slice blends (the crash’s held overturn, Part B, PR 5)',
     expect(small.weight).toBe(0);
     expect(small.clamped).toBe(true);
     expect(small.scale).toBeCloseTo(3.5, 12);
+  });
+});
+
+describe('the analytic caches\' number keys (the M1 CPU study, 2026-10-19)', () => {
+  it('join and part keys as the joined strings did: ±0 and NaN alike, every other double apart', () => {
+    const cache = new NumberKeyCache<string>(1000);
+    const strings = new Set<string>();
+    const keyOf = (a: number, b: number) => [a, b, 7, 0.5].join(',');
+    const values = [0, -0, Number.NaN, 1, 1 + Number.EPSILON, 0.1 + 0.2, 0.3, -1e-300, 1e-300, Infinity, -Infinity];
+    let found = 0;
+    for (const a of values) for (const b of values) {
+      cache.set(a, b, 7, 0.5, keyOf(a, b));
+      strings.add(keyOf(a, b));
+      for (const c of values) for (const d of values) {
+        const value = cache.get(c, d, 7, 0.5);
+        expect(value).toBe(strings.has(keyOf(c, d)) ? keyOf(c, d) : undefined);
+        if (value !== undefined) found += 1;
+      }
+    }
+    expect(found).toBeGreaterThan(1000);
   });
 });

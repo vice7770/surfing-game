@@ -227,6 +227,39 @@ export interface CaseBlend {
 
 /** Lifecycle clocks kept (`ProfileLibrary.analyticClocks`): well over the ~200 slices a Padang step asks for. */
 export const ANALYTIC_CLOCK_CAPACITY = 4096;
+/** Analytic profiles kept (`ProfileLibrary.analyticQueries`): repeats come within a step, about 100 queries. */
+const ANALYTIC_QUERY_CAPACITY = 256;
+
+/**
+ * A cache keyed by four numbers, without building a string key each time (the M1 CPU study, 2026-10-19). Its keys
+ * match as the strings they replace did: `String(x)` tells every double apart but +0 from −0 and NaN from NaN, and the
+ * Map's SameValueZero joins exactly those. Its values are pure functions of the key, so when it is full it starts
+ * afresh: a value found again is the same value.
+ */
+export class NumberKeyCache<V> {
+  private readonly levels = new Map<number, Map<number, Map<number, Map<number, V>>>>();
+  private count = 0;
+  constructor(private readonly capacity: number) {}
+
+  get(a: number, b: number, c: number, d: number): V | undefined {
+    return this.levels.get(a)?.get(b)?.get(c)?.get(d);
+  }
+
+  set(a: number, b: number, c: number, d: number, value: V): void {
+    if (this.count >= this.capacity) {
+      this.levels.clear();
+      this.count = 0;
+    }
+    let second = this.levels.get(a);
+    if (!second) this.levels.set(a, second = new Map());
+    let third = second.get(b);
+    if (!third) second.set(b, third = new Map());
+    let fourth = third.get(c);
+    if (!fourth) third.set(c, fourth = new Map());
+    if (!fourth.has(d)) this.count += 1;
+    fourth.set(d, value);
+  }
+}
 
 export class ProfileLibrary {
   private readonly bySlope: BarrelCase[][];
@@ -239,13 +272,14 @@ export class ProfileLibrary {
   private readonly analyticOther = new Float32Array(FLOATS);
   private readonly analyticEarlier = new Float32Array(FLOATS);
   private readonly analyticLater = new Float32Array(FLOATS);
-  private readonly analyticQueries = new Map<string, { profile: Float32Array; lookup: ProfileLookup }>();
+  private readonly analyticQueries = new NumberKeyCache<{ profile: Float32Array; lookup: ProfileLookup }>(ANALYTIC_QUERY_CAPACITY);
   /**
    * Each slice's lifecycle clock, a pure function of its slope and foot (`analyticClock`). Padang Medium's front and
    * contact ask for about 200 distinct slices a step, nearly the same ones step after step (the M1 CPU study,
    * 2026-10-19): held to 64, the oldest were dropped before they came round again and every step rebuilt ~400 clocks.
+   * Keyed by slope, foot height and foot depth (and 0).
    */
-  private readonly analyticClocks = new Map<string, { impact: number; retired: number; clear: number; event: BoundedCEvent }>();
+  private readonly analyticClocks = new NumberKeyCache<{ impact: number; retired: number; clear: number; event: BoundedCEvent }>(ANALYTIC_CLOCK_CAPACITY);
 
   constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
     const groups = new Map<number, BarrelCase[]>();
@@ -501,8 +535,7 @@ export class ProfileLibrary {
 
   private analyticShape(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): BoundedCMetadata {
     const parameters = this.analyticParameters(query, b, out);
-    const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
-    const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(clockKey)?.event, true);
+    const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(query.slope, query.footHeight, query.footDepth, 0)?.event, true);
     meta.sharedSheet = pairInnerSheet(out, meta);
     meta.lengthScale = b.scale; meta.timeScale = b.unit;
     for (let i = 0; i < FLOATS; i++) out[i] *= b.scale;
@@ -511,14 +544,12 @@ export class ProfileLibrary {
 
   /** Lifecycle uses the identical final carrier/parameter blend; it does not construct a full contour. */
   private analyticClock(query: Omit<ProfileQuery, 'seconds'>, b: ReturnType<ProfileLibrary['bracket']>) {
-    const key = [query.slope, query.footHeight, query.footDepth].join(',');
-    let clock = this.analyticClocks.get(key);
+    let clock = this.analyticClocks.get(query.slope, query.footHeight, query.footDepth, 0);
     if (!clock) {
       const parameters = this.analyticParameters({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
       const final = boundedCLifecycle(parameters);
       clock = { impact: final.impactTau, retired: final.retiredTau, clear: final.fullyFormedTau, event: final.impactEvent };
-      if (this.analyticClocks.size >= ANALYTIC_CLOCK_CAPACITY) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
-      this.analyticClocks.set(key, clock);
+      this.analyticClocks.set(query.slope, query.footHeight, query.footDepth, 0, clock);
     }
     return clock;
   }
@@ -530,8 +561,7 @@ export class ProfileLibrary {
   }
 
   private analyticAt(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): ProfileLookup {
-    const key = [query.slope, query.footHeight, query.footDepth, query.seconds].join(',');
-    const cached = this.analyticQueries.get(key);
+    const cached = this.analyticQueries.get(query.slope, query.footHeight, query.footDepth, query.seconds);
     if (cached) { out.set(cached.profile); return cached.lookup; }
     const clock = this.analyticClock(query, b);
     const meta = this.analyticShape(query, b, out);
@@ -548,8 +578,7 @@ export class ProfileLibrary {
       touchdownSeconds: meta.impactTau * b.unit, frameSeconds: b.frameStep * b.unit,
       tipAlong, tipUp, clearSeconds: meta.fullyFormedTau * b.unit,
       collapseSeconds: (meta.retiredTau - meta.impactTau) * b.unit, analytic: meta };
-    if (this.analyticQueries.size >= 64) this.analyticQueries.delete(this.analyticQueries.keys().next().value!);
-    this.analyticQueries.set(key, { profile: out.slice(), lookup });
+    this.analyticQueries.set(query.slope, query.footHeight, query.footDepth, query.seconds, { profile: out.slice(), lookup });
     return lookup;
   }
 
