@@ -348,7 +348,8 @@ function syntheticDrawing(iterations: number, width = 2048, height = 1280): () =
  * `&seconds=` and `&warm=` set the sample, `&seed=` the sea. The result is also left in `window.gpuCheck`.
  * `&arms=both` builds two identical seas, one on the solo host (its water prefetch) and one on the ordinary device path
  * (a host option turns the prefetch off), and drives them in turn for `&slot=` seconds each (default 2), so a busy
- * machine's drift falls on both alike; `&arms=ordinary` runs the ordinary path alone.
+ * machine's drift falls on both alike; `&arms=ordinary` runs the ordinary path alone; `&arms=base` drives this tree's
+ * worker against an older tree's, on the same solo host (the M1 CPU study, 2026-10-19; see `baseWorker`).
  */
 async function pipeline(): Promise<void> {
   const params = new URLSearchParams(location.search);
@@ -362,7 +363,12 @@ async function pipeline(): Promise<void> {
   const rider = params.get('rider') !== '0';
   const particles = (params.get('particles') ?? 'high') as 'low' | 'medium' | 'high';
   const slot = Number(params.get('slot') ?? 2) * 1000;
-  const armNames = params.get('arms') === 'both' ? ['solo', 'ordinary'] : params.get('arms') === 'ordinary' ? ['ordinary'] : ['solo'];
+  const armNames = params.get('arms') === 'base' ? ['solo', 'base'] : params.get('arms') === 'both' ? ['solo', 'ordinary']
+    : params.get('arms') === 'ordinary' ? ['ordinary'] : ['solo'];
+  // `&arms=base` (dev server only): the second arm is an older tree's worker, extracted beside src
+  // (`git archive a999e3e2 src | (mkdir -p .m1-cpu-base && tar -x -C .m1-cpu-base)`; `&baseDir=` names another folder).
+  const baseWorker = () => new Worker(new URL(`/${params.get('baseDir') ?? '.m1-cpu-base'}/src/game/surfZoneWorker.ts`, location.href),
+    { type: 'module' }) as unknown as WorkerPort;
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
@@ -409,7 +415,7 @@ async function pipeline(): Promise<void> {
   };
   for (const name of armNames) {
     const arm = { name, samples: [], sinceSwitch: 0 } as unknown as Arm;
-    const port = new TimedPort(createSurfZoneWorker(), (reply) => {
+    const port = new TimedPort(name === 'base' ? baseWorker() : createSurfZoneWorker(), (reply) => {
       if (reply.type === 'snapshot' && arms[active] === arm) arrived(arm);
     });
     // A host option (any) keeps the ordinary device path: the solo prefetch is the default host's alone.
