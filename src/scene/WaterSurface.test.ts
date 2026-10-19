@@ -1,4 +1,4 @@
-import { DataTexture, ShaderLib } from 'three';
+import { DataTexture, PerspectiveCamera, Scene, ShaderLib, type Vector4, type WebGLRenderer } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { WaterSurface, sampleSurfaceBed } from './WaterSurface';
 import { FlatSurfaceSource } from './FlatSurfaceSource';
@@ -6,6 +6,7 @@ import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
 import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import type { SurfaceSource } from './WaterSurface';
+import { PATCH_SIZE } from './water/richPatch';
 
 describe('WaterSurface GPU displacement data', () => {
   it('keeps a 1 m barrel seam grid independent of coarse water textures and follows its world window', () => {
@@ -556,5 +557,81 @@ describe('the roller lens\'s table on the GPU (S3, Task 4)', () => {
     water.setSource(new PhysicalSurfaceSource(new SurfZoneSimulation({ ...small, spot: 'reef' }), 2));
     water.update();
     expect(water.mesh.material.customProgramCacheKey()).not.toContain('roller');
+  });
+});
+
+describe('the Rich patch and the coarse water given way under it', () => {
+  // A tank like the Wave Lab's at Padang Padang (2 m render nodes) and a camera sent everywhere a view can go.
+  const tank = { xMin: -160, zMin: -1100, spacing: 2, nx: 161, nz: 551 };
+  const cubicTank = () => ({ grid: tank, time: 0, bedRevision: 0, cubic: true, write: (out: Float32Array) => out.fill(0), writeBed: (out: Float32Array) => out.fill(-6) });
+  const renderer = { info: { render: { frame: 0 } } } as unknown as WebGLRenderer;
+  const scene = new Scene();
+  // One render as three draws it: the world matrices first, then each object's hook just before its own draw.
+  const draw = (water: WaterSurface, camera: PerspectiveCamera, patchFirst: boolean) => {
+    (renderer.info.render.frame as number) += 1;
+    scene.add(water.mesh);
+    scene.updateMatrixWorld();
+    camera.updateMatrixWorld();
+    const objects = patchFirst ? [water.patch, water.mesh] : [water.mesh, water.patch];
+    for (const object of objects) {
+      if (!object.visible || !object.layers.test(camera.layers)) continue;
+      object.onBeforeRender(renderer, scene, camera, object.geometry, object.material, null as never);
+    }
+  };
+  const footprint = (water: WaterSurface) => {
+    const m = water.patch.matrixWorld.elements;
+    return [m[12] - (PATCH_SIZE / 2) * m[0], m[14] - (PATCH_SIZE / 2) * m[10], m[12] + (PATCH_SIZE / 2) * m[0], m[14] + (PATCH_SIZE / 2) * m[10]];
+  };
+  // The lineup, a jump across the tank, the Lab's overview high above, straight down, a free camera far off the grid,
+  // a turn on the spot, and a respawn at the beach.
+  const poses: [[number, number, number], [number, number, number]][] = [
+    [[-50, 2, -260], [-20, 0, -264]],
+    [[120, 3, -900], [150, 0, -880]],
+    [[20, 16, -166], [-50, 0, -300]],
+    [[0, 60, -500], [0, 0, -500.001]],
+    [[-900, 120, 400], [-50, 0, -300]],
+    [[-50, 2, -260], [-80, 0, -230]],
+    [[0, 4, -560], [0, 0, -600]],
+  ];
+
+  it('discards it exactly under the patch as drawn, in every render and from every camera, whichever draws first', () => {
+    const water = new WaterSurface(cubicTank());
+    water.setLook('rich');
+    water.update();
+    expect(water.patch.frustumCulled).toBe(false);
+    const camera = new PerspectiveCamera(52, 4 / 3, 0.1, 3000);
+    for (const patchFirst of [false, true]) {
+      for (const [eye, target] of poses) {
+        camera.position.set(...eye);
+        camera.lookAt(...target);
+        draw(water, camera, patchFirst);
+        const rect = water.materialUniforms.waterPatchRect.value as Vector4;
+        expect(water.materialUniforms.waterPatchActive.value).toBe(1);
+        footprint(water).forEach((value, k) => expect(value).toBeCloseTo(rect.toArray()[k], 6));
+        expect(water.patch.matrixWorld.elements[13]).toBe(0);
+      }
+    }
+  });
+
+  it('never discards where no patch draws: Classic, a hidden patch, a camera that leaves it out', () => {
+    const water = new WaterSurface(cubicTank());
+    water.setLook('rich');
+    water.update();
+    const camera = new PerspectiveCamera(52, 4 / 3, 0.1, 3000);
+    camera.position.set(-50, 2, -260);
+    camera.lookAt(-20, 0, -264);
+    draw(water, camera, false);
+    expect(water.materialUniforms.waterPatchActive.value).toBe(1);
+    water.patch.visible = false;
+    draw(water, camera, false);
+    expect(water.materialUniforms.waterPatchActive.value).toBe(0);
+    water.patch.visible = true;
+    water.patch.layers.set(3);
+    draw(water, camera, false);
+    expect(water.materialUniforms.waterPatchActive.value).toBe(0);
+    water.patch.layers.set(0);
+    water.setLook('classic');
+    draw(water, camera, false);
+    expect(water.materialUniforms.waterPatchActive.value).toBe(0);
   });
 });

@@ -444,7 +444,8 @@ export class WaterSurface {
     this.patch.frustumCulled = false;
     this.patch.visible = false;
     this.mesh.add(this.patch);
-    // Both meshes place the patch from the camera about to draw them, so the answer never depends on draw order.
+    // Both meshes place the patch, and say whether the coarse water gives way under it, from the camera about to draw
+    // them, so the answer never depends on draw order.
     const place = (camera: Camera) => this.placePatch(camera);
     this.mesh.onBeforeRender = (_renderer, _scene, camera) => place(camera);
     this.patch.onBeforeRender = (_renderer, _scene, camera) => place(camera);
@@ -774,7 +775,11 @@ export class WaterSurface {
   private readonly patchDirection = new Vector3();
 
   private placePatch(camera: Camera): void {
-    if (!this.patch.visible) return;
+    // The coarse water gives way only under a patch this camera draws (the Rich look, shown, in its layers): never a
+    // hole to the seabed where no patch draws.
+    const draws = this.effectiveLook === 'rich' && this.patch.visible && this.patch.layers.test(camera.layers);
+    this.uniforms.waterPatchActive.value = draws ? 1 : 0;
+    if (!draws) return;
     camera.getWorldPosition(this.patchCamera);
     camera.getWorldDirection(this.patchDirection);
     const rect = patchRect({ x: this.patchCamera.x, z: this.patchCamera.z, dirX: this.patchDirection.x, dirZ: this.patchDirection.z }, this.source.grid);
