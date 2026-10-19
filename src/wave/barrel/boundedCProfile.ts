@@ -34,7 +34,6 @@ const add=(a:Vec2,b:Vec2):Vec2=>[a[0]+b[0],a[1]+b[1]];
 const sub=(a:Vec2,b:Vec2):Vec2=>[a[0]-b[0],a[1]-b[1]];
 const mul=(a:Vec2,b:number):Vec2=>[a[0]*b,a[1]*b];
 const dot=(a:Vec2,b:Vec2)=>a[0]*b[0]+a[1]*b[1];
-const cross=(a:Vec2,b:Vec2)=>a[0]*b[1]-a[1]*b[0];
 // The helpers below build one array each, not one per operation (the M1 CPU study, 2026-10-19): the same operations
 // in the same order as add/sub/mul composed.
 const norm=(a:Vec2)=>Math.hypot(a[0],a[1]);
@@ -110,14 +109,11 @@ function arcSample(points:Vec2[],count:number):Vec2[]{
  const total=lengths.at(-1)!;const out:Vec2[]=[];let j=0;
  for(let i=0;i<=count;i++){const d=total*i/count;while(j+1<lengths.length-1&&lengths[j+1]<d)j++;const span=lengths[j+1]-lengths[j];out.push(span?mix(points[j],points[j+1],(d-lengths[j])/span):points[j]);}return out;
 }
-function raySegment(O:Vec2,d:Vec2,P:Vec2,Q:Vec2):number{
- const e=sub(Q,P),den=cross(d,e);if(Math.abs(den)<1e-18)return Infinity;const a=sub(P,O),r=cross(a,e)/den,t=cross(a,d)/den;return r>0&&t>=0&&t<=1?r:Infinity;
-}
 /** Whether an arc from r0 turning through `span` holds the direction (rad0, rad1): its angle from r0 by atan2, in [0, 2π). */
 function withinSpan(rad0:number,rad1:number,r0:Vec2,span:number):boolean{
  let a=Math.atan2(r0[0]*rad1-r0[1]*rad0,r0[0]*rad0+r0[1]*rad1);if(a<0)a+=2*Math.PI;return a<=span+1e-12||Math.abs(a-2*Math.PI)<1e-12;
 }
-/** `raySegment` from O along (d0, d1), on scalars. */
+/** The distance along the ray from O in direction (d0, d1) to segment PQ (Infinity if it misses), on scalars. */
 function raySegmentAt(O:Vec2,d0:number,d1:number,P:Vec2,Q:Vec2):number{
  const e0=Q[0]-P[0],e1=Q[1]-P[1],den=d0*e1-d1*e0;if(Math.abs(den)<1e-18)return Infinity;const a0=P[0]-O[0],a1=P[1]-O[1],r=(a0*e1-a1*e0)/den,t=(a0*d1-a1*d0)/den;return r>0&&t>=0&&t<=1?r:Infinity;
 }
@@ -161,8 +157,11 @@ export function arcBound(O:Vec2,c:Vec2,r0:Vec2,span:number,P:Vec2,Q:Vec2):number
  const cs=Math.cos(span),sn=Math.sin(span),t0=r0[0]*cs-r0[1]*sn,t1=r0[0]*sn+r0[1]*cs;
  return Math.min(best,raySegmentAt(O,c0+t0,c1+t1,P,Q));
 }
+/** The smallest R at which the root's face, from J along dU and from O along cV, meets segment PQ; on scalars (the M1 CPU study). */
 function faceBound(J:Vec2,O:Vec2,dU:Vec2,cV:Vec2,P:Vec2,Q:Vec2):number{
- const candidates=[raySegment(J,dU,P,Q),raySegment(O,cV,P,Q)];if(Math.abs(dU[0])>1e-18)for(const X of [P,Q]){const R=(X[0]-J[0])/dU[0];if(R>0){const U=add(J,mul(dU,R)),V=add(O,mul(cV,R));if(V[1]<=X[1]&&X[1]<=U[1])candidates.push(R);}}return Math.min(...candidates);
+ let best=Math.min(raySegmentAt(J,dU[0],dU[1],P,Q),raySegmentAt(O,cV[0],cV[1],P,Q));
+ if(Math.abs(dU[0])>1e-18)for(let end=0;end<2;end++){const X=end===0?P:Q,R=(X[0]-J[0])/dU[0];if(R>0){const up=J[1]+dU[1]*R,down=O[1]+cV[1]*R;if(down<=X[1]&&X[1]<=up)best=Math.min(best,R);}}
+ return best;
 }
 function root(J:Vec2,vr:Vec2,angle:number,qC:number,yC:number,T:number,P:Vec2[],V:Vec2[],bulk:Float32Array,sharedCrest?:number,preservedCarrierStart=0){
  const slope=Math.tan(angle),u=mul(vr,-1);let beta=Math.atan2(u[1],u[0]);if(beta<0)beta+=2*Math.PI;const spanU=3*Math.PI/2-beta,spanL=Math.PI/2+angle;
@@ -170,9 +169,16 @@ function root(J:Vec2,vr:Vec2,angle:number,qC:number,yC:number,T:number,P:Vec2[],
  if(N<=0)throw Error('nonpositive root depth');let R=Math.min(4*T,coef<0?N/-coef:Infinity);
  const domainReach=1+Math.sin(beta),domainRadius=sharedCrest!==undefined&&domainReach>0?(J[0]-sharedCrest)/domainReach:Infinity;
  R=Math.min(R,domainRadius);
- const guards:[Vec2,Vec2][]=[];for(let i=0;i<28;i++){const n:Vec2=[-V[i][1],V[i][0]];guards.push([sub(P[i],mul(n,T/2)),sub(P[i+1],mul(n,T/2))]);}
- for(let i=preservedCarrierStart;i<32;i++)guards.push([add(at(bulk,i),[0,-T/2]),add(at(bulk,i+1),[0,-T/2])]);
- for(const [a,b] of guards)R=Math.min(R,arcBound(J,cU,mul(cU,-1),spanU,a,b),arcBound(O,cL,[-1,0],spanL,a,b),faceBound(J,O,dU,cV,a,b));
+ // Each guard segment, the sheet's underside then the carrier's, in two reused ends (the bounds only read them), in order.
+ const a:Vec2=[0,0],b:Vec2=[0,0],turnU=mul(cU,-1),turnL:Vec2=[-1,0],half=T/2;
+ for(let i=0;i<28;i++){
+  const n0=-V[i][1],n1=V[i][0];a[0]=P[i][0]-n0*half;a[1]=P[i][1]-n1*half;b[0]=P[i+1][0]-n0*half;b[1]=P[i+1][1]-n1*half;
+  R=Math.min(R,arcBound(J,cU,turnU,spanU,a,b),arcBound(O,cL,turnL,spanL,a,b),faceBound(J,O,dU,cV,a,b));
+ }
+ for(let i=preservedCarrierStart;i<32;i++){
+  a[0]=bulk[2*i]+0;a[1]=bulk[2*i+1]+(-T/2);b[0]=bulk[2*(i+1)]+0;b[1]=bulk[2*(i+1)+1]+(-T/2);
+  R=Math.min(R,arcBound(J,cU,turnU,spanU,a,b),arcBound(O,cL,turnL,spanL,a,b),faceBound(J,O,dU,cV,a,b));
+ }
  if(!Number.isFinite(R)||R<T/2)throw Error('root thickness domain');const D=N+R*coef;if(D< -1e-12)throw Error('negative root face');const U=add(J,mul(dU,R));
  // This is the exact endpoint of the selected circle/domain equality, not a post-hoc vertex clamp.
  if(sharedCrest!==undefined&&R===domainRadius)U[0]=sharedCrest;
