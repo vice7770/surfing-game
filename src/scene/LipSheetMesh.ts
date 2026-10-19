@@ -4,6 +4,8 @@ import { LIP_STRIDE } from '../wave/SurfZoneRunner';
 import { LIP_SUBDIVISIONS, RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
 import { RICH_WATER } from './water/richWaterGlsl';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { LIP_HAZE_ROUTE, hazeLandOn, hazeLandProgramKey, hazeRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { horizonHazeUniforms } from './water/horizonHaze';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import type { WaterLook } from './water/waterLook';
 import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, type WaterOptics } from './waterOptics';
@@ -192,9 +194,17 @@ export class LipSheetMesh {
         .replace('#include <emissivemap_fragment>', `${richLipBody}\nwaterGlitterCover = vLipFoam;`)
         .replace('#include <lights_fragment_maps>', RICH_LIP_REFLECTION)
         .replace('#include <lights_physical_pars_fragment>', richGlitterLights(true));
+      // The horizon haze over the lip, as over the water behind it (the haze-land follow-up).
+      if (hazeLandOn('rich')) {
+        Object.assign(shader.uniforms, horizonHazeUniforms);
+        withHazeLand(shader, { route: hazeRoute(LIP_HAZE_ROUTE, true), pixelToward: 'vLipWorld - cameraPosition' });
+      }
     };
-    this.richMaterial.customProgramCacheKey = () => `breakline-lip-rich${glitterProgramKey()}`;
+    this.richMaterial.customProgramCacheKey = () => `breakline-lip-rich${glitterProgramKey()}${hazeLandProgramKey('rich', hazeRoute(LIP_HAZE_ROUTE, true))}`;
     onGlitterChange(() => {
+      this.richMaterial.needsUpdate = true;
+    });
+    onHazeLandChange(() => {
       this.richMaterial.needsUpdate = true;
     });
     this.mesh = new Mesh(new BufferGeometry(), material);

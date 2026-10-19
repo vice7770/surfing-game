@@ -1,6 +1,8 @@
 import { BufferAttribute, BufferGeometry, Color, DynamicDrawUsage, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { churnTexture } from './water/churnTexture';
+import { hazeLandOn, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { horizonHazeUniforms } from './water/horizonHaze';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
 
@@ -76,6 +78,8 @@ export class SprayPoints {
         waterTubeCount: { value: 0 },
         // G9: the Rich foam ball is a ball of the churned whitewater.
         waterChurnMap: { value: churnTexture() },
+        // Rich: the horizon haze, the water's own uniform objects (the haze-land follow-up).
+        ...horizonHazeUniforms,
       },
       vertexShader,
       fragmentShader,
@@ -85,6 +89,7 @@ export class SprayPoints {
     });
     this.mesh = new Points(geometry, material);
     this.mesh.frustumCulled = false;
+    onHazeLandChange(() => this.refreshShaders());
     // Points are sized in metres: the screen's pixels per metre at unit distance come from the camera and viewport.
     this.mesh.onBeforeRender = (renderer, _scene, camera) => {
       const height = renderer.getDrawingBufferSize(this.buffer).y;
@@ -97,9 +102,21 @@ export class SprayPoints {
   setLook(look: WaterLook): void {
     if (look === this.currentLook) return;
     this.currentLook = look;
+    this.refreshShaders();
+  }
+
+  /**
+   * The look's shaders. The Rich spray, mist and foam balls take the horizon haze per sprite (`hazeLand.ts`), as the
+   * water behind them does: one vertex is one sprite, so per vertex is per sprite.
+   */
+  private refreshShaders(): void {
     const { material } = this.mesh;
-    material.vertexShader = look === 'rich' ? richSprayVertex : vertexShader;
-    material.fragmentShader = look === 'rich' ? richSprayFragment : fragmentShader;
+    const rich = this.currentLook === 'rich';
+    const shader = { vertexShader: rich ? richSprayVertex : vertexShader, fragmentShader: rich ? richSprayFragment : fragmentShader };
+    if (hazeLandOn(this.currentLook)) withHazeLand(shader, { route: 'vertex', vertexAnchor: 'vSprayWorld = world;', vertexToward: 'world - cameraPosition' });
+    if (shader.vertexShader === material.vertexShader && shader.fragmentShader === material.fragmentShader) return;
+    material.vertexShader = shader.vertexShader;
+    material.fragmentShader = shader.fragmentShader;
     material.needsUpdate = true;
   }
 

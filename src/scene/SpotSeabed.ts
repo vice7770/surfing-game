@@ -3,6 +3,8 @@ import { causticLookupPars, type CausticUniforms } from './CausticMap';
 import { buildGridGeometry } from './gridGeometry';
 import { WATER_IOR } from './waterOptics';
 import { waterHeightPars } from './WaterSurface';
+import { hazeLandLook, hazeLandOn, hazeLandProgramKey, hazeRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { horizonHazeUniforms } from './water/horizonHaze';
 import { wetSandFragment, wetSandPars } from './water/shoreline';
 
 /** Share of the sand's light that is direct sun, which the caustics gather and spread (a rendering choice). */
@@ -34,6 +36,28 @@ export class SpotSeabed {
     this.mesh = new Mesh(new BufferGeometry(), new MeshBasicMaterial({ vertexColors: true, fog: true }));
     this.mesh.visible = false;
     this.mesh.frustumCulled = false;
+    const material = this.mesh.material;
+    material.onBeforeCompile = (shader) => SpotSeabed.haze(shader, false);
+    material.customProgramCacheKey = () => `breakline-spot-seabed${SpotSeabed.hazeKey(false)}`;
+    // The land haze follows the water's look (the haze-land follow-up).
+    onHazeLandChange(() => {
+      material.needsUpdate = true;
+    });
+  }
+
+  /**
+   * The horizon haze over the sand and the seabed in the Rich look (`hazeLand.ts`): the dry beach greys toward the
+   * horizon as the water beside it does. Per vertex (its 2–30 m grid); with the caustics' world position at hand
+   * (`world`), per pixel under the dev switch. Under water the haze is off, as the water's is.
+   */
+  private static haze(shader: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }, world: boolean): void {
+    if (!hazeLandOn(hazeLandLook())) return;
+    Object.assign(shader.uniforms, horizonHazeUniforms);
+    withHazeLand(shader, { route: hazeRoute('vertex', world), pixelToward: 'vSeabedWorld - cameraPosition' });
+  }
+
+  private static hazeKey(world: boolean): string {
+    return hazeLandProgramKey(hazeLandLook(), hazeRoute('vertex', world));
   }
 
   /**
@@ -66,8 +90,9 @@ ${causticLookupPars}${wet ? `${waterHeightPars}${wetSandPars}` : ''}`)
   float seabedLight = causticLightAt( vSeabedWorld.xz );
   diffuseColor.rgb *= mix( vec3( 1.0 ), vec3( seabedLight ), ${DIRECT_SHARE.toFixed(2)} * seabedReach );
 }${wet ? wetSandFragment : ''}`);
+      SpotSeabed.haze(shader, true);
     };
-    material.customProgramCacheKey = () => `breakline-spot-seabed-caustics${wet ? '-wet-sand' : ''}`;
+    material.customProgramCacheKey = () => `breakline-spot-seabed-caustics${wet ? '-wet-sand' : ''}${SpotSeabed.hazeKey(true)}`;
     material.needsUpdate = true;
   }
 

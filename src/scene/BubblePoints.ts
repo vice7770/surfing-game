@@ -1,4 +1,5 @@
 import { BufferAttribute, BufferGeometry, DynamicDrawUsage, Points, PointsMaterial } from 'three';
+import { hazeMaterial } from './water/hazeLand';
 
 /** What the renderer needs from a bubble cloud: packed (x, y, z) positions and how many are live. */
 export interface RenderableBubbles {
@@ -16,9 +17,10 @@ export class BubblePoints {
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3).setUsage(DynamicDrawUsage);
     geometry.setAttribute('position', this.positions);
     geometry.setDrawRange(0, 0);
-    this.mesh = new Points(geometry, new PointsMaterial({
+    // In the Rich look the horizon haze reaches the bubbles that show above the water (`hazeLand.ts`).
+    this.mesh = new Points(geometry, hazeMaterial(new PointsMaterial({
       color: '#f2fbff', size: 0.07, sizeAttenuation: true, transparent: true, opacity: 0.7, depthWrite: false,
-    }));
+    })));
     this.mesh.frustumCulled = false;
   }
 

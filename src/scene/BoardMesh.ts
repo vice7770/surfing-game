@@ -6,6 +6,7 @@ import { THRUSTER } from '../physics/finForces';
 import type { BoardShape } from '../physics/boardShape';
 import { BOARD_DESIGNS, designPixels, waxPixels, type BoardDesign } from './board/boardDesigns';
 import { finOutline } from './board/finGeometry';
+import { hazeObject } from './water/hazeLand';
 
 const ROWS = 48;
 const COLUMNS = 8;
@@ -128,6 +129,8 @@ export function createBoardMesh(shape: BoardShape, design: BoardDesign = BOARD_D
   for (const part of [hull, pad, fins]) part.position.set(-x, -y, -z);
   const group = new Group();
   group.add(hull, pad, fins);
+  // In the Rich look the board greys toward the horizon with distance (`hazeLand.ts`), as the water it rides.
+  hazeObject(group);
   return group;
 }
 

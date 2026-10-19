@@ -6,6 +6,8 @@ import { waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterChopMomentPars, waterChopNormal } from './waterChop';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
+import { SHEET_HAZE_ROUTE, hazeLandOn, hazeLandProgramKey, hazeRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
+import { horizonHazeUniforms } from './water/horizonHaze';
 import { CLASSIC_FOAM, WATER_IOR, waterBodyFragment } from './waterOptics';
 import { waterFragmentPars, waterVertexPars } from './WaterSurface';
 import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, SWEPT_SHEET_BODY } from './barrel/SweptBarrelMesh';
@@ -587,9 +589,17 @@ export class SpillingCurlMesh {
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>')
         // The sun's glitter about the curl's own normal, from the screen-space term alone (web-ocean plan, item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
+      // The horizon haze over the curl, as over the water it rides on (the haze-land follow-up).
+      if (hazeLandOn(this.look)) {
+        Object.assign(shader.uniforms, horizonHazeUniforms);
+        withHazeLand(shader, { route: hazeRoute(SHEET_HAZE_ROUTE, true), pixelToward: 'vWaterWorld - cameraPosition' });
+      }
     };
-    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}`;
+    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}${hazeLandProgramKey(this.look, hazeRoute(SHEET_HAZE_ROUTE, true))}`;
     onGlitterChange(() => {
+      if (this.look === 'rich') material.needsUpdate = true;
+    });
+    onHazeLandChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });
     this.mesh = new Mesh(geometry, material);

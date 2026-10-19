@@ -193,17 +193,14 @@ export function applyHorizonHaze(uniforms: typeof horizonHazeUniforms, sky: Hori
   uniforms.waterSkyGain.value = ring ? mirrorGain(gain) : 1;
 }
 
-/**
- * Vertex GLSL: the haze toward a world point, as `vWaterHaze` (rgb the horizon's colour that way, a its share).
- * Per vertex: the share and the colour change slowly across the water's triangles (its 1–40 m grid), and a varying
- * spares every pixel the ring's lookup. Needs `cameraPosition`.
- */
-export const waterHazeVertexPars = /* glsl */ `
-uniform vec3 waterHazeRing[ ${HAZE_RING_SIZE} ];
+/** GLSL: the haze's uniforms (`horizonHazeUniforms`). */
+export const waterHazeUniformPars = /* glsl */ `uniform vec3 waterHazeRing[ ${HAZE_RING_SIZE} ];
 uniform vec2 waterHazeTurn;
 uniform float waterHazeExtinction;
-varying vec4 vWaterHaze;
-vec3 waterHazeColor( vec2 toward ) {
+`;
+
+/** GLSL: the horizon's colour toward a world direction (x, z), from the ring (`ringColorAt`'s twin). */
+export const waterHazeColorPars = /* glsl */ `vec3 waterHazeColor( vec2 toward ) {
   // Into the photo's frame (the inverse of its turn), then its longitude as three's equirect u.
   vec2 p = vec2( toward.x * waterHazeTurn.x - toward.y * waterHazeTurn.y, toward.x * waterHazeTurn.y + toward.y * waterHazeTurn.x );
   float bin = ( atan( p.y, p.x ) * 0.15915494 + 0.5 ) * ${HAZE_RING_SIZE.toFixed(1)} - 0.5;
@@ -212,7 +209,16 @@ vec3 waterHazeColor( vec2 toward ) {
   int b = int( mod( first + 1.0, ${HAZE_RING_SIZE.toFixed(1)} ) );
   return mix( waterHazeRing[ a ], waterHazeRing[ b ], bin - first );
 }
-// The haze toward a world point; \`horizon\` (0–1) carries the far ocean's rim the rest of the way to the horizon.
+`;
+
+/**
+ * Vertex GLSL: the haze toward a world point, as `vWaterHaze` (rgb the horizon's colour that way, a its share).
+ * Per vertex: the share and the colour change slowly across the water's triangles (its 1–40 m grid), and a varying
+ * spares every pixel the ring's lookup. Needs `cameraPosition`.
+ */
+export const waterHazeVertexPars = /* glsl */ `
+${waterHazeUniformPars}varying vec4 vWaterHaze;
+${waterHazeColorPars}// The haze toward a world point; \`horizon\` (0–1) carries the far ocean's rim the rest of the way to the horizon.
 vec4 waterHazeAt( vec3 world, float horizon ) {
   if ( waterHazeExtinction <= 0.0 ) return vec4( 0.0 );
   vec3 toward = world - cameraPosition;

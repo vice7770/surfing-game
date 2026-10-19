@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, impactTime } from '../wave/SpillingCurl';
 import { CURL_POINTS, CURL_VERTICES, SpillingCurlMesh, buildCurlRibbon, createCurlRibbon, curlPixelScale, type CurlRibbon } from './SpillingCurlMesh';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
+import { SHEET_HAZE_ROUTE } from './water/hazeLand';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -246,7 +247,8 @@ describe('the spilling lip\'s mesh', () => {
       expect(vertex).toContain('transformed += normal * ( 0.5 * curlLod.x * max( 0.0, 2.0 * curlPixel - curlSheet ) );');
       expect(vertex).toContain('vCurlFar = curlPixel > 0.0 ? 1.0 - smoothstep( 2.0, 5.0, curlLod.y / curlPixel ) : 0.0;');
       expect(fragment).toContain('smoothstep( mix( 0.82, 0.4, vCurlFar ), 1.0, vCurlFlow.y )');
-      expect(curl.mesh.material.customProgramCacheKey()).toBe(`breakline-spilling-curl-${look}`);
+      // The Rich curl takes the horizon haze (the haze-land follow-up); Classic is as it was.
+      expect(curl.mesh.material.customProgramCacheKey()).toBe(`breakline-spilling-curl-${look}${look === 'rich' ? `-haze-land-${SHEET_HAZE_ROUTE}` : ''}`);
     }
     curl.update(slices([0.3, 0.4]), 2, face);
     expect(curl.mesh.visible).toBe(true);

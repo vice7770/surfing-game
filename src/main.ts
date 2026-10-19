@@ -51,6 +51,7 @@ import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { Environment } from './scene/Environment';
 import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
 import { applyHorizonHaze, horizonHazeUniforms } from './scene/water/horizonHaze';
+import { setHazeLandLook } from './scene/water/hazeLand';
 import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
 import { GlowPass } from './scene/GlowPass';
@@ -1058,6 +1059,8 @@ class SurfGame {
     this.physicalMode.spray.setLook(look);
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
+    // The sand, bubbles and riders take the horizon haze with the Rich water (hazeLand.ts).
+    setHazeLandLook(look);
     this.drawnLook = look;
     this.syncGlow();
   }

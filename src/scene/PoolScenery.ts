@@ -1,4 +1,5 @@
 import { BoxGeometry, Color, Group, Mesh, MeshStandardMaterial, PlaneGeometry } from 'three';
+import { hazeMaterial } from './water/hazeLand';
 
 /** The pool's outline in the world, m: its side walls at x = xMin and xMax, the machine's wall at zBack, and the deck's edge at zFront. */
 export interface PoolBounds {
@@ -38,6 +39,8 @@ export class PoolScenery {
   constructor() {
     this.group.visible = false;
     this.group.name = 'pool-scenery';
+    // The deck, hall and ground (out to 1.5 km) grey toward the horizon in the Rich look, as the water does (`hazeLand.ts`).
+    for (const material of [this.concrete, this.wall, this.ground, this.hall, this.louvre]) hazeMaterial(material);
   }
 
   /** Build the walls, deck, ground and hall around `bounds`, and show them. */

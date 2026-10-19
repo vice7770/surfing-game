@@ -3,6 +3,7 @@ import type { BodyPart, DetachedRiderPose } from '../../physics/DetachedSurfer';
 import { RIDER_PARTS } from '../../physics/riderPosture';
 import type { RiderVisualState } from '../rig/riderVisualState';
 import { Surfer } from '../Surfer';
+import { hazeObject } from '../water/hazeLand';
 import type { OutfitId } from './outfits';
 import { LOD_DISTANCE, SkinnedSurfer } from './SkinnedSurfer';
 import type { OutfitColors } from './surferMaterial';
@@ -32,6 +33,8 @@ export class SurferView {
 
   constructor() {
     this.fallback.setBoardVisible(false);
+    // The rider greys toward the horizon with distance in the Rich look, as the water under it (`hazeLand.ts`).
+    hazeObject(this.fallback.group);
     this.group.add(this.fallback.group);
   }
 
@@ -48,6 +51,7 @@ export class SurferView {
         // A later choice is on its way: this one arrived too late to be drawn.
         if (request !== this.requests) return;
         surfer.lodDistance = this.detail.lodDistance;
+        hazeObject(surfer.group);
         if (this.outfit) surfer.setOutfit(this.outfit.id, this.outfit.colors);
         if (this.skinnedSurfer) this.group.remove(this.skinnedSurfer.group);
         this.skinnedSurfer = surfer;

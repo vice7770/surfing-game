@@ -1,5 +1,6 @@
 import { BufferAttribute, BufferGeometry, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { LEASH } from '../../physics/Leash';
+import { hazeMaterial } from '../water/hazeLand';
 
 /** Samples along the cord, the vertices round it, and its radius, m (a 7 mm urethane cord). */
 const SAMPLES = 13;
@@ -43,7 +44,7 @@ export class LeashCord {
       }
     }
     geometry.setIndex(index);
-    this.object = new Mesh(geometry, new MeshStandardMaterial({ color: 0x1b1d20, roughness: 0.45, metalness: 0 }));
+    this.object = new Mesh(geometry, hazeMaterial(new MeshStandardMaterial({ color: 0x1b1d20, roughness: 0.45, metalness: 0 })));
     this.object.name = 'leash';
     this.object.frustumCulled = false;
   }
