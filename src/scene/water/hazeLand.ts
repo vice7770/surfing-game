@@ -47,10 +47,25 @@ export function hazeRoute(preferred: HazeRoute, either: boolean): HazeRoute {
   return either && hazeLandMode.route ? hazeLandMode.route : preferred;
 }
 
-/** The lip sheet's route (`LipSheetMesh`'s Rich program, which hands its fragments `vLipWorld`). */
-export const LIP_HAZE_ROUTE: HazeRoute = 'vertex';
-/** The spilling curl's and the swept barrel's route (the water's shading, which hands its fragments `vWaterWorld`). */
-export const SHEET_HAZE_ROUTE: HazeRoute = 'vertex';
+/**
+ * The lip sheet's route: per pixel, from the `vLipWorld` its Rich program already hands its fragments. As the foam
+ * work found for the tank, a new varying in a big Rich program costs more than the ring's lookup in each pixel.
+ */
+export const LIP_HAZE_ROUTE: HazeRoute = 'pixel';
+/** The spilling curl's and the swept barrel's route: per pixel, from the water's own `vWaterWorld` (as the lip's). */
+export const SHEET_HAZE_ROUTE: HazeRoute = 'pixel';
+/**
+ * The seabed's route: per pixel, from its `vSeabedWorld`, and none below `SEABED_HAZE_DEPTH`. The Rich tank discards
+ * pixels (its patch, the barrel's seam), so the GPU shades the seabed under it everywhere; per vertex, the haze's varying
+ * was paid in every one of those hidden pixels.
+ */
+export const SEABED_HAZE_ROUTE: HazeRoute = 'pixel';
+/**
+ * Below this height, m, the seabed is always under water, whose own haze covers it: no haze worked out there. The
+ * deepest troughs and the lowest tides (±1.2 m) stay well above it; were sand ever bared below it, it would lie at the
+ * break, where the haze is a few per cent.
+ */
+export const SEABED_HAZE_DEPTH = 5;
 
 /** The program cache key's part: none without the haze, else its route. */
 export function hazeLandProgramKey(look: WaterLook, route: HazeRoute): string {
@@ -105,6 +120,8 @@ export const hazeLandPars = /* glsl */ `${waterHazeUniformPars}${waterHazeColorP
 
 /** GLSL: from the eye to the vertex, world axes, after three's `<project_vertex>` (skinning and instancing in). */
 export const MV_TOWARD = '( vec4( mvPosition.xyz, 0.0 ) * viewMatrix ).xyz';
+/** GLSL: from the eye to the pixel, world axes, in a standard or physical material's fragment (its `vViewPosition`). */
+export const VIEW_TOWARD = '( vec4( -vViewPosition, 0.0 ) * viewMatrix ).xyz';
 const TONE_MAPPING = '#include <tonemapping_fragment>';
 const PROJECT = '#include <project_vertex>';
 const COMMON = '#include <common>';
@@ -118,6 +135,8 @@ export interface HazeSite {
   vertexToward?: string;
   /** Pixel route: GLSL from the eye to the pixel, world axes (a world position the fragment has, less `cameraPosition`). */
   pixelToward?: string;
+  /** Pixel route: GLSL, true where the haze is worked out (everywhere by default). */
+  pixelWhere?: string;
   /** The line after which the colour is final but for its encoding (three's `<tonemapping_fragment>` by default). */
   outputAnchor?: string;
 }
@@ -152,10 +171,11 @@ export function withHazeLand(shader: { vertexShader: string; fragmentShader: str
   }
   if (!site.pixelToward) throw new Error('The land haze per pixel needs the pixel\'s way from the eye');
   let fragment = declare(shader.fragmentShader, hazeLandPars, 'fragment');
+  const mix = `vec4 hazeLand = hazeLandToward( ${site.pixelToward} );
+  gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );`;
   fragment = once(fragment, output, `${output}
-{
-  vec4 hazeLand = hazeLandToward( ${site.pixelToward} );
-  gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeLand.rgb, hazeLand.a );
+${site.pixelWhere ? `if ( ${site.pixelWhere} ) {` : '{'}
+  ${mix}
 }`, 'fragment');
   shader.fragmentShader = fragment;
 }
@@ -164,7 +184,7 @@ export function withHazeLand(shader: { vertexShader: string; fragmentShader: str
 const hazed = new WeakSet<Material>();
 
 /**
- * Haze one of three's own materials (standard, physical, basic, points) per vertex in the Rich look, following the
+ * Haze one of three's own materials (standard, physical, basic, points) in the Rich look, following the
  * scene's look (`setHazeLandLook`) and the dev switch: its own `onBeforeCompile` runs first, its cache key gains the
  * haze's part. Call it after the material's own `onBeforeCompile` is set.
  */
@@ -175,14 +195,18 @@ export function hazeMaterial<T extends Material>(material: T): T {
   // Three's default key is the source of `onBeforeCompile`, which is about to become this wrapper's: keep the original's.
   const own = material.customProgramCacheKey === Material.prototype.customProgramCacheKey ? before.toString() : undefined;
   const ownKey = material.customProgramCacheKey;
+  // Standard and physical materials hand their fragments the view position: per pixel from it (no new varying, and
+  // right over the Wave Pool's few big ground planes); the rest (points, basic) per vertex.
+  const lit = (material as Material & { isMeshStandardMaterial?: boolean }).isMeshStandardMaterial === true;
+  const route = () => hazeRoute(lit ? 'pixel' : 'vertex', lit);
   material.onBeforeCompile = function hazedCompile(this: Material, shader: WebGLProgramParametersWithUniforms, renderer: WebGLRenderer) {
     before.call(this, shader, renderer);
     if (!hazeLandOn(sceneLook)) return;
     Object.assign(shader.uniforms, horizonHazeUniforms);
-    withHazeLand(shader, { route: 'vertex' });
+    withHazeLand(shader, { route: route(), pixelToward: VIEW_TOWARD });
   };
   material.customProgramCacheKey = function hazedKey(this: Material) {
-    return `${own ?? ownKey.call(this)}${hazeLandProgramKey(sceneLook, 'vertex')}`;
+    return `${own ?? ownKey.call(this)}${hazeLandProgramKey(sceneLook, route())}`;
   };
   // Held weakly: a body swapped for another is let go without being disposed.
   const held = new WeakRef(material);

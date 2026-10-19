@@ -643,8 +643,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   const viewOf = (name: string | View) => typeof name === 'string'
     ? shots.find((candidate) => candidate.name === name)
     : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
+  /** Back to the sheet's render size (1280 × 720, pixel ratio 1): a resize of the page sets the canvas to the window's. */
+  const fit = () => {
+    if (hooks.canvas.width !== RENDER.width || hooks.canvas.height !== RENDER.height) hooks.resize(RENDER.width, RENDER.height);
+  };
   /** Draw the camera's frame into `context` at (x, y), `width` × `height`, labelled. */
   const drawFrame = (context: CanvasRenderingContext2D, label: string, x: number, y: number, width: number, height: number) => {
+    fit();
     hooks.renderView(camera);
     context.drawImage(hooks.canvas, x, y, width, height);
     context.fillStyle = 'rgba(8, 24, 32, 0.6)';
@@ -715,11 +720,12 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
    * (EXT_disjoint_timer_query_webgl2) around each frame: unlike `waterSheetTime` it holds in a hidden page, whose
    * throttling stretches wall-clock times but not the GPU's work.
    */
-  const waterSheetGpuTime = async (name: string, look: WaterLook, frames = 60) => {
-    const shot = shots.find((candidate) => candidate.name === name);
+  const waterSheetGpuTime = async (name: string | View, look: WaterLook, frames = 60) => {
+    const shot = viewOf(name);
     const gl = hooks.canvas.getContext('webgl2');
     const timer = gl?.getExtension('EXT_disjoint_timer_query_webgl2') as { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number } | null;
     if (!shot || !gl || !timer) return undefined;
+    fit();
     hooks.setWaterLook(look);
     camera.position.copy(shot.eye);
     camera.lookAt(shot.target);
