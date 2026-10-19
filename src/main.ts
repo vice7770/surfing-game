@@ -189,6 +189,8 @@ class SurfGame {
    */
   private readonly photoBackground = new PhotoBackground();
   private skyFromPhoto = true;
+  /** Under the glow, a plain colour behind everything (before the photo loads) as its preimage. */
+  private readonly gradedBackdrop = new Color();
   private glowWanted = false;
   private drawnLook?: WaterLook;
   private readonly skyColor = new Color('#b8e3e5');
@@ -1033,6 +1035,12 @@ class SurfGame {
         this.sunDisc.setLight(this.photoSky.sunColor, this.photoSky.sunIntensity, this.glow.settings.sunRadiance);
         this.sunDisc.place(view, this.photoSky.sunDirection);
       }
+      // A plain colour behind everything (the painted sky's, before the photo loads) shows as on the canvas.
+      if ((background as Color | null)?.isColor && background !== this.underwaterColor) {
+        const { r, g, b } = background as Color;
+        const { exposure, lookPower, lookSaturation } = this.glow.settings;
+        this.scene.background = this.gradedBackdrop.setRGB(...agxPreimage([r, g, b], exposure, lookPower, lookSaturation));
+      }
       this.glow.render(this.renderer, this.scene, view);
     } else {
       this.renderer.render(this.scene, view);
@@ -1065,8 +1073,9 @@ class SurfGame {
       this.glow = new GlowPass();
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
-      // The photo, already as the canvas shows it, as the light the grade turns back into it.
+      // The photo and the painted sky, which are already as the canvas shows them, as the light the grade turns back into them.
       this.photoBackground.grade(this.glow.settings);
+      this.environment.gradeSky(this.glow.settings);
       const { exposure, lookPower, lookSaturation } = this.glow.settings;
       below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
     } else {
@@ -1076,6 +1085,7 @@ class SurfGame {
       this.sunDisc?.dispose();
       this.sunDisc = undefined;
       this.photoBackground.grade(undefined);
+      this.environment.gradeSky(undefined);
     }
     this.underwaterFog.color.copy(below);
     this.underwaterColor.copy(below);

@@ -1,5 +1,6 @@
 import { BackSide, Data3DTexture, Euler, Matrix3, Matrix4, NoBlending, PerspectiveCamera, Texture, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import { Environment } from './Environment';
 import { PhotoBackground } from './PhotoBackground';
 import { AGX_DECODE, GLOW, PREIMAGE_TABLE_SIZE } from './glowMath';
 
@@ -75,5 +76,21 @@ describe('the sky photo, drawn from the photo', () => {
     sky.mesh.onBeforeRender(undefined as never, undefined as never, camera, undefined as never, undefined as never, undefined as never);
     expect(new Vector3().setFromMatrixPosition(sky.mesh.matrixWorld).toArray()).toEqual([3, 2, -40]);
     sky.dispose();
+  });
+});
+
+describe('the painted sky under the glow', () => {
+  it('draws its preimage at alpha 0 while graded, and itself again after', () => {
+    const environment = new Environment();
+    const sky = environment.group.children.find((child) => (child as { material?: { fragmentShader?: string } }).material?.fragmentShader?.includes('uHorizon')) as unknown as
+      { material: { defines: Record<string, unknown>; uniforms: Record<string, unknown>; fragmentShader: string } };
+    expect(sky.material.defines).not.toHaveProperty('GRADED');
+    environment.gradeSky(GLOW);
+    expect(sky.material.defines).toHaveProperty('GRADED');
+    expect(sky.material.uniforms).toHaveProperty('preimage');
+    expect(sky.material.fragmentShader).toContain('gl_FragColor = vec4(agxPreimageOf(color), 0.0);');
+    environment.gradeSky(undefined);
+    expect(sky.material.defines).not.toHaveProperty('GRADED');
+    expect(sky.material.uniforms).not.toHaveProperty('preimage');
   });
 });

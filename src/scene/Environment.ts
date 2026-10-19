@@ -6,7 +6,9 @@ import {
   Color,
   ShaderMaterial,
   SphereGeometry,
+  type Data3DTexture,
 } from 'three';
+import { PREIMAGE_GLSL, preimageUniforms, type GradeLook } from './PhotoBackground';
 
 /** Distant scenery only: the painted sky and the sun. */
 export class Environment {
@@ -34,10 +36,19 @@ export class Environment {
         varying vec3 vDirection;
         uniform vec3 uHorizon;
         uniform vec3 uZenith;
+        #ifdef GRADED
+        ${PREIMAGE_GLSL}
+        #endif
         void main() {
           float altitude = clamp(vDirection.y * 1.7 + 0.12, 0.0, 1.0);
           vec3 color = mix(uHorizon, uZenith, smoothstep(0.0, 1.0, altitude));
+          #ifdef GRADED
+          // Under the glow: the light the grade turns into the colour the canvas shows (the colour is written as
+          // sRGB there), at alpha 0, so the bloom leaves it out.
+          gl_FragColor = vec4(agxPreimageOf(color), 0.0);
+          #else
           gl_FragColor = vec4(color, 1.0);
+          #endif
         }
       `,
     });
@@ -60,6 +71,24 @@ export class Environment {
   }
 
   get sunPosition() { return this.sun.position; }
+
+  /**
+   * Draw the painted sky as the glow and colour grade's preimage of itself, with that look (it shows until the
+   * photographed sky loads; graded as it is, it would be graded twice), or as itself (undefined).
+   */
+  gradeSky(look: GradeLook | undefined): void {
+    const material = this.skyMaterial;
+    if (look) {
+      Object.assign(material.uniforms, preimageUniforms(look));
+      material.defines.GRADED = '';
+    } else {
+      (material.uniforms.preimage?.value as Data3DTexture | undefined)?.dispose();
+      delete material.uniforms.preimage;
+      delete material.uniforms.preimageDecode;
+      delete material.defines.GRADED;
+    }
+    material.needsUpdate = true;
+  }
 
   /** The painted sky and sun give way to a photographed sky (`PhotoSky`) once it has loaded. */
   showSky(visible: boolean): void {
