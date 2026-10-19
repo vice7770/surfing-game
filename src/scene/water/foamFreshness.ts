@@ -29,7 +29,7 @@
 import { DEV_TOOLS, devParam } from '../../devTools';
 import { smoothstep } from '../../wave/Bathymetry';
 import { FOAM_CELL, FOAM_EDGE, FOAM_FLOW_PERIOD, FOAM_LEVELS, FOAM_THRESHOLDS, FOAM_TILE, sampleFoamTile } from '../foamPattern';
-import { laceStretch, laceWarp, waterLaceWarpGlsl } from './foamLook';
+import { LACE_SCALE, laceStretch, laceWarp, waterLaceWarpGlsl } from './foamLook';
 
 /** Youth from the plume's void fraction: from first bubbles to well aerated (the churn's own, `FRESH_AIR`, is 0.02–0.15). */
 export const YOUTH_AIR = [0.004, 0.05] as const;
@@ -124,7 +124,11 @@ export function freshLace(foam: number, youth: number): [number, number, number]
 export function freshFoamCover(x: number, z: number, flowX: number, flowZ: number, foam: number, youth: number, time: number, footprint = 0,
   streaks = true, lace = false): number {
   if (!(foam > 0.001)) return 0;
-  if (lace) [x, z] = laceWarp(x, z);
+  if (lace) {
+    [x, z] = laceWarp(x, z);
+    // The footprint in the lace's own, smaller cells.
+    footprint /= LACE_SCALE;
+  }
   const [base, gain, gather] = freshLace(foam, youth);
   const opacity = foamOpacity(foam, youth);
   const fade = smoothstep(0.25, 1, footprint / FOAM_CELL);
@@ -178,7 +182,7 @@ float waterFreshPhase( vec3 lace, vec2 edge, vec2 p ) {${lace ? '\n  p *= LACE_S
   return 1.0 - smoothstep( radius - edge.x, radius + edge.x, tile.r );
 }
 float waterFreshFoamCover( vec2 p, vec2 flow, float foam, float youth, float time, float footprint ) {
-  if ( foam <= 0.001 ) return 0.0;${lace ? '\n  p = waterLaceWarp( p );' : ''}
+  if ( foam <= 0.001 ) return 0.0;${lace ? '\n  p = waterLaceWarp( p );\n  footprint /= LACE_SCALE;' : ''}
   float aged = 1.0 - youth;
   float f = clamp( foam, 0.0, 1.0 );
   float spread = f * ( 1.0 - f ) * ( 1.0 + ${f(AGED_STREAKS.gather)} * aged );

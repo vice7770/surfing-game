@@ -56,6 +56,13 @@ const [K1, K2, K3, K4] = LACE_WARP.waves.map(waveVector);
  * drawn out along the flow. Applied to each flow-map phase's carried point, so the lace still moves with the current.
  */
 export const LACE_STRETCH = 1.35;
+/**
+ * And this much smaller than the network's own cell (`FOAM_CELL`, 0.7 m): 0.53 m across and 0.71 m along. From the
+ * ride's front view (3.5 m up, the rider 10 m off) the old cell spanned 40–60 pixels of a 1280-pixel frame and read as
+ * tiles (the playtest's v2); surf-zone lace holes run from a few centimetres to about half a metre. The lace's detail
+ * fades to its mean as much nearer (its footprint is counted in these cells).
+ */
+export const LACE_SCALE = 0.75;
 
 /** Where the lace's network is read for world (x, z), m (`LACE_WARP`): before the stretch and the flow map. */
 export function laceWarp(x: number, z: number): [number, number] {
@@ -76,14 +83,15 @@ export function churnFreshness(airFreshness: number, foam: number): number {
 const f = (value: number) => value.toFixed(4);
 const vec = (k: [number, number]) => `vec2( ${f(k[0])}, ${f(k[1])} )`;
 
-/** The lace's read point, in the tile's world metres, for a phase's carried point (x, z), m (`LACE_STRETCH`). */
+/** The lace's read point, in the tile's world metres, for a phase's carried point (x, z), m (`LACE_STRETCH`, `LACE_SCALE`). */
 export function laceStretch(x: number, z: number): [number, number] {
-  return [x, z / LACE_STRETCH];
+  return [x / LACE_SCALE, z / (LACE_SCALE * LACE_STRETCH)];
 }
 
 /** GLSL: `waterLaceWarp` and `LACE_STRETCH`, the twins of `laceWarp` and `laceStretch`. */
 export const waterLaceWarpGlsl = /* glsl */ `
-const vec2 LACE_STRETCH = vec2( 1.0, ${f(1 / LACE_STRETCH)} );
+const vec2 LACE_STRETCH = vec2( ${f(1 / LACE_SCALE)}, ${f(1 / (LACE_SCALE * LACE_STRETCH))} );
+const float LACE_SCALE = ${f(LACE_SCALE)};
 vec2 waterLaceWarp( vec2 p ) {
   vec2 bend = ${f(LACE_WARP.bend)} * sin( vec2( dot( p, ${vec(K3)} ), dot( p, ${vec(K4)} ) ) );
   return p + ${f(LACE_WARP.amplitude)} * sin( vec2( dot( p, ${vec(K1)} ), dot( p, ${vec(K2)} ) ) + bend );

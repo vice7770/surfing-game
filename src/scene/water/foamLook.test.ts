@@ -1,7 +1,7 @@
 import { ShaderLib, type Material, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import {
-  DENSE_CHURN, GLOW_DENSE, LACE_STRETCH, LACE_WARP, bandVolumeLight, churnFreshness, foamLookMode, foamLookProgramKey, laceStretch, laceWarp,
+  DENSE_CHURN, GLOW_DENSE, LACE_SCALE, LACE_STRETCH, LACE_WARP, bandVolumeLight, churnFreshness, foamLookMode, foamLookProgramKey, laceStretch, laceWarp,
   setFoamLook, thinGlow, waterChurnFreshGlsl, waterLaceWarpGlsl, withDenseChurn, withFoamLight,
 } from './foamLook';
 import { freshFoamCover, setFoamFresh, foamFreshMode, waterFoamFreshPars } from './foamFreshness';
@@ -48,6 +48,14 @@ describe('the foam look: the lace (item 3)', () => {
       expect(freshFoamCover(x, z, 0, 0, foam, 1, time, 0, false, true)).toBeCloseTo(foamCover(sx, sz, 0, 0, foam, time), 10);
     }
     expect(LACE_STRETCH).toBeGreaterThan(1);
+  });
+
+  it('draws the lace in smaller cells, fading to its mean as much nearer', () => {
+    expect(LACE_SCALE).toBeLessThan(1);
+    expect(LACE_SCALE * FOAM_CELL).toBeGreaterThan(0.4);
+    // The mean at a footprint of a lace cell, not of the network's own.
+    const footprint = LACE_SCALE * FOAM_CELL;
+    expect(freshFoamCover(3.1, 4.2, 0.5, 0, 0.4, 1, 1.2, footprint, false, true)).toBeCloseTo(0.4, 12);
   });
 
   it('gathers High\'s aged lace into its round patches, where it was one even network', () => {
