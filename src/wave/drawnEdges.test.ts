@@ -86,6 +86,13 @@ describe('the drawn whitewater\'s edges (the foam look, item 4a)', () => {
       toes.add(toe);
     }
     expect(toes.size).toBeGreaterThan(2);
+    // Where the noise cuts nothing, the toe's last row is left whole: no row is lost to the fray itself.
+    const thin = new Float64Array(g.nx * g.nz);
+    for (let iz = 20; iz <= 21; iz += 1) for (let ix = 0; ix < g.nx; ix += 1) thin[iz * g.nx + ix] = 1;
+    frayToes(thin, g.nx, Int32Array.of(20, 21), 2, g.xCenters, g.zCenters, 7.1);
+    let kept = 0;
+    for (let ix = 0; ix < g.nx; ix += 1) kept += thin[21 * g.nx + ix];
+    expect(kept / g.nx).toBeGreaterThan(0.4);
   });
 
   it('fades the band\'s drawn scale in from each end of a slot\'s run over 1 to bandFade columns', () => {

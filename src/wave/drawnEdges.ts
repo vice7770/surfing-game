@@ -117,11 +117,13 @@ export function frayToes(values: Float64Array, nx: number, rows: ArrayLike<numbe
       let end = k;
       while (end + 1 < count && rows[end + 1] === rows[end] + 1 && values[rows[end + 1] * nx + ix] > 0) end += 1;
       if (end > k) {
-        const toe = zCenters[rows[end]];
-        const depth = toe - zCenters[rows[k]];
-        const cut = noise * depth;
+        // The run's depth to its cells' edges: a toe cut by nothing leaves its last row whole.
+        const spacing = (zCenters[rows[end]] - zCenters[rows[k]]) / (end - k);
+        const toe = zCenters[rows[end]] + 0.5 * spacing;
+        const depth = toe - zCenters[rows[k]] + 0.5 * spacing;
+        const edge = toe - noise * depth;
         const fade = toeFade * depth;
-        for (let j = k; j <= end; j += 1) values[rows[j] * nx + ix] *= 1 - smoothstep(toe - cut - fade, toe - cut, zCenters[rows[j]]);
+        for (let j = k; j <= end; j += 1) values[rows[j] * nx + ix] *= 1 - smoothstep(edge - fade, edge, zCenters[rows[j]]);
       }
       k = end + 1;
     }
