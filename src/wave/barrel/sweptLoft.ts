@@ -274,6 +274,13 @@ export class SweptLoft {
   private cKind = new Uint8Array(2 * MAX_SLICES + 8);
   /** Three (world Z, metric Y) cap probes per bounded subdivision level. C rays are exactly [0,1]. */
   private readonly cCapPoints = new Float64Array(6 * C_CAP_REFINEMENT.levels);
+  /**
+   * One front's cap probes by x, while `cRefinements` plans it: neighbouring segments share their ends and each level
+   * re-probes its parent's, about a third of the probes (the M1 CPU study, 2026-10-19). Its slot in `capProbes`.
+   */
+  private readonly capProbed = new Map<number, number>();
+  /** Per probe: eligible (1) or not (0), then world Z and metric Y. */
+  private capProbes = new Float64Array(3 * 64);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 };
   private readonly query: ProfileQuery;
@@ -570,6 +577,8 @@ export class SweptLoft {
   }
 
   private cRefinements(records: Float32Array, f: Front, spacing: number, refine: boolean): number {
+    // Probes hold for this front's records only.
+    this.capProbed.clear();
     const n = this.cBaseSlices(records, f, spacing); let out = 0, previousTau = 0, previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
       this.atX(records, f, this.cBaseX[k], this.sample);
@@ -584,8 +593,38 @@ export class SweptLoft {
     return out;
   }
 
-  /** Actual fully formed pre-impact cap, before world-water/end projection. Artificial seams keep their old plan. */
+  /**
+   * Actual fully formed pre-impact cap, before world-water/end projection. Artificial seams keep their old plan. A cap
+   * probed before for this front (`capProbed`) is read back: the probe is a function of the front's records and x.
+   */
   private cCapAt(records: Float32Array, f: Front, x: number, offset: number): boolean {
+    // ±0 and NaN would share a key; they are probed afresh.
+    const keyed = x === x && x !== 0;
+    const slot = keyed ? this.capProbed.get(x) : undefined;
+    if (slot !== undefined) {
+      const probes = this.capProbes;
+      if (probes[slot] === 0) return false;
+      this.cCapPoints[offset] = probes[slot + 1];
+      this.cCapPoints[offset + 1] = probes[slot + 2];
+      return true;
+    }
+    const eligible = this.probeCap(records, f, x, offset);
+    if (keyed) {
+      const at = 3 * this.capProbed.size;
+      if (at + 3 > this.capProbes.length) {
+        const grown = new Float64Array(2 * this.capProbes.length);
+        grown.set(this.capProbes);
+        this.capProbes = grown;
+      }
+      this.capProbes[at] = eligible ? 1 : 0;
+      this.capProbes[at + 1] = eligible ? this.cCapPoints[offset] : 0;
+      this.capProbes[at + 2] = eligible ? this.cCapPoints[offset + 1] : 0;
+      this.capProbed.set(x, at);
+    }
+    return eligible;
+  }
+
+  private probeCap(records: Float32Array, f: Front, x: number, offset: number): boolean {
     const s = this.probe, sigma = this.atX(records, f, x, s);
     if (Math.min(sigma - f.first, f.last - sigma) < LOFT.endBlend) return false;
     const query = this.query;
