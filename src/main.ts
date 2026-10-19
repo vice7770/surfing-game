@@ -54,7 +54,7 @@ import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
 import { GlowPass } from './scene/GlowPass';
 import { SunDisc } from './scene/SunDisc';
-import { GlowSky } from './scene/GlowSky';
+import { PhotoBackground } from './scene/PhotoBackground';
 import { agxPreimage, agxPreimageRing, type Rgb } from './scene/glowMath';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { FftChop } from './scene/FftChop';
@@ -183,8 +183,12 @@ class SurfGame {
   private glow?: GlowPass;
   /** The sun's disc as HDR light, drawn while the glow runs. */
   private sunDisc?: SunDisc;
-  /** The sky photo as the grade turns back into itself, drawn in place of three's background while the glow runs. */
-  private glowSky?: GlowSky;
+  /**
+   * The sky photo, drawn from the photo in place of three's background, which would first turn it into a 235 MB cube
+   * map; under the glow, as the light the grade turns back into it. Dev (`setSkyFromPhoto(false)`): three's own, for A/Bs.
+   */
+  private readonly photoBackground = new PhotoBackground();
+  private skyFromPhoto = true;
   private glowWanted = false;
   private drawnLook?: WaterLook;
   private readonly skyColor = new Color('#b8e3e5');
@@ -260,6 +264,7 @@ class SurfGame {
 
     this.scene.background = new Color('#b8e3e5');
     this.scene.add(this.environment.group);
+    this.scene.add(this.photoBackground.mesh);
     this.scene.add(this.ambient);
     this.sunlight = new DirectionalLight('#ffe7bd', 1.2 + 0.6 * START_SUN.sunHeight);
     this.sunlight.position.copy(this.environment.sunPosition).normalize().multiplyScalar(45);
@@ -335,6 +340,12 @@ class SurfGame {
         this.syncGlow();
       },
       glow: () => this.glow,
+      /** Dev A/B: the sky photo drawn from the photo (true, the game's) or as three's background, through its cube map. */
+      setSkyFromPhoto: (on: boolean) => {
+        if (on && !this.skyFromPhoto) this.photoSky.background?.dispose(); // frees the cube three made; the photo uploads again
+        this.skyFromPhoto = on;
+        this.needsRender = true;
+      },
     };
   }
 
@@ -1007,26 +1018,26 @@ class SurfGame {
     const { board } = this.physicalMode;
     const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
     this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
+    // The sky photo through PhotoBackground, never three's background (and so never the cube map it would make).
+    const background = this.scene.background;
+    const photo = this.skyFromPhoto && (background as Texture | null)?.isTexture ? background as Texture : undefined;
+    if (photo) {
+      this.photoBackground.show(photo, this.scene.backgroundRotation, this.scene.backgroundIntensity);
+      this.scene.background = null;
+    } else {
+      this.photoBackground.hide();
+    }
     if (this.glow) {
       if (this.sunDisc) {
         this.sunDisc.sprite.visible = this.photoSky.ready && !this.isBelowSurface;
         this.sunDisc.setLight(this.photoSky.sunColor, this.photoSky.sunIntensity, this.glow.settings.sunRadiance);
         this.sunDisc.place(view, this.photoSky.sunDirection);
       }
-      // The sky photo, already tone-mapped, through GlowSky rather than three's background (so it is not graded twice).
-      const background = this.scene.background;
-      const photo = (background as Texture | null)?.isTexture ? background as Texture : undefined;
-      if (photo) {
-        this.glowSky?.show(photo, this.scene.backgroundRotation, this.scene.backgroundIntensity);
-        this.scene.background = null;
-      } else {
-        this.glowSky?.hide();
-      }
       this.glow.render(this.renderer, this.scene, view);
-      if (photo) this.scene.background = photo;
     } else {
       this.renderer.render(this.scene, view);
     }
+    this.scene.background = background;
   }
 
   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
@@ -1054,12 +1065,8 @@ class SurfGame {
       this.glow = new GlowPass();
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
-      this.glowSky = new GlowSky(this.glow.settings);
-      this.scene.add(this.glowSky.mesh);
-      // The cube map three made of the photo for its background is not drawn under the glow: free it (235 MB for a
-      // 4096 × 2048 photo). The photo itself uploads again on its next draw, from GlowSky; three makes the cube again
-      // if the glow stops.
-      this.photoSky.background?.dispose();
+      // The photo, already as the canvas shows it, as the light the grade turns back into it.
+      this.photoBackground.grade(this.glow.settings);
       const { exposure, lookPower, lookSaturation } = this.glow.settings;
       below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
     } else {
@@ -1068,9 +1075,7 @@ class SurfGame {
       if (this.sunDisc) this.scene.remove(this.sunDisc.sprite);
       this.sunDisc?.dispose();
       this.sunDisc = undefined;
-      if (this.glowSky) this.scene.remove(this.glowSky.mesh);
-      this.glowSky?.dispose();
-      this.glowSky = undefined;
+      this.photoBackground.grade(undefined);
     }
     this.underwaterFog.color.copy(below);
     this.underwaterColor.copy(below);

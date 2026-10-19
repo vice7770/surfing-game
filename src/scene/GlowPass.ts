@@ -13,7 +13,7 @@ import {
  * composite adds it back, grades the frame with AgX and writes the canvas,
  * dithered. Nothing is allocated until the first frame drawn with it, and
  * `dispose` frees it all, so with the glow off the game draws as it always has.
- * The sky photo comes in as `GlowSky` draws it: the light the grade turns back
+ * The sky photo comes in as `PhotoBackground` draws it: the light the grade turns back
  * into the photo, at alpha 0, which keeps it out of the bloom.
  *
  * Passes a frame: the scene, `levels` downsamples (the first the prefilter),
@@ -45,7 +45,7 @@ vec3 tap( vec2 offset ) {
   // A broken pixel (NaN or infinite, see the composite) must not flood the glow: it adds nothing.
   if ( any( isnan( c.rgb ) ) || any( isinf( c.rgb ) ) ) return vec3( 0.0 );
 #ifdef PREFILTER
-  // The sky photo writes alpha 0 (GlowSky): only what is drawn in front of it glows, as much as it covers.
+  // The sky photo writes alpha 0 (PhotoBackground): only what is drawn in front of it glows, as much as it covers.
   return clamp( c.rgb, 0.0, 6.0e4 ) * clamp( c.a, 0.0, 1.0 );
 #else
   return clamp( c.rgb, 0.0, 6.0e4 );
@@ -157,7 +157,7 @@ void main() {
   // The Rich water can leave a lone NaN pixel: the canvas drops it, a float target keeps it, so it takes its neighbour's colour.
   if ( broken( scene.rgb ) ) scene = texture2D( sceneMap, vUv + vec2( sceneTexel.x, 0.0 ) );
   if ( broken( scene.rgb ) ) scene = vec4( 0.0, 0.0, 0.0, 1.0 );
-  // Negative light is dropped, except the sky's (alpha 0, GlowSky): the preimage of a saturated yellow is negative in blue.
+  // Negative light is dropped, except the sky's (alpha 0, PhotoBackground): the preimage of a saturated yellow is negative in blue.
   vec3 hdr = scene.rgb - clamp( scene.a, 0.0, 1.0 ) * min( scene.rgb, 0.0 ) + bloomStrength * texture2D( bloomMap, vUv ).rgb;
   gl_FragColor = vec4( agxGrade( hdr ), 1.0 );
   #include <colorspace_fragment>

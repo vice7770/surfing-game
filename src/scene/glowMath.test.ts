@@ -73,7 +73,7 @@ function sampleTable(table: Float32Array, size: number, srgb: Rgb): Rgb {
 
 const bytes = (rgb: readonly number[]): Rgb => rgb.map((c) => c / 255) as unknown as Rgb;
 
-describe('the sky under the grade (GlowSky)', () => {
+describe('the sky under the grade (PhotoBackground)', () => {
   it('splits the preimage into its log encoding and the decode', () => {
     const display = hex('#c08060');
     const scene = agxDecode(agxEncodedPreimage(display));

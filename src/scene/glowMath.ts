@@ -264,7 +264,7 @@ export function glowMemory(width: number, height: number, samples: number = GLOW
  * The GPU memory the sky photo's background takes, bytes, as three 0.186 draws an equirect `scene.background`: the
  * photo itself (RGBA8 with its mips, a third more), and the cube map it is turned into, one face as tall as the
  * photo (RGBA8 with mips) with a depth renderbuffer for each of its six faces. Under the glow the sky is drawn from
- * the photo itself (`GlowSky`), and the cube is never made.
+ * the photo itself (`PhotoBackground`), and the cube is never made.
  */
 export function photoBackgroundMemory(width: number, height: number): { photo: number; cube: number; cubeDepth: number; total: number } {
   const photo = Math.round(width * height * 4 * (4 / 3));

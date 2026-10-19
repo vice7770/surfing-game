@@ -36,6 +36,7 @@ interface SheetHooks {
   renderView(camera: PerspectiveCamera): void;
   water: WaterSurface;
   setGlow(on: boolean): void;
+  setSkyFromPhoto(on: boolean): void;
 }
 
 const TIMES: readonly TimeOfDay[] = ['dawn', 'midday', 'sunset'];
@@ -394,6 +395,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   };
   /** The glow and colour grade on or off for the shots after (the web-ocean plan, item 6), on the same held sea. */
   const waterSheetGlow = (on: boolean) => hooks.setGlow(on);
+  /** The sky photo drawn from the photo (true, the game's) or as three's background, through its cube map: an A/B of the two. */
+  const waterSheetSkyFromPhoto = (on: boolean) => hooks.setSkyFromPhoto(on);
   /**
    * A shot's brightness as drawn: the mean relative luminance of its pixels (sRGB decoded), its 10th, 50th and 90th
    * percentiles and the share of pixels at 250 or more in every channel (blown out), for matching the grade's exposure.
@@ -670,7 +673,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     times.sort((a, b) => a - b);
     return times.length ? { median: +times[Math.floor(times.length / 2)].toFixed(3), p90: +times[Math.floor(times.length * 0.9)].toFixed(3), frames: times.length } : undefined;
   };
-  Object.assign(window, { waterSheetGpuTime, waterSheetGlow, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetGpuTime, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
