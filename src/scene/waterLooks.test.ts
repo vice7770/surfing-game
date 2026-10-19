@@ -10,7 +10,7 @@ import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
-import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
+import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER, plumeReach, plumeWhiteness } from './water/richWaterGlsl';
 import { mirrorsBarrelDither } from './barrel/barrelMaskGlsl';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 
@@ -191,12 +191,28 @@ describe('Classic water parity', () => {
     water.setLook('rich');
     const { fragment } = compiled(water.mesh.material);
     expect(fragment).toContain(`const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};`);
-    expect(fragment).toContain('float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );');
-    expect(fragment).toContain('float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;');
+    expect(fragment).toContain('float waterPlumeReach = max( 0.0, min( vWaterPlumeDepth, vWaterDepth ) );');
+    expect(fragment).toContain('float waterPlume = 1.0 - exp( min( 0.0, -PLUME_DENSITY * vWaterAir * waterPlumeReach ) );');
+    expect(fragment).toContain('float waterPlumePath = faceDirection > 0.0 ? 0.5 * waterPlumeReach / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;');
     expect(fragment).toContain('vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );');
     expect(fragment).toContain('diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );');
     // A fully aerated metre of plume reads near white.
     expect(1 - Math.exp(-PLUME_DENSITY * 0.2 * 1)).toBeGreaterThan(0.9);
+  });
+
+  it('keeps the plume within its range where MSAA shades a sliver triangle off its edge (the lone NaN pixel)', () => {
+    // Over a triangle every input is ≥ 0, and the clamps change nothing.
+    for (const [air, plume, depth] of [[0, 0, 0], [0.2, 1, 3], [0.05, 2, 0.4], [0.094, 1.57, 1.2]]) {
+      expect(plumeReach(plume, depth)).toBe(Math.min(plume, depth));
+      expect(plumeWhiteness(air, plumeReach(plume, depth))).toBe(1 - Math.exp(-PLUME_DENSITY * air * Math.min(plume, depth)));
+    }
+    // Off its edge, as seen from the Beach's sand at midday: the old path's e^47 made the body colour 1e20.
+    const [air, plume, depth] = [-0.6624, -28.86, -25.612];
+    const reach = plumeReach(plume, depth);
+    expect(reach).toBe(0);
+    expect(plumeWhiteness(air, reach)).toBe(0);
+    expect(plumeWhiteness(air, 1.5)).toBe(0);
+    expect(Math.exp(-2.45 * 0.5 * Math.min(plume, depth) / 0.75)).toBeGreaterThan(1e20);
   });
 
   it('lights Rich mist toward the sun and fades spray into the water, and switches back to the Classic spray', () => {

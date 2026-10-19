@@ -120,12 +120,17 @@ export const OPAQUE = 1e4;
 /**
  * Water a ray from a surface point at `origin` crosses before it leaves the
  * back of a crest, interpolating the surface crossing between samples.
+ * The ray starts on `heightAt`'s own surface under the origin: the drawn
+ * surface can sit a millimetre or so off the marched one (a mesh's triangles
+ * across the bilinear field, the Rich look's Catmull-Rom), and a level ray
+ * from just below it along a trough read as a thin crest (pale stripes).
  */
 export function crestThickness(heightAt: (x: number, z: number) => number, origin: Point3, direction: Point3): number {
+  const base = heightAt(origin.x, origin.z);
   let previous = 0;
   let previousGap = 0;
   for (const distance of CREST_SAMPLES) {
-    const gap = heightAt(origin.x + direction.x * distance, origin.z + direction.z * distance) - (origin.y + direction.y * distance);
+    const gap = heightAt(origin.x + direction.x * distance, origin.z + direction.z * distance) - (base + direction.y * distance);
     if (gap <= 0) return previousGap > 0 ? previous + ((distance - previous) * previousGap) / (previousGap - gap) : OPAQUE;
     previous = distance;
     previousGap = gap;
@@ -168,15 +173,24 @@ vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, fl
 }
 `;
 
-/** Mirrors `crestThickness`; needs `waterHeightAt( vec2 )` declared first. */
+/**
+ * Mirrors `crestThickness`; needs `waterHeightAt( vec2 )` declared first. The looks and the edge band change the one
+ * `float gap = … - p.y;` line, so the march and its base read the same surface.
+ */
 export const waterCrestPars = /* glsl */ `
+float waterCrestGap( vec3 p ) {
+  float gap = waterHeightAt( p.xz ) - p.y;
+  return gap;
+}
 float waterCrestThickness( vec3 origin, vec3 direction ) {
   const float samples[${CREST_SAMPLES.length}] = float[${CREST_SAMPLES.length}]( ${CREST_SAMPLES.map((d) => d.toFixed(2)).join(', ')} );
+  // Marched from the surface it marches, under the origin (see crestThickness).
+  origin.y += waterCrestGap( origin );
   float previous = 0.0;
   float previousGap = 0.0;
   for ( int i = 0; i < ${CREST_SAMPLES.length}; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
-    float gap = waterHeightAt( p.xz ) - p.y;
+    float gap = waterCrestGap( p );
     if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : ${OPAQUE.toFixed(1)};
     previous = samples[ i ];
     previousGap = gap;

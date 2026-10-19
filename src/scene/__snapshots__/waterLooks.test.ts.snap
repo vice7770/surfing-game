@@ -648,13 +648,19 @@ vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, fl
 }
 
 
+float waterCrestGap( vec3 p ) {
+  float gap = waterHeightAt( p.xz ) - p.y;
+  return gap;
+}
 float waterCrestThickness( vec3 origin, vec3 direction ) {
   const float samples[4] = float[4]( 0.25, 1.00, 2.50, 6.00 );
+  // Marched from the surface it marches, under the origin (see crestThickness).
+  origin.y += waterCrestGap( origin );
   float previous = 0.0;
   float previousGap = 0.0;
   for ( int i = 0; i < 4; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
-    float gap = waterHeightAt( p.xz ) - p.y;
+    float gap = waterCrestGap( p );
     if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : 10000.0;
     previous = samples[ i ];
     previousGap = gap;
@@ -1111,13 +1117,19 @@ vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, fl
 }
 
 
+float waterCrestGap( vec3 p ) {
+  float gap = waterHeightAt( p.xz ) - p.y;
+  return gap;
+}
 float waterCrestThickness( vec3 origin, vec3 direction ) {
   const float samples[4] = float[4]( 0.25, 1.00, 2.50, 6.00 );
+  // Marched from the surface it marches, under the origin (see crestThickness).
+  origin.y += waterCrestGap( origin );
   float previous = 0.0;
   float previousGap = 0.0;
   for ( int i = 0; i < 4; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
-    float gap = waterHeightAt( p.xz ) - p.y;
+    float gap = waterCrestGap( p );
     if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : 10000.0;
     previous = samples[ i ];
     previousGap = gap;
