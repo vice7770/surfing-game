@@ -116,26 +116,63 @@ export const WATER_BODY_GAIN = 3;
 export const CREST_SCATTER = 0.35;
 /** Thickness reported when no crest lies across the ray: it never enters water, or is still under water after the last sample. */
 export const OPAQUE = 1e4;
+/**
+ * How steep the water above the ray must stand, its rise over its thickness, for the sun to shine through it as a
+ * crest: none at the first, all from the second. Calm water marched toward a low sun finds "crests" a few millimetres
+ * proud of the ray over metres (slopes of a per cent or less); lit in full, they made pale regions with hard,
+ * grid-aligned edges where the first step toward the sun changed sign (the patch seam, playtest 2026-10-21).
+ */
+export const CREST_STEEPNESS = [0.01, 0.05] as const;
+
+/** What the march finds: the water crossed before the ray leaves the crest (OPAQUE for none) and its rise above the ray. */
+export interface CrestMarch {
+  thickness: number;
+  rise: number;
+}
 
 /**
  * Water a ray from a surface point at `origin` crosses before it leaves the
- * back of a crest, interpolating the surface crossing between samples.
+ * back of a crest, interpolating the surface crossing between samples, and the
+ * crest's height above the ray at the samples before it leaves.
  * The ray starts on `heightAt`'s own surface under the origin: the drawn
  * surface can sit a millimetre or so off the marched one (a mesh's triangles
  * across the bilinear field, the Rich look's Catmull-Rom), and a level ray
  * from just below it along a trough read as a thin crest (pale stripes).
  */
-export function crestThickness(heightAt: (x: number, z: number) => number, origin: Point3, direction: Point3): number {
+export function crestMarch(heightAt: (x: number, z: number) => number, origin: Point3, direction: Point3): CrestMarch {
   const base = heightAt(origin.x, origin.z);
   let previous = 0;
   let previousGap = 0;
+  let rise = 0;
   for (const distance of CREST_SAMPLES) {
     const gap = heightAt(origin.x + direction.x * distance, origin.z + direction.z * distance) - (base + direction.y * distance);
-    if (gap <= 0) return previousGap > 0 ? previous + ((distance - previous) * previousGap) / (previousGap - gap) : OPAQUE;
+    if (gap <= 0) return { thickness: previousGap > 0 ? previous + ((distance - previous) * previousGap) / (previousGap - gap) : OPAQUE, rise };
     previous = distance;
     previousGap = gap;
+    rise = Math.max(rise, gap);
   }
-  return OPAQUE;
+  return { thickness: OPAQUE, rise };
+}
+
+/** The march's thickness alone. */
+export function crestThickness(heightAt: (x: number, z: number) => number, origin: Point3, direction: Point3): number {
+  return crestMarch(heightAt, origin, direction).thickness;
+}
+
+/**
+ * The share of the crest light a march lets through, by the crest's steepness (`CREST_STEEPNESS`): it fades in from
+ * nothing where the first step leaves the water, so the light has no edge there.
+ */
+export function crestShare(march: CrestMarch): number {
+  if (march.thickness >= OPAQUE) return 0;
+  const t = Math.min(1, Math.max(0, (march.rise / march.thickness - CREST_STEEPNESS[0]) / (CREST_STEEPNESS[1] - CREST_STEEPNESS[0])));
+  return t * t * (3 - 2 * t);
+}
+
+/** CPU mirror of the crest light's march term for one channel: its share times e^(−c·thickness). */
+export function crestLight(heightAt: (x: number, z: number) => number, origin: Point3, direction: Point3, attenuation: number): number {
+  const march = crestMarch(heightAt, origin, direction);
+  return crestShare(march) * Math.exp(-attenuation * march.thickness);
 }
 
 const glsl = (value: number) => value.toFixed(6);
@@ -174,7 +211,7 @@ vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, fl
 `;
 
 /**
- * Mirrors `crestThickness`; needs `waterHeightAt( vec2 )` declared first. The looks and the edge band change the one
+ * Mirrors `crestMarch`; needs `waterHeightAt( vec2 )` declared first. The looks and the edge band change the one
  * `float gap = … - p.y;` line, so the march and its base read the same surface.
  */
 export const waterCrestPars = /* glsl */ `
@@ -182,18 +219,20 @@ float waterCrestGap( vec3 p ) {
   float gap = waterHeightAt( p.xz ) - p.y;
   return gap;
 }
-float waterCrestThickness( vec3 origin, vec3 direction ) {
+float waterCrestThickness( vec3 origin, vec3 direction, out float rise ) {
   const float samples[${CREST_SAMPLES.length}] = float[${CREST_SAMPLES.length}]( ${CREST_SAMPLES.map((d) => d.toFixed(2)).join(', ')} );
   // Marched from the surface it marches, under the origin (see crestThickness).
   origin.y += waterCrestGap( origin );
   float previous = 0.0;
   float previousGap = 0.0;
+  rise = 0.0;
   for ( int i = 0; i < ${CREST_SAMPLES.length}; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
     float gap = waterCrestGap( p );
     if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : ${OPAQUE.toFixed(1)};
     previous = samples[ i ];
     previousGap = gap;
+    rise = max( rise, gap );
   }
   return ${OPAQUE.toFixed(1)};
 }
@@ -225,15 +264,18 @@ export function waterBodyFragment(crestLight: boolean, caustics = false, foam = 
     waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );`) + sheet;
   // Sunlight crosses the crest from its sunlit back toward the face in view, so
   // march horizontally toward the sun; a height-field crest seldom lets the
-  // refracted view ray out through its back.
+  // refracted view ray out through its back. Only a crest steep enough lets it
+  // through (`crestShare`): calm water's millimetre "crests" stay dark.
   const crest = /* glsl */ `
     float waterBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
     vec2 waterSunward = waterSunDirection.xz;
     if ( waterBehind > 0.001 && dot( waterSunward, waterSunward ) > 1e-6 ) {
       vec2 waterToSun = normalize( waterSunward );
-      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ) );
+      float waterCrestRise;
+      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ), waterCrestRise );
       totalEmissiveRadiance += ${glsl(CREST_SCATTER)} * ( 1.0 - vWaterFoam ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
-        * waterSunRadiance * exp( -waterAttenuation * waterThickness );
+        * waterSunRadiance * exp( -waterAttenuation * waterThickness )
+        * smoothstep( ${glsl(CREST_STEEPNESS[0])}, ${glsl(CREST_STEEPNESS[1])}, waterCrestRise / waterThickness );
     }`;
   return /* glsl */ `
 #include <emissivemap_fragment>

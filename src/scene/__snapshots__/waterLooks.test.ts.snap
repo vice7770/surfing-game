@@ -652,18 +652,20 @@ float waterCrestGap( vec3 p ) {
   float gap = waterHeightAt( p.xz ) - p.y;
   return gap;
 }
-float waterCrestThickness( vec3 origin, vec3 direction ) {
+float waterCrestThickness( vec3 origin, vec3 direction, out float rise ) {
   const float samples[4] = float[4]( 0.25, 1.00, 2.50, 6.00 );
   // Marched from the surface it marches, under the origin (see crestThickness).
   origin.y += waterCrestGap( origin );
   float previous = 0.0;
   float previousGap = 0.0;
+  rise = 0.0;
   for ( int i = 0; i < 4; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
     float gap = waterCrestGap( p );
     if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : 10000.0;
     previous = samples[ i ];
     previousGap = gap;
+    rise = max( rise, gap );
   }
   return 10000.0;
 }
@@ -814,9 +816,11 @@ void main() {
     vec2 waterSunward = waterSunDirection.xz;
     if ( waterBehind > 0.001 && dot( waterSunward, waterSunward ) > 1e-6 ) {
       vec2 waterToSun = normalize( waterSunward );
-      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ) );
+      float waterCrestRise;
+      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ), waterCrestRise );
       totalEmissiveRadiance += 0.350000 * ( 1.0 - vWaterFoam ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
-        * waterSunRadiance * exp( -waterAttenuation * waterThickness );
+        * waterSunRadiance * exp( -waterAttenuation * waterThickness )
+        * smoothstep( 0.010000, 0.050000, waterCrestRise / waterThickness );
     }
   }
   // Foam is a matte network over the water (plan §2.4) that drifts with the current.
@@ -1121,18 +1125,20 @@ float waterCrestGap( vec3 p ) {
   float gap = waterHeightAt( p.xz ) - p.y;
   return gap;
 }
-float waterCrestThickness( vec3 origin, vec3 direction ) {
+float waterCrestThickness( vec3 origin, vec3 direction, out float rise ) {
   const float samples[4] = float[4]( 0.25, 1.00, 2.50, 6.00 );
   // Marched from the surface it marches, under the origin (see crestThickness).
   origin.y += waterCrestGap( origin );
   float previous = 0.0;
   float previousGap = 0.0;
+  rise = 0.0;
   for ( int i = 0; i < 4; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
     float gap = waterCrestGap( p );
     if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : 10000.0;
     previous = samples[ i ];
     previousGap = gap;
+    rise = max( rise, gap );
   }
   return 10000.0;
 }
@@ -1389,9 +1395,11 @@ waterRollerAt( vWaterWorld.xz, waterTime );
     vec2 waterSunward = waterSunDirection.xz;
     if ( waterBehind > 0.001 && dot( waterSunward, waterSunward ) > 1e-6 ) {
       vec2 waterToSun = normalize( waterSunward );
-      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ) );
+      float waterCrestRise;
+      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ), waterCrestRise );
       totalEmissiveRadiance += 0.350000 * ( 1.0 - max( vWaterFoam, waterRollerCover ) ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
-        * waterSunRadiance * exp( -waterAttenuation * waterThickness );
+        * waterSunRadiance * exp( -waterAttenuation * waterThickness )
+        * smoothstep( 0.010000, 0.050000, waterCrestRise / waterThickness );
     }
   }
   // Foam is a matte network over the water (plan §2.4) that drifts with the current.

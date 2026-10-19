@@ -2,7 +2,7 @@ import { Color, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import {
   OPAQUE, PARTICLE_ALBEDO, SPOT_OPTICS, WATER_BODY_GAIN, WATER_F0, WATER_IOR, applyOptics, applySun, beamAttenuation, createOpticsUniforms,
-  crestThickness, deepReflectance, diffuseAttenuation, refractedCosine, schlickFresnel, shallowReflectance, transmittance,
+  CREST_STEEPNESS, crestLight, crestMarch, crestShare, crestThickness, deepReflectance, diffuseAttenuation, refractedCosine, schlickFresnel, shallowReflectance, transmittance,
   waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
@@ -127,6 +127,73 @@ describe('water optics', () => {
     const z = -0.8 * Math.sqrt(Math.log(1.5 / 1.3));
     const onSurface = crestThickness(ridge, { x: 0, y: 1.3, z }, { x: 0, y: 0, z: 1 });
     expect(crestThickness(ridge, { x: 0, y: 1.3 - 0.001, z }, { x: 0, y: 0, z: 1 })).toBe(onSurface);
+  });
+
+  // The patch seam (playtest 2026-10-21): calm water at sunset, looking toward the sun, showed hard-edged pale regions
+  // with L-shaped corners. The march found "crests" millimetres above the ray and lit them in full, and cut the light
+  // off where the bilinear field's first step toward the sun changed sign: along its node lines.
+  it('lights no crest in calm water, and has no edge where the first step toward the sun changes sign', () => {
+    const towardSun = { x: 1, y: 0, z: 0 };
+    const attenuation = beamAttenuation(SPOT_OPTICS.pool)[1];
+    // A 3 mm swell 8 m long: every rise toward the sun is a few millimetres.
+    const calm = (x: number) => 0.003 * Math.sin((2 * Math.PI * x) / 8);
+    const light = (x: number) => crestLight(calm, { x, y: calm(x), z: 0 }, towardSun, attenuation);
+    let jump = 0;
+    let brightest = 0;
+    for (let x = 0; x < 16; x += 0.01) {
+      brightest = Math.max(brightest, light(x));
+      jump = Math.max(jump, Math.abs(light(x + 0.01) - light(x)));
+    }
+    // Before, its tops lit at e^(−c·t) ≈ 0.9 and went dark across one centimetre.
+    const before = (x: number) => {
+      const thickness = crestThickness(calm, { x, y: calm(x), z: 0 }, towardSun);
+      return thickness < OPAQUE ? Math.exp(-attenuation * thickness) : 0;
+    };
+    let beforeJump = 0;
+    for (let x = 0; x < 16; x += 0.01) beforeJump = Math.max(beforeJump, Math.abs(before(x + 0.01) - before(x)));
+    expect(beforeJump).toBeGreaterThan(0.8);
+    expect(brightest).toBeLessThan(1e-6);
+    expect(jump).toBeLessThan(1e-6);
+  });
+
+  it('fades the crest light in with the crest, so it never steps where the first sample leaves the water', () => {
+    const towardSun = { x: 1, y: 0, z: 0 };
+    const attenuation = beamAttenuation(SPOT_OPTICS.pool)[1];
+    // A crest growing from nothing to 20 cm a metre ahead: the light rises with it, without a step.
+    const crestOf = (height: number) => (x: number) => height * Math.exp(-(((x - 1) / 0.5) ** 2)) - 0.01 * x;
+    let previous = 0;
+    for (let mm = 0; mm <= 200; mm += 1) {
+      const crest = crestOf(mm / 1000);
+      const lit = crestLight(crest, { x: 0, y: crest(0), z: 0 }, towardSun, attenuation);
+      expect(Math.abs(lit - previous)).toBeLessThan(0.05);
+      previous = lit;
+    }
+    // Grown to 20 cm, it lights in full: e^(−c·t), as before.
+    const grown = crestOf(0.2);
+    expect(previous).toBeCloseTo(Math.exp(-attenuation * crestThickness(grown, { x: 0, y: grown(0), z: 0 }, towardSun)), 12);
+  });
+
+  it('lights a real crest as before', () => {
+    const ridge = (_x: number, z: number) => 1.5 * Math.exp(-((z / 0.8) ** 2));
+    const towardSun = { x: 0, y: 0, z: 1 };
+    const attenuation = beamAttenuation(SPOT_OPTICS.reef)[1];
+    for (const height of [1.45, 1.3, 0.9]) {
+      const origin = { x: 0, y: height, z: -0.8 * Math.sqrt(Math.log(1.5 / height)) };
+      const thickness = crestThickness(ridge, origin, towardSun);
+      expect(thickness).toBeLessThan(OPAQUE);
+      expect(crestLight(ridge, origin, towardSun, attenuation)).toBeCloseTo(Math.exp(-attenuation * thickness), 12);
+    }
+  });
+
+  it('reports the crest\'s rise above the ray, and lights it by its steepness: rise over thickness', () => {
+    const ridge = (_x: number, z: number) => 1.5 * Math.exp(-((z / 0.8) ** 2));
+    const origin = { x: 0, y: 1.3, z: -0.8 * Math.sqrt(Math.log(1.5 / 1.3)) };
+    const march = crestMarch(ridge, origin, { x: 0, y: 0, z: 1 });
+    expect(march.thickness).toBe(crestThickness(ridge, origin, { x: 0, y: 0, z: 1 }));
+    expect(march.rise).toBeCloseTo(ridge(0, origin.z + 0.25) - 1.3, 12);
+    expect(crestShare({ thickness: OPAQUE, rise: 1 })).toBe(0);
+    expect(crestShare({ thickness: 2, rise: 2 * CREST_STEEPNESS[0] })).toBe(0);
+    expect(crestShare({ thickness: 2, rise: 2 * CREST_STEEPNESS[1] })).toBe(1);
   });
 
   it('feeds the shader uniforms from the same model', () => {
