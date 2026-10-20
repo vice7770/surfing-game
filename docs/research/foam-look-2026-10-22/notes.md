@@ -167,11 +167,47 @@ WaterSurface, EdgeBand, waterLooks, textureUnits (16 units, unchanged), rollerLo
 SpillingCurlMesh, devTools: 17 files, 192 tests pass. `surfZoneState` (the Canyon's handover, bit for bit with the
 edges on) passes too. `tsc --noEmit` is clean apart from the known `zzProfile` errors.
 
+## Halfway warmer (the owner's call, 2026-10-22; branch `claude/foam-warm`)
+
+The owner wants front-lit sunset foam halfway warmer: a soft peach-white between the old pink (R/B 1.33) and the
+capped lavender (0.79), with the relief kept.
+
+**The dial.** `BAND_WRAP_KEPT = 0.55`: the share of the band's wrap the cap leaves in everywhere. It lifts a face's N·L
+by 0.55·(1 − N·L)/2 and keeps 72 % of its relief's shading. Under a high sun the cap leaves the wrap alone, so midday
+cannot move. The GLSL's mix weight becomes `max( 0.55, … )`; it is a constant, and `warmth: 0` compiles the same
+instruction.
+
+Swept on the same held sea (warmth 0 → 0.35 → 0.45 → 0.55 → 0.65): on the front-lit band at sunset, R/B ran
+0.79 → 0.95 → 1.00 → 1.06 → 1.11. At 0.65 the top half started to flatten again (p50 to p90 within 0.07). 0.55 is the
+halfway mark, (0.79 + 1.33)/2 = 1.06.
+
+Foam pixels (`waterSheetFoamLight`, linear luminance p10 / p50 / p90, R/B), Canyon High, before = 2026-10-21's look
+(`warmth: 0`), after = 0.55:
+
+| View | Sunset before | Sunset after | Dawn before → after | Midday before → after |
+| --- | --- | --- | --- | --- |
+| Front-lit band (35 s) | 0.38 / 0.49 / 0.60, 0.79 | 0.39 / 0.59 / 0.68, 1.06 | 0.33 / 0.415 / 0.450, 0.553 → 0.33 / 0.416 / 0.452, 0.563 | 0.708 / 0.780 / 0.813, 0.749 → 0.711 / 0.791 / 0.820, 0.752 |
+| Backlit close (30 s) | 0.38 / 0.53 / 0.65, 0.89 | 0.38 / 0.57 / 0.70, 1.05 | 0.362 / 0.437 / 0.508, 0.611 → 0.362 / 0.438 / 0.509, 0.617 | 0.418 / 0.594 / 0.748, 0.676 → 0.418 / 0.596 / 0.757, 0.677 |
+
+- **The relief stays:** p10 to p90 spans 0.29 on the band (0.22 before) and 0.32 on the close (0.27).
+- **Brighter:** the foam is about 0.1 brighter in its middle at sunset.
+- **Dawn and midday:** within 0.011 in luminance and 0.01 in R/B. At dawn the sun lies away from these faces, so the
+  band takes little of the wrap.
+- **Cost:** `waterSheetGpuAB` on Canyon High, warmth 0 / 0 again / 0.55, 50 cycles, against the same program: band
+  −0.08 ms (control −0.06), bore +0.06 (control +0.07).
+
+Stills (before above, after below):
+- `warm-canyon-band-sunset.jpg`: the front-lit band, now peach-white with its lumps;
+- `warm-canyon-close-sunset.jpg`: the backlit face;
+- `warm-canyon-band-dawn.jpg`, `warm-canyon-close-dawn.jpg`;
+- `warm-canyon-bore-midday.jpg`: no visible change.
+
+Dev: `waterFoamLook({ warmth })` sets the share in a page (it compiles a program per value).
+
 ## Still open
 
-- **The owner's eye.** The sunset white is now warm at a backlit crest and lavender-white down the face, and the
-  front-lit band reads blue-white more than orange (R/B 0.79). If it should read warmer front-lit, the band's cap is the
-  dial (`BAND_THROUGH`, or a share of the wrap left in).
+- **The owner's eye.** Front-lit sunset foam is now peach-white (R/B 1.06), warm at a backlit crest. The dial is
+  `BAND_WRAP_KEPT`.
 - **Straight fronts elsewhere.** The fray needs a drawn copy, which only the spilling spot has. A spot whose solver
   breaks along a straight line (the pool's arms, the Beach) still draws straight fronts. A drawn copy there would cost
   a full-grid pass in the worker.
