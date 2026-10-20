@@ -55,7 +55,7 @@ the sets.
 
 | Bed | Medium: tracker +x, angle | Medium: readout; clean +x | Medium sets ξb / ξγ | Big: tracker +x, angle | Big: readout; close-outs | Big sets ξb / ξγ | Small sets ξb |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Today, 1:30 below 2.8 m | 8 of 8, 33° | 21/78/1 %; 64 of 65 | 0.21 / 0.17 | 8 of 8, 38° | 15/84/1 %; 0 | 0.38 / 0.33 | 0.18 |
+| Old bed, 1:30 below 2.8 m | 8 of 8, 33° | 21/78/1 %; 64 of 65 | 0.21 / 0.17 | 8 of 8, 38° | 15/84/1 %; 0 | 0.38 / 0.33 | 0.18 |
 | **A, 1:23 below 2.2 m** | 6 of 8, 30° | 42/48/10 %; 61 of 70 | 0.18 / 0.15 | 8 of 8, 55° | 12/88/0 %; 0 | **0.56 / 0.44** | 0.15 |
 | B, 1:24 below 2.1 m | 5 of 7, 29° | 29/62/9 %; 57 of 73 | 0.17 / 0.14 | 7 of 7, 53° | 15/85/0 %; 0 | 0.55 / 0.43 | — |
 | C, 1:25 below 2.2 m | 6 of 8, 47° | 22/66/12 %; 63 of 72 | 0.18 / 0.15 | 8 of 8, 50° | 18/82/0 %; 1 | 0.51 / 0.40 | — |
@@ -75,46 +75,6 @@ the sets.
   shallow the hinge (E's 1.6 m too): by x 10 they are 0.8–1.1 m high. The 3 × 14 runs below, with more and bigger sets,
   put A's Medium sets at the hinge down to x 30 ("Why Medium's sets fade down the line").
 - **A was kept**: the steepest face and deepest hinge in range, so Big's sets plunge most and the fan stays least gentle.
-
-## Why Medium's sets fade down the line
-
-The waves reaching the arm's downcoast stretch are smaller than those at the peak, on either bed. The fan's deep face runs
-at 55° to the shore, so the bed shoals toward −x along every row: rays climbing it turn toward the peak (`rays.ts`, linear
-rays at 11 s, square). Their concentration where each column first reaches a depth:
-
-| Depth | x −30 | x −10 | x 10 | x 30 | x 50 |
-| --- | --- | --- | --- | --- | --- |
-| 3.5 m: old bed / reef bed | 1.11 / 1.02 | 0.71 / 0.71 | 0.71 / 0.71 | 0.71 / 0.71 | 0.84 / 0.71 |
-| 2.6 m | 1.59 / 1.40 | 0.63 / 0.64 | 0.63 / 0.64 | 0.64 / 0.64 | 0.71 / 0.81 |
-| 2.2 m | 2.02 / 1.76 | 0.59 / 0.61 | 0.59 / 0.60 | 0.60 / 0.61 | 0.03 / 0.78 |
-
-Down the line the rays spread to about 0.6 of the open sea's, so the heights there fall to about 0.8 of what they would be
-(√0.6), while the peak gathers 1.4–2 times. In the solver the Medium faces at onset are 2.1–2.3 m by the peak and 1.0–1.3 m
-from x −10 on (the sets, below). Big's sets still reach the steep face all along the arm (they break 3–4 m deep); Medium's
-reach the hinge, where the face rounds from 1:23 into the fan, and by x 50 only the fan.
-
-So **at Medium the reel's plunge holds by the peak and fades down the line**: ξb about 0.4 from the peak to x −10, 0.3–0.4
-to x 30, and spilling by x 50 (the tables below). Holding Medium's plunge all the way would take keeping the downcoast
-waves' height (less oblique deep contours, which changes the peel) or a hinge so shallow that the fan all but goes, which
-brings back mid-arm starts (the planar face's) and plunges Small. Both are outside the approved plan; they are the
-advisor's to weigh with the swept barrel.
-
-## The drawn lip (look only)
-
-The owner's call (Q24): let Pick & Feddersen size the curl on the new slope. `SPILLING_CURL.psi` now runs from 1:50 to
-**1:23** under H0/h0 0.28 (it ended at 1:30). Each column's curl takes the bed's gradient along +z across its breaker depth
-± 2.5 m (unchanged), so the curl grows where the crest climbs the steep face:
-
-| | Old span (1:30 cap) | Reef bed (1:23 cap) |
-| --- | --- | --- |
-| Curl height, Medium, along the arm | 0.23–0.33 H | 0.30–0.40 H (0.40 H from x −51 to −31, 0.30 H by x 60) |
-| Curl height, Big, along the arm | 0.23–0.33 H | 0.33–0.40 H |
-| Lip thickness | 0.052–0.06 H | 0.052–0.084 H |
-| Where the lip lands, ahead of the crest | 0.60 H | 0.75 H (`LANDING_SHARE`: the span's far end, the coordinator's round-2 ruling) |
-| At Big (H 2.5 m) | 0.58–0.83 m high, landing 1.5 m ahead, 0.13–0.15 m thick | 0.83–0.99 m high, landing 1.9 m ahead, 0.15–0.21 m thick |
-
-At 1:23 the overturn is Pick & Feddersen's 0.275 H² void, 1.0 H long, tilted 41°. Small's curl stays 0.23 H down the line
-(its gradient there is 1:58–1:130), 0.40 H by the peak. Nothing felt changes.
 
 ## The bars, 3 seeds × 14 periods per size (old bed → reef bed)
 
@@ -141,9 +101,9 @@ moved its waves since.
 What they mean, size by size:
 
 - **Big plunges weakly all along the arm**, as the reel: its sets break 3.5–4.3 m deep on the 1:23 face, ξγ 0.41–0.45 and
-  ξb 0.44–0.59 (Mead & Black's 2001 fit gives a vortex ratio of 2.3 at 1:23, against 2.8 at 1:30). Every bar holds or improves, but two: the platform
-  onsets (below) and the upcoast runs, 22 against 19, at most 29 m against 26 m. The solver's peel slows from 31° to 36°,
-  so the readout says "closes out" less (31 % against 41 %).
+  ξb 0.44–0.59 (Mead & Black's 2001 fit gives a vortex ratio of 2.3 at 1:23, against 2.8 at 1:30). Every bar holds or
+  improves but two: the platform onsets (below) and the upcoast runs, 22 against 19, at most 29 m against 26 m. The
+  solver's peel slows from 31° to 36°, so the readout says "closes out" less (31 % against 41 %).
 - **Medium's sets plunge weakly by the peak and fade down the line**: ξγ 0.41 at x −30, 0.27–0.35 to x 30, 0.14 by x 50
   (above, "Why Medium's sets fade"). Its peel holds (94 % toward +x by the tracker, 93 % of the clean reads), but the
   readout says "closes out" more often (57 % against 44 %: the solver's peel sits on the 27° line, 28° against 30°) and
@@ -155,6 +115,169 @@ What they mean, size by size:
   new 1 % lies mid-arm (x 20–55), 5.5–6 m deep: seed 3's biggest set (faces 3.5–3.9 m), breaking just seaward of the
   arm's foot. The same set breaks as deep on the old bed (its onsets deeper than 4.8 m: 169 there, 260 here), but there the
   face's foot was 35 m further out, so they counted as the face. The reef bed's face is shorter (1:23 from 6 m to 2.2 m).
+
+## Straight crests (bar 1)
+
+`crest-angle-report.ts`, seed 1, 600 s, 64 components, against the Beach (Medium, the 2026-10-05 reference, reproduced
+exactly here); full tables in `crest-angles.txt`. "Past the spread": crests further from their run's mean than the Beach's
+90th percentile (the Beach itself has 8–10 %). The take-off line is 30 m seaward of each bed's own take-off.
+
+| Run | Edge line: mean, mean \|angle\|, max \|angle\| | Past the spread; bend past | Take-off line: mean, mean \|angle\|, max | Past the spread; bend past | Two ways at once |
+| --- | --- | --- | --- | --- | --- |
+| Beach, Medium (reference) | 0.8°, 4.3°, 19.2° | 8 %; 8 % | 0.8°, 4.4°, 18.7° | 10 %; 10 % | 0 |
+| Canyon Medium, old bed | 0.4°, 2.7°, 9.1° | 5 %; 7 % | 2.9°, 4.7°, 13.8° | 4 %; 2 % | 0 |
+| **Canyon Medium, reef bed** | 0.5°, 2.8°, 9.3° | 2 %; 4 % | 2.8°, 3.8°, 8.8° | 0 %; 8 % | **0** |
+| Canyon Big, old bed | 1.1°, 3.3°, 11.6° | 5 %; 7 % | 1.2°, 3.3°, 9.3° | 5 %; 3 % | 0 |
+| **Canyon Big, reef bed** | 1.3°, 3.4°, 11.5° | 8 %; 8 % | 1.3°, 2.8°, 10.5° | 2 %; 0 % | **0** |
+
+The crests reach the arm as straight as before (the edge line lies over the untouched platform) and stay within the Beach's
+spread on the take-off line, which now crosses the steeper face: they lean a little less there than on the old bed. Never
+from more than one side at once.
+
+## Stable for 600 s (bar 4)
+
+Seed 1 on the reef bed, `--stability` (the fastest water is |q|/h where h > 5 cm, every 10 steps); the old bed's from the
+2026-10-09 tables, which the old bed's 3 × 14 re-run reproduced exactly.
+
+| | Small (67 periods) | Medium (55 periods) | Big (43 periods) |
+| --- | --- | --- | --- |
+| Fastest water | 4.82 m/s | 5.98 m/s (6.15 before) | 9.30 m/s (8.40 before) |
+| Froude caps | 0 | 0 (0) | 0 (0) |
+| Volume | 0.02 % | 0.30 % (within 0.36 %) | −0.15 % (within 0.41 %) |
+| Onsets per 100 s, throughout | 480–735 | 733–946 (657–889) | 760–908 (695–857) |
+| Tracker: clean samples toward +x; median | 53 of 57 (93 %); 27° | 47 of 51 (92 %); 29° (44 of 45; 30°) | 43 of 43; 41° (40 of 41; 32°) |
+| Readout every second: closes out / a left / a right | 49 / 50 / 1 % | 46 / 50 / 4 % (45 / 53 / 2 %) | 28 / 71 / 1 % (38 / 60 / 2 %) |
+| Starts within ±10 m of their median | 53 of 66 | 52 of 56 (53 of 57) | 44 of 49 (43 of 48) |
+| Close-outs | 0 | 0 (0) | 2 (1) |
+| Each crest's own fit: toward +x; median | 55 of 55; 41° | 45 of 45; 45° (52 of 52; 48°) | 35 of 35; 46° (41 of 41; 46°) |
+
+Big's two close-outs over 600 s: a 1.15 m face mid-arm (x −3, 81 m outside the line) breaking 41 m within 2 s, 36 m of it
+upcoast; and a 3.0 m set wave at the arm's end breaking 42 m within 2 s, nearly all downcoast, a fast section. With the 3 × 14
+runs' none, Big closes out 2 times in 99 crests, against 2 in 97 on the old bed. The fastest water at Big rises 0.9 m/s
+on the steeper face, with no Froude cap.
+
+## Why Medium's sets fade down the line
+
+The waves reaching the arm's downcoast stretch are smaller than those at the peak, on either bed. The fan's deep face runs
+at 55° to the shore, so the bed shoals toward −x along every row: rays climbing it turn toward the peak (`rays.ts`, linear
+rays at 11 s, square). Their concentration where each column first reaches a depth:
+
+| Depth | x −30 | x −10 | x 10 | x 30 | x 50 |
+| --- | --- | --- | --- | --- | --- |
+| 3.5 m: old bed / reef bed | 1.11 / 1.02 | 0.71 / 0.71 | 0.71 / 0.71 | 0.71 / 0.71 | 0.84 / 0.71 |
+| 2.6 m | 1.59 / 1.40 | 0.63 / 0.64 | 0.63 / 0.64 | 0.64 / 0.64 | 0.71 / 0.81 |
+| 2.2 m | 2.02 / 1.76 | 0.59 / 0.61 | 0.59 / 0.60 | 0.60 / 0.61 | 0.03 / 0.78 |
+
+Down the line the rays spread to about 0.6 of the open sea's, so the heights there fall to about 0.8 of what they would be
+(√0.6), while the peak gathers 1.4–2 times. In the solver the Medium faces at onset are 2.1–2.3 m by the peak and 1.0–1.4 m
+from x −10 on (the sets, below). Big's sets still reach the steep face all along the arm (they break 3–4 m deep); Medium's
+reach the hinge, where the face rounds from 1:23 into the fan, and by x 50 only the fan.
+
+So **at Medium the reel's plunge holds by the peak and fades down the line**: ξb about 0.4 from the peak to x −10, 0.3–0.4
+to x 30, and spilling by x 50 (the tables below). Holding Medium's plunge all the way would take keeping the downcoast
+waves' height (less oblique deep contours, which changes the peel) or a hinge so shallow that the fan all but goes, which
+brings back mid-arm starts (the planar face's) and plunges Small. Both are outside the approved plan; they are the
+advisor's to weigh with the swept barrel.
+
+## The take-off and the start (bars 6 and 7)
+
+**The take-off** (`CANYON_TAKE_OFF_DEPTH`): the line through each size's 90th-percentile start depth in the take-off's
+column (3 × 14), **1.24 + 1.07 Hs** (was 1.06 + 1.24 Hs): 2.20, 2.74 and 3.81 m for Small, Medium and Big, within 0.05 m of
+the measured 2.23, 2.69 and 3.82 m. On the steeper, shorter face the take-offs move 4.5, 13.5 and 26.5 m inshore (z −320.5,
+−333.5 and −358.0 at x −30).
+
+**The start** (`CANYON_RIDE_LINEUP`, big-start's rule: where the faces become catchable, about 17° over the highest third,
+but seaward of where one wave in ten starts breaking). Big-start's transect probe on the reef bed (`transects.txt`), the
+waves' starts pooled with the size report's:
+
+| | Small | Medium | Big |
+| --- | --- | --- | --- |
+| Top-third front, 11 m out | 7.8° / 8.5° (±3 m) | 6.3° / 7.1° | 12.3° / 12.6° |
+| Top-third front, 6 m out | 8.2° / 9.8° | 7.8° / 8.8° | 12.9° / 13.5° |
+| Top-third front, at the take-off | 11.2° / 12.6° | 11.2° / 12.3° | 14.4° / 15.1° |
+| First reaches 17° | 7–8 m inside | 9–12 m inside | 10–14 m inside |
+| One wave in ten starts breaking (pooled: 51, 61, 64 waves) | 6.0 m seaward | 1.0 m seaward | 5.3 m seaward |
+| Median break (pooled) | 14.1 m inside | 16.0 m inside | 20.5 m inside |
+| Old bed, one in ten / median (big-start) | 10.5 m seaward / 16.5 m inside | 0.5 m seaward / 29.5 m inside | 4 m inside / 41 m inside |
+| **Start** | **11 m** (unchanged) | **11 m** (unchanged; the rule would give 1–2 m) | **6 m** (was 0) |
+| Waves breaking seaward of the start (pooled) | 0 of 51 | 0 of 61 | 4 of 64 |
+
+**Bar 7, the risk, is real at Big.** The breaking band is narrower and closer: Big's median break comes 20.5 m inside its
+take-off against 41 m, and one wave in ten now breaks seaward of the take-off. Kept seaward of that, Big's start sits 6 m
+out, where the faces are 13° — as gentle as the 11 m start the catch diagnosis found Big's riders popping up on the crest
+from (12–14°, picked up 90–93 % up the face). The two halves of the rule no longer meet at Big; the owner's 2026-10-11 rule
+("don't start on top of the breaking") takes priority here, as big-start wrote it. `?startOut=0` starts at the take-off
+(14–15°; 7 of 40 waves in the size report break seaward of it). Medium's and Small's 11 m starts stay clear of their
+breaks (none seaward), Medium's on 6–7° faces as before (the owner: "fine for now").
+
+## The drawn lip (look only)
+
+The owner's call (Q24): let Pick & Feddersen size the curl on the new slope. `SPILLING_CURL.psi` now runs from 1:50 to
+**1:23** under H0/h0 0.28 (it ended at 1:30). Each column's curl takes the bed's gradient along +z across its breaker depth
+± 2.5 m (unchanged), so the curl grows where the crest climbs the steep face:
+
+| | Old span (1:30 cap) | Reef bed (1:23 cap) |
+| --- | --- | --- |
+| Curl height, Medium, along the arm | 0.23–0.33 H | 0.30–0.40 H (0.40 H from x −51 to −31, 0.30 H by x 60) |
+| Curl height, Big, along the arm | 0.23–0.33 H | 0.33–0.40 H |
+| Lip thickness | 0.052–0.06 H | 0.052–0.084 H |
+| Where the lip lands, ahead of the crest | 0.60 H | 0.75 H (`LANDING_SHARE`: the span's far end, the coordinator's round-2 ruling) |
+| At Big (H 2.5 m) | 0.58–0.83 m high, landing 1.5 m ahead, 0.13–0.15 m thick | 0.83–0.99 m high, landing 1.9 m ahead, 0.15–0.21 m thick |
+
+At 1:23 the overturn is Pick & Feddersen's 0.275 H² void, 1.0 H long, tilted 41°. Small's curl stays 0.23 H down the line
+(its gradient there is 1:58–1:130), 0.40 H by the peak. Nothing felt changes.
+
+## What changed in feel (for the owner to ride)
+
+The waves change, which is the point. Ride the Canyon, mid tide, calm, several sets each way, and record:
+
+1. **Big, from the default start (6 m out).** The sets break harder and closer: they pitch on the 1:23 face (ξ 0.4–0.6),
+   20 m inside the take-off at the median, not 41 m. Does the wave pick you up from 6 m out, or leave you on the crest
+   (the faces there are 13°)? Then `?startOut=0` (the take-off, 14–15°): do you drop in, and how often does a set break on
+   top of you?
+2. **Medium by the peak.** The sets stand up and pitch near the peak and soften down the line, as before. Does the drop
+   feel steeper? Does the shoulder hold as you go down the line?
+3. **The readout.** At Medium it says "closes out" more often (57 % of the time against 44 %) and "a right" 3 % (1 %);
+   at Big and Small it says "closes out" less. The breaker word at the take-off now reads "plunging" at Medium and Big
+   (ξ 0.45 and 0.46) and "spilling" at Small (0.37).
+4. **The drawn lip.** By the peak the curl is now up to 0.40 H high and lands 0.75 H ahead (0.33 H and 0.60 H before);
+   down the line it is as before. Look only.
+5. **Small** should feel much as before; its readout says "closes out" less.
+
+The take-off moved inshore (4.5, 13.5 and 26.5 m at Small, Medium and Big), with the starts on it.
+
+## Risks still open
+
+- **Big's start (bar 7).** Seaward of the breaks means 13° faces: the catch diagnosis's problem may come back at Big.
+  The owner's ride decides between 6 m and the take-off.
+- **Medium's plunge fades down the line** (bar 5 held by the peak only): the waves there are 1.0–1.4 m, the deep face's
+  refraction having spread them; ξ 0.27–0.35 mid-arm, 0.14 by x 50. Fixing it is the advisor's call (above).
+- **Medium's readout** (bar 2 holds at 93–94 % toward +x, but): "a right" 3–4 % (1–2 % before), "closes out" 57 %.
+- **Small by the peak** reaches ξ 0.32–0.33, on the "about 0.3" line; down the line it spills.
+- **Big's platform onsets** rise 5.3 → 7.2 %, the new 1 % from the biggest set breaking just seaward of the shorter
+  face's foot (bar 3); Big's upcoast runs 19 → 22 (at most 29 m against 26 m), and the fastest water 8.4 → 9.3 m/s, with
+  no Froude cap.
+- **The solver's peel (bar 8)** moves with the bed: Big's tracker reads 36° (41° over 600 s), slower than 31°; Medium's
+  28° (30°) and Small's 28° (29°). Each crest's own fit moves less (Big 40°, Medium 43°, Small 37°). The drawn peel stays
+  the spilling front's 55°: every solver peel is still faster.
+- **The drawn curl** is sized from the gradient across each column's breaker depth ± 2.5 m, not each wave's own break, so
+  at Medium it stands 0.30–0.32 H down the line where those waves spill on 1:90–1:120 (as before the change: 1:30 capped).
+- **Not re-recorded:** the dev bots' track (`server/bots/canyon-medium.bin`, git-ignored, `BOTS=1` only) was recorded on
+  the old bed. The Surf School's lesson waves are the Wave Pool's, so untouched.
+
+## Tests
+
+On this branch (2026-10-22, the M1), no full suite and no rider sessions (`SurfZoneRunner.test.ts`), per the brief:
+
+- `npx tsc --noEmit -p tsconfig.json`: no errors.
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon"`: 12 passed (536 s).
+- `npx vitest run src/wave/Bathymetry.test.ts src/wave/SpillingCurl.test.ts src/wave/drawnEdges.test.ts`: 49 passed.
+- The Canyon's tests in `SurfZoneHost`, `PhysicalSurfWater`, `surfZoneState` and `SurfWaterBodyField` (`-t "[Cc]anyon"`),
+  and the start's in `PhysicalMode` and `OnlinePlay`: all passed.
+
+Changed with provenance: the bed's test (its face now plunges the sets and spills the fan's: ξ checks), the take-off's
+90th-percentile depths, Big's start (6 m, seaward of where one wave in ten breaks), and the curl's spans (0.2–0.40 H; Big's
+0.83–0.99 m, landing 1.9 m ahead, 0.15–0.21 m thick).
 
 ## What the swept-barrel step will need
 
@@ -188,56 +311,3 @@ What they should give the swept barrel: where the face goes vertical and the lip
 W/L and tilt against Pick & Feddersen's fits at ψ0 = (1/23)/(H0/h0)^¼ (0.052–0.059, inside their 0.016–0.089), and
 whether Medium's sets at H/h0 0.29 throw a real tube or only a curl, which decides whether the barrel draws at Medium.
 Medium down the line (x 10 and beyond, ξ 0.14–0.34) spills and needs no case.
-
-## Stable for 600 s (bar 4)
-
-Seed 1 on the reef bed, `--stability` (the fastest water is |q|/h where h > 5 cm, every 10 steps); the old bed's from the
-2026-10-09 tables, which the old bed's 3 × 14 re-run reproduced exactly.
-
-| | Small (67 periods) | Medium (55 periods) | Big (43 periods) |
-| --- | --- | --- | --- |
-| Fastest water | 4.82 m/s | 5.98 m/s (6.15 before) | 9.30 m/s (8.40 before) |
-| Froude caps | 0 | 0 (0) | 0 (0) |
-| Volume | 0.02 % | 0.30 % (within 0.36 %) | −0.15 % (within 0.41 %) |
-| Onsets per 100 s, throughout | 480–735 | 733–946 (657–889) | 760–908 (695–857) |
-| Tracker: clean samples toward +x; median | 53 of 57 (93 %); 27° | 47 of 51 (92 %); 29° (44 of 45; 30°) | 43 of 43; 41° (40 of 41; 32°) |
-| Readout every second: closes out / a left / a right | 49 / 50 / 1 % | 46 / 50 / 4 % (45 / 53 / 2 %) | 28 / 71 / 1 % (38 / 60 / 2 %) |
-| Starts within ±10 m of their median | 53 of 66 | 52 of 56 (53 of 57) | 44 of 49 (43 of 48) |
-| Close-outs | 0 | 0 (0) | 2 (1) |
-| Each crest's own fit: toward +x; median | 55 of 55; 41° | 45 of 45; 45° (52 of 52; 48°) | 35 of 35; 46° (41 of 41; 46°) |
-
-Big's two close-outs over 600 s: a 1.15 m face mid-arm (x −3, 81 m outside the line) breaking 41 m within 2 s, 36 m of it
-upcoast; and a 3.0 m set wave at the arm's end breaking 42 m within 2 s, nearly all downcoast, a fast section. With the 3 × 14
-runs' none, Big closes out 2 times in 99 crests, against 2 in 97 on the old bed. The fastest water at Big rises 0.9 m/s
-on the steeper face, with no Froude cap.
-
-## The take-off and the start (bars 6 and 7)
-
-**The take-off** (`CANYON_TAKE_OFF_DEPTH`): the line through each size's 90th-percentile start depth in the take-off's
-column (3 × 14), **1.24 + 1.07 Hs** (was 1.06 + 1.24 Hs): 2.20, 2.74 and 3.81 m for Small, Medium and Big, within 0.05 m of
-the measured 2.23, 2.69 and 3.82 m. On the steeper, shorter face the take-offs move 4.5, 13.5 and 26.5 m inshore (z −320.5,
-−333.5 and −358.0 at x −30).
-
-**The start** (`CANYON_RIDE_LINEUP`, big-start's rule: where the faces become catchable, about 17° over the highest third,
-but seaward of where one wave in ten starts breaking). Big-start's transect probe on the reef bed (`transects.txt`), the
-waves' starts pooled with the size report's:
-
-| | Small | Medium | Big |
-| --- | --- | --- | --- |
-| Top-third front, 11 m out | 7.8° / 8.5° (±3 m) | 6.3° / 7.1° | 12.3° / 12.6° |
-| Top-third front, 6 m out | 8.2° / 9.8° | 7.8° / 8.8° | 12.9° / 13.5° |
-| Top-third front, at the take-off | 11.2° / 12.6° | 11.2° / 12.3° | 14.4° / 15.1° |
-| First reaches 17° | 7–8 m inside | 9–12 m inside | 10–14 m inside |
-| One wave in ten starts breaking (pooled: 51, 61, 64 waves) | 6.0 m seaward | 1.0 m seaward | 5.3 m seaward |
-| Median break (pooled) | 14.1 m inside | 16.0 m inside | 20.5 m inside |
-| Old bed, one in ten / median (big-start) | 10.5 m seaward / 16.5 m inside | 0.5 m seaward / 29.5 m inside | 4 m inside / 41 m inside |
-| **Start** | **11 m** (unchanged) | **11 m** (unchanged; the rule would give 1–2 m) | **6 m** (was 0) |
-| Waves breaking seaward of the start (pooled) | 0 of 51 | 0 of 61 | 4 of 64 |
-
-**Bar 7, the risk, is real at Big.** The breaking band is narrower and closer: Big's median break comes 20.5 m inside its
-take-off against 41 m, and one wave in ten now breaks seaward of the take-off. Kept seaward of that, Big's start sits 6 m
-out, where the faces are 13° — as gentle as the 11 m start the catch diagnosis found Big's riders popping up on the crest
-from (12–14°, picked up 90–93 % up the face). The two halves of the rule no longer meet at Big; the owner's 2026-10-11 rule
-("don't start on top of the breaking") takes priority here, as big-start wrote it. `?startOut=0` starts at the take-off
-(14–15°; 7 of 40 waves in the size report break seaward of it). Medium's and Small's 11 m starts stay clear of their
-breaks (none seaward), Medium's on 6–7° faces as before (the owner: "fine for now").
