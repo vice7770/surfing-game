@@ -1,5 +1,6 @@
 import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial, Vector2, type Camera, type WebGLRenderer } from 'three';
 import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, impactTime } from '../wave/SpillingCurl';
+import { GRAVITY } from '../wave/dispersion';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
 import { waterRipplePars } from './water/rippleTexture';
@@ -44,6 +45,14 @@ const FLOOR_LIFT = 0.03;
 const RISE = 0.1;
 const SHARPEN = 0.35;
 /**
+ * Pitch, then pour (round 5; the advisor's consult of 2026-10-20): the tip goes out at a steady pace to its landing at
+ * touchdown τ_i, held level at the peak until τ_i − t_f, then falls as t² over t_f = √(2 Δy / (POUR g)), Δy the slice's
+ * peak over its landing. A jet falls freely once it leaves the crest (Drazen et al. 2008); the game's barrel library
+ * falls at 0.58–0.71 g. Spread over all of τ_i, as rounds 1–4 drew it, the drop fell at about 0.16 g and landed at
+ * 1.3–1.5 m/s, gliding; at 0.65 g it lands at 2.7–3.0 m/s (H 2–2.5 m), as the splash falls (3.2 m/s).
+ */
+const POUR = 0.65;
+/**
  * Slices of one wave further apart than this along shore, m, are separate ribbons: a single column missing from a wave's
  * curl (an onset's patchy start, as at Small) is bridged, so it is not drawn as two pods (round 4).
  */
@@ -65,11 +74,13 @@ const SKY_AT_TIP = 0.5;
 /**
  * The contrast route for the void the gentle face leaves too low (the coordinator's ruling, round 2): the lip's
  * underside and the face under it are darkened for the sky the lip hides, so the void reads as a dark line under a
- * bright lip. Shares of the light taken away, and the floor's opacity (P).
+ * bright lip. Shares of the light taken away, and the floor's opacity (P). Round 5 (the advisor's target: the throat at
+ * most 0.5× the face beside it, from the ride camera at 15–40 m) darkened them from 0.45, 0.6 and 0.75: the floor at
+ * full opening now keeps 0.28 of the face's light under it, not 0.55.
  */
-const UNDER_SHADE = 0.45;
-const FLOOR_SHADE = 0.6;
-const FLOOR_ALPHA = 0.75;
+const UNDER_SHADE = 0.6;
+const FLOOR_SHADE = 0.8;
+const FLOOR_ALPHA = 0.9;
 /**
  * Fades, as shares of the landing's distance a/L: the lip grows out of the crest's water from ROOT_FADE[0] behind the
  * crest (invisible) to ROOT_FADE[1] (whole), so no seam shows where it attaches; the underside likewise out of the void's
@@ -107,9 +118,11 @@ const RAGGED = { period: 0.45, froth: 0.3 } as const;
  *   evenly, and its fingers (under a pixel there, a dotted edge) close;
  * - its void darkens by up to `shade` more of its own darkening, never past `maxShade`, but not under its tip from
  *   `litFrom` of the lip on, so its falling edge reads as a bright line over a dark one.
- * Up close, the lip `nearPixels` or more thick on screen, nothing changes (P).
+ * Up close, the lip `nearPixels` or more thick on screen, nothing changes (P). Round 5 moved `nearPixels` from 5 to 8:
+ * the line drawing begins further in, so from the ride camera at 15 m (a 2 m wave's lip about 5 px on a 720 px view)
+ * the separator is already partly drawn as a line.
  */
-const DISTANCE = { minPixels: 2, nearPixels: 5, frothFrom: 0.4, froth: 0.8, shade: 0.5, maxShade: 0.85, litFrom: 0.6 } as const;
+const DISTANCE = { minPixels: 2, nearPixels: 8, frothFrom: 0.4, froth: 0.8, shade: 0.5, maxShade: 0.85, litFrom: 0.6 } as const;
 const smooth = (edge0: number, edge1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
   return t * t * (3 - 2 * t);
@@ -150,6 +163,22 @@ export function createCurlRibbon(): CurlRibbon {
   };
 }
 
+/**
+ * A lip's flight at `age` s, its touchdown at `impact` s, its tip falling `drop` m from its peak to its landing: how far
+ * out its tip has gone (`reach`, 0 … 1, at a steady pace), how far through its fall (`pour`, 0 level … 1 landed: the
+ * tip has fallen pour² of the drop), how long the fall takes (`fall`, s, no longer than the flight) and when it starts
+ * (`from`, s). Pitch, then pour (`POUR`).
+ */
+export interface LipFlight { reach: number; pour: number; fall: number; from: number }
+export function lipFlight(age: number, impact: number, drop: number, out: LipFlight = { reach: 0, pour: 0, fall: 0, from: 0 }): LipFlight {
+  out.reach = impact > 0 ? Math.min(1, Math.max(0, age / impact)) : 1;
+  out.fall = Math.min(Math.max(0, impact), Math.sqrt((2 * Math.max(0, drop)) / (POUR * GRAVITY)));
+  out.from = impact - out.fall;
+  out.pour = out.fall > 0 ? Math.min(1, Math.max(0, (age - out.from) / out.fall)) : age >= impact ? 1 : 0;
+  return out;
+}
+const flightOf: LipFlight = { reach: 0, pour: 0, fall: 0, from: 0 };
+
 /** What a cross-section point is: the crest's water, the lip's outer surface or its underside, or the void's floor. */
 const BODY = 0;
 const OUTSIDE = 1;
@@ -178,9 +207,10 @@ const taperOf = new Float64Array(SLICES);
  * The curls' ribbon from a snapshot's slices (`CURL_FIELD`; `SpillingCurl.writeCurls`), each slice at its own age in the
  * break's sequence (the advisor, round 2), so a column's curl forms, falls, lands and collapses as the peel passes it:
  * - the crest sharpens to a peak, at most 0.1 H over the crest as drawn, over the first third of the flight;
- * - its tip goes out first, nearly level, and falls ballistically (a parabola in its reach, so its drop grows as t²),
- *   landing on the face as drawn (`heightAt`) where Pick & Feddersen's lip lands, at its touchdown 0.6 √H s;
- * - its void opens under it as it reaches out (in the last third), its underside and the face under it darkened;
+ * - its tip goes out at a steady pace, pitched level at the peak, and then pours: it falls as t² over the last t_f of
+ *   the flight (`POUR`, `lipFlight`), the lip drooping from the crest as a parabola to its tip, landing on the face as
+ *   drawn (`heightAt`) where Pick & Feddersen's lip lands, at its touchdown 0.6 √H s;
+ * - its void opens under it as it pitches over and pours, its underside and the face under it darkened;
  * - from touchdown its void fills over 0.5 s: the lip settles onto the face, whitens from its tip, bulks and fades out.
  * The face stands in for the void's lower branch: the solver's cannot overturn. Slices of one wave in neighbouring
  * columns are joined along shore, in x order.
@@ -243,25 +273,31 @@ export function buildCurlRibbon(slices: Float32Array, count: number, heightAt: (
     const height = lofted[o + CURL_FIELD.height];
     const white = lofted[o + CURL_FIELD.white];
     const impact = impactTime(height);
-    const flight = impact > 0 ? Math.min(1, Math.max(0, lofted[o + CURL_FIELD.age] / impact)) : 1;
+    const age = lofted[o + CURL_FIELD.age];
+    const crestY = heightAt(x, z);
+    const face = (a: number) => heightAt(x + nx * a, z + nz * a) - crestY;
+    const landed = landing > 0 ? face(landing) : 0;
+    // Pitch, then pour: the tip out at a steady pace, level at the peak, then falling as t² over the flight's last t_f
+    // from the slice's full peak to its landing.
+    const { reach: flight, pour, fall, from } = lipFlight(age, impact, RISE * height * taper - landed, flightOf);
     // The tip's reach, the crest's peak, the void's opening; collapsing, the lip settles, bulks white and fades.
     const reach = flight * landing;
     const peak = RISE * height * smooth(0, SHARPEN, flight) * taper;
-    const open = smooth(0.4, 1, flight) * (1 - white);
+    // The void opens as the lip pitches over and pours: from a quarter of its fall before it to touchdown.
+    const open = (fall > 0 ? smooth(from - 0.25 * fall, impact, age) : flight >= 1 ? 1 : 0) * (1 - white);
     const settle = smooth(0, 1, white);
     const thickness = lofted[o + CURL_FIELD.thickness] * (1 + 0.8 * smooth(0.2, 0.7, white)) * taper;
     const fading = 1 - smooth(COLLAPSE_FADE[0], COLLAPSE_FADE[1], white);
     const nominal = Math.max(lofted[o + CURL_FIELD.thickness], SPILLING_CURL.minLip * height);
-    const crestY = heightAt(x, z);
-    const face = (a: number) => heightAt(x + nx * a, z + nz * a) - crestY;
-    const landed = landing > 0 ? face(landing) : 0;
-    // The lip's middle: a ballistic arc from the peak, level there, down onto the face where it lands; settling onto the
-    // face as its void fills.
+    // How far the tip has fallen below the peak: pour² of its drop (at touchdown, onto the face at the landing).
+    const tipDrop = (peak - landed) * pour * pour;
+    // The lip's middle: level at the crest's peak, drooping as a parabola to its tip; settling onto the face as its void
+    // fills. At touchdown it is the arc from the peak onto the face where it lands.
     const middle = (a: number, f: number) => {
-      const r = landing > 0 ? a / landing : 0;
-      return (peak + (landed - peak) * r * r) * (1 - settle) + (f + 0.5 * thickness) * settle;
+      const r = reach > 0 ? a / reach : 0;
+      return (peak - tipDrop * r * r) * (1 - settle) + (f + 0.5 * thickness) * settle;
     };
-    const slope = (a: number) => (landing > 0 ? (2 * (landed - peak) * a) / (landing * landing) : 0) * (1 - settle);
+    const slope = (a: number) => (reach > 0 ? (-2 * tipDrop * a) / (reach * reach) : 0) * (1 - settle);
     let p = 0;
     const point = (a: number, y: number, kind: number, along: number, f: number, pair = -1) => {
       sectionA[p] = a;
