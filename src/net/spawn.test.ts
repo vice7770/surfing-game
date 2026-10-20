@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EDGE_MARGIN, SPAWN_CLEARANCE, chooseSpawn } from './spawn';
+import { EDGE_MARGIN, SPAWN_CLEARANCE, SPAWN_OUT, SPAWN_REACH, chooseSpawn } from './spawn';
+import { RIDE_LINEUP_OFFSET } from '../wave/SurfZoneSimulation';
 import { sideMargin } from '../physics/riderBounds';
 import { OPEN_EDGE_RAMP } from '../wave/ShallowWaterSolver';
 
@@ -11,6 +12,20 @@ describe('chooseSpawn', () => {
     expect(Math.abs(spot.x - 20)).toBeLessThanOrEqual(30);
     expect(spot.z).toBeLessThanOrEqual(-111);
     expect(spot.z).toBeGreaterThanOrEqual(-135);
+  });
+
+  it('starts the band at the ride\'s own start, and moves it with a nearer start (the Canyon\'s Big)', () => {
+    expect(SPAWN_OUT).toEqual({ near: RIDE_LINEUP_OFFSET, far: RIDE_LINEUP_OFFSET + SPAWN_REACH });
+    expect(SPAWN_OUT).toEqual({ near: 11, far: 35 });
+    for (const near of [0, 4.5]) {
+      const outs = [0, 0.3, 0.6, 0.99].map((r) => area.focusZ - chooseSpawn({ ...area, near }, [], () => r).z);
+      for (const out of outs) {
+        expect(out).toBeGreaterThanOrEqual(near - 1e-9);
+        expect(out).toBeLessThanOrEqual(near + SPAWN_REACH + 1e-9);
+      }
+      // Nearest the ride's start in an empty lineup, as at 11 m.
+      expect(Math.min(...outs)).toBeCloseTo(near, 9);
+    }
   });
 
   it('keeps clear of other surfers', () => {
