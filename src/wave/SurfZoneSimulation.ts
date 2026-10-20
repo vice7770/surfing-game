@@ -580,7 +580,7 @@ export function peakTakeOffX(spot: SpotName): number {
  *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
  *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
  *   blows right on top, without the chance to paddle to pick up speed". The rider starts `rideLineupOffset` further
- *   out still: 11 m, but at Big at the take-off itself, where its faces become catchable (`CANYON_RIDE_LINEUP`).
+ *   out still: 11 m, but at Big 6 m, just seaward of where one wave in ten starts breaking (`CANYON_RIDE_LINEUP`).
  * Re-measure if the arm or the swells change.
  */
 export const CANYON_TAKE_OFF_DEPTH = { base: 1.24, perMetre: 1.07 } as const;
@@ -603,20 +603,26 @@ export const RIDE_LINEUP_OFFSET = 11;
  * them): where the faces become catchable, about 17° over the highest third of the waves, but seaward of where one wave
  * in ten starts breaking. The catch diagnosis (2026-10-22): from rest on Big's 14° faces 11 m out the board was picked
  * up only 2–2.5 m ahead of the crest, 90–93 % up the face, and the rider fell over the back as the crest passed; already
- * paddling, from the take-off, on 17–19° it dropped in. Measured along the take-off's column with no rider (big-start,
- * 2026-10-22: 2 seeds × 12 periods a size, the face the rider feels, each wave's steepest front over 1 m):
- * - Big: 12–13° 11 m out, 15–16° at the take-off, 17° only 6–12 m inside it; one wave in 23 started breaking seaward of
- *   the take-off (its median 41 m inside), as `CANYON_TAKE_OFF_DEPTH` places it. So Big starts at its take-off.
- * - Medium: 7–8° 11 m out, 17° about at the take-off (2 m seaward and 11 m inside it on the two seeds), where one wave
- *   in ten starts breaking: the same rule would start it at the take-off too, but it keeps 11 m (the owner, 2026-10-12:
- *   "fine for now") until it is ridden again.
- * - Small: 17° 1–4 m seaward of the take-off, but one wave in ten starts breaking 10.5 m seaward of it: 11 m, as before.
+ * paddling, from the take-off, on 17–19° it dropped in. Measured along the take-off's column with no rider on the reef bed
+ * (2026-10-22, docs/research/canyon-reef-bed-2026-10-22: big-start's transect probe, 2 seeds × 12 periods a size, the face
+ * the rider feels, each wave's steepest front over 1 m; the waves' starts pooled with the size report's 3 seeds × 14):
+ * - Big: 12–13° 11 m out, 13° 6 m out, 14–15° at the take-off, 17° only 10–14 m inside it; one wave in ten starts
+ *   breaking 5.3 m seaward of the take-off (4 of 64 seaward of 6 m out; their median 20.5 m inside the take-off). So Big
+ *   starts 6 m out, the rule's priority (the owner's 2026-10-11 "not on top of the breaking"), on faces about as gentle
+ *   as the 11 m start the catch diagnosis found too gentle (12–13°): on the reef bed's steeper face the breaks come
+ *   closer, so the two halves of the rule no longer meet. `?startOut=0` tries the take-off (14–15°; 7 of 40 in the size
+ *   report's runs break seaward of it). On the 1:30 bed, until the reef bed, Big started at its take-off (offset 0):
+ *   17° 6–12 m inside it, one wave in 23 breaking seaward of it, their median 41 m inside.
+ * - Medium: 6–7° 11 m out, 11–12° at the take-off, 17° 9–12 m inside it; one wave in ten starts breaking 1 m seaward of
+ *   the take-off: the same rule would start it 1–2 m out, but it keeps 11 m (the owner, 2026-10-12: "fine for now") until
+ *   it is ridden again, as on the 1:30 bed (17° about at the take-off, one in ten there).
+ * - Small: 17° 7–8 m inside the take-off, one wave in ten starts breaking 6 m seaward of it: 11 m, as before.
  * Re-measure if the arm or the swells change.
  */
 export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
   { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
   { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: 0 },
+  { significantHeight: 2.4, offset: 6 },
 ];
 
 /**

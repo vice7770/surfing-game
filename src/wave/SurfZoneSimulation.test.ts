@@ -868,7 +868,7 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('starts the rider 11 m seaward of the take-off, but at the Canyon\'s Big at its take-off, seaward of its median break', () => {
+  it('starts the rider 11 m seaward of the take-off, but at the Canyon\'s Big 6 m out, seaward of where its waves break', () => {
     // Every other spot, at every size, as before.
     expect(RIDE_LINEUP_OFFSET).toBe(11);
     for (const spot of ['beach', 'point', 'reef', 'padang', 'pool'] as const) {
@@ -888,16 +888,18 @@ describe('SurfZoneSimulation', () => {
     const medium = sea(1.4, 11);
     const takeOff = takeOffPoint(big);
     const start = takeOff.z - rideLineupOffset(big);
-    // Further in than Medium's rule (11 m out) would put it: where Big's faces become catchable.
+    // Further in than Medium's rule (11 m out) would put it, nearer the faces' catchable 17° (10–14 m inside the take-off).
     expect(start).toBeGreaterThan(takeOff.z - rideLineupOffset(medium));
     expect(start).toBeLessThanOrEqual(takeOff.z);
-    // And seaward of where Big's waves break: their median first onset in the take-off's column (x −30 ± 4 m) was
-    // 2.53 m deep, 41 m inside the take-off (big-start, 2026-10-22: 23 waves over 2 seeds × 12 periods), on the old
-    // median line 0.96 + 0.65 Hs.
+    // And seaward of where one wave in ten starts breaking in the take-off's column (x −30 ± 4 m): 5.3 m seaward of the
+    // take-off on the reef bed (2026-10-22: 64 waves, big-start's transect probe and the size report pooled; their
+    // median 20.5 m inside it, 2.74 m deep), so 6 m out, about 4.07 m deep. On the 1:30 bed one in ten broke 4 m inside
+    // the take-off and Big started there (offset 0), its median break 41 m inside.
     const tank = tankLayout(big);
     const depth = (z: number) => tankDepth(canyon, tank.edgeDepth, takeOff.x, z, tank);
-    expect(depth(start)).toBeGreaterThan(0.96 + 0.65 * big.significantHeight);
-    expect(depth(start)).toBeCloseTo(canyonTakeOffDepth(big.significantHeight), 1);
+    expect(depth(start)).toBeGreaterThan(canyonTakeOffDepth(big.significantHeight));
+    expect(depth(start)).toBeCloseTo(4.07, 1);
+    expect(depth(start)).toBeGreaterThan(2.74);
   });
 
   it('starts the rider where `startOut` says (the `?startOut=<m>` dev switch), at any spot and size', () => {
