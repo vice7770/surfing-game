@@ -408,7 +408,8 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
   const recording = params.has('record');
   const chunks: Blob[] = [];
   const type = ['video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm'].find((kind) => MediaRecorder.isTypeSupported(kind)) ?? 'video/webm';
-  const recorder = recording ? new MediaRecorder(film.captureStream(60), { mimeType: type, videoBitsPerSecond: 12_000_000 }) : undefined;
+  // `&bitrate=<bits a second>`: a lighter film (12 Mb/s by default).
+  const recorder = recording ? new MediaRecorder(film.captureStream(60), { mimeType: type, videoBitsPerSecond: Number(params.get('bitrate') ?? 12_000_000) }) : undefined;
   if (recorder) {
     recorder.ondataavailable = (event) => chunks.push(event.data);
     show(0);
