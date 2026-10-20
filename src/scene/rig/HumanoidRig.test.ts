@@ -353,15 +353,16 @@ function riderState(crouch: number, compress: number, stance: 'regular' | 'goofy
 const kneeAngle = (rig: HumanoidRig, side: Side) =>
   (rig.joints.hip[side].clone().sub(rig.joints.knee[side]).angleTo(rig.joints.ankle[side].clone().sub(rig.joints.knee[side])) * 180) / Math.PI;
 
-// Part B, de Sousa 2022: knees at 150° or more extended, 90–110° crouched on the drop, 90° or less compressed. The
-// physics' crouch lowers the pelvis; the rig maps its standing height to the model's extended legs. The full crouch
-// is the pumping stance, about two thirds of Compress's depth (the movement-flow spec). Planing at 7 m/s
-// the board rides about 12° nose-up, the front foot 12 cm above the rear, so the front knee always bends more: the
-// knees are judged by their mean, and standing by the straighter one too (before: 98°/136°, 65°/94°, 44°/81°).
+// Part B, de Sousa 2022: 90° or less compressed. The physics' crouch lowers the pelvis; the rig maps its standing
+// height to the key pose's knees standing tall. The animation-realism plan (the owner's call, §10.1): trim's knees
+// flexed 30–65° front and 35–70° rear, about equal (115–150° included); the drop's past 90° (65–95° included, the
+// drop's key pose read on flat water, with no drop to read). The full crouch is the pumping stance, about two thirds
+// of Compress's depth (the movement-flow spec). Planing at 7 m/s the board rides nose-up, so the knees are judged by
+// their mean (before: 98°/136°, 65°/94°, 44°/81°; until phase 1 standing tall straightened them to 150° or more).
 describe('knees from the physics', () => {
   it.each([
-    ['standing', 0, 0, 120, 160],
-    ['crouched', 1, 0, 90, 115],
+    ['standing', 0, 0, 115, 150],
+    ['crouched', 1, 0, 80, 105],
     ['compressed', 0.6, 1, 0, 90],
   ])('bends the knees %s', (label, crouch, compress, least, most) => {
     const { bones } = createTestHumanoid();
@@ -372,7 +373,7 @@ describe('knees from the physics', () => {
     const mean = (knees[0] + knees[1]) / 2;
     expect(mean).toBeGreaterThanOrEqual(least as number);
     expect(mean).toBeLessThanOrEqual(most as number);
-    if (label === 'standing') expect(Math.max(...knees)).toBeGreaterThanOrEqual(150);
+    if (label === 'standing') for (const knee of knees) expect(knee).toBeLessThan(155);
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
   });
 });
@@ -483,26 +484,28 @@ describe('the arms', () => {
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
     return { rig, state, bones };
   };
-  const aim = (rig: HumanoidRig, side: Side, toward: Vector3) =>
-    (rig.joints.wrist[side].clone().sub(rig.joints.shoulder[side]).angleTo(toward) * 180) / Math.PI;
 
-  it.each([['regular', -2, 'left'], ['goofy', 2, 'right']] as const)('points the leading arm where the head looks, %s', (stance, yawRate, lead) => {
-    const { rig } = solved(stance, yawRate);
-    expect(aim(rig, lead, rig.look)).toBeLessThan(25);
+  // The animation-realism plan, phase 1: in a turn the leading arm turns toward where the head looks, within
+  // `leadTurn` of its own heading, its hand kept low (the relaxed hand's height); phase 2 aims it at the turn's target.
+  it.each([['regular', -2, 'left'], ['goofy', 2, 'right']] as const)('turns the leading arm toward where the head looks, its hand low, %s', (stance, yawRate, lead) => {
+    const level = (v: Vector3) => v.clone().setY(0);
+    const toLook = (rig: HumanoidRig) => (level(rig.joints.wrist[lead].clone().sub(rig.joints.shoulder[lead])).angleTo(level(rig.look)) * 180) / Math.PI;
+    const turning = solved(stance, yawRate).rig;
+    const straight = solved(stance, 0).rig;
+    expect(toLook(turning)).toBeLessThan(toLook(straight) - 10);
+    for (const rig of [turning, straight]) expect(rig.joints.wrist[lead].y).toBeLessThan(rig.joints.shoulder[lead].y - 0.3);
   });
 
-  // The riding-body plan, step 3: a free arm takes the stance's shape (lower, the elbow soft), keeping only the
-  // physics' hand's heading about the trunk, so the heading is what stays.
-  it('keeps the heading of the physics’ hands going straight, and of the rear hand in a turn', () => {
-    const heading = (rig: HumanoidRig, bones: Map<string, Bone>, side: Side, toward: Vector3) => {
-      const trunk = bones.get(BONES.neck)!.getWorldPosition(new Vector3()).sub(bones.get(BONES.hips)!.getWorldPosition(new Vector3())).normalize();
-      const arm = rig.joints.wrist[side].clone().sub(rig.joints.shoulder[side]).projectOnPlane(trunk);
-      return (arm.angleTo(toward.clone().projectOnPlane(trunk)) * 180) / Math.PI;
-    };
+  // The owner's reference (2026-10-22): a free arm takes the key pose's relaxed hand, framing its knee, whatever
+  // heading the physics holds its hand at about the torso (at ease: the alarm reads the hand's distance, kept here).
+  it('hangs a free hand at its knee, whatever heading the physics holds the hand at', () => {
+    const turned = solved('regular', 0, (state) => {
+      const torso = state.points[POINT.torso];
+      for (const point of [POINT.leftHand, POINT.rightHand]) state.points[point].sub(torso).applyAxisAngle(new Vector3(0, 1, 0), 0.6).add(torso);
+      state.clock += 1;
+    });
     const straight = solved('regular', 0);
-    for (const side of SIDES) expect(heading(straight.rig, straight.bones, side, straight.state.points[handPoint(side)].clone().sub(straight.rig.joints.shoulder[side]))).toBeLessThan(8);
-    const turning = solved('regular', -2);
-    expect(heading(turning.rig, turning.bones, 'right', turning.state.points[POINT.rightHand].clone().sub(turning.rig.joints.shoulder.right))).toBeLessThan(8);
+    for (const side of SIDES) expect(turned.rig.joints.wrist[side].distanceTo(straight.rig.joints.wrist[side]), side).toBeLessThan(0.02);
   });
 
   // The riding-body plan, step 1: the bend switched on at once as the hand crossed the hips (the Compress hand's pop,
@@ -540,6 +543,8 @@ describe('the arms', () => {
       const tail = new Vector3().subVectors(state.points[POINT.rightFoot], state.points[POINT.leftFoot]).setY(0).normalize();
       target = shoulder.clone().addScaledVector(tail.multiplyScalar(0.6).add(new Vector3(0, -0.8, 0)).normalize(), first.armLength + 0.15);
       state.points[POINT.rightHand].copy(target);
+      // A fresh solve: the bend and the hand's handover are followed in time (the motion filter).
+      state.clock += 1;
     });
     expect(rig.joints.wrist.right.distanceTo(target)).toBeLessThan(0.05);
   });

@@ -1,12 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { Quaternion, Vector3 } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
-import { drawnStance, stanceState } from '../../dev/ridingPoses';
+import { CROUCHED_TRIM, STANCE_RECIPES, drawnRecipe, drawnStance, stanceState } from '../../dev/ridingPoses';
+import { readGlbSkeleton } from './glbSkeleton';
 import { PosedBody } from './posedBody';
 import { BONES } from './humanoidBones';
 import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from './riderVisualState';
-import { StanceGauge, type StanceAngles } from './stanceGauge';
+import { StanceGauge, measureHands, type StanceAngles } from './stanceGauge';
 import { createTestHumanoid } from './testHumanoid';
 
 const at = new Vector3(0, 0.03, 0);
@@ -24,29 +26,37 @@ function angles(state: RiderVisualState, share: number): { read: StanceAngles; b
 }
 
 describe('the free arms (the stance poses, step 3)', () => {
-  it('holds trim\'s arms lower and softer, toward the map\'s middle (SurfDeeper: quiet, over their rails)', () => {
-    const state = stanceState('trim', 'regular', at, createRiderVisualState()).state;
-    const physics = angles(state, 0).read;
-    const shaped = angles(state, 1).read;
-    for (const key of ['leadArm', 'trailArm'] as const) {
-      expect(Math.abs(shaped[key] - 40), key).toBeLessThan(Math.abs(physics[key] - 40));
-      expect(shaped[key], key).toBeGreaterThanOrEqual(20);
-      expect(shaped[key], key).toBeLessThanOrEqual(60);
+  // The owner's reference (2026-10-22): the arms hang relaxed and close in, framing the knees; never spread.
+  it.each(['trim-frontside', 'trim-backside'])('hangs %s\'s free arms relaxed and low, in front, within the plan\'s elevations', (id) => {
+    for (const side of ['regular', 'goofy'] as const) {
+      const { bones } = createTestHumanoid();
+      const gauge = new StanceGauge(bones);
+      const body = new PosedBody(bones);
+      const { state } = drawnStance(id, side, at, (step) => body.update(step));
+      const read = gauge.measure(state, side);
+      const hands = measureHands(gauge.joints(), state, side);
+      // The plan's trim (WSL flow; Rapture): the front arm 20–50° from the trunk's down, the back arm 10–35°.
+      expect(read.leadArm, `${side} lead`).toBeGreaterThanOrEqual(20);
+      expect(read.leadArm, `${side} lead`).toBeLessThanOrEqual(50);
+      expect(read.trailArm, `${side} trail`).toBeGreaterThanOrEqual(10);
+      expect(read.trailArm, `${side} trail`).toBeLessThanOrEqual(35);
+      // Soft elbows, never locked; the hands in front of the knees and close in.
+      for (const elbow of [read.leadElbow, read.trailElbow]) expect(elbow, side).toBeLessThan(162);
+      expect(hands.inFront, side).toBeGreaterThan(-0.02);
+      expect(hands.out, side).toBeLessThan(1.25 * hands.shoulders);
     }
-    for (const key of ['leadElbow', 'trailElbow'] as const) expect(shaped[key], key).toBeLessThan(170);
-  });
-
-  it('puts the upper arm at the stance\'s elevation, the soft elbow below the wrist\'s line', () => {
-    const { read } = angles(stanceState('trim', 'regular', at, createRiderVisualState()).state, 1);
-    for (const key of ['leadArm', 'trailArm'] as const) expect(Math.abs(read[key] - RIG_DETAIL.arms.elevationTall), key).toBeLessThan(6);
   });
 
   it('swings the trailing arm up in the snap (the Bali camp: swung around)', () => {
-    const { bones } = createTestHumanoid();
-    const gauge = new StanceGauge(bones);
-    const body = new PosedBody(bones);
-    const { state } = drawnStance('snap-frontside', 'regular', at, (step) => body.update(step));
-    expect(gauge.measure(state, 'regular').trailArm).toBeGreaterThan(60);
+    // From the relaxed arm at the side (trim's 10–35°), well up: phase 2 sets the snap's own arms (`snapSwing` 60°).
+    const trail = (id: string) => {
+      const { bones } = createTestHumanoid();
+      const gauge = new StanceGauge(bones);
+      const body = new PosedBody(bones);
+      const { state } = drawnStance(id, 'regular', at, (step) => body.update(step));
+      return gauge.measure(state, 'regular').trailArm;
+    };
+    expect(trail('snap-frontside')).toBeGreaterThan(trail('trim') + 30);
   });
 
   it('bends the drop\'s leading elbow into Kerr\'s 140–170°', () => {
@@ -96,3 +106,29 @@ describe('the free arms losing balance (step 5)', () => {
   });
 });
 
+
+describe('the arms framing the knees (the owner\'s reference photo, 2026-10-22)', () => {
+  // Crouched trim and the drop: each hand within about 0.15 m of its knee's height, the front hand ahead of the front
+  // knee along the line, the back hand beside the back knee, neither out past the shoulders' width (the shoulder
+  // joints' spread and the shoulder's own breadth outside them, 1.25 of it). Every surfer, Regular and Goofy.
+  it.each([['crouched trim', CROUCHED_TRIM], ['the drop', STANCE_RECIPES.drop]] as const)('frames the knees in %s, on all four surfers', (_name, recipe) => {
+    for (const surfer of ['surfer1', 'surfer2', 'surfer3', 'surfer4']) {
+      const bytes = readFileSync(`public/assets/surfers/${surfer}.glb`);
+      for (const side of ['regular', 'goofy'] as const) {
+        const { bones } = readGlbSkeleton(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+        const gauge = new StanceGauge(bones);
+        const body = new PosedBody(bones);
+        const { state, reached } = drawnRecipe(recipe, side, at, (step) => body.update(step));
+        expect(reached, `${surfer} ${side}`).toBe(true);
+        const hands = measureHands(gauge.joints(), state, side);
+        const where = `${surfer} ${side}`;
+        expect(Math.abs(hands.frontAboveKnee), `${where}: front hand to its knee's height`).toBeLessThanOrEqual(0.15);
+        expect(Math.abs(hands.rearAboveKnee), `${where}: back hand to its knee's height`).toBeLessThanOrEqual(0.15);
+        expect(hands.frontAhead, `${where}: front hand ahead of the front knee`).toBeGreaterThan(0);
+        expect(Math.abs(hands.rearAlong), `${where}: back hand beside the back knee`).toBeLessThan(0.12);
+        expect(hands.inFront, `${where}: in front of the knees`).toBeGreaterThan(-0.02);
+        expect(hands.out, `${where}: within the shoulders' width`).toBeLessThan(1.25 * hands.shoulders);
+      }
+    }
+  }, 120_000);
+});
