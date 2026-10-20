@@ -1393,10 +1393,17 @@ export class HumanoidRig {
     // In a redirect the trailing arm swings up (the key pose's), as far as the turn has come in.
     const { trail } = this.pose;
     const swingUp = this.isRearFoot(state, side) && trail.swing > 1 ? Math.max(this.armTurn, trail.hold) : 0;
-    if (swingUp > 0) this.blendAim(shoulder, relaxed, this.spreadArm(shoulder, down, out, trail.swing, arms.elbow, this.spreadAt), swingUp, most);
+    // Swung round in front of the chest (the Bali camp: round to lead the carve), not out to the side as the physics
+    // holds its hand: the arms close in (the owner's principle).
+    if (swingUp > 0) {
+      const ahead = this.handNose.copy(this.facing).addScaledVector(down, -this.facing.dot(down));
+      if (ahead.lengthSq() > 1e-8) ahead.normalize().lerp(out, 0.3).normalize();
+      else ahead.copy(out);
+      this.blendAim(shoulder, relaxed, this.spreadArm(shoulder, down, ahead, trail.swing, arms.elbow, this.spreadAt), swingUp, most);
+    }
     // Losing balance the arms go out, straightening: out to the straight arm's own reach.
     if (this.alarm > 0) {
-      const spread = this.spreadArm(shoulder, down, out, Math.min(arms.alarmElevation, this.pose.alarm), arms.alarmElbow, this.spreadAt);
+      const spread = this.spreadArm(shoulder, down, out, Math.min(arms.alarmElevation, this.pose.alarm), Math.min(arms.alarmElbow, this.pose.alarmElbow), this.spreadAt);
       most = Math.max(most, spread.distanceTo(shoulder));
       this.blendAim(shoulder, relaxed, spread, this.alarm, most);
     }

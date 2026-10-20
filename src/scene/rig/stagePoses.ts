@@ -114,11 +114,14 @@ export interface StandingPose {
   trail: { swing: number; hold: number };
   /**
    * Losing balance, how far the free arms go out, ° from the trunk's down
-   * (`RIG_DETAIL.arms.alarmElevation` at most): out to the level riding, at
-   * chest height or below in a redirect and the tube (the plan's phase 2: the
+   * (`RIG_DETAIL.arms.alarmElevation` at most), and how straight the elbow
+   * comes (`alarmElbow`, °; `RIG_DETAIL.arms.alarmElbow` at most): out to the
+   * level riding, below chest height and bent, close in, in a redirect and the
+   * tube (the plan's phase 2, the owner's principle: never spread out; the
    * redirect's near-falls spread them into an airplane).
    */
   alarm: number;
+  alarmElbow: number;
   /**
    * The trailing hand on a rail (the tube, decision 12): its `share`, which rail
    * (+1 the toes', −1 the heels'), and its place along the board from the rear
@@ -161,6 +164,7 @@ const TRIM_FRONTSIDE: StandingPose = {
   lead: { turn: 20, raise: 0, lift: 0, reach: 0.9, hold: 0 },
   trail: { swing: 0, hold: 0 },
   alarm: 90,
+  alarmElbow: 175,
   grab: { share: 0, rail: 0, along: 0 },
   // Trim's 0.50–0.62 (SurfDeeper; Cornish Wave): the planing board's 0.67–0.74 drawn at about 0.58.
   weight: { pivot: 0.52, keep: 0.3, most: 0.1 },
@@ -261,9 +265,10 @@ const TOP_FRONTSIDE: StandingPose = {
   hips: 30,
   lookTurn: 50,
   hands: { lead: { nose: 0.15, toes: 0.12, up: 0.05 }, trail: { nose: 0.1, toes: 0.18, up: 0.08 } },
-  lead: { turn: 120, raise: -22, lift: 1, reach: 0.74, hold: 0 },
-  trail: { swing: 45, hold: 0 },
-  alarm: 60,
+  lead: { turn: 45, raise: -24, lift: 1, reach: 0.74, hold: 0 },
+  trail: { swing: 55, hold: 0 },
+  alarm: 50,
+  alarmElbow: 130,
 };
 
 /** The top turn and the snap, backside (Hobgood): on the toes' rail, the shoulders opened toward the tail, the head back to the pocket. */
@@ -273,7 +278,7 @@ const TOP_BACKSIDE: StandingPose = {
   chest: -35,
   hips: -12,
   lookTurn: 100,
-  lead: { turn: 120, raise: -30, lift: 1, reach: 0.74, hold: 0 },
+  lead: { turn: 45, raise: -35, lift: 1, reach: 0.74, hold: 0 },
 };
 
 /**
@@ -320,7 +325,8 @@ const TUBE_FRONTSIDE: StandingPose = {
   chest: 30,
   hips: 15,
   lead: { turn: 60, raise: -10, lift: 1, reach: 0.82, hold: 1 },
-  alarm: 55,
+  alarm: 50,
+  alarmElbow: 140,
   grab: { share: 1, rail: -1, along: 0.05 },
 };
 
@@ -425,6 +431,7 @@ export function blendPose(a: StandingPose, b: StandingPose, t: number, out: Stan
   out.trail.swing = lerp(a.trail.swing, b.trail.swing, t);
   out.trail.hold = lerp(a.trail.hold, b.trail.hold, t);
   out.alarm = lerp(a.alarm, b.alarm, t);
+  out.alarmElbow = lerp(a.alarmElbow, b.alarmElbow, t);
   out.grab.share = lerp(a.grab.share, b.grab.share, t);
   out.grab.rail = lerp(a.grab.rail, b.grab.rail, t);
   out.grab.along = lerp(a.grab.along, b.grab.along, t);
