@@ -8,11 +8,11 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
+  startOutSwitch, surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
-import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { rideLineupOffset, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
@@ -65,6 +65,26 @@ describe('PhysicalMode', () => {
       vi.unstubAllGlobals();
       mode.cancel();
       water.dispose();
+    }
+  });
+
+  it('starts the rider `?startOut=<m>` seaward of the take-off (a dev switch), and at the spot\'s own start otherwise', () => {
+    expect(startOutSwitch('?startOut=11')).toEqual({ startOut: 11 });
+    expect(startOutSwitch('?startOut=-2.5')).toEqual({ startOut: -2.5 });
+    for (const search of ['', '?startOut', '?startOut=', '?startOut=far', '?startOut=Infinity']) expect(startOutSwitch(search), search).toEqual({});
+    const big = physicalSettingsFor('canyon', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?startOut=11' });
+      const compared = surfZoneConfigFor(big, 5, false);
+      expect(compared.startOut).toBe(11);
+      // Today's start at the Canyon's Big, 11 m out, in place of its own.
+      expect(rideLineupOffset(compared)).toBe(11);
+      vi.stubGlobal('location', { search: '' });
+      const own = surfZoneConfigFor(big, 5, false);
+      expect(own.startOut).toBeUndefined();
+      expect(rideLineupOffset(own)).toBeLessThan(11);
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 
