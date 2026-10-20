@@ -85,7 +85,8 @@ build_basilisk() {
 omp_flags() {  # OMP=1: OpenMP (Homebrew's libomp with Apple's clang); otherwise nothing
   [ "${OMP:-0}" = 1 ] || return 0
   if [ "$(uname)" != Darwin ]; then echo "-fopenmp"; return; fi
-  local p; p="$(brew --prefix libomp)"
+  local p; p="$(brew --prefix libomp 2> /dev/null)"
+  [ -f "$p/include/omp.h" ] || { echo "OMP=1 needs Homebrew's libomp: brew install libomp" >&2; return 1; }
   echo "-Xpreprocessor -fopenmp -I$p/include -L$p/lib -lomp"
 }
 
@@ -183,7 +184,8 @@ start() {
   echo "$name: running (phase $([ -f "$P1/done" ] && echo 2 || echo 1))."
 }
 
-wait_running() {  # a build of this case already running (another shell, or a stopped supervisor's): wait for it
+wait_running() {  # a build of this case already running (another shell, or a stopped supervisor's): wait for it. The
+  # pattern is anchored on the binary as started (./periodic_<case>_p1 in its folder), so a shell naming its path doesn't count.
   local pattern=$1 said=0
   while pgrep -f "$pattern" > /dev/null; do
     [ "$said" = 1 ] || { echo "$name: already running ($pattern); waiting for it."; said=1; }
@@ -194,7 +196,7 @@ wait_running() {  # a build of this case already running (another shell, or a st
 foreground() {  # both phases in the foreground, resuming from the checkpoints; fails if a phase does
   parse "$1"
   [ -f "$P2/done" ] && { echo "$name: done ($(cat "$P2/done"))."; return; }
-  wait_running "periodic_${name}_(p1|p2)"
+  wait_running "^\./periodic_${name}_(p1|p2)( |$)"
   [ -f "$P2/done" ] && { echo "$name: done ($(cat "$P2/done"))."; return; }
   prepare "$1"
   if [ ! -f "$P1/done" ]; then
@@ -215,13 +217,14 @@ scout() {  # one coarse run of the whole case, every frame written at SCOUT_DTOU
   parse "$1"
   local end="${SCOUT_TMAX:-$("$PY" -c "print($tmax + $SCOUT_EXTRA)")}"
   [ -f "$PS/done" ] && { echo "$name: scout done ($(cat "$PS/done"))."; return; }
-  wait_running "periodic_${name}_scout"
+  wait_running "^\./periodic_${name}_scout( |$)"
   [ -f "$PS/done" ] && { echo "$name: scout done ($(cat "$PS/done"))."; return; }
   train "$PS"
   if [ ! -x "$PS/periodic_${name}_scout" ]; then
+    local omp; omp="$(omp_flags)"
     # shellcheck disable=SC2046,SC2086
     (cd "$PS" && cp "$HERE/periodic.c" . && \
-      qcc -O2 $(omp_flags) -DLEVEL="$SCOUT_LEVEL" $(bed_flags) -DXTOE="$xtoe" -DDOMAIN="$domain" -DTRAIN_C="$c" \
+      qcc -O2 $omp -DLEVEL="$SCOUT_LEVEL" $(bed_flags) -DXTOE="$xtoe" -DDOMAIN="$domain" -DTRAIN_C="$c" \
         -DTMAX="$end" -DTOUT0=0 -DDTOUT="$SCOUT_DTOUT" periodic.c -o "periodic_${name}_scout" -lm)
     params "$PS" "$SCOUT_LEVEL" scout 0 "$end" "" ""
   fi
