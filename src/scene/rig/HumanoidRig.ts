@@ -1381,7 +1381,8 @@ export class HumanoidRig {
     else {
       let low = 0;
       let high = top;
-      for (let i = 0; i < 14; i += 1) {
+      // To 0.08°, far under what shows (each step poses the hips and the spine).
+      for (let i = 0; i < 10; i += 1) {
         const middle = (low + high) / 2;
         if (distanceAt(middle) < reach) low = middle;
         else high = middle;
