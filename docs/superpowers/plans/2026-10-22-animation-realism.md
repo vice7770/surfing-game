@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan phase by phase. Steps use checkbox (`- [ ]`) syntax for tracking. **Build nothing until the owner approves this plan.**
 
-**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built". **Phase 2 built** on `claude/anim-p2` (from `claude/playtest-2026-10-22f`, 052337d2), awaiting the owner's ride check: see §8, phase 2, "Built".
+**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built". **Phase 2 built** on `claude/anim-p2` (from `claude/playtest-2026-10-22f`, 052337d2), awaiting the owner's ride check: see §8, phase 2, "Built". **Phase 3 built** on `claude/anim-p3` (from `main` at e445f06b, phases 1 and 2 in), awaiting the owner's ride check: see §8, phase 3, "Built".
 
 **The ask (owner, 2026-10-22):** "All movements need to be more realistic, right now a bit too random. All stages need proper animation; transitions are not so bad, but the stances are incorrect."
 
@@ -861,10 +861,10 @@ The rear knee caves in 31–34° toward the nose from the toes (the rear foot's 
 
 ### Phase 3: the take-off and the water
 
-- [ ] The pop-up: hands flat (§5.6); the landing's planted feet (§5.7); the hinge in `landing`.
-- [ ] Paddling: the lower chest, legs together, the scan; the catch (§5.4, §6); the lineup sit (§5.2, §6).
-- [ ] The prone kick-out's path (§5.15); the duck-dive review (§5.5).
-- [ ] **Gauge (lying, sitting):** `chestLift` (the sternum's line above the deck), `handAhead` (the entry ahead of the head), `pullDepth`, `legsApart`, `sitTrunk`.
+- [x] The pop-up: hands flat (§5.6); the landing's planted feet (§5.7); the hinge in `landing`.
+- [x] Paddling: the lower chest, legs together, the scan; the catch (§5.4, §6); the lineup sit (§5.2, §6).
+- [x] The prone kick-out's path (§5.15): tried, not kept (below); the duck-dive review (§5.5).
+- [x] **Gauge (lying, sitting):** `chestLift` (the sternum's line above the deck), `handAhead` (the entry ahead of the head), `pullDepth`, `legsApart`, `sitTrunk`; and `hipsDeck`, `handsApart`, `handsBack`, `palmFlat`.
 
 **Targets (Phase 3):**
 
@@ -903,6 +903,56 @@ The rear knee caves in 31–34° toward the nose from the toes (the rear foot's 
 - *The sit hides the first stroke:* the paddle's hands come from the physics, so as the sit blends out (0.4 s) the first stroke shows partly drawn. Accepted; check it in shot 1.
 - *Planted landing feet against the physics' jump:* the drawn feet travel an arc for 0.48 s. `PointInertia` stops blending the feet in landing; the switch tests must still pass.
 - *The catch cue isn't on the wire:* remote catches come from speed and pitch and may start later.
+
+**Built (phase 3, 2026-10-21, `claude/anim-p3`).** Drawn only: the physics, its points and every rider test are untouched; the pop-up's phase timings are exported from `AttachedRider` for the drawing to keep time by them (commits 4a7af926, 22996086, c289c25f, 3cb614e6, 76b9feac).
+
+- **The push** (`TAKE_OFF.hand`, `press`): the hands planted flat on the deck beside the drawn lower ribs (0.4 of the way from the hips to the neck along the lying trunk) as the push begins, 2 cm inside the rails, the back of the hand up and the fingers toward the nose, placed over 0.2 s (faster read as a jump). The chest is pushed up by the arms: the elbows' included angle runs from 60° at 15 % of the push to straight at 80 % (Borgonovo-Santos 2021), and the chest's line is solved on the skeleton so the shoulders are that far from the planted hands, the lower back lifting half of it (hips low, chest high), within 35° over the physics' own trunk and never lower than it (eased into either over 5°), no faster than 5 rad/s. The hips are held where they lay until 30 % of the push; from 65 % the trunk hands over to the physics' own, and the straight arms lift the hands off the deck (the reach begins).
+- **The landing** (`STAGE_POSES.landing`, `TAKE_OFF.touch`): each foot swings on a minimum-jerk arc from where its lying ankle was to its stance point, lifted 0.10 m (front, between the hands) and 0.05 m (back, across the stringer), both landing together at 90 % of the reach, at 45° (the owner's call, §10.3); `PointInertia` no longer blends the landing's feet, so nothing glides on into standing. Over the swing the feet, the toes and the elbows turn from how they lay, the knees drive forward and up under the chest before turning out, the facing turns from the deck to the stance's, and the hands come from where the push left them (about the shoulders) to low and forward in front of the hips. The landing's key pose hinges the trunk (the drop's, deep 40°), weighs the drawn hips back from the physics' 0.74 toward 0.62 only past it, and keeps the eyes forward; standing, it and the feet settle into riding's (60° / 80°) over the physics' 0.8 s settle (`StageWeights.landing`).
+- **Paddling** (`LYING_POSES.paddle`, `scan`): the lower back at 4° and the upper chest at 17° over the deck (the trunk's line reads 14–15°: lower, the shoulders came down to the physics' recovery height and the arm, folding tight past them, read as a jump at a 30 Hz display, as in step 8); the head neutral, its look 20° below the deck, lifting to −2° for a 0.6 s look-up every eight strokes (`WaterStages`, counted at each hand's reach on the board, so a remote surfer's poses count alike); the feet 0.08 m apart; no kick.
+- **The catch** (`LYING_POSES.catch`, `cobra`, `WATER_READING.catch*`): stroking with the take-off cue (the snapshot's slot, now read: local only), or faster than 2.5 m/s nose down past 5° (remote surfers): the chest up 30° (shallow) to 44° (the cobra, by the nose-down pitch from 5° to 15°), the head down 30–32°, the arm reaching all of its length; held a second after the condition goes, through the push (whose pose takes over), in and out over 0.3 s.
+- **The lineup sit** (`SIT`, `WATER_READING.sit*`): prone, not stroking, no duck, the hands at rest at the rails and the board slower than 0.5 m/s for 2 s: the drawn body sits up over 0.8 s, the hips on the deck (0.09 m) over the prone body's mass, the trunk 8° forward of the vertical in the world (the board's roll and pitch move only the legs and hips), straddling with the thighs out over the rails and the shins in the water, the hands on the thighs within a soft elbow, the head scanning a fixed 5 s cycle (85° over one shoulder, then 70° across to the other: the drawn state carries no set to follow), the chest turning a third of it. It lies down over 0.4 s on a stroke, a sweep of a hand, a duck or the board passing 0.8 m/s (the hysteresis). The leash follows the drawn feet.
+- **The duck-dive** (the review, §5.5): unchanged, the head tucked 79° down toward the deck, the back knee on the tail with the other leg kicked up (`03-duck-dive-phase3.jpg`). One fix found by it: the paddle's low chest hands over to the press within its first 0.15 (still handing over as the hands slide to straight arms at 0.3, the switch's blend swung the arms across the body).
+- **The prone kick-out** (§5.15, the chest first, then the hands to the rails, then the knees): tried and not kept. Leading the chest down while the physics' hips still stood high swung the arms through their shoulders at 23–27 rad/s (phase 2: 7), and a drawn path for the hands from held out to the rails did too. The lie-down keeps the physics' order (the parts together), the lying pose easing in over its last 40 %.
+- **Map and tests:** the gauge's new measures and the phase-3 targets (`pop-up-hands` read once the hands are placed, 0.22 s in; `pop-up` at 0.3 s; `landing`; `paddling` read over a stroke of each arm, its entry and depth at their extremes; `catch` down a 15° face; `sit` after 2 s still), sourced (Sheppard 2013; Rapture's paddle technique, pop-up, catching unbroken waves and board control). `stanceTargets.test.ts`: struck off `landing.stanceWidth`, `landing.weight` and `pop-up.leadElbow` / `trailElbow` (surfers 3 and 4); pinned `paddling.pullDepth` and `pop-up-hands.handsApart` (below). New `waterStages.test.ts`: the reader's sit and lying down (each cause, within 0.4 s; the speed's hysteresis), the catch (the cue while stroking; speed and pitch; held a second; the cobra by the pitch), the look-up every eight strokes and none in the catch; drawn on a real session, the sit's shape, the scan, the press's planted hands, straight elbows by 80 % and low hips, and the landing's soles and feet. The film: the pop-ups' switches checked blended only (the rig itself now carries them: raw 9 rad/s at 60 Hz against 108–131 at a fall or a lie-down); the glide's breathing read with the sit held off; the stand-up test's states carry the clock as the page's do.
+
+**Results** (the map's readings, the four surfers Regular and Goofy, mean (range); before is phase 2's code on the same recipes and gauge):
+
+| Stage | Measure | Before | After | Target |
+|---|---|---:|---:|---|
+| Sit | trunk from vertical / knees flexed / hips over the deck / legs apart | lying: 63° / 0° / 0.10 m / 0.29 m | 11° / 75° / 0.09 m / 0.62 m | ≤ 15° / 60–100° / 0.05–0.15 m / slightly apart |
+| Paddling | chest lift / legs apart / head (look below the deck) | 21.6° / 0.29 m / 17° | 14.7° / 0.10 m / 20°, −2° looking up every 8 strokes | 5–15° / ≤ 0.15 m / neutral |
+| Paddling | hand's entry ahead of the face / pull depth | 0.16 m / 0.23 m | 0.17 m / 0.25 m | 0.15–0.20 / 0.15–0.25 m |
+| Catch (15° face) | chest lift / head pitch down | 19.4° / 17° (no stage) | 27.2° / 31° | 20–35° / 20–40° |
+| Push, hands placed | hands apart / behind the trunk's middle / palm from flat | 0.47 m / −0.14 m (ahead) / 36° | 0.37 m / 0.07 m / 0° | 0.40–0.50 / 0.05–0.15 m / ≤ 30° |
+| Push, 0.3 s | elbows / chest lift / palm | 89° (82–97) / 26° / 43° | 99° (97–100) / 50° / 0° | 90–130° / chest high / ≤ 30° |
+| Landing (0.45 s) | width / weight / feet | 0.41 m / 1.07 / 81° / 87° | 0.63 m / 0.71 / 45° / 45° | 0.53–0.80 m / 0.64–0.80 / 35–55° |
+| Landing | knees flexed front / rear; trunk; arms | 118° / 96°; 0°; 46° / 47° | 112° / 92°; 29°; 49° / 27° | 70–100° (low); —; low and forward |
+| Landing → standing | each sole's middle after touchdown; the balls of the feet | glides 25–26 cm (20 cm still to go at the landing's end) | 1.9 cm (the settle's turn about the mid-foot); 4.2 cm | ≤ 3 cm |
+| Switches (the film, blended, 60 / 120 Hz) | pop-up: bone spike / joint spike | under 6 rad/s, 2 m/s | 2.9 / 2.3 rad/s; 1.0 / 0.6 m/s (crouched 5.4 rad/s at 120 Hz) | < 6 rad/s, < 2 m/s |
+
+The riding stances, the motion filter and the turns are as phase 2 left them: every stance target, film and rig test as before; `PosedBody.update` over phase 2's riding frames unchanged.
+
+**Stills and clips** (in `docs/research/animation-realism-2026-10-22/`):
+- `01-lineup-sit`, `02-paddle-catch`, `03-duck-dive` and `04-pop-up`, each `-phase3-before.jpg` (phase 2's code, the same tiles) and `-phase3.jpg`: the sit, paddling, the catch, the push and the landing against the target figures (`character-sheet.html?realism&only=<id>&gaps=0&when=…`; the catch tile now down a 15° face).
+- `phase3-strip-takeoff`, `phase3-strip-sit`, `phase3-strip-paddle`, each with `-before`: eight stills each, captioned (`character-sheet.html?motion=<recipe>&strip=…`).
+- `phase3-motion-before-water.mp4` / `phase3-motion-after-water.mp4` (paddling with its look-ups; sitting up after 2 s still, the scan, a stroke lying down, paddling off) and `phase3-motion-before-takeoff.mp4` / `phase3-motion-after-takeoff.mp4` (the catch down a 15° face into the pop-up and the landing; a ride let go with Enter, lying back down), surfer2 Regular: `node scripts/browser/motion-clip.mjs <out> "paddle,sit-and-paddle"` and `"catch-pop-up,lie-down"`.
+
+**M1 cost (this machine, Node):** `PosedBody.update` over recorded drawn frames (surfer2): the water's (paddling, the sit, the catch into the pop-up and the landing) 0.061 ms a frame on phase 2's code, 0.072 ms on phase 3's: prone 0.052 → 0.056 ms, the push 0.055 → 0.140 ms (the press's solve on the skeleton, twelve poses of the hips and spine a frame, for 0.72 s), the landing 0.065 → 0.077 ms; standing 0.084 → 0.089 ms; phase 2's riding frames 0.092 → 0.093 ms. Measured, not a gate.
+
+**Missed, and why (pinned):**
+- `paddling.pullDepth` (0.25–0.26 m for 0.15–0.25): the drawn wrist now follows the physics' hand to the bottom of its pull (`HAND_DEPTH` 0.25 m under the deck beside the rail, the board rolling with it); phase 2's higher chest left the arm short of it (0.23 m). Phase 5, with the stroke's rate and length.
+- `pop-up-hands.handsApart` (0.37 m for 0.40–0.50): the hands flat 2 cm inside the rails beside the drawn lower ribs, where this 1.78 m board is 0.42 m wide: the physics lays the prone body far back (its pelvis 0.37 m from the tail; the same placement leaves the shins and feet over the tail, not "the toes just off it"). Borgonovo-Santos' 0.46 m is the board's width at the chest.
+- The landing's front knee (low confidence, not pinned): flexed 112° for 70–100°, over the physics' landing pelvis, low (0.48 m over the deck) and forward (0.74 of the stance).
+- The catch's weight back on a steep face, and the board's trim with a seated rider (the nose higher as the body sits back): the physics' prone body and its place (phase 5). The scan's head follows a fixed cycle: the drawn state carries no set to follow.
+- The hands' roll through the landing can turn fast where the forearm passes the deck's normal (the hand bone is outside the film's measured bones): watch it in shot 3.
+
+**Shot list for the owner (Phase 3, as built):**
+1. Beach, small: paddle out 20 s, then stop and wait 5 s, then paddle again. *Look for:* the chest low over the board, the legs together, a look up every eight strokes or so; once still for 2 s, the rider sits up: straddling, upright, the legs in the water, the head turning over each shoulder; at the first stroke the rider lies straight back down (within half a second; the first stroke shows partly drawn).
+2. Beach, medium: catch three waves, the chase camera. *Look for:* the last strokes with the chest up and the head down as the board tips onto the face; the hands placed flat beside the ribs, the chest rising first with the hips low, then the hips up and the hands off the deck; the feet landing together, planted, not sliding in.
+3. The same, side camera. *Look for:* the front knee driving through under the chest, both feet landing at about 45°, then turning to about 60° front and 80° back over the next second; no foot gliding along the deck; the arms low and forward, not out.
+4. Duck-dive two waves. *Look for:* the head tucked toward the deck, the back knee on the tail; the arms straight onto the rails without swinging across the body.
+5. Ride, then lie down (Enter) to kick out prone. *Look for:* the lie-down as before (the drawn chest-first path was not kept); the low paddling chest easing in at its end.
+6. Online with a second player, if handy: the other surfer sitting when idle, paddling chest down, and their pop-up (their catch starts only from speed and pitch: the cue is not on the wire).
 
 ### Phase 4: falls and recovery
 
@@ -954,6 +1004,10 @@ These change the physics, so they change the feel. Each goes only when the owner
 | The kick-out's pivot | — | the nose over the back under a hard back foot | the snap's physics | only if phase 2's shot 6 shows it missing |
 | The deep U (snaps and cutbacks stalling on the static face) | pinned `it.fails` | | the turn's physics | open since 2026-09-27 |
 | Upright backside tube | — | — | — | decision 12: later |
+| The paddle's pull depth | 0.25–0.26 m under the waterline (drawn, following the physics' hand) | 0.15–0.25 m (Rapture) | `HAND_DEPTH` | with the stroke's rate and length (phase 3's pinned miss) |
+| The prone body's place along the board | the pelvis 0.37 m from the tail: the feet past the tail, the lower ribs where the board is 0.42 m wide (the push's hands 0.37 m apart) | the toes just off the tail; the hands 0.40–0.50 m apart | the prone posture's places | moves the board's trim: a ride check |
+| The catch's weight back, and the seated rider's trim | the prone body's place and mass | the weight back on a steep face; the nose up as the body sits | the prone posture, a seated posture | phase 3 draws the closest honest version |
+| The landing's pelvis | 0.48 m over the deck, 0.74 of the stance forward: the front knee flexed 112° | knees 70–100° | the landing posture's places | |
 
 ---
 
