@@ -214,15 +214,15 @@ export const RIG_DETAIL = {
    * ahead of the board by what the board turns over its lead, s, at the yaw
    * rate (the motion filter's, second order): the head by the look's 0.6 s
    * (`lookAhead` less its follow), the chest by `chest`, the hips by `hips`, so
-   * each comes round before the next (their world turn rates peak 0.1–0.35 s
-   * apart). The chest and hips within `twistMost`° of where the key pose has
-   * them, each followed, critically damped (the key poses' own turns come in by
-   * the stage weights): the chest at `chestFollow` rad/s, the hips at
-   * `hipsFollow` (0.5 s and 0.71 s behind; the gaze's 0.25 s), the neck's reach
-   * counted from where the chest is turning to, so the head turns first: in a
-   * cutback the head's world turn rate peaks 0.1–0.25 s before the chest's,
-   * the chest's 0.1–0.3 s before the hips'; the pad's twist (the movement-flow spec) turns the head and the chest
-   * at once and the hips by `hipsTwist` of it. This replaces the instant
+   * each comes round before the next. The chest and hips within `twistMost`°
+   * of where the key pose has them, each followed, critically damped (the key
+   * poses' own turns come in by the stage weights): the chest at `chestFollow`
+   * rad/s, the hips at `hipsFollow` (0.5 s and 0.71 s behind; the gaze's
+   * 0.25 s), the neck's reach counted from where the chest is turning to, so
+   * the head turns first: in a cutback the head's world turn rate peaks 0.1–0.3
+   * s before the chest's, the chest's 0.05–0.25 s before the hips'. The pad's
+   * twist (the movement-flow spec) turns the head and the chest at once and the
+   * hips by `hipsTwist` of it. This replaces the instant
    * proportional twist (the chest by 0.25 s of the turn and the hips by a third
    * of that, together) and the snap's extra 45°: the redirect's key poses turn
    * the shoulders back to the pocket.
