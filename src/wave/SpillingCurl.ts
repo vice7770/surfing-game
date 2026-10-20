@@ -241,6 +241,11 @@ export class SpillingCurl implements SpillingDrawnLook {
   /** The crest's normal n̂, toward the beach: the roller lens's, for the curl's slices only. */
   readonly normalX: Float64Array;
   readonly normalZ: Float64Array;
+  /**
+   * The roller band's drawn table's ages at the last `drawBand` (slot-major, `nx` a slot): s since its wave's front
+   * reached each column (NaN: no wave of the front's), for its fray's peel-side end (`frayBand`'s `PeelEnd`).
+   */
+  readonly bandAge: Float64Array;
   private readonly first: number;
   private readonly last: number;
   private readonly view = createLensView();
@@ -266,6 +271,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.normalX = new Float64Array(nx);
     this.normalZ = new Float64Array(nx).fill(1);
     this.gradient = new Float64Array(nx);
+    this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
     this.shapes = [];
     // Each column's bed along the waves' path (+z, the Canyon's straight crests) at the breaker depth: the gradient it
     // climbs (Mead & Black's band, as the reef break's), its overturn held to the span the advisor gave for the fan face.
@@ -404,12 +410,14 @@ export class SpillingCurl implements SpillingDrawnLook {
    * touched): each lens younger than `span` behind its front shows from its curl's landing line, the void filling up to
    * its crest, down to a toe that reaches the lens's own toe `toeSeconds` after touchdown; before touchdown, none. Once
    * landed it is drawn at full scale (over `flashSeconds`): the felt lens's scale grows with its travel (over 6.5 h_b,
-   * about 2.5 s), which drew the landing faint; by `span` the felt scale has grown to it.
+   * about 2.5 s), which drew the landing faint; by `span` the felt scale has grown to it. Each column's age is kept in
+   * `bandAge` for the band's fray.
    */
   drawBand(table: Float32Array, front: SpillingFront, roller: SpillingRoller, time: number): void {
     const { nx } = this.grid;
     const waves = front.waves;
     const reach = this.reach;
+    this.bandAge.fill(Number.NaN);
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = 0; column < nx; column += 1) {
         const o = (slot * nx + column) * ROLLER_STRIDE;
@@ -423,6 +431,7 @@ export class SpillingCurl implements SpillingDrawnLook {
         const j = waves[k].joinedAt[column];
         if (!(r === r)) continue;
         const age = time - (j === j && j > r ? j : r);
+        this.bandAge[slot * nx + column] = age;
         if (!(age < this.span)) continue;
         const own = this.wave[column] !== NONE && waves[this.wave[column]].id === id;
         const impact = own ? this.impact[column] : impactTime(this.nominal);

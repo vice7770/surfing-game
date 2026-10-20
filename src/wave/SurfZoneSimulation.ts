@@ -1417,8 +1417,12 @@ export class SurfZoneSimulation {
     into.set(this.roller.table);
     if (this.curl) {
       this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time);
-      // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a).
-      if (this.spilling!.options.drawnEdges) frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time);
+      // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a), its
+      // peel-side end, where the lip lands, only a column while young (the Canyon lip, round 5).
+      if (this.spilling!.options.drawnEdges) {
+        frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time,
+          { direction: this.spilling!.options.direction, age: this.curl.bandAge, young: this.curl.span });
+      }
     }
     return this.solver.nx;
   }
