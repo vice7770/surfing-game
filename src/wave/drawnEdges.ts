@@ -34,7 +34,34 @@ export const DRAWN_EDGES = {
   toeLife: 2,
   /** The roller band's drawn ends: its scale fades in over 1 to `bandFade` columns from each end of a slot's run. */
   bandFade: 6,
+  /**
+   * Where the lip lands (the Canyon spilling lip, round 5; the advisor's consult of 2026-10-20): a run's peel-side end,
+   * the one its front advances toward, is where each column's curl touches down, and its white must start there, not up
+   * to a second later. While that end's white is young (`PeelEnd.young`: the drawn look's span) it gives up at most
+   * `peelCut` m (the lip's finger scale, `RAGGED.period` in `SpillingCurlMesh`) and fades in over `peelFade` m, and the
+   * band's over half to `peelBandFade` column. Older, over `peelBlend` s, it frays as the upcoast end and the toe do.
+   */
+  peelCut: 0.45,
+  peelFade: 1,
+  peelBandFade: 1,
+  peelBlend: 1,
 } as const;
+
+/**
+ * The lip's landing end of the runs (`DRAWN_EDGES.peel*`): which way the front advances along x, each cell's age (s
+ * since its wave's front reached it; NaN: no lip there, frayed in full), and until what age its end counts as young.
+ */
+export interface PeelEnd {
+  readonly direction: 1 | -1;
+  /** `frayRow`: per cell of the row, as `values[start + k]` is at `age[k]`; `frayBand`: slot-major, `nx` a slot. */
+  readonly age: ArrayLike<number>;
+  readonly young: number;
+}
+
+/** How far an end `age` s old is the lip's landing end: 1 while young, 0 from `peelBlend` s later, and with no lip. */
+export function peelWeight(age: number, young: number): number {
+  return age === age ? 1 - smoothstep(young, young + DRAWN_EDGES.peelBlend, age) : 0;
+}
 
 /** A lattice cell's value in [0, 1): an integer hash of (i, j, salt). */
 function hash(i: number, j: number, salt: number): number {
@@ -60,11 +87,12 @@ export function edgeNoise(a: number, b: number, salt: number): number {
 
 /**
  * Frays the ends of each run of drawn white along one row (`values[start .. start + count)`, cell centres `xCenters`,
- * `dx` apart), at across-shore position z and sea time `time`. Only lowers values.
+ * `dx` apart), at across-shore position z and sea time `time`. With `peel`, a run's peel-side end frays only as far as
+ * the lip's fingers while its white is young (`DRAWN_EDGES.peelCut`). Only lowers values.
  */
 export function frayRow(values: Float64Array, start: number, count: number, xCenters: ArrayLike<number>, dx: number, z: number,
-  time: number): void {
-  const { endCut, endShare, endFade, endWavelength, endLife, gap } = DRAWN_EDGES;
+  time: number, peel?: PeelEnd): void {
+  const { endCut, endShare, endFade, endWavelength, endLife, gap, peelCut, peelFade } = DRAWN_EDGES;
   const zs = z / endWavelength;
   const ts = time / endLife;
   let ix = 0;
@@ -83,14 +111,18 @@ export function frayRow(values: Float64Array, start: number, count: number, xCen
     const x0 = xCenters[ix] - 0.5 * dx;
     const x1 = xCenters[end] + 0.5 * dx;
     const scale = Math.min(1, (endShare * (x1 - x0)) / (endCut + endFade));
-    const fade = scale * endFade;
+    // The peel-side end, where the lip lands, frays only as far as its fingers while young.
+    const youngLow = peel && peel.direction < 0 ? peelWeight(peel.age[ix], peel.young) : 0;
+    const youngHigh = peel && peel.direction > 0 ? peelWeight(peel.age[end], peel.young) : 0;
+    const fadeLow = scale * (endFade + (peelFade - endFade) * youngLow);
+    const fadeHigh = scale * (endFade + (peelFade - endFade) * youngHigh);
     // Each end its own noise: keyed by where it lies along shore, so neighbouring runs fray differently.
-    const cutLow = scale * endCut * edgeNoise(zs, ts, Math.floor(x0));
-    const cutHigh = scale * endCut * edgeNoise(zs + 0.5, ts, Math.floor(x1) + 7919);
+    const cutLow = scale * (endCut + (peelCut - endCut) * youngLow) * edgeNoise(zs, ts, Math.floor(x0));
+    const cutHigh = scale * (endCut + (peelCut - endCut) * youngHigh) * edgeNoise(zs + 0.5, ts, Math.floor(x1) + 7919);
     for (let k = ix; k <= end; k += 1) {
       if (!(values[start + k] > 0)) continue;
       const x = xCenters[k];
-      const share = smoothstep(cutLow, cutLow + fade, x - x0) * smoothstep(cutHigh, cutHigh + fade, x1 - x);
+      const share = smoothstep(cutLow, cutLow + fadeLow, x - x0) * smoothstep(cutHigh, cutHigh + fadeHigh, x1 - x);
       values[start + k] *= share;
     }
     ix = end + 1;
@@ -133,9 +165,11 @@ export function frayToes(values: Float64Array, nx: number, rows: ArrayLike<numbe
 /**
  * The roller band's drawn table (`ROLLER_FIELD`, slot-major, `stride` floats a column): each slot's run of columns with
  * a band fades in over 1 to `bandFade` columns from either end, by a noise keyed on where the end lies and the time.
+ * With `peel`, its peel-side end fades over at most `peelBandFade` column while young, where the lip lands.
  */
-export function frayBand(table: Float32Array, slots: number, nx: number, stride: number, scaleField: number, time: number): void {
-  const { bandFade, endLife } = DRAWN_EDGES;
+export function frayBand(table: Float32Array, slots: number, nx: number, stride: number, scaleField: number, time: number,
+  peel?: PeelEnd): void {
+  const { bandFade, endLife, peelBandFade } = DRAWN_EDGES;
   const ts = time / endLife;
   for (let slot = 0; slot < slots; slot += 1) {
     const at = (column: number) => (slot * nx + column) * stride + scaleField;
@@ -149,8 +183,15 @@ export function frayBand(table: Float32Array, slots: number, nx: number, stride:
       while (end + 1 < nx && table[at(end + 1)] > 0) end += 1;
       const length = end - column + 1;
       const most = Math.max(1, Math.floor(length / 3));
-      const low = Math.min(most, 1 + (bandFade - 1) * edgeNoise(column / 7, ts, slot + 31));
-      const high = Math.min(most, 1 + (bandFade - 1) * edgeNoise(end / 7, ts, slot + 61));
+      const noiseLow = edgeNoise(column / 7, ts, slot + 31);
+      const noiseHigh = edgeNoise(end / 7, ts, slot + 61);
+      // Where the lip lands, while young: over half a column to `peelBandFade`.
+      const youngLow = peel && peel.direction < 0 ? peelWeight(peel.age[slot * nx + column], peel.young) : 0;
+      const youngHigh = peel && peel.direction > 0 ? peelWeight(peel.age[slot * nx + end], peel.young) : 0;
+      const full = (noise: number) => 1 + (bandFade - 1) * noise;
+      const light = (noise: number) => peelBandFade * (0.5 + 0.5 * noise);
+      const low = Math.min(most, full(noiseLow) + (light(noiseLow) - full(noiseLow)) * youngLow);
+      const high = Math.min(most, full(noiseHigh) + (light(noiseHigh) - full(noiseHigh)) * youngHigh);
       for (let k = column; k <= end; k += 1) {
         const share = Math.min(1, (k - column + 0.5) / low, (end - k + 0.5) / high);
         table[at(k)] *= share * share * (3 - 2 * share);

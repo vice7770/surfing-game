@@ -17,7 +17,7 @@ import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
 import type { SurfZoneState } from './surfZoneState';
-import type { LipImpact } from './SprayCloud';
+import type { LipImpact, RollerToes } from './SprayCloud';
 import { OPEN_EDGE_RAMP, OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { riderBounds, sideMargin, type RiderBounds } from '../physics/riderBounds';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
@@ -33,7 +33,7 @@ import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
 import { frayBand } from './drawnEdges';
-import { SpillingCurl } from './SpillingCurl';
+import { BAND_LOOK_STRIDE, SpillingCurl } from './SpillingCurl';
 
 /** No drawn splashes (`drawnImpacts` without a spilling lip). */
 const NO_IMPACTS: readonly LipImpact[] = [];
@@ -142,6 +142,12 @@ export interface SurfZoneConfig {
    * Look only: nothing felt changes.
    */
   drawnEdges?: boolean;
+  /**
+   * Whether a spilling spot with its spilling lip throws the roller front's drawn spray off its toe line (the Canyon
+   * roller front, docs/research/roller-front-2026-10-22; Rich only): on by default; `?rollerFront=off` turns it off with
+   * the front's ribbon, for A/Bs. Drawn only: nothing felt changes.
+   */
+  rollerFront?: boolean;
   /**
    * Whether the tank's open sides relax toward the incoming sea (`SideFeed`, the wave-sizes work): the config's say,
    * else `SIDE_FEED_SPOTS` (none since 2026-10-07).
@@ -765,6 +771,8 @@ export class SurfZoneSimulation {
    * it reads the front, the lenses and the water, and writes only what is drawn.
    */
   readonly curl?: SpillingCurl;
+  /** The roller front's toe line for the drawn spray (`rollerToes`), kept for the step it was written at. */
+  private toes?: RollerToes & { readonly table: Float32Array; readonly look: Float32Array; time: number };
   /** The whitewater whose foam is drawn with the spilling lip on: the front's, held back until each curl lands. */
   private readonly drawnWhitewater?: Float64Array;
   /** Where the window stood when the drawn foam's surface drift was laid on its bed (it follows the window). */
@@ -1475,17 +1483,45 @@ export class SurfZoneSimulation {
   /**
    * S3: the roller's table (`ROLLER_FIELD`, slot-major) as float32, for both looks to draw the band; returns its columns.
    * With the spilling lip, the copy's band waits for each curl to land and grows down from its landing line (the felt
-   * table is never touched).
+   * table is never touched). With `look` (`BAND_LOOK_STRIDE` floats per slot and column), each entry's time since its
+   * curl landed and its wave's H, for the roller front (drawn only; left as it is without the lip).
    */
-  writeRoller(into: Float32Array): number {
+  writeRoller(into: Float32Array, look?: Float32Array): number {
     if (!this.roller) return 0;
     into.set(this.roller.table);
     if (this.curl) {
-      this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time);
-      // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a).
-      if (this.spilling!.options.drawnEdges) frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time);
+      this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time, look && look.length > 0 ? look : undefined);
+      // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a), its
+      // peel-side end, where the lip lands, only a column while young (the Canyon lip, round 5).
+      if (this.spilling!.options.drawnEdges) {
+        frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time,
+          { direction: this.spilling!.options.direction, age: this.curl.bandAge, young: this.curl.span });
+      }
     }
     return this.solver.nx;
+  }
+
+  /**
+   * The roller front's toe line for the drawn spray (the Canyon roller front): the roller's drawn table and its look, as
+   * `writeRoller` writes them for this step (once a step, however often it is asked), its columns and their place; none
+   * without the spilling lip or with `rollerFront` off. Drawn only: it reads the felt table and writes a copy.
+   */
+  rollerToes(): RollerToes | undefined {
+    if (!this.roller || !this.curl || this.config.rollerFront === false) return undefined;
+    const nx = this.solver.nx;
+    let toes = this.toes;
+    if (!toes) {
+      toes = {
+        table: new Float32Array(ROLLER_SLOTS * nx * ROLLER_STRIDE), look: new Float32Array(ROLLER_SLOTS * nx * BAND_LOOK_STRIDE),
+        columns: nx, column0: this.solver.xCenters[0], width: this.solver.dx, time: Number.NaN,
+      };
+      this.toes = toes;
+    }
+    if (toes.time !== this.solver.time) {
+      this.writeRoller(toes.table, toes.look);
+      toes.time = this.solver.time;
+    }
+    return toes;
   }
 
   /**

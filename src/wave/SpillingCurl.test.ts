@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { canyonArmAt } from './Bathymetry';
 import { overturn, overturnParameter, overturnSize } from './Overturn';
 import {
-  CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, SpillingCurl, curlSize, curlStage, drawnReach, impactTime, reachShare, type CurlGrid,
+  BAND_LOOK_FIELD, BAND_LOOK_OLD, BAND_LOOK_STRIDE, CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, SpillingCurl, curlSize, curlStage,
+  drawnReach, impactTime, reachShare, type CurlGrid,
 } from './SpillingCurl';
 import { SpillingFront } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, type SpillingRoller } from './SpillingRoller';
@@ -142,6 +143,17 @@ describe('the spilling lip on a spilling front', () => {
       expect(drawn[at(x, 2)]).toBe(1);
     }
     expect(foam.dense[at(16, 2)]).toBeLessThan(0.01);
+    // Its air too (round 5): none drawn on the shoulder's band, all of it behind the front and off the band.
+    for (const x of [-4, 0, 1]) {
+      expect(curl.shoulderAir[at(x, 2)]).toBe(0);
+      expect(curl.airShare(at(x, 2), 0)).toBe(0);
+    }
+    expect(curl.shoulderAir[at(-9, 2)]).toBeGreaterThan(0);
+    expect(curl.shoulderAir[at(-9, 2)]).toBeLessThan(1);
+    for (const [x, z] of [[-14, 2], [-4, 25], [4, 2]]) {
+      expect(curl.shoulderAir[at(x, z)]).toBe(1);
+      expect(curl.airShare(at(x, z), 0)).toBe(1);
+    }
   });
 
   it('draws none ahead of the front or before its curl lands, reaches the face\'s foot 2 s after, and changes nothing felt', () => {
@@ -262,6 +274,9 @@ describe('the spilling lip\'s band', () => {
       curl.drawBand(drawn, front, roller, time);
       const reached = front.waves[0].reached[20];
       if (!(reached === reached)) continue;
+      // Its age kept for the band's fray (where the lip lands, round 5); none in a column with no band.
+      if (drawn[o + ROLLER_FIELD.scale] > 0) expect(curl.bandAge[20]).toBeCloseTo(time - reached, 9);
+      expect(curl.bandAge[21]).toBeNaN();
       const since = time - reached - curl.impact[20];
       if (since < -dt) {
         expect(drawn[o + ROLLER_FIELD.scale]).toBe(0);
@@ -278,6 +293,59 @@ describe('the spilling lip\'s band', () => {
     expect(after).toBeGreaterThan(20);
     // The felt table is never touched.
     expect(felt[o + ROLLER_FIELD.scale]).toBe(Math.fround(0.2));
+  });
+});
+
+describe('the roller band\'s drawn look (the Canyon roller front)', () => {
+  it('writes beside the drawn table each entry\'s time since its curl landed and its wave\'s H, and leaves the table as without it', () => {
+    const grid = tank();
+    const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+    for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+    const out = new Float64Array(grid.nx * grid.nz);
+    // Column 20's lens (slot 0) is the front wave's, its section 1.4 m high; column 22's (slot 1) a wave the front has dropped.
+    const roller = {
+      tableWave: (column: number, slot: number) => (column === 20 && slot === 0 ? front.waves[0].id : column === 22 && slot === 1 ? 999 : -1),
+      lensOf: (column: number, id: number, view: { height: number }) => {
+        if (column !== 20 || id !== front.waves[0].id) return false;
+        view.height = 1.4;
+        return true;
+      },
+    } as unknown as SpillingRoller;
+    const felt = new Float32Array(ROLLER_SLOTS * grid.nx * ROLLER_STRIDE);
+    for (const o of [20 * ROLLER_STRIDE, (grid.nx + 22) * ROLLER_STRIDE]) {
+      felt[o + ROLLER_FIELD.scale] = 0.2;
+      felt[o + ROLLER_FIELD.length] = 5;
+    }
+    const plain = new Float32Array(felt.length);
+    const drawn = new Float32Array(felt.length);
+    const look = new Float32Array(ROLLER_SLOTS * grid.nx * BAND_LOOK_STRIDE).fill(-7);
+    const dt = 0.02;
+    let landed = 0;
+    for (let step = 1; step <= 600; step += 1) {
+      const time = step * dt;
+      front.update(time, dt, 2, grid.strength, out);
+      curl.update(time, dt, front, undefined, grid.strength);
+      plain.set(felt);
+      curl.drawBand(plain, front, roller, time);
+      drawn.set(felt);
+      curl.drawBand(drawn, front, roller, time, look);
+      expect(drawn).toEqual(plain);
+      const reached = front.waves[0].reached[20];
+      if (!(reached === reached)) continue;
+      const own = 20 * BAND_LOOK_STRIDE;
+      // Its own touchdown while its curl is the column's (younger than the look's span); the nominal one's after.
+      const impact = time - reached < curl.span ? curl.impact[20] : impactTime(SPILLING_CURL.nominalShare * 1.56);
+      expect(look[own + BAND_LOOK_FIELD.since]).toBeCloseTo(time - reached - impact, 5);
+      expect(look[own + BAND_LOOK_FIELD.height]).toBeCloseTo(1.4, 6);
+      if (look[own + BAND_LOOK_FIELD.since] >= 0) landed += 1;
+      // A dropped wave's: long landed, at the nominal H; an empty entry: no H.
+      const dropped = (grid.nx + 22) * BAND_LOOK_STRIDE;
+      expect(look[dropped + BAND_LOOK_FIELD.since]).toBe(BAND_LOOK_OLD);
+      expect(look[dropped + BAND_LOOK_FIELD.height]).toBeCloseTo(SPILLING_CURL.nominalShare * 1.56, 5);
+      expect(look[21 * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height]).toBe(0);
+    }
+    expect(landed).toBeGreaterThan(20);
   });
 });
 

@@ -24,7 +24,7 @@ import type { WaterLook } from './waterLook';
 export type HazeRoute = 'vertex' | 'pixel';
 
 /** The drawings the land haze reaches; `scenery` is three's own materials (riders, boards, leash, bubbles, the pool's). */
-export type HazeSiteName = 'seabed' | 'lip' | 'curl' | 'barrel' | 'spray' | 'scenery';
+export type HazeSiteName = 'seabed' | 'lip' | 'curl' | 'front' | 'barrel' | 'spray' | 'scenery';
 
 export interface HazeLandMode {
   /** Dev (`?hazeLand=off`, `window.waterHazeLand(false)`): nothing but the water hazed, as before. */
@@ -59,6 +59,8 @@ export const HAZE_ROUTES: Record<HazeSiteName, HazeRoute> = {
   seabed: 'vertex',
   lip: 'pixel',
   curl: 'pixel',
+  // The roller front (a standard material): per pixel from its view position, as three's lit materials.
+  front: 'pixel',
   barrel: 'pixel',
   spray: 'vertex',
   scenery: 'pixel',

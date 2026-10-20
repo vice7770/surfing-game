@@ -8,6 +8,7 @@ import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from './riderVisualState';
 import { StanceGauge } from './stanceGauge';
+import { STAGE_POSES, onEveryPose } from './stagePoses';
 import { createTestHumanoid } from './testHumanoid';
 
 const at = new Vector3(0, 0.03, 0);
@@ -68,7 +69,7 @@ describe('the clavicles and the toes (the stance poses, step 3)', () => {
   });
 
   it('lifts the heel past the ankle’s weight-bearing reach, the ball and the toes on the deck', () => {
-    // The hand in the face on surfer1: its front ankle closes to 44° with the heel down.
+    // The hand in the face on surfer1: its front ankle closes past the key pose's reach (35°) with the heel down.
     const bytes = readFileSync('public/assets/surfers/surfer1.glb');
     const glb = () => readGlbSkeleton(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
     const state = stanceState('hand-in-face', 'regular', at, createRiderVisualState()).state;
@@ -79,13 +80,13 @@ describe('the clavicles and the toes (the stance poses, step 3)', () => {
       root.updateMatrixWorld(true);
       return { bones, angles: gauge.measure(state, 'regular') };
     };
-    const reach = RIG_DETAIL.maxDorsiflexion;
-    RIG_DETAIL.maxDorsiflexion = 90;
+    const reach = STAGE_POSES.trimFrontside.maxDorsiflexion;
+    const restore = onEveryPose((key) => { key.maxDorsiflexion = 90; });
     const flat = pose().angles;
-    RIG_DETAIL.maxDorsiflexion = reach;
+    restore();
     const { bones, angles } = pose();
-    expect(Math.max(flat.ankleFront, flat.ankleRear)).toBeGreaterThan(42);
-    expect(Math.max(angles.ankleFront, angles.ankleRear)).toBeLessThanOrEqual(42);
+    expect(Math.max(flat.ankleFront, flat.ankleRear)).toBeGreaterThan(reach + 2);
+    expect(Math.max(angles.ankleFront, angles.ankleRear)).toBeLessThanOrEqual(reach + 2);
     const deckUp = new Vector3(0, 1, 0).applyQuaternion(state.boardQuaternion);
     for (const side of ['left', 'right'] as const) {
       const foot = state.points[side === 'left' ? POINT.leftFoot : POINT.rightFoot];
@@ -97,10 +98,9 @@ describe('the clavicles and the toes (the stance poses, step 3)', () => {
   it('keeps the heel down within the ankle’s reach: trim is as it was', () => {
     const state = stanceState('trim', 'regular', at, createRiderVisualState()).state;
     const lifted = solve(state);
-    const reach = RIG_DETAIL.maxDorsiflexion;
-    RIG_DETAIL.maxDorsiflexion = 90;
+    const restore = onEveryPose((key) => { key.maxDorsiflexion = 90; });
     const flat = solve(state);
-    RIG_DETAIL.maxDorsiflexion = reach;
+    restore();
     for (const side of ['left', 'right'] as const) {
       expect(world(lifted.bones, BONES.foot[side]).distanceTo(world(flat.bones, BONES.foot[side])), side).toBeLessThan(1e-6);
     }

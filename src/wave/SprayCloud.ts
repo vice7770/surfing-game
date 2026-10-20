@@ -3,6 +3,8 @@ import { PARTICLE_BUDGETS, particleBudget, poolSize, type ParticleBudget, type P
 import { seededRandom } from './random';
 import { firstSourceCell, type ParticleSources } from './particleSources';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
+import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from './SpillingCurl';
 
 /**
  * A lip parcel falling back into the water: where, how much stays (its
@@ -42,6 +44,31 @@ export interface StrokeSplash {
   speed: number;
 }
 
+/**
+ * The roller front's toe line (the Canyon roller front, docs/research/roller-front-2026-10-22), drawn only: the roller's
+ * drawn table (`ROLLER_FIELD`, slot-major, `columns` a slot) and its look beside it (`BAND_LOOK_FIELD`), the first
+ * column's centre x and the columns' width, m.
+ */
+export interface RollerToes {
+  readonly table: ArrayLike<number>;
+  readonly look: ArrayLike<number>;
+  readonly columns: number;
+  readonly column0: number;
+  readonly width: number;
+}
+
+/**
+ * The roller front's toe spray (the water-physics advisor, 2026-10-22): a sparse fringe of 2.5–3 mm drops thrown forward
+ * off the toe at `speed` × the bore's celerity c, `angle` (rad) above level, rising 0.3–1.5 m; such drops fall at
+ * 7.3–8.1 m/s (`fall`; Gunn & Kinzer 1949). Thrown where the band is drawn (scale over `minScale`) once its curl has
+ * landed, `rate` drops per metre of toe a second while young, `oldShare` of it once landed `young` s and more (P), from
+ * `at` of its length down the face (the band's toe, its coverage half gone) at `lift` H over the water (the nose's top).
+ */
+export const TOE_SPRAY = {
+  speed: 1.5, angle: [Math.PI / 6, Math.PI / 4] as const, fall: [7.3, 8.1] as const, rate: 2.5, oldShare: 0.3, young: 2,
+  minScale: 0.5, at: 0.9, lift: 0.13,
+} as const;
+
 /** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */
 export interface SprayScene {
   readonly solver: {
@@ -65,6 +92,8 @@ export interface SprayScene {
    * throws none from a splash-up), but kept apart from `lipImpacts`, which the sound and the reports read.
    */
   readonly drawnImpacts?: readonly LipImpact[];
+  /** The roller front's toe line, drawn only (Rich; none without it): asked for once a step. */
+  readonly rollerToes?: () => RollerToes | undefined;
   /** Local wind at crest height, m/s: positive onshore (+z). */
   readonly windSpeed: number;
   /** The rider's hands pulling through the water this step. */
@@ -191,12 +220,15 @@ export class SprayCloud {
   private readonly spin: Float64Array;
   private readonly lateral: Float64Array;
   private readonly random: () => number;
+  /** The roller front's toe spray draws on its own stream, so every other drop's stays as it was. */
+  private readonly toeRandom: () => number;
   /** Scratch for `roll`: each roller's sprites, and the rollers by id. */
   private readonly held = new Map<number, number>();
   private readonly rollerById = new Map<number, TubeRoller>();
 
   constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
     this.random = seededRandom(seed, 0x5b1a54);
+    this.toeRandom = seededRandom(seed, 0x70e5f7);
     const total = capacity + whitewaterCapacity;
     const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
@@ -252,6 +284,7 @@ export class SprayCloud {
     for (const impact of scene.drawnImpacts ?? []) this.splash(scene, impact);
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
+    this.toeSpray(scene, dt);
     this.feather(scene, dt);
     this.packedMistSize = this.budget.mistSize;
     this.particlesDirty = true;
@@ -461,6 +494,56 @@ export class SprayCloud {
           xCenters[i - row * nx] + (this.random() - 0.5) * dx, surface + 0.05, zCenters[row] + (this.random() - 0.5) * dz[row],
           u + (this.random() - 0.5), lift * (0.4 + 0.6 * this.random()), w + (this.random() - 0.5),
         );
+      }
+    }
+  }
+
+  /**
+   * The roller front's toe spray (`TOE_SPRAY`; Rich only, as the front is drawn): drops thrown forward off each drawn
+   * band's toe line, along its water's velocity c·n̂ at 1.5 c and 30–45° up, a sparse fringe. Drawn only.
+   */
+  private toeSpray(scene: SprayScene, dt: number): void {
+    if (this.look === 'classic') return;
+    const toes = scene.rollerToes?.();
+    if (!toes) return;
+    const { table, look, columns, column0, width } = toes;
+    const { solver } = scene;
+    const random = this.toeRandom;
+    for (let slot = 0; slot < ROLLER_SLOTS && this.room(false); slot += 1) {
+      for (let column = 0; column < columns && this.room(false); column += 1) {
+        const o = (slot * columns + column) * ROLLER_STRIDE;
+        const g = table[o + ROLLER_FIELD.scale];
+        if (!(g >= TOE_SPRAY.minScale)) continue;
+        const l = (slot * columns + column) * BAND_LOOK_STRIDE;
+        const since = look[l + BAND_LOOK_FIELD.since];
+        if (!(since >= 0)) continue;
+        const fx = table[o + ROLLER_FIELD.flowX];
+        const fz = table[o + ROLLER_FIELD.flowZ];
+        const c = Math.hypot(fx, fz);
+        if (!(c > 0.5)) continue;
+        const young = since < TOE_SPRAY.young ? 1 : TOE_SPRAY.oldShare;
+        const expected = TOE_SPRAY.rate * young * g * width * dt * this.budget.spawn;
+        let spawns = Math.floor(expected) + (random() < expected - Math.floor(expected) ? 1 : 0);
+        if (spawns === 0) continue;
+        const crest = table[o + ROLLER_FIELD.crest];
+        const length = table[o + ROLLER_FIELD.length];
+        const roughness = table[o + ROLLER_FIELD.roughness];
+        const height = look[l + BAND_LOOK_FIELD.height];
+        for (; spawns > 0 && this.room(false); spawns -= 1) {
+          const x = column0 + (column + random() - 0.5) * width;
+          const z = crest + TOE_SPRAY.at * length + (random() - 0.5) * roughness;
+          const cell = solver.cellIndex(x, z);
+          if (!(solver.h[cell] > WET)) continue;
+          const angle = TOE_SPRAY.angle[0] + (TOE_SPRAY.angle[1] - TOE_SPRAY.angle[0]) * random();
+          const speed = TOE_SPRAY.speed * c * (0.9 + 0.2 * random());
+          const across = (random() - 0.5) * 0.15 * speed;
+          const forward = speed * Math.cos(angle);
+          const k = this.count;
+          this.spawn(SPRAY, x, solver.h[cell] + solver.bed[cell] + TOE_SPRAY.lift * height, z,
+            (fx / c) * forward - (fz / c) * across, speed * Math.sin(angle), (fz / c) * forward + (fx / c) * across);
+          const fall = TOE_SPRAY.fall[0] + (TOE_SPRAY.fall[1] - TOE_SPRAY.fall[0]) * random();
+          this.drag[k] = GRAVITY / (fall * fall);
+        }
       }
     }
   }

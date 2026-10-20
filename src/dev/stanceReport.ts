@@ -46,6 +46,7 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
   trunkFlexion: 'Trunk over the toes', trunkPitch: 'Trunk toward the nose', trunkTilt: 'Trunk from the vertical', lean: 'Lean (world)', chestTwist: 'Chest twist', hipTwist: 'Pelvis twist',
   headYaw: 'Head yaw', headPitch: 'Head pitch (down +)', leadArm: 'Lead arm', trailArm: 'Trailing arm', leadElbow: 'Lead elbow', trailElbow: 'Trailing elbow',
   lowHand: 'Lower hand above the board', stanceWidth: 'Stance width', weight: 'Weight (rear 0 – front 1)',
+  footFront: 'Front foot to the stringer', footRear: 'Rear foot to the stringer', rearKneeIn: 'Rear knee in (toward the nose)', shoulderDrop: 'Lead shoulder drop',
 };
 
 /**

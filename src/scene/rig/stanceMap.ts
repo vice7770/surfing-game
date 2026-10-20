@@ -189,6 +189,63 @@ const SOURCE_LIST = {
     url: 'https://www.youtube.com/watch?v=yEI8IVZV46s',
     gives: 'The duck-dive, for step 8. Not read yet.',
   },
+  // The animation-realism plan's sources (docs/superpowers/plans/2026-10-22-animation-realism.md, §11).
+  weiss2024: {
+    short: 'Weiß 2024',
+    kind: 'measured',
+    cite: 'Weiß A, Koelewijn A, Masmoudi I, Lluch È (2024), Combining pose estimation and inertial measurement tracking data for a biomechanical simulation of river wave surfing using optimal control (Proc. 29th ECSS, Glasgow)',
+    url: 'https://cris.fau.de/publications/331306594',
+    gives: 'One surfer, nine river-wave turns: the front leg\'s peaks above the rear\'s, hip flexion 58.7°, knee 69.8°.',
+  },
+  bruton2013: {
+    short: 'Bruton 2013',
+    kind: 'measured',
+    cite: 'Bruton MR, O\'Dwyer NJ, Adams RD (2013), Neuromuscular characteristics of recreational and competitive male and female surfers (Int J Perform Anal Sport 13(2): 388–402)',
+    url: 'https://doi.org/10.1080/24748668.2013.11868656',
+    gives: 'The simulated surfing crouch; recreational women crouch shallower.',
+  },
+  seixas2023: {
+    short: 'Seixas 2023',
+    kind: 'measured',
+    cite: 'Seixas P, Oliveira R, Carita AI, Moreira M (2023), Setting qualitative performance parameters of elite surfing aerial manoeuvres with 360° rotation (Cuadernos de Psicología del Deporte 23(2): 169–193)',
+    url: 'https://doi.org/10.6018/cpd.534281',
+    gives: 'Landings: base of support 79.2 ± 13.7 cm, front knee 113.8 ± 19.9°, front ankle dorsiflexed 32.7 ± 14.5°.',
+  },
+  rapturestance: {
+    short: 'Rapture, stance',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: stance',
+    url: 'https://www.rapturecamps.com/learn-to-surf/surf-fundamentals/stance',
+    gives: 'The front foot 20–30° and the back 15–25° off square, the knees bent and the back knee in toward the front, the lead shoulder down the line, the hands low and quiet, the eyes where you go.',
+  },
+  rapturetakeoff: {
+    short: 'Rapture, take-off',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: take-off techniques (the research brief of 2026-10-22; its exact page to confirm in the build)',
+    url: 'https://www.rapturecamps.com/learn-to-surf/take-off/take-off-techniques',
+    gives: 'The drop: the deepest crouch, knees past 90°, the back fairly upright, the arms at the waist or below with the lead arm along the line, the eyes on the base, 55–60 % on the back foot on a steep face (the owner\'s call, §10.2).',
+  },
+  rapturesides: {
+    short: 'Rapture, frontside vs backside',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: frontside vs backside take-off',
+    url: 'https://www.rapturecamps.com/learn-to-surf/take-off/frontside-vs-backside-take-off',
+    gives: 'Backside the torso turns toward the wave, the shoulders open along the rails, looking over the lead shoulder down the line: not the frontside mirrored.',
+  },
+  wslflow: {
+    short: 'WSL flow',
+    kind: 'coaching',
+    cite: 'Mauro C (2017), 5 Ways to Find Your Flow (WSL Performance Center)',
+    url: 'https://www.worldsurfleague.com/posts/269518/performance-center-5-ways-to-fix-your-flow',
+    gives: 'A quiet upper body, the front arm pointing where you go; bend the knees, not the back; turns unwind head, shoulders, hips, knees, toes.',
+  },
+  bartonlynch: {
+    short: 'Barton Lynch',
+    kind: 'coaching',
+    cite: 'Stab (2016), The Average Surfer Makes These Common Mistakes Says The World Champ (Barton Lynch)',
+    url: 'https://stabmag.com/style/the-average-surfer-makes-these-common-mistakes-says-the-world-champ',
+    gives: 'The front arm, head and eyes lead; squat at the knees; the head centred over the board.',
+  },
 } satisfies Record<string, Source>;
 
 export type SourceId = keyof typeof SOURCE_LIST;
@@ -224,21 +281,42 @@ export const MEASURE_DOMAIN: Record<StanceMeasure, [number, number]> = {
   kneeFront: [0, 180], kneeRear: [0, 180], hipFront: [0, 180], hipRear: [0, 180], ankleFront: [0, 90], ankleRear: [0, 90],
   trunkFlexion: [-180, 180], trunkPitch: [-180, 180], trunkTilt: [-180, 180], lean: [-180, 180], chestTwist: [-180, 180], hipTwist: [-180, 180],
   headYaw: [-180, 180], headPitch: [-90, 90], leadArm: [0, 180], trailArm: [0, 180], leadElbow: [0, 180], trailElbow: [0, 180],
-  lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5],
+  lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5], footFront: [0, 90], footRear: [0, 90], rearKneeIn: [-180, 180], shoulderDrop: [-90, 90],
 };
 
 /** Feet 0.63 ± 0.10 m apart (the only measured stance width), for every standing stance. */
 const WIDTH: StanceTarget = { min: 0.53, max: 0.73, sources: ['borgonovo2021'], confidence: 'high', note: 'measured at the pop-up\'s landing' };
 
+/**
+ * Every riding stance's feet and rear knee (the animation-realism plan, phase 1):
+ * the feet's angles to the stringer, and the rear knee caving in toward the front.
+ */
+const STANCE: Partial<Record<StanceMeasure, StanceTarget>> = {
+  stanceWidth: WIDTH,
+  footFront: { min: 45, max: 70, sources: ['rapturestance'], confidence: 'medium', note: 'to the stringer: 20–30° off square; about 60° riding (the owner\'s call, §10.3)' },
+  footRear: { min: 65, max: 90, sources: ['rapturestance'], confidence: 'medium', note: 'nearer square over the fins: about 80° riding' },
+  rearKneeIn: { min: 10, max: 35, sources: ['rapturestance'], confidence: 'low', note: 'the rear knee in toward the front foot' },
+};
+
+/** Trim, either side (the plan's phase 1): the knees about equal (the owner's call, §10.1), bent at the knees, the arms low and quiet. */
+const TRIM: Partial<Record<StanceMeasure, StanceTarget>> = {
+  ...STANCE,
+  kneeFront: { min: 115, max: 150, sources: ['borgonovo2021', 'weiss2024', 'bruton2013'], confidence: 'medium', note: 'flexed 30–65°: a half squat, knees about equal' },
+  kneeRear: { min: 110, max: 145, sources: ['borgonovo2021', 'weiss2024', 'bruton2013'], confidence: 'medium', note: 'flexed 35–70°' },
+  leadArm: { min: 20, max: 50, sources: ['wslflow', 'rapturestance'], confidence: 'low', note: 'the front arm loose toward the travel' },
+  trailArm: { min: 10, max: 35, sources: ['wslflow', 'rapturestance'], confidence: 'low', note: 'the back arm at the side' },
+  shoulderDrop: { min: 3, max: 15, sources: ['rapturestance'], confidence: 'low', note: 'the lead shoulder low, down the line' },
+  weight: { min: 0.5, max: 0.62, sources: ['surfdeeper', 'cornishwave'], confidence: 'medium', note: 'centred (SurfDeeper) to 60/40 front (Cornish Wave)' },
+};
+
 export const STANCES: readonly MappedStance[] = [
   {
     id: 'trim',
     name: 'Trim',
-    reach: 'Standing with no input, riding straight at 7–8 m/s (phase standing).',
+    reach: 'Standing with no input, riding straight at 7–8 m/s on flat water (phase standing).',
     sides: 'both',
     targets: {
-      kneeFront: { min: 135, max: 165, sources: ['weiss2025', 'surfdeeper'], confidence: 'medium', note: 'straighter than a turn\'s peak (135° front on the river wave); a soft bend, never locked' },
-      kneeRear: { min: 125, max: 160, sources: ['weiss2025', 'surfdeeper'], confidence: 'medium', note: 'the back leg more bent than the front (129° at the river wave\'s peak)' },
+      ...TRIM,
       hipFront: { min: 130, max: 165, sources: ['weiss2025', 'surfdeeper'], confidence: 'low', note: 'hinged at the hips; the gauge\'s hip angle takes the trunk from the spine\'s base, so it includes the lower back' },
       hipRear: { min: 125, max: 165, sources: ['weiss2025', 'surfdeeper'], confidence: 'low' },
       ankleFront: { min: 5, max: 20, sources: ['weiss2025'], confidence: 'low', note: 'under the turn\'s peak (18°)' },
@@ -246,12 +324,33 @@ export const STANCES: readonly MappedStance[] = [
       trunkFlexion: { min: 10, max: 35, sources: ['surfdeeper'], confidence: 'low', note: 'hinge at the hips, tall through the spine' },
       chestTwist: { min: 20, max: 50, sources: ['surfdeeper'], confidence: 'low', note: 'the chest faces forward, not fully side-on' },
       headYaw: { min: 45, max: 90, sources: ['surfdeeper'], confidence: 'low', note: 'eyes where the rider goes: along the line, over the lead shoulder' },
-      leadArm: { min: 20, max: 60, sources: ['surfdeeper'], confidence: 'low', note: 'hands and elbows over their rails, quiet' },
-      trailArm: { min: 20, max: 60, sources: ['surfdeeper'], confidence: 'low' },
-      stanceWidth: WIDTH,
-      weight: { min: 0.5, max: 0.62, sources: ['surfdeeper', 'cornishwave'], confidence: 'medium', note: 'centred (SurfDeeper) to 60/40 front (Cornish Wave)' },
     },
-    gaps: 'The head\'s pitch, the elbows. Fanning\'s trim is not read yet.',
+    gaps: 'The head\'s pitch, the elbows. On flat water there is no face: the side is the last one read (frontside at first).',
+  },
+  {
+    id: 'trim-frontside',
+    name: 'Trim, frontside',
+    reach: 'Standing with no input across a 15° face at 7 m/s, the face rising on the toes\' side (phase standing; the stance sheet\'s `across` water).',
+    sides: 'frontside',
+    targets: {
+      ...TRIM,
+      trunkTilt: { min: 15, max: 30, sources: ['wslflow', 'bartonlynch'], confidence: 'medium', note: 'bend the knees, not the waist; the head over the board' },
+      chestTwist: { min: 20, max: 40, sources: ['rapturestance', 'surfdeeper'], confidence: 'low', note: 'the lead shoulder pointing down the line, the hips slightly open' },
+      headYaw: { min: 60, max: 90, sources: ['rapturestance', 'surfdeeper'], confidence: 'low', note: 'eyes down the line' },
+    },
+  },
+  {
+    id: 'trim-backside',
+    name: 'Trim, backside',
+    reach: 'Standing with no input across a 15° face at 7 m/s, the face rising on the heels\' side (phase standing; the `across-back` water).',
+    sides: 'backside',
+    targets: {
+      ...TRIM,
+      trunkTilt: { min: 15, max: 30, sources: ['wslflow', 'bartonlynch'], confidence: 'medium', note: 'bend the knees, not the waist' },
+      chestTwist: { min: 45, max: 70, sources: ['rapturesides'], confidence: 'low', note: 'the chest turned toward the wave, the shoulders open along the rails' },
+      headYaw: { min: 75, max: 110, sources: ['rapturesides'], confidence: 'low', note: 'over the lead shoulder, down the line' },
+    },
+    gaps: 'The hands\' place: the owner\'s reference photo (2026-10-22), read by the arms test, not the map.',
   },
   {
     id: 'trim-forward',
@@ -259,7 +358,7 @@ export const STANCES: readonly MappedStance[] = [
     reach: 'Standing, trim +1 (W, the stick forward), straight at 7–8 m/s.',
     sides: 'both',
     targets: {
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.6, max: 0.75, sources: ['cornishwave'], confidence: 'medium', note: 'toward 70/30 on the front foot, driving' },
     },
     gaps: 'Everything but the weight: the posture is trim\'s.',
@@ -270,27 +369,27 @@ export const STANCES: readonly MappedStance[] = [
     reach: 'Standing, trim −1 (S, the stick back), straight at 7–8 m/s.',
     sides: 'both',
     targets: {
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.35, max: 0.45, sources: ['cornishwave'], confidence: 'medium', note: '40/60 onto the back foot' },
     },
     gaps: 'Everything but the weight.',
   },
   {
     id: 'drop',
-    name: 'The drop (preparation)',
-    reach: 'Crouched (Shift held: the full crouch, two thirds of Compress\'s depth) going down a 15° face at 5 m/s: the thesis\'s preparation (phase standing).',
+    name: 'The drop',
+    reach: 'Crouched (Shift held: the full crouch, two thirds of Compress\'s depth) going down a 15° face at 5 m/s (phase standing).',
     sides: 'both',
     targets: {
-      kneeFront: { min: 90, max: 110, sources: ['desousa2022', 'kerr'], confidence: 'medium' },
-      kneeRear: { min: 90, max: 110, sources: ['desousa2022', 'kerr'], confidence: 'medium' },
-      trunkTilt: { min: 45, max: 65, sources: ['kerr'], confidence: 'low', note: 'read from the picture, so against the vertical' },
-      headPitch: { min: 10, max: 40, sources: ['desousa2022'], confidence: 'low', note: 'the head toward the bottom of the wave' },
-      leadArm: { min: 40, max: 70, sources: ['kerr'], confidence: 'low' },
-      leadElbow: { min: 140, max: 170, sources: ['kerr'], confidence: 'low' },
-      stanceWidth: WIDTH,
-      weight: { min: 0.6, max: 0.75, sources: ['desousa2022', 'cornishwave'], confidence: 'medium', note: 'the trunk over the front foot; 70/30' },
+      ...STANCE,
+      kneeFront: { min: 65, max: 90, sources: ['desousa2022', 'rapturetakeoff'], confidence: 'medium', note: 'the deepest crouch: flexed 90–115°' },
+      kneeRear: { min: 70, max: 95, sources: ['desousa2022', 'rapturetakeoff'], confidence: 'medium', note: 'flexed 85–110°' },
+      trunkTilt: { min: 20, max: 40, sources: ['rapturetakeoff'], confidence: 'low', note: 'the back fairly upright' },
+      headPitch: { min: 20, max: 45, sources: ['desousa2022', 'rapturetakeoff'], confidence: 'low', note: 'the eyes on the base' },
+      leadArm: { min: 20, max: 50, sources: ['rapturetakeoff'], confidence: 'low', note: 'at the waist or lower, along the line' },
+      trailArm: { min: 10, max: 40, sources: ['rapturetakeoff'], confidence: 'low' },
+      weight: { min: 0.4, max: 0.45, sources: ['rapturetakeoff'], confidence: 'low', note: 'the owner\'s call (§10.2): 55–60 % on the back foot on a steep drop; the preparation for the bottom turn goes to the front foot (the map\'s de Sousa and Cornish Wave, 60–75 %)' },
     },
-    gaps: 'The hips, the twist, the trailing arm.',
+    gaps: 'The hips, the twist. Until the animation-realism plan the map read the thesis\'s preparation here (knees 90–110° included, the weight 0.60–0.75 forward, Kerr\'s trunk 45–65°): the owner\'s call (§10.2) puts the drop\'s weight back and the bottom turn\'s preparation forward.',
   },
   {
     id: 'compress-frontside',
@@ -308,7 +407,7 @@ export const STANCES: readonly MappedStance[] = [
       headYaw: { min: 10, max: 70, sources: ['desousa2022'], confidence: 'low', note: 'the head turns toward the lip' },
       leadElbow: { min: 150, max: 180, sources: ['gudauskas'], confidence: 'low' },
       trailElbow: { min: 70, max: 120, sources: ['gudauskas'], confidence: 'low' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.6, max: 0.75, sources: ['desousa2022', 'cornishwave'], confidence: 'medium' },
     },
     gaps: 'The ankles (deep flexion forces them; no source), the chest\'s twist.',
@@ -326,7 +425,7 @@ export const STANCES: readonly MappedStance[] = [
       lean: { min: -50, max: -30, sources: ['forsyth2024', 'moreira2014'], confidence: 'low', note: 'toward the heels; the rail\'s 39° as frontside' },
       trunkFlexion: { min: -20, max: 20, sources: ['hobgood'], confidence: 'low', note: 'rotated with the hips rather than leaning over' },
       lowHand: { min: 0, max: 0.3, sources: ['desousa2022'], confidence: 'medium', note: 'backside the leading hand is the inside one' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.6, max: 0.75, sources: ['desousa2022', 'cornishwave'], confidence: 'medium' },
     },
     gaps: 'The head and the arms: Hobgood\'s footage is too far off to read.',
@@ -344,7 +443,7 @@ export const STANCES: readonly MappedStance[] = [
       leadArm: { min: 70, max: 120, sources: ['desousa2022', 'gudauskas'], confidence: 'low', note: 'the leading arm points at the lip' },
       trailArm: { min: 60, max: 110, sources: ['balisurfing', 'gudauskas'], confidence: 'low' },
       leadElbow: { min: 140, max: 175, sources: ['gudauskas'], confidence: 'low' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.35, max: 0.45, sources: ['desousa2022', 'cornishwave', 'knox'], confidence: 'medium', note: 'to the back foot while extending; 40/60; off the bottom heavy on the back foot' },
     },
     gaps: 'The chest\'s twist toward the lip (the lip\'s place is not in the board\'s frame), the hips.',
@@ -358,7 +457,7 @@ export const STANCES: readonly MappedStance[] = [
       kneeFront: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium' },
       kneeRear: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium' },
       trunkTilt: { min: -20, max: 20, sources: ['knox'], confidence: 'low', note: 'the body held more upright while pushing on the back foot' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.35, max: 0.45, sources: ['desousa2022', 'cornishwave', 'knox'], confidence: 'medium' },
     },
     gaps: 'The arms and the head.',
@@ -371,7 +470,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       headPitch: { min: -30, max: 5, sources: ['balisurfing'], confidence: 'low', note: 'keep looking at the lip to spot the section' },
       trailArm: { min: 60, max: 150, sources: ['balisurfing'], confidence: 'low', note: 'the trailing arm swung around to lead the heelside carve' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.35, max: 0.45, sources: ['cornishwave'], confidence: 'medium', note: '40/60 onto the back foot in top turns' },
     },
     gaps: 'The legs\' depth and the rotation\'s angles (Reyes not read yet).',
@@ -382,7 +481,7 @@ export const STANCES: readonly MappedStance[] = [
     reach: 'Standing, steering onto the toes\' rail with trim −0.5 at 8 m/s (phase standing).',
     sides: 'backside',
     targets: {
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.35, max: 0.45, sources: ['cornishwave'], confidence: 'medium' },
     },
     gaps: 'The upper body: Hobgood not read yet.',
@@ -397,7 +496,7 @@ export const STANCES: readonly MappedStance[] = [
       kneeRear: { min: 130, max: 180, sources: ['desousa2022'], confidence: 'low' },
       chestTwist: { min: 20, max: 90, sources: ['balisurfing'], confidence: 'low', note: 'the head, shoulders and hips lead the heelside carve: the chest turns toward the nose' },
       trailArm: { min: 60, max: 150, sources: ['balisurfing'], confidence: 'low', note: 'the trailing arm swung around' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.3, max: 0.45, sources: ['cornishwave'], confidence: 'medium', note: '40/60 or further back' },
     },
     gaps: 'Reyes\'s and the snap video\'s frames are not read at a usable size.',
@@ -411,7 +510,7 @@ export const STANCES: readonly MappedStance[] = [
       kneeFront: { min: 140, max: 180, sources: ['desousa2022'], confidence: 'low' },
       kneeRear: { min: 130, max: 180, sources: ['desousa2022'], confidence: 'low' },
       chestTwist: { min: -90, max: -20, sources: ['hobgood'], confidence: 'low', note: 'the shoulders opened into the toeside turn: the chest turns toward the tail' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.3, max: 0.45, sources: ['cornishwave', 'hobgood'], confidence: 'medium', note: 'further back on the tail' },
     },
     gaps: 'The arm up\'s angle: shown, not said (Hobgood 0:49).',
@@ -423,7 +522,7 @@ export const STANCES: readonly MappedStance[] = [
     sides: 'frontside',
     targets: {
       lean: { min: -75, max: -40, sources: ['forsyth2024', 'moreira2014'], confidence: 'low', note: 'the rail at 76 ± 5° on the heels; the body with it, the map\'s reading' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.3, max: 0.4, sources: ['rapturecutback', 'cornishwave'], confidence: 'medium', note: '65/35 to 70/30 onto the back foot' },
     },
     gaps: 'The head leading and the arm reaching back toward the breaking wave (Knox and Brock not read yet).',
@@ -436,7 +535,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       leadArm: { min: 45, max: 90, sources: ['rapturespeed'], confidence: 'low', note: 'the arms pulling up as the body compresses' },
       trailArm: { min: 45, max: 90, sources: ['rapturespeed'], confidence: 'low' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.4, max: 0.5, sources: ['rapturespeed'], confidence: 'medium', note: '55/45 onto the back foot going uphill' },
     },
     gaps: 'Depths: no source gives the pump\'s knee range (Fanning not read yet).',
@@ -449,7 +548,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       leadArm: { min: 0, max: 40, sources: ['rapturespeed'], confidence: 'low', note: 'the arms pushing down on the extension' },
       trailArm: { min: 0, max: 40, sources: ['rapturespeed'], confidence: 'low' },
-      stanceWidth: WIDTH,
+      ...STANCE,
       weight: { min: 0.5, max: 0.6, sources: ['rapturespeed'], confidence: 'medium', note: '55/45 onto the front foot going downhill' },
     },
     gaps: 'Depths (Fanning not read yet).',
@@ -464,7 +563,7 @@ export const STANCES: readonly MappedStance[] = [
       kneeRear: { min: 80, max: 100, sources: ['gudauskas'], confidence: 'low' },
       trunkTilt: { min: 40, max: 60, sources: ['gudauskas'], confidence: 'low', note: 'read from the picture, the lean included' },
       lowHand: { min: 0, max: 0.3, sources: ['gudauskas'], confidence: 'low', note: 'a hand dragging beside the rail' },
-      stanceWidth: WIDTH,
+      ...STANCE,
     },
   },
   {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, TOE_SPRAY, splashLaunch, type LipImpact, type RollerToes, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from './SpillingCurl';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 import { PARTICLE_BUDGETS } from './particleBudget';
 import { busyWhitewater } from './particleTestSupport';
@@ -491,5 +493,77 @@ describe('indexed sources and presentation packing', () => {
     eager.update(busyWhitewater(1), 1 / 60);
     lazy.update(busyWhitewater(1), 1 / 60);
     expect(lazy.particles).toEqual(eager.particles);
+  });
+});
+
+describe('the roller front\'s toe spray (the Canyon roller front)', () => {
+  /** One drawn band over columns 2–7 of slot 1 (x 2–8): crest at z 15, 6 m long, its water at c = 4 m/s toward +z. */
+  function toes(since: number, scale = 1): RollerToes {
+    const columns = 10;
+    const table = new Float32Array(ROLLER_SLOTS * columns * ROLLER_STRIDE);
+    const look = new Float32Array(ROLLER_SLOTS * columns * BAND_LOOK_STRIDE);
+    for (let column = 2; column <= 7; column += 1) {
+      const o = (columns + column) * ROLLER_STRIDE;
+      table[o + ROLLER_FIELD.crest] = 15;
+      table[o + ROLLER_FIELD.length] = 6;
+      table[o + ROLLER_FIELD.scale] = scale;
+      table[o + ROLLER_FIELD.flowZ] = 4;
+      table[o + ROLLER_FIELD.roughness] = 0.3;
+      const l = (columns + column) * BAND_LOOK_STRIDE;
+      look[l + BAND_LOOK_FIELD.since] = since;
+      look[l + BAND_LOOK_FIELD.height] = 2;
+    }
+    return { table, look, columns, column0: 0.5, width: 1 };
+  }
+  /** The drops thrown over `seconds` (in one update, so all are new): their launch position and velocity. */
+  function launch(cloud: SprayCloud, scene: SprayScene, seconds: number) {
+    cloud.update(scene, seconds);
+    const before = Array.from({ length: cloud.count }, (_, k) => Array.from(cloud.particles.subarray(k * SPRAY_STRIDE, k * SPRAY_STRIDE + 3)));
+    const dt = 1e-3;
+    cloud.update({ ...scene, rollerToes: undefined }, dt);
+    return before.map((p, k) => ({ x: p[0], y: p[1], z: p[2],
+      vx: (cloud.particles[k * SPRAY_STRIDE] - p[0]) / dt, vy: (cloud.particles[k * SPRAY_STRIDE + 1] - p[1]) / dt, vz: (cloud.particles[k * SPRAY_STRIDE + 2] - p[2]) / dt }));
+  }
+
+  it('throws a sparse fringe forward off the toe line at 1.5 c and 30–45° up, in Rich only, once its curl has landed', () => {
+    const cloud = new SprayCloud(7);
+    const drops = launch(cloud, { ...flatScene(), rollerToes: () => toes(0.5) }, 1);
+    // 6 columns, 2.5 drops a metre a second while young: about 15 a second.
+    expect(drops.length).toBeGreaterThan(5);
+    expect(drops.length).toBeLessThan(30);
+    for (const drop of drops) {
+      expect(drop.x).toBeGreaterThanOrEqual(2);
+      expect(drop.x).toBeLessThanOrEqual(8);
+      // From 0.9 of the band's length down the face, within its roughness.
+      expect(Math.abs(drop.z - (15 + TOE_SPRAY.at * 6))).toBeLessThanOrEqual(0.15 + 1e-6);
+      const speed = Math.hypot(drop.vx, drop.vy, drop.vz);
+      expect(speed / (1.5 * 4)).toBeGreaterThan(0.85);
+      expect(speed / (1.5 * 4)).toBeLessThan(1.15);
+      const angle = (Math.atan2(drop.vy, Math.hypot(drop.vx, drop.vz)) * 180) / Math.PI;
+      expect(angle).toBeGreaterThan(29);
+      expect(angle).toBeLessThan(46);
+      expect(drop.vz).toBeGreaterThan(0);
+    }
+    const classic = new SprayCloud(7);
+    classic.look = 'classic';
+    classic.update({ ...flatScene(), rollerToes: () => toes(0.5) }, 1);
+    expect(classic.count).toBe(0);
+    const early = new SprayCloud(7);
+    early.update({ ...flatScene(), rollerToes: () => toes(-0.2) }, 1);
+    expect(early.count).toBe(0);
+    const faint = new SprayCloud(7);
+    faint.update({ ...flatScene(), rollerToes: () => toes(0.5, 0.3) }, 1);
+    expect(faint.count).toBe(0);
+  });
+
+  it('throws them on its own random stream: every other drop is as it was', () => {
+    const scene = { ...flatScene(0, [impact(0.02)]) };
+    const plain = new SprayCloud(9);
+    const toed = new SprayCloud(9);
+    plain.update(scene, 1 / 60);
+    toed.update({ ...scene, rollerToes: () => toes(0.5) }, 1 / 60);
+    const plainCount = plain.count;
+    expect(toed.count).toBeGreaterThanOrEqual(plainCount);
+    expect(Array.from(toed.particles.subarray(0, plainCount * SPRAY_STRIDE))).toEqual(Array.from(plain.particles.subarray(0, plainCount * SPRAY_STRIDE)));
   });
 });
