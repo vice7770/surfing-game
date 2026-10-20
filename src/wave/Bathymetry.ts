@@ -189,8 +189,10 @@ export function padangReefAt(x: number): boolean {
  * the deep contours, where Big breaks, run less obliquely than the shallow ones, where Medium and Small break, so each
  * size meets contours matched to how far it has already refracted crossing the deep ones (the water-physics advisor,
  * 2026-10-09, after Mead's refraction compensation). A planar face from a deep platform refracted Medium's crests toward
- * the line and sped its peel. Below the hinge the face climbs at `pathSlope` along the waves' path, and above it more
- * gently downcoast, so they spill (an Iribarren number under 0.4 at the take-off). Upcoast of the peak the arm ends in
+ * the line and sped its peel. Below the hinge the face climbs at `pathSlope` along the waves' path, steep enough that the
+ * waves breaking there plunge weakly, as the owner's reference reel does (the reef bed, 2026-10-22: Iribarren numbers at
+ * breaking about 0.4–0.6); above it the face runs more gently downcoast, so the smaller waves breaking there spill (under
+ * 0.3). Upcoast of the peak the arm ends in
  * a face along +z that falls at `endSlope` across x, so every depth's contour is furthest out at the peak and each wave
  * starts breaking there. That end stays clear of the −x open edge's levelling (`OPEN_EDGE_RAMP`), so the edge copies
  * plain platform. Behind the line the top is level for `flatWidth` m, then falls to a trough `lagoonDepth` deep, so
@@ -200,8 +202,14 @@ export function padangReefAt(x: number): boolean {
  */
 export const CANYON = {
   shelfDepth: 6, shoreSlope: 1 / 25, crestDepth: 1,
-  /** The arm's face along the waves' path (+z) below the fan's hinge, and its upcoast end across x. */
-  pathSlope: 1 / 30, endSlope: 1 / 4,
+  /**
+   * The arm's face along the waves' path (+z) below the fan's hinge, and its upcoast end across x. The face was 1:30 until
+   * the reef bed (2026-10-22, docs/research/canyon-reef-bed-2026-10-22): every size spilled there, and more softly down the
+   * line, where the fan's shallow face took over. The owner's reference reel is a weak-to-moderate plunging left on about
+   * 1:22–1:30 reef (the water-physics advisor, 2026-10-22), who advised 1:23–1:25 below a 2.0–2.2 m hinge; the sweep kept
+   * the steepest, whose fan above the hinge is also the least gentle downcoast.
+   */
+  pathSlope: 1 / 23, endSlope: 1 / 4,
   peakX: -38, peakZ: -305, angle: 70,
   /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking. */
   takeOffX: -30,
@@ -215,9 +223,11 @@ export const CANYON = {
    * a single face would be `hingeDepth` deep below the peak; between the hinge line and the crest line the depth runs
    * linearly, so downcoast, where the two lines part, the shallow face is gentler and its contours more oblique than the
    * deep ones. Upcoast of the peak the hinge line runs parallel to the crest line. The hinge is rounded over
-   * ±`hingeRounding` m across shore. `fan` 0: one planar face.
+   * ±`hingeRounding` m across shore. `fan` 0: one planar face (rejected: on it crests broke first mid-arm, 15 of 54 in
+   * the 2026-10-09 sweep). The hinge was 2.8 m deep until the reef bed (2026-10-22): at 2.2 m Big's waves and the sets
+   * near the peak break below it, on `pathSlope`, while Small and the smaller waves down the line break on the fan.
    */
-  fan: 15, hingeDepth: 2.8, hingeRounding: 8,
+  fan: 15, hingeDepth: 2.2, hingeRounding: 8,
   /** Past the arm's end on the beach face the terrace tapers into the platform over this many metres along shore, m. */
   endTaper: 12,
   /**
