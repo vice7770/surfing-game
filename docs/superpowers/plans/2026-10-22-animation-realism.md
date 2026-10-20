@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan phase by phase. Steps use checkbox (`- [ ]`) syntax for tracking. **Build nothing until the owner approves this plan.**
 
-**Status:** for the owner's approval (2026-10-22). Branch `claude/animation-plan`. Nothing in the game changed: this branch adds this plan, a dev view (`character-sheet.html?realism`) and the stance sheet's stills.
+**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built".
 
 **The ask (owner, 2026-10-22):** "All movements need to be more realistic, right now a bit too random. All stages need proper animation; transitions are not so bad, but the stances are incorrect."
 
@@ -628,13 +628,14 @@ Each phase:
 
 ### Phase 1: the riding stance and the motion filter
 
-- [ ] **Gauge:** add `footFront`, `footRear`, `rearKneeIn` (the rear knee's bend from the toes toward the nose) and `shoulderDrop`.
-- [ ] **Map:**
+- [x] **Gauge:** add `footFront`, `footRear`, `rearKneeIn` (the rear knee's bend from the toes toward the nose) and `shoulderDrop`.
+- [x] **Map:**
   - add `trim-frontside` and `trim-backside`, read on an across-the-face recipe: the sheet's `across` and `across-back` water, already on this branch;
   - update `trim` and `drop`.
-- [ ] **`causeFilter.ts`** (§4), in `PosedBody`, with body-film tests for the measures in §4.
-- [ ] **`stagePoses.ts` / `stageBlend.ts`:** the stance and trim key poses; the side reader (§3.3).
-- [ ] **`RIG_DETAIL`:** the constants in §5.1, moved into the key poses.
+- [x] **`causeFilter.ts`** (§4), in `PosedBody`, with body-film tests for the measures in §4.
+- [x] **`stagePoses.ts` / `stageBlend.ts`:** the stance and trim key poses; the side reader (§3.3).
+- [x] **`RIG_DETAIL`:** the constants in §5.1, moved into the key poses.
+- [x] **The arms (the owner's addendum, 2026-10-22):** relaxed and close in, framing the knees (his reference photo), never spread; the alarm reaches out only for a real balance loss.
 
 **Targets (Phase 1):**
 
@@ -658,17 +659,20 @@ Each phase:
 
 **Motion tests (body film, at 30, 60 and 120 Hz):** the §4 table.
 
-**Shot list for the owner (Phase 1):**
-1. Beach, medium swell, the chase camera behind: a right (frontside for a regular foot). Ride 6–8 s of trim with no input, then 3 s with W and 3 s with S. *Look for:* knees bent with the rear knee in, the chest quiet (no shimmy at the turn's speed), arms low and still, head down the line.
-2. The same on a left (backside). *Look for:* the shoulders open along the rails, not the frontside pose mirrored.
-3. Point, medium, the side camera: a take-off and the drop. *Look for:* the deepest crouch, the back fairly upright, eyes on the base.
-4. Wave Pool, any size: a long weave (alternating steer every second). *Look for:* the board wobbles but the chest doesn't; the knees and hips take it.
-5. Any spot, Goofy (in the settings), one frontside and one backside ride: the mirror.
+**Shot list for the owner (Phase 1, as built):**
+1. Beach, medium swell, the chase camera behind: a right (frontside for a regular foot). Ride 6–8 s of trim with no input, then 3 s with W and 3 s with S. *Look for:* knees bent and about equal with the rear knee in, feet at about 60° and 80°; the chest quiet (no shimmy at the turn's speed); the arms hanging relaxed in front of the thighs, not held out; the head down the line.
+2. The same on a left (backside). *Look for:* the chest turned toward the wave (about 55°) and the trunk bent further over the toes, the hips toward the face: not the frontside pose mirrored.
+3. The same right, holding Shift for 3 s of crouched trim. *Look for:* the hands near the knees, the front hand forward and down along the line, the back hand by the back knee, the torso over the knees (compare with the reference photo of 2026-10-22).
+4. Point, medium, the side camera: a take-off and the drop. *Look for:* the deepest crouch, the back fairly upright, the hands low in front of the knees, the eyes on the base, the hips back (weight on the back foot).
+5. Wave Pool, any size: a long weave (alternating steer every second). *Look for:* the board wobbles but the chest and head don't; the knees take it. The arms go out only when the rider nearly falls, and come back.
+6. Any spot, Goofy (in the settings), one frontside and one backside ride: the mirror.
+7. Online with a second player, if handy: the other surfer's body as calm as your own.
 
 **M1 cost:**
 - The rig today costs 0.10–0.15 ms per surfer per frame on this M1, measured for `PosedBody.update` over a recorded compress recipe on the test humanoid, in the dev page.
 - The filter adds three second-order followers per point. With the pose blend, the budget is +0.03 ms per surfer, so ≤ 0.25 ms per surfer and ≤ 2 ms for an eight-surfer room.
 - It is measured by a micro-benchmark in the phase's PR and reported, never a gate (memory `user-hardware-performance`).
+- **Measured (phase 1, this M1, Node):** `PosedBody.update` over 480 drawn frames (compress, trim backside, the drop, a snap): surfer2 0.103 ms before and 0.103 ms after; the test humanoid 0.056 → 0.060 ms. The followers cost about what the hinge's old search (eight leg solves a frame) saved.
 
 **Risks:**
 - *The upper body looks late in a sharp turn* (up to 0.12 s): the anticipation cascade and the lean model carry the turn, not the raw points.
@@ -676,6 +680,61 @@ Each phase:
 - *The balance cue grows less readable:* its amplitude is kept (≥ 25 cm per full alarm) and only the flutter is removed.
 - *Remote surfers* (poses at 20 Hz, drawn 0.1 s behind): the filter runs on the drawn state, and the body film's remote drawer is part of the tests.
 - *The frontside/backside reader on flat water:* it keeps the last side.
+
+**Built (phase 1, 2026-10-22, `claude/anim-p1`).** Drawn only: the physics, its points and every rider test are untouched.
+
+- **The motion filter** (`src/scene/rig/causeFilter.ts`, in `PosedBody` between the point blend and the rig). Standing:
+  - the pelvis follows the physics' on the board's levelled frame, critically damped at 16 rad/s (the plan's);
+  - the trunk's lean and pitch follow theirs at 18 rad/s, damped 0.7, so the drawn lean trails the physics' bank by 0.08–0.11 s (the plan's 12 rad/s, critically damped, would lag 0.17 s);
+  - the yaw rate gets one more pole (0.08 s): with `RiderMotion`'s, the plan's second order at 9 rad/s;
+  - the pelvis is held within 0.15 m of the physics' (a body thrown hard), and the filter starts over at every switch.
+
+  The probe found the physics' own lean carried little of the board's wobble mid-turn (0.05° of the chest's 1.9°): the rig's hinge (1.3°) and reach bend (0.9°) drew it in. So, in the rig:
+  - the hinge, its backside bound and the reach bend follow their solved values (12, 12 and 6 rad/s);
+  - the hinge is now a trunk angle by the depth, not a hip angle (hinged to a hip angle, the pelvis's way back undid most of each degree, so the solved hinge moved ten times the legs' motion);
+  - the gaze holds steady in the world (8 rad/s, the plan's head follower, on its heading too), the lead longer by its lag (0.85 s);
+  - the swing keeps a third, within 15°; the alarm counts under 0.25 as none, rising over 0.25 s and falling over 0.6 s.
+- **The key poses** (`stagePoses.ts`) and **the stage reader** (`stageBlend.ts`: the side from the face's tilt in trim, held on flat water; the drop from the descent; each rate-limited). Riding: feet 60° / 80°; the knees standing tall at 42° (the plan's 40° left the rear knee at 31–33°); the rear knee's pole 20° toward the nose and 10° down from the rear foot's line; the ankle's reach 35°; the hinge 16° frontside, 42° backside (leaning into the face), 21° in the drop; the chest and hips 30°/15° frontside, 55°/25° backside; the lead shoulder dropped 8°; the drop's gaze 15° further down; the drawn hips biased back out of turns (trim toward 0.58, the drop toward 0.42: the owner's call).
+- **The arms** (the owner's addendum and reference photo, 2026-10-22): the free hands hang relaxed and close in, at their knees (followed, so the legs' absorption doesn't bob them), elbows soft; the leading arm turns toward the look by at most 20° in a turn; a hand handing over to the physics' point (the water, the face) does so over 0.25 s. Pulled forward from phase 2 for it: none (`snapRaise` and `snapSwing` stay for phase 2).
+- **Map and tests:** `trim-frontside`, `trim-backside` and the drop's new numbers; every riding stance's feet (45–70° / 65–90°, medium) and rear knee in (10–35°, low). `stanceTargets.test.ts` now reads all four surfers, Regular and Goofy. Struck from its known misses: `trim.kneeFront`, `compress-frontside.kneeFront`, `compress-frontside.lowHand`. New ones, each with why: `compress-backside.kneeFront` (0.8° over, the filter's lag), `extension-backside.kneeRear` (trim's taller knees: phase 2's bottom-turn pose), `snap-*.weight` (0.01–0.02 over, the filter's lag), `pop-up.*Elbow` (surfers 3 and 4, seen once all four were read: phase 3's flat hands).
+
+**Results** (the body film, 120 Hz, the page's pipeline on the test humanoid from 0.8 s while standing; before is `d8c6e88f`, the plan's §2 table):
+
+| Measure | Before | After | Target |
+|---|---:|---:|---:|
+| Chest roll 3–5 Hz, compress mid-turn | 1.90° | 0.38° | ≤ 0.6° |
+| Chest roll 3–5 Hz, weave | 0.75° | 0.23° | ≤ 0.25° |
+| Head yaw 3–5 Hz (against the board), weave | 1.18° | 0.29° | ≤ 0.4° |
+| Head yaw 3–5 Hz, rail change | 2.86° | 1.14° | — |
+| Lead hand's height about its shoulder 0.5–2 Hz, on the board, weave / compress (the plan's measure, the cue on) | 9.7 / 8.2 cm | 5.4 / 4.1 cm | ≤ 3 cm |
+| The hands' height about their shoulders 0.5–2 Hz in the world, the cue off: weave / compress / pumping / rail change | 7.1 / 8.2 / 6.2 / 9.2 cm | 4.1 / 2.4 / 0.2 / 4.4 cm | ≤ 3 cm |
+| The hands' swing pumping (`handSwing`, standing) | 7.9 / 5.9 cm | 2.3 / 2.9 cm | ≤ 4 cm |
+| The cue's own part per full alarm (on less off, against the alarm the arms show), rail change | 20.5 cm (r 0.78) | 37 cm (r 0.97) | ≥ 25 cm |
+| The drawn lean against the drawn state's own below 1 Hz: lag / RMS miss | — | 0.08–0.11 s / ≤ 2° | ≤ 0.12 s / 3° |
+| The balls of the feet sliding (straight, compress, pumping, chop, rail change) | — | ≤ 0.05 cm | ≤ 1 cm |
+| Switch spikes (the film's blend tests) | — | under the tests' 6 rad/s and 2 m/s | no worse |
+
+The 3 cm for the hands holds mid-turn and pumping. Weaving and through a rail change the body banks 40° each way with the relaxed arms held to it, and the leading arm turns toward the look: 4.1 and 4.4 cm with the cue off. The film's weave also nears a fall at every reversal (the balance reserve falls to 0.1–0.2; it falls at 1.94 s), so with the cue on its arms rise for real threats. The plan's measure (on the board's frame, the cue on) mixes the board's 40° roll into the height; the world frame with the cue off is the one the tests pin.
+
+**Stances** (surfer1 Regular, as the plan's §5 read them; all four surfers and Goofy agree within a few degrees; the hands from the arms stills):
+
+| Stance | Knees F / R | Feet | Trunk | Chest | Arms lead / trail | Weight | Hands above the knees F / R |
+|---|---|---|---:|---:|---|---:|---|
+| Trim frontside, before | 63° / 24° | 70° / 85° | 14° | 27° | 48° / 45° | 0.70 | 0.54 / 0.60 m |
+| Trim frontside, after | 57° / 46° | 60° / 80° | 28° | 32° | 32° / 20° | 0.58 | 0.23 / 0.28 m |
+| Trim backside, before | 66° / 28° | 70° / 85° | 7° | 20° | about the same | 0.71 | 0.53 / 0.59 m |
+| Trim backside, after | 63° / 57° | 60° / 80° | 23° | 54° | 32° / 19° | 0.60 | 0.24 / 0.27 m |
+| Crouched trim (the owner's photo), before | — | 70° / 85° | — | — | spread | — | 0.37 / 0.53 m |
+| Crouched trim, after | 94° / 90° | 60° / 80° | 49° | 38° | 55° / 46° | 0.58 | 0.00 / 0.05 m |
+| The drop, before | 81° / 83° | 70° / 85° | 34° | — | 49° / 48° | 0.53 | 0.39 / 0.49 m |
+| The drop, after | 92° / 109° | 60° / 80° | 32° | 35° | 46° / 29° | 0.42 | 0.09 / 0.11 m |
+
+The rear knee caves in 31–34° toward the nose from the toes (the rear foot's 10° and the pole's 20°: in the map's 10–35°). **Open (low confidence):** the lead shoulder. Read against the level, as a picture shows it, it sits 9° (frontside) and 16° (backside) *above* the trailing one: the chest turned toward the nose and bent over the toes about the feet's line raises it, and the 8° side bend doesn't make up for it. Hinging toward where the chest faces (as the stage figures do) fixed it, but carried the hips back past trim's weight range (backside 0.42, the drop 0.33); it is left for phase 2's chest-led turns, with the weight kept.
+
+**Stills and clips** (in `docs/research/animation-realism-2026-10-22/`):
+- `05-drop-phase1.jpg`, `06-trim-phase1.jpg`: today against the target figure, beside the plan's `05-drop.jpg` and `06-trim.jpg`;
+- `17-arms-before.jpg`, `17-arms-after.jpg`: crouched trim, trim frontside and backside, and the drop, from three-quarter front slightly above (the owner's photo's angle) and from the nose (`character-sheet.html?realism&arms&label=…`);
+- `phase1-motion-before.mp4`, `phase1-motion-after.mp4`: trim, a bottom turn and a weave with the weight back on surfer2 (`scripts/browser/motion-clip.mjs … "trim,bottom-turn,weave"`).
 
 ### Phase 2: turns and riding moves (frontside and backside)
 
@@ -853,32 +912,29 @@ These change the physics, so they change the feel. Each goes only when the owner
 
 ---
 
-## 10. Where the sources disagree (the owner's calls)
+## 10. Where the sources disagree (the owner's calls): decided 2026-10-22
 
-1. **Front or rear knee more flexed in trim:**
+The owner took every recommendation ("all recommended", 2026-10-22). Each call stays below with what the sources said.
+
+1. **Trim knees: about equal, each within 30–70°.** The front bends more only in compressions and landings.
    - Weiß et al. 2024 (one surfer, nine river-wave turns): the front knee peaks 8 % higher (69.8°);
    - Weiss et al. 2025 (seven surfers): the rear knee 51.1° against 44.7° front;
-   - SurfDeeper: the front leg straighter.
-
-   *Recommendation:* trim near equal (each 30–70°), with the front flexing more only in compressions and landings (Seixas 2023: front knee 113.8° included at landing).
-2. **The drop's weight:**
+   - SurfDeeper: the front leg straighter;
+   - Seixas 2023: the front knee 113.8° included at landing.
+2. **The drop's weight on the back foot; the bottom turn's preparation on the front foot.**
    - the research brief: 55–60 % on the back foot on a steep drop (its source page to confirm);
-   - the map (de Sousa 2022 preparation; Cornish Wave): 60–75 % front.
+   - the map (de Sousa 2022 preparation; Cornish Wave): 60–75 % front, now the bottom turn's preparation (phase 2).
 
-   *Recommendation:* the back foot for the drop (a steep face), the front foot for the bottom turn's preparation. The pose's weight is drawn from the physics' pelvis anyway, so this only sets the test's range.
-3. **Foot angles:**
+   The pose's weight is drawn from the physics' pelvis, so this sets the test's range (the drop: 0.40–0.45) and the drawn bias back (phase 1); the weights themselves are phase 5.
+3. **Foot angles: 45° on the pop-up's landing, settling to about 60° front and 80° back while riding.**
    - Rapture's stance page: the front foot 20–30° and the back 15–25° off square, so 60–70° and 65–75° to the stringer, with 60 % on the back foot;
    - its pop-up page: both feet at 45°, 60 % front.
 
-   *Recommendation:* 45° at the landing, turning to about 60° / 80° riding. The back foot over the fins and nearer square is the research's.
-4. **Hands at the pop-up:**
+   Riding (phase 1): 60° / 80°, the back foot over the fins. The landing's 45° and its settle are phase 3.
+4. **Pop-up hands flat beside the lower ribs, 0.4–0.5 m apart** (phase 3).
    - Borgonovo-Santos 2021 measures 0.46 m apart, which is where the rails are at the chest;
    - Rapture: beside the lower ribs, flat.
-
-   *Recommendation:* flat beside the lower ribs, 0.4–0.5 m apart.
-5. **Wire flag 128** for remote reeling and climbing (§6): yes or no.
-
----
+5. **Wire flag 128 for remote reeling and climbing: yes** (phase 4, §6).
 
 ## 11. Sources
 

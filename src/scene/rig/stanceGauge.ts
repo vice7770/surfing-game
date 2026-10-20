@@ -78,7 +78,7 @@ export interface StanceAngles {
   footRear: number;
   /** Which way the rear knee bends, on the deck: 0 toward the toes, + toward the nose (caving in toward the front foot). */
   rearKneeIn: number;
-  /** The lead shoulder below the trailing one, against the trunk's square: the angle of the shoulders' line, + lead lower. */
+  /** The lead shoulder below the trailing one, as a picture shows it: the shoulders' line against the level, + lead lower. */
   shoulderDrop: number;
 }
 
@@ -150,7 +150,6 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   };
   const kneeBend = direction(joints.knee[rear].clone().sub(joints.hip[rear].clone().add(joints.ankle[rear]).multiplyScalar(0.5)));
   const shoulders = joints.shoulder[front].clone().sub(joints.shoulder[rear]);
-  const trunkUp = joints.neck.clone().sub(joints.spine).normalize();
   return {
     kneeFront: knee(front),
     kneeRear: knee(rear),
@@ -176,7 +175,7 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     footFront: foot(front),
     footRear: foot(rear),
     rearKneeIn: Math.atan2(kneeBend.dot(NOSE), kneeBend.dot(toes)) * DEG,
-    shoulderDrop: Math.asin(Math.max(-1, Math.min(1, -shoulders.dot(trunkUp) / Math.max(1e-9, shoulders.length())))) * DEG,
+    shoulderDrop: Math.asin(Math.max(-1, Math.min(1, -shoulders.y / Math.max(1e-9, shoulders.length())))) * DEG,
   };
 }
 
