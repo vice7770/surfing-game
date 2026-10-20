@@ -310,6 +310,31 @@ const FILM_RECIPES: Record<string, StanceRecipe> = {
     seconds: 2.3,
   },
   weave: { ...STANCE_RECIPES.trim, controls: [{ at: 0.3, trim: -1, steer: 1 }, { at: 1.1, steer: -1 }, { at: 1.9, steer: 1 }], seconds: 2.4 },
+  // The animation-realism plan's phase 2: the backside bottom turn; the cutbacks held round toward 180° and let go at
+  // about 100° (on flat water the weight back stalls the board past it: the deep U, the plan's phase 5); the tubes under
+  // a test curl until the deep tuck slows the board to a stall; the kick-out climbing a 15° face.
+  'bottom-turn-backside': {
+    ...STANCE_RECIPES['extension-backside'],
+    controls: [{ at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.7, compress: 0, crouch: 0, steer: -0.3, trim: -0.5 }],
+    seconds: 2.3,
+  },
+  cutback: { ...STANCE_RECIPES['cutback-frontside'], controls: [{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }, { at: 1.8, steer: 0, trim: 0, crouch: 0.3 }], seconds: 2.4 },
+  'cutback-backside': { ...STANCE_RECIPES['cutback-backside'], controls: [{ at: 0, crouch: 0.5 }, { at: 0.4, steer: 1, trim: -0.7 }, { at: 1.8, steer: 0, trim: 0, crouch: 0.3 }], seconds: 2.4 },
+  tube: { ...STANCE_RECIPES['tube-frontside'], seconds: 1.8 },
+  'tube-backside': { ...STANCE_RECIPES['tube-backside'], seconds: 1.6 },
+  'kick-out': { ...STANCE_RECIPES['kick-out'], seconds: 1.3 },
+  // The video check (the owner's reel, 2026-10-22: barefoot_surf, a frontside top turn on a left; `&side=goofy`): down a
+  // 15° face crouched (the take-off and the drop), the bottom turn compressed onto the toes' rail, let go climbing with
+  // the weight going back, the redirect onto the heels with it back, and the finish crouched. A plane face is no wave:
+  // the board crosses it but never climbs it (the redirect's own physics, the plan's phase 5); the body's moves are the
+  // game's, step by step.
+  'top-turn-sequence': {
+    phase: 'standing', water: 'face', start: 'standing', speed: 7.5, seconds: 3.2,
+    controls: [
+      { at: 0, crouch: 1 }, { at: 0.5, steer: 1, compress: 1, crouch: 0.6 }, { at: 1.3, compress: 0, crouch: 0, steer: 0.5, trim: -0.5 },
+      { at: 1.7, steer: -0.8, trim: -0.6 }, { at: 2.4, steer: 0, trim: 0, crouch: 0.6 },
+    ],
+  },
 };
 
 interface MotionFrame { time: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
@@ -397,6 +422,13 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
   status.textContent = `${skyName} · motion · ${SURFERS[STANCE_SURFER]} ${STANCE_SIDE} · ${segments.join(', ')}`;
   canvas.style.display = 'none';
   canvas.after(film);
+  // `&strip=t,t,…`: those moments as one sheet of stills, captioned by `&captions=a|b|…` (the video check), posted to
+  // the receiver with `&save` (`&name=`, `&receiver=`).
+  const strip = params.get('strip');
+  if (strip !== null) {
+    await stillStrip(strip.split(',').map(Number), frames, show, film);
+    return;
+  }
   // `&at=seconds`: that moment alone, a still for scripts/browser/sheet-shot.mjs.
   const at = params.get('at');
   if (at !== null) {
@@ -438,6 +470,62 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
       reader.readAsDataURL(new Blob(chunks, { type }));
     });
     (window as unknown as { motionFilm: string }).motionFilm = url;
+  }
+  (window as unknown as { sheetReady: boolean }).sheetReady = true;
+}
+
+/**
+ * The motion view's stills as one sheet (`&strip`): each moment's frame scaled to a tile, four to a row, its time and
+ * caption under it; saved through the receiver with `&save`.
+ */
+async function stillStrip(times: number[], frames: MotionFrame[], show: (index: number) => void, film: HTMLCanvasElement): Promise<void> {
+  const captions = (params.get('captions') ?? '').split('|');
+  const tile = { width: 560, height: 315, text: 74 };
+  const perRow = Math.min(4, times.length);
+  const sheet = document.createElement('canvas');
+  sheet.width = perRow * tile.width;
+  sheet.height = 40 + Math.ceil(times.length / perRow) * (tile.height + tile.text);
+  const context = sheet.getContext('2d')!;
+  context.fillStyle = '#0d1117';
+  context.fillRect(0, 0, sheet.width, sheet.height);
+  context.font = '600 18px system-ui, sans-serif';
+  context.fillStyle = '#e6edf3';
+  context.fillText(params.get('title') ?? `${SURFERS[STANCE_SURFER]} ${STANCE_SIDE}: ${[...new Set(frames.map((frame) => frame.label))].join(', ')}`, 12, 26);
+  const wrapText = (text: string, width: number) => {
+    const lines: string[] = [];
+    let line = '';
+    for (const word of text.split(' ')) {
+      const next = line ? `${line} ${word}` : word;
+      if (context.measureText(next).width > width && line) {
+        lines.push(line);
+        line = word;
+      } else line = next;
+    }
+    if (line) lines.push(line);
+    return lines;
+  };
+  times.forEach((time, i) => {
+    const index = Math.max(0, frames.findIndex((frame) => frame.time >= time));
+    show(index);
+    const x = (i % perRow) * tile.width;
+    const y = 40 + Math.floor(i / perRow) * (tile.height + tile.text);
+    context.drawImage(film, 0, 0, film.width, film.height, x, y, tile.width, tile.height);
+    context.font = '12px system-ui, sans-serif';
+    context.fillStyle = '#c9d1d9';
+    wrapText(`${time.toFixed(2)} s · ${captions[i] ?? ''}`, tile.width - 16).slice(0, 4).forEach((text, k) => context.fillText(text, x + 8, y + tile.height + 16 + k * 15));
+    if (i % perRow) {
+      context.fillStyle = '#30363d';
+      context.fillRect(x - 1, y, 2, tile.height + tile.text);
+    }
+  });
+  film.style.display = 'none';
+  sheet.style.maxWidth = '100%';
+  document.body.append(sheet);
+  if (params.has('save')) {
+    const blob = await new Promise<Blob>((resolve) => sheet.toBlob((b) => resolve(b!), 'image/jpeg', Number(params.get('quality') ?? 0.85)));
+    const name = params.get('name') ?? 'motion-strip.jpg';
+    await fetch(`${params.get('receiver') ?? 'http://127.0.0.1:5194'}/upload?name=${encodeURIComponent(name)}`, { method: 'POST', body: blob });
+    (window as unknown as { stripSaved: string }).stripSaved = `${name} ${(blob.size / 1024).toFixed(0)} KB`;
   }
   (window as unknown as { sheetReady: boolean }).sheetReady = true;
 }

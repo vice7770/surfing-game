@@ -3,6 +3,8 @@ import { AttachedRider, type RiderPhase } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PlaneWater } from '../physics/PlaneWater';
 import { RideSession } from '../physics/RideSession';
+import type { SurfWater } from '../physics/SurfWater';
+import { CoveredWater } from '../physics/testing/CoveredWater';
 import type { StanceName } from '../physics/riderPosture';
 import { RiderMotion } from '../scene/rig/riderMotion';
 import { createRiderVisualState, readRiderSnapshot, type RiderVisualState } from '../scene/rig/riderVisualState';
@@ -35,8 +37,13 @@ interface Controls {
 export interface StanceRecipe {
   /** The phase the stance is read in. */
   phase: RiderPhase | 'fallen';
-  /** Flat water; down a 15° face along its fall line; or across one, the face rising on the toes' side (frontside) or the heels' (backside). */
-  water: 'flat' | 'face' | 'across' | 'across-back';
+  /**
+   * Flat water; down a 15° face along its fall line; across one, the face rising on the toes' side (frontside) or the
+   * heels' (backside); or up one, the board climbing its fall line (`climb`: the kick-out over the back).
+   */
+  water: 'flat' | 'face' | 'across' | 'across-back' | 'climb';
+  /** Under a tube's curl (`CoveredWater`): full manual crouch folds into the deep tuck (the tube stances). */
+  covered?: boolean;
   /** Standing on a board already moving, or lying on it (the pop-up), m/s. */
   start: 'standing' | 'prone';
   speed: number;
@@ -78,10 +85,17 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'snap-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 0.9),
   'snap-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 0.9),
   'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.2),
+  'cutback-backside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: 1, trim: -0.7 }], 1.2),
   'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7 }),
   'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7 }),
   // Crouched to the depth it was recorded at: Shift's 0.6 before the movement-flow spec's ladder made the crouch 0.65 of the depth.
   'hand-in-face': standing([{ at: 0, crouch: 0.92 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
+  // The animation-realism plan's tube stances (§5.14): the full crouch under a test curl folds into the deep tuck,
+  // past the pumping crouch's depth (the plan's §6); frontside with the hand in the face (E: the front palm on it).
+  'tube-frontside': standing([{ at: 0, crouch: 1 }, { at: 0.4, hand: true }], 1.2, { water: 'across', speed: 6, covered: true }),
+  'tube-backside': standing([{ at: 0, crouch: 1 }], 1.2, { water: 'across-back', speed: 6, covered: true }),
+  // The kick-out over the back (§5.15, §6): climbing straight up a 15° face with the weight fully back (S), slowing.
+  'kick-out': standing([{ at: 0, trim: -1 }], 0.9, { water: 'climb', speed: 6 }),
   // Lying on a board towed at 6 m/s, as the wave would carry it (the body film's pop-up).
   'pop-up': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.3 },
   // Read at the landing's end (it lasts 0.5 s): the drawn feet are still spreading to the stance until then.
@@ -102,16 +116,22 @@ function acrossSlope(kind: StanceRecipe['water'], stance: StanceName): number {
 }
 
 /** The recipe's water for a Regular or Goofy rider: across a face, it rises on the toes' side, or the heels' (`across-back`). */
-function waterFor(kind: StanceRecipe['water'], stance: StanceName): PlaneWater {
+function planeFor(kind: StanceRecipe['water'], stance: StanceName): PlaneWater {
   if (kind === 'face') return new PlaneWater({ slopeZ: -Math.tan(FACE) });
+  if (kind === 'climb') return new PlaneWater({ slopeZ: Math.tan(FACE) });
   if (kind === 'across' || kind === 'across-back') return new PlaneWater({ slopeX: acrossSlope(kind, stance) });
   return new PlaneWater();
 }
 
-/** A standing rider on water: flat, down a 15° face along its fall line, or across it lying on its slope. */
+/** The recipe's water: its plane, under a test curl where the recipe asks (`covered`). */
+function waterFor(recipe: Pick<StanceRecipe, 'water' | 'covered'>, stance: StanceName): SurfWater {
+  const plane = planeFor(recipe.water, stance);
+  return recipe.covered ? new CoveredWater(plane) : plane;
+}
+
+/** A standing rider on water: flat, down a 15° face along its fall line, up it, or across it lying on its slope. */
 function mount(speed: number, stance: StanceName, kind: StanceRecipe['water']) {
   const board = new BoardBody();
-  const water = waterFor(kind, stance);
   if (kind === 'across' || kind === 'across-back') {
     const slopeX = acrossSlope(kind, stance);
     const normal = new Vector3(-slopeX, 1, 0).normalize();
@@ -123,12 +143,17 @@ function mount(speed: number, stance: StanceName, kind: StanceRecipe['water']) {
     const fall = new Vector3(0, -Math.sin(FACE), Math.cos(FACE));
     const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, fall), normal, fall));
     board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, fall.multiplyScalar(speed));
+  } else if (kind === 'climb') {
+    const normal = new Vector3(0, 1, -Math.tan(FACE)).normalize();
+    const rise = new Vector3(0, Math.sin(FACE), Math.cos(FACE));
+    const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, rise), normal, rise));
+    board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, rise.multiplyScalar(speed));
   } else {
     board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
   }
   const rider = new AttachedRider(board.shape, { phase: 'standing', stance });
   board.attach(rider);
-  return { board, rider, water };
+  return { board, rider };
 }
 
 /** The controls held at `time`, s: each field as last set. */
@@ -155,7 +180,7 @@ interface Run {
  */
 function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVisualState, time: number) => void): Run {
   const toes = stance === 'regular' ? -1 : 1;
-  const water = waterFor(recipe.water, stance);
+  const water = waterFor(recipe, stance);
   const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined ? new RideSession({ stance }) : undefined;
   const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water);
   if (session) session.place({ x: 0, z: 0, heading: 0, speed: recipe.start === 'prone' ? 0 : recipe.speed, phase: recipe.start }, water);

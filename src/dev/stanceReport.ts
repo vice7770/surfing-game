@@ -47,6 +47,8 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
   headYaw: 'Head yaw', headPitch: 'Head pitch (down +)', leadArm: 'Lead arm', trailArm: 'Trailing arm', leadElbow: 'Lead elbow', trailElbow: 'Trailing elbow',
   lowHand: 'Lower hand above the board', stanceWidth: 'Stance width', weight: 'Weight (rear 0 – front 1)',
   footFront: 'Front foot to the stringer', footRear: 'Rear foot to the stringer', rearKneeIn: 'Rear knee in (toward the nose)', shoulderDrop: 'Lead shoulder drop',
+  rearKneeDeck: 'Rear knee over the deck', trailHeelRail: 'Trailing wrist to the heels\' rail', trailToeRail: 'Trailing wrist to the toes\' rail',
+  trailFromFront: 'Trailing wrist from the front foot', leadToNose: 'Lead arm from the nose',
 };
 
 /**
@@ -61,7 +63,7 @@ function ownerOf(measure: StanceMeasure, target: { min: number; max: number }, p
   return physics >= target.min && physics <= target.max ? 3 : 6;
 }
 
-const METRES: ReadonlySet<StanceMeasure> = new Set(['lowHand', 'stanceWidth']);
+const METRES: ReadonlySet<StanceMeasure> = new Set(['lowHand', 'stanceWidth', 'rearKneeDeck', 'trailHeelRail', 'trailToeRail', 'trailFromFront']);
 
 /** A value in the measure's unit: degrees, metres, or the weight's share. */
 export function formatMeasure(measure: StanceMeasure, value: number): string {

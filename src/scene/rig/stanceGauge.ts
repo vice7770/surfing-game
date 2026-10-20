@@ -1,5 +1,6 @@
 import { Quaternion, Vector3, type Bone, type Object3D } from 'three';
-import type { StanceName } from '../../physics/riderPosture';
+import { buildBoardShape } from '../../physics/boardShape';
+import { deckHeight, type StanceName } from '../../physics/riderPosture';
 import { BONES, type Side } from './humanoidBones';
 import { POINT, type RiderVisualState } from './riderVisualState';
 
@@ -80,6 +81,15 @@ export interface StanceAngles {
   rearKneeIn: number;
   /** The lead shoulder below the trailing one, as a picture shows it: the shoulders' line against the level, + lead lower. */
   shoulderDrop: number;
+  /** The rear knee's height over the deck beneath it, m (the tube's dropped knee; the animation-realism plan, phase 2). */
+  rearKneeDeck: number;
+  /** The trailing wrist from the heels' rail and from the toes' rail at its place along the board, m (the tube's rail grab). */
+  trailHeelRail: number;
+  trailToeRail: number;
+  /** The trailing wrist from the front ankle along the board, m (the pig-dog's grab by the front foot). */
+  trailFromFront: number;
+  /** The lead arm (the shoulder to the wrist) from the board's nose, °: pointing at the tube's exit, low and close. */
+  leadToNose: number;
 }
 
 export type StanceMeasure = keyof StanceAngles;
@@ -90,6 +100,18 @@ export interface BoardPose {
 }
 
 const SIDES: readonly Side[] = ['left', 'right'];
+/** The board the gauge reads the deck and the rails from: the game's shape (its frame about its centre of mass). */
+const BOARD = buildBoardShape();
+/** Half the board's width `z` m along it from mid-length (the shape's frame). */
+export function railHalfWidth(z: number): number {
+  return BOARD.curves.width(Math.min(1, Math.max(0, z / BOARD.length + 0.5))) / 2;
+}
+/** The deck's height `z` m along the board (the shape's frame). */
+export function deckAt(z: number): number {
+  return deckHeight(BOARD, z);
+}
+/** The board's centre of mass in its own frame: a board pose's position is there. */
+export const BOARD_CENTRE = new Vector3(BOARD.centerOfMass.x, BOARD.centerOfMass.y, BOARD.centerOfMass.z);
 /** Feet closer than this along the stringer, m, stand no stance to share the weight between (a landing's feet still arriving). */
 export const STANCE_MIN = 0.1;
 const DEG = 180 / Math.PI;
@@ -150,6 +172,13 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   };
   const kneeBend = direction(joints.knee[rear].clone().sub(joints.hip[rear].clone().add(joints.ankle[rear]).multiplyScalar(0.5)));
   const shoulders = joints.shoulder[front].clone().sub(joints.shoulder[rear]);
+  // In the shape's frame (about the board's centre of mass): the deck and the rails.
+  const shape = (point: Vector3) => local(point).add(BOARD_CENTRE);
+  const rearKnee = shape(joints.knee[rear]);
+  const trail = shape(joints.wrist[rear]);
+  const toesSign = toes.x;
+  const rail = (sign: number) => Math.hypot(trail.x - sign * railHalfWidth(trail.z), trail.y - deckAt(trail.z));
+  const leadArm = direction(joints.wrist[front].clone().sub(joints.shoulder[front]));
   return {
     kneeFront: knee(front),
     kneeRear: knee(rear),
@@ -176,6 +205,11 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     footRear: foot(rear),
     rearKneeIn: Math.atan2(kneeBend.dot(NOSE), kneeBend.dot(toes)) * DEG,
     shoulderDrop: Math.asin(Math.max(-1, Math.min(1, -shoulders.y / Math.max(1e-9, shoulders.length())))) * DEG,
+    rearKneeDeck: rearKnee.y - deckAt(rearKnee.z),
+    trailHeelRail: rail(-toesSign),
+    trailToeRail: rail(toesSign),
+    trailFromFront: Math.abs(local(joints.wrist[rear]).z - frontAnkle.z),
+    leadToNose: angle(leadArm, NOSE),
   };
 }
 

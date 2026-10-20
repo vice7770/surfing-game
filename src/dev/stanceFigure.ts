@@ -52,6 +52,7 @@ export const NEUTRAL_STANCE: StanceAngles = {
   kneeFront: 150, kneeRear: 145, hipFront: 160, hipRear: 160, ankleFront: 15, ankleRear: 15, trunkFlexion: 15, trunkPitch: 0, trunkTilt: 15, lean: 0,
   chestTwist: 25, hipTwist: 10, headYaw: 70, headPitch: 10, leadArm: 40, trailArm: 40, leadElbow: 160, trailElbow: 160,
   lowHand: 0.8, stanceWidth: 0.61, weight: 0.55, footFront: 70, footRear: 85, rearKneeIn: 10, shoulderDrop: 0,
+  rearKneeDeck: 0.45, trailHeelRail: 0.6, trailToeRail: 0.6, trailFromFront: 0.4, leadToNose: 60,
 };
 
 /**

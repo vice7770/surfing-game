@@ -326,7 +326,7 @@ const IMAGES: SheetImage[] = [
         gaps: ['Chest 63°: turns with the hips, no head-first sequence', 'Arms raised 128°/86°'],
       },
       {
-        title: 'Cutback, backside', today: stand([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: 1, trim: -0.7 }], 1.2), shot: TURN,
+        title: 'Cutback, backside', today: recipe('cutback-backside'), shot: TURN,
         target: {
           standing: {
             ...BASE, weight: 0.32, knee: [75, 70], lean: 40, trunk: 30, chest: -80, hips: -35, head: [-120, 10],
@@ -370,7 +370,7 @@ const IMAGES: SheetImage[] = [
     panels: [
       {
         title: 'Tube, frontside (grab-rail)', missing: 'No tube stance today: the deep tuck (under a curl only) and the hand in the face (E).',
-        today: stand([{ at: 0, crouch: 1 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }), shot: STAND_LOW,
+        today: recipe('tube-frontside'), shot: STAND_LOW,
         target: {
           standing: {
             ...BASE, width: 0.66, weight: 0.5, knee: [115, 135], rearKneeIn: 45, lean: 15, trunk: 40, chest: 30, hips: 15, head: [70, 0],
@@ -383,7 +383,7 @@ const IMAGES: SheetImage[] = [
       },
       {
         title: 'Tube, backside (pig-dog)', missing: 'No pig-dog today: crouch and the hand.',
-        today: stand([{ at: 0, crouch: 1 }, { at: 0.4, hand: true }], 1, { water: 'across-back', speed: 6 }), shot: STAND_LOW,
+        today: recipe('tube-backside'), shot: STAND_LOW,
         target: {
           standing: {
             ...BASE, width: 0.66, weight: 0.5, foot: [55, 85], knee: [120, 140], rearKneeIn: 40, lean: -10, trunk: 45, chest: 55, hips: 20, head: [90, 5],
@@ -401,9 +401,10 @@ const IMAGES: SheetImage[] = [
     panels: [
       {
         title: 'Kick-out over the back', missing: 'No kick-out today: the nearest is S with a hard steer (the snap).',
-        today: recipe('snap-frontside'), shot: STAND,
+        today: recipe('kick-out'), shot: STAND,
         target: {
-          board: { pitch: 25, roll: -10 },
+          // Today's board already climbs the face nose-up (the kick-out's recipe): the target stands on it, rolled.
+          board: { roll: -10 },
           standing: {
             ...BASE, weight: 0.25, knee: [35, 75], lean: -10, trunk: 10, chest: 60, hips: 30, head: [120, -10],
             lead: arm(-0.4, 0.6, 0.3, 150), trail: arm(0.45, -0.5, 0.0, 150),
@@ -875,6 +876,14 @@ export async function drawRealism(ctx: RealismContext): Promise<void> {
 }
 
 const FONT = '12px ui-monospace, Menlo, monospace';
+/**
+ * `&when=<text>` names what the left tiles show (a phase's before and after: "as drawn at the end of phase 1"), and
+ * `&gaps=0` leaves out the panels' written gaps and their "missing" notes (written for the plan's day 0): the tiles'
+ * own readings stay.
+ */
+const SHEET_PARAMS = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
+const SUBTITLE = SHEET_PARAMS.get('when') ?? 'today as the game draws it';
+const SHOW_GAPS = SHEET_PARAMS.get('gaps') !== '0';
 
 function caption(context: CanvasRenderingContext2D, x: number, y: number, width: number, text: string, color: string): void {
   context.font = '600 13px system-ui, sans-serif';
@@ -896,14 +905,14 @@ function composeImage(image: SheetImage, panels: Rendered[]): HTMLCanvasElement 
   context.fillText(`${image.title}`, 12, 21);
   context.font = '11.5px system-ui, sans-serif';
   context.fillStyle = '#8b949e';
-  context.fillText('Each pair: today as the game draws it (left), the target from the plan\'s numbers (magenta). Regular.', 12, 38);
+  context.fillText(`Each pair: ${SUBTITLE} (left), the target from the plan's numbers (magenta). Regular.`, 12, 38);
   panels.forEach((rendered, i) => {
     const x = i * 2 * TILE.width;
     context.drawImage(rendered.today, x, HEADER);
     context.drawImage(rendered.target, x + TILE.width, HEADER);
     caption(context, x, HEADER, TILE.width, `${rendered.panel.title} · today`, '#ffffff');
     caption(context, x + TILE.width, HEADER, TILE.width, `${rendered.panel.title} · target`, '#ff7cf3');
-    if (rendered.panel.missing) {
+    if (rendered.panel.missing && SHOW_GAPS) {
       context.font = '11px system-ui, sans-serif';
       const lines = wrap(context, rendered.panel.missing, TILE.width - 16);
       context.fillStyle = 'rgba(13,17,23,0.72)';
@@ -926,7 +935,7 @@ function composeImage(image: SheetImage, panels: Rendered[]): HTMLCanvasElement 
       }
     };
     block(rendered.panel.numbers, '#ff9cf5', '+ ');
-    block(rendered.panel.gaps, '#ffb86b', '– ');
+    if (SHOW_GAPS) block(rendered.panel.gaps, '#ffb86b', '– ');
     context.font = '10.5px ui-monospace, Menlo, monospace';
     if (rendered.todayLine) block([`today: ${rendered.todayLine}`], '#c9d1d9', '');
     if (rendered.targetLine) block([`figure: ${rendered.targetLine}`], '#d2a8ff', '');
