@@ -728,6 +728,36 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     return simulated;
   };
   /**
+   * Several views on one held sea, as a grid posted as `file` (the roller front, 2026-10-22): a row per view, and per
+   * row a column for each time of day under each arm (each `set` runs before its frame, e.g. a dev switch), at `scale`
+   * of the render's size, labelled with the view's name.
+   */
+  const waterSheetGrid = async (views: { name: string; view: string | View }[], look: WaterLook, times: TimeOfDay[],
+    arms: { label: string; set: () => unknown }[], file = 'water-grid.jpg', scale = 0.5) => {
+    const [width, height] = [Math.round(RENDER.width * scale), Math.round(RENDER.height * scale)];
+    const canvas = document.createElement('canvas');
+    canvas.width = width * times.length * arms.length;
+    canvas.height = height * views.length;
+    const context = canvas.getContext('2d')!;
+    for (const [column, time] of times.entries()) {
+      await hooks.setTimeOfDay(time);
+      for (const [row, { name, view }] of views.entries()) {
+        const shot = viewOf(view);
+        if (!shot) continue;
+        camera.position.copy(shot.eye);
+        camera.lookAt(shot.target);
+        camera.updateMatrixWorld();
+        for (const [k, arm] of arms.entries()) {
+          await arm.set();
+          hooks.setWaterLook(look);
+          drawFrame(context, `${name} · ${arm.label} · ${time}`, (column * arms.length + k) * width, row * height, width, height);
+        }
+      }
+    }
+    await post(canvas, file);
+    return true;
+  };
+  /**
    * The foam's light in a view (the foam look, 2026-10-22): the pixels whose colour follows the foam's (found by drawing
    * the foam magenta), their linear luminance's 10th, 50th and 90th percentiles and its spread (p90 over p10), and their
    * mean linear colour with its red-over-blue ratio (a flat pink sheet: a narrow spread, a high ratio).
@@ -1082,7 +1112,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       vsFirst: k === 0 ? 0 : at(times[k].map((t, cycle) => t - times[0][cycle]), 0.5),
     }]));
   };
-  Object.assign(window, { waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
