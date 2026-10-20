@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan phase by phase. Steps use checkbox (`- [ ]`) syntax for tracking. **Build nothing until the owner approves this plan.**
 
-**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built".
+**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built". **Phase 2 built** on `claude/anim-p2` (from `claude/playtest-2026-10-22f`, 052337d2), awaiting the owner's ride check: see §8, phase 2, "Built".
 
 **The ask (owner, 2026-10-22):** "All movements need to be more realistic, right now a bit too random. All stages need proper animation; transitions are not so bad, but the stances are incorrect."
 
@@ -738,11 +738,11 @@ The rear knee caves in 31–34° toward the nose from the toes (the rear foot's 
 
 ### Phase 2: turns and riding moves (frontside and backside)
 
-- [ ] Key poses: `bottom-*`, `top-*`, `cutback-*`, `pump-*`, `tube-*`, `kick-out` (§5.10–5.15).
-- [ ] The anticipation cascade (head → chest → hips, delayed), replacing the instant twist.
-- [ ] The lead arm aimed at the target; `snapRaise` and `snapSwing` lowered; the pump's arm channel.
-- [ ] The tube's rail grab: a new IK hand point. Map entries `tube-frontside` and `tube-backside`, read with a recipe crouched past the pumping depth under a test curl.
-- [ ] The kick-out's trigger (§6), and its recipe: climbing with S and a nose-up board.
+- [x] Key poses: `bottom-*`, `top-*`, `cutback-*`, `pump-*`, `tube-*`, `kick-out` (§5.10–5.15). The pump is trim's pose with an arm channel, not a pose of its own.
+- [x] The anticipation cascade (head → chest → hips, delayed), replacing the instant twist.
+- [x] The lead arm aimed at the target; `snapRaise` and `snapSwing` gone (the redirect's key poses set the arms); the pump's arm channel.
+- [x] The tube's rail grab: a new IK hand point. Map entries `tube-frontside` and `tube-backside`, read with a recipe crouched past the pumping depth under a test curl.
+- [x] The kick-out's trigger (§6), and its recipe: climbing with S and a nose-up board.
 
 **Targets (Phase 2):**
 
@@ -797,6 +797,61 @@ The rear knee caves in 31–34° toward the nose from the toes (the rear foot's 
 6. Any spot: ride up the face with S and steer over the back. *Look for:* the kick-out pose, and whether the board swings over (if not, that is phase 5).
 
 **M1 cost:** key-pose blending of at most 3 active poses, plus one more hand IK in the tube: +0.02 ms per surfer, measured.
+
+**Built (phase 2, 2026-10-22, `claude/anim-p2`).** Drawn only: the physics, its points and every rider test are untouched (commits 9497c612, bac168c9, 239b33bc, 78935ee2).
+
+- **The key poses** (`stagePoses.ts`), each frontside and backside, Goofy the mirror:
+  - *the bottom turn*: frontside the trunk stopped at 58° from vertical (it folded 65–74°), hinged 30–40° to dig the rail, the chest 28° before the cascade turns it on to the wave, the lead arm along the look about level, long; backside the chest about square to the toes (−25° before the cascade), hinged no further over the toes than Hobgood's bound, the rear knee bent past 90°;
+  - *the top turn and snap*: on the heels' rail frontside (the toes' backside) with the weight back, the knees standing tall at 60° and the hips 0.08 m lower (compressing through the redirect), the chest 72° (backside −35°) and the look led 50° (backside 100°) back to the pocket, the leading hand dropped low in front, the trailing arm swung round in front to 55° at most;
+  - *the cutback*: the redirect low (crouched), the chest 95° (backside −75°), the hips 55° (−40°), the look 75° (130°), the lead arm long and low along the look;
+  - *the tube*: the rear knee's pole turned 55° down to the deck; frontside the back hand to the heels' rail beside the back foot, backside the trailing hand on the toes' rail by the front foot (the pig-dog), the lead arm forward and low at the exit, the spine's bend to a reaching hand held to 20° (a full bend folded the trunk onto the thighs);
+  - *the kick-out*: the arms out for balance, the trailing arm swung, no higher than the shoulders.
+- **The stage reader** (`stageBlend.ts`): a turn's rail is its side (a bottom turn frontside on the toes', a redirect frontside on the heels'); its kind is read from the face once one has been read (turning away from it is a redirect), and on flat water from the weight back; a bottom turn carried on round with the weight going back stays one (the climb). The cutback is the redirect crouched; the tube the pelvis 0.31–0.40 m below standing (past Compress's 0.3 m: only the deep tuck under a curl reaches it; the plan's 0.195 m is the pumping crouch's, which Compress passes too); the kick-out climbing faster than 0.5 m/s, nose up past 15°, the weight back, slowing and straight. Each weight swings at its rate (0.25–0.35 s); the side holds through a turn (read only under 0.12 of a full turn: at 0.3 a carve's first roll flipped it).
+- **The cascade** (`RIG_DETAIL.cascade`): the head leads by the look (0.6 s of the yaw rate, or the pose's lead in a redirect where that is further; the gaze fed its own 0.25 s lag; turning, the look starts from where the board points), the neck's reach counted from where the chest is turning to; the chest and the hips follow at 4 and 2.8 rad/s, each led into the turn by 0.3 s and 0.12 s of the yaw rate. This replaces the instant twist (`twistGain`, `hipsTwistShare`, `snapTwist`).
+- **The arms**: the leading arm as pointer (`StandingPose.lead`: toward the look within the pose's reach, lifted toward its elevation, held in a turn's reversal so it does not drop to the knee between turns); the alarm's spread held to 50° with the elbows bent in a redirect and the tube; the pump pushes the free arms down up to 4° as the body rises, never lifting them (the plan's ±10° drew 4.7 cm of swing pumping against the motion filter's 4 cm).
+- **From phase 1:** the lead shoulder drawn low (`RIG_DETAIL.shoulderBend`: the upper spine bent up to 8° toward the nose, then up to 22° sideways, as far as shows the pose's drop against the level: a chest open toward the nose and hinged over the toes raises the lead shoulder, by geometry); the front hand forward along the line (0.15 m ahead of the knee in trim, the photo's).
+- **The recipes:** the redirects read once the drawn body has come round (top turn 1.5 s, snap 1.4, cutback 1.5: the head, chest and hips each behind the last); the tubes crouched fully under a test curl (`CoveredWater`), read at 1.6 and 1.5 s; the kick-out climbing a 15° face with S, read at 1.1 s.
+- **Map and tests:** the phase-2 targets above in `stanceMap.ts` (the bottom turn's trunk 40–60°, chest and lead arm; the top turn's and snap's knees compressing, chest, head and arms at chest height; the cutbacks; the pump's knees and arms; new `tube-frontside`, `tube-backside`, `kick-out`, `cutback-backside`), and the gauge's tube measures (`rearKneeDeck`, `trailHeelRail`, `trailToeRail`, `trailFromFront`, `leadToNose`). `stanceTargets.test.ts`: struck off `compress-backside.kneeFront` and `snap-*.weight`; the physics' own misses of medium confidence (the turns', the pump's and the extension's weights, ten) are now pinned as phase 5's. New tests: the cascade's order in a cutback, frontside and backside, Regular and Goofy; the bottom turn's lead arm; the arms at chest height or below in the redirects; the top turn's chest; the tube's rear knee and the pig-dog's grab; the pump's push (correlated −0.5 or less with the body's rise, never lifting, the alarm under 0.2); the stage reader's rails, kinds, tube, kick-out and rates.
+
+**Results** (surfer1 Regular unless said; the sheet's tiles; before is phase 1's code on the same recipes):
+
+| Stance | Measure | Before | After | Target |
+|---|---|---:|---:|---|
+| Bottom turn, frontside | trunk / lead arm / chest | 65° / 57° / 22° | 59° / 82° / 22° | 40–60° / 60–110° / −10–25° |
+| Bottom turn, backside (1.1 s, still coming round) | chest / arms | 70° / 27°, 21° | 31° / 62°, 22° | −15–15° / — |
+| Top turn, frontside | knees F / R | 26° / 18° | 66° / 68° | 50–80° / 40–70° |
+| Top turn, frontside | chest / head / arms | 48° / 84° / 67°, 53° | 73° / 125° / 29°, 43° | 70–110° / 110–160° / 30–70° |
+| Top turn, backside | chest / arms | 4° / 61°, 51° | −25° / 52°, 58° | −60 to −20° / 30–70° |
+| Cutback, frontside | chest / hips / head / arms | 63° / 21° / 100° / 95°, 72° | 82° / 30° / 129° / 41°, 33° | 90–150° / 40–80° / 140–180° / — |
+| Cutback, backside | chest / arms | −43° / 80°, 79° | −36° / 68°, 55° | −120 to −60° / — |
+| Pump, compressing / extending | arms | 27°, 16° / 38°, 28° | 36°, 16° / 47°, 25° | 30–55°, 15–40° / 15–40° |
+| Tube, frontside | trunk / chest / rear knee off the deck | 91° / −155° / — | 55° / −24° / 0.01–0.05 m | — / — / ≤ 0.15 m |
+| Tube, backside | rear knee / trailing wrist to the toes' rail, from the front foot | 115° / — | 125° / 0.04–0.06 m, 0.07–0.10 m | 125–155° / ≤ 0.08 m, ≤ 0.25 m |
+| Kick-out | arms | 30°, 11° | 73°, 42° | out for balance |
+| Trim, frontside / backside | lead shoulder drop (as a picture shows it) | −9° / −16° | +8° / +3° | 3–15° |
+| Crouched trim (the owner's photo) | lead shoulder / front hand ahead of the knee | −20° / 0.08 m | −5° / 0.18 m | lead lower / forward along the line |
+
+- **The cascade** (the test humanoid, the surfer sheet's films; the parts' world turn rates' peaks): the cutbacks, the head 0.28 s (frontside) and 0.10 s (backside) before the chest, the chest 0.05 s and 0.25 s before the hips; the top turn 0.15 s and 0.10 s; the bottom turn 0.33 s and 0.03 s, the hips about with the chest. Before, the chest and the hips turned together and the head trailed the chest's neck reach.
+- **The motion filter kept** (the body film, 30/60/120 Hz): the chest's 3–5 Hz roll mid-turn 0.34–0.37° (≤ 0.6°; phase 1 0.38°), weaving 0.07–0.08° (≤ 0.25°; 0.23°), the head's yaw weaving 0.30° (≤ 0.4°; 0.29°); the hands' swing pumping 3.9 cm at most (≤ 4 cm); every other film test as before. The weave's chest roll is read on a 1.1 s stretch (it falls at 1.94 s): there the band was set by the slow turn's shape more than the board's wobble (with the filter off it read lower than on), so it moved with the turn poses' hinge (0.19–0.52° between 30° and 40°); the bottom turns' hinge settled it at 0.07°.
+- **Stances still short, and why:** the backside readings of the map's moments are mid-way round (the chest 0.5 s behind its pose by design: the head first); the redirects' heads backside (the plan's −40° to 10° top, −150° to −100° cutback) are 20–30° and 8–21° (looking back past the tail is beyond the look's lead: the target needs the turn's destination, not a lead); the cutback's hips 30° (40–80°); the tube frontside's back hand reaches 0.2–0.5 m short of the heels' rail (behind a trunk folded over the toes in the deep tuck); the kick-out's knees front 79° / rear 27° (the body stands upright over the nose-up board: the physics' weight).
+
+**The video check** ([`phase2-video-check.md`](../../research/animation-realism-2026-10-22/phase2-video-check.md), stills `phase2-video-check.jpg` and `phase2-video-check-redirect.jpg`, each with its `-before`): the owner's reel (barefoot_surf, a frontside top turn, goofy, on a left) against the game's, step by step. Matched: 1 (the drop's pose), 3 (the bottom turn), 4 (the head first), 6 (the redirect led by the head), 7 (the leading hand dropped, the rotation to the curl, the compression), 8 (the crouch and the look). Needs physics: 2 (the lean before the rail bites), 5 (the extension climbing, the weight back), 7 (the back foot holding the rail: the top turn's weight; the redirect off a face), 8 (the weight onto both feet; the near fall out of the redirect). Drawable but not done: the head turning before the board (it needs the steer, local only).
+
+**Stills and clips** (in `docs/research/animation-realism-2026-10-22/`):
+- `07-bottom-turn`, `08-top-turn`, `09-cutback`, `10-pump`, `11-tube` and `12-kick-out`, each `-phase2-before.jpg` (phase 1's code) and `-phase2.jpg`; `06-trim-phase2.jpg` and `17-arms-phase2.jpg` (the lead shoulder and the front hand, beside phase 1's `06-trim-phase1.jpg` and `17-arms-after.jpg`). The sheet: `character-sheet.html?realism&only=<id>&gaps=0&when=…`.
+- `phase2-motion-before-frontside.mp4` / `phase2-motion-after-frontside.mp4` (the bottom turn, the snap, the cutback, pumping, the weave) and `phase2-motion-before-backside.mp4` / `phase2-motion-after-backside.mp4` (the backside bottom turn, snap and cutback, both tubes, the kick-out), surfer2 Regular: `node scripts/browser/motion-clip.mjs <out> "<recipes>" --bitrate=1200000`.
+
+**M1 cost (this M1, Node):** `PosedBody.update` over the same drawn frames (compress, trim backside, the drop, a snap): surfer2 0.104 ms a frame on phase 1's code, 0.093 ms on phase 2's (0.090 ms with a cutback, a tube and a top turn added); the test humanoid 0.054 → 0.050 ms. No measurable cost: the cascade's and the shoulder's followers and the pose blends (at most eight blends of twenty-odd numbers) cost about what the old twist's and snap's paths did.
+
+**Shot list for the owner (Phase 2, as built):**
+1. Beach, medium swell, the chase camera: a right (frontside for a regular foot). Drop crouched (Shift), bottom turn at the base (Space with the steer onto the toes), up the face with S, then steer back onto the heels with S held (the top turn). *Look for:* at the base the trunk over the knees, not folded flat, the lead arm pointing along the line about level; as the turn comes in the head turns first, then the shoulders, then the hips; at the top the leading hand drops low in front and the arms stay at chest height or below, the knees bent; the chest and head swing back toward the curl.
+2. The same on a left (backside). *Look for:* in the bottom turn the shoulders come square to the lip and the head looks over the front shoulder; at the top the shoulders open toward the tail, the head back to the pocket.
+3. Point, medium: two cutbacks frontside and two backside (crouched, S with the steer back toward the curl). *Look for:* the head first, then the shoulders, hips and board, about a quarter second apart; the lead arm long and low, sweeping back with the chest; no arms thrown up.
+4. Wave Pool: 5 s of pumping (Shift on and off about once a second). *Look for:* the hands pushing down a little as the body rises, never lifting; no arms flying up.
+5. Padang or the Reef, a size that barrels: a frontside tube (crouch fully under the curl, E for the hand in the face) and a backside one. *Look for:* the back knee dropped to the deck; backside the trailing hand on the shoreward rail by the front foot (the pig-dog); the lead arm forward and low at the exit. Frontside the back hand reaches toward the outside rail but may not get there (an open item).
+6. Any spot: ride straight up the face with S held and let the board go over the back. *Look for:* the arms out for balance (no higher than the shoulders); whether the board swings over the back (if not, that is phase 5).
+7. Any spot, trim frontside and backside for 3 s each (the phase-1 fix carried in): the lead shoulder lower than the trailing one, the front hand forward along the line ahead of the front knee.
+8. Goofy (in the settings): one frontside top turn on a left, filmed beside the reel (barefoot_surf): the eight steps of `phase2-video-check.md`.
 
 **Risks:**
 - *Stage weights flickering in rail changes:* rate limits and hysteresis, tested over a weave.
