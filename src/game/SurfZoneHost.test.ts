@@ -173,7 +173,8 @@ describe('SnapshotSurfZone at a swept spot (Padang Padang, Part B, PR 3)', () =>
 // The Canyon roller lens (S3, Task 4): the roller's table travels in the snapshot for both looks to draw the band.
 describe('the roller lens in the snapshot', () => {
   it('carries the Canyon\'s roller table to the page, where the water\'s source offers it with its columns', async () => {
-    const host = new LocalSurfZone({ ...config, spot: 'canyon' });
+    // Square drawn edges, so the table travels as written (the foam look frays the drawn band's run ends; below).
+    const host = new LocalSurfZone({ ...config, spot: 'canyon', drawnEdges: false });
     await host.ready;
     const roller = host.runner.simulation.roller!;
     const { nx, dx, xCenters } = host.runner.simulation.solver;
@@ -194,6 +195,19 @@ describe('the roller lens in the snapshot', () => {
     expect(source.writeRoller!(into)).toBe(nx);
     expect(into[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.scale]).toBe(0.75);
     expect(into[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.crest]).toBe(-60.25);
+  });
+
+  it('frays the drawn band\'s run ends by default, leaving the roller\'s own table as written (the foam look, item 4a)', async () => {
+    const host = new LocalSurfZone({ ...config, spot: 'canyon' });
+    await host.ready;
+    const roller = host.runner.simulation.roller!;
+    const { nx } = host.runner.simulation.solver;
+    roller.table[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.scale] = 0.75;
+    host.refresh();
+    const drawn = host.snapshot.roller[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.scale];
+    expect(drawn).toBeGreaterThanOrEqual(0);
+    expect(drawn).toBeLessThan(0.75);
+    expect(roller.table[(nx + 5) * ROLLER_STRIDE + ROLLER_FIELD.scale]).toBe(0.75);
   });
 
   it('offers no roller where the sea has none', async () => {
