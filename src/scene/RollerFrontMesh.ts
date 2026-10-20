@@ -45,7 +45,7 @@ import { DEV_TOOLS, devParam } from '../devTools';
 export const ROLLER_FRONT = {
   /**
    * Sub-columns per solver column: a quarter metre at the Canyon's 1 m columns (the advisor's half metre drew its lumps
-   * as facets; the vertices stay well inside the 5–15k budget: about 100 a patch).
+   * as facets; a mature band 5–10 m long needs its 17 face intervals too). 135 vertices a patch.
    */
   subColumns: 4,
   /** Buried this far at its rear, m (the curl's `BURY`). */
@@ -102,11 +102,25 @@ export const ROLLER_FRONT = {
    */
   thickness: 0.235,
   /**
-   * Fresh is brighter (Koepke 1984; the advisor: 1.5–2× the white 5 s older): × (1 + `fresh` e^{−since/`freshDecay`}),
-   * and its creases fill as it is (fresh foam is bubbles through and through), from none at touchdown (P).
+   * Fresh is brighter (Koepke 1984: foam's reflectance falls as it ages; the advisor: 1.5–2× the white 5 s older). With
+   * φ = e^{−since/`freshDecay`}, its light × (1 + `fresh` φ) × mix(`aged`, 1, φ): brighter than the band at touchdown,
+   * greyer than it once aged (P: a gain of 3.5 at touchdown, the first build's, blew the young front out to a flat white
+   * cut-out under the tone mapping, its lumps gone). Its creases fill by `freshFill` of φ (fresh foam is bubbles through).
    */
-  fresh: 2.5,
+  fresh: 0.6,
   freshDecay: 1.5,
+  aged: 0.85,
+  freshFill: 0.3,
+  /**
+   * Young to mature (the advisor): the relief falls from the table's d′max (0.35 h₁ young, Fr₁ 1.9) to `matureShare` h₁
+   * once its crest has travelled `matureDepths` breaker depths (Svendsen 1984), taken as H/0.78 (the breaker index), its
+   * travel as c × since. The table's own d′max follows Fr₁, which inshore of the Canyon's break (a shallow trough) stays
+   * at its 0.4 cap; without this the aged bore stood in 0.2–0.3 m lumps, rock rather than foam.
+   */
+  matureShare: 0.155,
+  matureDepths: 6.5,
+  /** The fine detail a mature front keeps: its churn's relief and the creases' and clumps' shading (P: calmer foam). */
+  matureDetail: 0.6,
   /**
    * The light a crease between lumps keeps, and between the churn's clumps, once aged (P: darker big creases read as
    * marble on the aged bore; the fine clumps' as foam).
@@ -119,7 +133,7 @@ export const ROLLER_FRONT = {
    * Foam is a dense scatterer, lit through its lumps: its normal is bent this far toward the sky for its light, so a
    * lump's side turned from the sun greys rather than going dark as a solid's would (P).
    */
-  soften: 0.5,
+  soften: 0.3,
   /** Matte: its roughness (the band's foam takes 0.7). */
   roughness: 0.8,
   /**
@@ -131,7 +145,7 @@ export const ROLLER_FRONT = {
 } as const;
 
 /** Sub-columns per patch's side and points across its section. */
-export const SECTION = 20;
+export const SECTION = 27;
 const COLUMNS_PER_PATCH = ROLLER_FRONT.subColumns + 1;
 /** One patch's vertices and indices. */
 export const PATCH_VERTICES = COLUMNS_PER_PATCH * SECTION;
@@ -141,7 +155,7 @@ const PATCH_INDICES = 6 * ROLLER_FRONT.subColumns * (SECTION - 1);
  * (packed toward the nose), and the nose's angles, degrees, from its top round its front and under the water.
  */
 const REAR = 3;
-const FACE_KNOTS = [0, 0.14, 0.28, 0.41, 0.53, 0.64, 0.74, 0.83, 0.9, 0.96, 1] as const;
+const FACE_KNOTS = [0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.55, 0.62, 0.68, 0.74, 0.79, 0.84, 0.88, 0.92, 0.95, 0.975, 1] as const;
 const NOSE_KNOTS = [90, 60, 30, 0, -30, -60, -90] as const;
 const NOSE_FROM = REAR + FACE_KNOTS.length - 1;
 /**
@@ -151,9 +165,10 @@ const NOSE_FROM = REAR + FACE_KNOTS.length - 1;
  */
 const NOISE_SPREAD = 0.215;
 
-/** The fresh front's brightness gain `since` s after its curl landed (`ROLLER_FRONT.fresh`). */
+/** The front's light, as a share of the band's, `since` s after its curl landed (`ROLLER_FRONT.fresh`, `aged`). */
 export function frontFresh(since: number): number {
-  return 1 + ROLLER_FRONT.fresh * Math.exp(-Math.max(0, since) / ROLLER_FRONT.freshDecay);
+  const phi = Math.exp(-Math.max(0, since) / ROLLER_FRONT.freshDecay);
+  return (1 + ROLLER_FRONT.fresh * phi) * (ROLLER_FRONT.aged + (1 - ROLLER_FRONT.aged) * phi);
 }
 
 const smooth = (edge0: number, edge1: number, x: number) => {
@@ -281,7 +296,7 @@ uniform highp sampler2D rfLook;
 uniform float rfPixelScale;
 uniform vec4 rfTune;
 varying vec3 vRfWorld;
-varying vec3 vRfAlong;
+varying vec4 vRfAlong;
 varying vec4 vRfSection;
 varying vec4 vRfShade;
 vec2 rfGradient( ivec2 c, int salt ) {
@@ -367,7 +382,7 @@ bool rfLive1 = rfA1.z > 0.0;
 vec3 objectNormal = vec3( 0.0, 1.0, 0.0 );
 vec3 rfPosition = vec3( 0.0, -1.0e4, 0.0 );
 vRfWorld = rfPosition;
-vRfAlong = vec3( 0.0, 0.0, 1.0 );
+vRfAlong = vec4( 0.0, 0.0, 1.0, 0.0 );
 vRfSection = vec4( 0.0 );
 vRfShade = vec4( 0.0, 0.0, 1.0, 0.0 );
 if ( rfLive0 || rfLive1 ) {
@@ -420,7 +435,9 @@ float rfWeightBack = rfNose ? 0.0 : 1.0 - smoothstep( -0.12, 0.03, rfXi );
 vec3 rfWeight = vec3( rfWeightBack, max( 0.0, 1.0 - rfWeightBack - rfWeightNose ), rfWeightNose );
 float rfEnvelope = rfXi < 0.0 ? ${f(F.crestShare)} * smoothstep( -${f(F.rear)}, 0.0, rfXi )
   : ${f(F.crestShare)} + ${f(1 - F.crestShare)} * smoothstep( 0.0, ${f(F.peak[0])}, rfXi );
-float rfSigma = mix( rfB.w * rfG * rfEnvelope, ${f(F.noseSigma)} * rfR, rfWeightNose ) * rfTune.x;
+float rfMature = clamp( max( 0.0, rfSince ) * rfCel / ( ${f(F.matureDepths / 0.78)} * max( rfH, 0.1 ) ), 0.0, 1.0 );
+float rfRough = mix( rfB.w, ${f(F.matureShare)} * rfB.z, rfMature );
+float rfSigma = mix( rfRough * rfG * rfEnvelope, ${f(F.noseSigma)} * rfR, rfWeightNose ) * rfTune.x;
 float rfCap = mix( rfThick, ${f(F.noseCap)} * rfR, rfWeightNose );
 // Its detail as it shrinks on screen: the fine lumps' size in pixels at its depth.
 vec4 rfView = modelViewMatrix * vec4( rfX, rfWater.x, rfZ0, 1.0 );
@@ -466,7 +483,7 @@ if ( rfNose ) {
 }
 objectNormal = normalize( vec3( rfSlopeA * rfSlopeC - rfSlopeBz * rfSlopeB, rfSlopeBz, -rfSlopeA ) );
 vRfWorld = rfPosition;
-vRfAlong = normalize( vec3( 0.0, rfSlopeA, rfSlopeBz ) );
+vRfAlong = vec4( normalize( vec3( 0.0, rfSlopeA, rfSlopeBz ) ), rfMature );
 // The fine clumps' place on the section (along shore, along the arc) and their pace along it: creeping down the face,
 // tumbling over the nose (behind the crest the geometry's lumps shed; the clumps there creep, so their tile never folds);
 // and how near the crest it lies, for the band's light through it (its waterRollerFresh).
@@ -474,12 +491,13 @@ vRfSection = vec4( rfX, rfS, ( ${f(F.creep)} + ${f(F.tumble - F.creep)} * rfWeig
 // Fades: into the band at its rear, at its run's ends (its scale), and in with the landing's flash. The lumps' share of
 // their height (creases), the fresh white's gain, the detail kept at distance, and how near the crest (the band's wrap).
 float rfAlpha = smoothstep( 0.0, 0.5, rfG ) * ( rfNose ? 1.0 : smoothstep( -${f(F.rear)}, ${f(F.rearFade)}, rfXi ) );
-vRfShade = vec4( rfAlpha, rfLift / max( 1e-3, min( rfSigma, rfCap ) ), 1.0 + ${f(F.fresh)} * rfTune.w * exp( -max( 0.0, rfSince ) / ${f(F.freshDecay)} ),
+vRfShade = vec4( rfAlpha, rfLift / max( 1e-3, min( rfSigma, rfCap ) ), exp( -max( 0.0, rfSince ) / ${f(F.freshDecay)} ),
   rfNear );
 }
 `;
 
 const frontFragmentPars = /* glsl */ `
+uniform vec4 rfTune;
 uniform vec4 rfTune2;
 uniform float waterTime;
 uniform vec3 waterFoamColor;
@@ -488,7 +506,7 @@ uniform vec3 waterSunRadiance;
 ${foamPatternPars}
 ${waterChurnPars}
 varying vec3 vRfWorld;
-varying vec3 vRfAlong;
+varying vec4 vRfAlong;
 varying vec4 vRfSection;
 varying vec4 vRfShade;
 // The churn's clumps on the section, carried along the arc at its pace in two flow-map phases a lump's lifetime apart.
@@ -505,9 +523,11 @@ vec2 rfChurnAt( vec2 p ) {
 const FRONT_COLOR = /* glsl */ `
 vec2 rfChurn = rfChurnAt( vRfSection.xy );
 // The creases, once aged: fresh foam (its gain over 1, as a share of the most) fills them.
-float rfAged = 1.0 - clamp( ( vRfShade.z - 1.0 ) / ${f(F.fresh)}, 0.0, 1.0 );
+float rfAged = 1.0 - ${f(F.freshFill)} * vRfShade.z;
+// A mature front's detail calms (its lumps already fall to 0.155 h1).
+float rfDetail = vRfShade.w * mix( 1.0, ${f(F.matureDetail)}, vRfAlong.w );
 float rfCrease = mix( 1.0, mix( ${f(F.crease)} * rfTune2.x, 1.0, smoothstep( 0.05, 0.6, vRfShade.y ) )
-  * mix( ${f(F.churnShade)} * rfTune2.y, 1.0, smoothstep( 0.1, 0.7, rfChurn.y ) ), vRfShade.w * rfAged );
+  * mix( ${f(F.churnShade)} * rfTune2.y, 1.0, smoothstep( 0.1, 0.7, rfChurn.y ) ), rfDetail * rfAged );
 diffuseColor.rgb = waterFoamColor * rfCrease;
 diffuseColor.a *= vRfShade.x;
 `;
@@ -522,7 +542,7 @@ const FRONT_NORMAL = /* glsl */ `#include <normal_fragment_maps>
   vec2 rfSlope = ${f(F.churnRelief)} * rfTune2.z * vec2( rfChurnAt( vRfSection.xy + vec2( rfTexel, 0.0 ) ).y - rfChurn.y,
     rfChurnAt( vRfSection.xy + vec2( 0.0, rfTexel ) ).y - rfChurn.y ) / rfTexel;
   vec3 rfWorldNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
-  rfWorldNormal = normalize( rfWorldNormal - vRfShade.w * ( rfSlope.x * vec3( 1.0, 0.0, 0.0 ) + rfSlope.y * vRfAlong ) );
+  rfWorldNormal = normalize( rfWorldNormal - rfDetail * ( rfSlope.x * vec3( 1.0, 0.0, 0.0 ) + rfSlope.y * vRfAlong.xyz ) );
   rfWorldNormal = normalize( rfWorldNormal + vec3( 0.0, ${f(F.soften)} * rfTune2.w, 0.0 ) );
   normal = normalize( ( viewMatrix * vec4( rfWorldNormal, 0.0 ) ).xyz );
 }`;
@@ -540,13 +560,13 @@ function frontVolume(kept: number): string {
   float rfCapped = min( rfWrapped, max( max( 0.0, rfSun ), waterSunDirection.y ) );
   // The sun shines through near the crest, as through the band, and through the whole young front: fresh foam is thin
   // and full of air, so its backlit side glows (its gain's share).
-  float rfThrough = max( ${f(kept)}, max( vRfSection.w * vRfSection.w, 1.0 - rfAged )
+  float rfThrough = max( ${f(kept)}, max( vRfSection.w * vRfSection.w, vRfShade.z )
     * ( 1.0 - smoothstep( ${f(BAND_THROUGH[0])}, ${f(BAND_THROUGH[1])}, rfSun ) ) );
   totalEmissiveRadiance += diffuseColor.rgb * waterSunRadiance * RECIPROCAL_PI * ( rfCapped + ( rfWrapped - rfCapped ) * rfThrough - max( 0.0, rfSun ) );
 }`;
 }
 
-const FRONT_GAIN = `outgoingLight *= vRfShade.z;
+const FRONT_GAIN = `outgoingLight *= ( 1.0 + ${f(F.fresh)} * rfTune.w * vRfShade.z ) * mix( ${f(F.aged)}, 1.0, vRfShade.z );
 #include <opaque_fragment>`;
 
 /** `?rollerFront=off`, or `window.waterRollerFront(false)`: the front not drawn (and, from the URL, its toe spray not thrown). */

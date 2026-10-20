@@ -64,10 +64,13 @@ describe('the roller front\'s patches', () => {
 });
 
 describe('the roller front\'s look', () => {
-  it('draws the white fresh from its landing 1.5–2× and more as bright as 5 s later (Koepke 1984; the advisor)', () => {
+  it('draws the white fresh from its landing 1.5–2× as bright as 5 s later (Koepke 1984; the advisor), brighter than the band, then greyer', () => {
     // The landing (0.15–0.65 s after touchdown) against the white 5 s older, in the light it gives back.
-    expect(frontFresh(0.4) / frontFresh(5.4)).toBeGreaterThan(2);
-    expect(frontFresh(5.4)).toBeLessThan(1.1);
+    const ratio = frontFresh(0.4) / frontFresh(5.4);
+    expect(ratio).toBeGreaterThan(1.5);
+    expect(ratio).toBeLessThan(2);
+    expect(frontFresh(0)).toBeGreaterThan(1.5);
+    expect(frontFresh(5.4)).toBeLessThan(0.95);
     expect(frontFresh(-1)).toBe(frontFresh(0));
   });
 
@@ -98,13 +101,13 @@ describe('the roller front\'s mesh', () => {
   const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
   const source: SurfaceSource = { grid, time: 0, bedRevision: 0, cubic: true, write: () => {}, writeBed: () => {} };
 
-  it('lays a patch on every slot and column pair once, quarter-metre sub-columns by 20 points across, and uploads only the look', () => {
+  it('lays a patch on every slot and column pair once, quarter-metre sub-columns by 27 points across, and uploads only the look', () => {
     const front = new RollerFrontMesh(new WaterSurface(source).materialUniforms);
     const { table, look } = run();
     front.update(table, look, COLUMNS);
     expect(front.mesh.visible).toBe(true);
     expect(front.drawn).toEqual({ entries: 4, patches: ROLLER_SLOTS * (COLUMNS - 1), vertices: ROLLER_SLOTS * (COLUMNS - 1) * PATCH_VERTICES });
-    expect(PATCH_VERTICES).toBe(5 * 20);
+    expect(PATCH_VERTICES).toBe(5 * 27);
     const patch = front.mesh.geometry.getAttribute('rfPatch');
     expect(patch.count).toBe(ROLLER_SLOTS * (COLUMNS - 1));
     expect([patch.getX(COLUMNS - 1 + 3), patch.getY(COLUMNS - 1 + 3)]).toEqual([3, 1]);
@@ -132,7 +135,7 @@ describe('the roller front\'s mesh', () => {
     expect(shader.vertexShader).toContain('texelFetch( waterRoller, ivec2( 2 * rfColumn, rfSlot ), 0 )');
     expect(shader.vertexShader).toContain('waterRollerToe( rfX, waterTime, rfB.w )');
     expect(shader.vertexShader).toContain('vec3 transformed = rfPosition;');
-    expect(shader.fragmentShader).toContain('outgoingLight *= vRfShade.z;');
+    expect(shader.fragmentShader).toContain('outgoingLight *= ( 1.0 +');
     // On the water's own uniforms: its heights, foam colour and sun.
     for (const name of ['waterSurface', 'waterGrid', 'waterRoller', 'waterRollerColumn0', 'rfLook', 'waterFoamColor', 'waterSunDirection', 'waterChurnMap', 'waterTime']) {
       expect(shader.uniforms).toHaveProperty(name);
