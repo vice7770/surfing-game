@@ -860,10 +860,11 @@ describe('SurfZoneSimulation', () => {
       expect(bed(point.x, point.z)).toBeCloseTo(canyonTakeOffDepth(significantHeight), 1);
       expect(point.z).toBeLessThan(canyonBreakLineZ(point.x));
     }
-    // Where nine in ten of each size's waves had started breaking in the take-off's column (canyon-big's final bed,
-    // 3 seeds × 14 periods): the sets, not the median wave (0.96 + 0.65 Hs until the owner's playtest of 2026-10-11).
-    for (const [significantHeight, ninetiethDepth] of [[0.9, 2.26], [1.4, 2.65], [2.4, 4.07]]) {
-      expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.15);
+    // Where nine in ten of each size's waves had started breaking in the take-off's column (the reef bed, 2026-10-22,
+    // 3 seeds × 14 periods): the sets, not the median wave (0.96 + 0.65 Hs until the owner's playtest of 2026-10-11). On
+    // the 1:30 face below a 2.8 m hinge they were 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs).
+    for (const [significantHeight, ninetiethDepth] of [[0.9, 2.23], [1.4, 2.69], [2.4, 3.82]]) {
+      expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.06);
     }
   });
 
