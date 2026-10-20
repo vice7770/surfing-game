@@ -44,10 +44,11 @@ import { DEV_TOOLS, devParam } from '../devTools';
 /** The front's numbers (the advisor's, 2026-10-22; P marks a value set by eye). */
 export const ROLLER_FRONT = {
   /**
-   * Sub-columns per solver column: a quarter metre at the Canyon's 1 m columns (the advisor's half metre drew its lumps
-   * as facets; a mature band 5–10 m long needs its 17 face intervals too). 135 vertices a patch.
+   * Sub-columns per solver column: half a metre at the Canyon's 1 m columns (the advisor's), by 20 points across: 60
+   * vertices a patch. Quarter metres by 27 points drew the lumps smoother, but Big's 220 live patches then ran 30k
+   * vertices, +1.1 ms of vertex work alone on the M1 (the budget is 5–15k); now 13k.
    */
-  subColumns: 4,
+  subColumns: 2,
   /** Buried this far at its rear, m (the curl's `BURY`). */
   bury: 0.04,
   /** Its base this far over the water as drawn, m: the two meshes' chords over the curved surface differ by a few cm (P). */
@@ -146,7 +147,7 @@ export const ROLLER_FRONT = {
 } as const;
 
 /** Sub-columns per patch's side and points across its section. */
-export const SECTION = 27;
+export const SECTION = 20;
 const COLUMNS_PER_PATCH = ROLLER_FRONT.subColumns + 1;
 /** One patch's vertices and indices. */
 export const PATCH_VERTICES = COLUMNS_PER_PATCH * SECTION;
@@ -156,15 +157,16 @@ const PATCH_INDICES = 6 * ROLLER_FRONT.subColumns * (SECTION - 1);
  * (packed toward the nose), and the nose's angles, degrees, from its top round its front and under the water.
  */
 const REAR = 3;
-const FACE_KNOTS = [0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.55, 0.62, 0.68, 0.74, 0.79, 0.84, 0.88, 0.92, 0.95, 0.975, 1] as const;
+const FACE_KNOTS = [0, 0.14, 0.28, 0.41, 0.53, 0.64, 0.74, 0.83, 0.9, 0.96, 1] as const;
 const NOSE_KNOTS = [90, 60, 30, 0, -30, -60, -90] as const;
 const NOSE_FROM = REAR + FACE_KNOTS.length - 1;
 /**
- * The lumps' noise: gradient noise on the band's pcg3d hash (a random unit gradient per lattice point, quintic fade; value
- * noise drew its lattice's cells as straight creases), its spread one octave's standard deviation (measured over 4·10⁵
- * samples: 0.215). The second octave's lattice is turned 37° from the first's.
+ * The lumps' noise: gradient noise on the band's pcg3d hash (a random gradient per lattice point, its components two of
+ * the hash's words in [−1, 1], quintic fade; value noise drew its lattice's cells as straight creases), its spread one
+ * octave's standard deviation (measured over 4·10⁵ samples: 0.177). The second octave's lattice is turned 37° from the
+ * first's.
  */
-const NOISE_SPREAD = 0.215;
+const NOISE_SPREAD = 0.177;
 
 /** The front's light, as a share of the band's, `since` s after its curl landed (`ROLLER_FRONT.fresh`, `aged`). */
 export function frontFresh(since: number): number {
@@ -300,9 +302,10 @@ varying vec3 vRfWorld;
 varying vec4 vRfAlong;
 varying vec4 vRfSection;
 varying vec4 vRfShade;
+// A lattice point's gradient: two of its hash's words, each in [−1, 1] (no trigonometry: the vertex shader's cost).
 vec2 rfGradient( ivec2 c, int salt ) {
-  float a = float( waterPcg3d( uvec3( ivec3( c, salt ) ) ).x ) * ( 6.28318530718 / 4294967296.0 );
-  return vec2( cos( a ), sin( a ) );
+  uvec3 h = waterPcg3d( uvec3( ivec3( c, salt ) ) );
+  return vec2( h.xy ) * ( 2.0 / 4294967296.0 ) - 1.0;
 }
 // Gradient noise and its gradient (value, d/dp): the slopes come with the value, so a vertex evaluates it once.
 vec3 rfGradientNoise( vec2 p, int salt ) {

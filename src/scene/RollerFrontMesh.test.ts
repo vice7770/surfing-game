@@ -101,13 +101,13 @@ describe('the roller front\'s mesh', () => {
   const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
   const source: SurfaceSource = { grid, time: 0, bedRevision: 0, cubic: true, write: () => {}, writeBed: () => {} };
 
-  it('lays a patch on every slot and column pair once, quarter-metre sub-columns by 27 points across, and uploads only the look', () => {
+  it('lays a patch on every slot and column pair once, half-metre sub-columns by 20 points across, and uploads only the look', () => {
     const front = new RollerFrontMesh(new WaterSurface(source).materialUniforms);
     const { table, look } = run();
     front.update(table, look, COLUMNS);
     expect(front.mesh.visible).toBe(true);
     expect(front.drawn).toEqual({ entries: 4, patches: ROLLER_SLOTS * (COLUMNS - 1), vertices: ROLLER_SLOTS * (COLUMNS - 1) * PATCH_VERTICES });
-    expect(PATCH_VERTICES).toBe(5 * 27);
+    expect(PATCH_VERTICES).toBe(3 * 20);
     const patch = front.mesh.geometry.getAttribute('rfPatch');
     expect(patch.count).toBe(ROLLER_SLOTS * (COLUMNS - 1));
     expect([patch.getX(COLUMNS - 1 + 3), patch.getY(COLUMNS - 1 + 3)]).toEqual([3, 1]);
