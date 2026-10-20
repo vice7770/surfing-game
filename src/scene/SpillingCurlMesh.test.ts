@@ -1,7 +1,7 @@
 import { OrthographicCamera, PerspectiveCamera, Scene, ShaderLib, type WebGLProgramParametersWithUniforms, type WebGLRenderer } from 'three';
 import { describe, expect, it } from 'vitest';
 import { CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, impactTime } from '../wave/SpillingCurl';
-import { CURL_POINTS, CURL_VERTICES, SpillingCurlMesh, buildCurlRibbon, createCurlRibbon, curlPixelScale, type CurlRibbon } from './SpillingCurlMesh';
+import { CURL_POINTS, CURL_VERTICES, SpillingCurlMesh, buildCurlRibbon, createCurlRibbon, curlPixelScale, lipFlight, type CurlRibbon } from './SpillingCurlMesh';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { HAZE_ROUTES } from './water/hazeLand';
 
@@ -76,9 +76,13 @@ describe('the spilling lip\'s mesh', () => {
     expect(buildCurlRibbon(gap, 2, face, createCurlRibbon()).indexCount).toBe(2 * 2 * (CURL_POINTS - 1) * 6);
   });
 
-  it('throws its tip out first, nearly level, falling as t², onto the face where it lands at touchdown', () => {
+  it('pitches its tip out level at a steady pace, then pours it as t² over its last t_f, onto the face at touchdown', () => {
+    // The drop: the peak (0.1 H) over the landing (0.3 × 0.6 m under the crest).
+    const drop = 0.1 * H + 0.3 * LANDING;
+    const { fall, from } = lipFlight(0, IMPACT, drop);
+    expect(fall).toBeCloseTo(Math.sqrt((2 * drop) / (0.65 * 9.81)), 6);
     // A run at each age through its flight, read in its middle.
-    const flight = [0.25, 0.5, 0.75, 1].map((share) => {
+    const flight = [0.25, 0.45, from / IMPACT, from / IMPACT + 0.5 * (fall / IMPACT), 1].map((share) => {
       const ribbon = buildCurlRibbon(run(share * IMPACT), 5, face, createCurlRibbon());
       return { share, peak: at(ribbon, MID, PEAK), tip: at(ribbon, MID, TIP) };
     });
@@ -87,14 +91,36 @@ describe('the spilling lip\'s mesh', () => {
       expect(peak.y - 1).toBeLessThanOrEqual(0.1 * H + LIP);
       expect(tip.a).toBeCloseTo(share * LANDING, 1);
     }
-    // The drop from the peak grows as the square of the flight: a quarter of the way out it has fallen about a sixteenth
-    // (measured from the peak's outer surface to the tip's, half a lip apart, so a little more).
-    const drop = (k: number) => flight[k].peak.y - flight[k].tip.y;
-    expect(drop(0) / drop(3)).toBeLessThan(0.2);
-    expect(drop(1) / drop(3)).toBeGreaterThan(0.15);
-    expect(drop(1) / drop(3)).toBeLessThan(0.4);
+    // Level until the pour (the peak's outer surface and the tip's lie within half a lip), then falling as t²: halfway
+    // through its fall it has dropped about a quarter of the way.
+    const level = (k: number) => flight[k].peak.y - flight[k].tip.y;
+    for (const k of [1, 2]) expect(Math.abs(level(k))).toBeLessThanOrEqual(0.5 * LIP + 1e-6);
+    const fallen = (k: number) => (flight[k].peak.y - flight[k].tip.y) / (flight[4].peak.y - flight[4].tip.y);
+    expect(fallen(3)).toBeGreaterThan(0.15);
+    expect(fallen(3)).toBeLessThan(0.4);
     // At touchdown it is on the face at the landing (within its thickness).
-    expect(Math.abs(flight[3].tip.y - face(0, LANDING))).toBeLessThanOrEqual(LIP);
+    expect(Math.abs(flight[4].tip.y - face(0, LANDING))).toBeLessThanOrEqual(LIP);
+  });
+
+  it('falls as the advisor\'s jet: t_f about 0.42 s at H 2 m and 0.47 s at 2.5 m, landing at 2.7–3.0 m/s, half the flight level', () => {
+    for (const [height, expected] of [[2, 0.42], [2.5, 0.47]] as const) {
+      const impact = impactTime(height);
+      // The drawn tip's drop, about 0.28 H (the advisor, computed from the code).
+      const { fall, from, reach, pour } = lipFlight(0.4 * impact, impact, 0.28 * height);
+      expect(fall).toBeCloseTo(expected, 2);
+      const speed = 0.65 * 9.81 * fall;
+      expect(speed).toBeGreaterThanOrEqual(2.6);
+      expect(speed).toBeLessThanOrEqual(3.05);
+      expect(from / impact).toBeGreaterThan(0.45);
+      expect(from / impact).toBeLessThan(0.55);
+      // Before the pour: out 0.4 of the way, not falling yet.
+      expect(reach).toBeCloseTo(0.4, 6);
+      expect(pour).toBe(0);
+    }
+    // A fall longer than the flight starts at once; with no drop, it lands at touchdown.
+    expect(lipFlight(0.1, 0.3, 5).from).toBe(0);
+    expect(lipFlight(0.29, 0.3, 0).pour).toBe(0);
+    expect(lipFlight(0.3, 0.3, 0).pour).toBe(1);
   });
 
   it('opens its void late in the flight, its underside and the face under it darkened for the sky the lip hides', () => {
