@@ -206,7 +206,7 @@ const IMAGES: SheetImage[] = [
           },
         },
         numbers: ['Hands flat beside the lower ribs, 0.46 m apart (not the rails)', 'Push 0.71 s, elbows 110° at peak force', 'Chest up, eyes forward', 'Borgonovo-Santos 2021'],
-        gaps: ['Hands drawn on the rails (renderPoint push: halfWidth)', 'Trunk rise and leg swing unsourced in the map'],
+        gaps: ['Hands grip the rails at the chest: 0.45 m apart (right), wrong place and grip', 'Trunk rise and leg swing unsourced in the map'],
       },
       {
         title: 'Landing', today: recipe('landing'), shot: STAND_LOW,
@@ -231,7 +231,7 @@ const IMAGES: SheetImage[] = [
           lead: arm(0.25, 0.75, -0.6), trail: arm(0.3, -0.3, -0.9, 150),
         },
       },
-      numbers: ['Deepest crouch: knees past 90° flexed, back fairly upright', 'Arms at waist height or below, lead arm along the line', 'Eyes on the base; 55–60 % on the back foot', 'Rapture; Kerr (map): trunk 45–65° tilt'],
+      numbers: ['Deepest crouch: knees past 90° flexed, back fairly upright', 'Arms at waist height or below, lead arm along the line', 'Eyes on the base; 55–60 % on the back foot', 'The research brief; Kerr (map): trunk 45–65° tilt'],
       gaps: ['Knees 81°/83°: just short of past 90°', 'Weight 0.53: the map says front (de Sousa), the research back: owner decides'],
     }],
   },
