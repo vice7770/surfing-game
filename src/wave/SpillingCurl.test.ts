@@ -142,6 +142,17 @@ describe('the spilling lip on a spilling front', () => {
       expect(drawn[at(x, 2)]).toBe(1);
     }
     expect(foam.dense[at(16, 2)]).toBeLessThan(0.01);
+    // Its air too (round 5): none drawn on the shoulder's band, all of it behind the front and off the band.
+    for (const x of [-4, 0, 1]) {
+      expect(curl.shoulderAir[at(x, 2)]).toBe(0);
+      expect(curl.airShare(at(x, 2), 0)).toBe(0);
+    }
+    expect(curl.shoulderAir[at(-9, 2)]).toBeGreaterThan(0);
+    expect(curl.shoulderAir[at(-9, 2)]).toBeLessThan(1);
+    for (const [x, z] of [[-14, 2], [-4, 25], [4, 2]]) {
+      expect(curl.shoulderAir[at(x, z)]).toBe(1);
+      expect(curl.airShare(at(x, z), 0)).toBe(1);
+    }
   });
 
   it('draws none ahead of the front or before its curl lands, reaches the face\'s foot 2 s after, and changes nothing felt', () => {

@@ -246,6 +246,13 @@ export class SpillingCurl implements SpillingDrawnLook {
    * reached each column (NaN: no wave of the front's), for its fray's peel-side end (`frayBand`'s `PeelEnd`).
    */
   readonly bandAge: Float64Array;
+  /**
+   * Per cell, the share of its air drawn after the shoulder's clearing (`clearShoulder`): 1 off the shoulder, less on its
+   * band, where the drawn whitewater is held back (round 5). The solver may break there before any onset joins it to a
+   * wave, so no front owns those cells and their air, aerated from the felt whitewater, drew Rich's churn and plume on the
+   * clean face ahead of the lip.
+   */
+  readonly shoulderAir: Float32Array;
   private readonly first: number;
   private readonly last: number;
   private readonly view = createLensView();
@@ -272,6 +279,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.normalZ = new Float64Array(nx).fill(1);
     this.gradient = new Float64Array(nx);
     this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
+    this.shoulderAir = new Float32Array(nx * nz).fill(1);
     this.shapes = [];
     // Each column's bed along the waves' path (+z, the Canyon's straight crests) at the breaker depth: the gradient it
     // climbs (Mead & Black's band, as the reef break's), its overturn held to the span the advisor gave for the fan face.
@@ -516,15 +524,16 @@ export class SpillingCurl implements SpillingDrawnLook {
   /**
    * Clears the drawn lace on each wave's unbroken shoulder ahead of its front (`SPILLING_CURL.shoulder*`), in the drawn
    * foam's own fields before their step, and holds back the drawn whitewater there (`drawn`: the solver's weak breaking
-   * ahead of a front that no onset has joined to a wave yet, which no band holds): never felt (the foam is drawn only, and
-   * the bores the air reads are not its values). Behind each front nothing changes, so the broken part's whitewater and
+   * ahead of a front that no onset has joined to a wave yet, which no band holds), and its drawn air (`shoulderAir`, read
+   * by `airShare`): never felt (the foam is drawn only, and the bores the air reads are not its values). Behind each front nothing changes, so the broken part's whitewater and
    * its lace trail are as they were; nor where another wave breaks further along the crest, which ends the shoulder.
    */
   clearShoulder(foam: { readonly dense: Float64Array; readonly residual: Float64Array }, drawn: Float64Array | undefined,
     front: SpillingFront, dt: number): void {
     if (!(dt > 0)) return;
-    const { grid, first, last } = this;
+    const { grid, first, last, shoulderAir } = this;
     const { nx, nz, dx, xCenters, zCenters, h, bed, restLevel } = grid;
+    shoulderAir.fill(1);
     const curl = SPILLING_CURL;
     const height = this.options.breakerHeight;
     const ahead = Math.max(curl.shoulderAhead, curl.shoulderAheadHeights * height);
@@ -596,6 +605,7 @@ export class SpillingCurl implements SpillingDrawnLook {
           foam.dense[i] *= keep;
           foam.residual[i] *= keep;
           if (drawn) drawn[i] *= 1 - shoulder;
+          if (shoulderAir[i] > 1 - shoulder) shoulderAir[i] = 1 - shoulder;
         }
       }
     }
@@ -603,12 +613,13 @@ export class SpillingCurl implements SpillingDrawnLook {
 
   /**
    * The share of cell `cell`'s air drawn where the drawn foam covers `foam` of the surface: in a column whose curl is
-   * young (younger than `span`), air shows only under drawn whitewater, none under a curl yet to land; elsewhere all of it,
-   * so a developed bore draws its air as before.
+   * young (younger than `span`), air shows only under drawn whitewater, none under a curl yet to land; on a shoulder,
+   * as far as its whitewater is drawn (`shoulderAir`); elsewhere all of it, so a developed bore draws its air as before.
    */
   airShare(cell: number, foam: number): number {
     const age = this.age[cell % this.grid.nx];
-    if (!(age === age)) return 1;
-    return Math.min(1, Math.max(0, foam / SPILLING_CURL.airFoam));
+    const shoulder = this.shoulderAir[cell];
+    if (!(age === age)) return shoulder;
+    return Math.min(shoulder, Math.max(0, foam / SPILLING_CURL.airFoam));
   }
 }
