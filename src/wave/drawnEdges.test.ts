@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DRAWN_EDGES, edgeNoise, frayBand, frayRow, frayToes } from './drawnEdges';
+import { DRAWN_EDGES, edgeNoise, frayBand, frayRow, frayToes, peelWeight } from './drawnEdges';
 import { SPILLING_FRONT_DEFAULTS, SpillingFront, type SpillingGrid } from './SpillingFront';
 import { SPILLING_FRONT } from './SurfZoneSimulation';
 
@@ -112,6 +112,89 @@ describe('the drawn whitewater\'s edges (the foam look, item 4a)', () => {
   });
 });
 
+describe('where the lip lands (the Canyon lip, round 5)', () => {
+  /** A row's run of white from x = −30 to 30 (columns 10 … 70), every cell `age` s old. */
+  const frayed = (z: number, time: number, age: number, direction: 1 | -1 = 1, peel = true) => {
+    const g = grid();
+    const row = new Float64Array(g.nx);
+    for (let ix = 10; ix <= 70; ix += 1) row[ix] = 1;
+    const ages = new Float64Array(g.nx).fill(age);
+    frayRow(row, 0, g.nx, g.xCenters, 1, z, time, peel ? { direction, age: ages, young: 3 } : undefined);
+    return row;
+  };
+  /** How far in from the run's edge (x = −30.5 low, 30.5 high) its white first reaches half. */
+  const inset = (row: Float64Array, high: boolean) => {
+    let k = high ? 70 : 10;
+    while (row[k] < 0.5) k += high ? -1 : 1;
+    return high ? 70 - k : k - 10;
+  };
+
+  it('is young until the look\'s span, frayed in full a peelBlend later, and with no lip', () => {
+    expect(peelWeight(0.5, 3)).toBe(1);
+    expect(peelWeight(3, 3)).toBe(1);
+    expect(peelWeight(3 + 0.5 * DRAWN_EDGES.peelBlend, 3)).toBeCloseTo(0.5, 6);
+    expect(peelWeight(3 + DRAWN_EDGES.peelBlend, 3)).toBe(0);
+    expect(peelWeight(Number.NaN, 3)).toBe(0);
+    expect(DRAWN_EDGES.peelCut).toBeLessThanOrEqual(0.45);
+    expect(DRAWN_EDGES.peelFade).toBeLessThanOrEqual(1);
+  });
+
+  it('cuts a young run\'s peel-side end no more than the lip\'s fingers, and frays its upcoast end in full', () => {
+    const { peelCut, peelFade, endCut, endFade } = DRAWN_EDGES;
+    const upcoast = new Set<number>();
+    for (let z = -20; z <= 20; z += 1) {
+      for (const time of [0.4, 5.3, 12.7]) {
+        const row = frayed(z, time, 1);
+        // The peel-side end (+x): its last cell (0.5 m in) loses at most all of it; one cell in, none.
+        expect(peelCut + peelFade).toBeLessThan(1.5);
+        expect(row[69]).toBe(1);
+        for (let ix = 30; ix < 70; ix += 1) expect(row[ix]).toBe(1);
+        upcoast.add(inset(row, false));
+        expect(inset(row, false)).toBeLessThanOrEqual(endCut + endFade);
+        // Toward −x the same: the peel's direction decides which end is the lip's.
+        const left = frayed(z, time, 1, -1);
+        expect(left[11]).toBe(1);
+      }
+    }
+    // The upcoast end still frays by metres from row to row.
+    expect(Math.max(...upcoast)).toBeGreaterThan(1);
+    expect(upcoast.size).toBeGreaterThan(2);
+  });
+
+  it('frays the peel-side end in full once its white is old, or with no lip, as without it', () => {
+    for (let z = -20; z <= 20; z += 1) {
+      const old = frayed(z, 7.7, 3 + DRAWN_EDGES.peelBlend);
+      const square = frayed(z, 7.7, 0, 1, false);
+      for (let ix = 0; ix < 81; ix += 1) expect(old[ix]).toBe(square[ix]);
+      const none = frayed(z, 7.7, Number.NaN);
+      for (let ix = 0; ix < 81; ix += 1) expect(none[ix]).toBe(square[ix]);
+    }
+  });
+
+  it('fades the band\'s peel-side end over at most a column while young, its other end over 1 to bandFade', () => {
+    const nx = 60;
+    const stride = 8;
+    for (const time of [0.3, 4.2, 9.9, 14.1]) {
+      const table = new Float32Array(2 * nx * stride);
+      for (let c = 10; c < 50; c += 1) table[(nx + c) * stride + 2] = 1;
+      const ages = new Float64Array(2 * nx).fill(1);
+      frayBand(table, 2, nx, stride, 2, time, { direction: 1, age: ages, young: 3 });
+      const scale = (c: number) => table[(nx + c) * stride + 2];
+      // The last column at half or more, the one before it whole.
+      expect(scale(49)).toBeGreaterThanOrEqual(0.5);
+      expect(scale(48)).toBe(1);
+      expect(scale(10)).toBeLessThan(1);
+      // Old, both ends as without it.
+      const old = new Float32Array(2 * nx * stride);
+      const square = new Float32Array(2 * nx * stride);
+      for (let c = 10; c < 50; c += 1) old[(nx + c) * stride + 2] = square[(nx + c) * stride + 2] = 1;
+      frayBand(old, 2, nx, stride, 2, time, { direction: 1, age: ages.fill(9), young: 3 });
+      frayBand(square, 2, nx, stride, 2, time);
+      expect(Array.from(old)).toEqual(Array.from(square));
+    }
+  });
+});
+
 describe('the spilling front\'s drawn edges', () => {
   it('are off by default and on at the Canyon', () => {
     expect(SPILLING_FRONT_DEFAULTS.drawnEdges).toBe(false);
@@ -150,5 +233,47 @@ describe('the spilling front\'s drawn edges', () => {
     for (let x = -20; x <= -5; x += 1) if (at(a.drawn, x, 4) < 1) frayedToes += 1;
     expect(frayedEnds).toBeGreaterThan(0);
     expect(frayedToes).toBeGreaterThan(5);
+  });
+
+  it('with the lip\'s look, cut its young white\'s peel-side end only at its last column, the felt as without it', () => {
+    const g = grid();
+    const size = g.nx * g.nz;
+    const strength = new Float64Array(size);
+    for (let iz = 20; iz <= 24; iz += 1) for (let ix = 10; ix <= 70; ix += 1) strength[iz * g.nx + ix] = 1;
+    // A look that draws all of it, young for 100 s; each front peels toward +x at 4 m/s from x = −40.
+    const look = { span: 100, share: () => 1 };
+    const arms = [
+      { front: new SpillingFront(g, { peelAngleDegrees: 90, drawnEdges: true }), look },
+      { front: new SpillingFront(g, { peelAngleDegrees: 90 }), look },
+      { front: new SpillingFront(g, { peelAngleDegrees: 90, drawnEdges: true }), look: undefined },
+      { front: new SpillingFront(g, { peelAngleDegrees: 90 }), look: undefined },
+    ].map((arm) => ({ ...arm, out: new Float64Array(size), felt: new Float64Array(size), drawn: new Float64Array(size) }));
+    for (const { front } of arms) for (let ix = 0; ix < g.nx; ix += 1) front.observeOnset(ix, 0, 0);
+    const [lip, lipSquare, plain, square] = arms;
+    const at = (values: Float64Array, column: number, z: number) => values[(z + 20) * g.nx + column];
+    let checked = 0;
+    let cutPlain = 0;
+    let cutUpcoast = 0;
+    for (let step = 1; step <= 40; step += 1) {
+      for (const arm of arms) arm.front.update(step * 0.25, 0.25, 4, strength, arm.out, arm.felt, arm.drawn, arm.look);
+      for (let i = 0; i < size; i += 1) {
+        expect(Object.is(lip.out[i], square.out[i])).toBe(true);
+        expect(Object.is(lip.felt[i], square.felt[i])).toBe(true);
+      }
+      // Rows the toe's fray leaves alone (z 0 … 2): behind the run's last column (its +x end, the front's), all of it.
+      for (let z = 0; z <= 2; z += 1) {
+        let end = g.nx - 1;
+        while (end > 0 && !(at(lipSquare.drawn, end, z) > 0)) end -= 1;
+        if (end < 20) continue;
+        for (let column = end - 6; column < end; column += 1) expect(at(lip.drawn, column, z)).toBe(at(lipSquare.drawn, column, z));
+        expect(at(lip.drawn, end, z)).toBeLessThanOrEqual(at(lipSquare.drawn, end, z));
+        checked += 1;
+        for (let column = end - 3; column < end; column += 1) if (at(plain.drawn, column, z) < at(square.drawn, column, z)) cutPlain += 1;
+        if (at(lip.drawn, 11, z) < at(lipSquare.drawn, 11, z)) cutUpcoast += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+    expect(cutPlain).toBeGreaterThan(0);
+    expect(cutUpcoast).toBeGreaterThan(0);
   });
 });

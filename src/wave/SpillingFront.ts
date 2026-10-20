@@ -15,7 +15,7 @@
  * Its decision paths use only + − × ÷ and min/max (the roller's online rule, R3 §3.4): its sine is a series.
  */
 
-import { frayRow, frayToes } from './drawnEdges';
+import { frayRow, frayToes, type PeelEnd } from './drawnEdges';
 
 export interface SpillingFrontOptions {
   /** Which way the break peels along shore: +1 toward +x (left to right seen from the beach), −1 toward −x. */
@@ -234,6 +234,11 @@ export class SpillingFront {
   private seaward?: Float64Array;
   /** For the drawn edges: the rows that drew white at the last update, in order. */
   private drawnRows?: Int32Array;
+  /**
+   * For the drawn edges with a look (the lip): the row's cells' ages, s since their wave's front reached them (NaN: no
+   * wave's), so each run's peel-side end, where the lip lands, frays only as far as its fingers while young.
+   */
+  private peel?: { direction: 1 | -1; age: Float64Array; young: number };
 
   constructor(private readonly grid: SpillingGrid, options: Partial<SpillingFrontOptions> = {}) {
     this.options = { ...SPILLING_FRONT_DEFAULTS, ...options };
@@ -362,7 +367,9 @@ export class SpillingFront {
    * crest there (or, owned by none, of every live wave's), the next crest breaking weakly before its onset joins it to a
    * wave of its own (B ≤ 0.3, or less than 5 m out), which an older wave's band holds meanwhile. It is drawn once its
    * own wave's front has reached it and its curl has landed. Written beside `out` and `felt`, which it never changes.
-   * With `drawnEdges`, each row's run of it then frays at its ends along the crest and each column's at its toe.
+   * With `drawnEdges`, each row's run of it then frays at its ends along the crest and each column's at its toe; with a
+   * look too, a run's peel-side end, where the lip lands, frays only as far as the lip's fingers while its white is young
+   * (`DRAWN_EDGES.peelCut`).
    */
   update(time: number, dt: number, breakerCelerity: number, strength: ArrayLike<number>, out: Float64Array, felt?: Float64Array,
     drawn?: Float64Array, look?: SpillingDrawnLook): void {
@@ -408,6 +415,15 @@ export class SpillingFront {
     const dx = nx > 1 ? xCenters[1] - xCenters[0] : 1;
     const drawnRows = fray ? (this.drawnRows ??= new Int32Array(nz)) : undefined;
     let drawnRowCount = 0;
+    let peel: PeelEnd | undefined;
+    let ages: Float64Array | undefined;
+    if (fray && look) {
+      const end = (this.peel ??= { direction, age: new Float64Array(nx), young: 0 });
+      end.direction = direction;
+      end.young = look.span;
+      peel = end;
+      ages = end.age;
+    }
     for (let iz = 0; iz < nz; iz += 1) {
       // With the drawn edges: whether this row draws any white, its run then frayed at its ends.
       let rowDraws = false;
@@ -434,6 +450,7 @@ export class SpillingFront {
         if (owner < 0) {
           out[i] = b;
           if (felt) felt[i] = b;
+          if (ages) ages[ix] = Number.NaN;
           if (drawn) {
             drawn[i] = z < seaward![ix] - options.crestReach ? 0 : b;
             if (drawn[i] > 0) rowDraws = true;
@@ -460,6 +477,7 @@ export class SpillingFront {
         }
         if (felt) felt[i] = b;
         const local = time - Math.max(reached, latest);
+        if (ages) ages[ix] = local;
         if (local >= options.rampSeconds) {
           out[i] = b;
           if (drawn) {
@@ -478,7 +496,7 @@ export class SpillingFront {
         this.ramped += 1;
       }
       if (rowDraws && drawnRows) {
-        frayRow(drawn!, iz * nx, nx, xCenters, dx, z, time);
+        frayRow(drawn!, iz * nx, nx, xCenters, dx, z, time, peel);
         drawnRows[drawnRowCount++] = iz;
       }
     }

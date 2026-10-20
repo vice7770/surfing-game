@@ -99,12 +99,92 @@ Now the Small curl reads as a lip along the crest that fades out at its ends. Th
 
 **The Medium motion strip** is refreshed (`motion-medium.jpg`): the clean shoulder, the lip at the front and the white spreading behind it.
 
+## Round 5: where the lip lands, pitch then pour, and contrast (2026-10-20)
+
+Branch `claude/lip-r5`, from `main` at e9745b4b, after the water-physics advisor's consult of 2026-10-20 (its row in `docs/research/water-physics/consult-log.md`). The advisor's changes 1–3 were built, with one fix found on the way. Nothing felt changed: the lip's felt-identity test, the shoulder tests at Medium and Big, the roller lens's tests and the other spots' test pass.
+
+**1. The fray stops where the lip lands** (`drawnEdges.ts`, `SpillingFront.update`, `SpillingCurl.drawBand`, `SurfZoneSimulation.writeRoller`).
+- #126's `frayRow` cut 0–4 m and faded 2 m at both ends of each row's drawn white, and `frayBand` faded the band over 1–6 columns at both ends. At the peel-side end, where each curl lands, the white started up to about 1 s after touchdown, and the 0.15 s landing flash faded.
+- Now, with the lip's look, a run's peel-side end gives up at most 0.45 m (`RAGGED.period`, the lip's finger scale) and fades over at most 1 m; the band's peel-side end fades over half a column to one. This holds while that end's white is younger than the look's span (3.6–3.8 s at the Canyon). Over the next 1 s it eases back to #126's full fray, so the end of a peel that stops later still frays, and nothing pops.
+- The upcoast end and the toe keep #126's fray. Without the lip (`?spillingCurl=0`) nothing changes.
+- Drawn only: each row's cell ages and the band's ages (`SpillingCurl.bandAge`) are written beside the drawn copies; the felt whitewater and the felt roller table never read them (tested bit for bit).
+
+**2. Pitch, then pour** (`SpillingCurlMesh.buildCurlRibbon`, `lipFlight`).
+- The tip still goes out at a steady pace to its landing at τ_i = 0.6 √H. It is held level at the peak until τ_i − t_f, then falls as t² over t_f = √(2 Δy / 0.65 g), Δy each slice's own peak over its landing.
+- The lip droops from the crest to its tip as a parabola whose depth grows as t², so at touchdown it is the same arc as before and the collapse is unchanged. The void opens from a quarter of the fall before the pour to touchdown.
+
+| Wave | τ_i | t_f | Level, then falling | Landing speed | Along the crest (5.7 m/s front) |
+| --- | --- | --- | --- | --- | --- |
+| H 2 m (Δy 0.56 m) | 0.85 s | 0.42 s | 0.43 s, then 0.42 s | 2.7 m/s | 2.4 m level, 2.4 m falling |
+| H 2.3 m (the strips' wave) | 0.91 s | 0.45 s | 0.46 s, then 0.45 s | 2.9 m/s | 2.6 m, 2.6 m |
+| H 2.5 m (Δy 0.70 m) | 0.95 s | 0.47 s | 0.48 s, then 0.47 s | 3.0 m/s | 2.7 m, 2.7 m at 5.7 m/s (the advisor's 3.4 + 3.3 m at Big's faster front) |
+
+Before, the drop (about 0.28 H) was spread over all of τ_i: about 0.16 g, landing at 1.3–1.5 m/s.
+
+**3. Contrast for distance** (`SpillingCurlMesh`: `UNDER_SHADE` 0.45 → 0.6, `FLOOR_SHADE` 0.6 → 0.8, `FLOOR_ALPHA` 0.75 → 0.9, `DISTANCE.nearPixels` 5 → 8). The floor at full opening now keeps 0.28 of the face's light under it, not 0.55, and from 15 m the separator is already partly drawn as a line. Mesh only: no new samplers, the tank's programs untouched (the curl's own vertex shader changed one literal).
+
+**The fix found on the way: no drawn air on the shoulder** (`SpillingCurl.clearShoulder`, `airShare`). With the foam's detailed look (the Medium preset and up), the face ahead of the lip drew a grey, pillowed mat: Rich's churn and plume. Where the solver breaks ahead of a front before any onset joins it to a wave, no front owns the cells. Their felt whitewater aerates them, and round 3's clearing held back their drawn foam but not their drawn air. The clearing now records what it holds back per cell, and the drawn air takes it. It clears the shoulder; the first 3 m ahead of the front, where the band fades in, and the face just below a young curl still show some (see the strips).
+
+### How it was checked
+
+- **The page:** the dev water sheet in the page (`?inpage&waterSheet&spot=canyon&swell=medium|big&direction=0&spreading=150&components=24`), seed 1. The graphics were set to the High preset in both pages, since the two dev origins had different saved settings (one was Low, with the simple foam). Before is e9745b4b and after is this branch: the same sea, step for step (h, q and the felt whitewater checked equal).
+- **The wave:** Medium, a 2.3–2.4 m set breaking at the take-off at 149.7 s (x −36.5, z −344), peeling toward +x and shrinking to 1.6 m by 156 s.
+- **The tool:** the contrast ratios are measured by a new dev tool, `waterSheetLipContrast(view, look, time)`.
+  - The band under the lip is the pixels the void's darkening changes, measured against the same pixels without the curl and against the green face 2–6 m ahead of the front (foam-free pixels). It also reports the band's darkest quarter, since the band's pixels include the translucent lip over it.
+  - The landing white is the columns 0.15–0.65 s after touchdown, against the columns 4.5–5.5 s after. Each is taken over the face from 1 m behind the crest to 6 m ahead, by the white's own pixels (the foam drawn magenta).
+- **The camera:** "ride" views look along the game's start camera's heading (seaward, toward the peel, from 3.6 m up) at 15 m and 40 m from the curl. That brackets the start position's view of a wave breaking at the break line, about 20 m off.
+
+### The strips and stills
+
+- **Pitch, then pour** (`r5-pour-medium.jpg`): one column (x −27.5) from 151.8 to 152.9 s, 0.1 s apart, before above and after below, from 4 m in front of the face, tracking the crest. ![](r5-pour-medium.jpg)
+- **The landing handing over to the white** (`r5-handover-medium.jpg`, beside the break from the shoulder side, 152.0–153.4 s, 0.2 s apart; `r5-ride15-medium.jpg`, the ride camera at 15 m): ![](r5-handover-medium.jpg) ![](r5-ride15-medium.jpg)
+- **Stills at 156 s** (`r5-stills-medium.jpg`: ride camera at 15 m and 40 m, from behind the wave in the lineup, beside; midday and sunset, before and after), Classic (`r5-classic-medium.jpg`), and close and overview (`r5-close-medium.jpg`): ![](r5-stills-medium.jpg) ![](r5-classic-medium.jpg) ![](r5-close-medium.jpg)
+- **What was measured** (`r5-contrast-regions.jpg`; the band red, the face beside it yellow, the landing cyan, the white 5 s older magenta): ![](r5-contrast-regions.jpg)
+- **Big** (`&swell=big`, after only; a 2.7 m set breaking at the take-off at 149.25 s, x −37.5, z −350): one column's pitch and pour from in front of the face (`r5-pour-big.jpg`, 0.1 s apart), the ride camera at 15 m and beside from the shoulder (`r5-ride15-big.jpg`, `r5-handover-big.jpg`, 0.2 s apart), and stills at 155.9 s of the same crest's next stretch (2.1 m): ride camera at 15 m and 40 m, beside and the overview, midday, sunset and Classic (`r5-stills-big.jpg`). ![](r5-pour-big.jpg) ![](r5-ride15-big.jpg) ![](r5-handover-big.jpg) ![](r5-stills-big.jpg)
+
+**My read.**
+- **Pitch, then pour.** Before, the lip slid out as one smooth tongue sloping down the whole way (152.0–152.3 s). After, it goes out as a level ledge on the crest for about 0.4 s, with the darker band under it, then drops quickly onto the face (152.5–152.8 s), and the splash follows. The ledge does read as a shelf for those few frames: this is the advisor's named risk, for the owner to judge in motion.
+- **The handover.** The white follows the landing with no green gap in either strip; the white's leading edge runs diagonally from the crest down the face, as the 2 s toe draws it. The peel-side end is a sharp edge now rather than a 1–6 m fade.
+- **The shoulder.** The grey pillows ahead of the front are gone from the shoulder in the ride view. Some remain in the first metres ahead of the front and on the face below a young curl, in both builds.
+- **At distance.** From 40 m the lip is a fine dark line along the crest in both builds, and the changes are subtle at this wave's size (1.6 m by 156 s).
+- **Big.** The lip reads as a short level ledge on the crest for about half its flight, then the splash and the white; it stays small beside the white, as the advisor expects. From the overview the white's peel-side ends are now crisp, diagonal edges (the white growing down the face behind the landing). Where the solver's onsets are patchy, so one crest is split between two fronts, the stretches show as separate patches with crisp leading edges: the full fray returns 1 s after the look's span, so these older ends soften, but the youngest stay sharp.
+
+### The contrast ratios (Medium, 156 s, Rich, midday; before → after)
+
+| | Ride camera, 15 m | Ride camera, 40 m | Target |
+| --- | --- | --- | --- |
+| Band under the lip ÷ the face beside it (mean) | 1.14 → 1.14 | 0.82 → 0.80 | ≤ 0.5 |
+| The band's darkest quarter ÷ the face beside it | 0.85 → 0.80 | 0.53 → 0.60 | |
+| The band ÷ the same pixels without the curl | 0.93 → 0.84 | 0.60 → 0.54 | |
+| Landing white ÷ white 5 s older (the white's pixels) | 0.94 → 0.89 | 0.83 → 0.80 | ≥ 1.5–2 |
+| The same, its 90th percentile | 0.95 → 0.97 | 0.59 → 0.75 | |
+| Big (after; 155.9 s, H 2.1 m): band ÷ face beside, mean and darkest quarter | 1.05, 0.75 | 1.08, 0.69 | ≤ 0.5 |
+| Big: the band ÷ the same pixels without the curl | 0.68 | 0.65 | |
+| Big: landing white ÷ white 5 s older (the white's pixels; 90th percentile) | 1.03 (separate frames) | 0.75 (0.86) | ≥ 1.5–2 |
+
+In Classic, the band at 15 m is 1.29 → 1.36 of the face beside it, and its darkest quarter 0.91 → 0.86. The 15 m white ratio is measured with the camera on the 5 s older white, the landing at its edge; the 40 m one has both in one frame. These rest on 3–4 columns each, so they move by ±0.05 between frames.
+
+**Neither target is met, and these knobs can't meet them.**
+- **The band.** From the ride camera, 3.6 m up over a 1.6–2.4 m crest, the lip covers its own void. The band's pixels are seen through the translucent lip, so darkening the void barely moves them. At 156 s, the runtime trials took the void's shade to 85 % at full opacity and moved the band only from 1.14 to 1.03 of the face beside it.
+  - The face beside it, the shoulder 2–6 m ahead, is itself darker (0.38–0.41) than the upper face under the lip without the curl (0.48–0.57).
+  - Reaching 0.5× would take the lip itself reading dark where it hangs over the void, or a deeper void than the gentle drawn face allows. Both are look questions for the advisor and the owner.
+- **The white.** The landing white (the drawn band at full scale and the collapsing curl) reads 0.55–0.66. The white 5 s older is the foam field's dense whitewater, at 0.60–0.69: those columns have no roller band any more.
+  - **The air share is not the lever.** Zeroing all drawn air (the youth signal Rich reads) changed the old white by 1 % (0.523 → 0.517) and the landing by 0 %.
+  - **Nor is the band.** Aging the drawn band (scale × 0–0.4 by 5 s, tried on the uploaded table) changed nothing in the old white and the landing by ≤ 2 %.
+  - **What would.** A 1.5× ratio needs the aged foam itself drawn darker, through the foam's freshness in the Rich tank shader (the M1 cost cliff) or the drawn foam values (which would change the owner's white). That is the owner's and the advisor's call, so I left it.
+
+**Cost.**
+- Building the ribbon: 0.075–0.079 ms for 20 slices and 0.21–0.22 ms for 56, the same before and after within noise. That is node on the M1 Air, interleaved over 40 rounds while other jobs ran; round 4's idle figures were 0.063 and 0.164 ms.
+- The fray's ages: one store per breaking cell in the front's row pass and per band cell.
+- The shoulder's air: one fill of the cell grid and a store per band cell per step.
+- No GPU timing was taken: the tank's shaders are untouched, and the curl's shader changed by one literal.
+
 ## The numbers and their sources
 
 | What | Value | Source |
 | --- | --- | --- |
 | Touchdown after the front reaches a column | τ_i = 0.6 √H s (0.84–0.86 s for the 2 m wave in the stills; 0.95 s at 2.5 m) | The barrel clock (along-the-crest.md); advisor 0.35–0.7 s at Medium (inferred) |
-| The tip's flight | Out at a steady pace to the landing at τ_i (0.2–0.3 C), falling as t² from a peak at most 0.1 H over the crest, sharpened over the first third | The advisor, round 2 (the jet leaves nearly level and falls ballistically; Mostert, Popinet & Deike 2022: laminar until touchdown) |
+| The tip's flight | Out at a steady pace to the landing at τ_i (0.2–0.3 C) from a peak at most 0.1 H over the crest, sharpened over the first third. Round 5: held level until τ_i − t_f, then falling as t² over t_f = √(2 Δy / 0.65 g), Δy the slice's peak over its landing (0.42 s at H 2 m, 0.47 s at 2.5 m; landing at 2.7–3.0 m/s); rounds 1–4 spread the drop over all of τ_i (about 0.16 g, 1.3–1.5 m/s) | The advisor, round 2 (the jet leaves nearly level and falls ballistically; Mostert, Popinet & Deike 2022: laminar until touchdown); round 5 (Drazen et al. 2008: free fall; the game's library 0.58–0.71 g) |
 | The void fills, the curl whitening from its tip | 0.5 s | along-the-crest.md (collapse from T to T + 0.5 s) |
 | The white's toe reaches the face's foot | 2 s after touchdown | The owner (2026-10-11); advisor's sourced 2–3.5 s (Svendsen 1984, 5–8 h_b) |
 | Overturn shape | Pick & Feddersen (2026) fits (`Overturn.ts`), ψ0 from each column's Mead & Black gradient at h_b | The advisor; provisional |
@@ -117,7 +197,9 @@ Now the Small curl reads as a lip along the crest that fades out at its ends. Th
 | The shoulder held back | Along each wave's crest line, up to 30 m ahead of its front, faded in over 3 m from the front. Across shore, from 2 m behind the crest to 12 m or 5 H_b ahead of it, whichever is more, faded over 3 m at both ends. The lace fades with a 0.1 s e-folding time | The coordinator's ruling, round 3; extents set by eye and by the measurement below |
 | Streaks | Two flow-map layers half a 0.45 s period apart; scrolled along the lip at 0.4 m/s near the crest to 3.2 m/s at the tip; 0.3 m apart in world x, 1.2 m long | Surf's Up course notes p. 80; Vlachos 2010; the advisor (2–4 lip thicknesses apart, 4:1) |
 | Ragged tip | Fingers cut from the tip's last fifth, 0.45 m period in world x; the tip's froth varied with the same noise | Surf's Up's lip trains; the advisor (0.3–0.6 m) |
-| Readable at distance (round 4) | The lip at least 2 CSS px thick; drawn as a line as its nominal thickness (0.052 H) goes from 5 px to 2 px on screen: froth from 0.4 of the lip at 0.8, fingers closed, the void up to 1.5× darker (at most 85 %) except under its tip from 0.6 | The coordinator's ruling, round 4; values set by eye on the distance stills |
+| Readable at distance (round 4) | The lip at least 2 CSS px thick; drawn as a line as its nominal thickness (0.052 H) goes from 8 px (round 4: 5 px) to 2 px on screen: froth from 0.4 of the lip at 0.8, fingers closed, the void up to 1.5× darker (at most 85 %) except under its tip from 0.6 | The coordinator's ruling, round 4; values set by eye on the distance stills; 8 px in round 5 |
+| The void's darkening (round 5) | 60 % on the lip's underside (was 45 %) and 80 % on the face under it (was 60 %), at 90 % opacity (was 75 %): the floor at full opening keeps 0.28 of the face's light, not 0.55 | The advisor's target, round 5: the throat at most 0.5× the face beside it (inferred) |
+| The drawn white's peel-side end (round 5) | While its white is younger than the look's span, a run's peel-side end gives up at most 0.45 m (the lip's finger scale) and fades over at most 1 m, the band's over half to one column; over the next 1 s it frays as #126 drew it (0–4 m, 2 m fade; 1–6 columns). The upcoast end and the toe keep #126's fray | The advisor, round 5 (#126's fray started the white up to about 1 s after touchdown) |
 | Run ends (round 4) | A run tapers over 2.5 m to an end closed by a slice of nothing; slices up to 2.6 m apart join (one missing column) | Set on the Small stills |
 | Along the crest (the stills' wave) | 0.17 s per metre (a 5.7 m/s front), curl standing over about 7 columns, the face's foot (the lens's toe) 7 m | Measured. Advisor: 0.175 s/m; 2–4 m of open curl, then about 3 m collapsing |
 
@@ -127,10 +209,10 @@ Now the Small curl reads as a lip along the crest that fades out at its ends. Th
   - **The slices.** A ribbon is lofted along each wave's crest from the snapshot's slices: up to 56 slices of 13 floats, 2.9 KB, carried through the snapshot so solo, worker and online clients all draw it. Each slice carries its column's curl at full size and its age. The ribbon builds the column's stage of the break from that age, so the curl doesn't inflate as one shape.
   - **The sequence per column:**
     - the crest sharpens to a peak at most 0.1 H over the drawn crest;
-    - the tip goes out first, nearly level, and falls as t² onto the drawn face at the landing, 0.6 H ahead, at touchdown;
-    - the void under it opens in the last third of the flight;
+    - the tip goes out first at a steady pace, held level (pitched), and in the last t_f of the flight pours: it falls as t² at 0.65 g onto the drawn face at the landing, 0.6 H ahead, at touchdown (round 5; before, it fell over the whole flight);
+    - the void under it opens from a quarter of the fall before the pour to touchdown;
     - after touchdown the lip settles onto the face over 0.5 s, whitens from its tip, bulks into a white mass and fades out into its landing patch.
-  - **The contrast route.** The drawn face is gentler than an overturning one, so the void a real curl has, 0.15–0.2 H more, is drawn as contrast, not geometry. The lip's underside and a veil on the face under it are darkened for the sky the lip hides. That darkening is 45 % on the underside and 60 % on the face under it, at 75 % opacity, as the void opens.
+  - **The contrast route.** The drawn face is gentler than an overturning one, so the void a real curl has, 0.15–0.2 H more, is drawn as contrast, not geometry. The lip's underside and a veil on the face under it are darkened for the sky the lip hides. That darkening is 60 % on the underside and 80 % on the face under it, at 90 % opacity, as the void opens (round 5; 45 %, 60 % and 75 % before).
   - **Shading.** It is shaded on the water's own uniforms, with the face's column of water as its body, so it takes the face's colour. Its falling outer half is the swept barrel's thin backlit sheet: translucent, letting 30 % of the water behind show through, brightest toward its tip.
   - **Streaks and tip.** Its falling half carries the streaks, and its tip the ragged fingers and froth, both fixed in world x. As the peel passes, they stay put while each column runs through its sequence.
   - **Rim and sheen.** Its view cosine is held off grazing, which removes the dark rim. Its Rich roughness is 0.25, which removes the plastic sheen.
@@ -177,6 +259,8 @@ Now the Small curl reads as a lip along the crest that fades out at its ends. Th
 - Deike, Melville & Popinet 2015: surf-scale spillers overturn.
 - Svendsen 1984: the roller's development over 5–8 h_b.
 - Mead & Black 2001: the orthogonal gradient.
+- Drazen, Melville & Lenain 2008: the plunging jet falls freely (round 5's pour).
+- Koepke 1984: fresh foam's reflectance falls as it ages (round 5's contrast target).
 
 ## What is provisional
 
@@ -193,7 +277,8 @@ Now the Small curl reads as a lip along the crest that fades out at its ends. Th
   - the splash's share (0.3) and fall speed (3.2 m/s).
 - **The foam's drift and lace.** The drift's flux constant (0.18) and reach (1.3 h_b), and the 6 s lace.
 - **The shoulder's band** (round 3). Its reach (30 m), its extent across shore (2 m behind the crest, 12 m or 5 H_b ahead, whichever is more), its 3 m fades, its 0.1 s e-folding time, and the 0.3 crest height where the shoulder ends.
-- **The distance drawing and the run ends** (round 4). `DISTANCE` (2 and 5 px, the froth's 0.4 and 0.8, the void's 1.5× and 85 %, the lit tip from 0.6), the 2.5 m end taper and the 2.6 m join.
+- **The distance drawing and the run ends** (round 4). `DISTANCE` (2 and 8 px, 5 px before round 5; the froth's 0.4 and 0.8, the void's 1.5× and 85 %, the lit tip from 0.6), the 2.5 m end taper and the 2.6 m join.
+- **Round 5.** The pour's 0.65 g (the library's 0.58–0.71 g), the void opening from a quarter of the fall before it, the void's 60 % and 80 % at 90 %, and the peel-side end's 0.45 m, 1 m, one column and 1 s ease back to the full fray.
 - **The curl's direction and the air rule.** The curl's direction is held within 30° of the shore's normal. The drawn air reaches full strength under foam 0.5 thick.
 
 ## Open checks for the owner (no rider tests were run)
@@ -206,3 +291,7 @@ Now the Small curl reads as a lip along the crest that fades out at its ends. Th
 - **Big's motion strip** is round 3's; round 4 changed only its far end and the old end's taper.
 - **The game's frame rate on the M1 Air**, with the pane shown: the frame costs above were measured with the pane hidden.
 - **Nothing felt changed**, so the ride itself should feel exactly as before. Worth confirming on the board, since the white now arrives later than the push.
+- **Round 5: the level ledge.** Pitch, then pour, holds the lip level for about half its flight (0.43–0.48 s, 2.4–2.7 m of crest), then drops it in the other half. In the strips the ledge reads as a shelf for a few frames. Does it read as the lip pitching out in motion, or as a shelf?
+- **Round 5: the landing white against the old white.** The landing reads no brighter than the white 5 s older (0.8–0.9×, against the advisor's 1.5–2×). Reaching it means drawing aged foam darker, a change to the white you approved. Is that wanted?
+- **Round 5: the throat from the ride camera.** From 3.6 m up, the lip hides its own void, so the darker void reads as a slightly darker lip, not a dark band (1.1× the face beside it at 15 m, 0.8× at 40 m).
+- **Round 5: the pillows.** The grey churn on the shoulder is gone. Some remains in the first metres ahead of the front and on the face just below a young curl, where the shoulder's band fades in. Is it visible in play at High and Ultra?

@@ -17,7 +17,9 @@ import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
-import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, type SurfZoneConfig, type SurfZoneSimulation } from '../wave/SurfZoneSimulation';
+import { CURL_FIELD, CURL_STRIDE, impactTime } from '../wave/SpillingCurl';
+import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import { LANDMARK } from '../wave/barrel/ProfileLibrary';
 import { LOFT, LOFT_SAMPLES } from '../wave/barrel/sweptLoft';
 import { TUBE_STRIDE } from '../wave/tubeTable';
@@ -779,6 +781,218 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       spread: +(at(0.9) / Math.max(at(0.1), 1e-4)).toFixed(3), rgb: rgb.map((c) => +c.toFixed(4)), redOverBlue: +(rgb[0] / rgb[2]).toFixed(3),
     };
   };
+  /**
+   * The spilling lip's contrast for distance (the Canyon lip, round 5; the advisor's targets of 2026-10-20), on screen from
+   * one view, as drawn (the page's own sea only, `&compute=cpu`):
+   * - `band`: the band under the lip (the pixels the curl's darkening changes: its underside and the veil on the face under
+   *   it) against the same pixels without the curl, and against the green face beside it along the crest (2–6 m ahead of
+   *   the front, the same reach down the face, its foam-free pixels). Target: at most 0.5×.
+   *   Also its darkest quarter (`bandDark`, the 25th percentile): the band's pixels include the translucent lip over it.
+   * - `white`: the landing white (columns `landing` s after touchdown, default 0.15–0.65) against the white 5 s older
+   *   (`old`, 4.5–5.5 s), each over its column's face from 1 m behind its crest (the front's, or its drawn band's where
+   *   that lies further out) to 6 m ahead: the mean luminance of the white's own pixels (`landingFoam`, `oldFoam`: those
+   *   whose colour follows the foam's, found by drawing the foam magenta), of all the region's, and its 90th percentile.
+   *   Target: at least 1.5–2×.
+   * Linear relative luminance. The marked frame is posted as `file` (band red, face beside it yellow, landing cyan, old
+   * white magenta).
+   */
+  const waterSheetLipContrast = async (name: string | View, look: WaterLook, time: TimeOfDay,
+    options: { landing?: [number, number]; old?: [number, number]; file?: string } = {}) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    const simulation = (hooks.mode.host as { runner?: { simulation?: SurfZoneSimulation } } | undefined)?.runner?.simulation;
+    const curlMesh = hooks.mode.curlMesh;
+    const snapshot = hooks.mode.host?.snapshot;
+    if (!shot || !gl || !simulation?.spilling || !simulation.curl || !curlMesh || !snapshot) return undefined;
+    const landingAges = options.landing ?? [0.15, 0.65];
+    const oldAges = options.old ?? [4.5, 5.5];
+    fit();
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    camera.updateProjectionMatrix();
+    const { width, height } = hooks.canvas;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(width * height * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const drawn = frame();
+    // Without the void's darkening: the curl's flow z (its shade) zeroed for one frame.
+    const flow = curlMesh.mesh.geometry.getAttribute('curlFlow') as unknown as { array: Float32Array; needsUpdate: boolean };
+    const kept = flow.array.slice();
+    for (let k = 2; k < flow.array.length; k += 3) flow.array[k] = 0;
+    flow.needsUpdate = true;
+    const unshaded = frame();
+    flow.array.set(kept);
+    flow.needsUpdate = true;
+    const shown = curlMesh.mesh.visible;
+    curlMesh.mesh.visible = false;
+    const bare = frame();
+    curlMesh.mesh.visible = shown;
+    const foamColour = hooks.water.materialUniforms.waterFoamColor.value as Color;
+    const foamWas = foamColour.clone();
+    foamColour.setRGB(1, 0, 1);
+    const magenta = frame();
+    foamColour.copy(foamWas);
+    hooks.renderView(camera);
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const luma = (pixels: Uint8Array, p: number) => 0.2126 * linear(pixels[4 * p]) + 0.7152 * linear(pixels[4 * p + 1]) + 0.0722 * linear(pixels[4 * p + 2]);
+    const foamy = (p: number) => drawn[4 * p + 1] - magenta[4 * p + 1] >= 40;
+    // Regions: 1 the band under the lip, 2 the face beside it, 3 the landing white, 4 the white 5 s older.
+    const region = new Uint8Array(width * height);
+    for (let p = 0; p < width * height; p += 1) {
+      const k = 4 * p;
+      const darkened = (unshaded[k] + unshaded[k + 1] + unshaded[k + 2]) - (drawn[k] + drawn[k + 1] + drawn[k + 2]);
+      if (darkened > 6) region[p] = 1;
+    }
+    // A column's face from `from` to `to` m across shore, projected and filled (rows from the bottom, as read back).
+    const { solver } = simulation;
+    const dx = solver.dx;
+    const point = new Vector3();
+    const fill = (x: number, from: number, to: number, mark: number) => {
+      const outline: [number, number][] = [];
+      const edge = (px: number, ascending: boolean) => {
+        const steps = Math.max(2, Math.ceil((to - from) / 0.5));
+        for (let k = 0; k <= steps; k += 1) {
+          const z = ascending ? from + ((to - from) * k) / steps : to - ((to - from) * k) / steps;
+          point.set(px, sampleSurfaceHeight(hooks.water.surfaceData, hooks.water.grid, px, z), z).project(camera);
+          if (point.z > 1 || point.z < -1) return false;
+          outline.push([((point.x + 1) / 2) * width, ((point.y + 1) / 2) * height]);
+        }
+        return true;
+      };
+      if (!edge(x - dx / 2, true) || !edge(x + dx / 2, false)) return;
+      const xs = outline.map((q) => q[0]);
+      const ys = outline.map((q) => q[1]);
+      const [x0, x1] = [Math.max(0, Math.floor(Math.min(...xs))), Math.min(width - 1, Math.ceil(Math.max(...xs)))];
+      const [y0, y1] = [Math.max(0, Math.floor(Math.min(...ys))), Math.min(height - 1, Math.ceil(Math.max(...ys)))];
+      for (let py = y0; py <= y1; py += 1) {
+        for (let px = x0; px <= x1; px += 1) {
+          let inside = false;
+          for (let a = 0, b = outline.length - 1; a < outline.length; b = a, a += 1) {
+            const [ax, ay] = outline[a];
+            const [bx, by] = outline[b];
+            if ((ay > py + 0.5) !== (by > py + 0.5) && px + 0.5 < ((bx - ax) * (py + 0.5 - ay)) / (by - ay) + ax) inside = !inside;
+          }
+          const p = py * width + px;
+          if (inside && region[p] !== 1) region[p] = mark;
+        }
+      }
+    };
+    // The curl's own waves and their heights, from the snapshot's slices.
+    const heightOf = new Map<number, number>();
+    for (let k = 0; k < snapshot.curlCount; k += 1) {
+      const o = k * CURL_STRIDE;
+      if (snapshot.curl[o + CURL_FIELD.length] > 0) heightOf.set(snapshot.curl[o + CURL_FIELD.wave], snapshot.curl[o + CURL_FIELD.height]);
+    }
+    const now = solver.time;
+    const direction = simulation.spilling.options.direction;
+    const nominal = 0.8 * simulation.curl.options.breakerHeight;
+    const columns = { landing: 0, old: 0, beside: 0 };
+    // The drawn band (the white) per column, for the wave in each slot: its crest and length across shore.
+    const table = new Float32Array(simulation.roller ? simulation.roller.table.length : 0);
+    const bandColumns = simulation.writeRoller(table);
+    const bandOf = (id: number, c: number) => {
+      for (let slot = 0; bandColumns > 0 && slot < ROLLER_SLOTS; slot += 1) {
+        if (simulation.roller!.tableWave(c, slot) !== id) continue;
+        const o = (slot * solver.nx + c) * ROLLER_STRIDE;
+        if (table[o + ROLLER_FIELD.scale] > 0) return { crest: table[o + ROLLER_FIELD.crest], length: table[o + ROLLER_FIELD.length] };
+      }
+      return undefined;
+    };
+    for (const wave of simulation.spilling.waves) {
+      const waveHeight = heightOf.get(wave.id);
+      if (waveHeight === undefined) continue;
+      const touchdown = impactTime(waveHeight > 0 ? waveHeight : nominal);
+      let frontCrest = Number.NaN;
+      for (let c = 0; c < solver.nx; c += 1) {
+        const r = wave.reached[c];
+        const j = wave.joinedAt[c];
+        const crest = wave.crest[c] === wave.crest[c] ? wave.crest[c] : wave.seen[c];
+        if (!(r === r) || !(crest === crest)) continue;
+        if (Math.abs(solver.xCenters[c] - wave.frontX) < 1.5) frontCrest = crest;
+        const since = now - (j === j && j > r ? j : r) - touchdown;
+        const landing = since >= landingAges[0] && since <= landingAges[1];
+        const aged = since >= oldAges[0] && since <= oldAges[1];
+        if (!landing && !aged) continue;
+        const band = bandOf(wave.id, c);
+        const from = band && band.crest < crest ? band.crest : crest;
+        fill(solver.xCenters[c], from - 1, from + 6, landing ? 3 : 4);
+        if (landing) columns.landing += 1;
+        else columns.old += 1;
+      }
+      // The green face beside it, ahead of the front: its crest the highest water near the front's.
+      if (!(frontCrest === frontCrest)) continue;
+      for (let d = 2; d <= 6; d += 1) {
+        const x = wave.frontX + direction * d;
+        let best = -Infinity;
+        let crest = frontCrest;
+        for (let z = frontCrest - 2; z <= frontCrest + 2; z += 0.25) {
+          const level = sampleSurfaceHeight(hooks.water.surfaceData, hooks.water.grid, x, z);
+          if (level > best) [best, crest] = [level, z];
+        }
+        fill(x, crest - 0.5, crest + 3, 2);
+        columns.beside += 1;
+      }
+    }
+    const stats = (pixels: Uint8Array, wanted: number, which: 'all' | 'clear' | 'foam' = 'all') => {
+      let n = 0;
+      let sum = 0;
+      for (let p = 0; p < width * height; p += 1) {
+        if (region[p] !== wanted || (which === 'clear' && foamy(p)) || (which === 'foam' && !foamy(p))) continue;
+        sum += luma(pixels, p);
+        n += 1;
+      }
+      return { pixels: n, luminance: n ? +(sum / n).toFixed(4) : Number.NaN };
+    };
+    /** A region's `share` quantile of luminance (the darkest quarter at 0.25). */
+    const quantile = (pixels: Uint8Array, wanted: number, share: number) => {
+      const values: number[] = [];
+      for (let p = 0; p < width * height; p += 1) if (region[p] === wanted) values.push(luma(pixels, p));
+      values.sort((a, b) => a - b);
+      return values.length ? +values[Math.floor(share * (values.length - 1))].toFixed(4) : Number.NaN;
+    };
+    const band = stats(drawn, 1);
+    const bandDark = quantile(drawn, 1, 0.25);
+    const bandDarkBare = quantile(bare, 1, 0.25);
+    const bandBare = stats(bare, 1);
+    const beside = stats(drawn, 2, 'clear');
+    const landing = stats(drawn, 3);
+    const old = stats(drawn, 4);
+    const landingFoam = stats(drawn, 3, 'foam');
+    const oldFoam = stats(drawn, 4, 'foam');
+    const landingP90 = quantile(drawn, 3, 0.9);
+    const oldP90 = quantile(drawn, 4, 0.9);
+    const ratio = (a: { luminance: number }, b: { luminance: number }) => +(a.luminance / b.luminance).toFixed(3);
+    const marked = new ImageData(width, height);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const p = (height - 1 - y) * width + x;
+        const k = 4 * p;
+        let [r, g, b] = [drawn[k], drawn[k + 1], drawn[k + 2]];
+        if ((x + y) % 4 === 0 && region[p]) [r, g, b] = [[255, 0, 0], [255, 230, 0], [0, 230, 255], [255, 0, 255]][region[p] - 1];
+        marked.data.set([r, g, b, 255], 4 * (y * width + x));
+      }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d')!.putImageData(marked, 0, 0);
+    await post(canvas, options.file ?? 'lip-contrast.png');
+    return {
+      time: +now.toFixed(2), columns, band, bandWithoutCurl: bandBare, bandDark, bandDarkBare, besideFace: beside, landing, old, landingFoam, oldFoam,
+      bandOverBare: ratio(band, bandBare), bandOverFace: ratio(band, beside), bandDarkOverFace: +(bandDark / beside.luminance).toFixed(3),
+      landingP90, oldP90, landingOverOld: ratio(landing, old), landingOverOldFoam: ratio(landingFoam, oldFoam),
+      landingOverOldP90: +(landingP90 / oldP90).toFixed(3),
+    };
+  };
   // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
   /**
    * A shot's GPU time, ms per frame (median, 10th and 90th percentiles, fastest), from the GPU's own timer
@@ -868,7 +1082,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       vsFirst: k === 0 ? 0 : at(times[k].map((t, cycle) => t - times[0][cycle]), 0.5),
     }]));
   };
-  Object.assign(window, { waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
