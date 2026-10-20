@@ -143,6 +143,16 @@ export const CURL_FIELD = {
   age: 12,
 } as const;
 
+/**
+ * The roller band's drawn look beside its drawn table (`drawBand`'s `look`; the Canyon roller front,
+ * docs/research/roller-front-2026-10-22): per slot and column, `BAND_LOOK_STRIDE` floats, drawn only. `since` is the time
+ * since its curl landed there, s (negative before; `BAND_LOOK_OLD` where it is unknown, long landed), and `height` its
+ * wave's H there, m (0 with no band).
+ */
+export const BAND_LOOK_STRIDE = 2;
+export const BAND_LOOK_FIELD = { since: 0, height: 1 } as const;
+export const BAND_LOOK_OLD = 60;
+
 /** Touchdown τ_i for a wave H m high, s. */
 export function impactTime(height: number): number {
   return SPILLING_CURL.impactClock * Math.sqrt(height > 0 ? height : 0);
@@ -421,16 +431,24 @@ export class SpillingCurl implements SpillingDrawnLook {
    * about 2.5 s), which drew the landing faint; by `span` the felt scale has grown to it. Each column's age is kept in
    * `bandAge` for the band's fray.
    */
-  drawBand(table: Float32Array, front: SpillingFront, roller: SpillingRoller, time: number): void {
+  drawBand(table: Float32Array, front: SpillingFront, roller: SpillingRoller, time: number, look?: Float32Array): void {
     const { nx } = this.grid;
     const waves = front.waves;
     const reach = this.reach;
+    const view = this.view;
     this.bandAge.fill(Number.NaN);
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = 0; column < nx; column += 1) {
         const o = (slot * nx + column) * ROLLER_STRIDE;
+        const l = (slot * nx + column) * BAND_LOOK_STRIDE;
+        if (look) {
+          look[l + BAND_LOOK_FIELD.since] = BAND_LOOK_OLD;
+          look[l + BAND_LOOK_FIELD.height] = 0;
+        }
         if (!(table[o + ROLLER_FIELD.scale] > 0)) continue;
         const id = roller.tableWave(column, slot);
+        // Its wave's H at this column (its lens's section), else the nominal height (a gap the table's run bridged).
+        if (look) look[l + BAND_LOOK_FIELD.height] = id >= 0 && roller.lensOf(column, id, view) && view.height > 0 ? view.height : this.nominal;
         if (id < 0) continue;
         let k = waves.length - 1;
         while (k >= 0 && waves[k].id !== id) k -= 1;
@@ -440,10 +458,11 @@ export class SpillingCurl implements SpillingDrawnLook {
         if (!(r === r)) continue;
         const age = time - (j === j && j > r ? j : r);
         this.bandAge[slot * nx + column] = age;
-        if (!(age < this.span)) continue;
         const own = this.wave[column] !== NONE && waves[this.wave[column]].id === id;
         const impact = own ? this.impact[column] : impactTime(this.nominal);
         const since = age - impact;
+        if (look) look[l + BAND_LOOK_FIELD.since] = Math.min(BAND_LOOK_OLD, since);
+        if (!(age < this.span)) continue;
         if (since < 0) {
           table[o + ROLLER_FIELD.scale] = 0;
           continue;

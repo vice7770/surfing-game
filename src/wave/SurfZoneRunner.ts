@@ -1,5 +1,5 @@
 import { ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
-import { CURL_CAPACITY, CURL_STRIDE } from './SpillingCurl';
+import { BAND_LOOK_STRIDE, CURL_CAPACITY, CURL_STRIDE } from './SpillingCurl';
 import { STRIP_PARCELS } from './PlungingLip';
 import { Vector3 } from 'three';
 import { withPocketReflex } from '../game/pocketReflex';
@@ -299,6 +299,11 @@ export interface SurfZoneBuffers {
   roller: Float32Array;
   rollerCount: number;
   /**
+   * Beside the roller's drawn table, with the spilling lip: each entry's time since its curl landed and its wave's H
+   * (`BAND_LOOK_FIELD`, `BAND_LOOK_STRIDE` floats per slot and column), for the roller front (drawn only); empty without it.
+   */
+  rollerLook: Float32Array;
+  /**
    * The spilling lip's curls at a spilling spot (the Canyon spilling lip): `CURL_FIELD`, `CURL_STRIDE` floats a slice,
    * `curlCount` of them; empty at every other spot.
    */
@@ -450,6 +455,7 @@ export class SurfZoneRunner {
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, drawnImpacts: simulation.drawnImpacts,
+      rollerToes: () => simulation.rollerToes(),
       windSpeed: this.config.windSpeed ?? 0, strokes,
       spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
     };
@@ -809,6 +815,7 @@ export class SurfZoneRunner {
       frontCount: 0,
       roller: new Float32Array(this.simulation.rollerColumns * ROLLER_SLOTS * ROLLER_STRIDE),
       rollerCount: 0,
+      rollerLook: new Float32Array(this.simulation.curl ? this.simulation.rollerColumns * ROLLER_SLOTS * BAND_LOOK_STRIDE : 0),
       curl: new Float32Array(this.simulation.curl ? CURL_CAPACITY * CURL_STRIDE : 0),
       curlCount: 0,
     };
@@ -822,7 +829,7 @@ export class SurfZoneRunner {
     simulation.writeUniformSnapshot(buffers.surface, buffers.flow, buffers.aeration, grid);
     this.snapshotFieldsMs = performance.now() - start;
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
-    buffers.rollerCount = buffers.roller.length > 0 ? simulation.writeRoller(buffers.roller) : 0;
+    buffers.rollerCount = buffers.roller.length > 0 ? simulation.writeRoller(buffers.roller, buffers.rollerLook) : 0;
     buffers.curlCount = buffers.curl.length > 0 ? simulation.writeCurls(buffers.curl) : 0;
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {

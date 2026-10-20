@@ -1011,6 +1011,8 @@ class SurfGame {
     this.physicalMode.drawBarrel();
     // The spilling lip's curls sit on the same heights (the Canyon spilling lip).
     this.physicalMode.drawCurl();
+    // The roller front's tumbling white lies on them too, over the band (the Canyon roller front; Rich).
+    this.physicalMode.drawRollerFront();
     this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);

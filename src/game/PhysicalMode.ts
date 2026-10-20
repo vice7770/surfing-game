@@ -27,6 +27,7 @@ import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight } from '../
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { SpillingCurlMesh } from '../scene/SpillingCurlMesh';
+import { RollerFrontMesh, rollerFrontMode } from '../scene/RollerFrontMesh';
 import type { WaterLook } from '../scene/water/waterLook';
 import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -386,6 +387,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(devParam('foamLook') === 'off' ? { drawnEdges: false } : {}),
     // `?startOut=<m>`: the rider starts this far seaward of the take-off (`?startOut=11` is the Canyon Big's old start).
     ...startOutSwitch(),
+    // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
+    ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
     ...overrides,
   };
 }
@@ -515,6 +518,8 @@ export class PhysicalMode {
   private swept = false;
   /** The spilling lip's curls (the Canyon spilling lip), built with the water on the first start; drawn wherever a sea has them. */
   private spillingCurl?: { mesh: SpillingCurlMesh; water: WaterSurface; drawn?: { status: unknown; surface: number; look: WaterLook } };
+  /** The roller front (the Canyon roller front), built with the curl; drawn in Rich wherever a sea's roller has a drawn look. */
+  private rollerFront?: { mesh: RollerFrontMesh; water: WaterSurface; drawn?: { status: unknown } };
   private readonly scene: Scene;
   /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
   private sprayShown = true;
@@ -660,6 +665,11 @@ export class PhysicalMode {
       this.scene.add(this.spillingCurl.mesh.mesh);
     }
     this.spillingCurl.drawn = undefined;
+    if (!this.rollerFront) {
+      this.rollerFront = { mesh: new RollerFrontMesh(water.materialUniforms), water };
+      this.scene.add(this.rollerFront.mesh.mesh);
+    }
+    this.rollerFront.drawn = undefined;
     this.lipSheet.mesh.visible = this.shown;
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
@@ -930,6 +940,36 @@ export class PhysicalMode {
     const { grid, surfaceData } = water;
     mesh.update(host.snapshot.curl, host.snapshot.curlCount, (x, z) => sampleSurfaceHeight(surfaceData, grid, x, z));
     curl.drawn = { status, surface: water.surfaceRevision, look };
+  }
+
+  /**
+   * The roller front (the Canyon roller front) over the heights the water just uploaded: the page calls this once the
+   * water has uploaded this frame's heights. Its patches are laid out only for a new snapshot; the heights are read on
+   * the GPU each frame. Rich only; none hidden, or with `?rollerFront=off` (`window.waterRollerFront(false)`).
+   */
+  drawRollerFront(): void {
+    const front = this.rollerFront;
+    if (!front) return;
+    const { host } = this;
+    const { water, mesh } = front;
+    const look = host?.snapshot.rollerLook;
+    if (!host || !look || look.length === 0 || !this.shown || water.drawnLook !== 'rich') {
+      mesh.hide();
+      front.drawn = undefined;
+      return;
+    }
+    const { status } = host.snapshot;
+    // The A/B switch only hides it, so turning it back on uploads nothing.
+    mesh.mesh.visible = rollerFrontMode.on && mesh.hasBand;
+    if (!rollerFrontMode.on || (front.drawn && front.drawn.status === status)) return;
+    // The table itself is the water's roller texture, uploaded with its heights; the front uploads only its look.
+    mesh.update(host.snapshot.roller, look, water.materialUniforms.waterRollerColumns.value as number);
+    front.drawn = { status };
+  }
+
+  /** The roller front's mesh, once a sea has started (the water sheet's checks). */
+  get rollerFrontMesh(): RollerFrontMesh | undefined {
+    return this.rollerFront?.mesh;
   }
 
   /** The spilling lip's mesh, once a sea has started (the water sheet's checks). */
