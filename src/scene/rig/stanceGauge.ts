@@ -73,6 +73,13 @@ export interface StanceAngles {
   stanceWidth: number;
   /** The hips' centre along the stringer from the rear ankle (0) to the front ankle (1); none (NaN) with the feet under `STANCE_MIN` apart. */
   weight: number;
+  /** Each foot's angle to the stringer on the deck, from the ankle to the toes: 90° square across (the animation-realism plan). */
+  footFront: number;
+  footRear: number;
+  /** Which way the rear knee bends, on the deck: 0 toward the toes, + toward the nose (caving in toward the front foot). */
+  rearKneeIn: number;
+  /** The lead shoulder below the trailing one, against the trunk's square: the angle of the shoulders' line, + lead lower. */
+  shoulderDrop: number;
 }
 
 export type StanceMeasure = keyof StanceAngles;
@@ -137,6 +144,13 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   const frontAnkle = local(joints.ankle[front]);
   const rearAnkle = local(joints.ankle[rear]);
   const span = frontAnkle.z - rearAnkle.z;
+  const foot = (side: Side) => {
+    const along = direction(joints.toe[side].clone().sub(joints.ankle[side]));
+    return Math.atan2(Math.abs(along.x), Math.abs(along.z)) * DEG;
+  };
+  const kneeBend = direction(joints.knee[rear].clone().sub(joints.hip[rear].clone().add(joints.ankle[rear]).multiplyScalar(0.5)));
+  const shoulders = joints.shoulder[front].clone().sub(joints.shoulder[rear]);
+  const trunkUp = joints.neck.clone().sub(joints.spine).normalize();
   return {
     kneeFront: knee(front),
     kneeRear: knee(rear),
@@ -159,6 +173,48 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     lowHand: Math.min(...SIDES.map((side) => joints.wrist[side].clone().sub(board.boardPosition).dot(WORLD_UP))),
     stanceWidth: Math.abs(span),
     weight: Math.abs(span) >= STANCE_MIN ? (local(joints.hips).z - rearAnkle.z) / span : Number.NaN,
+    footFront: foot(front),
+    footRear: foot(rear),
+    rearKneeIn: Math.atan2(kneeBend.dot(NOSE), kneeBend.dot(toes)) * DEG,
+    shoulderDrop: Math.asin(Math.max(-1, Math.min(1, -shoulders.dot(trunkUp) / Math.max(1e-9, shoulders.length())))) * DEG,
+  };
+}
+
+/**
+ * Where the free hands hang about the knees (the owner's reference of
+ * 2026-10-22: relaxed and close in, framing the knees), m: each wrist's height
+ * above its knee in the world; how far the front wrist is ahead of the front
+ * knee and the rear wrist from the rear knee, along the board's levelled nose;
+ * and how far out from the hips' centre the wider wrist sits along it, against
+ * the shoulders' spread (sideways for a body facing the rail).
+ */
+export interface HandReading {
+  frontAboveKnee: number;
+  rearAboveKnee: number;
+  frontAhead: number;
+  rearAlong: number;
+  /** The lesser of the two wrists' places in front of their knees, toward the toes, m. */
+  inFront: number;
+  out: number;
+  shoulders: number;
+}
+
+export function measureHands(joints: StanceJoints, board: BoardPose, stance: StanceName): HandReading {
+  const front: Side = stance === 'regular' ? 'left' : 'right';
+  const rear: Side = front === 'left' ? 'right' : 'left';
+  const nose = new Vector3(0, 0, 1).applyQuaternion(board.boardQuaternion).setY(0);
+  if (nose.lengthSq() < 1e-8) nose.set(0, 0, 1);
+  nose.normalize();
+  const along = (a: Vector3, b: Vector3) => a.clone().sub(b).dot(nose);
+  const toes = new Vector3().crossVectors(WORLD_UP, nose).normalize().multiplyScalar(stance === 'regular' ? -1 : 1);
+  return {
+    frontAboveKnee: joints.wrist[front].y - joints.knee[front].y,
+    rearAboveKnee: joints.wrist[rear].y - joints.knee[rear].y,
+    frontAhead: along(joints.wrist[front], joints.knee[front]),
+    rearAlong: along(joints.wrist[rear], joints.knee[rear]),
+    inFront: Math.min(...SIDES.map((side) => joints.wrist[side].clone().sub(joints.knee[side]).dot(toes))),
+    out: Math.max(...SIDES.map((side) => Math.abs(along(joints.wrist[side], joints.hips)))),
+    shoulders: joints.shoulder.left.distanceTo(joints.shoulder.right),
   };
 }
 

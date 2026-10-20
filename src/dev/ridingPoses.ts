@@ -55,6 +55,10 @@ const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRe
 /** The map's stances as the game reaches them (each stance's `reach`). */
 export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   trim: standing([], 1),
+  // The animation-realism plan's trims across a 15° face (the stance sheet's water): frontside the face rises on the
+  // toes' side, backside on the heels'.
+  'trim-frontside': standing([], 1.2, { water: 'across', speed: 7 }),
+  'trim-backside': standing([], 1.2, { water: 'across-back', speed: 7 }),
   'trim-forward': standing([{ at: 0.4, trim: 1 }], 1),
   'trim-back': standing([{ at: 0.4, trim: -1 }], 1),
   drop: standing([{ at: 0, crouch: 1 }], 1, { water: 'face', speed: 5 }),
@@ -85,6 +89,12 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'lying-down': standing([{ at: 0.5, popUp: true }], 3, { speed: 6, after: 0.2, phase: 'recover' }),
   'fall-start': standing([], 3, { speed: 7, separate: 0.5, after: 0.15, phase: 'fallen' }),
 };
+
+/**
+ * Crouched trim (Shift held) across the face, frontside: the owner's reference
+ * photo of 2026-10-22 (the arms framing the knees), not a stance of the map.
+ */
+export const CROUCHED_TRIM: StanceRecipe = standing([{ at: 0, crouch: 1 }], 1.2, { water: 'across', speed: 7 });
 
 /** Across a face, the slope along x: rising on the toes' side (−x Regular, +x Goofy), or the heels' (backside). */
 function acrossSlope(kind: StanceRecipe['water'], stance: StanceName): number {
