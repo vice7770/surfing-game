@@ -51,6 +51,8 @@ type Today =
   | { kind: 'recipe'; recipe: StanceRecipe }
   | {
     kind: 'session'; placement: RiderPlacement; seconds: number; input: (time: number, session: RideSession) => Partial<RideInput>;
+    /** Flat water (the default), or down a 15° face along its fall line (the catch). */
+    water?: 'flat' | 'face';
     /** Stops early, at the first step this holds (after `from` s), plus `after` s. */
     until?: (session: RideSession) => boolean; from?: number; after?: number;
   };
@@ -129,8 +131,8 @@ const IMAGES: SheetImage[] = [
   {
     id: '01-lineup-sit', title: 'The lineup sit (new stage)',
     panels: [{
-      title: 'Sitting, waiting', missing: 'No sit today: idle, the rider lies prone, hands at the rails.',
-      today: { kind: 'session', placement: prone(), seconds: 1.2, input: () => ({}) }, shot: SIT,
+      title: 'Sitting, waiting', missing: 'No sit until phase 3: idle, the rider lay prone, hands at the rails.',
+      today: { kind: 'session', placement: prone(), seconds: 3.6, input: () => ({}) }, shot: SIT,
       target: {
         board: { pitch: 10, sink: 0.1 },
         free: {
@@ -139,8 +141,8 @@ const IMAGES: SheetImage[] = [
           arms: { left: { at: [0.2, 0.05, -0.08], pole: [1, 0, -0.6] }, right: { at: [-0.2, 0.05, -0.08], pole: [-1, 0, -0.6] } },
         },
       },
-      numbers: ['Straddling, legs hanging slightly apart, knees ~70°', 'Board level, nose just out (pitch +5–10°)', 'Torso upright, head scanning behind', 'Hands free (thighs, rails)', 'Coaching cue: no measured source'],
-      gaps: ['No stage: idle is lying down', 'Trigger: prone, no input, slow (< 0.5 m/s) for 2 s; any paddle/steer lies down (drawn only)'],
+      numbers: ['Straddling, legs hanging slightly apart, knees ~70°', 'Board level, nose just out (pitch +5–10°)', 'Torso upright, head scanning behind', 'Hands free (thighs, rails)', 'Rapture, board control (a coaching cue)'],
+      gaps: ['Phase 3: drawn only; in after 2 s idle (prone, still, hands at rest), out on a stroke, a sweep or a duck', 'The board\'s trim is the physics\' prone one (phase 5)'],
     }],
   },
   {
@@ -160,11 +162,11 @@ const IMAGES: SheetImage[] = [
           },
         },
         numbers: ['Sternum on the stringer, chest only slightly lifted (~10°)', 'Hand in 15–20 cm ahead of the head, elbow high', 'Pull 15–25 cm deep to past the hip', 'Legs together, no kick; head neutral, a scan every 5–10 strokes', 'L+R cycle every 2–3 s cruising (Nessler 2019: 36–54/min a side)'],
-        gaps: ['Stroke rate 60/min a side, one cycle a second (physics)', 'Chest lifted with the torso point (0.18 m) and head high', 'No look-up scan'],
+        gaps: ['Stroke rate 60/min a side, one cycle a second; length; roll (physics, phase 5)', 'Phase 3: chest drawn low, head neutral, a look-up every 8 strokes, legs together'],
       },
       {
-        title: 'The catch', missing: 'No catch today: the cruising stroke goes on unchanged.',
-        today: { kind: 'session', placement: prone(), seconds: 3.6, input: () => ({ paddle: true }) }, shot: PRONE,
+        title: 'The catch', missing: 'No catch until phase 3: the cruising stroke went on unchanged.',
+        today: { kind: 'session', placement: prone(), seconds: 2, water: 'face', input: () => ({ paddle: true }) }, shot: PRONE,
         target: {
           board: { pitch: -12 },
           free: {
@@ -177,7 +179,7 @@ const IMAGES: SheetImage[] = [
           },
         },
         numbers: ['3–5 explosive full strokes, head down', 'Steep: weight back, chest up (the cobra, ~30°)', 'Board on the face, nose down', 'Then the pop-up'],
-        gaps: ['No stage; trigger from popUpCue / the take-off window (snapshot cue, not on the wire)', 'Drawn: stroke deepens and speeds, chest rises, head drops'],
+        gaps: ['Phase 3: the cue (or > 2.5 m/s nose-down past 5°) while stroking; cobra by the pitch; arms reach full', 'The weight back on the face and the stroke rate are the physics\' (phase 5)'],
       },
     ],
   },
@@ -211,7 +213,7 @@ const IMAGES: SheetImage[] = [
           },
         },
         numbers: ['Hands flat beside the lower ribs, 0.46 m apart (not the rails)', 'Push 0.71 s, elbows 110° at peak force', 'Chest up, eyes forward', 'Borgonovo-Santos 2021'],
-        gaps: ['Hands grip the rails at the chest: 0.45 m apart (right), wrong place and grip', 'Trunk rise and leg swing unsourced in the map'],
+        gaps: ['Phase 3: hands planted flat at the lower ribs, the chest pushed up by the elbows (straight at 80 %), hips low', 'The board is 0.42 m wide there: the hands 0.37 m apart'],
       },
       {
         title: 'Landing', today: recipe('landing'), shot: STAND_LOW,
@@ -222,7 +224,7 @@ const IMAGES: SheetImage[] = [
           },
         },
         numbers: ['Feet land together: back foot ~45° over the tail pad', 'Front foot between the hands at ~45°', 'Reach and land 0.48 s; knees ~80° flexed; 72 % front', 'Eyes forward'],
-        gaps: ['Feet 0.42 m apart, still gliding in from the lying legs (wt 1.06)', 'Trunk upright (0°), arms out; feet square (88°/83°)'],
+        gaps: ['Phase 3: each foot swung on an arc and planted at 45°, settling to 60°/80° standing', 'The front knee folds over the physics\' low, forward landing pelvis (phase 5)'],
       },
     ],
   },
@@ -678,7 +680,7 @@ function moveState(state: RiderVisualState, frame: Frame): void {
 function drawnSession(today: Extract<Today, { kind: 'session' }>, at: Vector3, draw: (state: RiderVisualState) => void): RiderVisualState {
   const run = (visit?: (session: RideSession, time: number, paddling: boolean) => void) => {
     const session = new RideSession();
-    const water = new PlaneWater();
+    const water = today.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(15 * DEG) }) : new PlaneWater();
     session.place(today.placement, water);
     let time = 0;
     let stopAt = Number.POSITIVE_INFINITY;
@@ -693,14 +695,16 @@ function drawnSession(today: Extract<Today, { kind: 'session' }>, at: Vector3, d
     return session;
   };
   const last = run();
-  const frame = frameAt(last.board.position, last.board.orientation, at, true);
+  // Floating on flat water the board keeps its own height; down a face it is brought to the tile's place (it slid down).
+  const frame = frameAt(last.board.position, last.board.orientation, at, today.water !== 'face');
   const motion = new RiderMotion();
   const state = createRiderVisualState();
   const rider = new Float64Array(RIDER_SNAPSHOT.length);
   const board = new Float64Array(8);
   const point = new Vector3();
   run((session, time, paddling) => {
-    writeRiderSnapshot(session, false, rider, point);
+    // The take-off cue as the page has it (the rider's own; the wave's take-off window needs a wave).
+    writeRiderSnapshot(session, session.rider.attached && session.rider.popUpCue, rider, point);
     session.board.position.toArray(board, 0);
     session.board.orientation.toArray(board, 3);
     readRiderSnapshot(rider, board, state);
@@ -735,6 +739,12 @@ const fmt = (value: number, digits = 0) => (Number.isFinite(value) ? value.toFix
 function readout(angles: StanceAngles, feet: Record<Side, number>): string {
   return `knee F ${fmt(flexion(angles.kneeFront))}° R ${fmt(flexion(angles.kneeRear))}° · feet ${fmt(feet.left)}°/${fmt(feet.right)}° · trunk ${fmt(angles.trunkTilt)}° · chest ${fmt(angles.chestTwist)}° · `
     + `arms ${fmt(angles.leadArm)}°/${fmt(angles.trailArm)}° · lean ${fmt(angles.lean)}° · ${fmt(angles.stanceWidth, 2)} m · wt ${fmt(angles.weight, 2)}`;
+}
+
+/** A lying or sitting pose's numbers in one line (the animation-realism plan's phase-3 measures). */
+function lyingReadout(angles: StanceAngles, phase: string): string {
+  return `phase ${phase} · chest lift ${fmt(angles.chestLift)}° · head ${fmt(angles.headPitch)}° down · trunk from vertical ${fmt(angles.sitTrunk)}° · `
+    + `knees ${fmt(flexion(angles.kneeFront))}°/${fmt(flexion(angles.kneeRear))}° · legs ${fmt(angles.legsApart, 2)} m · hands ${fmt(angles.handsApart, 2)} m · elbows ${fmt(angles.leadElbow)}°/${fmt(angles.trailElbow)}°`;
 }
 
 function wrap(context: CanvasRenderingContext2D, text: string, width: number): string[] {
@@ -816,7 +826,7 @@ export async function drawRealism(ctx: RealismContext): Promise<void> {
       board.quaternion.copy(state.boardQuaternion);
       const upright = state.phase === 'standing' || state.phase === 'landing';
       const todayJoints = gauge.joints();
-      const todayLine = upright ? readout(gauge.measure(state, 'regular'), footAngles(todayJoints, state)) : `phase ${state.phase}`;
+      const todayLine = upright ? readout(gauge.measure(state, 'regular'), footAngles(todayJoints, state)) : lyingReadout(gauge.measure(state, 'regular'), state.phase);
       look(panel.shot, state.points[POINT.pelvis].clone());
       const today = snap();
       // The target: the figure on its board, the surfer hidden.

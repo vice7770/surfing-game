@@ -1,7 +1,7 @@
 import { Quaternion, Vector3, type Bone, type Object3D } from 'three';
 import type { StanceName } from '../../physics/riderPosture';
 import { BOARD_CENTRE, deckAt, railHalfWidth } from './boardDeck';
-import { BONES, type Side } from './humanoidBones';
+import { BONES, MIDDLE_FINGER, type Side } from './humanoidBones';
 import { POINT, type RiderVisualState } from './riderVisualState';
 
 /**
@@ -24,6 +24,8 @@ export interface StanceJoints {
   knee: Record<Side, Vector3>;
   ankle: Record<Side, Vector3>;
   toe: Record<Side, Vector3>;
+  /** The back of each hand (the rig's: the rest pose's up carried by the hand), unit; zero where unknown (a figure). */
+  palm: Record<Side, Vector3>;
 }
 
 /**
@@ -90,6 +92,28 @@ export interface StanceAngles {
   trailFromFront: number;
   /** The lead arm (the shoulder to the wrist) from the board's nose, °: pointing at the tube's exit, low and close. */
   leadToNose: number;
+  /**
+   * Lying and sitting (the animation-realism plan's phase 3). The trunk (the
+   * spine's base to the neck) above the deck's plane, °: the paddler's chest
+   * lift, the catch's cobra.
+   */
+  chestLift: number;
+  /** The wrist farthest ahead under the waterline (the board's centre), ahead of the face (`FACE_DEPTH`) along the board, m (the stroke's entry; none above water). */
+  handAhead: number;
+  /** The deeper wrist under the waterline, m (+ below; the pull's depth). */
+  pullDepth: number;
+  /** The ankles apart across the board, m (lying, the legs together). */
+  legsApart: number;
+  /** The trunk from the world's vertical, any way, ° (sitting upright). */
+  sitTrunk: number;
+  /** The hips' centre over the deck beneath it, m (sitting on the board). */
+  hipsDeck: number;
+  /** The wrists apart, m (the push's hands). */
+  handsApart: number;
+  /** The wrists' middle behind the trunk's middle (between the spine's base and the neck), along the board, m (the push's hands at the lower ribs). */
+  handsBack: number;
+  /** The back of the hand from the deck's normal, the larger of the two hands, ° (the push's flat palms). */
+  palmFlat: number;
 }
 
 export type StanceMeasure = keyof StanceAngles;
@@ -100,6 +124,8 @@ export interface BoardPose {
 }
 
 const SIDES: readonly Side[] = ['left', 'right'];
+/** The face's place ahead of the head joint (the skull's base) along where the head faces, m: about a skull's depth (the sheet's mannequin draws its skull 0.08 m up the neck, 0.105 m round). */
+const FACE_DEPTH = 0.1;
 /** Feet closer than this along the stringer, m, stand no stance to share the weight between (a landing's feet still arriving). */
 export const STANCE_MIN = 0.1;
 const DEG = 180 / Math.PI;
@@ -119,7 +145,7 @@ export function createStanceJoints(): StanceJoints {
   return {
     hips: new Vector3(), spine: new Vector3(), neck: new Vector3(), head: new Vector3(),
     pelvisFacing: new Vector3(), chestFacing: new Vector3(), headFacing: new Vector3(),
-    shoulder: sided(), elbow: sided(), wrist: sided(), hip: sided(), knee: sided(), ankle: sided(), toe: sided(),
+    shoulder: sided(), elbow: sided(), wrist: sided(), hip: sided(), knee: sided(), ankle: sided(), toe: sided(), palm: sided(),
   };
 }
 
@@ -167,6 +193,14 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   const toesSign = toes.x;
   const rail = (sign: number) => Math.hypot(trail.x - sign * railHalfWidth(trail.z), trail.y - deckAt(trail.z));
   const leadArm = direction(joints.wrist[front].clone().sub(joints.shoulder[front]));
+  // Lying and sitting: the waterline at the board's centre (as `lowHand` reads it), the head and the wrists on the board.
+  const waterline = board.boardPosition.y;
+  // The face: the head joint (the skull's base) and a skull's depth along where the head faces.
+  const headAlong = local(joints.head.clone().addScaledVector(joints.headFacing.clone().normalize(), FACE_DEPTH)).z;
+  const under = SIDES.filter((side) => joints.wrist[side].y < waterline);
+  const middle = local(joints.spine.clone().add(joints.neck).multiplyScalar(0.5));
+  const hipsShape = shape(joints.hips);
+  const palms = SIDES.filter((side) => joints.palm[side].lengthSq() > 1e-12);
   return {
     kneeFront: knee(front),
     kneeRear: knee(rear),
@@ -198,6 +232,15 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     trailToeRail: rail(toesSign),
     trailFromFront: Math.abs(local(joints.wrist[rear]).z - frontAnkle.z),
     leadToNose: angle(leadArm, NOSE),
+    chestLift: Math.atan2(trunk.dot(DECK_UP), Math.hypot(trunk.x, trunk.z)) * DEG,
+    handAhead: under.length ? Math.max(...under.map((side) => local(joints.wrist[side]).z - headAlong)) : Number.NaN,
+    pullDepth: Math.max(...SIDES.map((side) => waterline - joints.wrist[side].y)),
+    legsApart: Math.abs(local(joints.ankle.left).x - local(joints.ankle.right).x),
+    sitTrunk: angle(worldTrunk, WORLD_UP),
+    hipsDeck: hipsShape.y - deckAt(hipsShape.z),
+    handsApart: joints.wrist.left.distanceTo(joints.wrist.right),
+    handsBack: middle.z - (local(joints.wrist.left).z + local(joints.wrist.right).z) / 2,
+    palmFlat: palms.length ? Math.max(...palms.map((side) => angle(direction(joints.palm[side]), DECK_UP))) : Number.NaN,
   };
 }
 
@@ -291,6 +334,8 @@ function rootOf(node: Object3D): Object3D {
  */
 export class StanceGauge {
   private readonly restFacing = { pelvis: new Vector3(), chest: new Vector3(), head: new Vector3() };
+  /** The back of each hand at rest, in its bone's frame: the world's up there (the rig's own: it turns this toward the hand's hint). */
+  private readonly restPalm = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
   /** The ankle's included angle at rest, shin to foot, degrees. */
   private readonly restAnkle: number;
 
@@ -303,6 +348,7 @@ export class StanceGauge {
     carry(BONES.hips, this.restFacing.pelvis);
     carry(BONES.spine[2], this.restFacing.chest);
     carry(BONES.head, this.restFacing.head);
+    for (const side of SIDES) this.restPalm[side].copy(WORLD_UP).applyQuaternion(this.bone(BONES.hand[side]).getWorldQuaternion(new Quaternion()).invert());
     const joints = this.joints();
     this.restAnkle = SIDES.reduce((sum, side) => sum + angle(joints.knee[side].clone().sub(joints.ankle[side]), joints.toe[side].clone().sub(joints.ankle[side])), 0) / SIDES.length;
   }
@@ -320,6 +366,13 @@ export class StanceGauge {
       at(BONES.leg[side], out.knee[side]);
       at(BONES.foot[side], out.ankle[side]);
       at(BONES.toe[side], out.toe[side]);
+      // Square to the hand's own axis (the wrist to the middle finger's base), as the rig turns it toward its hint.
+      out.palm[side].copy(this.restPalm[side]).applyQuaternion(this.bone(BONES.hand[side]).getWorldQuaternion(new Quaternion()));
+      const finger = this.bones.get(BONES.fingers[side][MIDDLE_FINGER][0]);
+      if (finger) {
+        const axis = finger.getWorldPosition(new Vector3()).sub(out.wrist[side]).normalize();
+        out.palm[side].addScaledVector(axis, -out.palm[side].dot(axis)).normalize();
+      }
     }
     out.hips.copy(out.hip.left).add(out.hip.right).multiplyScalar(0.5);
     at(BONES.spine[0], out.spine);

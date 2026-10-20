@@ -296,6 +296,42 @@ const SOURCE_LIST = {
     url: 'https://www.theinertia.com/surf/mark-healey-shares-two-simple-tips-to-improve-your-tube-riding-overnight/',
     gives: 'On the backhand, the front arm on the face while the other grabs the rail, the chest squared to the exit.',
   },
+  // The animation-realism plan's phase 3 (the take-off and the water, §5.2–5.7, §11).
+  sheppard2013: {
+    short: 'Sheppard 2013',
+    kind: 'measured',
+    cite: 'Sheppard JM, Osborne M, Chapman DW, Andrews M, McNamara P (2013), Technique adjustments influence the performance of sprint paddling in competitive male surfers (Int J Sports Sci Coach 8(1): 43–51)',
+    url: 'https://doi.org/10.1260/1747-9541.8.1.43',
+    gives: 'Sprint paddling: chest down beats chest up, and a low arm recovery beats a high one.',
+  },
+  rapturepaddle: {
+    short: 'Rapture, paddle technique',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: paddle technique',
+    url: 'https://www.rapturecamps.com/learn-to-surf/paddling/paddle-technique',
+    gives: 'The sternum on the stringer, the chest only slightly lifted; the hand in 15–20 cm ahead of the head with the fingers together and the elbow high, the pull 15–25 cm deep along the rail to past the hip, out elbow first, a low recovery; the head neutral, the eyes forward; the legs together, no kicking.',
+  },
+  rapturepopup: {
+    short: 'Rapture, pop-up',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: the pop-up',
+    url: 'https://www.rapturecamps.com/learn-to-surf/surf-fundamentals/pop-up',
+    gives: 'The hands flat beside the lower ribs; the chest up and the hips low through the press, the eyes forward; the back foot across the stringer over the tail pad and the front foot between the hands, both at about 45°, landing together.',
+  },
+  rapturecatch: {
+    short: 'Rapture, catching unbroken waves',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: catching unbroken waves',
+    url: 'https://www.rapturecamps.com/learn-to-surf/wave-knowledge/catching-unbroken-waves',
+    gives: 'The last strokes explosive and full, the head down; on a steep face the weight back and the chest up (the cobra).',
+  },
+  rapturecontrol: {
+    short: 'Rapture, board control',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: board control basics (sitting on the board)',
+    url: 'https://www.rapturecamps.com/learn-to-surf/surf-fundamentals/board-control-basics',
+    gives: 'Sitting: upright, balanced so the board is level with the nose just above the surface; the legs hanging relaxed and slightly apart either side, not squeezing; the head and torso turning to look behind for the sets.',
+  },
 } satisfies Record<string, Source>;
 
 export type SourceId = keyof typeof SOURCE_LIST;
@@ -333,6 +369,8 @@ export const MEASURE_DOMAIN: Record<StanceMeasure, [number, number]> = {
   headYaw: [-180, 180], headPitch: [-90, 90], leadArm: [0, 180], trailArm: [0, 180], leadElbow: [0, 180], trailElbow: [0, 180],
   lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5], footFront: [0, 90], footRear: [0, 90], rearKneeIn: [-180, 180], shoulderDrop: [-90, 90],
   rearKneeDeck: [-0.5, 1.5], trailHeelRail: [0, 2], trailToeRail: [0, 2], trailFromFront: [0, 2], leadToNose: [0, 180],
+  chestLift: [-90, 90], handAhead: [-2, 2], pullDepth: [-2, 2], legsApart: [0, 2], sitTrunk: [0, 180], hipsDeck: [-0.5, 2], handsApart: [0, 2], handsBack: [-2, 2],
+  palmFlat: [0, 180],
 };
 
 /** Feet 0.63 ± 0.10 m apart (the only measured stance width), for every standing stance. */
@@ -696,15 +734,28 @@ export const STANCES: readonly MappedStance[] = [
     gaps: 'Whether the board swings over the back under the hard back foot is the physics\' (phase 5): the owner\'s ride check.',
   },
   {
-    id: 'pop-up',
-    name: 'The pop-up\'s push',
-    reach: 'Lying on a board towed at 6 m/s (as a wave carries it), then the pop-up (the push phase).',
+    id: 'pop-up-hands',
+    name: 'The pop-up\'s hands placed',
+    reach: 'Lying on a board towed at 6 m/s, then the pop-up: the hands placed as the push begins (phase push, read 0.22 s in, once placed).',
     sides: 'both',
     targets: {
+      handsApart: { min: 0.4, max: 0.5, sources: ['borgonovo2021'], confidence: 'high', note: '0.46 m apart (the owner\'s call, §10.4: flat, not on the rails)' },
+      handsBack: { min: 0.05, max: 0.15, sources: ['rapturepopup'], confidence: 'medium', note: 'beside the lower ribs: behind the trunk\'s middle (the plan\'s "behind the torso point", on the drawn trunk), read as they are placed: the chest then rises over them' },
+      palmFlat: { min: 0, max: 30, sources: ['rapturepopup'], confidence: 'low', note: 'the palm flat on the deck, its back up' },
+    },
+  },
+  {
+    id: 'pop-up',
+    name: 'The pop-up\'s push',
+    reach: 'Lying on a board towed at 6 m/s (as a wave carries it), then the pop-up (the push phase), read 0.3 s in.',
+    sides: 'both',
+    targets: {
+      palmFlat: { min: 0, max: 30, sources: ['rapturepopup'], confidence: 'low', note: 'the palm flat on the deck, its back up' },
       leadElbow: { min: 90, max: 130, sources: ['borgonovo2021'], confidence: 'medium', note: '110–112 ± 18° at the push\'s peak force (the convention is not stated)' },
       trailElbow: { min: 90, max: 130, sources: ['borgonovo2021'], confidence: 'medium' },
+      headPitch: { min: -10, max: 20, sources: ['rapturepopup'], confidence: 'low', note: 'the eyes forward' },
     },
-    gaps: 'The trunk\'s rise and the legs\' swing: the Barefoot Surf and Swell Surf Camp sequences are not read yet.',
+    gaps: 'The legs\' swing: the Barefoot Surf and Swell Surf Camp sequences are not read yet. The elbows\' extension over the push (from about 70° of flexion, straight at 80 % of it: Borgonovo-Santos 2021) is read over time by the rig\'s pop-up test, not here.',
   },
   {
     id: 'landing',
@@ -712,11 +763,52 @@ export const STANCES: readonly MappedStance[] = [
     reach: 'The pop-up\'s end: the feet land (phase landing), read at its end, 0.45 s in.',
     sides: 'both',
     targets: {
-      kneeFront: { min: 80, max: 120, sources: ['borgonovo2021'], confidence: 'low', note: '99 ± 20° at the reach\'s peak force, read as included (the convention is not stated)' },
-      kneeRear: { min: 85, max: 115, sources: ['borgonovo2021'], confidence: 'low', note: '101 ± 14°' },
-      stanceWidth: WIDTH,
+      kneeFront: { min: 80, max: 110, sources: ['borgonovo2021'], confidence: 'low', note: 'flexed 70–100° (99 ± 20° at the reach\'s peak force, the convention not stated)' },
+      kneeRear: { min: 80, max: 110, sources: ['borgonovo2021'], confidence: 'low', note: 'flexed 70–100° (101 ± 14°)' },
+      stanceWidth: { min: 0.53, max: 0.8, sources: ['borgonovo2021', 'seixas2023'], confidence: 'medium', note: '0.63 ± 0.10 m; up to 0.79 ± 0.14 m on aerial landings' },
       weight: { min: 0.64, max: 0.8, sources: ['borgonovo2021'], confidence: 'medium', note: '72 ± 8 % of the force on the front foot; the hips\' place stands in for it' },
+      footFront: { min: 35, max: 55, sources: ['rapturepopup'], confidence: 'medium', note: 'about 45° to the stringer, between the hands (the owner\'s call, §10.3)' },
+      footRear: { min: 35, max: 55, sources: ['rapturepopup'], confidence: 'medium', note: 'about 45°, across the stringer over the tail pad' },
     },
+    gaps: 'The feet\'s slide after touchdown (≤ 3 cm) is read over time by the body film\'s pop-up test.',
+  },
+  {
+    id: 'paddling',
+    name: 'Paddling, cruising',
+    reach: 'Lying, paddling from rest on flat water (the paddle held; phase prone), read over its sixth second (a stroke of each arm).',
+    sides: 'both',
+    targets: {
+      chestLift: { min: 5, max: 15, sources: ['sheppard2013', 'rapturepaddle'], confidence: 'medium', note: 'the sternum on the stringer, the chest only slightly lifted' },
+      handAhead: { min: 0.15, max: 0.2, sources: ['rapturepaddle'], confidence: 'medium', note: 'the hand in 15–20 cm ahead of the head: its farthest reach under the water' },
+      pullDepth: { min: 0.15, max: 0.25, sources: ['rapturepaddle'], confidence: 'medium', note: '15–25 cm deep, along the rail to past the hip' },
+      legsApart: { min: 0, max: 0.15, sources: ['rapturepaddle'], confidence: 'low', note: 'the legs together, no kick' },
+    },
+    gaps: 'The stroke\'s rate (60 a minute a side against 36–54: Nessler 2019), its length (73 cm against 97 cm: Nessler 2015) and the board\'s roll (7° against 27–45°) are the physics\' (the plan\'s phase 5).',
+  },
+  {
+    id: 'catch',
+    name: 'The catch',
+    reach: 'Lying, paddling from rest down a 15° face (phase prone; the take-off cue and the board nose-down past 5° faster than 2.5 m/s), read 2 s in.',
+    sides: 'both',
+    targets: {
+      chestLift: { min: 20, max: 35, sources: ['rapturecatch'], confidence: 'low', note: 'steep: the chest up, the cobra' },
+      headPitch: { min: 20, max: 40, sources: ['rapturecatch'], confidence: 'low', note: 'the head down' },
+    },
+    gaps: 'The weight back on a steep face is the physics\' (the prone body\'s place along the board: the plan\'s phase 5); so is the stroke\'s rate (the cruise is what is slow).',
+  },
+  {
+    id: 'sit',
+    name: 'The lineup sit',
+    reach: 'Lying still on flat water, no input, for 2 s (phase prone): the drawn rider sits up (drawn only), read 3.6 s in.',
+    sides: 'both',
+    targets: {
+      sitTrunk: { min: 0, max: 15, sources: ['rapturecontrol'], confidence: 'low', note: 'sitting upright' },
+      kneeFront: { min: 80, max: 120, sources: ['rapturecontrol'], confidence: 'low', note: 'the legs hanging relaxed: flexed 60–100°' },
+      kneeRear: { min: 80, max: 120, sources: ['rapturecontrol'], confidence: 'low' },
+      hipsDeck: { min: 0.05, max: 0.15, sources: ['rapturecontrol'], confidence: 'low', note: 'sitting on the deck' },
+      legsApart: { min: 0.3, max: 1.0, sources: ['rapturecontrol'], confidence: 'low', note: 'slightly apart, either side of the board' },
+    },
+    gaps: 'The board\'s trim with a seated rider (the nose just out: the physics floats the prone body, phase 5); the head following the next set (the drawn state carries no set: a fixed scan stands in).',
   },
   {
     id: 'lying-down',

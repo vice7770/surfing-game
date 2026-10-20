@@ -49,6 +49,9 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
   footFront: 'Front foot to the stringer', footRear: 'Rear foot to the stringer', rearKneeIn: 'Rear knee in (toward the nose)', shoulderDrop: 'Lead shoulder drop',
   rearKneeDeck: 'Rear knee over the deck', trailHeelRail: 'Trailing wrist to the heels\' rail', trailToeRail: 'Trailing wrist to the toes\' rail',
   trailFromFront: 'Trailing wrist from the front foot', leadToNose: 'Lead arm from the nose',
+  chestLift: 'Chest lift over the deck', handAhead: 'Hand\'s entry ahead of the head', pullDepth: 'Pull\'s depth under the water', legsApart: 'Legs apart',
+  sitTrunk: 'Trunk from the vertical (any way)', hipsDeck: 'Hips over the deck', handsApart: 'Hands apart', handsBack: 'Hands behind the trunk\'s middle',
+  palmFlat: 'Palm from flat on the deck',
 };
 
 /**
@@ -63,7 +66,9 @@ function ownerOf(measure: StanceMeasure, target: { min: number; max: number }, p
   return physics >= target.min && physics <= target.max ? 3 : 6;
 }
 
-const METRES: ReadonlySet<StanceMeasure> = new Set(['lowHand', 'stanceWidth', 'rearKneeDeck', 'trailHeelRail', 'trailToeRail', 'trailFromFront']);
+const METRES: ReadonlySet<StanceMeasure> = new Set([
+  'lowHand', 'stanceWidth', 'rearKneeDeck', 'trailHeelRail', 'trailToeRail', 'trailFromFront', 'handAhead', 'pullDepth', 'legsApart', 'hipsDeck', 'handsApart', 'handsBack',
+]);
 
 /** A value in the measure's unit: degrees, metres, or the weight's share. */
 export function formatMeasure(measure: StanceMeasure, value: number): string {

@@ -15,6 +15,13 @@ export interface RiderVisualState {
   readonly boardQuaternion: Quaternion;
   /** 0–1: how hard the hands are pulling, which cups them. */
   stroking: number;
+  /**
+   * The take-off cue (the snapshot's `cue`: lying, the board planing down a face,
+   * or the take-off window): the catch's trigger (the animation-realism plan,
+   * §6). Local only: it is not on the wire, so another player's catch is read
+   * from its board's speed and pitch.
+   */
+  cue: boolean;
   /** How the board moves (`RiderMotion`, Part B): its turn rate, rad/s (positive as the heading grows), where it travels (horizontal, unit), how fast, m/s, and its climb, m/s. */
   yawRate: number;
   readonly travel: Vector3;
@@ -49,6 +56,7 @@ export function createRiderVisualState(): RiderVisualState {
     boardPosition: new Vector3(),
     boardQuaternion: new Quaternion(),
     stroking: 0,
+    cue: false,
     yawRate: 0,
     travel: new Vector3(0, 0, 1),
     speed: 0,
@@ -74,6 +82,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.boardPosition.set(board[0], board[1], board[2]);
   out.boardQuaternion.set(board[3], board[4], board[5], board[6]);
   out.duck = rider[RIDER_SNAPSHOT.duck] ?? 0;
+  out.cue = (rider[RIDER_SNAPSHOT.cue] ?? 0) > 0.5;
   out.leash.plug.set(rider[RIDER_SNAPSHOT.plug], rider[RIDER_SNAPSHOT.plug + 1], rider[RIDER_SNAPSHOT.plug + 2]);
   const leash = rider[RIDER_SNAPSHOT.leash] ?? 0;
   out.leash.worn = (leash & LEASH_BITS.worn) !== 0;
