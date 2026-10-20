@@ -653,9 +653,12 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     return simulated;
   };
   /** A shot by name, or a view given as its eye and target. */
-  const viewOf = (name: string | View) => typeof name === 'string'
-    ? shots.find((candidate) => candidate.name === name)
-    : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
+  /** A shot by name, a view, or a view worked out now (a camera that follows, e.g. a crest across a strip's frames). */
+  const viewOf = (name: string | View | (() => View)): Shot | undefined => {
+    if (typeof name === 'string') return shots.find((candidate) => candidate.name === name);
+    const view = typeof name === 'function' ? name() : name;
+    return { name: 'view', eye: new Vector3(...view.eye), target: new Vector3(...view.target) };
+  };
   /** Back to the sheet's render size (1280 × 720, pixel ratio 1): a resize of the page sets the canvas to the window's. */
   const fit = () => {
     if (hooks.canvas.width !== RENDER.width || hooks.canvas.height !== RENDER.height) hooks.resize(RENDER.width, RENDER.height);
@@ -699,10 +702,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   };
   /**
    * A view's frames as the sea steps on, `seconds` apart (the first now), tiled `columns` across at `scale` and labelled
-   * with the time since the first, posted as `file`: e.g. fresh foam aging into lace. With `arms` (each `set` runs before
+   * with the time since the first, posted as `file`: e.g. fresh foam aging into lace. Given a function for the view, the
+   * camera follows: it is placed afresh for each frame (e.g. riding with a crest). With `arms` (each `set` runs before
    * its frame, e.g. a dev switch), every frame is drawn under each arm, the arms' rows stacked under each row of frames.
    */
-  const waterSheetStrip = async (name: string | View, look: WaterLook, time: TimeOfDay, frames: number, seconds: number,
+  const waterSheetStrip = async (name: string | View | (() => View), look: WaterLook, time: TimeOfDay, frames: number, seconds: number,
     file = 'water-strip.jpg', columns = 3, scale = 0.5, arms: { label: string; set: () => unknown }[] = [{ label: '', set: () => undefined }]) => {
     const shot = viewOf(name);
     if (!shot) return false;
@@ -717,6 +721,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     camera.updateMatrixWorld();
     for (let frame = 0; frame < frames; frame += 1) {
       if (frame > 0) await waterSheetStep(seconds);
+      // A camera that follows is placed afresh for each frame.
+      if (typeof name === 'function') {
+        const follow = viewOf(name)!;
+        camera.position.copy(follow.eye);
+        camera.lookAt(follow.target);
+        camera.updateMatrixWorld();
+      }
       for (const [row, arm] of arms.entries()) {
         await arm.set();
         hooks.setWaterLook(look);
@@ -824,10 +835,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
    *   whose colour follows the foam's, found by drawing the foam magenta), of all the region's, and its 90th percentile.
    *   Target: at least 1.5–2×.
    * Linear relative luminance. The marked frame is posted as `file` (band red, face beside it yellow, landing cyan, old
-   * white magenta).
+   * white magenta). With `layer` (its `show` hides and shows a drawing, e.g. the roller front), also each region's mean
+   * over that drawing's own pixels (those it changes): `landingLayer`, `oldLayer` and their ratio.
    */
   const waterSheetLipContrast = async (name: string | View, look: WaterLook, time: TimeOfDay,
-    options: { landing?: [number, number]; old?: [number, number]; file?: string } = {}) => {
+    options: { landing?: [number, number]; old?: [number, number]; file?: string; layer?: { show: (on: boolean) => unknown } } = {}) => {
     const shot = viewOf(name);
     const gl = hooks.canvas.getContext('webgl2');
     const simulation = (hooks.mode.host as { runner?: { simulation?: SurfZoneSimulation } } | undefined)?.runner?.simulation;
@@ -868,6 +880,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     foamColour.setRGB(1, 0, 1);
     const magenta = frame();
     foamColour.copy(foamWas);
+    // With `layer` (the roller front, 2026-10-22): a frame without it, so its own pixels (those it changes) are known.
+    let without: Uint8Array | undefined;
+    if (options.layer) {
+      await options.layer.show(false);
+      without = frame();
+      await options.layer.show(true);
+    }
     hooks.renderView(camera);
     const linear = (c: number) => {
       const v = c / 255;
@@ -875,6 +894,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     };
     const luma = (pixels: Uint8Array, p: number) => 0.2126 * linear(pixels[4 * p]) + 0.7152 * linear(pixels[4 * p + 1]) + 0.0722 * linear(pixels[4 * p + 2]);
     const foamy = (p: number) => drawn[4 * p + 1] - magenta[4 * p + 1] >= 40;
+    const layered = (p: number) => without !== undefined
+      && Math.abs(drawn[4 * p] - without[4 * p]) + Math.abs(drawn[4 * p + 1] - without[4 * p + 1]) + Math.abs(drawn[4 * p + 2] - without[4 * p + 2]) > 6;
     // Regions: 1 the band under the lip, 2 the face beside it, 3 the landing white, 4 the white 5 s older.
     const region = new Uint8Array(width * height);
     for (let p = 0; p < width * height; p += 1) {
@@ -972,11 +993,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
         columns.beside += 1;
       }
     }
-    const stats = (pixels: Uint8Array, wanted: number, which: 'all' | 'clear' | 'foam' = 'all') => {
+    const stats = (pixels: Uint8Array, wanted: number, which: 'all' | 'clear' | 'foam' | 'layer' = 'all') => {
       let n = 0;
       let sum = 0;
       for (let p = 0; p < width * height; p += 1) {
-        if (region[p] !== wanted || (which === 'clear' && foamy(p)) || (which === 'foam' && !foamy(p))) continue;
+        if (region[p] !== wanted || (which === 'clear' && foamy(p)) || (which === 'foam' && !foamy(p)) || (which === 'layer' && !layered(p))) continue;
         sum += luma(pixels, p);
         n += 1;
       }
@@ -998,6 +1019,9 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     const old = stats(drawn, 4);
     const landingFoam = stats(drawn, 3, 'foam');
     const oldFoam = stats(drawn, 4, 'foam');
+    // The layer's own pixels in each (none without one).
+    const landingLayer = stats(drawn, 3, 'layer');
+    const oldLayer = stats(drawn, 4, 'layer');
     const landingP90 = quantile(drawn, 3, 0.9);
     const oldP90 = quantile(drawn, 4, 0.9);
     const ratio = (a: { luminance: number }, b: { luminance: number }) => +(a.luminance / b.luminance).toFixed(3);
@@ -1021,6 +1045,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       bandOverBare: ratio(band, bandBare), bandOverFace: ratio(band, beside), bandDarkOverFace: +(bandDark / beside.luminance).toFixed(3),
       landingP90, oldP90, landingOverOld: ratio(landing, old), landingOverOldFoam: ratio(landingFoam, oldFoam),
       landingOverOldP90: +(landingP90 / oldP90).toFixed(3),
+      ...(options.layer ? { landingLayer, oldLayer, landingOverOldLayer: ratio(landingLayer, oldLayer) } : {}),
     };
   };
   // `waterSheetMode`: the physical mode, for shots read off its snapshot (the Canyon spilling lip's curls, `snapshot.curl`).
