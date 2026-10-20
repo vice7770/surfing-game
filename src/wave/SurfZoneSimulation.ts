@@ -147,6 +147,11 @@ export interface SurfZoneConfig {
    * else `SIDE_FEED_SPOTS` (none since 2026-10-07).
    */
   sideFeed?: boolean;
+  /**
+   * Where the rider starts and relaunches, m seaward of the take-off, in place of the spot's own (`rideLineupOffset`):
+   * the `?startOut=<m>` dev switch, to compare starts. Nothing about the waves changes.
+   */
+  startOut?: number;
 }
 
 /**
@@ -568,8 +573,8 @@ export function peakTakeOffX(spot: SpotName): number {
  * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs: 1.49, 1.96 and 2.50 m). On
  *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
  *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
- *   blows right on top, without the chance to paddle to pick up speed". The rider starts `RIDE_LINEUP_OFFSET` further
- *   out still.
+ *   blows right on top, without the chance to paddle to pick up speed". The rider starts `rideLineupOffset` further
+ *   out still: 11 m, but at Big at the take-off itself, where its faces become catchable (`CANYON_RIDE_LINEUP`).
  * Re-measure if the arm or the swells change.
  */
 export const CANYON_TAKE_OFF_DEPTH = { base: 1.06, perMetre: 1.24 } as const;
@@ -577,6 +582,54 @@ export const CANYON_TAKE_OFF_DEPTH = { base: 1.06, perMetre: 1.24 } as const;
 /** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`). */
 export function canyonTakeOffDepth(significantHeight: number): number {
   return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
+}
+
+/**
+ * Where the rider starts and relaunches, m seaward of the take-off (`takeOffPoint`), at every spot but the Canyon (its
+ * own is `CANYON_RIDE_LINEUP`). In the catch reports riders stood almost only from 4–8 m outside; from 25 m out the waves
+ * pass before a paddler can reach the peak. The owner's playtest (2026-10-11) found 6 m sat on top of the breaking at the
+ * Canyon, so every spot starts 5 m further out, to paddle into the wave before it breaks.
+ */
+export const RIDE_LINEUP_OFFSET = 11;
+
+/**
+ * The Canyon's start, m seaward of its take-off, against Hs (`rideLineupOffset`: linear between these sizes, held beyond
+ * them): where the faces become catchable, about 17° over the highest third of the waves, but seaward of where one wave
+ * in ten starts breaking. The catch diagnosis (2026-10-22): from rest on Big's 14° faces 11 m out the board was picked
+ * up only 2–2.5 m ahead of the crest, 90–93 % up the face, and the rider fell over the back as the crest passed; already
+ * paddling, from the take-off, on 17–19° it dropped in. Measured along the take-off's column with no rider (big-start,
+ * 2026-10-22: 2 seeds × 12 periods a size, the face the rider feels, each wave's steepest front over 1 m):
+ * - Big: 12–13° 11 m out, 15–16° at the take-off, 17° only 6–12 m inside it; one wave in 23 started breaking seaward of
+ *   the take-off (its median 41 m inside), as `CANYON_TAKE_OFF_DEPTH` places it. So Big starts at its take-off.
+ * - Medium: 7–8° 11 m out, 17° about at the take-off (2 m seaward and 11 m inside it on the two seeds), where one wave
+ *   in ten starts breaking: the same rule would start it at the take-off too, but it keeps 11 m (the owner, 2026-10-12:
+ *   "fine for now") until it is ridden again.
+ * - Small: 17° 1–4 m seaward of the take-off, but one wave in ten starts breaking 10.5 m seaward of it: 11 m, as before.
+ * Re-measure if the arm or the swells change.
+ */
+export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
+  { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
+  { significantHeight: 2.4, offset: 0 },
+];
+
+/**
+ * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
+ * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
+ */
+export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut'>): number {
+  if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
+  if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
+  const sizes = CANYON_RIDE_LINEUP;
+  const height = config.significantHeight;
+  if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
+  for (let i = 1; i < sizes.length; i += 1) {
+    const [below, above] = [sizes[i - 1], sizes[i]];
+    if (height <= above.significantHeight) {
+      return below.offset + ((above.offset - below.offset) * (height - below.significantHeight)) / (above.significantHeight - below.significantHeight);
+    }
+  }
+  return sizes[sizes.length - 1].offset;
 }
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */

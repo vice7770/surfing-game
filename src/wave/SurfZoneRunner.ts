@@ -24,7 +24,7 @@ import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } fro
 import { cloneTubeApproachObservation, createTubeApproachObservation,
   type TubeApproachCue, type TubeApproachRequest, type TubeBodyPoint, type TubeApproachObservation } from './barrel/tubeApproach';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
-import { SurfZoneSimulation, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import { SurfZoneSimulation, rideLineupOffset, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { RiderBounds } from '../physics/riderBounds';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
@@ -100,14 +100,6 @@ export const REACTION_STRIDE = 4;
 const PARCEL_CAPACITY = 4096;
 /** A riderless board waits this far seaward of the break line, m. */
 const LINEUP_OFFSET = 25;
-/**
- * The rider starts, and relaunches, this far seaward of the break line, m. In
- * the catch reports riders stood almost only from 4–8 m outside; from 25 m out
- * the waves pass before a paddler can reach the peak. The owner's playtest
- * (2026-10-11) found 6 m sat on top of the breaking at the Canyon, so every spot
- * starts 5 m further out, to paddle into the wave before it breaks.
- */
-const RIDE_LINEUP_OFFSET = 11;
 
 /** The edge hint (the rider's bounds): shown once the rider is this far past them, m, again every so many seconds held there, s, and cleared within the last, m. */
 const EDGE_HINT_DEPTH = 0.5;
@@ -421,7 +413,8 @@ export class SurfZoneRunner {
     this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contactQueries, renderSpacing);
     this.bounds = tankRiderBounds(this.simulation.config);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
-    this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
+    // The rider starts, and relaunches, `rideLineupOffset` seaward of the break line (11 m; nearer at the Canyon's Big).
+    this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? rideLineupOffset(config)));
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
