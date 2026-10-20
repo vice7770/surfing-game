@@ -2,8 +2,9 @@ import { Euler, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
-  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, boardMotion, breathing, crawlRate, remoteDrawer, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, paddleStroke, posed,
-  repeatedFrames, rigAlone, shake, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, bandRms, boardMotion, breathing, crawlRate, cueAgainst, drawnAlarm, remoteDrawer, drawnLag, filmBody, footSlide, handSwing, headSteadiness,
+  kneeGive, leanFollow, motionReading, paddleStroke, posed, repeatedFrames, shake, standingStretch, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer,
+  unevenness, type BodyFilm, type FilmFrame, type FilmOptions,
 } from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
@@ -49,12 +50,13 @@ describe('the body film', () => {
   // The final review: riding through a rail change or a weave, until a switch (the weave ends in a fall at 1.94 s),
   // nothing is blended and the drawn body follows the rig at any display rate. Taken for a jump, a hand turning back
   // (about 1.2 m/s within a step) lurched the chest 10–45° at 30–100 Hz. Snapshots batched by 3 stand in for an
-  // online surfer's poses (20 Hz).
+  // online surfer's poses (20 Hz). The rig behind the motion filter (the animation-realism plan): the smoothing's
+  // blends leave it as it is.
   // Eighteen films each: a busy machine takes minutes.
   it.each(['rail change', 'weave'])('draws %s as the rig does, at any display rate', (name) => {
     const runs = [...[30, 50, 60, 75, 90, 100, 120, 144].map((rate) => ({ rate, delivery: 1 })), { rate: 60, delivery: 3 }];
     for (const { rate, delivery } of runs) {
-      const plain = filmBody(scenario(name), { rate, delivery, drawer: trackDrawer, pose: rigAlone });
+      const plain = filmBody(scenario(name), { rate, delivery, drawer: trackDrawer, pose: posed({ inertia: false }) });
       const drawn = filmBody(scenario(name), { rate, delivery, drawer: trackDrawer, pose: posed() });
       const riding = drawn.frames.findIndex((frame) => frame.switched);
       let worst = 0;
@@ -90,9 +92,9 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
-      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: Array.from({ length: 13 }, () => new Vector3()), hips: new Vector3(), board: new Vector3(), boardTurn: new Quaternion(),
+      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: Array.from({ length: 13 }, () => new Vector3()), toes: [new Vector3(), new Vector3()], hips: new Vector3(), board: new Vector3(), boardTurn: new Quaternion(),
       bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
-      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(), balance: 1, physicsHands: [new Vector3(), new Vector3()],
+      chestRoll: 0, physicsRoll: 0, chestYaw: 0, headYaw: 0, kneeFlexion: [0, 0], drawnRoll: 0, givenRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(), balance: 1, physicsHands: [new Vector3(), new Vector3()],
     };
     shape(i, frame);
     frames.push(frame);
@@ -230,9 +232,10 @@ describe('the swing at any display rate (step 4)', () => {
     // a little from rate to rate (4 cm with no swing), which is not the swing's.
     const swingAt = (rate: number) => {
       const swung = offsets(filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() }));
+      const share = RIG_DETAIL.swing.share;
       RIG_DETAIL.swing.share = 0;
       const held = offsets(filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() }));
-      RIG_DETAIL.swing.share = 1;
+      RIG_DETAIL.swing.share = share;
       return swung.map((hands, i) => hands.map((hand, side) => hand.clone().sub(held[i][side])));
     };
     // Its size at each rate, from 0.5 s (the track's first frames show slightly different moments at each rate). The
@@ -243,7 +246,8 @@ describe('the swing at any display rate (step 4)', () => {
       return Math.sqrt(kept.reduce((sum, hand) => sum + hand.lengthSq(), 0) / kept.length);
     };
     const fast = size(swingAt(120), 120);
-    expect(fast).toBeGreaterThan(0.01);
+    // A third of the swing, within 15° (the animation-realism plan's §4): still there, a few millimetres.
+    expect(fast).toBeGreaterThan(0.003);
     for (const rate of [30, 60]) expect(Math.abs(size(swingAt(rate), rate) / fast - 1), `${rate} Hz`).toBeLessThan(0.2);
   }, 240_000);
 
@@ -314,12 +318,49 @@ describe('the balance cue\'s measure (step 5)', () => {
   });
 });
 
+/**
+ * The cue's own part (the animation-realism plan's §4): the hands' height about their shoulders with the cue on less
+ * with it off (the physics is the same), frame by frame, against the alarm the arms show (`drawnAlarm`: past its
+ * deadband, rising fast and falling slower).
+ */
+function cueOwn(name: string, rate: number, drawer: FilmOptions['drawer'] = trackDrawer): { slope: number; correlation: number } {
+  const on = filmBody(scenario(name), { rate, drawer, pose: posed() });
+  RIG_DETAIL.arms.alarmShare = 0;
+  const off = filmBody(scenario(name), { rate, drawer, pose: posed() });
+  RIG_DETAIL.arms.alarmShare = 1;
+  const alarm = drawnAlarm(on, RIG_DETAIL.arms);
+  const frames = on.frames.map((frame, i) => {
+    const limbs = Array.from({ length: 13 }, () => new Vector3());
+    for (const side of ['left', 'right'] as const) {
+      const lift = (shot: FilmFrame) => shot.limbs[FILM_JOINT.hand[side]].y - shot.limbs[FILM_JOINT.shoulder[side]].y;
+      limbs[FILM_JOINT.hand[side]].y = off.frames[i] && off.frames[i].phase === frame.phase ? lift(frame) - lift(off.frames[i]) : Number.NaN;
+    }
+    return { ...frame, limbs };
+  });
+  const kept = frames.map((frame, i) => (frame.time >= 0.5 && Number.isFinite(frame.limbs[FILM_JOINT.hand.left].y) ? alarm[i] : Number.NaN));
+  return cueAgainst({ rate, frames }, kept);
+}
+
 describe('the balance cue on the drawn body (step 5; Patel et al. 2014, Objero et al. 2019)', () => {
-  it('raises the drawn arms as the physics\' balance runs out, through a weave', () => {
+  // The plan's acceptance: the cue stays readable, 25 cm or more per full alarm (33.7 cm before), now only for a real
+  // threat: past a deadband, and smoothed so the margin's flutter and a pump's dips no longer lift the arms.
+  it('raises the drawn arms by the alarm they show, 25 cm or more per full alarm, through a rail change', () => {
+    // A rail change loses balance once and recovers; the weave nears a fall at every reversal, its cue mixed with the
+    // leading arm's turn (the trailing arm's share is read through it below).
     for (const rate of [30, 60]) {
-      const cue = balanceCue(filmBody(scenario('weave'), { rate, drawer: trackDrawer, pose: posed() }));
-      expect(cue.correlation, `${rate} Hz`).toBeGreaterThan(0.7);
-      expect(cue.slope, `${rate} Hz`).toBeGreaterThan(0.1);
+      const rail = cueOwn('rail change', rate);
+      expect(rail.correlation, `rail change at ${rate} Hz`).toBeGreaterThan(0.9);
+      expect(rail.slope, `rail change at ${rate} Hz`).toBeGreaterThan(0.25);
+    }
+  }, 240_000);
+
+  it('keeps the margin\'s flutter off the arms riding straight, pumping and over chop', () => {
+    // The physics' margin dips to 0.56–0.81 riding at ease (its alarm 0.19–0.44): the arms show half of it at most.
+    for (const name of ['straight', 'pumping', 'chop']) {
+      const film = filmBody(scenario(name), { rate: 60, drawer: trackDrawer, pose: posed() });
+      const drawn = Math.max(...drawnAlarm(film, RIG_DETAIL.arms).filter(Number.isFinite));
+      const raw = Math.max(...film.frames.filter((frame) => Number.isFinite(frame.balance)).map((frame) => 1 - frame.balance));
+      expect(drawn, name).toBeLessThanOrEqual(0.5 * raw);
     }
   }, 240_000);
 
@@ -347,9 +388,13 @@ describe('the balance cue on the drawn body (step 5; Patel et al. 2014, Objero e
           for (const side of ['left', 'right'] as const) limbs[FILM_JOINT.hand[side]].y = (swung - held) / (90 - held);
           share.push({ ...frame, limbs });
         });
-        const cue = balanceCue({ rate, frames: share });
+        const alarm = drawnAlarm(on, RIG_DETAIL.arms);
+        const kept = share.map((frame) => alarm[on.frames.indexOf(on.frames.find((candidate) => candidate.time === frame.time)!)]);
+        const cue = cueAgainst({ rate, frames: share }, kept);
+        // The arm swings from its relaxed place at the knee to outstretched along the turn's way round, so its rise
+        // runs a little behind the share of the way it has come (0.7 before, from the old elevation straight up).
         expect(cue.correlation, `${name} at ${rate} Hz`).toBeGreaterThan(0.8);
-        expect(cue.slope, `${name} at ${rate} Hz: of the way per full alarm`).toBeGreaterThan(0.7);
+        expect(cue.slope, `${name} at ${rate} Hz: of the way per full alarm`).toBeGreaterThan(0.5);
       }
     }
   }, 240_000);
@@ -397,10 +442,11 @@ describe('another player\'s surfer (step 7)', () => {
   }, 240_000);
 
   it('shows the balance and the breath from what is sent', () => {
-    // The balance: read back from the hands' spread, which the points carry.
-    const weave = balanceCue(filmBody(scenario('weave'), { rate: 60, drawer: remoteDrawer, pose: posed() }));
-    expect(weave.correlation).toBeGreaterThan(0.7);
-    expect(weave.slope).toBeGreaterThan(0.1);
+    // The balance: read back from the hands' spread, which the points carry (the cue's own part, against the alarm
+    // the arms show, as the local body's above).
+    const rail = cueOwn('rail change', 60, remoteDrawer);
+    expect(rail.correlation).toBeGreaterThan(0.8);
+    expect(rail.slope).toBeGreaterThan(0.2);
     // The breath: from the paddling the pose carries.
     const paddle = filmBody(scenario('paddle then glide'), { rate: 30, drawer: remoteDrawer, pose: posed() });
     expect(breathing({ rate: paddle.rate, frames: paddle.frames.filter((frame) => frame.time > 21) })).toBeGreaterThan(0.003);
@@ -594,3 +640,77 @@ describe('the paddler and the swimmer (step 8)', () => {
     for (const side of ['left', 'right'] as const) expect(paddleStroke(shot, side).along, `${side} along`).toBeGreaterThan(0.893);
   }, 240_000);
 });
+
+// The animation-realism plan's motion filter (§4, phase 1): the board's 3–5 Hz roll-yaw wobble kept in the legs, out of
+// the chest and the head; the arms moving only with intent or for balance. Read as the plan's table reads them (§2:
+// the page's pipeline on the test humanoid, from 0.8 s while standing), at 30, 60 and 120 Hz. Before the filter (the
+// plan's baseline, 120 Hz): the chest rolled 1.90° mid-turn and 0.75° weaving, the head turned 1.18° weaving, the hips
+// moved 2 mm; the hands rose and fell 7–8 cm about their shoulders with the cue off and swung 7.9/5.9 cm pumping.
+describe('the motion filter (the animation-realism plan, §4)', () => {
+  const DEG = 180 / Math.PI;
+  const rates = [30, 60, 120];
+
+  it('keeps the wobble out of the chest and the head, the legs taking it', () => {
+    for (const rate of rates) {
+      const compress = motionReading(filmBody(scenario('compress mid-turn, the hand reaching'), { rate, drawer: trackDrawer, pose: posed() }));
+      const weave = motionReading(filmBody(scenario('weave'), { rate, drawer: trackDrawer, pose: posed() }));
+      expect(compress.chestRoll * DEG, `compress mid-turn at ${rate} Hz: the chest's roll`).toBeLessThanOrEqual(0.6);
+      expect(weave.chestRoll * DEG, `weave at ${rate} Hz: the chest's roll`).toBeLessThanOrEqual(0.25);
+      expect(weave.headYaw * DEG, `weave at ${rate} Hz: the head's yaw against the board`).toBeLessThanOrEqual(0.4);
+      // The legs carry what the chest no longer shows: stood on the raw board under the followed pelvis, the knees
+      // still flex at the wobble's pace (the feet stay on the deck: below).
+      for (const [name, reading] of [['compress', compress], ['weave', weave]] as const) {
+        expect(reading.knees * DEG, `${name} at ${rate} Hz: the knees`).toBeGreaterThan(0.15);
+      }
+    }
+  }, 600_000);
+
+  it('holds the hands still about their shoulders but for the balance cue, and swings them little pumping', () => {
+    // The hands' height about their shoulders in the world, 0.5–2 Hz, with the cue off (it is the intent: tested above).
+    // Before the filter: 7.1 cm weaving, 8.2 mid-turn, 6.2 pumping, 9.2 through a rail change. The plan's 3 cm holds
+    // mid-turn and pumping; weaving and through a rail change the body banks 40° each way with the relaxed arms held
+    // to it, and the leading arm turns toward the look: 3.9–4.0 and 4.4–4.6 cm.
+    const most: Record<string, number> = { weave: 0.045, 'compress mid-turn, the hand reaching': 0.03, pumping: 0.03, 'rail change': 0.05 };
+    RIG_DETAIL.arms.alarmShare = 0;
+    try {
+      for (const rate of rates) {
+        for (const [name, limit] of Object.entries(most)) {
+          const frames = standingStretch(filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() }));
+          const bob = Math.max(...(['left', 'right'] as const).map((side) => bandRmsOf(frames, rate, (frame) => frame.limbs[FILM_JOINT.hand[side]].y - frame.limbs[FILM_JOINT.shoulder[side]].y)));
+          expect(bob, `${name} at ${rate} Hz`).toBeLessThanOrEqual(limit);
+        }
+      }
+    } finally {
+      RIG_DETAIL.arms.alarmShare = 1;
+    }
+    for (const rate of rates) {
+      const pump = filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() });
+      for (const side of ['left', 'right'] as const) {
+        expect(handSwing({ rate, frames: standingStretch(pump) }, side), `pumping at ${rate} Hz, ${side}`).toBeLessThanOrEqual(0.04);
+      }
+    }
+  }, 600_000);
+
+  it('draws the lean as the physics banks, within 3° and no more than 0.12 s behind below 1 Hz', () => {
+    for (const rate of rates) {
+      for (const name of ['weave', 'rail change', 'compress mid-turn, the hand reaching']) {
+        const { lag, rms } = leanFollow(filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() }));
+        expect(lag, `${name} at ${rate} Hz`).toBeLessThanOrEqual(0.12);
+        expect(rms * DEG, `${name} at ${rate} Hz`).toBeLessThanOrEqual(3);
+      }
+    }
+  }, 600_000);
+
+  it('keeps the balls of the feet on the deck: a centimetre at most', () => {
+    for (const rate of rates) {
+      for (const name of ['straight', 'compress mid-turn, the hand reaching', 'pumping', 'chop', 'rail change']) {
+        expect(footSlide(filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() })), `${name} at ${rate} Hz`).toBeLessThanOrEqual(0.01);
+      }
+    }
+  }, 600_000);
+});
+
+/** The 0.5–2 Hz RMS of a reading over frames. */
+function bandRmsOf(frames: FilmFrame[], rate: number, read: (frame: FilmFrame) => number): number {
+  return bandRms(frames.map(read), rate, 0.5, 2);
+}
