@@ -5,6 +5,7 @@ import { EdgeBand } from './EdgeBand';
 import { FarFieldOcean } from './FarFieldOcean';
 import { LipSheetMesh } from './LipSheetMesh';
 import { SpillingCurlMesh } from './SpillingCurlMesh';
+import { RollerFrontMesh } from './RollerFrontMesh';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { SweptBarrelMesh } from './barrel/SweptBarrelMesh';
 import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
@@ -174,7 +175,7 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     expect(counts['edge band rich roller'].count).toBeLessThanOrEqual(UNITS);
   });
 
-  it('keeps the far ocean, the tube, the spilling curl, the lip and the caustics within the units', () => {
+  it('keeps the far ocean, the tube, the spilling curl, the roller front, the lip and the caustics within the units', () => {
     const programs: [string, { vertex: string; fragment: string }, boolean][] = [];
     for (const look of ['classic', 'rich'] as WaterLook[]) {
       const far = new FarFieldOcean();
@@ -192,6 +193,11 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
       curl.setLook(look);
       programs.push([`spilling curl ${look}`, compiled(curl.mesh.material), true]);
     }
+    // The roller front (Rich only, its own program): the water's heights in its vertices, the churn in its fragments.
+    const front = new RollerFrontMesh(new WaterSurface(roller).materialUniforms);
+    const frontProgram = compiled(front.mesh.material);
+    expect(units(frontProgram, true).samplers).toEqual(['waterChurnMap', 'waterSurface']);
+    programs.push(['roller front', frontProgram, true]);
     const lip = new LipSheetMesh();
     programs.push(['lip rich', compiled(lip.richMaterial), true]);
     const caustics = new CausticMap(new WaterSurface(cubic).causticSource);
