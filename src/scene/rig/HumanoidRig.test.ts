@@ -431,7 +431,9 @@ describe('the head', () => {
 });
 
 // Part B: the trunk turns into the turn, the shoulders leading the hips (the reference's trunk rotation; the
-// riding-the-wave spec's torso and shoulders turning into turns). Standing only.
+// riding-the-wave spec's torso and shoulders turning into turns). Standing only. The animation-realism plan's phase 2:
+// the key poses turn the chest and the hips (the bottom turn's to the wave, the redirect's back to the pocket) and the
+// cascade on into the turn, the chest by more of it than the hips.
 describe('the trunk', () => {
   const board = new Vector3(3, 0.1, -40);
   const level = new Quaternion();
@@ -444,23 +446,36 @@ describe('the trunk', () => {
     rig.solve(state);
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
     for (const side of SIDES) {
+      // The ankle behind its foot point by half the foot, or nearer where the heel lifts about the ball (the redirect's
+      // compression, the animation-realism plan's phase 2: past the ankle's reach under load).
       const foot = state.points[footPoint(side)];
-      expect(Math.hypot(rig.joints.ankle[side].x - foot.x, rig.joints.ankle[side].z - foot.z)).toBeCloseTo(rig.heelToMidfoot, 3);
+      const behind = Math.hypot(rig.joints.ankle[side].x - foot.x, rig.joints.ankle[side].z - foot.z);
+      expect(behind).toBeLessThanOrEqual(rig.heelToMidfoot + 5e-4);
+      expect(behind).toBeGreaterThan(rig.heelToMidfoot - 0.04);
     }
     const hips = rig.joints.hip.left.clone().sub(rig.joints.hip.right);
     return { chest: yawOf(rig.facing), hips: yawOf(hips) };
   };
 
-  it.each(['regular', 'goofy'] as const)('turns the chest into the turn and the hips less, %s', (stance) => {
+  it.each(['regular', 'goofy'] as const)('turns the chest into a frontside bottom turn and the hips less; squares it to the toes backside, %s', (stance) => {
     const turn = (from: number, to: number) => ((((to - from) % 360) + 540) % 360) - 180;
+    // From the toes toward the nose: Regular's toes are −x (a heading of −90°), Goofy's +x.
+    const twist = (yaw: number) => (stance === 'regular' ? turn(-90, yaw) : turn(yaw, 90));
+    const toes = stance === 'regular' ? -2 : 2;
     const straight = twisted(stance, 0);
-    const left = twisted(stance, 2);
-    const right = twisted(stance, -2);
-    expect(turn(straight.chest, left.chest)).toBeGreaterThan(20);
-    expect(turn(right.chest, straight.chest)).toBeGreaterThan(20);
-    const hipsTurn = turn(straight.hips, left.hips);
-    expect(hipsTurn).toBeGreaterThan(0);
-    expect(hipsTurn).toBeLessThan(turn(straight.chest, left.chest));
+    const frontside = twisted(stance, toes);
+    const backside = twisted(stance, -toes);
+    // Onto the toes' rail (frontside): the chest and the lead shoulder turned to the wave (Rapture; the plan's −10° to
+    // 25°), the cascade turning them on into the turn, the hips by less.
+    expect(twist(straight.chest) - twist(frontside.chest)).toBeGreaterThan(20);
+    expect(twist(frontside.chest)).toBeGreaterThanOrEqual(-10);
+    expect(twist(frontside.chest)).toBeLessThanOrEqual(25);
+    const hips = twist(straight.hips) - twist(frontside.hips);
+    expect(hips).toBeGreaterThan(0);
+    expect(hips).toBeLessThan(twist(straight.chest) - twist(frontside.chest));
+    // Onto the heels' (backside): the shoulders square to the lip, about square to the toes (Hobgood; −15° to 15°).
+    expect(Math.abs(twist(backside.chest))).toBeLessThanOrEqual(15);
+    expect(Math.abs(twist(straight.hips) - twist(backside.hips))).toBeLessThan(Math.abs(twist(straight.chest) - twist(backside.chest)));
   });
 });
 
@@ -485,15 +500,21 @@ describe('the arms', () => {
     return { rig, state, bones };
   };
 
-  // The animation-realism plan, phase 1: in a turn the leading arm turns toward where the head looks, within
-  // `leadTurn` of its own heading, its hand kept low (the relaxed hand's height); phase 2 aims it at the turn's target.
-  it.each([['regular', -2, 'left'], ['goofy', 2, 'right']] as const)('turns the leading arm toward where the head looks, its hand low, %s', (stance, yawRate, lead) => {
+  // The animation-realism plan: in a turn the leading arm points where the head looks (phase 1 turned it 20° at most, its
+  // hand at the knee); phase 2 aims it at the turn's target, the bottom turn's along the look about level, the arm long
+  // (de Sousa 2022: the leading arm toward the lip), never up over the head; riding straight it hangs at the knee.
+  it.each([['regular', -2, 'left'], ['goofy', 2, 'right']] as const)('points the leading arm along the look in a turn, about level, its hand low riding straight, %s', (stance, yawRate, lead) => {
     const level = (v: Vector3) => v.clone().setY(0);
-    const toLook = (rig: HumanoidRig) => (level(rig.joints.wrist[lead].clone().sub(rig.joints.shoulder[lead])).angleTo(level(rig.look)) * 180) / Math.PI;
+    const arm = (rig: HumanoidRig) => rig.joints.wrist[lead].clone().sub(rig.joints.shoulder[lead]);
+    const toLook = (rig: HumanoidRig) => (level(arm(rig)).angleTo(level(rig.look)) * 180) / Math.PI;
+    const elevation = (rig: HumanoidRig) => (Math.asin(arm(rig).y / arm(rig).length()) * 180) / Math.PI;
     const turning = solved(stance, yawRate).rig;
     const straight = solved(stance, 0).rig;
     expect(toLook(turning)).toBeLessThan(toLook(straight) - 10);
-    for (const rig of [turning, straight]) expect(rig.joints.wrist[lead].y).toBeLessThan(rig.joints.shoulder[lead].y - 0.3);
+    expect(toLook(turning)).toBeLessThan(30);
+    expect(elevation(turning)).toBeGreaterThan(-30);
+    expect(elevation(turning)).toBeLessThan(25);
+    expect(straight.joints.wrist[lead].y).toBeLessThan(straight.joints.shoulder[lead].y - 0.3);
   });
 
   // The owner's reference (2026-10-22): a free arm takes the key pose's relaxed hand, framing its knee, whatever
@@ -589,19 +610,27 @@ describe('the snap', () => {
     expect(Math.abs(turn(straight.chest, snap.chest))).toBeGreaterThan(carved + 15);
   });
 
-  it.each([['regular', -3], ['goofy', 3]] as const)('raises the leading arm high, toward the lip, %s', (stance, yawRate) => {
+  // The animation-realism plan's phase 2 (the owner's reel, step 7: at the top, drop the leading hand; the plan: the arms
+  // at chest height or below, close in). Step 3 raised it to 60° toward the lip, which with the alarm drew an airplane.
+  it.each([['regular', -3], ['goofy', 3]] as const)('drops the leading hand at the top, below the shoulder and close in, %s', (stance, yawRate) => {
     expect(raised(solved(stance, yawRate, false).rig, lead(stance))).toBeLessThan(25);
-    expect(raised(solved(stance, yawRate, true).rig, lead(stance))).toBeGreaterThan(40);
+    const snap = solved(stance, yawRate, true).rig;
+    const side = lead(stance);
+    expect(raised(snap, side)).toBeLessThan(0);
+    expect(raised(snap, side)).toBeGreaterThan(-60);
+    const reach = snap.joints.wrist[side].distanceTo(snap.joints.shoulder[side]) / snap.armLength;
+    expect(reach).toBeLessThan(0.9);
   });
 
-  // The surfer sheet's snap, from the real rider: the weight back (W/S) and full steer.
-  it.each(['regular', 'goofy'] as const)('draws the real rider’s snap with the leading arm high, %s', (stance) => {
+  // The surfer sheet's snap, from the real rider: the weight back (W/S) and full steer, read as a redirect.
+  it.each(['regular', 'goofy'] as const)('draws the real rider’s snap as a redirect, the leading hand dropped, %s', (stance) => {
     expect(RIDING_MOMENTS).toContain('snap');
     const state = ridingState('snap', stance, new Vector3(0, 0.03, 0), createRiderVisualState());
     expect(state.phase).toBe('standing');
     const rig = new HumanoidRig(createTestHumanoid().bones);
     rig.solve(state);
-    expect(raised(rig, lead(stance))).toBeGreaterThan(40);
+    expect(rig.stageWeights.redirect).toBeGreaterThan(0.8);
+    expect(raised(rig, lead(stance))).toBeLessThan(10);
   });
 
   // The final review: the weight was read along the board's own axis, so its pitch read as weight (a level carve down
@@ -636,11 +665,15 @@ describe('the snap', () => {
   };
 
   it.each(['regular', 'goofy'] as const)('draws no snap in a level carve down the face, %s', (stance) => {
-    expect(raised(stance === 'regular' ? onFace(60, 7, 1, 0, stance) : onFace(-60, 7, -1, 0, stance), lead(stance))).toBeLessThan(25);
+    const rig = stance === 'regular' ? onFace(60, 7, 1, 0, stance) : onFace(-60, 7, -1, 0, stance);
+    expect(raised(rig, lead(stance))).toBeLessThan(25);
+    expect(rig.stageWeights.redirect).toBeLessThan(0.3);
   });
 
   it.each(['regular', 'goofy'] as const)('draws the snap climbing the face with the weight back, %s', (stance) => {
-    expect(raised(stance === 'regular' ? onFace(150, 7, 1, -1, stance) : onFace(-150, 7, -1, -1, stance), lead(stance))).toBeGreaterThan(40);
+    const rig = stance === 'regular' ? onFace(150, 7, 1, -1, stance) : onFace(-150, 7, -1, -1, stance);
+    expect(rig.stageWeights.redirect).toBeGreaterThan(0.7);
+    expect(raised(rig, lead(stance))).toBeLessThan(10);
   });
 
   it('shows no snap with the weight back and no turn', () => {

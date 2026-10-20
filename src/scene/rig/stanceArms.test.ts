@@ -40,15 +40,18 @@ describe('the free arms (the stance poses, step 3)', () => {
       expect(read.leadArm, `${side} lead`).toBeLessThanOrEqual(50);
       expect(read.trailArm, `${side} trail`).toBeGreaterThanOrEqual(10);
       expect(read.trailArm, `${side} trail`).toBeLessThanOrEqual(35);
-      // Soft elbows, never locked; the hands in front of the knees and close in.
+      // Soft elbows, never locked; the hands in front of the knees and close in: the back hand within the shoulders'
+      // width, the front one ahead of its knee along the line by no more than a forearm (the owner's photo).
       for (const elbow of [read.leadElbow, read.trailElbow]) expect(elbow, side).toBeLessThan(162);
       expect(hands.inFront, side).toBeGreaterThan(-0.02);
-      expect(hands.out, side).toBeLessThan(1.25 * hands.shoulders);
+      expect(hands.rearOut, side).toBeLessThan(1.25 * hands.shoulders);
+      expect(hands.frontAhead, side).toBeLessThan(0.3);
     }
   });
 
-  it('swings the trailing arm up in the snap (the Bali camp: swung around)', () => {
-    // From the relaxed arm at the side (trim's 10–35°), well up: phase 2 sets the snap's own arms (`snapSwing` 60°).
+  it('swings the trailing arm up in the snap (the Bali camp: swung around), no higher than the chest', () => {
+    // From the relaxed arm at the side (trim's 10–35°), up: the animation-realism plan's phase 2 holds it at or below
+    // chest height (the top turn's 30–70°; step 3's 100° drew an airplane).
     const trail = (id: string) => {
       const { bones } = createTestHumanoid();
       const gauge = new StanceGauge(bones);
@@ -56,7 +59,8 @@ describe('the free arms (the stance poses, step 3)', () => {
       const { state } = drawnStance(id, 'regular', at, (step) => body.update(step));
       return gauge.measure(state, 'regular').trailArm;
     };
-    expect(trail('snap-frontside')).toBeGreaterThan(trail('trim') + 30);
+    expect(trail('snap-frontside')).toBeGreaterThan(trail('trim') + 15);
+    expect(trail('snap-frontside')).toBeLessThanOrEqual(70);
   });
 
   it('bends the drop\'s leading elbow into Kerr\'s 140–170°', () => {
@@ -100,7 +104,9 @@ describe('the free arms losing balance (step 5)', () => {
     const out = angles(alarmed, 1).read;
     for (const [arm, elbow] of [['leadArm', 'leadElbow'], ['trailArm', 'trailElbow']] as const) {
       expect(out[arm], arm).toBeGreaterThan(ease[arm] + 25);
-      expect(out[arm], arm).toBeLessThan(100);
+      // Out to about level from the trunk (the alarm's 90°), the trunk's own bend for the lead shoulder's drop (the
+      // animation-realism plan's phase 2) a few degrees on: never overhead.
+      expect(out[arm], arm).toBeLessThan(105);
       expect(out[elbow], elbow).toBeGreaterThan(ease[elbow] + 10);
     }
   });
@@ -109,8 +115,9 @@ describe('the free arms losing balance (step 5)', () => {
 
 describe('the arms framing the knees (the owner\'s reference photo, 2026-10-22)', () => {
   // Crouched trim and the drop: each hand within about 0.15 m of its knee's height, the front hand ahead of the front
-  // knee along the line, the back hand beside the back knee, neither out past the shoulders' width (the shoulder
-  // joints' spread and the shoulder's own breadth outside them, 1.25 of it). Every surfer, Regular and Goofy.
+  // knee along the line (by no more than a forearm: the animation-realism plan's phase 2 reaches it further forward, as
+  // the photo's), the back hand beside the back knee and not out past the shoulders' width (the shoulder joints' spread
+  // and the shoulder's own breadth outside them, 1.25 of it). Every surfer, Regular and Goofy.
   it.each([['crouched trim', CROUCHED_TRIM], ['the drop', STANCE_RECIPES.drop]] as const)('frames the knees in %s, on all four surfers', (_name, recipe) => {
     for (const surfer of ['surfer1', 'surfer2', 'surfer3', 'surfer4']) {
       const bytes = readFileSync(`public/assets/surfers/${surfer}.glb`);
@@ -125,9 +132,10 @@ describe('the arms framing the knees (the owner\'s reference photo, 2026-10-22)'
         expect(Math.abs(hands.frontAboveKnee), `${where}: front hand to its knee's height`).toBeLessThanOrEqual(0.15);
         expect(Math.abs(hands.rearAboveKnee), `${where}: back hand to its knee's height`).toBeLessThanOrEqual(0.15);
         expect(hands.frontAhead, `${where}: front hand ahead of the front knee`).toBeGreaterThan(0);
+        expect(hands.frontAhead, `${where}: front hand no more than a forearm ahead`).toBeLessThan(0.3);
         expect(Math.abs(hands.rearAlong), `${where}: back hand beside the back knee`).toBeLessThan(0.12);
         expect(hands.inFront, `${where}: in front of the knees`).toBeGreaterThan(-0.02);
-        expect(hands.out, `${where}: within the shoulders' width`).toBeLessThan(1.25 * hands.shoulders);
+        expect(hands.rearOut, `${where}: within the shoulders' width`).toBeLessThan(1.25 * hands.shoulders);
       }
     }
   }, 120_000);

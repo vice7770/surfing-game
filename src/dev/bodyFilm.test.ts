@@ -670,8 +670,11 @@ describe('the motion filter (the animation-realism plan, §4)', () => {
     // Before the filter: 7.1 cm weaving, 8.2 mid-turn, 6.2 pumping, 9.2 through a rail change. The plan's 3 cm holds
     // mid-turn and pumping; weaving and through a rail change the body banks 40° each way with the relaxed arms held
     // to it, and the leading arm turns toward the look: 3.9–4.0 and 4.4–4.6 cm.
+    // The animation-realism plan's phase 2 points the leading arm at the turn's target (intent: the pointer cause), its
+    // hand up from the knee toward the level as each turn comes in; read here without it, as phase 1 drew the arms.
     const most: Record<string, number> = { weave: 0.045, 'compress mid-turn, the hand reaching': 0.03, pumping: 0.03, 'rail change': 0.05 };
     RIG_DETAIL.arms.alarmShare = 0;
+    RIG_DETAIL.arms.pointShare = 0;
     try {
       for (const rate of rates) {
         for (const [name, limit] of Object.entries(most)) {
@@ -682,6 +685,7 @@ describe('the motion filter (the animation-realism plan, §4)', () => {
       }
     } finally {
       RIG_DETAIL.arms.alarmShare = 1;
+      RIG_DETAIL.arms.pointShare = 1;
     }
     for (const rate of rates) {
       const pump = filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() });

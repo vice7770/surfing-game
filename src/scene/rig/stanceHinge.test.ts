@@ -64,9 +64,13 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
   });
 
   it('keeps the centre of mass where the upright body has it, within 2 cm', () => {
-    // The hinge alone: Part B's bend toward a reaching hand moves the centre of mass of its own, in both.
+    // The hinge alone: Part B's bend toward a reaching hand, and the lead shoulder's drop (the animation-realism plan,
+    // phase 2: the upper body toward the front foot), move the centre of mass of their own, in both.
     const bend = RIG_DETAIL.reachBend;
+    const drop = { ...RIG_DETAIL.shoulderBend };
     RIG_DETAIL.reachBend = 0;
+    RIG_DETAIL.shoulderBend.pitch = 0;
+    RIG_DETAIL.shoulderBend.side = 0;
     try {
       for (const id of ['trim', 'drop', 'compress-frontside', 'compress-backside']) {
         const state = stanceState(id, 'regular', at, createRiderVisualState()).state;
@@ -78,6 +82,7 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
       }
     } finally {
       RIG_DETAIL.reachBend = bend;
+      Object.assign(RIG_DETAIL.shoulderBend, drop);
     }
   });
 
@@ -119,7 +124,12 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
 
   it('bends the trunk no faster than a brisk trunk bend, whatever the physics does in a step', () => {
     // Standing tall, then at once crouched for the drop, 1/60 s later: the hinge swings at most hingeRate × dt. (Not
-    // Compress: its bend toward the hand at the water makes up whatever the hinge leaves.)
+    // Compress: its bend toward the hand at the water makes up whatever the hinge leaves. The lead shoulder's drop is
+    // left out: the hinge alone.)
+    const drop = { ...RIG_DETAIL.shoulderBend };
+    RIG_DETAIL.shoulderBend.pitch = 0;
+    RIG_DETAIL.shoulderBend.side = 0;
+    restore = () => Object.assign(RIG_DETAIL.shoulderBend, drop);
     const { bones } = createTestHumanoid();
     const gauge = new StanceGauge(bones);
     const rig = new HumanoidRig(bones);

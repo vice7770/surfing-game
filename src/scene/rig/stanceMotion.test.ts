@@ -8,6 +8,7 @@ import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { PosedBody } from './posedBody';
 import { POINT, type RiderVisualState } from './riderVisualState';
 import { StanceGauge, type StanceAngles } from './stanceGauge';
+import { createTestHumanoid } from './testHumanoid';
 
 /**
  * The stance poses followed through a motion on surfer2, as the game draws them
@@ -85,16 +86,22 @@ describe('the stance poses through a motion (step 3\'s final review)', () => {
     }
   }, 240_000);
 
-  it('reaches the leading arm out in the snap, and never spins a hand', () => {
+  it('drops the leading hand in the snap, its elbow bent, and never spins a hand', () => {
+    // The animation-realism plan's phase 2 (the owner's reel, step 7): the leading hand dropped at the top, close in,
+    // the elbow 90–140° (step 3 reached it out, raised toward the lip: with the alarm, an airplane).
     for (const side of ['regular', 'goofy'] as const) {
       let reach = 0;
+      let below = 0;
       follow(STANCE_RECIPES['snap-frontside'], side, ({ state, bones }) => {
-        if (state.clock < 0.85) return;
+        if (state.clock < STANCE_RECIPES['snap-frontside'].seconds - 0.05) return;
         const lead = side === 'regular' ? 'left' : 'right';
         const arm = world(bones, BONES.arm[lead]).distanceTo(world(bones, BONES.foreArm[lead])) + world(bones, BONES.foreArm[lead]).distanceTo(world(bones, BONES.hand[lead]));
         reach = world(bones, BONES.hand[lead]).distanceTo(world(bones, BONES.arm[lead])) / arm;
+        below = world(bones, BONES.arm[lead]).y - world(bones, BONES.hand[lead]).y;
       });
-      expect(reach, side).toBeGreaterThan(0.8);
+      expect(reach, side).toBeGreaterThan(0.6);
+      expect(reach, side).toBeLessThan(0.95);
+      expect(below, side).toBeGreaterThan(0);
     }
     // A weave with the weight back: the hand turns no faster than a wrist can.
     const weave: StanceRecipe = {
@@ -171,6 +178,30 @@ describe('the arms swing with the body (step 4; Pontzer et al. 2009)', () => {
       RIG_DETAIL.swing.share = saved;
       // −0.5 with the whole swing; a third of it within 15° (the animation-realism plan) trails as surely, if less tidily.
       expect(correlation(swung.offsets.map((offset, i) => offset - held.offsets[i]), swung.rises), side).toBeLessThan(-0.3);
+    }
+  }, 240_000);
+
+  it('pushes the free hands down as the body extends in a pump, never lifting them, the alarm off (the plan\'s phase 2)', () => {
+    // Rapture, compression and extension: small arm motions in time with the pump, pushing down, not rising. The
+    // channel's own part (the pump's arms on less off, the physics the same) against the shoulders' rise; and the
+    // alarm the arms show stays under 0.2 (pumping read as a near fall before the deadband).
+    const gain = RIG_DETAIL.pump.gain;
+    for (const side of ['regular', 'goofy'] as const) {
+      const pushed = hands(pump, side, 0.6);
+      RIG_DETAIL.pump.gain = 0;
+      const still = hands(pump, side, 0.6);
+      RIG_DETAIL.pump.gain = gain;
+      const push = pushed.offsets.map((offset, i) => offset - still.offsets[i]);
+      expect(correlation(push, pushed.rises), side).toBeLessThan(-0.5);
+      expect(Math.max(...push), `${side}: never above where they hang`).toBeLessThan(0.005);
+      let alarm = 0;
+      const { bones } = createTestHumanoid();
+      const body = new PosedBody(bones);
+      drawnRecipe(pump, side, at, (state) => {
+        body.update(state);
+        if (state.clock > 0.6) alarm = Math.max(alarm, body.rig.alarmShown);
+      });
+      expect(alarm, side).toBeLessThan(0.2);
     }
   }, 240_000);
 
