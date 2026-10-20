@@ -158,6 +158,10 @@ export interface SurfZoneConfig {
  * Spilling spots (the canyon spilling prototype, docs/research/canyon-spilling-2026-10-05): their waves spill at any
  * size, never throwing a lip or a tube, and their whitewater follows a spilling front (`SpillingFront`) that peels
  * along each crest no faster than the spot's peel and never runs ahead of the solver's break.
+ * - The Canyon stays one on the reef bed (2026-10-22, docs/research/canyon-reef-bed-2026-10-22), whose Big and sets by
+ *   the peak plunge weakly: `throwLip` reads the bed's slope across its contours, about 3× the slope along the waves' path
+ *   on the 70° arm, so jets would fire on the gentle fan too. The spilling lip draws its overturn (`SpillingCurl`) until
+ *   the swept barrel is measured for it.
  */
 export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
 

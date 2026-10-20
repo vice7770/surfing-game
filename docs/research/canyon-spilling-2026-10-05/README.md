@@ -12,6 +12,8 @@ Built on `claude/canyon-spilling-wip`, merged into `claude/canyon-spilling`.
 
 **Status (owner, 2026-10-06).** After seeing the screenshots below, the owner ruled that the wave forms from a corner, in a strange shape. Waves must form straight to the beach. Their timing may be irregular, but waves must never come from more than one side, and never at the same time. The bed in §1 is therefore **the corner-canyon bed, being replaced for straight crests (owner, 2026-10-06)**: the branch `claude/canyon-straight` redesigns it, with the peel coming from an oblique break line. Every Canyon number in this note is the corner-canyon bed's, and its peel is not accepted. Its crest angles are in `docs/research/crest-angle-2026-10-05.md`.
 
+**Status (2026-10-22).** The arm's face below the fan's hinge is now 1:23 below a 2.2 m hinge (was 1:30 below 2.8 m), so Big and Medium's sets by the peak plunge weakly, as the owner's reference reel: `docs/research/canyon-reef-bed-2026-10-22`. The numbers below are the 1:30 bed's.
+
 **Status (2026-10-09).** The owner found Big unsurfable. Big broke on the level shelf, before the arm, and closed out. The bed is now a deep platform with a fan-faced arm and a trough behind its line, so every size breaks on the arm and peels toward +x (§1, "Every size on the arm"). The straight-crest bed's numbers below are kept as the before.
 
 ## Direction convention

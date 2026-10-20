@@ -14,7 +14,8 @@ export const SURF_SPOTS: readonly SpotName[] = ['pool', 'beach', 'point', 'reef'
  * Canyon was the default: its old bed gathered the swell so its waves peeled (median
  * 58°) and caught best, while the Beach, Point and Reef mostly closed out (median
  * 12–15°, measured before their swells came in square). Since 2026-10-07 the Canyon
- * is a spilling wave breaking along an oblique sandbar, drawn and felt peeling at 55°.
+ * is a wave breaking along an oblique bar, drawn and felt peeling at 55°: spilling until
+ * the reef bed (2026-10-22), whose steeper face plunges Big and the sets by the peak.
  */
 export const DEFAULT_SPOT: SpotName = 'pool';
 
