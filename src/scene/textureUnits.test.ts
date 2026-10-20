@@ -196,7 +196,7 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     // The roller front (Rich only, its own program): the water's heights in its vertices, the churn in its fragments.
     const front = new RollerFrontMesh(new WaterSurface(roller).materialUniforms);
     const frontProgram = compiled(front.mesh.material);
-    expect(units(frontProgram, true).samplers).toEqual(['waterChurnMap', 'waterSurface']);
+    expect(units(frontProgram, true).samplers).toEqual(['rfLook', 'waterChurnMap', 'waterRoller', 'waterSurface']);
     programs.push(['roller front', frontProgram, true]);
     const lip = new LipSheetMesh();
     programs.push(['lip rich', compiled(lip.richMaterial), true]);

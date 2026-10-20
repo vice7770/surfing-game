@@ -98,18 +98,28 @@ describe('the roller front\'s mesh', () => {
   const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
   const source: SurfaceSource = { grid, time: 0, bedRevision: 0, cubic: true, write: () => {}, writeBed: () => {} };
 
-  it('draws a patch per live column pair, quarter-metre sub-columns by 20 points across, and hides with none', () => {
+  it('lays a patch on every slot and column pair once, quarter-metre sub-columns by 20 points across, and uploads only the look', () => {
     const front = new RollerFrontMesh(new WaterSurface(source).materialUniforms);
     const { table, look } = run();
-    front.update(table, look, COLUMNS, -5.5, 1);
+    front.update(table, look, COLUMNS);
     expect(front.mesh.visible).toBe(true);
-    expect(front.drawn).toEqual({ patches: 5, vertices: 5 * PATCH_VERTICES });
+    expect(front.drawn).toEqual({ entries: 4, patches: ROLLER_SLOTS * (COLUMNS - 1), vertices: ROLLER_SLOTS * (COLUMNS - 1) * PATCH_VERTICES });
     expect(PATCH_VERTICES).toBe(5 * 20);
-    // Without its look (no spilling lip), none.
-    front.update(table, new Float32Array(0), COLUMNS, -5.5, 1);
+    const patch = front.mesh.geometry.getAttribute('rfPatch');
+    expect(patch.count).toBe(ROLLER_SLOTS * (COLUMNS - 1));
+    expect([patch.getX(COLUMNS - 1 + 3), patch.getY(COLUMNS - 1 + 3)]).toEqual([3, 1]);
+    // The look's texture: (since, H) per slot and column.
+    const texture = (front as unknown as { lookData: Float32Array }).lookData;
+    expect(texture[2 * (2 * COLUMNS + 5)]).toBeCloseTo(0.5, 6);
+    expect(texture[2 * (2 * COLUMNS + 5) + 1]).toBe(2);
+    // The same columns again: the patches are not laid out anew.
+    front.update(table, look, COLUMNS);
+    expect(front.mesh.geometry.getAttribute('rfPatch')).toBe(patch);
+    // Without its look (no spilling lip), or with no band drawn, none.
+    front.update(table, new Float32Array(0), COLUMNS);
     expect(front.mesh.visible).toBe(false);
-    front.update(table, look, COLUMNS, -5.5, 1);
-    front.hide();
+    front.update(new Float32Array(table.length), look, COLUMNS);
+    expect(front.hasBand).toBe(false);
     expect(front.drawn.patches).toBe(0);
   });
 
@@ -118,11 +128,13 @@ describe('the roller front\'s mesh', () => {
     const shader = { uniforms: {}, vertexShader: ShaderLib.standard.vertexShader, fragmentShader: ShaderLib.standard.fragmentShader };
     front.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
     expect(shader.vertexShader).toContain('vec3 rfWater = waterCubic( vec2( rfX, rfZ0 ) );');
+    // The drawn table from the water's own roller texture, as the band reads it.
+    expect(shader.vertexShader).toContain('texelFetch( waterRoller, ivec2( 2 * rfColumn, rfSlot ), 0 )');
     expect(shader.vertexShader).toContain('waterRollerToe( rfX, waterTime, rfB.w )');
     expect(shader.vertexShader).toContain('vec3 transformed = rfPosition;');
     expect(shader.fragmentShader).toContain('outgoingLight *= vRfShade.z;');
     // On the water's own uniforms: its heights, foam colour and sun.
-    for (const name of ['waterSurface', 'waterGrid', 'waterFoamColor', 'waterSunDirection', 'waterChurnMap', 'waterTime']) {
+    for (const name of ['waterSurface', 'waterGrid', 'waterRoller', 'waterRollerColumn0', 'rfLook', 'waterFoamColor', 'waterSunDirection', 'waterChurnMap', 'waterTime']) {
       expect(shader.uniforms).toHaveProperty(name);
     }
   });

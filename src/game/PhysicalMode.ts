@@ -947,12 +947,11 @@ export class PhysicalMode {
       return;
     }
     const { status } = host.snapshot;
-    // The A/B switch only hides it: its patches stay laid out, so turning it back on uploads nothing.
-    mesh.mesh.visible = rollerFrontMode.on && mesh.drawn.patches > 0;
+    // The A/B switch only hides it, so turning it back on uploads nothing.
+    mesh.mesh.visible = rollerFrontMode.on && mesh.hasBand;
     if (!rollerFrontMode.on || (front.drawn && front.drawn.status === status)) return;
-    const uniforms = water.materialUniforms;
-    const columns = uniforms.waterRollerColumns.value as number;
-    mesh.update(host.snapshot.roller, look, columns, uniforms.waterRollerColumn0.value as number, uniforms.waterRollerColumnWidth.value as number);
+    // The table itself is the water's roller texture, uploaded with its heights; the front uploads only its look.
+    mesh.update(host.snapshot.roller, look, water.materialUniforms.waterRollerColumns.value as number);
     front.drawn = { status };
   }
 

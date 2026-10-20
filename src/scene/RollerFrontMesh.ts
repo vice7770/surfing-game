@@ -1,5 +1,6 @@
 import {
-  BufferAttribute, DynamicDrawUsage, FrontSide, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, MeshStandardMaterial, Vector2, Vector4,
+  BufferAttribute, DataTexture, FloatType, FrontSide, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, MeshStandardMaterial, RGFormat,
+  Vector2, Vector4,
   type Camera, type WebGLRenderer,
 } from 'three';
 import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from '../wave/SpillingCurl';
@@ -177,7 +178,7 @@ export function frontLump(n: number, sigma: number, cap: number): number {
 const INSTANCE = { a0: 4, a1: 4, b0: 4, b1: 4, c: 4, d: 4, e: 2 } as const;
 type InstanceName = keyof typeof INSTANCE;
 
-/** The patches `buildFrontPatches` lays out, one per live slot and column pair. */
+/** The patches `buildFrontPatches` lays out, one per live slot and column pair: what the vertex shader reads for each. */
 export interface FrontPatches {
   /** Column i's and i + 1's (crest, length, scale, thickness), as drawn; an empty end takes its live neighbour's with no scale. */
   a0: Float32Array;
@@ -200,10 +201,10 @@ export function createFrontPatches(capacity: number): FrontPatches {
 }
 
 /**
- * The patches over the roller's drawn table (`ROLLER_FIELD`, slot-major, `columns` a slot) and its look
- * (`BAND_LOOK_FIELD`): one for each pair of neighbouring columns in a slot either of which is drawn (scale > 0). As the
- * band reads them, an empty end gives no scale and the live end's geometry: here it takes the live end's values with
- * scale 0, so the shader's plain mix draws the band's rule. Returns how many.
+ * The CPU twin of the vertex shader's reads (for the tests): the patches over the roller's drawn table (`ROLLER_FIELD`,
+ * slot-major, `columns` a slot) and its look (`BAND_LOOK_FIELD`), one for each pair of neighbouring columns in a slot
+ * either of which is drawn (scale > 0). As the band reads them, an empty end gives no scale and the live end's
+ * geometry: it takes the live end's values with scale 0, so a plain mix draws the band's rule. Returns how many.
  */
 export function buildFrontPatches(table: ArrayLike<number>, look: ArrayLike<number>, columns: number, column0: number, width: number,
   out: FrontPatches): number {
@@ -275,14 +276,8 @@ ${waterHeightPars}
 ${waterCubicPars}
 uniform float waterTime;
 ${waterRollerPars}
-attribute vec4 rfA0;
-attribute vec4 rfA1;
-attribute vec4 rfB0;
-attribute vec4 rfB1;
-attribute vec4 rfC;
-attribute vec4 rfD;
-attribute vec2 rfE;
-uniform float rfColumnWidth;
+attribute vec2 rfPatch;
+uniform highp sampler2D rfLook;
 uniform float rfPixelScale;
 uniform vec4 rfTune;
 varying vec3 vRfWorld;
@@ -334,6 +329,19 @@ float rfNoise( vec2 xs, vec3 weight, float c, float toe ) {
 float rfLump( float n, float sigma, float cap ) {
   return cap > 0.0 ? cap * tanh( sigma * ${f(F.billow)} * ( sqrt( n * n + ${f(F.billowCrease * F.billowCrease)} ) - ${f(F.billowCrease)} ) / cap ) : 0.0;
 }
+// The crest's and the length's slopes along shore at a drawn column of a slot, from its drawn neighbours (central where
+// both are): for the normal across columns.
+vec2 rfAlongShore( int c, int slot ) {
+  vec4 here = texelFetch( waterRoller, ivec2( 2 * c, slot ), 0 );
+  vec4 left = c > 0 ? texelFetch( waterRoller, ivec2( 2 * c - 2, slot ), 0 ) : vec4( 0.0 );
+  vec4 right = c + 1 < int( waterRollerColumns ) ? texelFetch( waterRoller, ivec2( 2 * c + 2, slot ), 0 ) : vec4( 0.0 );
+  bool l = left.z > 0.0;
+  bool r = right.z > 0.0;
+  if ( l && r ) return ( right.xy - left.xy ) / ( 2.0 * waterRollerColumnWidth );
+  if ( r ) return ( right.xy - here.xy ) / waterRollerColumnWidth;
+  if ( l ) return ( here.xy - left.xy ) / waterRollerColumnWidth;
+  return vec2( 0.0 );
+}
 float rfSmoothSlope( float e0, float e1, float x ) {
   float t = clamp( ( x - e0 ) / ( e1 - e0 ), 0.0, 1.0 );
   return 6.0 * t * ( 1.0 - t ) / ( e1 - e0 );
@@ -347,9 +355,43 @@ float rfSmoothSlope( float e0, float e1, float x ) {
 const frontBeginNormal = /* glsl */ `
 float rfTx = position.x;
 float rfK = position.y;
+// Its slot and columns i and i + 1 in the drawn table (the water's roller texture, as the band reads it) and the look
+// beside it (since, H): an empty end gives no scale and the live end's geometry. A patch with neither end drawn draws
+// nothing: its points all at one place, so its triangles have no area.
+int rfColumn = int( rfPatch.x );
+int rfSlot = int( rfPatch.y );
+vec4 rfA0 = texelFetch( waterRoller, ivec2( 2 * rfColumn, rfSlot ), 0 );
+vec4 rfA1 = texelFetch( waterRoller, ivec2( 2 * rfColumn + 2, rfSlot ), 0 );
+bool rfLive0 = rfA0.z > 0.0;
+bool rfLive1 = rfA1.z > 0.0;
+vec3 objectNormal = vec3( 0.0, 1.0, 0.0 );
+vec3 rfPosition = vec3( 0.0, -1.0e4, 0.0 );
+vRfWorld = rfPosition;
+vRfAlong = vec3( 0.0, 0.0, 1.0 );
+vRfSection = vec4( 0.0 );
+vRfShade = vec4( 0.0, 0.0, 1.0, 0.0 );
+if ( rfLive0 || rfLive1 ) {
+vec4 rfB0 = texelFetch( waterRoller, ivec2( 2 * rfColumn + 1, rfSlot ), 0 );
+vec4 rfB1 = texelFetch( waterRoller, ivec2( 2 * rfColumn + 3, rfSlot ), 0 );
+vec2 rfL0 = texelFetch( rfLook, ivec2( rfColumn, rfSlot ), 0 ).rg;
+vec2 rfL1 = texelFetch( rfLook, ivec2( rfColumn + 1, rfSlot ), 0 ).rg;
+vec2 rfD0 = rfAlongShore( rfLive0 ? rfColumn : rfColumn + 1, rfSlot );
+vec2 rfD1 = rfAlongShore( rfLive1 ? rfColumn + 1 : rfColumn, rfSlot );
+if ( !rfLive0 ) {
+  rfA0 = vec4( rfA1.xy, 0.0, rfA1.w );
+  rfB0 = rfB1;
+  rfL0 = rfL1;
+}
+if ( !rfLive1 ) {
+  rfA1 = vec4( rfA0.xy, 0.0, rfA0.w );
+  rfB1 = rfB0;
+  rfL1 = rfL0;
+}
+vec4 rfC = vec4( rfL0.x, rfL1.x, rfL0.y, rfL1.y );
+vec4 rfD = vec4( rfD0.x, rfD1.x, rfD0.y, rfD1.y );
 vec4 rfA = mix( rfA0, rfA1, rfTx );
 vec4 rfB = mix( rfB0, rfB1, rfTx );
-float rfX = rfE.x + rfTx * rfColumnWidth;
+float rfX = waterRollerColumn0 + ( float( rfColumn ) + rfTx ) * waterRollerColumnWidth;
 float rfCrest = rfA.x;
 float rfLen = max( rfA.y, 0.05 );
 float rfG = rfA.z;
@@ -395,7 +437,6 @@ float rfLumpX = ( rfLiftX - rfLift ) / rfStep;
 float rfLumpS = ( rfLiftS - rfLift ) / rfStep;
 // Its point and the slopes along the section (A, Bz: dy/ds, dz/ds) and along shore (B, C: dy/dx, dz/dx).
 float rfDzDx = rfDCrest + rfXi * rfDLen;
-vec3 rfPosition;
 float rfSlopeA;
 float rfSlopeBz;
 float rfSlopeB;
@@ -423,7 +464,7 @@ if ( rfNose ) {
   rfSlopeC = rfDzDx;
   rfSlopeB = rfWater.y + rfWater.z * rfDzDx + rfLumpX;
 }
-vec3 objectNormal = normalize( vec3( rfSlopeA * rfSlopeC - rfSlopeBz * rfSlopeB, rfSlopeBz, -rfSlopeA ) );
+objectNormal = normalize( vec3( rfSlopeA * rfSlopeC - rfSlopeBz * rfSlopeB, rfSlopeBz, -rfSlopeA ) );
 vRfWorld = rfPosition;
 vRfAlong = normalize( vec3( 0.0, rfSlopeA, rfSlopeBz ) );
 // The fine clumps' place on the section (along shore, along the arc) and their pace along it: creeping down the face,
@@ -435,6 +476,7 @@ vRfSection = vec4( rfX, rfS, ( ${f(F.creep)} + ${f(F.tumble - F.creep)} * rfWeig
 float rfAlpha = smoothstep( 0.0, 0.5, rfG ) * ( rfNose ? 1.0 : smoothstep( -${f(F.rear)}, ${f(F.rearFade)}, rfXi ) );
 vRfShade = vec4( rfAlpha, rfLift / max( 1e-3, min( rfSigma, rfCap ) ), 1.0 + ${f(F.fresh)} * rfTune.w * exp( -max( 0.0, rfSince ) / ${f(F.freshDecay)} ),
   rfNear );
+}
 `;
 
 const frontFragmentPars = /* glsl */ `
@@ -523,12 +565,16 @@ export const rollerFrontTune = { lumps: { value: new Vector4(1, 1, 1, 1) }, shad
  */
 export class RollerFrontMesh {
   readonly mesh: Mesh<InstancedBufferGeometry, MeshStandardMaterial>;
-  private patches: FrontPatches = createFrontPatches(1);
   private readonly geometry: InstancedBufferGeometry;
-  private attributes: Partial<Record<InstanceName, InstancedBufferAttribute>> = {};
+  /** The look beside the drawn table (since, H), one texel per slot and column, uploaded with each new table. */
+  private lookData = new Float32Array(2);
+  private lookTexture = new DataTexture(this.lookData, 1, 1, RGFormat, FloatType);
+  private readonly look = { value: this.lookTexture };
+  private columns = 0;
+  /** Drawn patches (either end drawn) at the last update. */
+  private live = 0;
   /** World metres per pixel per metre of depth, for the view being drawn (the curl's `curlPixelScale`). */
   readonly pixelScale = { value: 0 };
-  readonly columnWidth = { value: 1 };
 
   constructor(uniforms: Record<string, { value: unknown }>) {
     const geometry = new InstancedBufferGeometry();
@@ -556,14 +602,13 @@ export class RollerFrontMesh {
     geometry.setIndex(new BufferAttribute(index, 1));
     geometry.instanceCount = 0;
     this.geometry = geometry;
-    this.allocate(64);
     const material = new MeshStandardMaterial({
       color: '#ffffff', roughness: ROLLER_FRONT.roughness, metalness: 0, side: FrontSide, transparent: true,
       // It lies a few centimetres over the water: drawn over it where the two surfaces' chords meet.
       polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4,
     });
     material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, uniforms, { rfPixelScale: this.pixelScale, rfColumnWidth: this.columnWidth, rfTune: rollerFrontTune.lumps,
+      Object.assign(shader.uniforms, uniforms, { rfPixelScale: this.pixelScale, rfLook: this.look, rfTune: rollerFrontTune.lumps,
         rfTune2: rollerFrontTune.shade });
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${frontVertexPars}`)
@@ -599,45 +644,67 @@ export class RollerFrontMesh {
     this.pixelScale.value = perspective ? curlPixelScale(camera.projectionMatrix.elements[5], heightPixels) : 0;
   }
 
-  /** Room for `capacity` patches in the instance attributes. */
-  private allocate(capacity: number): void {
-    this.patches = createFrontPatches(capacity);
-    for (const name of Object.keys(INSTANCE) as InstanceName[]) {
-      const attribute = new InstancedBufferAttribute(this.patches[name], INSTANCE[name]).setUsage(DynamicDrawUsage);
-      this.attributes[name] = attribute;
-      this.geometry.setAttribute(`rf${name.toUpperCase()}`, attribute);
+  /**
+   * A patch for every slot and column pair, laid out once for the table's columns (static: nothing is uploaded per
+   * table but the look's texture; a buffer rewritten each snapshot stalls ANGLE's Metal on a frame still in flight).
+   */
+  private layOut(columns: number): void {
+    this.columns = columns;
+    const pairs = Math.max(0, columns - 1);
+    const patch = new Float32Array(2 * ROLLER_SLOTS * pairs);
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      for (let column = 0; column < pairs; column += 1) {
+        const k = slot * pairs + column;
+        patch[2 * k] = column;
+        patch[2 * k + 1] = slot;
+      }
     }
+    this.geometry.setAttribute('rfPatch', new InstancedBufferAttribute(patch, 2));
+    this.geometry.instanceCount = ROLLER_SLOTS * pairs;
+    this.lookData = new Float32Array(2 * ROLLER_SLOTS * Math.max(1, columns));
+    this.lookTexture.dispose();
+    this.lookTexture = new DataTexture(this.lookData, Math.max(1, columns), ROLLER_SLOTS, RGFormat, FloatType);
+    this.look.value = this.lookTexture;
   }
 
-  /** The patches over the drawn table and its look (`buildFrontPatches`); none, or `hide`, hides it. */
-  update(table: ArrayLike<number>, look: ArrayLike<number>, columns: number, column0: number, width: number): void {
-    const capacity = ROLLER_SLOTS * Math.max(1, columns - 1);
-    if (this.patches.e.length < INSTANCE.e * capacity) this.allocate(capacity);
-    const count = look.length >= ROLLER_SLOTS * columns * BAND_LOOK_STRIDE ? buildFrontPatches(table, look, columns, column0, width, this.patches) : 0;
-    this.columnWidth.value = width;
-    for (const name of Object.keys(INSTANCE) as InstanceName[]) {
-      const attribute = this.attributes[name]!;
-      attribute.clearUpdateRanges();
-      attribute.addUpdateRange(0, INSTANCE[name] * count);
-      attribute.needsUpdate = true;
+  /**
+   * The drawn table's look for the patches (the water's own roller texture carries the table itself, `waterRoller`):
+   * `look` per slot and column (`BAND_LOOK_FIELD`), `table` only to know whether any band is drawn. None hides it.
+   */
+  update(table: ArrayLike<number>, look: ArrayLike<number>, columns: number): void {
+    if (columns !== this.columns) this.layOut(columns);
+    const entries = ROLLER_SLOTS * columns;
+    this.live = 0;
+    if (columns >= 2 && look.length >= entries * BAND_LOOK_STRIDE && table.length >= entries * ROLLER_STRIDE) {
+      for (let entry = 0; entry < entries; entry += 1) if (table[entry * ROLLER_STRIDE + ROLLER_FIELD.scale] > 0) this.live += 1;
+      for (let entry = 0; entry < entries; entry += 1) {
+        this.lookData[2 * entry] = look[entry * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.since];
+        this.lookData[2 * entry + 1] = look[entry * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height];
+      }
+      this.lookTexture.needsUpdate = true;
     }
-    this.geometry.instanceCount = count;
-    this.mesh.visible = count > 0;
+    this.mesh.visible = this.live > 0;
   }
 
-  /** How many patches it draws, and their vertices. */
-  get drawn(): { patches: number; vertices: number } {
-    return { patches: this.geometry.instanceCount, vertices: this.geometry.instanceCount * PATCH_VERTICES };
+  /** The table's drawn entries at the last update, and the vertices its patches run (every pair's, empty or not). */
+  get drawn(): { entries: number; patches: number; vertices: number } {
+    const patches = this.mesh.visible ? this.geometry.instanceCount : 0;
+    return { entries: this.mesh.visible ? this.live : 0, patches, vertices: patches * PATCH_VERTICES };
+  }
+
+  /** Whether any band was drawn at the last update. */
+  get hasBand(): boolean {
+    return this.live > 0;
   }
 
   hide(): void {
-    this.geometry.instanceCount = 0;
     this.mesh.visible = false;
   }
 
   dispose(): void {
     this.mesh.geometry.dispose();
     this.mesh.material.dispose();
+    this.lookTexture.dispose();
   }
 }
 
