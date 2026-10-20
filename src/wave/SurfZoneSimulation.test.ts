@@ -6,7 +6,7 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  CANYON_RIDE_LINEUP, CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
@@ -865,6 +865,45 @@ describe('SurfZoneSimulation', () => {
     for (const [significantHeight, ninetiethDepth] of [[0.9, 2.26], [1.4, 2.65], [2.4, 4.07]]) {
       expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.15);
     }
+  });
+
+  it('starts the rider 11 m seaward of the take-off, but at the Canyon\'s Big at its take-off, seaward of its median break', () => {
+    // Every other spot, at every size, as before.
+    expect(RIDE_LINEUP_OFFSET).toBe(11);
+    for (const spot of ['beach', 'point', 'reef', 'padang', 'pool'] as const) {
+      for (const significantHeight of [0.6, 0.9, 1.4, 2.4, 3.8]) expect(rideLineupOffset({ spot, significantHeight })).toBe(RIDE_LINEUP_OFFSET);
+    }
+    // The Canyon's Practice (1.4 m at the edge), Small and Medium keep today's start (the owner, 2026-10-12: "fine for now").
+    for (const significantHeight of [0.9, 1.4]) expect(rideLineupOffset({ spot: 'canyon', significantHeight })).toBe(RIDE_LINEUP_OFFSET);
+    // Linear between the sizes measured, held beyond them; never inside the take-off.
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 1.9 })).toBeCloseTo((RIDE_LINEUP_OFFSET + CANYON_RIDE_LINEUP[2].offset) / 2, 9);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 3 })).toBe(CANYON_RIDE_LINEUP[2].offset);
+    for (const { offset } of CANYON_RIDE_LINEUP) expect(offset).toBeGreaterThanOrEqual(0);
+    const canyon = createSpot('canyon', 1);
+    const sea = (significantHeight: number, peakPeriod: number): SurfZoneConfig => ({
+      ...small, spot: 'canyon', alongShore: 160, significantHeight, peakPeriod, directionDegrees: 0,
+    });
+    const big = sea(2.4, 14);
+    const medium = sea(1.4, 11);
+    const takeOff = takeOffPoint(big);
+    const start = takeOff.z - rideLineupOffset(big);
+    // Further in than Medium's rule (11 m out) would put it: where Big's faces become catchable.
+    expect(start).toBeGreaterThan(takeOff.z - rideLineupOffset(medium));
+    expect(start).toBeLessThanOrEqual(takeOff.z);
+    // And seaward of where Big's waves break: their median first onset in the take-off's column (x −30 ± 4 m) was
+    // 2.53 m deep, 41 m inside the take-off (big-start, 2026-10-22: 23 waves over 2 seeds × 12 periods), on the old
+    // median line 0.96 + 0.65 Hs.
+    const tank = tankLayout(big);
+    const depth = (z: number) => tankDepth(canyon, tank.edgeDepth, takeOff.x, z, tank);
+    expect(depth(start)).toBeGreaterThan(0.96 + 0.65 * big.significantHeight);
+    expect(depth(start)).toBeCloseTo(canyonTakeOffDepth(big.significantHeight), 1);
+  });
+
+  it('starts the rider where `startOut` says (the `?startOut=<m>` dev switch), at any spot and size', () => {
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4, startOut: 11 })).toBe(11);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 1.4, startOut: 0 })).toBe(0);
+    expect(rideLineupOffset({ spot: 'beach', significantHeight: 1.4, startOut: 20 })).toBe(20);
+    expect(rideLineupOffset({ spot: 'beach', significantHeight: 1.4, startOut: Number.NaN })).toBe(RIDE_LINEUP_OFFSET);
   });
 
   it('takes off straight out from the window centre at the other spots', () => {

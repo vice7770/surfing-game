@@ -26,7 +26,7 @@ import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Se
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
 import type { OnlineController } from './net/OnlineController';
 import { ONLINE_QUEUE } from './net/OnlinePacer';
@@ -43,7 +43,7 @@ import { setGlitterForGraphics } from './scene/water/glitter';
 import { setFoamStreaksForGraphics } from './scene/water/foamFreshness';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
-import type { SurfZoneConfig } from './wave/SurfZoneSimulation';
+import { rideLineupOffset, type SurfZoneConfig } from './wave/SurfZoneSimulation';
 import type { RideFrame } from './game/RideTracker';
 import type { SoundFrame } from './audio/soundMapping';
 import type { ListenerPose } from './audio/AudioEngine';
@@ -492,8 +492,9 @@ class SurfGame {
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
-    // 15–30 m outside the break line: 5 m further out since the owner's playtest of 2026-10-11, as the solo start.
-    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 15 + Math.random() * 15 };
+    // 4–19 m beyond the solo start (`rideLineupOffset`: 15–30 m outside the break line, nearer at the Canyon's Big).
+    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...startOutSwitch() });
+    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: start + 4 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
     // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).

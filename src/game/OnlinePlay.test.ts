@@ -5,9 +5,12 @@ import { POSE_HZ } from '../net/protocol';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, type RideRequest } from '../wave/SurfZoneRunner';
 import { OnlinePlay, RESPAWN_SECONDS, type OnlineLink, type OnlineSurf } from './OnlinePlay';
 import type { SurfZoneHost } from './SurfZoneHost';
+import { RIDE_LINEUP_OFFSET, rideLineupOffset, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SPAWN_REACH } from '../net/spawn';
 
 class FakeHost {
   outstandingSteps = 0;
+  config: Pick<SurfZoneConfig, 'spot' | 'significantHeight'> = { spot: 'beach', significantHeight: 1.4 };
   readonly init = { focus: { x: 0, z: -100 }, windowXMin: -80, grid: { xMin: -80, zMin: -330, spacing: 1, nx: 161, nz: 361 }, dx: 1, bed: new Float32Array() };
   readonly snapshot = {
     board: Float64Array.of(2, 0.1, -110, 0, 0, 0, 1, 1),
@@ -106,6 +109,19 @@ describe('OnlinePlay', () => {
     expect(link.sent.length).toBeGreaterThanOrEqual(POSE_HZ - 1);
     expect(link.sent.length).toBeLessThanOrEqual(POSE_HZ + 1);
     expect(link.sent[0]).toMatchObject({ x: 2, z: -110, paddling: true, step: Math.round(100 / SURF_ZONE_STEP) });
+  });
+
+  it('spawns from the ride\'s own start out: 11 m outside the break line, nearer at the Canyon\'s Big', () => {
+    for (const config of [{ spot: 'beach', significantHeight: 1.4 }, { spot: 'canyon', significantHeight: 2.4 }] as const) {
+      const { link, surf, play } = setup();
+      surf.fake.config = config;
+      link.seaTime = 100 + 2 * SURF_ZONE_STEP;
+      play.step(surf, frame, paddle);
+      const out = -100 - surf.retries[0]!.z;
+      expect(out).toBeGreaterThanOrEqual(rideLineupOffset(config) - 1e-9);
+      expect(out).toBeLessThanOrEqual(rideLineupOffset(config) + SPAWN_REACH + 1e-9);
+    }
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4 })).toBeLessThan(RIDE_LINEUP_OFFSET);
   });
 
   it('passes the others\' pushes on to the water', () => {
