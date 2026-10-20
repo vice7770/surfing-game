@@ -525,8 +525,9 @@ export class SpillingCurl implements SpillingDrawnLook {
    * Clears the drawn lace on each wave's unbroken shoulder ahead of its front (`SPILLING_CURL.shoulder*`), in the drawn
    * foam's own fields before their step, and holds back the drawn whitewater there (`drawn`: the solver's weak breaking
    * ahead of a front that no onset has joined to a wave yet, which no band holds), and its drawn air (`shoulderAir`, read
-   * by `airShare`): never felt (the foam is drawn only, and the bores the air reads are not its values). Behind each front nothing changes, so the broken part's whitewater and
-   * its lace trail are as they were; nor where another wave breaks further along the crest, which ends the shoulder.
+   * by `airShare`): never felt (the foam is drawn only, and the bores the air reads are not its values). Behind each
+   * front nothing changes, so the broken part's whitewater and its lace trail are as they were; nor where another wave
+   * breaks further along the crest, which ends the shoulder.
    */
   clearShoulder(foam: { readonly dense: Float64Array; readonly residual: Float64Array }, drawn: Float64Array | undefined,
     front: SpillingFront, dt: number): void {
