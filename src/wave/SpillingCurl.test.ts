@@ -262,6 +262,9 @@ describe('the spilling lip\'s band', () => {
       curl.drawBand(drawn, front, roller, time);
       const reached = front.waves[0].reached[20];
       if (!(reached === reached)) continue;
+      // Its age kept for the band's fray (where the lip lands, round 5); none in a column with no band.
+      if (drawn[o + ROLLER_FIELD.scale] > 0) expect(curl.bandAge[20]).toBeCloseTo(time - reached, 9);
+      expect(curl.bandAge[21]).toBeNaN();
       const since = time - reached - curl.impact[20];
       if (since < -dt) {
         expect(drawn[o + ROLLER_FIELD.scale]).toBe(0);
