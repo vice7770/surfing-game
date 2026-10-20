@@ -1,6 +1,7 @@
 import { Euler, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
+import { WATER_READING } from '../scene/rig/stageBlend';
 import {
   ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, bandRms, boardMotion, breathing, crawlRate, cueAgainst, drawnAlarm, remoteDrawer, drawnLag, filmBody, footSlide, handSwing, headSteadiness,
   kneeGive, leanFollow, motionReading, paddleStroke, posed, repeatedFrames, shake, standingStretch, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer,
@@ -25,11 +26,15 @@ describe('the body film', () => {
   // docs/research/body-fluidity.md); blended, no joint or bone spikes in a frame above its neighbours by more than
   // a brisk limb's pace within 0.3 s of it (the lie-down's drawn foot also hitched 5 cm mid-way: a point's jump).
   // The physics' own transitions stay as fast as they are.
-  const blendsOut = (name: string) => {
+  // The animation-realism plan's phase 3: the rig itself carries the pop-up's switches (the press pushed up by the arms
+  // handing over to the physics' trunk, the feet swung onto the deck, the feet, toes and elbows turning from how they
+  // lay): the raw rig no longer pops there at 60 Hz (9 rad/s at most, against 108–131 at a fall and a lie-down), so the
+  // pop-ups are checked blended only.
+  const blendsOut = (name: string, rawPops = !name.startsWith('pop-up')) => {
     for (const rate of [60, 120]) {
       const raw = switchSpikes(filmBody(scenario(name), { rate }));
       const spikes = switchSpikes(filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() }));
-      expect(Math.max(...raw.map((spike) => spike.rotationSpeed))).toBeGreaterThan(20);
+      if (rawPops) expect(Math.max(...raw.map((spike) => spike.rotationSpeed))).toBeGreaterThan(20);
       expect(spikes.length).toBeGreaterThan(0);
       for (const spike of spikes) {
         expect(spike.rotationSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
@@ -37,7 +42,7 @@ describe('the body film', () => {
       }
     }
   };
-  it.each(['pop-up and landing', 'pop-up crouched', 'a fall', 'pumping into a fall'])('blends the switches of %s out', blendsOut);
+  it.each(['pop-up and landing', 'pop-up crouched', 'a fall', 'pumping into a fall'])('blends the switches of %s out', (name) => blendsOut(name));
   // The movement-flow spec's Compress pulls the body into its lean (COMPRESS_PULL) and drops at the crouch's pace: taken
   // mid-turn at 10 m/s, the inside hand's jump to the water was bigger than the smoothing blends (4.4, then 3.1–4.1, for
   // 2). Within a real bottom turn's pull (TURN_PULL_LIMIT, the owner's decision of 2026-10-07) it blends: 1.55–1.63.
@@ -284,12 +289,17 @@ describe('the head and the knees follow the physics (step 4)', () => {
 });
 
 describe('the drawn chest breathes (step 4)', () => {
+  // The lineup sit (the animation-realism plan's phase 3) would sit the glider up once still for 2 s: its sitting up is
+  // not breathing, so it is held off here.
   it('rises and falls about the hips gliding after 20 s of paddling, and not at all with the breathing off', () => {
     const glide = (shot: BodyFilm): BodyFilm => ({ rate: shot.rate, frames: shot.frames.filter((frame) => frame.time > 21) });
+    const sitAfter = WATER_READING.sitAfter;
+    WATER_READING.sitAfter = Number.POSITIVE_INFINITY;
     const breathes = breathing(glide(filmBody(scenario('paddle then glide'), { rate: 30, drawer: trackDrawer, pose: posed() })));
     RIG_DETAIL.breath.share = 0;
     const still = breathing(glide(filmBody(scenario('paddle then glide'), { rate: 30, drawer: trackDrawer, pose: posed() })));
     RIG_DETAIL.breath.share = 1;
+    WATER_READING.sitAfter = sitAfter;
     expect(breathes).toBeGreaterThan(0.003);
     expect(still).toBeLessThan(0.0005);
   }, 240_000);

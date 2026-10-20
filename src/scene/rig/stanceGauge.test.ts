@@ -134,7 +134,10 @@ describe('the stance gauge', () => {
   it('stays finite at a straight joint and a hanging arm', () => {
     const { measure, turn } = standing('regular');
     turn(BONES.arm.left, new Vector3(0, 0, 1), -90);
-    for (const value of Object.values(measure())) expect(Number.isFinite(value)).toBe(true);
+    const angles = measure();
+    // The stroke's entry has none with both hands above the water (the animation-realism plan's phase 3).
+    expect(angles.handAhead).toBeNaN();
+    for (const [key, value] of Object.entries(angles)) if (key !== 'handAhead') expect(Number.isFinite(value), key).toBe(true);
   });
 
   it('reads a surfer’s skeleton at rest as straight legs facing the toes', () => {

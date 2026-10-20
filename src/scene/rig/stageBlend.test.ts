@@ -66,10 +66,10 @@ describe('the key poses (the animation-realism plan, §3.1)', () => {
     expect(front.chest).toBeLessThanOrEqual(40);
   });
 
-  it('holds the feet to the owner\'s call: about 60° front and 80° back riding (§10.3)', () => {
-    for (const pose of Object.values(STAGE_POSES)) {
-      expect(pose.foot.front).toBe(60);
-      expect(pose.foot.rear).toBe(80);
+  it('holds the feet to the owner\'s call: about 60° front and 80° back riding, 45° landing (§10.3)', () => {
+    for (const [name, pose] of Object.entries(STAGE_POSES)) {
+      expect(pose.foot.front, name).toBe(name === 'landing' ? 45 : 60);
+      expect(pose.foot.rear, name).toBe(name === 'landing' ? 45 : 80);
     }
   });
 });
