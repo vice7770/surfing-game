@@ -22,7 +22,8 @@
  *
  * Dev: `?foamLook=off` compiles the Rich foam as before (its program is today's, byte for byte), and draws a spilling
  * spot's white with square edges (`drawnEdges`); `?foamLook=lace`, `dense` or `light` keeps one part;
- * `window.waterFoamLook(on)` or `waterFoamLook({ on, lace, dense, light })` switches the shading in a page.
+ * `window.waterFoamLook(on)` or `waterFoamLook({ on, lace, dense, light, warmth })` switches the shading in a page
+ * (`warmth: 0` draws the band's light as on 2026-10-21, before the owner's warmer call).
  */
 import { DEV_TOOLS, devParam } from '../../devTools';
 import { smoothstep } from '../../wave/Bathymetry';
@@ -129,14 +130,23 @@ export function thinGlow(foam: number): number {
 export const BAND_THROUGH = [0, 0.3] as const;
 
 /**
+ * The share of the wrap the cap leaves in everywhere (the owner, 2026-10-22: front-lit sunset foam "halfway warmer", a
+ * soft peach-white between the old pink and the capped lavender). The light scattered through the band from its sunlit
+ * parts, as a constant share of what the full wrap gave: it lifts a face's N·L by `share`·(1 − N·L)/2 and keeps
+ * (1 − share/2) of its relief's shading. Under a high sun the cap leaves the wrap alone, so there it changes nothing.
+ */
+export const BAND_WRAP_KEPT = 0.55;
+
+/**
  * CPU twin of the roller band's wrapped sun with its cap: the wrap (N·L + w)/(1 + w) held to no more than the band's own
  * N·L or level water's (the sun's height, L_y), except where the sun shines through: near the crest (`fresh` 1,
- * `waterRollerFresh`) of a face turned from it (`BAND_THROUGH`); less the N·L three's light already gives.
+ * `waterRollerFresh`) of a face turned from it (`BAND_THROUGH`), and `kept` of it everywhere (`BAND_WRAP_KEPT`); less
+ * the N·L three's light already gives.
  */
-export function bandVolumeLight(nDotL: number, sunHeight: number, fresh = 0, wrap = 1): number {
+export function bandVolumeLight(nDotL: number, sunHeight: number, fresh = 0, kept = BAND_WRAP_KEPT, wrap = 1): number {
   const wrapped = Math.max(0, (nDotL + wrap) / (1 + wrap));
   const capped = Math.min(wrapped, Math.max(Math.max(0, nDotL), sunHeight));
-  const through = fresh * fresh * (1 - smoothstep(BAND_THROUGH[0], BAND_THROUGH[1], nDotL));
+  const through = Math.max(kept, fresh * fresh * (1 - smoothstep(BAND_THROUGH[0], BAND_THROUGH[1], nDotL)));
   return capped + (wrapped - capped) * through - Math.max(0, nDotL);
 }
 
@@ -147,25 +157,26 @@ const WRAP = 'max( 0.0, ( waterBandSun + 1.0 ) / 2.0 )';
  * The Rich fragment with the light through foam kept to what the foam lets through (see the header): the glow on thin
  * fresh foam only, its freshness the air's (not the dense foam's churn), and the roller band's wrap capped.
  */
-export function withFoamLight(fragment: string): string {
+export function withFoamLight(fragment: string, kept = foamLookMode.warmth): string {
   if (fragment.split(GLOW).length !== 2) throw new Error('The foam light needs the fresh foam\'s glow once');
   let out = fragment.replace(GLOW, `totalEmissiveRadiance += 0.18 * waterFreshness( vWaterAir ) * waterFoamPattern
     * ( 1.0 - ${f(1 - GLOW_DENSE)} * smoothstep( ${f(GLOW_THICK[0])}, ${f(GLOW_THICK[1])}, vWaterFoam ) ) * ( 1.0 - waterChurn.x ) * pow(`);
   if (out.includes(BAND_VOLUME)) {
     if (!BAND_VOLUME.includes(WRAP)) throw new Error('The foam light needs the band\'s wrap');
     out = out.replace(BAND_VOLUME, BAND_VOLUME.replace(WRAP,
-      `mix( min( ${WRAP}, max( max( 0.0, waterBandSun ), waterSunDirection.y ) ), ${WRAP}, waterRollerFresh * waterRollerFresh
-    * ( 1.0 - smoothstep( ${f(BAND_THROUGH[0])}, ${f(BAND_THROUGH[1])}, waterBandSun ) ) )`));
+      `mix( min( ${WRAP}, max( max( 0.0, waterBandSun ), waterSunDirection.y ) ), ${WRAP}, max( ${f(kept)}, waterRollerFresh * waterRollerFresh
+    * ( 1.0 - smoothstep( ${f(BAND_THROUGH[0])}, ${f(BAND_THROUGH[1])}, waterBandSun ) ) ) )`));
   }
   return out;
 }
 
-/** The foam look's parts (dev): all on by default. */
+/** The foam look's parts (dev): all on by default; `warmth` is the band's kept wrap (`BAND_WRAP_KEPT`), 0 as on 2026-10-21. */
 export interface FoamLookMode {
   on: boolean;
   lace: boolean;
   dense: boolean;
   light: boolean;
+  warmth: number;
 }
 const asked = devParam('foamLook');
 const only = asked === 'lace' || asked === 'dense' || asked === 'light' ? asked : undefined;
@@ -174,6 +185,7 @@ export const foamLookMode: FoamLookMode = {
   lace: !only || only === 'lace',
   dense: !only || only === 'dense',
   light: !only || only === 'light',
+  warmth: BAND_WRAP_KEPT,
 };
 const listeners = new Set<() => void>();
 
@@ -196,8 +208,9 @@ export const lightLookOn = (): boolean => foamLookMode.on && foamLookMode.light;
 
 /** The Rich programs' cache-key part: none with every part on (the default). */
 export function foamLookProgramKey(): string {
-  if (laceLookOn() && denseLookOn() && lightLookOn()) return '';
-  return `-foam-look${laceLookOn() ? '-lace' : ''}${denseLookOn() ? '-dense' : ''}${lightLookOn() ? '-light' : ''}`;
+  const warmth = lightLookOn() && foamLookMode.warmth !== BAND_WRAP_KEPT ? `-warmth-${foamLookMode.warmth}` : '';
+  if (laceLookOn() && denseLookOn() && lightLookOn()) return warmth;
+  return `-foam-look${laceLookOn() ? '-lace' : ''}${denseLookOn() ? '-dense' : ''}${lightLookOn() ? '-light' : ''}${warmth}`;
 }
 
 if (DEV_TOOLS && typeof window !== 'undefined') Object.assign(window, { waterFoamLook: setFoamLook });
