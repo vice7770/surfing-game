@@ -337,7 +337,7 @@ const FILM_RECIPES: Record<string, StanceRecipe> = {
   },
 };
 
-interface MotionFrame { time: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
+interface MotionFrame { time: number; clock: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
 
 /**
  * The motion view: each recipe drawn as the game draws it (every step through the
@@ -372,7 +372,7 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
       last = start + step.clock - first;
       const nose = new Vector3(0, 0, 1).applyQuaternion(step.boardQuaternion);
       frames.push({
-        time: last, label: id, yaw: Math.atan2(nose.x, nose.z),
+        time: last, clock: step.clock, label: id, yaw: Math.atan2(nose.x, nose.z),
         board: { position: step.boardPosition.clone(), quaternion: step.boardQuaternion.clone() },
         bones: bones.map((bone) => ({ position: bone.position.clone(), quaternion: bone.quaternion.clone() })),
       });
@@ -422,8 +422,8 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
   status.textContent = `${skyName} · motion · ${SURFERS[STANCE_SURFER]} ${STANCE_SIDE} · ${segments.join(', ')}`;
   canvas.style.display = 'none';
   canvas.after(film);
-  // `&strip=t,t,…`: those moments as one sheet of stills, captioned by `&captions=a|b|…` (the video check), posted to
-  // the receiver with `&save` (`&name=`, `&receiver=`).
+  // `&strip=t,t,…`: those moments (the recipe's own clock, s) as one sheet of stills, captioned by `&captions=a|b|…`
+  // (the video check), posted to the receiver with `&save` (`&name=`, `&receiver=`).
   const strip = params.get('strip');
   if (strip !== null) {
     await stillStrip(strip.split(',').map(Number), frames, show, film);
@@ -505,7 +505,7 @@ async function stillStrip(times: number[], frames: MotionFrame[], show: (index: 
     return lines;
   };
   times.forEach((time, i) => {
-    const index = Math.max(0, frames.findIndex((frame) => frame.time >= time));
+    const index = Math.max(0, frames.findIndex((frame) => frame.clock >= time - 1e-6));
     show(index);
     const x = (i % perRow) * tile.width;
     const y = 40 + Math.floor(i / perRow) * (tile.height + tile.text);

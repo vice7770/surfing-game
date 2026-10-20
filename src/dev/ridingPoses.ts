@@ -80,22 +80,25 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'extension-backside': standing([
     { at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0, trim: 0 },
   ], 1.4),
-  'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1),
-  'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1),
-  'snap-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 0.9),
-  'snap-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 0.9),
-  'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.2),
-  'cutback-backside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: 1, trim: -0.7 }], 1.2),
+  // The redirects read once the drawn body has come round (the animation-realism plan's phase 2: the head, then the
+  // chest, then the hips, each behind the last; until then 1.0, 0.9 and 1.2 s, mid-way through it).
+  'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1.5),
+  'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1.5),
+  'snap-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 1.4),
+  'snap-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 1.4),
+  'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.5),
+  'cutback-backside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: 1, trim: -0.7 }], 1.5),
   'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7 }),
   'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7 }),
   // Crouched to the depth it was recorded at: Shift's 0.6 before the movement-flow spec's ladder made the crouch 0.65 of the depth.
   'hand-in-face': standing([{ at: 0, crouch: 0.92 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
   // The animation-realism plan's tube stances (§5.14): the full crouch under a test curl folds into the deep tuck,
   // past the pumping crouch's depth (the plan's §6); frontside with the hand in the face (E: the front palm on it).
-  'tube-frontside': standing([{ at: 0, crouch: 1 }, { at: 0.4, hand: true }], 1.2, { water: 'across', speed: 6, covered: true }),
-  'tube-backside': standing([{ at: 0, crouch: 1 }], 1.2, { water: 'across-back', speed: 6, covered: true }),
+  // Read once the tuck is past Compress's depth (about 1.2 s in) and the stage has come in.
+  'tube-frontside': standing([{ at: 0, crouch: 1 }, { at: 0.4, hand: true }], 1.6, { water: 'across', speed: 6, covered: true }),
+  'tube-backside': standing([{ at: 0, crouch: 1 }], 1.5, { water: 'across-back', speed: 6, covered: true }),
   // The kick-out over the back (§5.15, §6): climbing straight up a 15° face with the weight fully back (S), slowing.
-  'kick-out': standing([{ at: 0, trim: -1 }], 0.9, { water: 'climb', speed: 6 }),
+  'kick-out': standing([{ at: 0, trim: -1 }], 1.1, { water: 'climb', speed: 6 }),
   // Lying on a board towed at 6 m/s, as the wave would carry it (the body film's pop-up).
   'pop-up': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.3 },
   // Read at the landing's end (it lasts 0.5 s): the drawn feet are still spreading to the stance until then.

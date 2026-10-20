@@ -1,6 +1,6 @@
 import { Quaternion, Vector3, type Bone, type Object3D } from 'three';
-import { buildBoardShape } from '../../physics/boardShape';
-import { deckHeight, type StanceName } from '../../physics/riderPosture';
+import type { StanceName } from '../../physics/riderPosture';
+import { BOARD_CENTRE, deckAt, railHalfWidth } from './boardDeck';
 import { BONES, type Side } from './humanoidBones';
 import { POINT, type RiderVisualState } from './riderVisualState';
 
@@ -100,18 +100,6 @@ export interface BoardPose {
 }
 
 const SIDES: readonly Side[] = ['left', 'right'];
-/** The board the gauge reads the deck and the rails from: the game's shape (its frame about its centre of mass). */
-const BOARD = buildBoardShape();
-/** Half the board's width `z` m along it from mid-length (the shape's frame). */
-export function railHalfWidth(z: number): number {
-  return BOARD.curves.width(Math.min(1, Math.max(0, z / BOARD.length + 0.5))) / 2;
-}
-/** The deck's height `z` m along the board (the shape's frame). */
-export function deckAt(z: number): number {
-  return deckHeight(BOARD, z);
-}
-/** The board's centre of mass in its own frame: a board pose's position is there. */
-export const BOARD_CENTRE = new Vector3(BOARD.centerOfMass.x, BOARD.centerOfMass.y, BOARD.centerOfMass.z);
 /** Feet closer than this along the stringer, m, stand no stance to share the weight between (a landing's feet still arriving). */
 export const STANCE_MIN = 0.1;
 const DEG = 180 / Math.PI;
@@ -229,6 +217,8 @@ export interface HandReading {
   /** The lesser of the two wrists' places in front of their knees, toward the toes, m. */
   inFront: number;
   out: number;
+  /** The rear wrist's place out from the hips' centre along the levelled nose, m (the front hand reaches along the line: the photo's). */
+  rearOut: number;
   shoulders: number;
 }
 
@@ -247,6 +237,7 @@ export function measureHands(joints: StanceJoints, board: BoardPose, stance: Sta
     rearAlong: along(joints.wrist[rear], joints.knee[rear]),
     inFront: Math.min(...SIDES.map((side) => joints.wrist[side].clone().sub(joints.knee[side]).dot(toes))),
     out: Math.max(...SIDES.map((side) => Math.abs(along(joints.wrist[side], joints.hips)))),
+    rearOut: Math.abs(along(joints.wrist[rear], joints.hips)),
     shoulders: joints.shoulder.left.distanceTo(joints.shoulder.right),
   };
 }
