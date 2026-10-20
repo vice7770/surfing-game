@@ -165,6 +165,12 @@ def progress(run_dir, tend):
     return {"t": t, "tend": tend, "cells": cells, "wall": total_wall, "rate": rate, "eta": eta}
 
 
+def rel(path):
+    """A path as the owner would type it: relative to the repo when inside it."""
+    r = os.path.relpath(path, REPO)
+    return path if r.startswith("..") else r
+
+
 def hms(s):
     if s is None or s != s:
         return "?"
@@ -480,7 +486,7 @@ class Pipeline:
             args += ["--run", run, "--spot", f"{run}={spot}", "--a0", f"{run}={a0:.4f}", "--flat", f"{run}={hs:.7f}"]
         ok = self.sh("library", args, cwd=REPO, env=dict(os.environ))
         files = [f"{run.lower().replace('_', '-')}.bin" for run, *_ in built]
-        self.log(("wrote " if ok else "could not write ") + ", ".join(files) + f" to {os.path.relpath(cfg.assets, REPO)}")
+        self.log(("wrote " if ok else "could not write ") + ", ".join(files) + f" to {rel(cfg.assets)}")
         if ok and cfg.smoke:
             same = open(os.path.join(cfg.assets, files[0]), "rb").read() == open(
                 os.path.join(REPO, "public", "barrels", files[0]), "rb").read()
@@ -533,7 +539,7 @@ class Pipeline:
         os.makedirs(cfg.out, exist_ok=True)
         json.dump(summary, open(os.path.join(cfg.out, "summary.json"), "w"), indent=1, default=float)
         write_report(cfg, summary, rows)
-        self.log(f"wrote {os.path.relpath(os.path.join(cfg.out, 'report.md'), REPO)}")
+        self.log(f"wrote {rel(os.path.join(cfg.out, 'report.md'))}")
 
     # ---- status ----
     def status_lines(self):
@@ -570,7 +576,7 @@ class Pipeline:
         self.report()
         for line in self.status_lines():
             self.log(line)
-        self.log(f"finished in {hms(time.time() - t0)}; report: {os.path.relpath(os.path.join(cfg.out, 'report.md'), REPO)}"
+        self.log(f"finished in {hms(time.time() - t0)}; report: {rel(os.path.join(cfg.out, 'report.md'))}"
                  + (f"; failed: {', '.join(self.failed)}" if self.failed else ""))
         try:
             os.unlink(pidfile)
@@ -743,7 +749,7 @@ def write_report(cfg, summary, rows):
         "`_scout_track.json` (the second crest, `crest_track.py`), `_params.txt` and `_train.json`.",
         "- `barrel-index.json` and `barrel-cases.md`: the cases' index entries and validation table, from `npm run barrels`"
         f" (written for {', '.join(f'`{n}`' for n in built) if built else 'no case'}); their files are in "
-        f"`{os.path.relpath(cfg.assets, REPO)}`.",
+        f"`{rel(cfg.assets)}`.",
         "- `summary.json`: every number above. Figures (`*_strip.png`, `*_tube.png`, `*_overview.png`) when matplotlib was there.",
         "",
         "## For the swept barrel's wiring",
