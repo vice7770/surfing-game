@@ -5,6 +5,7 @@ import { POSE_HZ } from '../net/protocol';
 import { chooseSpawn } from '../net/spawn';
 import type { RideInput } from '../physics/RideSession';
 import type { RideRequest } from '../wave/SurfZoneRunner';
+import { rideLineupOffset } from '../wave/SurfZoneSimulation';
 import type { SurfZoneHost } from './SurfZoneHost';
 
 /** A respawn waits this long, s, so the button can't jump the queue for waves (spec N1). */
@@ -87,11 +88,12 @@ export class OnlinePlay {
     return { resync: false };
   }
 
-  /** A free spot outside the break, away from the others' latest positions. */
+  /** A free spot outside the break, from the ride's own start out (`rideLineupOffset`), away from the others' latest positions. */
   private freeSpot(host: SurfZoneHost): { x: number; z: number } {
     const { init } = host;
     return chooseSpawn({
       focusX: init.focus.x, focusZ: init.focus.z, xMin: init.windowXMin, xMax: init.windowXMin + (init.grid.nx - 1) * init.grid.spacing,
+      near: rideLineupOffset(host.config),
     }, this.link.remote.latestPositions());
   }
 

@@ -384,8 +384,20 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(devParam('spillingCurl') === '0' ? { spillingCurl: false } : {}),
     // `?foamLook=off`: a spilling spot's drawn white with square edges, as before the foam look (item 4a).
     ...(devParam('foamLook') === 'off' ? { drawnEdges: false } : {}),
+    // `?startOut=<m>`: the rider starts this far seaward of the take-off (`?startOut=11` is the Canyon Big's old start).
+    ...startOutSwitch(),
     ...overrides,
   };
+}
+
+/**
+ * The `?startOut=<m>` dev switch (`SurfZoneConfig.startOut`): where the rider starts and relaunches, m seaward of the
+ * take-off, in place of the spot's own (`rideLineupOffset`), to compare starts; nothing when absent or not a number.
+ */
+export function startOutSwitch(search?: string): { startOut?: number } {
+  const text = devParam('startOut', search)?.trim();
+  const metres = text ? Number(text) : Number.NaN;
+  return Number.isFinite(metres) ? { startOut: metres } : {};
 }
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
