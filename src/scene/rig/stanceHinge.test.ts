@@ -6,12 +6,14 @@ import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from './riderVisualState';
 import { StanceGauge } from './stanceGauge';
+import { onEveryPose } from './stagePoses';
 import { createTestHumanoid } from './testHumanoid';
 
 const at = new Vector3(0, 0.03, 0);
 const SIDES: readonly Side[] = ['left', 'right'];
-const saved = { ...RIG_DETAIL.hipAngle };
-afterEach(() => Object.assign(RIG_DETAIL.hipAngle, saved));
+let restore: (() => void) | undefined;
+const putBack = () => { restore?.(); restore = undefined; };
+afterEach(putBack);
 
 /** The body's centre of mass from its joints (Winter 2009's segment shares), in the world. */
 function centreOfMass(bones: Map<string, Bone>): Vector3 {
@@ -39,7 +41,8 @@ function posed(state: RiderVisualState) {
   return { bones, angles: gauge.measure(state, 'regular') };
 }
 
-const without = () => Object.assign(RIG_DETAIL.hipAngle, { tall: 180, deep: 180 });
+/** No hinge on any key pose (put back by `putBack`). */
+const without = () => { putBack(); restore = onEveryPose((pose) => { pose.hinge.tall = 0; pose.hinge.deep = 0; }); };
 
 describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
   // The movement-flow spec took Compress's forward weight away (W/S set it). While its pull leant the body in past what
@@ -70,7 +73,7 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
         const hinged = centreOfMass(posed(state).bones);
         without();
         const upright = centreOfMass(posed(state).bones);
-        Object.assign(RIG_DETAIL.hipAngle, saved);
+        putBack();
         expect(Math.hypot(hinged.x - upright.x, hinged.z - upright.z), id).toBeLessThan(0.02);
       }
     } finally {
@@ -86,14 +89,13 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
 
   it('leaves the feet where they were and a reaching hand on its point', () => {
     // The hinge alone: the heel lifts with the knees the hinge moves (the ankle's reach), in both runs held flat.
-    const reach = RIG_DETAIL.maxDorsiflexion;
-    RIG_DETAIL.maxDorsiflexion = 90;
+    const flat = onEveryPose((pose) => { pose.maxDorsiflexion = 90; });
     const state = stanceState('compress-frontside', 'regular', at, createRiderVisualState()).state;
     const { bones } = posed(state);
     without();
     const plain = posed(state).bones;
-    Object.assign(RIG_DETAIL.hipAngle, saved);
-    RIG_DETAIL.maxDorsiflexion = reach;
+    putBack();
+    flat();
     for (const side of SIDES) {
       const ankle = (all: Map<string, Bone>) => all.get(BONES.foot[side])!.getWorldPosition(new Vector3());
       expect(ankle(bones).distanceTo(ankle(plain)), side).toBeLessThan(0.005);
@@ -148,7 +150,7 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
       const hinged = centreOfMass(posed(state()).bones);
       without();
       const plain = centreOfMass(posed(state()).bones);
-      Object.assign(RIG_DETAIL.hipAngle, saved);
+      putBack();
       expect(hinged.distanceTo(plain), phase).toBeLessThan(1e-9);
     }
   });

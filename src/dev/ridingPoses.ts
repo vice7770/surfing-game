@@ -35,8 +35,8 @@ interface Controls {
 export interface StanceRecipe {
   /** The phase the stance is read in. */
   phase: RiderPhase | 'fallen';
-  /** Flat water; down a 15° face along its fall line; or across one, the face rising on the toes' side (frontside). */
-  water: 'flat' | 'face' | 'across';
+  /** Flat water; down a 15° face along its fall line; or across one, the face rising on the toes' side (frontside) or the heels' (backside). */
+  water: 'flat' | 'face' | 'across' | 'across-back';
   /** Standing on a board already moving, or lying on it (the pop-up), m/s. */
   start: 'standing' | 'prone';
   speed: number;
@@ -55,6 +55,10 @@ const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRe
 /** The map's stances as the game reaches them (each stance's `reach`). */
 export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   trim: standing([], 1),
+  // The animation-realism plan's trims across a 15° face (the stance sheet's water): frontside the face rises on the
+  // toes' side, backside on the heels'.
+  'trim-frontside': standing([], 1.2, { water: 'across', speed: 7 }),
+  'trim-backside': standing([], 1.2, { water: 'across-back', speed: 7 }),
   'trim-forward': standing([{ at: 0.4, trim: 1 }], 1),
   'trim-back': standing([{ at: 0.4, trim: -1 }], 1),
   drop: standing([{ at: 0, crouch: 1 }], 1, { water: 'face', speed: 5 }),
@@ -86,10 +90,21 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'fall-start': standing([], 3, { speed: 7, separate: 0.5, after: 0.15, phase: 'fallen' }),
 };
 
-/** The recipe's water for a Regular or Goofy rider: across a face, it rises on the toes' side (−x Regular, +x Goofy). */
+/**
+ * Crouched trim (Shift held) across the face, frontside: the owner's reference
+ * photo of 2026-10-22 (the arms framing the knees), not a stance of the map.
+ */
+export const CROUCHED_TRIM: StanceRecipe = standing([{ at: 0, crouch: 1 }], 1.2, { water: 'across', speed: 7 });
+
+/** Across a face, the slope along x: rising on the toes' side (−x Regular, +x Goofy), or the heels' (backside). */
+function acrossSlope(kind: StanceRecipe['water'], stance: StanceName): number {
+  return (stance === 'regular' ? -1 : 1) * (kind === 'across-back' ? -1 : 1) * Math.tan(FACE);
+}
+
+/** The recipe's water for a Regular or Goofy rider: across a face, it rises on the toes' side, or the heels' (`across-back`). */
 function waterFor(kind: StanceRecipe['water'], stance: StanceName): PlaneWater {
   if (kind === 'face') return new PlaneWater({ slopeZ: -Math.tan(FACE) });
-  if (kind === 'across') return new PlaneWater({ slopeX: (stance === 'regular' ? -1 : 1) * Math.tan(FACE) });
+  if (kind === 'across' || kind === 'across-back') return new PlaneWater({ slopeX: acrossSlope(kind, stance) });
   return new PlaneWater();
 }
 
@@ -97,8 +112,8 @@ function waterFor(kind: StanceRecipe['water'], stance: StanceName): PlaneWater {
 function mount(speed: number, stance: StanceName, kind: StanceRecipe['water']) {
   const board = new BoardBody();
   const water = waterFor(kind, stance);
-  if (kind === 'across') {
-    const slopeX = (stance === 'regular' ? -1 : 1) * Math.tan(FACE);
+  if (kind === 'across' || kind === 'across-back') {
+    const slopeX = acrossSlope(kind, stance);
     const normal = new Vector3(-slopeX, 1, 0).normalize();
     const forward = new Vector3(0, 0, 1);
     const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, forward), normal, forward));

@@ -163,21 +163,26 @@ describe('the arms swing with the body (step 4; Pontzer et al. 2009)', () => {
   };
 
   it('trails the free hands below their shoulders as the body rises in a pump, and above as it drops', () => {
+    // The swing's own part (the hands swung less the hands held to their cues, which follow the knees in a pump).
     for (const side of ['regular', 'goofy'] as const) {
-      const { offsets, rises } = hands(pump, side, 0.6);
-      expect(correlation(offsets, rises), side).toBeLessThan(-0.5);
+      const swung = hands(pump, side, 0.6);
+      RIG_DETAIL.swing.share = 0;
+      const held = hands(pump, side, 0.6);
+      RIG_DETAIL.swing.share = saved;
+      // −0.5 with the whole swing; a third of it within 15° (the animation-realism plan) trails as surely, if less tidily.
+      expect(correlation(swung.offsets.map((offset, i) => offset - held.offsets[i]), swung.rises), side).toBeLessThan(-0.3);
     }
   }, 240_000);
 
-  it('swings them a few centimetres, and lets them settle riding straight', () => {
+  it('swings them a little (the animation-realism plan: 4 cm at most pumping), and lets them settle riding straight', () => {
     for (const side of ['regular', 'goofy'] as const) {
       const swung = hands(pump, side, 0.6).places;
       RIG_DETAIL.swing.share = 0;
       const held = hands(pump, side, 0.6).places;
       RIG_DETAIL.swing.share = saved;
       const rms = Math.sqrt(swung.reduce((sum, place, i) => sum + place.distanceToSquared(held[i]), 0) / swung.length);
-      expect(rms, side).toBeGreaterThan(0.02);
-      expect(rms, side).toBeLessThan(0.15);
+      expect(rms, side).toBeGreaterThan(0.002);
+      expect(rms, side).toBeLessThan(0.04);
     }
     const straight: StanceRecipe = { ...STANCE_RECIPES.trim, seconds: 2 };
     const settled = hands(straight, 'regular', 1.9).places;
@@ -199,10 +204,14 @@ describe('the arms swing with the body (step 4; Pontzer et al. 2009)', () => {
          */
         const anchored = () => {
           const places: Vector3[] = [];
+          let since = Number.POSITIVE_INFINITY;
           follow({ ...STANCE_RECIPES[id], seconds: STANCE_RECIPES[id].seconds + 0.5 }, side, ({ state, plain }) => {
             const lower = state.points[POINT.leftHand].y < state.points[POINT.rightHand].y ? 'left' : 'right';
             const point = state.points[lower === 'left' ? POINT.leftHand : POINT.rightHand];
-            if (world(plain, BONES.hips).y - point.y >= RIG_DETAIL.reachFade) places.push(world(plain, BONES.hand[lower]));
+            // Held once the hand has been past the fade below the hips for the whole handover (the motion filter's).
+            if (world(plain, BONES.hips).y - point.y < RIG_DETAIL.reachFade) since = Number.POSITIVE_INFINITY;
+            else if (since === Number.POSITIVE_INFINITY) since = state.clock;
+            if (state.clock - since >= RIG_DETAIL.reachHandover) places.push(world(plain, BONES.hand[lower]));
           });
           return places;
         };

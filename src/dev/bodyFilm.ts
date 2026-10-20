@@ -46,6 +46,8 @@ export interface FilmFrame {
   joints: Vector3[];
   /** The drawn joints relative to the drawn hips, in the world's axes, m. */
   limbs: Vector3[];
+  /** The drawn balls of the feet (the toes' bases), left and right, relative to the drawn board, in its frame, m. */
+  toes: Vector3[];
   /** The drawn hips and board in the world, m, and the drawn board's orientation. */
   hips: Vector3;
   board: Vector3;
@@ -56,6 +58,17 @@ export interface FilmFrame {
   /** The drawn chest's roll across the board's heading, rad, and the physics' own (its torso point over its pelvis). */
   chestRoll: number;
   physicsRoll: number;
+  /**
+   * Where the drawn chest and head face in the world, rad about the up (the
+   * animation-realism plan's motion table: their yaw in the wobble band).
+   */
+  chestYaw: number;
+  headYaw: number;
+  /** The drawn knees' flexion, rad (0 straight), left and right: the legs take the board's wobble. */
+  kneeFlexion: [number, number];
+  /** The drawn trunk's lean across the board's heading, rad: its torso point over its pelvis point as the rig takes them (after the motion filter), and as the drawn state gave them (before it). */
+  drawnRoll: number;
+  givenRoll: number;
   /** The drawn hips and the physics' pelvis point, in the board's frame, m. */
   hipsOnBoard: Vector3;
   physicsPelvis: Vector3;
@@ -65,7 +78,7 @@ export interface FilmFrame {
 }
 
 /** Where the film's joints (`FilmFrame.joints`, `limbs`) keep the shoulders, the hands and the head; `worldBones` the chest (1) and the head (2). */
-export const FILM_JOINT = { shoulder: { left: 3, right: 9 }, hand: { left: 5, right: 11 }, head: 12 } as const;
+export const FILM_JOINT = { shoulder: { left: 3, right: 9 }, hand: { left: 5, right: 11 }, head: 12, ankle: { left: 2, right: 8 } } as const;
 const WORLD_BONE = { chest: 1, head: 2 } as const;
 
 export interface BodyFilm {
@@ -468,6 +481,188 @@ export function balanceCue(film: BodyFilm): { slope: number; correlation: number
   return { slope: av > 1e-12 ? covariance / av : 0, correlation: av > 1e-12 && sv > 1e-12 ? covariance / Math.sqrt(av * sv) : 0 };
 }
 
+/**
+ * The stretch the animation-realism plan's motion table reads: the frames
+ * standing from `from` s (past the stance's blend-in) until the rider first
+ * leaves standing (a fall, a lie-down).
+ */
+export function standingStretch(film: BodyFilm, from = 0.8): FilmFrame[] {
+  const frames: FilmFrame[] = [];
+  for (const frame of film.frames) {
+    if (frame.time < from - 1e-9) continue;
+    if (frame.phase !== 'standing') {
+      if (frames.length) break;
+      continue;
+    }
+    frames.push(frame);
+  }
+  return frames;
+}
+
+/** Angles followed through the film without their ±π wraps. */
+function unwrapped(values: readonly number[]): number[] {
+  const out: number[] = [];
+  let offset = 0;
+  values.forEach((value, i) => {
+    if (i > 0) {
+      const step = value + offset - out[i - 1];
+      offset -= 2 * Math.PI * Math.round(step / (2 * Math.PI));
+    }
+    out.push(value + offset);
+  });
+  return out;
+}
+
+/**
+ * The animation-realism plan's motion table (§2, §4), over the standing stretch:
+ * what reaches each drawn part in the board's wobble band (3–5 Hz), RMS. The
+ * chest's roll across the heading (`chestRoll`), rad; the chest's and head's
+ * yaw against the board's heading, rad, and the head's in the world; the hips'
+ * rise and fall on the board, m, and the knees' flexion (the legs taking it),
+ * rad; and the hands' height about their shoulders on the board in the arms'
+ * slow band (0.5–2 Hz: a bob with no intent) and above it (2–8 Hz), m, the
+ * hand that moves more. The plan's table of 2026-10-22 is these, on the lead
+ * (left) hand, which moved more in every scenario.
+ */
+export interface MotionReading {
+  chestRoll: number;
+  chestYaw: number;
+  headYaw: number;
+  headWorldYaw: number;
+  hips: number;
+  knees: number;
+  handSlow: number;
+  handFast: number;
+  /** Standing frames read. */
+  frames: number;
+}
+
+export function motionReading(film: BodyFilm, from = 0.8): MotionReading {
+  const frames = standingStretch(film, from);
+  const band = (values: number[], low = 3, high = 5) => bandRms(values, film.rate, low, high);
+  const boardYaw = frames.map((frame) => {
+    const nose = new Vector3(0, 0, 1).applyQuaternion(frame.boardTurn);
+    return Math.atan2(nose.x, nose.z);
+  });
+  const against = (yaws: number[]) => unwrapped(yaws.map((yaw, i) => Math.atan2(Math.sin(yaw - boardYaw[i]), Math.cos(yaw - boardYaw[i]))));
+  const hand = (side: Side) => frames.map((frame) => frame.joints[FILM_JOINT.hand[side]].y - frame.joints[FILM_JOINT.shoulder[side]].y);
+  const hands = SIDES.map(hand);
+  return {
+    chestRoll: band(frames.map((frame) => frame.chestRoll)),
+    chestYaw: band(against(frames.map((frame) => frame.chestYaw))),
+    headYaw: band(against(frames.map((frame) => frame.headYaw))),
+    headWorldYaw: band(unwrapped(frames.map((frame) => frame.headYaw))),
+    hips: band(frames.map((frame) => frame.hipsOnBoard.y)),
+    knees: Math.hypot(band(frames.map((frame) => frame.kneeFlexion[0])), band(frames.map((frame) => frame.kneeFlexion[1]))) / Math.SQRT2,
+    handSlow: Math.max(...hands.map((values) => band(values, 0.5, 2))),
+    handFast: Math.max(...hands.map((values) => band(values, 2, 8))),
+    frames: frames.length,
+  };
+}
+
+/**
+ * The alarm the drawn arms show, frame by frame (the animation-realism plan's
+ * §4, `RIG_DETAIL.arms`): the physics' (1 − its balance reserve), none under
+ * `deadband` and the rest rescaled, rising within `rise` s and falling within
+ * `fall` s (one pole each way at a third of that). NaN once detached.
+ */
+export function drawnAlarm(film: BodyFilm, arms: { alarmDeadband: number; alarmRise: number; alarmFall: number }): number[] {
+  let alarm = Number.NaN;
+  let last = Number.NaN;
+  return film.frames.map((frame) => {
+    if (!Number.isFinite(frame.balance)) {
+      alarm = Number.NaN;
+      return Number.NaN;
+    }
+    const wanted = Math.max(0, (1 - frame.balance - arms.alarmDeadband) / (1 - arms.alarmDeadband));
+    const dt = frame.time - last;
+    last = frame.time;
+    if (!Number.isFinite(alarm) || !(dt > 0)) alarm = wanted;
+    else alarm += (wanted - alarm) * (1 - Math.exp(-dt / ((wanted > alarm ? arms.alarmRise : arms.alarmFall) / 3)));
+    return alarm;
+  });
+}
+
+/**
+ * The balance cue against a given alarm, frame by frame (`balanceCue`'s, with
+ * `alarm` in place of the physics' own): the regression's slope, m per full
+ * alarm, and its correlation.
+ */
+export function cueAgainst(film: BodyFilm, alarm: readonly number[]): { slope: number; correlation: number } {
+  const pairs = film.frames.flatMap((frame, i) => (frame.phase === 'standing' && !frame.fallen && !frame.switched && Number.isFinite(alarm[i]) ? [{ frame, alarm: alarm[i] }] : []));
+  const spread = pairs.map(({ frame }) => (['left', 'right'] as const).reduce(
+    (sum, side) => sum + frame.limbs[FILM_JOINT.hand[side]].y - frame.limbs[FILM_JOINT.shoulder[side]].y, 0,
+  ) / 2);
+  const a = pairs.map((pair) => pair.alarm);
+  const mean = (values: number[]) => values.reduce((x, y) => x + y, 0) / values.length;
+  const [am, sm] = [mean(a), mean(spread)];
+  let covariance = 0;
+  let av = 0;
+  let sv = 0;
+  a.forEach((value, i) => {
+    covariance += (value - am) * (spread[i] - sm);
+    av += (value - am) ** 2;
+    sv += (spread[i] - sm) ** 2;
+  });
+  return { slope: av > 1e-12 ? covariance / av : 0, correlation: av > 1e-12 && sv > 1e-12 ? covariance / Math.sqrt(av * sv) : 0 };
+}
+
+/** `values` averaged over a centred window of `window` s (a zero-phase low-pass: it passes below about 0.6/`window` Hz). */
+function centredMean(values: readonly number[], rate: number, window: number): number[] {
+  const half = Math.round((window * rate) / 2);
+  return values.map((_, i) => {
+    const from = Math.max(0, i - half);
+    const to = Math.min(values.length - 1, i + half);
+    let sum = 0;
+    for (let j = from; j <= to; j += 1) sum += values[j];
+    return sum / (to - from + 1);
+  });
+}
+
+/**
+ * How the drawn trunk's lean follows the physics' bank below 1 Hz (the plan's
+ * §4): the trunk as the rig takes it against the drawn state's own (the
+ * physics' points as the page draws them, before the posing: the track's
+ * delay left out), both averaged over 0.5 s (centred); the shift that brings
+ * them closest (`drawnLag`), s, and their RMS difference at that shift, rad,
+ * over the standing stretch.
+ */
+export function leanFollow(film: BodyFilm, from = 0.8): { lag: number; rms: number } {
+  const frames = standingStretch(film, from);
+  const drawn = centredMean(frames.map((frame) => frame.drawnRoll), film.rate, 0.5);
+  const physics = centredMean(frames.map((frame) => frame.givenRoll), film.rate, 0.5);
+  const lag = drawnLag({ rate: film.rate, frames: frames.map((frame, i) => ({ ...frame, chestRoll: drawn[i], physicsRoll: physics[i] })) });
+  const shift = Math.round(lag * film.rate);
+  let sum = 0;
+  let count = 0;
+  for (let t = 0; t + shift < drawn.length; t += 1) {
+    sum += (drawn[t + shift] - physics[t]) ** 2;
+    count += 1;
+  }
+  return { lag, rms: count ? Math.sqrt(sum / count) : 0 };
+}
+
+/**
+ * How far the drawn feet slide on the deck while standing (the plan's §4: the
+ * feet stay on their points), m: each foot's ball (its toes' base, which stays
+ * on the deck as the heel lifts) farthest from its own median place on the
+ * board, across the deck, over the standing stretch; the larger.
+ */
+export function footSlide(film: BodyFilm, from = 0.8): number {
+  const frames = standingStretch(film, from).filter((frame) => !frame.switched);
+  let most = 0;
+  for (const side of [0, 1]) {
+    const ankles = frames.map((frame) => frame.toes[side]);
+    const median = (axis: 'x' | 'z') => {
+      const sorted = ankles.map((ankle) => ankle[axis]).sort((a, b) => a - b);
+      return sorted[Math.floor(sorted.length / 2)] ?? 0;
+    };
+    const [mx, mz] = [median('x'), median('z')];
+    for (const ankle of ankles) most = Math.max(most, Math.hypot(ankle.x - mx, ankle.z - mz));
+  }
+  return most;
+}
+
 /** The film's chop (step 4): bumps CHOP.height high every CHOP.length m along z, with their slope. A test surface, not a sea state. */
 const CHOP = { height: 0.05, length: 4 };
 export class ChopWater extends PlaneWater {
@@ -740,8 +935,10 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     state.clock = drawn.time;
     // As the page does (`PhysicalMode`): the hands pull while paddling lying down.
     state.stroking = paddling && state.phase === 'prone' ? 1 : 0;
+    // The drawn state's own lean before the posing moves its points (the motion filter's input).
+    const given = rollAcross(state, state.points[POINT.torso].clone().sub(state.points[POINT.pelvis]));
     pose(state);
-    film.frames.push(record(f / options.rate, state, session, rig, measured, pending));
+    film.frames.push(record(f / options.rate, state, session, rig, measured, pending, given));
     pending = false;
   }
   return film;
@@ -755,6 +952,7 @@ function poseRig(bones: Map<string, import('three').Bone>) {
       ...SIDES.flatMap((side) => [BONES.upLeg[side], BONES.leg[side], BONES.foot[side], BONES.arm[side], BONES.foreArm[side], BONES.hand[side]]),
       BONES.head,
     ].map(at),
+    toes: [BONES.toe.left, BONES.toe.right].map(at),
     hips: at(BONES.hips),
     chest: at(BONES.spine[2]),
   };
@@ -762,14 +960,23 @@ function poseRig(bones: Map<string, import('three').Bone>) {
 
 const UP = new Vector3(0, 1, 0);
 
+/** A vector's roll across the drawn board's heading, level, rad. */
+function rollAcross(state: ReturnType<typeof createRiderVisualState>, v: Vector3): number {
+  const forward = new Vector3(0, 0, 1).applyQuaternion(state.boardQuaternion).setY(0);
+  if (forward.lengthSq() < 1e-9) forward.set(0, 0, 1);
+  const across = new Vector3().crossVectors(UP, forward.normalize());
+  return Math.atan2(v.dot(across), v.y);
+}
+
 function record(
   time: number, state: ReturnType<typeof createRiderVisualState>, session: RideSession,
-  rig: ReturnType<typeof poseRig>, measured: import('three').Bone[], switched: boolean,
+  rig: ReturnType<typeof poseRig>, measured: import('three').Bone[], switched: boolean, givenRoll: number,
 ): FilmFrame {
   const boardPosition = state.boardPosition;
   const boardInverse = state.boardQuaternion.clone().invert();
   const hips = rig.hips.getWorldPosition(new Vector3());
   const world = rig.joints.map((bone) => bone.getWorldPosition(new Vector3()));
+  const toes = rig.toes.map((bone) => bone.getWorldPosition(new Vector3()).sub(boardPosition).applyQuaternion(boardInverse));
   const worldBones = measured.map((bone) => bone.getWorldQuaternion(new Quaternion()));
   // Across the board's heading, level.
   const forward = new Vector3(0, 0, 1).applyQuaternion(state.boardQuaternion).setY(0);
@@ -778,6 +985,15 @@ function record(
   const roll = (v: Vector3) => Math.atan2(v.dot(across), v.y);
   const chestUp = UP.clone().applyQuaternion(rig.chest.getWorldQuaternion(new Quaternion()));
   const torso = session.renderPoint(1, new Vector3()).sub(session.renderPoint(0, new Vector3()));
+  // The test humanoid's bones rest unturned, facing +z: a bone's world turn carries that facing.
+  const yawOf = (bone: number) => {
+    const facing = new Vector3(0, 0, 1).applyQuaternion(worldBones[bone]);
+    return Math.atan2(facing.x, facing.z);
+  };
+  const knee = (side: number) => {
+    const [hip, kneeJoint, ankle] = [world[side * 6], world[side * 6 + 1], world[side * 6 + 2]];
+    return Math.PI - hip.clone().sub(kneeJoint).angleTo(ankle.clone().sub(kneeJoint));
+  };
   return {
     time,
     phase: state.phase,
@@ -786,6 +1002,7 @@ function record(
     fallen: state.phase === 'fallen',
     joints: world.map((p) => p.clone().sub(boardPosition).applyQuaternion(boardInverse)),
     limbs: world.map((p) => p.clone().sub(hips)),
+    toes,
     hips,
     board: boardPosition.clone(),
     boardTurn: state.boardQuaternion.clone(),
@@ -793,6 +1010,11 @@ function record(
     worldBones,
     chestRoll: roll(chestUp),
     physicsRoll: roll(torso),
+    chestYaw: yawOf(WORLD_BONE.chest),
+    headYaw: yawOf(WORLD_BONE.head),
+    kneeFlexion: [knee(0), knee(1)],
+    drawnRoll: roll(state.points[POINT.torso].clone().sub(state.points[POINT.pelvis])),
+    givenRoll,
     hipsOnBoard: hips.clone().sub(boardPosition).applyQuaternion(boardInverse),
     physicsPelvis: state.points[POINT.pelvis].clone().sub(boardPosition).applyQuaternion(boardInverse),
     balance: session.rider.attached ? session.rider.balanceReserve : Number.NaN,
