@@ -134,6 +134,7 @@ export const ROLLER_FRONT = {
    * lump's side turned from the sun greys rather than going dark as a solid's would (P).
    */
   soften: 0.3,
+  softenSteep: 0.6,
   /** Matte: its roughness (the band's foam takes 0.7). */
   roughness: 0.8,
   /**
@@ -303,20 +304,28 @@ vec2 rfGradient( ivec2 c, int salt ) {
   float a = float( waterPcg3d( uvec3( ivec3( c, salt ) ) ).x ) * ( 6.28318530718 / 4294967296.0 );
   return vec2( cos( a ), sin( a ) );
 }
-float rfGradientNoise( vec2 p, int salt ) {
+// Gradient noise and its gradient (value, d/dp): the slopes come with the value, so a vertex evaluates it once.
+vec3 rfGradientNoise( vec2 p, int salt ) {
   vec2 i = floor( p );
   vec2 t = p - i;
-  vec2 u = waterRollerFade( vec3( t, 0.0 ) ).xy;
+  vec2 u = t * t * t * ( t * ( t * 6.0 - 15.0 ) + 10.0 );
+  vec2 du = 30.0 * t * t * ( t * ( t - 2.0 ) + 1.0 );
   ivec2 c = ivec2( i );
-  float a = dot( rfGradient( c, salt ), t );
-  float b = dot( rfGradient( c + ivec2( 1, 0 ), salt ), t - vec2( 1.0, 0.0 ) );
-  float d = dot( rfGradient( c + ivec2( 0, 1 ), salt ), t - vec2( 0.0, 1.0 ) );
-  float e = dot( rfGradient( c + ivec2( 1, 1 ), salt ), t - vec2( 1.0, 1.0 ) );
-  return mix( mix( a, b, u.x ), mix( d, e, u.x ), u.y );
+  vec2 ga = rfGradient( c, salt );
+  vec2 gb = rfGradient( c + ivec2( 1, 0 ), salt );
+  vec2 gc = rfGradient( c + ivec2( 0, 1 ), salt );
+  vec2 gd = rfGradient( c + ivec2( 1, 1 ), salt );
+  float va = dot( ga, t );
+  float vb = dot( gb, t - vec2( 1.0, 0.0 ) );
+  float vc = dot( gc, t - vec2( 0.0, 1.0 ) );
+  float vd = dot( gd, t - vec2( 1.0, 1.0 ) );
+  float k = va - vb - vc + vd;
+  return vec3( va + u.x * ( vb - va ) + u.y * ( vc - va ) + u.x * u.y * k,
+    ga + u.x * ( gb - ga ) + u.y * ( gc - ga ) + u.x * u.y * ( ga - gb - gc + gd ) + du * ( u.yx * k + vec2( vb, vc ) - va ) );
 }
 // One region's lumps along the section: two flow-map phases a lifetime apart, each a new lattice (its own salt), carried
 // rigidly along the arc at v m/s over its phase; two octaves of sizes l (m), weights w; about unit spread.
-float rfField( vec2 xs, float v, vec2 l, vec2 w, int region ) {
+vec3 rfField( vec2 xs, float v, vec2 l, vec2 w, int region ) {
   float p = waterTime / ${f(PERIOD)};
   float a = fract( p );
   float b = fract( p + 0.5 );
@@ -327,22 +336,33 @@ float rfField( vec2 xs, float v, vec2 l, vec2 w, int region ) {
   vec2 pa = xs - vec2( 0.0, v * ( a - 0.5 ) * ${f(PERIOD)} );
   vec2 pb = xs - vec2( 0.0, v * ( b - 0.5 ) * ${f(PERIOD)} );
   const mat2 turn = mat2( 0.8, 0.6, -0.6, 0.8 );
-  float na = w.x * rfGradientNoise( pa / l.x, ia ) + w.y * rfGradientNoise( turn * pa / l.y, ia + 1 );
-  float nb = w.x * rfGradientNoise( pb / l.x, ib ) + w.y * rfGradientNoise( turn * pb / l.y, ib + 1 );
+  // Each octave's value and its gradient in metres (the turned lattice's turned back).
+  vec3 a1 = rfGradientNoise( pa / l.x, ia );
+  vec3 a2 = rfGradientNoise( turn * pa / l.y, ia + 1 );
+  vec3 b1 = rfGradientNoise( pb / l.x, ib );
+  vec3 b2 = rfGradientNoise( turn * pb / l.y, ib + 1 );
+  vec3 na = w.x * vec3( a1.x, a1.yz / l.x ) + w.y * vec3( a2.x, ( a2.yz * turn ) / l.y );
+  vec3 nb = w.x * vec3( b1.x, b1.yz / l.x ) + w.y * vec3( b2.x, ( b2.yz * turn ) / l.y );
   return ( wa * na + wb * nb ) / ( ${f(NOISE_SPREAD)} * length( w ) * length( vec2( wa, wb ) ) );
 }
 // The lumps' noise at (x, s): the three regions' fields, blended by their weights (back, face, nose), kept at unit spread.
-float rfNoise( vec2 xs, vec3 weight, float c, float toe ) {
-  float n = 0.0;
+vec3 rfNoise( vec2 xs, vec3 weight, float c, float toe ) {
+  vec3 n = vec3( 0.0 );
   xs /= rfTune.y;
   if ( weight.x > 0.0 ) n += weight.x * rfField( xs, ${f(F.shed)} * c, vec2( ${f(F.back[0] * H_REF)}, ${f(F.back[1] * H_REF)} ), vec2( 1.0, 0.5 ), 0 );
   if ( weight.y > 0.0 ) n += weight.y * rfField( xs, ${f(F.creep)} * c, vec2( ${f(F.face[0] * H_REF)}, ${f(F.face[1] * H_REF)} ),
     vec2( mix( 1.0, 0.35, toe ), mix( 0.4, 1.0, toe ) ), 1 );
   if ( weight.z > 0.0 ) n += weight.z * rfField( xs, ${f(F.tumble)} * c, vec2( ${f(F.noseSizes[0] * H_REF)}, ${f(F.noseSizes[1] * H_REF)} ), vec2( 1.0, 0.7 ), 2 );
-  return n / max( 1e-3, length( weight ) );
+  return vec3( n.x, n.yz / rfTune.y ) / max( 1e-3, length( weight ) );
 }
 float rfLump( float n, float sigma, float cap ) {
   return cap > 0.0 ? cap * tanh( sigma * ${f(F.billow)} * ( sqrt( n * n + ${f(F.billowCrease * F.billowCrease)} ) - ${f(F.billowCrease)} ) / cap ) : 0.0;
+}
+// The lump's height's slope per unit of noise (rfLump's derivative in n).
+float rfLumpSlope( float n, float sigma, float cap ) {
+  if ( !( cap > 0.0 ) ) return 0.0;
+  float th = tanh( sigma * ${f(F.billow)} * ( sqrt( n * n + ${f(F.billowCrease * F.billowCrease)} ) - ${f(F.billowCrease)} ) / cap );
+  return sigma * ${f(F.billow)} * ( 1.0 - th * th ) * n / sqrt( n * n + ${f(F.billowCrease * F.billowCrease)} );
 }
 // The crest's and the length's slopes along shore at a drawn column of a slot, from its drawn neighbours (central where
 // both are): for the normal across columns.
@@ -444,14 +464,13 @@ vec4 rfView = modelViewMatrix * vec4( rfX, rfWater.x, rfZ0, 1.0 );
 float rfPixel = rfPixelScale * max( 0.0, -rfView.z );
 float rfNear = rfPixel > 0.0 ? smoothstep( ${f(F.minPixels)}, ${f(F.nearPixels)}, ${f(F.face[1] * H_REF)} / rfPixel ) : 1.0;
 float rfToe = smoothstep( 0.0, 0.9, rfXi );
-float rfN0 = rfNoise( vec2( rfX, rfS ), rfWeight, rfCel, rfToe );
+vec3 rfN0 = rfNoise( vec2( rfX, rfS ), rfWeight, rfCel, rfToe );
 float rfMean = rfLump( 1.0, rfSigma, rfCap );
-float rfLift = mix( rfMean, rfLump( rfN0, rfSigma, rfCap ), rfNear );
-const float rfStep = 0.25;
-float rfLiftX = mix( rfMean, rfLump( rfNoise( vec2( rfX + rfStep, rfS ), rfWeight, rfCel, rfToe ), rfSigma, rfCap ), rfNear );
-float rfLiftS = mix( rfMean, rfLump( rfNoise( vec2( rfX, rfS + rfStep ), rfWeight, rfCel, rfToe ), rfSigma, rfCap ), rfNear );
-float rfLumpX = ( rfLiftX - rfLift ) / rfStep;
-float rfLumpS = ( rfLiftS - rfLift ) / rfStep;
+float rfLift = mix( rfMean, rfLump( rfN0.x, rfSigma, rfCap ), rfNear );
+// The lumps' slopes along shore and along the arc, from the noise's own gradient.
+vec2 rfLumpSlopes = rfNear * rfLumpSlope( rfN0.x, rfSigma, rfCap ) * rfN0.yz;
+float rfLumpX = rfLumpSlopes.x;
+float rfLumpS = rfLumpSlopes.y;
 // Its point and the slopes along the section (A, Bz: dy/ds, dz/ds) and along shore (B, C: dy/dx, dz/dx).
 float rfDzDx = rfDCrest + rfXi * rfDLen;
 float rfSlopeA;
@@ -543,7 +562,9 @@ const FRONT_NORMAL = /* glsl */ `#include <normal_fragment_maps>
     rfChurnAt( vRfSection.xy + vec2( 0.0, rfTexel ) ).y - rfChurn.y ) / rfTexel;
   vec3 rfWorldNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   rfWorldNormal = normalize( rfWorldNormal - rfDetail * ( rfSlope.x * vec3( 1.0, 0.0, 0.0 ) + rfSlope.y * vRfAlong.xyz ) );
-  rfWorldNormal = normalize( rfWorldNormal + vec3( 0.0, ${f(F.soften)} * rfTune2.w, 0.0 ) );
+  // Steep faces (the nose's front, a lump's side) more: lit through as the foam they are, not as a shaded wall.
+  float rfBend = ( ${f(F.soften)} + ${f(F.softenSteep)} * ( 1.0 - smoothstep( 0.2, 0.7, rfWorldNormal.y ) ) ) * rfTune2.w;
+  rfWorldNormal = normalize( rfWorldNormal + vec3( 0.0, rfBend, 0.0 ) );
   normal = normalize( ( viewMatrix * vec4( rfWorldNormal, 0.0 ) ).xyz );
 }`;
 
