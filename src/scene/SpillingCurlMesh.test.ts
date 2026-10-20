@@ -269,9 +269,9 @@ describe('the spilling lip\'s mesh', () => {
       expect(fragment).toContain('vec2 curlUv = vec2( vWaterWorld.x /');
       expect(fragment).toContain('if ( ( vCurlFlow.y - 0.8 ) / 0.2 > 0.25 + 0.75 * curlCut + vCurlFar ) discard;');
       expect(fragment).toContain('outgoingLight *= 1.0 - min( 0.85, vCurlFlow.z * ( 1.0 + 0.5 * vCurlFar )');
-      // At distance: the lip pushed to 2 px thick at least, and drawn as a line from 5 px down.
+      // At distance: the lip pushed to 2 px thick at least, and drawn as a line from 8 px down (round 5).
       expect(vertex).toContain('transformed += normal * ( 0.5 * curlLod.x * max( 0.0, 2.0 * curlPixel - curlSheet ) );');
-      expect(vertex).toContain('vCurlFar = curlPixel > 0.0 ? 1.0 - smoothstep( 2.0, 5.0, curlLod.y / curlPixel ) : 0.0;');
+      expect(vertex).toContain('vCurlFar = curlPixel > 0.0 ? 1.0 - smoothstep( 2.0, 8.0, curlLod.y / curlPixel ) : 0.0;');
       expect(fragment).toContain('smoothstep( mix( 0.82, 0.4, vCurlFar ), 1.0, vCurlFlow.y )');
       // The Rich curl takes the horizon haze (the haze-land follow-up); Classic is as it was.
       expect(curl.mesh.material.customProgramCacheKey()).toBe(`breakline-spilling-curl-${look}${look === 'rich' ? `-haze-land-${HAZE_ROUTES.curl}` : ''}`);

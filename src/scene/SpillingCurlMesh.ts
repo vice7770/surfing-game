@@ -74,11 +74,13 @@ const SKY_AT_TIP = 0.5;
 /**
  * The contrast route for the void the gentle face leaves too low (the coordinator's ruling, round 2): the lip's
  * underside and the face under it are darkened for the sky the lip hides, so the void reads as a dark line under a
- * bright lip. Shares of the light taken away, and the floor's opacity (P).
+ * bright lip. Shares of the light taken away, and the floor's opacity (P). Round 5 (the advisor's target: the throat at
+ * most 0.5× the face beside it, from the ride camera at 15–40 m) darkened them from 0.45, 0.6 and 0.75: the floor at
+ * full opening now keeps 0.28 of the face's light under it, not 0.55.
  */
-const UNDER_SHADE = 0.45;
-const FLOOR_SHADE = 0.6;
-const FLOOR_ALPHA = 0.75;
+const UNDER_SHADE = 0.6;
+const FLOOR_SHADE = 0.8;
+const FLOOR_ALPHA = 0.9;
 /**
  * Fades, as shares of the landing's distance a/L: the lip grows out of the crest's water from ROOT_FADE[0] behind the
  * crest (invisible) to ROOT_FADE[1] (whole), so no seam shows where it attaches; the underside likewise out of the void's
@@ -116,9 +118,11 @@ const RAGGED = { period: 0.45, froth: 0.3 } as const;
  *   evenly, and its fingers (under a pixel there, a dotted edge) close;
  * - its void darkens by up to `shade` more of its own darkening, never past `maxShade`, but not under its tip from
  *   `litFrom` of the lip on, so its falling edge reads as a bright line over a dark one.
- * Up close, the lip `nearPixels` or more thick on screen, nothing changes (P).
+ * Up close, the lip `nearPixels` or more thick on screen, nothing changes (P). Round 5 moved `nearPixels` from 5 to 8:
+ * the line drawing begins further in, so from the ride camera at 15 m (a 2 m wave's lip about 5 px on a 720 px view)
+ * the separator is already partly drawn as a line.
  */
-const DISTANCE = { minPixels: 2, nearPixels: 5, frothFrom: 0.4, froth: 0.8, shade: 0.5, maxShade: 0.85, litFrom: 0.6 } as const;
+const DISTANCE = { minPixels: 2, nearPixels: 8, frothFrom: 0.4, froth: 0.8, shade: 0.5, maxShade: 0.85, litFrom: 0.6 } as const;
 const smooth = (edge0: number, edge1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
   return t * t * (3 - 2 * t);
