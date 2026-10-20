@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  startOutSwitch, surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonBedSwitch, startOutSwitch, surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -83,6 +83,24 @@ describe('PhysicalMode', () => {
       const own = surfZoneConfigFor(big, 5, false);
       expect(own.startOut).toBeUndefined();
       expect(rideLineupOffset(own)).toBeLessThan(11);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22): main's Canyon from before it, carried in the config, so the
+  // worker builds that bed and the seabed is drawn from it; absent or anything else, the reef bed.
+  it('runs the Canyon\'s old bed with `?canyonBed=old` (a dev switch), and the reef bed otherwise', () => {
+    expect(canyonBedSwitch('?canyonBed=old')).toEqual({ canyonBed: 'old' });
+    for (const search of ['', '?canyonBed', '?canyonBed=', '?canyonBed=reef', '?canyonBed=OLD']) expect(canyonBedSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonBed=old' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBe('old');
+      // A config that fixes the bed (an online room's: the reef bed on every client) keeps it.
+      expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

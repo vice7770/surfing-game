@@ -189,8 +189,10 @@ export function padangReefAt(x: number): boolean {
  * the deep contours, where Big breaks, run less obliquely than the shallow ones, where Medium and Small break, so each
  * size meets contours matched to how far it has already refracted crossing the deep ones (the water-physics advisor,
  * 2026-10-09, after Mead's refraction compensation). A planar face from a deep platform refracted Medium's crests toward
- * the line and sped its peel. Below the hinge the face climbs at `pathSlope` along the waves' path, and above it more
- * gently downcoast, so they spill (an Iribarren number under 0.4 at the take-off). Upcoast of the peak the arm ends in
+ * the line and sped its peel. Below the hinge the face climbs at `pathSlope` along the waves' path, steep enough that the
+ * waves breaking there plunge weakly, as the owner's reference reel does (the reef bed, 2026-10-22: Iribarren numbers at
+ * breaking about 0.4–0.6); above it the face runs more gently downcoast, so the smaller waves breaking there spill (under
+ * 0.3). Upcoast of the peak the arm ends in
  * a face along +z that falls at `endSlope` across x, so every depth's contour is furthest out at the peak and each wave
  * starts breaking there. That end stays clear of the −x open edge's levelling (`OPEN_EDGE_RAMP`), so the edge copies
  * plain platform. Behind the line the top is level for `flatWidth` m, then falls to a trough `lagoonDepth` deep, so
@@ -200,8 +202,14 @@ export function padangReefAt(x: number): boolean {
  */
 export const CANYON = {
   shelfDepth: 6, shoreSlope: 1 / 25, crestDepth: 1,
-  /** The arm's face along the waves' path (+z) below the fan's hinge, and its upcoast end across x. */
-  pathSlope: 1 / 30, endSlope: 1 / 4,
+  /**
+   * The arm's face along the waves' path (+z) below the fan's hinge, and its upcoast end across x. The face was 1:30 until
+   * the reef bed (2026-10-22, docs/research/canyon-reef-bed-2026-10-22): every size spilled there, and more softly down the
+   * line, where the fan's shallow face took over. The owner's reference reel is a weak-to-moderate plunging left on about
+   * 1:22–1:30 reef (the water-physics advisor, 2026-10-22), who advised 1:23–1:25 below a 2.0–2.2 m hinge; the sweep kept
+   * the steepest, whose fan above the hinge is also the least gentle downcoast.
+   */
+  pathSlope: 1 / 23, endSlope: 1 / 4,
   peakX: -38, peakZ: -305, angle: 70,
   /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking. */
   takeOffX: -30,
@@ -215,9 +223,11 @@ export const CANYON = {
    * a single face would be `hingeDepth` deep below the peak; between the hinge line and the crest line the depth runs
    * linearly, so downcoast, where the two lines part, the shallow face is gentler and its contours more oblique than the
    * deep ones. Upcoast of the peak the hinge line runs parallel to the crest line. The hinge is rounded over
-   * ±`hingeRounding` m across shore. `fan` 0: one planar face.
+   * ±`hingeRounding` m across shore. `fan` 0: one planar face (rejected: on it crests broke first mid-arm, 15 of 54 in
+   * the 2026-10-09 sweep). The hinge was 2.8 m deep until the reef bed (2026-10-22): at 2.2 m Big's waves and the sets
+   * near the peak break below it, on `pathSlope`, while Small and the smaller waves down the line break on the fan.
    */
-  fan: 15, hingeDepth: 2.8, hingeRounding: 8,
+  fan: 15, hingeDepth: 2.2, hingeRounding: 8,
   /** Past the arm's end on the beach face the terrace tapers into the platform over this many metres along shore, m. */
   endTaper: 12,
   /**
@@ -229,21 +239,37 @@ export const CANYON = {
   flatWidth: 10, lagoonDepth: 2,
 };
 
+/** Which Canyon bed a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed=old` dev switch): the reef bed or the one before it. */
+export type CanyonBed = 'reef' | 'old';
+
+/** The Canyon's shape: `CANYON`, or a copy of it with another bed's face (`canyonShape`). */
+export type CanyonShape = typeof CANYON;
+
+/**
+ * The Canyon's bed before the reef bed (2026-10-22): the arm's face 1:30 along the waves' path below a 2.8 m hinge, where
+ * every size spilled. Kept for the `?canyonBed=old` dev switch, so the owner can ride the two beds side by side; the rest
+ * of the shape is `CANYON`'s, unchanged by the reef bed.
+ */
+export const CANYON_OLD_BED = { pathSlope: 1 / 30, hingeDepth: 2.8 } as const;
+
+/** The Canyon's shape for a bed: `CANYON` itself for the reef bed (so the design sweeps' changes hold), else the old face on it. */
+export function canyonShape(bed: CanyonBed = 'reef'): CanyonShape {
+  return bed === 'old' ? { ...CANYON, ...CANYON_OLD_BED } : CANYON;
+}
+
 /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
-export function canyonBreakLineZ(x: number): number {
-  return CANYON.peakZ + (x - CANYON.peakX) * Math.tan((CANYON.angle * Math.PI) / 180);
+export function canyonBreakLineZ(x: number, c: CanyonShape = CANYON): number {
+  return c.peakZ + (x - c.peakX) * Math.tan((c.angle * Math.PI) / 180);
 }
 
 /** Where the Canyon's break line runs onto the beach face (its crest depth on the beach face), along shore, m. */
-export function canyonArmEndX(): number {
-  const c = CANYON;
+export function canyonArmEndX(c: CanyonShape = CANYON): number {
   return c.peakX + (-c.crestDepth / c.shoreSlope - c.peakZ) / Math.tan((c.angle * Math.PI) / 180);
 }
 
 /** Whether the Canyon's arm is ridden at along-shore position x: from its peak (and the end beside it) to where it meets the beach face. */
-export function canyonArmAt(x: number): boolean {
-  const c = CANYON;
-  return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonArmEndX();
+export function canyonArmAt(x: number, c: CanyonShape = CANYON): boolean {
+  return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonArmEndX(c);
 }
 
 /**
@@ -252,12 +278,11 @@ export function canyonArmAt(x: number): boolean {
  * the trough), and its upcoast end falling at `endSlope` across x upcoast of the peak, so every depth's contour is
  * furthest out where it turns from the line into the end; past the arm's end it tapers into the platform over `endTaper` m.
  */
-export function canyonTerraceDepth(x: number, z: number): number {
-  const c = CANYON;
-  const line = canyonBreakLineZ(x);
+export function canyonTerraceDepth(x: number, z: number, c: CanyonShape = CANYON): number {
+  const line = canyonBreakLineZ(x, c);
   const seaward = Math.max(0, line - z);
   // The fan's shallow face from the crest line to the hinge line, then pathSlope below the hinge (one face when fan is 0).
-  const width = line - canyonHingeZ(x);
+  const width = line - canyonHingeZ(x, c);
   const shallow = (c.hingeDepth - c.crestDepth) / width;
   // Behind the line, the top: level for flatWidth, then down to the trough.
   const top = Math.min(c.lagoonDepth, c.crestDepth + Math.max(0, z - line - c.flatWidth) * c.pathSlope);
@@ -267,13 +292,12 @@ export function canyonTerraceDepth(x: number, z: number): number {
   // Past the arm's end the fan's gentle downcoast face would run on as a shoal across the +x open edge: it tapers away,
   // so the edge copies plain beach face.
   const terrace = Math.max(face, end);
-  const armEnd = canyonArmEndX();
+  const armEnd = canyonArmEndX(c);
   return terrace + (c.shelfDepth - terrace) * smoothstep(armEnd, armEnd + c.endTaper, x);
 }
 
 /** Where the Canyon's hinge line (the fan's, `hingeDepth` deep) crosses along-shore position x. */
-export function canyonHingeZ(x: number): number {
-  const c = CANYON;
+export function canyonHingeZ(x: number, c: CanyonShape = CANYON): number {
   const atPeak = c.peakZ - (c.hingeDepth - c.crestDepth) / c.pathSlope;
   const angle = x >= c.peakX ? c.angle - c.fan : c.angle;
   return atPeak + (x - c.peakX) * Math.tan((angle * Math.PI) / 180);
@@ -283,12 +307,11 @@ export function canyonHingeZ(x: number): number {
  * The Canyon's arm's furthest foot seaward, z: where its face reaches the shelf at the bottom of its end, upcoast of the
  * peak (the hinge's rounding aside).
  */
-export function canyonFootZ(): number {
-  const c = CANYON;
+export function canyonFootZ(c: CanyonShape = CANYON): number {
   const x = c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope;
   return c.shelfDepth > c.hingeDepth
-    ? canyonHingeZ(x) - (c.shelfDepth - c.hingeDepth) / c.pathSlope
-    : canyonBreakLineZ(x) - (c.shelfDepth - c.crestDepth) / c.pathSlope;
+    ? canyonHingeZ(x, c) - (c.shelfDepth - c.hingeDepth) / c.pathSlope
+    : canyonBreakLineZ(x, c) - (c.shelfDepth - c.crestDepth) / c.pathSlope;
 }
 
 function beach(seed: number): SurfSpot {
@@ -411,25 +434,25 @@ function padang(): SurfSpot {
   };
 }
 
-function canyon(): SurfSpot {
-  const c = CANYON;
+function canyon(c: CanyonShape): SurfSpot {
   return {
     name: 'canyon',
     depthAt(x, z) {
       const offshore = -z;
       if (offshore <= 0) return offshore * 0.06;
       // The shelf and the beach face, the terrace on them where it is shallower.
-      return Math.min(c.shelfDepth, offshore * c.shoreSlope, canyonTerraceDepth(x, z));
+      return Math.min(c.shelfDepth, offshore * c.shoreSlope, canyonTerraceDepth(x, z, c));
     },
   };
 }
 
-export function createSpot(name: SpotName, seed: number): SurfSpot {
+/** A spot's bed; `canyonBed` picks the Canyon's (the reef bed unless 'old'), and every other spot ignores it. */
+export function createSpot(name: SpotName, seed: number, options: { canyonBed?: CanyonBed } = {}): SurfSpot {
   switch (name) {
     case 'beach': return beach(seed);
     case 'point': return point();
     case 'reef': return reef();
-    case 'canyon': return canyon();
+    case 'canyon': return canyon(canyonShape(options.canyonBed));
     case 'padang': return padang();
     case 'pool': return poolSpot();
   }

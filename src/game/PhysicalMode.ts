@@ -389,6 +389,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...startOutSwitch(),
     // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
+    // `?canyonBed=old`: the Canyon's bed before the reef bed, with its take-off, start and curl (main's until 2026-10-22).
+    ...canyonBedSwitch(),
     ...overrides,
   };
 }
@@ -401,6 +403,14 @@ export function startOutSwitch(search?: string): { startOut?: number } {
   const text = devParam('startOut', search)?.trim();
   const metres = text ? Number(text) : Number.NaN;
   return Number.isFinite(metres) ? { startOut: metres } : {};
+}
+
+/**
+ * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's bed before the reef bed (2026-10-22), with its
+ * own take-off, start and drawn curl, to ride the two side by side; nothing otherwise (the reef bed).
+ */
+export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
+  return devParam('canyonBed', search)?.trim() === 'old' ? { canyonBed: 'old' } : {};
 }
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
@@ -675,7 +685,7 @@ export class PhysicalMode {
     water.setOptics(SPOT_OPTICS[settings.spot]);
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
-    const spot = createSpot(config.spot, config.seed);
+    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
     const offshoreDepth = tank.edgeDepth;

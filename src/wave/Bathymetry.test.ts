@@ -323,7 +323,7 @@ describe('surf spot bathymetry', () => {
     }
   });
 
-  it('lays the Canyon\'s arm obliquely from its peak toward +x and the beach, across the window, on a spilling face', () => {
+  it('lays the Canyon\'s arm obliquely from its peak toward +x and the beach, across the window, plunging its sets and spilling down the fan', () => {
     const canyon = createSpot('canyon', 1);
     // The break line runs from its peak toward +x and the beach at the design angle, until it meets the beach face
     // inside the +x edge's margin.
@@ -340,8 +340,7 @@ describe('surf spot bathymetry', () => {
       expect(-trough * CANYON.shoreSlope).toBeGreaterThan(CANYON.lagoonDepth);
       expect(canyon.depthAt(x, trough)).toBeCloseTo(CANYON.lagoonDepth, 6);
       expect(canyon.depthAt(x, zHinge - (CANYON.shelfDepth - CANYON.hingeDepth) / CANYON.pathSlope - 2)).toBeCloseTo(CANYON.shelfDepth, 6);
-      // Below the hinge its face climbs at pathSlope along the waves' path (+z): a spilling slope (ξ < 0.4 for the breaker
-      // the shelf holds, γ h at its depth, at 11 s; the readout's own check is the take-off's, in SurfZoneSimulation.test.ts).
+      // Below the hinge its face climbs at pathSlope along the waves' path (+z).
       const below = zHinge - CANYON.hingeRounding - 5;
       expect((canyon.depthAt(x, below - 10) - canyon.depthAt(x, below)) / 10).toBeCloseTo(CANYON.pathSlope, 9);
       // Above it the fan's shallow face runs linearly from the crest line to the hinge line: never steeper than pathSlope,
@@ -350,8 +349,18 @@ describe('surf spot bathymetry', () => {
       expect(shallow).toBeLessThanOrEqual(CANYON.pathSlope + 1e-12);
       expect((canyon.depthAt(x, zLine - 10) - canyon.depthAt(x, zLine - 2)) / 8).toBeCloseTo(shallow, 9);
     }
-    const deepWavelength = (9.81 * 11 ** 2) / (2 * Math.PI);
-    expect(CANYON.pathSlope / Math.sqrt((0.78 * CANYON.shelfDepth) / deepWavelength)).toBeLessThan(0.4);
+    // The reef bed (2026-10-22, docs/research/canyon-reef-bed-2026-10-22): the waves breaking below the hinge plunge weakly,
+    // as the owner's reference reel (the advisor: ξb about 0.42–0.55), and those breaking on the fan down the line spill.
+    // ξb = slope / √(Hb / L0) with the advisor's Hb = 0.78 h: Big's and Medium's sets near the peak, measured 3.3–3.7 m and
+    // 2.2–2.3 m deep there, and Big's median wave at the hinge; then Small on the fan's shallow face, 1.3 m deep at x = 10.
+    // Until then (1:30 below a 2.8 m hinge) every size spilled: ξb under 0.4 for even the breaker the platform holds.
+    const iribarren = (slope: number, depth: number, period: number) => slope / Math.sqrt((0.78 * depth) / ((9.81 * period ** 2) / (2 * Math.PI)));
+    for (const [depth, period] of [[3.5, 14], [2.25, 11], [CANYON.hingeDepth, 14]]) {
+      expect(iribarren(CANYON.pathSlope, depth, period)).toBeGreaterThanOrEqual(0.4);
+      expect(iribarren(CANYON.pathSlope, depth, period)).toBeLessThan(0.6);
+    }
+    const fanAt10 = (CANYON.hingeDepth - CANYON.crestDepth) / (canyonBreakLineZ(10) - canyonHingeZ(10));
+    expect(iribarren(fanAt10, 1.3, 9)).toBeLessThan(0.3);
   });
 
   it('puts every depth\'s contour furthest out at the Canyon\'s peak, so each wave starts breaking there', () => {

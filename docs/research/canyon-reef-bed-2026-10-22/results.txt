@@ -1,0 +1,625 @@
+# The reef bed's size-report runs (scripts/canyon-size-report.ts, built from the old bed's code; candidates by --canyon).
+# T = the old bed (1:30 below 2.8 m); A = the reef bed (pathSlope 0.043478 = 1:23, hingeDepth 2.2); B 1:24/2.1, C 1:25/2.2, D 1:23/2.0, E 1:24/1.6, F 1:24/1.8.
+# *-1x8: 1 seed x 8 periods; A3/T3: 3 seeds x 14 periods, --stability; S600: seed 1, about 600 s, --stability.
+# Then arm-report.ts on each run's onsets (ξb along the arm; the take-off's column at today's take-off depth).
+
+## T3-small
+
+small: Hs 0.9 m, Tp 9 s, s 150; 3 seed(s) × 14 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.03333333333333333,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 36 samples, 30 clean; toward +x 29 of 30; median angle 29°, median peel speed 8.6 m/s; readout: closes out 20, left (+x) 15, right (−x) 1
+crests: 40; starts median x -33, 10–90 % -40…21, within ±10 m 29 of 40; start z median -304, depth median 1.49 m, seaward of the line median 21 m
+  starts by bed part: arm face 32, arm end 6, arm top 2; on the arm (face or end) 38 of 40
+  close-outs (≥ 40 m within 2 s): 0; spans median 14 m, 90th 22 m
+  upcoast (> 2 onsets over 5 m within 3 s): 5; reach median 5 m, 90th 9 m, most 9 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 36; toward +x 35; median 40°, speed 6.2 m/s
+onsets: 2509; by bed part: arm face 1801, arm top 586, beach face 68, arm end 54; depth median 1.41 m, 10–90 % 1.03…2.02 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 6.57°): 291 reads; closes out 203 (70 %), left (+x) 86 (30 %), right (−x) 2 (1 %), mixed 0 (0 %); clean toward +x 241 of 247; median angle 23°, angle of the +x reads ≥ 27°: median 39°
+health seed 1: fastest 3.99 m/s, Froude caps 0 (0 in water), volume -0.16 %, finite true; onsets per 100 s 622 101
+health seed 2: fastest 4.77 m/s, Froude caps 0 (0 in water), volume 0.03 %, finite true; onsets per 100 s 732 168
+health seed 3: fastest 4.73 m/s, Froude caps 0 (0 in water), volume 0.06 %, finite true; onsets per 100 s 695 191
+elapsed 670 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:30.0, hinge 2.8 m, fan 15°; 2509 onsets, 1855 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   28 2.02  1.66  1:395  0.02 0.02 |   10  2.09  1.99  1:395  0.02 0.02  26.5 | 0 %, 0 %
+   -30 ±10 |  349 1.73  1.33  1: 39  0.25 0.23 |  117  1.94  1.75  1: 35  0.25 0.26  3.1 | 0 %, 0 %
+   -10 ±10 |  390 1.54  0.68  1: 55  0.23 0.18 |  130  1.93  1.01  1: 47  0.23 0.19  3.9 | 0 %, 0 %
+    10 ±10 |  403 1.45  0.67  1: 70  0.18 0.13 |  135  1.70  0.85  1: 66  0.18 0.14  5.1 | 0 %, 0 %
+    30 ±10 |  460 1.45  0.66  1: 86  0.13 0.11 |  154  1.90  0.90  1: 81  0.15 0.11  6.1 | 0 %, 0 %
+    50 ±10 |  216 1.42  0.62  1: 98  0.14 0.10 |   72  1.93  0.80  1: 90  0.14 0.10  6.7 | 0 %, 0 %
+  whole arm: ξb median 0.15 (10–90 % 0.05…0.27); sets 0.18; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.11, sets 0.14
+take-off column x -30 ± 4 m: 27 waves; start depth 10 / 50 / 90 % 1.18 / 1.59 / 2.26 m (the take-off is fitted to the 90th); start z median -308, faces median 1.34 m
+
+## A3-small
+
+small: Hs 0.9 m, Tp 9 s, s 150; 3 seed(s) × 14 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 36 samples, 34 clean; toward +x 32 of 34; median angle 28°, median peel speed 8.6 m/s; readout: closes out 18, left (+x) 17, right (−x) 1
+crests: 43; starts median x -36, 10–90 % -40…-5, within ±10 m 32 of 43; start z median -306, depth median 1.44 m, seaward of the line median 10 m
+  starts by bed part: arm face 29, arm end 7, arm top 4, beach face 3; on the arm (face or end) 36 of 43
+  close-outs (≥ 40 m within 2 s): 0; spans median 10 m, 90th 18 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 3 m, 90th 5 m, most 7 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 34; toward +x 34; median 37°, speed 6.6 m/s
+onsets: 2768; by bed part: arm face 2221, arm top 450, beach face 46, arm end 46, shelf 5; depth median 1.48 m, 10–90 % 1.06…1.99 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 7.36°): 305 reads; closes out 154 (50 %), left (+x) 144 (47 %), right (−x) 7 (2 %), mixed 0 (0 %); clean toward +x 258 of 271; median angle 28°, angle of the +x reads ≥ 27°: median 47°
+health seed 1: fastest 4.50 m/s, Froude caps 0 (0 in water), volume -0.18 %, finite true; onsets per 100 s 735 70
+health seed 2: fastest 5.12 m/s, Froude caps 0 (0 in water), volume 0.01 %, finite true; onsets per 100 s 813 169
+health seed 3: fastest 4.76 m/s, Froude caps 0 (0 in water), volume 0.03 %, finite true; onsets per 100 s 779 202
+elapsed 680 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 2768 onsets, 2267 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   22 2.13  1.80  1:384  0.02 0.02 |    8  2.13  2.06  1:384  0.02 0.02  25.8 | 0 %, 0 %
+   -30 ±10 |  446 1.65  1.25  1: 35  0.32 0.28 |  149  1.85  1.65  1: 27  0.32 0.33  2.6 | 4 %, 0 %
+   -10 ±10 |  446 1.45  0.60  1: 62  0.22 0.16 |  149  1.77  0.78  1: 51  0.24 0.18  4.1 | 0 %, 0 %
+    10 ±10 |  486 1.44  0.63  1: 84  0.13 0.12 |  162  1.68  0.88  1: 76  0.16 0.13  5.8 | 0 %, 0 %
+    30 ±10 |  544 1.47  0.64  1:105  0.12 0.10 |  182  1.78  0.97  1: 90  0.13 0.11  6.6 | 0 %, 0 %
+    50 ±10 |  302 1.63  0.68  1:118  0.11 0.09 |  101  1.98  0.87  1: 98  0.12 0.09  7.2 | 0 %, 0 %
+  whole arm: ξb median 0.13 (10–90 % 0.05…0.32); sets 0.15; ξb ≥ 0.4: 1 % of onsets, 0 % of the sets'; ξγ median 0.10, sets 0.13
+take-off column x -30 ± 4 m: 33 waves; start depth 10 / 50 / 90 % 1.29 / 1.54 / 2.23 m (the take-off is fitted to the 90th); start z median -307, faces median 1.38 m
+
+## T3-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 3 seed(s) × 14 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.03333333333333333,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 40 samples, 35 clean; toward +x 35 of 35; median angle 30°, median peel speed 9.4 m/s; readout: left (+x) 21, closes out 19
+crests: 50; starts median x -37, 10–90 % -42…5, within ±10 m 41 of 50; start z median -326, depth median 1.98 m, seaward of the line median 30 m
+  starts by bed part: arm face 28, arm end 16, arm top 3, shelf 2, beach face 1; on the arm (face or end) 44 of 50
+  close-outs (≥ 40 m within 2 s): 1; spans median 18 m, 90th 26 m
+  upcoast (> 2 onsets over 5 m within 3 s): 8; reach median 6 m, 90th 8 m, most 115 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 45; toward +x 45; median 44°, speed 6.8 m/s
+onsets: 3864; by bed part: arm face 3044, arm top 413, beach face 216, arm end 160, shelf 31; depth median 1.87 m, 10–90 % 1.14…2.79 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.58°): 411 reads; closes out 181 (44 %), left (+x) 225 (55 %), right (−x) 5 (1 %), mixed 0 (0 %); clean toward +x 355 of 362; median angle 32°, angle of the +x reads ≥ 27°: median 39°
+health seed 1: fastest 5.37 m/s, Froude caps 0 (0 in water), volume 0.03 %, finite true; onsets per 100 s 725 513
+health seed 2: fastest 6.21 m/s, Froude caps 0 (0 in water), volume 0.08 %, finite true; onsets per 100 s 879 437
+health seed 3: fastest 6.98 m/s, Froude caps 0 (0 in water), volume 0.40 %, finite true; onsets per 100 s 841 469
+elapsed 911 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:30.0, hinge 2.8 m, fan 15°; 3864 onsets, 3204 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |  114 2.38  2.01  1:400  0.02 0.03 |   38  2.38  2.44  1:400  0.02 0.03  26.8 | 0 %, 0 %
+   -30 ±10 |  563 2.24  1.88  1: 35  0.28 0.28 |  188  2.53  2.43  1: 32  0.27 0.30  2.9 | 0 %, 0 %
+   -10 ±10 |  585 2.21  1.16  1: 48  0.27 0.22 |  195  2.71  1.53  1: 41  0.26 0.24  3.5 | 2 %, 0 %
+    10 ±10 |  603 2.02  0.90  1: 64  0.23 0.17 |  201  2.49  1.18  1: 59  0.21 0.18  4.6 | 0 %, 0 %
+    30 ±10 |  610 1.83  0.85  1: 79  0.18 0.14 |  204  2.70  1.28  1: 63  0.20 0.15  4.9 | 0 %, 0 %
+    50 ±10 |  552 1.61  0.73  1: 95  0.17 0.13 |  184  2.34  1.00  1: 90  0.16 0.12  6.7 | 0 %, 0 %
+  whole arm: ξb median 0.22 (10–90 % 0.08…0.31); sets 0.24; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.17, sets 0.19
+take-off column x -30 ± 4 m: 34 waves; start depth 10 / 50 / 90 % 1.48 / 2.20 / 2.65 m (the take-off is fitted to the 90th); start z median -329, faces median 2.09 m
+
+## A3-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 3 seed(s) × 14 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 42 samples, 34 clean; toward +x 32 of 34; median angle 28°, median peel speed 10.0 m/s; readout: closes out 24, left (+x) 16, right (−x) 2
+crests: 46; starts median x -39, 10–90 % -42…-17, within ±10 m 39 of 46; start z median -324, depth median 1.88 m, seaward of the line median 22 m
+  starts by bed part: arm end 22, arm face 21, beach face 2, arm top 1; on the arm (face or end) 43 of 46
+  close-outs (≥ 40 m within 2 s): 1; spans median 16 m, 90th 25 m
+  upcoast (> 2 onsets over 5 m within 3 s): 4; reach median 5 m, 90th 10 m, most 106 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 40; toward +x 40; median 43°, speed 7.1 m/s
+onsets: 4034; by bed part: arm face 3211, arm top 390, beach face 241, arm end 152, shelf 40; depth median 1.83 m, 10–90 % 1.16…2.70 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 10.24°): 428 reads; closes out 243 (57 %), left (+x) 171 (40 %), right (−x) 14 (3 %), mixed 0 (0 %); clean toward +x 345 of 369; median angle 27°, angle of the +x reads ≥ 27°: median 42°
+health seed 1: fastest 5.95 m/s, Froude caps 0 (0 in water), volume 0.01 %, finite true; onsets per 100 s 773 554
+health seed 2: fastest 7.89 m/s, Froude caps 0 (0 in water), volume -0.07 %, finite true; onsets per 100 s 918 426
+health seed 3: fastest 8.10 m/s, Froude caps 0 (0 in water), volume 0.40 %, finite true; onsets per 100 s 862 501
+elapsed 1090 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 4034 onsets, 3363 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |  104 2.24  2.09  1:387  0.03 0.03 |   35  2.38  2.45  1:387  0.02 0.03  26.0 | 1 %, 0 %
+   -30 ±10 |  596 2.15  1.65  1: 26  0.38 0.40 |  199  2.48  2.27  1: 23  0.38 0.41  2.3 | 37 %, 18 %
+   -10 ±10 |  584 1.94  0.96  1: 46  0.31 0.25 |  195  2.45  1.40  1: 29  0.42 0.35  2.7 | 23 %, 53 %
+    10 ±10 |  552 1.79  0.83  1: 70  0.22 0.17 |  184  2.38  1.17  1: 38  0.34 0.27  3.3 | 12 %, 36 %
+    30 ±10 |  628 1.83  0.86  1: 90  0.18 0.13 |  210  2.52  1.24  1: 30  0.41 0.33  2.8 | 17 %, 51 %
+    50 ±10 |  647 1.74  0.73  1:113  0.15 0.11 |  216  2.20  1.05  1: 74  0.19 0.14  5.6 | 12 %, 37 %
+  whole arm: ξb median 0.22 (10–90 % 0.07…0.47); sets 0.37; ξb ≥ 0.4: 20 % of onsets, 38 % of the sets'; ξγ median 0.16, sets 0.35
+take-off column x -30 ± 4 m: 39 waves; start depth 10 / 50 / 90 % 1.11 / 2.04 / 2.69 m (the take-off is fitted to the 90th); start z median -321, faces median 1.79 m
+
+## T3-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 3 seed(s) × 14 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.03333333333333333,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 42 samples, 40 clean; toward +x 40 of 40; median angle 31°, median peel speed 11.5 m/s; readout: left (+x) 29, closes out 13
+crests: 49; starts median x -43, 10–90 % -47…-32, within ±10 m 43 of 49; start z median -359, depth median 2.44 m, seaward of the line median 43 m
+  starts by bed part: arm end 38, arm face 9, beach face 1, shelf 1; on the arm (face or end) 47 of 49
+  close-outs (≥ 40 m within 2 s): 1; spans median 24 m, 90th 32 m
+  upcoast (> 2 onsets over 5 m within 3 s): 19; reach median 6 m, 90th 19 m, most 26 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 39; toward +x 39; median 42°, speed 8.7 m/s
+onsets: 4829; by bed part: arm face 3818, arm end 448, shelf 258, beach face 168, arm top 137; depth median 2.87 m, 10–90 % 1.78…4.59 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 2.94°): 549 reads; closes out 224 (41 %), left (+x) 323 (59 %), right (−x) 2 (0 %), mixed 0 (0 %); clean toward +x 523 of 525; median angle 31°, angle of the +x reads ≥ 27°: median 36°
+health seed 1: fastest 8.40 m/s, Froude caps 0 (0 in water), volume 0.37 %, finite true; onsets per 100 s 791 834
+health seed 2: fastest 8.41 m/s, Froude caps 0 (0 in water), volume 0.37 %, finite true; onsets per 100 s 811 687
+health seed 3: fastest 8.47 m/s, Froude caps 0 (0 in water), volume -1.10 %, finite true; onsets per 100 s 917 789
+elapsed 1745 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:30.0, hinge 2.8 m, fan 15°; 4829 onsets, 4266 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |  379 3.38  2.80  1:416  0.03 0.03 |  127  3.57  3.48  1:412  0.02 0.03  27.6 | 0 %, 0 %
+   -30 ±10 |  738 2.84  2.30  1: 31  0.36 0.36 |  246  3.55  2.98  1: 30  0.34 0.35  2.8 | 26 %, 0 %
+   -10 ±10 |  661 3.11  1.51  1: 32  0.41 0.31 |  221  4.05  1.77  1: 30  0.43 0.32  2.8 | 56 %, 74 %
+    10 ±10 |  623 2.86  1.38  1: 45  0.35 0.27 |  208  4.35  1.69  1: 30  0.44 0.31  2.8 | 40 %, 79 %
+    30 ±10 |  732 2.70  1.31  1: 62  0.28 0.21 |  244  4.13  1.69  1: 30  0.43 0.31  2.8 | 32 %, 67 %
+    50 ±10 |  680 2.70  1.30  1: 72  0.23 0.17 |  227  3.51  1.65  1: 30  0.43 0.33  2.8 | 27 %, 59 %
+  whole arm: ξb median 0.34 (10–90 % 0.17…0.46); sets 0.40; ξb ≥ 0.4: 32 % of onsets, 49 % of the sets'; ξγ median 0.30, sets 0.32
+take-off column x -30 ± 4 m: 42 waves; start depth 10 / 50 / 90 % 1.75 / 2.90 / 4.07 m (the take-off is fitted to the 90th); start z median -352, faces median 2.77 m
+
+## A3-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 3 seed(s) × 14 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 42 samples, 41 clean; toward +x 40 of 41; median angle 36°, median peel speed 9.9 m/s; readout: left (+x) 28, closes out 13, right (−x) 1
+crests: 50; starts median x -42, 10–90 % -46…-29, within ±10 m 44 of 50; start z median -342, depth median 2.38 m, seaward of the line median 33 m
+  starts by bed part: arm end 35, arm face 13, beach face 2; on the arm (face or end) 48 of 50
+  close-outs (≥ 40 m within 2 s): 0; spans median 19 m, 90th 32 m
+  upcoast (> 2 onsets over 5 m within 3 s): 22; reach median 7 m, 90th 22 m, most 116 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 37; toward +x 36; median 40°, speed 9.0 m/s
+onsets: 5102; by bed part: arm face 3916, arm end 402, shelf 367, arm top 235, beach face 182; depth median 2.68 m, 10–90 % 1.72…4.72 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.26°): 549 reads; closes out 169 (31 %), left (+x) 376 (68 %), right (−x) 4 (1 %), mixed 0 (0 %); clean toward +x 517 of 521; median angle 34°, angle of the +x reads ≥ 27°: median 37°
+health seed 1: fastest 8.35 m/s, Froude caps 0 (0 in water), volume 0.50 %, finite true; onsets per 100 s 830 878
+health seed 2: fastest 8.75 m/s, Froude caps 0 (0 in water), volume 0.17 %, finite true; onsets per 100 s 900 724
+health seed 3: fastest 8.32 m/s, Froude caps 0 (0 in water), volume -0.99 %, finite true; onsets per 100 s 922 848
+elapsed 1654 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 5102 onsets, 4318 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |  333 3.17  2.78  1:395  0.03 0.03 |  111  3.59  3.43  1:395  0.02 0.03  26.5 | 19 %, 31 %
+   -30 ±10 |  713 2.63  2.03  1: 23  0.50 0.47 |  238  3.58  2.89  1: 23  0.44 0.45  2.3 | 94 %, 88 %
+   -10 ±10 |  685 2.77  1.46  1: 23  0.56 0.41 |  229  4.21  1.81  1: 23  0.56 0.42  2.3 | 81 %, 100 %
+    10 ±10 |  674 2.64  1.28  1: 26  0.54 0.38 |  225  4.29  1.74  1: 23  0.57 0.41  2.3 | 61 %, 88 %
+    30 ±10 |  719 2.52  1.34  1: 37  0.44 0.35 |  240  3.50  1.58  1: 23  0.59 0.43  2.3 | 51 %, 78 %
+    50 ±10 |  727 2.65  1.28  1: 26  0.55 0.41 |  243  3.65  1.61  1: 23  0.59 0.44  2.3 | 55 %, 84 %
+  whole arm: ξb median 0.50 (10–90 % 0.16…0.64); sets 0.54; ξb ≥ 0.4: 64 % of onsets, 82 % of the sets'; ξγ median 0.42, sets 0.43
+take-off column x -30 ± 4 m: 40 waves; start depth 10 / 50 / 90 % 1.89 / 2.74 / 3.82 m (the take-off is fitted to the 90th); start z median -338, faces median 2.20 m
+
+## S600-small
+
+small: Hs 0.9 m, Tp 9 s, s 150; 1 seed(s) × 67 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 62 samples, 57 clean; toward +x 53 of 57; median angle 27°, median peel speed 8.7 m/s; readout: closes out 33, left (+x) 28, right (−x) 1
+crests: 66; starts median x -37, 10–90 % -42…-13, within ±10 m 53 of 66; start z median -310, depth median 1.48 m, seaward of the line median 11 m
+  starts by bed part: arm face 40, arm end 19, beach face 4, arm top 3; on the arm (face or end) 59 of 66
+  close-outs (≥ 40 m within 2 s): 0; spans median 14 m, 90th 18 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 3 m, 90th 5 m, most 7 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 55; toward +x 55; median 41°, speed 6.0 m/s
+onsets: 3762; by bed part: arm face 2935, arm top 612, beach face 112, arm end 91, shelf 12; depth median 1.48 m, 10–90 % 1.04…2.02 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 5.89°): 525 reads; closes out 257 (49 %), left (+x) 261 (50 %), right (−x) 7 (1 %), mixed 0 (0 %); clean toward +x 453 of 470; median angle 31°, angle of the +x reads ≥ 27°: median 41°
+health seed 1: fastest 4.82 m/s, Froude caps 0 (0 in water), volume 0.02 %, finite true; onsets per 100 s 735 594 480 676 534 730 13
+elapsed 986 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 3762 onsets, 3026 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   39 1.88  1.63  1:384  0.02 0.02 |   13  1.88  1.87  1:384  0.02 0.02  25.8 | 0 %, 0 %
+   -30 ±10 |  716 1.79  1.37  1: 33  0.30 0.28 |  239  1.86  1.74  1: 27  0.31 0.34  2.6 | 1 %, 0 %
+   -10 ±10 |  745 1.46  0.66  1: 60  0.23 0.17 |  249  1.78  0.84  1: 47  0.26 0.20  3.9 | 0 %, 0 %
+    10 ±10 |  607 1.46  0.62  1: 83  0.15 0.12 |  203  1.76  0.86  1: 72  0.17 0.13  5.5 | 0 %, 0 %
+    30 ±10 |  546 1.51  0.65  1: 99  0.13 0.10 |  182  1.96  0.92  1: 82  0.15 0.11  6.1 | 0 %, 1 %
+    50 ±10 |  318 1.58  0.65  1:117  0.12 0.09 |  106  2.00  0.81  1: 90  0.13 0.10  6.7 | 1 %, 2 %
+  whole arm: ξb median 0.15 (10–90 % 0.05…0.32); sets 0.19; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.11, sets 0.15
+take-off column x -30 ± 4 m: 57 waves; start depth 10 / 50 / 90 % 1.14 / 1.67 / 2.11 m (the take-off is fitted to the 90th); start z median -311, faces median 1.54 m
+
+## S600-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 55 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 54 samples, 51 clean; toward +x 47 of 51; median angle 29°, median peel speed 9.7 m/s; readout: closes out 26, left (+x) 25, right (−x) 3
+crests: 56; starts median x -39, 10–90 % -42…-34, within ±10 m 52 of 56; start z median -328, depth median 1.88 m, seaward of the line median 20 m
+  starts by bed part: arm end 30, arm face 23, beach face 2, arm top 1; on the arm (face or end) 53 of 56
+  close-outs (≥ 40 m within 2 s): 0; spans median 19 m, 90th 24 m
+  upcoast (> 2 onsets over 5 m within 3 s): 1; reach median 4 m, 90th 7 m, most 10 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 45; toward +x 45; median 45°, speed 6.7 m/s
+onsets: 5080; by bed part: arm face 3867, arm top 583, beach face 389, arm end 195, shelf 46; depth median 1.83 m, 10–90 % 1.11…2.60 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 10.24°): 590 reads; closes out 271 (46 %), left (+x) 296 (50 %), right (−x) 23 (4 %), mixed 0 (0 %); clean toward +x 504 of 538; median angle 31°, angle of the +x reads ≥ 27°: median 40°
+health seed 1: fastest 5.98 m/s, Froude caps 0 (0 in water), volume 0.30 %, finite true; onsets per 100 s 773 946 861 863 835 733 69
+elapsed 1009 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 5080 onsets, 4062 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |  119 2.13  1.96  1:387  0.03 0.03 |   40  2.13  2.22  1:384  0.02 0.03  25.8 | 2 %, 5 %
+   -30 ±10 |  847 2.22  1.77  1: 26  0.39 0.40 |  283  2.31  2.24  1: 24  0.38 0.42  2.4 | 36 %, 12 %
+   -10 ±10 |  728 2.06  1.04  1: 42  0.32 0.26 |  243  2.56  1.33  1: 26  0.45 0.38  2.5 | 31 %, 70 %
+    10 ±10 |  668 1.68  0.76  1: 76  0.21 0.16 |  223  2.17  1.08  1: 51  0.27 0.21  4.1 | 7 %, 22 %
+    30 ±10 |  731 1.73  0.81  1: 93  0.17 0.13 |  244  2.17  1.27  1: 65  0.19 0.16  5.0 | 8 %, 24 %
+    50 ±10 |  679 1.71  0.78  1:112  0.15 0.11 |  227  2.35  1.22  1: 55  0.23 0.18  4.4 | 13 %, 40 %
+  whole arm: ξb median 0.22 (10–90 % 0.07…0.46); sets 0.36; ξb ≥ 0.4: 19 % of onsets, 32 % of the sets'; ξγ median 0.17, sets 0.35
+take-off column x -30 ± 4 m: 48 waves; start depth 10 / 50 / 90 % 1.46 / 2.19 / 2.56 m (the take-off is fitted to the 90th); start z median -325, faces median 2.04 m
+
+## S600-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 1 seed(s) × 43 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 43 samples, 43 clean; toward +x 43 of 43; median angle 41°, median peel speed 8.8 m/s; readout: left (+x) 33, closes out 10
+crests: 49; starts median x -43, 10–90 % -46…-32, within ±10 m 44 of 49; start z median -345, depth median 2.47 m, seaward of the line median 33 m
+  starts by bed part: arm end 38, arm face 10, beach face 1; on the arm (face or end) 48 of 49
+  close-outs (≥ 40 m within 2 s): 2; spans median 23 m, 90th 32 m
+  upcoast (> 2 onsets over 5 m within 3 s): 22; reach median 7 m, 90th 15 m, most 36 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 35; toward +x 35; median 46°, speed 8.1 m/s
+onsets: 5052; by bed part: arm face 4009, arm end 414, beach face 233, arm top 210, shelf 186; depth median 2.83 m, 10–90 % 1.75…4.18 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 2.79°): 588 reads; closes out 165 (28 %), left (+x) 420 (71 %), right (−x) 3 (1 %), mixed 0 (0 %); clean toward +x 569 of 572; median angle 36°, angle of the +x reads ≥ 27°: median 42°
+health seed 1: fastest 9.30 m/s, Froude caps 0 (0 in water), volume -0.15 %, finite true; onsets per 100 s 830 908 760 881 890 765 18
+elapsed 1685 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 5052 onsets, 4423 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |  342 3.14  2.68  1:395  0.03 0.03 |  114  3.17  3.17  1:391  0.03 0.03  26.3 | 22 %, 43 %
+   -30 ±10 |  766 2.85  2.04  1: 23  0.50 0.47 |  256  3.54  2.82  1: 23  0.45 0.46  2.3 | 98 %, 97 %
+   -10 ±10 |  726 3.24  1.48  1: 23  0.58 0.43 |  242  4.00  1.84  1: 23  0.55 0.43  2.3 | 87 %, 98 %
+    10 ±10 |  713 3.01  1.36  1: 23  0.58 0.42 |  238  4.13  1.70  1: 23  0.57 0.42  2.3 | 74 %, 92 %
+    30 ±10 |  712 2.95  1.38  1: 23  0.58 0.43 |  238  3.64  1.62  1: 23  0.58 0.43  2.3 | 64 %, 85 %
+    50 ±10 |  704 2.43  1.26  1: 43  0.38 0.29 |  235  3.57  1.70  1: 23  0.58 0.45  2.3 | 49 %, 91 %
+  whole arm: ξb median 0.53 (10–90 % 0.16…0.64); sets 0.54; ξb ≥ 0.4: 70 % of onsets, 89 % of the sets'; ξγ median 0.43, sets 0.44
+take-off column x -30 ± 4 m: 45 waves; start depth 10 / 50 / 90 % 1.89 / 2.74 / 3.74 m (the take-off is fitted to the 90th); start z median -338, faces median 2.14 m
+
+## T-today-small-1x8
+
+small: Hs 0.9 m, Tp 9 s, s 150; 1 seed(s) × 8 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.03333333333333333,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 7 clean; toward +x 7 of 7; median angle 31°, median peel speed 7.7 m/s; readout: closes out 4, left (+x) 4
+crests: 8; starts median x -30, 10–90 % -43…-2, within ±10 m 5 of 8; start z median -290, depth median 1.77 m, seaward of the line median 24 m
+  starts by bed part: arm face 6, arm top 1, arm end 1; on the arm (face or end) 7 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 16 m, 90th 21 m
+  upcoast (> 2 onsets over 5 m within 3 s): 1; reach median 4 m, 90th 9 m, most 9 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 42°, speed 6.0 m/s
+onsets: 503; by bed part: arm face 377, arm top 107, arm end 15, beach face 4; depth median 1.45 m, 10–90 % 1.02…1.98 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 4.43°): 52 reads; closes out 41 (79 %), left (+x) 10 (19 %), right (−x) 1 (2 %), mixed 0 (0 %); clean toward +x 46 of 47; median angle 17°, angle of the +x reads ≥ 27°: median 67°
+elapsed 152 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:30.0, hinge 2.8 m, fan 15°; 503 onsets, 392 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |    7 1.88  1.48  1:395  0.02 0.02 |    3  1.69  1.66  1:390  0.02 0.03  26.2 | 0 %, 0 %
+   -30 ±10 |   94 1.92  1.43  1: 38  0.25 0.23 |   32  2.05  1.91  1: 33  0.25 0.27  2.9 | 0 %, 0 %
+   -10 ±10 |   86 1.63  0.66  1: 52  0.25 0.19 |   29  1.85  0.85  1: 46  0.26 0.20  3.8 | 0 %, 0 %
+    10 ±10 |   86 1.47  0.67  1: 70  0.19 0.14 |   29  1.57  0.76  1: 72  0.17 0.13  5.5 | 0 %, 0 %
+    30 ±10 |   80 1.33  0.58  1:171  0.09 0.07 |   27  1.53  0.77  1: 79  0.16 0.13  5.9 | 0 %, 0 %
+    50 ±10 |   39 1.47  0.62  1: 93  0.15 0.10 |   13  1.76  0.69  1: 92  0.15 0.10  6.8 | 0 %, 0 %
+  whole arm: ξb median 0.17 (10–90 % 0.05…0.27); sets 0.18; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.14, sets 0.14
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.35 / 1.88 / 2.29 m (the take-off is fitted to the 90th); start z median -310, faces median 1.77 m
+
+## A-p23-h22-small
+
+small: Hs 0.9 m, Tp 9 s, s 150; 1 seed(s) × 8 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 7 samples, 7 clean; toward +x 6 of 7; median angle 32°, median peel speed 7.5 m/s; readout: left (+x) 4, closes out 3
+crests: 14; starts median x -37, 10–90 % -48…-15, within ±10 m 8 of 14; start z median -285, depth median 1.63 m, seaward of the line median 6 m
+  starts by bed part: arm face 8, beach face 3, arm top 2, arm end 1; on the arm (face or end) 9 of 14
+  close-outs (≥ 40 m within 2 s): 0; spans median 6 m, 90th 15 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 2 m, 90th 4 m, most 5 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 9; toward +x 9; median 40°, speed 6.1 m/s
+onsets: 636; by bed part: arm face 510, arm top 83, beach face 30, arm end 13; depth median 1.42 m, 10–90 % 1.04…1.86 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 5.89°): 56 reads; closes out 22 (39 %), left (+x) 34 (61 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 46 of 52; median angle 48°, angle of the +x reads ≥ 27°: median 56°
+elapsed 141 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 636 onsets, 523 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |    5 1.88  1.47  1:384  0.02 0.02 |    2  2.13  1.65  1:381  0.02 0.03  25.6 | 0 %, 0 %
+   -30 ±10 |   95 1.74  1.31  1: 36  0.32 0.27 |   32  1.91  1.73  1: 26  0.33 0.34  2.5 | 2 %, 0 %
+   -10 ±10 |  124 1.38  0.55  1:272  0.07 0.05 |   42  1.75  0.69  1: 47  0.25 0.20  3.9 | 0 %, 0 %
+    10 ±10 |  124 1.54  0.65  1: 82  0.15 0.13 |   42  1.68  0.86  1: 77  0.16 0.13  5.9 | 0 %, 0 %
+    30 ±10 |  117 1.34  0.60  1:176  0.10 0.07 |   39  1.51  0.77  1: 99  0.13 0.10  7.3 | 0 %, 0 %
+    50 ±10 |   58 1.45  0.59  1:120  0.11 0.08 |   20  1.71  0.73  1:115  0.11 0.09  8.3 | 0 %, 0 %
+  whole arm: ξb median 0.13 (10–90 % 0.05…0.32); sets 0.15; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.09, sets 0.13
+take-off column x -30 ± 4 m: 7 waves; start depth 10 / 50 / 90 % 1.14 / 1.71 / 2.31 m (the take-off is fitted to the 90th); start z median -307, faces median 1.55 m
+
+## D-p23-h20-small
+
+small: Hs 0.9 m, Tp 9 s, s 150; 1 seed(s) × 8 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 7 of 8; median angle 54°, median peel speed 5.2 m/s; readout: left (+x) 6, closes out 2
+crests: 9; starts median x -36, 10–90 % -40…-15, within ±10 m 7 of 9; start z median -299, depth median 1.48 m, seaward of the line median 14 m
+  starts by bed part: arm face 8, arm end 1; on the arm (face or end) 9 of 9
+  close-outs (≥ 40 m within 2 s): 0; spans median 9 m, 90th 18 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 3 m, 90th 6 m, most 6 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 9; toward +x 9; median 40°, speed 6.1 m/s
+onsets: 611; by bed part: arm face 528, arm top 70, arm end 13; depth median 1.41 m, 10–90 % 1.08…1.79 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 5.02°): 62 reads; closes out 15 (24 %), left (+x) 47 (76 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 57 of 61; median angle 52°, angle of the +x reads ≥ 27°: median 56°
+elapsed 132 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:23.0, hinge 2 m, fan 15°; 611 onsets, 541 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |    5 1.88  1.47  1:384  0.02 0.02 |    2  2.13  1.65  1:381  0.02 0.03  25.6 | 0 %, 0 %
+   -30 ±10 |   96 1.70  1.32  1: 35  0.32 0.28 |   32  1.93  1.73  1: 25  0.33 0.35  2.4 | 0 %, 0 %
+   -10 ±10 |  125 1.42  0.56  1: 72  0.21 0.15 |   42  1.69  0.68  1: 47  0.23 0.20  3.9 | 0 %, 0 %
+    10 ±10 |  132 1.48  0.61  1: 93  0.13 0.11 |   44  1.59  0.82  1: 78  0.14 0.13  5.9 | 0 %, 0 %
+    30 ±10 |  118 1.31  0.57  1:207  0.08 0.06 |   40  1.46  0.75  1:115  0.11 0.09  8.3 | 0 %, 0 %
+    50 ±10 |   65 1.44  0.57  1:141  0.10 0.07 |   22  1.62  0.73  1:129  0.10 0.08  9.2 | 0 %, 0 %
+  whole arm: ξb median 0.11 (10–90 % 0.05…0.31); sets 0.14; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.08, sets 0.11
+take-off column x -30 ± 4 m: 9 waves; start depth 10 / 50 / 90 % 1.13 / 1.69 / 2.30 m (the take-off is fitted to the 90th); start z median -297, faces median 1.28 m
+
+## E-p24-h16-small
+
+small: Hs 0.9 m, Tp 9 s, s 150; 1 seed(s) × 8 periods; c_b 3.95 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.041667,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":1.6,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 7 clean; toward +x 7 of 7; median angle 51°, median peel speed 5.1 m/s; readout: left (+x) 6, closes out 2
+crests: 8; starts median x -31, 10–90 % -40…2, within ±10 m 6 of 8; start z median -298, depth median 1.46 m, seaward of the line median 16 m
+  starts by bed part: arm face 4, arm end 3, arm top 1; on the arm (face or end) 7 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 15 m, 90th 34 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 3 m, 90th 33 m, most 33 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 41°, speed 6.1 m/s
+onsets: 601; by bed part: arm face 518, arm top 68, arm end 15; depth median 1.35 m, 10–90 % 1.06…1.76 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 2.92°): 62 reads; closes out 28 (45 %), left (+x) 34 (55 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 56 of 58; median angle 43°, angle of the +x reads ≥ 27°: median 53°
+elapsed 137 s
+small: Hs 0.9 m, Tp 9 s; canyon pathSlope 1:24.0, hinge 1.6 m, fan 15°; 601 onsets, 533 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |    7 1.88  1.60  1:385  0.02 0.02 |    3  1.88  1.74  1:385  0.02 0.02  25.9 | 0 %, 0 %
+   -30 ±10 |   96 1.68  1.34  1: 33  0.30 0.30 |   32  1.96  1.72  1: 25  0.32 0.35  2.4 | 5 %, 0 %
+   -10 ±10 |  134 1.41  0.59  1: 77  0.20 0.14 |   45  1.61  0.80  1: 49  0.23 0.20  4.0 | 3 %, 7 %
+    10 ±10 |  117 1.37  0.55  1:270  0.06 0.04 |   39  1.48  0.76  1: 97  0.13 0.11  7.1 | 1 %, 3 %
+    30 ±10 |  113 1.30  0.61  1:248  0.06 0.05 |   38  1.38  0.74  1:245  0.05 0.05  16.7 | 0 %, 0 %
+    50 ±10 |   66 1.29  0.50  1:217  0.07 0.05 |   22  1.38  0.57  1:209  0.07 0.05  14.4 | 0 %, 0 %
+  whole arm: ξb median 0.07 (10–90 % 0.04…0.32); sets 0.12; ξb ≥ 0.4: 2 % of onsets, 2 % of the sets'; ξγ median 0.05, sets 0.10
+take-off column x -30 ± 4 m: 7 waves; start depth 10 / 50 / 90 % 1.08 / 1.70 / 2.29 m (the take-off is fitted to the 90th); start z median -311, faces median 1.53 m
+
+## T-today-medium-1x8
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.03333333333333333,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 8 of 8; median angle 33°, median peel speed 9.3 m/s; readout: left (+x) 7, closes out 1
+crests: 8; starts median x -37, 10–90 % -43…-33, within ±10 m 8 of 8; start z median -335, depth median 2.03 m, seaward of the line median 31 m
+  starts by bed part: arm face 4, arm end 3, arm top 1; on the arm (face or end) 7 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 19 m, 90th 23 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 6 m, 90th 9 m, most 9 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 8; toward +x 8; median 48°, speed 6.6 m/s
+onsets: 686; by bed part: arm face 495, arm top 139, beach face 27, arm end 25; depth median 1.60 m, 10–90 % 1.07…2.39 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.58°): 72 reads; closes out 15 (21 %), left (+x) 56 (78 %), right (−x) 1 (1 %), mixed 0 (0 %); clean toward +x 64 of 65; median angle 41°, angle of the +x reads ≥ 27°: median 41°
+elapsed 202 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:30.0, hinge 2.8 m, fan 15°; 686 onsets, 520 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   18 2.13  1.90  1:400  0.03 0.03 |    6  2.13  2.19  1:400  0.02 0.03  26.8 | 0 %, 0 %
+   -30 ±10 |   99 2.18  1.84  1: 36  0.29 0.28 |   33  2.41  2.25  1: 33  0.28 0.31  3.0 | 0 %, 0 %
+   -10 ±10 |  101 2.18  1.06  1: 50  0.27 0.21 |   34  2.53  1.42  1: 44  0.27 0.22  3.7 | 0 %, 0 %
+    10 ±10 |  110 1.51  0.67  1: 69  0.22 0.17 |   37  1.94  0.88  1: 68  0.21 0.17  5.2 | 0 %, 0 %
+    30 ±10 |  105 1.62  0.80  1: 82  0.18 0.14 |   35  1.90  1.02  1: 79  0.18 0.14  5.9 | 0 %, 0 %
+    50 ±10 |   72 1.50  0.71  1: 93  0.16 0.13 |   24  1.80  0.96  1: 91  0.16 0.13  6.7 | 0 %, 0 %
+  whole arm: ξb median 0.21 (10–90 % 0.07…0.31); sets 0.21; ξb ≥ 0.4: 0 % of onsets, 0 % of the sets'; ξγ median 0.16, sets 0.17
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.58 / 2.41 / 2.50 m (the take-off is fitted to the 90th); start z median -333, faces median 2.14 m
+
+## A-p23-h22-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 6 of 8; median angle 30°, median peel speed 9.7 m/s; readout: left (+x) 4, right (−x) 2, closes out 2
+crests: 8; starts median x -37, 10–90 % -42…-36, within ±10 m 8 of 8; start z median -328, depth median 1.85 m, seaward of the line median 20 m
+  starts by bed part: arm face 4, arm end 3, beach face 1; on the arm (face or end) 7 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 15 m, 90th 22 m
+  upcoast (> 2 onsets over 5 m within 3 s): 1; reach median 5 m, 90th 10 m, most 10 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 44°, speed 6.7 m/s
+onsets: 711; by bed part: arm face 538, arm top 101, beach face 47, arm end 25; depth median 1.53 m, 10–90 % 1.10…2.23 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 10.24°): 77 reads; closes out 32 (42 %), left (+x) 37 (48 %), right (−x) 8 (10 %), mixed 0 (0 %); clean toward +x 61 of 70; median angle 31°, angle of the +x reads ≥ 27°: median 39°
+elapsed 317 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 711 onsets, 563 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   15 2.13  1.96  1:387  0.03 0.03 |    5  2.11  2.21  1:384  0.02 0.03  25.8 | 0 %, 0 %
+   -30 ±10 |  105 2.05  1.60  1: 26  0.39 0.39 |   35  2.25  2.11  1: 24  0.38 0.42  2.4 | 36 %, 17 %
+   -10 ±10 |  110 1.89  0.92  1: 49  0.28 0.23 |   37  2.06  1.35  1: 42  0.30 0.27  3.5 | 14 %, 30 %
+    10 ±10 |   98 1.49  0.70  1: 83  0.16 0.15 |   33  1.57  0.89  1: 80  0.19 0.15  6.0 | 0 %, 0 %
+    30 ±10 |  128 1.55  0.73  1: 97  0.14 0.12 |   43  1.82  1.11  1: 90  0.14 0.13  6.7 | 0 %, 0 %
+    50 ±10 |   87 1.41  0.64  1:120  0.14 0.11 |   29  1.90  0.85  1:100  0.14 0.11  7.3 | 0 %, 0 %
+  whole arm: ξb median 0.16 (10–90 % 0.07…0.40); sets 0.18; ξb ≥ 0.4: 10 % of onsets, 9 % of the sets'; ξγ median 0.13, sets 0.15
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.00 / 2.19 / 2.56 m (the take-off is fitted to the 90th); start z median -318, faces median 1.94 m
+
+## B-p24-h21-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.041667,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.1,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 7 samples, 7 clean; toward +x 5 of 7; median angle 29°, median peel speed 9.7 m/s; readout: left (+x) 4, closes out 2, right (−x) 1
+crests: 10; starts median x -39, 10–90 % -45…-35, within ±10 m 9 of 10; start z median -318, depth median 1.90 m, seaward of the line median 22 m
+  starts by bed part: arm end 4, beach face 3, arm face 3; on the arm (face or end) 7 of 10
+  close-outs (≥ 40 m within 2 s): 0; spans median 15 m, 90th 22 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 4 m, 90th 7 m, most 7 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 8; toward +x 8; median 45°, speed 6.6 m/s
+onsets: 725; by bed part: arm face 578, arm top 75, beach face 47, arm end 25; depth median 1.55 m, 10–90 % 1.10…2.25 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 4.30°): 76 reads; closes out 22 (29 %), left (+x) 47 (62 %), right (−x) 7 (9 %), mixed 0 (0 %); clean toward +x 57 of 73; median angle 36°, angle of the +x reads ≥ 27°: median 39°
+elapsed 175 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:24.0, hinge 2.1 m, fan 15°; 725 onsets, 603 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   16 2.38  1.95  1:389  0.03 0.03 |    6  2.13  2.21  1:385  0.02 0.03  25.9 | 0 %, 0 %
+   -30 ±10 |  107 2.18  1.72  1: 26  0.38 0.39 |   36  2.26  2.11  1: 24  0.37 0.41  2.4 | 32 %, 6 %
+   -10 ±10 |  110 1.86  0.92  1: 50  0.28 0.23 |   37  2.12  1.34  1: 39  0.30 0.27  3.4 | 22 %, 38 %
+    10 ±10 |  109 1.45  0.62  1: 92  0.13 0.14 |   37  1.64  0.90  1: 83  0.18 0.14  6.2 | 0 %, 0 %
+    30 ±10 |  143 1.53  0.76  1:105  0.13 0.12 |   48  1.74  1.17  1: 97  0.13 0.12  7.1 | 0 %, 0 %
+    50 ±10 |   96 1.68  0.70  1:123  0.13 0.10 |   32  1.82  0.87  1:110  0.13 0.11  8.0 | 0 %, 0 %
+  whole arm: ξb median 0.15 (10–90 % 0.07…0.40); sets 0.17; ξb ≥ 0.4: 10 % of onsets, 8 % of the sets'; ξγ median 0.12, sets 0.14
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.78 / 2.17 / 2.54 m (the take-off is fitted to the 90th); start z median -327, faces median 2.06 m
+
+## C-p25-h22-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.04,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 6 of 8; median angle 47°, median peel speed 6.7 m/s; readout: left (+x) 5, right (−x) 2, closes out 1
+crests: 11; starts median x -38, 10–90 % -45…-33, within ±10 m 9 of 11; start z median -317, depth median 1.73 m, seaward of the line median 21 m
+  starts by bed part: arm face 5, beach face 3, arm end 3; on the arm (face or end) 8 of 11
+  close-outs (≥ 40 m within 2 s): 0; spans median 12 m, 90th 20 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 4 m, 90th 8 m, most 11 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 8; toward +x 8; median 45°, speed 6.6 m/s
+onsets: 731; by bed part: arm face 584, arm top 74, beach face 45, arm end 28; depth median 1.57 m, 10–90 % 1.11…2.27 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 9.41°): 77 reads; closes out 17 (22 %), left (+x) 51 (66 %), right (−x) 9 (12 %), mixed 0 (0 %); clean toward +x 63 of 72; median angle 36°, angle of the +x reads ≥ 27°: median 36°
+elapsed 179 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:25.0, hinge 2.2 m, fan 15°; 731 onsets, 612 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   18 2.13  1.95  1:390  0.03 0.03 |    6  2.07  2.24  1:387  0.02 0.03  26.0 | 0 %, 0 %
+   -30 ±10 |  109 2.21  1.64  1: 28  0.36 0.37 |   37  2.29  2.14  1: 26  0.36 0.39  2.5 | 20 %, 0 %
+   -10 ±10 |  122 1.82  0.99  1: 49  0.28 0.23 |   41  2.06  1.40  1: 45  0.26 0.25  3.8 | 9 %, 22 %
+    10 ±10 |  104 1.46  0.66  1: 85  0.16 0.14 |   35  1.70  0.92  1: 81  0.18 0.15  6.1 | 0 %, 0 %
+    30 ±10 |  135 1.49  0.73  1: 99  0.13 0.12 |   45  1.84  1.07  1: 93  0.14 0.13  6.8 | 0 %, 0 %
+    50 ±10 |  105 1.56  0.66  1:122  0.14 0.10 |   35  1.88  0.83  1:110  0.14 0.11  8.0 | 0 %, 0 %
+  whole arm: ξb median 0.16 (10–90 % 0.07…0.37); sets 0.18; ξb ≥ 0.4: 6 % of onsets, 5 % of the sets'; ξγ median 0.13, sets 0.15
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.76 / 2.26 / 2.52 m (the take-off is fitted to the 90th); start z median -329, faces median 2.03 m
+
+## D-p23-h20-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 7 samples, 7 clean; toward +x 6 of 7; median angle 33°, median peel speed 8.5 m/s; readout: left (+x) 5, right (−x) 1, closes out 1
+crests: 12; starts median x -37, 10–90 % -45…-21, within ±10 m 10 of 12; start z median -313, depth median 1.77 m, seaward of the line median 19 m
+  starts by bed part: arm face 5, beach face 3, arm end 3, arm top 1; on the arm (face or end) 8 of 12
+  close-outs (≥ 40 m within 2 s): 0; spans median 11 m, 90th 19 m
+  upcoast (> 2 onsets over 5 m within 3 s): 1; reach median 5 m, 90th 7 m, most 11 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 11; toward +x 9; median 40°, speed 7.4 m/s
+onsets: 742; by bed part: arm face 587, arm top 80, beach face 51, arm end 24; depth median 1.54 m, 10–90 % 1.11…2.18 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.04°): 73 reads; closes out 16 (22 %), left (+x) 50 (68 %), right (−x) 7 (10 %), mixed 0 (0 %); clean toward +x 65 of 72; median angle 39°, angle of the +x reads ≥ 27°: median 39°
+elapsed 186 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:23.0, hinge 2 m, fan 15°; 742 onsets, 611 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   15 2.13  1.95  1:387  0.03 0.03 |    5  2.13  2.21  1:387  0.02 0.03  26.0 | 0 %, 0 %
+   -30 ±10 |  103 2.00  1.58  1: 26  0.39 0.41 |   35  2.26  2.11  1: 23  0.39 0.42  2.3 | 44 %, 37 %
+   -10 ±10 |  111 1.81  0.87  1: 49  0.27 0.23 |   37  1.98  1.36  1: 43  0.30 0.27  3.6 | 22 %, 32 %
+    10 ±10 |  107 1.46  0.61  1: 93  0.13 0.13 |   36  1.61  0.90  1: 88  0.17 0.14  6.6 | 0 %, 0 %
+    30 ±10 |  139 1.49  0.74  1:112  0.12 0.11 |   47  1.76  1.05  1: 95  0.14 0.12  7.0 | 0 %, 0 %
+    50 ±10 |  111 1.65  0.70  1:126  0.13 0.10 |   37  1.87  0.85  1:100  0.15 0.11  7.3 | 0 %, 0 %
+  whole arm: ξb median 0.15 (10–90 % 0.07…0.42); sets 0.16; ξb ≥ 0.4: 12 % of onsets, 13 % of the sets'; ξγ median 0.12, sets 0.14
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.02 / 2.18 / 2.56 m (the take-off is fitted to the 90th); start z median -318, faces median 1.92 m
+
+## E-p24-h16-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.041667,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":1.6,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 7 clean; toward +x 7 of 7; median angle 34°, median peel speed 8.3 m/s; readout: left (+x) 6, closes out 2
+crests: 8; starts median x -37, 10–90 % -42…-32, within ±10 m 8 of 8; start z median -329, depth median 2.00 m, seaward of the line median 24 m
+  starts by bed part: arm face 4, arm end 3, beach face 1; on the arm (face or end) 7 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 15 m, 90th 22 m
+  upcoast (> 2 onsets over 5 m within 3 s): 3; reach median 7 m, 90th 10 m, most 10 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 8; toward +x 7; median 41°, speed 7.2 m/s
+onsets: 729; by bed part: arm face 627, arm top 47, arm end 30, beach face 25; depth median 1.46 m, 10–90 % 1.13…2.21 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.15°): 77 reads; closes out 37 (48 %), left (+x) 40 (52 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 57 of 65; median angle 35°, angle of the +x reads ≥ 27°: median 43°
+elapsed 173 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:24.0, hinge 1.6 m, fan 15°; 729 onsets, 657 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   20 2.13  1.94  1:389  0.03 0.03 |    7  2.07  2.18  1:385  0.02 0.03  25.9 | 0 %, 0 %
+   -30 ±10 |  105 2.02  1.64  1: 24  0.40 0.41 |   35  2.30  2.21  1: 24  0.38 0.42  2.4 | 46 %, 20 %
+   -10 ±10 |  112 1.61  0.82  1: 47  0.26 0.26 |   38  2.10  1.32  1: 25  0.45 0.40  2.5 | 35 %, 50 %
+    10 ±10 |  133 1.26  0.54  1:273  0.07 0.05 |   45  1.56  0.91  1: 89  0.17 0.14  6.6 | 9 %, 27 %
+    30 ±10 |  141 1.36  0.70  1:235  0.09 0.06 |   47  1.52  0.99  1:116  0.12 0.11  8.4 | 1 %, 4 %
+    50 ±10 |  115 1.53  0.71  1:130  0.12 0.10 |   39  1.73  0.81  1: 83  0.18 0.14  6.2 | 3 %, 10 %
+  whole arm: ξb median 0.12 (10–90 % 0.06…0.46); sets 0.23; ξb ≥ 0.4: 17 % of onsets, 21 % of the sets'; ξγ median 0.10, sets 0.18
+take-off column x -30 ± 4 m: 7 waves; start depth 10 / 50 / 90 % 1.07 / 2.16 / 2.71 m (the take-off is fitted to the 90th); start z median -327, faces median 1.93 m
+
+## F-p24-h18-medium
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.041667,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":1.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 7 of 8; median angle 47°, median peel speed 8.0 m/s; readout: left (+x) 6, closes out 1, right (−x) 1
+crests: 11; starts median x -38, 10–90 % -46…-35, within ±10 m 11 of 11; start z median -318, depth median 1.69 m, seaward of the line median 19 m
+  starts by bed part: arm face 5, beach face 4, arm end 2; on the arm (face or end) 7 of 11
+  close-outs (≥ 40 m within 2 s): 0; spans median 12 m, 90th 18 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 4 m, 90th 9 m, most 12 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 40°, speed 7.3 m/s
+onsets: 729; by bed part: arm face 608, arm top 60, beach face 39, arm end 22; depth median 1.55 m, 10–90 % 1.13…2.20 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.82°): 71 reads; closes out 18 (25 %), left (+x) 43 (61 %), right (−x) 10 (14 %), mixed 0 (0 %); clean toward +x 55 of 65; median angle 39°, angle of the +x reads ≥ 27°: median 41°
+elapsed 181 s
+medium: Hs 1.4 m, Tp 11 s; canyon pathSlope 1:24.0, hinge 1.8 m, fan 15°; 729 onsets, 630 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   14 2.13  1.94  1:389  0.03 0.03 |    5  2.13  2.19  1:389  0.02 0.03  26.1 | 0 %, 0 %
+   -30 ±10 |  102 2.00  1.64  1: 26  0.39 0.40 |   34  2.29  2.11  1: 24  0.38 0.42  2.4 | 41 %, 18 %
+   -10 ±10 |  111 1.73  0.88  1: 47  0.26 0.24 |   37  1.94  1.35  1: 38  0.34 0.30  3.3 | 25 %, 43 %
+    10 ±10 |  124 1.43  0.62  1:102  0.13 0.13 |   42  1.87  0.99  1: 57  0.26 0.20  4.5 | 8 %, 24 %
+    30 ±10 |  143 1.46  0.73  1:123  0.12 0.10 |   48  1.64  1.04  1:103  0.13 0.12  7.5 | 0 %, 0 %
+    50 ±10 |  114 1.63  0.73  1:126  0.13 0.10 |   38  1.82  0.85  1: 91  0.17 0.13  6.7 | 0 %, 0 %
+  whole arm: ξb median 0.14 (10–90 % 0.06…0.43); sets 0.19; ξb ≥ 0.4: 13 % of onsets, 16 % of the sets'; ξγ median 0.12, sets 0.15
+take-off column x -30 ± 4 m: 6 waves; start depth 10 / 50 / 90 % 1.00 / 2.16 / 2.54 m (the take-off is fitted to the 90th); start z median -318, faces median 1.96 m
+
+## T-today-big-1x8
+
+big: Hs 2.4 m, Tp 14 s, s 150; 1 seed(s) × 8 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.03333333333333333,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.8,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 8 of 8; median angle 38°, median peel speed 10.9 m/s; readout: left (+x) 8
+crests: 10; starts median x -41, 10–90 % -47…-31, within ±10 m 10 of 10; start z median -337, depth median 2.02 m, seaward of the line median 28 m
+  starts by bed part: arm end 6, arm face 3, beach face 1; on the arm (face or end) 9 of 10
+  close-outs (≥ 40 m within 2 s): 0; spans median 18 m, 90th 29 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 5 m, 90th 10 m, most 10 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 46°, speed 8.0 m/s
+onsets: 882; by bed part: arm face 727, arm end 53, arm top 50, beach face 31, shelf 21; depth median 2.61 m, 10–90 % 1.67…3.94 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 0.67°): 98 reads; closes out 15 (15 %), left (+x) 82 (84 %), right (−x) 1 (1 %), mixed 0 (0 %); clean toward +x 96 of 97; median angle 32°, angle of the +x reads ≥ 27°: median 33°
+elapsed 363 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:30.0, hinge 2.8 m, fan 15°; 882 onsets, 780 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   42 2.88  2.34  1:410  0.03 0.03 |   14  2.93  2.76  1:405  0.03 0.03  27.1 | 0 %, 0 %
+   -30 ±10 |  135 2.28  1.63  1: 33  0.41 0.37 |   45  2.73  2.34  1: 30  0.36 0.38  2.8 | 54 %, 0 %
+   -10 ±10 |  120 2.72  1.48  1: 43  0.38 0.30 |   40  3.72  1.62  1: 30  0.45 0.34  2.8 | 45 %, 70 %
+    10 ±10 |  119 2.80  1.35  1: 45  0.33 0.26 |   40  4.02  1.59  1: 30  0.46 0.33  2.8 | 29 %, 80 %
+    30 ±10 |  141 2.62  1.31  1: 67  0.27 0.19 |   47  3.33  1.57  1: 30  0.45 0.32  2.8 | 27 %, 55 %
+    50 ±10 |  140 2.37  1.18  1: 90  0.21 0.16 |   47  2.99  1.38  1: 48  0.31 0.24  4.0 | 17 %, 34 %
+  whole arm: ξb median 0.33 (10–90 % 0.17…0.46); sets 0.38; ξb ≥ 0.4: 32 % of onsets, 44 % of the sets'; ξγ median 0.27, sets 0.33
+take-off column x -30 ± 4 m: 8 waves; start depth 10 / 50 / 90 % 1.38 / 2.44 / 3.36 m (the take-off is fitted to the 90th); start z median -325, faces median 2.10 m
+
+## A-p23-h22-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 1 seed(s) × 8 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 8 of 8; median angle 55°, median peel speed 7.2 m/s; readout: left (+x) 8
+crests: 10; starts median x -41, 10–90 % -46…-29, within ±10 m 9 of 10; start z median -328, depth median 2.24 m, seaward of the line median 29 m
+  starts by bed part: arm end 7, arm face 2, beach face 1; on the arm (face or end) 9 of 10
+  close-outs (≥ 40 m within 2 s): 0; spans median 22 m, 90th 33 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 7 m, 90th 8 m, most 8 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 5; toward +x 5; median 46°, speed 8.1 m/s
+onsets: 931; by bed part: arm face 765, arm top 56, arm end 52, beach face 31, shelf 27; depth median 2.16 m, 10–90 % 1.70…3.73 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 1.01°): 98 reads; closes out 12 (12 %), left (+x) 86 (88 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 98 of 98; median angle 35°, angle of the +x reads ≥ 27°: median 35°
+elapsed 387 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:23.0, hinge 2.2 m, fan 15°; 931 onsets, 817 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   41 2.88  2.26  1:392  0.03 0.03 |   14  3.13  2.90  1:392  0.03 0.03  26.3 | 15 %, 36 %
+   -30 ±10 |  130 2.47  1.59  1: 24  0.53 0.47 |   44  3.37  2.42  1: 23  0.49 0.47  2.3 | 98 %, 100 %
+   -10 ±10 |  122 2.39  1.16  1: 32  0.49 0.40 |   41  3.65  1.66  1: 23  0.58 0.44  2.3 | 70 %, 90 %
+    10 ±10 |  120 2.05  1.20  1: 58  0.30 0.24 |   40  4.07  1.63  1: 23  0.56 0.41  2.3 | 33 %, 50 %
+    30 ±10 |  159 2.17  1.30  1: 62  0.29 0.22 |   53  3.15  1.54  1: 23  0.61 0.43  2.3 | 45 %, 58 %
+    50 ±10 |  150 1.99  1.17  1: 98  0.21 0.15 |   50  3.44  1.53  1: 23  0.60 0.45  2.3 | 40 %, 88 %
+  whole arm: ξb median 0.45 (10–90 % 0.16…0.63); sets 0.56; ξb ≥ 0.4: 54 % of onsets, 75 % of the sets'; ξγ median 0.38, sets 0.44
+take-off column x -30 ± 4 m: 9 waves; start depth 10 / 50 / 90 % 1.89 / 2.59 / 3.60 m (the take-off is fitted to the 90th); start z median -331, faces median 1.75 m
+
+## B-p24-h21-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 1 seed(s) × 8 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.041667,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.1,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 7 clean; toward +x 7 of 7; median angle 53°, median peel speed 7.3 m/s; readout: left (+x) 6, closes out 2
+crests: 12; starts median x -40, 10–90 % -46…-29, within ±10 m 10 of 12; start z median -324, depth median 2.08 m, seaward of the line median 32 m
+  starts by bed part: arm end 7, arm face 4, beach face 1; on the arm (face or end) 11 of 12
+  close-outs (≥ 40 m within 2 s): 0; spans median 18 m, 90th 27 m
+  upcoast (> 2 onsets over 5 m within 3 s): 3; reach median 4 m, 90th 8 m, most 8 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 43°, speed 8.5 m/s
+onsets: 937; by bed part: arm face 774, arm top 59, arm end 53, shelf 31, beach face 20; depth median 2.16 m, 10–90 % 1.69…3.75 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 0.78°): 98 reads; closes out 15 (15 %), left (+x) 83 (85 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 98 of 98; median angle 33°, angle of the +x reads ≥ 27°: median 34°
+elapsed 293 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:24.0, hinge 2.1 m, fan 15°; 937 onsets, 827 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   39 2.88  2.39  1:398  0.03 0.03 |   13  2.91  2.89  1:395  0.03 0.03  26.5 | 21 %, 38 %
+   -30 ±10 |  144 2.55  1.70  1: 24  0.50 0.46 |   48  3.35  2.61  1: 24  0.45 0.45  2.4 | 94 %, 98 %
+   -10 ±10 |  122 2.43  1.18  1: 28  0.54 0.41 |   41  3.68  1.63  1: 24  0.56 0.43  2.4 | 71 %, 95 %
+    10 ±10 |  120 2.02  1.18  1: 59  0.30 0.24 |   40  4.06  1.64  1: 24  0.55 0.39  2.4 | 36 %, 55 %
+    30 ±10 |  161 2.17  1.32  1: 59  0.29 0.23 |   54  3.19  1.55  1: 24  0.58 0.41  2.4 | 43 %, 54 %
+    50 ±10 |  150 2.02  1.21  1: 91  0.22 0.15 |   50  3.48  1.53  1: 24  0.59 0.44  2.4 | 43 %, 94 %
+  whole arm: ξb median 0.44 (10–90 % 0.16…0.63); sets 0.55; ξb ≥ 0.4: 55 % of onsets, 77 % of the sets'; ξγ median 0.40, sets 0.43
+take-off column x -30 ± 4 m: 8 waves; start depth 10 / 50 / 90 % 1.71 / 2.66 / 3.54 m (the take-off is fitted to the 90th); start z median -330, faces median 2.09 m
+
+## C-p25-h22-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 1 seed(s) × 8 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.04,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 8 clean; toward +x 8 of 8; median angle 50°, median peel speed 8.1 m/s; readout: left (+x) 6, closes out 2
+crests: 12; starts median x -40, 10–90 % -46…-38, within ±10 m 11 of 12; start z median -323, depth median 2.43 m, seaward of the line median 36 m
+  starts by bed part: arm end 6, arm face 4, beach face 1, arm top 1; on the arm (face or end) 10 of 12
+  close-outs (≥ 40 m within 2 s): 1; spans median 22 m, 90th 36 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 5 m, 90th 8 m, most 14 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 7; toward +x 7; median 43°, speed 8.4 m/s
+onsets: 933; by bed part: arm face 771, arm top 58, arm end 52, shelf 29, beach face 23; depth median 2.19 m, 10–90 % 1.71…3.83 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 0.88°): 98 reads; closes out 18 (18 %), left (+x) 80 (82 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 97 of 97; median angle 35°, angle of the +x reads ≥ 27°: median 39°
+elapsed 321 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:25.0, hinge 2.2 m, fan 15°; 933 onsets, 823 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   38 2.92  2.40  1:401  0.03 0.03 |   13  3.03  2.75  1:401  0.03 0.03  26.9 | 16 %, 31 %
+   -30 ±10 |  143 2.61  1.71  1: 25  0.48 0.44 |   48  3.32  2.63  1: 25  0.43 0.44  2.4 | 90 %, 88 %
+   -10 ±10 |  123 2.47  1.26  1: 31  0.50 0.40 |   41  3.69  1.59  1: 25  0.54 0.41  2.4 | 62 %, 93 %
+    10 ±10 |  120 2.10  1.27  1: 58  0.31 0.24 |   40  4.02  1.61  1: 25  0.53 0.38  2.4 | 35 %, 50 %
+    30 ±10 |  163 2.14  1.32  1: 65  0.28 0.21 |   55  2.87  1.55  1: 25  0.53 0.38  2.4 | 42 %, 51 %
+    50 ±10 |  149 2.00  1.19  1: 96  0.21 0.15 |   50  3.31  1.49  1: 25  0.56 0.42  2.4 | 39 %, 88 %
+  whole arm: ξb median 0.41 (10–90 % 0.16…0.60); sets 0.51; ξb ≥ 0.4: 52 % of onsets, 71 % of the sets'; ξγ median 0.37, sets 0.40
+take-off column x -30 ± 4 m: 9 waves; start depth 10 / 50 / 90 % 1.73 / 2.56 / 3.56 m (the take-off is fitted to the 90th); start z median -338, faces median 2.04 m
+
+## D-p23-h20-big
+
+big: Hs 2.4 m, Tp 14 s, s 150; 1 seed(s) × 8 periods; c_b 5.80 m/s; canyon {"shelfDepth":6,"shoreSlope":0.04,"crestDepth":1,"pathSlope":0.043478,"endSlope":0.25,"peakX":-38,"peakZ":-305,"angle":70,"takeOffX":-30,"zoneInner":-575,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2}
+tracker: 8 samples, 7 clean; toward +x 7 of 7; median angle 53°, median peel speed 7.3 m/s; readout: left (+x) 4, closes out 4
+crests: 11; starts median x -41, 10–90 % -45…-32, within ±10 m 10 of 11; start z median -328, depth median 2.13 m, seaward of the line median 26 m
+  starts by bed part: arm end 8, arm face 2, beach face 1; on the arm (face or end) 10 of 11
+  close-outs (≥ 40 m within 2 s): 0; spans median 18 m, 90th 27 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 7 m, 90th 8 m, most 12 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 6; toward +x 6; median 43°, speed 8.6 m/s
+onsets: 923; by bed part: arm face 755, arm top 59, arm end 52, shelf 36, beach face 21; depth median 2.15 m, 10–90 % 1.67…3.79 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 1.23°): 98 reads; closes out 19 (19 %), left (+x) 79 (81 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 90 of 90; median angle 35°, angle of the +x reads ≥ 27°: median 39°
+elapsed 291 s
+big: Hs 2.4 m, Tp 14 s; canyon pathSlope 1:23.0, hinge 2 m, fan 15°; 923 onsets, 807 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -50 ±10 |   41 2.88  2.26  1:395  0.03 0.03 |   14  3.13  2.90  1:392  0.03 0.03  26.3 | 17 %, 36 %
+   -30 ±10 |  127 2.47  1.61  1: 23  0.54 0.48 |   43  3.37  2.43  1: 23  0.49 0.47  2.3 | 97 %, 100 %
+   -10 ±10 |  121 2.38  1.07  1: 26  0.55 0.43 |   41  2.74  1.56  1: 23  0.59 0.44  2.3 | 83 %, 95 %
+    10 ±10 |  120 2.12  1.17  1: 46  0.37 0.29 |   40  4.16  1.65  1: 23  0.57 0.41  2.3 | 44 %, 70 %
+    30 ±10 |  160 2.22  1.33  1: 43  0.39 0.31 |   54  3.11  1.53  1: 23  0.61 0.43  2.3 | 49 %, 65 %
+    50 ±10 |  147 1.95  1.22  1: 88  0.22 0.16 |   49  3.37  1.54  1: 23  0.61 0.46  2.3 | 44 %, 92 %
+  whole arm: ξb median 0.47 (10–90 % 0.16…0.67); sets 0.58; ξb ≥ 0.4: 60 % of onsets, 81 % of the sets'; ξγ median 0.41, sets 0.44
+take-off column x -30 ± 4 m: 9 waves; start depth 10 / 50 / 90 % 1.84 / 2.61 / 3.56 m (the take-off is fitted to the 90th); start z median -331, faces median 1.75 m
