@@ -323,6 +323,15 @@ const FILM_RECIPES: Record<string, StanceRecipe> = {
   tube: { ...STANCE_RECIPES['tube-frontside'], seconds: 1.8 },
   'tube-backside': { ...STANCE_RECIPES['tube-backside'], seconds: 1.6 },
   'kick-out': { ...STANCE_RECIPES['kick-out'], seconds: 1.3 },
+  // The animation-realism plan's phase 3: paddling from rest (a look-up every eight strokes); the catch down a 15° face
+  // into the pop-up and the landing; sitting up after 2 s still (the scan's full cycle), then paddling off; and a ride
+  // let go with Enter, lying back down (the prone kick-out).
+  paddle: { phase: 'prone', water: 'flat', start: 'prone', speed: 0, controls: [{ at: 0, paddle: true }], seconds: 9 },
+  'catch-pop-up': {
+    phase: 'standing', water: 'face', start: 'prone', speed: 0, controls: [{ at: 0, paddle: true }, { at: 1.5, paddle: false, popUp: true }], seconds: 3.6,
+  },
+  'sit-and-paddle': { phase: 'prone', water: 'flat', start: 'prone', speed: 0, controls: [{ at: 7.2, paddle: true }], seconds: 9.2 },
+  'lie-down': { ...STANCE_RECIPES['lying-down'], seconds: 3, after: 1.4, controls: [{ at: 0.6, popUp: true }] },
   // The video check (the owner's reel, 2026-10-22: barefoot_surf, a frontside top turn on a left; `&side=goofy`): down a
   // 15° face crouched (the take-off and the drop), the bottom turn compressed onto the toes' rail, let go climbing with
   // the weight going back, the redirect onto the heels with it back, and the finish crouched. A plane face is no wave:
