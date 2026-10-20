@@ -106,16 +106,21 @@ const standingAt = (speed: number): RiderPlacement => ({ x: 0, z: 0, heading: 0,
 /** A free arm along a direction in the levelled board frame (toes, nose, up), its elbow included. */
 const arm = (toes: number, nose: number, up: number, elbow = 150) => ({ dir: [toes, nose, up] as const, elbow });
 
-/** The global stance (the research's base): width 0.63 m, front foot 55° and rear 80° to the stringer, the rear knee in. */
-const BASE = { width: 0.63, foot: [55, 80] as const, rearKneeIn: 20, shoulderDrop: 8 };
+/** The global stance (the research's base and the owner's call, §10.3): width 0.63 m, front foot 60° and rear 80° to the stringer, the rear knee in. */
+const BASE = { width: 0.63, foot: [60, 80] as const, rearKneeIn: 20, shoulderDrop: 8 };
 
+/**
+ * Trim's arms (the owner's reference photo of 2026-10-22): relaxed and close in,
+ * framing the knees, the front hand forward and down along the line, the back
+ * hand by the back knee; never spread.
+ */
 const TRIM_FS: StandingSpec = {
   ...BASE, weight: 0.55, knee: [45, 50], lean: 5, trunk: 22, chest: 30, hips: 15, head: [80, 10],
-  lead: arm(0.35, 0.7, -0.62), trail: arm(0.25, -0.15, -0.95, 155),
+  lead: arm(0.35, 0.35, -0.87, 155), trail: arm(0.3, -0.05, -0.95, 155),
 };
 const TRIM_BS: StandingSpec = {
   ...BASE, weight: 0.55, knee: [45, 50], lean: 0, trunk: 22, chest: 55, hips: 25, head: [95, 10],
-  lead: arm(0.1, 0.8, -0.58), trail: arm(-0.2, -0.1, -0.97, 155),
+  lead: arm(0.2, 0.45, -0.87, 155), trail: arm(0.25, -0.1, -0.96, 155),
 };
 
 const RAIL = (z: number) => halfWidth(z);
@@ -228,11 +233,11 @@ const IMAGES: SheetImage[] = [
       target: {
         standing: {
           ...BASE, width: 0.68, weight: 0.42, knee: [100, 95], lean: 0, trunk: 25, chest: 30, hips: 15, head: [70, 35],
-          lead: arm(0.25, 0.75, -0.6), trail: arm(0.3, -0.3, -0.9, 150),
+          lead: arm(0.3, 0.45, -0.84, 158), trail: arm(0.3, -0.05, -0.95, 158),
         },
       },
-      numbers: ['Deepest crouch: knees past 90° flexed, back fairly upright', 'Arms at waist height or below, lead arm along the line', 'Eyes on the base; 55–60 % on the back foot', 'The research brief; Kerr (map): trunk 45–65° tilt'],
-      gaps: ['Knees 81°/83°: just short of past 90°', 'Weight 0.53: the map says front (de Sousa), the research back: owner decides'],
+      numbers: ['Deepest crouch: knees past 90° flexed, back fairly upright', 'Arms low, in front, framing the knees; lead arm along the line', 'Eyes on the base; 55–60 % on the back foot (owner, §10.2)', 'The research brief; the owner\'s reference photo (arms)'],
+      gaps: ['Phase 1 drawn: knees, trunk, arms and gaze from the drop\'s key pose', 'Weight drawn back toward 0.42 (the physics\' pelvis: phase 5)'],
     }],
   },
   {
@@ -241,14 +246,14 @@ const IMAGES: SheetImage[] = [
       {
         title: 'Trim, frontside', today: stand([], 1.2, { water: 'across', speed: 7 }), shot: STAND,
         target: { standing: TRIM_FS },
-        numbers: ['Knees 30–80° flexed (45/50), rear knee in, hips low', 'Front foot 45–70°, rear 65–90° to the stringer', 'Lead shoulder low down the line; hands at the waist', 'Torso 20–30° from vertical, head over the board, quiet'],
-        gaps: ['Rear leg near straight (24°), front bent 63°: the hips sit forward (wt 0.70)', 'Front foot 70°: at the range edge', 'Arms held out ~45° each side, swinging'],
+        numbers: ['Knees 30–70° flexed, about equal (owner, §10.1), rear knee in', 'Front foot ~60°, rear ~80° to the stringer (owner, §10.3)', 'Lead shoulder low down the line; arms relaxed at the knees', 'Torso 15–30° from vertical, head over the board, quiet'],
+        gaps: ['Phase 1 drawn: the trim key pose, the motion filter, relaxed arms', 'Weight drawn back toward 0.58 (the physics\' 0.72: phase 5)'],
       },
       {
         title: 'Trim, backside', today: stand([], 1.2, { water: 'across-back', speed: 7 }), shot: STAND,
         target: { standing: TRIM_BS },
-        numbers: ['As frontside, but shoulders open along the rails (chest ~55°)', 'Head over the lead shoulder down the line', 'Lead arm along the line, trailing arm at the side'],
-        gaps: ['Backside drawn as frontside: chest 20°, not ~55°', 'Same legs: rear 28°, front 66°'],
+        numbers: ['As frontside, but shoulders open along the rails (chest ~55°)', 'Head over the lead shoulder down the line', 'Lead arm along the line, trailing arm at the side, both low'],
+        gaps: ['Phase 1 drawn: its own key pose (chest 55°, hinge deeper into the face)', 'The side read from the face\'s tilt (the plan\'s §3.3)'],
       },
     ],
   },
@@ -749,6 +754,10 @@ function wrap(context: CanvasRenderingContext2D, text: string, width: number): s
 interface Rendered { panel: Panel; today: HTMLCanvasElement; target: HTMLCanvasElement; todayLine?: string; targetLine?: string }
 
 export async function drawRealism(ctx: RealismContext): Promise<void> {
+  if (ctx.params.has('arms')) {
+    await drawArms(ctx);
+    return;
+  }
   const { renderer, scene, camera, surfers, boards, params, status } = ctx;
   const index = Math.min(3, Math.max(0, Number(params.get('surfer') ?? 0)));
   const surfer = surfers[index];
@@ -851,7 +860,10 @@ export async function drawRealism(ctx: RealismContext): Promise<void> {
     const receiver = params.get('receiver') ?? 'http://127.0.0.1:5194';
     const quality = Number(params.get('quality') ?? 0.82);
     const sizes: string[] = [];
-    for (const { name, canvas } of outputs) {
+    // `&suffix=<s>` saves beside the earlier stills (06-trim-<s>.jpg).
+    const suffix = params.get('suffix');
+    for (const { name: plain, canvas } of outputs) {
+      const name = suffix ? plain.replace(/\.jpg$/, `-${suffix}.jpg`) : plain;
       const q = name.startsWith('00') ? Number(params.get('overviewQuality') ?? 0.7) : quality;
       const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/jpeg', q));
       await fetch(`${receiver}/upload?name=${encodeURIComponent(name)}`, { method: 'POST', body: blob });
@@ -951,4 +963,118 @@ function composeOverview(rendered: { image: SheetImage; panels: Rendered[] }[]):
     context.drawImage(pair.target, x + tile.width, y + label, tile.width, tile.height);
   });
   return canvas;
+}
+
+// ---------- the arms (the owner's reference photo, 2026-10-22) ----------
+
+/** Three-quarter front, slightly above (the owner's photo), and from the nose at the chest's height. */
+const ARMS_FRONT: Shot = { eye: [-2.9, 2.0, 1.9], look: [0, 0.72, 0.15] };
+const ARMS_SIDE: Shot = { eye: [0.25, 1.2, 3.4], look: [0, 0.72, 0] };
+
+/** The arms' stances: crouched trim (the photo's), trim frontside and backside across the face, the drop. */
+const ARMS_STANCES: { title: string; recipe: StanceRecipe }[] = [
+  { title: 'Trim, crouched (the photo)', recipe: { phase: 'standing', water: 'across', start: 'standing', speed: 7, controls: [{ at: 0, crouch: 1 }], seconds: 1.2 } },
+  { title: 'Trim, frontside', recipe: { phase: 'standing', water: 'across', start: 'standing', speed: 7, controls: [], seconds: 1.2 } },
+  { title: 'Trim, backside', recipe: { phase: 'standing', water: 'across-back', start: 'standing', speed: 7, controls: [], seconds: 1.2 } },
+  { title: 'The drop', recipe: STANCE_RECIPES.drop },
+];
+
+/**
+ * The arms sheet (`?realism&arms&label=before|after`): each of `ARMS_STANCES`
+ * as the game draws it, from three-quarter front slightly above (the owner's
+ * reference photo) and from the nose, with where the hands hang about the
+ * knees; saved as 17-arms-<label>.jpg.
+ */
+async function drawArms(ctx: RealismContext): Promise<void> {
+  const { renderer, scene, camera, surfers, boards, params, status } = ctx;
+  const label = params.get('label') ?? 'today';
+  const index = Math.min(3, Math.max(0, Number(params.get('surfer') ?? 0)));
+  const surfer = surfers[index];
+  const board = boards[index];
+  surfers.forEach((other) => { other.group.visible = false; });
+  boards.forEach((other, i) => { other.visible = i === index; });
+  const bones = new Map<string, Bone>();
+  surfer.group.traverse((object) => { if ((object as Bone).isBone) bones.set(object.name, object as Bone); });
+  const gauge = new StanceGauge(bones);
+  renderer.setScissorTest(false);
+  renderer.setSize(TILE.width, TILE.height, false);
+  camera.aspect = TILE.width / TILE.height;
+  camera.fov = 34;
+  camera.updateProjectionMatrix();
+  const tiles: { title: string; front: HTMLCanvasElement; side: HTMLCanvasElement; line: string }[] = [];
+  const snap = () => {
+    const tile = document.createElement('canvas');
+    tile.width = TILE.width;
+    tile.height = TILE.height;
+    tile.getContext('2d')!.drawImage(ctx.canvas, 0, 0);
+    return tile;
+  };
+  const look = (shot: Shot) => {
+    const base = new Vector3(0, ctx.boardPosition.y, 0);
+    camera.position.set(...shot.eye).add(base);
+    camera.lookAt(new Vector3(...shot.look).add(base));
+    ctx.shadows.follow(base, ctx.sun.position.clone().normalize(), 0);
+    renderer.render(scene, camera);
+  };
+  for (const { title, recipe: stance } of ARMS_STANCES) {
+    status.textContent = `realism · arms · ${title}…`;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    surfer.resetMotion();
+    surfer.group.visible = true;
+    const state = drawnRecipe(stance, 'regular', ctx.boardPosition, (step) => surfer.update(step, new Vector3(...ARMS_FRONT.eye))).state;
+    board.position.copy(state.boardPosition);
+    board.quaternion.copy(state.boardQuaternion);
+    const joints = gauge.joints();
+    // Where the hands hang: each wrist's height over its knee, and the front one ahead of its knee along the line.
+    const nose = new Vector3(0, 0, 1).applyQuaternion(state.boardQuaternion).setY(0).normalize();
+    const above = (side: Side) => joints.wrist[side].y - joints.knee[side].y;
+    const ahead = joints.wrist.left.clone().sub(joints.knee.left).dot(nose);
+    const out = Math.max(...(['left', 'right'] as const).map((side) => Math.abs(joints.wrist[side].clone().sub(joints.hips).dot(nose))));
+    const line = `hands over knees F ${above('left').toFixed(2)} m, R ${above('right').toFixed(2)} m · front hand ahead ${ahead.toFixed(2)} m · out ${out.toFixed(2)} m (shoulders ${joints.shoulder.left.distanceTo(joints.shoulder.right).toFixed(2)})`;
+    look(ARMS_FRONT);
+    const front = snap();
+    look(ARMS_SIDE);
+    const side = snap();
+    tiles.push({ title, front, side, line });
+  }
+  surfer.group.visible = false;
+  board.visible = false;
+  const canvas = document.createElement('canvas');
+  canvas.width = tiles.length * TILE.width;
+  canvas.height = HEADER + 2 * TILE.height + 52;
+  const context = canvas.getContext('2d')!;
+  context.fillStyle = '#0d1117';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.font = '600 18px system-ui, sans-serif';
+  context.fillStyle = '#e6edf3';
+  context.fillText(`The arms, ${label}: three-quarter front from above (top), from the nose (bottom)`, 12, 21);
+  context.font = '11.5px system-ui, sans-serif';
+  context.fillStyle = '#8b949e';
+  context.fillText('The owner\'s reference (2026-10-22): relaxed and close in, framing the knees; never spread. Regular, surfer' + (index + 1) + '.', 12, 38);
+  tiles.forEach((tile, i) => {
+    const x = i * TILE.width;
+    context.drawImage(tile.front, x, HEADER);
+    context.drawImage(tile.side, x, HEADER + TILE.height);
+    caption(context, x, HEADER, TILE.width, tile.title, '#ffffff');
+    context.font = '10.5px ui-monospace, Menlo, monospace';
+    context.fillStyle = '#c9d1d9';
+    wrap(context, tile.line, TILE.width - 14).forEach((text, k) => context.fillText(text, x + 7, HEADER + 2 * TILE.height + 15 + k * 13));
+    if (i > 0) {
+      context.fillStyle = '#30363d';
+      context.fillRect(x - 1, HEADER, 2, canvas.height - HEADER);
+    }
+  });
+  ctx.canvas.style.display = 'none';
+  canvas.style.display = 'block';
+  canvas.style.maxWidth = '100%';
+  document.body.append(canvas);
+  (window as unknown as { realismReadouts: unknown }).realismReadouts = tiles.map((tile) => ({ title: tile.title, line: tile.line }));
+  if (params.has('save')) {
+    const receiver = params.get('receiver') ?? 'http://127.0.0.1:5194';
+    const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/jpeg', Number(params.get('quality') ?? 0.85)));
+    await fetch(`${receiver}/upload?name=${encodeURIComponent(`17-arms-${label}.jpg`)}`, { method: 'POST', body: blob });
+    (window as unknown as { realismSaved: string[] }).realismSaved = [`17-arms-${label}.jpg ${(blob.size / 1024).toFixed(0)} KB`];
+  }
+  status.textContent = `realism · arms · ${label}`;
+  (window as unknown as { sheetReady: boolean }).sheetReady = true;
 }
