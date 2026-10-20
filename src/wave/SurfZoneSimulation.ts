@@ -1,4 +1,6 @@
-import { CANYON, PADANG, REEF, canyonArmAt, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import {
+  CANYON, PADANG, REEF, canyonArmAt, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+} from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -33,7 +35,7 @@ import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
 import { frayBand } from './drawnEdges';
-import { BAND_LOOK_STRIDE, SpillingCurl } from './SpillingCurl';
+import { BAND_LOOK_STRIDE, SPILLING_CURL_OLD_PSI_MAX, SpillingCurl } from './SpillingCurl';
 
 /** No drawn splashes (`drawnImpacts` without a spilling lip). */
 const NO_IMPACTS: readonly LipImpact[] = [];
@@ -158,6 +160,13 @@ export interface SurfZoneConfig {
    * the `?startOut=<m>` dev switch, to compare starts. Nothing about the waves changes.
    */
   startOut?: number;
+  /**
+   * The Canyon's bed (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, the reef bed
+   * (2026-10-22); 'old', the bed before it (`CANYON_OLD_BED`) with its own take-off (`CANYON_TAKE_OFF_DEPTH_OLD`), start
+   * (`CANYON_RIDE_LINEUP_OLD`) and drawn curl (`SPILLING_CURL_OLD_PSI_MAX`): main's Canyon until the reef bed. Every other
+   * spot ignores it; online rooms always run the reef bed.
+   */
+  canyonBed?: CanyonBed;
 }
 
 /**
@@ -591,9 +600,13 @@ export function peakTakeOffX(spot: SpotName): number {
  */
 export const CANYON_TAKE_OFF_DEPTH = { base: 1.24, perMetre: 1.07 } as const;
 
-/** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`). */
-export function canyonTakeOffDepth(significantHeight: number): number {
-  return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
+/** `CANYON_TAKE_OFF_DEPTH` on the bed before the reef bed (`SurfZoneConfig.canyonBed` 'old'), its fit from 2026-10-11. */
+export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.06, perMetre: 1.24 } as const;
+
+/** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`), on a bed. */
+export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
+  const fit = bed === 'old' ? CANYON_TAKE_OFF_DEPTH_OLD : CANYON_TAKE_OFF_DEPTH;
+  return fit.base + fit.perMetre * significantHeight;
 }
 
 /**
@@ -631,14 +644,21 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
   { significantHeight: 2.4, offset: 6 },
 ];
 
+/** `CANYON_RIDE_LINEUP` on the bed before the reef bed (`SurfZoneConfig.canyonBed` 'old'): Big at its take-off (big-start). */
+export const CANYON_RIDE_LINEUP_OLD: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
+  { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
+  { significantHeight: 2.4, offset: 0 },
+];
+
 /**
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
-export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut'>): number {
+export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed'>): number {
   if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
-  const sizes = CANYON_RIDE_LINEUP;
+  const sizes = config.canyonBed === 'old' ? CANYON_RIDE_LINEUP_OLD : CANYON_RIDE_LINEUP;
   const height = config.significantHeight;
   if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
   for (let i = 1; i < sizes.length; i += 1) {
@@ -660,7 +680,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed);
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -671,7 +691,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
   // inside the measured breaks.
   const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
-    : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight) + config.tide
+    : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
@@ -828,7 +848,7 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed);
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
@@ -920,6 +940,8 @@ export class SurfZoneSimulation {
           breakerDepth, breakerHeight: BREAKER_INDEX * breakerDepth,
           // The overturn fits' H0/h0, as the plunging lip's: the incoming sea's height over the tank's offshore depth.
           nonlinearity: edgeHeight(config, tank.edgeDepth) / (tank.edgeDepth + config.tide),
+          // The old Canyon bed draws its own curl, the span ending at its 1:30 face (`SurfZoneConfig.canyonBed`).
+          ...(config.spot === 'canyon' && config.canyonBed === 'old' ? { psiMax: SPILLING_CURL_OLD_PSI_MAX } : {}),
         });
         this.drawnWhitewater = new Float64Array(this.solver.h.length);
       }

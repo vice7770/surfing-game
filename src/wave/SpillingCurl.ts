@@ -107,11 +107,20 @@ export const SPILLING_CURL = {
  * the drawn face is gentler than the overturning one, so the lip lands as far out as the fits allow and the void's missing
  * height is drawn as contrast, not geometry.
  */
-export const LANDING_SHARE = (() => {
-  const shape = overturn(SPILLING_CURL.psi.max);
+export const LANDING_SHARE = landingShare(SPILLING_CURL.psi.max);
+
+/** Where the lip lands for a span ending at ψ0 `psiMax`, as a share of H ahead of the crest: that fit's L cos θ. */
+export function landingShare(psiMax: number): number {
+  const shape = overturn(psiMax);
   const { length } = overturnSize(shape, 1);
   return length * Math.cos(shape.tilt);
-})();
+}
+
+/**
+ * The span's steep end before the reef bed (2026-10-22): 1:30 under H0/h0 0.28 (curls to 0.33 H, landing 0.60 H ahead), the
+ * old bed's face below its hinge. Drawn with the old bed (`SurfZoneConfig.canyonBed` 'old', the `?canyonBed=old` dev switch).
+ */
+export const SPILLING_CURL_OLD_PSI_MAX = overturnParameter(1 / 30, 0.28);
 
 /** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, eight waves at once. */
 export const CURL_CAPACITY = 56;
@@ -220,6 +229,8 @@ export interface SpillingCurlOptions {
   breakerHeight: number;
   /** The overturn fits' H0/h0: the incoming sea's height over the tank's offshore depth (as the plunging lip's). */
   nonlinearity: number;
+  /** The span's steep end, ψ0, and so where the lip lands (`landingShare`): `SPILLING_CURL.psi.max` unless given. */
+  psiMax?: number;
 }
 
 /** No wave in a column. */
@@ -273,12 +284,17 @@ export class SpillingCurl implements SpillingDrawnLook {
   private readonly reach = { top: 0, bottom: 0 };
   /** The H a column without a lens or a section takes, m. */
   private readonly nominal: number;
+  /** The span's steep end, ψ0 (`SpillingCurlOptions.psiMax`), and where the lip lands, as a share of H (`landingShare`). */
+  private readonly psiMax: number;
+  readonly landingShare: number;
 
   constructor(private readonly grid: CurlGrid, readonly options: SpillingCurlOptions) {
     const { nx, nz, xCenters, zCenters, bed, restLevel } = grid;
     this.first = Math.min(nx, OPEN_EDGE_REACH);
     this.last = nx - this.first;
     this.nominal = SPILLING_CURL.nominalShare * options.breakerHeight;
+    this.psiMax = options.psiMax ?? SPILLING_CURL.psi.max;
+    this.landingShare = options.psiMax === undefined ? LANDING_SHARE : landingShare(this.psiMax);
     this.span = impactTime(2 * options.breakerHeight) + SPILLING_CURL.toeSeconds + SPILLING_CURL.tailSeconds;
     this.age = new Float64Array(nx).fill(Number.NaN);
     this.wave = new Int32Array(nx).fill(NONE);
@@ -308,7 +324,7 @@ export class SpillingCurl implements SpillingDrawnLook {
       const measured = orthogonalGradient(depthAhead, hb, 0.5, 60);
       this.gradient[column] = measured > 0 ? measured : 0;
       const psi = overturnParameter(this.gradient[column], options.nonlinearity);
-      this.shapes.push(overturn(Math.min(SPILLING_CURL.psi.max, Math.max(SPILLING_CURL.psi.min, psi))));
+      this.shapes.push(overturn(Math.min(this.psiMax, Math.max(SPILLING_CURL.psi.min, psi))));
     }
   }
 
@@ -318,7 +334,7 @@ export class SpillingCurl implements SpillingDrawnLook {
    */
   size(column: number, height: number): CurlSize {
     const size = curlSize(this.shapes[Math.min(this.grid.nx - 1, Math.max(0, column))], height);
-    size.ahead = LANDING_SHARE * height;
+    size.ahead = this.landingShare * height;
     size.thickness = Math.max(size.thickness, SPILLING_CURL.minLip * height);
     return size;
   }

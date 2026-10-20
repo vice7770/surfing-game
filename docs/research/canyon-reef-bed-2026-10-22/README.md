@@ -229,7 +229,12 @@ At 1:23 the overturn is Pick & Feddersen's 0.275 H² void, 1.0 H long, tilted 41
 
 ## What changed in feel (for the owner to ride)
 
-The waves change, which is the point. Ride the Canyon, mid tide, calm, several sets each way, and record:
+The waves change, which is the point. Ride the Canyon, mid tide, calm, several sets each way, and record. **`?canyonBed=old`**
+(a dev switch, solo only) brings back main's Canyon from before the reef bed exactly: the 1:30 face below a 2.8 m hinge,
+its take-off (1.06 + 1.24 Hs), its starts (11, 11 and 0 m) and its curl (the span to 1:30, landing 0.60 H ahead), so the
+two can be ridden back to back. It is `SurfZoneConfig.canyonBed` ('reef' by default), carried to the worker in the config
+as `?startOut` is; online rooms always run the reef bed, since their sea is shared and handed between clients. A test pins
+it to main's own values (bed depths, take-offs, starts, curl sizes, the readout's breaker).
 
 1. **Big, from the default start (6 m out).** The sets break harder and closer: they pitch on the 1:23 face (ξ 0.4–0.6),
    20 m inside the take-off at the median, not 41 m. Does the wave pick you up from 6 m out, or leave you on the crest
