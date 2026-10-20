@@ -333,6 +333,9 @@ class Pipeline:
             self.stage[name] = "done"
             self.log("done", name)
         except Exception as e:  # noqa: BLE001 - one case's failure must not stop the others
+            if self.stopping:
+                self.stage[name] = "stopped"
+                return
             self.stage[name] = "failed"
             self.failed[name] = str(e)
             if not self.stopping:
@@ -630,6 +633,10 @@ def status_lines(cfg, stage=None):
     for name in cfg.cases:
         d = cfg.dirs(name)
         st = (stage or {}).get(name)
+        if st == "stopped":
+            lines.append(f"{name}: stopped (rerun to resume)")
+            left.append(None)
+            continue
         if st in ("failed", "waiting for an earlier run") or (st is None and exists(cfg.state, f"{name}.failed")):
             why = open(os.path.join(cfg.state, f"{name}.failed")).read().strip() if exists(cfg.state, f"{name}.failed") else ""
             lines.append(f"{name}: {st or 'failed'}{': ' + why if why else ''}")
