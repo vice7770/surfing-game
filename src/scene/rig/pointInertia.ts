@@ -66,7 +66,9 @@ function decay(x: Vector3, v: Vector3, y: number, dt: number): void {
  * keeps the jump as an offset that decays, on the board while riding (where a
  * standing body is still) and in the world once fallen (the fall carries over).
  * A point moving smoothly is left as it is; a teleport, or a jump that would
- * carry the body across the sea, starts over.
+ * carry the body across the sea, starts over. The landing's feet are not
+ * blended: the rig swings them onto the deck (the animation-realism plan's
+ * phase 3).
  */
 export class PointInertia {
   private readonly tracks: Track[] = Array.from({ length: 7 }, () => ({
@@ -165,7 +167,16 @@ export class PointInertia {
       const after = track.spread > 0;
       const continuing = after && track.spread <= JUMP_SPREAD && goalRate.distanceTo(track.goalRate) > JUMP;
       track.spread = continuing ? track.spread + 1 : 0;
-      if (switched || continuing || (!after && off > JUMP * dt)) {
+      // The landing's feet are the rig's to swing (`HumanoidRig.swingFeet`, the animation-realism plan's phase 3: they
+      // plant, not slide): taken as they are, at rest on the board, so none of the jump glides on into standing.
+      const planted = switched && state.phase === 'landing' && (i === POINT.leftFoot || i === POINT.rightFoot);
+      if (planted) {
+        goalRate.set(0, 0, 0);
+        track.offset.set(0, 0, 0);
+        track.offsetRate.set(0, 0, 0);
+        track.decay = 0;
+        track.spread = 0;
+      } else if (switched || continuing || (!after && off > JUMP * dt)) {
         goalRate.copy(track.goalRate);
         track.offset.copy(track.drawn).addScaledVector(track.drawnRate, dt).sub(goal);
         track.offsetRate.copy(track.drawnRate).sub(goalRate);
@@ -177,7 +188,8 @@ export class PointInertia {
       track.goal.copy(goal);
       track.goalRate.copy(goalRate);
       const drawn = goalRate.copy(goal).add(track.offset);
-      track.drawnRate.copy(drawn).sub(track.drawn).divideScalar(dt);
+      if (planted) track.drawnRate.set(0, 0, 0);
+      else track.drawnRate.copy(drawn).sub(track.drawn).divideScalar(dt);
       track.drawn.copy(drawn);
       fromFrame(drawn, point);
     });

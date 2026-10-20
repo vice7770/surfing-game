@@ -1,4 +1,5 @@
 import { Quaternion, Vector3, type Bone } from 'three';
+import { LANDING_TIME, PUSH_TIME, RECOVER_TIME } from '../../physics/AttachedRider';
 import { ArmSwing, armPendulum } from './armSwing';
 import { Breathing } from './breathing';
 import { Follower, balanceAlarmOf, type DrawnCues } from './causeFilter';
@@ -7,9 +8,12 @@ import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
 import { BOARD_CENTRE, deckAt, railHalfWidth } from './boardDeck';
-import { StageBlend } from './stageBlend';
+import { StageBlend, WaterStages } from './stageBlend';
 import { TURN_FULL, stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
-import { createStandingPose, stagePose, type HandOffset, type StageWeights, type StandingPose } from './stagePoses';
+import {
+  LYING_POSES, SIT, TAKE_OFF, createStandingPose, lyingPose, sitScan, stagePose,
+  type HandOffset, type LyingPose, type StageWeights, type StandingPose, type WaterWeights,
+} from './stagePoses';
 import { solveTwoBone } from './twoBoneIk';
 
 const SIDES: readonly Side[] = ['left', 'right'];
@@ -18,6 +22,36 @@ const REST_FORWARD = new Vector3(0, 0, 1);
 const REST_BACK = new Vector3(0, 0, -1);
 const REST_UP = new Vector3(0, 1, 0);
 const WORLD_UP = new Vector3(0, 1, 0);
+const DEG = Math.PI / 180;
+const smooth = (x: number) => {
+  const t = Math.max(0, Math.min(1, x));
+  return t * t * (3 - 2 * t);
+};
+/** A minimum-jerk path's share at `s` of its time (no speed or acceleration at either end). */
+const minimumJerk = (x: number) => {
+  const s = Math.max(0, Math.min(1, x));
+  return s * s * s * (10 - 15 * s + 6 * s * s);
+};
+
+/**
+ * `a` turned toward `b` by `t` of the angle between them (both unit), into
+ * `out`: the short way round, falling back to a straight blend where they
+ * point apart.
+ */
+function turnToward(a: Vector3, b: Vector3, t: number, out: Vector3): Vector3 {
+  if (t <= 0) return out.copy(a);
+  if (t >= 1) return out.copy(b);
+  const cos = Math.max(-1, Math.min(1, a.dot(b)));
+  const angle = Math.acos(cos);
+  if (angle < 1e-6 || angle > Math.PI - 1e-3) return out.copy(a).lerp(b, t).normalize();
+  const s = Math.sin(angle);
+  const wa = Math.sin((1 - t) * angle) / s;
+  const wb = Math.sin(t * angle) / s;
+  return out.set(a.x * wa + b.x * wb, a.y * wa + b.y * wb, a.z * wa + b.z * wb);
+}
+
+/** The lying head's look below the deck until the animation-realism plan's phase 3: its axis the deck's normal and 0.3 of the nose. */
+const LYING_LOOK = Math.atan(0.3) / DEG;
 
 /**
  * `value` brought smoothly under `cap`: unchanged up to `band` below it, then
@@ -427,6 +461,55 @@ export class HumanoidRig {
     return this.alarm;
   }
   readonly pose: StandingPose = createStandingPose();
+  /** Lying, the water stages read from the drawn state (`WaterStages`) and the lying key pose they blend, this solve. */
+  private readonly water = new WaterStages();
+  readonly lying: LyingPose = { ...LYING_POSES.paddle };
+  /** The water stages' weights this solve (read only: for tests and the dev views). */
+  get waterWeights(): Readonly<WaterWeights> {
+    return this.water.weights;
+  }
+  /** How far the lying key pose is drawn this solve, 0–1 (prone 1 less a duck; handing over in the push and the lie-down). */
+  lyingShare = 0;
+  /** The phase drawn last, when it began (none: long since, or unknown), and the last solve's clock. */
+  private phaseName = '';
+  private phaseSince = Number.NaN;
+  private phaseClock = Number.NaN;
+  /**
+   * The pop-up's feet (`TAKE_OFF.touch`): each lying ankle's place on the board
+   * at the last lying solve (where the reach lifts it from), and, swinging, the
+   * foot's place it swings from (the board's frame) and when the swing began.
+   */
+  private readonly liftOff = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private liftOffClock = Number.NaN;
+  private readonly swingFrom = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private swingStart = Number.NaN;
+  /** How far through its swing this solve (1: planted, or none), its time's share, and each lying foot's turn on the board, where it swings from. */
+  private swingShare = 1;
+  private swingTime = 1;
+  private readonly liftOffFoot = { left: new Quaternion(), right: new Quaternion() } as Record<Side, Quaternion>;
+  private readonly liftOffToe = { left: new Quaternion(), right: new Quaternion() } as Record<Side, Quaternion>;
+  /** Pushing, each hand's target about its shoulder, on the board's turn, at the last push solve (where the landing's arms come from). */
+  private readonly liftOffHand = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private liftOffHandClock = Number.NaN;
+  /** Swinging, the stance's foot points this solve (the physics' own), before the swing moves them. */
+  private readonly stancePoint = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly footTurn = new Quaternion();
+  private readonly placeLocal = new Vector3();
+  /** The push's start (`TAKE_OFF.press`): its phase's start read, the hips as they lay and the planted hands (the board's frame); scratch. */
+  private pressSince = Number.NaN;
+  private readonly pressHips = new Vector3();
+  private readonly pressHands = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly pressAt = new Vector3();
+  private readonly pressLine = new Vector3();
+  private readonly pressUp = new Vector3();
+  /** The press's chest drawn last, rad, and at which clock (its rate's limit). */
+  private pressAngle = 0;
+  private pressClock = Number.NaN;
+  private readonly boardInverse = new Quaternion();
+  private readonly sitNose = new Vector3();
+  private readonly sitAt = new Vector3();
+  private readonly sitThigh = new Vector3();
+  private readonly sitShin = new Vector3();
   /** The knees about the hips on the board's levelled frame, followed (the relaxed hands frame them without the board's wobble). */
   private readonly kneeFollowers: Record<Side, Follower[]> = {
     left: [0, 1, 2].map(() => new Follower(RIG_DETAIL.trunkFollow.omega)),
@@ -438,6 +521,7 @@ export class HumanoidRig {
     right: [0, 1, 2].map(() => new Follower(RIG_DETAIL.trunkFollow.ankles)),
   };
   private readonly kneeSquare = new Vector3();
+  private readonly kneeDrive = new Vector3();
   private readonly kneeNose = new Vector3();
   private readonly relaxedAt = new Vector3();
   private readonly spreadAt = new Vector3();
@@ -583,17 +667,58 @@ export class HumanoidRig {
     const upright = state.phase === 'standing' || state.phase === 'landing';
     const lying = state.phase === 'prone' || state.phase === 'push' || state.phase === 'recover';
     const fallen = state.phase === 'fallen';
+    const phaseTime = this.trackPhase(state);
+    // Lying, the water stages and their key pose (the animation-realism plan's phase 3), and the pop-up's drawn places.
+    if (lying) lyingPose(this.water.update(state), this.lying);
+    else this.water.reset();
+    this.lyingShare = lying ? this.lyingPoseShare(state, phaseTime) : 0;
+    const sit = state.phase === 'prone' || state.phase === 'push' ? this.water.weights.sit : 0;
+    if (lying) this.placeLying(state, phaseTime);
+    if (upright) this.swingFeet(state);
 
     // 1. The body's frame: up along the spine, forward where the chest faces.
     up.subVectors(p[POINT.torso], p[POINT.pelvis]);
     if (up.lengthSq() < 1e-10) up.copy(boardUp);
     up.normalize();
+    // Pushing, the chest pushed up by the arms (`TAKE_OFF.press`), handing over to the physics' trunk past the straight arms.
+    let pressed = Number.NaN;
+    let handover = 0;
+    if (state.phase === 'push') {
+      const s = Math.min(1, phaseTime / PUSH_TIME);
+      const { press } = TAKE_OFF;
+      this.pressUp.copy(up);
+      // No faster than a brisk trunk bend (`TAKE_OFF.press.rate`), from the last solve's: rising with the elbows and
+      // falling back as the hips come over the hands it swung 30° in 0.07 s. A fresh push takes it as it is.
+      const solved = this.pressChest(state, s);
+      const dt = state.clock - this.pressClock;
+      const most = press.rate * dt;
+      const angle = this.phaseSince === state.clock || !(dt > 0 && dt < 0.25) ? solved : this.pressAngle + Math.max(-most, Math.min(most, solved - this.pressAngle));
+      if (dt !== 0) {
+        this.pressAngle = angle;
+        this.pressClock = state.clock;
+      }
+      pressed = this.pressAngle / DEG;
+      handover = smooth((s - press.handover) / (1 - press.handover));
+      turnToward(this.overDeck(press.arch * pressed, this.direction), this.pressUp, handover, up);
+    }
+    // Lying, the lower back along the deck (the lying key pose's); sitting, upright over the hips.
+    if (this.lyingShare > 0) turnToward(up, this.overDeck(this.lying.back, this.direction), this.lyingShare, up);
+    if (sit > 0) turnToward(up, this.sitUp(SIT.lean, this.direction), sit, up);
     if (upright) {
-      // Hips open along the feet: the chest faces left × up (regular faces the −x rail).
+      // Hips open along the feet: the chest faces left × up (regular faces the −x rail). Swinging the feet onto the deck
+      // (the pop-up's reach), turning from lying (facing the deck) to the stance's as the swing goes: the swung feet's
+      // own line turns 90° in a tenth of a second as the front foot passes the rear one.
       this.scratch.subVectors(p[POINT.leftFoot], p[POINT.rightFoot]);
       forward.crossVectors(this.scratch, up);
-    } else if (lying) forward.copy(boardUp).negate();
-    else {
+      if (this.swingShare < 1) {
+        const stance = this.perpendicular(this.scratch.subVectors(this.stancePoint.left, this.stancePoint.right).cross(up), up);
+        turnToward(this.perpendicular(forward.copy(boardUp).negate(), up), stance, this.swingShare, forward);
+      }
+    } else if (lying) {
+      forward.copy(boardUp).negate();
+      // Sitting, the chest faces the nose.
+      if (sit > 0) turnToward(forward, this.sitUp(SIT.lean + 90, this.direction), sit, forward);
+    } else {
       // Fallen: the heading square to the spine, as far as the spine rises, and the water's down square to it. Upright
       // the heading leads, lying flat or diving the down: a swimmer faces the water (step 8: the heading alone vanished
       // as the spine lay along it, and the swimmer faced wherever its spine leaned, on its side or up). Rising in the
@@ -647,6 +772,9 @@ export class HumanoidRig {
       this.facing.applyAxisAngle(up, roll);
       hipsForward.applyAxisAngle(up, roll * RIG_DETAIL.crawlRoll.hips);
     }
+    // Sitting, the chest turns a share of the head's scan.
+    const scan = sit > 0 ? sitScan(this.water.sitTime(state.clock)) * DEG : 0;
+    if (sit > 0) this.facing.applyAxisAngle(up, sit * SIT.scan.chest * scan);
 
     // 2. The hips at the pelvis point (standing, raised to the model's extended legs), brought down if the legs cannot reach the feet.
     // Raised and lowered along the trunk's line less its pitch along the board, so the hips keep the physics' place
@@ -655,8 +783,10 @@ export class HumanoidRig {
     if (lift.lengthSq() < 1e-8) lift.copy(up);
     lift.normalize();
     const hipsAt = this.hipsAt.copy(p[POINT.pelvis]);
+    // Sitting, the hips on the deck over the prone body's mass.
+    if (sit > 0) hipsAt.lerp(this.sitHips(state, this.sitAt), sit);
     if (upright) hipsAt.addScaledVector(lift, state.uprightBlend * this.standingLift(state) - (state.phase === 'standing' ? state.standingBlend * this.pose.sink : 0));
-    if (state.phase === 'standing') this.weighBack(state, hipsAt);
+    if (upright) this.weighBack(state, hipsAt);
     this.placeHips(hipsAt);
     if (upright) {
       let drop = 0;
@@ -670,7 +800,10 @@ export class HumanoidRig {
     this.kneeFacing.copy(this.facing);
     const hinged = this.hingeAngle;
     this.hingeAngle = 0;
-    if (state.phase === 'standing' && state.standingBlend > 0) this.hinge(state, hinged);
+    // The upright body's own shape (the hinge, the relaxed arms) eases in from the landing (the animation-realism plan's
+    // phase 3: the trunk hinges in the landing too), and is whole standing after it.
+    const body = this.bodyBlend(state);
+    if (upright && body > 0) this.hinge(state, hinged, body);
     else {
       this.hingeClock = state.clock;
       this.hingeFollower.seed(0, state.clock);
@@ -680,6 +813,10 @@ export class HumanoidRig {
     chestUp.subVectors(p[POINT.head], p[POINT.torso]);
     if (chestUp.lengthSq() < 1e-10) chestUp.copy(up);
     chestUp.normalize();
+    if (Number.isFinite(pressed)) turnToward(this.overDeck(pressed, this.direction), chestUp, handover, chestUp);
+    // Lying, the chest lifted only as far as the lying key pose's (paddling's low chest, the catch's cobra); sitting, upright.
+    if (this.lyingShare > 0) turnToward(chestUp, this.overDeck(this.lying.chest, this.direction), this.lyingShare, chestUp);
+    if (sit > 0) turnToward(chestUp, this.sitUp(SIT.lean + SIT.chest, this.direction), sit, chestUp);
     if (this.hingeAngle) chestUp.applyAxisAngle(left, this.hingeAngle);
     // The lead shoulder dropped: the spine bent toward the lead (the nose's) side, about where the chest faces, as far
     // as shows the key pose's drop against the level.
@@ -705,10 +842,20 @@ export class HumanoidRig {
     }
     this.orient(BONES.neck, chestUp, this.facing);
     if (lying) {
-      // Ducking, the head tucks from looking ahead to facing the deck, crown toward the nose.
+      // Looking ahead along the deck, its look below the deck's plane the lying key pose's (neutral, the eyes forward;
+      // lifting to scan; down in the catch). Ducking, the head tucks from looking ahead to facing the deck, crown toward
+      // the nose. Sitting, upright, looking about the level as the scan turns it.
       const duck = state.phase === 'prone' ? Math.min(1, Math.max(0, state.duck)) : 0;
-      this.direction.copy(boardUp).addScaledVector(boardForward, 0.3).lerp(this.scratch.copy(boardForward).addScaledVector(boardUp, 0.2), duck);
-      this.orient(BONES.head, this.direction, this.hint.copy(boardForward).lerp(this.middle.copy(boardUp).negate(), duck));
+      const look = (LYING_LOOK + (this.lying.look - LYING_LOOK) * this.lyingShare) * DEG;
+      this.direction.copy(boardUp).addScaledVector(boardForward, Math.tan(look)).lerp(this.scratch.copy(boardForward).addScaledVector(boardUp, 0.2), duck);
+      this.hint.copy(boardForward).lerp(this.middle.copy(boardUp).negate(), duck);
+      if (sit > 0) {
+        const level = this.sitUp(90, this.scratch).applyAxisAngle(WORLD_UP, scan);
+        const tip = SIT.look * DEG;
+        this.direction.normalize().lerp(this.middle.copy(WORLD_UP).multiplyScalar(Math.cos(tip)).addScaledVector(level, Math.sin(tip)), sit);
+        this.hint.lerp(level.multiplyScalar(Math.cos(tip)).addScaledVector(WORLD_UP, -Math.sin(tip)), sit);
+      }
+      this.orient(BONES.head, this.direction, this.hint);
     }
     else if (state.phase === 'standing') this.lookWhereGoing(state);
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
@@ -731,6 +878,13 @@ export class HumanoidRig {
         }
         if (lying) this.lyingKnees(state, pole);
         else pole.copy(this.facing);
+        // Sitting, straddling: the thighs over the rails, the shins hanging in the water (`SIT`); out to the side first,
+        // so the swinging foot clears the tail.
+        if (sit > 0) this.sitLeg(state, side, hip, sit, target, pole);
+        if (lying) {
+          this.toBoard(state, target, this.liftOff[side]);
+          this.liftOffClock = state.clock;
+        }
       }
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
       // The ball, where the flat foot meets the deck ahead of the ankle.
@@ -757,12 +911,21 @@ export class HumanoidRig {
       if (upright) {
         // The sole on the deck: from the ankle to the ball (its rest pitch standing flat), the toes along the deck.
         this.orient(BONES.foot[side], this.direction.subVectors(ball, this.joints.ankle[side]), boardUp);
+        // Swinging onto the deck (the pop-up's reach), the foot and toes turn from how they lay to how they land as it swings.
+        if (this.swingShare < 1) this.turnFootFrom(state, BONES.foot[side], this.liftOffFoot[side]);
         this.orient(BONES.toe[side], this.footDirection, boardUp);
+        if (this.swingShare < 1) this.turnFootFrom(state, BONES.toe[side], this.liftOffToe[side]);
       } else {
         // Toes pointed along the shin; lying, the top of the foot faces the deck.
         this.direction.subVectors(this.joints.ankle[side], this.joints.knee[side]);
         this.orient(BONES.foot[side], this.direction, lying ? this.hint.copy(boardUp).negate() : this.facing);
         this.restLocal(BONES.toe[side]);
+        // How it lay, on the board: where the pop-up's reach swings it from.
+        if (lying) {
+          this.boardInverse.copy(state.boardQuaternion).invert();
+          this.bones.get(BONES.foot[side])!.getWorldQuaternion(this.liftOffFoot[side]).premultiply(this.boardInverse);
+          this.bones.get(BONES.toe[side])!.getWorldQuaternion(this.liftOffToe[side]).premultiply(this.boardInverse);
+        }
       }
     }
 
@@ -771,8 +934,20 @@ export class HumanoidRig {
     this.followPump(state);
     // 5. Arms.
     for (const side of SIDES) {
-      if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
-      else if (upright) pole.copy(WORLD_UP).multiplyScalar(-RIG_DETAIL.elbowDrop).addScaledVector(this.facing, -RIG_DETAIL.elbowBack);
+      // Pushing, the elbows back along the body (from the stroke's high elbow as the hands are placed).
+      if (state.phase === 'push') {
+        this.strokeSide(side, RIG_DETAIL.strokeElbow, this.handScratch);
+        pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3).normalize().lerp(this.handScratch.normalize(), 1 - smooth(phaseTime / TAKE_OFF.hand.place));
+      }
+      else if (upright) {
+        pole.copy(WORLD_UP).multiplyScalar(-RIG_DETAIL.elbowDrop).addScaledVector(this.facing, -RIG_DETAIL.elbowBack);
+        // Swinging the feet onto the deck, the elbows still back along the body, as the push had them, handing over as the
+        // feet plant: the arm comes off the deck straight, and a straight arm spun with the turning facing.
+        if (this.swingShare < 1) {
+          const back = this.handScratch.copy(boardForward).negate().addScaledVector(boardUp, 0.3).normalize();
+          turnToward(back, pole.normalize(), this.swingShare, pole);
+        }
+      }
       else pole.copy(this.facing).negate();
       // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
       this.restLocal(BONES.shoulder[side]);
@@ -783,10 +958,25 @@ export class HumanoidRig {
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       // Lying, and landing (the crouched landing's hand passed through the arm's full reach, the elbow snapping), the
-      // hand brought within the arm's reach smoothly.
-      else if (state.phase === 'prone' || state.phase === 'landing') this.softReach(shoulder, hand, target);
-      else target.copy(hand);
-      if (state.phase === 'standing') this.freeArm(state, side, shoulder, target, 1 - this.reaching[side]);
+      // hand brought within the arm's reach smoothly; in the catch the arm reaches all of it (the lying key pose's).
+      else if (state.phase === 'prone' || state.phase === 'landing') {
+        const reach = RIG_DETAIL.armReach + (this.lying.reach - RIG_DETAIL.armReach) * (state.phase === 'prone' ? this.lyingShare : 0);
+        this.softReach(shoulder, hand, target, reach);
+      } else if (state.phase === 'push') {
+        // The planted hand comes off the deck smoothly as the straight arm runs out of reach (the reach begins).
+        this.softReach(shoulder, hand, target, 1, TAKE_OFF.hand.lift);
+      } else target.copy(hand);
+      // Sitting, the hands rest on the thighs, the elbows out and back.
+      if (sit > 0) this.sitHand(state, side, shoulder, sit, target, pole);
+      // Pushing, where each hand is: the landing's arms come from it (`TAKE_OFF.armsIn`).
+      if (state.phase === 'push') {
+        // About its shoulder, on the board's turn: the landing's arm starts moving with the body, as the push's was.
+        this.liftOffHand[side].subVectors(target, shoulder).applyQuaternion(this.boardInverse.copy(state.boardQuaternion).invert());
+        this.liftOffHandClock = state.clock;
+      }
+      const fromPush = state.phase === 'landing' && phaseTime < TAKE_OFF.armsIn && Number.isFinite(this.phaseSince) && this.phaseSince - this.liftOffHandClock < 0.25;
+      if (fromPush) this.landingArm(state, side, shoulder, target, phaseTime);
+      else if (upright) this.freeArm(state, side, shoulder, target, 1 - this.reaching[side]);
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reaching[side]);
       if (state.phase === 'standing') this.driveClavicle(state, side, shoulder, target, chestUp, 1 - this.reaching[side]);
       // A free hand swings with the body; one on a point keeps it, and lying, pushing or fallen the swing rests.
@@ -806,21 +996,31 @@ export class HumanoidRig {
         const keep = Math.min(1, Math.max(0, (off - 0.15) / 0.2));
         handHint.multiplyScalar(keep).addScaledVector(this.facing, 1 - keep);
       }
+      // Pushing, the hand flat on the deck (`TAKE_OFF.hand`): its back up, the fingers toward the nose.
+      if (state.phase === 'push') {
+        const flat = smooth(phaseTime / TAKE_OFF.hand.place);
+        forearm.lerp(boardForward, flat).normalize();
+        this.strokeSide(side, RIG_DETAIL.strokeHand, handHint).normalize().lerp(boardUp, flat);
+      }
+      // Sitting, the hand's back up on the thigh.
+      if (sit > 0) handHint.lerp(WORLD_UP, sit);
       this.orient(BONES.hand[side], forearm, handHint);
       const curl = state.phase === 'prone'
         ? RIG_DETAIL.fingerCurlRelaxed + (RIG_DETAIL.fingerCurlStroke - RIG_DETAIL.fingerCurlRelaxed) * state.stroking
         : RIG_DETAIL.fingerCurlRelaxed;
       this.curlFingers(side, curl);
     }
+    // Sitting, the feet hang in the water: what draws from the state after the rig (the leash) follows them.
+    if (sit > 0) for (const side of SIDES) p[side === 'left' ? POINT.leftFoot : POINT.rightFoot].lerp(this.joints.ankle[side], sit);
   }
 
   /**
    * Standing, hinges the trunk forward at the hips (about the body's left) to the
    * key pose's hinge (`hinge` by the crouch's depth), the pelvis
-   * moving back along the level so the centre of mass stays, eased in by the
-   * standing blend. Never hinges back: a body already folded further is left.
+   * moving back along the level so the centre of mass stays, eased in by
+   * `blend` (`bodyBlend`). Never hinges back: a body already folded further is left.
    */
-  private hinge(state: RiderVisualState, last: number): void {
+  private hinge(state: RiderVisualState, last: number, blend: number): void {
     const { unhinged, levelForward } = this;
     const { depth } = this.blend;
     // The key poses' hinge, as the stages swing between them, followed slower than the hinge itself (`hingeSwing`): a
@@ -848,7 +1048,8 @@ export class HumanoidRig {
     const toes = this.scratch.set(this.blend.stance === 'regular' ? -1 : 1, 0, 0).applyQuaternion(state.boardQuaternion);
     const leaning = Math.atan2(unhinged.up.dot(toes), unhinged.up.dot(this.boardUp));
     // The backside bottom turn's (on the heels' rail, not a redirect: a frontside top turn is on the heels too).
-    const backside = Math.max(0, -this.blend.turn) * (1 - this.stages.weights.redirect);
+    // Standing only: landing, the turn's rail is not yet ridden.
+    const backside = state.phase === 'standing' ? Math.max(0, -this.blend.turn) * (1 - this.stages.weights.redirect) : 0;
     const allowed = Math.PI / 2 + ((RIG_DETAIL.backsideLean * Math.PI) / 180 - Math.PI / 2) * backside - leaning;
     // Nor further than keeps the trunk (the model's, between the body's up and the chest's) within the key pose's
     // `tiltMost` of the world's vertical, the lean into the turn included.
@@ -861,7 +1062,7 @@ export class HumanoidRig {
     // since the last solve; a clock standing still keeps the last (a display frame drawn twice from one snapshot), a
     // fresh solve takes it all.
     const angle = Math.max(0, Math.min(wanted, most, allowed, room));
-    const followed = this.hingeFollower.follow(angle * state.standingBlend, state.clock);
+    const followed = this.hingeFollower.follow(angle * blend, state.clock);
     // The tilt's room followed too (it reads the physics' lean, the board's wobble in it): binding (the bottom turn's
     // 58°), the raw room drew the wobble into the chest.
     const roomFollowed = Number.isFinite(room) ? this.roomFollower.follow(Math.max(0, Math.min(most, room)), state.clock) : most;
@@ -1048,8 +1249,289 @@ export class HumanoidRig {
     chestUp.applyAxisAngle(this.facing, this.dropFollower.follow(solve(this.facing, shoulderBend.side), state.clock));
   }
 
+  /**
+   * The phase's own clock: how long the drawn phase has run, s, from the drawn
+   * state's clock (remote surfers alike); unknown (a fresh solve, a gap) counts
+   * as long since.
+   */
+  private trackPhase(state: RiderVisualState): number {
+    const dt = state.clock - this.phaseClock;
+    if (!(dt >= 0 && dt < 0.25)) this.phaseSince = Number.NaN;
+    else if (state.phase !== this.phaseName) this.phaseSince = state.clock;
+    this.phaseName = state.phase;
+    this.phaseClock = state.clock;
+    return Number.isFinite(this.phaseSince) ? state.clock - this.phaseSince : Number.POSITIVE_INFINITY;
+  }
+
+  /**
+   * The upright body's own shape's share (the hinge, the relaxed arms): from the
+   * landing's start (`uprightBlend`), and standing whole once landed (the
+   * standing cues' own blend eases in only from standing). A rider read fresh
+   * standing has `standingBlend` ahead of `uprightBlend`, as before.
+   */
+  private bodyBlend(state: RiderVisualState): number {
+    if (state.phase === 'standing') return Math.max(state.standingBlend, state.uprightBlend);
+    return state.phase === 'landing' ? state.uprightBlend : 0;
+  }
+
+  /**
+   * How far the lying key pose is drawn (`TAKE_OFF.fade`): prone, all of it but
+   * where a duck-dive's press takes over (the physics' own posture); pushing, it
+   * hands over to the push's points over the push's first `fade`; lying back
+   * down, it comes in over the last `fade` of it.
+   */
+  private lyingPoseShare(state: RiderVisualState, phaseTime: number): number {
+    const { fade } = TAKE_OFF;
+    // Handed over by 0.15 of the press, before its hands slide forward to straight arms on the rails at 0.3: still handing
+    // over then, the switch's blend swung the arms across the body.
+    if (state.phase === 'prone') return 1 - smooth(state.duck / 0.15);
+    if (state.phase === 'push') return 1 - smooth(phaseTime / (PUSH_TIME * fade));
+    if (state.phase === 'recover') return smooth((phaseTime / RECOVER_TIME - (1 - fade)) / fade);
+    return 0;
+  }
+
+  /** A point in the board's frame (about its centre of mass), into `out`. */
+  private toBoard(state: RiderVisualState, point: Vector3, out: Vector3): Vector3 {
+    return out.copy(point).sub(state.boardPosition).applyQuaternion(this.boardInverse.copy(state.boardQuaternion).invert());
+  }
+
+  /** A point of the board's frame in the world, into `out`. */
+  private fromBoard(state: RiderVisualState, local: Vector3, out: Vector3): Vector3 {
+    return out.copy(local).applyQuaternion(state.boardQuaternion).add(state.boardPosition);
+  }
+
+  /**
+   * Lying, the drawn places the physics leaves open, moved in the state's
+   * points: the legs together (the lying key pose's, by its share); pushing,
+   * the hips held low through the press and the hands flat beside the lower ribs
+   * (`TAKE_OFF.press`, `hand`).
+   */
+  private placeLying(state: RiderVisualState, phaseTime: number): void {
+    const p = state.points;
+    const local = this.placeLocal;
+    if (this.lyingShare > 0) {
+      const half = this.lying.feet / 2;
+      for (const index of [POINT.leftFoot, POINT.rightFoot]) {
+        this.toBoard(state, p[index], local);
+        local.x += (Math.sign(local.x) * Math.min(Math.abs(local.x), half) - local.x) * this.lyingShare;
+        this.fromBoard(state, local, p[index]);
+      }
+    }
+    if (state.phase !== 'push') return;
+    const s = Math.min(1, phaseTime / PUSH_TIME);
+    const { press, hand } = TAKE_OFF;
+    // Where the push began (its first solve, or this one): the hips as they lay, and the hands' places beside the lower
+    // ribs, planted on the deck (the board's frame, about its centre of mass).
+    if (this.pressSince !== this.phaseSince || !Number.isFinite(this.phaseSince)) {
+      this.pressSince = this.phaseSince;
+      this.toBoard(state, p[POINT.pelvis], this.pressHips);
+      const z = this.pressHips.z + BOARD_CENTRE.z + hand.ribs * (this.spineBase + this.trunkLength);
+      for (const side of SIDES) {
+        const out = side === 'left' ? 1 : -1;
+        this.pressHands[side].set(out * Math.min(hand.apart / 2, railHalfWidth(z) - hand.inboard), deckAt(z) + hand.above, z).sub(BOARD_CENTRE);
+      }
+    }
+    // The hips held where they lay through the press, the physics' pelvis shown as the press comes on.
+    this.toBoard(state, p[POINT.pelvis], local);
+    local.lerp(this.pressHips, 1 - smooth((s - press.from) / (1 - press.from)));
+    this.fromBoard(state, local, p[POINT.pelvis]);
+    // The hands placed flat on their places.
+    const place = smooth(phaseTime / hand.place);
+    for (const side of SIDES) {
+      const index = side === 'left' ? POINT.leftHand : POINT.rightHand;
+      this.toBoard(state, p[index], local).lerp(this.pressHands[side], place);
+      this.fromBoard(state, local, p[index]);
+    }
+  }
+
+  /**
+   * Pushing (`TAKE_OFF.press`), the chest's line over the deck, rad, the arms
+   * push it to: the elbows extending on their schedule, the shoulders as far
+   * from the planted hands as the arms then reach, found on the skeleton (its
+   * hips at the drawn pelvis, the lower back lifting `arch` of the chest) by
+   * halving. Leaves the hips and spine posed for it (the solve poses them again).
+   */
+  private pressChest(state: RiderVisualState, s: number): number {
+    const { press } = TAKE_OFF;
+    const reach = this.elbowReach(press.elbow + (180 - press.elbow) * smooth((s - press.begin) / (press.straight - press.begin)));
+    const p = state.points;
+    const distanceAt = (degrees: number) => {
+      this.overDeck(press.arch * degrees, this.up);
+      this.forward.copy(this.boardUp).negate();
+      this.perpendicular(this.forward, this.up);
+      this.hipsForward.copy(this.forward);
+      this.facing.copy(this.forward);
+      this.placeHips(this.pressAt.copy(p[POINT.pelvis]));
+      this.orientSpine(this.overDeck(degrees, this.pressLine));
+      let sum = 0;
+      for (const side of SIDES) sum += this.bones.get(BONES.arm[side])!.getWorldPosition(this.pressAt).distanceTo(p[side === 'left' ? POINT.leftHand : POINT.rightHand]);
+      return sum / 2;
+    };
+    // The chest high, within `lift`° of the physics' own trunk (the push's end is its), brought under it smoothly
+    // (`softCap` over `liftEase`°): a hard cap kinked the chest's rate as it took hold and let go, and the nearly
+    // straight arms read the kink as a jump at the elbows. Never lower than the physics' own trunk (eased the same
+    // way): the hips rising over the planted hands would fold the chest flat over them; instead the straight arms
+    // lift the hands off the deck (the reach begins).
+    const own = Math.asin(Math.max(-1, Math.min(1, this.pressUp.dot(this.boardUp)))) / DEG;
+    const most = Math.max(0, own + press.lift);
+    const top = 85;
+    let solved: number;
+    if (distanceAt(top) <= reach) solved = top;
+    else if (distanceAt(0) >= reach) solved = 0;
+    else {
+      let low = 0;
+      let high = top;
+      for (let i = 0; i < 14; i += 1) {
+        const middle = (low + high) / 2;
+        if (distanceAt(middle) < reach) low = middle;
+        else high = middle;
+      }
+      solved = (low + high) / 2;
+    }
+    const capped = softCap(solved, Math.min(top, most), press.liftEase);
+    const floored = -softCap(-capped, -Math.max(0, own), press.liftEase);
+    return Math.max(0, floored) * DEG;
+  }
+
+  /**
+   * The pop-up's feet planted (`TAKE_OFF.touch`, `lift`): from the landing's
+   * start each foot point swings on a minimum-jerk arc above the deck from where
+   * its lying ankle was to its stance point, and lands on it at `touch` of the
+   * reach, both together; they never slide along the deck. The front foot is
+   * lifted through under the body, the back one turned across the stringer. In
+   * the state's points, so everything drawn after reads the swung feet.
+   */
+  private swingFeet(state: RiderVisualState): void {
+    const p = state.points;
+    const local = this.placeLocal;
+    const recent = state.clock - this.liftOffClock;
+    if (state.phase === 'landing' && this.phaseSince === state.clock && recent >= 0 && recent < 0.25) {
+      for (const side of SIDES) {
+        // The lying ankle's place, as the foot point an upright ankle stands over (the sole under it, the heel behind).
+        this.swingFrom[side].copy(this.liftOff[side]).add(local.set(0, -this.soleHeight, this.heelToMidfoot));
+      }
+      this.swingStart = state.clock;
+    }
+    this.swingShare = 1;
+    this.swingTime = 1;
+    if (!Number.isFinite(this.swingStart)) return;
+    const s = (state.clock - this.swingStart) / (LANDING_TIME * TAKE_OFF.touch);
+    if (!(s >= 0 && s < 1) || (!Number.isFinite(this.phaseSince) && state.phase === 'landing')) {
+      this.swingStart = Number.NaN;
+      return;
+    }
+    this.swingShare = minimumJerk(s);
+    this.swingTime = s;
+    this.stancePoint.left.copy(p[POINT.leftFoot]);
+    this.stancePoint.right.copy(p[POINT.rightFoot]);
+    const left = this.toBoard(state, p[POINT.leftFoot], this.middle).z;
+    const right = this.toBoard(state, p[POINT.rightFoot], this.middle).z;
+    const height = 16 * s * s * (1 - s) * (1 - s);
+    for (const side of SIDES) {
+      const index = side === 'left' ? POINT.leftFoot : POINT.rightFoot;
+      const front = side === 'left' ? left >= right : right > left;
+      this.toBoard(state, p[index], local);
+      local.sub(this.swingFrom[side]).multiplyScalar(minimumJerk(s)).add(this.swingFrom[side]);
+      local.y += height * (front ? TAKE_OFF.lift.front : TAKE_OFF.lift.rear);
+      this.fromBoard(state, local, p[index]);
+    }
+  }
+
+  /**
+   * Landing, a hand from where the push left it about its shoulder (on the
+   * deck, or lifted by the straight arm) straight to its relaxed place low and forward over
+   * `TAKE_OFF.armsIn` s: the physics' landing hands are held out along the
+   * board, nearly opposite the relaxed ones about the shoulder, and turning
+   * between them flipped the arm.
+   */
+  private landingArm(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, phaseTime: number): void {
+    const relaxed = this.relaxedHand(state, side, shoulder, this.relaxedAt);
+    target.copy(this.liftOffHand[side]).applyQuaternion(state.boardQuaternion).add(shoulder).lerp(relaxed, smooth(phaseTime / TAKE_OFF.armsIn));
+  }
+
+  /** A swinging foot's bone (the foot, the toes) turned from how it lay (`lay`, on the board) toward how it lands, by the swing's share. */
+  private turnFootFrom(state: RiderVisualState, name: string, lain: Quaternion): void {
+    const bone = this.bones.get(name)!;
+    const landed = bone.getWorldQuaternion(this.turnWorld);
+    const lay = this.footTurn.copy(state.boardQuaternion).multiply(lain);
+    lay.slerp(landed, this.swingShare);
+    bone.quaternion.copy(bone.parent!.getWorldQuaternion(this.turnParent).invert().multiply(lay));
+    bone.updateMatrixWorld(true);
+  }
+
+  /** The board's nose turned `degrees` up off the deck toward its normal (a lying line over the deck), into `out`. */
+  private overDeck(degrees: number, out: Vector3): Vector3 {
+    const angle = degrees * DEG;
+    return out.copy(this.boardForward).multiplyScalar(Math.cos(angle)).addScaledVector(this.boardUp, Math.sin(angle));
+  }
+
+  /** The world's up turned `degrees` toward the board's levelled nose (sitting, the trunk's line), into `out`. */
+  private sitUp(degrees: number, out: Vector3): Vector3 {
+    const nose = this.sitNose.copy(this.boardForward).setY(0);
+    if (nose.lengthSq() < 1e-8) nose.set(0, 0, 1);
+    nose.normalize();
+    const angle = degrees * DEG;
+    return out.copy(WORLD_UP).multiplyScalar(Math.cos(angle)).addScaledVector(nose, Math.sin(angle));
+  }
+
+  /**
+   * Sitting (`SIT.hipsOver`), where the hips bone goes: the hip joints on the
+   * deck's stringer between the physics' pelvis and torso points along it (the
+   * prone body's mass, where the board floats it), the bone above them along
+   * the seated trunk.
+   */
+  private sitHips(state: RiderVisualState, out: Vector3): Vector3 {
+    const p = state.points;
+    const z = (this.toBoard(state, p[POINT.pelvis], this.middle).z + this.toBoard(state, p[POINT.torso], this.middle).z) / 2 + BOARD_CENTRE.z;
+    this.middle.set(0, deckAt(z) + SIT.hipsOver, z).sub(BOARD_CENTRE);
+    this.fromBoard(state, this.middle, out);
+    return out.addScaledVector(this.sitUp(SIT.lean, this.middle), this.hipDrop);
+  }
+
+  /** A way in the board's frame (out across toward the side's rail, up, toward the nose; `SIT`'s), in the world, into `out` (unit). */
+  private sitWay(state: RiderVisualState, way: readonly number[], side: Side, out: Vector3): Vector3 {
+    return out.set((side === 'left' ? 1 : -1) * way[0], way[1], way[2]).normalize().applyQuaternion(state.boardQuaternion);
+  }
+
+  /**
+   * Sitting, a leg's ankle target and knee pole blended toward the straddle's
+   * (`SIT`): the thigh out over the rail, the shin hanging from the knee, the
+   * knee bending toward the nose; the foot out to the side before it drops, so
+   * it clears the tail as it swings from lying.
+   */
+  private sitLeg(state: RiderVisualState, side: Side, hip: Vector3, sit: number, target: Vector3, pole: Vector3): void {
+    const thigh = this.sitWay(state, SIT.thigh, side, this.sitThigh);
+    const shin = this.sitWay(state, SIT.shin, side, this.sitShin);
+    const ankle = this.sitAt.copy(hip).addScaledVector(thigh, this.upperLeg).addScaledVector(shin, this.lowerLeg);
+    const from = this.toBoard(state, target, this.placeLocal);
+    const to = this.toBoard(state, ankle, this.middle);
+    from.x += (to.x - from.x) * smooth(2 * sit);
+    from.y += (to.y - from.y) * sit;
+    from.z += (to.z - from.z) * sit;
+    this.fromBoard(state, from, target);
+    pole.lerp(this.middle.copy(thigh).sub(shin).normalize(), sit);
+  }
+
+  /** Sitting, a hand target and elbow pole blended toward the straddle's: on its thigh (`SIT.hands`), within `reach` of the arm, the elbow out and back. */
+  private sitHand(state: RiderVisualState, side: Side, shoulder: Vector3, sit: number, target: Vector3, pole: Vector3): void {
+    const { along, above, inside, reach } = SIT.hands;
+    const rest = this.sitAt.copy(this.joints.hip[side]).lerp(this.joints.knee[side], along).addScaledVector(WORLD_UP, above);
+    rest.addScaledVector(this.sitWay(state, [-1, 0, 0], side, this.middle), inside);
+    // Resting, within a soft elbow's reach: where the thigh is further, the hand rests short of it, above it.
+    this.softReach(shoulder, this.pressAt.copy(rest), rest, reach);
+    target.lerp(rest, sit);
+    pole.lerp(this.sitWay(state, [1, 0, -0.8], side, this.middle), sit);
+  }
+
   /** Forgets the last solve's motion: the next hinges, and swings its arms, at once (a new tile of the surfer sheet, a teleport). */
   reset(): void {
+    this.phaseClock = Number.NaN;
+    this.phaseSince = Number.NaN;
+    this.liftOffClock = Number.NaN;
+    this.swingStart = Number.NaN;
+    this.pressSince = Number.NaN;
+    this.liftOffHandClock = Number.NaN;
+    this.water.reset();
     this.hingeClock = Number.NaN;
     this.hingeAngle = 0;
     this.armClock = Number.NaN;
@@ -1373,7 +1855,7 @@ export class HumanoidRig {
    */
   private freeArm(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, share: number): void {
     const { arms } = RIG_DETAIL;
-    const weight = arms.share * share * state.standingBlend;
+    const weight = arms.share * share * this.bodyBlend(state);
     if (weight <= 0) return;
     // From the chest's down (the shoulders' girdle), bent for the lead shoulder's drop.
     const down = this.bend.copy(this.chestLine).negate();
@@ -1434,7 +1916,16 @@ export class HumanoidRig {
   private relaxedHand(state: RiderVisualState, side: Side, shoulder: Vector3, out: Vector3): Vector3 {
     const offset: HandOffset = this.isRearFoot(state, side) ? this.pose.hands.trail : this.pose.hands.lead;
     const { nose, toes, up } = this.bodyFrame();
-    out.copy(this.calmKnee[side]).addScaledVector(nose, offset.nose).addScaledVector(toes, offset.toes).addScaledVector(up, offset.up);
+    out.copy(this.calmKnee[side]);
+    // Swinging the feet onto the deck, in front of the hips (`TAKE_OFF.hands`), framing the knees once they plant:
+    // a swinging knee whips round under the body.
+    if (this.swingShare < 1) {
+      const { hands } = TAKE_OFF;
+      const lead = this.isRearFoot(state, side) ? 0 : 1;
+      this.handScratch.copy(this.hipsAt).addScaledVector(nose, hands.nose * (2 * lead - 1)).addScaledVector(toes, hands.toes).addScaledVector(up, hands.up);
+      out.lerp(this.handScratch, 1 - this.swingShare);
+    }
+    out.addScaledVector(nose, offset.nose).addScaledVector(toes, offset.toes).addScaledVector(up, offset.up);
     const offsetFromShoulder = this.handScratch.subVectors(out, shoulder);
     const distance = offsetFromShoulder.length();
     if (distance < 1e-6) return out;
@@ -1449,9 +1940,14 @@ export class HumanoidRig {
    */
   private bodyFrame(): { nose: Vector3; toes: Vector3; up: Vector3 } {
     const nose = this.bodyNose.crossVectors(this.bodyUp, this.forward).normalize();
-    if (nose.dot(this.boardForward) < 0) nose.negate();
+    // Toward the board's nose; where that is unclear (the landing's start, the body still facing the deck: this lies
+    // square to the nose), the last frame's way, so it never flips between frames.
+    const along = nose.dot(this.boardForward);
+    if (Math.abs(along) > 0.3) this.noseSign = along < 0 ? -1 : 1;
+    if (this.noseSign < 0) nose.negate();
     return { nose, toes: this.forward, up: this.bodyUp };
   }
+  private noseSign = 1;
 
   /** The board's levelled frame: its nose on the level, and toward the stance's toes (Regular faces the −x rail). */
   private levelled(nose: Vector3, toes: Vector3): { nose: Vector3; toes: Vector3 } {
@@ -1472,7 +1968,7 @@ export class HumanoidRig {
     const knee = this.handScratch.subVectors(this.joints.knee[side], this.hipsAt);
     const local = [knee.dot(nose), knee.dot(up), knee.dot(toes)];
     const followers = this.kneeFollowers[side];
-    const calm = state.phase === 'standing'
+    const calm = state.phase === 'standing' || state.phase === 'landing'
       ? local.map((value, i) => followers[i].follow(value, state.clock))
       : local.map((value, i) => followers[i].seed(value, state.clock));
     this.calmKnee[side].copy(this.hipsAt).addScaledVector(nose, calm[0]).addScaledVector(up, calm[1]).addScaledVector(toes, calm[2]);
@@ -1599,12 +2095,12 @@ export class HumanoidRig {
     return feet.lengthSq() > 1e-8 ? out.add(feet.normalize()) : out;
   }
 
-  /** Lying, the hand's point brought within the arm's reach smoothly (`armEase`): along the line from the shoulder. */
-  private softReach(shoulder: Vector3, hand: Vector3, out: Vector3): Vector3 {
+  /** Lying, the hand's point brought within `most` of the arm's reach smoothly (`armEase`): along the line from the shoulder. */
+  private softReach(shoulder: Vector3, hand: Vector3, out: Vector3, most = RIG_DETAIL.armReach, ease = RIG_DETAIL.armEase): Vector3 {
     const offset = out.subVectors(hand, shoulder);
     const distance = offset.length();
     if (distance < 1e-9) return out.copy(hand);
-    const reach = softCap(distance, RIG_DETAIL.armReach * this.armLength, RIG_DETAIL.armEase * this.armLength);
+    const reach = softCap(distance, most * this.armLength, ease * this.armLength);
     return offset.multiplyScalar(reach / distance).add(shoulder);
   }
 
@@ -1729,6 +2225,21 @@ export class HumanoidRig {
    * turned toward the nose and down by the key pose's `rearKneeIn`.
    */
   private kneePole(state: RiderVisualState, side: Side, out: Vector3): Vector3 {
+    this.standingKneePole(state, side, out);
+    // Swinging onto the deck (the pop-up's reach), the knees drive forward and up under the chest (from the lying
+    // legs' down and forward, `TAKE_OFF.knee`), turning out to the stance's over the swing's second half: the swinging
+    // foot passes right under the hip, and a folded leg's knee goes wherever its pole points.
+    if (this.swingTime < 1) {
+      const { knee } = TAKE_OFF;
+      const lay = this.kneeNose.copy(this.boardForward).addScaledVector(this.boardUp, -knee.lay).normalize();
+      const drive = this.kneeDrive.copy(this.boardForward).addScaledVector(this.boardUp, knee.drive).normalize();
+      turnToward(lay, drive, smooth(this.swingTime / knee.up), lay);
+      turnToward(lay, out.normalize(), smooth((this.swingTime - knee.out) / (1 - knee.out)), out);
+    }
+    return out;
+  }
+
+  private standingKneePole(state: RiderVisualState, side: Side, out: Vector3): Vector3 {
     if (!this.isRearFoot(state, side)) return out.copy(this.kneeFacing);
     const { boardUp } = this;
     const { kneeSquare: square, kneeNose: nose } = this;
@@ -1741,23 +2252,27 @@ export class HumanoidRig {
   }
 
   /**
-   * Standing, the drawn hips moved back along the stance toward the key pose's
-   * weight (`StandingPose.weight`), eased in by the standing blend: drawn only.
+   * Upright, the drawn hips moved back along the stance toward the key pose's
+   * weight (`StandingPose.weight`), eased in by the body's blend (`bodyBlend`):
+   * drawn only.
    */
   private weighBack(state: RiderVisualState, hipsAt: Vector3): void {
     const { pivot, keep, most } = this.pose.weight;
     // Along the deck, as the stance gauge reads the weight: a board planing nose up under an upright body sits its
     // hips forward along the deck, and the front knee bends for it.
     const nose = this.boardForward;
-    const front = state.points[this.blend.stance === 'regular' ? POINT.leftFoot : POINT.rightFoot].dot(nose);
-    const rear = state.points[this.blend.stance === 'regular' ? POINT.rightFoot : POINT.leftFoot].dot(nose);
+    // The stance's feet (the physics' own), not the swinging ones: the weight is the stance's.
+    const feet = this.swingShare < 1 ? this.stancePoint : { left: state.points[POINT.leftFoot], right: state.points[POINT.rightFoot] };
+    const front = feet[this.blend.stance === 'regular' ? 'left' : 'right'].dot(nose);
+    const rear = feet[this.blend.stance === 'regular' ? 'right' : 'left'].dot(nose);
     const span = front - rear;
     if (span < 0.1) return;
     const weight = (hipsAt.dot(nose) - rear) / span;
     if (weight <= pivot) return;
     // Not in a turn: the bottom turn's preparation goes to the front foot (the owner's call, §10.2).
-    const back = Math.min(most, (1 - keep) * (weight - pivot) * span) * (1 - Math.abs(this.blend.turn));
-    hipsAt.addScaledVector(nose, -state.standingBlend * back);
+    const turning = state.phase === 'standing' ? Math.abs(this.blend.turn) : 0;
+    const back = Math.min(most, (1 - keep) * (weight - pivot) * span) * (1 - turning);
+    hipsAt.addScaledVector(nose, -this.bodyBlend(state) * back);
   }
 
 
