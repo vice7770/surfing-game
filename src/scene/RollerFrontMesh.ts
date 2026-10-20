@@ -100,14 +100,20 @@ export const ROLLER_FRONT = {
    * the Canyon's lenses measure 6 H and more long, so their crest thickness (K H² over the length) comes out 0.08–0.16 H.
    */
   thickness: 0.235,
-  /** Fresh is brighter (Koepke 1984; the advisor: 1.5–2× the white 5 s older): × (1 + `fresh` e^{−since/`freshDecay`}). */
-  fresh: 1.5,
+  /**
+   * Fresh is brighter (Koepke 1984; the advisor: 1.5–2× the white 5 s older): × (1 + `fresh` e^{−since/`freshDecay`}),
+   * and its creases fill as it is (fresh foam is bubbles through and through), from none at touchdown (P).
+   */
+  fresh: 2.5,
   freshDecay: 1.5,
-  /** The light a crease between lumps keeps, and between the churn's clumps (P). */
-  crease: 0.5,
-  churnShade: 0.65,
+  /**
+   * The light a crease between lumps keeps, and between the churn's clumps, once aged (P: darker big creases read as
+   * marble on the aged bore; the fine clumps' as foam).
+   */
+  crease: 0.84,
+  churnShade: 0.64,
   /** The churn's clumps' relief on the normal, m (the tank's `CHURN_RELIEF` is 0.06; the front's stand proud, P). */
-  churnRelief: 0.2,
+  churnRelief: 0.3,
   /**
    * Foam is a dense scatterer, lit through its lumps: its normal is bent this far toward the sky for its light, so a
    * lump's side turned from the sun greys rather than going dark as a solid's would (P).
@@ -456,8 +462,10 @@ vec2 rfChurnAt( vec2 p ) {
 /** The foam colour, creased between lumps and between the churn's clumps (both fading with the detail at distance). */
 const FRONT_COLOR = /* glsl */ `
 vec2 rfChurn = rfChurnAt( vRfSection.xy );
+// The creases, once aged: fresh foam (its gain over 1, as a share of the most) fills them.
+float rfAged = 1.0 - clamp( ( vRfShade.z - 1.0 ) / ${f(F.fresh)}, 0.0, 1.0 );
 float rfCrease = mix( 1.0, mix( ${f(F.crease)} * rfTune2.x, 1.0, smoothstep( 0.05, 0.6, vRfShade.y ) )
-  * mix( ${f(F.churnShade)} * rfTune2.y, 1.0, smoothstep( 0.1, 0.7, rfChurn.y ) ), vRfShade.w );
+  * mix( ${f(F.churnShade)} * rfTune2.y, 1.0, smoothstep( 0.1, 0.7, rfChurn.y ) ), vRfShade.w * rfAged );
 diffuseColor.rgb = waterFoamColor * rfCrease;
 diffuseColor.a *= vRfShade.x;
 `;
@@ -479,7 +487,7 @@ const FRONT_NORMAL = /* glsl */ `#include <normal_fragment_maps>
 
 /**
  * The band's light as a volume scatterer (`BAND_VOLUME` with the foam look's cap, `bandVolumeLight`): the sun wrapped
- * round the face beyond three's N·L, so the front lights as the band beside it does.
+ * round the face beyond three's N·L, so the front lights as the band beside it does; while young, through all of it.
  */
 function frontVolume(kept: number): string {
   return /* glsl */ `#include <emissivemap_fragment>
@@ -488,7 +496,10 @@ function frontVolume(kept: number): string {
   float rfSun = dot( rfN, waterSunDirection );
   float rfWrapped = max( 0.0, ( rfSun + 1.0 ) / 2.0 );
   float rfCapped = min( rfWrapped, max( max( 0.0, rfSun ), waterSunDirection.y ) );
-  float rfThrough = max( ${f(kept)}, vRfSection.w * vRfSection.w * ( 1.0 - smoothstep( ${f(BAND_THROUGH[0])}, ${f(BAND_THROUGH[1])}, rfSun ) ) );
+  // The sun shines through near the crest, as through the band, and through the whole young front: fresh foam is thin
+  // and full of air, so its backlit side glows (its gain's share).
+  float rfThrough = max( ${f(kept)}, max( vRfSection.w * vRfSection.w, 1.0 - rfAged )
+    * ( 1.0 - smoothstep( ${f(BAND_THROUGH[0])}, ${f(BAND_THROUGH[1])}, rfSun ) ) );
   totalEmissiveRadiance += diffuseColor.rgb * waterSunRadiance * RECIPROCAL_PI * ( rfCapped + ( rfWrapped - rfCapped ) * rfThrough - max( 0.0, rfSun ) );
 }`;
 }

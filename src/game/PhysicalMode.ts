@@ -941,13 +941,15 @@ export class PhysicalMode {
     const { host } = this;
     const { water, mesh } = front;
     const look = host?.snapshot.rollerLook;
-    if (!host || !look || look.length === 0 || !this.shown || !rollerFrontMode.on || water.drawnLook !== 'rich') {
+    if (!host || !look || look.length === 0 || !this.shown || water.drawnLook !== 'rich') {
       mesh.hide();
       front.drawn = undefined;
       return;
     }
     const { status } = host.snapshot;
-    if (front.drawn && front.drawn.status === status) return;
+    // The A/B switch only hides it: its patches stay laid out, so turning it back on uploads nothing.
+    mesh.mesh.visible = rollerFrontMode.on && mesh.drawn.patches > 0;
+    if (!rollerFrontMode.on || (front.drawn && front.drawn.status === status)) return;
     const uniforms = water.materialUniforms;
     const columns = uniforms.waterRollerColumns.value as number;
     mesh.update(host.snapshot.roller, look, columns, uniforms.waterRollerColumn0.value as number, uniforms.waterRollerColumnWidth.value as number);
