@@ -318,7 +318,9 @@ describe('the spilling lip\'s splash', () => {
 });
 
 describe('the spilling lip at the Canyon', () => {
-  it('stands its curl about a quarter of the wave high (0.2–0.35 H) all along the arm', () => {
+  // The reef bed (2026-10-22): the span's steep end is the 1:23 face below the fan's hinge (1:30 and 0.35 H before), and the
+  // owner's call (Q24) lets Pick & Feddersen size the curl on it, so near the peak it stands 0.40 H high.
+  it('stands its curl a quarter to two fifths of the wave high (0.2–0.40 H) along the arm, highest by the peak', () => {
     const simulation = new SurfZoneSimulation({
       spot: 'canyon', seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0,
       componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
@@ -332,15 +334,18 @@ describe('the spilling lip at the Canyon', () => {
       for (const height of [0.6, 1, 1.4]) {
         const share = curl.size(column, height).width / height;
         expect(share).toBeGreaterThanOrEqual(0.2);
-        expect(share).toBeLessThanOrEqual(0.35);
+        expect(share).toBeLessThanOrEqual(0.4);
       }
-      // The size is the overturn's (`overturnSize`) for the bed the column's crest climbs, held to the fan face's span.
+      // The size is the overturn's (`overturnSize`) for the bed the column's crest climbs, held to the arm's span.
       expect(curl.size(column, 1).width).toBeCloseTo(overturnSize(curl.shapes[column], 1).width, 12);
+      // Where the crest climbs the steep face by the peak, the curl grows past the old span's 0.35 H.
+      if (xCenters[column] >= -41 && xCenters[column] <= -31) expect(curl.size(column, 1).width).toBeGreaterThan(0.39);
     }
     expect(arm).toBeGreaterThan(40);
   });
 
-  it('scales the curl with H: at Big (H 2.5 m) 0.58–0.83 m high, landing 1.5 m ahead, its lip 0.13–0.15 m thick', () => {
+  // On the reef bed (2026-10-22); before it, held to 1:30, 0.58–0.83 m high, landing 1.5 m ahead, 0.13–0.15 m thick.
+  it('scales the curl with H: at Big (H 2.5 m) 0.83–0.99 m high, landing 1.9 m ahead, its lip 0.15–0.21 m thick', () => {
     const simulation = new SurfZoneSimulation({
       spot: 'canyon', seed: 1, significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: 150, tide: 0,
       componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
@@ -349,7 +354,7 @@ describe('the spilling lip at the Canyon', () => {
     const { xCenters, nx } = simulation.solver;
     for (let column = 0; column < nx; column += 1) {
       if (!canyonArmAt(xCenters[column])) continue;
-      for (const [height, high, ahead, thick] of [[2.5, [0.56, 0.84], 1.5, [0.13, 0.153]], [1.3, [0.29, 0.44], 0.78, [0.067, 0.08]]] as const) {
+      for (const [height, high, ahead, thick] of [[2.5, [0.82, 0.995], 1.88, [0.148, 0.211]], [1.3, [0.43, 0.52], 0.98, [0.077, 0.11]]] as const) {
         const size = curl.size(column, height);
         expect(size.width).toBeGreaterThanOrEqual(high[0]);
         expect(size.width).toBeLessThanOrEqual(high[1]);
