@@ -600,10 +600,10 @@ export interface PopUpReport {
  * landing the body rises from the landing crouch to the riding stance, and a
  * failed attempt lies back down; both of those times are modelling choices.
  */
-const PUSH_TIME = 0.72;
-const LANDING_TIME = 0.48;
-const SETTLE_TIME = 0.8;
-const RECOVER_TIME = 0.6;
+export const PUSH_TIME = 0.72;
+export const LANDING_TIME = 0.48;
+export const SETTLE_TIME = 0.8;
+export const RECOVER_TIME = 0.6;
 /**
  * The duck-dive's timing (the wipeout spec): the arms straighten over
  * PRESS_TIME, s; the knee starts KNEE_DELAY s after the press began and lands
