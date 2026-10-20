@@ -12,7 +12,9 @@
  * recipes one after another in real time on one surfer (`&surfer`, `&side`),
  * the camera riding beside the board; `&record` films it from the canvas for
  * scripts/browser/motion-clip.mjs, and `&alarm=0` draws it without step 5's
- * balance cue (the arms as step 4 left them).
+ * balance cue (the arms as step 4 left them). `?realism` draws the
+ * animation-realism plan's stance sheet (`realismSheet.ts`): every stage today
+ * beside its target figure.
  */
 import {
   BufferGeometry, DirectionalLight, Float32BufferAttribute, LineBasicMaterial, LineSegments, Mesh, MeshPhysicalMaterial, NeutralToneMapping, PerspectiveCamera,
@@ -31,6 +33,7 @@ import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/r
 import { StanceGauge, measureJoints, type StanceJoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
 import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
+import { drawRealism } from './realismSheet';
 import { figureAngles, figureLengths, figurePlan, referenceJoints } from './stanceFigure';
 import { MEASURE_LABEL, compareStance, formatMeasure } from './stanceReport';
 
@@ -176,6 +179,10 @@ async function main(): Promise<void> {
     surfer.group.visible = false;
     scene.add(surfer.group);
   });
+  if (params.has('realism')) {
+    await drawRealism({ renderer, scene, camera, sun, shadows, surfers, boards, boardPosition, water, canvas, status, params });
+    return;
+  }
   const motion = params.get('motion');
   if (motion) {
     await playMotion(surfers, motion.split(','), entry.id);
