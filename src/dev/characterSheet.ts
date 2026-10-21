@@ -298,7 +298,7 @@ function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, r
 }
 
 /** Motions for the films beside the map's stances: a pump's three pulses, a held bottom turn released, a weave with the weight back. */
-const FILM_RECIPES: Record<string, StanceRecipe> = {
+const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
   pumping: {
     ...STANCE_RECIPES['pump-compression'],
     controls: [{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }, { at: 1.2, crouch: 1 }, { at: 1.6, crouch: 0 }, { at: 2.0, crouch: 1 }, { at: 2.4, crouch: 0 }],
@@ -337,6 +337,17 @@ const FILM_RECIPES: Record<string, StanceRecipe> = {
   // the weight going back, the redirect onto the heels with it back, and the finish crouched. A plane face is no wave:
   // the board crosses it but never climbs it (the redirect's own physics, the plan's phase 5); the body's moves are the
   // game's, step by step.
+  // The animation-realism plan's phase 4: each fall by cause (the stance recipes' stand-ins for a pearl's nose, a
+  // kick-out's tail and the lip's throw), 3 s of each; a fall, rising to the surface and looking round (6.5 s); reeling the
+  // leash in (from 5 s, shown from 4 s); and holding the board to climb back on after a slow fall, shown from 15.5 s (the
+  // swimmer reels from 3 s and comes within reach at 16.3 s; the body comes on at 17.2 s).
+  'fall-side': { ...STANCE_RECIPES['fall-side'], after: undefined, seconds: 3.5 },
+  'fall-pearl': { ...STANCE_RECIPES['fall-pearl'], after: undefined, seconds: 3.5 },
+  'fall-over': { ...STANCE_RECIPES['fall-over'], after: undefined, seconds: 3.5 },
+  'fall-back': { ...STANCE_RECIPES['fall-back'], after: undefined, seconds: 3.5 },
+  surfacing: { ...STANCE_RECIPES.surfacing, seconds: 6.5 },
+  reel: { ...STANCE_RECIPES.reel, seconds: 7, show: 4 },
+  climb: { phase: 'prone', water: 'flat', start: 'standing', speed: 2, separate: 0.5, controls: [{ at: 3, reel: true }], seconds: 18.6, show: 15.5 },
   'top-turn-sequence': {
     phase: 'standing', water: 'face', start: 'standing', speed: 7.5, seconds: 3.2,
     controls: [
@@ -346,7 +357,12 @@ const FILM_RECIPES: Record<string, StanceRecipe> = {
   },
 };
 
-interface MotionFrame { time: number; clock: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
+interface MotionFrame {
+  time: number; clock: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion };
+  /** Where the camera looks: the board riding, between the board and the body once fallen. */
+  focus: Vector3; fallen: boolean;
+  bones: { position: Vector3; quaternion: Quaternion }[];
+}
 
 /**
  * The motion view: each recipe drawn as the game draws it (every step through the
@@ -376,13 +392,17 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
     drawnRecipe(recipe, STANCE_SIDE, boardPosition, (step) => {
       surfer.update(step, step.boardPosition.clone().add(offset));
       // A recipe begins standing with no history: kept from when the standing blend is whole (the game's comes from the pop-up).
-      if (Number.isNaN(first) && recipe.start === 'standing' && step.standingBlend < 1) return;
+      if (Number.isNaN(first) && recipe.start === 'standing' && step.phase === 'standing' && step.standingBlend < 1) return;
+      // A recipe shown from later on (the climb): its body drawn all along, kept from then.
+      if (Number.isNaN(first) && recipe.show !== undefined && step.clock < recipe.show - 1e-9) return;
       if (Number.isNaN(first)) first = step.clock;
       last = start + step.clock - first;
       const nose = new Vector3(0, 0, 1).applyQuaternion(step.boardQuaternion);
+      const fallen = step.phase === 'fallen';
       frames.push({
         time: last, clock: step.clock, label: id, yaw: Math.atan2(nose.x, nose.z),
         board: { position: step.boardPosition.clone(), quaternion: step.boardQuaternion.clone() },
+        focus: fallen ? step.boardPosition.clone().lerp(step.points[0], 0.6) : step.boardPosition.clone(), fallen,
         bones: bones.map((bone) => ({ position: bone.position.clone(), quaternion: bone.quaternion.clone() })),
       });
     });
@@ -401,6 +421,14 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
     }
     return Math.atan2(sin, cos);
   });
+  // Fallen, the camera holds the heading it had at the fall: the loose board spins and flips.
+  let held = Number.NaN;
+  frames.forEach((frame, i) => {
+    if (i > 0 && frames[i - 1].label !== frame.label) held = Number.NaN;
+    if (!frame.fallen) held = headings[i];
+    else if (Number.isNaN(held)) held = headings[i];
+    else headings[i] = held;
+  });
   const up = new Vector3(0, 1, 0);
   const width = 1280;
   const height = 720;
@@ -417,8 +445,9 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
     frame.bones.forEach((pose, i) => { bones[i].position.copy(pose.position); bones[i].quaternion.copy(pose.quaternion); });
     board.position.copy(frame.board.position);
     board.quaternion.copy(frame.board.quaternion);
-    camera.position.copy(frame.board.position).add(offset.clone().applyAxisAngle(up, headings[index]));
-    camera.lookAt(frame.board.position.clone().add(new Vector3(0, 0.8, 0.3)));
+    camera.position.copy(frame.focus).add(offset.clone().applyAxisAngle(up, headings[index]));
+    if (frame.fallen) camera.position.y = Math.max(camera.position.y, frame.board.position.y + 1.2);
+    camera.lookAt(frame.focus.clone().add(frame.fallen ? new Vector3(0, 0.15, 0) : new Vector3(0, 0.8, 0.3)));
     shadows.follow(frame.board.position, sun.position.clone().normalize(), 0);
     renderer.render(scene, camera);
     context.drawImage(canvas, 0, 0);

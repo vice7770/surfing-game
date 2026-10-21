@@ -16,6 +16,7 @@ import { RiderMotion } from '../scene/rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { createTestHumanoid } from '../scene/rig/testHumanoid';
 import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
+import { pitchBoard, sessionCues } from './ridingPoses';
 
 /**
  * The body film (the riding-body plan, step 1): the real ride session stepped
@@ -285,6 +286,24 @@ export interface FilmScenario {
 const FACE = (15 * Math.PI) / 180;
 /** True in the one step nearest `at` s: a key pressed for a step. */
 const once = (time: number, at: number) => Math.abs(time - at) < STEP / 2;
+/** The sessions whose fall body has had its throw (a scenario's stand-in for the lip). */
+const thrown = new WeakSet<RideSession>();
+
+/**
+ * Lets the rider go at `at` s for `cause`, the board turned nose up (+) or down by `pitch`° at the separation, and the
+ * fall body thrown at `throwing` m/s at its first step (the stance recipes' stand-ins for a pearl's nose, a kick-out's tail
+ * and the lip's lift, which flat water makes none of).
+ */
+function fallAt(time: number, at: number, session: RideSession, cause: 'balance' | 'impact' = 'balance', pitch = 0, throwing?: Vector3): void {
+  if (once(time, at) && session.rider.attached) {
+    if (pitch) pitchBoard(session.board, pitch);
+    session.separate(cause);
+  }
+  if (throwing && session.surfer.active && !thrown.has(session)) {
+    thrown.add(session);
+    for (const node of session.surfer.nodes) node.velocity.add(throwing);
+  }
+}
 
 /** The frames riding (not fallen, not at a switch). */
 const riding = (film: BodyFilm) => film.frames.filter((frame) => !frame.fallen && !frame.switched);
@@ -747,6 +766,24 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
     name: 'paddle then glide', water: 'flat', seconds: 30, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
     input: (time) => ({ paddle: time < 20 }),
   },
+  // The animation-realism plan's phase 4: a fall by each cause, a fall from lying down, rising to the surface, reeling
+  // the leash in, and holding the board to climb back on after a slow fall (it comes on at 17.2 s).
+  { name: 'a pearl', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' }, input(time, session) { fallAt(time, 1, session, 'balance', -35); return {}; } },
+  {
+    name: 'over the falls', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' },
+    input(time, session) { fallAt(time, 1, session, 'impact', 0, new Vector3(0, 2.5, 1.5)); return {}; },
+  },
+  { name: 'off the back', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' }, input(time, session) { fallAt(time, 1, session, 'balance', 25); return {}; } },
+  { name: 'a fall from lying down', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' }, input(time, session) { fallAt(time, 1, session); return {}; } },
+  { name: 'surfacing', water: 'flat', seconds: 6.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' }, input(time, session) { fallAt(time, 0.5, session); return {}; } },
+  {
+    name: 'reeling the leash in', water: 'flat', seconds: 6.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' },
+    input(time, session) { fallAt(time, 0.5, session); return { reel: time > 5 }; },
+  },
+  {
+    name: 'climbing back on', water: 'flat', seconds: 18.5, placement: { x: 0, z: 0, heading: 0, speed: 2, phase: 'standing' },
+    input(time, session) { fallAt(time, 0.5, session); return { reel: time > 3 }; },
+  },
   // Step 8: off the board lying down, then swimming in calm water.
   {
     name: 'swimming', water: 'flat', seconds: 12, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
@@ -772,6 +809,11 @@ export interface FilmContext {
 
 /** The page's drawing of the rider from delivered snapshots, one display frame at a time. */
 export interface FilmDrawer {
+  /**
+   * Another player's surfer, drawn from what the wire sends: the session's own cues (the fall's cause, the hold) are not
+   * read; the frame says the hold where the pose's recovering flag gives one.
+   */
+  remote?: boolean;
   /** A snapshot arrives from the physics. */
   deliver(snapshot: FilmSnapshot): void;
   /** Draw a frame `dt` s after the last: the rider's arrays to draw and the time to draw them at, or undefined for none yet. */
@@ -931,6 +973,11 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     const drawn = drawer.frame(1 / options.rate);
     if (!drawn) continue;
     readRiderSnapshot(drawn.rider, drawn.board, state);
+    // As the page does (`PhysicalMode`): the fall's cause and the hold, beyond the snapshot, for the player's own surfer.
+    if (!drawer.remote) {
+      sessionCues(session, state);
+      state.stance = session.rider.stance;
+    }
     motion.update(state, drawn.time);
     state.clock = drawn.time;
     // As the page does (`PhysicalMode`): the hands pull while paddling lying down.

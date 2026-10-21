@@ -32,7 +32,21 @@ describe('rider visual state', () => {
     expect(state.duck).toBe(0.7);
     expect(state.leash).toMatchObject({ worn: true, snapped: false, reeling: true });
     expect(state.leash.plug.toArray()).toEqual([4, 5, 6]);
-    expect(state.swim).toEqual({ stroking: true, diving: false, under: true });
+    expect(state.swim).toEqual({ stroking: true, diving: false, under: true, holding: false });
+  });
+
+  it('leaves the hold, the fall\'s cause and the cord\'s drawn grip to whoever draws (none in the snapshot: the animation-realism plan\'s phase 4)', () => {
+    const state = createRiderVisualState();
+    state.swim.holding = true;
+    state.separation = 'impact';
+    state.leash.gripped = true;
+    state.stance = 'goofy';
+    readRiderSnapshot(new Float64Array(RIDER_SNAPSHOT.length), [0, 0, 0, 0, 0, 0, 1, 1], state);
+    expect(state.swim.holding).toBe(false);
+    expect(state.separation).toBeUndefined();
+    expect(state.leash.gripped).toBe(false);
+    // The stance is the player's setting: kept.
+    expect(state.stance).toBe('goofy');
   });
 
   it('decodes the upper body\'s twist, and reads none from a snapshot made before it (the movement-flow spec)', () => {

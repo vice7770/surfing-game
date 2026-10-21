@@ -1,5 +1,5 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
-import { AttachedRider, type RiderPhase } from '../physics/AttachedRider';
+import { AttachedRider, type RiderPhase, type RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PlaneWater } from '../physics/PlaneWater';
 import { RideSession } from '../physics/RideSession';
@@ -34,6 +34,10 @@ interface Controls {
   paddle?: boolean;
   /** A press for one step (the pop-up; standing, Enter lies the rider down). */
   popUp?: boolean;
+  /** In the water, the pop-up key held: reel the leash in, and grab the board once it is in reach. */
+  reel?: boolean;
+  /** In the water, swim (the paddle key). */
+  swim?: boolean;
 }
 
 /** How the real rider reaches a stance of the map (`stanceMap.ts`). */
@@ -62,6 +66,16 @@ export interface StanceRecipe {
   over?: number;
   /** The rider lets go (a fall) at this time, s. */
   separate?: number;
+  /** The fall's cause as the session names it (balance by default): impact is the lip's (going over the falls). */
+  cause?: RiderSeparation;
+  /**
+   * The board's pitch turned at the separation, ° (nose up +): a pearl's nose
+   * digging in (−35°), a kick-out's tail sinking (+25°), as flat water cannot
+   * make them. Only the board's pose: the body leaves with the rider's own motion.
+   */
+  pitch?: number;
+  /** The fall body thrown at its first step, m/s on top of the rider's own (the lip's lift going over the falls, which flat water lacks). */
+  thrown?: readonly [number, number, number];
 }
 
 const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRecipe> = {}): StanceRecipe => ({
@@ -122,6 +136,20 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   landing: { phase: 'landing', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.45 },
   'lying-down': standing([{ at: 0.5, popUp: true }], 3, { speed: 6, after: 0.2, phase: 'recover' }),
   'fall-start': standing([], 3, { speed: 7, separate: 0.5, after: 0.15, phase: 'fallen' }),
+  // The animation-realism plan's phase 4: the falls by cause from riding at 7 m/s on flat water, the board's pose at the
+  // separation standing in for a pearl's nose (−35°) and a kick-out's sinking tail (+25°), and a throw (2.5 m/s up, 1.5
+  // forward) for the lip's lift over the falls, which flat water makes none of; each read at its reflex's moment: the
+  // shield 0.5 s in, the tumble's curl 0.4 s in (the body's turn peaks), the cause's own shape 0.3 s in, the ball 0.6 s
+  // in. Then surfacing (rising under water 3 s after the fall), reeling the leash in, and holding the board to climb on
+  // (both hands at the rail's middle, the board rolling under the pull).
+  'fall-side': standing([], 3, { speed: 7, separate: 0.5, after: 0.5, phase: 'fallen' }),
+  'fall-tumble': standing([], 3, { speed: 7, separate: 0.5, after: 0.4, phase: 'fallen' }),
+  'fall-pearl': standing([], 3, { speed: 7, separate: 0.5, pitch: -35, after: 0.3, phase: 'fallen' }),
+  'fall-over': standing([], 3, { speed: 7, separate: 0.5, cause: 'impact', thrown: [0, 2.5, 1.5], after: 0.6, phase: 'fallen' }),
+  'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.3, phase: 'fallen' }),
+  surfacing: standing([], 3.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
+  reel: standing([{ at: 5, reel: true }], 5.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
+  'climb-grab': standing([{ at: 1.5, reel: true }], 6.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
 };
 
 /**
@@ -211,20 +239,31 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
   const world = visit && createRiderVisualState();
   let reachedAt: number | undefined;
   let time = 0;
+  let throwing = false;
   const end = Math.round(recipe.seconds / STEP);
   for (let i = 0; i < end; i += 1) {
     const controls = controlsAt(recipe, time);
     const steer = (controls.steer ?? 0) * toes;
     if (session) {
-      if (recipe.separate !== undefined && Math.abs(time - recipe.separate) < STEP / 2 && rider.attached) session.separate('balance');
+      if (recipe.separate !== undefined && Math.abs(time - recipe.separate) < STEP / 2 && rider.attached) {
+        if (recipe.pitch) pitchBoard(board, recipe.pitch);
+        session.separate(recipe.cause ?? 'balance');
+        throwing = recipe.thrown !== undefined;
+      }
       // Lying down, towed as the wave would carry the board (none from rest: the rider paddles, or floats).
       if (recipe.start === 'prone' && recipe.speed > 0 && rider.attached && rider.phase !== 'standing') {
         board.velocity.z = recipe.speed;
         rider.velocity.z = recipe.speed;
       }
       session.step(STEP, water, {
-        paddle: controls.paddle === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch, compress: controls.compress, hand: controls.hand,
+        paddle: controls.paddle === true || controls.swim === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch,
+        compress: controls.compress, hand: controls.hand, reel: controls.reel === true,
       });
+      if (throwing && session.surfer.active) {
+        throwing = false;
+        const [x, y, z] = recipe.thrown!;
+        for (const node of session.surfer.nodes) node.velocity.add(new Vector3(x, y, z));
+      }
     } else {
       rider.steer = steer;
       rider.trim = controls.trim ?? 0;
@@ -236,6 +275,8 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
     time += STEP;
     if (visit && world) {
       worldState(run, world);
+      // As the page does: the player's own stance is known.
+      world.stance = stance;
       // As the page does (`PhysicalMode`): the hands pull while paddling lying down.
       world.stroking = controls.paddle === true && world.phase === 'prone' ? 1 : 0;
       visit(world, time);
@@ -249,6 +290,23 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
   return run;
 }
 
+/** The board turned nose up (+) or down by `degrees` about its left (a recipe's `pitch` at the separation). */
+export function pitchBoard(board: BoardBody, degrees: number): void {
+  const left = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
+  board.orientation.premultiply(new Quaternion().setFromAxisAngle(left, (-degrees * Math.PI) / 180)).normalize();
+}
+
+/**
+ * What the page draws a ride session's fallen surfer from beyond its snapshot
+ * (`PhysicalMode`: the status's separation, the hold it reads), here straight
+ * from the session: why the rider fell, and whether the swimmer holds the board.
+ */
+export function sessionCues(session: RideSession, out: RiderVisualState): RiderVisualState {
+  out.separation = session.separation;
+  out.swim.holding = !session.rider.attached && session.recovery.state === 'holding';
+  return out;
+}
+
 /** The run's drawn state in the world: the seven points, the phase, the heading and the board's pose. */
 function worldState({ board, rider, session }: Run, out: RiderVisualState): RiderVisualState {
   const pose = new Float64Array(8);
@@ -259,6 +317,7 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
     // The take-off cue as the page has it (the rider's own; the wave's take-off window needs a wave).
     writeRiderSnapshot(session, session.rider.attached && session.rider.popUpCue, snapshot, new Vector3());
     readRiderSnapshot(snapshot, pose, out);
+    sessionCues(session, out);
   } else {
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
     out.phase = rider.attached ? rider.phase : 'fallen';
@@ -345,12 +404,14 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   Object.assign(to, {
     phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
+    separation: from.separation, stance: from.stance,
   });
   to.boardPosition.copy(from.boardPosition);
   to.boardQuaternion.copy(from.boardQuaternion);
   to.travel.copy(from.travel);
   to.leash.plug.copy(from.leash.plug);
-  Object.assign(to.leash, { worn: from.leash.worn, snapped: from.leash.snapped, reeling: from.leash.reeling });
+  Object.assign(to.leash, { worn: from.leash.worn, snapped: from.leash.snapped, reeling: from.leash.reeling, gripped: from.leash.gripped });
+  to.leash.grip.copy(from.leash.grip);
   Object.assign(to.swim, from.swim);
 }
 

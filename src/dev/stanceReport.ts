@@ -52,6 +52,7 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
   chestLift: 'Chest lift over the deck', handAhead: 'Hand\'s entry ahead of the head', pullDepth: 'Pull\'s depth under the water', legsApart: 'Legs apart',
   sitTrunk: 'Trunk from the vertical (any way)', hipsDeck: 'Hips over the deck', handsApart: 'Hands apart', handsBack: 'Hands behind the trunk\'s middle',
   palmFlat: 'Palm from flat on the deck',
+  wristsToHead: 'Wrists from the head (the shield)', wristsOverHead: 'Wrists over the head', railGrip: 'Wrists from the rail\'s middle',
 };
 
 /**
@@ -68,6 +69,7 @@ function ownerOf(measure: StanceMeasure, target: { min: number; max: number }, p
 
 const METRES: ReadonlySet<StanceMeasure> = new Set([
   'lowHand', 'stanceWidth', 'rearKneeDeck', 'trailHeelRail', 'trailToeRail', 'trailFromFront', 'handAhead', 'pullDepth', 'legsApart', 'hipsDeck', 'handsApart', 'handsBack',
+  'wristsToHead', 'wristsOverHead', 'railGrip',
 ]);
 
 /** A value in the measure's unit: degrees, metres, or the weight's share. */

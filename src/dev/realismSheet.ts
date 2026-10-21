@@ -23,7 +23,7 @@ import { RiderMotion } from '../scene/rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot, type RiderVisualState } from '../scene/rig/riderVisualState';
 import { StanceGauge, measureJoints, type BoardPose, type StanceAngles, type StanceJoints } from '../scene/rig/stanceGauge';
 import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
-import { STANCE_RECIPES, drawnRecipe, type StanceRecipe } from './ridingPoses';
+import { STANCE_RECIPES, drawnRecipe, sessionCues, type StanceRecipe } from './ridingPoses';
 import { figureLengths, type FigureLengths } from './stanceFigure';
 import { footAngles, freeFigure, halfWidth, standingFigure, type FreeSpec, type StandingSpec } from './stageFigures';
 
@@ -101,7 +101,6 @@ const stand = (controls: StanceRecipe['controls'], seconds: number, extra: Parti
 const recipe = (id: string): Today => ({ kind: 'recipe', recipe: STANCE_RECIPES[id] });
 const once = (time: number, at: number) => Math.abs(time - at) < STEP / 2;
 const prone = (speed = 0): RiderPlacement => ({ x: 0, z: 0, heading: 0, speed, phase: 'prone' });
-const standingAt = (speed: number): RiderPlacement => ({ x: 0, z: 0, heading: 0, speed, phase: 'standing' });
 
 // ---------- targets ----------
 
@@ -433,7 +432,7 @@ const IMAGES: SheetImage[] = [
     id: '13-falls', title: 'Falls: the reflexes over the ragdoll',
     panels: [
       {
-        title: 'Fall, the first 0.2 s', today: recipe('fall-start'), shot: BODY,
+        title: 'Fall to the side, 0.5 s in', today: recipe('fall-side'), shot: BODY,
         target: {
           board: { level: true },
           focus: [0.9, 0.35, 0],
@@ -447,7 +446,7 @@ const IMAGES: SheetImage[] = [
         gaps: ['Ragdoll limbs at their centres (fallenReach 0.92): arms spread', 'No protective pose'],
       },
       {
-        title: 'Over the falls', missing: 'Today: the same ragdoll for every fall (here 1.1 s into one on flat water).', today: { kind: 'session', placement: standingAt(7), seconds: 1.6, input: (t, s) => { if (once(t, 0.5) && s.rider.attached) s.separate('balance'); return {}; } }, shot: BODY,
+        title: 'Over the falls', missing: 'Today: the same ragdoll for every fall (here 0.6 s into one thrown up by a stand-in for the lip).', today: recipe('fall-over'), shot: BODY,
         target: {
           board: { level: true },
           focus: [0.9, 0.2, 0],
@@ -466,8 +465,8 @@ const IMAGES: SheetImage[] = [
     id: '14-fall-shapes', title: 'Fall shapes by cause',
     panels: [
       {
-        title: 'Pearl (nose dives)', missing: 'Today every fall is the same ragdoll (here 0.9 s in).',
-        today: { kind: 'session', placement: standingAt(7), seconds: 1.4, input: (t, s) => { if (once(t, 0.5) && s.rider.attached) s.separate('balance'); return {}; } }, shot: BODY,
+        title: 'Pearl (nose dives)', missing: 'Today every fall is the same ragdoll (here 0.3 s in, the board pitched 35° nose down at the separation).',
+        today: recipe('fall-pearl'), shot: BODY,
         target: {
           board: { level: true, pitch: -35, sink: 0.2 },
           focus: [0, 0.5, 0.6],
@@ -481,8 +480,8 @@ const IMAGES: SheetImage[] = [
         gaps: ['No cause-specific shape (the separation cause is known: pearl, lip, balance, reef)'],
       },
       {
-        title: 'Off the back', missing: 'Today: the same ragdoll.',
-        today: { kind: 'session', placement: standingAt(7), seconds: 0.85, input: (t, s) => { if (once(t, 0.5) && s.rider.attached) s.separate('balance'); return {}; } }, shot: BODY,
+        title: 'Off the back', missing: 'Today: the same ragdoll (here 0.3 s in, the board pitched 25° nose up at the separation).',
+        today: recipe('fall-back'), shot: BODY,
         target: {
           board: { level: true },
           focus: [0, 0.3, -1.0],
@@ -501,8 +500,8 @@ const IMAGES: SheetImage[] = [
     id: '15-surface-swim', title: 'Surfacing and swimming',
     panels: [
       {
-        title: 'Surfacing', missing: 'No surfacing shape: the ragdoll rises as it floats.',
-        today: { kind: 'session', placement: standingAt(7), seconds: 2.2, input: (t, s) => { if (once(t, 0.5) && s.rider.attached) s.separate('balance'); return {}; } }, shot: BODY,
+        title: 'Surfacing', missing: 'No surfacing shape: the ragdoll rises as it floats (here rising under water, 3 s after the fall).',
+        today: recipe('surfacing'), shot: BODY,
         target: {
           board: { level: true },
           focus: [0.9, 0.0, 0],
@@ -535,11 +534,7 @@ const IMAGES: SheetImage[] = [
     panels: [
       {
         title: 'Reeling the leash', missing: 'No reel pose: the cord is drawn from the left hand, the body is the ragdoll.',
-        today: {
-          kind: 'session', placement: standingAt(7), seconds: 4,
-          input: (t, s) => { if (once(t, 0.5) && s.rider.attached) s.separate('balance'); return { reel: t > 1.5 }; },
-          until: (s) => s.leash.reeling, from: 1.6, after: 0.6,
-        }, shot: BODY_WIDE,
+        today: recipe('reel'), shot: BODY_WIDE,
         target: {
           board: { level: true },
           focus: [0, -0.2, -1.5],
@@ -553,12 +548,8 @@ const IMAGES: SheetImage[] = [
         gaps: ['leash.reeling is in the snapshot: drawn only from it'],
       },
       {
-        title: 'Climbing back on', missing: 'No climb: the grab pulls the ragdoll on, then it snaps to prone.',
-        today: {
-          kind: 'session', placement: prone(), seconds: 6,
-          input: (t, s) => { if (once(t, 0.5) && s.rider.attached) s.separate('balance'); return { reel: t > 2.0 }; },
-          until: (s) => s.recovery.state === 'holding', from: 2.0, after: 0.3,
-        }, shot: BODY,
+        title: 'Climbing back on', missing: 'No climb: the grab pulls the ragdoll on, then it snaps to prone (here holding the board, 6 s after the fall).',
+        today: recipe('climb-grab'), shot: BODY,
         target: {
           board: { level: true },
           focus: [0.4, 0.0, 0],
@@ -708,6 +699,8 @@ function drawnSession(today: Extract<Today, { kind: 'session' }>, at: Vector3, d
     session.board.position.toArray(board, 0);
     session.board.orientation.toArray(board, 3);
     readRiderSnapshot(rider, board, state);
+    sessionCues(session, state);
+    state.stance = 'regular';
     moveState(state, frame);
     motion.update(state, time);
     state.clock = time;

@@ -888,6 +888,10 @@ export class PhysicalMode {
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
+      // Beyond the snapshot (the animation-realism plan's phase 4): why the rider fell, as the ride's status names it (the
+      // drawn fall's shape), and the player's stance (the leash's hand).
+      this.riderState.separation = status.ride?.separation;
+      this.riderState.stance = this.stance ?? 'regular';
       this.riderMotion.update(this.riderState, time);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
       this.riderState.clock = time;

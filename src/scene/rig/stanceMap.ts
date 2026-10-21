@@ -325,6 +325,36 @@ const SOURCE_LIST = {
     url: 'https://www.rapturecamps.com/learn-to-surf/wave-knowledge/catching-unbroken-waves',
     gives: 'The last strokes explosive and full, the head down; on a steep face the weight back and the chest up (the cobra).',
   },
+  // The animation-realism plan's phase 4 (falls and recovery, §5.16–5.17, §7).
+  rapturesafety: {
+    short: 'Rapture, safety basics',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: safety basics (falling)',
+    url: 'https://www.rapturecamps.com/learn-to-surf/surf-etiquette/safety-basics',
+    gives: 'Fall to the side or behind the board, never forward over the nose; flat, the body spread out, never head first (the depth is unknown: sandbars, rock, reef); the arms up over the head before surfacing, letting them take the impact of a descending board.',
+  },
+  rapturecalm: {
+    short: 'Rapture, staying calm underwater',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: staying calm underwater',
+    url: 'https://www.rapturecamps.com/learn-to-surf/surf-mindset/staying-calm-underwater',
+    gives: 'In a hold-down go completely limp; the arms up in a protective cage, the forearms crossed, the hands toward the opposite elbows; a single hold-down 5–10 s, a set rarely past 15–20 s; surface calmly, one deep breath.',
+  },
+  rapturerecover: {
+    short: 'Rapture, recovering after a wipeout',
+    kind: 'coaching',
+    cite: 'Rapture Surfcamps, Learn to surf: recovering after a wipeout',
+    url: 'https://www.rapturecamps.com/learn-to-surf/paddling/recovering-after-wipeout',
+    gives: 'Cover the head under water; the arms crossed overhead rising, then look round for the board and the next wave; pull the board in by the leash hand over hand, not swimming to it; approach it from the side, not the back, both hands on the nearest rail at about its midpoint, a kick and a pull in one motion sliding the belly onto the deck, then prone.',
+  },
+  bisdorff1999: {
+    short: 'Bisdorff 1999',
+    kind: 'measured',
+    cite: 'Bisdorff A, Bronstein A, Wolsley C, Gresty M, Davies A, Young A (1999), EMG responses to free fall in elderly subjects and akinetic rigid patients (J Neurol Neurosurg Psychiatry 66(4): 447–455)',
+    url: 'https://doi.org/10.1136/jnnp.66.4.447',
+    also: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC1736307',
+    gives: 'A sudden fall\'s first muscle responses in younger adults: the neck 54 ms, the abdominals 69 ms, the quadriceps 78 ms, the deltoid 80 ms, the tibialis anterior 85 ms after its onset; the elderly about 20 ms later. With the muscles\' electromechanical delay the limbs move from about 0.12 s.',
+  },
   rapturecontrol: {
     short: 'Rapture, board control',
     kind: 'coaching',
@@ -370,7 +400,7 @@ export const MEASURE_DOMAIN: Record<StanceMeasure, [number, number]> = {
   lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5], footFront: [0, 90], footRear: [0, 90], rearKneeIn: [-180, 180], shoulderDrop: [-90, 90],
   rearKneeDeck: [-0.5, 1.5], trailHeelRail: [0, 2], trailToeRail: [0, 2], trailFromFront: [0, 2], leadToNose: [0, 180],
   chestLift: [-90, 90], handAhead: [-2, 2], pullDepth: [-2, 2], legsApart: [0, 2], sitTrunk: [0, 180], hipsDeck: [-0.5, 2], handsApart: [0, 2], handsBack: [-2, 2],
-  palmFlat: [0, 180],
+  palmFlat: [0, 180], wristsToHead: [0, 3], wristsOverHead: [-3, 3], railGrip: [0, 5],
 };
 
 /** Feet 0.63 ± 0.10 m apart (the only measured stance width), for every standing stance. */
@@ -825,5 +855,86 @@ export const STANCES: readonly MappedStance[] = [
     sides: 'both',
     targets: {},
     gaps: 'No clean reference of a near fall or a fall\'s start: heat footage, cited when found, or our own playtests.',
+  },
+  // The animation-realism plan's phase 4: the falls' reflexes over the ragdoll, by cause, surfacing, the reel and the climb.
+  {
+    id: 'fall-side',
+    name: 'A fall to the side: the shield',
+    reach: 'Riding at 7 m/s on flat water, let go (balance): read 0.5 s into the fall (phase fallen).',
+    sides: 'both',
+    targets: {
+      wristsToHead: { min: 0, max: 0.25, sources: ['rapturecalm', 'rapturesafety', 'rapturerecover'], confidence: 'medium', note: 'the protective cage: the forearms crossed over the head, from 0.4 s (the reflex from 0.12 s: Bisdorff 1999)' },
+    },
+    gaps: 'To the side, an arm\'s length off the board and never over the nose is where the body goes: the physics\' (it leaves with the rider\'s own motion; the plan\'s phase 5). Feet first (the plan\'s default) against flat (Rapture\'s safety basics): flat only on reef, which the session names; shallow sand is not in the drawn state.',
+  },
+  {
+    id: 'fall-tumble',
+    name: 'A fall\'s tumble: the loose curl',
+    reach: 'The same fall, read 0.4 s in as the body turns fastest (phase fallen).',
+    sides: 'both',
+    targets: {
+      kneeFront: { min: 70, max: 120, sources: ['rapturecalm'], confidence: 'low', note: 'limp, a loose curl: flexed 60–110°' },
+      kneeRear: { min: 70, max: 120, sources: ['rapturecalm'], confidence: 'low' },
+    },
+    gaps: 'The tumble\'s length (2–5 s in the surf; hold-downs 5–10 s) is the water\'s: flat water turns the body for 0.3 s.',
+  },
+  {
+    id: 'fall-pearl',
+    name: 'A pearl',
+    reach: 'The same fall with the board pitched 35° nose down at the separation (a nose dug in; phase fallen), read 0.3 s in.',
+    sides: 'both',
+    targets: {},
+    gaps: 'Thrown forward, the arms forward and round the head, the chin tucked, then the shield: no source gives the angles (the shield\'s are the side fall\'s).',
+  },
+  {
+    id: 'fall-over',
+    name: 'Over the falls: the ball',
+    reach: 'The same fall for the lip\'s cause (impact), the body thrown 2.5 m/s up and 1.5 m/s on (a stand-in for the lip\'s lift): read 0.6 s in (phase fallen).',
+    sides: 'both',
+    targets: {
+      wristsToHead: { min: 0, max: 0.25, sources: ['rapturecalm', 'rapturerecover'], confidence: 'medium', note: 'the forearms over the head' },
+      kneeFront: { min: 0, max: 80, sources: ['rapturecalm'], confidence: 'low', note: 'a ball: the knees to the chest, flexed 100° or more' },
+      kneeRear: { min: 0, max: 80, sources: ['rapturecalm'], confidence: 'low' },
+      hipFront: { min: 0, max: 90, sources: ['rapturecalm'], confidence: 'low', note: 'the hips flexed 90° or more' },
+      hipRear: { min: 0, max: 90, sources: ['rapturecalm'], confidence: 'low' },
+    },
+  },
+  {
+    id: 'fall-back',
+    name: 'Off the back',
+    reach: 'The same fall with the board pitched 25° nose up at the separation (a sinking tail; phase fallen), read 0.3 s in.',
+    sides: 'both',
+    targets: {},
+    gaps: 'Seat first, the arms out and back, then the shield: no source gives the angles.',
+  },
+  {
+    id: 'surfacing',
+    name: 'Surfacing',
+    reach: 'The side fall on flat water, rising under water 3 s in (phase fallen).',
+    sides: 'both',
+    targets: {
+      wristsOverHead: { min: 0, max: 0.25, sources: ['rapturesafety', 'rapturerecover'], confidence: 'medium', note: 'the arms crossed overhead while rising, before the head breaks the surface' },
+    },
+    gaps: 'The look round for the board and the next wave comes once the head is out: the drawn state carries no wave, so the head turns to the board, then away (a fixed scan stands in, as the sit\'s).',
+  },
+  {
+    id: 'reel',
+    name: 'Reeling the leash in',
+    reach: 'The side fall, then the pop-up key held in the water from 5 s (the leash reeled in at 0.6 m/s): read at 5.6 s (phase fallen).',
+    sides: 'both',
+    targets: {
+      sitTrunk: { min: 0, max: 30, sources: ['rapturerecover'], confidence: 'low', note: 'upright in the water, pulling the board in hand over hand (the plan\'s figure; no source gives the angle)' },
+    },
+    gaps: 'The pulls\' pace (0.8–1.5 a second at the leash\'s 0.6 m/s) is read over time (the rig\'s tests). The physics floats the swimmer flat, its head at the surface: the upright trunk is drawn over its pelvis, as the sit\'s.',
+  },
+  {
+    id: 'climb-grab',
+    name: 'Climbing back on: the grab',
+    reach: 'The side fall, the pop-up key held from 1.5 s: holding the board at its rail\'s middle 6.5 s in (phase fallen; the board rolls under the pull for 8–17 s on flat water).',
+    sides: 'both',
+    targets: {
+      railGrip: { min: 0, max: 0.15, sources: ['rapturerecover'], confidence: 'low', note: 'both hands on the nearest rail at about its midpoint (within 0.3 m of it)' },
+    },
+    gaps: 'The chest over the deck before the legs swing on is read over time (the rig\'s tests). How long the pull takes (the board rolling under it) is the physics\' (the plan\'s phase 5).',
   },
 ];

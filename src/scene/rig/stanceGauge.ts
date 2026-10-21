@@ -114,6 +114,20 @@ export interface StanceAngles {
   handsBack: number;
   /** The back of the hand from the deck's normal, the larger of the two hands, ° (the push's flat palms). */
   palmFlat: number;
+  /**
+   * Fallen (the animation-realism plan's phase 4). The farther wrist from the
+   * head's centre (`HEAD_CENTRE` up the neck's line from the skull's base), m:
+   * the forearms shielding the head.
+   */
+  wristsToHead: number;
+  /** The lower wrist above the head's centre along the neck's line, m: the arms crossed overhead, surfacing. */
+  wristsOverHead: number;
+  /**
+   * The farther wrist from the near rail's middle, m: from its edge (the deck's
+   * height at the rail) within `RAIL_MIDDLE` m of mid-length, on the side the
+   * chest is (climbing back on, both hands on the rail).
+   */
+  railGrip: number;
 }
 
 export type StanceMeasure = keyof StanceAngles;
@@ -126,6 +140,10 @@ export interface BoardPose {
 const SIDES: readonly Side[] = ['left', 'right'];
 /** The face's place ahead of the head joint (the skull's base) along where the head faces, m: about a skull's depth (the sheet's mannequin draws its skull 0.08 m up the neck, 0.105 m round). */
 const FACE_DEPTH = 0.1;
+/** The head's centre above the head joint (the skull's base) along the neck's line, m: the sheet's mannequin draws its skull 0.08 m up, 0.105 m round. */
+export const HEAD_CENTRE = 0.09;
+/** The rail's middle: within this of the board's mid-length, m (the animation-realism plan's phase 4: both hands there to climb on). */
+export const RAIL_MIDDLE = 0.3;
 /** Feet closer than this along the stringer, m, stand no stance to share the weight between (a landing's feet still arriving). */
 export const STANCE_MIN = 0.1;
 const DEG = 180 / Math.PI;
@@ -201,6 +219,18 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   const middle = local(joints.spine.clone().add(joints.neck).multiplyScalar(0.5));
   const hipsShape = shape(joints.hips);
   const palms = SIDES.filter((side) => joints.palm[side].lengthSq() > 1e-12);
+  // Fallen: the head's centre, up the neck's line; the near rail, on the chest's side.
+  const neckLine = joints.head.clone().sub(joints.neck);
+  if (neckLine.lengthSq() < 1e-12) neckLine.set(0, 1, 0);
+  neckLine.normalize();
+  const skull = joints.head.clone().addScaledVector(neckLine, HEAD_CENTRE);
+  const chestShape = shape(joints.spine.clone().add(joints.neck).multiplyScalar(0.5));
+  const near = chestShape.x >= 0 ? 1 : -1;
+  const fromRail = (side: Side) => {
+    const wrist = shape(joints.wrist[side]);
+    const z = Math.max(-RAIL_MIDDLE, Math.min(RAIL_MIDDLE, wrist.z));
+    return Math.hypot(wrist.x - near * railHalfWidth(z), wrist.y - deckAt(z), wrist.z - z);
+  };
   return {
     kneeFront: knee(front),
     kneeRear: knee(rear),
@@ -241,6 +271,9 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     handsApart: joints.wrist.left.distanceTo(joints.wrist.right),
     handsBack: middle.z - (local(joints.wrist.left).z + local(joints.wrist.right).z) / 2,
     palmFlat: palms.length ? Math.max(...palms.map((side) => angle(direction(joints.palm[side]), DECK_UP))) : Number.NaN,
+    wristsToHead: Math.max(...SIDES.map((side) => joints.wrist[side].distanceTo(skull))),
+    wristsOverHead: Math.min(...SIDES.map((side) => joints.wrist[side].clone().sub(skull).dot(neckLine))),
+    railGrip: Math.max(...SIDES.map(fromRail)),
   };
 }
 

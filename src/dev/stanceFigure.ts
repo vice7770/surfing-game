@@ -54,6 +54,7 @@ export const NEUTRAL_STANCE: StanceAngles = {
   lowHand: 0.8, stanceWidth: 0.61, weight: 0.55, footFront: 70, footRear: 85, rearKneeIn: 10, shoulderDrop: 0,
   rearKneeDeck: 0.45, trailHeelRail: 0.6, trailToeRail: 0.6, trailFromFront: 0.4, leadToNose: 60,
   chestLift: 75, handAhead: Number.NaN, pullDepth: -0.9, legsApart: 0.05, sitTrunk: 15, hipsDeck: 0.75, handsApart: 0.6, handsBack: 0, palmFlat: Number.NaN,
+  wristsToHead: 0.7, wristsOverHead: -0.8, railGrip: 1,
 };
 
 /**

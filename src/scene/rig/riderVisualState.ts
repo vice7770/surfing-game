@@ -1,4 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
+import type { RiderSeparation } from '../../physics/AttachedRider';
+import type { StanceName } from '../../physics/riderPosture';
 import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS } from '../../wave/SurfZoneRunner';
 
 export type RiderPhase = (typeof RIDER_PHASES)[number];
@@ -36,10 +38,30 @@ export interface RiderVisualState {
   standingBlend: number;
   /** The duck-dive's press, 0–1 (the wipeout spec). */
   duck: number;
-  /** The leash: its plug on the tail, and whether it is worn whole, snapped, or being reeled in. */
-  readonly leash: { readonly plug: Vector3; worn: boolean; snapped: boolean; reeling: boolean };
-  /** The fallen surfer: stroking, diving, head under. */
-  readonly swim: { stroking: boolean; diving: boolean; under: boolean };
+  /**
+   * The leash: its plug on the tail, and whether it is worn whole, snapped, or
+   * being reeled in. Reeling, the drawn hand on the cord this frame (`grip`,
+   * the rig's: hand over hand, the animation-realism plan's phase 4) and
+   * whether the rig drew one (`gripped`): the cord is drawn from it.
+   */
+  readonly leash: { readonly plug: Vector3; worn: boolean; snapped: boolean; reeling: boolean; readonly grip: Vector3; gripped: boolean };
+  /**
+   * The fallen surfer: stroking, diving, head under, and holding the board (the
+   * recovery's grab: turning it deck-up, then pulling the body on). The snapshot
+   * does not carry the hold: the page reads it from what it asked and what the
+   * ride's status says (`HoldReading`), another player's from the pose's
+   * recovering flag (wire flag 128) with the swimmer by the board.
+   */
+  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean };
+  /**
+   * Why the rider fell, as the session named it (`RideSession.separation`:
+   * balance, foot slip, lost board, impact, reef): the drawn fall's shape reads
+   * it (the animation-realism plan's §7). Local only: it is not on the wire, so
+   * another player's fall is read from its motion. Undefined riding, or unknown.
+   */
+  separation: RiderSeparation | undefined;
+  /** The rider's stance where the drawing knows it (the player's own setting); undefined, the rig reads it from the feet. */
+  stance: StanceName | undefined;
   /** A running clock, s, for the code-driven cycles (the swimmer's crawl and kick). */
   clock: number;
   /** The breath held, 1 full to 0 (Part B): short of it, the swimmer's stroke quickens. */
@@ -64,8 +86,10 @@ export function createRiderVisualState(): RiderVisualState {
     uprightBlend: 1,
     standingBlend: 1,
     duck: 0,
-    leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false },
-    swim: { stroking: false, diving: false, under: false },
+    leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false, grip: new Vector3(), gripped: false },
+    swim: { stroking: false, diving: false, under: false, holding: false },
+    separation: undefined,
+    stance: undefined,
     clock: 0,
     breath: 1,
     twist: 0,
@@ -88,11 +112,15 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.leash.worn = (leash & LEASH_BITS.worn) !== 0;
   out.leash.snapped = (leash & LEASH_BITS.snapped) !== 0;
   out.leash.reeling = (leash & LEASH_BITS.reeling) !== 0;
+  out.leash.gripped = false;
   out.breath = rider[RIDER_SNAPSHOT.breath] ?? 1;
   out.twist = rider[RIDER_SNAPSHOT.twist] ?? 0;
   const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;
   out.swim.under = (swim & SWIM_BITS.under) !== 0;
+  // Not in the snapshot: whoever draws sets them after (the page, from its status and input; a remote pose's flag).
+  out.swim.holding = false;
+  out.separation = undefined;
   return out;
 }
