@@ -43,13 +43,25 @@ describe('the broken crest: where a drawn curl keeps the solver’s foam (option
     for (let foam = 0; foam < 1; foam += 0.05) expect(brokenWeight(foam + 0.05)).toBeGreaterThanOrEqual(brokenWeight(foam));
   });
 
+  it('takes a crest as broken only with whitewater on its face as well', () => {
+    const broken = new BrokenCrests();
+    // The crest landmark lies at z −100, the toe 8 m ahead, the face read halfway between.
+    const read: number[] = [];
+    const at = (crest: number, face: number) => (_x: number, z: number) => {
+      read.push(z);
+      return z < -99 ? crest : face;
+    };
+    expect(broken.update(slices([3], [1]), at(0.9, 0.9))[0]).toBe(1);
+    expect(read.map((z) => +z.toFixed(2))).toEqual([-100, -96]);
+    // Lace on a clean face's crest, and old foam on the face below a clean crest: not broken.
+    expect(broken.update(slices([3], [1], 2), at(0.9, 0.3))[0]).toBe(0);
+    expect(broken.update(slices([3], [1], 3), at(0.3, 0.9))[0]).toBe(0);
+  });
+
   it('reads each slice’s crest before its touchdown, keeps its whitest reading, and holds it through its collapse', () => {
     const broken = new BrokenCrests();
     const foam = new Map<number, number>([[3, 0.9], [7, 0.2]]);
-    const at = (x: number, z: number) => {
-      expect(z).toBeCloseTo(-100, 5);
-      return foam.get(Math.round(x)) ?? 0;
-    };
+    const at = (x: number) => foam.get(Math.round(x)) ?? 0;
     // Open (phase 1): the crest as it is now, white on the broken crest at x 3, none on the clean one at x 7.
     expect(Array.from(broken.update(slices([3, 7], [1, 1]), at).subarray(0, 2))).toEqual([1, 0]);
     // The old foam under the broken crest's curl fades while it is open: the curl stays white.
