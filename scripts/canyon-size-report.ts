@@ -31,7 +31,8 @@
  * canyon-layout the readout's replay and each crest's own fit count the breaks the game's tracker counts (`canyonPeelAt`:
  * the arm's, not the lagoon's or the beach face's behind it; every break on the arm's columns on the old layout), and the
  * close-outs and upcoast runs are also given off the beach face, where the short arm's flanks close out on the beach.
- *   node dist/scripts/canyon-size-report.mjs --from <file> [--verbose]   (re-reads a run's onsets)
+ *   node dist/scripts/canyon-size-report.mjs --from <file>[,<file>…] [--verbose]   (re-reads a run's onsets; several files, one
+ *   layout's seeds run apart with `--first-seed`, are read as one run)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { SWELLS } from '../src/game/SurfConditions';
@@ -388,7 +389,20 @@ function analyse(run: Run): void {
 }
 
 const from = option('from');
-const run: Run = from ? JSON.parse(readFileSync(from, 'utf8')) as Run : simulate();
+/** `--from a.json,b.json,…`: one layout's seeds run apart (each its own `--first-seed`), read as one run. */
+const read = (file: string) => JSON.parse(readFileSync(file, 'utf8')) as Run;
+const pooled = (files: string[]): Run => {
+  const [first, ...rest] = files.map(read);
+  for (const other of rest) {
+    first.records.push(...other.records);
+    first.samples.push(...other.samples);
+    first.onsets.push(...other.onsets);
+    first.health.push(...other.health);
+    first.seeds += other.seeds;
+  }
+  return first;
+};
+const run: Run = from ? pooled(from.split(',')) : simulate();
 const json = option('json');
 if (json && !from) {
   writeFileSync(json, JSON.stringify(run));
