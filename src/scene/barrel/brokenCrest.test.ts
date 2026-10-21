@@ -43,7 +43,7 @@ describe('the broken crest: where a drawn curl keeps the solver’s foam (option
     for (let foam = 0; foam < 1; foam += 0.05) expect(brokenWeight(foam + 0.05)).toBeGreaterThanOrEqual(brokenWeight(foam));
   });
 
-  it('reads each slice’s crest before its touchdown, and holds that reading through its collapse', () => {
+  it('reads each slice’s crest before its touchdown, keeps its whitest reading, and holds it through its collapse', () => {
     const broken = new BrokenCrests();
     const foam = new Map<number, number>([[3, 0.9], [7, 0.2]]);
     const at = (x: number, z: number) => {
@@ -52,6 +52,9 @@ describe('the broken crest: where a drawn curl keeps the solver’s foam (option
     };
     // Open (phase 1): the crest as it is now, white on the broken crest at x 3, none on the clean one at x 7.
     expect(Array.from(broken.update(slices([3, 7], [1, 1]), at).subarray(0, 2))).toEqual([1, 0]);
+    // The old foam under the broken crest's curl fades while it is open: the curl stays white.
+    foam.set(3, 0.4);
+    expect(Array.from(broken.update(slices([3, 7], [0, 1]), at).subarray(0, 2))).toEqual([1, 0]);
     // After touchdown the crash's foam reaches the clean crest and the broken one fades: each keeps what it read.
     foam.set(3, 0.3).set(7, 1);
     expect(Array.from(broken.update(slices([3, 7], [2, 2]), at).subarray(0, 2))).toEqual([1, 0]);
