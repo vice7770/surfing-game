@@ -5,8 +5,9 @@ import { BARREL_SLOPE, SweptLoft, type LoftResult } from '../../wave/barrel/swep
 import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
 import { sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
-import { sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
+import { sampleSurfaceFoam, sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
+import { BrokenCrests } from './brokenCrest';
 import { BarrelWater } from './barrelWater';
 import { SweptBarrelMesh, type SweptBarrelView } from './SweptBarrelMesh';
 
@@ -31,9 +32,12 @@ export class SweptBarrel {
   private holdClearDrawing = true;
   private readonly cameraWater = new BarrelWater();
   private cameraWaterRevision = 0;
+  /** Which slices' curls keep the solver's foam: those on a crest already white (drawing only, `brokenCrest.ts`). */
+  private readonly broken = new BrokenCrests();
   private drawn?: {
     loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
     look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
+    brokenFoam: boolean;
   };
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`). */
@@ -54,6 +58,7 @@ export class SweptBarrel {
    */
   setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot)): void {
     this.drawn = undefined;
+    this.broken.clear();
     this.cameraWater.prepare(undefined, undefined);
     const on = spot !== undefined && swept && BARREL_SLOPE[spot] !== undefined;
     this.spot = on ? spot : undefined;
@@ -110,7 +115,7 @@ export class SweptBarrel {
     const was = this.drawn;
     if (revision !== undefined && was?.revision === revision && was.loft === this.loft && was.surfaceRevision === water.surfaceRevision && was.front === front
       && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
-      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) {
+      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut && was.brokenFoam === mesh.brokenFoam) {
       mesh.syncScreenFallback();
       return;
     }
@@ -125,12 +130,14 @@ export class SweptBarrel {
       this.look = look;
       this.mesh.setLook(look);
     }
-    this.mesh.update(loft);
+    // The solver's foam on each slice's crest, as drawn: a crest already white keeps it on its curl (drawing only).
+    const kept = this.broken.update(loft, (x, z) => sampleSurfaceFoam(surfaceData, grid, x, z));
+    this.mesh.update(loft, kept);
     this.lastLoft = loft;
     this.cameraWater.prepare(loft, ++this.cameraWaterRevision);
     this.drawn = {
       loft: this.loft, revision, surfaceRevision: water.surfaceRevision, front, count, stillLevel, look, maskGrid,
-      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut,
+      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut, brokenFoam: mesh.brokenFoam,
     };
   }
 
