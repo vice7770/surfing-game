@@ -11,6 +11,7 @@ import { RiderMotion } from '../scene/rig/riderMotion';
 import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
+import { HoldReading } from './holdReading';
 import { EdgeBand } from '../scene/EdgeBand';
 import { EdgeWhitewater } from '../scene/EdgeWhitewater';
 import { EDGE_BAND, bandBedWeight, mirrorX } from '../scene/water/edgeBandGlsl';
@@ -485,6 +486,16 @@ export class PhysicalMode {
   private visualLipLook?: WaterLook;
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
+  /**
+   * The pop-up key asked this frame and the dive past half (the hold's reading), and whether the fallen surfer holds
+   * the board (the animation-realism plan's phase 4: the snapshot does not carry it): drawn, and sent to the others.
+   */
+  private asking = false;
+  private diving = false;
+  private readonly holds = new HoldReading();
+  get holding(): boolean {
+    return this.holds.holding;
+  }
   private retryPending = false;
   /** Where the next advance puts the rider (Surf School, spec L2). */
   private placePending?: RiderPlacement;
@@ -834,6 +845,8 @@ export class PhysicalMode {
       this.placePending = undefined;
     }
     if (input) this.paddling = input.paddle;
+    this.asking = Boolean(input && (input.popUp || input.reel));
+    this.diving = (input?.duckDive ?? 0) > 0.3;
     const request = input || retry || place
       ? {
         paddle: false, popUp: false, steer: 0, ...input, retry,
@@ -892,17 +905,24 @@ export class PhysicalMode {
       // drawn fall's shape), and the player's stance (the leash's hand).
       this.riderState.separation = status.ride?.separation;
       this.riderState.stance = this.stance ?? 'regular';
+      this.riderState.swim.holding = this.holds.update({
+        fallen: this.riderState.phase === 'fallen', asked: this.asking, diving: this.diving, status: status.ride,
+        chest: this.riderState.points[POINT.torso], board: this.riderState.boardPosition, turn: this.riderState.boardQuaternion,
+      });
       this.riderMotion.update(this.riderState, time);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
       this.riderState.clock = time;
       this.surfer.update(this.riderState, this.camera.camera.position);
       const { leash } = this.riderState;
-      // The leash is on the back foot: the right regular, the left goofy (the stances spec's setting).
-      this.leash.update(this.riderState.points[this.stance === 'goofy' ? POINT.leftFoot : POINT.rightFoot], leash.plug, {
-        snapped: leash.snapped, hand: leash.reeling ? this.riderState.points[POINT.leftHand] : undefined,
+      // The leash is on the back foot: the right regular, the left goofy (the stances spec's setting); reeling, it runs
+      // from the hand on the cord (the drawn rider's hand over hand), or the back foot's side's hand.
+      const goofy = this.stance === 'goofy';
+      this.leash.update(this.riderState.points[goofy ? POINT.leftFoot : POINT.rightFoot], leash.plug, {
+        snapped: leash.snapped, hand: leash.reeling ? (leash.gripped ? leash.grip : this.riderState.points[goofy ? POINT.leftHand : POINT.rightHand]) : undefined,
       });
     } else {
       this.riderMotion.reset();
+      this.holds.reset();
     }
   }
 
