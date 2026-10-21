@@ -615,8 +615,12 @@ describe('steering while lying down', () => {
   });
 });
 
-/** A board on a 15° face (down toward +z) heading `across` degrees from its fall line toward −x, at `speed`, with a standing rider. */
-function acrossFace(acrossDegrees: number, speed: number, stance: 'regular' | 'goofy' = 'regular') {
+/**
+ * A board on a 15° face (down toward +z) heading `across` degrees from its fall line toward −x, at `speed` through the
+ * water, with a standing rider. With `flow`, m/s, the face's water runs up it (the moving face: the phase-5 physics
+ * plan's item 2.4 A, the owner's decision 8 of 2026-10-22), and the board moves with it.
+ */
+function acrossFace(acrossDegrees: number, speed: number, stance: 'regular' | 'goofy' = 'regular', flow = 0) {
   const slope = (15 * Math.PI) / 180;
   const yaw = (acrossDegrees * Math.PI) / 180;
   const normal = new Vector3(0, 1, Math.tan(slope)).normalize();
@@ -625,12 +629,19 @@ function acrossFace(acrossDegrees: number, speed: number, stance: 'regular' | 'g
   const forward = fall.clone().multiplyScalar(Math.cos(yaw)).addScaledVector(side, -Math.sin(yaw)).normalize();
   const left = new Vector3().crossVectors(normal, forward).normalize();
   const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward));
+  const up = fall.clone().multiplyScalar(-flow);
   const board = new BoardBody();
-  board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, forward.clone().multiplyScalar(speed));
+  board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, forward.clone().multiplyScalar(speed).add(up));
   const rider = new AttachedRider(board.shape, { phase: 'standing', stance });
   board.attach(rider);
-  return { board, rider, water: new PlaneWater({ slopeZ: -Math.tan(slope) }) };
+  return { board, rider, water: new PlaneWater({ slopeZ: -Math.tan(slope), flow: { x: up.x, y: up.y, z: up.z } }) };
 }
+
+/**
+ * The moving face's water, m/s up the face: the wave's surface speed (the plan's 1–2 m/s; the game's own waves move
+ * 1.1 m/s under their bottom turns, `docs/research/angulation-study.md`).
+ */
+const FACE_FLOW = 1.5;
 
 /** How many times a yaw-rate trace changes sign, ignoring rates under 0.05 rad/s. */
 function signFlips(rates: number[]): number {
@@ -1430,8 +1441,8 @@ describe('lean, trim, crouch and heading hold', () => {
     // climbing a face that gives it nothing, slows from 6.3 to 1.8 m/s, and the rider falls at 1.4 s. The carve sheds
     // about 0.45 g at a 40–48° rail and bogs past its 48° bite, where Forsyth's surfers hold 75°: the deep U's
     // shortfall. Pinned for the user's decision, not tuned.
-    it.fails('snaps back down the face from a climb with the weight back', () => {
-      const { board, rider, water } = acrossFace(150, 6.7);
+    const snap = (flow: number) => {
+      const { board, rider, water } = acrossFace(150, 6.7, 'regular', flow);
       run(board, water, 0.2);
       rider.steer = 1;
       rider.trim = -1;
@@ -1444,7 +1455,8 @@ describe('lean, trim, crouch and heading hold', () => {
       });
       expect(rider.attached).toBe(true);
       expect(degrees(turned)).toBeGreaterThan(150);
-    });
+    };
+    it.fails('snaps back down the face from a climb with the weight back', () => snap(0));
 
     // The spec's sequence (the final review): a bottom turn carried up the face into the top turn. The top turns above
     // start from a board placed on a straight climb with the body upright, which no bottom turn leaves. Carved up to
@@ -1452,26 +1464,34 @@ describe('lean, trim, crouch and heading hold', () => {
     // carries the board on to 160–180° and the rider falls 0.3–1.1 s later; released early (100–110°, 0.4–1.2 s
     // neutral) it still carries on up and falls. Before the top-turn plan it fell 15 of 16 times. The carve up the
     // static face is the cutback's and the deep U's shortfall. Pinned, not tuned.
-    it.fails('carries a bottom turn up the face into a top turn back down it', () => {
-      const { board, rider, water } = acrossFace(90, 9);
+    const bottomIntoTop = (flow: number) => {
+      const { board, rider, water } = acrossFace(90, 9, 'regular', flow);
       run(board, water, 0.2);
       const fromFallLine = () => Math.abs(degrees(headingOf(board)));
       rider.steer = -1;
       for (let i = 0; i < 180 && rider.attached && fromFallLine() < 120; i += 1) board.step(STEP, water);
       rider.steer = 1;
       let lowest = 180;
+      let highest = 0;
       run(board, water, 2, () => {
-        if (rider.attached) lowest = Math.min(lowest, fromFallLine());
+        if (rider.attached) {
+          lowest = Math.min(lowest, fromFallLine());
+          highest = Math.max(highest, fromFallLine());
+        }
       });
-      expect(rider.attached).toBe(true);
-      expect(lowest).toBeLessThan(90);
+      return { attached: rider.attached, lowest, highest };
+    };
+    it.fails('carries a bottom turn up the face into a top turn back down it', () => {
+      const turn = bottomIntoTop(0);
+      expect(turn.attached).toBe(true);
+      expect(turn.lowest).toBeLessThan(90);
     });
 
     // A cutback: riding across the face away from the curl, a sustained turn back up the face and around toward it.
     // No steer, weight or easing tried turns more than 80–118° before the board, climbing, slows below planing and the
     // rider falls into the turn (1.5–2.6 s from 7 and 9 m/s). Pinned with the snap, not tuned.
-    it.fails('cuts back from across the face, turning 150° and staying on', () => {
-      const { board, rider, water } = acrossFace(80, 9);
+    const cutback = (flow: number) => {
+      const { board, rider, water } = acrossFace(80, 9, 'regular', flow);
       run(board, water, 0.2);
       rider.steer = -1;
       let last = headingOf(board);
@@ -1484,7 +1504,31 @@ describe('lean, trim, crouch and heading hold', () => {
       });
       expect(rider.attached).toBe(true);
       expect(-degrees(turned)).toBeGreaterThan(150);
+    };
+    it.fails('cuts back from across the face, turning 150° and staying on', () => cutback(0));
+
+    // The moving face (the phase-5 physics plan's item 2.4 A, the owner's decision 8 of 2026-10-22): the three redirects
+    // on a face whose water runs up it at FACE_FLOW. A plane face's water running up it uniformly is the still face seen
+    // from a frame moving with that water: the hull, its fins and the water's pressure read only the board's motion
+    // through the water and the surface's tilt, both the same in that frame. So at the same speed through the water the
+    // board carves the same turn, and the face feeds it nothing more than the still face did (the carve up from across
+    // reaches the same 168.7° and the rider falls). What differs is only what the rider reads over the ground: the lean
+    // a turn can hold (TURN_RADIUS) and Compress's path. From 1 to 2 m/s the snap turned 71–83° in its second (82° still)
+    // and the rider fell at 1.05–1.5 s (1.68 s still); the cutback came round 87° (87°) and fell. None of the three is
+    // the still face's alone: all three stay pinned on both.
+    it('carves the same turn on the moving face as on the still face, at the same speed through the water', () => {
+      const still = bottomIntoTop(0);
+      const moving = bottomIntoTop(FACE_FLOW);
+      expect(moving.attached).toBe(still.attached);
+      expect(moving.highest).toBeCloseTo(still.highest, 0);
     });
+    it.fails('snaps back down the moving face from a climb with the weight back', () => snap(FACE_FLOW));
+    it.fails('carries a bottom turn up the moving face into a top turn back down it', () => {
+      const turn = bottomIntoTop(FACE_FLOW);
+      expect(turn.attached).toBe(true);
+      expect(turn.lowest).toBeLessThan(90);
+    });
+    it.fails('cuts back across the moving face, turning 150° and staying on', () => cutback(FACE_FLOW));
 
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
