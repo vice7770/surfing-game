@@ -8,6 +8,7 @@ import { CoveredWater } from '../physics/testing/CoveredWater';
 import type { StanceName } from '../physics/riderPosture';
 import { RiderMotion } from '../scene/rig/riderMotion';
 import { createRiderVisualState, readRiderSnapshot, type RiderVisualState } from '../scene/rig/riderVisualState';
+import type { StanceAngles, StanceMeasure } from '../scene/rig/stanceGauge';
 import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
 
 /** Riding moments for the surfer sheet (Part B), each simulated by the real rider: stances of the map. */
@@ -29,6 +30,8 @@ interface Controls {
   crouch?: number;
   compress?: number;
   hand?: boolean;
+  /** Lying, the paddle held (the arms stroke). */
+  paddle?: boolean;
   /** A press for one step (the pop-up; standing, Enter lies the rider down). */
   popUp?: boolean;
 }
@@ -51,6 +54,12 @@ export interface StanceRecipe {
   /** Read at this time, s; or, with `after`, this long after the phase is first reached (within `seconds`). */
   seconds: number;
   after?: number;
+  /**
+   * Read over the last `over` s (a stroke of each arm), not at one instant: the
+   * measures of a cycle take their extreme over it (`CYCLE_MEASURES`), the rest
+   * the last frame's.
+   */
+  over?: number;
   /** The rider lets go (a fall) at this time, s. */
   separate?: number;
 }
@@ -101,6 +110,14 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'kick-out': standing([{ at: 0, trim: -1 }], 1.1, { water: 'climb', speed: 6 }),
   // Lying on a board towed at 6 m/s, as the wave would carry it (the body film's pop-up).
   'pop-up': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.3 },
+  // The hands as they are placed (the animation-realism plan's phase 3: beside the lower ribs; the chest then rises over them).
+  'pop-up-hands': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.22 },
+  // The animation-realism plan's phase 3: paddling from rest (read over its sixth second, a stroke of each arm); the
+  // catch, paddling from rest down a 15° face (the cue, and the board nose-down past 5° faster than 2.5 m/s); the
+  // lineup sit, lying still with no input until the drawn rider has sat up (2 s idle, 0.8 s in).
+  paddling: { phase: 'prone', water: 'flat', start: 'prone', speed: 0, controls: [{ at: 0, paddle: true }], seconds: 6, over: 1 },
+  catch: { phase: 'prone', water: 'face', start: 'prone', speed: 0, controls: [{ at: 0, paddle: true }], seconds: 2 },
+  sit: { phase: 'prone', water: 'flat', start: 'prone', speed: 0, controls: [], seconds: 3.6 },
   // Read at the landing's end (it lasts 0.5 s): the drawn feet are still spreading to the stance until then.
   landing: { phase: 'landing', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.45 },
   'lying-down': standing([{ at: 0.5, popUp: true }], 3, { speed: 6, after: 0.2, phase: 'recover' }),
@@ -200,13 +217,13 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
     const steer = (controls.steer ?? 0) * toes;
     if (session) {
       if (recipe.separate !== undefined && Math.abs(time - recipe.separate) < STEP / 2 && rider.attached) session.separate('balance');
-      // Lying down, towed as the wave would carry the board.
-      if (recipe.start === 'prone' && rider.attached && rider.phase !== 'standing') {
+      // Lying down, towed as the wave would carry the board (none from rest: the rider paddles, or floats).
+      if (recipe.start === 'prone' && recipe.speed > 0 && rider.attached && rider.phase !== 'standing') {
         board.velocity.z = recipe.speed;
         rider.velocity.z = recipe.speed;
       }
       session.step(STEP, water, {
-        paddle: false, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch, compress: controls.compress, hand: controls.hand,
+        paddle: controls.paddle === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch, compress: controls.compress, hand: controls.hand,
       });
     } else {
       rider.steer = steer;
@@ -217,7 +234,12 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       board.step(STEP, water);
     }
     time += STEP;
-    if (visit && world) visit(worldState(run, world), time);
+    if (visit && world) {
+      worldState(run, world);
+      // As the page does (`PhysicalMode`): the hands pull while paddling lying down.
+      world.stroking = controls.paddle === true && world.phase === 'prone' ? 1 : 0;
+      visit(world, time);
+    }
     if (recipe.after !== undefined) {
       if (reachedAt === undefined && phase() === recipe.phase) reachedAt = time;
       if (reachedAt !== undefined && time >= reachedAt + recipe.after - 1e-9) break;
@@ -234,7 +256,8 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
   board.orientation.toArray(pose, 3);
   if (session) {
     const snapshot = new Float64Array(RIDER_SNAPSHOT.length);
-    writeRiderSnapshot(session, false, snapshot, new Vector3());
+    // The take-off cue as the page has it (the rider's own; the wave's take-off window needs a wave).
+    writeRiderSnapshot(session, session.rider.attached && session.rider.popUpCue, snapshot, new Vector3());
     readRiderSnapshot(snapshot, pose, out);
   } else {
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
@@ -320,7 +343,7 @@ export function drawnRecipe(recipe: StanceRecipe, stance: StanceName, at: Vector
 function copyState(from: RiderVisualState, to: RiderVisualState): void {
   from.points.forEach((point, i) => to.points[i].copy(point));
   Object.assign(to, {
-    phase: from.phase, heading: from.heading, stroking: from.stroking, yawRate: from.yawRate, speed: from.speed, climb: from.climb,
+    phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
   });
   to.boardPosition.copy(from.boardPosition);
@@ -329,6 +352,34 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   to.leash.plug.copy(from.leash.plug);
   Object.assign(to.leash, { worn: from.leash.worn, snapped: from.leash.snapped, reeling: from.leash.reeling });
   Object.assign(to.swim, from.swim);
+}
+
+/** The measures of a cycle (a recipe's `over`): read at their extreme over the window, the farthest the stroke goes. */
+export const CYCLE_MEASURES: readonly StanceMeasure[] = ['handAhead', 'pullDepth'];
+
+/**
+ * The map's stance `id` as the game draws it (`drawnStance`), measured: at its
+ * last frame, or, for a recipe read `over` a window, each measure of a cycle
+ * (`CYCLE_MEASURES`) at its extreme over it. `measure` reads the body `draw`
+ * posed.
+ */
+export function measureDrawnStance(
+  id: string, stance: StanceName, at: Vector3, draw: (state: RiderVisualState) => void, measure: (state: RiderVisualState) => StanceAngles,
+): { state: RiderVisualState; reached: boolean; angles: StanceAngles } {
+  const recipe = STANCE_RECIPES[id];
+  if (!recipe) throw new Error(`No recipe for the stance ${id}.`);
+  const window: StanceAngles[] = [];
+  const { over } = recipe;
+  const drawn = drawnRecipe(recipe, stance, at, (step) => {
+    draw(step);
+    if (over !== undefined && step.clock >= recipe.seconds - over - 1e-9) window.push(measure(step));
+  });
+  const angles = measure(drawn.state);
+  for (const key of CYCLE_MEASURES) {
+    const values = window.map((reading) => reading[key]).filter(Number.isFinite);
+    if (values.length) angles[key] = Math.max(...values);
+  }
+  return { ...drawn, angles };
 }
 
 /** The map's stance `id` for a Regular or Goofy `stance` (`simulateStance`). */

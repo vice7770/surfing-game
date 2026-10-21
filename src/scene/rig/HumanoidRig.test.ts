@@ -719,6 +719,8 @@ describe('the stand-up', () => {
       state.boardPosition.copy(board.position);
       state.boardQuaternion.copy(board.orientation);
       motion.update(state, (180 + i) / 60);
+      // As the page does (`PhysicalMode`): the drawn clock runs with the sea's (the pop-up's swing and press are timed by it).
+      state.clock = (180 + i) / 60;
       if (yawRate !== undefined && state.phase === 'standing') state.yawRate = yawRate;
       rig.solve(state);
       phases.add(state.phase);

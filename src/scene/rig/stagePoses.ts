@@ -1,3 +1,5 @@
+import { SETTLE_TIME } from '../../physics/AttachedRider';
+
 /**
  * The animation-realism plan's key poses (docs/superpowers/plans/2026-10-22-animation-realism.md,
  * §5): what the drawn rider's shape is at each stage, frontside and backside,
@@ -12,7 +14,11 @@
  * back: their trunk, where the chest and hips face, the look's lead, the arms
  * as pointer and the tube's rail grab. The stage reader (`stageBlend.ts`)
  * blends them; the turn's anticipation (the head, then the chest, then the
- * hips) is the rig's (`RIG_DETAIL.cascade`), read from the yaw rate.
+ * hips) is the rig's (`RIG_DETAIL.cascade`), read from the yaw rate. Phase 3:
+ * the take-off and the water: the pop-up's landing (its feet at 45°, settling
+ * into riding's), its drawn places (`TAKE_OFF`: the push's flat hands, the hips
+ * low in the press, the feet swung onto the deck), the lying poses (paddling's
+ * low chest, the look-up, the catch and its cobra) and the lineup sit (`SIT`).
  *
  * Conventions: a foot's angle to the stringer (90° square across); knees and
  * hips as the rig takes them (the knees' flexion, the hips' included angle);
@@ -359,12 +365,229 @@ const KICK_OUT: StandingPose = {
   trail: { swing: 50, hold: 0.8 },
 };
 
+/**
+ * The pop-up's landing (the plan's §5.7; Borgonovo-Santos 2021; Rapture's pop-up
+ * page; the owner's call, §10.3): the feet land together at about 45° to the
+ * stringer, the back foot across it over the tail pad, the front foot between
+ * the hands; the knees bent 70–100° in the landing's crouch (the physics' pelvis
+ * 0.3 m under its standing one), the front foot loaded (72 ± 8 % of the impulse:
+ * the physics' landing pelvis sits 0.74 of the way to the front foot, drawn
+ * back toward 0.62 only past it, so 0.68–0.73), the trunk hinged as in the drop,
+ * the eyes forward, the arms low and forward. Standing, it settles into the
+ * riding pose over `TAKE_OFF.settle` s, the feet turning to about 60° and 80°.
+ */
+const LANDING: StandingPose = {
+  ...structuredClone(DROP),
+  foot: { front: 45, rear: 45 },
+  kneeTall: 30,
+  rearKneeIn: { toward: 15, down: 10 },
+  hinge: { tall: 21, deep: 40 },
+  chest: 20,
+  hips: 10,
+  shoulderDrop: 0,
+  hands: { lead: { nose: 0.16, toes: 0.12, up: 0.02 }, trail: { nose: 0.02, toes: 0.12, up: -0.04 } },
+  lookPitch: 20,
+  gazeDown: 0,
+  weight: { pivot: 0.62, keep: 0.4, most: 0.1 },
+};
+
 export const STAGE_POSES = {
   trimFrontside: TRIM_FRONTSIDE, trimBackside: TRIM_BACKSIDE, drop: DROP,
   bottomFrontside: BOTTOM_FRONTSIDE, bottomBackside: BOTTOM_BACKSIDE, topFrontside: TOP_FRONTSIDE, topBackside: TOP_BACKSIDE,
   cutbackFrontside: CUTBACK_FRONTSIDE, cutbackBackside: CUTBACK_BACKSIDE, tubeFrontside: TUBE_FRONTSIDE, tubeBackside: TUBE_BACKSIDE,
-  kickOut: KICK_OUT,
+  kickOut: KICK_OUT, landing: LANDING,
 } as const;
+
+/**
+ * The pop-up's drawn places (the plan's §5.6 and §5.7, phase 3), timed by the
+ * physics' own phases (`PUSH_TIME`, `LANDING_TIME`, `SETTLE_TIME`: Borgonovo-Santos
+ * 2021's 0.71 s push and 0.48 s reach):
+ * - `hand`: the push's hands flat beside the lower ribs (the owner's call,
+ *   §10.4: not gripping the rails, as the physics' push hand does beside the
+ *   chest): planted on the deck as the push begins, `ribs` of the way from the
+ *   hips to the neck along the lying trunk, `apart` m apart (Borgonovo-Santos
+ *   2021: 0.46 m) or `inboard` m in from the rail where the board is narrower,
+ *   the wrist `above` m over the deck (the hand's thickness), its back up and
+ *   the fingers toward the nose; placed over the push's first `place` s (no
+ *   faster than an arm swings, so nothing reads as a jump), coming off the deck
+ *   smoothly over the last `lift` of the arm's length as it runs out of reach;
+ * - `press`: the chest pushed up by the arms, the hips held low (Rapture's
+ *   pop-up: hips down, chest up; Borgonovo-Santos 2021: the elbows from deeply
+ *   bent to straight at 80 % of the push): the elbows' included angle from
+ *   `elbow`° at `begin` of the push (the hands coming down) to straight by
+ *   `straight` of it (eased); the chest's line over the deck solved on the
+ *   skeleton so the shoulders are that far from the planted hands, no more than
+ *   `lift`° over the physics' own trunk and no lower than it (eased into either
+ *   over `liftEase`°: the hips rising over the planted hands would fold the
+ *   chest flat; the straight arms lift the hands instead), no faster than
+ *   `rate` rad/s (a brisk trunk bend), the lower back lifting `arch` of it
+ *   (the arch at the upper back: with no cap it rose to 85° and fell back to
+ *   the physics' 27° by the push's end); the hips held where they lay (low and
+ *   back), the physics' pelvis
+ *   shown from `from` of the push, all of it by the push's end; from `handover`
+ *   of the push the trunk hands over to the physics' own by its end, so the
+ *   switch to the landing is the physics' (the straight arms lift the hands off
+ *   the deck: the reach begins; handing over only from `straight`, the chest
+ *   swung 40° in 0.14 s, which an online surfer's 20 Hz poses read as a jump);
+ * - `fade`: the lying key pose (the paddle's low chest, the catch's cobra, the
+ *   legs together) hands over to the push's own points over its first `fade`
+ *   of it ("the chest rises with the push"), and comes back in over the last
+ *   `fade` of the lie-down (`recover`: the prone kick-out keeps the physics'
+ *   path, the parts together; the plan's §5.15 chest first, then the hands, then
+ *   the knees, drawn with the chest leading the physics' trunk down while its
+ *   hips stood high, swung the arms through their shoulders at 23–27 rad/s
+ *   against 7, and a drawn path for the hands from held out to the rails did
+ *   too: tried and not kept);
+ * - `touch`: the feet land together at `touch` of the reach, each swung on a
+ *   minimum-jerk arc above the deck from where it lay (they never slide along
+ *   it), lifted at most `lift` m: the front foot swung through under the body
+ *   between the hands, the back foot turned across the stringer; the knees
+ *   drive forward and up under the chest (`knee`: their pole from the lying
+ *   legs', down `lay` for each of forward, to forward and `drive` up by `up` of
+ *   the swing, turning out to the stance's from `out` of it); the relaxed hands
+ *   low and forward, `hands` m about the hips (± along the nose, toward the
+ *   toes, up) until the knees they frame have planted, each coming there in a
+ *   straight line from where the push left it over `armsIn` s;
+ * - `settle`: standing, the landing's pose and feet settle into riding's over
+ *   this, s (the physics' settle).
+ */
+export const TAKE_OFF = {
+  hand: { ribs: 0.4, apart: 0.46, inboard: 0.02, above: 0.03, place: 0.2, lift: 0.05 },
+  press: { elbow: 60, begin: 0.15, straight: 0.8, handover: 0.65, arch: 0.5, lift: 35, liftEase: 5, rate: 5, from: 0.3 },
+  fade: 0.4,
+  touch: 0.9,
+  lift: { front: 0.1, rear: 0.05 },
+  knee: { lay: 1, drive: 0.5, up: 0.4, out: 0.5 },
+  hands: { nose: 0.15, toes: 0.25, up: -0.25 },
+  armsIn: 0.3,
+  settle: SETTLE_TIME,
+};
+
+/**
+ * A lying key pose (the plan's §5.3 and §5.4): the drawn trunk and head on the
+ * deck, which the physics' prone points leave open (their chest at 0.18 m and
+ * head at 0.32 m over the deck, lifted 10–23°).
+ */
+export interface LyingPose {
+  /**
+   * The pelvis' line (the lower back) and the chest's (the upper spine) above
+   * the deck, °: the arch at the upper chest only (the plan's §5.3).
+   */
+  back: number;
+  chest: number;
+  /** The head's look below the deck's plane, ° (+ down). */
+  look: number;
+  /** The feet's spread across the stringer, m: the legs together. */
+  feet: number;
+  /** How far the arm reaches its hand, a share of its length (the drawn arm's `RIG_DETAIL.armReach` cruising). */
+  reach: number;
+}
+
+/**
+ * Paddling, cruising (the plan's §5.3; Sheppard 2013: chest down paddles faster;
+ * Rapture's paddle technique): the sternum on the stringer, the chest only
+ * slightly lifted (5–15°: the trunk's line reads about 14° with the upper chest
+ * at 17°; lower, the shoulders came down to the physics' recovery height and
+ * the arm folded tight past them, turning fast enough for a 30 Hz display's
+ * smoothing to read the turn as a jump, as in the riding-body plan's step 8),
+ * the head neutral with the eyes forward, the legs together (≤ 0.15 m apart)
+ * with no kick.
+ */
+const PADDLE: LyingPose = { back: 4, chest: 17, look: 20, feet: 0.08, reach: 0.97 };
+/** The look-up (§5.3): every few strokes the head lifts to scan ahead, the chest a little with it. */
+const SCAN: LyingPose = { back: 4, chest: 21, look: -2, feet: 0.08, reach: 0.97 };
+/**
+ * The catch (§5.4; Rapture, catching unbroken waves): the last explosive full
+ * strokes with the head down; on a steep face the chest up in a cobra (20–35°),
+ * its depth by the board's nose-down pitch: `CATCH` shallow, `COBRA` steep. The
+ * arms reach full (`reach` 1).
+ */
+const CATCH: LyingPose = { back: 8, chest: 30, look: 30, feet: 0.08, reach: 1 };
+const COBRA: LyingPose = { back: 10, chest: 44, look: 32, feet: 0.08, reach: 1 };
+
+export const LYING_POSES = { paddle: PADDLE, scan: SCAN, catch: CATCH, cobra: COBRA } as const;
+
+const blendLying = (a: LyingPose, b: LyingPose, t: number, out: LyingPose): LyingPose => {
+  out.back = a.back + (b.back - a.back) * t;
+  out.chest = a.chest + (b.chest - a.chest) * t;
+  out.look = a.look + (b.look - a.look) * t;
+  out.feet = a.feet + (b.feet - a.feet) * t;
+  out.reach = a.reach + (b.reach - a.reach) * t;
+  return out;
+};
+
+const catchPose: LyingPose = { ...PADDLE };
+
+/** The lying pose the water stages' weights ask for: paddling, lifting into the look-up, into the catch (its cobra by the pitch). */
+export function lyingPose(weights: WaterWeights, out: LyingPose): LyingPose {
+  blendLying(PADDLE, SCAN, weights.scan, out);
+  blendLying(CATCH, COBRA, weights.cobra, catchPose);
+  return blendLying(out, catchPose, weights.catch, out);
+}
+
+/**
+ * The lineup sit (the plan's §5.2; a coaching cue, no measured source; Secomb
+ * 2015: 53 % of a session is spent stationary): straddling the board, the legs
+ * hanging relaxed and slightly apart, the knees about 70°, the torso upright,
+ * the hands on the thighs, the head scanning behind.
+ * - `hipsOver`: the hips (the hip joints' middle) over the deck, m, along the
+ *   board at the middle of the physics' pelvis and torso points (where its prone
+ *   body's mass floats the board: the board's trim is the physics' prone one);
+ * - `lean`: the trunk from the vertical toward the nose, °, in the world (the
+ *   board's roll and pitch move only the legs and hips); `chest` the chest's
+ *   further lean;
+ * - `thigh`, `shin`: each thigh's way from its hip (out, down, toward the nose),
+ *   and each shin's from its knee (out, down, toward the nose), in the board's
+ *   frame: the thighs over the rails, the shins hanging in the water;
+ * - `hands`: on the thighs, `along` of the way from the hip to the knee, `above`
+ *   m over the thigh's line, `inside` m in toward the stringer, within `reach`
+ *   of the arm's length (the elbow soft);
+ * - `look`: the head's look below the level, °;
+ * - `scan`: the head's slow scan (§5.2: ±90° over 4–6 s, timed off the clock with
+ *   no noise; a fixed cycle stands in for watching the sets, which the drawn
+ *   state does not carry): its yaw, ° (+ toward the body's left), at each key
+ *   time, s, over the `cycle`, eased between them; the chest turns `chest` of it.
+ */
+export const SIT = {
+  hipsOver: 0.09,
+  lean: 8,
+  chest: 4,
+  thigh: [0.42, -0.4, 0.8] as const,
+  shin: [0.08, -0.96, -0.2] as const,
+  hands: { along: 0.72, above: 0.07, inside: 0.02, reach: 0.9 },
+  look: 5,
+  scan: {
+    cycle: 5,
+    keys: [[0, 0], [0.8, 0], [1.8, -85], [2.6, -85], [3.8, 70], [4.4, 70], [5, 0]] as readonly (readonly [number, number])[],
+    chest: 0.3,
+  },
+};
+
+/** The scan's yaw at `time` s into the sit, ° (`SIT.scan`): its keys eased between (a smootherstep, no speed at a key). */
+export function sitScan(time: number): number {
+  const { cycle, keys } = SIT.scan;
+  const t = ((time % cycle) + cycle) % cycle;
+  for (let i = 1; i < keys.length; i += 1) {
+    const [t1, y1] = keys[i];
+    const [t0, y0] = keys[i - 1];
+    if (t > t1) continue;
+    const s = t1 > t0 ? (t - t0) / (t1 - t0) : 1;
+    const eased = s * s * s * (s * (6 * s - 15) + 10);
+    return y0 + (y1 - y0) * eased;
+  }
+  return keys[keys.length - 1][1];
+}
+
+/**
+ * The water stages' weights (`WaterStages`), each 0–1: how far into the lineup
+ * sit, the catch and its cobra (by the pitch), and the paddler's look-up.
+ */
+export interface WaterWeights {
+  sit: number;
+  catch: number;
+  cobra: number;
+  scan: number;
+}
 
 /**
  * The stages' weights (`StageBlend`), each 0–1: how far the side (in trim and
@@ -382,9 +605,11 @@ export interface StageWeights {
   cutback: number;
   tube: number;
   kickOut: number;
+  /** How far still in the pop-up's landing: 1 landing, easing to 0 over the settle once standing (none for a rider that never landed). */
+  landing: number;
 }
 
-export const NO_STAGES: Readonly<StageWeights> = { backside: 0, drop: 0, turn: 0, rail: 0, redirect: 0, cutback: 0, tube: 0, kickOut: 0 };
+export const NO_STAGES: Readonly<StageWeights> = { backside: 0, drop: 0, turn: 0, rail: 0, redirect: 0, cutback: 0, tube: 0, kickOut: 0, landing: 0 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const lerpHand = (a: HandOffset, b: HandOffset, t: number, out: HandOffset) => {
@@ -464,6 +689,7 @@ export function stagePose(weights: StageWeights, out: StandingPose): StandingPos
     blendPose(out, turnPose, weights.tube, out);
   }
   if (weights.kickOut > 0) blendPose(out, STAGE_POSES.kickOut, weights.kickOut, out);
+  if (weights.landing > 0) blendPose(out, STAGE_POSES.landing, weights.landing, out);
   return out;
 }
 
