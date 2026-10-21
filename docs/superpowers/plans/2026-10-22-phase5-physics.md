@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to build the batches the owner picks. Steps use checkbox (`- [ ]`) syntax for tracking. The owner has chosen (§4): every recommendation, approved.
 
-**Status:** approved. The owner took every recommendation of §4 ("use all recommended", 2026-10-22). Written on branch `claude/anim-p5-plan` (from `main` at e445f06b); it lands in `main` with batch A (branch `claude/phys5-a`). Batch C is built on `claude/phys5-c`; the follow-up (batch D: W2 option (a), the keyboard's rotation, the assists against the water) on `claude/phys5-d`.
+**Status:** approved. The owner took every recommendation of §4 ("use all recommended", 2026-10-22). Written on branch `claude/anim-p5-plan` (from `main` at e445f06b); it lands in `main` with batch A (branch `claude/phys5-a`). Batch C is built on `claude/phys5-c`; the follow-up (batch D: W2 option (a), the keyboard's rotation, the assists against the water) on `claude/phys5-d`, and W2 (a) finished (batch E) on `claude/phys5-e`.
 
 **The owner's principle (2026-10-22):** "I don't want to change something that is not physics based." The animation stays physics-driven. Where the drawing can't match real surfing without the physics, "we can compromise the physics after." This plan is that step: the animation-realism plan's phase 5 (`2026-10-22-animation-realism.md` §8, "Phase 5").
 
@@ -623,6 +623,30 @@ From batch B's record (`claude/playtest-2026-10-22n`, batches A, B and C). The o
 3. Point: a cutback back toward the curl with Compress and S. *Look for:* it should bog less on the face than before.
 4. Near the curl, a compressed turn in fast water. *Look for:* where the water runs with the board the assists now read it slow and fade; say if turns there feel weaker.
 5. Point: ride straight up the face, hold S and steer (the kick-out). *Look for:* whether the board swings over the back on a real wave or the rider falls; that decides whether the keyboard's rotation is worth a second look.
+
+### W2 (a) finished (batch E, 2026-10-22, `claude/phys5-e` from `claude/phys5-d`)
+
+The coordinator's call on batch D's one miss: the frontside cutback's cascade is a drawing timing, not physics, so W2 (a) goes in with the head's lead trimmed, the 0.35 s bar kept.
+
+- **W2 option (a) (commit 8c4743a4):** as batch D measured it: `copTarget.z` = trim × `TRIM_PRESSURE` 0.2 × half the stance, standing only; the zone stays 0.2 m (S 0.40 on the front foot, W 0.60, nothing 0.50).
+- **The head's lead trimmed (commit 77affeb5, drawn only):** `RIG_DETAIL.lookAhead` 0.85 → 0.7 (a steady turn looked into 0.45 s ahead, 0.6 before) and `leanLead.time` 0.5 → 0.55 (the lean's lead, which `lookAhead` also scales, given back). Neither alone held: the look at 0.7 left the head 0.017 s ahead of the board into a bottom turn (bar 0.03); the lean at 0.45, or the look at 0.75–0.8, left the cutback at the bar's 0.350 s exactly; leading the chest more (`cascade.chest` 0.35–0.45) did not move it.
+
+| Bar | Before (batch D) | W2 (a) alone | Batch E as built |
+|---|---|---|---|
+| Frontside cutback, the head before the chest (0.1–0.35 s), Regular and Goofy | 0.333 s | 0.367 s | 0.333 s |
+| Backside cutback, the head before the chest | 0.117 s | 0.150 s | 0.150 s |
+| The chest before the hips (> 0), frontside / backside | 0.050 / 0.250 s | 0.067 / 0.217 s | 0.067 / 0.217 s |
+| The head 10° into a bottom turn before the board (≥ 0.03 s), and the wrong way (> −6°) | 0.050 s, −5.0° | 0.050 s, −5.0° | 0.033 s, −4.7° |
+| The rail change's head the wrong way, local / another player's (> −10°) | −9.0° / −8.3° | — | −8.7° / −7.9° |
+| `projectionLean`, coached cutbacks, the ladder | 0.864, 0.873 / 0.633, 0.727; 4.83–5.01 / 3.47–3.65; 0.241 / 0.249 | — | 0.885, 0.881 / 0.633, 0.729; 4.57–4.75 / 3.24–3.40; 0.241 / 0.250 |
+| Still-water bar, 11 m/s guard, re-standing, pumps | 1.117 / 1.150 s; 0.83; pass; pass | — | the same (they hold no W/S) |
+| The test set (physics, rig, stance, body films, `stanceTargets`, Bindings, Controls, net) | 904 + 18 pinned | 1 failure | 904 passed, 18 pinned fails as before; tsc clean |
+
+**Shot list (batch E):**
+1. Beach, Medium: a top turn with S held hard at the top, three each side. *Look for:* the board pivots on the tail with the weight back; say if it bogs more than before.
+2. Point: two coached cutbacks each side (Compress, S, the steer). *Look for:* they still plane round (a little slower than before: 4.6–4.8 m/s against 4.8–5.0 on the test face).
+3. Any spot: W held through a bottom turn. *Look for:* more drive off the front foot than before.
+4. Any spot: a bottom turn and a cutback, watching the head. *Look for:* it still turns into the turn first, a touch later than before (it looks 0.45 s ahead of a turn, not 0.6).
 
 ---
 
