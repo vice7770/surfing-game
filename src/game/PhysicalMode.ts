@@ -390,7 +390,7 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...startOutSwitch(),
     // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
-    // `?canyonBed=old`: the Canyon's bed before the reef bed, with its take-off, start and curl (main's until 2026-10-22).
+    // `?canyonBed=old`: the Canyon's whole layout before canyon-layout, with its window, take-off and starts (main's until 2026-10-22).
     ...canyonBedSwitch(),
     ...overrides,
   };
@@ -407,8 +407,9 @@ export function startOutSwitch(search?: string): { startOut?: number } {
 }
 
 /**
- * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's bed before the reef bed (2026-10-22), with its
- * own take-off, start and drawn curl, to ride the two side by side; nothing otherwise (the reef bed).
+ * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-layout
+ * (2026-10-22, `CANYON_OLD`: the long arm across a 160 m window, 305 m out), with its own tank, take-off and starts, to
+ * ride the two side by side; nothing otherwise (today's layout).
  */
 export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
   return devParam('canyonBed', search)?.trim() === 'old' ? { canyonBed: 'old' } : {};

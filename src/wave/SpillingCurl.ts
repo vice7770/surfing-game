@@ -116,12 +116,6 @@ export function landingShare(psiMax: number): number {
   return length * Math.cos(shape.tilt);
 }
 
-/**
- * The span's steep end before the reef bed (2026-10-22): 1:30 under H0/h0 0.28 (curls to 0.33 H, landing 0.60 H ahead), the
- * old bed's face below its hinge. Drawn with the old bed (`SurfZoneConfig.canyonBed` 'old', the `?canyonBed=old` dev switch).
- */
-export const SPILLING_CURL_OLD_PSI_MAX = overturnParameter(1 / 30, 0.28);
-
 /** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, eight waves at once. */
 export const CURL_CAPACITY = 56;
 /** Floats per curl slice. */

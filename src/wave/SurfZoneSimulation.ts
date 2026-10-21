@@ -1,5 +1,5 @@
 import {
-  CANYON, PADANG, REEF, canyonArmAt, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonShape, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
@@ -35,7 +35,7 @@ import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
 import { frayBand } from './drawnEdges';
-import { BAND_LOOK_STRIDE, SPILLING_CURL_OLD_PSI_MAX, SpillingCurl } from './SpillingCurl';
+import { BAND_LOOK_STRIDE, SpillingCurl } from './SpillingCurl';
 
 /** No drawn splashes (`drawnImpacts` without a spilling lip). */
 const NO_IMPACTS: readonly LipImpact[] = [];
@@ -161,10 +161,11 @@ export interface SurfZoneConfig {
    */
   startOut?: number;
   /**
-   * The Canyon's bed (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, the reef bed
-   * (2026-10-22); 'old', the bed before it (`CANYON_OLD_BED`) with its own take-off (`CANYON_TAKE_OFF_DEPTH_OLD`), start
-   * (`CANYON_RIDE_LINEUP_OLD`) and drawn curl (`SPILLING_CURL_OLD_PSI_MAX`): main's Canyon until the reef bed. Every other
-   * spot ignores it; online rooms always run the reef bed.
+   * The Canyon's layout (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, today's
+   * (canyon-layout, 2026-10-22: the reef bed on a short arm 120 m out, in a 220 m window); 'old', the whole layout before
+   * it (`CANYON_OLD`: its window, bed, tank, take-off `CANYON_TAKE_OFF_DEPTH_OLD` and starts `CANYON_RIDE_LINEUP_OLD`; its
+   * curl was already the default's), main's Canyon until canyon-layout. Every other spot ignores it; online rooms always
+   * run the default.
    */
   canyonBed?: CanyonBed;
 }
@@ -246,9 +247,14 @@ const REEF_PATH_REACH = 400;
 /** Along-shore window width unless the config or the spot says otherwise, m. */
 export const ALONG_SHORE = 160;
 
-/** The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), else ALONG_SHORE. */
-export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>): number {
-  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? POOL.alongShore : ALONG_SHORE);
+/**
+ * The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), the Wave
+ * Pool's, or the Canyon's layout's (`CANYON.alongShore`, 220 m since canyon-layout; 160 m on `canyonBed` 'old'), else
+ * ALONG_SHORE.
+ */
+export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore' | 'canyonBed'>): number {
+  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? POOL.alongShore
+    : config.spot === 'canyon' ? canyonShape(config.canyonBed).alongShore : ALONG_SHORE);
 }
 
 /**
@@ -347,10 +353,11 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
   // The Canyon (its straight-crest bed): its own zone and edge (CANYON.edgeDepth, deep enough for Big since the canyon-big
   // redesign), with 1 m cells from the zone in, so the waves shoaling onto its platform are resolved (on 4 m cells they
-  // lost a third of their height unbroken).
+  // lost a third of their height unbroken). Its layout's (`canyonShape`): the zone from z −390 since canyon-layout.
   if (config.spot === 'canyon') {
-    const zoneInner = CANYON.zoneInner;
-    return { offshore: zoneInner - CANYON.zoneLength, zoneInner, blendEnd: zoneInner + CANYON.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: CANYON.edgeDepth };
+    const c = canyonShape(config.canyonBed);
+    const zoneInner = c.zoneInner;
+    return { offshore: zoneInner - c.zoneLength, zoneInner, blendEnd: zoneInner + c.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: c.edgeDepth };
   }
   // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
   if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore), edgeDepth: today.edgeDepth };
@@ -578,9 +585,9 @@ export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.
  */
 export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
-/** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak. */
-export function peakTakeOffX(spot: SpotName): number {
-  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : spot === 'canyon' ? CANYON.takeOffX : REEF.takeOffX;
+/** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak (its layout's). */
+export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed): number {
+  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : spot === 'canyon' ? canyonShape(canyonBed).takeOffX : REEF.takeOffX;
 }
 
 /**
@@ -600,8 +607,11 @@ export function peakTakeOffX(spot: SpotName): number {
  */
 export const CANYON_TAKE_OFF_DEPTH = { base: 1.24, perMetre: 1.07 } as const;
 
-/** `CANYON_TAKE_OFF_DEPTH` on the bed before the reef bed (`SurfZoneConfig.canyonBed` 'old'), its fit from 2026-10-11. */
-export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.06, perMetre: 1.24 } as const;
+/**
+ * `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-layout (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef
+ * bed's fit (2026-10-22, docs/research/canyon-reef-bed-2026-10-22), main's at 2dd9ba52.
+ */
+export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.24, perMetre: 1.07 } as const;
 
 /** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`), on a bed. */
 export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
@@ -644,11 +654,14 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
   { significantHeight: 2.4, offset: 6 },
 ];
 
-/** `CANYON_RIDE_LINEUP` on the bed before the reef bed (`SurfZoneConfig.canyonBed` 'old'): Big at its take-off (big-start). */
+/**
+ * `CANYON_RIDE_LINEUP` on the layout before canyon-layout (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef bed's
+ * starts (2026-10-22), main's at 2dd9ba52: Big 6 m out, seaward of where one wave in ten starts breaking.
+ */
 export const CANYON_RIDE_LINEUP_OLD: readonly { readonly significantHeight: number; readonly offset: number }[] = [
   { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
   { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: 0 },
+  { significantHeight: 2.4, offset: 6 },
 ];
 
 /**
@@ -704,7 +717,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
-    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot)));
+    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed)));
     return { x, z: breakZ(x) };
   }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
@@ -884,10 +897,12 @@ export class SurfZoneSimulation {
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
     // Padang Padang's is its reef's, from the peak to the channel. The Wave Pool's A-frame peels both ways alike, so a
     // fit across both arms reads as a close-out: its peel is the right arm's, where riders wait. The Canyon's is its
-    // arm's, from the peak to the beach face: upcoast of the peak the square crests close out on the beach.
+    // arm's, from the peak to the beach face: upcoast of the peak, and past the arm's end (canyon-layout's flanks), the
+    // square crests close out on the beach. Its layout's arm (`SurfZoneConfig.canyonBed`).
     const xCenters = this.solver.xCenters;
+    const canyon = canyonShape(config.canyonBed);
     const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt
-      : config.spot === 'canyon' ? canyonArmAt : undefined;
+      : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
@@ -940,8 +955,6 @@ export class SurfZoneSimulation {
           breakerDepth, breakerHeight: BREAKER_INDEX * breakerDepth,
           // The overturn fits' H0/h0, as the plunging lip's: the incoming sea's height over the tank's offshore depth.
           nonlinearity: edgeHeight(config, tank.edgeDepth) / (tank.edgeDepth + config.tide),
-          // The old Canyon bed draws its own curl, the span ending at its 1:30 face (`SurfZoneConfig.canyonBed`).
-          ...(config.spot === 'canyon' && config.canyonBed === 'old' ? { psiMax: SPILLING_CURL_OLD_PSI_MAX } : {}),
         });
         this.drawnWhitewater = new Float64Array(this.solver.h.length);
       }

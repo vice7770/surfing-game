@@ -500,8 +500,8 @@ class SurfGame {
     // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).
     if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
-    // The room's sea is the same on every client and handed between them: always the Canyon's reef bed, whatever
-    // `?canyonBed` says (its old bed is a solo dev switch).
+    // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
+    // `?canyonBed` says (its old layout is a solo dev switch).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef',
