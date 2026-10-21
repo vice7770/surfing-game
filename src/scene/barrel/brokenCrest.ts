@@ -11,13 +11,13 @@ import { LOFT, LOFT_SAMPLES, type LoftResult } from '../../wave/barrel/sweptLoft
  * lesser of the two, read on the water under the crest landmark and halfway from it to the toe's. Lace riding on a
  * clean face's crest is not a broken crest, nor is old foam on the face below a clean crest. From a front point's join
  * to its touchdown the crash withholds the solver's breaking over the drawn curl from the foam (`SweptCrash`, the gate),
- * so while a slice is before its touchdown that foam was made before its front started (drifting and fading), or is
- * whitewater lying where the crest runs in. Its whitest reading then is held through the slice's collapse, when the
+ * so before its touchdown the foam under a slice is old: the solver's own onset whitewater, which leads the lip by up to
+ * 2 s and fades as the curl opens (on Padang Padang's Big the crest and face read 0.83–0.91 in the half second before the
+ * throw, 0.26–0.28 half a second after), or whitewater made before the front started, which lasts. The reading is
+ * taken as the slice is now, so the curl shows the foam its water holds, and held through the collapse, when the
  * crash's own foam arrives (`BrokenCrests`).
  * White is the solver's whitewater, not the lace a crest rides through: from `clean` (no foam kept) to `white` (all of
- * it), smoothstep. On Padang Padang's Big the lace behind and around the crests reads about 0.5, its drawn crests'
- * median about 0.35 and their faces' less; a close-out's broken crests read 0.7–0.8, as much on the face
- * (docs/research/open-decisions-2026-10-22/) [provisional].
+ * it), smoothstep. Padang Padang's Big's lace reads about 0.5 (docs/research/open-decisions-2026-10-22/) [provisional].
  */
 export const BROKEN_CREST = { clean: 0.55, white: 0.8 } as const;
 
@@ -33,11 +33,10 @@ const AFTER_TOUCHDOWN = 2;
 /**
  * Each drawn slice's share of the solver's foam kept on its lifted water (`BROKEN_CREST`), drawing only.
  *
- * Its place along its front, by front and metre of crest x (the front's points sit a column apart, so a slice's x stays
- * put while its σ may shift), keeps its whitest reading: before its touchdown a slice reads its crest and face now, and
- * never keeps less than its place had, so a curl on a broken crest stays white as the old foam under it fades; after its
- * touchdown it keeps what its place had. A slice first seen past its touchdown (a front renumbered, or the page joining
- * late) reads its crest now. Places no slice drew this time are forgotten.
+ * Before its touchdown a slice reads its crest and face now; after it, it keeps the last reading its place along its
+ * front had, by front and metre of crest x (the front's points sit a column apart, so a slice's x stays put while its σ
+ * may shift). A slice first seen past its touchdown (a front renumbered, or the page joining late) reads them now.
+ * Places no slice drew this time are forgotten.
  */
 export class BrokenCrests {
   /** Per slice, the share kept; as many as the loft has slices. */
@@ -58,14 +57,12 @@ export class BrokenCrests {
       const faceZ = 0.5 * (z + loft.positions[profile + 3 * LANDMARK.toe + 2]);
       const front = loft.sliceFront[s];
       const place = Math.round(x);
-      const had = this.held.get(front)?.get(place);
-      const weight = loft.slicePhase[s] === AFTER_TOUCHDOWN && had !== undefined
-        ? had
-        : Math.max(had ?? 0, brokenWeight(Math.min(foamAt(x, z), foamAt(faceX, faceZ))));
+      const had = loft.slicePhase[s] === AFTER_TOUCHDOWN ? this.held.get(front)?.get(place) : undefined;
+      const weight = had ?? brokenWeight(Math.min(foamAt(x, z), foamAt(faceX, faceZ)));
       this.weights[s] = weight;
       let places = next.get(front);
       if (!places) next.set(front, (places = new Map()));
-      // Two slices share a metre: it keeps the whiter.
+      // Two slices sharing a metre: it holds the whiter.
       places.set(place, Math.max(places.get(place) ?? 0, weight));
     }
     for (const [front, places] of next) if (places.size === 0) next.delete(front);
