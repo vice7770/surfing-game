@@ -50,19 +50,21 @@ const ALONG_BODY_SHELTER = 0.1;
  *   side over 0.6–2.0 m/s; Rapture's paddle technique: a left-and-right cycle
  *   every 2–3 s cruising). It was 60, from Volschenk et al. 2021's sprints;
  * - the share of it spent pulling;
- * - the pull, from 0.45 m ahead of the shoulders to the hip, beside the rail;
+ * - the pull, from 0.485 m ahead of the board's middle to as far behind it (the
+ *   shoulders to the hip), beside the rail: 0.97 m (Nessler et al. 2015: 970 ±
+ *   77 mm; 0.90 m before);
  * - how deep the hand goes, and the hand and forearm's drag area (C_d 1.1 × 0.06 m²).
  *
  * The pull share is calibrated so a sustained flat-water paddle settles near
- * 1.5 m/s (plan §1.10, provisional, 1.5–2 m/s; it settled at 1.74 m/s at 60
- * strokes a minute). The hand then peaks at about 4.4 m/s relative to the
+ * 1.6 m/s (plan §1.10, provisional, 1.5–2 m/s; it settled at 1.74 m/s at 60
+ * strokes a minute). The hand then peaks at about 4.5 m/s relative to the
  * board, as in fast front-crawl strokes: faster, the drawn hand was read as
  * jumping at 30 Hz (`PointInertia`) and its stroke drawn differently by display
  * rate. Quasi-steady hand drag leaves out the hand's added mass and lift, which
  * the fast pull stands in for.
  */
 const ARM_CYCLE = 1.2;
-const PULL_SHARE = 0.27;
+const PULL_SHARE = 0.28;
 /**
  * The sprint (the phase 5 physics plan, item 2.8): as a wave picks the board up,
  * the last strokes quicken (Rapture, catching unbroken waves: a few hard, fast
@@ -76,8 +78,8 @@ const SPRINT_CYCLE = 1.0;
 const SPRINT_SLOPE = Math.tan((2 * Math.PI) / 180);
 const SPRINT_SLOPE_FULL = Math.tan((8 * Math.PI) / 180);
 const SPRINT_TIME = 0.4;
-const REACH = 0.45;
-const HIP = -0.45;
+const REACH = 0.485;
+const HIP = -0.485;
 const HAND_DEPTH = 0.25;
 const HAND_OUTSIDE_RAIL = 0.08;
 /**

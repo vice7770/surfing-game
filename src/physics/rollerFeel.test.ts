@@ -195,9 +195,9 @@ describe('the roller lens on a prone rider (S3, the plan\'s §7)', () => {
    * Whether the bare face throws a paddler depends on which arm pulls as it climbs it (a hand pulling against the bore's
    * upflow rolls the board): at 60 strokes a minute it threw 4 of 10 stroke phases, 2 of these 5 starts. So the paddler
    * sets out from five places, 0.3 m apart (the phase 5 physics plan, item 2.8: at 50 strokes a minute the one start
-   * this read fell on a throwing phase). Measured 2026-10-21: the lens throws it from every start, 1.4–1.7 s after it
-   * reaches it; the bare face lets it through from two, and throws it 2.0–2.8 s in from the others (before, 1.4–1.6 s
-   * and 2.5–2.8 s, the same two through).
+   * this read fell on a throwing phase). Measured 2026-10-21: the lens throws it from every start, 0.2–1.5 s after it
+   * reaches it; the bare face lets it through from two, and throws it 1.9–2.5 s in from the others (at 60 a minute,
+   * 1.4–1.6 s and 2.5–2.8 s, two through).
    */
   it('knocks a paddler punching through a 1.5 m roller off the board, sooner than the bare face, which lets it through', () => {
     const starts = [0, 0.3, 0.6, 0.9, 1.2];

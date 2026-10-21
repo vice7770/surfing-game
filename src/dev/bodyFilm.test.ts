@@ -649,10 +649,13 @@ describe('the paddler and the swimmer (step 8)', () => {
     for (const axis of ['along', 'across', 'vertical'] as const) expect(Math.abs(there[axis] - here[axis]), axis).toBeLessThan(0.01);
   }, 240_000);
 
-  // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,
-  // past the drawn arm's reach, so the drawn hand stops short at both ends. Real paddlers reach with the shoulder and
-  // roll with the board (27–45° a stroke, Nessler et al. 2019; the physics rolls it 7°): a question for the physics
-  // posture, with the stroke rate (60 a minute a side, where 1.7 m/s gives about 50). Pinned, not tuned.
+  // Its length is short: 80 cm (77 before the phase 5 physics plan's batch C). The physics' stroke is now 0.97 m long, at
+  // 50 a minute a side with the board rolling 18° (item 2.8), but its hand enters at 0.25 m under the deck, out of the
+  // drawn arm's reach, so the drawn hand stops short at both ends and then catches up. Tried and not kept: the hand's
+  // depth taken from the water (nearer its rail as the board rolls toward it) and going in and out at the surface drew
+  // 0.90 m at 60 Hz, but its catch-up (and the board's roll under it) read as jumps to `PointInertia` at 30 Hz: the
+  // stroke drew 0.08 m shorter and 0.2 m wider there. The drawn arm's reach with the shoulder is the drawing's.
+  // Pinned, not tuned.
   it.fails('paddles a stroke as long as a real one', () => {
     const shot = steady(60);
     for (const side of ['left', 'right'] as const) expect(paddleStroke(shot, side).along, `${side} along`).toBeGreaterThan(0.893);

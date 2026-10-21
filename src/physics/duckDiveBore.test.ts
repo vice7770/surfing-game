@@ -62,8 +62,8 @@ function meetings(diveAt?: number, depth = 2.5) {
 }
 
 describe('duck-dive under a broken wave (survey §5)', () => {
-  // Measured 2026-10-21 over the five starts (at 60 strokes a minute in brackets): on top, set back 5.9 m (6.0), the rider
-  // on from 3 (2).
+  // Measured 2026-10-21 over the five starts (at 60 strokes a minute in brackets): on top, set back 6.6 m (6.0), the rider
+  // on from 2 (2).
   it('a paddler staying on top is set back by a 1.2 m broken wave', () => {
     const top = meetings(undefined);
     expect(top.pushed).toBeGreaterThan(2);
@@ -77,7 +77,7 @@ describe('duck-dive under a broken wave (survey §5)', () => {
    * take 0.55 s and the depth builds over about a second (a real duck-dive is one
    * quick motion carried in by the paddling speed). Over the five starts it is
    * met, and was at 60 strokes a minute too: the timed dive keeps the rider on
-   * from 4 (3) and is set back 1.8 m (2.4 m) with it on, against 5.9 m (6.0 m) on
+   * from 5 (3) and is set back 1.7 m (2.4 m) with it on, against 6.6 m (6.0 m) on
    * top. Counted only with the rider on: until the stages eased in, the check was
    * met because the rider had let go and the board slipped under alone. See
    * docs/research/duck-dive-report.md.

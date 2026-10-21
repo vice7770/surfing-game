@@ -13,7 +13,7 @@ import { FaceWater } from './testing/FaceWater';
  * spot and in all plume water, a rider moves bit for bit as before. These fingerprints were recorded at 0d27853e, before
  * the lens-scoped body changes (the advisor's ruling of 2026-10-06), over riders in three waters with no lens in them.
  * The two paddling riders were recorded again with the phase 5 physics plan's stroke (item 2.8: its rate, its roll and
- * the line kept over the strokes), which changes every paddler by design; the still riders hold the lens's scope.
+ * the line kept over the strokes, and its 97 cm length), which changes every paddler by design; the still riders hold the lens's scope.
  */
 
 const STEP = 1 / 60;
@@ -85,7 +85,7 @@ describe('the roller lens\'s feel, outside a lens', () => {
     const water = plume(false);
     expect(ride(water, 0, 180, false, drained(water))).toBe('f986e92101dc4f34');
     const paddling = plume(false);
-    expect(ride(paddling, Math.PI, 180, true, drained(paddling))).toBe('8f64c82e0e42b70e');
+    expect(ride(paddling, Math.PI, 180, true, drained(paddling))).toBe('220f0f0a40bf8040');
   });
 
   it('leaves a prone rider at the Canyon, in broken water outside any lens, bit for bit as it was', () => {
@@ -107,6 +107,6 @@ describe('the roller lens\'s feel, outside a lens', () => {
 
   it('leaves a paddler meeting a broken wave on the duck-dive bore bit for bit as it was', () => {
     const water = new BoreWater({ depth: 2.5, height: 1.2, frontZ: -12 });
-    expect(ride(water, Math.PI, 300, true, () => [water.reaction.x, water.reaction.y, water.reaction.z])).toBe('c3387d13e2a8704d');
+    expect(ride(water, Math.PI, 300, true, () => [water.reaction.x, water.reaction.y, water.reaction.z])).toBe('dc7748fcc6dfb6ce');
   });
 });
