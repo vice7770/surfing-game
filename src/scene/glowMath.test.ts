@@ -162,12 +162,15 @@ describe('the bloom', () => {
     expect(glowMemory(2048, 1280).total).toBe(2048 * 1280 * 36 + (1024 * 640 + 512 * 320 + 256 * 160 + 128 * 80 + 64 * 40) * 8);
   });
 
-  it('runs the HDR scene at 2× MSAA unless the dev switch asks for 4×', () => {
+  it("runs the HDR scene at the setting's MSAA (2× by default) unless the dev switch asks for 2× or 4×", () => {
     expect(GLOW.samples).toBe(2);
     expect(glowSamples(null)).toBe(2);
     expect(glowSamples('2')).toBe(2);
     expect(glowSamples('4')).toBe(4);
     expect(glowSamples('8')).toBe(2);
+    expect(glowSamples(null, 4)).toBe(4);
+    expect(glowSamples('2', 4)).toBe(2);
+    expect(glowSamples('4', 2)).toBe(4);
   });
 
   it('writes matrices for GLSL column by column', () => {

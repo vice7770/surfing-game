@@ -36,17 +36,18 @@ export const GLOW = {
   /** Bloom mips, from half resolution down. */
   levels: 5,
   /**
-   * MSAA samples of the scene's HDR target: 2×, the owner's call (2026-10-22), for about +0.75 ms on the M1 against
-   * +2.8 ms at 4×; `?glowMsaa=4` keeps 4×. The canvas's own antialias, with the glow off, draws 4.
+   * MSAA samples of the scene's HDR target by default: 2×, the owner's call (2026-10-22), for about +0.75 ms on the M1
+   * against +2.8 ms at 4×. The player picks 2× or 4× in Graphics (`glowAntialias`); `?glowMsaa=2|4` (dev) overrides it.
+   * The canvas's own antialias, with the glow off, draws 4.
    */
   samples: 2,
 } as const;
 
 export type GlowSettings = { [K in keyof typeof GLOW]: number };
 
-/** `?glowMsaa=4` (dev): the HDR scene's MSAA samples, 4× in place of the default 2× (`2`, or anything else). */
-export function glowSamples(param: string | null | undefined): number {
-  return param === '4' ? 4 : GLOW.samples;
+/** The HDR scene's MSAA samples: the setting's (`setting`, else `GLOW.samples`), or `?glowMsaa=2|4`'s (dev) for an A/B. */
+export function glowSamples(param: string | null | undefined, setting: number = GLOW.samples): number {
+  return param === '4' ? 4 : param === '2' ? 2 : setting;
 }
 
 export const LINEAR_SRGB_TO_REC2020: Columns = [[0.6274, 0.0691, 0.0164], [0.3293, 0.9195, 0.0880], [0.0433, 0.0113, 0.8956]];

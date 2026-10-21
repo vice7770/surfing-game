@@ -54,6 +54,10 @@ function graphicsRows(settings: GameSettings, context: SettingsContext): Row[] {
     { kind: 'choice', id: 'waterLook', label: t('settings.waterLook'), value: g.waterLook, options: options('settings.waterLook', ['classic', 'rich']) },
     // The glow and colour grade, offered with the Rich look only.
     ...(g.waterLook === 'rich' ? [{ kind: 'toggle' as const, id: 'glow', label: t('settings.glow'), value: g.glow }] : []),
+    // Its anti-aliasing, while the glow is on.
+    ...(g.waterLook === 'rich' && g.glow
+      ? [{ kind: 'choice' as const, id: 'glowAntialias', label: t('settings.glowAntialias'), help: t('settings.glowAntialias.help'), value: String(g.glowAntialias), options: options('settings.glowAntialias', ['2', '4']) }]
+      : []),
     { kind: 'toggle', id: 'caustics', label: t('settings.caustics'), value: g.caustics },
     { kind: 'toggle', id: 'sprayMist', label: t('settings.sprayMist'), value: g.sprayMist },
     { kind: 'choice', id: 'particles', label: t('settings.particles'), help: t('settings.particles.help'), value: g.particles, options: options('settings.particles', ['low', 'medium', 'high']) },
@@ -152,6 +156,7 @@ export function applyRow(settings: GameSettings, id: string, value: string | num
   if (id === 'preset') return { tab: 'graphics', patch: withPreset(settings.graphics, value as GraphicsPreset, settings.detected) };
   // The glow is no preset's: it keeps the preset.
   if (id === 'glow') return { tab: 'graphics', patch: { glow: value === true } };
+  if (id === 'glowAntialias') return { tab: 'graphics', patch: { glowAntialias: Number(value) === 4 ? 4 : 2 } };
   if ((ADVANCED as readonly string[]).includes(id)) {
     const typed = id === 'frameLimit' && value !== 'screen' ? Number(value) : value;
     return { tab: 'graphics', patch: withAdvanced(settings.graphics, { [id]: typed }) };

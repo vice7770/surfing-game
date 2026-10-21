@@ -194,6 +194,8 @@ class SurfGame {
   /** Under the glow, a plain colour behind everything (before the photo loads) as its preimage. */
   private readonly gradedBackdrop = new Color();
   private glowWanted = false;
+  /** The glow's MSAA samples, from the Graphics setting (2× or 4×). */
+  private glowAntialias = 2;
   private drawnLook?: WaterLook;
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
@@ -388,6 +390,7 @@ class SurfGame {
     this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.glowWanted = resolved.glow;
+    this.glowAntialias = resolved.glowSamples;
     // The sun's glitter comes with the rich sea (High, Ultra); Medium draws its road lite (the M1's frame budget).
     setGlitterForGraphics(resolved.richSea);
     // Aged foam's streaks (web-ocean plan, item 7) take the headroom the glitter leaves: Low and Medium only.
@@ -1081,12 +1084,22 @@ class SurfGame {
    */
   private syncGlow(): void {
     const on = this.glowWanted && this.drawnLook === 'rich';
+    // The HDR scene's MSAA: the setting's 2× or 4×; `?glowMsaa=2|4` (dev) overrides it.
+    const samples = glowSamples(devParam('glowMsaa'), this.glowAntialias);
+    if (on && this.glow && this.glow.settings.samples !== samples) {
+      // A new anti-aliasing setting: a pass with the new samples, its old targets freed. The grade is unchanged.
+      this.glow.dispose();
+      this.glow = new GlowPass({ samples });
+      this.photoBackground.grade(this.glow.settings);
+      this.environment.gradeSky(this.glow.settings);
+      this.needsRender = true;
+      return;
+    }
     if (on === (this.glow !== undefined)) return;
     this.needsRender = true;
     const below = new Color(UNDERWATER);
     if (on) {
-      // The HDR scene at 2× MSAA; `?glowMsaa=4` (dev) at 4×.
-      this.glow = new GlowPass({ samples: glowSamples(devParam('glowMsaa')) });
+      this.glow = new GlowPass({ samples });
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
       // The photo and the painted sky, which are already as the canvas shows them, as the light the grade turns back into them.
