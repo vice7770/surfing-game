@@ -510,10 +510,11 @@ Each batch is its own PR from `main`, merged only when the owner says so in the 
 
 ### Batch B: the redirect off a face, and the lead (items 2.4, 2.1, 2.12; 2.9 re-read)
 
-- [ ] **Task 1: the moving-face test water** (item 2.4 A). The redirect tests (the snap, the bottom turn into a top turn, the cutback) run on it beside the static face. Report which pins pass.
-- [ ] **Task 2: the bite against the water** (item 2.4 B). The across-the-face block re-measured; pins struck off if met.
-- [ ] **Task 3: the lead from the body's bank** (items 2.1 A and 2.12 A). Drawn only.
-- [ ] **Task 4:** the kick-out re-read after batch A. If the board won't swing over, the owner decides on item 2.9 B.
+- [x] **Task 1: the moving-face test water** (item 2.4 A). The redirect tests (the snap, the bottom turn into a top turn, the cutback) run on it beside the static face. Report which pins pass. *None (below).*
+- [x] **Task 2: the bite against the water** (item 2.4 B). The across-the-face block re-measured; pins struck off if met. *None met.*
+- [x] **Task 3: the lead from the body's bank** (items 2.1 A and 2.12 A). Drawn only.
+- [x] **Task 4:** the kick-out re-read after batch A. If the board won't swing over, the owner decides on item 2.9 B. *It doesn't (below).*
+- [x] **Then: W2 re-tested** on the moving face with the bite fix. *Still breaks bars; not built (below).*
 
 **Shot list (batch B):**
 1. Beach or Point, medium: a bottom turn carried high into a top turn, three frontside and three backside. *Look for:* the board comes back down the face instead of spinning on up, with no arms thrown out after it.
@@ -522,6 +523,52 @@ Each batch is its own PR from `main`, merged only when the owner says so in the 
 4. Trim across a steep face and carve up onto the uphill rail (frontside, the toes). *Look for:* whether it feels any looser than before (the uphill rail now bites a little earlier).
 5. Any spot: one bottom turn steered early at the flat and one steered late at the base. *Look for:* the head and the inside shoulder turn in as the body starts to lean, before the board turns.
 6. Online, if handy: the other surfer's head leads as yours does.
+
+**Built (batch B, 2026-10-22, `claude/phys5-b` from `claude/phys5-a`).** Decisions 8, 9 and 11 are built; decision 10 needs nothing (the physics leans first). W2 (decisions 2 and 3) is re-tested and still held back.
+
+- **The moving face (decision 8; commit 54a8ab4d).** `acrossFace` takes the face's water running up it (`FACE_FLOW`, 1.5 m/s) and starts the board at its speed through the water; the three redirects run on it beside the still face, pinned.
+  - **A plane face's uniform flow feeds nothing.** It is the still face seen from a frame moving with the water: the hull, its fins and the water's pressure read only the board's motion through the water and the surface's tilt, both unchanged in that frame. At the same speed through the water the carve is the same to the degree (the carve up from across reaches 164° either way). So the moving face cannot be the energy-feeding bar the plan wanted, and it answers item 2.4 A's question: the deep U is not the still face's alone.
+  - Only the rider's readings over the ground differ (`TURN_RADIUS`'s speed, Compress's path and carry). From 1 to 2 m/s the snap turns 70–83° in its second (82° still) and falls at 1.05–1.57 s (1.67 s); the cutback comes round 74° (74°) and falls.
+  - Started at the same speed over the ground instead, the board climbs slower through the water and the top-turn block's 6 m/s riders fall from 1.5 m/s of flow.
+  - A face that feeds needs the face itself to move: `FaceWater` (the game's own model, the water rising past the board at ∂η/∂t, as `faceTrim.test.ts` measures). The redirect there is a research-sized test: the face is finite, so a top turn must finish before the board leaves it.
+- **The rail's bite against the water (decision 9; commits fc215c34, daa8b680).** The bug confirmed first, as a pinned test: along a 30° face the downhill rail 20° into the water read 50°, past the 48° bite, and Compress's pull was off (0 N); the uphill rail 52° in read 22° and pulled (29.9 N). Fixed: `prepareBank` reads the board's roll into the water (less the water's own roll about the heading, from the sample's normal under the board) for `RAIL_BITE`'s room and `railAhead`, so Compress's pull too; the ankle and the body's bank stay against gravity.
+  - The across-the-face block passes as before; no pin is met. The snap turns 81.7° (81.7°); the carve up from across 164° (168.7°); the cutback pin 74° (87°): its turn up the face rides the uphill rail, which now bites 15° sooner on the 15° face, and keeps more speed (4.7 m/s at the least, 3.2).
+  - On a 30° test face every redirect still falls, as before (outside the tuned envelope).
+- **The head leads from the body's lean (decisions 10 and 11; commit f7c291f8).** No physics, no wire.
+  - `RiderMotion` reads `leanRate`: the drawn pelvis over the feet (the swing does not turn it), standing only, smoothed as the turn rate is; the cause filter gives it the yaw rate's second pole (the feet ride the board's wobble: without it the weave's head turned up to 0.8° against the board, bar 0.4°).
+  - The head alone looks on by the turn the lean is bringing: g/v times the lean's rate over `RIG_DETAIL.leanLead` (0.5 s), followed as the gaze is, within the neck's reach. The leading arm keeps the board's look (led too, it pointed 114–118° from the trunk's down, bar 110°).
+  - Found on the way: steered at 8 m/s on flat water, the board first yaws about 7° the other way (the counter-steer that leans the body in) and comes 10° into the turn 0.62 s after the steer. The head led by the yaw rate alone looked 13.5° the wrong way with it and came in 0.07 s after the board; now at most 5° and 0.05 s before the board. Another player's head alike (the rail change's first turn: 16.8° → 8.3° the wrong way).
+  - Not kept: 0.75 s (the cutback's head turned 0.37 s before its chest, past the cascade's 0.35); the chest led from the lean too (it broke the cascade's order).
+- **The kick-out (task 4).** Straight up the still 15° face at 6 m/s with full S, the board does not yaw without a steer (it stalls nose-up at 38°). With the steer it turns 3° in 0.5 s and 65° by 1 s (41° without S), and the rider falls at 1.2 s (8 m/s: 81°, 1.28 s). It won't swing over the back: item 2.9 B is the owner's call.
+- **W2 re-tested on the moving face with the bite fix: still breaks bars; not built.** The moving face is still water in another frame, so the bars read what they read on still water (the flat-water ones identically), and its ground-frame differences made the cutbacks worse.
+  - W2 as specified (S 0.30, W 0.70, a 0.1 m zone): 34 tests fail (physics, body film, stance map). The Compress guard at 11 m/s swings 1.32 rad/s (≤ 0.87; the held turn 2.53 with two sign flips); the coached cutbacks bog to 1.17–1.25 m/s still and 0.93 moving (> 4.5); the leaning body off the plane falls to 70° (< 1°); the 12° S-turn pumps fall off; the bumps' gain drops to 0.43 (0.66); 16 body-film tests (the feet sliding, the weave, the knees' give, the arms' alarm and others). The still-water bar improves (1.067 / 1.050 s, keeping 0.897 / 0.921) and `projectionLean` holds (0.833, 0.858 / 0.631, 0.718).
+  - Decision 2 alone with today's 0.2 m zone: the guard, the still-water bar and re-standing are untouched (they hold no W/S), `projectionLean` holds (0.894, 0.888 / 0.642, 0.737), but the coached cutbacks miss: 4.21–4.44 m/s on the 10° face (> 4.5; 3.57–4.12 moving) and 3.10 on the 5° face goofy (> 3.2). Six tests fail.
+  - Measured as an option, not built: decision 2 at half strength (S 0.40, W 0.60) with the 0.2 m zone holds the probe's bars (cutbacks 4.57–4.75 and 3.24–3.40; `projectionLean` 0.881–0.885 / 0.633–0.729; the ladder 0.241); the full suite not run on it.
+  - **Options for the owner:** (a) S 0.40 / W 0.60 with the 0.2 m zone (above); (b) decision 2 as specified with the coached cutback bars lowered to 4.2 and 3.1 m/s; (c) a test water that feeds (`FaceWater`) before deciding; (d) W3, the body along its force line (research-sized).
+- **Found: the compressed turn's rules read the ground, not the water.** On the moving face the cutback across a 5° face bogs to 1.09–1.29 m/s through the water (3.47–3.65 still) at the same speed through the water. `COMPRESS_PULL` and `CARVE_CARRY` act along `board.velocity` (the path over the ground) and `TURN_RADIUS` reads the speed over the ground, so on moving water they pull and carry off the board's path through it. The game's waves move about 1.1 m/s under their turns. A follow-up, measured on waves before any change.
+
+**The bars** (before is batch A at 36718c12):
+
+| Bar | Before | After (batch B) |
+|---|---|---|
+| Still-water bottom turn, frontside / backside | 1.117 / 1.150 s, keeping 0.913 / 0.910 | the same (flat water: the bite reads alike) |
+| Compress cap, 11 m/s guard (≤ 0.87 rad/s) | 0.83 | 0.83 |
+| `projectionLean` at 12° (> 0.83) / 25° (< 0.74), 7.3 and 8.5 m/s | 0.864, 0.873 / 0.633, 0.727 | the same |
+| `stanceLadder` W/S range standing / compressed (> 0.15) | 0.241 / 0.249 | the same |
+| The stance map's misses | pinned | unchanged |
+| The coached cutback, 10° / 5° face (> 4.5 / > 3.2) | 5.02–5.03 / 3.47–3.65 | 4.83–5.01 / 3.47–3.65 |
+| The pinned fails | the six | the six, and the three redirects on the moving face |
+
+The moving face replaces no bar: the still-water bar, the cap and `projectionLean` stay on still water, and the redirect pins stay on both faces.
+
+**Shot list (batch B as built):**
+1. Beach or Point, medium: a bottom turn carried high into a top turn, three frontside and three backside. *Look for:* on the redirect's rail (the heels frontside, the toes backside) Compress keeps pulling deeper into a steep face than before. The test faces still fall here; say whether the waves do.
+2. Point: two cutbacks each side. *Look for:* the turn up the face rides the uphill rail, which now bites a little sooner: say if it feels looser or bogs.
+3. The steepest section you can find (the Point, or the Reef at a size that walls up): two snaps. *Look for:* more bite than before. Say if there are new falls into the turn.
+4. Trim across a steep face and carve up onto the uphill rail (frontside, the toes). *Look for:* whether it feels any looser than before.
+5. Any spot: one bottom turn steered early at the flat and one steered late at the base. *Look for:* the head turns into the turn as the body starts to lean, before the board turns, instead of glancing the other way with the board's first yaw.
+6. Online, if handy: the other surfer's head leads as yours does.
+7. Point: ride straight up the face, then hold S with the steer (the kick-out). *Look for:* whether the board swings over the back or the rider falls (about 65° in a second here): item 2.9 B's call.
 
 ### Batch C: the water (items 2.8, 2.10, 2.11; 2.7 if asked)
 

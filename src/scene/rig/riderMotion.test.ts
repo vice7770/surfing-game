@@ -1,9 +1,10 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RiderMotion } from './riderMotion';
-import { createRiderVisualState, type RiderPhase } from './riderVisualState';
+import { POINT, createRiderVisualState, type RiderPhase } from './riderVisualState';
 
 const STEP = 1 / 60;
+const Y = new Vector3(0, 1, 0);
 
 /** Samples a board at `heading(t)` moving by `position(t)` for `seconds`, from `start` s; returns the state. */
 function ride(motion: RiderMotion, seconds: number, heading: (t: number) => number, position: (t: number) => [number, number, number], start = 0, phase: RiderPhase = 'standing') {
@@ -74,6 +75,34 @@ describe('rider motion', () => {
     back.boardPosition.set(0, 0, 2.6);
     fallen.update(back, 0.6);
     expect(back.yawRate).toBe(0);
+  });
+
+  // The phase-5 physics plan's item 2.12 A (the owner's decision 11 of 2026-10-22): the head leads from the body's lean,
+  // read from the drawn points as the turn rate is, so another player's body reads it alike.
+  it('reads how fast the body leans across the board from the pelvis over the feet, standing only', () => {
+    const lean = (phase: RiderPhase, heading: number, rate: number) => {
+      const motion = new RiderMotion();
+      const state = createRiderVisualState();
+      const nose = new Vector3(Math.sin(heading), 0, Math.cos(heading));
+      const left = new Vector3(Math.cos(heading), 0, -Math.sin(heading));
+      for (let t = 0; t <= 1 + 1e-9; t += STEP) {
+        state.phase = phase;
+        state.heading = heading;
+        state.boardPosition.copy(nose).multiplyScalar(6 * t);
+        state.points[POINT.leftFoot].copy(state.boardPosition).addScaledVector(nose, 0.3);
+        state.points[POINT.rightFoot].copy(state.boardPosition).addScaledVector(nose, -0.3);
+        // The pelvis 0.8 m over the feet, leaning toward the board's left at `rate`.
+        state.points[POINT.pelvis].copy(state.boardPosition).addScaledVector(left, 0.8 * Math.sin(rate * t)).addScaledVector(Y, 0.8 * Math.cos(rate * t));
+        motion.update(state, t);
+      }
+      return state.leanRate;
+    };
+    for (const heading of [0, 2]) {
+      expect(lean('standing', heading, 0.5)).toBeCloseTo(0.5, 2);
+      expect(lean('standing', heading, -0.8)).toBeCloseTo(-0.8, 2);
+    }
+    expect(lean('landing', 0, 0.5)).toBe(0);
+    expect(lean('prone', 0, 0.5)).toBe(0);
   });
 
   it('follows where the board travels, and its heading when slow', () => {

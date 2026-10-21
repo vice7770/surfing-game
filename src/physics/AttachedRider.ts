@@ -297,6 +297,14 @@ const TURN_RADIUS = 4.5;
  * → 2 m/s in 0.6 s at 60–65°). The feet brake the body's fall into a turn by
  * rolling the board further onto its rail, so past the bite their room to do so
  * closes over RAIL_EASE, rad, and the upper body's swing brakes it instead.
+ *
+ * The rail bogs against the water it cuts, so its roll is read from the water's
+ * surface under the board (the phase-5 physics plan's item 2.4 B, the owner's
+ * decision 9 of 2026-10-22); the carve lab measured the bite on flat water, where
+ * the two agree. Read from the world's level, a board running along a 30° face
+ * had its downhill rail (a redirect's: the heels frontside, the toes backside)
+ * past the bite 18° into the water, and Compress's pull off, while its uphill
+ * rail bit on to 78°. The ankle and the body's bank stay against gravity.
  */
 const RAIL_BITE = (48 * Math.PI) / 180;
 const RAIL_EASE = (4 * Math.PI) / 180;
@@ -1062,8 +1070,10 @@ export class AttachedRider {
   private planing = false;
   private banked = false;
   private ankleRest = 0;
-  /** The board's roll toward the lean asked for, PULL_LOOKAHEAD on at its present roll rate, rad (COMPRESS_PULL's bite). */
+  /** The board's roll into the water toward the lean asked for, PULL_LOOKAHEAD on at its present roll rate, rad (COMPRESS_PULL's bite). */
   private railAhead = 0;
+  /** The water's surface normal under the board (the world's up off the water): the level the rail's bite is read from (RAIL_BITE). */
+  private readonly waterUp = new Vector3(0, 1, 0);
   private ankleTorque = 0;
   protected swingTorque = 0;
   /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
@@ -1268,6 +1278,7 @@ export class AttachedRider {
     this.banked = false;
     this.ankleRest = 0;
     this.railAhead = 0;
+    this.waterUp.set(0, 1, 0);
     this.covered = false;
     this.ankleTorque = 0;
     this.swingTorque = 0;
@@ -1691,6 +1702,8 @@ export class AttachedRider {
   /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
   private planingStep(board: BoardBody, water: SurfWater): void {
     const under = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
+    if (under.wet && !under.outsideDomain && under.normalY > 0) this.waterUp.set(under.normalX, under.normalY, under.normalZ);
+    else this.waterUp.set(0, 1, 0);
     const flowX = under.outsideDomain ? 0 : under.flowX;
     const flowZ = under.outsideDomain ? 0 : under.flowZ;
     const speed = Math.hypot(board.velocity.x - flowX, board.velocity.z - flowZ);
@@ -1711,10 +1724,12 @@ export class AttachedRider {
     const carried = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive);
     this.bankSpeed = this.localScratch.subVectors(this.velocity, carried).dot(this.across);
     this.bank.rate = this.bankSpeed / this.legLength;
-    // The board's roll about the heading, positive with the +x rail down.
+    // The board's roll about the heading, positive with the +x rail down: from the world's level (the ankle's) and
+    // into the water, from its surface under the board (the rail's bite, RAIL_BITE).
     const side = this.scratch.set(1, 0, 0).applyQuaternion(this.heading);
     const boardUp = this.scratch2.set(0, 1, 0).applyQuaternion(board.orientation);
     const roll = Math.atan2(boardUp.dot(side), boardUp.y);
+    const rail = roll - Math.atan2(this.waterUp.dot(side), this.waterUp.y);
     this.rollAxis.set(0, 0, -1).applyQuaternion(this.heading);
     const rollRate = this.rollAxis.dot(this.boardSpin);
     // The bank asked for, no more than a turn at the board's speed can hold, eased in.
@@ -1726,10 +1741,10 @@ export class AttachedRider {
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
     // Past the rail's bite the feet no longer roll the board further onto it.
-    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
-    const reach = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    const reach = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
     const leanSide = Math.sign(this.bankReference);
-    this.railAhead = leanSide * roll + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
+    this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
     const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;

@@ -649,6 +649,21 @@ describe('the paddler and the swimmer (step 8)', () => {
     for (const axis of ['along', 'across', 'vertical'] as const) expect(Math.abs(there[axis] - here[axis]), axis).toBeLessThan(0.01);
   }, 240_000);
 
+  // The phase-5 physics plan's item 2.12 A (the owner's decision 11 of 2026-10-22): the head leads from the body's lean,
+  // read from the drawn points, so another player's leads alike with nothing on the wire. The rail change's first turn
+  // (steered at 0.3 s at 8 m/s): the board first yaws the other way (the counter-steer that leans the body in), and the
+  // head led by the yaw rate alone looked 17.6° the wrong way with it here, 16.8° drawn as another player's; led from
+  // the lean too, 9.0° and 8.3°.
+  it('leads another player\'s head from its body\'s lean as the local one, from what the game sends', () => {
+    for (const drawer of [trackDrawer, remoteDrawer]) {
+      const frames = filmBody(scenario('rail change'), { rate: 60, drawer, pose: posed() }).frames
+        .filter((frame) => frame.time >= 0.2 && frame.time <= 0.9 && Number.isFinite(frame.headYaw));
+      // Steer −1 turns the heading down: the head's turn from 0.2 s, positive into the turn.
+      const into = (frame: (typeof frames)[number]) => -Math.atan2(Math.sin(frame.headYaw - frames[0].headYaw), Math.cos(frame.headYaw - frames[0].headYaw)) * (180 / Math.PI);
+      expect(Math.min(...frames.map(into)), drawer.name).toBeGreaterThan(-10);
+    }
+  }, 240_000);
+
   // Its length is short: 80 cm (77 before the phase 5 physics plan's batch C). The physics' stroke is now 0.97 m long, at
   // 50 a minute a side with the board rolling 18° (item 2.8), but its hand enters at 0.25 m under the deck, out of the
   // drawn arm's reach, so the drawn hand stops short at both ends and then catches up. Tried and not kept: the hand's

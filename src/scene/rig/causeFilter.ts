@@ -108,6 +108,13 @@ export const CAUSE_FILTER = {
    * order at 9 rad/s (11 % at 4 Hz, 0.22 s behind).
    */
   yawRate: { time: 0.08 },
+  /**
+   * The body's lean rate the head's lead reads (`RiderVisualState.leanRate`,
+   * `RIG_DETAIL.leanLead`): `RiderMotion` smooths it as the turn rate, and one
+   * more pole at `time` s keeps the board's wobble out of it as out of the yaw
+   * rate (the feet it is read over ride the board's roll).
+   */
+  leanRate: { time: 0.08 },
   /** The drawn pelvis never trails the physics' by more than this, m (a body thrown hard: the legs cannot take more). */
   leash: 0.15,
 };
@@ -148,6 +155,7 @@ export class CauseFilter {
   private readonly roll = new Follower(CAUSE_FILTER.lean.omega, CAUSE_FILTER.lean.damping);
   private readonly pitch = new Follower(CAUSE_FILTER.lean.omega, CAUSE_FILTER.lean.damping);
   private yawRate = 0;
+  private leanRate = 0;
   private clock = Number.NaN;
   private phase = '';
   private readonly nose = new Vector3();
@@ -163,17 +171,20 @@ export class CauseFilter {
     this.phase = '';
   }
 
-  /** Filters `state` in place (its pelvis, torso and head points and its yaw rate); returns the cues read before. */
+  /** Filters `state` in place (its pelvis, torso and head points, its yaw rate and its lean rate); returns the cues read before. */
   apply(state: RiderVisualState): DrawnCues {
     this.cues.alarm = balanceAlarmOf(state.points);
     const dt = state.clock - this.clock;
     // The yaw rate: one more pole, exact for a rate held over the frame.
     if (dt > 0 && dt < GAP) this.yawRate += (state.yawRate - this.yawRate) * (1 - Math.exp(-dt / CAUSE_FILTER.yawRate.time));
     else if (dt !== 0) this.yawRate = state.yawRate;
+    if (dt > 0 && dt < GAP) this.leanRate += (state.leanRate - this.leanRate) * (1 - Math.exp(-dt / CAUSE_FILTER.leanRate.time));
+    else if (dt !== 0) this.leanRate = state.leanRate;
     this.clock = state.clock;
     const share = CAUSE_FILTER.share;
     if (share <= 0) return this.cues;
     state.yawRate += (this.yawRate - state.yawRate) * share;
+    state.leanRate += (this.leanRate - state.leanRate) * share;
 
     const p = state.points;
     const { nose, left, offset, trunk, followed } = this;

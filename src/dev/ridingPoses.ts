@@ -420,6 +420,7 @@ export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vec
   out.heading = 0;
   const velocity = run.board.velocity.clone().applyQuaternion(frame.unturn);
   out.yawRate = run.board.angularVelocity.y;
+  out.leanRate = run.rider.attached && run.rider.phase === 'standing' ? run.rider.bank.rate : 0;
   out.speed = Math.hypot(velocity.x, velocity.z);
   out.climb = velocity.y;
   out.travel.set(velocity.x, 0, velocity.z);
@@ -472,7 +473,7 @@ export function drawnRecipe(recipe: StanceRecipe, stance: StanceName, at: Vector
 function copyState(from: RiderVisualState, to: RiderVisualState): void {
   from.points.forEach((point, i) => to.points[i].copy(point));
   Object.assign(to, {
-    phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, speed: from.speed, climb: from.climb,
+    phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, leanRate: from.leanRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
     separation: from.separation, stance: from.stance, weight: from.weight,
   });

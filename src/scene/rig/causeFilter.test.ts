@@ -115,6 +115,27 @@ describe('the cause filter (the animation-realism plan, §4)', () => {
     expect(across(state)).toBeCloseTo(0.4, 2);
   });
 
+  // The phase-5 physics plan's item 2.12 A: the head's lead reads the body's lean rate through one more pole, as the yaw
+  // rate: a held rate passes whole, the board's 4 Hz wobble at about a third.
+  it('passes a held lean rate and keeps most of a 4 Hz wobble out of it, as of the yaw rate', () => {
+    const run = (input: (t: number) => number) => {
+      const filter = new CauseFilter();
+      const state = createRiderVisualState();
+      const out: number[] = [];
+      for (let i = 0; i <= 240; i += 1) {
+        const t = i / 120;
+        Object.assign(state, { phase: 'standing', clock: t, leanRate: input(t), yawRate: input(t) });
+        filter.apply(state);
+        if (t >= 1) out.push(state.leanRate);
+        expect(state.leanRate).toBeCloseTo(state.yawRate, 12);
+      }
+      return out;
+    };
+    expect(run(() => 0.6).at(-1)).toBeCloseTo(0.6, 6);
+    const wobble = run((t) => Math.sin(2 * Math.PI * 4 * t));
+    expect(Math.sqrt(wobble.reduce((sum, v) => sum + v * v, 0) / wobble.length) * Math.SQRT2).toBeLessThan(0.5);
+  });
+
   it('passes every phase but standing as it is, and starts over at each switch', () => {
     const filter = new CauseFilter();
     const state = standing(0.1, 0.3, 0);

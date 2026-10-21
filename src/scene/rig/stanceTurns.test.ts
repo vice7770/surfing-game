@@ -42,7 +42,7 @@ describe('the chest and the head in turns (the stance poses, step 3; all low con
   });
 });
 
-/** A film recipe's drawn bones on the test humanoid, frame by frame: the head's, the chest's and the hips' facing in the world, rad. */
+/** A film recipe's drawn bones on the test humanoid, frame by frame: the head's, the chest's and the hips' facing in the world, and the board's heading, rad. */
 function turnFilm(recipe: StanceRecipe, side: 'regular' | 'goofy') {
   const { bones } = createTestHumanoid();
   const body = new PosedBody(bones);
@@ -55,11 +55,11 @@ function turnFilm(recipe: StanceRecipe, side: 'regular' | 'goofy') {
     const facing = new Vector3(0, 0, 1).applyQuaternion(bones.get(name)!.getWorldQuaternion(new Quaternion()).multiply(rest[part].clone().invert()));
     return Math.atan2(facing.x, facing.z);
   };
-  const rows: { time: number; head: number; chest: number; hips: number }[] = [];
+  const rows: { time: number; head: number; chest: number; hips: number; board: number }[] = [];
   drawnRecipe(recipe, side, new Vector3(0, 0.03, 0), (state) => {
     body.update(state);
     if (state.phase !== 'standing') return;
-    rows.push({ time: state.clock, head: yaw('head', BONES.head), chest: yaw('chest', BONES.spine[2]), hips: yaw('hips', BONES.hips) });
+    rows.push({ time: state.clock, head: yaw('head', BONES.head), chest: yaw('chest', BONES.spine[2]), hips: yaw('hips', BONES.hips), board: state.heading });
   });
   return rows;
 }
@@ -99,6 +99,25 @@ describe('the turn led by the head (the animation-realism plan, phase 2)', () =>
       expect(chest - head, `${side}: the head before the chest`).toBeGreaterThanOrEqual(0.1 - 1e-6);
       expect(chest - head, `${side}: the head before the chest`).toBeLessThanOrEqual(0.35);
       expect(hips - chest, `${side}: the chest before the hips`).toBeGreaterThan(0);
+    }
+  }, 120_000);
+
+  // The phase-5 physics plan's items 2.1 A and 2.12 A (the owner's decisions 10 and 11 of 2026-10-22): the head leads
+  // from the body's lean, before the board turns. Steered at 8 m/s on flat water, the board first yaws about 7° the
+  // other way (the counter-steer that leans the body in) and comes 10° into the turn 0.62 s after the steer; the head
+  // led by the yaw rate alone looked 13.5° the wrong way with it and came 10° in 0.07 s after the board. Led from the
+  // lean too, it looks at most 5° the wrong way and comes in 0.05 s before the board.
+  it.each(['frontside', 'backside'] as const)('turns the head into a %s bottom turn from the body\'s lean, before the board turns', (kind) => {
+    const recipe = { ...STANCE_RECIPES[`top-turn-${kind}`], controls: [{ at: 0.4, steer: kind === 'frontside' ? -1 : 1 }], seconds: 1.5 };
+    for (const side of ['regular', 'goofy'] as const) {
+      const rows = turnFilm(recipe, side);
+      // The way the turn grows the heading: the recipe's steer is onto the toes frontside, the heels backside.
+      const way = Math.sign(recipe.controls[0].steer * (side === 'regular' ? -1 : 1));
+      const start = rows.find((row) => row.time >= 0.4)!;
+      const into = (row: (typeof rows)[number], part: 'head' | 'board') => way * Math.atan2(Math.sin(row[part] - start[part]), Math.cos(row[part] - start[part])) * (180 / Math.PI);
+      const turned = (part: 'head' | 'board') => rows.find((row) => row.time >= 0.4 && into(row, part) >= 10)?.time ?? Infinity;
+      expect(turned('head'), side).toBeLessThan(turned('board') - 0.03);
+      expect(Math.min(...rows.filter((row) => row.time >= 0.4).map((row) => into(row, 'head'))), side).toBeGreaterThan(-6);
     }
   }, 120_000);
 
