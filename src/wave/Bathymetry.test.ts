@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, canyonArmAt, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonHingeZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_OLD, PADANG, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonHingeZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -415,6 +415,17 @@ describe('surf spot bathymetry', () => {
     expect(canyonArmAt(CANYON.peakX)).toBe(true);
     expect(canyonArmAt(levelled)).toBe(false);
     expect(canyonArmAt(canyonArmEndX() + 1)).toBe(false);
+    // Only the arm's breaks count: its face, its end and its flat top, not the lagoon's bores or the shore break on the
+    // beach face behind the short arm, which read as "a right" (canyon-layout, 2026-10-22). The old layout counts every
+    // break on the arm's columns, as main did.
+    const line = canyonBreakLineZ(CANYON.takeOffX);
+    expect(canyonPeelAt(CANYON.takeOffX, line - 30)).toBe(true);
+    expect(canyonPeelAt(CANYON.takeOffX, line + CANYON.flatWidth - 1)).toBe(true);
+    expect(canyonPeelAt(CANYON.takeOffX, line + CANYON.flatWidth + 1)).toBe(false);
+    expect(canyonPeelAt(-20, -25)).toBe(false);
+    expect(canyonPeelAt(-20, -150)).toBe(true);
+    expect(canyonPeelAt(levelled, -150)).toBe(false);
+    expect(canyonPeelAt(-30, -40, CANYON_OLD)).toBe(true);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {
