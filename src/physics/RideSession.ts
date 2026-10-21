@@ -76,8 +76,9 @@ export interface RideSessionOptions {
 /**
  * One board and its rider through a ride and its aftermath (board plan B2, surfer
  * plan S1): the board carries the attached rider; when the rider lets go, the
- * detached surfer starts from the rider's own centre of mass, velocity and spin
- * and moves on the same water, striking the board through its contact seam.
+ * detached surfer starts from the rider's own body (its parts where they were: the
+ * phase 5 physics plan, item 2.10), centre of mass, velocity and spin and moves on
+ * the same water, striking the board through its contact seam.
  * Order in a step: the board and attached rider (sample, solve, react), then the
  * detached surfer (sample, integrate, board contact).
  */
@@ -102,8 +103,11 @@ export class RideSession {
   private readonly heldCenter = new Vector3();
   private readonly heldMomentum = new Vector3();
   private readonly sample = createWaterSample();
-  /** The state the fall body started from, at the latest separation. */
-  readonly handoff = { center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3() };
+  /** The state the fall body started from, at the latest separation: the rider's centre of mass, frame, motion and parts. */
+  readonly handoff = {
+    center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3(),
+    parts: new Float64Array(RIDER_PARTS.length * 3),
+  };
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
   readonly started = { momentum: new Vector3(), center: new Vector3() };
   private field?: SurfWaterBodyField;

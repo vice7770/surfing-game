@@ -3,7 +3,7 @@ import { SUIT_COLORS, outfitFor } from '../game/SurferChoice';
 import { buildBoardShape } from '../physics/boardShape';
 import type { RemoteState } from '../net/RemoteSurfers';
 import { surferFor, type PlayerLook } from '../net/protocol';
-import { deckHeight } from '../physics/riderPosture';
+import { deckHeight, riderPartVolumes } from '../physics/riderPosture';
 import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS } from '../wave/SurfZoneRunner';
 import { createBoardMesh } from './BoardMesh';
 import { BOARD_DESIGNS } from './board/boardDesigns';
@@ -34,12 +34,25 @@ export function remoteBoardPose(state: RemoteState, surfaceAt: (x: number, z: nu
 }
 
 /**
+ * A swimmer's head is under water once the surface stands this far over its
+ * point, m: the fall body's head node (a 5 kg sphere at its 950 kg/m³) wholly
+ * wet, as `DetachedSurfer.underwater` reads it.
+ */
+export const REMOTE_HEAD_UNDER = Math.cbrt((3 * riderPartVolumes()[2]) / (4 * Math.PI));
+
+/**
  * The drawn rider of a remote pose on its board pose (`board`, from
  * `remoteBoardPose`): the snapshot's rider array rebuilt in `rider` from what
  * the pose carries, and read into `out` (spec N1; the body film's remote drawer
  * uses the same). What is not sent is drawn as at rest: the breath is full.
+ * Fallen, the swimmer's head is under water where this player's own sea
+ * (`surfaceAt`) stands over its point (the phase 5 physics plan, item 2.11: no
+ * wire bit; each player runs the sea), so it holds its breath there and turns
+ * its head to breathe only once up.
  */
-export function remoteRiderState(state: RemoteState, board: Float64Array, rider: Float64Array, out: RiderVisualState): RiderVisualState {
+export function remoteRiderState(
+  state: RemoteState, board: Float64Array, rider: Float64Array, out: RiderVisualState, surfaceAt?: (x: number, z: number) => number,
+): RiderVisualState {
   for (let i = 0; i < 21; i += 1) rider[RIDER_SNAPSHOT.points + i] = board[i % 3] + state.points[i];
   rider[RIDER_SNAPSHOT.phase] = state.phase;
   rider[RIDER_SNAPSHOT.present] = 1;
@@ -61,7 +74,11 @@ export function remoteRiderState(state: RemoteState, board: Float64Array, rider:
   const holding = fallen && state.recovering && boxGap(chestAt, boardAt.set(board[0], board[1], board[2]), turn) <= REMOTE_HOLD;
   const reeling = fallen && state.recovering && !holding && !state.leashSnapped;
   rider[RIDER_SNAPSHOT.leash] = (state.leashSnapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (reeling ? LEASH_BITS.reeling : 0);
-  rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) : 0;
+  const headX = board[0] + state.points[6];
+  const headY = board[1] + state.points[7];
+  const headZ = board[2] + state.points[8];
+  const under = fallen && surfaceAt !== undefined && surfaceAt(headX, headZ) - headY >= REMOTE_HEAD_UNDER;
+  rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) | (under ? SWIM_BITS.under : 0) : 0;
   readRiderSnapshot(rider, board, out);
   out.stroking = state.paddling && out.phase === 'prone' ? 1 : 0;
   out.swim.holding = holding;
@@ -190,7 +207,7 @@ export class RemoteSurferViews {
       view.motion.reset();
       return;
     }
-    remoteRiderState(state, pose, rider, view.state);
+    remoteRiderState(state, pose, rider, view.state, surfaceAt);
     view.motion.update(view.state, time);
     view.state.clock = performance.now() / 1000;
     view.surfer.update(view.state, camera);

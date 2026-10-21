@@ -571,7 +571,8 @@ describe('steering while lying down', () => {
   };
 
   // Without fins and a paddler keeping its line, the board wandered 45° in 20 s. The first pull, one
-  // arm from rest before the fins grip, still yaws it about 15°; under way it holds its line.
+  // arm from rest before the fins grip, still yaws it about 15° at 60 strokes a minute, and about 21° at 50 (the phase 5
+  // physics plan, item 2.8: the other arm comes 0.6 s after it, not 0.5); under way it holds its line.
   it('holds its line within 10° over 20 s of paddling through oblique swell', () => {
     const swell = new SwellWater({ height: 0.8, period: 8, direction: Math.PI / 4 });
     const { board, rider } = mounted('prone', swell.surfaceAt(0, 0));
@@ -592,7 +593,7 @@ describe('steering while lying down', () => {
     }
     expect(rider.attached).toBe(true);
     expect(board.velocity.length()).toBeGreaterThan(1);
-    expect(startUp).toBeLessThan((20 * Math.PI) / 180);
+    expect(startUp).toBeLessThan((25 * Math.PI) / 180);
     expect(worst).toBeLessThan((10 * Math.PI) / 180);
   });
 
@@ -1916,6 +1917,51 @@ describe('prone balance', () => {
     }
     expect(rider.attached).toBe(true);
     expect(worst).toBeLessThan((20 * Math.PI) / 180);
+  });
+});
+
+// The phase 5 physics plan, item 2.8 (decision 12): the stroke's rate and its roll. Nessler et al. 2019 (a short board in
+// a swim flume): 36–54 strokes a minute a side over 0.6–2.0 m/s, the board rolling 27–45° from rail to rail.
+describe('the stroke (the phase 5 physics plan, item 2.8)', () => {
+  /** Paddling from rest on `water` for `seconds`, then each step's roll (deg) and which hands pull, over `over` s. */
+  const paddleOn = (water: PlaneWater, seconds: number, over: number) => {
+    const { board, rider } = mounted('prone', water.surfaceAt(0, 0));
+    rider.paddle = true;
+    run(board, water, seconds);
+    const steps: { roll: number; left: boolean; right: boolean }[] = [];
+    run(board, water, over, () => steps.push({ roll: (roll(board) * 180) / Math.PI, left: rider.handLoad[0] > 0, right: rider.handLoad[1] > 0 }));
+    return { board, rider, steps };
+  };
+  /** Pulls begun a minute by one arm. */
+  const perMinute = (pulling: boolean[], seconds: number) => (60 * pulling.filter((on, i) => on && !pulling[i - 1]).length) / seconds;
+
+  it('strokes 50 times a minute a side cruising on flat water, rolling the board toward each arm as it pulls', () => {
+    const { rider, steps } = paddleOn(new PlaneWater(), 15, 12);
+    expect(rider.sprint).toBeLessThan(0.01);
+    expect(perMinute(steps.map((step) => step.left), 12)).toBeCloseTo(50, -1);
+    expect(perMinute(steps.map((step) => step.right), 12)).toBeCloseTo(50, -1);
+    // Rail to rail through each stroke: 7–10° before (the hands' drag alone); the hips' reach gives 17–20°.
+    const cycle = Math.round(1.2 / STEP);
+    let range = 0;
+    for (let from = 0; from + cycle <= steps.length; from += cycle) {
+      const rolls = steps.slice(from, from + cycle).map((step) => step.roll);
+      range += (Math.max(...rolls) - Math.min(...rolls)) / Math.floor(steps.length / cycle);
+    }
+    expect(range).toBeGreaterThan(15);
+    expect(range).toBeLessThan(45);
+    // Toward the pulling arm: the left arm (board +x) pulls with its rail down, a negative roll.
+    const mean = (pulling: (step: (typeof steps)[number]) => boolean) => {
+      const chosen = steps.filter(pulling);
+      return chosen.reduce((sum, step) => sum + step.roll, 0) / chosen.length;
+    };
+    expect(mean((step) => step.left)).toBeLessThan(-3);
+    expect(mean((step) => step.right)).toBeGreaterThan(3);
+  });
+
+  it('quickens its strokes down a face', () => {
+    const { rider, steps } = paddleOn(new PlaneWater({ slopeZ: -Math.tan((10 * Math.PI) / 180) }), 3, 3);
+    expect(rider.sprint).toBeGreaterThan(0.95);
+    expect(perMinute(steps.map((step) => step.left), 3)).toBeGreaterThan(55);
   });
 });
 

@@ -36,15 +36,18 @@ function spread(state: ReturnType<typeof createRiderVisualState>, left: number, 
 }
 
 describe('the fallen body\'s limbs by side (the animation-realism plan, phase 4)', () => {
-  it('finds the fall body\'s arm and leg points the other way round across the drawn body', () => {
-    // The fall body builds its left arm and leg at the rider's frame's −x: the drawn body's right, facing its heading.
+  it('finds the fall body\'s arm and leg points on their own sides as the fall starts (none the other way round)', () => {
+    // The fall body built its left arm and leg at the rider's frame's −x, the drawn body's right, facing its heading: each
+    // lay 0.3 m and more the other way round. It starts from the rider's own body now (the phase 5 physics plan, item
+    // 2.10): lying down, the arms by the rails on their own sides; standing, the arms and legs along the board, about level
+    // across the drawn body (nothing to trade).
     for (const phase of ['standing', 'prone'] as const) {
       let seen = false;
       fall(phase, (state) => {
         if (state.phase !== 'fallen' || seen) return;
         seen = true;
-        expect(spread(state, POINT.leftHand, POINT.rightHand), phase).toBeLessThan(-0.3);
-        expect(spread(state, POINT.leftFoot, POINT.rightFoot), phase).toBeLessThan(-0.2);
+        expect(spread(state, POINT.leftHand, POINT.rightHand), phase).toBeGreaterThan(phase === 'prone' ? 0.3 : -0.1);
+        expect(spread(state, POINT.leftFoot, POINT.rightFoot), phase).toBeGreaterThan(-0.06);
       });
       expect(seen).toBe(true);
     }

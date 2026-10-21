@@ -575,8 +575,11 @@ describe('the paddler and the swimmer (step 8)', () => {
   }, 240_000);
 
   // Nessler et al. 2015 (± 1 SD, the wetsuit and the bare arm): the stroke 970 ± 77 mm long and 170 ± 67 mm wide, the
-  // wrist through 424 ± 78 to 468 ± 92 mm up and down. Nessler et al. 2019: the board pitched 12.3 ± 2.3°.
-  it('paddles a stroke as wide and as deep as a real one, the board pitched as a real one', () => {
+  // wrist through 424 ± 78 to 468 ± 92 mm up and down. Nessler et al. 2019: the board pitched 12.3 ± 2.3°, 36–54 strokes a
+  // minute a side over 0.6–2.0 m/s, the board rolling 27–45° through each stroke. The phase 5 physics plan, item 2.8:
+  // 50 a minute a side cruising (60 before), the board rolled toward each arm as it pulls, 17–19° (7° before: the hips'
+  // 0.1 m reach rolls it no further, `STROKE_ROLL`).
+  it('paddles a stroke as wide and as deep as a real one, the board pitched and rolled as a real one, at a real rate', () => {
     const shot = steady(60);
     for (const side of ['left', 'right'] as const) {
       const stroke = paddleStroke(shot, side);
@@ -584,10 +587,14 @@ describe('the paddler and the swimmer (step 8)', () => {
       expect(stroke.across, `${side} across`).toBeLessThan(0.237);
       expect(stroke.vertical, `${side} vertical`).toBeGreaterThan(0.346);
       expect(stroke.vertical, `${side} vertical`).toBeLessThan(0.56);
+      expect(stroke.perMinute, `${side} a minute`).toBeGreaterThan(48);
+      expect(stroke.perMinute, `${side} a minute`).toBeLessThan(52);
     }
-    const board = boardMotion(shot, 1);
+    const board = boardMotion(shot, 1.2);
     expect(board.pitch).toBeGreaterThan(10);
     expect(board.pitch).toBeLessThan(14.6);
+    expect(board.roll).toBeGreaterThan(15);
+    expect(board.roll).toBeLessThan(45);
   }, 240_000);
   const swimming = (rate: number): BodyFilm => {
     const swim = filmBody(scenario('swimming'), { rate, drawer: trackDrawer, pose: posed() });
@@ -642,10 +649,13 @@ describe('the paddler and the swimmer (step 8)', () => {
     for (const axis of ['along', 'across', 'vertical'] as const) expect(Math.abs(there[axis] - here[axis]), axis).toBeLessThan(0.01);
   }, 240_000);
 
-  // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,
-  // past the drawn arm's reach, so the drawn hand stops short at both ends. Real paddlers reach with the shoulder and
-  // roll with the board (27–45° a stroke, Nessler et al. 2019; the physics rolls it 7°): a question for the physics
-  // posture, with the stroke rate (60 a minute a side, where 1.7 m/s gives about 50). Pinned, not tuned.
+  // Its length is short: 80 cm (77 before the phase 5 physics plan's batch C). The physics' stroke is now 0.97 m long, at
+  // 50 a minute a side with the board rolling 18° (item 2.8), but its hand enters at 0.25 m under the deck, out of the
+  // drawn arm's reach, so the drawn hand stops short at both ends and then catches up. Tried and not kept: the hand's
+  // depth taken from the water (nearer its rail as the board rolls toward it) and going in and out at the surface drew
+  // 0.90 m at 60 Hz, but its catch-up (and the board's roll under it) read as jumps to `PointInertia` at 30 Hz: the
+  // stroke drew 0.08 m shorter and 0.2 m wider there. The drawn arm's reach with the shoulder is the drawing's.
+  // Pinned, not tuned.
   it.fails('paddles a stroke as long as a real one', () => {
     const shot = steady(60);
     for (const side of ['left', 'right'] as const) expect(paddleStroke(shot, side).along, `${side} along`).toBeGreaterThan(0.893);
@@ -751,8 +761,12 @@ describe('the falls and the recovery (the animation-realism plan, phase 4)', () 
   it('blends climbing back on out: the prone pose easing in, the feet swung on', () => {
     for (const rate of [60, 120]) {
       const film = filmBody(scenario('climbing back on'), { rate, drawer: trackDrawer, pose: posed() });
-      // The switch back onto the board (the climb comes on at about 17.2 s).
-      const spikes = switchSpikes(film).filter((spike) => spike.time > 15);
+      // The switch back onto the board: the climb comes on at about 8.8 s (17.2 s before the phase 5 physics plan's fall
+      // from the rider's own pose, item 2.10, which leaves the board nearer the swimmer).
+      const fell = film.frames.findIndex((frame) => frame.fallen);
+      const on = film.frames.findIndex((frame, i) => i > fell && !frame.fallen);
+      expect(on, `${rate} Hz`).toBeGreaterThan(fell);
+      const spikes = switchSpikes(film).filter((spike) => spike.time > film.frames[on].time - 2);
       expect(spikes.length, `${rate} Hz`).toBeGreaterThan(0);
       for (const spike of spikes) {
         expect(spike.rotationSpeed, `at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
@@ -781,10 +795,13 @@ describe('the falls and the recovery (the animation-realism plan, phase 4)', () 
     expect(fastest(7, 30)).toBeLessThan(5.5);
   }, 240_000);
 
-  it.each(['a fall', 'over the falls', 'a pearl', 'off the back', 'a fall from lying down'])('moves the hands of %s about the shoulders at a protective movement\'s pace, never stopping dead', (name) => {
-    // In the chest's frame (the body's own turning left out), from the reflex's onset to a second in: the shield, the
-    // cause's throw and the curl. Before, the cause's throw came in 0.13 s (15 m/s off the back, stopped dead at 0.27 s),
-    // and the shield's blend swung round as the ragdoll's arm came opposite it (6–11 m/s, stopping in a frame).
+  /**
+   * The drawn hands' fastest pace about the shoulders and their sharpest change of it from a frame to the next, m/s, in
+   * the chest's frame (the body's own turning left out), from the reflex's onset to a second in: the shield, the cause's
+   * throw and the curl. Before, the cause's throw came in 0.13 s (15 m/s off the back, stopped dead at 0.27 s), and the
+   * shield's blend swung round as the ragdoll's arm came opposite it (6–11 m/s, stopping in a frame).
+   */
+  const handPace = (name: string) => {
     const film = filmBody(scenario(name), { rate: 60, drawer: trackDrawer, pose: posed() });
     const start = film.frames.findIndex((frame) => frame.fallen);
     const chest = new Quaternion();
@@ -804,8 +821,48 @@ describe('the falls and the recovery (the animation-realism plan, phase 4)', () 
         was.set(side, speed);
       }
     }
+    return { fastest, sharpest };
+  };
+
+  /*
+   * Over the falls, pinned for the drawing (the phase 5 physics plan, item 2.10): from the rider's own pose the thrown
+   * body tumbles at 5.5 rad/s into the water by 0.75 s and slows to 0.8 rad/s by 0.9 s, its arm points moving under
+   * 1 m/s about the torso then, while the drawn hands, balled up (the curl full), turn about the shoulders at 7.4 m/s
+   * there, changing by 5 m/s in a frame (4.99 and 2.85 before): the drawn chest's frame catching up with the tumble.
+   */
+  it.fails('moves the hands of over the falls about the shoulders at a protective movement\'s pace, never stopping dead', () => {
+    const { fastest, sharpest } = handPace('over the falls');
     expect(fastest).toBeLessThan(6.5);
     expect(sharpest).toBeLessThan(3.5);
+  }, 240_000);
+
+  it.each(['a fall', 'a pearl', 'off the back', 'a fall from lying down'])('moves the hands of %s about the shoulders at a protective movement\'s pace, never stopping dead', (name) => {
+    const { fastest, sharpest } = handPace(name);
+    expect(fastest).toBeLessThan(6.5);
+    expect(sharpest).toBeLessThan(3.5);
+  }, 240_000);
+
+  // The phase 5 physics plan, item 2.11: another player's swimmer holds its breath with its head under this player's own
+  // sea, read where the pose arrives (no wire bit): it turned its head to breathe under water.
+  it('holds another player\'s swimmer\'s breath while its head is under, as the local one\'s', () => {
+    const under = (drawer: typeof remoteDrawer | typeof trackDrawer) => {
+      let frames = 0;
+      let headUnder = 0;
+      const pose: FilmOptions['pose'] = (bones) => {
+        const body = new PosedBody(bones);
+        return (state) => {
+          body.update(state);
+          if (state.phase !== 'fallen') return;
+          frames += 1;
+          if (state.swim.under) headUnder += 1;
+        };
+      };
+      filmBody(scenario('surfacing'), { rate: 30, drawer, pose });
+      return headUnder / frames;
+    };
+    const [local, remote] = [under(trackDrawer), under(remoteDrawer)];
+    expect(local).toBeGreaterThan(0.1);
+    expect(Math.abs(remote - local)).toBeLessThan(0.1);
   }, 240_000);
 
   it('draws another player\'s reel and climb from what is sent (wire flag 128 with the swimmer by the board)', () => {

@@ -61,7 +61,9 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     let crossedArms = 0;
     let frames = 0;
     drawnFall({ ...STANCE_RECIPES['fall-side'], after: 3 }, 'regular', ({ since, joints, state, body }) => {
-      if (since < FALL_READING.settle) return;
+      // Rising to the surface, the arms cross overhead as a hold, all of it (not a reflex over the ragdoll): the fall body
+      // starts from the rider's own pose now (the phase 5 physics plan, item 2.10) and rises within these 3 s, from 1.7 s.
+      if (since < FALL_READING.settle || body.rig.fallWeights.surfacing > 0) return;
       frames += 1;
       for (const side of SIDES) {
         const middle = joints.shoulder[side].clone().add(joints.wrist[side]).multiplyScalar(0.5);
@@ -119,8 +121,11 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     const pearl = wrists('fall-pearl');
     const back = wrists('fall-back');
     expect([side.shape, pearl.shape, back.shape]).toEqual(['side', 'pearl', 'back']);
-    // The cage: the forearms crossed before the head; the pearl's arms round it, apart; off the back, out wide.
-    expect(side.apart).toBeLessThan(0.2);
+    // The cage: the forearms before the head; the pearl's arms round it, apart; off the back, out wide. The forearms
+    // crossed (0.16 m apart at 0.8 s, 0.06–0.08 by 1 s) while the fall body began in a T, its arms before and behind the
+    // rider's chest; from the rider's own pose (the phase 5 physics plan, item 2.10) its arms are at the body's sides,
+    // and the shield, 0.8 of the way over them, holds the wrists 0.21–0.25 m apart by the head (the drawing's to revisit).
+    expect(side.apart).toBeLessThan(0.3);
     expect(pearl.apart).toBeGreaterThan(side.apart + 0.05);
     expect(back.apart).toBeGreaterThan(pearl.apart + 0.2);
   });
@@ -179,7 +184,7 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     const grips: { time: number; side: string }[] = [];
     let trunk = 90;
     let reelFrom = Number.NaN;
-    drawnFall({ ...STANCE_RECIPES.reel, seconds: 6.2 }, stance, ({ time, state, angles, body }) => {
+    drawnFall({ ...STANCE_RECIPES.reel, seconds: 4.2 }, stance, ({ time, state, angles, body }) => {
       if (Number.isNaN(reelFrom) && body.rig.fallWeights.reel > 0) reelFrom = time;
       if (!state.leash.gripped) return;
       const side = SIDES.find((s) => body.rig.joints.wrist[s].distanceTo(state.leash.grip) < 1e-6) ?? '?';

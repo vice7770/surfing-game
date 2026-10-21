@@ -4,7 +4,7 @@ import { RIDER_PHASES, RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
 import { createRemoteState, type RemoteState } from '../net/RemoteSurfers';
 import { SkinnedSurfer } from './character/SkinnedSurfer';
 import { fakeGltfScene } from './character/testSurferScene';
-import { REMOTE_HOLD, RemoteSurferViews, remoteBoardPose, remoteRiderState } from './RemoteSurferViews';
+import { REMOTE_HEAD_UNDER, REMOTE_HOLD, RemoteSurferViews, remoteBoardPose, remoteRiderState } from './RemoteSurferViews';
 import { createRiderVisualState } from './rig/riderVisualState';
 
 const look = { body: 'surfer2', outfit: 'vest', color: 'coral', board: 'classic' };
@@ -82,6 +82,39 @@ describe('RemoteSurferViews', () => {
     views.update(1, state, () => 0, new Vector3());
     expect(views.root.children[0].visible).toBe(true);
     expect(views.surferOf(1)!.group.visible).toBe(false);
+  });
+
+  // The phase 5 physics plan, item 2.11: another player's swimmer holds its breath with its head under this player's own
+  // sea (no wire bit), so it turns its head to breathe only once up.
+  it('reads a remote swimmer\'s head under water from this player\'s own sea', () => {
+    const state = createRemoteState();
+    Object.assign(state, { x: 3, z: -4, lift: 0, present: true, boardPresent: true, phase: RIDER_PHASES.indexOf('fallen') });
+    // A swell's slope: the surface 0.4 m higher 2 m along +x.
+    const surfaceAt = (x: number) => 0.2 * (x - 3);
+    const board = remoteBoardPose(state, surfaceAt, new Float64Array(8));
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    const head = (x: number, y: number, fallen = true) => {
+      state.points.fill(0);
+      state.phase = RIDER_PHASES.indexOf(fallen ? 'fallen' : 'prone');
+      state.points[6] = x;
+      state.points[7] = y;
+      return remoteRiderState(state, board, rider, createRiderVisualState(), surfaceAt).swim.under;
+    };
+    expect(head(0, -0.3)).toBe(true);
+    expect(head(0, -REMOTE_HEAD_UNDER + 0.01)).toBe(false);
+    expect(head(0, 0.2)).toBe(false);
+    // Where the swell stands higher, the same head is under.
+    expect(head(1, -0.05)).toBe(true);
+    expect(head(0, -0.3, false)).toBe(false);
+    // With no sea to read (as before), never.
+    state.phase = RIDER_PHASES.indexOf('fallen');
+    state.points[7] = -0.3;
+    expect(remoteRiderState(state, board, rider, createRiderVisualState()).swim.under).toBe(false);
+    // The views read it on this player's water.
+    const views = new RemoteSurferViews(new Scene());
+    views.sync([{ id: 1, look }]);
+    views.update(1, state, surfaceAt, new Vector3());
+    expect(views.riderStateOf(1)!.swim.under).toBe(true);
   });
 
   // The animation-realism plan's phase 4 (wire flag 128): another player's reel and climb.

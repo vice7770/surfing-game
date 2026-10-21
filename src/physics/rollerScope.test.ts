@@ -12,6 +12,10 @@ import { FaceWater } from './testing/FaceWater';
  * The roller lens's feel (the Canyon roller lens, S3) changes the bodies only inside a lens: outside one, at every other
  * spot and in all plume water, a rider moves bit for bit as before. These fingerprints were recorded at 0d27853e, before
  * the lens-scoped body changes (the advisor's ruling of 2026-10-06), over riders in three waters with no lens in them.
+ * Recorded again with the phase 5 physics plan's batch C, which changes these by design: the two paddlers with its
+ * stroke (item 2.8: the rate, the roll, the line kept over the strokes and the 97 cm length), and the paddler in the
+ * plume and the rider down the face, who fall within their runs, with the fall from the rider's own pose (item 2.10).
+ * The still riders, unchanged, hold the lens's scope.
  */
 
 const STEP = 1 / 60;
@@ -83,7 +87,7 @@ describe('the roller lens\'s feel, outside a lens', () => {
     const water = plume(false);
     expect(ride(water, 0, 180, false, drained(water))).toBe('f986e92101dc4f34');
     const paddling = plume(false);
-    expect(ride(paddling, Math.PI, 180, true, drained(paddling))).toBe('655c590b740a3445');
+    expect(ride(paddling, Math.PI, 180, true, drained(paddling))).toBe('ce87c54f9195237c');
   });
 
   it('leaves a prone rider at the Canyon, in broken water outside any lens, bit for bit as it was', () => {
@@ -100,11 +104,11 @@ describe('the roller lens\'s feel, outside a lens', () => {
 
   it('leaves a standing rider down a wave face bit for bit as it was', () => {
     const water = new FaceWater({ depth: 2, height: 1.2, slope: 25 });
-    expect(ride(water, 0.6, 180, false, () => [], 'standing')).toBe('70e814f4d3a6ebfa');
+    expect(ride(water, 0.6, 180, false, () => [], 'standing')).toBe('e9c8f8116dfc1253');
   });
 
   it('leaves a paddler meeting a broken wave on the duck-dive bore bit for bit as it was', () => {
     const water = new BoreWater({ depth: 2.5, height: 1.2, frontZ: -12 });
-    expect(ride(water, Math.PI, 300, true, () => [water.reaction.x, water.reaction.y, water.reaction.z])).toBe('c00f4f9655ac20a9');
+    expect(ride(water, Math.PI, 300, true, () => [water.reaction.x, water.reaction.y, water.reaction.z])).toBe('dc7748fcc6dfb6ce');
   });
 });

@@ -24,7 +24,7 @@ const KNOWN_MISSES: Record<string, string> = {
   'extension-frontside.kneeRear': 'the physics\' pelvis still rising 0.3 s after Compress, from its deeper ladder (the movement-flow spec); and the knees stand tall at trim\'s 42° (the animation-realism plan, phase 1), where the extension\'s are straighter: phase 2\'s bottom-turn pose (compress at the base, extend climbing)',
   'extension-backside.kneeFront': 'as frontside: the board 17° nose-up under the body',
   'extension-backside.kneeRear': 'as frontside\'s rear knee: the knees stand tall at trim\'s 42°, the extension\'s straighter legs are phase 2\'s (it met at 158° with the knees standing tall at 25°)',
-  'paddling.pullDepth': 'the physics\' hand path (`HAND_DEPTH` 0.25 m under the deck beside the rail, the board rolling 7° a stroke): the drawn wrist follows the physics\' hand, 0.25–0.27 m under the waterline for 0.15–0.25 (the plan\'s phase 5, with the stroke\'s rate and length)',
+  'paddling.pullDepth': 'the physics\' hand path (`HAND_DEPTH` 0.25 m under the deck beside the rail): the drawn wrist follows the physics\' hand, 0.30 m under the waterline for 0.15–0.25, with the board rolling 18° toward the pulling arm (the phase 5 physics plan\'s batch C; 0.25 m at 7° before). Its depth taken from the water\'s surface (0.22 m) read as jumps at 30 Hz: pinned with the stroke\'s drawn length (the body film)',
   'pop-up-hands.handsApart': 'the hands flat 2 cm inside the rails beside the drawn lower ribs (the owner\'s call, §10.4): the physics lays the prone body far back on this 1.78 m board (its pelvis 0.37 m from the tail), where the board is 0.42 m wide, so 0.37 m apart; Borgonovo-Santos\' 0.46 m is the board\'s width at the chest',
 };
 
