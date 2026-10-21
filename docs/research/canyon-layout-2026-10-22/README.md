@@ -270,7 +270,7 @@ layout exactly: the long arm, the 160 m window, the far beach and the corner sta
 2. **The beach.** Is it close enough now: 145–180 m from the start, the peak 120 m out? Does the beach face behind the
    reef read well, and the shore break on the flanks either side?
 3. **The start.** Centred in the window (2 m from its centre, 87–91 m from each side bound): does it still feel isolated?
-4. **Medium.** The sets stand up and pitch along the whole short arm (ξ 0.4–0.48 to x 15); does the shoulder hold to the
+4. **Medium.** The sets stand up and pitch along the whole short arm (ξb 0.36–0.48 to x 15); does the shoulder hold to the
    arm's end on the beach (about 38 m along shore, 112 m along the line)? The readout should say "a left" more often.
 5. **Big from the 6 m start.** The faces there are 15° (13° on the long arm). Do you drop in, or get left on the crest?
    Then `?startOut=0` (the take-off; 8 of 65 waves break seaward of it). Big peels faster on the short arm (30°): does it
@@ -280,7 +280,10 @@ layout exactly: the long arm, the 160 m window, the far beach and the corner sta
 ## Risks
 
 - **Over the reef the crests still bend** (bar 1): refraction round the arm and its peel lag the crest over it, and the
-  flanks run ahead into the beach. In the open water either side they are square; the window-wide V should be gone.
+  flanks run ahead into the beach. In the open water either side they are square seaward of the take-off and by it, and
+  on the +x side inshore; round the arm's upcoast end inshore they lean more than the Beach's (p90 12–14° against
+  8.7–8.9° at Medium and Big), and at Big the −x edge chevron inshore is 15–17° (p90) against the Beach's 10–12° (today's
+  32–37°). The window-wide V is gone (two-sided crests 0–3 a band, against up to 49 today).
 - **Big peels faster** (30–31° against 36–40°): its readout says "closes out" 46 % of the time (31 % today), and it has 2
   close-outs in 48 crests (0 in 50), one of them seed 3's biggest set breaking on the taper past the arm's end.
 - **Big's start** stays where one wave in ten breaks (5 of 65 seaward of it): the faces there are 15°, short of 17°.
