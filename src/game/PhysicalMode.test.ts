@@ -444,13 +444,29 @@ describe('PhysicalMode', () => {
     expect(mode.nextView()).toBe('side');
     expect(mode.nextView()).toBe('overview');
     expect(mode.nextView()).toBe('front');
+    // The owner, 2026-10-22: the right stick swings the ride view round the rider, lying down too.
+    mode.update(1 / 60);
+    for (let frame = 0; frame < 30; frame += 1) {
+      mode.camera.steerSwing(1, 1 / 60);
+      mode.update(1 / 60);
+    }
+    mode.camera.steerSwing(0, 1);
+    const swung = mode.camera.swing;
+    expect(swung).toBeGreaterThan(0.5);
     expect(mode.readout().find((row) => row.label === 'RIDER')?.value).toMatch(/^PRONE · \d+\.\d m\/s/);
     mode.advance(1, { paddle: false, popUp: true, steer: 0 });
+    mode.update(1 / 60);
     expect(local.runner.session!.rider.phase).toBe('push');
     mode.retry();
     mode.advance(1);
+    mode.update(1 / 60);
     expect(local.runner.session!.rider.phase).toBe('prone');
     expect(local.runner.status().ride!.resets).toBe(1);
+    // Popping up and paddling out again keep it; the camera button starts the next view from its own framing.
+    expect(mode.camera.swing).toBe(swung);
+    expect(mode.camera.view).toBe('front');
+    expect(mode.nextView()).toBe('behind');
+    expect(mode.camera.swing).toBe(0);
     mode.setVisible(false);
     expect(mode.board.visible).toBe(false);
     expect(mode.surfer.group.visible).toBe(false);

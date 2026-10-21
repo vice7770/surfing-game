@@ -714,6 +714,9 @@ class SurfGame {
 
   /** One frame of the physical surf zone: fixed solver steps with the player's (or `?demo`'s autopilot's) input, then render. */
   private physicalFrame(elapsed: number, simElapsed: number): void {
+    // The pad's right stick across swings the ride view round the rider in every stage, on real time (the owner,
+    // 2026-10-22); the Wave Lab flies its own camera.
+    if (!this.waveLab.active) this.physicalMode.camera.steerSwing(controls.cameraSwing, elapsed);
     if (this.online) {
       this.onlineFrame(elapsed);
       return;

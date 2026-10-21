@@ -39,11 +39,12 @@ The pad is the main target: analog sticks and triggers. The keyboard is its digi
 | Weight | right stick Y | W / S | front or back foot, in every stance. Centred by default. |
 | Crouch | LT (analog) | Shift | down to about two thirds of the depth (knees about 100–110°): the pumping stance |
 | Compress | RT (analog) | Space | down to full depth (knees and hips at or under 90°), dropping as fast as the crouch; works alone or over the crouch |
-| Rotation | right stick X (analog, **new**) | automatic | twists the upper body. The stick points where the rider looks, in the same sense as steering. |
+| Rotation | automatic (since 2026-10-22; was right stick X) | automatic | twists the upper body. The stick pointed where the rider looks, in the same sense as steering. |
 | Hand | LB | E | unchanged |
 
 - **Heights:** normal (no input) → crouch → Compress. Releasing either one is the projection: a quick extension that unweights the board. There is no extend key.
 - **Weight in Compress:** Compress no longer moves the weight forward. W/S (or the right stick) always set it. The bottom turn is Compress with the front foot; the cutback is Compress with the back foot.
+- **Rotation, since 2026-10-22 (the owner):** the right stick's X swings the camera around the rider instead, in every stage, and the body turns with the ride by itself on every device. The twist stays in the physics (`RideInput.rotate`), unbound, for a new input later. What follows describes it with the stick.
 - **Rotation:** with the stick, winding the upper body into a turn turns the board through the feet. This is a real effect, but a short-lived one: a steady twist gives no net yaw torque. The drawn head and shoulders follow it. On the keyboard and touch, the body twists by itself with the turn, as it does today.
 - **The inside hand** still reaches for the water when compressed into a lean.
 - **A HUD stance readout** shows height (Normal / Crouch / Compress), weight (front / back) and rotation. Settings can turn it off. It shows inputs only; it does not recognise moves.

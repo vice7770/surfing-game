@@ -79,7 +79,7 @@ function controlRows(settings: GameSettings, context: SettingsContext): Row[] {
       disabled: steam !== 'disconnected',
     },
     { kind: 'heading', id: 'sticks', label: t('settings.sticks') },
-    { kind: 'choice', id: 'trimStick', label: t('settings.trimStick'), value: trimStick, options: options('settings.trimStick', ['right', 'left']) },
+    { kind: 'choice', id: 'trimStick', label: t('settings.trimStick'), help: t('settings.trimStick.help'), value: trimStick, options: options('settings.trimStick', ['right', 'left']) },
     { kind: 'choice', id: 'stickResponse', label: t('settings.stickResponse'), help: t('settings.stickResponse.help'), value: stickResponse, options: options('settings.stickResponse', ['linear', 'precise']) },
     { kind: 'slider', id: 'deadzoneSteam', label: t('settings.deadzoneSteam'), help: deadzoneHelp, value: deadzoneSteam, min: 0, max: MAX_DEADZONE, step: 0.01 },
     { kind: 'slider', id: 'deadzoneGamepad', label: t('settings.deadzoneGamepad'), help: deadzoneHelp, value: deadzoneGamepad, min: 0, max: MAX_DEADZONE, step: 0.01 },
@@ -87,7 +87,7 @@ function controlRows(settings: GameSettings, context: SettingsContext): Row[] {
   ];
   for (const action of REBINDABLE) {
     const label = t(`action.${action}` as StringKey);
-    // The standing actions (P9) say what they do, as the key card.
+    // The standing actions (P9) say what they do, as the key card; the camera, its stick swing.
     const helpKey = `action.${action}.help`;
     const help = helpKey in EN ? { help: t(helpKey as StringKey) } : {};
     for (const slot of [0, 1] as const) {
