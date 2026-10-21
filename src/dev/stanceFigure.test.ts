@@ -28,7 +28,7 @@ describe('the reference figure', () => {
           for (const measure of FIGURE_HONOURS) {
             // A trunk bent to meet the hips' targets leaves its own angle to follow.
             if (plan.trunkFromHips && (measure === 'trunkFlexion' || measure === 'trunkPitch')) continue;
-            const tolerance = measure === 'weight' || measure === 'stanceWidth' ? 0.01 : 2;
+            const tolerance = measure === 'hipsOver' || measure === 'stanceWidth' ? 0.01 : 2;
             expect(Math.abs(read[measure] - wanted[measure]), `${stance.id}, ${side}: ${measure} ${read[measure].toFixed(2)} for ${wanted[measure].toFixed(2)}`).toBeLessThan(tolerance);
           }
           // The hips, where the map targets them: their mean met, the trunk bent for it.

@@ -39,7 +39,9 @@ describe('the stance gauge', () => {
     expect(angles.trailArm).toBeCloseTo(90, 3);
     // The test humanoid's ankles are 0.18 m apart, its hips between them.
     expect(angles.stanceWidth).toBeCloseTo(0.18, 6);
-    expect(angles.weight).toBeCloseTo(0.5, 6);
+    expect(angles.hipsOver).toBeCloseTo(0.5, 6);
+    // No weight felt where the board's pose carries none (a skeleton alone).
+    expect(angles.weight).toBeNaN();
     expect(angles.lowHand).toBeCloseTo(1.4, 6);
   });
 
@@ -86,7 +88,7 @@ describe('the stance gauge', () => {
     expect(angles.trailArm).toBeCloseTo(90, 3);
   });
 
-  it('reads the weight, the lean and the twist against the board', () => {
+  it('reads the hips over the stance, the lean and the twist against the board', () => {
     const { gauge, turn } = standing('regular');
     // The chest opened 20° toward the nose.
     turn(BONES.spine[1], UP, 20);
@@ -96,7 +98,7 @@ describe('the stance gauge', () => {
     expect(angles.hipTwist).toBeCloseTo(0, 3);
     // The hips over the front ankle (toward the nose).
     joints.hips.z = joints.ankle.left.z;
-    expect(measureJoints(joints, board, 'regular').weight).toBeCloseTo(1, 6);
+    expect(measureJoints(joints, board, 'regular').hipsOver).toBeCloseTo(1, 6);
     // The board rolled 30° onto its toe rail, the body upright on it: the body leans 30° toward the toes.
     const rolled = { boardPosition: new Vector3(), boardQuaternion: new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), (30 * Math.PI) / 180) };
     const onRail = standing('regular');
@@ -109,35 +111,50 @@ describe('the stance gauge', () => {
     expect(angles.trunkTilt).toBeCloseTo(30, 3);
   });
 
-  it('reads the physics\' own points: its trunk, lean, hands, width and weight', () => {
+  it('reads the physics\' own points: its trunk, lean, hands, width and hips; and its weight, the state\'s', () => {
     const state = posturePoints('standing', 'regular', new Vector3(1, 0.03, -2), new Quaternion(), createRiderVisualState());
+    state.weight = 0.3;
     const read = measurePoints(state, 'regular');
     // The physics' standing trunk is upright over the pelvis; its feet stand at the stance points.
     expect(read.trunkFlexion).toBeCloseTo(0, 1);
     expect(read.trunkTilt).toBeCloseTo(0, 1);
     const along = state.points[POINT.leftFoot].z - state.points[POINT.rightFoot].z;
     expect(read.stanceWidth).toBeCloseTo(Math.abs(along), 6);
-    expect(read.weight).toBeCloseTo((state.points[POINT.pelvis].z - state.points[POINT.rightFoot].z) / along, 6);
+    expect(read.hipsOver).toBeCloseTo((state.points[POINT.pelvis].z - state.points[POINT.rightFoot].z) / along, 6);
+    expect(read.weight).toBe(0.3);
     expect(read.lowHand).toBeCloseTo(Math.min(state.points[POINT.leftHand].y, state.points[POINT.rightHand].y) - 0.03, 6);
   });
 
-  it('gives no weight while the feet stand together along the board (no stance to share it between)', () => {
+  it('gives no hips over the stance while the feet stand together along the board (no stance to share it between)', () => {
     const { gauge } = standing('regular');
     const joints = gauge.joints();
     joints.ankle.left.z = joints.ankle.right.z + 0.02;
-    expect(measureJoints(joints, board, 'regular').weight).toBeNaN();
+    expect(measureJoints(joints, board, 'regular').hipsOver).toBeNaN();
     const state = posturePoints('standing', 'regular', new Vector3(), new Quaternion(), createRiderVisualState());
     state.points[POINT.leftFoot].z = state.points[POINT.rightFoot].z + 0.05;
-    expect(measurePoints(state, 'regular').weight).toBeNaN();
+    expect(measurePoints(state, 'regular').hipsOver).toBeNaN();
+  });
+
+  // The phase-5 physics plan's W1 (the owner's decision 1): the weight is the feet's pressure the physics feels, carried
+  // by the drawn state (`RiderVisualState.weight`), not where the drawn hips sit.
+  it('reads the weight from the board\'s pose: the feet\'s pressure, whatever the hips', () => {
+    const { gauge } = standing('regular');
+    const joints = gauge.joints();
+    joints.hips.z = joints.ankle.left.z;
+    const read = measureJoints(joints, { ...board, weight: 0.3 }, 'regular');
+    expect(read.weight).toBe(0.3);
+    expect(read.hipsOver).toBeCloseTo(1, 6);
   });
 
   it('stays finite at a straight joint and a hanging arm', () => {
     const { measure, turn } = standing('regular');
     turn(BONES.arm.left, new Vector3(0, 0, 1), -90);
     const angles = measure();
-    // The stroke's entry has none with both hands above the water (the animation-realism plan's phase 3).
+    // The stroke's entry has none with both hands above the water (the animation-realism plan's phase 3), nor the weight
+    // with no pressure known (a skeleton alone: the phase-5 physics plan's W1).
     expect(angles.handAhead).toBeNaN();
-    for (const [key, value] of Object.entries(angles)) if (key !== 'handAhead') expect(Number.isFinite(value), key).toBe(true);
+    expect(angles.weight).toBeNaN();
+    for (const [key, value] of Object.entries(angles)) if (key !== 'handAhead' && key !== 'weight') expect(Number.isFinite(value), key).toBe(true);
   });
 
   it('reads a surfer’s skeleton at rest as straight legs facing the toes', () => {

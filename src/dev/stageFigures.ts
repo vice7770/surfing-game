@@ -39,7 +39,10 @@ export type ArmSpec = ArmReach | ArmGrab;
 
 /** A standing stage's numbers (every angle in degrees). */
 export interface StandingSpec {
-  /** The ankles apart along the stringer, m, and the hips' share of the way from the rear ankle to the front. */
+  /**
+   * The ankles apart along the stringer, m, and the hips' share of the way from the rear ankle to the front (the gauge's
+   * `hipsOver`): a picture's weight, the hips over the feet's pressure at steady speed.
+   */
   width: number;
   weight: number;
   /** Knee flexion, 0° straight: front, rear. */

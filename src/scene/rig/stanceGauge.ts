@@ -74,8 +74,21 @@ export interface StanceAngles {
   lowHand: number;
   /** The ankles apart along the stringer, m. */
   stanceWidth: number;
-  /** The hips' centre along the stringer from the rear ankle (0) to the front ankle (1); none (NaN) with the feet under `STANCE_MIN` apart. */
+  /**
+   * The weight: the front foot's share of the load (0 the back foot, 1 the
+   * front), as the physics feels it, smoothed over 0.3 s (the board pose's
+   * `weight`: the phase-5 physics plan's W1, the owner's decision 1 of
+   * 2026-10-22); none (NaN) where the drawing does not know it (a figure,
+   * another player's surfer).
+   */
   weight: number;
+  /**
+   * The hips' centre along the stringer from the rear ankle (0) to the front
+   * ankle (1); none (NaN) with the feet under `STANCE_MIN` apart. The weight
+   * until phase 5: under an upright body on a nose-up deck it reads the deck's
+   * pitch more than the weight (0.022 of the stance per degree; the plan's §1.1).
+   */
+  hipsOver: number;
   /** Each foot's angle to the stringer on the deck, from the ankle to the toes: 90° square across (the animation-realism plan). */
   footFront: number;
   footRear: number;
@@ -135,6 +148,8 @@ export type StanceMeasure = keyof StanceAngles;
 export interface BoardPose {
   readonly boardPosition: Vector3;
   readonly boardQuaternion: Quaternion;
+  /** The front foot's share of the load where the drawing knows it (`RiderVisualState.weight`): the gauge's weight. */
+  readonly weight?: number;
 }
 
 const SIDES: readonly Side[] = ['left', 'right'];
@@ -253,7 +268,8 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     trailElbow: elbow(rear),
     lowHand: Math.min(...SIDES.map((side) => joints.wrist[side].clone().sub(board.boardPosition).dot(WORLD_UP))),
     stanceWidth: Math.abs(span),
-    weight: Math.abs(span) >= STANCE_MIN ? (local(joints.hips).z - rearAnkle.z) / span : Number.NaN,
+    weight: board.weight ?? Number.NaN,
+    hipsOver: Math.abs(span) >= STANCE_MIN ? (local(joints.hips).z - rearAnkle.z) / span : Number.NaN,
     footFront: foot(front),
     footRear: foot(rear),
     rearKneeIn: Math.atan2(kneeBend.dot(NOSE), kneeBend.dot(toes)) * DEG,
@@ -319,15 +335,16 @@ export function measureHands(joints: StanceJoints, board: BoardPose, stance: Sta
   };
 }
 
-/** The measures the physics' seven points set themselves: the rig follows them. */
-export type PointMeasure = 'trunkFlexion' | 'trunkPitch' | 'trunkTilt' | 'lean' | 'lowHand' | 'stanceWidth' | 'weight';
-export const POINT_MEASURES: readonly PointMeasure[] = ['trunkFlexion', 'trunkPitch', 'trunkTilt', 'lean', 'lowHand', 'stanceWidth', 'weight'];
+/** The measures the physics sets itself, by its seven points (the rig follows them) or its contact (the weight). */
+export type PointMeasure = 'trunkFlexion' | 'trunkPitch' | 'trunkTilt' | 'lean' | 'lowHand' | 'stanceWidth' | 'weight' | 'hipsOver';
+export const POINT_MEASURES: readonly PointMeasure[] = ['trunkFlexion', 'trunkPitch', 'trunkTilt', 'lean', 'lowHand', 'stanceWidth', 'weight', 'hipsOver'];
 
 /**
  * The same measures read from the physics' own points, before the rig: the
  * trunk from the pelvis to the torso's centre, the lean from the feet to the
- * head, the lower hand, the feet's spread and the pelvis between them. Where
- * the drawn body misses a target these meet, the drawing moved it.
+ * head, the lower hand, the feet's spread and the pelvis between them; and the
+ * weight, the physics' own (the state's). Where the drawn body misses a target
+ * these meet, the drawing moved it.
  */
 export function measurePoints(state: RiderVisualState, stance: StanceName): Pick<StanceAngles, PointMeasure> {
   const inverse = new Quaternion().copy(state.boardQuaternion).invert();
@@ -349,7 +366,8 @@ export function measurePoints(state: RiderVisualState, stance: StanceName): Pick
     lean: Math.atan2(body.dot(toesLevel), body.dot(WORLD_UP)) * DEG,
     lowHand: Math.min(points[POINT.leftHand].y, points[POINT.rightHand].y) - state.boardPosition.y,
     stanceWidth: Math.abs(span),
-    weight: Math.abs(span) >= STANCE_MIN ? (local(points[POINT.pelvis]).z - rear.z) / span : Number.NaN,
+    weight: state.weight,
+    hipsOver: Math.abs(span) >= STANCE_MIN ? (local(points[POINT.pelvis]).z - rear.z) / span : Number.NaN,
   };
 }
 

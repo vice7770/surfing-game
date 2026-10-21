@@ -29,22 +29,30 @@ const KNOWN_MISSES: Record<string, string> = {
 };
 
 /**
- * The targets of medium or high confidence the physics owns (its own points miss them too: the weight, the lean, the
- * lower hand), missed today, each with why. They are the plan's phase 5 (the physics, ride-checked with the owner):
- * the drawn weight cues follow the physics' pelvis, so the drawing does not meet them by moving the hips. Pinned as the
- * drawn ones are: a new miss fails this, and so does one met without being struck off.
+ * The targets of medium or high confidence the physics owns (its own reading misses them too: the weight, the lean,
+ * the lower hand), missed today, each with why. Pinned as the drawn ones are: a new miss fails this, and so does one
+ * met without being struck off.
+ *
+ * The weight is the feet's pressure, smoothed over 0.3 s (the phase-5 physics plan's W1, the owner's decision 1 of
+ * 2026-10-22), read at steady speed riding straight (trim, W/S, the pump: met, but the pump's). Carving on flat water
+ * the board sheds 0.2–0.6 g, which a wave's face would feed back (the plan's §1.2, §2.4), and the pressure moves ahead
+ * of the body by its height times the deceleration; the balance re-centres it only past 0.2 m from the middle (the
+ * plan's W2, a 0.1 m zone about where W/S hold it, is held back: it broke the Compress cap's 11 m/s guard). Until
+ * phase 5 the weight read the pelvis's place, which on a nose-up deck reads its pitch: the compressed bottom turns'
+ * 0.59–0.60 now read 0.61, met.
  */
 const PHASE5_MISSES: Record<string, string> = {
-  'compress-frontside.weight': 'the physics\' pelvis about centred (0.59–0.60) where the bottom turn\'s preparation puts 60–75 % on the front foot (de Sousa 2022; Cornish Wave; the owner\'s call, §10.2): the plan\'s phase 5',
-  'compress-backside.weight': 'as frontside: just under the 0.60',
-  'cutback-frontside.weight': 'the physics\' pelvis near the middle (0.45–0.48) under S at −0.7, where the cutback is 65/35 to 70/30 on the back foot (Rapture): more weight back sinks the tail (the deep U): phase 5',
-  'cutback-backside.weight': 'as frontside',
-  'extension-frontside.weight': 'let go tall and centred on flat water, the slowing board rides nose-up under the upright body and its pelvis sits forward along the deck (0.74): phase 5, with the extension\'s knees',
+  'extension-frontside.weight': 'let go with no S held on flat water, the board slows about 0.5 g out of the turn: the pressure 0.74 on the front foot, where the thesis\'s final phase puts it back (S\'s; the recipe holds none, the movement-flow spec\'s projection)',
   'extension-backside.weight': 'as frontside',
-  'pump-compression.weight': 'the pump\'s weight is the physics\' (0.57 going uphill for 55/45 back: the plan\'s phase-5 table)',
-  'pump-extension.weight': 'as the compression: 0.60–0.61 going downhill, just over 55/45 front',
-  'top-turn-frontside.weight': 'the top turn\'s 70/30 on the back foot (Rapture): the physics\' pelvis about centred on flat water (0.54), 0.65 forward on the real wave (the tail sinks: the plan\'s phase-5 gap, pinned `it.fails` in the snap test)',
+  'top-turn-frontside.weight': 'at full S (decision 5) on flat water, the carve slows the board about 0.3 g: the pressure 0.46 against the top turn\'s 70/30 on the back foot (Rapture); the plan\'s W2 (S holding 0.30 within 0.1 m) is held back',
   'top-turn-backside.weight': 'as frontside',
+  'snap-frontside.weight': 'full S on flat water, the board slowing 0.5–0.6 g: the pressure 0.49 against 0.30–0.45 (the pelvis, read as the weight until phase 5, met it)',
+  'snap-backside.weight': 'as frontside',
+  'cutback-frontside.weight': 'S at −0.7 on flat water, the carve slowing about 0.3 g: the pressure 0.51 against 65/35 to 70/30 on the back foot (Rapture)',
+  'cutback-backside.weight': 'as frontside',
+  'pump-compression.weight': 'at steady speed, crouching loads the feet evenly: 0.51 against 55/45 onto the back foot going uphill (Rapture), which the flat recipe has no hill for',
+  'pump-extension.weight': 'at steady speed, rising out of the crouch: 0.63 against 55/45 onto the front foot going downhill',
+  'landing.weight': 'the pressure at the landing\'s end, smoothed: 0.81, the trunk sitting 0.08 m forward (the landing posture), against the study\'s 72 ± 8 % of the peak force',
 };
 
 const SURFERS = ['surfer1', 'surfer2', 'surfer3', 'surfer4'] as const;

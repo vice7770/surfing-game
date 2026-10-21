@@ -39,6 +39,21 @@ describe('every mapped stance, simulated by the real rider', () => {
     expect(along('trim-forward')).toBeGreaterThan(along('trim'));
   });
 
+  // The phase-5 physics plan's W1 (the owner's decision 1 of 2026-10-22): the weight is the feet's pressure, read
+  // riding straight at steady speed, where flat water's own drag (about 0.2 g) would load the front foot.
+  it('reads the weight as the feet\'s pressure, riding straight at steady speed', () => {
+    for (const stance of ['regular', 'goofy'] as const) {
+      const { state } = stanceState('trim', stance, at, createRiderVisualState());
+      expect(state.weight).toBeGreaterThan(0.45);
+      expect(state.weight).toBeLessThan(0.58);
+      const flat = simulateStance({ ...STANCE_RECIPES.trim, steady: false }, stance, at, createRiderVisualState()).state;
+      expect(flat.weight).toBeGreaterThan(state.weight + 0.05);
+      // W/S at steady speed: the front foot and the back.
+      expect(stanceState('trim-forward', stance, at, createRiderVisualState()).state.weight).toBeGreaterThan(0.6);
+      expect(stanceState('trim-back', stance, at, createRiderVisualState()).state.weight).toBeLessThan(0.4);
+    }
+  });
+
   it('puts a hand toward the wave for the hand in the face, as Compress does', () => {
     // The physics reaches for the wave's side, where the water stands higher: riding down the fall line there is none.
     for (const id of ['hand-in-face', 'compress-frontside']) {

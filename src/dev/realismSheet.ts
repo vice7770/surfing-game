@@ -731,7 +731,7 @@ const fmt = (value: number, digits = 0) => (Number.isFinite(value) ? value.toFix
 /** A standing pose's numbers in one line, the plan's conventions (knees as flexion; regular: the left foot in front). */
 function readout(angles: StanceAngles, feet: Record<Side, number>): string {
   return `knee F ${fmt(flexion(angles.kneeFront))}° R ${fmt(flexion(angles.kneeRear))}° · feet ${fmt(feet.left)}°/${fmt(feet.right)}° · trunk ${fmt(angles.trunkTilt)}° · chest ${fmt(angles.chestTwist)}° · `
-    + `arms ${fmt(angles.leadArm)}°/${fmt(angles.trailArm)}° · lean ${fmt(angles.lean)}° · ${fmt(angles.stanceWidth, 2)} m · wt ${fmt(angles.weight, 2)}`;
+    + `arms ${fmt(angles.leadArm)}°/${fmt(angles.trailArm)}° · lean ${fmt(angles.lean)}° · ${fmt(angles.stanceWidth, 2)} m · hips ${fmt(angles.hipsOver, 2)} · wt ${fmt(angles.weight, 2)}`;
 }
 
 /** A lying or sitting pose's numbers in one line (the animation-realism plan's phase-3 measures). */

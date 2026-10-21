@@ -21,6 +21,11 @@ export const MOMENT_STANCE: Record<RidingMoment, string> = {
 
 const STEP = 1 / 60;
 const FACE = (15 * Math.PI) / 180;
+/**
+ * The face that holds trim's speed (a steady recipe's, W1): down along the travel by this slope (10°), a standing rider
+ * with no input keeps 7.9 of 8 m/s over 2 s, and 6.8 of 7 across a 15° face (2026-10-22).
+ */
+export const STEADY_SLOPE = 0.18;
 /** A recipe's `pitch` comes over this long before the separation, s. */
 export const PITCH_TIME = 0.2;
 
@@ -81,6 +86,15 @@ export interface StanceRecipe {
   thrown?: readonly [number, number, number];
   /** Read this long after the swimmer first holds the board (the recovery's grab), s, within `seconds`; not reached without a hold. */
   hold?: number;
+  /**
+   * The weight (the feet's pressure) read at steady speed (the phase-5 physics plan's W1): from the same run on its
+   * water tilted down along the travel by `STEADY_SLOPE`, the face that holds trim's speed, as a wave's face feeds a
+   * board trimming across it. Flat water's own drag slows the board about 0.2 g, and the contact passes that on: the
+   * pressure moves ahead of the centre of mass by its height times the deceleration, which reads as weight on the front
+   * foot. Riding straight only (flat water or across a face): a carve sheds 0.1–0.6 g on flat water, more than a face
+   * gives back. The recipe's other measures are read on its own water.
+   */
+  steady?: boolean;
 }
 
 const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRecipe> = {}): StanceRecipe => ({
@@ -89,13 +103,14 @@ const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRe
 
 /** The map's stances as the game reaches them (each stance's `reach`). */
 export const STANCE_RECIPES: Record<string, StanceRecipe> = {
-  trim: standing([], 1),
+  // Riding straight, the weight is read at steady speed (W1: `steady`).
+  trim: standing([], 1, { steady: true }),
   // The animation-realism plan's trims across a 15° face (the stance sheet's water): frontside the face rises on the
   // toes' side, backside on the heels'.
-  'trim-frontside': standing([], 1.2, { water: 'across', speed: 7 }),
-  'trim-backside': standing([], 1.2, { water: 'across-back', speed: 7 }),
-  'trim-forward': standing([{ at: 0.4, trim: 1 }], 1),
-  'trim-back': standing([{ at: 0.4, trim: -1 }], 1),
+  'trim-frontside': standing([], 1.2, { water: 'across', speed: 7, steady: true }),
+  'trim-backside': standing([], 1.2, { water: 'across-back', speed: 7, steady: true }),
+  'trim-forward': standing([{ at: 0.4, trim: 1 }], 1, { steady: true }),
+  'trim-back': standing([{ at: 0.4, trim: -1 }], 1, { steady: true }),
   drop: standing([{ at: 0, crouch: 1 }], 1, { water: 'face', speed: 5 }),
   'compress-frontside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }], 1.1),
   'compress-backside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }], 1.1),
@@ -109,15 +124,16 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
     { at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0, trim: 0 },
   ], 1.4),
   // The redirects read once the drawn body has come round (the animation-realism plan's phase 2: the head, then the
-  // chest, then the hips, each behind the last; until then 1.0, 0.9 and 1.2 s, mid-way through it).
-  'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1.5),
-  'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1.5),
+  // chest, then the hips, each behind the last; until then 1.0, 0.9 and 1.2 s, mid-way through it). The top turn at full
+  // S, as the coaching describes it (the owner's decision 5 of 2026-10-22; half S, −0.5, until then).
+  'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 1.5),
+  'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 1.5),
   'snap-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 1.4),
   'snap-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 1.4),
   'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.5),
   'cutback-backside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: 1, trim: -0.7 }], 1.5),
-  'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7 }),
-  'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7 }),
+  'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7, steady: true }),
+  'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7, steady: true }),
   // Crouched to the depth it was recorded at: Shift's 0.6 before the movement-flow spec's ladder made the crouch 0.65 of the depth.
   'hand-in-face': standing([{ at: 0, crouch: 0.92 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
   // The animation-realism plan's tube stances (§5.14): the full crouch under a test curl folds into the deep tuck,
@@ -183,10 +199,24 @@ function waterFor(recipe: Pick<StanceRecipe, 'water' | 'covered'>, stance: Stanc
   return recipe.covered ? new CoveredWater(plane) : plane;
 }
 
-/** A standing rider on water: flat, down a 15° face along its fall line, up it, or across it lying on its slope. */
-function mount(speed: number, stance: StanceName, kind: StanceRecipe['water']) {
+/** A steady recipe's water (W1): its flat water or face across, tilted down along the travel (+z) by `STEADY_SLOPE`. */
+function steadySlopes(kind: StanceRecipe['water'], stance: StanceName): { slopeX: number; slopeZ: number } {
+  if (kind !== 'flat' && kind !== 'across' && kind !== 'across-back') throw new Error(`No steady water for ${kind}.`);
+  return { slopeX: kind === 'flat' ? 0 : acrossSlope(kind, stance), slopeZ: -STEADY_SLOPE };
+}
+
+/**
+ * A standing rider on water: flat, down a 15° face along its fall line, up it, or across it lying on its slope; or, on
+ * a steady recipe's water (`slopes`), along +z on its plane.
+ */
+function mount(speed: number, stance: StanceName, kind: StanceRecipe['water'], slopes?: { slopeX: number; slopeZ: number }) {
   const board = new BoardBody();
-  if (kind === 'across' || kind === 'across-back') {
+  if (slopes) {
+    const normal = new Vector3(-slopes.slopeX, 1, -slopes.slopeZ).normalize();
+    const forward = new Vector3(0, slopes.slopeZ, 1).normalize();
+    const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, forward), normal, forward));
+    board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, forward.multiplyScalar(speed));
+  } else if (kind === 'across' || kind === 'across-back') {
     const slopeX = acrossSlope(kind, stance);
     const normal = new Vector3(-slopeX, 1, 0).normalize();
     const forward = new Vector3(0, 0, 1);
@@ -232,11 +262,12 @@ interface Run {
  * after every step. `reached` is false when the rider ended in another phase
  * (it fell, or never got there).
  */
-function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVisualState, time: number) => void): Run {
+function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVisualState, time: number) => void, steady = false): Run {
   const toes = stance === 'regular' ? -1 : 1;
-  const water = waterFor(recipe, stance);
+  const slopes = steady ? steadySlopes(recipe.water, stance) : undefined;
+  const water = slopes ? new PlaneWater(slopes) : waterFor(recipe, stance);
   const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined ? new RideSession({ stance }) : undefined;
-  const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water);
+  const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water, slopes);
   if (session) session.place({ x: 0, z: 0, heading: 0, speed: recipe.start === 'prone' ? 0 : recipe.speed, phase: recipe.start }, water);
   const board = session?.board ?? mounted!.board;
   const rider = session?.rider ?? mounted!.rider;
@@ -346,6 +377,7 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
   } else {
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
     out.phase = rider.attached ? rider.phase : 'fallen';
+    out.weight = rider.attached ? rider.contact.weight : Number.NaN;
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
     out.heading = Math.atan2(forward.x, forward.z);
     out.boardPosition.copy(board.position);
@@ -391,7 +423,17 @@ export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vec
   out.travel.set(velocity.x, 0, velocity.z);
   if (out.travel.lengthSq() > 1e-12) out.travel.normalize();
   else out.travel.set(0, 0, 1);
+  if (recipe.steady) out.weight = steadyWeight(recipe, stance);
   return { state: out, reached: run.reached };
+}
+
+/**
+ * The weight a `steady` recipe reads (W1): the rider's at the read's end, the same run down the face that holds trim's
+ * speed (`STEADY_SLOPE`). NaN when the rider is not standing then.
+ */
+export function steadyWeight(recipe: StanceRecipe, stance: StanceName): number {
+  const run = play(recipe, stance, undefined, true);
+  return run.reached ? run.rider.contact.weight : Number.NaN;
 }
 
 /**
@@ -420,6 +462,7 @@ export function drawnRecipe(recipe: StanceRecipe, stance: StanceName, at: Vector
     draw(world);
     copyState(world, last);
   });
+  if (recipe.steady) last.weight = steadyWeight(recipe, stance);
   return { state: last, reached: run.reached };
 }
 
@@ -429,7 +472,7 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   Object.assign(to, {
     phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
-    separation: from.separation, stance: from.stance,
+    separation: from.separation, stance: from.stance, weight: from.weight,
   });
   to.boardPosition.copy(from.boardPosition);
   to.boardQuaternion.copy(from.boardQuaternion);

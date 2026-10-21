@@ -26,7 +26,7 @@ describe('the animation-realism plan\'s stage figures', () => {
       expect(read.kneeFront).toBeCloseTo(180 - spec.knee[0], 0);
       expect(read.kneeRear).toBeCloseTo(180 - spec.knee[1], 0);
       expect(read.stanceWidth).toBeCloseTo(spec.width, 2);
-      expect(read.weight).toBeCloseTo(spec.weight, 2);
+      expect(read.hipsOver).toBeCloseTo(spec.weight, 2);
       const feet = footAngles(joints, board);
       const [front, rear] = stance === 'regular' ? ['left', 'right'] as const : ['right', 'left'] as const;
       expect(feet[front]).toBeCloseTo(spec.foot[0], 0);

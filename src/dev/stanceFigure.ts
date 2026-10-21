@@ -43,7 +43,7 @@ export function figureLengths(rest: StanceJoints): FigureLengths {
 
 /** The measures the figure is built to show exactly; the rest (the hips' angle, the ankles, the lean, the hand's height) follow from them. */
 export const FIGURE_HONOURS: readonly StanceMeasure[] = [
-  'kneeFront', 'kneeRear', 'stanceWidth', 'weight', 'trunkFlexion', 'trunkPitch', 'chestTwist', 'hipTwist', 'headYaw', 'headPitch',
+  'kneeFront', 'kneeRear', 'stanceWidth', 'hipsOver', 'trunkFlexion', 'trunkPitch', 'chestTwist', 'hipTwist', 'headYaw', 'headPitch',
   'leadArm', 'trailArm', 'leadElbow', 'trailElbow',
 ];
 
@@ -51,7 +51,7 @@ export const FIGURE_HONOURS: readonly StanceMeasure[] = [
 export const NEUTRAL_STANCE: StanceAngles = {
   kneeFront: 150, kneeRear: 145, hipFront: 160, hipRear: 160, ankleFront: 15, ankleRear: 15, trunkFlexion: 15, trunkPitch: 0, trunkTilt: 15, lean: 0,
   chestTwist: 25, hipTwist: 10, headYaw: 70, headPitch: 10, leadArm: 40, trailArm: 40, leadElbow: 160, trailElbow: 160,
-  lowHand: 0.8, stanceWidth: 0.61, weight: 0.55, footFront: 70, footRear: 85, rearKneeIn: 10, shoulderDrop: 0,
+  lowHand: 0.8, stanceWidth: 0.61, weight: 0.55, hipsOver: 0.55, footFront: 70, footRear: 85, rearKneeIn: 10, shoulderDrop: 0,
   rearKneeDeck: 0.45, trailHeelRail: 0.6, trailToeRail: 0.6, trailFromFront: 0.4, leadToNose: 60,
   chestLift: 75, handAhead: Number.NaN, pullDepth: -0.9, legsApart: 0.05, sitTrunk: 15, hipsDeck: 0.75, handsApart: 0.6, handsBack: 0, palmFlat: Number.NaN,
   wristsToHead: 0.7, wristsOverHead: -0.8, railGrip: 1,
@@ -65,8 +65,10 @@ export const NEUTRAL_STANCE: StanceAngles = {
 export function figureAngles(stance: MappedStance, drawn: StanceAngles): StanceAngles {
   const angles = { ...drawn };
   for (const [measure, target] of Object.entries(stance.targets) as [StanceMeasure, { min: number; max: number }][]) angles[measure] = (target.min + target.max) / 2;
-  // No weight read (the feet together): the figure stands centred.
-  if (!Number.isFinite(angles.weight)) angles.weight = 0.5;
+  // The figure's hips over the feet's pressure, as a body stands riding at steady speed (the phase-5 physics plan's
+  // §1.1); with no weight targeted or read (the feet together), its own hips' reading, or centred.
+  if (stance.targets.weight) angles.hipsOver = angles.weight;
+  if (!Number.isFinite(angles.hipsOver)) angles.hipsOver = 0.5;
   if (stance.targets.trunkTilt && !stance.targets.trunkFlexion) angles.trunkFlexion = drawn.trunkFlexion + angles.trunkTilt - drawn.trunkTilt;
   return angles;
 }
@@ -112,7 +114,7 @@ export function referenceJoints(angles: StanceAngles, lengths: FigureLengths, fe
  * A figure standing the stance `angles` on the board (the sheet's reference,
  * the stance map): the ankles at `feet` (in the board's frame: x across, y up
  * from the board's centre, z the nose) moved apart to the stance's width; the
- * hips' centre along the stringer at the weight, over the feet across; each
+ * hips' centre along the stringer at `hipsOver`, over the feet across; each
  * hip joint as high as its knee's angle puts it (the pelvis tilts), each knee
  * bent toward the toes; the trunk,
  * pelvis, chest and head at their angles; each arm raised outward from the
@@ -130,13 +132,13 @@ function buildFigure(angles: StanceAngles, lengths: FigureLengths, feet: { front
   const middle = (feet.front.z + feet.rear.z) / 2;
   const ankleFront = feet.front.clone().setZ(middle + angles.stanceWidth / 2);
   const ankleRear = feet.rear.clone().setZ(middle - angles.stanceWidth / 2);
-  // The pelvis: its centre along the stringer at the weight, over the feet; each hip joint as high as its knee's
+  // The pelvis: its centre along the stringer at `hipsOver`, over the feet; each hip joint as high as its knee's
   // angle puts it above its ankle, so a pelvis between two different knees tilts.
   const pelvisFacing = deck(angles.hipTwist);
   const leftward = new Vector3().crossVectors(up, pelvisFacing).normalize();
   const frontward = front === 'left' ? leftward : leftward.clone().negate();
   const reach = (knee: number) => Math.sqrt(Math.max(0, lengths.shin ** 2 + lengths.thigh ** 2 - 2 * lengths.shin * lengths.thigh * Math.cos(knee * DEG)));
-  const centre = new Vector3((ankleFront.x + ankleRear.x) / 2, 0, ankleRear.z + angles.weight * (ankleFront.z - ankleRear.z));
+  const centre = new Vector3((ankleFront.x + ankleRear.x) / 2, 0, ankleRear.z + angles.hipsOver * (ankleFront.z - ankleRear.z));
   const joint = (ankle: Vector3, toward: number, knee: number) => {
     const at = centre.clone().addScaledVector(frontward, toward * lengths.hipHalf);
     const level = Math.hypot(at.x - ankle.x, at.z - ankle.z);

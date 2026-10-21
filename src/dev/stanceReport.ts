@@ -45,7 +45,7 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
   kneeFront: 'Front knee', kneeRear: 'Rear knee', hipFront: 'Front hip', hipRear: 'Rear hip', ankleFront: 'Front ankle', ankleRear: 'Rear ankle',
   trunkFlexion: 'Trunk over the toes', trunkPitch: 'Trunk toward the nose', trunkTilt: 'Trunk from the vertical', lean: 'Lean (world)', chestTwist: 'Chest twist', hipTwist: 'Pelvis twist',
   headYaw: 'Head yaw', headPitch: 'Head pitch (down +)', leadArm: 'Lead arm', trailArm: 'Trailing arm', leadElbow: 'Lead elbow', trailElbow: 'Trailing elbow',
-  lowHand: 'Lower hand above the board', stanceWidth: 'Stance width', weight: 'Weight (rear 0 – front 1)',
+  lowHand: 'Lower hand above the board', stanceWidth: 'Stance width', weight: 'Weight: the feet\'s pressure (rear 0 – front 1)', hipsOver: 'Hips over the stance (rear 0 – front 1)',
   footFront: 'Front foot to the stringer', footRear: 'Rear foot to the stringer', rearKneeIn: 'Rear knee in (toward the nose)', shoulderDrop: 'Lead shoulder drop',
   rearKneeDeck: 'Rear knee over the deck', trailHeelRail: 'Trailing wrist to the heels\' rail', trailToeRail: 'Trailing wrist to the toes\' rail',
   trailFromFront: 'Trailing wrist from the front foot', leadToNose: 'Lead arm from the nose',
@@ -57,8 +57,8 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
 
 /**
  * Which step of the riding-body plan owns a miss: the physics' posture (step
- * 6) when the physics' own points miss the target too, for the measures they
- * set (the trunk, the lean, the lower hand, the feet, the weight); otherwise
+ * 6) when the physics' own reading misses the target too, for the measures it
+ * sets (the trunk, the lean, the lower hand, the feet, the weight); otherwise
  * the drawn pose (step 3: the rig's own choices, how it maps the physics'
  * crouch onto the legs, and anything it moves away from the points).
  */
@@ -76,13 +76,14 @@ const METRES: ReadonlySet<StanceMeasure> = new Set([
 export function formatMeasure(measure: StanceMeasure, value: number): string {
   if (!Number.isFinite(value)) return '—';
   if (METRES.has(measure)) return `${value.toFixed(2)} m`;
-  if (measure === 'weight') return value.toFixed(2);
+  if (measure === 'weight' || measure === 'hipsOver') return value.toFixed(2);
   return `${value.toFixed(0)}°`;
 }
 
 const range = (measure: StanceMeasure, target: StanceTarget) => {
-  const unit = METRES.has(measure) ? ' m' : measure === 'weight' ? '' : '°';
-  const digits = METRES.has(measure) || measure === 'weight' ? 2 : 0;
+  const share = measure === 'weight' || measure === 'hipsOver';
+  const unit = METRES.has(measure) ? ' m' : share ? '' : '°';
+  const digits = METRES.has(measure) || share ? 2 : 0;
   return `${target.min.toFixed(digits)}–${target.max.toFixed(digits)}${unit}`;
 };
 

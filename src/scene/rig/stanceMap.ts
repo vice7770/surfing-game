@@ -392,12 +392,12 @@ export interface MappedStance {
   gaps?: string;
 }
 
-/** Each measure's possible values (degrees, or metres for the hand and the width, a share for the weight). */
+/** Each measure's possible values (degrees, or metres for the hand and the width, a share for the weight and the hips). */
 export const MEASURE_DOMAIN: Record<StanceMeasure, [number, number]> = {
   kneeFront: [0, 180], kneeRear: [0, 180], hipFront: [0, 180], hipRear: [0, 180], ankleFront: [0, 90], ankleRear: [0, 90],
   trunkFlexion: [-180, 180], trunkPitch: [-180, 180], trunkTilt: [-180, 180], lean: [-180, 180], chestTwist: [-180, 180], hipTwist: [-180, 180],
   headYaw: [-180, 180], headPitch: [-90, 90], leadArm: [0, 180], trailArm: [0, 180], leadElbow: [0, 180], trailElbow: [0, 180],
-  lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5], footFront: [0, 90], footRear: [0, 90], rearKneeIn: [-180, 180], shoulderDrop: [-90, 90],
+  lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5], hipsOver: [-0.5, 1.5], footFront: [0, 90], footRear: [0, 90], rearKneeIn: [-180, 180], shoulderDrop: [-90, 90],
   rearKneeDeck: [-0.5, 1.5], trailHeelRail: [0, 2], trailToeRail: [0, 2], trailFromFront: [0, 2], leadToNose: [0, 180],
   chestLift: [-90, 90], handAhead: [-2, 2], pullDepth: [-2, 2], legsApart: [0, 2], sitTrunk: [0, 180], hipsDeck: [-0.5, 2], handsApart: [0, 2], handsBack: [-2, 2],
   palmFlat: [0, 180], wristsToHead: [0, 3], wristsOverHead: [-3, 3], railGrip: [0, 5],
@@ -432,7 +432,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'trim',
     name: 'Trim',
-    reach: 'Standing with no input, riding straight at 7–8 m/s on flat water (phase standing).',
+    reach: 'Standing with no input, riding straight at 7–8 m/s on flat water (phase standing); the weight read at steady speed, down the 10° face that holds trim\'s speed (the phase-5 plan\'s W1).',
     sides: 'both',
     targets: {
       ...TRIM,
@@ -449,7 +449,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'trim-frontside',
     name: 'Trim, frontside',
-    reach: 'Standing with no input across a 15° face at 7 m/s, the face rising on the toes\' side (phase standing; the stance sheet\'s `across` water).',
+    reach: 'Standing with no input across a 15° face at 7 m/s, the face rising on the toes\' side (phase standing; the stance sheet\'s `across` water); the weight read at steady speed.',
     sides: 'frontside',
     targets: {
       ...TRIM,
@@ -461,7 +461,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'trim-backside',
     name: 'Trim, backside',
-    reach: 'Standing with no input across a 15° face at 7 m/s, the face rising on the heels\' side (phase standing; the `across-back` water).',
+    reach: 'Standing with no input across a 15° face at 7 m/s, the face rising on the heels\' side (phase standing; the `across-back` water); the weight read at steady speed.',
     sides: 'backside',
     targets: {
       ...TRIM,
@@ -474,7 +474,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'trim-forward',
     name: 'Trim forward (W)',
-    reach: 'Standing, trim +1 (W, the stick forward), straight at 7–8 m/s.',
+    reach: 'Standing, trim +1 (W, the stick forward), straight at 7–8 m/s; the weight read at steady speed.',
     sides: 'both',
     targets: {
       ...STANCE,
@@ -485,7 +485,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'trim-back',
     name: 'Trim back (S)',
-    reach: 'Standing, trim −1 (S, the stick back), straight at 7–8 m/s.',
+    reach: 'Standing, trim −1 (S, the stick back), straight at 7–8 m/s; the weight read at steady speed.',
     sides: 'both',
     targets: {
       ...STANCE,
@@ -588,7 +588,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'top-turn-frontside',
     name: 'Top turn, frontside',
-    reach: 'Standing, steering onto the heels\' rail with trim −0.5 at 8 m/s: the turn off the top (phase standing).',
+    reach: 'Standing, steering onto the heels\' rail with the weight fully back (S, trim −1; the owner\'s decision 5 of 2026-10-22) at 8 m/s: the turn off the top (phase standing).',
     sides: 'frontside',
     targets: {
       kneeFront: { min: 100, max: 130, sources: ['rapturetop'], confidence: 'low', note: 'compressing through the redirect, the front knee dropping: flexed 50–80°, the front at least the rear (the plan\'s phase 2)' },
@@ -600,14 +600,14 @@ export const STANCES: readonly MappedStance[] = [
       trailArm: { min: 30, max: 70, sources: ['rapturetop', 'balisurfing'], confidence: 'low', note: 'swung around, but no higher than the chest (the plan\'s phase 2; the Bali camp\'s 60–150° drew an airplane)' },
       leadElbow: { min: 90, max: 140, sources: ['rapturetop'], confidence: 'low' },
       ...STANCE,
-      weight: { min: 0.25, max: 0.35, sources: ['rapturetop', 'cornishwave'], confidence: 'medium', note: 'about 70/30 on the back foot (Rapture; Cornish Wave 40/60); the physics\' pelvis sets it (the plan\'s phase 5)' },
+      weight: { min: 0.25, max: 0.35, sources: ['rapturetop', 'cornishwave'], confidence: 'medium', note: 'about 70/30 on the back foot (Rapture; Cornish Wave 40/60): the feet\'s pressure (the phase-5 plan\'s W1)' },
     },
     gaps: 'The rotation\'s timing (Reyes not read yet).',
   },
   {
     id: 'top-turn-backside',
     name: 'Top turn, backside',
-    reach: 'Standing, steering onto the toes\' rail with trim −0.5 at 8 m/s (phase standing).',
+    reach: 'Standing, steering onto the toes\' rail with the weight fully back (S, trim −1) at 8 m/s (phase standing).',
     sides: 'backside',
     targets: {
       chestTwist: { min: -60, max: -20, sources: ['hobgood'], confidence: 'low', note: 'the shoulders opened toward the tail, back to the pocket' },
@@ -615,7 +615,7 @@ export const STANCES: readonly MappedStance[] = [
       leadArm: { min: 30, max: 70, sources: ['rapturetop'], confidence: 'low', note: 'at chest height or below, close in' },
       trailArm: { min: 30, max: 70, sources: ['rapturetop'], confidence: 'low' },
       ...STANCE,
-      weight: { min: 0.25, max: 0.35, sources: ['rapturetop', 'cornishwave'], confidence: 'medium', note: 'about 70/30 on the back foot; the physics\' (phase 5)' },
+      weight: { min: 0.25, max: 0.35, sources: ['rapturetop', 'cornishwave'], confidence: 'medium', note: 'about 70/30 on the back foot: the feet\'s pressure' },
     },
     gaps: 'The knees: as frontside, read from no backside source.',
   },
@@ -683,7 +683,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'pump-compression',
     name: 'Pump, compressing',
-    reach: 'Standing at 7 m/s, crouching (Shift) for 0.4 s: the pump\'s compression, going uphill (phase standing).',
+    reach: 'Standing at 7 m/s, crouching (Shift) for 0.4 s: the pump\'s compression, going uphill (phase standing); the weight read at steady speed.',
     sides: 'both',
     targets: {
       kneeFront: { min: 90, max: 110, sources: ['rapturecompression'], confidence: 'low', note: 'flexed 70–90° (the plan\'s phase 2)' },
@@ -698,7 +698,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'pump-extension',
     name: 'Pump, extending',
-    reach: 'After the compression, releasing the crouch for 0.3 s: the extension, going downhill (phase standing).',
+    reach: 'After the compression, releasing the crouch for 0.3 s: the extension, going downhill (phase standing); the weight read at steady speed.',
     sides: 'both',
     targets: {
       kneeFront: { min: 130, max: 150, sources: ['rapturecompression'], confidence: 'low', note: 'flexed 30–50° (the plan\'s phase 2)' },
@@ -758,7 +758,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       kneeFront: { min: 135, max: 160, sources: ['raptureetiquette'], confidence: 'low', note: 'the front leg long: flexed 20–45°' },
       kneeRear: { min: 90, max: 120, sources: ['raptureetiquette'], confidence: 'low', note: 'the back knee bent: flexed 60–90°' },
-      weight: { min: 0.15, max: 0.3, sources: ['raptureetiquette'], confidence: 'low', note: 'hard on the back foot; the physics\' (phase 5)' },
+      weight: { min: 0.15, max: 0.3, sources: ['raptureetiquette'], confidence: 'low', note: 'hard on the back foot: the feet\'s pressure, read as the board slows' },
       ...STANCE,
     },
     gaps: 'Whether the board swings over the back under the hard back foot is the physics\' (phase 5): the owner\'s ride check.',
@@ -796,7 +796,7 @@ export const STANCES: readonly MappedStance[] = [
       kneeFront: { min: 80, max: 110, sources: ['borgonovo2021'], confidence: 'low', note: 'flexed 70–100° (99 ± 20° at the reach\'s peak force, the convention not stated)' },
       kneeRear: { min: 80, max: 110, sources: ['borgonovo2021'], confidence: 'low', note: 'flexed 70–100° (101 ± 14°)' },
       stanceWidth: { min: 0.53, max: 0.8, sources: ['borgonovo2021', 'seixas2023'], confidence: 'medium', note: '0.63 ± 0.10 m; up to 0.79 ± 0.14 m on aerial landings' },
-      weight: { min: 0.64, max: 0.8, sources: ['borgonovo2021'], confidence: 'medium', note: '72 ± 8 % of the force on the front foot; the hips\' place stands in for it' },
+      weight: { min: 0.64, max: 0.8, sources: ['borgonovo2021'], confidence: 'medium', note: '72 ± 8 % of the force on the front foot: the feet\'s pressure, smoothed over 0.3 s (the hips\' place stood in for it until phase 5)' },
       footFront: { min: 35, max: 55, sources: ['rapturepopup'], confidence: 'medium', note: 'about 45° to the stringer, between the hands (the owner\'s call, §10.3)' },
       footRear: { min: 35, max: 55, sources: ['rapturepopup'], confidence: 'medium', note: 'about 45°, across the stringer over the tail pad' },
     },
