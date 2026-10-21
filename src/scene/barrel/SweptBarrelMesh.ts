@@ -101,7 +101,9 @@ gl_FragColor = vec4( vSweptView, 1.0 );`;
 // The loft's vertices are world positions and normals: the water's depth, foam and current are read where each lies.
 // The curl takes the water's foam only as far as it lies on the water: the solver breaks where the tube is, so its
 // roller's whitewater there is the tube's water, not foam on it; the tube's own foam comes with the crash curve (PR 5).
-// The lip's thickness and its weight as a sheet come from the loft (`sheetAcross`).
+// On a crest already white before its front started the curl keeps it (`brokenCrest.ts`): `sweptLift` is then the
+// lift less that share, so it weighs only the foam. The lip's thickness and its weight as a sheet come from the loft
+// (`sheetAcross`).
 const sweptVertexPars = /* glsl */ `attribute float sweptLift;
 attribute float sweptMask;
 attribute float sweptSheet;
@@ -328,6 +330,11 @@ export class SweptBarrelMesh {
   /** Dev only: false draws the lip as the column it was before the sheet (the water sheet's before-and-after). */
   sheetShown = true;
   /**
+   * Dev only: false draws every curl without the solver's foam, as before the owner's option (a), whatever its crest
+   * (the water sheet's before-and-after, `brokenCrest.ts`).
+   */
+  brokenFoam = true;
+  /**
    * Each triangle faces the way its vertices' normals point. The loft winds its quads the other way (its front faces
    * look along −n), so a double-sided material saw every outer face as a back face and turned its normal into the
    * water: the view cosine came out negative, the body fell to R∞ with no bed, and the lights lit the water's inside.
@@ -435,8 +442,11 @@ export class SweptBarrelMesh {
       && this.uniforms.waterBarrelMaskActive.value === 1 && this.mesh.visible && this.mesh.geometry.drawRange.count > 0;
   }
 
-  /** Draw a loft's grid; none, or an empty one, hides the mesh. */
-  update(loft: LoftResult | undefined): void {
+  /**
+   * Draw a loft's grid; none, or an empty one, hides the mesh. `kept`: per slice, the share of the solver's foam its
+   * lifted water keeps (`BrokenCrests`); none keeps none, as before.
+   */
+  update(loft: LoftResult | undefined, kept?: Float32Array): void {
     if (!loft || loft.indexCount === 0) {
       this.mesh.visible = false;
       this.mesh.geometry.setDrawRange(0, 0);
@@ -447,7 +457,13 @@ export class SweptBarrelMesh {
     const indices = Math.min(loft.indexCount, INDICES);
     (this.positions.array as Float32Array).set(loft.positions.subarray(0, 3 * vertices));
     (this.normals.array as Float32Array).set(loft.normals.subarray(0, 3 * vertices));
-    (this.lift.array as Float32Array).set(loft.lift.subarray(0, vertices));
+    // The foam's weight: the lift, less the share a slice on a broken crest keeps (`brokenCrest.ts`).
+    const lift = this.lift.array as Float32Array;
+    if (kept && this.brokenFoam) {
+      for (let v = 0; v < vertices; v += 1) lift[v] = loft.lift[v] * (1 - kept[Math.floor(v / LOFT_SAMPLES)]);
+    } else {
+      lift.set(loft.lift.subarray(0, vertices));
+    }
     (this.mask.array as Float32Array).set(loft.mask.subarray(0, vertices));
     (this.sheet.array as Float32Array).set(loft.sheet.subarray(0, vertices));
     (this.sheetBack.array as Float32Array).set(loft.sheetBack.subarray(0, vertices));
