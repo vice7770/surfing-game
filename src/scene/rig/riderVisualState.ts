@@ -30,6 +30,13 @@ export interface RiderVisualState {
   speed: number;
   climb: number;
   /**
+   * Standing, how fast the body leans across the board, rad/s (positive toward
+   * its left, the way a turn grows the heading): the drawn pelvis over the feet,
+   * read over sea time by `RiderMotion` as the turn rate is, so another player's
+   * body reads it alike. 0 in any other phase.
+   */
+  leanRate: number;
+  /**
    * How far the body has come into its upright pose (from the landing) and its
    * standing cues (from standing), 0–1 (`RiderMotion`); 1 for a state built
    * without motion (the dev sheet, tests).
@@ -88,6 +95,7 @@ export function createRiderVisualState(): RiderVisualState {
     stroking: 0,
     cue: false,
     yawRate: 0,
+    leanRate: 0,
     travel: new Vector3(0, 0, 1),
     speed: 0,
     climb: 0,

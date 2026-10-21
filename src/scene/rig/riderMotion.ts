@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import type { RiderPhase, RiderVisualState } from './riderVisualState';
+import { POINT, type RiderPhase, type RiderVisualState } from './riderVisualState';
 
 /** Samples are smoothed over this, s: a turn reads within a fifth of a second, a single physics step's jitter does not. */
 const MOTION_TIME = 0.15;
@@ -33,9 +33,11 @@ const ease = (x: number) => {
 /**
  * How the drawn board moves (Part B): its turn rate, where it travels and how
  * fast it climbs, read from the drawn states over sea time, so the local rider
- * and every remote one pose from the same motion; and how far the body has come
- * into its upright and standing poses. A repeated or earlier sample changes
- * nothing; a jump, climbing back on after a fall, or sea time going back starts over.
+ * and every remote one pose from the same motion; standing, how fast the body
+ * leans across the board (the phase-5 physics plan's item 2.12 A: the head's lead
+ * from the lean); and how far the body has come into its upright and standing
+ * poses. A repeated or earlier sample changes nothing; a jump, climbing back on
+ * after a fall, or sea time going back starts over.
  */
 export class RiderMotion {
   private time = Number.NaN;
@@ -44,6 +46,9 @@ export class RiderMotion {
   private readonly position = new Vector3();
   private readonly velocity = new Vector3();
   private yawRate = 0;
+  /** Standing, the body's lean across the board (`leanOf`), rad, and its rate, rad/s, smoothed as the turn rate is. */
+  private lean = 0;
+  private leanRate = 0;
   private uprightSince = Number.NaN;
   private standingSince = Number.NaN;
   private readonly sample = new Vector3();
@@ -59,6 +64,9 @@ export class RiderMotion {
     } else if (dt > 0) {
       const blend = 1 - Math.exp(-dt / MOTION_TIME);
       this.yawRate += (wrap(state.heading - this.heading) / dt - this.yawRate) * blend;
+      // The lean's rate standing on from standing; from any other phase, or into one, none.
+      const leaning = state.phase === 'standing' && this.phase === 'standing';
+      this.leanRate = leaning ? this.leanRate + ((leanOf(state) - this.lean) / dt - this.leanRate) * blend : 0;
       this.sample.subVectors(state.boardPosition, this.position).divideScalar(dt);
       this.velocity.lerp(this.sample, blend);
       this.remember(state, time);
@@ -70,6 +78,7 @@ export class RiderMotion {
   reset(): void {
     this.time = Number.NaN;
     this.yawRate = 0;
+    this.leanRate = 0;
     this.velocity.set(0, 0, 0);
     this.uprightSince = Number.NaN;
     this.standingSince = Number.NaN;
@@ -78,6 +87,7 @@ export class RiderMotion {
   private remember(state: RiderVisualState, time: number): void {
     this.time = time;
     this.heading = state.heading;
+    this.lean = leanOf(state);
     this.phase = state.phase;
     this.position.copy(state.boardPosition);
     const upright = state.phase === 'landing' || state.phase === 'standing';
@@ -90,6 +100,7 @@ export class RiderMotion {
   private write(state: RiderVisualState): void {
     const speed = Math.hypot(this.velocity.x, this.velocity.z);
     state.yawRate = this.yawRate;
+    state.leanRate = state.phase === 'standing' ? this.leanRate : 0;
     state.speed = speed;
     state.climb = this.velocity.y;
     const pointing = this.pointing.set(Math.sin(this.heading), 0, Math.cos(this.heading));
@@ -103,4 +114,20 @@ export class RiderMotion {
     state.uprightBlend = Number.isNaN(this.uprightSince) ? 0 : ease((this.time - this.uprightSince) / UPRIGHT_EASE);
     state.standingBlend = Number.isNaN(this.standingSince) ? 0 : ease((this.time - this.standingSince) / STANDING_EASE);
   }
+}
+
+/**
+ * The body's lean across the board, rad (positive toward its left): the drawn pelvis over the middle of the feet,
+ * against the world's up, about the heading's level line. The pelvis is the physics' body, banked, and the upper
+ * body's swing turns the chest and head about it, not it (`AttachedRider.renderPoint`): so this reads the lean the
+ * turn will follow, not the swing that throws it.
+ */
+function leanOf(state: RiderVisualState): number {
+  const p = state.points;
+  const left = Math.cos(state.heading);
+  const back = -Math.sin(state.heading);
+  const x = p[POINT.pelvis].x - (p[POINT.leftFoot].x + p[POINT.rightFoot].x) / 2;
+  const y = p[POINT.pelvis].y - (p[POINT.leftFoot].y + p[POINT.rightFoot].y) / 2;
+  const z = p[POINT.pelvis].z - (p[POINT.leftFoot].z + p[POINT.rightFoot].z) / 2;
+  return Math.atan2(x * left + z * back, Math.max(1e-6, y));
 }

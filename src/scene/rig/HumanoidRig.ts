@@ -27,6 +27,8 @@ const REST_BACK = new Vector3(0, 0, -1);
 const REST_UP = new Vector3(0, 1, 0);
 const WORLD_UP = new Vector3(0, 1, 0);
 const DEG = Math.PI / 180;
+/** Gravity, m/s² (the lean's lead: the turn a lean holds, g tan θ / v). */
+const GRAVITY = 9.81;
 const smooth = (x: number) => {
   const t = Math.max(0, Math.min(1, x));
   return t * t * (3 - 2 * t);
@@ -261,6 +263,28 @@ export const RIG_DETAIL = {
   neckTurn: 90,
   gazeFollow: 8,
   /**
+   * The head leads from the body's lean (the phase-5 physics plan's items 2.1 A
+   * and 2.12 A, the owner's decisions 10 and 11 of 2026-10-22; WSL flow: head,
+   * shoulders, hips, knees, toes). Steered, the physics leans the body first (the
+   * upper body's swing throws it in), and the board's yaw follows: in a bottom
+   * turn steered at 8 m/s on flat water it first yaws about 7° the other way (the
+   * counter-steer that leans it in: a bicycle steers out to lean in) and comes
+   * into the turn about 0.45 s after the lean starts. The look led by the yaw rate
+   * alone looked 13° the wrong way with it, and came 10° into the turn 0.07 s
+   * after the board. So the head alone also leads by the turn the lean is
+   * bringing: the yaw rate a lean holds grows as g/v times the lean's rate (a
+   * turn's g tan θ / v), looked ahead over `time`, s, about the board's lag behind
+   * the lean; below `slowest` m/s, read as at it (no bank is asked for off the
+   * plane). It now looks at most 5° the wrong way and comes 10° in 0.05 s before
+   * the board. Leaning out of a turn, the head comes back first too. Followed as
+   * the gaze is, within the neck's reach; the leading arm keeps pointing along the
+   * board's look (at 0.75 s the head turned 0.37 s before the chest in the
+   * cutback, past the cascade's 0.35; led too, the chest broke the cascade's
+   * order). Read from the drawn body (`RiderVisualState.leanRate`), so another
+   * player's head leads alike, with nothing on the wire.
+   */
+  leanLead: { time: 0.5, slowest: 4 },
+  /**
    * The anticipation cascade (the animation-realism plan's §3.2 and phase 2;
    * WSL flow: turns unwind head → shoulders → hips → board; the owner's reel,
    * step 4: the head is the steering wheel): each part is turned into the turn
@@ -468,6 +492,9 @@ export class HumanoidRig {
   private readonly bendFollower = [0, 1, 2].map(() => new Follower(RIG_DETAIL.trunkFollow.bend));
   private readonly pitchFollower = new Follower(RIG_DETAIL.gazeFollow);
   private readonly yawFollower = new Follower(RIG_DETAIL.gazeFollow);
+  /** The head's own lead from the body's lean (`leanLead`), rad about the up, followed as the gaze is; and the head's level look with it. */
+  private readonly leanFollower = new Follower(RIG_DETAIL.gazeFollow);
+  private readonly headLook = new Vector3();
   private readonly blend: StanceBlend = { stance: 'regular', depth: 0, turn: 0, back: 0 };
   /** Upright, the stages read from the drawn state (`stageBlend.ts`) and the key pose they blend (`stagePoses.ts`), this solve. */
   private readonly stages = new StageBlend();
@@ -895,6 +922,7 @@ export class HumanoidRig {
       for (const follower of this.bendFollower) follower.seed(0, state.clock);
       this.pitchFollower.seed(0, state.clock);
       this.yawFollower.reset();
+      this.leanFollower.seed(0, state.clock);
     }
     // The chest breathes: the upper spine turned back (inhaling) and forward about the body's left, half at each bone.
     const breath = RIG_DETAIL.breath.share * this.breathing.update(state, this.trunkLength / 2);
@@ -1658,6 +1686,7 @@ export class HumanoidRig {
     for (const follower of this.bendFollower) follower.reset();
     this.pitchFollower.reset();
     this.yawFollower.reset();
+    this.leanFollower.reset();
     for (const side of SIDES) for (const follower of [...this.kneeFollowers[side], ...this.ankleFollowers[side]]) follower.reset();
     this.swing.reset();
     this.breathing.reset();
@@ -2126,20 +2155,31 @@ export class HumanoidRig {
     const last = this.yawFollower.value;
     const followed = this.yawFollower.follow(last + Math.atan2(Math.sin(heading - last), Math.cos(heading - last)) + lag * state.yawRate, state.clock);
     look.set(Math.sin(followed), 0, Math.cos(followed));
+    // The head alone leads on by the turn the body's lean is bringing (`leanLead`), before the board turns, followed as
+    // the gaze is and within the neck's reach; the look the leading arm points along stays the board's.
+    const { leanLead } = RIG_DETAIL;
+    const leaning = (leanLead.time * GRAVITY * state.leanRate) / Math.max(state.speed, leanLead.slowest);
+    const led = this.headLook.copy(look).applyAxisAngle(WORLD_UP, this.leanFollower.follow(state.standingBlend * (RIG_DETAIL.lookAhead - lag) * leaning, state.clock));
+    if (hint.lengthSq() > 1e-8) {
+      const turn = Math.atan2(this.scratch.crossVectors(hint, led).y, hint.dot(led));
+      const most = (RIG_DETAIL.neckTurn * Math.PI) / 180;
+      if (Math.abs(turn) > most) led.copy(hint).applyAxisAngle(WORLD_UP, Math.sign(turn) * most);
+    }
     const pitchMost = (this.pose.lookPitch * Math.PI) / 180;
     const climbing = Math.atan2(state.climb, Math.max(state.speed, 1)) - (this.pose.gazeDown * Math.PI) / 180;
     const pitch = this.pitchFollower.follow(Math.max(-pitchMost, Math.min(pitchMost, climbing)), state.clock);
-    direction.copy(WORLD_UP).multiplyScalar(Math.cos(pitch)).addScaledVector(look, -Math.sin(pitch));
+    direction.copy(WORLD_UP).multiplyScalar(Math.cos(pitch)).addScaledVector(led, -Math.sin(pitch));
     look.multiplyScalar(Math.cos(pitch)).addScaledVector(WORLD_UP, Math.sin(pitch));
+    led.multiplyScalar(Math.cos(pitch)).addScaledVector(WORLD_UP, Math.sin(pitch));
     // Easing in from the landing's head: world up, facing mostly the nose.
     const blend = state.standingBlend;
     if (blend < 1) {
       direction.multiplyScalar(blend).addScaledVector(WORLD_UP, 1 - blend).normalize();
-      this.headHint.copy(this.boardForward).lerp(this.facing, 0.25).multiplyScalar(1 - blend).addScaledVector(look, blend);
+      this.headHint.copy(this.boardForward).lerp(this.facing, 0.25).multiplyScalar(1 - blend).addScaledVector(led, blend);
       this.orient(BONES.head, direction, this.headHint);
       return;
     }
-    this.orient(BONES.head, direction, look);
+    this.orient(BONES.head, direction, led);
   }
 
   /**
