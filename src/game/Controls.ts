@@ -50,7 +50,7 @@ export class Controls {
   private padPrevious = new Set<Action>();
   private padSteerValue = 0;
   private padTrimValue = 0;
-  private padRotateValue = 0;
+  private padSwingValue = 0;
   private padCrouchValue = 0;
   private padCompressValue = 0;
   private padDuckValue = 0;
@@ -122,9 +122,10 @@ export class Controls {
    * pop-up key's hold (the reel, in the water) lying down; trim, crouch, Compress
    * and the hand standing; steering always. Keys and touch ramp in and out over
    * RAMP_TIME, so a digital input feels analog; a pad's stick and trigger pass
-   * straight through. Disabled, every axis ramps back to rest. The upper body's
-   * rotation is the pad's alone (the movement-flow spec): standing, while the pad
-   * was used last; otherwise undefined, and the body turns with the ride by itself.
+   * straight through. Disabled, every axis ramps back to rest. No device asks for
+   * the upper body's rotation: the pad's right stick across swings the camera
+   * (`cameraSwing`, the owner, 2026-10-22), so `rotate` stays undefined and the
+   * body turns with the ride by itself.
    */
   rideRequest(dt: number, standing: boolean): RideInput {
     const keys = this.active ? heldActions(this.held, [], this.bindings()) : new Set<Action>();
@@ -157,11 +158,19 @@ export class Controls {
       crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
       compress: compressing && pad ? Math.max(this.padCompressValue, compress) : compress,
       hand: standing && has('hand'),
-      rotate: standing && pad && this.lastDevice === 'gamepad' ? this.padRotateValue : undefined,
       duckDive: standing ? 0 : Math.max(pad ? this.padDuckValue : 0, duck),
       reel: !standing && has('popUp'),
     };
     return this.lastRequest;
+  }
+
+  /**
+   * The camera's swing asked for this frame (the owner, 2026-10-22): the driving pad's right stick across, −1 to 1
+   * after its dead zone and response, positive right; in every stage, lying down, standing or in the water. Nothing
+   * while a menu is open; the keyboard and touch have none.
+   */
+  get cameraSwing(): number {
+    return this.active ? this.padSwingValue : 0;
   }
 
   requestGetUp(): void { this.getUpRequested = true; }
@@ -183,7 +192,7 @@ export class Controls {
       const sticks = padSticks(pads.find((pad, index) => padKey(pad, index) === this.driving), this.stick());
       this.padSteerValue = sticks.steer;
       this.padTrimValue = sticks.trim;
-      this.padRotateValue = sticks.rotate;
+      this.padSwingValue = sticks.swing;
       this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
       // A trigger resting just off its stop is not a press (the Steam Controller reports raw travel).
       const compressValue = padValue(pads, this.bindings().gamepad.compress[0]);
@@ -219,7 +228,7 @@ export class Controls {
     this.padHeld = new Set();
     this.padSteerValue = 0;
     this.padTrimValue = 0;
-    this.padRotateValue = 0;
+    this.padSwingValue = 0;
     this.padCrouchValue = 0;
     this.padCompressValue = 0;
     this.padDuckValue = 0;

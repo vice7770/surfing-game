@@ -33,7 +33,7 @@ describe('the glow pass', () => {
     expect(stub.drawn).toHaveLength(1 + GLOW.levels + (GLOW.levels - 1) + 1);
     expect(glow.passes).toBe(11);
     const { scene: hdr, mips } = glow.targets;
-    expect(hdr).toMatchObject({ width: 1280, height: 800, samples: 4, depthBuffer: true, stencilBuffer: true });
+    expect(hdr).toMatchObject({ width: 1280, height: 800, samples: 2, depthBuffer: true, stencilBuffer: true });
     expect(stub.drawn[0].target).toBe(hdr);
     expect(mips.map((mip) => [mip.width, mip.height])).toEqual([[640, 400], [320, 200], [160, 100], [80, 50], [40, 25]]);
     // Down 0 → 4, then up 3 → 0 without clearing (they add onto the mip), then the canvas.
@@ -47,13 +47,13 @@ describe('the glow pass', () => {
     expect(glow.targets.scene).toBeUndefined();
   });
 
-  it('takes the dev switch\'s MSAA samples in place of the default 4', () => {
-    const glow = new GlowPass({ samples: 2 });
+  it('takes the dev switch\'s MSAA samples in place of the default 2', () => {
+    const glow = new GlowPass({ samples: 4 });
     glow.render(rendererStub(1280, 800).renderer, new Scene(), new PerspectiveCamera());
-    expect(glow.targets.scene?.samples).toBe(2);
+    expect(glow.targets.scene?.samples).toBe(4);
     expect(glow.settings.exposure).toBe(GLOW.exposure);
     glow.dispose();
-    expect(new GlowPass().settings.samples).toBe(4);
+    expect(new GlowPass().settings.samples).toBe(2);
   });
 
   it('follows the drawing buffer when the window or render scale changes', () => {

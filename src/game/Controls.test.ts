@@ -216,16 +216,33 @@ describe('the ride request (P9)', () => {
     expect(controls.rideRequest(0.2, true).compress).toBe(0);
   });
 
-  // The movement-flow spec: the pad's right stick across turns the upper body, standing; the keyboard leaves the body
-  // to turn with the ride by itself, so a key pressed after the pad hands the rotation back (Review Focus 3).
-  it('asks for the upper body\'s rotation from the pad\'s right stick, standing, until a key is pressed', () => {
+  // The owner, 2026-10-22: the pad's right stick across swings the camera in every stage, and no longer asks for the
+  // upper body's rotation: the body turns with the ride by itself on the pad too, as on the keyboard and touch.
+  it('swings the camera from the pad\'s right stick across, lying down and standing, and asks for no rotation', () => {
     const { controls, key, setPads } = setup();
     setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.8, 0] }]);
     controls.poll();
-    expect(controls.rideRequest(1 / 60, true).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
-    expect(controls.rideRequest(1 / 60, false).rotate).toBeUndefined();
-    key('keydown', 'KeyW');
+    expect(controls.cameraSwing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
     expect(controls.rideRequest(1 / 60, true).rotate).toBeUndefined();
+    expect(controls.rideRequest(1 / 60, false).rotate).toBeUndefined();
+    expect(controls.rideRequest(1 / 60, true)).not.toHaveProperty('rotate');
+    // Still swinging after a key, the stick being held; not while a menu is open, nor once it is let go.
+    key('keydown', 'KeyW');
+    expect(controls.cameraSwing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    controls.enabled = false;
+    expect(controls.cameraSwing).toBe(0);
+    controls.enabled = true;
+    setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, -1, 0] }]);
+    controls.poll();
+    expect(controls.cameraSwing).toBe(-1);
+    setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.1, 0] }]);
+    controls.poll();
+    expect(controls.cameraSwing).toBe(0);
+    // Trim on the left stick: the right stick across still swings.
+    const left = setup({ trimStick: 'left', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });
+    left.setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.8, 0] }]);
+    left.controls.poll();
+    expect(left.controls.cameraSwing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
   });
 
   it('ramps keys in over 0.2 s; opposite keys cancel, and unbound keys do nothing', () => {

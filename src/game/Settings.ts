@@ -73,7 +73,16 @@ export interface GraphicsSettings extends AdvancedGraphics {
    * water only. An A/B the owner is judging, so no preset sets it and choosing one keeps it; off by default.
    */
   glow: boolean;
+  /**
+   * The glow's anti-aliasing: MSAA samples of its HDR scene target, 2× (the default, the owner's call 2026-10-22: about
+   * +0.75 ms on the M1) or 4× (smoother edges, about +2.8 ms). Like the glow, no preset sets it.
+   */
+  glowAntialias: GlowAntialias;
 }
+
+/** The glow's MSAA sample counts the player can pick. */
+export type GlowAntialias = 2 | 4;
+export const GLOW_ANTIALIAS: readonly GlowAntialias[] = [2, 4];
 
 export interface ControlSettings extends StickSettings {
   bindings: Bindings;
@@ -135,7 +144,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', breathMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true, stanceReadout: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
-      preset: 'auto', ...PRESETS.medium, glow: false,
+      preset: 'auto', ...PRESETS.medium, glow: false, glowAntialias: 2,
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 2 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
@@ -267,6 +276,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       waterLook: oneOf(graphics.waterLook, ['classic', 'rich'] as const, presetLook),
       particles: oneOf(graphics.particles, PARTICLE_LEVELS, presetParticles),
       glow: flag(graphics.glow, g.glow),
+      glowAntialias: oneOf(graphics.glowAntialias, GLOW_ANTIALIAS, g.glowAntialias),
     },
     controls: {
       bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings, controls.padLayout !== 2),

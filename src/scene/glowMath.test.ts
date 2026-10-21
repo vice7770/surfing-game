@@ -152,20 +152,25 @@ describe('the bloom', () => {
     expect(bloomSizes(20, 10).at(-1)).toEqual({ width: 1, height: 1 });
   });
 
-  it('adds about 60 bytes a pixel, nearly all of it the multisampled HDR scene', () => {
+  it('adds about 39 bytes a pixel at the default 2× MSAA, most of it the multisampled HDR scene; 63 at 4×', () => {
     const at1280 = glowMemory(1280, 800);
-    expect(at1280.sceneSamples).toBe(1280 * 800 * 4 * 12);
+    expect(at1280.sceneSamples).toBe(1280 * 800 * 2 * 12);
     expect(at1280.sceneResolve).toBe(1280 * 800 * 12);
     expect(at1280.bloom).toBe((640 * 400 + 320 * 200 + 160 * 100 + 80 * 50 + 40 * 25) * 8);
-    expect(at1280.total / (1280 * 800)).toBeCloseTo(62.7, 1);
-    expect(glowMemory(2048, 1280).total).toBe(2048 * 1280 * 60 + (1024 * 640 + 512 * 320 + 256 * 160 + 128 * 80 + 64 * 40) * 8);
+    expect(at1280.total / (1280 * 800)).toBeCloseTo(38.7, 1);
+    expect(glowMemory(1280, 800, 4).total / (1280 * 800)).toBeCloseTo(62.7, 1);
+    expect(glowMemory(2048, 1280).total).toBe(2048 * 1280 * 36 + (1024 * 640 + 512 * 320 + 256 * 160 + 128 * 80 + 64 * 40) * 8);
   });
 
-  it('runs the HDR scene at 4× MSAA unless the dev switch asks for 2×', () => {
-    expect(glowSamples(null)).toBe(4);
-    expect(glowSamples('4')).toBe(4);
+  it("runs the HDR scene at the setting's MSAA (2× by default) unless the dev switch asks for 2× or 4×", () => {
+    expect(GLOW.samples).toBe(2);
+    expect(glowSamples(null)).toBe(2);
     expect(glowSamples('2')).toBe(2);
-    expect(glowSamples('8')).toBe(4);
+    expect(glowSamples('4')).toBe(4);
+    expect(glowSamples('8')).toBe(2);
+    expect(glowSamples(null, 4)).toBe(4);
+    expect(glowSamples('2', 4)).toBe(2);
+    expect(glowSamples('4', 2)).toBe(4);
   });
 
   it('writes matrices for GLSL column by column', () => {

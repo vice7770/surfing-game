@@ -110,7 +110,7 @@ describe('settingsModel', () => {
 describe('applyRow', () => {
   it('turns the preset to Custom for a hand-set value, and copies a chosen preset', () => {
     expect(applyRow(defaultSettings(), 'caustics', false)).toEqual({ tab: 'graphics', patch: expect.objectContaining({ preset: 'custom', caustics: false }) });
-    expect(applyRow(defaultSettings(), 'preset', 'low')).toEqual({ tab: 'graphics', patch: { preset: 'low', ...PRESETS.low, glow: false } });
+    expect(applyRow(defaultSettings(), 'preset', 'low')).toEqual({ tab: 'graphics', patch: { preset: 'low', ...PRESETS.low, glow: false, glowAntialias: 2 } });
     expect(applyRow(defaultSettings(), 'frameLimit', '30')).toEqual({ tab: 'graphics', patch: expect.objectContaining({ frameLimit: 30 }) });
   });
 
@@ -145,6 +145,22 @@ describe('applyRow', () => {
     expect(settingsModel('graphics', classic, context).map((r) => r.id)).not.toContain('glow');
     expect(applyRow(defaultSettings(), 'glow', true)).toEqual({ tab: 'graphics', patch: { glow: true } });
     expect(applyRow(defaultSettings(), 'glow', false)).toEqual({ tab: 'graphics', patch: { glow: false } });
+  });
+
+  // The owner's ask (2026-10-22): the glow's anti-aliasing as a setting, 2× or 4×.
+  it('offers the glow anti-aliasing, 2× or 4×, under the glow while it is on, without making the preset Custom', () => {
+    expect(settingsModel('graphics', defaultSettings(), context).map((r) => r.id)).not.toContain('glowAntialias');
+    const glowing = { ...defaultSettings(), graphics: { ...defaultSettings().graphics, glow: true } };
+    const rows = settingsModel('graphics', glowing, context);
+    const ids = rows.map((r) => r.id);
+    expect(ids.indexOf('glowAntialias')).toBe(ids.indexOf('glow') + 1);
+    expect(rows.find((r) => r.id === 'glowAntialias')).toMatchObject({
+      kind: 'choice', value: '2', label: 'Glow anti-aliasing', options: [{ value: '2', label: '2×' }, { value: '4', label: '4×' }],
+    });
+    const classic = { ...glowing, graphics: { ...glowing.graphics, preset: 'low' as const, ...PRESETS.low } };
+    expect(settingsModel('graphics', classic, context).map((r) => r.id)).not.toContain('glowAntialias');
+    expect(applyRow(glowing, 'glowAntialias', '4')).toEqual({ tab: 'graphics', patch: { glowAntialias: 4 } });
+    expect(applyRow(glowing, 'glowAntialias', '2')).toEqual({ tab: 'graphics', patch: { glowAntialias: 2 } });
   });
 
   // The Particles setting, after Spray and mist; it applies at once, the running sea included.

@@ -83,6 +83,16 @@ describe('SettingsStore', () => {
     expect(store.value.graphics.glow).toBe(false);
   });
 
+  it('keeps the glow anti-aliasing at 2× for a new or older save, saves 4×, and refuses other sample counts', () => {
+    const storage = memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: { preset: 'high', ...PRESETS.high, glow: true } }) });
+    const store = new SettingsStore(storage);
+    expect(store.value.graphics.glowAntialias).toBe(2);
+    store.update('graphics', { glowAntialias: 4 });
+    expect(new SettingsStore(storage).value.graphics.glowAntialias).toBe(4);
+    expect(sanitizeSettings({ graphics: { glowAntialias: 8 } }, defaultSettings()).graphics.glowAntialias).toBe(2);
+    expect(sanitizeSettings({ graphics: { glowAntialias: '4' } }, defaultSettings()).graphics.glowAntialias).toBe(2);
+  });
+
   // C1: the stick settings, with their defaults and ranges.
   it('keeps the stick settings within their ranges', () => {
     expect(defaultSettings().controls).toMatchObject({ trimStick: 'right', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });

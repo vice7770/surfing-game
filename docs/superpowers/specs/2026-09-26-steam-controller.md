@@ -73,7 +73,7 @@ The check decides. If the game and Steam work together cleanly, nothing more is 
   - 0.15 for other gamepads;
   - each with its own slider (0–0.3).
 - **The pad touched last drives the sticks.** Buttons still work on any connected pad.
-- The right stick does nothing while lying down.
+- The right stick did nothing while lying down. **Since 2026-10-22 (the owner),** its X swings the front, behind and side views around the rider in every stage, lying down included, until the camera button changes the view. Trim stays on its Y while standing; with trim on the left stick, the right stick's Y is free.
 
 ### Buttons (Q5, Q11, Q12)
 
