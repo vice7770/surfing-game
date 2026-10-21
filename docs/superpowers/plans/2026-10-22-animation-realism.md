@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan phase by phase. Steps use checkbox (`- [ ]`) syntax for tracking. **Build nothing until the owner approves this plan.**
 
-**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built". **Phase 2 built** on `claude/anim-p2` (from `claude/playtest-2026-10-22f`, 052337d2), awaiting the owner's ride check: see §8, phase 2, "Built". **Phase 3 built** on `claude/anim-p3` (from `main` at e445f06b, phases 1 and 2 in), awaiting the owner's ride check: see §8, phase 3, "Built".
+**Status:** approved by the owner on 2026-10-22 ("all recommended" on §10, now decided). Phase 0 (this plan, the dev view `character-sheet.html?realism`, the stance sheet's stills) on `claude/animation-plan`. **Phase 1 built** on `claude/anim-p1` (from `main` at fade7dd2), awaiting the owner's ride check: see §8, phase 1, "Built". **Phase 2 built** on `claude/anim-p2` (from `claude/playtest-2026-10-22f`, 052337d2), awaiting the owner's ride check: see §8, phase 2, "Built". **Phase 3 built** on `claude/anim-p3` (from `main` at e445f06b, phases 1 and 2 in), awaiting the owner's ride check: see §8, phase 3, "Built". **Phase 4 built** on `claude/anim-p4` (from `main` at 90ef34a1, phases 1 to 3 in), awaiting the owner's ride check: see §8, phase 4, "Built".
 
 **The ask (owner, 2026-10-22):** "All movements need to be more realistic, right now a bit too random. All stages need proper animation; transitions are not so bad, but the stances are incorrect."
 
@@ -956,10 +956,10 @@ The riding stances, the motion filter and the turns are as phase 2 left them: ev
 
 ### Phase 4: falls and recovery
 
-- [ ] The reflex layer (§7) in the rig's fallen branch; the shape by cause (a new local snapshot slot for the separation's cause).
-- [ ] Surfacing; the swim's sight toward the board.
-- [ ] The reel and the climb-on key poses (§6); `SWIM_BITS.holding`; `climbOn` blended over 0.4 s.
-- [ ] **Owner's call:** wire flag 128 "recovering". Without it, remote surfers fall back as in §6.
+- [x] The reflex layer (§7) in the rig's fallen branch; the shape by cause (read on the page from the ride's status, not a snapshot slot: below).
+- [x] Surfacing; the swim's sight toward the board.
+- [x] The reel and the climb-on key poses (§6); the hold read on the page (`HoldReading`) in place of `SWIM_BITS.holding`; `climbOn` blended over 0.4 s.
+- [x] **Owner's call:** wire flag 128 "recovering" (Q20).
 
 **Targets (Phase 4)** (new fallen measures read from the drawn joints over a recipe):
 
@@ -988,6 +988,60 @@ The riding stances, the motion filter and the turns are as phase 2 left them: ev
 - *A reflex fights the ragdoll's own motion* (an arm drawn over the head while the physics' arm is spread): capped at 0.8 weight, and within an arm's reach of the point.
 - *The cause misread for remote surfers:* they get the default shape.
 - *Reaching for the board near a breaking wave:* the reach is off under a breaking wave.
+
+**Built (phase 4, 2026-10-21, `claude/anim-p4`).** Drawn only: the ragdoll, its points and every physics test are untouched; the page reads what the snapshot lacks, and one wire bit carries the recovery (commits 3209e28b, 7ddb8b20, 25d7d88b, 9a295362, 55f3a207, e4d9d9df, 67225182, 50088d48, 9cd53661; stills and clips below).
+
+- **The limbs by side** (`FallenSides`, 7ddb8b20): the fall body (`DetachedSurfer`) builds its arm and leg points on the rider's frame with its "left" at the drawn body's right, so each drawn arm reached across the chest for the point of its name for the whole fall (the arms crossed in 44–96 % of fallen frames; a fall from lying down flung both hands over the body at 7.7 m/s). The points now trade places when they lie the other way round across the drawn body, with a margin (0.1 m arms, 0.06 m legs). This was the drawing, not the physics: the 5–8 m/s fling the plan asked about is gone (4.0 m/s, the reflex's own pace).
+- **The stages** (`FallStages`, `FALL_READING`): the reflex starts 0.12 s after the fall (the first muscle responses to a sudden fall come at 54–85 ms, the deltoid's at 80: Bisdorff et al. 1999, *J Neurol Neurosurg Psychiatry* 66: 447–455; plus the 40 ms before a muscle moves the limb), the knees bend by 0.4 s and the forearms cover the head by 0.45 s, held until the swimmer has surfaced. The shape by cause: the session's `separation` (over the falls for `impact`, flat for `reef`), else the board's pitch at the fall (a pearl nose down past 25°, off the back nose up past 20°); remote surfers read the motion (slipping back off the board, or lifted with the lip). Tumbling (the drawn spine turning faster than 3 rad/s) curls the body loosely; over the falls, a ball for 1.5 s. Feet first in the air (the pelvis 0.15–0.4 m over the board's centre and falling). Surfacing: rising under water, the forearms crossed overhead; up, treading water upright, looking to the board, then away (a fixed scan: the drawn state carries no wave), then back; calm by the board, the near hand reaches for it.
+- **The key poses** (`FALL_POSES`): the cage (the wrists before the face, crossed; the elbows forward and out), the pearl's arms round the head, off the back's arms out and back, the overhead cross, sculling, the legs' bends (brace, curl, ball, pencil, flat, tread, kick), the chin's tuck. Each reflex at most 0.8 of the way over the ragdoll's limb (§7), never past the limb's reach of its physics point (eased in from 0.6 s); the holds (surfacing, the cord, the rail) all of it.
+- **Their pace** (9cd53661): each arm blends from the ragdoll's way to the aim through a way kept in the chest's frame (it swung round as the ragdoll's arm came opposite the aim: a standing fall's hands at 6 m/s stopped in a frame, a pearl's at 11); the cause's throw comes in at the shield's pace (in 0.13 s, 15 m/s off the back); the reflex and the hold combine softly; the kept elbows', hands' and ways' turns ease at their limits; the fallen arm comes straight smoothly. The hands now move 3.6–5.9 m/s about the shoulders in the chest's frame from the onset, never stopping dead (a protective arm's pace: the film test below).
+- **The reel** (§6): upright in the water (the trunk drawn toward upright over the pelvis, at most 60° off the floating physics' trunk), hand over hand along the line from the chest to the leash's plug, each pull drawing the cord at the leash's 0.6 m/s (1.33 pulls a second), the back foot's hand first; the cord runs from the hand on it (before: always the left hand).
+- **The climb** (§6): both hands at the near rail's middle either side of the chest (the rail held while the chest wanders under the board), the elbows back and down; the kick and pull with the chest over the deck facing up; back on the board, the prone pose eases in over 0.4 s, the knees and elbows turning from how they held, the feet planted and swung on over the rail (`PointInertia` no longer blends them).
+- **The swim:** the crawl as it was (step 8); the head lifts to sight the board every five strokes (the plan's 4–6), within 70° of the heading.
+- **The page** (e4d9d9df): the drawn state carries the ride status's `separation` and the player's stance (the snapshot lives in `src/wave`, out of this phase's bounds: a two-line slot there would replace the page's reading). `HoldReading` reads the hold from what the page asks and sees, as `RideSession` grabs: the pop-up key with the chest within 1 m of the board's box takes it (the status shows the board in reach only while the key is up), released diving, 2.3 m from the board, or once a newer status finds the board free and in reach (agrees with the session on more than 99 % of fallen frames).
+- **The wire** (67225182): flag 128 "recovering", in the water reeling the leash in or holding the board; another player's swimmer holds the board with its chest within 0.7 m of the board's box, else reels (its cord from the right hand: the stance is not sent).
+- **Map and tests:** the gauge's `wristsToHead`, `wristsOverHead`, `railGrip`; the phase-4 targets (`fall-side`, `fall-tumble`, `fall-over`, `surfacing`, `reel`, `climb-grab`; `fall-pearl` and `fall-back` read for their tiles) with the Rapture pages on safety, staying calm underwater and recovering after a wipeout, and Bisdorff 1999. `stanceTargets.test.ts`: three before-misses struck; `fall-side.wristsToHead` met on all four surfers. New `fallStages.test.ts` (each shape's trigger, the onset, surfacing and bobbing, the look, the reel's flicker, the hold and the pull, the rail kept, the reach), `fallReflexes.test.ts` (the shield by 0.5 s and held, each arm within reach of its point and on its side, the curl, a shape per cause, feet first, surfacing overhead, treading, the reel hand over hand with the back foot's hand first, both hands at the rail, the chest over the deck before the feet swing on, the sight every five strokes), `holdReading.test.ts`, wire flag 128 (`poseCodec`, `ownPose`, `RemoteSurfers`, `RemoteSurferViews`); the film (`bodyFilm.test.ts`): the switches of over the falls, a fall from lying down and climbing back on blended out at 60 and 120 Hz, the fling gone, each fall's hands at a protective pace, another player's reel and climb from the flag.
+
+**Results** (surfer2, Regular and Goofy alike unless noted; before is phase 3's drawing on the same recipes and gauge; the stance map's reading moments):
+
+| Stage | Measure | Before | After | Target |
+|---|---|---:|---:|---|
+| Fall to the side (0.5 s) | wrists to the head | 0.47 m (the four surfers' mean 0.49) | 0.19 m (all four ≤ 0.25) | ≤ 0.25 m (medium) |
+| Fall to the side | the shield first in (wrists within 0.25 m) | never | 0.40 s | onset 0.12–0.25 s; from 0.4 s |
+| Tumble (0.7 s) | knees flexed / wrists to the head | 46° / 0.41 m | 79° / 0.17 m | 60–110° |
+| Over the falls (0.6 s) | knees / hips flexed | 46° / 38–44° | 113° / 93–110° | ≥ 100° / ≥ 90° |
+| Pearl (0.45 s) | wrists to the head / hands apart | 0.55 m / — | 0.21 m / 0.38 m (round the head) | arms forward round the head |
+| Off the back (0.45 s) | hands apart | — | 0.96 m (out and back) | arms out to the sides behind |
+| Surfacing (rising) | wrists over the head | −0.44 m (below) | +0.19 m | 0–0.25 m (medium) |
+| Reel | trunk from vertical / the cord's hand | 84–85° (floating flat) / the left, always | 25–26° / alternating, 1.33 pulls a second, the back foot's first | ≤ 30° / 0.8–1.5 a second |
+| Climb (2.2 s after the grab) | the wrists' middle from the near rail | 0.38 m (Regular) / 0.32 m (Goofy) | 0.15 m / 0.06 m | ≤ 0.15 m |
+| Climb on | chest over the deck, then the feet | the prone pose in a frame | chest first; the feet on within 0.45 s | chest over before the legs swing on |
+| Fall from lying down | fastest hand in the first 0.5 s | 7.7 m/s (crossing the body) | 4.0 m/s (3.5 before the reflex's onset) | a protective pace |
+| The falls, 0.12–1 s | the hands about the shoulders, chest's frame | 3.0–4.8 m/s (the ragdoll alone) | 3.6–5.9 m/s, steps ≤ 2.9 m/s a frame | — |
+
+Riding, the take-off and the water are as phase 3 left them: every stance target, film and rig test as before.
+
+**Stills and clips** (in `docs/research/animation-realism-2026-10-22/`):
+- `13-falls`, `14-fall-shapes`, `15-surface-swim`, `16-reel-climb`, each `-phase4-before.jpg` (phase 3's drawing) and `-phase4.jpg` (`character-sheet.html?realism&only=<id>&gaps=0&when=…`).
+- `phase4-motion-before-falls.mp4` / `phase4-motion-after-falls.mp4` (to the side, a pearl, over the falls, off the back) and `phase4-motion-before-recovery.mp4` / `phase4-motion-after-recovery.mp4` (surfacing, the reel, the climb), surfer2 Regular: `node scripts/browser/motion-clip.mjs <out> "fall-side,fall-pearl,fall-over,fall-back"` and `"surfacing,reel,climb"`.
+
+**M1 cost (this machine, Node):** `PosedBody.update` over 2502 recorded fallen frames (the falls, surfacing, the reel, the climb on, swimming; surfer2): 0.052 ms a frame on phase 3's drawing, 0.058 ms on phase 4's (+0.006; budget +0.01). Measured, not a gate.
+
+**Missed, and why (pinned for phase 5, batch C, or the owner):**
+- *The fall's direction is the physics':* the fall body starts on the board's frame, facing its nose, arms at the board's ±x; to the side at an arm's length and not over the nose is `DetachedSurfer`'s placement and throw (phase 5, batch C). Only its sides were the drawing's (fixed).
+- *No righting moment:* the ragdoll floats flat and can hang head down for 2–4 s; the surfacing tile's body is inverted (trunk 112° from vertical) with the arms overhead along it. Treading is drawn upright (≤ 60° off the physics' trunk) over its pelvis; the physics' buoyancy is phase 5.
+- *The physics' climb is slow:* the board rolls on its side under the pull for 1–17 s and holds the chest 0.35 m off; the drawn grip follows the rail (0.15 m Regular at 2.2 s, the board on its side in the tile). The reel stops at the leash's 0.8 m reach.
+- *The cause and the hold are not in the snapshot:* read on the page (the status's separation, `HoldReading`); a slot in `SurfZoneRunner` would make them exact (out of bounds here). The reef's flat shape comes from the cause only (the drawn state carries no depth).
+- *The next-wave look is a fixed scan* (the drawn state carries no wave); the remote breathing head is unchanged (phase 5); a remote surfer's stance is not sent (its cord runs from the right hand).
+- *Residual blips:* 0.5 s into a fall the body flips over entering the water (10 rad/s) and the drawn hands trail it for a few frames (up to 5 m/s); the climb film's reel resuming by the board (the near hand handing over) moves one hand 7 m/s for four frames.
+
+**Shot list for the owner (Phase 4, as built):**
+1. Beach, medium: three wipeouts on purpose: steer hard off the bottom (to the side), W into a steep drop (a pearl), stall under the lip (over the falls). *Look for:* the forearms coming up over the head within half a second and staying there under water; the legs reaching down feet first in the air; a pearl's arms forward round the head, over the falls a ball (knees to the chest); no arm crossing the body or snapping into place.
+2. One fall off the back (climb with S and lose it). *Look for:* the arms out and back first, then the shield.
+3. After each fall, wait to surface. *Look for:* rising with the forearms crossed overhead; once up, treading upright, looking to the board, then away, then back.
+4. Hold Enter to reel and climb on. *Look for:* hand over hand along the cord, your back foot's hand first, the cord running from the hand on it; then both hands at the rail's middle, belly on from the side, the legs swung on, the prone pose easing in (no snap).
+5. Snap the leash (big swell) and swim to the board. *Look for:* the crawl as before, the head lifting to sight the board every five strokes or so.
+6. Online with a second player, if handy: their reel and climb drawn (flag 128); their falls take a shape from the motion (slipping back, or lifted with the lip), else to the side.
 
 ### Phase 5 (later, separate): the physics gaps, owner ride-checked
 
