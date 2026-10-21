@@ -32,7 +32,8 @@ export interface RideInput {
   hand?: boolean;
   /**
    * Standing, the upper body's rotation asked for (the movement-flow spec): −1 (right) to 1 (left), as `steer`,
-   * the way the rider looks. Undefined, the body turns with the ride by itself (the keyboard and touch).
+   * the way the rider looks. Undefined, the body turns with the ride by itself: every device since the pad's right
+   * stick across went to the camera (the owner, 2026-10-22); kept for the twist's next input.
    */
   rotate?: number;
   /** Lying down or swimming, the Duck-dive action: 0 to 1 (analog). */
