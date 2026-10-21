@@ -541,6 +541,30 @@ const CROUCH_HOLD = 0.75;
  */
 const COMPRESS_KEEP = 0.9;
 /**
+ * The projection rises tall (the phase-5 physics plan's item 2.2 A, the owner's
+ * decision 6 of 2026-10-22): letting Compress go from at least TALL_FROM, m,
+ * down while the board planes, the leg rises to the riding stance as before and,
+ * once within TALL_START, m, of it, on to EXTENSION_TALL, m, over it; there it
+ * settles back to it over EXTENSION_SETTLE, s. De Sousa 2022's final phase
+ * extends the knees and hips progressively, to 150° or more at the knee: with
+ * two 0.45 m bones the riding stance's 42° straightens to about 24° at +0.04 m
+ * (0.06 m would be straight). Until then the ladder's top was the riding
+ * stance, and the extension stood no taller than trim.
+ *
+ * Aimed tall from the moment of letting go, the leg rose faster through the
+ * turn's load and pumped the board on: a late projection (let go at a 25° lean,
+ * `projectionLean.test.ts`) kept 0.766 of its speed at 8.5 m/s against the
+ * owner's 0.74 (0.731 before). Rising to the riding stance first, it keeps
+ * 0.727. The pumping crouch let go stands no taller than before: risen tall,
+ * the pump's balance read as a near fall (the drawn arms' alarm 0.26 against
+ * 0.2). Within LEG_EXTENSION's travel up; a crouch or Compress taken again drops
+ * the aim at once.
+ */
+export const EXTENSION_TALL = 0.04;
+const EXTENSION_SETTLE = 0.5;
+const TALL_FROM = 0.05;
+const TALL_START = 0.02;
+/**
  * Standing, a hand in the face (spec P9): asked for, the upper body bends toward
  * the wave side, where the water stands higher beside the board (read
  * WAVE_SIDE_REACH, m, out on each side; a side only when it is WAVE_SIDE_MIN, m,
@@ -920,6 +944,12 @@ export class AttachedRider {
   private restRate = 0;
   /** Standing, the leg's rest rising toward a shallower crouch asked for: a crouch or Compress released (the projection). */
   private extending = false;
+  /** Standing, the share of EXTENSION_TALL the leg's rest aims over the riding stance (the projection rising tall), and whether it has got there and is settling back. */
+  private tall = 0;
+  private tallReached = false;
+  private tallFrom = false;
+  /** The leg was last brought down by Compress (not the crouch alone): letting it go is the projection. */
+  private fromCompress = false;
 
   private legFresh = true;
   private legDamping = 0;
@@ -1206,6 +1236,10 @@ export class AttachedRider {
     this.leg.rest = 0;
     this.restRate = 0;
     this.extending = false;
+    this.tall = 0;
+    this.tallReached = false;
+    this.tallFrom = false;
+    this.fromCompress = false;
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
@@ -1718,7 +1752,24 @@ export class AttachedRider {
     // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
     const crouch = this.covered ? manualCrouchShare(this.crouch, this.compress) : CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
-    const rest = -Math.max(crouch, compress) * CROUCH_DEPTH;
+    const asked = -Math.max(crouch, compress) * CROUCH_DEPTH;
+    // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
+    // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
+    if (compress > 0) this.fromCompress = true;
+    else if (asked < 0) this.fromCompress = false;
+    if (asked < 0 || !this.fromCompress || this.phase !== 'standing' || !this.planing) {
+      this.tall = 0;
+      this.tallReached = false;
+      this.tallFrom = false;
+    } else if (this.leg.rest < -TALL_FROM) {
+      this.tall = 1;
+      this.tallReached = false;
+      this.tallFrom = false;
+    }
+    if (this.tall > 0 && this.leg.rest >= -TALL_START) this.tallFrom = true;
+    if (this.tallFrom && !this.tallReached && this.leg.rest >= 0.9 * EXTENSION_TALL * this.tall) this.tallReached = true;
+    if (this.tallReached) this.tall = Math.max(0, this.tall - h / EXTENSION_SETTLE);
+    const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
     const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const accelerationLimit = !down ? EXTEND_ACCELERATION
@@ -1733,7 +1784,9 @@ export class AttachedRider {
     // Compress keeps its old stop; a deeper manual target opens more travel. A released tuck
     // retains its current travel limit while extending, so release cannot snap the body up.
     const deepest = Math.max(-this.leg.rest, CROUCH_DEPTH, -rest);
-    this.leg.rest = Math.max(-deepest, Math.min(0, this.leg.rest + this.restRate * h));
+    // Up to the riding stance, or over it as far as the projection's aim (EXTENSION_TALL); settling, down from where it is.
+    const tallest = Math.max(0, rest, this.leg.rest);
+    this.leg.rest = Math.max(-deepest, Math.min(tallest, this.leg.rest + this.restRate * h));
     // Feet on a deck only push: compressing, the legs fold no faster than the body falls onto them, so a board
     // dropping or rolling away from under the rider unloads the feet rather than being pulled up by them.
     const slack = this.leg.extension - this.legLoad / this.legStiffness;
@@ -1741,10 +1794,10 @@ export class AttachedRider {
       this.leg.rest = Math.min(0, slack);
       this.restRate = Math.max(this.restRate, this.leg.rate);
     }
-    if (this.leg.rest === 0 || this.leg.rest === -deepest) this.restRate = 0;
+    if ((this.leg.rest === tallest && this.restRate > 0) || this.leg.rest === -deepest) this.restRate = 0;
     this.extending = this.restRate > 0 && this.leg.rest < rest;
-    // The deeper tuck keeps the current bent-leg stiffness rather than softening below it.
-    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, -this.leg.rest)) / CROUCH_DEPTH);
+    // The deeper tuck keeps the current bent-leg stiffness rather than softening below it; standing tall, the riding stance's.
+    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, Math.max(0, -this.leg.rest))) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
     this.leg.height = this.localCenter.y - this.base.y;
     // Where the centre of mass is along the leg, and how fast it moves along it relative to where it is carried.
