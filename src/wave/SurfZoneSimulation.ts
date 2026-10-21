@@ -1,5 +1,5 @@
 import {
-  PADANG, REEF, canyonArmAt, canyonShape, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonPeelAt, canyonShape, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
@@ -779,6 +779,11 @@ export class SurfZoneSimulation {
   /** Each throw, for reports: the jet asked for and thrown, the wave, its void and, for a reef break, its vortex ratio. */
   onThrow?: (event: LipThrowEvent) => void;
   readonly peel: PeelTracker;
+  /**
+   * Whether a column's new break at z counts toward the peel, where the spot says (the Canyon's arm, `canyonPeelAt`);
+   * every break elsewhere.
+   */
+  private readonly peelOnsetAt?: (column: number, z: number) => boolean;
   /** The waves breaking at the take-off, as surf reports measure them (the wave-sizes spec). */
   readonly surf: SurfMeter;
   /** Called with every wave measured starting to break, anywhere in the window (reports listen here). */
@@ -904,6 +909,8 @@ export class SurfZoneSimulation {
     const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt
       : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
+    // The Canyon's lagoon and its beach face behind the arm are not its wave (`CANYON.peelReach`; every break on the old layout).
+    if (config.spot === 'canyon' && Number.isFinite(canyon.peelReach)) this.peelOnsetAt = (column, z) => canyonPeelAt(xCenters[column], z, canyon);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
     this.foam = new FoamField(this.solver, config.foamDecay ?? (spillingCurlOn(config) ? SPILLING_CURL_FOAM_DECAY : FOAM_DECAY[config.spot]));
@@ -1324,7 +1331,7 @@ export class SurfZoneSimulation {
       this.outerBreak[column] = outer;
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
-        this.peel.markOnset(column, solver.time, outer);
+        if (!this.peelOnsetAt || this.peelOnsetAt(column, outer)) this.peel.markOnset(column, solver.time, outer);
         this.spilling?.observeOnset(column, solver.time, outer);
         this.measureBreak(column, row);
         this.throwLip(column, row);

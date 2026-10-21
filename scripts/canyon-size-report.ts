@@ -32,7 +32,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { SWELLS } from '../src/game/SurfConditions';
-import { CANYON, canyonArmAt, canyonBreakLineZ, canyonShape, canyonTerraceDepth, createSpot, type CanyonBed, type CanyonShape } from '../src/wave/Bathymetry';
+import { CANYON, canyonArmAt, canyonBreakLineZ, canyonPeelAt, canyonShape, canyonTerraceDepth, createSpot, type CanyonBed, type CanyonShape } from '../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
 import { MIXED_PEAK_FIT, PeelTracker, skillForPeel } from '../src/wave/Breaking';
 import { GRAVITY } from '../src/wave/dispersion';
@@ -223,7 +223,7 @@ function crestsByDensity(onsets: Phased[], tp: number): Phased[][] {
 function analyse(run: Run): void {
   const bed = run.bed ?? 'reef';
   // Today's layout takes the run's shape (a sweep's); a run from before canyon-layout had no window in it: 160 m.
-  if (bed === 'reef') Object.assign(CANYON, { alongShore: 160 }, run.canyon);
+  if (bed === 'reef') Object.assign(CANYON, { alongShore: 160, peelReach: Infinity }, run.canyon);
   const c = canyonShape(bed);
   const { tp, hs, celerity } = run;
   const config = configFor(1, hs, tp, run.spreading, bed);
@@ -313,7 +313,8 @@ function analyse(run: Run): void {
     let k = 0;
     const read = (time: number) => {
       while (k < mine.length && mine[k].t <= time + 1e-9) {
-        tracker.markOnset(Math.min(window - 1, Math.max(0, Math.round(mine[k].x - xMin - 0.5))), mine[k].t, mine[k].z);
+        // As the simulation's tracker: only the breaks on the arm count (`canyonPeelAt`; every break on the old layout).
+        if (canyonPeelAt(mine[k].x, mine[k].z, c)) tracker.markOnset(Math.min(window - 1, Math.max(0, Math.round(mine[k].x - xMin - 0.5))), mine[k].t, mine[k].z);
         k += 1;
       }
       return tracker.estimate(time, celerity);

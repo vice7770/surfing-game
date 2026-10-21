@@ -267,6 +267,14 @@ export const CANYON = {
    * (the advisor's P2w: the mirror's chevrons within the Beach's spread).
    */
   alongShore: 220,
+  /**
+   * How far inshore of the break line a column's new break still counts toward the peel the readout measures, m: the arm's
+   * flat top (`flatWidth`), so the face, the end and the top count, and not the lagoon's bores or the shore break on the
+   * beach face behind the arm (`SurfZoneSimulation`'s peel). On the short arm (canyon-layout) the beach face lies 60–95 m
+   * behind the line: its shore break upcoast of the peak, seconds after the arm's breaks, read as "a right" 8 % of the time
+   * at Medium (3 seeds × 14 periods; 3 % on the old layout, whose beach lay 280 m behind the peak). Infinity: every break.
+   */
+  peelReach: 10,
 };
 
 /**
@@ -296,7 +304,7 @@ export const CANYON_OLD: CanyonShape = Object.freeze({
   fan: 15, hingeDepth: 2.2, hingeRounding: 8,
   endTaper: 12,
   flatWidth: 10, lagoonDepth: 2,
-  alongShore: 160,
+  alongShore: 160, peelReach: Infinity,
 });
 
 /** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */
@@ -317,6 +325,11 @@ export function canyonArmEndX(c: CanyonShape = CANYON): number {
 /** Whether the Canyon's arm is ridden at along-shore position x: from its peak (and the end beside it) to where it meets the beach face. */
 export function canyonArmAt(x: number, c: CanyonShape = CANYON): boolean {
   return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonArmEndX(c);
+}
+
+/** Whether a break at (x, z) counts toward the Canyon's peel: on the arm, no further inshore of its break line than `peelReach`. */
+export function canyonPeelAt(x: number, z: number, c: CanyonShape = CANYON): boolean {
+  return canyonArmAt(x, c) && z < canyonBreakLineZ(x, c) + c.peelReach;
 }
 
 /**
