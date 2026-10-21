@@ -68,7 +68,7 @@ function decay(x: Vector3, v: Vector3, y: number, dt: number): void {
  * A point moving smoothly is left as it is; a teleport, or a jump that would
  * carry the body across the sea, starts over. The landing's feet are not
  * blended: the rig swings them onto the deck (the animation-realism plan's
- * phase 3).
+ * phase 3), nor are the feet climbing back on (phase 4: swung over the rail).
  */
 export class PointInertia {
   private readonly tracks: Track[] = Array.from({ length: 7 }, () => ({
@@ -113,6 +113,7 @@ export class PointInertia {
     // The body leaving the board (or climbing back on): what was drawn carries over into the other frame, moving on
     // with the board's motion, so the fall blends like any other switch.
     if (!fresh && fallen !== this.fallen) this.changeFrame(state, fallen);
+    const climbedOn = this.fallen && !fallen;
     this.fallen = fallen;
     const switched = state.phase !== this.phase;
     this.phase = state.phase;
@@ -169,7 +170,9 @@ export class PointInertia {
       track.spread = continuing ? track.spread + 1 : 0;
       // The landing's feet are the rig's to swing (`HumanoidRig.swingFeet`, the animation-realism plan's phase 3: they
       // plant, not slide): taken as they are, at rest on the board, so none of the jump glides on into standing.
-      const planted = switched && state.phase === 'landing' && (i === POINT.leftFoot || i === POINT.rightFoot);
+      // So are the feet back on the board after a climb (the animation-realism plan's phase 4: the rig swings them on
+      // over the rail from where they were).
+      const planted = switched && (state.phase === 'landing' || climbedOn) && (i === POINT.leftFoot || i === POINT.rightFoot);
       if (planted) {
         goalRate.set(0, 0, 0);
         track.offset.set(0, 0, 0);

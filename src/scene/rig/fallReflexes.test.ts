@@ -237,4 +237,20 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     expect(feetOn - prone).toBeLessThanOrEqual(FALL_POSES.climb.on + 0.05);
     expect(fastestFoot).toBeLessThan(6);
   });
+
+  it('swims with the head lifted to sight the board every five strokes (the plan\'s 4–6), the crawl as it was', () => {
+    const recipe: StanceRecipe = { phase: 'fallen', water: 'flat', start: 'prone', speed: 0, separate: 0.5, controls: [{ at: 1, swim: true }], seconds: 16 };
+    const sights: number[] = [];
+    let looking = false;
+    drawnFall(recipe, 'regular', ({ time, joints, state }) => {
+      // The face turned forward along the heading (a sight), not down at the water nor to the side (a breath).
+      const forward = joints.headFacing.dot(new Vector3(Math.sin(state.heading), 0, Math.cos(state.heading)));
+      if (!looking && forward > 0.6) sights.push(time);
+      looking = forward > 0.6;
+    });
+    expect(sights.length).toBeGreaterThanOrEqual(2);
+    // Five strokes (both arms) at the crawl's 0.38 cycles a second: 6.6 s.
+    const every = FALL_POSES.sight.every / (2 * 0.38);
+    for (let i = 1; i < sights.length; i += 1) expect(sights[i] - sights[i - 1]).toBeCloseTo(every, 0);
+  });
 });

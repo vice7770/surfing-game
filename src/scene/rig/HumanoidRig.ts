@@ -930,9 +930,16 @@ export class HumanoidRig {
         }
         if (lying) this.lyingKnees(state, pole);
         else pole.copy(this.facing);
-        // Fallen, the reflexes and the stages' legs over the ragdoll's; back on the board after a climb, the feet swung on.
-        if (fw) this.fallenLeg(state, fw, side, hip, target, pole);
-        if (lying && climbOn < 1) this.climbOnFoot(state, side, climbOn, target);
+        // Fallen, the reflexes and the stages' legs over the ragdoll's; back on the board after a climb, the feet swung on,
+        // the knees turning from how they kicked to how they lie.
+        if (fw) {
+          this.fallenLeg(state, fw, side, hip, target, pole);
+          this.kneeWas[side].copy(pole);
+        }
+        if (lying && climbOn < 1) {
+          this.climbOnFoot(state, side, climbOn, target);
+          turnToward(this.fallScratch.a.copy(this.kneeWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
+        }
         // Sitting, straddling: the thighs over the rails, the shins hanging in the water (`SIT`); out to the side first,
         // so the swinging foot clears the tail.
         if (sit > 0) this.sitLeg(state, side, hip, sit, target, pole);
@@ -1009,6 +1016,8 @@ export class HumanoidRig {
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
       if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
+      // Back on the board after a climb, the elbows turning from how they held the rail.
+      if (state.phase === 'prone' && climbOn < 1) turnToward(this.fallScratch.a.copy(this.elbowWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       // Fallen, the reflexes (the shield, the cause's shape, surfacing, the reach) and the stages that hold something
@@ -2451,10 +2460,11 @@ export class HumanoidRig {
    * in place: its way from the root turned and its reach changed, not along the
    * chord between (from an arm out to the side to the forearms across the face,
    * the chord passed by the shoulder: the arm folded shut and its elbow spun).
-   * The way is the weighted sum of the two (unit) and, half way, a little of
-   * where the chest faces: between two ways nearly opposite (the sculling hands
-   * low, the rail above) the turn's side otherwise flipped from frame to frame,
-   * and the limb with it; this way it passes in front of the body.
+   * The way turns through the two's middle, which leans to where the chest
+   * faces as they come apart: between two ways nearly opposite (the sculling
+   * hands low, the rail above) the turn's side flipped from frame to frame, and
+   * a sum of the two swung the arm through the middle at 13 m/s; this way it
+   * passes in front of the body, at an even pace.
    */
   private about(origin: Vector3, point: Vector3, to: Vector3, t: number): void {
     if (t <= 0) return;
@@ -2470,11 +2480,18 @@ export class HumanoidRig {
       point.lerp(to, t);
       return;
     }
-    a.multiplyScalar((1 - t) / la).addScaledVector(b, t / lb).addScaledVector(this.facing, 0.4 * Math.min(t, 1 - t));
-    if (a.lengthSq() < 1e-10) a.copy(this.facing);
+    a.divideScalar(la);
+    b.divideScalar(lb);
+    const middle = this.aboutC.copy(a).add(b);
+    middle.addScaledVector(this.facing, Math.max(0, 1 - middle.length()));
+    if (middle.lengthSq() < 1e-10) middle.copy(this.facing);
+    middle.normalize();
+    if (t < 0.5) turnToward(a, middle, 2 * t, a);
+    else turnToward(middle, b, 2 * t - 1, a);
     point.copy(origin).addScaledVector(a.normalize(), la + (lb - la) * t);
   }
 
+  private readonly aboutC = new Vector3();
   private readonly aboutA = new Vector3();
   private readonly aboutB = new Vector3();
 
@@ -2579,7 +2596,11 @@ export class HumanoidRig {
     if (hold < 0.5) this.withinReach(fw, shoulder, target, hand, this.armLength);
     if (elbow.lengthSq() > 1e-8) this.swingPole(shoulder, target, pole, elbow.normalize(), weight, this.fallScratch.b.copy(up).negate().add(outward).normalize());
     this.keepElbow(state, side, shoulder, target, pole);
+    this.elbowWas[side].copy(pole);
   }
+
+  /** The elbows' way at the last fallen solve (back on the board, they turn from it). */
+  private readonly elbowWas = { left: new Vector3(1, 0, 0), right: new Vector3(-1, 0, 0) } as Record<Side, Vector3>;
 
   /** Fallen, each hand's back as drawn at the last solve (it carries on from there). */
   private readonly handBack = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
@@ -2756,6 +2777,9 @@ export class HumanoidRig {
       out.lerp(this.fromBoard(state, at, at), fw.pull);
     }
   }
+
+  /** The knees' way at the last fallen solve (back on the board, they turn from it). */
+  private readonly kneeWas = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
 
   /** Holding the board, the hand on the nose's grip (chosen as the hold begins), and whether one is chosen. */
   private gripNose: Side = 'left';

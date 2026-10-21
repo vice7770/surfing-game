@@ -63,7 +63,7 @@ export const FALL_READING = {
   onset: 0.12, braced: 0.25, bent: 0.4, shielded: 0.45,
   causeHold: 0.5, causeFade: 0.3,
   pearlPitch: 25, backPitch: 20, backSlip: 1.5, window: 0.12, lift: 1, liftAfter: 0.1, liftWithin: 0.6,
-  tumble: 3, tumbleSmooth: 0.08, tumbleHold: 0.6, ballFor: 1.5, curlIn: 0.15, curlOut: 0.5,
+  tumble: 3, tumbleSmooth: 0.08, tumbleHold: 0.6, ballFor: 1.5, curlIn: 0.3, curlOut: 0.5,
   airFrom: 0.15, airFull: 0.4, airFalling: 0.3, airWithin: 1.5, airIn: 0.3,
   settle: 0.6, outFor: 0.3, calmFor: 1.5, calmRate: 1.2, nearSurface: 0.3, underFor: 1.2, deepUnder: 0.5,
   rising: 0.1, surfaceIn: 0.3, surfaceHold: 0.3,
