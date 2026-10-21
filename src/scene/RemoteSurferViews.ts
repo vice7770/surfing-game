@@ -8,6 +8,7 @@ import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS } from '../wave/Sur
 import { createBoardMesh } from './BoardMesh';
 import { BOARD_DESIGNS } from './board/boardDesigns';
 import { LeashCord } from './board/LeashCord';
+import { boxGap } from '../game/holdReading';
 import { SurferView } from './character/SurferView';
 import { RiderMotion } from './rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot, type RiderVisualState } from './rig/riderVisualState';
@@ -54,12 +55,28 @@ export function remoteRiderState(state: RemoteState, board: Float64Array, rider:
   plugAt.y += board[1];
   plugAt.z += board[2];
   plugAt.toArray(rider, RIDER_SNAPSHOT.plug);
-  rider[RIDER_SNAPSHOT.leash] = state.leashSnapped ? LEASH_BITS.snapped : LEASH_BITS.worn;
+  // Recovering (wire flag 128, the animation-realism plan's phase 4): holding the board by it, reeling the leash in off it.
+  chestAt.set(board[0] + state.points[3], board[1] + state.points[4], board[2] + state.points[5]);
+  const holding = fallen && state.recovering && boxGap(chestAt, boardAt.set(board[0], board[1], board[2]), turn) <= REMOTE_HOLD;
+  const reeling = fallen && state.recovering && !holding && !state.leashSnapped;
+  rider[RIDER_SNAPSHOT.leash] = (state.leashSnapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (reeling ? LEASH_BITS.reeling : 0);
   rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) : 0;
   readRiderSnapshot(rider, board, out);
   out.stroking = state.paddling && out.phase === 'prone' ? 1 : 0;
+  out.swim.holding = holding;
   return out;
 }
+
+/**
+ * A remote swimmer recovering (wire flag 128: reeling the leash in, or holding
+ * the board) with its chest within this of the board's box, m, holds the board;
+ * farther, it reels (the physics holds the chest 0.35 m off the board turning
+ * it, and grabs it within 1 m; reeled in, the leash leaves the chest a metre
+ * and more from the tail).
+ */
+export const REMOTE_HOLD = 0.7;
+const chestAt = new Vector3();
+const boardAt = new Vector3();
 
 /** The tag floats this far above the head, m. */
 const TAG_ABOVE_HEAD = 0.45;
@@ -176,7 +193,11 @@ export class RemoteSurferViews {
     view.motion.update(view.state, time);
     view.state.clock = performance.now() / 1000;
     view.surfer.update(view.state, camera);
-    view.leash.update(view.state.points[POINT.rightFoot], view.state.leash.plug, { snapped: view.state.leash.snapped });
+    // The cord from the back (right) ankle, or reeling, from the hand on it.
+    const { leash } = view.state;
+    view.leash.update(view.state.points[POINT.rightFoot], leash.plug, {
+      snapped: leash.snapped, hand: leash.reeling ? (leash.gripped ? leash.grip : view.state.points[POINT.rightHand]) : undefined,
+    });
   }
 
   /** Player `id`'s drawn rider state, if it has a view. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
+import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
 import { createPose } from './poseCodec';
 import { OwnPoseTracker } from './ownPose';
 
@@ -27,6 +27,23 @@ describe('OwnPoseTracker', () => {
     expect(pose.points[3]).toBeCloseTo(0.1, 6);
     expect(pose.points[4]).toBeCloseTo(0.5, 6);
     expect(pose.points[5]).toBeCloseTo(-0.2, 6);
+  });
+
+  // The animation-realism plan's phase 4 (wire flag 128): the others draw the reel and the climb.
+  it('marks a fallen surfer recovering: reeling the leash in (the snapshot\'s bit), or holding the board (the page\'s reading)', () => {
+    const fallen = () => {
+      const source = snapshot();
+      source.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf('fallen');
+      return source;
+    };
+    const tracker = new OwnPoseTracker();
+    expect(tracker.write(fallen(), () => 1, 10, false, createPose()).recovering).toBe(false);
+    const reeling = fallen();
+    reeling.rider[RIDER_SNAPSHOT.leash] = LEASH_BITS.worn | LEASH_BITS.reeling;
+    expect(tracker.write(reeling, () => 1, 10, false, createPose()).recovering).toBe(true);
+    expect(tracker.write(fallen(), () => 1, 10, false, createPose(), true).recovering).toBe(true);
+    // Riding, never.
+    expect(tracker.write(snapshot(), () => 1, 10, false, createPose(), true).recovering).toBe(false);
   });
 
   it('marks a pose without a rider', () => {

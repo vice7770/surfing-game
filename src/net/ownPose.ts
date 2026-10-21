@@ -1,4 +1,4 @@
-import { LEASH_BITS, RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS } from '../wave/SurfZoneRunner';
+import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS } from '../wave/SurfZoneRunner';
 import type { SurferPose } from './poseCodec';
 
 /** The parts of a surf zone snapshot a pose is made from. */
@@ -32,8 +32,11 @@ export class OwnPoseTracker {
     this.jz += reaction[3];
   }
 
-  /** Fills `out` from the snapshot, with the board's lift above this water (`heightAt`), and starts a new sum of pushes. */
-  write(snapshot: PoseSource, heightAt: (x: number, z: number) => number, seaTime: number, paddling: boolean, out: SurferPose): SurferPose {
+  /**
+   * Fills `out` from the snapshot, with the board's lift above this water (`heightAt`), and starts a new sum of
+   * pushes. `holding`: the fallen surfer holds the board (the page's reading: the snapshot does not carry it).
+   */
+  write(snapshot: PoseSource, heightAt: (x: number, z: number) => number, seaTime: number, paddling: boolean, out: SurferPose, holding = false): SurferPose {
     const { board, rider } = snapshot;
     out.step = Math.round(seaTime / SURF_ZONE_STEP);
     out.boardPresent = board[7] > 0;
@@ -53,6 +56,9 @@ export class OwnPoseTracker {
     out.leashSnapped = out.present && ((rider[RIDER_SNAPSHOT.leash] ?? 0) & LEASH_BITS.snapped) !== 0;
     out.ducking = out.present && (rider[RIDER_SNAPSHOT.duck] ?? 0) >= 0.3;
     out.diving = out.present && ((rider[RIDER_SNAPSHOT.swim] ?? 0) & SWIM_BITS.diving) !== 0;
+    // The animation-realism plan's phase 4 (wire flag 128): in the water reeling the leash in, or holding the board.
+    const fallen = out.phase === RIDER_PHASES.indexOf('fallen');
+    out.recovering = out.present && fallen && (holding || ((rider[RIDER_SNAPSHOT.leash] ?? 0) & LEASH_BITS.reeling) !== 0);
     const { weight } = this;
     out.reaction.x = weight > 0 ? this.x / weight : 0;
     out.reaction.z = weight > 0 ? this.z / weight : 0;

@@ -1,10 +1,11 @@
 import { Group, Scene, Vector3 } from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RIDER_PHASES } from '../wave/SurfZoneRunner';
+import { RIDER_PHASES, RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
 import { createRemoteState, type RemoteState } from '../net/RemoteSurfers';
 import { SkinnedSurfer } from './character/SkinnedSurfer';
 import { fakeGltfScene } from './character/testSurferScene';
-import { RemoteSurferViews } from './RemoteSurferViews';
+import { REMOTE_HOLD, RemoteSurferViews, remoteBoardPose, remoteRiderState } from './RemoteSurferViews';
+import { createRiderVisualState } from './rig/riderVisualState';
 
 const look = { body: 'surfer2', outfit: 'vest', color: 'coral', board: 'classic' };
 
@@ -81,5 +82,32 @@ describe('RemoteSurferViews', () => {
     views.update(1, state, () => 0, new Vector3());
     expect(views.root.children[0].visible).toBe(true);
     expect(views.surferOf(1)!.group.visible).toBe(false);
+  });
+
+  // The animation-realism plan's phase 4 (wire flag 128): another player's reel and climb.
+  it('draws a recovering swimmer holding the board by it, and reeling the leash in off it; neither without the flag', () => {
+    const state = createRemoteState();
+    Object.assign(state, { x: 0, z: 0, lift: 0, present: true, boardPresent: true, phase: RIDER_PHASES.indexOf('fallen') });
+    const board = remoteBoardPose(state, () => 0, new Float64Array(8));
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    const at = (chestX: number, recovering: boolean) => {
+      state.points.fill(0);
+      // The chest point (the torso) `chestX` m off the board's centre, across it.
+      state.points[3] = chestX;
+      state.recovering = recovering;
+      return remoteRiderState(state, board, rider, createRiderVisualState());
+    };
+    const holding = at(0.25 + REMOTE_HOLD / 2, true);
+    expect(holding.swim.holding).toBe(true);
+    expect(holding.leash.reeling).toBe(false);
+    const reeling = at(2, true);
+    expect(reeling.swim.holding).toBe(false);
+    expect(reeling.leash.reeling).toBe(true);
+    const neither = at(0.4, false);
+    expect(neither.swim.holding).toBe(false);
+    expect(neither.leash.reeling).toBe(false);
+    // A snapped leash reels nothing.
+    state.leashSnapped = true;
+    expect(at(2, true).leash.reeling).toBe(false);
   });
 });

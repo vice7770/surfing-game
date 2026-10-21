@@ -76,15 +76,26 @@ describe('pose codec', () => {
 });
 
 describe('pose flags (the wipeout spec)', () => {
-  it('carries a snapped leash, a duck-dive and a dive, and ignores flags it does not know', () => {
+  it('carries a snapped leash, a duck-dive and a dive', () => {
     const pose = createPose();
     Object.assign(pose, { present: true, boardPresent: true, leashSnapped: true, ducking: true, diving: false });
     const view = new DataView(new ArrayBuffer(POSE_BYTES));
     encodePose(pose, view, 0);
     const back = decodePose(view, 0, createPose());
-    expect(back).toMatchObject({ leashSnapped: true, ducking: true, diving: false, present: true, boardPresent: true });
-    view.setUint8(61, view.getUint8(61) | 128);
-    expect(decodePose(view, 0, createPose())).toMatchObject({ leashSnapped: true, ducking: true, present: true });
+    expect(back).toMatchObject({ leashSnapped: true, ducking: true, diving: false, present: true, boardPresent: true, recovering: false });
+  });
+
+  // The animation-realism plan's phase 4 (the owner's call Q20): the byte's last free bit.
+  it('carries a swimmer recovering (reeling the leash in, or holding the board) in flag 128, the others as they were', () => {
+    const pose = createPose();
+    Object.assign(pose, { present: true, boardPresent: true, recovering: true, phase: 5 });
+    const view = new DataView(new ArrayBuffer(POSE_BYTES));
+    encodePose(pose, view, 0);
+    expect(view.getUint8(61) & 128).toBe(128);
+    expect(decodePose(view, 0, createPose())).toMatchObject({ recovering: true, present: true, boardPresent: true, leashSnapped: false, diving: false });
+    // A pose from a build before it reads as not recovering.
+    view.setUint8(61, view.getUint8(61) & ~128);
+    expect(decodePose(view, 0, createPose()).recovering).toBe(false);
   });
 });
 

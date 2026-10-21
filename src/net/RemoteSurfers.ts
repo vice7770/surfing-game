@@ -40,13 +40,15 @@ export interface RemoteState {
   leashSnapped: boolean;
   ducking: boolean;
   diving: boolean;
+  /** In the water, reeling the leash in or holding the board (wire flag 128, the animation-realism plan's phase 4). */
+  recovering: boolean;
   heading: number;
 }
 
 export function createRemoteState(): RemoteState {
   return {
     x: 0, z: 0, lift: 0, quaternion: [0, 0, 0, 1], points: new Float32Array(21), phase: -1,
-    present: false, boardPresent: false, paddling: false, leashSnapped: false, ducking: false, diving: false, heading: 0,
+    present: false, boardPresent: false, paddling: false, leashSnapped: false, ducking: false, diving: false, recovering: false, heading: 0,
   };
 }
 
@@ -139,6 +141,7 @@ function copyPose(pose: SurferPose, out: RemoteState): void {
   out.leashSnapped = pose.leashSnapped;
   out.ducking = pose.ducking;
   out.diving = pose.diving;
+  out.recovering = pose.recovering;
   out.heading = pose.heading;
 }
 

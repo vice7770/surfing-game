@@ -46,6 +46,17 @@ describe('RemoteSurfers', () => {
     expect(remote.ids()).toEqual([1, 2]);
   });
 
+  it('carries a swimmer recovering (wire flag 128), the nearer pose\'s', () => {
+    const remote = setup();
+    remote.receiveBundle(bundle({ id: 1, pose: poseAt(600, 10, { phase: FALLEN }) }), 0, []);
+    remote.receiveBundle(bundle({ id: 1, pose: poseAt(606, 10, { phase: FALLEN, recovering: true }) }), 50, []);
+    const state = createRemoteState();
+    remote.sample(1, 601 * SURF_ZONE_STEP, state);
+    expect(state.recovering).toBe(false);
+    remote.sample(1, 605 * SURF_ZONE_STEP, state);
+    expect(state.recovering).toBe(true);
+  });
+
   it('interpolates between the two poses around the time asked', () => {
     const remote = setup();
     remote.receiveBundle(bundle({ id: 1, pose: poseAt(600, 10) }), 0, []);

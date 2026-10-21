@@ -15,6 +15,8 @@ const IDLE: RideInput = { paddle: false, popUp: false, steer: 0 };
 /** What online play needs from the physical mode (PhysicalMode). */
 export interface OnlineSurf {
   readonly host?: SurfZoneHost;
+  /** The fallen surfer holds the board (the page's reading; sent as wire flag 128 with the reel). */
+  readonly holding?: boolean;
   advance(steps: number, input?: Omit<RideRequest, 'retry'>, reactions?: ArrayLike<number>): void;
   retry(spawnAt?: { x: number; z: number }): void;
 }
@@ -83,7 +85,7 @@ export class OnlinePlay {
     const interval = 1 / POSE_HZ;
     if (this.sendClock + 1e-9 >= interval) {
       this.sendClock = Math.min(interval, this.sendClock - interval);
-      this.link.sendPose(this.own.write(host.snapshot, (x, z) => host.heightAt(x, z), shown, riding && (input?.paddle ?? false), this.pose));
+      this.link.sendPose(this.own.write(host.snapshot, (x, z) => host.heightAt(x, z), shown, riding && (input?.paddle ?? false), this.pose, surf.holding ?? false));
     }
     return { resync: false };
   }
