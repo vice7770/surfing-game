@@ -449,11 +449,11 @@ Each batch is its own PR from `main`, merged only when the owner says so in the 
 
 ### Batch A: the top turn's weight and height (reel steps 5, 7, 8; items 2.2, 2.3, 2.5, 2.6, 2.9)
 
-- [ ] **Task 1: W1 (weight is the pressure).** The pressure slot on the snapshot. The gauge and the map read it, low-passed, on steady-speed recipes. `PHASE5_MISSES` re-pinned. The top turn and the kick-out read at full S (decision 5).
-- [ ] **Task 2: the along-board loop probe** (a fast unit test, not a ride). W/S steps on a towed board: the pressure and the board's pitch rate, with today's 0.2 m zone and a 0.1 m zone. If 0.1 m rings, smooth the pressure the balance reads over 0.2 s.
-- [ ] **Task 3: W2** (S 0.30, W 0.70, a 0.1 m zone, standing only). The bars re-measured: the still-water bar, `projectionLean`, `stanceLadder`, `pumping`.
-- [ ] **Task 4: the projection rises tall** (item 2.2 A, 0.04 m, settling over 0.5 s).
-- [ ] **Task 5:** phase 1's drawn trim bias removed (decision 7); the stance stills and the before/after clip of a top turn (`motion-clip.mjs`).
+- [x] **Task 1: W1 (weight is the pressure).** The pressure slot on the snapshot. The gauge and the map read it, low-passed, on steady-speed recipes. `PHASE5_MISSES` re-pinned. The top turn and the kick-out read at full S (decision 5).
+- [x] **Task 2: the along-board loop probe** (a fast unit test, not a ride). W/S steps on a towed board: the pressure and the board's pitch rate, with today's 0.2 m zone and a 0.1 m zone. If 0.1 m rings, smooth the pressure the balance reads over 0.2 s.
+- [ ] **Task 3: W2** (S 0.30, W 0.70, a 0.1 m zone, standing only). *Held back: it breaks the bars (below); the owner's call.* The bars re-measured: the still-water bar, `projectionLean`, `stanceLadder`, `pumping`.
+- [x] **Task 4: the projection rises tall** (item 2.2 A, 0.04 m, settling over 0.5 s).
+- [ ] **Task 5:** *held back (below).* Phase 1's drawn trim bias removed (decision 7); the stance stills and the before/after clip of a top turn (`motion-clip.mjs`).
 
 **Shot list (batch A):**
 1. Beach, medium, the chase camera, a right (frontside for a regular foot). Drop, Compress at the base for the bottom turn, let Compress go as the board climbs, then hold S with the steer back (the top turn). *Look for:*
@@ -466,6 +466,47 @@ Each batch is its own PR from `main`, merged only when the owner says so in the 
 4. Beach: one bottom turn with no W and one with W held. *Look for:* both still drive off the front foot; W's a little more.
 5. Point: ride straight up the face with S held and over the back. *Look for:* the hips back over the back foot and the front leg long, not the front knee folded.
 6. Goofy (in the settings): a frontside top turn on a left, filmed beside the reel. Steps 5, 7 and 8 of `phase2-video-check.md`.
+
+**Built (batch A, 2026-10-22, `claude/phys5-a`).** Decisions 1, 5 and 6 are built, and the quick test run; decisions 2, 3 and 7 are held back, each with the bars they break and the options. Decision 4 needs nothing built (no tail-lift term).
+
+- **W1, the weight is the feet's pressure (decision 1; commits 4918a1af, d1741c63).**
+  - `AttachedRider.contact.weight`: `frontShare` low-passed over 0.3 s while upright (NaN otherwise), a read-out nothing in the physics reads. A local snapshot slot (`RIDER_SNAPSHOT.weight`) carries it to `RiderVisualState.weight`; it is not on the wire, so another player's surfer reads none.
+  - The gauge's `weight` is that pressure; the hips' place along the stance (the weight until now) is `hipsOver`. The figures stand their hips over the pressure.
+  - Riding straight (trim, W/S, the pump), the map reads the weight at steady speed: the same run down a 10° face that holds trim's speed (`STEADY_SLOPE` 0.18: 7.9 of 8 m/s kept over 2 s). A tow does not do it: the drag still slows the board within each step, and the contact passes that on. A face fed along the travel was tried for the turns too and could not give back what a carve sheds on still water (0.3–0.6 g), so the turns are read on their own water.
+  - Decision 5: the top turn's recipe holds full S (half until now); the kick-out's already did.
+  - `PHASE5_MISSES` re-pinned (below).
+- **The quick test (task 2).** W/S steps on a board towed at 5, 7 and 9 m/s (standing, crouched, compressed), with today's 0.2 m zone and W2's 0.1 m:
+  - the balance does not oscillate: after every step its shift moves one way and stops;
+  - after an S step the board's pitch rings about 3 cycles at about 3 Hz and settles (about 1.5 with 0.2 m), to the wobble a towed board had before W2 (0.005–0.053 rad/s about its running mean, against 0.010–0.049);
+  - one exception: towed at 5 m/s with S held, the body ends near its reach (the shift 0.24 of 0.25 m) and the hull keeps a 7 Hz pitch limit cycle (±0.3° at 21° nose up, the pressure ±0.03) with the balance still: a hull and leg mode at that trim, not the balance;
+  - the plan's remedy, the pressure the balance reads smoothed over 0.2 s, does not help (the step transients grow slightly).
+  - Kept as a test of the 0.1 m zone on `claude/phys5-a-w2` (below).
+- **W2 held back (decisions 2 and 3).** Built as specified it holds the still-water bar (1.067 / 1.050 s, keeping 0.90–0.92) and `projectionLean` (0.833–0.858 / 0.640–0.730), but the 0.1 m zone breaks the bars in turns. On still water every carve sheds 0.2–0.6 g, the pressure moves ahead by the body's height times that, and the balance now pulls the body back to hold it: the tail sinks, the drag grows, and the balance pulls further, to its reach.
+  - The Compress cap's 11 m/s guard: the yaw rate swings 1.32 rad/s against 0.87 (0.83 before); with the 0.2 s smoothing, 1.57.
+  - The coached cutback at half S bogs (1.2 m/s against over 4.5); the timed pumps no longer gain; a leaning body off the plane falls to 70° instead of standing up; the margin, the hand in the face, the reef strike's naming and a deep-crouch ramp tests fail; twelve body-film tests (the balls of the feet slide 14 cm riding straight on flat water, the weave's chest rolls 0.84° against 0.25°).
+  - With today's 0.2 m zone and W2's targets (decision 2 alone): the 11 m/s guard holds and the still-water bar is unchanged, but the late projection keeps 0.744 (bar < 0.74) and the half-S cutbacks 4.27 m/s (bar > 4.5) and 3.10 (> 3.2).
+  - At steady speed TRIM_SHIFT's feed-forward carries the pressure past S's 0.30 and W's 0.70 toward the zone's far edges: S 0.19 and W 0.84 with W2 (0.24 and 0.81 today).
+  - **Options for the owner:** (a) re-bench W2 on batch B's moving face first, where a carve sheds about what a wave's does (0.1 g), since the still face's 0.2–0.6 g is what drives the zone to the body's reach; (b) decision 2 alone with today's 0.2 m zone, accepting the late projection at 0.744 and the half-S cutbacks just under their bars; (c) the 0.1 m zone riding straight only, today's in a carve (a rule, needs measuring); (d) W3, the body along its force line (research-sized). The experiment as built is on the local branch `claude/phys5-a-w2` (not for main).
+- **The projection rises tall (decision 6; commit 6533becb).** Letting Compress go while planing, the leg rises to the riding stance as before and, within 2 cm of it, on to 0.04 m over it (about 24° at the knees); tall (the body over 0.024 m) from about 0.6 to 1.0 s after letting go, back by about 1.5 s. Two first forms broke the bars and are not kept: aimed tall from the moment of letting go, the leg rose faster through the turn's load and pumped the board on (the late projection kept 0.766 against 0.74); and the pumping crouch let go tall read as a near fall (the drawn alarm 0.26 against 0.2). The map's extension, read 0.3 s after letting go, is unchanged: its knees stay pinned (still rising then).
+- **Decision 7 held back.** Drawn where the physics' pelvis is, trim's hips sit 0.64–0.70 of the way along a deck pitched nose up by flat water's drag, and the rear leg reaches its length: the knees' give over chop correlates 0.60 with the physics' leg (bar 0.8), trim-backside's trailing arm hangs at 7° (≥ 10°), the frontside tube's rear knee 60.4° (≤ 60°), the pump's hands swing 4.3 cm (≤ 4). The plan expected only a more bent front knee. Options: keep the bias until W2 is decided (W2 brings the pelvis back on a slowing board); or take it and re-pin those four with the knees' give lowered.
+
+**The bars** (before is `main` at 2dd9ba52):
+
+| Bar | Before | After (batch A as built) | W2 as specified (held) |
+|---|---|---|---|
+| Still-water bottom turn, frontside / backside | 1.117 / 1.150 s, keeping 0.913 / 0.910 | the same | 1.067 / 1.050 s, keeping 0.897 / 0.921 |
+| Compress cap, 11 m/s guard (≤ 0.87 rad/s) | 0.83 | unchanged (code untouched) | 1.32 (0.2 s smoothing: 1.57) |
+| `projectionLean` at 12° (> 0.83) / 25° (< 0.74), 7.3 and 8.5 m/s | 0.864, 0.873 / 0.639, 0.731 | 0.864, 0.873 / 0.633, 0.727 | 0.833, 0.858 / 0.640, 0.730 |
+| `stanceLadder` W/S range standing / compressed (> 0.15) | 0.241 / 0.249 | the same | 0.226 / 0.233 |
+| The pinned fails | 15 expected | 15 expected | 14 (Compress at 11 m/s now stays on, swinging) |
+
+**The map's weights** (surfer1 Regular, all four and Goofy alike; before is the pelvis's place, after the pressure): trim 0.64 → 0.52 (target 0.50–0.62, met); W 0.86 → 0.68 (0.60–0.75, met); S 0.37 → 0.39 (0.35–0.45, met); the compressed bottom turn 0.56 → 0.69 (0.60–0.75, met). At full S: the top turn 0.54 at half S (0.34 at full) → 0.46 (0.25–0.35, pinned); the snap 0.36 → 0.49 (0.30–0.45, pinned: the still water's 0.5–0.6 g); the kick-out 0.84 → 0.71 (0.15–0.30, low confidence). Pinned too: the cutback 0.51, the extension 0.74 (no S held), the pumps 0.51 / 0.63, the landing 0.81.
+
+**Shot list (batch A as built):**
+1. Beach, medium, the chase camera, a right (frontside for a regular foot). Drop, Compress at the base for the bottom turn, let Compress go as the board climbs. *Look for:* the rider comes up to the riding stance as before, then on up, knees nearly straight, for about half a second from about 0.6 s after letting go, then settles. Say if it comes too late for the climb.
+2. The same on a left (backside).
+3. Wave Pool: pump with Shift (on and off about once a second). *Look for:* no change from before (the crouch does not rise tall).
+4. Any spot: let Compress go below planing speed (a slow board). *Look for:* no tall stance.
 
 ### Batch B: the redirect off a face, and the lead (items 2.4, 2.1, 2.12; 2.9 re-read)
 
