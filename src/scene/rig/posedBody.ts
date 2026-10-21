@@ -1,6 +1,7 @@
 import type { Bone } from 'three';
 import { BodyInertia } from './bodyInertia';
 import { CauseFilter } from './causeFilter';
+import { FallenSides } from './fallenSides';
 import { HumanoidRig } from './HumanoidRig';
 import { PointInertia } from './pointInertia';
 import type { RiderVisualState } from './riderVisualState';
@@ -13,25 +14,30 @@ export interface PosedBodyOptions {
   bones?: boolean;
   /** The motion filter (`CauseFilter`, the animation-realism plan's §4): the board's wobble kept out of the trunk; on by default. */
   filter?: boolean;
+  /** The fallen body's limbs taken by side (`FallenSides`, the animation-realism plan's phase 4); on by default. */
+  sides?: boolean;
 }
 
 /**
  * The drawn body's posing from a visual state (the riding-body plan): the
  * physics' points blended where they jump, the motion filter keeping the
  * board's fast wobble in the legs, the rig solving the skeleton from them, and
- * the rig's own switches blended out. The page's surfers (local and online)
+ * the rig's own switches blended out; fallen, the limbs' points taken by side
+ * first (`FallenSides`). The page's surfers (local and online)
  * and the body film pose through this, so the film measures what the page
  * draws. The points are blended and filtered in place: whatever else draws
  * from the state after it (the leash) follows the drawn body.
  */
 export class PosedBody {
   readonly rig: HumanoidRig;
+  private readonly sides?: FallenSides;
   private readonly points?: PointInertia;
   private readonly filter?: CauseFilter;
   private readonly inertia?: BodyInertia;
 
   constructor(bones: Map<string, Bone>, options: PosedBodyOptions = {}) {
     this.rig = new HumanoidRig(bones);
+    if (options.sides ?? true) this.sides = new FallenSides();
     const inertia = options.inertia ?? true;
     if (options.points ?? inertia) this.points = new PointInertia();
     if (options.filter ?? true) this.filter = new CauseFilter();
@@ -41,12 +47,14 @@ export class PosedBody {
   /** Forgets the motion: the next state is drawn as the rig solves it (a new tile of the surfer sheet, a teleport). */
   reset(): void {
     this.rig.reset();
+    this.sides?.reset();
     this.points?.reset();
     this.filter?.reset();
     this.inertia?.reset();
   }
 
   update(state: RiderVisualState): void {
+    this.sides?.apply(state);
     this.points?.apply(state);
     const cues = this.filter?.apply(state);
     this.rig.solve(state, cues);
