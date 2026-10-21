@@ -781,6 +781,33 @@ describe('the falls and the recovery (the animation-realism plan, phase 4)', () 
     expect(fastest(7, 30)).toBeLessThan(5.5);
   }, 240_000);
 
+  it.each(['a fall', 'over the falls', 'a pearl', 'off the back', 'a fall from lying down'])('moves the hands of %s about the shoulders at a protective movement\'s pace, never stopping dead', (name) => {
+    // In the chest's frame (the body's own turning left out), from the reflex's onset to a second in: the shield, the
+    // cause's throw and the curl. Before, the cause's throw came in 0.13 s (15 m/s off the back, stopped dead at 0.27 s),
+    // and the shield's blend swung round as the ragdoll's arm came opposite it (6–11 m/s, stopping in a frame).
+    const film = filmBody(scenario(name), { rate: 60, drawer: trackDrawer, pose: posed() });
+    const start = film.frames.findIndex((frame) => frame.fallen);
+    const chest = new Quaternion();
+    const was = new Map<string, number>();
+    let fastest = 0;
+    let sharpest = 0;
+    for (let i = start + 1; i < film.frames.length; i += 1) {
+      const since = film.frames[i].time - film.frames[start].time;
+      if (since > 1) break;
+      for (const side of ['left', 'right'] as const) {
+        const at = (frame: FilmFrame) => frame.limbs[FILM_JOINT.hand[side]].clone().sub(frame.limbs[FILM_JOINT.shoulder[side]]).applyQuaternion(chest.copy(frame.worldBones[1]).invert());
+        const speed = at(film.frames[i]).distanceTo(at(film.frames[i - 1])) * film.rate;
+        if (since > 0.12) {
+          fastest = Math.max(fastest, speed);
+          if (was.has(side)) sharpest = Math.max(sharpest, Math.abs(speed - was.get(side)!));
+        }
+        was.set(side, speed);
+      }
+    }
+    expect(fastest).toBeLessThan(6.5);
+    expect(sharpest).toBeLessThan(3.5);
+  }, 240_000);
+
   it('draws another player\'s reel and climb from what is sent (wire flag 128 with the swimmer by the board)', () => {
     const most = (name: string, drawer: typeof remoteDrawer | typeof trackDrawer) => {
       const seen = { reel: 0, climb: 0 };

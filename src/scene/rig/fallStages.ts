@@ -24,8 +24,9 @@ export type FallShape = 'side' | 'flat' | 'pearl' | 'falls' | 'back';
  *   swimmer has surfaced (Rapture: cover the head under water, the arms
  *   overhead rising);
  * - the cause's own shape (the pearl's arms forward round the head, falling off
- *   the back's arms out and back) shows from the onset, handing over to the
- *   shield from `causeHold` over `causeFade`;
+ *   the back's arms out and back) comes in from the onset at the shield's pace
+ *   (by `shielded`: in by `braced`, the arms were thrown at 11–15 m/s and
+ *   stopped dead), handing over to the shield from `causeHold` over `causeFade`;
  * - the shape: the session's cause where it names one (local only: `impact` is
  *   the lip's, over the falls; `reef`, flat), else the board's pitch at the fall:
  *   nose down past `pearlPitch` a pearl, nose up past `backPitch` off the back;
@@ -61,7 +62,7 @@ export type FallShape = 'side' | 'flat' | 'pearl' | 'falls' | 'back';
  */
 export const FALL_READING = {
   onset: 0.12, braced: 0.25, bent: 0.4, shielded: 0.45,
-  causeHold: 0.5, causeFade: 0.3,
+  causeHold: 0.6, causeFade: 0.3,
   pearlPitch: 25, backPitch: 20, backSlip: 1.5, window: 0.12, lift: 1, liftAfter: 0.1, liftWithin: 0.6,
   tumble: 3, tumbleSmooth: 0.08, tumbleHold: 0.6, ballFor: 1.5, curlIn: 0.3, curlOut: 0.5,
   airFrom: 0.15, airFull: 0.4, airFalling: 0.3, airWithin: 1.5, airIn: 0.3,
@@ -267,7 +268,7 @@ export class FallStages {
     const surfacedNow = this.rates.surfaced.step(this.up ? 1 : 0, dt, R.treadIn, R.treadOut);
     w.surfaced = surfacedNow;
     w.guard = onset * (1 - surfacedNow);
-    w.cause = w.shape === 'pearl' || w.shape === 'back' ? ease((since - R.onset) / (R.braced - R.onset)) * (1 - ease((since - R.causeHold) / R.causeFade)) : 0;
+    w.cause = w.shape === 'pearl' || w.shape === 'back' ? ease((since - R.onset) / (R.shielded - R.onset)) * (1 - ease((since - R.causeHold) / R.causeFade)) : 0;
     w.curl = this.rates.curl.step(curl, dt, R.curlIn, R.curlOut);
     const height = Number.isFinite(near) ? p[POINT.pelvis].y - near : Number.NaN;
     const air = since < R.airWithin && !under && this.pelvisRise < -R.airFalling ? ramp(height, R.airFrom, R.airFull) : 0;

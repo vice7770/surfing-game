@@ -25,7 +25,6 @@ const KNOWN_MISSES: Record<string, string> = {
   'extension-backside.kneeFront': 'as frontside: the board 17° nose-up under the body',
   'extension-backside.kneeRear': 'as frontside\'s rear knee: the knees stand tall at trim\'s 42°, the extension\'s straighter legs are phase 2\'s (it met at 158° with the knees standing tall at 25°)',
   'paddling.pullDepth': 'the physics\' hand path (`HAND_DEPTH` 0.25 m under the deck beside the rail, the board rolling 7° a stroke): the drawn wrist follows the physics\' hand, 0.25–0.27 m under the waterline for 0.15–0.25 (the plan\'s phase 5, with the stroke\'s rate and length)',
-  'fall-side.wristsToHead': 'the shield is in by 0.40 s (surfers 1 and 2: 0.25 m) and holds 0.10–0.20 m from 0.6 s, but 0.5 s in the body flips over entering the water (10 rad/s) and the drawn arms trail it for a tenth of a second: 0.25–0.26 m on surfers 1 and 2, 0.37 m on the longer-armed 3 and 4 (the reflex held to 0.8 of the way, the plan\'s §7, and the switch\'s blends)',
   'pop-up-hands.handsApart': 'the hands flat 2 cm inside the rails beside the drawn lower ribs (the owner\'s call, §10.4): the physics lays the prone body far back on this 1.78 m board (its pelvis 0.37 m from the tail), where the board is 0.42 m wide, so 0.37 m apart; Borgonovo-Santos\' 0.46 m is the board\'s width at the chest',
 };
 

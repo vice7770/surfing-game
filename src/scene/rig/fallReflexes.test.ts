@@ -103,9 +103,9 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
   });
 
   it('draws a shape for each cause: the cage to the side, the arms thrown up round the head in a pearl, out and back off the back', () => {
-    const wrists = (id: string) => {
+    const wrists = (id: string, after?: number) => {
       const reading = { up: 0, apart: 0, shape: '' };
-      drawnFall(STANCE_RECIPES[id], 'regular', ({ joints, body }) => {
+      drawnFall({ ...STANCE_RECIPES[id], after: after ?? STANCE_RECIPES[id].after }, 'regular', ({ joints, body }) => {
         const up = joints.neck.clone().sub(joints.spine).normalize();
         reading.up = joints.wrist.left.clone().add(joints.wrist.right).multiplyScalar(0.5).sub(joints.neck).dot(up);
         reading.apart = joints.wrist.left.distanceTo(joints.wrist.right);
@@ -113,7 +113,9 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
       });
       return reading;
     };
-    const side = wrists('fall-side');
+    // The cage read once the body has gone in (0.5 s in, it flips over entering the water and the wrists, at the head
+    // by 0.45 s, cross by 0.75).
+    const side = wrists('fall-side', 0.8);
     const pearl = wrists('fall-pearl');
     const back = wrists('fall-back');
     expect([side.shape, pearl.shape, back.shape]).toEqual(['side', 'pearl', 'back']);

@@ -31,6 +31,18 @@ const smooth = (x: number) => {
   const t = Math.max(0, Math.min(1, x));
   return t * t * (3 - 2 * t);
 };
+/**
+ * A kept turn's step toward a wanted one `angle` rad away, over `dt` at no more
+ * than `rate` rad/s: the turn eases in and out of the limit (a turn within it
+ * closes in `KEEP_EASE` s), so its pace never jumps as the want comes within
+ * the limit or leaves it (a hard limit jumped up to twice the rate in a frame,
+ * and the bones' smoothing took each as a jump).
+ */
+const KEEP_EASE = 0.05;
+function keptStep(angle: number, rate: number, dt: number): number {
+  const step = rate * dt * Math.tanh(angle / (rate * KEEP_EASE));
+  return Math.abs(step) > Math.abs(angle) ? angle : step;
+}
 /** A minimum-jerk path's share at `s` of its time (no speed or acceleration at either end). */
 const minimumJerk = (x: number) => {
   const s = Math.max(0, Math.min(1, x));
@@ -1051,6 +1063,10 @@ export class HumanoidRig {
         const free = RIG_DETAIL.swing.share * state.standingBlend * (1 - this.reaching[side]);
         this.swing.follow(side, shoulder, target, free, state.clock, (RIG_DETAIL.swing.most * Math.PI) / 180);
       } else this.swing.still(side, shoulder, state.clock);
+      // Fallen, the arm comes straight smoothly (the reflexes' and the holds' aims reach all of it, and past): solved
+      // all the way, the upper arm swung onto the line in the last frames, faster the nearer it came, and stopped dead.
+      // Eased from the ragdoll's own reach (`fallenReach`) to the arm's (`armReach`).
+      if (fallen) this.softReach(shoulder, target, target, RIG_DETAIL.armReach, RIG_DETAIL.armReach - RIG_DETAIL.fallenReach);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole, fallen);
       // The hand's back toward the deck's normal, turning to the chest's facing as the forearm comes along the normal
@@ -2464,9 +2480,10 @@ export class HumanoidRig {
    * faces as they come apart: between two ways nearly opposite (the sculling
    * hands low, the rail above) the turn's side flipped from frame to frame, and
    * a sum of the two swung the arm through the middle at 13 m/s; this way it
-   * passes in front of the body, at an even pace.
+   * passes in front of the body, at an even pace. With `via` (unit), it passes
+   * that way instead, at an even pace along both legs (`keptVia`).
    */
-  private about(origin: Vector3, point: Vector3, to: Vector3, t: number): void {
+  private about(origin: Vector3, point: Vector3, to: Vector3, t: number, via?: Vector3): void {
     if (t <= 0) return;
     if (t >= 1) {
       point.copy(to);
@@ -2482,6 +2499,17 @@ export class HumanoidRig {
     }
     a.divideScalar(la);
     b.divideScalar(lb);
+    // Through a given way (`keptVia`): at an even pace along both legs, so the pace keeps as the two legs' share changes.
+    if (via) {
+      const first = Math.acos(Math.max(-1, Math.min(1, a.dot(via))));
+      const second = Math.acos(Math.max(-1, Math.min(1, via.dot(b))));
+      const along = t * (first + second);
+      if (along < first) turnToward(a, via, along / first, a);
+      else turnToward(via, b, second > 1e-9 ? (along - first) / second : 1, a);
+      if (a.lengthSq() < 1e-10) a.copy(via);
+      point.copy(origin).addScaledVector(a.normalize(), la + (lb - la) * t);
+      return;
+    }
     const middle = this.aboutC.copy(a).add(b);
     middle.addScaledVector(this.facing, Math.max(0, 1 - middle.length()));
     if (middle.lengthSq() < 1e-10) middle.copy(this.facing);
@@ -2496,21 +2524,75 @@ export class HumanoidRig {
   private readonly aboutB = new Vector3();
 
   /**
+   * Fallen, the way an arm's blend passes from the ragdoll's (`point`, about
+   * `origin`) to the drawn aim (`to`): `about`'s middle (leaning to the chest's
+   * front as the two come apart), kept in the chest's frame and turned toward it
+   * no faster than `FALL_POSES.viaRate` (unit, in the world; a new fall's, or
+   * after a gap, as it is).
+   */
+  private keptVia(state: RiderVisualState, side: Side, origin: Vector3, point: Vector3, to: Vector3): Vector3 {
+    const want = this.viaWant;
+    const a = this.aboutA.subVectors(point, origin);
+    const b = this.aboutB.subVectors(to, origin);
+    if (a.lengthSq() < 1e-12 || b.lengthSq() < 1e-12) want.copy(this.facing);
+    else {
+      want.copy(a.normalize()).add(b.normalize());
+      want.addScaledVector(this.facing, Math.max(0, 1 - want.length()));
+      if (want.lengthSq() < 1e-10) want.copy(this.facing);
+    }
+    want.normalize();
+    const up = this.fallUp;
+    const front = this.viaFront.copy(this.facing).addScaledVector(up, -this.facing.dot(up));
+    if (front.lengthSq() < 1e-8) return want;
+    front.normalize();
+    const across = this.viaAcross.crossVectors(up, front);
+    const kept = this.viaKept[side];
+    const way = this.viaWay;
+    const dt = state.clock - this.viaClock[side];
+    if (dt >= 0 && dt < 0.25 && kept.lengthSq() > 0.5) {
+      way.set(0, 0, 0).addScaledVector(across, kept.x).addScaledVector(up, kept.y).addScaledVector(front, kept.z);
+      const angle = Math.acos(Math.max(-1, Math.min(1, way.dot(want))));
+      const step = keptStep(angle, FALL_POSES.viaRate, dt);
+      if (angle < 1e-6) way.copy(want);
+      else if (angle < Math.PI - 1e-3) turnToward(way, want, step / angle, way);
+      else way.applyAxisAngle(up, step);
+      if (way.lengthSq() < 1e-10) way.copy(want);
+      way.normalize();
+    } else way.copy(want);
+    kept.set(way.dot(across), way.dot(up), way.dot(front));
+    this.viaClock[side] = state.clock;
+    return way;
+  }
+
+  private readonly viaWant = new Vector3();
+  private readonly viaFront = new Vector3();
+  private readonly viaAcross = new Vector3();
+  private readonly viaWay = new Vector3();
+  /** Each arm's kept way (`keptVia`) in the chest's frame (across, up, front), and the clock it was kept at. */
+  private readonly viaKept = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly viaClock = { left: Number.NaN, right: Number.NaN } as Record<Side, number>;
+
+  /**
    * `target` kept so the limb's middle (between its root and `target`) is
    * within `reach` of `point`, the physics' mass point for the limb (it sits at
    * the limb's centre): the drawn limb never wanders past its reach of it, so
    * its apparent mass stays (the plan's §7). From `FALL_READING.settle` into
-   * the fall: before, the fall's switch is still blending the drawn trunk and
-   * points from the rider's (the points in their frame, the physics' own ahead
-   * of them), and a limb kept to either folded through its shoulder.
+   * the fall, in over `FALL_POSES.keepIn`, `weight` of the way: before, the
+   * fall's switch is still blending the drawn trunk and points from the rider's
+   * (the points in their frame, the physics' own ahead of them), and a limb
+   * kept to either folded through its shoulder.
    */
-  private withinReach(fw: FallWeights, root: Vector3, target: Vector3, point: Vector3, reach: number): void {
-    if (fw.since < FALL_READING.settle) return;
+  private withinReach(fw: FallWeights, root: Vector3, target: Vector3, point: Vector3, reach: number, weight = 1): void {
+    const share = weight * smooth((fw.since - FALL_READING.settle) / FALL_POSES.keepIn);
+    if (share <= 0) return;
     const middle = this.middle.copy(root).add(target).multiplyScalar(0.5);
     const offset = middle.sub(point);
     if (offset.length() <= reach) return;
-    target.copy(point).add(offset.setLength(reach)).multiplyScalar(2).sub(root);
+    const kept = this.reachKept.copy(point).add(offset.setLength(reach)).multiplyScalar(2).sub(root);
+    target.lerp(kept, share);
   }
+
+  private readonly reachKept = new Vector3();
 
   private readonly armAim = new Vector3();
   private readonly armPole = new Vector3();
@@ -2589,11 +2671,14 @@ export class HumanoidRig {
       elbow.lerp(this.fallScratch.c.copy(outward).addScaledVector(face, -0.3).addScaledVector(WORLD_UP, -0.5), fw.climb);
       hold = Math.max(hold, fw.climb);
     }
-    const weight = Math.max(F.most * reflex, hold) * (1 - fw.stroke);
+    // The reflex's share and the hold's together, softly (the larger of the two had a kink as one passed the other:
+    // with the ragdoll's arm opposite the aim, the last fifth of the hold's fade swung the hand back in 0.08 s, 6 m/s).
+    const weight = (1 - (1 - F.most * reflex) * (1 - hold)) * (1 - fw.stroke);
     if (weight <= 0) return;
-    this.about(shoulder, target, aim, weight);
-    // A hand holding something (the cord, the rail) is where that is; a reflex never past the arm's reach of its point.
-    if (hold < 0.5) this.withinReach(fw, shoulder, target, hand, this.armLength);
+    this.about(shoulder, target, aim, weight, this.keptVia(state, side, shoulder, target, aim));
+    // A hand holding something (the cord, the rail) is where that is (handed over as the hold comes in); a reflex
+    // never past the arm's reach of its point.
+    if (hold < 0.5) this.withinReach(fw, shoulder, target, hand, this.armLength, 1 - smooth(2 * hold));
     if (elbow.lengthSq() > 1e-8) this.swingPole(shoulder, target, pole, elbow.normalize(), weight, this.fallScratch.b.copy(up).negate().add(outward).normalize());
     this.keepElbow(state, side, shoulder, target, pole);
     this.elbowWas[side].copy(pole);
@@ -2621,8 +2706,7 @@ export class HumanoidRig {
         last.normalize();
         want.normalize();
         const angle = Math.atan2(this.scratch.crossVectors(last, want).dot(forearm), last.dot(want));
-        const most = FALL_POSES.elbowRate * dt;
-        hint.copy(last).applyAxisAngle(forearm, Math.max(-most, Math.min(most, angle)));
+        hint.copy(last).applyAxisAngle(forearm, keptStep(angle, FALL_POSES.elbowRate, dt));
       }
     }
     back.copy(hint).normalize();
@@ -2662,8 +2746,7 @@ export class HumanoidRig {
     if (want.lengthSq() < 1e-8) return;
     want.normalize();
     const angle = Math.atan2(this.scratch.crossVectors(last, want).dot(axis), last.dot(want));
-    const most = FALL_POSES.elbowRate * dt;
-    pole.copy(last).applyAxisAngle(axis, Math.max(-most, Math.min(most, angle)));
+    pole.copy(last).applyAxisAngle(axis, keptStep(angle, FALL_POSES.elbowRate, dt));
     kept.copy(pole);
   }
 

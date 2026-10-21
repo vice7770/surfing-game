@@ -768,7 +768,16 @@ export function onEveryPose(change: (pose: StandingPose) => void): () => void {
  *   the limbs drawn about it (the shield) swung with its kinks;
  * - `elbowRate`: fallen, an elbow's bend turns round the arm's line from where
  *   it was drawn no faster than this, rad/s (under the bones' smoothing's 6:
- *   folded tight, its aim along the arm's line flipped it over in a frame).
+ *   folded tight, its aim along the arm's line flipped it over in a frame);
+ * - `viaRate`: fallen, the way an arm's blend passes from the ragdoll's arm to
+ *   the drawn aim (their middle, leaning to the chest's front as the two come
+ *   apart) turns in the chest's frame no faster than this, rad/s: as the
+ *   ragdoll's arm swung to nearly opposite the aim (flung down and back under
+ *   a standing fall's shield, a pearl's tumble) the middle swung round to the
+ *   front, and the drawn hand with it, on and off at 6–11 m/s;
+ * - `keepIn`: the reflexes' hold within the arm's (or leg's) reach of its
+ *   physics point comes in over this, s, from `FALL_READING.settle` (all at
+ *   once, the pearl's hands jumped 0.19 m in a frame).
  */
 export const FALL_POSES = {
   most: 0.8,
@@ -796,6 +805,8 @@ export const FALL_POSES = {
   turn: 0,
   facing: 12,
   elbowRate: 5,
+  viaRate: 4,
+  keepIn: 0.3,
 };
 
 /** A leg's pose: the hip's and the knee's flexion and the thigh's spread out, °. */
