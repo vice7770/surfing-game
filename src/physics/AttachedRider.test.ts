@@ -1217,10 +1217,10 @@ describe('lean, trim, crouch and heading hold', () => {
     });
 
     // The phase-5 physics plan's item 2.4 B (the owner's decision 9 of 2026-10-22): the rail bogs against the water it
-    // cuts, so its bite (RAIL_BITE, and Compress's pull, which eases off before it) should be judged from the water's
-    // surface under the board. It is judged against the world's level: along a 30° face the downhill rail (the
-    // redirect's: the heels frontside, the toes backside) 20° into the water reads 50°, past the 48° bite, and Compress's
-    // pull is off; the uphill rail 52° into the water reads 22° and still pulls. Pinned until the fix. A board placed along the face at 7 m/s, `rail`° into the water on its downhill (+1) or uphill
+    // cuts, so its bite (RAIL_BITE, and Compress's pull, which eases off before it) is judged from the water's surface
+    // under the board. Judged against the world's level, along a 30° face the downhill rail (the redirect's: the heels
+    // frontside, the toes backside) 20° into the water read 50°, past the 48° bite, and Compress's pull was off; the
+    // uphill rail 52° into the water read 22° and still pulled. A board placed along the face at 7 m/s, `rail`° into the water on its downhill (+1) or uphill
     // (−1) rail, steered onto that rail with Compress: the pull on the body after the rider's first two looks, and the
     // rail ahead it reads, degrees.
     const railInFace = (slope: number, rail: number, downhill: 1 | -1) => {
@@ -1242,7 +1242,7 @@ describe('lean, trim, crouch and heading hold', () => {
       return { pull: inner.assistForce.length(), railAhead: degrees(inner.railAhead) };
     };
 
-    it.fails('judges the rail\'s bite against the water, not the world\'s level', () => {
+    it('judges the rail\'s bite against the water, not the world\'s level', () => {
       // On flat water the two agree.
       expect(railInFace(0, 30, 1).railAhead).toBeCloseTo(30, 6);
       expect(railInFace(0, 30, 1).pull).toBeGreaterThan(0);
@@ -1530,7 +1530,9 @@ describe('lean, trim, crouch and heading hold', () => {
 
     // A cutback: riding across the face away from the curl, a sustained turn back up the face and around toward it.
     // No steer, weight or easing tried turns more than 80–118° before the board, climbing, slows below planing and the
-    // rider falls into the turn (1.5–2.6 s from 7 and 9 m/s). Pinned with the snap, not tuned.
+    // rider falls into the turn (1.5–2.6 s from 7 and 9 m/s). Pinned with the snap, not tuned. With the rail's bite read
+    // from the water (decision 9) it comes round 74° (87° before): the turn up the face rides the uphill rail, which
+    // now bites 15° sooner on this face, and keeps more of its speed (4.7 m/s at the least, 3.2 before).
     const cutback = (flow: number) => {
       const { board, rider, water } = acrossFace(80, 9, 'regular', flow);
       run(board, water, 0.2);
@@ -1553,10 +1555,11 @@ describe('lean, trim, crouch and heading hold', () => {
     // from a frame moving with that water: the hull, its fins and the water's pressure read only the board's motion
     // through the water and the surface's tilt, both the same in that frame. So at the same speed through the water the
     // board carves the same turn, and the face feeds it nothing more than the still face did (the carve up from across
-    // reaches the same 168.7° and the rider falls). What differs is only what the rider reads over the ground: the lean
-    // a turn can hold (TURN_RADIUS) and Compress's path. From 1 to 2 m/s the snap turned 71–83° in its second (82° still)
-    // and the rider fell at 1.05–1.5 s (1.68 s still); the cutback came round 87° (87°) and fell. None of the three is
-    // the still face's alone: all three stay pinned on both.
+    // reaches the same 164° and the rider falls). What differs is only what the rider reads over the ground: the lean
+    // a turn can hold (TURN_RADIUS) and Compress's path. From 1 to 2 m/s the snap turns 70–83° in its second (82° still)
+    // and the rider falls at 1.05–1.57 s (1.67 s still); the cutback comes round 74° (74°) and falls. None of the three
+    // is the still face's alone: all three stay pinned on both. (Measured with the rail's bite read from the water,
+    // decision 9; read from the world's level the numbers were within 1°, the cutback's 87°.)
     it('carves the same turn on the moving face as on the still face, at the same speed through the water', () => {
       const still = bottomIntoTop(0);
       const moving = bottomIntoTop(FACE_FLOW);
