@@ -45,23 +45,64 @@ const PART_DRAG = 0.9;
 const ALONG_BODY_SHELTER = 0.1;
 /**
  * Prone paddling, alternating arms:
- * - each arm's cycle, 60 strokes a minute for both arms together;
+ * - each arm's cycle cruising: 50 strokes a minute a side (the phase 5 physics
+ *   plan, item 2.8; Nessler et al. 2019, a short board in a swim flume: 36–54 a
+ *   side over 0.6–2.0 m/s; Rapture's paddle technique: a left-and-right cycle
+ *   every 2–3 s cruising). It was 60, from Volschenk et al. 2021's sprints;
  * - the share of it spent pulling;
  * - the pull, from 0.45 m ahead of the shoulders to the hip, beside the rail;
  * - how deep the hand goes, and the hand and forearm's drag area (C_d 1.1 × 0.06 m²).
  *
- * The stroke rate follows prone paddling studies (Volschenk et al. 2021).
- * The pull share is calibrated once, so a sustained flat-water paddle settles
- * near 1.6 m/s (plan §1.10, provisional). The hand then peaks at about 4.4 m/s
- * relative to the board, as in fast front-crawl strokes. Quasi-steady hand drag
- * leaves out the hand's added mass and lift, which the fast pull stands in for.
+ * The pull share is calibrated so a sustained flat-water paddle settles near
+ * 1.5 m/s (plan §1.10, provisional, 1.5–2 m/s; it settled at 1.74 m/s at 60
+ * strokes a minute). The hand then peaks at about 4.4 m/s relative to the
+ * board, as in fast front-crawl strokes: faster, the drawn hand was read as
+ * jumping at 30 Hz (`PointInertia`) and its stroke drawn differently by display
+ * rate. Quasi-steady hand drag leaves out the hand's added mass and lift, which
+ * the fast pull stands in for.
  */
-const ARM_CYCLE = 1.0;
-const PULL_SHARE = 0.32;
+const ARM_CYCLE = 1.2;
+const PULL_SHARE = 0.27;
+/**
+ * The sprint (the phase 5 physics plan, item 2.8): as a wave picks the board up,
+ * the last strokes quicken (Rapture, catching unbroken waves: a few hard, fast
+ * strokes; Nessler et al. 2019: the rate rises with the speed, to 54 a side).
+ * The arm's cycle shortens toward SPRINT_CYCLE, s, as the surface falls along
+ * the heading from SPRINT_SLOPE to SPRINT_SLOPE_FULL (the face lifting the
+ * tail), or at once with the pop-up cue, eased over SPRINT_TIME, s (about a
+ * stroke). Modelling values.
+ */
+const SPRINT_CYCLE = 1.0;
+const SPRINT_SLOPE = Math.tan((2 * Math.PI) / 180);
+const SPRINT_SLOPE_FULL = Math.tan((8 * Math.PI) / 180);
+const SPRINT_TIME = 0.4;
 const REACH = 0.45;
 const HIP = -0.45;
 const HAND_DEPTH = 0.25;
 const HAND_OUTSIDE_RAIL = 0.08;
+/**
+ * The board's roll through each stroke (the phase 5 physics plan, item 2.8;
+ * Nessler et al. 2019: 27–45° from rail to rail, more on smaller boards): the
+ * paddler rolls toward each arm as it pulls, reaching with the shoulder. The
+ * prone balance levels the board toward a roll that swings STROKE_ROLL, rad,
+ * toward the pulling arm, at its most STROKE_ROLL_LEAD of a cycle before the
+ * pull's middle (the board lags the body's shift about that much), and comes in
+ * over STROKE_ROLL_TIME, s, as the board gets under way (full by
+ * STROKE_ROLL_SPEED, m/s: the first strokes from rest are flat). On a face
+ * (catching, or meeting whitewater, the surface tilted from STROKE_ROLL_CALM to
+ * STROKE_ROLL_ROUGH) the paddler keeps the board flat: rolling into whitewater
+ * capsized it under a hand pulling against the bore's upflow. Modelling values,
+ * sized on flat water: the hips' 0.1 m reach rolls it 17–19° (from 7–10°); a
+ * bigger reach rolled it further and threw the rider. The roll also keeps the
+ * line in a quartering swell: without it, at 50 strokes a minute, the board
+ * wandered 9–12° over the strokes (2–5° with it).
+ */
+const STROKE_ROLL = (15 * Math.PI) / 180;
+const STROKE_ROLL_LEAD = 0.35;
+const STROKE_ROLL_TIME = 0.5;
+const STROKE_ROLL_SPEED = 1.2;
+const STROKE_ROLL_CALM = Math.tan((3 * Math.PI) / 180);
+const STROKE_ROLL_ROUGH = Math.tan((8 * Math.PI) / 180);
 /**
  * Swinging forward over the water (the riding-body plan, step 8; only the pull
  * pushes on the water), the drawn hand at mid-swing, m:
@@ -98,9 +139,19 @@ const STEER_STROKE = 0.6;
  * error over HOLD_ANGLE, rad, and to the yaw rate over HOLD_ANGLE / HOLD_RATE_TIME
  * (a modelling choice for the paddler's own correction; the turn comes only
  * from the strokes' drag). Steering sets a new line.
+ *
+ * Under way it reads the line over the strokes, the heading error and the yaw
+ * rate smoothed over HOLD_SMOOTHING, s: each arm's pull yaws the board toward
+ * the other side until the next (±0.3 rad/s at 50 strokes a minute), and read
+ * at once the correction softened the very arm pulling, by 40–60 % at the end of
+ * its pull, and the paddle settled at 1.3 m/s. From rest, before the fins grip,
+ * it reads them at once, the smoothing coming in by HOLD_SMOOTHING_SPEED, m/s.
+ * The gains were 10° and 0.5 s at 60 strokes a minute, read at once.
  */
-const HOLD_ANGLE = (10 * Math.PI) / 180;
-const HOLD_RATE_TIME = 0.5;
+const HOLD_ANGLE = (6 * Math.PI) / 180;
+const HOLD_RATE_TIME = 0.65;
+const HOLD_SMOOTHING = 0.5;
+const HOLD_SMOOTHING_SPEED = 1.5;
 /**
  * Lying down, the legs trailing past the tail sit in the board's wake: flow
  * along the body meets this further share of their drag (a modelling choice).
@@ -799,6 +850,9 @@ export class AttachedRider {
   /** Lying down, the heading the paddler keeps (rad from +z toward +x), and the correction it asks of the strokes now. */
   private line: number | undefined;
   private hold = 0;
+  /** The heading error and yaw rate the line keeping reads, smoothed over the strokes (rad, rad/s). */
+  private lineError = 0;
+  private lineRate = 0;
   /** Buoyancy on the body at the latest substep, N. */
   readonly buoyancy = new Vector3();
   /** Contact over the latest step: mean force on the rider (N, world), centre of pressure (board frame) and more. */
@@ -843,7 +897,14 @@ export class AttachedRider {
   /** Water impulses on the parts and hands over the step, and their positions, for the water's reactions. */
   private readonly reaction = new Float64Array((RIDER_PARTS.length + 2) * 3);
   private readonly reactionAt = new Float64Array((RIDER_PARTS.length + 2) * 2);
-  private strokeTime = 0;
+  /** How far through its cycle the left arm is (the right half a cycle on), 0–1; and the cycle now, s. */
+  private strokePhase = 0;
+  private strokeCycle = ARM_CYCLE;
+  /** Paddling, the sprint: 0 cruising to 1 at SPRINT_CYCLE (read only). */
+  sprint = 0;
+  /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
+  private strokeRoll = 0;
+  private waterCalm = 1;
   /** A posture transition: where it started (board frame), how far along it is and how long it takes, s. */
   private readonly fromParts: Float64Array;
   private phaseTime = 0;
@@ -1141,6 +1202,9 @@ export class AttachedRider {
     this.duck.held = 0;
     this.pressTrack.reset();
     this.kneeTrack.reset();
+    this.sprint = 0;
+    this.strokeRoll = 0;
+    this.waterCalm = 1;
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
     // A new mount starts from the neutral stance, whatever the body was doing before (a relaunch mid-carve).
@@ -1315,7 +1379,7 @@ export class AttachedRider {
    * Returns the hand's speed along the board while pulling (0 in recovery).
    */
   private handLocal(side: number, out: Vector3): number {
-    const phase = (this.strokeTime / ARM_CYCLE + side * 0.5) % 1;
+    const phase = this.armPhase(side);
     let z: number;
     let height: number;
     let swing = 0;
@@ -1324,7 +1388,7 @@ export class AttachedRider {
       const s = phase / PULL_SHARE;
       z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
       height = -HAND_DEPTH;
-      along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * PULL_SHARE * ARM_CYCLE);
+      along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * PULL_SHARE * this.strokeCycle);
     } else {
       // Out of the water at the hip, over it and out, and back in at the reach, rising and settling with no speed at
       // either end, so the drawn hand neither jumps nor jerks (the riding-body plan, step 8).
@@ -1336,6 +1400,31 @@ export class AttachedRider {
     }
     out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL + swing), deckHeight(this.shape, z) + height, z);
     return along;
+  }
+
+  /** How far through its cycle arm `side` (0 left, 1 right, half a cycle on) is, 0–1: pulling below PULL_SHARE. */
+  private armPhase(side: number): number {
+    return (this.strokePhase + side * 0.5) % 1;
+  }
+
+  /**
+   * The stroke's clock over a substep: the sprint eased toward the face's fall along the heading (or the pop-up cue),
+   * and the arms advanced at the cycle it gives, so a quickening stroke never jumps.
+   */
+  private advanceStroke(h: number, board: BoardBody, water: SurfWater): void {
+    let wanted = this.popUpCue ? 1 : 0;
+    const sample = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation).setY(0);
+    if (!sample.outsideDomain && forward.lengthSq() > 1e-6) {
+      forward.normalize();
+      const fall = -(sample.slopeX * forward.x + sample.slopeZ * forward.z);
+      wanted = Math.max(wanted, Math.min(1, Math.max(0, (fall - SPRINT_SLOPE) / (SPRINT_SLOPE_FULL - SPRINT_SLOPE))));
+    }
+    const tilt = sample.outsideDomain ? 0 : Math.hypot(sample.slopeX, sample.slopeZ);
+    this.waterCalm = 1 - Math.min(1, Math.max(0, (tilt - STROKE_ROLL_CALM) / (STROKE_ROLL_ROUGH - STROKE_ROLL_CALM)));
+    this.sprint += (wanted - this.sprint) * Math.min(1, h / SPRINT_TIME);
+    this.strokeCycle = ARM_CYCLE + (SPRINT_CYCLE - ARM_CYCLE) * this.sprint;
+    this.strokePhase = (this.strokePhase + h / this.strokeCycle) % 1;
   }
 
   /** A part's centre in the world. */
@@ -1780,13 +1869,12 @@ export class AttachedRider {
       this.hold = 0;
       return;
     }
-    this.keepLine(board);
-    this.strokeTime += h;
+    this.keepLine(h, board);
+    this.advanceStroke(h, board, water);
     for (let side = 0; side < 2; side += 1) {
       const effort = this.strokeEffort(side);
       if (!(effort > 0)) continue;
-      const phase = (this.strokeTime / ARM_CYCLE + side * 0.5) % 1;
-      if (phase >= PULL_SHARE) continue;
+      if (this.armPhase(side) >= PULL_SHARE) continue;
       // Pull: the hand sweeps from reach to hip beside the rail, fastest mid-stroke.
       const along = this.handLocal(side, this.localScratch);
       board.toWorld(this.localScratch, this.partWorld);
@@ -1837,17 +1925,24 @@ export class AttachedRider {
   }
 
   /** Paddling straight, the correction that brings the board back to its line; steering, a new line. */
-  private keepLine(board: BoardBody): void {
+  private keepLine(h: number, board: BoardBody): void {
     const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
     const heading = Math.atan2(forward.x, forward.z);
     if (this.line === undefined || this.sweeping || !this.paddle) {
       this.line = heading;
       this.hold = 0;
+      this.lineError = 0;
+      this.lineRate = board.angularVelocity.y;
       return;
     }
     let error = heading - this.line;
     error -= 2 * Math.PI * Math.round(error / (2 * Math.PI));
-    this.hold = Math.max(-1, Math.min(1, -(error + HOLD_RATE_TIME * board.angularVelocity.y) / HOLD_ANGLE));
+    // Over the strokes under way; at once from rest.
+    const smoothing = HOLD_SMOOTHING * Math.min(1, board.velocity.length() / HOLD_SMOOTHING_SPEED);
+    const ease = smoothing > h ? h / smoothing : 1;
+    this.lineError += (error - this.lineError) * ease;
+    this.lineRate += (board.angularVelocity.y - this.lineRate) * ease;
+    this.hold = Math.max(-1, Math.min(1, -(this.lineError + HOLD_RATE_TIME * this.lineRate) / HOLD_ANGLE));
   }
 
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */
@@ -2456,8 +2551,20 @@ export class AttachedRider {
       const roll = Math.asin(Math.max(-1, Math.min(1, side.y)));
       const rate = this.scratch2.copy(board.angularVelocity).applyQuaternion(this.spin.copy(board.orientation).invert()).z;
       const ducking = this.duck.press > DUCK_BUSY;
-      const reachX = ducking ? DUCK_SHIFT : reach.x;
-      const wanted = ducking ? DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate : PRONE_ROLL_SHIFT * roll + PRONE_ROLL_DAMPING * rate;
+      // Pushing up (the pop-up), the hands hold the rails as they do ducking, the body up over them on its arms: it
+      // levels a board the stroke left rolling (from mid-roll the prone hips let it capsize under the rising body).
+      const onRails = ducking || this.phase === 'push';
+      const reachX = onRails ? DUCK_SHIFT : reach.x;
+      // Paddling, the level kept swings toward each arm as it pulls (board +x, the left arm's side, down is a negative
+      // roll); pushing up, at once level.
+      const rolling = this.paddle && !ducking && this.phase === 'prone' ? Math.min(1, board.velocity.length() / STROKE_ROLL_SPEED) * this.waterCalm : 0;
+      this.strokeRoll = this.phase === 'prone' ? this.strokeRoll + (rolling - this.strokeRoll) * Math.min(1, h / STROKE_ROLL_TIME) : 0;
+      const swing = 2 * Math.PI * (this.strokePhase - PULL_SHARE / 2 + STROKE_ROLL_LEAD);
+      const rollTo = -STROKE_ROLL * this.strokeRoll * Math.cos(swing);
+      const rollRate = ((STROKE_ROLL * this.strokeRoll * 2 * Math.PI) / this.strokeCycle) * Math.sin(swing);
+      const wanted = onRails
+        ? DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate
+        : PRONE_ROLL_SHIFT * (roll - rollTo) + PRONE_ROLL_DAMPING * (rate - rollRate);
       const targetX = Math.min(reachX, Math.max(-reachX, wanted));
       this.shiftAxis('x', targetX, reachX, h);
       this.shiftAxis('z', 0, reach.z, h);

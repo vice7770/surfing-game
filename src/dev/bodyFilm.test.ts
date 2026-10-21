@@ -575,8 +575,11 @@ describe('the paddler and the swimmer (step 8)', () => {
   }, 240_000);
 
   // Nessler et al. 2015 (± 1 SD, the wetsuit and the bare arm): the stroke 970 ± 77 mm long and 170 ± 67 mm wide, the
-  // wrist through 424 ± 78 to 468 ± 92 mm up and down. Nessler et al. 2019: the board pitched 12.3 ± 2.3°.
-  it('paddles a stroke as wide and as deep as a real one, the board pitched as a real one', () => {
+  // wrist through 424 ± 78 to 468 ± 92 mm up and down. Nessler et al. 2019: the board pitched 12.3 ± 2.3°, 36–54 strokes a
+  // minute a side over 0.6–2.0 m/s, the board rolling 27–45° through each stroke. The phase 5 physics plan, item 2.8:
+  // 50 a minute a side cruising (60 before), the board rolled toward each arm as it pulls, 17–19° (7° before: the hips'
+  // 0.1 m reach rolls it no further, `STROKE_ROLL`).
+  it('paddles a stroke as wide and as deep as a real one, the board pitched and rolled as a real one, at a real rate', () => {
     const shot = steady(60);
     for (const side of ['left', 'right'] as const) {
       const stroke = paddleStroke(shot, side);
@@ -584,10 +587,14 @@ describe('the paddler and the swimmer (step 8)', () => {
       expect(stroke.across, `${side} across`).toBeLessThan(0.237);
       expect(stroke.vertical, `${side} vertical`).toBeGreaterThan(0.346);
       expect(stroke.vertical, `${side} vertical`).toBeLessThan(0.56);
+      expect(stroke.perMinute, `${side} a minute`).toBeGreaterThan(48);
+      expect(stroke.perMinute, `${side} a minute`).toBeLessThan(52);
     }
-    const board = boardMotion(shot, 1);
+    const board = boardMotion(shot, 1.2);
     expect(board.pitch).toBeGreaterThan(10);
     expect(board.pitch).toBeLessThan(14.6);
+    expect(board.roll).toBeGreaterThan(15);
+    expect(board.roll).toBeLessThan(45);
   }, 240_000);
   const swimming = (rate: number): BodyFilm => {
     const swim = filmBody(scenario('swimming'), { rate, drawer: trackDrawer, pose: posed() });
