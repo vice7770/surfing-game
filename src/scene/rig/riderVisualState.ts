@@ -68,6 +68,14 @@ export interface RiderVisualState {
   breath: number;
   /** Standing, the upper body's twist asked for by the pad, rad about the up, as `yawRate` turns (the movement-flow spec); 0 without. */
   twist: number;
+  /**
+   * Upright, the weight the rider feels: the front foot's share of the load
+   * (0 the back foot, 1 the front), smoothed over 0.3 s (the physics'
+   * `contact.weight`; the phase-5 physics plan's W1). The stance gauge reads it as
+   * the weight. NaN where unknown: not upright, or another player's (it is not on
+   * the wire, and nothing drawn reads it).
+   */
+  weight: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -93,6 +101,7 @@ export function createRiderVisualState(): RiderVisualState {
     clock: 0,
     breath: 1,
     twist: 0,
+    weight: Number.NaN,
   };
 }
 
@@ -115,6 +124,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.leash.gripped = false;
   out.breath = rider[RIDER_SNAPSHOT.breath] ?? 1;
   out.twist = rider[RIDER_SNAPSHOT.twist] ?? 0;
+  out.weight = rider[RIDER_SNAPSHOT.weight] ?? Number.NaN;
   const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;

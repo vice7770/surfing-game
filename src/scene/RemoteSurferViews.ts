@@ -47,8 +47,9 @@ export function remoteRiderState(state: RemoteState, board: Float64Array, rider:
   // The wipeout spec: the duck-dive, the leash's plug and bits, and the swimmer, from the pose's flags.
   const fallen = state.phase === RIDER_PHASES.indexOf('fallen');
   rider[RIDER_SNAPSHOT.duck] = state.ducking ? 1 : 0;
-  // Another player's breath is not sent: drawn as full.
+  // Another player's breath is not sent: drawn as full. Nor is the weight it feels: none.
   rider[RIDER_SNAPSHOT.breath] = 1;
+  rider[RIDER_SNAPSHOT.weight] = Number.NaN;
   turn.set(board[3], board[4], board[5], board[6]);
   plugAt.copy(PLUG).applyQuaternion(turn);
   plugAt.x += board[0];

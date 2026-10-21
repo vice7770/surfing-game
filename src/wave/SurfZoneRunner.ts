@@ -149,9 +149,11 @@ export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 
  * Layout of a snapshot's rider array: seven drawn points (x, y, z each), then
  * phase, cue, presence and heading; the duck-dive's press (0–1), the leash's
  * plug (x, y, z), the leash's bits and the swimmer's bits, the breath (the wipeout spec),
- * and the upper body's twist, rad (the movement-flow spec).
+ * the upper body's twist, rad (the movement-flow spec), and the weight the rider
+ * feels, the front foot's share of the load smoothed (`AttachedRider.contact.weight`,
+ * the phase-5 physics plan's W1; NaN unless upright; local only, not on the wire).
  */
-export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, length: 33 } as const;
+export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, weight: 33, length: 34 } as const;
 /** `RIDER_SNAPSHOT.leash`: the leash is worn whole, has snapped, is being reeled in. */
 export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
 /** `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under. */
@@ -174,6 +176,7 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   out[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
   out[RIDER_SNAPSHOT.breath] = session.breath.level;
   out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.twist.angle : 0;
+  out[RIDER_SNAPSHOT.weight] = session.rider.attached ? session.rider.contact.weight : Number.NaN;
   session.leashPlug(point).toArray(out, RIDER_SNAPSHOT.plug);
   const { leash, surfer } = session;
   out[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);

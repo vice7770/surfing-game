@@ -427,6 +427,13 @@ const SPECIFIC_FORCE_TIME = 0.1;
 const LEG_EXTENSION = 0.1;
 /** The balance margin's smoothing, s. */
 const MARGIN_TIME = 0.1;
+/**
+ * The weight the rider feels (the phase-5 physics plan's W1, the owner's
+ * decision 1 of 2026-10-22): the front foot's share of the load, low-passed over
+ * WEIGHT_TIME, s, the coaching's sustained feel (60/40, 70/30) rather than one
+ * instant's. A read-out only: nothing in the physics reads it.
+ */
+const WEIGHT_TIME = 0.3;
 /** The drawn arms reach out ARM_SPREAD of their length at ease, and ARM_ALARM more with no margin left. */
 export const ARM_SPREAD = 0.7;
 export const ARM_ALARM = 0.8;
@@ -807,6 +814,8 @@ export class AttachedRider {
     centreOfPressure: new Vector3(),
     /** Share of the load on the front foot, from where the centre of pressure falls between the feet. */
     frontShare: 0,
+    /** Upright, the weight: `frontShare` low-passed over WEIGHT_TIME (0 the back foot, 1 the front); NaN in any other phase. */
+    weight: Number.NaN,
     /** Peak normal load in the step, body weights. */
     load: 0,
     feasible: true,
@@ -1200,6 +1209,7 @@ export class AttachedRider {
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
+    this.contact.weight = Number.NaN;
     this.standingLine = undefined;
     this.standingHold = 0;
     this.markParts();
@@ -2131,6 +2141,9 @@ export class AttachedRider {
       this.contact.feasible = false;
     }
     this.balanceMargin = this.upright ? this.balanceMargin + (this.rawMargin - this.balanceMargin) * (1 - Math.exp(-h / MARGIN_TIME)) : 1;
+    const felt = this.contact;
+    felt.weight = !this.upright ? Number.NaN
+      : Number.isNaN(felt.weight) ? felt.frontShare : felt.weight + (felt.frontShare - felt.weight) * (1 - Math.exp(-h / WEIGHT_TIME));
     const mean = before.add(this.velocity).multiplyScalar(0.5);
     this.work.gravity += h * this.gravity.dot(mean);
     this.work.water += h * this.waterForce.dot(mean);

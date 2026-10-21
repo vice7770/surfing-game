@@ -1,6 +1,8 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { LEASH_BITS, RIDER_SNAPSHOT, SWIM_BITS } from '../../wave/SurfZoneRunner';
+import { PlaneWater } from '../../physics/PlaneWater';
+import { RideSession } from '../../physics/RideSession';
+import { LEASH_BITS, RIDER_SNAPSHOT, SWIM_BITS, writeRiderSnapshot } from '../../wave/SurfZoneRunner';
 import { BONES, REQUIRED_BONES } from './humanoidBones';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState, readRiderSnapshot } from './riderVisualState';
@@ -54,6 +56,31 @@ describe('rider visual state', () => {
     rider[RIDER_SNAPSHOT.twist] = 0.5;
     expect(readRiderSnapshot(rider, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).twist).toBe(0.5);
     expect(readRiderSnapshot(new Float64Array(RIDER_SNAPSHOT.twist), [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).twist).toBe(0);
+  });
+
+  it('decodes the weight the rider feels, and none from a snapshot made before it (the phase-5 physics plan\'s W1)', () => {
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    rider[RIDER_SNAPSHOT.weight] = 0.3;
+    expect(readRiderSnapshot(rider, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).weight).toBe(0.3);
+    expect(readRiderSnapshot(new Float64Array(RIDER_SNAPSHOT.weight), [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).weight).toBeNaN();
+    expect(createRiderVisualState().weight).toBeNaN();
+  });
+
+  it('carries the physics\' weight through the snapshot: standing, the feet\'s pressure smoothed; lying, none', () => {
+    const water = new PlaneWater();
+    const snapshot = new Float64Array(RIDER_SNAPSHOT.length);
+    const read = (phase: 'standing' | 'prone') => {
+      const session = new RideSession({ stance: 'regular' });
+      session.place({ x: 0, z: 0, heading: 0, speed: phase === 'standing' ? 7 : 0, phase }, water);
+      for (let i = 0; i < 30; i += 1) session.step(1 / 60, water, { paddle: false, popUp: false, steer: 0, trim: phase === 'standing' ? 1 : 0 });
+      writeRiderSnapshot(session, false, snapshot, new Vector3());
+      return { session, state: readRiderSnapshot(snapshot, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()) };
+    };
+    const standing = read('standing');
+    expect(standing.state.weight).toBe(standing.session.rider.contact.weight);
+    // W held half a second: the smoothed pressure lags the instant's, on its way to the front foot.
+    expect(standing.state.weight).toBeGreaterThan(0.5);
+    expect(read('prone').state.weight).toBeNaN();
   });
 
   it('puts a standing regular rider’s left foot forward on the deck, and a goofy rider’s right', () => {
