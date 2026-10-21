@@ -1,0 +1,581 @@
+# Phase 5 Physics Plan (the rider's physics, so the ride matches real surfing)
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to build the batches the owner picks. Steps use checkbox (`- [ ]`) syntax for tracking. The owner has chosen (§4): every recommendation, approved.
+
+**Status:** approved. The owner took every recommendation of §4 ("use all recommended", 2026-10-22). Written on branch `claude/anim-p5-plan` (from `main` at e445f06b); it lands in `main` with batch A (branch `claude/phys5-a`). Batch C is built on `claude/phys5-c`.
+
+**The owner's principle (2026-10-22):** "I don't want to change something that is not physics based." The animation stays physics-driven. Where the drawing can't match real surfing without the physics, "we can compromise the physics after." This plan is that step: the animation-realism plan's phase 5 (`2026-10-22-animation-realism.md` §8, "Phase 5").
+
+**What it covers:**
+- the "needs physics" steps of phase 2's video check against the owner's reel (barefoot_surf, Jesse Mendes, a goofy frontside top turn on a left; `docs/research/animation-realism-2026-10-22/phase2-video-check.md`): steps 2, 5, 7 and 8;
+- the other physics gaps the animation plan lists: trim weight, the pump, paddling, the kick-out, the deep U, the fall from lying down and the remote swimmer;
+- phase 2's "drawable but not done": the head turning before the board moves.
+
+**How each item reads:**
+- what the owner sees;
+- the cause in the physics code, with file and line (`AttachedRider.ts` unless named);
+- what real surfing does, sourced;
+- two or three options, each with the code change, what the owner would feel, the risk to tuned behaviour and the tests it touches;
+- one recommendation.
+
+§1 comes first because one cause sits under five of the items: where the weight goes along the board. §3 groups the items into three build batches, each with a shot list. §4 holds the decisions for a grilling round.
+
+---
+
+## 0. The ground rules
+
+**The bars that pin the feel** (a change that moves one is the owner's call):
+
+| Bar | Where | Today |
+|---|---|---|
+| The still-water compressed bottom turn: 90° in ≤ 1.15 s keeping > 0.85 of its speed | `compressTurn.test.ts:82–90` | 1.117 s frontside, 1.15 s backside (the owner's decision of 2026-10-07) |
+| Compress's sideways pull ≤ 1.41 g (Forsyth 2024's peak) | `TURN_PULL_LIMIT`, `:347` | binding above about 43° asked |
+| The projection let go at 12° keeps > 0.83 of its speed; at 25° < 0.74 | `projectionLean.test.ts:76–82` | 0.731 at 25° |
+| W/S moves the feet's pressure as far compressed as standing | `stanceLadder.test.ts:83–90` | range > 0.15 |
+| The stance map on all four surfers, Regular and Goofy, with the physics' ten medium-confidence misses pinned | `stanceTargets.test.ts:36–47` (`PHASE5_MISSES`) | ten pinned |
+| The pinned physics fails (`it.fails`) | `AttachedRider.test.ts:998, 1274, 1433, 1455, 1473`; `bodyFilm.test.ts:638` | the hard turn, Compress at 11 m/s, the snap, the bottom turn into a top turn, the cutback, the paddle's length |
+| The catch and the pop-up | the prone grip (`PRONE_GRIP` 0.6, P4f, `:30`), the pop-up's timing (`:603–606`) | the owner's ride |
+
+**The test policy** (memories `owner-playtests-riding`, 2026-10-22): a physics change runs the main suite plus the Wave Pool's `SurfZoneSimulation` tests (`-t "pool"`). `SurfZoneRunner` riding sessions, ride reports, catch reports and bot rides are skipped. The owner rides; each batch ends with a shot list.
+
+**The walls** (tried, measured and reverted; don't retry: memories `p4e-carve-root-cause`, `bottom-turn-check`):
+- lean-in feed-forward of the asked bank, reference shaping and rate feed-forward (`lean-in-study.md`);
+- `BANK_RATE_GAIN` below 3.6, everywhere or at the entry only;
+- rail-first: the feet's rest rolling the rail past the body (`bottom-turn-entry-study.md`);
+- rail grip (refuted: a banked planing hull has about no side force along its beam);
+- an ankle rest that lays the board flat on the water;
+- banking by the felt stance force, by the path's pull or by the board's roll;
+- crouch-pulse unweighting for reversals;
+- a free pitch pendulum along the leg (P4e's rewrite 3: it chattered between the load cap and flight).
+
+---
+
+## 1. One cause under five items: where the weight goes along the board
+
+The top turn's weight (step 7), the extension's weight (step 5), the weight out of the redirect (step 8), trim's weight and the kick-out's knees all trace to the same three things. A static calculation shows how they add up (a scratch script, not a rider session; constants from the code at e445f06b).
+
+### 1.1 How the physics places the weight
+
+- **The body is carried world-upright along the board.** Standing, the body's frame is the board's heading banked about it (`frame()`, `:2216–2234`: `bodyFrame` at `:2231`, the target at `:2234`). It has no pitch. The correction drive holds the body to that target along the board (`prepare()`, `:1524–1529`). So when the deck pitches nose-up by τ, the pelvis sits 0.78 sin τ m forward of the stance's middle *along the deck*: 0.022 of the stance per degree.
+- **The feet's pressure is where the contact's line meets the deck** (`project()`, `:2294–2302`; its share between the feet, `contact.frontShare`, `:2325–2326`). With the body world-upright, the pressure moves ahead of the centre of mass by H × d / n:
+  - H = 0.85 m, the centre of mass over the deck (`riderPosture.ts:100`'s places and masses);
+  - d is the board's deceleration along its deck in g, gravity's share included;
+  - n is the load factor.
+
+  At steady speed d = 0, and the pressure is centred whatever the pitch. A board slowing at 0.3 g puts the pressure 0.25 m ahead: 0.40 of the stance onto the front foot. This is the weight transfer of a braking car, and it is real.
+- **The balance lets the pressure wander.** It acts only once the pressure is more than `TRIM_FREEDOM` (0.2 m, `:138–142`) from the stance's middle (`balanceStep`, `:2472–2475`). That is ±0.32 of the stance, so 0.18 to 0.82 on the front foot is left alone. The hook for a pressure the rider wants is there and unused: `copTarget.z` is always 0 (`:881`, `:2452`).
+- **W/S moves only the upper body,** by `TRIM_SHIFT` 0.25 m (`:470`, `:2482–2484`, applied at `updatePosture`, `:2426–2430`). The legs stay put, so the centre of mass moves 0.795 × 0.25 = 0.20 m. That is 0.32 of the stance.
+
+### 1.2 The calculation
+
+The pressure is the feet's share on the front foot. The pelvis is its place between the ankles, the stance map's `weight` today.
+
+| Case | Pressure today | Pelvis today | Pressure, W2 (§1.4) | Pelvis, W2 |
+|---|---:|---:|---:|---:|
+| Trim at steady speed, deck 6° nose-up | 0.50 | 0.63 | 0.50 | 0.63 |
+| Trim at steady speed, deck 12° nose-up | 0.50 | 0.76 | 0.50 | 0.76 |
+| Bottom turn shedding 0.18 g, no W | 0.74 | 0.61 | 0.66 | 0.50 |
+| Climbing, slowing 0.2 g, no S | 0.77 | 0.82 | 0.66 | 0.68 |
+| Climbing, slowing 0.2 g, full S | 0.45 | 0.42 | 0.45 | 0.42 |
+| Top turn, half S, 0.15 g | 0.54 | 0.52 | 0.54 | 0.52 |
+| Top turn, full S, 0.3 g | 0.59 | 0.32 | 0.46 | 0.15 |
+| Top turn, full S, 0.45 g (the static face) | 0.79 | 0.42 | 0.48 | 0.03 |
+| Snap on a wave, full S, 0.1 g | 0.32 | 0.28 | 0.32 | 0.28 |
+| Down the face, speeding up 0.2 g, no input | 0.23 | 0.33 | 0.34 | 0.47 |
+| Kick-out recipe: full S, deck 20° up, slowing 0.3 g | 0.59 | 0.53 | 0.46 | 0.36 |
+
+What the table says:
+- **The pelvis reads the deck's pitch, not the weight.** The planing board's 0.67–0.74 that phase 1 drew at 0.58 (`stagePoses.ts:169–170`) is a deck 7–11° nose-up under a world-upright body. The pressure there is centred. The physics-posture study found the same on the real wave: the feet's pressure matches the coaching in trim (0.59), descending (0.56) and the bottom turn (0.74), with the pelvis 0.1–0.25 ahead (`2026-10-02-physics-posture.md`).
+- **The top turn's measured 0.53–0.65 were read at half S.** The stance map's top turn uses trim −0.5 (`ridingPoses.ts`, `top-turn-*`), and so did the autopilot. The Beach's 0.65 at half S fits a carve slowing about 0.25 g. At full S on a wave the pressure is already 0.32 (70/30 back). The snap, read at full S, already meets the map (phase 2 struck `snap-*.weight` off).
+- **Full S falls short only where the board slows hard.** That means a decelerating carve, a climb, and above all the static test face, which sheds 0.45 g and gives nothing back. There, 70/30 back needs the centre of mass far behind the middle: 0.21 m at 0.1 g, 0.30 m at 0.2 g, 0.38 m at 0.3 g and 0.51 m at 0.45 g. That is a lean 14–31° behind the force line through the middle. S reaches 0.20 m, and the dead zone hides the rest.
+
+### 1.3 What real surfing does
+
+- **The weight a surfer feels is the feet's pressure,** and they place it by moving the hips. The coaching's 60/40 and 70/30 describe that pressure: Rapture's stance and top-turn pages (top turn about 70/30 on the back foot); SurfDeeper; Cornish Wave (trim 0.50–0.62); de Sousa 2022 (the bottom turn's preparation 60–75 % front, its final phase "weight to the back foot").
+- **Slowing loads the front foot unless the surfer leans back.** That is plain mechanics: the contact's force must decelerate the body.
+- **Weight back sinks the tail.** It moves gravity behind buoyancy, and the board rotates nose-up until the centre of buoyancy has moved back under it (the Exploratorium's surfing physics). A planing hull's trim angle is a compromise between friction and lift drag (Hendricks 1969). So a tail held down slows the board, which is why the snap is a short push.
+- **On a real wave the board slows little.** Bottom turns and cutbacks keep 0.88–0.95 of their speed (Forsyth et al. 2024, cited at `CARVE_CARRY`, `:349–352`), because the wave feeds them. So the 0.1 g row is the real one, and the 0.45 g row is the static face's.
+- **Weiß et al. 2025** (seven surfers on a river wave): the muscle forces are higher in the front leg. The authors read it as the front leg carrying the weight and the rear leg's moments stabilising. The differences were not significant.
+
+### 1.4 The options (they serve items 2.2, 2.3, 2.5, 2.6 and 2.9)
+
+**W1: weight is the feet's pressure (measurement and plumbing, no physics change).**
+- *Change:*
+  - the stance map's `weight` reads the physics' `contact.frontShare`, low-passed over 0.3 s (the coaching's sustained feel), sent to the drawing in a new local snapshot slot (`RIDER_SNAPSHOT`, `SurfZoneRunner.ts:154`, `:166–182`);
+  - the pelvis stays as its own measure (`hipsOver`);
+  - the recipes that read weight run at steady speed: a towed board, as the pop-up recipe is, or a face whose slope balances the drag. Flat water's own drag loads the front foot (the physics-posture study: read at one instant on flat water, the pressure missed more, 42 against 39);
+  - remote surfers draw nothing from it.
+- *Feel:* none.
+- *Risk:* none to the physics. The map's weight rows read differently, so `PHASE5_MISSES` is re-pinned.
+- *Tests:* `stanceTargets`, `stanceMap`, `stanceGauge`; the snapshot's layout tests.
+
+**W2: W/S sets the pressure the rider holds (physics: the balance's target).**
+- *Change:* in `balanceStep` (`:2450–2475`), standing only:
+  - `copTarget.z` = trim × `TRIM_PRESSURE` × half the stance (provisional 0.4), so S holds 0.30 on the front foot, W 0.70 and nothing 0.50;
+  - `TRIM_FREEDOM` 0.2 → 0.1 m;
+  - `TRIM_SHIFT` stays as the feed-forward;
+  - the landing keeps today's (the pop-up's 72/28 forward landing);
+  - the reach, `STANDING_SHIFT.z` 0.25 m, can stay. In the calculation it binds only at 0.45 g.
+- *Feel:*
+  - S is the back foot at any speed: in a top turn the board pivots on its tail. Held, the nose lifts, and the board slows and sinks (physics: decision 4);
+  - with no input, the board's own decelerations move the weight less. The bottom turn reads 0.66 on the front instead of 0.74, still the preparation's 60–75 %; the climb 0.66 instead of 0.77; the drop 0.34 instead of 0.23. The rider re-centres more, as a surfer does;
+  - W runs the board flatter and faster.
+- *Risk:*
+  1. **The balance loop along the board.** Moving the body moves the pressure the other way first: its own acceleration, up to `STANDING_SHIFT_ACCELERATION` 3 m/s² (`:394–398`), shifts the pressure by H × 3 / g = 0.26 m. Today's 0.2 m zone hides that; a 0.1 m zone could ring in pitch. A fast unit probe comes first (§3, batch A, task 2). If it rings, the balance reads a longer-smoothed pressure (`COP_SMOOTHING` 0.05 s → 0.2 s).
+  2. The tail sinks sooner under S (the pinned snap).
+  3. The board's pitch under a centred pressure changes its drag. Re-measure the still-water bar (it sits on its 1.15 s backside limit) and `projectionLean`.
+  4. The 1.41 g cap is sideways: unaffected. Prone, the catch, the push and the landing: unaffected (their branches are unchanged).
+- *Tests:* `stanceLadder` (a larger W/S range), `compressTurn`, `projectionLean`, `pumping` (the hull's load under a pump moves), `cutback.test`, `leanOut`, `AttachedRider.test`'s standing block, `stanceTargets` (re-pinned, with W1).
+
+**W3: the body carried along its force line (physics, research-sized).**
+- *Change:* the target along the board follows the low-passed specific force, as the leg's load already does (`prepareLeg`, `:1699–1704`), instead of the world's vertical, with W/S's shift on top. The body then leans back against a slowing board by itself: 17° behind the deck's normal at 0.3 g.
+- *Feel:* the most like a surfer. The pressure sits exactly where W/S put it, whatever the board does.
+- *Risk:* high. The board's acceleration is partly the rider's own push: the P9 lesson, where banking by the felt stance force exploded. It needs the carve lab's plant along the board first.
+- *Tests:* everything standing.
+
+**Recommendation:** W1, then W2 with a 0.1 m zone. W3 is not for now.
+
+---
+
+## 2. The items
+
+### 2.1 Leaning before the rail bites (reel step 2)
+
+**Seen:** in the reel the surfer leans toward the wave at the flat, before the bottom turn. In the game the lean comes only as the board banks.
+
+**Cause:**
+- **The lean starts at the steer.** The asked bank is `steer × RAIL_RANGE`, eased in over `REFERENCE_TIME` 0.05 s (`prepareBank`, `:1583–1585`). Nothing leans before the player steers.
+- **The physics already leans the body first.** Steering into a lean the body lags, the feet hold their rest at nothing and the upper body's swing throws the body in (`:1594–1600`; `swingStep`, `:1613–1627`). The ankle then drags the board's roll after the body (`:1603`). But the rail follows within about 0.05 s, and the pull 0.04 s after it (`rail-control-study.md`), so the two read as one.
+- **The swing that throws the lean rolls the upper body the other way,** by its reaction (`:1616`). It is drawn at 0.35 of the swing (`SWING_DRAWN_CHEST`, `:440`; `swung`, `:1301–1306`), and phase 1 kept a third of that within 15°. So at a turn's start the drawn chest tips slightly *out*.
+- **The lean-in is slow,** with a time constant of about 0.49 s (`BANK_GAIN` 7.4, `BANK_RATE_GAIN` 3.6, `:223–224`). The board has turned only 13° after 0.6 s (memory `bottom-turn-check`). So the body does lean well before the board visibly turns. And the drawn lean trails the physics' bank by 0.08–0.11 s (phase 1's filter).
+
+**Real surfing:**
+- Rapture's bottom turn: look and lean into the turn at the flat, then drive off the rail;
+- WSL flow (Mauro 2017): head, shoulders, hips, knees, toes;
+- the lean is the body falling into the turn, held by the turn's pull. A bicycle steers out to lean in (the game's own rail-change study);
+- Forsyth et al. 2024: 99° in 0.96 s, so the lean is in within about 0.3 s.
+
+**Options:**
+- **A. No physics change: the player's timing, and a lead the eye can read.**
+  - *Change:* steer at the flat. The drawn head, inside shoulder and lead arm turn and drop into the turn as soon as the body's bank starts to move. Its rate is read from the drawn points, the same for local and remote surfers, which is item 2.12's lead.
+  - *Feel:* none. *Risk:* the cascade's and the motion filter's drawn tests only. *Tests:* `stanceTurns`, `causeFilter`, the body film.
+- **B. The braking curve (physics, designed and measured, not built: `rail-control-study.md`).**
+  - *Change:* the balance brakes the lean on √(2A·e) at A = 1.5 rad/s² instead of a straight line. The body leans 29° by 0.5 s (23° today). The deep U reaches 56° by 1.0 s (46° today), and 99° 0.12 s sooner.
+  - *Feel:* a quicker lean-in, a slightly sharper bottom turn, and more falls in rail changes.
+  - *Risk:* it fixes two pins (the hard turn, Compress at 11 m/s) and breaks six tests (the rail change from a carve at 8 m/s, the held rider settling, four drawn, online and HUD tests). On the Canyon's waves it changed nothing measurable (falls 72 against 75, rides of 3 s or more 14 against 18).
+  - *Tests:* those six, plus `compressTurn` (the still-water bar may improve).
+- **C. A rail-angle controller (physics, research):** the rail leads the body by a small angle held below its bite, so the pull builds first and the body falls in inside it. This is the lean-in study's last lead. It needs the board's yaw build-up in the roll model, and it borders the rail-first wall.
+
+**Recommendation:** A. The physics already leans first. What's missing is an earlier steer (the player's) and a lead the eye can read. B only if the owner's ride finds the lean-in too slow.
+
+### 2.2 Extending on the climb, with the weight back (reel step 5)
+
+**Seen:** 0.3 s after Compress the drawn knees are still 82–111°, where the extension wants 0–30°. On flat water the weight is forward (0.74–0.77).
+
+**Cause:**
+- **The ladder's top is the riding stance.** Letting Compress go returns the leg's rest to 0 (`prepareLeg`, `:1709–1711`): the posture's own height, the pelvis 0.78 m over the deck (`riderPosture.ts:100`).
+  - By the follower's limits (`LEG_FREQUENCY` 12 rad/s, `EXTEND_ACCELERATION` 15 m/s², `MAX_LEG_SPEED` 2.5 m/s; `:512–515`, `:1714–1722`) the body is half-way up at 0.18 s and within 10 % at 0.29 s (the calculation).
+  - So the physics' pelvis is up by 0.3 s, but it never rises past the riding stance, where phase 1's drawn knees stand at 42°.
+  - The extension's 0–30° (de Sousa 2022's final phase, the knee at 150° or more included) needs the pelvis over the riding stance by 3–5 cm. With two 0.45 m bones: +2 cm gives 34°, +4 cm 24°, +6 cm straight.
+  - The leg has the room: `LEG_EXTENSION` is 0.1 m of travel up (`:427`).
+  - The 0.62 depth that the video check read at 0.3 s is then likely the drawn pelvis's follow (16 rad/s) plus flat water's 17° nose-up board, which brings the pelvis 3 cm nearer the deck's plane. To confirm in the build's first test.
+- **The weight back is S's alone** (the movement-flow spec: weight is always W/S). Climbing, the board slows, and the pressure moves ahead of the body (§1): 0.77 with no S at 0.2 g, 0.45 with full S. The recipe holds no S (`ridingPoses.ts`, `extension-*`, trim 0). Its pelvis reading adds the 17° pitch: 0.23 m.
+
+**Real surfing:** de Sousa 2022's final phase: the knees and hips extend progressively, the weight goes to the back foot and the rail is released. Rapture's compression and extension: extend up the face, unweighting. The reel, step 5.
+
+**Options:**
+- **A. The projection rises tall.**
+  - *Change:* letting Compress or the crouch go while planing (the existing `extending`, `:1735`), the leg's rest aims `EXTENSION_TALL` (provisional 0.04 m) over the riding stance, then settles back over about 0.5 s.
+  - *Feel:* a livelier release. The board is unweighted a beat longer and its rail lets go sooner, and the rider stands tall up the face, then settles. It may keep a little more speed when timed at the turn's load, as the pumping tests' leg work does.
+  - *Risk:* `projectionLean`'s 0.83 and 0.74; the pumping tests' work; the leg's stability (`legSpring` tests); the posture-error guard (inside `LEG_EXTENSION`'s 0.1 m). `extending` lasts longer, so the projection's neutral feet (`:1597–1599`) hold longer.
+  - *Tests:* `stanceLadder`, `projectionLean`, `pumping`, `compressTurn`, `legSpring`; the map's `extension-*.knee*` known misses (struck off when met).
+- **B. A tall rung while climbing.**
+  - *Change:* whenever the board climbs faster than 0.5 m/s with no crouch or Compress held, the rest aims tall.
+  - *Feel:* every climb stands tall by itself. It's less a player's move.
+  - *Risk:* as A, plus the timing of every pump on a rising face.
+- **C. No physics change.** The drawn knees could only straighten by drawing the pelvis higher than the physics puts it, against the principle.
+
+**Recommendation:** A, with W2 (§1.4) so that S holds the back foot on the climb.
+
+### 2.3 The back foot holding the rail at the top (reel step 7)
+
+**Seen:** the top turn's weight is 0.53–0.55 on the front foot on flat water and 0.65 on the Beach, against the reel's and Rapture's 70/30 back.
+
+**Cause** (§1):
+- **Those readings were taken at half S:** the stance map's top turn uses trim −0.5, as did the autopilot. At full S on a wave the pressure is about 0.32 already.
+- **A carve's deceleration moves the pressure forward** by H × d: 0.59 at full S and 0.3 g, 0.79 on the static face's 0.45 g. Inside the 0.2 m dead zone nothing pulls it back (`:2472`), and S moves the centre of mass only 0.20 m (`:470`, `:2426–2430`).
+- **The tail sinks under the weight** (the pinned snap, `AttachedRider.test.ts:1426–1447`). With the pressure aft, the hull trims nose-up until its lift has moved back with it: 40° nose-up within a second, slowing from 6.3 to 1.8 m/s on a face that gives nothing back. That is physics (§1.3), made worse by the static face (item 2.4).
+
+**Real surfing:**
+- Rapture's top turn: the weight onto the back foot to pivot, about 70/30;
+- the reel, step 7: push the back foot to hold the rail;
+- a snap comes round 152° in under a second (Forsyth 2024), so the back foot's push is short;
+- on a real wave the board slows little (§1.3).
+
+**Options:** W1, W2 or W3 (§1.4), plus reading the map's top turn and kick-out at full S (decision 5). The recipe is the player's input, not the target.
+
+**Recommendation:** W1 and W2, with the map's top turn read at full S. The tail sinking under held S stays physics (decision 4).
+
+### 2.4 The redirect off a face, and the deep-U stall (reel step 7; open since 2026-09-27)
+
+**Seen:** on the plane face, steering onto the heels with the weight back after a bottom turn spins the board on onto the toes and nearly throws the rider. On the static face, snaps and cutbacks stall. Three tests are pinned: `AttachedRider.test.ts:1433` (the snap), `:1455` (a bottom turn carried into a top turn) and `:1473` (the cutback).
+
+**Cause:**
+- **The static face gives nothing back.** Its water is still (`PlaneWater.ts`). A carve sheds about 0.45 g on a 40–48° rail (the snap pin's comment, `AttachedRider.test.ts:1426–1431`). That is the hull's planing drag under load: Savitsky's within 10–25 % (`carve-drag-study.md`), so it is physical. A real top turn rides water moving up the face on a face that feeds it gravity. The game's own waves move 1.1 m/s under their bottom turns (`angulation-study.md`).
+- **Carried up the face, the body still leans into the old turn.** The rail follows the body (the ankle, `:1603`; the hull rights about the rider's load line), so the old turn runs on until the body is across. It reaches 160–180°, and the rider falls 0.3–1.1 s later (`AttachedRider.test.ts:1449–1454`). `LEAN_OUT_PULL` helps only under Compress (`:1657`, `:1674–1678`).
+- **The rail's bite is judged against the world, not the water** (a lead, found in this read):
+  - `prepareBank` reads the board's roll about the heading against the world's vertical (`:1575–1577`). It closes the feet's room past `RAIL_BITE` 48° (`:248`, `:1589–1590`), and the pull's bite likewise (`railAhead`, `:1592`; `compressAssist`, `:1666`).
+  - The bog is the water's: the carve lab measured it on flat water, where the two agree.
+  - Across a face tilted α, the downhill rail reaches the bite α early and the uphill rail α late. The downhill rail is the redirect's: the heels frontside, the toes backside.
+  - On a 30° face near the lip, the redirect's rail has 18° against the water before the feet's room and Compress's pull close.
+
+**Real surfing:**
+- Forsyth et al. 2024: top turns and cutbacks come round 152° in 0.96 s, at up to 3 rad/s, on a 2.2 m radius, at about 2 g, on a rail near 75°. On a steep face that roll is partly the face's own tilt;
+- the face's water moves up toward the lip.
+
+**Options:**
+- **A. Measure first: a moving-face test water (no feel change).**
+  - *Change:* `PlaneWater`'s `flow` option (it exists) runs up the face at the wave's surface speed (1–2 m/s). The redirect tests run on it beside the static ones.
+  - *Says:* whether the deep U is the static face's.
+  - *Risk:* none to the game.
+  - *Tests:* new ones; the pins stay.
+- **B. The bite against the water (physics).**
+  - *Change:* the roll that `RAIL_BITE`, `RAIL_EASE` and `railAhead` read is measured from the water's normal under the board (the sample's normal). The ankle and the body's bank stay against gravity.
+  - *Feel:* on flat water, nothing. On a face, redirects and cutbacks on the downhill rail hold more rail and keep Compress's pull. Carving onto the uphill rail (a bottom turn climbing the face) bites a little earlier: a touch softer.
+  - *Risk:* falls into turns high on faces (the lean-in study's capsize past the bite, now at the water's bite). The still-water bar and the 1.41 g cap are unchanged (flat water).
+  - *Tests:* `AttachedRider.test`'s across-the-face block (six turns back down the face, four partial steers, two holds, three stalls that must not pull); `compressTurn`; `leanOut`; `cutback.test` (a 5° face). The pins may start passing and be struck off.
+- **C. A gameplay rule (against the principle):** extend `CARVE_CARRY` to redirects without Compress. Named only so the owner knows it exists. Not recommended.
+
+**Recommendation:** A, then B.
+
+### 2.5 Out of the redirect: the weight onto both feet, and no near fall (reel step 8)
+
+**Seen:** after the plane-face redirect the arms are out (the physics' alarm 0.6–0.8 from 1.8 s), and the weight's place is whatever the physics left.
+
+**Cause:**
+- the near fall is item 2.4's failed redirect;
+- the weight: coming down the face the board speeds up, and the pressure goes back (−H × a: 0.23 on the front foot at 0.2 g). That is inside the dead zone, so nothing re-centres it.
+
+**Real surfing:** the reel's step 8: weight back onto both feet, compress, look back toward the shoulder.
+
+**Options:**
+- **A. Nothing of its own.** Item 2.4 removes the near fall. W2 re-centres the weight to within 0.1 m with no input (0.34 at 0.2 g).
+- **B. A re-centre on S's release** (the balance aiming at the middle for a moment). A rule on top of W2, not needed if W2 holds.
+
+**Recommendation:** A. Judge it after batches A and B.
+
+### 2.6 Trim weight (0.58 drawn against the physics' pelvis)
+
+**Seen:** phase 1 draws the hips in trim at about 0.58. The physics' pelvis reads 0.64–0.70 on flat water and 0.74 on the Beach.
+
+**Cause:** the pelvis reads the deck's pitch (§1.1). The planing board rides 7–11° nose-up under a world-upright body. At steady speed the feet's pressure is centred, and on the Beach it is 0.59: within the coaching's 0.50–0.62. The drawn bias (`stagePoses.ts:169–170`, `weight: { pivot: 0.52, keep: 0.3, most: 0.1 }`) moves the drawn hips off the physics' points to meet a pelvis-based target.
+
+**Real surfing:**
+- at steady speed only gravity loads the feet, so a surfer stands world-upright too, and the hips sit uphill of the stance's middle along a nose-up deck by the same geometry;
+- the coaching's 60/40 is the feet's pressure (Cornish Wave; SurfDeeper);
+- Weiß 2025: the front leg's muscles carry more.
+
+**Options:**
+- **A. W1:** weight is the pressure. Then the drawn bias goes, and the hips are drawn where the physics' points put them (decision 7).
+  - *Feel:* none. *Risk:* the drawn trim's knees: the front foot sits 8–12 cm higher on a nose-up deck, so the front knee bends a little more. Checked on the ride.
+  - *Tests:* `stanceTargets`; phase 1's trim tests.
+- **B. W2** changes nothing at steady speed.
+- **C. Move the posture's places back** (`riderPosture.ts:100`) until the pelvis reads 0.58 on a nose-up deck. The pressure would then sit back at steady speed (about 0.40), against the coaching. Not recommended.
+
+**Recommendation:** A.
+
+### 2.7 The pump reading as a near fall
+
+**Seen:** while pumping, the physics' balance margin dips toward a near fall. The drawn arms and the HUD's balance meter read it.
+
+**Cause:**
+- **The margin is one instant's ratio** (`rawMargin`, `:2317–2321`): the free centre of pressure against the feet's edges (±0.13 m across). That centre is the contact's line: the height times the sideways force over the normal force (`:2294–2295`).
+- **The pump unloads the feet.** The crouch drops the legs at up to 0.6 g (`CROUCH_ACCELERATION` 6 m/s², `:513`), leaving about 0.4 of the weight on the feet. The same sideways push from the board's wobble then moves the centre of pressure 2.5 times as far, so the margin dips with every pump.
+- **It is a read-out only.** It drives the drawn alarm (`renderPoint`, `:1273`) and the HUD's meter (`SurfZoneRunner.ts:939`). No physics decision reads it: falls come from the posture error and the sway (`:2185–2187`).
+- Phases 1 and 2's drawn deadband already keeps the pump's alarm under 0.2 (the pump's push test).
+
+**Real surfing:**
+- pumping unweights the board on purpose (Rapture, speed generation), and nobody nearly falls;
+- biomechanics measures dynamic balance by the extrapolated centre of mass: the position plus the velocity over ω₀, against the support's edge (Hof et al. 2005).
+
+**Options:**
+- **A. Leave the physics.** The drawn deadband holds.
+- **B. The margin by the extrapolated centre of mass:** the bank's θ + θ̇/ω₀ across, and the sway along (`swayStep` already computes its capture point, `:2557–2563`).
+  - *Feel:* the meter and the arms read threats the body is moving into, not unloaded instants. Falls come from the dynamics as today.
+  - *Risk:* the meter's behaviour; the balance cue's 25 cm per alarm (phase 1's bar).
+  - *Tests:* the body film's alarm and cue tests, the feedback-cue tests, the HUD's meter tests.
+- **C. Weight the margin by the load:** an unloaded instant counts less. Simple, but ad hoc.
+
+**Recommendation:** A, unless the owner sees the meter dip or the arms rise while pumping. Then B.
+
+### 2.8 Paddling: the board's roll, the stroke rate and the stroke's length
+
+**Seen:**
+- the board rolls 7° through a stroke, against 27–45°;
+- 60 strokes a minute a side, against about 50;
+- the drawn stroke is 73 cm long, against 97.
+
+**Cause:**
+- **The rate:** `ARM_CYCLE` 1.0 s for each arm (`:59`).
+- **The length:**
+  - the physics' pull runs from `REACH` 0.45 m to `HIP` −0.45 m along the board (`:61–62`): 0.90 m;
+  - the drawn hand stops at 73 cm, because the physics' hand enters and leaves 0.7 m from the drawn shoulder, past the arm's reach (`2026-10-04-paddle-swim.md`);
+  - real paddlers reach with the shoulder as the board and body roll to the pulling side.
+- **The roll:**
+  - the prone balance levels the board: the hips shift toward the high rail by 0.4 m per rad and 0.16 m per rad/s (`PRONE_ROLL_SHIFT`, `PRONE_ROLL_DAMPING`, `:134–135`; `balanceStep`'s prone branch, `:2453–2463`);
+  - nothing rolls the body toward the pulling arm, so the board rolls only from the hand's off-centre drag.
+- **The calibration:** `PULL_SHARE` is set so that a flat-water paddle settles near 1.6 m/s (`:52–58`). Any change re-fits it.
+
+**Real surfing:**
+- Nessler et al. 2019, a swim flume on a short board:
+  - 36–54 strokes a minute a side over 0.6–2.0 m/s;
+  - a roll through each stroke of 27–45°, more on smaller boards;
+  - a pitch of 12.3°;
+- Nessler et al. 2015: a stroke 970 mm long and 170 mm wide;
+- Rapture, paddle technique: a left-and-right cycle every 2–3 s cruising, long reaching strokes;
+- Sheppard et al. 2013: chest down.
+
+**The static check:**
+
+| Stroke | Pull share | Mean thrust at 1.6 m/s | Hand's peak speed |
+|---|---:|---:|---:|
+| Today: a 1.0 s cycle, 0.90 m | 0.32 | 68 N | 4.4 m/s |
+| A 1.2 s cycle (50 a minute), 0.97 m | 0.275 | 68 N | 4.6 m/s |
+
+The physics' own model is quasi-steady hand drag.
+
+**Options:**
+- **A. Rate, roll and length together** (Nessler measured them as one motion).
+  - *Change:*
+    - `ARM_CYCLE` 1.2 s cruising, quickening toward 1.0 s as the board catches: the sprint (the pop-up cue, or the board pitched down a face; Nessler's top rate is 54);
+    - `REACH`/`HIP` ±0.485 m;
+    - `PULL_SHARE` re-fit (0.275), so the cruise still settles at 1.6 m/s;
+    - the prone balance's level target swings toward the pulling arm in time with the stroke, an offset sized for a 27–35° roll at cruise.
+  - *Feel:* the same cruising speed, with a slower, longer stroke. The board rocks rail to rail. On a wave the strokes quicken. The catch's timing may move (the last strokes' thrust is the sprint's): the owner's ride.
+  - *Risk:*
+    - the prone roll's stability: a board tipped 15° capsizes in 2 s on its own, and the shift catches it;
+    - `PRONE_GRIP`'s calibration (P4f, `:24–30`);
+    - the duck-dive pins;
+    - the paddle speed bar (1.5–2 m/s, `AttachedRider.test.ts:168`);
+    - the take-off cue; `rollerFeel`;
+    - the catch.
+  - *Tests:* `AttachedRider.test`'s prone block, `takeOffCue`, `duckDive*`, `rollerFeel`, the body film's paddle pin (`bodyFilm.test.ts:638`, struck off when met).
+- **B. Rate and length only.** A without the roll. Lower risk, but the drawn length stays short, because the drawn shoulder can't reach without the roll.
+- **C. Leave the paddle.**
+
+**Recommendation:** A, in two commits (the rate and the sprint, then the roll and the length), with one ride check.
+
+### 2.9 The kick-out pivot (the knees over a nose-up board)
+
+**Seen:**
+- phase 2's kick-out reads the front knee at 79° and the rear at 27°, against a long front leg (20–45°) and a bent rear (60–90°);
+- whether the board swings over the back is open (phase 2's shot 6).
+
+**Cause:**
+- **The knees are geometry.** The recipe climbs a 15° face with full S. On a deck 20° nose-up the front foot is 0.22 m higher than the rear (0.63 sin 20°). The world-upright pelvis sits about over the stance's middle along the deck (0.53 by the calculation: S's 0.25 m about cancels the pitch's 0.27 m). So the front leg folds to reach its higher foot, and the rear leg straightens.
+- **The pressure stays at 0.59 even at full S.** The board slows at about 0.3 g, inside the dead zone.
+- **The swing over the back is a yaw on the tail.** Nothing yaws the board but the steer's rail, the hand and the twist rotor. The rotor is pad only (`rotate` is NaN on the keyboard, `:1634`), and its net yaw is about nothing by angular momentum.
+
+**Real surfing:** hard back-foot pressure swings the nose over the back of the wave, with the hips over the back foot and the front leg long (coaching; Rapture names it, with no measured source).
+
+**Options:**
+- **A. Nothing of its own.** W2 brings the hips back on the climb (the pelvis to 0.36, the pressure to 0.46), and the knees follow.
+- **B. The keyboard's rotation.**
+  - *Change:* with no pad rotation, the twist rotor follows the steer's anticipation. This is the movement-flow spec's "keyboard and touch rotate automatically", never built in the physics. The hips then twist the board on its tail.
+  - *Feel:* on the keyboard, every steer starts with a small twist. The board's first yaw goes briefly the other way (`twist.test.ts:46`).
+  - *Risk:* the still-water bar; the top turns' wrong-way start (the top-turn plan's lesson); the heading hold.
+- **C. A kick-out input.** Not physics.
+
+**Recommendation:** A. B only if the ride shows that the board won't swing over.
+
+### 2.10 The fall from lying down flinging the arms (5–8 m/s)
+
+**Seen:** falling off while lying down, the drawn arms fling at 5–8 m/s. The switch spike reads 2.3 m/s at 120 Hz, over its 2 m/s limit (`2026-10-04-paddle-swim.md`).
+
+**Cause:**
+- **The fallen body doesn't start from the rider's posture.** `DetachedSurfer.start` (`DetachedSurfer.ts:319–330`) places its seven nodes at its own default body about the rider's centre of mass and frame (`handoffState`, `AttachedRider.ts:1234–1241`).
+  - That default body (`SPECS`, `DetachedSurfer.ts:113–121`) has the arms out at ±0.36 m at chest height and the legs side by side.
+  - `riderPosture.ts:7` says the parts are shared "so a fall starts from the same body", but the start doesn't use them.
+- **Lying, the hands were at the rails or mid-stroke.** At the switch they jump to the default arms, and the drawn blend spreads the jump.
+- From standing, the legs jump from along the board to side by side too, also blended.
+
+**Real surfing:** a body keeps its shape at the instant it falls. Momentum and posture are continuous.
+
+**Options:**
+- **A. Start from the rider's own body.**
+  - *Change:* the nodes start at the rider's part centres (the same order, `RIDER_PARTS`), each with the rider's v + ω × r. The distance joints close the few centimetres between the posture's lengths and the fallen body's own over a few substeps, with the momentum kept.
+  - *Feel:* wipeouts start from the pose you were in, so their first 0.2 s look continuous. The tumble after is the same physics.
+  - *Risk:*
+    - the fallen body's first steps: a joint-limit snap where the posture lies outside the limits (`:218–222`). For example, prone's arms beside the waist;
+    - the hold-down, leash and climb-on tests;
+    - the reef strike's timing.
+  - *Tests:* `DetachedSurfer.test`, `RideSession.test`, `Leash.test`, `BoardRecovery.test`; the body film's fall spikes, which should improve.
+- **B. Leave the physics.** Phase 4's reflex layer and the point blend draw it.
+- **C. A and B.**
+
+**Recommendation:** A. Phase 4's reflexes are then drawn on a continuous start.
+
+### 2.11 Another player's swimmer turning its head to breathe under water
+
+**Cause:** not physics. The pose on the wire carries no "head under": `SWIM_BITS.under` is local only (`SurfZoneRunner.ts:158`, `:180–181`). The codec's flags byte (`poseCodec.ts:16`, `:51–57`) is full once phase 4's flag 128 is in.
+
+**Options:**
+- **A. Derive it where the pose arrives:** the remote head point against the local sea's surface. Each client runs the sea, and `heightAt` already places remote boards (`ownPose.ts:42`). No wire change.
+- **B. A wire bit:** a new flags byte, which changes the wire format.
+- **C. Leave it.**
+
+**Recommendation:** A.
+
+### 2.12 The head turning before the board moves (phase 2's "drawable but not done")
+
+**Answer: plumbing, not physics.** The physics answers the steer within a substep (the asked bank, `:1583–1585`), and the body's bank moves first (the swing). The drawing gets neither the steer nor the asked bank: they are not in `RIDER_SNAPSHOT` (`SurfZoneRunner.ts:154`) and not on the wire (`ownPose.ts:36–62`).
+
+**Options:**
+- **A. Lead from the body's bank** (the drawn points).
+  - *Change:* the cascade's head lead (`HumanoidRig.ts:211–230`, `:615–625`, `:1505`) reads the bank's rate as well as the yaw rate.
+  - *Why it works:* the bank's rate shows within about 0.1 s of a steer. The swing's 200 N·m on the leaning body gives about 4 rad/s², 0.2–0.4 s before the board's yaw builds.
+  - *Feel:* none. It works for local and remote surfers alike, with no wire change.
+  - *Tests:* the cascade's order tests, the motion filter's.
+- **B. The asked bank on the local snapshot.** `bankReference` is a physics state, put in a new slot. The head moves at the key press, 0.05–0.1 s sooner than A. Remote surfers would need a wire byte (the flags are full), or keep A.
+- **C. The keyboard's rotation from the steer** (item 2.9 B). That is physics: the twist is already drawn (`HumanoidRig.ts:624–625`, `:1505`), but it is local only.
+
+**Recommendation:** A.
+
+---
+
+## 3. The build batches (ordered by payoff for the reel's top turn)
+
+Each batch is its own PR from `main`, merged only when the owner says so in the turn. Each runs `tsc`, the main suite and the Wave Pool's `SurfZoneSimulation` tests, and ends with the owner's ride. The cost on the M1 is measured and reported, never a gate: a few more numbers per substep, nothing measurable expected.
+
+### Batch A: the top turn's weight and height (reel steps 5, 7, 8; items 2.2, 2.3, 2.5, 2.6, 2.9)
+
+- [ ] **Task 1: W1 (weight is the pressure).** The pressure slot on the snapshot. The gauge and the map read it, low-passed, on steady-speed recipes. `PHASE5_MISSES` re-pinned. The top turn and the kick-out read at full S (decision 5).
+- [ ] **Task 2: the along-board loop probe** (a fast unit test, not a ride). W/S steps on a towed board: the pressure and the board's pitch rate, with today's 0.2 m zone and a 0.1 m zone. If 0.1 m rings, smooth the pressure the balance reads over 0.2 s.
+- [ ] **Task 3: W2** (S 0.30, W 0.70, a 0.1 m zone, standing only). The bars re-measured: the still-water bar, `projectionLean`, `stanceLadder`, `pumping`.
+- [ ] **Task 4: the projection rises tall** (item 2.2 A, 0.04 m, settling over 0.5 s).
+- [ ] **Task 5:** phase 1's drawn trim bias removed (decision 7); the stance stills and the before/after clip of a top turn (`motion-clip.mjs`).
+
+**Shot list (batch A):**
+1. Beach, medium, the chase camera, a right (frontside for a regular foot). Drop, Compress at the base for the bottom turn, let Compress go as the board climbs, then hold S with the steer back (the top turn). *Look for:*
+   - as you let go, the rider stands tall, knees nearly straight, for about half a second;
+   - at the top, the hips over the back foot, the back knee bent, the front leg long, and the board pivoting.
+
+   Then hold S for a full second at the top. The nose should lift and the board slow and sink: that's the physics (decision 4). Say if it feels unfair.
+2. The same on a left (backside).
+3. Wave Pool, 1.25 m: 5 s of trim across the face with no input, then 3 s of W, then 3 s of S. *Look for:* no input, the rider stands centred; with W, the board flattens and runs; with S, the nose lifts and the board slows.
+4. Beach: one bottom turn with no W and one with W held. *Look for:* both still drive off the front foot; W's a little more.
+5. Point: ride straight up the face with S held and over the back. *Look for:* the hips back over the back foot and the front leg long, not the front knee folded.
+6. Goofy (in the settings): a frontside top turn on a left, filmed beside the reel. Steps 5, 7 and 8 of `phase2-video-check.md`.
+
+### Batch B: the redirect off a face, and the lead (items 2.4, 2.1, 2.12; 2.9 re-read)
+
+- [ ] **Task 1: the moving-face test water** (item 2.4 A). The redirect tests (the snap, the bottom turn into a top turn, the cutback) run on it beside the static face. Report which pins pass.
+- [ ] **Task 2: the bite against the water** (item 2.4 B). The across-the-face block re-measured; pins struck off if met.
+- [ ] **Task 3: the lead from the body's bank** (items 2.1 A and 2.12 A). Drawn only.
+- [ ] **Task 4:** the kick-out re-read after batch A. If the board won't swing over, the owner decides on item 2.9 B.
+
+**Shot list (batch B):**
+1. Beach or Point, medium: a bottom turn carried high into a top turn, three frontside and three backside. *Look for:* the board comes back down the face instead of spinning on up, with no arms thrown out after it.
+2. Point: two cutbacks each side. *Look for:* the board holds its rail round, with no stall.
+3. The steepest section you can find (the Point, or the Reef at a size that walls up): two snaps. *Look for:* more bite than before. Say if there are new falls into the turn.
+4. Trim across a steep face and carve up onto the uphill rail (frontside, the toes). *Look for:* whether it feels any looser than before (the uphill rail now bites a little earlier).
+5. Any spot: one bottom turn steered early at the flat and one steered late at the base. *Look for:* the head and the inside shoulder turn in as the body starts to lean, before the board turns.
+6. Online, if handy: the other surfer's head leads as yours does.
+
+### Batch C: the water (items 2.8, 2.10, 2.11; 2.7 if asked)
+
+- [ ] **Task 1: the paddle's rate and sprint**, `PULL_SHARE` re-fit, the paddle speed bar.
+- [ ] **Task 2: the paddle's roll and length**, the prone stability tests, the body film's paddle pin.
+- [ ] **Task 3: the fall starts from the rider's own body** (item 2.10 A).
+- [ ] **Task 4: the remote swimmer's head under**, from the local sea (item 2.11 A).
+- [ ] **Task 5 (only if the owner asks, decision 15):** the margin by the extrapolated centre of mass (item 2.7 B).
+
+**Shot list (batch C):**
+1. Beach, small: paddle out for 20 s, with the chase and side cameras. *Look for:* a slower, longer stroke (about one every 1.2 s a side), and the board rocking rail to rail with each stroke.
+2. Beach and Point, medium: catch three waves each. *Look for:* the last strokes quicken as the wave picks you up. Say if the catch is harder than before.
+3. Paddle into whitewater or a closing section and fall off lying down. *Look for:* the arms don't fling out.
+4. Online: wipe out and get held under. *Look for:* the other player's swimmer keeps its face down under water.
+5. Wave Pool: 5 s of pumping (Shift on and off about once a second). *Look for:* whether the HUD's balance meter dips or the arms rise. Only if they do, decision 15.
+
+---
+
+## 4. Decisions for the owner (each with the recommended answer)
+
+**Approved, 2026-10-22:** the owner took every recommended answer below ("use all recommended"). Batch A builds decisions 1–7 (§3).
+
+1. **Is "weight" the feet's pressure** (the physics' `contact.frontShare`, low-passed over 0.3 s), with the pelvis kept as its own measure? *Recommended: yes* (W1). The pelvis reads the deck's pitch.
+2. **Should W/S set the pressure the rider holds** (S 0.30 on the front foot, W 0.70, nothing 0.50)? *Recommended: yes* (W2).
+3. **How far may the board's own pushes move the weight before the rider re-centres?**
+   - 0.2 m (today);
+   - 0.1 m: the bottom turn stays front-loaded with no W (0.66);
+   - 0.05 m: more centred, but the bottom turn then needs W.
+
+   *Recommended: 0.1 m.*
+4. **Is the tail sinking under a held S physics to keep,** with no tail-lift term? *Recommended: keep it,* and judge it on the moving face and real waves (batch B).
+5. **Should the map's top turn and kick-out be read at full S,** as the coaching describes them? This changes the recipe (the player's input), not the targets. *Recommended: yes.*
+6. **Should the projection rise above the riding stance?** *Recommended: yes, by 0.04 m* (the knees to about 24°), settling over 0.5 s. The alternative is 0.06 m (straight legs).
+7. **Should phase 1's drawn trim bias go** once the weight reads by pressure, drawing the hips where the physics puts them? *Recommended: yes,* checked on batch A's ride.
+8. **Should a moving-face test water be the redirect's bar,** with the static-face pins kept? *Recommended: yes.*
+9. **Should the rail's bite be judged against the water's surface** instead of the world? *Recommended: yes,* after decision 8's measurement.
+10. **The lean before the rail bites: change the physics?** *Recommended: no.* The physics leans first. Steer at the flat, and draw the lead (decision 11). The braking curve (item 2.1 B) only if the ride says the lean-in is too slow.
+11. **Should the head lead from the body's bank** (drawn, local and remote, no wire)? *Recommended: yes.* The alternative is the asked bank on the local snapshot, with a wire byte for remote surfers.
+12. **Paddling: rate, roll and length together, with a sprint on a wave?** *Recommended: yes,* in two commits and one ride. The alternative is the rate and length only.
+13. **Should the fall start from the rider's own body?** *Recommended: yes.*
+14. **Should the remote swimmer's head-under come from the local sea** (no wire)? *Recommended: yes.*
+15. **The pump's near-fall reading: leave the physics?** *Recommended: leave it,* unless the meter or the arms dip on the ride. Then use the extrapolated centre of mass.
+16. **The kick-out: no change of its own?** *Recommended: yes.* The keyboard's rotation only if the board won't swing over the back after batch A.
+17. **The order: batch A, then B, then C,** one PR each, merged on the owner's word? *Recommended: yes.*
+
+---
+
+## 5. Sources
+
+**Measured studies** (the animation plan's §11 has the full references):
+- Forsyth JR et al. (2024). *Sci Rep* 14:8734. https://doi.org/10.1038/s41598-024-58387-y
+  - bottom turn: 42° roll, 99° in 0.96 s;
+  - cutback: 75° roll, 152°;
+  - bottom turns and cutbacks keep 0.88–0.95 of their speed.
+- de Sousa (2022), U. Lisboa thesis: the bottom turn's phases, via `src/scene/rig/stanceMap.ts` and memory `stances-compress-requirements`.
+- Weiß A et al. (2024), *Proc. 29th ECSS*. Weiss A et al. (2025). *Multibody Syst Dyn* 66(4):955–975. https://doi.org/10.1007/s11044-025-10071-3 (abstract: https://cris.fau.de/publications/342918955)
+  - the front leg's muscle forces are higher;
+  - by the abstract, the front leg carries the weight and the rear leg's moments stabilise;
+  - not significant (n = 7).
+- Borgonovo-Santos M et al. (2021). *Sensors* 21(5):1783. https://doi.org/10.3390/s21051783
+  - the stance 0.63 m wide;
+  - the pop-up's timing.
+- Nessler JA et al. (2019). *JSCR* 33(4):1102–1110. https://doi.org/10.1519/JSC.0000000000003070
+  - strokes a minute a side, the board's roll and pitch.
+- Nessler JA et al. (2015). *PLoS One* 10(11):e0142325. https://doi.org/10.1371/journal.pone.0142325
+  - the stroke's length and width.
+- Sheppard JM et al. (2013). *Int J Sports Sci Coach* 8(1):43–51. https://doi.org/10.1260/1747-9541.8.1.43
+- Hof AL, Gazendam MGJ, Sinke WE (2005). The condition for dynamic stability. *J Biomech* 38(1):1–8. https://doi.org/10.1016/j.jbiomech.2004.03.025
+  - the extrapolated centre of mass.
+
+**The physics of the board:**
+- The Exploratorium, *The Science of Surfing: physics*. https://annex.exploratorium.edu/the-world/surfing/physics/
+  - weight back puts gravity behind buoyancy, and the board rotates nose-up until the centre of buoyancy has moved back;
+  - fins resist sliding sideways.
+- Hendricks T (1969). Surfboard hydrodynamics, part 2. *Surfer*. https://www.surfresearch.com.au/1969_03_Hendricks_Hydronamics_2_Surfer.html
+  - planing begins at about 7–8 mph;
+  - the trim angle is a compromise between friction drag and the drag of lift.
+- Savitsky (1964), via `hullForces.ts` and `carve-drag-study.md`: the hull's planing drag under load.
+
+**Coaching** (Rapture Camps, under https://www.rapturecamps.com/learn-to-surf/):
+- `surf-maneuvers/bottom-turn`, `surf-maneuvers/top-turn`, `surf-maneuvers/compression-and-extension`, `surf-maneuvers/speed-generation`;
+- `surf-fundamentals/stance`;
+- `paddling/paddle-technique`.
+
+Also:
+- Mauro C (2017), WSL Performance Center, 5 Ways to Find Your Flow;
+- SurfDeeper; Cornish Wave (via the stance map);
+- the owner's reel: barefoot_surf, Jesse Mendes (`phase2-video-check.md`).
+
+**The game's own studies:**
+- `docs/research/rail-control-study.md`, `lean-in-study.md`, `bottom-turn-entry-study.md`, `body-lean-study.md`, `carve-drag-study.md`, `angulation-study.md`, `rail-change-study.md`;
+- `docs/superpowers/plans/2026-10-02-physics-posture.md`, `2026-10-04-paddle-swim.md`, `2026-10-22-animation-realism.md`.
+
+**The static calculation** behind §1.2, §2.2 and §2.8 is a scratch script, not in the repo. Its inputs are the constants named above. Its model:
+- the pressure is the centre of mass's shift plus H × d / n, with the dead zone and the reach;
+- the pelvis is 0.78 sin τ plus the shifts;
+- the knee comes from two 0.45 m bones;
+- the paddle thrust is quasi-steady hand drag, as `handLocal` (`:1317–1339`) moves the hand.
