@@ -1,4 +1,4 @@
-import { ShaderLib, type Material, type WebGLProgramParametersWithUniforms } from 'three';
+import { PerspectiveCamera, ShaderLib, type Material, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import { CausticMap } from './CausticMap';
 import { EdgeBand } from './EdgeBand';
@@ -123,16 +123,18 @@ const roller: SurfaceSource = {
   ...tubed, rollerColumns: 4, rollerColumn0: 0.5, rollerColumnWidth: 1,
   writeRoller: (into) => { into.fill(0, 0, ROLLER_SLOTS * 4 * ROLLER_STRIDE); return 4; },
 };
+/** The Canyon's: the roller, and a rock floor's cover of its bed (`rockBed.ts`), read from the bed's own texture. */
+const rocky: SurfaceSource = { ...roller, writeBedCover: (into) => into.fill(0) };
 
 /** Every water program a spot can turn on: each source and option, in both looks, and the edge band made of it. */
 function waterPrograms(): { name: string; program: { vertex: string; fragment: string } }[] {
   const out: { name: string; program: { vertex: string; fragment: string } }[] = [];
-  const sources = { plain, cubic, tubed, roller } as const;
+  const sources = { plain, cubic, tubed, roller, rocky } as const;
   for (const look of ['classic', 'rich'] as WaterLook[]) {
     for (const [sourceName, source] of Object.entries(sources)) {
       for (const barrel of [false, true]) {
         // The roller runs only where no swept crash does (SurfZoneSimulation): a spot never has it and the curl's seam.
-        if (barrel && source === roller) continue;
+        if (barrel && (source === roller || source === rocky)) continue;
         for (const vertexNormals of [false, true]) {
           if (vertexNormals && (look === 'classic' || barrel)) continue;
           const water = new WaterSurface(source);
@@ -173,6 +175,9 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     // The Canyon's (the roller) and Padang Padang's (the swept barrel) Rich programs, the fullest.
     expect(counts['water rich roller'].count).toBeLessThanOrEqual(15);
     expect(counts['edge band rich roller'].count).toBeLessThanOrEqual(UNITS);
+    // The rock's cover adds no unit: it rides in the bed's texture.
+    expect(counts['water rich rocky'].count).toBe(counts['water rich roller'].count);
+    expect(counts['edge band rich rocky'].count).toBe(counts['edge band rich roller'].count);
   });
 
   it('keeps the far ocean, the tube, the spilling curl, the roller front, the lip and the caustics within the units', () => {
@@ -192,6 +197,17 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
       const curl = new SpillingCurlMesh(water.materialUniforms);
       curl.setLook(look);
       programs.push([`spilling curl ${look}`, compiled(curl.mesh.material), true]);
+      // Over a rock floor (the Canyon's): its body reads the cover from the bed's texture it already reads.
+      const rockCurl = new SpillingCurlMesh(new WaterSurface(rocky).materialUniforms);
+      rockCurl.setLook(look);
+      rockCurl.rockBed = () => true;
+      rockCurl.mesh.onBeforeRender(
+        { getRenderTarget: () => ({ height: 720 }) } as never, undefined as never, new PerspectiveCamera(), rockCurl.mesh.geometry, rockCurl.mesh.material, null as never,
+      );
+      const rockProgram = compiled(rockCurl.mesh.material);
+      expect(rockProgram.vertex).toContain('vWaterRock');
+      expect(units(rockProgram, true).count).toBe(units(compiled(curl.mesh.material), true).count);
+      programs.push([`spilling curl ${look} rock`, rockProgram, true]);
     }
     // The roller front (Rich only, its own program): the water's heights in its vertices, the churn in its fragments.
     const front = new RollerFrontMesh(new WaterSurface(roller).materialUniforms);
