@@ -1216,6 +1216,47 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(board.velocity.length()).toBeGreaterThan(0.6 * speed);
     });
 
+    // The phase-5 physics plan's item 2.4 B (the owner's decision 9 of 2026-10-22): the rail bogs against the water it
+    // cuts, so its bite (RAIL_BITE, and Compress's pull, which eases off before it) should be judged from the water's
+    // surface under the board. It is judged against the world's level: along a 30° face the downhill rail (the
+    // redirect's: the heels frontside, the toes backside) 20° into the water reads 50°, past the 48° bite, and Compress's
+    // pull is off; the uphill rail 52° into the water reads 22° and still pulls. Pinned until the fix. A board placed along the face at 7 m/s, `rail`° into the water on its downhill (+1) or uphill
+    // (−1) rail, steered onto that rail with Compress: the pull on the body after the rider's first two looks, and the
+    // rail ahead it reads, degrees.
+    const railInFace = (slope: number, rail: number, downhill: 1 | -1) => {
+      const tilt = (slope * Math.PI) / 180;
+      // Heading along the face toward −x, the board's +x (its left) faces down it; rolled `world` about its length.
+      const world = tilt + (downhill * rail * Math.PI) / 180;
+      const forward = new Vector3(-1, 0, 0);
+      const up = new Vector3(0, Math.cos(world), Math.sin(world));
+      const board = new BoardBody();
+      const normal = new Vector3(0, 1, Math.tan(tilt)).normalize();
+      board.place(normal.multiplyScalar(board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(up, forward), up, forward)), forward.clone().multiplyScalar(7));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' });
+      board.attach(rider);
+      Object.assign(rider, { steer: downhill, compress: 1 });
+      const water = new PlaneWater({ slopeZ: -Math.tan(tilt) });
+      rider.prepare(STEP, board, water);
+      rider.prepare(STEP, board, water);
+      const inner = rider as unknown as { assistForce: Vector3; railAhead: number };
+      return { pull: inner.assistForce.length(), railAhead: degrees(inner.railAhead) };
+    };
+
+    it.fails('judges the rail\'s bite against the water, not the world\'s level', () => {
+      // On flat water the two agree.
+      expect(railInFace(0, 30, 1).railAhead).toBeCloseTo(30, 6);
+      expect(railInFace(0, 30, 1).pull).toBeGreaterThan(0);
+      expect(railInFace(0, 52, 1).pull).toBe(0);
+      // Along a 30° face: the downhill rail 20° into the water (50° from the world's level) still bites, and pulls.
+      const downhill = railInFace(30, 20, 1);
+      expect(downhill.railAhead).toBeCloseTo(20, 6);
+      expect(downhill.pull).toBeGreaterThan(0);
+      // The uphill rail 52° into the water (22° from the world's level) is past its bite: no pull.
+      const uphill = railInFace(30, 52, -1);
+      expect(uphill.railAhead).toBeCloseTo(52, 6);
+      expect(uphill.pull).toBe(0);
+    });
+
     // The Canyon's rides ended in their first bottom turn: crouched at full steer on the trough's flat water at 8–12
     // m/s. The crouch's drop took the load off the board as the body leaned in, the ankles' brake rolled the board onto
     // its rail instead of stopping the body, and the rider dove into the turn (0.65 s at 7.5 m/s). A settled crouch held.
