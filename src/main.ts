@@ -1085,7 +1085,7 @@ class SurfGame {
     this.needsRender = true;
     const below = new Color(UNDERWATER);
     if (on) {
-      // `?glowMsaa=2` (dev): the HDR scene at 2× MSAA, for the owner's A/B against the default 4×.
+      // The HDR scene at 2× MSAA; `?glowMsaa=4` (dev) at 4×.
       this.glow = new GlowPass({ samples: glowSamples(devParam('glowMsaa')) });
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
