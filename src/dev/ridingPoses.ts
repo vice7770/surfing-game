@@ -147,14 +147,16 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   // shield 0.5 s in, the tumble's curl 0.7 s in (in the water, turning over), the cause's own shape 0.45 s in, the ball 0.6 s
   // in. Then surfacing (rising under water 3 s after the fall), reeling the leash in, and holding the board to climb on,
   // a second after the grab (both hands at the rail's middle, the board rolling under the pull: Goofy's leash on the
-  // other leg, its swimmer comes within reach at 19.3 s, Regular's at 3 s).
+  // other leg, its swimmer comes within reach at 19.3 s, Regular's at 3 s). The reel starts 3 s in (it was 5 s): the fall
+  // body starts from the rider's own pose (the phase 5 physics plan, item 2.10) and the board drifts no further than its
+  // leash brings in 1.4–2 s, so reeled from 5 s, the swimmer had the board 0.5 s later.
   'fall-side': standing([], 3, { speed: 7, separate: 0.5, after: 0.5, phase: 'fallen' }),
   'fall-tumble': standing([], 3, { speed: 7, separate: 0.5, after: 0.7, phase: 'fallen' }),
   'fall-pearl': standing([], 3, { speed: 7, separate: 0.5, pitch: -35, after: 0.45, phase: 'fallen' }),
   'fall-over': standing([], 3, { speed: 7, separate: 0.5, cause: 'impact', thrown: [0, 2.5, 1.5], after: 0.6, phase: 'fallen' }),
   'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.45, phase: 'fallen' }),
   surfacing: standing([], 3.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
-  reel: standing([{ at: 5, reel: true }], 5.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
+  reel: standing([{ at: 3, reel: true }], 3.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
   'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen' }),
 };
 

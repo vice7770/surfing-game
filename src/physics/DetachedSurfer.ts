@@ -29,6 +29,11 @@ export interface AttachedRiderState {
   orientation: Readonly<Quaternion>;
   velocity: Readonly<Vector3>;
   angularVelocity: Readonly<Vector3>;
+  /**
+   * The rider's own body at the separation: its seven part centres in the world, x y z per part in the fall body's node
+   * order (`RIDER_PARTS`). Absent, the fall body starts in its own shape about the centre of mass, turned by `orientation`.
+   */
+  parts?: ArrayLike<number>;
 }
 
 export interface SwimInput {
@@ -214,21 +219,32 @@ const localOffsets = SPECS.map((spec) => spec.local.clone().sub(localCenter));
 const links = LINKS.map(([a, b]) => ({
   a, b, length: localOffsets[a].distanceTo(localOffsets[b]),
 }));
+/** The link between nodes `a` and `b`, by its index in LINKS. */
+const linkIndex = (a: number, b: number): number => LINKS.findIndex(([p, q]) => (p === a && q === b) || (p === b && q === a));
+/** Each joint's angle bounds, with the links on either side of it (their lengths set the bounds' distances). */
 const angleLimits = [
   { a: 0, joint: 1, b: 2, minDegrees: 125, maxDegrees: 180 },
   { a: 0, joint: 1, b: 3, minDegrees: 35, maxDegrees: 160 },
   { a: 0, joint: 1, b: 4, minDegrees: 35, maxDegrees: 160 },
   { a: 1, joint: 0, b: 5, minDegrees: 75, maxDegrees: 180 },
   { a: 1, joint: 0, b: 6, minDegrees: 75, maxDegrees: 180 },
-].map(({ a, joint, b, minDegrees, maxDegrees }) => {
-  const first = localOffsets[a].distanceTo(localOffsets[joint]);
-  const second = localOffsets[b].distanceTo(localOffsets[joint]);
-  const distanceAt = (degrees: number): number => Math.sqrt(
-    first * first + second * second
-      - 2 * first * second * Math.cos(degrees * Math.PI / 180),
-  );
-  return { a, b, minDistance: distanceAt(minDegrees), maxDistance: distanceAt(maxDegrees) };
-});
+].map(({ a, joint, b, minDegrees, maxDegrees }) => ({
+  a, b, first: linkIndex(a, joint), second: linkIndex(joint, b),
+  minCos: Math.cos(minDegrees * Math.PI / 180), maxCos: Math.cos(maxDegrees * Math.PI / 180),
+}));
+
+/** The distance between the ends of two links `first` and `second` long meeting at an angle whose cosine is `cos`. */
+function distanceAt(first: number, second: number, cos: number): number {
+  return Math.sqrt(Math.max(0, first * first + second * second - 2 * first * second * cos));
+}
+
+/**
+ * Started from the rider's own body (the phase 5 physics plan, item 2.10), the links' lengths are the posture's, a few
+ * centimetres from the fall body's own (0.27–0.45 m pelvis to torso against its 0.35): they close to its own over
+ * SHAPE_TIME, s, on a minimum-jerk path, as do any joint bounds the posture lay outside, so the body keeps its shape and
+ * its momentum (the joints' corrections are axial and mass-weighted) and moves no faster than its own motion carries it.
+ */
+const SHAPE_TIME = 0.25;
 
 /**
  * Solver-independent post-wipeout body. Seven buoyant mass points and distance
@@ -291,6 +307,12 @@ export class DetachedSurfer implements DetachedRiderPose {
   private readonly controlSpin = new Vector3();
   private readonly controlTorque = new Vector3();
   private readonly controlInertia = new Matrix3();
+  /** The links' lengths and the joint bounds' slack at the start (from the rider's body), and how long since, s. */
+  private readonly startLength = new Float64Array(LINKS.length);
+  private readonly linkLength = new Float64Array(LINKS.length);
+  private readonly lowSlack = new Float64Array(angleLimits.length);
+  private readonly highSlack = new Float64Array(angleLimits.length);
+  private shapeAge = Infinity;
 
   constructor(readonly bodyDensity = DEFAULT_BODY_DENSITY, readonly mass = totalMass) {
     if (!Number.isFinite(bodyDensity) || bodyDensity <= 0) throw new RangeError('body density must be finite and positive');
@@ -316,18 +338,36 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.forces = this.nodes.map(() => new Vector3());
   }
 
+  /**
+   * Start the fall from the rider: at its centre of mass with its velocity and spin, each node moving with the body
+   * (v + ω × r). Given the rider's parts, each node starts at its part, the body's shape eased to its own over
+   * SHAPE_TIME (the phase 5 physics plan, item 2.10: from a default T-shape the arms snapped out from the rails);
+   * otherwise in its own shape, turned by the rider's frame.
+   */
   start(attached: AttachedRiderState): void {
     const offset = new Vector3();
     const spin = new Vector3();
+    const parts = attached.parts;
+    // The parts' centre of mass, so the nodes start about the rider's own: the legs' fold moves the parts a little.
+    const partsCenter = new Vector3();
+    if (parts) {
+      for (let index = 0; index < this.nodes.length; index += 1) {
+        partsCenter.x += parts[index * 3] * this.nodes[index].mass / this.mass;
+        partsCenter.y += parts[index * 3 + 1] * this.nodes[index].mass / this.mass;
+        partsCenter.z += parts[index * 3 + 2] * this.nodes[index].mass / this.mass;
+      }
+    }
     for (let index = 0; index < this.nodes.length; index += 1) {
       const node = this.nodes[index];
-      offset.copy(localOffsets[index]).applyQuaternion(attached.orientation);
+      if (parts) offset.set(parts[index * 3], parts[index * 3 + 1], parts[index * 3 + 2]).sub(partsCenter);
+      else offset.copy(localOffsets[index]).applyQuaternion(attached.orientation);
       node.position.copy(attached.center).add(offset);
       spin.crossVectors(attached.angularVelocity, offset);
       node.velocity.copy(attached.velocity).add(spin);
       node.submersion = 0;
       node.grounded = false;
     }
+    this.startShape(parts !== undefined);
     const forward = new Vector3(0, 0, 1).applyQuaternion(attached.orientation);
     this.heading = Math.atan2(forward.x, forward.z);
     this.active = true;
@@ -372,6 +412,33 @@ export class DetachedSurfer implements DetachedRiderPose {
       out.add(radius.cross(momentum));
     }
     return out;
+  }
+
+  /** The links' lengths and the joints' slack at the start: the nodes' own (from the rider's body) or the fall body's. */
+  private startShape(fromRider: boolean): void {
+    for (let k = 0; k < links.length; k += 1) {
+      this.startLength[k] = fromRider ? this.nodes[links[k].a].position.distanceTo(this.nodes[links[k].b].position) : links[k].length;
+      this.linkLength[k] = this.startLength[k];
+    }
+    for (let k = 0; k < angleLimits.length; k += 1) {
+      const limit = angleLimits[k];
+      const first = this.linkLength[limit.first];
+      const second = this.linkLength[limit.second];
+      const distance = this.nodes[limit.a].position.distanceTo(this.nodes[limit.b].position);
+      this.lowSlack[k] = fromRider ? Math.max(0, distanceAt(first, second, limit.minCos) - distance) : 0;
+      this.highSlack[k] = fromRider ? Math.max(0, distance - distanceAt(first, second, limit.maxCos)) : 0;
+    }
+    this.shapeAge = fromRider ? 0 : Infinity;
+  }
+
+  /** The links' lengths this step: from the rider's posture to the fall body's own over SHAPE_TIME. */
+  private easeShape(dt: number): number {
+    if (!(this.shapeAge < SHAPE_TIME)) return 1;
+    this.shapeAge += dt;
+    const s = Math.min(1, this.shapeAge / SHAPE_TIME);
+    const eased = s * s * s * (10 - 15 * s + 6 * s * s);
+    for (let k = 0; k < links.length; k += 1) this.linkLength[k] = this.startLength[k] + (links[k].length - this.startLength[k]) * eased;
+    return eased;
   }
 
   private solveDistance(aIndex: number, bIndex: number, minimum: number, maximum: number): void {
@@ -645,12 +712,18 @@ export class DetachedSurfer implements DetachedRiderPose {
     // Angle bounds are endpoint-distance inequalities around each joint.
     // Axial, mass-weighted corrections conserve the point system's linear
     // and angular momentum in free space.
+    const shaped = this.easeShape(dt);
     for (let iteration = 0; iteration < 10; iteration += 1) {
-      for (const link of links) {
-        this.solveDistance(link.a, link.b, link.length, link.length);
+      for (let k = 0; k < links.length; k += 1) {
+        this.solveDistance(links[k].a, links[k].b, this.linkLength[k], this.linkLength[k]);
       }
-      for (const limit of angleLimits) {
-        this.solveDistance(limit.a, limit.b, limit.minDistance, limit.maxDistance);
+      for (let k = 0; k < angleLimits.length; k += 1) {
+        const limit = angleLimits[k];
+        const first = this.linkLength[limit.first];
+        const second = this.linkLength[limit.second];
+        this.solveDistance(limit.a, limit.b,
+          distanceAt(first, second, limit.minCos) - this.lowSlack[k] * (1 - shaped),
+          distanceAt(first, second, limit.maxCos) + this.highSlack[k] * (1 - shaped));
       }
       for (let index = 0; index < this.nodes.length; index += 1) {
         const node = this.nodes[index];

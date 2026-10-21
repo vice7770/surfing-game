@@ -776,8 +776,10 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
   { name: 'a fall from lying down', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' }, input(time, session) { fallAt(time, 1, session); return {}; } },
   { name: 'surfacing', water: 'flat', seconds: 6.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' }, input(time, session) { fallAt(time, 0.5, session); return {}; } },
   {
-    name: 'reeling the leash in', water: 'flat', seconds: 6.5, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' },
-    input(time, session) { fallAt(time, 0.5, session); return { reel: time > 5 }; },
+    // Reeled from 3 s (5 s before the phase 5 physics plan's fall from the rider's own pose, item 2.10: the board now
+    // drifts near enough that the swimmer had it 0.5 s after a reel from 5 s); the grab comes about 4.6 s in.
+    name: 'reeling the leash in', water: 'flat', seconds: 4.4, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' },
+    input(time, session) { fallAt(time, 0.5, session); return { reel: time > 3 }; },
   },
   {
     name: 'climbing back on', water: 'flat', seconds: 18.5, placement: { x: 0, z: 0, heading: 0, speed: 2, phase: 'standing' },

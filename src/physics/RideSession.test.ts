@@ -161,6 +161,29 @@ describe('ride session', () => {
     expect(handed!.momentum.z).toBeGreaterThan(50);
   });
 
+  // The phase 5 physics plan, item 2.10: a fall starts from the rider's own pose (it snapped to a default T-shape: the
+  // arms jumped 0.5–0.65 m from the rails or the stance, the legs 0.25–0.35 m from the stance to side by side).
+  it('starts the fall body from the rider\'s own pose, lying down or standing: each part where it was, moving with it', () => {
+    for (const phase of ['prone', 'standing'] as const) {
+      const session = new RideSession();
+      const water = new PlaneWater();
+      session.place({ x: 0, z: 0, heading: 0.4, speed: phase === 'standing' ? 7 : 0, phase }, water);
+      for (let i = 0; i < 60; i += 1) session.step(STEP, water, idle);
+      session.step(STEP, water, idle);
+      const parts = Array.from({ length: 7 }, (_, i) => session.rider.partPosition(i, new Vector3()));
+      const velocity = session.rider.velocity.clone();
+      session.separate('balance');
+      session.step(STEP, water, idle);
+      // One step on: each node within that step's travel of its part (the body moving 7 m/s, 0.12 m).
+      const travel = velocity.length() * STEP + 0.02;
+      session.surfer.nodes.forEach((node, i) => expect(node.position.distanceTo(parts[i]), `${phase} ${i}`).toBeLessThan(travel));
+      // The left arm on the body's left: lying, the board's left (+x turned by the heading).
+      const left = new Vector3(Math.cos(0.4), 0, -Math.sin(0.4));
+      if (phase === 'prone') expect(session.surfer.nodes[3].position.clone().sub(session.surfer.nodes[4].position).dot(left)).toBeGreaterThan(0.4);
+      expect(session.handoff.parts[0]).toBe(parts[0].x);
+    }
+  });
+
   it('keeps the riderless board floating while the rider falls and swims', () => {
     const session = new RideSession();
     const water = new PlaneWater();

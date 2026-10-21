@@ -1294,15 +1294,20 @@ export class AttachedRider {
 
   /**
    * The state a fall body starts from when the rider lets go: its centre of
-   * mass and velocity, and a body frame whose up is the head's direction (along
-   * the board lying down, the rider's up standing), spinning with the rider.
+   * mass and velocity, a body frame whose up is the head's direction (along
+   * the board lying down, the rider's up standing), spinning with the rider,
+   * and, given room for them, its own parts' centres in the world (the phase 5
+   * physics plan, item 2.10: the fall starts from the rider's pose).
    */
-  handoffState(out: { center: Vector3; orientation: Quaternion; velocity: Vector3; angularVelocity: Vector3 }): typeof out {
+  handoffState(out: { center: Vector3; orientation: Quaternion; velocity: Vector3; angularVelocity: Vector3; parts?: Float64Array }): typeof out {
     out.center.copy(this.position);
     out.velocity.copy(this.velocity);
     out.angularVelocity.copy(this.angularVelocity);
     out.orientation.copy(this.orientation);
     if (!this.upright) out.orientation.multiply(this.spin.setFromAxisAngle(X, Math.PI / 2));
+    if (out.parts) {
+      for (let i = 0; i < RIDER_PARTS.length; i += 1) this.partPosition(i, this.scratch).toArray(out.parts, i * 3);
+    }
     return out;
   }
 

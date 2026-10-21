@@ -90,6 +90,49 @@ describe('DetachedSurfer on controlled water', () => {
     }
   });
 
+  // The phase 5 physics plan, item 2.10: the fall starts from the rider's own body, not a default T-shape about it.
+  it('starts from the rider\'s own parts, moving with the body, and eases its shape to its own keeping its momentum', () => {
+    const body = new DetachedSurfer();
+    const center = new Vector3(4, 1, -2);
+    const velocity = new Vector3(3, -0.5, 1);
+    const angularVelocity = new Vector3(0.7, 1.1, -0.4);
+    // A prone rider's parts about its centre (`riderPose`'s places, roughly): the arms beside the chest, the legs trailing.
+    const offsets = [[0, 0, -0.52], [0, 0.08, -0.08], [0, 0.22, 0.25], [0.28, -0.05, -0.1], [-0.28, -0.05, -0.1], [0.08, -0.05, -1.05], [-0.08, -0.05, -1.05]];
+    const mean = offsets.reduce((sum, offset, i) => sum.addScaledVector(new Vector3(...offset), body.nodes[i].mass / body.mass), new Vector3());
+    // A little off the centre of mass, as the legs' fold leaves the parts: they start shifted onto it together.
+    const parts = new Float64Array(offsets.flatMap(([x, y, z]) => [center.x + x - mean.x, center.y + y - mean.y + 0.01, center.z + z - mean.z]));
+    body.start({ center, velocity, angularVelocity, orientation: new Quaternion(), parts });
+    expect(body.centerOfMass().distanceTo(center)).toBeLessThan(1e-12);
+    // Each node where its part was, on its own side.
+    body.nodes.forEach((node, i) => {
+      expect(node.position.distanceTo(new Vector3(parts[i * 3], parts[i * 3 + 1] - 0.01, parts[i * 3 + 2]))).toBeLessThan(1e-12);
+      expect(node.velocity.distanceTo(velocity.clone().add(angularVelocity.clone().cross(node.position.clone().sub(center))))).toBeLessThan(1e-12);
+    });
+    expect(body.nodes[3].position.x).toBeGreaterThan(body.nodes[4].position.x);
+    const momentum = body.linearMomentum();
+    const spin = body.angularMomentum();
+    // In free space (no water: only gravity, which turns nothing), the links close to the body's own over a quarter second, smoothly,
+    // the momentum kept.
+    const air: BodyWaterField = { sampleAt(_p, out) { out.surfaceY = -100; out.bedY = -200; out.flow.set(0, 0, 0); out.wet = false; out.outsideDomain = true; out.breaking = 0; } };
+    let fastest = 0;
+    const pelvisTorso = () => body.nodes[0].position.distanceTo(body.nodes[1].position);
+    const before = pelvisTorso();
+    for (let frame = 0; frame < 30; frame += 1) {
+      const was = body.nodes.map((node) => node.position.clone());
+      body.step(1 / 60, air);
+      // Relative to the centre of mass's own fall: how fast each node moves within the body.
+      const fall = body.nodes[1].velocity.clone();
+      body.nodes.forEach((node, i) => { fastest = Math.max(fastest, node.position.clone().sub(was[i]).divideScalar(1 / 60).sub(fall).length()); });
+    }
+    expect(before).toBeGreaterThan(0.4);
+    expect(pelvisTorso()).toBeCloseTo(0.35, 3);
+    expect(fastest).toBeLessThan(5);
+    const dropped = momentum.clone().add(new Vector3(0, -9.81 * body.mass * 0.5, 0));
+    expect(body.linearMomentum().distanceTo(dropped)).toBeLessThan(1e-6);
+    // The joints' corrections are axial and mass-weighted: the spin is kept to the integration's own order.
+    expect(body.angularMomentum().distanceTo(spin)).toBeLessThan(0.02 * spin.length());
+  });
+
   it('drifts in the direction of local water flow and separates from the no-flow trace', () => {
     const following = new DetachedSurfer();
     const opposing = new DetachedSurfer();
