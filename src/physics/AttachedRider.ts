@@ -1041,6 +1041,11 @@ export class AttachedRider {
   private loaded = false;
   /** Where the rider wants its centre of pressure, relative to the middle of the support: along the board, where W/S hold it (TRIM_PRESSURE). */
   readonly copTarget = { x: 0, z: 0 };
+  /** Pushing up, how far the arms let the body over the high rail as the board rolls under it, m, and its rate (`armsGiveStep`). */
+  private armsGive = 0;
+  private armsGiveRate = 0;
+  /** The prone posture's centre of mass over the deck, m: pushing up, the arms give for the lift above it. */
+  private readonly proneHeight: number;
   /** The steering lean of the upper body across the board, m, and its rate. */
   private readonly lean = new Vector3();
   private readonly leanRate = new Vector3();
@@ -1157,6 +1162,8 @@ export class AttachedRider {
     this.parts = pose.parts.slice();
     this.fromParts = pose.parts.slice();
     this.support = pose.support;
+    const lying = postureCenter(riderPose(shape, 'prone', this.stance).parts, this.partMasses);
+    this.proneHeight = lying.y - deckHeight(shape, lying.z);
     const ducks = (stance: StanceName) => {
       const press = duckPose(shape, 'duckPress', stance);
       const knee = duckPose(shape, 'duckKnee', stance);
@@ -1226,9 +1233,11 @@ export class AttachedRider {
     }
     if (board && upright !== this.upright) this.remap(this.fromParts, upright, board);
     if (upright && !this.upright) this.legFresh = true;
-    // The balance shift is folded into where the transition starts.
+    // The balance shift (and the arms' give) is folded into where the transition starts.
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
+    this.armsGive = 0;
+    this.armsGiveRate = 0;
     this.phase = phase;
     this.phaseTime = 0;
     this.phaseDuration = duration;
@@ -1318,6 +1327,8 @@ export class AttachedRider {
     this.waterCalm = 1;
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
+    this.armsGive = 0;
+    this.armsGiveRate = 0;
     // A new mount starts from the neutral stance, whatever the body was doing before (a relaunch mid-carve).
     this.lean.set(0, 0, 0);
     this.leanRate.set(0, 0, 0);
@@ -1729,7 +1740,7 @@ export class AttachedRider {
     this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
-    this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
+    this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x + this.armsGiveRate) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
     // A push's sway carries the centre of mass off its feet.
     if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
     // The posture's own motion (a pop-up) carries the centre of mass with it.
@@ -2674,7 +2685,7 @@ export class AttachedRider {
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       if (!this.shifts(i)) continue;
-      this.parts[i * 3] += this.balance.x + this.lean.x;
+      this.parts[i * 3] += this.balance.x + this.lean.x + this.armsGive;
       this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
     const center = postureCenter(this.parts, this.partMasses);
@@ -2709,10 +2720,9 @@ export class AttachedRider {
       const roll = Math.asin(Math.max(-1, Math.min(1, side.dot(this.waterUp))));
       const rate = this.scratch2.copy(board.angularVelocity).applyQuaternion(this.spin.copy(board.orientation).invert()).z;
       const ducking = this.duck.press > DUCK_BUSY;
-      // Pushing up (the pop-up), the hands hold the rails as they do ducking, the body up over them on its arms: it
-      // levels a board the stroke left rolling (from mid-roll the prone hips let it capsize under the rising body).
-      const onRails = ducking || this.phase === 'push';
+      const onRails = ducking;
       const reachX = onRails ? DUCK_SHIFT : reach.x;
+      this.armsGiveStep(roll, h);
       // Paddling, the level kept swings toward each arm as it pulls (board +x, the left arm's side, down is a negative
       // roll); pushing up, at once level.
       const rolling = this.paddle && !ducking && this.phase === 'prone' ? Math.min(1, board.velocity.length() / STROKE_ROLL_SPEED) * this.waterCalm : 0;
@@ -2753,6 +2763,40 @@ export class AttachedRider {
     const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
+  }
+
+  /**
+   * Pushing up (the pop-up; the paddle-balance fix, 2026-10-22), the hips keep the
+   * prone balance (PRONE_ROLL_SHIFT within PRONE_SHIFT) and the arms give. As the
+   * chest leaves the deck the body rises on its hands, which hold the rails, and
+   * the board rolls under them while the body's centre of mass stays over the
+   * board's middle: the body shifts toward the high rail by its lift over the
+   * prone posture times tan of the roll, within the hands' span on the rails
+   * (DUCK_SHIFT). Carried rigidly with the deck, the rising body (its centre of
+   * mass from 0.19 m to 0.45 m over it) swung across by its height for every
+   * radian of roll; the hips' 0.1 m levels that only to 13°.
+   *
+   * The duck-dive's hold, which batch C gave the push (the hands on the rails,
+   * DUCK_ROLL_SHIFT 1.0 m per rad), is made for a board under water, with no
+   * waterplane and slow to roll. On a floating or planing board the body's shift,
+   * critically damped over BALANCE_TIME, came a quarter cycle or more behind the
+   * board's roll and drove it: in a probe on a static 15° face, popping up at
+   * each tenth of a second through a stroke, the board rolled 22–79° in the rise
+   * and the rider fell in 11 of 12 (none, the board within 18°, with the hips'
+   * balance and the arms' give); popping up on a face catching the paddler, 17 of
+   * 20, 12 in the rise (4 and 3 with this, the 3 nose-diving at the foot of an
+   * 18° face).
+   */
+  private armsGiveStep(roll: number, h: number): void {
+    if (this.phase !== 'push') {
+      this.armsGive = 0;
+      this.armsGiveRate = 0;
+      return;
+    }
+    const lift = Math.max(0, this.localCenter.y - deckHeight(this.shape, this.localCenter.z) - this.proneHeight);
+    const give = Math.max(-DUCK_SHIFT, Math.min(DUCK_SHIFT, lift * Math.tan(roll)));
+    this.armsGiveRate = (give - this.armsGive) / h;
+    this.armsGive = give;
   }
 
   /**

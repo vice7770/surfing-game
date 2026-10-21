@@ -2059,8 +2059,8 @@ describe('the stroke (the phase 5 physics plan, item 2.8)', () => {
 });
 
 // The paddle-balance fix (2026-10-22, the owner's ride after phase 5): lying down and paddling, the rider lost its balance
-// and fell off. The balance comes first and levels the board to the water it lies on (`AttachedRider`'s STROKE_ROLL and
-// PRONE_ROLL_SHIFT). Before, these runs threw the rider ('lost board').
+// and fell off. The balance comes first, levels the board to the water it lies on (`AttachedRider`'s STROKE_ROLL and
+// PRONE_ROLL_SHIFT), and pushing up the arms give (`armsGiveStep`). Before, these runs threw the rider ('lost board').
 describe('the paddle\'s balance (the paddle-balance fix)', () => {
   /** Paddling from rest on `water` for `seconds` with `input` at each moment: whether the rider stayed on, and the board's largest roll, deg. */
   const paddleOn = (water: SurfWater & { advance?(dt: number): void }, seconds: number, input: (time: number) => Partial<RideInput>, heading = 0) => {
@@ -2096,6 +2096,32 @@ describe('the paddle\'s balance (the paddle-balance fix)', () => {
     for (const across of [30, -30]) {
       const { attached } = paddleOn(new FaceWater({ depth: 2.5, height: 1.4, slope: 12, crestZ: -25 }), 12, () => ({}), (across * Math.PI) / 180);
       expect(attached, `${across}°`).toBe(true);
+    }
+  });
+
+  it('pops up at any point of the stroke on a 15° slope, the board within 20° as the body rises, and stands', () => {
+    // Pushing up on the duck-dive's hold, the board rolled 22–79° in the rise and 11 of 12 such pop-ups threw the rider.
+    for (const at of [3, 3.2, 3.4, 3.6, 3.8, 4]) {
+      const water = new PlaneWater({ slopeZ: -Math.tan((15 * Math.PI) / 180) });
+      const session = new RideSession();
+      session.reset(new Vector3(), 0, water);
+      const { rider, board } = session;
+      let rising = 0;
+      let standing = 0;
+      let margin = 1;
+      for (let i = 0; i < Math.round((at + 3) / STEP) && rider.attached; i += 1) {
+        const time = i * STEP;
+        session.step(STEP, water, { paddle: time < at, popUp: Math.abs(time - at) < STEP / 2, steer: 0 });
+        if (rider.phase === 'push' || rider.phase === 'landing') rising = Math.max(rising, Math.abs(roll(board)));
+        if (rider.phase === 'standing') {
+          standing += STEP;
+          margin = Math.min(margin, rider.balanceMargin);
+        }
+      }
+      expect(rider.attached, `popped at ${at} s`).toBe(true);
+      expect(standing, `popped at ${at} s`).toBeGreaterThan(1.5);
+      expect((rising * 180) / Math.PI, `popped at ${at} s`).toBeLessThan(20);
+      expect(margin, `popped at ${at} s`).toBeGreaterThan(0.5);
     }
   });
 });
