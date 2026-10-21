@@ -9,7 +9,7 @@ import { waterChopMomentPars, waterChopNormal } from './waterChop';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { hazeLandKey, hazeLandRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
 import { horizonHazeUniforms } from './water/horizonHaze';
-import { reefBedProgramKey, withReefBed } from './water/reefBed';
+import { rockBedProgramKey, withRockBed } from './water/rockBed';
 import { CLASSIC_FOAM, WATER_IOR, waterBodyFragment } from './waterOptics';
 import { waterFragmentPars, waterVertexPars } from './WaterSurface';
 import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, SWEPT_SHEET_BODY } from './barrel/SweptBarrelMesh';
@@ -579,11 +579,11 @@ export class SpillingCurlMesh {
   /** World metres per pixel per metre of depth (`curlPixelScale`), for the view being drawn. */
   readonly pixelScale = { value: 0 };
   /**
-   * Whether the water under the curl draws a reef's floor (`WaterSurface.reefBed`): its body is the face's column of
+   * Whether the water under the curl draws a rock floor (`WaterSurface.rockBed`): its body is the face's column of
    * water, so it takes the same bed. Asked before each draw; the program follows.
    */
-  reefBed: () => boolean = () => false;
-  private reefCompiled = false;
+  rockBed: () => boolean = () => false;
+  private rockCompiled = false;
 
   constructor(uniforms: Record<string, { value: unknown }>) {
     const geometry = new BufferGeometry();
@@ -632,8 +632,8 @@ export class SpillingCurlMesh {
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>')
         // The sun's glitter about the curl's own normal, from the screen-space term alone (web-ocean plan, item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
-      // The face's bed under it, reef or sand, as the water it rides on draws it.
-      if (this.reefCompiled) withReefBed(shader, { surface: 'waterHeightAt( position.xz )', xz: 'position.xz' });
+      // The face's bed under it, rock or sand, as the water it rides on draws it.
+      if (this.rockCompiled) withRockBed(shader, { surface: 'waterHeightAt( position.xz )', xz: 'position.xz' });
       // The horizon haze over the curl, as over the water it rides on (the haze-land follow-up).
       const haze = hazeLandRoute('curl', this.look);
       if (haze) {
@@ -641,7 +641,7 @@ export class SpillingCurlMesh {
         withHazeLand(shader, { route: haze, pixelToward: 'vWaterWorld - cameraPosition' });
       }
     };
-    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}${hazeLandKey(hazeLandRoute('curl', this.look))}${reefBedProgramKey(this.reefCompiled)}`;
+    material.customProgramCacheKey = () => `breakline-spilling-curl-${this.look}${this.look === 'rich' ? glitterProgramKey() : ''}${hazeLandKey(hazeLandRoute('curl', this.look))}${rockBedProgramKey(this.rockCompiled)}`;
     onGlitterChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });
@@ -654,9 +654,9 @@ export class SpillingCurlMesh {
     // A pixel's size for this render's camera and view (`DISTANCE`): set as the curl is drawn, in any view.
     this.mesh.onBeforeRender = (renderer, _scene, camera) => {
       this.setView(camera, viewHeight(renderer));
-      const reef = this.reefBed();
-      if (reef !== this.reefCompiled) {
-        this.reefCompiled = reef;
+      const rock = this.rockBed();
+      if (rock !== this.rockCompiled) {
+        this.rockCompiled = rock;
         this.mesh.material.needsUpdate = true;
       }
     };

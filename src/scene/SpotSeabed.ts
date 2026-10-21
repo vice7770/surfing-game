@@ -26,10 +26,10 @@ export class SpotSeabed {
   private readonly shallow = new Color('#d6c69c');
   private readonly deep = new Color('#2f5f66');
   /**
-   * A reef's floor in the shallows, where the bed has one (`reefBed.ts`): the sand's colour scaled as the water's reef
-   * albedo is to its sand's (live coral, `SPOT_OPTICS`), so the reef seen from under the water is not sand either.
+   * A rock floor in the shallows, where the bed has one (`rockBed.ts`): the sand's colour scaled as the water's rock
+   * albedo is to its sand's (`SPOT_OPTICS`), so the rock seen from under the water is not sand either.
    */
-  private readonly reef = new Color('#64643a');
+  private readonly rock = new Color('#827863');
 
   /** The floor's colours, shallow to deep: sand by default, a pool's painted concrete (the movement-flow spec). */
   setPalette(shallow: string, deep: string): void {
@@ -113,22 +113,26 @@ ${causticLookupPars}${wet ? `${waterHeightPars}${wetSandPars}` : ''}`)
   }
 
   /**
-   * Rebuild on explicit (possibly graded) world axes, e.g. fine under the tank and coarse beyond it; with `reefCover`
-   * (0 sand to 1 reef, `reefBed.ts`), the reef's floor in its own colour.
+   * Rebuild on explicit (possibly graded) world axes, e.g. fine under the tank and coarse beyond it; with `rockCover`
+   * (0 sand, 1 rock, past 1 darker rock, `rockBed.ts`), the rock's floor in its own colour.
    */
-  setDepthOnGrid(depthAt: (x: number, z: number) => number, xs: number[], zs: number[], reefCover?: (x: number, z: number) => number): void {
+  setDepthOnGrid(depthAt: (x: number, z: number) => number, xs: number[], zs: number[], rockCover?: (x: number, z: number) => number): void {
     const geometry = buildGridGeometry(xs, zs);
     const positions = geometry.getAttribute('position');
     const colors = new Float32Array(positions.count * 3);
     const color = new Color();
-    const reef = new Color();
+    const rock = new Color();
     for (let i = 0; i < positions.count; i += 1) {
       const depth = depthAt(positions.getX(i), positions.getZ(i));
       positions.setY(i, -depth);
       const deepening = Math.min(1, Math.max(0, depth / 12));
       color.copy(this.shallow).lerp(this.deep, deepening);
-      const cover = reefCover ? reefCover(positions.getX(i), positions.getZ(i)) : 0;
-      if (cover > 0) color.lerp(reef.copy(this.reef).lerp(this.deep, deepening), cover);
+      const cover = rockCover ? rockCover(positions.getX(i), positions.getZ(i)) : 0;
+      if (cover > 0) {
+        // Past 1 the cover runs on to darker rock (its joints and shaded blocks), never below black.
+        color.lerp(rock.copy(this.rock).lerp(this.deep, deepening), cover);
+        color.setRGB(Math.max(0, color.r), Math.max(0, color.g), Math.max(0, color.b));
+      }
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
