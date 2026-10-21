@@ -7,12 +7,16 @@ import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones
 import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
-import { BOARD_CENTRE, deckAt, railHalfWidth } from './boardDeck';
+import { BOARD_CENTRE, BOARD_LENGTH, deckAt, railHalfWidth } from './boardDeck';
+import { fallenFrame } from './fallenSides';
+import { FALL_READING, FallStages, type FallWeights } from './fallStages';
 import { StageBlend, WaterStages } from './stageBlend';
+import { HEAD_CENTRE, RAIL_MIDDLE } from './stanceGauge';
+import { LEASH } from '../../physics/Leash';
 import { TURN_FULL, stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
 import {
-  LYING_POSES, SIT, TAKE_OFF, createStandingPose, lyingPose, sitScan, stagePose,
-  type HandOffset, type LyingPose, type StageWeights, type StandingPose, type WaterWeights,
+  FALL_POSES, LYING_POSES, SIT, TAKE_OFF, createStandingPose, lyingPose, sitScan, stagePose,
+  type HandOffset, type LegAngles, type LyingPose, type StageWeights, type StandingPose, type WaterWeights,
 } from './stagePoses';
 import { solveTwoBone } from './twoBoneIk';
 
@@ -49,6 +53,9 @@ function turnToward(a: Vector3, b: Vector3, t: number, out: Vector3): Vector3 {
   const wb = Math.sin(t * angle) / s;
   return out.set(a.x * wa + b.x * wb, a.y * wa + b.y * wb, a.z * wa + b.z * wb);
 }
+
+/** A fallen limb within this share of its length off its root's line to its end counts as coming straight (`aimLimb`'s `steady`). */
+const STRAIGHT = 0.08;
 
 /** The lying head's look below the deck until the animation-realism plan's phase 3: its axis the deck's normal and 0.3 of the nose. */
 const LYING_LOOK = Math.atan(0.3) / DEG;
@@ -470,6 +477,32 @@ export class HumanoidRig {
   }
   /** How far the lying key pose is drawn this solve, 0–1 (prone 1 less a duck; handing over in the push and the lie-down). */
   lyingShare = 0;
+  /** Fallen, the stages read from the drawn state (`FallStages`: the reflexes, surfacing, the reel, the climb), this solve. */
+  private readonly fall = new FallStages();
+  /** The fall's stages' weights this solve (read only: for tests and the dev views). */
+  get fallWeights(): Readonly<FallWeights> {
+    return this.fall.weights;
+  }
+  /** Fallen: the trunk's turn toward upright this solve (treading water), the neck's line, and the head's centre. */
+  private readonly treadTurn = new Quaternion();
+  private readonly fallUp = new Vector3();
+  private readonly headCentre = new Vector3();
+  /** Reeling, how far through its pulls (each hand's cycle, 0–1), the hand that began, and the clock it was advanced to. */
+  private reelPhase = 0;
+  private reelFirst: Side = 'right';
+  private reelClock = Number.NaN;
+  /** The hand on the cord this solve, reeling (none: ''). */
+  private reelGrip: Side | '' = '';
+  /** The swimmer's strokes counted (its sight every few), both arms. */
+  private crawlStrokes = 0;
+  /** The last fallen solve held the board (a climb), and where its ankles were on the board; when the prone pose after it began. */
+  private climbing = false;
+  private readonly climbFeet = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private climbOnSince = Number.NaN;
+  /** Where the chest faced at the last solve before the fall (the fallen facing turns from it), and whether one was. */
+  private readonly fallFrom = new Vector3();
+  private fallFromSet = false;
+  private readonly fallScratch = { a: new Vector3(), b: new Vector3(), c: new Vector3(), d: new Vector3(), e: new Vector3() };
   /** The phase drawn last, when it began (none: long since, or unknown), and the last solve's clock. */
   private phaseName = '';
   private phaseSince = Number.NaN;
@@ -668,10 +701,18 @@ export class HumanoidRig {
     const lying = state.phase === 'prone' || state.phase === 'push' || state.phase === 'recover';
     const fallen = state.phase === 'fallen';
     const phaseTime = this.trackPhase(state);
+    // Fallen, the reflexes and the recovery's stages (the animation-realism plan's phase 4); back on the board after a
+    // climb, the prone pose comes in over the climb's `on` (it snapped to prone).
+    const fw = fallen ? this.fall.update(state) : undefined;
+    if (!fallen) this.fall.reset();
+    this.reelGrip = '';
+    if (state.phase === 'prone' && phaseTime === 0 && this.climbing) this.climbOnSince = state.clock;
+    else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
+    const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < FALL_POSES.climb.on ? (state.clock - this.climbOnSince) / FALL_POSES.climb.on : 1;
     // Lying, the water stages and their key pose (the animation-realism plan's phase 3), and the pop-up's drawn places.
     if (lying) lyingPose(this.water.update(state), this.lying);
     else this.water.reset();
-    this.lyingShare = lying ? this.lyingPoseShare(state, phaseTime) : 0;
+    this.lyingShare = lying ? this.lyingPoseShare(state, phaseTime) * smooth(climbOn) : 0;
     const sit = state.phase === 'prone' || state.phase === 'push' ? this.water.weights.sit : 0;
     if (lying) this.placeLying(state, phaseTime);
     if (upright) this.swingFeet(state);
@@ -723,10 +764,17 @@ export class HumanoidRig {
       // the heading leads, lying flat or diving the down: a swimmer faces the water (step 8: the heading alone vanished
       // as the spine lay along it, and the swimmer faced wherever its spine leaned, on its side or up). Rising in the
       // heading's plane the two agree, so neither cancels the other.
-      const rise = Math.max(0, up.y);
-      forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
-      forward.addScaledVector(up, -forward.dot(up)).multiplyScalar(rise);
-      forward.add(this.scratch.set(0, -1, 0).addScaledVector(up, up.y));
+      fallenFrame(state, up, forward);
+      // The fall's start: from where the rider's chest faced (`FALL_POSES.turn`).
+      if (fw && this.fallFromSet && fw.since < FALL_POSES.turn) {
+        const from = this.perpendicular(this.fallScratch.a.copy(this.fallFrom), up);
+        turnToward(from, forward, smooth(fw.since / FALL_POSES.turn), forward);
+      }
+      // Tumbling, the facing followed (the heading's share of it comes and goes with the spine's rise, kinked level: the
+      // limbs drawn about it swung in a frame); then, treading water (up, reeling, holding the board), the trunk turned
+      // toward upright over its pelvis, facing the cord or the board.
+      if (fw) this.followFacing(state, up, forward);
+      if (fw) this.treadTrunk(state, fw, up, forward);
     }
     this.perpendicular(forward, up);
     left.crossVectors(up, forward).normalize();
@@ -814,6 +862,8 @@ export class HumanoidRig {
     if (chestUp.lengthSq() < 1e-10) chestUp.copy(up);
     chestUp.normalize();
     if (Number.isFinite(pressed)) turnToward(this.overDeck(pressed, this.direction), chestUp, handover, chestUp);
+    // Fallen, the chest turned with the trunk toward upright (treading water), and curled forward tumbling.
+    if (fw) this.fallenChest(fw, chestUp, left);
     // Lying, the chest lifted only as far as the lying key pose's (paddling's low chest, the catch's cobra); sitting, upright.
     if (this.lyingShare > 0) turnToward(chestUp, this.overDeck(this.lying.chest, this.direction), this.lyingShare, chestUp);
     if (sit > 0) turnToward(chestUp, this.sitUp(SIT.lean + SIT.chest, this.direction), sit, chestUp);
@@ -859,7 +909,9 @@ export class HumanoidRig {
     }
     else if (state.phase === 'standing') this.lookWhereGoing(state);
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
+    else if (fw) this.fallenHead(state, fw, chestUp, up);
     else this.orient(BONES.head, chestUp, this.direction.copy(this.swimFacing).applyAxisAngle(up, this.headRoll));
+    if (fw) this.bones.get(BONES.head)!.getWorldPosition(this.headCentre).addScaledVector(chestUp, HEAD_CENTRE);
 
     // 4. Legs and feet (before the arms: the relaxed hands frame the knees).
     for (const side of SIDES) {
@@ -878,6 +930,9 @@ export class HumanoidRig {
         }
         if (lying) this.lyingKnees(state, pole);
         else pole.copy(this.facing);
+        // Fallen, the reflexes and the stages' legs over the ragdoll's; back on the board after a climb, the feet swung on.
+        if (fw) this.fallenLeg(state, fw, side, hip, target, pole);
+        if (lying && climbOn < 1) this.climbOnFoot(state, side, climbOn, target);
         // Sitting, straddling: the thighs over the rails, the shins hanging in the water (`SIT`); out to the side first,
         // so the swinging foot clears the tail.
         if (sit > 0) this.sitLeg(state, side, hip, sit, target, pole);
@@ -906,7 +961,7 @@ export class HumanoidRig {
           solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
         }
       }
-      this.aimLimb(BONES.upLeg[side], BONES.leg[side], hip, this.joints.knee[side], this.joints.ankle[side], pole);
+      this.aimLimb(BONES.upLeg[side], BONES.leg[side], hip, this.joints.knee[side], this.joints.ankle[side], pole, fallen);
       if (upright) this.followKnee(state, side);
       if (upright) {
         // The sole on the deck: from the ankle to the ball (its rest pitch standing flat), the toes along the deck.
@@ -956,6 +1011,9 @@ export class HumanoidRig {
       if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
+      // Fallen, the reflexes (the shield, the cause's shape, surfacing, the reach) and the stages that hold something
+      // (the cord, the rail) over the ragdoll's.
+      if (fw) this.fallenArm(state, fw, side, shoulder, hand, target, pole);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       // Lying, and landing (the crouched landing's hand passed through the arm's full reach, the elbow snapping), the
       // hand brought within the arm's reach smoothly; in the catch the arm reaches all of it (the lying key pose's).
@@ -985,11 +1043,17 @@ export class HumanoidRig {
         this.swing.follow(side, shoulder, target, free, state.clock, (RIG_DETAIL.swing.most * Math.PI) / 180);
       } else this.swing.still(side, shoulder, state.clock);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
-      this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
+      this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole, fallen);
       // The hand's back toward the deck's normal, turning to the chest's facing as the forearm comes along the normal
       // (a hint along the forearm spun the hand).
       const forearm = this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]).normalize();
       const handHint = this.handHint.copy(fallen ? this.facing : boardUp);
+      // Holding the board, the palm on the rail. Fallen, the hint kept off the forearm's line: with the forearms across
+      // the head (the shield) the chest's facing ran along them, and the hand turned over in a frame.
+      if (fw) this.fallenHandHint(side, forearm, handHint);
+      if (fw && fw.climb > 0) handHint.lerp(boardUp, fw.climb).normalize();
+      if (fw) this.offLine(forearm, handHint);
+      if (fw) this.keepHand(state, side, forearm, handHint);
       if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeHand, handHint);
       else if (!fallen) {
         const off = this.scratch.copy(boardUp).addScaledVector(forearm, -boardUp.dot(forearm)).length();
@@ -1012,6 +1076,24 @@ export class HumanoidRig {
     }
     // Sitting, the feet hang in the water: what draws from the state after the rig (the leash) follows them.
     if (sit > 0) for (const side of SIDES) p[side === 'left' ? POINT.leftFoot : POINT.rightFoot].lerp(this.joints.ankle[side], sit);
+    // Fallen, the leash is drawn from the drawn ankle (the physics' leg point is the leg's middle), and, reeling, from the
+    // hand on the cord. Holding the board, where the feet are on it: back on the board they swing on from there.
+    state.leash.gripped = false;
+    if (fw) {
+      for (const side of SIDES) p[side === 'left' ? POINT.leftFoot : POINT.rightFoot].copy(this.joints.ankle[side]);
+      if (this.reelGrip && fw.reel > 0.5) {
+        state.leash.grip.copy(this.joints.wrist[this.reelGrip]);
+        state.leash.gripped = true;
+      }
+      this.fallenClock = state.clock;
+      this.climbing = fw.climb > 0.5;
+      if (this.climbing) for (const side of SIDES) this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
+    } else {
+      this.climbing = false;
+      this.gripSet = false;
+      this.fallFrom.copy(this.facing);
+      this.fallFromSet = true;
+    }
   }
 
   /**
@@ -1526,6 +1608,11 @@ export class HumanoidRig {
 
   /** Forgets the last solve's motion: the next hinges, and swings its arms, at once (a new tile of the surfer sheet, a teleport). */
   reset(): void {
+    this.fall.reset();
+    this.fallFromSet = false;
+    this.reelClock = Number.NaN;
+    this.climbing = false;
+    this.climbOnSince = Number.NaN;
     this.phaseClock = Number.NaN;
     this.phaseSince = Number.NaN;
     this.liftOffClock = Number.NaN;
@@ -2077,7 +2164,9 @@ export class HumanoidRig {
     this.crawlClock = state.clock;
     if (!(step > 0 && step < 0.5)) return;
     const breath = Math.min(1, Math.max(0, state.breath));
-    this.crawlPhase = (this.crawlPhase + step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath))) % 1;
+    const cycles = step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath));
+    this.crawlPhase = (this.crawlPhase + cycles) % 1;
+    if (state.phase === 'fallen' && state.swim.stroking) this.crawlStrokes += 2 * cycles;
   }
 
   /**
@@ -2114,6 +2203,574 @@ export class HumanoidRig {
     const discriminant = along * along - (offset.lengthSq() - reach * reach);
     const t = discriminant > 0 ? Math.max(0, -along + Math.sqrt(discriminant)) : 0;
     return out.copy(hand).addScaledVector(this.boardForward, t);
+  }
+
+  /**
+   * Fallen and up (treading water), reeling or holding the board: the trunk
+   * turned toward upright about its pelvis (`FALL_POSES.tread`: at most its
+   * `most`° from the physics' trunk, which floats flat), into `treadTurn` (the
+   * chest turns with it); reeling, it faces the cord, holding the board, the board.
+   */
+  private treadTrunk(state: RiderVisualState, fw: FallWeights, up: Vector3, forward: Vector3): void {
+    this.treadTurn.identity();
+    // Holding the board, only part of the way up: hanging on its rail, the hands reach it.
+    const tread = Math.max(fw.surfaced * (1 - fw.stroke) * (1 - fw.climb), fw.reel, fw.climb * (1 - fw.pull) * FALL_POSES.climb.upright);
+    if (tread <= 0) return;
+    const angle = Math.acos(Math.max(-1, Math.min(1, up.y)));
+    const axis = this.fallScratch.a.crossVectors(up, WORLD_UP);
+    const turn = Math.min(angle, FALL_POSES.tread.most * DEG) * tread;
+    if (turn > 1e-6 && axis.lengthSq() > 1e-10) {
+      this.treadTurn.setFromAxisAngle(axis.normalize(), turn);
+      up.applyQuaternion(this.treadTurn);
+      forward.applyQuaternion(this.treadTurn);
+    }
+    // Hanging on the rail, the trunk leans onto the board (its shoulders over the rail, the hands' reach of it).
+    const lean = fw.climb * (1 - fw.pull) * FALL_POSES.climb.lean * DEG;
+    if (lean > 0) {
+      const onto = this.fallScratch.b.subVectors(this.fall.nearest, state.points[POINT.pelvis]).setY(0);
+      const turnAxis = this.fallScratch.c.crossVectors(up, onto);
+      if (onto.lengthSq() > 1e-6 && turnAxis.lengthSq() > 1e-8) {
+        const q = this.turn.setFromAxisAngle(turnAxis.normalize(), Math.min(lean, up.angleTo(onto.normalize())));
+        up.applyQuaternion(q);
+        forward.applyQuaternion(q);
+        this.treadTurn.premultiply(q);
+      }
+    }
+    const face = Math.max(fw.reel, fw.climb * (1 - fw.pull));
+    if (face <= 0) return;
+    const toward = this.fallScratch.b.subVectors(fw.reel >= fw.climb ? state.leash.plug : this.fall.nearest, state.points[POINT.pelvis]);
+    toward.addScaledVector(up, -toward.dot(up));
+    if (toward.lengthSq() < 1e-6) return;
+    this.perpendicular(forward, up);
+    turnToward(forward, toward.normalize(), face, forward);
+  }
+
+  /** The fallen facing's two followers (`FALL_POSES.facing`), and the clock they were followed to. */
+  private readonly facingFollow = [new Vector3(), new Vector3()];
+  private facingClock = Number.NaN;
+
+  /**
+   * Fallen, `forward` (square to `up`) followed in two stages at
+   * `FALL_POSES.facing` rad/s each: a second order, so neither its turn nor its
+   * rate jumps. A clock standing still, or after a gap, takes it as it is.
+   */
+  private followFacing(state: RiderVisualState, up: Vector3, forward: Vector3): void {
+    const dt = state.clock - this.facingClock;
+    this.facingClock = state.clock;
+    const [first, second] = this.facingFollow;
+    if (!(dt > 0 && dt < 0.25)) {
+      first.copy(forward);
+      second.copy(forward);
+      return;
+    }
+    const k = 1 - Math.exp(-FALL_POSES.facing * dt);
+    turnToward(this.perpendicular(first, up), forward, k, first);
+    turnToward(this.perpendicular(second, up), this.perpendicular(first, up), k, second);
+    forward.copy(this.perpendicular(second, up));
+  }
+
+  /** Fallen, the chest turned with the trunk toward upright (`treadTurn`), and curled forward tumbling (`FALL_POSES.spine`). */
+  private fallenChest(fw: FallWeights, chestUp: Vector3, left: Vector3): void {
+    chestUp.applyQuaternion(this.treadTurn);
+    const { spine } = FALL_POSES;
+    const curl = (fw.shape === 'falls' ? spine.ball : spine.curl) * fw.curl * (1 - fw.stroke);
+    if (curl) chestUp.applyAxisAngle(left, curl * DEG);
+    this.fallUp.copy(chestUp);
+  }
+
+  /**
+   * Fallen, the head: the chin tucked behind the shield, the pearl's throw and
+   * the ball (`FALL_POSES.tuck`); up, reeling or holding the board, lifted
+   * upright and turned to the board (then the look round's scan), the cord or
+   * the rail within the neck's reach; swimming, lifted every few strokes to
+   * sight the board (`FALL_POSES.sight`).
+   */
+  private fallenHead(state: RiderVisualState, fw: FallWeights, chestUp: Vector3, up: Vector3): void {
+    const F = FALL_POSES;
+    const sight = this.sight(state, fw);
+    const dir = this.fallScratch.a.copy(chestUp);
+    const face = this.fallScratch.b.copy(this.swimFacing).applyAxisAngle(up, this.headRoll * (1 - sight));
+    const tuck = F.tuck * Math.max(0.5 * fw.guard, fw.cause, fw.shape === 'falls' ? fw.curl : 0) * (1 - fw.stroke);
+    if (tuck) dir.applyAxisAngle(this.left, tuck * DEG);
+    const look = Math.max(fw.surfaced * (1 - fw.stroke), fw.reel, fw.climb);
+    const head = this.bones.get(BONES.head)!.getWorldPosition(this.fallScratch.c);
+    if (look > 0) {
+      const holding = Math.max(fw.reel, fw.climb);
+      const at = fw.reel >= fw.climb && fw.reel > 0 ? state.leash.plug : fw.climb > 0 ? this.fall.nearest : state.boardPosition;
+      const bearing = this.fallScratch.d.subVectors(at, head).setY(0);
+      if (bearing.lengthSq() > 1e-8) {
+        bearing.normalize().applyAxisAngle(WORLD_UP, fw.lookYaw * (1 - holding) * DEG);
+        this.withinNeck(bearing, F.tread.neck);
+        turnToward(dir, WORLD_UP, F.tread.head * look, dir);
+        face.addScaledVector(dir, -face.dot(dir));
+        if (face.lengthSq() > 1e-8) turnToward(face.normalize(), bearing, look, face);
+      }
+    }
+    if (sight > 0) {
+      const bearing = this.fallScratch.d.subVectors(state.boardPosition, head).setY(0);
+      const heading = this.fallScratch.e.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+      if (bearing.lengthSq() > 1e-8 && bearing.normalize().dot(heading) >= Math.cos(F.sight.within * DEG)) heading.copy(bearing);
+      dir.applyAxisAngle(this.fallScratch.c.crossVectors(dir, WORLD_UP).normalize(), Math.min(dir.angleTo(WORLD_UP), F.sight.lift * DEG * sight));
+      face.lerp(heading, sight).normalize();
+    }
+    this.orient(BONES.head, dir, face);
+  }
+
+  /** `bearing` (level, unit) brought within `degrees` of where the chest faces (level), about the up. */
+  private withinNeck(bearing: Vector3, degrees: number): void {
+    const chest = this.fallScratch.e.copy(this.facing).setY(0);
+    if (chest.lengthSq() < 1e-8) return;
+    chest.normalize();
+    const angle = Math.atan2(this.scratch.crossVectors(chest, bearing).y, chest.dot(bearing));
+    const most = degrees * DEG;
+    if (Math.abs(angle) <= most) return;
+    bearing.copy(chest).applyAxisAngle(WORLD_UP, Math.sign(angle) * most);
+  }
+
+  /** Swimming, how far the head is lifted to sight the board, 0–1: a bump every `sight.every` strokes, `sight.time` s long. */
+  private sight(state: RiderVisualState, fw: FallWeights): number {
+    if (!state.swim.stroking || state.swim.under || fw.stroke <= 0) return 0;
+    const { every, time } = FALL_POSES.sight;
+    const breath = Math.min(1, Math.max(0, state.breath));
+    const span = time * 2 * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath));
+    const into = this.crawlStrokes % every;
+    return into < span ? fw.stroke * Math.sin((Math.PI * into) / span) : 0;
+  }
+
+  /**
+   * A leg's ankle at its pose (`LegAngles`) from its hip in the body's frame,
+   * into `out`, its knee's way into `knee`: the thigh flexed from `down` toward
+   * the chest's facing and spread out to its side, the shin bent back from it.
+   */
+  private legAt(hip: Vector3, side: Side, angles: LegAngles, down: Vector3, out: Vector3, knee: Vector3): Vector3 {
+    const outward = this.fallScratch.c.copy(this.left).multiplyScalar(side === 'left' ? 1 : -1);
+    // Where the kneecap faces: the chest's facing square to the leg's down, handing over to the spine's line where the
+    // facing comes along the down (feet first from a body lying flat, facing the water: it spun the legs in a frame).
+    const front = this.fallScratch.d.copy(this.facing).addScaledVector(down, -this.facing.dot(down));
+    const along = front.length();
+    const spine = this.middle.copy(this.up).addScaledVector(down, -this.up.dot(down));
+    if (spine.lengthSq() > 1e-8) spine.normalize();
+    if (spine.dot(this.facing) < 0) spine.negate();
+    const keep = Math.max(0, Math.min(1, (along - 0.2) / 0.3));
+    front.multiplyScalar(along > 1e-8 ? keep / along : 0).addScaledVector(spine, 1 - keep);
+    if (front.lengthSq() < 1e-8) front.copy(this.forward);
+    front.normalize();
+    const spread = angles.spread * DEG;
+    const leg = this.fallScratch.e.copy(down).multiplyScalar(Math.cos(spread)).addScaledVector(outward, Math.sin(spread)).normalize();
+    const hipFlex = angles.hip * DEG;
+    const kneeFlex = angles.knee * DEG;
+    // The thigh and where its kneecap faces, then the shin bent back from the thigh.
+    const thigh = out.copy(leg).multiplyScalar(Math.cos(hipFlex)).addScaledVector(front, Math.sin(hipFlex));
+    knee.copy(front).multiplyScalar(Math.cos(hipFlex)).addScaledVector(leg, -Math.sin(hipFlex));
+    const shin = this.middle.copy(thigh).multiplyScalar(Math.cos(kneeFlex)).addScaledVector(knee, -Math.sin(kneeFlex));
+    return out.multiplyScalar(this.upperLeg).addScaledVector(shin, this.lowerLeg).add(hip);
+  }
+
+  /** Two leg poses blended, `t` of the way from `a` to `b`, into `out`. */
+  private static mixLeg(a: LegAngles, b: LegAngles, t: number, out: LegAngles): LegAngles {
+    out.hip = a.hip + (b.hip - a.hip) * t;
+    out.knee = a.knee + (b.knee - a.knee) * t;
+    out.spread = a.spread + (b.spread - a.spread) * t;
+    return out;
+  }
+
+  private readonly legPose: LegAngles = { hip: 0, knee: 0, spread: 0 };
+
+  /**
+   * Fallen, a leg's target over the ragdoll's (`target`, `pole`): the knees'
+   * reflex bend (flat onto reef), seat first off the back, feet first in the air
+   * (down toward the water), the loose curl tumbling (the ball over the falls),
+   * treading water once up, the kick pulling onto the board; by the stages'
+   * weights, at most `FALL_POSES.most` of the way, never past the leg's reach of
+   * the physics' leg point.
+   */
+  private fallenLeg(state: RiderVisualState, fw: FallWeights, side: Side, hip: Vector3, target: Vector3, pole: Vector3): void {
+    const { legs, most } = FALL_POSES;
+    const pose = Object.assign(this.legPose, fw.shape === 'flat' ? legs.flat : legs.bend);
+    if (fw.shape === 'back') HumanoidRig.mixLeg(pose, legs.seat, fw.cause, pose);
+    if (fw.shape !== 'flat') HumanoidRig.mixLeg(pose, legs.pencil, fw.air, pose);
+    HumanoidRig.mixLeg(pose, fw.shape === 'falls' ? legs.ball : legs.curl, fw.curl, pose);
+    const tread = Math.max(fw.surfaced * (1 - fw.stroke), fw.reel, fw.climb * (1 - fw.pull));
+    if (tread > 0) {
+      const { tread: t } = legs;
+      const swing = t.swing * Math.sin(2 * Math.PI * t.rate * state.clock + (side === 'left' ? 0 : Math.PI));
+      HumanoidRig.mixLeg(pose, { hip: t.hip + swing, knee: t.knee - swing / 2, spread: t.spread }, tread, pose);
+    }
+    if (fw.pull > 0) {
+      const { kick } = legs;
+      const flutter = kick.flutter * Math.sin(2 * Math.PI * kick.rate * state.clock + (side === 'left' ? 0 : Math.PI));
+      HumanoidRig.mixLeg(pose, { hip: kick.hip + flutter / 2, knee: kick.knee + flutter, spread: kick.spread }, fw.pull, pose);
+    }
+    const weight = most * Math.max(fw.bend, fw.cause, fw.air, fw.curl, tread, fw.pull) * (1 - fw.stroke);
+    if (weight <= 0) return;
+    // Feet first, the legs reach down toward the water, whichever way the trunk lies.
+    const down = this.fallScratch.a.copy(this.up).negate();
+    if (fw.air > 0 && fw.shape !== 'flat') turnToward(down, this.fallScratch.b.set(0, -1, 0), fw.air, down);
+    const knee = this.fallScratch.b;
+    const at = this.legAt(hip, side, pose, down, this.handScratch, knee);
+    this.about(hip, target, at, weight);
+    this.withinReach(fw, hip, target, state.points[side === 'left' ? POINT.leftFoot : POINT.rightFoot], this.legLength);
+    this.swingPole(hip, target, pole, knee.normalize(), weight, this.facing);
+  }
+
+  /**
+   * Fallen, the back of the hand off the elbow's bend (the bend's plane's
+   * normal, the palm toward the arm's inside, Goofy's and Regular's alike by
+   * side), into `hint`, handing over to the chest's facing as the arm comes
+   * straight: the facing alone ran along the forearm across the head (the
+   * shield), and the hand spun over in a frame.
+   */
+  private fallenHandHint(side: Side, forearm: Vector3, hint: Vector3): void {
+    const upper = this.fallScratch.c.subVectors(this.joints.elbow[side], this.joints.shoulder[side]);
+    const normal = this.fallScratch.d.crossVectors(upper, forearm);
+    const bend = normal.length() / Math.max(1e-6, upper.length());
+    if (bend < 1e-6) return;
+    normal.multiplyScalar(side === 'left' ? -1 / normal.length() : 1 / normal.length());
+    const keep = Math.max(0, Math.min(1, (bend - 0.15) / 0.25));
+    hint.multiplyScalar(1 - keep).addScaledVector(normal, keep);
+  }
+
+  /**
+   * `hint` made square to `line` (unit) and kept off it: where it comes within
+   * about 25° of the line it hands over smoothly to the line's square with the
+   * body's up (which is square to the facing, so the two are never both on the line).
+   */
+  private offLine(line: Vector3, hint: Vector3): void {
+    hint.addScaledVector(line, -hint.dot(line));
+    const off = hint.length();
+    const other = this.fallScratch.e.crossVectors(line, this.up);
+    if (other.lengthSq() < 1e-8) return;
+    other.normalize();
+    if (hint.dot(other) < 0) other.negate();
+    const keep = Math.max(0, Math.min(1, (off - 0.2) / 0.25));
+    hint.multiplyScalar(off > 1e-8 ? keep / off : 0).addScaledVector(other, 1 - keep);
+  }
+
+  /**
+   * `point` moved `t` of the way toward `to` about `origin` (a limb's root),
+   * in place: its way from the root turned and its reach changed, not along the
+   * chord between (from an arm out to the side to the forearms across the face,
+   * the chord passed by the shoulder: the arm folded shut and its elbow spun).
+   * The way is the weighted sum of the two (unit) and, half way, a little of
+   * where the chest faces: between two ways nearly opposite (the sculling hands
+   * low, the rail above) the turn's side otherwise flipped from frame to frame,
+   * and the limb with it; this way it passes in front of the body.
+   */
+  private about(origin: Vector3, point: Vector3, to: Vector3, t: number): void {
+    if (t <= 0) return;
+    if (t >= 1) {
+      point.copy(to);
+      return;
+    }
+    const a = this.aboutA.subVectors(point, origin);
+    const b = this.aboutB.subVectors(to, origin);
+    const la = a.length();
+    const lb = b.length();
+    if (la < 1e-6 || lb < 1e-6) {
+      point.lerp(to, t);
+      return;
+    }
+    a.multiplyScalar((1 - t) / la).addScaledVector(b, t / lb).addScaledVector(this.facing, 0.4 * Math.min(t, 1 - t));
+    if (a.lengthSq() < 1e-10) a.copy(this.facing);
+    point.copy(origin).addScaledVector(a.normalize(), la + (lb - la) * t);
+  }
+
+  private readonly aboutA = new Vector3();
+  private readonly aboutB = new Vector3();
+
+  /**
+   * `target` kept so the limb's middle (between its root and `target`) is
+   * within `reach` of `point`, the physics' mass point for the limb (it sits at
+   * the limb's centre): the drawn limb never wanders past its reach of it, so
+   * its apparent mass stays (the plan's §7). From `FALL_READING.settle` into
+   * the fall: before, the fall's switch is still blending the drawn trunk and
+   * points from the rider's (the points in their frame, the physics' own ahead
+   * of them), and a limb kept to either folded through its shoulder.
+   */
+  private withinReach(fw: FallWeights, root: Vector3, target: Vector3, point: Vector3, reach: number): void {
+    if (fw.since < FALL_READING.settle) return;
+    const middle = this.middle.copy(root).add(target).multiplyScalar(0.5);
+    const offset = middle.sub(point);
+    if (offset.length() <= reach) return;
+    target.copy(point).add(offset.setLength(reach)).multiplyScalar(2).sub(root);
+  }
+
+  private readonly armAim = new Vector3();
+  private readonly armPole = new Vector3();
+
+  /**
+   * Fallen, an arm's target over the ragdoll's (`target`, `pole`): the shield
+   * (the protective cage), the cause's own throw (the pearl's arms round the
+   * head, off the back's out and back), the near hand for the board, sculling
+   * up, each at most `FALL_POSES.most` of the way; the arms crossed overhead
+   * rising to the surface (a thing the swimmer does, not a reflex), the hands on
+   * the cord (reeling) and on the rail (holding the board) all of it. Never past
+   * the arm's reach of the physics' arm point.
+   */
+  private fallenArm(state: RiderVisualState, fw: FallWeights, side: Side, shoulder: Vector3, hand: Vector3, target: Vector3, pole: Vector3): void {
+    const F = FALL_POSES;
+    const outward = this.fallScratch.a.copy(this.left).multiplyScalar(side === 'left' ? 1 : -1);
+    const up = this.fallUp;
+    const face = this.facing;
+    const head = this.headCentre;
+    const aim = this.armAim;
+    const elbow = this.armPole;
+    // The cage: the wrists before the head, crossed; the elbows forward and out.
+    aim.copy(head).addScaledVector(up, F.cage.up).addScaledVector(face, F.cage.forward).addScaledVector(outward, -F.cage.across);
+    elbow.copy(face).multiplyScalar(F.cage.elbowForward).addScaledVector(outward, F.cage.elbowOut);
+    let reflex = fw.guard;
+    if (fw.cause > 0) {
+      const thrown = this.fallScratch.b;
+      const way = this.fallScratch.c;
+      if (fw.shape === 'pearl') {
+        thrown.copy(head).addScaledVector(up, F.pearl.up).addScaledVector(face, F.pearl.forward).addScaledVector(outward, F.pearl.out);
+        way.copy(outward).multiplyScalar(F.pearl.elbowOut).addScaledVector(face, F.pearl.elbowForward);
+      } else {
+        way.copy(outward).multiplyScalar(F.back.out).addScaledVector(face, -F.back.back).addScaledVector(up, F.back.up).normalize();
+        thrown.copy(shoulder).addScaledVector(way, F.back.reach * this.armLength);
+        way.copy(up).negate().addScaledVector(face, 0.3);
+      }
+      this.about(shoulder, aim, thrown, fw.cause);
+      elbow.lerp(way.normalize(), fw.cause);
+      reflex = Math.max(reflex, fw.cause);
+    }
+    if (fw.surfacing > 0) {
+      const over = this.fallScratch.b.copy(head).addScaledVector(up, F.overhead.up).addScaledVector(face, F.overhead.forward).addScaledVector(outward, -F.overhead.across);
+      this.about(shoulder, aim, over, fw.surfacing);
+      elbow.lerp(this.fallScratch.c.copy(outward).multiplyScalar(F.overhead.elbowOut).addScaledVector(up, F.overhead.elbowUp), fw.surfacing);
+    }
+    // Up, treading water: the hands low in front, sculling.
+    const scull = fw.surfaced * (1 - fw.stroke) * (1 - Math.max(fw.reel, fw.climb));
+    if (scull > 0) {
+      const { scull: sc } = F;
+      const sway = sc.sway * Math.sin(2 * Math.PI * sc.rate * state.clock);
+      const low = this.fallScratch.b.copy(shoulder).addScaledVector(face, sc.forward).addScaledVector(up, -sc.down).addScaledVector(outward, sc.out + sway);
+      this.about(shoulder, aim, low, scull);
+      elbow.lerp(this.fallScratch.c.copy(outward).addScaledVector(up, -0.5), scull);
+      reflex = Math.max(reflex, scull);
+    }
+    // Calm by the board, the near hand reaches for it.
+    // The near hand: the one on the board's side of the body, handing over smoothly as the body turns side on to it.
+    const near = fw.reach > 0 ? fw.reach * Math.max(0, Math.min(1, (this.fallScratch.b.subVectors(this.fall.nearest, shoulder).dot(outward) + 0.05) / 0.1)) : 0;
+    if (near > 0) {
+      this.about(shoulder, aim, this.fall.nearest, near);
+      elbow.lerp(this.fallScratch.c.copy(outward).addScaledVector(up, -0.5), near);
+      reflex = Math.max(reflex, near);
+    }
+    // The stages the swimmer does (no reflex: Rapture's arms kept overhead rising), and those that hold something (the
+    // cord, the rail), all the way.
+    let hold = fw.surfacing;
+    if (fw.reel > 0) {
+      this.reelHand(state, fw, side, outward, this.fallScratch.b);
+      this.about(shoulder, aim, this.fallScratch.b, fw.reel);
+      elbow.lerp(this.fallScratch.c.copy(outward).multiplyScalar(0.7).addScaledVector(up, -0.7), fw.reel);
+      hold = Math.max(hold, fw.reel);
+    }
+    if (fw.climb > 0) {
+      this.railGrip(state, fw, side, shoulder, this.fallScratch.b);
+      this.about(shoulder, aim, this.fallScratch.b, fw.climb);
+      elbow.lerp(this.fallScratch.c.copy(outward).addScaledVector(face, -0.3).addScaledVector(WORLD_UP, -0.5), fw.climb);
+      hold = Math.max(hold, fw.climb);
+    }
+    const weight = Math.max(F.most * reflex, hold) * (1 - fw.stroke);
+    if (weight <= 0) return;
+    this.about(shoulder, target, aim, weight);
+    // A hand holding something (the cord, the rail) is where that is; a reflex never past the arm's reach of its point.
+    if (hold < 0.5) this.withinReach(fw, shoulder, target, hand, this.armLength);
+    if (elbow.lengthSq() > 1e-8) this.swingPole(shoulder, target, pole, elbow.normalize(), weight, this.fallScratch.b.copy(up).negate().add(outward).normalize());
+    this.keepElbow(state, side, shoulder, target, pole);
+  }
+
+  /** Fallen, each hand's back as drawn at the last solve (it carries on from there). */
+  private readonly handBack = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+
+  /**
+   * Fallen, the back of a hand (`hint`, square to `forearm`) carried on from
+   * where the last solve drew it, turned toward the hint no faster than
+   * `FALL_POSES.elbowRate` rad/s about the forearm (folding the arm, the bend's
+   * plane takes over from the chest's facing, and the hand spun).
+   */
+  private keepHand(state: RiderVisualState, side: Side, forearm: Vector3, hint: Vector3): void {
+    const back = this.handBack[side];
+    const dt = state.clock - this.fallenClock;
+    if (dt > 0 && dt < 0.25 && back.lengthSq() > 0.5) {
+      const last = this.fallScratch.e.copy(back).addScaledVector(forearm, -back.dot(forearm));
+      const want = this.middle.copy(hint).addScaledVector(forearm, -hint.dot(forearm));
+      if (last.lengthSq() > 1e-6 && want.lengthSq() > 1e-6) {
+        last.normalize();
+        want.normalize();
+        const angle = Math.atan2(this.scratch.crossVectors(last, want).dot(forearm), last.dot(want));
+        const most = FALL_POSES.elbowRate * dt;
+        hint.copy(last).applyAxisAngle(forearm, Math.max(-most, Math.min(most, angle)));
+      }
+    }
+    back.copy(hint).normalize();
+  }
+
+  /** The clock of the last fallen solve: an elbow drawn then carries on from where it was. */
+  private fallenClock = Number.NaN;
+
+  /**
+   * Fallen, an elbow's bend carried on from where the last solve aimed it:
+   * turned from there round the arm's line toward `pole` no faster than
+   * `FALL_POSES.elbowRate` rad/s, into `pole`. Folded tight (the shield), the
+   * elbow's bend runs round a wide circle, and where its aim came along the
+   * arm's line it went over to the other side in a frame; the arm straight
+   * (reaching for the rail), the aim is the arm's turn about itself.
+   */
+  private keepElbow(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, pole: Vector3): void {
+    const dt = state.clock - this.fallenClock;
+    const kept = this.elbowPole[side];
+    const axis = this.fallScratch.c.subVectors(target, shoulder);
+    if (axis.lengthSq() < 1e-8) return;
+    axis.normalize();
+    if (!(dt > 0 && dt < 0.25)) {
+      kept.copy(pole).addScaledVector(axis, -pole.dot(axis));
+      if (kept.lengthSq() > 1e-10) kept.normalize();
+      return;
+    }
+    // From the bend's side the last solve aimed at (kept square to the arm, so it stays off the arm's line as it moves).
+    const last = this.fallScratch.e.copy(kept).addScaledVector(axis, -kept.dot(axis));
+    if (last.lengthSq() < 1e-6) {
+      kept.copy(pole).addScaledVector(axis, -pole.dot(axis));
+      if (kept.lengthSq() > 1e-10) kept.normalize();
+      return;
+    }
+    last.normalize();
+    const want = this.middle.copy(pole).addScaledVector(axis, -pole.dot(axis));
+    if (want.lengthSq() < 1e-8) return;
+    want.normalize();
+    const angle = Math.atan2(this.scratch.crossVectors(last, want).dot(axis), last.dot(want));
+    const most = FALL_POSES.elbowRate * dt;
+    pole.copy(last).applyAxisAngle(axis, Math.max(-most, Math.min(most, angle)));
+    kept.copy(pole);
+  }
+
+  /** Fallen, each elbow's bend's side as the last solve aimed it (`keepElbow`). */
+  private readonly elbowPole = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+
+  /**
+   * A limb's bend turned `t` of the way from `pole` to `to` round the limb's own
+   * line (from `root` to `end`), into `pole`: the knee or elbow swings round
+   * the limb, never through its line, always the way past `via` (an arm's
+   * elbow by its side's down, coming up from the side to the head; a knee by
+   * where the chest faces). Blended straight, a spread arm's bend passed along
+   * the arm as it came to the shield, and taken the short way it flipped sides
+   * where the two faced apart: the elbow went over in a frame, and the bones'
+   * smoothing swung the hand 0.4 m off as it blended the flip out.
+   */
+  private swingPole(root: Vector3, end: Vector3, pole: Vector3, to: Vector3, t: number, via: Vector3): void {
+    const axis = this.fallScratch.c.subVectors(end, root);
+    if (axis.lengthSq() < 1e-8) return;
+    axis.normalize();
+    const flat = (v: Vector3, into: Vector3) => {
+      into.copy(v).addScaledVector(axis, -v.dot(axis));
+      if (into.lengthSq() < 1e-6) into.copy(via).addScaledVector(axis, -via.dot(axis));
+      return into.normalize();
+    };
+    const a = flat(pole, this.fallScratch.d);
+    const b = flat(to, this.fallScratch.e);
+    const c = flat(via, this.middle);
+    const turn = (from: Vector3, into: Vector3) => {
+      const angle = Math.atan2(this.scratch.crossVectors(from, into).dot(axis), from.dot(into));
+      return angle < 0 ? angle + 2 * Math.PI : angle;
+    };
+    // The way round from a to b that passes `via`: forward if `via` comes first, else back; the short way where `via`
+    // lies at either end (a knee's pole is where the chest faces: taken the long way, a knee a few degrees off spun round).
+    const forward = turn(a, b);
+    const toVia = turn(a, c);
+    const near = (angle: number) => Math.min(angle, 2 * Math.PI - angle) < 0.1;
+    const short = forward <= Math.PI ? forward : forward - 2 * Math.PI;
+    const angle = near(toVia) || near(turn(b, c)) ? short : toVia <= forward ? forward : forward - 2 * Math.PI;
+    pole.copy(a).applyAxisAngle(axis, angle * t);
+  }
+
+  /**
+   * Reeling, a hand's place on the cord now (`FALL_POSES.reel`), into `out`:
+   * hand over hand along the line from the chest to the plug, each pull drawing
+   * the cord in at the leash's rate, the other hand going back for the next;
+   * the hand pulling is the cord's (`reelGrip`). The first pull is the back
+   * foot's side's (the leash's ankle).
+   */
+  private reelHand(state: RiderVisualState, fw: FallWeights, side: Side, outward: Vector3, out: Vector3): void {
+    const R = FALL_POSES.reel;
+    const dt = state.clock - this.reelClock;
+    if (!(dt >= 0 && dt < 0.25) || fw.reel < 1e-3) {
+      // A new reel: the back foot's hand pulls first.
+      const stance = state.stance ?? this.blend.stance;
+      this.reelFirst = stance === 'regular' ? 'right' : 'left';
+      this.reelPhase = 0;
+    } else if (side === 'left' && dt > 0) {
+      this.reelPhase = (this.reelPhase + (dt * LEASH.reelRate) / R.pull / 2) % 1;
+    }
+    if (side === 'left') this.reelClock = state.clock;
+    const chest = this.bones.get(BONES.spine[2])!.getWorldPosition(this.fallScratch.d);
+    const cord = this.fallScratch.e.subVectors(state.leash.plug, chest);
+    if (cord.lengthSq() < 1e-6) cord.copy(this.facing);
+    cord.normalize();
+    const up = this.fallUp;
+    const phase = (this.reelPhase + (side === this.reelFirst ? 0 : 0.5)) % 1;
+    const ahead = this.handScratch.copy(chest).addScaledVector(cord, R.ahead).addScaledVector(up, R.up);
+    const behind = this.middle.copy(chest).addScaledVector(cord, -R.behind).addScaledVector(up, -R.down);
+    if (phase < 0.5) {
+      out.copy(ahead).lerp(behind, phase / 0.5);
+      this.reelGrip = side;
+    } else {
+      const s = (phase - 0.5) / 0.5;
+      out.copy(behind).lerp(ahead, minimumJerk(s)).addScaledVector(outward, R.lift * Math.sin(Math.PI * s)).addScaledVector(up, 0.5 * R.lift * Math.sin(Math.PI * s));
+    }
+    out.addScaledVector(outward, R.apart);
+  }
+
+  /**
+   * Holding the board, a hand's place (`FALL_POSES.climb`), into `out`: on the
+   * near rail by its middle, either side of the chest's place along it (the
+   * left hand the one on the body's left), pressing on the deck under the
+   * shoulder as the chest comes over it.
+   */
+  private railGrip(state: RiderVisualState, fw: FallWeights, side: Side, shoulder: Vector3, out: Vector3): void {
+    const C = FALL_POSES.climb;
+    const chest = this.toBoard(state, state.points[POINT.torso], this.fallScratch.c).add(BOARD_CENTRE);
+    const near = this.fall.nearRail;
+    const middle = Math.max(-C.middle, Math.min(C.middle, chest.z));
+    const grip = (z: number, into: Vector3) => {
+      const along = Math.max(-RAIL_MIDDLE, Math.min(RAIL_MIDDLE, z));
+      return this.fromBoard(state, into.set(near * railHalfWidth(along), deckAt(along) + C.above, along).sub(BOARD_CENTRE), into);
+    };
+    const a = grip(middle + C.apart, this.fallScratch.d);
+    const b = grip(middle - C.apart, this.fallScratch.e);
+    // The nose's grip the hand whose shoulder is nearer the nose as the hold begins, kept while it holds (read each frame
+    // off the body's left, a body lying across the rail swapped the hands' grips back and forth).
+    if (side === 'left' && (fw.climb < 0.05 || !this.gripSet)) {
+      const left = this.toBoard(state, this.joints.shoulder.left, this.fallScratch.c).z;
+      this.gripNose = left >= this.toBoard(state, this.joints.shoulder.right, this.fallScratch.c).z ? 'left' : 'right';
+      this.gripSet = true;
+    }
+    out.copy(side === this.gripNose ? a : b);
+    if (fw.pull > 0) {
+      const at = this.toBoard(state, shoulder, this.fallScratch.c).add(BOARD_CENTRE);
+      const half = BOARD_LENGTH / 2;
+      const z = Math.max(-half, Math.min(half, at.z));
+      const inside = Math.max(0, railHalfWidth(z) - C.inside);
+      at.set(Math.max(-inside, Math.min(inside, at.x)), deckAt(z) + 0.02, z).sub(BOARD_CENTRE);
+      out.lerp(this.fromBoard(state, at, at), fw.pull);
+    }
+  }
+
+  /** Holding the board, the hand on the nose's grip (chosen as the hold begins), and whether one is chosen. */
+  private gripNose: Side = 'left';
+  private gripSet = false;
+
+  /**
+   * Back on the board after a climb, a foot's target swung on over the rail
+   * (`FALL_POSES.climb`): from where the ankle was holding the board to its
+   * lying place, on a minimum-jerk path lifted `lift` m, `s` of the way.
+   */
+  private climbOnFoot(state: RiderVisualState, side: Side, s: number, target: Vector3): void {
+    const to = this.toBoard(state, target, this.fallScratch.a);
+    const local = this.fallScratch.b.copy(this.climbFeet[side]).lerp(to, minimumJerk(s));
+    local.y += FALL_POSES.climb.lift * Math.sin(Math.PI * s);
+    this.fromBoard(state, local, target);
   }
 
   /** Turns a bone by `angle` rad about the world's `axis`, its children with it. */
@@ -2284,10 +2941,30 @@ export class HumanoidRig {
     return out.copy(point).addScaledVector(this.boardUp, this.soleHeight).addScaledVector(this.footDirection, -this.heelToMidfoot);
   }
 
-  /** Aims a limb's two bones at its solved joints, their fronts toward the bend (or the pole when straight). */
-  private aimLimb(upperName: string, lowerName: string, root: Vector3, mid: Vector3, end: Vector3, pole: Vector3): void {
+  /**
+   * Aims a limb's two bones at its solved joints, their fronts toward the bend
+   * (or the pole when straight). `steady` (fallen): handing over to the pole's
+   * side as the limb comes straight (within `STRAIGHT` of its length off the
+   * line), not at once: a fallen arm reaching all of its length for the rail
+   * turned over about itself in a frame as its bend's few millimetres swung.
+   */
+  private aimLimb(upperName: string, lowerName: string, root: Vector3, mid: Vector3, end: Vector3, pole: Vector3, steady = false): void {
     const { bend } = this;
     bend.subVectors(mid, this.middle.copy(root).lerp(end, 0.5));
+    if (steady) {
+      const line = this.fallScratch.e.subVectors(end, root);
+      const length = line.length();
+      if (length > 1e-6) {
+        line.divideScalar(length);
+        const off = bend.length() / (root.distanceTo(mid) + mid.distanceTo(end));
+        const side = this.middle.copy(pole).addScaledVector(line, -pole.dot(line));
+        if (side.lengthSq() > 1e-10) {
+          side.normalize();
+          const keep = Math.max(0, Math.min(1, off / STRAIGHT));
+          bend.multiplyScalar(bend.lengthSq() > 1e-12 ? keep / bend.length() : 0).addScaledVector(side, 1 - keep);
+        }
+      }
+    }
     if (bend.lengthSq() < 1e-10) bend.copy(pole);
     this.orient(upperName, this.direction.subVectors(mid, root), bend);
     this.orient(lowerName, this.direction.subVectors(end, mid), bend);

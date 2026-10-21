@@ -702,3 +702,105 @@ export function onEveryPose(change: (pose: StandingPose) => void): () => void {
   KEY_POSES.forEach(change);
   return () => KEY_POSES.forEach((pose, i) => Object.assign(pose, structuredClone(saved[i])));
 }
+
+/**
+ * The fallen surfer's key poses (the animation-realism plan's §5.16, §5.17, §7
+ * and phase 4), drawn over the ragdoll by the stages `FallStages` reads. Angles
+ * in °; places in m, in the body's frame (up the neck's line, forward where
+ * the chest faces, out to the limb's side) about the head's centre (`HEAD_CENTRE`
+ * up the neck from the skull's base) or the shoulder.
+ * - `most`: the most a reflex draws a limb from the ragdoll's toward its pose
+ *   (the plan's §7: the ragdoll still reads); what the swimmer does (the arms
+ *   kept overhead rising, Rapture's), and the stages that hold something (the
+ *   cord, the rail), draw the hands all the way;
+ * - `cage`: the protective cage (Rapture, staying calm underwater: the forearms
+ *   crossed over the head, the hands toward the opposite elbows; safety basics:
+ *   the arms take the impact): each wrist `up` over the head's centre, `forward`
+ *   of it and `across` past the middle, the elbows forward and out;
+ * - `overhead`: surfacing (Rapture, recovering after a wipeout: the arms crossed
+ *   overhead rising, the forearms crossing over the crown; the plan's elbows wide);
+ * - `pearl`: thrown forward, the arms forward round the head (the plan's §7);
+ *   `back`: off the back, the arms out and back from the shoulder;
+ * - `scull`: treading water once up, the hands low in front, sculling `sway` m
+ *   at `rate` a second (keeping afloat with the head up: provisional);
+ * - `legs`: each a hip's and a knee's flexion and the thigh's spread out: the
+ *   knees' reflex bend; feet first (`pencil`: the plan's default, down toward
+ *   the water); the loose curl tumbling (the plan's knees 60–110°); the ball
+ *   over the falls (knees 100° or more, hips 90° or more); seat first off the
+ *   back; flat onto reef (Rapture, safety basics: flat, spread out, never head
+ *   first); treading water (each leg swinging `swing`° at `rate` a second, the
+ *   two opposite: an eggbeater's alternation); the climb's kick (`flutter`° at
+ *   `rate` a second: the kick that slides the belly on);
+ * - `spine`: the trunk curling forward (the ball, the curl); `tuck`: the chin
+ *   to the chest (the plan's pearl and ball);
+ * - `tread`: treading water, reeling and holding the board, the trunk turned
+ *   toward upright over its pelvis, at most `most`° from the physics' (the
+ *   physics floats the swimmer flat; the plan's reel figure is upright, ≤ 30°
+ *   from the vertical, as the sit draws upright over the prone body), the head
+ *   lifted `head` of the way to upright, the look turned within `neck`° of the
+ *   chest;
+ * - `reel` (the plan's §6; Rapture: hand over hand, not swimming to the board):
+ *   each pull draws `pull` m of the cord at the leash's rate (`LEASH.reelRate`,
+ *   0.6 m/s: 1.3 pulls a second, in the plan's 0.8–1.5), the hand from `ahead`
+ *   m along the cord from the chest (`up` over it) to `behind` m short of it
+ *   (`down` under it), each hand `apart` m off the cord, the hand going back
+ *   lifted `lift` m off it;
+ * - `climb` (Rapture, recovering after a wipeout: from the side, both hands on
+ *   the nearest rail at about its midpoint, a kick and a pull sliding the belly
+ *   on): the grips `apart` m either side of the chest's place along the rail,
+ *   within `middle` m of the rail's middle, `above` m over its edge; pulling
+ *   on, the hands press on the deck under the shoulders, `inside` m in from the
+ *   rails; back on the board the prone pose comes in over `on` s, the feet
+ *   swung over the rail `lift` m high (it snapped to prone); hanging on the
+ *   rail, the trunk only `upright` of treading water's way up and leaning
+ *   `lean`° onto the board (drawn upright, the shoulders rose out of the hands'
+ *   reach of the rail: the physics holds the chest 0.35 m off the board);
+ * - `sight`: the swimmer sights the board (the plan's §5.17: the head up every
+ *   4–6 strokes): every `every` strokes for `time` s, the head lifted `lift`°
+ *   toward the board's bearing within `within`° of the heading;
+ * - `turn`: the fallen body's facing turns from the rider's own (the chest
+ *   toward the toes, standing) to the fall body's over `turn` s: the fall body
+ *   starts laid out on the board's frame, facing its nose, whatever the rider's
+ *   pose, and the drawn chest swung 90° in a frame (the bones' smoothing took
+ *   0.4 s over it, and the shield came in late);
+ * - `facing`: tumbling, the fallen facing (the heading's share of it comes and
+ *   goes with the spine's rise) is followed in two stages at `facing` rad/s:
+ *   the limbs drawn about it (the shield) swung with its kinks;
+ * - `elbowRate`: fallen, an elbow's bend turns round the arm's line from where
+ *   it was drawn no faster than this, rad/s (under the bones' smoothing's 6:
+ *   folded tight, its aim along the arm's line flipped it over in a frame).
+ */
+export const FALL_POSES = {
+  most: 0.8,
+  cage: { up: 0.05, forward: 0.08, across: 0.05, elbowForward: 0.7, elbowOut: 0.7 },
+  overhead: { up: 0.28, forward: 0.04, across: 0.04, elbowOut: 1, elbowUp: 0.4 },
+  pearl: { up: 0.16, forward: 0.12, out: 0.1, elbowOut: 1, elbowForward: 0.5 },
+  back: { out: 0.75, back: 0.45, up: 0.15, reach: 0.9 },
+  scull: { forward: 0.3, down: 0.3, out: 0.22, sway: 0.08, rate: 0.7 },
+  legs: {
+    bend: { hip: 25, knee: 45, spread: 6 },
+    pencil: { hip: 5, knee: 12, spread: -2 },
+    curl: { hip: 70, knee: 85, spread: 8 },
+    ball: { hip: 115, knee: 125, spread: 6 },
+    seat: { hip: 80, knee: 60, spread: 8 },
+    flat: { hip: 0, knee: 8, spread: 14 },
+    tread: { hip: 22, knee: 50, spread: 10, swing: 14, rate: 0.7 },
+    kick: { hip: -5, knee: 25, spread: 5, flutter: 22, rate: 2 },
+  },
+  spine: { ball: 25, curl: 12 },
+  tuck: 25,
+  tread: { most: 60, head: 0.75, neck: 80 },
+  reel: { pull: 0.45, ahead: 0.42, up: 0.06, behind: 0.03, down: 0.18, apart: 0.07, lift: 0.12 },
+  climb: { apart: 0.15, middle: 0.15, above: 0.025, inside: 0.04, on: 0.4, lift: 0.12, upright: 0.5, lean: 30 },
+  sight: { every: 5, time: 0.6, lift: 35, within: 70 },
+  turn: 0,
+  facing: 12,
+  elbowRate: 5,
+};
+
+/** A leg's pose: the hip's and the knee's flexion and the thigh's spread out, °. */
+export interface LegAngles {
+  hip: number;
+  knee: number;
+  spread: number;
+}

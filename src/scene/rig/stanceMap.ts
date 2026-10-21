@@ -870,7 +870,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'fall-tumble',
     name: 'A fall\'s tumble: the loose curl',
-    reach: 'The same fall, read 0.4 s in as the body turns fastest (phase fallen).',
+    reach: 'The same fall, read 0.6 s in, in the water and turning over (phase fallen).',
     sides: 'both',
     targets: {
       kneeFront: { min: 70, max: 120, sources: ['rapturecalm'], confidence: 'low', note: 'limp, a loose curl: flexed 60–110°' },
@@ -881,7 +881,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'fall-pearl',
     name: 'A pearl',
-    reach: 'The same fall with the board pitched 35° nose down at the separation (a nose dug in; phase fallen), read 0.3 s in.',
+    reach: 'The same fall with the board pitched 35° nose down at the separation (a nose dug in; phase fallen), read 0.45 s in.',
     sides: 'both',
     targets: {},
     gaps: 'Thrown forward, the arms forward and round the head, the chin tucked, then the shield: no source gives the angles (the shield\'s are the side fall\'s).',
@@ -902,7 +902,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'fall-back',
     name: 'Off the back',
-    reach: 'The same fall with the board pitched 25° nose up at the separation (a sinking tail; phase fallen), read 0.3 s in.',
+    reach: 'The same fall with the board pitched 25° nose up at the separation (a sinking tail; phase fallen), read 0.45 s in.',
     sides: 'both',
     targets: {},
     gaps: 'Seat first, the arms out and back, then the shield: no source gives the angles.',
@@ -930,7 +930,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'climb-grab',
     name: 'Climbing back on: the grab',
-    reach: 'The side fall, the pop-up key held from 1.5 s: holding the board at its rail\'s middle 6.5 s in (phase fallen; the board rolls under the pull for 8–17 s on flat water).',
+    reach: 'The side fall, the pop-up key held from 1.5 s: read a second after the grab (phase fallen; Regular grabs at 3 s, Goofy, its leash on the other leg, at 19.3 s; the board rolls under the pull for 8–17 s on flat water).',
     sides: 'both',
     targets: {
       railGrip: { min: 0, max: 0.15, sources: ['rapturerecover'], confidence: 'low', note: 'both hands on the nearest rail at about its midpoint (within 0.3 m of it)' },

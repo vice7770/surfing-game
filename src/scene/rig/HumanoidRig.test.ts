@@ -319,14 +319,17 @@ describe('humanoid rig', () => {
       }
       expect(rig.joints.wrist.left.distanceTo(hand)).toBeGreaterThan(0.2);
       expect(rig.joints.ankle.left.distanceTo(ankle)).toBeGreaterThan(0.05);
+      // Stopped, the crawl lets go: the swimmer (up, its head out) treads water (the animation-realism plan's phase 4),
+      // the hands sculling slowly in front, not circling the shoulders.
       state.swim.stroking = false;
-      state.clock += 0.25;
-      rig.solve(state);
+      for (let i = 0; i < 75; i += 1) {
+        state.clock += 0.02;
+        rig.solve(state);
+      }
       const still = rig.joints.wrist.left.clone();
-      state.clock += 0.25;
+      state.clock += 0.1;
       rig.solve(state);
-      // Held, but for the chest's breath (step 4), a fraction of a millimetre at the hand.
-      expect(rig.joints.wrist.left.distanceTo(still)).toBeLessThan(0.002);
+      expect(rig.joints.wrist.left.distanceTo(still)).toBeLessThan(0.05);
     });
   });
 });

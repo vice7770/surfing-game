@@ -465,7 +465,7 @@ const IMAGES: SheetImage[] = [
     id: '14-fall-shapes', title: 'Fall shapes by cause',
     panels: [
       {
-        title: 'Pearl (nose dives)', missing: 'Today every fall is the same ragdoll (here 0.3 s in, the board pitched 35° nose down at the separation).',
+        title: 'Pearl (nose dives)', missing: 'Today every fall is the same ragdoll (here 0.45 s in, the board pitched 35° nose down at the separation).',
         today: recipe('fall-pearl'), shot: BODY,
         target: {
           board: { level: true, pitch: -35, sink: 0.2 },
@@ -480,7 +480,7 @@ const IMAGES: SheetImage[] = [
         gaps: ['No cause-specific shape (the separation cause is known: pearl, lip, balance, reef)'],
       },
       {
-        title: 'Off the back', missing: 'Today: the same ragdoll (here 0.3 s in, the board pitched 25° nose up at the separation).',
+        title: 'Off the back', missing: 'Today: the same ragdoll (here 0.45 s in, the board pitched 25° nose up at the separation).',
         today: recipe('fall-back'), shot: BODY,
         target: {
           board: { level: true },

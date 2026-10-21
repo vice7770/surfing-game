@@ -76,6 +76,8 @@ export interface StanceRecipe {
   pitch?: number;
   /** The fall body thrown at its first step, m/s on top of the rider's own (the lip's lift going over the falls, which flat water lacks). */
   thrown?: readonly [number, number, number];
+  /** Read this long after the swimmer first holds the board (the recovery's grab), s, within `seconds`; not reached without a hold. */
+  hold?: number;
 }
 
 const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRecipe> = {}): StanceRecipe => ({
@@ -139,17 +141,18 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   // The animation-realism plan's phase 4: the falls by cause from riding at 7 m/s on flat water, the board's pose at the
   // separation standing in for a pearl's nose (−35°) and a kick-out's sinking tail (+25°), and a throw (2.5 m/s up, 1.5
   // forward) for the lip's lift over the falls, which flat water makes none of; each read at its reflex's moment: the
-  // shield 0.5 s in, the tumble's curl 0.4 s in (the body's turn peaks), the cause's own shape 0.3 s in, the ball 0.6 s
-  // in. Then surfacing (rising under water 3 s after the fall), reeling the leash in, and holding the board to climb on
-  // (both hands at the rail's middle, the board rolling under the pull).
+  // shield 0.5 s in, the tumble's curl 0.6 s in (in the water, turning over), the cause's own shape 0.45 s in, the ball 0.6 s
+  // in. Then surfacing (rising under water 3 s after the fall), reeling the leash in, and holding the board to climb on,
+  // a second after the grab (both hands at the rail's middle, the board rolling under the pull: Goofy's leash on the
+  // other leg, its swimmer comes within reach at 19.3 s, Regular's at 3 s).
   'fall-side': standing([], 3, { speed: 7, separate: 0.5, after: 0.5, phase: 'fallen' }),
-  'fall-tumble': standing([], 3, { speed: 7, separate: 0.5, after: 0.4, phase: 'fallen' }),
-  'fall-pearl': standing([], 3, { speed: 7, separate: 0.5, pitch: -35, after: 0.3, phase: 'fallen' }),
+  'fall-tumble': standing([], 3, { speed: 7, separate: 0.5, after: 0.6, phase: 'fallen' }),
+  'fall-pearl': standing([], 3, { speed: 7, separate: 0.5, pitch: -35, after: 0.45, phase: 'fallen' }),
   'fall-over': standing([], 3, { speed: 7, separate: 0.5, cause: 'impact', thrown: [0, 2.5, 1.5], after: 0.6, phase: 'fallen' }),
-  'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.3, phase: 'fallen' }),
+  'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.45, phase: 'fallen' }),
   surfacing: standing([], 3.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
   reel: standing([{ at: 5, reel: true }], 5.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
-  'climb-grab': standing([{ at: 1.5, reel: true }], 6.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
+  'climb-grab': standing([{ at: 1.5, reel: true }], 22, { speed: 7, separate: 0.5, hold: 1, phase: 'fallen' }),
 };
 
 /**
@@ -238,6 +241,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
   const phase = () => (rider.attached ? rider.phase : 'fallen');
   const world = visit && createRiderVisualState();
   let reachedAt: number | undefined;
+  let heldAt: number | undefined;
   let time = 0;
   let throwing = false;
   const end = Math.round(recipe.seconds / STEP);
@@ -285,8 +289,12 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       if (reachedAt === undefined && phase() === recipe.phase) reachedAt = time;
       if (reachedAt !== undefined && time >= reachedAt + recipe.after - 1e-9) break;
     }
+    if (recipe.hold !== undefined && session) {
+      if (heldAt === undefined && session.recovery.state === 'holding') heldAt = time;
+      if (heldAt !== undefined && time >= heldAt + recipe.hold - 1e-9) break;
+    }
   }
-  run.reached = phase() === recipe.phase && (recipe.after === undefined || reachedAt !== undefined);
+  run.reached = phase() === recipe.phase && (recipe.after === undefined || reachedAt !== undefined) && (recipe.hold === undefined || heldAt !== undefined);
   return run;
 }
 

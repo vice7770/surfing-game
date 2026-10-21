@@ -125,7 +125,7 @@ export interface StanceAngles {
   /**
    * The farther wrist from the near rail's middle, m: from its edge (the deck's
    * height at the rail) within `RAIL_MIDDLE` m of mid-length, on the side the
-   * chest is (climbing back on, both hands on the rail).
+   * hands' middle is (climbing back on, both hands on the rail).
    */
   railGrip: number;
 }
@@ -224,8 +224,9 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   if (neckLine.lengthSq() < 1e-12) neckLine.set(0, 1, 0);
   neckLine.normalize();
   const skull = joints.head.clone().addScaledVector(neckLine, HEAD_CENTRE);
-  const chestShape = shape(joints.spine.clone().add(joints.neck).multiplyScalar(0.5));
-  const near = chestShape.x >= 0 ? 1 : -1;
+  // The rail the hands are at: the one their middle is nearer.
+  const handsShape = shape(joints.wrist.left.clone().add(joints.wrist.right).multiplyScalar(0.5));
+  const near = handsShape.x >= 0 ? 1 : -1;
   const fromRail = (side: Side) => {
     const wrist = shape(joints.wrist[side]);
     const z = Math.max(-RAIL_MIDDLE, Math.min(RAIL_MIDDLE, wrist.z));

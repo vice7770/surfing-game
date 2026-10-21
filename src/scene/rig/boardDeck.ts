@@ -12,6 +12,9 @@ const BOARD = buildBoardShape();
 /** The board's centre of mass in its own frame. */
 export const BOARD_CENTRE = new Vector3(BOARD.centerOfMass.x, BOARD.centerOfMass.y, BOARD.centerOfMass.z);
 
+/** The board's length, m. */
+export const BOARD_LENGTH = BOARD.length;
+
 /** Half the board's width `z` m along it from mid-length (the shape's frame). */
 export function railHalfWidth(z: number): number {
   return BOARD.curves.width(Math.min(1, Math.max(0, z / BOARD.length + 0.5))) / 2;
