@@ -870,7 +870,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'fall-tumble',
     name: 'A fall\'s tumble: the loose curl',
-    reach: 'The same fall, read 0.6 s in, in the water and turning over (phase fallen).',
+    reach: 'The same fall, read 0.7 s in, in the water and turning over (phase fallen).',
     sides: 'both',
     targets: {
       kneeFront: { min: 70, max: 120, sources: ['rapturecalm'], confidence: 'low', note: 'limp, a loose curl: flexed 60–110°' },

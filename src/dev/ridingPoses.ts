@@ -21,6 +21,8 @@ export const MOMENT_STANCE: Record<RidingMoment, string> = {
 
 const STEP = 1 / 60;
 const FACE = (15 * Math.PI) / 180;
+/** A recipe's `pitch` comes over this long before the separation, s. */
+export const PITCH_TIME = 0.2;
 
 /** From `at` s the rider holds these controls; steer and the hand count toward the toes' rail (+1), whichever the stance. */
 interface Controls {
@@ -69,9 +71,10 @@ export interface StanceRecipe {
   /** The fall's cause as the session names it (balance by default): impact is the lip's (going over the falls). */
   cause?: RiderSeparation;
   /**
-   * The board's pitch turned at the separation, ° (nose up +): a pearl's nose
-   * digging in (−35°), a kick-out's tail sinking (+25°), as flat water cannot
-   * make them. Only the board's pose: the body leaves with the rider's own motion.
+   * The board's pitch turned by the separation, ° (nose up +), over the
+   * `PITCH_TIME` before it: a pearl's nose digging in (−35°), a kick-out's tail
+   * sinking (+25°), as flat water cannot make them. Only the board's pose: the
+   * body leaves with the rider's own motion.
    */
   pitch?: number;
   /** The fall body thrown at its first step, m/s on top of the rider's own (the lip's lift going over the falls, which flat water lacks). */
@@ -141,18 +144,18 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   // The animation-realism plan's phase 4: the falls by cause from riding at 7 m/s on flat water, the board's pose at the
   // separation standing in for a pearl's nose (−35°) and a kick-out's sinking tail (+25°), and a throw (2.5 m/s up, 1.5
   // forward) for the lip's lift over the falls, which flat water makes none of; each read at its reflex's moment: the
-  // shield 0.5 s in, the tumble's curl 0.6 s in (in the water, turning over), the cause's own shape 0.45 s in, the ball 0.6 s
+  // shield 0.5 s in, the tumble's curl 0.7 s in (in the water, turning over), the cause's own shape 0.45 s in, the ball 0.6 s
   // in. Then surfacing (rising under water 3 s after the fall), reeling the leash in, and holding the board to climb on,
   // a second after the grab (both hands at the rail's middle, the board rolling under the pull: Goofy's leash on the
   // other leg, its swimmer comes within reach at 19.3 s, Regular's at 3 s).
   'fall-side': standing([], 3, { speed: 7, separate: 0.5, after: 0.5, phase: 'fallen' }),
-  'fall-tumble': standing([], 3, { speed: 7, separate: 0.5, after: 0.6, phase: 'fallen' }),
+  'fall-tumble': standing([], 3, { speed: 7, separate: 0.5, after: 0.7, phase: 'fallen' }),
   'fall-pearl': standing([], 3, { speed: 7, separate: 0.5, pitch: -35, after: 0.45, phase: 'fallen' }),
   'fall-over': standing([], 3, { speed: 7, separate: 0.5, cause: 'impact', thrown: [0, 2.5, 1.5], after: 0.6, phase: 'fallen' }),
   'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.45, phase: 'fallen' }),
   surfacing: standing([], 3.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
   reel: standing([{ at: 5, reel: true }], 5.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
-  'climb-grab': standing([{ at: 1.5, reel: true }], 22, { speed: 7, separate: 0.5, hold: 1, phase: 'fallen' }),
+  'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen' }),
 };
 
 /**
@@ -249,8 +252,11 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
     const controls = controlsAt(recipe, time);
     const steer = (controls.steer ?? 0) * toes;
     if (session) {
+      // The board pitched over the 0.2 s before the separation (a nose digging in, a tail sinking), then the fall.
+      if (recipe.separate !== undefined && recipe.pitch && rider.attached && time > recipe.separate - PITCH_TIME - STEP / 2 && time < recipe.separate + STEP / 2) {
+        pitchBoardToward(board, recipe.pitch, STEP / Math.max(STEP, recipe.separate - time + STEP));
+      }
       if (recipe.separate !== undefined && Math.abs(time - recipe.separate) < STEP / 2 && rider.attached) {
-        if (recipe.pitch) pitchBoard(board, recipe.pitch);
         session.separate(recipe.cause ?? 'balance');
         throwing = recipe.thrown !== undefined;
       }
@@ -302,6 +308,17 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
 export function pitchBoard(board: BoardBody, degrees: number): void {
   const left = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
   board.orientation.premultiply(new Quaternion().setFromAxisAngle(left, (-degrees * Math.PI) / 180)).normalize();
+}
+
+/**
+ * The board turned `share` of the way from its pitch now to `degrees` (nose up +): a recipe's `pitch` over the
+ * `PITCH_TIME` before the separation, each step the rest's share (the water turns it back between steps), so it
+ * reaches it as the rider lets go.
+ */
+export function pitchBoardToward(board: BoardBody, degrees: number, share: number): void {
+  const nose = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+  const now = (Math.asin(Math.max(-1, Math.min(1, nose.y))) * 180) / Math.PI;
+  pitchBoard(board, (degrees - now) * Math.min(1, share));
 }
 
 /**
