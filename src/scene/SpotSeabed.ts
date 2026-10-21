@@ -25,6 +25,11 @@ export class SpotSeabed {
   readonly mesh: Mesh<BufferGeometry, MeshBasicMaterial>;
   private readonly shallow = new Color('#d6c69c');
   private readonly deep = new Color('#2f5f66');
+  /**
+   * A reef's floor in the shallows, where the bed has one (`reefBed.ts`): the sand's colour scaled as the water's reef
+   * albedo is to its sand's (live coral, `SPOT_OPTICS`), so the reef seen from under the water is not sand either.
+   */
+  private readonly reef = new Color('#64643a');
 
   /** The floor's colours, shallow to deep: sand by default, a pool's painted concrete (the movement-flow spec). */
   setPalette(shallow: string, deep: string): void {
@@ -107,16 +112,23 @@ ${causticLookupPars}${wet ? `${waterHeightPars}${wetSandPars}` : ''}`)
     this.setDepthOnGrid(depthAt, axis(xMin, width), axis(zMin, length));
   }
 
-  /** Rebuild on explicit (possibly graded) world axes, e.g. fine under the tank and coarse beyond it. */
-  setDepthOnGrid(depthAt: (x: number, z: number) => number, xs: number[], zs: number[]): void {
+  /**
+   * Rebuild on explicit (possibly graded) world axes, e.g. fine under the tank and coarse beyond it; with `reefCover`
+   * (0 sand to 1 reef, `reefBed.ts`), the reef's floor in its own colour.
+   */
+  setDepthOnGrid(depthAt: (x: number, z: number) => number, xs: number[], zs: number[], reefCover?: (x: number, z: number) => number): void {
     const geometry = buildGridGeometry(xs, zs);
     const positions = geometry.getAttribute('position');
     const colors = new Float32Array(positions.count * 3);
     const color = new Color();
+    const reef = new Color();
     for (let i = 0; i < positions.count; i += 1) {
       const depth = depthAt(positions.getX(i), positions.getZ(i));
       positions.setY(i, -depth);
-      color.copy(this.shallow).lerp(this.deep, Math.min(1, Math.max(0, depth / 12)));
+      const deepening = Math.min(1, Math.max(0, depth / 12));
+      color.copy(this.shallow).lerp(this.deep, deepening);
+      const cover = reefCover ? reefCover(positions.getX(i), positions.getZ(i)) : 0;
+      if (cover > 0) color.lerp(reef.copy(this.reef).lerp(this.deep, deepening), cover);
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;

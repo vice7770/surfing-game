@@ -46,6 +46,7 @@ import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
 import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
+import { onReefBedChange, reefBedMode, reefBedProgramKey, withReefBed } from './water/reefBed';
 import { denseLookOn, foamLookProgramKey, laceLookOn, lightLookOn, onFoamLookChange, waterChurnFreshGlsl, withDenseChurn, withFoamLight } from './water/foamLook';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
@@ -239,6 +240,11 @@ export interface SurfaceSource {
   readonly bedRevision: number;
   /** Bed elevation per grid node, m (negative below datum). */
   writeBed(data: Float32Array): void;
+  /**
+   * A reef's cover of the bed per grid node, 0 (sand) to 1 (reef), for the water to draw the reef's floor in its own
+   * albedo (`reefBed.ts`); without it the bed is the spot's one albedo. Written with the bed (`bedRevision`).
+   */
+  writeBedCover?(data: Float32Array): void;
   /** Interleaved surface current (u, w) per grid node, m/s; without it the foam pattern stands still. */
   writeFlow?(data: Float32Array): void;
   /** Its bodies sample a Catmull-Rom surface over the render nodes (`PhysicalSurfWater`), which the Rich look draws (G8). */
@@ -264,6 +270,10 @@ export class WaterSurface {
   private rawData = new Float32Array(1);
   private rawTexture = WaterSurface.createBedTexture(this.rawData, { xMin: 0, zMin: 0, spacing: 1, nx: 1, nz: 1 });
   private bedTexture: DataTexture;
+  /** The reef's cover per grid node, and the bed texture's texels, (height, cover) interleaved, where the source has one. */
+  private bedCover?: { cover: Float32Array; texels: Float32Array };
+  /** The reef's floor compiled in (`reefBed.ts`): only where the source's bed has a cover, so every other spot's program is today's. */
+  private reefBedEnabled = false;
   private flowTexture: DataTexture;
   /** G9: (void fraction, plume depth) per grid node, for the Rich churn and plume. */
   private aerationData: Float32Array;
@@ -321,7 +331,7 @@ export class WaterSurface {
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.bedData = new Float32Array(grid.nx * grid.nz);
-    this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
+    this.bedTexture = this.createBed(grid);
     this.flowData = new Float32Array(grid.nx * grid.nz * 2);
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
@@ -416,6 +426,8 @@ export class WaterSurface {
         // The light through foam kept to what the foam lets through (item 4b): after the dense churn, whose freshness
         // the glow does not take.
         if (lightLookOn()) shader.fragmentShader = withFoamLight(shader.fragmentShader);
+        // The reef's floor in its own albedo (the 2026-10-22 playtest), only where the bed has one.
+        if (this.reefBedEnabled) withReefBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
         // The horizon plan: the haze toward the horizon, and the sky mirrored from the slopes' spread.
         withRichHorizon(shader);
         return;
@@ -435,8 +447,9 @@ export class WaterSurface {
           .replace(`#include <common>\n${waterFragmentPars}`, `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
+      if (this.reefBedEnabled) withReefBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}` : ''}${reefBedProgramKey(this.reefBedEnabled)}`;
     // The glitter's mode (Sea detail, or a dev switch) changes the Rich program.
     onGlitterChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
@@ -447,9 +460,11 @@ export class WaterSurface {
     onFoamLookChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
     });
+    onReefBedChange(() => this.refreshReefBed());
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.refreshTubeColumns();
     this.refreshRoller();
+    this.refreshReefBed();
     this.mesh.frustumCulled = false;
     this.patch = new Mesh(createPatchGeometry(PATCH_SIZE, PATCH_SPACING), material);
     this.patch.frustumCulled = false;
@@ -495,6 +510,14 @@ export class WaterSurface {
     if (changed) {
       if (source !== this.bedSource || source.bedRevision !== this.bedRevision) {
         source.writeBed(this.bedData);
+        if (this.bedCover && source.writeBedCover) {
+          const { cover, texels } = this.bedCover;
+          source.writeBedCover(cover);
+          for (let i = 0; i < cover.length; i += 1) {
+            texels[2 * i] = this.bedData[i];
+            texels[2 * i + 1] = cover[i];
+          }
+        }
         this.bedSource = source;
         this.bedRevision = source.bedRevision;
         this.bedTexture.needsUpdate = true;
@@ -855,16 +878,22 @@ export class WaterSurface {
     this.refreshRoller();
     const grid = source.grid;
     this.refreshBarrelMaskGrid();
-    if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
+    const resized = previous.nx !== grid.nx || previous.nz !== grid.nz || previous.spacing !== grid.spacing;
+    // The bed's texture for the new grid, or with (or without) the reef's cover the new source's bed has.
+    if (resized || (source.writeBedCover !== undefined) !== (this.bedCover !== undefined)) {
+      this.bedData = new Float32Array(grid.nx * grid.nz);
+      this.bedTexture.dispose();
+      this.bedTexture = this.createBed(grid);
+      this.uniforms.waterBed.value = this.bedTexture;
+      this.bedSource = undefined;
+    }
+    this.refreshReefBed();
+    if (!resized) return;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
     this.texture.dispose();
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.uniforms.waterSurface.value = this.texture;
     this.uniforms.waterSurfaceRaw.value = this.texture;
-    this.bedData = new Float32Array(grid.nx * grid.nz);
-    this.bedTexture.dispose();
-    this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
-    this.uniforms.waterBed.value = this.bedTexture;
     this.flowData = new Float32Array(grid.nx * grid.nz * 2);
     this.flowTexture.dispose();
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
@@ -972,8 +1001,35 @@ export class WaterSurface {
     return texture;
   }
 
-  private static createBedTexture(data: Float32Array, grid: SurfaceGrid): DataTexture {
-    const texture = new DataTexture(data, grid.nx, grid.nz, RedFormat, FloatType);
+  /**
+   * The bed's texture for the source's grid: its height (red), and where the source's bed has a reef's cover, the cover
+   * too (green), from texels kept beside `bedData`.
+   */
+  private createBed(grid: SurfaceGrid): DataTexture {
+    if (!this.source.writeBedCover) {
+      this.bedCover = undefined;
+      return WaterSurface.createBedTexture(this.bedData, grid);
+    }
+    const nodes = grid.nx * grid.nz;
+    this.bedCover = { cover: new Float32Array(nodes), texels: new Float32Array(2 * nodes) };
+    return WaterSurface.createBedTexture(this.bedCover.texels, grid, true);
+  }
+
+  /** Whether the reef's floor is compiled in: where the bed has a cover, unless `?reefBed=off`. */
+  private refreshReefBed(): void {
+    const on = this.bedCover !== undefined && reefBedMode.on;
+    if (on === this.reefBedEnabled) return;
+    this.reefBedEnabled = on;
+    this.mesh.material.needsUpdate = true;
+  }
+
+  /** Whether the water draws a reef's floor in its own albedo (`reefBed.ts`); the spilling curl's body follows it. */
+  get reefBed(): boolean {
+    return this.reefBedEnabled;
+  }
+
+  private static createBedTexture(data: Float32Array, grid: SurfaceGrid, covered = false): DataTexture {
+    const texture = new DataTexture(data, grid.nx, grid.nz, covered ? RGFormat : RedFormat, FloatType);
     texture.magFilter = NearestFilter;
     texture.minFilter = NearestFilter;
     texture.generateMipmaps = false;

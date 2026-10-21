@@ -15,6 +15,7 @@ import { HoldReading } from './holdReading';
 import { EdgeBand } from '../scene/EdgeBand';
 import { EdgeWhitewater } from '../scene/EdgeWhitewater';
 import { EDGE_BAND, bandBedWeight, mirrorX } from '../scene/water/edgeBandGlsl';
+import { reefCoverFor } from '../scene/water/reefBed';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -670,7 +671,9 @@ export class PhysicalMode {
     const { init } = host;
     // A swept spot draws its barrel as one lofted surface: its water is never carved, and its lip strips are off.
     this.swept = sweptBarrelOn(config);
-    water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing));
+    // The reef's floor in its own albedo where the spot has one (the Canyon's arm, the 2026-10-22 playtest): drawn only.
+    const reefCover = reefCoverFor(config.spot, config.canyonBed);
+    water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing, reefCover));
     if (!this.sweptBarrel) {
       // `?barrelView=phase|front`: the curl flat-coloured by its slices' phase or front (a dev view, the tube review).
       const view = SWEPT_BARREL_VIEWS.find((candidate) => candidate === devParam('barrelView'));
@@ -684,6 +687,7 @@ export class PhysicalMode {
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept);
     if (!this.spillingCurl) {
       this.spillingCurl = { mesh: new SpillingCurlMesh(water.materialUniforms), water };
+      this.spillingCurl.mesh.reefBed = () => water.reefBed;
       this.scene.add(this.spillingCurl.mesh.mesh);
     }
     this.spillingCurl.drawn = undefined;
@@ -734,6 +738,7 @@ export class PhysicalMode {
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin - band, windowMax + band, 2, 30),
       gradedAxis(Math.min(-900, tank.offshore - 300), tank.shore + 30, tank.offshore, tank.shore, 2, 30),
+      reefCover,
     );
     const profile = new FarFieldProfile(surfZoneSea(config), {
       referenceZ: tank.offshore,

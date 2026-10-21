@@ -25,6 +25,11 @@ export interface WaterOptics {
   readonly turbidity: number;
   /** Seabed albedo, linear RGB. */
   readonly bedAlbedo: Rgb;
+  /**
+   * The albedo of a reef built on that bed, linear RGB, where the bed's cover says reef (`reefBed.ts`); without it, or
+   * where the cover is 0, the bed is `bedAlbedo`.
+   */
+  readonly reefAlbedo?: Rgb;
 }
 
 /**
@@ -36,7 +41,9 @@ export const SPOT_OPTICS: Record<SpotName, WaterOptics> = {
   beach: { turbidity: 2, bedAlbedo: [0.42, 0.36, 0.24] },
   point: { turbidity: 1, bedAlbedo: [0.36, 0.33, 0.24] },
   reef: { turbidity: 0.15, bedAlbedo: [0.5, 0.47, 0.36] },
-  canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24] },
+  // Its reef (the arm, its end and its back reef, `canyonReefCover`) as Padang Padang's live coral, the sand's
+  // pockets in it mottled in by the cover (the owner's 2026-10-22 playtest: the reef read white as sand).
+  canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24], reefAlbedo: [0.08, 0.08, 0.025] },
   // Clear water as the Reef's (nothing measured on the Bukit's west coast), over live coral: about 8 % at
   // 550–650 nm and 2.5 % at 400–500 nm (Hochberg & Atkinson 2003). docs/research/padang-padang-sources.md.
   padang: { turbidity: 0.15, bedAlbedo: [0.08, 0.08, 0.025] },
@@ -300,6 +307,7 @@ export function createOpticsUniforms(): OpticsUniforms {
     waterDiffuseAttenuation: { value: new Vector3() },
     waterDeepReflectance: { value: new Vector3() },
     waterBedAlbedo: { value: new Vector3() },
+    waterReefAlbedo: { value: new Vector3() },
     waterSunDirection: { value: new Vector3(0, 1, 0) },
     waterSunRadiance: { value: new Color(1, 1, 1) },
     waterBodyGain: { value: WATER_BODY_GAIN },
@@ -313,6 +321,7 @@ export function applyOptics(uniforms: OpticsUniforms, optics: WaterOptics): void
   (uniforms.waterDiffuseAttenuation.value as Vector3).fromArray(diffuseAttenuation(optics));
   (uniforms.waterDeepReflectance.value as Vector3).fromArray(deepReflectance(optics));
   (uniforms.waterBedAlbedo.value as Vector3).fromArray(optics.bedAlbedo);
+  (uniforms.waterReefAlbedo.value as Vector3).fromArray(optics.reefAlbedo ?? optics.bedAlbedo);
 }
 
 /** `direction` points toward the sun (world); `radiance` is the sun light's colour × intensity. */
