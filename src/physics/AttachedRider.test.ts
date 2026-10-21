@@ -7,10 +7,13 @@ import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
+import { RideSession, type RideInput } from './RideSession';
 import { deckHeight, stanceFeet } from './riderPosture';
 import { SwellWater } from './SwellWater';
 import type { SurfWater, WaterSample } from './SurfWater';
+import { ChopWater } from './testing/ChopWater';
 import { CoveredWater } from './testing/CoveredWater';
+import { FaceWater } from './testing/FaceWater';
 
 const STEP = 1 / 60;
 /**
@@ -2052,6 +2055,48 @@ describe('the stroke (the phase 5 physics plan, item 2.8)', () => {
     const { rider, steps } = paddleOn(new PlaneWater({ slopeZ: -Math.tan((10 * Math.PI) / 180) }), 3, 3);
     expect(rider.sprint).toBeGreaterThan(0.95);
     expect(perMinute(steps.map((step) => step.left), 3)).toBeGreaterThan(55);
+  });
+});
+
+// The paddle-balance fix (2026-10-22, the owner's ride after phase 5): lying down and paddling, the rider lost its balance
+// and fell off. The balance comes first and levels the board to the water it lies on (`AttachedRider`'s STROKE_ROLL and
+// PRONE_ROLL_SHIFT). Before, these runs threw the rider ('lost board').
+describe('the paddle\'s balance (the paddle-balance fix)', () => {
+  /** Paddling from rest on `water` for `seconds` with `input` at each moment: whether the rider stayed on, and the board's largest roll, deg. */
+  const paddleOn = (water: SurfWater & { advance?(dt: number): void }, seconds: number, input: (time: number) => Partial<RideInput>, heading = 0) => {
+    const session = new RideSession();
+    session.reset(new Vector3(), heading, water);
+    let worst = 0;
+    for (let i = 0; i < Math.round(seconds / STEP) && session.rider.attached; i += 1) {
+      session.step(STEP, water, { paddle: true, popUp: false, steer: 0, ...input(i * STEP) });
+      water.advance?.(STEP);
+      worst = Math.max(worst, Math.abs(roll(session.board)));
+    }
+    return { attached: session.rider.attached, worst: (worst * 180) / Math.PI };
+  };
+  /** Full steer one way for 2 s, none for 2 s, the other way, none. */
+  const weaving = (time: number) => {
+    const quarter = Math.floor(time / 2) % 4;
+    return { steer: quarter === 0 ? 1 : quarter === 2 ? -1 : 0 };
+  };
+
+  it('paddles through a choppy sea, straight and steering, and stays on', () => {
+    // Hs about 0.7 m of 2–4 s waves, the surface sloped up to 8–12°: three of these four runs threw the rider, 4.8–12.3 s in.
+    for (const seed of [4, 11]) {
+      for (const steering of [false, true]) {
+        const { attached, worst } = paddleOn(new ChopWater(1, seed), 20, steering ? weaving : () => ({}));
+        expect(attached, `seed ${seed}${steering ? ', steering' : ''}`).toBe(true);
+        expect(worst, `seed ${seed}${steering ? ', steering' : ''}`).toBeLessThan(35);
+      }
+    }
+  });
+
+  it('stays on as a wave\'s face lifts the board, paddling 30° across it', () => {
+    // A 1.4 m face at 12° running up behind the paddler: across it either way, the board capsized 9.5–10.3 s in.
+    for (const across of [30, -30]) {
+      const { attached } = paddleOn(new FaceWater({ depth: 2.5, height: 1.4, slope: 12, crestZ: -25 }), 12, () => ({}), (across * Math.PI) / 180);
+      expect(attached, `${across}°`).toBe(true);
+    }
   });
 });
 

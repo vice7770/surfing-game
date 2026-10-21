@@ -15,7 +15,10 @@ import { FaceWater } from './testing/FaceWater';
  * Recorded again with the phase 5 physics plan's batch C, which changes these by design: the two paddlers with its
  * stroke (item 2.8: the rate, the roll, the line kept over the strokes and the 97 cm length), and the paddler in the
  * plume and the rider down the face, who fall within their runs, with the fall from the rider's own pose (item 2.10).
- * The still riders, unchanged, hold the lens's scope.
+ * The still riders, unchanged, hold the lens's scope. Recorded again with the paddle-balance fix (2026-10-22), which
+ * changes every prone rider by design: lying down, the balance comes first and keeps the water's level, not the
+ * world's (`AttachedRider`'s STROKE_ROLL and PRONE_ROLL_SHIFT). The rider standing down the face, unchanged, holds the
+ * lens's scope.
  */
 
 const STEP = 1 / 60;
@@ -85,21 +88,21 @@ function drained(water: PhysicalSurfWater): () => number[] {
 describe('the roller lens\'s feel, outside a lens', () => {
   it('leaves a prone rider in a plume on a P11 bore bit for bit as it was', () => {
     const water = plume(false);
-    expect(ride(water, 0, 180, false, drained(water))).toBe('f986e92101dc4f34');
+    expect(ride(water, 0, 180, false, drained(water))).toBe('0be636d78e413fc7');
     const paddling = plume(false);
-    expect(ride(paddling, Math.PI, 180, true, drained(paddling))).toBe('ce87c54f9195237c');
+    expect(ride(paddling, Math.PI, 180, true, drained(paddling))).toBe('b4d9c392aa3a30d6');
   });
 
   it('leaves a prone rider at the Canyon, in broken water outside any lens, bit for bit as it was', () => {
     const water = plume(true);
-    expect(ride(water, 0, 180, false, drained(water))).toBe('5dd0d8aa28c12675');
+    expect(ride(water, 0, 180, false, drained(water))).toBe('b1c7512670a900f5');
   });
 
   it('leaves a board landing hard, in a plume and at the Canyon outside any lens, bit for bit as it was', () => {
     const water = plume(false);
-    expect(ride(water, 0, 120, false, drained(water), 'landing')).toBe('00636756353438e0');
+    expect(ride(water, 0, 120, false, drained(water), 'landing')).toBe('4932645fb9d072d5');
     const canyon = plume(true);
-    expect(ride(canyon, 0, 120, false, drained(canyon), 'landing')).toBe('e10779712b438b01');
+    expect(ride(canyon, 0, 120, false, drained(canyon), 'landing')).toBe('8790302abf748303');
   });
 
   it('leaves a standing rider down a wave face bit for bit as it was', () => {
@@ -109,6 +112,6 @@ describe('the roller lens\'s feel, outside a lens', () => {
 
   it('leaves a paddler meeting a broken wave on the duck-dive bore bit for bit as it was', () => {
     const water = new BoreWater({ depth: 2.5, height: 1.2, frontZ: -12 });
-    expect(ride(water, Math.PI, 300, true, () => [water.reaction.x, water.reaction.y, water.reaction.z])).toBe('dc7748fcc6dfb6ce');
+    expect(ride(water, Math.PI, 300, true, () => [water.reaction.x, water.reaction.y, water.reaction.z])).toBe('8980791094de0a00');
   });
 });

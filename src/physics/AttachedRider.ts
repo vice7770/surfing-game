@@ -98,6 +98,21 @@ const HAND_OUTSIDE_RAIL = 0.08;
  * bigger reach rolled it further and threw the rider. The roll also keeps the
  * line in a quartering swell: without it, at 50 strokes a minute, the board
  * wandered 9–12° over the strokes (2–5° with it).
+ *
+ * The balance comes first (the paddle-balance fix, 2026-10-22; the "posture
+ * first" principle of dual-task balance, Shumway-Cook and Woollacott: a body
+ * keeps its balance before a second task's movement). The hips level the board
+ * first, within their reach, and the stroke's swing takes only the reach the
+ * levelling leaves. The swing alone asks more than the hips have: its rate,
+ * 15° at 0.83 Hz, asks PRONE_ROLL_DAMPING × 1.37 rad/s, 0.22 m of the 0.1 m.
+ * Asked together, as the swing's tracking error, the hips were held by the
+ * swing whenever chop, a steering stroke or a face rolled the board the other
+ * way: in a probe, 0.03–0.08 m toward the low rail while the board rolled
+ * toward it at 50–70°/s. Past about 36° the hips' 0.1 m cannot right the board
+ * (its roll with the hips held there, on flat water), so it capsized and the
+ * rider slid off ('lost board'), in 8 of 55 paddling runs (chop, steering, a
+ * face lifting the board at 30°) and 18 of 72 chop runs. On flat water the
+ * board rocks as before (18.6° rail to rail).
  */
 const STROKE_ROLL = (15 * Math.PI) / 180;
 const STROKE_ROLL_LEAD = 0.35;
@@ -183,6 +198,20 @@ const PRONE_SHIFT = { x: 0.1, z: 0 };
  * capsizes (a board tipped 15° on flat water rolls over in about 2 s). A
  * paddler keeps it level by shifting toward the high rail: m of shift per rad
  * of roll and per rad/s of roll rate (a modelling choice).
+ *
+ * The level it keeps is the water's under the board, not the world's (the
+ * paddle-balance fix, 2026-10-22). Lying awash, the body moves with the surface
+ * water, and the vertical it feels is the surface's normal: the otoliths sense
+ * gravity less the head's acceleration (Angelaki and Cullen 2008), and for
+ * water moving under gravity that is normal to the free surface, a surface of
+ * equal pressure (Euler's equation: g − a = ∇p / ρ). The rate is the board's own
+ * (the semicircular canals sense rotation). Levelled to the world's horizontal
+ * across sloping water (chop, or a swell or a face crossed at an angle), the
+ * hips held the board against the water's own level and spent their reach on
+ * it: in a probe's chop (Hs 0.65–1.55 m at 2.2–4.2 s, `ChopWater`), with the
+ * balance first (STROKE_ROLL), 3 runs of 72 still capsized, all in seas too
+ * steep to stand unbroken (slopes to 23–28°); none level with the water. On
+ * flat water the two levels are one.
  */
 const PRONE_ROLL_SHIFT = 0.4;
 const PRONE_ROLL_DAMPING = 0.16;
@@ -1101,7 +1130,7 @@ export class AttachedRider {
   private ankleRest = 0;
   /** The board's roll into the water toward the lean asked for, PULL_LOOKAHEAD on at its present roll rate, rad (COMPRESS_PULL's bite). */
   private railAhead = 0;
-  /** The water's surface normal under the board (the world's up off the water): the level the rail's bite is read from (RAIL_BITE). */
+  /** The water's surface normal under the board (the world's up off the water): the level the rail's bite is read from (RAIL_BITE), and the level a prone body keeps (PRONE_ROLL_SHIFT). */
   private readonly waterUp = new Vector3(0, 1, 0);
   /** The water's own flow under the board, level, m/s: the compressed turn's rules read the board's motion through it. */
   private readonly waterFlow = { x: 0, z: 0 };
@@ -2674,9 +2703,10 @@ export class AttachedRider {
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (!this.upright && this.inContact) {
-      // Toward the high rail (board +x is its left): the roll, positive with the left rail up, and its rate about the board's length.
+      // Toward the high rail (board +x is its left): the roll from the water's level (PRONE_ROLL_SHIFT), positive with
+      // the left rail up, and its rate about the board's length.
       const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation);
-      const roll = Math.asin(Math.max(-1, Math.min(1, side.y)));
+      const roll = Math.asin(Math.max(-1, Math.min(1, side.dot(this.waterUp))));
       const rate = this.scratch2.copy(board.angularVelocity).applyQuaternion(this.spin.copy(board.orientation).invert()).z;
       const ducking = this.duck.press > DUCK_BUSY;
       // Pushing up (the pop-up), the hands hold the rails as they do ducking, the body up over them on its arms: it
@@ -2690,9 +2720,15 @@ export class AttachedRider {
       const swing = 2 * Math.PI * (this.strokePhase - PULL_SHARE / 2 + STROKE_ROLL_LEAD);
       const rollTo = -STROKE_ROLL * this.strokeRoll * Math.cos(swing);
       const rollRate = ((STROKE_ROLL * this.strokeRoll * 2 * Math.PI) / this.strokeCycle) * Math.sin(swing);
-      const wanted = onRails
-        ? DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate
-        : PRONE_ROLL_SHIFT * (roll - rollTo) + PRONE_ROLL_DAMPING * (rate - rollRate);
+      let wanted: number;
+      if (onRails) {
+        wanted = DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate;
+      } else {
+        // The balance first: the hips level the board within their reach, and the stroke's swing has what is left.
+        const level = Math.min(reachX, Math.max(-reachX, PRONE_ROLL_SHIFT * roll + PRONE_ROLL_DAMPING * rate));
+        const spare = reachX - Math.abs(level);
+        wanted = level + Math.min(spare, Math.max(-spare, -(PRONE_ROLL_SHIFT * rollTo + PRONE_ROLL_DAMPING * rollRate)));
+      }
       const targetX = Math.min(reachX, Math.max(-reachX, wanted));
       this.shiftAxis('x', targetX, reachX, h);
       this.shiftAxis('z', 0, reach.z, h);
