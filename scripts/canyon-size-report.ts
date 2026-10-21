@@ -27,7 +27,10 @@
  *        [--first-seed 1] [--hs 2.4 --tp 14] [--bed old] [--verbose] [--stability] [--json <file>]
  *
  * `--bed old` runs the layout before canyon-layout (`?canyonBed=old`, `CANYON_OLD`); `--canyon` reshapes today's. The
- * window, the arm and the bed parts are the run's layout's (canyon-layout, 2026-10-22: 220 m since, 160 m before).
+ * window, the arm and the bed parts are the run's layout's (canyon-layout, 2026-10-22: 220 m since, 160 m before). Since
+ * canyon-layout the readout's replay and each crest's own fit count the breaks the game's tracker counts (`canyonPeelAt`:
+ * the arm's, not the lagoon's or the beach face's behind it; every break on the arm's columns on the old layout), and the
+ * close-outs and upcoast runs are also given off the beach face, where the short arm's flanks close out on the beach.
  *   node dist/scripts/canyon-size-report.mjs --from <file> [--verbose]   (re-reads a run's onsets)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -81,6 +84,8 @@ interface Run {
 interface CrestReport {
   seed: number; t: number; x: number; z: number; depth: number; part: string; seaward: number; face: number; onsets: number; phaseSpread: number;
   span: number; upcoast: boolean; upcoastReach: number; downcoastReach: number;
+  /** The same, from its onsets off the beach face alone: the arm's and the platform's (the flanks' shore break left out). */
+  armSpan: number; armUpcoast: boolean; armUpcoastReach: number;
   fit?: { direction: number; angle: number; r2: number; speed: number; columns: number };
 }
 
@@ -263,13 +268,22 @@ function analyse(run: Run): void {
       const span = Math.max(...early.map((o) => o.x)) - Math.min(...early.map((o) => o.x));
       const soon = group.filter((o) => o.t <= first.t + UPCOAST_SECONDS);
       const up = soon.filter((o) => o.x < first.x - UPCOAST_REACH);
+      // Off the beach face: on the short arm (canyon-layout) the flanks close out on the beach within seconds, as on a real
+      // reef's; the arm's own close-outs and upcoast runs are counted without them too.
+      const offBeach = (o: Onset) => bedPart(o.x, o.z, tank, c) !== 'beach face';
+      const earlyOff = early.filter(offBeach);
+      const soonOff = soon.filter(offBeach);
       const crest: CrestReport = {
         seed: record.seed, t: first.t, x: first.x, z: first.z, depth: first.depth, part: bedPart(first.x, first.z, tank, c),
         seaward: canyonBreakLineZ(first.x, c) - first.z, face: first.face, onsets: group.length, phaseSpread: group[group.length - 1].phase - group[0].phase,
         span, upcoast: up.length > UPCOAST_ONSETS, upcoastReach: Math.max(0, first.x - Math.min(...soon.map((o) => o.x))),
         downcoastReach: Math.max(0, Math.max(...soon.map((o) => o.x)) - first.x),
+        armSpan: earlyOff.length ? Math.max(...earlyOff.map((o) => o.x)) - Math.min(...earlyOff.map((o) => o.x)) : 0,
+        armUpcoast: soonOff.filter((o) => o.x < first.x - UPCOAST_REACH).length > UPCOAST_ONSETS,
+        armUpcoastReach: soonOff.length ? Math.max(0, first.x - Math.min(...soonOff.map((o) => o.x))) : 0,
       };
-      const arm = group.filter((o) => armAt(o.x));
+      // Its own fit along the arm: the breaks the readout's tracker counts (`canyonPeelAt`: on the old layout every break on the arm's columns).
+      const arm = group.filter((o) => canyonPeelAt(o.x, o.z, c));
       if (arm.length >= FIT_ONSETS) {
         const n = arm.length;
         const mx = arm.reduce((s, o) => s + o.x, 0) / n;
@@ -355,6 +369,9 @@ function analyse(run: Run): void {
   console.log(`  close-outs (≥ ${CLOSE_SPAN} m within ${CLOSE_SECONDS} s): ${closeOuts.length}; spans median ${f(median(crests.map((c) => c.span)))} m, 90th ${f(quantile(crests.map((c) => c.span), 0.9))} m`);
   console.log(`  upcoast (> ${UPCOAST_ONSETS} onsets over ${UPCOAST_REACH} m within ${UPCOAST_SECONDS} s): ${crests.filter((c) => c.upcoast).length}; reach median ${f(median(crests.map((c) => c.upcoastReach)))} m, `
     + `90th ${f(quantile(crests.map((c) => c.upcoastReach), 0.9))} m, most ${f(Math.max(0, ...crests.map((c) => c.upcoastReach)))} m`);
+  console.log(`  off the beach face (the flanks' shore break left out): close-outs ${crests.filter((c) => c.armSpan >= CLOSE_SPAN).length}; spans median ${f(median(crests.map((c) => c.armSpan)))} m, `
+    + `90th ${f(quantile(crests.map((c) => c.armSpan), 0.9))} m; upcoast ${crests.filter((c) => c.armUpcoast).length}; reach median ${f(median(crests.map((c) => c.armUpcoastReach)))} m, `
+    + `90th ${f(quantile(crests.map((c) => c.armUpcoastReach), 0.9))} m, most ${f(Math.max(0, ...crests.map((c) => c.armUpcoastReach)))} m`);
   console.log(`  own fits (r² ≥ ${MIXED_PEAK_FIT}, ≥ ${FIT_ONSETS} onsets on the arm): ${fitted.length}; toward +x ${fitted.filter((c) => c.fit!.direction > 0).length}; `
     + `median ${f(median(fitted.map((c) => c.fit!.angle)))}°, speed ${f(median(fitted.map((c) => c.fit!.speed)), 1)} m/s`);
   console.log(`onsets: ${recorded.length}; by bed part: ${tally(recorded.map((o) => bedPart(o.x, o.z, tank, c)))}; depth median ${f(median(recorded.map((o) => o.depth)), 2)} m, `
