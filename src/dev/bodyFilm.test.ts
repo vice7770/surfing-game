@@ -842,6 +842,29 @@ describe('the falls and the recovery (the animation-realism plan, phase 4)', () 
     expect(sharpest).toBeLessThan(3.5);
   }, 240_000);
 
+  // The phase 5 physics plan, item 2.11: another player's swimmer holds its breath with its head under this player's own
+  // sea, read where the pose arrives (no wire bit): it turned its head to breathe under water.
+  it('holds another player\'s swimmer\'s breath while its head is under, as the local one\'s', () => {
+    const under = (drawer: typeof remoteDrawer | typeof trackDrawer) => {
+      let frames = 0;
+      let headUnder = 0;
+      const pose: FilmOptions['pose'] = (bones) => {
+        const body = new PosedBody(bones);
+        return (state) => {
+          body.update(state);
+          if (state.phase !== 'fallen') return;
+          frames += 1;
+          if (state.swim.under) headUnder += 1;
+        };
+      };
+      filmBody(scenario('surfacing'), { rate: 30, drawer, pose });
+      return headUnder / frames;
+    };
+    const [local, remote] = [under(trackDrawer), under(remoteDrawer)];
+    expect(local).toBeGreaterThan(0.1);
+    expect(Math.abs(remote - local)).toBeLessThan(0.1);
+  }, 240_000);
+
   it('draws another player\'s reel and climb from what is sent (wire flag 128 with the swimmer by the board)', () => {
     const most = (name: string, drawer: typeof remoteDrawer | typeof trackDrawer) => {
       const seen = { reel: 0, climb: 0 };

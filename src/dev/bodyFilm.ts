@@ -874,7 +874,7 @@ export function remoteDrawer(context: FilmContext): FilmDrawer {
       const time = clock - INTERPOLATION_DELAY;
       if (!remotes.sample(id, time, remote) || !remote.present) return undefined;
       remoteBoardPose(remote, context.surfaceAt, board);
-      remoteRiderState(remote, board, rider, drawn);
+      remoteRiderState(remote, board, rider, drawn, context.surfaceAt);
       return { rider, board, time, holding: drawn.swim.holding };
     },
   };
