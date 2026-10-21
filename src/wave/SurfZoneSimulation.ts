@@ -633,20 +633,20 @@ export const RIDE_LINEUP_OFFSET = 11;
  * them): where the faces become catchable, about 17° over the highest third of the waves, but seaward of where one wave
  * in ten starts breaking. The catch diagnosis (2026-10-22): from rest on Big's 14° faces 11 m out the board was picked
  * up only 2–2.5 m ahead of the crest, 90–93 % up the face, and the rider fell over the back as the crest passed; already
- * paddling, from the take-off, on 17–19° it dropped in. Measured along the take-off's column with no rider on the reef bed
- * (2026-10-22, docs/research/canyon-reef-bed-2026-10-22: big-start's transect probe, 2 seeds × 12 periods a size, the face
- * the rider feels, each wave's steepest front over 1 m; the waves' starts pooled with the size report's 3 seeds × 14):
- * - Big: 12–13° 11 m out, 13° 6 m out, 14–15° at the take-off, 17° only 10–14 m inside it; one wave in ten starts
- *   breaking 5.3 m seaward of the take-off (4 of 64 seaward of 6 m out; their median 20.5 m inside the take-off). So Big
- *   starts 6 m out, the rule's priority (the owner's 2026-10-11 "not on top of the breaking"), on faces about as gentle
- *   as the 11 m start the catch diagnosis found too gentle (12–13°): on the reef bed's steeper face the breaks come
- *   closer, so the two halves of the rule no longer meet. `?startOut=0` tries the take-off (14–15°; 7 of 40 in the size
- *   report's runs break seaward of it). On the 1:30 bed, until the reef bed, Big started at its take-off (offset 0):
- *   17° 6–12 m inside it, one wave in 23 breaking seaward of it, their median 41 m inside.
- * - Medium: 6–7° 11 m out, 11–12° at the take-off, 17° 9–12 m inside it; one wave in ten starts breaking 1 m seaward of
- *   the take-off: the same rule would start it 1–2 m out, but it keeps 11 m (the owner, 2026-10-12: "fine for now") until
- *   it is ridden again, as on the 1:30 bed (17° about at the take-off, one in ten there).
- * - Small: 17° 7–8 m inside the take-off, one wave in ten starts breaking 6 m seaward of it: 11 m, as before.
+ * paddling, from the take-off, on 17–19° it dropped in. Re-measured on canyon-layout's short arm (2026-10-22,
+ * docs/research/canyon-layout-2026-10-22/start.txt: big-start's transect probe along the take-off's column, 2 seeds × 12
+ * periods a size, the face the rider feels, each wave's steepest front over 1 m; the waves' starts pooled with the size
+ * report's 3 seeds × 14), the same starts:
+ * - Big: 13.8° 11 m out, 14.9° 6 m out, 14.7° at the take-off, 17° only 10 m inside it (±3 m); one wave in ten starts
+ *   breaking 6.0 m seaward of the take-off (5 of 65 seaward of 6 m out; their median 18 m inside it). So Big starts 6 m
+ *   out, the rule's priority (the owner's 2026-10-11 "not on top of the breaking"); its faces there are steeper than on the
+ *   long arm (13°), still short of 17°. `?startOut=0` tries the take-off (8 of 65 break seaward of it). On the long arm
+ *   one in ten broke 5.3 m seaward, and Big started 6 m out too; on the 1:30 bed before it, at its take-off (offset 0).
+ * - Medium: 8° 11 m out, 15° at the take-off, 17° 6 m inside it; one wave in ten starts breaking 3 m seaward of the
+ *   take-off (1 of 59 seaward of 11 m out): the rule would start it 3–4 m out, but it keeps 11 m (the owner, 2026-10-12:
+ *   "fine for now") until it is ridden again, as on the long arm.
+ * - Small: 10° 11 m out, 17° at the take-off; one wave in ten starts breaking 5.5 m seaward of it (2 of 55 seaward of
+ *   11 m out): 11 m, as before.
  * Re-measure if the arm or the swells change.
  */
 export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [

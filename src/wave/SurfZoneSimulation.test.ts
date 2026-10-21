@@ -887,24 +887,26 @@ describe('SurfZoneSimulation', () => {
     for (const { offset } of CANYON_RIDE_LINEUP) expect(offset).toBeGreaterThanOrEqual(0);
     const canyon = createSpot('canyon', 1);
     const sea = (significantHeight: number, peakPeriod: number): SurfZoneConfig => ({
-      ...small, spot: 'canyon', alongShore: 160, significantHeight, peakPeriod, directionDegrees: 0,
+      ...small, spot: 'canyon', alongShore: CANYON.alongShore, significantHeight, peakPeriod, directionDegrees: 0,
     });
     const big = sea(2.4, 14);
     const medium = sea(1.4, 11);
     const takeOff = takeOffPoint(big);
     const start = takeOff.z - rideLineupOffset(big);
-    // Further in than Medium's rule (11 m out) would put it, nearer the faces' catchable 17° (10–14 m inside the take-off).
+    // Further in than Medium's rule (11 m out) would put it, nearer the faces' catchable 17° (10 m inside the take-off).
     expect(start).toBeGreaterThan(takeOff.z - rideLineupOffset(medium));
     expect(start).toBeLessThanOrEqual(takeOff.z);
-    // And seaward of where one wave in ten starts breaking in the take-off's column (x −30 ± 4 m): 5.3 m seaward of the
-    // take-off on the reef bed (2026-10-22: 64 waves, big-start's transect probe and the size report pooled; their
-    // median 20.5 m inside it, 2.74 m deep), so 6 m out, about 4.07 m deep. On the 1:30 bed one in ten broke 4 m inside
-    // the take-off and Big started there (offset 0), its median break 41 m inside.
+    // And seaward of where one wave in ten starts breaking in the take-off's column (its x ± 4 m): 6.0 m seaward of the
+    // take-off on canyon-layout's short arm (2026-10-22: 65 waves, big-start's transect probe and the size report pooled;
+    // their median 18 m inside it, 2.91 m deep), so 6 m out, about 4.08 m deep, 180 m from the waterline. On the long arm
+    // one in ten broke 5.3 m seaward and Big started 6 m out too (4.07 m deep, 364 m out); on the 1:30 bed before it, at
+    // its take-off.
     const tank = tankLayout(big);
     const depth = (z: number) => tankDepth(canyon, tank.edgeDepth, takeOff.x, z, tank);
     expect(depth(start)).toBeGreaterThan(canyonTakeOffDepth(big.significantHeight));
-    expect(depth(start)).toBeCloseTo(4.07, 1);
-    expect(depth(start)).toBeGreaterThan(2.74);
+    expect(depth(start)).toBeCloseTo(4.08, 1);
+    expect(depth(start)).toBeGreaterThan(2.91);
+    expect(-start).toBeCloseTo(179.5, 6);
   });
 
   // The `?canyonBed=old` dev switch (canyon-layout, 2026-10-22): main's whole Canyon layout until canyon-layout, to ride the
