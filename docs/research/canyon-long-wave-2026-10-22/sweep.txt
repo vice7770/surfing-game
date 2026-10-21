@@ -1,0 +1,99 @@
+# The sweep, Medium (Hs 1.4 m, Tp 11 s), seed 1, 12 periods (main 14, planar 70° tapering 10): canyon-size-report.ts --canyon <spec>, re-read with --from, and ride-report.ts.
+# today-medium-s1 = main (15° fan, peak x -10, taper past the line's end); q-fan0 = fan=0; qF0R = fan=0,runOn=1; qP65R = fan=0,runOn=1,angle=65,peakX=-30,takeOffX=-22,alongShore=240;
+# qP60R = fan=0,runOn=1,angle=60,peakX=-42,takeOffX=-34,alongShore=260; qF8R = fan=8,runOn=1,peakX=-25,takeOffX=-17,alongShore=240; qA = runOn=1,peakX=-40,takeOffX=-32,alongShore=260;
+# qA2 = runOn=1,peakX=-33,takeOffX=-25,alongShore=275,endSlope=1/7.
+
+== today-medium-s1
+tracker: 13 samples, 13 clean; toward +x 13 of 13; median angle 37°, median peel speed 7.9 m/s; readout: left (+x) 12, closes out 1
+crests: 15; starts median x -11, 10–90 % -15…-4, within ±10 m 14 of 15; start z median -140, depth median 1.81 m, seaward of the line median 15 m
+readout every 1 s : 134 reads; closes out 19 (14 %), left (+x) 115 (86 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 127 of 127; median angle 34°, angle of the +x reads ≥ 27°: median 36°
+medium (today-medium-s1.json): 14 crests; ride along shore median 9 m, 75th 16, 90th 37; along its breaks median 11 m, 90th 93; duration median 1.4 s, 75th 6.7, 90th 18.8; ≥ 10 s 3 of 14; peel over the ride median 42°; upcoast within 3 s median 3 m, 90th 7 m
+== q-fan0-medium
+tracker: 10 samples, 10 clean; toward +x 9 of 10; median angle 68°, median peel speed 5.4 m/s; readout: left (+x) 8, closes out 1, right (−x) 1
+crests: 10; starts median x -11, 10–90 % -13…13, within ±10 m 9 of 10; start z median -135, depth median 1.68 m, seaward of the line median 16 m
+readout every 1 s : 92 reads; closes out 9 (10 %), left (+x) 81 (88 %), right (−x) 2 (2 %), mixed 0 (0 %); clean toward +x 89 of 91; median angle 57°, angle of the +x reads ≥ 27°: median 68°
+medium (q-fan0-medium.json): 9 crests; ride along shore median 14 m, 75th 26, 90th 39; along its breaks median 52 m, 90th 129; duration median 8.1 s, 75th 13.0, 90th 20.8; ≥ 10 s 4 of 9; peel over the ride median 49°; upcoast within 3 s median 2 m, 90th 6 m
+== qF0R-medium
+tracker: 12 samples, 12 clean; toward +x 12 of 12; median angle 64°, median peel speed 5.4 m/s; readout: left (+x) 11, closes out 1
+crests: 12; starts median x -11, 10–90 % -13…-4, within ±10 m 11 of 12; start z median -142, depth median 1.68 m, seaward of the line median 16 m
+readout every 1 s : 120 reads; closes out 19 (16 %), left (+x) 100 (83 %), right (−x) 1 (1 %), mixed 0 (0 %); clean toward +x 117 of 118; median angle 61°, angle of the +x reads ≥ 27°: median 69°
+medium (qF0R-medium.json): 11 crests; ride along shore median 21 m, 75th 25, 90th 28; along its breaks median 56 m, 90th 88; duration median 11.2 s, 75th 14.4, 90th 16.8; ≥ 10 s 6 of 11; peel over the ride median 50°; upcoast within 3 s median 3 m, 90th 6 m
+== qP65R-medium
+tracker: 11 samples, 10 clean; toward +x 10 of 10; median angle 47°, median peel speed 9.1 m/s; readout: left (+x) 8, closes out 3
+crests: 15; starts median x -31, 10–90 % -33…-8, within ±10 m 12 of 15; start z median -137, depth median 1.66 m, seaward of the line median 15 m
+readout every 1 s : 110 reads; closes out 16 (15 %), left (+x) 94 (85 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 102 of 102; median angle 46°, angle of the +x reads ≥ 27°: median 48°
+medium (qP65R-medium.json): 14 crests; ride along shore median 20 m, 75th 26, 90th 39; along its breaks median 53 m, 90th 123; duration median 9.2 s, 75th 13.3, 90th 18.1; ≥ 10 s 6 of 14; peel over the ride median 61°; upcoast within 3 s median 2 m, 90th 8 m
+== qP60R-medium
+tracker: 11 samples, 11 clean; toward +x 10 of 11; median angle 29°, median peel speed 9.7 m/s; readout: left (+x) 7, closes out 3, right (−x) 1
+crests: 13; starts median x -44, 10–90 % -46…-36, within ±10 m 12 of 13; start z median -136, depth median 1.73 m, seaward of the line median 16 m
+readout every 1 s : 118 reads; closes out 39 (33 %), left (+x) 78 (66 %), right (−x) 1 (1 %), mixed 0 (0 %); clean toward +x 115 of 116; median angle 30°, angle of the +x reads ≥ 27°: median 39°
+medium (qP60R-medium.json): 12 crests; ride along shore median 10 m, 75th 15, 90th 27; along its breaks median 19 m, 90th 68; duration median 1.8 s, 75th 4.7, 90th 9.5; ≥ 10 s 1 of 12; peel over the ride median 36°; upcoast within 3 s median 3 m, 90th 6 m
+== qF8R-medium
+tracker: 12 samples, 11 clean; toward +x 11 of 11; median angle 34°, median peel speed 8.3 m/s; readout: left (+x) 8, closes out 4
+crests: 14; starts median x -26, 10–90 % -28…4, within ±10 m 12 of 14; start z median -138, depth median 1.63 m, seaward of the line median 19 m
+readout every 1 s : 120 reads; closes out 30 (25 %), left (+x) 90 (75 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 108 of 108; median angle 34°, angle of the +x reads ≥ 27°: median 36°
+medium (qF8R-medium.json): 13 crests; ride along shore median 11 m, 75th 27, 90th 28; along its breaks median 26 m, 90th 90; duration median 5.2 s, 75th 13.2, 90th 13.7; ≥ 10 s 5 of 13; peel over the ride median 49°; upcoast within 3 s median 1 m, 90th 6 m
+== qA-medium
+tracker: 12 samples, 11 clean; toward +x 9 of 11; median angle 43°, median peel speed 6.8 m/s; readout: left (+x) 8, right (−x) 2, closes out 2
+crests: 13; starts median x -41, 10–90 % -44…-4, within ±10 m 11 of 13; start z median -136, depth median 1.81 m, seaward of the line median 20 m
+readout every 1 s : 113 reads; closes out 25 (22 %), left (+x) 78 (69 %), right (−x) 10 (9 %), mixed 0 (0 %); clean toward +x 93 of 103; median angle 36°, angle of the +x reads ≥ 27°: median 36°
+medium (qA-medium.json): 11 crests; ride along shore median 9 m, 75th 22, 90th 23; along its breaks median 19 m, 90th 68; duration median 1.7 s, 75th 5.2, 90th 13.3; ≥ 10 s 2 of 11; peel over the ride median 37°; upcoast within 3 s median 3 m, 90th 5 m
+== qA2-medium
+tracker: 12 samples, 11 clean; toward +x 11 of 11; median angle 29°, median peel speed 9.6 m/s; readout: left (+x) 8, closes out 4
+crests: 14; starts median x -37, 10–90 % -43…-20, within ±10 m 12 of 14; start z median -137, depth median 1.71 m, seaward of the line median 15 m
+readout every 1 s : 114 reads; closes out 46 (40 %), left (+x) 68 (60 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 100 of 103; median angle 29°, angle of the +x reads ≥ 27°: median 38°
+medium (qA2-medium.json): 13 crests; ride along shore median 11 m, 75th 16, 90th 36; along its breaks median 16 m, 90th 81; duration median 2.5 s, 75th 5.7, 90th 11.4; ≥ 10 s 2 of 13; peel over the ride median 38°; upcoast within 3 s median 2 m, 90th 8 m
+
+## Finalists, Medium, 3 seeds (seed 1 at 12 periods, seeds 2-3 at 14), peak as swept
+== F0R
+tracker: 37 samples, 34 clean; toward +x 34 of 34; median angle 50°, median peel speed 6.4 m/s; readout: left (+x) 31, closes out 6
+crests: 40; starts median x -12, 10–90 % -14…-4, within ±10 m 37 of 40; start z median -139, depth median 1.68 m, seaward of the line median 16 m
+readout every 1 s : 392 reads; closes out 69 (18 %), left (+x) 317 (81 %), right (−x) 6 (2 %), mixed 0 (0 %); clean toward +x 361 of 367; median angle 48°, angle of the +x reads ≥ 27°: median 52°
+medium (3 files pooled): 37 crests; ride along shore median 22 m, 75th 35, 90th 39; along its breaks median 63 m, 90th 132; duration median 13.0 s, 75th 18.4, 90th 20.7; ≥ 10 s 24 of 37; peel over the ride median 57°; upcoast within 3 s median 4 m, 90th 7 m
+== P65R
+tracker: 37 samples, 32 clean; toward +x 32 of 32; median angle 38°, median peel speed 7.7 m/s; readout: left (+x) 24, closes out 13
+crests: 43; starts median x -32, 10–90 % -34…-21, within ±10 m 38 of 43; start z median -138, depth median 1.75 m, seaward of the line median 17 m
+readout every 1 s : 380 reads; closes out 135 (36 %), left (+x) 245 (64 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 322 of 322; median angle 37°, angle of the +x reads ≥ 27°: median 44°
+medium (3 files pooled): 41 crests; ride along shore median 18 m, 75th 29, 90th 33; along its breaks median 53 m, 90th 110; duration median 8.7 s, 75th 14.5, 90th 18.1; ≥ 10 s 17 of 41; peel over the ride median 47°; upcoast within 3 s median 3 m, 90th 7 m
+
+## Big screen, seed 1, 10 periods
+== F0R
+tracker: 10 samples, 10 clean; toward +x 10 of 10; median angle 44°, median peel speed 8.5 m/s; readout: left (+x) 9, closes out 1
+readout every 1 s : 126 reads; closes out 15 (12 %), left (+x) 111 (88 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 123 of 123; median angle 44°, angle of the +x reads ≥ 27°: median 45°
+health seed 1: fastest 10.35 m/s, Froude caps 122 (0 in water), volume -0.16 %, finite true; onsets per 100 s 1244 505
+big (qF0R-big.json): 8 crests; ride along shore median 24 m, 75th 43, 90th 46; along its breaks median 88 m, 90th 164; duration median 13.5 s, 75th 17.2, 90th 22.8; ≥ 10 s 5 of 8; peel over the ride median 54°; upcoast within 3 s median 9 m, 90th 14 m
+== P65R
+tracker: 10 samples, 9 clean; toward +x 9 of 9; median angle 35°, median peel speed 10.2 m/s; readout: left (+x) 8, closes out 2
+readout every 1 s : 127 reads; closes out 22 (17 %), left (+x) 105 (83 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 116 of 117; median angle 43°, angle of the +x reads ≥ 27°: median 43°
+health seed 1: fastest 9.37 m/s, Froude caps 0 (0 in water), volume 0.01 %, finite true; onsets per 100 s 1347 551
+big (qP65R-big.json): 10 crests; ride along shore median 18 m, 75th 30, 90th 56; along its breaks median 47 m, 90th 163; duration median 7.3 s, 75th 13.2, 90th 21.9; ≥ 10 s 3 of 10; peel over the ride median 40°; upcoast within 3 s median 8 m, 90th 13 m
+
+## peel-model.ts (linear rays, eikonal), the same candidates
+== runOn=0,fan=15,peakX=-10,takeOffX=-2
+small  h_b 2 m, c_b 3.95 m/s: peak (-14, -153) at 25.1 s; ride toward +x to (10, -110): 24 m along shore, 49 m along the break, 6.8 s; peel 10/50/90 % -1/28/37°, ≥ 40° over 1 m; upcoast spread 0 m; the reef's break reaches the waterline's 110 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-16, -170) at 21.8 s; ride toward +x to (16, -117): 32 m along shore, 62 m along the break, 7.3 s; peel 10/50/90 % 27/30/35°, ≥ 40° over 2 m; upcoast spread 0 m; the reef's break reaches the waterline's 117 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-21, -215) at 14.9 s; ride toward +x to (33, -96): 54 m along shore, 133 m along the break, 14.7 s; peel 10/50/90 % 35/36/44°, ≥ 40° over 16 m; upcoast spread 0 m; the reef's break reaches the waterline's 96 m
+== fan=0,runOn=0,peakX=-10,takeOffX=-2
+small  h_b 2 m, c_b 3.95 m/s: peak (-14, -153) at 25.1 s; ride toward +x to (19, -63): 33 m along shore, 96 m along the break, 12.2 s; peel 10/50/90 % 27/30/30°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 63 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-16, -170) at 21.8 s; ride toward +x to (30, -39): 46 m along shore, 139 m along the break, 17.0 s; peel 10/50/90 % 31/35/37°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 39 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-21, -215) at 14.9 s; ride toward +x to (31, -64): 52 m along shore, 160 m along the break, 18.8 s; peel 10/50/90 % 42/43/43°, ≥ 40° over 49 m; upcoast spread 0 m; the reef's break reaches the waterline's 64 m
+== fan=0,runOn=1,peakX=-10,takeOffX=-2
+small  h_b 2 m, c_b 3.95 m/s: peak (-14, -153) at 25.1 s; ride toward +x to (30, -33): 44 m along shore, 128 m along the break, 16.4 s; peel 10/50/90 % 30/30/31°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 33 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-16, -170) at 21.8 s; ride toward +x to (32, -39): 48 m along shore, 139 m along the break, 17.2 s; peel 10/50/90 % 34/35/35°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 39 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-21, -215) at 14.9 s; ride toward +x to (35, -61): 56 m along shore, 164 m along the break, 19.2 s; peel 10/50/90 % 43/43/43°, ≥ 40° over 52 m; upcoast spread 0 m; the reef's break reaches the waterline's 61 m
+== runOn=1,fan=15,peakX=-40,takeOffX=-32,alongShore=260
+small  h_b 2 m, c_b 3.95 m/s: peak (-44, -153) at 25.1 s; ride toward +x to (25, -36): 69 m along shore, 136 m along the break, 17.3 s; peel 10/50/90 % 28/28/28°, ≥ 40° over 1 m; upcoast spread 0 m; the reef's break reaches the waterline's 36 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-46, -170) at 21.8 s; ride toward +x to (39, -42): 85 m along shore, 154 m along the break, 17.1 s; peel 10/50/90 % 30/30/30°, ≥ 40° over 2 m; upcoast spread 0 m; the reef's break reaches the waterline's 42 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-51, -215) at 14.9 s; ride toward +x to (48, -59): 99 m along shore, 186 m along the break, 19.6 s; peel 10/50/90 % 36/36/40°, ≥ 40° over 10 m; upcoast spread 0 m; the reef's break reaches the waterline's 59 m
+== fan=0,runOn=1,angle=65,peakX=-30,takeOffX=-22,alongShore=240
+small  h_b 2 m, c_b 3.95 m/s: peak (-34, -151) at 25.3 s; ride toward +x to (20, -36): 54 m along shore, 127 m along the break, 15.9 s; peel 10/50/90 % 28/28/29°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 36 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-36, -167) at 22.2 s; ride toward +x to (23, -41): 59 m along shore, 139 m along the break, 16.7 s; peel 10/50/90 % 33/33/34°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 41 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-41, -208) at 15.7 s; ride toward +x to (28, -60): 69 m along shore, 163 m along the break, 18.5 s; peel 10/50/90 % 41/41/41°, ≥ 40° over 64 m; upcoast spread 0 m; the reef's break reaches the waterline's 60 m
+== fan=0,runOn=1,angle=60,peakX=-42,takeOffX=-34,alongShore=260
+small  h_b 2 m, c_b 3.95 m/s: peak (-46, -149) at 25.6 s; ride toward +x to (19, -37): 65 m along shore, 129 m along the break, 15.6 s; peel 10/50/90 % 27/27/28°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 37 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-48, -164) at 22.6 s; ride toward +x to (23, -42): 71 m along shore, 141 m along the break, 16.2 s; peel 10/50/90 % 32/32/32°, ≥ 40° over 1 m; upcoast spread 0 m; the reef's break reaches the waterline's 42 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-53, -203) at 16.3 s; ride toward +x to (30, -60): 83 m along shore, 166 m along the break, 18.0 s; peel 10/50/90 % 39/39/39°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 60 m
+== fan=0,runOn=1
+small  h_b 2 m, c_b 3.95 m/s: peak (-26, -153) at 25.1 s; ride toward +x to (18, -33): 44 m along shore, 128 m along the break, 16.4 s; peel 10/50/90 % 30/30/31°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 33 m
+medium h_b 2.5 m, c_b 4.69 m/s: peak (-28, -170) at 21.8 s; ride toward +x to (20, -39): 48 m along shore, 139 m along the break, 17.2 s; peel 10/50/90 % 34/35/35°, ≥ 40° over 0 m; upcoast spread 0 m; the reef's break reaches the waterline's 39 m
+big    h_b 3.8 m, c_b 5.80 m/s: peak (-33, -215) at 14.9 s; ride toward +x to (23, -61): 56 m along shore, 164 m along the break, 19.2 s; peel 10/50/90 % 43/43/43°, ≥ 40° over 52 m; upcoast spread 0 m; the reef's break reaches the waterline's 61 m

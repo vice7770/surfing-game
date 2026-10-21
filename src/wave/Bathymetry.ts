@@ -216,8 +216,8 @@ export function padangReefAt(x: number): boolean {
  * face down the line, its waves spread by its obliqueness, rarely carried the break on: half of Medium's crests broke
  * over less than 1.4 s (3 seeds × 14 periods), and the deep face ended in the taper 90 m from the beach. On a planar face
  * running into the beach Medium's crests break down the arm for 13 s at the median (24 of 37 for 10 s or more, against
- * 13 of 40), at a 50° peel by the readout (34° on the fan), the same footprint, window, beach and starts. The arm is
- * moved 12 m upcoast so its footprint, 15 m longer, stays centred.
+ * 13 of 40), at a 50° peel by the readout (34° on the fan), with the same beach and starts. The arm is moved 7 m upcoast
+ * and the window widened to 240 m, so its footprint, 15 m longer, keeps open water either side (`alongShore`).
  * Mutable for the design sweep (`scripts/canyon-size-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
@@ -235,13 +235,14 @@ export const CANYON = {
    */
   pathSlope: 1 / 23, endSlope: 1 / 4,
   /**
-   * The peak and the line's angle to the shore, degrees. The peak stands 120 m out (305 m until canyon-layout), 22 m
-   * upcoast of the window's centre (10 m until canyon-long-wave), so the arm's footprint from its upcoast end (x −42) to
-   * the end of its taper (x 43) is centred.
+   * The peak and the line's angle to the shore, degrees. The peak stands 120 m out (305 m until canyon-layout), 17 m
+   * upcoast of the window's centre (10 m until canyon-long-wave), so the arm's footprint from its upcoast end (x −37) to
+   * the end of its taper (x 48) leaves 83 m of open water to the −x side and 72 m to the +x side (80 m and 70 m on the
+   * short arm).
    */
-  peakX: -22, peakZ: -120, angle: 70,
+  peakX: -17, peakZ: -120, angle: 70,
   /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking (8 m, as before). */
-  takeOffX: -14,
+  takeOffX: -9,
   /**
    * The tank: the relaxation zone's inner edge, where the 1 m cells start, and the blend onto the platform, m. The blend
    * ends 40 m seaward of the arm's furthest foot (z −290), as it did at −575 before canyon-layout (foot −475).
@@ -276,11 +277,14 @@ export const CANYON = {
    */
   flatWidth: 10, lagoonDepth: 2,
   /**
-   * The window's width along shore, m (`alongShoreOf`): 220 m (160 m until canyon-layout), so 67–68 m of open water
-   * (70–90 m on the short arm), where the crests stay square, stands between the arm's footprint and each open side,
-   * whose edge band mirrors it (the advisor's P2w: the mirror's chevrons within the Beach's spread).
+   * The window's width along shore, m (`alongShoreOf`): 240 m since canyon-long-wave (220 m on canyon-layout's short arm,
+   * 160 m before), so 72–83 m of open water, where the crests stay square, stands between the arm's footprint and each
+   * open side, whose edge band mirrors it (the advisor's P2w: the mirror's chevrons within the Beach's spread). In the
+   * 220 m window the planar arm's footprint, 15 m longer than the short arm's, left 67–68 m either side, and the crests
+   * wrapping round its upcoast end came back from the −x side's mirror as a chevron inshore (Big: p90 24° inside the
+   * take-off, against the Beach's 10° and the short arm's 16°; 13 two-sided crests of 188 near the beach).
    */
-  alongShore: 220,
+  alongShore: 240,
   /**
    * How far inshore of the break line a column's new break still counts toward the peel the readout measures, m: the arm's
    * flat top (`flatWidth`), so the face, the end and the top count, and not the lagoon's bores or the shore break on the

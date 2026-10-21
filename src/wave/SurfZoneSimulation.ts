@@ -162,10 +162,10 @@ export interface SurfZoneConfig {
   startOut?: number;
   /**
    * The Canyon's layout (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, today's
-   * (canyon-layout, 2026-10-22: the reef bed on a short arm 120 m out, in a 220 m window); 'old', the whole layout before
-   * it (`CANYON_OLD`: its window, bed, tank, take-off `CANYON_TAKE_OFF_DEPTH_OLD` and starts `CANYON_RIDE_LINEUP_OLD`; its
-   * curl was already the default's), main's Canyon until canyon-layout. Every other spot ignores it; online rooms always
-   * run the default.
+   * (canyon-long-wave, 2026-10-22: a planar arm 120 m out whose break runs into the beach, in a 220 m window); 'old', the
+   * whole layout before it (`CANYON_OLD`: canyon-layout's short arm on its fan, with its window, bed, tank, take-off
+   * `CANYON_TAKE_OFF_DEPTH_OLD` and starts `CANYON_RIDE_LINEUP_OLD`), main's Canyon until canyon-long-wave. Every other
+   * spot ignores it; online rooms always run the default.
    */
   canyonBed?: CanyonBed;
 }
@@ -249,7 +249,7 @@ export const ALONG_SHORE = 160;
 
 /**
  * The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), the Wave
- * Pool's, or the Canyon's layout's (`CANYON.alongShore`, 220 m since canyon-layout; 160 m on `canyonBed` 'old'), else
+ * Pool's, or the Canyon's layout's (`CANYON.alongShore`, 220 m since canyon-layout, on `canyonBed` 'old' too), else
  * ALONG_SHORE.
  */
 export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore' | 'canyonBed'>): number {
@@ -593,12 +593,14 @@ export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed): number {
 /**
  * Where the Canyon's sets start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
  * line through the depth by which nine in ten of each size's waves have started breaking in the take-off's column
- * (the take-off's x ± 4 m; each wave's most seaward onset there), 2.19, 2.65 and 3.85 m for Small, Medium and Big
- * (canyon-layout, 2026-10-22, docs/research/canyon-layout-2026-10-22: 3 seeds × 14 periods each; within 0.06 m of the
- * line). Riders wait where the arm's face is this deep (`takeOffPoint`), so the sets break at, not seaward of, the take-off.
- * - On the short arm the take-off's column is again 8 m downcoast of the peak, on the same face, so the depths barely
- *   move: 2.23, 2.69 and 3.82 m on the long arm (the reef bed, 1.24 + 1.07 Hs, `CANYON_TAKE_OFF_DEPTH_OLD`), and on the
- *   1:30 face below a 2.8 m hinge before it 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs, from 2026-10-11).
+ * (the take-off's x ± 4 m; each wave's most seaward onset there), 2.43, 2.85 and 3.91 m for Small, Medium and Big
+ * (canyon-long-wave, 2026-10-22, docs/research/canyon-long-wave-2026-10-22: 3 seeds × 14 periods each; within 0.05 m of
+ * the line). Riders wait where the arm's face is this deep (`takeOffPoint`), so the sets break at, not seaward of, the
+ * take-off.
+ * - On the planar face the take-off's column, 8 m downcoast of the peak as before, climbs at 1:23 to the line, so the
+ *   sets start a little deeper than on the fan: 2.19, 2.65 and 3.85 m on canyon-layout's short arm (1.14 + 1.12 Hs,
+ *   `CANYON_TAKE_OFF_DEPTH_OLD`), 2.23, 2.69 and 3.82 m on the long arm before it (1.24 + 1.07 Hs), and on the 1:30
+ *   face below a 2.8 m hinge before that 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs, from 2026-10-11).
  * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs: 1.49, 1.96 and 2.50 m). On
  *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
  *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
@@ -606,13 +608,13 @@ export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed): number {
  *   out still (`CANYON_RIDE_LINEUP`).
  * Re-measure if the arm or the swells change.
  */
-export const CANYON_TAKE_OFF_DEPTH = { base: 1.14, perMetre: 1.12 } as const;
+export const CANYON_TAKE_OFF_DEPTH = { base: 1.5, perMetre: 1 } as const;
 
 /**
- * `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-layout (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef
- * bed's fit (2026-10-22, docs/research/canyon-reef-bed-2026-10-22), main's at 2dd9ba52.
+ * `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-long-wave (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`):
+ * canyon-layout's fit on its short arm (2026-10-22, docs/research/canyon-layout-2026-10-22), main's at bff9a874.
  */
-export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.24, perMetre: 1.07 } as const;
+export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.14, perMetre: 1.12 } as const;
 
 /** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`), on a bed. */
 export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
@@ -633,31 +635,32 @@ export const RIDE_LINEUP_OFFSET = 11;
  * them): where the faces become catchable, about 17° over the highest third of the waves, but seaward of where one wave
  * in ten starts breaking. The catch diagnosis (2026-10-22): from rest on Big's 14° faces 11 m out the board was picked
  * up only 2–2.5 m ahead of the crest, 90–93 % up the face, and the rider fell over the back as the crest passed; already
- * paddling, from the take-off, on 17–19° it dropped in. Re-measured on canyon-layout's short arm (2026-10-22,
- * docs/research/canyon-layout-2026-10-22/start.txt: big-start's transect probe along the take-off's column, 2 seeds × 12
- * periods a size, the face the rider feels, each wave's steepest front over 1 m; the waves' starts pooled with the size
- * report's 3 seeds × 14), the same starts:
- * - Big: 13.8° 11 m out, 14.9° 6 m out, 14.7° at the take-off, 17° only 10 m inside it (±3 m); one wave in ten starts
- *   breaking 6.0 m seaward of the take-off (5 of 65 seaward of 6 m out; their median 18 m inside it). So Big starts 6 m
- *   out, the rule's priority (the owner's 2026-10-11 "not on top of the breaking"); its faces there are steeper than on the
- *   long arm (13°), still short of 17°. `?startOut=0` tries the take-off (8 of 65 break seaward of it). On the long arm
- *   one in ten broke 5.3 m seaward, and Big started 6 m out too; on the 1:30 bed before it, at its take-off (offset 0).
- * - Medium: 8° 11 m out, 15° at the take-off, 17° 6 m inside it; one wave in ten starts breaking 3 m seaward of the
- *   take-off (1 of 59 seaward of 11 m out): the rule would start it 3–4 m out, but it keeps 11 m (the owner, 2026-10-12:
- *   "fine for now") until it is ridden again, as on the long arm.
- * - Small: 10° 11 m out, 17° at the take-off; one wave in ten starts breaking 5.5 m seaward of it (2 of 55 seaward of
- *   11 m out): 11 m, as before.
+ * paddling, from the take-off, on 17–19° it dropped in. Re-measured on canyon-long-wave's planar arm (2026-10-22,
+ * docs/research/canyon-long-wave-2026-10-22/start.txt: big-start's transect probe along the take-off's column, 2 seeds ×
+ * 12 periods a size, the face the rider feels, each wave's steepest front over 1 m; the waves' starts pooled with the size
+ * report's 3 seeds × 14). On the planar face the waves start breaking over a wider band across shore than on the fan,
+ * and their faces stand up later, inside the take-off:
+ * - Big: 12.2° 11 m out, 12.1° 6 m out, 13.0° at the take-off, 17° only 37–40 m inside it (±3 m); one wave in ten starts
+ *   breaking 10 m seaward of the take-off (6 of 64 seaward of 11 m out, 9 of 64 of 6 m out; their median 10 m inside
+ *   it). So Big starts 11 m out, the rule's priority (the owner's 2026-10-11 "not on top of the breaking"), on faces as
+ *   steep as 6 m out. `?startOut=0` tries the take-off (14 of 64 break seaward of it). On canyon-layout's short arm one
+ *   in ten broke 6.0 m seaward, and Big started 6 m out (`CANYON_RIDE_LINEUP_OLD`).
+ * - Medium: 6.2° 11 m out, 7.0° at the take-off, 17° 20–23 m inside it; one wave in ten starts breaking 4 m seaward of
+ *   the take-off (1 of 60 seaward of 11 m out): 11 m, as before (the owner, 2026-10-12: "fine for now").
+ * - Small: 6.2° 11 m out, 10.1° at the take-off, 17° 18–21 m inside it; one wave in ten starts breaking 7.5 m seaward
+ *   of it (2 of 50 seaward of 11 m out): 11 m, as before.
  * Re-measure if the arm or the swells change.
  */
 export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
   { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
   { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: 6 },
+  { significantHeight: 2.4, offset: RIDE_LINEUP_OFFSET },
 ];
 
 /**
- * `CANYON_RIDE_LINEUP` on the layout before canyon-layout (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef bed's
- * starts (2026-10-22), main's at 2dd9ba52: Big 6 m out, seaward of where one wave in ten starts breaking.
+ * `CANYON_RIDE_LINEUP` on the layout before canyon-long-wave (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`):
+ * canyon-layout's starts on its short arm (2026-10-22), main's at bff9a874: Big 6 m out, seaward of where one wave in ten
+ * starts breaking.
  */
 export const CANYON_RIDE_LINEUP_OLD: readonly { readonly significantHeight: number; readonly offset: number }[] = [
   { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },

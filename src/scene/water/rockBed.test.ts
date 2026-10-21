@@ -1,6 +1,6 @@
 import { PerspectiveCamera, Scene, ShaderLib, type WebGLRenderer } from 'three';
 import { describe, expect, it } from 'vitest';
-import { CANYON, CANYON_OLD, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonShape, type SpotName } from '../../wave/Bathymetry';
+import { CANYON, CANYON_OLD, canyonBreakLineZ, canyonFootZ, canyonReefEndX, canyonShape, type SpotName } from '../../wave/Bathymetry';
 import { SPOT_OPTICS } from '../waterOptics';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { EdgeBand } from '../EdgeBand';
@@ -29,7 +29,7 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
   const { blocks, patches, pockets, tops } = ROCK_TEXTURE;
   const least = (1 - blocks.tone - patches.tone) * (1 - pockets.depth) * (1 - tops.pale);
 
-  for (const [name, c] of [['short arm', CANYON], ['old layout', CANYON_OLD]] as const) {
+  for (const [name, c] of [['today\'s arm', CANYON], ['old layout', CANYON_OLD]] as const) {
     it(`covers the arm's top, end and back, and leaves the platform, the beach face and the land sand (${name})`, () => {
       const cover = canyonRockCover(c);
       // The arm's top, a few metres inshore of its break line, downcoast of the peak: rock, its texture aside.
@@ -39,24 +39,31 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
         expect(cover(x, z)).toBeGreaterThanOrEqual(least - 1e-9);
         expect(cover(x, z)).toBeLessThanOrEqual(ROCK_DARKEST);
       }
-      // Open platform upcoast of the arm's end, seaward of its foot, and past its end on the beach face: sand.
+      // Open platform upcoast of the arm's end, seaward of its foot, and past its end on the beach face (where its face
+      // runs on to, today's, `canyonReefEndX`): sand.
       expect(cover(c.peakX - 60, c.peakZ)).toBe(0);
       expect(cover(c.peakX + 5, canyonFootZ(c) - 40)).toBe(0);
-      expect(cover(canyonArmEndX(c) + c.endTaper + 10, -c.crestDepth / c.shoreSlope)).toBe(0);
+      expect(cover(canyonReefEndX(c) + c.endTaper + 10, -c.crestDepth / c.shoreSlope)).toBe(0);
       // The beach face inshore of the ledge's back, shallower than its trough: sand. Dry land: sand.
       expect(cover(c.peakX + 5, -(c.lagoonDepth / c.shoreSlope) * 0.8)).toBe(0);
       expect(cover(c.peakX + 5, 5)).toBe(0);
     });
   }
 
-  it('follows the ledge where its layout puts it: each layout\'s peak is rock only on its own bed', () => {
+  it('follows the ledge where its layout puts it: each layout\'s peak, and the reef either side, rock only on its own bed', () => {
     const today = canyonRockCover(canyonShape('reef'));
     const old = canyonRockCover(canyonShape('old'));
     const onTop = (c: typeof CANYON) => [c.peakX + 2, canyonBreakLineZ(c.peakX + 2, c) + 3] as const;
     expect(today(...onTop(CANYON))).toBeGreaterThan(0);
     expect(old(...onTop(CANYON_OLD))).toBeGreaterThan(0);
-    // The old layout's peak, 305 m out, is open platform on today's short arm.
-    expect(today(...onTop(CANYON_OLD))).toBe(0);
+    // The two arms overlap (canyon-long-wave moved the peak 12 m upcoast and made the face planar): today's upcoast end
+    // stands on open platform on the old layout, and the old fan's deep face downcoast on open platform today.
+    const todaysEnd = [CANYON.peakX - 12, canyonBreakLineZ(CANYON.peakX - 12) - 8] as const;
+    expect(today(...todaysEnd)).toBeGreaterThan(0);
+    expect(old(...todaysEnd)).toBe(0);
+    const oldFan = [30, -120] as const;
+    expect(old(...oldFan)).toBeGreaterThan(0);
+    expect(today(...oldFan)).toBe(0);
   });
 
   it('turns from sand to rock over the relief ROCK_RELIEF gives, smoothly', () => {

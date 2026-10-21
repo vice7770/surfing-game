@@ -87,7 +87,8 @@ if (process.argv.includes('--pool') && runs.length > 1) {
 }
 for (const { file, run } of runs) {
   const bed = run.bed ?? 'reef';
-  if (bed === 'reef') Object.assign(CANYON, run.canyon);
+  // A run from before canyon-long-wave has no `runOn`: its arm tapered past the line's end.
+  if (bed === 'reef') Object.assign(CANYON, { runOn: 0 }, run.canyon);
   const c = canyonShape(bed);
   const cb = run.celerity;
   const config = { spot: 'canyon', seed: 1, significantHeight: run.hs, peakPeriod: run.tp, directionDegrees: 0, spreading: 150, tide: 0, canyonBed: bed } as SurfZoneConfig;

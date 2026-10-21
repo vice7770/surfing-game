@@ -228,8 +228,9 @@ function crestsByDensity(onsets: Phased[], tp: number): Phased[][] {
 
 function analyse(run: Run): void {
   const bed = run.bed ?? 'reef';
-  // Today's layout takes the run's shape (a sweep's); a run from before canyon-layout had no window in it: 160 m.
-  if (bed === 'reef') Object.assign(CANYON, { alongShore: 160, peelReach: Infinity }, run.canyon);
+  // Today's layout takes the run's shape (a sweep's); a run from before canyon-layout had no window in it (160 m), and one
+  // from before canyon-long-wave no `runOn` (its arm tapered past the line's end).
+  if (bed === 'reef') Object.assign(CANYON, { alongShore: 160, peelReach: Infinity, runOn: 0 }, run.canyon);
   const c = canyonShape(bed);
   const { tp, hs, celerity } = run;
   const config = configFor(1, hs, tp, run.spreading, bed);

@@ -1,0 +1,98 @@
+# canyon-size-report.ts, 3 seeds × 14 periods a size (each size's own swell, square, s = 150, mid tide, calm), --stability.
+# today = main's Canyon at bff9a874 (canyon-layout's short arm on its fan; now ?canyonBed=old), its runs' onsets re-read (--from); now = canyon-long-wave (fan 0, runOn 1, peak x -22, take-off x -14), seeds run apart (--first-seed) and pooled (--from a,b,c).
+
+## small: today
+
+small: Hs 0.9 m, Tp 9 s, s 150; 3 seed(s) × 14 periods; c_b 3.95 m/s; layout reef, window 220 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-10,"peakZ":-120,"angle":70,"takeOffX":-2,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":220,"peelReach":10}
+tracker: 27 samples, 25 clean; toward +x 25 of 25; median angle 28°, median peel speed 8.5 m/s; readout: left (+x) 15, closes out 12
+crests: 40; starts median x -7, 10–90 % -12…20, within ±10 m 32 of 40; start z median -126, depth median 1.52 m, seaward of the line median 13 m
+  starts by bed part: arm face 23, arm end 13, arm top 3, beach face 1; on the arm (face or end) 36 of 40
+  close-outs (≥ 40 m within 2 s): 1; spans median 14 m, 90th 23 m
+  upcoast (> 2 onsets over 5 m within 3 s): 3; reach median 3 m, 90th 10 m, most 100 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 14 m, 90th 22 m; upcoast 2; reach median 3 m, 90th 6 m, most 29 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 33; toward +x 33; median 50°, speed 5.2 m/s
+onsets: 1890; by bed part: arm face 857, beach face 755, arm top 220, arm end 58; depth median 1.42 m, 10–90 % 1.00…2.13 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 11.90°): 234 reads; closes out 119 (51 %), left (+x) 115 (49 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 208 of 208; median angle 29°, angle of the +x reads ≥ 27°: median 43°
+health seed 1: fastest 4.49 m/s, Froude caps 0 (0 in water), volume -0.10 %, finite true; onsets per 100 s 431 58
+health seed 2: fastest 4.68 m/s, Froude caps 0 (0 in water), volume 0.04 %, finite true; onsets per 100 s 563 74
+health seed 3: fastest 5.02 m/s, Froude caps 0 (0 in water), volume -0.12 %, finite true; onsets per 100 s 607 157
+
+## small: now
+
+small: Hs 0.9 m, Tp 9 s, s 150; 3 seed(s) × 14 periods; c_b 3.95 m/s; layout reef, window 220 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-22,"peakZ":-120,"angle":70,"takeOffX":-14,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":0,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":220,"peelReach":10,"runOn":1}
+tracker: 29 samples, 28 clean; toward +x 28 of 28; median angle 37°, median peel speed 6.7 m/s; readout: left (+x) 23, closes out 6
+crests: 40; starts median x -21, 10–90 % -25…-1, within ±10 m 31 of 40; start z median -121, depth median 1.59 m, seaward of the line median 12 m
+  starts by bed part: arm face 21, arm end 16, arm top 3; on the arm (face or end) 37 of 40
+  close-outs (≥ 40 m within 2 s): 0; spans median 10 m, 90th 17 m
+  upcoast (> 2 onsets over 5 m within 3 s): 1; reach median 2 m, 90th 7 m, most 17 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 10 m, 90th 17 m; upcoast 1; reach median 2 m, 90th 7 m, most 17 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 35; toward +x 35; median 33°, speed 7.2 m/s
+onsets: 2292; by bed part: beach face 1083, arm face 892, arm top 254, arm end 63; depth median 1.43 m, 10–90 % 0.97…2.00 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 14.69°): 242 reads; closes out 69 (29 %), left (+x) 173 (71 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 197 of 197; median angle 50°, angle of the +x reads ≥ 27°: median 54°
+health seed 1: fastest 5.56 m/s, Froude caps 0 (0 in water), volume -0.09 %, finite true; onsets per 100 s 476 79
+health seed 2: fastest 5.83 m/s, Froude caps 0 (0 in water), volume 0.06 %, finite true; onsets per 100 s 740 79
+health seed 3: fastest 6.72 m/s, Froude caps 0 (0 in water), volume -0.11 %, finite true; onsets per 100 s 695 223
+
+## medium: today
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 3 seed(s) × 14 periods; c_b 4.69 m/s; layout reef, window 220 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-10,"peakZ":-120,"angle":70,"takeOffX":-2,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":220,"peelReach":10}
+tracker: 39 samples, 36 clean; toward +x 36 of 36; median angle 34°, median peel speed 9.4 m/s; readout: left (+x) 24, closes out 15
+crests: 45; starts median x -11, 10–90 % -14…-4, within ±10 m 41 of 45; start z median -139, depth median 1.81 m, seaward of the line median 18 m
+  starts by bed part: arm end 25, arm face 19, beach face 1; on the arm (face or end) 44 of 45
+  close-outs (≥ 40 m within 2 s): 0; spans median 17 m, 90th 25 m
+  upcoast (> 2 onsets over 5 m within 3 s): 2; reach median 3 m, 90th 7 m, most 12 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 16 m, 90th 25 m; upcoast 2; reach median 3 m, 90th 7 m, most 12 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 40; toward +x 40; median 51°, speed 6.4 m/s
+onsets: 4493; by bed part: beach face 2859, arm face 1319, arm top 172, arm end 143; depth median 1.57 m, 10–90 % 1.17…2.41 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 10.91°): 399 reads; closes out 156 (39 %), left (+x) 242 (61 %), right (−x) 1 (0 %), mixed 0 (0 %); clean toward +x 366 of 367; median angle 31°, angle of the +x reads ≥ 27°: median 37°
+health seed 1: fastest 5.96 m/s, Froude caps 0 (0 in water), volume -0.03 %, finite true; onsets per 100 s 848 538
+health seed 2: fastest 5.83 m/s, Froude caps 0 (0 in water), volume -0.38 %, finite true; onsets per 100 s 1041 250
+health seed 3: fastest 7.58 m/s, Froude caps 0 (0 in water), volume -0.13 %, finite true; onsets per 100 s 1257 559
+
+## medium: now
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 3 seed(s) × 14 periods; c_b 4.69 m/s; layout reef, window 220 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-22,"peakZ":-120,"angle":70,"takeOffX":-14,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":0,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":220,"peelReach":10,"runOn":1}
+tracker: 39 samples, 36 clean; toward +x 36 of 36; median angle 44°, median peel speed 6.8 m/s; readout: left (+x) 30, closes out 9
+crests: 44; starts median x -24, 10–90 % -26…-10, within ±10 m 39 of 44; start z median -138, depth median 1.71 m, seaward of the line median 15 m
+  starts by bed part: arm end 31, arm face 9, arm top 3, beach face 1; on the arm (face or end) 40 of 44
+  close-outs (≥ 40 m within 2 s): 1; spans median 12 m, 90th 19 m
+  upcoast (> 2 onsets over 5 m within 3 s): 3; reach median 4 m, 90th 7 m, most 100 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 12 m, 90th 18 m; upcoast 2; reach median 3 m, 90th 7 m, most 9 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 41; toward +x 41; median 43°, speed 6.9 m/s
+onsets: 4810; by bed part: beach face 3195, arm face 1245, arm top 214, arm end 156; depth median 1.63 m, 10–90 % 1.17…2.34 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 6.71°): 407 reads; closes out 96 (24 %), left (+x) 311 (76 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 377 of 377; median angle 44°, angle of the +x reads ≥ 27°: median 49°
+health seed 1: fastest 7.75 m/s, Froude caps 0 (0 in water), volume -0.03 %, finite true; onsets per 100 s 865 538
+health seed 2: fastest 7.93 m/s, Froude caps 0 (0 in water), volume -0.40 %, finite true; onsets per 100 s 1233 272
+health seed 3: fastest 8.65 m/s, Froude caps 0 (0 in water), volume -0.11 %, finite true; onsets per 100 s 1328 574
+
+## big: today
+
+big: Hs 2.4 m, Tp 14 s, s 150; 3 seed(s) × 14 periods; c_b 5.80 m/s; layout reef, window 220 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-10,"peakZ":-120,"angle":70,"takeOffX":-2,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":15,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":220,"peelReach":10}
+tracker: 41 samples, 38 clean; toward +x 37 of 38; median angle 30°, median peel speed 11.8 m/s; readout: left (+x) 24, closes out 17
+crests: 48; starts median x -14, 10–90 % -19…-7, within ±10 m 46 of 48; start z median -161, depth median 2.44 m, seaward of the line median 32 m
+  starts by bed part: arm end 41, arm face 7; on the arm (face or end) 48 of 48
+  close-outs (≥ 40 m within 2 s): 2; spans median 22 m, 90th 32 m
+  upcoast (> 2 onsets over 5 m within 3 s): 24; reach median 8 m, 90th 22 m, most 96 m
+  off the beach face (the flanks' shore break left out): close-outs 2; spans median 22 m, 90th 32 m; upcoast 24; reach median 8 m, 90th 22 m, most 96 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 32; toward +x 32; median 31°, speed 11.6 m/s
+onsets: 7177; by bed part: beach face 4734, arm face 1605, arm end 381, shelf 261, arm top 196; depth median 2.43 m, 10–90 % 1.77…4.34 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 2.27°): 527 reads; closes out 242 (46 %), left (+x) 281 (53 %), right (−x) 4 (1 %), mixed 0 (0 %); clean toward +x 468 of 485; median angle 29°, angle of the +x reads ≥ 27°: median 38°
+health seed 1: fastest 9.70 m/s, Froude caps 0 (0 in water), volume -0.05 %, finite true; onsets per 100 s 1173 848
+health seed 2: fastest 8.65 m/s, Froude caps 0 (0 in water), volume 0.09 %, finite true; onsets per 100 s 1338 1292
+health seed 3: fastest 9.18 m/s, Froude caps 0 (0 in water), volume 1.17 %, finite true; onsets per 100 s 1289 1237
+
+## big: now
+
+big: Hs 2.4 m, Tp 14 s, s 150; 3 seed(s) × 14 periods; c_b 5.80 m/s; layout reef, window 220 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-22,"peakZ":-120,"angle":70,"takeOffX":-14,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":0,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":220,"peelReach":10,"runOn":1}
+tracker: 39 samples, 32 clean; toward +x 31 of 32; median angle 47°, median peel speed 8.4 m/s; readout: left (+x) 26, closes out 12, right (−x) 1
+crests: 50; starts median x -26, 10–90 % -29…-13, within ±10 m 44 of 50; start z median -159, depth median 2.50 m, seaward of the line median 32 m
+  starts by bed part: arm end 34, arm face 14, arm top 2; on the arm (face or end) 48 of 50
+  close-outs (≥ 40 m within 2 s): 2; spans median 17 m, 90th 26 m
+  upcoast (> 2 onsets over 5 m within 3 s): 16; reach median 7 m, 90th 24 m, most 30 m
+  off the beach face (the flanks' shore break left out): close-outs 2; spans median 17 m, 90th 26 m; upcoast 16; reach median 7 m, 90th 24 m, most 30 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 44; toward +x 44; median 48°, speed 7.9 m/s
+onsets: 7280; by bed part: beach face 4810, arm face 1534, arm end 377, shelf 308, arm top 251; depth median 2.57 m, 10–90 % 1.77…4.57 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 3.10°): 523 reads; closes out 183 (35 %), left (+x) 334 (64 %), right (−x) 3 (1 %), mixed 3 (1 %); clean toward +x 429 of 432; median angle 44°, angle of the +x reads ≥ 27°: median 49°
+health seed 1: fastest 9.89 m/s, Froude caps 11 (0 in water), volume 0.25 %, finite true; onsets per 100 s 1227 860
+health seed 2: fastest 10.05 m/s, Froude caps 0 (0 in water), volume 0.30 %, finite true; onsets per 100 s 1322 1372
+health seed 3: fastest 9.74 m/s, Froude caps 0 (0 in water), volume 1.35 %, finite true; onsets per 100 s 1334 1165

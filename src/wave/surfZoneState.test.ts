@@ -135,7 +135,7 @@ function canyonFingerprint(sim: SurfZoneSimulation): string {
 }
 
 describe('the Canyon\'s spilling front and roller lenses in the handover (the roller lens, S3, §5)', () => {
-  // The Canyon's whole arm, 160 m of shore (canyon-layout's short arm, x −30…40, inside it; its own window is 220 m),
+  // The Canyon's whole arm, 160 m of shore (canyon-long-wave's planar arm, x −37…48, inside it; its own window is 240 m),
   // spun up a period: its waves already break and carry lenses.
   const canyon: SurfZoneConfig = {
     spot: 'canyon', seed: 3, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0,

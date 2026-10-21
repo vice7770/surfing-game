@@ -14,7 +14,7 @@
  *   have started breaking, counting from the deep side) and how far seaward of a given take-off and start they break.
  *
  *   rolldown docs/research/canyon-long-wave-2026-10-22/arm-report.ts -o dist/scripts/arm-report.mjs --format esm --platform node \
- *     && node dist/scripts/arm-report.mjs <run.json> [--take-off <m deep>] [--start <m seaward>] [--bins -25,-15,...]
+ *     && node dist/scripts/arm-report.mjs <run.json>[,<run.json>…] [--take-off <m deep>] [--start <m seaward>] [--bins -25,-15,...]
  *
  * Bins: 20 m wide (±10 m) on canyon-reef-bed's arm; here 10 m wide (±5 m), centred every 10 m from 5 m inside the arm's
  * upcoast end to its end on the beach face, unless `--bins` says.
@@ -32,9 +32,15 @@ const option = (name: string): string | undefined => {
   const index = process.argv.indexOf(`--${name}`);
   return index >= 0 ? process.argv[index + 1] : undefined;
 };
-const run = JSON.parse(readFileSync(process.argv[2], 'utf8')) as Run;
+// One file, or several (`a.json,b.json,…`: one layout's seeds run apart), read as one run.
+const [run, ...others] = process.argv[2].split(',').map((file) => JSON.parse(readFileSync(file, 'utf8')) as Run);
+for (const other of others) {
+  run.records.push(...other.records);
+  run.onsets.push(...other.onsets);
+}
 const bed = run.bed ?? 'reef';
-if (bed === 'reef') Object.assign(CANYON, { alongShore: 160 }, run.canyon);
+// A run from before canyon-long-wave has no `runOn`: its arm tapered past the line's end.
+if (bed === 'reef') Object.assign(CANYON, { alongShore: 160, runOn: 0 }, run.canyon);
 const c = canyonShape(bed);
 const config = { spot: 'canyon', seed: 1, significantHeight: run.hs, peakPeriod: run.tp, directionDegrees: 0, spreading: run.spreading, tide: 0, canyonBed: bed } as SurfZoneConfig;
 const tank = tankLayout(config);
