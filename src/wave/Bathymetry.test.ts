@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, canyonArmAt, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonHingeZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_OLD, PADANG, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonHingeZ, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -306,10 +306,11 @@ describe('surf spot bathymetry', () => {
     });
   });
 
-  // The straight-crest bed (the owner, 2026-10-06): no canyon, so nothing seaward of the arm turns the crests.
+  // The straight-crest bed (the owner, 2026-10-06): no canyon, so nothing seaward of the arm turns the crests. Its own
+  // window since canyon-layout (2026-10-22: 220 m; ALONG_SHORE's 160 m before).
   it('keeps the Canyon level along shore seaward of its arm, with no canyon, and level across both open edges', () => {
     const canyon = createSpot('canyon', 1);
-    const edge = ALONG_SHORE / 2;
+    const edge = CANYON.alongShore / 2;
     // Seaward of the arm's furthest foot, at the bottom of its end just upcoast of the peak, the bed is the plain shelf
     // everywhere along shore.
     const foot = canyonFootZ();
@@ -323,22 +324,41 @@ describe('surf spot bathymetry', () => {
     }
   });
 
-  it('lays the Canyon\'s arm obliquely from its peak toward +x and the beach, across the window, plunging its sets and spilling down the fan', () => {
+  it('lays the Canyon\'s arm obliquely from its peak toward +x and the beach, a short reef near the beach, plunging its sets and spilling down the fan', () => {
     const canyon = createSpot('canyon', 1);
-    // The break line runs from its peak toward +x and the beach at the design angle, until it meets the beach face
-    // inside the +x edge's margin.
+    // The break line runs from its peak toward +x and the beach at the design angle, until it meets the beach face.
     expect(canyonBreakLineZ(CANYON.peakX + 20) - canyonBreakLineZ(CANYON.peakX)).toBeCloseTo(20 * Math.tan((CANYON.angle * Math.PI) / 180), 6);
-    expect(canyonArmEndX()).toBeGreaterThan(ALONG_SHORE / 2 - 20);
-    // Behind the line the terrace's top is crestDepth deep; seaward of its face the shelf.
-    for (const x of [-30, 0, 30]) {
+    // A short reef near a visible beach (canyon-layout, 2026-10-22; the advisor's design C with a 1:15 beach): the peak
+    // 120 m from the waterline, the arm 35–40 m along shore to its end on the beach face (about 110 m along its line), its
+    // footprint from its upcoast end to its taper about centred in the window, with open water either side clear of
+    // each edge's levelling (50 m −x, 50 m +x). Until then the line ran 280 m across shore from a peak 305 m out, across
+    // the whole window.
+    const armEnd = canyonArmEndX();
+    const upcoastEnd = CANYON.peakX - (CANYON.shelfDepth - CANYON.crestDepth) / CANYON.endSlope;
+    expect(-CANYON.peakZ).toBe(120);
+    expect(armEnd - CANYON.peakX).toBeGreaterThan(35);
+    expect(armEnd - CANYON.peakX).toBeLessThan(40);
+    expect(Math.hypot(armEnd - CANYON.peakX, canyonBreakLineZ(armEnd) - CANYON.peakZ)).toBeLessThan(115);
+    expect(Math.abs((upcoastEnd + armEnd + CANYON.endTaper) / 2)).toBeLessThan(10);
+    expect(upcoastEnd).toBeGreaterThan(-CANYON.alongShore / 2 + OPEN_EDGE_RAMP + 40);
+    expect(armEnd + CANYON.endTaper).toBeLessThan(CANYON.alongShore / 2 - OPEN_EDGE_RAMP - 40);
+    // Behind the line the terrace's top is crestDepth deep; seaward of its face the shelf. Along the arm, from the
+    // take-off to 10 m short of its end.
+    for (const x of [CANYON.takeOffX, 10, 18]) {
       const zLine = canyonBreakLineZ(x);
       const zHinge = canyonHingeZ(x);
       expect(canyon.depthAt(x, zLine + 2)).toBeCloseTo(CANYON.crestDepth, 6);
       // Behind the line the top is level for flatWidth, then falls at pathSlope to the trough, which the beach face closes.
       expect(canyon.depthAt(x, zLine + CANYON.flatWidth - 1)).toBeCloseTo(CANYON.crestDepth, 6);
+      // Down the arm the 1:15 beach face closes the trough before it is 2 m deep (canyon-layout): from 10 m downcoast of
+      // the take-off on.
       const trough = zLine + CANYON.flatWidth + (CANYON.lagoonDepth - CANYON.crestDepth) / CANYON.pathSlope + 1;
-      expect(-trough * CANYON.shoreSlope).toBeGreaterThan(CANYON.lagoonDepth);
-      expect(canyon.depthAt(x, trough)).toBeCloseTo(CANYON.lagoonDepth, 6);
+      if (x <= 10) {
+        expect(-trough * CANYON.shoreSlope).toBeGreaterThan(CANYON.lagoonDepth);
+        expect(canyon.depthAt(x, trough)).toBeCloseTo(CANYON.lagoonDepth, 6);
+      } else {
+        expect(canyon.depthAt(x, trough)).toBeCloseTo(-trough * CANYON.shoreSlope, 6);
+      }
       expect(canyon.depthAt(x, zHinge - (CANYON.shelfDepth - CANYON.hingeDepth) / CANYON.pathSlope - 2)).toBeCloseTo(CANYON.shelfDepth, 6);
       // Below the hinge its face climbs at pathSlope along the waves' path (+z).
       const below = zHinge - CANYON.hingeRounding - 5;
@@ -352,7 +372,8 @@ describe('surf spot bathymetry', () => {
     // The reef bed (2026-10-22, docs/research/canyon-reef-bed-2026-10-22): the waves breaking below the hinge plunge weakly,
     // as the owner's reference reel (the advisor: ξb about 0.42–0.55), and those breaking on the fan down the line spill.
     // ξb = slope / √(Hb / L0) with the advisor's Hb = 0.78 h: Big's and Medium's sets near the peak, measured 3.3–3.7 m and
-    // 2.2–2.3 m deep there, and Big's median wave at the hinge; then Small on the fan's shallow face, 1.3 m deep at x = 10.
+    // 2.2–2.3 m deep there, and Big's median wave at the hinge; then Small on the fan's shallow face, 1.3 m deep at x = 10
+    // (20 m down the arm since canyon-layout; 48 m before, where the fan was 1:74 against 1:45 now).
     // Until then (1:30 below a 2.8 m hinge) every size spilled: ξb under 0.4 for even the breaker the platform holds.
     const iribarren = (slope: number, depth: number, period: number) => slope / Math.sqrt((0.78 * depth) / ((9.81 * period ** 2) / (2 * Math.PI)));
     for (const [depth, period] of [[3.5, 14], [2.25, 11], [CANYON.hingeDepth, 14]]) {
@@ -368,7 +389,7 @@ describe('surf spot bathymetry', () => {
     for (let depth = 1.5; depth < CANYON.shelfDepth - 0.05; depth += 0.5) {
       // Each along-shore column's most seaward point this shallow, and the column where it lies furthest out.
       let best = { x: Number.NaN, z: Infinity };
-      for (let x = -70; x <= 70; x += 0.5) {
+      for (let x = -CANYON.alongShore / 2 + OPEN_EDGE_RAMP; x <= CANYON.alongShore / 2 - OPEN_EDGE_RAMP; x += 0.5) {
         let z = CANYON.zoneInner + CANYON.blendLength;
         while (z < 0 && canyon.depthAt(x, z) > depth) z += 0.25;
         if (z < best.z) best = { x, z };
@@ -379,18 +400,32 @@ describe('surf spot bathymetry', () => {
     }
   });
 
-  it('ends the Canyon\'s arm upcoast of its peak clear of the −x open edge\'s levelling, so the edge copies plain shelf', () => {
+  it('ends the Canyon\'s arm clear of both open edges\' levelling, so each edge copies plain shelf and beach face', () => {
     const canyon = createSpot('canyon', 1);
-    // The open edge eases the bed over OPEN_EDGE_RAMP to its profile that far in: there the arm's end must be gone.
-    const levelled = -ALONG_SHORE / 2 + OPEN_EDGE_RAMP;
+    // The open edge eases the bed over OPEN_EDGE_RAMP to its profile that far in: there the arm's end must be gone, and
+    // since canyon-layout (2026-10-22) its taper past its end on the beach face too.
+    const levelled = -CANYON.alongShore / 2 + OPEN_EDGE_RAMP;
     expect(CANYON.peakX - (CANYON.shelfDepth - CANYON.crestDepth) / CANYON.endSlope).toBeGreaterThan(levelled);
+    expect(canyonArmEndX() + CANYON.endTaper).toBeLessThan(-levelled);
     for (let z = -400; z <= -5; z += 5) {
       expect(canyon.depthAt(levelled, z)).toBeCloseTo(Math.min(CANYON.shelfDepth, -z * CANYON.shoreSlope), 9);
+      expect(canyon.depthAt(-levelled, z)).toBeCloseTo(Math.min(CANYON.shelfDepth, -z * CANYON.shoreSlope), 9);
     }
     // The peel is measured on the arm, from its end beside the peak to the beach face (`canyonArmAt`).
     expect(canyonArmAt(CANYON.peakX)).toBe(true);
     expect(canyonArmAt(levelled)).toBe(false);
     expect(canyonArmAt(canyonArmEndX() + 1)).toBe(false);
+    // Only the arm's breaks count: its face, its end and its flat top, not the lagoon's bores or the shore break on the
+    // beach face behind the short arm, which read as "a right" (canyon-layout, 2026-10-22). The old layout counts every
+    // break on the arm's columns, as main did.
+    const line = canyonBreakLineZ(CANYON.takeOffX);
+    expect(canyonPeelAt(CANYON.takeOffX, line - 30)).toBe(true);
+    expect(canyonPeelAt(CANYON.takeOffX, line + CANYON.flatWidth - 1)).toBe(true);
+    expect(canyonPeelAt(CANYON.takeOffX, line + CANYON.flatWidth + 1)).toBe(false);
+    expect(canyonPeelAt(-20, -25)).toBe(false);
+    expect(canyonPeelAt(-20, -150)).toBe(true);
+    expect(canyonPeelAt(levelled, -150)).toBe(false);
+    expect(canyonPeelAt(-30, -40, CANYON_OLD)).toBe(true);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

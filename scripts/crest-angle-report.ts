@@ -12,15 +12,32 @@
  * `--swell practice|small|medium|big`, `--seed`, `--seconds` (600), `--spreading` and `--direction` (override the
  * swell's), `--components` (64, the GPU tier's; 24 is the CPU tier's), `--offset` (30 m seaward of the take-off),
  * `--quiet` (no per-crest lines), `--json <file>` (the crests and summary), `--canyon key=value,...` (reshape the Canyon, as
- * the canyon peel report's sweep).
+ * the canyon peel report's sweep), `--bed old` (the Canyon's layout before canyon-layout, `?canyonBed=old`).
  *
  * Each crest's two halves along shore (split at its middle point) are also fitted on their own: their angles' difference,
  * the bend, shows a crest that runs two ways at once (an A-frame, or a crest turned by one side of the bed).
+ *
+ * Inshore of the take-off too (canyon-layout, 2026-10-22: the water-physics advisor found the old bar watched only lines
+ * seaward of the arm, where the Canyon's V had not formed yet, and never the edge band's mirror):
+ * - three more watched lines, `in-25`, `in-50` and `in-75`, a quarter, half and three quarters of the way from the
+ *   take-off to the waterline (over the arm, its top and the lagoon, at the Canyon);
+ * - **the crest lines**, every second (the advisor's `crests.ts`): every crest in the fine zone (local maxima of η along
+ *   z per column, above 0.25 Hs, linked column to column within 3 m) and its local angle (least squares over ±10 m) at
+ *   stations every 15 m along shore and 12 m inside each open side edge, with the crest's z there. Summarised by band
+ *   across shore (relative to the take-off: `seaward` more than 30 m seaward of it, `take-off` the 30 m seaward of it,
+ *   `inside` to halfway to the waterline, `inner` the rest) and by station group (the open water either side of the
+ *   Canyon's arm and over it; the whole window elsewhere): p50 and p90 of |angle|. The **edge chevron**: past each open
+ *   side the edge band draws the tank's water mirrored, so a crest leaning a° at the edge station is drawn as a chevron
+ *   2a° from straight. **Two-sided**: a crest whose mean angles over the window's outer thirds lean opposite ways, each
+ *   past `TWO_SIDED` (crest-angle-compare.ts recounts against the Beach's spread);
+ * - **the session's health**: the fastest water (|q|/h where h > 5 cm, every 10 steps), the Froude caps and the volume.
  */
 import { writeFileSync } from 'node:fs';
 import { GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../src/game/SurfConditions';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { CANYON_OLD, canyonArmEndX, canyonShape } from '../src/wave/Bathymetry';
+import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from './canyonShape';
 
@@ -35,6 +52,7 @@ const seed = Number(option('seed') ?? 1);
 const seconds = Number(option('seconds') ?? 600);
 const offset = Number(option('offset') ?? 30);
 const quiet = process.argv.includes('--quiet');
+const bed = option('bed') === 'old' ? 'old' as const : undefined;
 applyCanyonShape(option('canyon'));
 
 /** The worker's step, s. */
@@ -53,6 +71,17 @@ const MIN_COVERAGE = 0.5;
 const FIRST_WAVES = 3;
 /** A crest's half shorter than this along shore, m, gives no angle of its own. */
 const MIN_HALF_SPAN = 20;
+/** The crest lines: a crest point stands this many Hs above still water; points link column to column within this many m. */
+const LINE_CREST_SHARE = 0.25;
+const LINE_LINK = 3;
+/** A crest line spans at least this many columns; its local angle is fitted over ± this many m, from at least that many points. */
+const LINE_MIN_COLUMNS = 15;
+const LINE_HALF_SPAN = 10;
+/** Stations every this many m along shore, and the edge stations this far inside each open side edge, m. */
+const STATION_STEP = 15;
+const EDGE_STATION = 12;
+/** A crest leaning more than this, degrees, either way over both outer thirds of the window runs two ways at once (provisional). */
+const TWO_SIDED = 5;
 
 const settings = physicalSettingsFor(spot, { swell: swellSize, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
 const swell = swellFor(settings);
@@ -65,6 +94,7 @@ const config: SurfZoneConfig = {
   tide: settings.tide, windSpeed: settings.windSpeed, stage: 2, compute: 'cpu',
   ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
   componentCount: numberOption('components') ?? GPU_TIER_COMPONENTS,
+  ...(bed ? { canyonBed: bed } : {}),
 };
 
 /**
@@ -191,7 +221,79 @@ class Watch {
   }
 }
 
-const watches = [new Watch('edge', simulation.tank.fineFrom + 5), new Watch('take-off', takeOff.z - offset)];
+const watches = [
+  new Watch('edge', simulation.tank.fineFrom + 5), new Watch('take-off', takeOff.z - offset),
+  ...[25, 50, 75].map((share) => new Watch(`in-${share}`, takeOff.z * (1 - share / 100))),
+];
+
+// The crest lines (see the header): stations along shore, their groups, and the bands across shore.
+const windowMin = simulation.windowXMin;
+const windowMax = windowMin + solver.nx * solver.dx;
+const stations: number[] = [windowMin + EDGE_STATION];
+for (let x = Math.ceil((windowMin + EDGE_STATION + 5) / STATION_STEP) * STATION_STEP; x <= windowMax - EDGE_STATION - 5; x += STATION_STEP) stations.push(x);
+stations.push(windowMax - EDGE_STATION);
+/** The Canyon's arm's footprint (its upcoast end to its taper) ± 10 m; other spots have none. */
+const shape = spot === 'canyon' ? (bed === 'old' ? CANYON_OLD : canyonShape()) : undefined;
+const footprint = shape
+  ? { from: shape.peakX - (shape.shelfDepth - shape.crestDepth) / shape.endSlope - 10, to: canyonArmEndX(shape) + shape.endTaper + 10 }
+  : undefined;
+const groupOf = (x: number) => (!footprint ? 'window' : x < footprint.from ? 'open −x' : x > footprint.to ? 'open +x' : 'arm');
+const stationGroups = stations.map(groupOf);
+const BANDS = ['seaward', 'take-off', 'inside', 'inner'] as const;
+const bandOf = (z: number) => (z < takeOff.z - 30 ? 'seaward' : z < takeOff.z ? 'take-off' : z < takeOff.z / 2 ? 'inside' : 'inner');
+const outerThird = (windowMax - windowMin) / 6;
+const fineRow = rowAt(simulation.tank.fineFrom + 10);
+interface CrestLine { t: number; angles: number[]; zs: number[]; xFrom: number; xTo: number }
+const crestLines: CrestLine[] = [];
+const lineSurface = (row: number, column: number) => {
+  const i = row * solver.nx + column;
+  return solver.h[i] > 0.02 ? solver.surfaceAt(i) - still : Number.NaN;
+};
+/** Every crest line in the fine zone now: local maxima of η along z per column, linked column to column. */
+function crestLinesNow(): { x: number; z: number }[][] {
+  const lines: { x: number; z: number }[][] = [];
+  let open: { line: { x: number; z: number }[]; z: number }[] = [];
+  for (let column = 2; column < solver.nx - 2; column += 1) {
+    const points: number[] = [];
+    for (let row = fineRow + 2; row < solver.nz - 2; row += 1) {
+      const e = lineSurface(row, column);
+      if (!(e > LINE_CREST_SHARE * config.significantHeight)) continue;
+      const a = lineSurface(row - 1, column), c = lineSurface(row + 1, column);
+      if (!(e >= a && e > c && e >= lineSurface(row - 2, column) && e > lineSurface(row + 2, column))) continue;
+      const d = a - 2 * e + c;
+      const shift = d < 0 ? Math.max(-0.5, Math.min(0.5, (0.5 * (a - c)) / d)) : 0;
+      points.push(solver.zCenters[row] + shift * (solver.zCenters[row + 1] - solver.zCenters[row]));
+    }
+    const x = solver.xCenters[column];
+    const next: typeof open = [];
+    const used = new Set<number>();
+    for (const o of open) {
+      let best = -1;
+      let bestD = LINE_LINK + 0.01;
+      points.forEach((z, k) => { const d = Math.abs(z - o.z); if (!used.has(k) && d < bestD) { best = k; bestD = d; } });
+      if (best >= 0) { used.add(best); o.line.push({ x, z: points[best] }); next.push({ line: o.line, z: points[best] }); }
+    }
+    points.forEach((z, k) => { if (!used.has(k)) { const line = [{ x, z }]; lines.push(line); next.push({ line, z }); } });
+    open = next;
+  }
+  return lines.filter((line) => line.length >= LINE_MIN_COLUMNS);
+}
+/** A crest line's local angle at x, degrees (least squares over ±LINE_HALF_SPAN m), and its z there. */
+function localAngle(line: { x: number; z: number }[], x: number): { angle: number; z: number } {
+  const near = line.filter((p) => Math.abs(p.x - x) <= LINE_HALF_SPAN);
+  if (near.length < LINE_HALF_SPAN) return { angle: Number.NaN, z: Number.NaN };
+  const { slope, mz } = lineFit(near);
+  const at = near.reduce((best, p) => (Math.abs(p.x - x) < Math.abs(best.x - x) ? p : best));
+  return { angle: (Math.atan(slope) * 180) / Math.PI, z: Math.abs(at.x - x) < 0.6 ? at.z : mz };
+}
+
+// The session's health (as the size report's `--stability`).
+const boussinesq = solver instanceof BoussinesqSolver ? solver : undefined;
+const caps0 = boussinesq?.froudeCaps ?? 0;
+const capsInWater0 = boussinesq?.froudeCapsInWater ?? 0;
+const volume0 = solver.totalVolume();
+let fastest = 0;
+let finite = true;
 console.log(`Crest angles: ${spot}, ${swellSize} (Hs ${config.significantHeight} m, Tp ${config.peakPeriod} s, ${config.directionDegrees}°, s ${config.spreading.toFixed(0)}), `
   + `seed ${seed}, ${config.componentCount} components, ${seconds} s. Take-off (${takeOff.x.toFixed(0)}, ${takeOff.z.toFixed(0)}); `
   + `lines z = ${watches.map((w) => solver.zCenters[w.row].toFixed(0)).join(', ')}; crests followed over x ${solver.xCenters[firstColumn].toFixed(0)}…${solver.xCenters[lastColumn].toFixed(0)}.`);
@@ -199,10 +301,32 @@ console.log(`Crest angles: ${spot}, ${swellSize} (Hs ${config.significantHeight}
 const crests: Crest[] = [];
 const start = simulation.seaTime;
 const steps = Math.round(seconds / STEP);
+const perSecond = Math.round(1 / STEP);
 for (let step = 0; step < steps; step += 1) {
   simulation.step(STEP);
   for (const watch of watches) watch.sample(crests);
+  if (step % 10 === 0) {
+    for (let i = 0; i < solver.h.length; i += 1) {
+      const h = solver.h[i];
+      if (!Number.isFinite(h)) finite = false;
+      if (h > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / h);
+    }
+  }
+  if ((step + 1) % perSecond === 0) {
+    for (const line of crestLinesNow()) {
+      const local = stations.map((x) => localAngle(line, x));
+      if (local.every((l) => !Number.isFinite(l.angle))) continue;
+      crestLines.push({
+        t: simulation.seaTime, angles: local.map((l) => Math.round(l.angle * 100) / 100), zs: local.map((l) => Math.round(l.z * 10) / 10),
+        xFrom: line[0].x, xTo: line[line.length - 1].x,
+      });
+    }
+  }
 }
+const health = {
+  fastest, finite, caps: (boussinesq?.froudeCaps ?? 0) - caps0, capsInWater: (boussinesq?.froudeCapsInWater ?? 0) - capsInWater0,
+  volumeDrift: solver.totalVolume() / volume0 - 1,
+};
 
 const mean = (values: number[]) => (values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : Number.NaN);
 const std = (values: number[]) => Math.sqrt(mean(values.map((v) => (v - mean(values)) ** 2)));
@@ -240,8 +364,46 @@ for (const s of summaries) {
   console.log(`| ${s.line} | ${s.crests} (${s.short}) | ${f(s.meanAngle)} | ${f(s.meanAbs)} | ${f(s.maxAbs)} | ${f(s.std)} | ${f(s.firstAbs)} | ${f(s.laterAbs)} | ${f(s.straightness, 2)} | ${s.bins.map((b) => f(b.meanAbs)).join(' · ')} `
     + `| ${f(s.meanBend)} / ${f(s.maxBend)} (${s.halved}) | ${s.bins.map((b) => f(b.mean)).join(' · ')} |`);
 }
+
+// The crest lines by band and station group, the edge chevrons and the crests running two ways at once.
+const quantile = (values: number[], q: number) => {
+  const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+  return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : Number.NaN;
+};
+const groups = [...new Set(stationGroups)];
+console.log(`\nCrest lines every second: ${crestLines.length} over ${seconds} s; stations ${stations.map((x) => x.toFixed(0)).join(', ')} `
+  + `(${groups.map((g) => `${g}: ${stations.filter((_, i) => stationGroups[i] === g).map((x) => x.toFixed(0)).join(' ')}`).join('; ')}). |angle| p50 / p90 °:`);
+console.log(`| Band | ${groups.join(' | ')} | Edge chevron −x / +x (2 \\|angle\\| at x ${stations[0].toFixed(0)} / ${stations[stations.length - 1].toFixed(0)}) `
+  + `| Signed median, outer thirds −x / +x (a V: − / +) | Two-sided (outer thirds past ±${TWO_SIDED}°) |`);
+console.log(`|---|${groups.map(() => '---').join('|')}|---|---|---|`);
+const bandOf2 = (line: CrestLine, i: number) => (Number.isFinite(line.zs[i]) ? bandOf(line.zs[i]) : undefined);
+// (Each station's angle counts in the band of the crest's z there.)
+for (const band of BANDS) {
+  const cell = (g: string) => {
+    const values = crestLines.flatMap((line) => stations.map((_, i) => (stationGroups[i] === g && bandOf2(line, i) === band ? Math.abs(line.angles[i]) : Number.NaN)));
+    return `${f(quantile(values, 0.5))} / ${f(quantile(values, 0.9))} (${values.filter(Number.isFinite).length})`;
+  };
+  const edge = (i: number) => crestLines.map((line) => (bandOf2(line, i) === band ? 2 * Math.abs(line.angles[i]) : Number.NaN));
+  const last = stations.length - 1;
+  // A crest's lean over each outer third of the window; the crest's band is its mean z's over its stations.
+  const lean = (line: CrestLine, side: -1 | 1) => {
+    const values = stations.flatMap((x, i) => (side * x > outerThird ? [line.angles[i]] : [])).filter(Number.isFinite);
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : Number.NaN;
+  };
+  const meanZ = (line: CrestLine) => { const zs = line.zs.filter(Number.isFinite); return zs.reduce((a, b) => a + b, 0) / zs.length; };
+  const inBand = crestLines.filter((line) => bandOf(meanZ(line)) === band && Number.isFinite(lean(line, -1)) && Number.isFinite(lean(line, 1)));
+  const twoSided = inBand.filter((line) => Math.sign(lean(line, -1)) !== Math.sign(lean(line, 1)) && Math.abs(lean(line, -1)) > TWO_SIDED && Math.abs(lean(line, 1)) > TWO_SIDED);
+  const signed = (side: -1 | 1) => quantile(crestLines.flatMap((line) => stations.map((x, i) => (side * x > outerThird && bandOf2(line, i) === band ? line.angles[i] : Number.NaN))), 0.5);
+  console.log(`| ${band} | ${groups.map(cell).join(' | ')} | ${f(quantile(edge(0), 0.5))} / ${f(quantile(edge(0), 0.9))} · ${f(quantile(edge(last), 0.5))} / ${f(quantile(edge(last), 0.9))} `
+    + `| ${f(signed(-1))} / ${f(signed(1))} | ${twoSided.length} of ${inBand.length} |`);
+}
+console.log(`\nHealth over ${seconds} s: fastest water ${health.fastest.toFixed(2)} m/s; Froude caps ${health.caps} (${health.capsInWater} in water); volume ${(100 * health.volumeDrift).toFixed(2)} %; finite ${health.finite}.`);
+
 const json = option('json');
 if (json) {
-  writeFileSync(json, JSON.stringify({ spot, swell: swellSize, seed, seconds, config: { ...config }, takeOff, summaries, crests }, null, 1));
+  writeFileSync(json, JSON.stringify({
+    spot, swell: swellSize, seed, seconds, config: { ...config }, takeOff, summaries, crests,
+    lines: { stations, groups: stationGroups, outerThird, bands: { takeOffZ: takeOff.z }, records: crestLines }, health,
+  }));
   console.log(`Wrote ${json}.`);
 }

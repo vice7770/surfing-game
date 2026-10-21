@@ -1,0 +1,26 @@
+
+=== today (canyon-layout): peak (-10, -120), 70°, beach 1:15, window 220 m
+arm: upcoast end x -30.0, peak x -10, end on the beach face x 28.2 (z -15.0), taper to x 40.2; along shore 38.2 m from the peak (58.2 m with the end), along the line 111.7 m; footprint centre x 5.1; foot z -289.9; hinge at the peak z -147.6
+small (Hs 0.9 m, Tp 9 s): take-off (-2, -134.0) 2.14 m deep; start 11.0 m out at z -145.0, 2.58 m deep; to the waterline (z 0 at mid tide) 145 m, the peak 120 m; to the window's centre 2 m, to its −x / +x edges 108 / 112 m, to the rider's −x / +x bounds 87 / 91 m, to the offshore bound 241 m; tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}; cells 220 × 451 = 99220
+medium (Hs 1.4 m, Tp 11 s): take-off (-2, -147.5) 2.69 m deep; start 11.0 m out at z -158.5, 3.17 m deep; to the waterline (z 0 at mid tide) 159 m, the peak 120 m; to the window's centre 2 m, to its −x / +x edges 108 / 112 m, to the rider's −x / +x bounds 87 / 91 m, to the offshore bound 228 m; tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}; cells 220 × 451 = 99220
+big (Hs 2.4 m, Tp 14 s): take-off (-2, -173.5) 3.82 m deep; start 6.0 m out at z -179.5, 4.08 m deep; to the waterline (z 0 at mid tide) 180 m, the peak 120 m; to the window's centre 2 m, to its −x / +x edges 108 / 112 m, to the rider's −x / +x bounds 87 / 91 m, to the offshore bound 207 m; tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}; cells 220 × 451 = 99220
+  depth x -60, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 5.3 4.0 2.7 1.3 0.0
+  depth x -30, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 5.3 4.0 2.7 1.3 0.0
+  depth x  -2, z −300…0 by 20: 6.0 6.0 6.0 6.0 5.8 5.0 4.1 3.2 2.4 1.7 1.1 1.3 2.0 2.0 1.3 0.0
+  depth x  10, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 5.7 4.9 4.0 3.1 2.3 1.8 1.3 1.0 1.7 1.3 0.0
+  depth x  20, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 6.0 5.5 4.6 3.7 2.9 2.1 1.8 1.4 1.0 1.3 0.0
+  depth x  30, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 6.0 6.0 5.3 4.5 3.6 2.8 2.3 2.0 1.7 1.3 0.0
+  depth x  50, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 5.3 4.0 2.7 1.3 0.0
+
+=== old (?canyonBed=old): peak (-38, -305), 70°, beach 1:25, window 160 m
+arm: upcoast end x -58.0, peak x -38, end on the beach face x 63.9 (z -25.0), taper to x 75.9; along shore 101.9 m from the peak (121.9 m with the end), along the line 298.0 m; footprint centre x 9.0; foot z -474.9; hinge at the peak z -332.6
+small (Hs 0.9 m, Tp 9 s): take-off (-30, -320.5) 2.20 m deep; start 11.0 m out at z -331.5, 2.65 m deep; to the waterline (z 0 at mid tide) 332 m, the peak 305 m; to the window's centre 30 m, to its −x / +x edges 50 / 110 m, to the rider's −x / +x bounds 29 / 89 m, to the offshore bound 240 m; tank {"offshore":-665,"zoneInner":-575,"blendEnd":-515,"fineFrom":-575,"shore":30,"edgeDepth":7.9}; cells 160 × 636 = 101760
+medium (Hs 1.4 m, Tp 11 s): take-off (-30, -333.5) 2.74 m deep; start 11.0 m out at z -344.5, 3.21 m deep; to the waterline (z 0 at mid tide) 345 m, the peak 305 m; to the window's centre 30 m, to its −x / +x edges 50 / 110 m, to the rider's −x / +x bounds 29 / 89 m, to the offshore bound 227 m; tank {"offshore":-665,"zoneInner":-575,"blendEnd":-515,"fineFrom":-575,"shore":30,"edgeDepth":7.9}; cells 160 × 636 = 101760
+big (Hs 2.4 m, Tp 14 s): take-off (-30, -358.0) 3.80 m deep; start 6.0 m out at z -364.0, 4.06 m deep; to the waterline (z 0 at mid tide) 364 m, the peak 305 m; to the window's centre 30 m, to its −x / +x edges 50 / 110 m, to the rider's −x / +x bounds 29 / 89 m, to the offshore bound 207 m; tank {"offshore":-665,"zoneInner":-575,"blendEnd":-515,"fineFrom":-575,"shore":30,"edgeDepth":7.9}; cells 160 × 636 = 101760
+  depth x -60, z −300…0 by 20: 6.0 6.0 6.0 6.0 6.0 6.0 6.0 6.0 5.6 4.8 4.0 3.2 2.4 1.6 0.8 0.0
+  depth x -30, z −300…0 by 20: 1.5 1.0 1.6 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 1.6 0.8 0.0
+  depth x  -2, z −300…0 by 20: 3.0 2.2 1.9 1.5 1.2 1.0 1.7 2.0 2.0 2.0 2.0 2.0 2.0 1.6 0.8 0.0
+  depth x  10, z −300…0 by 20: 3.8 2.9 2.2 1.9 1.6 1.4 1.1 1.1 2.0 2.0 2.0 2.0 2.0 1.6 0.8 0.0
+  depth x  20, z −300…0 by 20: 4.4 3.5 2.6 2.1 1.9 1.6 1.4 1.2 1.0 1.7 2.0 2.0 2.0 1.6 0.8 0.0
+  depth x  30, z −300…0 by 20: 5.0 4.1 3.3 2.4 2.0 1.8 1.6 1.4 1.2 1.0 1.4 2.0 2.0 1.6 0.8 0.0
+  depth x  50, z −300…0 by 20: 6.0 5.4 4.5 3.6 2.8 2.1 2.0 1.8 1.6 1.5 1.3 1.1 1.0 1.6 0.8 0.0

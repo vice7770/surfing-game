@@ -24,16 +24,22 @@
  *
  *   rolldown scripts/canyon-size-report.ts -o dist/scripts/canyon-size-report.mjs --format esm --platform node \
  *     && node dist/scripts/canyon-size-report.mjs --size big --seeds 1 --periods 8 [--canyon key=value,...] \
- *        [--first-seed 1] [--hs 2.4 --tp 14] [--verbose] [--stability] [--json <file>]
+ *        [--first-seed 1] [--hs 2.4 --tp 14] [--bed old] [--verbose] [--stability] [--json <file>]
+ *
+ * `--bed old` runs the layout before canyon-layout (`?canyonBed=old`, `CANYON_OLD`); `--canyon` reshapes today's. The
+ * window, the arm and the bed parts are the run's layout's (canyon-layout, 2026-10-22: 220 m since, 160 m before). Since
+ * canyon-layout the readout's replay and each crest's own fit count the breaks the game's tracker counts (`canyonPeelAt`:
+ * the arm's, not the lagoon's or the beach face's behind it; every break on the arm's columns on the old layout), and the
+ * close-outs and upcoast runs are also given off the beach face, where the short arm's flanks close out on the beach.
  *   node dist/scripts/canyon-size-report.mjs --from <file> [--verbose]   (re-reads a run's onsets)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { SWELLS } from '../src/game/SurfConditions';
-import { CANYON, canyonArmAt, canyonBreakLineZ, canyonTerraceDepth, createSpot } from '../src/wave/Bathymetry';
+import { CANYON, canyonArmAt, canyonBreakLineZ, canyonPeelAt, canyonShape, canyonTerraceDepth, createSpot, type CanyonBed, type CanyonShape } from '../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
 import { MIXED_PEAK_FIT, PeelTracker, skillForPeel } from '../src/wave/Breaking';
 import { GRAVITY } from '../src/wave/dispersion';
-import { SurfZoneSimulation, tankDepth, tankLayout, type SurfZoneConfig, type TankLayout } from '../src/wave/SurfZoneSimulation';
+import { SurfZoneSimulation, alongShoreOf, tankDepth, tankLayout, type SurfZoneConfig, type TankLayout } from '../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from './canyonShape';
 
 const option = (name: string): string | undefined => {
@@ -69,6 +75,8 @@ interface Sample { seed: number; t: number; angle: number; direction: number; fi
 interface Health { seed: number; fastest: number; caps: number; capsInWater: number; volumeDrift: number; finite: boolean; onsetsPer100: number[] }
 interface Run {
   size: string; hs: number; tp: number; spreading: number; seeds: number; periods: number; canyon: Record<string, number>; celerity: number;
+  /** The layout (`SurfZoneConfig.canyonBed`); runs from before canyon-layout have none: today's then, on a 160 m window. */
+  bed?: CanyonBed;
   /** Per seed: when the record starts and ends, s. */
   records: { seed: number; start: number; end: number }[];
   samples: Sample[]; onsets: Onset[]; health: Health[];
@@ -76,22 +84,26 @@ interface Run {
 interface CrestReport {
   seed: number; t: number; x: number; z: number; depth: number; part: string; seaward: number; face: number; onsets: number; phaseSpread: number;
   span: number; upcoast: boolean; upcoastReach: number; downcoastReach: number;
+  /** The same, from its onsets off the beach face alone: the arm's and the platform's (the flanks' shore break left out). */
+  armSpan: number; armUpcoast: boolean; armUpcoastReach: number;
   fit?: { direction: number; angle: number; r2: number; speed: number; columns: number };
 }
 
-function configFor(seed: number, hs: number, tp: number, spreading: number): SurfZoneConfig {
-  return { spot: 'canyon', seed, significantHeight: hs, peakPeriod: tp, directionDegrees: 0, spreading, tide: 0, windSpeed: 0, stage: 2 } as unknown as SurfZoneConfig;
+function configFor(seed: number, hs: number, tp: number, spreading: number, bed?: CanyonBed): SurfZoneConfig {
+  return {
+    spot: 'canyon', seed, significantHeight: hs, peakPeriod: tp, directionDegrees: 0, spreading, tide: 0, windSpeed: 0, stage: 2,
+    ...(bed === 'old' ? { canyonBed: 'old' } : {}),
+  } as unknown as SurfZoneConfig;
 }
 
 /** The bed part under (x, z): the tank's blend, the level shelf, the arm's face, its upcoast end, its top, or the beach face. */
-function bedPart(x: number, z: number, tank: TankLayout): string {
-  const c = CANYON;
+function bedPart(x: number, z: number, tank: TankLayout, c: CanyonShape): string {
   if (z < tank.blendEnd) return 'blend';
-  const terrace = canyonTerraceDepth(x, z);
+  const terrace = canyonTerraceDepth(x, z, c);
   const beachFace = -z * c.shoreSlope;
   if (beachFace < Math.min(c.shelfDepth, terrace)) return 'beach face';
   if (terrace >= c.shelfDepth - 0.05) return 'shelf';
-  if (z >= canyonBreakLineZ(x)) return 'arm top';
+  if (z >= canyonBreakLineZ(x, c)) return 'arm top';
   return x < c.peakX ? 'arm end' : 'arm face';
 }
 
@@ -105,10 +117,11 @@ function simulate(): Run {
   const seeds = number('seeds', 1);
   const firstSeed = number('first-seed', 1);
   const stability = process.argv.includes('--stability');
+  const bed: CanyonBed = option('bed') === 'old' ? 'old' : 'reef';
   applyCanyonShape(option('canyon'));
-  const run: Run = { size, hs, tp, spreading, seeds, periods, canyon: { ...CANYON }, celerity: Number.NaN, records: [], samples: [], onsets: [], health: [] };
+  const run: Run = { size, hs, tp, spreading, seeds, periods, canyon: { ...canyonShape(bed) }, bed, celerity: Number.NaN, records: [], samples: [], onsets: [], health: [] };
   for (let seed = firstSeed; seed < firstSeed + seeds; seed += 1) {
-    const simulation = new SurfZoneSimulation(configFor(seed, hs, tp, spreading));
+    const simulation = new SurfZoneSimulation(configFor(seed, hs, tp, spreading, bed));
     const { solver } = simulation;
     run.celerity = simulation.breakerCelerity();
     const columnOf = (x: number) => Math.min(solver.nx - 1, Math.max(0, Math.round((x - solver.xCenters[0]) / solver.dx)));
@@ -213,14 +226,19 @@ function crestsByDensity(onsets: Phased[], tp: number): Phased[][] {
 }
 
 function analyse(run: Run): void {
-  Object.assign(CANYON, run.canyon);
+  const bed = run.bed ?? 'reef';
+  // Today's layout takes the run's shape (a sweep's); a run from before canyon-layout had no window in it: 160 m.
+  if (bed === 'reef') Object.assign(CANYON, { alongShore: 160, peelReach: Infinity }, run.canyon);
+  const c = canyonShape(bed);
   const { tp, hs, celerity } = run;
-  const config = configFor(1, hs, tp, run.spreading);
+  const config = configFor(1, hs, tp, run.spreading, bed);
   const tank = tankLayout(config);
-  const spot = createSpot('canyon', 1);
+  const spot = createSpot('canyon', 1, { canyonBed: bed });
+  const window = alongShoreOf(config);
+  const armAt = (x: number) => canyonArmAt(x, c);
   // Each 1 m column's travel time from the zone's inner edge to every metre shoreward, over the still bed at √(g h).
-  const xMin = -80;
-  const columns = 161;
+  const xMin = -window / 2;
+  const columns = window + 1;
   const rows = Math.ceil(tank.shore - tank.zoneInner) + 1;
   const travel = new Float64Array(columns * rows);
   for (let c = 0; c < columns; c += 1) {
@@ -250,13 +268,22 @@ function analyse(run: Run): void {
       const span = Math.max(...early.map((o) => o.x)) - Math.min(...early.map((o) => o.x));
       const soon = group.filter((o) => o.t <= first.t + UPCOAST_SECONDS);
       const up = soon.filter((o) => o.x < first.x - UPCOAST_REACH);
+      // Off the beach face: on the short arm (canyon-layout) the flanks close out on the beach within seconds, as on a real
+      // reef's; the arm's own close-outs and upcoast runs are counted without them too.
+      const offBeach = (o: Onset) => bedPart(o.x, o.z, tank, c) !== 'beach face';
+      const earlyOff = early.filter(offBeach);
+      const soonOff = soon.filter(offBeach);
       const crest: CrestReport = {
-        seed: record.seed, t: first.t, x: first.x, z: first.z, depth: first.depth, part: bedPart(first.x, first.z, tank),
-        seaward: canyonBreakLineZ(first.x) - first.z, face: first.face, onsets: group.length, phaseSpread: group[group.length - 1].phase - group[0].phase,
+        seed: record.seed, t: first.t, x: first.x, z: first.z, depth: first.depth, part: bedPart(first.x, first.z, tank, c),
+        seaward: canyonBreakLineZ(first.x, c) - first.z, face: first.face, onsets: group.length, phaseSpread: group[group.length - 1].phase - group[0].phase,
         span, upcoast: up.length > UPCOAST_ONSETS, upcoastReach: Math.max(0, first.x - Math.min(...soon.map((o) => o.x))),
         downcoastReach: Math.max(0, Math.max(...soon.map((o) => o.x)) - first.x),
+        armSpan: earlyOff.length ? Math.max(...earlyOff.map((o) => o.x)) - Math.min(...earlyOff.map((o) => o.x)) : 0,
+        armUpcoast: soonOff.filter((o) => o.x < first.x - UPCOAST_REACH).length > UPCOAST_ONSETS,
+        armUpcoastReach: soonOff.length ? Math.max(0, first.x - Math.min(...soonOff.map((o) => o.x))) : 0,
       };
-      const arm = group.filter((o) => canyonArmAt(o.x));
+      // Its own fit along the arm: the breaks the readout's tracker counts (`canyonPeelAt`: on the old layout every break on the arm's columns).
+      const arm = group.filter((o) => canyonPeelAt(o.x, o.z, c));
       if (arm.length >= FIT_ONSETS) {
         const n = arm.length;
         const mx = arm.reduce((s, o) => s + o.x, 0) / n;
@@ -290,17 +317,18 @@ function analyse(run: Run): void {
   }
   // The readout as the player sees it: the tracker replayed from the same onsets, read every READOUT_EVERY s (the game
   // reads it on every status update; the run's own samples come once a period). Checked against the run's samples.
-  const xs = Array.from({ length: 160 }, (_, i) => -79.5 + i);
+  const xs = Array.from({ length: window }, (_, i) => xMin + 0.5 + i);
   const readout: Sample[] = [];
   let replayError = 0;
   for (const record of run.records) {
-    const tracker = new PeelTracker(xs, tp, undefined, (column) => canyonArmAt(xs[column]));
+    const tracker = new PeelTracker(xs, tp, undefined, (column) => armAt(xs[column]));
     const mine = run.onsets.filter((o) => o.seed === record.seed).sort((a, b) => a.t - b.t);
     const checks = run.samples.filter((s) => s.seed === record.seed);
     let k = 0;
     const read = (time: number) => {
       while (k < mine.length && mine[k].t <= time + 1e-9) {
-        tracker.markOnset(Math.min(159, Math.max(0, Math.round(mine[k].x + 79.5))), mine[k].t, mine[k].z);
+        // As the simulation's tracker: only the breaks on the arm count (`canyonPeelAt`; every break on the old layout).
+        if (canyonPeelAt(mine[k].x, mine[k].z, c)) tracker.markOnset(Math.min(window - 1, Math.max(0, Math.round(mine[k].x - xMin - 0.5))), mine[k].t, mine[k].z);
         k += 1;
       }
       return tracker.estimate(time, celerity);
@@ -332,7 +360,7 @@ function analyse(run: Run): void {
   const fitted = crests.filter((c) => c.fit && c.fit.r2 >= MIXED_PEAK_FIT);
   const closeOuts = crests.filter((c) => c.span >= CLOSE_SPAN);
   const onArm = (c: CrestReport) => c.part === 'arm face' || c.part === 'arm end';
-  console.log(`\n${run.size}: Hs ${hs} m, Tp ${tp} s, s ${run.spreading}; ${run.seeds} seed(s) × ${run.periods} periods; c_b ${celerity.toFixed(2)} m/s; canyon ${JSON.stringify(run.canyon)}`);
+  console.log(`\n${run.size}: Hs ${hs} m, Tp ${tp} s, s ${run.spreading}; ${run.seeds} seed(s) × ${run.periods} periods; c_b ${celerity.toFixed(2)} m/s; layout ${bed}, window ${window} m; canyon ${JSON.stringify(run.canyon)}`);
   console.log(`tracker: ${samples.length} samples, ${clean.length} clean; toward +x ${plus} of ${clean.length}; median angle ${f(median(clean.map((s) => s.angle)))}°, `
     + `median peel speed ${f(median(clean.map((s) => s.speed)), 1)} m/s; readout: ${tally(samples.map((s) => s.words))}`);
   console.log(`crests: ${crests.length}; starts median x ${f(startMedian)}, 10–90 % ${f(quantile(starts, 0.1))}…${f(quantile(starts, 0.9))}, within ±${SAME_START} m ${within} of ${crests.length}; `
@@ -341,9 +369,12 @@ function analyse(run: Run): void {
   console.log(`  close-outs (≥ ${CLOSE_SPAN} m within ${CLOSE_SECONDS} s): ${closeOuts.length}; spans median ${f(median(crests.map((c) => c.span)))} m, 90th ${f(quantile(crests.map((c) => c.span), 0.9))} m`);
   console.log(`  upcoast (> ${UPCOAST_ONSETS} onsets over ${UPCOAST_REACH} m within ${UPCOAST_SECONDS} s): ${crests.filter((c) => c.upcoast).length}; reach median ${f(median(crests.map((c) => c.upcoastReach)))} m, `
     + `90th ${f(quantile(crests.map((c) => c.upcoastReach), 0.9))} m, most ${f(Math.max(0, ...crests.map((c) => c.upcoastReach)))} m`);
+  console.log(`  off the beach face (the flanks' shore break left out): close-outs ${crests.filter((c) => c.armSpan >= CLOSE_SPAN).length}; spans median ${f(median(crests.map((c) => c.armSpan)))} m, `
+    + `90th ${f(quantile(crests.map((c) => c.armSpan), 0.9))} m; upcoast ${crests.filter((c) => c.armUpcoast).length}; reach median ${f(median(crests.map((c) => c.armUpcoastReach)))} m, `
+    + `90th ${f(quantile(crests.map((c) => c.armUpcoastReach), 0.9))} m, most ${f(Math.max(0, ...crests.map((c) => c.armUpcoastReach)))} m`);
   console.log(`  own fits (r² ≥ ${MIXED_PEAK_FIT}, ≥ ${FIT_ONSETS} onsets on the arm): ${fitted.length}; toward +x ${fitted.filter((c) => c.fit!.direction > 0).length}; `
     + `median ${f(median(fitted.map((c) => c.fit!.angle)))}°, speed ${f(median(fitted.map((c) => c.fit!.speed)), 1)} m/s`);
-  console.log(`onsets: ${recorded.length}; by bed part: ${tally(recorded.map((o) => bedPart(o.x, o.z, tank)))}; depth median ${f(median(recorded.map((o) => o.depth)), 2)} m, `
+  console.log(`onsets: ${recorded.length}; by bed part: ${tally(recorded.map((o) => bedPart(o.x, o.z, tank, c)))}; depth median ${f(median(recorded.map((o) => o.depth)), 2)} m, `
     + `10–90 % ${f(quantile(recorded.map((o) => o.depth), 0.1), 2)}…${f(quantile(recorded.map((o) => o.depth), 0.9), 2)} m`);
   console.log(`readout every ${READOUT_EVERY} s (the tracker replayed; largest error against the run's samples ${f(replayError, 2)}°): ${readout.length} reads; `
     + `closes out ${share(readout.filter((s) => s.words === 'closes out').length)}, left (+x) ${share(readout.filter((s) => s.words === 'left (+x)').length)}, `
