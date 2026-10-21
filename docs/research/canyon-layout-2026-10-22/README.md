@@ -292,3 +292,20 @@ layout exactly: the long arm, the 160 m window, the far beach and the corner sta
   forecast's Canyon fit (`SURF_FORECAST`, from 2026-09-27) was not refitted for this or any Canyon change since.
 - **`?canyonBed=old`** now means main's whole layout; the 1:30 bed it used to select is gone.
 - Measured on a shared M1 under load (load average 3.5–10 from other agents): the cost's step times carry that noise.
+
+## Tests
+
+On this branch (2026-10-22, the M1), no full suite and no rider sessions, per the brief:
+
+- `npx tsc --noEmit -p tsconfig.json`: no errors.
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon"`: 13 passed (642 s).
+- `Bathymetry`, `SpillingCurl`, `drawnEdges`, `riderBounds`, `spawn`, `EdgeBand`, `FarFieldOcean`, `PhysicalMode`,
+  `OnlinePlay`, `SurfConditions`, `labSettings`, `roomSea`, `protocol`: 160 passed.
+- The Canyon's tests in `SurfZoneHost`, `PhysicalSurfWater`, `surfZoneState`, `SurfWaterBodyField`,
+  `SurfZoneWaterPrefetch`, `WaterSurface` and `rollerScope` (`-t "[Cc]anyon"`): 18 passed; `SpillingFront`, `FoamField`,
+  `SprayCloud`, `sizeReport`, `surfForecast` and the server's `bots` and `RoomRegistry`: 99 passed.
+
+Changed with provenance: the bed's tests (the short arm, centred, 120 m out, clear of both edges' levelling; the peel's
+breaks), the old layout's pin (main's 2dd9ba52 values), the take-off's 90th-percentile depths and the short arm's
+take-offs, Big's start (4.08 m deep, 180 m out), the Canyon tests on its own 220 m window, the shoulder test around the
+take-off wherever it is, and the curl test's points on the short arm.

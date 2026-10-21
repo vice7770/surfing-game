@@ -270,7 +270,7 @@ export const CANYON = {
   /**
    * How far inshore of the break line a column's new break still counts toward the peel the readout measures, m: the arm's
    * flat top (`flatWidth`), so the face, the end and the top count, and not the lagoon's bores or the shore break on the
-   * beach face behind the arm (`SurfZoneSimulation`'s peel). On the short arm (canyon-layout) the beach face lies 60–95 m
+   * beach face behind the arm (`SurfZoneSimulation`'s peel). On the short arm (canyon-layout) the beach face lies 60–120 m
    * behind the line: its shore break upcoast of the peak, seconds after the arm's breaks, read as "a right" 8 % of the time
    * at Medium (3 seeds × 14 periods; 3 % on the old layout, whose beach lay 280 m behind the peak). Infinity: every break.
    */
