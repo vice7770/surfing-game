@@ -2,6 +2,7 @@ import { Euler, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import { WATER_READING } from '../scene/rig/stageBlend';
+import { PosedBody } from '../scene/rig/posedBody';
 import {
   ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, bandRms, boardMotion, breathing, crawlRate, cueAgainst, drawnAlarm, remoteDrawer, drawnLag, filmBody, footSlide, handSwing, headSteadiness,
   kneeGive, leanFollow, motionReading, paddleStroke, posed, repeatedFrames, shake, standingStretch, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer,
@@ -728,3 +729,75 @@ describe('the motion filter (the animation-realism plan, §4)', () => {
 function bandRmsOf(frames: FilmFrame[], rate: number, read: (frame: FilmFrame) => number): number {
   return bandRms(frames.map(read), rate, 0.5, 2);
 }
+
+// The animation-realism plan's phase 4: the falls' reflexes, by cause, and the recovery, through the page's pipeline.
+describe('the falls and the recovery (the animation-realism plan, phase 4)', () => {
+  // The fall's own switch (over the falls, the body thrown onto the board jumps its points again later: the physics' own,
+  // as before). The pearl's and off the back's stand-ins (the board pitched 35° and 25° in 0.2 s on flat water) jolt the
+  // riding body before the fall: no game's switch, left out.
+  it.each(['over the falls', 'a fall from lying down'])('blends the switches of %s out, the reflexes coming in after', (name) => {
+    for (const rate of [60, 120]) {
+      const film = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+      const fell = film.frames.find((frame) => frame.fallen)!.time;
+      const spikes = switchSpikes(film).filter((spike) => spike.time < fell + 0.1);
+      expect(spikes.length).toBeGreaterThan(0);
+      for (const spike of spikes) {
+        expect(spike.rotationSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
+        expect(spike.jointSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(2);
+      }
+    }
+  }, 240_000);
+
+  it('blends climbing back on out: the prone pose easing in, the feet swung on', () => {
+    for (const rate of [60, 120]) {
+      const film = filmBody(scenario('climbing back on'), { rate, drawer: trackDrawer, pose: posed() });
+      // The switch back onto the board (the climb comes on at about 17.2 s).
+      const spikes = switchSpikes(film).filter((spike) => spike.time > 15);
+      expect(spikes.length, `${rate} Hz`).toBeGreaterThan(0);
+      for (const spike of spikes) {
+        expect(spike.rotationSpeed, `at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
+        expect(spike.jointSpeed, `at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(2);
+      }
+    }
+  }, 240_000);
+
+  it('no longer flings the hands across the body falling off lying down (each arm takes the fall body\'s arm point on its own side)', () => {
+    // Before, the fall body's arm points lay the other way round across the drawn body: each hand crossed it, 7.7 m/s in
+    // the fall's first half second. Now the switch's own part (before the reflex, 0.12 s) moves them a hand's pace, and
+    // the reflex brings them to the head no faster than a protective movement (Hsiao and Robinovitch 1998: about 4 m/s).
+    const film = filmBody(scenario('a fall from lying down'), { rate: 60, drawer: trackDrawer, pose: posed() });
+    const start = film.frames.findIndex((frame) => frame.fallen);
+    const fastest = (from: number, to: number) => {
+      let most = 0;
+      for (let i = Math.max(1, start + from); i < Math.min(film.frames.length, start + to); i += 1) {
+        for (const side of ['left', 'right'] as const) {
+          const j = FILM_JOINT.hand[side];
+          most = Math.max(most, film.frames[i].limbs[j].distanceTo(film.frames[i - 1].limbs[j]) * film.rate);
+        }
+      }
+      return most;
+    };
+    expect(fastest(0, 7)).toBeLessThan(3.5);
+    expect(fastest(7, 30)).toBeLessThan(5.5);
+  }, 240_000);
+
+  it('draws another player\'s reel and climb from what is sent (wire flag 128 with the swimmer by the board)', () => {
+    const most = (name: string, drawer: typeof remoteDrawer | typeof trackDrawer) => {
+      const seen = { reel: 0, climb: 0 };
+      const pose: FilmOptions['pose'] = (bones) => {
+        const body = new PosedBody(bones);
+        return (state) => {
+          body.update(state);
+          seen.reel = Math.max(seen.reel, body.rig.fallWeights.reel);
+          seen.climb = Math.max(seen.climb, body.rig.fallWeights.climb);
+        };
+      };
+      filmBody(scenario(name), { rate: 30, drawer, pose });
+      return seen;
+    };
+    expect(most('reeling the leash in', remoteDrawer).reel).toBeGreaterThan(0.9);
+    expect(most('climbing back on', remoteDrawer).climb).toBeGreaterThan(0.9);
+    // As the local body: the reel off the board, the climb by it.
+    expect(most('reeling the leash in', trackDrawer).climb).toBe(0);
+  }, 240_000);
+});

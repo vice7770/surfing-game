@@ -16,7 +16,7 @@ import { RiderMotion } from '../scene/rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { createTestHumanoid } from '../scene/rig/testHumanoid';
 import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
-import { pitchBoard, sessionCues } from './ridingPoses';
+import { PITCH_TIME, pitchBoardToward, sessionCues } from './ridingPoses';
 
 /**
  * The body film (the riding-body plan, step 1): the real ride session stepped
@@ -290,15 +290,14 @@ const once = (time: number, at: number) => Math.abs(time - at) < STEP / 2;
 const thrown = new WeakSet<RideSession>();
 
 /**
- * Lets the rider go at `at` s for `cause`, the board turned nose up (+) or down by `pitch`° at the separation, and the
+ * Lets the rider go at `at` s for `cause`, the board turned nose up (+) or down by `pitch`° by the separation, and the
  * fall body thrown at `throwing` m/s at its first step (the stance recipes' stand-ins for a pearl's nose, a kick-out's tail
  * and the lip's lift, which flat water makes none of).
  */
 function fallAt(time: number, at: number, session: RideSession, cause: 'balance' | 'impact' = 'balance', pitch = 0, throwing?: Vector3): void {
-  if (once(time, at) && session.rider.attached) {
-    if (pitch) pitchBoard(session.board, pitch);
-    session.separate(cause);
-  }
+  // The board pitched over the 0.2 s before (a nose digging in, a tail sinking), then the fall.
+  if (pitch && session.rider.attached && time > at - PITCH_TIME - STEP / 2 && time < at + STEP / 2) pitchBoardToward(session.board, pitch, STEP / Math.max(STEP, at - time + STEP));
+  if (once(time, at) && session.rider.attached) session.separate(cause);
   if (throwing && session.surfer.active && !thrown.has(session)) {
     thrown.add(session);
     for (const node of session.surfer.nodes) node.velocity.add(throwing);
@@ -801,10 +800,14 @@ export interface FilmSnapshot {
   board: Float64Array;
 }
 
-/** What a drawer may read of the film: the water's surface (another player's board is floated on it), and whether the rider paddles. */
+/**
+ * What a drawer may read of the film: the water's surface (another player's board is floated on it), whether the
+ * rider paddles, and whether the fallen surfer holds the board (as the page reads it: sent as wire flag 128).
+ */
 export interface FilmContext {
   surfaceAt(x: number, z: number): number;
   paddling(): boolean;
+  holding(): boolean;
 }
 
 /** The page's drawing of the rider from delivered snapshots, one display frame at a time. */
@@ -816,8 +819,11 @@ export interface FilmDrawer {
   remote?: boolean;
   /** A snapshot arrives from the physics. */
   deliver(snapshot: FilmSnapshot): void;
-  /** Draw a frame `dt` s after the last: the rider's arrays to draw and the time to draw them at, or undefined for none yet. */
-  frame(dt: number): { rider: ArrayLike<number>; board: ArrayLike<number>; time: number } | undefined;
+  /**
+   * Draw a frame `dt` s after the last: the rider's arrays to draw and the time to draw them at (and, another player's,
+   * the hold its pose says), or undefined for none yet.
+   */
+  frame(dt: number): { rider: ArrayLike<number>; board: ArrayLike<number>; time: number; holding?: boolean } | undefined;
 }
 
 /** Today's page: the newest snapshot as it is. */
@@ -850,11 +856,12 @@ export function remoteDrawer(context: FilmContext): FilmDrawer {
   let nextSend = Number.NEGATIVE_INFINITY;
   let clock = Number.NaN;
   return {
+    remote: true,
     deliver(snapshot) {
       if (Number.isNaN(clock)) clock = snapshot.seaTime;
       if (snapshot.seaTime + 1e-9 < nextSend) return;
       nextSend = snapshot.seaTime + 1 / POSE_HZ;
-      tracker.write(snapshot, context.surfaceAt, snapshot.seaTime, context.paddling(), pose);
+      tracker.write(snapshot, context.surfaceAt, snapshot.seaTime, context.paddling(), pose, context.holding());
       encodePose(pose, new DataView(bytes.buffer), 0);
       const bundle = encodeBundle([{ id, pose: bytes }]);
       remotes.receiveBundle(bundle.buffer.slice(bundle.byteOffset, bundle.byteOffset + bundle.byteLength) as ArrayBuffer, 0, []);
@@ -866,7 +873,7 @@ export function remoteDrawer(context: FilmContext): FilmDrawer {
       if (!remotes.sample(id, time, remote) || !remote.present) return undefined;
       remoteBoardPose(remote, context.surfaceAt, board);
       remoteRiderState(remote, board, rider, drawn);
-      return { rider, board, time };
+      return { rider, board, time, holding: drawn.swim.holding };
     },
   };
 }
@@ -927,7 +934,9 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
   const session = new RideSession();
   session.place(scenario.placement, water);
   let paddling = false;
-  const drawer = (options.drawer ?? latestDrawer)({ surfaceAt: (x, z) => water.surfaceAt(x, z), paddling: () => paddling });
+  const drawer = (options.drawer ?? latestDrawer)({
+    surfaceAt: (x, z) => water.surfaceAt(x, z), paddling: () => paddling, holding: () => !session.rider.attached && session.recovery.state === 'holding',
+  });
   const { bones } = createTestHumanoid();
   const pose = (options.pose ?? rigAlone)(bones);
   const rig = poseRig(bones);
@@ -977,7 +986,7 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     if (!drawer.remote) {
       sessionCues(session, state);
       state.stance = session.rider.stance;
-    }
+    } else state.swim.holding = drawn.holding ?? false;
     motion.update(state, drawn.time);
     state.clock = drawn.time;
     // As the page does (`PhysicalMode`): the hands pull while paddling lying down.
