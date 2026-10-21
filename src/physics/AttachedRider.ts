@@ -290,6 +290,13 @@ const MAX_BANK = (70 * Math.PI) / 180;
  * the body fell into it as the turn slowed, and a rider steering hard at 1–2
  * m/s after a pop-up banked to 70° with no turn under it (the Canyon's ride
  * report).
+ *
+ * The speed is the board's through the water under it, as planing reads it:
+ * the carve's hull and fins feel only that. Read over the ground (until the
+ * phase-5 follow-up, 2026-10-22), a board climbing a wave's face, whose water
+ * runs shoreward under it (the medians on the Beach's and the Point's faces at
+ * Medium: about 1.1 m/s half way up, 1.4–1.7 near the top), read 18 % slower
+ * than it ran through the water, and leaned 10° less into a top turn or cutback.
  */
 const TURN_RADIUS = 4.5;
 /**
@@ -365,6 +372,14 @@ const TWIST_GRIP_RADIUS = 0.15;
  * either side, keeping 0.57 of the speed (0.36 before; with CARVE_CARRY, 1.12–
  * 1.15 s keeping 0.91). At 0.7 a rider compressing from standing fell after
  * 100°. Riding straight it does nothing.
+ *
+ * The path, the speed it fades with and the carry's direction are the board's
+ * through the water (the phase-5 follow-up, 2026-10-22). Read over the ground, a
+ * face's own flow turned them: on water running 1.5 m/s up a 5° face the coached
+ * cutback bogged to 1.1–1.3 m/s through the water (3.5–3.7 on still water), and
+ * on the Beach's and Point's faces at Medium a top turn's or cutback's pull read
+ * 0.7 weaker and 13° off its path (the medians). Through the water the rules are
+ * the same on any uniformly moving water as on still water.
  */
 const COMPRESS_PULL = 0.5;
 /**
@@ -1074,6 +1089,8 @@ export class AttachedRider {
   private railAhead = 0;
   /** The water's surface normal under the board (the world's up off the water): the level the rail's bite is read from (RAIL_BITE). */
   private readonly waterUp = new Vector3(0, 1, 0);
+  /** The water's own flow under the board, level, m/s: the compressed turn's rules read the board's motion through it. */
+  private readonly waterFlow = { x: 0, z: 0 };
   private ankleTorque = 0;
   protected swingTorque = 0;
   /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
@@ -1279,6 +1296,8 @@ export class AttachedRider {
     this.ankleRest = 0;
     this.railAhead = 0;
     this.waterUp.set(0, 1, 0);
+    this.waterFlow.x = 0;
+    this.waterFlow.z = 0;
     this.covered = false;
     this.ankleTorque = 0;
     this.swingTorque = 0;
@@ -1706,6 +1725,8 @@ export class AttachedRider {
     else this.waterUp.set(0, 1, 0);
     const flowX = under.outsideDomain ? 0 : under.flowX;
     const flowZ = under.outsideDomain ? 0 : under.flowZ;
+    this.waterFlow.x = flowX;
+    this.waterFlow.z = flowZ;
     const speed = Math.hypot(board.velocity.x - flowX, board.velocity.z - flowZ);
     if (this.planing ? speed < PLANING_DROP : speed > PLANING_SPEED) this.planing = !this.planing;
     if (this.planing) this.banked = true;
@@ -1732,8 +1753,9 @@ export class AttachedRider {
     const rail = roll - Math.atan2(this.waterUp.dot(side), this.waterUp.y);
     this.rollAxis.set(0, 0, -1).applyQuaternion(this.heading);
     const rollRate = this.rollAxis.dot(this.boardSpin);
-    // The bank asked for, no more than a turn at the board's speed can hold, eased in.
-    const speed = this.boardVelocity.dot(this.localScratch.set(0, 0, 1).applyQuaternion(this.heading));
+    // The bank asked for, no more than a turn at the board's speed through the water can hold, eased in.
+    const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
+    const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
     const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS))) : 0;
     const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
@@ -1810,7 +1832,8 @@ export class AttachedRider {
     const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
-    const along = this.scratch.set(board.velocity.x, 0, board.velocity.z);
+    // The board's path through the water: the carve's and the drag's (on moving water the path over the ground is off it).
+    const along = this.scratch.set(board.velocity.x - this.waterFlow.x, 0, board.velocity.z - this.waterFlow.z);
     if (along.lengthSq() < 1e-6) return;
     const speed = along.length();
     along.divideScalar(speed);

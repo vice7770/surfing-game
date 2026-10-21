@@ -1556,11 +1556,13 @@ describe('lean, trim, crouch and heading hold', () => {
     // from a frame moving with that water: the hull, its fins and the water's pressure read only the board's motion
     // through the water and the surface's tilt, both the same in that frame. So at the same speed through the water the
     // board carves the same turn, and the face feeds it nothing more than the still face did (the carve up from across
-    // reaches the same 164° and the rider falls). What differs is only what the rider reads over the ground: the lean
-    // a turn can hold (TURN_RADIUS) and Compress's path. From 1 to 2 m/s the snap turns 70–83° in its second (82° still)
-    // and the rider falls at 1.05–1.57 s (1.67 s still); the cutback comes round 74° (74°) and falls. None of the three
-    // is the still face's alone: all three stay pinned on both. (Measured with the rail's bite read from the water,
-    // decision 9; read from the world's level the numbers were within 1°, the cutback's 87°.)
+    // reaches the same 164° and the rider falls). What differed was only what the rider read over the ground: the lean
+    // a turn can hold (TURN_RADIUS) and Compress's path. From 1 to 2 m/s the snap turned 70–83° in its second (82° still)
+    // and the rider fell at 1.05–1.57 s (1.67 s still); the cutback came round 74° (74°) and fell. Since those read the
+    // board's motion through the water too (the phase-5 follow-up), all three are the still face's to the degree: the
+    // snap 81.7° in its second, falling at 1.67 s, the cutback 73.9°. None of the three is the still face's alone: all
+    // three stay pinned on both. (Measured with the rail's bite read from the water, decision 9; read from the world's
+    // level the numbers were within 1°, the cutback's 87°.)
     it('carves the same turn on the moving face as on the still face, at the same speed through the water', () => {
       const still = bottomIntoTop(0);
       const moving = bottomIntoTop(FACE_FLOW);
