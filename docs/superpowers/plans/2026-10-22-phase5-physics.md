@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to build the batches the owner picks. Steps use checkbox (`- [ ]`) syntax for tracking. The owner has chosen (§4): every recommendation, approved.
 
-**Status:** approved. The owner took every recommendation of §4 ("use all recommended", 2026-10-22). Written on branch `claude/anim-p5-plan` (from `main` at e445f06b); it lands in `main` with batch A (branch `claude/phys5-a`). Batch C is built on `claude/phys5-c`.
+**Status:** approved. The owner took every recommendation of §4 ("use all recommended", 2026-10-22). Written on branch `claude/anim-p5-plan` (from `main` at e445f06b); it lands in `main` with batch A (branch `claude/phys5-a`). Batch C is built on `claude/phys5-c`; the follow-up (batch D: W2 option (a), the keyboard's rotation, the assists against the water) on `claude/phys5-d`.
 
 **The owner's principle (2026-10-22):** "I don't want to change something that is not physics based." The animation stays physics-driven. Where the drawing can't match real surfing without the physics, "we can compromise the physics after." This plan is that step: the animation-realism plan's phase 5 (`2026-10-22-animation-realism.md` §8, "Phase 5").
 
@@ -584,6 +584,45 @@ The moving face replaces no bar: the still-water bar, the cap and `projectionLea
 3. Paddle into whitewater or a closing section and fall off lying down. *Look for:* the arms don't fling out.
 4. Online: wipe out and get held under. *Look for:* the other player's swimmer keeps its face down under water.
 5. Wave Pool: 5 s of pumping (Shift on and off about once a second). *Look for:* whether the HUD's balance meter dips or the arms rise. Only if they do, decision 15.
+
+### Follow-up (batch D, 2026-10-22, `claude/phys5-d`): W2 (a), the keyboard's rotation, the assists against the water
+
+From batch B's record (`claude/playtest-2026-10-22n`, batches A, B and C). The owner took batch B's option (a) for W2, decision 16's keyboard rotation, and the assists measured against the water.
+
+- **W2, option (a) (S 0.40 / W 0.60 held in today's 0.2 m zone): not built; one stance bar misses by a frame.** Built and run (kept on the local branch `claude/phys5-d-w2a`, not pushed): `copTarget.z` = trim × `TRIM_PRESSURE` 0.2 × half the stance, standing only.
+  - Every physics bar holds. The still-water bar, the 11 m/s guard, re-standing and the pumps hold no W/S, so they are unchanged by construction (and pass). `projectionLean` 0.864, 0.873 / 0.633, 0.727 → 0.885, 0.881 / 0.633, 0.729. The coached cutbacks 4.83–5.01 → 4.57–4.75 m/s (> 4.5) and 3.47–3.65 → 3.24–3.40 on 5° (> 3.2). The ladder 0.241 / 0.249 → 0.241 / 0.250. The body films, the stance map's misses and the 18 pinned fails pass as before.
+  - The miss: `stanceTurns.test.ts`, the frontside cutback's cascade. The head's turn peaks 0.367 s before the chest's (bar ≤ 0.35; 0.333 before), Regular and Goofy alike: the head's peak comes three frames sooner. One test in 920.
+  - At steady speed (a face that holds trim's speed) it changes little: S still holds 0.23 on the front foot (TRIM_SHIFT's feed-forward carries it past 0.40), W 0.82 → 0.83; on flat water W 0.81 → 0.91. What (a) moves is a slowing carve's: the zone's front edge at full S comes back from 0.82 to 0.72.
+- **The keyboard's rotation (item 2.9 B): not built; the stick doesn't swing the kick-out over either.** The kick-out recipe (straight up the still 15° face, full S, full steer):
+  - today's keyboard: the rider falls at 1.20–1.32 s from 5–7 m/s (72–125° round, still planing at 2.9–3.6 m/s); 1.58 s from 8 m/s (193°);
+  - the pad's stick held into the turn: 1.33 s (121°) at 6 m/s; a rotation the keyboard would give (the steer's while S is held, ramped): 1.25–1.28 s from 5–6 m/s, still planing; from 7–8 m/s the board stalls after 71–129° and the rider falls 0.6–0.8 s later;
+  - 80 pad techniques at 6 m/s (steer 0.3–1, held 0.3 s to the end, the rotation either way from the start or 0.4 s): every rider falls by 1.9 s; one (steer 0.7 for 0.3 s, the stick into the turn) comes 131° round before the board stalls and falls 0.4 s after it.
+  - The fall is the redirect pins' (the body falls into the turn as the board bleeds its speed: the bank runs to 70° with the swing at its range), which a twist cannot catch (it gives no net yaw). The still face's stall throws even a rider riding straight up with no steer (2.1 s). The owner's ride at the Point decides whether real waves take the board over the back.
+- **The assists against the water (built; commit below).** The sea alone (no rider): the Beach and the Point at Medium (Hs 1.4 m, Tp 11 s, s = 150, the GPU tier's 64 components), seeds 1 and 2, 60 s each after the spin-up, every 0.5 s. On every unbroken crest 0.5 m+ high and steeper than 15° within 60 m along shore and from 20 m seaward to 50 m shoreward of the take-off, the surface flow at 0.1–0.9 of the face's height (123,615 points).
+  - The water's level flow, medians: at the base 0.31 m/s (Beach) and 0.56 (Point), seaward; half way up 1.05–1.09, shoreward; near the top 1.40–1.74. Next to breaking crests 3.5–4.6 m/s (the 90th percentile at mid-face).
+  - The assists read both ways, statically, for boards on those points (the heading along the path through the water): bottom turns at the base at 6 and 7.5 m/s, headed 20° down to 60° up the face; top turns and cutbacks at 0.5–0.9 of the face at 4 and 5.5 m/s, headed 30–150° up it. Read over the ground:
+    - bottom turns: the pull and the carry differ by 6 % (Beach) and 9–10 % (Point) at the median; over 10 % in 25–50 % of the cases; the lean cap within ±2–6°;
+    - top turns and cutbacks: the board reads 18 % slower (it climbs against the water's shoreward flow), the lean cap 10° less, the pull 0.68–0.70 weaker (its fade 0.31 lower) and 13° off its path; the pull's vector differs by 73–75 %, the carry's by 47 %; over 10 % in 97–99 % of the cases. Leaving out the flows next to breaking crests: 59–62 %, 10°, 40 %.
+  - So `TURN_RADIUS`'s speed, Compress's path and fade, the carry's and the lean-out pull's direction now read the board's motion through the water under it (the flow `planingStep` samples, as planing already did). On still water nothing changes, so every bar holds as it was; on uniformly moving water the turn is the still water's: the coached cutback on a 5° face whose water runs 1.1–1.5 m/s up it keeps 3.47–3.65 m/s (1.02–1.29 over the ground's reading), and the moving face's three pins read the still face's to the degree (the snap 81.7° in its second, falling at 1.67 s; the cutback 73.9°). A new test pins it (`cutback.test.ts`).
+
+**The bars** (before is `claude/playtest-2026-10-22n` at 6b9cb4c8):
+
+| Bar | Before | After (batch D as built) | W2 (a) (held) |
+|---|---|---|---|
+| Still-water bottom turn, frontside / backside (≤ 1.15 s, > 0.85 kept) | 1.117 / 1.150 s, keeping 0.913 / 0.910 | the same (still water) | the same |
+| Compress cap, 11 m/s guard (≤ 0.87 rad/s) | 0.83 | the same | the same |
+| `projectionLean` at 12° (> 0.83) / 25° (< 0.74), 7.3 and 8.5 m/s | 0.864, 0.873 / 0.633, 0.727 | the same | 0.885, 0.881 / 0.633, 0.729 |
+| The coached cutback, 10° / 5° face (> 4.5 / > 3.2) | 4.83–5.01 / 3.47–3.65 | the same; moving water 1.1–1.5 m/s: the same (5°: 1.02–1.29 before) | 4.57–4.75 / 3.24–3.40 |
+| `stanceLadder` W/S range standing / compressed (> 0.15) | 0.241 / 0.249 | the same | 0.241 / 0.250 |
+| The frontside cutback's head before its chest (0.1–0.35 s) | 0.333 s | the same | 0.367 s (misses) |
+| Pumps, re-standing, body films, stance tests, pinned fails | pass | pass | pass but the cascade |
+
+**Shot list (batch D):**
+1. Point, Medium: three top turns and three cutbacks each side, Compress (Space) held with the steer. *Look for:* on the face the turn now leans and pulls as on still water (up to about 10° deeper into a climbing turn): the board should hold its rail round and keep more speed. Say if there are new falls into the turn.
+2. Beach, Medium: three compressed bottom turns. *Look for:* about as before (the water at the base hardly moves).
+3. Point: a cutback back toward the curl with Compress and S. *Look for:* it should bog less on the face than before.
+4. Near the curl, a compressed turn in fast water. *Look for:* where the water runs with the board the assists now read it slow and fade; say if turns there feel weaker.
+5. Point: ride straight up the face, hold S and steer (the kick-out). *Look for:* whether the board swings over the back on a real wave or the rider falls; that decides whether the keyboard's rotation is worth a second look.
 
 ---
 
