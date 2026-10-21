@@ -188,11 +188,25 @@ const PRONE_ROLL_SHIFT = 0.4;
 const PRONE_ROLL_DAMPING = 0.16;
 const STANDING_SHIFT = { x: 0.35, z: 0.25 };
 /**
- * Fore and aft, where the load sits is trim (a later, deliberate control), not
- * balance: standing, the rider only keeps the centre of pressure within this
- * distance of the middle of the stance, clear of the feet's edges.
+ * Fore and aft, where the load sits is trim, not balance: the rider only keeps
+ * the centre of pressure within TRIM_FREEDOM, m, of where it holds it, clear of
+ * the feet's edges.
+ *
+ * Standing, W/S set where it holds it (the phase-5 physics plan's W2, option (a)
+ * of batch B's record, the owner's decision of 2026-10-22): TRIM_PRESSURE of half
+ * the stance toward the front foot or the back, so full S holds 0.40 of the load
+ * on the front foot, full W 0.60 and nothing 0.50 (toward the coaching's 70/30:
+ * Rapture's top turn on the back foot, Cornish Wave's driving forward). The
+ * board's own pushes still move it within the 0.2 m zone before the rider
+ * re-centres. The plan's 0.30 / 0.70 broke the bars (with a 0.1 m zone 34 tests,
+ * with 0.2 m the coached cutbacks: 4.21–4.44 m/s against 4.5): on still water
+ * every carve sheds 0.2–0.6 g, and the pressure held back sinks the tail into
+ * it. Until then the zone sat about the middle and W/S moved only the upper body
+ * (TRIM_SHIFT, kept as the feed-forward). Landing from a pop-up holds the middle:
+ * the landing loads the front foot (72/28 in the laboratory study).
  */
 const TRIM_FREEDOM = 0.2;
+const TRIM_PRESSURE = 0.2;
 /**
  * Carried upright (landing from a pop-up, and standing below planing), balance
  * keeps the centre of pressure within LATERAL_FREEDOM, m, of the middle of the
@@ -996,7 +1010,7 @@ export class AttachedRider {
   private readonly smoothedCop = { x: 0, z: 0 };
   /** The contact carries enough load for its centre of pressure to guide balance. */
   private loaded = false;
-  /** Where the rider wants its centre of pressure, relative to the middle of the support (steering moves it toward a rail). */
+  /** Where the rider wants its centre of pressure, relative to the middle of the support: along the board, where W/S hold it (TRIM_PRESSURE). */
   readonly copTarget = { x: 0, z: 0 };
   /** The steering lean of the upper body across the board, m, and its rate. */
   private readonly lean = new Vector3();
@@ -2654,6 +2668,9 @@ export class AttachedRider {
     const reach = this.upright ? STANDING_SHIFT : PRONE_SHIFT;
     const support = this.support;
     this.copTarget.x = 0;
+    // Standing, W/S set the pressure the rider holds along the board (TRIM_PRESSURE); landing and lying, the middle.
+    this.copTarget.z = this.upright && this.phase === 'standing'
+      ? (Math.max(-1, Math.min(1, this.trim)) * TRIM_PRESSURE * (this.feet.front - this.feet.rear)) / 2 : 0;
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (!this.upright && this.inContact) {
