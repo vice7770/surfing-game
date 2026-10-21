@@ -760,7 +760,7 @@ describe('SurfZoneSimulation', () => {
   it('spills at the Canyon at every size: no lip, no tube, and its foam follows the spilling front', () => {
     for (const [significantHeight, peakPeriod] of [[1.4, 11], [3, 14]]) {
       const simulation = new SurfZoneSimulation({
-        ...small, spot: 'canyon', significantHeight, peakPeriod, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: 160,
+        ...small, spot: 'canyon', significantHeight, peakPeriod, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: CANYON.alongShore,
         dx: 1, fineSpacing: 1,
       });
       let broke = 0;
@@ -848,7 +848,7 @@ describe('SurfZoneSimulation', () => {
     // The straight-crest bed: each wave starts breaking at the arm's peak, so riders wait there, whatever the swell.
     expect(TAKE_OFF.canyon).toBe('peak');
     for (const [significantHeight, peakPeriod, directionDegrees] of [[1.4, 11, 0], [0.9, 9, -10], [2.4, 14, 10]]) {
-      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, significantHeight, peakPeriod, directionDegrees };
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: CANYON.alongShore, significantHeight, peakPeriod, directionDegrees };
       const tank = tankLayout(config);
       const bed = (x: number, z: number) => tankDepth(canyon, tank.edgeDepth, x, z, tank);
       const point = takeOffPoint(config);
@@ -860,11 +860,16 @@ describe('SurfZoneSimulation', () => {
       expect(bed(point.x, point.z)).toBeCloseTo(canyonTakeOffDepth(significantHeight), 1);
       expect(point.z).toBeLessThan(canyonBreakLineZ(point.x));
     }
-    // Where nine in ten of each size's waves had started breaking in the take-off's column (the reef bed, 2026-10-22,
+    // Where nine in ten of each size's waves had started breaking in the take-off's column (canyon-layout, 2026-10-22,
     // 3 seeds × 14 periods): the sets, not the median wave (0.96 + 0.65 Hs until the owner's playtest of 2026-10-11). On
-    // the 1:30 face below a 2.8 m hinge they were 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs).
-    for (const [significantHeight, ninetiethDepth] of [[0.9, 2.23], [1.4, 2.69], [2.4, 3.82]]) {
-      expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.06);
+    // the long arm they were 2.23, 2.69 and 3.82 m (the reef bed, 1.24 + 1.07 Hs); on the 1:30 face below a 2.8 m hinge
+    // before it 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs).
+    for (const [significantHeight, ninetiethDepth] of [[0.9, 2.19], [1.4, 2.65], [2.4, 3.85]]) {
+      expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.07);
+    }
+    // The short arm's take-offs, 134–174 m from the waterline (canyon-layout; 320–358 m on the long arm).
+    for (const [significantHeight, peakPeriod, z] of [[0.9, 9, -134], [1.4, 11, -147.5], [2.4, 14, -173.5]]) {
+      expect(takeOffPoint({ ...small, spot: 'canyon', alongShore: undefined, significantHeight, peakPeriod, directionDegrees: 0 })).toEqual({ x: CANYON.takeOffX, z });
     }
   });
 
@@ -1715,9 +1720,9 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
 
 // The Canyon roller lens (S3, docs/superpowers/plans/2026-10-06-canyon-roller-s3.md, Task 2).
 describe('the Canyon roller lens (S3)', () => {
-  /** The test "spills at the Canyon at every size"'s Medium sea: Hs 1.4 m, Tp 11 s, 0°, s = 150, 160 m. */
+  /** The test "spills at the Canyon at every size"'s Medium sea: Hs 1.4 m, Tp 11 s, 0°, s = 150, on its own window (220 m since canyon-layout). */
   const canyon: SurfZoneConfig = {
-    ...small, spot: 'canyon', significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: 160,
+    ...small, spot: 'canyon', significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: PADANG_SPREADING, alongShore: CANYON.alongShore,
     dx: 1, fineSpacing: 1,
   };
 
@@ -1856,7 +1861,8 @@ describe('the Canyon roller lens (S3)', () => {
       off.writeUniformSnapshot(offOut[0], offOut[1], offOut[2], grid);
       for (let o = 0; o < onOut[0].length; o += 2) expect(onOut[0][o]).toBe(offOut[0][o]);
       same('flow', onOut[1], offOut[1]);
-      for (const [x, z] of [[-30, -330], [0, -270], [20, -230]]) expect(on.heightAt(x, z)).toBe(off.heightAt(x, z));
+      // Over the arm's face, its flat top and down the line (canyon-layout's short arm; x −30…20, z −330…−230 before it).
+      for (const [x, z] of [[-2, -150], [0, -100], [20, -60]]) expect(on.heightAt(x, z)).toBe(off.heightAt(x, z));
       slices += on.writeCurls(curls);
       expect(off.writeCurls(curls)).toBe(0);
     }
@@ -1877,7 +1883,8 @@ describe('the Canyon roller lens (S3)', () => {
     const takeOff = takeOffPoint(simulation.config);
     const out: number[] = [];
     for (const wave of simulation.spilling!.waves) {
-      if (!(wave.frontX > -45 && wave.frontX < 0) || !canyonArmAt(wave.frontX)) continue;
+      // From 15 m upcoast of the take-off to 30 m downcoast (x −45…0 on the old layout's take-off at x −30).
+      if (!(wave.frontX > takeOff.x - 15 && wave.frontX < takeOff.x + 30) || !canyonArmAt(wave.frontX)) continue;
       const front = Math.round((wave.frontX - xCenters[0]) / dx);
       let z = Number.NaN;
       for (let d = 0; d <= 6 && !(z === z); d += 1) if (wave.crest[front - d] === wave.crest[front - d]) z = wave.crest[front - d];

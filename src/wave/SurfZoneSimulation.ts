@@ -593,19 +593,20 @@ export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed): number {
 /**
  * Where the Canyon's sets start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
  * line through the depth by which nine in ten of each size's waves have started breaking in the take-off's column
- * (x −30 ± 4 m; each wave's most seaward onset there), 2.23, 2.69 and 3.82 m for Small, Medium and Big (the reef bed,
- * 2026-10-22, docs/research/canyon-reef-bed-2026-10-22: 3 seeds × 14 periods each; within 0.05 m of the line). Riders
- * wait where the arm's face is this deep (`takeOffPoint`), so the sets break at, not seaward of, the take-off.
- * - On the reef bed Big's sets break 0.25 m shallower than on the 1:30 face below a 2.8 m hinge, where the same probe
- *   gave 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs, from 2026-10-11 until the reef bed; re-run 2026-10-22, the same).
+ * (the take-off's x ± 4 m; each wave's most seaward onset there), 2.19, 2.65 and 3.85 m for Small, Medium and Big
+ * (canyon-layout, 2026-10-22, docs/research/canyon-layout-2026-10-22: 3 seeds × 14 periods each; within 0.06 m of the
+ * line). Riders wait where the arm's face is this deep (`takeOffPoint`), so the sets break at, not seaward of, the take-off.
+ * - On the short arm the take-off's column is again 8 m downcoast of the peak, on the same face, so the depths barely
+ *   move: 2.23, 2.69 and 3.82 m on the long arm (the reef bed, 1.24 + 1.07 Hs, `CANYON_TAKE_OFF_DEPTH_OLD`), and on the
+ *   1:30 face below a 2.8 m hinge before it 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs, from 2026-10-11).
  * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs: 1.49, 1.96 and 2.50 m). On
  *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
  *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
  *   blows right on top, without the chance to paddle to pick up speed". The rider starts `rideLineupOffset` further
- *   out still: 11 m, but at Big 6 m, just seaward of where one wave in ten starts breaking (`CANYON_RIDE_LINEUP`).
+ *   out still (`CANYON_RIDE_LINEUP`).
  * Re-measure if the arm or the swells change.
  */
-export const CANYON_TAKE_OFF_DEPTH = { base: 1.24, perMetre: 1.07 } as const;
+export const CANYON_TAKE_OFF_DEPTH = { base: 1.14, perMetre: 1.12 } as const;
 
 /**
  * `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-layout (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef
