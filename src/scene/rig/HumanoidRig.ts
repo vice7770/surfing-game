@@ -251,15 +251,19 @@ export const RIG_DETAIL = {
    * `gazeFollow` rad/s, critically damped (0.25 s behind, 0.09× at 4 Hz), so
    * neither the board's yaw wobble (through the yaw rate, or the chest's facing
    * at the neck's reach) nor its heave over chop turns or nods it. The lead is
-   * longer by the heading's lag, so a steady turn is still looked into 0.6 s
-   * ahead (0.6 s before). Within `neckTurn`° of the chest: the neck's axial
+   * longer by the heading's lag, so a steady turn is looked into 0.45 s ahead
+   * (0.6 s, at 0.85, until the phase-5 follow-up's W2: with the weight held back
+   * the frontside cutback's head then turned 0.367 s before its chest, past the
+   * cascade's 0.35; at 0.7 it turns 0.333 s before it, the lean's lead
+   * `leanLead` raised to keep the head ahead of the board into a bottom turn).
+   * Within `neckTurn`° of the chest: the neck's axial
    * rotation, about 80–90° (the backside bottom turn's look over the front
    * shoulder, 100–140° from the toes with the shoulders square, needs its
    * last degrees). Where the key pose looks further into a turn than the yaw
    * rate's lead (`StandingPose.lookTurn`: a redirect's destination), the pose's
    * lead stands in for it.
    */
-  lookAhead: 0.85,
+  lookAhead: 0.7,
   neckTurn: 90,
   gazeFollow: 8,
   /**
@@ -276,20 +280,21 @@ export const RIG_DETAIL = {
    * turn's g tan θ / v), looked ahead over `time`, s, about the board's lag behind
    * the lean; below `slowest` m/s, read as at it (no bank is asked for off the
    * plane). It now looks at most 5° the wrong way and comes 10° in 0.05 s before
-   * the board. Leaning out of a turn, the head comes back first too. Followed as
+   * the board (0.5 s with `lookAhead` at 0.85; with it at 0.7, 0.55 s looks 4.7°
+   * the wrong way and comes in 0.033 s before the board). Leaning out of a turn, the head comes back first too. Followed as
    * the gaze is, within the neck's reach; the leading arm keeps pointing along the
    * board's look (at 0.75 s the head turned 0.37 s before the chest in the
    * cutback, past the cascade's 0.35; led too, the chest broke the cascade's
    * order). Read from the drawn body (`RiderVisualState.leanRate`), so another
    * player's head leads alike, with nothing on the wire.
    */
-  leanLead: { time: 0.5, slowest: 4 },
+  leanLead: { time: 0.55, slowest: 4 },
   /**
    * The anticipation cascade (the animation-realism plan's §3.2 and phase 2;
    * WSL flow: turns unwind head → shoulders → hips → board; the owner's reel,
    * step 4: the head is the steering wheel): each part is turned into the turn
    * ahead of the board by what the board turns over its lead, s, at the yaw
-   * rate (the motion filter's, second order): the head by the look's 0.6 s
+   * rate (the motion filter's, second order): the head by the look's 0.45 s
    * (`lookAhead` less its follow), the chest by `chest`, the hips by `hips`, so
    * each comes round before the next. The chest and hips within `twistMost`°
    * of where the key pose has them, each followed, critically damped (the key
