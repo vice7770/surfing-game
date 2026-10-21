@@ -35,12 +35,12 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 ANALYSIS = os.path.join(HERE, "analysis")
-CASES = ["canyon23_a49", "canyon23f74_a38", "canyon23_a38", "canyon23_a29"]  # the costliest first
+CASES = ["canyon23_a49", "canyon23f54_a38", "canyon23_a38", "canyon23_a29"]  # the costliest first
 WHAT = {
-    "canyon23_a29": ("x −30 (take-off), fan 1:31", "Medium's sets"),
-    "canyon23_a38": ("x −30 (take-off), fan 1:31", "Big's typical wave"),
-    "canyon23_a49": ("x −30 (take-off), fan 1:31", "Big's sets"),
-    "canyon23f74_a38": ("x 10, fan 1:74", "Big down the line"),
+    "canyon23_a29": ("x −2 (take-off), fan 1:31", "Medium's sets"),
+    "canyon23_a38": ("x −2 (take-off), fan 1:31", "Big's typical wave"),
+    "canyon23_a49": ("x −2 (take-off), fan 1:31", "Big's sets"),
+    "canyon23f54_a38": ("x 18, fan 1:54", "Big down the line"),
 }
 SMOKE_WINDOW = {"tswitch": 1.0, "tmax": 2.0}  # the smoke test's phases: a second of each, at levels 7 and 8
 EXTEND = float(os.environ.get("CANYON_EXTEND", 4.0))  # phase 2 carried on this much (sqrt(h0/g)) once, if it broke late
@@ -765,7 +765,7 @@ def write_report(cfg, summary, rows):
         "holds the eight shipped cases. Wiring adds them (`npm run barrels` with every shipped case `--keep`ed and these "
         "`--run` from `data/`, `--spot canyon --flat 0.1666667` and each `--a0`), a `canyon` entry in `BARREL_SPOTS` "
         "(slope 1/23, foot 6 m, its join and throw tables: the throw from the depths above), and `canyon` in `SWEPT_BARREL`.",
-        "- The two transects share S1 = 1/23, so the library's slope key can't tell `canyon23f74_a38` from `canyon23_a38`: "
+        "- The two transects share S1 = 1/23, so the library's slope key can't tell `canyon23f54_a38` from `canyon23_a38`: "
         "the loft would blend them as two A0 of one transect. Either keep one per spot or key cases by the fan (S2) or the "
         "column along the arm.",
     ]

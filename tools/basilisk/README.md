@@ -71,23 +71,23 @@ The owner asked for them (2026-09-30) to source the Reef's lip and tube, which a
 `tools/basilisk/run_periodic.sh` runs a train of cnoidal waves, so the wave studied, the second crest, breaks into the trough its predecessor leaves. The owner approved these runs on 2026-09-30. A level-9 test on the Reef's 1:4.2 ledge shows the step: the first wave's backwash drains the ledge to about 1.8 m below still level, and the second crest breaks at the ledge top.
 - **`periodic.c`:** `slope.c` with the solitary wave replaced by the train in `train.dat`, written by `analysis/cnoidal_train.py` (first-order cnoidal theory). It dumps `final` at the end, so a finer build can continue from it, and can keep its finest two levels inside a window (`XWIN0`, `XWIN1`).
 - **Two phases per case:** level 10 until the second crest nears the break, then level 12 inside a window around it.
-- **Cases:** `reef42` and `reef60` (the Reef's ledge at 1:4.2 and 1:6); `padang19`, `padang19b` and `padang19c` (Padang's 16 s, 18 s and 14 s swells, which give the swept barrel its onset lag for swell); `padang19s` (the Small swell, for the barrel library); `point21_a08`, `point21_a15`, `point21_a23` and `point21_a30` (the Point's transect at four sizes, for PR 7); `reef42_a35` (a 3.5 m crest on the Reef's ledge, the second point of its throw line); `canyon23_a29`, `canyon23_a38`, `canyon23_a49` and `canyon23f74_a38` (the Canyon's reef bed, below). PR 7's records say which of them the library uses, and why.
+- **Cases:** `reef42` and `reef60` (the Reef's ledge at 1:4.2 and 1:6); `padang19`, `padang19b` and `padang19c` (Padang's 16 s, 18 s and 14 s swells, which give the swept barrel its onset lag for swell); `padang19s` (the Small swell, for the barrel library); `point21_a08`, `point21_a15`, `point21_a23` and `point21_a30` (the Point's transect at four sizes, for PR 7); `reef42_a35` (a 3.5 m crest on the Reef's ledge, the second point of its throw line); `canyon23_a29`, `canyon23_a38`, `canyon23_a49` and `canyon23f54_a38` (the Canyon's reef bed, below). PR 7's records say which of them the library uses, and why.
 - **Two-slope beds:** a case may end with `:HMID:S2`, the depth where the first slope ends (in h0) and the second slope from there to the flat, as `slope.c` takes them. Without them the bed is one slope to the flat, and the old cases build exactly as before (their qcc command lines were checked byte for byte, 2026-10-21).
 - **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib. For a supervisor: `fg` (both phases in the foreground), `scout` (the whole case at `SCOUT_LEVEL`, 10, every frame written, which `analysis/crest_track.py` reads to place the switch, end and window), `compile`, `cases` and `flags` (the qcc command lines). `CASES_FILE` replaces or adds case definitions by name; `RUNS` moves the runs' folder; `OMP=1` builds with OpenMP.
 - **Overview figure:** `analysis/train_overview.py` draws a run's surface along the whole domain at chosen times.
 
 ## The Canyon's tube runs
 
-The swept barrel for the Canyon needs its own Navier–Stokes cases on the reef bed of 2026-10-22 (`docs/research/canyon-reef-bed-2026-10-22/README.md`, "What the swept-barrel step will need"). `tools/basilisk/run_canyon.sh` runs all four on the M4 Pro and turns them into the barrel library's files, in one command.
+The swept barrel for the Canyon needs its own Navier–Stokes cases on the reef bed of 2026-10-22 (`docs/research/canyon-reef-bed-2026-10-22/README.md`, "What the swept-barrel step will need"), on canyon-layout's short arm (`docs/research/canyon-layout-2026-10-22/README.md`, "The tube runs": the take-off's transect is unchanged, 8 m downcoast of the peak; the down-the-line case moved from x 10, 1:74, to x 18, 1:54). `tools/basilisk/run_canyon.sh` runs all four on the M4 Pro and turns them into the barrel library's files, in one command.
 
 The cases are two-crest cnoidal trains, the second crest studied, along the wave's path from the arm's 6 m foot (h0): 1:23 to the 2.2 m hinge (0.367 h0), then the fan to the 1.0 m crest (0.167 h0), then flat to the closed right wall.
 
 | Case | Transect (fan) | H/h0 | T | What it sources |
 |---|---|---|---|---|
-| `canyon23_a29` | x −30, the take-off (1:31) | 0.29 | 11 s | Medium's sets: a real tube, or only a curl? |
-| `canyon23_a38` | x −30 (1:31) | 0.38 | 14 s | Big's typical wave |
-| `canyon23_a49` | x −30 (1:31) | 0.49 | 14 s | Big's sets |
-| `canyon23f74_a38` | x 10 (1:74) | 0.38 | 14 s | Big down the line |
+| `canyon23_a29` | x −2, the take-off (1:31) | 0.29 | 11 s | Medium's sets: a real tube, or only a curl? |
+| `canyon23_a38` | x −2 (1:31) | 0.38 | 14 s | Big's typical wave |
+| `canyon23_a49` | x −2 (1:31) | 0.49 | 14 s | Big's sets |
+| `canyon23f54_a38` | x 18 (1:54) | 0.38 | 14 s | Big down the line |
 
 **What it does,** per case, four at once (one core each):
 1. **Scout:** the whole case at level 10, every 0.1 written (minutes). `analysis/crest_track.py` follows the second crest and finds where its face goes vertical. That places phase 2 (in √(h0/g) and h0): the switch 5 before vertical, the end 3 after touchdown (at least 5 after vertical; 6.5 if the scout saw none), and the window from 3 h0 behind the crest as it stands 3 before vertical to at least 8 h0 ahead of where it goes vertical. They are frozen in `tools/basilisk/runs/canyon/cases.txt`, so a resumed run keeps them.

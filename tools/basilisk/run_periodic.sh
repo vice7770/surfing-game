@@ -29,9 +29,11 @@
 #   point21_a08/a15/a23/a30  the Point's 7 m foot, 1:21.5 along the contours' normal to a 0.35 m flat, foot crests A0
 #              0.08 at 9 s, 0.15 at 11 s, 0.23 at 12 s, 0.30 at 14 s (PR 7; switch, end and window from level-9 scouts)
 #   reef42_a35  the Reef's 1:4.2 ledge with a 3.5 m foot crest at 16 s (A0 0.35), its throw line's second point (PR 7)
-#   canyon23_a29, canyon23_a38, canyon23_a49, canyon23f74_a38  the Canyon's reef bed (2026-10-22) from the arm's 6 m foot:
-#              1:23 to the 2.2 m hinge (0.367 h0), then the fan to the 1.0 m crest (0.167 h0), 1:31 at x -30 (the take-off)
-#              and 1:74 at x 10 (f74); H/h0 0.29 at 11 s (Medium's sets), 0.38 and 0.49 at 14 s (Big's typical wave and
+#   canyon23_a29, canyon23_a38, canyon23_a49, canyon23f54_a38  the Canyon's reef bed (2026-10-22) from the arm's 6 m foot:
+#              1:23 to the 2.2 m hinge (0.367 h0), then the fan to the 1.0 m crest (0.167 h0), 1:31 at the take-off (8 m
+#              downcoast of the peak: x -2 on canyon-layout's short arm, x -30 before) and 1:54 at x 18, 28 m downcoast
+#              of the peak (f54; until canyon-layout 1:74 at x 10, 48 m downcoast, f74); H/h0 0.29 at 11 s (Medium's sets),
+#              0.38 and 0.49 at 14 s (Big's typical wave and
 #              its sets). Their switch, end and window here are provisional, from the bed alone; run_canyon.sh places
 #              them from a scout of each case (docs/research/canyon-reef-bed-2026-10-22/README.md, the swept-barrel step).
 # Each case uses one core (OMP=1: OMP_NUM_THREADS cores, with Homebrew's libomp on macOS). Safe to rerun: each phase
@@ -59,7 +61,7 @@ SCOUT_EXTRA="${SCOUT_EXTRA:-10}"
 # (slope.c's HMID and S2). Without them the bed is one slope to the flat (HMID = HS).
 CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56 padang19b:7:0.42:18:0.0526316:0.1785714:72:32:42:45:64 padang19c:7:0.24:14:0.0526316:0.1785714:64:31:41:38:52 padang19s:7:0.195:16:0.0526316:0.1785714:64:35:46:42:56 point21_a08:7:0.141:9:0.0465116:0.05:52:31:44:27:47 point21_a15:7:0.229:11:0.0465116:0.05:60:31:41.5:29:49 point21_a23:7:0.318:12:0.0465116:0.05:60:28:37.5:29:49 point21_a30:7:0.38:14:0.0465116:0.05:68:26:39:34:54 reef42_a35:10:0.439:16:0.238095:0.15:64:18.5:28:24:44"
 # The Canyon (2026-10-22's reef bed): provisional windows, from the bed alone (run_canyon.sh scouts each case).
-CASES_ALL="$CASES_ALL canyon23_a29:6:0.29:11:0.0434783:0.1666667:56:26.5:41.5:31.5:52.5:0.3666667:0.0322581 canyon23_a38:6:0.38:14:0.0434783:0.1666667:64:25:40:35:56:0.3666667:0.0322581 canyon23_a49:6:0.49:14:0.0434783:0.1666667:64:22:37:34:55:0.3666667:0.0322581 canyon23f74_a38:6:0.38:14:0.0434783:0.1666667:68:25:40:35:56:0.3666667:0.0135135"
+CASES_ALL="$CASES_ALL canyon23_a29:6:0.29:11:0.0434783:0.1666667:56:26.5:41.5:31.5:52.5:0.3666667:0.0322581 canyon23_a38:6:0.38:14:0.0434783:0.1666667:64:25:40:35:56:0.3666667:0.0322581 canyon23_a49:6:0.49:14:0.0434783:0.1666667:64:22:37:34:55:0.3666667:0.0322581 canyon23f54_a38:6:0.38:14:0.0434783:0.1666667:68:25:40:35:56:0.3666667:0.0185928"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.
