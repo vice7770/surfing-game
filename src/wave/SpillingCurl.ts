@@ -274,6 +274,11 @@ export class SpillingCurl implements SpillingDrawnLook {
   readonly shoulderAir: Float32Array;
   /** Per column, 1 where a swept tube draws this wave's crest at the last update (`update`'s `tube`): no curl drawn there. */
   readonly tube: Uint8Array;
+  /**
+   * Per column with a tube, how much later its white comes than the curl's own landing would bring it, s: the swept
+   * tube's clock against the spilling front's (the advisor asked for it, 2026-10-22); NaN elsewhere.
+   */
+  readonly tubeHold: Float64Array;
   private readonly first: number;
   private readonly last: number;
   private readonly view = createLensView();
@@ -307,6 +312,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
     this.shoulderAir = new Float32Array(nx * nz).fill(1);
     this.tube = new Uint8Array(nx);
+    this.tubeHold = new Float64Array(nx).fill(Number.NaN);
     this.shapes = [];
     // Each column's bed along the waves' path (+z, the Canyon's straight crests) at the breaker depth: the gradient it
     // climbs (Mead & Black's band, as the reef break's), its overturn held to the span the advisor gave for the fan face.
@@ -360,6 +366,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     age.fill(Number.NaN);
     wave.fill(NONE);
     this.tube.fill(0);
+    this.tubeHold.fill(Number.NaN);
     const waves = front.waves;
     for (let k = 0; k < waves.length; k += 1) {
       const { reached, joinedAt } = waves[k];
@@ -412,7 +419,9 @@ export class SpillingCurl implements SpillingDrawnLook {
       const touchdown = tube ? tube.touchdown[column] : Number.NaN;
       if (touchdown === touchdown && crest === crest && Math.abs(tube!.z[column] - crest) <= TUBE_MATCH) {
         this.tube[column] = 1;
+        const own = this.impact[column];
         this.impact[column] = Math.max(0, age[column] + touchdown - time);
+        this.tubeHold[column] = this.impact[column] - own;
       }
       this.landing[column] = this.size(column, h).ahead;
       // The face's foot: the lens's toe, its length L_r, or, unset, the stage's at birth (H / tan θ_s, Martins et al. 2018).
