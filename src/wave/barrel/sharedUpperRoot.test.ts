@@ -170,5 +170,5 @@ describe('shared inner-sheet sampling', () => {
       }
     }
     expect(pairedCells).toBeGreaterThan(1000);
-  }, 30000);
+  }, 120_000); // About 9 s alone; it passed 30 s once on a loaded M1 (2026-10-22), so a wider margin.
 });
