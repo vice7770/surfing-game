@@ -164,12 +164,17 @@ const RADIUS = CLOCK.smoothing * Math.sqrt(7);
  *   exactly, to its leading edge, where a weighted mean would sit 0.31 of the radius behind. One point uses its own,
  *   and points bunched within about half a metre their weighted mean. The fit is clamped to the window's throw
  *   times, so it never extrapolates.
- * - **Causality.** A point's τ starts at the earliest frame (BreakingFront), and never falls: when a later neighbour
- *   moves the fit, the lip pauses rather than retracts. Frequent pauses would mean the onsets are still noisy at the 2 m scale.
+ * - **Causality.** A point's τ starts at the earliest frame (BreakingFront), and never falls: before its throw, when a
+ *   later neighbour moves the fit, the face pauses rather than retracts (it is waiting for its crest). Frequent pauses
+ *   would mean the onsets are still noisy at the 2 m scale.
+ * - **After the throw** (the advisor, 2026-10-22: the Canyon's lips hung 0.3–1.3 s in 16–30 % of its tubes): a point
+ *   whose own crest has crossed its throw depth fits its throw time over its thrown neighbours only, so neighbours
+ *   still joining or foreseen no longer slide it later; and once its lip is drawn thrown (τ ≥ 0) its clock runs at
+ *   least at real time, `step` s a step, catching up only when the fit moves earlier. A free jet never hangs.
  *
  * Only + − × ÷ and loops over points in σ order, for online determinism.
  */
-export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetTiming): number {
+export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetTiming, step = 0): number {
   let pauses = 0;
   let start = 0;
   while (start < points.length) {
@@ -178,7 +183,8 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
     for (let k = start; k < end; k += 1) {
       const point = points[k];
       const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
-      if (shown < point.tau) pauses += 1;
+      if (point.tau >= 0) point.tau = Math.max(shown, point.tau + step);
+      else if (shown < point.tau) pauses += 1;
       else point.tau = shown;
     }
     start = end;
@@ -200,9 +206,13 @@ function throwTime(point: FrontPoint, time: number, timing: OnsetTiming): number
   return Math.max(Math.min(foreseen, latest), point.broke);
 }
 
-/** Point k's throw time from a biweight-weighted line through the throw times of points[start, end) near it. */
+/**
+ * Point k's throw time from a biweight-weighted line through the throw times of points[start, end) near it: once its
+ * own crest has thrown (lagged), through its thrown neighbours' only.
+ */
 function fittedThrow(points: readonly FrontPoint[], start: number, end: number, k: number, time: number, timing: OnsetTiming): number {
   const centre = points[k].sigma;
+  const thrownOnly = timing.lagged && points[k].thrown !== null;
   let s0 = 0;
   let s1 = 0;
   let s2 = 0;
@@ -214,6 +224,7 @@ function fittedThrow(points: readonly FrontPoint[], start: number, end: number, 
   while (from > start && centre - points[from - 1].sigma < RADIUS) from -= 1;
   for (let j = from; j < end && points[j].sigma - centre < RADIUS; j += 1) {
     const other = points[j];
+    if (thrownOnly && other.thrown === null) continue;
     const thrown = throwTime(other, time, timing);
     const d = other.sigma - centre;
     const u = d / RADIUS;

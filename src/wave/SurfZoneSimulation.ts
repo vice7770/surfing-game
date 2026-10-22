@@ -1249,7 +1249,7 @@ export class SurfZoneSimulation {
     end = performance.now();
     this.stepCosts.roller = end - phase;
     phase = end;
-    this.advanceFront();
+    this.advanceFront(dt);
     end = performance.now();
     this.stepCosts.front = end - phase;
     phase = end;
@@ -1309,13 +1309,13 @@ export class SurfZoneSimulation {
   }
 
   /** The swept barrel's front (Part B): the crests breaking in the fine zone, linked into lines, and their clocks. */
-  private advanceFront(): void {
+  private advanceFront(dt: number): void {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
     const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
-    this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
+    this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!, dt);
     if (this.crash) {
       // The barrel's jets leave and land on its clock, and the whitewater waits for its touchdown (PR 5).
       const { throws, volume } = this.crash.update(front.points, {

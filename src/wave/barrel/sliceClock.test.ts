@@ -35,7 +35,7 @@ function run(
       point.broke = time;
       point.tau = timing.earliest;
     }
-    pauses += advanceClocks(front, time, timing);
+    pauses += advanceClocks(front, time, timing, DT);
     each?.(time);
   }
   return pauses;
@@ -87,23 +87,56 @@ describe('the slice clock', () => {
     // Groups of five columns breaking together, 0.5 s apart: the solver's teeth, a peel of 10 m/s on average.
     run(points, 5, (point) => 0.5 * Math.floor(point.column / 5));
     const interior = points.slice(8, 32);
+    // A lip already thrown when the next group breaks runs on rather than hang (the advisor, 2026-10-22), so each
+    // group's edge keeps part of its tooth: under 0.3 s of the 0.5 s between groups (held, under 0.2 s).
     for (let k = 1; k < interior.length; k += 1) {
-      expect(Math.abs(interior[k].tau - interior[k - 1].tau)).toBeLessThan(0.2);
+      expect(Math.abs(interior[k].tau - interior[k - 1].tau)).toBeLessThan(0.3);
     }
     const gradient = (interior[0].tau - interior.at(-1)!.tau) / (interior.at(-1)!.sigma - interior[0].sigma);
     expect(gradient).toBeCloseTo(0.1, 1);
   });
 
-  it('never turns a clock back when a later neighbour breaks, and counts the pauses', () => {
+  it('never turns a clock back when a later neighbour breaks, and runs a thrown lip at least at real time', () => {
     const points = crest(30);
     let before = points.map((point) => point.tau);
-    const pauses = run(points, 4, (point) => 0.5 * Math.floor(point.column / 5), AT_ONCE, () => {
+    let held = 0;
+    run(points, 4, (point) => 0.5 * Math.floor(point.column / 5), AT_ONCE, () => {
       points.forEach((point, k) => {
         if (point.joined < 4 && before[k] !== 0) expect(point.tau).toBeGreaterThanOrEqual(before[k]);
+        // Thrown (τ ≥ 0 a step ago): never paused, at least a step on (the advisor, 2026-10-22).
+        if (before[k] >= 0 && point.joined < 4) {
+          expect(point.tau).toBeGreaterThanOrEqual(before[k] + DT - 1e-12);
+          if (point.tau < before[k] + DT + 1e-9) held += 1;
+        }
       });
       before = points.map((point) => point.tau);
     });
-    expect(pauses).toBeGreaterThan(0);
+    // The later groups' joins moved the fit later: those lips ran on at real time rather than hang.
+    expect(held).toBeGreaterThan(0);
+  });
+
+  it('pauses a face before its throw, and counts it', () => {
+    const points = crest(1);
+    Object.assign(points[0], { joined: 5, broke: 5, depth: 2.5, throwDepth: 2, crestDepth: 2.25 });
+    advanceClocks(points, 5.5, LAGGED, 0.5);
+    expect(points[0].tau).toBeCloseTo(-0.5, 12);
+    // Its crest stopped: its foreseen throw slides a second later, and the face waits for it.
+    expect(advanceClocks(points, 6, LAGGED, 0.5)).toBe(1);
+    expect(points[0].tau).toBeCloseTo(-0.5, 12);
+  });
+
+  it('fits a thrown point over its thrown neighbours only, and runs it on when they move the fit later', () => {
+    const points = crest(3);
+    points.forEach((point) => Object.assign(point, { depth: 2.5, throwDepth: 2, crestDepth: 2.5 }));
+    points[1].thrown = 1;
+    // Its neighbours have not come shoreward: their throws, foreseen at the earliest frame from now, would pull it later.
+    advanceClocks(points, 2, LAGGED, DT);
+    expect(points[1].tau).toBeCloseTo(1, 12);
+    // All thrown, its neighbours later than it: the fit moves later, and its lip runs on at real time.
+    points[0].thrown = 2;
+    points[2].thrown = 2;
+    advanceClocks(points, 2 + DT, LAGGED, DT);
+    expect(points[1].tau).toBeCloseTo(1 + DT, 12);
   });
 
   it('uses a lone point’s own throw, and bunched points’ mean', () => {
