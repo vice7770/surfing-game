@@ -18,10 +18,11 @@ Branch `claude/tube-from-basilisk` (step 1, Padang); the Canyon's wiring is step
 
 ### T2: the shards
 
-- **Ends.** A front's ends, and the ends that cuts leave (`sealRuns`), blend into the water over **1 m**, not 2.5 m: the loft, the contact and the crash curve alike (`LOFT.endBlend`). This is the only distance blend, where a run meets water that isn't on its front. The leading end needs no taper of its own: each slice draws its own clock's frame, the steepening face before the throw and the lip growing after it. Close-outs throw and land together along their length, so a 5.7 m section draws 3.7 m of full curl and two 1 m ends. No minimum run length.
+- **Ends.** A front's ends, and the ends that cuts leave (`sealRuns`), blend into the water over **1 m where the end slice has thrown**, not 2.5 m: the loft, the contact and the crash curve alike (`LOFT.endBlend`, `endBlendLength`, `endWeight`). This is the only distance blend, where a run meets water that isn't on its front. The leading end needs no clock taper of its own: each slice draws its own clock's frame, the steepening face before the throw and the lip growing after it. Close-outs throw and land together along their length, so a 5.7 m section draws 3.7 m of full curl and two 1 m ends. No minimum run length.
+- **Young ends** (the advisor's follow-up). A front's young end, whose end slice has not thrown, has no lip inside its blend, but the library's earliest frames already stand 0.8–1.0 of the held height on a 14–28° face, about 0.37 H over the solver's own unbroken crest beside them (Padang Medium). Over 1 m that was a cliff; such an end now blends over max(1 m, H), keeping the seam no steeper than about 20°, the face's own slope.
 - **The narrowed clock link** (ruled 2026-10-03, built now): an end is a candidate only within the 3-row reach in z per column between the ends, 3 m beside it and 6 m across an empty column. Since the 3-row rule already links neighbours within 3 m, the link now only bridges one-column holes stepping under 6 m. `CLOCK_SLOPE` 0.166 s/m, `CLOCK_REACH` 10 m and the 1 s/m split are unchanged, and so is the 2 T order fix.
   - Tests: a 3.5 m neighbour step stays two fronts; a hole stepping 5.9 m links and 6.1 m doesn't; the nearer end wins when it is listed second; with the switch on, a 1.01 s/m pair stays split.
-  - Switched on at Padang only if the front-gap probe's bars pass: see "The front-gap probe" below.
+  - Left off at Padang: the front-gap probe's bar on holes and folds failed (see "The front-gap probe" below).
 
 ## The probe: before and after
 
@@ -29,9 +30,9 @@ The advisor's probe (`advisor-probe/`, and `src/wave/barrel/tubeShape.test.ts` n
 
 | | Bounded-C (main) | Basilisk (this branch) | Target |
 |---|---|---|---|
-| Lip thickness, median | 0.014–0.021 H (3–7 cm) | 0.11–0.22 H (0.3–0.65 m) | 0.1–0.2 H |
+| Lip thickness, median | 0.014–0.021 H (3–7 cm) | 0.12–0.22 H (0.3–0.65 m) | 0.1–0.2 H |
 | Lip tip | 0.009–0.014 H | 0.03–0.16 H; late in flight median 0.10 H | about 0.07 H (0.03–0.16 accepted at level 12) |
-| Void (points 64–112) | 0.48–0.69 H² | 0.09–0.23 H² | after T4; Pick & Feddersen 0.25–0.38 is a check |
+| Void (points 64–112) | 0.48–0.69 H² | 0.09–0.22 H² | after T4; Pick & Feddersen 0.25–0.38 is a check |
 | Void L/W, tilt (A0 0.3–0.45, clear frame) | — | 2.0–2.1, 43–44° | Mead & Black, Padang: 1.97–2.14, 29–41° |
 | Crossed profiles (6,085 queries) | — | 52 → 0 after the loop removal | 0 |
 
@@ -39,25 +40,51 @@ Vertical air gap (the advisor, clear hold): 0.43–0.78 m at foot 0.9–1.4 m, 1
 
 ## Stills
 
-`stills/`, each a grid: rows are the views, columns before (the bounded-C) and after (the cases' own frames) at midday and sunset. Every before/after pair is one held sea (`waterSheetTubeShape`), Padang's own swells, GPU tier, 64 components.
-- Views, built from the held curl's middle slice: `ride` (a rider's eye on the face 8 m down the line toward the shoulder, 1.8 m over the toe, looking into the mouth), `side` (12 m in front of the crest), `beach` (70 m shoreward), `inside` (in the void at a third of the way from the back wall to the mouth, looking toward the shoulder).
-- `main-big-tubeShape-c-*.jpg`: main's own Padang Big (the `?tubeShape=c` A/B in full: its crash and contact too), for reference.
-- `views-medium-sheet-phase.jpg`: `?barrelView=sheet` (the lip's thickness, white thin to blue 1 m) and `phase` (blue before vertical, green open, red after touchdown).
+`stills/`, each a grid: rows are the views, columns before (the bounded-C) and after (the cases' own frames) at midday and sunset, Rich and Classic in separate files. Every before/after pair is one held sea (`waterSheetTubeShape`), Padang's own Small (1.2 m, 16 s), Medium (2.2 m, 17 s) and Big (3.8 m, 18 s), GPU tier, 64 components, the held curl on the reef 35–60 m inside the take-off.
+- Views, built from the held curl's middle slice: `ride` (a rider's eye on the face 8 m down the line toward the shoulder, 1.8 m over the toe, looking into the mouth), `side` (12 m in front of the crest, at the lip's height), `beach` (70 m shoreward and 25 m along), `inside` (in the void, a third of the way from the back wall to the mouth, looking toward the shoulder).
+- `ab-small-*`, `ab-medium-*`, `ab-big-*`: before and after.
+- `main-big-tubeShape-c-*.jpg`: main's own Padang Big in full (`?tubeShape=c`: its crash and contact too), on its own sea.
+- `views-medium-sheet-phase.jpg`, `views-big-sheet-phase.jpg`: `?barrelView=sheet` (the lip's thickness, white thin to blue 1 m: the C's lip is white, the cases' runs white to pale blue) and `phase` (blue before vertical, green open, red after touchdown).
+- `small-side-sheet-region.jpg`, `small-lip-close-sheet-on-off.jpg`: the bright lip edge at Small, with the sheet's shading on and off and the `region` view (red the lip, blue the back wall).
 
-PENDING
+What they show: the C drew a squared shelf or a small lumpy dome with a membrane roof, and an inside of flat walls and stripes. The cases' own frames draw a green face, a lip with body throwing forward and a round void; from inside, the lip curls overhead. At Small the tube is small, as the runs are (see Risks).
 
 ## Cost
 
-PENDING
+The drawn loft on the page's main thread, Padang Big, the same held sea and fronts, each shape's loft built alternately 100 times (warm caches), on this loaded M1 (load 7–20, other sessions' Node runs): **the cases' frames 2.8 ms p50 (9.8 p90), the bounded-C 5.8 ms (28.9 p90)**, 56–59 slices. The raw profile is a lerp of two frames; the C built each contour with its cap refinement (about 400 `cRefineCap` calls a build, `docs/research/perf-2026-10-22`). LOFTCOST
+
+The loop closing adds a pass over the tip-to-throat points of blended profiles only (about 1 µs a query). The young-end blend adds two profile lookups a front. No shader change in step 1.
 
 ## Risks
 
-PENDING
+- **The lip reads bright.** The sheet's shading lets the sky through the lip over its own thickness; through 0.3–0.65 m of clear water little is absorbed, so from in front, level with it, the lip's edge draws as a pale band (Small, Medium and Big stills; `small-lip-close-sheet-on-off.jpg`: off, the band is the lip's dark underside). Shading, not shape: no shader change in this pass (the M1 cost cliff). A question for the advisor and the owner, beside T3.
+- **Small tubes are small.** The level-12 cases' void is 0.09–0.23 H², and the vertical air gap is 0.43–0.78 m at foot crests 0.9–1.4 m: a crouched rider (head about 1.19 m over the deck) fits from about A0 0.3 up, Medium's sets and Big. Honest until T4 (the advisor: no enlargement without the owner's say, as a gameplay assist).
+- **The curl painted white (T3) shows more.** The raw curl stands taller, so where it stands over the inside's whitewater (the −x side's shorebreak close-outs the sheet held first) #142's kept foam paints a tall white wall with green streaks. T3 is the owner's.
+- **bc0b489f's old problems:**
+  - *Fins:* the clear hold keeps them away (the −1.37 m pair is +0.02 m).
+  - *Crossings:* closed at load and in blends (52 → 0 in 6,085 queries).
+  - *The seam and the stippling:* the raw path's mask is the pre-10-05 one, a dithered band, without the C's retirement rows and fade-weighted mask. No new seam showed in the stills; the dithered band's stippling at the mask's edge is as it was before 10-05.
+  - *The grey band:* not seen in the stills (it was seen with both shapes on 10-05 and never traced); not specifically probed.
+  - *Tube entry:* the rider's contact uses the same profiles as the drawing (clear hold); the dev tube guide works on them again. Ordinary entry, crouch and exit are the owner's to ride.
+- **Young ends.** The library's earliest frames stand 0.3–0.55 H over the solver's unbroken crest beside a front's young end (Medium 0.29–0.35 H, Big 0.50–0.55 H at the median, 1 m blend). They now blend over max(1 m, H). YOUNG
+- **Short close-outs draw blunt.** A 5 m section draws 3 m of full curl and two 1 m ends, as ruled; with the drawn crest standing over the solver's, a section's thrown ends step down to the water over 1 m.
 
-## The front-gap probe
+## The front-gap probe: the narrowed link stays off
 
-PENDING
+`src/wave/probes/padangFrontGap.probe.test.ts`, seed 3, 1 m cells, link off against on (narrowed), Padang's own Medium (100 s) and Big (60 s; the run was stopped at 97 s once the bar had failed at Medium too):
+
+| | Medium off | Medium on | Big off | Big on |
+|---|---|---|---|---|
+| True splits linked by the clock | 0 of 123 | 0 of 123 (0 %) | 0 of 282 | 0 of 360 (0 %) |
+| Strips dropped as overlaps (folds), a frame | 0.45 | 0.46 | 0.37 | 0.39 |
+| Of them holding an open tube (holes), a frame | 0.024 | 0.032 | 0.150 | 0.158 |
+| Self-folds | 0 | 0 | 0 | 0 |
+| Frames with two curls on two fronts within 12 m | 1128 | 1022 | 355 | 313 |
+| Open curl, p10 / p50 / p90, m | 0.25 / 4.50 / 10.49 | 0.25 / 4.71 / 10.96 | 0.24 / 4.95 / 10.98 | 0.00 / 4.98 / 11.14 |
+| Fronts a wave | 2.64 | 2.46 | 2.22 | 2.03 |
+
+The link bridges one-column holes (4,341 bridge-steps at Medium, 0.4 % of them across two crest lines), merges no true split and leaves fewer split curls, but holes plus folds rise (Medium 0.47 → 0.49, Big 0.52 → 0.55). The advisor's bar (holes plus folds no more than off) fails, so `PADANG_FRONT` stays `{ jumpReach: 10 }`: "If folds still rise after narrowing, keep it off; the loft's normal is then the suspect." The narrowed link is built and tested behind its switch. The open curl's median, 4.5–5.0 m, sits at the low end of 2.6 H/tan α (about 4–10 m at H 2–3 m and 35–40°).
 
 ## Tests
 
-PENDING
+TESTS
