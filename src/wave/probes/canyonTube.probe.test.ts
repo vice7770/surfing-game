@@ -5,7 +5,7 @@ import { CANYON } from '../Bathymetry';
 import { libraryFromBytes } from '../barrel/barrelLibrary';
 import { readBarrelCases } from '../barrel/nodeBarrelCases';
 import { BARREL_SPOTS } from '../barrel/barrelSpots';
-import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from '../barrel/frontRecords';
+import { FRONT_CAPACITY, FRONT_PIECE, FRONT_STRIDE } from '../barrel/frontRecords';
 import type { ProfileLibrary } from '../barrel/ProfileLibrary';
 import { BARREL_SLOPE, SweptLoft } from '../barrel/sweptLoft';
 import { sampleSurfaceHeight } from '../../scene/WaterSurface';
@@ -42,6 +42,8 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
   it('logs its fronts, regime and the curl beside the tubes', () => {
     const swellName = (process.env.SWELL ?? 'big') as keyof typeof SWELLS;
     const swell = SWELLS[swellName];
+    // SPAN=off: without the pods guard (`BarrelSpot.tubeSpan`), for the before/after of the advisor's fourth ruling.
+    if (process.env.SPAN === 'off') delete BARREL_SPOTS.canyon!.tubeSpan;
     const log = process.env.LOG ?? `canyon-tube-${swellName}.txt`;
     writeFileSync(log, '');
     const simulation = new SurfZoneSimulation({
@@ -64,6 +66,8 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
     const surface = new Float32Array(grid.nx * grid.nz * 2);
     const openRuns: number[] = [];
     const openRunsH: number[] = [];
+    // Per wave (a front, all its pieces), its longest open run over its life, m, and in that run's drawn H.
+    const waveOpen = new Map<number, { length: number; inH: number }>();
     // The holds' check: per column, the touchdown it first waited for, and at its white's start how far it had moved.
     // Which point each column's next marking reads (the youngest tube-regime point there, as `markTubeColumns` picks it,
     // from the front as this step left it), and each point's clock: how long it has held (paused) while the solver ran.
@@ -99,10 +103,10 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
       curlMs.push(simulation.stepCosts.roller);
       points += front.points.length;
       for (const p of front.points) {
-        if (p.footHeight <= simulation.tubeFootMax) tubePoints += 1;
+        if (p.footHeight <= simulation.tubeFootMax && (!simulation.tubeSpanned || p.tubeSpan === true)) tubePoints += 1;
         if (frame % 30 === 0) feet.push(p.footHeight);
       }
-      const recordCount = writeFrontRecords(front.points, records, simulation.tubeFootMax);
+      const recordCount = simulation.writeTubeRecords(records);
       drawn += recordCount;
       if (recordCount > 0) {
         grid.xMin = simulation.windowXMin;
@@ -118,8 +122,12 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
           if (first >= 0 && (!open || !continues)) {
             const length = result.sliceSigma[s - 1] - result.sliceSigma[first];
             const runHeights = Array.from(heights.subarray(first, s)).sort((a, b) => a - b);
+            const inH = length / Math.max(1e-6, runHeights[runHeights.length >> 1]);
             openRuns.push(length);
-            openRunsH.push(length / Math.max(1e-6, runHeights[runHeights.length >> 1]));
+            openRunsH.push(inH);
+            const wave = result.sliceFront[first] % FRONT_PIECE;
+            const best = waveOpen.get(wave);
+            if (!best || length > best.length) waveOpen.set(wave, { length, inH });
             first = -1;
           }
           if (open && first < 0) first = s;
@@ -150,9 +158,10 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
       const best = new Float64Array(touchdowns.length).fill(-Infinity);
       for (const p of front.points) {
         const before = lastTau.get(p.id);
-        if (before !== undefined) paused.set(p.id, (paused.get(p.id) ?? 0) + Math.max(0, step - (p.tau - before)));
+        // Held after its lip was drawn thrown (τ ≥ 0 a step ago): before it, a face may wait for its crest.
+        if (before !== undefined && before >= 0) paused.set(p.id, (paused.get(p.id) ?? 0) + Math.max(0, step - (p.tau - before)));
         lastTau.set(p.id, p.tau);
-        if (!(p.footHeight <= simulation.tubeFootMax) || p.column < 0 || p.column >= touchdowns.length) continue;
+        if (!(p.footHeight <= simulation.tubeFootMax) || (simulation.tubeSpanned && p.tubeSpan !== true) || p.column < 0 || p.column >= touchdowns.length) continue;
         const td = time - p.tau + library.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds;
         if (!(td <= best[p.column])) {
           best[p.column] = td;
@@ -173,6 +182,11 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
     const rowedUnbroken = front.sizes.unbroken.filter((h) => h >= rowFloor).length;
     const slow = [...waits].sort((a, b) => a.hold - b.hold).slice(Math.floor(0.9 * waits.length));
     const inBand = openRunsH.filter((v) => v >= OPEN_BAND[0] && v <= OPEN_BAND[1]).length;
+    const waves = [...waveOpen.values()];
+    // WAVES: each wave's longest open run, by front, to compare runs wave by wave (the guard leaves the sea and fronts alone).
+    if (process.env.WAVES) writeFileSync(process.env.WAVES, [...waveOpen].map(([id, w]) => `${id} ${w.length.toFixed(3)} ${w.inH.toFixed(3)}`).join('\n') + '\n');
+    const wavesInBand = waves.filter((w) => w.inH >= OPEN_BAND[0] && w.inH <= OPEN_BAND[1]).length;
+    const mean = (values: number[]) => values.reduce((sum, v) => sum + v, 0) / Math.max(1, values.length);
     appendFileSync(log, [
       `the Canyon ${swellName} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), seed ${process.env.SEED ?? 3}, ${seconds} s, 1 m cells; tube regime: foot crests to ${simulation.tubeFootMax.toFixed(2)} m (ξ_f ≥ 0.54)`,
       `front: joins ${front.joins} (late, past the throw depth: ${front.latePasses}), unbroken ${front.unbroken} (${((100 * front.unbroken) / Math.max(1, reached)).toFixed(1)} % of the crests that reached their throw depth; the bar about 20 %), lost ${front.lost}, unsized ${front.unsized}, jumps ${front.jumps}`,
@@ -180,9 +194,10 @@ describe.runIf(process.env.PROBE)('the Canyon tube probe', () => {
       `the curl: slices a frame ${(curlSlices / frames).toFixed(1)}; columns the tube takes a frame ${(tubeColumns / frames).toFixed(1)}; its white later than the curl's own landing by ${quantiles(holds)} s`,
       `sizes with a join row (crests over the band ≥ ${rowFloor.toFixed(2)} m): joins ${rowedJoins}, unbroken ${rowedUnbroken} (${((100 * rowedUnbroken) / Math.max(1, rowedJoins + rowedUnbroken)).toFixed(1)} %); under it: joins ${front.sizes.joined.length - rowedJoins}, unbroken ${front.sizes.unbroken.length - rowedUnbroken} (sizes counted after the spin-up); band crests joined ${quantiles(front.sizes.joined)} m, unbroken ${quantiles(front.sizes.unbroken)} m`,
       `open tube runs (open, standing, one front) ${quantiles(openRuns)} m, in their drawn H ${quantiles(openRunsH)} (the band 1.3–3.5 H / tan α at 53–57°: ${OPEN_BAND[0].toFixed(2)}–${OPEN_BAND[1].toFixed(2)} H; inside ${((100 * inBand) / Math.max(1, openRunsH.length)).toFixed(0)} %, under ${((100 * openRunsH.filter((v) => v < OPEN_BAND[0]).length) / Math.max(1, openRunsH.length)).toFixed(0)} %)`,
+      `per wave (a front, its longest open run over its life; pods guard ${simulation.tubeSpanned ? 'on' : 'off'}): ${waves.length} waves, ${quantiles(waves.map((w) => w.length))} m (mean ${mean(waves.map((w) => w.length)).toFixed(2)}), in H ${quantiles(waves.map((w) => w.inH))}; inside 0.84–2.64 H ${((100 * wavesInBand) / Math.max(1, waves.length)).toFixed(0)} %, under ${((100 * waves.filter((w) => w.inH < OPEN_BAND[0]).length) / Math.max(1, waves.length)).toFixed(0)} %, over ${((100 * waves.filter((w) => w.inH > OPEN_BAND[1]).length) / Math.max(1, waves.length)).toFixed(0)} %`,
       `CPU ms (Node, this machine's load): the front a step ${quantiles(frontMs)}; the roller and curl with the tube marking ${quantiles(curlMs)}; the page's loft a frame with records ${quantiles(loftMs)}`,
       `whites started in tube columns ${waits.length}: hold ${quantiles(waits.map((w) => w.hold))} s; the slowest tenth (hold ≥ ${slow.length ? slow[0].hold.toFixed(2) : '—'} s): its touchdown moved while it waited ${quantiles(slow.map((w) => w.moved))} s, over 0.3 s ${slow.filter((w) => w.moved > 0.3).length} of ${slow.length}; all: over 0.3 s ${waits.filter((w) => w.moved > 0.3).length}`,
-      `  of the whites whose touchdown moved over 0.3 s: the same point all along ${waits.filter((w) => w.moved > 0.3 && !w.changed).length} (its clock held ${quantiles(waits.filter((w) => w.moved > 0.3 && !w.changed).map((w) => w.paused))} s), another point took the column ${waits.filter((w) => w.moved > 0.3 && w.changed).length}; the slowest tenth's clocks held ${quantiles(slow.filter((w) => !w.changed).map((w) => w.paused))} s, changed point ${slow.filter((w) => w.changed).length}; every same-point wait's hold over 0.3 s ${waits.filter((w) => !w.changed && w.paused > 0.3).length} of ${waits.filter((w) => !w.changed).length}`,
+      `  of the whites whose touchdown moved over 0.3 s: the same point all along ${waits.filter((w) => w.moved > 0.3 && !w.changed).length} (its clock held after the throw ${quantiles(waits.filter((w) => w.moved > 0.3 && !w.changed).map((w) => w.paused))} s), another point took the column ${waits.filter((w) => w.moved > 0.3 && w.changed).length}; the slowest tenth's clocks held after the throw ${quantiles(slow.filter((w) => !w.changed).map((w) => w.paused))} s, changed point ${slow.filter((w) => w.changed).length}; every same-point wait's clock held after the throw over 0.3 s ${waits.filter((w) => !w.changed && w.paused > 0.3).length} of ${waits.filter((w) => !w.changed).length}`,
     ].join('\n') + '\n');
   }, 7_200_000);
 });

@@ -800,6 +800,7 @@ describe('SurfZoneSimulation', () => {
       expect(simulation.curl).toBeDefined();
     }
     expect(tubes.tubeFootMax).toBeCloseTo(1.98, 2);
+    expect(tubes.tubeSpanned).toBe(true);
     const records = new Float32Array(FRONT_STRIDE * 4096);
     let drawn = 0;
     let curls = 0;
@@ -807,8 +808,10 @@ describe('SurfZoneSimulation', () => {
     for (let frame = 0; frame < 30 * 30; frame += 1) {
       tubes.step(1 / 30);
       before.step(1 / 30);
-      const count = writeFrontRecords(tubes.front!.points, records, tubes.tubeFootMax);
+      const count = tubes.writeTubeRecords(records);
       for (let k = 0; k < count; k += 1) expect(records[k * FRONT_STRIDE + FRONT_FIELD.footHeight]).toBeLessThanOrEqual(tubes.tubeFootMax);
+      // Only pieces that have reached a wave height's span (the pods guard): no lone points.
+      expect(count).toBeLessThanOrEqual(tubes.front!.points.filter((p) => p.tubeSpan === true).length);
       drawn += count;
       curls += tubes.writeCurls(new Float32Array(CURL_CAPACITY * CURL_STRIDE));
       tubeColumns += tubes.curl!.tube.reduce((sum, v) => sum + v, 0);

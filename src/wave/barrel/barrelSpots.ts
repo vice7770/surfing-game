@@ -53,6 +53,14 @@ export interface BarrelSpot {
    * one, and the spot's own look draws them (`tubeFootMax`). None: every point draws its tube (Padang Padang).
    */
   tubeFrom?: number;
+  /**
+   * A front's tube-regime piece draws its tube, is felt as one and takes the spilling curl's columns only once its span
+   * along the crest has reached this many of its wave heights H (its drawn height at the throw), and from then on (the
+   * advisor's fourth ruling, 2026-10-22: Medium's 0.25 m open runs at the Canyon were patchy fresh onsets, "pods", not
+   * plunging sections; a peeling front passes 1 H within 0.2–0.4 s while its lead is still steepening). A minimum
+   * front width, not a minimum open run. None: every piece draws (Padang Padang). Inferred, provisional.
+   */
+  tubeSpan?: number;
 }
 
 /**
@@ -216,7 +224,7 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   padang: { slope: 1 / 19, get footDepth() { return PADANG.baseDepth; }, onset: PADANG_ONSET, frontFrom: 'zone', front: PADANG_FRONT },
   canyon: {
     get slope() { return CANYON.pathSlope; }, get footDepth() { return CANYON.shelfDepth; }, onset: CANYON_ONSET, frontFrom: 'zone',
-    front: { joinPast: 1.5 }, crash: false, tubeFrom: 0.54,
+    front: { joinPast: 1.5 }, crash: false, tubeFrom: 0.54, tubeSpan: 1,
   },
   point: { slope: 0.0465116, footDepth: POINT_FOOT, onset: POINT_ONSET, frontFrom: 'zone' },
   reef: {

@@ -28,10 +28,11 @@ import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { BARREL_SPOTS, tubeFootMax } from './barrel/barrelSpots';
 import type { TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
-import type { ProfileLibrary } from './barrel/ProfileLibrary';
+import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
 import { SweptCrash } from './barrel/SweptCrash';
 import { CarrierSupport } from './barrel/carrierSupport';
+import { latchTubeSpans, writeFrontRecords } from './barrel/frontRecords';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
@@ -840,6 +841,11 @@ export class SurfZoneSimulation {
    * front point does. The front's records leave the rest out (`writeFrontRecords`), so they are neither drawn nor felt.
    */
   readonly tubeFootMax: number = Infinity;
+  /**
+   * At a spot with `BarrelSpot.tubeSpan` (the Canyon): only the front's pieces that have reached their span draw, are
+   * felt and take the curl's columns (`latchTubeSpans`).
+   */
+  readonly tubeSpanned: boolean = false;
   /** With a tube regime and a spilling curl: the library, and per column the solver time a tube there touches down and its crest's z (NaN: none). */
   private readonly tubeLibrary?: ProfileLibrary;
   private readonly tubeTouchdown?: Float64Array;
@@ -988,6 +994,7 @@ export class SurfZoneSimulation {
       this.tubeFootMax = tubeFootMax(config.spot, config.peakPeriod);
       if (barrel && slope !== undefined && Number.isFinite(this.tubeFootMax)) {
         this.tubeLibrary = barrel;
+        this.tubeSpanned = BARREL_SPOTS[config.spot]?.tubeSpan !== undefined;
         this.tubeTouchdown = new Float64Array(this.solver.nx).fill(Number.NaN);
         this.tubeZ = new Float64Array(this.solver.nx).fill(Number.NaN);
       }
@@ -1293,7 +1300,7 @@ export class SurfZoneSimulation {
     const slope = BARREL_SLOPE[this.config.spot]!;
     const time = this.solver.time;
     for (const p of front.points) {
-      if (!(p.footHeight <= this.tubeFootMax) || p.column < 0 || p.column >= tubeTouchdown.length) continue;
+      if (!(p.footHeight <= this.tubeFootMax) || (this.tubeSpanned && p.tubeSpan !== true) || p.column < 0 || p.column >= tubeTouchdown.length) continue;
       const touchdown = time - p.tau + tubeLibrary.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds;
       // The youngest wave's: the one touching down last.
       if (!(touchdown <= tubeTouchdown[p.column])) {
@@ -1301,6 +1308,37 @@ export class SurfZoneSimulation {
         tubeZ[p.column] = p.z;
       }
     }
+  }
+
+  /**
+   * At a spot with `BarrelSpot.tubeSpan` (the Canyon): marks the front's pieces that have reached their span, which then
+   * stay marked (`latchTubeSpans`). H is the drawn height at the throw of a piece's highest foot crest, from the library
+   * (the advisor's fourth ruling, 2026-10-22).
+   */
+  private latchTubeSpans(): void {
+    const span = BARREL_SPOTS[this.config.spot]?.tubeSpan;
+    if (!this.tubeSpanned || !this.front || span === undefined) return;
+    latchTubeSpans(this.front.points, this.tubeFootMax, span, (p) => this.throwHeight(p.footHeight, p.footDepth));
+  }
+
+  /** A tube's drawn height at its throw (τ = 0) for a foot crest and depth, m: crest over the lower of its toe and front. */
+  private throwHeight(footHeight: number, footDepth: number): number {
+    const library = this.tubeLibrary!;
+    const query = { slope: BARREL_SLOPE[this.config.spot]!, footHeight, footDepth, seconds: 0, hold: 'contact' as const };
+    const point = this.heightPoint;
+    library.pointAt(query, LANDMARK.crest, point);
+    const crest = point[1];
+    library.pointAt(query, LANDMARK.toe, point);
+    const toe = point[1];
+    library.pointAt(query, LANDMARK.front, point);
+    return Math.max(1e-6, crest - Math.min(toe, point[1]));
+  }
+
+  private readonly heightPoint = new Float64Array(2);
+
+  /** The front's records as the page draws them and the contact feels them: the tube regime's and, with a span, the spanned pieces' (`writeFrontRecords`). */
+  writeTubeRecords(out: Float32Array): number {
+    return this.front ? writeFrontRecords(this.front.points, out, this.tubeFootMax, this.tubeSpanned) : 0;
   }
 
   /** The columns' tubes for the spilling curl (`markTubeColumns`), when there are any to read. */
@@ -1316,6 +1354,7 @@ export class SurfZoneSimulation {
     const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!, dt);
+    this.latchTubeSpans();
     if (this.crash) {
       // The barrel's jets leave and land on its clock, and the whitewater waits for its touchdown (PR 5).
       const { throws, volume } = this.crash.update(front.points, {

@@ -23,8 +23,10 @@ export const FRONT_PIECE = 2 ** 20;
  * Writes `points` (in their order: by front, then σ) into `out` as records, as many as fit; returns how many. `footMax`, m:
  * a point whose foot crest is higher plunges no tube (a spot's tube regime, `BarrelSpot.tubeFrom`), so it is left out,
  * and the piece of its front after it is written as a front of its own (`FRONT_PIECE`): the loft never bridges the gap.
+ * `spanned`: only points whose piece has reached its span (`FrontPoint.tubeSpan`, `BarrelSpot.tubeSpan`); the others
+ * are left out the same way.
  */
-export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Array, footMax = Infinity): number {
+export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Array, footMax = Infinity, spanned = false): number {
   const capacity = Math.floor(out.length / FRONT_STRIDE);
   let count = 0;
   let front = Number.NaN;
@@ -37,7 +39,7 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
       piece = 0;
       gap = false;
     }
-    if (!(p.footHeight <= footMax)) {
+    if (!(p.footHeight <= footMax) || (spanned && p.tubeSpan !== true)) {
       gap = true;
       continue;
     }
@@ -59,4 +61,32 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
     count += 1;
   }
   return count;
+}
+
+/**
+ * At a spot with `BarrelSpot.tubeSpan` (the Canyon; the advisor's fourth ruling, 2026-10-22): each tube-regime piece of
+ * a front (its points in a row within `footMax`, as `writeFrontRecords` splits them) whose span along the crest has
+ * reached `span` of its wave heights (`heightOf` its highest foot crest's point, m), or one of whose points already had,
+ * marks all its points (`FrontPoint.tubeSpan`). Once marked, a point stays marked, so a piece is drawn, felt and takes
+ * the curl's columns from then on and a shrinking tube never pops out; a point joining a marked piece is marked with it.
+ */
+export function latchTubeSpans(points: FrontPoint[], footMax: number, span: number, heightOf: (point: FrontPoint) => number): void {
+  let start = 0;
+  while (start < points.length) {
+    if (!(points[start].footHeight <= footMax)) {
+      start += 1;
+      continue;
+    }
+    let end = start + 1;
+    while (end < points.length && points[end].front === points[start].front && points[end].footHeight <= footMax) end += 1;
+    let spanned = false;
+    let highest = start;
+    for (let k = start; k < end; k += 1) {
+      if (points[k].tubeSpan === true) spanned = true;
+      if (points[k].footHeight > points[highest].footHeight) highest = k;
+    }
+    if (!spanned) spanned = points[end - 1].sigma - points[start].sigma >= span * heightOf(points[highest]);
+    if (spanned) for (let k = start; k < end; k += 1) points[k].tubeSpan = true;
+    start = end;
+  }
 }

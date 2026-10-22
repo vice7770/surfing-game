@@ -19,7 +19,7 @@ import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type Spr
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
-import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
+import { FRONT_CAPACITY, FRONT_STRIDE } from './barrel/frontRecords';
 import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
 import { cloneTubeApproachObservation, createTubeApproachObservation,
   type TubeApproachCue, type TubeApproachRequest, type TubeBodyPoint, type TubeApproachObservation } from './barrel/tubeApproach';
@@ -577,7 +577,7 @@ export class SurfZoneRunner {
     if (!contactQueries || !simulation.front) return;
     const start = performance.now();
     // Only the points whose waves plunge a tube (the spot's tube regime, `tubeFootMax`): the rest are not felt as one.
-    const count = writeFrontRecords(simulation.front.points, this.contactRecords, simulation.tubeFootMax);
+    const count = simulation.writeTubeRecords(this.contactRecords);
     // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
     if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
     else this.water.withSurfaceNodeCache(() => {
@@ -875,7 +875,7 @@ export class SurfZoneRunner {
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
     // The drawn tubes: as the contact's, only the points whose waves plunge one (`tubeFootMax`).
-    buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front, simulation.tubeFootMax) : 0;
+    buffers.frontCount = simulation.writeTubeRecords(buffers.front);
     this.fillMs = performance.now() - start;
   }
 

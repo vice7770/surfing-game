@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FrontPoint } from './BreakingFront';
-import { FRONT_FIELD, FRONT_PIECE, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
+import { FRONT_FIELD, FRONT_PIECE, FRONT_STRIDE, latchTubeSpans, writeFrontRecords } from './frontRecords';
 
 const point = (id: number, throwZ: number | null): FrontPoint => ({
   id, front: 3, column: id, sigma: id * 1.1, x: id + 0.5, z: -150 + id, b: 0.3, height: 1.7, joined: 5, depth: 3.1,
@@ -41,5 +41,29 @@ describe('front records under a tube regime (the Canyon, 2026-10-22)', () => {
     const fronts = Array.from({ length: count }, (_, k) => out[k * FRONT_STRIDE + FRONT_FIELD.front]);
     expect(fronts).toEqual([7, 7, 7 + FRONT_PIECE, 7 + FRONT_PIECE, 9]);
     expect(Array.from({ length: count }, (_, k) => out[k * FRONT_STRIDE + FRONT_FIELD.sigma])).toEqual([0, 1, 3, 4, 5]);
+  });
+
+  it('draws a piece only once its span reaches a wave height, and keeps it drawn (the pods guard, 2026-10-22)', () => {
+    const point = (front: number, k: number, footHeight: number) => ({
+      id: k, front, column: k, sigma: k, x: k, z: 0, b: 0, height: 1, joined: 0, depth: 3, throwDepth: 2, crestDepth: 2, thrown: null,
+      throwZ: null, footHeight, footDepth: 6, broke: 0, tau: 0, seen: 0, fresh: null,
+    }) as unknown as FrontPoint;
+    // Front 7: a 1 m piece, a gap (foot 3 m), a 2 m piece; front 9: a lone point. H 1.5 m: only the 2 m piece reaches it.
+    const points = [point(7, 0, 1), point(7, 1, 1.5), point(7, 2, 3), point(7, 3, 1), point(7, 4, 1.2), point(7, 5, 1), point(9, 6, 1)];
+    const heights: number[] = [];
+    latchTubeSpans(points, 1.98, 1, (p) => {
+      heights.push(p.footHeight);
+      return 1.5;
+    });
+    // Each piece asks the height of its highest foot crest.
+    expect(heights).toEqual([1.5, 1.2, 1]);
+    expect(points.map((p) => p.tubeSpan === true)).toEqual([false, false, false, true, true, true, false]);
+    const out = new Float32Array(10 * FRONT_STRIDE);
+    const count = writeFrontRecords(points, out, 1.98, true);
+    expect(Array.from({ length: count }, (_, k) => out[k * FRONT_STRIDE + FRONT_FIELD.sigma])).toEqual([3, 4, 5]);
+    // The piece shrinks to one point: still marked, still drawn; a point joining it is marked with it.
+    const shrunk = [points[5], { ...point(7, 7, 1), sigma: 5.5 }];
+    latchTubeSpans(shrunk, 1.98, 1, () => 1.5);
+    expect(shrunk.every((p) => p.tubeSpan === true)).toBe(true);
   });
 });
