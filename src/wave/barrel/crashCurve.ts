@@ -3,7 +3,7 @@ import type { FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
-import { LOFT, collapseFade } from './sweptLoft';
+import { LOFT, collapseFade, endBlendLength, endWeight } from './sweptLoft';
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
 export interface CrashSlice {
@@ -133,6 +133,13 @@ export class CrashCurve {
   private readonly normal = { x: 0, z: 0 };
   private readonly raySample = new Float64Array(2);
   private readonly directRays: CrestRayPlan;
+  /** The last run's ends and their blends (`endBlendLength`), kept while the same run is sliced point by point. */
+  private endA?: FrontPoint;
+  private endB?: FrontPoint;
+  private endTauA = Number.NaN;
+  private endTauB = Number.NaN;
+  private readonly ends = new Float64Array(2);
+  private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
     this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
@@ -164,9 +171,9 @@ export class CrashCurve {
     } else {
       into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
     }
-    const d = Math.min(p.sigma - first, last - p.sigma);
-    const r = Math.min(1, d / LOFT.endBlend);
-    into.endWeight = d <= 0 ? 0 : r * r * (3 - 2 * r);
+    // The loft's end weight (`endWeight`): 1 m at an end that has thrown, at least its height H at a young one.
+    const ends = this.endsOf(points, start, end);
+    into.endWeight = endWeight(p.sigma, first, last, ends[0], ends[1]);
     // The drawn frame: the touchdown frame from touchdown on (PR 4), faded over the tube's collapse.
     const query = { slope: this.slope, footHeight: p.footHeight, footDepth: p.footDepth };
     const profile = this.profile;
@@ -280,6 +287,21 @@ export class CrashCurve {
     into.axisY = o.axisY;
     into.voidHeight = (GRAVITY * into.collapse * into.collapse) / 2;
     return into;
+  }
+
+  /** Run [start, end)'s two ends' blends, m, as the loft lays them (`endBlendLength`). */
+  private endsOf(points: readonly FrontPoint[], start: number, end: number): Float64Array {
+    const a = points[start];
+    const b = points[end - 1];
+    if (a !== this.endA || b !== this.endB || a.tau !== this.endTauA || b.tau !== this.endTauB) {
+      this.endA = a;
+      this.endB = b;
+      this.endTauA = a.tau;
+      this.endTauB = b.tau;
+      this.ends[0] = endBlendLength(this.library, this.slope, a.footHeight, a.footDepth, a.tau, this.endProfile);
+      this.ends[1] = endBlendLength(this.library, this.slope, b.footHeight, b.footDepth, b.tau, this.endProfile);
+    }
+    return this.ends;
   }
 
   /**

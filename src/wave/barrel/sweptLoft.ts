@@ -49,6 +49,32 @@ export const REST = { behind: 0.1, ramp: 0.5, near: 0.1, ahead: 3, step: 0.5 } a
 function restHeight(crestY: number, toeY: number, frontY: number): number {
   return Math.max(1e-6, crestY - (toeY < frontY ? toeY : frontY));
 }
+
+/**
+ * How long a front's end blends into the water, m (the advisor, 2026-10-22): `LOFT.endBlend` where its end slice has
+ * thrown (a close-out's ends, a cut end with a lip), so short sections draw blunt, not as shards; and at a young end,
+ * whose end slice has not thrown (τ < 0, no lip inside the blend), at least the slice's drawn height H. The library's
+ * earliest frames already stand 0.8–1.0 of the held height on a 14–28° face, about 0.37 H over the solver's own
+ * unbroken crest beside them (Padang Medium), and over 1 H that seam is no steeper than about 20°, the face's own slope
+ * [inferred]. `profile` is scratch.
+ */
+export function endBlendLength(
+  library: ProfileLibrary, slope: number, footHeight: number, footDepth: number, tau: number, profile: Float32Array,
+): number {
+  if (!(tau < 0)) return LOFT.endBlend;
+  library.profileAt({ slope, footHeight, footDepth, seconds: tau }, profile);
+  const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
+  return Math.max(LOFT.endBlend, height);
+}
+
+/** A front's end weight at σ: a smoothstep over each end's blend (`endBlendLength`), the lower of the two; 0 past an end. */
+export function endWeight(sigma: number, first: number, last: number, blendFirst: number, blendLast: number): number {
+  const a = sigma - first;
+  const b = last - sigma;
+  if (a <= 0 || b <= 0) return 0;
+  const u = Math.min(1, a / blendFirst, b / blendLast);
+  return u * u * (3 - 2 * u);
+}
 /**
  * The library's runs' slope along the wave's path, per spot with a barrel transect (`BARREL_SPOTS`; the owner's 1:19 at
  * Padang Padang).
@@ -268,6 +294,10 @@ export class SweptLoft {
   private normalFirst = new Int32Array(0);
   private normalLast = new Int32Array(0);
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
+  /** A front's ends' profiles, for their blends (`endBlendLength`). */
+  private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** Per slice, the drawn height H (`restHeight`), m: the seal's young cut ends blend over it (`endBlendLength`). */
+  private readonly sliceHeight = new Float64Array(MAX_SLICES + 1);
   /** Per front, its slices' σ, before and after refinement. */
   private base = new Float64Array(2 * MAX_SLICES + 8);
   private sigmas = new Float64Array(2 * MAX_SLICES + 8);
@@ -922,6 +952,14 @@ export class SweptLoft {
       runStart = -1;
     };
     const plannedCount = this.planRays(records, f, n, budgeted);
+    // Each end's blend: 1 m where its end point has thrown, at least its height H at a young end (`endBlendLength`).
+    const end = (k: number) => {
+      const o = k * FRONT_STRIDE;
+      return endBlendLength(this.library, this.slope, records[o + FRONT_FIELD.footHeight], records[o + FRONT_FIELD.footDepth],
+        records[o + FRONT_FIELD.tau], this.endProfile);
+    };
+    const blendFirst = end(f.start);
+    const blendLast = end(f.end - 1);
     for (let k = 0; k < plannedCount; k += 1) {
       if (this.plannedLive[k] === 0) { closeRun(); continue; }
       const retirementSupport = this.library.options.geometry === 'bounded-C' && this.plannedLive[k] === 2;
@@ -984,8 +1022,7 @@ export class SweptLoft {
       const reachBack = drawnCrestX - (REST.behind + REST.ramp) * drawnHeight;
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
-      const r0 = Math.min(1, d / LOFT.endBlend);
-      const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
+      const wEnd = endWeight(sigma, f.first, f.last, blendFirst, blendLast);
       // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
       // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
       const w = wEnd * wFade * wFormation;
@@ -1068,6 +1105,7 @@ export class SweptLoft {
       r.sliceRayX[slice] = nx;
       r.sliceRayZ[slice] = nz;
       r.sliceWeight[slice] = w;
+      this.sliceHeight[slice] = drawnHeight;
       r.sliceOverturned[slice] = overturned;
       // Boundary transport and water flow differ once the analytic cap rests on its floor.
       const fluidScale = lookup.analytic ? lookup.analytic.lengthScale / lookup.analytic.timeScale : 1;
@@ -1311,11 +1349,16 @@ export class SweptLoft {
       const cutLast = r.sliceWeight[last] > 0;
       if (cutFirst || cutLast) {
         for (let s = first; s <= last; s += 1) {
+          // A young cut end (its slice not thrown) blends over at least its height, as a front's own young end does.
+          const blend = (end: number) => (r.sliceTau[end] < 0 ? Math.max(LOFT.endBlend, this.sliceHeight[end]) : LOFT.endBlend);
+          const u = Math.min(1, Math.max(0, Math.min(
+            cutFirst ? (r.sliceSigma[s] - r.sliceSigma[first]) / blend(first) : Infinity,
+            cutLast ? (r.sliceSigma[last] - r.sliceSigma[s]) / blend(last) : Infinity,
+          )));
           const distance = Math.min(
             cutFirst ? r.sliceSigma[s] - r.sliceSigma[first] : Infinity,
             cutLast ? r.sliceSigma[last] - r.sliceSigma[s] : Infinity,
           );
-          const u = Math.min(1, Math.max(0, distance / LOFT.endBlend));
           const weight = u * u * (3 - 2 * u);
           const mask = Math.min(1, Math.max(0, distance / LOFT.band));
           r.sliceWeight[s] *= weight;

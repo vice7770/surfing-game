@@ -4,7 +4,7 @@ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
+import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, endBlendLength, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
 import { lipCase, toyCase, tubeCase } from './toyCase';
 
 /** The y where the vertical line at (x, z) meets triangle (u, v, w) strictly inside it; undefined where it misses. */
@@ -238,6 +238,27 @@ describe('the swept loft', () => {
       }
     }
     expect(checked).toBeGreaterThan(2);
+  });
+
+  it('blends a young end, whose slice has not thrown, over its drawn height H; a thrown end over 1 m (the advisor, 2026-10-22)', () => {
+    // The +x end (σ 20) has not thrown (τ −0.2 s), the −x end (σ 0) has.
+    const tau = (k: number) => (k > 15 ? -0.2 : 0.2);
+    const loft = loftOf(tau);
+    const profile = new Float32Array(2 * PROFILE_POINTS);
+    const young = endBlendLength(library(), 0.05, 2.1, 7, -0.2, profile);
+    expect(young).toBeGreaterThan(2);
+    expect(endBlendLength(library(), 0.05, 2.1, 7, 0.2, profile)).toBe(LOFT.endBlend);
+    const sliceAtSigma = (sigma: number) => {
+      let best = 0;
+      for (let s = 1; s < loft.sliceCount; s += 1) if (Math.abs(loft.sliceSigma[s] - sigma) < Math.abs(loft.sliceSigma[best] - sigma)) best = s;
+      return best;
+    };
+    expect(loft.sliceWeight[sliceAtSigma(1)]).toBeCloseTo(1, 6);
+    expect(loft.sliceWeight[sliceAtSigma(19)]).toBeLessThan(0.5);
+    const mid = sliceAtSigma(20 - young / 2);
+    const u = (20 - loft.sliceSigma[mid]) / young;
+    expect(loft.sliceWeight[mid]).toBeCloseTo(u * u * (3 - 2 * u), 5);
+    expect(loft.sliceWeight[sliceAtSigma(20 - young - 0.5)]).toBeCloseTo(1, 6);
   });
 
   it('fades a slice into the water over its tube’s collapse after touchdown, drawing the touchdown frame (the advisor, 2026-09-30)', () => {

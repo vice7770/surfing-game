@@ -241,35 +241,79 @@ function selfFolds(loft: LoftResult): number {
   return folds;
 }
 
+/** What `endSteps` gathers over a run. */
+interface EndSteps {
+  /** Young ends (end slice not thrown, τ < 0, blended over max(1 m, H)): the seam's slope, drawn crest over the water at the end per metre of blend. */
+  youngSlope: number[];
+  /** The same in H over the whole blend, and at thrown ends (1 m). */
+  youngStep: number[];
+  thrownStep: number[];
+  /** Young ends with a thrown slice (a lip) inside their blend, of young ends. */
+  lipInside: number;
+  young: number;
+  /** The solver's crest along the end's tangent, 3 m behind to 3 m past (−3 … 3 m), over the crest at the end, in H: summed, and how many. */
+  solverCrest: Float64Array;
+  solverCount: number;
+}
+const createEndSteps = (): EndSteps => ({ youngSlope: [], youngStep: [], thrownStep: [], lipInside: 0, young: 0, solverCrest: new Float64Array(7), solverCount: 0 });
+
 /**
- * Each front's end steps (the advisor, 2026-10-22): the drawn crest a metre in from an end (past the 1 m end blend) over
- * the water at the end itself, in the slice's H (crest over toe), at its younger end (the leading end, smaller τ) and its
- * older one, for fronts whose ends both stand on thrown slices' runs.
+ * Each front's end steps (the advisor, 2026-10-22): the drawn crest at the end of the end's blend (1 m at an end that has
+ * thrown, max(1 m, H) at a young end, `endBlendLength`) over the water at the end itself; at young ends also whether a lip
+ * falls inside the blend, and the solver's own crest along the end's tangent from 3 m behind to 3 m past the end (its
+ * highest water within 3 m along the ray), over its crest at the end, in H: a crest dropping at the end itself points at
+ * the newest point's clock, one standing low all along at the two models' heights.
  */
-function endSteps(loft: LoftResult, younger: number[], older: number[]): void {
-  const crestY = (s: number) => loft.positions[3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest) + 1];
-  const toeY = (s: number) => loft.positions[3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.toe) + 1];
+function endSteps(loft: LoftResult, heightAt: (x: number, z: number) => number, out: EndSteps): void {
+  const vertex = (s: number, i: number) => 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + i);
+  const crestY = (s: number) => loft.positions[vertex(s, LANDMARK.crest) + 1];
+  const toeY = (s: number) => loft.positions[vertex(s, LANDMARK.toe) + 1];
   let start = 0;
   while (start < loft.sliceCount) {
     let end = start;
     while (end + 1 < loft.sliceCount && loft.sliceFront[end + 1] === loft.sliceFront[start]) end += 1;
-    const sigmaFirst = loft.sliceSigma[start] + LOFT.extension;
-    const sigmaLast = loft.sliceSigma[end] - LOFT.extension;
     const nearest = (sigma: number) => {
-      let best = -1;
-      for (let s = start; s <= end; s += 1) if (best < 0 || Math.abs(loft.sliceSigma[s] - sigma) < Math.abs(loft.sliceSigma[best] - sigma)) best = s;
+      let best = start;
+      for (let s = start; s <= end; s += 1) if (Math.abs(loft.sliceSigma[s] - sigma) < Math.abs(loft.sliceSigma[best] - sigma)) best = s;
       return best;
     };
-    if (sigmaLast - sigmaFirst > 2 * LOFT.endBlend + 0.5) {
-      const ends = [[nearest(sigmaFirst), nearest(sigmaFirst + LOFT.endBlend)], [nearest(sigmaLast), nearest(sigmaLast - LOFT.endBlend)]];
-      const steps = ends.map(([edge, inside]) => {
-        const H = crestY(inside) - toeY(inside);
-        return loft.sliceTau[inside] >= 0 && H > 0.3 && loft.sliceWeight[inside] > 0.9 ? Math.abs(crestY(inside) - crestY(edge)) / H : Number.NaN;
-      });
-      if (steps.every((v) => v === v)) {
-        const firstYounger = loft.sliceTau[ends[0][1]] <= loft.sliceTau[ends[1][1]];
-        younger.push(firstYounger ? steps[0] : steps[1]);
-        older.push(firstYounger ? steps[1] : steps[0]);
+    const sides = [
+      { edge: loft.sliceSigma[start] + LOFT.extension, inward: 1 },
+      { edge: loft.sliceSigma[end] - LOFT.extension, inward: -1 },
+    ];
+    if (sides[1].edge - sides[0].edge > 3) {
+      for (const { edge, inward } of sides) {
+        const e = nearest(edge);
+        const youngEnd = loft.sliceTau[e] < 0;
+        const tip = nearest(edge + inward);
+        const H = Math.max(0.3, crestY(tip) - toeY(tip));
+        const blend = youngEnd ? Math.max(LOFT.endBlend, H) : LOFT.endBlend;
+        const inside = nearest(edge + inward * blend);
+        if (!(loft.sliceWeight[inside] > 0.9)) continue;
+        const step = Math.abs(crestY(inside) - crestY(e));
+        if (!youngEnd) {
+          out.thrownStep.push(step / H);
+          continue;
+        }
+        out.young += 1;
+        out.youngStep.push(step / H);
+        out.youngSlope.push(step / Math.max(1e-6, Math.abs(loft.sliceSigma[inside] - loft.sliceSigma[e])));
+        let lip = false;
+        for (let s = Math.min(e, inside); s <= Math.max(e, inside); s += 1) if (loft.sliceTau[s] >= 0) lip = true;
+        if (lip) out.lipInside += 1;
+        // The solver's crest along the end's tangent (outward), its highest water within 3 m either side along the ray.
+        const c = vertex(e, LANDMARK.crest);
+        const [cx, cz] = [loft.positions[c], loft.positions[c + 2]];
+        const [rx, rz] = [loft.sliceRayX[e], loft.sliceRayZ[e]];
+        const [tx, tz] = [-inward * rz, inward * rx];
+        const crestAt = (o: number) => {
+          let top = -Infinity;
+          for (let a = -3; a <= 3; a += 0.5) top = Math.max(top, heightAt(cx - o * tx + a * rx, cz - o * tz + a * rz));
+          return top;
+        };
+        const atEnd = crestAt(0);
+        for (let o = -3; o <= 3; o += 1) out.solverCrest[o + 3] += (crestAt(o) - atEnd) / H;
+        out.solverCount += 1;
       }
     }
     start = end + 1;
@@ -410,8 +454,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     const openRuns: number[] = [];
     const tongueLengths: number[] = [];
     let foldSlices = 0;
-    const youngerSteps: number[] = [];
-    const olderSteps: number[] = [];
+    const ends = createEndSteps();
     // Pairs: open ones by key, and the gap columns' states and the adjacent ends' causes over every pair-frame.
     const open = new Map<string, PairLife>();
     const closed: PairLife[] = [];
@@ -573,7 +616,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
         `fronts peeling at 20 m/s or more by their throws: ${fast.length} (${fast.reduce((s, f) => s + f.n, 0)} throws): jumped ${quantiles(fast.map((f) => f.jumped))}, joined in a jump ${quantiles(fast.map((f) => f.joinAtJump))}; slower fronts ${slow.length}: jumped ${quantiles(slow.map((f) => f.jumped))}, joined in a jump ${quantiles(slow.map((f) => f.joinAtJump))}`,
         ...fast.map((f) => `  fast f${f.front}: ${f.n} throws over ${f.span.toFixed(0)} m, by throws ${f.throwPeel.toFixed(1)} m/s, by joins ${f.joinPeel.toFixed(1)} m/s, by the solver's first breaks ${fixed(f.breakPeel, 1)} m/s; jumped ${(100 * f.jumped).toFixed(0)} %, joined in a jump ${(100 * f.joinAtJump).toFixed(0)} %`),
         `neighbouring points within ${jumpReach ?? TRACK} m in z: ${linkCounts.pairs} pair-steps, linked ${linkCounts.linked} (|Δjoin|/d ${quantiles(linkedRates, 3)} s/m; ${linkCounts.linkedRefusedB} over ${LINK_SLOPE.toFixed(3)} s/m, which (B) would split); unlinked ${linkCounts.pairs - linkCounts.linked}: (A) the reach widened for clock-compatible ends would link ${linkCounts.unlinkedA} (of them over 1 s/m: ${linkCounts.unlinkedSplitA}), (B) the clock alone ${linkCounts.unlinkedB}; unlinked beyond the 3-row reach ${linkCounts.unlinkedReach}, of which (A) links ${linkCounts.unlinkedReachA}`,
-        `drawn (as the page holds each case clear): strips dropped as overlaps (folds) ${(overlapStrips / Math.max(1, frames)).toFixed(2)} a frame, of them holding an open tube (holes) ${(overlapOpenStrips / Math.max(1, frames)).toFixed(3)} a frame (most weight ${overlapOpenWeight.toFixed(2)}); self-folds (a slice's lifted span crossing its own front's 2–20 m along) ${(foldSlices / Math.max(1, frames)).toFixed(2)} slices a frame; end steps over the 1 m blend, in H: younger ends ${quantiles(youngerSteps)}, older ${quantiles(olderSteps)}; tongues (standing runs) ${quantiles(tongueLengths)} m; open curls (open, standing) ${quantiles(openRuns)} m (end blend ${LOFT.endBlend} m)`,
+        `drawn (as the page holds each case clear): strips dropped as overlaps (folds) ${(overlapStrips / Math.max(1, frames)).toFixed(2)} a frame, of them holding an open tube (holes) ${(overlapOpenStrips / Math.max(1, frames)).toFixed(3)} a frame (most weight ${overlapOpenWeight.toFixed(2)}); self-folds (a slice's lifted span crossing its own front's 2–20 m along) ${(foldSlices / Math.max(1, frames)).toFixed(2)} slices a frame; young ends (not thrown, blended over max(1 m, H)): ${ends.young}, their seam's slope ${quantiles(ends.youngSlope)} (tan 20° is 0.36), step ${quantiles(ends.youngStep)} H, with a lip inside the blend ${ends.lipInside}; thrown ends' step over 1 m ${quantiles(ends.thrownStep)} H; the solver's crest along a young end's tangent, 3 m behind to 3 m past, over its crest at the end, in H: ${Array.from(ends.solverCrest, (v) => (v / Math.max(1, ends.solverCount)).toFixed(2)).join(' ')}; tongues (standing runs) ${quantiles(tongueLengths)} m; open curls (open, standing) ${quantiles(openRuns)} m (end blend ${LOFT.endBlend} m)`,
         `headline, clock link ${linkOn ? 'ON' : 'off'}, ${swellName}, seed ${seed}, ${label}: fronts a wave ${(frontsPerWave.reduce((a, b) => a + b, 0) / Math.max(1, frontsPerWave.length)).toFixed(2)}; drawn fronts a frame ${(drawnFronts / frames).toFixed(2)}; pairs ${closed.length} (${listed(byClass)}); true splits linked by the clock ${splitLinkedByClock.length} of ${splitPairs.length} (${clockShare.toFixed(1)} %; by the old rules ${splitLinked.length - splitLinkedByClock.length}); clock link-frames across crest lines ${links(crossWaveFrames)} of ${links(clockLinkFrames)} (${crossShare.toFixed(1)} %); throws ${allThrows.length}; peel by throws median ${quantile(frontPeels.map((f) => f.throwPeel), 0.5).toFixed(1)} / 90 % ${quantile(frontPeels.map((f) => f.throwPeel), 0.9).toFixed(1)} m/s over ${frontPeels.length} fronts; fast fronts (20 m/s or more) ${fast.length}`,
       ].join('\n') + '\n');
     };
@@ -872,7 +915,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
       const list = tongues(result);
       overlapStrips += result.overlaps;
       foldSlices += selfFolds(result);
-      endSteps(result, youngerSteps, olderSteps);
+      endSteps(result, (x, z) => sampleSurfaceHeight(surface, grid, x, z), ends);
       overlapOpenStrips += result.overlapsOpen;
       overlapOpenWeight = Math.max(overlapOpenWeight, result.overlapOpenWeight);
       for (const tongue of list) tongueLengths.push(result.sliceSigma[tongue.last] - result.sliceSigma[tongue.first]);
