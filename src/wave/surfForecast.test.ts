@@ -50,6 +50,8 @@ describe('empirical surf heights', () => {
       // Padang Padang's faces grow only as about Hs^0.2–0.4 (only a small swell's biggest waves break at its take-off),
       // against the forecast's 0.8, so one power law spans its three swells within 35 %: Small 26 % low, Big 31 % high
       // (Medium and Big measured at the take-offs that follow their breaks).
+      // The Canyon's take-off faces grow as about Hs^0.4 on its planar arm (2026-10-22), so its fit reads Hs 1 m 21 % low
+      // and Hs 3 m 19 % high.
       const tolerance = spot === 'padang' ? 0.35 : 0.25;
       const buoys = runs.filter((run) => run.spot === spot && run.source === 'buoy' && !saturated(run));
       expect(buoys.length).toBeGreaterThan(0);
