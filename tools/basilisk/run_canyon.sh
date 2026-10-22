@@ -1,5 +1,5 @@
 #!/bin/bash
-# The Canyon's tube runs on the M4 Pro, in one command: four periodic cases on the Canyon's reef bed, each scouted at
+# The Canyon's tube runs on the M4 Pro, in one command: three periodic cases on the Canyon's reef bed, each scouted at
 # level 10, run at level 10 then 13 in its break window, analysed, and turned into the swept barrel's case files and a
 # report (docs/research/canyon-tube-runs/). See tools/basilisk/README.md, "The Canyon's tube runs".
 #
@@ -15,7 +15,7 @@
 #   tools/basilisk/run_canyon.sh smoke       a few seconds of one case at levels 7 and 8 (tools/basilisk/runs/smoke), to
 #                                            prove the compile, run and analysis plumbing
 #
-# -j N (or JOBS=N): cases at once (default: all four, at most one per performance core and per 4 GB of memory).
+# -j N (or JOBS=N): cases at once (default: all three, at most one per performance core and per 4 GB of memory).
 # LEVEL2=14 runs phase 2 one level finer (phase 1 is reused). OMP=1 gives each case its share of the performance cores
 # with OpenMP (brew install libomp; its speed-up isn't measured). PYTHON picks the Python (default tools/basilisk/.venv's,
 # else python3). BASILISK_HOME (default ~/basilisk-C) picks the Basilisk build. Safe to rerun at any point.
@@ -78,7 +78,7 @@ check() {
     problem "free disk space: ${free_gb} GB free where the runs go ($STATE), at least ${NEED_GB:-5} GB wanted" \
       "free some space, or set RUNS to a folder on a larger disk (each case writes a few hundred MB)"
   else
-    echo "  Disk: ${free_gb} GB free (the four cases write about 1–2 GB)."
+    echo "  Disk: ${free_gb} GB free (the three cases write about 1–2 GB)."
   fi
   if [ "${OMP:-0}" = 1 ] && [ "$(uname)" = Darwin ] && [ ! -f "$(brew --prefix libomp 2> /dev/null)/include/omp.h" ]; then
     problem "Homebrew's libomp, for OMP=1" "brew install libomp    # or run without OMP=1: one core per case"

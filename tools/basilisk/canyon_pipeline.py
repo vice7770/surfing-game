@@ -35,12 +35,11 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 ANALYSIS = os.path.join(HERE, "analysis")
-CASES = ["canyon23_a49", "canyon23f54_a38", "canyon23_a38", "canyon23_a29"]  # the costliest first
+CASES = ["canyon23_a49", "canyon23_a38", "canyon23_a29"]  # the costliest first
 WHAT = {
-    "canyon23_a29": ("x −2 (take-off), fan 1:31", "Medium's sets"),
-    "canyon23_a38": ("x −2 (take-off), fan 1:31", "Big's typical wave"),
-    "canyon23_a49": ("x −2 (take-off), fan 1:31", "Big's sets"),
-    "canyon23f54_a38": ("x 18, fan 1:54", "Big down the line"),
+    "canyon23_a29": ("x −9 (take-off), planar 1:23", "Medium's sets"),
+    "canyon23_a38": ("x −9 (take-off), planar 1:23", "Big's typical wave"),
+    "canyon23_a49": ("x −9 (take-off), planar 1:23", "Big's sets"),
 }
 SMOKE_WINDOW = {"tswitch": 1.0, "tmax": 2.0}  # the smoke test's phases: a second of each, at levels 7 and 8
 EXTEND = float(os.environ.get("CANYON_EXTEND", 4.0))  # phase 2 carried on this much (sqrt(h0/g)) once, if it broke late
@@ -730,8 +729,8 @@ def write_report(cfg, summary, rows):
         f"{summary['basilisk']}). Each case is a two-crest cnoidal train on the Canyon's reef bed along the wave's path "
         "(`tools/basilisk/run_periodic.sh`), the second crest studied: a scout at level "
         f"{cfg.scout_level} placed the switch and the window, phase 1 ran at level {cfg.level1} and phase 2 at level "
-        f"{cfg.level2} inside the window. Bed: h0 = 6 m, 1:23 to 2.2 m (0.367 h0), the fan to 1.0 m (0.167 h0), flat to "
-        "the closed right wall. Numbers are [measured] in the model.",
+        f"{cfg.level2} inside the window. Bed: h0 = 6 m, one planar face at 1:23 to 1.0 m (0.167 h0), flat to the closed "
+        "right wall. Numbers are [measured] in the model.",
         "",
         "| Case | Transect; what | H/h0 at T | A0, the foot crest (m; from) | Face vertical | H at vertical (crest, trough ahead) | Tube | "
         "Open, vertical to touchdown (s) | Jet A_J/H² (fit) | Tube A_O/H² (fit) | L/W (fit) | Tilt (fit) | Lip, cells across | "
@@ -765,9 +764,8 @@ def write_report(cfg, summary, rows):
         "holds the eight shipped cases. Wiring adds them (`npm run barrels` with every shipped case `--keep`ed and these "
         "`--run` from `data/`, `--spot canyon --flat 0.1666667` and each `--a0`), a `canyon` entry in `BARREL_SPOTS` "
         "(slope 1/23, foot 6 m, its join and throw tables: the throw from the depths above), and `canyon` in `SWEPT_BARREL`.",
-        "- The two transects share S1 = 1/23, so the library's slope key can't tell `canyon23f54_a38` from `canyon23_a38`: "
-        "the loft would blend them as two A0 of one transect. Either keep one per spot or key cases by the fan (S2) or the "
-        "column along the arm.",
+        "- The arm's face is planar (canyon-long-wave), one transect at every column, so the cases are three A0 of it, "
+        "the loft's own key (slope 1/23, A0); down the line the same face carries smaller waves.",
     ]
     open(out, "w").write("\n".join(lines) + "\n")
 
