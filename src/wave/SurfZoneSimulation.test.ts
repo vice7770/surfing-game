@@ -780,6 +780,52 @@ describe('SurfZoneSimulation', () => {
     }
   }, 600_000);
 
+  it('draws the Canyon’s tubes from its own run where Big plunges, beside its spilling look, and changes nothing felt (2026-10-22)', () => {
+    // Big's typical waves (2.4 m at 14 s): a tube where ξ_f ≥ 0.54 (foot crests to 1.98 m), the curl elsewhere.
+    const config: SurfZoneConfig = {
+      ...small, spot: 'canyon', significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: PADANG_SPREADING,
+      alongShore: CANYON.alongShore, dx: 1, fineSpacing: 1,
+    };
+    const library = libraryFromBytes(readBarrelCases('canyon'));
+    expect(library.cases.map((c) => c.id)).toEqual(['periodic-canyon23-a38-l13']);
+    const tubes = new SurfZoneSimulation(config, 'warm', library);
+    // `?canyonTube=off`: the Canyon as before its tubes were wired.
+    const before = new SurfZoneSimulation({ ...config, sweptBarrel: false }, 'warm', library);
+    expect(before.front).toBeUndefined();
+    expect(tubes.front).toBeDefined();
+    expect(tubes.crash).toBeUndefined();
+    for (const simulation of [tubes, before]) {
+      expect(simulation.spilling).toBeDefined();
+      expect(simulation.roller).toBeDefined();
+      expect(simulation.curl).toBeDefined();
+    }
+    expect(tubes.tubeFootMax).toBeCloseTo(1.98, 2);
+    const records = new Float32Array(FRONT_STRIDE * 4096);
+    let drawn = 0;
+    let curls = 0;
+    let tubeColumns = 0;
+    for (let frame = 0; frame < 30 * 30; frame += 1) {
+      tubes.step(1 / 30);
+      before.step(1 / 30);
+      const count = writeFrontRecords(tubes.front!.points, records, tubes.tubeFootMax);
+      for (let k = 0; k < count; k += 1) expect(records[k * FRONT_STRIDE + FRONT_FIELD.footHeight]).toBeLessThanOrEqual(tubes.tubeFootMax);
+      drawn += count;
+      curls += tubes.writeCurls(new Float32Array(CURL_CAPACITY * CURL_STRIDE));
+      tubeColumns += tubes.curl!.tube.reduce((sum, v) => sum + v, 0);
+    }
+    // Its front joins and draws tubes, the curl gives them their columns and draws the rest, and nothing is thrown.
+    expect(tubes.front!.joins).toBeGreaterThan(0);
+    expect(drawn).toBeGreaterThan(0);
+    expect(tubeColumns).toBeGreaterThan(0);
+    expect(curls).toBeGreaterThan(0);
+    expect(tubes.lipJets).toBe(0);
+    expect(tubes.lip.landings).toBe(0);
+    // The water, its breaking and the felt whitewater are the same with the tubes and without: they are drawn and felt
+    // by the rider, never poured into the sea.
+    expect(Array.from(tubes.solver.h)).toEqual(Array.from(before.solver.h));
+    expect(Array.from(tubes.whitewaterStrength)).toEqual(Array.from(before.whitewaterStrength));
+  }, 1_800_000);
+
   it('throws each jet ahead of its crest, 1.15-1.8 times its speed, as measured jets leave (P7)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
     const launches: { speed: number; crest: number }[] = [];
