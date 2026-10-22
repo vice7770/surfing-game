@@ -36,6 +36,9 @@ let input: RideInput = { paddle: false, popUp: false, steer: 0 };
 let retry = false;
 let peelDirection = 0;
 let rides = 0;
+/** Each stand's ride, for the log: seconds standing, along shore (x) and along the board's path, m, and how it ended. */
+const ridden: { seconds: number; alongShore: number; path: number; outcome: string }[] = [];
+let standing: { x: number; path: number; lastX: number; lastZ: number } | undefined;
 const total = Math.round((minutes * 60) / SURF_ZONE_STEP);
 const started = Date.now();
 
@@ -58,8 +61,24 @@ for (let step = 0; step < total; step += 1) {
       },
       peelDirection, board: { x: board.position.x, z: board.position.z, heading: session.heading }, focusZ: runner.focus.z, crestBehind: crest - config.tide,
     }, SURF_ZONE_STEP);
-    if (autopilot.state === 'ride' && before !== 'ride') rides += 1;
+    if (autopilot.state === 'ride' && before !== 'ride') {
+      rides += 1;
+      standing = { x: board.position.x, path: 0, lastX: board.position.x, lastZ: board.position.z };
+    }
+    if (standing) {
+      standing.path += Math.hypot(board.position.x - standing.lastX, board.position.z - standing.lastZ);
+      standing.lastX = board.position.x;
+      standing.lastZ = board.position.z;
+    }
     if (autopilot.state === 'done') {
+      if (standing) {
+        const ride = { seconds: autopilot.rideTime, alongShore: board.position.x - standing.x, path: standing.path, outcome: autopilot.outcome ?? '' };
+        ridden.push(ride);
+        console.log(`  ride ${ridden.length} at ${(step * SURF_ZONE_STEP).toFixed(0)} s: ${ride.seconds.toFixed(1)} s, ${ride.alongShore.toFixed(0)} m along shore, ${ride.path.toFixed(0)} m ridden (${ride.outcome})`);
+        standing = undefined;
+      } else {
+        console.log(`  attempt ${autopilot.attempts} at ${(step * SURF_ZONE_STEP).toFixed(0)} s: ${autopilot.outcome ?? ''}, ${(runner.focus.z - board.position.z).toFixed(0)} m outside the take-off`);
+      }
       autopilot.reset();
       input = { paddle: false, popUp: false, steer: 0 };
       retry = true;
@@ -77,4 +96,6 @@ for (let step = 0; step < total; step += 1) {
 
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, encodeBotTrack(frames));
+const seconds = ridden.map((ride) => ride.seconds).sort((a, b) => a - b);
+if (seconds.length) console.log(`Rides: ${seconds.length} ended, median ${seconds[Math.floor((seconds.length - 1) / 2)].toFixed(1)} s, longest ${seconds.at(-1)!.toFixed(1)} s${standing ? '; one still riding at the end' : ''}.`);
 console.log(`Wrote ${frames.length} poses (${minutes} min, ${rides} stands) to ${output}.`);
