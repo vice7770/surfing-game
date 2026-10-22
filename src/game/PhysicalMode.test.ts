@@ -74,15 +74,15 @@ describe('PhysicalMode', () => {
     for (const search of ['', '?startOut', '?startOut=', '?startOut=far', '?startOut=Infinity']) expect(startOutSwitch(search), search).toEqual({});
     const big = physicalSettingsFor('canyon', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
     try {
-      vi.stubGlobal('location', { search: '?startOut=11' });
+      vi.stubGlobal('location', { search: '?startOut=6' });
       const compared = surfZoneConfigFor(big, 5, false);
-      expect(compared.startOut).toBe(11);
-      // Today's start at the Canyon's Big, 11 m out, in place of its own.
-      expect(rideLineupOffset(compared)).toBe(11);
+      expect(compared.startOut).toBe(6);
+      // The short arm's start at the Canyon's Big, 6 m out, in place of its own (11 m since canyon-long-wave).
+      expect(rideLineupOffset(compared)).toBe(6);
       vi.stubGlobal('location', { search: '' });
       const own = surfZoneConfigFor(big, 5, false);
       expect(own.startOut).toBeUndefined();
-      expect(rideLineupOffset(own)).toBeLessThan(11);
+      expect(rideLineupOffset(own)).toBe(11);
     } finally {
       vi.unstubAllGlobals();
     }

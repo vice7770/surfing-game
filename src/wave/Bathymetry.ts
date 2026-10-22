@@ -185,18 +185,17 @@ export function padangReefAt(x: number): boolean {
  * their height unbroken).
  *
  * On the platform stands a terrace, the arm, `crestDepth` deep. Its seaward edge, the break line, runs at `angle` degrees
- * to the shore from its peak (peakX, peakZ) toward +x and the beach, where it ends on the beach face. Its face is a fan (`fan`):
- * the deep contours, where Big breaks, run less obliquely than the shallow ones, where Medium and Small break, so each
- * size meets contours matched to how far it has already refracted crossing the deep ones (the water-physics advisor,
- * 2026-10-09, after Mead's refraction compensation). A planar face from a deep platform refracted Medium's crests toward
- * the line and sped its peel. Below the hinge the face climbs at `pathSlope` along the waves' path, steep enough that the
- * waves breaking there plunge weakly, as the owner's reference reel does (the reef bed, 2026-10-22: Iribarren numbers at
- * breaking about 0.4–0.6); above it the face runs more gently downcoast, so the smaller waves breaking there spill (under
- * 0.3). Upcoast of the peak the arm ends in
+ * to the shore from its peak (peakX, peakZ) toward +x and the beach, where it ends on the beach face. Its face climbs at
+ * `pathSlope` along the waves' path, steep enough that the waves breaking on it plunge weakly, as the owner's reference
+ * reel does (the reef bed, 2026-10-22: Iribarren numbers at breaking about 0.4–0.6). The face is planar (`fan` 0) since
+ * canyon-long-wave: its contours, where every size breaks, run parallel to the line all the way to the beach, and the
+ * deep face runs on past the line's end on the beach face until its foot meets the beach face's (`runOn`), so each
+ * wave's break runs down the whole arm into the beach. Until then it was a fan, its deep contours 15° less oblique than
+ * the line, tapering past the line's end (below). Upcoast of the peak the arm ends in
  * a face along +z that falls at `endSlope` across x, so every depth's contour is furthest out at the peak and each wave
  * starts breaking there. That end stays clear of the −x open edge's levelling (`OPEN_EDGE_RAMP`), so the edge copies
  * plain platform. Behind the line the top is level for `flatWidth` m, then falls to a trough `lagoonDepth` deep, so
- * bores that crossed the line do not re-break along shore all at once; past the arm's end on the beach face the terrace
+ * bores that crossed the line do not re-break along shore all at once; past the reef's end on the beach face the terrace
  * tapers into the platform (`endTaper`), so the +x open edge copies plain beach face. A planar beach face caps it all.
  *
  * The layout is a short reef near a visible beach (canyon-layout, 2026-10-22; the owner approved the water-physics
@@ -210,6 +209,16 @@ export function padangReefAt(x: number): boolean {
  * line, to its end on the steeper 1:15 beach face), and the window is `alongShore` m wide with the arm's footprint (its
  * upcoast end to its taper) about centred in it, so open water, square crests, stands either side of the reef. Past
  * the arm the crests close out on the beach either side, after the peak's ride, as on a real reef's flanks.
+ *
+ * The wave runs the length of the arm (canyon-long-wave, 2026-10-22, docs/research/canyon-long-wave-2026-10-22). The
+ * owner's playtest of the short arm: "the wave has small progress; the wave itself is not long. A lot of foam, but no
+ * long wave or steep wave." On the fan the peak's hump closed out at the arm's upcoast end, and the 55° deep face down
+ * the line broke in sections (a fast run across it, a re-break by the beach later), and ended in the taper 90 m from the
+ * beach: half of Medium's crests peeled rideably for 1.4 s or less (3 seeds × 14 periods). On a planar face running into
+ * the beach they peel down the arm for 9.5 s at the median (21 of 43 for 10 s or more, against 13 of 40), Big's for
+ * 9.7 s (1.8 s), plunging all along (ξb 0.4–0.65), the readout saying "closes out" a quarter of the time (39–46 % on the
+ * fan), with the same beach and starts. The arm is moved 7 m upcoast and the window widened to 240 m, so its footprint,
+ * 15 m longer, keeps open water either side (`alongShore`).
  * Mutable for the design sweep (`scripts/canyon-size-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
@@ -227,13 +236,14 @@ export const CANYON = {
    */
   pathSlope: 1 / 23, endSlope: 1 / 4,
   /**
-   * The peak and the line's angle to the shore, degrees. The peak stands 120 m out (305 m until canyon-layout), 10 m
-   * upcoast of the window's centre, so the arm's footprint from its upcoast end (x −30) to its taper (x 40) is about
-   * centred.
+   * The peak and the line's angle to the shore, degrees. The peak stands 120 m out (305 m until canyon-layout), 17 m
+   * upcoast of the window's centre (10 m until canyon-long-wave), so the arm's footprint from its upcoast end (x −37) to
+   * the end of its taper (x 48) leaves 83 m of open water to the −x side and 72 m to the +x side (80 m and 70 m on the
+   * short arm).
    */
-  peakX: -10, peakZ: -120, angle: 70,
+  peakX: -17, peakZ: -120, angle: 70,
   /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking (8 m, as before). */
-  takeOffX: -2,
+  takeOffX: -9,
   /**
    * The tank: the relaxation zone's inner edge, where the 1 m cells start, and the blend onto the platform, m. The blend
    * ends 40 m seaward of the arm's furthest foot (z −290), as it did at −575 before canyon-layout (foot −475).
@@ -247,12 +257,18 @@ export const CANYON = {
    * a single face would be `hingeDepth` deep below the peak; between the hinge line and the crest line the depth runs
    * linearly, so downcoast, where the two lines part, the shallow face is gentler and its contours more oblique than the
    * deep ones. Upcoast of the peak the hinge line runs parallel to the crest line. The hinge is rounded over
-   * ±`hingeRounding` m across shore. `fan` 0: one planar face (rejected: on it crests broke first mid-arm, 15 of 54 in
-   * the 2026-10-09 sweep). The hinge was 2.8 m deep until the reef bed (2026-10-22): at 2.2 m Big's waves and the sets
-   * near the peak break below it, on `pathSlope`, while Small and the smaller waves down the line break on the fan.
+   * ±`hingeRounding` m across shore. `fan` 0: one planar face, the hinge line parallel to the crest line.
+   * - 0 since canyon-long-wave (2026-10-22): on the 15° fan (canyon-layout's short arm, `CANYON_OLD`) the sets broke
+   *   on the arm's upcoast end and the peak and seldom carried on down the 55° deep face, whose obliqueness spread their
+   *   waves (the advisor's rays: K 0.64 at Medium). On the planar face the break runs down the arm to the beach (the
+   *   sweep, 1 seed × 12 periods at Medium: rides 11 s at the median on the planar 70° face, 9 s at 65°, 2 s at 60°, 5 s
+   *   on an 8° fan, 2 s on the 15° fan running on to the beach at 55°).
+   * - The planar face was rejected on the long arm (2026-10-09, 15 of 54 crests starting mid-arm); on this short arm all 44
+   *   Medium crests start on the arm's end and face, 39 within 10 m of their median (3 seeds × 14 periods).
+   * - The hinge was 2.8 m deep until the reef bed (2026-10-22); on a planar face it only places the hinge line.
    */
-  fan: 15, hingeDepth: 2.2, hingeRounding: 8,
-  /** Past the arm's end on the beach face the terrace tapers into the platform over this many metres along shore, m. */
+  fan: 0, hingeDepth: 2.2, hingeRounding: 8,
+  /** Past the reef's end on the beach face (`canyonReefEndX`) the terrace tapers into the platform over this many metres along shore, m. */
   endTaper: 12,
   /**
    * Behind the break line the terrace's top is `crestDepth` deep for `flatWidth` m, then deepens at `pathSlope` toward
@@ -262,11 +278,14 @@ export const CANYON = {
    */
   flatWidth: 10, lagoonDepth: 2,
   /**
-   * The window's width along shore, m (`alongShoreOf`): 220 m (160 m until canyon-layout), so 70–90 m of open water,
-   * where the crests stay square, stands between the arm's footprint and each open side, whose edge band mirrors it
-   * (the advisor's P2w: the mirror's chevrons within the Beach's spread).
+   * The window's width along shore, m (`alongShoreOf`): 240 m since canyon-long-wave (220 m on canyon-layout's short arm,
+   * 160 m before), so 72–83 m of open water, where the crests stay square, stands between the arm's footprint and each
+   * open side, whose edge band mirrors it (the advisor's P2w: the mirror's chevrons within the Beach's spread). In the
+   * 220 m window the planar arm's footprint, 15 m longer than the short arm's, left 67–68 m either side, and the crests
+   * wrapping round its upcoast end came back from the −x side's mirror as a chevron inshore (Big: p90 24° inside the
+   * take-off, against the Beach's 10° and the short arm's 16°; 13 two-sided crests of 188 near the beach).
    */
-  alongShore: 220,
+  alongShore: 240,
   /**
    * How far inshore of the break line a column's new break still counts toward the peel the readout measures, m: the arm's
    * flat top (`flatWidth`), so the face, the end and the top count, and not the lagoon's bores or the shore break on the
@@ -275,11 +294,20 @@ export const CANYON = {
    * at Medium (3 seeds × 14 periods; 3 % on the old layout, whose beach lay 280 m behind the peak). Infinity: every break.
    */
   peelReach: 10,
+  /**
+   * 1: the arm's deep face runs on past its end on the beach face, along its hinge line, until its foot meets the beach
+   * face's `shelfDepth` contour (`canyonReefEndX`), where it tapers into the platform; 0: it tapers past the end of its
+   * crest line on the beach face (`canyonArmEndX`), as canyon-layout's short arm did. 1 since canyon-long-wave
+   * (2026-10-22): the waves' break runs down the arm's face into the beach face, not into the taper's corner (the advisor:
+   * on the fan the deep face ended there 90 m from the beach; on the planar face 15 m further along shore).
+   */
+  runOn: 1,
 };
 
 /**
- * Which Canyon layout a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed=old` dev switch): 'reef', today's (the reef
- * bed on canyon-layout's short arm), or 'old', the layout before canyon-layout (`CANYON_OLD`).
+ * Which Canyon layout a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed=old` dev switch): 'reef', today's (the
+ * planar arm running into the beach, canyon-long-wave), or 'old', the layout before canyon-long-wave (`CANYON_OLD`:
+ * canyon-layout's short arm on its fan).
  */
 export type CanyonBed = 'reef' | 'old';
 
@@ -287,24 +315,25 @@ export type CanyonBed = 'reef' | 'old';
 export type CanyonShape = typeof CANYON;
 
 /**
- * The Canyon's whole layout before canyon-layout (2026-10-22), main's at 2dd9ba52: the reef bed's arm (1:23 below a 2.2 m
- * hinge, the 15° fan, the 70° line) from a peak 305 m out at x −38 across the whole 160 m window, on a 1:25 beach face,
- * its tank's zone from z −575 and its take-off at x −30. Kept for the `?canyonBed=old` dev switch, so the owner can ride
- * the two layouts side by side, with that layout's take-off (`CANYON_TAKE_OFF_DEPTH_OLD`) and starts
- * (`CANYON_RIDE_LINEUP_OLD`). Frozen: the design sweeps reshape `CANYON` alone. The 1:30 bed before the reef bed, which
- * this switch rode until canyon-layout, is no longer reachable: it is `CANYON_OLD_BED` at main's 2dd9ba52.
+ * The Canyon's whole layout before canyon-long-wave (2026-10-22), main's at bff9a874: canyon-layout's short arm, the
+ * reef bed's 1:23 face below a 2.2 m hinge on the 15° fan, its 70° line from a peak 120 m out at x −10, tapering past the
+ * line's end on the 1:15 beach face, in the 220 m window, its tank's zone from z −390 and its take-off at x −2. Kept for
+ * the `?canyonBed=old` dev switch, so the owner can ride the two side by side, with that layout's take-off
+ * (`CANYON_TAKE_OFF_DEPTH_OLD`) and starts (`CANYON_RIDE_LINEUP_OLD`). Frozen: the design sweeps reshape `CANYON` alone.
+ * The long arm before canyon-layout, which this switch rode until canyon-long-wave, is no longer reachable: it is
+ * `CANYON_OLD` at main's bff9a874.
  */
 export const CANYON_OLD: CanyonShape = Object.freeze({
-  shelfDepth: 6, shoreSlope: 1 / 25, crestDepth: 1,
+  shelfDepth: 6, shoreSlope: 1 / 15, crestDepth: 1,
   pathSlope: 1 / 23, endSlope: 1 / 4,
-  peakX: -38, peakZ: -305, angle: 70,
-  takeOffX: -30,
-  zoneInner: -575, blendLength: 60,
+  peakX: -10, peakZ: -120, angle: 70,
+  takeOffX: -2,
+  zoneInner: -390, blendLength: 60,
   edgeDepth: 7.9, zoneLength: 90,
   fan: 15, hingeDepth: 2.2, hingeRounding: 8,
   endTaper: 12,
   flatWidth: 10, lagoonDepth: 2,
-  alongShore: 160, peelReach: Infinity,
+  alongShore: 220, peelReach: 10, runOn: 0,
 });
 
 /** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */
@@ -322,14 +351,30 @@ export function canyonArmEndX(c: CanyonShape = CANYON): number {
   return c.peakX + (-c.crestDepth / c.shoreSlope - c.peakZ) / Math.tan((c.angle * Math.PI) / 180);
 }
 
-/** Whether the Canyon's arm is ridden at along-shore position x: from its peak (and the end beside it) to where it meets the beach face. */
-export function canyonArmAt(x: number, c: CanyonShape = CANYON): boolean {
-  return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonArmEndX(c);
+/**
+ * Where the Canyon's reef ends along shore, m: its crest line's end on the beach face (`canyonArmEndX`), or, when its deep
+ * face runs on (`runOn`), where that face's foot, `shelfDepth` deep below the hinge line, meets the beach face's own
+ * `shelfDepth` contour. Past it the terrace tapers into the platform over `endTaper` m.
+ */
+export function canyonReefEndX(c: CanyonShape = CANYON): number {
+  if (!c.runOn) return canyonArmEndX(c);
+  const footBelowHinge = (c.shelfDepth - c.hingeDepth) / c.pathSlope;
+  return c.peakX + (-c.shelfDepth / c.shoreSlope + footBelowHinge - canyonHingeZ(c.peakX, c)) / Math.tan(((c.angle - c.fan) * Math.PI) / 180);
 }
 
-/** Whether a break at (x, z) counts toward the Canyon's peel: on the arm, no further inshore of its break line than `peelReach`. */
+/** Whether the Canyon's arm is ridden at along-shore position x: from its peak (and the end beside it) to where its reef ends on the beach face. */
+export function canyonArmAt(x: number, c: CanyonShape = CANYON): boolean {
+  return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonReefEndX(c);
+}
+
+/**
+ * Whether a break at (x, z) counts toward the Canyon's peel: on the arm, no further inshore of its break line than
+ * `peelReach`; where the deep face runs on past the crest line's end (`runOn`), only where the reef, not the beach face,
+ * makes the bed (the shore break behind it is not its wave).
+ */
 export function canyonPeelAt(x: number, z: number, c: CanyonShape = CANYON): boolean {
-  return canyonArmAt(x, c) && z < canyonBreakLineZ(x, c) + c.peelReach;
+  if (!canyonArmAt(x, c) || !(z < canyonBreakLineZ(x, c) + c.peelReach)) return false;
+  return !c.runOn || canyonTerraceDepth(x, z, c) < Math.min(c.shelfDepth, -z * c.shoreSlope) - 0.05;
 }
 
 /**
@@ -352,8 +397,8 @@ export function canyonTerraceDepth(x: number, z: number, c: CanyonShape = CANYON
   // Past the arm's end the fan's gentle downcoast face would run on as a shoal across the +x open edge: it tapers away,
   // so the edge copies plain beach face.
   const terrace = Math.max(face, end);
-  const armEnd = canyonArmEndX(c);
-  return terrace + (c.shelfDepth - terrace) * smoothstep(armEnd, armEnd + c.endTaper, x);
+  const reefEnd = canyonReefEndX(c);
+  return terrace + (c.shelfDepth - terrace) * smoothstep(reefEnd, reefEnd + c.endTaper, x);
 }
 
 /** Where the Canyon's hinge line (the fan's, `hingeDepth` deep) crosses along-shore position x. */
