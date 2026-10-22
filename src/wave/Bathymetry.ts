@@ -212,12 +212,13 @@ export function padangReefAt(x: number): boolean {
  *
  * The wave runs the length of the arm (canyon-long-wave, 2026-10-22, docs/research/canyon-long-wave-2026-10-22). The
  * owner's playtest of the short arm: "the wave has small progress; the wave itself is not long. A lot of foam, but no
- * long wave or steep wave." On the fan the sets broke as a patch at the arm's upcoast end and the peak, and the 55° deep
- * face down the line, its waves spread by its obliqueness, rarely carried the break on: half of Medium's crests broke
- * over less than 1.4 s (3 seeds × 14 periods), and the deep face ended in the taper 90 m from the beach. On a planar face
- * running into the beach Medium's crests break down the arm for 13 s at the median (24 of 37 for 10 s or more, against
- * 13 of 40), at a 50° peel by the readout (34° on the fan), with the same beach and starts. The arm is moved 7 m upcoast
- * and the window widened to 240 m, so its footprint, 15 m longer, keeps open water either side (`alongShore`).
+ * long wave or steep wave." On the fan the peak's hump closed out at the arm's upcoast end, and the 55° deep face down
+ * the line broke in sections (a fast run across it, a re-break by the beach later), and ended in the taper 90 m from the
+ * beach: half of Medium's crests peeled rideably for 1.4 s or less (3 seeds × 14 periods). On a planar face running into
+ * the beach they peel down the arm for 9.5 s at the median (21 of 43 for 10 s or more, against 13 of 40), Big's for
+ * 9.7 s (1.8 s), plunging all along (ξb 0.4–0.65), the readout saying "closes out" a quarter of the time (39–46 % on the
+ * fan), with the same beach and starts. The arm is moved 7 m upcoast and the window widened to 240 m, so its footprint,
+ * 15 m longer, keeps open water either side (`alongShore`).
  * Mutable for the design sweep (`scripts/canyon-size-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
@@ -262,8 +263,8 @@ export const CANYON = {
    *   waves (the advisor's rays: K 0.64 at Medium). On the planar face the break runs down the arm to the beach (the
    *   sweep, 1 seed × 12 periods at Medium: rides 11 s at the median on the planar 70° face, 9 s at 65°, 2 s at 60°, 5 s
    *   on an 8° fan, 2 s on the 15° fan running on to the beach at 55°).
-   * - The planar face was rejected on the long arm (2026-10-09, 15 of 54 crests starting mid-arm); on the short arm 39 of
-   *   40 Medium crests start on the arm's end and face, 37 within 10 m of their median (3 seeds × 14 periods).
+   * - The planar face was rejected on the long arm (2026-10-09, 15 of 54 crests starting mid-arm); on this short arm all 44
+   *   Medium crests start on the arm's end and face, 39 within 10 m of their median (3 seeds × 14 periods).
    * - The hinge was 2.8 m deep until the reef bed (2026-10-22); on a planar face it only places the hinge line.
    */
   fan: 0, hingeDepth: 2.2, hingeRounding: 8,

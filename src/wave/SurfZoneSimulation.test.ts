@@ -889,7 +889,7 @@ describe('SurfZoneSimulation', () => {
     const takeOff = takeOffPoint(big);
     const start = takeOff.z - rideLineupOffset(big);
     // Seaward of where one wave in ten starts breaking in the take-off's column (its x ± 4 m): 10 m seaward of the take-off
-    // on the planar arm (2026-10-22: 64 waves, big-start's transect probe and the size report pooled; their median 10 m
+    // on the planar arm (2026-10-22: 66 waves, big-start's transect probe and the size report pooled; their median 10 m
     // inside it, 3.08 m deep), so 11 m out, about 4.37 m deep, 176 m from the waterline, on faces as steep as 6 m out
     // (12°). On the short arm's fan one in ten broke 6.0 m seaward and Big started 6 m out (4.08 m deep, 180 m out).
     const tank = tankLayout(big);
@@ -1870,9 +1870,12 @@ describe('the Canyon roller lens (S3)', () => {
   }, 900_000);
 
   /**
-   * The drawn foam on the unbroken shoulder ahead of each wave's front at the take-off: per front whose crest lies within
-   * 15 m of the size's take-off line, the mean over 3–15 m ahead along its crest, from 1 m behind the crest to 8 m ahead,
-   * up to where another wave has broken on that crest (its own whitewater: the shoulder ends there).
+   * The drawn foam on the unbroken shoulder ahead of each wave's front at the take-off: per front whose crest lies from
+   * 15 m seaward of the size's take-off line to 40 m inshore of it, the mean over 3–15 m ahead along its crest, from 1 m
+   * behind the crest to 8 m ahead, up to where another wave has broken on that crest (its own whitewater: the shoulder ends
+   * there). The band ran to 15 m inshore until canyon-long-wave (2026-10-22): on the planar arm the waves down the line
+   * break nearer its crest line, their fronts 25 m inshore of the take-off line at the median (1 m on the short arm's fan),
+   * so the old band held 13 fronts in 30 s at Medium against 90 on the fan.
    */
   function shoulderFoam(simulation: SurfZoneSimulation): number[] {
     const { solver, foam } = simulation;
@@ -1886,7 +1889,7 @@ describe('the Canyon roller lens (S3)', () => {
       let z = Number.NaN;
       for (let d = 0; d <= 6 && !(z === z); d += 1) if (wave.crest[front - d] === wave.crest[front - d]) z = wave.crest[front - d];
       const line = takeOff.z + (wave.frontX - takeOff.x) * Math.tan((CANYON.angle * Math.PI) / 180);
-      if (!(Math.abs(z - line) <= 15)) continue;
+      if (!(z - line >= -15 && z - line <= 40)) continue;
       let sum = 0;
       let n = 0;
       for (let d = 1; d <= 15 && front + d < nx; d += 1) {

@@ -12,7 +12,9 @@
  *   readout) is at least 27°, the readout's close-out line, once the ride is WINDOW m long.
  * Reported per size: each crest's ride along shore and along its line of breaks (m) and its duration (s), the median
  * peel over the ride, and the share of crests riding 10 s or more; also how far each crest breaks upcoast (toward −x)
- * of its start within 3 s.
+ * of its start within 3 s; and how long the crest keeps breaking down the reef whatever its peel (the same walk with the
+ * gap rule alone: a fast section does not end it, nor a section re-breaking further inshore later), along shore and in
+ * seconds.
  *
  *   rolldown docs/research/canyon-long-wave-2026-10-22/ride-report.ts -o dist/scripts/ride-report.mjs --format esm --platform node \
  *     && node dist/scripts/ride-report.mjs <run.json> [<run.json> ...] [--pool] [--verbose]
@@ -112,7 +114,7 @@ for (const { file, run } of runs) {
     const r = Math.min(rows - 1, Math.max(0, Math.round(o.z - tank.zoneInner)));
     return o.t - travel[col * rows + r];
   };
-  const rides: { seed: number; t: number; x: number; along: number; line: number; seconds: number; angle: number; upcoast: number }[] = [];
+  const rides: { seed: number; t: number; x: number; along: number; line: number; seconds: number; angle: number; upcoast: number; runAlong: number; runSeconds: number }[] = [];
   for (const record of run.records) {
     // The crests: the size report's grouping (each onset's phase, its time less its crest's travel time from the zone
     // down its column, and the phases' density peaks, one per crest), so the reef's bores and the next crest do not merge.
@@ -154,10 +156,23 @@ for (const { file, run } of runs) {
       const seconds = end.t - path[0].t;
       const angle = seconds > 0 ? (Math.asin(Math.min(1, cb / (line / seconds))) * 180) / Math.PI : 0;
       const upcoast = Math.max(0, first.x - Math.min(...crest.filter((o) => o.t <= first.t + 3).map((o) => o.x)));
-      rides.push({ seed: record.seed, t: first.t, x: first.x, along: end.x - path[0].x, line, seconds, angle, upcoast });
+      // How long the crest keeps breaking down the reef, whatever its peel: from the first break toward +x while the next
+      // comes within GAP m along shore (a fast section does not end it, nor a section re-breaking further inshore later).
+      let runEnd = path[0];
+      let runLast = path[0].t;
+      gap = 0;
+      for (let b = start + 1; ; b += 1) {
+        const o = bins.get(b);
+        if (!o) { if ((gap += BIN) > GAP) break; continue; }
+        runEnd = o;
+        runLast = Math.max(runLast, o.t);
+        gap = 0;
+      }
+      rides.push({ seed: record.seed, t: first.t, x: first.x, along: end.x - path[0].x, line, seconds, angle, upcoast, runAlong: runEnd.x - path[0].x, runSeconds: runLast - path[0].t });
       if (verbose) {
         console.log(`  seed ${record.seed} t ${first.t.toFixed(1)}: start x ${first.x.toFixed(0)} z ${first.z.toFixed(0)}; ride to x ${end.x.toFixed(0)} z ${end.z.toFixed(0)}, `
-          + `${(end.x - path[0].x).toFixed(0)} m along shore, ${line.toFixed(0)} m along its breaks, ${seconds.toFixed(1)} s, ${angle.toFixed(0)}°; upcoast ${upcoast.toFixed(0)} m; ${crest.length} breaks`);
+          + `${(end.x - path[0].x).toFixed(0)} m along shore, ${line.toFixed(0)} m along its breaks, ${seconds.toFixed(1)} s, ${angle.toFixed(0)}°; upcoast ${upcoast.toFixed(0)} m; ${crest.length} breaks; `
+          + `breaking down the reef ${(runEnd.x - path[0].x).toFixed(0)} m along shore, ${(runLast - path[0].t).toFixed(1)} s`);
       }
     }
   }
@@ -166,5 +181,7 @@ for (const { file, run } of runs) {
     + `75th ${fmt(quantile(rides.map((r) => r.along), 0.75))}, 90th ${fmt(quantile(rides.map((r) => r.along), 0.9))}; along its breaks median ${fmt(quantile(rides.map((r) => r.line), 0.5))} m, `
     + `90th ${fmt(quantile(rides.map((r) => r.line), 0.9))}; duration median ${fmt(quantile(rides.map((r) => r.seconds), 0.5), 1)} s, 75th ${fmt(quantile(rides.map((r) => r.seconds), 0.75), 1)}, `
     + `90th ${fmt(quantile(rides.map((r) => r.seconds), 0.9), 1)}; ≥ 10 s ${rides.filter((r) => r.seconds >= 10).length} of ${rides.length}; `
-    + `peel over the ride median ${fmt(quantile(real.map((r) => r.angle), 0.5))}°; upcoast within 3 s median ${fmt(quantile(rides.map((r) => r.upcoast), 0.5))} m, 90th ${fmt(quantile(rides.map((r) => r.upcoast), 0.9))} m`);
+    + `peel over the ride median ${fmt(quantile(real.map((r) => r.angle), 0.5))}°; upcoast within 3 s median ${fmt(quantile(rides.map((r) => r.upcoast), 0.5))} m, 90th ${fmt(quantile(rides.map((r) => r.upcoast), 0.9))} m; `
+    + `breaking down the reef whatever its peel (gaps under ${GAP} m along shore): along shore median ${fmt(quantile(rides.map((r) => r.runAlong), 0.5))} m, 90th ${fmt(quantile(rides.map((r) => r.runAlong), 0.9))}; `
+    + `duration median ${fmt(quantile(rides.map((r) => r.runSeconds), 0.5), 1)} s, 90th ${fmt(quantile(rides.map((r) => r.runSeconds), 0.9), 1)}; ≥ 10 s ${rides.filter((r) => r.runSeconds >= 10).length} of ${rides.length}`);
 }
