@@ -88,3 +88,41 @@ The link bridges one-column holes (4,341 bridge-steps at Medium, 0.4 % of them a
 ## Tests
 
 TESTS
+
+## Step 2: the Canyon's tubes
+
+Branch `claude/canyon-tube-wiring`, stacked on step 1. The advisor's rulings (consult log, 2026-10-22, both rows).
+
+### What changed
+
+- **Cases.** `canyon23_a38` (Big's typical wave, a tube), `canyon23_a49` (Big's sets: a fold at the crest) and `canyon23_a29` (Medium's sets: a curl, under-resolved at 1.6 cells, a lower bound, provisional) are in the game's index (`barrelLibraryIndex.ts`, `docs/research/barrel-cases.md`). `canyon23f74_a38` is not staged.
+  - The Canyon's library holds **a38 alone**: a49 and a29 are kept in the index but not drawn (`BARREL_CASE_NOTES`, labelled), because a tube case never blends with a curl or a fold. In A0 order the tube (0.31) sits between the curl (0.21) and the fold (0.42), so an A0 blend would turn Big's smaller waves toward a curl and Medium's sets toward a tube, both the wrong way (the advisor: the runs order by Battjes's ξ_b, curl 0.36–0.38, tube 0.40–0.42). So the A0-only key's a29/a38 blend across period never happens: every tube-regime wave draws a38, scaled by Froude.
+  - **The owner's reruns:** `npm run barrels:canyon` (after `tools/basilisk/run_canyon.sh` and its `analyse`) rewrites the index, the three cases' files and the validation table from `docs/research/canyon-tube-runs/data`, taking each case's finest level (a level-14 rerun replaces the level-13 file), its A0 from its `_case.json`, and keeping every other shipped case byte for byte. `npm run barrels:canyon -- DIR` reads another folder. The notes match a case by its name less its level, so a rerun keeps them.
+- **The transect** (`BARREL_SPOTS.canyon`): slope 1:23 (`CANYON.pathSlope`), the 6 m platform as the foot, fronts followed from the relaxation zone.
+  - **The throw:** d = 0.342 + 1.289 η_foot − 0.270 (T − 14) m, exact through the three runs (computed from them in code); f74 lies 0.013 m off it. Clamped to 1.27–2.52 m and 11–14 s. `OnsetTables.throwDepth` takes an optional period term.
+  - **The join:** the solver's fresh onset on the transect (`spotOnset`, `spot-onset-canyon.txt`: H0 6, 1:23 to a 1 m flat, 9–14 s, 1–4 m drives), each wave's first onset against its highest over the band, rows as the advisor chose them. At 9–12 s the solver's onset sits at or shallower than the throw line (at 11 s within 0.12 m of a29's vertical, zero lag): `joinPast` 1.5 H lets such a crest join and throw where the solver breaks it rather than being dropped as unbroken. The 12 s rows are flagged (0.5–1 m shallower than 11 and 14 s for the same band crest).
+- **The regime.** A front point draws and is felt as a tube only where ξ_f = S / √(η_foot / L0) ≥ 0.54 (`BarrelSpot.tubeFrom`, `tubeFootMax`): foot crests up to 0.82, 1.22, 1.46 and 1.98 m at 9, 11, 12 and 14 s. a38 (1.86 m at 14 s) is a tube; a49 (2.52 m) and a29 (1.27 m at 11 s) are not. The front's records leave the rest out, and a front's piece after a gap is written as a front of its own (`writeFrontRecords`'s `footMax`, `FRONT_PIECE`), so the loft never bridges a gap. The clamp flag is not used for the regime.
+- **The crash is off** at the Canyon (`BarrelSpot.crash`, `sweptCrashOn`): no jet leaves or lands, its water is exactly as before (a test steps the Canyon's Big with and without its tubes and compares the water and the felt whitewater bit for bit), and its spilling front, roller, drawn edges, curl, 6 s lace (`spillingCurlOn`) and foam balls stay.
+- **The curl gives way to the tube.** Each step the simulation marks the columns where a tube-regime point stands on a wave's crest (within 5 m of the curl's crest there), with the solver time its tube touches down (`markTubeColumns`). There the spilling curl draws nothing and makes no splash, and its white and its roller band wait for that touchdown (`SpillingCurl.update`'s `tube`). Never both on the same metre of crest.
+- **`?canyonTube=off`** (`canyonTubeSwitch`): the Canyon as before its tubes (no front, no tube, the curl everywhere). Online rooms always run the default. The Canyon's old layout (`?canyonBed=old`) never draws tubes (its arm is not the runs' 1:23).
+- **The water program.** With the barrel's mask the Canyon's Rich edge band would take 17 texture units (roller, rock bed, mask), past the M1's 16. A water drawing the swept barrel never carves its surface, so its program now leaves the carve out and takes neither tube texture: the Canyon's edge band takes 15, its water 14; Padang Padang's lose the same two (14, 13), with no visual change.
+
+### The Canyon's probe
+
+CANYONPROBE
+
+### Stills
+
+`stills/canyon-*`: the Canyon's own Big (2.4 m, 14 s) and Medium (1.4 m, 11 s), GPU tier, 64 components, views from the start (the rider's lineup, 18 m seaward of the take-off, 1.6 m up, looking at the held tube), the ride camera (`ride`, as at Padang), `side` and `beach`. CANYONSTILLS
+
+### Cost
+
+CANYONCOST
+
+### Risks
+
+CANYONRISKS
+
+### Tests
+
+CANYONTESTS
