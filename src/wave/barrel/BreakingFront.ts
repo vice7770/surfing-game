@@ -82,8 +82,9 @@ export interface FrontOptions {
    * the nearest chain end in that column or the one before it (a one-column gap) within CLOCK_REACH, when their joins
    * differ by at most CLOCK_SLOPE per metre between them. The 1 s/m split (SPLIT) is left as it is: it still refuses the
    * neighbours it refused, and the clock's slope is a sixth of it, so a pair it refuses is never linked as it stands.
-   * Nothing asks that the two ends lie on one crest line: within 10 m it may join two waves' fronts whose joins agree (the
-   * padangFrontGap probe counts those links).
+   * Narrowed (the advisor, 2026-10-03): the two ends lie within the 3-row reach in z per column between them (3 m beside
+   * it, 6 m across an empty column), so a crest's step onto another crest line, or another wave's front whose joins
+   * happen to agree, stays a front of its own; the padangFrontGap probe counts what it links.
    *
    * Each step keeps every link the rules above make, and the next step matches crests to points in the order the front
    * lists them without the switch (`FrontState.order`): a crest exactly as far from two points in its column takes the
@@ -589,7 +590,9 @@ export class BreakingFront {
    * With `clockLink`, after a column's links: each of its heads (points no neighbour took) in turn, in the column's order
    * (z), continues the nearest end of a chain that stops in the column before or CLOCK_BRIDGE columns earlier and is not
    * continued yet, if that end lies within CLOCK_REACH of the head and its join within CLOCK_SLOPE per metre between them
-   * of the head's, both bounds inclusive (the advisor's "within 10 m" and "≤ 0.166 s/m × the gap"). It is the 3-row
+   * of the head's, both bounds inclusive (the advisor's "within 10 m" and "≤ 0.166 s/m × the gap"), and within the 3-row
+   * reach in z per column between them, exclusive (the narrowing, the advisor, 2026-10-03: 3 m beside it, 6 m across an
+   * empty column). It is the 3-row
    * link's own order: with two heads in reach of one end, the first in z takes it, even when the other is nearer (pairing
    * the nearest first instead, synthetic crest lines had a third more clock links crossing one another, and fewer links). The
    * head's chain is recorded under the one it continues (`parents`); the chains themselves, and so the links above, are
@@ -612,6 +615,9 @@ export class BreakingFront {
         const tail = chain.at(-1)!;
         const dx = point.x - tail.x;
         const dz = point.z - tail.z;
+        // Narrowed (the advisor, 2026-10-03): an end is a candidate only within the 3-row reach per column between the
+        // ends (3 m a column on 1 m rows), so a crest's step to another crest line stays two fronts.
+        if (!(Math.abs(dz) < this.linkReach * (point.column - tail.column))) continue;
         const gap = Math.sqrt(dx * dx + dz * dz);
         if (gap <= CLOCK_REACH && Math.abs(point.joined - tail.joined) <= CLOCK_SLOPE * gap && gap < nearest) {
           best = chain;

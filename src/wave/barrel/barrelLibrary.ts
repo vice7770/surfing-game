@@ -34,10 +34,22 @@ export async function loadBarrelCaseBytes(
   }));
 }
 
-/** Case files decoded into one library. */
-export function libraryFromBytes(bytes: readonly Uint8Array[]): ProfileLibrary {
+/**
+ * How the swept barrel draws and collides its tubes (the owner, 2026-10-22: "draw tubes from our own simulations, not
+ * the thin hand-made shape"):
+ * - `basilisk`, the default: each case's own Basilisk frames, blended and scaled (`ProfileLibrary`'s raw path), so the
+ *   lip's thickness, its tip's path and the void are the runs' own (docs/research/tube-from-basilisk-2026-10-22);
+ * - `bounded-C`: the authored parameter-first C profile the game drew from 2026-10-05 (bc0b489f) to 2026-10-22, which
+ *   takes only the crest, toe and their tangents from the cases (a lip 0.014–0.021 H thick). Kept for the
+ *   `?tubeShape=c` A/B only (`SurfZoneConfig.tubeShape`).
+ */
+export type TubeShape = 'basilisk' | 'bounded-C';
+
+/** Case files decoded into one library, drawn as `shape` says (`TubeShape`). */
+export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk'): ProfileLibrary {
   const cases = bytes.map(decodeCase);
-  // The bounded provider's explicitly evaluated domain is the eight shipped cases. General fixtures stay raw.
+  if (shape !== 'bounded-C') return new ProfileLibrary(cases);
+  // The bounded provider's explicitly evaluated domain is the shipped cases. General fixtures stay raw.
   const eligible = cases.every((c) => BARREL_CASES.some((entry) => entry.id === c.id));
   return new ProfileLibrary(cases, eligible ? { geometry: 'bounded-C' } : {});
 }
@@ -46,6 +58,7 @@ export function libraryFromBytes(bytes: readonly Uint8Array[]): ProfileLibrary {
 export async function loadBarrelLibrary(
   cases: readonly BarrelCaseEntry[] = BARREL_CASES,
   fetcher: typeof fetch = globalThis.fetch.bind(globalThis),
+  shape: TubeShape = 'basilisk',
 ): Promise<ProfileLibrary> {
-  return libraryFromBytes(await loadBarrelCaseBytes(cases, fetcher));
+  return libraryFromBytes(await loadBarrelCaseBytes(cases, fetcher), shape);
 }

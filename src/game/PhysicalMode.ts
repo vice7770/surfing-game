@@ -45,7 +45,7 @@ import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
 import { devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
-import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
+import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, type TubeShape } from '../wave/barrel/barrelLibrary';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -393,6 +393,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
     // `?canyonBed=old`: the Canyon's whole layout before canyon-long-wave, with its take-off and starts (main's until 2026-10-22).
     ...canyonBedSwitch(),
+    // `?tubeShape=c`: the swept barrel drawn and felt as the authored bounded-C (2026-10-05 to 2026-10-22), for A/Bs.
+    ...tubeShapeSwitch(),
     ...overrides,
   };
 }
@@ -405,6 +407,14 @@ export function startOutSwitch(search?: string): { startOut?: number } {
   const text = devParam('startOut', search)?.trim();
   const metres = text ? Number(text) : Number.NaN;
   return Number.isFinite(metres) ? { startOut: metres } : {};
+}
+
+/**
+ * The `?tubeShape=c` dev switch (`SurfZoneConfig.tubeShape`): the swept barrel drawn and felt as the authored bounded-C
+ * profile the game drew from 2026-10-05 to 2026-10-22, in place of the cases' own Basilisk frames, to compare the two.
+ */
+export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
+  return devParam('tubeShape', search)?.trim().toLowerCase() === 'c' ? { tubeShape: 'bounded-C' } : {};
 }
 
 /**
@@ -680,7 +690,8 @@ export class PhysicalMode {
       this.sweptBarrel = new SweptBarrel(water, async (spot) => {
         const bytes = await barrelCaseBytes(spot);
         if (!bytes) throw new Error('No barrel case files');
-        return libraryFromBytes(bytes);
+        // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
+        return libraryFromBytes(bytes, this.config?.tubeShape);
       }, view);
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
@@ -1025,6 +1036,18 @@ export class PhysicalMode {
   /** The swept barrel's mesh, once a swept spot has made it (the water sheet's views and before-and-after). */
   get barrelMesh(): SweptBarrelMesh | undefined {
     return this.sweptBarrel?.mesh;
+  }
+
+  /**
+   * Dev A/B (the water sheet's `waterSheetTubeShape`): draw the running spot's cases as `shape` from now on, on the same
+   * held sea; the surf zone's contact and crash keep the shape they started with (`SurfZoneConfig.tubeShape`).
+   */
+  async setDrawnTubeShape(shape: TubeShape): Promise<boolean> {
+    const spot = this.config?.spot;
+    const bytes = spot && this.swept ? await barrelCaseBytes(spot) : undefined;
+    if (!spot || !bytes || !this.sweptBarrel) return false;
+    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape));
+    return true;
   }
 
   /** The Wave Lab rows for the running surf zone. */

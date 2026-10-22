@@ -304,7 +304,8 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     const grid = simulation.renderGrid(1);
     const surface = new Float32Array(grid.nx * grid.nz * 2);
     const records = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
-    const loft = new SweptLoft(library, BARREL_SLOPE.padang!);
+    // As the page draws it: each case held at its last clear frame (`holdClearDrawing`).
+    const loft = new SweptLoft(library, BARREL_SLOPE.padang!, { holdClearDrawing: true });
     const samples: CrestSample[] = [];
     appendFileSync(log, `Padang Padang ${swellName} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), seed ${seed}, 1 m cells; crests from z ${solver.zCenters[fromRow].toFixed(0)} over ${minHeight.toFixed(2)} m, jumps followed ${jumpReach === undefined ? 'no' : `${jumpReach} m`}; clock link ${linkOn ? 'ON' : 'off'}; waves: crests linked column to column within ${LINE_REACH} m a column, up to ${LINE_SKIP} columns; tongues: joined slices of one front at weight ≥ ${STANDING}; neighbours within ${NEIGHBOUR} m\n`);
     const seconds = Number(process.env.SECONDS ?? 150);
@@ -334,6 +335,13 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     const lips: number[] = [];
     let drawnFronts = 0;
     let wavesWithFronts = 0;
+    // The drawing (the tube from Basilisk, 2026-10-22): strips dropped for overlapping an earlier front (folds), those that
+    // held an open tube (holes in a barrel), and the open curl's runs along σ (open slices standing, one front, joined), m.
+    let overlapStrips = 0;
+    let overlapOpenStrips = 0;
+    let overlapOpenWeight = 0;
+    const openRuns: number[] = [];
+    const tongueLengths: number[] = [];
     // Pairs: open ones by key, and the gap columns' states and the adjacent ends' causes over every pair-frame.
     const open = new Map<string, PairLife>();
     const closed: PairLife[] = [];
@@ -495,6 +503,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
         `fronts peeling at 20 m/s or more by their throws: ${fast.length} (${fast.reduce((s, f) => s + f.n, 0)} throws): jumped ${quantiles(fast.map((f) => f.jumped))}, joined in a jump ${quantiles(fast.map((f) => f.joinAtJump))}; slower fronts ${slow.length}: jumped ${quantiles(slow.map((f) => f.jumped))}, joined in a jump ${quantiles(slow.map((f) => f.joinAtJump))}`,
         ...fast.map((f) => `  fast f${f.front}: ${f.n} throws over ${f.span.toFixed(0)} m, by throws ${f.throwPeel.toFixed(1)} m/s, by joins ${f.joinPeel.toFixed(1)} m/s, by the solver's first breaks ${fixed(f.breakPeel, 1)} m/s; jumped ${(100 * f.jumped).toFixed(0)} %, joined in a jump ${(100 * f.joinAtJump).toFixed(0)} %`),
         `neighbouring points within ${jumpReach ?? TRACK} m in z: ${linkCounts.pairs} pair-steps, linked ${linkCounts.linked} (|Δjoin|/d ${quantiles(linkedRates, 3)} s/m; ${linkCounts.linkedRefusedB} over ${LINK_SLOPE.toFixed(3)} s/m, which (B) would split); unlinked ${linkCounts.pairs - linkCounts.linked}: (A) the reach widened for clock-compatible ends would link ${linkCounts.unlinkedA} (of them over 1 s/m: ${linkCounts.unlinkedSplitA}), (B) the clock alone ${linkCounts.unlinkedB}; unlinked beyond the 3-row reach ${linkCounts.unlinkedReach}, of which (A) links ${linkCounts.unlinkedReachA}`,
+        `drawn (as the page holds each case clear): strips dropped as overlaps (folds) ${(overlapStrips / Math.max(1, frames)).toFixed(2)} a frame, of them holding an open tube (holes) ${(overlapOpenStrips / Math.max(1, frames)).toFixed(3)} a frame (most weight ${overlapOpenWeight.toFixed(2)}); tongues (standing runs) ${quantiles(tongueLengths)} m; open curls (open, standing) ${quantiles(openRuns)} m (end blend ${LOFT.endBlend} m)`,
         `headline, clock link ${linkOn ? 'ON' : 'off'}, ${swellName}, seed ${seed}, ${label}: fronts a wave ${(frontsPerWave.reduce((a, b) => a + b, 0) / Math.max(1, frontsPerWave.length)).toFixed(2)}; drawn fronts a frame ${(drawnFronts / frames).toFixed(2)}; pairs ${closed.length} (${listed(byClass)}); true splits linked by the clock ${splitLinkedByClock.length} of ${splitPairs.length} (${clockShare.toFixed(1)} %; by the old rules ${splitLinked.length - splitLinkedByClock.length}); clock link-frames across crest lines ${links(crossWaveFrames)} of ${links(clockLinkFrames)} (${crossShare.toFixed(1)} %); throws ${allThrows.length}; peel by throws median ${quantile(frontPeels.map((f) => f.throwPeel), 0.5).toFixed(1)} / 90 % ${quantile(frontPeels.map((f) => f.throwPeel), 0.9).toFixed(1)} m/s over ${frontPeels.length} fronts; fast fronts (20 m/s or more) ${fast.length}`,
       ].join('\n') + '\n');
     };
@@ -791,6 +800,20 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
       }
       const result = loft.build(records, recordCount, 0, (x, z) => sampleSurfaceHeight(surface, grid, x, z));
       const list = tongues(result);
+      overlapStrips += result.overlaps;
+      overlapOpenStrips += result.overlapsOpen;
+      overlapOpenWeight = Math.max(overlapOpenWeight, result.overlapOpenWeight);
+      for (const tongue of list) tongueLengths.push(result.sliceSigma[tongue.last] - result.sliceSigma[tongue.first]);
+      let openFirst = -1;
+      for (let s = 0; s <= result.sliceCount; s += 1) {
+        const open = s < result.sliceCount && result.slicePhase[s] === 1 && result.sliceWeight[s] >= STANDING;
+        const continues = openFirst >= 0 && s < result.sliceCount && result.sliceFront[s] === result.sliceFront[openFirst] && result.sliceJoined[s - 1] === 1;
+        if (openFirst >= 0 && (!open || !continues)) {
+          openRuns.push(result.sliceSigma[s - 1] - result.sliceSigma[openFirst]);
+          openFirst = -1;
+        }
+        if (open && openFirst < 0) openFirst = s;
+      }
       if (list.length) framesWithTongue += 1;
       let split = false;
       for (let a = 0; a < list.length; a += 1) {

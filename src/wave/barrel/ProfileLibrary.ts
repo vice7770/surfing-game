@@ -261,7 +261,66 @@ export class NumberKeyCache<V> {
   }
 }
 
+/**
+ * The farthest apart, in profile points, two segments of a frame may be for their crossing to count as a tip or throat
+ * loop (`removeLoops`): the loops the level-12 cases carry span 2–9 points (the advisor, 2026-10-22).
+ */
+export const LOOP_SPAN = 10;
+/** Where a blended profile's folds are looked for, profile points: the lip's tip to the throat's (the only place they formed). */
+const BLEND_LOOPS = [56, 100] as const;
+
+/**
+ * Removes a frame's small self-crossings in place (the advisor's ruling, 2026-10-22; the tube from Basilisk): where
+ * segment i–i+1 crosses segment j–j+1 with j − i ≤ LOOP_SPAN, the points between (i+1 to j) move to the crossing, so the
+ * loop closes to a point and every index keeps its place. The level-12 runs resolve the lip with 2–4 cells, and their
+ * 128-point resampling leaves cm-wide folds at the tip (points 59–74) or the throat (86–88) of a few open frames
+ * (padang19s 4, pad19-a20 2). Returns how many points moved. Only + − × ÷.
+ */
+export function removeLoops(frames: Float32Array, from = 0, to = PROFILE_POINTS - 1): number {
+  let moved = 0;
+  for (let o = 0; o < frames.length; o += FLOATS) {
+    let i = from;
+    while (i < to) {
+      const ax = frames[o + 2 * i];
+      const ay = frames[o + 2 * i + 1];
+      const ex = frames[o + 2 * i + 2] - ax;
+      const ey = frames[o + 2 * i + 3] - ay;
+      let crossed = false;
+      for (let j = i + 2; j <= Math.min(i + LOOP_SPAN, to - 1); j += 1) {
+        const bx = frames[o + 2 * j];
+        const by = frames[o + 2 * j + 1];
+        const fx = frames[o + 2 * j + 2] - bx;
+        const fy = frames[o + 2 * j + 3] - by;
+        const den = ex * fy - ey * fx;
+        if (den === 0) continue;
+        // Where the two segments meet, as shares along each: both strictly inside is a crossing.
+        const t = ((bx - ax) * fy - (by - ay) * fx) / den;
+        const u = ((bx - ax) * ey - (by - ay) * ex) / den;
+        if (!(t > 0 && t < 1 && u > 0 && u < 1)) continue;
+        const x = ax + t * ex;
+        const y = ay + t * ey;
+        for (let k = i + 1; k <= j; k += 1) {
+          frames[o + 2 * k] = x;
+          frames[o + 2 * k + 1] = y;
+        }
+        moved += j - i;
+        crossed = true;
+        break;
+      }
+      // After a loop closes, the same segment is looked at again: a second loop may start from it.
+      if (!crossed) i += 1;
+    }
+  }
+  return moved;
+}
+
 export class ProfileLibrary {
+  /** The cases as the library draws them: each case's own frames, with their small loops closed (`removeLoops`). */
+  readonly cases: readonly BarrelCase[];
+  /** How many frame points `removeLoops` moved when the library loaded (none with the bounded-C). */
+  readonly loopPoints: number;
+  /** How many points blended profiles have had moved by `removeLoops` since the library loaded (a diagnostic). */
+  blendLoops = 0;
   private readonly bySlope: BarrelCase[][];
   private readonly held = new Map<BarrelCase, HeldFrame>();
   private readonly scratch = new Float32Array(FLOATS);
@@ -281,7 +340,18 @@ export class ProfileLibrary {
    */
   private readonly analyticClocks = new NumberKeyCache<{ impact: number; retired: number; clear: number; event: BoundedCEvent }>(ANALYTIC_CLOCK_CAPACITY);
 
-  constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
+  constructor(cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
+    // The raw path draws and collides the frames themselves, so their loops close once, here, for both. The bounded-C
+    // reads only the crest, toe and their tangents, and stays byte for byte as it was (the `?tubeShape=c` A/B).
+    let moved = 0;
+    this.cases = options.geometry === 'bounded-C' ? cases : cases.map((c) => {
+      const frames = c.frames.slice();
+      const points = removeLoops(frames);
+      moved += points;
+      return points > 0 ? { ...c, frames } : c;
+    });
+    this.loopPoints = moved;
+    cases = this.cases;
     const groups = new Map<number, BarrelCase[]>();
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
@@ -298,6 +368,8 @@ export class ProfileLibrary {
     if (b.upper !== b.lower) {
       this.frameAt(b.upper, times[1], this.scratch);
       for (let i = 0; i < FLOATS; i += 1) out[i] += b.weight * (this.scratch[i] - out[i]);
+      // Two loop-free frames can still blend into a cm-wide fold under the tip (7 of 6,085 Padang queries): closed the same way.
+      this.blendLoops += removeLoops(out, BLEND_LOOPS[0], BLEND_LOOPS[1]);
     }
     for (let i = 0; i < FLOATS; i += 1) out[i] *= b.scale;
     const tip = this.tipLower;

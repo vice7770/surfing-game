@@ -215,13 +215,29 @@ describe('the swept loft', () => {
     }
   });
 
-  it('blends into the water over 2.5 m at each end, and masks 1 m past them', () => {
+  it('blends into the water over 1 m at each end, and masks 1 m past them (the advisor, 2026-10-22: no shards)', () => {
     const loft = loftOf(() => 0);
     const first = LOFT.extensionSamples + 32;
     // The extended end slice is the water, unmasked; the middle slice is masked.
     expect(loft.positions[3 * first + 1]).toBe(0.5);
     expect(loft.mask[first]).toBe(0);
     expect(loft.mask[Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + first]).toBe(1);
+    // Half a metre in, the weight is the smoothstep's half; a metre in, the whole profile stands.
+    expect(LOFT.endBlend).toBe(1);
+    const sigmaOf = (s: number) => loft.sliceSigma[s] - loft.sliceSigma[0] - LOFT.extension;
+    let checked = 0;
+    for (let s = 0; s < loft.sliceCount; s += 1) {
+      const d = sigmaOf(s);
+      if (Math.abs(d - 0.5) < 1e-4) {
+        expect(loft.sliceWeight[s]).toBeCloseTo(0.5, 3);
+        checked += 1;
+      }
+      if (d >= 1 - 1e-4 && d <= 3) {
+        expect(loft.sliceWeight[s]).toBeCloseTo(1, 6);
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(2);
   });
 
   it('fades a slice into the water over its tube’s collapse after touchdown, drawing the touchdown frame (the advisor, 2026-09-30)', () => {

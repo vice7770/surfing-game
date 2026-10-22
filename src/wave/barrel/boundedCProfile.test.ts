@@ -53,9 +53,11 @@ describe('bounded C provider contracts',()=>{
 });
 
 describe('parameter-first shared library authority',()=>{
- const library=libraryFromBytes(readBarrelCases());
- it('opts shipped factory cases in, preserves raw bytes and direct fixture semantics',()=>{
+ // Since 2026-10-22 the game draws the cases' own Basilisk frames; the C stays for the `?tubeShape=c` A/B only.
+ const library=libraryFromBytes(readBarrelCases(),'bounded-C');
+ it('opts shipped factory cases in when the A/B asks for it, preserves raw bytes and direct fixture semantics',()=>{
   expect(library.options.geometry).toBe('bounded-C');expect(new ProfileLibrary(cases).options.geometry).toBeUndefined();
+  expect(libraryFromBytes(readBarrelCases()).options.geometry).toBeUndefined();
   const raw=readBarrelCases();const snapshots=raw.map(b=>b.slice());libraryFromBytes(raw);raw.forEach((b,i)=>expect(b).toEqual(snapshots[i]));
   expect(()=>new ProfileLibrary([toyCase(.3,0)],{geometry:'bounded-C'}).profileAt({slope:.05,footHeight:2.1,footDepth:7,seconds:0},new Float32Array(256))).toThrow(/domain/);
  });

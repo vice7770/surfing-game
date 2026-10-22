@@ -1137,7 +1137,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       vsFirst: k === 0 ? 0 : at(times[k].map((t, cycle) => t - times[0][cycle]), 0.5),
     }]));
   };
-  Object.assign(window, { waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  /** The curl drawn as another tube shape on the same held sea (`?tubeShape=c`'s bounded-C against the cases' own frames). */
+  const waterSheetTubeShape = async (shape: 'basilisk' | 'bounded-C') => {
+    const done = await hooks.mode.setDrawnTubeShape(shape);
+    hooks.render(0);
+    return done;
+  };
+  Object.assign(window, { waterSheetTubeShape, waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

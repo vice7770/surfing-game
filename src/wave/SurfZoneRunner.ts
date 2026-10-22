@@ -398,7 +398,7 @@ export class SurfZoneRunner {
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up', internal?: typeof WORKER_CONTACT_OWNER) {
     // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
     const slope = BARREL_SLOPE[config.spot];
-    const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
+    const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases, config.tubeShape) : undefined;
     this.simulation = new SurfZoneSimulation(config, start, library);
     this.workerOwned = internal === WORKER_CONTACT_OWNER;
     const requestedGrid = this.simulation.renderGrid(options.renderSpacing ?? 1);

@@ -26,6 +26,7 @@ import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { BARREL_SPOTS } from './barrel/barrelSpots';
+import type { TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import type { ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
@@ -168,6 +169,12 @@ export interface SurfZoneConfig {
    * spot ignores it; online rooms always run the default.
    */
   canyonBed?: CanyonBed;
+  /**
+   * How the swept barrel draws and collides its tubes (`TubeShape`): each case's own Basilisk frames, the default, or
+   * 'bounded-C', the authored C profile drawn from 2026-10-05 to 2026-10-22 (the `?tubeShape=c` dev A/B). Online rooms
+   * always run the default.
+   */
+  tubeShape?: TubeShape;
 }
 
 /**

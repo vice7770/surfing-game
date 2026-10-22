@@ -17,12 +17,15 @@ export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from '.
  * - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
  *   samples, so the seam's band always has both surfaces [inferred];
  * - `band`, m: the dithered overlap at the mask's edge [inferred];
- * - `endBlend`, m: a front's ends blend into the water over this length [inferred].
+ * - `endBlend`, m: a front's ends, and the ends a cut leaves (`sealRuns`), blend into the water over this length: where a
+ *   run meets water that isn't on its front, and nowhere else (the advisor, 2026-10-22: the same as `band`; it was 2.5 m,
+ *   which drew short close-out sections as pointed shards, T2). A run's leading end needs no taper of its own: its
+ *   slices draw their own clocks' frames, the steepening face before the throw and the lip growing after it [inferred].
  * (After touchdown a slice fades into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a
  * faded slice is dropped.)
  */
 export const LOFT = {
-  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5,
+  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 1,
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;

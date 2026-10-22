@@ -71,7 +71,8 @@ describe('sampled C intrinsic retirement closure on ordinary water',()=>{
  });
  it('retains the original physical end and overlap seals while retirement masks use the existing intrinsic fade',()=>{
   const x=Array.from({length:21},(_,k)=>k),ages=x.map(()=>times.touchdownSeconds+times.collapseSeconds/2),r=packet(x,ages),l=build(r);honestTopology(l);
-  const firstRaw=rowAt(l,0),nearEnd=rowAt(l,1),middle=rowAt(l,10);expect(l.sliceWeight[firstRaw]).toBe(0);expect(l.sliceWeight[nearEnd]).toBeLessThan(l.sliceFade[nearEnd]);expect(l.sliceWeight[middle]).toBe(l.sliceFade[middle]);expect(l.mask[middle*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(l.sliceFade[middle]);expect(l.mask[nearEnd*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(l.sliceFade[nearEnd]);
+  // Within the 1 m end blend (2026-10-22; 2.5 m before).
+  const firstRaw=rowAt(l,0),nearEnd=rowAt(l,0.5),middle=rowAt(l,10);expect(l.sliceWeight[firstRaw]).toBe(0);expect(l.sliceWeight[nearEnd]).toBeLessThan(l.sliceFade[nearEnd]);expect(l.sliceWeight[middle]).toBe(l.sliceFade[middle]);expect(l.mask[middle*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(l.sliceFade[middle]);expect(l.mask[nearEnd*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(l.sliceFade[nearEnd]);
   const b=packet(x.map(v=>v+10),ages,2),both=new Float32Array(r.length+b.length);both.set(r);both.set(b,r.length);const overlap=build(both);expect(overlap.overlaps).toBeGreaterThan(0);const start=Array.from(overlap.sliceJoined.subarray(0,overlap.sliceCount)).findIndex((v,s)=>v===1&&overlap.sliceFront[s]===2);expect(start).toBeGreaterThan(0);expect(overlap.sliceFade[start]).toBeGreaterThan(0);expect(overlap.sliceWeight[start]).toBe(0);expect(overlap.sliceWeight[start+1]).toBeGreaterThan(0);for(let j=0;j<LOFT_SAMPLES;j++)expect(overlap.mask[start*LOFT_SAMPLES+j]).toBe(0);
 
  });

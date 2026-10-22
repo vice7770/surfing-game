@@ -13,6 +13,9 @@ const TIMING = onsetTiming(7, 16);
 const HEIGHT = 1.6;
 const JOIN = TIMING.joinDepth(HEIGHT);
 const LINKED: FrontOptions = { jumpReach: 10, clockLink: true };
+/** Two halves of one crest: columns 0–9 at z 10 and 11–20 at RIGHT_Z, column 10 empty (a one-column hole). */
+const COLUMNS = [...Array.from({ length: 10 }, (_, k) => k), ...Array.from({ length: 10 }, (_, k) => k + 11)];
+const RIGHT_Z = 15.5;
 const sample = (column: number, z: number, depth: number, strength: number): CrestSample => ({
   column, row: Math.floor(z), x: column + 0.5, z, eta: HEIGHT, wave: HEIGHT,
   strength, rise: 0.5, depth, b: 0.3, speed: 5,
@@ -22,19 +25,20 @@ const sample = (column: number, z: number, depth: number, strength: number): Cre
 function linkedCrashExit(label: string) {
   const front = new BreakingFront(1, TIMING, LINKED);
   for (const time of [0.75, 1, 1.25]) {
-    const samples = Array.from({ length: 20 }, (_, column) => {
+    const samples = COLUMNS.map((column) => {
       const joined = time >= (column < 10 ? 1 : 1.25);
-      return sample(column, column < 10 ? 10 : 16, joined ? JOIN : TIMING.h0, joined ? 0.5 : 0);
+      return sample(column, column < 10 ? 10 : RIGHT_Z, joined ? JOIN : TIMING.h0, joined ? 0.5 : 0);
     });
     front.update(samples, samples.length, time);
   }
-  expect(front.clockLinks).toBe(1);
+  // The narrowed link (2026-10-03) joins the halves across the empty column 10, 5.5 m apart in z (5.85 m between the ends).
+  expect(front.bridges).toBe(1);
   expect(new Set(front.points.map(p => p.front)).size).toBe(1);
   const linkedState = front.exportState();
   expect(linkedState.order).toHaveLength(20);
 
-  // The six-metre gap exceeds the smoothing radius: left crosses its own throw; right stays before its throw.
-  const crossing = Array.from({ length: 20 }, (_, column) => sample(column, column < 10 ? 10.1 : 16,
+  // The 5.85 m gap exceeds the smoothing radius (2√7 m): left crosses its own throw; right stays before its throw.
+  const crossing = COLUMNS.map((column) => sample(column, column < 10 ? 10.1 : RIGHT_Z,
     column < 10 ? TIMING.throwDepth(HEIGHT) - 0.1 : JOIN, 0.5));
   front.update(crossing, crossing.length, 1.5);
   advanceClocks(front.points, 1.5, TIMING);
@@ -110,7 +114,7 @@ describe('clock-linked matching order after actual crash pruning', () => {
     expect(state.order).toEqual(expectedOrder);
     const copy = new BreakingFront(1, TIMING, LINKED);
     copy.importState(state);
-    const samples = Array.from({ length: 10 }, (_, k) => sample(k + 10, 16.1, JOIN, 0.5));
+    const samples = Array.from({ length: 10 }, (_, k) => sample(k + 11, RIGHT_Z + 0.1, JOIN, 0.5));
     front.update(samples, samples.length, pruneTime + 0.01);
     copy.update(samples, samples.length, pruneTime + 0.01);
     expect(copy.exportState()).toEqual(front.exportState());

@@ -81,6 +81,15 @@ export class SweptBarrel {
     }, (error: unknown) => console.warn('The barrel library did not load; the swept barrel stays off.', error));
   }
 
+  /** Dev A/B: draw `spot`'s cases from `library` from now on (the same cases as another `TubeShape`), geometry and mask together. */
+  useLibrary(spot: SpotName, library: ProfileLibrary): void {
+    this.libraries.set(spot, library);
+    if (this.spot !== spot) return;
+    this.drawn = undefined;
+    this.cameraWater.prepare(undefined, undefined);
+    this.loft = new SweptLoft(library, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing });
+  }
+
   /** Keep the last clear roof shape; changing the drawing hold rebuilds geometry and its water mask together. */
   setHoldClearDrawing(enabled: boolean): void {
     if (enabled === this.holdClearDrawing) return;

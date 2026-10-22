@@ -179,7 +179,9 @@ describe('the crash curve (the Padang Padang spec, Part B, PR 5)', () => {
     const end = curve.slice(front(21, () => 0), 0, 21, 0, 0, flat, createCrashSlice());
     expect(end.width).toBe(0.5);
     expect(end.endWeight).toBe(0);
-    expect(curve.slice(front(21, () => 0), 0, 21, 1, 0, flat, createCrashSlice()).endWeight).toBeCloseTo(0.4 * 0.4 * (3 - 0.8), 12);
+    // A point 1 m in is past the loft's 1 m end blend (2026-10-22), as its drawn slice is: full weight.
+    expect(LOFT.endBlend).toBe(1);
+    expect(curve.slice(front(21, () => 0), 0, 21, 1, 0, flat, createCrashSlice()).endWeight).toBe(1);
   });
 
   it('reaches over the lifted band of the drawn profile, for the whitewater gate', () => {
