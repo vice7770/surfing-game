@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FrontPoint } from './BreakingFront';
-import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
+import { FRONT_FIELD, FRONT_PIECE, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
 
 const point = (id: number, throwZ: number | null): FrontPoint => ({
   id, front: 3, column: id, sigma: id * 1.1, x: id + 0.5, z: -150 + id, b: 0.3, height: 1.7, joined: 5, depth: 3.1,
@@ -24,5 +24,22 @@ describe('the front records the snapshot carries', () => {
     expect(out[FRONT_FIELD.pace]).toBe(6.25);
     expect(out[FRONT_STRIDE + FRONT_FIELD.pace]).toBeNaN();
     expect(out[2 * FRONT_STRIDE + FRONT_FIELD.pace]).toBeNaN();
+  });
+});
+
+describe('front records under a tube regime (the Canyon, 2026-10-22)', () => {
+  it('leaves out points that plunge no tube, and writes the piece of a front after a gap as a front of its own', () => {
+    const point = (front: number, k: number, footHeight: number) => ({
+      id: k, front, column: k, sigma: k, x: k, z: 0, b: 0, height: 1, joined: 0, depth: 3, throwDepth: 2, crestDepth: 2, thrown: null,
+      throwZ: null, footHeight, footDepth: 6, broke: 0, tau: 0, seen: 0, fresh: null,
+    }) as unknown as FrontPoint;
+    const points = [point(7, 0, 1), point(7, 1, 1.5), point(7, 2, 3), point(7, 3, 1), point(7, 4, 1.2), point(9, 5, 1)];
+    const out = new Float32Array(10 * FRONT_STRIDE);
+    expect(writeFrontRecords(points, out)).toBe(6);
+    const count = writeFrontRecords(points, out, 1.98);
+    expect(count).toBe(5);
+    const fronts = Array.from({ length: count }, (_, k) => out[k * FRONT_STRIDE + FRONT_FIELD.front]);
+    expect(fronts).toEqual([7, 7, 7 + FRONT_PIECE, 7 + FRONT_PIECE, 9]);
+    expect(Array.from({ length: count }, (_, k) => out[k * FRONT_STRIDE + FRONT_FIELD.sigma])).toEqual([0, 1, 3, 4, 5]);
   });
 });

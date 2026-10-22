@@ -248,6 +248,58 @@ describe('the spilling lip on a spilling front', () => {
   });
 });
 
+describe('the spilling lip beside a swept tube (the Canyon’s tube regime, 2026-10-22)', () => {
+  it('draws no curl and no splash where a tube stands on its wave’s crest, and holds its white until the tube’s touchdown', () => {
+    const grid = tank();
+    const run = (withTube: boolean) => {
+      const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+      for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+      const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+      const size = grid.nx * grid.nz;
+      const [out, felt, drawn] = [new Float64Array(size), new Float64Array(size), new Float64Array(size)];
+      // A tube on columns 6–8 (x −14 to −12, which the front reached 0.5–1.5 s in), its crest at z 0.5 (the curl's at
+      // 0), touching down 3 s in.
+      const touchdown = new Float64Array(grid.nx).fill(Number.NaN);
+      const z = new Float64Array(grid.nx).fill(Number.NaN);
+      for (let ix = 6; ix <= 8; ix += 1) {
+        touchdown[ix] = 3;
+        z[ix] = 0.5;
+      }
+      const dt = 0.02;
+      let splashes = 0;
+      const tubeSplashes: number[] = [];
+      for (let step = 1; step <= 100; step += 1) {
+        const time = step * dt;
+        front.update(time, dt, 2, grid.strength, out, felt, drawn, curl);
+        curl.update(time, dt, front, undefined, grid.strength, withTube ? { touchdown, z } : undefined);
+        splashes += curl.splashes.length;
+        for (const splash of curl.splashes) if (splash.x >= -14 && splash.x <= -12) tubeSplashes.push(splash.x);
+      }
+      const into = new Float32Array(CURL_CAPACITY * CURL_STRIDE);
+      const count = curl.writeCurls(into, front, (_x, zz) => 1 / Math.cosh(zz / 3) ** 2);
+      const xs = Array.from({ length: count }, (_, k) => into[k * CURL_STRIDE + CURL_FIELD.x]);
+      return { curl, xs, splashes, tubeSplashes };
+    };
+    const plain = run(false);
+    const tubed = run(true);
+    // Without the tube the curl stands across x −14 to −12; with it, none there, the rest as before.
+    expect(plain.xs.some((x) => x >= -14 && x <= -12)).toBe(true);
+    expect(tubed.xs.some((x) => x >= -14 && x <= -12)).toBe(false);
+    // The tube only takes slices away: every slice drawn beside it is drawn without it too.
+    expect(tubed.xs.every((x) => plain.xs.includes(x))).toBe(true);
+    expect(Array.from(tubed.curl.tube.subarray(6, 9)).every((v) => v === 1)).toBe(true);
+    expect(tubed.curl.tube[10]).toBe(0);
+    expect(plain.splashes).toBeGreaterThan(tubed.splashes);
+    expect(tubed.tubeSplashes).toEqual([]);
+    // At 2 s the tube has not landed: its columns draw none of their white yet, though the curl's own clock has.
+    const column = 7;
+    const age = tubed.curl.age[column];
+    expect(plain.curl.share(column, age, 1)).toBeGreaterThan(0);
+    expect(tubed.curl.share(column, age, 1)).toBe(0);
+    expect(tubed.curl.impact[column]).toBeCloseTo(age + 1, 6);
+  });
+});
+
 describe('the spilling lip\'s band', () => {
   it('draws no band before the curl lands, then a bright one from the landing line, growing to the lens\'s toe', () => {
     const grid = tank();

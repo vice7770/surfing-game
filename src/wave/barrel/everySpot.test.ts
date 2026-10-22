@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, type SpotName } from '../Bathymetry';
-import { SWEPT_BARREL, SurfZoneSimulation, sweptBarrelOn, type SurfZoneConfig } from '../SurfZoneSimulation';
+import { SWEPT_BARREL, SurfZoneSimulation, spillingCurlOn, sweptBarrelOn, sweptCrashOn, type SurfZoneConfig } from '../SurfZoneSimulation';
 import { libraryFromBytes } from './barrelLibrary';
 import { BARREL_CASES } from './barrelLibraryIndex';
-import { BARREL_SPOTS, FLOOR_MARGIN } from './barrelSpots';
+import { BARREL_SPOTS, FLOOR_MARGIN, tubeFootMax } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
@@ -136,5 +136,47 @@ describe.each(SPOTS)('the swept barrel at %s, switched on inside the test', (spo
     };
     expect(new SurfZoneSimulation({ ...config, sweptBarrel: true }, 'warm').front).toBeDefined();
     expect(new SurfZoneSimulation({ ...config, sweptBarrel: false }, 'warm').front).toBeUndefined();
+  });
+});
+
+describe('the Canyon’s barrel transect (the tube from Basilisk, 2026-10-22)', () => {
+  const canyon = BARREL_SPOTS.canyon!;
+
+  it('throws where its three runs went vertical, with a period term, clamped to the runs', () => {
+    const at = (period: number) => onsetTiming(canyon.footDepth, period, true, canyon.onset);
+    // a38 (14 s, 1.86 m → 2.74 m), a49 (14 s, 2.52 m → 3.59 m), a29 (11 s, 1.27 m → 2.79 m): exact.
+    expect(at(14).throwDepth(1.8599071679999999)).toBeCloseTo(2.740354281192891, 9);
+    expect(at(14).throwDepth(2.5191580799999995)).toBeCloseTo(3.590326732873789, 9);
+    expect(at(11).throwDepth(1.2682458461538462)).toBeCloseTo(2.788606727843102, 9);
+    // canyon23f74_a38 (14 s, 1.886 m → 2.761 m), not in the fit, within 0.013 m.
+    expect(Math.abs(at(14).throwDepth(1.8863036746987953) - 2.7610994726910683)).toBeLessThan(0.014);
+    // Clamped: a 9 s wave throws as an 11 s one, a 16 s as a 14 s one; a crest under 1.27 m as one of 1.27 m.
+    expect(at(9).throwDepth(2)).toBe(at(11).throwDepth(2));
+    expect(at(16).throwDepth(2)).toBe(at(14).throwDepth(2));
+    expect(at(11).throwDepth(0.9)).toBe(at(11).throwDepth(1.2682458461538462));
+    // Padang Padang's has no period term.
+    const padang = BARREL_SPOTS.padang!;
+    expect(onsetTiming(7, 16, true, padang.onset).throwDepth(2)).toBe(onsetTiming(7, 18, true, padang.onset).throwDepth(2));
+  });
+
+  it('plunges a tube only where ξ_f = S / √(η_foot / L0) ≥ 0.54: foot crests to 0.82, 1.22, 1.46 and 1.98 m at 9, 11, 12 and 14 s', () => {
+    expect(tubeFootMax('canyon', 9)).toBeCloseTo(0.82, 2);
+    expect(tubeFootMax('canyon', 11)).toBeCloseTo(1.22, 2);
+    expect(tubeFootMax('canyon', 12)).toBeCloseTo(1.46, 2);
+    expect(tubeFootMax('canyon', 14)).toBeCloseTo(1.98, 2);
+    expect(tubeFootMax('padang', 16)).toBe(Infinity);
+    // The runs: a38 (1.86 m at 14 s) a tube; a49 (2.52 m at 14 s) and a29 (1.27 m at 11 s) not.
+    expect(1.8599 <= tubeFootMax('canyon', 14)).toBe(true);
+    expect(2.5192 <= tubeFootMax('canyon', 14)).toBe(false);
+    expect(1.2682 <= tubeFootMax('canyon', 11)).toBe(false);
+  });
+
+  it('runs without the crash, so its spilling front, roller and curl stay (the 6 s lace too), and joins zero-lag crests late', () => {
+    expect(sweptCrashOn({ spot: 'canyon' })).toBe(false);
+    expect(sweptCrashOn({ spot: 'padang' })).toBe(true);
+    expect(sweptCrashOn({ spot: 'canyon', sweptCrash: true })).toBe(true);
+    expect(spillingCurlOn({ spot: 'canyon' })).toBe(true);
+    expect(spillingCurlOn({ spot: 'canyon', sweptCrash: true })).toBe(false);
+    expect(canyon.front).toEqual({ joinPast: 1.5 });
   });
 });
