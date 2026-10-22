@@ -125,12 +125,30 @@ describe('the slice clock', () => {
     expect(points[0].tau).toBeCloseTo(-0.5, 12);
   });
 
+  it('catches a thrown lip up at no more than twice real time, and a face its fit throws from τ = 0', () => {
+    const points = crest(1);
+    Object.assign(points[0], { depth: 2.5, throwDepth: 2, crestDepth: 2.5, thrown: 1 });
+    // A face whose crest is found to have thrown a second ago: it reaches τ = 0, not 1, in one step.
+    advanceClocks(points, 2, LAGGED, DT);
+    expect(points[0].tau).toBe(0);
+    // Then twice real time a step until it is on its fit, never more.
+    let before = points[0].tau;
+    for (let step = 1; step <= 40; step += 1) {
+      advanceClocks(points, 2 + step * DT, LAGGED, DT);
+      expect(points[0].tau - before).toBeLessThanOrEqual(2 * DT + 1e-12);
+      expect(points[0].tau - before).toBeGreaterThanOrEqual(DT - 1e-12);
+      before = points[0].tau;
+    }
+    // Caught up after a second's 2× run (30 steps): on its fit, at real time.
+    expect(points[0].tau).toBeCloseTo(1 + 40 * DT, 9);
+  });
+
   it('fits a thrown point over its thrown neighbours only, and runs it on when they move the fit later', () => {
     const points = crest(3);
     points.forEach((point) => Object.assign(point, { depth: 2.5, throwDepth: 2, crestDepth: 2.5 }));
     points[1].thrown = 1;
     // Its neighbours have not come shoreward: their throws, foreseen at the earliest frame from now, would pull it later.
-    advanceClocks(points, 2, LAGGED, DT);
+    advanceClocks(points, 2, LAGGED);
     expect(points[1].tau).toBeCloseTo(1, 12);
     // All thrown, its neighbours later than it: the fit moves later, and its lip runs on at real time.
     points[0].thrown = 2;

@@ -170,7 +170,9 @@ const RADIUS = CLOCK.smoothing * Math.sqrt(7);
  * - **After the throw** (the advisor, 2026-10-22: the Canyon's lips hung 0.3–1.3 s in 16–30 % of its tubes): a point
  *   whose own crest has crossed its throw depth fits its throw time over its thrown neighbours only, so neighbours
  *   still joining or foreseen no longer slide it later; and once its lip is drawn thrown (τ ≥ 0) its clock runs at
- *   least at real time, `step` s a step, catching up only when the fit moves earlier. A free jet never hangs.
+ *   least at real time, `step` s a step, catching up only when the fit moves earlier, and then at most at twice real
+ *   time, so a catch-up plays as a speed-up rather than a jump (the fifth ruling). A face whose fit has thrown it
+ *   reaches τ = 0 as before and runs on from there at the same cap. A free jet never hangs and never skips.
  *
  * Only + − × ÷ and loops over points in σ order, for online determinism.
  */
@@ -183,9 +185,9 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
     for (let k = start; k < end; k += 1) {
       const point = points[k];
       const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
-      if (point.tau >= 0) point.tau = Math.max(shown, point.tau + step);
+      if (point.tau >= 0) point.tau = step > 0 ? Math.min(Math.max(shown, point.tau + step), point.tau + 2 * step) : Math.max(shown, point.tau);
       else if (shown < point.tau) pauses += 1;
-      else point.tau = shown;
+      else point.tau = shown >= 0 && step > 0 ? Math.min(shown, Math.max(0, point.tau + 2 * step)) : shown;
     }
     start = end;
   }

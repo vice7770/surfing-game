@@ -11,7 +11,9 @@ export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from '.
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
  * "Lofting" and "The seam"; the advisor's rulings, 2026-09-30):
  * - `spacing`, `fine`, m: slices every half metre along the front, a quarter where neighbouring clocks differ by more
- *   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage);
+ *   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage), and halved again where they
+ *   still do, up to `levels` times (0.25, 0.125, 0.0625 m: the advisor's fifth ruling, 2026-10-22, a slow peel's clock
+ *   steps 4–8 times that between half-metre slices at the Canyon); within the budget the most levels that fit;
  * - `budget`, vertices: past it the spacing widens and neighbouring clocks are clamped to T_open/4 (the advisor);
  * - `pinned`: samples at each end of a profile blended onto the water, never reaching the lip or throat [inferred];
  * - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
@@ -25,7 +27,7 @@ export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from '.
  * faded slice is dropped.)
  */
 export const LOFT = {
-  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 1,
+  spacing: 0.5, fine: 0.25, levels: 3, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 1,
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
@@ -163,6 +165,8 @@ export interface LoftResult {
   overlaps: number;
   overlapsOpen: number;
   overlapOpenWeight: number;
+  /** The clock refinement's depth this build (`LOFT.levels` unless the budget clamped it; 0: none). */
+  refineLevels: number;
   /** Ray stabilization: slices corrected, largest shared blend, minimum stored row advance, and invalid input pairs. */
   rayCorrections: number;
   rayMaxBlend: number;
@@ -298,6 +302,9 @@ export class SweptLoft {
   private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
   /** Per slice, the drawn height H (`restHeight`), m: the seal's young cut ends blend over it (`endBlendLength`). */
   private readonly sliceHeight = new Float64Array(MAX_SLICES + 1);
+  /** Per slice, its library's frame time, s (the refinement's unit; read by probes). */
+  private readonly sliceFrame = new Float64Array(MAX_SLICES + 1);
+  private readonly sliceTouchdown = new Float64Array(MAX_SLICES + 1);
   /** Per front, its slices' σ, before and after refinement. */
   private base = new Float64Array(2 * MAX_SLICES + 8);
   private sigmas = new Float64Array(2 * MAX_SLICES + 8);
@@ -369,7 +376,7 @@ export class SweptLoft {
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
-      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
+      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, refineLevels: 0,
       rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
@@ -447,18 +454,19 @@ export class SweptLoft {
       : Math.ceil((f.last - f.first + 2 * LOFT.extension) / LOFT.spacing) + 1);
     if (boundedC) this.cScratch(samples);
     if (this.base.length < samples) this.base = new Float64Array(Math.max(samples, 2 * this.base.length));
-    if (this.sigmas.length < 2 * samples) this.sigmas = new Float64Array(Math.max(2 * samples, 2 * this.sigmas.length));
+    const refined = 2 ** LOFT.levels * samples;
+    if (this.sigmas.length < refined) this.sigmas = new Float64Array(Math.max(refined, 2 * this.sigmas.length));
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count in this legacy spacing decision; C closures also count against the final hard prefix cap.
     let live = 0;
-    let extra = 0;
-    for (const f of fronts) {
-      const survey = this.survey(records, f);
-      live += survey.live;
-      extra += survey.extra;
-    }
+    const extra = this.extraByLevel.fill(0);
+    for (const f of fronts) live += this.survey(records, f, extra);
     let spacing: number = LOFT.spacing;
-    let budgeted = live + extra > MAX_SLICES;
+    // The most refinement levels that fit the budget (none: the base spacing alone); fewer than `LOFT.levels` is a clamp.
+    let levels = boundedC ? 1 : LOFT.levels;
+    while (levels > 0 && live + extra[levels - 1] > MAX_SLICES) levels -= 1;
+    r.refineLevels = levels;
+    let budgeted = levels === 0;
     if (live > MAX_SLICES) spacing = (LOFT.spacing * live) / Math.max(1, MAX_SLICES - 2 * fronts.length);
     for (let frontIndex = 0; frontIndex < fronts.length; frontIndex += 1) {
       const f = fronts[frontIndex];
@@ -467,7 +475,7 @@ export class SweptLoft {
         break;
       }
       const n = boundedC ? this.cRefinements(records, f, spacing, !budgeted)
-        : budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
+        : budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing, levels);
       if (r.cSampling) r.cSampling.plannedStations += n;
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
       // C truncation owns the ordered prefix even when a dangling support rollback leaves capacity.
@@ -724,14 +732,15 @@ export class SweptLoft {
   }
 
   /**
-   * A front's base slices at `spacing` that have not faded after touchdown (the rest are dropped), and the midpoints
-   * the live ones need (neighbouring clocks more than `frames` frames apart).
+   * A front's base slices at `spacing` that have not faded after touchdown (the rest are dropped), how many; and, added
+   * into `extra` per refinement depth (`extra[L − 1]` with L levels), the slices the live ones' refinement would add:
+   * where neighbouring clocks differ by more than `frames` frames, a midpoint, and halving again while they still would
+   * (the clock taken as linear between them).
    */
-  private survey(records: Float32Array, f: Front): { live: number; extra: number } {
+  private survey(records: Float32Array, f: Front, extra: Float64Array): number {
     const boundedC = this.library.options.geometry === 'bounded-C';
     const n = boundedC ? this.cBaseSlices(records, f, LOFT.spacing) : this.baseSlices(f, LOFT.spacing, this.base);
     let live = 0;
-    let extra = 0;
     let previous = Number.NaN;
     let previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
@@ -742,28 +751,63 @@ export class SweptLoft {
         continue;
       }
       live += 1;
-      if (Math.abs(s.tau - previous) > LOFT.frames * Math.min(times.frameSeconds, previousFrame)) extra += 1;
-      previous = s.tau;
+      // Past touchdown the drawing holds its frame, so the clocks compared are the drawn ones (the C's as they were).
+      const drawn = boundedC ? s.tau : Math.min(s.tau, times.touchdownSeconds);
+      // A gap of g frames-thresholds needs ⌈log2 g⌉ halvings; L levels add 2^min(L, that) − 1 slices (only ÷ and ×).
+      let gap = Math.abs(drawn - previous) / (LOFT.frames * Math.min(times.frameSeconds, previousFrame));
+      let added = 0;
+      for (let level = 0; level < LOFT.levels; level += 1) {
+        if (gap > 1) {
+          added = 2 * added + 1;
+          gap /= 2;
+        }
+        extra[level] += added;
+      }
+      previous = drawn;
       previousFrame = times.frameSeconds;
     }
-    return { live, extra };
+    return live;
   }
 
-  /** A front's base slices, with the midpoints where neighbouring clocks differ by more than `frames` frames, into `sigmas`; how many. */
-  private refinements(records: Float32Array, f: Front, spacing: number): number {
+  /** Per refinement depth, the slices a build's refinement would add (`survey`). */
+  private readonly extraByLevel = new Float64Array(LOFT.levels);
+
+  /**
+   * A front's base slices, with midpoints where neighbouring drawn clocks (held at touchdown, as the drawing holds its
+   * frame) differ by more than `frames` frames, halved again up to `levels` deep while they still do, into `sigmas`;
+   * how many.
+   */
+  private refinements(records: Float32Array, f: Front, spacing: number, levels: number): number {
     const n = this.baseSlices(f, spacing, this.base);
     let out = 0;
     let previousTau = 0;
     let previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
       const s = this.at(records, f, this.base[k], this.probe);
-      const frame = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).frameSeconds;
-      if (k > 0 && Math.abs(s.tau - previousTau) > LOFT.frames * Math.min(frame, previousFrame)) this.sigmas[out++] = (this.base[k - 1] + this.base[k]) / 2;
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      const tau = Math.min(s.tau, times.touchdownSeconds);
+      const frame = times.frameSeconds;
+      if (k > 0) out = this.refine(records, f, this.base[k - 1], previousTau, previousFrame, this.base[k], tau, frame, levels, out);
       this.sigmas[out++] = this.base[k];
-      previousTau = s.tau;
+      previousTau = tau;
       previousFrame = frame;
     }
     return out;
+  }
+
+  /** The slices strictly between σ a and b (drawn clocks and frames given), in order, into `sigmas` from `out`; the new end. */
+  private refine(
+    records: Float32Array, f: Front, a: number, tauA: number, frameA: number, b: number, tauB: number, frameB: number, levels: number, out: number,
+  ): number {
+    if (levels <= 0 || !(Math.abs(tauB - tauA) > LOFT.frames * Math.min(frameA, frameB))) return out;
+    const middle = (a + b) / 2;
+    const s = this.at(records, f, middle, this.probe);
+    const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+    const tau = Math.min(s.tau, times.touchdownSeconds);
+    const frame = times.frameSeconds;
+    out = this.refine(records, f, a, tauA, frameA, middle, tau, frame, levels - 1, out);
+    this.sigmas[out++] = middle;
+    return this.refine(records, f, middle, tau, frame, b, tauB, frameB, levels - 1, out);
   }
 
   /** Front f's values at σ (see `Sample`), into `into`. */
@@ -1106,6 +1150,8 @@ export class SweptLoft {
       r.sliceRayZ[slice] = nz;
       r.sliceWeight[slice] = w;
       this.sliceHeight[slice] = drawnHeight;
+      this.sliceFrame[slice] = lookup.frameSeconds;
+      this.sliceTouchdown[slice] = lookup.touchdownSeconds;
       r.sliceOverturned[slice] = overturned;
       // Boundary transport and water flow differ once the analytic cap rests on its floor.
       const fluidScale = lookup.analytic ? lookup.analytic.lengthScale / lookup.analytic.timeScale : 1;
