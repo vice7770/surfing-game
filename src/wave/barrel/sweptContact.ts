@@ -344,15 +344,16 @@ export class SweptContact {
   }
 
   /**
-   * Answers-only ordinary guide: the nearest geometrically reachable mature C mouth, preserving a preferred front
+   * Answers-only ordinary guide: the nearest geometrically reachable mature mouth, preserving a preferred front
    * while one remains usable. The private loft never escapes; returned points/scalars belong to this generation.
    * Calling this is opt-in. Physics queries and their normal/bucket preparation are unchanged.
    */
   approachNear(request: TubeApproachRequest, observation?: TubeApproachObservation): TubeApproachCue | undefined {
     const loft = this.last;
     if (observation) Object.assign(observation, createTubeApproachObservation(request, this.geometryStep));
-    if (!this.boundedC || !loft || !validTubeApproachRequest(request)) {
-      if (observation) observation.outcome = !this.boundedC ? 'not-bounded-c' : !loft ? 'no-contact-loft' : 'invalid-request';
+    // Any tube shape (the cases' own frames since 2026-10-22, or the `?tubeShape=c` A/B): the mouth is the lip landmark.
+    if (!loft || !validTubeApproachRequest(request)) {
+      if (observation) observation.outcome = !loft ? 'no-contact-loft' : 'invalid-request';
       return undefined;
     }
     const p = loft.positions, candidates: { strip: number; fraction: number; distance: number; preferred: boolean;

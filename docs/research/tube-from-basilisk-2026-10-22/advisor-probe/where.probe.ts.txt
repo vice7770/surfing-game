@@ -1,0 +1,39 @@
+import { test } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+const W = '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/tube-from-basilisk/';
+import { decodeCase } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/tube-from-basilisk/src/wave/barrel/profileFormat';
+import { ProfileLibrary, PROFILE_POINTS } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/tube-from-basilisk/src/wave/barrel/ProfileLibrary';
+const OUT = '/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/probe/';
+function pairs(p: ArrayLike<number>) {
+  const res: string[] = [];
+  const x = (i: number) => p[2 * i], y = (i: number) => p[2 * i + 1];
+  for (let i = 0; i < PROFILE_POINTS - 1; i++) for (let j = i + 2; j < PROFILE_POINTS - 1; j++) {
+    const ax = x(i), ay = y(i), bx = x(i + 1), by = y(i + 1), cx = x(j), cy = y(j), dx = x(j + 1), dy = y(j + 1);
+    const d1 = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+    const d2 = (bx - ax) * (dy - ay) - (by - ay) * (dx - ax);
+    const d3 = (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx);
+    const d4 = (dx - cx) * (by - cy) - (dy - cy) * (bx - cx);
+    if (d1 * d2 < 0 && d3 * d4 < 0) res.push(`${i}-${j}`);
+  }
+  return res;
+}
+const F = 2 * PROFILE_POINTS;
+test('where', () => {
+  const rows: string[] = [];
+  for (const id of ['periodic-padang19s-l12', 'pad19-a20-l12', 'periodic-canyon23-a29-l13', 'periodic-canyon23-a49-l13']) {
+    const c = decodeCase(new Uint8Array(readFileSync(W + 'public/barrels/' + id + '.bin')));
+    const n = c.frames.length / F;
+    for (let f = 0; f < n; f++) {
+      const pr = pairs(c.frames.subarray(f * F, (f + 1) * F));
+      if (pr.length) rows.push(`${id} frame ${f} tau ${(c.tauStart + f * c.tauStep).toFixed(3)} (td ${c.touchdown}): ${pr.join(' ')}`);
+    }
+  }
+  const pad = ['periodic-padang19s-l12', 'pad19-a20-l12', 'pad19-a30-l12', 'pad19-a45-l12'].map((id) => decodeCase(new Uint8Array(readFileSync(W + 'public/barrels/' + id + '.bin'))));
+  const lib = new ProfileLibrary(pad, {});
+  const out = new Float32Array(F);
+  for (const [foot, s] of [[0.81, 0.32], [1.26, 0.32], [1.31, 0.32], [1.01, 0.68], [1.51, 0.36]] as const) {
+    const l = lib.profileAt({ slope: 1 / 19, footHeight: foot, footDepth: 7, seconds: s, hold: 'contact' }, out);
+    rows.push(`blend foot ${foot} s ${s} case ${l.caseId}: ${pairs(out).join(' ')}`);
+  }
+  writeFileSync(OUT + 'where.txt', rows.join('\n'));
+});

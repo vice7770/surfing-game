@@ -41,6 +41,40 @@ function measure(p: Float32Array) {
   for (let i = 64; i < 112; i += 1) area += x(i) * y(i + 1) - x(i + 1) * y(i);
   return { lip: across[across.length >> 1] / H, tip: tip / H, void: Math.abs(area) / 2 / (H * H) };
 }
+/** The void's (points 64–112) aspect, its axes' ratio from the polygon's second moments, and its long axis' tilt, °. */
+function voidAxes(p: Float32Array): { aspect: number; tilt: number } {
+  const x = (i: number) => p[2 * i];
+  const y = (i: number) => p[2 * i + 1];
+  const ring = Array.from({ length: 49 }, (_, k) => 64 + k);
+  let area = 0;
+  let cx = 0;
+  let cy = 0;
+  ring.forEach((i, k) => {
+    const j = ring[(k + 1) % ring.length];
+    const c = x(i) * y(j) - x(j) * y(i);
+    area += c / 2;
+    cx += (x(i) + x(j)) * c;
+    cy += (y(i) + y(j)) * c;
+  });
+  cx /= 6 * area;
+  cy /= 6 * area;
+  let sxx = 0;
+  let syy = 0;
+  let sxy = 0;
+  ring.forEach((i, k) => {
+    const j = ring[(k + 1) % ring.length];
+    const [xi, yi, xj, yj] = [x(i) - cx, y(i) - cy, x(j) - cx, y(j) - cy];
+    const c = xi * yj - xj * yi;
+    sxx += ((xi * xi + xi * xj + xj * xj) * c) / 12;
+    syy += ((yi * yi + yi * yj + yj * yj) * c) / 12;
+    sxy += ((xi * yj + 2 * xi * yi + 2 * xj * yj + xj * yi) * c) / 24;
+  });
+  const [mxx, myy, mxy] = [sxx / area, syy / area, sxy / area];
+  const half = (mxx + myy) / 2;
+  const spread = Math.sqrt(((mxx - myy) / 2) ** 2 + mxy * mxy);
+  const along = Math.atan2(half + spread - mxx, mxy);
+  return { aspect: Math.sqrt((half + spread) / (half - spread)), tilt: 90 - Math.abs((Math.abs(along) * 180) / Math.PI - 90) };
+}
 function probe(library: ProfileLibrary) {
   const out = new Float32Array(2 * PROFILE_POINTS);
   const rows: ReturnType<typeof measure>[] = [];
@@ -76,6 +110,22 @@ describe("the tube's shape at Padang Padang", () => {
     const late = rows.filter((_, k) => k % 3 > 0).map((row) => row.tip).sort((a, b) => a - b);
     expect(late[late.length >> 1]).toBeGreaterThan(0.06);
     expect(late[late.length >> 1]).toBeLessThan(0.13);
+  });
+
+  it('holds a void as long as Padang Padang’s from A0 0.3 up: L/W 1.9–2.4 (Mead & Black: 1.97–2.14), tilted 35–50°', () => {
+    // The void's polygon (tip, throat, toe), its axes from its second moments, at the clear frame the drawing holds from
+    // touchdown. The level-12 cases measure 2.0–2.1 and 44° this way (the advisor: 2.11–2.30, 40° by plunge_measure).
+    const library = libraryFromBytes(bytes);
+    const out = new Float32Array(2 * PROFILE_POINTS);
+    for (const footHeight of [2.1, 2.8, 3.15]) {
+      const query = { slope: 1 / 19, footHeight, footDepth: 7 };
+      library.profileAt({ ...query, seconds: library.profileTimes(query).touchdownSeconds, hold: 'contact' }, out);
+      const { aspect, tilt } = voidAxes(out);
+      expect(aspect).toBeGreaterThan(1.9);
+      expect(aspect).toBeLessThan(2.4);
+      expect(tilt).toBeGreaterThan(35);
+      expect(tilt).toBeLessThan(50);
+    }
   });
 
   it('is not the authored shape the `?tubeShape=c` A/B draws: a membrane around an enlarged void', () => {

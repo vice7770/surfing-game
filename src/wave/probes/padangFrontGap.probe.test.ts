@@ -209,6 +209,73 @@ function crestOf(loft: LoftResult, slice: number): [number, number] {
   return [loft.positions[3 * v], loft.positions[3 * v + 2]];
 }
 
+/**
+ * Folds (the advisor, 2026-10-22): a joined slice whose lifted span (crest to toe, in plan) crosses the lifted span of a
+ * slice of its own front 2 m or more away along σ (up to 20 m): the front's rays cross under the drawn curl.
+ */
+function selfFolds(loft: LoftResult): number {
+  const S = LOFT_SAMPLES;
+  const E = LOFT.extensionSamples;
+  const at = (s: number, i: number) => 3 * (s * S + E + i);
+  let folds = 0;
+  for (let s = 0; s < loft.sliceCount; s += 1) {
+    if (!(loft.sliceWeight[s] > 0.5) || loft.sliceJoined[s] !== 1) continue;
+    const a = at(s, LANDMARK.crest);
+    const b = at(s, LANDMARK.toe);
+    const [ax, az, bx, bz] = [loft.positions[a], loft.positions[a + 2], loft.positions[b], loft.positions[b + 2]];
+    for (let t = s + 1; t < loft.sliceCount && loft.sliceFront[t] === loft.sliceFront[s]; t += 1) {
+      const apart = loft.sliceSigma[t] - loft.sliceSigma[s];
+      if (apart < 2) continue;
+      if (apart > 20) break;
+      if (!(loft.sliceWeight[t] > 0.5)) continue;
+      const c = at(t, LANDMARK.crest);
+      const d = at(t, LANDMARK.toe);
+      const [cx, cz, dx, dz] = [loft.positions[c], loft.positions[c + 2], loft.positions[d], loft.positions[d + 2]];
+      const side = (px: number, pz: number, qx: number, qz: number, rx: number, rz: number) => (qx - px) * (rz - pz) - (qz - pz) * (rx - px);
+      if (side(ax, az, bx, bz, cx, cz) * side(ax, az, bx, bz, dx, dz) < 0 && side(cx, cz, dx, dz, ax, az) * side(cx, cz, dx, dz, bx, bz) < 0) {
+        folds += 1;
+        break;
+      }
+    }
+  }
+  return folds;
+}
+
+/**
+ * Each front's end steps (the advisor, 2026-10-22): the drawn crest a metre in from an end (past the 1 m end blend) over
+ * the water at the end itself, in the slice's H (crest over toe), at its younger end (the leading end, smaller τ) and its
+ * older one, for fronts whose ends both stand on thrown slices' runs.
+ */
+function endSteps(loft: LoftResult, younger: number[], older: number[]): void {
+  const crestY = (s: number) => loft.positions[3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest) + 1];
+  const toeY = (s: number) => loft.positions[3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.toe) + 1];
+  let start = 0;
+  while (start < loft.sliceCount) {
+    let end = start;
+    while (end + 1 < loft.sliceCount && loft.sliceFront[end + 1] === loft.sliceFront[start]) end += 1;
+    const sigmaFirst = loft.sliceSigma[start] + LOFT.extension;
+    const sigmaLast = loft.sliceSigma[end] - LOFT.extension;
+    const nearest = (sigma: number) => {
+      let best = -1;
+      for (let s = start; s <= end; s += 1) if (best < 0 || Math.abs(loft.sliceSigma[s] - sigma) < Math.abs(loft.sliceSigma[best] - sigma)) best = s;
+      return best;
+    };
+    if (sigmaLast - sigmaFirst > 2 * LOFT.endBlend + 0.5) {
+      const ends = [[nearest(sigmaFirst), nearest(sigmaFirst + LOFT.endBlend)], [nearest(sigmaLast), nearest(sigmaLast - LOFT.endBlend)]];
+      const steps = ends.map(([edge, inside]) => {
+        const H = crestY(inside) - toeY(inside);
+        return loft.sliceTau[inside] >= 0 && H > 0.3 && loft.sliceWeight[inside] > 0.9 ? Math.abs(crestY(inside) - crestY(edge)) / H : Number.NaN;
+      });
+      if (steps.every((v) => v === v)) {
+        const firstYounger = loft.sliceTau[ends[0][1]] <= loft.sliceTau[ends[1][1]];
+        younger.push(firstYounger ? steps[0] : steps[1]);
+        older.push(firstYounger ? steps[1] : steps[0]);
+      }
+    }
+    start = end + 1;
+  }
+}
+
 interface Tongue {
   front: number;
   first: number;
@@ -342,6 +409,9 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     let overlapOpenWeight = 0;
     const openRuns: number[] = [];
     const tongueLengths: number[] = [];
+    let foldSlices = 0;
+    const youngerSteps: number[] = [];
+    const olderSteps: number[] = [];
     // Pairs: open ones by key, and the gap columns' states and the adjacent ends' causes over every pair-frame.
     const open = new Map<string, PairLife>();
     const closed: PairLife[] = [];
@@ -503,7 +573,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
         `fronts peeling at 20 m/s or more by their throws: ${fast.length} (${fast.reduce((s, f) => s + f.n, 0)} throws): jumped ${quantiles(fast.map((f) => f.jumped))}, joined in a jump ${quantiles(fast.map((f) => f.joinAtJump))}; slower fronts ${slow.length}: jumped ${quantiles(slow.map((f) => f.jumped))}, joined in a jump ${quantiles(slow.map((f) => f.joinAtJump))}`,
         ...fast.map((f) => `  fast f${f.front}: ${f.n} throws over ${f.span.toFixed(0)} m, by throws ${f.throwPeel.toFixed(1)} m/s, by joins ${f.joinPeel.toFixed(1)} m/s, by the solver's first breaks ${fixed(f.breakPeel, 1)} m/s; jumped ${(100 * f.jumped).toFixed(0)} %, joined in a jump ${(100 * f.joinAtJump).toFixed(0)} %`),
         `neighbouring points within ${jumpReach ?? TRACK} m in z: ${linkCounts.pairs} pair-steps, linked ${linkCounts.linked} (|Δjoin|/d ${quantiles(linkedRates, 3)} s/m; ${linkCounts.linkedRefusedB} over ${LINK_SLOPE.toFixed(3)} s/m, which (B) would split); unlinked ${linkCounts.pairs - linkCounts.linked}: (A) the reach widened for clock-compatible ends would link ${linkCounts.unlinkedA} (of them over 1 s/m: ${linkCounts.unlinkedSplitA}), (B) the clock alone ${linkCounts.unlinkedB}; unlinked beyond the 3-row reach ${linkCounts.unlinkedReach}, of which (A) links ${linkCounts.unlinkedReachA}`,
-        `drawn (as the page holds each case clear): strips dropped as overlaps (folds) ${(overlapStrips / Math.max(1, frames)).toFixed(2)} a frame, of them holding an open tube (holes) ${(overlapOpenStrips / Math.max(1, frames)).toFixed(3)} a frame (most weight ${overlapOpenWeight.toFixed(2)}); tongues (standing runs) ${quantiles(tongueLengths)} m; open curls (open, standing) ${quantiles(openRuns)} m (end blend ${LOFT.endBlend} m)`,
+        `drawn (as the page holds each case clear): strips dropped as overlaps (folds) ${(overlapStrips / Math.max(1, frames)).toFixed(2)} a frame, of them holding an open tube (holes) ${(overlapOpenStrips / Math.max(1, frames)).toFixed(3)} a frame (most weight ${overlapOpenWeight.toFixed(2)}); self-folds (a slice's lifted span crossing its own front's 2–20 m along) ${(foldSlices / Math.max(1, frames)).toFixed(2)} slices a frame; end steps over the 1 m blend, in H: younger ends ${quantiles(youngerSteps)}, older ${quantiles(olderSteps)}; tongues (standing runs) ${quantiles(tongueLengths)} m; open curls (open, standing) ${quantiles(openRuns)} m (end blend ${LOFT.endBlend} m)`,
         `headline, clock link ${linkOn ? 'ON' : 'off'}, ${swellName}, seed ${seed}, ${label}: fronts a wave ${(frontsPerWave.reduce((a, b) => a + b, 0) / Math.max(1, frontsPerWave.length)).toFixed(2)}; drawn fronts a frame ${(drawnFronts / frames).toFixed(2)}; pairs ${closed.length} (${listed(byClass)}); true splits linked by the clock ${splitLinkedByClock.length} of ${splitPairs.length} (${clockShare.toFixed(1)} %; by the old rules ${splitLinked.length - splitLinkedByClock.length}); clock link-frames across crest lines ${links(crossWaveFrames)} of ${links(clockLinkFrames)} (${crossShare.toFixed(1)} %); throws ${allThrows.length}; peel by throws median ${quantile(frontPeels.map((f) => f.throwPeel), 0.5).toFixed(1)} / 90 % ${quantile(frontPeels.map((f) => f.throwPeel), 0.9).toFixed(1)} m/s over ${frontPeels.length} fronts; fast fronts (20 m/s or more) ${fast.length}`,
       ].join('\n') + '\n');
     };
@@ -801,6 +871,8 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
       const result = loft.build(records, recordCount, 0, (x, z) => sampleSurfaceHeight(surface, grid, x, z));
       const list = tongues(result);
       overlapStrips += result.overlaps;
+      foldSlices += selfFolds(result);
+      endSteps(result, youngerSteps, olderSteps);
       overlapOpenStrips += result.overlapsOpen;
       overlapOpenWeight = Math.max(overlapOpenWeight, result.overlapOpenWeight);
       for (const tongue of list) tongueLengths.push(result.sliceSigma[tongue.last] - result.sliceSigma[tongue.first]);
