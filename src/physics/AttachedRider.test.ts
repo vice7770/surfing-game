@@ -2126,6 +2126,91 @@ describe('the paddle\'s balance (the paddle-balance fix)', () => {
   });
 });
 
+// The sprint paddle (the owner's choices of 2026-10-22): double-press the paddle and hold it; about a third faster than
+// cruising, coming up to speed sooner, for 8 s of a reserve that refills in 15 s.
+describe('the sprint paddle', () => {
+  /** Paddling from rest on flat water, sprint asked for or not, with the reserve kept full: each step's speed. */
+  const speeds = (sprint: boolean, seconds: number) => {
+    const water = new PlaneWater();
+    const session = new RideSession();
+    session.reset(new Vector3(), 0, water);
+    const out: number[] = [];
+    for (let i = 0; i < Math.round(seconds / STEP); i += 1) {
+      session.reserve.level = 1;
+      session.step(STEP, water, { paddle: true, sprint, popUp: false, steer: 0 });
+      out.push(session.board.velocity.z);
+    }
+    return out;
+  };
+  /** The speed averaged over a stroke centred on each step, and the time it first reaches `speed`. */
+  const reach = (trace: number[], cycle: number, speed: number) => {
+    const n = Math.round(cycle / STEP);
+    for (let i = 0; i + n <= trace.length; i += 1) {
+      const mean = trace.slice(i, i + n).reduce((a, b) => a + b, 0) / n;
+      if (mean >= speed) return (i + n / 2) * STEP;
+    }
+    return Infinity;
+  };
+  const top = (trace: number[]) => trace.slice(-240).reduce((a, b) => a + b, 0) / 240;
+
+  it('settles about a third faster than cruising on flat water, and comes up to it sooner', () => {
+    const cruise = speeds(false, 16);
+    const sprint = speeds(true, 16);
+    expect(top(cruise)).toBeGreaterThan(1.5);
+    expect(top(cruise)).toBeLessThan(1.7);
+    expect(top(sprint)).toBeGreaterThan(1.95);
+    expect(top(sprint)).toBeLessThan(2.2);
+    // More force from rest: 1 m/s in about half the cruise's time, and its own 90 % sooner than the cruise reaches its own.
+    expect(reach(sprint, 60 / 70, 1)).toBeLessThan(0.6 * reach(cruise, 1.2, 1));
+    expect(reach(sprint, 60 / 70, 0.9 * top(sprint))).toBeLessThan(reach(cruise, 1.2, 0.9 * top(cruise)));
+  });
+
+  it('strokes 70 times a minute a side, the hand deeper, as the drawn arms show', () => {
+    const water = new PlaneWater();
+    const session = new RideSession();
+    session.reset(new Vector3(), 0, water);
+    const pulls: boolean[] = [];
+    const deepest = { cruise: 0, sprint: 0 };
+    const hand = new Vector3();
+    for (let i = 0; i < Math.round(16 / STEP); i += 1) {
+      const sprint = i * STEP >= 8;
+      session.reserve.level = 1;
+      session.step(STEP, water, { paddle: true, sprint, popUp: false, steer: 0 });
+      if (i * STEP < 4) continue;
+      // The drawn left hand, below the deck: the physics' stroke draws it.
+      const depth = -session.board.toLocal(session.rider.renderPoint(3, session.board, hand), hand).y;
+      if (sprint) deepest.sprint = Math.max(deepest.sprint, depth);
+      else deepest.cruise = Math.max(deepest.cruise, depth);
+      if (i * STEP >= 10) pulls.push(session.rider.handLoad[0] > 0);
+    }
+    const perMinute = (60 * pulls.filter((on, k) => on && !pulls[k - 1]).length) / 6;
+    expect(perMinute).toBeGreaterThan(65);
+    expect(perMinute).toBeLessThan(75);
+    expect(deepest.sprint).toBeGreaterThan(deepest.cruise + 0.05);
+  });
+
+  it('runs out after about 8 s held, cruises until a quarter is back, then sprints again; a new placement is full', () => {
+    const water = new PlaneWater();
+    const session = new RideSession();
+    session.reset(new Vector3(), 0, water);
+    let out = Infinity;
+    let back = Infinity;
+    for (let i = 0; i < Math.round(14 / STEP); i += 1) {
+      const time = i * STEP;
+      session.step(STEP, water, { paddle: true, sprint: true, popUp: false, steer: 0 });
+      if (out === Infinity && !session.rider.sprintPaddling) out = time;
+      if (out < Infinity && back === Infinity && session.rider.sprintPaddling) back = time;
+    }
+    expect(out).toBeGreaterThan(7.9);
+    expect(out).toBeLessThan(8.2);
+    // A quarter of 15 s: 3.75 s.
+    expect(back - out).toBeGreaterThan(3.6);
+    expect(back - out).toBeLessThan(3.9);
+    session.reset(new Vector3(), 0, water);
+    expect(session.reserve.level).toBe(1);
+  });
+});
+
 describe('catching', () => {
   it('never cues or stands from paddling on flat water', () => {
     const { board, rider } = mounted('prone');

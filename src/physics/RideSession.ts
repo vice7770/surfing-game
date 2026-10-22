@@ -5,6 +5,7 @@ import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
 import { BREATH, Breath } from './Breath';
 import { Leash } from './Leash';
+import { PaddleReserve } from './PaddleReserve';
 import { boundsPush, type RiderBounds } from './riderBounds';
 import { RIDER_PARTS, deckHeight, type StanceName } from './riderPosture';
 import { createWaterSample, type SurfWater } from './SurfWater';
@@ -19,6 +20,11 @@ export const REEF_STRIKE_WINDOW = 0.6;
 
 export interface RideInput {
   paddle: boolean;
+  /**
+   * Lying down, the sprint paddle: the paddle double-pressed and held (`SprintPress`, the owner's choice of
+   * 2026-10-22). It sprints while the reserve allows (`PaddleReserve`); otherwise, and without it, the paddle cruises.
+   */
+  sprint?: boolean;
   popUp: boolean;
   /** −1 (right) to 1 (left). Lying down it turns the swimmer; standing it shifts weight onto a rail. */
   steer: number;
@@ -95,6 +101,8 @@ export class RideSession {
   readonly leash = new Leash();
   /** The breath the surfer holds under water (the wipeout spec, Part B); a new one at each placement. */
   readonly breath = new Breath();
+  /** The sprint paddle's reserve (`PaddleReserve`): the surfer's own, kept through falls; a full one at each placement (a new session, a retry). */
+  readonly reserve = new PaddleReserve();
   private readonly plugLocal = new Vector3();
   private readonly ankle = new Vector3();
   private readonly plug = new Vector3();
@@ -182,6 +190,7 @@ export class RideSession {
     this.recovery.release();
     this.leash.reset();
     this.breath.reset();
+    this.reserve.reset();
   }
 
   /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
@@ -213,6 +222,7 @@ export class RideSession {
     const wasAttached = rider.attached;
     if (rider.attached) {
       rider.paddle = input.paddle;
+      rider.paddleSprint = (input.sprint ?? false) && this.reserve.available;
       rider.steer = input.steer;
       rider.trim = input.trim ?? 0;
       rider.crouch = input.crouch ?? 0;
@@ -223,7 +233,10 @@ export class RideSession {
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).
       if (input.popUp && !(rider.phase === 'standing' && rider.lieDown(board))) rider.popUp();
     }
+    const sprinting = rider.sprintPaddling;
     board.step(dt, water);
+    // The reserve drains while the rider sprint-paddles, and refills at anything else, on the board or off it.
+    this.reserve.step(dt, sprinting);
     if (rider.attached) {
       // On the board the breath comes back, and the cord hangs slack.
       this.breath.step(dt, false, BREATH.relaxed);
