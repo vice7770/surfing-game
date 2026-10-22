@@ -133,8 +133,8 @@ function waterPrograms(): { name: string; program: { vertex: string; fragment: s
   for (const look of ['classic', 'rich'] as WaterLook[]) {
     for (const [sourceName, source] of Object.entries(sources)) {
       for (const barrel of [false, true]) {
-        // The roller runs only where no swept crash does (SurfZoneSimulation): a spot never has it and the curl's seam.
-        if (barrel && (source === roller || source === rocky)) continue;
+        // The roller runs only where no swept crash does (SurfZoneSimulation): with the crash off the Canyon has it and the
+        // swept barrel's mask together (its tubes, 2026-10-22), over its rock floor.
         for (const vertexNormals of [false, true]) {
           if (vertexNormals && (look === 'classic' || barrel)) continue;
           const water = new WaterSurface(source);
@@ -175,6 +175,13 @@ describe('the water programs\' texture units (≤ 16, the M1\'s)', () => {
     // The Canyon's (the roller) and Padang Padang's (the swept barrel) Rich programs, the fullest.
     expect(counts['water rich roller'].count).toBeLessThanOrEqual(15);
     expect(counts['edge band rich roller'].count).toBeLessThanOrEqual(UNITS);
+    // The Canyon's with its tubes (2026-10-22): its roller, rock and the barrel's mask, the carve's two tube textures
+    // left out where the barrel draws (`waterNoCarvePars`); Padang Padang's barrel programs lose them too.
+    for (const name of ['water rich rocky barrel', 'edge band rich rocky barrel', 'water rich tubed barrel', 'edge band rich tubed barrel']) {
+      expect(counts[name].samplers, name).not.toContain('waterTubeMap');
+      expect(counts[name].samplers, name).toContain('waterBarrelMask');
+    }
+    expect(counts['edge band rich rocky barrel'].count).toBeLessThanOrEqual(UNITS);
     // The rock's cover adds no unit: it rides in the bed's texture.
     expect(counts['water rich rocky'].count).toBe(counts['water rich roller'].count);
     expect(counts['edge band rich rocky'].count).toBe(counts['edge band rich roller'].count);

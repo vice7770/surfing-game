@@ -174,3 +174,18 @@ vec3 waterCarvedCubic( vec2 xz ) {
 
 /** Both, for the Rich water. */
 export const waterTubePars = `${waterTubeCarvePars}\n${waterCarvedCubicPars}`;
+
+/**
+ * The same two functions for a water that draws the swept barrel (`WaterSurface.setBarrelEnabled`): its tubes are
+ * the barrel's surface, never cut into the water (its source hands over none, `SnapshotSurfZone`), so the surface is
+ * left as it is and the program takes neither tube texture. The Canyon's Rich edge band, with its roller and the
+ * barrel's mask, would otherwise ask for 17 of the M1's 16 units (2026-10-22); Padang Padang's draws as before.
+ */
+export const waterNoCarvePars = /* glsl */ `
+float waterCarve( vec2 xz, float surface ) {
+  return surface;
+}
+vec3 waterCarvedCubic( vec2 xz ) {
+  return waterCubic( xz );
+}
+`;
