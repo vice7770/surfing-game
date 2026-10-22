@@ -109,7 +109,19 @@ Branch `claude/canyon-tube-wiring`, stacked on step 1. The advisor's rulings (co
 
 ### The Canyon's probe
 
-CANYONPROBE
+`src/wave/probes/canyonTube.probe.test.ts`, the Canyon's own swells, seed 3, 60 s after a period's spin-up, 1 m cells, the a38 library:
+
+| | Medium (1.4 m, 11 s) | Big (2.4 m, 14 s) |
+|---|---|---|
+| Tube regime (foot crest at most) | 1.22 m | 1.98 m |
+| Joins (late, past the throw depth) | 147 (10) | 1066 (59) |
+| Unbroken, of the crests that reached their throw depth (the advisor's bar about 20 %) | 963, 86.8 % | 202, 15.9 % |
+| Front points a frame, in the tube regime | 24.0, 97 % | 148.2, 88 % |
+| Foot crests, p10 / p50 / p90 | 0.32 / 0.76 / 0.94 m | 0.56 / 1.22 / 2.03 m |
+| Curl slices a frame; columns the tube takes from it | 10.9; 3.6 | 10.8; 9.0 |
+| The tube's white later than the curl's own landing, p10 / p50 / p90 | −0.70 / −0.12 / 1.39 s | −0.62 / 1.13 / 3.22 s |
+
+CANYONPROBENOTE
 
 ### Stills
 

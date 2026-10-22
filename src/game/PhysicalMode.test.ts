@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonBedSwitch, startOutSwitch, surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonBedSwitch, canyonTubeSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -83,6 +83,29 @@ describe('PhysicalMode', () => {
       const own = surfZoneConfigFor(big, 5, false);
       expect(own.startOut).toBeUndefined();
       expect(rideLineupOffset(own)).toBe(11);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonTube=off` and `?tubeShape=c` dev switches (the tube from Basilisk, 2026-10-22): the Canyon without its
+  // tubes, and the authored bounded-C in place of the cases' own frames; an online room's config keeps the defaults.
+  it('turns the Canyon\'s tubes off with `?canyonTube=off`, and draws the bounded-C with `?tubeShape=c` (dev switches)', () => {
+    expect(canyonTubeSwitch('?canyonTube=off')).toEqual({ sweptBarrel: false });
+    for (const search of ['', '?canyonTube', '?canyonTube=on']) expect(canyonTubeSwitch(search), search).toEqual({});
+    expect(tubeShapeSwitch('?tubeShape=c')).toEqual({ tubeShape: 'bounded-C' });
+    expect(tubeShapeSwitch('?tubeShape=basilisk')).toEqual({});
+    const canyon = physicalSettingsFor('canyon', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const padang = physicalSettingsFor('padang', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonTube=off' });
+      expect(surfZoneConfigFor(canyon, 5, false).sweptBarrel).toBe(false);
+      // Only the Canyon's: Padang Padang keeps its barrel.
+      expect(surfZoneConfigFor(padang, 5, false).sweptBarrel).toBeUndefined();
+      expect(surfZoneConfigFor(canyon, 5, false, { sweptBarrel: undefined }).sweptBarrel).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeShape=c' });
+      expect(surfZoneConfigFor(padang, 5, false).tubeShape).toBe('bounded-C');
+      expect(surfZoneConfigFor(padang, 5, false, { tubeShape: 'basilisk' }).tubeShape).toBe('basilisk');
     } finally {
       vi.unstubAllGlobals();
     }
