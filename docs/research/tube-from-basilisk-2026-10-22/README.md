@@ -51,7 +51,9 @@ What they show: the C drew a squared shelf or a small lumpy dome with a membrane
 
 ## Cost
 
-The drawn loft on the page's main thread, Padang Big, the same held sea and fronts, each shape's loft built alternately 100 times (warm caches), on this loaded M1 (load 7–20, other sessions' Node runs): **the cases' frames 2.8 ms p50 (9.8 p90), the bounded-C 5.8 ms (28.9 p90)**, 56–59 slices. The raw profile is a lerp of two frames; the C built each contour with its cap refinement (about 400 `cRefineCap` calls a build, `docs/research/perf-2026-10-22`). LOFTCOST
+The drawn loft on the page's main thread, Padang Big, the same held sea and fronts, each shape's loft built alternately 100 times (warm caches), on this loaded M1 (load 7–20, other sessions' Node runs): **the cases' frames 2.8 ms p50 (9.8 p90), the bounded-C 5.8 ms (28.9 p90)**, 56–59 slices. The raw profile is a lerp of two frames; the C built each contour with its cap refinement (about 400 `cRefineCap` calls a build, `docs/research/perf-2026-10-22`).
+
+So the loft gets cheaper, not dearer: the perf study's 10–11 ms a snapshot on the M1 (`SweptLoft.build` 10.1 ms p50, 21.6 p90, at Padang Medium) was the C's construction; on the same fronts the cases' frames take about half the C's time. The worker's contact reads the same profiles; it was not timed separately.
 
 The loop closing adds a pass over the tip-to-throat points of blended profiles only (about 1 µs a query). The young-end blend adds two profile lookups a front. No shader change in step 1.
 
@@ -66,7 +68,9 @@ The loop closing adds a pass over the tip-to-throat points of blended profiles o
   - *The seam and the stippling:* the raw path's mask is the pre-10-05 one, a dithered band, without the C's retirement rows and fade-weighted mask. No new seam showed in the stills; the dithered band's stippling at the mask's edge is as it was before 10-05.
   - *The grey band:* not seen in the stills (it was seen with both shapes on 10-05 and never traced); not specifically probed.
   - *Tube entry:* the rider's contact uses the same profiles as the drawing (clear hold); the dev tube guide works on them again. Ordinary entry, crouch and exit are the owner's to ride.
-- **Young ends.** The library's earliest frames stand 0.3–0.55 H over the solver's unbroken crest beside a front's young end (Medium 0.29–0.35 H, Big 0.50–0.55 H at the median, 1 m blend). They now blend over max(1 m, H). YOUNG
+- **Young ends.** The library's earliest frames stand 0.3–0.55 H over the solver's unbroken crest beside a front's young end (Medium 0.29–0.35 H, Big 0.50–0.55 H at the median, 1 m blend). They now blend over max(1 m, H).
+
+  With the final code at Padang Medium (60 s, seed 3, link off): 1,308 young ends; their step over the blend 0.04 / 0.18 / 0.47 H (p10 / p50 / p90, max 0.70), against a median of 0.29–0.35 H with the 1 m blend; the seam's slope 0.04 / 0.17 / 0.47 (tan 20° is 0.36, so the steepest tenth is still steeper than the face); a lip inside the blend 21 times. Thrown ends step 0.02 / 0.08 / 0.40 H over their 1 m. Over the same run, strips dropped as folds 0.20 a frame, holes 0.007, self-folds 0. Big's young ends were not rerun with the final code.
 - **Short close-outs draw blunt.** A 5 m section draws 3 m of full curl and two 1 m ends, as ruled; with the drawn crest standing over the solver's, a section's thrown ends step down to the water over 1 m.
 
 ## The front-gap probe: the narrowed link stays off
@@ -87,7 +91,12 @@ The link bridges one-column holes (4,341 bridge-steps at Medium, 0.4 % of them a
 
 ## Tests
 
-TESTS
+On 8e40ebb6 (every later commit of this step is docs), on this M1 under other sessions' load:
+- `npx tsc --noEmit -p .`: clean.
+- The main suite (`npx vitest run src --maxWorkers=3`, without `SurfZoneSimulation` and `SurfZoneRunner`): 302 files passed, 27 skipped; 2,860 tests passed, 18 expected failures, 31 skipped.
+- `SurfZoneSimulation.test.ts -t "[Pp]adang|[Cc]anyon|[Bb]arrel|[Tt]ube"`: 36 passed (2 h 6 min).
+- `SurfZoneSimulation.test.ts -t "[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: 11 passed.
+- No `SurfZoneRunner` rider sessions were run: the owner rides.
 
 ## Step 2: the Canyon's tubes
 
