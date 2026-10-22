@@ -1,4 +1,5 @@
-import { PADANG, REEF, type SpotName } from '../Bathymetry';
+import { CANYON, PADANG, REEF, type SpotName } from '../Bathymetry';
+import { GRAVITY } from '../dispersion';
 import type { FrontOptions } from './BreakingFront';
 import { PADANG_ONSET, type OnsetTables } from './sliceClock';
 
@@ -40,6 +41,29 @@ export interface BarrelSpot {
   frontFrom: 'fine' | 'zone';
   /** The front's rules (BreakingFront's `FrontOptions`): Padang Padang's crest jumps, the Reef's jumps and late join. */
   front?: FrontOptions;
+  /**
+   * Whether its jets leave and land on the barrel's clock (the swept crash, PR 5), unless the config says otherwise: on
+   * where not given. Off at the Canyon, whose spilling front, roller and curl draw its white as the owner approved them,
+   * and whose water stays exactly as it was measured (the advisor, 2026-10-22).
+   */
+  crash?: boolean;
+  /**
+   * Where its waves plunge a tube, the surf-similarity number ξ_f = S / √(η_foot / L0) at least this (S the transect's
+   * `slope`, η_foot a point's foot crest, L0 = g T² / 2π); below it they curl or fold, draw no tube and are not felt as
+   * one, and the spot's own look draws them (`tubeFootMax`). None: every point draws its tube (Padang Padang).
+   */
+  tubeFrom?: number;
+}
+
+/**
+ * The highest foot crest at a spot that plunges a tube under swell of `period` s (`BarrelSpot.tubeFrom`), m: Infinity
+ * where every point does. ξ_f ≥ ξ means η_foot ≤ (S / ξ)² L0. Only + − × ÷ (π a constant).
+ */
+export function tubeFootMax(spot: SpotName, period: number): number {
+  const record = BARREL_SPOTS[spot];
+  if (record?.tubeFrom === undefined) return Infinity;
+  const ratio = record.slope / record.tubeFrom;
+  return ratio * ratio * ((GRAVITY * period * period) / (2 * Math.PI));
 }
 
 /**
@@ -117,6 +141,64 @@ const POINT_ONSET: OnsetTables = {
 const POINT_FOOT = 7;
 
 /**
+ * The Canyon's three tube runs (docs/research/canyon-tube-runs, the owner's M4, level 13, on the reef bed's 1:23 to the
+ * 2.2 m hinge from the 6 m platform): each case's foot crest (its A0 × 6 m, from the scout) and the still depth where its
+ * face went vertical, m (`plunge_measure.py`), and its period, s. a38 is Big's typical wave (a tube), a49 Big's sets (a
+ * fold at the crest), a29 Medium's sets (a curl, under-resolved: a lower bound).
+ */
+const CANYON_RUNS = {
+  a29: { foot: 1.2682458461538462, vertical: 2.788606727843102, period: 11 },
+  a38: { foot: 1.8599071679999999, vertical: 2.740354281192891, period: 14 },
+  a49: { foot: 2.5191580799999995, vertical: 3.590326732873789, period: 14 },
+} as const;
+/** The throw line through the three runs (the advisor, 2026-10-22): its slope in the foot crest at 14 s, and per second of period. */
+const CANYON_THROW_SLOPE = (CANYON_RUNS.a49.vertical - CANYON_RUNS.a38.vertical) / (CANYON_RUNS.a49.foot - CANYON_RUNS.a38.foot);
+const CANYON_THROW_INTERCEPT = CANYON_RUNS.a38.vertical - CANYON_THROW_SLOPE * CANYON_RUNS.a38.foot;
+const CANYON_THROW_PERIOD = (CANYON_RUNS.a29.vertical - CANYON_THROW_INTERCEPT - CANYON_THROW_SLOPE * CANYON_RUNS.a29.foot)
+  / (CANYON_RUNS.a29.period - CANYON_RUNS.a38.period);
+
+/**
+ * The Canyon's transect (the tube from Basilisk, 2026-10-22; the water-physics advisor's rulings): its 6 m platform, the
+ * arm's face at 1:23 along the waves' path (`CANYON.pathSlope`) to the 2.2 m hinge and the 1 m top. All provisional.
+ * - **The join:** the game's solver's fresh onset on that transect (the spotOnset probe, 2026-10-22: H0 6, 1:23 to a 1 m
+ *   flat; regular waves at 9, 11, 12 and 14 s), each wave's first onset against its highest over the band, the median of
+ *   12 waves. Left out: drives where only 1–2 waves onset (every 1 m drive: one wave is no table row), saturated drives
+ *   (9 s at 3.5 and 4 m, whose band crest fell as the drive grew), and rows whose onset lies at or seaward of the band's
+ *   shallow edge (11 and 14 s at 4 m: the band must stay seaward of every onset). 14 s at 3.5 m is kept, 0.09 m inside it.
+ *   Flagged: the 12 s rows' larger drives onset 0.5–1 m shallower than at 11 and 14 s for the same band crest; to check
+ *   on 2D seeds (12 s, Practice) within about 0.3 m before trusting them.
+ * - **The band:** Padang Padang's 6–5 m at 7 m, scaled to the 6 m foot.
+ * - **The throw:** the still depth where the Navier–Stokes face goes vertical, a line in the foot crest with a period term
+ *   (`CANYON_RUNS`): d = 0.342 + 1.289 η − 0.270 (T − 14), exact through the three runs; canyon23f74_a38 (14 s, 1.886 m
+ *   → 2.761 m, not staged) lies 0.013 m off it. a29 went vertical 0.81 m deeper than the 14 s line alone puts it, so the
+ *   period is real. Clamped to the runs' foot crests (1.27–2.52 m) and periods (11–14 s): unclamped, a 9 s wave would
+ *   throw 0.5 m deeper than an 11 s one. No floor. At 11 s the solver and Navier–Stokes agree (a29 vertical at 2.79 m,
+ *   its first onset 2.67 m): zero lag, as for Padang Padang's small 14 s wave; at 14 s the solver breaks first.
+ * - **The front:** `joinPast` 1.5 H, the Reef's rule, so a zero-lag crest the solver breaks just past its throw depth
+ *   joins and throws there, rather than being dropped as unbroken (bar: at most about 20 % unbroken).
+ * - **The crash:** off (`crash`), so the Canyon's water, its spilling front, roller and curl are exactly as measured
+ *   and approved; the tube is drawn and felt, and its white waits for the tube's own touchdown.
+ * - **The tube's regime:** a tube where ξ_f ≥ 0.54 (`tubeFrom`): between a29 (0.531, a curl) and f74 (0.554, a tube),
+ *   Battjes's 0.4 at the break on these runs: foot crests up to 0.82, 1.22, 1.46 and 1.98 m at 9, 11, 12 and 14 s.
+ *   Elsewhere the spilling curl draws. Its library holds a38 alone (`BARREL_CASE_NOTES`): a tube case never blends
+ *   with a curl case.
+ */
+const CANYON_ONSET: OnsetTables = {
+  h0: 6,
+  band: [(6 / 7) * 6, (5 / 7) * 6],
+  join: [
+    { period: 9, rows: [[1.07, 1.89], [1.48, 2.41], [1.79, 2.85], [2.05, 3.24]] },
+    { period: 11, rows: [[0.97, 2.2], [1.23, 2.67], [1.42, 3.15], [1.6, 3.63], [2.09, 4.11]] },
+    { period: 12, rows: [[1.14, 1.98], [1.43, 2.67], [1.76, 3.07], [2.15, 3.07], [2.55, 3.28], [2.84, 3.41]] },
+    { period: 14, rows: [[1.26, 2.28], [1.86, 2.8], [2.34, 3.2], [2.77, 3.63], [3.22, 4.2]] },
+  ],
+  throwDepth: {
+    intercept: CANYON_THROW_INTERCEPT, slope: CANYON_THROW_SLOPE, heights: [CANYON_RUNS.a29.foot, CANYON_RUNS.a49.foot],
+    period: { slope: CANYON_THROW_PERIOD, reference: 14, periods: [11, 14] },
+  },
+};
+
+/**
  * Every spot's barrel transect, where its cases are in the library. Padang Padang's is round 6's (the owner's 1:19 along
  * the path from the wedge's 7 m foot, read live for the design sweep); the Reef's, its shelf's 10 m and the ledge along
  * the swell's path. The Reef's fine zone starts at the shelf's edge, so its front follows crests from there.
@@ -128,6 +210,10 @@ const POINT_FOOT = 7;
  */
 export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   padang: { slope: 1 / 19, get footDepth() { return PADANG.baseDepth; }, onset: PADANG_ONSET, frontFrom: 'zone', front: PADANG_FRONT },
+  canyon: {
+    get slope() { return CANYON.pathSlope; }, get footDepth() { return CANYON.shelfDepth; }, onset: CANYON_ONSET, frontFrom: 'zone',
+    front: { joinPast: 1.5 }, crash: false, tubeFrom: 0.54,
+  },
   point: { slope: 0.0465116, footDepth: POINT_FOOT, onset: POINT_ONSET, frontFrom: 'zone' },
   reef: {
     slope: 0.238095, get footDepth() { return REEF.shelfDepth; }, onset: REEF_ONSET, frontFrom: 'fine',

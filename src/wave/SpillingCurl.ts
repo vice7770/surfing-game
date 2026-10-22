@@ -118,6 +118,8 @@ export function landingShare(psiMax: number): number {
 
 /** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, eight waves at once. */
 export const CURL_CAPACITY = 56;
+/** A swept tube's crest this close across shore to a column's curl crest is that wave's, m (the Canyon's tube regime) [inferred]. */
+const TUBE_MATCH = 5;
 /** Floats per curl slice. */
 export const CURL_STRIDE = 13;
 /** Where each value sits in a curl slice (`writeCurls`). */
@@ -270,6 +272,8 @@ export class SpillingCurl implements SpillingDrawnLook {
    * clean face ahead of the lip.
    */
   readonly shoulderAir: Float32Array;
+  /** Per column, 1 where a swept tube draws this wave's crest at the last update (`update`'s `tube`): no curl drawn there. */
+  readonly tube: Uint8Array;
   private readonly first: number;
   private readonly last: number;
   private readonly view = createLensView();
@@ -302,6 +306,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.gradient = new Float64Array(nx);
     this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
     this.shoulderAir = new Float32Array(nx * nz).fill(1);
+    this.tube = new Uint8Array(nx);
     this.shapes = [];
     // Each column's bed along the waves' path (+z, the Canyon's straight crests) at the breaker depth: the gradient it
     // climbs (Mead & Black's band, as the reef break's), its overturn held to the span the advisor gave for the fan face.
@@ -345,12 +350,16 @@ export class SpillingCurl implements SpillingDrawnLook {
    * height, normal, landing line and foot, from its roller lens there or, without one, a section of the solver's surface
    * at its S2 crest. It keeps nothing from step to step: a sea taken over rebuilds it from its front and lenses.
    */
-  update(time: number, dt: number, front: SpillingFront, roller: SpillingRoller | undefined, strength: ArrayLike<number>): void {
+  update(
+    time: number, dt: number, front: SpillingFront, roller: SpillingRoller | undefined, strength: ArrayLike<number>,
+    tube?: { readonly touchdown: ArrayLike<number>; readonly z: ArrayLike<number> },
+  ): void {
     const { grid, first, last, view, section } = this;
     const { age, wave } = this;
     this.splashes.length = 0;
     age.fill(Number.NaN);
     wave.fill(NONE);
+    this.tube.fill(0);
     const waves = front.waves;
     for (let k = 0; k < waves.length; k += 1) {
       const { reached, joinedAt } = waves[k];
@@ -398,13 +407,20 @@ export class SpillingCurl implements SpillingDrawnLook {
       this.normalZ[column] = Math.cos(held);
       this.height[column] = h;
       this.impact[column] = impactTime(h);
+      // A swept tube on this wave's crest here (the Canyon's tube regime): the tube draws, not this curl, and its white
+      // waits for the tube's own touchdown, its landing no splash of this curl's (the advisor, 2026-10-22).
+      const touchdown = tube ? tube.touchdown[column] : Number.NaN;
+      if (touchdown === touchdown && crest === crest && Math.abs(tube!.z[column] - crest) <= TUBE_MATCH) {
+        this.tube[column] = 1;
+        this.impact[column] = Math.max(0, age[column] + touchdown - time);
+      }
       this.landing[column] = this.size(column, h).ahead;
       // The face's foot: the lens's toe, its length L_r, or, unset, the stage's at birth (H / tan θ_s, Martins et al. 2018).
       const toe = length > 0 ? length : h / ROLLER_DEFAULTS.tanBirth;
       this.foot[column] = Math.max(this.landing[column] + SPILLING_CURL.soft, toe);
       // Touched down this step: its splash, the share of its jet that splashes up, on at the breaker celerity.
       const since = age[column] - this.impact[column];
-      if (dt > 0 && crest === crest && since >= 0 && since < dt) {
+      if (dt > 0 && crest === crest && since >= 0 && since < dt && this.tube[column] === 0) {
         const shape = this.shapes[column];
         const celerity = Math.sqrt(GRAVITY * this.options.breakerDepth);
         const volume = SPILLING_CURL.splashShare * shape.jetArea * h * h * grid.dx;
@@ -531,7 +547,7 @@ export class SpillingCurl implements SpillingDrawnLook {
       // The column nearest the wave's front among its standing curl's, for the start's frame.
       let nearest = NONE;
       for (let column = first; column < last && count < capacity; column += 1) {
-        if (this.wave[column] !== k) continue;
+        if (this.wave[column] !== k || this.tube[column] === 1) continue;
         const crest = this.crest[column];
         const age = this.age[column];
         const impact = this.impact[column];

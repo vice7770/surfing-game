@@ -66,12 +66,18 @@ export async function loadBarrelCaseBytes(
  */
 export type TubeShape = 'basilisk' | 'bounded-C';
 
+/**
+ * The bounded-C's evaluated domain (bc0b489f): the eight cases shipped with it, Padang Padang's, the Reef's and the
+ * Point's. The Canyon's cases came after it, so the `?tubeShape=c` A/B draws them raw.
+ */
+export const BOUNDED_C_CASES: readonly BarrelCaseEntry[] = BARREL_CASES.filter((entry) => entry.spot !== 'canyon');
+
 /** Case files decoded into one library, drawn as `shape` says (`TubeShape`). */
 export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk'): ProfileLibrary {
   const cases = bytes.map(decodeCase);
   if (shape !== 'bounded-C') return new ProfileLibrary(cases);
-  // The bounded provider's explicitly evaluated domain is the shipped cases. General fixtures stay raw.
-  const eligible = cases.every((c) => BARREL_CASES.some((entry) => entry.id === c.id));
+  // The bounded provider's explicitly evaluated domain is the cases shipped with it. General fixtures stay raw.
+  const eligible = cases.every((c) => BOUNDED_C_CASES.some((entry) => entry.id === c.id));
   return new ProfileLibrary(cases, eligible ? { geometry: 'bounded-C' } : {});
 }
 

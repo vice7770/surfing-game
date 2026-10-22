@@ -3,12 +3,13 @@ import { Box3, Triangle, Vector3 } from 'three';
 import { boundedCCap, boundedCLifecycle, boundedCParameters, sampleBoundedC } from './boundedCProfile';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { createContactHit, SweptContact } from './sweptContact';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
 const c = cases.find(value => value.id === 'pad19-a30-l12')!;
 const STILL = 0.5;

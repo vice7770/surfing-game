@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { describe, expect, it } from 'vitest';
 import { BARREL_CASES } from './barrelLibraryIndex';
+import { barrelCaseNote } from './barrelLibrary';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { sheetTablesLookup } from './lipSheet';
@@ -230,6 +231,7 @@ describe('the clear-profile drawing hold', () => {
         }
       }
     }
-    expect(visited.sort()).toEqual(BARREL_CASES.map(entry => entry.id).sort());
+    // Every case a spot draws (those kept but not drawn, `BARREL_CASE_NOTES`, aside).
+    expect(visited.sort()).toEqual(BARREL_CASES.filter(entry => !barrelCaseNote(entry.id)).map(entry => entry.id).sort());
   });
 });

@@ -4,10 +4,11 @@ import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import { ProfileLibrary } from './ProfileLibrary';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { decodeCase } from './profileFormat';
 import { SweptCrash, type CrashSea } from './SweptCrash';
 
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const c = cases.find(c => c.id === 'pad19-a30-l12')!;
 const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
 const query = { slope: c.slope, footHeight: c.nonlinearity * 2, footDepth: 2 };

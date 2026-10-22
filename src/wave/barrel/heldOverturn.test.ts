@@ -38,6 +38,8 @@ describe('a frame’s jet and void, as metrics.py measures them (the crash’s w
       'periodic-point21-a15-l12': { jet: 0.068 * 0.355 * 0.355, air: 0.043 * 0.355 * 0.355 },
       'periodic-point21-a23-l12': { jet: 0.043 * 0.476 * 0.476, air: 0.034 * 0.476 * 0.476 },
       'periodic-point21-a30-l12': { jet: 0.15 * 0.479 * 0.479, air: 0.145 * 0.479 * 0.479 },
+      // The Canyon's drawn case (2026-10-22): A_J and A_O per H_I² at 0.495 h0, as barrel-cases.md has them.
+      'periodic-canyon23-a38-l13': { jet: 0.172 * 0.495 * 0.495, air: 0.166 * 0.495 * 0.495 },
     };
     for (const bytes of readBarrelCases()) {
       const c = decodeCase(bytes);

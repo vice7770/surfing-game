@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { arcBound, boundedCParameters, blendBoundedCParameters, boundedCLifecycle, sampleBoundedC, type BoundedCParameters, type Vec2 } from './boundedCProfile';
 import { decodeCase } from './profileFormat';
 import { readBarrelCases } from './nodeBarrelCases';
-import { libraryFromBytes } from './barrelLibrary';
+import { libraryFromBytes, BOUNDED_C_CASES } from './barrelLibrary';
 import { ProfileLibrary } from './ProfileLibrary';
 import { GRAVITY } from '../dispersion';
 import { toyCase } from './toyCase';
@@ -16,7 +16,7 @@ function crossings(p:Float32Array):Set<string>{
   if(t>1e-9&&t<1-1e-9&&u>1e-9&&u<1-1e-9)result.add(`${i}/${j}`);
  }return result;
 }
-const cases=readBarrelCases().map(decodeCase);
+const cases=readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const frame=(c:typeof cases[number],f:number)=>c.frames.slice(256*f,256*(f+1));
 const blend=(a:Float32Array,b:Float32Array,t:number)=>Float32Array.from(a,(v,i)=>v+t*(b[i]-v));
 
@@ -54,11 +54,11 @@ describe('bounded C provider contracts',()=>{
 
 describe('parameter-first shared library authority',()=>{
  // Since 2026-10-22 the game draws the cases' own Basilisk frames; the C stays for the `?tubeShape=c` A/B only.
- const library=libraryFromBytes(readBarrelCases(),'bounded-C');
+ const library=libraryFromBytes(readBarrelCases(undefined, BOUNDED_C_CASES),'bounded-C');
  it('opts shipped factory cases in when the A/B asks for it, preserves raw bytes and direct fixture semantics',()=>{
   expect(library.options.geometry).toBe('bounded-C');expect(new ProfileLibrary(cases).options.geometry).toBeUndefined();
-  expect(libraryFromBytes(readBarrelCases()).options.geometry).toBeUndefined();
-  const raw=readBarrelCases();const snapshots=raw.map(b=>b.slice());libraryFromBytes(raw);raw.forEach((b,i)=>expect(b).toEqual(snapshots[i]));
+  expect(libraryFromBytes(readBarrelCases(undefined, BOUNDED_C_CASES)).options.geometry).toBeUndefined();
+  const raw=readBarrelCases(undefined, BOUNDED_C_CASES);const snapshots=raw.map(b=>b.slice());libraryFromBytes(raw);raw.forEach((b,i)=>expect(b).toEqual(snapshots[i]));
   expect(()=>new ProfileLibrary([toyCase(.3,0)],{geometry:'bounded-C'}).profileAt({slope:.05,footHeight:2.1,footDepth:7,seconds:0},new Float32Array(256))).toThrow(/domain/);
  });
  it('pointAt, drawing, contact and table metadata all share final metric contour and actual clocks',()=>{

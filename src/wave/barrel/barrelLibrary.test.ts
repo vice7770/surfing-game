@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, loadBarrelLibrary, type BarrelCaseEntry } from './barrelLibrary';
+import { barrelCaseNote, barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, loadBarrelLibrary, type BarrelCaseEntry } from './barrelLibrary';
 import { BARREL_CASES } from './barrelLibraryIndex';
 import { caseFromLibrary, type LibraryJson } from './caseFromLibrary';
 import { readBarrelCases } from './nodeBarrelCases';
@@ -31,10 +31,23 @@ describe('loading the barrel library', () => {
     expect(libraryFromBytes(loaded).profileAt({ slope: barrel.slope, footHeight: barrel.nonlinearity * 7, footDepth: 7, seconds: 0.2 }, out).caseId).toBe('test');
   });
 
-  it('reads the index’s case files in node', () => {
+  it('reads the index’s case files in node: every case a spot draws, or the entries asked for', () => {
     const cases = readBarrelCases();
-    expect(cases.length).toBe(BARREL_CASES.length);
+    expect(cases.length).toBe(BARREL_CASES.filter((entry) => !barrelCaseNote(entry.id)).length);
+    expect(readBarrelCases(undefined, BARREL_CASES).length).toBe(BARREL_CASES.length);
     expect(libraryFromBytes(cases)).toBeInstanceOf(ProfileLibrary);
+  });
+
+  it('keeps the Canyon’s fold and curl cases in the index, labelled, and draws its tube case alone (2026-10-22)', () => {
+    const canyon = BARREL_CASES.filter((entry) => entry.spot === 'canyon').map((entry) => entry.id);
+    expect(canyon.map((id) => id.replace(/-l\d+$/, '')).sort()).toEqual(['periodic-canyon23-a29', 'periodic-canyon23-a38', 'periodic-canyon23-a49']);
+    expect(barrelCasesFor('canyon').map((entry) => entry.id.replace(/-l\d+$/, ''))).toEqual(['periodic-canyon23-a38']);
+    expect(barrelCaseNote('periodic-canyon23-a49-l13')?.note).toMatch(/fold/);
+    expect(barrelCaseNote('periodic-canyon23-a29-l14')?.note).toMatch(/provisional/);
+    // canyon23f74_a38 is never staged (the advisor, 2026-10-22).
+    expect(BARREL_CASES.some((entry) => entry.id.startsWith('periodic-canyon23f74'))).toBe(false);
+    // The bounded-C A/B never reads a Canyon case: they came after it.
+    expect(libraryFromBytes(readBarrelCases('canyon'), 'bounded-C').options.geometry).toBeUndefined();
   });
 
   // PR 7: each spot loads only its own transect's cases.

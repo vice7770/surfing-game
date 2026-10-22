@@ -35,13 +35,17 @@ function records(n: number, tau: number, footHeight: number, footDepth: number):
 }
 
 describe('the swept barrel’s spots (Part B, PR 7)', () => {
-  it('leaves the owner’s switch alone: only Padang Padang is swept unless a test says so', () => {
-    expect(SWEPT_BARREL).toEqual(['padang']);
-    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+  it('leaves the owner’s switch alone: Padang Padang and the Canyon (2026-10-22) are swept unless a test says so', () => {
+    expect(SWEPT_BARREL).toEqual(['padang', 'canyon']);
+    for (const spot of ['beach', 'point', 'reef'] as const) {
       expect(sweptBarrelOn({ spot })).toBe(false);
       // A test can switch a spot on only where it has a barrel transect.
       expect(sweptBarrelOn({ spot, sweptBarrel: true })).toBe(BARREL_SPOTS[spot] !== undefined);
     }
+    // The Canyon's tubes: on, off with `?canyonTube=off` (the config's say), and never on its old layout.
+    expect(sweptBarrelOn({ spot: 'canyon' })).toBe(true);
+    expect(sweptBarrelOn({ spot: 'canyon', sweptBarrel: false })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old' })).toBe(false);
   });
 
   it('gives every spot with cases a transect, and every transect cases', () => {

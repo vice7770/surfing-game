@@ -25,7 +25,7 @@ import { riderBounds, sideMargin, type RiderBounds } from '../physics/riderBound
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
-import { BARREL_SPOTS } from './barrel/barrelSpots';
+import { BARREL_SPOTS, tubeFootMax } from './barrel/barrelSpots';
 import type { TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import type { ProfileLibrary } from './barrel/ProfileLibrary';
@@ -221,9 +221,12 @@ export function surfaceDrift(solver: Pick<ShallowWaterSolver, 'bed' | 'restLevel
  */
 export const SPILLING_CURL_FOAM_DECAY: FoamDecay = { dense: 3, residual: 6 };
 
-/** Whether a sea draws the spilling lip: wherever its spilling front runs (no swept barrel there), unless the config says not. */
-export function spillingCurlOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront' | 'spillingCurl' | 'sweptBarrel'>): boolean {
-  return spillingFrontOn(config) && config.spillingCurl !== false && !sweptBarrelOn(config);
+/**
+ * Whether a sea draws the spilling lip: wherever its spilling front runs (no swept crash there: the Canyon's tubes leave
+ * its spilling front, roller and curl as they were), unless the config says not.
+ */
+export function spillingCurlOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront' | 'spillingCurl' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed'>): boolean {
+  return spillingFrontOn(config) && config.spillingCurl !== false && !sweptCrashOn(config);
 }
 
 /** Whether a sea's whitewater follows a spilling front: the config's say, else SPILLING_SPOTS. */
@@ -235,11 +238,23 @@ export function spillingFrontOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingF
  * Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run.
  * The owner's switch: a spot with a barrel transect (`BARREL_SPOTS`) is switched on by adding it here (Part B, PR 7).
  */
-export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
+export const SWEPT_BARREL: readonly SpotName[] = ['padang', 'canyon'];
 
-/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel transect. */
-export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
+/**
+ * Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel
+ * transect, nor on the Canyon's old layout (`canyonBed` 'old', whose arm is not the 1:23 its tube runs climbed).
+ */
+export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'canyonBed'>): boolean {
+  if (config.spot === 'canyon' && config.canyonBed === 'old') return false;
   return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
+}
+
+/**
+ * Whether a swept sea's jets leave and land on the barrel's clock (the swept crash, PR 5): the config's say, else the
+ * spot's (`BarrelSpot.crash`: off at the Canyon), else on. It needs the profile library as well (the constructor's).
+ */
+export function sweptCrashOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed'>): boolean {
+  return sweptBarrelOn(config) && (config.sweptCrash ?? BARREL_SPOTS[config.spot]?.crash ?? true);
 }
 
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
@@ -820,6 +835,15 @@ export class SurfZoneSimulation {
    * it reads the front, the lenses and the water, and writes only what is drawn.
    */
   readonly curl?: SpillingCurl;
+  /**
+   * The highest foot crest whose wave plunges a tube (`tubeFootMax`, the spot's tube regime), m: Infinity where every
+   * front point does. The front's records leave the rest out (`writeFrontRecords`), so they are neither drawn nor felt.
+   */
+  readonly tubeFootMax: number = Infinity;
+  /** With a tube regime and a spilling curl: the library, and per column the solver time a tube there touches down and its crest's z (NaN: none). */
+  private readonly tubeLibrary?: ProfileLibrary;
+  private readonly tubeTouchdown?: Float64Array;
+  private readonly tubeZ?: Float64Array;
   /** The roller front's toe line for the drawn spray (`rollerToes`), kept for the step it was written at. */
   private toes?: RollerToes & { readonly table: Float32Array; readonly look: Float32Array; time: number };
   /** The whitewater whose foam is drawn with the spilling lip on: the front's, held back until each curl lands. */
@@ -951,12 +975,21 @@ export class SurfZoneSimulation {
       const record = BARREL_SPOTS[config.spot]!;
       this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
       const slope = BARREL_SLOPE[config.spot];
-      const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && config.sweptCrash !== false ? new CarrierSupport(barrel, slope) : undefined;
+      const crash = sweptCrashOn(config);
+      const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
-      if (barrel && slope !== undefined && config.sweptCrash !== false) {
+      if (barrel && slope !== undefined && crash) {
         this.crash = new SweptCrash(barrel, slope);
         this.whitewater = new Float64Array(this.solver.h.length);
+      }
+      // A spot whose waves plunge a tube only from a regime (the Canyon): the rest are its own look's, and the tube's
+      // columns hold its white until the tube's own touchdown (`markTubeColumns`).
+      this.tubeFootMax = tubeFootMax(config.spot, config.peakPeriod);
+      if (barrel && slope !== undefined && Number.isFinite(this.tubeFootMax)) {
+        this.tubeLibrary = barrel;
+        this.tubeTouchdown = new Float64Array(this.solver.nx).fill(Number.NaN);
+        this.tubeZ = new Float64Array(this.solver.nx).fill(Number.NaN);
       }
     }
     if (spillingFrontOn(config) && !this.crash) {
@@ -1086,7 +1119,10 @@ export class SurfZoneSimulation {
     if (state.spilling?.roller) this.roller?.importState(state.spilling.roller);
     else this.roller?.reset();
     // The spilling lip keeps nothing of its own: it is rebuilt from the front and lenses taken over, as the donor's was.
-    if (this.curl) this.curl.update(solver.time, 0, this.spilling!, this.roller, this.breaking.strength);
+    if (this.curl) {
+      this.markTubeColumns();
+      this.curl.update(solver.time, 0, this.spilling!, this.roller, this.breaking.strength, this.tubeColumns());
+    }
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
@@ -1206,7 +1242,10 @@ export class SurfZoneSimulation {
     // Its roller lenses (S3) read the water and the front, after the front's step.
     if (this.roller) this.roller.update(this.solver.time, dt, this.spilling!, this.breaking.strength, this.breakerDepth());
     // The spilling lip's columns, after the lenses' step: what the next step's drawn whitewater and the snapshot read.
-    this.curl?.update(this.solver.time, dt, this.spilling!, this.roller, this.breaking.strength);
+    if (this.curl) {
+      this.markTubeColumns();
+      this.curl.update(this.solver.time, dt, this.spilling!, this.roller, this.breaking.strength, this.tubeColumns());
+    }
     end = performance.now();
     this.stepCosts.roller = end - phase;
     phase = end;
@@ -1238,6 +1277,35 @@ export class SurfZoneSimulation {
     end = performance.now();
     this.stepCosts.aeration = end - phase;
     this.lastStepMs = end - start;
+  }
+
+  /**
+   * Each column's tube, at a spot with a tube regime and a spilling curl (the Canyon): the solver time its youngest
+   * tube-regime front point there touches down (its clock from now to the library's touchdown) and its crest's z, NaN
+   * where none. The spilling curl draws nothing there and holds its white until that touchdown, so the tube and the curl
+   * never draw the same metre of crest (the advisor, 2026-10-22). Read from the front as the last step left it.
+   */
+  private markTubeColumns(): void {
+    const { front, tubeLibrary, tubeTouchdown, tubeZ } = this;
+    if (!front || !tubeLibrary || !tubeTouchdown || !tubeZ) return;
+    tubeTouchdown.fill(Number.NaN);
+    tubeZ.fill(Number.NaN);
+    const slope = BARREL_SLOPE[this.config.spot]!;
+    const time = this.solver.time;
+    for (const p of front.points) {
+      if (!(p.footHeight <= this.tubeFootMax) || p.column < 0 || p.column >= tubeTouchdown.length) continue;
+      const touchdown = time - p.tau + tubeLibrary.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds;
+      // The youngest wave's: the one touching down last.
+      if (!(touchdown <= tubeTouchdown[p.column])) {
+        tubeTouchdown[p.column] = touchdown;
+        tubeZ[p.column] = p.z;
+      }
+    }
+  }
+
+  /** The columns' tubes for the spilling curl (`markTubeColumns`), when there are any to read. */
+  private tubeColumns(): { touchdown: Float64Array; z: Float64Array } | undefined {
+    return this.tubeTouchdown && this.tubeZ ? { touchdown: this.tubeTouchdown, z: this.tubeZ } : undefined;
   }
 
   /** The swept barrel's front (Part B): the crests breaking in the fine zone, linked into lines, and their clocks. */

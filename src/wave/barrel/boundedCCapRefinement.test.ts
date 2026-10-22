@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
 const c = cases.find(value => value.id === 'pad19-a30-l12')!;
 type Query = Omit<ProfileQuery, 'seconds' | 'hold'>;

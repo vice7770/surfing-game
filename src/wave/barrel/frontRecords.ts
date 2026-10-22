@@ -13,15 +13,42 @@ export const FRONT_FIELD = { x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight:
 /** Most front points a snapshot carries: about one per metre of breaking crest, several fronts across a 320 m window. */
 export const FRONT_CAPACITY = 2048;
 
-/** Writes `points` (in their order: by front, then σ) into `out` as records, as many as fit; returns how many. */
-export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Array): number {
-  const count = Math.min(points.length, Math.floor(out.length / FRONT_STRIDE));
-  for (let k = 0; k < count; k += 1) {
+/**
+ * A front's piece after a gap (`writeFrontRecords`'s `footMax`) is written as its own front, numbered front + piece ×
+ * this: within float32's exact integers for 15 pieces of fronts numbered under a million.
+ */
+export const FRONT_PIECE = 2 ** 20;
+
+/**
+ * Writes `points` (in their order: by front, then σ) into `out` as records, as many as fit; returns how many. `footMax`, m:
+ * a point whose foot crest is higher plunges no tube (a spot's tube regime, `BarrelSpot.tubeFrom`), so it is left out,
+ * and the piece of its front after it is written as a front of its own (`FRONT_PIECE`): the loft never bridges the gap.
+ */
+export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Array, footMax = Infinity): number {
+  const capacity = Math.floor(out.length / FRONT_STRIDE);
+  let count = 0;
+  let front = Number.NaN;
+  let piece = 0;
+  let gap = false;
+  for (let k = 0; k < points.length && count < capacity; k += 1) {
     const p = points[k];
-    const o = k * FRONT_STRIDE;
+    if (p.front !== front) {
+      front = p.front;
+      piece = 0;
+      gap = false;
+    }
+    if (!(p.footHeight <= footMax)) {
+      gap = true;
+      continue;
+    }
+    if (gap) {
+      piece = Math.min(15, piece + 1);
+      gap = false;
+    }
+    const o = count * FRONT_STRIDE;
     out[o + FRONT_FIELD.x] = p.x;
     out[o + FRONT_FIELD.z] = p.z;
-    out[o + FRONT_FIELD.front] = p.front;
+    out[o + FRONT_FIELD.front] = p.front + piece * FRONT_PIECE;
     out[o + FRONT_FIELD.sigma] = p.sigma;
     out[o + FRONT_FIELD.tau] = p.tau;
     out[o + FRONT_FIELD.footHeight] = p.footHeight;
@@ -29,6 +56,7 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
     out[o + FRONT_FIELD.throwZ] = p.throwZ ?? Number.NaN;
     if (p.carrierSupport) out[o + FRONT_FIELD.pace] = geometricPaceActive(p) ? p.jetPace! : Number.NaN;
     else out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
+    count += 1;
   }
   return count;
 }

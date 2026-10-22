@@ -4,9 +4,10 @@ import { pairInnerSheet } from './sharedUpperRoot';
 import { ProfileLibrary, type BarrelCase } from './ProfileLibrary';
 import { decodeCase } from './profileFormat';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { GRAVITY } from '../dispersion';
 
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const frame = (c: BarrelCase, f: number) => c.frames.slice(256 * f, 256 * (f + 1));
 const blend = (a: Float32Array, b: Float32Array, w: number) => Float32Array.from(a, (v, i) => v + w * (b[i] - v));
 

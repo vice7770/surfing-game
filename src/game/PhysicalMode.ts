@@ -40,7 +40,7 @@ import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } f
 import type { SprayLook } from '../wave/SprayCloud';
 import { particleBudget, type ParticleLevel } from '../wave/particleBudget';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, sweptCrashOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
 import { devParam } from '../devTools';
@@ -395,6 +395,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...canyonBedSwitch(),
     // `?tubeShape=c`: the swept barrel drawn and felt as the authored bounded-C (2026-10-05 to 2026-10-22), for A/Bs.
     ...tubeShapeSwitch(),
+    // `?canyonTube=off`: the Canyon without its swept tubes, exactly as before they were wired (2026-10-22), for A/Bs.
+    ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
     ...overrides,
   };
 }
@@ -407,6 +409,14 @@ export function startOutSwitch(search?: string): { startOut?: number } {
   const text = devParam('startOut', search)?.trim();
   const metres = text ? Number(text) : Number.NaN;
   return Number.isFinite(metres) ? { startOut: metres } : {};
+}
+
+/**
+ * The `?canyonTube=off` dev switch (`SurfZoneConfig.sweptBarrel` false at the Canyon): its spilling front, roller and
+ * curl draw every wave's white as they did before its tubes were wired (2026-10-22), with no tube drawn or felt.
+ */
+export function canyonTubeSwitch(search?: string): { sweptBarrel?: false } {
+  return devParam('canyonTube', search)?.trim().toLowerCase() === 'off' ? { sweptBarrel: false } : {};
 }
 
 /**
@@ -549,6 +559,8 @@ export class PhysicalMode {
   /** The swept barrel (the Padang Padang spec, Part B, PR 3): built with the water on the first start, on at a swept spot. */
   private sweptBarrel?: SweptBarrel;
   private swept = false;
+  /** Whether the swept spot's jets land on its clock (`sweptCrashOn`): off at the Canyon, which keeps its own white. */
+  private sweptCrash = false;
   /** The spilling lip's curls (the Canyon spilling lip), built with the water on the first start; drawn wherever a sea has them. */
   private spillingCurl?: { mesh: SpillingCurlMesh; water: WaterSurface; drawn?: { status: unknown; surface: number; look: WaterLook } };
   /** The roller front (the Canyon roller front), built with the curl; drawn in Rich wherever a sea's roller has a drawn look. */
@@ -681,6 +693,8 @@ export class PhysicalMode {
     const { init } = host;
     // A swept spot draws its barrel as one lofted surface: its water is never carved, and its lip strips are off.
     this.swept = sweptBarrelOn(config);
+    // A swept spot without the crash (the Canyon) keeps its own white: its lip sheets and foam balls as before.
+    this.sweptCrash = sweptCrashOn(config);
     // A rock floor in its own albedo where the spot has one (the Canyon's ledge, the 2026-10-22 playtest): drawn only.
     const rockCover = rockCoverFor(config.spot, config.canyonBed);
     water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing, rockCover));
@@ -785,6 +799,7 @@ export class PhysicalMode {
     this.host?.dispose();
     this.host = undefined;
     this.swept = false;
+    this.sweptCrash = false;
     this.sweptBarrel?.setSpot(undefined);
     this.board.visible = false;
     this.surfer.group.visible = false;
@@ -899,10 +914,10 @@ export class PhysicalMode {
     if (refreshVisuals) {
       this.farField.update(status.seaTime);
       // Swept barrels draw the jet; foam and spray draw the splash water. Extra splash ribbons form detached white bands.
-      this.lipSheet.update(host.snapshot.lip, this.swept ? 0 : host.snapshot.lipCount, host.init.dx);
+      this.lipSheet.update(host.snapshot.lip, this.swept && this.sweptCrash ? 0 : host.snapshot.lipCount, host.init.dx);
       this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
       // Surface foam and spray show the swept whitewater; opaque foam balls obscure its opening.
-      this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount }, !this.swept);
+      this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount }, !(this.swept && this.sweptCrash));
       // Mirrored past the open sides with the edge band's water (none at the Wave Pool).
       this.edgeWhitewater.update(this.edgeBand?.layout);
       this.visualHost = host;

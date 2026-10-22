@@ -576,7 +576,8 @@ export class SurfZoneRunner {
     const { contact, simulation, contactQueries, ordinaryContactOwner } = this;
     if (!contactQueries || !simulation.front) return;
     const start = performance.now();
-    const count = writeFrontRecords(simulation.front.points, this.contactRecords);
+    // Only the points whose waves plunge a tube (the spot's tube regime, `tubeFootMax`): the rest are not felt as one.
+    const count = writeFrontRecords(simulation.front.points, this.contactRecords, simulation.tubeFootMax);
     // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
     if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
     else this.water.withSurfaceNodeCache(() => {
@@ -873,7 +874,8 @@ export class SurfZoneRunner {
     buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
-    buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front) : 0;
+    // The drawn tubes: as the contact's, only the points whose waves plunge one (`tubeFootMax`).
+    buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front, simulation.tubeFootMax) : 0;
     this.fillMs = performance.now() - start;
   }
 
