@@ -125,7 +125,7 @@ CANYONPROBENOTE
 
 ### Stills
 
-`stills/canyon-*`: the Canyon's own Big (2.4 m, 14 s) and Medium (1.4 m, 11 s), GPU tier, 64 components, views from the start (the rider's lineup, 18 m seaward of the take-off, 1.6 m up, looking at the held tube), the ride camera (`ride`, as at Padang), `side` and `beach`. CANYONSTILLS
+`stills/canyon-*`: the Canyon's own Big (2.4 m, 14 s) and Medium (1.4 m, 11 s), GPU tier, 64 components, views from the start (the rider's lineup, 18 m seaward of the take-off, 1.6 m up, looking at the held tube), the ride camera (`ride`, as at Padang), `side` and `beach`. `canyon-big-*`: Big's typical wave on the arm 35 m seaward of the peak, a 5.4 m open run of a38's tube: from the ride camera a green face with a lip throwing, beside the spilling curl's white on the next section; from the start and the beach a short tube in the line of white. The lip's edge is bright as at Padang, and a short section's two blended ends give its lip a V from in front. `canyon-medium-rich.jpg`: Medium, the curl and its white as before: over about 90 s of held sea at Medium no open tube run was longer than 0.5 m (see the probe).
 
 ### Cost
 
@@ -133,8 +133,33 @@ CANYONCOST
 
 ### Risks
 
-CANYONRISKS
+- **Medium draws few tubes.** 87 % of the crests that reach their throw depth at Medium are not broken by the solver there and are dropped (the advisor's bar is about 20 %; Big's is 16 %). Medium's foot crests (0.3–0.9 m) sit below the join table's lowest 11 s row and the throw line's clamp, so their join and throw depth clamp to 2.2 m, well seaward of where the solver breaks them, and `joinPast`'s 1.5 H of travel is only about 0.07 m of depth on 1:23. Those crests keep the spilling curl, today's look. Put to the advisor (third consult); ADVISOR3
+- **A tube section beside a curl section** along one crest (the Big stills): the tube regime is per point, so a crest can change from tube to curl where its foot crest crosses the regime's height.
+- **The two clocks.** In tube columns the white waits for the tube's touchdown: at Big 1.1 s later than the curl's own landing at the median, up to 3.2 s (p90), and sometimes earlier (p10 −0.6 s).
+- **a29's curl may be partly resolution** (1.6 cells): a level-14 rerun could lower the 0.54 threshold. The 12 s join rows are flagged until checked on 2D seeds.
+- **Felt tubes at the Canyon.** The rider's contact now has the Canyon's tubes: riding changes there; the owner rides.
+- **The water program** at both swept spots lost the carve (two samplers and their code): no visual change, and fewer instructions, but not timed in a shown pane (the M1 cost cliff).
+- **`?tubeShape=c` at the Canyon** draws the cases' own frames: the bounded-C was never evaluated on the Canyon's cases.
 
 ### Tests
 
 CANYONTESTS
+
+## Shot list for the owner
+
+Rich, then Classic; midday and sunset. Record the ride camera unless a shot says otherwise.
+
+**Padang Padang, its own swells:**
+1. **Big (3.8 m, 18 s):** take off at the peak and drive down the line; look back and up at the curl. Look for a lip with body, green and thick, not a pale membrane; a round void; blunt section ends, not shards.
+2. **Medium (2.2 m, 17 s):** the same, then crouch under a throwing lip. Does a crouched rider fit? It should from about A0 0.3, Medium's sets.
+3. **Small (1.2 m, 16 s):** tubes are small and a rider should not fit (level-12 cases, T4 owed). Watch the ends of short sections, and the young ends of a front, which now ease over about the wave's height.
+4. **Big from the beach:** sections peeling and closing out; ends blunt; any seam, grey band or stippling along the mask's edge.
+5. **Inside, if you get barrelled:** the walls, the lip overhead, and how bright its edge reads against the sky.
+6. **A/B:** the same size with `?tubeShape=c` (the old authored shape) for comparison.
+
+**The Canyon, its sizes:**
+7. **Big (2.4 m, 14 s):** typical waves draw a tube on the arm. Watch where a crest changes from tube to the spilling curl, and that its white comes only after the lip lands.
+8. **Big sets:** still the curl and the tumbling white, no tube.
+9. **Medium (1.4 m, 11 s):** today's curl and white, with at most a rare small tube (see the probe).
+10. **From the start (the lineup):** can you read the tube from where you wait?
+11. **A/B:** `?canyonTube=off` at Big, the Canyon as before its tubes.
