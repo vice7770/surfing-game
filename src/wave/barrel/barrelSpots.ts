@@ -162,9 +162,13 @@ const CANYON_THROW_PERIOD = (CANYON_RUNS.a29.vertical - CANYON_THROW_INTERCEPT -
  * arm's face at 1:23 along the waves' path (`CANYON.pathSlope`) to the 2.2 m hinge and the 1 m top. All provisional.
  * - **The join:** the game's solver's fresh onset on that transect (the spotOnset probe, 2026-10-22: H0 6, 1:23 to a 1 m
  *   flat; regular waves at 9, 11, 12 and 14 s), each wave's first onset against its highest over the band, the median of
- *   12 waves. Left out: drives where only 1–2 waves onset (every 1 m drive: one wave is no table row), saturated drives
- *   (9 s at 3.5 and 4 m, whose band crest fell as the drive grew), and rows whose onset lies at or seaward of the band's
- *   shallow edge (11 and 14 s at 4 m: the band must stay seaward of every onset). 14 s at 3.5 m is kept, 0.09 m inside it.
+ *   12 waves. Small drives (1–1.4 m, the advisor's third ruling: Medium's crests sat under the lowest row) give a row
+ *   only where at least 6 of the 12 waves fresh-break on the slope: 1.25 and 1.4 m at 11 and 12 s (12 s at 1.25 m on 6
+ *   waves) and 1.1–1.4 m at 14 s; at 9 s every one broke a single wave. Left out: drives where only 1–2 waves onset
+ *   (one wave is no table row), saturated drives (9 s at 3.5 and 4 m, whose band crest fell as the drive grew), and rows
+ *   whose onset lies at or seaward of the band's shallow edge (11 and 14 s at 4 m: the band must stay seaward of every
+ *   onset). 14 s at 3.5 m is kept, 0.09 m inside it. Under its period's lowest row a crest clamps to it and joins only if
+ *   the solver breaks it there (measured: it seldom does), so it draws no tube and the curl draws it.
  *   Flagged: the 12 s rows' larger drives onset 0.5–1 m shallower than at 11 and 14 s for the same band crest; to check
  *   on 2D seeds (12 s, Practice) within about 0.3 m before trusting them.
  * - **The band:** Padang Padang's 6–5 m at 7 m, scaled to the 6 m foot.
@@ -188,9 +192,9 @@ const CANYON_ONSET: OnsetTables = {
   band: [(6 / 7) * 6, (5 / 7) * 6],
   join: [
     { period: 9, rows: [[1.07, 1.89], [1.48, 2.41], [1.79, 2.85], [2.05, 3.24]] },
-    { period: 11, rows: [[0.97, 2.2], [1.23, 2.67], [1.42, 3.15], [1.6, 3.63], [2.09, 4.11]] },
-    { period: 12, rows: [[1.14, 1.98], [1.43, 2.67], [1.76, 3.07], [2.15, 3.07], [2.55, 3.28], [2.84, 3.41]] },
-    { period: 14, rows: [[1.26, 2.28], [1.86, 2.8], [2.34, 3.2], [2.77, 3.63], [3.22, 4.2]] },
+    { period: 11, rows: [[0.81, 1.93], [0.91, 2.11], [0.97, 2.2], [1.23, 2.67], [1.42, 3.15], [1.6, 3.63], [2.09, 4.11]] },
+    { period: 12, rows: [[0.94, 1.76], [1.07, 1.85], [1.14, 1.98], [1.43, 2.67], [1.76, 3.07], [2.15, 3.07], [2.55, 3.28], [2.84, 3.41]] },
+    { period: 14, rows: [[0.89, 1.8], [1.03, 1.98], [1.17, 2.2], [1.26, 2.28], [1.86, 2.8], [2.34, 3.2], [2.77, 3.63], [3.22, 4.2]] },
   ],
   throwDepth: {
     intercept: CANYON_THROW_INTERCEPT, slope: CANYON_THROW_SLOPE, heights: [CANYON_RUNS.a29.foot, CANYON_RUNS.a49.foot],

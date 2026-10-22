@@ -159,6 +159,22 @@ describe('the Canyon’s barrel transect (the tube from Basilisk, 2026-10-22)', 
     expect(onsetTiming(7, 16, true, padang.onset).throwDepth(2)).toBe(onsetTiming(7, 18, true, padang.onset).throwDepth(2));
   });
 
+  it('joins small crests where the solver fresh-breaks 6 of 12 waves, and clamps under its lowest such row', () => {
+    const at = (period: number) => onsetTiming(canyon.footDepth, period, true, canyon.onset);
+    // The small drives (the advisor's third ruling, 2026-10-22): 11 s at 1.25 m (band crest 0.81 m, onset 1.93 m on 10
+    // waves), 12 s at 1.25 m (0.94 → 1.76, 6 waves), 14 s at 1.1 m (0.89 → 1.80, 11 waves).
+    expect(at(11).joinDepth(0.81)).toBeCloseTo(1.93, 9);
+    expect(at(12).joinDepth(0.94)).toBeCloseTo(1.76, 9);
+    expect(at(14).joinDepth(0.89)).toBeCloseTo(1.8, 9);
+    // Under the lowest row a crest clamps to it; at 9 s no small drive broke more than one wave, so its 1.5 m row stays first.
+    expect(at(11).joinDepth(0.6)).toBe(at(11).joinDepth(0.81));
+    expect(at(9).joinDepth(0.6)).toBeCloseTo(1.89, 9);
+    // Each period's rows rise with the crest.
+    for (const { rows } of canyon.onset.join) {
+      for (let k = 1; k < rows.length; k += 1) expect(rows[k][0]).toBeGreaterThan(rows[k - 1][0]);
+    }
+  });
+
   it('plunges a tube only where ξ_f = S / √(η_foot / L0) ≥ 0.54: foot crests to 0.82, 1.22, 1.46 and 1.98 m at 9, 11, 12 and 14 s', () => {
     expect(tubeFootMax('canyon', 9)).toBeCloseTo(0.82, 2);
     expect(tubeFootMax('canyon', 11)).toBeCloseTo(1.22, 2);

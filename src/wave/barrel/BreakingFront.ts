@@ -260,6 +260,11 @@ export class BreakingFront {
   jumps = 0;
   waveJumps = 0;
   latePasses = 0;
+  /**
+   * Set by a probe (none in the game): each joined and each unbroken crest's height over the band, m, so the unbroken
+   * share can be read by size (the Canyon's Medium, the advisor's 2026-10-22 ruling: only sizes with a join row count).
+   */
+  sizes?: { joined: number[]; unbroken: number[] };
   /** Steps a point on its pace (jet or not) ran on at it with no crest in reach (PR 5; a diagnostic). */
   coasted = 0;
   /** With `ownOnset`: jumped crests that crossed their throw depth before their own fresh onset came (a diagnostic). */
@@ -381,6 +386,7 @@ export class BreakingFront {
         const own = ownOnset && next.risen === true;
         if (next.crossed !== null && s.strength > 0 && (!ownOnset || own) && (track.depth > throwDepth || late || (own && jumpedNow))) {
           this.joins += 1;
+          this.sizes?.joined.push(next.refHeight);
           if (track.depth <= throwDepth) this.latePasses += 1;
           // Past its throw depth, it throws as it joins: after it (late), or carried past it by the jump.
           const past = track.depth <= throwDepth || (ownOnset && jumpedNow && s.depth <= throwDepth);
@@ -401,6 +407,7 @@ export class BreakingFront {
         // all, so it has no barrel.
         if (next.crossed !== null && track.depth <= throwDepth && !late) {
           this.unbroken += 1;
+          this.sizes?.unbroken.push(next.refHeight);
           if (ownOnset && track.risen === false) this.unrisen += 1;
           continue;
         }
