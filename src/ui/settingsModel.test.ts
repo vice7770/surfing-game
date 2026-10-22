@@ -32,7 +32,9 @@ describe('settingsModel', () => {
     const rows = settingsModel('controls', defaultSettings(), context);
     const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
     for (const action of ['trimForward', 'trimBack', 'crouch', 'compress', 'hand']) expect(help(action)).toBeTruthy();
-    expect(help('paddle')).toBeUndefined();
+    // The sprint paddle (the owner's choices of 2026-10-22): the paddle's double press is told where it is bound.
+    expect(help('paddle')).toContain('press twice and hold to sprint');
+    expect(help('popUp')).toBeUndefined();
   });
 
   // The stances spec: Regular or Goofy, a Gameplay choice.

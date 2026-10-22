@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver } from '../game/rideAnalysis';
-import { breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, stanceReadout } from './RideHud';
+import { breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, showsSprintBar, stanceReadout } from './RideHud';
 
 // P9: on by default in Practice, off in natural seas (the spec).
 describe('showsBalanceMeter', () => {
@@ -73,5 +73,17 @@ describe('stanceReadout', () => {
   it('shows the weight always, and the rotation only when the pad asks for one', () => {
     expect(stanceReadout({ trim: -1.4 })).toEqual({ level: 'normal', weight: -1 });
     expect(stanceReadout({ trim: 0.5, rotate: 0.3 })).toEqual({ level: 'normal', weight: 0.5, rotate: 0.3 });
+  });
+});
+
+// The sprint paddle's bar (the owner's choices of 2026-10-22): while paddling, below full; gone once full.
+describe('showsSprintBar', () => {
+  const sprint = (reserve: number, paddling: boolean) => ({ reserve, spent: reserve === 0, paddling, sprinting: false });
+  it('shows while the rider paddles with the reserve below full, and not otherwise', () => {
+    expect(showsSprintBar(sprint(0.6, true))).toBe(true);
+    expect(showsSprintBar(sprint(0, true))).toBe(true);
+    expect(showsSprintBar(sprint(1, true))).toBe(false);
+    expect(showsSprintBar(sprint(0.6, false))).toBe(false);
+    expect(showsSprintBar(undefined)).toBe(false);
   });
 });

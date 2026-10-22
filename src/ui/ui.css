@@ -151,6 +151,12 @@
 .is-high-contrast .hud-stance { background: #0d2a2d; outline: 2px solid #fff; }
 /* The wipeout spec, Part B: the breath meter beside the balance meter, and the edges darkening as the breath runs low. */
 .hud-breath .hud-balance-fill { background: #9fd0f0; }
+/* The sprint paddle's reserve (the owner's choices of 2026-10-22): a small bar at the bottom centre while paddling below full, fading out. */
+.hud-sprint { position: absolute; left: 50%; bottom: calc(max(16px, 4vh) + 2.2em); width: 7em; height: .5em; overflow: hidden; border-radius: 99px; background: rgba(248, 246, 234, .35); opacity: 0; transform: translateX(-50%); transition: opacity .4s linear; }
+.hud-sprint.is-shown { opacity: 1; transition-duration: .15s; }
+.hud-sprint-fill { width: 100%; height: 100%; border-radius: 99px; background: #f3d28b; transform-origin: left; transition: transform .1s linear; }
+.hud-sprint.is-spent .hud-sprint-fill { background: var(--accent); }
+#app[data-screen='ride'].has-touch .hud-sprint { bottom: 96px; }
 .hud-vignette { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: radial-gradient(ellipse at center, rgba(4, 18, 24, 0) 45%, rgba(4, 18, 24, .95) 100%); transition: opacity .3s linear; }
 .ride-hud .hud-pause { position: absolute; top: max(12px, 2vh); right: max(12px, 2vw); display: grid; place-items: center; width: 2.8em; height: 2.8em; border: 1px solid rgba(248, 246, 234, .5); border-radius: 50%; background: rgba(23, 63, 67, .45); color: #fff8e9; cursor: pointer; backdrop-filter: blur(8px); pointer-events: auto; }
 .hud-pause svg { width: 1.3em; height: 1.3em; }
@@ -229,6 +235,11 @@
 .is-high-contrast .hud-hints { padding: .4em .8em; border-radius: 10px; background: #0d2a2d; }
 .is-high-contrast .ride-hud .hud-pause { background: #0d2a2d; border-color: #fff; }
 .is-reduced-motion .hud-balance-fill, .is-reduced-motion .end-card, .is-reduced-motion .hud-vignette { animation: none; transition: none; }
+.is-reduced-motion .hud-sprint, .is-reduced-motion .hud-sprint-fill { transition: none; }
+@media (prefers-reduced-motion: reduce) { .hud-sprint, .hud-sprint-fill { transition: none; } }
+.is-high-contrast .hud-sprint { background: #0d2a2d; outline: 2px solid #fff; }
+.is-high-contrast .hud-sprint-fill { background: #fff; }
+.is-high-contrast .hud-sprint.is-spent .hud-sprint-fill { background: #ff8a5c; }
 
 /* Touch controls during a ride. */
 #app[data-screen='ride'].has-touch .touch-controls { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; pointer-events: none; }

@@ -20,6 +20,17 @@ export function showsBreathMeter(setting: GameplaySettings['breathMeter'], swell
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
 }
 
+/**
+ * Whether the sprint paddle's bar shows (the owner's choices of 2026-10-22): while the rider paddles lying down and
+ * the reserve is below full; it fades out once full, and whenever the paddling stops.
+ */
+export function showsSprintBar(sprint: NonNullable<SurfZoneStatus['ride']>['sprint'] | undefined): boolean {
+  return !!sprint && sprint.paddling && sprint.reserve < SPRINT_FULL;
+}
+
+/** The sprint reserve reads full at this. */
+const SPRINT_FULL = 0.999;
+
 /** The screen's edges darken as the breath falls below half, to MAX_VIGNETTE at none (Part B). */
 const MAX_VIGNETTE = 0.85;
 export function breathVignette(breath: number): number {
@@ -92,6 +103,9 @@ export class RideHud {
   private readonly breath = el('div', { class: 'hud-balance hud-breath', attrs: { role: 'meter', 'aria-label': t('hud.breath'), 'aria-valuemin': '0', 'aria-valuemax': '100' } });
   private readonly breathFill = el('div', { class: 'hud-balance-fill' });
   private readonly vignette = el('div', { class: 'hud-vignette', attrs: { 'aria-hidden': 'true' } });
+  /** The sprint paddle's reserve (the owner's choices of 2026-10-22): a small bar at the bottom centre, fading out when full. */
+  private readonly sprint = el('div', { class: 'hud-sprint', attrs: { role: 'meter', 'aria-label': t('hud.sprint'), 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-hidden': 'true' } });
+  private readonly sprintFill = el('div', { class: 'hud-sprint-fill' });
   private rescuesSeen = -1;
   private edgeHoldsSeen = -1;
   /** The stance readout (the movement-flow spec): the height, and the weight and rotation as a dot on a track. */
@@ -105,6 +119,7 @@ export class RideHud {
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
     this.breath.append(this.breathFill);
+    this.sprint.append(this.sprintFill);
     this.rotateRow.append(el('small', { text: t('hud.stance.rotation') }), el('span', { class: 'hud-track' }, this.rotateDot));
     this.stance.append(this.stanceLevel,
       el('div', { class: 'hud-stance-row' }, el('small', { text: t('hud.stance.weight') }), el('span', { class: 'hud-track' }, this.weightDot)),
@@ -119,8 +134,22 @@ export class RideHud {
         this.breath,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit),
         this.stance),
+      this.sprint,
       el('button', { class: 'hud-pause', attrs: { type: 'button', 'aria-label': t('hud.pause') }, on: { click: onPause } }, icon(ICONS.pause)),
       this.hints);
+  }
+
+  /** The sprint paddle's bar: shown while paddling below full (`showsSprintBar`), its fill the reserve; spent, in the accent colour. */
+  private updateSprint(sprint: NonNullable<SurfZoneStatus['ride']>['sprint'] | undefined): void {
+    const shown = showsSprintBar(sprint);
+    this.sprint.classList.toggle('is-shown', shown);
+    this.sprint.setAttribute('aria-hidden', shown ? 'false' : 'true');
+    if (!sprint) return;
+    const reserve = Math.max(0, Math.min(1, sprint.reserve));
+    this.sprintFill.style.transform = `scaleX(${reserve.toFixed(3)})`;
+    this.sprint.classList.toggle('is-spent', sprint.spent);
+    this.sprint.classList.toggle('is-sprinting', sprint.sprinting);
+    this.sprint.setAttribute('aria-valuenow', Math.round(reserve * 100).toString());
   }
 
   /** The stance readout, while standing and shown: the height asked for, the weight, and the pad's rotation. */
@@ -185,6 +214,7 @@ export class RideHud {
       this.breath.classList.toggle('is-low', breath < LOW_BALANCE);
       this.breath.setAttribute('aria-valuenow', Math.round(Math.max(0, breath) * 100).toString());
     }
+    this.updateSprint(ride?.sprint);
     const dark = breathVignette(breath).toFixed(2);
     if (this.vignette.style.opacity !== dark) this.vignette.style.opacity = dark;
     this.hints.hidden = !showHints;

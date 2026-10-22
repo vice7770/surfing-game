@@ -252,6 +252,11 @@ export interface SurfZoneStatus {
     /** The breath held, 1 full to 0 (Part B), and how often a rider held down too long was rescued. */
     breath: number;
     rescues: number;
+    /**
+     * The sprint paddle (the owner's choices of 2026-10-22): its reserve, 1 full to 0 (`PaddleReserve`), whether it
+     * is spent and waiting to refill, whether the rider paddles lying down, and whether it sprints.
+     */
+    sprint?: { reserve: number; spent: boolean; paddling: boolean; sprinting: boolean };
     /** How often the rider has been held at the window's bounds (`SurfZoneRunner.bounds`): the HUD hints at each new one. */
     edgeHolds?: number;
   };
@@ -957,6 +962,11 @@ export class SurfZoneRunner {
         knock: this.snapshotKnock,
         breath: this.session.breath.level,
         rescues: this.rescues,
+        sprint: {
+          reserve: this.session.reserve.level, spent: this.session.reserve.spent,
+          paddling: this.session.rider.attached && this.session.rider.phase === 'prone' && this.session.rider.paddle,
+          sprinting: this.session.rider.sprintPaddling,
+        },
         edgeHolds: this.edgeHolds,
       } : undefined,
     };
