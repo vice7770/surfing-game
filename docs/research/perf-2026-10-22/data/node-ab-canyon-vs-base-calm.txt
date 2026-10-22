@@ -1,0 +1,20 @@
+old canyon medium: 160 x 636 cells, render 161 x 696, t 22.000
+new canyon medium: 240 x 451 cells, render 241 x 511, t 22.000
+ms p50/p95 over 300 steps (order alternated):
+breaking       old 0.54/0.59  new 0.53/0.60  new/old p50 1.00, paired median diff 0.00
+roller         old 0.18/0.29  new 0.21/0.26  new/old p50 1.12, paired median diff 0.01
+front          old 0.00/0.00  new 0.00/0.00  new/old p50 0.68, paired median diff -0.00
+lip            old 0.03/0.03  new 0.02/0.03  new/old p50 1.00, paired median diff -0.00
+foam           old 1.57/1.86  new 1.42/1.47  new/old p50 0.90, paired median diff -0.17
+airSources     old 0.04/0.04  new 0.01/0.02  new/old p50 0.38, paired median diff -0.02
+aeration       old 0.80/0.86  new 0.72/0.73  new/old p50 0.90, paired median diff -0.08
+contact        old 0.00/0.00  new 0.00/0.00  new/old p50 -, paired median diff 0.00
+board          old 0.72/1.94  new 0.73/1.74  new/old p50 1.01, paired median diff 0.00
+bubbles        old 0.07/0.09  new 0.07/0.11  new/old p50 1.02, paired median diff -0.00
+spray          old 0.05/0.11  new 0.05/0.09  new/old p50 0.94, paired median diff -0.00
+sounds         old 0.00/0.00  new 0.00/0.00  new/old p50 0.96, paired median diff -0.00
+snapshotFields old 2.39/2.46  new 2.56/2.62  new/old p50 1.07, paired median diff 0.18
+snapshot       old 2.64/2.74  new 2.81/2.92  new/old p50 1.06, paired median diff 0.18
+summary        old 0.23/0.26  new 0.24/0.27  new/old p50 1.01, paired median diff 0.00
+cpu            old 7.21/8.71  new 7.09/8.17  new/old p50 0.98, paired median diff -0.11
+snapshots differing on 320 of 320 steps frame 0 counts; frame 0 surface; frame 0 flow; frame 0 aeration; frame 0 bubbles; state old 37764678192f97af new f8436c888f71635b DIFFER
