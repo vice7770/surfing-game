@@ -1,0 +1,5 @@
+# The Basilisk analysis scripts (tools/basilisk/analysis): numpy and scipy for the profiles and metrics, matplotlib for
+# the figures. tools/basilisk/run_canyon.sh setup installs them into tools/basilisk/.venv.
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7

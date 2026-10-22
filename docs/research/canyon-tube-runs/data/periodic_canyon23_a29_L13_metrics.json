@@ -1,0 +1,37 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-canyon-tubes/tools/basilisk/runs/periodic_canyon23_a29_L13",
+ "t_vertical": 32.125,
+ "t_impact": 34.35,
+ "timing": "plunge_measure.py: the local trough as the water level, the crest looked for at x >= XMIN, touchdown = first enclosed tube, the frame before it with the jet >= 3 cells off the face",
+ "at_vertical": {
+  "crest_m": 2.182344,
+  "x_m": 229.97459999999998,
+  "trough_m": -0.5744274,
+  "H_m": 2.7567714
+ },
+ "pre_touchdown": {
+  "t": 34.325,
+  "crest_m": 1.852272,
+  "trough_m": -0.42773459999999996,
+  "H_m": 2.2800066,
+  "jet_m2": 0.054964462558587,
+  "tube_m2": 0.24474075588005917,
+  "tube_L_m": 0.8620604398367671,
+  "tube_W_m": 0.5453745280888143,
+  "L/W": 1.580676022508298,
+  "tilt_deg": 88.72379025242688,
+  "lip_m": 0.06375940713506659,
+  "lip_cells": 1.5545150691978138,
+  "per H at touchdown": {
+   "jet": 0.010573281075842409,
+   "tube": 0.04707974356841451,
+   "lip": 0.027964571302147363
+  },
+  "per H at vertical": {
+   "jet": 0.00723236734595064,
+   "tube": 0.032203627010152294,
+   "lip": 0.02312828954009991
+  },
+  "open_s": 1.7400876985878506
+ }
+}
