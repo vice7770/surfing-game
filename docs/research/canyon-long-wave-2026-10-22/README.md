@@ -86,7 +86,12 @@ only where the reef, not the beach face, makes the bed, so the shore break behin
 
 Each size's own swell (`SWELLS`: Small Hs 0.9 m and Tp 9 s, Medium 1.4 m and 11 s, Big 2.4 m and 14 s), square, s = 150,
 mid tide, calm. Main's runs re-read here reproduce canyon-layout's tables line for line, so main's waves have not moved
-since. The tools, here unless said:
+since.
+
+Every other spot is byte-identical to main (`other-spots.txt`). After 3 s their window, tank, take-off, rider bounds, peel
+and a hash of the water match main built the same way, line for line.
+
+The tools, here unless said:
 
 - **`scripts/canyon-size-report.ts`** (3 seeds × 14 periods, `--stability`): the tracker, the readout every second, each
   crest's start, close-out and upcoast run, the onsets and the health. It now pools seeds run apart (`--from a,b,c`).
