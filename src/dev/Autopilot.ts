@@ -48,6 +48,12 @@ export interface AutopilotOptions {
   /** Seconds of paddling without a cue before giving up. */
   giveUp?: number;
   /**
+   * Waiting, hold the lineup as a surfer does: once the drift carries the board this far inside its wait point, m,
+   * turn and paddle back out to it, then turn back to wait. Unset, a waiting board drifts where the water takes it
+   * (the bots' track found it carried 7–48 m inside the Canyon's take-off before a crest came, 2026-10-22).
+   */
+  holdInside?: number;
+  /**
    * Standing: hold a line along the face ('line'), ride S-turns up and down it ('turns', spec P9), or ride the user's
    * movement flow ('flow', the movement-flow spec): bottom turn, projection, cutback, rebound; or approach a current
    * measured mouth with ordinary steering and crouch ('tube', a dev driver, not a ride certification).
@@ -135,6 +141,12 @@ const DEG = Math.PI / 180;
  * of the crest, on the flat, where a full bottom turn bled its speed and it fell).
  */
 const TAKEOFF_ANGLE = 35 * DEG;
+/**
+ * Holding the lineup (`holdInside`): paddling back out once the heading is within RETURN_PADDLE of straight out to sea,
+ * and going for a wave only once turned back within FACING_BEACH of the waves' travel.
+ */
+const RETURN_PADDLE = 60 * DEG;
+const FACING_BEACH = 90 * DEG;
 const BOTTOM_REACH = 6;
 const BOTTOM_FACE = 0.35;
 const BOTTOM_START = 90 * DEG;
@@ -279,6 +291,9 @@ export class Autopilot {
   private readonly rise: number;
   private readonly line: number;
   private readonly giveUp: number;
+  private readonly holdInside?: number;
+  /** Waiting with `holdInside`: paddling back out to the wait point. */
+  private returning = false;
   private clock = 0;
   private stalled = 0;
   private readonly stall: boolean;
@@ -322,6 +337,7 @@ export class Autopilot {
     this.rise = options.rise ?? 0.5;
     this.line = ((options.lineDegrees ?? 60) * Math.PI) / 180;
     this.giveUp = options.giveUp ?? 8;
+    this.holdInside = options.holdInside;
     this.style = options.style ?? 'line';
     this.stall = options.stall ?? true;
     this.turnLimit = options.turnLimit ?? TURN_LIMIT;
@@ -352,6 +368,7 @@ export class Autopilot {
 
   reset(): void {
     this.state = 'position';
+    this.returning = false;
     this.seenFace = 0;
     this.outcome = undefined;
     this.rideTime = 0;
@@ -394,6 +411,7 @@ export class Autopilot {
         else this.state = 'wait';
         break;
       case 'wait': {
+        if (this.holdInside !== undefined && ride.phase === 'prone' && this.holdLineup(view, heading, yawRate, input)) break;
         const face = this.lastFace || Math.sign(view.peelDirection);
         if (face !== 0) input.steer = this.aim(this.travel + face * TAKEOFF_ANGLE, heading, yawRate);
         if (view.crestBehind > this.rise) {
@@ -447,6 +465,29 @@ export class Autopilot {
         break;
     }
     return input;
+  }
+
+  /**
+   * Waiting with `holdInside`: once drifted that far inside the wait point, turn seaward (a sweeping arm, about
+   * 10–12°/s on the Canyon) and paddle back out to it, then turn back toward the beach before going for a wave. True
+   * while it is still making its way back, so the wait waits.
+   */
+  private holdLineup(view: AutopilotView, heading: number, yawRate: number, input: AutopilotInput): boolean {
+    const inside = view.board.z - (view.focusZ - this.waitOutside);
+    if (inside > this.holdInside!) this.returning = true;
+    else if (inside <= 0) this.returning = false;
+    if (this.returning) {
+      const out = this.travel + Math.PI;
+      input.steer = this.aim(out, heading, yawRate);
+      input.paddle = Math.abs(wrap(out - heading)) < RETURN_PADDLE;
+      return true;
+    }
+    // Back out, still facing the sea: turn round before a crest can be gone for.
+    if (Math.abs(wrap(heading - this.travel)) > FACING_BEACH) {
+      input.steer = this.aim(this.travel + (this.lastFace || Math.sign(view.peelDirection)) * TAKEOFF_ANGLE, heading, yawRate);
+      return true;
+    }
+    return false;
   }
 
   /**

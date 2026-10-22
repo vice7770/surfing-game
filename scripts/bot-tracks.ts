@@ -26,7 +26,9 @@ const output = option('out') ?? 'server/bots/canyon-medium.bin';
 
 const config = roomSurfZoneConfig({ spot: 'canyon', conditions: { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, seed: 7 }, 0, 'cpu');
 const runner = new SurfZoneRunner(config, { rider: true });
-const autopilot = new Autopilot({ rise: 0.25 * config.significantHeight });
+// Waiting at the take-off and holding the lineup: the Canyon's water carries a waiting board shoreward about 1 m/s
+// over its arm, 7–48 m inside the take-off before a crest came (2026-10-22). Let drift 10 m inside, it paddles back.
+const autopilot = new Autopilot({ rise: 0.25 * config.significantHeight, waitOutside: 0, holdInside: 10 });
 const tracker = new OwnPoseTracker();
 const buffers = runner.createBuffers();
 const pose = createPose();
@@ -56,7 +58,8 @@ for (let step = 0; step < total; step += 1) {
     input = autopilot.next({
       ride: {
         phase: session.phase, speed: Math.hypot(board.velocity.x, board.velocity.z), boardSpeed: board.velocity.length(),
-        cue: session.rider.popUpCue, popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave,
+        // The cue the player's HUD shows: planing down the face, or caught high on it (the take-off window).
+        cue: runner.cue, popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave,
         balance: session.phase === 'fallen' ? 0 : session.rider.balanceReserve,
       },
       peelDirection, board: { x: board.position.x, z: board.position.z, heading: session.heading }, focusZ: runner.focus.z, crestBehind: crest - config.tide,

@@ -123,6 +123,36 @@ describe('the take-off', () => {
     expect(fresh.next(view({ board: { x: 0, z: -3, heading: 0 }, peelDirection: 0 }), 1 / 60).steer).toBe(0);
   });
 
+  // The bots' track (2026-10-22): waiting, the Canyon's water carried the board 7–48 m inside the take-off before a
+  // crest came, and every attempt from there missed. Holding the lineup, it paddles back out and turns round first.
+  it('holds its lineup when asked: paddles back out once drifted inside, and turns to the beach before going', () => {
+    const at = (z: number, heading: number, crestBehind = 0) => view({ board: { x: 0, z, heading }, crestBehind });
+    const pilot = new Autopilot({ waitOutside: 0, holdInside: 3 });
+    pilot.next(at(0.5, 0), 1 / 60);
+    expect(pilot.state).toBe('wait');
+    // Within the band it waits.
+    expect(pilot.next(at(2, 0), 1 / 60).paddle).toBe(false);
+    // Past it, it turns seaward without paddling, then paddles out once facing the sea, and lets a crest go by.
+    const turning = pilot.next(at(4, 0), 1 / 60);
+    expect(turning.paddle).toBe(false);
+    expect(Math.abs(turning.steer)).toBe(1);
+    expect(pilot.next(at(3.5, Math.PI), 1 / 60).paddle).toBe(true);
+    expect(pilot.next(at(2, Math.PI, 1), 1 / 60).paddle).toBe(true);
+    expect(pilot.state).toBe('wait');
+    // Back out, still facing the sea: it turns round and lets a crest go by; facing the beach, it goes.
+    const round = pilot.next(at(-0.5, Math.PI, 1), 1 / 60);
+    expect(round.paddle).toBe(false);
+    expect(round.steer).not.toBe(0);
+    expect(pilot.state).toBe('wait');
+    pilot.next(at(-0.5, 0.2, 1), 1 / 60);
+    expect(pilot.state).toBe('go');
+    // Unasked, a drifting board waits wherever the water takes it.
+    const drifting = new Autopilot({ waitOutside: 0 });
+    drifting.next(at(0.5, 0), 1 / 60);
+    expect(drifting.next(at(20, 0), 1 / 60)).toMatchObject({ paddle: false });
+    expect(drifting.state).toBe('wait');
+  });
+
   // Riding-the-wave Task 7: straight down a 1.3 m face the rider stood 8 m ahead of the crest on the flat.
   it('angles the take-off toward the open face', () => {
     const toPlusX = paddling(0, -1);
