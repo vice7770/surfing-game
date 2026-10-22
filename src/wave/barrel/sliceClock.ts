@@ -58,7 +58,14 @@ export interface OnsetTables {
   h0: number;
   band: readonly [deeper: number, shallower: number];
   join: readonly { period: number; rows: readonly (readonly [height: number, depth: number])[] }[];
-  throwDepth: { intercept: number; slope: number; heights: readonly [lowest: number, highest: number] };
+  throwDepth: {
+    intercept: number; slope: number; heights: readonly [lowest: number, highest: number];
+    /**
+     * A transect whose runs differ in period as well as height (the Canyon's 11 and 14 s): m per second of the sea's
+     * peak period from `reference`, the period clamped to `periods` (the runs' own), so none is extrapolated.
+     */
+    period?: { slope: number; reference: number; periods: readonly [shortest: number, longest: number] };
+  };
   /**
    * The shallowest a lip throws, m at mid tide: the transect's flat (a reef's top), which a tide shifts rather than
    * scales. A wave too small to go vertical on the slope throws as it crosses onto the flat (the Reef; the advisor,
@@ -111,6 +118,10 @@ export function onsetTiming(h0: number, period: number, lagged = true, tables: O
   const scale = h0 / tables.h0;
   const { join, band, throwDepth } = tables;
   const [lowest, highest] = throwDepth.heights;
+  // The throw's period term, m at the tables' foot (none on a transect run at one period's trend, Padang Padang's).
+  const byPeriod = throwDepth.period
+    ? throwDepth.period.slope * (Math.min(throwDepth.period.periods[1], Math.max(throwDepth.period.periods[0], period)) - throwDepth.period.reference)
+    : 0;
   const joinAt = (measured: number) => {
     const height = measured / scale;
     const first = join[0];
@@ -127,7 +138,7 @@ export function onsetTiming(h0: number, period: number, lagged = true, tables: O
     band: [band[0] * scale, band[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
     throwDepth: (footHeight) => {
-      const depth = (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale))) * scale;
+      const depth = (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale)) + byPeriod) * scale;
       return tables.floor === undefined ? depth : Math.max(depth, tables.floor + h0 - tables.h0);
     },
     lagged,

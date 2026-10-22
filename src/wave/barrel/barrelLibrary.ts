@@ -13,9 +13,30 @@ export interface BarrelCaseEntry {
   asset: string;
 }
 
-/** The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases. */
+/**
+ * Cases kept in the index but not drawn, by their run's name (any level: a rerun keeps its note), and why (the
+ * water-physics advisor, 2026-10-22, docs/research/canyon-tube-runs). A spot never blends a tube case with a curl case:
+ * the library draws tubes, and where its physics only curls or folds the spot's own look draws the white.
+ */
+export const BARREL_CASE_NOTES: Readonly<Record<string, { drawn: false; note: string }>> = {
+  'periodic-canyon23-a49': {
+    drawn: false,
+    note: "The Canyon's Big sets (A0 0.42, 14 s): a fold at the crest, not a tube (A_O 0.03 H_I², ξ_b 0.38); their curl stays the spilling lip's",
+  },
+  'periodic-canyon23-a29': {
+    drawn: false,
+    note: "The Canyon's Medium sets (A0 0.21, 11 s): a curl, under-resolved (1.6 cells across the lip), a lower bound; provisional",
+  },
+};
+
+/** A case's note (`BARREL_CASE_NOTES`), by its id less its level (`-l12`, `-l13`, …). */
+export function barrelCaseNote(id: string): { drawn: false; note: string } | undefined {
+  return BARREL_CASE_NOTES[id.replace(/-l\d+$/, '')];
+}
+
+/** The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws. */
 export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES): BarrelCaseEntry[] {
-  return cases.filter((entry) => entry.spot === spot);
+  return cases.filter((entry) => entry.spot === spot && !barrelCaseNote(entry.id));
 }
 
 /**
