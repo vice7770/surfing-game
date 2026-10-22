@@ -315,5 +315,36 @@ describe('the ride request (P9)', () => {
     target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'KeyM', repeat: true }));
     expect(mute).toHaveBeenCalledTimes(1);
   });
-});
 
+  // The sprint paddle (the owner's choices of 2026-10-22): the paddle double-pressed and held, on any device.
+  it('sprints on a double press of the paddle held, from the keyboard or a pad, and not standing', () => {
+    const STEP = 1 / 60;
+    const { controls, key, setPads } = setup();
+    key('keydown', 'Space');
+    expect(controls.rideRequest(STEP, false)).toMatchObject({ paddle: true, sprint: false });
+    key('keyup', 'Space');
+    for (let i = 0; i < 6; i += 1) controls.rideRequest(STEP, false);
+    key('keydown', 'Space');
+    expect(controls.rideRequest(STEP, false)).toMatchObject({ paddle: true, sprint: true });
+    key('keyup', 'Space');
+    expect(controls.rideRequest(STEP, false)).toMatchObject({ paddle: false, sprint: false });
+    // ArrowUp, the other paddle key, the same.
+    key('keydown', 'ArrowUp');
+    controls.rideRequest(STEP, false);
+    key('keyup', 'ArrowUp');
+    controls.rideRequest(STEP, false);
+    key('keydown', 'ArrowUp');
+    expect(controls.rideRequest(STEP, false).sprint).toBe(true);
+    key('keyup', 'ArrowUp');
+    // RT on a pad: pressed, let go, pressed again within 0.3 s.
+    for (let i = 0; i < 30; i += 1) controls.rideRequest(STEP, false);
+    for (const held of [true, false, true]) {
+      setPads([pad(held ? [7] : [])]);
+      controls.poll();
+      controls.rideRequest(0.1, false);
+    }
+    expect(controls.lastRequest).toMatchObject({ paddle: true, sprint: true });
+    // Standing, the paddle's keys do not paddle, and nothing sprints.
+    expect(controls.rideRequest(STEP, true)).toMatchObject({ paddle: false, sprint: false });
+  });
+});

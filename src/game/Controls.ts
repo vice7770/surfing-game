@@ -1,6 +1,6 @@
 import type { RideInput } from '../physics/RideSession';
 import { heldActions, padValue, readPads, type Action, type Bindings, type PadKind, type PadState } from './Bindings';
-import { AxisRamp } from './InputAxes';
+import { AxisRamp, SprintPress } from './InputAxes';
 import { DEFAULT_STICK, drivingPad, padKey, padSticks, touched, type StickSettings } from './Sticks';
 import type { CallId } from '../net/protocol';
 
@@ -61,6 +61,8 @@ export class Controls {
   private touchCompress = false;
   /** Compress held since lying down (Space and RT paddle): it waits for a fresh press standing. */
   private compressStale = false;
+  /** The paddle double-pressed and held, on any device: the sprint paddle (`SprintPress`). */
+  private readonly sprintPress = new SprintPress();
   /** Keys held → the ride's axes, ramped (spec P9). */
   private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp(), duckDive: new AxisRamp() };
   /** The latest ride request, for the hints to see what the player holds. */
@@ -150,8 +152,10 @@ export class Controls {
     const compress = this.ramps.compress.update(compressKeys, dt);
     const duck = this.ramps.duckDive.update(duckKeys, dt);
     const pad = this.active;
+    const paddle = !standing && (has('paddle') || touch(this.touchPaddle));
     this.lastRequest = {
-      paddle: !standing && (has('paddle') || touch(this.touchPaddle)),
+      paddle,
+      sprint: this.sprintPress.update(paddle, dt),
       popUp: this.active && this.getUpRequested,
       steer: pad && this.padSteerValue !== 0 ? this.padSteerValue : steer,
       trim: standing && pad && this.padTrimValue !== 0 ? this.padTrimValue : trim,
@@ -225,6 +229,7 @@ export class Controls {
 
   private release(): void {
     this.held.clear();
+    this.sprintPress.reset();
     this.padHeld = new Set();
     this.padSteerValue = 0;
     this.padTrimValue = 0;
