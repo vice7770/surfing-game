@@ -712,6 +712,90 @@ The owner's ride: "too unbalanced on the board and getting up from it. While pad
 4. Pop up late on a steep face. *Look for:* a nose-dive at the bottom still throws you. That is a real cause.
 5. Paddle into whitewater or under a closing lip, and duck-dive once. *Look for:* the bore and the lip still knock you off; the duck-dive works as before.
 
+### The sprint paddle (2026-10-22, `claude/sprint-paddle` from `claude/paddle-balance`)
+
+The owner's choices of 2026-10-22, built as given.
+
+**Control.** Double-press the paddle and keep holding it to sprint; letting go stops the sprint, and the paddling with it. A single press held cruises, as before.
+- `SprintPress` (`InputAxes.ts`) reads the paddle as `Controls` combines it across the keyboard (Space, ↑), the pads (RT, and the Steam Controller through them) and the touch paddle button.
+- The double press is a release and a press again within `DOUBLE_PRESS_WINDOW`, 0.3 s:
+  - deliberate double presses come 0.1–0.25 s apart;
+  - a quarter of a cruising stroke is too short a stop to mean one.
+- `RideInput.sprint` carries it to the worker.
+
+**The physics** (`AttachedRider`'s SPRINT_PADDLE_* constants, with their reasoning). The strokes go over to the sprint in 0.3 s:
+- **Rate:** 70 a minute a side, against 50 cruising (the owner's figure, from Sheppard et al. 2013, Nessler et al. 2019 and Volschenk et al. 2021).
+- **Overlapping pulls:** 0.43 of each arm's cycle, against 0.28. Swimmers' arm phases overlap more as they speed up (Chollet, Chalies and Chatard 2000).
+- **A deeper catch:**
+  - the hand 0.32 m down, against 0.25;
+  - the forearm upright and the upper arm in the water. Their extra drag area (×2.4 the hand's and forearm's) pushes as a plate, along the stroke only.
+- **The arm pulling all out:** it gives way at 0.8 body weights, against 0.4. Sprint paddling is limited by pulling strength (Sheppard et al. 2012).
+
+The catch's own quickening (SPRINT_CYCLE) stays, and stays free.
+
+**The reserve** (`PaddleReserve`):
+- **Model:** the anaerobic reserve, as W′ in the critical-power model (Skiba et al. 2012), with surfing's short sprints between long paddles (Farley et al. 2012).
+- **Owner's numbers, linear both ways:**
+  - 8 s of sprinting;
+  - 15 s to refill, at anything else (cruising, lying still, riding, swimming);
+  - emptied, it cruises until a quarter is back.
+- **Where it lives:** in `RideSession`, as the surfer's own. It is kept through falls and climbs back on, and is full at each placement (a new session, a retry, a lesson's start), like the breath.
+
+**The HUD:**
+- a small bar at the bottom centre;
+- shown while paddling below full, and fading out at full;
+- the accent colour while spent;
+- high-contrast and reduced-motion rules like the balance meter's;
+- strings `hud.sprint` and `action.paddle.help`.
+
+The status carries `ride.sprint` (the reserve, spent, paddling, sprinting).
+
+**Online:** no wire field. The pose sends the seven drawn points, the hands among them, 20 times a second, so another player's sprint shows as its faster, deeper strokes.
+
+| On flat water (the speed averaged over a stroke) | Cruise | Sprint |
+|---|---|---|
+| Top speed | 1.59 m/s | 2.08 m/s |
+| 1 m/s from rest | 1.12 s | 0.55 s |
+| 90 % of its own top speed | 2.42 s | 1.83 s |
+| The cruise's 90 % (1.43 m/s) | 2.43 s | 1.00 s |
+| The hand's greatest load | 0.40 body weights | 0.78 |
+| Strokes a minute a side | 50 | 70 |
+
+**The balance while sprinting** (the paddle-balance probes, the sprint held):
+
+| Probe | With an endless reserve | With the 8 s reserve |
+|---|---|---|
+| Paddling, 55 runs | 0 falls | 0 falls |
+| Chop sweep, 72 runs | 2 falls, both at ×2 | 4 falls, all at ×2 |
+
+`ChopWater` ×2 is Hs 1.3–1.55 m at 2–4 s, sloped to 28°: steeper than linear waves stand unbroken. Cruising holds it with no falls.
+- **Tried first:** the sprint's extra area as a sphere's drag, the way the hand's is drawn. It turned the chop's flow across the stroke into side forces on the arm: 11 of 72 fell. As a plate along the stroke, 2.
+- **Also tried:** easing the sprint whenever the hips run out of reach. It changed nothing.
+
+**Tests:**
+- the double press, from the keyboard (Space, ↑) and a pad's RT; none standing;
+- the reserve's drain, refill and lockout;
+- the sprint's top speed and its sooner reach to it;
+- 70 strokes a minute with the drawn hand deeper;
+- running out at 8 s, back after 3.75 s, full at a new placement;
+- the bar's visibility (`showsSprintBar`).
+
+Results:
+- the main suite: 2,851 passed, with the 18 pinned fails as before (after the settings test's paddle line was updated);
+- `SurfZoneSimulation`'s rider subset: 11 passed;
+- `tsc --noEmit` is clean.
+
+**Shot list (sprint paddle):**
+1. Any spot: hold paddle for 10 s, then double-press and hold. *Look for:*
+   - the strokes quicken and dig deeper;
+   - the board picks up speed within a second;
+   - the bar appears at the bottom centre and empties over about 8 s;
+   - the paddler drops back to cruise when it runs out.
+2. Keep holding after it empties. *Look for:* the sprint comes back by itself about 4 s later (a quarter refilled). Let go, and it refills in 15 s; it fades out when full.
+3. Paddle for a wave, and sprint the last two seconds. *Look for:* a catch that is easier than before. Say if it feels too easy.
+4. Sprint through chop, steering. *Look for:* no falls.
+5. Try it on the pad (RT twice), with touch (the paddle button tapped twice and held), and with high-contrast HUD and reduced motion on.
+
 ---
 
 ## 4. Decisions for the owner (each with the recommended answer)
