@@ -1,7 +1,7 @@
 import { t } from '../ui/strings';
 import { describeSurf, type SurfWords } from '../ui/surfHeight';
 import type { SpotName } from '../wave/Bathymetry';
-import { PRACTICE_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
+import { PRACTICE_SURF, SWELL_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
 import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, REFRACTED_SPREADING, type PhysicalSettings } from './PhysicalMode';
 import { solverStage } from '../wave/SurfZoneSimulation';
 import { POOL, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolSize } from '../wave/pool';
@@ -106,11 +106,16 @@ export function swellChoice(spot: SpotName, swell: Exclude<SwellSize, 'practice'
   return SPOT_SWELLS[spot]?.[swell] ?? SWELLS[swell];
 }
 
-/** The surf a swell size makes at a spot (the wave-sizes spec): the practice groundswell as measured, the others forecast. */
+/**
+ * The surf a swell size makes at a spot (the wave-sizes spec): the practice groundswell as measured, and a spot's own
+ * swells as measured where its forecast can't follow them (SWELL_SURF: the Canyon), the others forecast.
+ */
 export function surfForecastFor(spot: SpotName, swell: SwellSize): SurfForecast {
   // The Wave Pool's faces are its sizes: every wave the same.
   if (spot === 'pool') return { typical: POOL_FACES[poolSize(swell)], sets: POOL_FACES[poolSize(swell)] };
   if (swell === 'practice') return { ...PRACTICE_SURF[spot] };
+  const measured = SWELL_SURF[spot]?.[swell];
+  if (measured) return { ...measured };
   const { significantHeight, peakPeriod } = swellChoice(spot, swell);
   return forecastSurf(spot, significantHeight, peakPeriod);
 }

@@ -6,7 +6,9 @@ import {
   DEFAULT_CONDITIONS, DEFAULT_SPOT, PADANG_SWELLS, PADANG_TIDES, PADANG_WINDS, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings,
   nextBackdropSpot, physicalSettingsFor, ridesAsPractice, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
 } from './SurfConditions';
-import { PRACTICE_SURF, forecastSurf } from '../wave/surfForecast';
+import { readFileSync, readdirSync } from 'node:fs';
+import type { SizeRun } from '../wave/sizeReport';
+import { PRACTICE_SURF, SWELL_SURF, forecastSurf } from '../wave/surfForecast';
 import { surfName as describeName } from '../ui/surfHeight';
 
 const water = { stage: 2 as const, compute: 'auto' as const };
@@ -112,8 +114,28 @@ describe('surf conditions', () => {
     for (const spot of SURF_SPOTS.filter((s) => s !== 'pool')) {
       expect(surfForecastFor(spot, 'practice')).toEqual(PRACTICE_SURF[spot]);
       const big = swellChoice(spot, 'big');
-      expect(surfForecastFor(spot, 'big')).toEqual(forecastSurf(spot, big.significantHeight, big.peakPeriod));
-      expect(surfForecastFor(spot, 'big').typical).toBeGreaterThan(surfForecastFor(spot, 'small').typical);
+      expect(surfForecastFor(spot, 'big')).toEqual(SWELL_SURF[spot]?.big ?? forecastSurf(spot, big.significantHeight, big.peakPeriod));
+      expect(surfForecastFor(spot, 'big').typical).toBeGreaterThan(surfForecastFor(spot, 'medium').typical);
+      expect(surfForecastFor(spot, 'medium').typical).toBeGreaterThan(surfForecastFor(spot, 'small').typical);
+    }
+  });
+
+  // The Canyon's planar arm (2026-10-22): its take-off faces grow as about Hs^0.4, which the forecast's Hs^0.8 Tp^0.4
+  // can't follow (Small 32 % under, Big 11 % over), so its sizes show the faces the size report measured there.
+  it('shows the Canyon\'s own swells as the size report measured them, and its forecast for any other sea', () => {
+    const folder = 'docs/research/sizes';
+    const runs = readdirSync(folder).filter((name) => name.endsWith('.json'))
+      .flatMap((name) => JSON.parse(readFileSync(`${folder}/${name}`, 'utf8')) as SizeRun[]);
+    for (const size of ['small', 'medium', 'big'] as const) {
+      const run = runs.find((r) => r.spot === 'canyon' && r.size === size)!;
+      const swell = swellChoice('canyon', size);
+      // Measured on the swell the Surf screen sends: a changed swell needs its faces measured again.
+      expect(run).toMatchObject({ significantHeight: swell.significantHeight, period: swell.peakPeriod, heightAt: 'edge' });
+      expect(surfForecastFor('canyon', size)).toEqual(SWELL_SURF.canyon![size]);
+    }
+    for (const spot of ['beach', 'point', 'reef', 'padang'] as const) {
+      const medium = swellChoice(spot, 'medium');
+      expect(surfForecastFor(spot, 'medium')).toEqual(forecastSurf(spot, medium.significantHeight, medium.peakPeriod));
     }
   });
 
