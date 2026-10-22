@@ -781,7 +781,7 @@ The status carries `ride.sprint` (the reserve, spent, paddling, sprinting).
 - the bar's visibility (`showsSprintBar`).
 
 Results:
-- the main suite: 2,851 passed, with the 18 pinned fails as before (after the settings test's paddle line was updated);
+- the main suite: 2,852 passed (the settings test updated for the paddle's new help line, re-run on its own), with the 18 pinned fails as before;
 - `SurfZoneSimulation`'s rider subset: 11 passed;
 - `tsc --noEmit` is clean.
 
