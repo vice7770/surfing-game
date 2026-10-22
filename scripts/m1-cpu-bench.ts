@@ -10,6 +10,7 @@
  *   rolldown scripts/m1-cpu-bench.ts -o dist/scripts/m1-cpu-bench.mjs --format esm --platform node
  *   node dist/scripts/m1-cpu-bench.mjs --spot canyon --steps 240
  *   node --cpu-prof --cpu-prof-dir=/tmp/prof dist/scripts/m1-cpu-bench.mjs --spot padang --steps 120 --hash 0
+ *   node dist/scripts/m1-cpu-bench.mjs --spot canyon --size big --swept 0     the Canyon without its tubes (`?canyonTube=off`)
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -31,7 +32,9 @@ const size = (option('size') ?? 'medium') as SwellSize;
 const steps = Number(option('steps') ?? 240);
 const seed = Number(option('seed') ?? 8761);
 const hashing = option('hash') !== '0';
-const statePath = option('state') ?? `/tmp/m1-cpu-bench-${spot}-${size}-${seed}.sea`;
+/** `--swept 0`: the spot without its swept barrel (the Canyon's `?canyonTube=off`). */
+const swept = option('swept') !== '0';
+const statePath = option('state') ?? `/tmp/m1-cpu-bench-${spot}-${size}-${seed}${swept ? '' : '-unswept'}.sea`;
 /** Steps after the import before timing starts (the rider settles; caches fill). */
 const warm = Number(option('warm') ?? 20);
 
@@ -39,7 +42,7 @@ type Pipeline = NonNullable<SurfZoneStatus['pipelineMs']>;
 
 async function main(): Promise<void> {
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
-  const config = surfZoneConfigFor(settings, seed, true);
+  const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, seed, true), ...(swept ? {} : { sweptBarrel: false }) };
   const barrelCases = sweptBarrelOn(config) ? readBarrelCases(spot) : undefined;
   const runner = SurfZoneRunner.forWorker(config, { rider: true, ...(barrelCases ? { barrelCases } : {}) }, 'warm');
   const built = performance.now();
