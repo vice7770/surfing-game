@@ -1,0 +1,34 @@
+[
+  {
+    "id": "periodic-canyon23-a49-l13",
+    "spot": "canyon",
+    "slope": 0.0434783,
+    "nonlinearity": 0.4199,
+    "flatDepth": 0.1666667,
+    "asset": "barrels/periodic-canyon23-a49-l13.bin"
+  },
+  {
+    "id": "periodic-canyon23f74-a38-l13",
+    "spot": "canyon",
+    "slope": 0.0434783,
+    "nonlinearity": 0.3144,
+    "flatDepth": 0.1666667,
+    "asset": "barrels/periodic-canyon23f74-a38-l13.bin"
+  },
+  {
+    "id": "periodic-canyon23-a38-l13",
+    "spot": "canyon",
+    "slope": 0.0434783,
+    "nonlinearity": 0.31,
+    "flatDepth": 0.1666667,
+    "asset": "barrels/periodic-canyon23-a38-l13.bin"
+  },
+  {
+    "id": "periodic-canyon23-a29-l13",
+    "spot": "canyon",
+    "slope": 0.0434783,
+    "nonlinearity": 0.2114,
+    "flatDepth": 0.1666667,
+    "asset": "barrels/periodic-canyon23-a29-l13.bin"
+  }
+]

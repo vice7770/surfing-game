@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tree A/B</title>
+<style>
+  body { margin: 0; background: #111; color: #ddd; font: 12px ui-monospace, monospace; }
+  iframe { width: 640px; height: 400px; border: 0; display: inline-block; }
+  pre { margin: 4px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<pre id="log">Two trees' water sheets side by side: ?q=<the sheet's query, without the leading ?></pre>
+<iframe id="base"></iframe><iframe id="new"></iframe>
+<script type="module">
+// Dev only (the perf study of 2026-10-22): the base tree (/.m1-cpu-base/) and this tree each run the water sheet in an
+// iframe of one page, so their frames can be timed in turn, block by block, on the same GPU at the same moment.
+const query = new URLSearchParams(location.search).get('q') ?? '';
+const frames = { base: document.getElementById('base'), new: document.getElementById('new') };
+// `&trees=new,new` (or base,base): an A/A control, the same tree in both frames.
+const trees = (new URLSearchParams(location.search).get('trees') ?? 'base,new').split(',');
+const page = (tree) => (tree === 'base' ? `/.m1-cpu-base/index.html?${query}` : `/?${query}`);
+frames.base.src = page(trees[0]);
+frames.new.src = page(trees[1]);
+const breathe = () => new Promise((resolve) => setTimeout(resolve, 0));
+const channel = new MessageChannel();
+const waiting = [];
+channel.port1.onmessage = () => waiting.shift()?.();
+const tick = () => new Promise((resolve) => { waiting.push(resolve); channel.port2.postMessage(0); });
+const q = (values, share) => {
+  const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+  return sorted.length ? +sorted[Math.min(sorted.length - 1, Math.floor(share * sorted.length))].toFixed(2) : NaN;
+};
+async function install() {
+  for (const name of ['base', 'new']) {
+    const w = frames[name].contentWindow;
+    if (!w.waterSheetReady) return false;
+  }
+  for (const name of ['base', 'new']) {
+    const w = frames[name].contentWindow;
+    if (!w.perf) {
+      await w.eval("import('/.m1-cpu-base/perf-page.js').then((m) => m.install())");
+      await w.waterSheetShot('lineup', 'rich', 'midday', 'x.png');
+    }
+  }
+  return true;
+}
+/** Steady-state ms a frame, the two trees in turn block by block (the order turned every cycle): each's median and the paired median difference new − base. */
+async function pair(view, look, cycles = 8, count = 20) {
+  const per = { base: [], new: [] };
+  for (const name of ['base', 'new']) await frames[name].contentWindow.perf.throughput(view, look, 6, 1);
+  for (let cycle = 0; cycle < cycles; cycle += 1) {
+    const order = cycle % 2 === 0 ? ['base', 'new'] : ['new', 'base'];
+    for (const name of order) {
+      const r = await frames[name].contentWindow.perf.throughput(view, look, count, 1);
+      per[name][cycle] = r.ms;
+      await tick();
+    }
+  }
+  return { base: q(per.base, 0.5), new: q(per.new, 0.5), diff: q(per.new.map((t, c) => t - per.base[c]), 0.5), diffMin: q(per.new.map((t, c) => t - per.base[c]), 0), diffMax: q(per.new.map((t, c) => t - per.base[c]), 1) };
+}
+/** Every look and view: the paired steady-state ms a frame, and each tree's main-thread submission (ms, the faster of two runs). */
+async function full(views = ['ride', 'lineup', 'horizon'], looks = ['rich', 'classic']) {
+  const out = {};
+  for (const look of looks) for (const view of views) {
+    if (!frames.base.contentWindow.perf.views[view] || !frames.new.contentWindow.perf.views[view]) continue;
+    const steady = await pair(view, look, 8, 20);
+    const cpu = {};
+    for (const name of ['base', 'new', 'base', 'new']) {
+      const t = await frames[name].contentWindow.perf.time(view, look, 16);
+      cpu[name] = Math.min(cpu[name] ?? Infinity, t.cpu);
+    }
+    out[look + ' ' + view] = [steady.base, steady.new, steady.diff, steady.diffMin, steady.diffMax, cpu.base, cpu.new];
+  }
+  return out;
+}
+window.treeAB = { install, pair, full, frames, breathe };
+</script>
+</body>
+</html>

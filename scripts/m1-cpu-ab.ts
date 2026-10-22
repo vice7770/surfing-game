@@ -9,6 +9,15 @@
  *   rolldown scripts/m1-cpu-ab.ts -o /tmp/m1-cpu-ab.mjs --format esm --platform node
  *   node /tmp/m1-cpu-ab.mjs --spot canyon --steps 300 --state /tmp/m1-cpu-bench-canyon-medium-8761.sea
  *   rm -r .m1-cpu-base
+ *
+ * `--base-state` gives the base tree a sea of its own, for a layout change whose window differs between the trees (the
+ * Canyon's 240 m window, 2026-10-22, docs/research/perf-2026-10-22): save it with the base tree's own m1-cpu-bench,
+ *   git archive <base> src scripts/m1-cpu-bench.ts | (mkdir -p .m1-cpu-base && tar -x -C .m1-cpu-base)
+ *   rolldown ./.m1-cpu-base/scripts/m1-cpu-bench.ts -o /tmp/m1-cpu-bench-base.mjs --format esm --platform node
+ *   node /tmp/m1-cpu-bench-base.mjs --spot canyon --steps 1 --hash 0 --state /tmp/canyon-base.sea
+ *   node /tmp/m1-cpu-ab.mjs --spot canyon --steps 300 --state /tmp/canyon-new.sea --base-state /tmp/canyon-base.sea
+ * (the leading ./ matters: rolldown reads a bare `.m1-cpu-base/…` entry as a package). The arms then step different
+ * seas, so only their timings compare; the snapshot comparison reports them as differing.
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -31,16 +40,18 @@ const steps = Number(option('steps') ?? 240);
 const warm = Number(option('warm') ?? 20);
 const seed = Number(option('seed') ?? 8761);
 const statePath = option('state')!;
+/** The base arm's own saved sea (default: `--state`, the same sea for both). */
+const baseStatePath = option('base-state') ?? statePath;
 const only = option('only'); // 'old' or 'new': time one arm alone (profiling)
-if (!existsSync(statePath)) throw new Error('no state ' + statePath);
+for (const path of [statePath, baseStatePath]) if (!existsSync(path)) throw new Error('no state ' + path);
 
 type Any = any;
-async function make(Runner: Any, decode: Any): Promise<Any> {
+async function make(Runner: Any, decode: Any, path: string): Promise<Any> {
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const config = surfZoneConfigFor(settings, seed, true);
   const barrelCases = sweptBarrelOn(config) ? readBarrelCases(spot) : undefined;
   const runner = Runner.forWorker(config, { rider: true, ...(barrelCases ? { barrelCases } : {}) }, 'warm');
-  runner.simulation.importState(decode(new Uint8Array(readFileSync(statePath))));
+  runner.simulation.importState(decode(new Uint8Array(readFileSync(path))));
   await runner.spinUp();
   return runner;
 }
@@ -64,11 +75,13 @@ function same(a: ArrayBufferView, b: ArrayBufferView): boolean {
 
 async function main(): Promise<void> {
   const arms: { name: string; runner: Any; buffers: Any; samples: Any[] }[] = [];
-  if (only !== 'new') arms.push({ name: 'old', runner: await make(OldRunner, decodeOld), buffers: undefined, samples: [] });
-  if (only !== 'old') arms.push({ name: 'new', runner: await make(NewRunner, decodeNew), buffers: undefined, samples: [] });
+  if (only !== 'new') arms.push({ name: 'old', runner: await make(OldRunner, decodeOld, baseStatePath), buffers: undefined, samples: [] });
+  if (only !== 'old') arms.push({ name: 'new', runner: await make(NewRunner, decodeNew, statePath), buffers: undefined, samples: [] });
   for (const arm of arms) arm.buffers = arm.runner.createBuffers();
-  const { solver } = arms[0].runner.simulation;
-  console.log(spot + ' ' + size + ': ' + solver.nx + ' x ' + solver.nz + ' cells, render ' + arms[0].runner.grid.nx + ' x ' + arms[0].runner.grid.nz + ', t ' + solver.time.toFixed(3));
+  for (const arm of arms) {
+    const { solver } = arm.runner.simulation;
+    console.log(arm.name + ' ' + spot + ' ' + size + ': ' + solver.nx + ' x ' + solver.nz + ' cells, render ' + arm.runner.grid.nx + ' x ' + arm.runner.grid.nz + ', t ' + solver.time.toFixed(3));
+  }
   let mismatches = 0;
   const firstMismatch: string[] = [];
   for (let frame = 0; frame < warm + steps; frame += 1) {

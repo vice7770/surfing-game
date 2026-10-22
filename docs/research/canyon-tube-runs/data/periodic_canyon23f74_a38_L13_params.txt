@@ -1,0 +1,17 @@
+name=canyon23f74_a38
+kind=p2
+level=13
+h0=6
+H_over_h0=0.38
+period=14
+S1=0.0434783
+HMID=0.3666667
+S2=0.0135135
+HS=0.1666667
+domain=68
+tout0=30
+tmax=40.5
+xwin0=40
+xwin1=55
+xtoe=33.726
+train_c=1.079536664915728

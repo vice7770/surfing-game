@@ -13,3 +13,4 @@ __pycache__/
 
 # The M1 CPU study's A/B base tree (scripts/m1-cpu-ab.ts, gpu-check &arms=base): a scratch copy of an older src.
 .m1-cpu-base/
+tools/basilisk/.venv/
