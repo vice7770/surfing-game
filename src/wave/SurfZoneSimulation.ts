@@ -677,29 +677,23 @@ export const RIDE_LINEUP_OFFSET = 11;
 /**
  * The Canyon's start, m seaward of its take-off, against Hs (`rideLineupOffset`: linear between these sizes, held beyond
  * them): as far in as a paddler catches the sets best, but seaward of where one wave in ten starts breaking (the owner,
- * 2026-10-11: "not on top of the breaking"). Measured by canyon-wave-r2's catch model (2026-10-22,
- * docs/research/canyon-wave-r2-2026-10-22/catch-model.mjs; no riders): a point-mass paddler, 80 kg, with the prone drag
- * (45 N at 1.7 m/s) and the sprint paddle (2.1 m/s on flat water) of `AttachedRider`, on the solver's own waves along the
- * take-off's column (3 seeds × 14 periods a size), sprinting from rest 0.5–6 s before each crest reaches the start, caught
- * when it reaches the take-off window (`inTakeOffWindow`: 0.8 of the crest's speed, half-way up the face, 1.1–2.2 faces
- * ahead of the crest); its top speed from the 11 m start on canyon-long-wave's bed, 3.6 m/s at Medium, matches the
- * autopilot's 3.3–3.9 m/s. The sets (top third) caught with the best timing, and where one wave in ten starts breaking:
- * - Small: 13 % from 11 m out, 33 % from 9 m, 50 % from 6 m; one in ten breaks 8 m seaward of the take-off (2 of 27
- *   seaward of 9 m out): 9 m.
- * - Medium: 44 % from 11 m and 9 m out, 63–71 % from 3–6 m; one in ten breaks 10 m seaward (3 of 36 seaward of 11 m,
- *   5 of 36 of 9 m): 11 m.
- * - Big: 50 % from 9–11 m out, 52 % from 6 m (where 17 % of the sets break on the paddler, 8 % from 11 m); one in ten
- *   breaks 5 m seaward: 11 m.
- * On canyon-long-wave's bed, from its own take-offs, 11 m out caught 50 % of Medium's sets and 42 % of Big's; with the
- * breaking-age join Big's faces stand a little steeper at the start (13° against 12°, their steepest metre).
- * The take-off itself moved in with the refit (`CANYON_TAKE_OFF_DEPTH`): 1, 4 and 10 m at Small, Medium and Big, so the
- * starts lie 138, 149 and 166 m from the waterline (141, 153 and 176 m before).
- * Re-measure if the arm, its breaking or the swells change.
+ * 2026-10-11: "not on top of the breaking"; 2026-10-23, decision 5). At the upcoast beach peak since canyon-beach-break
+ * (2026-10-23, docs/research/canyon-beach-break-2026-10-23): canyon-wave-r2's catch model (`catch-model.mjs`: a point-mass
+ * paddler, 80 kg, the prone drag and the 2.1 m/s sprint of `AttachedRider`, caught in `inTakeOffWindow`) on the solver's own
+ * waves in the tip's column, 2 seeds × 12 periods a size:
+ * - Small: one wave in ten breaks 4.5 m seaward of the take-off; 6 m out catches 90 % of the sets (one in ten breaks on
+ *   the paddler): 6 m, 103 m from the waterline.
+ * - Medium: one in ten breaks inside it; 9 m out catches 80 % of the sets, none breaking on the paddler (60 % from 11 m):
+ *   9 m, 134 m.
+ * - Big: one in ten breaks inside it; 3 m out catches 86 % (77 % from 11 m), none breaking on the paddler: 3 m, 183.5 m.
+ * The bars' waves are kinder to catch than the reef's (its sets: 33, 44 and 50 % at its starts, canyon-wave-r2). On a 1:50
+ * bar the starts lie nearer the beach as the swell drops: a spilling beach's sizes break across its width.
+ * Re-measure if the bars, their breaking or the swells change.
  */
 export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
-  { significantHeight: 0.9, offset: 9 },
-  { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: RIDE_LINEUP_OFFSET },
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
 ];
 
 /**

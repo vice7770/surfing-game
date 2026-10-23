@@ -1,0 +1,6 @@
+canyon medium (old, tube on): 260 × 451 = 117260 cells, 64 components; spun up in 66.8 s
+step (1/30 s), 150 steps: p50 225.71 ms, mean 215.37 ms, p95 255.96 ms; 1.925 µs a cell (p50)
+canyon medium (today): 400 × 451 = 180400 cells, 64 components; spun up in 138.7 s
+step (1/30 s), 150 steps: p50 362.88 ms, mean 316.56 ms, p95 446.56 ms; 2.012 µs a cell (p50)
+canyon medium (today barOnset=0.65,barJoin=0.5): 400 × 451 = 180400 cells, 64 components; spun up in 136.4 s
+step (1/30 s), 150 steps: p50 378.70 ms, mean 357.59 ms, p95 457.24 ms; 2.099 µs a cell (p50)

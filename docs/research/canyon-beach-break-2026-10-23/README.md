@@ -4,7 +4,26 @@ Branch `claude/canyon-beach-break`, from `main` at `b11d63ef`. Wave only, no rid
 
 ## In short
 
-__HEADLINE__
+- **The beach peaks break in one long, travelling line.** Medium, 3 seeds × 14 periods, read frame by frame off the water:
+  the white line along a wave's crest is a typical **43–44 m** (its median over the frames it breaks), its longest
+  **76–77 m** at the median (97–118 m in one wave in ten). In **50–67 %** of the waves one unbroken line travels **40 m or
+  more down each arm** from the peak (the owner's 40–60 m), its end reaching 41–48 m at the median, at a visible 45–57°
+  on most arms. Big runs longer (longest 105–110 m; 67–82 % of the arms past 40 m).
+- **Today's main, measured the same way, breaks in a patch:** the reef's drawn white is a typical **6 m** (longest 8 m at
+  the median), and one wave in 17 travels 40 m. The owner's "a couple of metres" is right. The recorded rides of 10–16 s
+  and 44–84 m (#149, #156) were onset statistics joined across pauses and gaps: they measured where breaking started, not a
+  line that breaks.
+- **A gentler wave body:** the beach's faces start breaking at a steepest metre of **18–20°** and front/back steepness
+  **1.3–2.3**, against the reef's 22–24° and 2.5–2.8 (today's main 23°, 2.8): a lower breaking onset on the bars only
+  (0.40 √(gh), the reef's 0.65 pinned exactly), CPU, GPU and stage 1.
+- **The cost of the long line is a wide peak:** in about seven waves in ten the line is already 40 m wide 2 s after it
+  starts (the tip breaks over ±20 m before the arms peel). The screens could trade it for continuity, not have both.
+- **Spilling at every size** (ξb 0.21–0.26 at the first breaks; 84–98 % under 0.4), on two planar sandbars (1:50 and 1:44,
+  V contours at 40° from a tip 12 m round) on a 5 m floor, in a 400 m window (+54 % cells). The reef, its transect, its
+  onset, its gate and its bars are unchanged. Its tube is off by default (`?canyonTube=on`).
+- **Starts** at the upcoast beach peak: 103, 134 and 183.5 m from the waterline at Small, Medium and Big (the catch model
+  catches 80–90 % of the sets there). **The bars read turquoise-green**, not white: the Canyon's sand under the water is wet
+  sand (0.24/0.20/0.13), the beach above it unchanged, the rock on the reef alone.
 
 ## What the owner asked, and what changed in the brief
 
@@ -236,7 +255,22 @@ beside it as without (Medium, seed 1, the same 400 m window: typical 11 m and 7 
 
 ## Frames
 
-__FRAMES__
+Rich, midday, the GPU tier, held seas in the water sheet (`?inpage&waterSheet&spot=canyon&compute=gpu&graphics=ultra`),
+10 frames 0.5 s apart along one set:
+
+- **`main-medium-start-strip.jpg`, `main-medium-above-strip.jpg`:** today's main (`?canyonBed=old&canyonTube=on`), Medium,
+  from the start camera (the spectator's overview, 70 m beside and 95 m behind the take-off, 16 m up) and from above. The
+  reef's white is a patch of a few metres at the peak in every frame, and the tube's small pod.
+- **`medium-start-strip.jpg`, `medium-above-strip.jpg`:** this build, Medium, the same cameras on the upcoast beach peak.
+  From above the peak's white is a ^ along the crest, growing from about 25 m to 60 m across the frames, the last wave's
+  white a 100 m ^ inside it down both arms; the bar between the rips reads pale turquoise, the rips darker.
+- **`big-above-strip.jpg`:** Big from above: the next set's white appears at the tip (10 m) and grows to about 45 m in 4 s,
+  the last one's 100 m ^ inside.
+- **`medium-views-wet-dry.jpg`:** Medium, one held sea: the start view, from the start along the peak, from above and from
+  the beach, with the wet sand (now, left) and the dry sand (before, right).
+- **`big-views.jpg`:** Big, the same four views.
+
+The top-down solver frames behind the frame bars (the white over η, every 0.25 s) are `frame-probe.ts --stills`.
 
 ## Crests
 
@@ -244,15 +278,60 @@ __CRESTS__
 
 ## The start and the catch
 
-__START__
+**The take-off** (`CANYON_TAKE_OFF_DEPTH`, refitted at the upcoast peak's tip, x −112): 0.95 + 1.11 Hs, through the depth
+by which nine in ten waves had started breaking in the tip's column (1.87, 2.61 and 3.57 m measured; 1.94, 2.50 and 3.61 m
+fitted). On the bar's 1:50 the take-offs lie 97, 125 and 180.5 m from the waterline. The reef keeps its own (canyon-wave-r2's
+1.67 + 0.75 Hs at x −9) for its readout (`canyonReefTakeOff`).
+
+**The starts** (`CANYON_RIDE_LINEUP`; the catch model, `catch-model.mjs`, on the tip's column, 2 seeds × 12 periods): as
+far in as the sets are caught best, seaward of where one wave in ten starts breaking.
+
+| | Small | Medium | Big |
+| --- | --- | --- | --- |
+| One wave in ten starts breaking | 4.5 m seaward of the take-off | 3.5 m inside it | 5 m inside it |
+| Sets caught (best timing) / breaking on the paddler, at the start | 90 % / 10 % | 80 % / 0 | 86 % / 0 |
+| Start, m seaward of the take-off; its depth | **6 m; 2.06 m** | **9 m; 2.68 m** | **3 m; 3.67 m** |
+| Start to the waterline (main: 138, 149, 166 m) | **103 m** | **134 m** | **183.5 m** |
+
+- The bars' sets are kinder to catch than the reef's were (33, 44 and 50 % at its starts): their faces are gentler and they
+  break later on the bar.
+- **The 140–180 m rule:** Medium sits 6 m inside it, Small 37 m, Big 3.5 m outside. A spilling bar breaks small waves near
+  the beach and big ones far out (decision 6); holding Small at 140 m would need a steeper bar (higher ξb) or a terrace whose
+  slope break made the arms stall (the knee, above).
+- The rider's bounds widen with the window (x ±179). Online spawns follow the start.
 
 ## Colour and rock
 
-__COLOUR__
+- **The bars read pale turquoise-green and never glow white** (`medium-views-wet-dry.jpg`): the Canyon's sand under the
+  water is wet sand, 0.24/0.20/0.13 (`SPOT_OPTICS.canyon.bedAlbedo`; dry 0.42/0.36/0.24), the advisor's Lekner & Dorf
+  (1988) darkening (×0.60/0.57/0.50), with Zhang & Voss (2006) on sand seen under water. With the dry sand the same bars glow
+  a pale cyan-white, the old white wedge again. It switches at the waterline, not faded in (the advisor: a fade would draw a
+  white fringe). One uniform changes; no shader, texture or varying is added (no cost; the edge band keeps its 16 units).
+- **The beach itself keeps its colour:** the dry sand is the seabed mesh's, not the water's albedo.
+- **The rock stays on the reef:** the rock cover now reads the sand bed with the floor and the bars in it
+  (`canyonSandDepth`), so relief over a bar is never rock (`rockBed.test.ts`). On the old layout the arithmetic is main's.
+- Every other spot's optics are unchanged (the wet-sand physics holds anywhere: the owner's call to widen it).
 
 ## Health and cost
 
-__COST__
+**Health** (the size reports' `--stability`, 3 seeds × 14 periods a size): fastest water 4.2–6.0 m/s (Small), 5.3–7.0 m/s
+(Medium), 8.1–8.5 m/s (Big); Froude caps 0, 0, and 11/0/1 at Big (none in water); volumes within 0.03–0.39 %, Big's 0.45,
+0.48 and 1.60 % (its seed 3, as canyon-wave-r2's 1.22 %); finite throughout. The 600 s crest runs: below.
+
+**Cost** (`step-bench.ts`, the game's sea, 64 components, stage 2 on the CPU, 150 steps after spin-up, Medium; `cost.txt`).
+Measured with five other simulations running on the M1, so the absolute times are 4× a quiet machine's; the ratios hold:
+
+| | Cells | Step p50 (mean) | Per cell, p50 |
+| --- | --- | --- | --- |
+| Today's main (`?canyonBed=old&canyonTube=on`) | 117,260 | 226 ms (215) | 1.93 µs |
+| This build | 180,400 (+54 %) | 363 ms (317) | 2.01 µs |
+| This build without its onset and join fields | 180,400 | 379 ms (358) | 2.10 µs |
+
+- **The cost is the window:** +54 % cells, +47 % on the mean step; per cell within the load's noise.
+- **The fields cost nothing measurable** (one read per cell each, in the breaking pass).
+- On the quiet M1, canyon-wave-r2 measured Medium at 53 ms: expect about 80 ms now on the CPU tier, and the GPU tier's
+  solver work up by about the cells' share. Spin-up 67 → 137 s here (loaded).
+- Drawing: one uniform's value changed; no shader instruction, varying or texture unit added.
 
 ## Risks
 
@@ -287,4 +366,18 @@ __TESTS__
 
 ## What to ride (the owner)
 
-__SHOTS__
+Ride the Canyon, mid tide, calm, midday, Rich, recorded. Then the same with `?canyonBed=old&canyonTube=on` (main's Canyon).
+
+1. **Medium from the start** (the upcoast peak, 134 m from the beach). Sprint about 2 s before the crest.
+   - Watch the white from the take-off: does one line run down the arm you ride, 40 m or more, without gaps?
+   - Go left once and right once. Is the peak a wide section (the first 2 s) before the arm peels?
+   - The readout should say "Spilling peak, left … and right …".
+2. **The downcoast peak** (x 121): the steeper, shorter one. Paddle there or use the Wave Lab.
+3. **Big from the start** (183.5 m out). Does it spill, and does the peak close out too wide? Watch for sets breaking on
+   the floor between the bars.
+4. **Small from the start** (103 m out): does it spill and peel, or mush?
+5. **The reef** (paddle to x −9): it should break and read as before; tube off. Then `?canyonTube=on` for the tube.
+6. **The colour**: from the start and from the beach, the bars turquoise-green, no white glow; the reef grey rock.
+7. **The crests** either side of the reef: square to the beach seaward, a shallow ^ over each bar near the break.
+8. **The GPU tier**: the same sets with `compute=cpu` and on the GPU: the beach's white should look the same (the new
+   per-cell onset and join run on both).

@@ -196,7 +196,9 @@ describe('the Canyon’s barrel transect (the tube from Basilisk, 2026-10-22)', 
     expect(sweptCrashOn({ spot: 'canyon', sweptCrash: true })).toBe(false);
     expect(sweptCrashOn({ spot: 'canyon', sweptBarrel: true, sweptCrash: true })).toBe(true);
     expect(spillingCurlOn({ spot: 'canyon' })).toBe(true);
-    expect(spillingCurlOn({ spot: 'canyon', sweptCrash: true })).toBe(false);
+    // The curl gives way only to a crash that runs: with the tube off by default, asking for the crash alone runs none.
+    expect(spillingCurlOn({ spot: 'canyon', sweptCrash: true })).toBe(true);
+    expect(spillingCurlOn({ spot: 'canyon', sweptBarrel: true, sweptCrash: true })).toBe(false);
     expect(canyon.front).toEqual({ joinPast: 1.5 });
   });
 });

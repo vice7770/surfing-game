@@ -928,18 +928,17 @@ describe('SurfZoneSimulation', () => {
     for (const spot of ['beach', 'point', 'reef', 'padang', 'pool'] as const) {
       for (const significantHeight of [0.6, 0.9, 1.4, 2.4, 3.8]) expect(rideLineupOffset({ spot, significantHeight })).toBe(RIDE_LINEUP_OFFSET);
     }
-    // The Canyon (canyon-wave-r2, 2026-10-22, its catch model on the solver's waves, 3 seeds × 14 periods a size): Small
-    // 9 m out, where a sprinting paddler caught a third of the sets (13 % from 11 m) and one wave in ten breaks 8 m
-    // seaward of the take-off; Medium and Big 11 m, seaward of where one in ten breaks (10 m and 5 m); linear between, held
-    // beyond; never inside the take-off.
-    expect(CANYON_RIDE_LINEUP.map(({ offset }) => offset)).toEqual([9, RIDE_LINEUP_OFFSET, RIDE_LINEUP_OFFSET]);
-    for (const [significantHeight, offset] of [[0.6, 9], [0.9, 9], [1.15, 10], [1.4, 11], [1.9, 11], [2.4, 11], [3, 11]]) {
+    // The Canyon (canyon-beach-break, 2026-10-23, its catch model on the solver's waves at the upcoast beach peak, 2 seeds
+    // × 12 periods a size): Small 6 m out (90 % of the sets caught; one wave in ten breaks 4.5 m seaward of the take-off),
+    // Medium 9 m (80 %), Big 3 m (86 %; at both one in ten breaks inside the take-off); linear between, held beyond.
+    expect(CANYON_RIDE_LINEUP.map(({ offset }) => offset)).toEqual([6, 9, 3]);
+    for (const [significantHeight, offset] of [[0.6, 6], [0.9, 6], [1.15, 7.5], [1.4, 9], [1.9, 6], [2.4, 3], [3, 3]]) {
       expect(rideLineupOffset({ spot: 'canyon', significantHeight })).toBeCloseTo(offset, 9);
     }
     for (const { offset } of CANYON_RIDE_LINEUP) expect(offset).toBeGreaterThanOrEqual(0);
-    // The starts' depth and their distance to the waterline: 138, 149 and 166 m (141, 153 and 176 m before the refit).
+    // The starts' depth and their distance to the waterline: 103, 134 and 183.5 m, on the bar's 1:50.
     const canyon = createSpot('canyon', 1);
-    for (const [significantHeight, peakPeriod, startDepth, fromShore] of [[0.9, 9, 2.72, 137.5], [1.4, 11, 3.19, 148.5], [2.4, 14, 3.93, 165.5]]) {
+    for (const [significantHeight, peakPeriod, startDepth, fromShore] of [[0.9, 9, 2.06, 103], [1.4, 11, 2.68, 134], [2.4, 14, 3.67, 183.5]]) {
       const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: CANYON.alongShore, significantHeight, peakPeriod, directionDegrees: 0 };
       const takeOff = takeOffPoint(config);
       const start = takeOff.z - rideLineupOffset(config);

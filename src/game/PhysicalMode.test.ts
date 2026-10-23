@@ -82,7 +82,8 @@ describe('PhysicalMode', () => {
       vi.stubGlobal('location', { search: '' });
       const own = surfZoneConfigFor(big, 5, false);
       expect(own.startOut).toBeUndefined();
-      expect(rideLineupOffset(own)).toBe(11);
+      // Its own: 3 m out at Big's beach peak since canyon-beach-break (11 m on the reef before).
+      expect(rideLineupOffset(own)).toBe(3);
     } finally {
       vi.unstubAllGlobals();
     }
