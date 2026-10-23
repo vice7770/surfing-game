@@ -308,7 +308,9 @@ describe('the spilling lip\'s band', () => {
     const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
     const out = new Float64Array(grid.nx * grid.nz);
     // One lens in column 20 (x = 0), slot 0: the felt table's, faint (its scale still growing with its travel).
-    const roller = { tableWave: (column: number, slot: number) => (column === 20 && slot === 0 ? front.waves[0].id : -1) } as unknown as SpillingRoller;
+    const roller = {
+      tableWave: (column: number, slot: number) => (column === 20 && slot === 0 ? front.waves[0].id : -1), lensOf: () => false,
+    } as unknown as SpillingRoller;
     const felt = new Float32Array(ROLLER_SLOTS * grid.nx * ROLLER_STRIDE);
     const o = 20 * ROLLER_STRIDE;
     felt[o + ROLLER_FIELD.scale] = 0.2;
@@ -349,11 +351,11 @@ describe('the spilling lip\'s band', () => {
 });
 
 describe('the roller band\'s drawn look (the Canyon roller front)', () => {
-  it('writes beside the drawn table each entry\'s time since its curl landed and its wave\'s H, and leaves the table as without it', () => {
+  it.each([true, false])('writes beside the drawn table each entry\'s time since its curl landed and its wave\'s H, and leaves the table as without it (local %s)', (local) => {
     const grid = tank();
     const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
     for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
-    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28, local });
     const out = new Float64Array(grid.nx * grid.nz);
     // Column 20's lens (slot 0) is the front wave's, its section 1.4 m high; column 22's (slot 1) a wave the front has dropped.
     const roller = {
@@ -386,8 +388,9 @@ describe('the roller band\'s drawn look (the Canyon roller front)', () => {
       const reached = front.waves[0].reached[20];
       if (!(reached === reached)) continue;
       const own = 20 * BAND_LOOK_STRIDE;
-      // Its own touchdown while its curl is the column's (younger than the look's span); the nominal one's after.
-      const impact = time - reached < curl.span ? curl.impact[20] : impactTime(SPILLING_CURL.nominalShare * 1.56);
+      // Its own touchdown while its curl is the column's (younger than the look's span); after, its lens's H's (the local
+      // wave's), or, as before canyon-curl-front, the nominal one's.
+      const impact = time - reached < curl.span ? curl.impact[20] : impactTime(local ? 1.4 : SPILLING_CURL.nominalShare * 1.56);
       expect(look[own + BAND_LOOK_FIELD.since]).toBeCloseTo(time - reached - impact, 5);
       expect(look[own + BAND_LOOK_FIELD.height]).toBeCloseTo(1.4, 6);
       if (look[own + BAND_LOOK_FIELD.since] >= 0) landed += 1;
@@ -398,6 +401,45 @@ describe('the roller band\'s drawn look (the Canyon roller front)', () => {
       expect(look[21 * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height]).toBe(0);
     }
     expect(landed).toBeGreaterThan(20);
+  });
+});
+
+describe('the local wave\'s H where a column has none (canyon-curl-front)', () => {
+  it.each([true, false])('draws a bridged gap\'s band at its run\'s lenses\' H, linear between them (local %s; else the nominal)', (local) => {
+    const grid = tank();
+    const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+    for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28, local });
+    const out = new Float64Array(grid.nx * grid.nz);
+    // One run of the front wave's band over columns 18–22, slot 0: lenses at 18 (1.0 m) and 22 (2.0 m), a gap between.
+    const lenses = new Map([[18, 1], [22, 2]]);
+    const roller = {
+      tableWave: (column: number, slot: number) => (slot === 0 && column >= 18 && column <= 22 ? front.waves[0].id : -1),
+      lensOf: (column: number, _id: number, view: { height: number }) => {
+        const height = lenses.get(column);
+        if (height === undefined) return false;
+        view.height = height;
+        return true;
+      },
+    } as unknown as SpillingRoller;
+    const drawn = new Float32Array(ROLLER_SLOTS * grid.nx * ROLLER_STRIDE);
+    const look = new Float32Array(ROLLER_SLOTS * grid.nx * BAND_LOOK_STRIDE);
+    for (let step = 1; step <= 50; step += 1) {
+      const time = step * 0.02;
+      front.update(time, 0.02, 2, grid.strength, out);
+      curl.update(time, 0.02, front, undefined, grid.strength);
+    }
+    drawn.fill(0);
+    for (let column = 18; column <= 22; column += 1) {
+      drawn[column * ROLLER_STRIDE + ROLLER_FIELD.scale] = 1;
+      drawn[column * ROLLER_STRIDE + ROLLER_FIELD.length] = 5;
+    }
+    curl.drawBand(drawn, front, roller, 1, look);
+    const height = (column: number) => look[column * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height];
+    expect(height(18)).toBeCloseTo(1, 6);
+    expect(height(22)).toBeCloseTo(2, 6);
+    const nominal = SPILLING_CURL.nominalShare * 1.56;
+    for (const [column, between] of [[19, 1.25], [20, 1.5], [21, 1.75]]) expect(height(column)).toBeCloseTo(local ? between : nominal, 5);
   });
 });
 

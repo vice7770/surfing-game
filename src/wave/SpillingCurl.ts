@@ -227,7 +227,19 @@ export interface SpillingCurlOptions {
   nonlinearity: number;
   /** The span's steep end, ψ0, and so where the lip lands (`landingShare`): `SPILLING_CURL.psi.max` unless given. */
   psiMax?: number;
+  /**
+   * Where a column's wave has no H of its own (no lens, no section; a bridged gap in the band), it takes the local wave's
+   * (`LOCAL_REACH`) rather than the nominal take-off H (canyon-curl-front, 2026-10-23): true unless given false
+   * (`?curlLocal=off`, the before).
+   */
+  local?: boolean;
 }
+
+/**
+ * A column with no H of its own takes its wave's from the nearest columns that have one this step, within this many
+ * columns either side (linear between the two nearest, else the nearer): the local wave down the line, not the take-off's.
+ */
+export const LOCAL_REACH = 6;
 
 /** No wave in a column. */
 const NONE = -1;
@@ -279,6 +291,14 @@ export class SpillingCurl implements SpillingDrawnLook {
    * tube's clock against the spilling front's (the advisor asked for it, 2026-10-22); NaN elsewhere.
    */
   readonly tubeHold: Float64Array;
+  /** Per column at the last update: its wave's H as its lens or section measured it (NaN: neither), and its lens's length. */
+  private readonly measured: Float64Array;
+  private readonly measuredLength: Float64Array;
+  /** `SpillingCurlOptions.local`. */
+  readonly local: boolean;
+  /** `drawBand`'s scratch, one slot's columns: each entry's lens H (NaN: none) and its wave (−1: no entry). */
+  private readonly lookHeight: Float64Array;
+  private readonly lookWave: Int32Array;
   private readonly first: number;
   private readonly last: number;
   private readonly view = createLensView();
@@ -311,6 +331,11 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.gradient = new Float64Array(nx);
     this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
     this.shoulderAir = new Float32Array(nx * nz).fill(1);
+    this.measured = new Float64Array(nx).fill(Number.NaN);
+    this.measuredLength = new Float64Array(nx).fill(Number.NaN);
+    this.local = options.local !== false;
+    this.lookHeight = new Float64Array(nx);
+    this.lookWave = new Int32Array(nx);
     this.tube = new Uint8Array(nx);
     this.tubeHold = new Float64Array(nx).fill(Number.NaN);
     this.shapes = [];
@@ -381,8 +406,11 @@ export class SpillingCurl implements SpillingDrawnLook {
         wave[column] = k;
       }
     }
+    // Each column's crest, H, lens length and normal: from its lens, or a section of the surface at its S2 crest.
+    const { measured, measuredLength } = this;
     for (let column = first; column < last; column += 1) {
       const k = wave[column];
+      measured[column] = Number.NaN;
       if (k === NONE) continue;
       const id = waves[k].id;
       let crest = Number.NaN;
@@ -404,7 +432,6 @@ export class SpillingCurl implements SpillingDrawnLook {
           length = section.toe - section.crest;
         }
       }
-      const h = height > 0 ? height : this.nominal;
       // The curl falls down the face toward the beach: a lens's normal, fitted over a few columns, swings along shore
       // where a crest kinks or breaks again, so it is held within `maxTurn` of +z.
       const turn = Math.atan2(nx, nz > 0 ? nz : 0);
@@ -412,6 +439,17 @@ export class SpillingCurl implements SpillingDrawnLook {
       this.crest[column] = crest;
       this.normalX[column] = Math.sin(held);
       this.normalZ[column] = Math.cos(held);
+      measured[column] = height > 0 ? height : Number.NaN;
+      measuredLength[column] = length;
+    }
+    for (let column = first; column < last; column += 1) {
+      const k = wave[column];
+      if (k === NONE) continue;
+      const crest = this.crest[column];
+      const length = measuredLength[column];
+      // Its H: as measured; where neither a lens nor a section has it, the local wave's (`localHeight`), else the nominal.
+      const height = measured[column] === measured[column] ? measured[column] : this.local ? this.localHeight(column, k) : Number.NaN;
+      const h = height > 0 ? height : this.nominal;
       this.height[column] = h;
       this.impact[column] = impactTime(h);
       // A swept tube on this wave's crest here (the Canyon's tube regime): the tube draws, not this curl, and its white
@@ -440,6 +478,25 @@ export class SpillingCurl implements SpillingDrawnLook {
         });
       }
     }
+  }
+
+  /**
+   * The local wave's H at `column` for wave index `k` (this update's front), where the column has none of its own: from
+   * the nearest columns of the same wave whose lens or section measured one this step, within `LOCAL_REACH` either side,
+   * linear between the two nearest (the one nearer alone); NaN where none is in reach.
+   */
+  private localHeight(column: number, k: number): number {
+    const { measured, wave, first, last } = this;
+    let left = -1;
+    let right = -1;
+    for (let d = 1; d <= LOCAL_REACH && (left < 0 || right < 0); d += 1) {
+      const l = column - d;
+      const r = column + d;
+      if (left < 0 && l >= first && wave[l] === k && measured[l] === measured[l]) left = l;
+      if (right < 0 && r < last && wave[r] === k && measured[r] === measured[r]) right = r;
+    }
+    if (left >= 0 && right >= 0) return measured[left] + ((measured[right] - measured[left]) * (column - left)) / (right - left);
+    return left >= 0 ? measured[left] : right >= 0 ? measured[right] : Number.NaN;
   }
 
   /**
@@ -474,6 +531,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     const reach = this.reach;
     const view = this.view;
     this.bandAge.fill(Number.NaN);
+    const { lookHeight, lookWave } = this;
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = 0; column < nx; column += 1) {
         const o = (slot * nx + column) * ROLLER_STRIDE;
@@ -482,10 +540,16 @@ export class SpillingCurl implements SpillingDrawnLook {
           look[l + BAND_LOOK_FIELD.since] = BAND_LOOK_OLD;
           look[l + BAND_LOOK_FIELD.height] = 0;
         }
+        lookWave[column] = -1;
         if (!(table[o + ROLLER_FIELD.scale] > 0)) continue;
         const id = roller.tableWave(column, slot);
-        // Its wave's H at this column (its lens's section), else the nominal height (a gap the table's run bridged).
-        if (look) look[l + BAND_LOOK_FIELD.height] = id >= 0 && roller.lensOf(column, id, view) && view.height > 0 ? view.height : this.nominal;
+        // Its wave's H at this column (its lens's section); a gap the table's run bridged has none (filled below).
+        const lensHeight = id >= 0 && (look || !this.ownWave(waves, column, id)) && roller.lensOf(column, id, view) && view.height > 0 ? view.height : Number.NaN;
+        if (look) {
+          look[l + BAND_LOOK_FIELD.height] = lensHeight === lensHeight ? lensHeight : this.nominal;
+          lookHeight[column] = lensHeight;
+          lookWave[column] = id;
+        }
         if (id < 0) continue;
         let k = waves.length - 1;
         while (k >= 0 && waves[k].id !== id) k -= 1;
@@ -495,8 +559,10 @@ export class SpillingCurl implements SpillingDrawnLook {
         if (!(r === r)) continue;
         const age = time - (j === j && j > r ? j : r);
         this.bandAge[slot * nx + column] = age;
-        const own = this.wave[column] !== NONE && waves[this.wave[column]].id === id;
-        const impact = own ? this.impact[column] : impactTime(this.nominal);
+        const own = this.ownWave(waves, column, id);
+        // Another wave's band than the column's curl: its H here, its lens's (the local wave's), else the nominal.
+        const other = own ? 0 : this.local && lensHeight > 0 ? lensHeight : this.nominal;
+        const impact = own ? this.impact[column] : impactTime(other);
         const since = age - impact;
         if (look) look[l + BAND_LOOK_FIELD.since] = Math.min(BAND_LOOK_OLD, since);
         if (!(age < this.span)) continue;
@@ -508,7 +574,7 @@ export class SpillingCurl implements SpillingDrawnLook {
         if (table[o + ROLLER_FIELD.scale] < flash) table[o + ROLLER_FIELD.scale] = flash;
         if (since >= SPILLING_CURL.toeSeconds + SPILLING_CURL.tailSeconds) continue;
         const length = table[o + ROLLER_FIELD.length];
-        const landing = own ? this.landing[column] : this.size(column, this.nominal).ahead;
+        const landing = own ? this.landing[column] : this.size(column, other).ahead;
         drawnReach(since, landing, length, reach);
         const top = reach.top > 0 ? reach.top : 0;
         const bottom = Math.min(length, reach.bottom);
@@ -519,7 +585,31 @@ export class SpillingCurl implements SpillingDrawnLook {
         table[o + ROLLER_FIELD.crest] += top;
         table[o + ROLLER_FIELD.length] = bottom - top;
       }
+      // A gap the table's run bridged draws its wave's local H: its run's nearest lenses' (`LOCAL_REACH`), not the nominal.
+      if (look && this.local) {
+        for (let column = 0; column < nx; column += 1) {
+          const id = lookWave[column];
+          if (id < 0 || lookHeight[column] === lookHeight[column]) continue;
+          let left = -1;
+          let right = -1;
+          for (let d = 1; d <= LOCAL_REACH && (left < 0 || right < 0); d += 1) {
+            const p = column - d;
+            const q = column + d;
+            if (left < 0 && p >= 0 && lookWave[p] === id && lookHeight[p] === lookHeight[p]) left = p;
+            if (right < 0 && q < nx && lookWave[q] === id && lookHeight[q] === lookHeight[q]) right = q;
+          }
+          if (left < 0 && right < 0) continue;
+          const height = left >= 0 && right >= 0 ? lookHeight[left] + ((lookHeight[right] - lookHeight[left]) * (column - left)) / (right - left)
+            : lookHeight[left >= 0 ? left : right];
+          look[(slot * nx + column) * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height] = height;
+        }
+      }
     }
+  }
+
+  /** Whether `column`'s curl at the last update is wave `id`'s (its youngest wave behind its front; `waves` the front's). */
+  private ownWave(waves: SpillingFront['waves'], column: number, id: number): boolean {
+    return this.wave[column] !== NONE && waves[this.wave[column]].id === id;
   }
 
   /**

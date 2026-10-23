@@ -141,6 +141,12 @@ export interface SurfZoneConfig {
    */
   spillingCurl?: boolean;
   /**
+   * Whether the spilling lip's curl, band and roller front take the local wave's H where a column has none of its own
+   * (no lens, no section, a bridged gap), rather than the nominal take-off H (canyon-curl-front, 2026-10-23): on by
+   * default; `?curlLocal=off` draws them as before, for A/Bs. Drawn only: nothing felt changes.
+   */
+  curlLocal?: boolean;
+  /**
    * Whether a spilling spot's drawn whitewater and roller band fray at their ends and toe (the foam look, item 4a,
    * `drawnEdges.ts`): on by default where the spot's front asks for it; false draws them square (the before stills).
    * Look only: nothing felt changes.
@@ -1024,6 +1030,7 @@ export class SurfZoneSimulation {
           breakerDepth, breakerHeight: BREAKER_INDEX * breakerDepth,
           // The overturn fits' H0/h0, as the plunging lip's: the incoming sea's height over the tank's offshore depth.
           nonlinearity: edgeHeight(config, tank.edgeDepth) / (tank.edgeDepth + config.tide),
+          ...(config.curlLocal === false ? { local: false } : {}),
         });
         this.drawnWhitewater = new Float64Array(this.solver.h.length);
       }
