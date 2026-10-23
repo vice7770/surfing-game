@@ -1415,16 +1415,17 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
     } finally {
       tracking.mockRestore();
     }
-    expect(points.map((p) => p.z)).toEqual([-109.7, -111.6, -109.5, -139.7, -142.4]);
+    // A thrown lip's clock runs at least at real time (the advisor, 2026-10-22): τ 0.1 + one step, each crest on its pace.
+    const tau = 0.1 + 1 / 60;
+    [-110 + 3 * tau, -112 + 4 * tau, -110 + 5 * tau, -140 + 3 * tau, -143 + 6 * tau].forEach((z, k) => expect(points[k].z).toBeCloseTo(z, 9));
     const distance = (a: FrontPoint, b: FrontPoint) => {
       const dx = b.x - a.x;
       const dz = b.z - a.z;
       return Math.sqrt(dx * dx + dz * dz);
     };
     expect(points.map((p) => p.sigma)).toEqual([0, distance(points[0], points[1]), distance(points[0], points[1]) + distance(points[1], points[2]), 0, distance(points[3], points[4])]);
-    expect(points.map((p) => [p.id, p.front, p.tau, p.footHeight, p.footDepth])).toEqual([
-      [0, 4, 0.1, 2.1, 7], [1, 4, 0.1, 2.1, 7], [2, 4, 0.1, 2.1, 7], [3, 9, 0.1, 2.1, 7], [4, 9, 0.1, 2.1, 7],
-    ]);
+    expect(points.map((p) => [p.id, p.front, p.footHeight, p.footDepth])).toEqual([[0, 4, 2.1, 7], [1, 4, 2.1, 7], [2, 4, 2.1, 7], [3, 9, 2.1, 7], [4, 9, 2.1, 7]]);
+    for (const p of points) expect(p.tau).toBeCloseTo(tau, 12);
     const records = new Float32Array(points.length * FRONT_STRIDE);
     expect(writeFrontRecords(points, records)).toBe(points.length);
     for (let k = 0; k < points.length; k += 1) {
@@ -1459,13 +1460,16 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
     expect(after[1].sigma).toBeGreaterThan(2);
     expect(after[2].front).toBe(9);
     expect(after[2].sigma).toBe(0);
-    expect(after[3].sigma).toBeCloseTo(Math.sqrt(2 * 2 + 2.7 * 2.7), 12);
+    // Its crests 3 − 3 τ apart in z, τ 0.1 + one step (a thrown clock runs at least at real time).
+    const tau = 0.1 + 1 / 60;
+    expect(after[3].sigma).toBeCloseTo(Math.sqrt(2 * 2 + (3 - 3 * tau) ** 2), 12);
     expect(simulation.exportState().front!.points.map((p) => p.sigma)).toEqual(after.map((p) => p.sigma));
   });
 
-  it('runs on Padang Padang only', () => {
-    expect(SWEPT_BARREL).toEqual(['padang']);
-    expect(new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm').front).toBeUndefined();
+  it('runs on Padang Padang and the Canyon only (the Canyon from 2026-10-22, off with its switch)', () => {
+    expect(SWEPT_BARREL).toEqual(['padang', 'canyon']);
+    expect(new SurfZoneSimulation({ ...small, spot: 'beach' }, 'warm').front).toBeUndefined();
+    expect(new SurfZoneSimulation({ ...small, spot: 'canyon', sweptBarrel: false }, 'warm').front).toBeUndefined();
     expect(new SurfZoneSimulation(padang(), 'warm').front).toBeDefined();
     expect(new SurfZoneSimulation(padang({ sweptBarrel: false }), 'warm').front).toBeUndefined();
   });
