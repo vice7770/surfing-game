@@ -50,20 +50,16 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
     });
   }
 
-  it('follows the ledge where its layout puts it: each layout\'s peak, and the reef either side, rock only on its own bed', () => {
+  it('follows the ledge where its layout puts it: today\'s and the old layout\'s arm are one, so their rock is too', () => {
     const today = canyonRockCover(canyonShape('reef'));
     const old = canyonRockCover(canyonShape('old'));
     const onTop = (c: typeof CANYON) => [c.peakX + 2, canyonBreakLineZ(c.peakX + 2, c) + 3] as const;
     expect(today(...onTop(CANYON))).toBeGreaterThan(0);
-    expect(old(...onTop(CANYON_OLD))).toBeGreaterThan(0);
-    // The two arms overlap (canyon-long-wave moved the peak 12 m upcoast and made the face planar): today's upcoast end
-    // stands on open platform on the old layout, and the old fan's deep face downcoast on open platform today.
-    const todaysEnd = [CANYON.peakX - 12, canyonBreakLineZ(CANYON.peakX - 12) - 8] as const;
-    expect(today(...todaysEnd)).toBeGreaterThan(0);
-    expect(old(...todaysEnd)).toBe(0);
-    const oldFan = [30, -120] as const;
-    expect(old(...oldFan)).toBeGreaterThan(0);
-    expect(today(...oldFan)).toBe(0);
+    // canyon-wave-r2 (2026-10-22) changed the breaking and the window, not the arm: the old layout (main's at 578202fd)
+    // has the same bed, so the same rock, from its upcoast end to past the run-on and on the open platform.
+    for (const [x, z] of [onTop(CANYON), [CANYON.peakX - 12, canyonBreakLineZ(CANYON.peakX - 12) - 8], [30, -120], [10, -60], [-60, -150]] as const) {
+      expect(old(x, z)).toBe(today(x, z));
+    }
   });
 
   it('turns from sand to rock over the relief ROCK_RELIEF gives, smoothly', () => {

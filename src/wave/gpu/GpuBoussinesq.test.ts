@@ -299,6 +299,17 @@ describe('GpuBoussinesq host', () => {
     expect(feed).toBeInstanceOf(SideFeed);
     writeParams(fedSolver, fedLayout, { boundary: fedLayout.zones[0] as SeaStateBoundary, firstRow: 0, rows: 12, feed }, 0.02, 0.04, bytes);
     expect([words[20], words[21]]).toEqual([feed.deviceShape().slots, feed.deviceShape().components]);
+    // The breaking age's diagonal join (canyon-wave-r2): 0 (rule A, every spot but the Canyon) unless the solver sets it,
+    // and the device gates the diagonal parents with it as the CPU does (`inheritedAge`).
+    expect(floats[22]).toBe(0);
+    const joined = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, { breaking: { onset: 0.65, diagonalJoin: 0.5 } });
+    const joinedLayout = joined.deviceLayout();
+    expect(joinedLayout.breaking?.diagonalJoin).toBe(0.5);
+    writeParams(joined, joinedLayout, undefined, 0.02, 0.04, bytes);
+    expect(floats[22]).toBe(0.5);
+    const source = boussinesqWgsl();
+    expect(source).toContain('let diagonals = P.diagonalJoin <= 0.0 || rise >= P.diagonalJoin * sqrt(g * still);');
+    expect(source.match(/if \(diagonals && /g)).toHaveLength(4);
   });
 
   it('reads back the surface rise rate, which a lip needs to find its crest\'s motion', () => {

@@ -11,6 +11,8 @@ export interface BreakingOptions {
   end?: number;
   /** Onset-to-end transition time T* in units of √(h/g). */
   transition?: number;
+  /** The breaking age's diagonal join (`KennedyOptions.diagonalJoin`; 0 or absent: rule A, always), on the stage 1 indicator. */
+  diagonalJoin?: number;
 }
 
 const MIN_DEPTH = 0.05;
@@ -119,7 +121,9 @@ export class BreakingModel {
         const spanZ = zCenters[up === i ? iz : iz + 1] - zCenters[down === i ? iz : iz - 1];
         const slopeX = right === left ? 0 : (h[right] + bed[right] - h[left] - bed[left]) / spanX;
         const slopeZ = up === down ? 0 : (h[up] + bed[up] - h[down] - bed[down]) / spanZ;
-        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX, slopeZ, this.strength, this.age);
+        const join = this.options.diagonalJoin ?? 0;
+        const diagonals = !(join > 0) || rise >= join * Math.sqrt(GRAVITY * depth);
+        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX, slopeZ, this.strength, this.age, diagonals);
         const ramp = Math.min(1, inherited / (transition * Math.sqrt(depth / GRAVITY)));
         const threshold = Math.sqrt(GRAVITY * depth) * (onset + (end - onset) * ramp);
         let breaking = Math.min(1, Math.max(0, rise / threshold - 1));

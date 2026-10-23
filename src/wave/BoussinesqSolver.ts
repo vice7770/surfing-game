@@ -69,6 +69,11 @@ export interface KennedyOptions {
   end?: number;
   transition?: number;
   delta?: number;
+  /**
+   * A diagonal parent behind the face passes its breaking age only where the cell's own surface rises at least this × √(g h)
+   * (`inheritedAge`'s `diagonals`); 0, the default: always (rule A). The Canyon's `CANYON.ageJoin` (canyon-wave-r2).
+   */
+  diagonalJoin?: number;
 }
 
 export interface BoussinesqOptions extends SolverOptions {
@@ -87,7 +92,7 @@ export interface BoussinesqDeviceLayout {
   xBoundary: number;
   dispersive: boolean;
   /** Kennedy breaking with the onset already scaled by the wind; absent when waves do not break. */
-  breaking?: { onset: number; end: number; transition: number; mixing: number };
+  breaking?: { onset: number; end: number; transition: number; mixing: number; diagonalJoin?: number };
   /** Still depth and its slopes along x and z. */
   still: Float64Array;
   slopeX: Float64Array;
@@ -202,7 +207,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: BoussinesqOptions = {}) {
     super(grid, depthAt, options);
     this.dispersive = options.dispersion ?? true;
-    if (options.breaking) this.kennedy = { end: 0.15, transition: 5, delta: 1.2, ...options.breaking };
+    if (options.breaking) this.kennedy = { end: 0.15, transition: 5, delta: 1.2, diagonalJoin: 0, ...options.breaking };
     const size = this.nx * this.nz;
     const make = () => new Float64Array(size);
     this.breakingStrength = make(); this.breakingAge = make(); this.riseRate = make(); this.viscosity = make();
@@ -375,6 +380,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
       dispersive: this.dispersive,
       breaking: kennedy && {
         onset: kennedy.onset * this.onsetScale, end: kennedy.end, transition: kennedy.transition, mixing: kennedy.delta * kennedy.delta,
+        diagonalJoin: kennedy.diagonalJoin,
       },
       still: this.still,
       slopeX: this.dX,
@@ -423,6 +429,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     const { nx, nz, h, rateH, breakingStrength: strength, breakingAge: age, nextStrength, nextAge, riseRate, viscosity: nu, gravity: g } = this;
     const onset = kennedy.onset * this.onsetScale;
     const mixing = kennedy.delta * kennedy.delta;
+    const join = kennedy.diagonalJoin;
     // The front faces' slopes, from the half-step surface the dispersive terms use (the device's HALF field): a breaking
     // event's age comes only from behind its face (`inheritedAge`).
     const { halfEta, f1: slopeX, f2: slopeZ } = this;
@@ -441,9 +448,10 @@ export class BoussinesqSolver extends ShallowWaterSolver {
           nu[i] = 0;
           continue;
         }
-        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX[i], slopeZ[i], strength, age);
         // Thresholds scale with the still depth (Kennedy et al. 2000); the mixing acts over the whole column.
         const still = Math.max(BREAKING_DEPTH, this.still[i]);
+        const diagonals = !(join > 0) || rise >= join * Math.sqrt(g * still);
+        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX[i], slopeZ[i], strength, age, diagonals);
         const ramp = Math.min(1, inherited / (kennedy.transition * Math.sqrt(still / g)));
         const threshold = Math.sqrt(g * still) * (onset + (kennedy.end - onset) * ramp);
         const breaking = Math.min(1, Math.max(0, rise / threshold - 1));

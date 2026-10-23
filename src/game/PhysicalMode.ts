@@ -397,6 +397,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...tubeShapeSwitch(),
     // `?canyonTube=off`: the Canyon without its swept tubes, exactly as before they were wired (2026-10-22), for A/Bs.
     ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
+    // `?canyonAgeJoin=<J>`: the Canyon's breaking-age join (0: rule A, as before canyon-wave-r2), for A/Bs.
+    ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
     ...overrides,
   };
 }
@@ -420,6 +422,17 @@ export function canyonTubeSwitch(search?: string): { sweptBarrel?: false } {
 }
 
 /**
+ * The `?canyonAgeJoin=<J>` dev switch (`SurfZoneConfig.canyonAgeJoin`): the Canyon's breaking age passes through the
+ * diagonal parents only where the cell rises at J √(g h) or faster; 0 is rule A, the Canyon before canyon-wave-r2 (its
+ * default is `CANYON.ageJoin`, 0.5). A number of 0 or more, else nothing.
+ */
+export function canyonAgeJoinSwitch(search?: string): { canyonAgeJoin?: number } {
+  const text = devParam('canyonAgeJoin', search)?.trim();
+  const join = text ? Number(text) : Number.NaN;
+  return Number.isFinite(join) && join >= 0 ? { canyonAgeJoin: join } : {};
+}
+
+/**
  * The `?tubeShape=c` dev switch (`SurfZoneConfig.tubeShape`): the swept barrel drawn and felt as the authored bounded-C
  * profile the game drew from 2026-10-05 to 2026-10-22, in place of the cases' own Basilisk frames, to compare the two.
  */
@@ -428,9 +441,9 @@ export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
 }
 
 /**
- * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-long-wave
- * (2026-10-22, `CANYON_OLD`: canyon-layout's short arm on its fan, 120 m out), with its own tank, take-off and starts, to
- * ride the two side by side; nothing otherwise (today's layout).
+ * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-wave-r2
+ * (2026-10-22, `CANYON_OLD`: canyon-long-wave's planar arm, main's at 578202fd, with rule A's breaking age, its 240 m
+ * window, take-off and starts), to ride the two side by side; nothing otherwise (today's layout).
  */
 export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
   return devParam('canyonBed', search)?.trim() === 'old' ? { canyonBed: 'old' } : {};

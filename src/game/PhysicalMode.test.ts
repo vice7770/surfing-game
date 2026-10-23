@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonBedSwitch, canyonTubeSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBedSwitch, canyonTubeSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -124,6 +124,25 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonAgeJoin=<J>` dev switch (canyon-wave-r2): the Canyon's breaking-age join alone, 0 for rule A, carried in
+  // the config to the worker; anything else leaves the layout's own.
+  it('runs the Canyon\'s breaking-age join from `?canyonAgeJoin=<J>` (a dev switch), and its layout\'s otherwise', () => {
+    expect(canyonAgeJoinSwitch('?canyonAgeJoin=0')).toEqual({ canyonAgeJoin: 0 });
+    expect(canyonAgeJoinSwitch('?canyonAgeJoin=0.35')).toEqual({ canyonAgeJoin: 0.35 });
+    for (const search of ['', '?canyonAgeJoin', '?canyonAgeJoin=', '?canyonAgeJoin=-1', '?canyonAgeJoin=off']) expect(canyonAgeJoinSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const beach = physicalSettingsFor('beach', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonAgeJoin=0' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonAgeJoin).toBe(0);
+      expect(surfZoneConfigFor(beach, 5, false).canyonAgeJoin).toBeUndefined();
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(medium, 5, false, { canyonAgeJoin: undefined }).canyonAgeJoin).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

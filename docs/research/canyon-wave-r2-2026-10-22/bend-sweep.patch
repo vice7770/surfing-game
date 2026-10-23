@@ -1,0 +1,104 @@
+diff --git a/src/wave/Bathymetry.ts b/src/wave/Bathymetry.ts
+index 418b151b..974513d9 100644
+--- a/src/wave/Bathymetry.ts
++++ b/src/wave/Bathymetry.ts
+@@ -302,6 +302,16 @@ export const CANYON = {
+    * on the fan the deep face ended there 90 m from the beach; on the planar face 15 m further along shore).
+    */
+   runOn: 1,
++  /**
++   * Down the line the arm may bend: past `bendX` (along shore) its face's slope along the waves' path eases from
++   * `pathSlope` to `downSlope`, and its line's angle from `angle` to `downAngle`, over `bendLength` m along shore (the
++   * slope by a smoothstep, the line's gradient linearly, so the line stays C¹). Upcoast of `bendX`, the take-off's
++   * transect included, the bed is the planar arm's exactly. `downSlope` = `pathSlope` and `downAngle` = `angle`: no bend.
++   * Planar arms only (`fan` 0).
++   */
++  bendX: -4, bendLength: 20, downSlope: 1 / 23, downAngle: 70,
++  /** EXPERIMENT: the solver's breaking-age join through diagonal parents (`KennedyOptions.diagonalJoin`); 0: rule A as everywhere. */
++  ageJoin: 0,
+ };
+ 
+ /**
+@@ -334,6 +344,7 @@ export const CANYON_OLD: CanyonShape = Object.freeze({
+   endTaper: 12,
+   flatWidth: 10, lagoonDepth: 2,
+   alongShore: 220, peelReach: 10, runOn: 0,
++  bendX: -4, bendLength: 20, downSlope: 1 / 23, downAngle: 70, ageJoin: 0,
+ });
+ 
+ /** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */
+@@ -343,11 +354,38 @@ export function canyonShape(bed: CanyonBed = 'reef'): CanyonShape {
+ 
+ /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
+ export function canyonBreakLineZ(x: number, c: CanyonShape = CANYON): number {
+-  return c.peakZ + (x - c.peakX) * Math.tan((c.angle * Math.PI) / 180);
++  if (!canyonBends(c) || x <= c.bendX) return c.peakZ + (x - c.peakX) * Math.tan((c.angle * Math.PI) / 180);
++  // Past the bend the line's gradient runs linearly from tan(angle) to tan(downAngle) over bendLength.
++  const from = Math.tan((c.angle * Math.PI) / 180);
++  const to = Math.tan((c.downAngle * Math.PI) / 180);
++  const d = x - c.bendX;
++  const eased = d < c.bendLength ? (d * d) / (2 * c.bendLength) : d - c.bendLength / 2;
++  return c.peakZ + (x - c.peakX) * from + (to - from) * eased;
++}
++
++/** Whether the Canyon's arm bends down the line (`bendX`: its face's slope or its line's angle changing). */
++export function canyonBends(c: CanyonShape = CANYON): boolean {
++  return c.downSlope !== c.pathSlope || c.downAngle !== c.angle;
++}
++
++/** The Canyon's face's slope along the waves' path (+z) at along-shore position x: `pathSlope`, easing to `downSlope` past the bend. */
++export function canyonFaceSlope(x: number, c: CanyonShape = CANYON): number {
++  return c.pathSlope + (c.downSlope - c.pathSlope) * smoothstep(c.bendX, c.bendX + c.bendLength, x);
++}
++
++/** The x in [lo, hi] where an increasing f crosses 0 (bisection, to 1e-9 m). */
++function crossing(f: (x: number) => number, lo: number, hi: number): number {
++  for (let k = 0; k < 80 && hi - lo > 1e-9; k += 1) {
++    const mid = 0.5 * (lo + hi);
++    if (f(mid) < 0) lo = mid;
++    else hi = mid;
++  }
++  return 0.5 * (lo + hi);
+ }
+ 
+ /** Where the Canyon's break line runs onto the beach face (its crest depth on the beach face), along shore, m. */
+ export function canyonArmEndX(c: CanyonShape = CANYON): number {
++  if (canyonBends(c)) return crossing((x) => canyonBreakLineZ(x, c) + c.crestDepth / c.shoreSlope, c.peakX, c.peakX + 1000);
+   return c.peakX + (-c.crestDepth / c.shoreSlope - c.peakZ) / Math.tan((c.angle * Math.PI) / 180);
+ }
+ 
+@@ -358,6 +396,10 @@ export function canyonArmEndX(c: CanyonShape = CANYON): number {
+  */
+ export function canyonReefEndX(c: CanyonShape = CANYON): number {
+   if (!c.runOn) return canyonArmEndX(c);
++  if (canyonBends(c)) {
++    const foot = (x: number) => canyonBreakLineZ(x, c) - (c.shelfDepth - c.crestDepth) / canyonFaceSlope(x, c);
++    return crossing((x) => foot(x) + c.shelfDepth / c.shoreSlope, c.peakX, c.peakX + 1000);
++  }
+   const footBelowHinge = (c.shelfDepth - c.hingeDepth) / c.pathSlope;
+   return c.peakX + (-c.shelfDepth / c.shoreSlope + footBelowHinge - canyonHingeZ(c.peakX, c)) / Math.tan(((c.angle - c.fan) * Math.PI) / 180);
+ }
+@@ -384,6 +426,7 @@ export function canyonPeelAt(x: number, z: number, c: CanyonShape = CANYON): boo
+  * furthest out where it turns from the line into the end; past the arm's end it tapers into the platform over `endTaper` m.
+  */
+ export function canyonTerraceDepth(x: number, z: number, c: CanyonShape = CANYON): number {
++  if (canyonBends(c) && x > c.bendX) return bentTerraceDepth(x, z, c);
+   const line = canyonBreakLineZ(x, c);
+   const seaward = Math.max(0, line - z);
+   // The fan's shallow face from the crest line to the hinge line, then pathSlope below the hinge (one face when fan is 0).
+@@ -401,6 +444,15 @@ export function canyonTerraceDepth(x: number, z: number, c: CanyonShape = CANYON
+   return terrace + (c.shelfDepth - terrace) * smoothstep(reefEnd, reefEnd + c.endTaper, x);
+ }
+ 
++/** `canyonTerraceDepth` past the bend (`bendX`, downcoast of the peak): the planar face at its own slope up to the bent line. */
++function bentTerraceDepth(x: number, z: number, c: CanyonShape): number {
++  const line = canyonBreakLineZ(x, c);
++  const top = Math.min(c.lagoonDepth, c.crestDepth + Math.max(0, z - line - c.flatWidth) * c.pathSlope);
++  const terrace = z > line ? Math.max(c.crestDepth, top) : c.crestDepth + canyonFaceSlope(x, c) * (line - z);
++  const reefEnd = canyonReefEndX(c);
++  return terrace + (c.shelfDepth - terrace) * smoothstep(reefEnd, reefEnd + c.endTaper, x);
++}
++
+ /** Where the Canyon's hinge line (the fan's, `hingeDepth` deep) crosses along-shore position x. */
+ export function canyonHingeZ(x: number, c: CanyonShape = CANYON): number {
+   const atPeak = c.peakZ - (c.hingeDepth - c.crestDepth) / c.pathSlope;

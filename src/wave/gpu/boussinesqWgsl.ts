@@ -38,7 +38,7 @@ struct Params {
   manning: f32, restLevel: f32, onset: f32, endShare: f32,
   transition: f32, mixing: f32, dispersive: u32, breaks: u32,
   components: u32, zoneFirst: u32, zoneRows: u32, tau: f32,
-  feedSlots: u32, feedComponents: u32, pad2: f32, pad3: f32,
+  feedSlots: u32, feedComponents: u32, diagonalJoin: f32, pad3: f32,
   pad4: f32, pad5: f32, pad6: f32, pad7: f32,
   pad8: f32, pad9: f32, pad10: f32, pad11: f32,
 };
@@ -417,7 +417,10 @@ fn parentAge(current: f32, j: u32) -> f32 {
   let depth = at(${FIELD.H}u, i); let rise = at(${FIELD.RATEH}u, i);
   put(${FIELD.RISE}u, i, rise);
   if (P.breaks == 0u || depth <= BREAKING_DEPTH) { put(${FIELD.NEXTSTRENGTH}u, i, 0.0); put(${FIELD.NEXTAGE}u, i, 0.0); put(${FIELD.NU}u, i, 0.0); return; }
-  // The breaking age comes only from behind the cell's front face, up the half-step surface's slope (breakingAge.ts).
+  // The breaking age comes only from behind the cell's front face, up the half-step surface's slope (breakingAge.ts);
+  // through the diagonal parents only where the cell's own rise rate reaches diagonalJoin √(g h) (0: always).
+  let still = max(BREAKING_DEPTH, at(${FIELD.STILL}u, i));
+  let diagonals = P.diagonalJoin <= 0.0 || rise >= P.diagonalJoin * sqrt(g * still);
   var inherited = select(0.0, at(${FIELD.AGE}u, i), at(${FIELD.STRENGTH}u, i) > 0.0);
   let sx = ddx(${FIELD.HALF}u, ix, iz, false);
   let sz = ddz(${FIELD.HALF}u, ix, iz, false);
@@ -427,20 +430,19 @@ fn parentAge(current: f32, j: u32) -> f32 {
       if (bx >= 0 && bx < i32(nx)) {
         let j = iz * nx + u32(bx);
         inherited = parentAge(inherited, j);
-        if (iz > 0u) { inherited = parentAge(inherited, j - nx); }
-        if (iz < P.nz - 1u) { inherited = parentAge(inherited, j + nx); }
+        if (diagonals && iz > 0u) { inherited = parentAge(inherited, j - nx); }
+        if (diagonals && iz < P.nz - 1u) { inherited = parentAge(inherited, j + nx); }
       }
     } else {
       let bz = i32(iz) + i32(sign(sz));
       if (bz >= 0 && bz < i32(P.nz)) {
         let j = u32(bz) * nx + ix;
         inherited = parentAge(inherited, j);
-        if (ix > 0u) { inherited = parentAge(inherited, j - 1u); }
-        if (ix < nx - 1u) { inherited = parentAge(inherited, j + 1u); }
+        if (diagonals && ix > 0u) { inherited = parentAge(inherited, j - 1u); }
+        if (diagonals && ix < nx - 1u) { inherited = parentAge(inherited, j + 1u); }
       }
     }
   }
-  let still = max(BREAKING_DEPTH, at(${FIELD.STILL}u, i));
   let ramp = min(1.0, inherited / (P.transition * sqrt(still / g)));
   let threshold = sqrt(g * still) * (P.onset + (P.endShare - P.onset) * ramp);
   let b = min(1.0, max(0.0, rise / threshold - 1.0));

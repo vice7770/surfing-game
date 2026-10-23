@@ -161,6 +161,7 @@ export function writeParams(
   floats[19] = tau;
   const feed = zone?.feed?.deviceShape();
   words[20] = feed?.slots ?? 0; words[21] = feed?.components ?? 0;
+  floats[22] = breaking?.diagonalJoin ?? 0;
 }
 
 /**

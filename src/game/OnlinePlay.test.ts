@@ -111,8 +111,8 @@ describe('OnlinePlay', () => {
     expect(link.sent[0]).toMatchObject({ x: 2, z: -110, paddling: true, step: Math.round(100 / SURF_ZONE_STEP) });
   });
 
-  it('spawns from the ride\'s own start out: 11 m outside the break line, nearer at the old Canyon\'s Big', () => {
-    for (const config of [{ spot: 'beach', significantHeight: 1.4 }, { spot: 'canyon', significantHeight: 2.4 }] as const) {
+  it('spawns from the ride\'s own start out: 11 m outside the break line, nearer at the Canyon\'s Small', () => {
+    for (const config of [{ spot: 'beach', significantHeight: 1.4 }, { spot: 'canyon', significantHeight: 2.4 }, { spot: 'canyon', significantHeight: 0.9 }] as const) {
       const { link, surf, play } = setup();
       surf.fake.config = config;
       link.seaTime = 100 + 2 * SURF_ZONE_STEP;
@@ -121,9 +121,10 @@ describe('OnlinePlay', () => {
       expect(out).toBeGreaterThanOrEqual(rideLineupOffset(config) - 1e-9);
       expect(out).toBeLessThanOrEqual(rideLineupOffset(config) + SPAWN_REACH + 1e-9);
     }
-    // Since canyon-long-wave the Canyon's Big starts 11 m out too; its old layout (`?canyonBed=old`) 6 m.
+    // Since canyon-wave-r2 the Canyon's Small starts 9 m out, its Big 11 m; its old layout (`?canyonBed=old`) 11 m at every size.
     expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4 })).toBe(RIDE_LINEUP_OFFSET);
-    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4, canyonBed: 'old' })).toBeLessThan(RIDE_LINEUP_OFFSET);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9 })).toBeLessThan(RIDE_LINEUP_OFFSET);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9, canyonBed: 'old' })).toBe(RIDE_LINEUP_OFFSET);
   });
 
   it('passes the others\' pushes on to the water', () => {

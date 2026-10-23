@@ -504,11 +504,11 @@ class SurfGame {
     if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
     // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
-    // `?canyonBed` says (its old layout is a solo dev switch); and the cases' own tubes, whatever `?tubeShape` or
-    // `?canyonTube` say (the spot's own swept barrel: what a rider hits must match on every client).
+    // `?canyonBed` or `?canyonAgeJoin` say (its old layout and breaking are solo dev switches); and the cases' own tubes,
+    // whatever `?tubeShape` or `?canyonTube` say (the spot's own swept barrel: what a rider hits must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
-      canyonBed: 'reef', tubeShape: 'basilisk', sweptBarrel: undefined,
+      canyonBed: 'reef', canyonAgeJoin: undefined, tubeShape: 'basilisk', sweptBarrel: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,

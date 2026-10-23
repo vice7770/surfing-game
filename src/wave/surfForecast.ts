@@ -83,11 +83,13 @@ export const PRACTICE_SURF: Record<SpotName, SurfForecast> = {
  * these, as it does PRACTICE_SURF and the Wave Pool's faces.
  */
 export const SWELL_SURF: Partial<Record<SpotName, Record<'small' | 'medium' | 'big', SurfForecast>>> = {
-  // The Canyon's planar arm (2026-10-22): seed 1, 240 s each, 44, 30 and 23 waves at the take-off.
+  // The Canyon's planar arm with canyon-wave-r2's breaking-age join and refitted take-off (2026-10-22): seed 1, 240 s
+  // each, 42, 36 and 29 waves at the take-off. The sets now break shallower and taller there (before the join, at the old
+  // take-off: 1.85 / 2.10, 2.41 / 2.68 and 2.96 / 3.20 m).
   canyon: {
-    small: { typical: 1.85, sets: 2.10 },
-    medium: { typical: 2.41, sets: 2.68 },
-    big: { typical: 2.96, sets: 3.20 },
+    small: { typical: 1.99, sets: 2.14 },
+    medium: { typical: 2.49, sets: 2.70 },
+    big: { typical: 3.07, sets: 3.53 },
   },
 };
 

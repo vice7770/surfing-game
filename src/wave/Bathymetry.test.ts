@@ -307,7 +307,8 @@ describe('surf spot bathymetry', () => {
   });
 
   // The straight-crest bed (the owner, 2026-10-06): no canyon, so nothing seaward of the arm turns the crests. Its own
-  // window since canyon-layout (2026-10-22: 220 m, 240 m since canyon-long-wave; ALONG_SHORE's 160 m before).
+  // window since canyon-layout (2026-10-22: 220 m, 240 m since canyon-long-wave, 260 m since canyon-wave-r2; ALONG_SHORE's
+  // 160 m before).
   it('keeps the Canyon level along shore seaward of its arm, with no canyon, and level across both open edges', () => {
     const canyon = createSpot('canyon', 1);
     const edge = CANYON.alongShore / 2;
@@ -333,8 +334,8 @@ describe('surf spot bathymetry', () => {
     // canyon-long-wave (2026-10-22) the face runs on past the line's end until its foot meets the beach face's (`runOn`),
     // 50–55 m downcoast of the peak, so the waves' break runs down the arm into the beach face; the footprint, from the
     // upcoast end to the end of the taper, leaves open water either side clear of each edge's levelling, 50 m and more
-    // (72–83 m to the window's sides: in a 220 m window, 67–68 m, the crests wrapping round the upcoast end came back
-    // from the −x side's mirror as a chevron inshore).
+    // (82–93 m to the window's sides since canyon-wave-r2; in the 220 m and 240 m windows, 67–83 m, the crests wrapping
+    // round the upcoast end came back from the −x side's mirror as a chevron inshore).
     const armEnd = canyonArmEndX();
     const reefEnd = canyonReefEndX();
     const upcoastEnd = CANYON.peakX - (CANYON.shelfDepth - CANYON.crestDepth) / CANYON.endSlope;
@@ -432,11 +433,13 @@ describe('surf spot bathymetry', () => {
     expect(canyonPeelAt(-20, -25)).toBe(false);
     expect(canyonPeelAt(-20, -150)).toBe(true);
     expect(canyonPeelAt(levelled, -150)).toBe(false);
-    // The old layout (canyon-layout's short arm) counts its arm's breaks as main did: to its taper, then none.
-    const oldLine = canyonBreakLineZ(CANYON_OLD.takeOffX, CANYON_OLD);
-    expect(canyonPeelAt(CANYON_OLD.takeOffX, oldLine - 30, CANYON_OLD)).toBe(true);
-    expect(canyonPeelAt(CANYON_OLD.takeOffX, oldLine + CANYON_OLD.flatWidth + 1, CANYON_OLD)).toBe(false);
-    expect(canyonArmAt(canyonArmEndX(CANYON_OLD) + 1, CANYON_OLD)).toBe(false);
+    // The old layout (canyon-long-wave's, main's at 578202fd; canyon-wave-r2) has the same arm and counts the same
+    // breaks: it differs in its window (240 m) and its breaking age (rule A through every diagonal parent, `ageJoin` 0).
+    for (const [x, z] of [[CANYON.takeOffX, line - 30], [CANYON.takeOffX, line + CANYON.flatWidth + 1], [canyonArmEndX() + 1, -60], [-20, -25]]) {
+      expect(canyonPeelAt(x, z, CANYON_OLD)).toBe(canyonPeelAt(x, z));
+    }
+    expect([canyonArmEndX(CANYON_OLD), canyonReefEndX(CANYON_OLD)]).toEqual([canyonArmEndX(), canyonReefEndX()]);
+    expect([CANYON_OLD.alongShore, CANYON_OLD.ageJoin, CANYON.alongShore, CANYON.ageJoin]).toEqual([240, 0, 260, 0.5]);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {
