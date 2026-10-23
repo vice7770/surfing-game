@@ -191,7 +191,13 @@ Measured, not a gate (Node on this M1 under other sessions' load, 60 s, final co
 
 ### Tests
 
-CANYONTESTS
+On 6ae5e310 (the step's final code; later commits are docs and the three test fixes below), with `origin/main` (578202fd) merged in, on this M1 under other sessions' load:
+- `npx tsc --noEmit -p .`: clean.
+- The main suite (`npx vitest run src --maxWorkers=2`, without `SurfZoneSimulation` and `SurfZoneRunner`): 302 files passed, 29 skipped; 2,879 tests passed, 18 expected failures, 33 skipped.
+- `SurfZoneSimulation.test.ts -t "[Pp]adang|[Cc]anyon|[Bb]arrel|[Tt]ube"`: 34 passed, 3 failed, all three stale tests, fixed in the next commit and passing there: two crash-pacing fixtures encoded the old pause (a thrown clock held at τ 0.1 through a step; it now runs a step on, so their crests moved 1/60 s of pace further), and "runs on Padang Padang only" predated the Canyon's wiring (`SWEPT_BARREL` is `['padang', 'canyon']`).
+- `SurfZoneSimulation.test.ts -t "[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: 11 passed.
+- Probes (opt-in, `PROBE=1`): `canyonTube`, `tubeClock`, `spotOnset` (the small drives), as quoted above.
+- No `SurfZoneRunner` rider sessions were run: the owner rides.
 
 ## Shot list for the owner
 
