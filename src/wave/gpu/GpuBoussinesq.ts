@@ -162,6 +162,8 @@ export function writeParams(
   const feed = zone?.feed?.deviceShape();
   words[20] = feed?.slots ?? 0; words[21] = feed?.components ?? 0;
   floats[22] = breaking?.diagonalJoin ?? 0;
+  words[23] = breaking?.onsetFactor ? 1 : 0;
+  words[24] = breaking?.joinField ? 1 : 0;
 }
 
 /**
@@ -520,6 +522,17 @@ export class GpuBoussinesq {
       if (source) field.set(source);
       else field.fill(0);
       this.write(this.fields, index * n * 4, field);
+    }
+    // The onset over the bed, where it varies (`KennedyOptions.onsetAt`): only then is it read.
+    const onsetFactor = layout.breaking?.onsetFactor;
+    if (onsetFactor) {
+      field.set(onsetFactor);
+      this.write(this.fields, FIELD.ONSET * n * 4, field);
+    }
+    const joinField = layout.breaking?.joinField;
+    if (joinField) {
+      field.set(joinField);
+      this.write(this.fields, FIELD.JOIN * n * 4, field);
     }
     this.write(this.grid, 0, packGrid(solver, layout));
     this.writeFeed();

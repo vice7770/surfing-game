@@ -24,13 +24,20 @@ export interface WaveInfo {
   rows: { label: string; value: string }[];
 }
 
-/** The peel in surfers' words: a surfer riding shoreward (+z) has −x on the right, so a peel toward +x is a left. */
-function peelText(peel: PeelEstimate | undefined): { text: string; skill?: string } {
+/**
+ * The peel in surfers' words: a surfer riding shoreward (+z) has −x on the right, so a peel toward +x is a left. A peak
+ * peeling both ways (the Canyon's beach peaks) is "a peak, left and right", each arm's angle given, the faster arm's skill.
+ */
+function peelText(peel: PeelEstimate | undefined): { text: string; skill?: string; peak?: boolean } {
   if (!peel) return { text: t('lab.info.waiting') };
   const skill = skillForPeel(peel.angleDegrees);
   if (skill === 'closeout') return { text: t('lab.peel.closeout') };
   if (peel.fit < MIXED_PEAK_FIT) return { text: t('lab.peel.mixed') };
   const angle = Math.round(peel.angleDegrees);
+  if (peel.peak) {
+    const text = t('lab.peel.peak', { left: Math.round(peel.peak.left), right: Math.round(peel.peak.right) });
+    return { text, skill: t(`lab.skill.${skill}` as StringKey), peak: true };
+  }
   return { text: t(peel.direction > 0 ? 'lab.peel.left' : 'lab.peel.right', { angle }), skill: t(`lab.skill.${skill}` as StringKey) };
 }
 
@@ -43,7 +50,8 @@ export function waveInfo(
   const set = input.steady ? t('lab.info.steady')
     : input.timeToSet > 0 ? t('lab.info.setIn', { seconds: Math.round(input.timeToSet) }) : t('lab.info.setNow');
   return {
-    summary: [breaker, peel.text, peel.skill].filter(Boolean).join(' · '),
+    // A peak reads as one phrase with its breaker: "Spilling peak, left 50° and right 48°".
+    summary: (peel.peak ? [t('lab.summary.peak', { breaker, peak: peel.text }), peel.skill] : [breaker, peel.text, peel.skill]).filter(Boolean).join(' · '),
     rows: [
       { label: t('lab.info.surf'), value: describeSurf(input.surf, { ...words, units }) },
       { label: t('lab.info.face'), value: input.face === undefined ? t('lab.info.noFace') : formatHeight(input.face, units) },

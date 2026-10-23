@@ -1,6 +1,6 @@
 import { PerspectiveCamera, Scene, ShaderLib, type WebGLRenderer } from 'three';
 import { describe, expect, it } from 'vitest';
-import { CANYON, CANYON_OLD, canyonBreakLineZ, canyonFootZ, canyonReefEndX, canyonShape, type SpotName } from '../../wave/Bathymetry';
+import { CANYON, CANYON_OLD, canyonBars, canyonBreakLineZ, canyonFootZ, canyonReefEndX, canyonShape, type SpotName } from '../../wave/Bathymetry';
 import { SPOT_OPTICS } from '../waterOptics';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { EdgeBand } from '../EdgeBand';
@@ -49,6 +49,14 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
       expect(cover(c.peakX + 5, 5)).toBe(0);
     });
   }
+
+  // canyon-beach-break (2026-10-23): the beach peaks' bars are sand, however far they stand above the floor round them.
+  it('leaves the beach peaks\' sandbars sand: the rock stays on the reef', () => {
+    const cover = canyonRockCover(CANYON);
+    for (const bar of canyonBars()) {
+      for (const u of [-40, -20, 0, 20, 40]) for (const z of [-200, -150, -100, -60, -20]) expect(cover(bar.x + u, z)).toBe(0);
+    }
+  });
 
   it('follows the ledge where its layout puts it: today\'s and the old layout\'s arm are one, so their rock is too', () => {
     const today = canyonRockCover(canyonShape('reef'));
@@ -109,7 +117,11 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
     expect(g).toBeGreaterThanOrEqual(b);
     expect(b / g).toBeGreaterThan(0.6);
     rock!.forEach((value, k) => {
-      expect(value).toBeLessThan(sand[k] / 2);
+      // Darker than its sand, which is wet sand under the water since canyon-beach-break (0.24/0.20/0.13: the Beach's dry
+      // 0.42/0.36/0.24 darkened as wetting does, Lekner & Dorf 1988), so a sandbar never reads as rock nor glows white.
+      expect(value).toBeLessThan(sand[k]);
+      expect(sand[k]).toBeGreaterThan(0.45 * SPOT_OPTICS.beach.bedAlbedo[k]);
+      expect(sand[k]).toBeLessThan(0.65 * SPOT_OPTICS.beach.bedAlbedo[k]);
       // Its darkest joints stay above black.
       expect(value + (ROCK_DARKEST - 1) * (value - sand[k])).toBeGreaterThan(0);
     });

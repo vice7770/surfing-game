@@ -307,6 +307,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     const skill = skillForPeel(peel.angleDegrees);
     if (skill === 'closeout') peelText = `closing out · ${angle}° (needs ≥ 27°)`;
     else if (peel.fit < MIXED_PEAK_FIT) peelText = `mixed peaks · ${angle}°`;
+    else if (peel.peak) peelText = `peak · ${Math.round(peel.peak.left)}° toward +x, ${Math.round(peel.peak.right)}° toward −x · ${skill}`;
     else peelText = `${angle}° toward ${peel.direction > 0 ? '+x' : '−x'} · ${skill}`;
   }
   const band = config.bandwidth !== undefined && Number.isFinite(config.bandwidth) ? ` · band ±${Math.round(config.bandwidth * 100)} %` : '';
@@ -393,11 +394,11 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...startOutSwitch(),
     // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
-    // `?canyonBed=old`: the Canyon's whole layout before canyon-long-wave, with its take-off and starts (main's until 2026-10-22).
+    // `?canyonBed=old`: the Canyon's whole layout before canyon-beach-break, with its take-off and starts (main's until 2026-10-23).
     ...canyonBedSwitch(),
     // `?tubeShape=c`: the swept barrel drawn and felt as the authored bounded-C (2026-10-05 to 2026-10-22), for A/Bs.
     ...tubeShapeSwitch(),
-    // `?canyonTube=off`: the Canyon without its swept tubes, exactly as before they were wired (2026-10-22), for A/Bs.
+    // `?canyonTube=on`: the Canyon with its swept tubes on the reef (its default until canyon-beach-break, 2026-10-23).
     ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
     // `?canyonAgeJoin=<J>`: the Canyon's breaking-age join (0: rule A, as before canyon-wave-r2), for A/Bs.
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
@@ -416,11 +417,14 @@ export function startOutSwitch(search?: string): { startOut?: number } {
 }
 
 /**
- * The `?canyonTube=off` dev switch (`SurfZoneConfig.sweptBarrel` false at the Canyon): its spilling front, roller and
- * curl draw every wave's white as they did before its tubes were wired (2026-10-22), with no tube drawn or felt.
+ * The `?canyonTube=on` dev switch (`SurfZoneConfig.sweptBarrel` true at the Canyon): the reef's swept tubes, drawn and
+ * felt, as main ran them from 2026-10-22 until canyon-beach-break. Off by default since (the owner, 2026-10-23: "I really
+ * don't want the Canyon to have a tube; spilling waves are supposed to be the default for the Canyon. The tube in the
+ * video isn't surfable"): the reef's spilling curl and its white draw every wave, as before the tubes were wired. The
+ * barrel's wiring is kept for the tube work to come; online rooms run the default.
  */
-export function canyonTubeSwitch(search?: string): { sweptBarrel?: false } {
-  return devParam('canyonTube', search)?.trim().toLowerCase() === 'off' ? { sweptBarrel: false } : {};
+export function canyonTubeSwitch(search?: string): { sweptBarrel?: true } {
+  return devParam('canyonTube', search)?.trim().toLowerCase() === 'on' ? { sweptBarrel: true } : {};
 }
 
 /**

@@ -14,9 +14,9 @@ export const FIELD = {
   ZHS: 22, ZHN: 23, ZETAS: 24, ZETAN: 25, ZWS: 26, ZWN: 27, ZUS: 28, ZUN: 29,
   HALF: 30, SRCX: 31, SRCZ: 32, PREDX: 33, PREDZ: 34, STARTP: 35, STARTQ: 36,
   STRENGTH: 37, AGE: 38, NEXTSTRENGTH: 39, NEXTAGE: 40, NU: 41, VISCX: 42, VISCZ: 43, SHEAR: 44,
-  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52,
+  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52, ONSET: 53, JOIN: 54,
 } as const;
-export const FIELD_COUNT = 53;
+export const FIELD_COUNT = 55;
 
 /** Grid buffer layout: x centres (nx), then per row: z centre, dz, below, above, gap. */
 export const ROW_STRIDE = 5;
@@ -38,8 +38,8 @@ struct Params {
   manning: f32, restLevel: f32, onset: f32, endShare: f32,
   transition: f32, mixing: f32, dispersive: u32, breaks: u32,
   components: u32, zoneFirst: u32, zoneRows: u32, tau: f32,
-  feedSlots: u32, feedComponents: u32, diagonalJoin: f32, pad3: f32,
-  pad4: f32, pad5: f32, pad6: f32, pad7: f32,
+  feedSlots: u32, feedComponents: u32, diagonalJoin: f32, onsetField: u32,
+  joinField: u32, pad5: f32, pad6: f32, pad7: f32,
   pad8: f32, pad9: f32, pad10: f32, pad11: f32,
 };
 
@@ -420,7 +420,9 @@ fn parentAge(current: f32, j: u32) -> f32 {
   // The breaking age comes only from behind the cell's front face, up the half-step surface's slope (breakingAge.ts);
   // through the diagonal parents only where the cell's own rise rate reaches diagonalJoin √(g h) (0: always).
   let still = max(BREAKING_DEPTH, at(${FIELD.STILL}u, i));
-  let diagonals = P.diagonalJoin <= 0.0 || rise >= P.diagonalJoin * sqrt(g * still);
+  // The join where it varies along the bed (KennedyOptions.joinAt): the cell's own.
+  let join = select(P.diagonalJoin, at(${FIELD.JOIN}u, i), P.joinField != 0u);
+  let diagonals = join <= 0.0 || rise >= join * sqrt(g * still);
   var inherited = select(0.0, at(${FIELD.AGE}u, i), at(${FIELD.STRENGTH}u, i) > 0.0);
   let sx = ddx(${FIELD.HALF}u, ix, iz, false);
   let sz = ddz(${FIELD.HALF}u, ix, iz, false);
@@ -444,7 +446,9 @@ fn parentAge(current: f32, j: u32) -> f32 {
     }
   }
   let ramp = min(1.0, inherited / (P.transition * sqrt(still / g)));
-  let threshold = sqrt(g * still) * (P.onset + (P.endShare - P.onset) * ramp);
+  // The onset where it varies over the bed (KennedyOptions.onsetAt): the cell's factor on P.onset, 1 where they agree.
+  let onset = select(P.onset, P.onset * at(${FIELD.ONSET}u, i), P.onsetField != 0u);
+  let threshold = sqrt(g * still) * (onset + (P.endShare - onset) * ramp);
   let b = min(1.0, max(0.0, rise / threshold - 1.0));
   put(${FIELD.NEXTSTRENGTH}u, i, b);
   put(${FIELD.NEXTAGE}u, i, select(0.0, inherited + P.dt, b > 0.0));

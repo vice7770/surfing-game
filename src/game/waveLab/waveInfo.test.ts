@@ -22,6 +22,14 @@ describe('wave info', () => {
     expect(waveInfo({ ...base, peel: { angleDegrees: 8, direction: 1, peelSpeed: 30, columns: 40, fit: 0.9, lineSlope: 0 } }, 'metric').summary).toContain('closes out');
   });
 
+  // canyon-beach-break (2026-10-23): a beach peak's two arms read as one peak, the owner's "spilling peak, left and right".
+  it('calls a peak peeling both ways a peak, left and right, with its breaker', () => {
+    const peel = { angleDegrees: 47, direction: -1, peelSpeed: 6.5, columns: 40, fit: 0.9, lineSlope: 0, peak: { left: 52, right: 47 } };
+    const info = waveInfo({ ...base, breaker: 'spilling', peel }, 'metric');
+    expect(info.summary).toBe('Spilling peak, left 52° and right 47° · good for surfing');
+    expect(info.rows.find((row) => row.label === 'Peel')!.value).toBe('peak, left 52° and right 47°');
+  });
+
   it('says so when there is no face, no break yet, or a steady swell', () => {
     const info = waveInfo({ ...base, face: undefined, breaker: 'none', steady: true }, 'imperial');
     expect(info.rows[1].value).toBe('Flat here');

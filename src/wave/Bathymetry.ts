@@ -229,6 +229,15 @@ export function padangReefAt(x: number): boolean {
  * or 1:27 face, the line at 66° or 75°) moved neither the faces down the line nor the peel beyond one seed's noise, and
  * would have put the down-the-line tube on a slope its Basilisk cases never climbed: the arm stays planar. The window
  * widens to 260 m for the −x side's chevron (`alongShore`).
+ *
+ * A beach break either side of the reef (canyon-beach-break, 2026-10-23, docs/research/canyon-beach-break-2026-10-23). The
+ * owner: "the waves only collapse on the reef and don't continue along the rest of the wave. I want the waves to be stable
+ * across the playable map. Spilling waves are supposed to be the default for the Canyon." Either side of the reef a
+ * sandbar peak (`beach`, `canyonBars`) on a 5 m floor makes a spilling A-frame that peels both ways, and the beach breaks
+ * by the Beach's rules, earlier than the reef and passing its breaking age along its crests (`barOnset`, `barJoin`). The
+ * reef, its transect and its breaking are unchanged. Riders start at the upcoast peak. The window widens to 400 m: two
+ * A-frames with 40–60 m arms, a rip each side of the reef and the open edges' bands need it (transverse bars stand
+ * 150–300 m apart, NIWA; the advisor).
  * Mutable for the design sweep (`scripts/canyon-size-report.ts --canyon key=value,...`).
  */
 export const CANYON = {
@@ -256,8 +265,11 @@ export const CANYON = {
    * short arm).
    */
   peakX: -17, peakZ: -120, angle: 70,
-  /** Where riders wait along shore, m: on the arm just downcoast of its peak, where each wave starts breaking (8 m, as before). */
-  takeOffX: -9,
+  /**
+   * Where riders wait along shore, m: since canyon-beach-break at the upcoast beach peak's tip (`upPeakX`), the beach peak
+   * nearest the reef's take-off (the owner's decision 5); on the reef until then (`reefTakeOffX`).
+   */
+  takeOffX: -112,
   /**
    * The tank: the relaxation zone's inner edge, where the 1 m cells start, and the blend onto the platform, m. The blend
    * ends 40 m seaward of the arm's furthest foot (z −290), as it did at −575 before canyon-layout (foot −475).
@@ -292,7 +304,7 @@ export const CANYON = {
    */
   flatWidth: 10, lagoonDepth: 2,
   /**
-   * The window's width along shore, m (`alongShoreOf`): 260 m since canyon-wave-r2 (240 m from canyon-long-wave, 220 m on
+   * The window's width along shore, m (`alongShoreOf`): 400 m since canyon-beach-break (below); 260 m from canyon-wave-r2 (240 m from canyon-long-wave, 220 m on
    * canyon-layout's short arm, 160 m before), so 82–93 m of open water, where the crests stay square, stands between the
    * arm's footprint and each open side, whose edge band mirrors it (the advisor's P2w: the mirror's chevrons within the
    * Beach's spread). In the 240 m window the crests wrapping round the arm's upcoast end still leaned at the −x side inshore
@@ -301,7 +313,9 @@ export const CANYON = {
    * wrapping round its upcoast end came back from the −x side's mirror as a chevron inshore (Big: p90 24° inside the
    * take-off, against the Beach's 10° and the short arm's 16°; 13 two-sided crests of 188 near the beach).
    */
-  alongShore: 260,
+  // 400 m since canyon-beach-break: the reef's footprint (85 m) in the middle, a beach peak each side with its arms
+  // (134 m and 114 m with their tapers), the rips beside the reef and the open edges' 20 m bands.
+  alongShore: 400,
   /**
    * How far inshore of the break line a column's new break still counts toward the peel the readout measures, m: the arm's
    * flat top (`flatWidth`), so the face, the end and the top count, and not the lagoon's bores or the shore break on the
@@ -329,12 +343,81 @@ export const CANYON = {
    * 0.5 / 0.65, the crests' own fits 45 → 52 / 54 / 49°, the median ride 6.9 → 8.5 / 16.0 / 10.7 s.
    */
   ageJoin: 0.5,
+  /**
+   * The beach either side of the reef (canyon-beach-break, 2026-10-23, docs/research/canyon-beach-break-2026-10-23): 1, a
+   * sandbar peak each side, spilling A-frames that peel both ways on a shallow floor; 0, the plain 6 m platform and 1:15
+   * beach face of the layouts before (`CANYON_OLD`), where the flanks' crests rolled through unbroken and dumped on the
+   * beach. The owner (2026-10-23): "the waves only collapse on the reef and don't continue along the rest of the wave. I
+   * want the waves to be stable across the playable map."
+   */
+  beach: 1,
+  /**
+   * Where riders wait on the reef, along shore, m: the reef's own take-off (`takeOffX` until the beach, where riders now
+   * start at a beach peak). The reef's readout reads its breaker there (`canyonReefTakeOff`).
+   */
+  reefTakeOffX: -9,
+  /**
+   * The beach sections' floor, m deep: the shallow rips beside and between the bars (the owner's "shallow rip channel",
+   * the advisor's floor, 2026-10-23). Over a 6 m platform the bars' crests turned 16–18° at breaking; over 5 m about 10°,
+   * the Beach's spread. Its seaward edge `floorEdge` (z), below which it ramps down to the platform at `floorRamp`; along
+   * shore it blends back to the platform over the `floorBlend` m beside the reef's footprint, so the reef keeps its own
+   * 6 m surround (no deep slot beside it, the old V's cause).
+   */
+  floorDepth: 5, floorEdge: -230, floorRamp: 1 / 30, floorBlend: 4,
+  /**
+   * The bars (the advisor's transverse bars, Wright & Short 1984; NIWA): each a V of contours from its tip, attached to
+   * the beach with no trough inside (the owner: one bar, spilling all the way in). On its axis its depth climbs from the
+   * floor to the waterline at the peak's `slope` along +z, planar (its top, from `crestDepth` at `crestZ` in, as steep as
+   * its face; `barKnee` rounds a knee where they differ); its contours run back from the tip at `barAngle` to the shore,
+   * rounded over the peak's `rounding` m (a hyperbola), so the break contour of every size is a V and each wave breaks
+   * first at the tip and peels both ways. Past each arm's `reach` along shore the bar fades into the floor and the 1:15 face
+   * over `barTaper` m: the rips, where the arms end.
+   * - Planar since the frame-by-frame bars (2026-10-23): a knee 2 m deep, which pulled the break out to 140–160 m from the
+   *   waterline at the solver's γ ≈ 1, broke the arms in patches: down an arm the swell is lower (refraction gathers it on
+   *   the tip), so its break crossed the knee onto the gentle top and stalled. With the beach's earlier onset (`barOnset`)
+   *   the sets break deeper, further out, on the plain slope.
+   * - 40°, not the advisor's Snell-calibrated 60°: on the bars the arms' swell falls to 0.65–0.75 of the tip's 30 m down
+   *   each arm, which slows the break along it on its own; at 60–65° the arms peeled at 60–70° to the crest, visibly, and
+   *   their white stalled 10–20 m from the tip. At 40° the arms' ends run 40–46 m from the peak at a visible 50–56°
+   *   (Medium, 1 seed × 12 periods; `frame-probe.ts`).
+   * Along the waves' rays (Mead & Black's orthogonal gradient) a bar climbs cos α / cos θ faster than along +z: about
+   * 1:40–1:45 at 1:44–1:50, where the sets' ξb reads 0.2–0.3, spilling with a face (Battjes 1974).
+   */
+  barAngle: 40, barTaper: 12, barKnee: 15,
+  /**
+   * The upcoast (−x) peak, the default start's (the owner's decision 5: the beach peak nearest the reef's take-off): the
+   * mellower and longer of the two (decision 13), its bar gentler, so its tip stands further out and its arms run longer.
+   */
+  upPeakX: -112, upSlope: 1 / 50, upRounding: 12, upReach: 55, upCrestZ: -130, upCrestDepth: 2.6,
+  /**
+   * The beach's breaking onset (owner, 2026-10-23: "a less steep wave body on the beach, the wave body forming and
+   * breaking"), as a fraction of √(g h) (`canyonOnset`): Kennedy et al.'s onset is a calibration of a depth-averaged model,
+   * 0.65 for their plunging cases and lower where waves spill (FUNWAVE's Vincent & Briggs shoal, irregular waves over a
+   * submerged mound like a bar: 0.45); the Beach spot's barred beach runs 0.35 (`BREAKING_ONSET`). At 0.65 a face reaches
+   * about 27–31° before it breaks, at 0.45 about 20–22° (the water-physics advisor, 2026-10-23). The reef keeps the
+   * spot's 0.65 exactly over its footprint and `onsetPin` m beside it at every depth; the beach's onset blends in over
+   * `onsetBlend` m along shore, inside the rips where nothing should break, and only where the bed is `onsetShallow` m deep
+   * or shallower, easing back to the spot's at `onsetDeep` m, so Big's biggest sets do not break across the floor.
+   */
+  barOnset: 0.4, onsetPin: 3, onsetBlend: 8, onsetShallow: 3, onsetDeep: 4.5,
+  /**
+   * The beach's breaking-age join (`canyonJoin`; the reef's is `ageJoin`): 0, rule A as at every other spot, the Beach's
+   * included. The owner's top bar (2026-10-23: "the white break interrupts and the wave never fully breaks, making a long
+   * ride impossible"): with the reef's gate on the bars each part of a crest had to reach its own fresh threshold, and the
+   * arms, lower than the peak (refraction draws the swell onto the tip), broke in patches; with rule A a broken crest's age
+   * passes along it, as a spilling break spreads sideways (Goda's lateral spread, 0–C_b), and the white runs on down the
+   * arms. Medium, 1 seed × 12 periods, frame by frame (frame-probe.ts): the beach peaks' typical white line 21–33 m → 32–51
+   * m, its longest 39–58 m → 71–77 m at the median, the arms' ends reaching the bars' ends 0–3 → 2–8 of 13–16 waves.
+   */
+  barJoin: 0,
+  /** The downcoast (+x) peak: a little steeper and shorter. */
+  downPeakX: 121, downSlope: 1 / 44, downRounding: 12, downReach: 45, downCrestZ: -121, downCrestDepth: 2.75,
 };
 
 /**
  * Which Canyon layout a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed=old` dev switch): 'reef', today's (the
- * planar arm running into the beach, canyon-long-wave, with canyon-wave-r2's breaking-age join and window), or 'old', the
- * layout before canyon-wave-r2 (`CANYON_OLD`: canyon-long-wave's, main's at 578202fd).
+ * reef with a beach break either side, canyon-beach-break), or 'old', the layout before it (`CANYON_OLD`: canyon-wave-r2's
+ * reef alone, main's at b11d63ef).
  */
 export type CanyonBed = 'reef' | 'old';
 
@@ -342,13 +425,12 @@ export type CanyonBed = 'reef' | 'old';
 export type CanyonShape = typeof CANYON;
 
 /**
- * The Canyon's whole layout before canyon-wave-r2 (2026-10-22), main's at 578202fd (#149, canyon-long-wave): the same
- * planar 1:23 arm at 70° from its peak 120 m out at x −17, running on into the 1:15 beach face, with rule A's breaking
- * age through every diagonal parent (`ageJoin` 0), in the 240 m window, its take-off at x −9. Kept for the
- * `?canyonBed=old` dev switch, so the owner can ride the two side by side, with that layout's take-off
- * (`CANYON_TAKE_OFF_DEPTH_OLD`) and starts (`CANYON_RIDE_LINEUP_OLD`). Frozen: the design sweeps reshape `CANYON` alone.
- * canyon-layout's short arm on its fan, which this switch rode until canyon-wave-r2, is no longer reachable: it is
- * `CANYON_OLD` at main's 578202fd.
+ * The Canyon's whole layout before canyon-beach-break (2026-10-23), main's at b11d63ef (#156, canyon-wave-r2, and the curl
+ * work after it): the planar 1:23 arm at 70° from its peak 120 m out at x −17, running on into the 1:15 beach face, with
+ * the breaking-age join (`ageJoin` 0.5), on the plain 6 m platform with no beach peaks, in the 260 m window, its take-off
+ * at x −9 (`CANYON_TAKE_OFF_DEPTH_OLD`, its starts `CANYON_RIDE_LINEUP_OLD`). Kept for the `?canyonBed=old` dev switch, so
+ * the owner can ride the two side by side. Frozen: the design sweeps reshape `CANYON` alone. canyon-long-wave's layout
+ * (rule A's age, 240 m), which this switch rode until canyon-beach-break, is `CANYON_OLD` at main's b11d63ef.
  */
 export const CANYON_OLD: CanyonShape = Object.freeze({
   shelfDepth: 6, shoreSlope: 1 / 15, crestDepth: 1,
@@ -360,7 +442,14 @@ export const CANYON_OLD: CanyonShape = Object.freeze({
   fan: 0, hingeDepth: 2.2, hingeRounding: 8,
   endTaper: 12,
   flatWidth: 10, lagoonDepth: 2,
-  alongShore: 240, peelReach: 10, runOn: 1, ageJoin: 0,
+  alongShore: 260, peelReach: 10, runOn: 1, ageJoin: 0.5,
+  // No beach peaks: the plain platform and beach face either side (the bar keys are unread).
+  beach: 0, reefTakeOffX: -9,
+  floorDepth: 6, floorEdge: -230, floorRamp: 1 / 30, floorBlend: 10,
+  barAngle: 62, barTaper: 12, barKnee: 15,
+  upPeakX: -115, upSlope: 1 / 44, upRounding: 10, upReach: 55, upCrestZ: -140, upCrestDepth: 1.7,
+  downPeakX: 123, downSlope: 1 / 38, downRounding: 7, downReach: 45, downCrestZ: -130, downCrestDepth: 1.6,
+  barOnset: 0.65, onsetPin: 5, onsetBlend: 12, onsetShallow: 3, onsetDeep: 4.5, barJoin: 0.5,
 });
 
 /** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */
@@ -566,14 +655,149 @@ function padang(): SurfSpot {
   };
 }
 
+/** The Canyon reef's footprint along shore, m: from its upcoast end's foot to the end of its taper past the reef's end. */
+export function canyonReefSpan(c: CanyonShape = CANYON): { from: number; to: number } {
+  return { from: c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope, to: canyonReefEndX(c) + c.endTaper };
+}
+
+/**
+ * The beach sections' floor at (x, z), m deep (`CANYON.floorDepth`): the platform's depth seaward of the floor's ramp and
+ * over the reef's footprint, the floor's beside it, blended over `floorBlend` m along shore and the ramp across shore.
+ * Without the beach, the platform.
+ */
+export function canyonFloorDepth(x: number, z: number, c: CanyonShape = CANYON): number {
+  if (!c.beach || c.floorDepth >= c.shelfDepth) return c.shelfDepth;
+  const reef = canyonReefSpan(c);
+  const along = Math.max(smoothstep(reef.from, reef.from - c.floorBlend, x), smoothstep(reef.to, reef.to + c.floorBlend, x));
+  const rampLength = (c.shelfDepth - c.floorDepth) / c.floorRamp;
+  const across = smoothstep(c.floorEdge - rampLength, c.floorEdge, z);
+  return c.shelfDepth - (c.shelfDepth - c.floorDepth) * along * across;
+}
+
+/**
+ * A beach peak's bar (`CANYON.barAngle`): its tip along shore; its face's slope along +z; on its axis the face's top
+ * (`crestZ`, `crestDepth` deep), from where its top falls gently to the waterline; its tip's rounding and its arms'
+ * reach along shore, m.
+ */
+export interface CanyonBar {
+  readonly x: number; readonly slope: number; readonly crestZ: number; readonly crestDepth: number; readonly rounding: number; readonly reach: number;
+}
+
+/** The Canyon's beach peaks, upcoast (−x) first; none without the beach. */
+export function canyonBars(c: CanyonShape = CANYON): CanyonBar[] {
+  if (!c.beach) return [];
+  return [
+    { x: c.upPeakX, slope: c.upSlope, crestZ: c.upCrestZ, crestDepth: c.upCrestDepth, rounding: c.upRounding, reach: c.upReach },
+    { x: c.downPeakX, slope: c.downSlope, crestZ: c.downCrestZ, crestDepth: c.downCrestDepth, rounding: c.downRounding, reach: c.downReach },
+  ];
+}
+
+/**
+ * A bar's own depth at (x, z), m. Its V: the point lies d = tan θ (√(u² + b²) − b) − z seaward of the V through the
+ * waterline (u along shore from the tip, b the tip's rounding, θ `barAngle`), so every contour runs back from the tip at θ
+ * to the shore. Along d its profile is the axis's: its top falling gently from `crestDepth` at d = −crestZ to the waterline
+ * at d = 0, and seaward of the top its face climbing at `slope`, the knee rounded over ±`barKnee` m (C¹).
+ */
+export function canyonBarDepth(bar: CanyonBar, x: number, z: number, c: CanyonShape = CANYON): number {
+  const u = x - bar.x;
+  const run = Math.sqrt(u * u + bar.rounding * bar.rounding) - bar.rounding;
+  const d = Math.max(0, run * Math.tan((c.barAngle * Math.PI) / 180) - z);
+  const top = bar.crestDepth / -bar.crestZ;
+  return top * d + (bar.slope - top) * rounded(d + bar.crestZ, c.barKnee);
+}
+
+/** The Canyon's bed beneath its bars at (x, z): the floor, the beach face and the reef, the shallowest (`canyon`). */
+function canyonBackground(x: number, z: number, c: CanyonShape): number {
+  return Math.min(canyonFloorDepth(x, z, c), -z * c.shoreSlope, canyonTerraceDepth(x, z, c));
+}
+
+/**
+ * The Canyon's bed at (x, z) where it is water (z < 0): the background (the platform or the beach sections' floor, the
+ * 1:15 beach face, the reef's terrace, the shallowest), with each beach peak's bar where it is shallower, faded into the
+ * background past its arms' reach over `barTaper` m along shore.
+ */
+export function canyonSeaDepth(x: number, z: number, c: CanyonShape = CANYON): number {
+  return withBars(canyonBackground(x, z, c), x, z, c);
+}
+
+/**
+ * The Canyon's sand bed at (x, z), z < 0, m deep: its bed without the reef's terrace (the platform or the floor, the beach
+ * face and the bars). The rock cover is the terrace where it stands above this (`canyonRockCover`), so the bars, sand
+ * themselves, never turn to rock.
+ */
+export function canyonSandDepth(x: number, z: number, c: CanyonShape = CANYON): number {
+  return withBars(Math.min(canyonFloorDepth(x, z, c), -z * c.shoreSlope), x, z, c);
+}
+
+/** A bed `depth` deep at (x, z) with each beach peak's bar where it is shallower, faded past its arms' reach. */
+function withBars(background: number, x: number, z: number, c: CanyonShape): number {
+  let depth = background;
+  for (const bar of canyonBars(c)) {
+    const fade = smoothstep(bar.reach, bar.reach + c.barTaper, Math.abs(x - bar.x));
+    if (fade >= 1) continue;
+    depth -= Math.max(0, depth - canyonBarDepth(bar, x, z, c)) * (1 - fade);
+  }
+  return depth;
+}
+
+/** Which beach peak's bar raises the bed at (x, z) (its index in `canyonBars`), or −1: the bed there is not a bar's. */
+export function canyonBarAt(x: number, z: number, c: CanyonShape = CANYON): number {
+  if (!(z < 0)) return -1;
+  const bars = canyonBars(c);
+  const background = canyonBackground(x, z, c);
+  for (let k = 0; k < bars.length; k += 1) {
+    const bar = bars[k];
+    if (Math.abs(x - bar.x) >= bar.reach + c.barTaper) continue;
+    if (canyonBarDepth(bar, x, z, c) < background) return k;
+  }
+  return -1;
+}
+
+/**
+ * The Canyon's breaking onset at (x, z), as a fraction of √(g h), given the spot's own `onset` (the reef's): the beach's
+ * `barOnset` in the beach sections where the bed is `onsetShallow` m deep or shallower, easing back to `onset` at
+ * `onsetDeep` m; `onset` itself, exactly, over the reef's footprint and `onsetPin` m beside it, with the beach's blending
+ * in over `onsetBlend` m along shore beyond. Without the beach, `onset` everywhere.
+ */
+export function canyonOnset(x: number, z: number, onset: number, c: CanyonShape = CANYON): number {
+  if (!c.beach || c.barOnset === onset) return onset;
+  const along = canyonBeachShare(x, c);
+  if (!(along > 0) || !(z < 0)) return onset;
+  const shallow = smoothstep(c.onsetDeep, c.onsetShallow, canyonSeaDepth(x, z, c));
+  return shallow > 0 ? onset + (c.barOnset - onset) * along * shallow : onset;
+}
+
+/**
+ * How far along-shore position x is the beach's for its breaking rules, 0–1: 0 over the reef's footprint and `onsetPin` m
+ * beside it, 1 past the `onsetBlend` m beyond (inside the rips, where nothing should break), smoothly between.
+ */
+export function canyonBeachShare(x: number, c: CanyonShape = CANYON): number {
+  if (!c.beach) return 0;
+  const reef = canyonReefSpan(c);
+  return Math.max(
+    smoothstep(reef.from - c.onsetPin, reef.from - c.onsetPin - c.onsetBlend, x),
+    smoothstep(reef.to + c.onsetPin, reef.to + c.onsetPin + c.onsetBlend, x),
+  );
+}
+
+/**
+ * The Canyon's breaking-age join at along-shore position x (`KennedyOptions.joinAt`), given the reef's `join`
+ * (`CANYON.ageJoin`): the reef's over its footprint and `onsetPin` m beside it, the beach's `barJoin` past the blend.
+ */
+export function canyonJoin(x: number, join: number, c: CanyonShape = CANYON): number {
+  if (!c.beach || c.barJoin === join) return join;
+  const along = canyonBeachShare(x, c);
+  return along > 0 ? join + (c.barJoin - join) * along : join;
+}
+
 function canyon(c: CanyonShape): SurfSpot {
   return {
     name: 'canyon',
     depthAt(x, z) {
       const offshore = -z;
       if (offshore <= 0) return offshore * 0.06;
-      // The shelf and the beach face, the terrace on them where it is shallower.
-      return Math.min(c.shelfDepth, offshore * c.shoreSlope, canyonTerraceDepth(x, z, c));
+      // The shelf (or the beach sections' floor) and the beach face, the terrace and the bars on them where shallower.
+      return canyonSeaDepth(x, z, c);
     },
   };
 }

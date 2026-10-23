@@ -39,6 +39,7 @@ import { SWELLS } from '../src/game/SurfConditions';
 import { CANYON, canyonArmAt, canyonBreakLineZ, canyonPeelAt, canyonShape, canyonTerraceDepth, createSpot, type CanyonBed, type CanyonShape } from '../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
 import { MIXED_PEAK_FIT, PeelTracker, skillForPeel } from '../src/wave/Breaking';
+import { waveHeightAt } from '../src/wave/CrestKinematics';
 import { GRAVITY } from '../src/wave/dispersion';
 import { SurfZoneSimulation, alongShoreOf, tankDepth, tankLayout, type SurfZoneConfig, type TankLayout } from '../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from './canyonShape';
@@ -71,7 +72,11 @@ const SAME_START = 10;
 /** The crests' celerity for the phase: √(g (h + KAPPA·min(h, Hs))) over the still depth h (a bore runs faster than √(g h)). */
 const KAPPA = number('kappa', 0.3);
 
-interface Onset { seed: number; t: number; x: number; z: number; face: number; depth: number }
+interface Onset {
+  seed: number; t: number; x: number; z: number; face: number; depth: number;
+  /** With `--raw`, the face's shape as it starts breaking: its steepest metre, degrees, and its front/back steepness ratio. */
+  front?: number; asymmetry?: number;
+}
 interface Sample { seed: number; t: number; angle: number; direction: number; fit: number; speed: number; words: string }
 interface Health { seed: number; fastest: number; caps: number; capsInWater: number; volumeDrift: number; finite: boolean; onsetsPer100: number[] }
 interface Run {
@@ -81,6 +86,12 @@ interface Run {
   /** Per seed: when the record starts and ends, s. */
   records: { seed: number; start: number; end: number }[];
   samples: Sample[]; onsets: Onset[]; health: Health[];
+  /**
+   * With `--raw` (canyon-beach-break): every column's outermost break jumping seaward by more than 5 m, the game's onset
+   * without its filters (one a column per 0.7 Tp; none under 0.4 h_b): a spilling surf zone's arms break again within a
+   * period of the last wave's and inshore of 0.9 m, which the filters drop.
+   */
+  raw?: Onset[];
 }
 interface CrestReport {
   seed: number; t: number; x: number; z: number; depth: number; part: string; seaward: number; face: number; onsets: number; phaseSpread: number;
@@ -108,6 +119,35 @@ function bedPart(x: number, z: number, tank: TankLayout, c: CanyonShape): string
   return x < c.peakX ? 'arm end' : 'arm face';
 }
 
+/**
+ * A crest's shape down its column (canyon-beach-break's face bars): from the crest shoreward to the trough ahead and
+ * seaward to the trough behind (each within `reach` m, stopping where the water rises again), the front's steepest metre,
+ * degrees, and the ratio of the front's mean steepness (its drop over its run) to the back's: 1 a symmetric crest, more a
+ * face pitched forward.
+ */
+function faceShape(solver: SurfZoneSimulation['solver'], crest: number, reach: number): { front: number; asymmetry: number } {
+  const { nx, nz, zCenters } = solver;
+  const ix = crest % nx;
+  const iz = Math.floor(crest / nx);
+  const eta = (j: number) => solver.surfaceAt(j * nx + ix);
+  const top = eta(iz);
+  let steepest = 0;
+  let ahead = iz;
+  for (let j = iz + 1; j < nz && zCenters[j] - zCenters[iz] <= reach; j += 1) {
+    if (eta(j) > eta(j - 1)) break;
+    steepest = Math.max(steepest, (eta(j - 1) - eta(j)) / (zCenters[j] - zCenters[j - 1]));
+    ahead = j;
+  }
+  let behind = iz;
+  for (let j = iz - 1; j >= 0 && zCenters[iz] - zCenters[j] <= reach; j -= 1) {
+    if (eta(j) > eta(j + 1)) break;
+    behind = j;
+  }
+  const front = ahead > iz ? (top - eta(ahead)) / (zCenters[ahead] - zCenters[iz]) : 0;
+  const back = behind < iz ? (top - eta(behind)) / (zCenters[iz] - zCenters[behind]) : 0;
+  return { front: (Math.atan(steepest) * 180) / Math.PI, asymmetry: back > 0 ? front / back : Number.NaN };
+}
+
 function simulate(): Run {
   const size = (option('size') ?? 'medium') as keyof typeof SWELLS;
   const swell = SWELLS[size];
@@ -130,6 +170,9 @@ function simulate(): Run {
       const i = solver.rowBelow(wave.z) * solver.nx + columnOf(wave.x);
       run.onsets.push({ seed, t: wave.time, x: wave.x, z: wave.z, face: wave.face, depth: solver.restLevel - solver.bed[i] });
     };
+    const raw = process.argv.includes('--raw');
+    const outer = new Float64Array(solver.nx).fill(Infinity);
+    if (raw) run.raw ??= [];
     const point = simulation.breakPoint();
     console.log(`seed ${seed}: ${size} Hs ${hs} m Tp ${tp} s s ${spreading}; c_b ${run.celerity.toFixed(2)} m/s, h_b ${simulation.breakerDepth().toFixed(2)} m; `
       + `take-off (${point.x.toFixed(0)}, ${point.z.toFixed(0)}); tank ${JSON.stringify(simulation.tank)}`);
@@ -145,6 +188,24 @@ function simulate(): Run {
     for (let period = 0; period < periods; period += 1) {
       for (let index = 0; index < perPeriod; index += 1) {
         simulation.step(step);
+        if (raw) {
+          for (let column = 0; column < solver.nx; column += 1) {
+            const z = simulation.outerBreakZ(column);
+            if (z < outer[column] - 5) {
+              const row = solver.rowBelow(z);
+              let crest = row * solver.nx + column;
+              for (let iz = row - 1; iz >= Math.max(1, row - 4); iz -= 1) if (solver.surfaceAt(iz * solver.nx + column) > solver.surfaceAt(crest)) crest = iz * solver.nx + column;
+              const depth = Math.max(0.01, solver.restLevel - solver.bed[crest]);
+              const shape = faceShape(solver, crest, 0.5 * tp * Math.sqrt(GRAVITY * depth));
+              run.raw!.push({
+                seed, t: solver.time, x: solver.xCenters[column], z: solver.zCenters[Math.floor(crest / solver.nx)],
+                face: waveHeightAt(solver, crest, 0.5 * tp * Math.sqrt(GRAVITY * depth)), depth: solver.restLevel - solver.bed[row * solver.nx + column],
+                front: shape.front, asymmetry: shape.asymmetry,
+              });
+            }
+            outer[column] = z;
+          }
+        }
         if (stability && index % 10 === 0) {
           for (let i = 0; i < solver.h.length; i += 1) {
             const h = solver.h[i];

@@ -1,5 +1,5 @@
 import { DEV_TOOLS, devParam } from '../../devTools';
-import { canyonShape, canyonTerraceDepth, smoothstep, type CanyonBed, type CanyonShape, type SpotName } from '../../wave/Bathymetry';
+import { canyonSandDepth, canyonShape, canyonTerraceDepth, smoothstep, type CanyonBed, type CanyonShape, type SpotName } from '../../wave/Bathymetry';
 
 /**
  * A rock floor under the water (the owner's playtest, 2026-10-22: "There is also a white colour on the left side of the
@@ -129,13 +129,15 @@ export function reliefCover(relief: number): number {
  * The Canyon's rock cover at (x, z): its terrace (the arm, its end and its back) where it stands above the sand bed it
  * is built on, the platform and the beach face (`canyon` in Bathymetry.ts takes the shallowest of the three), textured.
  * It follows the terrace wherever its shape puts it; past the arm's end, where the terrace tapers into the platform, and
- * on the beach face inshore of its back, the floor is sand.
+ * on the beach face inshore of its back, the floor is sand. Since canyon-beach-break the sand bed includes the beach
+ * sections' floor and bars (`canyonSandDepth`; the plain platform and face on the old layout): rock stays on the reef,
+ * and a bar never reads as rock.
  */
 export function canyonRockCover(c: CanyonShape): (x: number, z: number) => number {
   return (x, z) => {
     const offshore = -z;
     if (offshore <= 0) return 0;
-    const sand = Math.min(c.shelfDepth, offshore * c.shoreSlope);
+    const sand = canyonSandDepth(x, z, c);
     const terrace = canyonTerraceDepth(x, z, c);
     const cover = reliefCover(sand - terrace);
     return cover > 0 ? Math.min(ROCK_DARKEST, cover * rockTexture(x, z, Math.min(sand, terrace))) : 0;

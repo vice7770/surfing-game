@@ -47,7 +47,12 @@ export const SPOT_OPTICS: Record<SpotName, WaterOptics> = {
   // Kokaly et al. 2017), and wetting darkens a rough mineral surface by a third to a half (Twomey, Bohren & Mergenthaler
   // 1986; Lekner & Dorf 1988), to about 0.08–0.2: here 0.14/0.12/0.09, a third of the sand's, its joints, blocks and
   // sand pockets textured in by the cover.
-  canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24], rockAlbedo: [0.14, 0.12, 0.09] },
+  // Its sand under the water is wet sand (canyon-beach-break, 2026-10-23: the owner wants the shallow bars pale
+  // turquoise-green through the water, never white): the dry 0.42/0.36/0.24 of the Beach's sand darkened ×0.60/0.57/0.50
+  // as wetting darkens it (Lekner & Dorf 1988, their Eq. 1, the water sending 0.475 of the light back down; Twomey,
+  // Bohren & Mergenthaler 1986), so 1 m of water over a bar draws about 0.38/0.68/0.52 in Rich rather than 0.66/1.1/0.84
+  // (the water-physics advisor, 2026-10-23; provisional). The beach above the water (`SpotSeabed`) keeps its colour.
+  canyon: { turbidity: 1, bedAlbedo: [0.24, 0.2, 0.13], rockAlbedo: [0.14, 0.12, 0.09] },
   // Clear water as the Reef's (nothing measured on the Bukit's west coast), over live coral: about 8 % at
   // 550–650 nm and 2.5 % at 400–500 nm (Hochberg & Atkinson 2003). docs/research/padang-padang-sources.md.
   padang: { turbidity: 0.15, bedAlbedo: [0.08, 0.08, 0.025] },

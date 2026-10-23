@@ -211,6 +211,11 @@ export interface SurfZoneStatus {
   /** The surf at the take-off over the last 2 minutes (the wave-sizes spec); undefined while measuring. */
   surf?: SurfReading;
   peel?: PeelEstimate;
+  /**
+   * The Canyon with its beach peaks (canyon-beach-break): each peak's stretch of shore, breaker and peel, so a readout can
+   * follow its view (the Wave Lab's card); `breaker` and `peel` above are the peak nearest the rider's (else the take-off's).
+   */
+  peaks?: { from: number; to: number; breaker: { value: number; type: BreakerType }; peel?: PeelEstimate }[];
   lipLaunches: number;
   lipVolume: number;
   /** Breaks that threw a plunging jet, and that spilled as a roller (plan P7). */
@@ -715,7 +720,8 @@ export class SurfZoneRunner {
     this.peelAge += SURF_ZONE_STEP;
     if (this.peelAge >= 1) {
       this.peelAge = 0;
-      this.peelAngle = this.simulation.peelEstimate()?.angleDegrees ?? 0;
+      // The peel of the peak the rider is on (the Canyon's beach peaks; the spot's one peel elsewhere).
+      this.peelAngle = this.simulation.peelEstimate(session.board.centerOfMass.x)?.angleDegrees ?? 0;
     }
     const body = session.rider.attached ? session.board : undefined;
     const position = body ? body.centerOfMass : session.surfer.centerOfMass(this.point);
@@ -915,6 +921,9 @@ export class SurfZoneRunner {
   status(): SurfZoneStatus {
     const start = performance.now();
     const { simulation } = this;
+    // The readout's peak (the Canyon's beach peaks): the one nearest the rider, else the take-off's.
+    const near = this.session ? this.session.board.centerOfMass.x : this.focus.x;
+    const peaks = simulation.readoutPeaks();
     const status: SurfZoneStatus = {
       seaTime: simulation.seaTime,
       timeToSet: simulation.timeToSet,
@@ -923,10 +932,11 @@ export class SurfZoneRunner {
       cells: simulation.solver.nx * simulation.solver.nz,
       breakPoint: { ...this.focus },
       breakDepth: this.breakDepth,
-      breaker: { ...this.breaker },
+      breaker: simulation.breakerNear(near) ?? { ...this.breaker },
       breakingFraction: simulation.breakingFraction(),
       surf: simulation.surf.reading(simulation.solver.time),
-      peel: simulation.peelEstimate(),
+      peel: simulation.peelEstimate(near),
+      ...(peaks ? { peaks } : {}),
       lipLaunches: simulation.lipLaunches,
       lipVolume: simulation.lipVolume,
       lipJets: simulation.lipJets,

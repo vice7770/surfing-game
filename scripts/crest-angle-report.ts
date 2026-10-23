@@ -36,7 +36,7 @@ import { writeFileSync } from 'node:fs';
 import { GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../src/game/SurfConditions';
 import type { SpotName } from '../src/wave/Bathymetry';
-import { CANYON_OLD, canyonReefEndX, canyonShape } from '../src/wave/Bathymetry';
+import { CANYON_OLD, canyonBars, canyonReefEndX, canyonShape } from '../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from './canyonShape';
@@ -237,7 +237,17 @@ const shape = spot === 'canyon' ? (bed === 'old' ? CANYON_OLD : canyonShape()) :
 const footprint = shape
   ? { from: shape.peakX - (shape.shelfDepth - shape.crestDepth) / shape.endSlope - 10, to: canyonReefEndX(shape) + shape.endTaper + 10 }
   : undefined;
-const groupOf = (x: number) => (!footprint ? 'window' : x < footprint.from ? 'open −x' : x > footprint.to ? 'open +x' : 'arm');
+// With its beach peaks (canyon-beach-break), each bar's arms apart: its −x arm, its +x arm, the reef ('arm'), the rest open.
+const bars = shape ? canyonBars(shape) : [];
+const groupOf = (x: number) => {
+  if (!footprint) return 'window';
+  for (const [k, bar] of bars.entries()) {
+    const u = x - bar.x;
+    if (Math.abs(u) <= bar.reach + shape!.barTaper) return `${k === 0 ? 'peak −x' : 'peak +x'} ${u < 0 ? 'right arm' : 'left arm'}`;
+  }
+  if (bars.length && x >= footprint.from && x <= footprint.to) return 'arm';
+  return bars.length ? 'open' : x < footprint.from ? 'open −x' : x > footprint.to ? 'open +x' : 'arm';
+};
 const stationGroups = stations.map(groupOf);
 const BANDS = ['seaward', 'take-off', 'inside', 'inner'] as const;
 const bandOf = (z: number) => (z < takeOff.z - 30 ? 'seaward' : z < takeOff.z ? 'take-off' : z < takeOff.z / 2 ? 'inside' : 'inner');

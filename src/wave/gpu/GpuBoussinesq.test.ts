@@ -308,8 +308,33 @@ describe('GpuBoussinesq host', () => {
     writeParams(joined, joinedLayout, undefined, 0.02, 0.04, bytes);
     expect(floats[22]).toBe(0.5);
     const source = boussinesqWgsl();
-    expect(source).toContain('let diagonals = P.diagonalJoin <= 0.0 || rise >= P.diagonalJoin * sqrt(g * still);');
+    expect(source).toContain(`let join = select(P.diagonalJoin, at(${FIELD.JOIN}u, i), P.joinField != 0u);`);
+    expect(source).toContain('let diagonals = join <= 0.0 || rise >= join * sqrt(g * still);');
     expect(source.match(/if \(diagonals && /g)).toHaveLength(4);
+    // The onset over the bed (canyon-beach-break, `KennedyOptions.onsetAt`): off (word 23 = 0) unless the solver has a field,
+    // which the device multiplies into P.onset per cell, as the CPU does; 1 exactly where the two agree.
+    expect(words[23]).toBe(0);
+    expect(joinedLayout.breaking?.onsetFactor).toBeUndefined();
+    const varied = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, {
+      breaking: { onset: 0.65, onsetAt: (x) => (x < 4 ? 0.65 : 0.45) },
+    });
+    const variedLayout = varied.deviceLayout();
+    const factor = variedLayout.breaking!.onsetFactor!;
+    expect(factor[0]).toBe(1);
+    expect(factor[7]).toBeCloseTo(0.45 / 0.65, 12);
+    writeParams(varied, variedLayout, undefined, 0.02, 0.04, bytes);
+    expect(words[23]).toBe(1);
+    expect(source).toContain(`let onset = select(P.onset, P.onset * at(${FIELD.ONSET}u, i), P.onsetField != 0u);`);
+    expect(source).toContain('let threshold = sqrt(g * still) * (onset + (P.endShare - onset) * ramp);');
+    // The join along the bed (canyon-beach-break, `KennedyOptions.joinAt`): word 24, and the cell's own join.
+    expect(words[24]).toBe(0);
+    const gated = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, {
+      breaking: { onset: 0.65, diagonalJoin: 0.5, joinAt: (x) => (x < 4 ? 0.5 : 0) },
+    });
+    const gatedLayout = gated.deviceLayout();
+    expect(Array.from(gatedLayout.breaking!.joinField!.subarray(0, 8))).toEqual([0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0]);
+    writeParams(gated, gatedLayout, undefined, 0.02, 0.04, bytes);
+    expect([words[23], words[24]]).toEqual([0, 1]);
   });
 
   it('reads back the surface rise rate, which a lip needs to find its crest\'s motion', () => {

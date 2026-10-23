@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_OLD, PADANG, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBreakLineZ, canyonFootZ, canyonReefEndX, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_OLD, PADANG, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBarAt, canyonBarDepth, canyonBars, canyonBreakLineZ, canyonFloorDepth, canyonFootZ, canyonJoin, canyonOnset, canyonReefEndX, canyonReefSpan, canyonSandDepth, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -314,7 +314,9 @@ describe('surf spot bathymetry', () => {
     const edge = CANYON.alongShore / 2;
     // Seaward of the arm's furthest foot, at the bottom of its end just upcoast of the peak, the bed is the plain shelf
     // everywhere along shore.
-    const foot = canyonFootZ();
+    // Since canyon-beach-break the beach peaks' bars climb from the platform too: seaward of the furthest of their feet
+    // (where the gentlest bar is the platform's depth) the bed is the plain platform as well.
+    const foot = Math.min(canyonFootZ(), ...canyonBars().map((bar) => bar.crestZ - (CANYON.shelfDepth - bar.crestDepth) / bar.slope));
     for (let x = -edge; x <= edge; x += 5) {
       for (let z = foot - 1; z >= CANYON.zoneInner + CANYON.blendLength; z -= 10) expect(canyon.depthAt(x, z)).toBe(CANYON.shelfDepth);
     }
@@ -350,7 +352,7 @@ describe('surf spot bathymetry', () => {
     // One planar face (`fan` 0): along the arm, from the take-off to the beach face, the face climbs at pathSlope along
     // the waves' path (+z) from the shelf to the crest line, and behind the line the terrace's top is crestDepth deep.
     expect(CANYON.fan).toBe(0);
-    for (const x of [CANYON.takeOffX, -2, 6]) {
+    for (const x of [CANYON.reefTakeOffX, -2, 6]) {
       const zLine = canyonBreakLineZ(x);
       expect(canyon.depthAt(x, zLine + 2)).toBeCloseTo(CANYON.crestDepth, 6);
       // Behind the line the top is level for flatWidth, then falls at pathSlope to the trough, which the beach face closes.
@@ -378,7 +380,10 @@ describe('surf spot bathymetry', () => {
     expect(canyonPeelAt(runOnX, -70)).toBe(true);
     expect(canyon.depthAt(runOnX, -25)).toBeCloseTo(25 * CANYON.shoreSlope, 9);
     expect(canyonPeelAt(runOnX, -25)).toBe(false);
-    for (let z = -200; z <= -5; z += 5) expect(canyon.depthAt(reefEnd + CANYON.endTaper + 1, z)).toBeCloseTo(Math.min(CANYON.shelfDepth, -z * CANYON.shoreSlope), 9);
+    for (let z = -200; z <= -5; z += 5) {
+      const x = reefEnd + CANYON.endTaper + 1;
+      expect(canyon.depthAt(x, z)).toBeCloseTo(Math.min(canyonFloorDepth(x, z), -z * CANYON.shoreSlope), 9);
+    }
     // The reef bed (2026-10-22, docs/research/canyon-reef-bed-2026-10-22): the waves breaking on the 1:23 face plunge
     // weakly, as the owner's reference reel (the advisor: ξb about 0.42–0.55). ξb = slope / √(Hb / L0) with the advisor's
     // Hb = 0.78 h: Big's and Medium's sets, 3.3–3.7 m and 2.2–2.3 m deep by the peak, and Big's median wave at 2.2 m. On
@@ -396,7 +401,9 @@ describe('surf spot bathymetry', () => {
     for (let depth = 1.5; depth < CANYON.shelfDepth - 0.05; depth += 0.5) {
       // Each along-shore column's most seaward point this shallow, and the column where it lies furthest out.
       let best = { x: Number.NaN, z: Infinity };
-      for (let x = -CANYON.alongShore / 2 + OPEN_EDGE_RAMP; x <= CANYON.alongShore / 2 - OPEN_EDGE_RAMP; x += 0.5) {
+      // Over the reef's footprint (the beach peaks beside it have their own tips, `canyonBars`).
+      const reef = canyonReefSpan();
+      for (let x = reef.from; x <= reef.to; x += 0.5) {
         let z = CANYON.zoneInner + CANYON.blendLength;
         while (z < 0 && canyon.depthAt(x, z) > depth) z += 0.25;
         if (z < best.z) best = { x, z };
@@ -415,10 +422,13 @@ describe('surf spot bathymetry', () => {
     const levelled = -CANYON.alongShore / 2 + OPEN_EDGE_RAMP;
     expect(CANYON.peakX - (CANYON.shelfDepth - CANYON.crestDepth) / CANYON.endSlope).toBeGreaterThan(levelled);
     expect(canyonReefEndX() + CANYON.endTaper).toBeLessThan(-levelled);
+    // Since canyon-beach-break the bars end clear of the levelling too: each edge copies the beach sections' plain floor
+    // and beach face.
     for (let z = -400; z <= -5; z += 5) {
-      expect(canyon.depthAt(levelled, z)).toBeCloseTo(Math.min(CANYON.shelfDepth, -z * CANYON.shoreSlope), 9);
-      expect(canyon.depthAt(-levelled, z)).toBeCloseTo(Math.min(CANYON.shelfDepth, -z * CANYON.shoreSlope), 9);
+      expect(canyon.depthAt(levelled, z)).toBeCloseTo(Math.min(canyonFloorDepth(levelled, z), -z * CANYON.shoreSlope), 9);
+      expect(canyon.depthAt(-levelled, z)).toBeCloseTo(Math.min(canyonFloorDepth(-levelled, z), -z * CANYON.shoreSlope), 9);
     }
+    for (const bar of canyonBars()) expect(Math.abs(bar.x) + bar.reach + CANYON.barTaper).toBeLessThanOrEqual(-levelled);
     // The peel is measured on the arm, from its end beside the peak to where its face meets the beach face (`canyonArmAt`).
     expect(canyonArmAt(CANYON.peakX)).toBe(true);
     expect(canyonArmAt(levelled)).toBe(false);
@@ -426,20 +436,79 @@ describe('surf spot bathymetry', () => {
     expect(canyonArmAt(canyonReefEndX() + 1)).toBe(false);
     // Only the arm's breaks count: its face, its end and its flat top, not the lagoon's bores or the shore break on the
     // beach face behind the short arm, which read as "a right" (canyon-layout, 2026-10-22).
-    const line = canyonBreakLineZ(CANYON.takeOffX);
-    expect(canyonPeelAt(CANYON.takeOffX, line - 30)).toBe(true);
-    expect(canyonPeelAt(CANYON.takeOffX, line + CANYON.flatWidth - 1)).toBe(true);
-    expect(canyonPeelAt(CANYON.takeOffX, line + CANYON.flatWidth + 1)).toBe(false);
+    const line = canyonBreakLineZ(CANYON.reefTakeOffX);
+    expect(canyonPeelAt(CANYON.reefTakeOffX, line - 30)).toBe(true);
+    expect(canyonPeelAt(CANYON.reefTakeOffX, line + CANYON.flatWidth - 1)).toBe(true);
+    expect(canyonPeelAt(CANYON.reefTakeOffX, line + CANYON.flatWidth + 1)).toBe(false);
     expect(canyonPeelAt(-20, -25)).toBe(false);
     expect(canyonPeelAt(-20, -150)).toBe(true);
     expect(canyonPeelAt(levelled, -150)).toBe(false);
     // The old layout (canyon-long-wave's, main's at 578202fd; canyon-wave-r2) has the same arm and counts the same
     // breaks: it differs in its window (240 m) and its breaking age (rule A through every diagonal parent, `ageJoin` 0).
-    for (const [x, z] of [[CANYON.takeOffX, line - 30], [CANYON.takeOffX, line + CANYON.flatWidth + 1], [canyonArmEndX() + 1, -60], [-20, -25]]) {
+    for (const [x, z] of [[CANYON.reefTakeOffX, line - 30], [CANYON.reefTakeOffX, line + CANYON.flatWidth + 1], [canyonArmEndX() + 1, -60], [-20, -25]]) {
       expect(canyonPeelAt(x, z, CANYON_OLD)).toBe(canyonPeelAt(x, z));
     }
     expect([canyonArmEndX(CANYON_OLD), canyonReefEndX(CANYON_OLD)]).toEqual([canyonArmEndX(), canyonReefEndX()]);
-    expect([CANYON_OLD.alongShore, CANYON_OLD.ageJoin, CANYON.alongShore, CANYON.ageJoin]).toEqual([240, 0, 260, 0.5]);
+    // The old layout (main's at b11d63ef, canyon-wave-r2's reef alone) and today's (its beach either side, in a wider window).
+    expect([CANYON_OLD.alongShore, CANYON_OLD.ageJoin, CANYON_OLD.beach, CANYON.alongShore, CANYON.ageJoin, CANYON.beach]).toEqual([260, 0.5, 0, 400, 0.5, 1]);
+  });
+
+  // canyon-beach-break (2026-10-23, docs/research/canyon-beach-break-2026-10-23): a sandbar peak each side of the reef.
+  it('lays a sandbar peak each side of the Canyon\'s reef: V contours from its tip, attached to the beach, on a 5 m floor', () => {
+    const canyon = createSpot('canyon', 1);
+    const reef = canyonReefSpan();
+    const tan = Math.tan((CANYON.barAngle * Math.PI) / 180);
+    const [up, down] = canyonBars();
+    expect(up.x).toBe(CANYON.takeOffX);
+    // One each side, clear of the reef's footprint and its rips (the floor between).
+    expect(up.x + up.reach + CANYON.barTaper).toBeLessThan(reef.from);
+    expect(down.x - down.reach - CANYON.barTaper).toBeGreaterThan(reef.to);
+    for (const bar of [up, down]) {
+      // Along its axis the bar climbs at its slope from the floor to the waterline, the beach staying at z = 0.
+      for (const [a, b] of [[-200, -150], [-120, -60], [-50, -10]]) {
+        expect((canyon.depthAt(bar.x, a) - canyon.depthAt(bar.x, b)) / (b - a)).toBeCloseTo(bar.slope, 6);
+      }
+      expect(canyon.depthAt(bar.x, -0.5)).toBeGreaterThan(0);
+      expect(canyon.depthAt(bar.x, 0.5)).toBeLessThan(0);
+      // Each depth's contour runs back from the tip at barAngle either side, over its tip's hyperbola.
+      for (const u of [-30, -15, 15, 30]) {
+        const run = Math.sqrt(u * u + bar.rounding ** 2) - bar.rounding;
+        expect(canyonBarDepth(bar, bar.x + u, -120 + run * tan)).toBeCloseTo(canyonBarDepth(bar, bar.x, -120), 9);
+        expect(canyonBarAt(bar.x + u, -100)).toBe(bar === up ? 0 : 1);
+      }
+      // Past its arms the floor and the beach face: the rip.
+      expect(canyonBarAt(bar.x + bar.reach + CANYON.barTaper + 1, -100)).toBe(-1);
+    }
+    // The beach sections' floor: 5 m, the platform's 6 m over the reef's footprint and seaward of its ramp.
+    expect(canyonFloorDepth(-150, -150)).toBe(CANYON.floorDepth);
+    expect(canyonFloorDepth(0, -150)).toBe(CANYON.shelfDepth);
+    expect(canyonFloorDepth(-150, -300)).toBe(CANYON.shelfDepth);
+    // The mellower, longer peak upcoast; the steeper, shorter one downcoast (the owner's decision 13).
+    expect(up.slope).toBeLessThan(down.slope);
+    expect(up.reach).toBeGreaterThan(down.reach);
+    // The sand bed under the rock cover includes the bars: they are never rock (canyonRockCover).
+    for (const bar of [up, down]) expect(canyonSandDepth(bar.x, -100)).toBe(canyon.depthAt(bar.x, -100));
+  });
+
+  it('breaks the Canyon\'s beach earlier than its reef, and passes its breaking age along its crests by rule A', () => {
+    const reef = canyonReefSpan();
+    // The reef keeps the spot's onset and join exactly, over its footprint and onsetPin m beside it, at every depth.
+    for (let x = reef.from - CANYON.onsetPin; x <= reef.to + CANYON.onsetPin; x += 1) {
+      for (let z = -330; z < 0; z += 5) expect(canyonOnset(x, z, 0.65)).toBe(0.65);
+      expect(canyonJoin(x, 0.5)).toBe(0.5);
+    }
+    // The beach: its own onset where the bed is onsetShallow m deep or shallower, the spot's past onsetDeep; rule A.
+    const [up, down] = canyonBars();
+    for (const bar of [up, down]) {
+      expect(canyonOnset(bar.x, -60, 0.65)).toBe(CANYON.barOnset);
+      expect(canyonOnset(bar.x, -300, 0.65)).toBe(0.65);
+      expect(canyonJoin(bar.x, 0.5)).toBe(CANYON.barJoin);
+    }
+    expect(CANYON.barOnset).toBeLessThan(0.65);
+    expect(CANYON.barJoin).toBe(0);
+    // The old layout: one onset and one join everywhere.
+    expect(canyonOnset(up.x, -60, 0.65, CANYON_OLD)).toBe(0.65);
+    expect(canyonJoin(up.x, 0.5, CANYON_OLD)).toBe(0.5);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

@@ -124,11 +124,13 @@ export class WaveLab {
     if (!host || !config) return undefined;
     const point = this.underView(sea);
     const { status } = host.snapshot;
+    // At a spot with several peaks (the Canyon's reef and beach peaks), the one under the view.
+    const peak = nearestPeak(status.peaks, point.x);
     return waveInfo({
       face: measureFace((x, z) => host.heightAt(x, z), point.x, point.z),
       period: config.peakPeriod,
-      breaker: status.breaker.type,
-      peel: status.peel,
+      breaker: (peak?.breaker ?? status.breaker).type,
+      peel: peak ? peak.peel : status.peel,
       breakingFraction: status.breakingFraction,
       timeToSet: status.timeToSet,
       steady: sea.practice,
@@ -170,4 +172,18 @@ export class WaveLab {
       foam: (x, z) => sampleSurfaceFoam(host.snapshot.surface, host.init.grid, x, z),
     };
   }
+}
+
+/** The peak whose stretch of shore holds along-shore position x, else the nearest one's; none without peaks. */
+export function nearestPeak<P extends { from: number; to: number }>(peaks: readonly P[] | undefined, x: number): P | undefined {
+  let best: P | undefined;
+  let gap = Infinity;
+  for (const peak of peaks ?? []) {
+    const away = Math.max(0, peak.from - x, x - peak.to);
+    if (away < gap) {
+      gap = away;
+      best = peak;
+    }
+  }
+  return best;
 }

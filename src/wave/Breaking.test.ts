@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BreakingModel, PeelTracker, boreStrength, breakerDepthFor, skillForPeel } from './Breaking';
+import { BreakingModel, PeelTracker, aFrameEstimate, boreStrength, breakerDepthFor, skillForPeel, type PeelEstimate } from './Breaking';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
 function damBreak(): ShallowWaterSolver {
@@ -159,3 +159,25 @@ describe('PeelTracker', () => {
     expect(skillForPeel(14)).toBe('closeout');
   });
 });
+
+// canyon-beach-break (2026-10-23): a beach peak's two arms, one tracker each, read as one peak peeling both ways.
+describe('aFrameEstimate', () => {
+  const arm = (direction: number, angleDegrees: number, fit = 0.9): PeelEstimate => ({ angleDegrees, direction, peelSpeed: 6, lineSlope: 1, columns: 20, fit });
+  it('reads a peak when both arms peel cleanly their own way: the steeper arm\'s angle, both arms\' angles, the asker\'s side', () => {
+    const peak = aFrameEstimate(arm(1, 52), arm(-1, 47), -1)!;
+    expect(peak.peak).toEqual({ left: 52, right: 47 });
+    expect(peak.angleDegrees).toBe(47);
+    expect(peak.direction).toBe(-1);
+    expect(aFrameEstimate(arm(1, 52), arm(-1, 47), 1)!.direction).toBe(1);
+  });
+  it('gives the one arm that reads cleanly alone, and the asker\'s side\'s own read when neither does', () => {
+    expect(aFrameEstimate(arm(1, 52), arm(-1, 20), -1)).toEqual(arm(1, 52));
+    expect(aFrameEstimate(arm(1, 52), arm(-1, 47, 0.1), -1)).toEqual(arm(1, 52));
+    // An arm fitted the wrong way is no clean arm.
+    expect(aFrameEstimate(arm(-1, 52), arm(-1, 47), 1)).toEqual(arm(-1, 47));
+    expect(aFrameEstimate(arm(1, 20), arm(-1, 15), -1)).toEqual(arm(-1, 15));
+    expect(aFrameEstimate(arm(1, 20), undefined, -1)).toEqual(arm(1, 20));
+    expect(aFrameEstimate(undefined, undefined, 1)).toBeUndefined();
+  });
+});
+

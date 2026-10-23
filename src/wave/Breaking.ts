@@ -13,6 +13,10 @@ export interface BreakingOptions {
   transition?: number;
   /** The breaking age's diagonal join (`KennedyOptions.diagonalJoin`; 0 or absent: rule A, always), on the stage 1 indicator. */
   diagonalJoin?: number;
+  /** The onset where it varies over the bed (`KennedyOptions.onsetAt`), on the stage 1 indicator; absent, `onset` everywhere. */
+  onsetAt?: (x: number, z: number) => number;
+  /** The diagonal join where it varies (`KennedyOptions.joinAt`), on the stage 1 indicator; absent, `diagonalJoin` everywhere. */
+  joinAt?: (x: number, z: number) => number;
 }
 
 const MIN_DEPTH = 0.05;
@@ -53,6 +57,12 @@ export class BreakingModel {
   private readonly nextStrength: Float64Array;
   private readonly nextAge: Float64Array;
   private primed = false;
+  /** Each cell's onset (`BreakingOptions.onsetAt`), and the window's first column centre it was taken at. */
+  private onsets?: Float64Array;
+  private onsetsAt = Number.NaN;
+  /** Each cell's diagonal join (`BreakingOptions.joinAt`), and the window's first column centre it was taken at. */
+  private joins?: Float64Array;
+  private joinsAt = Number.NaN;
 
   /**
    * On the stage 2 solver breaking is part of the step (Kennedy eddy
@@ -97,6 +107,21 @@ export class BreakingModel {
     const onset = this.options.onset * this.onsetScale;
     const end = this.options.end ?? 0.15;
     const transition = this.options.transition ?? 5;
+    // Where the onset varies over the bed: each cell's, taken again after a window shift.
+    const onsetAt = this.options.onsetAt;
+    if (onsetAt && this.onsetsAt !== this.solver.xCenters[0]) {
+      const onsets = (this.onsets ??= new Float64Array(nx * nz));
+      for (let iz = 0; iz < nz; iz += 1) for (let ix = 0; ix < nx; ix += 1) onsets[iz * nx + ix] = onsetAt(this.solver.xCenters[ix], zCenters[iz]);
+      this.onsetsAt = this.solver.xCenters[0];
+    }
+    const onsets = onsetAt ? this.onsets : undefined;
+    const joinAt = this.options.joinAt;
+    if (joinAt && this.joinsAt !== this.solver.xCenters[0]) {
+      const joins = (this.joins ??= new Float64Array(nx * nz));
+      for (let iz = 0; iz < nz; iz += 1) for (let ix = 0; ix < nx; ix += 1) joins[iz * nx + ix] = joinAt(this.solver.xCenters[ix], zCenters[iz]);
+      this.joinsAt = this.solver.xCenters[0];
+    }
+    const joins = joinAt ? this.joins : undefined;
     for (let iz = 0; iz < nz; iz += 1) {
       for (let ix = 0; ix < nx; ix += 1) {
         const i = iz * nx + ix;
@@ -121,11 +146,12 @@ export class BreakingModel {
         const spanZ = zCenters[up === i ? iz : iz + 1] - zCenters[down === i ? iz : iz - 1];
         const slopeX = right === left ? 0 : (h[right] + bed[right] - h[left] - bed[left]) / spanX;
         const slopeZ = up === down ? 0 : (h[up] + bed[up] - h[down] - bed[down]) / spanZ;
-        const join = this.options.diagonalJoin ?? 0;
+        const join = joins ? joins[i] : this.options.diagonalJoin ?? 0;
         const diagonals = !(join > 0) || rise >= join * Math.sqrt(GRAVITY * depth);
         const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX, slopeZ, this.strength, this.age, diagonals);
         const ramp = Math.min(1, inherited / (transition * Math.sqrt(depth / GRAVITY)));
-        const threshold = Math.sqrt(GRAVITY * depth) * (onset + (end - onset) * ramp);
+        const onsetHere = onsets ? onsets[i] * this.onsetScale : onset;
+        const threshold = Math.sqrt(GRAVITY * depth) * (onsetHere + (end - onsetHere) * ramp);
         let breaking = Math.min(1, Math.max(0, rise / threshold - 1));
         const stillDepth = restLevel - bed[i];
         if (rise > 0 && stillDepth > 0.1 && interior) {
@@ -157,6 +183,12 @@ export interface PeelEstimate {
   columns: number;
   /** r² of the onset-time fit; low values mean several peaks at once. */
   fit: number;
+  /**
+   * A peak peeling both ways (the Canyon's beach peaks, canyon-beach-break): each arm's own peel angle, degrees, the left
+   * (toward +x, as a surfer riding shoreward sees it) and the right (toward −x). The estimate's angle and speed are then
+   * the steeper arm's, its direction the arm on the asker's side of the peak.
+   */
+  peak?: { left: number; right: number };
 }
 
 export type PeelSkill = 'beginner' | 'intermediate' | 'advanced' | 'professional' | 'closeout';
@@ -177,6 +209,26 @@ export function skillForPeel(angleDegrees: number): PeelSkill {
 
 /** Below this r² the onset-time fit reads several peaks breaking at once, not one peel. */
 export const MIXED_PEAK_FIT = 0.3;
+
+/**
+ * A peak's peel from its two arms' trackers (the Canyon's beach peaks, canyon-beach-break): its left arm peels toward +x,
+ * its right toward −x. When both read cleanly (a fit of MIXED_PEAK_FIT or better, the arm's own way, not a close-out), a
+ * peak: the steeper arm's angle and speed, both arms' angles in `peak`, and `side` (the asker's side of the tip) for its
+ * direction. Else the one arm that reads cleanly; else the asker's side's own (a close-out, or mixed peaks), or the other's.
+ */
+export function aFrameEstimate(left: PeelEstimate | undefined, right: PeelEstimate | undefined, side: 1 | -1): PeelEstimate | undefined {
+  const clean = (estimate: PeelEstimate | undefined, direction: number): estimate is PeelEstimate => estimate !== undefined
+    && estimate.fit >= MIXED_PEAK_FIT && estimate.direction === direction && skillForPeel(estimate.angleDegrees) !== 'closeout';
+  const leftClean = clean(left, 1);
+  const rightClean = clean(right, -1);
+  if (leftClean && rightClean) {
+    const steeper = left.angleDegrees <= right.angleDegrees ? left : right;
+    return { ...steeper, direction: side, peak: { left: left.angleDegrees, right: right.angleDegrees } };
+  }
+  if (leftClean) return left;
+  if (rightClean) return right;
+  return side > 0 ? left ?? right : right ?? left;
+}
 
 /**
  * Measures peel from when and where each along-shore column starts breaking.

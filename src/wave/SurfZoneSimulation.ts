@@ -1,8 +1,8 @@
 import {
-  PADANG, REEF, canyonArmAt, canyonPeelAt, canyonShape, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
-import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
+import { BreakingModel, PeelTracker, aFrameEstimate, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { AERATION, AerationField } from './AerationField';
@@ -251,16 +251,18 @@ export function spillingFrontOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingF
 /**
  * Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run.
  * The owner's switch: a spot with a barrel transect (`BARREL_SPOTS`) is switched on by adding it here (Part B, PR 7).
+ * The Canyon left it on canyon-beach-break (2026-10-23, the owner: "spilling waves are supposed to be the default for the
+ * Canyon. A tube on the reef section is OK. The tube in the video isn't surfable; it's the same as Padang's. Leave the
+ * reef section as it is and the tubing work for later"): its tube is the `?canyonTube=on` dev switch, its wiring kept.
  */
-export const SWEPT_BARREL: readonly SpotName[] = ['padang', 'canyon'];
+export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
 
 /**
  * Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel
- * transect, nor on the Canyon's old layout (`canyonBed` 'old': main's Canyon at 578202fd, from before its tube was wired;
- * its arm is today's, so `?canyonTube=off` on today's layout is the like-for-like A/B).
+ * transect. At the Canyon, on either layout, only when the config asks (`?canyonTube=on`): its reef's tube as main ran
+ * it from 2026-10-22 to canyon-beach-break, on the reef's columns alone (`advanceFront`).
  */
 export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'canyonBed'>): boolean {
-  if (config.spot === 'canyon' && config.canyonBed === 'old') return false;
   return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
 }
 
@@ -628,31 +630,35 @@ export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed): number {
 }
 
 /**
- * Where the Canyon's sets start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
- * line through the depth by which nine in ten of each size's waves have started breaking in the take-off's column
- * (the take-off's x ± 4 m; each wave's most seaward onset there), 2.34, 2.73 and 3.47 m for Small, Medium and Big
- * (canyon-wave-r2, 2026-10-22, docs/research/canyon-wave-r2-2026-10-22: 3 seeds × 14 periods each; within 0.01 m of the
- * line). Riders wait where the arm's face is this deep (`takeOffPoint`), so the sets break at, not seaward of, the take-off.
- * - With the breaking age's diagonal join (`CANYON.ageJoin`) the crest beside the peak's break no longer breaks early on
- *   the age it inherited, so the sets start breaking shallower: on the same face canyon-long-wave's fit was 1.50 + 1.00 Hs
- *   (2.39, 2.86 and 4.00 m; `CANYON_TAKE_OFF_DEPTH_OLD`), Big's most of all.
- * - On canyon-layout's short arm, on its fan, the depths were 2.19, 2.65 and 3.85 m (1.14 + 1.12 Hs), 2.23, 2.69 and
- *   3.82 m on the long arm before it (1.24 + 1.07 Hs), and on the 1:30 face below a 2.8 m hinge before that 2.26, 2.65
- *   and 4.07 m (1.06 + 1.24 Hs, from 2026-10-11).
- * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs: 1.49, 1.96 and 2.50 m). On
- *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
- *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
- *   blows right on top, without the chance to paddle to pick up speed". The rider starts `rideLineupOffset` further
- *   out still (`CANYON_RIDE_LINEUP`).
- * Re-measure if the arm, its breaking or the swells change.
+ * Where the Canyon's sets start breaking at its default start's beach peak (the upcoast bar's tip, canyon-beach-break,
+ * 2026-10-23, docs/research/canyon-beach-break-2026-10-23), m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a
+ * least-squares line through the depth by which nine in ten of each size's waves have started breaking in the tip's column
+ * (± 4 m; each wave's most seaward break there, the game's onsets without their filters), 1.87, 2.61 and 3.57 m for Small,
+ * Medium and Big (3 seeds × 14 periods each; the line gives 1.94, 2.50 and 3.61 m). Riders wait where the bar is this deep
+ * (`takeOffPoint`), so the sets break at, not seaward of, the take-off. On the bar's 1:50 they break 94, 131 and 179 m from
+ * the waterline: further out as they grow, as a spilling beach's do (the owner's decision 6). Re-measure if the bars,
+ * their breaking or the swells change.
  */
-export const CANYON_TAKE_OFF_DEPTH = { base: 1.67, perMetre: 0.75 } as const;
+export const CANYON_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
 
 /**
- * `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-wave-r2 (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`):
- * canyon-long-wave's fit on its planar arm (2026-10-22, docs/research/canyon-long-wave-2026-10-22), main's at 578202fd.
+ * Where the Canyon's reef's sets start breaking on its arm, m deep, against Hs: canyon-wave-r2's fit (2026-10-22,
+ * docs/research/canyon-wave-r2-2026-10-22: 3 seeds × 14 periods each; 2.34, 2.73 and 3.47 m for Small, Medium and Big,
+ * within 0.01 m of the line) in the take-off's column (x −9 ± 4 m). The reef's own take-off (`canyonReefTakeOff`), where
+ * its readout reads its breaker; and the take-off of the layout before canyon-beach-break (`CANYON_TAKE_OFF_DEPTH_OLD`),
+ * main's at b11d63ef, whose riders started on the reef.
+ * - With the breaking age's diagonal join (`CANYON.ageJoin`) the crest beside the peak's break no longer breaks early on
+ *   the age it inherited, so the sets start breaking shallower: on the same face canyon-long-wave's fit was 1.50 + 1.00 Hs
+ *   (2.39, 2.86 and 4.00 m), Big's most of all.
+ * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs). On the arm's 1:30 face the
+ *   waves of a size broke over 30–60 m across shore, so half of them broke 15–45 m seaward of that take-off, on top of a
+ *   rider who waited there: the owner's playtest (2026-10-11), "the wave blows right on top, without the chance to paddle
+ *   to pick up speed".
  */
-export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.5, perMetre: 1 } as const;
+export const CANYON_REEF_TAKE_OFF_DEPTH = { base: 1.67, perMetre: 0.75 } as const;
+
+/** `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-beach-break (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef's. */
+export const CANYON_TAKE_OFF_DEPTH_OLD = CANYON_REEF_TAKE_OFF_DEPTH;
 
 /** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`), on a bed. */
 export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
@@ -697,11 +703,11 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
 ];
 
 /**
- * `CANYON_RIDE_LINEUP` on the layout before canyon-wave-r2 (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`):
- * canyon-long-wave's starts on its planar arm (2026-10-22), main's at 578202fd: every size 11 m out.
+ * `CANYON_RIDE_LINEUP` on the layout before canyon-beach-break (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`):
+ * canyon-wave-r2's starts on the reef (2026-10-22), main's at b11d63ef: 9, 11 and 11 m out at Small, Medium and Big.
  */
 export const CANYON_RIDE_LINEUP_OLD: readonly { readonly significantHeight: number; readonly offset: number }[] = [
-  { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
+  { significantHeight: 0.9, offset: 9 },
   { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
   { significantHeight: 2.4, offset: RIDE_LINEUP_OFFSET },
 ];
@@ -748,13 +754,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
     : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
-  const breakZ = (x: number) => {
-    // Scan the whole simulated bed from the relaxation zone inward.
-    for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
-      if (tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide <= target) return z;
-    }
-    return tank.fineFrom;
-  };
+  const breakZ = (x: number) => firstReaching(spot, tank, x, target, config.tide);
   const reach = Math.max(0, alongShoreOf(config) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
@@ -766,6 +766,34 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const swell = { period: config.peakPeriod, direction: (config.directionDegrees * Math.PI) / 180 };
   const x = focusX(bed, swell, tank.zoneInner, breakZ(0), -reach, reach);
   return { x, z: breakZ(x) };
+}
+
+/** Where the tank's bed along +z at x is first `target` deep or shallower at the tide, scanning from the relaxation zone in, z. */
+function firstReaching(spot: SurfSpot, tank: TankLayout, x: number, target: number, tide: number): number {
+  for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
+    if (tankDepth(spot, tank.edgeDepth, x, z, tank) + tide <= target) return z;
+  }
+  return tank.fineFrom;
+}
+
+/**
+ * The Canyon's reef's own take-off, where its readout reads its breaker (canyon-beach-break: riders now start at a beach
+ * peak): at its take-off x (`CANYON.reefTakeOffX`), where its arm is as deep as its sets start breaking
+ * (`CANYON_REEF_TAKE_OFF_DEPTH`).
+ */
+export function canyonReefTakeOff(config: SurfZoneConfig): { x: number; z: number } {
+  const c = canyonShape(config.canyonBed);
+  const depth = CANYON_REEF_TAKE_OFF_DEPTH.base + CANYON_REEF_TAKE_OFF_DEPTH.perMetre * config.significantHeight;
+  return { x: c.reefTakeOffX, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), c.reefTakeOffX, depth + config.tide, config.tide) };
+}
+
+/**
+ * A Canyon beach peak's take-off (canyon-beach-break): at its bar's tip, where the bed is as deep as the default start's
+ * sets start breaking (`canyonTakeOffDepth`), so its readout reads its breaker there.
+ */
+export function canyonBeachTakeOff(config: SurfZoneConfig, x: number): { x: number; z: number } {
+  const target = canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide;
+  return { x, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), x, target, config.tide) };
 }
 
 /**
@@ -888,6 +916,20 @@ export class SurfZoneSimulation {
   private readonly onsetTiming?: OnsetTiming;
   /** Where the front follows crests from, z: the fine zone's start, or the relaxation zone's inner edge (`BarrelSpot.frontFrom`). */
   private readonly frontFrom: number;
+  /**
+   * At the Canyon with its beach peaks: whether an along-shore position is the reef's (its footprint, `canyonReefSpan`),
+   * where the swept barrel's front follows crests and the spilling front sees onsets. The beach peaks' A-frames peel both
+   * ways, which the spilling front (one direction, its upcoast gate) cannot follow: their white and the breaking the rider
+   * feels are the solver's own, as at the Beach (the water-physics advisor, 2026-10-23).
+   */
+  private readonly reefAt?: (x: number) => boolean;
+  /**
+   * The Canyon's beach peaks (canyon-beach-break): each arm's peel, over the breaks on its own bar. One tracker across both
+   * arms of an A-frame reads as a close-out (the Wave Pool's note), so the left arm (toward +x) and the right have one each.
+   */
+  private readonly beachPeel?: { x: number; left: PeelTracker; right: PeelTracker; onBar: (x: number, z: number) => boolean }[];
+  /** The Canyon's readout per peak with its beach peaks, built when first asked: each peak's take-off x and breaker there. */
+  private peakBreakers?: { x: number; breaker: { value: number; type: BreakerType } }[];
   lastStepMs = 0;
   /** Latest step's wall time by stage, including the device readback wait in `water`. */
   readonly stepCosts = { water: 0, breaking: 0, roller: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
@@ -936,8 +978,18 @@ export class SurfZoneSimulation {
     const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
     // The Canyon's breaking age joins through the diagonals only on steep enough water (`CANYON.ageJoin`, canyon-wave-r2).
     const diagonalJoin = config.spot === 'canyon' ? config.canyonAgeJoin ?? canyonShape(config.canyonBed).ageJoin : 0;
+    // Its beach breaks earlier than its reef (`canyonOnset`, canyon-beach-break): the onset over the bed, at each cell's
+    // centre, levelled like the bed across the open edges' bands (the transect OPEN_EDGE_RAMP m in).
+    const shape = canyonShape(config.canyonBed);
+    const inside = alongShore / 2 - OPEN_EDGE_RAMP;
+    const onsetAt = config.spot === 'canyon' && config.breakingOnset === undefined && shape.beach && shape.barOnset !== onset
+      ? (x: number, z: number) => canyonOnset(Math.min(inside, Math.max(-inside, x)), z, onset, shape) : undefined;
+    // …and passes its breaking age along its crests by the beach's rule (`canyonJoin`: rule A), the reef keeping its gate.
+    const joinAt = config.spot === 'canyon' && config.canyonAgeJoin === undefined && shape.beach && shape.barJoin !== diagonalJoin
+      ? (x: number) => canyonJoin(Math.min(inside, Math.max(-inside, x)), diagonalJoin, shape) : undefined;
+    const kennedy = { onset, ...(diagonalJoin > 0 ? { diagonalJoin } : {}), ...(onsetAt ? { onsetAt } : {}), ...(joinAt ? { joinAt } : {}) };
     this.solver = solverStage(config.spot, config.stage) === 2
-      ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: diagonalJoin > 0 ? { onset, diagonalJoin } : { onset } })
+      ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: kennedy })
       : new ShallowWaterSolver(grid, depthAt, { waterLevel: config.tide });
     this.sea = surfZoneSea(config);
     if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
@@ -955,7 +1007,7 @@ export class SurfZoneSimulation {
     }
     this.spinUpSeconds = spinUp;
     // Nothing below reads the water, so all of it can be built before the spin-up.
-    this.breaking = new BreakingModel(this.solver, diagonalJoin > 0 ? { onset, diagonalJoin } : { onset });
+    this.breaking = new BreakingModel(this.solver, kennedy);
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
     // Padang Padang's is its reef's, from the peak to the channel. The Wave Pool's A-frame peels both ways alike, so a
@@ -969,6 +1021,22 @@ export class SurfZoneSimulation {
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     // The Canyon's lagoon and its beach face behind the arm are not its wave (`CANYON.peelReach`; every break on the old layout).
     if (config.spot === 'canyon' && Number.isFinite(canyon.peelReach)) this.peelOnsetAt = (column, z) => canyonPeelAt(xCenters[column], z, canyon);
+    if (config.spot === 'canyon' && canyon.beach) {
+      const span = canyonReefSpan(canyon);
+      this.reefAt = (x) => x >= span.from && x <= span.to;
+      this.beachPeel = canyonBars(canyon).map((bar, k) => {
+        const reach = bar.reach + canyon.barTaper;
+        // An arm's columns: from the tip's (a metre either side) out to the end of its taper.
+        const arm = (side: 1 | -1) => (column: number) => {
+          const u = side * (xCenters[column] - bar.x);
+          return u >= -1 && u <= reach;
+        };
+        return {
+          x: bar.x, left: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(1)), right: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(-1)),
+          onBar: (x: number, z: number) => canyonBarAt(x, z, canyon) === k,
+        };
+      });
+    }
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
     this.foam = new FoamField(this.solver, config.foamDecay ?? (spillingCurlOn(config) ? SPILLING_CURL_FOAM_DECAY : FOAM_DECAY[config.spot]));
@@ -1369,7 +1437,20 @@ export class SurfZoneSimulation {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
-    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
+    let count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
+    // The Canyon's tube is the reef's (`?canyonTube=on`): its beach peaks spill, so their crests never join its front.
+    const ridden = this.reefAt;
+    if (ridden) {
+      let kept = 0;
+      for (let k = 0; k < count; k += 1) {
+        const sample = this.crestSamples[k];
+        if (!ridden(sample.x)) continue;
+        this.crestSamples[k] = this.crestSamples[kept];
+        this.crestSamples[kept] = sample;
+        kept += 1;
+      }
+      count = kept;
+    }
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!, dt);
     this.latchTubeSpans();
@@ -1415,8 +1496,7 @@ export class SurfZoneSimulation {
   }
 
   /** Breaker-point Iribarren number from the bed slope at the break line and H_b = γ h_b. */
-  iribarren(): { value: number; type: BreakerType } {
-    const point = this.breakPoint();
+  iribarren(point = this.breakPoint()): { value: number; type: BreakerType } {
     const bed = (z: number) => tankDepth(this.spot, this.tank.edgeDepth, point.x, z, this.tank);
     const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
     const depth = this.breakerDepth();
@@ -1425,8 +1505,59 @@ export class SurfZoneSimulation {
     return { value: readout.iribarren, type: readout.breakerType };
   }
 
-  peelEstimate(): PeelEstimate | undefined {
-    return this.peel.estimate(this.solver.time, this.breakerCelerity());
+  /**
+   * The peel the readout gives: the spot's (at the Canyon, its reef's), or, at the Canyon with its beach peaks, the peel of
+   * the peak nearest along-shore position x when one is given (the rider's, or the view's): the reef's on its footprint,
+   * else the nearest beach peak's two arms (`aFrameEstimate`).
+   */
+  peelEstimate(x?: number): PeelEstimate | undefined {
+    const peak = x === undefined ? undefined : this.beachPeakNear(x);
+    if (!peak) return this.peel.estimate(this.solver.time, this.breakerCelerity());
+    // Each arm's fit leaves out the open edge's levelled band, where the bed is no longer the bar's.
+    const margin = OPEN_EDGE_RAMP / (this.solver.nx * this.solver.dx);
+    const celerity = this.breakerCelerity();
+    return aFrameEstimate(peak.left.estimate(this.solver.time, celerity, margin), peak.right.estimate(this.solver.time, celerity, margin), x! < peak.x ? -1 : 1);
+  }
+
+  /**
+   * The Canyon's peaks with its beach peaks, for a readout that follows the view (the Wave Lab): each one's stretch of
+   * shore (the reef's footprint, each bar's tip ± its reach and taper), its breaker and its peel now. Undefined elsewhere.
+   */
+  readoutPeaks(): { from: number; to: number; breaker: { value: number; type: BreakerType }; peel?: PeelEstimate }[] | undefined {
+    if (!this.beachPeel) return undefined;
+    const c = canyonShape(this.config.canyonBed);
+    const reef = canyonReefSpan(c);
+    const middle = 0.5 * (reef.from + reef.to);
+    return [
+      { from: reef.from, to: reef.to, breaker: this.breakerNear(middle)!, peel: this.peelEstimate(middle) },
+      ...canyonBars(c).map((bar) => {
+        const reach = bar.reach + c.barTaper;
+        return { from: bar.x - reach, to: bar.x + reach, breaker: this.breakerNear(bar.x)!, peel: this.peelEstimate(bar.x) };
+      }),
+    ];
+  }
+
+  /** The beach peak nearest along-shore position x, or none: off the Canyon's beach, or on its reef's footprint. */
+  private beachPeakNear(x: number): NonNullable<SurfZoneSimulation['beachPeel']>[number] | undefined {
+    if (!this.beachPeel || this.reefAt?.(x)) return undefined;
+    let best = this.beachPeel[0];
+    for (const peak of this.beachPeel) if (Math.abs(x - peak.x) < Math.abs(x - best.x)) best = peak;
+    return best;
+  }
+
+  /**
+   * The breaker the readout gives for the peak nearest along-shore position x, at the Canyon with its beach peaks: the
+   * reef's at its own take-off (`canyonReefTakeOff`) on its footprint, else the nearest beach peak's at its tip
+   * (`canyonBeachTakeOff`). Undefined elsewhere: the spot's one take-off's (`iribarren`).
+   */
+  breakerNear(x: number): { value: number; type: BreakerType } | undefined {
+    if (!this.beachPeel) return undefined;
+    this.peakBreakers ??= [
+      { x: Number.NaN, breaker: this.iribarren(canyonReefTakeOff(this.config)) },
+      ...this.beachPeel.map((peak) => ({ x: peak.x, breaker: this.iribarren(canyonBeachTakeOff(this.config, peak.x)) })),
+    ];
+    const peak = this.beachPeakNear(x);
+    return { ...(this.peakBreakers.find((p) => p.x === peak?.x) ?? this.peakBreakers[0]).breaker };
   }
 
   /** Share of wet surf-zone cells breaking with B > 0.3. */
@@ -1468,7 +1599,15 @@ export class SurfZoneSimulation {
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
         if (!this.peelOnsetAt || this.peelOnsetAt(column, outer)) this.peel.markOnset(column, solver.time, outer);
-        this.spilling?.observeOnset(column, solver.time, outer);
+        if (this.beachPeel) {
+          const x = solver.xCenters[column];
+          for (const peak of this.beachPeel) {
+            if (!peak.onBar(x, outer)) continue;
+            if (peak.left.measures(column)) peak.left.markOnset(column, solver.time, outer);
+            if (peak.right.measures(column)) peak.right.markOnset(column, solver.time, outer);
+          }
+        }
+        if (!this.reefAt || this.reefAt(solver.xCenters[column])) this.spilling?.observeOnset(column, solver.time, outer);
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }

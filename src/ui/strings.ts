@@ -103,6 +103,8 @@ export const EN = {
   'lab.peel.right': 'a right at {angle}°',
   'lab.peel.closeout': 'closes out',
   'lab.peel.mixed': 'mixed peaks',
+  'lab.peel.peak': 'peak, left {left}° and right {right}°',
+  'lab.summary.peak': '{breaker} {peak}',
   'lab.skill.beginner': 'easy to surf',
   'lab.skill.intermediate': 'good for surfing',
   'lab.skill.advanced': 'fast, for good surfers',

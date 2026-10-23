@@ -35,17 +35,19 @@ function records(n: number, tau: number, footHeight: number, footDepth: number):
 }
 
 describe('the swept barrel’s spots (Part B, PR 7)', () => {
-  it('leaves the owner’s switch alone: Padang Padang and the Canyon (2026-10-22) are swept unless a test says so', () => {
-    expect(SWEPT_BARREL).toEqual(['padang', 'canyon']);
+  it('leaves the owner’s switch alone: Padang Padang is swept unless a test says so, the Canyon (2026-10-22 to 2026-10-23) only when asked', () => {
+    expect(SWEPT_BARREL).toEqual(['padang']);
     for (const spot of ['beach', 'point', 'reef'] as const) {
       expect(sweptBarrelOn({ spot })).toBe(false);
       // A test can switch a spot on only where it has a barrel transect.
       expect(sweptBarrelOn({ spot, sweptBarrel: true })).toBe(BARREL_SPOTS[spot] !== undefined);
     }
-    // The Canyon's tubes: on, off with `?canyonTube=off` (the config's say), and never on its old layout.
-    expect(sweptBarrelOn({ spot: 'canyon' })).toBe(true);
-    expect(sweptBarrelOn({ spot: 'canyon', sweptBarrel: false })).toBe(false);
+    // The Canyon's tubes (canyon-beach-break): off by default, on with `?canyonTube=on` (the config's say), on either layout
+    // (`?canyonBed=old&canyonTube=on` is main's Canyon at b11d63ef, tube and all).
+    expect(sweptBarrelOn({ spot: 'canyon' })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'canyon', sweptBarrel: true })).toBe(true);
     expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old' })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old', sweptBarrel: true })).toBe(true);
   });
 
   it('gives every spot with cases a transect, and every transect cases', () => {
@@ -190,7 +192,9 @@ describe('the Canyon’s barrel transect (the tube from Basilisk, 2026-10-22)', 
   it('runs without the crash, so its spilling front, roller and curl stay (the 6 s lace too), and joins zero-lag crests late', () => {
     expect(sweptCrashOn({ spot: 'canyon' })).toBe(false);
     expect(sweptCrashOn({ spot: 'padang' })).toBe(true);
-    expect(sweptCrashOn({ spot: 'canyon', sweptCrash: true })).toBe(true);
+    // With its tube on (`?canyonTube=on`, off by default since canyon-beach-break).
+    expect(sweptCrashOn({ spot: 'canyon', sweptCrash: true })).toBe(false);
+    expect(sweptCrashOn({ spot: 'canyon', sweptBarrel: true, sweptCrash: true })).toBe(true);
     expect(spillingCurlOn({ spot: 'canyon' })).toBe(true);
     expect(spillingCurlOn({ spot: 'canyon', sweptCrash: true })).toBe(false);
     expect(canyon.front).toEqual({ joinPast: 1.5 });
