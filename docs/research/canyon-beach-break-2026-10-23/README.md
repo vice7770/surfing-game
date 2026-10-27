@@ -48,7 +48,7 @@ Three more asks came while the work ran, and reshaped it:
 
 `frame-probe.ts` reads, every 0.25 s, the line that is white right now along each crest: the solver's breaking (strength
 over 0.3) and the white drawn (the spilling front's `drawnWhitewater`, which holds the white back ahead of the peel and
-under the curl). On main (`?canyonBed=old&canyonTube=on`, b11d63ef exactly), Medium, seed 1, 14 periods:
+under the curl). On main (`?canyonBed=old&canyonTube=on`, b11d63ef exactly), Medium, seed 1, 12 periods:
 
 | The reef's breaking line, today's main | Solver | Drawn (what the player sees) |
 | --- | --- | --- |
