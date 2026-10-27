@@ -274,7 +274,35 @@ The top-down solver frames behind the frame bars (the white over η, every 0.25 
 
 ## Crests
 
-__CRESTS__
+`scripts/crest-angle-report.ts` (seed 1, 600 s, 64 components; `crests.txt`), its station groups now each peak's arms, the
+reef and the open water. |angle| p90, °, by band across shore from the take-off (now the beach peak's: seaward of it, its
+30 m, inside to halfway to the beach, the rest), against the Beach's p90 (2.6, 8.4, 10.4, 11.5°) and main's (canyon-wave-r2):
+
+| Medium | Beach | Main: open water / the reef | Now: the peaks' arms | Now: the reef / open | Edge chevron −x / +x: main → now |
+| --- | --- | --- | --- | --- | --- |
+| seaward | 2.6 | 4.9–6.5 / 7.2 | 5.4–8.4 | 8.0 / 5.1 | 9.4 / 6.5 → 9.0 / 7.3 |
+| take-off | 8.4 | 4.6–7.1 / 13.9 | 6.1–13.1 | 16.7 / 8.7 | 8.9 / 5.9 → 13.7 / 7.4 |
+| inside | 10.4 | 7.9–15.5 / 24.8 | 14.3–23.5 | 25.6 / 16.6 | 10.3 / 9.3 → 21.4 / 20.5 |
+| inner | 11.5 | 8.0–12.4 / 27.9 | 19.8–23.8 | 30.4 / 17.6 | 10.9 / 11.3 → 23.1 / 23.8 |
+
+| Big | Beach | Now: the peaks' arms | Now: the reef / open | Edge chevron −x / +x, now |
+| --- | --- | --- | --- | --- |
+| seaward | 2.6 | 4.8–8.0 | 6.2 / 5.0 | 11.6 / 6.4 |
+| take-off | 8.4 | 5.4–9.4 | 10.1 / 5.0 | 8.2 / 5.6 |
+| inside | 10.4 | 8.1–16.7 | 17.6 / 9.6 | 14.3 / 10.6 |
+| inner | 11.5 | 17.5–20.3 | 24.5 / 12.8 | 20.6 / 19.7 |
+
+- **No crest comes from two sides:** inside the take-off 0 of 43 (Medium) and 1 of 232, 3 of 112 (Big); seaward 4 of 746
+  and 7 of 521, as main's 0–5.
+- **Seaward and at the take-off the crests stay near the Beach's spread** (the arms' p90 5–13° at Medium, 5–9° at Big).
+- **Inside, over the bars, they bend** to 14–24° p90: the shallow ^ seaward of each break (`medium-above-strip.jpg`), the
+  refraction that makes a peak (the advisor: 10–20° per side, by break depth), and the breaking crests' own V as the
+  white runs down both arms. The reef's own crests read 25–30° there, as on main.
+- **The edge chevrons inside rose** from about 10° to 20–21° at Medium (14 and 11° at Big): each bar's outer arm ends
+  just short of its edge's 20 m band, so its leaning crests reach the edge station and the mirror doubles them. A wider
+  window, or arms ending further in, would ease it.
+- Health over the 600 s: Medium's fastest water 7.18 m/s, no Froude cap, volume 0.58 %; Big's 8.42 m/s, no cap, −0.46 %;
+  finite at both.
 
 ## The start and the catch
 
@@ -299,6 +327,17 @@ far in as the sets are caught best, seaward of where one wave in ten starts brea
   the beach and big ones far out (decision 6); holding Small at 140 m would need a steeper bar (higher ξb) or a terrace whose
   slope break made the arms stall (the knee, above).
 - The rider's bounds widen with the window (x ±179). Online spawns follow the start.
+
+**The Surf screen's faces** (`SWELL_SURF.canyon`, re-measured at the new take-off: `scripts/size-report.ts --spots canyon
+--swells <size> --no-practice`, seed 1, 240 s at Small and 360 s at Medium and Big, so at least 20 waves reach the bar's
+take-off; `docs/research/sizes/canyon-swell-*.json`):
+
+| Typical / sets, m | Small | Medium | Big |
+| --- | --- | --- | --- |
+| The reef's take-off (canyon-wave-r2) | 1.99 / 2.14 | 2.49 / 2.70 | 3.07 / 3.53 |
+| **The upcoast peak's take-off** (waves) | **1.23 / 1.30** (22) | **1.87 / 1.97** (28) | **2.76 / 2.99** (23) |
+
+A spilling bar's faces where its sets start breaking stand lower than the reef's plunging sets did.
 
 ## Colour and rock
 
@@ -357,7 +396,8 @@ Measured with five other simulations running on the M1, so the absolute times ar
 - **The crests bend over the bars** (a shallow ^ seaward of the break, the refraction that makes the peak): measured
   against the Beach below.
 - **Seed noise:** the screens ran 1 seed; 15 waves an arm move a share by about 7 points a wave.
-- **Not re-measured:** `SURF_FORECAST.canyon` and `PRACTICE_SURF.canyon` (the take-off moved to a beach peak); the dev bots'
+- **Not re-measured:** `SURF_FORECAST.canyon` and `PRACTICE_SURF.canyon` (the take-off moved to a beach peak: the Surf screen
+  shows the re-measured `SWELL_SURF` for the game's own sizes, these only for other seas); the dev bots'
   track (`server/bots/canyon-medium.bin`).
 
 ## Tests

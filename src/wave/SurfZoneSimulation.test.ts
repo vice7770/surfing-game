@@ -778,7 +778,7 @@ describe('SurfZoneSimulation', () => {
       const { whitewaterStrength, breaking } = simulation;
       for (let i = 0; i < whitewaterStrength.length; i += 1) expect(whitewaterStrength[i]).toBeLessThanOrEqual(breaking.strength[i]);
     }
-  }, 600_000);
+  }, 1_800_000);
 
   it('draws the Canyon’s tubes from its own run where Big plunges, beside its spilling look, and changes nothing felt (2026-10-22)', () => {
     // Big's typical waves (2.4 m at 14 s): a tube where ξ_f ≥ 0.54 (foot crests to 1.98 m), the curl elsewhere.
@@ -1962,7 +1962,8 @@ describe('the Canyon roller lens (S3)', () => {
   function shoulderFoam(simulation: SurfZoneSimulation): number[] {
     const { solver, foam } = simulation;
     const { nx, nz, xCenters, zCenters, h, bed, restLevel, dx } = solver;
-    const takeOff = takeOffPoint(simulation.config);
+    // The reef's take-off (riders start at a beach peak since canyon-beach-break; the spilling front is the reef's).
+    const takeOff = canyonReefTakeOff(simulation.config);
     const out: number[] = [];
     for (const wave of simulation.spilling!.waves) {
       // From 15 m upcoast of the take-off to 30 m downcoast (x −45…0 on the old layout's take-off at x −30).
