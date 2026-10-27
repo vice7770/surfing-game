@@ -402,7 +402,34 @@ Measured with five other simulations running on the M1, so the absolute times ar
 
 ## Tests
 
-__TESTS__
+On this branch, the M1, no rider sessions:
+
+- `npx tsc --noEmit -p .`: no errors.
+- `npx vitest run src --maxWorkers=2 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`: 303
+  files passed (30 skipped); 2,894 tests passed, 18 expected failures, 36 skipped.
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]arrel|[Tt]ube|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`:
+  25 passed (76 skipped), 28 min.
+
+New or changed, with provenance in each:
+
+- **`Bathymetry.test.ts`:** the bars (V contours, attached to the beach, planar on the axis, faded into the rips), the floor,
+  the decision-13 pair, the sand bed under the rock, the onset and join fields (the reef pinned exactly over its footprint
+  at every depth); the reef's tests read its own take-off; the edges clear of the bars.
+- **`BoussinesqSolver.test.ts`:** a field equal to the onset breaks exactly as without it (bit for bit); a lower one breaks
+  further out.
+- **`GpuBoussinesq.test.ts`:** the onset and join fields' flags (words 23, 24) and their WGSL lines.
+- **`Breaking.test.ts`:** `aFrameEstimate`. **`waveInfo.test.ts`, `WaveLab.test.ts`:** "Spilling peak, left 52° and right 47°";
+  the view's nearest peak.
+- **`SurfZoneSimulation.test.ts`:** the old layout repinned to main's b11d63ef values, every one exact (`pin-main.txt`); the
+  join follows the old layout (0.5); the beach peak's take-off and fit, the reef's own take-off; the starts (6, 9, 3 m);
+  the tube on only when asked, on the reef's columns; the reef's shoulder-foam test at the reef's take-off.
+- **`PhysicalMode.test.ts`, `everySpot.test.ts`, `OnlinePlay.test.ts`:** `?canyonTube=on`; the default tube off; the starts.
+- **`rockBed.test.ts`:** wet sand darker than dry, rock darker than wet sand; the bars never rock.
+- **`surfForecast.test.ts`, `SurfConditions.test.ts`:** checked against the re-measured `SWELL_SURF` files.
+
+**Other spots are unchanged:** every new path is the Canyon's alone (its fields absent elsewhere, `SWEPT_BARREL` minus the
+Canyon, its optics), and the onset/join arithmetic is untouched where a field is absent (`× 1` where present and equal); the
+per-spot tests above pass as before.
 
 ## What to ride (the owner)
 
