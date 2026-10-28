@@ -426,10 +426,12 @@ export const CANYON = {
    */
   reefBoreHold: 1,
   /**
-   * …and a break on the reef more than this many metres seaward of where its column last broke is the next crest, which
-   * waits for nothing, m: a random sea's crests can follow 3–4 s apart, inside the 0.7 Tp wait (Medium, seed 2, 62–65 s:
-   * a crest at z −145 met the last one's onsets at −110 in seven columns, whose white stayed undrawn for 9 s). No bore runs
-   * back seaward, and the next crest breaks about a wavelength out (28–60 m on the reef from Small to Big).
+   * …and a break on the reef more than this many metres seaward of where its column last broke is the next crest, m: a
+   * random sea's crests can follow 3–4 s apart, inside the 0.7 Tp wait (Medium, seed 2, 62–65 s: a crest at z −145 met the
+   * last one's onsets at −110 in seven columns, whose white stayed undrawn for 9 s). No bore runs back seaward, and the
+   * next crest breaks about a wavelength out (28–60 m on the reef from Small to Big). Inside the wait it goes to the
+   * spilling front alone, which draws its white; the readout's tracker still reads one onset a column a period (counted as
+   * onsets too, such crests read "closes out" 11 % of the time at Medium, seed 1, against 3 %, and the peel 49° for 72°).
    */
   reefCrestGap: 20,
   /** The downcoast (+x) peak: a little steeper and shorter. */

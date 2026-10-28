@@ -186,8 +186,8 @@ export interface SurfZoneConfig {
   /**
    * Whether the Canyon's reef counts its waves' onsets in sequence (canyon-reef-sequence, 2026-10-27, `CANYON.reefBoreHold`):
    * in its columns a bore that drops out for under the hold is no new wave, and a crest breaking on the reef waits only
-   * for the last break on the reef, not for the bores and shore break behind it, and not at all a wavelength seaward of
-   * them, so each crest's onsets join its spilling front and its white is drawn down the reef. False: the `?canyonReefSeq=off` dev switch, for A/Bs (main's until
+   * for the last break on the reef, not for the bores and shore break behind it, and the spilling front joins a following
+   * crest a wavelength seaward of them even inside that wait, so each crest's white is drawn down the reef. False: the `?canyonReefSeq=off` dev switch, for A/Bs (main's until
    * 2026-10-27); online rooms run the default.
    */
   canyonReefSeq?: boolean;
@@ -940,8 +940,8 @@ export class SurfZoneSimulation {
   /**
    * The Canyon's reef columns' onsets (`CANYON.reefBoreHold`, canyon-reef-sequence): where each column's break was last
    * seen, z, and when, s (a column breaking again within `hold` s counts its jump from there, not from none), and when
-   * each last started breaking on the reef (`peelOnsetAt`), s, which alone a break on the reef waits 0.7 Tp for, unless it
-   * lies more than `crestGap` m seaward of where the column last broke.
+   * each last started breaking on the reef (`peelOnsetAt`), s, which alone a break on the reef waits 0.7 Tp for; one more
+   * than `crestGap` m seaward of where the column last broke, inside that wait, goes to the spilling front alone.
    */
   private readonly reefOnsets?: { hold: number; crestGap: number; columns: Uint8Array; seenZ: Float64Array; seenAt: Float64Array; lastOnReef: Float64Array };
   /** The first pass records the warm field's bores; onsets count from the next step. */
@@ -1618,7 +1618,8 @@ export class SurfZoneSimulation {
       this.outerBreak[column] = outer;
       // On the Canyon's reef a bore that dropped out for under the hold is still where it was last seen, and a break on the
       // reef waits only for the last on the reef (`reefBoreHold`): the bores and shore break behind it are other breaks.
-      // A break on the reef more than `reefCrestGap` m seaward of where the column last broke is the next crest: no wait.
+      // A break on the reef more than `reefCrestGap` m seaward of where the column last broke is the next crest: inside the
+      // wait it is no onset (the readout reads one wave a period), but the spilling front joins it, so its white is drawn.
       let from = previous;
       let seen = Infinity;
       const reef = this.reefOnsets?.columns[column] ? this.reefOnsets : undefined;
@@ -1631,8 +1632,9 @@ export class SurfZoneSimulation {
         }
       }
       const onReef = reef !== undefined && outer < from - 5 && (!this.peelOnsetAt || this.peelOnsetAt(column, outer));
-      const wait = onReef ? (outer < seen - reef.crestGap ? -Infinity : reef.lastOnReef[column]) : this.lastOnset[column];
-      if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, wait)) {
+      if (this.onsetsArmed && onReef && outer < seen - reef.crestGap && !this.newBreaker(column, row, reef.lastOnReef[column])) {
+        if (this.newBreaker(column, row, -Infinity)) this.spilling?.observeOnset(column, solver.time, outer);
+      } else if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, onReef ? reef.lastOnReef[column] : this.lastOnset[column])) {
         this.lastOnset[column] = solver.time;
         if (onReef) reef.lastOnReef[column] = solver.time;
         if (!this.peelOnsetAt || this.peelOnsetAt(column, outer)) this.peel.markOnset(column, solver.time, outer);

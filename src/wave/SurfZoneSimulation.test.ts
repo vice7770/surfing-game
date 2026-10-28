@@ -1031,19 +1031,24 @@ describe('SurfZoneSimulation', () => {
 
   // canyon-reef-sequence (2026-10-27): in the reef's columns a bore dropping out under B 0.3 for less than
   // `CANYON.reefBoreHold` s is no new wave, and a break on the reef waits 0.7 Tp only for the column's last break on the
-  // reef, not for the shore break behind it, and not at all `CANYON.reefCrestGap` m seaward of where its column last broke
-  // (a following crest), so the next crest's onset comes through and its white joins its spilling front.
+  // reef, not for the shore break behind it; and a following crest `CANYON.reefCrestGap` m seaward of where its column last
+  // broke, inside that wait, joins the spilling front alone. So each crest's white joins its spilling front.
   // `canyonReefSeq: false` (the `?canyonReefSeq=off` dev switch) and the old bed count them as main did; no other spot
   // carries the record.
   it('counts the Canyon reef\'s onsets in sequence: a bore dropping out is no new wave, and its shore break keeps no crest out', () => {
     const tiny = { seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0, componentCount: 4, alongShore: 40, dx: 4, fineSpacing: 4, coarseSpacing: 8, spinUpPeriods: 0.1 };
     const build = (config: Partial<SurfZoneConfig>) => new SurfZoneSimulation({ ...tiny, spot: 'canyon', ...config } as SurfZoneConfig, 'warm');
     const onsets = (simulation: SurfZoneSimulation) => {
-      const internals = simulation as unknown as { markBreakingOnsets(): void; lastOnset: Float64Array; onsetsArmed: boolean };
+      const internals = simulation as unknown as {
+        markBreakingOnsets(): void; lastOnset: Float64Array; onsetsArmed: boolean; spilling: { observeOnset(column: number, time: number, z: number): void };
+      };
       const { solver } = simulation;
       const column = solver.xCenters.findIndex((x) => Math.abs(x + 8) <= solver.dx / 2);
       const line = canyonBreakLineZ(solver.xCenters[column]);
       const counted: number[] = [];
+      const joined: number[] = [];
+      const observe = internals.spilling.observeOnset.bind(internals.spilling);
+      internals.spilling.observeOnset = (c, time, z) => { if (c === column) joined.push(time); observe(c, time, z); };
       internals.onsetsArmed = true;
       const breakAt = (time: number, z?: number) => {
         solver.time = time;
@@ -1067,15 +1072,16 @@ describe('SurfZoneSimulation', () => {
       breakAt(26.5, line - 30); // a crest following 3.5 s behind it, 34 m seaward, inside the 0.7 Tp wait
       breakAt(26.6); // drops out…
       breakAt(28, line - 24); // …and breaks again 6 m on: the same crest
-      return counted;
+      return { counted, joined };
     };
     expect(CANYON.reefBoreHold).toBe(1);
     expect(CANYON.reefCrestGap).toBe(20);
     expect(CANYON_OLD.reefBoreHold).toBe(0);
-    expect(onsets(build({}))).toEqual([10, 21, 23, 26.5]);
+    // The following crest is no onset (the readout reads one a period), but the spilling front joins it.
+    expect(onsets(build({}))).toEqual({ counted: [10, 21, 23], joined: [10, 21, 23, 26.5] });
     // As main: the bore's return counts, and keeps the shore break and the next crest out; the crest after it then counts
     // only because the wait since the bore's return has run.
-    expect(onsets(build({ canyonReefSeq: false }))).toEqual([10, 18.1, 26.5]);
+    expect(onsets(build({ canyonReefSeq: false }))).toEqual({ counted: [10, 18.1, 26.5], joined: [10, 18.1, 26.5] });
     const record = (config: Partial<SurfZoneConfig>) => Object.keys(build(config).exportState().arrays).filter((name) => name.startsWith('reefOnsets.'));
     expect(record({})).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
     for (const config of [{ canyonReefSeq: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) expect(record(config), JSON.stringify(config)).toEqual([]);
