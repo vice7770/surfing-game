@@ -1,5 +1,5 @@
 import {
-  PADANG, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type CanyonShape, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, aFrameEstimate, breakerDepthFor, type PeelEstimate } from './Breaking';
@@ -198,6 +198,14 @@ export interface SurfZoneConfig {
    */
   canyonReefSeq?: boolean;
   /**
+   * Whether the Canyon's beach peaks draw and feel as the reef does (canyon-beach-look, 2026-10-28): their onsets feed
+   * the spilling front, one group of waves per arm peeling away from its tip (`CANYON_BEACH_LOOK`), so their breaking gets
+   * the drawn spilling lip and curl, the roller lenses and their push, and the roller front. False: the
+   * `?canyonBeachLook=off` dev switch, for A/Bs (the solver's own whitewater there, main's until 2026-10-28); online rooms
+   * run the default.
+   */
+  canyonBeachLook?: boolean;
+  /**
    * How the swept barrel draws and collides its tubes (`TubeShape`): each case's own Basilisk frames, the default, or
    * 'bounded-C', the authored C profile drawn from 2026-10-05 to 2026-10-22 (the `?tubeShape=c` dev A/B). Online rooms
    * always run the default.
@@ -215,6 +223,13 @@ export interface SurfZoneConfig {
  *   the swept barrel is measured for it.
  */
 export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
+
+/**
+ * The Canyon's beach peaks' groups of the spilling front (canyon-beach-look, 2026-10-28; `SpillingFrontOptions.groups`):
+ * each arm's front may run as fast along shore as its bar's 40° contours peel a crest (c / tan 40° ≈ 1.19 c, above the
+ * reef's 55° cap of 1.22 c_b at the bars' faster crests), and the same upcoast gate as the reef's.
+ */
+export const CANYON_BEACH_LOOK = { peelAngleDegrees: 40, upcoastMargin: 6 } as const;
 
 /** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
 export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {
@@ -931,6 +946,10 @@ export class SurfZoneSimulation {
    * feels are the solver's own, as at the Beach (the water-physics advisor, 2026-10-23).
    */
   private readonly reefAt?: (x: number) => boolean;
+  /** The Canyon's beach peaks' tips along shore with the beach look on (`canyonBeachLook`): their arms' groups. */
+  private readonly beachLook?: readonly number[];
+  /** The Canyon's layout (`canyonShape`). */
+  private readonly canyonShape: CanyonShape;
   /**
    * The Canyon's beach peaks (canyon-beach-break): each arm's peel, over the breaks on its own bar. One tracker across both
    * arms of an A-frame reads as a close-out (the Wave Pool's note), so the left arm (toward +x) and the right have one each.
@@ -1036,6 +1055,7 @@ export class SurfZoneSimulation {
     // square crests close out on the beach. Its layout's arm (`SurfZoneConfig.canyonBed`).
     const xCenters = this.solver.xCenters;
     const canyon = canyonShape(config.canyonBed);
+    this.canyonShape = canyon;
     const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt
       : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
@@ -1113,7 +1133,14 @@ export class SurfZoneSimulation {
       }
     }
     if (spillingFrontOn(config) && !this.crash) {
-      this.spilling = new SpillingFront(this.solver, { ...SPILLING_FRONT[config.spot], ...(config.drawnEdges === false ? { drawnEdges: false } : {}) });
+      // The Canyon's beach peaks: a group of the front's waves per arm, each peeling away from its tip (canyon-beach-look).
+      const beachGroups = config.spot === 'canyon' && canyon.beach && config.canyonBeachLook !== false
+        ? canyonBars(canyon).flatMap(() => ([-1, 1] as const).map((direction) => ({ direction, ...CANYON_BEACH_LOOK })))
+        : [];
+      if (beachGroups.length) this.beachLook = canyonBars(canyon).map((bar) => bar.x);
+      this.spilling = new SpillingFront(this.solver, {
+        ...SPILLING_FRONT[config.spot], ...(config.drawnEdges === false ? { drawnEdges: false } : {}), ...(beachGroups.length ? { groups: beachGroups } : {}),
+      });
       this.whitewater = new Float64Array(this.solver.h.length);
       if (config.roller !== false) {
         const mask = config.rollerMask ?? 'front';
@@ -1658,6 +1685,12 @@ export class SurfZoneSimulation {
           }
         }
         if (!this.reefAt || this.reefAt(solver.xCenters[column])) this.spilling?.observeOnset(column, solver.time, outer);
+        else if (this.beachLook) {
+          // A break on a beach peak's bar starts or joins its arm's group: the −x arm's left of its tip, the +x arm's right.
+          const x = solver.xCenters[column];
+          const bar = canyonBarAt(x, outer, this.canyonShape);
+          if (bar >= 0) this.spilling?.observeOnset(column, solver.time, outer, 1 + 2 * bar + (x >= this.beachLook[bar] ? 1 : 0));
+        }
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }
@@ -1863,7 +1896,8 @@ export class SurfZoneSimulation {
       // peel-side end, where the lip lands, only a column while young (the Canyon lip, round 5).
       if (this.spilling!.options.drawnEdges) {
         frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time,
-          { direction: this.spilling!.options.direction, age: this.curl.bandAge, young: this.curl.span });
+          { direction: this.spilling!.options.direction, age: this.curl.bandAge, young: this.curl.span,
+            ...(this.spilling!.options.groups?.length ? { directions: this.curl.bandDirection } : {}) });
       }
     }
     return this.solver.nx;

@@ -21,7 +21,7 @@
  * drawn (dense + residual > 0.3), which outlives the breaking.
  *
  *   rolldown docs/research/canyon-beach-break-2026-10-23/frame-probe.ts -o dist/scripts/frame-probe.mjs --format esm --platform node \
- *     && node dist/scripts/frame-probe.mjs --size medium --seed 1 --periods 12 [--canyon key=value,...] [--bed old] [--tube on] [--foam]
+ *     && node dist/scripts/frame-probe.mjs --size medium --seed 1 --periods 12 [--canyon key=value,...] [--bed old] [--tube on] [--beach-look off] [--foam]
  *        [--stills <dir> --from <s> --to <s> --every <s> --x <x0,x1> --z <z0,z1>] [--json <file>]
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -55,7 +55,7 @@ const SECTION_CHECK = 2;
 
 const sim = new SurfZoneSimulation({
   spot: 'canyon', seed, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: 0, spreading: swell.spreading ?? 150,
-  tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', ...(bed ? { canyonBed: bed } : {}), ...(option('tube') === 'on' ? { sweptBarrel: true } : {}),
+  tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', ...(bed ? { canyonBed: bed } : {}), ...(option('tube') === 'on' ? { sweptBarrel: true } : {}), ...(option('beach-look') === 'off' ? { canyonBeachLook: false } : {}),
 } as unknown as SurfZoneConfig);
 const { solver } = sim;
 const c = canyonShape(bed);

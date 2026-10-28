@@ -277,6 +277,8 @@ export class SpillingCurl implements SpillingDrawnLook {
    * reached each column (NaN: no wave of the front's), for its fray's peel-side end (`frayBand`'s `PeelEnd`).
    */
   readonly bandAge: Float64Array;
+  /** The band's entries' waves' peel directions at the last `drawBand` (slot-major), for the fray's peel side. */
+  readonly bandDirection: Int8Array;
   /**
    * Per cell, the share of its air drawn after the shoulder's clearing (`clearShoulder`): 1 off the shoulder, less on its
    * band, where the drawn whitewater is held back (round 5). The solver may break there before any onset joins it to a
@@ -330,6 +332,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.normalZ = new Float64Array(nx).fill(1);
     this.gradient = new Float64Array(nx);
     this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
+    this.bandDirection = new Int8Array(ROLLER_SLOTS * nx).fill(1);
     this.shoulderAir = new Float32Array(nx * nz).fill(1);
     this.measured = new Float64Array(nx).fill(Number.NaN);
     this.measuredLength = new Float64Array(nx).fill(Number.NaN);
@@ -531,6 +534,7 @@ export class SpillingCurl implements SpillingDrawnLook {
     const reach = this.reach;
     const view = this.view;
     this.bandAge.fill(Number.NaN);
+    this.bandDirection.fill(1);
     const { lookHeight, lookWave } = this;
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = 0; column < nx; column += 1) {
@@ -559,6 +563,7 @@ export class SpillingCurl implements SpillingDrawnLook {
         if (!(r === r)) continue;
         const age = time - (j === j && j > r ? j : r);
         this.bandAge[slot * nx + column] = age;
+        this.bandDirection[slot * nx + column] = waves[k].direction;
         const own = this.ownWave(waves, column, id);
         // Another wave's band than the column's curl: its H here, its lens's (the local wave's), else the nominal.
         const other = own ? 0 : this.local && lensHeight > 0 ? lensHeight : this.nominal;
@@ -686,7 +691,6 @@ export class SpillingCurl implements SpillingDrawnLook {
     const ahead = Math.max(curl.shoulderAhead, curl.shoulderAheadHeights * height);
     const fade = curl.shoulderFade;
     const clear = 1 - Math.exp(-dt / curl.shoulderClear);
-    const direction = front.options.direction;
     const reach = Math.round(curl.shoulderReach / dx);
     // The first row at or past z (a binary search: the rows stretch offshore).
     const rowOf = (z: number) => {
@@ -716,6 +720,8 @@ export class SpillingCurl implements SpillingDrawnLook {
       return { z: at, level: best };
     };
     for (const wave of front.waves) {
+      // Each wave clears the shoulder ahead of its own front, the way it peels (an A-frame's arms apart).
+      const { direction } = wave;
       // The crest at the front: the wave's own crest in the last columns it has reached, the highest water near it.
       const frontColumn = Math.round((wave.frontX - xCenters[0]) / dx);
       let crestZ = Number.NaN;

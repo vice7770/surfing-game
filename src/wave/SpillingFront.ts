@@ -60,7 +60,23 @@ export interface SpillingFrontOptions {
    * read it. Off by default; the Canyon's front turns it on (`SPILLING_FRONT`).
    */
   drawnEdges: boolean;
+  /**
+   * More groups of waves beside the front's own (group 0, which peels `direction`; canyon-beach-look, 2026-10-28): each
+   * group's onsets start and join only its own waves, which peel its way, under its own visible peel cap and upcoast gate,
+   * and keep at most `maxWaves` (group k is `groups[k - 1]`). The Canyon's beach peaks: an A-frame's arms, one group each.
+   */
+  groups?: readonly SpillingGroup[];
 }
+
+/** A group of the front's waves (`SpillingFrontOptions.groups`): which way it peels, its visible peel cap and gate. */
+export interface SpillingGroup {
+  readonly direction: 1 | -1;
+  readonly peelAngleDegrees: number;
+  readonly upcoastMargin: number;
+}
+
+/** Group k > 0's wave ids start at k times this, so group 0's (the front's own) stay as they were without groups. */
+export const GROUP_IDS = 1_000_000;
 
 /**
  * How much faster than the breaker celerity a crest may have run since its first onset, for a later break to count as
@@ -139,6 +155,9 @@ export interface SpillingWave {
   readonly id: number;
   /** Solver time of the wave's first onset, s. */
   readonly onset: number;
+  /** Its group (`SpillingFrontOptions.groups`; 0: the front's own) and which way it peels along shore. */
+  readonly group: number;
+  readonly direction: 1 | -1;
   /** Along-shore position of its first onset (the peak), m, and where across shore it started breaking there, z. */
   readonly startX: number;
   readonly startZ: number;
@@ -188,6 +207,9 @@ export type ColumnValues = (number | null)[];
 export interface SpillingWaveState {
   id: number;
   onset: number;
+  /** Absent from donors before canyon-beach-look: the front's own group, its direction. */
+  group?: number;
+  direction?: 1 | -1;
   startX: number;
   startZ: number;
   crestX: number;
@@ -209,6 +231,8 @@ export interface SpillingWaveState {
  */
 export interface SpillingFrontState {
   started: number;
+  /** Waves started so far in each further group (`SpillingFrontOptions.groups`); absent: none. */
+  groupStarted?: number[];
   celerity: number;
   waves: SpillingWaveState[];
 }
@@ -226,8 +250,9 @@ export class SpillingFront {
   /** Cells withheld ahead of a front at the last update, and cells thinned by the onset ramp. */
   gated = 0;
   ramped = 0;
-  /** Waves started so far. */
+  /** Waves started so far (the front's own group), and in each further group. */
   started = 0;
+  private readonly groupStarted: number[];
   /** The breaker celerity of the latest update, m/s: how far a wave's band has run since its onset. */
   private celerity = 0;
   /** For the drawn whitewater: each column's most seaward crest any live wave last had there, z (NaN: none). */
@@ -238,15 +263,25 @@ export class SpillingFront {
    * For the drawn edges with a look (the lip): the row's cells' ages, s since their wave's front reached them (NaN: no
    * wave's), so each run's peel-side end, where the lip lands, frays only as far as its fingers while young.
    */
-  private peel?: { direction: 1 | -1; age: Float64Array; young: number };
+  private peel?: { direction: 1 | -1; age: Float64Array; young: number; directions?: Int8Array };
+  /** Each group's upcoast gate at the last update (`update`'s scratch). */
+  private gates?: Float64Array;
 
   constructor(private readonly grid: SpillingGrid, options: Partial<SpillingFrontOptions> = {}) {
     this.options = { ...SPILLING_FRONT_DEFAULTS, ...options };
+    this.groupStarted = (this.options.groups ?? []).map(() => 0);
   }
 
-  /** Along-shore speed cap for a breaker celerity c_b, m/s: c_b / sin α. */
-  speedCap(breakerCelerity: number): number {
-    return breakerCelerity / seriesSine((this.options.peelAngleDegrees * Math.PI) / 180);
+  /** Along-shore speed cap for a breaker celerity c_b, m/s: c_b / sin α (a group's own α for its waves). */
+  speedCap(breakerCelerity: number, group = 0): number {
+    const angle = group > 0 ? this.groupOf(group).peelAngleDegrees : this.options.peelAngleDegrees;
+    return breakerCelerity / seriesSine((angle * Math.PI) / 180);
+  }
+
+  /** A group's peel: the front's own for 0, else `groups[group - 1]`. */
+  private groupOf(group: number): SpillingGroup {
+    const { options } = this;
+    return group > 0 ? options.groups![group - 1] : { direction: options.direction, peelAngleDegrees: options.peelAngleDegrees, upcoastMargin: options.upcoastMargin };
   }
 
   /**
@@ -264,11 +299,13 @@ export class SpillingFront {
    * cell jumped seaward). It joins the wave whose broken extent it touches, if that wave has not broken there yet;
    * otherwise it starts a wave of its own, the front at its peak.
    */
-  observeOnset(column: number, time: number, z: number): void {
+  observeOnset(column: number, time: number, z: number, group = 0): void {
     const x = this.grid.xCenters[column];
     const { joinReach } = this.options;
+    const { direction } = this.groupOf(group);
     for (let k = this.waves.length - 1; k >= 0; k -= 1) {
       const wave = this.waves[k];
+      if (wave.group !== group) continue;
       if (!Number.isNaN(wave.joinedAt[column])) continue;
       const low = Math.min(wave.backX, wave.tipX) - joinReach;
       const high = Math.max(wave.backX, wave.tipX) + joinReach;
@@ -277,8 +314,8 @@ export class SpillingFront {
       wave.joinedAt[column] = time;
       wave.joinedZ[column] = z;
       wave.lastJoin = time;
-      if (this.ahead(x, wave.tipX)) wave.tipX = x;
-      if (this.ahead(wave.backX, x)) wave.backX = x;
+      if (this.ahead(x, wave.tipX, direction)) wave.tipX = x;
+      if (this.ahead(wave.backX, x, direction)) wave.backX = x;
       return;
     }
     // One crest breaking again further along, or spreading back, breaks where an older wave's crest has since run: it
@@ -286,6 +323,7 @@ export class SpillingFront {
     let crestX = x;
     for (let k = this.waves.length - 1; k >= 0; k -= 1) {
       const older = this.waves[k];
+      if (older.group !== group) continue;
       const run = this.celerity * (time - older.onset);
       const { bandWidth } = this.options;
       if (z < older.startZ + run - bandWidth || z > older.startZ + CREST_SPEED_SPAN * run + bandWidth) continue;
@@ -294,7 +332,8 @@ export class SpillingFront {
     }
     const nx = this.grid.nx;
     const wave: SpillingWave = {
-      id: this.started, onset: time, startX: x, startZ: z, crestX, frontX: x, tipX: x, backX: x,
+      id: group > 0 ? group * GROUP_IDS + this.groupStarted[group - 1] : this.started, onset: time, group, direction,
+      startX: x, startZ: z, crestX, frontX: x, tipX: x, backX: x,
       reached: new Float64Array(nx).fill(Number.NaN), joinedAt: new Float64Array(nx).fill(Number.NaN),
       joinedZ: new Float64Array(nx).fill(Number.NaN), lastJoin: time, crest: new Float64Array(nx).fill(Number.NaN),
       seen: new Float64Array(nx).fill(Number.NaN), seenAt: new Float64Array(nx).fill(Number.NaN),
@@ -303,8 +342,12 @@ export class SpillingFront {
     wave.joinedZ[column] = z;
     wave.reached[column] = time;
     this.waves.push(wave);
-    this.started += 1;
-    if (this.waves.length > this.options.maxWaves) this.waves.shift();
+    if (group > 0) this.groupStarted[group - 1] += 1;
+    else this.started += 1;
+    // Each group keeps at most maxWaves: its oldest goes.
+    let count = 0;
+    for (const other of this.waves) if (other.group === group) count += 1;
+    if (count > this.options.maxWaves) this.waves.splice(this.waves.findIndex((other) => other.group === group), 1);
   }
 
   /**
@@ -345,9 +388,9 @@ export class SpillingFront {
     return z >= from - reach && z <= from + CREST_SPEED_SPAN * this.celerity * since + reach;
   }
 
-  /** Whether along-shore position `a` lies ahead of `b` in the peel's direction. */
-  private ahead(a: number, b: number): boolean {
-    return this.options.direction * (a - b) > 0;
+  /** Whether along-shore position `a` lies ahead of `b` in a peel's direction. */
+  private ahead(a: number, b: number, direction: 1 | -1): boolean {
+    return direction * (a - b) > 0;
   }
 
   /**
@@ -376,23 +419,26 @@ export class SpillingFront {
     const { grid, options } = this;
     const { nx, nz, xCenters, zCenters } = grid;
     const { direction } = options;
-    const cap = this.speedCap(breakerCelerity);
     this.celerity = breakerCelerity;
     while (this.waves.length > 0 && time - this.waves[0].onset > options.lifetime) this.waves.shift();
-    // The upcoast gate counts from the most upcoast crest start among the live waves: a break further along a crest
+    // The upcoast gate counts from the most upcoast crest start among a group's live waves: a break further along a crest
     // that no older crest's run holds keeps the gate where its crest first broke, and leaves the arm behind it alone.
-    let gateFrom = Infinity;
-    for (const wave of this.waves) gateFrom = Math.min(gateFrom, direction * wave.crestX);
+    const groups = 1 + (options.groups?.length ?? 0);
+    const gateFrom = (this.gates ??= new Float64Array(groups)).fill(Infinity);
+    for (const wave of this.waves) gateFrom[wave.group] = Math.min(gateFrom[wave.group], wave.direction * wave.crestX);
     for (const wave of this.waves) {
-      const room = direction * (wave.tipX - wave.frontX);
-      if (room > 0) wave.frontX += direction * Math.min(room, cap * Math.max(0, dt));
+      const { group, direction: way } = wave;
+      const { upcoastMargin } = group > 0 ? this.groupOf(group) : options;
+      const cap = this.speedCap(breakerCelerity, group);
+      const room = way * (wave.tipX - wave.frontX);
+      if (room > 0) wave.frontX += way * Math.min(room, cap * Math.max(0, dt));
       for (let column = 0; column < nx; column += 1) {
         if (!Number.isNaN(wave.reached[column])) continue;
         const x = xCenters[column];
         // Upcoast of the crests' first onset beyond the margin: never reached, so the whitewater there stays withheld.
-        if (gateFrom - direction * x > options.upcoastMargin) continue;
+        if (gateFrom[group] - way * x > upcoastMargin) continue;
         // Behind the front (and upstream of the peak within the margin, which the solver may break on its own): reached now.
-        if (!this.ahead(x, wave.frontX)) wave.reached[column] = time;
+        if (!this.ahead(x, wave.frontX, way)) wave.reached[column] = time;
       }
     }
     const waves = this.waves;
@@ -417,12 +463,15 @@ export class SpillingFront {
     let drawnRowCount = 0;
     let peel: PeelEnd | undefined;
     let ages: Float64Array | undefined;
+    let ways: Int8Array | undefined;
     if (fray && look) {
-      const end = (this.peel ??= { direction, age: new Float64Array(nx), young: 0 });
+      const end = (this.peel ??= { direction, age: new Float64Array(nx), young: 0, ...(options.groups?.length ? { directions: new Int8Array(nx) } : {}) });
       end.direction = direction;
       end.young = look.span;
       peel = end;
       ages = end.age;
+      // With groups, each cell's peel side is its owner's (an A-frame's arms peel apart).
+      ways = end.directions;
     }
     for (let iz = 0; iz < nz; iz += 1) {
       // With the drawn edges: whether this row draws any white, its run then frayed at its ends.
@@ -451,6 +500,7 @@ export class SpillingFront {
           out[i] = b;
           if (felt) felt[i] = b;
           if (ages) ages[ix] = Number.NaN;
+          if (ways) ways[ix] = direction;
           if (drawn) {
             drawn[i] = z < seaward![ix] - options.crestReach ? 0 : b;
             if (drawn[i] > 0) rowDraws = true;
@@ -478,6 +528,7 @@ export class SpillingFront {
         if (felt) felt[i] = b;
         const local = time - Math.max(reached, latest);
         if (ages) ages[ix] = local;
+        if (ways) ways[ix] = wave.direction;
         if (local >= options.rampSeconds) {
           out[i] = b;
           if (drawn) {
@@ -510,6 +561,7 @@ export class SpillingFront {
   reset(): void {
     this.waves.length = 0;
     this.started = 0;
+    this.groupStarted.fill(0);
     this.celerity = 0;
     this.gated = 0;
     this.ramped = 0;
@@ -519,9 +571,10 @@ export class SpillingFront {
   exportState(): SpillingFrontState {
     return {
       started: this.started,
+      ...(this.groupStarted.length ? { groupStarted: [...this.groupStarted] } : {}),
       celerity: this.celerity,
       waves: this.waves.map((wave) => ({
-        id: wave.id, onset: wave.onset, startX: wave.startX, startZ: wave.startZ, crestX: wave.crestX, frontX: wave.frontX,
+        id: wave.id, onset: wave.onset, ...(wave.group > 0 ? { group: wave.group, direction: wave.direction } : {}), startX: wave.startX, startZ: wave.startZ, crestX: wave.crestX, frontX: wave.frontX,
         tipX: wave.tipX, backX: wave.backX, lastJoin: wave.lastJoin,
         reached: toValues(wave.reached), joinedAt: toValues(wave.joinedAt), joinedZ: toValues(wave.joinedZ), crest: toValues(wave.crest),
         seen: toValues(wave.seen), seenAt: toValues(wave.seenAt),
@@ -534,10 +587,12 @@ export class SpillingFront {
     const { nx } = this.grid;
     this.reset();
     this.started = state.started;
+    state.groupStarted?.forEach((count, k) => { if (k < this.groupStarted.length) this.groupStarted[k] = count; });
     this.celerity = state.celerity;
     for (const wave of state.waves) {
+      const group = wave.group ?? 0;
       this.waves.push({
-        id: wave.id, onset: wave.onset, startX: wave.startX, startZ: wave.startZ, crestX: wave.crestX, frontX: wave.frontX,
+        id: wave.id, onset: wave.onset, group, direction: wave.direction ?? this.groupOf(group).direction, startX: wave.startX, startZ: wave.startZ, crestX: wave.crestX, frontX: wave.frontX,
         tipX: wave.tipX, backX: wave.backX, lastJoin: wave.lastJoin,
         reached: fromValues(wave.reached, new Float64Array(nx)), joinedAt: fromValues(wave.joinedAt, new Float64Array(nx)),
         joinedZ: fromValues(wave.joinedZ, new Float64Array(nx)), crest: fromValues(wave.crest, new Float64Array(nx)),
