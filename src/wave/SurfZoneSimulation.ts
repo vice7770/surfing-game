@@ -1078,11 +1078,21 @@ export class SurfZoneSimulation {
       });
     }
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
-    if (config.spot === 'canyon' && canyon.beach && canyon.reefBoreHold > 0 && config.canyonReefSeq !== false) {
+    // The beach peaks' columns count their onsets in sequence too with the beach look (canyon-beach-look), each on its bar:
+    // the spilling front's waves join by onsets, as the reef's.
+    const reefSeq = config.spot === 'canyon' && canyon.beach && canyon.reefBoreHold > 0 && config.canyonReefSeq !== false;
+    const beachSeq = config.spot === 'canyon' && canyon.beach && canyon.reefBoreHold > 0 && config.canyonBeachLook !== false && spillingFrontOn(config);
+    if (reefSeq || beachSeq) {
       const span = canyonReefSpan(canyon);
+      const bars = canyonBars(canyon);
       const { nx } = this.solver;
+      const zone = (x: number) => {
+        if (x >= span.from && x <= span.to) return reefSeq ? 1 : 0;
+        const k = bars.findIndex((bar) => Math.abs(x - bar.x) <= bar.reach + canyon.barTaper);
+        return beachSeq && k >= 0 ? 2 + k : 0;
+      };
       this.reefOnsets = {
-        hold: canyon.reefBoreHold, crestGap: canyon.reefCrestGap, columns: Uint8Array.from(xCenters, (x) => (x >= span.from && x <= span.to ? 1 : 0)),
+        hold: canyon.reefBoreHold, crestGap: canyon.reefCrestGap, columns: Uint8Array.from(xCenters, zone),
         seenZ: new Float64Array(nx).fill(Infinity), seenAt: new Float64Array(nx).fill(-Infinity), lastOnReef: new Float64Array(nx).fill(-Infinity),
       };
     }
@@ -1669,9 +1679,12 @@ export class SurfZoneSimulation {
           reef.seenAt[column] = solver.time;
         }
       }
-      const onReef = reef !== undefined && outer < from - 5 && (!this.peelOnsetAt || this.peelOnsetAt(column, outer));
+      // On the reef (`peelReach`), or on its own bar in a beach peak's columns (`canyonBarAt`).
+      const zone = reef ? reef.columns[column] : 0;
+      const onReef = reef !== undefined && outer < from - 5
+        && (zone === 1 ? !this.peelOnsetAt || this.peelOnsetAt(column, outer) : canyonBarAt(solver.xCenters[column], outer, this.canyonShape) === zone - 2);
       if (this.onsetsArmed && onReef && outer < seen - reef.crestGap && !this.newBreaker(column, row, reef.lastOnReef[column])) {
-        if (this.newBreaker(column, row, -Infinity)) this.spilling?.observeOnset(column, solver.time, outer);
+        if (this.newBreaker(column, row, -Infinity)) this.observeFront(column, outer);
       } else if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, onReef ? reef.lastOnReef[column] : this.lastOnset[column])) {
         this.lastOnset[column] = solver.time;
         if (onReef) reef.lastOnReef[column] = solver.time;
@@ -1684,18 +1697,29 @@ export class SurfZoneSimulation {
             if (peak.right.measures(column)) peak.right.markOnset(column, solver.time, outer);
           }
         }
-        if (!this.reefAt || this.reefAt(solver.xCenters[column])) this.spilling?.observeOnset(column, solver.time, outer);
-        else if (this.beachLook) {
-          // A break on a beach peak's bar starts or joins its arm's group: the −x arm's left of its tip, the +x arm's right.
-          const x = solver.xCenters[column];
-          const bar = canyonBarAt(x, outer, this.canyonShape);
-          if (bar >= 0) this.spilling?.observeOnset(column, solver.time, outer, 1 + 2 * bar + (x >= this.beachLook[bar] ? 1 : 0));
-        }
+        this.observeFront(column, outer);
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }
     }
     this.onsetsArmed = true;
+  }
+
+  /**
+   * The spilling front hears of a new break in `column` at z: on the Canyon's reef (or anywhere, without its beach) its own
+   * waves'; with the beach look, on a beach peak's bar, its arm's group's (the −x arm's left of the tip, the +x arm's right).
+   */
+  private observeFront(column: number, z: number): void {
+    const front = this.spilling;
+    if (!front) return;
+    const x = this.solver.xCenters[column];
+    if (!this.reefAt || this.reefAt(x)) {
+      front.observeOnset(column, this.solver.time, z);
+      return;
+    }
+    if (!this.beachLook) return;
+    const bar = canyonBarAt(x, z, this.canyonShape);
+    if (bar >= 0) front.observeOnset(column, this.solver.time, z, 1 + 2 * bar + (x >= this.beachLook[bar] ? 1 : 0));
   }
 
   /** Where each column's outermost breaking cell lies across shore, z (Infinity when the column is not breaking). */
