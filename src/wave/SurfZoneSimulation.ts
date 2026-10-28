@@ -186,8 +186,8 @@ export interface SurfZoneConfig {
   /**
    * Whether the Canyon's reef counts its waves' onsets in sequence (canyon-reef-sequence, 2026-10-27, `CANYON.reefBoreHold`):
    * in its columns a bore that drops out for under the hold is no new wave, and a crest breaking on the reef waits only
-   * for the last break on the reef, not for the bores and shore break behind it, so each crest's onsets join its spilling
-   * front and its white is drawn down the reef. False: the `?canyonReefSeq=off` dev switch, for A/Bs (main's until
+   * for the last break on the reef, not for the bores and shore break behind it, and not at all a wavelength seaward of
+   * them, so each crest's onsets join its spilling front and its white is drawn down the reef. False: the `?canyonReefSeq=off` dev switch, for A/Bs (main's until
    * 2026-10-27); online rooms run the default.
    */
   canyonReefSeq?: boolean;
@@ -940,9 +940,10 @@ export class SurfZoneSimulation {
   /**
    * The Canyon's reef columns' onsets (`CANYON.reefBoreHold`, canyon-reef-sequence): where each column's break was last
    * seen, z, and when, s (a column breaking again within `hold` s counts its jump from there, not from none), and when
-   * each last started breaking on the reef (`peelOnsetAt`), s, which alone a break on the reef waits 0.7 Tp for.
+   * each last started breaking on the reef (`peelOnsetAt`), s, which alone a break on the reef waits 0.7 Tp for, unless it
+   * lies more than `crestGap` m seaward of where the column last broke.
    */
-  private readonly reefOnsets?: { hold: number; columns: Uint8Array; seenZ: Float64Array; seenAt: Float64Array; lastOnReef: Float64Array };
+  private readonly reefOnsets?: { hold: number; crestGap: number; columns: Uint8Array; seenZ: Float64Array; seenAt: Float64Array; lastOnReef: Float64Array };
   /** The first pass records the warm field's bores; onsets count from the next step. */
   private onsetsArmed = false;
   /** When each column last started a wave that could throw a lip, s. */
@@ -1050,7 +1051,7 @@ export class SurfZoneSimulation {
       const span = canyonReefSpan(canyon);
       const { nx } = this.solver;
       this.reefOnsets = {
-        hold: canyon.reefBoreHold, columns: Uint8Array.from(xCenters, (x) => (x >= span.from && x <= span.to ? 1 : 0)),
+        hold: canyon.reefBoreHold, crestGap: canyon.reefCrestGap, columns: Uint8Array.from(xCenters, (x) => (x >= span.from && x <= span.to ? 1 : 0)),
         seenZ: new Float64Array(nx).fill(Infinity), seenAt: new Float64Array(nx).fill(-Infinity), lastOnReef: new Float64Array(nx).fill(-Infinity),
       };
     }
@@ -1617,17 +1618,21 @@ export class SurfZoneSimulation {
       this.outerBreak[column] = outer;
       // On the Canyon's reef a bore that dropped out for under the hold is still where it was last seen, and a break on the
       // reef waits only for the last on the reef (`reefBoreHold`): the bores and shore break behind it are other breaks.
+      // A break on the reef more than `reefCrestGap` m seaward of where the column last broke is the next crest: no wait.
       let from = previous;
+      let seen = Infinity;
       const reef = this.reefOnsets?.columns[column] ? this.reefOnsets : undefined;
       if (reef) {
-        if (!(previous < Infinity) && solver.time - reef.seenAt[column] <= reef.hold) from = reef.seenZ[column];
+        seen = reef.seenZ[column];
+        if (!(previous < Infinity) && solver.time - reef.seenAt[column] <= reef.hold) from = seen;
         if (outer < Infinity) {
           reef.seenZ[column] = outer;
           reef.seenAt[column] = solver.time;
         }
       }
       const onReef = reef !== undefined && outer < from - 5 && (!this.peelOnsetAt || this.peelOnsetAt(column, outer));
-      if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, onReef ? reef.lastOnReef[column] : this.lastOnset[column])) {
+      const wait = onReef ? (outer < seen - reef.crestGap ? -Infinity : reef.lastOnReef[column]) : this.lastOnset[column];
+      if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, wait)) {
         this.lastOnset[column] = solver.time;
         if (onReef) reef.lastOnReef[column] = solver.time;
         if (!this.peelOnsetAt || this.peelOnsetAt(column, outer)) this.peel.markOnset(column, solver.time, outer);

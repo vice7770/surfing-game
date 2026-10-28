@@ -1031,7 +1031,8 @@ describe('SurfZoneSimulation', () => {
 
   // canyon-reef-sequence (2026-10-27): in the reef's columns a bore dropping out under B 0.3 for less than
   // `CANYON.reefBoreHold` s is no new wave, and a break on the reef waits 0.7 Tp only for the column's last break on the
-  // reef, not for the shore break behind it, so the next crest's onset comes through and its white joins its spilling front.
+  // reef, not for the shore break behind it, and not at all `CANYON.reefCrestGap` m seaward of where its column last broke
+  // (a following crest), so the next crest's onset comes through and its white joins its spilling front.
   // `canyonReefSeq: false` (the `?canyonReefSeq=off` dev switch) and the old bed count them as main did; no other spot
   // carries the record.
   it('counts the Canyon reef\'s onsets in sequence: a bore dropping out is no new wave, and its shore break keeps no crest out', () => {
@@ -1062,12 +1063,19 @@ describe('SurfZoneSimulation', () => {
       breakAt(21, -24); // the shore break on the beach face behind the reef (beyond `peelReach`)
       breakAt(22);
       breakAt(23, line - 2); // the next crest on the reef, 13 s after the last, 2 s after the shore break
+      breakAt(25, line + 4); // its bore on the top
+      breakAt(26.5, line - 30); // a crest following 3.5 s behind it, 34 m seaward, inside the 0.7 Tp wait
+      breakAt(26.6); // drops out…
+      breakAt(28, line - 24); // …and breaks again 6 m on: the same crest
       return counted;
     };
     expect(CANYON.reefBoreHold).toBe(1);
+    expect(CANYON.reefCrestGap).toBe(20);
     expect(CANYON_OLD.reefBoreHold).toBe(0);
-    expect(onsets(build({}))).toEqual([10, 21, 23]);
-    expect(onsets(build({ canyonReefSeq: false }))).toEqual([10, 18.1]);
+    expect(onsets(build({}))).toEqual([10, 21, 23, 26.5]);
+    // As main: the bore's return counts, and keeps the shore break and the next crest out; the crest after it then counts
+    // only because the wait since the bore's return has run.
+    expect(onsets(build({ canyonReefSeq: false }))).toEqual([10, 18.1, 26.5]);
     const record = (config: Partial<SurfZoneConfig>) => Object.keys(build(config).exportState().arrays).filter((name) => name.startsWith('reefOnsets.'));
     expect(record({})).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
     for (const config of [{ canyonReefSeq: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) expect(record(config), JSON.stringify(config)).toEqual([]);

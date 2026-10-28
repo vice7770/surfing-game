@@ -425,6 +425,13 @@ export const CANYON = {
    * `?canyonReefSeq=off` dev switch). The reef's water and breaking are untouched: at a spilling spot an onset throws no lip.
    */
   reefBoreHold: 1,
+  /**
+   * …and a break on the reef more than this many metres seaward of where its column last broke is the next crest, which
+   * waits for nothing, m: a random sea's crests can follow 3–4 s apart, inside the 0.7 Tp wait (Medium, seed 2, 62–65 s:
+   * a crest at z −145 met the last one's onsets at −110 in seven columns, whose white stayed undrawn for 9 s). No bore runs
+   * back seaward, and the next crest breaks about a wavelength out (28–60 m on the reef from Small to Big).
+   */
+  reefCrestGap: 20,
   /** The downcoast (+x) peak: a little steeper and shorter. */
   downPeakX: 121, downSlope: 1 / 44, downRounding: 12, downReach: 45, downCrestZ: -121, downCrestDepth: 2.75,
 };
@@ -464,7 +471,7 @@ export const CANYON_OLD: CanyonShape = Object.freeze({
   barAngle: 62, barTaper: 12, barKnee: 15,
   upPeakX: -115, upSlope: 1 / 44, upRounding: 10, upReach: 55, upCrestZ: -140, upCrestDepth: 1.7,
   downPeakX: 123, downSlope: 1 / 38, downRounding: 7, downReach: 45, downCrestZ: -130, downCrestDepth: 1.6,
-  barOnset: 0.65, onsetPin: 5, onsetBlend: 12, onsetShallow: 3, onsetDeep: 4.5, barJoin: 0.5, reefBoreHold: 0,
+  barOnset: 0.65, onsetPin: 5, onsetBlend: 12, onsetShallow: 3, onsetDeep: 4.5, barJoin: 0.5, reefBoreHold: 0, reefCrestGap: 20,
 });
 
 /** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */

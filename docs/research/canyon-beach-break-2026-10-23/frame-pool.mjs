@@ -1,4 +1,5 @@
-// The frame probe's waves pooled over seeds (canyon-beach-break): node frame-pool.mjs <frame.json>[,…] [--tips reef=-17,up=-112,down=121]
+// The frame probe's waves pooled over seeds (canyon-beach-break; the foam field and the reef's distance down its line since
+// canyon-reef-sequence): node frame-pool.mjs <frame.json>[,…] [--tips reef=-17,up=-112,down=121]
 // Per region and field: waves; per wave its typical (median) and longest line, its share of frames with a patch, its line
 // 2 s after it starts (40 m or more: closing out at the peak), and each end's reach from the peak while it travelled as one
 // line (40 m or more: the owner's arm). Frames are every 0.25 s while a wave is seen.
@@ -16,7 +17,7 @@ for (const file of files) {
   for (const [key, value] of Object.entries(json)) (pooled[key] ??= []).push(...value.waves.filter((w) => w.frames.length >= 4));
 }
 for (const [key, waves] of Object.entries(pooled)) {
-  const region = key.replace(/^(solver|drawn) /, '');
+  const region = key.replace(/^(solver|drawn|foam) /, '');
   const tip = tipOf(region);
   const along = (f) => f[1] - f[0];
   const typical = waves.map((w) => q(w.frames.map(along), 0.5));
@@ -25,7 +26,10 @@ for (const [key, waves] of Object.entries(pooled)) {
   const section = waves.map((w) => (w.frames.length > 8 ? along(w.frames[8]) : NaN)).filter(Number.isFinite);
   const sides = (region === 'reef' ? [1] : [-1, 1]).map((side) => {
     const reach = waves.map((w) => { const r = w.reached.find(([s]) => s === side); return r ? Math.abs(r[1].x - tip) : NaN; });
-    return `${side > 0 ? '+x' : '−x'}: one travelling line ≥ 40 m from the peak in ${reach.filter((v) => v >= 40).length} of ${waves.length}, its end median ${fmt(q(reach, 0.5))} m (90th ${fmt(q(reach, 0.9))})`;
+    // The reef's line runs at 70° to the shore: its end's distance down the reef, along that line (canyon-reef-sequence).
+    const down = region === 'reef' ? reach.map((v) => v / Math.cos((70 * Math.PI) / 180)) : undefined;
+    return `${side > 0 ? '+x' : '−x'}: one travelling line ≥ 40 m from the peak in ${reach.filter((v) => v >= 40).length} of ${waves.length}, its end median ${fmt(q(reach, 0.5))} m (90th ${fmt(q(reach, 0.9))})`
+      + (down ? `; down the reef's line its end median ${fmt(q(down, 0.5))} m (90th ${fmt(q(down, 0.9))}), ≥ 40 m in ${down.filter((v) => v >= 40).length} of ${waves.length}` : '');
   });
   console.log(`${key}: ${waves.length} waves; typical line p50 ${fmt(q(typical, 0.5))} m (90th ${fmt(q(typical, 0.9))}); longest p50 ${fmt(q(longest, 0.5))} m (90th ${fmt(q(longest, 0.9))}); `
     + `frames with a patch p50 ${fmt(100 * q(patchy, 0.5))} %; line 2 s in p50 ${fmt(q(section, 0.5))} m, ≥ 40 m ${section.filter((v) => v >= 40).length} of ${section.length}; ${sides.join('; ')}`);
