@@ -184,6 +184,14 @@ export interface SurfZoneConfig {
    */
   canyonAgeJoin?: number;
   /**
+   * Whether the Canyon's reef counts its waves' onsets in sequence (canyon-reef-sequence, 2026-10-27, `CANYON.reefBoreHold`):
+   * in its columns a bore that drops out for under the hold is no new wave, and a crest breaking on the reef waits only
+   * for the last break on the reef, not for the bores and shore break behind it, so each crest's onsets join its spilling
+   * front and its white is drawn down the reef. False: the `?canyonReefSeq=off` dev switch, for A/Bs (main's until
+   * 2026-10-27); online rooms run the default.
+   */
+  canyonReefSeq?: boolean;
+  /**
    * How the swept barrel draws and collides its tubes (`TubeShape`): each case's own Basilisk frames, the default, or
    * 'bounded-C', the authored C profile drawn from 2026-10-05 to 2026-10-22 (the `?tubeShape=c` dev A/B). Online rooms
    * always run the default.
@@ -929,6 +937,12 @@ export class SurfZoneSimulation {
   readonly stepCosts = { water: 0, breaking: 0, roller: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
+  /**
+   * The Canyon's reef columns' onsets (`CANYON.reefBoreHold`, canyon-reef-sequence): where each column's break was last
+   * seen, z, and when, s (a column breaking again within `hold` s counts its jump from there, not from none), and when
+   * each last started breaking on the reef (`peelOnsetAt`), s, which alone a break on the reef waits 0.7 Tp for.
+   */
+  private readonly reefOnsets?: { hold: number; columns: Uint8Array; seenZ: Float64Array; seenAt: Float64Array; lastOnReef: Float64Array };
   /** The first pass records the warm field's bores; onsets count from the next step. */
   private onsetsArmed = false;
   /** When each column last started a wave that could throw a lip, s. */
@@ -1032,6 +1046,14 @@ export class SurfZoneSimulation {
       });
     }
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
+    if (config.spot === 'canyon' && canyon.beach && canyon.reefBoreHold > 0 && config.canyonReefSeq !== false) {
+      const span = canyonReefSpan(canyon);
+      const { nx } = this.solver;
+      this.reefOnsets = {
+        hold: canyon.reefBoreHold, columns: Uint8Array.from(xCenters, (x) => (x >= span.from && x <= span.to ? 1 : 0)),
+        seenZ: new Float64Array(nx).fill(Infinity), seenAt: new Float64Array(nx).fill(-Infinity), lastOnReef: new Float64Array(nx).fill(-Infinity),
+      };
+    }
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
     this.foam = new FoamField(this.solver, config.foamDecay ?? (spillingCurlOn(config) ? SPILLING_CURL_FOAM_DECAY : FOAM_DECAY[config.spot]));
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
@@ -1139,6 +1161,9 @@ export class SurfZoneSimulation {
       // G9: the air breaking drove into the water, which draws the churn.
       'aeration.air': this.aeration.air, 'aeration.depth': this.aeration.depth,
       outerBreak: this.outerBreak, lastThrow: this.lastThrow, lastOnset: this.lastOnset,
+      ...(this.reefOnsets
+        ? { 'reefOnsets.seenZ': this.reefOnsets.seenZ, 'reefOnsets.seenAt': this.reefOnsets.seenAt, 'reefOnsets.lastOnReef': this.reefOnsets.lastOnReef }
+        : {}),
     };
     if (solver instanceof BoussinesqSolver) {
       arrays.breakingStrength = solver.breakingStrength;
@@ -1590,8 +1615,21 @@ export class SurfZoneSimulation {
       }
       const previous = this.outerBreak[column];
       this.outerBreak[column] = outer;
-      if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
+      // On the Canyon's reef a bore that dropped out for under the hold is still where it was last seen, and a break on the
+      // reef waits only for the last on the reef (`reefBoreHold`): the bores and shore break behind it are other breaks.
+      let from = previous;
+      const reef = this.reefOnsets?.columns[column] ? this.reefOnsets : undefined;
+      if (reef) {
+        if (!(previous < Infinity) && solver.time - reef.seenAt[column] <= reef.hold) from = reef.seenZ[column];
+        if (outer < Infinity) {
+          reef.seenZ[column] = outer;
+          reef.seenAt[column] = solver.time;
+        }
+      }
+      const onReef = reef !== undefined && outer < from - 5 && (!this.peelOnsetAt || this.peelOnsetAt(column, outer));
+      if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, onReef ? reef.lastOnReef[column] : this.lastOnset[column])) {
         this.lastOnset[column] = solver.time;
+        if (onReef) reef.lastOnReef[column] = solver.time;
         if (!this.peelOnsetAt || this.peelOnsetAt(column, outer)) this.peel.markOnset(column, solver.time, outer);
         if (this.beachPeel) {
           const x = solver.xCenters[column];
@@ -1616,13 +1654,14 @@ export class SurfZoneSimulation {
 
   /**
    * Whether a column's break at `row` starts a new wave: at most one per
-   * 0.7 Tp, and only where the still depth is at least 0.4 h_b. Shallower
-   * first breaks are swash bores reaching the shore after a lull; counting
-   * them read every spot's peel as mixed peaks.
+   * 0.7 Tp after `last` (the column's last onset; on the Canyon's reef, its
+   * last on the reef), and only where the still depth is at least 0.4 h_b.
+   * Shallower first breaks are swash bores reaching the shore after a lull;
+   * counting them read every spot's peel as mixed peaks.
    */
-  private newBreaker(column: number, row: number): boolean {
+  private newBreaker(column: number, row: number, last = this.lastOnset[column]): boolean {
     const { solver } = this;
-    if (solver.time - this.lastOnset[column] < 0.7 * this.config.peakPeriod) return false;
+    if (solver.time - last < 0.7 * this.config.peakPeriod) return false;
     return solver.restLevel - solver.bed[row * solver.nx + column] >= 0.4 * this.breakerDepth();
   }
 

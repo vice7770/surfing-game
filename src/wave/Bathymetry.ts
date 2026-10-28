@@ -410,6 +410,21 @@ export const CANYON = {
    * m, its longest 39–58 m → 71–77 m at the median, the arms' ends reaching the bars' ends 0–3 → 2–8 of 13–16 waves.
    */
   barJoin: 0,
+  /**
+   * The reef's onsets in sequence (canyon-reef-sequence, 2026-10-27, docs/research/canyon-reef-sequence-2026-10-27;
+   * `SurfZoneSimulation`'s onsets): how long a reef column's break may drop out and still count as the same bore, s. A new
+   * wave starts breaking in a column when its outermost breaking cell jumps more than 5 m seaward, and the column then
+   * waits 0.7 Tp for its next. On the reef that read three other breaks as new waves: a bore crossing its 1 m top, which
+   * breaks at about the strength (0.3) that marks it, dropping under it for a frame or a few and coming back about 1 m on
+   * (25 of the 155 onsets in its columns, Medium, seed 1, 100 s); the bores re-breaking in its lagoon; and each wave's
+   * shore break on the beach face behind, which comes some 3 s before the next crest but one reaches the reef. Each wait
+   * then kept a crest's onset on the reef out, so the spilling front, whose waves join by onsets, drew its white as the old
+   * wave's stray (none) across metres of the peak, wave after wave: the reef's drawn line ran half the solver's. Within this
+   * hold a column's break counts from where it was last seen (a next crest breaks a wavelength seaward), and a break on the
+   * reef (`peelReach`) waits only for the column's last break on the reef. 0: as before (`CANYON_OLD`; the
+   * `?canyonReefSeq=off` dev switch). The reef's water and breaking are untouched: at a spilling spot an onset throws no lip.
+   */
+  reefBoreHold: 1,
   /** The downcoast (+x) peak: a little steeper and shorter. */
   downPeakX: 121, downSlope: 1 / 44, downRounding: 12, downReach: 45, downCrestZ: -121, downCrestDepth: 2.75,
 };
@@ -449,7 +464,7 @@ export const CANYON_OLD: CanyonShape = Object.freeze({
   barAngle: 62, barTaper: 12, barKnee: 15,
   upPeakX: -115, upSlope: 1 / 44, upRounding: 10, upReach: 55, upCrestZ: -140, upCrestDepth: 1.7,
   downPeakX: 123, downSlope: 1 / 38, downRounding: 7, downReach: 45, downCrestZ: -130, downCrestDepth: 1.6,
-  barOnset: 0.65, onsetPin: 5, onsetBlend: 12, onsetShallow: 3, onsetDeep: 4.5, barJoin: 0.5,
+  barOnset: 0.65, onsetPin: 5, onsetBlend: 12, onsetShallow: 3, onsetDeep: 4.5, barJoin: 0.5, reefBoreHold: 0,
 });
 
 /** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */

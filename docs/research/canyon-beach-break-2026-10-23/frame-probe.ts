@@ -68,9 +68,15 @@ for (const [k, bar] of canyonBars(c).entries()) {
   regions.push({ name: k === 0 ? 'peak −x' : 'peak +x', from: bar.x - reach, to: bar.x + reach, tip: bar.x, ends: [{ side: -1, x: bar.x - bar.reach }, { side: 1, x: bar.x + bar.reach }] });
 }
 const drawn = (sim as unknown as { drawnWhitewater?: Float64Array }).drawnWhitewater;
+// `--foam`: the foam drawn too (dense + residual), which outlives the breaking (canyon-reef-sequence, 2026-10-27).
+const foamSum = new Float64Array(solver.nx * solver.nz);
 const fields: { name: string; values: () => ArrayLike<number> }[] = [
   { name: 'solver', values: () => sim.breaking.strength },
   { name: 'drawn', values: () => drawn ?? sim.breaking.strength },
+  ...(process.argv.includes('--foam') ? [{ name: 'foam', values: () => {
+    for (let i = 0; i < foamSum.length; i += 1) foamSum[i] = sim.foam.dense[i] + sim.foam.residual[i];
+    return foamSum;
+  } }] : []),
 ];
 
 interface Line { from: number; to: number; along: number; arc: number; z: number; patches: number; t?: number }
