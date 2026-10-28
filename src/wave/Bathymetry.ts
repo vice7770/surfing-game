@@ -39,6 +39,22 @@ export const BEACH_OUTER = { barOffshore: 450, barHeight: 2, barWidth: 80, maxDe
 /** The Point's shelf past its 12 m: a gentler 1:67 slope to 30 m (an assumption; see the research doc). */
 export const POINT_OUTER = { slope: 0.015, maxDepth: 30 };
 /**
+ * The Point's breaking onset by depth (point-onset, 2026-10-28, step 3b of the all-spots survey;
+ * docs/research/point-onset-2026-10-28): Kennedy's onset is `shallow` √(g h) in still water `shallowDepth` m deep or
+ * less, easing to the spot's own (0.65) by `deepDepth` m. The survey (docs/research/all-spots-breaking-2026-10-28) found
+ * the Point's faces the steepest of any spot where they start to break (their steepest metre 22–25°) on its 1:25 shelf.
+ * The onset is a calibration, set per bed region and keyed by depth, not by slope or ξ (the water-physics advisor,
+ * 2026-10-23: Kennedy et al. 2000's 0.65 on a plane beach, FUNWAVE's 0.45 on Vincent & Briggs's shoal; the face at onset
+ * about 27–31° at 0.65 and 20–22° at 0.45). A flat 0.45 broke Big's sets 3 m and more deep, all along the window at once
+ * (9 of 9 waves 109 m wide 2 s in); keyed by depth, Big's deeper breaks keep 0.65.
+ */
+export const POINT_ONSET = { shallow: 0.45, shallowDepth: 3, deepDepth: 4.5 };
+
+/** The Point's onset in still water `depth` m deep (`POINT_ONSET`), given the spot's own `onset`. */
+export function pointOnset(depth: number, onset: number, p = POINT_ONSET): number {
+  return p.shallow + (onset - p.shallow) * smoothstep(p.shallowDepth, p.deepDepth, depth);
+}
+/**
  * The Teahupo'o Reef (the Teahupo'o Reef spec): a left slab. The tank's deep water rises up a
  * 1:2.29 forereef (Rodríguez-Burguette et al. 2025, a model of Teahupo'o's reef) to a shelf
  * about 10 m deep (Shand 2024), where the wave stands up before the reef rises again to its

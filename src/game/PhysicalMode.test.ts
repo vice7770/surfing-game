@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -128,6 +128,25 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?onset=old` dev switch (point-onset, step 3b of the all-spots survey): every spot's onset as before, carried in
+  // the config to the worker at every spot; anything else leaves the default.
+  it('runs every spot\'s onset as before step 3b with `?onset=old` (a dev switch), and today\'s otherwise', () => {
+    expect(onsetSwitch('?onset=old')).toEqual({ onsetRule: 'old' });
+    expect(onsetSwitch('?onset=OLD')).toEqual({ onsetRule: 'old' });
+    for (const search of ['', '?onset', '?onset=', '?onset=new', '?onset=0.45']) expect(onsetSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?onset=old' });
+      for (const spot of ['point', 'beach', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).onsetRule, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('point', conditions, { stage: 2, compute: 'cpu' }), 5, false, { onsetRule: undefined }).onsetRule).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

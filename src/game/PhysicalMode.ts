@@ -402,6 +402,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
     // `?canyonAgeJoin=<J>`: the Canyon's breaking-age join (0: rule A, as before canyon-wave-r2), for A/Bs.
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
+    // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
+    ...onsetSwitch(),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
     ...(settings.spot === 'canyon' ? canyonReefSeqSwitch() : {}),
     ...overrides,
@@ -447,6 +449,15 @@ export function canyonAgeJoinSwitch(search?: string): { canyonAgeJoin?: number }
  */
 export function canyonReefSeqSwitch(search?: string): { canyonReefSeq?: false } {
   return devParam('canyonReefSeq', search)?.trim().toLowerCase() === 'off' ? { canyonReefSeq: false } : {};
+}
+
+/**
+ * The `?onset=old` dev switch (`SurfZoneConfig.onsetRule`): every spot's Kennedy onset as before step 3b of the all-spots
+ * survey (2026-10-28), one value a spot, the Canyon's per-cell field kept: today the Point's depth-keyed onset (0.45 in
+ * water up to 3 m, 0.65 by 4.5 m, `POINT_ONSET`) goes back to its flat 0.65. 'old', else nothing.
+ */
+export function onsetSwitch(search?: string): { onsetRule?: 'old' } {
+  return devParam('onset', search)?.trim().toLowerCase() === 'old' ? { onsetRule: 'old' } : {};
 }
 
 /**

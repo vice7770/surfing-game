@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { CANYON, CANYON_OLD, PADANG, REEF, canyonArmAt, canyonBarAt, canyonBreakLineZ, canyonFootZ, canyonReefSpan, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
+import { CANYON, CANYON_OLD, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBarAt, canyonBreakLineZ, canyonFootZ, canyonReefSpan, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -1085,6 +1085,44 @@ describe('SurfZoneSimulation', () => {
     const record = (config: Partial<SurfZoneConfig>) => Object.keys(build(config).exportState().arrays).filter((name) => name.startsWith('reefOnsets.'));
     expect(record({})).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
     for (const config of [{ canyonReefSeq: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) expect(record(config), JSON.stringify(config)).toEqual([]);
+  });
+
+  // point-onset (step 3b of the all-spots survey, 2026-10-28): the Point's Kennedy onset eases from 0.45 √(g h) in still
+  // water 3 m deep or less to its 0.65 by 4.5 m, over the session's tide (`POINT_ONSET`); `onsetRule: 'old'` (the
+  // `?onset=old` dev switch) and a set `breakingOnset` keep one value, and no other spot gets the field.
+  it('eases the Point\'s onset from 0.45 in water up to 3 m deep to 0.65 by 4.5 m, and keeps every other spot\'s', () => {
+    // The game's 160 m window on coarse cells: its open edges' 20 m bands level the bed to the transect 20 m in, and the
+    // onset with it.
+    const tiny = { seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0, componentCount: 4, dx: 4, fineSpacing: 4, coarseSpacing: 8, spinUpPeriods: 0.1 };
+    const solverFor = (config: Partial<SurfZoneConfig>) => new SurfZoneSimulation({ ...tiny, spot: 'point', ...config } as SurfZoneConfig, 'warm').solver as BoussinesqSolver;
+    expect(POINT_ONSET).toEqual({ shallow: 0.45, shallowDepth: 3, deepDepth: 4.5 });
+    expect([pointOnset(1, 0.65), pointOnset(3, 0.65), pointOnset(3.75, 0.65), pointOnset(4.5, 0.65), pointOnset(12, 0.65)]).toEqual([0.45, 0.45, 0.55, 0.65, 0.65]);
+    for (const tide of [0, 0.6]) {
+      const solver = solverFor({ tide });
+      const factor = solver.deviceLayout().breaking?.onsetFactor;
+      expect(factor, `tide ${tide}`).toBeDefined();
+      let shallow = 0;
+      let deep = 0;
+      const { nx, xCenters } = solver;
+      for (let i = 0; i < factor!.length; i += 1) {
+        const x = xCenters[i % nx];
+        // Across the open edges' 20 m bands, the transect's 20 m in, uniform as the bed's copied edge; inside, the bed's own.
+        if (Math.abs(x) > 60) {
+          expect(factor![i], `x ${x}`).toBe(factor![i - (i % nx) + (x < 0 ? 0 : nx - 1)]);
+          continue;
+        }
+        const depth = solver.restLevel - solver.bed[i];
+        if (!(depth > 0.05)) continue;
+        expect(factor![i], `x ${x}`).toBeCloseTo(pointOnset(depth, 0.65) / 0.65, 5);
+        if (depth <= 3) shallow += 1;
+        if (depth >= 4.5) deep += 1;
+      }
+      expect(shallow).toBeGreaterThan(20);
+      expect(deep).toBeGreaterThan(20);
+    }
+    expect(solverFor({ onsetRule: 'old' }).deviceLayout().breaking?.onsetFactor).toBeUndefined();
+    expect(solverFor({ breakingOnset: 0.5 }).deviceLayout().breaking?.onsetFactor).toBeUndefined();
+    for (const spot of ['beach', 'reef', 'pool'] as const) expect(solverFor({ spot }).deviceLayout().breaking?.onsetFactor, spot).toBeUndefined();
   });
 
   it('starts the rider where `startOut` says (the `?startOut=<m>` dev switch), at any spot and size', () => {

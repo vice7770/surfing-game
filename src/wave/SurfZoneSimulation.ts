@@ -1,5 +1,5 @@
 import {
-  PADANG, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, aFrameEstimate, breakerDepthFor, type PeelEstimate } from './Breaking';
@@ -94,6 +94,12 @@ export interface SurfZoneConfig {
   windSpeed?: number;
   /** Kennedy onset threshold as a fraction of √(gh); defaults per spot. */
   breakingOnset?: number;
+  /**
+   * 'old': every spot's onset as before step 3b of the all-spots survey (2026-10-28), one value a spot (the Canyon keeps its
+   * per-cell field, which came before): today only the Point's depth-keyed onset (`POINT_ONSET`) goes back to its flat
+   * 0.65. The `?onset=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  onsetRule?: 'old';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */
@@ -991,8 +997,13 @@ export class SurfZoneSimulation {
     // centre, levelled like the bed across the open edges' bands (the transect OPEN_EDGE_RAMP m in).
     const shape = canyonShape(config.canyonBed);
     const inside = alongShore / 2 - OPEN_EDGE_RAMP;
+    // The Point's eases from 0.45 √(g h) in water 3 m deep or less to its 0.65 by 4.5 m (`pointOnset`, point-onset), over
+    // the still water at the session's tide, levelled across the open edges' bands as the Canyon's; `?onset=old`
+    // (`onsetRule`) keeps its flat 0.65.
     const onsetAt = config.spot === 'canyon' && config.breakingOnset === undefined && shape.beach && shape.barOnset !== onset
-      ? (x: number, z: number) => canyonOnset(Math.min(inside, Math.max(-inside, x)), z, onset, shape) : undefined;
+      ? (x: number, z: number) => canyonOnset(Math.min(inside, Math.max(-inside, x)), z, onset, shape)
+      : config.spot === 'point' && config.breakingOnset === undefined && config.onsetRule !== 'old'
+        ? (x: number, z: number) => pointOnset(depthAt(Math.min(inside, Math.max(-inside, x)), z) + config.tide, onset) : undefined;
     // …and passes its breaking age along its crests by the beach's rule (`canyonJoin`: rule A), the reef keeping its gate.
     const joinAt = config.spot === 'canyon' && config.canyonAgeJoin === undefined && shape.beach && shape.barJoin !== diagonalJoin
       ? (x: number) => canyonJoin(Math.min(inside, Math.max(-inside, x)), diagonalJoin, shape) : undefined;
