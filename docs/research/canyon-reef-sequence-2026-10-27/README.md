@@ -44,7 +44,8 @@ the next one out in turn.
 **The change** (`CANYON.reefBoreHold` 1 s, `CANYON.reefCrestGap` 20 m; the reef's columns only, from its upcoast end to its
 taper): a column's break that dropped out for under 1 s counts its jump from where it was last seen, not from none; a break
 on the reef (within `peelReach` of the line, `canyonPeelAt`) waits 0.7 Tp only for the column's last break on the reef; and
-one more than 20 m seaward of where its column last broke waits for nothing. The physical reason: one bore is one wave, no
+one more than 20 m seaward of where its column last broke, inside that wait, goes to the spilling front alone, which draws
+its white, while the readout's tracker still reads one onset a column a period. The physical reason: one bore is one wave, no
 bore runs back seaward, and a crest breaking on the reef is a new wave whatever the bores and the shore break behind it do;
 the next crest breaks about a wavelength seaward (28–60 m on the reef from Small to Big), far beyond 5 m or 20 m. With
 `--flicker` again (the bore hold and the wait on the reef): 88 onsets in the reef's columns, none a bore coming back where
@@ -54,6 +55,11 @@ lines, identical to the digit). What changes: the reef's drawn white and the foa
 waves on the reef (the roller's lenses, the rider's felt breaking ahead of a front), the reef's peel readout and the surf
 report's breaks, which now count the crests that break on the reef and not their flickers. The record is handed over with
 the sea (`reefOnsets.*`), and `?canyonReefSeq=off`, the old bed and every other spot carry none.
+
+**The readout** (`canyon-size-report.ts`, Medium, seed 1, 12 periods; the tracker replayed every second as the game reads
+it): main reads the reef 70 times, "closes out" 1 %, a left at 67° (median); this branch 94 times, "closes out" 3 %, a
+left at 72°, nearer the 75° the frames show; crests closing out (40 m within 2 s) 2 → 1. Counting the following crests
+as onsets too read "closes out" 11 % and a left at 49°: the tracker fits one wave a period, so they go to the front alone.
 
 ## Why the solver's line is short
 
@@ -136,6 +142,32 @@ peel), and a frame where the tip's newest column has no white yet ends the probe
   strips draw the same: the reef's white is a short line at the crest, 5–8 m, travelling down the reef at its slow peel
   while the beach peaks either side draw their long ^ (an earlier set, from 108.5 s, drew the same both ways too). The
   reef's line is as short as the reef makes it (above), and this branch draws it on the sets where main lost it.
+
+## Risks
+
+- **The reef's line stays short.** It is drawn as long as the solver breaks it, which is as long as this reef makes it:
+  typically 10 m, 16 m at most, its end 19 m along shore from the peak, against the beach peaks' 39–44 m and 73–76 m. A
+  line of tens of metres down the reef takes a new bed (a faster peel than 70°, or less of the swell bent onto the peak),
+  which this task ruled out; the water-physics advisor should look at that before anyone tries it.
+- **More of the reef is drawn, felt and read.** Its crests now join the spilling front, so their white, foam and air and
+  the roller's lenses follow every crest, and the breaking a rider feels there follows the crest's front (the solver's
+  behind it, none ahead; the front keeps up with the solver's tip up to its 55° cap). On main those columns were the last
+  wave's, felt as the solver broke them. Riding there is the owner's to try.
+- **The readout** reads the reef more often and a little slower (72°, 67°), "closes out" 3 % against 1 % (seed 1).
+- **Bigger and smaller swells** were not measured frame by frame; the change is bookkeeping by the bed's own length scales
+  (1 s, 20 m), but the following-crest gap assumes crests 28 m or more apart on the reef.
+- **The GPU's sea** draws its own sets; the two in-game sets shot were not ones the wait held up, so the strips there
+  match. The frames that show the change are the solver's (top-down stills).
+
+## Tests
+
+- `npx tsc --noEmit -p .`: clean.
+- The main suite (`npx vitest run src --maxWorkers=3 --exclude SurfZoneSimulation --exclude SurfZoneRunner`): TESTS_MAIN.
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]arrel|[Tt]ube|…|[Ss]wim"`: TESTS_SZS.
+- New: `counts the Canyon reef's onsets in sequence…` (SurfZoneSimulation: the bore's return, the shore break and a
+  following crest, with and without `canyonReefSeq`, and the record handed over at the Canyon only) and
+  `counts the Canyon reef's onsets as main did with ?canyonReefSeq=off…` (PhysicalMode: the switch, other spots, online
+  rooms). No rider sessions.
 
 ## Tools
 
