@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SPILLING_FRONT_DEFAULTS, SpillingFront, seriesSine, type SpillingGrid } from './SpillingFront';
+import { GROUP_IDS, SPILLING_FRONT_DEFAULTS, SpillingFront, seriesSine, type SpillingGrid } from './SpillingFront';
 
 /** A 1 m grid, 41 columns (x −20…20) by 41 rows (z −20…20; +z toward the beach). */
 function grid(): SpillingGrid {
@@ -37,6 +37,50 @@ function setup(options: ConstructorParameters<typeof SpillingFront>[1] = {}) {
 }
 
 describe('SpillingFront', () => {
+  // canyon-beach-look (2026-10-28): an A-frame's arms as groups of waves, each peeling its own way from the tip.
+  it('runs each group\'s waves its own way, joins onsets only within a group, and keeps the front\'s own as they were', () => {
+    const arms = [
+      { direction: -1 as const, peelAngleDegrees: 90, upcoastMargin: Infinity, lifetime: 20 },
+      { direction: 1 as const, peelAngleDegrees: 90, upcoastMargin: Infinity, lifetime: 20 },
+    ];
+    const { g, front, strength, out } = setup({ groups: arms, rampSeconds: 0.001 });
+    // An A-frame breaks first at its tip (x −2…2), then 3 m a second down each arm: the −x arm's onsets in group 1, the
+    // +x arm's in group 2 (as the game hears them, the columns in order of x within each step).
+    breakBand(g, strength, -20, 20, 0, 2);
+    for (let t = 0; t <= 5; t += 1) {
+      const reach = 2 + 3 * t;
+      const was = t > 0 ? 2 + 3 * (t - 1) : -1;
+      for (let x = -reach; x <= reach; x += 1) {
+        if (Math.abs(x) <= was) continue;
+        front.observeOnset(column(g, x), t, 0, x < 0 ? 1 : 2);
+      }
+      if (t > 0) front.update(t, 1, 1, strength, out);
+    }
+    expect(front.waves.map((wave) => [wave.group, wave.direction, wave.id])).toEqual([[1, -1, GROUP_IDS], [2, 1, 2 * GROUP_IDS]]);
+    expect(front.started).toBe(0);
+    expect([front.waves[0].startX, front.waves[0].tipX, front.waves[1].startX, front.waves[1].tipX]).toEqual([-2, -17, 0, 17]);
+    // Each front runs from its first onset toward its tip, its own way, at 1 m/s: 5 m in 5 s.
+    expect(front.waves[0].frontX).toBeCloseTo(-7, 6);
+    expect(front.waves[1].frontX).toBeCloseTo(5, 6);
+    // Behind each front the solver's white passes; ahead of it, withheld.
+    expect(sum(out, g, -5)).toBeGreaterThan(0);
+    expect(sum(out, g, -12)).toBe(0);
+    expect(sum(out, g, 3)).toBeGreaterThan(0);
+    expect(sum(out, g, 12)).toBe(0);
+    // The front's own waves (group 0) number on as before; a group's waves drop after its own lifetime.
+    front.observeOnset(column(g, 0), 6, -10);
+    expect(front.waves.at(-1)!.id).toBe(0);
+    front.update(21, 1, 1, strength, out);
+    expect(front.waves.map((wave) => wave.group)).toEqual([0]);
+    // Its state carries the groups over; one without (a donor before the groups) reads as the front's own.
+    const state = front.exportState();
+    expect(state.groupStarted).toEqual([1, 1]);
+    const copy = new SpillingFront(g, { peelAngleDegrees: 90, groups: arms });
+    copy.importState(state);
+    expect(copy.exportState()).toEqual(state);
+    expect(new SpillingFront(g).exportState()).not.toHaveProperty('groupStarted');
+  });
+
   it('caps the front at c_b / sin α along shore and never lets it pass the solver tip', () => {
     expect(new SpillingFront(grid(), { peelAngleDegrees: 30 }).speedCap(5)).toBeCloseTo(10, 6);
     const { g, front, strength, out } = setup();

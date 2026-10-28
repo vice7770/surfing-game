@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { CANYON, CANYON_OLD, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBarAt, canyonBreakLineZ, canyonFootZ, canyonReefSpan, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
+import { CANYON, CANYON_OLD, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonBreakLineZ, canyonFootZ, canyonReefSpan, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  CANYON_RIDE_LINEUP, CANYON_RIDE_LINEUP_OLD, CANYON_SWELL_DEPTH, CANYON_TAKE_OFF_DEPTH_OLD, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  CANYON_BEACH_LOOK, CANYON_RIDE_LINEUP, CANYON_RIDE_LINEUP_OLD, CANYON_SWELL_DEPTH, CANYON_TAKE_OFF_DEPTH_OLD, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint, canyonReefTakeOff,
   alongShoreOf, tankDepth, tankLayout, tankRiderBounds,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
@@ -1085,6 +1085,35 @@ describe('SurfZoneSimulation', () => {
     const record = (config: Partial<SurfZoneConfig>) => Object.keys(build(config).exportState().arrays).filter((name) => name.startsWith('reefOnsets.'));
     expect(record({})).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
     for (const config of [{ canyonReefSeq: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) expect(record(config), JSON.stringify(config)).toEqual([]);
+  });
+
+  // canyon-beach-look (2026-10-28): a break on a beach peak's bar starts or joins its arm's group of the spilling front
+  // (the −x arm's left of the tip, the +x arm's right), counted in sequence as the reef's; the reef's own stay group 0;
+  // `canyonBeachLook: false` (the `?canyonBeachLook=off` dev switch) leaves the beach peaks to the solver's whitewater.
+  it('feeds the Canyon beach peaks\' breaks to their arms\' groups of the spilling front, and none with the look off', () => {
+    const coarse = { seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0, componentCount: 4, dx: 4, fineSpacing: 4, coarseSpacing: 8, spinUpPeriods: 0.1 };
+    const groupsOf = (config: Partial<SurfZoneConfig>) => {
+      const simulation = new SurfZoneSimulation({ ...coarse, spot: 'canyon', ...config } as SurfZoneConfig, 'warm');
+      const internals = simulation as unknown as { markBreakingOnsets(): void; onsetsArmed: boolean; spilling: { waves: { group: number; direction: number }[] } };
+      const { solver } = simulation;
+      internals.onsetsArmed = true;
+      // On the up peak's bar 10 m either side of its tip, and on the reef's face at its take-off.
+      const up = canyonBars(CANYON)[0];
+      const breaks = [up.x - 10, up.x + 10].map((x) => {
+        const column = solver.xCenters.findIndex((c) => Math.abs(c - x) <= solver.dx / 2);
+        let row = 0;
+        while (!(canyonBarAt(solver.xCenters[column], solver.zCenters[row]) === 0 && solver.restLevel - solver.bed[row * solver.nx + column] < 2.5)) row += 1;
+        return { column, row };
+      });
+      solver.time = 10;
+      simulation.breaking.strength.fill(0);
+      for (const { column, row } of breaks) simulation.breaking.strength[row * solver.nx + column] = 1;
+      internals.markBreakingOnsets();
+      return internals.spilling.waves.map((wave) => [wave.group, wave.direction]);
+    };
+    expect(CANYON_BEACH_LOOK).toEqual({ peelAngleDegrees: 40, upcoastMargin: Infinity, lifetime: 20 });
+    expect(groupsOf({})).toEqual([[1, -1], [2, 1]]);
+    expect(groupsOf({ canyonBeachLook: false })).toEqual([]);
   });
 
   // point-onset (step 3b of the all-spots survey, 2026-10-28): the Point's Kennedy onset eases from 0.45 √(g h) in still
