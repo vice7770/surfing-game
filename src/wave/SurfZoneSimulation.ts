@@ -229,9 +229,11 @@ export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
  * each arm's front may run as fast along shore as its bar's 40° contours peel a crest (c / tan 40° ≈ 1.19 c, above the
  * reef's 55° cap of 1.22 c_b at the bars' faster crests). No upcoast gate: upcoast of an arm is its tip and the other arm,
  * whose own group draws it; counted from an arm's first onset, the reef's 6 m left a gap at the tip, where an A-frame's
- * first section breaks both sides of it at once.
+ * first section breaks both sides of it at once. Each wave is dropped 20 s after its first onset, not the reef's 45 s:
+ * an arm starts a wave every 3–4 s (Medium), and its break has run its 45–55 m arm in some 10–15 s, so at 45 s the
+ * front kept some 60 beach waves live, each seeding roller lenses in its bores.
  */
-export const CANYON_BEACH_LOOK = { peelAngleDegrees: 40, upcoastMargin: Infinity } as const;
+export const CANYON_BEACH_LOOK = { peelAngleDegrees: 40, upcoastMargin: Infinity, lifetime: 20 } as const;
 
 /** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
 export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {

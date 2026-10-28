@@ -73,6 +73,8 @@ export interface SpillingGroup {
   readonly direction: 1 | -1;
   readonly peelAngleDegrees: number;
   readonly upcoastMargin: number;
+  /** Seconds after its first onset each of its waves is dropped (`SpillingFrontOptions.lifetime` for the front's own). */
+  readonly lifetime: number;
 }
 
 /** Group k > 0's wave ids start at k times this, so group 0's (the front's own) stay as they were without groups. */
@@ -281,7 +283,8 @@ export class SpillingFront {
   /** A group's peel: the front's own for 0, else `groups[group - 1]`. */
   private groupOf(group: number): SpillingGroup {
     const { options } = this;
-    return group > 0 ? options.groups![group - 1] : { direction: options.direction, peelAngleDegrees: options.peelAngleDegrees, upcoastMargin: options.upcoastMargin };
+    return group > 0 ? options.groups![group - 1]
+      : { direction: options.direction, peelAngleDegrees: options.peelAngleDegrees, upcoastMargin: options.upcoastMargin, lifetime: options.lifetime };
   }
 
   /**
@@ -421,6 +424,13 @@ export class SpillingFront {
     const { direction } = options;
     this.celerity = breakerCelerity;
     while (this.waves.length > 0 && time - this.waves[0].onset > options.lifetime) this.waves.shift();
+    // A group's own lifetime drops its waves sooner (an A-frame's arm has broken and gone in well under the reef's 45 s).
+    if (options.groups?.length) {
+      for (let k = this.waves.length - 1; k >= 0; k -= 1) {
+        const wave = this.waves[k];
+        if (wave.group > 0 && time - wave.onset > options.groups[wave.group - 1].lifetime) this.waves.splice(k, 1);
+      }
+    }
     // The upcoast gate counts from the most upcoast crest start among a group's live waves: a break further along a crest
     // that no older crest's run holds keeps the gate where its crest first broke, and leaves the arm behind it alone.
     const groups = 1 + (options.groups?.length ?? 0);

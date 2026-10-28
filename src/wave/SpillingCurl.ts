@@ -116,8 +116,12 @@ export function landingShare(psiMax: number): number {
   return length * Math.cos(shape.tilt);
 }
 
-/** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, eight waves at once. */
-export const CURL_CAPACITY = 56;
+/**
+ * The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, ten waves at once. 56 until
+ * canyon-beach-look (2026-10-28): with the beach peaks' arms curling too, Medium wrote 24 at the median and 49 at the
+ * 90th percentile, and filled 56 in 5 % of frames (Big 13 %); 72 keeps the curl mesh within its 1.5k-vertex budget.
+ */
+export const CURL_CAPACITY = 72;
 /** A swept tube's crest this close across shore to a column's curl crest is that wave's, m (the Canyon's tube regime) [inferred]. */
 const TUBE_MATCH = 5;
 /** Floats per curl slice. */

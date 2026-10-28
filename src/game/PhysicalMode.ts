@@ -404,6 +404,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
+    // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
+    ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
     ...(settings.spot === 'canyon' ? canyonReefSeqSwitch() : {}),
     ...overrides,
@@ -449,6 +451,15 @@ export function canyonAgeJoinSwitch(search?: string): { canyonAgeJoin?: number }
  */
 export function canyonReefSeqSwitch(search?: string): { canyonReefSeq?: false } {
   return devParam('canyonReefSeq', search)?.trim().toLowerCase() === 'off' ? { canyonReefSeq: false } : {};
+}
+
+/**
+ * The `?canyonBeachLook=off` dev switch (`SurfZoneConfig.canyonBeachLook` false): the Canyon's beach peaks without the
+ * reef's spilling look (canyon-beach-look, 2026-10-28): no drawn lip or curl, roller lenses, roller push or roller front
+ * there, their whitewater the solver's own, as main drew them until then. 'off', else nothing.
+ */
+export function canyonBeachLookSwitch(search?: string): { canyonBeachLook?: false } {
+  return devParam('canyonBeachLook', search)?.trim().toLowerCase() === 'off' ? { canyonBeachLook: false } : {};
 }
 
 /**
