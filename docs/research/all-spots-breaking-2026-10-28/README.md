@@ -9,11 +9,11 @@ The Canyon's numbers are on record (canyon-beach-break, canyon-reef-sequence) an
 
 | spot | breaks in sequence? | body | why | fix (kind) |
 |---|---|---|---|---|
-| **Wave Pool** | partly: each arm's line typically 21–31 m, 8 of 10 arms' lines travel 40 m from the apex, but patchy at Big (46 %) | gentle (11–13°) | 71° arms peel slowly; rule A spreads the break along the crest ahead of the peel (longer, faster, patchy) | the bed's arm angle, then the age gate (physical) |
+| **Wave Pool** | partly: each arm's line typically 17–31 m (Small to Big), 16–18 of 19–23 arms per size travel 40 m from the apex, but patchy at Big (46 %) | gentle (11–13°) | 71° arms peel slowly; rule A spreads the break along the crest ahead of the peel (longer, faster, patchy) | the bed's arm angle, then the age gate (physical) |
 | **Beach** | no: sections of bar close out at once (40 m wide within 2 s in 4 of 5 / 9 of 10 / 6 of 10 waves), rips split them (patches 37–44 %) | gentle (11–18°, onset 0.35) | straight bars parallel to the shore, cut by rips | the bed: the Canyon's oblique bar peaks (physical) |
-| **Point** | yes: lines 52–83 m, 7–9 of 9–10 waves travel 40 m+ toward +x, no patches; the peak opens 40 m in 2 s in a third to half of the waves, 6 of 10 at Big | **steep** (22–25°) | onset 0.65 on a sand-like shelf; a fast peel (visible 31–36°) | onset 0.45 keyed by depth (calibration; Big must stay 0.65) |
+| **Point** | yes: lines typically 32–83 m (Small to Big), 4 of 4, 7 of 9 and 9 of 10 waves travel 40 m+ toward +x, no patches; the peak opens 40 m in 2 s in a third to half of the waves, 6 of 10 at Big | **steep** (22–25°) | onset 0.65 on a sand-like shelf; a fast peel (visible 31–36°) | onset 0.45 keyed by depth (calibration; Big must stay 0.65) |
 | **Reef** | yes: lines 38–55 m in a window 81 m long, 2–6 % patches, peel 36–46° on the 45° ledge; Big's line breaks into sections | slab (ξb 1.8–5; 16–20°, p90 28–38°) | its own: the peak sits at the window's −x edge, the pass ends the ledge at x 30 | none needed for sequence; keep 0.65 |
-| **Padang Padang** | the solver's yes (48–66 m), **the drawn white patchy** (22–31 % at Medium/Big, against 3–8 %) | plunging (ξb 0.7–0.8; front/back 2–4) | the swept crash holds each curl's white until its touchdown (drawing); the peak opens 44 m in 2 s at Medium (7 of 13) on the 40° wedge | the crash gate's holes (drawing), when tube work resumes; keep 0.65 |
+| **Padang Padang** | the solver's yes (44–66 m), **the drawn white patchy** (22–31 % at Medium/Big, against 3–8 %) | plunging (ξb 0.7–0.8; front/back 2–4) | the swept crash holds each curl's white until its touchdown (drawing); the peak opens 44 m in 2 s at Medium (7 of 13) on the 40° wedge | the crash gate's holes (drawing), when tube work resumes; keep 0.65 |
 
 Recommended order: **Point, Beach, Pool, Reef, Padang** (the owner's default was Pool, Beach, Point, Reef, Padang). The
 numbers argue for two changes: the Point's fix is one calibration already measured to give a gentler body and longer lines,
@@ -145,7 +145,7 @@ waves).
   longer (21–31 m) and faster (visible 54–60°) and carries 8 of 10 arms past 40 m, but in patches (17–19 %, 46 % at Big).
   The gate removes the patches and halves the reach (2 of 10 past 40 m).
 - *Onset:* the first breaks are already gentle (11–13°: the aged threshold breaks them early); 0.45 changes little.
-- *Fix (physical):* the bed: arms nearer 55–60° peel 1.6–1.9 times faster along shore (c / tan θ), which lengthens the line
+- *Fix (physical):* the bed: arms nearer 55–60° peel 1.7–2.0 times faster along shore (c / tan θ), which lengthens the line
   for the same breaking time; then the age gate to keep the arms clean. Without a bed change, rule A is what makes the
   Pool's arms break in sequence, at the cost of Big's patches. A design decision for the owner.
 
