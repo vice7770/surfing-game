@@ -149,7 +149,8 @@ waves).
   for the same breaking time; then the age gate to keep the arms clean. Without a bed change, rule A is what makes the
   Pool's arms break in sequence, at the cost of Big's patches. A design decision for the owner.
 
-**Beach** (Dean profile with a bar 1.5–3 m deep, shore-parallel, cut by rips at random intervals; onset 0.35).
+**Beach** (a Dean profile, A 0.12, with one bar 0.9 m high 90 m out, parallel to the shore, cut by 22 m rips about 110 m
+apart; onset 0.35).
 - *Drawn:* the solver's own.
 - *Bed:* a shore-parallel bar meets each crest along its whole length at once: sections close out (the line 40 m or more
   2 s in: 4 of 5, 9 of 10, 6 of 10), and the rips between them split the crest into patches (37–44 % at Small and Medium).
@@ -161,7 +162,7 @@ waves).
   12 m tips, onset 0.40, rule A: lines typically 39–44 m, arms past 40 m in half the waves); the Beach's own swell
   (Hs 0.9–2.4 m) is the Canyon's.
 
-**Point** (a headland; a planar shelf seaward of it; onset 0.65).
+**Point** (a 1:25 shelf to 12 m along a shoreline that curves 120 m out into the headland; onset 0.65).
 - *Drawn:* the solver's own; no patches anywhere.
 - *Sequence:* already there: 7–9 of 9–10 waves travel 40 m or more toward +x, lines 52–83 m (filling the 110 m region at
   Big), visible peel 31–36°. The peak opens 40 m within 2 s in a third to half of Medium's waves (14 of 27, 3 seeds) and 6
