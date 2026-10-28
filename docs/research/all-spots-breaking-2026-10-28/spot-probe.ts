@@ -20,7 +20,7 @@
  * bed's slope along the waves' path (+z) over ±2 cells at the crest (and, beside it, over the bed's whole gradient).
  *
  *   rolldown docs/research/all-spots-breaking-2026-10-28/spot-probe.ts -o dist/scripts/spot-probe.mjs --format esm --platform node \
- *     && node dist/scripts/spot-probe.mjs --spot point --size medium [--seed 1] [--periods 9] [--onset 0.45] [--json <file>]
+ *     && node dist/scripts/spot-probe.mjs --spot point --size medium [--seed 1] [--periods 9] [--onset 0.45] [--join 0.5] [--json <file>]
  */
 import { writeFileSync } from 'node:fs';
 import { physicalSettingsFor } from '../../../src/game/SurfConditions';
@@ -29,7 +29,9 @@ import { padangReefAt, reefLedgeAt, type SpotName } from '../../../src/wave/Bath
 import { POOL } from '../../../src/wave/pool';
 import { waveHeightAt } from '../../../src/wave/CrestKinematics';
 import { GRAVITY } from '../../../src/wave/dispersion';
-import { SurfZoneSimulation, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
+import { SurfZoneSimulation, sweptBarrelOn, sweptCrashOn, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
+import { libraryFromBytes } from '../../../src/wave/barrel/barrelLibrary';
+import { readBarrelCases } from '../../../src/wave/barrel/nodeBarrelCases';
 
 const option = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] : undefined; };
 const spot = (option('spot') ?? 'point') as SpotName;
@@ -52,8 +54,16 @@ const EDGE = 25;
 
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
 const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, seed, false), compute: 'cpu', ...(onsetOverride !== undefined ? { breakingOnset: onsetOverride } : {}) };
-const sim = new SurfZoneSimulation(config);
+// A swept spot's barrel cases, as the game loads them (Padang Padang: its tubes drawn, its crash on, its white waiting for
+// each tube's touchdown); without them the sea runs no barrel.
+const barrel = sweptBarrelOn(config) ? libraryFromBytes(readBarrelCases(spot)) : undefined;
+const sim = new SurfZoneSimulation(config, 'spun-up', barrel);
 const { solver } = sim;
+// `--join J`: a screen only, no game change: Kennedy's breaking age passes through the diagonal parents only where the
+// cell rises at J √(g h) or faster (the Canyon reef's gate, `CANYON.ageJoin`; 0, rule A, every other spot's), set on the
+// solver's options after the spin-up, so the measured periods run with it.
+const joinOverride = option('join') !== undefined ? Number(option('join')) : undefined;
+if (joinOverride !== undefined) (solver as unknown as { kennedy: { diagonalJoin: number } }).kennedy.diagonalJoin = joinOverride;
 const { nx, nz, xCenters, zCenters } = solver;
 const firstRow = solver.rowBelow(sim.tank.fineFrom);
 const columnOf = (x: number) => Math.min(nx - 1, Math.max(0, Math.round((x - xCenters[0]) / solver.dx)));
@@ -271,8 +281,8 @@ const quantile = (values: number[], q: number) => {
   return v.length ? v[Math.min(v.length - 1, Math.floor(q * v.length))] : Number.NaN;
 };
 const fmt = (v: number, d = 0) => (Number.isFinite(v) ? v.toFixed(d) : '—');
-const onset = onsetOverride ?? '(the spot\'s)';
-console.log(`${spot} ${size} seed ${seed}: Hs ${config.significantHeight.toFixed(2)} m, Tp ${config.peakPeriod} s, onset ${onset}; ${periods} periods from ${(solver.time - periods * config.peakPeriod).toFixed(0)} s (${((Date.now() - t0) / 1000).toFixed(0)} s wall); region x ${fmt(from)}…${fmt(to)}; frames every ${FRAME} s`);
+const onset = `${onsetOverride ?? '(the spot\'s)'}${joinOverride !== undefined ? `, age join ${joinOverride}` : ''}`;
+console.log(`${spot} ${size} seed ${seed}: Hs ${config.significantHeight.toFixed(2)} m, Tp ${config.peakPeriod} s, onset ${onset}${barrel ? `, swept barrel (${sweptCrashOn(config) ? 'crash on' : 'no crash'})` : ''}; ${periods} periods from ${(solver.time - periods * config.peakPeriod).toFixed(0)} s (${((Date.now() - t0) / 1000).toFixed(0)} s wall); region x ${fmt(from)}…${fmt(to)}; frames every ${FRAME} s`);
 const json: Record<string, unknown> = { spot, size, seed, periods, hs: config.significantHeight, tp: config.peakPeriod, region: [from, to] };
 for (const field of fields) {
   for (const region of regions) {
