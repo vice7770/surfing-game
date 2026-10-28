@@ -20,12 +20,12 @@
  * bed's slope along the waves' path (+z) over ±2 cells at the crest (and, beside it, over the bed's whole gradient).
  *
  *   rolldown docs/research/all-spots-breaking-2026-10-28/spot-probe.ts -o dist/scripts/spot-probe.mjs --format esm --platform node \
- *     && node dist/scripts/spot-probe.mjs --spot point --size medium [--seed 1] [--periods 9] [--onset 0.45] [--join 0.5] [--json <file>]
+ *     && node dist/scripts/spot-probe.mjs --spot point --size medium [--seed 1] [--periods 9] [--onset 0.45 | --onset-rule old] [--join 0.5] [--json <file>]
  */
 import { writeFileSync } from 'node:fs';
 import { physicalSettingsFor } from '../../../src/game/SurfConditions';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
-import { padangReefAt, reefLedgeAt, type SpotName } from '../../../src/wave/Bathymetry';
+import { POINT_ONSET, padangReefAt, reefLedgeAt, type SpotName } from '../../../src/wave/Bathymetry';
 import { POOL } from '../../../src/wave/pool';
 import { waveHeightAt } from '../../../src/wave/CrestKinematics';
 import { GRAVITY } from '../../../src/wave/dispersion';
@@ -52,8 +52,18 @@ const ARM = 40;
 const SECTION_CHECK = 2;
 const EDGE = 25;
 
+// `--point-onset k=v,…`: the Point's depth-keyed onset reshaped for a screen (`POINT_ONSET`: shallow, shallowDepth, deepDepth).
+for (const pair of (option('point-onset') ?? '').split(',').filter(Boolean)) {
+  const [key, value] = pair.split('=');
+  if (!(key in POINT_ONSET)) throw new Error(`POINT_ONSET has no ${key}`);
+  (POINT_ONSET as Record<string, number>)[key] = Number(value);
+}
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
-const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, seed, false), compute: 'cpu', ...(onsetOverride !== undefined ? { breakingOnset: onsetOverride } : {}) };
+// `--onset-rule old`: every spot's onset as before step 3b (`SurfZoneConfig.onsetRule`, the `?onset=old` dev switch).
+const onsetRule = option('onset-rule') === 'old' ? 'old' as const : undefined;
+const config: SurfZoneConfig = {
+  ...surfZoneConfigFor(settings, seed, false), compute: 'cpu', ...(onsetOverride !== undefined ? { breakingOnset: onsetOverride } : {}), ...(onsetRule ? { onsetRule } : {}),
+};
 // A swept spot's barrel cases, as the game loads them (Padang Padang: its tubes drawn, its crash on, its white waiting for
 // each tube's touchdown); without them the sea runs no barrel.
 const barrel = sweptBarrelOn(config) ? libraryFromBytes(readBarrelCases(spot)) : undefined;
@@ -271,6 +281,7 @@ const step = 1 / 30;
 const perFrame = Math.round(FRAME / step);
 const steps = Math.round((periods * config.peakPeriod) / step);
 const t0 = Date.now();
+const lips0 = sim.lipLaunches;
 for (let n = 1; n <= steps; n += 1) {
   sim.step(step);
   watchFirstBreaks();
@@ -281,7 +292,7 @@ const quantile = (values: number[], q: number) => {
   return v.length ? v[Math.min(v.length - 1, Math.floor(q * v.length))] : Number.NaN;
 };
 const fmt = (v: number, d = 0) => (Number.isFinite(v) ? v.toFixed(d) : '—');
-const onset = `${onsetOverride ?? '(the spot\'s)'}${joinOverride !== undefined ? `, age join ${joinOverride}` : ''}`;
+const onset = `${onsetOverride ?? (onsetRule ? '(as before step 3b)' : '(the spot\'s)')}${option('point-onset') ? ` point ${option('point-onset')}` : ''}${joinOverride !== undefined ? `, age join ${joinOverride}` : ''}`;
 console.log(`${spot} ${size} seed ${seed}: Hs ${config.significantHeight.toFixed(2)} m, Tp ${config.peakPeriod} s, onset ${onset}${barrel ? `, swept barrel (${sweptCrashOn(config) ? 'crash on' : 'no crash'})` : ''}; ${periods} periods from ${(solver.time - periods * config.peakPeriod).toFixed(0)} s (${((Date.now() - t0) / 1000).toFixed(0)} s wall); region x ${fmt(from)}…${fmt(to)}; frames every ${FRAME} s`);
 const json: Record<string, unknown> = { spot, size, seed, periods, hs: config.significantHeight, tp: config.peakPeriod, region: [from, to] };
 for (const field of fields) {
@@ -316,6 +327,8 @@ for (const field of fields) {
 }
 const stats = (pick: (b: FirstBreak) => number, d = 1) => `${fmt(quantile(firstBreaks.map(pick), 0.5), d)} (${fmt(quantile(firstBreaks.map(pick), 0.1), d)}–${fmt(quantile(firstBreaks.map(pick), 0.9), d)})`;
 console.log(`first breaks: ${firstBreaks.length}; depth ${stats((b) => b.depth)} m, face ${stats((b) => b.face, 2)} m, steepest metre ${stats((b) => b.steepest, 0)}°, front/back ${stats((b) => b.asymmetry, 2)}, ξb along the path ${stats((b) => b.xi, 2)}, over the whole gradient ${stats((b) => b.xiFull, 2)}; x ${stats((b) => b.x, 0)}`);
+console.log(`lips thrown in the measured periods: ${sim.lipLaunches - lips0} (the Iribarren number at each column's onset said plunging)`);
+json.lips = sim.lipLaunches - lips0;
 json.firstBreaks = firstBreaks;
 const out = option('json');
 if (out) writeFileSync(out, JSON.stringify(json));
