@@ -17,6 +17,9 @@ for (const spot of spots) for (const size of sizes) {
     if (!v || typeof v !== 'object' || !('typical' in v)) continue;
     const [field, ...rest] = key.split(' ');
     const region = rest.join(' ');
+    // The drawn white is the solver's wherever no front or crash gates it (every spot but the Canyon and Padang Padang).
+    const solver = j[`solver ${region}`];
+    if (field === 'drawn' && JSON.stringify({ ...v, perWave: 0 }) === JSON.stringify({ ...solver, perWave: 0 })) continue;
     const arm = (side) => { const e = v.ends.find((x) => x.side === side); return e ? `${e.reach40}/${v.waves} · ${f(e.reach)} m · ${f(e.peel)}°` : '—'; };
     console.log(`| ${region} | ${size} | ${field} | ${v.waves} | ${f(v.typical)} (${f(v.typical90)}) | ${f(v.longest)} (${f(v.longest90)}) | ${f(100 * v.patches)} % | ${f(v.section)} (${v.sectionClose}) | ${arm(-1)} | ${arm(1)} |`);
   }
