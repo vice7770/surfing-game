@@ -7,14 +7,14 @@ player sees it, frame by frame (`frame-probe.ts` in canyon-beach-break, now with
 
 **Result.** The drawn white on the reef was half of what the solver breaks: the game's wave onsets lost most crests in the
 reef's columns, so the spilling front left their white undrawn at the peak. Counting the reef's onsets in sequence
-(`CANYON.reefBoreHold`, `reefCrestGap`, `?canyonReefSeq=off` for the A/B) draws the line the solver breaks: over 3 seeds × 14
-periods at Medium the drawn line, wave by wave, is typically 10 m long (6 m on main) and at most 16 m (11 m), and its end
-travels as one line 19 m along shore from the peak at the median (13 m), 54 m down the reef's 70° line (37 m), 40 m or more
-down it in 31 of 47 waves (22 of 50); patches beside it halve (5 % of frames, 10 %). The solver breaks 11 / 18 / 24 m. The
-solver's
-own line, which nothing here changes, is as long as this reef makes it: its 70° line peels along shore at about a third of
-the crest's speed, each column breaks for about 5 s before its bore reaches the lagoon, and the arm bends the swell onto
-its peak, so the shoulder 20–35 m along shore is too small to break on the 1 m top. A longer line takes a new bed.
+(`CANYON.reefBoreHold`, `reefCrestGap`; `?canyonReefSeq=off` for the A/B) draws the line the solver breaks: over 3 seeds
+× 14 periods at Medium the drawn line, wave by wave, is typically 10 m long (6 m on main) and at most 16 m (11 m), and its
+end travels as one line 19 m along shore from the peak at the median (13 m), 54 m down the reef's 70° line (37 m), 40 m or
+more down it in 31 of 47 waves (22 of 50); patches beside it halve (5 % of frames, 10 %). The solver breaks 11 / 18 / 24 m.
+The solver's own line, which nothing here changes, is as long as this reef makes it: its 70° line peels along shore at
+about a third of the crest's speed, each column breaks for about 5 s before its bore reaches the lagoon, and the arm bends
+the swell onto its peak, so the shoulder 20–35 m along shore is too small to break on the 1 m top. A longer line takes a
+new bed.
 
 ## Why the drawn line was short
 
@@ -23,8 +23,8 @@ front's waves, every onset). In the set at 24–34 s (Medium, seed 1) the solver
 and on down the reef; the drawn white left x −18.5 and −16.5 to −14.5 blank for 10 s, as on every set.
 
 A new wave starts breaking in a column when its outermost breaking cell jumps more than 5 m seaward, and the column then
-waits 0.7 Tp for its next (`SurfZoneSimulation.markBreakingOnsets`, `newBreaker`). In the reef's columns three other breaks
-counted as new waves:
+waits 0.7 Tp for its next (`SurfZoneSimulation.markBreakingOnsets`, `newBreaker`). In the reef's columns that wait held a
+crest's onset up behind other breaks:
 
 - **the bore on the reef's top flickers.** Crossing the 1 m top it breaks at about B 0.3, the strength that marks it,
   drops under it for a frame or a few and comes back about 1 m on (`--flicker`: of the 155 onsets in the reef's columns in
@@ -46,8 +46,9 @@ taper): a column's break that dropped out for under 1 s counts its jump from whe
 on the reef (within `peelReach` of the line, `canyonPeelAt`) waits 0.7 Tp only for the column's last break on the reef; and
 one more than 20 m seaward of where its column last broke waits for nothing. The physical reason: one bore is one wave, no
 bore runs back seaward, and a crest breaking on the reef is a new wave whatever the bores and the shore break behind it do;
-the next crest breaks about a wavelength seaward (28–60 m on the reef from Small to Big), far beyond 5 m or 20 m. With `--flicker` again: 88 onsets in the reef's columns, none a
-bore coming back where it was. Nothing the water does changes: at a spilling spot an onset throws no lip, so the solver's
+the next crest breaks about a wavelength seaward (28–60 m on the reef from Small to Big), far beyond 5 m or 20 m. With
+`--flicker` again (the bore hold and the wait on the reef): 88 onsets in the reef's columns, none a bore coming back where
+it was. Nothing the water does changes: at a spilling spot an onset throws no lip, so the solver's
 breaking, the beach peaks and every other spot are byte-identical (the frame bars' solver lines and all the beach peaks'
 lines, identical to the digit). What changes: the reef's drawn white and the foam and air it feeds, the spilling front's
 waves on the reef (the roller's lenses, the rider's felt breaking ahead of a front), the reef's peel readout and the surf
@@ -76,8 +77,8 @@ the sea (`reefOnsets.*`), and `?canyonReefSeq=off`, the old bed and every other 
   along-shore slope, a 50 m radius at 3 m). One by one (zero up-crossings, 180 s, on the line and 10 m behind it): H1/3
   1.1–1.4 m at x −16 (11–12 of 26–30 waves over 0.78 h), 0.63–0.65 m at x 4 (1–2 of 34), 0.49–0.54 m at x 12 (none). A
   reef flat holds waves up to about 0.55 h and breaks them past about 0.78 h (Gourlay 1994; McCowan): the shoulder's waves
-  cross the 1 m top unbroken, as the solver has them (it breaks 0–4 % of the time there). The peel ends 16 m along shore
-  from the peak at the median, 45 m down the line.
+  cross the 1 m top unbroken, as the solver has them (it breaks 0–4 % of the time there). The solver's peel ends 24 m
+  along shore from the peak at the median (90th 47), 69 m down the line (3 seeds × 14 periods).
 
 ## The levers tried (Medium, seed 1, 8 periods; typical / longest line, m; the end's reach from the peak along shore, m)
 
@@ -126,9 +127,9 @@ peel), and a frame where the tip's newest column has no white yet ends the probe
 
 - **`reef-stills-s2-before-after.png`:** the set the wait hit, from above, seaward up (Medium, seed 2, 66–75 s, one frame
   a second; x −28 to 8, z −150 to −60, 3 px a metre; the bed's 1 m contours in brown). Top row, the solver's white: the
-  crest breaks at the peak and its white runs 20 m along the crest down the reef. Middle row, the drawn white on main
-  (`?canyonReefSeq=off`): a 1–2 m dot at the peak for 9 s. Bottom row, this branch: the solver's line, its newest metres
-  at the tip still landing (`frame-probe.ts --stills`, `stills-rows.mjs`).
+  crest breaks at the peak and its white grows to about 17 m along the crest as it peels down the reef. Middle row, the
+  drawn white on main (`?canyonReefSeq=off`): a 1–2 m dot at the peak for 9 s. Bottom row, this branch: the solver's
+  line, its newest metres at the tip still landing (`frame-probe.ts --stills`, `stills-rows.mjs`).
 - **`main-medium-reef-strip.jpg`, `medium-reef-strip.jpg`:** the game's look (Rich, midday, the GPU tier, the water sheet
   `?inpage&waterSheet&spot=canyon&compute=gpu&graphics=ultra&swell=medium`), 10 frames 1 s apart from 110 m above the
   reef, a set from 221 s, main and this branch. The GPU's sea is its own; this set's onsets were never held up, and the two
