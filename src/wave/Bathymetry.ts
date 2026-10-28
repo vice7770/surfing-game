@@ -575,6 +575,77 @@ export function canyonFootZ(c: CanyonShape = CANYON): number {
     : canyonBreakLineZ(x, c) - (c.shelfDepth - c.crestDepth) / c.pathSlope;
 }
 
+/** The Beach's layout: today's sandbar peak (`BEACH`), or the shore-parallel bar and rips before it ('old', `BEACH_OLD`). */
+export type BeachBed = 'peaks' | 'old';
+
+/**
+ * The Beach (beach-bar-peaks, 2026-10-28, docs/research/beach-bar-peaks-2026-10-28; the owner, 2026-10-28: "Yes, Canyon-style
+ * peaks"): a sandy beach break whose sandbar peak, as the Canyon's beach sections' (canyon-beach-break, `CANYON.barAngle`),
+ * is a V of contours from its tip at `peakX`, attached to the beach: each wave breaks first at the tip and peels both ways
+ * down its arms, where until then one shore-parallel bar, cut by rips, closed out in sections (`BEACH_OLD`, the
+ * `?beachBed=old` dev switch; the all-spots survey, 2026-10-28: 40 m of crest broke within 2 s in 4–9 waves of 10, patches
+ * in 37–44 % of frames). Its background is the Beach's own sand: Dean's profile (A `deanA`) with its outer bar
+ * (`BEACH_OUTER`), stepped down inshore to the bar section's floor (`floorDepth`, behind a `faceSlope` beach face) where
+ * the Dean profile is shallower, so the bar stands from its rips as the Canyon's do. Mutable for the design sweep.
+ */
+export const BEACH = {
+  /** The window's width along shore, m. */
+  alongShore: 240,
+  /** Dean's A for the sand profile seaward of the floor, and the floor and beach face of the bar section, m and slope. */
+  deanA: 0.12, floorDepth: 5, faceSlope: 1 / 15,
+  /** The bar (`canyonBarDepth`): its contours' angle to the shore, the taper of its arms' ends and its knee's rounding. */
+  barAngle: 40, barTaper: 12, barKnee: 15,
+  /** The peak: its tip along shore, its face's slope along +z, its top's line (z) and depth there, its rounding and reach. */
+  peakX: 0, slope: 1 / 50, crestZ: -130, crestDepth: 2.6, rounding: 12, reach: 55,
+  /** The bars' onset (√(g h)), `onsetShallow` m deep or shallower, easing to the spot's at `onsetDeep` m (as the Canyon's). */
+  barOnset: 0.4, onsetShallow: 3, onsetDeep: 4.5,
+};
+
+/** The Beach before beach-bar-peaks: a shore-parallel bar cut by rips (`BEACH_BAR`) on the Dean profile, 160 m wide. */
+export const BEACH_OLD = Object.freeze({ ...BEACH, alongShore: 160 });
+
+/** The Beach's shape for a layout: `BEACH` itself by default (so the sweeps' changes hold), else `BEACH_OLD`. */
+export function beachShape(bed: BeachBed = 'peaks'): typeof BEACH {
+  return bed === 'old' ? BEACH_OLD : BEACH;
+}
+
+/** The Beach's peak's bar (`canyonBarDepth`'s shape). */
+export function beachBar(b: typeof BEACH = BEACH): CanyonBar {
+  return { x: b.peakX, slope: b.slope, crestZ: b.crestZ, crestDepth: b.crestDepth, rounding: b.rounding, reach: b.reach };
+}
+
+/** The Beach's sand beneath its bar at z (z < 0), m deep: the Dean profile and outer bar, or the floor's step where deeper. */
+export function beachBackgroundDepth(z: number, b: typeof BEACH = BEACH): number {
+  const offshore = -z;
+  const outerBar = BEACH_OUTER.barHeight * Math.exp(-(((offshore - BEACH_OUTER.barOffshore) / BEACH_OUTER.barWidth) ** 2));
+  const dean = deanDepth(offshore, b.deanA, BEACH_OUTER.maxDepth) - outerBar;
+  return b.floorDepth > 0 ? Math.max(dean, Math.min(b.floorDepth, offshore * b.faceSlope)) : dean;
+}
+
+/** The Beach's bed at (x, z), z < 0, m deep: its background with the peak's bar where shallower, faded past its arms. */
+export function beachSeaDepth(x: number, z: number, b: typeof BEACH = BEACH): number {
+  const background = beachBackgroundDepth(z, b);
+  const bar = beachBar(b);
+  const fade = smoothstep(bar.reach, bar.reach + b.barTaper, Math.abs(x - bar.x));
+  if (fade >= 1) return background;
+  return background - Math.max(0, background - canyonBarDepth(bar, x, z, b as unknown as CanyonShape)) * (1 - fade);
+}
+
+/** The Beach's breaking onset at (x, z) (`BEACH.barOnset`): the bars' where the bed is shallow, the spot's deeper. */
+export function beachOnset(x: number, z: number, onset: number, b: typeof BEACH = BEACH): number {
+  if (b.barOnset === onset || !(z < 0)) return onset;
+  return onset + (b.barOnset - onset) * smoothstep(b.onsetDeep, b.onsetShallow, beachSeaDepth(x, z, b));
+}
+
+function barBeach(b: typeof BEACH): SurfSpot {
+  return {
+    name: 'beach',
+    depthAt(x, z) {
+      return z < 0 ? beachSeaDepth(x, z, b) : -z * 0.06;
+    },
+  };
+}
+
 function beach(seed: number): SurfSpot {
   const random = seededRandom(seed, 0xbeac4);
   const rips: number[] = [];
@@ -843,9 +914,9 @@ function canyon(c: CanyonShape): SurfSpot {
 }
 
 /** A spot's bed; `canyonBed` picks the Canyon's (the reef bed unless 'old'), and every other spot ignores it. */
-export function createSpot(name: SpotName, seed: number, options: { canyonBed?: CanyonBed } = {}): SurfSpot {
+export function createSpot(name: SpotName, seed: number, options: { canyonBed?: CanyonBed; beachBed?: BeachBed } = {}): SurfSpot {
   switch (name) {
-    case 'beach': return beach(seed);
+    case 'beach': return options.beachBed === 'old' ? beach(seed) : barBeach(BEACH);
     case 'point': return point();
     case 'reef': return reef();
     case 'canyon': return canyon(canyonShape(options.canyonBed));
