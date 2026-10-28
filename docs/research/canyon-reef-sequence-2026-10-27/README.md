@@ -162,8 +162,8 @@ peel), and a frame where the tip's newest column has no white yet ends the probe
 ## Tests
 
 - `npx tsc --noEmit -p .`: clean.
-- The main suite (`npx vitest run src --maxWorkers=3 --exclude SurfZoneSimulation --exclude SurfZoneRunner`): TESTS_MAIN.
-- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]arrel|[Tt]ube|…|[Ss]wim"`: TESTS_SZS.
+- The main suite (`npx vitest run src --maxWorkers=3 --exclude SurfZoneSimulation --exclude SurfZoneRunner`): 303 files, 2895 passed (18 expected fail, 36 skipped).
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]arrel|[Tt]ube|…|[Ss]wim"`: 26 passed (76 skipped by the filter), 25 min.
 - New: `counts the Canyon reef's onsets in sequence…` (SurfZoneSimulation: the bore's return, the shore break and a
   following crest, with and without `canyonReefSeq`, and the record handed over at the Canyon only) and
   `counts the Canyon reef's onsets as main did with ?canyonReefSeq=off…` (PhysicalMode: the switch, other spots, online
