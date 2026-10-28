@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBedSwitch, canyonTubeSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, startOutSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -128,6 +128,25 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonReefSeq=off` dev switch (canyon-reef-sequence): the Canyon's reef counting its onsets as main did, carried
+  // in the config to the worker; anything else, or another spot, leaves the default.
+  it('counts the Canyon reef\'s onsets as main did with `?canyonReefSeq=off` (a dev switch), and in sequence otherwise', () => {
+    expect(canyonReefSeqSwitch('?canyonReefSeq=off')).toEqual({ canyonReefSeq: false });
+    expect(canyonReefSeqSwitch('?canyonReefSeq=OFF')).toEqual({ canyonReefSeq: false });
+    for (const search of ['', '?canyonReefSeq', '?canyonReefSeq=', '?canyonReefSeq=on', '?canyonReefSeq=0']) expect(canyonReefSeqSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const beach = physicalSettingsFor('beach', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonReefSeq=off' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonReefSeq).toBe(false);
+      expect(surfZoneConfigFor(beach, 5, false).canyonReefSeq).toBeUndefined();
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(medium, 5, false, { canyonReefSeq: undefined }).canyonReefSeq).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

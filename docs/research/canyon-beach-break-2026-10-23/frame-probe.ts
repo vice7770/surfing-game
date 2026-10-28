@@ -16,10 +16,12 @@
  * longest line, its median line over the frames it breaks, the share of its frames with a patch beside the line, and each
  * end's travel: from where the wave starts, does the line's end reach the region's end (the reef's end on the beach face
  * toward +x; each bar's arm end, both ways) moving on every frame by no more than JUMP m (a farther jump is a patch ahead
- * joining it) and never vanishing? That is the peak-to-end share.
+ * joining it) and never vanishing? That is the peak-to-end share. On the reef, whose line runs at `angle` to the shore, the
+ * end's distance is also given down that line (canyon-reef-sequence, 2026-10-27). `--foam` adds a third field, the foam
+ * drawn (dense + residual > 0.3), which outlives the breaking.
  *
  *   rolldown docs/research/canyon-beach-break-2026-10-23/frame-probe.ts -o dist/scripts/frame-probe.mjs --format esm --platform node \
- *     && node dist/scripts/frame-probe.mjs --size medium --seed 1 --periods 12 [--canyon key=value,...] [--bed old] [--tube on]
+ *     && node dist/scripts/frame-probe.mjs --size medium --seed 1 --periods 12 [--canyon key=value,...] [--bed old] [--tube on] [--foam]
  *        [--stills <dir> --from <s> --to <s> --every <s> --x <x0,x1> --z <z0,z1>] [--json <file>]
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -286,8 +288,11 @@ for (const field of fields) {
         return crest > 0 && v > 0 ? (Math.atan(crest / v) * 180) / Math.PI : Number.NaN;
       });
       const fromTip = list.map((w) => Math.abs(w.reached.get(end.side)!.x - region.tip));
+      // The reef's line runs at `angle` to the shore: its end's distance down the reef, along that line (canyon-reef-sequence).
+      const down = region.name === 'reef' ? fromTip.map((v) => v / Math.cos((c.angle * Math.PI) / 180)) : undefined;
       return `${end.side > 0 ? '+x' : '−x'}: one travelling line reached ${ARM} m from the peak in ${list.filter((w, k) => fromTip[k] >= ARM).length} of ${list.length}, `
         + `the end (x ${fmt(end.x)}) in ${ok.length}; its end got median ${fmt(quantile(fromTip, 0.5))} m from the peak (90th ${fmt(quantile(fromTip, 0.9))}), `
+        + (down ? `down the reef's ${c.angle}° line median ${fmt(quantile(down, 0.5))} m (90th ${fmt(quantile(down, 0.9))}), ${ARM} m or more down it in ${down.filter((v) => v >= ARM).length} of ${list.length}, ` : '')
         + `its visible peel median ${fmt(quantile(peel, 0.5))}° (${peel.filter(Number.isFinite).length} waves)`;
     });
     console.log(`${key}: ${list.length} waves; frames breaking ${lines.length}, line along shore p50 ${fmt(quantile(lines.map((l) => l.length), 0.5))} m, p90 ${fmt(quantile(lines.map((l) => l.length), 0.9))} m, `

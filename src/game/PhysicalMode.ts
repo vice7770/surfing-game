@@ -402,6 +402,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
     // `?canyonAgeJoin=<J>`: the Canyon's breaking-age join (0: rule A, as before canyon-wave-r2), for A/Bs.
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
+    // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
+    ...(settings.spot === 'canyon' ? canyonReefSeqSwitch() : {}),
     ...overrides,
   };
 }
@@ -436,6 +438,15 @@ export function canyonAgeJoinSwitch(search?: string): { canyonAgeJoin?: number }
   const text = devParam('canyonAgeJoin', search)?.trim();
   const join = text ? Number(text) : Number.NaN;
   return Number.isFinite(join) && join >= 0 ? { canyonAgeJoin: join } : {};
+}
+
+/**
+ * The `?canyonReefSeq=off` dev switch (`SurfZoneConfig.canyonReefSeq` false): the Canyon's reef counts its waves' onsets
+ * as main did until canyon-reef-sequence (2026-10-27), where a bore dropping out or the shore break behind the reef kept
+ * the next crest's onsets out and its white undrawn across metres of the peak (`CANYON.reefBoreHold`). 'off', else nothing.
+ */
+export function canyonReefSeqSwitch(search?: string): { canyonReefSeq?: false } {
+  return devParam('canyonReefSeq', search)?.trim().toLowerCase() === 'off' ? { canyonReefSeq: false } : {};
 }
 
 /**

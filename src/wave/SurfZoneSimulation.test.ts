@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { CANYON, CANYON_OLD, PADANG, REEF, canyonArmAt, canyonBarAt, canyonFootZ, canyonReefSpan, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
+import { CANYON, CANYON_OLD, PADANG, REEF, canyonArmAt, canyonBarAt, canyonBreakLineZ, canyonFootZ, canyonReefSpan, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -1027,6 +1027,50 @@ describe('SurfZoneSimulation', () => {
     expect(join({ canyonAgeJoin: 0.35 })).toBe(0.35);
     expect(join({ canyonBed: 'old' })).toBe(0.5);
     expect(join({ spot: 'beach', canyonAgeJoin: 0.5 })).toBe(0);
+  });
+
+  // canyon-reef-sequence (2026-10-27): in the reef's columns a bore dropping out under B 0.3 for less than
+  // `CANYON.reefBoreHold` s is no new wave, and a break on the reef waits 0.7 Tp only for the column's last break on the
+  // reef, not for the shore break behind it, so the next crest's onset comes through and its white joins its spilling front.
+  // `canyonReefSeq: false` (the `?canyonReefSeq=off` dev switch) and the old bed count them as main did; no other spot
+  // carries the record.
+  it('counts the Canyon reef\'s onsets in sequence: a bore dropping out is no new wave, and its shore break keeps no crest out', () => {
+    const tiny = { seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0, componentCount: 4, alongShore: 40, dx: 4, fineSpacing: 4, coarseSpacing: 8, spinUpPeriods: 0.1 };
+    const build = (config: Partial<SurfZoneConfig>) => new SurfZoneSimulation({ ...tiny, spot: 'canyon', ...config } as SurfZoneConfig, 'warm');
+    const onsets = (simulation: SurfZoneSimulation) => {
+      const internals = simulation as unknown as { markBreakingOnsets(): void; lastOnset: Float64Array; onsetsArmed: boolean };
+      const { solver } = simulation;
+      const column = solver.xCenters.findIndex((x) => Math.abs(x + 8) <= solver.dx / 2);
+      const line = canyonBreakLineZ(solver.xCenters[column]);
+      const counted: number[] = [];
+      internals.onsetsArmed = true;
+      const breakAt = (time: number, z?: number) => {
+        solver.time = time;
+        simulation.breaking.strength.fill(0);
+        if (z !== undefined) simulation.breaking.strength[solver.rowBelow(z) * solver.nx + column] = 1;
+        const before = internals.lastOnset[column];
+        internals.markBreakingOnsets();
+        if (internals.lastOnset[column] !== before) counted.push(time);
+      };
+      breakAt(9);
+      breakAt(10, line - 2); // a crest breaks on the reef
+      breakAt(12, line + 4); // its bore on the top
+      breakAt(17.9, line + 6);
+      breakAt(18); // drops out under B 0.3…
+      breakAt(18.1, line + 6); // …and back where it was
+      breakAt(19);
+      breakAt(21, -24); // the shore break on the beach face behind the reef (beyond `peelReach`)
+      breakAt(22);
+      breakAt(23, line - 2); // the next crest on the reef, 13 s after the last, 2 s after the shore break
+      return counted;
+    };
+    expect(CANYON.reefBoreHold).toBe(1);
+    expect(CANYON_OLD.reefBoreHold).toBe(0);
+    expect(onsets(build({}))).toEqual([10, 21, 23]);
+    expect(onsets(build({ canyonReefSeq: false }))).toEqual([10, 18.1]);
+    const record = (config: Partial<SurfZoneConfig>) => Object.keys(build(config).exportState().arrays).filter((name) => name.startsWith('reefOnsets.'));
+    expect(record({})).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
+    for (const config of [{ canyonReefSeq: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) expect(record(config), JSON.stringify(config)).toEqual([]);
   });
 
   it('starts the rider where `startOut` says (the `?startOut=<m>` dev switch), at any spot and size', () => {
