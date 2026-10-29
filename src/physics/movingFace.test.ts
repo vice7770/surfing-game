@@ -48,10 +48,11 @@ function popUp(degrees: number, faceSpeed: number, held = false) {
   let infeasible = 0;
   for (let n = 0; n < 7 / STEP && session.phase !== 'fallen'; n += 1) {
     water.time = (n + 1) * STEP;
-    const pop = !popped && n * STEP >= 3;
+    const pop: boolean = !popped && n * STEP >= 3;
     popped ||= pop;
     session.step(STEP, water, { paddle: !popped, sprint: !popped, popUp: pop, steer: 0 });
-    if (popped && session.phase !== 'standing' && session.phase !== 'fallen' && !session.rider.contact.feasible) infeasible += STEP;
+    const phase: string = session.phase;
+    if (popped && phase !== 'standing' && phase !== 'fallen' && !session.rider.contact.feasible) infeasible += STEP;
   }
   const v = session.board.velocity;
   return { phase: session.phase, infeasible, speed: Math.hypot(v.x, v.z) };
