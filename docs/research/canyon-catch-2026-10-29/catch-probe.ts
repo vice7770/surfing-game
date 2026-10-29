@@ -15,7 +15,7 @@
  * Per trial it also gives the cue's, the pop's and the stand's times against the crest reaching the rider, the face under
  * the board at the pop and the wave's face at the start (the gauge's, the most seen while the crest was 0–10 m away).
  *   rolldown docs/research/canyon-catch-2026-10-29/catch-probe.ts -o dist/scripts/catch-probe.mjs --format esm --platform node \
- *     && node dist/scripts/catch-probe.mjs --size medium --seed 1 --periods 12 [--start <m out>] [--state <sea>] [--json <file>] [--surface old]
+ *     && node dist/scripts/catch-probe.mjs --size medium --seed 1 --periods 12 [--start <m out>] [--state <sea>] [--json <file>] [--surface old] [--froth old] [--ride-time 6]
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
@@ -38,6 +38,8 @@ const PROBE = 36;
 /** A trial's riders live this long, s. */
 const TRIAL = 16;
 const RIDE_TIME = 2;
+/** `--ride-time T`: riders ride on until T s on the face (RIDE_TIME + 1 by default), the JSON's `riding` up to it. */
+const RIDE_LONG = Number(option('ride-time') ?? RIDE_TIME + 1);
 const RIDE_SHARE = 0.6;
 /** `lift`: the crest within this many m of a sprinting rider, high on the face, and no cue yet. */
 const LIFT_AHEAD = 1.5;
@@ -49,7 +51,11 @@ const STROKES = (option('strokes') ?? 'feather,old').split(',') as ('feather' | 
  * the take-off window's place on the face with a lower speed share (`share` of the crest's) and a face at least `slope`°
  * steep under the board along its heading.
  */
-interface Script { name: string; stroke: 'feather' | 'old'; sprint: number; lift: boolean; rule?: { share: number; slope: number }; wait?: number; trim?: number }
+interface Script {
+  name: string; stroke: 'feather' | 'old'; sprint: number; lift: boolean; rule?: { share: number; slope: number }; wait?: number; trim?: number;
+  /** Standing, a bottom turn (bottom-stop, 2026-10-29): Compress and the steer toward +1 (left) or −1 from 0.6 s after standing, for 0.8 s. */
+  turn?: 1 | -1;
+}
 const ALL: Script[] = STROKES.flatMap((stroke) => [
   { name: `good${stroke === 'old' ? '/old' : ''}`, stroke, sprint: 2, lift: false },
   { name: `early${stroke === 'old' ? '/old' : ''}`, stroke, sprint: 4, lift: false },
@@ -64,6 +70,9 @@ const ALL: Script[] = STROKES.flatMap((stroke) => [
   { name: `patient10${stroke === 'old' ? '/old' : ''}`, stroke, sprint: 2, lift: false, wait: 1 },
   // Up at the cue, then the weight forward (trim) from the pop on, to drop in.
   { name: `drop${stroke === 'old' ? '/old' : ''}`, stroke, sprint: 2, lift: false, trim: 1 },
+  // Up at the cue, then a bottom turn either way (bottom-stop, 2026-10-29).
+  { name: `turnL${stroke === 'old' ? '/old' : ''}`, stroke, sprint: 2, lift: false, turn: 1 },
+  { name: `turnR${stroke === 'old' ? '/old' : ''}`, stroke, sprint: 2, lift: false, turn: -1 },
 ]);
 const wanted = option('scripts')?.split(',');
 const SCRIPTS = wanted ? ALL.filter((script) => wanted.includes(script.name)) : ALL;
@@ -72,7 +81,9 @@ const spotName = (option('spot') ?? 'canyon') as 'canyon';
 const settings = physicalSettingsFor(spotName, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 const base = surfZoneConfigFor(settings, seed, true);
 // `--surface old`: the sea's surface held still through the bodies' step, as before popup-moving-face (`?surfaceMotion=old`).
-const config: SurfZoneConfig = { ...base, compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}) };
+const config: SurfZoneConfig = {
+  ...base, compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}), ...(option('froth') === 'old' ? { froth: 'old' as const } : {}),
+};
 const statePath = option('state');
 const wall = Date.now();
 let sim: SurfZoneSimulation;
@@ -179,8 +190,11 @@ function stepRider(rider: Rider, t: number, start: Start): void {
     rider.popSpeed = frame.speedShoreward;
     rider.popCrest = frame.crestSpeed;
   }
+  const sinceStand = rider.standAt === undefined ? -1 : t - rider.standAt;
+  const turning = script.turn !== undefined && session.phase === 'standing' && sinceStand >= 0.6 && sinceStand < 1.4;
   session.step(STEP, water, {
-    paddle: prone && !pop && rider.popAt === undefined, sprint: prone && rider.sprinting && !pop, popUp: pop, steer: 0,
+    paddle: prone && !pop && rider.popAt === undefined, sprint: prone && rider.sprinting && !pop, popUp: pop, steer: turning ? script.turn! : 0,
+    ...(turning ? { compress: 1 } : {}),
     ...(script.trim !== undefined && rider.popAt !== undefined ? { trim: script.trim } : {}),
   });
   if (session.phase === 'standing' && rider.standAt === undefined) rider.standAt = t;
@@ -202,7 +216,7 @@ function stepRider(rider: Rider, t: number, start: Start): void {
       + ` | contact ${session.rider.inContact ? 'on' : 'OFF'} flight ${session.rider.flightTime.toFixed(2)} feasible ${session.rider.contact.feasible} load ${(session.rider.contact.load / (session.rider.mass * 9.81)).toFixed(2)} pitch ${pitchOf(b).toFixed(0)}° vy ${b.velocity.y.toFixed(2)} ry ${(session.rider.position.y - b.centerOfMass.y).toFixed(2)}`);
   }
   // Done: down, ridden, or the wave gone a second past.
-  if (rider.fellAt !== undefined || rider.riding >= RIDE_TIME + 1 || (rider.passedAt !== undefined && t > rider.passedAt + 1)) rider.done = true;
+  if (rider.fellAt !== undefined || rider.riding >= RIDE_LONG || (rider.passedAt !== undefined && t > rider.passedAt + 1)) rider.done = true;
 }
 
 function outcome(rider: Rider): Outcome {
