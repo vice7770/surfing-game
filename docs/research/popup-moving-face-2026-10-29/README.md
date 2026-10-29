@@ -275,9 +275,9 @@ added.
 
 - `npx tsc --noEmit -p .`: clean.
 - The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude
-  "**/SurfZoneRunner.test.ts"`): RESULT_MAIN.
+  "**/SurfZoneRunner.test.ts"`): 305 files passed (30 skipped); 2907 tests passed (18 expected fail, 36 skipped).
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t
-  "[Cc]anyon|[Pp]oint|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: RESULT_SZS.
+  "[Cc]anyon|[Pp]oint|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: 24 passed (80 skipped by the filter), 20 min.
 - **New:**
   - `movingFace.test.ts`: on 18° and 22° faces travelling at 6 m/s, the pop-up's contact holds as on a still face, and
     the ride matches it within 2 %. Held, the step's jumps cost the contact more than 0.15 s.
