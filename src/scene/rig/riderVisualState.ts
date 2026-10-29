@@ -57,9 +57,10 @@ export interface RiderVisualState {
    * recovery's grab: turning it deck-up, then pulling the body on). The snapshot
    * does not carry the hold: the page reads it from what it asked and what the
    * ride's status says (`HoldReading`), another player's from the pose's
-   * recovering flag (wire flag 128) with the swimmer by the board.
+   * recovering flag (wire flag 128) with the swimmer by the board. `climbing`: on the board again, still climbing on
+   * from the water (the snapshot's bit; local only).
    */
-  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean };
+  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean; climbing: boolean };
   /**
    * Why the rider fell, as the session named it (`RideSession.separation`:
    * balance, foot slip, lost board, impact, reef): the drawn fall's shape reads
@@ -103,7 +104,7 @@ export function createRiderVisualState(): RiderVisualState {
     standingBlend: 1,
     duck: 0,
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false, grip: new Vector3(), gripped: false },
-    swim: { stroking: false, diving: false, under: false, holding: false },
+    swim: { stroking: false, diving: false, under: false, holding: false, climbing: false },
     separation: undefined,
     stance: undefined,
     clock: 0,
@@ -137,6 +138,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;
   out.swim.under = (swim & SWIM_BITS.under) !== 0;
+  out.swim.climbing = (swim & SWIM_BITS.climbing) !== 0;
   // Not in the snapshot: whoever draws sets them after (the page, from its status and input; a remote pose's flag).
   out.swim.holding = false;
   out.separation = undefined;

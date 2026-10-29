@@ -86,6 +86,8 @@ export interface StanceRecipe {
   thrown?: readonly [number, number, number];
   /** Read this long after the swimmer first holds the board (the recovery's grab), s, within `seconds`; not reached without a hold. */
   hold?: number;
+  /** 'old': back on the board as before swim-back (`RideSessionOptions.swim`): the reel to the ankle, the springs' pull. */
+  swim?: 'old';
   /**
    * The weight (the feet's pressure) read at steady speed (the phase-5 physics plan's W1): from the same run on its
    * water tilted down along the travel by `STEADY_SLOPE`, the face that holds trim's speed, as a wave's face feeds a
@@ -268,7 +270,8 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
   const toes = stance === 'regular' ? -1 : 1;
   const slopes = steady ? steadySlopes(recipe.water, stance) : undefined;
   const water = slopes ? new PlaneWater(slopes) : waterFor(recipe, stance);
-  const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined ? new RideSession({ stance }) : undefined;
+  const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined
+    ? new RideSession({ stance, ...(recipe.swim ? { swim: recipe.swim } : {}) }) : undefined;
   const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water, slopes);
   if (session) session.place({ x: 0, z: 0, heading: 0, speed: recipe.start === 'prone' ? 0 : recipe.speed, phase: recipe.start }, water);
   const board = session?.board ?? mounted!.board;

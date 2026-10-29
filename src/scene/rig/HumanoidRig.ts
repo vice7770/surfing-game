@@ -1,5 +1,5 @@
 import { Quaternion, Vector3, type Bone } from 'three';
-import { LANDING_TIME, PUSH_TIME, RECOVER_TIME } from '../../physics/AttachedRider';
+import { CLIMB_TIME, LANDING_TIME, PUSH_TIME, RECOVER_TIME } from '../../physics/AttachedRider';
 import { ArmSwing, armPendulum } from './armSwing';
 import { Breathing } from './breathing';
 import { Follower, balanceAlarmOf, type DrawnCues } from './causeFilter';
@@ -543,6 +543,13 @@ export class HumanoidRig {
   private climbing = false;
   private readonly climbFeet = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
   private climbOnSince = Number.NaN;
+  /**
+   * How long the drawn climb-on takes, s: the physics' own climb (CLIMB_TIME; swim-back, 2026-10-29), its points carrying
+   * the body from the water onto the deck, or the climb's `on` after a body that snapped to prone (`swim: 'old'`), the
+   * feet swung on from where they held (`climbFeetOn`).
+   */
+  private climbOnTime: number = FALL_POSES.climb.on;
+  private climbFeetOn = false;
   /** Where the chest faced at the last solve before the fall (the fallen facing turns from it), and whether one was. */
   private readonly fallFrom = new Vector3();
   private fallFromSet = false;
@@ -750,9 +757,13 @@ export class HumanoidRig {
     const fw = fallen ? this.fall.update(state) : undefined;
     if (!fallen) this.fall.reset();
     this.reelGrip = '';
-    if (state.phase === 'prone' && phaseTime === 0 && this.climbing) this.climbOnSince = state.clock;
-    else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
-    const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < FALL_POSES.climb.on ? (state.clock - this.climbOnSince) / FALL_POSES.climb.on : 1;
+    const climbingOn = state.phase === 'prone' && state.swim.climbing;
+    if (state.phase === 'prone' && phaseTime === 0 && (this.climbing || climbingOn)) {
+      this.climbOnSince = state.clock;
+      this.climbOnTime = climbingOn ? CLIMB_TIME : FALL_POSES.climb.on;
+      this.climbFeetOn = !climbingOn;
+    } else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
+    const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < this.climbOnTime ? (state.clock - this.climbOnSince) / this.climbOnTime : 1;
     // Lying, the water stages and their key pose (the animation-realism plan's phase 3), and the pop-up's drawn places.
     if (lying) lyingPose(this.water.update(state), this.lying);
     else this.water.reset();
@@ -982,7 +993,8 @@ export class HumanoidRig {
           this.kneeWas[side].copy(pole);
         }
         if (lying && climbOn < 1) {
-          this.climbOnFoot(state, side, climbOn, target);
+          // Climbing on in the physics, the feet are its points'; snapped to prone, swung on from where they held.
+          if (this.climbFeetOn) this.climbOnFoot(state, side, climbOn, target);
           turnToward(this.fallScratch.a.copy(this.kneeWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
         }
         // Sitting, straddling: the thighs over the rails, the shins hanging in the water (`SIT`); out to the side first,

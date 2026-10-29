@@ -156,8 +156,11 @@ export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 
 export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, weight: 33, length: 34 } as const;
 /** `RIDER_SNAPSHOT.leash`: the leash is worn whole, has snapped, is being reeled in. */
 export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
-/** `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under. */
-export const SWIM_BITS = { stroking: 1, diving: 2, under: 4 } as const;
+/**
+ * `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under; or, on the board again, is still climbing
+ * on from the water (`AttachedRider.climbingOn`, swim-back 2026-10-29).
+ */
+export const SWIM_BITS = { stroking: 1, diving: 2, under: 4, climbing: 8 } as const;
 
 const IDLE: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
 
@@ -180,7 +183,7 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   session.leashPlug(point).toArray(out, RIDER_SNAPSHOT.plug);
   const { leash, surfer } = session;
   out[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
-  out[RIDER_SNAPSHOT.swim] = !surfer.active ? 0
+  out[RIDER_SNAPSHOT.swim] = !surfer.active ? (session.rider.climbingOn ? SWIM_BITS.climbing : 0)
     : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0);
 }
 
