@@ -145,38 +145,27 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('preserves dynamic void fraction receivers, replacement and preprocessing before snapshot output', () => {
-    const prepare = () => {
-      const scene = snapshotScene();
-      const grid = { ...scene.renderGrid(2), nx: 8, nz: 4 };
-      const out = snapshotOutputs(grid);
-      for (const field of out) field.fill(123.25);
-      const calls: Array<[number, string, boolean, number[], number | undefined]> = [];
-      const original = scene.aeration.voidFraction;
-      function later(this: typeof scene.aeration, cell: number): number {
-        calls.push([cell, 'later', this === scene.aeration, out.map(field => field[0]), snapshotInternals(scene).velocityX?.[cell]]);
-        scene.solver.bed[cell] -= 0.0125;
-        this.depth[cell] += 0.001;
-        return original.call(this, cell);
-      }
-      scene.aeration.voidFraction = function(this: typeof scene.aeration, cell: number): number {
-        calls.push([cell, 'first', this === scene.aeration, out.map(field => field[0]), snapshotInternals(scene).velocityX?.[cell]]);
-        scene.solver.bed[cell] -= 0.025;
-        if (cell + 1 < scene.solver.qx.length) scene.solver.qx[cell + 1] += 0.125;
-        if (cell === 2) this.voidFraction = later;
-        return original.call(this, cell);
-      };
-      return { scene, grid, out, calls };
+  // Since canyon-perf (2026-10-29, 73c0798a) the snapshot computes each cell's void fraction inline, row by row, with
+  // `AerationField.voidFraction`'s arithmetic (the plume's air over its depth), instead of calling the method per cell:
+  // a replaced `voidFraction` is no longer called. Nothing in the game replaces it. The bytes stay the reference path's.
+  it('computes the void fraction inline, as the reference fields path does through `voidFraction`, without calling it', () => {
+    const a = snapshotScene(); const b = snapshotScene();
+    const grid = { ...a.renderGrid(2), nx: 8, nz: 4 };
+    const outA = snapshotOutputs(grid); const outB = snapshotOutputs(grid);
+    for (const field of [...outA, ...outB]) field.fill(123.25);
+    let calls = 0;
+    const original = b.aeration.voidFraction;
+    b.aeration.voidFraction = function(this: typeof b.aeration, cell: number): number {
+      calls += 1;
+      return original.call(this, cell);
     };
-    const a = prepare(); const b = prepare();
-    snapshotInternals(a.scene).writeUniformFields(a.grid, ...a.out);
-    b.scene.writeUniformSnapshot(...b.out, b.grid);
-    expect(b.calls).toEqual(a.calls);
-    expect(b.calls).toHaveLength(b.scene.solver.h.length);
-    expect(b.calls.every((row, index) => row[0] === index && row[2] && row[3].every(value => value === 123.25))).toBe(true);
-    expect(b.calls.every(row => typeof row[4] === 'number')).toBe(true);
-    expect(b.calls.slice(0, 4).map(row => row[1])).toEqual(['first', 'first', 'first', 'later']);
-    expectSnapshotPair(a.scene, b.scene, a.out, b.out);
+    snapshotInternals(a).writeUniformFields(grid, ...outA);
+    b.writeUniformSnapshot(...outB, grid);
+    expect(calls).toBe(0);
+    // Each cell's inline fraction is the method's, and every snapshot byte the reference path's.
+    const fractions = snapshotInternals(b).voidFractions!;
+    for (let cell = 0; cell < b.solver.h.length; cell += 1) expect(fractions[cell]).toBe(original.call(b.aeration, cell));
+    expectSnapshotPair(a, b, outA, outB);
   });
 
   it('preserves snapshot bits and store order with overlapping outputs and output input aliases', () => {
@@ -701,7 +690,9 @@ describe('SurfZoneSimulation', () => {
   it('breaks waves in the surf zone, measures the peel and paints whitewater', () => {
     // Bores need the game's 1 m surf-zone cells; 2 m cells smear them below either breaking criterion.
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
-    let broke = false;
+    // From the state it is built in: with the Point's depth-keyed onset (point-onset, 2026-10-28) the spun-up zone is
+    // already breaking, with a peel to read, before its first step.
+    let broke = simulation.breakingFraction() > 0;
     let estimate = simulation.peelEstimate();
     for (let frame = 0; frame < 20 * 30 && !(estimate && simulation.breakingFraction() > 0.02); frame += 1) {
       simulation.step(1 / 30);
@@ -1431,9 +1422,17 @@ describe('SurfZoneSimulation', () => {
   }, 90_000);
 
   it('does not read the spin-up bores as one simultaneous close-out', () => {
+    // On the Point's flat onset of before point-onset (`onsetRule: 'old'`) nothing new breaks in the first frames: the
+    // warm field's bores alone, which the first pass records and no onset counts (`onsetsArmed`), give no peel.
+    const flat = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, onsetRule: 'old' });
+    for (let frame = 0; frame < 3; frame += 1) flat.step(1 / 30);
+    expect(flat.peelEstimate()).toBeUndefined();
+    // On its depth-keyed onset (point-onset, 2026-10-28) the next crest starts breaking seaward of those bores within the
+    // first frames, along the shore one column after another: a peel, not one simultaneous close-out (α ≈ 0).
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1 });
     for (let frame = 0; frame < 3; frame += 1) simulation.step(1 / 30);
-    expect(simulation.peelEstimate()).toBeUndefined();
+    const estimate = simulation.peelEstimate();
+    if (estimate) expect(estimate.angleDegrees).toBeGreaterThan(15);
   });
 
   it('holds waves up longer under offshore wind', () => {
