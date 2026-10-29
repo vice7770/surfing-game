@@ -175,7 +175,9 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.45, phase: 'fallen' }),
   surfacing: standing([], 3.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
   reel: standing([{ at: 3, reel: true }], 3.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
-  'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen' }),
+  // As before swim-back (2026-10-29): today the hold lasts only until the board is deck-up and turned, and then the
+  // physics climbs the body on (phase prone, the rig's tests); this key pose reads the old hold, 2.2 s by the board.
+  'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen', swim: 'old' }),
 };
 
 /**

@@ -545,11 +545,9 @@ export class HumanoidRig {
   private climbOnSince = Number.NaN;
   /**
    * How long the drawn climb-on takes, s: the physics' own climb (CLIMB_TIME; swim-back, 2026-10-29), its points carrying
-   * the body from the water onto the deck, or the climb's `on` after a body that snapped to prone (`swim: 'old'`), the
-   * feet swung on from where they held (`climbFeetOn`).
+   * the body from the water onto the deck, or the climb's `on` after a body that snapped to prone (`swim: 'old'`).
    */
   private climbOnTime: number = FALL_POSES.climb.on;
-  private climbFeetOn = false;
   /** Where the chest faced at the last solve before the fall (the fallen facing turns from it), and whether one was. */
   private readonly fallFrom = new Vector3();
   private fallFromSet = false;
@@ -761,7 +759,6 @@ export class HumanoidRig {
     if (state.phase === 'prone' && phaseTime === 0 && (this.climbing || climbingOn)) {
       this.climbOnSince = state.clock;
       this.climbOnTime = climbingOn ? CLIMB_TIME : FALL_POSES.climb.on;
-      this.climbFeetOn = !climbingOn;
     } else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
     const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < this.climbOnTime ? (state.clock - this.climbOnSince) / this.climbOnTime : 1;
     // Lying, the water stages and their key pose (the animation-realism plan's phase 3), and the pop-up's drawn places.
@@ -993,8 +990,9 @@ export class HumanoidRig {
           this.kneeWas[side].copy(pole);
         }
         if (lying && climbOn < 1) {
-          // Climbing on in the physics, the feet are its points'; snapped to prone, swung on from where they held.
-          if (this.climbFeetOn) this.climbOnFoot(state, side, climbOn, target);
+          // The feet swung on from where they were drawn in the water: over the physics' climb (onto its points), or,
+          // snapped to prone, over the climb's `on`.
+          this.climbOnFoot(state, side, climbOn, target);
           turnToward(this.fallScratch.a.copy(this.kneeWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
         }
         // Sitting, straddling: the thighs over the rails, the shins hanging in the water (`SIT`); out to the side first,
@@ -1157,7 +1155,9 @@ export class HumanoidRig {
       }
       this.fallenClock = state.clock;
       this.climbing = fw.climb > 0.5;
-      if (this.climbing) for (const side of SIDES) this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
+      // Where the drawn ankles were on the board: the climb's feet start there (a board held to climb, or one the physics
+      // climbs straight onto: swim-back).
+      for (const side of SIDES) this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
     } else {
       this.climbing = false;
       this.gripSet = false;

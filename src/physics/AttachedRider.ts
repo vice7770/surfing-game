@@ -823,6 +823,8 @@ export const RECOVER_TIME = 0.6;
  */
 export const CLIMB_TIME = 1.2;
 const CLIMB_ACROSS = 0.55;
+/** Climbing on, the drawn hands reach the rails over this share of the climb, from where the swimmer's arms were. */
+const CLIMB_HANDS = 0.25;
 const CLIMB_RISE = 0.15;
 /**
  * The duck-dive's timing (the wipeout spec): the arms straighten over
@@ -1089,8 +1091,9 @@ export class AttachedRider {
   private waterCalm = 1;
   /** A posture transition: where it started (board frame), how far along it is and how long it takes, s. */
   private readonly fromParts: Float64Array;
-  /** The transition is a climb from the water (`climbFrom`): its path rises first, then slides. */
+  /** The transition is a climb from the water (`climbFrom`): its path comes across low, then rises. */
   private climbing = false;
+  private readonly handRail = new Vector3();
   private phaseTime = 0;
   private phaseDuration = 0;
   private readonly postureRate = new Vector3();
@@ -1569,9 +1572,12 @@ export class AttachedRider {
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
       if (this.climbing) {
-        // Climbing on: the hands on the rails beside the chest (within the board's length).
+        // Climbing on: the hands go from where the swimmer's arms were to the rails beside the chest (within the board's
+        // length) over the climb's first CLIMB_HANDS, then hold them there.
         const z = Math.max(-this.shape.length / 2 + 0.05, Math.min(this.shape.length / 2 - 0.05, this.parts[1 * 3 + 2]));
-        return board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), out);
+        const rail = board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), this.handRail);
+        const reach = minimumJerk(Math.min(1, this.phaseTime / (CLIMB_HANDS * this.phaseDuration)));
+        return this.partPosition(index, out).lerp(rail, reach);
       }
       if (this.phase === 'prone') {
         const stroking = (this.paddle || this.sweeping) && this.strokeEffort(side) > 0;

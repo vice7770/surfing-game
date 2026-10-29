@@ -281,6 +281,8 @@ export interface FilmScenario {
   seconds: number;
   /** The input at `time` s; it may also act on the session (a tow, a separation). */
   input(time: number, session: RideSession): Partial<RideInput>;
+  /** 'old': back on the board as before swim-back (`RideSessionOptions.swim`). */
+  swim?: 'old';
 }
 
 const FACE = (15 * Math.PI) / 180;
@@ -933,7 +935,7 @@ function boardPose(session: RideSession, out: Float64Array): Float64Array {
 export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm {
   const delivery = options.delivery ?? 1;
   const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : scenario.water === 'chop' ? new ChopWater() : new PlaneWater();
-  const session = new RideSession();
+  const session = new RideSession(scenario.swim ? { swim: scenario.swim } : {});
   session.place(scenario.placement, water);
   let paddling = false;
   const drawer = (options.drawer ?? latestDrawer)({

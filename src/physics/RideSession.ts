@@ -331,9 +331,12 @@ export class RideSession {
     const { board, rider, surfer, remount } = this;
     surfer.linearMomentum(remount.before).addScaledVector(board.velocity, board.mass);
     if (fromWater) {
-      // Climbing on from where the body is (swim-back): the parts in `RIDER_PARTS` order, the fall body's own.
+      // Climbing on from where the body is (swim-back): the parts in `RIDER_PARTS` order, the fall body's own. Joined
+      // rigidly, the pair turns as the swimmer did: the light board's spin is a few hundredths of the pair's angular
+      // momentum (its own kept, it swung the heavy body round with it at the join).
       for (let i = 0; i < RIDER_PARTS.length; i += 1) surfer.getPartPosition(RIDER_PARTS[i], this.pelvis).toArray(this.climbParts, i * 3);
       rider.climbFrom(this.climbParts, board);
+      surfer.spin(board.angularVelocity);
     } else {
       rider.phase = 'prone';
     }

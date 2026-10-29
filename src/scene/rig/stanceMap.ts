@@ -930,7 +930,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'climb-grab',
     name: 'Climbing back on: the grab',
-    reach: 'The side fall, the pop-up key held from 1.5 s: read a second after the grab (phase fallen; Regular grabs at 3 s, Goofy, its leash on the other leg, at 19.3 s; the board rolls under the pull for 8–17 s on flat water).',
+    reach: 'The side fall, the pop-up key held from 1.5 s: read a second after the grab (phase fallen; Regular grabs at 3 s, Goofy, its leash on the other leg, at 19.3 s; the board rolls under the pull for 8–17 s on flat water). As before swim-back (2026-10-29, `swim: \'old\'`): today the hold lasts until the board is deck-up and turned, and the physics then climbs the body on over 1.2 s from where it is (phase prone, its hands on the rails), drawn from its points.',
     sides: 'both',
     targets: {
       railGrip: { min: 0, max: 0.15, sources: ['rapturerecover'], confidence: 'low', note: 'both hands on the nearest rail at about its midpoint (within 0.3 m of it)' },

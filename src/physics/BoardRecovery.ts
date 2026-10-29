@@ -37,9 +37,11 @@ const ALIGNED_RATE = 2;
 const LOST_UP = 0.3;
 /**
  * Climbing on from the water (the default), the board need only be deck-up within about 32° (CLIMB_UP): a swimmer's
- * weight on the near rail rolls it toward them as they come up, and the prone balance levels it once they lie on it.
+ * weight on the near rail rolls it toward them as they come up, and the prone balance levels it once they lie on it;
  */
 const CLIMB_UP = 0.85;
+/** ...and held steady in the hands, turning slower than CLIMB_RATE, rad/s: climbing onto a board still swinging round, the body was flung across it. */
+const CLIMB_RATE = 1.5;
 /** The body comes on only while the deck's normal is within about 18° of the vertical (MOUNT_UP) and turning slower than MOUNT_RATE, rad/s. */
 const MOUNT_UP = 0.95;
 const MOUNT_RATE = 1;
@@ -141,7 +143,7 @@ export class BoardRecovery {
     if (this.options.swim !== 'old') {
       // The board deck-up and turned in the hands, the chest by it: climb on (the attached rider's contact carries it).
       this.hold(dt, board);
-      if (this.up > CLIMB_UP && this.inReach(board)) this.state = 'climb-ready';
+      if (this.up > CLIMB_UP && board.angularVelocity.length() < CLIMB_RATE && this.inReach(board)) this.state = 'climb-ready';
       return this.state;
     }
     let handsClose = true;

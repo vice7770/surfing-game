@@ -157,6 +157,13 @@ const SURFACE_PITCH = Math.PI / 3;
 /** The arms' and the legs' thrust per limb at full effort, N (the stroke's). */
 const ARM_THRUST = 75;
 const LEG_THRUST = 30;
+/**
+ * A crawl's arm cycle, s: 0.38 cycles a second at 1.0 m/s (Kjendlie et al. 2004, as the drawn crawl's `crawlRate`). A
+ * swimmer breathes at least once a cycle; its head under longer than that, it swims up for air (swim-back, 2026-10-29).
+ */
+const CRAWL_CYCLE = 1 / 0.38;
+/** A face in the water swimming the crawl: the head's centre within CRAWL_FACE of its radii under the surface (provisional). */
+const CRAWL_FACE = 2;
 
 /**
  * A lip strike, for every body it can hit: the water density a parcel's mass is
@@ -264,10 +271,14 @@ export class DetachedSurfer implements DetachedRiderPose {
   /**
    * Swimming at the surface with the face in the water (swim-back, 2026-10-29): a stroke swims up toward the light only
    * with the chest under too (held down), not whenever the head is: a crawl's head is in the water much of each stroke,
-   * and pitched 60° up, the stroke gave half its push forward (0.70 m/s through a chop, 0.80 now). False (`swim: 'old'`):
-   * up whenever the head is under, as before.
+   * and pitched 60° up, the stroke gave half its push forward (0.70 m/s through a chop, 0.80 now). Up still with the
+   * head well under (its centre deeper than CRAWL_FACE radii: plunged, not a face in the water), or under for longer
+   * than a crawl's arm cycle (CRAWL_CYCLE: a breath is due). False (`swim: 'old'`): up whenever the head is under.
    */
   crawlAtSurface = true;
+  /** How long the head has been under without a break, s, and how deep its centre is, m. */
+  private headUnder = 0;
+  private headDepth = 0;
   /** The head is fully under water. */
   underwater = false;
   readonly lastForces: BodyForceLedger = {
@@ -381,6 +392,7 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.controlGain = 0;
     this.diving = false;
     this.underwater = false;
+    this.headUnder = 0;
     this.angularSpeed = attached.angularVelocity.length();
     this.outsideDomain = false;
     this.swimEligible = false;
@@ -406,6 +418,29 @@ export class DetachedSurfer implements DetachedRiderPose {
     out.set(0, 0, 0);
     for (const node of this.nodes) out.addScaledVector(node.velocity, node.mass);
     return out;
+  }
+
+  /** The body's angular velocity as a whole, rad/s: its angular momentum about its centre of mass through its inertia there. */
+  spin(out = new Vector3()): Vector3 {
+    const center = this.centerOfMass(new Vector3());
+    const lever = new Vector3();
+    let xx = 0; let yy = 0; let zz = 0;
+    let xy = 0; let xz = 0; let yz = 0;
+    out.set(0, 0, 0);
+    for (const node of this.nodes) {
+      lever.subVectors(node.position, center);
+      out.add(new Vector3().crossVectors(lever, node.velocity).multiplyScalar(node.mass));
+      const { x, y, z } = lever;
+      xx += node.mass * (y * y + z * z);
+      yy += node.mass * (x * x + z * z);
+      zz += node.mass * (x * x + y * y);
+      xy -= node.mass * x * y;
+      xz -= node.mass * x * z;
+      yz -= node.mass * y * z;
+    }
+    const inertia = new Matrix3().set(xx, xy, xz, xy, yy, yz, xz, yz, zz);
+    if (Math.abs(inertia.determinant()) < 1e-9) return out.set(0, 0, 0);
+    return out.applyMatrix3(inertia.invert());
   }
 
   angularMomentum(out = new Vector3()): Vector3 {
@@ -634,6 +669,7 @@ export class DetachedSurfer implements DetachedRiderPose {
       }
       node.submersion = this.sample.wet
         ? submergedFraction(this.sample.surfaceY - node.position.y, node.radius) : 0;
+      if (index === PART_INDEX.head) this.headDepth = this.sample.wet ? this.sample.surfaceY - node.position.y : 0;
       // Aerated water (the wipeout spec, Part B) is a lighter mixture to float and drag in.
       const mixture = WATER_DENSITY * (1 - (this.sample.voidFraction ?? 0));
       const buoyancy = mixture * GRAVITY * node.volume * node.submersion;
@@ -692,12 +728,15 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.heading += clamp(input.steer, -1, 1) * this.controlGain * dt * 2;
 
     this.underwater = this.nodes[PART_INDEX.head].submersion >= 1;
+    this.headUnder = this.underwater ? this.headUnder + dt : 0;
     const dive = clamp(input.dive ?? 0, 0, 1);
     this.diving = dive > 0.05 && this.controlGain > 0;
     const effort = this.diving ? dive : input.stroke && this.controlGain > 0 ? 1 : 0;
     if (effort > 0) {
       // Diving pulls down and forward; underwater a stroke swims up toward the light; otherwise along the surface.
-      const held = this.underwater && (!this.crawlAtSurface || this.nodes[PART_INDEX.torso].submersion >= 1);
+      const head = this.nodes[PART_INDEX.head];
+      const held = this.underwater && (!this.crawlAtSurface || this.nodes[PART_INDEX.torso].submersion >= 1
+        || this.headDepth > CRAWL_FACE * head.radius || this.headUnder > CRAWL_CYCLE);
       const pitch = this.diving ? -DIVE_PITCH : held ? SURFACE_PITCH : Math.atan(0.3);
       const direction = this.strokeDirection.set(
         Math.sin(this.heading) * Math.cos(pitch), Math.sin(pitch), Math.cos(this.heading) * Math.cos(pitch),
