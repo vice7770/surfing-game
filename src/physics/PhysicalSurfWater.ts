@@ -492,6 +492,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       const share = this.weights[c] / wet;
       solver.qx[i] -= (impulseX * share) / mass;
       solver.qz[i] -= (impulseZ * share) / mass;
+      solver.markWater(i);
     }
   }
 

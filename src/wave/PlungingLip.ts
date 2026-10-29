@@ -598,6 +598,8 @@ export class PlungingLip implements LipParcelSource {
     const surface = (index: number) => h[index] + bed[index];
     const height = waveHeight > 0 ? waveHeight : surface(cell) - restLevel;
     if (!(height > 0) || !(h[cell] > 0)) return 0;
+    // A launch takes water and momentum from its window and rings: the device gets all of the water again (canyon-perf).
+    this.solver.markAllWater();
     const trough = surface(cell) - height;
     const reach = SOURCE_REACH * height;
     const column = cell % nx;
@@ -1238,6 +1240,7 @@ export class PlungingLip implements LipParcelSource {
     solver.h[cell] += volume / area;
     solver.qx[cell] += momentumX / area;
     solver.qz[cell] += momentumZ / area;
+    solver.markWater(cell);
     return true;
   }
 

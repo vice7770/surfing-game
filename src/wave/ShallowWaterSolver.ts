@@ -229,6 +229,15 @@ export class ShallowWaterSolver {
   protected predictorZ?: Float64Array;
   protected predictorMask?: Float64Array;
   private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
+  /**
+   * Which cells' water (h, qx, qz) the CPU has changed since a device last held it (canyon-perf, 2026-10-29): a device
+   * step then sends only those (`waterChangedFrom` … `waterChangedTo`, cell indices, none when from > to), or all of the
+   * water while `waterChangedAll`. Whatever writes h, qx or qz between device steps says so (`markWater`, or
+   * `markAllWater`): a board's push, a lip's launch or landing, an import; the CPU's own step and a window shift mark all.
+   */
+  waterChangedAll = true;
+  waterChangedFrom = Number.POSITIVE_INFINITY;
+  waterChangedTo = -1;
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: SolverOptions = {}) {
     this.nx = grid.nx;
@@ -330,9 +339,28 @@ export class ShallowWaterSolver {
     return rate > 0 ? this.courant / rate : Infinity;
   }
 
+  /** Cell `cell`'s water (h, qx or qz) was changed on the CPU (`waterChangedAll`). */
+  markWater(cell: number): void {
+    if (cell < this.waterChangedFrom) this.waterChangedFrom = cell;
+    if (cell > this.waterChangedTo) this.waterChangedTo = cell;
+  }
+
+  /** The CPU changed water anywhere (`waterChangedAll`). */
+  markAllWater(): void {
+    this.waterChangedAll = true;
+  }
+
+  /** A device now holds exactly this water, every cell (`waterChangedAll`). */
+  waterHeld(): void {
+    this.waterChangedAll = false;
+    this.waterChangedFrom = Number.POSITIVE_INFINITY;
+    this.waterChangedTo = -1;
+  }
+
   /** Advance by dt seconds, sub-stepping as the CFL condition requires. */
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
+    this.markAllWater();
     const substeps = cflSubsteps(dt, this.maxStableStep());
     const sub = dt / substeps;
     for (let s = 0; s < substeps; s += 1) {
@@ -426,6 +454,7 @@ export class ShallowWaterSolver {
   shiftAlongShore(columns: number): void {
     const shift = Math.trunc(columns);
     if (shift === 0) return;
+    this.markAllWater();
     const { nx, nz } = this;
     if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${shift} columns in a ${nx}-column window`);
     // The edges move: their columns get the spot's seabed back before they slide inside.

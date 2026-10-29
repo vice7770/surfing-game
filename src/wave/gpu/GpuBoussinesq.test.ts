@@ -99,6 +99,107 @@ describe('GpuBoussinesq host', () => {
     }
   });
 
+  // canyon-perf (2026-10-29): the water went up whole before every step, though it had just come back from the device
+  // and only a board's push or a lip's landing had touched it since. Now only the cells the CPU marked go up, and the
+  // device's water is then the same bits a whole upload would have made it: a stand-in GPU with memory, whose step nudges
+  // the water, checks it step by step against the CPU's arrays, and that a step after one whose result never came back
+  // (no readback) sends it all again.
+  it('sends only the water the CPU changed since the device last held it, leaving the device the same bits', async () => {
+    vi.stubGlobal('GPUBufferUsage', { STORAGE: 1, COPY_DST: 2, COPY_SRC: 4, MAP_READ: 8, UNIFORM: 16 });
+    vi.stubGlobal('GPUShaderStage', { COMPUTE: 1 });
+    vi.stubGlobal('GPUMapMode', { READ: 1 });
+    type Memory = { size: number; usage: number; bytes: Uint8Array };
+    const memories: Memory[] = [];
+    const waterWrites: { offset: number; length: number }[] = [];
+    let fields: Memory | undefined;
+    const n = 64;
+    const device = {
+      queue: {
+        writeBuffer: (buffer: Memory, offset: number, data: ArrayBuffer | Float32Array, dataOffset = 0, size?: number) => {
+          const bytes = data instanceof ArrayBuffer ? new Uint8Array(data, dataOffset, size) : new Uint8Array(data.buffer, data.byteOffset + dataOffset * 4, (size ?? data.length - dataOffset) * 4);
+          buffer.bytes.set(bytes, offset);
+          if (buffer === fields && offset < 3 * n * 4) waterWrites.push({ offset, length: bytes.length });
+        },
+        // The device's step: every cell's water nudged, then the readback copies run.
+        submit: (commands: { copies: (() => void)[] }[]) => {
+          const water = new Float32Array(fields!.bytes.buffer, 0, 3 * n);
+          for (let i = 0; i < water.length; i += 1) water[i] = Math.fround(water[i] * 1.001 + 0.001);
+          for (const command of commands) for (const copy of command.copies) copy();
+        },
+        onSubmittedWorkDone: async () => {},
+      },
+      createBuffer: ({ size, usage }: { size: number; usage: number }) => {
+        const memory = { size, usage, bytes: new Uint8Array(size), mapAsync: async () => {}, unmap: () => {}, destroy: () => {}, getMappedRange: () => memory.bytes.slice().buffer };
+        memories.push(memory);
+        if (size === FIELD_COUNT * n * 4) fields = memory;
+        return memory;
+      },
+      createBindGroupLayout: () => ({}), createPipelineLayout: () => ({}), createBindGroup: () => ({}), createComputePipeline: () => ({}),
+      createShaderModule: () => ({ getCompilationInfo: async () => ({ messages: [] }) }),
+      createCommandEncoder: () => {
+        const copies: (() => void)[] = [];
+        return {
+          beginComputePass: () => ({ setBindGroup: () => {}, setPipeline: () => {}, dispatchWorkgroups: () => {}, end: () => {} }),
+          copyBufferToBuffer: (from: Memory, fromOffset: number, to: Memory, toOffset: number, size: number) => {
+            copies.push(() => to.bytes.set(from.bytes.subarray(fromOffset, fromOffset + size), toOffset));
+          },
+          finish: () => ({ copies }),
+        };
+      },
+      destroy: () => {},
+    };
+    const gpu = { requestAdapter: async () => ({ limits: { maxStorageBufferBindingSize: 1e9, maxBufferSize: 1e9 }, requestDevice: async () => device }) } as unknown as GPU;
+    try {
+      const solver = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(-8, 0, 8), xBoundary: 'open' }, () => 2);
+      expect(solver.nx * solver.nz).toBe(n);
+      for (let i = 0; i < n; i += 1) {
+        solver.qx[i] = 0.1 * Math.sin(i);
+        solver.qz[i] = 0.05 * Math.cos(i);
+      }
+      const host = await GpuBoussinesq.create(solver, gpu);
+      if (!host) throw new Error('adapter missing');
+      // The device's water against the CPU's, as f32 bits.
+      const held = () => {
+        const water = new Float32Array(fields!.bytes.buffer, 0, 3 * n);
+        return [solver.h, solver.qx, solver.qz].every((array, k) => array.every((value, i) => Object.is(Math.fround(value), water[k * n + i])));
+      };
+      const step = async () => { waterWrites.length = 0; await host.step(1 / 60); };
+      // The first step sends it all, in one write; its result comes back.
+      await step();
+      expect(waterWrites).toEqual([{ offset: 0, length: 3 * n * 4 }]);
+      expect(held()).toBe(true);
+      // Nothing changed: nothing goes up, and the device still holds the CPU's water.
+      await step();
+      expect(waterWrites).toEqual([]);
+      expect(held()).toBe(true);
+      // A push on two cells, marked: only that run of cells goes up, in each of the three fields.
+      solver.qx[9] += 0.25;
+      solver.markWater(9);
+      solver.qz[12] -= 0.5;
+      solver.markWater(12);
+      const before = [solver.h, solver.qx, solver.qz].map((array) => Float32Array.from(array));
+      await step();
+      expect(waterWrites).toEqual([0, 1, 2].map((k) => ({ offset: (k * n + 9) * 4, length: 4 * 4 })));
+      // What went up was the CPU's water, as a whole upload would have sent it: the device then nudged and returned it.
+      const nudged = before.map((array) => array.map((value) => Math.fround(value * 1.001 + 0.001)));
+      expect([solver.h, solver.qx, solver.qz].map((array) => Float32Array.from(array))).toEqual(nudged);
+      expect(held()).toBe(true);
+      // A step whose result never comes back leaves the device's water its own: the next step sends it all again.
+      host.readback = false;
+      await step();
+      host.readback = true;
+      await step();
+      expect(waterWrites).toEqual([{ offset: 0, length: 3 * n * 4 }]);
+      expect(held()).toBe(true);
+      // The CPU's own step marks all of it.
+      solver.step(1 / 60);
+      await step();
+      expect(waterWrites).toEqual([{ offset: 0, length: 3 * n * 4 }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The M1 readback study (2026-10-17): a frame's CFL substeps went to the queue one submission each, and a GPU busy
   // drawing the page schedules each submission separately. They now go in one, with each substep's Params at its own
   // dynamic offset: the same kernels, parameters and order.

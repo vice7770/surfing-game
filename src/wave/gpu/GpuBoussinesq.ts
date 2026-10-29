@@ -200,6 +200,12 @@ export class GpuBoussinesq {
   private readonly bindLayout: GPUBindGroupLayout;
   private version = -1;
   private plungeVersion = -1;
+  /**
+   * Whether this device's water (h, qx, qz) may differ from the solver's in cells the solver has not marked changed
+   * (`ShallowWaterSolver.waterChangedAll`; canyon-perf, 2026-10-29): from its creation, and from each submitted step
+   * until its result is unpacked into the solver. Then only the cells the CPU changed since go up.
+   */
+  private waterStale = true;
   private disposed = false;
   /** At most one future result owns the mapped staging buffer. */
   private preparing = false;
@@ -370,11 +376,24 @@ export class GpuBoussinesq {
         this.write(this.fields, FIELD.HOLD * n * 4, this.field);
       }
       this.plungeVersion = solver.plungeVersion;
-      DEVICE_UPLOAD.forEach((index, k) => {
-        const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
-        this.upload.set(source, k * n);
-      });
-      this.write(this.fields, FIELD.H * n * 4, this.upload);
+      // The water: all of it when the device may hold other water, else the cells the CPU changed since it last held the
+      // solver's (a board's push, a lip's landing), the same f32 values either way: a cell that came back from the device
+      // goes up as the bits it came back as (canyon-perf, 2026-10-29).
+      if (this.waterStale || solver.waterChangedAll) {
+        DEVICE_UPLOAD.forEach((index, k) => {
+          const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
+          this.upload.set(source, k * n);
+        });
+        this.write(this.fields, FIELD.H * n * 4, this.upload);
+      } else if (solver.waterChangedFrom <= solver.waterChangedTo) {
+        const from = solver.waterChangedFrom;
+        const count = solver.waterChangedTo - from + 1;
+        DEVICE_UPLOAD.forEach((index, k) => {
+          const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
+          this.upload.set(source.subarray(from, from + count), k * n + from);
+          this.write(this.fields, (index * n + from) * 4, this.upload, k * n + from, count);
+        });
+      }
       if (this.zone) {
         packComponents(this.zone.boundary, solver.time, solver.xCenters[0], this.components);
         this.write(this.sea, 0, this.components);
@@ -423,6 +442,8 @@ export class GpuBoussinesq {
         DEVICE_READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
       }
       device.queue.submit([encoder.finish()]);
+      // The device's water moves on: it holds the solver's again only once this step's result is unpacked.
+      this.waterStale = true;
       transfer.submits += 1;
       if (!deferred) this.lastSubsteps = substeps;
       diagnostics.substeps = substeps;
@@ -476,6 +497,8 @@ export class GpuBoussinesq {
             }
             const unpackStart = performance.now();
             DEVICE_READBACK.forEach((index, k) => readbackTarget(solver, index).set(back.subarray(k * n, (k + 1) * n)));
+            solver.waterHeld();
+            this.waterStale = false;
             this.staging.unmap(); mapped = false;
             active = false; this.preparing = false; this.discardPrepared = undefined;
             solver.adoptDeviceStep(dt);
@@ -493,6 +516,8 @@ export class GpuBoussinesq {
         const view = back.subarray(k * n, (k + 1) * n);
         readbackTarget(solver, index).set(view);
       });
+      solver.waterHeld();
+      this.waterStale = false;
       this.staging.unmap(); mapped = false;
       solver.adoptDeviceStep(dt);
       diagnostics.unpack = performance.now() - phase;

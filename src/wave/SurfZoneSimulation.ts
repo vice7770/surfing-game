@@ -1264,6 +1264,7 @@ export class SurfZoneSimulation {
   importState(state: SurfZoneState): void {
     const { solver } = this;
     if (state.nx !== solver.nx || state.nz !== solver.nz) throw new Error(`A sea state from another tank (${state.nx}×${state.nz}, not ${solver.nx}×${solver.nz})`);
+    solver.markAllWater();
     const arrays = this.stateArrays();
     for (const [name, values] of Object.entries(state.arrays)) {
       const target = arrays[name];
