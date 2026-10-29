@@ -1,0 +1,7 @@
+== page GPU frame, paired (ab.html, base b11d63ef vs today), Medium preset (graphics=medium, components=24), Medium swell, Rich, 1280x720, steady-state ms a frame
+rich ride (start camera): base 7.52, today 8.91, paired diff +1.41 [1.27, 1.48]; main-thread submit 2.1 / 2.3
+rich horizon: base 8.72, today 9.86, paired diff +1.15 [1.00, 1.19]; submit 1.9 / 2.1
+in today's frame, ride, throughput arms: all 8.81; roller look off +0.01; curl and roller-front meshes hidden +0.01; none +0.02
+== High preset (graphics=high, 64 comps), Medium swell, Rich, 1280x720 (the sheet's own size, not High's 1.75 density)
+rich ride: base 9.95, today 10.78, paired diff +0.88 [0.55, 1.15]; submit 2.4 / 2.4
+rich horizon: base 10.90, today 12.25, paired diff +1.33 [1.10, 1.48]; submit 0.7 / 2.4

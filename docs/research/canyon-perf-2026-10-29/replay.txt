@@ -1,0 +1,26 @@
+replay canyon medium, 64 components, seed 8761, 240 frames, prefetched, filled (main 8c7b6b22):
+  sea time 26.0000 s; frames with 2+ substeps 0, most 1
+  h                    853a74c81c9a9592
+  qx                   c05b50e99c6ac1e8
+  qz                   9c37a99af1962876
+  foam.dense           92615326bd17562d
+  foam.residual        0a9e3573f98c004f
+  aeration.air         8817de71f84cb091
+  aeration.depth       9e0695b540ec8379
+  outerBreak           a2627c02ae77af2d
+  lastThrow            b6fcd2413d5c7985
+  lastOnset            788e7b0da7643f1d
+  reefOnsets.seenZ     7486af1508c5a4fa
+  reefOnsets.seenAt    010243a75ae27dd9
+  reefOnsets.lastOnReef b782ef800f465cce
+  breakingStrength     554ffc333ad96361
+  breakingAge          2556e0d136c79514
+  plungeHold           f0e3702be744427b
+  predictor.x          b5c31c6be15bf0ce
+  predictor.z          624dbb79d15e6fe1
+  riseRate             9fd2676e284926bd
+  viscosity            6a68677705eca23b
+  summary              90b917235c9ca2a2
+  snapshots            c83f69f5e5f66753
+this branch, same page on the root tree: all 22 hashes identical (Medium, prefetched, filled).
+Big, ordinary device path (no prefetch), filled, 240 frames, sea time 32 s: main and this branch, all 22 hashes identical (h 2c9a6ebf5af4369b).

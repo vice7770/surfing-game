@@ -16,9 +16,9 @@ foam's line grows from 30 m to 40 m and 35 m. Patches beside the line rise by 4 
 17 → 21 %; over all frames 25.7 → 27.0 % and 24.2 → 24.7 %), and a few fewer waves' ends travel 40 m down an arm as one
 line. At Big (seed 1) the up peak's typical line is 58 m (49 m) and its patches 39 % (42 %). The solver's lines at both
 peaks and the reef's (solver and drawn) are identical to main's to the digit in every seed and at Big. The cost on this
-machine (M4 Pro): 0.8 ms (Medium) to 1.0 ms (Big) more CPU per 1/30 s step; on the GPU, the curl and roller-front
-meshes cost nothing measurable (under 0.1 ms) and the roller look in the water shader about 0.9 ms from the start
-camera; the M1 was not measured.
+machine, the M1 Air (corrected 2026-10-29, canyon-perf: these notes first named it an M4 Pro): 0.8 ms (Medium) to 1.0 ms
+(Big) more CPU per 1/30 s step; on the GPU, the curl and roller-front meshes cost nothing measurable (under 0.1 ms) and
+the roller look in the water shader about 0.9 ms from the start camera.
 
 ## The change
 
@@ -138,7 +138,7 @@ wherever it broke. A faster cap leaves fewer cells ahead of a front; the 20° ca
 (`counts.crowded`, `ROLLER_SLOTS` 4, undrawn and unfelt that step): 7016 at Medium, 597 at Big, against none on main;
 overflows (a lens yielding its slot to a newer wave's) 40 and 45.
 
-**GPU** (`waterSheetGpuAB`, Rich, midday, `graphics=ultra`, 60 timed frames; this machine, not the M1; ms per frame,
+**GPU** (`waterSheetGpuAB`, Rich, midday, `graphics=ultra`, 60 timed frames; this machine, the M1 Air; ms per frame,
 median):
 
 Between page loads the medians cannot tell the look's cost: the same page timed twice in a row moved from 34.7 to
@@ -226,9 +226,9 @@ GPU's sea is its own and both pages run the same sea, shot at the same time (fro
 - **The rider's feel at the beach peaks changes:** roller lenses where there were none (their push and aeration, and
   their tops in the surface the board meets, `PhysicalSurfWater`), and no breaking felt ahead of an arm's front (a short
   moment at the 20° cap: 4.8 % of crest column-frames). Riding them is the owner's.
-- **M1 cost not measured.** Here the look adds 0.8–1.0 ms of CPU a step and about 0.9 ms of GPU where the camera looks
-  along the beach peaks' bores (the roller look's per-pixel work; the meshes nothing). Worth a `waterSheetGpuAB` on the M1,
-  in-page (the roller look's `waterRollerColumns` arm), since page-to-page medians swing by more than the look costs.
+- **The cost is the M1 Air's** (these notes first said the M1 was not measured; it was the machine measured): the look
+  adds 0.8–1.0 ms of CPU a step and about 0.9 ms of GPU where the camera looks along the beach peaks' bores (the roller
+  look's per-pixel work; the meshes nothing). The Canyon's frame rate on the M1 is canyon-perf's (2026-10-29).
 
 ## Shot list (the owner rides; each shot once with the default and once with `?canyonBeachLook=off`)
 
