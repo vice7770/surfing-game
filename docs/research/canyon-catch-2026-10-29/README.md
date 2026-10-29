@@ -252,7 +252,20 @@ the pop after the crest passed the start (s); the face under the board; how far 
 
 ## 6. Tests
 
-TESTS
+- `npx tsc --noEmit -p .`: clean.
+- The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`):
+  304 files passed (30 skipped), 2903 tests passed (18 expected fail, 36 skipped).
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`:
+  21 passed (83 skipped by the filter), 22 min.
+- **New or changed:**
+  - `AttachedRider.test.ts`:
+    - the sprint down a 12° face: above 3.9 m/s now, under 3.3 with the old stroke;
+    - an outrun hand's load stays under an arm's limit and well under the broadside one's.
+  - `PhysicalMode.test.ts`: the `?stroke=old` switch at every spot, and online rooms on the default.
+  - `rollerScope.test.ts`: its two paddlers' fingerprints recorded again by design, and with `stroke: 'old'` the old
+    fingerprints bit for bit.
+  - The flat-water sprint and cruise tests pass unchanged.
+- No rider sessions.
 
 ## Tools
 
