@@ -78,6 +78,8 @@ export interface RiderPlacement {
 
 export interface RideSessionOptions {
   stance?: StanceName;
+  /** How the paddler's hands meet water outrunning them (`AttachedRiderOptions.stroke`; 'old': the `?stroke=old` dev switch). */
+  stroke?: 'feather' | 'old';
 }
 
 /**
@@ -125,7 +127,7 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
-    this.rider = new AttachedRider(this.board.shape, { stance: options.stance });
+    this.rider = new AttachedRider(this.board.shape, { stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}) });
     const tail = -this.board.shape.length / 2 + PLUG_FROM_TAIL;
     this.plugLocal.set(0, deckHeight(this.board.shape, tail), tail);
   }

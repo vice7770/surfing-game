@@ -182,6 +182,18 @@ const HAND_DRAG_AREA = 0.066;
  */
 const HAND_FORCE_LIMIT = 0.4;
 /**
+ * A pulling hand the board outruns (canyon-catch, 2026-10-29): the stroke sweeps the hand back over the board on a fixed
+ * path at about 2.6–2.9 m/s on average (the sprint's and the cruise's), so once the board goes faster than that through
+ * the water, the hand's palm would meet the water head-on from in front and brake. A paddler cannot pull water that
+ * outruns the stroke and does not hold the palm against it: the hand slices in edge-on until the board slows, and the
+ * arm drives in no broadside blade. Edge-on, a flat hand's drag is about a fifth of its broadside drag (Berger, de Groot
+ * and Hollander 1995: the hand's drag coefficient falls from about 1.1 broadside to 0.2–0.3 at small pitch): its drag
+ * area is FEATHER_DRAG of the pulling hand's then. Without it the sprint settled down a 12° face at 3.0 m/s against the
+ * cruise's 3.9, slower the steeper the face (3.7 against 5.8 at 20°), and a paddler's sprint left Canyon waves behind
+ * that the cruise caught. Flat-water paddling never outruns its hands (1.6 and 2.1 m/s), and is unchanged.
+ */
+const FEATHER_DRAG = 0.2;
+/**
  * Steering lying down: paddling, the arm on the outside of the turn pulls
  * harder and the inside arm softer by this share; not paddling, the outside arm
  * sweeps alone. Board +x is its left, so turning left is a stronger right arm.
@@ -763,6 +775,11 @@ export interface AttachedRiderOptions {
   mass?: number;
   stance?: StanceName;
   phase?: PosePhase;
+  /**
+   * How a pulling hand meets water outrunning it (`FEATHER_DRAG`): 'feather', the default, edge-on; 'old' broadside, as
+   * before canyon-catch (the `?stroke=old` dev switch, for A/Bs).
+   */
+  stroke?: 'feather' | 'old';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1046,6 +1063,9 @@ export class AttachedRider {
   paddleSprintShare = 0;
   /** Sprinting, the pulling arm's drag area broadside to the stroke this substep, m² (SPRINT_PADDLE_AREA). */
   private bladeArea = 0;
+  /** A hand is pulling this substep (`paddleStep`): one the board outruns feathers (`FEATHER_DRAG`), unless the stroke is 'old'. */
+  private pulling = false;
+  private readonly feathers: boolean;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
   private strokeRoll = 0;
   private waterCalm = 1;
@@ -1198,6 +1218,7 @@ export class AttachedRider {
     this.mass = options.mass ?? REFERENCE_RIDER.mass;
     this.stance = options.stance ?? 'regular';
     this.phase = options.phase ?? 'prone';
+    this.feathers = (options.stroke ?? 'feather') === 'feather';
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
     this.feet = stanceFeet(shape);
@@ -2106,7 +2127,9 @@ export class AttachedRider {
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
       // Sprinting, the arm deeper in the catch pushes broadside along the stroke (SPRINT_PADDLE_AREA).
       this.bladeArea = HAND_DRAG_AREA * (SPRINT_PADDLE_AREA - 1) * this.paddleSprintShare * effort;
+      this.pulling = this.feathers;
       this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA * effort, h, 1);
+      this.pulling = false;
       this.bladeArea = 0;
     }
   }
@@ -2209,7 +2232,9 @@ export class AttachedRider {
     const force = this.partForce.set(-support * sample.slopeX, support, -support * sample.slopeZ);
     this.buoyancy.add(force);
     const relative = this.flow.set(sample.flowX, sample.flowY, sample.flowZ).sub(this.partVelocity);
-    const drag = 0.5 * mixture * dragArea * wet * relative.length();
+    // A pulling hand the board outruns slices in edge-on (`FEATHER_DRAG`): the water meets it from in front.
+    const outrun = this.pulling && slot >= RIDER_PARTS.length && relative.dot(this.bodyAxis) < 0;
+    const drag = 0.5 * mixture * dragArea * wet * relative.length() * (outrun ? FEATHER_DRAG : 1);
     // Inside a roller lens (the Canyon roller lens, S3; the advisor's ruling of 2026-10-06, provisional): the shelter
     // models streamlined ambient flow along a paddling body, but a roller overruns a prone rider from behind and strikes
     // its feet, legs and tail as bluff bodies. Where the lens's own flow is (its share, S(ζ)·g), none of it is sheltered;
@@ -2217,7 +2242,7 @@ export class AttachedRider {
     const lens = sample.lensShare;
     const along = lens !== undefined && lens > 0 ? shelter + (1 - shelter) * lens : shelter;
     force.addScaledVector(relative, drag).addScaledVector(this.bodyAxis, -drag * (1 - along) * relative.dot(this.bodyAxis));
-    if (this.bladeArea > 0 && slot >= RIDER_PARTS.length) {
+    if (this.bladeArea > 0 && slot >= RIDER_PARTS.length && !outrun) {
       // A plate's drag acts along its normal: the arm broadside to the stroke pushes only along the board.
       const normal = relative.dot(this.bodyAxis);
       force.addScaledVector(this.bodyAxis, 0.5 * mixture * this.bladeArea * wet * normal * Math.abs(normal));
