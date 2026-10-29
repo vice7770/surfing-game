@@ -168,10 +168,12 @@ export interface LensPoint {
   /** Its water's velocity, c·n̂, m/s. */
   flowX: number;
   flowZ: number;
+  /** Where the point lies along it, ξ: 0 at its crest, 1 at its toe, negative behind the crest (bottom-stop, 2026-10-29). */
+  xi?: number;
 }
 
 export function createLensPoint(): LensPoint {
-  return { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0 };
+  return { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0, xi: 0 };
 }
 
 /** What the rider's water reads from a roller (`PhysicalSurfWater`'s `roller` option). */
@@ -647,6 +649,8 @@ export class SpillingRoller implements RollerLens {
   private readonly section = createSection();
   /** The lens `thicknessAt` picked: its scale and its water's velocity. */
   private pickG = 0;
+  /** The picked lens's ξ at the point (`LensPoint.xi`). */
+  private pickXi = 0;
   private pickFlowX = 0;
   private pickFlowZ = 0;
 
@@ -826,6 +830,7 @@ export class SpillingRoller implements RollerLens {
     out.thickness = thickness;
     out.rise = this.options.voidMean * thickness;
     out.g = this.pickG;
+    out.xi = this.pickXi;
     out.flowX = this.pickFlowX;
     out.flowZ = this.pickFlowZ;
     return true;
@@ -1279,6 +1284,7 @@ export class SpillingRoller implements RollerLens {
         picked = o0;
         pickedW0 = w0;
         this.pickG = g;
+        this.pickXi = xi;
       }
     }
     if (!(best > 0)) return 0;

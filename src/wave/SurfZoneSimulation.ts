@@ -119,6 +119,14 @@ export interface SurfZoneConfig {
    * the default.
    */
   swim?: 'old';
+  /**
+   * 'old': a roller's froth drags a board's whole wetted hull anywhere in the lens's footprint, past its g-blended flow
+   * and uncapped, as before bottom-stop (2026-10-29); by default only where the lens reaches (ξ ≤ g), past the roller's
+   * own water (c·n̂), at most its grip on the face (Duncan's shear) and on the share of the hull's depth it covers
+   * (`PhysicalSurfWaterOptions.froth`). Only the Canyon has roller lenses. The `?froth=old` dev switch, for A/Bs; online
+   * rooms run the default.
+   */
+  froth?: 'old';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

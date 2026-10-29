@@ -55,6 +55,18 @@ export interface WaterSample {
   lensFlowX?: number;
   lensFlowZ?: number;
   lensScale?: number;
+  /**
+   * In a roller lens's footprint (bottom-stop, 2026-10-29), what a board's froth drag reads: the lens's thickness there,
+   * m, down from the surface (which stands on its top); where the point lies along it, ξ (0 at its crest, 1 at its toe,
+   * negative behind); its own water's velocity, c·n̂, m/s; and its grip on the face there, Pa: the weight of its aerated
+   * water along the slope, ρ(1 − ᾱ)·g·t·sin θ (Duncan's shear, Martins et al. 2018 eq. 1). Absent outside a footprint,
+   * and where the water leaves them out (`?froth=old`).
+   */
+  lensThickness?: number;
+  lensReach?: number;
+  lensSpeedX?: number;
+  lensSpeedZ?: number;
+  lensGrip?: number;
   /** The seabed's unit normal (up on a flat bed), and what it is made of (the Teahupo'o Reef, Part C; absent: sand). */
   bedNormalX: number;
   bedNormalY: number;
@@ -82,7 +94,7 @@ export function createWaterSample(): WaterSample {
   return {
     surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
     normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
-    bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand', lensShare: undefined, lensFlowX: undefined, lensFlowZ: undefined, lensScale: undefined,
+    bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand', lensShare: undefined, lensFlowX: undefined, lensFlowZ: undefined, lensScale: undefined, lensThickness: undefined, lensReach: undefined, lensSpeedX: undefined, lensSpeedZ: undefined, lensGrip: undefined,
     waterFloorY: undefined, ceilingY: undefined, ceilingTopY: undefined, covered: undefined, clearance: undefined, tube: undefined,
   };
 }

@@ -71,13 +71,21 @@ export function lensFlowShare(zeta: number): number {
  * air is the more of the lens's and the plume's (they describe the same air; the lens's is better resolved). The
  * vertical flow is left as it is.
  */
-export function applyLens(out: WaterSample, y: number, lens: LensPoint, voidMean: number, u: number, w: number): void {
+export function applyLens(out: WaterSample, y: number, lens: LensPoint, voidMean: number, u: number, w: number, thickness = true): void {
   out.regime = 'bore';
   out.flowX = u;
   out.flowZ = w;
   out.lensFlowX = u + lens.g * (lens.flowX - u);
   out.lensFlowZ = w + lens.g * (lens.flowZ - w);
   out.lensScale = lens.g;
+  if (thickness) {
+    out.lensThickness = lens.thickness;
+    out.lensReach = lens.xi;
+    out.lensSpeedX = lens.flowX;
+    out.lensSpeedZ = lens.flowZ;
+    const slope = Math.hypot(out.slopeX, out.slopeZ);
+    out.lensGrip = SEAWATER_DENSITY * (1 - voidMean) * GRAVITY * lens.thickness * (slope / Math.hypot(1, slope));
+  }
   const underside = out.surfaceY - lens.thickness;
   if (!(lens.thickness > 0) || y < underside) return;
   const zeta = (y - underside) / lens.thickness;
@@ -133,6 +141,12 @@ export interface PhysicalSurfWaterOptions {
    * (`setSampleTime`).
    */
   surfaceMotion?: 'old';
+  /**
+   * 'old': the samples carry no lens thickness, reach, own speed or grip, so the board's froth drag acts on its whole
+   * wetted hull anywhere in a lens's footprint, past the g-blended flow and uncapped, as before bottom-stop (2026-10-29;
+   * the `?froth=old` dev switch, for A/Bs).
+   */
+  froth?: 'old';
 }
 
 /** Only numeric state read by the existing plain-height sampler; no complete solver facade. */
@@ -327,7 +341,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private readonly cells = new Int32Array(4);
   private readonly weights = new Float64Array(4);
   private readonly hit = createContactHit();
-  private readonly lens: LensPoint = { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0 };
+  private readonly lens: LensPoint = { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0, xi: 0 };
   /**
    * When the bodies' samples are taken, s, relative to the water's state (`setSampleTime`; ≤ 0, the step ends at the
    * state). The sea's surface rises at −∇·q (continuity: the depth-integrated mass equation, ∂η/∂t + ∇·q = 0), a face
@@ -356,6 +370,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
+      ...(simulation.config.froth ? { froth: simulation.config.froth } : {}),
     });
   }
 
@@ -384,6 +399,11 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       out.lensFlowX = undefined;
       out.lensFlowZ = undefined;
       out.lensScale = undefined;
+      out.lensThickness = undefined;
+      out.lensReach = undefined;
+      out.lensSpeedX = undefined;
+      out.lensSpeedZ = undefined;
+      out.lensGrip = undefined;
     }
     if (this.outside(x, z)) return this.flatSea(out);
     const { h, bed, qx, qz } = solver;
@@ -458,7 +478,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.flowX = u * horizontal;
     out.flowZ = w * horizontal;
     out.flowY = rise * vertical;
-    if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w);
+    if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w, this.options.froth !== 'old');
     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
     return out;
   }

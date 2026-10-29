@@ -41,6 +41,17 @@ export interface BoardWork {
  */
 const FROTH_DRAG = 500;
 
+/**
+ * The froth's stress on a patch of hull in a roller lens's footprint where the lens reaches (bottom-stop, 2026-10-29),
+ * Pa, along the roller's own direction: FROTH_DRAG·g on the speed `ahead` (m/s) by which the patch outruns the roller's
+ * water, on the share of the patch's depth under the surface, `immersion` (m), that the lens's thickness covers, and
+ * never more than the roller's grip on the face there (`WaterSample.lensGrip`). Needs the sample's lens fields.
+ */
+export function frothStress(sample: WaterSample, ahead: number, immersion: number): number {
+  const inLens = sample.lensThickness === undefined || !(immersion > sample.lensThickness) ? 1 : sample.lensThickness / immersion;
+  return Math.min(FROTH_DRAG * sample.lensScale! * ahead * inLens, sample.lensGrip!);
+}
+
 export interface BoardBodyOptions {
   shape?: BoardShape;
   payloads?: BoardPayload[];
@@ -839,15 +850,40 @@ export class BoardBody implements BoardContactBody {
       // roller's water is already pushed by the lens's unsheltered flow on the body and by the hull's forces, so a
       // symmetric drag would count that push twice. So only the board's speed past the lens's water, along its flow, is
       // dragged, linearly, scaled by the lens's development and the wetted hull. Nothing outside a lens.
-      if (sample.lensScale !== undefined && sample.lensScale > 0) {
+      // Where it holds froth (bottom-stop, 2026-10-29, after the water-physics advisor's ruling of that day), with the
+      // lens's fields (`?froth=old`, or a water that leaves them out: as before, in full anywhere in the footprint):
+      // - a young roller reaches only so far down the face, the further the more developed (ξ ≤ g; spillers' rollers
+      //   grow to their full length over 5–8 breaker depths, Svendsen 1984; Duncan's steady ones cover ~60 % of the face);
+      // - the board is held back only past the roller's own water, c·n̂ (not the g-blended flow, slower in a young lens);
+      // - never harder than the roller's grip on the face there, ρ(1 − ᾱ)·g·t·sin θ (Duncan's shear, Martins et al. 2018
+      //   eq. 1), a few tens to a hundred Pa where it is thin;
+      // - and only on the share of the patch's depth the lens covers (a hull below it runs in green water).
+      // Dragged in full down to a young lens's toe, past its g-blended flow and without a cap, a straight-in rider at the
+      // bottom of a Big face was braked at 0.3–0.5 body weights by froth that is not drawn there, and thrown; the bare
+      // board then stopped dead (about 11 g).
+      const reached = sample.lensReach === undefined || sample.lensScale === undefined || sample.lensReach <= sample.lensScale;
+      if (sample.lensScale !== undefined && sample.lensScale > 0 && reached) {
         const wettedHere = force.wettedArea + force.deckWettedArea;
-        const flow = Math.sqrt(sample.lensFlowX! * sample.lensFlowX! + sample.lensFlowZ! * sample.lensFlowZ!);
-        const ex = flow > 0 ? sample.lensFlowX! / flow : 0;
-        const ez = flow > 0 ? sample.lensFlowZ! / flow : 0;
-        const ahead = Math.max(0, (relative.x + sample.flowX - sample.lensFlowX!) * ex + (relative.z + sample.flowZ - sample.lensFlowZ!) * ez);
-        const dx = ahead * ex;
-        const dz = ahead * ez;
-        const drag = FROTH_DRAG * sample.lensScale * wettedHere;
+        const ownX = sample.lensSpeedX ?? sample.lensFlowX!;
+        const ownZ = sample.lensSpeedZ ?? sample.lensFlowZ!;
+        const flow = Math.sqrt(ownX * ownX + ownZ * ownZ);
+        const ex = flow > 0 ? ownX / flow : 0;
+        const ez = flow > 0 ? ownZ / flow : 0;
+        const ahead = Math.max(0, (relative.x + sample.flowX - ownX) * ex + (relative.z + sample.flowZ - ownZ) * ez);
+        let drag: number;
+        let dx: number;
+        let dz: number;
+        if (sample.lensGrip === undefined) {
+          // As before: N·s/m on the speed past the lens's water.
+          drag = FROTH_DRAG * sample.lensScale * wettedHere;
+          dx = ahead * ex;
+          dz = ahead * ez;
+        } else {
+          // N, along the roller's own direction.
+          drag = frothStress(sample, ahead, sample.surfaceY - point[k * 3 + 1]) * wettedHere;
+          dx = ex;
+          dz = ez;
+        }
         if (drag > 0 && ahead > 0) {
           const fx = -drag * dx;
           const fz = -drag * dz;

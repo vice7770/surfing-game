@@ -410,6 +410,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...surfaceMotionSwitch(),
     // `?swim=old`: back on the board after a wipeout as before swim-back (the reel to the ankle, the springs' pull), for A/Bs.
     ...swimSwitch(),
+    // `?froth=old`: a roller's froth dragging a board anywhere in its footprint, uncapped, as before bottom-stop, for A/Bs.
+    ...frothSwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -501,6 +503,15 @@ export function surfaceMotionSwitch(search?: string): { surfaceMotion?: 'old' } 
  */
 export function swimSwitch(search?: string): { swim?: 'old' } {
   return devParam('swim', search)?.trim().toLowerCase() === 'old' ? { swim: 'old' } : {};
+}
+
+/**
+ * The `?froth=old` dev switch (`SurfZoneConfig.froth`, bottom-stop 2026-10-29): a roller's froth drags a board's whole
+ * wetted hull anywhere in the lens's footprint, past the lens's g-blended flow and uncapped, as before, in place of only
+ * where the lens reaches, past the roller's own water and at most its grip on the face. Only the Canyon has roller lenses.
+ */
+export function frothSwitch(search?: string): { froth?: 'old' } {
+  return devParam('froth', search)?.trim().toLowerCase() === 'old' ? { froth: 'old' } : {};
 }
 
 /**

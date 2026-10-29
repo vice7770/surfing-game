@@ -31,6 +31,8 @@ export interface RollerBoreOptions {
    * `PhysicalSurfWater`'s is, so the lens's top is felt as the game draws it (its toe smoothed over a node).
    */
   nodeSpacing?: number;
+  /** 'old': the samples leave out the lens's thickness, reach, own speed and grip, as `PhysicalSurfWater`'s `?froth=old`. */
+  froth?: 'old';
 }
 
 function smoothstep(t: number): number {
@@ -51,7 +53,7 @@ function smoothstep(t: number): number {
  * the lens and 0 elsewhere. Test-only.
  */
 export class RollerWater implements SurfWater {
-  readonly options: Required<Omit<RollerBoreOptions, 'roller'>> & { roller: RollerOptions };
+  readonly options: Required<Omit<RollerBoreOptions, 'roller' | 'froth'>> & { roller: RollerOptions; froth?: 'old' };
   /** The roller's length L_r and crest thickness t_c (of the quarter ellipse, or the wedge's at its crest), m. */
   readonly rollerLength: number;
   readonly crestThickness: number;
@@ -135,15 +137,17 @@ export class RollerWater implements SurfWater {
       slopeX: 0, slopeZ, normalX: 0, normalY: 1 / norm, normalZ: -slopeZ / norm,
       flowX: 0, flowY: rising * (height / column), flowZ: current, regime: rise > 0 ? 'bore' : 'profile',
       breaking: thickness > 0 ? 1 : 0, voidFraction: 0, turbulence: 0, lensShare: undefined, lensFlowX: undefined, lensFlowZ: undefined, lensScale: undefined,
+      lensThickness: undefined, lensReach: undefined, lensSpeedX: undefined, lensSpeedZ: undefined, lensGrip: undefined,
     });
     if (thickness > 0) {
       const { lens } = this;
       lens.thickness = thickness;
       lens.rise = roller.voidMean * thickness;
       lens.g = this.options.scale;
+      lens.xi = (z - this.crestZ()) / this.rollerLength;
       lens.flowX = 0;
       lens.flowZ = speed;
-      applyLens(out, y, lens, roller.voidMean, 0, current);
+      applyLens(out, y, lens, roller.voidMean, 0, current, this.options.froth !== 'old');
     }
     return out;
   }

@@ -57,7 +57,9 @@ let sim: SurfZoneSimulation | undefined;
 if (waterName === 'canyon') {
   const size = (option('size') ?? 'medium') as SwellSize;
   const settings = physicalSettingsFor('canyon', { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
-  const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, Number(option('seed') ?? 1), true), compute: 'cpu', ...(swimOption ? { swim: swimOption } as never : {}) };
+  const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, Number(option('seed') ?? 1), true), compute: 'cpu', ...(swimOption ? { swim: swimOption } as never : {}),
+    // `--froth old`: a roller's froth on the boards as before bottom-stop (`?froth=old`).
+    ...(option('froth') === 'old' ? { froth: 'old' as const } : {}) };
   sim = new SurfZoneSimulation(config, 'warm');
   sim.importState(decodeSurfZoneState(new Uint8Array(readFileSync(option('state')!))));
   const physical = PhysicalSurfWater.forSimulation(sim);

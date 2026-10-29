@@ -32,8 +32,9 @@ const show = option('show') ?? 'popup';
 const STEP = 1 / 60;
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 // `--surface old`: the sea's surface held still through the bodies' step, as before popup-moving-face (`?surfaceMotion=old`).
+// `--froth old`: a roller's froth on the boards as before bottom-stop (`?froth=old`).
 const config: SurfZoneConfig = {
-  ...surfZoneConfigFor(settings, Number(option('seed') ?? 1), true), compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}),
+  ...surfZoneConfigFor(settings, Number(option('seed') ?? 1), true), compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}), ...(option('froth') === 'old' ? { froth: 'old' as const } : {}),
 };
 const sim = new SurfZoneSimulation(config, 'warm');
 sim.importState(decodeSurfZoneState(new Uint8Array(readFileSync(option('state')!))));

@@ -53,7 +53,7 @@ const count = Number(option('riders') ?? 4);
 const spread = Number(option('spread') ?? 3);
 
 interface Trial {
-  session: RideSession; gauge: WaveFrameGauge; dx: number; seenBehind: boolean; sprinting: boolean; popped: boolean; stood: number;
+  session: RideSession; gauge: WaveFrameGauge; dx: number; seenBehind: boolean; sprinting: boolean; popped: boolean; stood: number; lastBoardWork?: Record<string, number>; lastRiderWork?: Record<string, number>;
   riding: number; done: boolean; log: string[]; speeds: number[]; topSpeed: number; worstDrop: number; worstAt: number;
 }
 const trials: Trial[] = Array.from({ length: count }, (_, k) => {
@@ -149,6 +149,21 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
           + `hull ${(board.lowestPoint() - sample.surfaceY).toFixed(3)}${lensPatches(session)}${lensesHere(board.centerOfMass.x, board.centerOfMass.z)}`);
       }
     }
+    // --trace-dx D --trace-from T: per step, the board's and the rider's velocities and each ledger's work this step, J.
+    if (option('trace-dx') !== undefined && Math.abs(trial.dx - Number(option('trace-dx'))) < 0.05 && !Number.isNaN(trial.stood)
+      && t - trial.stood >= Number(option('trace-from') ?? 0)) {
+      const bw = { ...board.work } as Record<string, number>;
+      const rw = { ...session.rider.work } as Record<string, number>;
+      const delta = (now: Record<string, number>, last: Record<string, number> | undefined) => Object.entries(now)
+        .map(([key, value]) => [key, value - (last?.[key] ?? value)] as const).filter(([, d]) => Math.abs(d) > 5).map(([key, d]) => `${key} ${d.toFixed(0)}`).join(' ');
+      const rv = session.rider.velocity;
+      const ke = 0.5 * board.mass * board.velocity.lengthSq() + 0.5 * session.rider.mass * rv.lengthSq();
+      console.log(`trace t ${(t - trial.stood).toFixed(3)} ${session.phase} board v ${board.velocity.x.toFixed(2)} ${board.velocity.y.toFixed(2)} ${board.velocity.z.toFixed(2)} `
+        + `rider v ${rv.x.toFixed(2)} ${rv.y.toFixed(2)} ${rv.z.toFixed(2)} attached ${session.rider.attached} upright ${session.rider.upright} KE ${ke.toFixed(0)} `
+        + `| board work ${delta(bw, trial.lastBoardWork)} | rider work ${delta(rw, trial.lastRiderWork)}`);
+      trial.lastBoardWork = bw;
+      trial.lastRiderWork = rw;
+    }
     if (session.phase === 'fallen' || (!Number.isNaN(trial.stood) && t - trial.stood > Number(option('after') ?? 6)) || t > seconds) trial.done = true;
   }
 }
@@ -159,5 +174,7 @@ for (const trial of trials) {
   console.log(`dx ${trial.dx.toFixed(1).padStart(5)}: ${outcome.padEnd(42)} top speed ${trial.topSpeed.toFixed(2)} m/s, riding ${trial.riding.toFixed(2)} s, `
     + `most lost in 0.1 s ${trial.worstDrop.toFixed(2)} m/s at ${trial.worstAt.toFixed(2)} s`);
 }
-const stopped = trials.find((trial) => trial.worstDrop > 2);
+// The log of the first rider who lost more than 2 m/s in 0.1 s, or of the rider at `--log-dx D`.
+const logDx = option('log-dx');
+const stopped = logDx !== undefined ? trials.find((trial) => Math.abs(trial.dx - Number(logDx)) < 0.05) : trials.find((trial) => trial.worstDrop > 2);
 if (stopped && !quiet) console.log(`first stopped (dx ${stopped.dx.toFixed(1)}):\n  ${stopped.log.join('\n  ')}`);
