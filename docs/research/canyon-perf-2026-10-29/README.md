@@ -261,9 +261,9 @@ In the page's worker the snapshot gains more (−2.5 ms). Once the 2.2 MB upload
 
 ## 5. Tests
 
-- `npx tsc --noEmit -p .`: TSC
-- The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`): MAIN
-- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: SZS
+- `npx tsc --noEmit -p .`: clean.
+- The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`): 304 files passed (30 skipped), 2901 tests passed (18 expected fail, 36 skipped).
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: 21 passed (83 skipped by the filter), 22 min.
 - The GPU parity tests (`src/wave/gpu/*.test.ts`, `src/dev/tierParity.test.ts`, `src/game/SurfZoneWaterPrefetch.test.ts`, `src/game/SurfZoneHost.test.ts`): 169 passed before the main suite's run.
 - On the device: the replay hashes above. No rider sessions.
 
