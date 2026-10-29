@@ -80,6 +80,12 @@ export interface RideSessionOptions {
   stance?: StanceName;
   /** How the paddler's hands meet water outrunning them (`AttachedRiderOptions.stroke`; 'old': the `?stroke=old` dev switch). */
   stroke?: 'feather' | 'old';
+  /**
+   * Back to the board after a wipeout (swim-back, 2026-10-29): by default the reel brings the board's tail to the hand
+   * and the swimmer climbs on from where the body is (`BoardRecovery`, `AttachedRider.climbFrom`); 'old' (the
+   * `?swim=old` dev switch): the reel to the ankle and the springs' pull, as before.
+   */
+  swim?: 'old';
 }
 
 /**
@@ -96,7 +102,9 @@ export class RideSession {
   readonly rider: AttachedRider;
   readonly surfer = new DetachedSurfer();
   /** The fallen surfer's grab on the board, pulling them back onto it (surfer plan S3). */
-  readonly recovery = new BoardRecovery(this.surfer);
+  readonly recovery: BoardRecovery;
+  /** 'old': back on the board as before swim-back (`RideSessionOptions.swim`). */
+  private readonly swimOld: boolean;
   /** The latest climb back on: the swimmer's and board's linear momentum just before, the mounted pair's after (N·s), and how many so far. */
   readonly remount = { before: new Vector3(), after: new Vector3(), count: 0 };
   /** The leash, from the back-foot ankle to the tail plug; a new one at each placement. */
@@ -113,6 +121,7 @@ export class RideSession {
   private readonly held = { x: 0, z: 0 };
   private readonly heldCenter = new Vector3();
   private readonly heldMomentum = new Vector3();
+  private readonly climbParts = new Float64Array(RIDER_PARTS.length * 3);
   private readonly sample = createWaterSample();
   /** The state the fall body started from, at the latest separation: the rider's centre of mass, frame, motion and parts. */
   readonly handoff = {
@@ -128,6 +137,8 @@ export class RideSession {
 
   constructor(options: RideSessionOptions = {}) {
     this.rider = new AttachedRider(this.board.shape, { stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}) });
+    this.swimOld = options.swim === 'old';
+    this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});
     const tail = -this.board.shape.length / 2 + PLUG_FROM_TAIL;
     this.plugLocal.set(0, deckHeight(this.board.shape, tail), tail);
   }
@@ -259,13 +270,28 @@ export class RideSession {
       this.breath.step(dt, surfer.underwater, working ? BREATH.working : BREATH.relaxed);
       surfer.resolveBoardContact(board);
       const back = surfer.nodes[this.rider.stance === 'regular' ? 6 : 5];
-      this.leash.step(dt, this.leashAnkle(this.ankle), back, this.leashPlug(this.plug), board, input.reel ?? false);
+      this.leashPlug(this.plug);
+      if (!this.swimOld && (input.reel ?? false) && this.recovery.state === 'free') {
+        // Hand over hand, the cord comes in through the hand nearer the board: its tail comes to the hand.
+        const hand = this.reelingHand(this.plug);
+        this.leash.step(dt, hand.position, hand, this.plug, board, true, 'hand');
+      } else {
+        this.leash.step(dt, this.leashAnkle(this.ankle), back, this.plug, board, this.swimOld ? (input.reel ?? false) : false);
+      }
       // In the water, the pop-up input reaches for the board, and holding it reels the leash in; within reach
       // the grab pulls the body onto it.
       if ((input.popUp || input.reel) && this.recovery.state === 'free') this.recovery.tryGrab(board);
-      if (this.recovery.state !== 'free' && this.recovery.step(dt, board) === 'prone-ready') this.climbOn();
+      const recovered = this.recovery.state !== 'free' ? this.recovery.step(dt, board) : 'free';
+      if (recovered === 'prone-ready') this.climbOn();
+      else if (recovered === 'climb-ready') this.climbOn(true);
     }
     if (wasAttached && !rider.attached) this.reefCause();
+  }
+
+  /** The swimmer's arm nearer the board's plug: the hand the cord comes in through. */
+  private reelingHand(plug: Vector3): (typeof this.surfer.nodes)[number] {
+    const [, , , left, right] = this.surfer.nodes;
+    return left.position.distanceToSquared(plug) <= right.position.distanceToSquared(plug) ? left : right;
   }
 
   /**
@@ -300,10 +326,16 @@ export class RideSession {
    * the pair moves on with the linear momentum the swimmer and board had
    * together (an inelastic join, like the fall's handoff in reverse).
    */
-  private climbOn(): void {
+  private climbOn(fromWater = false): void {
     const { board, rider, surfer, remount } = this;
     surfer.linearMomentum(remount.before).addScaledVector(board.velocity, board.mass);
-    rider.phase = 'prone';
+    if (fromWater) {
+      // Climbing on from where the body is (swim-back): the parts in `RIDER_PARTS` order, the fall body's own.
+      for (let i = 0; i < RIDER_PARTS.length; i += 1) surfer.getPartPosition(RIDER_PARTS[i], this.pelvis).toArray(this.climbParts, i * 3);
+      rider.climbFrom(this.climbParts, board);
+    } else {
+      rider.phase = 'prone';
+    }
     board.attach(rider);
     // Mounted, the body moves with the deck under it, spin included: share the momentum around that.
     const spin = this.spinPart.subVectors(rider.velocity, board.velocity);

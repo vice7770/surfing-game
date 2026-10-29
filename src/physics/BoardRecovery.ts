@@ -1,7 +1,12 @@
 import { Quaternion, Vector3 } from 'three';
 import { type BoardContactBody, DetachedSurfer } from './DetachedSurfer';
 
-export type RecoveryState = 'free' | 'holding' | 'prone-ready';
+/**
+ * 'climb-ready' (swim-back, 2026-10-29): the board held deck-up and turned, the chest by it: the rider climbs on from
+ * where the body is (`AttachedRider.climbFrom`). 'prone-ready' (`swim: 'old'`): pulled onto the deck by the hands'
+ * and chest's springs, it lies down there.
+ */
+export type RecoveryState = 'free' | 'holding' | 'prone-ready' | 'climb-ready';
 
 /** How far the chest may be from the nearest point of the board to grab it, m, and how fast the two may be moving apart, m/s. */
 const GRAB_REACH = 1.0;
@@ -30,6 +35,11 @@ const ALIGNED_YAW = (25 * Math.PI) / 180;
 const ALIGNED_UP = 0.7;
 const ALIGNED_RATE = 2;
 const LOST_UP = 0.3;
+/**
+ * Climbing on from the water (the default), the board need only be deck-up within about 32° (CLIMB_UP): a swimmer's
+ * weight on the near rail rolls it toward them as they come up, and the prone balance levels it once they lie on it.
+ */
+const CLIMB_UP = 0.85;
 /** The body comes on only while the deck's normal is within about 18° of the vertical (MOUNT_UP) and turning slower than MOUNT_RATE, rad/s. */
 const MOUNT_UP = 0.95;
 const MOUNT_RATE = 1;
@@ -83,7 +93,16 @@ export class BoardRecovery {
     { index: 1, xSign: 0, height: 0.2, stiffness: 380, damping: 60 },
   ] as const;
 
-  constructor(private readonly rider: DetachedSurfer) {}
+  /**
+   * `swim: 'old'` (the `?swim=old` dev switch, for A/Bs): as before swim-back (2026-10-29), the hands' and chest's
+   * springs pull the body onto the deck and it lies down only once the deck is within 18° of level and turning under
+   * 1 rad/s with the hands and chest at their places (MOUNT_UP, MOUNT_RATE). The hands' places were 2 cm over the deck,
+   * 9 cm inside it for the arm's 11 cm sphere, so every step the board's contact pushed the hands out and the springs
+   * pulled them in again, kicking the light board's rails: it rolled and spun at 2–9 rad/s while held, and the climb
+   * waited 2–16 s, or never came. By default, once the hands have the board deck-up and turned (`align`) with the chest
+   * by it, the rider climbs on from where the body is (`climb-ready`).
+   */
+  constructor(private readonly rider: DetachedSurfer, private readonly options: { swim?: 'old' } = {}) {}
 
   /** Whether a grab now would reach: the chest near enough to the board, and not moving away from it too fast. */
   inReach(board: BoardContactBody): boolean {
@@ -117,6 +136,12 @@ export class BoardRecovery {
     else if (this.up < LOST_UP) this.aligned = false;
     if (!this.aligned) {
       this.hold(dt, board);
+      return this.state;
+    }
+    if (this.options.swim !== 'old') {
+      // The board deck-up and turned in the hands, the chest by it: climb on (the attached rider's contact carries it).
+      this.hold(dt, board);
+      if (this.up > CLIMB_UP && this.inReach(board)) this.state = 'climb-ready';
       return this.state;
     }
     let handsClose = true;

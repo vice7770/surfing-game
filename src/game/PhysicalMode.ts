@@ -408,6 +408,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...strokeSwitch(),
     // `?surfaceMotion=old`: the sea's surface held still through the bodies' step, as before popup-moving-face, for A/Bs.
     ...surfaceMotionSwitch(),
+    // `?swim=old`: back on the board after a wipeout as before swim-back (the reel to the ankle, the springs' pull), for A/Bs.
+    ...swimSwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -490,6 +492,15 @@ export function strokeSwitch(search?: string): { stroke?: 'old' } {
  */
 export function surfaceMotionSwitch(search?: string): { surfaceMotion?: 'old' } {
   return devParam('surfaceMotion', search)?.trim().toLowerCase() === 'old' ? { surfaceMotion: 'old' } : {};
+}
+
+/**
+ * The `?swim=old` dev switch (`SurfZoneConfig.swim`, swim-back 2026-10-29): every spot's fallen surfer gets back on the
+ * board as before, the reel stopping by the ankle and the hands' and chest's springs pulling the body onto the deck, in
+ * place of the reel to the hand and the climb from where the body is.
+ */
+export function swimSwitch(search?: string): { swim?: 'old' } {
+  return devParam('swim', search)?.trim().toLowerCase() === 'old' ? { swim: 'old' } : {};
 }
 
 /**

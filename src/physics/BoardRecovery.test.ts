@@ -61,7 +61,8 @@ describe('BoardRecovery', () => {
   it('starts a nearby grab through equal and opposite impulses without moving positions', () => {
     const body = swimmer();
     const board = new ContactBoard();
-    const recovery = new BoardRecovery(body);
+    // As before swim-back the hands hold first; by default this board, deck-up and turned, is climbed at once.
+    const recovery = new BoardRecovery(body, { swim: 'old' });
     const beforePositions = body.nodes.map((node) => node.position.clone());
     const beforeMomentum = body.linearMomentum().addScaledVector(board.velocity, 1 / board.inverseMass);
 
@@ -84,10 +85,10 @@ describe('BoardRecovery', () => {
     expect(board.velocity.length()).toBe(0);
   });
 
-  it('can draw a reachable swimmer into prone contact without a position jump', () => {
+  it('can draw a reachable swimmer into prone contact without a position jump (`swim: \'old\'`)', () => {
     const body = swimmer();
     const board = new ContactBoard(0);
-    const recovery = new BoardRecovery(body);
+    const recovery = new BoardRecovery(body, { swim: 'old' });
     expect(recovery.tryGrab(board)).toBe(true);
     let ready = false;
     for (let frame = 0; frame < 240; frame += 1) {
@@ -119,6 +120,30 @@ function swimmerBesideBoard(options: { boardHeading: number; swimmerHeading: num
 }
 
 const idle = { paddle: false, popUp: false, steer: 0 };
+
+// swim-back (2026-10-29): once the hands have the board deck-up and turned with the chest by it, the climb starts from
+// where the body is (the attached rider's transition), with no spring pulling the body onto the deck first.
+describe('the climb from the water', () => {
+  it('climbs a board within reach, deck-up and turned, at once, without moving or pushing anything', () => {
+    const body = swimmer();
+    const board = new ContactBoard();
+    const recovery = new BoardRecovery(body);
+    const before = body.nodes.map((node) => [node.position.clone(), node.velocity.clone()]);
+    expect(recovery.tryGrab(board)).toBe(true);
+    expect(recovery.step(1 / 60, board)).toBe('climb-ready');
+    expect(body.nodes.every((node, index) => node.position.equals(before[index][0]))).toBe(true);
+    expect(board.position.toArray()).toEqual([0, 0, 0]);
+  });
+
+  it('turns an upside-down board deck-up in the hands before the climb', () => {
+    const body = swimmer();
+    const board = new ContactBoard(0);
+    board.orientation.setFromAxisAngle(new Vector3(0, 0, 1), Math.PI);
+    const recovery = new BoardRecovery(body);
+    expect(recovery.tryGrab(board)).toBe(true);
+    expect(recovery.step(1 / 60, board)).toBe('holding');
+  });
+});
 
 describe('grabbing the board from any side', () => {
   it('grabs a board pointing the other way, turns it and climbs on', () => {

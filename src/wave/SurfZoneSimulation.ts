@@ -112,6 +112,13 @@ export interface SurfZoneConfig {
    * `?surfaceMotion=old` dev switch, for A/Bs. Every spot's bodies; online rooms run the default.
    */
   surfaceMotion?: 'old';
+  /**
+   * 'old': back on the board after a wipeout as before swim-back (2026-10-29): the reel to the ankle, and the hands' and
+   * chest's springs pulling the body onto the deck (`RideSessionOptions.swim`); by default the reel brings the tail to
+   * the hand and the swimmer climbs on from where the body is. The `?swim=old` dev switch, for A/Bs; online rooms run
+   * the default.
+   */
+  swim?: 'old';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

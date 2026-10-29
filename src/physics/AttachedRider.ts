@@ -814,6 +814,17 @@ export const LANDING_TIME = 0.48;
 export const SETTLE_TIME = 0.8;
 export const RECOVER_TIME = 0.6;
 /**
+ * Climbing back on from the water (swim-back, 2026-10-29): the hands on the rails push the chest up out of the water
+ * and the body slides along onto the deck, from wherever the swimmer's parts were into the prone posture, over
+ * CLIMB_TIME, s. Provisional, by the pop-up's own two moves: the arms' push up (PUSH_TIME, 0.72 s, Borgonovo-Santos
+ * 2021) and a move of the whole body onto its support (LANDING_TIME, 0.48 s). The body comes across and along the
+ * board low, still floating, over the first CLIMB_ACROSS of the time, and rises onto it from CLIMB_RISE of it on: risen
+ * first beside the board, out of the water, its weight came onto the near rail and rolled the board over.
+ */
+export const CLIMB_TIME = 1.2;
+const CLIMB_ACROSS = 0.55;
+const CLIMB_RISE = 0.15;
+/**
  * The duck-dive's timing (the wipeout spec): the arms straighten over
  * PRESS_TIME, s; the knee starts KNEE_DELAY s after the press began and lands
  * over KNEE_TIME; released, both give back over RELEASE_TIME, letting the board
@@ -1078,6 +1089,8 @@ export class AttachedRider {
   private waterCalm = 1;
   /** A posture transition: where it started (board frame), how far along it is and how long it takes, s. */
   private readonly fromParts: Float64Array;
+  /** The transition is a climb from the water (`climbFrom`): its path rises first, then slides. */
+  private climbing = false;
   private phaseTime = 0;
   private phaseDuration = 0;
   private readonly postureRate = new Vector3();
@@ -1272,11 +1285,34 @@ export class AttachedRider {
    * then; otherwise the rider lies back down.
    */
   popUp(): boolean {
-    if (!this.attached || this.phase !== 'prone' || this.duck.press > DUCK_BUSY) return false;
+    if (!this.attached || this.phase !== 'prone' || this.climbing || this.duck.press > DUCK_BUSY) return false;
     this.beginTransition('push', PUSH_TIME);
     this.popUpTime = 0;
     Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0, refusal: undefined });
     return true;
+  }
+
+  /**
+   * Climb back on from the water (swim-back, 2026-10-29): before the board takes the rider (`BoardBody.attach`), the
+   * transition into the prone posture starts from the swimmer's own parts, `parts` (world, x y z per part in
+   * `RIDER_PARTS` order), over CLIMB_TIME, coming across before it rises. The phase is 'prone' throughout (the drawn
+   * body follows the parts); climbing, it neither paddles, pops up nor shows the cue. The contact carries it as any
+   * posture change: if it cannot hold the body (a wave, a board torn away), the rider lets go into the water again.
+   */
+  climbFrom(parts: ArrayLike<number>, board: BoardBody): void {
+    this.beginTransition('prone', CLIMB_TIME);
+    for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+      board.toLocal(this.scratch.set(parts[i * 3], parts[i * 3 + 1], parts[i * 3 + 2]), this.scratch2);
+      this.fromParts[i * 3] = this.scratch2.x;
+      this.fromParts[i * 3 + 1] = this.scratch2.y;
+      this.fromParts[i * 3 + 2] = this.scratch2.z;
+    }
+    this.climbing = true;
+  }
+
+  /** Climbing back on from the water (`climbFrom`), until lying on the board. */
+  get climbingOn(): boolean {
+    return this.attached && this.climbing;
   }
 
   /** Lie back down from standing, when the player asks: the body goes back to the prone posture over RECOVER_TIME. */
@@ -1313,6 +1349,7 @@ export class AttachedRider {
     this.phase = phase;
     this.phaseTime = 0;
     this.phaseDuration = duration;
+    this.climbing = false;
   }
 
   /** Advance the phase clock; at a phase's end, move on (or check whether the rider can stand). */
@@ -1335,6 +1372,10 @@ export class AttachedRider {
     } else if (ended === 'recover') {
       this.fromParts.set(this.parts);
       this.phase = 'prone';
+    } else if (ended === 'prone') {
+      // On the board after a climb.
+      this.fromParts.set(this.parts);
+      this.climbing = false;
     }
   }
 
@@ -1527,6 +1568,11 @@ export class AttachedRider {
     const upright = this.phase === 'landing' || this.phase === 'standing';
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
+      if (this.climbing) {
+        // Climbing on: the hands on the rails beside the chest (within the board's length).
+        const z = Math.max(-this.shape.length / 2 + 0.05, Math.min(this.shape.length / 2 - 0.05, this.parts[1 * 3 + 2]));
+        return board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), out);
+      }
       if (this.phase === 'prone') {
         const stroking = (this.paddle || this.sweeping) && this.strokeEffort(side) > 0;
         // Ducking, the hands hold the rails where the arms reach; otherwise beside the chest.
@@ -1613,7 +1659,7 @@ export class AttachedRider {
 
   /** Sprint paddling now: asked for (`paddleSprint`), paddling, lying down, not ducking. Its reserve drains (`RideSession`). */
   get sprintPaddling(): boolean {
-    return this.attached && this.paddleSprint && this.paddle && this.phase === 'prone' && this.duck.press <= DUCK_BUSY;
+    return this.attached && this.paddleSprint && this.paddle && this.phase === 'prone' && !this.climbing && this.duck.press <= DUCK_BUSY;
   }
 
   /** The share of each arm's cycle spent pulling: more as the strokes go over to the player's sprint (SPRINT_PADDLE_PULL). */
@@ -1755,7 +1801,7 @@ export class AttachedRider {
       this.popUpReport.landingPeak = this.stepLoad;
       this.popUpReport.frontShare = this.contact.frontShare;
     }
-    this.popUpCue = this.attached && this.phase === 'prone' && this.cue(board, water);
+    this.popUpCue = this.attached && this.phase === 'prone' && !this.climbing && this.cue(board, water);
     const { reaction, reactionAt } = this;
     for (let k = 0; k < RIDER_PARTS.length + 2; k += 1) {
       const jx = reaction[k * 3];
@@ -2106,7 +2152,9 @@ export class AttachedRider {
       const radius = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI));
       // Lying on the board, the part of a body sphere inside the board is board, not wet body.
       const z = this.parts[i * 3 + 2];
-      const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2;
+      // Climbing on, a part beside the board (past its rail) is in the water, not over the deck (swim-back: its
+      // buoyancy cut there put the swimmer's weight on the near rail and rolled the board over).
+      const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2 && (!this.climbing || Math.abs(this.parts[i * 3]) <= this.halfWidth(z));
       const deckY = onDeck ? board.toWorld(this.localScratch.set(this.parts[i * 3], deckHeight(this.shape, z), z), this.scratch2).y : -Infinity;
       const inWake = !this.upright && z < -this.shape.length / 2;
       this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, inWake ? shelter * WAKE_SHELTER : shelter, deckY);
@@ -2118,7 +2166,7 @@ export class AttachedRider {
     if (this.upright && this.handSide !== 0) this.standingHand(h, board, water);
     // The player's sprint comes in over SPRINT_PADDLE_TIME while paddling lying down, and goes as it stops.
     this.paddleSprintShare += ((this.sprintPaddling ? 1 : 0) - this.paddleSprintShare) * Math.min(1, h / SPRINT_PADDLE_TIME);
-    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) {
+    if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping)) {
       this.line = undefined;
       this.hold = 0;
       return;
@@ -2568,6 +2616,7 @@ export class AttachedRider {
 
   private separate(cause: RiderSeparation): void {
     this.attached = false;
+    this.climbing = false;
     this.inContact = false;
     this.separation = cause;
   }
@@ -2763,7 +2812,23 @@ export class AttachedRider {
   private updatePosture(): void {
     const pose = riderPose(this.shape, this.posePhase(), this.stance);
     this.postureRate.set(0, 0, 0);
-    if (this.phaseDuration > 0) {
+    if (this.phaseDuration > 0 && this.climbing) {
+      // Climbing on: across and along the board on a minimum-jerk path over the first CLIMB_ACROSS of the time, up (the
+      // board's y) over the time from CLIMB_RISE on.
+      const s = Math.min(1, this.phaseTime / this.phaseDuration);
+      const slide = Math.min(1, s / CLIMB_ACROSS);
+      const up = Math.max(0, (s - CLIMB_RISE) / (1 - CLIMB_RISE));
+      const rise = minimumJerk(up);
+      const across = minimumJerk(slide);
+      const riseRate = s > CLIMB_RISE ? minimumJerkRate(up) / ((1 - CLIMB_RISE) * this.phaseDuration) : 0;
+      const acrossRate = s < CLIMB_ACROSS ? minimumJerkRate(slide) / (CLIMB_ACROSS * this.phaseDuration) : 0;
+      const from = postureCenter(this.fromParts, this.partMasses);
+      const to = postureCenter(pose.parts, this.partMasses);
+      this.postureRate.set((to.x - from.x) * acrossRate, (to.y - from.y) * riseRate, (to.z - from.z) * acrossRate);
+      for (let k = 0; k < this.parts.length; k += 1) {
+        this.parts[k] = this.fromParts[k] + (pose.parts[k] - this.fromParts[k]) * (k % 3 === 1 ? rise : across);
+      }
+    } else if (this.phaseDuration > 0) {
       // A minimum-jerk path from where the transition began to the phase's pose.
       const s = Math.min(1, this.phaseTime / this.phaseDuration);
       const blend = minimumJerk(s);
@@ -2830,7 +2895,7 @@ export class AttachedRider {
       this.armsGiveStep(roll, h);
       // Paddling, the level kept swings toward each arm as it pulls (board +x, the left arm's side, down is a negative
       // roll); pushing up, at once level.
-      const rolling = this.paddle && !ducking && this.phase === 'prone' ? Math.min(1, board.velocity.length() / STROKE_ROLL_SPEED) * this.waterCalm : 0;
+      const rolling = this.paddle && !ducking && this.phase === 'prone' && !this.climbing ? Math.min(1, board.velocity.length() / STROKE_ROLL_SPEED) * this.waterCalm : 0;
       this.strokeRoll = this.phase === 'prone' ? this.strokeRoll + (rolling - this.strokeRoll) * Math.min(1, h / STROKE_ROLL_TIME) : 0;
       const swing = 2 * Math.PI * (this.strokePhase - this.pullShare / 2 + STROKE_ROLL_LEAD);
       const rollTo = -STROKE_ROLL * this.strokeRoll * Math.cos(swing);
