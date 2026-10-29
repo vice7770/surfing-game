@@ -16,7 +16,7 @@ const size = (option('size') ?? 'medium') as keyof typeof SWELLS;
 const swell = SWELLS[size];
 const sim = new SurfZoneSimulation({
   spot: 'canyon', seed: Number(option('seed') ?? 1), significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: 0,
-  spreading: swell.spreading ?? 150, tide: 0, windSpeed: 0, stage: 2, compute: 'cpu',
+  spreading: swell.spreading ?? 150, tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', ...(option('beach-look') === 'off' ? { canyonBeachLook: false } : {}),
 } as unknown as SurfZoneConfig);
 const { solver } = sim;
 const { nx, nz, xCenters, zCenters } = solver;

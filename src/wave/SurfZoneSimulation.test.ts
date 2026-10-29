@@ -1111,7 +1111,7 @@ describe('SurfZoneSimulation', () => {
       internals.markBreakingOnsets();
       return internals.spilling.waves.map((wave) => [wave.group, wave.direction]);
     };
-    expect(CANYON_BEACH_LOOK).toEqual({ peelAngleDegrees: 40, upcoastMargin: Infinity, lifetime: 20 });
+    expect(CANYON_BEACH_LOOK).toEqual({ peelAngleDegrees: 20, upcoastMargin: Infinity, lifetime: 20 });
     expect(groupsOf({})).toEqual([[1, -1], [2, 1]]);
     expect(groupsOf({ canyonBeachLook: false })).toEqual([]);
   });
