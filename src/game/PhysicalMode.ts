@@ -414,6 +414,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...frothSwitch(),
     // `?extension=old`: the legs extending at their full pace letting Compress go, as before compress-exit, for A/Bs.
     ...extensionSwitch(),
+    // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
+    ...boardSpraySwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -523,6 +525,14 @@ export function frothSwitch(search?: string): { froth?: 'old' } {
  */
 export function extensionSwitch(search?: string): { extension?: 'old' } {
   return devParam('extension', search)?.trim().toLowerCase() === 'old' ? { extension: 'old' } : {};
+}
+
+/**
+ * The `?boardSpray=off` dev switch (`SurfZoneConfig.boardSpray`, board-spray 2026-10-29): no board throws spray, as before,
+ * in place of the sheets a planing board throws off its rails and tail.
+ */
+export function boardSpraySwitch(search?: string): { boardSpray?: 'off' } {
+  return devParam('boardSpray', search)?.trim().toLowerCase() === 'off' ? { boardSpray: 'off' } : {};
 }
 
 /**
@@ -968,6 +978,9 @@ export class PhysicalMode {
   }
 
   /** Put the rider here on the next advance (a lesson's start, spec L2); the waves carry on from wherever they are. */
+  /** The other players' boards' sheets for the next batch (`setRemoteSheets`). */
+  private boardSheets?: Float32Array;
+
   place(placement: RiderPlacement): void {
     this.placePending = placement;
   }
@@ -989,8 +1002,15 @@ export class PhysicalMode {
       ? {
         paddle: false, popUp: false, steer: 0, ...input, retry,
         ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}), ...(this.stance ? { stance: this.stance } : {}),
+        ...(this.boardSheets ? { boardSheets: this.boardSheets } : {}),
       } : undefined;
+    this.boardSheets = undefined;
     this.host?.advance(steps, request, reactions);
+  }
+
+  /** Online (board-spray): the other players' boards' sheets, from their poses on this water, for the next batch of steps. */
+  setRemoteSheets(packed: Float32Array | undefined): void {
+    this.boardSheets = packed;
   }
 
   update(dt: number): void {

@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, boardSpraySwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -186,6 +186,27 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { surfaceMotion: undefined }).surfaceMotion).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).surfaceMotion).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?boardSpray=off` dev switch (board-spray, 2026-10-29): no spray off the boards, carried in the config to the
+  // worker; anything else leaves the default (the sheets off the rails and tail).
+  it('throws no spray off the boards with `?boardSpray=off` (a dev switch), and throws it otherwise', () => {
+    expect(boardSpraySwitch('?boardSpray=off')).toEqual({ boardSpray: 'off' });
+    expect(boardSpraySwitch('?boardSpray=OFF')).toEqual({ boardSpray: 'off' });
+    for (const search of ['', '?boardSpray', '?boardSpray=', '?boardSpray=on', '?froth=old']) expect(boardSpraySwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?boardSpray=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).boardSpray, spot).toBe('off');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { boardSpray: undefined }).boardSpray).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).boardSpray).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

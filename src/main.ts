@@ -33,6 +33,7 @@ import { ONLINE_QUEUE } from './net/OnlinePacer';
 import { decompress } from './wave/surfZoneState';
 import { INTERPOLATION_DELAY, createRemoteState, type RemoteState } from './net/RemoteSurfers';
 import { RemoteSurferViews } from './scene/RemoteSurferViews';
+import { RemoteSpray } from './net/remoteSpray';
 import { NameTags, type TagEntry } from './ui/NameTags';
 import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
@@ -91,6 +92,8 @@ const recordRequested = devFlag('record');
 const waterSheetRequested = devFlag('waterSheet');
 /** `?particleBench`: a dev tool times the whitewater's particles on a heavy sea (src/dev/particleBench.ts). */
 const particleBenchRequested = devFlag('particleBench');
+/** `?inpage&boardSprayStrip`: a dev tool films the boards' spray on the Wave Pool, frame by frame (src/dev/boardSprayStrip.ts). */
+const boardSprayStripRequested = devFlag('boardSprayStrip');
 /** `?waterSheet&compute=gpu` (or `auto`, and the same on `?record`): the sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
 const devToolOnDevice = (waterSheetRequested || recordRequested) && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
@@ -226,6 +229,8 @@ class SurfGame {
   private soundSnapped?: boolean;
   private readonly listenerForward = new Vector3();
   /** Online play (spec N1): the session, its frame logic, and the other surfers as drawn with their tags. */
+  /** Other players' boards' spray from their poses (board-spray). */
+  private readonly remoteSpray = new RemoteSpray();
   private online?: {
     controller: OnlineController; play: OnlinePlay; views: RemoteSurferViews; tags: NameTags;
     state: RemoteState; anchors: Vector3[]; rebuilding: boolean;
@@ -306,7 +311,7 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     // The app shows the loading card whenever a scene builds.
     getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    if (!recordRequested && !waterSheetRequested && !particleBenchRequested) requestAnimationFrame(this.frame);
+    if (!recordRequested && !waterSheetRequested && !particleBenchRequested && !boardSprayStripRequested) requestAnimationFrame(this.frame);
   }
 
   /**
@@ -508,13 +513,14 @@ class SurfGame {
     // look are solo dev switches), and
     // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
     // sample moving through their step whatever `?surfaceMotion` says, the swim back to the board whatever `?swim` says,
-    // a roller's froth on the boards whatever `?froth` says, and the legs letting Compress go whatever `?extension` says;
+    // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, and
+    // the boards' spray whatever `?boardSpray` says;
     // and the cases' own tubes, whatever `?tubeShape` or `?canyonTube` say (the spot's own swept barrel: what a rider hits
     // must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonAgeJoin: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined,
+      sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,
@@ -974,9 +980,12 @@ class SurfGame {
       anchors[entries.length] ??= new Vector3();
       return anchors[entries.length];
     };
+    // Their boards' spray (board-spray), thrown in the worker's spray with the next steps.
+    this.remoteSpray.begin();
     for (const player of others) {
       const drawn = controller.remote.sample(player.id, seaTime, state);
       views.update(player.id, drawn ? state : undefined, surface, camera.position, seaTime);
+      if (drawn) this.remoteSpray.add(controller.remote, player.id, seaTime, state, surface);
       const world = anchor();
       if (!views.tagAnchor(player.id, world)) continue;
       const call = controller.calls.get(player.id);
@@ -990,6 +999,7 @@ class SurfGame {
       const world = anchor().set(rider[head], rider[head + 1] + 0.45, rider[head + 2]);
       entries.push({ id: controller.you!, name: '', world, call: t(`online.call.${own.call}`) });
     }
+    this.physicalMode.setRemoteSheets(this.remoteSpray.packed());
     const canvas = this.renderer.domElement;
     tags.update(entries, camera, canvas.clientWidth, canvas.clientHeight, this.showNameTags);
   }
@@ -1266,6 +1276,7 @@ if (recordRequested && new URLSearchParams(window.location.search).get('pilot') 
 } else if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
 if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
 if (particleBenchRequested) void import('./dev/particleBench').then(({ runParticleBench }) => runParticleBench(game.recording));
+if (boardSprayStripRequested) void import('./dev/boardSprayStrip').then(({ boardSprayStrip }) => boardSprayStrip(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
@@ -1299,5 +1310,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
 }, { stick: () => settings.value.controls });
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

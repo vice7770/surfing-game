@@ -6,6 +6,8 @@ import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
 import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, wettedShare, type WorldPatch } from './hullForces';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
+import type { BoardSpraySheet } from '../wave/SprayCloud';
+import { createHullSprayBuffers, hullSpraySheets, type HullSprayBuffers } from './boardSpray';
 
 interface Vec { x: number; y: number; z: number }
 
@@ -514,6 +516,50 @@ export class BoardBody implements BoardContactBody {
     this.updateRotation();
     this.impulseAt(worldPoint.x - this.centerOfMass.x, worldPoint.y - this.centerOfMass.y, worldPoint.z - this.centerOfMass.z, impulse.x, impulse.y, impulse.z);
   }
+
+  /**
+   * The sheets of spray the hull throws now (board-spray, 2026-10-29; `boardSpray.ts`), into `out`: how many. Drawn only:
+   * nothing here changes the board.
+   */
+  spraySheets(out: BoardSpraySheet[]): number {
+    const lanes = this.strips.length;
+    const stations = this.strips[0].length;
+    const spray = this.sprayState ??= createHullSprayBuffers(stations, lanes, this.stationLength);
+    const { width, across, point, depth, water, hull, sea, axisX, axisY, axisZ } = spray;
+    const r = this.rotation;
+    axisX[0] = r[0]; axisX[1] = r[3]; axisX[2] = r[6];
+    axisY[0] = r[1]; axisY[1] = r[4]; axisY[2] = r[7];
+    axisZ[0] = r[2]; axisZ[1] = r[5]; axisZ[2] = r[8];
+    const { velocity: v, angularVelocity: w } = this;
+    for (let j = 0; j < lanes; j += 1) {
+      const strip = this.strips[j];
+      for (let i = 0; i < stations; i += 1) {
+        const k = strip[i];
+        const o = i * lanes + j;
+        const sample = this.samples[k];
+        width[o] = this.area[k] / this.stationLength;
+        across[o] = this.local[k * 3];
+        point[o * 3] = this.point[k * 3];
+        point[o * 3 + 1] = this.point[k * 3 + 1];
+        point[o * 3 + 2] = this.point[k * 3 + 2];
+        depth[o] = sample.surfaceY - this.point[k * 3 + 1];
+        water[o * 3] = sample.flowX;
+        water[o * 3 + 1] = sample.flowY;
+        water[o * 3 + 2] = sample.flowZ;
+        const rx = this.arm[k * 3];
+        const ry = this.arm[k * 3 + 1];
+        const rz = this.arm[k * 3 + 2];
+        hull[o * 3] = v.x + w.y * rz - w.z * ry;
+        hull[o * 3 + 1] = v.y + w.z * rx - w.x * rz;
+        hull[o * 3 + 2] = v.z + w.x * ry - w.y * rx;
+        sea[o] = sample.wet && !sample.outsideDomain ? 1 : 0;
+      }
+    }
+    return hullSpraySheets(spray, out);
+  }
+
+  /** `spraySheets`'s hull state, made on first use. */
+  private sprayState?: HullSprayBuffers;
 
   /** Advance by `dt` on `water`, then hand the water its reactions. */
   step(dt: number, water: SurfWater): void {

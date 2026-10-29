@@ -13,6 +13,7 @@
  *        [--turn-at 0.6] [--turn-for 0.8] [--side left|right] [--every 2] [--after 6] [--froth old] [--quiet]
  */
 import { readFileSync } from 'node:fs';
+import { BOARD_SHEETS, createBoardSpraySheet } from '../../../src/physics/boardSpray';
 import { Vector3 } from 'three';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../../../src/game/SurfConditions';
@@ -122,6 +123,7 @@ const legState = (session: RideSession) => {
     + `carry ${(r.carryForce.length() / weight).toFixed(2)} W assist ${(r.assistForce.length() / weight).toFixed(2)} W `
     + `sway ${Math.hypot(r.sway.x, r.sway.z).toFixed(3)} contact ${r.inContact ? 'on' : 'off'} flight ${r.flightTime.toFixed(2)} limit ${r.limit} posture ${r.postureError.toFixed(3)}`;
 };
+const sheets = Array.from({ length: BOARD_SHEETS }, createBoardSpraySheet);
 const t0 = sim.solver.time;
 for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.done); n += 1) {
   sim.step(STEP);
@@ -173,6 +175,18 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
           + ` | lens ${sim.roller?.lensAt(board.centerOfMass.x, board.centerOfMass.z, lens) ? `t ${lens.thickness.toFixed(3)} g ${lens.g.toFixed(2)} c ${Math.hypot(lens.flowX, lens.flowZ).toFixed(2)}` : 'none'} `
           + `hull ${(board.lowestPoint() - sample.surfaceY).toFixed(3)}${lensPatches(session)}${lensesHere(board.centerOfMass.x, board.centerOfMass.z)}`);
       }
+    }
+    // --spray-dx D: every 6 steps, the sheets the board throws (board-spray): flux, speed, how far up and out.
+    if (option('spray-dx') !== undefined && Math.abs(trial.dx - Number(option('spray-dx'))) < 0.05 && !Number.isNaN(trial.stood)
+      && Math.round((t - trial.stood) / STEP) % 6 === 0) {
+      const count = board.spraySheets(sheets);
+      const parts = [];
+      for (let n = 0; n < count; n += 1) {
+        const sh = sheets[n];
+        const speedNow = Math.hypot(sh.vx, sh.vy, sh.vz);
+        parts.push(`${sh.flux.toFixed(1)} kg/s at ${speedNow.toFixed(1)} m/s (up ${sh.vy.toFixed(1)}, flat ${Math.hypot(sh.vx, sh.vz).toFixed(1)}) over ${sh.length.toFixed(2)} m`);
+      }
+      console.log(`spray t ${(t - trial.stood).toFixed(2)} ${session.phase} v ${Math.hypot(board.velocity.x, board.velocity.z).toFixed(1)} | ${parts.join(' ; ') || 'none'}`);
     }
     // --trace-dx D --trace-from T: per step, the board's and the rider's velocities and each ledger's work this step, J.
     if (option('trace-dx') !== undefined && Math.abs(trial.dx - Number(option('trace-dx'))) < 0.05 && !Number.isNaN(trial.stood)

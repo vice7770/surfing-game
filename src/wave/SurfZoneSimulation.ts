@@ -133,6 +133,12 @@ export interface SurfZoneConfig {
    * `?extension=old` dev switch, for A/Bs; online rooms run the default.
    */
   extension?: 'old';
+  /**
+   * 'off': no board throws spray, as before board-spray (2026-10-29); by default a planing board throws a sheet off its
+   * rails and tail (`physics/boardSpray.ts`), drawn in the spray (`SprayCloud`). Visual only. The `?boardSpray=off` dev
+   * switch, for A/Bs; online rooms run the default.
+   */
+  boardSpray?: 'off';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

@@ -15,7 +15,8 @@ import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
+import { BOARD_SHEETS, createBoardSpraySheet, unpackBoardSheets } from '../physics/boardSpray';
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
@@ -141,6 +142,8 @@ export interface RideRequest extends RideInput {
   pocketReflex?: boolean;
   /** The player's stance, taken up at the next ride (a retry or a placement), never mid-ride. */
   stance?: StanceName;
+  /** Online (board-spray): the other players' boards' sheets for this batch, from their poses (`BOARD_SHEET_STRIDE` each). */
+  boardSheets?: Float32Array;
 }
 
 /** The rider's phases in snapshot order, `fallen` once in the water. */
@@ -338,6 +341,12 @@ export class SurfZoneRunner {
   readonly spray: SprayCloud;
   /** Hidden spray has no effect on water, rider physics or sound. */
   private sprayEnabled = true;
+  /** The boards throw spray (board-spray; `SurfZoneConfig.boardSpray`). */
+  private readonly boardSprays: boolean;
+  /** This step's sheets off the board (`BOARD_SHEETS` at most), and how many; and the other players' (`setRemoteSheets`). */
+  private readonly boardSheets: BoardSpraySheet[] = Array.from({ length: BOARD_SHEETS }, createBoardSpraySheet);
+  private readonly sheetsInUse: BoardSpraySheet[] = [];
+  private remoteSheets: readonly BoardSpraySheet[] = [];
   /** Uniform render grid over the window and the whole tank. */
   readonly grid: RenderGrid;
   /** Bed elevation per render node (fixed until the window slides). */
@@ -416,6 +425,7 @@ export class SurfZoneRunner {
       ?? (config.spot === 'padang' && requestedGrid.nx * requestedGrid.nz >= 200_000 ? 2 : 1);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
+    this.boardSprays = config.boardSpray !== 'off';
     this.grid = requestedGrid.spacing === renderSpacing ? requestedGrid : this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
     this.simulation.writeUniformBed(this.bed, this.grid);
@@ -473,6 +483,7 @@ export class SurfZoneRunner {
     // A detached rider's last strokes are stale: only an attached paddler splashes.
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
+      boardSheets: this.sheetsInUse,
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, drawnImpacts: simulation.drawnImpacts,
       rollerToes: () => simulation.rollerToes(),
       windSpeed: this.config.windSpeed ?? 0, strokes,
@@ -510,6 +521,7 @@ export class SurfZoneRunner {
   advance(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): void {
     const batchStart = performance.now();
     this.applyRemote(reactions);
+    this.takeRemoteSheets(input.boardSheets);
     for (let step = 0; step < steps; step += 1) {
       const start = performance.now();
       this.simulation.step(SURF_ZONE_STEP);
@@ -536,6 +548,7 @@ export class SurfZoneRunner {
     const batchStart = performance.now();
     if ((reactions !== undefined || steps !== 1) && this.simulation.hasWaterPrefetch) await this.simulation.discardWaterPrefetch();
     this.applyRemote(reactions);
+    this.takeRemoteSheets(input.boardSheets);
     for (let step = 0; step < steps; step += 1) {
       const start = performance.now();
       await this.simulation.stepAsync(SURF_ZONE_STEP);
@@ -656,7 +669,10 @@ export class SurfZoneRunner {
     let end = performance.now();
     this.bubbleMs = end - phase;
     phase = end;
-    if (this.sprayEnabled) this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    if (this.sprayEnabled) {
+      this.collectSheets();
+      this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    }
     end = performance.now();
     this.sprayMs = end - phase;
     phase = end;
@@ -678,6 +694,26 @@ export class SurfZoneRunner {
     } else if (depth <= EDGE_HINT_CLEAR) {
       this.heldAtEdge = 0;
     }
+  }
+
+  /** The sheets the boards throw this step (board-spray): this board's, from its hull, and the other players'. */
+  private collectSheets(): void {
+    const sheets = this.sheetsInUse;
+    sheets.length = 0;
+    if (!this.boardSprays) return;
+    const count = this.board ? this.board.spraySheets(this.boardSheets) : 0;
+    for (let n = 0; n < count; n += 1) sheets.push(this.boardSheets[n]);
+    for (const sheet of this.remoteSheets) sheets.push(sheet);
+  }
+
+  /** Other players' sheets (board-spray), thrown on every step of this batch: they come with each frame's request. */
+  private takeRemoteSheets(packed?: Float32Array): void {
+    this.remoteSheets = packed && this.boardSprays ? unpackBoardSheets(packed) : [];
+  }
+
+  /** The sheets thrown in the latest step (board-spray): the dev tools' reading. */
+  boardSheetsNow(): readonly BoardSpraySheet[] {
+    return this.sheetsInUse;
   }
 
   /** Each step's lip landings and paddle strokes, kept for the next snapshot's sound (S1). */
