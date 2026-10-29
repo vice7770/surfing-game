@@ -225,6 +225,7 @@ Build each tool with `rolldown <file> -o dist/scripts/<name>.mjs --format esm --
 - **`bottom-replay.ts`** (bottom-stop) adds:
   - `--turn-compress c`, `--turn-steer s`: how far Compress and the steer are held through the turn (0: none);
   - `--compress-after c --compress-after-for s`: Compress held on after the turn;
+  - `--steer-after s --steer-after-for t`: the steer held on after Compress is let go;
   - `--extension old`;
   - `--trace-dx` logs the leg, the carry, the sway and the flight.
 - **`catch-probe.ts`** (canyon-catch) adds `--extension old`.
