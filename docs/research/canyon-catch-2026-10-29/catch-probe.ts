@@ -224,7 +224,14 @@ const starts: Start[] = outs.map((o) => {
 const span = Math.round((0.5 * config.peakPeriod) / STEP);
 const minRise = 0.3 * config.significantHeight;
 const end = sim.solver.time + periods * config.peakPeriod;
+// `--save-at t --save <file>`: keep the sea at sea time t (to replay one trial's riders from there) and stop.
+const saveAt = option('save-at') !== undefined ? Number(option('save-at')) : undefined;
 while (sim.solver.time < end || active.length > 0) {
+  if (saveAt !== undefined && sim.solver.time >= saveAt) {
+    writeFileSync(option('save')!, encodeSurfZoneState(sim.exportState()));
+    console.log(`saved the sea at t ${sim.solver.time.toFixed(3)} s to ${option('save')}`);
+    process.exit(0);
+  }
   sim.step(STEP);
   const t = sim.solver.time;
   if (t < end) {
