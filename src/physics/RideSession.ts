@@ -86,6 +86,11 @@ export interface RideSessionOptions {
    * `?swim=old` dev switch): the reel to the ankle and the springs' pull, as before.
    */
   swim?: 'old';
+  /**
+   * Letting Compress go (compress-exit, 2026-10-29): by default the legs extend no faster than the stance's spring can
+   * catch the body (`AttachedRiderOptions.extension`); 'old' (the `?extension=old` dev switch): at their full pace.
+   */
+  extension?: 'old';
 }
 
 /**
@@ -136,7 +141,9 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
-    this.rider = new AttachedRider(this.board.shape, { stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}) });
+    this.rider = new AttachedRider(this.board.shape, {
+      stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
+    });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});
     this.surfer.crawlAtSurface = !this.swimOld;

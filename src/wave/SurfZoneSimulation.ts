@@ -127,6 +127,12 @@ export interface SurfZoneConfig {
    * rooms run the default.
    */
   froth?: 'old';
+  /**
+   * 'old': letting Compress go, the rider's legs extend at their full pace, as before compress-exit (2026-10-29); by
+   * default no faster than the stance's spring can catch the body (`AttachedRiderOptions.extension`). Every spot. The
+   * `?extension=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  extension?: 'old';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

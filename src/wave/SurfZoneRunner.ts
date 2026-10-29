@@ -439,7 +439,10 @@ export class SurfZoneRunner {
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
-      this.session = new RideSession({ stance: options.stance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}) });
+      this.session = new RideSession({
+        stance: options.stance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}),
+        ...(config.extension ? { extension: config.extension } : {}),
+      });
       this.board = this.session.board;
     } else if (options.board) {
       this.board = new BoardBody();

@@ -37,6 +37,10 @@ const turnFor = Number(option('turn-for') ?? 0.8);
 const side = option('side') === 'right' ? -1 : 1;
 // `--turn-compress c`: how far Compress is held through the turn (1: fully; 0: the steer alone).
 const turnCompress = Number(option('turn-compress') ?? 1);
+// `--turn-steer s`: how far the steer is held through the turn (0: Compress alone); `--compress-after c`: Compress held after it.
+const turnSteer = Number(option('turn-steer') ?? 1);
+const compressAfter = Number(option('compress-after') ?? 0);
+const compressAfterFor = Number(option('compress-after-for') ?? Infinity);
 const quiet = process.argv.includes('--quiet');
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 const config: SurfZoneConfig = {
@@ -60,7 +64,8 @@ interface Trial {
 }
 const trials: Trial[] = Array.from({ length: count }, (_, k) => {
   const dx = count === 1 ? 0 : -spread + (2 * spread * k) / (count - 1);
-  const session = new RideSession();
+  // `--extension old`: the legs extend at their full pace letting Compress go, as before compress-exit (`?extension=old`).
+  const session = new RideSession(option('extension') === 'old' ? { extension: 'old' } : {});
   session.place({ x: focus.x + dx, z: focus.z - out, heading: 0, speed: 0, phase: 'prone' }, water);
   return { session, gauge: new WaveFrameGauge({ directionX: 0, directionZ: 1 }), dx, seenBehind: false, sprinting: false, popped: false, stood: Number.NaN,
     riding: 0, done: false, log: [], speeds: [], topSpeed: 0, worstDrop: 0, worstAt: Number.NaN };
@@ -101,6 +106,19 @@ const lensesHere = (x: number, z: number) => {
   }
   return parts.length ? ` | slots ${parts.join(', ')}` : '';
 };
+/** The leg's state: its rest length and rate, extension, rate and force, the load it feels, the projection's aim, and the carry. */
+const legState = (session: RideSession) => {
+  const r = session.rider as unknown as {
+    leg: { rest: number; extension: number; rate: number; force: number }; restRate: number; legLoad: number; tall: number; mass: number;
+    carryForce: Vector3; assistForce: Vector3; compress: number; bank: { angle: number };
+    sway: Vector3; inContact: boolean; flightTime: number; limit: string; postureError: number;
+  };
+  const weight = r.mass * 9.81;
+  return `rest ${r.leg.rest.toFixed(3)} rate ${r.restRate.toFixed(2)} ext ${r.leg.extension.toFixed(3)} v ${r.leg.rate.toFixed(2)} force ${(r.leg.force / weight).toFixed(2)} W `
+    + `load ${(r.legLoad / weight).toFixed(2)} W tall ${r.tall.toFixed(2)} compress ${r.compress.toFixed(2)} bank ${(r.bank.angle * 180 / Math.PI).toFixed(0)}° `
+    + `carry ${(r.carryForce.length() / weight).toFixed(2)} W assist ${(r.assistForce.length() / weight).toFixed(2)} W `
+    + `sway ${Math.hypot(r.sway.x, r.sway.z).toFixed(3)} contact ${r.inContact ? 'on' : 'off'} flight ${r.flightTime.toFixed(2)} limit ${r.limit} posture ${r.postureError.toFixed(3)}`;
+};
 const t0 = sim.solver.time;
 for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.done); n += 1) {
   sim.step(STEP);
@@ -120,9 +138,10 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
     const standing = session.phase === 'standing';
     const since = standing ? t - trial.stood : 0;
     const turning = ride === 'turn' && standing && since >= turnAt && since < turnAt + turnFor;
+    const after = ride === 'turn' && standing && since >= turnAt + turnFor && since < turnAt + turnFor + compressAfterFor;
     session.step(STEP, water, {
       paddle: prone && !trial.popped, sprint: prone && trial.sprinting && !trial.popped, popUp: pop,
-      steer: turning ? side : 0, compress: turning ? turnCompress : 0,
+      steer: turning ? side * turnSteer : 0, compress: turning ? turnCompress : after ? compressAfter : 0,
     });
     if (session.phase === 'standing' && Number.isNaN(trial.stood)) trial.stood = t;
     if (session.phase === 'standing' && frame.valid && frame.aheadOfCrest >= 0 && frame.speedShoreward >= 0.6 * frame.crestSpeed) trial.riding += STEP;
@@ -162,7 +181,8 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
       const ke = 0.5 * board.mass * board.velocity.lengthSq() + 0.5 * session.rider.mass * rv.lengthSq();
       console.log(`trace t ${(t - trial.stood).toFixed(3)} ${session.phase} board v ${board.velocity.x.toFixed(2)} ${board.velocity.y.toFixed(2)} ${board.velocity.z.toFixed(2)} `
         + `rider v ${rv.x.toFixed(2)} ${rv.y.toFixed(2)} ${rv.z.toFixed(2)} attached ${session.rider.attached} upright ${session.rider.upright} KE ${ke.toFixed(0)} `
-        + `| board work ${delta(bw, trial.lastBoardWork)} | rider work ${delta(rw, trial.lastRiderWork)}`);
+        + `| board work ${delta(bw, trial.lastBoardWork)} | rider work ${delta(rw, trial.lastRiderWork)}`
+        + ` | leg ${legState(session)}`);
       trial.lastBoardWork = bw;
       trial.lastRiderWork = rw;
     }

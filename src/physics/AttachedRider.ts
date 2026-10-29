@@ -694,6 +694,28 @@ const CROUCH_ACCELERATION = 6;
 const CROUCH_SPEED = 1.5;
 const EXTEND_ACCELERATION = 15;
 /**
+ * The projection's catch (compress-exit, 2026-10-29), m/s: letting Compress go, the legs extend no faster than the
+ * stance's spring can catch the body, g·√(m/k): 0.40 at the riding stance's 44 kN/m, 0.57 at Compress's softened 22 kN/m
+ * (the reference rider's 73 kg).
+ *
+ * The leg is a spring under the body (Blickhan 1989's spring-mass leg), sagging m g / k under its weight. A body moving
+ * up along it at v relative to the deck swings about that sag by v / ω (ω = √(k/m)); if the deck stops rising under the
+ * feet, or drops away, the spring runs out of sag and the feet leave it once v / ω > m g / k, that is v > g / ω: a
+ * jump's take-off, the push falling to zero with the body still rising (Linthorne 2001). Out of a compressed bottom turn
+ * on the Canyon's Big, the legs rose at up to 1.25 m/s (EXTEND_ACCELERATION's 1.5 g, a 2.5–3 body-weight push) and the
+ * body at 1.4 m/s off the deck. Where the board then came off the bottom and rolled out of the turn, the feet left
+ * it for about 0.4 s, the unloaded board turned and slowed under the rider, and 9 of 14 riders on one wave fell 1.9–2.5 s
+ * after standing. Coaches read the bottom turn's extension as progressive (De Sousa 2022), and the knees load 45–90 N·m
+ * through river-wave turns (Weiß et al. 2024), not a jump's push. Caught, 13 of 14 ride on.
+ *
+ * Only letting Compress go: the pumping crouch let go keeps its pace, as the pumps' tests and the stance map pin it.
+ * Compress's softening is the leg's own (CROUCH_SOFTENING), so the catch falls from 0.57 to 0.40 m/s as the leg stiffens
+ * toward the riding stance.
+ */
+function projectionCatch(mass: number, stiffness: number): number {
+  return WATER.gravity * Math.sqrt(mass / stiffness);
+}
+/**
  * While the feet brake the body's bank near their edges (the ankle's rest past
  * CROUCH_HOLD of ANKLE_REST_RANGE), the legs hold rather than drop, stopping at
  * the edges. A crouch's drop takes the load off the board; taken as the body
@@ -785,6 +807,11 @@ export interface AttachedRiderOptions {
    * before canyon-catch (the `?stroke=old` dev switch, for A/Bs).
    */
   stroke?: 'feather' | 'old';
+  /**
+   * How the legs extend letting Compress go (`projectionCatch`): by default no faster than the stance's spring can
+   * catch the body; 'old' at the legs' full pace, as before compress-exit (the `?extension=old` dev switch, for A/Bs).
+   */
+  extension?: 'old';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1084,6 +1111,8 @@ export class AttachedRider {
   /** A hand is pulling this substep (`paddleStep`): one the board outruns feathers (`FEATHER_DRAG`), unless the stroke is 'old'. */
   private pulling = false;
   private readonly feathers: boolean;
+  /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
+  private readonly catches: boolean;
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1242,6 +1271,7 @@ export class AttachedRider {
     this.stance = options.stance ?? 'regular';
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
+    this.catches = options.extension !== 'old';
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -2104,7 +2134,9 @@ export class AttachedRider {
     const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
-    const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
+    // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
+    const caught = this.catches && !down && this.fromCompress ? projectionCatch(this.mass, this.legStiffness) : Infinity;
+    const speedLimit = down ? CROUCH_SPEED : Math.min(MAX_LEG_SPEED, caught);
     // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
     const hold = this.banking && !compressing
       ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;

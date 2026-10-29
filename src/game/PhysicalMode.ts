@@ -412,6 +412,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...swimSwitch(),
     // `?froth=old`: a roller's froth dragging a board anywhere in its footprint, uncapped, as before bottom-stop, for A/Bs.
     ...frothSwitch(),
+    // `?extension=old`: the legs extending at their full pace letting Compress go, as before compress-exit, for A/Bs.
+    ...extensionSwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -512,6 +514,15 @@ export function swimSwitch(search?: string): { swim?: 'old' } {
  */
 export function frothSwitch(search?: string): { froth?: 'old' } {
   return devParam('froth', search)?.trim().toLowerCase() === 'old' ? { froth: 'old' } : {};
+}
+
+/**
+ * The `?extension=old` dev switch (`SurfZoneConfig.extension`, compress-exit 2026-10-29): every spot's rider, letting
+ * Compress go, extends the legs at their full pace, as before, in place of no faster than the stance's spring can catch
+ * the body.
+ */
+export function extensionSwitch(search?: string): { extension?: 'old' } {
+  return devParam('extension', search)?.trim().toLowerCase() === 'old' ? { extension: 'old' } : {};
 }
 
 /**

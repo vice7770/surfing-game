@@ -131,7 +131,7 @@ function place(at: Start): Trial {
   const trial: Trial = {
     placed: sim.solver.time, last: [], start: at,
     riders: SCRIPTS.map((script) => ({
-      script, session: new RideSession({ stroke: script.stroke }), gauge: new WaveFrameGauge({ directionX: 0, directionZ: 1 }), sprinting: false,
+      script, session: new RideSession({ stroke: script.stroke, ...(option('extension') === 'old' ? { extension: 'old' as const } : {}) }), gauge: new WaveFrameGauge({ directionX: 0, directionZ: 1 }), sprinting: false,
       proneBreaking: 0, maxSpeedProne: 0, face: 0, riding: 0, done: false, seenBehind: false,
       ...(traceTrial === at.trials.length && traceScript === script.name && at === starts[0] ? { trace: [] } : {}),
     })),
