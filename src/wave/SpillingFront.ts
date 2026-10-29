@@ -270,6 +270,9 @@ export class SpillingFront {
   private peel?: { direction: 1 | -1; age: Float64Array; young: number; directions?: Int8Array };
   /** Each group's upcoast gate at the last update (`update`'s scratch). */
   private gates?: Float64Array;
+  /** Per column, how many live waves have joined there and which (`update`'s owner search; nx × at least the waves). */
+  private joinedCount?: Int32Array;
+  private joinedWaves?: Int32Array;
 
   constructor(private readonly grid: SpillingGrid, options: Partial<SpillingFrontOptions> = {}) {
     this.options = { ...SPILLING_FRONT_DEFAULTS, ...options };
@@ -467,6 +470,20 @@ export class SpillingFront {
       }
     }
     for (const wave of waves) wave.crest.fill(Number.NaN);
+    // Per column, the waves that have joined there, in order (canyon-perf, 2026-10-29): a wave with no onset in a column
+    // (its join NaN) can never own a cell of it, so each breaking cell asks only these, in the same order, and picks the
+    // same owner as asking every wave would.
+    const joinedCount = (this.joinedCount ??= new Int32Array(nx));
+    const joinedWaves = (this.joinedWaves = this.joinedWaves && this.joinedWaves.length >= nx * count ? this.joinedWaves : new Int32Array(nx * Math.max(count, 8)));
+    const stride = joinedWaves.length / nx;
+    joinedCount.fill(0);
+    for (let k = 0; k < count; k += 1) {
+      const joinedAt = waves[k].joinedAt;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const joined = joinedAt[ix];
+        if (joined === joined) joinedWaves[ix * stride + joinedCount[ix]++] = k;
+      }
+    }
     this.gated = 0;
     this.ramped = 0;
     const fray = drawn !== undefined && options.drawnEdges;
@@ -500,7 +517,8 @@ export class SpillingFront {
         if (!(b > 0)) continue;
         let owner = -1;
         let latest = -Infinity;
-        for (let k = 0; k < count; k += 1) {
+        for (let m = ix * stride, last = m + joinedCount[ix]; m < last; m += 1) {
+          const k = joinedWaves[m];
           const joined = waves[k].joinedAt[ix];
           if (!(joined > latest)) continue;
           const start = waves[k].joinedZ[ix];

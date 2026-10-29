@@ -35,3 +35,10 @@ time('writeUniformSnapshot', () => sim.writeUniformSnapshot(buffers.surface, buf
 time('fill (the whole snapshot)', () => runner.fill(buffers));
 const status = runner as unknown as { status(): unknown };
 time('status (the summary)', () => status.status());
+// A coarser render grid (an option that changes the drawing, not built): the same tank at 1.5 m and 2 m between nodes.
+for (const spacing of (option('spacings') ?? '').split(',').filter(Boolean).map(Number)) {
+  const coarse = { ...grid, spacing, nx: Math.round((grid.nx - 1) * grid.spacing / spacing) + 1, nz: Math.round((grid.nz - 1) * grid.spacing / spacing) + 1 };
+  const nodes = coarse.nx * coarse.nz;
+  const surface = new Float32Array(nodes * 2); const flow = new Float32Array(nodes * 2); const aeration = new Float32Array(nodes * 2);
+  time(`fields at ${spacing} m (${coarse.nx} × ${coarse.nz})`, () => sim.writeUniformSnapshot(surface, flow, aeration, coarse));
+}
