@@ -15,7 +15,7 @@ import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
+import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
 import { BOARD_SHEETS, createBoardSpraySheet, unpackBoardSheets } from '../physics/boardSpray';
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
@@ -424,7 +424,7 @@ export class SurfZoneRunner {
     const renderSpacing = options.renderSpacing
       ?? (config.spot === 'padang' && requestedGrid.nx * requestedGrid.nz >= 200_000 ? 2 : 1);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
-    this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
+    this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY, BOARD_SPRAY_CAPACITY);
     this.boardSprays = config.boardSpray !== 'off';
     this.grid = requestedGrid.spacing === renderSpacing ? requestedGrid : this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
@@ -858,7 +858,7 @@ export class SurfZoneRunner {
       aeration: new Float32Array(nodes * 2),
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
-      spray: new Float32Array((SPRAY_CAPACITY + WHITEWATER_CAPACITY) * SPRAY_STRIDE),
+      spray: new Float32Array((SPRAY_CAPACITY + WHITEWATER_CAPACITY + BOARD_SPRAY_CAPACITY) * SPRAY_STRIDE),
       sprayCount: 0,
       board: new Float64Array(8),
       rider: new Float64Array(RIDER_SNAPSHOT.length),

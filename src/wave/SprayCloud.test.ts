@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, TOE_SPRAY, splashLaunch, type LipImpact, type RollerToes, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { BOARD_SPRAY_PER_KG, FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, type BoardSpraySheet, TOE_SPRAY, splashLaunch, type LipImpact, type RollerToes, type SprayScene, type StrokeSplash } from './SprayCloud';
 import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from './SpillingCurl';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
@@ -565,5 +565,50 @@ describe('the roller front\'s toe spray (the Canyon roller front)', () => {
     const plainCount = plain.count;
     expect(toed.count).toBeGreaterThanOrEqual(plainCount);
     expect(Array.from(toed.particles.subarray(0, plainCount * SPRAY_STRIDE))).toEqual(Array.from(plain.particles.subarray(0, plainCount * SPRAY_STRIDE)));
+  });
+});
+
+describe('a board\'s spray (board-spray)', () => {
+  /** A hard turn's sheet: `flux` kg/s leaving 4 cm over the water along 0.6 m of rail, out and up at 6 and 5 m/s. */
+  const sheet = (flux: number): BoardSpraySheet => ({
+    x: 5, y: 0.04, z: 20, alongX: 0, alongZ: 1, length: 0.6, vx: 6, vy: 5, vz: 2, flux, spread: 1, fall: 7, mist: 0.1,
+  });
+
+  it('throws BOARD_SPRAY_PER_KG drawn particles per kilogram of the sheet\'s water, out along its velocity', () => {
+    const cloud = new SprayCloud(4, 4096, 1024, 512);
+    cloud.update({ ...flatScene(), boardSheets: [sheet(60)] }, 0.1);
+    expect(cloud.boardSpawns).toBeGreaterThanOrEqual(Math.floor(60 * 0.1 * BOARD_SPRAY_PER_KG) - 1);
+    expect(cloud.boardSpawns).toBeLessThanOrEqual(Math.ceil(60 * 0.1 * BOARD_SPRAY_PER_KG) + 1);
+    // A twentieth of a second later: on their way out and up.
+    cloud.update(flatScene(), 0.05);
+    let out = 0;
+    for (let k = 0; k < cloud.count; k += 1) if (cloud.particles[k * SPRAY_STRIDE] > 5 && cloud.particles[k * SPRAY_STRIDE + 1] > 0.04) out += 1;
+    expect(out / cloud.count).toBeGreaterThan(0.8);
+  });
+
+  it('keeps the boards\' spray in a pool of its own, scaled by the Particles setting, without crowding the sea\'s', () => {
+    const cloud = new SprayCloud(4, 4096, 1024, 512);
+    for (let frame = 0; frame < 120; frame += 1) cloud.update({ ...flatScene(), boardSheets: [sheet(400)] }, 1 / 60);
+    expect(cloud.boardCount).toBe(512);
+    const medium = new SprayCloud(4, 4096, 1024, 512);
+    medium.setLevel('medium');
+    for (let frame = 0; frame < 120; frame += 1) medium.update({ ...flatScene(), boardSheets: [sheet(400)] }, 1 / 60);
+    expect(medium.boardCount).toBe(256);
+    // None without a pool of its own.
+    const none = new SprayCloud(4);
+    none.update({ ...flatScene(), boardSheets: [sheet(400)] }, 1 / 60);
+    expect(none.count).toBe(0);
+  });
+
+  it('throws them on its own random stream: the sea\'s drops are as they were', () => {
+    const plain = new SprayCloud(9, 4096, 1024, 512);
+    const sprayed = new SprayCloud(9, 4096, 1024, 512);
+    for (let frame = 0; frame < 90; frame += 1) {
+      const scene = busyWhitewater(frame);
+      plain.update(scene, 1 / 60);
+      sprayed.update({ ...scene, boardSheets: [sheet(80)] }, 1 / 60);
+      expect(sprayed.count - sprayed.boardCount).toBe(plain.count);
+    }
+    expect(sprayed.boardCount).toBeGreaterThan(0);
   });
 });

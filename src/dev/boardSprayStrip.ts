@@ -21,6 +21,7 @@ import { PoolStart, type PoolStartKind } from './poolStart';
 
 interface StripHooks {
   start(settings: PhysicalSettings, overrides?: Record<string, unknown>): Promise<void>;
+  setTimeOfDay(time: 'dawn' | 'midday' | 'sunset'): Promise<void>;
   step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
   render(seconds: number, camera?: PerspectiveCamera): void;
   renderView(camera: PerspectiveCamera): void;
@@ -35,10 +36,12 @@ const RECEIVER = params.get('receiver') ?? 'http://localhost:5199';
 const SIZE = (params.get('size') ?? 'medium') as SwellSize;
 const ARM: 1 | -1 = params.get('arm') === 'left' ? -1 : 1;
 const CASES = (params.get('cases') ?? 'trim,turn,compress').split(',') as Case[];
-const TIMES = (params.get('times') ?? '0.5,0.8,1.1,1.4').split(',').map(Number);
+const TIMES = (params.get('times') ?? '0.6,0.9,1.2,1.5').split(',').map(Number);
 const STEER = Number(params.get('steer') ?? -ARM);
 const OFF = params.get('boardSpray') === 'off';
-const TILE = { width: 480, height: 270 };
+const TILE = { width: 640, height: 360 };
+/** The GPU timing's frame, as the game's at 720p. */
+const FULL = { width: 1280, height: 720 };
 const STEP = 1 / 60;
 const TURN = { from: 0.3, for: 0.8 };
 
@@ -74,6 +77,7 @@ async function log(line: string): Promise<void> {
 export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
   const settings = physicalSettingsFor('pool', { swell: SIZE, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
   await hooks.start(settings, OFF ? { boardSpray: 'off' } : undefined);
+  await hooks.setTimeOfDay('midday');
   hooks.resize(TILE.width, TILE.height);
   const host = hooks.mode.host;
   const placed = PoolStart.at(host, ARM);
@@ -108,7 +112,7 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
       if (column < 0) continue;
       const board = host.snapshot.board;
       for (const [row, view] of (['chase', 'side'] as const).entries()) {
-        hooks.render(0, cameraFor(board, view, camera));
+        hooks.render(STEP / 2, cameraFor(board, view, camera));
         context.drawImage(hooks.canvas, column * TILE.width, row * TILE.height, TILE.width, TILE.height);
       }
       context.fillStyle = 'rgba(0,0,0,0.55)';
@@ -124,7 +128,13 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
       // The compressed turn's busiest frame: the spray's GPU time, drawn against hidden, frame by frame.
       if (which === 'compress' && !held && column === Math.floor(TIMES.length / 2)) {
         held = true;
+        hooks.resize(FULL.width, FULL.height);
+        camera.aspect = FULL.width / FULL.height;
+        camera.updateProjectionMatrix();
         result.gpu = await sprayGpuAB(hooks, cameraFor(board, 'chase', camera));
+        hooks.resize(TILE.width, TILE.height);
+        camera.aspect = TILE.width / TILE.height;
+        camera.updateProjectionMatrix();
       }
     }
     await post(strip, `board-spray-${which}${OFF ? '-off' : ''}.png`);

@@ -1,8 +1,14 @@
 import { buildBoardShape } from '../physics/boardShape';
+import { REFERENCE_RIDER } from '../physics/boardReference';
 import { createHullSprayBuffers, createBoardSpraySheet, hullSprayLayout, hullSpraySheets, packBoardSheets, BOARD_SHEETS } from '../physics/boardSpray';
 import type { BoardSpraySheet } from '../wave/SprayCloud';
+import { RIDER_PHASES } from '../wave/SurfZoneRunner';
 import { createRemoteState, type RemoteState, type RemoteSurfers } from './RemoteSurfers';
 
+/** What a remote board's hull holds up, N: the reference board, and with its rider (73 kg) on it. */
+const BOARD_WEIGHT = 5 * 9.81;
+const REMOTE_LOAD = BOARD_WEIGHT + REFERENCE_RIDER.mass * 9.81;
+const FALLEN = RIDER_PHASES.indexOf('fallen');
 /** The board's velocity is read over this much of the drawn past, s: a pose's span (20 a second). */
 const VELOCITY_SPAN = 0.05;
 
@@ -20,7 +26,10 @@ export class RemoteSpray {
 
   constructor() {
     this.hull.width.set(this.layout.width);
-    for (let o = 0; o < this.layout.stations * this.layout.lanes; o += 1) this.hull.across[o] = this.layout.local[o * 3];
+    for (let o = 0; o < this.layout.stations * this.layout.lanes; o += 1) {
+      this.hull.across[o] = this.layout.local[o * 3];
+      this.hull.along[o] = this.layout.local[o * 3 + 2];
+    }
   }
 
   /** Start a frame's sheets. */
@@ -32,6 +41,8 @@ export class RemoteSpray {
   add(remote: RemoteSurfers, id: number, seaTime: number, state: RemoteState, heightAt: (x: number, z: number) => number): void {
     if (!state.boardPresent || !remote.sample(id, seaTime - VELOCITY_SPAN, this.before)) return;
     const { layout, hull } = this;
+    // What the water holds up: the board and, on it, its rider (the reference rider's weight).
+    hull.lift = state.present && state.phase >= 0 && state.phase !== FALLEN ? REMOTE_LOAD : BOARD_WEIGHT;
     const [qx, qy, qz, qw] = state.quaternion;
     // The board's axes (the quaternion's rotation matrix columns).
     const r0 = 1 - 2 * (qy * qy + qz * qz); const r1 = 2 * (qx * qy - qz * qw); const r2 = 2 * (qx * qz + qy * qw);

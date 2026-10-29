@@ -525,7 +525,9 @@ export class BoardBody implements BoardContactBody {
     const lanes = this.strips.length;
     const stations = this.strips[0].length;
     const spray = this.sprayState ??= createHullSprayBuffers(stations, lanes, this.stationLength);
-    const { width, across, point, depth, water, hull, sea, axisX, axisY, axisZ } = spray;
+    const { width, across, along, point, depth, water, hull, sea, axisX, axisY, axisZ } = spray;
+    // What the water holds up, N (the step's mean pressure and buoyancy): the flat board's blister turns its momentum.
+    spray.lift = Math.max(0, this.forces.pressure.y + this.forces.buoyancy.y);
     const r = this.rotation;
     axisX[0] = r[0]; axisX[1] = r[3]; axisX[2] = r[6];
     axisY[0] = r[1]; axisY[1] = r[4]; axisY[2] = r[7];
@@ -539,6 +541,7 @@ export class BoardBody implements BoardContactBody {
         const sample = this.samples[k];
         width[o] = this.area[k] / this.stationLength;
         across[o] = this.local[k * 3];
+        along[o] = this.local[k * 3 + 2];
         point[o * 3] = this.point[k * 3];
         point[o * 3 + 1] = this.point[k * 3 + 1];
         point[o * 3 + 2] = this.point[k * 3 + 2];

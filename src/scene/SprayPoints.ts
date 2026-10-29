@@ -1,5 +1,5 @@
 import { BufferAttribute, BufferGeometry, Color, DynamicDrawUsage, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
+import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { churnTexture } from './water/churnTexture';
 import { hazeLandRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
 import { horizonHazeUniforms } from './water/horizonHaze';
@@ -51,7 +51,7 @@ export class SprayPoints {
   private readonly buffer = new Vector2();
   private currentLook: WaterLook = 'classic';
 
-  constructor(readonly capacity = SPRAY_CAPACITY + WHITEWATER_CAPACITY) {
+  constructor(readonly capacity = SPRAY_CAPACITY + WHITEWATER_CAPACITY + BOARD_SPRAY_CAPACITY) {
     const geometry = new BufferGeometry();
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3).setUsage(DynamicDrawUsage);
     this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2).setUsage(DynamicDrawUsage);

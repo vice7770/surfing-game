@@ -70,10 +70,10 @@ export const TOE_SPRAY = {
 } as const;
 
 /**
- * A planing board's spray sheet this step (board-spray, 2026-10-29; `boardSpraySheets` in `physics/boardSpray.ts`): its
- * root, where the water leaves the hull (at a rail, or the tail), as a line from (x, y, z) `length` m along (alongX,
- * alongZ); the sheet's launch velocity, m/s (world); the water it throws, kg/s; and the spread of its drops' velocities,
- * m/s. Drawn only.
+ * A planing board's spray sheet this step (board-spray, 2026-10-29; `hullSpraySheets` in `physics/boardSpray.ts`): where
+ * the water leaves the hull, as a line from (x, y, z) `length` m along (alongX, alongZ); the sheet's launch velocity,
+ * m/s (world); the water it throws, kg/s; the spread of its drops' velocities, m/s; their fall speed, m/s; and the share
+ * drawn as mist. Drawn only.
  */
 export interface BoardSpraySheet {
   x: number;
@@ -87,6 +87,8 @@ export interface BoardSpraySheet {
   vz: number;
   flux: number;
   spread: number;
+  fall: number;
+  mist: number;
 }
 
 /** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */
@@ -145,9 +147,12 @@ const SPRAY_PER_FOAM = 0.6;
 const FEATHER_RATE = 0.05;
 /** Drawn spray and mist per m³ of air a closing tube blows out (G9, s_a; docs/research/whitewater-sources.md, provisional). */
 export const SPRAY_PER_AIR = 40;
-/** Drawn particles per kilogram of water a board's spray sheet throws, and the share of them that are mist (board-spray; see `boardSpraySheets`). */
-export const BOARD_SPRAY_PER_KG = 6;
-export const BOARD_MIST = 0.15;
+/**
+ * Drawn particles per kilogram of water a board's sheet throws (board-spray; the water-physics advisor, 2026-10-29: 6–8
+ * keeps a hard Compress bottom turn's fan to a few hundred live), and its drops' fall speeds either way of the sheet's.
+ */
+export const BOARD_SPRAY_PER_KG = 7;
+const BOARD_FALL_SPREAD = 1;
 /** The share of a spit's and of an eruption's particles that are mist (provisional). */
 const SPIT_MIST = 0.5;
 const ERUPTION_MIST = 0.3;
@@ -186,6 +191,8 @@ export const SPRAY_STRIDE = 6;
 /** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
 export const SPRAY_CAPACITY = 4096;
 export const WHITEWATER_CAPACITY = 1024;
+/** The boards' spray has a pool of its own beside them (board-spray): the sea's spray fills its pool on busy Reef steps. */
+export const BOARD_SPRAY_CAPACITY = 512;
 
 type Kind = 0 | 1 | 2 | 3 | 4;
 const SPRAY: Kind = 0;
@@ -219,7 +226,8 @@ export class SprayCloud {
   count = 0;
   /** How many of them are a closing tube's whitewater. */
   whitewaterCount = 0;
-  /** Particles the boards' sheets have spawned so far (board-spray; for the dev tools' counts). */
+  /** How many of them are the boards' spray, and how many the boards' sheets have spawned so far (board-spray). */
+  boardCount = 0;
   boardSpawns = 0;
   /** The look the spray is drawn in: Classic's lip-impact drops are as they were before G9. */
   look: SprayLook = 'rich';
@@ -229,6 +237,7 @@ export class SprayCloud {
   /** The pools in use at that budget: spray and mist, and a tube's whitewater. */
   private sprayRoom: number;
   private whitewaterRoom: number;
+  private boardRoom: number;
   private readonly x: Float64Array;
   private readonly y: Float64Array;
   private readonly z: Float64Array;
@@ -241,6 +250,8 @@ export class SprayCloud {
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
   private readonly kind: Uint8Array;
+  /** Whether a particle is a board's spray (its own pool). */
+  private readonly fromBoard: Uint8Array;
   /** A foam-ball sprite's roller, and where it sits in it: its distance from the axis, angle round it, and offset along it. */
   private readonly owner: Float64Array;
   private readonly radial: Float64Array;
@@ -255,20 +266,24 @@ export class SprayCloud {
   private readonly held = new Map<number, number>();
   private readonly rollerById = new Map<number, TubeRoller>();
 
-  constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
+  constructor(
+    seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4), readonly boardCapacity = 0,
+  ) {
     this.random = seededRandom(seed, 0x5b1a54);
     this.toeRandom = seededRandom(seed, 0x70e5f7);
     this.boardRandom = seededRandom(seed, 0xb0a5d5);
-    const total = capacity + whitewaterCapacity;
+    const total = capacity + whitewaterCapacity + boardCapacity;
     const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
     this.vx = make(); this.vy = make(); this.vz = make();
     this.age = make(); this.life = make(); this.drag = make(); this.size = make();
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
+    this.fromBoard = new Uint8Array(total);
     this.packedParticles = new Float32Array(total * SPRAY_STRIDE);
     this.sprayRoom = capacity;
     this.whitewaterRoom = whitewaterCapacity;
+    this.boardRoom = boardCapacity;
   }
 
   /**
@@ -280,6 +295,7 @@ export class SprayCloud {
     this.budget = particleBudget(level);
     this.sprayRoom = poolSize(this.capacity, this.budget);
     this.whitewaterRoom = poolSize(this.whitewaterCapacity, this.budget);
+    this.boardRoom = poolSize(this.boardCapacity, this.budget);
   }
 
   get level(): ParticleLevel {
@@ -297,7 +313,7 @@ export class SprayCloud {
 
   /** Whether there is room for another particle of spray and mist, or of a tube's whitewater. */
   private room(whitewater: boolean): boolean {
-    return whitewater ? this.whitewaterCount < this.whitewaterRoom : this.count - this.whitewaterCount < this.sprayRoom;
+    return whitewater ? this.whitewaterCount < this.whitewaterRoom : this.count - this.whitewaterCount - this.boardCount < this.sprayRoom;
   }
 
   update(scene: SprayScene, dt: number): void {
@@ -324,6 +340,7 @@ export class SprayCloud {
   clear(): void {
     this.count = 0;
     this.whitewaterCount = 0;
+    this.boardCount = 0;
     this.particlesDirty = false;
   }
 
@@ -444,17 +461,24 @@ export class SprayCloud {
     const random = this.boardRandom;
     const expected = sheet.flux * dt * BOARD_SPRAY_PER_KG * this.budget.spawn;
     let spawns = Math.floor(expected) + (random() < expected - Math.floor(expected) ? 1 : 0);
-    for (; spawns > 0 && this.room(false); spawns -= 1) {
+    for (; spawns > 0 && this.boardCount < this.boardRoom; spawns -= 1) {
       const along = random() * sheet.length;
       const pace = 0.8 + 0.4 * random();
-      const mist = random() < BOARD_MIST;
+      const k = this.count;
       this.spawn(
-        mist ? MIST : SPRAY,
+        random() < sheet.mist ? MIST : SPRAY,
         sheet.x + sheet.alongX * along, sheet.y, sheet.z + sheet.alongZ * along,
         sheet.vx * pace + (random() - 0.5) * 2 * sheet.spread, sheet.vy * pace + (random() - 0.5) * 2 * sheet.spread,
         sheet.vz * pace + (random() - 0.5) * 2 * sheet.spread,
         random,
       );
+      // The sheet's own drops: they fall as fast as its drops do (the mist as the mist does).
+      if (this.kind[k] === SPRAY) {
+        const fall = Math.max(1, sheet.fall + (random() - 0.5) * 2 * BOARD_FALL_SPREAD);
+        this.drag[k] = GRAVITY / (fall * fall);
+      }
+      this.fromBoard[k] = 1;
+      this.boardCount += 1;
       this.boardSpawns += 1;
     }
   }
@@ -648,6 +672,7 @@ export class SprayCloud {
     this.vz[k] = vz;
     this.age[k] = 0;
     this.kind[k] = kind;
+    this.fromBoard[k] = 0;
     this.count += 1;
     if (isWhitewater(kind)) this.whitewaterCount += 1;
     if (kind === FOAM_BALL) {
@@ -665,6 +690,7 @@ export class SprayCloud {
 
   private remove(k: number): void {
     if (isWhitewater(this.kind[k])) this.whitewaterCount -= 1;
+    if (this.fromBoard[k]) this.boardCount -= 1;
     this.count -= 1;
     const last = this.count;
     this.x[k] = this.x[last];
@@ -678,6 +704,7 @@ export class SprayCloud {
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
     this.kind[k] = this.kind[last];
+    this.fromBoard[k] = this.fromBoard[last];
     this.owner[k] = this.owner[last];
     this.radial[k] = this.radial[last];
     this.spin[k] = this.spin[last];
