@@ -35,6 +35,8 @@ const ride = option('ride') ?? 'straight';
 const turnAt = Number(option('turn-at') ?? 0.6);
 const turnFor = Number(option('turn-for') ?? 0.8);
 const side = option('side') === 'right' ? -1 : 1;
+// `--turn-compress c`: how far Compress is held through the turn (1: fully; 0: the steer alone).
+const turnCompress = Number(option('turn-compress') ?? 1);
 const quiet = process.argv.includes('--quiet');
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 const config: SurfZoneConfig = {
@@ -120,7 +122,7 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
     const turning = ride === 'turn' && standing && since >= turnAt && since < turnAt + turnFor;
     session.step(STEP, water, {
       paddle: prone && !trial.popped, sprint: prone && trial.sprinting && !trial.popped, popUp: pop,
-      steer: turning ? side : 0, compress: turning ? 1 : 0,
+      steer: turning ? side : 0, compress: turning ? turnCompress : 0,
     });
     if (session.phase === 'standing' && Number.isNaN(trial.stood)) trial.stood = t;
     if (session.phase === 'standing' && frame.valid && frame.aheadOfCrest >= 0 && frame.speedShoreward >= 0.6 * frame.crestSpeed) trial.riding += STEP;

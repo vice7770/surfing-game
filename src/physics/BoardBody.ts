@@ -858,9 +858,9 @@ export class BoardBody implements BoardContactBody {
       // - never harder than the roller's grip on the face there, ρ(1 − ᾱ)·g·t·sin θ (Duncan's shear, Martins et al. 2018
       //   eq. 1), a few tens to a hundred Pa where it is thin;
       // - and only on the share of the patch's depth the lens covers (a hull below it runs in green water).
-      // Dragged in full down to a young lens's toe, past its g-blended flow and without a cap, a straight-in rider at the
-      // bottom of a Big face was braked at 0.3–0.5 body weights by froth that is not drawn there, and thrown; the bare
-      // board then stopped dead (about 11 g).
+      // Dragged in full down to a young lens's toe, past its g-blended flow and without a cap, a straight-in rider on the
+      // lower half of a Big face was braked at 0.3–0.55 body weights by froth that is not drawn there, and thrown; the
+      // bare board then stopped dead (about 11 g).
       const reached = sample.lensReach === undefined || sample.lensScale === undefined || sample.lensReach <= sample.lensScale;
       if (sample.lensScale !== undefined && sample.lensScale > 0 && reached) {
         const wettedHere = force.wettedArea + force.deckWettedArea;
