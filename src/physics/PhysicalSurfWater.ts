@@ -127,6 +127,12 @@ export interface PhysicalSurfWaterOptions {
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
   roller?: RollerLens;
+  /**
+   * 'old': the surface held still through the bodies' step, as before popup-moving-face (2026-10-29; the
+   * `?surfaceMotion=old` dev switch, for A/Bs). By default it moves at its rise rate to each substep's time
+   * (`setSampleTime`).
+   */
+  surfaceMotion?: 'old';
 }
 
 /** Only numeric state read by the existing plain-height sampler; no complete solver facade. */
@@ -322,6 +328,16 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private readonly weights = new Float64Array(4);
   private readonly hit = createContactHit();
   private readonly lens: LensPoint = { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0 };
+  /**
+   * When the bodies' samples are taken, s, relative to the water's state (`setSampleTime`; ≤ 0, the step ends at the
+   * state). The sea's surface rises at −∇·q (continuity: the depth-integrated mass equation, ∂η/∂t + ∇·q = 0), a face
+   * at about c tan θ: 2.2 m/s on a Big Canyon set's 20° face at 6 m/s, so in one 1/60 s step it climbs 3.6 cm. Held
+   * still through the step, the board slid down the frozen face, lost its water and fell free, then met the face
+   * 3.6 cm higher at the next step: kicked at 60 Hz, which threw a rider pushing up off it (popup-moving-face,
+   * 2026-10-29). Each sample's surface is moved back to its time at that rate, the plain surface's (the swept
+   * barrel's contact answers its own).
+   */
+  private sampleTime = 0;
 
   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
     super(solver, options.nodeSpacing ?? 1, options);
@@ -339,7 +355,12 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
+      ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
     });
+  }
+
+  setSampleTime(offset: number): void {
+    this.sampleTime = this.options.surfaceMotion === 'old' ? 0 : offset;
   }
 
   /** Internal ordinary swept owner only: copy fresh fields before building, retain them through later demand. */
@@ -385,7 +406,13 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.wet = depth > WET;
     this.surface(x, z, out);
     const contact = swept !== undefined && swept.query(x, y, z, this.hit);
+    // The surface's rise rate (continuity), m/s: found here when the sample's time needs it, else with the flow below.
+    let rise = Number.NaN;
     if (contact) this.fromContact(y, out);
+    else if (this.sampleTime !== 0 && out.wet) {
+      rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
+      out.surfaceY += rise * this.sampleTime;
+    }
     out.voidFraction = this.airAt(y, out.surfaceY);
     out.turbulence = this.turbulenceAt(y, out.surfaceY, this.blend(bed));
     out.breaking = this.options.breaking ? this.blend(this.options.breaking) : 0;
@@ -405,7 +432,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       w += (this.weights[c] * qz[i]) / h[i];
     }
     const height = Math.min(depth, Math.max(0, y - bottom));
-    const rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
+    if (rise !== rise) rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
     const kh = waveNumber(this.omega, depth) * depth;
     let horizontal = 1;
     let vertical = height / depth;
@@ -442,7 +469,12 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       const floor = swept.floorAt(x, z);
       if (floor === floor) return floor;
     }
-    return this.plainSurfaceAt(x, z);
+    const surface = this.plainSurfaceAt(x, z);
+    if (this.sampleTime === 0 || this.outside(x, z)) return surface;
+    this.cellWeights(x, z);
+    if (!(this.blend(this.solver.h) > WET)) return surface;
+    const { qx, qz } = this.solver;
+    return surface + (0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'))) * this.sampleTime;
   }
 
   addReaction(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void {

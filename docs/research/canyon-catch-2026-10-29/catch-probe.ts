@@ -15,7 +15,7 @@
  * Per trial it also gives the cue's, the pop's and the stand's times against the crest reaching the rider, the face under
  * the board at the pop and the wave's face at the start (the gauge's, the most seen while the crest was 0–10 m away).
  *   rolldown docs/research/canyon-catch-2026-10-29/catch-probe.ts -o dist/scripts/catch-probe.mjs --format esm --platform node \
- *     && node dist/scripts/catch-probe.mjs --size medium --seed 1 --periods 12 [--start <m out>] [--state <sea>] [--json <file>]
+ *     && node dist/scripts/catch-probe.mjs --size medium --seed 1 --periods 12 [--start <m out>] [--state <sea>] [--json <file>] [--surface old]
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
@@ -71,7 +71,8 @@ const SCRIPTS = wanted ? ALL.filter((script) => wanted.includes(script.name)) : 
 const spotName = (option('spot') ?? 'canyon') as 'canyon';
 const settings = physicalSettingsFor(spotName, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 const base = surfZoneConfigFor(settings, seed, true);
-const config: SurfZoneConfig = { ...base, compute: 'cpu' };
+// `--surface old`: the sea's surface held still through the bodies' step, as before popup-moving-face (`?surfaceMotion=old`).
+const config: SurfZoneConfig = { ...base, compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}) };
 const statePath = option('state');
 const wall = Date.now();
 let sim: SurfZoneSimulation;
@@ -88,6 +89,7 @@ const water: SurfWater = {
   sampleAt: (x, y, z, out) => physical.sampleAt(x, y, z, out),
   surfaceAt: (x, z) => physical.surfaceAt(x, z),
   addReaction: () => {},
+  setSampleTime: (offset) => physical.setSampleTime(offset),
 };
 // `--focus reef`: the Canyon reef's own take-off (its readout's, `canyonReefTakeOff`), not the default start's beach peak.
 const focus = option('focus') === 'reef' ? canyonReefTakeOff(config) : sim.breakPoint();

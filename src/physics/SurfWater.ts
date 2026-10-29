@@ -103,4 +103,10 @@ export interface SurfWater {
    * the horizontal part; how an adapter treats the vertical part is its own.
    */
   addReaction(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void;
+  /**
+   * The bodies integrate over the step that brought the water to its state. Before each substep the board says when its
+   * samples are taken, s, relative to that state (−dt to 0), and 0 after its step. A water whose surface moves through
+   * the step (the simulated sea) samples its surface at that time; one without it, or held, ignores it.
+   */
+  setSampleTime?(offset: number): void;
 }

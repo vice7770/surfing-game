@@ -338,6 +338,44 @@ describe('PhysicalSurfWater', () => {
     expect(water.sampleAt(0.1, solver.bed[0], 0.3, out).flowY).toBeCloseTo(0, 9);
   });
 
+  // popup-moving-face (2026-10-29): the bodies integrate over the step that brought the water to its state, so a moving
+  // face must be sampled where it was at each substep's time, not held at the step's end through it.
+  it('moves its surface back through the step at its rise rate, to where the step found it, unless held (`surfaceMotion: \'old\'`)', () => {
+    const depth = 2;
+    const solver = new ShallowWaterSolver({ nx: 4, xMin: -2, dx: 1, zEdges: uniformEdges(-30, 30, 120), xBoundary: 'periodic' }, () => depth);
+    // A hump 0.5 m high travelling shoreward at √(g d): its front face, 2.8 m ahead of its top, climbs ~0.5 m/s.
+    const c = Math.sqrt(9.81 * depth);
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      const eta = 0.5 * Math.exp(-((solver.zCenters[iz] / 4) ** 2));
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        solver.h[iz * solver.nx + ix] = depth + eta;
+        solver.qz[iz * solver.nx + ix] = c * eta;
+      }
+    }
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10 });
+    const held = new PhysicalSurfWater(solver, { peakPeriod: 10, surfaceMotion: 'old' });
+    const out = createWaterSample();
+    const dt = 1 / 60;
+    for (const z of [2, 2.8, 4]) {
+      const before = water.surfaceAt(0.3, z);
+      solver.step(dt);
+      const after = water.surfaceAt(0.3, z);
+      expect(after - before, `z ${z}`).toBeGreaterThan(0.004);
+      water.setSampleTime(-dt);
+      held.setSampleTime(-dt);
+      const moved = water.surfaceAt(0.3, z);
+      // Within a tenth of the step's climb of where it was; the sample agrees with the height.
+      expect(Math.abs(moved - before), `z ${z}`).toBeLessThan(0.1 * (after - before));
+      expect(water.sampleAt(0.3, moved - 0.2, z, out).surfaceY, `z ${z}`).toBeCloseTo(moved, 12);
+      expect(held.surfaceAt(0.3, z)).toBe(after);
+      expect(held.sampleAt(0.3, after - 0.2, z, out).surfaceY).toBe(after);
+      // Back at the water's own time, the state's surface.
+      water.setSampleTime(0);
+      expect(water.surfaceAt(0.3, z)).toBe(after);
+      expect(water.sampleAt(0.3, after - 0.2, z, out).surfaceY).toBe(after);
+    }
+  });
+
   it('says when a point lies beyond the simulated window', () => {
     const { water } = channel();
     const out = createWaterSample();

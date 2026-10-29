@@ -406,6 +406,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
     ...strokeSwitch(),
+    // `?surfaceMotion=old`: the sea's surface held still through the bodies' step, as before popup-moving-face, for A/Bs.
+    ...surfaceMotionSwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -479,6 +481,15 @@ export function onsetSwitch(search?: string): { onsetRule?: 'old' } {
  */
 export function strokeSwitch(search?: string): { stroke?: 'old' } {
   return devParam('stroke', search)?.trim().toLowerCase() === 'old' ? { stroke: 'old' } : {};
+}
+
+/**
+ * The `?surfaceMotion=old` dev switch (`SurfZoneConfig.surfaceMotion`, popup-moving-face 2026-10-29): every spot's
+ * boards and riders sample the sea's surface held still through their step, as before, in place of moving at its rise
+ * rate to each substep's time.
+ */
+export function surfaceMotionSwitch(search?: string): { surfaceMotion?: 'old' } {
+  return devParam('surfaceMotion', search)?.trim().toLowerCase() === 'old' ? { surfaceMotion: 'old' } : {};
 }
 
 /**

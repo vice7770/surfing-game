@@ -223,6 +223,9 @@ export class BoardBody implements BoardContactBody {
   substepsTaken = 0;
 
   private readonly substeps: number;
+  /** This step's length and the time into it the next substep starts, s: when its samples are taken (`setSampleTime`). */
+  private stepSpan = 0;
+  private stepElapsed = 0;
   private readonly count: number;
   private readonly bodyInertia: number[];
   private readonly bodyInverseInertia: number[];
@@ -514,7 +517,11 @@ export class BoardBody implements BoardContactBody {
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
     this.rider?.beginStep();
     this.substepsTaken = 0;
+    this.stepSpan = dt;
+    this.stepElapsed = 0;
     for (let s = 0; s < substeps; s += 1) this.advance(h, water, 0);
+    // Back to the water's own time for whatever samples it next (the rider's cue, other bodies).
+    water.setSampleTime?.(0);
     const inverseDt = 1 / dt;
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
     this.rider?.endStep(dt, water, this);
@@ -698,7 +705,10 @@ export class BoardBody implements BoardContactBody {
       this.advance(h / 2, water, depth + 1);
     } else {
       this.substepsTaken += 1;
+      // The water's state is the step's end: this substep samples it as it was at its start.
+      water.setSampleTime?.(this.stepElapsed - this.stepSpan);
       this.substep(h, water);
+      this.stepElapsed += h;
     }
   }
 

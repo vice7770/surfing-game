@@ -106,6 +106,12 @@ export interface SurfZoneConfig {
    * rider; online rooms run the default.
    */
   stroke?: 'feather' | 'old';
+  /**
+   * 'old': the sea's surface held still through the bodies' step, as before popup-moving-face (2026-10-29); by default
+   * the bodies sample it moving at its rise rate to each substep's time (`PhysicalSurfWaterOptions.surfaceMotion`). The
+   * `?surfaceMotion=old` dev switch, for A/Bs. Every spot's bodies; online rooms run the default.
+   */
+  surfaceMotion?: 'old';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

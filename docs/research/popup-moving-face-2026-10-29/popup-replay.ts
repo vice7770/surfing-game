@@ -6,13 +6,12 @@
  * normal impulse over the body's weight), the posture error, the board's heave (vertical speed and acceleration), its
  * pitch against the surface under it, and the wave frame. Ends with the outcome.
  *   rolldown docs/research/popup-moving-face-2026-10-29/popup-replay.ts -o dist/scripts/popup-replay.mjs --format esm --platform node \
- *     && node dist/scripts/popup-replay.mjs --state <sea> [--size big] [--spot canyon] [--lead 2] [--seconds 14] [--popup old] [--quiet]
+ *     && node dist/scripts/popup-replay.mjs --state <sea> [--size big] [--spot canyon] [--lead 2] [--seconds 14] [--riders n --spread m] [--surface old] [--subs] [--quiet]
  */
 import { readFileSync } from 'node:fs';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../../../src/game/SurfConditions';
 import { AttachedRider } from '../../../src/physics/AttachedRider';
-import { BoardBody } from '../../../src/physics/BoardBody';
 import { PhysicalSurfWater } from '../../../src/physics/PhysicalSurfWater';
 import { RideSession } from '../../../src/physics/RideSession';
 import { createWaterSample, type SurfWater } from '../../../src/physics/SurfWater';
@@ -27,31 +26,21 @@ const size = (option('size') ?? 'big') as SwellSize;
 const lead = Number(option('lead') ?? 2);
 const seconds = Number(option('seconds') ?? 14);
 const quiet = process.argv.includes('--quiet');
-const popup = option('popup') as 'old' | undefined;
 const STEP = 1 / 60;
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
-const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, Number(option('seed') ?? 1), true), compute: 'cpu' };
+// `--surface old`: the sea's surface held still through the bodies' step, as before popup-moving-face (`?surfaceMotion=old`).
+const config: SurfZoneConfig = {
+  ...surfZoneConfigFor(settings, Number(option('seed') ?? 1), true), compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}),
+};
 const sim = new SurfZoneSimulation(config, 'warm');
 sim.importState(decodeSurfZoneState(new Uint8Array(readFileSync(option('state')!))));
 const physical = PhysicalSurfWater.forSimulation(sim);
-// `--advance` (experiment): the sampled surface moves within the frame at its rise rate (continuity, ∂η/∂t = −∇·q, the
-// sample's flowY at the surface), from the frame's end state back to each substep's time, instead of holding still.
-const advance = process.argv.includes('--advance');
-const clock = { tau: STEP };
-const riseSample = createWaterSample();
-const riseAt = (x: number, z: number, surfaceY: number) => physical.sampleAt(x, surfaceY, z, riseSample).flowY;
 const water: SurfWater = {
-  sampleAt: (x, y, z, o) => {
-    const s = physical.sampleAt(x, y, z, o);
-    if (advance && !s.outsideDomain) s.surfaceY += riseAt(x, z, s.surfaceY) * (clock.tau - STEP);
-    return s;
-  },
-  surfaceAt: (x, z) => { const y = physical.surfaceAt(x, z); return advance ? y + riseAt(x, z, y) * (clock.tau - STEP) : y; },
+  sampleAt: (x, y, z, o) => physical.sampleAt(x, y, z, o),
+  surfaceAt: (x, z) => physical.surfaceAt(x, z),
   addReaction: () => {},
+  setSampleTime: (offset) => physical.setSampleTime(offset),
 };
-const boardProto = BoardBody.prototype as unknown as { substep(h: number, w: SurfWater): void };
-const substepOf = boardProto.substep;
-boardProto.substep = function (h, w) { substepOf.call(this, h, w); clock.tau += h; };
 const focus = sim.breakPoint();
 const out = option('start') !== undefined ? Number(option('start')) : rideLineupOffset(config);
 // `--riders n`: n riders, spread `--spread` m along shore about the start (each its own trial of the same wave).
@@ -60,17 +49,17 @@ const spread = Number(option('spread') ?? 4);
 type Limit = 'none' | 'flight' | 'slip' | 'tip' | 'impact';
 interface Trial {
   session: RideSession; gauge: WaveFrameGauge; dx: number; sprinting: boolean; seenBehind: boolean; popped: number; stood: number;
-  riding: number; lastVy: number; log: string[]; done: boolean; popAhead?: number; popFrac?: number; popSlope?: number; popSpeed?: number; popCrest?: number;
+  riding: number; lastVy: number; log: string[]; done: boolean; pushLeast: number; pushMost: number; heave: number[]; popAhead?: number; popFrac?: number; popSlope?: number; popSpeed?: number; popCrest?: number;
 }
 const trials: Trial[] = Array.from({ length: count }, (_, k) => {
   const dx = count === 1 ? 0 : -spread + (2 * spread * k) / (count - 1);
-  const session = new RideSession(popup ? ({ popup } as never) : {});
+  const session = new RideSession();
   session.place({ x: focus.x + dx, z: focus.z - out, heading: 0, speed: 0, phase: 'prone' }, water);
-  return { session, gauge: new WaveFrameGauge({ directionX: 0, directionZ: 1 }), dx, sprinting: false, seenBehind: false, popped: NaN, stood: NaN, riding: 0, lastVy: 0, log: [], done: false };
+  return { session, gauge: new WaveFrameGauge({ directionX: 0, directionZ: 1 }), dx, sprinting: false, seenBehind: false, popped: NaN, stood: NaN, riding: 0, lastVy: 0, log: [], done: false, pushLeast: Infinity, pushMost: -Infinity, heave: [] };
 });
 
 // The contact, substep by substep: wrap the private projection the hold and the stance go through.
-const tally = { none: 0, flight: 0, slip: 0, tip: 0, impact: 0, leastNormal: Infinity, normal: 0, wanted: 0 };
+const tally = { none: 0, flight: 0, slip: 0, tip: 0, impact: 0, leastNormal: Infinity, mostNormal: -Infinity, normal: 0, wanted: 0 };
 // `--subs`: each substep's asked normal and across/along impulses over its weight, and its length (1 = a quarter frame).
 const subs: string[] = [];
 const showSubs = process.argv.includes('--subs');
@@ -81,6 +70,7 @@ proto.project = function (this: { limit: Limit; mass: number }, impulse, h, boar
   tally[this.limit] += 1;
   const local = (this as unknown as { scratch: { y: number } }).scratch;
   tally.leastNormal = Math.min(tally.leastNormal, local.y / (this.mass * 9.81 * h));
+  tally.mostNormal = Math.max(tally.mostNormal, local.y / (this.mass * 9.81 * h));
   if (showSubs) {
     const w = this.mass * 9.81 * h;
     const self = this as unknown as { external: { y: number }; drive: { x: number; y: number; z: number }; velocity: { y: number }; boardVelocity: { y: number } };
@@ -123,14 +113,19 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
       trial.popped = t;
       trial.popAhead = frame.aheadOfCrest; trial.popFrac = frame.faceFraction; trial.popSlope = slope; trial.popSpeed = frame.speedShoreward; trial.popCrest = frame.crestSpeed;
     }
-    for (const k of Object.keys(tally) as (keyof typeof tally)[]) tally[k] = k === 'leastNormal' ? Infinity : 0;
+    for (const k of Object.keys(tally) as (keyof typeof tally)[]) tally[k] = k === 'leastNormal' ? Infinity : k === 'mostNormal' ? -Infinity : 0;
     subs.length = 0;
-    clock.tau = 0;
     session.step(STEP, water, { paddle: prone && !pop && Number.isNaN(trial.popped), sprint: prone && trial.sprinting && !pop, popUp: pop, steer: 0 });
     if (session.phase === 'standing' && Number.isNaN(trial.stood)) trial.stood = t;
     if (session.phase === 'standing' && frame.valid && frame.aheadOfCrest >= 0 && frame.speedShoreward >= 0.6 * frame.crestSpeed) trial.riding += STEP;
     const vy = board.velocity.y;
     const ay = (vy - trial.lastVy) / STEP;
+    // Through the push: the substeps' least and most load on the hold, and the board's change of heave frame to frame.
+    if (session.phase === 'push') {
+      trial.pushLeast = Math.min(trial.pushLeast, tally.leastNormal);
+      trial.pushMost = Math.max(trial.pushMost, tally.mostNormal);
+      trial.heave.push(vy - trial.lastVy);
+    }
     trial.lastVy = vy;
     if (!Number.isNaN(trial.popped) && t <= trial.popped + 2) {
       const q = board.orientation;
@@ -148,7 +143,8 @@ const outcome = (trial: Trial) => (trial.session.phase === 'fallen' ? (Number.is
   : trial.riding >= 3 ? 'rode' : Number.isNaN(trial.popped) ? 'no pop' : 'left behind');
 for (const trial of trials) {
   console.log(`dx ${trial.dx.toFixed(1).padStart(5)}: ${outcome(trial).padEnd(28)} pop ${Number.isNaN(trial.popped) ? '-' : trial.popped.toFixed(2)} ahead ${trial.popAhead?.toFixed(2) ?? '-'} frac ${trial.popFrac?.toFixed(2) ?? '-'} `
-    + `slope ${trial.popSlope?.toFixed(1) ?? '-'} speed ${trial.popSpeed?.toFixed(2) ?? '-'}/${trial.popCrest?.toFixed(2) ?? '-'}`);
+    + `slope ${trial.popSlope?.toFixed(1) ?? '-'} speed ${trial.popSpeed?.toFixed(2) ?? '-'}/${trial.popCrest?.toFixed(2) ?? '-'} | push load ${trial.pushLeast.toFixed(2)}…${trial.pushMost.toFixed(2)} `
+    + `heave rms ${Math.sqrt(trial.heave.reduce((a, b) => a + b * b, 0) / Math.max(1, trial.heave.length)).toFixed(3)} m/s a frame`);
 }
 const failed = trials.find((trial) => trial.session.phase === 'fallen' && Number.isNaN(trial.stood));
 if (failed && !quiet) console.log(`first fall popping up (dx ${failed.dx.toFixed(1)}):\n  ${failed.log.join('\n  ')}`);
