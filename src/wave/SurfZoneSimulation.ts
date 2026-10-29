@@ -845,6 +845,9 @@ export function tankDepth(
 }
 
 const WET = 0.01;
+/** `writeUniformSnapshot`'s row notes: a solver row holds foam, or air or plume. */
+const FOAMED = 1;
+const AIRED = 2;
 
 /**
  * Physical surf zone for one spot: a seeded sea enters through an offshore
@@ -995,6 +998,10 @@ export class SurfZoneSimulation {
   private velocityZ?: Float64Array;
   /** Each cell's void fraction, for `writeUniformAeration`. */
   private voidFractions?: Float64Array;
+  /** Each cell's foam cover (dense + lace), for `writeUniformSnapshot`'s nodes. */
+  private foamCover?: Float64Array;
+  /** Per solver row, whether it holds any foam (`FOAMED`) or any air or plume (`AIRED`), for `writeUniformSnapshot`. */
+  private snapshotRows?: Uint8Array;
   /** Foam and aeration move over the same post-water flow; only their field values change between them. */
   private readonly advectionStencil = new AdvectionStencil();
 
@@ -2016,24 +2023,48 @@ export class SurfZoneSimulation {
    */
   writeUniformSnapshot(surface: Float32Array, flow: Float32Array, aeration: Float32Array, grid: RenderGrid): void {
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { h, bed, qx, qz, nx } = this.solver;
+    const { h, bed, qx, qz, nx, nz } = this.solver;
     const { dense, residual } = this.foam;
-    const plume = this.aeration.depth;
+    const { air, depth: plume } = this.aeration;
     if (!this.velocityX || this.velocityX.length !== h.length) {
       this.velocityX = new Float64Array(h.length);
       this.velocityZ = new Float64Array(h.length);
     }
     if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
+    if (!this.foamCover || this.foamCover.length !== h.length) this.foamCover = new Float64Array(h.length);
+    if (!this.snapshotRows || this.snapshotRows.length !== nz) this.snapshotRows = new Uint8Array(nz);
     const u = this.velocityX;
     const w = this.velocityZ!;
     const fraction = this.voidFractions;
-    for (let i = 0; i < h.length; i += 1) {
-      const wet = h[i] > WET;
-      u[i] = wet ? qx[i] / h[i] : 0;
-      w[i] = wet ? qz[i] / h[i] : 0;
-      fraction[i] = this.aeration.voidFraction(i);
-      // With the spilling lip, a young curl's column draws its air where the drawn whitewater is: none before it lands.
-      if (this.curl) fraction[i] *= this.curl.airShare(i, dense[i] + residual[i]);
+    const cover = this.foamCover;
+    const held = this.snapshotRows;
+    const { curl } = this;
+    // Row by row, so a cell's column is at hand (canyon-perf, 2026-10-29): the same arithmetic as before, without a call
+    // or a remainder per cell, and each cell's foam cover (dense + lace) summed once for the nodes that read it. Each row
+    // also notes whether it holds any foam (FOAMED) or any air or plume (AIRED): a node whose four cells hold none gets
+    // the +0 their weighted sum would give, without reading them.
+    for (let iz = 0; iz < nz; iz += 1) {
+      const start = iz * nx;
+      let foamed = 0;
+      let aired = 0;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = start + ix;
+        const water = h[i];
+        const wet = water > WET;
+        u[i] = wet ? qx[i] / water : 0;
+        w[i] = wet ? qz[i] / water : 0;
+        const foam = dense[i] + residual[i];
+        cover[i] = foam;
+        // The plume's void fraction (`AerationField.voidFraction`).
+        const reach = plume[i];
+        const share = reach > 0 ? Math.min(1, air[i] / reach) : 0;
+        // With the spilling lip, a young curl's column draws its air where the drawn whitewater is: none before it lands.
+        const void_ = curl ? share * curl.airShareAt(ix, i, foam) : share;
+        fraction[i] = void_;
+        if (foam !== 0) foamed = FOAMED;
+        if (void_ !== 0 || reach !== 0) aired = AIRED;
+      }
+      held[iz] = foamed | aired;
     }
     const nodes = grid.nx;
     const lines = grid.nz;
@@ -2041,23 +2072,38 @@ export class SurfZoneSimulation {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
       const line = r * nodes;
+      const rowsHeld = held[rows[r]] | held[rows[r] + 1];
+      const foamed = (rowsHeld & FOAMED) !== 0;
+      const aired = (rowsHeld & AIRED) !== 0;
       for (let c = 0; c < nodes; c += 1) {
         const i = row + columns[c];
+        const j = i + nx;
         const tx = columnWeights[c];
         const w00 = (1 - tx) * (1 - tz);
         const w10 = tx * (1 - tz);
         const w01 = (1 - tx) * tz;
         const w11 = tx * tz;
         const o = (line + c) * 2;
-        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
-        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
-        surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
-        surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
-          + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
-        flow[o] = depth > WET ? u[i] * w00 + u[i + 1] * w10 + u[i + nx] * w01 + u[i + nx + 1] * w11 : 0;
-        flow[o + 1] = depth > WET ? w[i] * w00 + w[i + 1] * w10 + w[i + nx] * w01 + w[i + nx + 1] * w11 : 0;
-        aeration[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
-        aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[i + nx] + w11 * plume[i + nx + 1];
+        const depth = h[i] * w00 + h[i + 1] * w10 + h[j] * w01 + h[j + 1] * w11;
+        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[j] * w01 + bed[j + 1] * w11;
+        if (depth > WET) {
+          surface[o] = depth + bottom;
+          surface[o + 1] = foamed ? cover[i] * w00 + cover[i + 1] * w10 + cover[j] * w01 + cover[j + 1] * w11 : 0;
+          flow[o] = u[i] * w00 + u[i + 1] * w10 + u[j] * w01 + u[j + 1] * w11;
+          flow[o + 1] = w[i] * w00 + w[i + 1] * w10 + w[j] * w01 + w[j + 1] * w11;
+        } else {
+          surface[o] = bottom - 0.05;
+          surface[o + 1] = 0;
+          flow[o] = 0;
+          flow[o + 1] = 0;
+        }
+        if (aired) {
+          aeration[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[j] + w11 * fraction[j + 1];
+          aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[j] + w11 * plume[j + 1];
+        } else {
+          aeration[o] = 0;
+          aeration[o + 1] = 0;
+        }
       }
     }
     this.writeLensTops(surface, grid);

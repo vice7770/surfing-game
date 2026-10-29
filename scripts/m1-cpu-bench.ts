@@ -41,7 +41,7 @@ const warm = Number(option('warm') ?? 20);
 type Pipeline = NonNullable<SurfZoneStatus['pipelineMs']>;
 
 async function main(): Promise<void> {
-  const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+  const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: (Number(option('stage') ?? 2) === 1 ? 1 : 2) as 1 | 2, compute: 'auto' });
   const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, seed, true), ...(swept ? {} : { sweptBarrel: false }) };
   const barrelCases = sweptBarrelOn(config) ? readBarrelCases(spot) : undefined;
   const runner = SurfZoneRunner.forWorker(config, { rider: true, ...(barrelCases ? { barrelCases } : {}) }, 'warm');

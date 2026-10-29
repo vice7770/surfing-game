@@ -47,7 +47,7 @@ for (const path of [statePath, baseStatePath]) if (!existsSync(path)) throw new 
 
 type Any = any;
 async function make(Runner: Any, decode: Any, path: string): Promise<Any> {
-  const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+  const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: (Number(option('stage') ?? 2) === 1 ? 1 : 2) as 1 | 2, compute: 'auto' });
   const config = surfZoneConfigFor(settings, seed, true);
   const barrelCases = sweptBarrelOn(config) ? readBarrelCases(spot) : undefined;
   const runner = Runner.forWorker(config, { rider: true, ...(barrelCases ? { barrelCases } : {}) }, 'warm');
@@ -114,7 +114,7 @@ async function main(): Promise<void> {
     const sorted = values.filter(Number.isFinite).sort((x, y) => x - y);
     return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : Number.NaN;
   };
-  const keys = ['breaking', 'roller', 'front', 'lip', 'foam', 'airSources', 'aeration', 'contact', 'board', 'bubbles', 'spray', 'sounds', 'snapshotFields', 'snapshot', 'summary', 'cpu'];
+  const keys = ['water', 'step', 'breaking', 'roller', 'front', 'lip', 'foam', 'airSources', 'aeration', 'contact', 'board', 'bubbles', 'spray', 'sounds', 'snapshotFields', 'snapshot', 'summary', 'cpu'];
   for (const arm of arms) for (const s of arm.samples) s.cpu = s.step - s.water + s.snapshot + s.summary;
   const rows: string[] = [];
   for (const key of keys) {

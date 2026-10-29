@@ -777,7 +777,12 @@ export class SpillingCurl implements SpillingDrawnLook {
    * as far as its whitewater is drawn (`shoulderAir`); elsewhere all of it, so a developed bore draws its air as before.
    */
   airShare(cell: number, foam: number): number {
-    const age = this.age[cell % this.grid.nx];
+    return this.airShareAt(cell % this.grid.nx, cell, foam);
+  }
+
+  /** `airShare` with the cell's column already known (the snapshot's pass over the cells, row by row). */
+  airShareAt(column: number, cell: number, foam: number): number {
+    const age = this.age[column];
     const shoulder = this.shoulderAir[cell];
     if (!(age === age)) return shoulder;
     return Math.min(shoulder, Math.max(0, foam / SPILLING_CURL.airFoam));
