@@ -506,13 +506,13 @@ class SurfGame {
     // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
     // `?canyonBed`, `?canyonAgeJoin`, `?canyonReefSeq` or `?canyonBeachLook` say (its old layout, breaking, onsets and beach
     // look are solo dev switches), and
-    // every spot's onset whatever `?onset` says;
+    // every spot's onset whatever `?onset` says, and every rider's stroke whatever `?stroke` says;
     // and the cases' own tubes, whatever `?tubeShape` or `?canyonTube` say (the spot's own swept barrel: what a rider hits
     // must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonAgeJoin: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined,
+      sweptBarrel: undefined, stroke: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,

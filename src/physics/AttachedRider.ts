@@ -95,9 +95,12 @@ const SPRINT_TIME = 0.4;
  *   took longer than the cruise to come up to it;
  * - a deeper catch: the hand SPRINT_PADDLE_DEPTH, m, down (HAND_DEPTH's 0.25),
  *   the forearm upright under it and the upper arm in the water, their drag area
- *   SPRINT_PADDLE_AREA times the hand's and forearm's (0.16 m², about a whole
- *   arm's at C_d 1.1–1.2, with the added mass of an arm driven hard into the
- *   catch, which quasi-steady drag leaves out): fitted to the top speed;
+ *   SPRINT_PADDLE_AREA times the hand's and forearm's (0.12 m², about a whole
+ *   arm's at C_d 0.8–0.9, with the added mass of an arm driven hard into the
+ *   catch, which quasi-steady drag leaves out): fitted to the top speed. It was
+ *   2.4 until canyon-catch (2026-10-29), fitted while the stroke's slow ends,
+ *   where the board outruns the hand, braked; with the hand feathering there
+ *   (FEATHER_DRAG), 1.8 gives the same 2.08 m/s on flat water;
  * - the arm pulling all out: it gives way at SPRINT_PADDLE_LIMIT body weights,
  *   not HAND_FORCE_LIMIT's 0.4 (a modelling value). Sprint paddling is limited by
  *   pulling strength (Sheppard et al. 2012: relative pull-up strength predicted
@@ -113,7 +116,9 @@ const SPRINT_PADDLE_TIME = 0.3;
 const SPRINT_PADDLE_CYCLE = 60 / 70;
 const SPRINT_PADDLE_PULL = 0.43;
 const SPRINT_PADDLE_DEPTH = 0.32;
-const SPRINT_PADDLE_AREA = 2.4;
+const SPRINT_PADDLE_AREA = 1.8;
+/** SPRINT_PADDLE_AREA as fitted before the hand feathered (the 'old' stroke, `AttachedRiderOptions.stroke`). */
+const SPRINT_PADDLE_AREA_BROADSIDE = 2.4;
 const SPRINT_PADDLE_LIMIT = 0.8;
 const REACH = 0.485;
 const HIP = -0.485;
@@ -1066,6 +1071,8 @@ export class AttachedRider {
   /** A hand is pulling this substep (`paddleStep`): one the board outruns feathers (`FEATHER_DRAG`), unless the stroke is 'old'. */
   private pulling = false;
   private readonly feathers: boolean;
+  /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
+  private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
   private strokeRoll = 0;
   private waterCalm = 1;
@@ -1219,6 +1226,7 @@ export class AttachedRider {
     this.stance = options.stance ?? 'regular';
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
+    this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
     this.feet = stanceFeet(shape);
@@ -2126,7 +2134,7 @@ export class AttachedRider {
       board.toWorld(this.localScratch, this.partWorld);
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
       // Sprinting, the arm deeper in the catch pushes broadside along the stroke (SPRINT_PADDLE_AREA).
-      this.bladeArea = HAND_DRAG_AREA * (SPRINT_PADDLE_AREA - 1) * this.paddleSprintShare * effort;
+      this.bladeArea = HAND_DRAG_AREA * (this.sprintArea - 1) * this.paddleSprintShare * effort;
       this.pulling = this.feathers;
       this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA * effort, h, 1);
       this.pulling = false;

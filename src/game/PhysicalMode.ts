@@ -404,6 +404,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
+    // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
+    ...strokeSwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -469,6 +471,14 @@ export function canyonBeachLookSwitch(search?: string): { canyonBeachLook?: fals
  */
 export function onsetSwitch(search?: string): { onsetRule?: 'old' } {
   return devParam('onset', search)?.trim().toLowerCase() === 'old' ? { onsetRule: 'old' } : {};
+}
+
+/**
+ * The `?stroke=old` dev switch (`SurfZoneConfig.stroke`): every spot's paddler with hands that meet water outrunning the
+ * stroke broadside and the sprint's blade as fitted before, as until canyon-catch (2026-10-29). 'old', else nothing.
+ */
+export function strokeSwitch(search?: string): { stroke?: 'old' } {
+  return devParam('stroke', search)?.trim().toLowerCase() === 'old' ? { stroke: 'old' } : {};
 }
 
 /**

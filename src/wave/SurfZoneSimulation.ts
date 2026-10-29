@@ -100,6 +100,12 @@ export interface SurfZoneConfig {
    * 0.65. The `?onset=old` dev switch, for A/Bs; online rooms run the default.
    */
   onsetRule?: 'old';
+  /**
+   * How the paddler's hands meet water outrunning the stroke (`AttachedRiderOptions.stroke`, canyon-catch 2026-10-29):
+   * 'feather', the default, edge-on; 'old', broadside as before (the `?stroke=old` dev switch, for A/Bs). Every spot's
+   * rider; online rooms run the default.
+   */
+  stroke?: 'feather' | 'old';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

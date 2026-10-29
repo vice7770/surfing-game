@@ -1948,19 +1948,30 @@ describe('prone balance', () => {
     expect(Math.abs(roll(board))).toBeLessThan((5 * Math.PI) / 180);
   });
 
-  it('never pushes a hand harder than an arm can, however fast the board runs', () => {
-    const { board, rider } = mounted('prone');
-    board.velocity.z = 5;
-    rider.velocity.z = 5;
-    rider.paddle = true;
-    let hardest = 0;
-    run(board, new PlaneWater({ level: 0.3 }), 3, () => {
-      hardest = Math.max(hardest, rider.handLoad[0], rider.handLoad[1]);
-    });
-    const weight = rider.mass * WATER.gravity;
-    expect(hardest).toBeGreaterThan(0.3 * weight);
-    expect(hardest).toBeLessThanOrEqual(0.4 * weight + 1e-9);
-    expect(rider.attached).toBe(true);
+  // canyon-catch (2026-10-29): a hand the board outruns slices in edge-on (FEATHER_DRAG) rather than braking broadside;
+  // the 'old' stroke (`?stroke=old`) still meets the water broadside, held to the arm's limit.
+  it('never pushes a hand harder than an arm can, however fast the board runs, and feathers a hand the board outruns', () => {
+    const hardest = (stroke: 'feather' | 'old') => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+      const rider = new AttachedRider(board.shape, { phase: 'prone', stroke });
+      board.attach(rider);
+      board.velocity.z = 5;
+      rider.velocity.z = 5;
+      rider.paddle = true;
+      let most = 0;
+      run(board, new PlaneWater({ level: 0.3 }), 3, () => {
+        most = Math.max(most, rider.handLoad[0], rider.handLoad[1]);
+      });
+      expect(rider.attached).toBe(true);
+      return { most, weight: rider.mass * WATER.gravity };
+    };
+    const old = hardest('old');
+    expect(old.most).toBeGreaterThan(0.3 * old.weight);
+    expect(old.most).toBeLessThanOrEqual(0.4 * old.weight + 1e-9);
+    const feathered = hardest('feather');
+    expect(feathered.most).toBeLessThanOrEqual(0.4 * feathered.weight + 1e-9);
+    expect(feathered.most).toBeLessThan(0.6 * old.most);
   });
 
   it('records each pulling hand’s stroke for the spray: beside a rail, pushed forward by the water', () => {
@@ -2163,6 +2174,28 @@ describe('the sprint paddle', () => {
     // More force from rest: 1 m/s in about half the cruise's time, and its own 90 % sooner than the cruise reaches its own.
     expect(reach(sprint, 60 / 70, 1)).toBeLessThan(0.6 * reach(cruise, 1.2, 1));
     expect(reach(sprint, 60 / 70, 0.9 * top(sprint))).toBeLessThan(reach(cruise, 1.2, 0.9 * top(cruise)));
+  });
+
+  // canyon-catch (2026-10-29): down a face the board soon outruns the stroke's hand. Broadside, the sprint's deep hand
+  // braked it, so a sprint down a 12° face settled near 3 m/s, slower than cruising (3.9) and short of a 4.5 m/s
+  // crest; feathered (FEATHER_DRAG), the sprint keeps the face's speed.
+  it('sprints down a 12° face faster than it did with its hand broadside to water outrunning it', () => {
+    const down = (stroke: 'feather' | 'old', sprint: boolean) => {
+      const water = new PlaneWater({ slopeZ: -Math.tan((12 * Math.PI) / 180), depth: 4 });
+      const session = new RideSession({ stroke });
+      session.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' }, water);
+      for (let i = 0; i < Math.round(7 / STEP); i += 1) {
+        session.reserve.level = 1;
+        session.step(STEP, water, { paddle: true, sprint, popUp: false, steer: 0 });
+      }
+      return Math.hypot(session.board.velocity.x, session.board.velocity.z);
+    };
+    const feathered = down('feather', true);
+    const broadside = down('old', true);
+    expect(broadside).toBeLessThan(3.3);
+    expect(broadside).toBeLessThan(down('old', false) - 0.5);
+    expect(feathered).toBeGreaterThan(3.9);
+    expect(feathered).toBeGreaterThan(broadside + 0.8);
   });
 
   it('strokes 70 times a minute a side, the hand deeper, as the drawn arms show', () => {
