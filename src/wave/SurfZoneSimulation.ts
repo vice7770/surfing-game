@@ -233,7 +233,7 @@ export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
  * an arm starts a wave every 3–4 s (Medium), and its break has run its 45–55 m arm in some 10–15 s, so at 45 s the
  * front kept some 60 beach waves live, each seeding roller lenses in its bores.
  */
-export const CANYON_BEACH_LOOK = { peelAngleDegrees: 40, upcoastMargin: Infinity, lifetime: 20 } as const;
+export const CANYON_BEACH_LOOK = { peelAngleDegrees: 40, upcoastMargin: Infinity, lifetime: 20, ageFromFront: true } as const;
 
 /** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
 export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {

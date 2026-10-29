@@ -406,7 +406,7 @@ export class SpillingCurl implements SpillingDrawnLook {
         const r = reached[column];
         const j = joinedAt[column];
         if (!(r === r && j === j)) continue;
-        const a = time - (r > j ? r : j);
+        const a = waves[k].group > 0 && front.groupOf(waves[k].group).ageFromFront ? time - r : time - (r > j ? r : j);
         if (!(a >= 0 && a < this.span)) continue;
         if (age[column] <= a) continue;
         age[column] = a;
@@ -565,7 +565,7 @@ export class SpillingCurl implements SpillingDrawnLook {
         const r = waves[k].reached[column];
         const j = waves[k].joinedAt[column];
         if (!(r === r)) continue;
-        const age = time - (j === j && j > r ? j : r);
+        const age = waves[k].group > 0 && front.groupOf(waves[k].group).ageFromFront ? time - r : time - (j === j && j > r ? j : r);
         this.bandAge[slot * nx + column] = age;
         this.bandDirection[slot * nx + column] = waves[k].direction;
         const own = this.ownWave(waves, column, id);

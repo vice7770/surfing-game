@@ -77,6 +77,12 @@ export interface SpillingGroup {
   readonly lifetime: number;
   /** Where its waves' look reaches along shore, m (the curl's shoulder clears no further): its arm. Absent: everywhere. */
   readonly span?: { readonly from: number; readonly to: number };
+  /**
+   * Whether its look's age counts from its front's reach alone, not from a column's own onset when that came later (the
+   * front's own: the later of the two). A column of an arm already broken around it that the solver breaks late, as rule
+   * A's spread does, then shows its white at once, and the line no gap while its lip would land.
+   */
+  readonly ageFromFront?: boolean;
 }
 
 /** Group k > 0's wave ids start at k times this, so group 0's (the front's own) stay as they were without groups. */
@@ -538,7 +544,7 @@ export class SpillingFront {
           continue;
         }
         if (felt) felt[i] = b;
-        const local = time - Math.max(reached, latest);
+        const local = wave.group > 0 && this.groupOf(wave.group).ageFromFront ? time - reached : time - Math.max(reached, latest);
         if (ages) ages[ix] = local;
         if (ways) ways[ix] = wave.direction;
         if (local >= options.rampSeconds) {
