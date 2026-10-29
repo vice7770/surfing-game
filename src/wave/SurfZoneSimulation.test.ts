@@ -1083,8 +1083,13 @@ describe('SurfZoneSimulation', () => {
     // only because the wait since the bore's return has run.
     expect(onsets(build({ canyonReefSeq: false }))).toEqual({ counted: [10, 18.1, 26.5], joined: [10, 18.1, 26.5] });
     const record = (config: Partial<SurfZoneConfig>) => Object.keys(build(config).exportState().arrays).filter((name) => name.startsWith('reefOnsets.'));
-    expect(record({})).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
-    for (const config of [{ canyonReefSeq: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) expect(record(config), JSON.stringify(config)).toEqual([]);
+    // The beach peaks' bars keep the record with the reef's sequence off (canyon-beach-look); with both off, none.
+    for (const config of [{}, { canyonReefSeq: false }, { canyonBeachLook: false }]) {
+      expect(record(config), JSON.stringify(config)).toEqual(['reefOnsets.seenZ', 'reefOnsets.seenAt', 'reefOnsets.lastOnReef']);
+    }
+    for (const config of [{ canyonReefSeq: false, canyonBeachLook: false }, { canyonBed: 'old' as const }, { spot: 'beach' as const }]) {
+      expect(record(config), JSON.stringify(config)).toEqual([]);
+    }
   });
 
   // canyon-beach-look (2026-10-28): a break on a beach peak's bar starts or joins its arm's group of the spilling front
