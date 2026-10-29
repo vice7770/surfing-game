@@ -1,0 +1,8 @@
+canyon prone idle : fell at 12.0 s (balance); surfaced 0.27 s, grabbed —, climbing —, lying on the board —
+canyon prone idle : fell at 11.4 s (balance); surfaced 0.30 s, grabbed —, climbing —, lying on the board —
+canyon prone swim : fell at 10.9 s (balance); surfaced 0.25 s, grabbed 0.83 s, climbing 1.52 s, lying on the board 2.73 s | swimming 0.8 s: toward the board -0.10 m/s, over the ground 2.35 m/s, through the water along the heading 0.78 m/s (0.6 s with control), control 0.60, thrust 111 N, drag 157 N
+canyon prone swim : fell at 10.7 s (balance); surfaced 0.27 s, grabbed 0.47 s, climbing 2.70 s (1 fell back), lying on the board 3.92 s | swimming 0.7 s: toward the board -0.03 m/s, over the ground 1.83 m/s, through the water along the heading 0.63 m/s (0.2 s with control), control 0.42, thrust 71 N, drag 110 N
+canyon prone reel : fell at 10.5 s (balance); surfaced 0.25 s, grabbed 0.70 s, climbing 1.03 s, lying on the board 2.25 s
+canyon prone reel : fell at 10.8 s (balance); surfaced 0.28 s, grabbed 0.50 s, climbing 0.58 s, lying on the board 1.80 s
+canyon prone both : fell at 10.3 s (balance); surfaced 0.25 s, grabbed 0.35 s, climbing 0.98 s, lying on the board 2.20 s | swimming 0.3 s: toward the board 1.05 m/s, over the ground 2.50 m/s, through the water along the heading 0.81 m/s (0.1 s with control), control 0.41, thrust 47 N, drag 100 N
+canyon prone both : fell at 10.3 s (balance); surfaced 0.23 s, grabbed 0.27 s, climbing 0.88 s, lying on the board 2.10 s | swimming 0.3 s: toward the board 1.18 m/s, over the ground 2.16 m/s, through the water along the heading 0.71 m/s (0.1 s with control), control 0.37, thrust 31 N, drag 63 N
