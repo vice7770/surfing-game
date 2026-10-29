@@ -265,7 +265,7 @@ leash and a board in tow, sits below those, in the brief's 0.8–1.2 m/s.
 - The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude
   "**/SurfZoneRunner.test.ts"`): 307 files passed (30 skipped); 2922 tests passed (18 expected fail, 36 skipped).
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t
-  "[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: RESULT_SZS.
+  "[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`: 11 passed (93 skipped by the filter), 10 min.
 - **New:**
   - `swimBack.test.ts`:
     - the swim's own speed on flat water, 0.8–1.2 m/s;
