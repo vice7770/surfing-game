@@ -225,7 +225,11 @@ Every wave (29 a script, sets and others; 16 stands):
 - Main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude
   "**/SurfZoneRunner.test.ts"`): 2925 passed, 18 expected fail, 36 skipped; one timed out under the probes' load
   (`uniformSnapshot`'s Canyon bytes, 60 s), which passes on its own.
-- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Swim]"`: TBD
+- `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "[Cc]anyon|[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Swim]"`:
+  101 passed, 3 failed, 2 h 6 min. `[Swim]` is a character class, so the filter runs nearly the whole file. The three
+  failures fail the same on main's sources (2480ccd1), and none touches a board: "preserves dynamic void fraction
+  receivers…", "breaks waves in the surf zone, measures the peel…" and "does not read the spin-up bores as one
+  simultaneous close-out".
 - **New:**
   - `frothDrag.test.ts`:
     - no drag on a board past a young roller's reach (ξ > g), drag within it, and the whole footprint before;
