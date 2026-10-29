@@ -10,6 +10,10 @@ import { hullSprayLayout } from '../../../src/physics/boardSpray';
 import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet } from '../../../src/wave/SprayCloud';
 import { busyWhitewater } from '../../../src/wave/particleTestSupport';
 import type { ParticleLevel } from '../../../src/wave/particleBudget';
+import { RemoteSurfers, createRemoteState } from '../../../src/net/RemoteSurfers';
+import { RemoteSpray } from '../../../src/net/remoteSpray';
+import { POSE_BYTES, createPose, encodeBundle, encodePose } from '../../../src/net/poseCodec';
+import { RIDER_PHASES, SURF_ZONE_STEP } from '../../../src/wave/SurfZoneRunner';
 
 const args = process.argv.slice(2);
 const option = (name: string) => {
@@ -71,3 +75,28 @@ run(false);
 const base = run(false);
 const board = run(true);
 console.log(`spray step (${LEVEL}): ${base.ms.toFixed(4)} ms without, ${board.ms.toFixed(4)} ms with the sheet (+${(board.ms - base.ms).toFixed(4)} ms), ${board.live.toFixed(0)} board particles live`);
+
+// 3. Another player's sheets on the page, from their pose (`RemoteSpray.add`), each frame.
+{
+  const remote = new RemoteSurfers();
+  remote.join({ id: 1, name: 'Ana', look: { body: 'surfer1', outfit: 'fullsuit', color: 'teal', board: 'classic' } });
+  for (const [step, z] of [[600, 0], [606, 1]] as const) {
+    const p = createPose();
+    const roll = (30 * Math.PI) / 180;
+    Object.assign(p, { step, x: 0, z, lift: 0, qx: -0.03, qy: 0, qz: Math.sin(roll / 2), qw: Math.cos(roll / 2), phase: RIDER_PHASES.indexOf('standing'), present: true, boardPresent: true });
+    const bytes = new Uint8Array(POSE_BYTES);
+    encodePose(p, new DataView(bytes.buffer), 0);
+    remote.receiveBundle(encodeBundle([{ id: 1, pose: bytes }]).buffer as ArrayBuffer, 0, []);
+  }
+  const state = createRemoteState();
+  const seaTime = 606 * SURF_ZONE_STEP;
+  remote.sample(1, seaTime, state);
+  const spray = new RemoteSpray();
+  const frames = 50_000;
+  const t = performance.now();
+  for (let n = 0; n < frames; n += 1) {
+    spray.begin();
+    spray.add(remote, 1, seaTime, state, (x: number, z: number) => 0.01 * Math.sin(x + z));
+  }
+  console.log(`RemoteSpray.add: ${(((performance.now() - t) / frames) * 1000).toFixed(2)} µs a player a frame (${spray.packed()?.length ?? 0} floats)`);
+}

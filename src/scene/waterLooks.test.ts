@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { LipSheetMesh } from './LipSheetMesh';
 import { SprayPoints } from './SprayPoints';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY, BOARD_SPRAY_CAPACITY } from '../wave/SprayCloud';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { churnTexture } from './water/churnTexture';
 import { rippleStrength, rippleTexture } from './water/rippleTexture';
@@ -259,8 +259,8 @@ describe('Classic water parity', () => {
     // Smoothstep with its edges in order (reversed edges are undefined in GLSL ES).
     expect(spray.mesh.material.fragmentShader).toContain('( 1.0 - smoothstep( 0.55, 1.0, r ) )');
     expect(spray.mesh.material.fragmentShader).not.toContain('smoothstep( 1.0, 0.55, r )');
-    // The Rich pool holds the spray and the tube's whitewater both.
-    expect(spray.capacity).toBe(SPRAY_CAPACITY + WHITEWATER_CAPACITY);
+    // The Rich pool holds the spray and the tube's whitewater both, and the boards' spray (board-spray, its own pool).
+    expect(spray.capacity).toBe(SPRAY_CAPACITY + WHITEWATER_CAPACITY + BOARD_SPRAY_CAPACITY);
   });
 
   it('gives the Rich far ocean the ripples and anti-aliased gloss, still, and switches back to Classic', () => {
