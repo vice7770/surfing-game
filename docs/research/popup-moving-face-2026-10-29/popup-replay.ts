@@ -26,6 +26,9 @@ const size = (option('size') ?? 'big') as SwellSize;
 const lead = Number(option('lead') ?? 2);
 const seconds = Number(option('seconds') ?? 14);
 const quiet = process.argv.includes('--quiet');
+// `--after s`: log this long after the pop (2 s by default); `--show standing`: print the first rider that fell standing.
+const after = Number(option('after') ?? 2);
+const show = option('show') ?? 'popup';
 const STEP = 1 / 60;
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 // `--surface old`: the sea's surface held still through the bodies' step, as before popup-moving-face (`?surfaceMotion=old`).
@@ -127,13 +130,15 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
       trial.heave.push(vy - trial.lastVy);
     }
     trial.lastVy = vy;
-    if (!Number.isNaN(trial.popped) && t <= trial.popped + 2) {
+    if (!Number.isNaN(trial.popped) && t <= trial.popped + after) {
       const q = board.orientation;
       const pitch = (Math.atan2(2 * (q.y * q.z - q.w * q.x), Math.hypot(2 * (q.x * q.z + q.w * q.y), 1 - 2 * (q.x * q.x + q.y * q.y))) * 180) / Math.PI;
       const r = session.rider;
+      const sway = (r as unknown as { sway: { x: number; z: number } }).sway;
       trial.log.push(`t ${(t - trial.popped).toFixed(3)} ${session.phase.padEnd(8)} ${['none', 'flight', 'slip', 'tip', 'impact'].map((k) => `${k[0]}${tally[k as Limit]}`).join(' ')} least ${tally.leastNormal.toFixed(2)} asked ${tally.wanted.toFixed(2)} gave ${tally.normal.toFixed(2)} `
         + `err ${r.postureError.toFixed(3)} | v ${Math.hypot(board.velocity.x, board.velocity.z).toFixed(2)} vy ${vy.toFixed(2)} ay ${ay.toFixed(0)} pitch ${pitch.toFixed(1)} slope ${slope.toFixed(1)} `
-        + `lift ${(board.forces.pressure.y / ((board.mass + r.mass) * 9.81)).toFixed(2)} | ahead ${frame.aheadOfCrest.toFixed(2)} frac ${frame.faceFraction.toFixed(2)}`
+        + `lift ${(board.forces.pressure.y / ((board.mass + r.mass) * 9.81)).toFixed(2)} | ahead ${frame.aheadOfCrest.toFixed(2)} frac ${frame.faceFraction.toFixed(2)} `
+        + `shore ${frame.speedShoreward.toFixed(2)}/${frame.crestSpeed.toFixed(2)} | depth ${sample.waterDepth.toFixed(2)} over bed ${(board.centerOfMass.y - sample.bedY).toFixed(2)} brk ${sample.breaking.toFixed(2)} | sway ${Math.hypot(sway.x, sway.z).toFixed(3)} margin ${r.balanceMargin.toFixed(2)} limit ${(r as unknown as { limit: string }).limit}`
         + (showSubs ? `\n      ${subs.join('\n      ')}` : ''));
     }
     if (session.phase === 'fallen' || trial.riding >= 3 || (!Number.isNaN(trial.popped) && t > trial.popped + 6)) trial.done = true;
@@ -146,8 +151,8 @@ for (const trial of trials) {
     + `slope ${trial.popSlope?.toFixed(1) ?? '-'} speed ${trial.popSpeed?.toFixed(2) ?? '-'}/${trial.popCrest?.toFixed(2) ?? '-'} | push load ${trial.pushLeast.toFixed(2)}…${trial.pushMost.toFixed(2)} `
     + `heave rms ${Math.sqrt(trial.heave.reduce((a, b) => a + b * b, 0) / Math.max(1, trial.heave.length)).toFixed(3)} m/s a frame`);
 }
-const failed = trials.find((trial) => trial.session.phase === 'fallen' && Number.isNaN(trial.stood));
-if (failed && !quiet) console.log(`first fall popping up (dx ${failed.dx.toFixed(1)}):\n  ${failed.log.join('\n  ')}`);
+const failed = trials.find((trial) => trial.session.phase === 'fallen' && (show === 'standing' ? !Number.isNaN(trial.stood) : Number.isNaN(trial.stood)));
+if (failed && !quiet) console.log(`first fall ${show === 'standing' ? 'standing' : 'popping up'} (dx ${failed.dx.toFixed(1)}):\n  ${failed.log.join('\n  ')}`);
 const tallyOut = { rode: 0, popfall: 0, other: 0 };
 for (const trial of trials) { const o = outcome(trial); if (o === 'rode') tallyOut.rode += 1; else if (o.startsWith('fell popping')) tallyOut.popfall += 1; else tallyOut.other += 1; }
 console.log(`${spot} ${size}: ${count} riders: rode ${tallyOut.rode}, fell popping up ${tallyOut.popfall}, other ${tallyOut.other}`);

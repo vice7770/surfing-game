@@ -1,0 +1,124 @@
+== held (?surfaceMotion=old), 16 riders
+dx  -8.0: fell popping up (lost board) pop 7.30 ahead 2.60 frac 0.79 slope 17.6 speed 4.79/5.97
+dx  -6.9: fell popping up (foot slip)  pop 7.30 ahead 2.62 frac 0.79 slope 18.1 speed 4.82/5.98
+dx  -5.9: rode                         pop 7.30 ahead 2.63 frac 0.78 slope 18.6 speed 4.86/5.97
+dx  -4.8: rode                         pop 7.28 ahead 2.63 frac 0.78 slope 18.9 speed 4.81/5.99
+dx  -3.7: rode                         pop 7.28 ahead 2.61 frac 0.77 slope 19.3 speed 4.87/5.98
+dx  -2.7: fell popping up (lost board) pop 7.27 ahead 2.60 frac 0.77 slope 19.6 speed 4.87/5.99
+dx  -1.6: fell popping up (lost board) pop 7.25 ahead 2.59 frac 0.77 slope 19.8 speed 4.84/6.00
+dx  -0.5: fell popping up (lost board) pop 7.25 ahead 2.56 frac 0.78 slope 20.0 speed 4.86/5.96
+dx   0.5: fell popping up (lost board) pop 7.23 ahead 2.50 frac 0.79 slope 19.9 speed 4.84/5.96
+dx   1.6: fell popping up (lost board) pop 7.22 ahead 2.43 frac 0.80 slope 19.5 speed 4.80/5.94
+dx   2.7: fell popping up (lost board) pop 7.20 ahead 2.38 frac 0.81 slope 19.1 speed 4.81/5.92
+dx   3.7: fell popping up (lost board) pop 7.18 ahead 2.34 frac 0.82 slope 18.6 speed 4.82/5.90
+dx   4.8: fell popping up (lost board) pop 7.15 ahead 2.33 frac 0.82 slope 18.1 speed 4.73/5.91
+dx   5.9: rode                         pop 7.13 ahead 2.32 frac 0.83 slope 17.9 speed 4.73/5.90
+dx   6.9: fell popping up (lost board) pop 7.12 ahead 2.33 frac 0.83 slope 17.8 speed 4.75/5.90
+dx   8.0: fell popping up (lost board) pop 7.10 ahead 2.32 frac 0.83 slope 17.8 speed 4.77/5.89
+canyon big: 16 riders: rode 4, fell popping up 12, other 0
+== moving (today), 16 riders
+dx  -8.0: rode                         pop 7.32 ahead 2.50 frac 0.81 slope 17.2 speed 4.76/5.94
+dx  -6.9: rode                         pop 7.32 ahead 2.51 frac 0.80 slope 17.7 speed 4.78/5.93
+dx  -5.9: rode                         pop 7.32 ahead 2.51 frac 0.80 slope 18.2 speed 4.81/5.93
+dx  -4.8: rode                         pop 7.30 ahead 2.52 frac 0.79 slope 18.5 speed 4.79/5.95
+dx  -3.7: rode                         pop 7.28 ahead 2.51 frac 0.79 slope 18.8 speed 4.78/5.97
+dx  -2.7: rode                         pop 7.28 ahead 2.48 frac 0.79 slope 19.2 speed 4.83/5.95
+dx  -1.6: rode                         pop 7.27 ahead 2.47 frac 0.79 slope 19.4 speed 4.83/5.96
+dx  -0.5: rode                         pop 7.25 ahead 2.47 frac 0.79 slope 19.6 speed 4.85/5.96
+dx   0.5: rode                         pop 7.23 ahead 2.43 frac 0.80 slope 19.5 speed 4.86/5.95
+dx   1.6: rode                         pop 7.20 ahead 2.39 frac 0.81 slope 19.0 speed 4.79/5.96
+dx   2.7: rode                         pop 7.18 ahead 2.36 frac 0.81 slope 18.7 speed 4.81/5.94
+dx   3.7: rode                         pop 7.17 ahead 2.32 frac 0.82 slope 18.3 speed 4.83/5.93
+dx   4.8: rode                         pop 7.15 ahead 2.29 frac 0.83 slope 17.9 speed 4.82/5.92
+dx   5.9: rode                         pop 7.13 ahead 2.28 frac 0.83 slope 17.7 speed 4.83/5.92
+dx   6.9: rode                         pop 7.10 ahead 2.28 frac 0.83 slope 17.4 speed 4.76/5.95
+dx   8.0: rode                         pop 7.08 ahead 2.27 frac 0.83 slope 17.3 speed 4.78/5.95
+canyon big: 16 riders: rode 16, fell popping up 0, other 0
+== held, 4 riders
+dx  -6.0: rode                         pop 7.30 ahead 2.63 frac 0.78 slope 18.5 speed 4.85/5.97 | push load -0.94…5.89 heave rms 0.043 m/s a frame
+dx  -2.0: fell popping up (lost board) pop 7.25 ahead 2.61 frac 0.77 slope 19.7 speed 4.83/6.01 | push load -332.02…342.95 heave rms 1.113 m/s a frame
+dx   2.0: fell popping up (lost board) pop 7.22 ahead 2.41 frac 0.81 slope 19.4 speed 4.83/5.93 | push load -22.74…171.59 heave rms 0.213 m/s a frame
+dx   6.0: fell popping up (lost board) pop 7.13 ahead 2.32 frac 0.83 slope 17.9 speed 4.74/5.90 | push load -63.28…61.40 heave rms 0.212 m/s a frame
+canyon big: 4 riders: rode 1, fell popping up 3, other 0
+== moving, 4 riders
+dx  -6.0: rode                         pop 7.32 ahead 2.51 frac 0.80 slope 18.2 speed 4.81/5.93 | push load 0.22…1.97 heave rms 0.012 m/s a frame
+dx  -2.0: rode                         pop 7.27 ahead 2.48 frac 0.79 slope 19.3 speed 4.80/5.96 | push load -0.11…1.60 heave rms 0.013 m/s a frame
+dx   2.0: rode                         pop 7.20 ahead 2.37 frac 0.81 slope 18.9 speed 4.83/5.94 | push load -2.91…3.24 heave rms 0.045 m/s a frame
+dx   6.0: fell popping up (lost board) pop 7.12 ahead 2.29 frac 0.83 slope 17.5 speed 4.76/5.95 | push load -5.87…7.37 heave rms 0.063 m/s a frame
+canyon big: 4 riders: rode 3, fell popping up 1, other 0
+== held, the rider 1 m left of the start (--riders 3 --spread 1 --subs), 0.38–0.47 s after the pop: each substep's asked normal / across / along impulse over its weight (n none, s slip, f flight, i impact; the number after the letter is its length in quarter frames), the body's external force over its weight, the drive's and the board's vertical speeds
+  t 0.383 push     n5 f0 s0 t0 i0 least -0.23 asked 1.02 gave 1.02 err 0.003 | v 5.24 vy 0.21 ay -3 pitch -15.4 slope 19.1 lift 0.07 | ahead 2.26 frac 0.82
+      n1.00:3.93/-0.34/0.25 ext -1.00 dr 0.49 bv 0.26
+      n1.00:0.17/-0.04/-0.01 ext -1.00 dr 0.48 bv 0.31
+      n0.50:-0.23/0.01/-0.21 ext -1.00 dr 0.41 bv 0.29
+      n0.50:0.02/0.02/0.03 ext -1.00 dr 0.41 bv 0.34
+      n1.00:0.08/-0.05/0.09 ext -1.00 dr 0.47 bv 0.31
+  t 0.400 push     n4 f0 s0 t0 i0 least -0.01 asked 0.72 gave 0.72 err 0.004 | v 5.31 vy 0.20 ay -0 pitch -15.8 slope 19.2 lift 0.05 | ahead 2.24 frac 0.83
+      n1.00:2.77/-0.26/0.10 ext -1.00 dr 0.46 bv 0.21
+      n1.00:0.12/-0.01/-0.01 ext -1.00 dr 0.45 bv 0.29
+      n1.00:0.00/-0.01/-0.01 ext -1.00 dr 0.44 bv 0.26
+      n1.00:-0.01/-0.01/-0.01 ext -1.00 dr 0.43 bv 0.24
+  t 0.417 push     n4 f0 s0 t0 i0 least -0.01 asked 0.56 gave 0.56 err 0.004 | v 5.36 vy 0.17 ay -2 pitch -16.3 slope 19.2 lift 0.04 | ahead 2.21 frac 0.83
+      n1.00:2.21/-0.20/0.07 ext -1.00 dr 0.43 bv 0.20
+      n1.00:0.07/0.01/-0.00 ext -1.00 dr 0.42 bv 0.26
+      n1.00:-0.01/-0.01/-0.01 ext -1.00 dr 0.41 bv 0.23
+      n1.00:-0.01/-0.01/-0.01 ext -1.00 dr 0.40 bv 0.20
+  t 0.433 push     n4 f0 s0 t0 i0 least -0.01 asked 0.42 gave 0.42 err 0.004 | v 5.40 vy 0.11 ay -3 pitch -16.7 slope 19.1 lift 0.03 | ahead 2.19 frac 0.83
+      n1.00:1.69/-0.16/0.05 ext -1.00 dr 0.39 bv 0.17
+      n1.00:0.02/0.03/-0.01 ext -1.00 dr 0.38 bv 0.20
+      n1.00:-0.01/-0.00/-0.01 ext -1.00 dr 0.38 bv 0.18
+      n1.00:-0.01/-0.00/-0.01 ext -1.00 dr 0.37 bv 0.14
+  t 0.450 push     n1 f8 s9 t0 i0 least -12.52 asked -0.81 gave 0.34 err 0.062 | v 5.96 vy 0.97 ay 51 pitch -17.4 slope 18.9 lift 0.04 | ahead 2.18 frac 0.83
+      n1.00:1.22/-0.11/0.03 ext -1.00 dr 0.36 bv 0.11
+      s0.50:-0.21/0.33/-0.22 ext -1.00 dr 0.28 bv 0.13
+      s0.50:0.02/0.89/-0.01 ext -1.00 dr 0.28 bv 0.20
+      s0.50:0.06/2.28/0.06 ext -1.00 dr 0.35 bv 0.17
+      s0.25:0.31/21.14/0.11 ext -1.00 dr 0.89 bv 0.11
+      s0.13:0.47/54.70/0.18 ext -1.00 dr 1.38 bv 0.00
+      s0.13:0.10/25.66/0.25 ext -1.00 dr 1.01 bv -0.08
+      s0.06:1.10/134.08/0.22 ext -1.00 dr 2.07 bv -0.11
+      s0.06:-0.24/60.49/0.41 ext -1.00 dr 1.32 bv -0.20
+      s0.06:0.32/61.99/0.39 ext -1.00 dr 1.41 bv -0.19
+      f0.06:-4.21/63.93/0.21 ext -1.00 dr 1.54 bv -0.22
+      f0.06:-10.70/64.16/0.35 ext -1.00 dr 0.98 bv 0.23
+      f0.06:-12.52/64.05/0.40 ext -1.00 dr 0.88 bv 0.45
+      f0.13:-5.78/32.55/0.26 ext -1.00 dr 0.78 bv 0.67
+      f0.13:-5.37/32.75/0.30 ext -1.00 dr 0.79 bv 0.78
+      f0.13:-4.62/33.04/0.34 ext -1.00 dr 0.79 bv 0.88
+      f0.13:-4.04/33.23/0.36 ext -1.00 dr 0.83 bv 0.93
+      f0.13:-3.52/33.41/0.37 ext -1.00 dr 0.88 bv 0.95
+  t 0.467 push     n0 f14 s0 t0 i2 least -30.84 asked -8.85 gave 0.25 err 0.135 | v 6.11 vy 1.14 ay 10 pitch -17.5 slope 18.6 lift 0.15 | ahead 2.17 frac 0.83
+      i0.13:30.40/42.26/0.92 ext -1.00 dr 0.93 bv 0.97
+      i0.13:292.55/253.29/3.72 ext -1.00 dr 6.64 bv 1.05
+      f0.25:-26.69/-11.54/-0.18 ext -1.00 dr -0.50 bv 1.07
+      f0.25:-30.84/-12.86/-0.28 ext -1.00 dr -0.75 bv 1.08
+      f0.25:-29.00/-12.63/-0.31 ext -1.00 dr -0.75 bv 1.08
+      f0.25:-27.02/-12.29/-0.34 ext -1.00 dr -0.76 bv 1.09
+      f0.25:-25.23/-11.96/-0.38 ext -1.00 dr -0.76 bv 1.10
+      f0.25:-23.10/-11.46/-0.40 ext -1.00 dr -0.77 bv 1.10
+      f0.25:-21.45/-11.08/-0.43 ext -1.00 dr -0.77 bv 1.11
+      f0.25:-20.16/-10.82/-0.46 ext -1.00 dr -0.78 bv 1.11
+      f0.25:-18.87/-10.51/-0.49 ext -1.00 dr -0.78 bv 1.12
+      f0.25:-17.59/-10.17/-0.51 ext -1.00 dr -0.78 bv 1.12
+      f0.25:-16.65/-9.94/-0.54 ext -1.00 dr -0.78 bv 1.13
+      f0.25:-16.11/-9.86/-0.56 ext -1.00 dr -0.78 bv 1.13
+      f0.25:-15.63/-9.80/-0.59 ext -1.00 dr -0.78 bv 1.13
+      f0.50:-7.33/-4.72/-0.30 ext -1.00 dr -0.77 bv 1.14
+  t 0.483 push     n0 f8 s0 t0 i0 least -13.99 asked -7.01 gave 0.00 err 0.199 | v 6.14 vy 1.30 ay 9 pitch -17.3 slope 18.2 lift 0.04 | ahead 2.17 frac 0.83
+
+== moving, the rider 6 m right of the start (--riders 4 --spread 6), the one of 4 that fell: the push held (load ~1 body weight a substep), then the board slowed and pitched up at the top of the face, losing the wave
+  t 0.000 push     n8 f0 s0 t0 i0 least 0.86 asked 0.90 gave 0.90 err 0.000 | v 4.89 vy 0.46 ay 0 pitch -16.0 slope 17.5 lift 0.32 | ahead 2.29 frac 0.83
+  t 0.050 push     n8 f0 s0 t0 i0 least 0.97 asked 1.04 gave 1.04 err 0.000 | v 4.95 vy 0.47 ay -0 pitch -14.7 slope 18.1 lift 0.31 | ahead 2.26 frac 0.84
+  t 0.100 push     n8 f0 s0 t0 i0 least 1.05 asked 1.07 gave 1.07 err 0.001 | v 4.93 vy 0.42 ay -1 pitch -12.9 slope 18.3 lift 0.34 | ahead 2.19 frac 0.84
+  t 0.150 push     n8 f0 s0 t0 i0 least 1.16 asked 1.20 gave 1.20 err 0.001 | v 4.90 vy 0.38 ay -1 pitch -10.8 slope 17.7 lift 0.37 | ahead 2.12 frac 0.85
+  t 0.200 push     n8 f0 s0 t0 i0 least 1.13 asked 1.16 gave 1.16 err 0.002 | v 4.87 vy 0.33 ay -1 pitch -8.8 slope 16.6 lift 0.39 | ahead 2.09 frac 0.86
+  t 0.250 push     n2 f2 s3 t0 i1 least -1.38 asked 0.90 gave 0.85 err 0.004 | v 4.96 vy 0.26 ay -1 pitch -6.9 slope 17.2 lift 0.40 | ahead 2.04 frac 0.87
+  t 0.300 push     n8 f0 s0 t0 i0 least 0.86 asked 1.05 gave 1.05 err 0.002 | v 4.89 vy 0.23 ay -1 pitch -5.3 slope 17.2 lift 0.43 | ahead 1.96 frac 0.87
+  t 0.350 push     n8 f0 s0 t0 i0 least 0.70 asked 0.96 gave 0.96 err 0.002 | v 4.93 vy 0.22 ay 0 pitch -4.1 slope 16.4 lift 0.44 | ahead 1.92 frac 0.88
+  t 0.400 push     n7 f0 s1 t0 i0 least -0.21 asked 0.80 gave 0.80 err 0.002 | v 4.98 vy 0.25 ay 1 pitch -3.2 slope 15.4 lift 0.44 | ahead 1.86 frac 0.89
+  t 0.450 push     n5 f0 s3 t0 i0 least -0.49 asked 0.71 gave 0.71 err 0.003 | v 5.13 vy 0.29 ay -2 pitch -2.6 slope 15.9 lift 0.53 | ahead 1.77 frac 0.89
+  t 0.500 push     n5 f2 s1 t0 i0 least -2.27 asked 0.22 gave 0.66 err 0.002 | v 5.17 vy 0.38 ay 1 pitch -2.2 slope 15.8 lift 0.50 | ahead 1.74 frac 0.90
+  t 0.550 push     n1 f3 s2 t0 i0 least -3.01 asked 0.22 gave 1.03 err 0.007 | v 5.28 vy 0.41 ay -0 pitch -1.7 slope 14.9 lift 0.55 | ahead 1.72 frac 0.90
+  t 0.600 push     n0 f7 s0 t0 i0 least -5.87 asked -4.33 gave 0.00 err 0.018 | v 4.65 vy 0.82 ay 14 pitch -0.9 slope 14.2 lift 0.39 | ahead 1.65 frac 0.91
+  t 0.650 push     n0 f4 s0 t0 i0 least -5.37 asked -5.22 gave 0.00 err 0.093 | v 4.01 vy 1.18 ay 5 pitch 1.2 slope 14.4 lift 0.16 | ahead 1.56 frac 0.92
+  t 0.700 push     n0 f4 s0 t0 i0 least -4.77 asked -4.50 gave 0.00 err 0.196 | v 3.72 vy 1.31 ay 1 pitch 3.5 slope 13.6 lift 0.07 | ahead 1.47 frac 0.93

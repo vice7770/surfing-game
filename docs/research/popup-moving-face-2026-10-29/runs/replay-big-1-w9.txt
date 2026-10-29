@@ -1,0 +1,32 @@
+== Big seed 1, wave 9 (sea saved at t 151.9), moving (today): 8 riders
+dx  -4.0: fell standing (lost board)   pop 5.60 ahead 2.96 frac 0.78 slope 19.2 speed 5.58/6.97 | push load -1.25…4.48 heave rms 0.036 m/s a frame
+dx  -2.9: fell standing (lost board)   pop 5.62 ahead 2.91 frac 0.79 slope 19.1 speed 5.57/6.95 | push load -1.13…2.73 heave rms 0.036 m/s a frame
+dx  -1.7: fell standing (lost board)   pop 5.65 ahead 2.88 frac 0.80 slope 18.8 speed 5.56/6.94 | push load -0.51…3.05 heave rms 0.062 m/s a frame
+dx  -0.6: fell standing (lost board)   pop 5.68 ahead 2.83 frac 0.80 slope 18.6 speed 5.55/6.98 | push load 0.17…1.81 heave rms 0.030 m/s a frame
+dx   0.6: fell popping up (balance)    pop 5.68 ahead 2.85 frac 0.80 slope 18.5 speed 5.51/6.94 | push load -10.76…35.81 heave rms 0.102 m/s a frame
+dx   1.7: fell standing (lost board)   pop 5.70 ahead 2.84 frac 0.80 slope 18.3 speed 5.49/6.95 | push load 0.12…1.76 heave rms 0.026 m/s a frame
+dx   2.9: fell standing (balance)      pop 5.72 ahead 2.83 frac 0.80 slope 18.2 speed 5.49/6.97 | push load -0.19…1.83 heave rms 0.023 m/s a frame
+dx   4.0: fell standing (lost board)   pop 5.73 ahead 2.82 frac 0.81 slope 18.0 speed 5.49/6.98 | push load 0.35…1.67 heave rms 0.022 m/s a frame
+canyon big: 8 riders: rode 0, fell popping up 1, other 7
+== held (?surfaceMotion=old): 8 riders
+dx  -4.0: fell popping up (lost board) pop 5.60 ahead 3.02 frac 0.78 slope 19.2 speed 5.66/6.97 | push load -126.44…288.73 heave rms 0.772 m/s a frame
+dx  -2.9: fell popping up (balance)    pop 5.60 ahead 2.96 frac 0.78 slope 19.3 speed 5.58/6.97 | push load -29.57…864.66 heave rms 0.521 m/s a frame
+dx  -1.7: fell popping up (lost board) pop 5.62 ahead 2.96 frac 0.78 slope 19.2 speed 5.61/6.96 | push load -24.95…26.64 heave rms 0.130 m/s a frame
+dx  -0.6: fell popping up (lost board) pop 5.63 ahead 2.96 frac 0.79 slope 19.1 speed 5.57/6.94 | push load -476.47…1160.94 heave rms 0.826 m/s a frame
+dx   0.6: fell standing (balance)      pop 5.63 ahead 2.97 frac 0.78 slope 19.1 speed 5.56/6.95 | push load -4.69…14.91 heave rms 0.115 m/s a frame
+dx   1.7: fell popping up (lost board) pop 5.63 ahead 2.99 frac 0.78 slope 19.1 speed 5.57/6.96 | push load -134.09…294.25 heave rms 0.840 m/s a frame
+dx   2.9: fell popping up (lost board) pop 5.65 ahead 2.99 frac 0.78 slope 18.9 speed 5.57/6.95 | push load -407.68…3313.00 heave rms 0.774 m/s a frame
+dx   4.0: fell popping up (lost board) pop 5.67 ahead 2.99 frac 0.79 slope 18.7 speed 5.58/6.94 | push load -11.78…177.43 heave rms 0.136 m/s a frame
+canyon big: 8 riders: rode 0, fell popping up 7, other 1
+== moving, the rider 2 m left of the start, every other frame from 2.3 s after the pop: down the face at 9.9 m/s, 7 m ahead of the crest, the board stopped dead
+  t 2.300 standing n32 f0 s0 t0 i0  v 9.92 vy -0.93 ay -1 pitch -16.4 slope 17.7 lift 0.69 | ahead 6.46 frac 0.39 shore 9.95/6.50 | depth 3.71 over bed 3.69 brk 0.76 | sway 0.000 margin 0.54 limit none
+  t 2.333 standing n32 f0 s0 t0 i0  v 9.86 vy -0.85 ay 2 pitch -16.3 slope 17.1 lift 0.84 | ahead 6.56 frac 0.38 shore 9.89/6.54 | depth 3.68 over bed 3.65 brk 0.76 | sway 0.000 margin 0.49 limit none
+  t 2.367 standing n32 f0 s0 t0 i0  v 9.77 vy -0.85 ay -1 pitch -16.2 slope 17.3 lift 0.75 | ahead 6.67 frac 0.37 shore 9.81/6.53 | depth 3.64 over bed 3.62 brk 0.78 | sway 0.000 margin 0.47 limit none
+  t 2.400 standing n32 f0 s0 t0 i0  v 9.68 vy -0.84 ay 1 pitch -16.3 slope 17.1 lift 0.72 | ahead 6.79 frac 0.36 shore 9.72/6.49 | depth 3.61 over bed 3.59 brk 0.79 | sway 0.000 margin 0.43 limit none
+  t 2.433 standing n32 f0 s0 t0 i0  v 9.62 vy -0.81 ay 1 pitch -16.4 slope 16.7 lift 0.77 | ahead 6.90 frac 0.35 shore 9.65/6.47 | depth 3.58 over bed 3.55 brk 0.79 | sway 0.000 margin 0.38 limit none
+  t 2.467 standing n32 f0 s0 t0 i0  v 9.57 vy -0.79 ay 0 pitch -16.5 slope 16.8 lift 0.77 | ahead 6.99 frac 0.34 shore 9.59/6.52 | depth 3.54 over bed 3.52 brk 0.80 | sway 0.000 margin 0.33 limit none
+  t 2.500 standing n1 f5 s0 t26 i0  v 8.71 vy -0.49 ay 17 pitch -16.6 slope 16.6 lift 0.70 | ahead 7.08 frac 0.33 shore 9.54/6.55 | depth 3.51 over bed 3.49 brk 0.82 | sway 0.000 margin 0.26 limit flight
+  t 2.533 standing n0 f32 s0 t0 i0  v 5.10 vy 0.70 ay 27 pitch -16.6 slope 16.3 lift 0.25 | ahead 7.16 frac 0.33 shore 6.47/6.52 | depth 3.49 over bed 3.49 brk 0.82 | sway 0.000 margin 0.18 limit flight
+  t 2.567 standing n0 f0 s0 t24 i8  v 8.89 vy -0.81 ay -104 pitch -17.0 slope 16.3 lift 0.37 | ahead 7.12 frac 0.33 shore 4.45/6.49 | depth 3.51 over bed 3.50 brk 0.85 | sway 0.000 margin 0.13 limit impact
+  t 2.600 standing n25 f0 s0 t7 i0  v 9.87 vy -1.32 ay 6 pitch -17.1 slope 16.3 lift 1.33 | ahead 7.16 frac 0.33 shore 9.98/6.53 | depth 3.49 over bed 3.45 brk 0.87 | sway 0.000 margin 0.24 limit tip
+  t 2.633 fallen   n0 f10 s0 t0 i0  v 4.46 vy 0.49 ay 45 pitch -17.1 slope 16.2 lift 0.36 | ahead 7.24 frac 0.32 shore 6.70/6.56 | depth 3.46 over bed 3.44 brk 0.89 | sway 0.000 margin 0.19 limit flight
