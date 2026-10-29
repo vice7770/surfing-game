@@ -1,7 +1,11 @@
 /**
- * The sprint paddle's flat-water top speed against its blade area (canyon-catch, 2026-10-29): `the sprint paddle` test's
- * measure (16 s from rest, the reserve kept full, the mean over the last 4 s), for the stroke as it is ('feather') and
- * as before ('old'). Dev only: reads `globalThis.__area` (a scratch build sets SPRINT_PADDLE_AREA from it).
+ * The sprint paddle's flat-water top speed (canyon-catch, 2026-10-29): `the sprint paddle` test's measure (16 s from
+ * rest, the reserve kept full, the mean over the last 4 s), cruising and sprinting, with the stroke as it is ('feather':
+ * the outrun hand edge-on, the sprint's blade SPRINT_PADDLE_AREA 1.8) and as before ('old': broadside, 2.4). The blade
+ * was refitted by rerunning this with SPRINT_PADDLE_AREA set to 2.4, 2.0, 1.8, 1.6 and 1.4 in a scratch build:
+ * 2.225, 2.136, 2.084, 2.024 and 1.958 m/s, against the old stroke's 2.084.
+ *   rolldown docs/research/canyon-catch-2026-10-29/sprint-fit.ts -o dist/scripts/sprint-fit.mjs --format esm --platform node \
+ *     && node dist/scripts/sprint-fit.mjs
  */
 import { Vector3 } from 'three';
 import { PlaneWater } from '../../../src/physics/PlaneWater';
@@ -20,10 +24,4 @@ const top = (sprint: boolean, stroke: 'feather' | 'old') => {
   }
   return out.slice(-240).reduce((a, b) => a + b, 0) / 240;
 };
-const g = globalThis as unknown as { __area?: number };
-g.__area = 2.4;
-console.log(`old stroke: cruise ${top(false, 'old').toFixed(3)}, sprint ${top(true, 'old').toFixed(3)} (area 2.4)`);
-for (const area of (process.argv[2] ?? '2.4,2.2,2.0,1.9,1.8').split(',').map(Number)) {
-  g.__area = area;
-  console.log(`feather, area ${area}: cruise ${top(false, 'feather').toFixed(3)}, sprint ${top(true, 'feather').toFixed(3)}`);
-}
+for (const stroke of ['feather', 'old'] as const) console.log(`${stroke}: cruise ${top(false, stroke).toFixed(3)} m/s, sprint ${top(true, stroke).toFixed(3)} m/s`);
