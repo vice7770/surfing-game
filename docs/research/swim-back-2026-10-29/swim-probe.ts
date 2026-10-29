@@ -161,7 +161,8 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => Number.
       const aim = script === 'away' ? Math.PI : bearing;
       const inReach = recovery.inReach(board);
       input = {
-        paddle: swim && recovery.state === 'free', steer: swim ? Math.max(-1, Math.min(1, 2 * wrap(aim - surfer.heading))) : 0,
+        // Steering only while swimming free: holding the board, the hands turn it to the swimmer.
+        paddle: swim && recovery.state === 'free', steer: swim && recovery.state === 'free' ? Math.max(-1, Math.min(1, 2 * wrap(aim - surfer.heading))) : 0,
         popUp: (script === 'swim' && inReach) || ((script === 'reel' || script === 'both') && Number.isNaN(trial.grabbed) && trial.lastDistance !== trial.lastDistance),
         reel: script === 'reel' || script === 'both',
       };

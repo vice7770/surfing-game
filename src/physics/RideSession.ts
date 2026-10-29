@@ -139,6 +139,7 @@ export class RideSession {
     this.rider = new AttachedRider(this.board.shape, { stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}) });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});
+    this.surfer.crawlAtSurface = !this.swimOld;
     const tail = -this.board.shape.length / 2 + PLUG_FROM_TAIL;
     this.plugLocal.set(0, deckHeight(this.board.shape, tail), tail);
   }

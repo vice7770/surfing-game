@@ -2,6 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { CLIMB_TIME } from './AttachedRider';
 import { PlaneWater } from './PlaneWater';
+import { ChopWater } from './testing/ChopWater';
 import { RideSession, type RideInput, type RideSessionOptions } from './RideSession';
 
 const STEP = 1 / 60;
@@ -65,6 +66,34 @@ describe('back on the board after a wipeout (swim-back)', () => {
 
   // Twelve falls (3–6 m/s, after 0.5–1.5 s standing), holding the reel from the first moment: measured 2.1–5.4 s; before,
   // 2.2–16.1 s, or not in 20 s (median about 7 s).
+  // In a wind chop the head is often under at the surface: swimming up toward the light at 60° then, the stroke gave
+  // half its push forward (0.70 m/s); up only with the chest under too (held down), 0.80 m/s.
+  it('swims on through a chop with the face in the water, not up toward the light', () => {
+    const speed = (options: RideSessionOptions) => {
+      const session = new RideSession(options);
+      const water = new ChopWater(1, 1);
+      session.reset(new Vector3(), 0, water);
+      for (let i = 0; i < 60; i += 1) { session.step(STEP, water, idle); water.advance(STEP); }
+      session.separate('balance');
+      let along = 0;
+      let time = 0;
+      const momentum = new Vector3();
+      for (let n = 0; n < 16 / STEP; n += 1) {
+        const { surfer } = session;
+        session.step(STEP, water, { ...idle, paddle: true, steer: Math.max(-1, Math.min(1, 2 * wrap(Math.PI - surfer.heading))) });
+        water.advance(STEP);
+        if (n * STEP < 2 || surfer.controlGain < 0.5) continue;
+        surfer.linearMomentum(momentum);
+        along += ((momentum.x * Math.sin(surfer.heading) + momentum.z * Math.cos(surfer.heading)) / surfer.mass) * STEP;
+        time += STEP;
+      }
+      return along / time;
+    };
+    const now = speed({});
+    expect(now).toBeGreaterThan(0.75);
+    expect(now).toBeGreaterThan(speed({ swim: 'old' }) + 0.05);
+  });
+
   it('holding the reel, lies on the board again within 6 s of every fall, where half took longer before', () => {
     const reel = (n: number): RideInput => ({ ...idle, popUp: n === 0, reel: true });
     let slowBefore = 0;

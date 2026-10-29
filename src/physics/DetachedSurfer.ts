@@ -261,6 +261,13 @@ export class DetachedSurfer implements DetachedRiderPose {
   outsideDomain = false;
   /** Diving this step: the dive held, with control. */
   diving = false;
+  /**
+   * Swimming at the surface with the face in the water (swim-back, 2026-10-29): a stroke swims up toward the light only
+   * with the chest under too (held down), not whenever the head is: a crawl's head is in the water much of each stroke,
+   * and pitched 60° up, the stroke gave half its push forward (0.70 m/s through a chop, 0.80 now). False (`swim: 'old'`):
+   * up whenever the head is under, as before.
+   */
+  crawlAtSurface = true;
   /** The head is fully under water. */
   underwater = false;
   readonly lastForces: BodyForceLedger = {
@@ -690,7 +697,8 @@ export class DetachedSurfer implements DetachedRiderPose {
     const effort = this.diving ? dive : input.stroke && this.controlGain > 0 ? 1 : 0;
     if (effort > 0) {
       // Diving pulls down and forward; underwater a stroke swims up toward the light; otherwise along the surface.
-      const pitch = this.diving ? -DIVE_PITCH : this.underwater ? SURFACE_PITCH : Math.atan(0.3);
+      const held = this.underwater && (!this.crawlAtSurface || this.nodes[PART_INDEX.torso].submersion >= 1);
+      const pitch = this.diving ? -DIVE_PITCH : held ? SURFACE_PITCH : Math.atan(0.3);
       const direction = this.strokeDirection.set(
         Math.sin(this.heading) * Math.cos(pitch), Math.sin(pitch), Math.cos(this.heading) * Math.cos(pitch),
       );
