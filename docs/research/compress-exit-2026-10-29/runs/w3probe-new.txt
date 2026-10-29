@@ -1,0 +1,200 @@
+canyon big seed 1: take-off (-112, -180.5), default start 3 m out; starts 3 m out (3.67 m deep); t 72.7 s after the spin-up (2 s wall)
+stepped to t 101.8 s; 1 waves from 3 m out (246 s wall)
+trace, wave 0 (86.7 s), turnL:
+  t 0.00 prone    z -0.0 v 1.00 lift 0.00 | c 0.0 ahead 35.8 face 2.68 frac 0.02 brk 0.00 slope -1° vs -1.01 | contact on flight 0.00 feasible true load 0.00 pitch 1° vy -0.15 ry 0.15
+  t 0.10 prone    z -0.1 v 0.70 lift 0.01 | c 6.9 ahead 35.0 face 2.68 frac 0.02 brk 0.00 slope -1° vs -0.77 | contact on flight 0.00 feasible true load 0.00 pitch 2° vy -0.25 ry 0.14
+  t 0.20 prone    z -0.2 v 0.41 lift 0.03 | c 6.9 ahead 34.2 face 2.68 frac 0.01 brk 0.00 slope -1° vs -0.44 | contact on flight 0.00 feasible true load 0.00 pitch 6° vy -0.30 ry 0.12
+  t 0.30 prone    z -0.2 v 0.44 lift 0.04 | c 7.0 ahead 33.5 face 2.68 frac 0.01 brk 0.00 slope -1° vs -0.41 | contact on flight 0.00 feasible true load 0.00 pitch 9° vy -0.35 ry 0.10
+  t 0.40 prone    z -0.2 v 0.60 lift 0.04 | c 7.2 ahead 32.7 face 2.68 frac 0.01 brk 0.00 slope -1° vs -0.51 | contact on flight 0.00 feasible true load 0.00 pitch 11° vy -0.36 ry 0.09
+  t 0.50 prone    z -0.3 v 0.72 lift 0.04 | c 7.2 ahead 31.9 face 2.67 frac 0.00 brk 0.00 slope -1° vs -0.60 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy -0.34 ry 0.09
+  t 0.60 prone    z -0.4 v 0.75 lift 0.03 | c 7.1 ahead 31.1 face 2.67 frac 0.00 brk 0.00 slope -0° vs -0.66 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy -0.29 ry 0.09
+  t 0.70 prone    z -0.4 v 0.40 lift 0.03 | c 7.2 ahead 30.3 face 2.67 frac 0.00 brk 0.00 slope -0° vs -0.42 | contact on flight 0.00 feasible true load 0.00 pitch 13° vy -0.18 ry 0.09
+  t 0.80 prone    z -0.4 v 0.14 lift 0.05 | c 7.3 ahead 29.6 face 2.66 frac 0.00 brk 0.00 slope -0° vs -0.03 | contact on flight 0.00 feasible true load 0.00 pitch 14° vy -0.07 ry 0.08
+  t 0.90 prone    z -0.4 v 0.13 lift 0.06 | c 7.3 ahead 28.8 face 2.65 frac 0.00 brk 0.00 slope -0° vs 0.09 | contact on flight 0.00 feasible true load 0.00 pitch 16° vy -0.02 ry 0.07
+  t 1.00 prone    z -0.4 v 0.08 lift 0.05 | c 7.3 ahead 28.1 face 2.65 frac 0.00 brk 0.00 slope -0° vs 0.02 | contact on flight 0.00 feasible true load 0.00 pitch 17° vy -0.01 ry 0.06
+  t 1.10 prone    z -0.4 v 0.28 lift 0.05 | c 7.4 ahead 27.3 face 2.65 frac 0.00 brk 0.00 slope -0° vs -0.02 | contact on flight 0.00 feasible true load 0.00 pitch 17° vy -0.00 ry 0.06
+  t 1.20 prone    z -0.4 v 0.29 lift 0.04 | c 7.5 ahead 26.6 face 2.64 frac 0.00 brk 0.00 slope 0° vs -0.06 | contact on flight 0.00 feasible true load 0.00 pitch 16° vy -0.01 ry 0.06
+  t 1.30 prone    z -0.4 v 0.17 lift 0.04 | c 7.6 ahead 25.8 face 2.64 frac 0.00 brk 0.00 slope 0° vs -0.07 | contact on flight 0.00 feasible true load 0.00 pitch 15° vy 0.01 ry 0.06
+  t 1.40 prone    z -0.4 v 0.09 lift 0.05 | c 7.5 ahead 25.0 face 2.64 frac 0.00 brk 0.00 slope 0° vs 0.08 | contact on flight 0.00 feasible true load 0.00 pitch 15° vy 0.06 ry 0.07
+  t 1.50 prone    z -0.4 v 0.10 lift 0.05 | c 7.6 ahead 24.3 face 2.64 frac 0.00 brk 0.00 slope 0° vs 0.10 | contact on flight 0.00 feasible true load 0.00 pitch 15° vy 0.06 ry 0.07
+  t 1.60 prone    z -0.4 v 0.16 lift 0.05 | c 7.6 ahead 23.5 face 2.64 frac 0.00 brk 0.00 slope 0° vs 0.02 | contact on flight 0.00 feasible true load 0.00 pitch 15° vy 0.06 ry 0.07
+  t 1.70 prone    z -0.4 v 0.33 lift 0.05 | c 7.6 ahead 22.8 face 2.65 frac 0.01 brk 0.00 slope 1° vs -0.05 | contact on flight 0.00 feasible true load 0.00 pitch 14° vy 0.05 ry 0.07
+  t 1.80 prone    z -0.4 v 0.38 lift 0.05 | c 7.5 ahead 22.0 face 2.65 frac 0.01 brk 0.00 slope 1° vs -0.09 | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.04 ry 0.08
+  t 1.90 prone    z -0.4 v 0.28 lift 0.05 | c 7.5 ahead 21.3 face 2.65 frac 0.01 brk 0.00 slope 1° vs 0.06 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.09 ry 0.08
+  t 2.00 prone    z -0.4 v 0.43 lift 0.06 | c 7.5 ahead 20.6 face 2.65 frac 0.01 brk 0.00 slope 1° vs 0.40 | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.13 ry 0.08
+  t 2.10 prone    z -0.4 v 0.39 lift 0.07 | c 7.4 ahead 19.9 face 2.65 frac 0.02 brk 0.00 slope 1° vs 0.40 | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.12 ry 0.08
+  t 2.20 prone    z -0.3 v 0.37 lift 0.07 | c 7.4 ahead 19.2 face 2.65 frac 0.02 brk 0.00 slope 1° vs 0.34 | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.11 ry 0.08
+  t 2.30 prone    z -0.3 v 0.45 lift 0.06 | c 7.8 ahead 18.3 face 2.65 frac 0.02 brk 0.00 slope 1° vs 0.27 | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.10 ry 0.08
+  t 2.40 prone    z -0.3 v 0.42 lift 0.06 | c 7.9 ahead 17.5 face 2.65 frac 0.03 brk 0.00 slope 1° vs 0.23 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.09 ry 0.08
+  t 2.50 prone    z -0.2 v 0.47 lift 0.06 | c 7.9 ahead 16.8 face 2.64 frac 0.04 brk 0.00 slope 2° vs 0.33 | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 0.13 ry 0.09
+  t 2.60 prone    z -0.2 v 0.71 lift 0.08 | c 7.7 ahead 16.1 face 2.64 frac 0.04 brk 0.00 slope 2° vs 0.67 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.19 ry 0.09
+  t 2.70 prone    z -0.1 v 0.69 lift 0.08 | c 7.6 ahead 15.4 face 2.64 frac 0.05 brk 0.00 slope 2° vs 0.69 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.19 ry 0.09
+  t 2.80 prone    z -0.0 v 0.65 lift 0.08 | c 7.5 ahead 14.8 face 2.64 frac 0.06 brk 0.00 slope 3° vs 0.65 | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.20 ry 0.09
+  t 2.90 prone    z 0.0 v 0.70 lift 0.08 | c 7.5 ahead 14.1 face 2.63 frac 0.07 brk 0.00 slope 3° vs 0.64 | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 0.22 ry 0.09
+  t 3.00 prone    z 0.1 v 0.70 lift 0.08 | c 7.5 ahead 13.4 face 2.63 frac 0.08 brk 0.00 slope 4° vs 0.65 sprint | contact on flight 0.00 feasible true load 0.00 pitch 10° vy 0.24 ry 0.09
+  t 3.10 prone    z 0.2 v 0.85 lift 0.08 | c 7.4 ahead 12.8 face 2.63 frac 0.10 brk 0.00 slope 4° vs 0.77 sprint | contact on flight 0.00 feasible true load 0.00 pitch 10° vy 0.31 ry 0.10
+  t 3.20 prone    z 0.3 v 1.32 lift 0.11 | c 7.4 ahead 12.1 face 2.63 frac 0.11 brk 0.00 slope 5° vs 1.25 sprint | contact on flight 0.00 feasible true load 0.00 pitch 10° vy 0.42 ry 0.10
+  t 3.30 prone    z 0.4 v 1.42 lift 0.13 | c 7.4 ahead 11.5 face 2.63 frac 0.13 brk 0.00 slope 6° vs 1.41 sprint | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.49 ry 0.09
+  t 3.40 prone    z 0.5 v 1.38 lift 0.12 | c 7.4 ahead 10.9 face 2.62 frac 0.15 brk 0.00 slope 7° vs 1.36 sprint | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.54 ry 0.09
+  t 3.50 prone    z 0.7 v 1.40 lift 0.12 | c 7.3 ahead 10.3 face 2.62 frac 0.17 brk 0.00 slope 8° vs 1.31 sprint | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 0.61 ry 0.09
+  t 3.60 prone    z 0.8 v 1.63 lift 0.12 | c 7.4 ahead 9.7 face 2.62 frac 0.20 brk 0.00 slope 9° vs 1.46 sprint | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 0.72 ry 0.09
+  t 3.70 prone    z 1.0 v 2.16 lift 0.18 | c 7.4 ahead 9.1 face 2.62 frac 0.23 brk 0.00 slope 10° vs 2.07 sprint | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.86 ry 0.08
+  t 3.80 prone    z 1.2 v 2.25 lift 0.19 | c 7.3 ahead 8.7 face 2.62 frac 0.26 brk 0.00 slope 11° vs 2.24 sprint | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.95 ry 0.08
+  t 3.90 prone    z 1.5 v 2.26 lift 0.18 | c 7.3 ahead 8.1 face 2.62 frac 0.29 brk 0.00 slope 12° vs 2.26 sprint | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 1.00 ry 0.08
+  t 4.00 prone    z 1.7 v 2.35 lift 0.17 | c 7.3 ahead 7.6 face 2.63 frac 0.33 brk 0.00 slope 13° vs 2.31 sprint | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 1.08 ry 0.09
+  t 4.10 prone    z 1.9 v 2.85 lift 0.21 | c 7.2 ahead 7.2 face 2.63 frac 0.37 brk 0.00 slope 14° vs 2.75 sprint | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 1.26 ry 0.09
+  t 4.20 prone    z 2.2 v 3.09 lift 0.24 | c 7.2 ahead 6.8 face 2.63 frac 0.40 brk 0.00 slope 15° vs 3.09 sprint | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 1.35 ry 0.08
+  t 4.30 prone    z 2.5 v 3.09 lift 0.24 | c 7.2 ahead 6.4 face 2.63 frac 0.44 brk 0.00 slope 16° vs 3.07 sprint | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 1.30 ry 0.08
+  t 4.40 prone    z 2.9 v 3.14 lift 0.21 | c 7.2 ahead 6.0 face 2.63 frac 0.48 brk 0.00 slope 17° vs 3.09 sprint | contact on flight 0.00 feasible true load 0.00 pitch 9° vy 1.23 ry 0.10
+  t 4.50 prone    z 3.2 v 3.53 lift 0.22 | c 7.1 ahead 5.6 face 2.63 frac 0.52 brk 0.00 slope 17° vs 3.40 sprint | contact on flight 0.00 feasible true load 0.00 pitch 6° vy 1.32 ry 0.12
+  t 4.60 prone    z 3.6 v 3.98 lift 0.28 | c 7.2 ahead 5.2 face 2.63 frac 0.56 brk 0.00 slope 17° vs 3.94 sprint | contact on flight 0.00 feasible true load 0.00 pitch 5° vy 1.29 ry 0.13
+  t 4.70 prone    z 4.0 v 4.03 lift 0.22 | c 7.2 ahead 4.9 face 2.63 frac 0.60 brk 0.00 slope 18° vs 4.03 sprint | contact on flight 0.00 feasible true load 0.00 pitch 1° vy 0.92 ry 0.15
+  t 4.80 prone    z 4.4 v 4.08 lift 0.24 | c 7.1 ahead 4.6 face 2.63 frac 0.63 brk 0.00 slope 18° vs 4.06 sprint | contact on flight 0.00 feasible true load 0.00 pitch -7° vy 0.66 ry 0.19
+  t 4.90 prone    z 4.8 v 4.41 lift 0.25 | c 7.1 ahead 4.3 face 2.63 frac 0.66 brk 0.00 slope 18° vs 4.32 sprint | contact on flight 0.00 feasible true load 0.00 pitch -14° vy 0.77 ry 0.23
+  t 5.00 prone    z 5.2 v 4.95 lift 0.26 | c 7.2 ahead 4.0 face 2.63 frac 0.69 brk 0.00 slope 18° vs 4.87 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy 0.72 ry 0.24
+  t 5.10 prone    z 5.8 v 5.23 lift 0.31 | c 7.2 ahead 3.8 face 2.63 frac 0.71 brk 0.00 slope 18° vs 5.18 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy 0.55 ry 0.23
+  t 5.20 push     z 6.3 v 5.41 lift 0.38 | c 7.1 ahead 3.7 face 2.63 frac 0.73 brk 0.00 slope 18° vs 5.38 sprint | contact on flight 0.00 feasible true load 0.00 pitch -14° vy 0.46 ry 0.23
+  t 5.23 push     z 6.5 v 5.44 lift 0.41 | c 7.1 ahead 3.6 face 2.63 frac 0.74 brk 0.00 slope 18° vs 5.42 sprint | contact on flight 0.00 feasible true load 0.00 pitch -14° vy 0.45 ry 0.23
+  t 5.27 push     z 6.6 v 5.45 lift 0.43 | c 7.2 ahead 3.5 face 2.64 frac 0.74 brk 0.00 slope 18° vs 5.45 sprint | contact on flight 0.00 feasible true load 0.00 pitch -14° vy 0.45 ry 0.23
+  t 5.30 push     z 6.8 v 5.44 lift 0.44 | c 7.1 ahead 3.5 face 2.64 frac 0.75 brk 0.00 slope 18° vs 5.45 sprint | contact on flight 0.00 feasible true load 0.00 pitch -13° vy 0.43 ry 0.23
+  t 5.33 push     z 7.0 v 5.43 lift 0.45 | c 7.1 ahead 3.4 face 2.64 frac 0.75 brk 0.00 slope 18° vs 5.43 sprint | contact on flight 0.00 feasible true load 0.00 pitch -13° vy 0.41 ry 0.24
+  t 5.37 push     z 7.2 v 5.43 lift 0.46 | c 7.1 ahead 3.4 face 2.64 frac 0.76 brk 0.00 slope 18° vs 5.42 sprint | contact on flight 0.00 feasible true load 0.00 pitch -13° vy 0.42 ry 0.25
+  t 5.40 push     z 7.4 v 5.43 lift 0.48 | c 7.2 ahead 3.3 face 2.64 frac 0.77 brk 0.00 slope 18° vs 5.43 sprint | contact on flight 0.00 feasible true load 0.00 pitch -12° vy 0.43 ry 0.26
+  t 5.43 push     z 7.5 v 5.44 lift 0.48 | c 7.1 ahead 3.3 face 2.64 frac 0.77 brk 0.00 slope 18° vs 5.43 sprint | contact on flight 0.00 feasible true load 0.00 pitch -12° vy 0.43 ry 0.27
+  t 5.47 push     z 7.7 v 5.46 lift 0.49 | c 7.0 ahead 3.2 face 2.64 frac 0.78 brk 0.00 slope 18° vs 5.45 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.44 ry 0.29
+  t 5.50 push     z 7.9 v 5.50 lift 0.49 | c 7.1 ahead 3.2 face 2.64 frac 0.78 brk 0.00 slope 18° vs 5.48 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.44 ry 0.30
+  t 5.53 push     z 8.1 v 5.55 lift 0.49 | c 7.1 ahead 3.1 face 2.64 frac 0.79 brk 0.00 slope 18° vs 5.52 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.45 ry 0.32
+  t 5.57 push     z 8.3 v 5.62 lift 0.48 | c 7.1 ahead 3.1 face 2.64 frac 0.79 brk 0.00 slope 18° vs 5.58 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.44 ry 0.33
+  t 5.60 push     z 8.5 v 5.71 lift 0.48 | c 7.1 ahead 3.0 face 2.64 frac 0.80 brk 0.00 slope 17° vs 5.66 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.44 ry 0.35
+  t 5.63 push     z 8.7 v 5.82 lift 0.49 | c 7.0 ahead 3.0 face 2.64 frac 0.80 brk 0.00 slope 17° vs 5.76 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.42 ry 0.36
+  t 5.67 push     z 8.9 v 5.94 lift 0.47 | c 7.1 ahead 2.9 face 2.64 frac 0.81 brk 0.00 slope 18° vs 5.87 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy 0.41 ry 0.38
+  t 5.70 push     z 9.1 v 6.06 lift 0.43 | c 7.1 ahead 2.9 face 2.65 frac 0.81 brk 0.00 slope 18° vs 5.99 sprint | contact on flight 0.00 feasible true load 0.00 pitch -12° vy 0.39 ry 0.39
+  t 5.73 push     z 9.3 v 6.17 lift 0.39 | c 7.0 ahead 2.9 face 2.65 frac 0.81 brk 0.00 slope 18° vs 6.10 sprint | contact on flight 0.00 feasible true load 0.00 pitch -12° vy 0.36 ry 0.40
+  t 5.77 push     z 9.5 v 6.28 lift 0.33 | c 7.0 ahead 2.8 face 2.65 frac 0.82 brk 0.00 slope 17° vs 6.20 sprint | contact on flight 0.00 feasible true load 0.00 pitch -13° vy 0.31 ry 0.40
+  t 5.80 push     z 9.7 v 6.38 lift 0.26 | c 7.1 ahead 2.8 face 2.65 frac 0.82 brk 0.00 slope 17° vs 6.31 sprint | contact on flight 0.00 feasible true load 0.00 pitch -15° vy 0.25 ry 0.41
+  t 5.83 push     z 9.9 v 6.48 lift 0.20 | c 7.1 ahead 2.8 face 2.65 frac 0.82 brk 0.00 slope 18° vs 6.41 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy 0.14 ry 0.40
+  t 5.87 push     z 10.1 v 6.57 lift 0.19 | c 7.1 ahead 2.8 face 2.65 frac 0.82 brk 0.00 slope 18° vs 6.51 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy 0.01 ry 0.40
+  t 5.90 landing  z 10.3 v 7.03 lift 0.35 | c 7.0 ahead 2.8 face 2.65 frac 0.82 brk 0.00 slope 18° vs 6.64 sprint | contact on flight 0.00 feasible true load 0.00 pitch -18° vy -0.12 ry 0.40
+  t 5.93 landing  z 10.6 v 7.23 lift 0.40 | c 7.0 ahead 2.7 face 2.65 frac 0.82 brk 0.00 slope 17° vs 7.11 sprint | contact on flight 0.00 feasible true load 0.00 pitch -18° vy -0.16 ry 0.40
+  t 5.97 landing  z 10.8 v 7.48 lift 0.52 | c 7.1 ahead 2.7 face 2.65 frac 0.82 brk 0.00 slope 18° vs 7.33 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.29 ry 0.40
+  t 6.00 landing  z 11.1 v 7.80 lift 0.65 | c 7.1 ahead 2.8 face 2.66 frac 0.82 brk 0.00 slope 18° vs 7.63 sprint | contact on flight 0.00 feasible true load 0.00 pitch -18° vy -0.43 ry 0.41
+  t 6.03 landing  z 11.3 v 8.13 lift 0.73 | c 7.0 ahead 2.8 face 2.66 frac 0.81 brk 0.00 slope 18° vs 7.97 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.48 ry 0.43
+  t 6.07 landing  z 11.6 v 8.42 lift 0.80 | c 7.0 ahead 2.8 face 2.66 frac 0.81 brk 0.00 slope 18° vs 8.28 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.50 ry 0.45
+  t 6.10 landing  z 11.9 v 8.62 lift 0.83 | c 7.0 ahead 2.9 face 2.66 frac 0.80 brk 0.00 slope 18° vs 8.53 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.51 ry 0.49
+  t 6.13 landing  z 12.2 v 8.74 lift 0.81 | c 7.0 ahead 2.9 face 2.66 frac 0.80 brk 0.00 slope 19° vs 8.69 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.47 ry 0.52
+  t 6.17 landing  z 12.5 v 8.78 lift 0.77 | c 7.0 ahead 3.0 face 2.66 frac 0.79 brk 0.00 slope 18° vs 8.77 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.40 ry 0.56
+  t 6.20 landing  z 12.8 v 8.74 lift 0.65 | c 7.0 ahead 3.1 face 2.66 frac 0.78 brk 0.00 slope 19° vs 8.77 sprint | contact on flight 0.00 feasible true load 0.00 pitch -15° vy -0.30 ry 0.59
+  t 6.23 landing  z 13.0 v 8.60 lift 0.45 | c 7.0 ahead 3.1 face 2.67 frac 0.77 brk 0.00 slope 19° vs 8.68 sprint | contact on flight 0.00 feasible true load 0.00 pitch -15° vy -0.31 ry 0.62
+  t 6.27 landing  z 13.3 v 8.40 lift 0.15 | c 7.1 ahead 3.2 face 2.67 frac 0.76 brk 0.00 slope 19° vs 8.50 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.43 ry 0.65
+  t 6.30 landing  z 13.6 v 8.29 lift 0.00 | c 7.0 ahead 3.2 face 2.67 frac 0.76 brk 0.00 slope 19° vs 8.33 sprint | contact on flight 0.00 feasible false load 0.00 pitch -17° vy -0.64 ry 0.67
+  t 6.33 landing  z 13.9 v 8.21 lift 0.00 | c 6.9 ahead 3.3 face 2.67 frac 0.75 brk 0.00 slope 19° vs 8.25 sprint | contact on flight 0.00 feasible false load 0.00 pitch -19° vy -0.94 ry 0.69
+  t 6.37 landing  z 14.1 v 8.24 lift 0.05 | c 7.0 ahead 3.3 face 2.67 frac 0.74 brk 0.00 slope 20° vs 8.32 sprint | contact on flight 0.00 feasible false load 0.00 pitch -20° vy -0.50 ry 0.69
+  t 6.40 standing z 14.4 v 7.82 lift 0.12 | c 7.1 ahead 3.3 face 2.67 frac 0.74 brk 0.00 slope 19° vs 8.17 sprint | contact on flight 0.00 feasible false load 0.00 pitch -18° vy 0.22 ry 0.68
+  t 6.43 standing z 14.7 v 8.10 lift 0.50 | c 7.0 ahead 3.4 face 2.67 frac 0.73 brk 0.00 slope 20° vs 7.61 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.65 ry 0.66
+  t 6.47 standing z 14.9 v 8.29 lift 0.69 | c 7.0 ahead 3.4 face 2.68 frac 0.73 brk 0.00 slope 20° vs 8.19 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.61 ry 0.66
+  t 6.50 standing z 15.2 v 8.50 lift 0.82 | c 7.0 ahead 3.5 face 2.68 frac 0.72 brk 0.00 slope 20° vs 8.40 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.66 ry 0.66
+  t 6.53 standing z 15.5 v 8.68 lift 0.88 | c 7.0 ahead 3.5 face 2.68 frac 0.71 brk 0.00 slope 20° vs 8.59 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.65 ry 0.66
+  t 6.57 standing z 15.8 v 8.84 lift 0.90 | c 7.0 ahead 3.6 face 2.68 frac 0.70 brk 0.00 slope 20° vs 8.76 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.63 ry 0.68
+  t 6.60 standing z 16.1 v 8.96 lift 0.85 | c 7.0 ahead 3.6 face 2.68 frac 0.69 brk 0.00 slope 20° vs 8.90 sprint | contact on flight 0.00 feasible true load 0.00 pitch -15° vy -0.69 ry 0.69
+  t 6.63 standing z 16.4 v 9.05 lift 0.78 | c 6.9 ahead 3.7 face 2.68 frac 0.68 brk 0.00 slope 20° vs 9.00 sprint | contact on flight 0.00 feasible true load 0.00 pitch -15° vy -0.81 ry 0.71
+  t 6.67 standing z 16.7 v 9.13 lift 0.68 | c 7.0 ahead 3.7 face 2.69 frac 0.67 brk 0.00 slope 20° vs 9.09 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -0.92 ry 0.73
+  t 6.70 standing z 17.0 v 9.21 lift 0.57 | c 7.0 ahead 3.8 face 2.69 frac 0.66 brk 0.00 slope 20° vs 9.16 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -1.00 ry 0.76
+  t 6.73 standing z 17.3 v 9.35 lift 0.47 | c 6.9 ahead 3.9 face 2.69 frac 0.65 brk 0.00 slope 20° vs 9.27 sprint | contact on flight 0.00 feasible true load 0.00 pitch -18° vy -0.98 ry 0.78
+  t 6.77 standing z 17.6 v 9.45 lift 0.51 | c 6.9 ahead 4.0 face 2.69 frac 0.64 brk 0.00 slope 20° vs 9.40 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.98 ry 0.80
+  t 6.80 standing z 17.9 v 9.54 lift 0.59 | c 6.9 ahead 4.1 face 2.69 frac 0.62 brk 0.00 slope 20° vs 9.50 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -0.98 ry 0.82
+  t 6.83 standing z 18.2 v 9.61 lift 0.62 | c 6.9 ahead 4.2 face 2.69 frac 0.61 brk 0.00 slope 20° vs 9.58 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -1.06 ry 0.84
+  t 6.87 standing z 18.6 v 9.68 lift 0.59 | c 6.9 ahead 4.3 face 2.69 frac 0.60 brk 0.00 slope 20° vs 9.65 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -1.08 ry 0.86
+  t 6.90 standing z 18.9 v 9.76 lift 0.58 | c 6.8 ahead 4.4 face 2.70 frac 0.58 brk 0.00 slope 20° vs 9.72 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -1.03 ry 0.88
+  t 6.93 standing z 19.2 v 9.81 lift 0.55 | c 6.8 ahead 4.5 face 2.70 frac 0.57 brk 0.00 slope 20° vs 9.79 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -1.09 ry 0.90
+  t 6.97 standing z 19.5 v 9.83 lift 0.46 | c 6.7 ahead 4.6 face 2.70 frac 0.56 brk 0.00 slope 19° vs 9.81 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -1.16 ry 0.91
+  t 7.00 standing z 19.9 v 9.91 lift 0.46 | c 6.8 ahead 4.7 face 2.70 frac 0.54 brk 0.00 slope 19° vs 9.87 sprint | contact on flight 0.00 feasible true load 0.00 pitch -17° vy -1.04 ry 0.92
+  t 7.03 standing z 20.2 v 9.92 lift 0.44 | c 6.7 ahead 4.8 face 2.70 frac 0.53 brk 0.00 slope 19° vs 9.92 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -1.07 ry 0.93
+  t 7.07 standing z 20.5 v 9.90 lift 0.28 | c 6.6 ahead 5.0 face 2.70 frac 0.52 brk 0.00 slope 19° vs 9.90 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -1.09 ry 0.93
+  t 7.10 standing z 20.8 v 9.93 lift 0.26 | c 6.6 ahead 5.1 face 2.69 frac 0.50 brk 0.00 slope 19° vs 9.89 sprint | contact on flight 0.00 feasible false load 0.00 pitch -16° vy -1.01 ry 0.92
+  t 7.13 standing z 21.2 v 9.95 lift 0.35 | c 6.6 ahead 5.2 face 2.69 frac 0.49 brk 0.00 slope 19° vs 9.91 sprint | contact on flight 0.00 feasible true load 0.00 pitch -16° vy -1.04 ry 0.91
+  t 7.17 standing z 21.5 v 10.09 lift 0.44 | c 6.7 ahead 5.3 face 2.69 frac 0.48 brk 0.00 slope 18° vs 9.99 sprint | contact on flight 0.00 feasible true load 0.00 pitch -15° vy -0.91 ry 0.89
+  t 7.20 standing z 21.8 v 10.27 lift 0.54 | c 6.6 ahead 5.4 face 2.69 frac 0.46 brk 0.00 slope 18° vs 10.17 sprint | contact on flight 0.00 feasible true load 0.00 pitch -14° vy -0.86 ry 0.87
+  t 7.30 standing z 22.9 v 10.82 lift 0.55 | c 6.6 ahead 5.8 face 2.68 frac 0.42 brk 0.00 slope 18° vs 10.73 sprint | contact on flight 0.00 feasible true load 0.00 pitch -12° vy -1.26 ry 0.79
+  t 7.40 standing z 24.0 v 11.20 lift 0.70 | c 6.5 ahead 6.3 face 2.67 frac 0.37 brk 0.00 slope 17° vs 11.08 sprint | contact on flight 0.00 feasible true load 0.00 pitch -11° vy -1.24 ry 0.71
+  t 7.50 standing z 25.1 v 11.45 lift 1.00 | c 6.6 ahead 6.7 face 2.66 frac 0.32 brk 0.00 slope 16° vs 11.22 sprint | contact on flight 0.00 feasible true load 0.00 pitch -9° vy -1.27 ry 0.62
+  t 7.60 standing z 26.3 v 11.71 lift 1.15 | c 6.5 ahead 7.2 face 2.64 frac 0.27 brk 0.00 slope 14° vs 11.33 sprint | contact on flight 0.00 feasible true load 0.00 pitch -8° vy -1.31 ry 0.55
+  t 7.70 standing z 27.4 v 12.08 lift 1.49 | c 6.4 ahead 7.7 face 2.62 frac 0.23 brk 0.00 slope 13° vs 11.45 sprint | contact on flight 0.00 feasible true load 0.00 pitch -5° vy -1.01 ry 0.50
+  t 7.80 standing z 28.6 v 12.17 lift 1.50 | c 6.5 ahead 8.2 face 2.60 frac 0.19 brk 0.00 slope 11° vs 11.21 sprint | contact on flight 0.00 feasible true load 0.00 pitch -2° vy -0.80 ry 0.47
+  t 7.90 standing z 29.8 v 12.11 lift 1.71 | c 6.5 ahead 8.7 face 2.57 frac 0.16 brk 0.00 slope 9° vs 10.69 sprint | contact on flight 0.00 feasible true load 0.00 pitch -1° vy -0.79 ry 0.49
+  t 8.00 standing z 30.8 v 11.64 lift 1.65 | c 6.4 ahead 9.1 face 2.54 frac 0.14 brk 0.00 slope 8° vs 9.81 sprint | contact on flight 0.00 feasible true load 0.00 pitch 0° vy -0.42 ry 0.57
+  t 8.10 standing z 31.9 v 11.50 lift 1.08 | c 6.3 ahead 9.4 face 2.52 frac 0.12 brk 0.00 slope 7° vs 9.23 sprint | contact on flight 0.00 feasible true load 0.00 pitch 0° vy -0.11 ry 0.66
+  t 8.20 standing z 32.8 v 11.25 lift 0.67 | c 6.4 ahead 9.7 face 2.49 frac 0.11 brk 0.00 slope 7° vs 8.83 sprint | contact on flight 0.00 feasible true load 0.00 pitch -0° vy -0.18 ry 0.73
+  t 8.30 standing z 33.8 v 11.21 lift 0.61 | c 6.4 ahead 9.9 face 2.45 frac 0.09 brk 0.00 slope 6° vs 8.67 sprint | contact on flight 0.00 feasible true load 0.00 pitch -1° vy -0.24 ry 0.79
+  t 8.40 standing z 34.8 v 11.09 lift 1.00 | c 6.3 ahead 10.1 face 2.42 frac 0.08 brk 0.00 slope 5° vs 8.50 sprint | contact on flight 0.00 feasible true load 0.00 pitch -0° vy -0.17 ry 0.83
+  t 8.50 standing z 35.7 v 10.95 lift 1.08 | c 6.3 ahead 10.3 face 2.39 frac 0.07 brk 0.00 slope 5° vs 8.32 sprint | contact on flight 0.00 feasible true load 0.00 pitch 1° vy -0.05 ry 0.85
+  t 8.60 standing z 36.6 v 10.82 lift 0.86 | c 6.3 ahead 10.5 face 2.36 frac 0.07 brk 0.00 slope 5° vs 8.18 sprint | contact on flight 0.00 feasible true load 0.00 pitch -0° vy -0.09 ry 0.89
+  t 8.70 standing z 37.5 v 10.65 lift 1.22 | c 6.4 ahead 10.7 face 2.33 frac 0.06 brk 0.00 slope 4° vs 7.93 sprint | contact on flight 0.00 feasible true load 0.00 pitch 1° vy 0.14 ry 0.90
+  t 8.80 standing z 38.4 v 10.39 lift 1.22 | c 6.4 ahead 10.8 face 2.30 frac 0.05 brk 0.00 slope 4° vs 7.68 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy 0.14 ry 0.90
+  t 8.90 standing z 39.3 v 10.22 lift 0.75 | c 6.4 ahead 11.0 face 2.28 frac 0.05 brk 0.00 slope 4° vs 7.91 sprint | contact on flight 0.00 feasible true load 0.00 pitch 1° vy 0.06 ry 0.91
+  t 9.00 standing z 40.2 v 10.10 lift 0.76 | c 6.4 ahead 11.1 face 2.27 frac 0.05 brk 0.00 slope 4° vs 7.77 sprint | contact on flight 0.00 feasible true load 0.00 pitch 0° vy 0.03 ry 0.91
+  t 9.10 standing z 41.0 v 9.97 lift 0.99 | c 6.5 ahead 11.2 face 2.25 frac 0.05 brk 0.00 slope 3° vs 7.76 sprint | contact on flight 0.00 feasible true load 0.00 pitch 1° vy 0.04 ry 0.90
+  t 9.20 standing z 41.9 v 9.80 lift 1.04 | c 6.6 ahead 11.3 face 2.23 frac 0.05 brk 0.00 slope 2° vs 7.61 sprint | contact on flight 0.00 feasible true load 0.00 pitch 2° vy 0.03 ry 0.89
+  t 9.30 standing z 42.7 v 9.61 lift 0.95 | c 6.7 ahead 11.4 face 2.22 frac 0.04 brk 0.00 slope 2° vs 7.48 sprint | contact on flight 0.00 feasible true load 0.00 pitch 2° vy 0.03 ry 0.88
+  t 9.40 standing z 43.6 v 9.45 lift 0.86 | c 6.8 ahead 11.4 face 2.20 frac 0.04 brk 0.00 slope 3° vs 7.33 sprint | contact on flight 0.00 feasible true load 0.00 pitch 2° vy 0.01 ry 0.88
+  t 9.50 standing z 44.4 v 9.30 lift 0.90 | c 6.9 ahead 11.4 face 2.18 frac 0.04 brk 0.00 slope 2° vs 7.22 sprint | contact on flight 0.00 feasible true load 0.00 pitch 2° vy 0.03 ry 0.87
+  t 9.60 standing z 45.2 v 9.14 lift 0.97 | c 6.8 ahead 11.5 face 2.16 frac 0.03 brk 0.00 slope 2° vs 7.09 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy 0.05 ry 0.87
+  t 9.70 standing z 45.9 v 8.96 lift 0.97 | c 6.8 ahead 11.5 face 2.13 frac 0.03 brk 0.00 slope 1° vs 7.00 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy 0.05 ry 0.87
+  t 9.80 standing z 46.7 v 8.78 lift 0.91 | c 6.9 ahead 11.5 face 2.10 frac 0.02 brk 0.00 slope 1° vs 6.92 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy 0.04 ry 0.87
+  t 9.90 standing z 47.5 v 8.62 lift 0.89 | c 6.9 ahead 11.5 face 2.07 frac 0.01 brk 0.00 slope 1° vs 6.88 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy 0.06 ry 0.87
+  t 10.00 standing z 48.2 v 8.45 lift 0.88 | c 6.9 ahead 11.5 face 2.03 frac 0.00 brk 0.00 slope 1° vs 6.85 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy 0.06 ry 0.87
+  t 10.10 standing z 48.9 v 8.29 lift 0.88 | c 6.9 ahead 11.5 face 2.01 frac 0.00 brk 0.00 slope 1° vs 6.81 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy 0.05 ry 0.86
+  t 10.20 standing z 49.6 v 8.12 lift 0.88 | c 6.9 ahead 11.5 face 1.99 frac 0.00 brk 0.00 slope 1° vs 6.76 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy 0.05 ry 0.86
+  t 10.30 standing z 50.3 v 7.95 lift 0.86 | c 6.9 ahead 11.4 face 1.97 frac 0.00 brk 0.00 slope 0° vs 6.63 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy 0.05 ry 0.86
+  t 10.40 standing z 51.0 v 7.80 lift 0.82 | c 6.9 ahead 11.4 face 1.96 frac 0.00 brk 0.00 slope 0° vs 6.60 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy 0.02 ry 0.86
+  t 10.50 standing z 51.7 v 7.64 lift 0.80 | c 6.8 ahead 11.4 face 1.96 frac 0.01 brk 0.00 slope 1° vs 6.68 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.01 ry 0.86
+  t 10.60 standing z 52.3 v 7.49 lift 0.80 | c 5.8 ahead 11.8 face 1.97 frac 0.02 brk 0.04 slope 0° vs 7.07 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.03 ry 0.86
+  t 10.70 standing z 53.0 v 7.35 lift 0.79 | c 4.8 ahead 12.2 face 1.93 frac 0.00 brk 0.12 slope 1° vs 7.21 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy -0.06 ry 0.86
+  t 10.80 standing z 53.6 v 7.21 lift 0.80 | c 3.6 ahead 12.9 face 1.93 frac 0.01 brk 0.22 slope 1° vs 7.20 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.08 ry 0.86
+  t 10.90 standing z 54.2 v 7.06 lift 0.81 | c 2.8 ahead 13.5 face 1.94 frac 0.01 brk 0.31 slope 1° vs 7.09 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.08 ry 0.86
+  t 11.00 standing z 54.8 v 6.92 lift 0.83 | c 3.0 ahead 13.9 face 1.95 frac 0.02 brk 0.37 slope 1° vs 6.94 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.09 ry 0.86
+  t 11.10 standing z 55.4 v 6.78 lift 0.84 | c 3.1 ahead 14.3 face 1.96 frac 0.03 brk 0.40 slope 2° vs 6.78 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.09 ry 0.86
+  t 11.20 standing z 56.0 v 6.64 lift 0.85 | c 4.3 ahead 14.2 face 1.96 frac 0.03 brk 0.41 slope 1° vs 6.63 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.08 ry 0.86
+  t 11.30 standing z 56.6 v 6.50 lift 0.85 | c 6.0 ahead 13.8 face 1.96 frac 0.03 brk 0.40 slope 2° vs 6.50 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.09 ry 0.86
+  t 11.40 standing z 57.1 v 6.36 lift 0.84 | c 7.5 ahead 13.4 face 1.96 frac 0.04 brk 0.37 slope 3° vs 6.37 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.08 ry 0.86
+  t 11.50 standing z 57.7 v 6.23 lift 0.82 | c 8.8 ahead 12.8 face 1.96 frac 0.04 brk 0.32 slope 3° vs 6.25 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.06 ry 0.86
+  t 11.60 standing z 58.2 v 6.11 lift 0.81 | c 9.9 ahead 12.1 face 1.97 frac 0.04 brk 0.28 slope 4° vs 6.13 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.01 ry 0.86
+  t 11.70 standing z 58.7 v 5.99 lift 0.71 | c 10.5 ahead 11.5 face 1.97 frac 0.05 brk 0.24 slope 5° vs 5.99 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy 0.00 ry 0.86
+  t 11.80 standing z 59.3 v 5.93 lift 0.48 | c 10.7 ahead 11.0 face 1.99 frac 0.05 brk 0.17 slope 5° vs 5.89 sprint | contact on flight 0.00 feasible true load 0.00 pitch 4° vy -0.11 ry 0.86
+  t 11.90 standing z 59.8 v 5.90 lift 0.45 | c 10.6 ahead 10.6 face 2.00 frac 0.06 brk 0.15 slope 6° vs 5.80 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy -0.13 ry 0.87
+  t 12.00 standing z 60.3 v 5.87 lift 0.52 | c 10.5 ahead 10.1 face 2.01 frac 0.07 brk 0.13 slope 7° vs 5.70 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy -0.09 ry 0.87
+  t 12.10 standing z 60.8 v 5.82 lift 0.60 | c 10.2 ahead 9.7 face 2.03 frac 0.08 brk 0.05 slope 7° vs 5.56 sprint | contact on flight 0.00 feasible true load 0.00 pitch 3° vy -0.04 ry 0.86
+  t 12.20 standing z 61.3 v 5.75 lift 0.71 | c 10.0 ahead 9.3 face 2.05 frac 0.09 brk 0.04 slope 8° vs 5.40 sprint | contact on flight 0.00 feasible true load 0.00 pitch 5° vy 0.03 ry 0.86
+  t 12.30 standing z 61.8 v 5.66 lift 0.79 | c 9.7 ahead 9.0 face 2.06 frac 0.11 brk 0.08 slope 9° vs 5.26 sprint | contact on flight 0.00 feasible true load 0.00 pitch 6° vy 0.12 ry 0.86
+  t 12.40 standing z 62.3 v 5.55 lift 0.81 | c 9.3 ahead 8.6 face 2.07 frac 0.12 brk 0.00 slope 10° vs 5.11 sprint | contact on flight 0.00 feasible true load 0.00 pitch 7° vy 0.21 ry 0.85
+  t 12.50 standing z 62.8 v 5.43 lift 0.79 | c 9.0 ahead 8.3 face 2.08 frac 0.14 brk 0.00 slope 11° vs 4.93 sprint | contact on flight 0.00 feasible true load 0.00 pitch 8° vy 0.29 ry 0.85
+  t 12.60 standing z 63.2 v 5.32 lift 0.77 | c 8.7 ahead 8.0 face 2.09 frac 0.16 brk 0.02 slope 12° vs 4.74 sprint | contact on flight 0.00 feasible true load 0.00 pitch 8° vy 0.36 ry 0.85
+  t 12.70 standing z 63.7 v 5.22 lift 0.78 | c 8.5 ahead 7.7 face 2.09 frac 0.19 brk 0.00 slope 13° vs 4.59 sprint | contact on flight 0.00 feasible true load 0.00 pitch 8° vy 0.43 ry 0.85
+  t 12.80 standing z 64.1 v 5.12 lift 0.77 | c 8.2 ahead 7.4 face 2.09 frac 0.21 brk 0.00 slope 14° vs 4.48 sprint | contact on flight 0.00 feasible true load 0.00 pitch 8° vy 0.50 ry 0.85
+  t 12.90 standing z 64.6 v 5.03 lift 0.75 | c 8.0 ahead 7.1 face 2.10 frac 0.24 brk 0.00 slope 15° vs 4.37 sprint | contact on flight 0.00 feasible true load 0.00 pitch 9° vy 0.57 ry 0.84
+  t 13.00 standing z 65.0 v 4.95 lift 0.73 | c 7.8 ahead 6.8 face 2.09 frac 0.27 brk 0.00 slope 16° vs 4.26 sprint | contact on flight 0.00 feasible true load 0.00 pitch 9° vy 0.63 ry 0.84
+  t 13.10 standing z 65.5 v 4.86 lift 0.73 | c 7.6 ahead 6.5 face 2.08 frac 0.30 brk 0.00 slope 16° vs 4.16 sprint | contact on flight 0.00 feasible true load 0.00 pitch 10° vy 0.69 ry 0.84
+  t 13.20 standing z 65.9 v 4.78 lift 0.74 | c 7.5 ahead 6.2 face 2.08 frac 0.34 brk 0.00 slope 17° vs 4.07 sprint | contact on flight 0.00 feasible true load 0.00 pitch 10° vy 0.75 ry 0.84
+  t 13.30 standing z 66.3 v 4.70 lift 0.73 | c 7.3 ahead 5.9 face 2.06 frac 0.38 brk 0.00 slope 18° vs 4.01 sprint | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 0.81 ry 0.84
+  t 13.40 standing z 66.8 v 4.62 lift 0.71 | c 7.2 ahead 5.6 face 2.05 frac 0.42 brk 0.00 slope 18° vs 3.95 sprint | contact on flight 0.00 feasible true load 0.00 pitch 11° vy 0.86 ry 0.83
+  t 13.50 standing z 67.2 v 4.54 lift 0.68 | c 7.2 ahead 5.3 face 2.03 frac 0.47 brk 0.00 slope 19° vs 3.89 sprint | contact on flight 0.00 feasible true load 0.00 pitch 12° vy 0.90 ry 0.83
+  t 13.60 standing z 67.6 v 4.46 lift 0.64 | c 7.1 ahead 5.0 face 2.01 frac 0.51 brk 0.00 slope 18° vs 3.83 sprint | contact on flight 0.00 feasible true load 0.00 pitch 13° vy 0.92 ry 0.83
+  t 13.70 standing z 68.0 v 4.40 lift 0.59 | c 7.0 ahead 4.7 face 1.99 frac 0.56 brk 0.00 slope 19° vs 3.80 sprint | contact on flight 0.00 feasible true load 0.00 pitch 14° vy 0.92 ry 0.82
+  t 13.80 standing z 68.4 v 4.37 lift 0.63 | c 7.0 ahead 4.4 face 1.97 frac 0.60 brk 0.00 slope 18° vs 4.03 sprint | contact on flight 0.00 feasible false load 0.00 pitch 15° vy 0.91 ry 0.82
+  t 13.90 standing z 68.8 v 4.17 lift 0.41 | c 6.9 ahead 4.1 face 1.96 frac 0.65 brk 0.00 slope 18° vs 3.55 sprint | contact on flight 0.00 feasible true load 0.00 pitch 16° vy 0.92 ry 0.82
+  t 14.00 standing z 69.2 v 4.30 lift 0.26 | c 6.9 ahead 3.8 face 1.94 frac 0.70 brk 0.00 slope 16° vs 3.74 sprint | contact on flight 0.00 feasible true load 0.00 pitch 17° vy 0.75 ry 0.81
+  t 14.10 standing z 69.7 v 4.38 lift 0.29 | c 6.8 ahead 3.5 face 1.92 frac 0.74 brk 0.00 slope 16° vs 3.89 sprint | contact on flight 0.00 feasible true load 0.00 pitch 17° vy 0.61 ry 0.81
+  t 14.20 standing z 70.1 v 4.33 lift 0.40 | c 6.8 ahead 3.2 face 1.90 frac 0.77 brk 0.00 slope 14° vs 3.90 sprint | contact on flight 0.00 feasible true load 0.00 pitch 18° vy 0.60 ry 0.81
+  t 14.30 standing z 70.5 v 4.37 lift 0.45 | c 6.8 ahead 2.9 face 1.89 frac 0.81 brk 0.00 slope 13° vs 3.98 sprint | contact on flight 0.00 feasible true load 0.00 pitch 19° vy 0.56 ry 0.81
+  t 14.40 standing z 71.0 v 4.73 lift 0.44 | c 6.7 ahead 2.7 face 1.87 frac 0.84 brk 0.00 slope 13° vs 4.42 sprint | contact on flight 0.00 feasible true load 0.00 pitch 20° vy 0.43 ry 0.80
+  t 14.50 standing z 71.5 v 5.02 lift 0.42 | c 6.7 ahead 2.5 face 1.86 frac 0.86 brk 0.00 slope 12° vs 4.86 sprint | contact on flight 0.00 feasible true load 0.00 pitch 19° vy 0.31 ry 0.81
+  t 14.60 standing z 72.0 v 5.12 lift 0.39 | c 6.6 ahead 2.3 face 1.84 frac 0.88 brk 0.00 slope 11° vs 5.07 sprint | contact on flight 0.00 feasible true load 0.00 pitch 19° vy 0.25 ry 0.81
+  t 14.70 standing z 72.5 v 5.13 lift 0.39 | c 6.6 ahead 2.2 face 1.83 frac 0.89 brk 0.00 slope 10° vs 5.13 sprint | contact on flight 0.00 feasible true load 0.00 pitch 20° vy 0.20 ry 0.80
+  t 14.80 standing z 73.0 v 5.02 lift 0.38 | c 6.6 ahead 2.0 face 1.82 frac 0.90 brk 0.00 slope 10° vs 5.04 sprint | contact on flight 0.00 feasible true load 0.00 pitch 21° vy 0.17 ry 0.80
+  t 14.90 standing z 73.5 v 4.97 lift 0.36 | c 6.6 ahead 1.9 face 1.81 frac 0.92 brk 0.00 slope 9° vs 4.96 sprint | contact on flight 0.00 feasible true load 0.00 pitch 23° vy 0.13 ry 0.79
+  t 15.00 standing z 73.9 v 5.01 lift 0.34 | c 6.6 ahead 1.7 face 1.80 frac 0.93 brk 0.00 slope 9° vs 4.97 sprint | contact on flight 0.00 feasible true load 0.00 pitch 24° vy 0.08 ry 0.79
+-- from 3 m out (3.67 m deep), set faces ≥ 2.70 m:
+turnL     sets 1: rode 1, no cue 0, left on the crest 0, white water 0, fell 0; rides: pop 0.33 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.73 up; paddling top speed 5.35 m/s
+turnL     all  1: rode 1, no cue 0, left on the crest 0, white water 0, fell 0; rides: pop 0.33 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.73 up; paddling top speed 5.35 m/s
+turnR     sets 1: rode 1, no cue 0, left on the crest 0, white water 0, fell 0; rides: pop 0.33 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.73 up; paddling top speed 5.35 m/s
+turnR     all  1: rode 1, no cue 0, left on the crest 0, white water 0, fell 0; rides: pop 0.33 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.73 up; paddling top speed 5.35 m/s
+wall 246 s

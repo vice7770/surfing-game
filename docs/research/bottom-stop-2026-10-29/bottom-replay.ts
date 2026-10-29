@@ -41,6 +41,9 @@ const turnCompress = Number(option('turn-compress') ?? 1);
 const turnSteer = Number(option('turn-steer') ?? 1);
 const compressAfter = Number(option('compress-after') ?? 0);
 const compressAfterFor = Number(option('compress-after-for') ?? Infinity);
+// `--steer-after s --steer-after-for t`: the steer held on after Compress is let go (a projection on the rail).
+const steerAfter = Number(option('steer-after') ?? 0);
+const steerAfterFor = Number(option('steer-after-for') ?? 0);
 const quiet = process.argv.includes('--quiet');
 const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
 const config: SurfZoneConfig = {
@@ -139,9 +142,10 @@ for (let n = 0; n < Math.round(seconds / STEP) && trials.some((trial) => !trial.
     const since = standing ? t - trial.stood : 0;
     const turning = ride === 'turn' && standing && since >= turnAt && since < turnAt + turnFor;
     const after = ride === 'turn' && standing && since >= turnAt + turnFor && since < turnAt + turnFor + compressAfterFor;
+    const steering = ride === 'turn' && standing && since >= turnAt + turnFor && since < turnAt + turnFor + steerAfterFor;
     session.step(STEP, water, {
       paddle: prone && !trial.popped, sprint: prone && trial.sprinting && !trial.popped, popUp: pop,
-      steer: turning ? side * turnSteer : 0, compress: turning ? turnCompress : after ? compressAfter : 0,
+      steer: turning ? side * turnSteer : steering ? side * steerAfter : 0, compress: turning ? turnCompress : after ? compressAfter : 0,
     });
     if (session.phase === 'standing' && Number.isNaN(trial.stood)) trial.stood = t;
     if (session.phase === 'standing' && frame.valid && frame.aheadOfCrest >= 0 && frame.speedShoreward >= 0.6 * frame.crestSpeed) trial.riding += STEP;
