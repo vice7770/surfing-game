@@ -724,8 +724,10 @@ export class SpillingCurl implements SpillingDrawnLook {
       return { z: at, level: best };
     };
     for (const wave of front.waves) {
-      // Each wave clears the shoulder ahead of its own front, the way it peels (an A-frame's arms apart).
+      // Each wave clears the shoulder ahead of its own front, the way it peels (an A-frame's arms apart), within its
+      // group's span (a beach arm's own, never on into the rip and the reef beyond it).
       const { direction } = wave;
+      const span = wave.group > 0 ? front.groupOf(wave.group).span : undefined;
       // The crest at the front: the wave's own crest in the last columns it has reached, the highest water near it.
       const frontColumn = Math.round((wave.frontX - xCenters[0]) / dx);
       let crestZ = Number.NaN;
@@ -743,6 +745,7 @@ export class SpillingCurl implements SpillingDrawnLook {
       for (let d = 1; d <= reach; d += 1) {
         const c = frontColumn + direction * d;
         if (c < first || c >= last) break;
+        if (span && (xCenters[c] < span.from || xCenters[c] > span.to)) break;
         const crest = highest(c, crestZ, curl.shoulderTrack);
         if (!(crest.level - restLevel >= crestLevel)) break;
         crestZ = crest.z;

@@ -1149,7 +1149,11 @@ export class SurfZoneSimulation {
     if (spillingFrontOn(config) && !this.crash) {
       // The Canyon's beach peaks: a group of the front's waves per arm, each peeling away from its tip (canyon-beach-look).
       const beachGroups = config.spot === 'canyon' && canyon.beach && config.canyonBeachLook !== false
-        ? canyonBars(canyon).flatMap(() => ([-1, 1] as const).map((direction) => ({ direction, ...CANYON_BEACH_LOOK })))
+        ? canyonBars(canyon).flatMap((bar) => ([-1, 1] as const).map((direction) => ({
+          direction, ...CANYON_BEACH_LOOK,
+          // Each arm's span: from its tip to the end of its bar's taper.
+          span: direction < 0 ? { from: bar.x - bar.reach - canyon.barTaper, to: bar.x } : { from: bar.x, to: bar.x + bar.reach + canyon.barTaper },
+        })))
         : [];
       if (beachGroups.length) this.beachLook = canyonBars(canyon).map((bar) => bar.x);
       this.spilling = new SpillingFront(this.solver, {

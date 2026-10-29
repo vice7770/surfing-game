@@ -75,6 +75,8 @@ export interface SpillingGroup {
   readonly upcoastMargin: number;
   /** Seconds after its first onset each of its waves is dropped (`SpillingFrontOptions.lifetime` for the front's own). */
   readonly lifetime: number;
+  /** Where its waves' look reaches along shore, m (the curl's shoulder clears no further): its arm. Absent: everywhere. */
+  readonly span?: { readonly from: number; readonly to: number };
 }
 
 /** Group k > 0's wave ids start at k times this, so group 0's (the front's own) stay as they were without groups. */
@@ -281,7 +283,7 @@ export class SpillingFront {
   }
 
   /** A group's peel: the front's own for 0, else `groups[group - 1]`. */
-  private groupOf(group: number): SpillingGroup {
+  groupOf(group: number): SpillingGroup {
     const { options } = this;
     return group > 0 ? options.groups![group - 1]
       : { direction: options.direction, peelAngleDegrees: options.peelAngleDegrees, upcoastMargin: options.upcoastMargin, lifetime: options.lifetime };
