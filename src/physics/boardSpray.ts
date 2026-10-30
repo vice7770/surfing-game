@@ -531,6 +531,8 @@ interface SheetRow {
  * launched from where it was, not the present sheet carried along rigidly): one a step, for `keep` s, by key (a board
  * and a side). `at` reads the row launched `age` s before `now`, between the two nearest.
  */
+const ROW_FIELDS = ['x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz'] as const;
+
 export class SheetHistory {
   private readonly rows = new Map<string, SheetRow[]>();
 
@@ -553,7 +555,7 @@ export class SheetHistory {
   /** A packed sheet's row (`packBoardSheets`, at `o`). */
   pushPacked(key: string, time: number, packed: ArrayLike<number>, o: number): void {
     const sheet = this.scratch;
-    for (const name of ['x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz'] as const) sheet[name] = packed[o + SHEET_AT[name]];
+    for (const name of ROW_FIELDS) sheet[name] = packed[o + SHEET_AT[name]];
     this.push(key, time, sheet);
   }
 
@@ -586,7 +588,15 @@ export class SheetHistory {
     const later = list[b];
     const earlier = list[Math.max(0, b - 1)];
     const f = later.time > earlier.time ? Math.min(1, Math.max(0, (time - earlier.time) / (later.time - earlier.time))) : 1;
-    for (const key of ['x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz'] as const) out[key] = earlier[key] + (later[key] - earlier[key]) * f;
+    out.x = earlier.x + (later.x - earlier.x) * f;
+    out.y = earlier.y + (later.y - earlier.y) * f;
+    out.z = earlier.z + (later.z - earlier.z) * f;
+    out.alongX = earlier.alongX + (later.alongX - earlier.alongX) * f;
+    out.alongZ = earlier.alongZ + (later.alongZ - earlier.alongZ) * f;
+    out.length = earlier.length + (later.length - earlier.length) * f;
+    out.vx = earlier.vx + (later.vx - earlier.vx) * f;
+    out.vy = earlier.vy + (later.vy - earlier.vy) * f;
+    out.vz = earlier.vz + (later.vz - earlier.vz) * f;
     out.time = time;
     return true;
   }

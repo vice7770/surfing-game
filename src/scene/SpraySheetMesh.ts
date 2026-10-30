@@ -160,7 +160,6 @@ export class SpraySheetMesh {
   private readonly fades = new Float32Array(CAPACITY * PER_CURTAIN);
   /** The root lines each board's sides launched from lately (`SheetHistory`): the curtain is that water now. */
   private readonly history = new SheetHistory();
-  private readonly point = new Vector3();
   /** Curtains drawn this frame. */
   drawn = 0;
 
@@ -295,12 +294,15 @@ export class SpraySheetMesh {
       const rootThickness = source[o + SHEET_AT.thickness];
       for (let j = 0; j <= ROWS; j += 1) {
         const age = (j / ROWS) * flight;
+        // The row this water left from (`curtainPoint`, the row looked up once for all its columns).
+        this.history.at(key, now, age, row);
+        const fall = 0.5 * GRAVITY * age * age;
         for (let i = 0; i <= COLUMNS; i += 1) {
           const v = base + j * (COLUMNS + 1) + i;
-          curtainPoint(this.history, key, now, i / COLUMNS, age, this.point);
-          this.positions[v * 3] = this.point.x + dx;
-          this.positions[v * 3 + 1] = this.point.y + dy;
-          this.positions[v * 3 + 2] = this.point.z + dz;
+          const along = (i / COLUMNS) * row.length;
+          this.positions[v * 3] = row.x + row.alongX * along + row.vx * age + dx;
+          this.positions[v * 3 + 1] = row.y + row.vy * age - fall + dy;
+          this.positions[v * 3 + 2] = row.z + row.alongZ * along + row.vz * age + dz;
           this.curtain[v * 2] = i / COLUMNS;
           this.curtain[v * 2 + 1] = age / breakup;
           this.fingers[v] = fingers;
