@@ -49,6 +49,23 @@ describe('other players\' spray from their poses (board-spray)', () => {
     for (const sheet of sheets) expect(sheet.vy).toBeGreaterThan(0);
   });
 
+  it('marks each sheet with its player and side for its curtain, and its tear where its water went (spray-sheet)', () => {
+    for (const run of [0.4, 0.6, 1]) {
+      const sheets = unpackBoardSheets(sheetsOf(run, (35 * Math.PI) / 180)!);
+      for (const sheet of sheets) {
+        // Player 1's (its id + 1: the player's own board is 0), on one side or the other.
+        expect(sheet.source).toBe(2);
+        expect(Math.abs(sheet.side)).toBe(1);
+        expect(sheet.breakup).toBeGreaterThanOrEqual(0);
+        if (sheet.breakup > 0) {
+          // Flown on from its root for its tear time: out and down by gravity's share.
+          expect(sheet.tearY).toBeCloseTo(sheet.y + sheet.vy * sheet.breakup - 0.5 * 9.81 * sheet.breakup ** 2, 3);
+          expect(sheet.tearVY).toBeCloseTo(sheet.vy - 9.81 * sheet.breakup, 3);
+        }
+      }
+    }
+  });
+
   it('throws nothing from a board at rest or out of the water', () => {
     expect(sheetsOf(0, (30 * Math.PI) / 180)).toBeUndefined();
     expect(sheetsOf(1, (30 * Math.PI) / 180, 1)).toBeUndefined();

@@ -10,6 +10,8 @@ import {
   BOARD_SHEET_STRIDE, SheetHistory, createBoardSpraySheet, packBoardSheets, placeTear, sprayCurtain,
 } from '../../../src/physics/boardSpray';
 import { SpraySheetMesh } from '../../../src/scene/SpraySheetMesh';
+import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SprayCloud, WHITEWATER_CAPACITY } from '../../../src/wave/SprayCloud';
+import { busyWhitewater } from '../../../src/wave/particleTestSupport';
 
 const step = 1 / 60;
 const sheets = [-1, 1].map((side) => ({
@@ -62,3 +64,28 @@ start = performance.now();
 for (let n = 500; n < 500 + frames; n += 1) pageFrame(n);
 const both = ((performance.now() - start) / frames) * 1000;
 console.log(`page, SpraySheetMesh.update with two curtains (worker's share included): ${both.toFixed(1)} µs a frame`);
+
+// The spray's step with a compressed turn's sheet thrown at once (no curtain: #170) against torn from its curtain (its
+// drops shed on the way and thrown from the tear), on the same busy sea.
+{
+  const at = { ...createBoardSpraySheet(), x: 12, y: 0.1, z: 12, alongX: 0, alongZ: 1, length: 0.6, vx: 6, vy: 5, vz: 6, flux: 90, spread: 1.4,
+    fall: 7, mist: 0.12, boardX: 0, boardY: 0, boardZ: 9 };
+  const torn = { ...at, thickness: 0.04, onset: 0.13, breakup: 0.13 };
+  placeTear(torn, torn.x, torn.y, torn.z, torn.alongX, torn.alongZ, torn.length, 6, 5, -3, 6, 5, 6, torn.breakup);
+  const run = (sheet: typeof at, frames = 1200) => {
+    const spray = new SprayCloud(3, SPRAY_CAPACITY, WHITEWATER_CAPACITY, BOARD_SPRAY_CAPACITY);
+    spray.setLevel('high');
+    let total = 0;
+    for (let frame = 0; frame < frames; frame += 1) {
+      const scene = busyWhitewater(frame);
+      const t = performance.now();
+      spray.update({ ...scene, boardSheets: [sheet] }, 1 / 60);
+      total += performance.now() - t;
+    }
+    return total / frames;
+  };
+  run(at); run(torn);
+  const plain = run(at);
+  const curtain = run(torn);
+  console.log(`spray step (high): ${plain.toFixed(4)} ms the sheet thrown at once, ${curtain.toFixed(4)} ms torn from its curtain (${(curtain - plain >= 0 ? '+' : '') + (curtain - plain).toFixed(4)} ms)`);
+}
