@@ -34,7 +34,7 @@ tool on the Wave Pool and headless benches. No SurfZoneRunner rider sessions wer
   - The advisor calls that physical for fast sheets, but it is the main thing for the owner to judge (Open, item 1).
 - **Cost on the M1:**
   - **Worker:** about 1.5 µs a step.
-  - **Page:** about 26 µs a frame for the player's two sides.
+  - **Page:** about 24 µs a frame for the player's two sides, plus about 0.6 µs per other player.
   - **GPU:** no measurable difference at 720p in either look.
   - Because it costs nothing measurable, it is not scaled by the Particles setting. It shows and hides with the spray.
 - **A/B:** `?spraySheet=off` restores #170: no curtain, drops off the rail at once. Online rooms use the default.
@@ -133,13 +133,15 @@ What they show:
 
 ### CPU
 
-Measured with `curtain-bench.ts`, on an idle M1:
-- **Worker:** two sheets' clock, history and tear take 1.4 µs a step. `hullSpraySheets` itself: see below.
-- **Page:** `SpraySheetMesh.update` with two curtains takes 26 µs a frame.
+Measured with `curtain-bench.ts` and #170's `spray-bench.ts`, on an idle M1:
+- **Worker:**
+  - two sheets' history and tear take 1.05 µs a step;
+  - `hullSpraySheets`, now with the clock, takes 3.6 µs a call (#170: 3.2).
+- **Page:** `SpraySheetMesh.update` with two curtains takes 24 µs a frame.
   - This is after looking each row up once rather than per point; it was 174 µs before.
-- **The spray's step at High, on the test sea's busy whitewater:** see below. It compares a compressed turn's sheet
-  thrown at once (#170) with the same sheet torn from its curtain.
-- **Other players:** see below for `RemoteSpray.add` with the history and tear. (#170: 4.5 µs per player per frame.)
+- **The spray's step at High, on the test sea's busy whitewater,** with a compressed turn's sheet: 0.2787 ms thrown at
+  once (#170), 0.2835 ms torn from its curtain (+0.005 ms).
+- **Other players:** `RemoteSpray.add` with the history and tear takes 5.1 µs per player per frame (#170: 4.5).
 
 ### GPU
 
@@ -155,7 +157,30 @@ frame by frame for 60 cycles: drawn, curtains hidden, and all spray hidden.
 
 ### Tests
 
-See below.
+- **tsc:** clean.
+- **Main suite** (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude
+  "**/SurfZoneRunner.test.ts"`): 2950 passed, 18 expected fail, 36 skipped.
+  - One test failed in that run: `WorkerSurfZone.test.ts`'s transfer list lacked the new sheets buffer. With the buffer
+    added, it passes (23 of 23).
+- **SZS filter** (`npx vitest run src/wave/SurfZoneSimulation.test.ts -t
+  "[Bb]oard|[Rr]ider|[Ss]urfer|[Rr]oller|[Pp]addl|[Dd]uck|[Ss]wim"`): 11 passed (93 skipped by the filter), 10 min.
+- **New:**
+  - `boardSpray.test.ts`:
+    - Squire's two regimes;
+    - the curtain's thickness and its tear after 2.5 e-folds;
+    - the first drops never after the tear;
+    - the clamp when slow, drops at once when fast;
+    - no curtain for the blister, under 1 mm, or in still air;
+    - the root on the board, from its aftmost exit to its foremost.
+  - `SprayCloud.test.ts`: the drops leave from where the curtain tears (some shed on the way); the same kilograms.
+  - `SpraySheetMesh.test.ts`:
+    - the curtain's points from the history;
+    - fingers per metre;
+    - drawn with the board's offset;
+    - nothing drawn for a short tear.
+  - `remoteSpray.test.ts`: other players' sheets are marked with their player and side, and torn where their water
+    went.
+  - `PhysicalMode.test.ts`: `?spraySheet=off`.
 
 ## Open (the owner's calls)
 
