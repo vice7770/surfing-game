@@ -601,6 +601,26 @@ describe('a board\'s spray (board-spray)', () => {
     expect(none.count).toBe(0);
   });
 
+  it('throws the drops from where the curtain tears when it is drawn (spray-sheet), from the root when it is not', () => {
+    // Off a board doing 8 m/s along +z: the sheet's water flies at (6, 5, −6) m/s relative to it, tearing 0.1 s out.
+    const torn = new SprayCloud(4, 4096, 1024, 512);
+    torn.update({ ...flatScene(), boardSheets: [{ ...sheet(60), breakup: 0.1 }] }, 0.1);
+    const plain = new SprayCloud(4, 4096, 1024, 512);
+    plain.update({ ...flatScene(), boardSheets: [sheet(60)] }, 0.1);
+    expect(torn.count).toBe(plain.count);
+    const mean = (cloud: SprayCloud, axis: number) => {
+      let sum = 0;
+      for (let k = 0; k < cloud.count; k += 1) sum += cloud.particles[k * SPRAY_STRIDE + axis];
+      return sum / cloud.count;
+    };
+    expect(mean(plain, 0)).toBeCloseTo(5, 6);
+    // 0.6 m out and back, 0.45 m up (less gravity's), give or take the tear's spread.
+    expect(mean(torn, 0)).toBeGreaterThan(5.5);
+    expect(mean(torn, 0)).toBeLessThan(5.7);
+    expect(mean(torn, 1)).toBeGreaterThan(0.4);
+    expect(mean(torn, 2)).toBeLessThan(20.3 - 0.5);
+  });
+
   it('throws them on its own random stream: the sea\'s drops are as they were', () => {
     const plain = new SprayCloud(9, 4096, 1024, 512);
     const sprayed = new SprayCloud(9, 4096, 1024, 512);
