@@ -1078,7 +1078,7 @@ export class PhysicalMode {
     const snapshotBoard = host.snapshot.board;
     this.curtainOffset.set(pose[0] - snapshotBoard[0], pose[1] - snapshotBoard[1], pose[2] - snapshotBoard[2]);
     if (!(snapshotBoard[7] > 0)) this.curtainOffset.set(0, 0, 0);
-    this.curtains.update(host.snapshot.sheets, host.snapshot.sheetCount, this.curtainOffset, this.otherCurtains);
+    this.curtains.update(status.seaTime, host.snapshot.sheets, host.snapshot.sheetCount, this.curtainOffset, this.otherCurtains);
     this.curtains.mesh.visible = this.shown && this.sprayShown;
     this.surfer.group.visible = this.shown && riding;
     this.leash.object.visible = this.shown && riding && pose[7] > 0;

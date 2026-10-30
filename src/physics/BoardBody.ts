@@ -521,13 +521,14 @@ export class BoardBody implements BoardContactBody {
    * The sheets of spray the hull throws now (board-spray, 2026-10-29; `boardSpray.ts`), into `out`: how many. Drawn only:
    * nothing here changes the board.
    */
-  spraySheets(out: BoardSpraySheet[]): number {
+  spraySheets(out: BoardSpraySheet[], wind = 0): number {
     const lanes = this.strips.length;
     const stations = this.strips[0].length;
     const spray = this.sprayState ??= createHullSprayBuffers(stations, lanes, this.stationLength);
     const { width, across, along, point, depth, water, hull, sea, axisX, axisY, axisZ } = spray;
     // What the water holds up, N (the step's mean pressure and buoyancy): the flat board's blister turns its momentum.
     spray.lift = Math.max(0, this.forces.pressure.y + this.forces.buoyancy.y);
+    spray.wind = wind;
     const r = this.rotation;
     axisX[0] = r[0]; axisX[1] = r[3]; axisX[2] = r[6];
     axisY[0] = r[1]; axisY[1] = r[4]; axisY[2] = r[7];

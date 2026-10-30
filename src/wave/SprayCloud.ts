@@ -100,6 +100,23 @@ export interface BoardSpraySheet {
   thickness: number;
   fan: number;
   breakup: number;
+  /**
+   * When it first sheds drops (s, turbulent: before it tears), which side of its board it leaves (−1 its −x side, +1
+   * its +x), and whose board (0 the player's, else another player's id + 1); where it tears (the tear line from (tearX,
+   * tearY, tearZ), tearLength m along (tearAlongX, tearAlongZ)) and its water's velocity there (world).
+   */
+  onset: number;
+  side: number;
+  source: number;
+  tearX: number;
+  tearY: number;
+  tearZ: number;
+  tearAlongX: number;
+  tearAlongZ: number;
+  tearLength: number;
+  tearVX: number;
+  tearVY: number;
+  tearVZ: number;
 }
 
 /** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */
@@ -164,6 +181,15 @@ export const SPRAY_PER_AIR = 40;
  */
 export const BOARD_SPRAY_PER_KG = 7;
 const BOARD_FALL_SPREAD = 1;
+/**
+ * The curtain's water (spray-sheet; the water-physics advisor, 2026-10-30): a fifth to a quarter of it sheds as finer
+ * drops before it tears, with more mist; the tear's drops are about 5 mm and more, falling at 9 m/s (Gunn & Kinzer),
+ * where the air lets drops so large (12σ/ρ_a U² over 5 mm: up to about 12 m/s).
+ */
+const BOARD_SHED = 0.22;
+const BOARD_SHED_MIST = 0.1;
+const TEAR_FALL = 9;
+const TEAR_LARGE_SPEED = 12;
 /** The share of a spit's and of an eruption's particles that are mist (provisional). */
 const SPIT_MIST = 0.5;
 const ERUPTION_MIST = 0.3;
@@ -472,39 +498,67 @@ export class SprayCloud {
     const random = this.boardRandom;
     const expected = sheet.flux * dt * BOARD_SPRAY_PER_KG * this.budget.spawn;
     let spawns = Math.floor(expected) + (random() < expected - Math.floor(expected) ? 1 : 0);
-    // Drawn as a curtain (spray-sheet), the sheet's water flies as one until it tears, `breakup` s out: its drops are
-    // thrown from there, as the water launched then from where the hull was, fanned out, with gravity's pull since.
     const torn = sheet.breakup > 0;
-    const relativeX = sheet.vx - sheet.boardX;
-    const relativeY = sheet.vy - sheet.boardY;
-    const relativeZ = sheet.vz - sheet.boardZ;
-    const reach = Math.hypot(relativeX, relativeY, relativeZ) * Math.tan(sheet.fan);
     for (; spawns > 0 && this.boardCount < this.boardRoom; spawns -= 1) {
       const across = random();
-      const along = across * sheet.length;
-      // The tear line is ragged: each drop leaves within a sixth of the flight either side of it.
-      const t = torn ? sheet.breakup * (0.85 + 0.3 * random()) : 0;
-      const widen = (across - 0.5) * 2 * reach * t;
       const pace = 0.8 + 0.4 * random();
       const k = this.count;
+      if (!torn) {
+        // As drops at once, from along the root (board-spray; the spray-sheet's `?spraySheet=off`).
+        this.spawn(
+          random() < sheet.mist ? MIST : SPRAY,
+          sheet.x + sheet.alongX * across * sheet.length, sheet.y, sheet.z + sheet.alongZ * across * sheet.length,
+          sheet.vx * pace + (random() - 0.5) * 2 * sheet.spread, sheet.vy * pace + (random() - 0.5) * 2 * sheet.spread,
+          sheet.vz * pace + (random() - 0.5) * 2 * sheet.spread,
+          random,
+        );
+        this.boardDrops(k, sheet.fall, random);
+        continue;
+      }
+      // The curtain's water (spray-sheet): BOARD_SHED of it shed as finer drops along the sheet between its first drops
+      // (`onset`) and its tear, the rest from the ragged tear line, a sixth of the flight either side of it.
+      const rootX = sheet.x + sheet.alongX * across * sheet.length;
+      const rootZ = sheet.z + sheet.alongZ * across * sheet.length;
+      const tearX = sheet.tearX + sheet.tearAlongX * across * sheet.tearLength;
+      const tearZ = sheet.tearZ + sheet.tearAlongZ * across * sheet.tearLength;
+      if (random() < BOARD_SHED) {
+        const age = sheet.onset + (sheet.breakup - sheet.onset) * random();
+        const f = age / sheet.breakup;
+        // On the chord from the root to the tear, lifted by gravity's bulge between them.
+        const bulge = 0.5 * GRAVITY * age * (sheet.breakup - age);
+        this.spawn(
+          random() < Math.min(1, sheet.mist + BOARD_SHED_MIST) ? MIST : SPRAY,
+          rootX + (tearX - rootX) * f, sheet.y + (sheet.tearY - sheet.y) * f + bulge, rootZ + (tearZ - rootZ) * f,
+          (sheet.vx + (sheet.tearVX - sheet.vx) * f) * pace + (random() - 0.5) * 2 * sheet.spread,
+          (sheet.vy + (sheet.tearVY - sheet.vy) * f) * pace + (random() - 0.5) * 2 * sheet.spread,
+          (sheet.vz + (sheet.tearVZ - sheet.vz) * f) * pace + (random() - 0.5) * 2 * sheet.spread,
+          random,
+        );
+        this.boardDrops(k, sheet.fall - 1, random);
+        continue;
+      }
+      const ragged = (random() - 0.5) * 0.3 * sheet.breakup;
       this.spawn(
         random() < sheet.mist ? MIST : SPRAY,
-        sheet.x + sheet.alongX * (along + widen) + relativeX * t,
-        sheet.y + relativeY * t - 0.5 * GRAVITY * t * t,
-        sheet.z + sheet.alongZ * (along + widen) + relativeZ * t,
-        sheet.vx * pace + (random() - 0.5) * 2 * sheet.spread, (sheet.vy - GRAVITY * t) * pace + (random() - 0.5) * 2 * sheet.spread,
-        sheet.vz * pace + (random() - 0.5) * 2 * sheet.spread,
+        tearX + sheet.tearVX * ragged, sheet.tearY + sheet.tearVY * ragged, tearZ + sheet.tearVZ * ragged,
+        sheet.tearVX * pace + (random() - 0.5) * 2 * sheet.spread, sheet.tearVY * pace + (random() - 0.5) * 2 * sheet.spread,
+        sheet.tearVZ * pace + (random() - 0.5) * 2 * sheet.spread,
         random,
       );
-      // The sheet's own drops: they fall as fast as its drops do (the mist as the mist does).
-      if (this.kind[k] === SPRAY) {
-        const fall = Math.max(1, sheet.fall + (random() - 0.5) * 2 * BOARD_FALL_SPREAD);
-        this.drag[k] = GRAVITY / (fall * fall);
-      }
-      this.fromBoard[k] = 1;
-      this.boardCount += 1;
-      this.boardSpawns += 1;
+      // The tear's drops are the bigger: about 5 mm and more, falling at 9 m/s, where the air lets them be so large.
+      this.boardDrops(k, Math.hypot(sheet.tearVX, sheet.tearVY, sheet.tearVZ) <= TEAR_LARGE_SPEED ? TEAR_FALL : sheet.fall, random);
     }
+  }
+
+  /** A board's drop just spawned at `k`: its own pool, and its fall speed (`fall` a metre either way; the mist as mist). */
+  private boardDrops(k: number, fall: number, random: () => number): void {
+    if (this.kind[k] === SPRAY) {
+      const speed = Math.max(1, fall + (random() - 0.5) * 2 * BOARD_FALL_SPREAD);
+      this.drag[k] = GRAVITY / (speed * speed);
+    }
+    this.fromBoard[k] = 1;
+    this.boardCount += 1;
+    this.boardSpawns += 1;
   }
 
   /**

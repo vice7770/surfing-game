@@ -4,6 +4,7 @@ import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from './SpillingCurl';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 import { PARTICLE_BUDGETS } from './particleBudget';
+import { createBoardSpraySheet, placeTear } from '../physics/boardSpray';
 import { busyWhitewater } from './particleTestSupport';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
@@ -571,8 +572,8 @@ describe('the roller front\'s toe spray (the Canyon roller front)', () => {
 describe('a board\'s spray (board-spray)', () => {
   /** A hard turn's sheet: `flux` kg/s leaving 4 cm over the water along 0.6 m of rail, out and up at 6 and 5 m/s. */
   const sheet = (flux: number): BoardSpraySheet => ({
-    x: 5, y: 0.04, z: 20, alongX: 0, alongZ: 1, length: 0.6, vx: 6, vy: 5, vz: 2, flux, spread: 1, fall: 7, mist: 0.1,
-    boardX: 0, boardY: 0, boardZ: 8, thickness: 0, fan: 0, breakup: 0,
+    ...createBoardSpraySheet(), x: 5, y: 0.04, z: 20, alongX: 0, alongZ: 1, length: 0.6, vx: 6, vy: 5, vz: 2, flux, spread: 1, fall: 7,
+    mist: 0.1, boardX: 0, boardY: 0, boardZ: 8,
   });
 
   it('throws BOARD_SPRAY_PER_KG drawn particles per kilogram of the sheet\'s water, out along its velocity', () => {
@@ -604,7 +605,10 @@ describe('a board\'s spray (board-spray)', () => {
   it('throws the drops from where the curtain tears when it is drawn (spray-sheet), from the root when it is not', () => {
     // Off a board doing 8 m/s along +z: the sheet's water flies at (6, 5, −6) m/s relative to it, tearing 0.1 s out.
     const torn = new SprayCloud(4, 4096, 1024, 512);
-    torn.update({ ...flatScene(), boardSheets: [{ ...sheet(60), breakup: 0.1 }] }, 0.1);
+    const curtain = { ...sheet(60), breakup: 0.1, onset: 0.03 };
+    // Torn where the hull's course would carry it: the root 0.1 s at (6, 5, −6) relative to the board, less gravity's.
+    placeTear(curtain, 5, 0.04, 20, 0, 1, 0.6, 6, 5, -6, 6, 5, 2, 0.1);
+    torn.update({ ...flatScene(), boardSheets: [curtain] }, 0.1);
     const plain = new SprayCloud(4, 4096, 1024, 512);
     plain.update({ ...flatScene(), boardSheets: [sheet(60)] }, 0.1);
     expect(torn.count).toBe(plain.count);
@@ -614,11 +618,11 @@ describe('a board\'s spray (board-spray)', () => {
       return sum / cloud.count;
     };
     expect(mean(plain, 0)).toBeCloseTo(5, 6);
-    // 0.6 m out and back, 0.45 m up (less gravity's), give or take the tear's spread.
-    expect(mean(torn, 0)).toBeGreaterThan(5.5);
-    expect(mean(torn, 0)).toBeLessThan(5.7);
-    expect(mean(torn, 1)).toBeGreaterThan(0.4);
-    expect(mean(torn, 2)).toBeLessThan(20.3 - 0.5);
+    // Most 0.6 m out and back, 0.45 m up (less gravity's), at the tear; a fifth shed on the way: a little short of it.
+    expect(mean(torn, 0)).toBeGreaterThan(5.45);
+    expect(mean(torn, 0)).toBeLessThan(5.65);
+    expect(mean(torn, 1)).toBeGreaterThan(0.35);
+    expect(mean(torn, 2)).toBeLessThan(20.3 - 0.4);
   });
 
   it('throws them on its own random stream: the sea\'s drops are as they were', () => {

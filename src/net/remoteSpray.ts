@@ -1,6 +1,6 @@
 import { buildBoardShape } from '../physics/boardShape';
 import { REFERENCE_RIDER } from '../physics/boardReference';
-import { createHullSprayBuffers, createBoardSpraySheet, hullSprayLayout, hullSpraySheets, packBoardSheets, BOARD_SHEETS } from '../physics/boardSpray';
+import { createHullSprayBuffers, createBoardSpraySheet, hullSprayLayout, hullSpraySheets, packBoardSheets, BOARD_SHEETS, SheetHistory } from '../physics/boardSpray';
 import type { BoardSpraySheet } from '../wave/SprayCloud';
 import { RIDER_PHASES } from '../wave/SurfZoneRunner';
 import { createRemoteState, type RemoteState, type RemoteSurfers } from './RemoteSurfers';
@@ -23,6 +23,8 @@ export class RemoteSpray {
   private readonly before = createRemoteState();
   private readonly sheets: BoardSpraySheet[] = Array.from({ length: BOARD_SHEETS }, createBoardSpraySheet);
   private readonly all: BoardSpraySheet[] = [];
+  /** Each player's sides' root lines lately (spray-sheet): where their water tears. */
+  private readonly history = new SheetHistory();
 
   constructor() {
     this.hull.width.set(this.layout.width);
@@ -37,8 +39,11 @@ export class RemoteSpray {
     this.all.length = 0;
   }
 
-  /** Add the sheets of player `id`'s board, drawn `state` at `seaTime` (`RemoteSurfers.sample`), on the water at `heightAt`. */
-  add(remote: RemoteSurfers, id: number, seaTime: number, state: RemoteState, heightAt: (x: number, z: number) => number): void {
+  /**
+   * Add the sheets of player `id`'s board, drawn `state` at `seaTime` (`RemoteSurfers.sample`), on the water at
+   * `heightAt`, in `wind` m/s along +z.
+   */
+  add(remote: RemoteSurfers, id: number, seaTime: number, state: RemoteState, heightAt: (x: number, z: number) => number, wind = 0): void {
     if (!state.boardPresent || !remote.sample(id, seaTime - VELOCITY_SPAN, this.before)) return;
     const { layout, hull } = this;
     // What the water holds up: the board and, on it, its rider (the reference rider's weight).
@@ -75,9 +80,18 @@ export class RemoteSpray {
       hull.hull[o * 3 + 2] = vz;
       hull.sea[o] = 1;
     }
+    hull.wind = wind;
     const count = hullSpraySheets(hull, this.sheets);
-    // Fresh sheets for each board: the next board reuses the scratch.
-    for (let n = 0; n < count; n += 1) this.all.push({ ...this.sheets[n] });
+    // Fresh sheets for each board (the next board reuses the scratch), torn where their water went.
+    for (let n = 0; n < count; n += 1) {
+      // Whose: the player's id over 0 (0 is this player's own board).
+      const sheet = { ...this.sheets[n], source: id + 1 };
+      const key = `${sheet.source}:${sheet.side}`;
+      this.history.push(key, seaTime, sheet);
+      this.history.tearOf(key, seaTime, sheet);
+      this.all.push(sheet);
+    }
+    this.history.prune(seaTime, 0.25);
   }
 
   /** This frame's sheets, packed; undefined with none. */

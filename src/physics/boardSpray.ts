@@ -27,12 +27,18 @@ import type { BoardShape } from './boardShape';
 
 /** Sheets a board throws at most: off each side. */
 export const BOARD_SHEETS = 2;
-/**
- * Floats per packed sheet (`packBoardSheets`): x, y, z, alongX, alongZ, length, vx, vy, vz, flux, spread, fall, mist,
- * boardX, boardY, boardZ, thickness, fan, breakup.
- */
-export const BOARD_SHEET_STRIDE = 19;
+/** The packed sheet's fields, in order (`packBoardSheets`). */
+const SHEET_FIELDS = [
+  'x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz', 'flux', 'spread', 'fall', 'mist', 'boardX', 'boardY', 'boardZ',
+  'thickness', 'fan', 'breakup', 'onset', 'side', 'source', 'tearX', 'tearY', 'tearZ', 'tearAlongX', 'tearAlongZ', 'tearLength',
+  'tearVX', 'tearVY', 'tearVZ',
+] as const satisfies readonly (keyof BoardSpraySheet)[];
+/** Floats per packed sheet (`packBoardSheets`): `SHEET_FIELDS`. */
+export const BOARD_SHEET_STRIDE = SHEET_FIELDS.length;
+/** Where each field sits in a packed sheet. */
+export const SHEET_AT = Object.fromEntries(SHEET_FIELDS.map((name, k) => [name, k])) as Record<(typeof SHEET_FIELDS)[number], number>;
 const WATER_DENSITY = 1025;
+const GRAVITY = 9.81;
 const DEGREE = Math.PI / 180;
 /** The sheet's measured share of its potential-flow speed (Savitsky & Breslin 1958: 0.77–0.87 at β 20–30°). */
 const KAPPA = 0.8;
@@ -85,19 +91,64 @@ export function sheetDrops(speed: number): { fall: number; mist: number } {
 export function createBoardSpraySheet(): BoardSpraySheet {
   return {
     x: 0, y: 0, z: 0, alongX: 0, alongZ: 0, length: 0, vx: 0, vy: 0, vz: 0, flux: 0, spread: 0, fall: 7, mist: 0.05,
-    boardX: 0, boardY: 0, boardZ: 0, thickness: 0, fan: 0, breakup: 0,
+    boardX: 0, boardY: 0, boardZ: 0, thickness: 0, fan: 0, breakup: 0, onset: 0, side: 1, source: 0,
+    tearX: 0, tearY: 0, tearZ: 0, tearAlongX: 0, tearAlongZ: 1, tearLength: 0, tearVX: 0, tearVY: 0, tearVZ: 0,
   };
 }
 
+const AIR_DENSITY = 1.2;
+const SURFACE_TENSION = 0.072;
+const KINEMATIC_VISCOSITY = 1e-6;
 /**
- * The curtain of water a sheet leaves the hull as (spray-sheet, 2026-10-30): `flux` kg/s at `speed` m/s along `width` m of
- * rail. Its thickness there, m (ṁ / ρ U w), the half-angle it fans out at, rad, and the time it flies before it tears
- * into drops, s (none: it leaves as drops at once).
- * PROVISIONAL: the break-up from the water-physics advisor's ruling.
+ * The curtain's clock (spray-sheet, 2026-10-30; the water-physics advisor's ruling of that day). The water that ran over
+ * the bottom is turbulent: it roughens and sheds its first drops a way out (Dai, Hsiang & Faeth 1997's turbulent bow
+ * sheets: roughness at 0.061·D·Re_D^¼, D = 4h; first drops (x_i − x_r)/Λ = 18 800·We_Λ^−0.67, Λ = h/2), and the air's
+ * sinuous waves (Squire 1953) grow from that roughness at n and tear it after N_t e-folds: N_t = 2.5 (provisional, to
+ * calibrate against footage; a smooth nozzle sheet needs 12–13, Clark & Dombrowski; Gaillard et al. 2021).
  */
-export function sprayCurtain(flux: number, speed: number, width: number): { thickness: number; fan: number; breakup: number } {
-  const thickness = speed > 0 && width > 0 ? flux / (WATER_DENSITY * speed * width) : 0;
-  return { thickness, fan: 0.2, breakup: thickness > 1e-4 && speed > 1 ? 0.3 / speed : 0 };
+export const CURTAIN_CLOCK = { foldings: 2.5, smoothFoldings: 12, shortest: 0.01, longest: 0.3, thinnest: 0.001, jetShare: 0.5 } as const;
+
+/**
+ * Squire's growth rate of the sheet's sinuous waves, 1/s, for a sheet `thickness` m thick moving through the air at
+ * `speed` m/s: ρ_a U² / √(2σρh) in the long-wave limit (ρ_a U² h/2σ under 27/16), 0.385 ρ_a^1.5 U³ / (σ√ρ) past it.
+ */
+export function squireGrowth(thickness: number, speed: number): number {
+  const weber = (AIR_DENSITY * speed * speed * thickness) / (2 * SURFACE_TENSION);
+  return weber < 27 / 16
+    ? (AIR_DENSITY * speed * speed) / Math.sqrt(2 * SURFACE_TENSION * WATER_DENSITY * thickness)
+    : (0.385 * AIR_DENSITY ** 1.5 * speed ** 3) / (SURFACE_TENSION * Math.sqrt(WATER_DENSITY));
+}
+
+/**
+ * When the turbulent sheet sheds its first drops, s after it leaves the hull: Dai, Hsiang & Faeth's onset run, less what
+ * it ran over the bottom (`run`, m), at `wallSpeed` m/s.
+ */
+export function curtainOnset(thickness: number, wallSpeed: number, run: number): number {
+  if (!(thickness > 0) || !(wallSpeed > 0)) return 0;
+  const d = 4 * thickness;
+  const rough = 0.061 * d * ((wallSpeed * d) / KINEMATIC_VISCOSITY) ** 0.25;
+  const half = thickness / 2;
+  const weber = (WATER_DENSITY * wallSpeed * wallSpeed * half) / SURFACE_TENSION;
+  const first = rough + half * 18_800 * weber ** -0.67;
+  return Math.max(0, (first - run) / wallSpeed);
+}
+
+/**
+ * The curtain a sheet leaves the hull as: `flux` kg/s off `width` m of rail, crossing it at `across` m/s relative to the
+ * hull (normal to the root line), through the air at `airSpeed` m/s, having run `run` m over the bottom at `wallSpeed`
+ * m/s, `jetShare` of it the jet's. Its thickness there, m (ṁ / ρ L |(U − U_hull)·n̂|: a line source, no 1/r thinning),
+ * when it first sheds drops and when it tears, s (0: no curtain: drops at once). No curtain where it is the flat
+ * blister's, under a millimetre, or tears within CURTAIN_CLOCK.shortest.
+ */
+export function sprayCurtain(
+  flux: number, width: number, across: number, airSpeed: number, wallSpeed: number, run: number, jetShare: number,
+): { thickness: number; onset: number; breakup: number } {
+  const thickness = across > 0 && width > 0 ? flux / (WATER_DENSITY * across * width) : 0;
+  if (!(thickness >= CURTAIN_CLOCK.thinnest) || !(airSpeed > 0.5) || jetShare < CURTAIN_CLOCK.jetShare) return { thickness, onset: 0, breakup: 0 };
+  const growth = squireGrowth(thickness, airSpeed);
+  const onset = curtainOnset(thickness, wallSpeed, run);
+  const breakup = Math.min(onset + CURTAIN_CLOCK.foldings / growth, CURTAIN_CLOCK.smoothFoldings / growth, CURTAIN_CLOCK.longest);
+  return breakup < CURTAIN_CLOCK.shortest ? { thickness, onset: 0, breakup: 0 } : { thickness, onset: Math.min(onset, breakup), breakup };
 }
 
 /**
@@ -123,6 +174,8 @@ export interface HullSprayState {
   axisY: ArrayLike<number>;
   axisZ: ArrayLike<number>;
   lift: number;
+  /** The wind over the water, m/s along +z (onshore): the sheet tears by its speed through the air. */
+  wind: number;
 }
 
 /** A `HullSprayState` to fill: its arrays made for `stations` × `lanes` patches. */
@@ -145,7 +198,7 @@ export function createHullSprayBuffers(stations: number, lanes: number, stationL
   return {
     stations, lanes, stationLength, width: new Float64Array(n), across: new Float64Array(n), along: new Float64Array(n),
     point: new Float64Array(n * 3), depth: new Float64Array(n), water: new Float64Array(n * 3), hull: new Float64Array(n * 3),
-    sea: new Float64Array(n), axisX: new Float64Array(3), axisY: new Float64Array(3), axisZ: new Float64Array(3), lift: 0,
+    sea: new Float64Array(n), axisX: new Float64Array(3), axisY: new Float64Array(3), axisZ: new Float64Array(3), lift: 0, wind: 0,
   };
 }
 
@@ -196,16 +249,21 @@ interface SideSum {
   /** The hull's own velocity where it leaves (world, m/s), and the water's. */
   bx: number; by: number; bz: number;
   wx: number; wy: number; wz: number;
+  /** How much of it is the jet's (not the flat blister's), and its run over the bottom, root to rail, water-weighted. */
+  jet: number; run: number;
   fall: number; mist: number;
   first: number; last: number;
 }
 const sums: [SideSum, SideSum] = [createSum(), createSum()];
 function createSum(): SideSum {
-  return { flux: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, bx: 0, by: 0, bz: 0, wx: 0, wy: 0, wz: 0, fall: 0, mist: 0, first: Infinity, last: -Infinity };
+  return {
+    flux: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, bx: 0, by: 0, bz: 0, wx: 0, wy: 0, wz: 0, jet: 0, run: 0, fall: 0, mist: 0,
+    first: Infinity, last: -Infinity,
+  };
 }
 function clear(sum: SideSum): void {
   sum.flux = 0; sum.x = 0; sum.y = 0; sum.z = 0; sum.vx = 0; sum.vy = 0; sum.vz = 0; sum.fall = 0; sum.mist = 0;
-  sum.bx = 0; sum.by = 0; sum.bz = 0; sum.wx = 0; sum.wy = 0; sum.wz = 0;
+  sum.bx = 0; sum.by = 0; sum.bz = 0; sum.wx = 0; sum.wy = 0; sum.wz = 0; sum.jet = 0; sum.run = 0;
   sum.first = Infinity; sum.last = -Infinity;
 }
 /**
@@ -337,7 +395,11 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     const wx = point[at * 3] + axisX[0] * (exitAcross - across[at]) + axisZ[0] * (exitAlong - station.z);
     const wz = point[at * 3 + 2] + axisX[2] * (exitAcross - across[at]) + axisZ[2] * (exitAlong - station.z);
     const surface = point[at * 3 + 1] + depth[at];
-    add(sums[side > 0 ? 1 : 0], hull, at, flux, wx, surface + LIFT_OFF, wz, exitAlong,
+    const sum = sums[side > 0 ? 1 : 0];
+    sum.jet += flux;
+    // Its run over the dry bottom, root to where it leaves: at 2α from the path (the spray-sheet's turbulent onset).
+    sum.run += flux * Math.hypot(exitAcross - root, station.z - exitAlong);
+    add(sum, hull, at, flux, wx, surface + LIFT_OFF, wz, exitAlong,
       water[at * 3] + (launch * dx) / norm, water[at * 3 + 1] + (launch * dy) / norm, water[at * 3 + 2] + (launch * dz) / norm);
   }
   // The flat board's side blister, off both rails at its spray root (the foremost wetted station), for the share of the
@@ -398,13 +460,21 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     sheet.boardX = sum.bx / sum.flux;
     sheet.boardY = sum.by / sum.flux;
     sheet.boardZ = sum.bz / sum.flux;
-    // The sheet itself (spray-sheet): its speed through the air (over the water), how thick it leaves the hull, how
-    // fast it fans out, and when it tears into the drops.
-    const speed = Math.hypot(sheet.vx - sum.wx / sum.flux, sheet.vy - sum.wy / sum.flux, sheet.vz - sum.wz / sum.flux);
-    const shape = sprayCurtain(sum.flux, speed, span);
-    sheet.thickness = shape.thickness;
-    sheet.fan = shape.fan;
-    sheet.breakup = shape.breakup;
+    sheet.side = sum === sums[0] ? -1 : 1;
+    // The sheet itself (spray-sheet): how thick it leaves the hull, and when it sheds its first drops and tears.
+    const rx = sheet.vx - sheet.boardX;
+    const ry = sheet.vy - sheet.boardY;
+    const rz = sheet.vz - sheet.boardZ;
+    const onRoot = rx * sheet.alongX + rz * sheet.alongZ;
+    const across = Math.sqrt(Math.max(0, rx * rx + ry * ry + rz * rz - onRoot * onRoot));
+    const airSpeed = Math.hypot(sheet.vx, sheet.vy, sheet.vz - hull.wind);
+    const curtain = sprayCurtain(sum.flux, span, across, airSpeed, Math.hypot(rx, ry, rz), sum.jet > 0 ? sum.run / sum.jet : 0, sum.jet / sum.flux);
+    sheet.thickness = curtain.thickness;
+    sheet.onset = curtain.onset;
+    sheet.breakup = curtain.breakup;
+    sheet.fan = 0;
+    // Where it tears, as if the hull had held its course (the history's `tearOf` places it where the water went).
+    placeTear(sheet, sheet.x, sheet.y, sheet.z, sheet.alongX, sheet.alongZ, sheet.length, rx, ry, rz, sheet.vx, sheet.vy, sheet.vz, sheet.breakup);
   }
   return count;
 }
@@ -412,10 +482,7 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
 /** `sheets` packed for a message (`BOARD_SHEET_STRIDE` floats each). */
 export function packBoardSheets(sheets: readonly BoardSpraySheet[], out: Float32Array<ArrayBufferLike> = new Float32Array(sheets.length * BOARD_SHEET_STRIDE)): Float32Array<ArrayBufferLike> {
   sheets.forEach((sheet, n) => {
-    out.set([
-      sheet.x, sheet.y, sheet.z, sheet.alongX, sheet.alongZ, sheet.length, sheet.vx, sheet.vy, sheet.vz, sheet.flux, sheet.spread,
-      sheet.fall, sheet.mist, sheet.boardX, sheet.boardY, sheet.boardZ, sheet.thickness, sheet.fan, sheet.breakup,
-    ], n * BOARD_SHEET_STRIDE);
+    for (let k = 0; k < BOARD_SHEET_STRIDE; k += 1) out[n * BOARD_SHEET_STRIDE + k] = sheet[SHEET_FIELDS[k]];
   });
   return out;
 }
@@ -424,12 +491,117 @@ export function packBoardSheets(sheets: readonly BoardSpraySheet[], out: Float32
 export function unpackBoardSheets(packed: ArrayLike<number>): BoardSpraySheet[] {
   const sheets: BoardSpraySheet[] = [];
   for (let o = 0; o + BOARD_SHEET_STRIDE <= packed.length; o += BOARD_SHEET_STRIDE) {
-    sheets.push({
-      x: packed[o], y: packed[o + 1], z: packed[o + 2], alongX: packed[o + 3], alongZ: packed[o + 4], length: packed[o + 5],
-      vx: packed[o + 6], vy: packed[o + 7], vz: packed[o + 8], flux: packed[o + 9], spread: packed[o + 10],
-      fall: packed[o + 11], mist: packed[o + 12], boardX: packed[o + 13], boardY: packed[o + 14], boardZ: packed[o + 15],
-      thickness: packed[o + 16], fan: packed[o + 17], breakup: packed[o + 18],
-    });
+    const sheet = createBoardSpraySheet();
+    for (let k = 0; k < BOARD_SHEET_STRIDE; k += 1) sheet[SHEET_FIELDS[k]] = packed[o + k];
+    sheets.push(sheet);
   }
   return sheets;
+}
+
+/**
+ * Where a sheet tears (spray-sheet): its root line then (from (x, y, z), `length` m along (alongX, alongZ)) carried
+ * `age` s at (carryX, carryY, carryZ) and pulled down by gravity since; and its water's velocity there, from (vx, vy, vz)
+ * over the ground at the root.
+ */
+export function placeTear(
+  sheet: BoardSpraySheet, x: number, y: number, z: number, alongX: number, alongZ: number, length: number,
+  carryX: number, carryY: number, carryZ: number, vx: number, vy: number, vz: number, age: number,
+): void {
+  sheet.tearX = x + carryX * age;
+  sheet.tearY = y + carryY * age - 0.5 * GRAVITY * age * age;
+  sheet.tearZ = z + carryZ * age;
+  sheet.tearAlongX = alongX;
+  sheet.tearAlongZ = alongZ;
+  sheet.tearLength = length;
+  sheet.tearVX = vx;
+  sheet.tearVY = vy - GRAVITY * age;
+  sheet.tearVZ = vz;
+}
+
+/** One root line a sheet left from, and its water's velocity over the ground then. */
+interface SheetRow {
+  time: number;
+  x: number; y: number; z: number;
+  alongX: number; alongZ: number; length: number;
+  vx: number; vy: number; vz: number;
+}
+
+/**
+ * The root lines a sheet has left from lately (spray-sheet; the advisor: a turning board's curtain is the water it
+ * launched from where it was, not the present sheet carried along rigidly): one a step, for `keep` s, by key (a board
+ * and a side). `at` reads the row launched `age` s before `now`, between the two nearest.
+ */
+export class SheetHistory {
+  private readonly rows = new Map<string, SheetRow[]>();
+
+  constructor(private readonly keep = CURTAIN_CLOCK.longest + 0.05) {}
+
+  push(key: string, time: number, sheet: BoardSpraySheet): void {
+    let list = this.rows.get(key);
+    if (!list) {
+      list = [];
+      this.rows.set(key, list);
+    }
+    const last = list.at(-1);
+    if (last && time <= last.time) list.pop();
+    list.push({
+      time, x: sheet.x, y: sheet.y, z: sheet.z, alongX: sheet.alongX, alongZ: sheet.alongZ, length: sheet.length,
+      vx: sheet.vx, vy: sheet.vy, vz: sheet.vz,
+    });
+  }
+
+  /** A packed sheet's row (`packBoardSheets`, at `o`). */
+  pushPacked(key: string, time: number, packed: ArrayLike<number>, o: number): void {
+    const sheet = this.scratch;
+    for (const name of ['x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz'] as const) sheet[name] = packed[o + SHEET_AT[name]];
+    this.push(key, time, sheet);
+  }
+
+  private readonly scratch = createBoardSpraySheet();
+
+  /** Forget rows older than `keep`, and boards' sides that threw nothing for `missing` s. */
+  prune(now: number, missing: number): void {
+    for (const [key, list] of this.rows) {
+      if (!list.length || now - list[list.length - 1].time > missing) {
+        this.rows.delete(key);
+        continue;
+      }
+      while (list.length > 2 && now - list[1].time > this.keep) list.shift();
+    }
+  }
+
+  /** How far back the rows of `key` go, s. */
+  span(key: string, now: number): number {
+    const list = this.rows.get(key);
+    return list?.length ? now - list[0].time : 0;
+  }
+
+  /** The row launched `age` s before `now` (interpolated; the oldest one past the history), into `out`; false with none. */
+  at(key: string, now: number, age: number, out: SheetRow): boolean {
+    const list = this.rows.get(key);
+    if (!list?.length) return false;
+    const time = now - age;
+    let b = list.length - 1;
+    while (b > 0 && list[b - 1].time >= time) b -= 1;
+    const later = list[b];
+    const earlier = list[Math.max(0, b - 1)];
+    const f = later.time > earlier.time ? Math.min(1, Math.max(0, (time - earlier.time) / (later.time - earlier.time))) : 1;
+    for (const key of ['x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz'] as const) out[key] = earlier[key] + (later[key] - earlier[key]) * f;
+    out.time = time;
+    return true;
+  }
+
+  /** Each sheet's tear placed where its water went (`placeTear` with the row it left from), `breakup` s ago. */
+  tearOf(key: string, now: number, sheet: BoardSpraySheet): void {
+    if (!(sheet.breakup > 0) || !this.at(key, now, sheet.breakup, this.row)) return;
+    const age = Math.min(sheet.breakup, now - this.row.time);
+    const row = this.row;
+    placeTear(sheet, row.x, row.y, row.z, row.alongX, row.alongZ, row.length, row.vx, row.vy, row.vz, row.vx, row.vy, row.vz, age);
+  }
+
+  private readonly row: SheetRow = { time: 0, x: 0, y: 0, z: 0, alongX: 0, alongZ: 0, length: 0, vx: 0, vy: 0, vz: 0 };
+}
+
+export function createSheetRow(): SheetRow {
+  return { time: 0, x: 0, y: 0, z: 0, alongX: 0, alongZ: 0, length: 0, vx: 0, vy: 0, vz: 0 };
 }

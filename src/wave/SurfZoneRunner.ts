@@ -16,7 +16,7 @@ import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
-import { BOARD_SHEETS, BOARD_SHEET_STRIDE, createBoardSpraySheet, packBoardSheets, unpackBoardSheets } from '../physics/boardSpray';
+import { BOARD_SHEETS, BOARD_SHEET_STRIDE, SheetHistory, createBoardSpraySheet, packBoardSheets, unpackBoardSheets } from '../physics/boardSpray';
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
@@ -351,6 +351,8 @@ export class SurfZoneRunner {
   private readonly boardSheets: BoardSpraySheet[] = Array.from({ length: BOARD_SHEETS }, createBoardSpraySheet);
   private readonly sheetsInUse: BoardSpraySheet[] = [];
   private remoteSheets: readonly BoardSpraySheet[] = [];
+  /** The board's sheets' root lines lately, by side (spray-sheet): where their water tears. */
+  private readonly sheetHistory = new SheetHistory();
   /** How many of this step's sheets are this board's (the first ones), for the snapshot's drawn curtain. */
   private ownSheets = 0;
   /** Uniform render grid over the window and the whole tank. */
@@ -708,8 +710,18 @@ export class SurfZoneRunner {
     const sheets = this.sheetsInUse;
     sheets.length = 0;
     if (!this.boardSprays) return;
-    const count = this.board ? this.board.spraySheets(this.boardSheets) : 0;
-    for (let n = 0; n < count; n += 1) sheets.push(this.boardSheets[n]);
+    const count = this.board ? this.board.spraySheets(this.boardSheets, this.config.windSpeed ?? 0) : 0;
+    // The tear where the water went (spray-sheet): each side's root lines lately.
+    const now = this.simulation.solver.time;
+    for (let n = 0; n < count; n += 1) {
+      const sheet = this.boardSheets[n];
+      sheet.source = 0;
+      const key = `0:${sheet.side}`;
+      this.sheetHistory.push(key, now, sheet);
+      this.sheetHistory.tearOf(key, now, sheet);
+      sheets.push(sheet);
+    }
+    this.sheetHistory.prune(now, 0.1);
     this.ownSheets = count;
     for (const sheet of this.remoteSheets) sheets.push(sheet);
     // Without the curtains the drops leave the hull at once, as before spray-sheet.
