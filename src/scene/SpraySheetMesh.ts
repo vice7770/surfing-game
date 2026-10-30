@@ -16,9 +16,11 @@ import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, type WaterOptic
  * prefactor; `fingersPerMetre`, clamped) that tear raggedly. Thin water passes most light face-on (two Fresnel faces,
  * about 2 % each; Pope & Fry): it reads by the sky's and sun's reflection, with `floor` of cover for readability (the
  * 2026-09-29 decision: physical optics with a readability minimum). Where the curtain reaches under `faint` m it fades
- * out, gone under `none` m (fast snaps throw drops at once).
+ * out, gone under `none` m (fast snaps throw drops at once). The rough sheet is streaked along its flight (`streaks`
+ * streaks a finger: the turbulence it brought off the bottom, Dai et al. 1997's striations), and whitens by up to `whiten`
+ * at its tear, where its ligaments and beaded rims and the first drops crowd (white by optical depth, as the drops past it).
  */
-export const CURTAIN = { fingering: 0.55, minFingers: 8, maxFingers: 60, floor: 0.12, none: 0.08, faint: 0.15 } as const;
+export const CURTAIN = { fingering: 0.55, minFingers: 8, maxFingers: 60, floor: 0.12, none: 0.08, faint: 0.15, streaks: 3, whiten: 0.3 } as const;
 const GRAVITY = 9.81;
 const CURTAIN_ROUGHNESS = 0.18;
 /** A board's side that threw nothing for this long, s, is forgotten. */
@@ -31,10 +33,18 @@ const curtainCoverGlsl = /* glsl */ `{
   vec3 curtainV = normalize( cameraPosition - vLipWorld );
   vec3 curtainN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   float curtainF = waterFresnel( abs( dot( curtainN, curtainV ) ) );
-  diffuseColor.a = curtainCover * vFade * max( ${CURTAIN.floor.toFixed(2)}, curtainF );
-  // Clear thin water: what shows through it is the scene behind (the blending), not the lip's light through it.
+  float curtainSheen = max( ${CURTAIN.floor.toFixed(2)}, curtainF ) * curtainStreak( vCurtain, vFingers, vSeed );
+  diffuseColor.a = curtainCover * vFade * min( 1.0, curtainSheen + vLipFoam );
+  // Clear thin water: what shows through it is the scene behind (the blending), not the lip's light through it; only
+  // its whitened tear scatters (premultiplied: the foam's share of the light).
+  diffuseColor.rgb = lipFoamColor * vLipFoam;
   totalEmissiveRadiance = vec3( 0.0 );
 }`;
+/** `curtainWhite` on the CPU (Rich's foam attribute): the whitening `share` of the way to the tear. */
+function whiteAt(share: number): number {
+  const x = Math.min(1, Math.max(0, (share - CURTAIN.fingering) / (1 - CURTAIN.fingering)));
+  return CURTAIN.whiten * x * x * (3 - 2 * x);
+}
 /** Each curtain is drawn as a grid: COLUMNS across its root, ROWS out along its flight to where it tears. */
 const COLUMNS = 24;
 const ROWS = 10;
@@ -85,6 +95,18 @@ float curtainMask( vec2 c, float fingers, float seed ) {
   // Gone at the tear (where the drops take over).
   float tear = 1.0 - smoothstep( 0.82, 1.0, t / reach );
   return side * finger * tear;
+}
+// Streamwise streaks: the rough sheet's striations, a few to a finger, stretched along its flight (0.6 to 1.4).
+float curtainStreak( vec2 c, float fingers, float seed ) {
+  float lane = c.x * fingers * ${CURTAIN.streaks.toFixed(1)} + seed * 7.0 + c.y * 0.8;
+  float which = floor( lane );
+  float f = fract( lane );
+  float n = mix( curtainHash( which * 7.31 + seed ), curtainHash( ( which + 1.0 ) * 7.31 + seed ), f * f * ( 3.0 - 2.0 * f ) );
+  return 0.6 + 0.8 * n;
+}
+// Its whitening toward the tear (both looks; Rich takes it as the lip's foam).
+float curtainWhite( vec2 c ) {
+  return ${CURTAIN.whiten.toFixed(2)} * smoothstep( ${CURTAIN.fingering.toFixed(2)}, 1.0, c.y );
 }`;
 
 const classicVertex = /* glsl */ `
@@ -129,9 +151,12 @@ void main() {
   float fresnel = 0.02 + 0.98 * pow( 1.0 - facing, 5.0 );
   float through = pow( max( dot( -view, normalize( sunDirection ) ), 0.0 ), 3.0 );
   vec3 body = mix( deepColor, glowColor, 0.45 + 0.55 * through );
-  // Premultiplied: the sky it reflects and a little of the water's colour, over what it lets through.
-  float cover = mask * max( ${CURTAIN.floor.toFixed(2)}, fresnel );
-  gl_FragColor = vec4( mask * ( skyColor * fresnel + body * ${CURTAIN.floor.toFixed(2)} ), cover );
+  // Premultiplied: the sky it reflects (at least the readability floor's sheen, streaked), a trace of the water's
+  // colour and the sun through it, and the whitening tear, over what it lets through.
+  float sheen = max( ${CURTAIN.floor.toFixed(2)}, fresnel ) * curtainStreak( vCurtain, vFingers, vSeed );
+  float white = curtainWhite( vCurtain );
+  float cover = mask * min( 1.0, sheen + white );
+  gl_FragColor = vec4( mask * ( skyColor * sheen + body * 0.04 * ( 1.0 + 2.0 * through ) + vec3( 0.93, 0.97, 0.97 ) * white ), cover );
 }`;
 
 /**
@@ -213,7 +238,7 @@ export class SpraySheetMesh {
     geometry.setAttribute('normal', new BufferAttribute(this.normals, 3).setUsage(DynamicDrawUsage));
     geometry.setAttribute('curtain', new BufferAttribute(this.curtain, 2).setUsage(DynamicDrawUsage));
     geometry.setAttribute('thickness', new BufferAttribute(this.thickness, 1).setUsage(DynamicDrawUsage));
-    geometry.setAttribute('foam', new BufferAttribute(this.foam, 1));
+    geometry.setAttribute('foam', new BufferAttribute(this.foam, 1).setUsage(DynamicDrawUsage));
     geometry.setAttribute('curtainFingers', new BufferAttribute(this.fingers, 1).setUsage(DynamicDrawUsage));
     geometry.setAttribute('curtainSeed', new BufferAttribute(this.seeds, 1).setUsage(DynamicDrawUsage));
     geometry.setAttribute('curtainFade', new BufferAttribute(this.fades, 1).setUsage(DynamicDrawUsage));
@@ -305,6 +330,7 @@ export class SpraySheetMesh {
           this.positions[v * 3 + 2] = row.z + row.alongZ * along + row.vz * age + dz;
           this.curtain[v * 2] = i / COLUMNS;
           this.curtain[v * 2 + 1] = age / breakup;
+          this.foam[v] = whiteAt(age / breakup);
           this.fingers[v] = fingers;
           this.seeds[v] = seed;
           this.fades[v] = fade;
@@ -323,7 +349,7 @@ export class SpraySheetMesh {
     const geometry = this.mesh.geometry;
     geometry.setDrawRange(0, drawn * COLUMNS * ROWS * 6);
     if (drawn === 0) return;
-    for (const name of ['position', 'normal', 'curtain', 'thickness', 'curtainFingers', 'curtainSeed', 'curtainFade']) {
+    for (const name of ['position', 'normal', 'curtain', 'thickness', 'foam', 'curtainFingers', 'curtainSeed', 'curtainFade']) {
       const attribute = geometry.getAttribute(name) as BufferAttribute;
       attribute.clearUpdateRanges();
       attribute.addUpdateRange(0, drawn * PER_CURTAIN * attribute.itemSize);

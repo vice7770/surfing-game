@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildBoardShape } from './boardShape';
 import {
-  BOARD_SHEET_STRIDE, createBoardSpraySheet, createHullSprayBuffers, hullSprayLayout, hullSpraySheets, packBoardSheets, pileUp,
-  sheetDrops, unpackBoardSheets, type HullSprayBuffers,
+  BOARD_SHEET_STRIDE, CURTAIN_CLOCK, createBoardSpraySheet, createHullSprayBuffers, hullSprayLayout, hullSpraySheets, packBoardSheets,
+  pileUp, sheetDrops, sprayCurtain, squireGrowth, unpackBoardSheets, type HullSprayBuffers,
 } from './boardSpray';
 
 const DEGREE = Math.PI / 180;
@@ -114,5 +114,33 @@ describe('the spray off a planing board (board-spray)', () => {
     for (const [n, sheet] of back.entries()) {
       for (const key of Object.keys(sheet) as (keyof typeof sheet)[]) expect(sheet[key]).toBeCloseTo(sheets[n][key], 4);
     }
+  });
+});
+
+describe('the spray sheet\'s curtain (spray-sheet)', () => {
+  it('grows the sheet\'s flapping at Squire\'s rate: ρ_a U²/√(2σρh) for thin sheets, 0.22·U³ for thick ones', () => {
+    expect(squireGrowth(0.002, 4)).toBeCloseTo((1.2 * 16) / Math.sqrt(2 * 0.072 * 1025 * 0.002), 6);
+    expect(squireGrowth(0.04, 6)).toBeCloseTo(0.22 * 6 ** 3, -1);
+    expect(squireGrowth(0.08, 6)).toBe(squireGrowth(0.04, 6));
+  });
+
+  it('is as thick as its water over the rail at its speed across it, and tears after 2.5 e-folds of the flapping', () => {
+    // A compressed turn's sheet: 90 kg/s off 0.6 m of rail, 4 m/s across it, 6 m/s through the air.
+    const curtain = sprayCurtain(90, 0.6, 4, 6, 7, 0.2, 1);
+    expect(curtain.thickness).toBeCloseTo(90 / (1025 * 0.6 * 4), 6);
+    expect(curtain.breakup).toBeCloseTo(CURTAIN_CLOCK.foldings / squireGrowth(curtain.thickness, 6), 6);
+    expect(curtain.breakup).toBeGreaterThan(0.04);
+    expect(curtain.breakup).toBeLessThan(0.06);
+    // Its first drops (the wall jet's onset) never after the tear.
+    expect(curtain.onset).toBeLessThanOrEqual(curtain.breakup);
+    // Slow through the air it holds to the clamp; fast it tears at once (drops off the rail).
+    expect(sprayCurtain(90, 0.6, 4, 2, 7, 0.2, 1).breakup).toBe(CURTAIN_CLOCK.longest);
+    expect(sprayCurtain(90, 0.6, 4, 14, 14, 0.2, 1).breakup).toBe(0);
+  });
+
+  it('draws no curtain for the flat blister, under a millimetre, or still air', () => {
+    expect(sprayCurtain(90, 0.6, 4, 6, 7, 0.2, 0.3).breakup).toBe(0);
+    expect(sprayCurtain(1, 0.6, 4, 6, 7, 0.2, 1).breakup).toBe(0);
+    expect(sprayCurtain(90, 0.6, 4, 0.2, 7, 0.2, 1).breakup).toBe(0);
   });
 });

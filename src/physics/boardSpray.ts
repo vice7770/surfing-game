@@ -100,13 +100,15 @@ const AIR_DENSITY = 1.2;
 const SURFACE_TENSION = 0.072;
 const KINEMATIC_VISCOSITY = 1e-6;
 /**
- * The curtain's clock (spray-sheet, 2026-10-30; the water-physics advisor's ruling of that day). The water that ran over
- * the bottom is turbulent: it roughens and sheds its first drops a way out (Dai, Hsiang & Faeth 1997's turbulent bow
- * sheets: roughness at 0.061·D·Re_D^¼, D = 4h; first drops (x_i − x_r)/Λ = 18 800·We_Λ^−0.67, Λ = h/2), and the air's
- * sinuous waves (Squire 1953) grow from that roughness at n and tear it after N_t e-folds: N_t = 2.5 (provisional, to
- * calibrate against footage; a smooth nozzle sheet needs 12–13, Clark & Dombrowski; Gaillard et al. 2021).
+ * The curtain's clock (spray-sheet, 2026-10-30; the water-physics advisor's rulings of that day). The air's sinuous
+ * waves (Squire 1953) grow on the sheet from the rail at n and tear it after N_t e-folds: t_b = N_t / n, N_t = 2.5
+ * (provisional, to calibrate against footage; a smooth nozzle sheet needs 12–13, Clark & Dombrowski; Gaillard et al.
+ * 2021), clamped to 12/n and `longest`. The turbulent wall jet's onset (Dai, Hsiang & Faeth 1997: roughness at
+ * 0.061·D·Re_D^¼, D = 4h; first drops (x_i − x_r)/Λ = 18 800·We_Λ^−0.67, Λ = h/2) is not in series with it: the
+ * bottom's boundary layer is 2.5–6 mm after the run, against cm-thick sheets, so the spray root's near-potential water
+ * leaves the rail smooth; the onset is only when the sheet sheds its first drops, capped at the tear.
  */
-export const CURTAIN_CLOCK = { foldings: 2.5, smoothFoldings: 12, shortest: 0.01, longest: 0.3, thinnest: 0.001, jetShare: 0.5 } as const;
+export const CURTAIN_CLOCK = { foldings: 2.5, shortest: 0.01, longest: 0.3, thinnest: 0.001, jetShare: 0.5 } as const;
 
 /**
  * Squire's growth rate of the sheet's sinuous waves, 1/s, for a sheet `thickness` m thick moving through the air at
@@ -147,7 +149,7 @@ export function sprayCurtain(
   if (!(thickness >= CURTAIN_CLOCK.thinnest) || !(airSpeed > 0.5) || jetShare < CURTAIN_CLOCK.jetShare) return { thickness, onset: 0, breakup: 0 };
   const growth = squireGrowth(thickness, airSpeed);
   const onset = curtainOnset(thickness, wallSpeed, run);
-  const breakup = Math.min(onset + CURTAIN_CLOCK.foldings / growth, CURTAIN_CLOCK.smoothFoldings / growth, CURTAIN_CLOCK.longest);
+  const breakup = Math.min(CURTAIN_CLOCK.foldings / growth, CURTAIN_CLOCK.longest);
   return breakup < CURTAIN_CLOCK.shortest ? { thickness, onset: 0, breakup: 0 } : { thickness, onset: Math.min(onset, breakup), breakup };
 }
 
