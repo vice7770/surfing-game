@@ -254,19 +254,20 @@ interface SideSum {
   /** How much of it is the jet's (not the flat blister's), and its run over the bottom, root to rail, water-weighted. */
   jet: number; run: number;
   fall: number; mist: number;
-  first: number; last: number;
+  /** Its exits' extent along the board (board frame, m), and their water-weighted sum. */
+  first: number; last: number; along: number;
 }
 const sums: [SideSum, SideSum] = [createSum(), createSum()];
 function createSum(): SideSum {
   return {
     flux: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, bx: 0, by: 0, bz: 0, wx: 0, wy: 0, wz: 0, jet: 0, run: 0, fall: 0, mist: 0,
-    first: Infinity, last: -Infinity,
+    first: Infinity, last: -Infinity, along: 0,
   };
 }
 function clear(sum: SideSum): void {
   sum.flux = 0; sum.x = 0; sum.y = 0; sum.z = 0; sum.vx = 0; sum.vy = 0; sum.vz = 0; sum.fall = 0; sum.mist = 0;
   sum.bx = 0; sum.by = 0; sum.bz = 0; sum.wx = 0; sum.wy = 0; sum.wz = 0; sum.jet = 0; sum.run = 0;
-  sum.first = Infinity; sum.last = -Infinity;
+  sum.first = Infinity; sum.last = -Infinity; sum.along = 0;
 }
 /**
  * Add `flux` kg/s leaving patch `at` of `hull` at (x, y, z) (world), `along` m along the board, at (vx, vy, vz) over the
@@ -283,6 +284,7 @@ function add(sum: SideSum, hull: HullSprayState, at: number, flux: number, x: nu
   sum.fall += flux * drops.fall; sum.mist += flux * drops.mist;
   sum.first = Math.min(sum.first, along);
   sum.last = Math.max(sum.last, along);
+  sum.along += flux * along;
 }
 
 /** A station's reading: its wetted patches' mean speed into the water and its path through it (world), and its depth line. */
@@ -448,9 +450,13 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     const span = Math.max(stationLength, sum.last - sum.first);
     sheet.alongX = axisZ[0] / horizontal;
     sheet.alongZ = axisZ[2] / horizontal;
-    sheet.x = sum.x / sum.flux - sheet.alongX * span * 0.5;
+    // From its aftmost exit to its foremost (spray-sheet: not centred on its water's mean, which a heavy tail and a
+    // light nose put past the tail), about a station either side of a lone one.
+    const mean = sum.along / sum.flux;
+    const back = span > stationLength ? mean - sum.first : stationLength * 0.5;
+    sheet.x = sum.x / sum.flux - axisZ[0] * back;
     sheet.y = sum.y / sum.flux;
-    sheet.z = sum.z / sum.flux - sheet.alongZ * span * 0.5;
+    sheet.z = sum.z / sum.flux - axisZ[2] * back;
     sheet.length = span;
     sheet.vx = sum.vx / sum.flux;
     sheet.vy = sum.vy / sum.flux;

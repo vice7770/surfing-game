@@ -85,6 +85,20 @@ describe('the spray off a planing board (board-spray)', () => {
     expect(water(drifting)).toBeGreaterThan(water(carve));
   });
 
+  it('leaves along the rail between its aftmost and foremost exits, on the board (spray-sheet)', () => {
+    const tail = Math.min(...layout.local.filter((_, k) => k % 3 === 2)) - layout.stationLength / 2;
+    const nose = Math.max(...layout.local.filter((_, k) => k % 3 === 2)) + layout.stationLength / 2;
+    for (const options of [{ speed: 12, bank: 33 * DEGREE, drift: 6 * DEGREE, sink: 0.04 }, { speed: 12, bank: 8 * DEGREE, sink: 0.05 }, { speed: 10 }]) {
+      for (const sheet of sheetsOf(hullAt(options))) {
+        // The board's along axis is world z (no yaw) here: the root's two ends, in its frame.
+        const start = sheet.z;
+        const end = sheet.z + sheet.alongZ * sheet.length;
+        expect(start).toBeGreaterThanOrEqual(tail - 0.02);
+        expect(end).toBeLessThanOrEqual(nose + 0.02);
+      }
+    }
+  });
+
   it('throws more water the deeper the low rail is loaded (Compress), as Wagner\'s ρ·W·D', () => {
     const light = sheetsOf(hullAt({ speed: 12, bank: 40 * DEGREE, drift: 6 * DEGREE, sink: 0.03 }));
     const loaded = sheetsOf(hullAt({ speed: 12, bank: 40 * DEGREE, drift: 6 * DEGREE, sink: 0.08 }));

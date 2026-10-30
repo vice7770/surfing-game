@@ -58,8 +58,8 @@ interface CaseLog {
 }
 
 /**
- * A camera 6 m behind the board along its heading and 2.2 m over it, 7 m to its side, or (`close`) 2 m off the rail
- * its spray leaves (`sheet`, else the board's +x side), looking at it.
+ * A camera 6 m behind the board along its heading and 2.2 m over it, 7 m to its side, or (`close`) 2.2 m off the
+ * curtain its rail throws (`sheet`, else the board's +x side), square to it, looking at it.
  */
 function cameraFor(board: Float64Array, view: 'chase' | 'side' | 'close', camera: PerspectiveCamera, sheet?: { x: number; y: number; z: number; vx: number; vz: number }): PerspectiveCamera {
   const position = new Vector3(board[0], board[1], board[2]);
@@ -69,9 +69,13 @@ function cameraFor(board: Float64Array, view: 'chase' | 'side' | 'close', camera
   if (view === 'close') {
     const target = sheet ? new Vector3(sheet.x, sheet.y, sheet.z) : position.clone();
     const out = sheet ? new Vector3(sheet.vx, 0, sheet.vz).normalize() : across.clone();
-    // Behind and outside the spray, looking along the rail at where it leaves.
-    camera.position.copy(target).addScaledVector(out, 1.6).addScaledVector(forward, -1.4).add(new Vector3(0, 0.7, 0));
-    camera.lookAt(target.x + out.x * 0.4, target.y + 0.15, target.z + out.z * 0.4);
+    // Outside the spray, square to its curtain (which trails along `out`, the water's way off the hull), looking at its
+    // first half metre.
+    const face = new Vector3(-out.z, 0, out.x);
+    if (face.dot(target.clone().sub(position)) < 0) face.negate();
+    const middle = target.clone().addScaledVector(out, 0.5);
+    camera.position.copy(middle).addScaledVector(face, 2.2).add(new Vector3(0, 0.5, 0));
+    camera.lookAt(middle.x, middle.y + 0.15, middle.z);
     camera.updateMatrixWorld();
     return camera;
   }
@@ -157,6 +161,8 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
         curtainAt: Array.from((hooks.mode.curtains.mesh.geometry.getAttribute('position').array as Float32Array).slice(0, 3)).map((v) => +v.toFixed(2)),
         curtainTip: Array.from((hooks.mode.curtains.mesh.geometry.getAttribute('position').array as Float32Array).slice(3 * 262, 3 * 262 + 3)).map((v) => +v.toFixed(2)),
         boardAt: [hooks.mode.board.position.x, hooks.mode.board.position.y, hooks.mode.board.position.z].map((v) => +v.toFixed(2)),
+        snapshotBoard: [board[0], board[1], board[2]].map((v) => +v.toFixed(2)),
+        roots: sheets.map((sheet) => ({ side: sheet.side, at: [sheet.x, sheet.y, sheet.z].map((v) => +v.toFixed(2)), length: +sheet.length.toFixed(2), breakup: +sheet.breakup.toFixed(3) })),
         sheet: sheets[0] ? {
           root: +sheets[0].length.toFixed(2), thickness: +(sheets[0].thickness * 1000).toFixed(1), breakup: +sheets[0].breakup.toFixed(3),
           speed: +Math.hypot(sheets[0].vx - sheets[0].boardX, sheets[0].vy - sheets[0].boardY, sheets[0].vz - sheets[0].boardZ).toFixed(2),

@@ -19,8 +19,10 @@ import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, type WaterOptic
  * out, gone under `none` m (fast snaps throw drops at once). The rough sheet is streaked along its flight (`streaks`
  * streaks a finger: the turbulence it brought off the bottom, Dai et al. 1997's striations), and whitens by up to `whiten`
  * at its tear, where its ligaments and beaded rims and the first drops crowd (white by optical depth, as the drops past it).
+ * Its two free ends gather into rims (Taylor–Culick; about 1 cm by the tear, the advisor), round water that always shows
+ * a glint: `rim` more sheen along them.
  */
-export const CURTAIN = { fingering: 0.55, minFingers: 8, maxFingers: 60, floor: 0.12, none: 0.08, faint: 0.15, streaks: 3, whiten: 0.3 } as const;
+export const CURTAIN = { fingering: 0.55, minFingers: 8, maxFingers: 60, floor: 0.15, none: 0.08, faint: 0.15, streaks: 3, whiten: 0.3, rim: 0.35 } as const;
 const GRAVITY = 9.81;
 const CURTAIN_ROUGHNESS = 0.18;
 /** A board's side that threw nothing for this long, s, is forgotten. */
@@ -33,12 +35,20 @@ const curtainCoverGlsl = /* glsl */ `{
   vec3 curtainV = normalize( cameraPosition - vLipWorld );
   vec3 curtainN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   float curtainF = waterFresnel( abs( dot( curtainN, curtainV ) ) );
-  float curtainSheen = max( ${CURTAIN.floor.toFixed(2)}, curtainF ) * curtainStreak( vCurtain, vFingers, vSeed );
+  float curtainSheen = max( ${CURTAIN.floor.toFixed(2)}, curtainF ) * curtainStreak( vCurtain, vFingers, vSeed ) + curtainRim( vCurtain );
   diffuseColor.a = curtainCover * vFade * min( 1.0, curtainSheen + vLipFoam );
   // Clear thin water: what shows through it is the scene behind (the blending), not the lip's light through it; only
   // its whitened tear scatters (premultiplied: the foam's share of the light).
   diffuseColor.rgb = lipFoamColor * vLipFoam;
   totalEmissiveRadiance = vec3( 0.0 );
+  #ifdef ENVMAP_TYPE_CUBE_UV
+    // The sheen past the water's own Fresnel (its floor, streaks and rims): more of the sky it reflects, so the floor
+    // brightens what is behind as wet glass does rather than greying it.
+    vec3 curtainR = reflect( -curtainV, curtainN * sign( dot( curtainN, curtainV ) ) );
+    curtainR.y = max( curtainR.y, 0.05 );
+    vec3 curtainSky = textureCubeUV( envMap, envMapRotation * normalize( curtainR ), ${CURTAIN_ROUGHNESS.toFixed(2)} ).rgb * envMapIntensity;
+    totalEmissiveRadiance = curtainSky * max( 0.0, curtainSheen - curtainF );
+  #endif
 }`;
 /** `curtainWhite` on the CPU (Rich's foam attribute): the whitening `share` of the way to the tear. */
 function whiteAt(share: number): number {
@@ -104,6 +114,13 @@ float curtainStreak( vec2 c, float fingers, float seed ) {
   float n = mix( curtainHash( which * 7.31 + seed ), curtainHash( ( which + 1.0 ) * 7.31 + seed ), f * f * ( 3.0 - 2.0 * f ) );
   return 0.6 + 0.8 * n;
 }
+// The rims its free ends gather into, thickening as it flies: more sheen just inside its frayed sides.
+float curtainRim( vec2 c ) {
+  float edge = min( c.x, 1.0 - c.x );
+  float at = 0.04 + 0.12 * c.y;
+  float width = 0.015 + 0.03 * c.y;
+  return ${CURTAIN.rim.toFixed(2)} * smoothstep( 0.05, 0.4, c.y ) * exp( -pow( ( edge - at ) / width, 2.0 ) );
+}
 // Its whitening toward the tear (both looks; Rich takes it as the lip's foam).
 float curtainWhite( vec2 c ) {
   return ${CURTAIN.whiten.toFixed(2)} * smoothstep( ${CURTAIN.fingering.toFixed(2)}, 1.0, c.y );
@@ -153,7 +170,7 @@ void main() {
   vec3 body = mix( deepColor, glowColor, 0.45 + 0.55 * through );
   // Premultiplied: the sky it reflects (at least the readability floor's sheen, streaked), a trace of the water's
   // colour and the sun through it, and the whitening tear, over what it lets through.
-  float sheen = max( ${CURTAIN.floor.toFixed(2)}, fresnel ) * curtainStreak( vCurtain, vFingers, vSeed );
+  float sheen = max( ${CURTAIN.floor.toFixed(2)}, fresnel ) * curtainStreak( vCurtain, vFingers, vSeed ) + curtainRim( vCurtain );
   float white = curtainWhite( vCurtain );
   float cover = mask * min( 1.0, sheen + white );
   gl_FragColor = vec4( mask * ( skyColor * sheen + body * 0.04 * ( 1.0 + 2.0 * through ) + vec3( 0.93, 0.97, 0.97 ) * white ), cover );
@@ -225,7 +242,7 @@ export class SpraySheetMesh {
         // sun's reflection and the light through it.
         .replace('#include <emissivemap_fragment>', `${richLipBody}\nwaterGlitterCover = vLipFoam;\n${curtainCoverGlsl}`)
         // Premultiplied (glass's blending): what it reflects and scatters, over what it lets through.
-        .replace('#include <opaque_fragment>', '#include <opaque_fragment>\ngl_FragColor.rgb *= curtainCover;')
+        .replace('#include <opaque_fragment>', '#include <opaque_fragment>\ngl_FragColor.rgb *= curtainCover * vFade;')
         .replace('#include <lights_fragment_maps>', RICH_LIP_REFLECTION)
         .replace('#include <lights_physical_pars_fragment>', richGlitterLights(true));
     };
