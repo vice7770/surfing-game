@@ -139,6 +139,12 @@ export interface SurfZoneConfig {
    * switch, for A/Bs; online rooms run the default.
    */
   boardSpray?: 'off';
+  /**
+   * 'off': the boards' spray leaves the hull as drops, as before spray-sheet (2026-10-30); by default it leaves as a
+   * curtain of water that tears into the drops a little way out, drawn on the page (`SpraySheetMesh`). The
+   * `?spraySheet=off` dev switch, for A/Bs; online rooms run the default.
+   */
+  spraySheet?: 'off';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */

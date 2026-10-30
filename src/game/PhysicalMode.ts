@@ -20,6 +20,7 @@ import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
 import { SprayPoints } from '../scene/SprayPoints';
+import { SpraySheetMesh } from '../scene/SpraySheetMesh';
 import { LipSheetMesh } from '../scene/LipSheetMesh';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
@@ -416,6 +417,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...extensionSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
+    // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
+    ...spraySheetSwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -536,6 +539,14 @@ export function boardSpraySwitch(search?: string): { boardSpray?: 'off' } {
 }
 
 /**
+ * The `?spraySheet=off` dev switch (`SurfZoneConfig.spraySheet`, spray-sheet 2026-10-30): the boards' spray leaves the
+ * hull as drops, as before, in place of a curtain of water that tears into them a little way out.
+ */
+export function spraySheetSwitch(search?: string): { spraySheet?: 'off' } {
+  return devParam('spraySheet', search)?.trim().toLowerCase() === 'off' ? { spraySheet: 'off' } : {};
+}
+
+/**
  * The `?tubeShape=c` dev switch (`SurfZoneConfig.tubeShape`): the swept barrel drawn and felt as the authored bounded-C
  * profile the game drew from 2026-10-05 to 2026-10-22, in place of the cases' own Basilisk frames, to compare the two.
  */
@@ -600,6 +611,11 @@ export class PhysicalMode {
   readonly spray = new SprayPoints();
   /** The lip sheets and spray mirrored past the open sides, with the edge band's water. */
   private readonly edgeWhitewater = new EdgeWhitewater([this.lipSheet.mesh, this.spray.mesh]);
+  /** The boards' spray sheets drawn as curtains of water (spray-sheet). */
+  readonly curtains = new SpraySheetMesh();
+  /** Other players' sheets as last drawn (spray-sheet), for their curtains. */
+  private otherCurtains?: ArrayLike<number>;
+  private readonly curtainOffset = new Vector3();
   /** The physical board, drawn at the snapshot's pose. */
   private readonly boardShape = buildBoardShape();
   readonly board = createBoardMesh(this.boardShape);
@@ -732,7 +748,7 @@ export class PhysicalMode {
 
   constructor(scene: Scene) {
     this.scene = scene;
-    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object);
+    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object, this.curtains.mesh);
     this.leash.object.visible = false;
     this.board.visible = false;
     this.surfer.group.visible = false;
@@ -842,6 +858,7 @@ export class PhysicalMode {
     water.setOptics(SPOT_OPTICS[settings.spot]);
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
+    this.curtains.setOptics(SPOT_OPTICS[settings.spot]);
     const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
@@ -1011,6 +1028,8 @@ export class PhysicalMode {
   /** Online (board-spray): the other players' boards' sheets, from their poses on this water, for the next batch of steps. */
   setRemoteSheets(packed: Float32Array | undefined): void {
     this.boardSheets = packed;
+    // Drawn as curtains too, where the config draws them (spray-sheet).
+    this.otherCurtains = this.host?.config.spraySheet === 'off' || this.host?.config.boardSpray === 'off' ? undefined : packed;
   }
 
   update(dt: number): void {
@@ -1055,6 +1074,12 @@ export class PhysicalMode {
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
+    // The spray's curtains, carried with the drawn board (the snapshot's sheets are where it was at the snapshot).
+    const snapshotBoard = host.snapshot.board;
+    this.curtainOffset.set(pose[0] - snapshotBoard[0], pose[1] - snapshotBoard[1], pose[2] - snapshotBoard[2]);
+    if (!(snapshotBoard[7] > 0)) this.curtainOffset.set(0, 0, 0);
+    this.curtains.update(host.snapshot.sheets, host.snapshot.sheetCount, this.curtainOffset, this.otherCurtains);
+    this.curtains.mesh.visible = this.shown && this.sprayShown;
     this.surfer.group.visible = this.shown && riding;
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
@@ -1221,5 +1246,6 @@ export class PhysicalMode {
     this.lipSheet.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
     this.spray.mesh.visible = visible && this.sprayShown;
+    this.curtains.mesh.visible = visible && this.sprayShown;
   }
 }

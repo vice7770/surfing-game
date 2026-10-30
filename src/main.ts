@@ -514,13 +514,13 @@ class SurfGame {
     // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
     // sample moving through their step whatever `?surfaceMotion` says, the swim back to the board whatever `?swim` says,
     // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, and
-    // the boards' spray whatever `?boardSpray` says;
+    // the boards' spray and its curtains whatever `?boardSpray` and `?spraySheet` say;
     // and the cases' own tubes, whatever `?tubeShape` or `?canyonTube` say (the spot's own swept barrel: what a rider hits
     // must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonAgeJoin: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined,
+      sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,
@@ -1091,6 +1091,7 @@ class SurfGame {
     this.physicalMode.spray.setLook(look);
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
+    this.physicalMode.curtains.setLook(look);
     // The sand, bubbles and riders take the horizon haze with the Rich water (hazeLand.ts).
     setHazeLandLook(look);
     this.drawnLook = look;
@@ -1201,6 +1202,7 @@ class SurfGame {
     this.physicalMode.farField.setSun(direction, radiance);
     this.physicalMode.spray.setSun(direction, radiance);
     this.physicalMode.lipSheet.setSun(direction, radiance);
+    this.physicalMode.curtains.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {

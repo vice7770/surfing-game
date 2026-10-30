@@ -16,7 +16,7 @@ import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
-import { BOARD_SHEETS, createBoardSpraySheet, unpackBoardSheets } from '../physics/boardSpray';
+import { BOARD_SHEETS, BOARD_SHEET_STRIDE, createBoardSpraySheet, packBoardSheets, unpackBoardSheets } from '../physics/boardSpray';
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
@@ -296,6 +296,9 @@ export interface SurfZoneBuffers {
   /** Spray and mist: x, y, z, size and opacity per particle (`SPRAY_STRIDE`). */
   spray: Float32Array;
   sprayCount: number;
+  /** The board's spray sheets this step (spray-sheet; `BOARD_SHEET_STRIDE` each), drawn as curtains; none with them off. */
+  sheets: Float32Array;
+  sheetCount: number;
   board: Float64Array;
   rider: Float64Array;
   /** Sound (S1): lip landings since the last snapshot (`LIP_HIT_STRIDE`). */
@@ -341,12 +344,15 @@ export class SurfZoneRunner {
   readonly spray: SprayCloud;
   /** Hidden spray has no effect on water, rider physics or sound. */
   private sprayEnabled = true;
-  /** The boards throw spray (board-spray; `SurfZoneConfig.boardSpray`). */
+  /** The boards throw spray (board-spray; `SurfZoneConfig.boardSpray`), as curtains that tear into drops (`spraySheet`). */
   private readonly boardSprays: boolean;
+  private readonly curtains: boolean;
   /** This step's sheets off the board (`BOARD_SHEETS` at most), and how many; and the other players' (`setRemoteSheets`). */
   private readonly boardSheets: BoardSpraySheet[] = Array.from({ length: BOARD_SHEETS }, createBoardSpraySheet);
   private readonly sheetsInUse: BoardSpraySheet[] = [];
   private remoteSheets: readonly BoardSpraySheet[] = [];
+  /** How many of this step's sheets are this board's (the first ones), for the snapshot's drawn curtain. */
+  private ownSheets = 0;
   /** Uniform render grid over the window and the whole tank. */
   readonly grid: RenderGrid;
   /** Bed elevation per render node (fixed until the window slides). */
@@ -426,6 +432,7 @@ export class SurfZoneRunner {
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY, BOARD_SPRAY_CAPACITY);
     this.boardSprays = config.boardSpray !== 'off';
+    this.curtains = config.spraySheet !== 'off';
     this.grid = requestedGrid.spacing === renderSpacing ? requestedGrid : this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
     this.simulation.writeUniformBed(this.bed, this.grid);
@@ -703,7 +710,10 @@ export class SurfZoneRunner {
     if (!this.boardSprays) return;
     const count = this.board ? this.board.spraySheets(this.boardSheets) : 0;
     for (let n = 0; n < count; n += 1) sheets.push(this.boardSheets[n]);
+    this.ownSheets = count;
     for (const sheet of this.remoteSheets) sheets.push(sheet);
+    // Without the curtains the drops leave the hull at once, as before spray-sheet.
+    if (!this.curtains) for (const sheet of sheets) sheet.breakup = 0;
   }
 
   /** Other players' sheets (board-spray), thrown on every step of this batch: they come with each frame's request. */
@@ -860,6 +870,8 @@ export class SurfZoneRunner {
       bubbleCount: 0,
       spray: new Float32Array((SPRAY_CAPACITY + WHITEWATER_CAPACITY + BOARD_SPRAY_CAPACITY) * SPRAY_STRIDE),
       sprayCount: 0,
+      sheets: new Float32Array(BOARD_SHEETS * BOARD_SHEET_STRIDE),
+      sheetCount: 0,
       board: new Float64Array(8),
       rider: new Float64Array(RIDER_SNAPSHOT.length),
       lipHits: new Float32Array(SOUND_EVENT_CAPACITY * LIP_HIT_STRIDE),
@@ -908,6 +920,10 @@ export class SurfZoneRunner {
     buffers.bubbles.set(this.bubbles.positions.subarray(0, buffers.bubbleCount * 3));
     buffers.sprayCount = Math.min(buffers.spray.length / SPRAY_STRIDE, this.spray.count);
     buffers.spray.set(this.spray.particles.subarray(0, buffers.sprayCount * SPRAY_STRIDE));
+    // The board's sheets as of the last step, to draw as curtains on the page (spray-sheet).
+    const drawn = this.curtains && this.sprayEnabled ? Math.min(this.ownSheets, BOARD_SHEETS) : 0;
+    if (drawn > 0) packBoardSheets(this.sheetsInUse.slice(0, drawn), buffers.sheets);
+    buffers.sheetCount = drawn;
     const { board } = this;
     buffers.board.fill(0);
     if (board) {

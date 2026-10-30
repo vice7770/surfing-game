@@ -27,8 +27,11 @@ import type { BoardShape } from './boardShape';
 
 /** Sheets a board throws at most: off each side. */
 export const BOARD_SHEETS = 2;
-/** Floats per packed sheet (`packBoardSheets`): x, y, z, alongX, alongZ, length, vx, vy, vz, flux, spread, fall, mist. */
-export const BOARD_SHEET_STRIDE = 13;
+/**
+ * Floats per packed sheet (`packBoardSheets`): x, y, z, alongX, alongZ, length, vx, vy, vz, flux, spread, fall, mist,
+ * boardX, boardY, boardZ, thickness, fan, breakup.
+ */
+export const BOARD_SHEET_STRIDE = 19;
 const WATER_DENSITY = 1025;
 const DEGREE = Math.PI / 180;
 /** The sheet's measured share of its potential-flow speed (Savitsky & Breslin 1958: 0.77–0.87 at β 20–30°). */
@@ -80,7 +83,21 @@ export function sheetDrops(speed: number): { fall: number; mist: number } {
 }
 
 export function createBoardSpraySheet(): BoardSpraySheet {
-  return { x: 0, y: 0, z: 0, alongX: 0, alongZ: 0, length: 0, vx: 0, vy: 0, vz: 0, flux: 0, spread: 0, fall: 7, mist: 0.05 };
+  return {
+    x: 0, y: 0, z: 0, alongX: 0, alongZ: 0, length: 0, vx: 0, vy: 0, vz: 0, flux: 0, spread: 0, fall: 7, mist: 0.05,
+    boardX: 0, boardY: 0, boardZ: 0, thickness: 0, fan: 0, breakup: 0,
+  };
+}
+
+/**
+ * The curtain of water a sheet leaves the hull as (spray-sheet, 2026-10-30): `flux` kg/s at `speed` m/s along `width` m of
+ * rail. Its thickness there, m (ṁ / ρ U w), the half-angle it fans out at, rad, and the time it flies before it tears
+ * into drops, s (none: it leaves as drops at once).
+ * PROVISIONAL: the break-up from the water-physics advisor's ruling.
+ */
+export function sprayCurtain(flux: number, speed: number, width: number): { thickness: number; fan: number; breakup: number } {
+  const thickness = speed > 0 && width > 0 ? flux / (WATER_DENSITY * speed * width) : 0;
+  return { thickness, fan: 0.2, breakup: thickness > 1e-4 && speed > 1 ? 0.3 / speed : 0 };
 }
 
 /**
@@ -176,20 +193,29 @@ interface SideSum {
   flux: number;
   x: number; y: number; z: number;
   vx: number; vy: number; vz: number;
+  /** The hull's own velocity where it leaves (world, m/s), and the water's. */
+  bx: number; by: number; bz: number;
+  wx: number; wy: number; wz: number;
   fall: number; mist: number;
   first: number; last: number;
 }
 const sums: [SideSum, SideSum] = [createSum(), createSum()];
 function createSum(): SideSum {
-  return { flux: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, fall: 0, mist: 0, first: Infinity, last: -Infinity };
+  return { flux: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, bx: 0, by: 0, bz: 0, wx: 0, wy: 0, wz: 0, fall: 0, mist: 0, first: Infinity, last: -Infinity };
 }
 function clear(sum: SideSum): void {
   sum.flux = 0; sum.x = 0; sum.y = 0; sum.z = 0; sum.vx = 0; sum.vy = 0; sum.vz = 0; sum.fall = 0; sum.mist = 0;
+  sum.bx = 0; sum.by = 0; sum.bz = 0; sum.wx = 0; sum.wy = 0; sum.wz = 0;
   sum.first = Infinity; sum.last = -Infinity;
 }
-/** Add `flux` kg/s leaving at (x, y, z) (world), `along` m along the board, at (vx, vy, vz) over the ground. */
-function add(sum: SideSum, flux: number, x: number, y: number, z: number, along: number, vx: number, vy: number, vz: number): void {
+/**
+ * Add `flux` kg/s leaving patch `at` of `hull` at (x, y, z) (world), `along` m along the board, at (vx, vy, vz) over the
+ * ground.
+ */
+function add(sum: SideSum, hull: HullSprayState, at: number, flux: number, x: number, y: number, z: number, along: number, vx: number, vy: number, vz: number): void {
   if (!(flux > 0)) return;
+  sum.bx += flux * hull.hull[at * 3]; sum.by += flux * hull.hull[at * 3 + 1]; sum.bz += flux * hull.hull[at * 3 + 2];
+  sum.wx += flux * hull.water[at * 3]; sum.wy += flux * hull.water[at * 3 + 1]; sum.wz += flux * hull.water[at * 3 + 2];
   const drops = sheetDrops(Math.hypot(vx, vy, vz));
   sum.flux += flux;
   sum.x += flux * x; sum.y += flux * y; sum.z += flux * z;
@@ -311,7 +337,7 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     const wx = point[at * 3] + axisX[0] * (exitAcross - across[at]) + axisZ[0] * (exitAlong - station.z);
     const wz = point[at * 3 + 2] + axisX[2] * (exitAcross - across[at]) + axisZ[2] * (exitAlong - station.z);
     const surface = point[at * 3 + 1] + depth[at];
-    add(sums[side > 0 ? 1 : 0], flux, wx, surface + LIFT_OFF, wz, exitAlong,
+    add(sums[side > 0 ? 1 : 0], hull, at, flux, wx, surface + LIFT_OFF, wz, exitAlong,
       water[at * 3] + (launch * dx) / norm, water[at * 3 + 1] + (launch * dy) / norm, water[at * 3 + 2] + (launch * dz) / norm);
   }
   // The flat board's side blister, off both rails at its spray root (the foremost wetted station), for the share of the
@@ -345,7 +371,7 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
       const wx = point[at * 3] + axisX[0] * (edge - across[at]);
       const wz = point[at * 3 + 2] + axisX[2] * (edge - across[at]);
       const surface = point[at * 3 + 1] + depth[at];
-      add(sums[rail > 0 ? 1 : 0], flux / 2, wx, surface + LIFT_OFF, wz, station.z,
+      add(sums[rail > 0 ? 1 : 0], hull, at, flux / 2, wx, surface + LIFT_OFF, wz, station.z,
         water[at * 3] + cx * sideways, water[at * 3 + 1] + sideways * Math.tan(elevation), water[at * 3 + 2] + cz * sideways);
     }
   }
@@ -369,16 +395,26 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     sheet.spread = SHEET_SPREAD * Math.hypot(sheet.vx, sheet.vy, sheet.vz);
     sheet.fall = sum.fall / sum.flux;
     sheet.mist = sum.mist / sum.flux;
+    sheet.boardX = sum.bx / sum.flux;
+    sheet.boardY = sum.by / sum.flux;
+    sheet.boardZ = sum.bz / sum.flux;
+    // The sheet itself (spray-sheet): its speed through the air (over the water), how thick it leaves the hull, how
+    // fast it fans out, and when it tears into the drops.
+    const speed = Math.hypot(sheet.vx - sum.wx / sum.flux, sheet.vy - sum.wy / sum.flux, sheet.vz - sum.wz / sum.flux);
+    const shape = sprayCurtain(sum.flux, speed, span);
+    sheet.thickness = shape.thickness;
+    sheet.fan = shape.fan;
+    sheet.breakup = shape.breakup;
   }
   return count;
 }
 
 /** `sheets` packed for a message (`BOARD_SHEET_STRIDE` floats each). */
-export function packBoardSheets(sheets: readonly BoardSpraySheet[], out = new Float32Array(sheets.length * BOARD_SHEET_STRIDE)): Float32Array {
+export function packBoardSheets(sheets: readonly BoardSpraySheet[], out: Float32Array<ArrayBufferLike> = new Float32Array(sheets.length * BOARD_SHEET_STRIDE)): Float32Array<ArrayBufferLike> {
   sheets.forEach((sheet, n) => {
     out.set([
       sheet.x, sheet.y, sheet.z, sheet.alongX, sheet.alongZ, sheet.length, sheet.vx, sheet.vy, sheet.vz, sheet.flux, sheet.spread,
-      sheet.fall, sheet.mist,
+      sheet.fall, sheet.mist, sheet.boardX, sheet.boardY, sheet.boardZ, sheet.thickness, sheet.fan, sheet.breakup,
     ], n * BOARD_SHEET_STRIDE);
   });
   return out;
@@ -391,7 +427,8 @@ export function unpackBoardSheets(packed: ArrayLike<number>): BoardSpraySheet[] 
     sheets.push({
       x: packed[o], y: packed[o + 1], z: packed[o + 2], alongX: packed[o + 3], alongZ: packed[o + 4], length: packed[o + 5],
       vx: packed[o + 6], vy: packed[o + 7], vz: packed[o + 8], flux: packed[o + 9], spread: packed[o + 10],
-      fall: packed[o + 11], mist: packed[o + 12],
+      fall: packed[o + 11], mist: packed[o + 12], boardX: packed[o + 13], boardY: packed[o + 14], boardZ: packed[o + 15],
+      thickness: packed[o + 16], fan: packed[o + 17], breakup: packed[o + 18],
     });
   }
   return sheets;

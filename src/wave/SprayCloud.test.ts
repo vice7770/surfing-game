@@ -572,6 +572,7 @@ describe('a board\'s spray (board-spray)', () => {
   /** A hard turn's sheet: `flux` kg/s leaving 4 cm over the water along 0.6 m of rail, out and up at 6 and 5 m/s. */
   const sheet = (flux: number): BoardSpraySheet => ({
     x: 5, y: 0.04, z: 20, alongX: 0, alongZ: 1, length: 0.6, vx: 6, vy: 5, vz: 2, flux, spread: 1, fall: 7, mist: 0.1,
+    boardX: 0, boardY: 0, boardZ: 8, thickness: 0, fan: 0, breakup: 0,
   });
 
   it('throws BOARD_SPRAY_PER_KG drawn particles per kilogram of the sheet\'s water, out along its velocity', () => {

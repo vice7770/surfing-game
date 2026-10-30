@@ -22,6 +22,7 @@ import { PoolStart, type PoolStartKind } from './poolStart';
 interface StripHooks {
   start(settings: PhysicalSettings, overrides?: Record<string, unknown>): Promise<void>;
   setTimeOfDay(time: 'dawn' | 'midday' | 'sunset'): Promise<void>;
+  setWaterLook(look: 'classic' | 'rich'): void;
   step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
   render(seconds: number, camera?: PerspectiveCamera): void;
   renderView(camera: PerspectiveCamera): void;
@@ -39,6 +40,11 @@ const CASES = (params.get('cases') ?? 'trim,turn,compress').split(',') as Case[]
 const TIMES = (params.get('times') ?? '0.6,0.9,1.2,1.5').split(',').map(Number);
 const STEER = Number(params.get('steer') ?? -ARM);
 const OFF = params.get('boardSpray') === 'off';
+/** `&spraySheet=off`: the spray as drops at once, without its curtains (spray-sheet's before). */
+const NO_SHEET = params.get('spraySheet') === 'off';
+/** `&close=1`: a third row, close to the rail the spray leaves (spray-sheet). */
+const CLOSE = params.get('close') === '1';
+const VIEWS = (CLOSE ? ['chase', 'side', 'close'] : ['chase', 'side']) as ('chase' | 'side' | 'close')[];
 const TILE = { width: 640, height: 360 };
 /** The GPU timing's frame, as the game's at 720p. */
 const FULL = { width: 1280, height: 720 };
@@ -48,15 +54,27 @@ const TURN = { from: 0.3, for: 0.8 };
 interface CaseLog {
   case: Case;
   start: string;
-  frames: { t: number; speed: number; sheets: number; flux: number; spray: number; boardSpawns: number }[];
+  frames: Record<string, unknown>[];
 }
 
-/** A camera `back` m behind the board along its heading and `up` m over it, or `side` m to its side, looking at it. */
-function cameraFor(board: Float64Array, view: 'chase' | 'side', camera: PerspectiveCamera): PerspectiveCamera {
+/**
+ * A camera 6 m behind the board along its heading and 2.2 m over it, 7 m to its side, or (`close`) 2 m off the rail
+ * its spray leaves (`sheet`, else the board's +x side), looking at it.
+ */
+function cameraFor(board: Float64Array, view: 'chase' | 'side' | 'close', camera: PerspectiveCamera, sheet?: { x: number; y: number; z: number; vx: number; vz: number }): PerspectiveCamera {
   const position = new Vector3(board[0], board[1], board[2]);
   const q = new Quaternion(board[3], board[4], board[5], board[6]);
   const forward = new Vector3(0, 0, 1).applyQuaternion(q).setY(0).normalize();
   const across = new Vector3(forward.z, 0, -forward.x);
+  if (view === 'close') {
+    const target = sheet ? new Vector3(sheet.x, sheet.y, sheet.z) : position.clone();
+    const out = sheet ? new Vector3(sheet.vx, 0, sheet.vz).normalize() : across.clone();
+    // Behind and outside the spray, looking along the rail at where it leaves.
+    camera.position.copy(target).addScaledVector(out, 1.6).addScaledVector(forward, -1.4).add(new Vector3(0, 0.7, 0));
+    camera.lookAt(target.x + out.x * 0.4, target.y + 0.15, target.z + out.z * 0.4);
+    camera.updateMatrixWorld();
+    return camera;
+  }
   if (view === 'chase') camera.position.copy(position).addScaledVector(forward, -6).add(new Vector3(0, 2.2, 0));
   else camera.position.copy(position).addScaledVector(across, 7).addScaledVector(forward, 1).add(new Vector3(0, 1.4, 0));
   camera.lookAt(position.x, position.y + 0.8, position.z);
@@ -76,8 +94,11 @@ async function log(line: string): Promise<void> {
 
 export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
   const settings = physicalSettingsFor('pool', { swell: SIZE, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
-  await hooks.start(settings, OFF ? { boardSpray: 'off' } : undefined);
+  await hooks.start(settings, { ...(OFF ? { boardSpray: 'off' } : {}), ...(NO_SHEET ? { spraySheet: 'off' } : {}) });
   await hooks.setTimeOfDay('midday');
+  // `&look=classic|rich`: the water look (the game's graphics setting otherwise).
+  const look = params.get('look');
+  if (look === 'classic' || look === 'rich') hooks.setWaterLook(look);
   hooks.resize(TILE.width, TILE.height);
   const host = hooks.mode.host;
   const placed = PoolStart.at(host, ARM);
@@ -100,7 +121,7 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
     const entry: CaseLog = { case: which, start: `${kind} at ${host.snapshot.status.seaTime.toFixed(1)} s`, frames: [] };
     const strip = document.createElement('canvas');
     strip.width = TILE.width * TIMES.length;
-    strip.height = TILE.height * 2;
+    strip.height = TILE.height * VIEWS.length;
     const context = strip.getContext('2d')!;
     const spawnsBefore = runner.spray.boardSpawns;
     let held = false;
@@ -111,8 +132,16 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
       const column = TIMES.findIndex((time) => Math.abs(time - t) < STEP / 2);
       if (column < 0) continue;
       const board = host.snapshot.board;
-      for (const [row, view] of (['chase', 'side'] as const).entries()) {
-        hooks.render(STEP / 2, cameraFor(board, view, camera));
+      const now = runner.boardSheetsNow()[0];
+      const aim = now ? { x: now.x + now.alongX * now.length * 0.5, y: now.y, z: now.z + now.alongZ * now.length * 0.5, vx: now.vx - now.boardX, vz: now.vz - now.boardZ } : undefined;
+      for (const [row, view] of VIEWS.entries()) {
+        hooks.render(STEP / 2, cameraFor(board, view, camera, aim));
+        // `&only=curtains`: the drops hidden, to see the curtains alone.
+        if (params.get('only') === 'curtains') {
+          hooks.mode.spray.mesh.visible = false;
+          hooks.renderView(cameraFor(board, view, camera, aim));
+          hooks.mode.spray.mesh.visible = true;
+        }
         context.drawImage(hooks.canvas, column * TILE.width, row * TILE.height, TILE.width, TILE.height);
       }
       context.fillStyle = 'rgba(0,0,0,0.55)';
@@ -124,6 +153,15 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
       entry.frames.push({
         t: +t.toFixed(2), speed: +Math.hypot(runner.board!.velocity.x, runner.board!.velocity.z).toFixed(2), sheets: sheets.length,
         flux: +sheets.reduce((sum, sheet) => sum + sheet.flux, 0).toFixed(1), spray: runner.spray.count, boardSpawns: runner.spray.boardSpawns - spawnsBefore,
+        curtains: hooks.mode.curtains.drawn,
+        curtainAt: Array.from((hooks.mode.curtains.mesh.geometry.getAttribute('position').array as Float32Array).slice(0, 3)).map((v) => +v.toFixed(2)),
+        curtainTip: Array.from((hooks.mode.curtains.mesh.geometry.getAttribute('position').array as Float32Array).slice(3 * 262, 3 * 262 + 3)).map((v) => +v.toFixed(2)),
+        boardAt: [hooks.mode.board.position.x, hooks.mode.board.position.y, hooks.mode.board.position.z].map((v) => +v.toFixed(2)),
+        sheet: sheets[0] ? {
+          root: +sheets[0].length.toFixed(2), thickness: +(sheets[0].thickness * 1000).toFixed(1), breakup: +sheets[0].breakup.toFixed(3),
+          speed: +Math.hypot(sheets[0].vx - sheets[0].boardX, sheets[0].vy - sheets[0].boardY, sheets[0].vz - sheets[0].boardZ).toFixed(2),
+          launch: +Math.hypot(sheets[0].vx, sheets[0].vy, sheets[0].vz).toFixed(2), fan: +sheets[0].fan.toFixed(2),
+        } : undefined,
       });
       // The compressed turn's busiest frame: the spray's GPU time, drawn against hidden, frame by frame.
       if (which === 'compress' && !held && column === Math.floor(TIMES.length / 2)) {
@@ -137,7 +175,7 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
         camera.updateProjectionMatrix();
       }
     }
-    await post(strip, `board-spray-${which}${OFF ? '-off' : ''}.png`);
+    await post(strip, `board-spray-${which}${OFF ? '-off' : ''}${NO_SHEET ? '-drops' : ''}${CLOSE ? '-close' : ''}.png`);
     await log(`${which}: ${JSON.stringify(entry)}`);
     result.cases.push(entry);
     // Wait out this wave before the next case's.
@@ -158,7 +196,13 @@ async function sprayGpuAB(hooks: StripHooks, camera: PerspectiveCamera, cycles =
   const timer = gl?.getExtension('EXT_disjoint_timer_query_webgl2') as { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number } | null;
   if (!gl || !timer) return 'no GPU timer';
   const spray = hooks.mode.spray.mesh;
-  const arms = [() => { spray.visible = true; }, () => { spray.visible = false; }];
+  const curtains = hooks.mode.curtains.mesh;
+  // The spray as drawn (drops and curtains), its curtains hidden, and all of it hidden.
+  const arms = [
+    () => { spray.visible = true; curtains.visible = true; },
+    () => { spray.visible = true; curtains.visible = false; },
+    () => { spray.visible = false; curtains.visible = false; },
+  ];
   for (const arm of arms) {
     arm();
     hooks.renderView(camera);
@@ -177,6 +221,7 @@ async function sprayGpuAB(hooks: StripHooks, camera: PerspectiveCamera, cycles =
     if (cycle % 2 === 1) await breathe();
   }
   spray.visible = true;
+  curtains.visible = true;
   const times = arms.map(() => new Array<number>(cycles).fill(Number.NaN));
   for (const { arm, cycle, query } of pending) {
     while (!gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE)) await new Promise((resolve) => setTimeout(resolve, 5));
@@ -188,6 +233,7 @@ async function sprayGpuAB(hooks: StripHooks, camera: PerspectiveCamera, cycles =
     return sorted.length ? +sorted[Math.floor(sorted.length / 2)].toFixed(3) : Number.NaN;
   };
   return {
-    drawn: median(times[0]), hidden: median(times[1]), sprayCost: median(times[0].map((t, cycle) => t - times[1][cycle])),
+    drawn: median(times[0]), curtainsHidden: median(times[1]), allHidden: median(times[2]), curtains: hooks.mode.curtains.drawn,
+    curtainCost: median(times[0].map((t, cycle) => t - times[1][cycle])), sprayCost: median(times[0].map((t, cycle) => t - times[2][cycle])),
   };
 }

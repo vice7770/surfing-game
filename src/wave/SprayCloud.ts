@@ -89,6 +89,17 @@ export interface BoardSpraySheet {
   spread: number;
   fall: number;
   mist: number;
+  /**
+   * The sheet as a curtain of water (spray-sheet, 2026-10-30): the hull's velocity where it leaves (world, m/s), its
+   * thickness there (m), the half-angle it fans out at (rad), and how long it flies before it tears into drops (s; 0:
+   * drops at once). With the curtain drawn, its drops are thrown from where it tears.
+   */
+  boardX: number;
+  boardY: number;
+  boardZ: number;
+  thickness: number;
+  fan: number;
+  breakup: number;
 }
 
 /** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */
@@ -461,14 +472,27 @@ export class SprayCloud {
     const random = this.boardRandom;
     const expected = sheet.flux * dt * BOARD_SPRAY_PER_KG * this.budget.spawn;
     let spawns = Math.floor(expected) + (random() < expected - Math.floor(expected) ? 1 : 0);
+    // Drawn as a curtain (spray-sheet), the sheet's water flies as one until it tears, `breakup` s out: its drops are
+    // thrown from there, as the water launched then from where the hull was, fanned out, with gravity's pull since.
+    const torn = sheet.breakup > 0;
+    const relativeX = sheet.vx - sheet.boardX;
+    const relativeY = sheet.vy - sheet.boardY;
+    const relativeZ = sheet.vz - sheet.boardZ;
+    const reach = Math.hypot(relativeX, relativeY, relativeZ) * Math.tan(sheet.fan);
     for (; spawns > 0 && this.boardCount < this.boardRoom; spawns -= 1) {
-      const along = random() * sheet.length;
+      const across = random();
+      const along = across * sheet.length;
+      // The tear line is ragged: each drop leaves within a sixth of the flight either side of it.
+      const t = torn ? sheet.breakup * (0.85 + 0.3 * random()) : 0;
+      const widen = (across - 0.5) * 2 * reach * t;
       const pace = 0.8 + 0.4 * random();
       const k = this.count;
       this.spawn(
         random() < sheet.mist ? MIST : SPRAY,
-        sheet.x + sheet.alongX * along, sheet.y, sheet.z + sheet.alongZ * along,
-        sheet.vx * pace + (random() - 0.5) * 2 * sheet.spread, sheet.vy * pace + (random() - 0.5) * 2 * sheet.spread,
+        sheet.x + sheet.alongX * (along + widen) + relativeX * t,
+        sheet.y + relativeY * t - 0.5 * GRAVITY * t * t,
+        sheet.z + sheet.alongZ * (along + widen) + relativeZ * t,
+        sheet.vx * pace + (random() - 0.5) * 2 * sheet.spread, (sheet.vy - GRAVITY * t) * pace + (random() - 0.5) * 2 * sheet.spread,
         sheet.vz * pace + (random() - 0.5) * 2 * sheet.spread,
         random,
       );
