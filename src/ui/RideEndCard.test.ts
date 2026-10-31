@@ -48,9 +48,9 @@ describe('endCardModel', () => {
     expect(endCardModel({ ...wipeout, outcome: 'ended' }, [], 'metric').title).toBe('end.ended');
   });
 
-  it('shows no card after a wipeout, only after rides that end otherwise', () => {
+  it('shows no card after any ride (owner, 2026-10-31)', () => {
     expect(showsEndCard(wipeout)).toBe(false);
-    expect(showsEndCard({ ...wipeout, outcome: 'complete' })).toBe(true);
-    expect(showsEndCard({ ...wipeout, outcome: 'ended' })).toBe(true);
+    expect(showsEndCard({ ...wipeout, outcome: 'complete' })).toBe(false);
+    expect(showsEndCard({ ...wipeout, outcome: 'ended' })).toBe(false);
   });
 });

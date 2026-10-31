@@ -620,7 +620,7 @@ export class App {
     this.show();
   }
 
-  /** Feed the ride tracker; a finished ride is logged and, unless it was a wipeout, summed up on the end card. */
+  /** Feed the ride tracker; a finished ride is logged (no end card: `showsEndCard`). */
   private trackRide(): void {
     const frame = this.game.rideFrame;
     if (!frame) return;
