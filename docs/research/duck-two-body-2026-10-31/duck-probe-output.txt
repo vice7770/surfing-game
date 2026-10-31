@@ -1,0 +1,16 @@
+## Flat water (two-body)
+{"case":"1.5 s press, from rest","deck":"0.61","nose":"0.97","pitch":"9.0 → -4.5 at 0.3 s","rollMax":"21","board":"kept","back":"back on at 4.68 s"}
+{"case":"3 s press, from rest","deck":"0.62","nose":"0.92","pitch":"9.0 → -4.5 at 0.3 s","rollMax":"44","board":"kept","back":"back on at 5.80 s"}
+{"case":"1.5 s press, from paddling (1.62 m/s)","deck":"0.78","nose":"1.25","pitch":"11.4 → -1.1 at 0.3 s","rollMax":"45","board":"kept","back":"not back on"}
+{"case":"3 s press, from paddling (1.62 m/s)","deck":"0.75","nose":"1.29","pitch":"11.4 → -1.1 at 0.3 s","rollMax":"37","board":"kept","back":"not back on"}
+## Test bore (1.2 m broken wave), five starts each
+{"depth":2.5,"case":"on top","pushed":"5.7","on":"3/5","pushedOn":"4.5"}
+{"depth":2.5,"case":"early (9 m)","pushed":"2.9","on":"5/5","pushedOn":"2.9"}
+{"depth":2.5,"case":"on time (2.5 m)","pushed":"2.2","on":"5/5","pushedOn":"2.2"}
+{"depth":2.5,"case":"late (0.3 m)","pushed":"1.1","on":"5/5","pushedOn":"1.1"}
+{"depth":2.5,"case":"on time, 3 s hold","pushed":"1.6","on":"5/5","pushedOn":"1.6"}
+{"depth":1.2,"case":"on top","pushed":"10.4","on":"0/5","pushedOn":"—"}
+{"depth":1.2,"case":"early (9 m)","pushed":"4.6","on":"1/5","pushedOn":"4.6"}
+{"depth":1.2,"case":"on time (2.5 m)","pushed":"4.8","on":"5/5","pushedOn":"4.8"}
+{"depth":1.2,"case":"late (0.3 m)","pushed":"3.0","on":"4/5","pushedOn":"3.2"}
+{"depth":1.2,"case":"on time, 3 s hold","pushed":"4.9","on":"5/5","pushedOn":"4.9"}
