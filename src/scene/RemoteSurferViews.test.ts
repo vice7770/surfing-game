@@ -143,4 +143,21 @@ describe('RemoteSurferViews', () => {
     state.leashSnapped = true;
     expect(at(2, true).leash.reeling).toBe(false);
   });
+
+  // duck-drawn: the duck-diving flag (wire flag 16) is the two-body dive, its points the swimmer's own parts; drawn as the
+  // dive (its press, not sent, as full), lying only.
+  it('draws another player\'s duck-dive as the two-body dive from the duck-diving flag', () => {
+    const state = riding(0, 0);
+    const board = remoteBoardPose(state, () => 0, new Float64Array(8));
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    state.ducking = true;
+    const ducking = remoteRiderState(state, board, rider, createRiderVisualState());
+    expect(ducking.swim.ducking).toBe(true);
+    expect(ducking.duck).toBe(1);
+    state.ducking = false;
+    expect(remoteRiderState(state, board, rider, createRiderVisualState()).swim.ducking).toBe(false);
+    state.ducking = true;
+    state.phase = RIDER_PHASES.indexOf('standing');
+    expect(remoteRiderState(state, board, rider, createRiderVisualState()).swim.ducking).toBe(false);
+  });
 });

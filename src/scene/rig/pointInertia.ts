@@ -105,8 +105,9 @@ export class PointInertia {
   apply(state: RiderVisualState): void {
     const dt = state.clock - this.clock;
     // Climbing back on from the water (swim-back), the board slides under the body: its jumps blend in the world, as the
-    // swimmer's did, until it lies on the board and moves with it.
-    const fallen = state.phase === 'fallen' || state.swim.climbing;
+    // swimmer's did, until it lies on the board and moves with it. So they do in the two-body duck-dive (duck-drawn): the
+    // body is its own, the board moving under its hands.
+    const fallen = state.phase === 'fallen' || state.swim.climbing || state.swim.ducking;
     let fresh = !(dt >= 0 && dt <= LONGEST_FRAME) || state.points[POINT.pelvis].distanceTo(this.pelvis) > TELEPORT;
     this.pelvis.copy(state.points[POINT.pelvis]);
     this.clock = state.clock;

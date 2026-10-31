@@ -5,7 +5,7 @@ import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS } from '../../wave/
 
 export type RiderPhase = (typeof RIDER_PHASES)[number];
 
-/** The snapshot's point order: trunk centres, then hand and foot tips (limb centres once fallen). */
+/** The snapshot's point order: trunk centres, then hand and foot tips (limb centres once fallen, and in the two-body duck-dive). */
 export const POINT = { pelvis: 0, torso: 1, head: 2, leftHand: 3, rightHand: 4, leftFoot: 5, rightFoot: 6 } as const;
 
 /** What the drawn rider is solved from: the physics' seven points, phase and heading, and the board's pose. */
@@ -58,9 +58,10 @@ export interface RiderVisualState {
    * does not carry the hold: the page reads it from what it asked and what the
    * ride's status says (`HoldReading`), another player's from the pose's
    * recovering flag (wire flag 128) with the swimmer by the board. `climbing`: on the board again, still climbing on
-   * from the water (the snapshot's bit; local only).
+   * from the water (the snapshot's bit; local only). `ducking`: in the two-body duck-dive, the points the swimmer's own
+   * parts (the snapshot's bit; another player's from the pose's duck-diving flag, wire flag 16).
    */
-  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean; climbing: boolean };
+  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean; climbing: boolean; ducking: boolean };
   /**
    * Why the rider fell, as the session named it (`RideSession.separation`:
    * balance, foot slip, lost board, impact, reef): the drawn fall's shape reads
@@ -104,7 +105,7 @@ export function createRiderVisualState(): RiderVisualState {
     standingBlend: 1,
     duck: 0,
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false, grip: new Vector3(), gripped: false },
-    swim: { stroking: false, diving: false, under: false, holding: false, climbing: false },
+    swim: { stroking: false, diving: false, under: false, holding: false, climbing: false, ducking: false },
     separation: undefined,
     stance: undefined,
     clock: 0,
@@ -139,6 +140,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;
   out.swim.under = (swim & SWIM_BITS.under) !== 0;
   out.swim.climbing = (swim & SWIM_BITS.climbing) !== 0;
+  out.swim.ducking = (swim & SWIM_BITS.ducking) !== 0;
   // Not in the snapshot: whoever draws sets them after (the page, from its status and input; a remote pose's flag).
   out.swim.holding = false;
   out.separation = undefined;

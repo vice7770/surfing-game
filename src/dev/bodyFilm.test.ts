@@ -1,11 +1,12 @@
 import { Euler, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import { BOARD_CENTRE, BOARD_LENGTH, deckAt, railHalfWidth } from '../scene/rig/boardDeck';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import { WATER_READING } from '../scene/rig/stageBlend';
 import { PosedBody } from '../scene/rig/posedBody';
 import {
   ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, bandRms, boardMotion, breathing, crawlRate, cueAgainst, drawnAlarm, remoteDrawer, drawnLag, filmBody, footSlide, handSwing, headSteadiness,
-  kneeGive, leanFollow, motionReading, paddleStroke, posed, repeatedFrames, shake, standingStretch, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer,
+  kneeGive, leanFollow, motionReading, paddleStroke, posed, repeatedFrames, shake, spikesWithin, standingStretch, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer,
   unevenness, type BodyFilm, type FilmFrame, type FilmOptions,
 } from './bodyFilm';
 
@@ -97,7 +98,7 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   const frames: FilmFrame[] = [];
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
-      time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
+      time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false, free: false,
       joints: Array.from({ length: 13 }, () => new Vector3()), limbs: Array.from({ length: 13 }, () => new Vector3()), toes: [new Vector3(), new Vector3()], hips: new Vector3(), board: new Vector3(), boardTurn: new Quaternion(),
       bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
       chestRoll: 0, physicsRoll: 0, chestYaw: 0, headYaw: 0, kneeFlexion: [0, 0], drawnRoll: 0, givenRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(), balance: 1, physicsHands: [new Vector3(), new Vector3()],
@@ -131,6 +132,7 @@ describe('the body film measures', () => {
   it('measures a fallen body from its hips, and its bones in the world', () => {
     const fall = film(60, 40, (i, frame) => {
       frame.fallen = i >= 20;
+      frame.free = frame.fallen;
       frame.phase = frame.fallen ? 'fallen' : 'standing';
       frame.switched = i === 20;
       // Relative to the board the body flies off once fallen; about its hips a limb moves 0.1 m in the switch's frame.
@@ -921,5 +923,92 @@ describe('the falls and the recovery (the animation-realism plan, phase 4)', () 
     // As the local body: the reel off the board, the climb by it (since swim-back the reel brings the board to the hand
     // within the film, and the climb follows: none while the cord comes in, but the frame the hold begins on, 0.02).
     expect(most('reeling the leash in', trackDrawer).climbReeling).toBeLessThan(0.05);
+  }, 240_000);
+});
+
+// duck-drawn (2026-10-31, the two-body plan's step 6): the rig draws the two-body duck-dive from the swimmer's own parts
+// (`DIVE_DRAWN`). Before it, the page drew the lying pose's duck from them as though they were hands and feet: the hands
+// pulled off the rails toward the arms' middles, the feet drawn at the legs' middles, and the legs through the deck.
+describe('the two-body duck-dive drawn (duck-drawn)', () => {
+  const dive = scenario('a duck-dive');
+  const shape = (frame: FilmFrame, joint: number) => {
+    const at = frame.joints[joint].clone().add(BOARD_CENTRE);
+    return { x: at.x, y: at.y - deckAt(at.z), z: at.z };
+  };
+  /** Ducking, the film's joints' and their limbs' points under the deck inside its outline, deepest, m (none: 0). */
+  const throughDeck = (film: BodyFilm, from: number, to: number) => {
+    const limbs = [[0, 1], [1, 2], [3, 4], [4, 5], [6, 7], [7, 8], [9, 10], [10, 11]];
+    let deepest = 0;
+    for (const frame of film.frames) {
+      if (frame.time < from || frame.time > to || !frame.free) continue;
+      const joints = frame.joints.map((joint) => joint.clone().add(BOARD_CENTRE));
+      const points = [...joints, ...limbs.flatMap(([a, b]) => [0.25, 0.5, 0.75].map((s) => joints[a].clone().lerp(joints[b], s)))];
+      for (const point of points) {
+        if (Math.abs(point.z) > BOARD_LENGTH / 2 - 0.02 || Math.abs(point.x) > railHalfWidth(point.z) - 0.01) continue;
+        deepest = Math.max(deepest, deckAt(point.z) - point.y);
+      }
+    }
+    return deepest;
+  };
+
+  it('holds the rails at the grips, kneels on the tail and keeps every limb out of the board, where the old pose did not', () => {
+    for (const old of [false, true]) {
+      const film = filmBody({ ...dive, ...(old ? { duckDrawn: 'old' as const } : {}) }, { rate: 60, drawer: trackDrawer, pose: posed() });
+      expect(film.frames.some((frame) => frame.free)).toBe(true);
+      // Pressing (0.4 s into the dive to its end at 2.5 s): each wrist on its rail where the physics' grip is.
+      let offRail = 0;
+      let kneeHigh = 0;
+      let kneeAlong = { least: Infinity, most: -Infinity };
+      for (const frame of film.frames) {
+        if (frame.time < 1.4 || frame.time > 2.5) continue;
+        for (const [joint, out] of [[FILM_JOINT.hand.left, 1], [FILM_JOINT.hand.right, -1]] as const) {
+          const wrist = shape(frame, joint);
+          offRail = Math.max(offRail, Math.hypot(wrist.x - out * (railHalfWidth(wrist.z) - 0.02), wrist.y - 0.025));
+        }
+        // The regular rider's back (right) knee on the tail, as the physics' knee presses it from 0.6 s.
+        if (frame.time >= 1.6) {
+          const knee = shape(frame, 7);
+          kneeHigh = Math.max(kneeHigh, Math.abs(knee.y));
+          kneeAlong = { least: Math.min(kneeAlong.least, knee.z), most: Math.max(kneeAlong.most, knee.z) };
+        }
+      }
+      const deepest = throughDeck(film, 1.05, 6.5);
+      if (old) {
+        expect(offRail).toBeGreaterThan(0.5);
+        expect(deepest).toBeGreaterThan(0.1);
+        continue;
+      }
+      expect(offRail).toBeLessThan(0.01);
+      // Within the knee's reach of the deck (the physics holds the leg's part 12 cm off it), as the hips allow: shifted
+      // off to the high rail by the balance, a thigh's length short of the tail's point.
+      expect(kneeHigh).toBeLessThan(0.16);
+      expect(kneeAlong.least).toBeGreaterThan(-0.65);
+      expect(kneeAlong.most).toBeLessThan(-0.3);
+      // The limbs' centre lines no deeper than the deck's top (a knee or a forearm's own flesh brushes it).
+      expect(deepest).toBeLessThan(0.01);
+    }
+  }, 240_000);
+
+  // Smooth in and out (the body film's limits): the old drawing jumped to the swimmer's parts in a frame (its joints at up
+  // to 27 m/s at 60 Hz and 86 at 120, a frame's spike 7.8 and 12 m/s over its neighbours). Drawn as the dive, nothing
+  // passes 8 m/s, and no frame spikes 6 m/s, nor a bone 16 rad/s, in the dive's hand-overs or through it. What spikes
+  // remain are the physics' own, read about the hips: its board kicked into a 17.6 rad/s roll for a step by the balance's
+  // push (1.28 s), and the body stopped against the board as it is joined to it to climb back on (the hand-back, an
+  // inelastic join); both are open for the physics (the dive's notes). The falls' limits (2 m/s, 6 rad/s) are not met.
+  it('draws the dive in and out at a limb\'s pace, at 60 and 120 Hz, here and for another player', () => {
+    for (const rate of [60, 120]) {
+      for (const drawer of [trackDrawer, remoteDrawer]) {
+        const film = filmBody(dive, { rate, drawer, pose: posed() });
+        const start = film.frames.find((frame) => frame.free)!.time;
+        const back = film.frames.find((frame, i) => i > 0 && !frame.free && film.frames[i - 1].free)!.time;
+        const label = `${rate} Hz${drawer === remoteDrawer ? ', remote' : ''}`;
+        for (const [from, to] of [[start - 0.05, start + 0.4], [start + 0.4, back - 0.05], [back - 0.05, back + 1.3]]) {
+          const within = spikesWithin(film, from, to);
+          expect(within.jointSpeed, `${label}, ${from.toFixed(2)}–${to.toFixed(2)} s`).toBeLessThan(8);
+          expect(within.jointSpike, `${label}, ${from.toFixed(2)}–${to.toFixed(2)} s`).toBeLessThan(6);
+          expect(within.boneSpike, `${label}, ${from.toFixed(2)}–${to.toFixed(2)} s`).toBeLessThan(16);
+        }
+      }
+    }
   }, 240_000);
 });

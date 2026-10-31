@@ -34,10 +34,13 @@ describe('rider visual state', () => {
     expect(state.duck).toBe(0.7);
     expect(state.leash).toMatchObject({ worn: true, snapped: false, reeling: true });
     expect(state.leash.plug.toArray()).toEqual([4, 5, 6]);
-    expect(state.swim).toEqual({ stroking: true, diving: false, under: true, holding: false, climbing: false });
+    expect(state.swim).toEqual({ stroking: true, diving: false, under: true, holding: false, climbing: false, ducking: false });
     // On the board again, still climbing on (swim-back).
     rider[RIDER_SNAPSHOT.swim] = SWIM_BITS.climbing;
     expect(readRiderSnapshot(rider, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).swim.climbing).toBe(true);
+    // In the two-body duck-dive (duck-drawn), its head under.
+    rider[RIDER_SNAPSHOT.swim] = SWIM_BITS.ducking | SWIM_BITS.under;
+    expect(readRiderSnapshot(rider, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).swim).toMatchObject({ ducking: true, under: true, climbing: false });
   });
 
   it('leaves the hold, the fall\'s cause and the cord\'s drawn grip to whoever draws (none in the snapshot: the animation-realism plan\'s phase 4)', () => {

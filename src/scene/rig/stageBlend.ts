@@ -355,7 +355,8 @@ export class WaterStages {
     }
     const prone = state.phase === 'prone';
     const stroking = prone && state.stroking > 0;
-    const ducking = state.duck > 0;
+    // Ducking: the press, or the two-body dive's whole (its press let go, the body still under, duck-drawn).
+    const ducking = state.duck > 0 || state.swim.ducking;
     // The board's nose-down pitch, °.
     this.nose.set(0, 0, 1).applyQuaternion(state.boardQuaternion);
     const noseDown = -Math.asin(Math.max(-1, Math.min(1, this.nose.y))) / DEG;

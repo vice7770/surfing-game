@@ -161,9 +161,10 @@ export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, head
 export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
 /**
  * `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under; or, on the board again, is still climbing
- * on from the water (`AttachedRider.climbingOn`, swim-back 2026-10-29).
+ * on from the water (`AttachedRider.climbingOn`, swim-back 2026-10-29); or the rider is in the two-body duck-dive
+ * (`RideSession.ducking`, duck-drawn 2026-10-31): the drawn points are then the swimmer's own parts, its head under or not.
  */
-export const SWIM_BITS = { stroking: 1, diving: 2, under: 4, climbing: 8 } as const;
+export const SWIM_BITS = { stroking: 1, diving: 2, under: 4, climbing: 8, ducking: 16 } as const;
 
 const IDLE: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
 
@@ -186,8 +187,9 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   session.leashPlug(point).toArray(out, RIDER_SNAPSHOT.plug);
   const { leash, surfer } = session;
   out[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
-  out[RIDER_SNAPSHOT.swim] = !surfer.active ? (session.rider.climbingOn ? SWIM_BITS.climbing : 0)
-    : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0);
+  out[RIDER_SNAPSHOT.swim] = (!surfer.active ? (session.rider.climbingOn ? SWIM_BITS.climbing : 0)
+    : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0))
+    | (session.ducking ? SWIM_BITS.ducking : 0);
 }
 
 /** The Wave Lab readout's values, as plain data that can cross the worker boundary. */

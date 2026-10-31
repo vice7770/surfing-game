@@ -138,6 +138,8 @@ export class BodyInertia {
   private clock = Number.NaN;
   private phase = '';
   private fallen = false;
+  /** In the two-body duck-dive, or climbing back on straight after one (`apply`'s `own`). */
+  private diving = false;
   /** Just started over: the next frame only learns how the pose moves (a jump is measured against that motion). */
   private learning = false;
 
@@ -159,8 +161,9 @@ export class BodyInertia {
   apply(state: RiderVisualState): void {
     const dt = state.clock - this.clock;
     // Climbing back on from the water (swim-back), the board slides under the body: its jumps blend in the world, as the
-    // swimmer's did, until it lies on the board and moves with it.
-    const fallen = state.phase === 'fallen' || state.swim.climbing;
+    // swimmer's did, until it lies on the board and moves with it. So they do in the two-body duck-dive (duck-drawn): the
+    // body is its own, the board moving under its hands.
+    const fallen = state.phase === 'fallen' || state.swim.climbing || state.swim.ducking;
     let fresh = !(dt >= 0 && dt <= LONGEST_FRAME) || state.points[POINT.pelvis].distanceTo(this.pelvis) > TELEPORT;
     this.pelvis.copy(state.points[POINT.pelvis]);
     this.clock = state.clock;
@@ -197,6 +200,13 @@ export class BodyInertia {
       return;
     }
     const base = (2 * LN2) / INERTIA_HALF_LIFE;
+    // The two-body duck-dive draws its own hand-overs (`DIVE_DRAWN`, duck-drawn): its bones follow the physics' body as it
+    // moves against the board its hands hold, and none of that is a jump (taken for jumps, the arms' turns as the chest
+    // drew down to the hands held them off the rails); nor is the climb back on straight after it, which the rig draws
+    // from the dive (the body stops against the board as it joins it, and carried on, the arms swung on past the rails).
+    // What was being blended still settles.
+    this.diving = state.swim.ducking || (this.diving && state.swim.climbing);
+    const own = this.diving;
     for (const track of this.tracks) {
       const { target } = track;
       const goalRate = toVector(scratchQ.copy(target).multiply(scratchQ2.copy(track.goal).invert()), scratchV).divideScalar(dt);
@@ -208,7 +218,7 @@ export class BodyInertia {
       const after = track.spread > 0;
       const continuing = after && track.spread <= JUMP_SPREAD && goalRate.distanceTo(track.goalRate) > JUMP_TURN;
       track.spread = continuing ? track.spread + 1 : 0;
-      if (switched || continuing || (!after && off > JUMP_TURN * dt)) {
+      if (!own && (switched || continuing || (!after && off > JUMP_TURN * dt))) {
         // The drawn bone carries on from where it was: the offset takes the jump. A jump breaks the pose, not its
         // motion: the rig's pose keeps the rate it had (this frame's rate is the jump itself).
         goalRate.copy(track.goalRate);
@@ -231,7 +241,7 @@ export class BodyInertia {
     const after = this.hipsSpread > 0;
     const continuing = after && this.hipsSpread <= JUMP_SPREAD && goalRate.distanceTo(this.hipsGoalRate) > JUMP_TRAVEL;
     this.hipsSpread = continuing ? this.hipsSpread + 1 : 0;
-    if (switched || continuing || (!after && off > JUMP_TRAVEL * dt)) {
+    if (!own && (switched || continuing || (!after && off > JUMP_TRAVEL * dt))) {
       goalRate.copy(this.hipsGoalRate);
       this.hipsOffset.copy(this.hipsDrawn).addScaledVector(this.hipsDrawnRate, dt).sub(goal);
       this.hipsOffsetRate.copy(this.hipsDrawnRate).sub(goalRate);

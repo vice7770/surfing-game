@@ -552,6 +552,15 @@ export function duckBodySwitch(search?: string): { duckBody?: 'old' } {
 }
 
 /**
+ * The `?duckDrawn=old` dev switch (duck-drawn 2026-10-31): the player's own two-body duck-dive drawn as main drew it
+ * before (the lying pose's duck, from the swimmer's parts as though they were hands and feet), for A/Bs of the drawing;
+ * the physics is the same.
+ */
+export function duckDrawnOld(search?: string): boolean {
+  return devParam('duckDrawn', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
  * The `?spraySheet=off` dev switch (`SurfZoneConfig.spraySheet`, spray-sheet 2026-10-30): the boards' spray leaves the
  * hull as drops, as before, in place of a curtain of water that tears into them a little way out.
  */
@@ -644,6 +653,8 @@ export class PhysicalMode {
   /** The leash (the wipeout spec), from the back foot to the tail plug. */
   private readonly leash = new LeashCord();
   private readonly riderState = createRiderVisualState();
+  /** `?duckDrawn=old`: the two-body duck-dive drawn as before duck-drawn (`duckDrawnOld`). */
+  private readonly duckDrawnOld = duckDrawnOld();
   /** How the rider's board moves, for the drawn body (Part B). */
   private readonly riderMotion = new RiderMotion();
   /** The snapshots the board, rider and camera target are drawn between, and the arrays drawn this frame. */
@@ -1110,6 +1121,8 @@ export class PhysicalMode {
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
+      // `?duckDrawn=old`: the two-body duck-dive drawn as before duck-drawn.
+      if (this.duckDrawnOld) this.riderState.swim.ducking = false;
       // Beyond the snapshot (the animation-realism plan's phase 4): why the rider fell, as the ride's status names it (the
       // drawn fall's shape), and the player's stance (the leash's hand).
       this.riderState.separation = status.ride?.separation;

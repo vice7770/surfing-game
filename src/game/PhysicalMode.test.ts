@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, boardSpraySwitch, spraySheetSwitch, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -189,6 +189,14 @@ describe('PhysicalMode', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  // The `?duckDrawn=old` dev switch (duck-drawn, 2026-10-31): the page's own two-body duck-dive drawn as before; drawing
+  // only, so nothing goes to the sea's config.
+  it('draws the two-body duck-dive as before with `?duckDrawn=old` (a dev switch), and as the dive otherwise', () => {
+    expect(duckDrawnOld('?duckDrawn=old')).toBe(true);
+    expect(duckDrawnOld('?duckDrawn=OLD')).toBe(true);
+    for (const search of ['', '?duckDrawn', '?duckDrawn=', '?duckDrawn=new', '?duckBody=old']) expect(duckDrawnOld(search), search).toBe(false);
   });
 
   // The `?spraySheet=off` dev switch (spray-sheet, 2026-10-30): the boards' spray as drops at once, carried in the config

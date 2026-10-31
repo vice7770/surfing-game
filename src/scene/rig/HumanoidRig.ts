@@ -1,5 +1,6 @@
 import { Quaternion, Vector3, type Bone } from 'three';
 import { CLIMB_TIME, LANDING_TIME, PUSH_TIME, RECOVER_TIME } from '../../physics/AttachedRider';
+import { DUCK_BODY } from '../../physics/duckingBody';
 import { ArmSwing, armPendulum } from './armSwing';
 import { Breathing } from './breathing';
 import { Follower, balanceAlarmOf, type DrawnCues } from './causeFilter';
@@ -422,6 +423,45 @@ export const RIG_DETAIL = {
 };
 
 /**
+ * The drawn two-body duck-dive (duck-drawn, 2026-10-31: the two-body plan's step 6). Ducking, the snapshot's points
+ * are the swimmer's own parts (`DetachedSurfer`'s centres; its arms' and legs' are the limbs' middles, `SWIM_BITS.ducking`),
+ * and the rig draws the body as the physics holds it, with no clip:
+ * - **the hands on the rails** where the physics' grips are (`DuckingBody.gripPoint`: `DUCK_BODY.gripAhead` m ahead of the
+ *   board's middle as the press comes on, back to `gripBack` as it is let go), the wrist `FALL_POSES.climb.above` over
+ *   the rail, within the arm's reach of the drawn shoulder, the elbows out to the sides, back off the chest and toward the
+ *   hips (`elbow`, in the body's own frame);
+ * - **the trunk** the physics' own (its pelvis, chest and head parts), the chest facing the deck, the head tucked by the
+ *   press as before, its drawn press following the physics' no faster than `duckRate` a second (another player's comes
+ *   on and off whole: its press is not sent);
+ * - **each leg** straight through its part's centre, as a fallen body's (`RIG_DETAIL.fallenReach`), and the back leg's
+ *   knee on the tail where the physics' knee presses (`DUCK_BODY.kneeAt`) as its part comes there: all of it within
+ *   `kneeNear` m of that point on the deck (the knee's spring holds the part `DUCK_BODY.kneeContact` from it), none past
+ *   `kneeFar`; the thigh from the hip to the knee, `kneeAbove` m over the deck, the shin back along the deck `shinLift`°
+ *   off it (Barefoot Surf's duck-dive: the knee or the foot on the tail, the other leg trailing).
+ * - **The chest's facing** square to the spine and the board's across (`diveFacing`): the deck's down along the board,
+ *   the tail as the head goes down to the deck; each elbow's bend carried on from the last frame round its arm
+ *   (`keepElbow`), as a fallen arm's.
+ * - **In** over `in` s, the press's own time, from the lying pose as last drawn (the hands from beside the chest over the
+ *   rail, out and up by at most `handArc` m; the feet from the deck's tail); **out**, as the physics climbs back on from
+ *   the water (`AttachedRider.climbFrom`), as a climb from the water is drawn (`CLIMB_TIME`): the feet, knees, elbows
+ *   and facing from how the dive drew them, the hands sliding back along the rails from its grips over the climb's
+ *   first `handsBack`.
+ * The page's other layers keep out of it (`PointInertia` and `BodyInertia` read the body in the world, and the bones'
+ * layer takes nothing in the dive or the climb straight after it for a jump).
+ */
+export const DIVE_DRAWN = {
+  in: DUCK_BODY.pressTime,
+  kneeNear: DUCK_BODY.kneeContact + 0.03,
+  kneeFar: 0.4,
+  kneeAbove: 0.05,
+  shinLift: 15,
+  duckRate: 6,
+  handArc: 0.08,
+  handsBack: 0.25,
+  elbow: { out: 1, back: 0.7, hips: 0.5 },
+} as const;
+
+/**
  * Poses a Mixamo-named skeleton from a `RiderVisualState` each frame: the hips
  * at the pelvis point, the spine toward the torso and head points, and the
  * limbs to the hand and foot points by two-bone IK, with `RIG_DETAIL` choosing
@@ -548,6 +588,29 @@ export class HumanoidRig {
    * the body from the water onto the deck, or the climb's `on` after a body that snapped to prone (`swim: 'old'`).
    */
   private climbOnTime: number = FALL_POSES.climb.on;
+  /**
+   * The two-body duck-dive (`DIVE_DRAWN`): when this dive's drawing began (−∞: met mid-dive), the last solve's clock and
+   * whether it drew the dive, and whether the climb drawn now follows one; the drawn press and its clock.
+   */
+  private diveSince = Number.NaN;
+  private diveClock = Number.NaN;
+  private diveWas = false;
+  /** Ducking, the last solve's clock (the elbows' bends carried on from it, `keepElbow`); none not ducking. */
+  private diveElbowClock = Number.NaN;
+  private climbFromDive = false;
+  private drawnDuck = 0;
+  private duckClock = Number.NaN;
+  /** Lying, the trunk's points, the hands' and the ankles' targets as last drawn (the board's frame), whether set: the dive comes in from them. */
+  private readonly diveFrom = [new Vector3(), new Vector3(), new Vector3()];
+  private readonly diveHandFrom = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly diveFootFrom = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private diveFromSet = false;
+  /** Ducking, the hands' targets as last drawn (the board's frame): the climb back on slides them back from there. */
+  private readonly diveHands = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly diveScratch = { a: new Vector3(), b: new Vector3(), c: new Vector3(), d: new Vector3() };
+  /** Ducking, each leg's kneel on the tail as drawn (`followKneel`), and at which clock. */
+  private readonly kneelDrawn: Record<Side, number> = { left: 0, right: 0 };
+  private readonly kneelClock: Record<Side, number> = { left: Number.NaN, right: Number.NaN };
   /** Where the chest faced at the last solve before the fall (the fallen facing turns from it), and whether one was. */
   private readonly fallFrom = new Vector3();
   private fallFromSet = false;
@@ -742,6 +805,7 @@ export class HumanoidRig {
    */
   solve(state: RiderVisualState, cues?: DrawnCues): void {
     this.advanceCrawl(state);
+    this.followDuck(state);
     const { up, forward, left, boardUp, boardForward, chestUp, hipsForward, target, pole } = this;
     const p = state.points;
     boardUp.set(0, 1, 0).applyQuaternion(state.boardQuaternion);
@@ -755,16 +819,24 @@ export class HumanoidRig {
     const fw = fallen ? this.fall.update(state) : undefined;
     if (!fallen) this.fall.reset();
     this.reelGrip = '';
+    // The two-body duck-dive (`DIVE_DRAWN`): its drawing's share, coming in; once it is over and the body climbs back on,
+    // that climb is drawn as one from the water (another player's too: the climbing bit is local).
+    const diving = state.phase === 'prone' && state.swim.ducking;
+    const dive = this.diveShare(state, diving);
+    const fromDive = state.phase === 'prone' && !diving && this.diveWas;
     const climbingOn = state.phase === 'prone' && state.swim.climbing;
-    if (state.phase === 'prone' && phaseTime === 0 && (this.climbing || climbingOn)) {
+    if (state.phase === 'prone' && ((phaseTime === 0 && (this.climbing || climbingOn)) || fromDive)) {
       this.climbOnSince = state.clock;
-      this.climbOnTime = climbingOn ? CLIMB_TIME : FALL_POSES.climb.on;
+      this.climbOnTime = climbingOn || fromDive ? CLIMB_TIME : FALL_POSES.climb.on;
+      this.climbFromDive = fromDive;
     } else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
     const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < this.climbOnTime ? (state.clock - this.climbOnSince) / this.climbOnTime : 1;
     // Lying, the water stages and their key pose (the animation-realism plan's phase 3), and the pop-up's drawn places.
     if (lying) lyingPose(this.water.update(state), this.lying);
     else this.water.reset();
-    this.lyingShare = lying ? this.lyingPoseShare(state, phaseTime) * smooth(climbOn) : 0;
+    // Ducking, the trunk's points come in from where the lying body was drawn.
+    if (diving && dive < 1) this.trunkIntoDive(state, dive);
+    this.lyingShare = lying ? (diving ? 1 - dive : this.lyingPoseShare(state, phaseTime)) * smooth(climbOn) : 0;
     const sit = state.phase === 'prone' || state.phase === 'push' ? this.water.weights.sit : 0;
     if (lying) this.placeLying(state, phaseTime);
     if (upright) this.swingFeet(state);
@@ -811,6 +883,11 @@ export class HumanoidRig {
       forward.copy(boardUp).negate();
       // Sitting, the chest faces the nose.
       if (sit > 0) turnToward(forward, this.sitUp(SIT.lean + 90, this.direction), sit, forward);
+      // Ducking, the chest turned with the spine about the board's across: facing the deck along it, the tail as the head
+      // goes down to the deck (the deck's down square to a spine that dives at it vanished, and the arms' sides with it);
+      // climbing back on after, handed back to the deck's down as the lying pose comes in.
+      const turned = diving ? dive : this.climbFromDive && climbOn < 1 ? 1 - smooth(climbOn) : 0;
+      if (turned > 0) this.diveFacing(state, up, turned, forward);
     } else {
       // Fallen: the heading square to the spine, as far as the spine rises, and the water's down square to it. Upright
       // the heading leads, lying flat or diving the down: a swimmer faces the water (step 8: the heading alone vanished
@@ -948,7 +1025,7 @@ export class HumanoidRig {
       // Looking ahead along the deck, its look below the deck's plane the lying key pose's (neutral, the eyes forward;
       // lifting to scan; down in the catch). Ducking, the head tucks from looking ahead to facing the deck, crown toward
       // the nose. Sitting, upright, looking about the level as the scan turns it.
-      const duck = state.phase === 'prone' ? Math.min(1, Math.max(0, state.duck)) : 0;
+      const duck = state.phase === 'prone' ? this.drawnDuck : 0;
       const look = (LYING_LOOK + (this.lying.look - LYING_LOOK) * this.lyingShare) * DEG;
       this.direction.copy(boardUp).addScaledVector(boardForward, Math.tan(look)).lerp(this.scratch.copy(boardForward).addScaledVector(boardUp, 0.2), duck);
       this.hint.copy(boardForward).lerp(this.middle.copy(boardUp).negate(), duck);
@@ -983,6 +1060,11 @@ export class HumanoidRig {
         }
         if (lying) this.lyingKnees(state, pole);
         else pole.copy(this.facing);
+        // Ducking, straight through its part, or the back knee on the tail (`DIVE_DRAWN`).
+        if (diving) {
+          this.divingLeg(state, side, hip, foot, dive, target, pole);
+          this.kneeWas[side].copy(pole);
+        }
         // Fallen, the reflexes and the stages' legs over the ragdoll's; back on the board after a climb, the feet swung on,
         // the knees turning from how they kicked to how they lie.
         if (fw) {
@@ -1003,6 +1085,8 @@ export class HumanoidRig {
           this.liftOffClock = state.clock;
         }
       }
+      // Lying, where the foot was drawn: a dive comes in from it.
+      if (state.phase === 'prone' && !diving) this.toBoard(state, target, this.diveFootFrom[side]);
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
       // The ball, where the flat foot meets the deck ahead of the ankle.
       const ball = this.pivot;
@@ -1071,6 +1155,11 @@ export class HumanoidRig {
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
       if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
+      // Ducking, the elbows out to the sides, back off the chest and toward the hips, in the body's own frame (`DIVE_DRAWN.elbow`):
+      // square enough to wherever the arm reaches its rail from, ahead, below or outboard of it (a pole along the board
+      // turned the elbow over as the arm swung from reaching forward to back; one out to the side, as the body hung off
+      // that side of the board).
+      if (diving) turnToward(pole.normalize(), this.diveElbow(side, this.diveScratch.c), dive, pole);
       // Back on the board after a climb, the elbows turning from how they held the rail.
       if (state.phase === 'prone' && climbOn < 1) turnToward(this.fallScratch.a.copy(this.elbowWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
@@ -1078,6 +1167,8 @@ export class HumanoidRig {
       // Fallen, the reflexes (the shield, the cause's shape, surfacing, the reach) and the stages that hold something
       // (the cord, the rail) over the ragdoll's.
       if (fw) this.fallenArm(state, fw, side, shoulder, hand, target, pole);
+      // The two-body duck-dive: the hand on its rail at the physics' grip (`DIVE_DRAWN`).
+      else if (diving) this.divingHand(state, side, shoulder, dive, target);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       // Lying, and landing (the crouched landing's hand passed through the arm's full reach, the elbow snapping), the
       // hand brought within the arm's reach smoothly; in the catch the arm reaches all of it (the lying key pose's).
@@ -1088,6 +1179,11 @@ export class HumanoidRig {
         // The planted hand comes off the deck smoothly as the straight arm runs out of reach (the reach begins).
         this.softReach(shoulder, hand, target, 1, TAKE_OFF.hand.lift);
       } else target.copy(hand);
+      // Back on after a dive (the climb from the water), the hand slides back along the rail from the dive's grip.
+      if (state.phase === 'prone' && !diving && climbOn < 1 && this.climbFromDive) {
+        const back = minimumJerk(climbOn / DIVE_DRAWN.handsBack);
+        target.lerp(this.fromBoard(state, this.diveHands[side], this.diveScratch.a), 1 - back);
+      }
       // Sitting, the hands rest on the thighs, the elbows out and back.
       if (sit > 0) this.sitHand(state, side, shoulder, sit, target, pole);
       // Pushing, where each hand is: the landing's arms come from it (`TAKE_OFF.armsIn`).
@@ -1110,6 +1206,14 @@ export class HumanoidRig {
       // all the way, the upper arm swung onto the line in the last frames, faster the nearer it came, and stopped dead.
       // Eased from the ragdoll's own reach (`fallenReach`) to the arm's (`armReach`).
       if (fallen) this.softReach(shoulder, target, target, RIG_DETAIL.armReach, RIG_DETAIL.armReach - RIG_DETAIL.fallenReach);
+      // Lying, where the hand was drawn (a dive comes in from it); ducking, where it holds (the climb back on leaves from it),
+      // and the elbow's bend carried on from where it was, round the arm toward its pole (`keepElbow`: whichever way the
+      // pole is set, an arm reaching its rail from some side lies along it, and the elbow went over in a frame).
+      if (state.phase === 'prone') this.toBoard(state, target, diving ? this.diveHands[side] : this.diveHandFrom[side]);
+      if (diving) {
+        this.keepElbow(state, side, shoulder, target, pole, this.diveElbowClock);
+        this.elbowWas[side].copy(pole);
+      }
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole, fallen);
       // The hand's back toward the deck's normal, turning to the chest's facing as the forearm comes along the normal
@@ -1137,8 +1241,9 @@ export class HumanoidRig {
       // Sitting, the hand's back up on the thigh.
       if (sit > 0) handHint.lerp(WORLD_UP, sit);
       this.orient(BONES.hand[side], forearm, handHint);
+      // Ducking, the hands grip the rails as hard as a stroke's pull.
       const curl = state.phase === 'prone'
-        ? RIG_DETAIL.fingerCurlRelaxed + (RIG_DETAIL.fingerCurlStroke - RIG_DETAIL.fingerCurlRelaxed) * state.stroking
+        ? RIG_DETAIL.fingerCurlRelaxed + (RIG_DETAIL.fingerCurlStroke - RIG_DETAIL.fingerCurlRelaxed) * Math.max(state.stroking, diving ? dive : 0)
         : RIG_DETAIL.fingerCurlRelaxed;
       this.curlFingers(side, curl);
     }
@@ -1164,6 +1269,19 @@ export class HumanoidRig {
       this.fallFrom.copy(this.facing);
       this.fallFromSet = true;
     }
+    // Ducking, the leash from the drawn ankle (the physics' leg point is the leg's middle), and the drawn feet where the
+    // climb back on starts; lying, the trunk's points, where a dive comes in from.
+    if (diving) {
+      for (const side of SIDES) {
+        p[side === 'left' ? POINT.leftFoot : POINT.rightFoot].copy(this.joints.ankle[side]);
+        this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
+      }
+    } else if (state.phase === 'prone') {
+      for (let i = 0; i < 3; i += 1) this.toBoard(state, p[i], this.diveFrom[i]);
+    }
+    this.diveFromSet = state.phase === 'prone' && !diving ? true : diving && this.diveFromSet;
+    this.diveWas = diving;
+    this.diveElbowClock = diving ? state.clock : Number.NaN;
   }
 
   /**
@@ -1680,6 +1798,12 @@ export class HumanoidRig {
   reset(): void {
     this.fall.reset();
     this.fallFromSet = false;
+    this.diveSince = Number.NaN;
+    this.diveClock = Number.NaN;
+    this.diveWas = false;
+    this.climbFromDive = false;
+    this.duckClock = Number.NaN;
+    this.diveFromSet = false;
     this.reelClock = Number.NaN;
     this.climbing = false;
     this.climbOnSince = Number.NaN;
@@ -2276,6 +2400,158 @@ export class HumanoidRig {
     return offset.multiplyScalar(reach / distance).add(shoulder);
   }
 
+  /**
+   * The duck-dive's press as drawn, 0–1: the physics' (the snapshot's), followed no faster than `DIVE_DRAWN.duckRate` a
+   * second (the physics' own press is slower; another player's comes on and off whole).
+   */
+  private followDuck(state: RiderVisualState): void {
+    const dt = state.clock - this.duckClock;
+    const wanted = Math.min(1, Math.max(0, state.duck));
+    const most = DIVE_DRAWN.duckRate * dt;
+    this.drawnDuck = dt >= 0 && dt < 0.25 ? this.drawnDuck + Math.max(-most, Math.min(most, wanted - this.drawnDuck)) : wanted;
+    this.duckClock = state.clock;
+  }
+
+  /**
+   * The two-body duck-dive's drawing's share this solve (`DIVE_DRAWN.in`), 0 not ducking; a dive met mid-way (a new
+   * rig, a long frame) is drawn whole at once.
+   */
+  private diveShare(state: RiderVisualState, diving: boolean): number {
+    const dt = state.clock - this.diveClock;
+    const fresh = !(dt >= 0 && dt < 0.25);
+    this.diveClock = state.clock;
+    if (fresh) this.diveWas = false;
+    if (!diving) {
+      this.diveSince = Number.NaN;
+      return 0;
+    }
+    if (Number.isNaN(this.diveSince)) this.diveSince = fresh || !this.diveFromSet ? Number.NEGATIVE_INFINITY : state.clock;
+    return minimumJerk((state.clock - this.diveSince) / DIVE_DRAWN.in);
+  }
+
+  /**
+   * Ducking, where the chest faces (`DIVE_DRAWN`): square to the spine `up` and to the board's across (its +x, the lying
+   * body's left), on the deck's side: the deck's down while the spine lies along the board, turning toward the tail as
+   * the head goes down to the deck; from the lying facing in `out` by `dive`. Undefined only for a spine along the
+   * board's across, where the lying facing is kept.
+   */
+  private diveFacing(state: RiderVisualState, up: Vector3, dive: number, out: Vector3): Vector3 {
+    const across = this.diveScratch.c.set(1, 0, 0).applyQuaternion(state.boardQuaternion);
+    across.addScaledVector(up, -across.dot(up));
+    if (across.lengthSq() < 1e-6) return out;
+    const facing = this.diveScratch.d.crossVectors(across.normalize(), up).normalize();
+    this.perpendicular(out, up);
+    return turnToward(out, facing, dive, out);
+  }
+
+  /** Ducking, an elbow's pole (`DIVE_DRAWN.elbow`): out to its side, back off the chest and toward the hips, unit, into `out`. */
+  private diveElbow(side: Side, out: Vector3): Vector3 {
+    const { elbow } = DIVE_DRAWN;
+    return out.copy(this.left).multiplyScalar((side === 'left' ? 1 : -1) * elbow.out).addScaledVector(this.facing, -elbow.back)
+      .addScaledVector(this.up, -elbow.hips).normalize();
+  }
+
+  /** Ducking, coming in: the trunk's points from where the lying body was drawn (the board's frame), `dive` of the way. */
+  private trunkIntoDive(state: RiderVisualState, dive: number): void {
+    if (!this.diveFromSet) return;
+    for (let i = 0; i < 3; i += 1) state.points[i].lerp(this.fromBoard(state, this.diveFrom[i], this.diveScratch.a), 1 - dive);
+  }
+
+  /**
+   * Ducking, a hand's target (`DIVE_DRAWN`): on its rail where the physics' grip is (`DuckingBody.gripPoint`, by the
+   * drawn press), coming in from where the lying hand was drawn, within the arm's reach of the shoulder.
+   */
+  private divingHand(state: RiderVisualState, side: Side, shoulder: Vector3, dive: number, out: Vector3): void {
+    const z = DUCK_BODY.gripBack + (DUCK_BODY.gripAhead - DUCK_BODY.gripBack) * this.drawnDuck;
+    const local = this.diveScratch.a.set((side === 'left' ? 1 : -1) * (railHalfWidth(z) - 0.02), deckAt(z) + FALL_POSES.climb.above, z).sub(BOARD_CENTRE);
+    // Coming in, from where the lying hand was (beside the chest, or mid-stroke in the water) over the rail: out and up
+    // `handArc` m at most on the way, as the climb's feet come over it.
+    if (dive < 1 && this.diveFromSet) {
+      local.lerp(this.diveScratch.b.copy(this.diveHandFrom[side]), 1 - dive);
+      const arc = DIVE_DRAWN.handArc * Math.sin(Math.PI * dive);
+      local.x += (side === 'left' ? 1 : -1) * arc;
+      local.y += arc;
+    }
+    this.fromBoard(state, local, out);
+    this.softReach(shoulder, out, out, RIG_DETAIL.duckArmReach);
+  }
+
+  /**
+   * Ducking, a leg's ankle target and knee pole (`DIVE_DRAWN`): straight through its part's centre (`centre`), and the
+   * back leg's knee on the tail as its part comes onto the physics' knee point, the shin back along the deck; coming in
+   * from where the lying foot was drawn.
+   */
+  private divingLeg(state: RiderVisualState, side: Side, hip: Vector3, centre: Vector3, dive: number, target: Vector3, pole: Vector3): void {
+    const { a: spot, b: knee, c: shin, d: ankle } = this.diveScratch;
+    target.subVectors(centre, hip).setLength(RIG_DETAIL.fallenReach * this.legLength).add(hip);
+    // The knees toward the deck and the nose, as lying (`lyingKnees` with the feet in order; it reads its way across from
+    // the feet, and ducking those are the legs' parts, which move about: the near-straight legs spun about themselves).
+    pole.copy(this.boardForward).sub(this.boardUp).normalize();
+    const kneel = this.followKneel(state, side, this.diveBackLeg(state, side) ? this.kneelShare(state, centre) : 0, dive);
+    if (kneel > 0) {
+      this.kneeSpot(state, spot).addScaledVector(this.boardUp, DIVE_DRAWN.kneeAbove);
+      this.kneeOnDeck(hip, spot, knee);
+      const lift = DIVE_DRAWN.shinLift * DEG;
+      shin.copy(this.boardForward).multiplyScalar(-Math.cos(lift)).addScaledVector(this.boardUp, Math.sin(lift));
+      ankle.copy(knee).addScaledVector(shin, this.lowerLeg);
+      target.lerp(ankle, kneel);
+      // The knee bends toward where it kneels.
+      const bend = shin.copy(knee).sub(this.middle.copy(hip).lerp(ankle, 0.5));
+      if (bend.lengthSq() > 1e-10 && pole.lengthSq() > 1e-10) turnToward(pole.normalize(), bend.normalize(), kneel, pole);
+    }
+    if (dive < 1 && this.diveFromSet) target.lerp(this.fromBoard(state, this.diveFootFrom[side], spot), 1 - dive);
+  }
+
+  /**
+   * Ducking, a leg's kneel as drawn: its reading (`kneelShare`) followed no faster than the physics' knee comes on
+   * (`DUCK_BODY.kneeTime` for all of it), easing in and out of that pace (`keptStep`): the knee's spring draws the leg's
+   * part in faster than that once it is near, and the kneel's share by distance jumped with it.
+   */
+  private followKneel(state: RiderVisualState, side: Side, wanted: number, dive: number): number {
+    const dt = state.clock - this.kneelClock[side];
+    this.kneelClock[side] = state.clock;
+    const fresh = !(dt >= 0 && dt < 0.25) || dive === 0;
+    this.kneelDrawn[side] = fresh ? wanted : this.kneelDrawn[side] + keptStep(wanted - this.kneelDrawn[side], 1 / DUCK_BODY.kneeTime, dt);
+    return this.kneelDrawn[side];
+  }
+
+  /** Ducking, where the physics' knee presses the tail (`DUCK_BODY.kneeAt`), on the deck, in the world, into `out`. */
+  private kneeSpot(state: RiderVisualState, out: Vector3): Vector3 {
+    return this.fromBoard(state, out.set(0, deckAt(DUCK_BODY.kneeAt), DUCK_BODY.kneeAt).sub(BOARD_CENTRE), out);
+  }
+
+  /** Ducking, how far a leg kneels on the tail, 0–1: by how near its part (`centre`) is to the knee's point (`DIVE_DRAWN`). */
+  private kneelShare(state: RiderVisualState, centre: Vector3): number {
+    const distance = centre.distanceTo(this.kneeSpot(state, this.diveScratch.d));
+    return 1 - smooth((distance - DIVE_DRAWN.kneeNear) / (DIVE_DRAWN.kneeFar - DIVE_DRAWN.kneeNear));
+  }
+
+  /** Ducking, whether `side` is the back leg (the knee's): by the stance where the drawing knows it, else the leg whose part is nearer the tail's knee point. */
+  private diveBackLeg(state: RiderVisualState, side: Side): boolean {
+    if (state.stance) return side === (state.stance === 'regular' ? 'right' : 'left');
+    const spot = this.kneeSpot(state, this.diveScratch.d);
+    const left = state.points[POINT.leftFoot].distanceToSquared(spot);
+    const right = state.points[POINT.rightFoot].distanceToSquared(spot);
+    return side === (right <= left ? 'right' : 'left');
+  }
+
+  /**
+   * Kneeling, the knee as near `spot` as the thigh lets it be: beyond the thigh's reach of the hip, toward it; within
+   * it, on the deck's plane through the spot at the thigh's length from the hip, nearest the spot (the thigh's reach
+   * meets the deck in a circle through which the spot is passed), so past the spot along the deck. The two meet at the
+   * reach (the spot itself).
+   */
+  private kneeOnDeck(hip: Vector3, spot: Vector3, out: Vector3): Vector3 {
+    const up = this.boardUp;
+    if (hip.distanceToSquared(spot) >= this.upperLeg * this.upperLeg) return out.subVectors(spot, hip).setLength(this.upperLeg).add(hip);
+    const height = (hip.x - spot.x) * up.x + (hip.y - spot.y) * up.y + (hip.z - spot.z) * up.z;
+    const centre = this.diveScratch.d.copy(hip).addScaledVector(up, -height);
+    const radius = Math.sqrt(this.upperLeg * this.upperLeg - height * height);
+    const way = out.subVectors(spot, centre);
+    if (way.lengthSq() < 1e-10) way.copy(this.boardForward).negate();
+    return way.setLength(radius).add(centre);
+  }
+
   /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */
   private straightOnRail(hand: Vector3, shoulder: Vector3, out: Vector3): Vector3 {
     const reach = RIG_DETAIL.duckArmReach * this.armLength;
@@ -2778,10 +3054,11 @@ export class HumanoidRig {
    * `FALL_POSES.elbowRate` rad/s, into `pole`. Folded tight (the shield), the
    * elbow's bend runs round a wide circle, and where its aim came along the
    * arm's line it went over to the other side in a frame; the arm straight
-   * (reaching for the rail), the aim is the arm's turn about itself.
+   * (reaching for the rail), the aim is the arm's turn about itself. `since`:
+   * the clock of the last solve that kept it (the two-body duck-dive's too).
    */
-  private keepElbow(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, pole: Vector3): void {
-    const dt = state.clock - this.fallenClock;
+  private keepElbow(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, pole: Vector3, since = this.fallenClock): void {
+    const dt = state.clock - since;
     const kept = this.elbowPole[side];
     const axis = this.fallScratch.c.subVectors(target, shoulder);
     if (axis.lengthSq() < 1e-8) return;
@@ -2800,7 +3077,11 @@ export class HumanoidRig {
     }
     last.normalize();
     const want = this.middle.copy(pole).addScaledVector(axis, -pole.dot(axis));
-    if (want.lengthSq() < 1e-8) return;
+    if (want.lengthSq() < 1e-8) {
+      pole.copy(last);
+      kept.copy(pole);
+      return;
+    }
     want.normalize();
     const angle = Math.atan2(this.scratch.crossVectors(last, want).dot(axis), last.dot(want));
     pole.copy(last).applyAxisAngle(axis, keptStep(angle, FALL_POSES.elbowRate, dt));

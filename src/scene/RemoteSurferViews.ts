@@ -78,7 +78,11 @@ export function remoteRiderState(
   const headY = board[1] + state.points[7];
   const headZ = board[2] + state.points[8];
   const under = fallen && surfaceAt !== undefined && surfaceAt(headX, headZ) - headY >= REMOTE_HEAD_UNDER;
-  rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) | (under ? SWIM_BITS.under : 0) : 0;
+  // Duck-diving on the board (wire flag 16): the two-body dive (duck-drawn), its points the swimmer's own parts (online
+  // rooms run the default dive, so the flag is it). Its press is not sent: drawn as full.
+  const ducking = state.ducking && state.phase === RIDER_PHASES.indexOf('prone');
+  rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) | (under ? SWIM_BITS.under : 0)
+    : ducking ? SWIM_BITS.ducking : 0;
   readRiderSnapshot(rider, board, out);
   out.stroking = state.paddling && out.phase === 'prone' ? 1 : 0;
   out.swim.holding = holding;

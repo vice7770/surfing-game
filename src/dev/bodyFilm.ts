@@ -43,6 +43,11 @@ export interface FilmFrame {
   /** Since the last frame: a phase change, or a drawn point jumping more than 0.1 m against the board in one step. */
   switched: boolean;
   fallen: boolean;
+  /**
+   * The body is its own, not riding the board: fallen, or in the two-body duck-dive (duck-drawn; the board moving under
+   * its hands). The switches' speeds read its joints about its hips then, as a fall's.
+   */
+  free: boolean;
   /** The drawn joints relative to the drawn board, in its frame, m. */
   joints: Vector3[];
   /** The drawn joints relative to the drawn hips, in the world's axes, m. */
@@ -114,7 +119,7 @@ export function switchSpeeds(film: BodyFilm, window = 0.3): SwitchSpeed[] {
     for (let t = Math.max(1, index - reach); t <= Math.min(frames.length - 1, index + reach); t += 1) {
       const before = frames[t - 1];
       const now = frames[t];
-      const riding = !before.fallen && !now.fallen;
+      const riding = !before.free && !now.free;
       const positions = riding ? [before.joints, now.joints] : [before.limbs, now.limbs];
       positions[1].forEach((joint, j) => { jointSpeed = Math.max(jointSpeed, joint.distanceTo(positions[0][j]) * rate); });
       const rotations = riding ? [before.bones, now.bones] : [before.worldBones, now.worldBones];
@@ -134,18 +139,56 @@ export function switchSpeeds(film: BodyFilm, window = 0.3): SwitchSpeed[] {
 export function switchSpikes(film: BodyFilm, window = 0.3): SwitchSpeed[] {
   const { frames, rate } = film;
   const reach = Math.round(window * rate);
+  const { spikeAt } = spikeSeries(film);
+  const spikes: SwitchSpeed[] = [];
+  frames.forEach((frame, index) => {
+    if (!frame.switched) return;
+    let jointSpeed = 0;
+    let rotationSpeed = 0;
+    for (let t = Math.max(1, index - reach); t <= Math.min(frames.length - 1, index + reach); t += 1) {
+      const spike = spikeAt(t);
+      jointSpeed = Math.max(jointSpeed, spike.joint);
+      rotationSpeed = Math.max(rotationSpeed, spike.bone);
+    }
+    spikes.push({ time: frame.time, phase: frame.phase, jointSpeed, rotationSpeed });
+  });
+  return spikes;
+}
+
+/**
+ * The largest one-frame spike (as `switchSpikes` reads one) of any frame from `from` s to `to` s, with the fastest
+ * joint and bone there (duck-drawn: a whole dive, whose hand-overs need not be switches).
+ */
+export function spikesWithin(film: BodyFilm, from: number, to: number): { jointSpike: number; boneSpike: number; jointSpeed: number; boneSpeed: number; at: number } {
+  const { spikeAt, joints, bones } = spikeSeries(film);
+  const out = { jointSpike: 0, boneSpike: 0, jointSpeed: 0, boneSpeed: 0, at: Number.NaN };
+  film.frames.forEach((frame, t) => {
+    if (t < 1 || frame.time < from || frame.time > to) return;
+    const spike = spikeAt(t);
+    if (spike.joint > out.jointSpike) out.at = frame.time;
+    out.jointSpike = Math.max(out.jointSpike, spike.joint);
+    out.boneSpike = Math.max(out.boneSpike, spike.bone);
+    out.jointSpeed = Math.max(out.jointSpeed, ...joints[t]);
+    out.boneSpeed = Math.max(out.boneSpeed, ...bones[t]);
+  });
+  return out;
+}
+
+/** Every frame's joint and bone speeds (against the board, or about the hips once fallen), and each frame's spike over its neighbours' median. */
+function spikeSeries(film: BodyFilm) {
+  const { frames, rate } = film;
   // Every frame's speed of each joint and bone (against the board, or about the hips once fallen).
   const joints = frames.map((now, t) => {
     if (t === 0) return now.joints.map(() => 0);
     const before = frames[t - 1];
-    const riding = !before.fallen && !now.fallen;
+    const riding = !before.free && !now.free;
     const [a, b] = riding ? [before.joints, now.joints] : [before.limbs, now.limbs];
     return b.map((joint, j) => joint.distanceTo(a[j]) * rate);
   });
   const bones = frames.map((now, t) => {
     if (t === 0) return now.bones.map(() => 0);
     const before = frames[t - 1];
-    const riding = !before.fallen && !now.fallen;
+    const riding = !before.free && !now.free;
     const [a, b] = riding ? [before.bones, now.bones] : [before.worldBones, now.worldBones];
     return b.map((bone, j) => angleBetween(bone, a[j]) * rate);
   });
@@ -156,18 +199,14 @@ export function switchSpikes(film: BodyFilm, window = 0.3): SwitchSpeed[] {
     const median = around.length ? around[Math.floor(around.length / 2)] : 0;
     return series[t][j] - median;
   };
-  const spikes: SwitchSpeed[] = [];
-  frames.forEach((frame, index) => {
-    if (!frame.switched) return;
-    let jointSpeed = 0;
-    let rotationSpeed = 0;
-    for (let t = Math.max(1, index - reach); t <= Math.min(frames.length - 1, index + reach); t += 1) {
-      joints[t].forEach((_, j) => { jointSpeed = Math.max(jointSpeed, spike(joints, t, j)); });
-      bones[t].forEach((_, j) => { rotationSpeed = Math.max(rotationSpeed, spike(bones, t, j)); });
-    }
-    spikes.push({ time: frame.time, phase: frame.phase, jointSpeed, rotationSpeed });
-  });
-  return spikes;
+  const spikeAt = (t: number) => {
+    let joint = 0;
+    let bone = 0;
+    joints[t].forEach((_, j) => { joint = Math.max(joint, spike(joints, t, j)); });
+    bones[t].forEach((_, j) => { bone = Math.max(bone, spike(bones, t, j)); });
+    return { joint, bone };
+  };
+  return { joints, bones, spikeAt };
 }
 
 /** The share of frames, while the rider moves, drawn with the hips exactly where the frame before drew them. */
@@ -283,6 +322,10 @@ export interface FilmScenario {
   input(time: number, session: RideSession): Partial<RideInput>;
   /** 'old': back on the board as before swim-back (`RideSessionOptions.swim`). */
   swim?: 'old';
+  /** 'old': the duck-dive's single rigid rider (`RideSessionOptions.duckBody`, `?duckBody=old`). */
+  duckBody?: 'old';
+  /** 'old': the two-body duck-dive drawn as before duck-drawn (`?duckDrawn=old`: the snapshot's ducking bit not read). */
+  duckDrawn?: 'old';
 }
 
 const FACE = (15 * Math.PI) / 180;
@@ -787,6 +830,12 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
     name: 'climbing back on', water: 'flat', seconds: 18.5, placement: { x: 0, z: 0, heading: 0, speed: 2, phase: 'standing' },
     input(time, session) { fallAt(time, 0.5, session); return { reel: time > 3 }; },
   },
+  // duck-drawn (2026-10-31): paddling, then a 1.5 s duck-dive on flat water, and back on the board (the two-body dive:
+  // the press, the knee on the tail, let go, up, the climb back on).
+  {
+    name: 'a duck-dive', water: 'flat', seconds: 8, placement: { x: 0, z: 0, heading: 0, speed: 1.5, phase: 'prone' },
+    input: (time) => ({ paddle: time < 1, duckDive: time >= 1 && time < 2.5 ? 1 : 0 }),
+  },
   // Step 8: off the board lying down, then swimming in calm water.
   {
     name: 'swimming', water: 'flat', seconds: 12, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
@@ -935,7 +984,7 @@ function boardPose(session: RideSession, out: Float64Array): Float64Array {
 export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm {
   const delivery = options.delivery ?? 1;
   const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : scenario.water === 'chop' ? new ChopWater() : new PlaneWater();
-  const session = new RideSession(scenario.swim ? { swim: scenario.swim } : {});
+  const session = new RideSession({ ...(scenario.swim ? { swim: scenario.swim } : {}), ...(scenario.duckBody ? { duckBody: scenario.duckBody } : {}) });
   session.place(scenario.placement, water);
   let paddling = false;
   const drawer = (options.drawer ?? latestDrawer)({
@@ -986,6 +1035,7 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     const drawn = drawer.frame(1 / options.rate);
     if (!drawn) continue;
     readRiderSnapshot(drawn.rider, drawn.board, state);
+    if (scenario.duckDrawn === 'old') state.swim.ducking = false;
     // As the page does (`PhysicalMode`): the fall's cause and the hold, beyond the snapshot, for the player's own surfer.
     if (!drawer.remote) {
       sessionCues(session, state);
@@ -1060,6 +1110,7 @@ function record(
     moving: session.board.velocity.length() > 0.5,
     switched,
     fallen: state.phase === 'fallen',
+    free: state.phase === 'fallen' || session.ducking,
     joints: world.map((p) => p.clone().sub(boardPosition).applyQuaternion(boardInverse)),
     limbs: world.map((p) => p.clone().sub(hips)),
     toes,

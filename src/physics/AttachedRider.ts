@@ -1334,6 +1334,9 @@ export class AttachedRider {
    */
   climbFrom(parts: ArrayLike<number>, board: BoardBody): void {
     this.beginTransition('prone', CLIMB_TIME);
+    // Lying, the body turns with the board, from the step it is mounted (duck-drawn): its own turn was the one it had
+    // when it last rode, before the fall or the dive, and the parts were drawn turned by it for the first step back on.
+    this.orientation.copy(board.orientation);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       board.toLocal(this.scratch.set(parts[i * 3], parts[i * 3 + 1], parts[i * 3 + 2]), this.scratch2);
       this.fromParts[i * 3] = this.scratch2.x;
