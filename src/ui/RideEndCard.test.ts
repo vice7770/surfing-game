@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver, RideReport } from '../game/rideAnalysis';
 import type { RideResult } from '../game/RideTracker';
-import { endCardModel } from './RideEndCard';
+import { endCardModel, showsEndCard } from './RideEndCard';
 
 const wipeout: RideResult = { outcome: 'wipeout', reason: 'ride.reason.impact', distance: 42.4, topSpeed: 8.2, seconds: 12.44 };
 
@@ -46,5 +46,11 @@ describe('endCardModel', () => {
     expect(endCardModel(wipeout, ['distance'], 'metric').newBest).toBe(true);
     expect(endCardModel({ ...wipeout, outcome: 'complete' }, [], 'metric').title).toBe('end.complete');
     expect(endCardModel({ ...wipeout, outcome: 'ended' }, [], 'metric').title).toBe('end.ended');
+  });
+
+  it('shows no card after a wipeout, only after rides that end otherwise', () => {
+    expect(showsEndCard(wipeout)).toBe(false);
+    expect(showsEndCard({ ...wipeout, outcome: 'complete' })).toBe(true);
+    expect(showsEndCard({ ...wipeout, outcome: 'ended' })).toBe(true);
   });
 });

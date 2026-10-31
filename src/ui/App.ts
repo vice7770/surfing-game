@@ -46,7 +46,7 @@ import type { FlowFrame } from '../game/school/lessonFlow';
 import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
 import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
-import { createRideEndCard, endCardModel } from './RideEndCard';
+import { createRideEndCard, endCardModel, showsEndCard } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
 import { HintBook, HintCoach, offersHint, type HintId } from '../game/hints';
 import { RideHud, showsBalanceMeter, showsBreathMeter, type HintKeys } from './RideHud';
@@ -620,7 +620,7 @@ export class App {
     this.show();
   }
 
-  /** Feed the ride tracker; a finished ride is logged and summed up on the end card. */
+  /** Feed the ride tracker; a finished ride is logged and, unless it was a wipeout, summed up on the end card. */
   private trackRide(): void {
     const frame = this.game.rideFrame;
     if (!frame) return;
@@ -643,6 +643,7 @@ export class App {
     if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
     if (records.length > 0) this.sound.playUi('chime');
     this.hideEndCard();
+    if (!showsEndCard(result)) return;
     const scoring = score !== undefined ? { score, bestTwo: bestTwo(this.sessionScores) } : undefined;
     this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units, scoring), {
       replay: () => {

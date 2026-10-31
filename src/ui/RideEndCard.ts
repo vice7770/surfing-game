@@ -49,6 +49,15 @@ export function endCardModel(result: RideResult, records: readonly BestKind[], u
   };
 }
 
+/**
+ * Whether a finished ride gets the end card: not after a wipeout (owner, 2026-10-31),
+ * where the rider swims back and climbs on with nothing popping up; still after a
+ * ride that ends standing (kicked out, the wave died) or by a retry.
+ */
+export function showsEndCard(result: RideResult): boolean {
+  return result.outcome !== 'wipeout';
+}
+
 export interface EndCardHandlers {
   replay(): void;
   newWave(): void;
@@ -57,8 +66,8 @@ export interface EndCardHandlers {
 }
 
 /**
- * The card at the foot of the screen after a ride. It is not modal: the waves run
- * on and a fallen rider can swim back, so it takes no focus.
+ * The card at the foot of the screen after a ride that did not end in a wipeout.
+ * It is not modal: the waves run on, so it takes no focus.
  */
 export function createRideEndCard(model: EndCardModel, handlers: EndCardHandlers, retryKey: string): HTMLElement {
   const button = (label: string, action: () => void, primary = false) =>
