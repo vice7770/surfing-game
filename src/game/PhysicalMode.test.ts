@@ -217,6 +217,9 @@ describe('PhysicalMode', () => {
   it('throws no spray off the boards with `?boardSpray=off` (a dev switch), and throws it otherwise', () => {
     expect(boardSpraySwitch('?boardSpray=off')).toEqual({ boardSpray: 'off' });
     expect(boardSpraySwitch('?boardSpray=OFF')).toEqual({ boardSpray: 'off' });
+    // `?boardSpray=old` (spray-rework, 2026-10-31): #171's spray, the worker's round drops and the clear curtain.
+    expect(boardSpraySwitch('?boardSpray=old')).toEqual({ boardSpray: 'old' });
+    expect(boardSpraySwitch('?boardSpray=OLD')).toEqual({ boardSpray: 'old' });
     for (const search of ['', '?boardSpray', '?boardSpray=', '?boardSpray=on', '?froth=old']) expect(boardSpraySwitch(search), search).toEqual({});
     const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
     try {

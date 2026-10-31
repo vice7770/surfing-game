@@ -132,8 +132,12 @@ void main() {
   float across = 1.0 - vCorner.x * vCorner.x;
   // A wide bundle is drawn as hairlines (its drops' streaks), about 3 px apart, keeping its mean cover; a dense one solid.
   float hairs = clamp( vWidthPx / 4.0, 1.0, 6.0 );
-  float lane = fract( ( vCorner.x * 0.5 + 0.5 ) * hairs + vSeed * 7.13 );
-  float hair = 1.0 - smoothstep( 0.18, 0.32, abs( lane - 0.5 ) );
+  // Each hairline a little off its lane and of its own weight, so the bundle reads as drops' streaks, not a comb.
+  float laneAt = ( vCorner.x * 0.5 + 0.5 ) * hairs + vSeed * 7.13;
+  float laneIndex = floor( laneAt );
+  float laneHash = fract( sin( laneIndex * 12.9898 + vSeed * 78.233 ) * 43758.5453 );
+  float lane = fract( laneAt ) - 0.5 + ( laneHash - 0.5 ) * 0.5;
+  float hair = ( 1.0 - smoothstep( 0.1, 0.3, abs( lane ) ) ) * ( 0.5 + laneHash );
   float hairy = hairs > 1.5 ? mix( hair * min( 1.0, vAlpha / 0.4 ), vAlpha, smoothstep( 0.5, 0.9, vAlpha ) ) : vAlpha;
   float alpha = hairy * across * mix( 0.45, 1.0, vCorner.y );
   if ( alpha < 0.004 ) discard;
@@ -225,8 +229,9 @@ export const CARVE_LINE = {
    */
   dense: { min: 0.4, max: 1 },
   lace: 0.15,
-  /** Points kept per board side. */
+  /** Points kept per board side; a rail this far from its last point (m) starts a new line. */
   points: 256,
+  jump: 2,
   /** It lies this far over the surface, m. */
   lift: 0.03,
 } as const;
@@ -259,9 +264,10 @@ void main() {
   // Dense white while its bubbles rise, then a lace that thins out to the end.
   float dense = ${CARVE_LINE.dense.min.toFixed(2)} + ${(CARVE_LINE.dense.max - CARVE_LINE.dense.min).toFixed(2)} * vLine.z;
   float rising = 1.0 - smoothstep( 0.6 * dense, 1.4 * dense, age );
-  float lace = smoothstep( 0.4 - 0.2 * rising + 0.35 * across, 0.8, churn.x + 0.15 * churn.y );
-  float cover = mix( ${CARVE_LINE.lace.toFixed(2)} * lace * 2.0, mix( lace, 1.0, 0.35 ), rising );
-  float alpha = min( 1.0, vLine.z * 1.2 ) * ( 1.0 - smoothstep( 0.55, 1.0, across ) ) * cover
+  float lace = smoothstep( 0.4 - 0.2 * rising + 0.35 * across, 0.85, churn.x + 0.15 * churn.y );
+  float cover = mix( ${CARVE_LINE.lace.toFixed(2)} * lace * 2.0, mix( lace, 1.0, 0.2 ) * 0.75, rising );
+  // Soft at its edges: churned water thinning out sideways, not a painted band.
+  float alpha = vLine.z * ( 1.0 - smoothstep( 0.2, 1.0, across ) ) * cover
     * ( 1.0 - smoothstep( ${(CARVE_LINE.life * 0.6).toFixed(1)}, ${CARVE_LINE.life.toFixed(1)}, age ) ) * smoothstep( 0.0, 0.08, age );
   if ( alpha < 0.01 ) discard;
   vec3 light = fanRich > 0.5 ? 0.55 + spraySunRadiance * 0.45 : vec3( 0.95 );
@@ -455,7 +461,14 @@ export class BoardFanMesh {
       const x = packed[o + SHEET_AT.x];
       const z = packed[o + SHEET_AT.z];
       const last = line.points[line.points.length - 1];
-      if (last && Math.hypot(x - last.x, z - last.z) < CARVE_LINE.spacing && now - last.t < 0.25) return;
+      const run = last ? Math.hypot(x - last.x, z - last.z) : 0;
+      if (last && run < CARVE_LINE.spacing && now - last.t < 0.25) return;
+      // A board put somewhere else (a retry, a placed start), or a rail that stopped throwing, starts a new line rather
+      // than drawing one across the sea; the old one fades where it is.
+      if (last && (run > CARVE_LINE.jump || now - last.t > 0.5)) {
+        this.lines.set(`${key}@${now}`, line);
+        this.lines.set(key, (line = new CarveLine()));
+      }
       const speed = Math.hypot(packed[o + SHEET_AT.boardX], packed[o + SHEET_AT.boardZ]);
       const strength = Math.min(1, flux / Math.max(1, speed) / CARVE_LINE.perMetre);
       const width = CARVE_LINE.width.min + (CARVE_LINE.width.max - CARVE_LINE.width.min) * strength;

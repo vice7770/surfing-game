@@ -4,7 +4,11 @@
  * recorder's placed starts do (`poolStart.ts`), and rides a scripted case:
  * - `trim`: on the face, straight, no input;
  * - `turn`: from the trough, a bottom turn (the steer from 0.3 s for 0.8 s);
- * - `compress`: the same turn with Compress held through it.
+ * - `compress`: the same turn with Compress held through it;
+ * - `carve` (spray-rework): from the face, the steer and Compress together, a hard rail turn.
+ * `&spot=canyon` (spray-rework) rides the Canyon's waves instead, each case on the next wave to break at its take-off
+ * (`BreakStart`); `&boardSpray=old` films #171's spray; the log gives each frame's roll, drift, yaw rate, each sheet's
+ * launch and the heights its root's ends would throw to, and the fan's live drops.
  * Frames at `&times=0.5,0.8,1.1,1.4` s after the placement, from behind the rider (chase) and from the side, go into one
  * strip per case, posted to the ride receiver (`npm run record:ride`) as `board-spray-<case>.png`. `&boardSpray=off` is
  * the A/B. `&cases=trim,turn,compress`, `&arm=left`, `&steer=1|-1` (the bottom turn's way; up the face by default).
@@ -65,7 +69,10 @@ interface CaseLog {
  * A camera 6 m behind the board along its heading and 2.2 m over it, 7 m to its side, or (`close`) 2.2 m off the
  * curtain its rail throws (`sheet`, else the board's +x side), square to it, looking at it.
  */
-function cameraFor(board: Float64Array, view: 'chase' | 'side' | 'close', camera: PerspectiveCamera, sheet?: { x: number; y: number; z: number; vx: number; vz: number }): PerspectiveCamera {
+function cameraFor(
+  board: Float64Array, view: 'chase' | 'side' | 'close', camera: PerspectiveCamera, sheet?: { x: number; y: number; z: number; vx: number; vz: number },
+  surfaceAt?: (x: number, z: number) => number,
+): PerspectiveCamera {
   const position = new Vector3(board[0], board[1], board[2]);
   const q = new Quaternion(board[3], board[4], board[5], board[6]);
   const forward = new Vector3(0, 0, 1).applyQuaternion(q).setY(0).normalize();
@@ -79,6 +86,8 @@ function cameraFor(board: Float64Array, view: 'chase' | 'side' | 'close', camera
     if (face.dot(target.clone().sub(position)) < 0) face.negate();
     const middle = target.clone().addScaledVector(out, 0.5);
     camera.position.copy(middle).addScaledVector(face, 2.2).add(new Vector3(0, 0.5, 0));
+    // Above the water there (on a face the outside of a turn can be under it).
+    if (surfaceAt) camera.position.y = Math.max(camera.position.y, surfaceAt(camera.position.x, camera.position.z) + 0.4);
     camera.lookAt(middle.x, middle.y + 0.15, middle.z);
     camera.updateMatrixWorld();
     return camera;
@@ -128,6 +137,7 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
     return;
   }
   const runner = host.runner;
+  const surfaceAt = (x: number, z: number) => host.heightAt(x, z);
   const camera = new PerspectiveCamera(55, TILE.width / TILE.height, 0.1, 2000);
   const result: { cases: CaseLog[]; gpu?: unknown; off: boolean } = { cases: [], off: OFF };
   for (const which of CASES) {
@@ -159,13 +169,13 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
       const now = runner.boardSheetsNow()[0];
       const aim = now ? { x: now.x + now.alongX * now.length * 0.5, y: now.y, z: now.z + now.alongZ * now.length * 0.5, vx: now.vx - now.boardX, vz: now.vz - now.boardZ } : undefined;
       for (const [row, view] of VIEWS.entries()) {
-        hooks.render(STEP / 2, cameraFor(board, view, camera, aim));
+        hooks.render(STEP / 2, cameraFor(board, view, camera, aim, surfaceAt));
         // `&only=curtains`: the drops hidden, to see the curtains alone.
         if (params.get('only') === 'curtains') {
           const fanShown = hooks.mode.fan.group.visible;
           hooks.mode.spray.mesh.visible = false;
           hooks.mode.fan.group.visible = false;
-          hooks.renderView(cameraFor(board, view, camera, aim));
+          hooks.renderView(cameraFor(board, view, camera, aim, surfaceAt));
           hooks.mode.spray.mesh.visible = true;
           hooks.mode.fan.group.visible = fanShown;
         }
