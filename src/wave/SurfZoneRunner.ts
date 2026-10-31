@@ -179,7 +179,7 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   out[RIDER_SNAPSHOT.cue] = cue ? 1 : 0;
   out[RIDER_SNAPSHOT.present] = 1;
   out[RIDER_SNAPSHOT.heading] = session.heading;
-  out[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
+  out[RIDER_SNAPSHOT.duck] = session.duckPress;
   out[RIDER_SNAPSHOT.breath] = session.breath.level;
   out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.twist.angle : 0;
   out[RIDER_SNAPSHOT.weight] = session.rider.attached ? session.rider.contact.weight : Number.NaN;
@@ -1042,7 +1042,7 @@ export class SurfZoneRunner {
           partSpheres: this.tubeBody.slice(7).map(p => ({ ...p })),
         } } : {}),
         leash: { snapped: this.session.leash.snapped, tension: this.session.leash.tension, distance: this.session.leash.distance, reeling: this.session.leash.reeling },
-        duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
+        duck: this.session.duckPress,
         boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),
         knock: this.snapshotKnock,
         breath: this.session.breath.level,

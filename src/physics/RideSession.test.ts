@@ -258,7 +258,10 @@ describe('the duck-dive in a ride', () => {
     const water = new PlaneWater();
     session.reset(new Vector3(0, 0, 0), 0, water);
     for (let i = 0; i < 12; i += 1) session.step(STEP, water, { ...idle, duckDive: 1 });
-    expect(session.rider.duck.press).toBeGreaterThan(0.5);
+    // The two-body dive's arms (duck-two-body), still counted on the board.
+    expect(session.duckPress).toBeGreaterThan(0.5);
+    expect(session.ducking).toBe(true);
+    expect(session.rider.attached).toBe(true);
   });
 });
 
@@ -385,13 +388,22 @@ describe('the leash in a ride', () => {
 
 // The wipeout spec, Part B: breath.
 describe('breath in a ride', () => {
-  it('never drains lying on the board, even with the deck under water', () => {
+  it('never drains lying on the board, even with the deck under water; a duck-dive holds it a little, the body under', () => {
     const session = new RideSession();
     const water = new PlaneWater();
     session.reset(new Vector3(0, 0, 0), 0, water);
-    for (let i = 0; i < 270; i += 1) session.step(STEP, water, { ...idle, duckDive: i < 90 ? 1 : 0 });
+    for (let i = 0; i < 270; i += 1) session.step(STEP, water, idle);
     expect(session.rider.attached).toBe(true);
     expect(session.breath.level).toBe(1);
+    // The two-body dive takes the body under with the board (duck-two-body): held breath, working, a sixth of it at most.
+    let least = 1;
+    for (let i = 0; i < 270; i += 1) {
+      session.step(STEP, water, { ...idle, duckDive: i < 90 ? 1 : 0 });
+      least = Math.min(least, session.breath.level);
+    }
+    expect(session.rider.attached).toBe(true);
+    expect(least).toBeLessThan(1);
+    expect(least).toBeGreaterThan(0.8);
   });
 
   it('drains while the fallen surfer is held under, faster diving than relaxed', () => {

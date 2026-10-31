@@ -1,8 +1,10 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { AttachedRider, type RiderPhase, type RiderSeparation } from './AttachedRider';
 import { BoardBody } from './BoardBody';
+import type { BoardShape } from './boardShape';
 import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
+import { DuckingBody } from './duckingBody';
 import { BREATH, Breath } from './Breath';
 import { Leash } from './Leash';
 import { PaddleReserve } from './PaddleReserve';
@@ -97,7 +99,23 @@ export interface RideSessionOptions {
    * rider is the swimmer's own body held to the rails; 'old' (the `?duckBody=old` dev switch): as before.
    */
   duckBody?: 'old';
+  /** The board's shape (the reference board by default; tests dive bigger boards). */
+  shape?: BoardShape;
 }
+
+/**
+ * After a two-body duck-dive, the rider lies back on the board (`climbFrom`, from where the body is) once the deck is
+ * within DUCK_BACK_DEPTH m of the surface (the body on it holds the pair deeper than the rigid prone rider's 13 cm), its
+ * normal within about 35° of up (DUCK_BACK_UP), turning slowly, and the chest over it, within DUCK_BACK_CHEST
+ * m above the deck; not so within DUCK_SURFACE_WAIT s of letting go, the swimmer holds the board as after a fall
+ * (provisional).
+ */
+const DUCK_BACK_DEPTH = 0.45;
+const DUCK_BACK_CHEST = 0.45;
+const DUCK_BACK_UP = 0.82;
+/** ...and turning slower than this, rad/s: lain on rolling fast, the pair kept rolling. */
+const DUCK_BACK_RATE = 1.5;
+const DUCK_SURFACE_WAIT = 6;
 
 /**
  * One board and its rider through a ride and its aftermath (board plan B2, surfer
@@ -139,8 +157,14 @@ export class RideSession {
     center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3(),
     parts: new Float64Array(RIDER_PARTS.length * 3),
   };
-  /** In the two-body duck-dive (duck-two-body): the rider is the swimmer's body, held to the board's rails. */
+  /**
+   * In the two-body duck-dive (duck-two-body, `DuckingBody`): the rider is the swimmer's own body held to the board's
+   * rails (`surfer`), the rigid rider set aside, still counted on the board (`rider.attached`, prone).
+   */
   ducking = false;
+  readonly duckBody = new DuckingBody();
+  /** 'old' (`?duckBody=old`): the duck-dive is the rigid rider's posture, as before. */
+  private readonly duckOld: boolean;
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
   readonly started = { momentum: new Vector3(), center: new Vector3() };
   private field?: SurfWaterBodyField;
@@ -149,7 +173,8 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
-    this.board = new BoardBody(options.duckBody === 'old' ? { submerged: 'old' } : {});
+    this.board = new BoardBody({ ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}) });
+    this.duckOld = options.duckBody === 'old';
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
     });
@@ -175,6 +200,12 @@ export class RideSession {
 
   get phase(): RiderPhase | 'fallen' {
     return this.rider.attached ? this.rider.phase : 'fallen';
+  }
+
+  /** The duck-dive's press, 0–1: the two-body dive's arms, or the rigid rider's posture (`?duckBody=old`); 0 off the board. */
+  get duckPress(): number {
+    if (this.ducking) return this.duckBody.press.value;
+    return this.rider.attached ? this.rider.duck.press : 0;
   }
 
   get separation(): RiderSeparation | undefined {
@@ -215,6 +246,7 @@ export class RideSession {
     }
     this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation, velocity);
     this.rider.phase = placement.phase;
+    this.ducking = false;
     this.board.attach(this.rider);
     this.surfer.active = false;
     this.recovery.release();
@@ -225,7 +257,7 @@ export class RideSession {
 
   /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
   renderPoint(index: number, out: Vector3): Vector3 {
-    return this.rider.attached ? this.rider.renderPoint(index, this.board, out) : this.surfer.getPartPosition(RIDER_PARTS[index], out);
+    return this.rider.attached && !this.ducking ? this.rider.renderPoint(index, this.board, out) : this.surfer.getPartPosition(RIDER_PARTS[index], out);
   }
 
   /** Which way the body faces, radians from +z toward +x. */
@@ -263,6 +295,10 @@ export class RideSession {
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).
       if (input.popUp && !(rider.phase === 'standing' && rider.lieDown(board))) rider.popUp();
     }
+    // The two-body duck-dive begins lying on the board (not mid-climb): the body becomes its own, held to the rails.
+    if (!this.duckOld && !this.ducking && rider.attached && rider.phase === 'prone' && !rider.climbingOn && (input.duckDive ?? 0) > 0.3) {
+      this.beginDucking();
+    }
     const sprinting = rider.sprintPaddling;
     // The board meets the water as a submerged plate only in the two-body duck-dive (`BoardBody.plateAllowed`): a free board
     // after a fall, one the swimmer holds and one with the rigid rider on it keep the hull law their falls, holds and
@@ -271,7 +307,9 @@ export class RideSession {
     board.step(dt, water);
     // The reserve drains while the rider sprint-paddles, and refills at anything else, on the board or off it.
     this.reserve.step(dt, sprinting);
-    if (rider.attached) {
+    if (this.ducking) {
+      this.stepDucking(dt, water, input);
+    } else if (rider.attached) {
       // On the board the breath comes back, and the cord hangs slack.
       this.breath.step(dt, false, BREATH.relaxed);
       this.leash.tension = 0;
@@ -282,7 +320,7 @@ export class RideSession {
       surfer.linearMomentum(this.started.momentum);
       surfer.centerOfMass(this.started.center);
     }
-    if (surfer.active) {
+    if (surfer.active && !this.ducking) {
       // Diving lets go of a held board (the leash keeps it).
       if ((input.duckDive ?? 0) > 0.3 && this.recovery.state !== 'free') this.recovery.release();
       surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer, dive: input.duckDive ?? 0 });
@@ -307,6 +345,76 @@ export class RideSession {
       else if (recovered === 'climb-ready') this.climbOn(true);
     }
     if (wasAttached && !rider.attached) this.reefCause();
+  }
+
+  /**
+   * Into the two-body duck-dive: the swimmer's body starts from the rigid rider's, its parts where they are, moving as
+   * they were (the fall's own hand-over, `handoffState`), the board left to the water and the hands.
+   */
+  private beginDucking(): void {
+    const { rider, board, surfer } = this;
+    surfer.start(rider.handoffState(this.handoff));
+    surfer.linearMomentum(this.started.momentum);
+    surfer.centerOfMass(this.started.center);
+    board.rider = undefined;
+    this.recovery.release();
+    this.duckBody.start();
+    this.ducking = true;
+  }
+
+  /**
+   * A step of the two-body duck-dive, after the board's: the body steps in the water and against the board, then the
+   * hands, arms and knee act between them (`DuckingBody`). It ends three ways: the hands lose the board (a fall, the body
+   * swimming on the leash); let go and come back up with the body over the deck and the board near the surface, the
+   * rider climbs back on from where the body is (`AttachedRider.climbFrom`, as after a swim); or let go and not up in
+   * `DUCK_SURFACE_WAIT` s, the swimmer holds the board as after a fall (`BoardRecovery`), to climb on when it can.
+   */
+  private stepDucking(dt: number, water: SurfWater, input: RideInput): void {
+    const { surfer, board, rider } = this;
+    surfer.step(dt, this.bodyField(water), { stroke: false, steer: 0, dive: 0 });
+    this.breath.step(dt, surfer.underwater, BREATH.working);
+    surfer.resolveBoardContact(board);
+    this.leash.tension = 0;
+    this.leash.reeling = false;
+    const back = rider.stance === 'regular' ? 6 : 5;
+    const lost = this.duckBody.step(dt, input.duckDive ?? 0, surfer, board, back);
+    if (lost) {
+      this.endDucking();
+      rider.release('balance');
+      return;
+    }
+    const { duckBody } = this;
+    if (duckBody.released <= 0 || duckBody.press.value > 0.05 || duckBody.knee.value > 0.05) return;
+    if (this.backOver(water)) {
+      this.endDucking();
+      this.climbOn(true);
+      return;
+    }
+    if (duckBody.released > DUCK_SURFACE_WAIT) {
+      this.endDucking();
+      rider.release('balance');
+      this.recovery.tryGrab(board);
+    }
+  }
+
+  private endDucking(): void {
+    this.ducking = false;
+    this.board.rider = this.rider;
+  }
+
+  /**
+   * Back over the board after a dive: its deck near the surface (within `DUCK_BACK_DEPTH` m at its middle), deck up,
+   * and the chest over it (above the deck, within its rails).
+   */
+  private backOver(water: SurfWater): boolean {
+    const { board, surfer } = this;
+    const deck = board.toWorld({ x: 0, y: deckHeight(board.shape, 0), z: 0 }, this.pelvis);
+    if (water.surfaceAt(deck.x, deck.z) - deck.y > DUCK_BACK_DEPTH) return false;
+    if (new Vector3(0, 1, 0).applyQuaternion(board.orientation).y < DUCK_BACK_UP || board.angularVelocity.length() > DUCK_BACK_RATE) return false;
+    const chest = board.toLocal(surfer.getPartPosition('torso', this.spinPart), this.heldCenter);
+    const above = chest.y - deckHeight(board.shape, chest.z);
+    return above > -0.05 && above < DUCK_BACK_CHEST && Math.abs(chest.x) < board.shape.maxWidth / 2 + 0.1
+      && Math.abs(chest.z) < board.shape.length / 2;
   }
 
   /** The swimmer's arm nearer the board's plug: the hand the cord comes in through. */
