@@ -91,6 +91,12 @@ export interface RideSessionOptions {
    * catch the body (`AttachedRiderOptions.extension`); 'old' (the `?extension=old` dev switch): at their full pace.
    */
   extension?: 'old';
+  /**
+   * The duck-dive's two bodies (duck-two-body, 2026-10-31; `docs/research/duck-dive-2026-10-31/two-body-plan.md`): by
+   * default the board meets the water as a submerged plate under water (`BoardBodyOptions.submerged`), and the ducking
+   * rider is the swimmer's own body held to the rails; 'old' (the `?duckBody=old` dev switch): as before.
+   */
+  duckBody?: 'old';
 }
 
 /**
@@ -103,7 +109,7 @@ export interface RideSessionOptions {
  * detached surfer (sample, integrate, board contact).
  */
 export class RideSession {
-  readonly board = new BoardBody();
+  readonly board: BoardBody;
   readonly rider: AttachedRider;
   readonly surfer = new DetachedSurfer();
   /** The fallen surfer's grab on the board, pulling them back onto it (surfer plan S3). */
@@ -133,6 +139,8 @@ export class RideSession {
     center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3(),
     parts: new Float64Array(RIDER_PARTS.length * 3),
   };
+  /** In the two-body duck-dive (duck-two-body): the rider is the swimmer's body, held to the board's rails. */
+  ducking = false;
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
   readonly started = { momentum: new Vector3(), center: new Vector3() };
   private field?: SurfWaterBodyField;
@@ -141,6 +149,7 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
+    this.board = new BoardBody(options.duckBody === 'old' ? { submerged: 'old' } : {});
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
     });
@@ -255,6 +264,10 @@ export class RideSession {
       if (input.popUp && !(rider.phase === 'standing' && rider.lieDown(board))) rider.popUp();
     }
     const sprinting = rider.sprintPaddling;
+    // The board meets the water as a submerged plate only in the two-body duck-dive (`BoardBody.plateAllowed`): a free board
+    // after a fall, one the swimmer holds and one with the rigid rider on it keep the hull law their falls, holds and
+    // climbs were calibrated on.
+    board.plateAllowed = this.ducking;
     board.step(dt, water);
     // The reserve drains while the rider sprint-paddles, and refills at anything else, on the board or off it.
     this.reserve.step(dt, sprinting);

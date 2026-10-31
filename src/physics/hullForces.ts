@@ -81,6 +81,36 @@ export function wettedShare(depth: number): number {
   return Math.min(1, Math.max(0, 0.5 + depth / WET_RAMP));
 }
 
+/**
+ * A fully submerged board (duck-two-body, 2026-10-31; the two-body plan's step 1): a flat plate deep in the water meets
+ * the flow on both faces. Driven face-on it is a bluff plate, C_D90 about 1.17 at aspect ratio 1 to 1.2 at 5 (Hoerner
+ * 1965, *Fluid-Dynamic Drag*, 3-16), where the planing law gives it only its coefficient, about 0.46. So, submerged, the
+ * normal force gains the cross-flow drag the planing law leaves out (Hoerner & Borst 1975, *Fluid-Dynamic Lift*, ch. 19:
+ * a plate's normal force as its lift plus a cross-flow drag), ½ρ (C_D90 − C_n)·|v_n|·v_n by its share under.
+ * Its lift at small incidence stays the planing law's, C_n·|v|·v_n: running along its length the board is a plate of
+ * aspect ratio about 0.27, whose lift slope (Helmbold's 2πA/(2 + √(A² + 4)), 0.42 a radian) is the planing
+ * coefficient's within a tenth. (Across the board the slope would be larger, but a plate stalls there within degrees;
+ * a free linear slope that large made a loose board in a bore flutter and blow up.)
+ * It takes over as the board goes under, from `SUBMERGED.from` to `SUBMERGED.depth` below the surface (its shallowest
+ * face):
+ * - by the reference beam, twice a plate's half-width a, its image in the free surface (the fast-motion limit, φ = 0)
+ *   changes its added mass by about (a/2d)², 6 % (Newman 1977, *Marine Hydrodynamics*, §4.7; a cylinder's image
+ *   doublet): a deep plate;
+ * - at 15 cm the image is still most of it ((a/2d)² ≈ 0.7): the planing law's one-sided water, half a deep plate's added
+ *   mass, is the nearer. A prone rider's board rests with its deck about 13 cm under (7 cm paddling): the planing law,
+ *   as before.
+ */
+export const SUBMERGED = { normalDrag: 1.18, from: 0.15, depth: 0.5 } as const;
+
+/**
+ * How far the board's shallowest face lies below the surface, as its share of a submerged plate (smoothstepped): 0
+ * awash or shallower than `SUBMERGED.from`, 1 by `SUBMERGED.depth`.
+ */
+export function submergedShare(depth: number): number {
+  const x = Math.min(1, Math.max(0, (depth - SUBMERGED.from) / (SUBMERGED.depth - SUBMERGED.from)));
+  return x * x * (3 - 2 * x);
+}
+
 /** A hull patch placed in the world: bottom centre, outward (downward) normal, planform area and thickness. */
 export interface WorldPatch {
   position: Vec;
@@ -133,7 +163,9 @@ function zero(v: Vec): void {
  * Reynolds number, and `pressureScale` places the patch in the pressure
  * distribution (`planingScales`).
  */
-export function patchForce(patch: WorldPatch, water: WaterSample, relative: Vec, wettedLength: number, out: PatchForce, pressureScale = 1): PatchForce {
+export function patchForce(
+  patch: WorldPatch, water: WaterSample, relative: Vec, wettedLength: number, out: PatchForce, pressureScale = 1, submergedShareHere = 0,
+): PatchForce {
   zero(out.buoyancy);
   zero(out.pressure);
   zero(out.friction);
@@ -174,18 +206,26 @@ export function patchForce(patch: WorldPatch, water: WaterSample, relative: Vec,
   if (!(speed > 0)) return out;
   const normalSpeed = relative.x * normal.x + relative.y * normal.y + relative.z * normal.z;
   const face = normalSpeed > 0 ? bottom : deck;
-  if (normalSpeed !== 0 && face > 0) {
-    const k = 0.5 * density * PRESSURE_COEFFICIENT * pressureScale * face * area;
-    const pressure = k * speed * normalSpeed;
-    out.pressure.x = -pressure * normal.x;
-    out.pressure.y = -pressure * normal.y;
-    out.pressure.z = -pressure * normal.z;
-    out.pressureDamping = k * (speed + (normalSpeed * normalSpeed) / speed);
-  }
   const tx = relative.x - normalSpeed * normal.x;
   const ty = relative.y - normalSpeed * normal.y;
   const tz = relative.z - normalSpeed * normal.z;
   const tangential = Math.hypot(tx, ty, tz);
+  // Submerged, both faces wet: the plate's cross-flow drag on top of the planing law, by its share under (`SUBMERGED`).
+  const deep = bottom >= 1 && deck >= 1 ? submergedShareHere : 0;
+  if (normalSpeed !== 0 && face > 0) {
+    const k = 0.5 * density * PRESSURE_COEFFICIENT * pressureScale * face * area;
+    let pressure = k * speed * normalSpeed;
+    let damping = k * (speed + (normalSpeed * normalSpeed) / speed);
+    if (deep > 0) {
+      const kd = 0.5 * density * area * deep * (SUBMERGED.normalDrag - PRESSURE_COEFFICIENT);
+      pressure += kd * Math.abs(normalSpeed) * normalSpeed;
+      damping += 2 * kd * Math.abs(normalSpeed);
+    }
+    out.pressure.x = -pressure * normal.x;
+    out.pressure.y = -pressure * normal.y;
+    out.pressure.z = -pressure * normal.z;
+    out.pressureDamping = damping;
+  }
   if (tangential > 0) {
     const friction = 0.5 * density * ittcFriction((speed * wettedLength) / WATER.viscosity) * tangential * (bottom + deck) * area;
     out.friction.x = -friction * tx;

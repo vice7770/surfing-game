@@ -134,6 +134,11 @@ export interface SurfZoneConfig {
    */
   extension?: 'old';
   /**
+   * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
+   * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
+   */
+  duckBody?: 'old';
+  /**
    * 'off': no board throws spray, as before board-spray (2026-10-29); by default a planing board throws a sheet off its
    * rails and tail (`physics/boardSpray.ts`), drawn in the spray (`SprayCloud`). Visual only. The `?boardSpray=off` dev
    * switch, for A/Bs; online rooms run the default.

@@ -420,6 +420,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
     ...spraySheetSwitch(),
+    // `?duckBody=old`: the duck-dive's single rigid rider and the board's planing law at any depth, as before duck-two-body.
+    ...duckBodySwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
     ...(settings.spot === 'canyon' ? canyonBeachLookSwitch() : {}),
     // `?canyonReefSeq=off`: the Canyon's reef counting its onsets as main did until canyon-reef-sequence, for A/Bs.
@@ -539,6 +541,14 @@ export function boardSpraySwitch(search?: string): { boardSpray?: 'off' | 'old' 
   const value = devParam('boardSpray', search)?.trim().toLowerCase();
   // `?boardSpray=old` (spray-rework): #171's spray, its drops the worker's round sprites and its curtain clear glass.
   return value === 'off' ? { boardSpray: 'off' } : value === 'old' ? { boardSpray: 'old' } : {};
+}
+
+/**
+ * The `?duckBody=old` dev switch (`SurfZoneConfig.duckBody`, duck-two-body 2026-10-31): the board under water meets it
+ * with the planing hull's law, and the ducking rider is the single rigid body on the deck, as before.
+ */
+export function duckBodySwitch(search?: string): { duckBody?: 'old' } {
+  return devParam('duckBody', search)?.trim().toLowerCase() === 'old' ? { duckBody: 'old' } : {};
 }
 
 /**

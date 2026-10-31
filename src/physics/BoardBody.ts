@@ -3,7 +3,7 @@ import type { AttachedRider } from './AttachedRider';
 import type { BoardContactBody } from './DetachedSurfer';
 import { buildBoardShape, type BoardShape } from './boardShape';
 import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
-import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, wettedShare, type WorldPatch } from './hullForces';
+import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
 import type { BoardSpraySheet } from '../wave/SprayCloud';
@@ -61,6 +61,12 @@ export interface BoardBodyOptions {
   substeps?: number;
   /** The fin set; the reference thruster by default, none with []. */
   fins?: readonly FinSpec[];
+  /**
+   * Under water (duck-two-body, 2026-10-31): `'plate'` (the default) meets the water as a submerged plate once its deck
+   * is under, with a plate's cross-flow drag, added mass and roll inertia (`SUBMERGED`); `'old'` as before, the planing
+   * hull's one-sided law at any depth (`?duckBody=old`).
+   */
+  submerged?: 'plate' | 'old';
 }
 
 /**
@@ -89,6 +95,24 @@ interface Foil {
  * inelastically, sharing its normal momentum (von Kármán's water-entry model).
  */
 const ADDED_MASS_PER_AREA = Math.PI / 8;
+/**
+ * A submerged plate's added mass per unit length (duck-two-body; Newman 1977, *Marine Hydrodynamics*, §4.13, a flat
+ * plate of half-width a): ρπa² for motion normal to it, water on both faces, twice the planing strip's one-sided ρπb²/8
+ * (`ADDED_MASS_PER_AREA`, a = b/2). Going under, each station gains the other side's ρπb²/8 along the board's normal at
+ * its centre, by its share under. Its roll is left to the strip's spread: spread evenly across the beam, the one-sided
+ * added mass gives ρπb⁴/96 a metre about the long axis, already more than the deep plate's own ρπa⁴/8 = ρπb⁴/128 (and
+ * 2.7 times the one-sided plate's), so nothing is added.
+ */
+const PLATE_ADDED_MASS = Math.PI / 8;
+/**
+ * A body moving under the surface radiates waves with an amplitude falling as e^(−kd) with its depth d, their energy as
+ * e^(−2kd), k = ω²/g for its motion's frequency ω (Newman 1977, *Marine Hydrodynamics*, §6.17). For a board heaving and
+ * rolling over a second and a half or so, k is about 1.8 /m: a third left at 30 cm, a sixth at half a metre. The free
+ * board's (as the plate): with the rigid rider on it the hull law stands as calibrated.
+ */
+const RADIATED_WAVENUMBER = (2 * Math.PI / 1.5) ** 2 / 9.81;
+/** A submerged plate lies under a plain surface: one whose normal is within 45° of straight up. */
+const PLATE_SURFACE_NORMAL = Math.SQRT1_2;
 /**
  * Wave radiation damping of motion into the surface at each wetted patch, as a share of the
  * critical heave damping of a floating strip with that added mass: a modelling
@@ -274,6 +298,25 @@ export class BoardBody implements BoardContactBody {
   private readonly foilPoint = new Vector3();
   /** Patch indices of each strip along the board, tail to nose, and each patch's planing pressure scale. */
   private readonly strips: Int32Array[];
+  /** Under water as a plate (`BoardBodyOptions.submerged`), and how: each patch's share of it this substep, the stations. */
+  private readonly plate: boolean;
+  private readonly plateShare: Float64Array;
+  /**
+   * Whether it may meet the water as a submerged plate now (duck-two-body): its owner's say. A board a swimmer holds keeps
+   * the hull law the hold and the climb were calibrated on, as one with the rigid rider on it does.
+   */
+  plateAllowed = true;
+  /** The board's share of a submerged plate this substep (`plateDepth`), and what of its wave radiation reaches the surface. */
+  private plateShareNow = 0;
+  private radiationDepth = 1;
+  /** Each station's patches, its beam and its mid-thickness centre (board frame, about the centre of mass). */
+  private readonly stationPatches: Int32Array[];
+  private readonly stationBeam: Float64Array;
+  private readonly stationLocal: Float64Array;
+  /** This substep: each station's plate added mass along the board's normal, and its arm (world). */
+  private readonly stationHeave: Float64Array;
+  private readonly stationArm: Float64Array;
+
   private readonly pressureScale: Float64Array;
   private readonly stripShares: Float64Array;
   private readonly stripBeams: Float64Array;
@@ -317,6 +360,7 @@ export class BoardBody implements BoardContactBody {
     const payloads = options.payloads ?? [];
     this.shape = shape;
     this.substeps = options.substeps ?? 4;
+    this.plate = options.submerged !== 'old';
     this.mass = shape.mass + payloads.reduce((sum, payload) => sum + payload.mass, 0);
     this.inverseMass = 1 / this.mass;
     const maxThickness = Math.max(...shape.patches.map((patch) => patch.thickness));
@@ -371,6 +415,23 @@ export class BoardBody implements BoardContactBody {
       this.radiationPerArea[k] = WATER.density * 2 * RADIATION_DAMPING * Math.sqrt((WATER.gravity * Math.PI * b) / 8);
     });
     this.addedMass = new Float64Array(count);
+    this.plateShare = new Float64Array(count);
+    // The stations, tail to nose: each one's patches, its beam and its centre at mid-thickness, area-weighted.
+    const stationZs = [...beam.keys()].sort((a, b) => a - b);
+    this.stationPatches = stationZs.map((z) => Int32Array.from(shape.patches.flatMap((patch, k) => (patch.position.z === z ? [k] : []))));
+    this.stationBeam = Float64Array.from(stationZs, (z) => beam.get(z) ?? 0);
+    this.stationLocal = new Float64Array(stationZs.length * 3);
+    this.stationPatches.forEach((list, i) => {
+      let weight = 0;
+      for (const k of list) {
+        const a = this.area[k];
+        weight += a;
+        for (let d = 0; d < 3; d += 1) this.stationLocal[i * 3 + d] += a * (this.local[k * 3 + d] - (this.localNormal[k * 3 + d] * this.thickness[k]) / 2);
+      }
+      for (let d = 0; d < 3; d += 1) this.stationLocal[i * 3 + d] /= weight || 1;
+    });
+    this.stationHeave = new Float64Array(stationZs.length);
+    this.stationArm = new Float64Array(stationZs.length * 3);
     this.entrained = new Float64Array(count);
     this.previousAddedMass = new Float64Array(count);
     this.radiation = new Float64Array(count);
@@ -824,6 +885,12 @@ export class BoardBody implements BoardContactBody {
     }
     const wettedLength = wetMax >= wetMin ? wetMax - wetMin + this.stationLength : this.stationLength;
     this.placePressure();
+    // With the rigid rider on it (lying, climbing on, standing) the board keeps the hull law the rider was calibrated on:
+    // a rigid body perched on a deep board is no physical pair (it is top-heavy; a real one moves), and its climb back
+    // on leaned on that law's damping. The plate is the free board's, and the ducking board's under the two-body dive.
+    const plateDepth = this.plate && this.plateAllowed && !this.rider?.attached ? this.plateDepth() : -Infinity;
+    this.plateShareNow = submergedShare(plateDepth);
+    this.radiationDepth = plateDepth > 0 ? Math.exp(-2 * RADIATED_WAVENUMBER * plateDepth) : 1;
 
     // Forces, torques about the centre of mass, and the implicit pressure matrix.
     const { system, rhs, force, patch } = this;
@@ -863,7 +930,11 @@ export class BoardBody implements BoardContactBody {
       relative.x = v.x + w.y * rz - w.z * ry - sample.flowX;
       relative.y = v.y + w.z * rx - w.x * rz - sample.flowY;
       relative.z = v.z + w.x * ry - w.y * rx - sample.flowZ;
-      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k]);
+      // Under water (duck-two-body): the whole board is a submerged plate as far as its shallowest face is under
+      // (`plateDepth`, from the patches sampled above), never a buried rail or a deep tail of a board still in the surface.
+      const share = this.plateShareNow;
+      this.plateShare[k] = share;
+      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k], share);
       submerged += force.submerged * patch.area * patch.thickness;
       wetted += force.wettedArea;
       const b = force.buoyancy;
@@ -982,10 +1053,12 @@ export class BoardBody implements BoardContactBody {
       // hull enters. Anywhere else, as before.
       const entryLens = sample.lensScale !== undefined;
       const froth = entryLens ? 1 - (sample.voidFraction ?? 0) : 1;
+      // The strip's one-sided added mass, at any depth; under water the plate's other side is added below (`plateInertia`).
       const addedMass = entryLens
         ? froth * this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection
         : this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection;
-      const radiation = entryLens ? froth * this.radiationPerArea[k] * force.wettedArea * projection : this.radiationPerArea[k] * force.wettedArea * projection;
+      // Its waves are radiated from below the surface: weaker the deeper, as e^(−2kd) (`RADIATED_WAVENUMBER`).
+      const radiation = this.radiationDepth * (entryLens ? froth * this.radiationPerArea[k] * force.wettedArea * projection : this.radiationPerArea[k] * force.wettedArea * projection);
       const intoSurface = entryLens
         ? (relative.x + sample.flowX - sample.lensFlowX!) * ux + (relative.y + sample.lensScale! * sample.flowY) * uy
           + (relative.z + sample.flowZ - sample.lensFlowZ!) * uz
@@ -1021,6 +1094,7 @@ export class BoardBody implements BoardContactBody {
     }
     this.submergedVolume = submerged;
     this.wettedArea = wetted;
+    this.plateInertia(system);
     this.applyFoils(h, water, system);
     const ft = this.foilTotals;
 
@@ -1135,6 +1209,7 @@ export class BoardBody implements BoardContactBody {
       this.reaction[k * 3 + 2] += pressure * nz + water * uz;
     }
 
+    this.settlePlate(dvx, dvy, dvz, dwx, dwy, dwz, avx, avy, avz, awx, awy, awz);
     this.settleFoils(h, rhs, avx, avy, avz, awx, awy, awz);
     this.work.gravity += h * weight * avy;
     this.work.buoyancy += h * (totals.bx * avx + totals.by * avy + totals.bz * avz + totals.btx * awx + totals.bty * awy + totals.btz * awz);
@@ -1323,6 +1398,90 @@ export class BoardBody implements BoardContactBody {
     const cz = rx * ny - ry * nx;
     const J = this.worldInverseInertia;
     return this.inverseMass + cx * (J[0] * cx + J[1] * cy + J[2] * cz) + cy * (J[3] * cx + J[4] * cy + J[5] * cz) + cz * (J[6] * cx + J[7] * cy + J[8] * cz);
+  }
+
+  /**
+   * How deep the board's shallowest face is under the surface, m (negative: some of it is out): its patches' upper faces
+   * (the deck, or the bottom of a capsized board), each against the water sampled over it. Outside the water: −∞.
+   */
+  private plateDepth(): number {
+    let shallowest = Infinity;
+    for (let k = 0; k < this.count; k += 1) {
+      const sample = this.samples[k];
+      if (!sample.wet || sample.outsideDomain) return -Infinity;
+      // Under a plain surface only: in a fold, under an overhang or against a steep face (the curl, a tube's water) the
+      // water over the board is no free surface it is deep beneath. Both its sampled normal and its height graph's slope
+      // must say so (the normal's sign alone is no outward convention in a fold).
+      if (!(sample.normalY >= PLATE_SURFACE_NORMAL) || sample.slopeX * sample.slopeX + sample.slopeZ * sample.slopeZ > 1) return -Infinity;
+      const y = this.point[k * 3 + 1];
+      const upper = Math.max(y, y - this.normal[k * 3 + 1] * this.thickness[k]);
+      shallowest = Math.min(shallowest, sample.surfaceY - upper);
+    }
+    return shallowest;
+  }
+
+  /**
+   * The submerged plate's water inertia (duck-two-body), station by station, into the implicit system: each station's
+   * other side's added mass along the board's normal at its centre (heave, and pitch through its arm), scaled by how far
+   * the board is under (`plateShare`), in the water's density there.
+   */
+  private plateInertia(system: Float64Array): void {
+    const { stationPatches, stationBeam, stationLocal, stationHeave, stationArm, rotation: r } = this;
+    stationHeave.fill(0);
+    if (!this.plate) return;
+    // The board's normal (its y axis), world.
+    const nx = r[1]; const ny = r[4]; const nz = r[7];
+    const a = this.direction;
+    for (let i = 0; i < stationPatches.length; i += 1) {
+      const list = stationPatches[i];
+      let share = 0;
+      let density = 0;
+      for (const k of list) {
+        share += this.plateShare[k];
+        density += WATER.density * (1 - (this.samples[k].voidFraction ?? 0));
+      }
+      share /= list.length;
+      density /= list.length;
+      if (!(share > 0)) continue;
+      const beam = stationBeam[i];
+      const heave = share * density * PLATE_ADDED_MASS * beam * beam * this.stationLength;
+      stationHeave[i] = heave;
+      const lx = stationLocal[i * 3]; const ly = stationLocal[i * 3 + 1]; const lz = stationLocal[i * 3 + 2];
+      const rx = r[0] * lx + r[1] * ly + r[2] * lz;
+      const ry = r[3] * lx + r[4] * ly + r[5] * lz;
+      const rz = r[6] * lx + r[7] * ly + r[8] * lz;
+      stationArm[i * 3] = rx; stationArm[i * 3 + 1] = ry; stationArm[i * 3 + 2] = rz;
+      a[0] = nx; a[1] = ny; a[2] = nz;
+      a[3] = ry * nz - rz * ny; a[4] = rz * nx - rx * nz; a[5] = rx * ny - ry * nx;
+      for (let p = 0; p < 6; p += 1) for (let q = 0; q < 6; q += 1) system[p * 6 + q] += heave * a[p] * a[q];
+    }
+  }
+
+  /** The submerged plate's inertia impulses this substep: the ledgers, and the water's reaction, spread over each station. */
+  private settlePlate(dvx: number, dvy: number, dvz: number, dwx: number, dwy: number, dwz: number, avx: number, avy: number, avz: number, awx: number, awy: number, awz: number): void {
+    if (!this.plate) return;
+    const { stationPatches, stationHeave, stationArm, rotation: r } = this;
+    const nx = r[1]; const ny = r[4]; const nz = r[7];
+    for (let i = 0; i < stationPatches.length; i += 1) {
+      const heave = stationHeave[i];
+      if (!(heave > 0)) continue;
+      const rx = stationArm[i * 3]; const ry = stationArm[i * 3 + 1]; const rz = stationArm[i * 3 + 2];
+      const cx = ry * nz - rz * ny; const cy = rz * nx - rx * nz; const cz = rx * ny - ry * nx;
+      const change = dvx * nx + dvy * ny + dvz * nz + dwx * cx + dwy * cy + dwz * cz;
+      const mean = avx * nx + avy * ny + avz * nz + awx * cx + awy * cy + awz * cz;
+      const inertia = -heave * change;
+      this.work.addedMass += inertia * mean;
+      this.forces.addedMass.x += inertia * nx;
+      this.forces.addedMass.y += inertia * ny;
+      this.forces.addedMass.z += inertia * nz;
+      // The water takes the heave's impulse back, shared by the station's patches.
+      const list = stationPatches[i];
+      for (const k of list) {
+        this.reaction[k * 3] += (inertia * nx) / list.length;
+        this.reaction[k * 3 + 1] += (inertia * ny) / list.length;
+        this.reaction[k * 3 + 2] += (inertia * nz) / list.length;
+      }
+    }
   }
 
   private updateRotation(): void {

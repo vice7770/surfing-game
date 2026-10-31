@@ -460,11 +460,13 @@ export class SurfZoneRunner {
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
       this.session = new RideSession({
         stance: options.stance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}),
-        ...(config.extension ? { extension: config.extension } : {}),
+        ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
       });
       this.board = this.session.board;
     } else if (options.board) {
-      this.board = new BoardBody();
+      this.board = new BoardBody(config.duckBody === 'old' ? { submerged: 'old' } : {});
+      // A riderless board keeps the hull law (the plate is the two-body duck-dive's, `RideSession.ducking`).
+      this.board.plateAllowed = false;
     }
     if (start === 'spun-up') this.seat();
   }
