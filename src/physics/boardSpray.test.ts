@@ -99,6 +99,29 @@ describe('the spray off a planing board (board-spray)', () => {
     }
   });
 
+  it('fits its launch along the root: the tail, swept wider by the yaw, throws faster than the mean (spray-rework)', () => {
+    const hull = hullAt({ speed: 9, bank: 35 * DEGREE, drift: 6 * DEGREE, sink: 0.05 });
+    // The board turning toward its low (−x) rail: its nose swings to −x, its tail (−z) out toward +x, under the high rail
+    // that throws; the hull's patches move so (ω × r).
+    const yaw = 2.5;
+    for (let o = 0; o < layout.stations * layout.lanes; o += 1) {
+      const z = hull.point[o * 3 + 2];
+      hull.hull[o * 3] -= yaw * z;
+    }
+    const [sheet] = sheetsOf(hull);
+    expect(sheet.length).toBeGreaterThan(layout.stationLength);
+    const aft = Math.hypot(sheet.aftVX, sheet.aftVY, sheet.aftVZ);
+    const fore = Math.hypot(sheet.foreVX, sheet.foreVY, sheet.foreVZ);
+    const mean = Math.hypot(sheet.vx, sheet.vy, sheet.vz);
+    expect(aft).toBeGreaterThan(mean);
+    expect(fore).toBeLessThan(aft);
+    expect(sheet.fluxMean).toBeGreaterThanOrEqual(0);
+    expect(sheet.fluxMean).toBeLessThanOrEqual(1);
+    // Its water-weighted mean is still the mean: the fit through it.
+    const at = sheet.fluxMean;
+    expect(sheet.aftVY + (sheet.foreVY - sheet.aftVY) * at).toBeCloseTo(sheet.vy, 1);
+  });
+
   it('throws more water the deeper the low rail is loaded (Compress), as Wagner\'s ρ·W·D', () => {
     const light = sheetsOf(hullAt({ speed: 12, bank: 40 * DEGREE, drift: 6 * DEGREE, sink: 0.03 }));
     const loaded = sheetsOf(hullAt({ speed: 12, bank: 40 * DEGREE, drift: 6 * DEGREE, sink: 0.08 }));

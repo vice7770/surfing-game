@@ -117,6 +117,19 @@ export interface BoardSpraySheet {
   tearVX: number;
   tearVY: number;
   tearVZ: number;
+  /**
+   * Its launch along the root (spray-rework, 2026-10-31; the water-physics advisor: the per-side mean hides the tail's
+   * faster jet): the water-weighted straight-line fit of each station's launch velocity against its place along the
+   * root, at the root's aft end and its fore end (world, m/s); and where along the root its water leaves on average, as a
+   * share of the root from its aft end (0.5 when even).
+   */
+  aftVX: number;
+  aftVY: number;
+  aftVZ: number;
+  foreVX: number;
+  foreVY: number;
+  foreVZ: number;
+  fluxMean: number;
 }
 
 /** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */

@@ -139,3 +139,68 @@ export class PoolStart {
     return best;
   }
 }
+
+/**
+ * Dev only (spray-rework, 2026-10-31): a placed start at any spot's take-off (the board-spray strips at the Canyon). It
+ * watches the water near the spot's break point (`breakPoint`), and when a wave starts breaking there (a rising edge:
+ * strength over 0.3 within the window), puts the rider `along` m further along shore (the way the wave peels: +1 or −1),
+ * ahead of the crest there as `placementFor` does. Each wave is its own (no period, as the pool's).
+ */
+export class BreakStart {
+  private readonly runner: SurfZoneRunner;
+  private readonly strength: Float64Array;
+  private readonly point: { x: number; z: number };
+  private readonly sample = createWaterSample();
+  private breaking = true;
+
+  constructor(host: LocalSurfZone, readonly arm: 1 | -1, readonly along = PLACE_ALONG) {
+    this.runner = host.runner;
+    this.strength = (host.runner.simulation as unknown as { breaking: Breaking }).breaking.strength;
+    this.point = host.runner.simulation.breakPoint();
+  }
+
+  /** Call once a step: whether a wave has just started breaking at the break point. */
+  due(): boolean {
+    const breaking = this.breaksAt(this.point.x);
+    const rising = breaking && !this.breaking;
+    this.breaking = breaking;
+    return rising;
+  }
+
+  placement(kind: PoolStartKind): RiderPlacement {
+    const { water } = this.runner;
+    const x = this.point.x + this.arm * this.along;
+    const z = this.crestAt(x);
+    const face = water.sampleAt(x, water.surfaceAt(x, z + 2), z + 2, this.sample);
+    const travel = Math.hypot(face.slopeX, face.slopeZ) > 0.02 ? Math.atan2(-face.slopeX, -face.slopeZ) : 0;
+    return placementFor(kind, { x, z }, travel, this.arm);
+  }
+
+  private window(x: number, visit: (z: number, i: number) => void): void {
+    const { solver } = this.runner.simulation;
+    const column = Math.round((x - solver.xCenters[0]) / solver.dx);
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      const z = solver.zCenters[iz];
+      if (z < this.point.z - CREST_WINDOW.seaward) continue;
+      if (z > this.point.z + CREST_WINDOW.shoreward) break;
+      visit(z, iz * solver.nx + column);
+    }
+  }
+
+  private breaksAt(x: number): boolean {
+    let any = false;
+    this.window(x, (_z, i) => { if (this.strength[i] > 0.3) any = true; });
+    return any;
+  }
+
+  private crestAt(x: number): number {
+    const { solver } = this.runner.simulation;
+    let best = Number.NaN;
+    let highest = -Infinity;
+    this.window(x, (z, i) => {
+      const eta = solver.h[i] + solver.bed[i] - solver.restLevel;
+      if (eta > highest) [highest, best] = [eta, z];
+    });
+    return best;
+  }
+}

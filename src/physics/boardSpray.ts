@@ -31,7 +31,7 @@ export const BOARD_SHEETS = 2;
 const SHEET_FIELDS = [
   'x', 'y', 'z', 'alongX', 'alongZ', 'length', 'vx', 'vy', 'vz', 'flux', 'spread', 'fall', 'mist', 'boardX', 'boardY', 'boardZ',
   'thickness', 'fan', 'breakup', 'onset', 'side', 'source', 'tearX', 'tearY', 'tearZ', 'tearAlongX', 'tearAlongZ', 'tearLength',
-  'tearVX', 'tearVY', 'tearVZ',
+  'tearVX', 'tearVY', 'tearVZ', 'aftVX', 'aftVY', 'aftVZ', 'foreVX', 'foreVY', 'foreVZ', 'fluxMean',
 ] as const satisfies readonly (keyof BoardSpraySheet)[];
 /** Floats per packed sheet (`packBoardSheets`): `SHEET_FIELDS`. */
 export const BOARD_SHEET_STRIDE = SHEET_FIELDS.length;
@@ -93,6 +93,7 @@ export function createBoardSpraySheet(): BoardSpraySheet {
     x: 0, y: 0, z: 0, alongX: 0, alongZ: 0, length: 0, vx: 0, vy: 0, vz: 0, flux: 0, spread: 0, fall: 7, mist: 0.05,
     boardX: 0, boardY: 0, boardZ: 0, thickness: 0, fan: 0, breakup: 0, onset: 0, side: 1, source: 0,
     tearX: 0, tearY: 0, tearZ: 0, tearAlongX: 0, tearAlongZ: 1, tearLength: 0, tearVX: 0, tearVY: 0, tearVZ: 0,
+    aftVX: 0, aftVY: 0, aftVZ: 0, foreVX: 0, foreVY: 0, foreVZ: 0, fluxMean: 0.5,
   };
 }
 
@@ -256,18 +257,21 @@ interface SideSum {
   fall: number; mist: number;
   /** Its exits' extent along the board (board frame, m), and their water-weighted sum. */
   first: number; last: number; along: number;
+  /** For the launch's straight-line fit along the root (spray-rework): Σ f·a², and Σ f·a·v. */
+  aa: number; avx: number; avy: number; avz: number;
 }
 const sums: [SideSum, SideSum] = [createSum(), createSum()];
 function createSum(): SideSum {
   return {
     flux: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, bx: 0, by: 0, bz: 0, wx: 0, wy: 0, wz: 0, jet: 0, run: 0, fall: 0, mist: 0,
-    first: Infinity, last: -Infinity, along: 0,
+    first: Infinity, last: -Infinity, along: 0, aa: 0, avx: 0, avy: 0, avz: 0,
   };
 }
 function clear(sum: SideSum): void {
   sum.flux = 0; sum.x = 0; sum.y = 0; sum.z = 0; sum.vx = 0; sum.vy = 0; sum.vz = 0; sum.fall = 0; sum.mist = 0;
   sum.bx = 0; sum.by = 0; sum.bz = 0; sum.wx = 0; sum.wy = 0; sum.wz = 0; sum.jet = 0; sum.run = 0;
   sum.first = Infinity; sum.last = -Infinity; sum.along = 0;
+  sum.aa = 0; sum.avx = 0; sum.avy = 0; sum.avz = 0;
 }
 /**
  * Add `flux` kg/s leaving patch `at` of `hull` at (x, y, z) (world), `along` m along the board, at (vx, vy, vz) over the
@@ -285,6 +289,8 @@ function add(sum: SideSum, hull: HullSprayState, at: number, flux: number, x: nu
   sum.first = Math.min(sum.first, along);
   sum.last = Math.max(sum.last, along);
   sum.along += flux * along;
+  sum.aa += flux * along * along;
+  sum.avx += flux * along * vx; sum.avy += flux * along * vy; sum.avz += flux * along * vz;
 }
 
 /** A station's reading: its wetted patches' mean speed into the water and its path through it (world), and its depth line. */
@@ -469,6 +475,20 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     sheet.boardY = sum.by / sum.flux;
     sheet.boardZ = sum.bz / sum.flux;
     sheet.side = sum === sums[0] ? -1 : 1;
+    // Its launch along the root (spray-rework): the water-weighted straight-line fit against the place along it, at
+    // its two ends (the tail's stations, sweeping wider with the yaw, throw faster than the mean); a lone station's is
+    // the mean.
+    const spreadAlong = sum.aa / sum.flux - mean * mean;
+    const fit = span > stationLength && spreadAlong > 1e-6;
+    const slope = (moment: number, average: number) => (fit ? (moment / sum.flux - mean * average) / spreadAlong : 0);
+    const sx = slope(sum.avx, sheet.vx);
+    const sy = slope(sum.avy, sheet.vy);
+    const sz = slope(sum.avz, sheet.vz);
+    const aft = sum.first - mean;
+    const fore = sum.last - mean;
+    sheet.aftVX = sheet.vx + sx * aft; sheet.aftVY = sheet.vy + sy * aft; sheet.aftVZ = sheet.vz + sz * aft;
+    sheet.foreVX = sheet.vx + sx * fore; sheet.foreVY = sheet.vy + sy * fore; sheet.foreVZ = sheet.vz + sz * fore;
+    sheet.fluxMean = fit ? Math.min(1, Math.max(0, (mean - sum.first) / (sum.last - sum.first))) : 0.5;
     // The sheet itself (spray-sheet): how thick it leaves the hull, and when it sheds its first drops and tears.
     const rx = sheet.vx - sheet.boardX;
     const ry = sheet.vy - sheet.boardY;

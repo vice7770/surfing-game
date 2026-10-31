@@ -21,6 +21,7 @@ import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
 import { SprayPoints } from '../scene/SprayPoints';
 import { SpraySheetMesh } from '../scene/SpraySheetMesh';
+import { BoardFanMesh } from '../scene/BoardFanMesh';
 import { LipSheetMesh } from '../scene/LipSheetMesh';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
@@ -534,8 +535,10 @@ export function extensionSwitch(search?: string): { extension?: 'old' } {
  * The `?boardSpray=off` dev switch (`SurfZoneConfig.boardSpray`, board-spray 2026-10-29): no board throws spray, as before,
  * in place of the sheets a planing board throws off its rails and tail.
  */
-export function boardSpraySwitch(search?: string): { boardSpray?: 'off' } {
-  return devParam('boardSpray', search)?.trim().toLowerCase() === 'off' ? { boardSpray: 'off' } : {};
+export function boardSpraySwitch(search?: string): { boardSpray?: 'off' | 'old' } {
+  const value = devParam('boardSpray', search)?.trim().toLowerCase();
+  // `?boardSpray=old` (spray-rework): #171's spray, its drops the worker's round sprites and its curtain clear glass.
+  return value === 'off' ? { boardSpray: 'off' } : value === 'old' ? { boardSpray: 'old' } : {};
 }
 
 /**
@@ -613,6 +616,11 @@ export class PhysicalMode {
   private readonly edgeWhitewater = new EdgeWhitewater([this.lipSheet.mesh, this.spray.mesh]);
   /** The boards' spray sheets drawn as curtains of water (spray-sheet). */
   readonly curtains = new SpraySheetMesh();
+  /**
+   * The boards' spray as a fan of fine streaked drops, mist and the carve's foam line, on the page (spray-rework); the
+   * worker's drops are #171's (`?boardSpray=old`).
+   */
+  readonly fan = new BoardFanMesh();
   /** Other players' sheets as last drawn (spray-sheet), for their curtains. */
   private otherCurtains?: ArrayLike<number>;
   private readonly curtainOffset = new Vector3();
@@ -677,6 +685,7 @@ export class PhysicalMode {
     this.visualsDirty = true;
     this.host?.setParticleLevel(level);
     this.lipSheet.setSubdivisions(particleBudget(level).lipSubdivisions);
+    this.fan.setLevel(level);
   }
   config?: SurfZoneConfig;
   /** The storm behind the running sea, in storm mode. */
@@ -748,7 +757,7 @@ export class PhysicalMode {
 
   constructor(scene: Scene) {
     this.scene = scene;
-    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object, this.curtains.mesh);
+    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object, this.curtains.mesh, this.fan.group);
     this.leash.object.visible = false;
     this.board.visible = false;
     this.surfer.group.visible = false;
@@ -1019,7 +1028,7 @@ export class PhysicalMode {
       ? {
         paddle: false, popUp: false, steer: 0, ...input, retry,
         ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}), ...(this.stance ? { stance: this.stance } : {}),
-        ...(this.boardSheets ? { boardSheets: this.boardSheets } : {}),
+        ...(this.boardSheets && this.host?.config.boardSpray === 'old' ? { boardSheets: this.boardSheets } : {}),
       } : undefined;
     this.boardSheets = undefined;
     this.host?.advance(steps, request, reactions);
@@ -1030,7 +1039,11 @@ export class PhysicalMode {
     this.boardSheets = packed;
     // Drawn as curtains too, where the config draws them (spray-sheet).
     this.otherCurtains = this.host?.config.spraySheet === 'off' || this.host?.config.boardSpray === 'off' ? undefined : packed;
+    this.otherFans = this.host?.config.boardSpray === undefined ? packed : undefined;
   }
+
+  /** Other players' sheets for their fans (spray-rework), as last drawn. */
+  private otherFans?: ArrayLike<number>;
 
   update(dt: number): void {
     const { host } = this;
@@ -1078,8 +1091,11 @@ export class PhysicalMode {
     const snapshotBoard = host.snapshot.board;
     this.curtainOffset.set(pose[0] - snapshotBoard[0], pose[1] - snapshotBoard[1], pose[2] - snapshotBoard[2]);
     if (!(snapshotBoard[7] > 0)) this.curtainOffset.set(0, 0, 0);
+    this.curtains.setStyle(host.config.boardSpray === 'old' ? 'glass' : 'smeared');
     this.curtains.update(status.seaTime, host.snapshot.sheets, host.snapshot.sheetCount, this.curtainOffset, this.otherCurtains);
     this.curtains.mesh.visible = this.shown && this.sprayShown;
+    this.updateFan();
+    this.fan.group.visible = host.config.boardSpray === undefined && this.shown && this.sprayShown;
     this.surfer.group.visible = this.shown && riding;
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
@@ -1226,6 +1242,7 @@ export class PhysicalMode {
     this.visualsDirty = true;
     this.host?.setSprayEnabled(visible);
     this.spray.mesh.visible = this.shown && visible;
+    this.fan.group.visible = this.shown && visible && this.host?.config.boardSpray === undefined;
   }
 
   cameraBelowSurface(margin = 0.1, position = this.camera.camera.position): boolean {
@@ -1247,5 +1264,19 @@ export class PhysicalMode {
     this.bubbles.mesh.visible = visible;
     this.spray.mesh.visible = visible && this.sprayShown;
     this.curtains.mesh.visible = visible && this.sprayShown;
+    this.fan.group.visible = visible && this.sprayShown && this.host?.config.boardSpray === undefined;
   }
+
+  /**
+   * The fan (spray-rework): its drops thrown from the snapshot's sheets since the last call, flown on the GPU; #171's
+   * are the worker's (`?boardSpray=old`). Each frame, from `update`; dev tools stepping the sea call it each step.
+   */
+  updateFan(): void {
+    const { host } = this;
+    if (!host || host.config.boardSpray !== undefined) return;
+    this.fan.update(host.snapshot.status.seaTime, host.snapshot.sheets, host.snapshot.sheetCount, this.otherFans, this.surfaceAt, host.config.windSpeed ?? 0, this.curtainOffset);
+  }
+
+  /** The water's height for the fan's drops and carve lines (the running sea's). */
+  private readonly surfaceAt = (x: number, z: number) => this.host?.heightAt(x, z) ?? 0;
 }

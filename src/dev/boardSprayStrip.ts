@@ -17,7 +17,7 @@ import type { PhysicalMode, PhysicalSettings } from '../game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../game/SurfConditions';
 import { LocalSurfZone } from '../game/SurfZoneHost';
 import { advance, breathe } from './devStepping';
-import { PoolStart, type PoolStartKind } from './poolStart';
+import { BreakStart, PoolStart, type PoolStartKind } from './poolStart';
 
 interface StripHooks {
   start(settings: PhysicalSettings, overrides?: Record<string, unknown>): Promise<void>;
@@ -31,15 +31,19 @@ interface StripHooks {
   canvas: HTMLCanvasElement;
 }
 
-type Case = 'trim' | 'turn' | 'compress';
+type Case = 'trim' | 'turn' | 'compress' | 'carve';
 const params = new URLSearchParams(window.location.search);
 const RECEIVER = params.get('receiver') ?? 'http://localhost:5199';
 const SIZE = (params.get('size') ?? 'medium') as SwellSize;
+/** `&spot=canyon` (spray-rework): the Canyon's waves, each case on the next wave to break at its take-off (`BreakStart`). */
+const SPOT = (params.get('spot') ?? 'pool') as 'pool' | 'canyon';
 const ARM: 1 | -1 = params.get('arm') === 'left' ? -1 : 1;
 const CASES = (params.get('cases') ?? 'trim,turn,compress').split(',') as Case[];
 const TIMES = (params.get('times') ?? '0.6,0.9,1.2,1.5').split(',').map(Number);
 const STEER = Number(params.get('steer') ?? -ARM);
 const OFF = params.get('boardSpray') === 'off';
+/** `&boardSpray=old` (spray-rework): #171's spray, for the before strips. */
+const OLD = params.get('boardSpray') === 'old';
 /** `&spraySheet=off`: the spray as drops at once, without its curtains (spray-sheet's before). */
 const NO_SHEET = params.get('spraySheet') === 'off';
 /** `&close=1`: a third row, close to the rail the spray leaves (spray-sheet). */
@@ -86,6 +90,19 @@ function cameraFor(board: Float64Array, view: 'chase' | 'side' | 'close', camera
   return camera;
 }
 
+/** The board's roll off level (deg: its deck's normal from straight up) and drift (deg: its velocity off its heading, level). */
+function attitude(board: { orientation: Quaternion; velocity: Vector3; angularVelocity: Vector3 }): { roll: number; drift: number; yawRate: number } {
+  const up = new Vector3(0, 1, 0).applyQuaternion(board.orientation);
+  const heading = new Vector3(0, 0, 1).applyQuaternion(board.orientation).setY(0).normalize();
+  const flat = board.velocity.clone().setY(0);
+  const drift = flat.length() > 0.5 ? Math.acos(Math.min(1, Math.max(-1, flat.normalize().dot(heading)))) : 0;
+  return {
+    roll: +((Math.acos(Math.min(1, up.y)) * 180) / Math.PI).toFixed(1), drift: +((drift * 180) / Math.PI).toFixed(1),
+    // The turn's rate, deg/s (about the vertical; the advisor: pros peak over 200 in a snap, 300 in a cutback).
+    yawRate: +((board.angularVelocity.y * 180) / Math.PI).toFixed(0),
+  };
+}
+
 async function post(canvas: HTMLCanvasElement, name: string): Promise<void> {
   const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
   if (png) await fetch(`${RECEIVER}/upload?name=${name}`, { method: 'POST', body: png }).catch(() => undefined);
@@ -97,24 +114,25 @@ async function log(line: string): Promise<void> {
 }
 
 export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
-  const settings = physicalSettingsFor('pool', { swell: SIZE, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
-  await hooks.start(settings, { ...(OFF ? { boardSpray: 'off' } : {}), ...(NO_SHEET ? { spraySheet: 'off' } : {}) });
+  const settings = physicalSettingsFor(SPOT, { swell: SIZE, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+  await hooks.start(settings, { ...(OFF ? { boardSpray: 'off' } : OLD ? { boardSpray: 'old' } : {}), ...(NO_SHEET ? { spraySheet: 'off' } : {}) });
   await hooks.setTimeOfDay('midday');
   // `&look=classic|rich`: the water look (the game's graphics setting otherwise).
   const look = params.get('look');
   if (look === 'classic' || look === 'rich') hooks.setWaterLook(look);
   hooks.resize(TILE.width, TILE.height);
   const host = hooks.mode.host;
-  const placed = PoolStart.at(host, ARM);
+  const placed = SPOT === 'pool' ? PoolStart.at(host, ARM) : host instanceof LocalSurfZone ? new BreakStart(host, ARM) : undefined;
   if (!(host instanceof LocalSurfZone) || !placed) {
-    await log('boardSprayStrip needs the Wave Pool stepped in the page (`?inpage`, the CPU tier)');
+    await log('boardSprayStrip needs the sea stepped in the page (`?inpage`, the CPU tier)');
     return;
   }
   const runner = host.runner;
   const camera = new PerspectiveCamera(55, TILE.width / TILE.height, 0.1, 2000);
   const result: { cases: CaseLog[]; gpu?: unknown; off: boolean } = { cases: [], off: OFF };
   for (const which of CASES) {
-    const kind: PoolStartKind = which === 'trim' ? 'face' : 'trough';
+    // `carve` (spray-rework): from the face, a hard rail turn (the steer and Compress) as the others' bottom turn.
+    const kind: PoolStartKind = which === 'trim' || which === 'carve' ? 'face' : 'trough';
     // Idle on the lineup until a wave is due, then put the rider in place.
     for (let n = 0; n < 60 * 40 && !placed.due(); n += 1) {
       await advance(hooks, 1, { paddle: false, popUp: false, steer: 0 });
@@ -132,7 +150,9 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
     for (let n = 1; n <= Math.round((Math.max(...TIMES) + 0.05) / STEP); n += 1) {
       const t = n * STEP;
       const turning = which !== 'trim' && t >= TURN.from && t < TURN.from + TURN.for;
-      await advance(hooks, 1, { paddle: false, popUp: false, steer: turning ? STEER : 0, ...(which === 'compress' && turning ? { compress: 1 } : {}) } as never);
+      await advance(hooks, 1, { paddle: false, popUp: false, steer: turning ? STEER : 0, ...((which === 'compress' || which === 'carve') && turning ? { compress: 1 } : {}) } as never);
+      // The fan throws as the sea steps (the game's frames do this; the strip renders only its columns).
+      hooks.mode.updateFan();
       const column = TIMES.findIndex((time) => Math.abs(time - t) < STEP / 2);
       if (column < 0) continue;
       const board = host.snapshot.board;
@@ -142,9 +162,12 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
         hooks.render(STEP / 2, cameraFor(board, view, camera, aim));
         // `&only=curtains`: the drops hidden, to see the curtains alone.
         if (params.get('only') === 'curtains') {
+          const fanShown = hooks.mode.fan.group.visible;
           hooks.mode.spray.mesh.visible = false;
+          hooks.mode.fan.group.visible = false;
           hooks.renderView(cameraFor(board, view, camera, aim));
           hooks.mode.spray.mesh.visible = true;
+          hooks.mode.fan.group.visible = fanShown;
         }
         context.drawImage(hooks.canvas, column * TILE.width, row * TILE.height, TILE.width, TILE.height);
       }
@@ -157,12 +180,21 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
       entry.frames.push({
         t: +t.toFixed(2), speed: +Math.hypot(runner.board!.velocity.x, runner.board!.velocity.z).toFixed(2), sheets: sheets.length,
         flux: +sheets.reduce((sum, sheet) => sum + sheet.flux, 0).toFixed(1), spray: runner.spray.count, boardSpawns: runner.spray.boardSpawns - spawnsBefore,
-        curtains: hooks.mode.curtains.drawn,
+        curtains: hooks.mode.curtains.drawn, fan: hooks.mode.fan.live(),
         curtainAt: Array.from((hooks.mode.curtains.mesh.geometry.getAttribute('position').array as Float32Array).slice(0, 3)).map((v) => +v.toFixed(2)),
         curtainTip: Array.from((hooks.mode.curtains.mesh.geometry.getAttribute('position').array as Float32Array).slice(3 * 262, 3 * 262 + 3)).map((v) => +v.toFixed(2)),
         boardAt: [hooks.mode.board.position.x, hooks.mode.board.position.y, hooks.mode.board.position.z].map((v) => +v.toFixed(2)),
         snapshotBoard: [board[0], board[1], board[2]].map((v) => +v.toFixed(2)),
         roots: sheets.map((sheet) => ({ side: sheet.side, at: [sheet.x, sheet.y, sheet.z].map((v) => +v.toFixed(2)), length: +sheet.length.toFixed(2), breakup: +sheet.breakup.toFixed(3) })),
+        // The spray's size (spray-rework): the board's roll off level and drift off its heading, each sheet's launch over
+        // the ground and the height its water would reach in a vacuum, vy²/2g.
+        ...attitude(runner.board!),
+        launches: sheets.map((sheet) => ({
+          v: [sheet.vx, sheet.vy, sheet.vz].map((v) => +v.toFixed(2)), flux: +sheet.flux.toFixed(1), apex: +(Math.max(0, sheet.vy) ** 2 / (2 * 9.81)).toFixed(2),
+          // The fit along the root (spray-rework): the aft end's launch and its apex, the fore end's apex, where its water leaves.
+          aft: [sheet.aftVX, sheet.aftVY, sheet.aftVZ].map((v) => +v.toFixed(2)), aftApex: +(Math.max(0, sheet.aftVY) ** 2 / (2 * 9.81)).toFixed(2),
+          foreApex: +(Math.max(0, sheet.foreVY) ** 2 / (2 * 9.81)).toFixed(2), fluxMean: +sheet.fluxMean.toFixed(2),
+        })),
         sheet: sheets[0] ? {
           root: +sheets[0].length.toFixed(2), thickness: +(sheets[0].thickness * 1000).toFixed(1), breakup: +sheets[0].breakup.toFixed(3),
           speed: +Math.hypot(sheets[0].vx - sheets[0].boardX, sheets[0].vy - sheets[0].boardY, sheets[0].vz - sheets[0].boardZ).toFixed(2),
@@ -181,7 +213,7 @@ export async function boardSprayStrip(hooks: StripHooks): Promise<void> {
         camera.updateProjectionMatrix();
       }
     }
-    await post(strip, `board-spray-${which}${OFF ? '-off' : ''}${NO_SHEET ? '-drops' : ''}${CLOSE ? '-close' : ''}.png`);
+    await post(strip, `board-spray-${SPOT === 'pool' ? '' : `${SPOT}-`}${which}${OFF ? '-off' : OLD ? '-old' : ''}${NO_SHEET ? '-drops' : ''}${CLOSE ? '-close' : ''}.png`);
     await log(`${which}: ${JSON.stringify(entry)}`);
     result.cases.push(entry);
     // Wait out this wave before the next case's.
@@ -203,11 +235,14 @@ async function sprayGpuAB(hooks: StripHooks, camera: PerspectiveCamera, cycles =
   if (!gl || !timer) return 'no GPU timer';
   const spray = hooks.mode.spray.mesh;
   const curtains = hooks.mode.curtains.mesh;
-  // The spray as drawn (drops and curtains), its curtains hidden, and all of it hidden.
+  const fan = hooks.mode.fan.group;
+  const fanShown = fan.visible;
+  // The spray as drawn (the sea's drops, the curtains and the fan), its curtains hidden, its fan hidden, all of it hidden.
   const arms = [
-    () => { spray.visible = true; curtains.visible = true; },
-    () => { spray.visible = true; curtains.visible = false; },
-    () => { spray.visible = false; curtains.visible = false; },
+    () => { spray.visible = true; curtains.visible = true; fan.visible = fanShown; },
+    () => { spray.visible = true; curtains.visible = false; fan.visible = fanShown; },
+    () => { spray.visible = true; curtains.visible = true; fan.visible = false; },
+    () => { spray.visible = false; curtains.visible = false; fan.visible = false; },
   ];
   for (const arm of arms) {
     arm();
@@ -228,6 +263,7 @@ async function sprayGpuAB(hooks: StripHooks, camera: PerspectiveCamera, cycles =
   }
   spray.visible = true;
   curtains.visible = true;
+  fan.visible = fanShown;
   const times = arms.map(() => new Array<number>(cycles).fill(Number.NaN));
   for (const { arm, cycle, query } of pending) {
     while (!gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE)) await new Promise((resolve) => setTimeout(resolve, 5));
@@ -239,7 +275,9 @@ async function sprayGpuAB(hooks: StripHooks, camera: PerspectiveCamera, cycles =
     return sorted.length ? +sorted[Math.floor(sorted.length / 2)].toFixed(3) : Number.NaN;
   };
   return {
-    drawn: median(times[0]), curtainsHidden: median(times[1]), allHidden: median(times[2]), curtains: hooks.mode.curtains.drawn,
-    curtainCost: median(times[0].map((t, cycle) => t - times[1][cycle])), sprayCost: median(times[0].map((t, cycle) => t - times[2][cycle])),
+    drawn: median(times[0]), curtainsHidden: median(times[1]), fanHidden: median(times[2]), allHidden: median(times[3]), curtains: hooks.mode.curtains.drawn,
+    fanLive: hooks.mode.fan.live(),
+    curtainCost: median(times[0].map((t, cycle) => t - times[1][cycle])), fanCost: median(times[0].map((t, cycle) => t - times[2][cycle])),
+    sprayCost: median(times[0].map((t, cycle) => t - times[3][cycle])),
   };
 }

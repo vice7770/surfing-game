@@ -492,7 +492,8 @@ export class SurfZoneRunner {
     // A detached rider's last strokes are stale: only an attached paddler splashes.
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
-      boardSheets: this.sheetsInUse,
+      // The boards' drops are the page's fan (spray-rework), but for #171's (`?boardSpray=old`).
+      boardSheets: this.config.boardSpray === 'old' ? this.sheetsInUse : undefined,
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, drawnImpacts: simulation.drawnImpacts,
       rollerToes: () => simulation.rollerToes(),
       windSpeed: this.config.windSpeed ?? 0, strokes,

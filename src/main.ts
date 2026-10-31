@@ -297,6 +297,7 @@ class SurfGame {
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
     this.physicalMode.spray.useWater(this.water.causticSource);
+    this.physicalMode.fan.useWater(this.water.causticSource);
     this.lab = this.labHost();
     this.school = this.schoolHost();
     this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
@@ -1092,6 +1093,7 @@ class SurfGame {
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
     this.physicalMode.curtains.setLook(look);
+    this.physicalMode.fan.setLook(look);
     // The sand, bubbles and riders take the horizon haze with the Rich water (hazeLand.ts).
     setHazeLandLook(look);
     this.drawnLook = look;
@@ -1203,6 +1205,7 @@ class SurfGame {
     this.physicalMode.spray.setSun(direction, radiance);
     this.physicalMode.lipSheet.setSun(direction, radiance);
     this.physicalMode.curtains.setSun(direction, radiance);
+    this.physicalMode.fan.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {

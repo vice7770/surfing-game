@@ -138,7 +138,7 @@ export interface SurfZoneConfig {
    * rails and tail (`physics/boardSpray.ts`), drawn in the spray (`SprayCloud`). Visual only. The `?boardSpray=off` dev
    * switch, for A/Bs; online rooms run the default.
    */
-  boardSpray?: 'off';
+  boardSpray?: 'off' | 'old';
   /**
    * 'off': the boards' spray leaves the hull as drops, as before spray-sheet (2026-10-30); by default it leaves as a
    * curtain of water that tears into the drops a little way out, drawn on the page (`SpraySheetMesh`). The

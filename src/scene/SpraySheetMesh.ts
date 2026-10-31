@@ -50,10 +50,24 @@ const curtainCoverGlsl = /* glsl */ `{
     totalEmissiveRadiance = curtainSky * max( 0.0, curtainSheen - curtainF );
   #endif
 }`;
-/** `curtainWhite` on the CPU (Rich's foam attribute): the whitening `share` of the way to the tear. */
+/** `curtainWhite` on the CPU (the foam attribute): the whitening `share` of the way to the tear. */
 function whiteAt(share: number): number {
   const x = Math.min(1, Math.max(0, (share - CURTAIN.fingering) / (1 - CURTAIN.fingering)));
   return CURTAIN.whiten * x * x * (3 - 2 * x);
+}
+
+/**
+ * The smeared root (spray-rework, 2026-10-31): over a camera's exposure (`shutter` s) a fast, rough sheet's glints smear
+ * into white (the water-physics advisor, inferred), the more the further it moves in it, full by `length` m, at most
+ * `most`, fading out over `over` of its flight; the drops past its tear are white by their own optical depth (the fan).
+ */
+export const SMEAR = { shutter: 1 / 60, length: 0.1, most: 0.6, over: 0.85 } as const;
+
+/** The smeared root's whitening at `share` of the way to the tear, for a sheet `relative` m/s off its hull. */
+export function smearAt(share: number, relative: number): number {
+  const smear = SMEAR.most * Math.min(1, (relative * SMEAR.shutter) / SMEAR.length);
+  const x = Math.min(1, Math.max(0, share / SMEAR.over));
+  return smear * (1 - x * x * (3 - 2 * x));
 }
 /** Each curtain is drawn as a grid: COLUMNS across its root, ROWS out along its flight to where it tears. */
 const COLUMNS = 24;
@@ -131,13 +145,16 @@ attribute vec2 curtain;
 attribute float curtainFingers;
 attribute float curtainSeed;
 attribute float curtainFade;
+attribute float foam;
 varying vec2 vCurtain;
 varying float vFingers;
 varying float vSeed;
 varying float vFade;
+varying float vFoam;
 varying vec3 vNormal;
 varying vec3 vWorld;
 void main() {
+  vFoam = foam;
   vCurtain = curtain;
   vFingers = curtainFingers;
   vSeed = curtainSeed;
@@ -157,6 +174,7 @@ varying vec2 vCurtain;
 varying float vFingers;
 varying float vSeed;
 varying float vFade;
+varying float vFoam;
 varying vec3 vNormal;
 varying vec3 vWorld;
 ${curtainMaskGlsl}
@@ -171,7 +189,7 @@ void main() {
   // Premultiplied: the sky it reflects (at least the readability floor's sheen, streaked), a trace of the water's
   // colour and the sun through it, and the whitening tear, over what it lets through.
   float sheen = max( ${CURTAIN.floor.toFixed(2)}, fresnel ) * curtainStreak( vCurtain, vFingers, vSeed ) + curtainRim( vCurtain );
-  float white = curtainWhite( vCurtain );
+  float white = vFoam;
   float cover = mask * min( 1.0, sheen + white );
   gl_FragColor = vec4( mask * ( skyColor * sheen + body * 0.04 * ( 1.0 + 2.0 * through ) + vec3( 0.93, 0.97, 0.97 ) * white ), cover );
 }`;
@@ -204,6 +222,13 @@ export class SpraySheetMesh {
   private readonly history = new SheetHistory();
   /** Curtains drawn this frame. */
   drawn = 0;
+  /** Whether the root smears white (spray-rework), or stays #171's clear glass (`?boardSpray=old`). */
+  private smeared = true;
+
+  /** #171's clear glass (`'glass'`), or the root smeared white over the camera's exposure (`'smeared'`, spray-rework). */
+  setStyle(style: 'glass' | 'smeared'): void {
+    this.smeared = style === 'smeared';
+  }
 
   constructor() {
     this.classicMaterial = new ShaderMaterial({
@@ -347,7 +372,7 @@ export class SpraySheetMesh {
           this.positions[v * 3 + 2] = row.z + row.alongZ * along + row.vz * age + dz;
           this.curtain[v * 2] = i / COLUMNS;
           this.curtain[v * 2 + 1] = age / breakup;
-          this.foam[v] = whiteAt(age / breakup);
+          this.foam[v] = Math.max(whiteAt(age / breakup), this.smeared ? smearAt(age / breakup, relative) : 0);
           this.fingers[v] = fingers;
           this.seeds[v] = seed;
           this.fades[v] = fade;
