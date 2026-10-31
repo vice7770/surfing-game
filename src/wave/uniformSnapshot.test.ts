@@ -121,6 +121,6 @@ describe('the worker snapshot\'s fields', () => {
           for (let k = 0; k < 3; k += 1) expect(bytes(fast[k])).toEqual(bytes(reference[k]));
         }
       }
-    });
+    }, 180_000); // A Canyon warm start: about 20 s alone, it timed out at 60 s under other agents' load (2026-10-29, 10-31).
   }
 });

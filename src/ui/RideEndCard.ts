@@ -50,12 +50,14 @@ export function endCardModel(result: RideResult, records: readonly BestKind[], u
 }
 
 /**
- * Whether a finished ride gets the end card: not after a wipeout (owner, 2026-10-31),
- * where the rider swims back and climbs on with nothing popping up; still after a
- * ride that ends standing (kicked out, the wave died) or by a retry.
+ * Whether a finished ride gets the end card: never (owner, 2026-10-31: "the popup to start
+ * a new wave or change beach is still there; remove it"). Play carries on after every ride,
+ * the rider swims back or paddles out, and the pause menu keeps Replay, New wave and the
+ * menu. The ride is still logged and a new best still chimes. The card's code is kept,
+ * unused, should a summary come back.
  */
-export function showsEndCard(result: RideResult): boolean {
-  return result.outcome !== 'wipeout';
+export function showsEndCard(_result: RideResult): boolean {
+  return false;
 }
 
 export interface EndCardHandlers {
