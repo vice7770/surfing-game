@@ -106,6 +106,10 @@ describe('settingsModel', () => {
     expect(value('bind:gamepad:mute:0', 'steam')).toMatchObject({ value: 'View' });
     expect(value('bind:gamepad:hand:1', 'steam')).toMatchObject({ value: 'L4' });
     expect(value('bind:gamepad:retry:1')).toMatchObject({ value: '—' });
+    // duck-dive-l3: the duck-dive on L3, and the left and right calls with no pad button by default.
+    expect(value('bind:gamepad:duckDive:0')).toMatchObject({ value: 'L3' });
+    expect(value('bind:gamepad:callLeft:0')).toMatchObject({ value: '—' });
+    expect(value('bind:gamepad:callRight:1')).toMatchObject({ value: '—' });
   });
 });
 
@@ -119,6 +123,11 @@ describe('applyRow', () => {
   it('rebinds through the swap rules, and refuses a reserved key', () => {
     expect(applyRow(defaultSettings(), 'bind:keyboard:paddle:0', 'KeyW')).toMatchObject({ tab: 'controls' });
     expect(applyRow(defaultSettings(), 'bind:keyboard:paddle:0', 'Escape')).toBeUndefined();
+    // An action with no pad button by default takes one in either slot (duck-dive-l3: the left and right calls).
+    const first = applyRow(defaultSettings(), 'bind:gamepad:callLeft:0', 11);
+    expect(first?.patch).toMatchObject({ bindings: { gamepad: { callLeft: [11] } } });
+    const second = applyRow(defaultSettings(), 'bind:gamepad:callRight:1', 16);
+    expect(second?.patch).toMatchObject({ bindings: { gamepad: { callRight: [16] } } });
   });
 
   it('applies gameplay and accessibility values to their tabs', () => {

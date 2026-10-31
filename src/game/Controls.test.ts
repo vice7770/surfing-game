@@ -68,16 +68,18 @@ describe('Controls', () => {
     expect(standing.trim).toBeLessThan(0);
   });
 
-  it('reads the duck-dive from LT as an analog value lying down', () => {
+  // duck-dive-l3 (2026-10-31): the duck-dive is on L3 (and the D-pad down); LT crouches only, standing.
+  it('duck-dives fully from L3 lying down, and not from LT, which crouches standing', () => {
     const { controls, setPads } = setup();
-    const values = Array.from({ length: 17 }, (_, i) => (i === 6 ? 0.4 : 0));
+    setPads([pad([10])]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, false).duckDive).toBe(1);
+    expect(controls.rideRequest(1 / 60, true).duckDive ?? 0).toBe(0);
+    const values = Array.from({ length: 17 }, (_, i) => (i === 6 ? 0.8 : 0));
     setPads([{ ...pad([6]), values }]);
     controls.poll();
-    expect(controls.rideRequest(1 / 60, false).duckDive).toBeCloseTo(0.4, 2);
-    // Held, it stays as deep as the trigger says (the keys' ramp is the keyboard's).
-    for (let i = 0; i < 60; i += 1) controls.rideRequest(1 / 60, false);
-    expect(controls.rideRequest(1 / 60, false).duckDive).toBeCloseTo(0.4, 2);
-    expect(controls.rideRequest(1 / 60, true).duckDive ?? 0).toBe(0);
+    expect(controls.rideRequest(1 / 60, false).duckDive ?? 0).toBe(0);
+    expect(controls.rideRequest(1 / 60, true).crouch).toBeGreaterThan(0.5);
   });
 
   it('duck-dives fully from the D-pad down', () => {

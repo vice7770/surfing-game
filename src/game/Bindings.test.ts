@@ -94,11 +94,15 @@ describe('bindings', () => {
     expect(readPads(() => [])).toEqual([]);
   });
 
-  // N1: surf calls online, on 1–4 and four spare pad buttons, rebindable. C1 moved the party call from LB to X, which the hand left.
-  it('shouts the four surf calls on 1–4 and spare pad buttons, clashing with nothing', () => {
+  // N1: surf calls online, on 1–4 and spare pad buttons, rebindable. C1 moved the party call from LB to X, which the hand
+  // left; duck-dive-l3 (2026-10-31) took the left and right calls off the stick clicks (L3 duck-dives): keys only.
+  it('shouts the four surf calls on 1–4, the party and nice calls also on X and B, clashing with nothing', () => {
     expect(heldActions(new Set(['Digit1', 'Digit2', 'Digit3', 'Digit4']), [], DEFAULT_BINDINGS))
       .toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
-    expect(heldActions(new Set(), [pad([10, 11, 2, 1])], DEFAULT_BINDINGS)).toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
+    expect(heldActions(new Set(), [pad([2, 1])], DEFAULT_BINDINGS)).toEqual(new Set(['callParty', 'callNice']));
+    expect(DEFAULT_BINDINGS.gamepad.callLeft).toEqual([]);
+    expect(DEFAULT_BINDINGS.gamepad.callRight).toEqual([]);
+    expect(heldActions(new Set(), [pad([11])], DEFAULT_BINDINGS)).toEqual(new Set());
     for (const call of ['callLeft', 'callRight', 'callParty', 'callNice'] as const) {
       expect(REBINDABLE).toContain(call);
       for (const code of DEFAULT_BINDINGS.keyboard[call]) expect(heldActions(new Set([code]), [], DEFAULT_BINDINGS)).toEqual(new Set([call]));

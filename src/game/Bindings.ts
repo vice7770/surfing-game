@@ -64,6 +64,7 @@ export const DEFAULT_BINDINGS: Bindings = {
     pause: ['Escape'],
   },
   // C1: the hand on LB (the right thumb trims), so the party call takes X; on the Steam Controller L4 also reaches and R4 also pops up.
+  // An action may have no default button (the left and right calls), and is bound on the Controls screen.
   gamepad: {
     paddle: [7],
     popUp: [0, 18],
@@ -74,13 +75,14 @@ export const DEFAULT_BINDINGS: Bindings = {
     crouch: [6],
     compress: [7],
     hand: [4, 17],
-    // LT (analog; it crouches only standing) and the D-pad's down.
-    duckDive: [6, 13],
+    // L3 and the D-pad's down (duck-dive-l3, 2026-10-31: LT crouches only, as before the wipeout spec).
+    duckDive: [10, 13],
     retry: [3],
     camera: [5],
     mute: [8],
-    callLeft: [10],
-    callRight: [11],
+    // Online, the left and right calls are on 1 and 2 only (duck-dive-l3: L3 is the duck-dive's); rebindable to any button.
+    callLeft: [],
+    callRight: [],
     callParty: [2],
     callNice: [1],
     pause: [9],

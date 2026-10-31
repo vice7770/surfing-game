@@ -34,7 +34,7 @@ Status: **agreed** in a grilling session with the user on 2026-09-27 (two rounds
 
 ### Duck-dive
 
-- A new rebindable action, **Duck-dive**, live lying down and while swimming: S/↓ on the keyboard (ramped over 0.2 s like every key), LT on a gamepad (analog; LT is free lying down because Crouch uses it only standing), and D-pad down.
+- A new rebindable action, **Duck-dive**, live lying down and while swimming: S/↓ on the keyboard (ramped over 0.2 s like every key), LT on a gamepad (analog; LT is free lying down because Crouch uses it only standing), and D-pad down. *(2026-10-31, the owner: moved to L3 and D-pad down; LT crouches only. The online left and right calls left L3 and R3 for keys 1 and 2. Saves migrate as pad layout 3; `docs/research/duck-dive-2026-10-31`.)*
 - Held while prone: the arms push the nose under through the hand contacts, and the knee follows on the tail about 0.3 s later. The physics decides how deep the board goes; harder (analog) pushes deeper. Releasing lets the board float up and the rider surface with it. Timing (starting 1–2 body lengths before the whitewater) and paddle speed are the skill.
 - The milestone spec's number: about 234 N net push to sink the reference board (25.75 L).
 - **While swimming**, the same action takes a breath and dives; releasing floats up.

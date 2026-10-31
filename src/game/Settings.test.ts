@@ -116,14 +116,36 @@ describe('SettingsStore', () => {
 
   // Review Focus 1 (the wipeout spec): a new action takes only the defaults a save leaves free.
   it('gives the new Duck-dive only the defaults a saved lying-down binding leaves free', () => {
-    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS'] }, gamepad: { paddle: [6] } }, padLayout: 2 } };
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS'] }, gamepad: { paddle: [10] } }, padLayout: 3 } };
     const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) }));
     const { keyboard, gamepad } = store.value.controls.bindings;
     expect(keyboard.paddle).toEqual(['KeyS']);
     expect(keyboard.duckDive).toEqual(['ArrowDown']);
-    expect(gamepad.paddle).toEqual([6]);
+    expect(gamepad.paddle).toEqual([10]);
     expect(gamepad.duckDive).toEqual([13]);
     expect(defaultSettings().controls.bindings.keyboard.duckDive).toEqual(['KeyS', 'ArrowDown']);
+  });
+
+  // duck-dive-l3 (2026-10-31): a save on layout 2 still holding the duck-dive on LT and the left and right calls on the stick
+  // clicks moves them together, once, to L3 and keys only; not when the player rebound around them.
+  it('moves a saved duck-dive from LT to L3 and the left and right calls off the stick clicks, just once, as one layout', () => {
+    const saved = (gamepad: object, extra: object = { padLayout: 2 }) =>
+      new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings: { gamepad }, ...extra } }) })).value;
+    const moved = saved({ duckDive: [6, 13], callLeft: [10], callRight: [11] });
+    expect(moved.controls.bindings.gamepad).toMatchObject({ duckDive: [10, 13], callLeft: [], callRight: [], crouch: [6], trimBack: [13] });
+    expect(moved.controls.padLayout).toBe(3);
+    // A save from before C1 takes both layouts' moves.
+    expect(saved({ hand: [2], duckDive: [6, 13], callLeft: [10], callRight: [11] }, {}).controls.bindings.gamepad)
+      .toMatchObject({ hand: [4, 17], duckDive: [10, 13], callLeft: [] });
+    // The player put the camera on L3: nothing moves (L3 would do two things).
+    expect(saved({ duckDive: [6, 13], callLeft: [10], callRight: [11], camera: [10] }).controls.bindings.gamepad)
+      .toMatchObject({ duckDive: [6, 13], callLeft: [10], callRight: [11], camera: [10] });
+    // The player's own duck-dive stays; the calls still leave the stick clicks.
+    expect(saved({ duckDive: [3], retry: [12], callLeft: [10], callRight: [11] }).controls.bindings.gamepad)
+      .toMatchObject({ duckDive: [3], callLeft: [], callRight: [] });
+    // Already on layout 3: kept as saved.
+    expect(saved({ duckDive: [6, 13], callLeft: [10], callRight: [11] }, { padLayout: 3 }).controls.bindings.gamepad)
+      .toMatchObject({ duckDive: [6, 13], callLeft: [10], callRight: [11] });
   });
 
   it('leaves the new Duck-dive unbound when a save took both its defaults', () => {

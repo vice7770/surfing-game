@@ -142,7 +142,7 @@ export class Controls {
     else if (!compressHeld) this.compressStale = false;
     const compressing = standing && !this.compressStale;
     const compressKeys = compressing && (has('compress') || touch(this.touchCompress)) ? 1 : 0;
-    // The keyboard's duck-dive ramps; a pad's buttons (LT analog, the D-pad at full) pass straight through.
+    // The keyboard's duck-dive ramps; a pad's buttons (L3 and the D-pad, at full; an analog trigger if rebound to one) pass straight through.
     const duckKeys = !standing && this.active && keys.has('duckDive') ? 1 : 0;
     const steer = this.ramps.steer.update(steerKeys, dt);
     const trim = this.ramps.trim.update(trimKeys, dt);

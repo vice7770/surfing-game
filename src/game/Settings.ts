@@ -4,7 +4,7 @@ import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
 import type { StanceName } from '../physics/riderPosture';
 import { PARTICLE_LEVELS, type ParticleLevel } from '../wave/particleBudget';
-import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, freeInputs, type Action, type Bindings } from './Bindings';
+import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, freeInputs, overlap, type Action, type Bindings } from './Bindings';
 import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
@@ -87,8 +87,11 @@ export const GLOW_ANTIALIAS: readonly GlowAntialias[] = [2, 4];
 export interface ControlSettings extends StickSettings {
   bindings: Bindings;
   handedness: 'right' | 'left';
-  /** Which default pad layout the bindings started from: 2 since C1 moved the hand to LB. A save without it is migrated once. */
-  padLayout: 2;
+  /**
+   * Which default pad layout the bindings started from: 2 since C1 moved the hand to LB, 3 since duck-dive-l3 moved the
+   * duck-dive to L3 and took the calls off the stick clicks. An older save is migrated once.
+   */
+  padLayout: 3;
 }
 
 export interface AccessibilitySettings {
@@ -146,7 +149,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     graphics: {
       preset: 'auto', ...PRESETS.medium, glow: false, glowAntialias: 2,
     },
-    controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 2 },
+    controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 3 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
     accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false, monoAudio: false },
     surfer: { ...DEFAULT_SURFER },
@@ -173,10 +176,17 @@ function within(value: unknown, min: number, max: number, fallback: number): num
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback;
 }
 
-/** The pad defaults before C1, which a save from then still holds unless the player changed them (the party call only exists since N1). */
-const LEGACY_PAD_DEFAULTS: Partial<Record<Action, number[]>> = { hand: [2], popUp: [0], callParty: [4] };
+/**
+ * Each pad layout's moves, by the layout they replaced: a save from before it still holds the old defaults unless the
+ * player changed them. Layout 2 (C1): the hand off X (the party call only exists since N1). Layout 3 (duck-dive-l3,
+ * 2026-10-31): the duck-dive from LT to L3, the left and right calls off the stick clicks (keys only by default).
+ */
+const LEGACY_PAD_DEFAULTS: readonly { layout: number; old: Partial<Record<Action, number[]>> }[] = [
+  { layout: 2, old: { hand: [2], popUp: [0], callParty: [4] } },
+  { layout: 3, old: { duckDive: [6, 13], callLeft: [10], callRight: [11] } },
+];
 
-function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bindings {
+function sanitizeBindings(raw: unknown, defaults: Bindings, layout: number): Bindings {
   const source = record(raw);
   const keyboard = record(source.keyboard);
   const gamepad = record(source.gamepad);
@@ -193,16 +203,20 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
     if (validButtons(gamepad[action])) result.gamepad[action] = [...gamepad[action]];
     else defaulted.push({ device: 'gamepad', action });
   }
-  // C1 moved the hand to LB, the party call to X and added the grips. The actions a save still holds on their old defaults
-  // move together, as one layout, unless that would leave a button with two actions (the player rebound around them).
-  if (legacy) {
-    const moved = (Object.entries(LEGACY_PAD_DEFAULTS) as [Action, number[]][])
-      .filter(([action, old]) => result.gamepad[action].join() === old.join())
+  // Each layout the save predates, in turn: C1 moved the hand to LB, the party call to X and added the grips; duck-dive-l3
+  // moved the duck-dive to L3 and the left and right calls off the stick clicks. The actions a save still holds on a
+  // layout's old defaults move together, as one layout, unless that would leave a button with two actions (the player
+  // rebound around them).
+  for (const { layout: next, old } of LEGACY_PAD_DEFAULTS) {
+    if (layout >= next) continue;
+    const moved = (Object.entries(old) as [Action, number[]][])
+      .filter(([action, buttons]) => result.gamepad[action].join() === buttons.join())
       .map(([action]) => action);
-    const next = { ...result.gamepad };
-    for (const action of moved) next[action] = [...defaults.gamepad[action]];
-    const clash = moved.some((action) => next[action].some((button) => ACTIONS.some((other) => other !== action && next[other].includes(button))));
-    if (!clash) result.gamepad = next;
+    const after = { ...result.gamepad };
+    for (const action of moved) after[action] = [...defaults.gamepad[action]];
+    // (Actions live in different contexts may share a button: the duck-dive and trim back on the D-pad's down.)
+    const clash = moved.some((action) => after[action].some((button) => ACTIONS.some((other) => other !== action && overlap(action, other) && after[other].includes(button))));
+    if (!clash) result.gamepad = after;
   }
   // An action the save lacks (one added since, like Compress) takes its defaults only where the player's own bindings
   // leave them free, so no input does two things at once; with none free it waits unbound. After C1's move, whose
@@ -279,13 +293,13 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       glowAntialias: oneOf(graphics.glowAntialias, GLOW_ANTIALIAS, g.glowAntialias),
     },
     controls: {
-      bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings, controls.padLayout !== 2),
+      bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings, typeof controls.padLayout === 'number' ? controls.padLayout : 1),
       handedness: oneOf(controls.handedness, ['right', 'left'] as const, defaults.controls.handedness),
       trimStick: oneOf(controls.trimStick, ['right', 'left'] as const, defaults.controls.trimStick),
       stickResponse: oneOf(controls.stickResponse, ['linear', 'precise'] as const, defaults.controls.stickResponse),
       deadzoneSteam: within(controls.deadzoneSteam, 0, MAX_DEADZONE, defaults.controls.deadzoneSteam),
       deadzoneGamepad: within(controls.deadzoneGamepad, 0, MAX_DEADZONE, defaults.controls.deadzoneGamepad),
-      padLayout: 2,
+      padLayout: 3,
     },
     audio: {
       master: within(audio.master, 0, 1, defaults.audio.master),
