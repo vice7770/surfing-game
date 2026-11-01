@@ -17,7 +17,7 @@ let biggest = { x: 0, step: 0 };
 for (let x = 0; x <= 140; x += 0.5) {
   // Where the face's rounded knee ends, seaward of the crest line, square to it: (platform − crest)/G + rounding.
   const knee = (POOL_BARREL.platformDepth - poolBarrelCrestDepth(x)) / poolBarrelGradient(x) + POOL_BARREL.kneeRounding;
-  const z = poolCrestZ(x) - knee / poolNormalShare(x);
+  const z = poolCrestZ(x, POOL_BARREL) - knee / poolNormalShare(x, POOL_BARREL);
   const step = poolBarrelDepth(x, edge - 1e-6) - poolBarrelDepth(x, edge + 1e-6);
   if (z - edge < worst.margin) worst = { x, margin: z - edge, step };
   if (Math.abs(step) > Math.abs(biggest.step)) biggest = { x, step };
@@ -27,5 +27,5 @@ console.log(`terrace edge z ${edge}, ramp foot ${poolRampFootZ()}; the knee's le
 for (const x of [0, 5, 10, 15, 20, 27, 35, 45, 55, 70, 100, 139]) {
   const row: string[] = [];
   for (let z = -320; z <= 0; z += 10) row.push(poolBarrelDepth(x, z).toFixed(2));
-  console.log(`x ${String(x).padStart(3)} crest z ${poolCrestZ(x).toFixed(0)}: ${row.join(' ')}`);
+  console.log(`x ${String(x).padStart(3)} crest z ${poolCrestZ(x, POOL_BARREL).toFixed(0)}: ${row.join(' ')}`);
 }

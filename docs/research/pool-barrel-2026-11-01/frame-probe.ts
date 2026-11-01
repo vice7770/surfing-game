@@ -18,7 +18,7 @@
  *
  *   rolldown docs/research/pool-barrel-2026-11-01/frame-probe.ts -o dist/scripts/pool-frame-probe.mjs --format esm --platform node \
  *     && node dist/scripts/pool-frame-probe.mjs --size small|big|medium [--waves barrel|training] [--H <m>] [--periods 12] [--settle 50]
- *        [--barrel key=value,...] [--json <file>]
+ *        [--barrel key=value,...] [--join J] [--json <file>]
  */
 import { writeFileSync } from 'node:fs';
 import {
@@ -35,6 +35,8 @@ for (const pair of (option('barrel') ?? '').split(',').filter(Boolean)) {
   const [key, value] = pair.split('=');
   (POOL_BARREL as Record<string, number>)[key] = Number(value);
 }
+// The floor's planform: the Barrel floor's own keys (`--barrel armAngle=…`), or the training's.
+const planform = barrel ? POOL_BARREL : POOL;
 const height = Number(option('H') ?? (barrel ? POOL_BARREL_EDGE_HEIGHT[size as PoolBarrelSize] : POOL_EDGE_HEIGHT[size as PoolSize]));
 const periods = Number(option('periods') ?? 12);
 const settle = Number(option('settle') ?? 50);
@@ -54,6 +56,8 @@ const L0 = (GRAVITY * POOL.period ** 2) / (2 * Math.PI);
 const sim = new SurfZoneSimulation({
   spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
   tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', ...(barrel ? { poolWaves: 'barrel' } : {}),
+  // `--join J`: the Barrel floor's breaking-age join in place of its own (`?poolAgeJoin`; 0 is rule A).
+  ...(option('join') !== undefined ? { poolAgeJoin: Number(option('join')) } : {}),
 } as unknown as SurfZoneConfig);
 const { solver } = sim;
 const { nx, nz, xCenters, zCenters } = solver;
@@ -71,7 +75,7 @@ const ARC_STEP = 0.25;
 const arcTable = new Float64Array(Math.ceil(150 / ARC_STEP) + 2);
 for (let k = 1; k < arcTable.length; k += 1) {
   const x0 = (k - 1) * ARC_STEP; const x1 = k * ARC_STEP;
-  arcTable[k] = arcTable[k - 1] + Math.hypot(x1 - x0, poolCrestZ(x1) - poolCrestZ(x0));
+  arcTable[k] = arcTable[k - 1] + Math.hypot(x1 - x0, poolCrestZ(x1, planform) - poolCrestZ(x0, planform));
 }
 const arc = (x: number) => { const at = Math.min(arcTable.length - 1.001, Math.abs(x) / ARC_STEP); const i = Math.floor(at); return arcTable[i] + (arcTable[i + 1] - arcTable[i]) * (at - i); };
 const U_TAKE_OFF = arc(POOL.takeOffX);

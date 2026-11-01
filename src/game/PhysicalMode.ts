@@ -408,6 +408,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
     // `?canyonAgeJoin=<J>`: the Canyon's breaking-age join (0: rule A, as before canyon-wave-r2), for A/Bs.
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
+    // `?poolAgeJoin=<J>`: the Wave Pool's Barrel floor's breaking-age join (0: rule A, as its training floor), for A/Bs.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolAgeJoinSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -464,6 +466,16 @@ export function canyonAgeJoinSwitch(search?: string): { canyonAgeJoin?: number }
   const text = devParam('canyonAgeJoin', search)?.trim();
   const join = text ? Number(text) : Number.NaN;
   return Number.isFinite(join) && join >= 0 ? { canyonAgeJoin: join } : {};
+}
+
+/**
+ * The `?poolAgeJoin=<J>` dev switch (`SurfZoneConfig.poolAgeJoin`): the Wave Pool's Barrel floor's breaking age passed along
+ * its crests at J (0: rule A, as before pool-barrel's gate and as its training floor runs), in place of `POOL_BARREL.ageJoin`.
+ */
+export function poolAgeJoinSwitch(search?: string): { poolAgeJoin?: number } {
+  const text = devParam('poolAgeJoin', search)?.trim();
+  const join = text ? Number(text) : Number.NaN;
+  return Number.isFinite(join) && join >= 0 ? { poolAgeJoin: join } : {};
 }
 
 /**

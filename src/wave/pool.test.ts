@@ -98,10 +98,11 @@ describe('the Wave Pool’s Barrel floor (the pool-barrel decisions, 2026-10-31)
     }
     // On the barrel section the face climbs at `gradient` square to the crest line, from the knee to the crest.
     for (const x of [20, 27, 35, 45]) {
-      const crest = poolCrestZ(x);
-      const normal = poolNormalShare(x);
+      const crest = poolCrestZ(x, POOL_BARREL);
+      const normal = poolNormalShare(x, POOL_BARREL);
       expect(poolBarrelDepth(x, crest)).toBeCloseTo(poolBarrelCrestDepth(x), 6);
-      if (x >= b.crestEase) expect(poolBarrelCrestDepth(x)).toBeCloseTo(b.armCrestDepth, 9);
+      // From |x| crestEase the crest shallows on to `outerCrestDepth` at the barrel section's end (keeping its break in order).
+      if (x >= b.crestEase) expect(poolBarrelCrestDepth(x)).toBeCloseTo(b.armCrestDepth + ((b.outerCrestDepth - b.armCrestDepth) * (x - b.crestEase)) / (b.armLength - b.crestEase), 9);
       const rise = poolBarrelDepth(x, crest - 5 / normal) - poolBarrelDepth(x, crest - 10 / normal);
       expect(-rise / 5).toBeCloseTo(b.gradient, 6);
       expect(poolBarrelGradient(x)).toBeCloseTo(b.gradient, 9);
@@ -110,18 +111,21 @@ describe('the Wave Pool’s Barrel floor (the pool-barrel decisions, 2026-10-31)
     expect(poolBarrelGradient(0)).toBeCloseTo(b.tipGradient, 9);
     expect(poolBarrelDepth(0, POOL.apexZ)).toBeCloseTo(b.crestDepth, 6);
     expect(poolBarrelDepth(0, POOL.apexZ - 10)).toBeCloseTo(b.crestDepth + 10 * b.tipGradient, 6);
-    // The crest line and planform are the training floor's.
-    expect(poolCrestZ(0)).toBe(POOL.apexZ);
+    // Its planform is its own (`POOL_BARREL`'s keys), the training's tip.
+    expect(poolCrestZ(0, POOL_BARREL)).toBe(POOL.apexZ);
+    expect(POOL_BARREL.apexZ).toBe(POOL.apexZ);
   });
 
   it('backs off past the barrel section into the platform, level across the open side edges', () => {
     const b = POOL_BARREL;
-    expect(poolBarrelCrestDepth(b.armLength)).toBeCloseTo(b.armCrestDepth, 9);
+    expect(poolBarrelCrestDepth(b.armLength)).toBeCloseTo(b.outerCrestDepth, 9);
+    for (let x = b.crestEase + 1; x <= b.armLength; x += 1) expect(poolBarrelCrestDepth(x)).toBeLessThan(poolBarrelCrestDepth(x - 1));
     expect(poolBarrelCrestDepth(b.armLength + b.taperWidth)).toBeCloseTo(b.platformDepth, 9);
     for (let x = b.armLength + 1; x <= b.armLength + b.taperWidth; x += 1) expect(poolBarrelCrestDepth(x)).toBeGreaterThan(poolBarrelCrestDepth(x - 1));
     // Past the back-off: the platform from its edge to the beach face, the same at every x out to the edges.
     const edge = POOL.alongShore / 2;
-    for (const z of [poolBarrelPlatformZ() + 1, -150, -60, -30]) {
+    // (The beach face's toe lies at platformDepth / shoreSlope from the waterline: 36 m at 4.5 m.)
+    for (const z of [poolBarrelPlatformZ() + 1, -150, -60, -b.platformDepth / POOL.shoreSlope - 1]) {
       expect(poolBarrelDepth(edge, z)).toBeCloseTo(b.platformDepth, 9);
       expect(poolBarrelDepth(b.armLength + b.taperWidth + 1, z)).toBeCloseTo(b.platformDepth, 9);
       expect(poolBarrelDepth(edge - 3, z)).toBeCloseTo(poolBarrelDepth(edge, z), 9);
@@ -132,11 +136,19 @@ describe('the Wave Pool’s Barrel floor (the pool-barrel decisions, 2026-10-31)
     expect(poolBarrelDepth(0, poolDeckZ() + 5)).toBeCloseTo(-POOL.deck, 9);
   });
 
+  it('gates its breaking age along the crests, as the Canyon does; the training floor keeps rule A', () => {
+    const layout = (config: Parameters<typeof tankLayout>[0]) => (new SurfZoneSimulation({ ...config, componentCount: 1, spinUpPeriods: 0 } as never, 'warm').solver as unknown as { deviceLayout(): { breaking?: { diagonalJoin?: number } } }).deviceLayout().breaking?.diagonalJoin;
+    expect(layout(barrel)).toBe(POOL_BARREL.ageJoin);
+    expect(layout({ ...barrel, poolAgeJoin: 0 }) ?? 0).toBe(0);
+    const { poolWaves: _, ...training } = barrel;
+    expect(layout({ ...training, poolAgeJoin: 0.5 }) ?? 0).toBe(0);
+  });
+
   it('waits on the right arm’s barrel section, where its first breaks are', () => {
     const takeOff = takeOffPoint(barrel);
     expect(takeOff.x).toBeCloseTo(POOL.takeOffX, 6);
     expect(poolBarrelDepth(takeOff.x, takeOff.z)).toBeCloseTo(poolBarrelBreakDepth(POOL_BARREL_EDGE_HEIGHT.small), 1);
-    expect(takeOff.z).toBeLessThan(poolCrestZ(POOL.takeOffX));
+    expect(takeOff.z).toBeLessThan(poolCrestZ(POOL.takeOffX, POOL_BARREL));
     expect(poolBarrelRiddenAt(POOL.takeOffX)).toBe(true);
     expect(poolBarrelRiddenAt(-POOL.takeOffX)).toBe(false);
     expect(POOL_BARREL_EDGE_HEIGHT.small).toBeLessThan(POOL_BARREL_EDGE_HEIGHT.big);

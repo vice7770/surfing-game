@@ -14,7 +14,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout, type PoolWaves } from './pool';
+import { POOL, POOL_BARREL, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout, type PoolWaves } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -248,6 +248,12 @@ export interface SurfZoneConfig {
    * other spot ignores it; online rooms always run the default.
    */
   canyonAgeJoin?: number;
+  /**
+   * The Wave Pool's Barrel floor's breaking-age join, in place of its own (`POOL_BARREL.ageJoin`): the `?poolAgeJoin=<J>`
+   * dev switch, 0 for rule A as the training floor runs, to A/B the gate alone. Every other floor and spot ignores it;
+   * online rooms always run the default.
+   */
+  poolAgeJoin?: number;
   /**
    * Whether the Canyon's reef counts its waves' onsets in sequence (canyon-reef-sequence, 2026-10-27, `CANYON.reefBoreHold`):
    * in its columns a bore that drops out for under the hold is no new wave, and a crest breaking on the reef waits only
@@ -1090,7 +1096,9 @@ export class SurfZoneSimulation {
     const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z, tank);
     const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
     // The Canyon's breaking age joins through the diagonals only on steep enough water (`CANYON.ageJoin`, canyon-wave-r2).
-    const diagonalJoin = config.spot === 'canyon' ? config.canyonAgeJoin ?? canyonShape(config.canyonBed).ageJoin : 0;
+    // So does the Wave Pool's Barrel floor's (`POOL_BARREL.ageJoin`, pool-barrel); its training floor keeps rule A.
+    const diagonalJoin = config.spot === 'canyon' ? config.canyonAgeJoin ?? canyonShape(config.canyonBed).ageJoin
+      : config.spot === 'pool' && config.poolWaves === 'barrel' ? config.poolAgeJoin ?? POOL_BARREL.ageJoin : 0;
     // Its beach breaks earlier than its reef (`canyonOnset`, canyon-beach-break): the onset over the bed, at each cell's
     // centre, levelled like the bed across the open edges' bands (the transect OPEN_EDGE_RAMP m in).
     const shape = canyonShape(config.canyonBed);

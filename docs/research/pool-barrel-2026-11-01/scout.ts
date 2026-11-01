@@ -24,6 +24,7 @@ for (const pair of (option('barrel') ?? '').split(',').filter(Boolean)) {
   const [key, value] = pair.split('=');
   (POOL_BARREL as Record<string, number>)[key] = Number(value);
 }
+const planform = waves === 'barrel' ? POOL_BARREL : POOL;
 const config = {
   spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
   tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', ...(waves === 'barrel' ? { poolWaves: 'barrel' } : {}),
@@ -57,7 +58,7 @@ interface Onset { t: number; x: number; z: number; depth: number; face: number }
 const onsets: Onset[] = [];
 const deep: Onset[] = [];
 // The wave's height over the platform at the take-off's knee (x 27): its range there over the last periods.
-const kneeZ = poolCrestZ(POOL.takeOffX) - ((POOL_BARREL.platformDepth - POOL_BARREL.armCrestDepth) / POOL_BARREL.gradient + POOL_BARREL.kneeRounding + 2) / 0.366;
+const kneeZ = poolCrestZ(POOL.takeOffX, planform) - ((POOL_BARREL.platformDepth - POOL_BARREL.armCrestDepth) / POOL_BARREL.gradient + POOL_BARREL.kneeRounding + 2) / 0.366;
 const kneeCell = solver.rowBelow(kneeZ) * nx + Math.round((POOL.takeOffX - xCenters[0]) / solver.dx);
 let kneeMax = -Infinity; let kneeMin = Infinity;
 let leastTop = Infinity; let fastest = 0;
@@ -66,10 +67,10 @@ let leastTop = Infinity; let fastest = 0;
 const PROFILE_X = [0, 5, 10, 15, 20, 27, 35, 45, 55];
 const profileCells = PROFILE_X.map((x) => {
   const col = Math.round((x - xCenters[0]) / solver.dx);
-  let z3 = poolCrestZ(x);
-  while (z3 > poolCrestZ(x) - 120 && solver.restLevel - solver.bed[solver.rowBelow(z3) * nx + col] < 3.0) z3 -= 0.5;
+  let z3 = poolCrestZ(x, planform);
+  while (z3 > poolCrestZ(x, planform) - 120 && solver.restLevel - solver.bed[solver.rowBelow(z3) * nx + col] < 3.0) z3 -= 0.5;
   let zp = z3;
-  while (zp > poolCrestZ(x) - 200 && solver.restLevel - solver.bed[solver.rowBelow(zp) * nx + col] < POOL_BARREL.platformDepth - 0.01) zp -= 0.5;
+  while (zp > poolCrestZ(x, planform) - 200 && solver.restLevel - solver.bed[solver.rowBelow(zp) * nx + col] < POOL_BARREL.platformDepth - 0.01) zp -= 0.5;
   zp -= 10;
   return { x, cells: [solver.rowBelow(z3) * nx + col, solver.rowBelow(zp) * nx + col], max: [-Infinity, -Infinity], min: [Infinity, Infinity] };
 });
@@ -95,9 +96,9 @@ for (let n = 1; n <= steps; n += 1) {
       const z = row >= 0 ? zCenters[row] : Number.NaN;
       const before = whiteZ[a];
       whiteZ[a] = z;
-      const fresh = row >= 0 && (!(before === before) || z < before - 10);
+      const fresh = row >= 0 && (!(before === before) || z < before - 10) && time > settle + 0.2;
       if (fresh && depthAt(row * nx + col) > DEEP && Math.abs(XS[a]) <= POOL_BARREL.armLength) deep.push({ t: time, x: XS[a], z, depth: depthAt(row * nx + col), face: 0 });
-      const near = row >= 0 && z >= poolCrestZ(XS[a]) - 70 && z <= poolCrestZ(XS[a]) + 8;
+      const near = row >= 0 && z >= poolCrestZ(XS[a], planform) - 70 && z <= poolCrestZ(XS[a], planform) + 8;
       if (fresh && near && time - last[a] > 4) {
         last[a] = time;
         let crest = -Infinity; let trough = Infinity;

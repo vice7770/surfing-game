@@ -1,0 +1,9 @@
+beach: sea d65e9541 grid 160×233 take-off 0.000,-107.500 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5} jets 34
+point: sea 0f9561cb grid 160×233 take-off 0.000,-123.000 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8} jets 176
+reef: sea 08eeae3a grid 160×248 take-off -50.000,-94.500 start 11 tank {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30} jets 0
+padang: sea b49c761c grid 320×516 take-off -50.000,-196.591 start 11 tank {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25} jets 102
+canyon: sea 316bb67a grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9} jets 0
+pool shared swell: sea 042a89cb grid 280×359 take-off 27.000,-214.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 230
+pool small: sea b68588f4 grid 280×359 take-off 27.000,-193.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 126
+pool medium: sea 564d0e2f grid 280×359 take-off 27.000,-205.000 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 242
+pool big: sea 1b0d2434 grid 280×359 take-off 27.000,-217.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 226

@@ -120,38 +120,47 @@ export function regularSignificantHeight(height: number): number {
   return Math.SQRT2 * height;
 }
 
+/** A finger's planform, its crest line: the training floor's (`POOL`) or the Barrel floor's (`POOL_BARREL`'s own keys). */
+export interface PoolPlanform {
+  apexZ: number; armAngle: number; outerArmAngle: number; bendX: number; bendWidth: number; tipRounding: number; alongShore: number;
+}
+
 /** The crest line's slope dz/d|x| at along-shore position x: the hyperbola's at the tip, its arms easing from armAngle to outerArmAngle. */
-function crestSlope(u: number): number {
-  const p = POOL;
+function crestSlope(u: number, p: PoolPlanform = POOL): number {
   const bend = ease(p.bendX - p.bendWidth / 2, p.bendX + p.bendWidth / 2, u);
   const angle = p.armAngle + (p.outerArmAngle - p.armAngle) * bend;
   return Math.tan((angle * Math.PI) / 180) * (u / Math.hypot(u, p.tipRounding));
 }
 
-/** The crest line's z at |x| on a 0.25 m table, integrated from its slope; rebuilt when POOL changes (the probes set it). */
+/**
+ * The crest line's z at |x| on a 0.25 m table, integrated from its slope; rebuilt when its planform changes (the probes set
+ * it). One table per planform (the training's keyed on all of `POOL`, as before the Barrel floor), a few kept.
+ */
 const CREST_STEP = 0.25;
-let crestTable: { key: string; z: Float64Array } | undefined;
-function crestTableFor(): Float64Array {
-  const key = JSON.stringify(POOL);
-  if (crestTable?.key === key) return crestTable.z;
-  const count = Math.ceil(POOL.alongShore / CREST_STEP) + 2;
+const crestTables = new Map<string, Float64Array>();
+function crestTableFor(p: PoolPlanform = POOL): Float64Array {
+  const key = p === POOL ? JSON.stringify(POOL) : `planform ${JSON.stringify(p)}`;
+  const cached = crestTables.get(key);
+  if (cached) return cached;
+  const count = Math.ceil(p.alongShore / CREST_STEP) + 2;
   const z = new Float64Array(count);
-  for (let i = 1; i < count; i += 1) z[i] = z[i - 1] + (CREST_STEP * (crestSlope((i - 1) * CREST_STEP) + crestSlope(i * CREST_STEP))) / 2;
-  crestTable = { key, z };
+  for (let i = 1; i < count; i += 1) z[i] = z[i - 1] + (CREST_STEP * (crestSlope((i - 1) * CREST_STEP, p) + crestSlope(i * CREST_STEP, p))) / 2;
+  if (crestTables.size >= 8) crestTables.clear();
+  crestTables.set(key, z);
   return z;
 }
 
 /** Where the crest line (the top of the reef's arms) crosses along-shore position x: rounded at the tip, bent outward. */
-export function poolCrestZ(x: number): number {
-  const table = crestTableFor();
+export function poolCrestZ(x: number, p: PoolPlanform = POOL): number {
+  const table = crestTableFor(p);
   const at = Math.min(table.length - 1.001, Math.abs(x) / CREST_STEP);
   const i = Math.floor(at);
-  return POOL.apexZ + table[i] + (table[i + 1] - table[i]) * (at - i);
+  return p.apexZ + table[i] + (table[i + 1] - table[i]) * (at - i);
 }
 
 /** The share of a step along +z that lies square to the crest line at along-shore position x: the cosine of the line's angle there. */
-export function poolNormalShare(x: number): number {
-  return 1 / Math.hypot(1, crestSlope(Math.abs(x)));
+export function poolNormalShare(x: number, p: PoolPlanform = POOL): number {
+  return 1 / Math.hypot(1, crestSlope(Math.abs(x), p));
 }
 
 /** The arm the pool's peel is measured on: the right one (riders wait there), out to where its taper ends. */
@@ -222,21 +231,40 @@ export type PoolWaves = 'training' | 'barrel';
  * Mutable for the probes.
  */
 export const POOL_BARREL = {
-  platformDepth: 3.25,
+  /** Its planform (`PoolPlanform`): the training finger's, unless a key here differs. */
+  apexZ: -210,
+  armAngle: 71,
+  outerArmAngle: 65,
+  bendX: 40,
+  bendWidth: 14,
+  tipRounding: 15,
+  alongShore: 280,
+  platformDepth: 4.5,
   gradient: 1 / 9.5,
-  tipGradient: 1 / 15,
+  tipGradient: 1 / 14,
   tipEase: 15,
   crestDepth: 1.0,
   armCrestDepth: 0.9,
   crestEase: 25,
+  /** The crest's depth where the barrel section ends (|x| `armLength`), reached linearly from |x| `crestEase`. */
+  outerCrestDepth: 0.6,
   kneeRounding: 3,
   flatWidth: 6,
   lagoonSlope: 1 / 18,
   lagoonDepth: 1.8,
   armLength: 45,
   taperWidth: 25,
+  /**
+   * The solver's breaking age passes to a cell from the diagonal parents behind its face only where the cell's own surface
+   * rises at least `ageJoin` √(g h) (`KennedyOptions.diagonalJoin`, as the Canyon's `CANYON.ageJoin`; 0: rule A, as the
+   * training floor runs). Measured (pool-barrel, 2026-11-01): under rule A the aged threshold ran from the tip's focus
+   * along the crest at 6–20 m/s, so the inner arm broke at 2.0–2.2 m under 1.3 m crests (H/h about 0.6) and the line
+   * stalled for 3–7 s around x 34–38 where the tip's focus faded and the natural break took over; gated, each part of the
+   * crest breaks at its own threshold, as in nature (Dally 1990; Goda 1992's sideways spread, 0–C_b; the advisor).
+   */
+  ageJoin: 0.5,
   /** How far seaward of the training terrace's edge (`poolTerraceZ`) the platform begins, m: room for the knee near the tip. */
-  platformLead: 0,
+  platformLead: 20,
 };
 
 /** Where the barrel floor's platform begins, z, m: the ramp below it, the platform shoreward of it. */
@@ -281,7 +309,9 @@ export function poolBarrelGradient(x: number): number {
 /** The barrel floor's crest depth at along-shore position x, m: easing from the tip's to the arm's, then backing off to the platform. */
 export function poolBarrelCrestDepth(x: number): number {
   const b = POOL_BARREL;
-  const arm = b.crestDepth + (b.armCrestDepth - b.crestDepth) * ease(0, b.crestEase, Math.abs(x));
+  const u = Math.abs(x);
+  const along = Math.min(1, Math.max(0, (u - b.crestEase) / (b.armLength - b.crestEase)));
+  const arm = b.crestDepth + (b.armCrestDepth - b.crestDepth) * ease(0, b.crestEase, u) + (b.outerCrestDepth - b.armCrestDepth) * along;
   return arm + (b.platformDepth - arm) * poolBarrelTaper(x);
 }
 
@@ -293,8 +323,8 @@ export function poolBarrelDepth(x: number, z: number): number {
   // Seaward of the terrace's edge, the ramp alone, square to the crests: no ridges run on (the advisor, 2026-11-01).
   if (z < poolBarrelPlatformZ()) return Math.min(barrelRamp(z), beach);
   const crest = poolBarrelCrestDepth(x);
-  const crestLine = poolCrestZ(x);
-  const normal = poolNormalShare(x);
+  const crestLine = poolCrestZ(x, b);
+  const normal = poolNormalShare(x, b);
   let reef: number;
   if (z <= crestLine) reef = barrelFace(crest, poolBarrelGradient(x), (crestLine - z) * normal);
   else {
@@ -311,10 +341,10 @@ export const POOL_BARREL_FACES = { small: 1.5, big: 1.8 } as const;
 export type PoolBarrelSize = keyof typeof POOL_BARREL_FACES;
 
 /** The wave height the machine makes at the tank's edge for each Barrel size, m: set so the surf meter reads its face (the size probe). */
-export const POOL_BARREL_EDGE_HEIGHT: Record<PoolBarrelSize, number> = { small: 1.05, big: 1.3 };
+export const POOL_BARREL_EDGE_HEIGHT: Record<PoolBarrelSize, number> = { small: 0.99, big: 1.24 };
 
 /** Where the machine's wave starts breaking at the barrel's take-off, m deep for a wave H m high at the feed (the size probe). */
-export const POOL_BARREL_BREAK_DEPTH = { base: 0.27, perMetre: 1.08 } as const;
+export const POOL_BARREL_BREAK_DEPTH = { base: 1.36, perMetre: 0.88 } as const;
 
 /** How deep the pool's wave of height H at the feed first breaks at the barrel's take-off, m. */
 export function poolBarrelBreakDepth(height: number): number {
