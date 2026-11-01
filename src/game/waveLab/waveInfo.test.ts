@@ -30,6 +30,14 @@ describe('wave info', () => {
     expect(info.rows.find((row) => row.label === 'Peel')!.value).toBe('peak, left 52° and right 47°');
   });
 
+  // canyon-b (2026-11-01): the Canyon's up-coast peak runs into its reef bowl, "spilling peak into a plunging reef bowl".
+  it('names the reef bowl a peak runs into, with the bowl\'s breaker', () => {
+    const peel = { angleDegrees: 35, direction: 1, peelSpeed: 8, columns: 40, fit: 0.9, lineSlope: 0, peak: { left: 35, right: 52 }, bowl: 'plunging' as const };
+    const info = waveInfo({ ...base, breaker: 'spilling', peel }, 'metric');
+    expect(info.summary).toBe('Spilling peak into a plunging reef bowl, left 35° and right 52° · fast, for good surfers');
+    expect(info.rows.find((row) => row.label === 'Peel')!.value).toBe('peak into a plunging reef bowl, left 35° and right 52°');
+  });
+
   it('says so when there is no face, no break yet, or a steady swell', () => {
     const info = waveInfo({ ...base, face: undefined, breaker: 'none', steady: true }, 'imperial');
     expect(info.rows[1].value).toBe('Flat here');

@@ -512,11 +512,19 @@ describe('surf spot bathymetry', () => {
     const canyon = createSpot('canyon', 1);
     const [up, down] = canyonBars();
     const bowlX = (u: number) => up.x + u;
-    // The arm as it was to where the bowl ramps in, and the whole −x arm and the downcoast bar, value for value.
+    // The tip and the whole −x arm, and the downcoast bar, value for value; the +x arm, its contours at its own angle, the
+    // plain bar to where the bowl ramps in.
+    const old = createSpot('canyon', 1, { canyonBed: 'old' });
     for (let z = -250; z < 0; z += 5) {
-      for (const u of [-60, -30, 0, 20, 40, CANYON.bowlFrom - 1]) expect(canyon.depthAt(bowlX(u), z)).toBe(createSpot('canyon', 1, { canyonBed: 'old' }).depthAt(bowlX(u), z));
-      for (const x of [down.x - 50, down.x, down.x + 50]) expect(canyon.depthAt(x, z)).toBe(createSpot('canyon', 1, { canyonBed: 'old' }).depthAt(x, z));
+      for (const u of [-60, -30, -10, 0]) expect(canyon.depthAt(bowlX(u), z)).toBe(old.depthAt(bowlX(u), z));
+      for (const x of [down.x - 50, down.x, down.x + 50]) expect(canyon.depthAt(x, z)).toBe(old.depthAt(x, z));
+      // No bowl yet: the bed is the sand's (the bars without it).
+      for (const u of [20, 40, CANYON.bowlFrom - 1]) expect(canyon.depthAt(bowlX(u), z)).toBe(canyonSandDepth(bowlX(u), z));
     }
+    const tan = (degrees: number) => Math.tan((degrees * Math.PI) / 180);
+    const arm = Math.sqrt(40 ** 2 + up.rounding ** 2) - up.rounding;
+    expect(canyonBarDepth(up, bowlX(40), -120 + arm * tan(CANYON.bowlArmAngle))).toBeCloseTo(canyonBarDepth(up, up.x, -120), 9);
+    expect(canyonBarDepth(up, bowlX(-40), -120 + arm * tan(CANYON.barAngle))).toBeCloseTo(canyonBarDepth(up, up.x, -120), 9);
     expect([up.plusReach, up.plusTaper, up.bowl, down.plusReach, down.bowl]).toEqual([CANYON.bowlEnd + CANYON.bowlBackOff, CANYON.bowlFade, true, down.reach, false]);
     // The whole bowl's transect along +z (its middle): the bar's 1:50 to the platform, level at it, the 1:21 face to the
     // crest on the bar's 1.9 m contour, a level top, then down to meet the bar.
@@ -524,7 +532,7 @@ describe('surf spot bathymetry', () => {
     const x = bowlX(u);
     const crestZ = canyonBreakLineZ(x);
     const run = Math.sqrt(u * u + up.rounding ** 2) - up.rounding;
-    expect(crestZ).toBeCloseTo(run * Math.tan((CANYON.barAngle * Math.PI) / 180) - CANYON.bowlCrestContour / up.slope, 9);
+    expect(crestZ).toBeCloseTo(run * Math.tan((CANYON.bowlArmAngle * Math.PI) / 180) - CANYON.bowlCrestContour / up.slope, 9);
     expect(canyon.depthAt(x, crestZ)).toBeCloseTo(CANYON.bowlCrest, 6);
     expect(canyon.depthAt(x, crestZ + CANYON.bowlTop - 3)).toBeCloseTo(CANYON.bowlCrest, 6);
     const knee = crestZ - (CANYON.bowlPlatform - CANYON.bowlCrest) / CANYON.bowlFace;

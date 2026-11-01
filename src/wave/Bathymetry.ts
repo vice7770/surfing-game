@@ -465,9 +465,18 @@ export const CANYON = {
    * to `bowlFrom`; the bowl ramping in over `bowlRamp`; whole to `bowlEnd`; its crest deepening to `bowlBackCrest` over
    * `bowlBackOff`, so the wave backs off; then bar and bowl fade into the floor over `bowlFade` (the arm's taper). Its
    * breaking is the reef's (the spot's 0.65 onset and the age gate, `ageJoin`) from `bowlFrom`, the beach's blending in
-   * over `bowlRulesBlend` m on the arm's side.
+   * over `bowlRulesBlend` m on the arm's side. The advisor's 50–75 m moved 5 m on with the arm at 32° (below), whose
+   * break reaches further: Medium's one travelling line reached 40 m in 9 of 15 waves (6 of 15 at 40°, 50–75 m).
    */
-  bowlFrom: 50, bowlRamp: 10, bowlEnd: 75, bowlBackOff: 8, bowlBackCrest: 2, bowlFade: 15, bowlRulesBlend: 5,
+  bowlFrom: 55, bowlRamp: 10, bowlEnd: 80, bowlBackOff: 8, bowlBackCrest: 2, bowlFade: 15, bowlRulesBlend: 5,
+  /**
+   * The upcoast bar's +x arm's contours' angle to the shore, degrees, with its bowl (its −x arm's stays `barAngle`), and so
+   * the bowl's: 32°. The screens (Medium, seed 1 × 12 periods, frame by frame, canyon-b's frame-probe.ts): the +x arm's one
+   * travelling line reached 40 m from the tip in 6, 8 and 9 of 15 waves at 40°, 32° and 26°, its end a median 37, 44 and
+   * 49 m from it; at 26° the bowl, its contours with the arm's, plunged over 15 m (40 m at 32°). Its peel needs about
+   * 9.4 m/s at Medium (c / sin α; GPS-tracked surfers peak at 9.3 m/s on average, Farley 2012): the bowl's fast section.
+   */
+  bowlArmAngle: 32,
   /**
    * The bowl's transect, along +z (the advisor's, after Mead & Black's surfing-reef components: a platform just deeper
    * than where the waves break, then a ridge, a wedge's steep face, Mead 2000): seaward, the bar's own slope down to
@@ -511,10 +520,14 @@ function bowlCrestD(c: CanyonShape): number {
   return c.bowlCrestContour / c.upSlope;
 }
 
-/** How far a point along shore is from the upcoast bar's waterline V's tip, along its run, m (`canyonBarDepth`'s run). */
-function upBarRun(x: number, c: CanyonShape): number {
+/**
+ * How far seaward of the shore the upcoast bar's waterline V lies at along-shore position x, m (`canyonBarDepth`'s
+ * `run · tan θ`; θ its +x arm's `bowlArmAngle` with version B's bowl).
+ */
+function upBarV(x: number, c: CanyonShape): number {
   const u = x - c.upPeakX;
-  return Math.sqrt(u * u + c.upRounding * c.upRounding) - c.upRounding;
+  const run = Math.sqrt(u * u + c.upRounding * c.upRounding) - c.upRounding;
+  return run * Math.tan(((u > 0 && !c.reef && c.bowl ? c.bowlArmAngle : c.barAngle) * Math.PI) / 180);
 }
 
 /** Version B's bowl along shore, m: from where it ramps in to where its bar fades into the floor. */
@@ -525,7 +538,7 @@ function bowlSpan(c: CanyonShape): { from: number; end: number; to: number } {
 /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
 export function canyonBreakLineZ(x: number, c: CanyonShape = CANYON): number {
   // Version B: the bowl's crest line, on its bar's `bowlCrestContour` m contour.
-  if (!c.reef) return upBarRun(x, c) * Math.tan((c.barAngle * Math.PI) / 180) - bowlCrestD(c);
+  if (!c.reef) return upBarV(x, c) - bowlCrestD(c);
   return c.peakZ + (x - c.peakX) * Math.tan((c.angle * Math.PI) / 180);
 }
 
@@ -602,7 +615,7 @@ export function canyonHingeZ(x: number, c: CanyonShape = CANYON): number {
  */
 export function canyonFootZ(c: CanyonShape = CANYON): number {
   // Version B: the bowl's platform's seaward end where it ramps in (its bar `bowlPlatform` m deep there).
-  if (!c.reef) return upBarRun(bowlSpan(c).from, c) * Math.tan((c.barAngle * Math.PI) / 180) - c.bowlPlatform / c.upSlope;
+  if (!c.reef) return upBarV(bowlSpan(c).from, c) - c.bowlPlatform / c.upSlope;
   const x = c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope;
   return c.shelfDepth > c.hingeDepth
     ? canyonHingeZ(x, c) - (c.shelfDepth - c.hingeDepth) / c.pathSlope
@@ -790,7 +803,9 @@ export function canyonBars(c: CanyonShape = CANYON): CanyonBar[] {
 export function canyonBarDepth(bar: CanyonBar, x: number, z: number, c: CanyonShape = CANYON, bowl = true): number {
   const u = x - bar.x;
   const run = Math.sqrt(u * u + bar.rounding * bar.rounding) - bar.rounding;
-  const d = Math.max(0, run * Math.tan((c.barAngle * Math.PI) / 180) - z);
+  // Version B's upcoast bar's +x arm, into its bowl, at its own angle (`bowlArmAngle`).
+  const angle = bar.bowl && u > 0 ? c.bowlArmAngle : c.barAngle;
+  const d = Math.max(0, run * Math.tan((angle * Math.PI) / 180) - z);
   const top = bar.crestDepth / -bar.crestZ;
   const plain = top * d + (bar.slope - top) * rounded(d + bar.crestZ, c.barKnee);
   if (!bowl || !bar.bowl || !(u > c.bowlFrom)) return plain;

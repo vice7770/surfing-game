@@ -7,7 +7,7 @@ import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
   CANYON_BEACH_LOOK, CANYON_RIDE_LINEUP, CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
-  solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint, canyonReefTakeOff,
+  solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint, canyonReefTakeOff, canyonBowlTakeOff,
   alongShoreOf, tankDepth, tankLayout, tankRiderBounds,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
 } from './SurfZoneSimulation';
@@ -773,9 +773,10 @@ describe('SurfZoneSimulation', () => {
 
   it('draws the Canyon’s tubes from its own run where Big plunges, beside its spilling look, and changes nothing felt (2026-10-22)', () => {
     // Big's typical waves (2.4 m at 14 s): a tube where ξ_f ≥ 0.54 (foot crests to 1.98 m), the curl elsewhere.
+    // The reef's tube (`?canyonBed=old` since canyon-b, 2026-11-01: version B's bowl draws the spilling curl, its tube off).
     const config: SurfZoneConfig = {
       ...small, spot: 'canyon', significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: PADANG_SPREADING,
-      alongShore: CANYON.alongShore, dx: 1, fineSpacing: 1,
+      alongShore: CANYON.alongShore, dx: 1, fineSpacing: 1, canyonBed: 'old',
     };
     const library = libraryFromBytes(readBarrelCases('canyon'));
     expect(library.cases.map((c) => c.id)).toEqual(['periodic-canyon23-a38-l13']);
@@ -905,11 +906,17 @@ describe('SurfZoneSimulation', () => {
     for (const [significantHeight, ninetiethDepth] of [[0.9, 1.87], [1.4, 2.61], [2.4, 3.57]]) {
       expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.12);
     }
-    // The take-offs: 97, 125 and 180.5 m from the waterline, on the bar's 1:50; the reef's own as canyon-wave-r2 seated it.
+    // The take-offs: 97, 125 and 180.5 m from the waterline, on the bar's 1:50; the reef's own as canyon-wave-r2 seated it
+    // (on the old layout since canyon-b); version B's bowl's on its face, above its platform.
     for (const [significantHeight, peakPeriod, z, reefZ] of [[0.9, 9, -97, -128.5], [1.4, 11, -125, -137.5], [2.4, 14, -180.5, -154.5]]) {
       const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: undefined, significantHeight, peakPeriod, directionDegrees: 0 };
       expect(takeOffPoint(config)).toEqual({ x: CANYON.takeOffX, z });
-      expect(canyonReefTakeOff(config)).toEqual({ x: CANYON.reefTakeOffX, z: reefZ });
+      expect(canyonReefTakeOff({ ...config, canyonBed: 'old' })).toEqual({ x: CANYON_BEACH.reefTakeOffX, z: reefZ });
+      const bowl = canyonBowlTakeOff(config);
+      const tank = tankLayout(config);
+      expect(canyonArmAt(bowl.x)).toBe(true);
+      expect(tankDepth(canyon, tank.edgeDepth, bowl.x, bowl.z, tank)).toBeLessThan(CANYON.bowlPlatform);
+      expect(bowl.z).toBeGreaterThan(canyonBreakLineZ(bowl.x) - (CANYON.bowlPlatform - CANYON.bowlCrest) / CANYON.bowlFace);
     }
   });
 
@@ -961,9 +968,9 @@ describe('SurfZoneSimulation', () => {
       [121, -120, 2.7272727272727275], [100, -100, 2.5051344757962064], [150, -90, 2.4151296072788493], [80, -60, 1.9494808268917918], [64, -70, 4.666666666666667],
     ];
     for (const [x, z, depth] of depths) expect(old.depthAt(x, z)).toBe(depth);
-    // canyon-b leaves the upcoast peak's −x arm and tip, and the downcoast peak, as they were (its bowl runs from 50 m
-    // down the +x arm; its channel replaces the reef).
-    for (const [x, z, depth] of depths) if (x <= CANYON.upPeakX + CANYON.bowlFrom || x >= CANYON.downPeakX - CANYON.downReach) expect(today.depthAt(x, z)).toBe(depth);
+    // canyon-b leaves the upcoast peak's −x arm and tip, and the downcoast peak, as they were (its +x arm runs at its own
+    // angle into the bowl; its channel replaces the reef).
+    for (const [x, z, depth] of depths) if (x <= CANYON.upPeakX || x >= CANYON.downPeakX - CANYON.downReach) expect(today.depthAt(x, z)).toBe(depth);
     expect(createSpot('beach', 1, { canyonBed: 'old' }).depthAt(0, -200)).toBe(createSpot('beach', 1).depthAt(0, -200));
     // Main's window, tank, rider bounds, take-offs and starts at Small, Medium, Big and between; the same on today's.
     for (const [significantHeight, peakPeriod, z, offset] of [[0.9, 9, -97, 6], [1.4, 11, -125, 9], [2.4, 14, -180.5, 3], [1.9, 12, -152.5, 6]]) {
@@ -2094,11 +2101,11 @@ describe('the Canyon roller lens (S3)', () => {
     const out: number[] = [];
     for (const wave of simulation.spilling!.waves) {
       // From 15 m upcoast of the take-off to 30 m downcoast (x −45…0 on the old layout's take-off at x −30).
-      if (!(wave.frontX > takeOff.x - 15 && wave.frontX < takeOff.x + 30) || !canyonArmAt(wave.frontX)) continue;
+      if (!(wave.frontX > takeOff.x - 15 && wave.frontX < takeOff.x + 30) || !canyonArmAt(wave.frontX, CANYON_BEACH)) continue;
       const front = Math.round((wave.frontX - xCenters[0]) / dx);
       let z = Number.NaN;
       for (let d = 0; d <= 6 && !(z === z); d += 1) if (wave.crest[front - d] === wave.crest[front - d]) z = wave.crest[front - d];
-      const line = takeOff.z + (wave.frontX - takeOff.x) * Math.tan((CANYON.angle * Math.PI) / 180);
+      const line = takeOff.z + (wave.frontX - takeOff.x) * Math.tan((CANYON_BEACH.angle * Math.PI) / 180);
       if (!(z - line >= -15 && z - line <= 40)) continue;
       let sum = 0;
       let n = 0;
@@ -2129,7 +2136,8 @@ describe('the Canyon roller lens (S3)', () => {
 
   for (const [size, significantHeight, peakPeriod, least] of [['Medium', 1.4, 11, 40], ['Big', 2.4, 14, 15]] as const) {
     it(`keeps the shoulder ahead of each front at the take-off clean green water at ${size}: its drawn foam at most 0.02`, () => {
-      const simulation = new SurfZoneSimulation({ ...canyon, significantHeight, peakPeriod });
+      // The reef's take-off (`?canyonBed=old` since canyon-b).
+      const simulation = new SurfZoneSimulation({ ...canyon, significantHeight, peakPeriod, canyonBed: 'old' });
       const samples: number[] = [];
       for (let frame = 1; frame <= 30 * 30; frame += 1) {
         simulation.step(1 / 30);

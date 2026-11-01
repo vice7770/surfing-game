@@ -15,7 +15,7 @@
  * Per trial it also gives the cue's, the pop's and the stand's times against the crest reaching the rider, the face under
  * the board at the pop and the wave's face at the start (the gauge's, the most seen while the crest was 0–10 m away).
  *   rolldown docs/research/canyon-catch-2026-10-29/catch-probe.ts -o dist/scripts/catch-probe.mjs --format esm --platform node \
- *     && node dist/scripts/catch-probe.mjs --size medium --seed 1 --periods 12 [--start <m out>] [--state <sea>] [--json <file>] [--surface old] [--froth old] [--ride-time 6]
+ *     && node dist/scripts/catch-probe.mjs --size medium --seed 1 --periods 12 [--start <m out>] [--state <sea>] [--json <file>] [--surface old] [--froth old] [--ride-time 6] [--bed old]
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
@@ -83,6 +83,8 @@ const base = surfZoneConfigFor(settings, seed, true);
 // `--surface old`: the sea's surface held still through the bodies' step, as before popup-moving-face (`?surfaceMotion=old`).
 const config: SurfZoneConfig = {
   ...base, compute: 'cpu', ...(option('surface') === 'old' ? { surfaceMotion: 'old' as const } : {}), ...(option('froth') === 'old' ? { froth: 'old' as const } : {}),
+  // `--bed old` (canyon-b, 2026-11-01): the Canyon before version B (`?canyonBed=old`).
+  ...(option('bed') === 'old' ? { canyonBed: 'old' as const } : {}),
 };
 const statePath = option('state');
 const wall = Date.now();
