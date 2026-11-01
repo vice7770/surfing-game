@@ -21,6 +21,7 @@ advisor's consults are the consult log's rows of 2026-11-01 ("Pool Barrel drawin
 - **Checks:**
   - tsc (app and server) clean.
   - Main suite: 315 files, 3,008 tests passed (20 expected fails, 37 skipped).
+  - Byte identity: Training, the A-frame and every other spot hash as main's.
   - SurfZoneSimulation subset `-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`: 35 passed and 1
     stale (`SWEPT_BARREL` now includes the pool), fixed and passing on its own (6,186 s on the M1).
 - **Waiting on step 2:** the owner's level-13 pool cases (`periodic-pool-straight-*`) had not landed on origin at
@@ -305,6 +306,9 @@ All dev only; online rooms pin the sea's to the default.
 - **SurfZoneSimulation subset** (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): 35 passed and 1
   failed, 68 skipped by the filter (6,186 s). The failure was stale: "runs on Padang Padang…" pinned `SWEPT_BARREL` to
   `['padang']`. It now also checks the pool's floors and passes on its own.
+- **Byte identity** (`docs/research/pool-barrel-straight-2026-11-01/pin-check.ts`, `runs/pin-drawing.txt`): every spot on the
+  shared swell, the Wave Pool's three Training sizes and the A-frame Barrel hash exactly as main's (the straight floor's
+  `runs/pin-branch.txt`). The straight Barrel itself changes by design, since its crash is on.
 - No rider sessions were run.
 - **New and changed tests:**
   - `src/wave/barrel/poolTube.test.ts`: the pool's cases and family, its reef reach, its foot, band, zero lag and joins;
