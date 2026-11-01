@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, type SpotName } from '../Bathymetry';
 import { SWEPT_BARREL, SurfZoneSimulation, spillingCurlOn, sweptBarrelOn, sweptCrashOn, type SurfZoneConfig } from '../SurfZoneSimulation';
-import { libraryFromBytes } from './barrelLibrary';
+import { barrelCasesFor, libraryFromBytes } from './barrelLibrary';
 import { BARREL_CASES } from './barrelLibraryIndex';
 import { BARREL_SPOTS, FLOOR_MARGIN, tubeFootMax } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
@@ -36,7 +36,7 @@ function records(n: number, tau: number, footHeight: number, footDepth: number):
 
 describe('the swept barrel’s spots (Part B, PR 7)', () => {
   it('leaves the owner’s switch alone: Padang Padang is swept unless a test says so, the Canyon (2026-10-22 to 2026-10-23) only when asked', () => {
-    expect(SWEPT_BARREL).toEqual(['padang']);
+    expect(SWEPT_BARREL).toEqual(['padang', 'pool']);
     for (const spot of ['beach', 'point', 'reef'] as const) {
       expect(sweptBarrelOn({ spot })).toBe(false);
       // A test can switch a spot on only where it has a barrel transect.
@@ -48,11 +48,20 @@ describe('the swept barrel’s spots (Part B, PR 7)', () => {
     expect(sweptBarrelOn({ spot: 'canyon', sweptBarrel: true })).toBe(true);
     expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old' })).toBe(false);
     expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old', sweptBarrel: true })).toBe(true);
+    // The Wave Pool (pool-barrel-drawing): its straight Barrel only; Training and the A-frame never, even when asked.
+    expect(sweptBarrelOn({ spot: 'pool', poolWaves: 'barrel' })).toBe(true);
+    expect(sweptCrashOn({ spot: 'pool', poolWaves: 'barrel' })).toBe(true);
+    expect(sweptCrashOn({ spot: 'pool', poolWaves: 'barrel', sweptCrash: false })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'pool', poolWaves: 'barrel', sweptBarrel: false })).toBe(false);
+    for (const config of [{}, { poolWaves: 'training' as const }, { poolWaves: 'barrel' as const, poolBarrel: 'aframe' as const }]) {
+      expect(sweptBarrelOn({ spot: 'pool', ...config })).toBe(false);
+      expect(sweptBarrelOn({ spot: 'pool', ...config, sweptBarrel: true })).toBe(false);
+    }
   });
 
   it('gives every spot with cases a transect, and every transect cases', () => {
     for (const spot of SPOTS) expect(BARREL_SPOTS[spot], spot).toBeDefined();
-    for (const spot of Object.keys(BARREL_SPOTS) as SpotName[]) expect(SPOTS, spot).toContain(spot);
+    for (const spot of Object.keys(BARREL_SPOTS) as SpotName[]) expect(barrelCasesFor(spot).length, spot).toBeGreaterThan(0);
   });
 
   it('throws the Reef’s lips on the line through its two runs, never shallower than its top at the tide', () => {

@@ -43,7 +43,7 @@ export class SweptBarrel {
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`). */
   constructor(
     private readonly water: WaterSurface,
-    private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot)),
+    private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot), undefined, undefined, spot),
     view?: SweptBarrelView,
   ) {
     this.mesh = new SweptBarrelMesh(water.materialUniforms, view);

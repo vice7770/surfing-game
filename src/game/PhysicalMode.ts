@@ -412,6 +412,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolAgeJoinSwitch() : {}),
     // `?poolBarrel=aframe`: the Wave Pool's Barrel on step 1's A-frame (pool-barrel, merged 2026-11-01), for A/Bs.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
+    // `?poolTube=off` / `?poolCrash=off`: the straight Barrel without its swept tube, or with it and the solver's own lip.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -486,6 +488,17 @@ export function poolAgeJoinSwitch(search?: string): { poolAgeJoin?: number } {
  */
 export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
   return devParam('poolBarrel', search)?.trim() === 'aframe' ? { poolBarrel: 'aframe' } : {};
+}
+
+/**
+ * The `?poolTube=off` and `?poolCrash=off` dev switches (`SurfZoneConfig.sweptBarrel`, `.sweptCrash`; pool-barrel-drawing,
+ * 2026-11-01): the Wave Pool's straight Barrel as merged before its tube was drawn (no swept barrel: the solver's white and
+ * its lip sheet), or with its tube drawn and felt but the solver's own lip throws in place of the tube's jets (the crash's
+ * A/B: the crash changes the pool's water). Nothing otherwise; online rooms run the default.
+ */
+export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCrash?: false } {
+  if (devParam('poolTube', search)?.trim().toLowerCase() === 'off') return { sweptBarrel: false };
+  return devParam('poolCrash', search)?.trim().toLowerCase() === 'off' ? { sweptCrash: false } : {};
 }
 
 /**
@@ -910,7 +923,7 @@ export class PhysicalMode {
         const bytes = await barrelCaseBytes(spot);
         if (!bytes) throw new Error('No barrel case files');
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
-        return libraryFromBytes(bytes, this.config?.tubeShape);
+        return libraryFromBytes(bytes, this.config?.tubeShape, spot);
       }, view);
       // `?lipFoam=old` and `?lipBack=old`: the curl's foam and the Rich lip's background as before pool-barrel-drawing.
       if (lipFoamOld()) this.sweptBarrel.mesh.lipFoam = 'old';
@@ -1299,7 +1312,7 @@ export class PhysicalMode {
     const spot = this.config?.spot;
     const bytes = spot && this.swept ? await barrelCaseBytes(spot) : undefined;
     if (!spot || !bytes || !this.sweptBarrel) return false;
-    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape));
+    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot));
     return true;
   }
 

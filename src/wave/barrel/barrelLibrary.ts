@@ -2,6 +2,7 @@ import type { SpotName } from '../Bathymetry';
 import { BARREL_CASES } from './barrelLibraryIndex';
 import { decodeCase } from './profileFormat';
 import { ProfileLibrary } from './ProfileLibrary';
+import { BARREL_SPOTS } from './barrelSpots';
 
 /** One case in the generated index: the spot whose transect it was run on, what it covers, and where its frames are (public/<asset>). */
 export interface BarrelCaseEntry {
@@ -34,8 +35,24 @@ export function barrelCaseNote(id: string): { drawn: false; note: string } | und
   return BARREL_CASE_NOTES[id.replace(/-l\d+$/, '')];
 }
 
-/** The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws. */
+/**
+ * The Wave Pool's straight Barrel's tube cases, by id (pool-barrel-drawing, T5: the pool loads only its own). Until the
+ * owner's level-13 runs on its reef land (`pool_straight_small` and `pool_straight_big`, step 2), a PROVISIONAL stand-in:
+ * Padang Padang's four cases on 1:19 (the water-physics advisor, 2026-11-01): at the pool's foot crests (A0 about 0.26 and
+ * 0.34 on its 4.5 m platform, inferred) they blend within their own range and draw a breaker 1–9 % (1.5 m) and 2–15 % (1.8 m)
+ * over the surf meter's face, on a slope by the 1.5 m case's own 1:18.7 along the reef's ray (the Canyon's a38 drew 25–50 %
+ * over it at the straight reef's feed). Three are solitary waves at level 12, so their crests stand over a periodic one's.
+ * When the real cases land, this is the one line to change, to their ids (`periodic-pool-straight-small-l13`,
+ * `periodic-pool-straight-big-l13`, as `npm run barrels` names them), and the pool reads them as one family (`BarrelSpot.family`).
+ */
+export const POOL_TUBE_CASES: readonly string[] = ['periodic-padang19s-l12', 'pad19-a20-l12', 'pad19-a30-l12', 'pad19-a45-l12'];
+
+/**
+ * The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws; the
+ * Wave Pool, its own list (`POOL_TUBE_CASES`).
+ */
 export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES): BarrelCaseEntry[] {
+  if (spot === 'pool') return cases.filter((entry) => POOL_TUBE_CASES.includes(entry.id));
   return cases.filter((entry) => entry.spot === spot && !barrelCaseNote(entry.id));
 }
 
@@ -72,9 +89,14 @@ export type TubeShape = 'basilisk' | 'bounded-C';
  */
 export const BOUNDED_C_CASES: readonly BarrelCaseEntry[] = BARREL_CASES.filter((entry) => entry.spot !== 'canyon');
 
-/** Case files decoded into one library, drawn as `shape` says (`TubeShape`). */
-export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk'): ProfileLibrary {
-  const cases = bytes.map(decodeCase);
+/**
+ * Case files decoded into one library, drawn as `shape` says (`TubeShape`). At a spot whose cases are one family
+ * (`BarrelSpot.family`: one floor at several sizes), every case takes the spot's slope, so a slice blends them by its A0
+ * alone; each case's own slope along its ray stays in its file and notes.
+ */
+export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk', spot?: SpotName): ProfileLibrary {
+  const family = spot !== undefined && BARREL_SPOTS[spot]?.family ? BARREL_SPOTS[spot]!.slope : undefined;
+  const cases = bytes.map(decodeCase).map((c) => (family === undefined ? c : { ...c, slope: family }));
   if (shape !== 'bounded-C') return new ProfileLibrary(cases);
   // The bounded provider's explicitly evaluated domain is the cases shipped with it. General fixtures stay raw.
   const eligible = cases.every((c) => BOUNDED_C_CASES.some((entry) => entry.id === c.id));
@@ -86,6 +108,7 @@ export async function loadBarrelLibrary(
   cases: readonly BarrelCaseEntry[] = BARREL_CASES,
   fetcher: typeof fetch = globalThis.fetch.bind(globalThis),
   shape: TubeShape = 'basilisk',
+  spot?: SpotName,
 ): Promise<ProfileLibrary> {
-  return libraryFromBytes(await loadBarrelCaseBytes(cases, fetcher), shape);
+  return libraryFromBytes(await loadBarrelCaseBytes(cases, fetcher), shape, spot);
 }
