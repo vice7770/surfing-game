@@ -1,0 +1,1 @@
+Crest angles: pool, big (Hs 1.8667619023324857 m, Tp 10 s, 0°, s 24), seed 1, 64 components, 600 s. Take-off (84, -200); lines z = -283, -231, -151, -101, -51; crests followed over x -120…121.

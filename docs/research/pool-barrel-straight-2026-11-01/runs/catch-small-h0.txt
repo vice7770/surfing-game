@@ -1,0 +1,30 @@
+pool barrel small seed 1: take-off (84.35822227524088, -197.5), default start 11 m out; starts 6 m out (2.23 m deep), 11 m out (2.66 m deep), 16 m out (3.10 m deep); t 20.0 s after the spin-up (29 s wall)
+stepped to t 145.5 s; 12 waves from 6 m out, 12 waves from 11 m out, 12 waves from 16 m out (704 s wall)
+-- from 6 m out (2.23 m deep), set faces ≥ 1.51 m:
+good      sets 4: rode 0, no cue 0, left on the crest 2, white water 2, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.67 m/s
+good      all  12: rode 0, no cue 0, left on the crest 10, white water 2, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.36 m/s
+early     sets 4: rode 0, no cue 0, left on the crest 2, white water 2, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.46 m/s
+early     all  12: rode 0, no cue 0, left on the crest 9, white water 3, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.43 m/s
+late      sets 4: rode 0, no cue 0, left on the crest 2, white water 2, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.65 m/s
+late      all  12: rode 0, no cue 0, left on the crest 9, white water 3, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.19 m/s
+lift      sets 4: rode 0, no cue 0, left on the crest 4, white water 0, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.58 m/s
+lift      all  12: rode 0, no cue 0, left on the crest 12, white water 0, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.36 m/s
+-- from 11 m out (2.66 m deep), set faces ≥ 1.50 m:
+good      sets 4: rode 2, no cue 0, left on the crest 2, white water 0, fell 0; rides: pop 0.87 s after the crest passed the start, standing 1.20 s after the pop, face under the board 15°, 0.75 up; paddling top speed 4.68 m/s
+good      all  12: rode 3, no cue 0, left on the crest 8, white water 1, fell 0; rides: pop 0.77 s after the crest passed the start, standing 1.20 s after the pop, face under the board 15°, 0.69 up; paddling top speed 4.58 m/s
+early     sets 4: rode 2, no cue 0, left on the crest 2, white water 0, fell 0; rides: pop 0.92 s after the crest passed the start, standing 1.20 s after the pop, face under the board 19°, 0.65 up; paddling top speed 4.79 m/s
+early     all  12: rode 2, no cue 0, left on the crest 9, white water 1, fell 0; rides: pop 0.92 s after the crest passed the start, standing 1.20 s after the pop, face under the board 19°, 0.65 up; paddling top speed 4.72 m/s
+late      sets 4: rode 0, no cue 0, left on the crest 4, white water 0, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.93 m/s
+late      all  12: rode 0, no cue 0, left on the crest 12, white water 0, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.68 m/s
+lift      sets 4: rode 2, no cue 0, left on the crest 2, white water 0, fell 0; rides: pop 0.87 s after the crest passed the start, standing 1.20 s after the pop, face under the board 15°, 0.75 up; paddling top speed 4.68 m/s
+lift      all  12: rode 3, no cue 0, left on the crest 8, white water 1, fell 0; rides: pop 0.77 s after the crest passed the start, standing 1.20 s after the pop, face under the board 15°, 0.69 up; paddling top speed 4.58 m/s
+-- from 16 m out (3.10 m deep), set faces ≥ 1.52 m:
+good      sets 4: rode 1, no cue 1, left on the crest 2, white water 0, fell 0; rides: pop 1.22 s after the crest passed the start, standing 1.20 s after the pop, face under the board 13°, 0.77 up; paddling top speed 4.68 m/s
+good      all  12: rode 4, no cue 2, left on the crest 6, white water 0, fell 0; rides: pop 1.22 s after the crest passed the start, standing 1.20 s after the pop, face under the board 13°, 0.77 up; paddling top speed 4.61 m/s
+early     sets 4: rode 1, no cue 0, left on the crest 2, white water 1, fell 0; rides: pop 1.22 s after the crest passed the start, standing 1.20 s after the pop, face under the board 13°, 0.77 up; paddling top speed 4.68 m/s
+early     all  12: rode 4, no cue 0, left on the crest 7, white water 1, fell 0; rides: pop 1.22 s after the crest passed the start, standing 1.20 s after the pop, face under the board 13°, 0.77 up; paddling top speed 4.61 m/s
+late      sets 4: rode 0, no cue 1, left on the crest 2, white water 1, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.65 m/s
+late      all  12: rode 0, no cue 4, left on the crest 5, white water 3, fell 0; rides: pop NaN s after the crest passed the start, standing NaN s after the pop, face under the board NaN°, NaN up; paddling top speed 4.65 m/s
+lift      sets 4: rode 1, no cue 0, left on the crest 3, white water 0, fell 0; rides: pop 1.22 s after the crest passed the start, standing 1.20 s after the pop, face under the board 13°, 0.77 up; paddling top speed 4.68 m/s
+lift      all  12: rode 4, no cue 0, left on the crest 8, white water 0, fell 0; rides: pop 1.22 s after the crest passed the start, standing 1.20 s after the pop, face under the board 13°, 0.77 up; paddling top speed 4.61 m/s
+wall 704 s

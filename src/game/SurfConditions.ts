@@ -4,7 +4,7 @@ import type { SpotName } from '../wave/Bathymetry';
 import { PRACTICE_SURF, SWELL_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
 import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, REFRACTED_SPREADING, type PhysicalSettings } from './PhysicalMode';
 import { solverStage } from '../wave/SurfZoneSimulation';
-import { POOL, POOL_BARREL_EDGE_HEIGHT, POOL_BARREL_FACES, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolBarrelSize, type PoolSize, type PoolWaves } from '../wave/pool';
+import { POOL, POOL_STRAIGHT_EDGE_HEIGHT, POOL_BARREL_FACES, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolBarrelSize, type PoolSize, type PoolWaves } from '../wave/pool';
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings: the Wave Pool first, where the riding is learned. */
 export const SURF_SPOTS: readonly SpotName[] = ['pool', 'beach', 'point', 'reef', 'canyon', 'padang'];
@@ -192,7 +192,8 @@ export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, 
   // the Barrel floor at its own sizes when the choice says so.
   if (spot === 'pool') {
     const barrel = conditions.waves === 'barrel';
-    const height = barrel ? POOL_BARREL_EDGE_HEIGHT[poolBarrelSize(conditions.swell)] : POOL_EDGE_HEIGHT[poolSize(conditions.swell)];
+    // The Barrel's default floor, its straight reef (`?poolBarrel=aframe`'s A-frame takes its own heights: PhysicalMode).
+    const height = barrel ? POOL_STRAIGHT_EDGE_HEIGHT[poolBarrelSize(conditions.swell)] : POOL_EDGE_HEIGHT[poolSize(conditions.swell)];
     return {
       ...DEFAULT_PHYSICAL_SETTINGS, spot, ...raisedWater(spot, water), source: 'buoy',
       significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period,

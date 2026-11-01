@@ -27,7 +27,7 @@ import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { PoolScenery } from '../scene/PoolScenery';
-import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight, type PoolWaves } from '../wave/pool';
+import { POOL, POOL_EDGE_HEIGHT, POOL_STRAIGHT, poolDeckZ, poolFloorOf, regularSignificantHeight, type PoolWaves } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { SpillingCurlMesh } from '../scene/SpillingCurlMesh';
@@ -410,6 +410,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
     // `?poolAgeJoin=<J>`: the Wave Pool's Barrel floor's breaking-age join (0: rule A, as its training floor), for A/Bs.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolAgeJoinSwitch() : {}),
+    // `?poolBarrel=aframe`: the Wave Pool's Barrel on step 1's A-frame (pool-barrel, merged 2026-11-01), for A/Bs.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -476,6 +478,14 @@ export function poolAgeJoinSwitch(search?: string): { poolAgeJoin?: number } {
   const text = devParam('poolAgeJoin', search)?.trim();
   const join = text ? Number(text) : Number.NaN;
   return Number.isFinite(join) && join >= 0 ? { poolAgeJoin: join } : {};
+}
+
+/**
+ * The `?poolBarrel=aframe` dev switch (`SurfZoneConfig.poolBarrel`): the Wave Pool's Barrel on step 1's mirrored A-frame
+ * (`POOL_BARREL`) in place of its straight reef, at the Barrel sizes' machine heights.
+ */
+export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
+  return devParam('poolBarrel', search)?.trim() === 'aframe' ? { poolBarrel: 'aframe' } : {};
 }
 
 /**
@@ -905,7 +915,7 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     this.curtains.setOptics(SPOT_OPTICS[settings.spot]);
-    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves });
+    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
     const offshoreDepth = tank.edgeDepth;
@@ -930,6 +940,8 @@ export class PhysicalMode {
     const hole = { xMin: windowMin - band, xMax: windowMax + band, zMin: tank.offshore, zMax: tank.shore };
     // The Wave Pool: walls and a deck around the window, no open ocean beyond, and a painted concrete floor.
     this.atPool = config.spot === 'pool';
+    // The Barrel's straight reef starts near the +x wall: its overview stands down the reef's line, inside the walls.
+    this.camera.overviewSide = this.atPool && poolFloorOf(config) === 'straight' ? (POOL_STRAIGHT.side > 0 ? -1 : 1) : 1;
     if (this.atPool) {
       this.poolScenery.show({ xMin: windowMin, xMax: windowMax, zBack: tank.offshore, zFront: poolDeckZ(), deck: POOL.deck, floor: POOL.feedDepth + 0.5 });
       this.seabed.setPalette('#dfe6e4', '#a9c3c6');

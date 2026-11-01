@@ -368,18 +368,192 @@ export function poolBarrelRiddenAt(x: number): boolean {
   return x >= 0 && x <= POOL_BARREL.armLength + POOL_BARREL.taperWidth;
 }
 
-/** The pool's bed for its kind of wave: the training A-frame (the default) or the Barrel mode's. */
-export function poolSpot(waves: PoolWaves = 'training'): SurfSpot {
-  return { name: 'pool', depthAt: waves === 'barrel' ? poolBarrelDepth : poolDepth };
+/**
+ * The Barrel mode's layouts (pool-barrel-straight, 2026-11-01): 'straight', the default, one straight reef the machine's
+ * oblique wave peels along from the +x end (`POOL_STRAIGHT`); 'aframe', step 1's mirrored A-frame (`POOL_BARREL`), kept
+ * for A/B (`?poolBarrel=aframe`).
+ */
+export type PoolBarrelLayout = 'straight' | 'aframe';
+
+/** The pool's floors: the training A-frame, the Barrel's straight reef, the Barrel's A-frame. */
+export type PoolFloor = 'training' | PoolBarrelLayout;
+
+/** Which floor a sea runs: Training unless its waves are the Barrel's; then the straight reef unless the A-frame is asked for. */
+export function poolFloorOf(config: { poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout }): PoolFloor {
+  if (config.poolWaves !== 'barrel') return 'training';
+  return config.poolBarrel === 'aframe' ? 'aframe' : 'straight';
 }
 
 /**
- * The machine's sea: one regular wave square to the tank, of height H = Hs/√2 at the edge, every POOL.period s.
+ * The Barrel mode's straight floor (docs/research/pool-barrel-straight-2026-11-01; the water-physics advisor's layout,
+ * 2026-11-01): the owner's "straight, starting from right to left", a right-hander from the +x end along one reef, its
+ * crests straight lines from the machine to the beach. As in real pools, straight peeling crests come from angling the
+ * generated wave onto a straight reef, not from refraction over a V. Under the same machine (its 9 m feed, zone, ramp foot):
+ * - **the machine's regular wave travels obliquely** toward −x (`side` +1), so the crest's +x end leads. The window's sides
+ *   wrap (`periodicWaves` n > 0): the wave's direction is the one whose along-shore wavenumber is 2πn / W at the feed (kx is
+ *   conserved by Snell over a bed uniform along x), so an oblique regular wave crosses the walls exactly, with no shadow
+ *   from the zone's upwave corner and no reflection off the downwave wall. n 2: about 39° at the feed and 27–30° on the
+ *   platform. (Open sides, n 0, shade the reef's start and reflect at −x; the side feed's linear transform is out of range on
+ *   the 1:8.6 ramp and the 1:8 beach, and lagged Padang's crests 15–28 m.)
+ * - **a level platform** `platformDepth` deep from `platformLead` m seaward of the training terrace's edge (step 1: at 3.25 m
+ *   the waves broke at the knee);
+ * - **one straight reef** at `reefAngle`° to x, seaward at its +x start (`startX`, `startZ`), so the crest meets it at
+ *   θ_p + φ ≈ 68–70°, the A-frame arm's angle, and peels along it at c_p / sin(θ_p + φ), about 7 m/s (a reef parallel to the
+ *   machine could not peel slower than the feed's celerity, 8.8 m/s, α_b about 32°: pros only). Square to its line: a face
+ *   at `gradient` from the knee (rounded ±`kneeRounding` m) to the crest; the crest's depth along the reef (s from the start,
+ *   `crestProfile`: rising from the platform over 30 m, the take-off section easing to the barrel's crest, the barrel, a
+ *   back-off and the fade back to the platform); a top `flatWidth` m across; behind it a slope `backSlope` straight back
+ *   down to the platform (no shallow lagoon: the bed stays periodic, the return flow slow, and the bores re-break on the
+ *   beach);
+ * - the beach face and deck as the training floor's; the columns at the walls are the plain ramp, platform and beach.
+ * `side` −1 mirrors it into a left-hander (x → −x). Mutable for the probes.
+ */
+export const POOL_STRAIGHT = {
+  side: 1,
+  /** Along-shore wavelengths of the machine's wave in the window (its sides wrap); 0: open sides at `direction`°. */
+  periodicWaves: 2,
+  direction: 39,
+  platformDepth: 4.5,
+  platformLead: 20,
+  /** The reef's start (s = 0): where its crest line leaves the platform, x and z, m (before mirroring). */
+  startX: 115,
+  startZ: -221,
+  reefAngle: 40,
+  gradient: 1 / 9.5,
+  kneeRounding: 3,
+  /** The crest's depth along the reef: [s, depth] knots, m, eased between (smoothstep), the platform's depth beyond. */
+  crestProfile: [[0, 4.5], [30, 1.6], [65, 0.9], [175, 0.9], [205, 2.0], [235, 4.5]] as [number, number][],
+  flatWidth: 6,
+  backSlope: 1 / 10,
+  /**
+   * Where riders wait: s along the reef, m (the advisor's, where the white has come down the start's convex end); and how
+   * far seaward of the take-off they start, m, by size (the catch probe's best: 18 m at 1.5 m faces, 13.5 m at 1.8 m; the
+   * face along +z there is 1:12.4, so nearer starts sit barely deeper than the break), eased between on the sea's Hs.
+   */
+  takeOffS: 40,
+  startOut: { small: 18, big: 13.5 },
+  /** The breaking age's gate along the crests (as the A-frame Barrel's and the Canyon's): the reef's start is a convex end. */
+  ageJoin: 0.5,
+};
+
+/** Where the straight floor's platform begins, z, m. */
+export function poolStraightPlatformZ(): number {
+  return poolTerraceZ() - POOL_STRAIGHT.platformLead;
+}
+
+/** The straight reef's along (s, from its start) and seaward (n, square to its line) distances at (x, z), m. */
+export function poolStraightFrame(x: number, z: number): { s: number; n: number } {
+  const r = POOL_STRAIGHT;
+  const phi = (r.reefAngle * Math.PI) / 180;
+  const dx = r.side * x - r.startX;
+  const dz = z - r.startZ;
+  // Along the reef: toward −x (mirrored) and shoreward; seaward: square to it, toward −z.
+  return { s: -dx * Math.cos(phi) + dz * Math.sin(phi), n: -dx * Math.sin(phi) - dz * Math.cos(phi) };
+}
+
+/** The point on the straight reef's crest line s m from its start, (x, z), m. */
+export function poolStraightAt(s: number): { x: number; z: number } {
+  const r = POOL_STRAIGHT;
+  const phi = (r.reefAngle * Math.PI) / 180;
+  return { x: r.side * (r.startX - s * Math.cos(phi)), z: r.startZ + s * Math.sin(phi) };
+}
+
+/** The straight reef's crest depth s m along it, m: `crestProfile`'s knots eased, the platform's depth beyond them. */
+export function poolStraightCrestDepth(s: number): number {
+  const knots = POOL_STRAIGHT.crestProfile;
+  if (s <= knots[0][0] || s >= knots[knots.length - 1][0]) return POOL_STRAIGHT.platformDepth;
+  let k = 1;
+  while (s > knots[k][0]) k += 1;
+  const [s0, d0] = knots[k - 1];
+  const [s1, d1] = knots[k];
+  return d0 + (d1 - d0) * ease(s0, s1, s);
+}
+
+/** The Barrel mode's straight floor's still depth below datum at (x, z), m; negative on the deck (`POOL_STRAIGHT`). */
+export function poolStraightDepth(x: number, z: number): number {
+  const p = POOL;
+  const r = POOL_STRAIGHT;
+  const beach = Math.max(-p.deck, -z * p.shoreSlope);
+  const edge = poolStraightPlatformZ();
+  if (z < edge) {
+    // The ramp square to the tank, from the machine's floor at the training ramp's foot up to the platform.
+    const foot = poolRampFootZ();
+    const ramp = z <= foot ? p.feedDepth : r.platformDepth + ((edge - z) * (p.feedDepth - r.platformDepth)) / (edge - foot);
+    return Math.min(ramp, beach);
+  }
+  const { s, n } = poolStraightFrame(x, z);
+  const crest = poolStraightCrestDepth(s);
+  let reef: number;
+  if (n >= 0) {
+    // The face square to the crest line, from the crest down to the platform, its knee rounded.
+    const knee = (r.platformDepth - crest) / r.gradient;
+    const half = Math.min(r.kneeRounding, knee);
+    if (n <= knee - half) reef = crest + n * r.gradient;
+    else if (n >= knee + half) reef = r.platformDepth;
+    else {
+      const left = knee + half - n;
+      reef = r.platformDepth - (r.gradient * left * left) / (4 * half);
+    }
+  } else {
+    // The top, then straight back down to the platform.
+    reef = Math.min(r.platformDepth, crest + Math.max(0, -n - r.flatWidth) * r.backSlope);
+  }
+  return Math.min(reef, beach);
+}
+
+/** The machine's wave height at the tank's edge for each Barrel size on the straight floor, m (the size probe). */
+export const POOL_STRAIGHT_EDGE_HEIGHT: Record<PoolBarrelSize, number> = { small: 1.05, big: 1.32 };
+
+/**
+ * Where the machine's wave first breaks at the straight floor's take-off, m deep for a wave H m high at the feed: the frame
+ * probe's first breaks at s 40–50 (x 78–84) were 1.52 and 1.91 m deep for H 1.05 and 1.32 (1.5 and 1.8 m faces).
+ */
+export const POOL_STRAIGHT_BREAK_DEPTH = { base: 0.01, perMetre: 1.44 } as const;
+
+/** How far seaward of the straight floor's take-off riders start for a machine wave H m high at the feed, m (`startOut`). */
+export function poolStraightStartOut(height: number): number {
+  const { small, big } = POOL_STRAIGHT.startOut;
+  const t = Math.min(1, Math.max(0, (height - POOL_STRAIGHT_EDGE_HEIGHT.small) / (POOL_STRAIGHT_EDGE_HEIGHT.big - POOL_STRAIGHT_EDGE_HEIGHT.small)));
+  return small + (big - small) * t;
+}
+
+/** How deep the pool's wave of height H at the feed first breaks at the straight floor's take-off, m. */
+export function poolStraightBreakDepth(height: number): number {
+  return POOL_STRAIGHT_BREAK_DEPTH.base + POOL_STRAIGHT_BREAK_DEPTH.perMetre * height;
+}
+
+/** The straight reef the peel is measured on: its columns from its start to its end. */
+export function poolStraightRiddenAt(x: number): boolean {
+  const knots = POOL_STRAIGHT.crestProfile;
+  const start = poolStraightAt(knots[0][0]).x;
+  const end = poolStraightAt(knots[knots.length - 1][0]).x;
+  return x <= Math.max(start, end) && x >= Math.min(start, end);
+}
+
+/**
+ * The machine's wave direction on the straight floor, rad from +z (toward −x for `side` +1): `direction`°, or with wrapped
+ * sides the one whose along-shore wavenumber k sin θ is 2π n / W at the feed (`waveNumber`, the solver's k there).
+ */
+export function poolStraightDirection(waveNumber: number, alongShore = POOL.alongShore): number {
+  const s = POOL_STRAIGHT;
+  const theta = s.periodicWaves > 0 ? Math.asin(Math.min(1, (2 * Math.PI * s.periodicWaves) / (alongShore * waveNumber))) : (s.direction * Math.PI) / 180;
+  return -s.side * theta;
+}
+
+/** The pool's bed for its floor: the training A-frame (the default), the Barrel's straight reef or its A-frame. */
+export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout): SurfSpot {
+  const floor = poolFloorOf({ poolWaves: waves, poolBarrel: barrel });
+  return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : poolStraightDepth };
+}
+
+/**
+ * The machine's sea: one regular wave of height H = Hs/√2 at the edge, every POOL.period s, square to the tank
+ * (`direction` 0, the training and A-frame floors) or oblique (the straight floor's, rad from +z).
  * Every wave is the same one, so the pool needs no seed.
  */
-export function poolSea(significantHeight: number, depth: number, waveNumberAt: WaveNumberFunction): SeaState {
+export function poolSea(significantHeight: number, depth: number, waveNumberAt: WaveNumberFunction, direction = 0): SeaState {
   const height = significantHeight / Math.SQRT2;
-  return new SeaState([{ amplitude: height / 2, omega: (2 * Math.PI) / POOL.period, direction: 0, phase: 0 }], depth, waveNumberAt);
+  return new SeaState([{ amplitude: height / 2, omega: (2 * Math.PI) / POOL.period, direction, phase: 0 }], depth, waveNumberAt);
 }
 
 /** The machine's relaxation zone is this many wavelengths at its floor long: 1.5–2 absorb a 10 s wave (the advisor). */
@@ -389,10 +563,12 @@ const POOL_ZONE_WAVELENGTHS = 1.75;
  * The pool's tank across shore, m (a TankLayout without its edge depth): the relaxation zone over the machine's
  * floor ending just seaward of the ramp, the fine grid from just seaward of the terrace to the shore.
  */
-export function poolTankLayout(shore: number, waves: PoolWaves = 'training'): { offshore: number; zoneInner: number; blendEnd: number; fineFrom: number; shore: number } {
+export function poolTankLayout(shore: number, floor: PoolFloor | PoolWaves = 'training'): { offshore: number; zoneInner: number; blendEnd: number; fineFrom: number; shore: number } {
   const zoneInner = poolRampFootZ() - 10;
   const zone = POOL_ZONE_WAVELENGTHS * waveKinematics(POOL.period, POOL.feedDepth).wavelength;
-  // The Barrel floor's platform begins seaward of the terrace's edge: its 1 m cells from 10 m seaward of it, as the terrace's.
-  const fineFrom = (waves === 'barrel' ? Math.min(poolTerraceZ(), poolBarrelPlatformZ()) : poolTerraceZ()) - 10;
+  // The Barrel floors' platforms begin seaward of the terrace's edge: their 1 m cells from 10 m seaward of it, as the terrace's.
+  // ('barrel' alone is the A-frame's, as step 1 called it.)
+  const platform = floor === 'straight' ? poolStraightPlatformZ() : floor === 'aframe' || floor === 'barrel' ? poolBarrelPlatformZ() : poolTerraceZ();
+  const fineFrom = Math.min(poolTerraceZ(), platform) - 10;
   return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + 10, fineFrom, shore };
 }

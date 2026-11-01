@@ -522,7 +522,7 @@ class SurfGame {
     // must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
-      canyonBed: 'reef', canyonAgeJoin: undefined, poolAgeJoin: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
+      canyonBed: 'reef', canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
       sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {

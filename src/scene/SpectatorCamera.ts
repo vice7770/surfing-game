@@ -121,6 +121,11 @@ export const CINEMA_HEIGHT = 11;
 export class SpectatorCamera {
   readonly camera = new PerspectiveCamera(52, 1, 0.1, 3000);
   private currentView: SpectatorView = 'overview';
+  /**
+   * Which side of the break the overview stands, along shore: +1 (+70 m, every spot's) or −1, beside the Wave Pool's
+   * straight reef down its line, inside the pool's walls (pool-barrel-straight; set per sea by PhysicalMode).
+   */
+  overviewSide: 1 | -1 = 1;
   private readonly desired = new Vector3();
   /** The front view's lean from its look point toward the crest: as wanted this frame, and as eased. */
   private readonly leanWanted = new Vector3();
@@ -235,7 +240,7 @@ export class SpectatorCamera {
       if (this.settled) swingAbout(this.camera.position, pivotX, pivotZ, wrapAngle(swing - this.appliedSwing));
       this.appliedSwing = swing;
     } else if (view === 'overview' || view === 'front' || view === 'behind' || view === 'side') {
-      this.desired.set(focus.x + 70, 16, focus.z + 95);
+      this.desired.set(focus.x + this.overviewSide * 70, 16, focus.z + 95);
       this.target.set(focus.x, 0, focus.z - 40);
     } else if (view === 'profile') {
       const x = focus.x + 40;

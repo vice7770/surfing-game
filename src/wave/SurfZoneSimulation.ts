@@ -14,7 +14,10 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, POOL_BARREL, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout, type PoolWaves } from './pool';
+import {
+  POOL, POOL_BARREL, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolRiddenAt, poolSea, poolStraightBreakDepth,
+  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolWaves,
+} from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -237,11 +240,18 @@ export interface SurfZoneConfig {
   canyonBed?: CanyonBed;
   /**
    * The Wave Pool's kind of wave (the Surf screen's Waves row, the pool-barrel decisions of 2026-10-31): 'training', the
-   * default, its A-frame for faces of 1.0–1.5 m (`POOL`); 'barrel', the same machine onto a floor whose arms plunge a tube
-   * (`POOL_BARREL`), with its own take-off depth and ridden arm. Every other spot ignores it; online rooms carry it in
-   * their conditions.
+   * default, its A-frame for faces of 1.0–1.5 m (`POOL`); 'barrel', the same machine onto a floor that plunges a tube: the
+   * straight reef its oblique wave peels along, a right-hander from the +x wall (`POOL_STRAIGHT`, pool-barrel-straight), or
+   * step 1's A-frame (`poolBarrel` 'aframe'), each with its own take-off, start, ridden reef and breaking-age gate. Every
+   * other spot ignores it; online rooms carry it in their conditions.
    */
   poolWaves?: PoolWaves;
+  /**
+   * The Wave Pool's Barrel layout (pool-barrel-straight): the straight reef the machine's oblique wave peels along, the
+   * default (`POOL_STRAIGHT`), or 'aframe', step 1's mirrored A-frame (`POOL_BARREL`): the `?poolBarrel=aframe` dev switch,
+   * for A/Bs. Only with `poolWaves` 'barrel'; online rooms always run the default.
+   */
+  poolBarrel?: PoolBarrelLayout;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
@@ -498,7 +508,7 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     return { offshore: zoneInner - c.zoneLength, zoneInner, blendEnd: zoneInner + c.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: c.edgeDepth };
   }
   // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
-  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore, config.poolWaves), edgeDepth: today.edgeDepth };
+  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore, poolFloorOf(config)), edgeDepth: today.edgeDepth };
   // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
   // lies inside it, with the zone lengthened to absorb its long waves.
   if (config.spot === 'reef') {
@@ -682,7 +692,14 @@ export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[co
 export function surfZoneSea(config: SurfZoneConfig): SeaState {
   const tank = tankLayout(config);
   // The Wave Pool's machine: one regular wave, the same every time (the movement-flow spec).
-  if (config.spot === 'pool') return poolSea(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, madsenSorensenWaveNumber);
+  if (config.spot === 'pool') {
+    // Square to the tank, or oblique onto the Barrel's straight reef (`POOL_STRAIGHT`): at its feed, wrapped across the sides
+    // when they wrap (its along-shore wavelength fitting the window).
+    const depth = tank.edgeDepth + config.tide;
+    const direction = poolFloorOf(config) === 'straight'
+      ? poolStraightDirection(madsenSorensenWaveNumber((2 * Math.PI) / POOL.period, depth), alongShoreOf(config)) : 0;
+    return poolSea(edgeHeight(config, tank.edgeDepth), depth, madsenSorensenWaveNumber, direction);
+  }
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && solverStage(config.spot, config.stage) === 2;
   return SeaState.fromSpectrum({
     significantHeight: edgeHeight(config, tank.edgeDepth),
@@ -724,8 +741,10 @@ export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.
 export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
 /** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak (its layout's). */
-export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed, poolWaves?: PoolWaves): number {
-  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? (poolWaves === 'barrel' ? POOL_BARREL.takeOffX : POOL.takeOffX)
+export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed, poolWaves?: PoolWaves, poolBarrel?: PoolBarrelLayout): number {
+  const floor = poolFloorOf({ poolWaves, poolBarrel });
+  return spot === 'padang' ? PADANG.takeOffX
+    : spot === 'pool' ? (floor === 'straight' ? poolStraightAt(POOL_STRAIGHT.takeOffS).x : floor === 'aframe' ? POOL_BARREL.takeOffX : POOL.takeOffX)
     : spot === 'canyon' ? canyonShape(canyonBed).takeOffX : REEF.takeOffX;
 }
 
@@ -798,10 +817,12 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
-export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed' | 'poolWaves'>): number {
+export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): number {
   if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
-  // The Wave Pool's Barrel floor: its own start (`POOL_BARREL.startOut`, the catch probe's).
-  if (config.spot === 'pool' && config.poolWaves === 'barrel') return POOL_BARREL.startOut;
+  // The Wave Pool's Barrel floors: their own starts (`POOL_STRAIGHT.startOut`, `POOL_BARREL.startOut`, the catch probe's).
+  if (config.spot === 'pool' && config.poolWaves === 'barrel') {
+    return poolFloorOf(config) === 'aframe' ? POOL_BARREL.startOut : poolStraightStartOut(config.significantHeight / Math.SQRT2);
+  }
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
   // Either layout: canyon-b leaves the upcoast peak, where riders start, as it was.
   const sizes = CANYON_RIDE_LINEUP;
@@ -826,7 +847,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -836,7 +857,8 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   // estimate from its Hs put the take-off 14 m seaward of the break, and 1.5 H put it 13–23 m inside it.
   // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
   // inside the measured breaks.
-  const target = config.spot === 'pool' ? (config.poolWaves === 'barrel' ? poolBarrelBreakDepth : poolBreakDepth)(height / Math.SQRT2)
+  const floor = poolFloorOf(config);
+  const target = config.spot === 'pool' ? (floor === 'straight' ? poolStraightBreakDepth : floor === 'aframe' ? poolBarrelBreakDepth : poolBreakDepth)(height / Math.SQRT2)
     : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => firstReaching(spot, tank, x, target, config.tide);
@@ -844,7 +866,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
-    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed, config.poolWaves)));
+    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed, config.poolWaves, config.poolBarrel)));
     return { x, z: breakZ(x) };
   }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
@@ -1086,14 +1108,16 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves });
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
     const alongShore = alongShoreOf(config);
     const dx = config.dx ?? 1;
     const grid = {
-      nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,
+      // The Barrel's straight floor wraps its sides when its machine's wave fits the window (`POOL_STRAIGHT.periodicWaves`).
+      nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx,
+      xBoundary: config.spot === 'pool' && poolFloorOf(config) === 'straight' && POOL_STRAIGHT.periodicWaves > 0 ? 'periodic' as const : 'open' as const,
       zEdges: stretchedEdges(tank.offshore, tank.shore, tank.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
     };
     const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z, tank);
@@ -1101,7 +1125,7 @@ export class SurfZoneSimulation {
     // The Canyon's breaking age joins through the diagonals only on steep enough water (`CANYON.ageJoin`, canyon-wave-r2).
     // So does the Wave Pool's Barrel floor's (`POOL_BARREL.ageJoin`, pool-barrel); its training floor keeps rule A.
     const diagonalJoin = config.spot === 'canyon' ? config.canyonAgeJoin ?? canyonShape(config.canyonBed).ageJoin
-      : config.spot === 'pool' && config.poolWaves === 'barrel' ? config.poolAgeJoin ?? POOL_BARREL.ageJoin : 0;
+      : config.spot === 'pool' && config.poolWaves === 'barrel' ? config.poolAgeJoin ?? (poolFloorOf(config) === 'aframe' ? POOL_BARREL.ageJoin : POOL_STRAIGHT.ageJoin) : 0;
     // Its beach breaks earlier than its reef (`canyonOnset`, canyon-beach-break): the onset over the bed, at each cell's
     // centre, levelled like the bed across the open edges' bands (the transect OPEN_EDGE_RAMP m in).
     const shape = canyonShape(config.canyonBed);
@@ -1146,7 +1170,7 @@ export class SurfZoneSimulation {
     const xCenters = this.solver.xCenters;
     const canyon = canyonShape(config.canyonBed);
     this.canyonShape = canyon;
-    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? (config.poolWaves === 'barrel' ? poolBarrelRiddenAt : poolRiddenAt)
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? { training: poolRiddenAt, aframe: poolBarrelRiddenAt, straight: poolStraightRiddenAt }[poolFloorOf(config)]
       : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     // The Canyon's lagoon and its beach face behind the arm are not its wave (`CANYON.peelReach`; every break on the old layout).

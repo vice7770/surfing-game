@@ -62,14 +62,14 @@ SETS = {
         ],
     },
     "pool": {
-        "cases": ["pool_barrel_big", "pool_barrel_small"],
+        "cases": ["pool_straight_big", "pool_straight_small"],
         "what": {
-            "pool_barrel_small": ("the barrel arm's ray (|x| 15–45, mirrored), platform to crest", "Barrel 1.5 m faces"),
-            "pool_barrel_big": ("the barrel arm's ray (|x| 15–45, mirrored), platform to crest", "Barrel 1.8 m faces"),
+            "pool_straight_small": ("the straight reef's ray over its barrel section (s 65–175), platform to crest", "Barrel 1.5 m faces"),
+            "pool_straight_big": ("the straight reef's ray over its barrel section (s 65–175), platform to crest", "Barrel 1.8 m faces"),
         },
-        "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_barrel_small",
+        "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_straight_small",
         "title": "The Wave Pool's Barrel tube runs", "label": "Wave Pool Barrel",
-        "bed": "Each case is a two-crest cnoidal train of the pool's 10 s machine wave on its Barrel floor along each arm's ray",
+        "bed": "Each case is a two-crest cnoidal train of the pool's 10 s machine wave on its Barrel straight reef along its ray",
         "bed_detail": "Bed (docs/research/pool-barrel-2026-11-01/README.md, the Basilisk cases): h0 = the platform's depth, "
                       "one planar face along the ray (S1) to the reef crest (HS), flat to the closed right wall.",
         "fits": "S1 = the face's slope along the ray (the solver's measured Mead & Black X)",
@@ -77,7 +77,7 @@ SETS = {
         "wiring": [
             "- The cases' `.bin` files are written but listed in no game index: step 3 (the drawing) wires them, "
             "with a `pool` entry in `BARREL_SPOTS` and the Barrel floor's tube on.",
-            "- The arms are mirrored and their barrel section (|x| 15–45) is one transect, so one case per size covers both arms.",
+            "- The straight reef is uniform along its barrel section (s 65–175), so one case per size covers it.",
         ],
     },
 }

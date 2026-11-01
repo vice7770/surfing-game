@@ -157,7 +157,7 @@ export const EN = {
   'spot.padang': 'Padang Padang',
   'spot.padang.blurb': 'Hollow left over sharp coral, Bali',
   'spot.pool': 'Wave Pool',
-  'spot.pool.blurb': 'The same A-frame every ten seconds, to practise on',
+  'spot.pool.blurb': 'The same wave every ten seconds: an A-frame to practise on, or a barrelling right',
   'cond.swell.pool.small': '1.0 m',
   'cond.swell.pool.medium': '1.25 m',
   'cond.swell.pool.big': '1.5 m',

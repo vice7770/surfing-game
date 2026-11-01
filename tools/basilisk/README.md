@@ -130,17 +130,19 @@ A case that threw no tube has no `.bin` (its row in the report says so, as `poin
 
 ## The Wave Pool's Barrel tube runs
 
-Step 2 of the Wave Pool's Barrel mode (pool-barrel, 2026-11-01; `docs/research/pool-barrel-2026-11-01/README.md`): the
-Barrel floor's transect along each arm's ray, as Navier–Stokes cases, so step 3 can draw the tube from them. The arms are
-mirrored and their barrel section is one transect, so there is one case per size:
+Step 2 of the Wave Pool's Barrel mode: the Barrel's straight reef (pool-barrel-straight, 2026-11-01;
+`docs/research/pool-barrel-straight-2026-11-01/README.md`), its transect along the reef's ray over the barrel section, as
+Navier–Stokes cases, so step 3 can draw the tube from them. The reef is uniform along its barrel section, so there is one
+case per size (step 1's A-frame cases, `pool_barrel_*`, were never run and are replaced):
 
 | Case | Transect | H/h0 | T | What it sources |
 |---|---|---|---|---|
-| `pool_barrel_small` | the right arm's ray at the take-off (x 27), the 4.5 m platform up one face to the crest | the platform's height | 10 s | Barrel 1.5 m faces |
-| `pool_barrel_big` | the same | the platform's height | 10 s | Barrel 1.8 m faces |
+| `pool_straight_small` | the reef's ray over s 65–175: the 4.5 m platform up one face (1:18.7 along the ray) to the 0.9 m crest | 0.352 | 10 s | Barrel 1.5 m faces |
+| `pool_straight_big` | the same, the face 1:21.6 along the bigger wave's ray | 0.437 | 10 s | Barrel 1.8 m faces |
 
-The numbers (h0, H/h0, the face's slope along the ray S1 and the crest HS) are in `run_periodic.sh`'s case table, from the
-solver's own measurements on the floor (the README's "The Basilisk cases").
+The numbers are the solver's own measurements on the floor: H/h0 is the machine wave's height on the platform 10 m seaward
+of the face's knee over the barrel section, over its 4.5 m; S1 is 1/X, Mead & Black's gradient along the crests' travel at
+their lip jets there.
 
 `tools/basilisk/run_pool.sh` (or `npm run barrels:pool`) is `run_canyon.sh` for these cases (`TUBE_SET=pool`): the same
 scout, two phases, analysis, case files and report, with the runs in `tools/basilisk/runs/pool/` and the report in
@@ -148,7 +150,7 @@ scout, two phases, analysis, case files and report, with the runs in `tools/basi
 
 ```
 git fetch origin
-git checkout claude/pool-barrel      # or main, once it is merged
+git checkout claude/pool-barrel-straight      # or main, once it is merged
 git pull
 npm run barrels:pool -- check        # what's missing, and how to install it
 npm run barrels:pool -- setup        # only if check asked: Basilisk into ~/basilisk-C, numpy/scipy/matplotlib into tools/basilisk/.venv
@@ -163,11 +165,11 @@ npm run barrels:pool -- status       # each case's phase and ETA
   report shows fewer than about 4 across the lip, `LEVEL2=14 npm run barrels:pool` reruns phase 2 one level finer (about
   5× the cost; phase 1 is reused).
 - **Stop and resume:** `npm run barrels:pool -- stop`, then `npm run barrels:pool` again; after a restart or crash just
-  run it again (10-minute checkpoints). One case only: `POOL_CASES=pool_barrel_small npm run barrels:pool`.
+  run it again (10-minute checkpoints). One case only: `POOL_CASES=pool_straight_small npm run barrels:pool`.
 - **Afterwards,** commit and push the case files and the report:
 
 ```
-git add public/barrels/periodic-pool-barrel-*.bin docs/research/pool-tube-runs
+git add public/barrels/periodic-pool-straight-*.bin docs/research/pool-tube-runs
 git commit -m "data(pool): the Wave Pool's Barrel tube runs at level 13"
 git push
 ```
