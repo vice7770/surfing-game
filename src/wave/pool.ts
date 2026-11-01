@@ -434,6 +434,13 @@ export const POOL_STRAIGHT = {
   startOut: { small: 18, big: 13.5 },
   /** The breaking age's gate along the crests (as the A-frame Barrel's and the Canyon's): the reef's start is a convex end. */
   ageJoin: 0.5,
+  /**
+   * A land barrier on the wrap column, `wrapWallWidth` m wide, from the beach out to z `wrapWallFrom` (0: none, the
+   * default): the walled pool's own side wall where the bores and currents are, which stops the along-shore current the
+   * wrap lets circulate behind the reef (the advisor's fix; the owner's call: it reflects the beach's waves at the −x wall).
+   */
+  wrapWallWidth: 0,
+  wrapWallFrom: -150,
 };
 
 /** Where the straight floor's platform begins, z, m. */
@@ -481,6 +488,8 @@ export function poolStraightDepth(x: number, z: number): number {
     const ramp = z <= foot ? p.feedDepth : r.platformDepth + ((edge - z) * (p.feedDepth - r.platformDepth)) / (edge - foot);
     return Math.min(ramp, beach);
   }
+  // The wrap's land barrier (none by default): the deck, from the beach out to `wrapWallFrom`.
+  if (r.wrapWallWidth > 0 && z > r.wrapWallFrom && Math.abs(x) >= p.alongShore / 2 - r.wrapWallWidth / 2) return -p.deck;
   const { s, n } = poolStraightFrame(x, z);
   const crest = poolStraightCrestDepth(s);
   let reef: number;

@@ -1,0 +1,1 @@
+pool barrel small seed 1: take-off (84.35822227524088, -195.5), default start 18 m out; starts 13 m out (2.66 m deep), 18 m out (3.10 m deep), 23 m out (3.68 m deep); t 20.0 s after the spin-up (58 s wall)

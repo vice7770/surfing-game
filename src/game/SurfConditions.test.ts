@@ -6,7 +6,7 @@ import {
   DEFAULT_CONDITIONS, DEFAULT_SPOT, PADANG_SWELLS, PADANG_TIDES, PADANG_WINDS, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings,
   nextBackdropSpot, physicalSettingsFor, poolBarrelSize, ridesAsPractice, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
 } from './SurfConditions';
-import { POOL_BARREL_EDGE_HEIGHT } from '../wave/pool';
+import { POOL_STRAIGHT_EDGE_HEIGHT } from '../wave/pool';
 import { readFileSync, readdirSync } from 'node:fs';
 import type { SizeRun } from '../wave/sizeReport';
 import { PRACTICE_SURF, SWELL_SURF, forecastSurf } from '../wave/surfForecast';
@@ -179,7 +179,7 @@ describe('surf conditions', () => {
     expect(training.poolWaves).toBeUndefined();
     expect(physicalSettingsFor('pool', { ...conditions, waves: 'training' }, water)).toEqual(training);
     expect(barrel).toMatchObject({ spot: 'pool', poolWaves: 'barrel', peakPeriod: training.peakPeriod, tide: 0, windSpeed: 0 });
-    expect(barrel.significantHeight).toBeCloseTo(Math.SQRT2 * POOL_BARREL_EDGE_HEIGHT.big, 12);
+    expect(barrel.significantHeight).toBeCloseTo(Math.SQRT2 * POOL_STRAIGHT_EDGE_HEIGHT.big, 12);
     expect(physicalSettingsFor('pool', { ...conditions, swell: 'small', waves: 'barrel' }, water).significantHeight).toBeLessThan(barrel.significantHeight);
     // Every other spot ignores it.
     expect(physicalSettingsFor('canyon', { ...conditions, waves: 'barrel' }, water)).toEqual(physicalSettingsFor('canyon', conditions, water));
