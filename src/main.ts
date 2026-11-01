@@ -94,6 +94,8 @@ const waterSheetRequested = devFlag('waterSheet');
 const particleBenchRequested = devFlag('particleBench');
 /** `?inpage&boardSprayStrip`: a dev tool films the boards' spray on the Wave Pool, frame by frame (src/dev/boardSprayStrip.ts). */
 const boardSprayStripRequested = devFlag('boardSprayStrip');
+/** `?inpage&duckDiveStrip`: a dev tool films a timed duck-dive at the Canyon or on a still sea (src/dev/duckDiveStrip.ts). */
+const duckDiveStripRequested = devFlag('duckDiveStrip');
 /** `?waterSheet&compute=gpu` (or `auto`, and the same on `?record`): the sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
 const devToolOnDevice = (waterSheetRequested || recordRequested) && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
@@ -312,7 +314,7 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     // The app shows the loading card whenever a scene builds.
     getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    if (!recordRequested && !waterSheetRequested && !particleBenchRequested && !boardSprayStripRequested) requestAnimationFrame(this.frame);
+    if (!recordRequested && !waterSheetRequested && !particleBenchRequested && !boardSprayStripRequested && !duckDiveStripRequested) requestAnimationFrame(this.frame);
   }
 
   /**
@@ -1282,6 +1284,7 @@ if (recordRequested && new URLSearchParams(window.location.search).get('pilot') 
 if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
 if (particleBenchRequested) void import('./dev/particleBench').then(({ runParticleBench }) => runParticleBench(game.recording));
 if (boardSprayStripRequested) void import('./dev/boardSprayStrip').then(({ boardSprayStrip }) => boardSprayStrip(game.recording));
+if (duckDiveStripRequested) void import('./dev/duckDiveStrip').then(({ duckDiveStrip }) => duckDiveStrip(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
@@ -1315,5 +1318,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
 }, { stick: () => settings.value.controls });
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);
