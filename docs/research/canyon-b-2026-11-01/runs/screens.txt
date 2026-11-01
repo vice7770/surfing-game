@@ -1,0 +1,34 @@
+Screens before the final design (frame-probe.ts, 12 periods). b0: the advisor's first bed (arm 40°, bowl 50–75 m, face 1:21). c4, c6: arm 32° and 26°. c8: 32°, bowl 55–80 m (adopted). f-*: c8 on more seeds and at Big, face 1:21. The final face is 1:18 (medium-s1/s2/s3, big-s1/s2 here). old-*: ?canyonBed=old.
+
+== b0-medium-s1
+canyon today medium seed 1, 12 periods (409 s); frames every 0.25 s; 
+into the bowl: 50 m in 3, 68 m in 2, 75 m in 2 of 15; +x: one travelling line reached 40 m from the peak in 6 of 15, the end (x -29) in 1; its end got median 37 m from the peak (90th 76), its visible peel median 49° (13 waves)
+plunging (median ξb ≥ 0.5) along the arm: 40 m (60–65, 65–70, 70–75, 75–80, 80–85, 85–90, 90–95, 95–100)
+== c4-medium-s1
+canyon today medium seed 1, 12 periods (468 s); frames every 0.25 s; bowlArmAngle=32
+into the bowl: 50 m in 4, 68 m in 3, 75 m in 1 of 15; +x: one travelling line reached 40 m from the peak in 8 of 15, the end (x -29) in 1; its end got median 44 m from the peak (90th 75), its visible peel median 41° (13 waves)
+plunging (median ξb ≥ 0.5) along the arm: 40 m (60–65, 65–70, 70–75, 75–80, 80–85, 85–90, 90–95, 95–100)
+== c6-medium-s1
+canyon today medium seed 1, 12 periods (468 s); frames every 0.25 s; bowlArmAngle=26
+into the bowl: 50 m in 5, 68 m in 2, 75 m in 1 of 15; +x: one travelling line reached 40 m from the peak in 9 of 15, the end (x -29) in 1; its end got median 49 m from the peak (90th 72), its visible peel median 39° (12 waves)
+plunging (median ξb ≥ 0.5) along the arm: 15 m (70–75, 90–95, 95–100)
+== c8-medium-s1
+canyon today medium seed 1, 12 periods (469 s); frames every 0.25 s; bowlArmAngle=32,bowlFrom=55,bowlEnd=80
+into the bowl: 55 m in 4, 73 m in 3, 80 m in 1 of 15; +x: one travelling line reached 40 m from the peak in 9 of 15, the end (x -24) in 1; its end got median 45 m from the peak (90th 80), its visible peel median 43° (13 waves)
+plunging (median ξb ≥ 0.5) along the arm: 40 m (65–70, 70–75, 75–80, 80–85, 85–90, 90–95, 95–100, 100–105)
+== f-medium-s2
+canyon today medium seed 2, 12 periods (926 s); frames every 0.25 s; 
+into the bowl: 55 m in 3, 73 m in 2, 80 m in 2 of 15; +x: one travelling line reached 40 m from the peak in 8 of 15, the end (x -24) in 1; its end got median 44 m from the peak (90th 81), its visible peel median 47° (11 waves)
+plunging (median ξb ≥ 0.5) along the arm: 20 m (85–90, 90–95, 95–100, 100–105)
+== f-medium-s3
+canyon today medium seed 3, 12 periods (996 s); frames every 0.25 s; 
+into the bowl: 55 m in 9, 73 m in 6, 80 m in 4 of 14; +x: one travelling line reached 40 m from the peak in 11 of 14, the end (x -24) in 4; its end got median 59 m from the peak (90th 104), its visible peel median 45° (11 waves)
+plunging (median ξb ≥ 0.5) along the arm: 10 m (95–100, 100–105)
+== f-big-s1
+canyon today big seed 1, 12 periods (1925 s); frames every 0.25 s; 
+into the bowl: 55 m in 7, 73 m in 5, 80 m in 5 of 15; +x: one travelling line reached 40 m from the peak in 12 of 15, the end (x -24) in 5; its end got median 54 m from the peak (90th 104), its visible peel median 48° (13 waves)
+plunging (median ξb ≥ 0.5) along the arm: 30 m (65–70, 70–75, 75–80, 80–85, 95–100, 100–105)
+== f-big-s2
+canyon today big seed 2, 12 periods (1968 s); frames every 0.25 s; 
+into the bowl: 55 m in 12, 73 m in 10, 80 m in 9 of 16; +x: one travelling line reached 40 m from the peak in 14 of 16, the end (x -24) in 6; its end got median 82 m from the peak (90th 104), its visible peel median 52° (15 waves)
+plunging (median ξb ≥ 0.5) along the arm: 40 m (65–70, 70–75, 75–80, 80–85, 85–90, 90–95, 95–100, 100–105)

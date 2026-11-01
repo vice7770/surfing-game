@@ -853,6 +853,13 @@ export function canyonReefTakeOff(config: SurfZoneConfig): { x: number; z: numbe
 }
 
 /**
+ * How far above version B's bowl platform (canyon-b) its waves are taken to break, m, where the sea would break them deeper:
+ * on the face just past the knee, where the platform has carried them unbroken (the advisor; Mead & Black). The readout's
+ * bowl take-off (`canyonBowlTakeOff`) and the drawn curl's bowl columns (`SpillingCurlOptions.breakerDepthAt`).
+ */
+export const BOWL_FACE_BELOW_PLATFORM = 0.2;
+
+/**
  * Version B's reef bowl's take-off (canyon-b), where the readout reads its breaker: midway along the whole bowl, where its
  * bed first reaches the depth the default start's sets break at (`canyonTakeOffDepth`), no deeper than just above its
  * platform (Big's sets would read the bar's slope seaward of it; they break on the bowl's face, the advisor).
@@ -860,7 +867,7 @@ export function canyonReefTakeOff(config: SurfZoneConfig): { x: number; z: numbe
 export function canyonBowlTakeOff(config: SurfZoneConfig): { x: number; z: number } {
   const c = canyonShape(config.canyonBed);
   const x = c.upPeakX + 0.5 * (c.bowlFrom + c.bowlRamp + c.bowlEnd);
-  const target = Math.min(canyonTakeOffDepth(config.significantHeight, config.canyonBed), c.bowlPlatform - 0.2) + config.tide;
+  const target = Math.min(canyonTakeOffDepth(config.significantHeight, config.canyonBed), c.bowlPlatform - BOWL_FACE_BELOW_PLATFORM) + config.tide;
   return { x, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), x, target, config.tide) };
 }
 
@@ -1226,11 +1233,16 @@ export class SurfZoneSimulation {
       }
       if (config.spillingCurl !== false) {
         const breakerDepth = this.breakerDepth();
+        const canyon = this.canyonShape;
+        // Version B's bowl (canyon-b): its waves break on its face, so its columns' curls are sized there even when the sea
+        // would break them deeper (Big's, on the bar seaward of the platform).
+        const bowlDepth = Math.min(breakerDepth, canyon.bowlPlatform - BOWL_FACE_BELOW_PLATFORM + config.tide);
         this.curl = new SpillingCurl(this.solver, {
           breakerDepth, breakerHeight: BREAKER_INDEX * breakerDepth,
           // The overturn fits' H0/h0, as the plunging lip's: the incoming sea's height over the tank's offshore depth.
           nonlinearity: edgeHeight(config, tank.edgeDepth) / (tank.edgeDepth + config.tide),
           ...(config.curlLocal === false ? { local: false } : {}),
+          ...(config.spot === 'canyon' && canyon.bowl ? { breakerDepthAt: (x: number) => (canyonArmAt(x, canyon) ? bowlDepth : breakerDepth) } : {}),
         });
         this.drawnWhitewater = new Float64Array(this.solver.h.length);
       }

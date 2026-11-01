@@ -237,6 +237,12 @@ export interface SpillingCurlOptions {
    * (`?curlLocal=off`, the before).
    */
   local?: boolean;
+  /**
+   * The still depth a column's waves break in, m, at along-shore position x, where it differs from the sea's
+   * (`breakerDepth`): the Canyon's reef bowl (canyon-b), whose platform carries the waves unbroken to its face, so even
+   * Big's break on the face, not on the bar seaward of it. The sea's everywhere unless given.
+   */
+  breakerDepthAt?: (x: number) => number;
 }
 
 /**
@@ -348,9 +354,9 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.shapes = [];
     // Each column's bed along the waves' path (+z, the Canyon's straight crests) at the breaker depth: the gradient it
     // climbs (Mead & Black's band, as the reef break's), its overturn held to the span the advisor gave for the fan face.
-    const hb = options.breakerDepth;
     for (let column = 0; column < nx; column += 1) {
       const x = xCenters[column];
+      const hb = options.breakerDepthAt?.(x) ?? options.breakerDepth;
       let row = 0;
       while (row < nz - 1 && restLevel - bed[row * nx + column] > hb) row += 1;
       const z = zCenters[row];

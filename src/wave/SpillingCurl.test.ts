@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canyonArmAt } from './Bathymetry';
+import { CANYON, CANYON_BEACH, canyonArmAt } from './Bathymetry';
 import { overturn, overturnParameter, overturnSize } from './Overturn';
 import {
   BAND_LOOK_FIELD, BAND_LOOK_OLD, BAND_LOOK_STRIDE, CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, SpillingCurl, curlSize, curlStage,
@@ -481,17 +481,18 @@ describe('the spilling lip\'s splash', () => {
 
 describe('the spilling lip at the Canyon', () => {
   // The reef bed (2026-10-22): the span's steep end is the 1:23 face below the fan's hinge (1:30 and 0.35 H before), and the
-  // owner's call (Q24) lets Pick & Feddersen size the curl on it, so near the peak it stands 0.40 H high.
+  // owner's call (Q24) lets Pick & Feddersen size the curl on it, so near the peak it stands 0.40 H high. On the old layout
+  // (`?canyonBed=old`) since canyon-b (2026-11-01), whose reef is gone.
   it('stands its curl a quarter to two fifths of the wave high (0.2–0.40 H) along the arm, highest by the peak', () => {
     const simulation = new SurfZoneSimulation({
       spot: 'canyon', seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0,
-      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'old',
     }, 'warm');
     const curl = simulation.curl!;
     const { xCenters, nx } = simulation.solver;
     let arm = 0;
     for (let column = 0; column < nx; column += 1) {
-      if (!canyonArmAt(xCenters[column])) continue;
+      if (!canyonArmAt(xCenters[column], CANYON_BEACH)) continue;
       arm += 1;
       for (const height of [0.6, 1, 1.4]) {
         const share = curl.size(column, height).width / height;
@@ -510,12 +511,12 @@ describe('the spilling lip at the Canyon', () => {
   it('scales the curl with H: at Big (H 2.5 m) 0.83–0.99 m high, landing 1.9 m ahead, its lip 0.15–0.21 m thick', () => {
     const simulation = new SurfZoneSimulation({
       spot: 'canyon', seed: 1, significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: 150, tide: 0,
-      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'old',
     }, 'warm');
     const curl = simulation.curl!;
     const { xCenters, nx } = simulation.solver;
     for (let column = 0; column < nx; column += 1) {
-      if (!canyonArmAt(xCenters[column])) continue;
+      if (!canyonArmAt(xCenters[column], CANYON_BEACH)) continue;
       for (const [height, high, ahead, thick] of [[2.5, [0.82, 0.995], 1.88, [0.148, 0.211]], [1.3, [0.43, 0.52], 0.98, [0.077, 0.11]]] as const) {
         const size = curl.size(column, height);
         expect(size.width).toBeGreaterThanOrEqual(high[0]);
@@ -526,6 +527,33 @@ describe('the spilling lip at the Canyon', () => {
       }
       // Its touchdown comes later on a bigger wave: about 0.95 s at Big.
       expect(impactTime(2.5)).toBeCloseTo(0.95, 2);
+    }
+  });
+
+  // Version B (canyon-b, 2026-11-01): the up-coast peak's +x arm runs into a reef bowl. On the arm the curl is the bar's;
+  // over the whole bowl it stands 0.40 H at Medium and at Big, whose waves the platform carries unbroken to the face (sized
+  // at the sea's breaker depth, Big's would read the bar's 1:50 seaward of the platform).
+  it('stands the curl 0.40 H over version B\'s whole reef bowl at Medium and Big, about a quarter of H on the arm before it', () => {
+    for (const [significantHeight, peakPeriod] of [[1.4, 11], [2.4, 14]] as const) {
+      const simulation = new SurfZoneSimulation({
+        spot: 'canyon', seed: 1, significantHeight, peakPeriod, directionDegrees: 0, spreading: 150, tide: 0,
+        componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+      }, 'warm');
+      const curl = simulation.curl!;
+      const { xCenters, nx } = simulation.solver;
+      let whole = 0;
+      for (let column = 0; column < nx; column += 1) {
+        const u = xCenters[column] - CANYON.upPeakX;
+        if (u >= CANYON.bowlFrom + CANYON.bowlRamp + 5 && u <= CANYON.bowlEnd) {
+          whole += 1;
+          expect(curl.size(column, 1).width).toBeGreaterThan(0.39);
+        }
+        if (u >= 25 && u <= CANYON.bowlFrom - 5) {
+          expect(curl.size(column, 1).width).toBeGreaterThan(0.2);
+          expect(curl.size(column, 1).width).toBeLessThan(0.27);
+        }
+      }
+      expect(whole).toBeGreaterThan(8);
     }
   });
 });

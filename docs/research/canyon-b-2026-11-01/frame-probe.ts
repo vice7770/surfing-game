@@ -1,8 +1,9 @@
 /**
  * canyon-b (2026-11-01): canyon-beach-break's frame probe, with version B's regions (no reef; the upcoast peak's region runs
- * on along its +x arm into the bowl, `CanyonBar.plusReach`; the bowl's own), the +x line's reach into the bowl (50, 67 and
- * 75 m from the tip: where it ramps in, its middle, its end), and each column's onsets' shape along that arm, binned by
- * distance from the tip: the depth, the wave's height, the face's steepest slope and the bed's along +z, and ξb (`--bins`).
+ * on along its +x arm into the bowl, `CanyonBar.plusReach`; the bowl's own), the +x line's reach into the bowl (`bowlFrom`,
+ * the middle of the whole bowl and `bowlEnd` from the tip: 55, 72.5 and 80 m), and each column's onsets' shape along that
+ * arm, binned by distance from the tip: the depth, the wave's height, the face's steepest slope and the bed's along +z, and
+ * ξb (`--bins`).
  *
  * The breaking line as a player sees it, frame by frame (canyon-beach-break, 2026-10-23; wave only, no riders). The
  * owner: "the waves are not continuous; they break on the reef and that is that. The breaking line is not long, maybe a
