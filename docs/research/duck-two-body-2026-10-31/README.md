@@ -1,6 +1,6 @@
 # The two-body duck-dive (duck-two-body, 2026-10-31)
 
-The owner approved `docs/research/duck-dive-2026-10-31/two-body-plan.md`. This is the first checkpoint: steps 1–4 (the submerged board, the grip, the arm push and the knee, the hand-over and the hand-back). Steps 5–6 come next: the measurements under broken water are already here; the drawn dive and the online pose are still to do.
+The owner approved `docs/research/duck-dive-2026-10-31/two-body-plan.md`. Steps 1–4 (the submerged board, the grip, the arm push and the knee, the hand-over and the hand-back) merged as #176; the measurements under broken water (step 5) are here. Step 6, the drawn dive and the online pose, followed on 2026-11-01 (its section below), with a final Canyon re-run.
 
 This work was done on the M1 Air, on branch `claude/duck-two-body` from main at fef92d3b. It used headless probes and the duck-dive report; no SurfZoneRunner rider sessions ran in tests. Switch: `?duckBody=old` (online rooms use the default).
 
@@ -14,7 +14,7 @@ This work was done on the M1 Air, on branch `claude/duck-two-body` from main at 
 | The board kept through a 3 s hold from paddling speed | rolled over 1.1 s in | kept; lain on again within 6 s | met |
 | Canyon whitewater: the timed dive keeps the board clearly more often than on top | 6 % against 20 % | **100 % against 20 %** | met |
 | Early and late dives cost more than on time (Canyon) | not met | early 5.4 m, late 7.9 m, on time 4.6 m | met |
-| The drawn duck-dive reads right | — | step 6, next checkpoint | to do |
+| The drawn duck-dive reads right | the lying duck pose from the swimmer's parts: hands 0.77 m off the rails, legs 16 cm through the deck | step 6: on the rails, kneeling on the tail, nothing through the deck (strips) | met |
 
 **Canyon whitewater:** seeds 2–4, the same as the duck-dive-l3 README's, 14 episodes.
 - The timed dive is set back 4.6 m against 15.5 m on top, keeping the board in every meeting, at 0.93 m deep.
@@ -71,6 +71,73 @@ This work was done on the M1 Air, on branch `claude/duck-two-body` from main at 
   Not so within 6 s, the swimmer holds the board as after a fall (`BoardRecovery`).
 - **Breath.** Ducked under, the body holds its breath: about a sixth of it in a long dive, refilled once back on the board.
 
+## Step 6: the drawn dive (duck-drawn, 2026-11-01)
+
+Branch `claude/duck-drawn` from main at 02ae066e. Switch: `?duckDrawn=old` draws the same physics as main drew it.
+
+**What was wrong.** While ducking, the snapshot's points are the swimmer's own parts. The arms' and legs' parts are the
+limbs' middles. Main drew the lying pose's duck from them as though they were hands and feet:
+- the hands up to 0.77 m off the rails;
+- the legs folded 16 cm through the deck.
+
+**What the rig draws now** (`HumanoidRig`'s `DIVE_DRAWN`):
+- **A flag.** The snapshot's swim field carries `SWIM_BITS.ducking` while the session ducks.
+- **The hands** hold the rails where the physics' grips are (`DuckingBody.gripPoint`), by the drawn press, within the
+  arm's reach.
+  - Each elbow's bend is carried on round its arm from the last frame (`keepElbow`, as a fallen arm's). Whichever way
+    a fixed pole points, an arm reaching its rail from some side lies along it, and the elbow went over in a frame.
+- **The trunk** is the physics' own. The chest faces square to the spine and the board's across: the deck while the
+  spine lies along the board, the tail as the head goes down.
+- **The legs** are drawn straight through their parts, as a fallen body's.
+  - The back leg kneels on the tail as its part comes onto the physics' knee point (`DUCK_BODY.kneeAt`). Its share is
+    read from that nearness, followed no faster than the knee's own 0.25 s.
+  - The knee sits on the deck within the thigh's reach of the hip; the shin lies back along the deck, 15° off it.
+- **In:** over the press's 0.35 s, from the lying pose as last drawn. The hands come in over the rail.
+- **Out:** the hand-back is drawn as a climb from the water (1.2 s). The feet, knees, elbows and facing start from the
+  dive's; the hands slide back along the rails.
+- **The page's layers.** `PointInertia` and `BodyInertia` read the dive in the world. The bones' layer takes nothing in
+  the dive, or the climb straight after it, for a jump: taken so, it held the arms 0.5 m off the rails as the chest
+  drew down to the hands.
+- **A physics fix.** `AttachedRider.climbFrom` turns the body with the board at once. Its own turn was the one it had
+  when it last rode, so the first step back on drew the parts turned by it: the legs 0.5 m out for a frame.
+
+**Online.** The duck-diving flag (wire flag 16) now carries the two-body dive whole. The others draw it from the seven
+points they already get, at no new bytes. The press is not sent, so another player's dive is drawn at full press
+(the grips 0.3 m ahead, the head tucked) until the hand-back.
+
+**Measured** (the body film's new `a duck-dive` scenario: paddling, a 1.5 s dive on flat water, back on; the page's
+posing):
+
+| | Main's drawing | Drawn as the dive |
+| --- | --- | --- |
+| A wrist off its rail, pressing | 0.77 m | under 1 cm (another player's 1 cm) |
+| Limbs through the deck while ducking | 16 cm | none (a knee's centre line at the deck's top; another player's elbow 2 cm into it for a moment) |
+| The back knee | — | 9–14 cm over the deck, 0.40–0.48 m behind the middle (the physics' knee point is 0.55 m) |
+| The fastest joint, 60 / 120 Hz | 27 / 86 m/s | 6.0 / 7.1 m/s |
+| A frame's spike over its neighbours, joints | 7.8 / 12.1 m/s | 4.4 / 4.9 m/s |
+| A frame's spike, bones | 16.6 / 21.6 rad/s | 12.9 / 14.6 rad/s |
+
+- **Reading the joints.** While ducking they are read about the hips, as a fall's (`FilmFrame.free`): the body is its
+  own there.
+- **Not within the falls' limits** (2 m/s, 6 rad/s). What spikes remains is the physics' own:
+  - the board kicked into a 17.6 rad/s roll for a step at 0.28 s by the balance's push at the rails (see Open);
+  - the body stopping against the board in a step as the hand-back joins them (an inelastic join).
+- The hand-overs are each under 4.9 m/s joint spikes (in) and 3.5 (out).
+
+**Strips** (`?inpage&duckDiveStrip`, `src/dev/duckDiveStrip.ts`): a 1.5 s dive on time (the broken water 2.5 m away) at
+the Canyon (Medium), and on a still sea. Frames 0–4 s into the dive, from behind, from the side, and from the side with
+the sea's surface hidden (x-ray: the body is under water and the water hides it):
+- `drawn/duck-dive-flat.jpg` and `drawn/duck-dive-canyon.jpg`;
+- the old pose of the same physics, `drawn/duck-dive-flat-old.jpg` and `drawn/duck-dive-canyon-old.jpg`;
+- the frames' depth, pitch, roll and press in `drawn/strip-log.txt`.
+
+What they show:
+- **Flat water:** the hands on the rails, the chest drawn down to them, the board nose-down, the knee on the tail and
+  the other leg trailing; back on at 3 s.
+- **The Canyon:** the whitewater passes over at 0.6–2 s. The body hangs on the board as the bore pitches it 36° nose-up
+  and rolls it 44°. At 4 s the pair is still under, 0.85 m deep.
+- **The old pose:** the arms flung past the nose, the legs folded through the board.
+
 ## Measured
 
 ### Flat water and the test bore
@@ -109,6 +176,12 @@ This work was done on the M1 Air, on branch `claude/duck-two-body` from main at 
 | dive on time, 15 m inside | 19 | 8.1 m | 5.3 to 15.7 m | 100 % | 0.92 m |
 
 The same seeds with the rigid rider (the duck-dive-l3 README): on time 6.6 m and 6 % kept; early 5.8 m and 13 %; late 11.6 m and 0 %.
+
+**The final re-run** (2026-11-01, on the merged code: main at 02ae066e with step 6). Seeds 2–4 again, as
+`canyon/final-seed2–4.json`. Every row is the same as above, to the centimetre: 14 episodes (8 abandoned).
+- **On top:** 12 of the 15 lost the board, a median 0.9 s after the whitewater reached them; 15 m inside, 9 of 19
+  (1.8 s).
+- **Diving:** no diver came off.
 - "Still with the board" counts a diver still ducking (holding the board under) 4 s after the whitewater reached them.
 - No diver lost the board in these meetings: the hands' pull stayed under their grip.
 
@@ -126,8 +199,32 @@ The same seeds with the rigid rider (the duck-dive-l3 README): on time 6.6 m and
 
 ## Open (the owner's calls)
 
-1. **The 50 L board** sinks nearly as deep as the reference (0.58 m against 0.61 m), though the arms and knee push 400 N against its 460 N net buoyancy. Not yet explained; possibly the body's weight in air over the deck early in the press (unverified).
-2. **Lying back on after a dive from paddling speed** takes 4–6 s. The pair levels and rises slowly with the body on it.
-3. **The plate for every submerged board** (falls, holds, climbs): measured to change the climb and the recovery animations. It waits for a climb that does not rest a rigid rider on a deep board.
-4. **The late dive under the analytic bore** (see Measured).
-5. **Step 6, the drawn dive:** today the page draws a prone rider in its duck pose from the press, the points from the swimmer's parts. The body following the board under needs the rig to draw the swimmer's pose while ducking, then strips from the chase and side cameras.
+1. **The 50 L board** sinks nearly as deep as the reference (0.58 m against 0.61 m), though the arms and knee push
+   400 N against its 460 N net buoyancy. Looked into on 2026-11-01 (report only, nothing tuned). The depth is not set
+   by the push against the buoyancy; it comes from how the ducking body is coupled to the board:
+   - **The water's net lift is small.** Traced through a 1.5 s dive from rest, the board's net vertical water force
+     is only 15–70 N for either board. Its buoyancy is 259 N (reference) or 503 N (50 L). The plate's pressure
+     (cross-flow drag), heave added mass and radiation take −200 to −1,100 N of it each step.
+   - **Why so much.** Each step, after the board's own water step, the ropes, press, knee and balance act on it as
+     impulses (`DuckingBody.step`). They leave it rising at 0.4–2.1 m/s while its depth holds steady (0.35–0.46 m).
+     The next water step's plate terms then take that speed out (the drag on 1.3 m/s over the plate is about 1 kN).
+   - **So the hold-down is the drag on a step-rate jolt,** whatever the board's volume, rather than the arms' 400 N.
+   - **The likely fix** (a physics change, not made): solve the grips, press and balance inside the board's substeps,
+     or as compliant springs, then re-check the 50 L board (the survey: practically un-diveable).
+2. **The board rattles in the dive** (new, seen drawing it). Through the press its roll rate flips sign every
+   2–3 steps:
+   - ±4–5°, 10–20 Hz; one 17.6 rad/s kick for a step 0.28 s in;
+   - 17 large flips in 0.9 s, 1 with the lateral balance switched off.
+   The balance's spring-damper pushes the body and, back, the board at the rails above its centre of mass, and its
+   roll-rate term feeds the light board's roll back into the push. Capping the damper at the step's reduced mass did
+   not help; a filtered roll rate rolled the pair over. It is the same family as item 1 (impulses after the board's
+   step) and wants the same fix. It shows on the drawn board and hands.
+3. **The hand-back is a stop.** The body joins the board in a step (an inelastic join) while still moving against it.
+   That stop is the drawn climb's largest spike (3.4 m/s at a joint). A hand-back gated on the body moving with the
+   board (0.3–0.8 m/s) delayed lying back on past the probe's window, so it was not kept.
+4. **Lying back on after a dive from paddling speed** takes 4–6 s. The pair levels and rises slowly with the body on it.
+5. **The plate for every submerged board** (falls, holds, climbs): measured to change the climb and the recovery
+   animations. It waits for a climb that does not rest a rigid rider on a deep board.
+6. **The late dive under the analytic bore** (see Measured).
+7. **Another player's press is not sent.** Their dive is drawn at full press until the hand-back. A byte would carry
+   it; the pose codec's flags are all used.
