@@ -25,8 +25,8 @@ the beach's last metres), and never from two sides. Each wave starts breaking at
 median 120 m of reef (to u ≈ 150) in about 18 s, then fades as the wave is spent. It plunges (lip jets on 90–100 % of
 onsets) from the take-off to about u 90, then turns to a spilling bore. The peel runs 8.5–10.4 m/s over the first 25 m
 past the take-off, then 6.5 (1.5 m) / 7.1 (1.8 m) m/s down the barrel section, a peel angle of about 67–72° (Walker's
-30° minimum met with room). The catch is the weak part: the best measured start catches 4 of 12 at 1.5 m, 2–8 of 12 at
-1.8 m (Training catches 10 of 12).
+30° minimum met with room). The catch is the weak part: the chosen start catches up to 4 of 12 at 1.5 m and 2–4 of 12 at
+1.8 m nose in (8 of 12 for one script angled 35° down the line); Training catches 10 of 12.
 
 ## The design and why (the water-physics advisor's layout; `docs/research/water-physics/consult-log.md`, top row)
 
@@ -123,7 +123,14 @@ Twelve waves per start, four scripts (good, early, late, lift). Counts are waves
 | 16 m | 0–4 (good, early, lift 4) | 0 (no cue) | 0 | 0 |
 | At s 75 instead: 6 / 11 / 16 m | 0 / 1–3 / 1–4 | 0–2 / 0 / 0 | 0–1 / 0 / 2–3 | — |
 
-CHOSEN_START_CATCH
+The check at the chosen starts, nose in (`runs/catch-*-chosen-h0.txt`, all fourteen scripts, the start ±5 m):
+
+| | 5 m nearer | the chosen start | 5 m further out |
+|---|---|---|---|
+| 1.5 m (18 m out, 3.1 m deep) | 0–4 (good 3, early 2, late 0, lift 3; share70 4) | 0–4 (good 4, early 4, late 0, lift 4) | 0 (no cue on 10–12) |
+| 1.8 m (13.5 m out, 3.1 m deep) | 0 (left on the crest or white water) | 0–4 (good 3, early 3, late 2, lift 3; steep 4) | 0 |
+
+The chosen starts are the best of the three at both sizes.
 
 Most misses are "left on the crest": the rider pops but the wave goes on without them, because on this reef the wave
 reaches the rider moving along the reef as well as in, and its face under a rider who waits nose to the beach is
@@ -136,18 +143,24 @@ item for the owner's play: whether a player who paddles angled down the line cat
 
 | | 1.5 m | 1.8 m | 1.8 m, wall on the wrap |
 |---|---|---|---|
-| finite, Froude caps | yes, 0 | yes, 0 | WALL_HEALTH |
-| fastest water | 6.40 m/s | 6.98 m/s | WALL_FAST |
-| volume drift | 0.17 % | 0.24 % | WALL_VOLUME |
-| least water on the reef top | 0.17 m | 0.10 m | WALL_TOP |
-| mean along-shore current behind the reef (z −100…−45), last 100 s | — | −0.33 m/s | WALL_CURRENT |
+| finite, Froude caps | yes, 0 | yes, 0 | yes |
+| fastest water | 6.40 m/s | 6.98 m/s | 11.3 m/s |
+| volume drift | 0.17 % | 0.24 % | 0.03 % |
+| least water on the reef top | 0.17 m | 0.10 m | 0.12 m |
+| mean along-shore current behind the reef (z −100…−45), last 100 s | — | −0.33 m/s | +0.03 m/s (−0.15 at most) |
 
 The periodic window lets the water the breaking waves push along the reef (S_xy, the advisor's 1.2–1.6 kN/m) circulate
 round the wrap, so a current builds behind the reef toward −x: −0.05 m/s at 100 s, −0.18 at 300 s, −0.26 at 450 s,
-−0.27 at 550 s and −0.33 m/s by 600 s, just past the advisor's 0.3 m/s bar. The waves themselves did not change over the
-600 s (start and reach above). The advisor's fix is a land barrier on the wrap column (the pool's real side wall where the
+−0.27 at 550 s and −0.33 m/s by 600 s, just past the advisor's 0.3 m/s bar. The start and the line held over the 600 s (above),
+but the meter over the whole run reads 1.67 m (sets 1.69) against 1.79 m over the first 12 periods: the faces at the
+take-off come down about 7 % as the current builds (inferred from the timing; not separated from the meter's window). The advisor's fix is a land barrier on the wrap column (the pool's real side wall where the
 bores and the current run); it is built as an option (`POOL_STRAIGHT.wrapWallWidth`, off by default) because it is the
-owner's call: it stops the current, but the beach's waves reflect off it at the −x side. WALL_SUMMARY
+owner's call: it stops the current, but the beach's waves reflect off it at the −x side.
+Measured with a 2 m wall from the beach out to z −150 (`runs/health-big-600s-wall.txt`, 600 s at 1.8 m): the current
+stays small (−0.07, −0.03, −0.12, −0.15, −0.03 m/s per 100 s, +0.03 at the end), but the waves get worse: the line's end
+median falls from u 152 to u 136 (u 150 on 11 of 57 waves against 42 of 59), the meter reads 2.08 m against 1.67 m over
+the same 600 s (likely the beach's waves reflecting off the wall; inferred), and the fastest water rises to 11.3 m/s against 7.0. So it
+stays off; the default is the plain periodic window, and the current is an open item for the owner's play.
 
 ## Cost (`../pool-barrel-2026-11-01/step-bench.ts`, `cost.txt`)
 
@@ -199,7 +212,8 @@ SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Rr]oller|[Bb]oard|[Rr
 
 ## Open items and risks
 
-1. **The catch** is poor next to Training's (best 4 / 12 at 1.5 m, 2–8 / 12 at 1.8 m depending on the script). The
+1. **The catch** is poor next to Training's (up to 4 / 12 at 1.5 m, 2–4 / 12 at 1.8 m nose in, 8 / 12 for one script
+   angled down the line). The
    owner's play decides whether angling down the line makes it fine; if not, the next physical lever is the face along
    the rider's paddling line at the take-off (a slightly steeper face or a shallower crest at s 30–50), not the size.
 2. **The plunging section** is the first ~50–60 m past the take-off (to u 90–100); after that the wave spills, and the
@@ -207,8 +221,9 @@ SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Rr]oller|[Bb]oard|[Rr
    stepping deeper along the reef, so the wave breaks later rather than spending itself), which is a new floor question
    for the advisor.
 3. **The tube** in the shallow-water fit is 0.6–0.85 m high, under the 1–1.2 m target; step 2 measures it properly.
-4. **The current behind the reef** reaches −0.33 m/s by 600 s; the wall on the wrap is built as an option, the owner's
-   call.
+4. **The current behind the reef** reaches −0.33 m/s by 600 s, and the take-off's faces come down about 7 % over that
+   time. The wall on the wrap (built as an option, off) stops the current but shortens the line and adds fast water, so
+   it stays off; the owner's play decides whether the current matters.
 5. **The GPU** cannot run periodic sides; the straight Barrel is CPU-only (4–8 % over Training's CPU cost on the M1). A
    device path for cyclic solves would be its own job.
 6. **The reef top** keeps 0.10–0.17 m of water at the least (the advisor's bar 0.2 m): it does not dry, but the inside

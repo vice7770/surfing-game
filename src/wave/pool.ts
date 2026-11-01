@@ -437,7 +437,9 @@ export const POOL_STRAIGHT = {
   /**
    * A land barrier on the wrap column, `wrapWallWidth` m wide, from the beach out to z `wrapWallFrom` (0: none, the
    * default): the walled pool's own side wall where the bores and currents are, which stops the along-shore current the
-   * wrap lets circulate behind the reef (the advisor's fix; the owner's call: it reflects the beach's waves at the −x wall).
+   * wrap lets circulate behind the reef (the advisor's fix). Measured at 1.8 m over 600 s with 2 m: the current stays
+   * under 0.15 m/s, but the line ends sooner (median u 136 against 152) and the fastest water reaches 11 m/s, so it is
+   * off (the owner's call; docs/research/pool-barrel-straight-2026-11-01).
    */
   wrapWallWidth: 0,
   wrapWallFrom: -150,
