@@ -518,12 +518,12 @@ class SurfGame {
     // sample moving through their step whatever `?surfaceMotion` says, the swim back to the board whatever `?swim` says,
     // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, and
     // the boards' spray and its curtains whatever `?boardSpray` and `?spraySheet` say, the duck-dive's two bodies whatever `?duckBody` says;
-    // and the cases' own tubes, whatever `?tubeShape` or `?canyonTube` say (the spot's own swept barrel: what a rider hits
-    // must match on every client).
+    // and the cases' own tubes, whatever `?tubeShape`, `?canyonTube`, `?poolTube` or `?poolCrash` say (the spot's own swept
+    // barrel and its crash: what a rider hits must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
+      sweptBarrel: undefined, sweptCrash: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,

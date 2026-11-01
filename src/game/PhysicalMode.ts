@@ -412,6 +412,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolAgeJoinSwitch() : {}),
     // `?poolBarrel=aframe`: the Wave Pool's Barrel on step 1's A-frame (pool-barrel, merged 2026-11-01), for A/Bs.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
+    // `?poolTube=off` / `?poolCrash=off`: the straight Barrel without its swept tube, or with it and the solver's own lip.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -486,6 +488,17 @@ export function poolAgeJoinSwitch(search?: string): { poolAgeJoin?: number } {
  */
 export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
   return devParam('poolBarrel', search)?.trim() === 'aframe' ? { poolBarrel: 'aframe' } : {};
+}
+
+/**
+ * The `?poolTube=off` and `?poolCrash=off` dev switches (`SurfZoneConfig.sweptBarrel`, `.sweptCrash`; pool-barrel-drawing,
+ * 2026-11-01): the Wave Pool's straight Barrel as merged before its tube was drawn (no swept barrel: the solver's white and
+ * its lip sheet), or with its tube drawn and felt but the solver's own lip throws in place of the tube's jets (the crash's
+ * A/B: the crash changes the pool's water). Nothing otherwise; online rooms run the default.
+ */
+export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCrash?: false } {
+  if (devParam('poolTube', search)?.trim().toLowerCase() === 'off') return { sweptBarrel: false };
+  return devParam('poolCrash', search)?.trim().toLowerCase() === 'off' ? { sweptCrash: false } : {};
 }
 
 /**
@@ -584,6 +597,23 @@ export function duckBodySwitch(search?: string): { duckBody?: 'old' } {
  */
 export function duckDrawnOld(search?: string): boolean {
   return devParam('duckDrawn', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?lipFoam=old` dev switch (pool-barrel-drawing, T3, 2026-11-01): the swept barrel's lifted water painted with the
+ * water's foam under it on a crest already white, and no landing white on its lip, as main drew it before T3 (the owner's
+ * option (a) of 2026-10-22), for A/Bs at every swept spot. Drawing only: each player's own view.
+ */
+export function lipFoamOld(search?: string): boolean {
+  return devParam('lipFoam', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?lipBack=old` dev switch (pool-barrel-drawing, 2026-11-01; Rich only): the swept barrel's lip shows the sky behind
+ * it by its underside's diffuse view everywhere, as before (the pale band from in front), not per view ray. Drawing only.
+ */
+export function lipBackOld(search?: string): boolean {
+  return devParam('lipBack', search)?.trim().toLowerCase() === 'old';
 }
 
 /**
@@ -893,8 +923,11 @@ export class PhysicalMode {
         const bytes = await barrelCaseBytes(spot);
         if (!bytes) throw new Error('No barrel case files');
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
-        return libraryFromBytes(bytes, this.config?.tubeShape);
+        return libraryFromBytes(bytes, this.config?.tubeShape, spot);
       }, view);
+      // `?lipFoam=old` and `?lipBack=old`: the curl's foam and the Rich lip's background as before pool-barrel-drawing.
+      if (lipFoamOld()) this.sweptBarrel.mesh.lipFoam = 'old';
+      if (lipBackOld()) this.sweptBarrel.mesh.lipBack = 'old';
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept);
@@ -1279,7 +1312,7 @@ export class PhysicalMode {
     const spot = this.config?.spot;
     const bytes = spot && this.swept ? await barrelCaseBytes(spot) : undefined;
     if (!spot || !bytes || !this.sweptBarrel) return false;
-    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape));
+    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot));
     return true;
   }
 

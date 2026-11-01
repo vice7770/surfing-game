@@ -17,7 +17,7 @@ function quad(): LoftResult {
     sliceOverturned: new Uint8Array(2), sliceTipAlong: new Float32Array(2), sliceTipUp: new Float32Array(2), sliceAnchorVX: new Float32Array(2),
     sliceTipTransportAlong: new Float32Array(2), sliceTipTransportUp: new Float32Array(2),
     sliceAnchorVZ: new Float32Array(2), sliceFormed: new Float32Array(2), sliceTipX: new Float32Array(2), sliceTipY: new Float32Array(2),
-    sliceTipZ: new Float32Array(2), sliceMouth: new Float32Array(2),
+    sliceTipZ: new Float32Array(2), sliceMouth: new Float32Array(2), sliceStretch: new Float32Array(2).fill(1), sliceAfter: new Float32Array(2).fill(-1),
   };
 }
 

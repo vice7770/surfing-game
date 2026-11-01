@@ -37,13 +37,13 @@ export class SweptBarrel {
   private drawn?: {
     loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
     look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
-    brokenFoam: boolean;
+    brokenFoam: boolean; lipFoam: 'carried' | 'old';
   };
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`). */
   constructor(
     private readonly water: WaterSurface,
-    private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot)),
+    private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot), undefined, undefined, spot),
     view?: SweptBarrelView,
   ) {
     this.mesh = new SweptBarrelMesh(water.materialUniforms, view);
@@ -124,7 +124,8 @@ export class SweptBarrel {
     const was = this.drawn;
     if (revision !== undefined && was?.revision === revision && was.loft === this.loft && was.surfaceRevision === water.surfaceRevision && was.front === front
       && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
-      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut && was.brokenFoam === mesh.brokenFoam) {
+      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut && was.brokenFoam === mesh.brokenFoam
+      && was.lipFoam === mesh.lipFoam) {
       mesh.syncScreenFallback();
       return;
     }
@@ -139,14 +140,15 @@ export class SweptBarrel {
       this.look = look;
       this.mesh.setLook(look);
     }
-    // The solver's foam on each slice's crest, as drawn: a crest already white keeps it on its curl (drawing only).
+    // The solver's foam on each slice's crest, as drawn: a crest already white keeps it on its curl, carried onto its lip
+    // (T3; drawing only).
     const kept = this.broken.update(loft, (x, z) => sampleSurfaceFoam(surfaceData, grid, x, z));
-    this.mesh.update(loft, kept);
+    this.mesh.update(loft, kept, this.broken);
     this.lastLoft = loft;
     this.cameraWater.prepare(loft, ++this.cameraWaterRevision);
     this.drawn = {
       loft: this.loft, revision, surfaceRevision: water.surfaceRevision, front, count, stillLevel, look, maskGrid,
-      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut, brokenFoam: mesh.brokenFoam,
+      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut, brokenFoam: mesh.brokenFoam, lipFoam: mesh.lipFoam,
     };
   }
 

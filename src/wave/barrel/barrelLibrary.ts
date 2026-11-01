@@ -2,6 +2,7 @@ import type { SpotName } from '../Bathymetry';
 import { BARREL_CASES } from './barrelLibraryIndex';
 import { decodeCase } from './profileFormat';
 import { ProfileLibrary } from './ProfileLibrary';
+import { BARREL_SPOTS } from './barrelSpots';
 
 /** One case in the generated index: the spot whose transect it was run on, what it covers, and where its frames are (public/<asset>). */
 export interface BarrelCaseEntry {
@@ -34,8 +35,27 @@ export function barrelCaseNote(id: string): { drawn: false; note: string } | und
   return BARREL_CASE_NOTES[id.replace(/-l\d+$/, '')];
 }
 
-/** The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws. */
+/**
+ * The Wave Pool's straight Barrel's tube cases, by id (pool-barrel-drawing, T5: the pool loads only its own). Until the
+ * owner's level-13 runs on its reef land (`pool_straight_small` and `pool_straight_big`, step 2), a PROVISIONAL stand-in:
+ * the Canyon's `periodic-canyon23-a38-l13` alone, Froude-scaled by each slice's foot crest. The advisor's rule (2026-11-01):
+ * a stand-in must draw its breaker on the solver's face, within about 10 % of the surf meter's. At the foot crests the
+ * game's front measures on the face's knee (0.84 m at the 1.5 m faces, 1.08 m at 1.8 m) a38 draws 1.35–1.52 m and
+ * 1.74–1.96 m (the meter's 1.52 and 1.79 m), while Padang Padang's four cases on 1:19 draw 1.30–1.33 and 1.45–1.52 m, 13–19 %
+ * under it (the advisor picked them on inferred foot crests 40 % higher). a38 is level 13, periodic, over a submerged crest
+ * at 0.17 h0 (the pool's 0.2), on a gentler 1:23, so its void is longer (L/W 2.5–2.9 against Mead & Black's 1.8–2.2 here).
+ * When the real cases land, this is the one line to change, to their ids (`periodic-pool-straight-small-l13`,
+ * `periodic-pool-straight-big-l13`, as `npm run barrels` names them), and the pool reads them as one family by A0
+ * (`BarrelSpot.family`).
+ */
+export const POOL_TUBE_CASES: readonly string[] = ['periodic-canyon23-a38-l13'];
+
+/**
+ * The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws; the
+ * Wave Pool, its own list (`POOL_TUBE_CASES`).
+ */
 export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES): BarrelCaseEntry[] {
+  if (spot === 'pool') return cases.filter((entry) => POOL_TUBE_CASES.includes(entry.id));
   return cases.filter((entry) => entry.spot === spot && !barrelCaseNote(entry.id));
 }
 
@@ -72,9 +92,14 @@ export type TubeShape = 'basilisk' | 'bounded-C';
  */
 export const BOUNDED_C_CASES: readonly BarrelCaseEntry[] = BARREL_CASES.filter((entry) => entry.spot !== 'canyon');
 
-/** Case files decoded into one library, drawn as `shape` says (`TubeShape`). */
-export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk'): ProfileLibrary {
-  const cases = bytes.map(decodeCase);
+/**
+ * Case files decoded into one library, drawn as `shape` says (`TubeShape`). At a spot whose cases are one family
+ * (`BarrelSpot.family`: one floor at several sizes), every case takes the spot's slope, so a slice blends them by its A0
+ * alone; each case's own slope along its ray stays in its file and notes.
+ */
+export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk', spot?: SpotName): ProfileLibrary {
+  const family = spot !== undefined && BARREL_SPOTS[spot]?.family ? BARREL_SPOTS[spot]!.slope : undefined;
+  const cases = bytes.map(decodeCase).map((c) => (family === undefined ? c : { ...c, slope: family }));
   if (shape !== 'bounded-C') return new ProfileLibrary(cases);
   // The bounded provider's explicitly evaluated domain is the cases shipped with it. General fixtures stay raw.
   const eligible = cases.every((c) => BOUNDED_C_CASES.some((entry) => entry.id === c.id));
@@ -86,6 +111,7 @@ export async function loadBarrelLibrary(
   cases: readonly BarrelCaseEntry[] = BARREL_CASES,
   fetcher: typeof fetch = globalThis.fetch.bind(globalThis),
   shape: TubeShape = 'basilisk',
+  spot?: SpotName,
 ): Promise<ProfileLibrary> {
-  return libraryFromBytes(await loadBarrelCaseBytes(cases, fetcher), shape);
+  return libraryFromBytes(await loadBarrelCaseBytes(cases, fetcher), shape, spot);
 }

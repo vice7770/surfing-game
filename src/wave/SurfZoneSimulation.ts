@@ -16,7 +16,7 @@ import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type Tub
 import { SeaState } from './SeaState';
 import {
   POOL, POOL_BARREL, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolRiddenAt, poolSea, poolStraightBreakDepth,
-  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolWaves,
+  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolWaves,
 } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -348,7 +348,7 @@ export const SPILLING_CURL_FOAM_DECAY: FoamDecay = { dense: 3, residual: 6 };
  * Whether a sea draws the spilling lip: wherever its spilling front runs (no swept crash there: the Canyon's tubes leave
  * its spilling front, roller and curl as they were), unless the config says not.
  */
-export function spillingCurlOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront' | 'spillingCurl' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed'>): boolean {
+export function spillingCurlOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront' | 'spillingCurl' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): boolean {
   return spillingFrontOn(config) && config.spillingCurl !== false && !sweptCrashOn(config);
 }
 
@@ -364,14 +364,21 @@ export function spillingFrontOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingF
  * Canyon. A tube on the reef section is OK. The tube in the video isn't surfable; it's the same as Padang's. Leave the
  * reef section as it is and the tubing work for later"): its tube is the `?canyonTube=on` dev switch, its wiring kept.
  */
-export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
+export const SWEPT_BARREL: readonly SpotName[] = ['padang', 'pool'];
+
+/**
+ * The Wave Pool's floors whose barrel is swept (pool-barrel-drawing, 2026-11-01): the Barrel's straight reef, whose
+ * transect its tube cases stand for (`BARREL_SPOTS.pool`). Training and the Barrel's A-frame (`?poolBarrel=aframe`) never.
+ */
+export const SWEPT_POOL_FLOORS: readonly PoolFloor[] = ['straight'];
 
 /**
  * Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel
  * transect. At the Canyon, on either layout, only when the config asks (`?canyonTube=on`): its reef's tube as main ran
  * it from 2026-10-22 to canyon-beach-break, on the reef's columns alone (`advanceFront`).
  */
-export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'canyonBed'>): boolean {
+export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): boolean {
+  if (config.spot === 'pool' && !SWEPT_POOL_FLOORS.includes(poolFloorOf(config))) return false;
   return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
 }
 
@@ -379,7 +386,7 @@ export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel
  * Whether a swept sea's jets leave and land on the barrel's clock (the swept crash, PR 5): the config's say, else the
  * spot's (`BarrelSpot.crash`: off at the Canyon), else on. It needs the profile library as well (the constructor's).
  */
-export function sweptCrashOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed'>): boolean {
+export function sweptCrashOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): boolean {
   return sweptBarrelOn(config) && (config.sweptCrash ?? BARREL_SPOTS[config.spot]?.crash ?? true);
 }
 
@@ -1632,13 +1639,16 @@ export class SurfZoneSimulation {
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
     let count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
-    // The Canyon's tube is the reef's (`?canyonTube=on`): its beach peaks spill, so their crests never join its front.
+    // The Canyon's tube is the reef's (`?canyonTube=on`): its beach peaks spill, so their crests never join its front; the
+    // Wave Pool's straight reef's, on its reef alone (`BarrelSpot.frontAt`).
     const ridden = this.reefAt;
-    if (ridden) {
+    const at = BARREL_SPOTS[this.config.spot]?.frontAt;
+    if (ridden || at) {
       let kept = 0;
       for (let k = 0; k < count; k += 1) {
         const sample = this.crestSamples[k];
-        if (!ridden(sample.x)) continue;
+        if (ridden && !ridden(sample.x)) continue;
+        if (at && !at(sample.x, sample.z)) continue;
         this.crestSamples[k] = this.crestSamples[kept];
         this.crestSamples[kept] = sample;
         kept += 1;

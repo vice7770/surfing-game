@@ -1,0 +1,76 @@
+import { test } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+const W = '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/canyon-beach-break/';
+import { decodeCase } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/canyon-beach-break/src/wave/barrel/profileFormat';
+import { ProfileLibrary, PROFILE_POINTS, LANDMARK } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/canyon-beach-break/src/wave/barrel/ProfileLibrary';
+const OUT = '/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/poolprobe/';
+const F = 2 * PROFILE_POINTS;
+function dist(ax: number, ay: number, bx: number, by: number) { return Math.hypot(ax - bx, ay - by); }
+function segDist(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
+  const dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy; let t = l > 0 ? ((px - ax) * dx + (py - ay) * dy) / l : 0; t = Math.max(0, Math.min(1, t));
+  return dist(px, py, ax + t * dx, ay + t * dy);
+}
+function arc(p: ArrayLike<number>, a: number, b: number) { let s = 0; for (let i = a; i < b; i++) s += dist(p[2*i], p[2*i+1], p[2*i+2], p[2*i+3]); return s; }
+function measure(p: ArrayLike<number>) {
+  const x = (i: number) => p[2 * i], y = (i: number) => p[2 * i + 1];
+  const crestY = y(LANDMARK.crest);
+  let minY = Infinity; for (let i = LANDMARK.crest; i < PROFILE_POINTS; i++) minY = Math.min(minY, y(i));
+  const H = crestY - minY;
+  const th: number[] = [];
+  for (let i = 44; i <= 60; i++) { let m = Infinity; for (let j = 68; j < 88; j++) m = Math.min(m, segDist(x(i), y(i), x(j), y(j), x(j + 1), y(j + 1))); th.push(m); }
+  th.sort((a, b) => a - b);
+  let tip = Infinity; for (let i = 56; i <= 62; i++) for (let j = 66; j < 74; j++) tip = Math.min(tip, segDist(x(i), y(i), x(j), y(j), x(j + 1), y(j + 1)));
+  // void polygon 64..112 closed: area and second moments
+  let A = 0, cx = 0, cy = 0;
+  const n0 = 64, n1 = 112;
+  const idx: number[] = []; for (let i = n0; i <= n1; i++) idx.push(i);
+  for (let k = 0; k < idx.length; k++) { const i = idx[k], j = idx[(k + 1) % idx.length]; const c = x(i) * y(j) - x(j) * y(i); A += c; cx += (x(i) + x(j)) * c; cy += (y(i) + y(j)) * c; }
+  A /= 2; cx /= 6 * A; cy /= 6 * A;
+  let Ixx = 0, Iyy = 0, Ixy = 0;
+  for (let k = 0; k < idx.length; k++) { const i = idx[k], j = idx[(k + 1) % idx.length]; const xi = x(i) - cx, yi = y(i) - cy, xj = x(j) - cx, yj = y(j) - cy; const c = xi * yj - xj * yi;
+    Ixx += (yi * yi + yi * yj + yj * yj) * c; Iyy += (xi * xi + xi * xj + xj * xj) * c; Ixy += (xi * yj + 2 * xi * yi + 2 * xj * yj + xj * yi) * c; }
+  Ixx /= 12; Iyy /= 12; Ixy /= 24;
+  // covariance of x is Iyy/A, of y Ixx/A, cross Ixy/A
+  const sxx = Iyy / A, syy = Ixx / A, sxy = Ixy / A;
+  const tr = sxx + syy, det = sxx * syy - sxy * sxy; const l1 = tr / 2 + Math.sqrt(Math.max(0, tr * tr / 4 - det)), l2 = tr / 2 - Math.sqrt(Math.max(0, tr * tr / 4 - det));
+  const ang = 0.5 * Math.atan2(2 * sxy, sxx - syy) * 180 / Math.PI; // major axis angle from +x (forward)
+  let vh = 0;
+  for (let i = 64; i <= 88; i++) {
+    const px = x(i), py = y(i); let best = NaN;
+    for (let k = 88; k < 127; k++) { const x0 = x(k), x1 = x(k + 1); if (x0 === x1 || (x0 - px) * (x1 - px) > 0) continue; const u = y(k) + (px - x0) / (x1 - x0) * (y(k + 1) - y(k)); if (u < py && !(u <= best)) best = u; }
+    if (best === best && py - best > vh) vh = py - best;
+  }
+  return { H, crestY, lip: th[Math.floor(th.length / 2)], tip, area: Math.abs(A), LW: Math.sqrt(l1 / Math.max(1e-12, l2)), tilt: -ang, vh, outer: arc(p, 32, 64), under: arc(p, 64, 88) };
+}
+function load(ids: string[]) { return ids.map((id) => decodeCase(new Uint8Array(readFileSync(W + 'public/barrels/' + id + '.bin')))); }
+test('pool', () => {
+  const rows: string[] = [];
+  const sets: [string, string[]][] = [
+    ['A pad19 family', ['periodic-padang19s-l12', 'pad19-a20-l12', 'pad19-a30-l12', 'pad19-a45-l12']],
+    ['a30 alone', ['pad19-a30-l12']],
+    ['a45 alone', ['pad19-a45-l12']],
+    ['D canyon a38 alone', ['periodic-canyon23-a38-l13']],
+    ['E point21 a30 alone', ['periodic-point21-a30-l12']],
+    ['F point family', ['periodic-point21-a15-l12', 'periodic-point21-a23-l12', 'periodic-point21-a30-l12']],
+  ];
+  for (const [name, ids] of sets) {
+    const cases = load(ids);
+    const lib = new ProfileLibrary(cases, {});
+    const slope = cases[0].slope;
+    const out = new Float32Array(F);
+    rows.push(`## ${name}`);
+    for (const foot of [1.10, 1.17, 1.25, 1.45, 1.51, 1.58]) {
+      const q = { slope, footHeight: foot, footDepth: 4.5 };
+      const t = lib.profileTimes(q);
+      const td = t.touchdownSeconds;
+      const l0 = lib.profileAt({ ...q, seconds: 0, hold: 'contact' }, out); const m0 = measure(out);
+      rows.push(` foot ${foot} m (A0 ${(foot/4.5).toFixed(3)}) scale ${t.scale.toFixed(2)} m${t.clamped ? ' clamped' : ''} case ${l0.caseId}: touchdown ${td.toFixed(2)} s clear ${t.clearSeconds.toFixed(2)} collapse ${t.collapseSeconds.toFixed(2)}; at tau0: crest ${m0.crestY.toFixed(2)} m, outer arc ${m0.outer.toFixed(2)} under arc ${m0.under.toFixed(2)}`);
+      for (const f of [-0.5, 0.3, 0.5, 0.8, 0.95, 1.0]) {
+        lib.profileAt({ ...q, seconds: f * td, hold: 'contact' }, out);
+        const m = measure(out);
+        rows.push(`   ${f.toFixed(2)} TD: H ${m.H.toFixed(2)} crest ${m.crestY.toFixed(2)} lip ${(m.lip/m.H).toFixed(3)} H (${m.lip.toFixed(2)} m) tip ${(m.tip/m.H).toFixed(3)} H void ${(m.area/m.H/m.H).toFixed(3)} H2 L/W ${m.LW.toFixed(2)} tilt ${m.tilt.toFixed(0)} vgap ${m.vh.toFixed(2)} m; outer arc ${m.outer.toFixed(2)} (x${(m.outer/m0.outer).toFixed(2)}) under ${m.under.toFixed(2)} (x${(m.under/Math.max(1e-6,m0.under)).toFixed(2)})`);
+      }
+    }
+  }
+  writeFileSync(OUT + 'straight.txt', rows.join('\n'));
+});

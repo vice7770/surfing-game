@@ -31,22 +31,74 @@ export function brokenWeight(foam: number): number {
 const AFTER_TOUCHDOWN = 2;
 
 /**
- * Each drawn slice's share of the solver's foam kept on its lifted water (`BROKEN_CREST`), drawing only.
+ * The foam a drawn curl carries on its lifted water (T3; the water-physics advisor's rulings, 2026-11-01, amending the
+ * owner's option (a); docs/research/pool-barrel-drawing-2026-11-01):
+ * - `cap`: before touchdown the lip's sheet carries at most this much foam, eased in by its weight as a sheet from the
+ *   crest and the throat. Lips are laminar until touchdown (Mostert et al. 2022): they carry only the foam their crest
+ *   had, stretched into streaks that read near 0.10 against fresh foam's 0.41 (Koepke 1984, the knowledge base's foam
+ *   notes), so the lip stays translucent and backlit (the bright edge): its sheet light and glow keep at least 70 %;
+ * - `flash`, s: after touchdown the tip turns white within this (the flash the owner approved), and the white sweeps back
+ *   up the lip to the crest, and down its underside to the throat, over the tube's collapse √(2W/g) [inferred];
+ * - `edge`: the sweep's soft edge, as a share of the run from the tip [inferred].
+ */
+export const LIP_FOAM = { cap: 0.3, flash: 0.15, edge: 0.15 } as const;
+
+const ramp = (value: number) => {
+  const t = Math.min(1, Math.max(0, value));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * The foam on one lifted profile point of a drawn slice, 0–1 (T3, `LIP_FOAM`): its crest's foam (`outer`) on the lip's
+ * outer surface from the crest to the tip, its face's (`face`) on the underside from the tip to the throat, both thinned
+ * by the surface's stretch since the throw (`stretch`, L(0)/L(τ) ≤ 1) and capped as a sheet (`sheetWeight`) until
+ * touchdown; the face's own on the back wall (throat to toe), neither thinned nor capped; behind the crest its crest's.
+ * From touchdown (`after` s, the collapse `collapse` s) the white of the landing sweeps over the lip and its underside
+ * from the tip. `point` is the profile's index (`LANDMARK`).
+ */
+export function lipFoamAt(
+  point: number, outer: number, face: number, stretch: number, sheetWeight: number, after: number, collapse: number,
+): number {
+  if (point < LANDMARK.crest) return outer;
+  if (point > LANDMARK.throat) return face;
+  const onLip = point <= LANDMARK.lip;
+  const carried = (onLip ? outer : face) * stretch;
+  if (!(after > 0)) return carried + sheetWeight * (Math.min(carried, LIP_FOAM.cap) - carried);
+  // The run from the tip: 0 at the tip, 1 at the crest (the outer surface) or the throat (the underside).
+  const run = onLip ? (LANDMARK.lip - point) / (LANDMARK.lip - LANDMARK.crest) : (point - LANDMARK.lip) / (LANDMARK.throat - LANDMARK.lip);
+  const reach = collapse > 0 ? after / collapse : 1;
+  const white = ramp(after / LIP_FOAM.flash) * (1 - ramp((run - reach) / LIP_FOAM.edge));
+  return Math.max(carried, white);
+}
+
+/**
+ * Each drawn slice's share of the solver's foam kept on its lifted water (`BROKEN_CREST`), drawing only; and the foam
+ * its lip carries (T3, `lipFoamAt`): the share times the foam its crest (`outer`) and its face (`face`) held when the slice
+ * was first drawn, or less if it holds less now (latched: the solver's onset whitewater, which leads the lip by up to 2 s,
+ * is not a laminar lip's; the advisor, 2026-11-01). Clean crests carry none.
  *
  * Before its touchdown a slice reads its crest and face now; after it, it keeps the last reading its place along its
  * front had, by front and metre of crest x (the front's points sit a column apart, so a slice's x stays put while its σ
  * may shift). A slice first seen past its touchdown (a front renumbered, or the page joining late) reads them now.
- * Places no slice drew this time are forgotten.
+ * Places no slice drew this time are forgotten, their latches with them.
  */
 export class BrokenCrests {
   /** Per slice, the share kept; as many as the loft has slices. */
   weights = new Float32Array(0);
-  private held = new Map<number, Map<number, number>>();
-  private next = new Map<number, Map<number, number>>();
+  /** Per slice, the foam its lip's outer surface carries (its crest's), and its underside and back wall (its face's). */
+  outer = new Float32Array(0);
+  face = new Float32Array(0);
+  private held = new Map<number, Map<number, Reading>>();
+  private next = new Map<number, Map<number, Reading>>();
 
   update(loft: LoftResult, foamAt: (x: number, z: number) => number): Float32Array {
     const { sliceCount } = loft;
-    if (this.weights.length < sliceCount) this.weights = new Float32Array(Math.max(sliceCount, 2 * this.weights.length));
+    if (this.weights.length < sliceCount) {
+      const size = Math.max(sliceCount, 2 * this.weights.length);
+      this.weights = new Float32Array(size);
+      this.outer = new Float32Array(size);
+      this.face = new Float32Array(size);
+    }
     const next = this.next;
     for (const places of next.values()) places.clear();
     for (let s = 0; s < sliceCount; s += 1) {
@@ -57,13 +109,26 @@ export class BrokenCrests {
       const faceZ = 0.5 * (z + loft.positions[profile + 3 * LANDMARK.toe + 2]);
       const front = loft.sliceFront[s];
       const place = Math.round(x);
-      const had = loft.slicePhase[s] === AFTER_TOUCHDOWN ? this.held.get(front)?.get(place) : undefined;
-      const weight = had ?? brokenWeight(Math.min(foamAt(x, z), foamAt(faceX, faceZ)));
+      const was = this.held.get(front)?.get(place);
+      const after = loft.slicePhase[s] === AFTER_TOUCHDOWN && was !== undefined;
+      const crestFoam = foamAt(x, z);
+      const faceFoam = foamAt(faceX, faceZ);
+      const weight = after ? was.weight : brokenWeight(Math.min(crestFoam, faceFoam));
+      const latchedCrest = was?.crest ?? crestFoam;
+      const latchedFace = was?.faceFoam ?? faceFoam;
+      const outer = after ? was.outer : weight * Math.min(latchedCrest, crestFoam);
+      const faceCarried = after ? was.face : weight * Math.min(latchedFace, faceFoam);
       this.weights[s] = weight;
+      this.outer[s] = outer;
+      this.face[s] = faceCarried;
       let places = next.get(front);
       if (!places) next.set(front, (places = new Map()));
-      // Two slices sharing a metre: it holds the whiter.
-      places.set(place, Math.max(places.get(place) ?? 0, weight));
+      // Two slices sharing a metre: it holds the whiter, and the first latch.
+      const shared = places.get(place);
+      places.set(place, shared ? {
+        weight: Math.max(shared.weight, weight), outer: Math.max(shared.outer, outer), face: Math.max(shared.face, faceCarried),
+        crest: shared.crest, faceFoam: shared.faceFoam,
+      } : { weight, outer, face: faceCarried, crest: latchedCrest, faceFoam: latchedFace });
     }
     for (const [front, places] of next) if (places.size === 0) next.delete(front);
     this.next = this.held;
@@ -76,4 +141,13 @@ export class BrokenCrests {
     this.held.clear();
     this.next.clear();
   }
+}
+
+/** A place's reading: the share kept and the lip's foam (held after touchdown), and the foam latched when first drawn. */
+interface Reading {
+  weight: number;
+  outer: number;
+  face: number;
+  crest: number;
+  faceFoam: number;
 }

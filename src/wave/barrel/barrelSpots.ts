@@ -2,6 +2,7 @@ import { CANYON, PADANG, REEF, type SpotName } from '../Bathymetry';
 import { GRAVITY } from '../dispersion';
 import type { FrontOptions } from './BreakingFront';
 import { PADANG_ONSET, type OnsetTables } from './sliceClock';
+import { poolStraightFrame } from '../pool';
 
 /**
  * How far over a reef's top its throw's floor sits, m: the pass's Gaussian tail lifts the flat's still depth by up to
@@ -61,6 +62,17 @@ export interface BarrelSpot {
    * front width, not a minimum open run. None: every piece draws (Padang Padang). Inferred, provisional.
    */
   tubeSpan?: number;
+  /**
+   * Its cases are one family: one floor run at several sizes, whose slopes along their rays differ only because a bigger
+   * wave breaks deeper on it (the Wave Pool's straight reef; the advisor, 2026-11-01). Each case takes the spot's slope in
+   * the library, so a slice blends them by its own A0 (`libraryFromBytes`).
+   */
+  family?: true;
+  /**
+   * Where its front follows crests, by the crest's place (x, z): elsewhere a crest is no barrel's (the Wave Pool's beach,
+   * whose shore break past the reef's ends would join on the band and draw tubes from the reef's cases). None: anywhere.
+   */
+  frontAt?: (x: number, z: number) => boolean;
 }
 
 /**
@@ -211,6 +223,63 @@ const CANYON_ONSET: OnsetTables = {
 };
 
 /**
+ * Where the Wave Pool's straight Barrel's front sizes its crests, m still depth: on the face's knee, in its rounding (the
+ * platform is 4.5 m), not at the platform's seaward edge 20–100 m out, where the crests on the plunging section stood 13–20 %
+ * lower than 10 m seaward of the knee (the join probe, pool-barrel-drawing; the advisor's 5 % rule, 2026-11-01). Inferred.
+ */
+export const POOL_FOOT_DEPTH = 4.4;
+
+/**
+ * The Wave Pool's straight Barrel's transect (pool-barrel-drawing, 2026-11-01; the water-physics advisor's rulings; all
+ * provisional until step 2's level-13 cases land): the 4.5 m platform up the reef's 1:9.5 face (1:18.7 along the ray at
+ * the 1.5 m faces, 1:21.6 at 1.8 m) to its 0.9 m crest.
+ * - **The band:** Padang Padang's 6–5 m at 7 m, scaled to the 4.5 m platform (3.86–3.21 m), 1.2 m deeper than the deepest
+ *   plunging onset (2.03 m).
+ * - **The join:** where the game's own 2D solver's white starts on the reef's plunging section (u 40–90), against the band
+ *   crest the front's own tracks read there, one row per machine height: the two sizes (1.05 and 1.32 m at the feed) and
+ *   the size sweep's 1.15, 1.27 and 1.4 m (docs/research/pool-barrel-straight-2026-11-01/runs, frame-*.txt and e2-*.txt:
+ *   each 10 m bin's median onset depth, strength over 0.3, the median over u 40–90; the band crests from the join probe,
+ *   docs/research/pool-barrel-drawing-2026-11-01). Not Kennedy's fresh onset (the advisor's first ruling): on this oblique
+ *   peel the white reaches a column along the crest before its own crest rises fresh, so fresh onsets fire on only 10–67 %
+ *   of the plunging section's columns, 0.3–0.8 m shallower than the white the player sees, and a tube thrown there would
+ *   trail the white line by 4–10 m (measured; the advisor to confirm).
+ * - **The throw:** at the join (zero lag) until step 2's Navier–Stokes vertical depths give a line through both cases, as
+ *   the Canyon's; with `joinPast` 3 H, a crest the solver breaks just past its depth joins and throws there rather than
+ *   being dropped as unbroken: the Canyon's and the Reef's 1.5 H joined 0.67–0.83 of the waves in each column of the
+ *   plunging section at 1.5 m faces and 0.17–0.5 past s 70 at 1.8 m; 3 H joins every wave there (measured; the white's
+ *   onset depth spreads 1.11–1.70 m at 1.5 m faces, p10–p90, so 1.5 H, 0.15 m of depth on the 1:12.4 face, misses its
+ *   shallower third).
+ */
+export const POOL_JOIN: OnsetTables['join'] = [
+  { period: 10, rows: [[0.76, 1.43], [0.82, 1.60], [0.88, 1.83], [0.89, 1.91], [0.92, 1.96]] },
+];
+const POOL_ONSET: OnsetTables = {
+  h0: POOL_FOOT_DEPTH,
+  band: [(6 / 7) * 4.5, (5 / 7) * 4.5],
+  join: POOL_JOIN,
+  throwDepth: { intercept: Number.POSITIVE_INFINITY, slope: 0, heights: [0, Number.POSITIVE_INFINITY] },
+};
+
+/**
+ * Where the Wave Pool's straight reef's front follows crests (the advisor, 2026-11-01): along the reef from `from` to
+ * `to` m of its length (s), and no further inside than `behind` m behind its crest line (n; its 6 m top and the slope down
+ * behind it), so the beach's shore break, past the reef's ends and inside it, is never the barrel's. `to` is where the
+ * reef stops plunging: the solver throws lip jets on under half its onsets from s 90–100 at both sizes
+ * (docs/research/pool-barrel-straight-2026-11-01, frame-*.txt), and past it its smaller waves break over the 0.9 m crest
+ * and spill, so a tube joined there late (`joinPast`) would draw on a spilling bore (measured: 0.17–0.33 of the waves at
+ * s 120–180 with the front to 205). The advisor's gate on the solver's own plunge test, by the floor's measured place:
+ * the throw's test does not run at a swept spot with the crash (`throwLip`). Its convex start whitens s 0–30 as one
+ * section.
+ */
+export const POOL_FRONT_REACH = { from: 20, to: 100, behind: 30 } as const;
+
+/** Whether a crest at (x, z) is on the Wave Pool's straight reef, as its front follows them (`POOL_FRONT_REACH`). */
+export function poolStraightFrontAt(x: number, z: number): boolean {
+  const { s, n } = poolStraightFrame(x, z);
+  return s >= POOL_FRONT_REACH.from && s <= POOL_FRONT_REACH.to && n >= -POOL_FRONT_REACH.behind;
+}
+
+/**
  * Every spot's barrel transect, where its cases are in the library. Padang Padang's is round 6's (the owner's 1:19 along
  * the path from the wedge's 7 m foot, read live for the design sweep); the Reef's, its shelf's 10 m and the ledge along
  * the swell's path. The Reef's fine zone starts at the shelf's edge, so its front follows crests from there.
@@ -230,5 +299,10 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   reef: {
     slope: 0.238095, get footDepth() { return REEF.shelfDepth; }, onset: REEF_ONSET, frontFrom: 'fine',
     front: { jumpReach: 10, joinPast: 1.5 },
+  },
+  // The Wave Pool's straight Barrel only (`sweptBarrelOn`): its 1.5 m case's 1:18.7 along the ray as the family's slope.
+  pool: {
+    slope: 1 / 18.7, footDepth: POOL_FOOT_DEPTH, onset: POOL_ONSET, frontFrom: 'fine',
+    front: { joinPast: 3 }, family: true, frontAt: poolStraightFrontAt,
   },
 };
