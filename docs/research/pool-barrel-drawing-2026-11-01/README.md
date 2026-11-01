@@ -21,18 +21,17 @@ advisor's consults are the consult log's rows of 2026-11-01 ("Pool Barrel drawin
 - **Checks:**
   - tsc (app and server) clean.
   - Main suite: 315 files, 3,008 tests passed (20 expected fails, 37 skipped).
-  - The SurfZoneSimulation subset `-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"` was running at the
-    last commit; its result goes here when it ends.
+  - SurfZoneSimulation subset `-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`: 35 passed and 1
+    stale (`SWEPT_BARREL` now includes the pool), fixed and passing on its own (6,186 s on the M1).
 - **Waiting on step 2:** the owner's level-13 pool cases (`periodic-pool-straight-*`) had not landed on origin at
   2026-11-01 evening.
 
 ## Next steps
 
-1. Finish the SurfZoneSimulation subset. Fix any stale pool test: the straight Barrel now runs the swept tube and its crash.
-2. When the pool cases land, follow "When the real pool cases land" below. The swap is one line (`POOL_TUBE_CASES`), then
+1. When the pool cases land, follow "When the real pool cases land" below. The swap is one line (`POOL_TUBE_CASES`), then
    the throw line, then a rerun of the probes.
-3. Ask the advisor to confirm the departures listed under "Open items" 3.
-4. The owner's look pass: the shot list at the end.
+2. Ask the advisor to confirm the departures listed under "Open items" 3.
+3. The owner's look pass: the shot list at the end.
 
 ## How to verify
 
@@ -301,7 +300,12 @@ All dev only; online rooms pin the sea's to the default.
 ## Tests
 
 - **Type-check:** `npx tsc --noEmit -p .` and the server's are clean.
-- **Main suite** and the SurfZoneSimulation subset: see the hand-back. No rider sessions were run.
+- **Main suite** (`npx vitest run src --maxWorkers=3`, without SurfZoneSimulation and SurfZoneRunner): 315 files passed, 31
+  skipped; 3,008 tests passed, 20 expected fails, 37 skipped (755 s).
+- **SurfZoneSimulation subset** (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): 35 passed and 1
+  failed, 68 skipped by the filter (6,186 s). The failure was stale: "runs on Padang Padang…" pinned `SWEPT_BARREL` to
+  `['padang']`. It now also checks the pool's floors and passes on its own.
+- No rider sessions were run.
 - **New and changed tests:**
   - `src/wave/barrel/poolTube.test.ts`: the pool's cases and family, its reef reach, its foot, band, zero lag and joins;
     the loft's stretch.

@@ -1628,8 +1628,13 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
     expect(simulation.exportState().front!.points.map((p) => p.sigma)).toEqual(after.map((p) => p.sigma));
   });
 
-  it('runs on Padang Padang, and on the Canyon only when asked (its default from 2026-10-22 to canyon-beach-break)', () => {
-    expect(SWEPT_BARREL).toEqual(['padang']);
+  it('runs on Padang Padang, on the Wave Pool’s straight Barrel, and on the Canyon only when asked (its default from 2026-10-22 to canyon-beach-break)', () => {
+    expect(SWEPT_BARREL).toEqual(['padang', 'pool']);
+    // The pool's straight Barrel only (pool-barrel-drawing): Training and the A-frame never, `?poolTube=off` off.
+    expect(new SurfZoneSimulation({ ...small, spot: 'pool', poolWaves: 'barrel' }, 'warm').front).toBeDefined();
+    expect(new SurfZoneSimulation({ ...small, spot: 'pool', poolWaves: 'barrel', sweptBarrel: false }, 'warm').front).toBeUndefined();
+    expect(new SurfZoneSimulation({ ...small, spot: 'pool' }, 'warm').front).toBeUndefined();
+    expect(new SurfZoneSimulation({ ...small, spot: 'pool', poolWaves: 'barrel', poolBarrel: 'aframe' }, 'warm').front).toBeUndefined();
     expect(new SurfZoneSimulation({ ...small, spot: 'beach' }, 'warm').front).toBeUndefined();
     expect(new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm').front).toBeUndefined();
     expect(new SurfZoneSimulation({ ...small, spot: 'canyon', sweptBarrel: true }, 'warm').front).toBeDefined();
