@@ -10,6 +10,44 @@ when the owner changed the Barrel from the A-frame to the straight reef, and res
 advisor's consults are the consult log's rows of 2026-11-01 ("Pool Barrel drawing"). The advisor's probes are in
 `advisor-probe/`, the run summaries in `runs/`, the stills in `stills/`. No rider sessions were run.
 
+## Where it stands
+
+- **Built and pushed** on `claude/pool-barrel-drawing`, rebased on main 9f4a9eb1. Nothing is merged.
+  - The straight Barrel's swept tube: a provisional a38 stand-in, its front on the reef's plunging section, crash on.
+  - T3, the lip's foam (every swept spot).
+  - The Rich lip's pale-band fix.
+  - The A/B switches.
+  - The tests.
+- **Checks:**
+  - tsc (app and server) clean.
+  - Main suite: 315 files, 3,008 tests passed (20 expected fails, 37 skipped).
+  - The SurfZoneSimulation subset `-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"` was running at the
+    last commit; its result goes here when it ends.
+- **Waiting on step 2:** the owner's level-13 pool cases (`periodic-pool-straight-*`) had not landed on origin at
+  2026-11-01 evening.
+
+## Next steps
+
+1. Finish the SurfZoneSimulation subset. Fix any stale pool test: the straight Barrel now runs the swept tube and its crash.
+2. When the pool cases land, follow "When the real pool cases land" below. The swap is one line (`POOL_TUBE_CASES`), then
+   the throw line, then a rerun of the probes.
+3. Ask the advisor to confirm the departures listed under "Open items" 3.
+4. The owner's look pass: the shot list at the end.
+
+## How to verify
+
+- **Types:** `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`.
+- **Unit tests:** `npx vitest run src/wave/barrel src/scene/barrel`.
+- **Probes** (opt-in; results in `runs/`):
+  - shape: `PROBE=1 TUBE_MODE=shape npx vitest run src/wave/probes/poolTube.probe.test.ts`;
+  - in game: `TUBE_MODE=front H=1.05` (or `H=1.32`);
+  - cost: `TUBE_MODE=cost`.
+- **Stills** (the water sheet, vite on a free port; a hidden pane is slow):
+  - `?inpage&waterSheet&spot=pool&swell=small&waves=barrel&compute=gpu&graphics=ultra`, then
+    `waterSheetGrid([{name:'ride',view:'curl-ride'},…], 'rich', ['midday'], arms)`;
+  - arms via `waterSheetBarrel.lipFoam` / `.lipBack` = `'old'`;
+  - lip against wall: `waterSheetCurlLuma('curl-front','rich','midday')`.
+
 ## In one paragraph
 
 The straight Barrel now draws and feels the swept tube on its reef's plunging section (its own front, crash on). It uses
