@@ -155,8 +155,8 @@ and Mead & Black's fits at each throw). Their size: W 0.70–0.72 m by L 1.35–
 
 |angle| p50 / p90, °, by band across shore from the take-off (seaward of it; its 30 m; inside to halfway to the waterline;
 the rest), over the whole window; then the edge chevron (2 |angle| at the open edges' stations) and the crests leaning
-opposite ways over the window's outer thirds ("two-sided", each past 5°). (These runs placed the take-off at z −199, the
-first fit's; the final take-off is at −176.5 and −190.5, so the bands sit 9–22 m further out than the game's.)
+opposite ways over the window's outer thirds ("two-sided", each past 5°). (These runs placed the take-off by the first fit, z −199 at 1.5 m and −205 at 1.8 m, against the
+final −176.5 and −190.5, so their bands sit 14–22 m further out than the game's.)
 
 | Band | 1.5 m: window | edge chevron −x / +x (p50 / p90) | two-sided | 1.8 m: window | edge chevron | two-sided | Training Medium: window | two-sided |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -300,7 +300,26 @@ breaking strength (FNV-1a), with the take-off, start and tank.
 
 ## Tests
 
-PENDING
+No rider sessions; the catch probe's riders run outside the tests.
+- `npx tsc --noEmit -p .` and the server's (`-p server/tsconfig.json`): clean.
+- The main suite (`npx vitest run src --maxWorkers=2 --exclude "**/SurfZoneSimulation.test.ts" --exclude
+  "**/SurfZoneRunner.test.ts"`): 314 files passed, 30 skipped; 2991 tests passed, 20 expected to fail, 36 skipped (712 s).
+  The files touched after it (the start and take-off keys) were run again: 9 files, 144 tests passed.
+- `SurfZoneSimulation.test.ts -t "[Pp]ool|[Bb]arrel|[Tt]ube|[Rr]oller|[Bb]oard|[Rr]ider"`: 20 passed, 84 skipped by the
+  filter (1316 s).
+- New tests:
+  - `pool.test.ts`: the Barrel floor mirrored; the same machine and zone with the plain feed at the zone's edge (no
+    ridges); the level platform continuous at its edge and the knee shoreward of it everywhere; the face's gradient square
+    to the crest line, the tip's, the crest along the arm and its shallowing to `outerCrestDepth`; the back-off into the
+    platform, level across the open edges; the lagoon, beach and deck; the breaking-age gate on the Barrel and not on
+    Training (`?poolAgeJoin=0` turning it off); the readout's plunging take-off; the take-off on the right arm at
+    `poolBarrelBreakDepth`, the ridden arm, the 6 m start against Training's 11, the sizes.
+  - `SurfScreen.test.ts`: the pool's Waves, Size and Time rows; Barrel's two sizes and their selection; the sea spots
+    never show Waves.
+  - `SurfConditions.test.ts`: the Barrel's forecast, sizes, machine heights and `poolWaves`; Training's settings unchanged
+    with or without `waves: 'training'`; other spots ignore it.
+  - `protocol.test.ts`: a room carries `waves`; a room without it parses as before (Training); an invalid one is refused.
+  - `roomSea.test.ts`: every player builds the Barrel floor for a Barrel room, Training for a room without waves.
 
 ## Risks and open items
 
