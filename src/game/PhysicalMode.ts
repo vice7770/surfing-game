@@ -587,6 +587,23 @@ export function duckDrawnOld(search?: string): boolean {
 }
 
 /**
+ * The `?lipFoam=old` dev switch (pool-barrel-drawing, T3, 2026-11-01): the swept barrel's lifted water painted with the
+ * water's foam under it on a crest already white, and no landing white on its lip, as main drew it before T3 (the owner's
+ * option (a) of 2026-10-22), for A/Bs at every swept spot. Drawing only: each player's own view.
+ */
+export function lipFoamOld(search?: string): boolean {
+  return devParam('lipFoam', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?lipBack=old` dev switch (pool-barrel-drawing, 2026-11-01; Rich only): the swept barrel's lip shows the sky behind
+ * it by its underside's diffuse view everywhere, as before (the pale band from in front), not per view ray. Drawing only.
+ */
+export function lipBackOld(search?: string): boolean {
+  return devParam('lipBack', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
  * The `?spraySheet=off` dev switch (`SurfZoneConfig.spraySheet`, spray-sheet 2026-10-30): the boards' spray leaves the
  * hull as drops, as before, in place of a curtain of water that tears into them a little way out.
  */
@@ -895,6 +912,9 @@ export class PhysicalMode {
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
         return libraryFromBytes(bytes, this.config?.tubeShape);
       }, view);
+      // `?lipFoam=old` and `?lipBack=old`: the curl's foam and the Rich lip's background as before pool-barrel-drawing.
+      if (lipFoamOld()) this.sweptBarrel.mesh.lipFoam = 'old';
+      if (lipBackOld()) this.sweptBarrel.mesh.lipBack = 'old';
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept);

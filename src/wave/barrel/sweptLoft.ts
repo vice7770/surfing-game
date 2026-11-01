@@ -69,6 +69,17 @@ export function endBlendLength(
   return Math.max(LOFT.endBlend, height);
 }
 
+/** A profile's arc from the crest to the lip's tip, in its own units. */
+export function crestToTip(profile: Float32Array): number {
+  let length = 0;
+  for (let i = LANDMARK.crest; i < LANDMARK.lip; i += 1) {
+    const dx = profile[2 * i + 2] - profile[2 * i];
+    const dy = profile[2 * i + 3] - profile[2 * i + 1];
+    length += Math.sqrt(dx * dx + dy * dy);
+  }
+  return length;
+}
+
 /** A front's end weight at σ: a smoothstep over each end's blend (`endBlendLength`), the lower of the two; 0 past an end. */
 export function endWeight(sigma: number, first: number, last: number, blendFirst: number, blendLast: number): number {
   const a = sigma - first;
@@ -202,6 +213,15 @@ export interface LoftResult {
   sliceTipY: Float32Array;
   sliceTipZ: Float32Array;
   sliceMouth: Float32Array;
+  /**
+   * Per slice, how far its lip's outer surface has stretched since its face went vertical, as L(0) / L(τ), L the profile's
+   * arc from the crest to the lip's tip (`LANDMARK.crest`–`LANDMARK.lip`), at most 1; 1 before the throw (T3, the
+   * water-physics advisor, 2026-11-01: the crest's foam, carried onto the lip, thins as its surface stretches). Drawn lofts
+   * only (1 in contact mode).
+   */
+  sliceStretch: Float32Array;
+  /** Per slice, s since its lip touched down (τ less its touchdown time; ≤ 0 before). */
+  sliceAfter: Float32Array;
 }
 
 export interface LoftOptions {
@@ -328,6 +348,8 @@ export class SweptLoft {
   private readonly velocity = new Float64Array(2);
   /** A slice's forward rest (`forwardRest`): its hold and end, m past the toe, and the climbs where it eases and at the toe. */
   private readonly rest = new Float64Array(4);
+  /** Scratch: a slice's profile at τ = 0, for its stretch (`stretchOf`). */
+  private readonly stretchProfile = new Float32Array(2 * PROFILE_POINTS);
   /** Per slice, its anchor (x, z) and its drawn profile's reach along its ray past its extensions, m: its footprint. */
   private readonly anchorX = new Float64Array(MAX_SLICES + 1);
   private readonly anchorZ = new Float64Array(MAX_SLICES + 1);
@@ -383,7 +405,7 @@ export class SweptLoft {
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
       sliceTipTransportAlong: new Float32Array(slices), sliceTipTransportUp: new Float32Array(slices),
       sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
-      sliceMouth: new Float32Array(slices),
+      sliceMouth: new Float32Array(slices), sliceStretch: new Float32Array(slices), sliceAfter: new Float32Array(slices),
     };
   }
 
@@ -409,6 +431,20 @@ export class SweptLoft {
       prepareRow: loft.prepareRow.bind(loft),
       prepareNormal: loft.prepareNormal.bind(loft),
     };
+  }
+
+  /**
+   * A slice's stretch (`LoftResult.sliceStretch`): its drawn profile's crest-to-tip arc against the same slice's at τ = 0
+   * (the query as it stands, its clock set to 0), at most 1.
+   */
+  private stretchOf(profile: Float32Array): number {
+    const query = this.query;
+    const seconds = query.seconds;
+    query.seconds = 0;
+    this.library.profileAt(query, this.stretchProfile);
+    query.seconds = seconds;
+    const now = crestToTip(profile);
+    return now > 0 ? Math.min(1, crestToTip(this.stretchProfile) / now) : 1;
   }
 
   /** Loft the records' fronts over the water (`heightAt`). */
@@ -1135,6 +1171,8 @@ export class SweptLoft {
       r.sliceLife[slice] = life;
       r.sliceCollapse[slice] = lookup.collapseSeconds;
       r.sliceFade[slice] = wFade;
+      r.sliceAfter[slice] = tau - touchdown;
+      r.sliceStretch[slice] = this.measureSheet && w > 0 && tau > 0 ? this.stretchOf(profile) : 1;
       r.sliceTipGap[slice] = tipGap;
       if (tipGap > r.tipGap) r.tipGap = tipGap;
       r.sliceRestHold[slice] = restHold;

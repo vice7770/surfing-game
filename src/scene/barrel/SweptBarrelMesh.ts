@@ -13,6 +13,7 @@ import { horizonHazeUniforms } from '../water/horizonHaze';
 import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
+import { lipFoamAt } from './brokenCrest';
 import { configureBarrelCoverage } from './barrelFallback';
 
 /** The most vertices, and triangle indices, a loft fills (its budget and one slice more). */
@@ -98,13 +99,36 @@ gl_FragColor = vec4( vSweptView * ( 0.45 + 0.55 * abs( normalize( normal ).z ) )
 const SWEPT_REGION_OUTPUT = /* glsl */ `#include <opaque_fragment>
 gl_FragColor = vec4( vSweptView, 1.0 );`;
 
+/** `sweptLift`'s whole part: the lift in these steps (its fraction is the lifted water's own foam, below 1). */
+export const SWEPT_LIFT_STEPS = 1023;
+/** The most foam `sweptLift`'s fraction holds: under 1 by more than a float's step at its largest whole part. */
+const LIP_FOAM_MAX = 0.998;
+
+/** `sweptLift` for a vertex lifted `lift` (0–1) whose lifted water carries `foam` (0–1). */
+export function packSweptLift(lift: number, foam: number): number {
+  return Math.round(Math.min(1, Math.max(0, lift)) * SWEPT_LIFT_STEPS) + Math.min(LIP_FOAM_MAX, Math.max(0, foam));
+}
+
+/** The barrel's foam composition: the water's lace only where the curl rests on the water (`vSweptLace`), a tint elsewhere. */
+function sweptFoam(foam: string): string {
+  const pattern = 'waterFoamPattern );';
+  if (!foam.includes(pattern)) throw new Error('The barrel foam composition has no lace pattern to weigh');
+  return foam.replace(pattern, 'waterFoamPattern * vSweptLace );');
+}
+
 // The loft's vertices are world positions and normals: the water's depth, foam and current are read where each lies.
 // The curl takes the water's foam only as far as it lies on the water: the solver breaks where the tube is, so its
 // roller's whitewater there is the tube's water, not foam on it; the tube's own foam comes with the crash curve (PR 5).
-// On a crest already white before its front started the curl keeps it (`brokenCrest.ts`): `sweptLift` is then the
-// lift less that share, so it weighs only the foam. The lip's thickness and its weight as a sheet come from the loft
-// (`sheetAcross`).
+// `sweptLift` packs two values (WebGL2's guaranteed 16 attributes: a 14th would leave the dev view one): its whole part,
+// the lift in thousandths (`SWEPT_LIFT_STEPS`), and its fraction, the foam the lifted water itself carries (T3,
+// `lipFoamAt`: a broken crest's foam carried onto its lip, thinned and capped until touchdown, then the landing's white).
+// The water's own foam weighs only where the vertex rests on it, and the lace only there (`sweptLipLace`); lifted water
+// takes its own foam as a plain tint. With `?lipFoam=old` the fraction is 0, the lift is less the share a slice on a
+// crest already white keeps (`brokenCrest.ts`, the owner's option (a)), and the lace lies over it all, as before T3.
+// The lip's thickness and its weight as a sheet come from the loft (`sheetAcross`).
 const sweptVertexPars = /* glsl */ `attribute float sweptLift;
+uniform float sweptLipLace;
+varying float vSweptLace;
 attribute float sweptMask;
 attribute float sweptSheet;
 attribute float sweptSheetWeight;
@@ -119,7 +143,10 @@ varying float vSweptWallDepth;
 varying vec3 vSweptWallNormal;`;
 const sweptBeginNormal = /* glsl */ `vec3 objectNormal = vec3( normal );
 vWaterDepth = max( 0.0, position.y - waterBedAt( position.xz ) );
-vWaterFoam = ( 1.0 - sweptLift ) * waterFoamAt( position.xz );
+float sweptLiftSteps = floor( sweptLift );
+float sweptLifted = sweptLiftSteps / ${SWEPT_LIFT_STEPS.toFixed(1)};
+vWaterFoam = ( 1.0 - sweptLifted ) * waterFoamAt( position.xz ) + sweptLifted * ( sweptLift - sweptLiftSteps );
+vSweptLace = 1.0 - sweptLipLace * sweptLifted;
 vWaterFlow = waterFlowAt( position.xz );
 vSweptMask = sweptMask;
 vSweptSheet = sweptSheet;
@@ -127,7 +154,8 @@ vSweptSheetWeight = sweptSheetWeight;
 vSweptSheetBack = sweptSheetBack;
 vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );
 vSweptWallNormal = sweptWallNormal;`;
-const sweptFragmentPars = /* glsl */ `varying float vSweptMask;
+const sweptFragmentPars = /* glsl */ `varying float vSweptLace;
+varying float vSweptMask;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -138,6 +166,7 @@ varying vec3 vSweptWallNormal;`;
  * column body at the throat's or the back wall's depth and normal) [provisional: a third of the way to the toe].
  */
 export const WALL_POINT = LANDMARK.throat + 8;
+
 
 /**
  * Rich's two-interface approximation: enter on the fragment normal, leave on the local opposite sheet normal.
@@ -172,15 +201,18 @@ export const RICH_SHEET_TRANSMISSION = /* glsl */ `
  * advisor, 2026-10-01) [provisional]. And the sun's crest light where it is behind, over its own path through the
  * sheet, t / |n·L| (at least 0.2). The height field's march is never run on the curl.
  */
-function sweptSheetBody(transmission = ''): string {
+function sweptSheetBody(transmission = '', perRay = false): string {
   const ray = transmission ? `\n    vec3 sweptSkyRay = -waterV;\n    float sweptSkyTransmission = 1.0;${transmission}` : '';
   const sky = transmission
     ? 'PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity'
     : 'getIBLIrradiance( -normal )';
-  const back = transmission
-    ? `float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;
+  const back = !transmission
+    ? 'vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;'
+    : perRay
+      ? `${RICH_SHEET_BACK_PER_RAY}
     vec3 sweptBack = sweptSkyShare * sweptSky + ( 1.0 - sweptSkyShare ) * sweptWall;`
-    : 'vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;';
+      : `float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;
+    vec3 sweptBack = sweptSkyShare * sweptSky + ( 1.0 - sweptSkyShare ) * sweptWall;`;
   return /* glsl */ `
     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
     vec3 sweptReach = exp( -waterAttenuation * sweptPath );
@@ -202,8 +234,33 @@ function sweptSheetBody(transmission = ''): string {
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
       sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * exp( -waterAttenuation * sweptSunPath ) );`;
 }
+/**
+ * What the Rich lip shows behind it, per view ray (the pale band's fix; the water-physics advisor, 2026-11-01): the sky
+ * only where the ray, having crossed the lip, leaves the tube (`sweptLeaves`, from the fragment, as the throat's
+ * reflections test it), the wall otherwise, weighed by the far surface's Fresnel transmission water to air, so the
+ * curtain fades to total internal reflection rather than switching off there. Before it, every point of the lip's outer
+ * surface took the underside's diffuse view of the sky (`sheetAcross`) and sampled the sky along the exit ray: from in
+ * front, level with the lip, that ray meets the back wall, yet the lip showed the horizon through 0.3–1 m of clear water,
+ * a pale band. The underside (the inner face's weight, `vSweptThroat.w`) keeps its far side's view of the sky: seen from
+ * inside or below, the lip's far side faces the sky, the bright lip surfers see.
+ */
+const RICH_SHEET_BACK_PER_RAY = /* glsl */ `float sweptExitCos = max( 0.0, -dot( sweptInside, sweptFarInwardN ) );
+    float sweptExitSin = ${WATER_IOR.toFixed(6)} * sqrt( max( 0.0, 1.0 - sweptExitCos * sweptExitCos ) );
+    float sweptExitT = 0.0;
+    if ( sweptSkyTransmission > 0.0 && sweptExitSin < 1.0 ) {
+      float sweptAirCos = sqrt( 1.0 - sweptExitSin * sweptExitSin );
+      float sweptRs = ( ${WATER_IOR.toFixed(6)} * sweptExitCos - sweptAirCos ) / ( ${WATER_IOR.toFixed(6)} * sweptExitCos + sweptAirCos );
+      float sweptRp = ( sweptAirCos - ${WATER_IOR.toFixed(6)} * sweptExitCos ) / ( sweptAirCos + ${WATER_IOR.toFixed(6)} * sweptExitCos );
+      sweptExitT = 1.0 - 0.5 * ( sweptRs * sweptRs + sweptRp * sweptRp );
+    }
+    vec2 sweptExitTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay.xy ), vSweptTube.y - vWaterWorld.y );
+    float sweptRayLeaves = sweptLeaves( sweptSkyRay, sweptExitTip ) ? 1.0 : 0.0;
+    float sweptSkyShare = mix( sweptRayLeaves, clamp( vSweptSheetBack, 0.0, 1.0 ), clamp( vSweptThroat.w, 0.0, 1.0 ) ) * sweptExitT;`;
+
 export const SWEPT_SHEET_BODY = sweptSheetBody();
 export const RICH_SHEET_BODY = sweptSheetBody(RICH_SHEET_TRANSMISSION);
+/** Rich's sheet with the background chosen per ray (`RICH_SHEET_BACK_PER_RAY`), the default; `?lipBack=old` draws `RICH_SHEET_BODY`. */
+export const RICH_SHEET_BODY_PER_RAY = sweptSheetBody(RICH_SHEET_TRANSMISSION, true);
 /** The sheet's mean entry and exit use geometric normals; surface ripples still shade its gloss. */
 export const RICH_SHEET_BODY_NORMAL = /* glsl */ `vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   vec3 sweptMeanN = normalize( ( vec4( nonPerturbedNormal, 0.0 ) * viewMatrix ).xyz );
@@ -343,6 +400,19 @@ export class SweptBarrelMesh {
    * draws the loft's own winding (the water sheet's before-and-after).
    */
   facesOut = true;
+  /**
+   * The foam a curl's lifted water carries (T3, `lipFoamAt`): 'carried', the default, its crest's and face's foam carried
+   * onto the lip, thinned, capped until touchdown, then the landing's white; 'old', the `?lipFoam=old` dev switch, the
+   * water's foam under each vertex on a crest already white (the owner's option (a), as main drew it before T3).
+   */
+  lipFoam: 'carried' | 'old' = 'carried';
+  /**
+   * Rich only: what the lip shows behind it (`RICH_SHEET_BACK_PER_RAY`): 'ray', the default, per view ray; 'old', the
+   * `?lipBack=old` dev switch, the underside's diffuse view of the sky everywhere (the pale band from in front).
+   */
+  private lipBackShown: 'ray' | 'old' = 'ray';
+  /** The mesh's own uniforms: whether the water's lace lies over lifted water (`?lipFoam=old`) or only where it rests. */
+  private readonly ownUniforms = { sweptLipLace: { value: 1 } };
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`); none draws it as the water. */
   constructor(private readonly uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
@@ -365,7 +435,7 @@ export class SweptBarrelMesh {
     const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
     configureBarrelCoverage(material);
     material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, uniforms);
+      Object.assign(shader.uniforms, uniforms, this.ownUniforms);
       const rich = this.look === 'rich';
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
@@ -379,9 +449,9 @@ export class SweptBarrelMesh {
         .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', rich
-          ? waterBodyFragment(false, true, RICH_FAR_FOAM, RICH_SHEET_BODY + RICH_LIP_GLOW)
+          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY : RICH_SHEET_BODY) + RICH_LIP_GLOW)
             .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
-          : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+          : waterBodyFragment(false, true, sweptFoam(CLASSIC_FOAM), SWEPT_SHEET_BODY))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>')
         // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
@@ -400,7 +470,7 @@ export class SweptBarrelMesh {
         .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
         .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
     };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
+    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.look === 'rich' && this.lipBackShown === 'old' ? '-lip-back-old' : ''}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
     onGlitterChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });
@@ -428,6 +498,17 @@ export class SweptBarrelMesh {
     this.mesh.material.needsUpdate = true;
   }
 
+  /** Rich only: what the lip shows behind it, per ray (the default) or as before (`?lipBack=old`); recompiles on a change. */
+  get lipBack(): 'ray' | 'old' {
+    return this.lipBackShown;
+  }
+
+  set lipBack(value: 'ray' | 'old') {
+    if (value === this.lipBackShown) return;
+    this.lipBackShown = value;
+    this.mesh.material.needsUpdate = true;
+  }
+
   /** Graphics setting (G8): shaded as the Classic water, or the Rich. */
   setLook(look: WaterLook): void {
     if (look === this.look) return;
@@ -444,9 +525,11 @@ export class SweptBarrelMesh {
 
   /**
    * Draw a loft's grid; none, or an empty one, hides the mesh. `kept`: per slice, the share of the solver's foam its
-   * lifted water keeps (`BrokenCrests`); none keeps none, as before.
+   * lifted water keeps (`BrokenCrests`); `lip`: per slice, the foam its lip's outer surface and its underside and back
+   * wall carry (`BrokenCrests.outer`, `.face`; T3). Without `lip`, or with `lipFoam` 'old', the lifted water keeps `kept`'s
+   * share of the water's foam under it, as before T3; with neither, none.
    */
-  update(loft: LoftResult | undefined, kept?: Float32Array): void {
+  update(loft: LoftResult | undefined, kept?: Float32Array, lip?: { outer: Float32Array; face: Float32Array }): void {
     if (!loft || loft.indexCount === 0) {
       this.mesh.visible = false;
       this.mesh.geometry.setDrawRange(0, 0);
@@ -457,12 +540,28 @@ export class SweptBarrelMesh {
     const indices = Math.min(loft.indexCount, INDICES);
     (this.positions.array as Float32Array).set(loft.positions.subarray(0, 3 * vertices));
     (this.normals.array as Float32Array).set(loft.normals.subarray(0, 3 * vertices));
-    // The foam's weight: the lift, less the share a slice on a broken crest keeps (`brokenCrest.ts`).
     const lift = this.lift.array as Float32Array;
-    if (kept && this.brokenFoam) {
-      for (let v = 0; v < vertices; v += 1) lift[v] = loft.lift[v] * (1 - kept[Math.floor(v / LOFT_SAMPLES)]);
+    const carried = this.lipFoam === 'carried';
+    this.ownUniforms.sweptLipLace.value = carried ? 1 : 0;
+    if (carried) {
+      // The lift, and the foam its lifted water carries (T3): none on a clean crest's lip before touchdown.
+      const own = lip && this.brokenFoam;
+      for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+        const outer = own ? lip.outer[s] : 0;
+        const face = own ? lip.face[s] : 0;
+        const [stretch, after, collapse] = [loft.sliceStretch[s], loft.sliceAfter[s], loft.sliceCollapse[s]];
+        for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
+          const v = s * LOFT_SAMPLES + j;
+          const point = j - LOFT.extensionSamples;
+          const foam = point < 0 || point >= PROFILE_POINTS ? 0 : lipFoamAt(point, outer, face, stretch, loft.sheetWeight[v], after, collapse);
+          lift[v] = packSweptLift(loft.lift[v], foam);
+        }
+      }
+    } else if (kept && this.brokenFoam) {
+      // As before T3: the foam's weight is the lift, less the share a slice on a broken crest keeps (`brokenCrest.ts`).
+      for (let v = 0; v < vertices; v += 1) lift[v] = packSweptLift(loft.lift[v] * (1 - kept[Math.floor(v / LOFT_SAMPLES)]), 0);
     } else {
-      lift.set(loft.lift.subarray(0, vertices));
+      for (let v = 0; v < vertices; v += 1) lift[v] = packSweptLift(loft.lift[v], 0);
     }
     (this.mask.array as Float32Array).set(loft.mask.subarray(0, vertices));
     (this.sheet.array as Float32Array).set(loft.sheet.subarray(0, vertices));
