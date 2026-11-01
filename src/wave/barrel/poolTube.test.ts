@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { POOL_STRAIGHT, poolStraightAt, poolStraightFrame } from '../pool';
 import { POOL_TUBE_CASES, barrelCasesFor, libraryFromBytes } from './barrelLibrary';
-import { BARREL_SPOTS, POOL_FRONT_REACH, poolStraightFrontAt } from './barrelSpots';
+import { BARREL_SPOTS, POOL_FOOT_DEPTH, POOL_FRONT_REACH, poolStraightFrontAt } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
@@ -14,8 +14,9 @@ describe('the Wave Pool’s straight Barrel tube', () => {
   it('loads only its own list of cases, provisional until step 2’s land, and reads them as one family by A0', () => {
     const entries = barrelCasesFor('pool');
     expect(entries.map((entry) => entry.id).sort()).toEqual([...POOL_TUBE_CASES].sort());
-    // Padang Padang loads its own as before, the pool's stand-ins among them.
-    expect(barrelCasesFor('padang').map((entry) => entry.id)).toEqual(expect.arrayContaining([...POOL_TUBE_CASES]));
+    // The stand-in is the Canyon's a38 (provisional); the Canyon's own list is unchanged.
+    expect(POOL_TUBE_CASES).toEqual(['periodic-canyon23-a38-l13']);
+    expect(barrelCasesFor('canyon').map((entry) => entry.id)).toContain('periodic-canyon23-a38-l13');
     const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
     // One family: every case takes the pool's slope, so a slice brackets them by its A0 alone.
     expect(new Set(library.cases.map((c) => c.slope))).toEqual(new Set([BARREL_SPOTS.pool!.slope]));
@@ -23,9 +24,10 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     // Their files keep their own slopes; the library without the spot does too.
     expect(readBarrelCases('pool').map((bytes) => decodeCase(bytes).slope)).toEqual(entries.map((entry) => entry.slope));
     expect(libraryFromBytes(readBarrelCases('pool')).cases.map((c) => c.slope)).toEqual(entries.map((entry) => entry.slope));
-    // The pool's 1.5 m faces' foot crest (A0 about 0.26 on its 4.5 m platform) blends a20 and a30.
-    const blend = library.frameBlend({ slope: BARREL_SLOPE.pool!, footHeight: 1.17, footDepth: 4.5, seconds: 0 }, {} as never);
-    expect([blend.lower.id, blend.upper.id]).toEqual(['pad19-a20-l12', 'pad19-a30-l12']);
+    // One case: a slice's foot crest scales it by Froude (h0 = η_foot / its A0), as the Canyon's.
+    const blend = library.frameBlend({ slope: BARREL_SLOPE.pool!, footHeight: 0.84, footDepth: 4.4, seconds: 0 }, {} as never);
+    expect([blend.lower.id, blend.upper.id]).toEqual(['periodic-canyon23-a38-l13', 'periodic-canyon23-a38-l13']);
+    expect(blend.scale).toBeCloseTo(0.84 / library.cases[0].nonlinearity, 9);
   });
 
   it('follows crests on its reef only: from s 20 to 205 along it and no further inside than 30 m behind its crest line', () => {
@@ -50,9 +52,11 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     expect(POOL_FRONT_REACH).toEqual({ from: 20, to: 205, behind: 30 });
   });
 
-  it('sizes its crests at the 4.5 m platform, reads them over 3.86–3.21 m and throws them where they join (zero lag)', () => {
+  it('sizes its crests on the face’s knee, reads them over 3.86–3.21 m and throws them where they join (zero lag)', () => {
     const pool = BARREL_SPOTS.pool!;
-    expect(pool.footDepth).toBe(POOL_STRAIGHT.platformDepth);
+    expect(pool.footDepth).toBe(POOL_FOOT_DEPTH);
+    expect(POOL_FOOT_DEPTH).toBeLessThan(POOL_STRAIGHT.platformDepth);
+    expect(POOL_FOOT_DEPTH).toBeGreaterThan(POOL_STRAIGHT.platformDepth - POOL_STRAIGHT.kneeRounding * POOL_STRAIGHT.gradient);
     expect(pool.frontFrom).toBe('fine');
     expect(pool.front).toEqual({ joinPast: 1.5 });
     expect(pool.crash).toBeUndefined();
@@ -72,7 +76,7 @@ describe('the loft’s stretch (T3)', () => {
   it('reads 1 before the throw and the crest-to-tip arc at τ = 0 over its own as the lip flies', () => {
     const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
     const loft = new SweptLoft(library, BARREL_SLOPE.pool!, { holdClearDrawing: true });
-    const query = { slope: BARREL_SLOPE.pool!, footHeight: 1.17, footDepth: 4.5 };
+    const query = { slope: BARREL_SLOPE.pool!, footHeight: 0.84, footDepth: 4.4 };
     const touchdown = library.profileTimes(query).touchdownSeconds;
     const profile = new Float32Array(2 * PROFILE_POINTS);
     library.profileAt({ ...query, seconds: 0 }, profile);
@@ -82,7 +86,7 @@ describe('the loft’s stretch (T3)', () => {
       for (let k = 0; k < 21; k += 1) {
         const o = k * FRONT_STRIDE;
         records[o + FRONT_FIELD.x] = k + 0.5; records[o + FRONT_FIELD.z] = -100; records[o + FRONT_FIELD.front] = 1; records[o + FRONT_FIELD.sigma] = k;
-        records[o + FRONT_FIELD.tau] = tau; records[o + FRONT_FIELD.footHeight] = 1.17; records[o + FRONT_FIELD.footDepth] = 4.5;
+        records[o + FRONT_FIELD.tau] = tau; records[o + FRONT_FIELD.footHeight] = 0.84; records[o + FRONT_FIELD.footDepth] = 4.4;
         records[o + FRONT_FIELD.throwZ] = tau >= 0 ? -100 : Number.NaN;
       }
       const result = loft.build(records, 21, 0, () => 0);

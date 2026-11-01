@@ -7,7 +7,7 @@ import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
 import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
-import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+import { RICH_LIP_GLOW, RICH_LIP_GLOW_GATED, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, packWallViews, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 import { hazeLandKey, hazeLandRoute } from '../water/hazeLand';
 
 /** The barrel's haze key in a look (the haze-land follow-up: Rich adds its route to the program's key). */
@@ -187,7 +187,15 @@ describe('the swept barrel’s mesh', () => {
       }
       // Behind the far side that sees no opening, the back wall as drawn: its column body at its depth, under its own light.
       expect(vertex).toContain('vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );');
-      expect(fragment).toContain('sweptWallLight += getIBLIrradiance( ( viewMatrix * vec4( sweptWallN, 0.0 ) ).xyz );');
+      if (look === 'classic') expect(fragment).toContain('sweptWallLight += getIBLIrradiance( ( viewMatrix * vec4( sweptWallN, 0.0 ) ).xyz );');
+      // Rich: lit as the drawn back wall is, the lip shading it (the pale band's fix): its views from the vertex.
+      else {
+        expect(fragment).toContain('vec3 sweptWallLight = sweptWallSky * sweptWallOwn + vSweptWallView.y * sweptWallThrough * sweptWallAbove + sweptWallSun * waterSunRadiance * sweptWallSunThrough;');
+        expect(vertex).toContain('vSweptWallView = vec3( sweptWallPacked - 2.0 * sweptWallLipSteps, sweptWallLipSteps / 255.0, sweptWallLeaves( waterSunDirection, sweptWallTip ) ? 1.0 : 0.0 );');
+        // The crest light's lobe narrowed and gated on the outer run, the glow gated there.
+        expect(fragment).toContain('pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 16.0 ) * mix( sweptSunBack, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) );');
+      }
+      expect(vertex).toContain('vSweptWallNormal = sweptWallNormal / length( sweptWallNormal );');
       expect(fragment).toContain('vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;');
       expect(fragment).toContain('float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );');
       // The height field's crest-light march never runs on the curl.
@@ -253,7 +261,18 @@ describe('the swept barrel’s mesh', () => {
     for (const j of [0, 40, LOFT_SAMPLES - 1]) {
       const o = 3 * (slice * LOFT_SAMPLES + j);
       expect(Array.from(wall.slice(o, o + 3))).toEqual(Array.from(loft.positions.slice(from, from + 3)));
-      expect(Array.from(normal.slice(o, o + 3))).toEqual(Array.from(loft.normals.slice(from, from + 3)));
+      // Its normal's length carries the wall point's views of the sky and the lip (`packWallViews`).
+      const scale = packWallViews(loft.throat[4 * (from / 3)], loft.throat[4 * (from / 3) + 1]);
+      expect(Array.from(normal.slice(o, o + 3))).toEqual(Array.from(loft.normals.slice(from, from + 3), (n) => Math.fround(n * scale)));
+    }
+  });
+
+  it('packs the wall point’s views into its normal’s length, as the vertex shader decodes them', () => {
+    for (const [sky, lip] of [[0, 0], [1, 0], [0.37, 0.42], [0.05, 1], [1, 1]]) {
+      const packed = Math.fround(packWallViews(sky, lip)) - 1;
+      const steps = Math.floor(0.5 * packed);
+      expect(packed - 2 * steps).toBeCloseTo(sky, 4);
+      expect(steps / 255).toBeCloseTo(Math.round(255 * lip) / 255, 9);
     }
   });
 
@@ -268,6 +287,9 @@ describe('the swept barrel’s mesh', () => {
     expect(old).toContain(RICH_SHEET_BODY);
     expect(old).toContain('float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;');
     expect(old).not.toContain('sweptLeaves( sweptSkyRay');
+    expect(old).toContain(RICH_LIP_GLOW);
+    expect(old).not.toContain('sweptSunIn');
+    expect(old).toContain('float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );');
     swept.lipBack = 'ray';
     expect(swept.mesh.material.customProgramCacheKey()).not.toContain('-lip-back-old');
     expect(compiled(swept.mesh.material).fragment).toContain(RICH_SHEET_BODY_PER_RAY);
@@ -286,11 +308,13 @@ describe('the swept barrel’s mesh', () => {
     const { vertex, fragment } = compiled(swept.mesh.material);
     for (const line of ['attribute vec4 sweptThroat;', 'vSweptThroat = sweptThroat;', 'vSweptTube = sweptTube;', 'vSweptRay = sweptRay;', 'attribute vec3 sweptExitNormal;', 'vSweptExitNormal = sweptExitNormal;']) expect(vertex).toContain(line);
     // The glow: the sun on the sheet's far side, through k = 8 times its thickness, on the water's absorption alone.
-    expect(fragment).toContain(RICH_LIP_GLOW);
+    expect(fragment).toContain(RICH_LIP_GLOW_GATED);
     expect(RICH_LIP_GLOW).toContain('max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance');
+    // On the outer run only where the sun reaches the sheet's far side (`sweptSunIn`); the underside keeps it.
+    expect(RICH_LIP_GLOW_GATED).toContain('* mix( sweptSunIn, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) ) * waterSunRadiance');
     expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 8.0 * vSweptSheet )`);
-    expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(RICH_SHEET_BODY_PER_RAY));
-    expect(fragment.indexOf(RICH_LIP_GLOW)).toBeLessThan(fragment.indexOf('float waterCover'));
+    expect(fragment.indexOf(RICH_LIP_GLOW_GATED)).toBeGreaterThan(fragment.indexOf(RICH_SHEET_BODY_PER_RAY));
+    expect(fragment.indexOf(RICH_LIP_GLOW_GATED)).toBeLessThan(fragment.indexOf('float waterCover'));
     // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;
     // the sun through the lip where its direction doesn't leave the tube, red first, and no glint.
     expect(fragment).toContain(RICH_THROAT);

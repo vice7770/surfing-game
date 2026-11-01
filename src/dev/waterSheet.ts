@@ -85,8 +85,11 @@ const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARA
 const BUOY = { height: Number(PARAMETERS.get('height')) || undefined, period: Number(PARAMETERS.get('period')) || undefined };
 /** Reef breaks: the sheet holds them on an open tube. */
 const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
-/** Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube. */
-const SWEPT_SPOT = SPOT === 'padang';
+/**
+ * Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube; so does the
+ * Wave Pool's straight Barrel (`&spot=pool&waves=barrel`, pool-barrel-drawing).
+ */
+const SWEPT_SPOT = SPOT === 'padang' || (SPOT === 'pool' && PARAMETERS.get('waves') === 'barrel' && PARAMETERS.get('poolBarrel') !== 'aframe');
 /** `&whitewater` (G9): hold on a collapsing tube's foam ball, and shoot its whitewater in place of the face and bore. */
 const WHITEWATER = PARAMETERS.has('whitewater');
 /** `&compute=gpu|auto`: the sea steps in the game's worker, on its GPU tier (main.ts leaves `inpage` for it); `cpu` in the page. */
@@ -194,6 +197,10 @@ function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
     { name: 'curl-front', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2), target: mouth },
     { name: 'curl-behind', eye: new Vector3(crest.x - rx * 9 + sx * 5, crest.y + 3, crest.z - rz * 9 + sz * 5), target: tip },
     { name: 'curl-inside', eye: inside, target: new Vector3(inside.x + sx * 8, inside.y, inside.z + sz * 8) },
+    // The ride camera's view (the tube from Basilisk, 2026-10-22): a rider's eye 8 m down the line toward the shoulder,
+    // 3 m in front of the toe (on the water ahead of the face, not inside the shoulder's) and 1.8 m over it, looking into
+    // the mouth.
+    { name: 'curl-ride', eye: new Vector3(toe.x + sx * 8 + rx * 3, toe.y + 1.8, toe.z + sz * 8 + rz * 3), target: mouth },
   ];
 }
 

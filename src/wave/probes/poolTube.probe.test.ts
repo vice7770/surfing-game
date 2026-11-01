@@ -3,8 +3,10 @@ import { performance } from 'node:perf_hooks';
 import { describe, it } from 'vitest';
 import { libraryFromBytes } from '../barrel/barrelLibrary';
 import { readBarrelCases } from '../barrel/nodeBarrelCases';
+import { BARREL_CASES } from '../barrel/barrelLibraryIndex';
 import { BARREL_SPOTS, POOL_JOIN } from '../barrel/barrelSpots';
 import type { CrestTrack } from '../barrel/BreakingFront';
+import { columnCrests, type CrestSample } from '../barrel/crestOnset';
 import { FRONT_CAPACITY, FRONT_PIECE, FRONT_STRIDE } from '../barrel/frontRecords';
 import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from '../barrel/ProfileLibrary';
 import { BARREL_SLOPE, LOFT, LOFT_SAMPLES, SweptLoft } from '../barrel/sweptLoft';
@@ -139,12 +141,14 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       const lines: string[] = ['library, foot crest (m) / foot depth (m), case: at 0.5 / 0.8 / 0.95 of touchdown, H (m), lip (H), tip (H), void (H²), L/W, tilt (°), air gap (m); touchdown s'];
       const sets: [string, ProfileLibrary, number, number[]][] = [
         ['Padang Padang (its four cases, 7 m foot)', libraryFromBytes(readBarrelCases('padang')), 7, [0.99, 1.4, 2.1, 3.15]],
-        ['the pool (provisional: Padang\'s four cases, 4.5 m foot)', libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool'), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
+        ['the pool on Padang Padang\'s four cases (the advisor\'s second pick, 4.5 m foot)', libraryFromBytes(readBarrelCases('padang'), 'basilisk', 'pool'), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
+        // The Canyon's a38 alone (the first stand-in, the advisor's A1 of 2026-11-01 on the A-frame), for comparison.
+        ['the pool on the Canyon\'s a38 alone (the provisional stand-in, 4.5 m foot)', libraryFromBytes(readBarrelCases(undefined, BARREL_CASES.filter((entry) => entry.id === 'periodic-canyon23-a38-l13'))), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
       ];
       for (const [name, lib, depth, feet] of sets) {
         lines.push(`## ${name}`);
         for (const footHeight of feet) {
-          const query = { slope: name.startsWith('Padang') ? 1 / 19 : BARREL_SLOPE.pool!, footHeight, footDepth: depth };
+          const query = { slope: name.startsWith('Padang') ? 1 / 19 : name.includes('a38') ? lib.cases[0].slope : BARREL_SLOPE.pool!, footHeight, footDepth: depth };
           const times = lib.profileTimes(query);
           const rows = [0.5, 0.8, 0.95].map((share) => {
             const lookup = lib.profileAt({ ...query, seconds: share * times.touchdownSeconds, hold: 'contact' }, out);
@@ -190,25 +194,29 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
     const t0 = Date.now();
 
     if (mode === 'join') {
-      // Per column, the wave its track belongs to: a new one when the track's z falls back seaward.
-      type Wave = { column: number; x: number; z0: number; z: number; foot: number; ref: number | null; fresh: number | null; freshS: number; knee: number; t: number };
-      const open = new Map<number, Wave>();
+      const samples: CrestSample[] = [];
+      // Per column, the waves its tracks belong to: a track continues the open wave in its column nearest it within 8 m
+      // (its crest moves under a metre a step), else starts one; a wave unseen for a second is done.
+      type Wave = { column: number; x: number; z0: number; z: number; foot: number; ref: number | null; fresh: number | null; broke: number | null; freshS: number; knee: number; t: number; seen: number };
+      const open = new Map<number, Wave[]>();
       const done: Wave[] = [];
       for (let n = 1; n <= steps; n += 1) {
         simulation.step(step);
         if (solver.time < settle) continue;
         const tracks = front['tracks'] as CrestTrack[];
+        // The crests as the front reads them, for each track's segment's breaking (the join's own test, strength > 0).
+        const count = columnCrests(solver, simulation.breaking, solver.rowBelow(simulation.tank.fineFrom), 0.25 * height, samples);
+        const byColumn = new Map<number, CrestSample[]>();
+        for (let k = 0; k < count; k += 1) (byColumn.get(samples[k].column) ?? byColumn.set(samples[k].column, []).get(samples[k].column)!).push(samples[k]);
         for (const track of tracks) {
           if (track.footHeight === null) continue;
           const x = solver.xCenters[track.column];
-          let wave = open.get(track.column);
-          if (wave && track.z < wave.z - 15) {
-            done.push(wave);
-            wave = undefined;
-          }
+          const list = open.get(track.column) ?? open.set(track.column, []).get(track.column)!;
+          let wave: Wave | undefined;
+          for (const candidate of list) if (Math.abs(candidate.z - track.z) < 8 && (!wave || Math.abs(candidate.z - track.z) < Math.abs(wave.z - track.z))) wave = candidate;
           if (!wave) {
-            wave = { column: track.column, x, z0: track.z, z: track.z, foot: track.footHeight, ref: null, fresh: null, freshS: Number.NaN, knee: Number.NaN, t: solver.time };
-            open.set(track.column, wave);
+            wave = { column: track.column, x, z0: track.z, z: track.z, foot: track.footHeight, ref: null, fresh: null, broke: null, freshS: Number.NaN, knee: Number.NaN, t: solver.time, seen: solver.time };
+            list.push(wave);
           }
           const { s, n: across } = poolStraightFrame(x, track.z);
           if (wave.knee !== wave.knee && across <= kneeN + 10) wave.knee = etaAt(track.column, track.z);
@@ -216,31 +224,44 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
             wave.fresh = track.fresh;
             wave.freshS = s;
           }
+          if (wave.broke === null && track.refHeight !== null) {
+            const sample = byColumn.get(track.column)?.find((candidate) => Math.abs(candidate.z - track.z) < 1.5);
+            if (sample && sample.strength > 0) wave.broke = sample.depth;
+          }
           wave.ref = track.refHeight;
           wave.z = track.z;
+          wave.seen = solver.time;
+        }
+        for (const [column, list] of open) {
+          const kept = list.filter((wave) => solver.time - wave.seen <= 1);
+          for (const wave of list) if (!kept.includes(wave)) done.push(wave);
+          open.set(column, kept);
         }
       }
-      done.push(...open.values());
+      for (const list of open.values()) done.push(...list);
       // Only waves first seen after the settle, on the reef (the front's own reach), sized at the platform.
       const waves = done.filter((w) => w.t > settle + 0.5 && w.ref !== null && BARREL_SPOTS.pool!.frontAt!(w.x, w.z));
       const lines = [`pool straight, H ${height} m at the feed (Hs ${regularSignificantHeight(height).toFixed(3)}), ${periods} periods after ${settle} s, ${((Date.now() - t0) / 1000).toFixed(0)} s wall; footDepth ${BARREL_SPOTS.pool!.footDepth}`];
       lines.push(`column-waves on the reef: ${waves.length}; with a fresh onset ${waves.filter((w) => w.fresh !== null).length}`);
       lines.push(`foot crest (sized at ${BARREL_SPOTS.pool!.footDepth} m) ${quantiles(waves.map((w) => w.foot))} m; the crest 10 m seaward of the knee ${quantiles(waves.filter((w) => w.knee === w.knee).map((w) => w.knee))} m; their ratio ${quantiles(waves.filter((w) => w.knee === w.knee).map((w) => w.foot / w.knee), 3)}`);
-      lines.push(`band crest ${quantiles(waves.map((w) => w.ref!))} m; fresh depth ${quantiles(waves.filter((w) => w.fresh !== null).map((w) => w.fresh!))} m`);
-      lines.push('by s (20 m bins): column-waves, fresh %, band crest p50, fresh depth p50, foot/knee p50');
+      lines.push(`band crest ${quantiles(waves.map((w) => w.ref!))} m; fresh depth ${quantiles(waves.filter((w) => w.fresh !== null).map((w) => w.fresh!))} m; first breaking (strength > 0 over its segment) ${quantiles(waves.filter((w) => w.broke !== null).map((w) => w.broke!))} m`);
+      lines.push('by s (20 m bins): column-waves, fresh %, band crest p50, fresh depth p50, foot/knee p50; breaking %, its depth p50');
       for (let s0 = 0; s0 < 220; s0 += 20) {
         const bin = waves.filter((w) => { const s = poolStraightFrame(w.x, w.z0).s; return s >= s0 && s < s0 + 20; });
         if (!bin.length) continue;
         const fresh = bin.filter((w) => w.fresh !== null);
-        lines.push(`  s ${s0}–${s0 + 20}: ${bin.length}, ${((100 * fresh.length) / bin.length).toFixed(0)} %, ${median(bin.map((w) => w.ref!)).toFixed(3)} m, ${median(fresh.map((w) => w.fresh!)).toFixed(2)} m, ${median(bin.filter((w) => w.knee === w.knee).map((w) => w.foot / w.knee)).toFixed(3)}`);
+        const broke = bin.filter((w) => w.broke !== null);
+        lines.push(`  s ${s0}–${s0 + 20}: ${bin.length}, ${((100 * fresh.length) / bin.length).toFixed(0)} %, ${median(bin.map((w) => w.ref!)).toFixed(3)} m, ${median(fresh.map((w) => w.fresh!)).toFixed(2)} m, ${median(bin.filter((w) => w.knee === w.knee).map((w) => w.foot / w.knee)).toFixed(3)}; ${((100 * broke.length) / bin.length).toFixed(0)} %, ${median(broke.map((w) => w.broke!)).toFixed(2)} m`);
       }
-      lines.push('by band crest (0.05 m bins): column-waves, fresh %, fresh depth p50 (p25–p75), s p50');
+      lines.push('by band crest (0.05 m bins): column-waves, fresh %, fresh depth p50 (p25–p75), s p50; breaking %, its depth p50 (p25–p75)');
       for (let h = 0.5; h < 2.5; h += 0.05) {
         const bin = waves.filter((w) => w.ref! >= h && w.ref! < h + 0.05);
         if (bin.length < 4) continue;
         const fresh = bin.filter((w) => w.fresh !== null).map((w) => w.fresh!).sort((a, b) => a - b);
         const q = (k: number) => (fresh.length ? fresh[Math.min(fresh.length - 1, Math.floor(k * fresh.length))].toFixed(2) : '—');
-        lines.push(`  ${h.toFixed(2)}–${(h + 0.05).toFixed(2)}: ${bin.length}, ${((100 * fresh.length) / bin.length).toFixed(0)} %, ${q(0.5)} (${q(0.25)}–${q(0.75)}), s ${median(bin.map((w) => poolStraightFrame(w.x, w.z0).s)).toFixed(0)}`);
+        const broke = bin.filter((w) => w.broke !== null).map((w) => w.broke!).sort((a, b) => a - b);
+        const b = (k: number) => (broke.length ? broke[Math.min(broke.length - 1, Math.floor(k * broke.length))].toFixed(2) : '—');
+        lines.push(`  ${h.toFixed(2)}–${(h + 0.05).toFixed(2)}: ${bin.length}, ${((100 * fresh.length) / bin.length).toFixed(0)} %, ${q(0.5)} (${q(0.25)}–${q(0.75)}), s ${median(bin.map((w) => poolStraightFrame(w.x, w.z0).s)).toFixed(0)}; ${((100 * broke.length) / bin.length).toFixed(0)} %, ${b(0.5)} (${b(0.25)}–${b(0.75)})`);
       }
       appendFileSync(log, lines.join('\n') + '\n');
       return;
@@ -270,6 +291,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
     let builds = 0;
     let preSlices = 0;
     let preFoamy = 0;
+    const foamyAt: number[] = [];
+    const foamyTau: number[] = [];
     let points = 0;
     const joinsAt: number[] = [];
     let joins0 = 0;
@@ -311,7 +334,12 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
         if (s < result.sliceCount) {
           if (result.sliceAfter[s] <= 0 && result.sliceWeight[s] >= STANDING) {
             preSlices += 1;
-            if (broken.outer[s] > 0.01 || broken.face[s] > 0.01) preFoamy += 1;
+            if (broken.outer[s] > 0.01 || broken.face[s] > 0.01) {
+              preFoamy += 1;
+              const o = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
+              foamyAt.push(poolStraightFrame(result.positions[o], result.positions[o + 2]).s);
+              foamyTau.push(result.sliceTau[s]);
+            }
           }
           if (result.slicePhase[s] === 2 && result.sliceAfter[s] < 0.04) {
             const o = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
@@ -364,7 +392,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       `vertical air gap, open standing slices ${quantiles(gaps)} m; per wave p90 ${quantiles([...gapsByWave.values()].map((g) => [...g].sort((a, b) => a - b)[Math.floor(0.9 * g.length)]))} m`,
       `open runs ${quantiles(openRuns)} m; per wave longest ${quantiles(waves.map((w) => w.length))} m, in H ${quantiles(waves.map((w) => w.inH))}, where (s) ${quantiles(waves.map((w) => w.s), 0)}; ${waves.length} waves`,
       `lofts ${builds}: folds (overlaps) a build ${(overlaps / Math.max(1, builds)).toFixed(3)}, holes (open overlaps) ${(overlapsOpen / Math.max(1, builds)).toFixed(3)}, clamps ${clamped}, budget-clamped refinement ${((100 * budget) / Math.max(1, builds)).toFixed(1)} %`,
-      `lip foam before touchdown: ${preSlices} standing slices, carrying foam ${preFoamy} (${((100 * preFoamy) / Math.max(1, preSlices)).toFixed(1)} %; the bar ≤ 5 %)`,
+      `lip foam before touchdown: ${preSlices} standing slices, carrying foam ${preFoamy} (${((100 * preFoamy) / Math.max(1, preSlices)).toFixed(1)} %; the bar ≤ 5 %), at s ${quantiles(foamyAt, 0)}, τ ${quantiles(foamyTau)} s`,
       `CPU ms (Node, this M1): the front a step ${quantiles(frontMs)}; the loft a build ${quantiles(loftMs)}`,
     ];
     appendFileSync(log, lines.join('\n') + '\n');
