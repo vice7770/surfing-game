@@ -115,8 +115,9 @@ describe('PhysicalMode', () => {
     }
   });
 
-  // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22): main's Canyon from before it, carried in the config, so the
-  // worker builds that bed and the seabed is drawn from it; absent or anything else, the reef bed.
+  // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22; repointed by canyon-b, 2026-11-01): main's Canyon from before
+  // version B (the reef with a beach peak either side), carried in the config, so the worker builds that bed and the
+  // seabed is drawn from it; absent or anything else, today's (version B).
   it('runs the Canyon\'s old bed with `?canyonBed=old` (a dev switch), and the reef bed otherwise', () => {
     expect(canyonBedSwitch('?canyonBed=old')).toEqual({ canyonBed: 'old' });
     for (const search of ['', '?canyonBed', '?canyonBed=', '?canyonBed=reef', '?canyonBed=OLD']) expect(canyonBedSwitch(search), search).toEqual({});

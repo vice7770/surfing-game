@@ -452,12 +452,37 @@ export const CANYON = {
   reefCrestGap: 20,
   /** The downcoast (+x) peak: a little steeper and shorter. */
   downPeakX: 121, downSlope: 1 / 44, downRounding: 12, downReach: 45, downCrestZ: -121, downCrestDepth: 2.75,
+  /**
+   * Version B (canyon-b, 2026-11-01, docs/research/canyon-b-2026-11-01; the owner: "the wave starts from the centre, is
+   * surfable into the reef area and forms a tube … the most consistent, requires only wave work"). `reef` 1: the reef's
+   * terrace, its arm 120 m out at x −17 (version A, `CANYON_BEACH`, the `?canyonBed=old` dev switch); 0: none. `bowl` 1:
+   * the upcoast bar's +x arm runs on, with no rip, into a reef bowl where its waves stand up and pitch, then backs off
+   * into a channel (the plain 5 m floor) before the downcoast bar.
+   */
+  reef: 0, bowl: 1,
+  /**
+   * The bowl along the upcoast bar's +x arm, m from its tip (u; the water-physics advisor, 2026-11-01): the arm as it was
+   * to `bowlFrom`; the bowl ramping in over `bowlRamp`; whole to `bowlEnd`; its crest deepening to `bowlBackCrest` over
+   * `bowlBackOff`, so the wave backs off; then bar and bowl fade into the floor over `bowlFade` (the arm's taper). Its
+   * breaking is the reef's (the spot's 0.65 onset and the age gate, `ageJoin`) from `bowlFrom`, the beach's blending in
+   * over `bowlRulesBlend` m on the arm's side.
+   */
+  bowlFrom: 50, bowlRamp: 10, bowlEnd: 75, bowlBackOff: 8, bowlBackCrest: 2, bowlFade: 15, bowlRulesBlend: 5,
+  /**
+   * The bowl's transect, along +z (the advisor's, after Mead & Black's surfing-reef components: a platform just deeper
+   * than where the waves break, then a ridge, a wedge's steep face, Mead 2000): seaward, the bar's own slope down to
+   * `bowlPlatform` m; level there (up to 0.35 m deeper than the bar beside it) to a knee rounded ±`bowlKnee` m; a face
+   * climbing at `bowlFace` to a crest `bowlCrest` m deep on the bar's `bowlCrestContour` m contour (so its contours run
+   * with the arm's, at `barAngle`); a top level for `bowlTop` m, then down at `bowlBack` to meet the bar, no lagoon.
+   * ξb about 0.53–0.58 along +z at Medium and Big (the advisor's arithmetic, γ ≈ 1).
+   */
+  bowlCrestContour: 1.9, bowlCrest: 1.2, bowlPlatform: 3, bowlFace: 1 / 21, bowlKnee: 4, bowlTop: 9, bowlBack: 1 / 30,
 };
 
 /**
- * Which Canyon layout a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed=old` dev switch): 'reef', today's (the
- * reef with a beach break either side, canyon-beach-break), or 'old', the layout before it (`CANYON_OLD`: canyon-wave-r2's
- * reef alone, main's at b11d63ef).
+ * Which Canyon layout a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed=old` dev switch): 'reef', today's (version
+ * B, canyon-b: the upcoast bar's +x arm runs into a reef bowl), or 'old', the layout before it (`CANYON_BEACH`: version A,
+ * the reef 120 m out with a beach peak either side, main's at 376d9cd4).
  */
 export type CanyonBed = 'reef' | 'old';
 
@@ -465,45 +490,48 @@ export type CanyonBed = 'reef' | 'old';
 export type CanyonShape = typeof CANYON;
 
 /**
- * The Canyon's whole layout before canyon-beach-break (2026-10-23), main's at b11d63ef (#156, canyon-wave-r2, and the curl
- * work after it): the planar 1:23 arm at 70° from its peak 120 m out at x −17, running on into the 1:15 beach face, with
- * the breaking-age join (`ageJoin` 0.5), on the plain 6 m platform with no beach peaks, in the 260 m window, its take-off
- * at x −9 (`CANYON_TAKE_OFF_DEPTH_OLD`, its starts `CANYON_RIDE_LINEUP_OLD`). Kept for the `?canyonBed=old` dev switch, so
- * the owner can ride the two side by side. Frozen: the design sweeps reshape `CANYON` alone. canyon-long-wave's layout
- * (rule A's age, 240 m), which this switch rode until canyon-beach-break, is `CANYON_OLD` at main's b11d63ef.
+ * The Canyon's whole layout before canyon-b (2026-11-01), main's at 376d9cd4 (#158 canyon-beach-break and the work on it
+ * since): the reef's planar 1:23 arm at 70° from its peak 120 m out at x −17, a sandbar A-frame either side with a rip
+ * between each and the reef, in the 400 m window, riders starting at the upcoast peak. Kept for the `?canyonBed=old` dev
+ * switch, so the owner can ride the two side by side: today's values with the reef's terrace on and no bowl, taken when
+ * the module loads, so the design sweeps' changes to `CANYON` leave it as it is.
  */
-export const CANYON_OLD: CanyonShape = Object.freeze({
-  shelfDepth: 6, shoreSlope: 1 / 15, crestDepth: 1,
-  pathSlope: 1 / 23, endSlope: 1 / 4,
-  peakX: -17, peakZ: -120, angle: 70,
-  takeOffX: -9,
-  zoneInner: -390, blendLength: 60,
-  edgeDepth: 7.9, zoneLength: 90,
-  fan: 0, hingeDepth: 2.2, hingeRounding: 8,
-  endTaper: 12,
-  flatWidth: 10, lagoonDepth: 2,
-  alongShore: 260, peelReach: 10, runOn: 1, ageJoin: 0.5,
-  // No beach peaks: the plain platform and beach face either side (the bar keys are unread).
-  beach: 0, reefTakeOffX: -9,
-  floorDepth: 6, floorEdge: -230, floorRamp: 1 / 30, floorBlend: 10,
-  barAngle: 62, barTaper: 12, barKnee: 15,
-  upPeakX: -115, upSlope: 1 / 44, upRounding: 10, upReach: 55, upCrestZ: -140, upCrestDepth: 1.7,
-  downPeakX: 123, downSlope: 1 / 38, downRounding: 7, downReach: 45, downCrestZ: -130, downCrestDepth: 1.6,
-  barOnset: 0.65, onsetPin: 5, onsetBlend: 12, onsetShallow: 3, onsetDeep: 4.5, barJoin: 0.5, reefBoreHold: 0, reefCrestGap: 20,
-});
+export const CANYON_BEACH: CanyonShape = Object.freeze({ ...CANYON, reef: 1, bowl: 0 });
 
-/** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_OLD`. */
+/** The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_BEACH`. */
 export function canyonShape(bed: CanyonBed = 'reef'): CanyonShape {
-  return bed === 'old' ? CANYON_OLD : CANYON;
+  return bed === 'old' ? CANYON_BEACH : CANYON;
+}
+
+/**
+ * Version B's bowl crest line's distance seaward of its bar's waterline V, m (`canyonBarDepth`'s d): where the bar is
+ * `bowlCrestContour` m deep.
+ */
+function bowlCrestD(c: CanyonShape): number {
+  return c.bowlCrestContour / c.upSlope;
+}
+
+/** How far a point along shore is from the upcoast bar's waterline V's tip, along its run, m (`canyonBarDepth`'s run). */
+function upBarRun(x: number, c: CanyonShape): number {
+  const u = x - c.upPeakX;
+  return Math.sqrt(u * u + c.upRounding * c.upRounding) - c.upRounding;
+}
+
+/** Version B's bowl along shore, m: from where it ramps in to where its bar fades into the floor. */
+function bowlSpan(c: CanyonShape): { from: number; end: number; to: number } {
+  return { from: c.upPeakX + c.bowlFrom, end: c.upPeakX + c.bowlEnd + c.bowlBackOff, to: c.upPeakX + c.bowlEnd + c.bowlBackOff + c.bowlFade };
 }
 
 /** Where the Canyon's break line (the terrace's seaward edge) crosses along-shore position x. */
 export function canyonBreakLineZ(x: number, c: CanyonShape = CANYON): number {
+  // Version B: the bowl's crest line, on its bar's `bowlCrestContour` m contour.
+  if (!c.reef) return upBarRun(x, c) * Math.tan((c.barAngle * Math.PI) / 180) - bowlCrestD(c);
   return c.peakZ + (x - c.peakX) * Math.tan((c.angle * Math.PI) / 180);
 }
 
 /** Where the Canyon's break line runs onto the beach face (its crest depth on the beach face), along shore, m. */
 export function canyonArmEndX(c: CanyonShape = CANYON): number {
+  if (!c.reef) return bowlSpan(c).end;
   return c.peakX + (-c.crestDepth / c.shoreSlope - c.peakZ) / Math.tan((c.angle * Math.PI) / 180);
 }
 
@@ -513,13 +541,15 @@ export function canyonArmEndX(c: CanyonShape = CANYON): number {
  * `shelfDepth` contour. Past it the terrace tapers into the platform over `endTaper` m.
  */
 export function canyonReefEndX(c: CanyonShape = CANYON): number {
-  if (!c.runOn) return canyonArmEndX(c);
+  if (!c.reef || !c.runOn) return canyonArmEndX(c);
   const footBelowHinge = (c.shelfDepth - c.hingeDepth) / c.pathSlope;
   return c.peakX + (-c.shelfDepth / c.shoreSlope + footBelowHinge - canyonHingeZ(c.peakX, c)) / Math.tan(((c.angle - c.fan) * Math.PI) / 180);
 }
 
 /** Whether the Canyon's arm is ridden at along-shore position x: from its peak (and the end beside it) to where its reef ends on the beach face. */
 export function canyonArmAt(x: number, c: CanyonShape = CANYON): boolean {
+  // Version B: the bowl, from where it ramps in to where its crest has backed off.
+  if (!c.reef) return x >= bowlSpan(c).from && x <= bowlSpan(c).end;
   return x >= c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope && x <= canyonReefEndX(c);
 }
 
@@ -530,7 +560,7 @@ export function canyonArmAt(x: number, c: CanyonShape = CANYON): boolean {
  */
 export function canyonPeelAt(x: number, z: number, c: CanyonShape = CANYON): boolean {
   if (!canyonArmAt(x, c) || !(z < canyonBreakLineZ(x, c) + c.peelReach)) return false;
-  return !c.runOn || canyonTerraceDepth(x, z, c) < Math.min(c.shelfDepth, -z * c.shoreSlope) - 0.05;
+  return !c.reef || !c.runOn || canyonTerraceDepth(x, z, c) < Math.min(c.shelfDepth, -z * c.shoreSlope) - 0.05;
 }
 
 /**
@@ -540,6 +570,8 @@ export function canyonPeelAt(x: number, z: number, c: CanyonShape = CANYON): boo
  * furthest out where it turns from the line into the end; past the arm's end it tapers into the platform over `endTaper` m.
  */
 export function canyonTerraceDepth(x: number, z: number, c: CanyonShape = CANYON): number {
+  // Version B has no terrace: the platform, which the floor and the bars cover.
+  if (!c.reef) return c.shelfDepth;
   const line = canyonBreakLineZ(x, c);
   const seaward = Math.max(0, line - z);
   // The fan's shallow face from the crest line to the hinge line, then pathSlope below the hinge (one face when fan is 0).
@@ -569,6 +601,8 @@ export function canyonHingeZ(x: number, c: CanyonShape = CANYON): number {
  * peak (the hinge's rounding aside).
  */
 export function canyonFootZ(c: CanyonShape = CANYON): number {
+  // Version B: the bowl's platform's seaward end where it ramps in (its bar `bowlPlatform` m deep there).
+  if (!c.reef) return upBarRun(bowlSpan(c).from, c) * Math.tan((c.barAngle * Math.PI) / 180) - c.bowlPlatform / c.upSlope;
   const x = c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope;
   return c.shelfDepth > c.hingeDepth
     ? canyonHingeZ(x, c) - (c.shelfDepth - c.hingeDepth) / c.pathSlope
@@ -697,6 +731,8 @@ function padang(): SurfSpot {
 
 /** The Canyon reef's footprint along shore, m: from its upcoast end's foot to the end of its taper past the reef's end. */
 export function canyonReefSpan(c: CanyonShape = CANYON): { from: number; to: number } {
+  // Version B: the bowl's, from where it ramps in to where its bar has faded into the floor.
+  if (!c.reef) return { from: bowlSpan(c).from, to: bowlSpan(c).to };
   return { from: c.peakX - (c.shelfDepth - c.crestDepth) / c.endSlope, to: canyonReefEndX(c) + c.endTaper };
 }
 
@@ -708,7 +744,9 @@ export function canyonReefSpan(c: CanyonShape = CANYON): { from: number; to: num
 export function canyonFloorDepth(x: number, z: number, c: CanyonShape = CANYON): number {
   if (!c.beach || c.floorDepth >= c.shelfDepth) return c.shelfDepth;
   const reef = canyonReefSpan(c);
-  const along = Math.max(smoothstep(reef.from, reef.from - c.floorBlend, x), smoothstep(reef.to, reef.to + c.floorBlend, x));
+  // Version B: the floor everywhere, the channel past the bowl included (no 6 m pocket: the advisor, deeper water there
+  // would lead the crests round the bowl's end).
+  const along = !c.reef ? 1 : Math.max(smoothstep(reef.from, reef.from - c.floorBlend, x), smoothstep(reef.to, reef.to + c.floorBlend, x));
   const rampLength = (c.shelfDepth - c.floorDepth) / c.floorRamp;
   const across = smoothstep(c.floorEdge - rampLength, c.floorEdge, z);
   return c.shelfDepth - (c.shelfDepth - c.floorDepth) * along * across;
@@ -721,14 +759,25 @@ export function canyonFloorDepth(x: number, z: number, c: CanyonShape = CANYON):
  */
 export interface CanyonBar {
   readonly x: number; readonly slope: number; readonly crestZ: number; readonly crestDepth: number; readonly rounding: number; readonly reach: number;
+  /** Its +x arm's reach and taper, m (version B's upcoast bar runs on into its bowl; else `reach` and `CANYON.barTaper`). */
+  readonly plusReach: number; readonly plusTaper: number;
+  /** Version B: its +x arm runs into the reef bowl (`canyonBarDepth`). */
+  readonly bowl: boolean;
 }
 
 /** The Canyon's beach peaks, upcoast (−x) first; none without the beach. */
 export function canyonBars(c: CanyonShape = CANYON): CanyonBar[] {
   if (!c.beach) return [];
+  const bowl = !c.reef && c.bowl > 0;
   return [
-    { x: c.upPeakX, slope: c.upSlope, crestZ: c.upCrestZ, crestDepth: c.upCrestDepth, rounding: c.upRounding, reach: c.upReach },
-    { x: c.downPeakX, slope: c.downSlope, crestZ: c.downCrestZ, crestDepth: c.downCrestDepth, rounding: c.downRounding, reach: c.downReach },
+    {
+      x: c.upPeakX, slope: c.upSlope, crestZ: c.upCrestZ, crestDepth: c.upCrestDepth, rounding: c.upRounding, reach: c.upReach,
+      plusReach: bowl ? c.bowlEnd + c.bowlBackOff : c.upReach, plusTaper: bowl ? c.bowlFade : c.barTaper, bowl,
+    },
+    {
+      x: c.downPeakX, slope: c.downSlope, crestZ: c.downCrestZ, crestDepth: c.downCrestDepth, rounding: c.downRounding, reach: c.downReach,
+      plusReach: c.downReach, plusTaper: c.barTaper, bowl: false,
+    },
   ];
 }
 
@@ -738,12 +787,34 @@ export function canyonBars(c: CanyonShape = CANYON): CanyonBar[] {
  * to the shore. Along d its profile is the axis's: its top falling gently from `crestDepth` at d = −crestZ to the waterline
  * at d = 0, and seaward of the top its face climbing at `slope`, the knee rounded over ±`barKnee` m (C¹).
  */
-export function canyonBarDepth(bar: CanyonBar, x: number, z: number, c: CanyonShape = CANYON): number {
+export function canyonBarDepth(bar: CanyonBar, x: number, z: number, c: CanyonShape = CANYON, bowl = true): number {
   const u = x - bar.x;
   const run = Math.sqrt(u * u + bar.rounding * bar.rounding) - bar.rounding;
   const d = Math.max(0, run * Math.tan((c.barAngle * Math.PI) / 180) - z);
   const top = bar.crestDepth / -bar.crestZ;
-  return top * d + (bar.slope - top) * rounded(d + bar.crestZ, c.barKnee);
+  const plain = top * d + (bar.slope - top) * rounded(d + bar.crestZ, c.barKnee);
+  if (!bowl || !bar.bowl || !(u > c.bowlFrom)) return plain;
+  // Version B: the reef bowl along its +x arm, ramping in, its crest backing off at its end.
+  const share = smoothstep(c.bowlFrom, c.bowlFrom + c.bowlRamp, u);
+  const crest = c.bowlCrest + (c.bowlBackCrest - c.bowlCrest) * smoothstep(c.bowlEnd, c.bowlEnd + c.bowlBackOff, u);
+  return plain + (bowlProfile(d, plain, crest, bar, c) - plain) * share;
+}
+
+/**
+ * Version B's bowl's depth `d` m seaward of its bar's waterline V (`canyonBarDepth`), the bar there `plain` m deep, its
+ * crest `crest` m deep: seaward of the crest a face at `bowlFace` up from a level platform `bowlPlatform` deep (its knee
+ * rounded), the bar's own slope beyond; inshore a top level for `bowlTop`, then down at `bowlBack` to meet the bar.
+ */
+function bowlProfile(d: number, plain: number, crest: number, bar: CanyonBar, c: CanyonShape): number {
+  const crestD = c.bowlCrestContour / bar.slope;
+  if (d >= crestD) {
+    const knee = crestD + Math.max(0, c.bowlPlatform - crest) / c.bowlFace;
+    const face = crest + c.bowlFace * (d - crestD) - c.bowlFace * rounded(d - knee, c.bowlKnee);
+    // Seaward of where the bar is the platform's depth, the bar's own slope (the kink rounded over a centimetre's depth).
+    return face + rounded(plain - Math.max(crest, c.bowlPlatform), 0.05);
+  }
+  const back = crest + c.bowlBack * rounded(crestD - c.bowlTop - d, 2);
+  return Math.min(back, plain);
 }
 
 /** The Canyon's bed beneath its bars at (x, z): the floor, the beach face and the reef, the shallowest (`canyon`). */
@@ -766,16 +837,30 @@ export function canyonSeaDepth(x: number, z: number, c: CanyonShape = CANYON): n
  * themselves, never turn to rock.
  */
 export function canyonSandDepth(x: number, z: number, c: CanyonShape = CANYON): number {
-  return withBars(Math.min(canyonFloorDepth(x, z, c), -z * c.shoreSlope), x, z, c);
+  return withBars(Math.min(canyonFloorDepth(x, z, c), -z * c.shoreSlope), x, z, c, false);
 }
 
-/** A bed `depth` deep at (x, z) with each beach peak's bar where it is shallower, faded past its arms' reach. */
-function withBars(background: number, x: number, z: number, c: CanyonShape): number {
+/**
+ * The Canyon's rock at (x, z), m deep, where it stands above the sand (`canyonSandDepth`): its reef's terrace, or version
+ * B's bowl (the bed with it, `canyonSeaDepth`).
+ */
+export function canyonRockDepth(x: number, z: number, c: CanyonShape = CANYON): number {
+  return c.reef ? canyonTerraceDepth(x, z, c) : canyonSeaDepth(x, z, c);
+}
+
+/** How far along shore a bar's arm on the side of x reaches, and its taper, m. */
+function barSide(bar: CanyonBar, x: number, c: CanyonShape): { reach: number; taper: number } {
+  return x > bar.x ? { reach: bar.plusReach, taper: bar.plusTaper } : { reach: bar.reach, taper: c.barTaper };
+}
+
+/** A bed `depth` deep at (x, z) with each beach peak's bar where it is shallower, faded past its arms' reach (`bowl`: with version B's). */
+function withBars(background: number, x: number, z: number, c: CanyonShape, bowl = true): number {
   let depth = background;
   for (const bar of canyonBars(c)) {
-    const fade = smoothstep(bar.reach, bar.reach + c.barTaper, Math.abs(x - bar.x));
+    const side = barSide(bar, x, c);
+    const fade = smoothstep(side.reach, side.reach + side.taper, Math.abs(x - bar.x));
     if (fade >= 1) continue;
-    depth -= Math.max(0, depth - canyonBarDepth(bar, x, z, c)) * (1 - fade);
+    depth -= Math.max(0, depth - canyonBarDepth(bar, x, z, c, bowl)) * (1 - fade);
   }
   return depth;
 }
@@ -787,7 +872,8 @@ export function canyonBarAt(x: number, z: number, c: CanyonShape = CANYON): numb
   const background = canyonBackground(x, z, c);
   for (let k = 0; k < bars.length; k += 1) {
     const bar = bars[k];
-    if (Math.abs(x - bar.x) >= bar.reach + c.barTaper) continue;
+    const side = barSide(bar, x, c);
+    if (Math.abs(x - bar.x) >= side.reach + side.taper) continue;
     if (canyonBarDepth(bar, x, z, c) < background) return k;
   }
   return -1;
@@ -814,6 +900,13 @@ export function canyonOnset(x: number, z: number, onset: number, c: CanyonShape 
 export function canyonBeachShare(x: number, c: CanyonShape = CANYON): number {
   if (!c.beach) return 0;
   const reef = canyonReefSpan(c);
+  // Version B: the bowl's rules from where it ramps in, the beach's blending in over `bowlRulesBlend` on the arm's side.
+  if (!c.reef) {
+    return Math.max(
+      smoothstep(reef.from, reef.from - c.bowlRulesBlend, x),
+      smoothstep(reef.to + c.onsetPin, reef.to + c.onsetPin + c.onsetBlend, x),
+    );
+  }
   return Math.max(
     smoothstep(reef.from - c.onsetPin, reef.from - c.onsetPin - c.onsetBlend, x),
     smoothstep(reef.to + c.onsetPin, reef.to + c.onsetPin + c.onsetBlend, x),

@@ -309,7 +309,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     const skill = skillForPeel(peel.angleDegrees);
     if (skill === 'closeout') peelText = `closing out · ${angle}° (needs ≥ 27°)`;
     else if (peel.fit < MIXED_PEAK_FIT) peelText = `mixed peaks · ${angle}°`;
-    else if (peel.peak) peelText = `peak · ${Math.round(peel.peak.left)}° toward +x, ${Math.round(peel.peak.right)}° toward −x · ${skill}`;
+    else if (peel.peak) peelText = `peak${peel.bowl ? ` into a ${peel.bowl} reef bowl` : ''} · ${Math.round(peel.peak.left)}° toward +x, ${Math.round(peel.peak.right)}° toward −x · ${skill}`;
     else peelText = `${angle}° toward ${peel.direction > 0 ? '+x' : '−x'} · ${skill}`;
   }
   const band = config.bandwidth !== undefined && Number.isFinite(config.bandwidth) ? ` · band ±${Math.round(config.bandwidth * 100)} %` : '';
@@ -577,9 +577,9 @@ export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
 }
 
 /**
- * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-wave-r2
- * (2026-10-22, `CANYON_OLD`: canyon-long-wave's planar arm, main's at 578202fd, with rule A's breaking age, its 240 m
- * window, take-off and starts), to ride the two side by side; nothing otherwise (today's layout).
+ * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-b (2026-11-01,
+ * `CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's at 376d9cd4), to ride the two side by side;
+ * nothing otherwise (today's layout, version B: the upcoast peak's +x arm runs into a reef bowl).
  */
 export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
   return devParam('canyonBed', search)?.trim() === 'old' ? { canyonBed: 'old' } : {};

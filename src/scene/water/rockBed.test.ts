@@ -1,6 +1,6 @@
 import { PerspectiveCamera, Scene, ShaderLib, type WebGLRenderer } from 'three';
 import { describe, expect, it } from 'vitest';
-import { CANYON, CANYON_OLD, canyonBars, canyonBreakLineZ, canyonFootZ, canyonReefEndX, canyonShape, type SpotName } from '../../wave/Bathymetry';
+import { CANYON, CANYON_BEACH, canyonBars, canyonBreakLineZ, canyonFootZ, canyonReefEndX, canyonShape, type SpotName } from '../../wave/Bathymetry';
 import { SPOT_OPTICS } from '../waterOptics';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { EdgeBand } from '../EdgeBand';
@@ -29,7 +29,8 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
   const { blocks, patches, pockets, tops } = ROCK_TEXTURE;
   const least = (1 - blocks.tone - patches.tone) * (1 - pockets.depth) * (1 - tops.pale);
 
-  for (const [name, c] of [['today\'s arm', CANYON], ['old layout', CANYON_OLD]] as const) {
+  // The reef's layout (version A), `?canyonBed=old` since canyon-b; version B's bowl below.
+  for (const [name, c] of [['old layout', CANYON_BEACH]] as const) {
     it(`covers the arm's top, end and back, and leaves the platform, the beach face and the land sand (${name})`, () => {
       const cover = canyonRockCover(c);
       // The arm's top, a few metres inshore of its break line, downcoast of the peak: rock, its texture aside.
@@ -52,22 +53,26 @@ describe('the rock\'s cover of the Canyon\'s bed', () => {
 
   // canyon-beach-break (2026-10-23): the beach peaks' bars are sand, however far they stand above the floor round them.
   it('leaves the beach peaks\' sandbars sand: the rock stays on the reef', () => {
-    const cover = canyonRockCover(CANYON);
-    for (const bar of canyonBars()) {
-      for (const u of [-40, -20, 0, 20, 40]) for (const z of [-200, -150, -100, -60, -20]) expect(cover(bar.x + u, z)).toBe(0);
+    for (const c of [CANYON, CANYON_BEACH]) {
+      const cover = canyonRockCover(c);
+      for (const bar of canyonBars(c)) {
+        for (const u of [-40, -20, 0, 20, 40]) for (const z of [-200, -150, -100, -60, -20]) expect(cover(bar.x + u, z)).toBe(0);
+      }
     }
   });
 
-  it('follows the ledge where its layout puts it: today\'s and the old layout\'s arm are one, so their rock is too', () => {
-    const today = canyonRockCover(canyonShape('reef'));
-    const old = canyonRockCover(canyonShape('old'));
-    const onTop = (c: typeof CANYON) => [c.peakX + 2, canyonBreakLineZ(c.peakX + 2, c) + 3] as const;
-    expect(today(...onTop(CANYON))).toBeGreaterThan(0);
-    // canyon-wave-r2 (2026-10-22) changed the breaking and the window, not the arm: the old layout (main's at 578202fd)
-    // has the same bed, so the same rock, from its upcoast end to past the run-on and on the open platform.
-    for (const [x, z] of [onTop(CANYON), [CANYON.peakX - 12, canyonBreakLineZ(CANYON.peakX - 12) - 8], [30, -120], [10, -60], [-60, -150]] as const) {
-      expect(old(x, z)).toBe(today(x, z));
-    }
+  // canyon-b (2026-11-01): version B's rock is its bowl, where it stands above the bar it is built on (its face, top and
+  // back); its platform, the bar beside it and the channel past it are sand, and no reef stands at x −17 any more.
+  it('covers version B\'s bowl where it stands above its bar, and leaves its platform, the bar and the channel sand', () => {
+    const cover = canyonRockCover(canyonShape('reef'));
+    const [up] = canyonBars();
+    const x = up.x + 0.5 * (CANYON.bowlFrom + CANYON.bowlRamp + CANYON.bowlEnd);
+    const crest = canyonBreakLineZ(x);
+    for (const dz of [-4, 0, 4]) expect(cover(x, crest + dz), `${dz}`).toBeGreaterThanOrEqual(least - 1e-9);
+    expect(cover(x, crest - 55)).toBe(0);
+    expect(cover(up.x + CANYON.bowlFrom - 5, crest)).toBe(0);
+    for (const [cx, z] of [[0, -100], [-17, -120], [30, -60]] as const) expect(cover(cx, z)).toBe(0);
+    expect(canyonRockCover(canyonShape('old'))(CANYON_BEACH.peakX + 2, canyonBreakLineZ(CANYON_BEACH.peakX + 2, CANYON_BEACH) + 3)).toBeGreaterThan(0);
   });
 
   it('turns from sand to rock over the relief ROCK_RELIEF gives, smoothly', () => {

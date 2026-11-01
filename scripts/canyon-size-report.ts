@@ -26,7 +26,7 @@
  *     && node dist/scripts/canyon-size-report.mjs --size big --seeds 1 --periods 8 [--canyon key=value,...] \
  *        [--first-seed 1] [--hs 2.4 --tp 14] [--bed old] [--verbose] [--stability] [--json <file>]
  *
- * `--bed old` runs the layout before canyon-layout (`?canyonBed=old`, `CANYON_OLD`); `--canyon` reshapes today's. The
+ * `--bed old` runs the layout before canyon-b (`?canyonBed=old`, `CANYON_BEACH`); `--canyon` reshapes today's. The
  * window, the arm and the bed parts are the run's layout's (canyon-layout, 2026-10-22: 220 m since, 160 m before). Since
  * canyon-layout the readout's replay and each crest's own fit count the breaks the game's tracker counts (`canyonPeelAt`:
  * the arm's, not the lagoon's or the beach face's behind it; every break on the arm's columns on the old layout), and the

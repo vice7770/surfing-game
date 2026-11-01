@@ -121,12 +121,12 @@ describe('OnlinePlay', () => {
       expect(out).toBeGreaterThanOrEqual(rideLineupOffset(config) - 1e-9);
       expect(out).toBeLessThanOrEqual(rideLineupOffset(config) + SPAWN_REACH + 1e-9);
     }
-    // Since canyon-beach-break the Canyon's starts are its beach peak's (6, 9 and 3 m out); its old layout (`?canyonBed=old`,
-    // main's at b11d63ef) keeps canyon-wave-r2's 9, 11 and 11 m.
+    // Since canyon-beach-break the Canyon's starts are its beach peak's (6, 9 and 3 m out), on either layout since canyon-b
+    // (`?canyonBed=old`, main's at 376d9cd4: the bowl leaves the upcoast peak's tip as it was).
     expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4 })).toBe(3);
     expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9 })).toBeLessThan(RIDE_LINEUP_OFFSET);
-    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9, canyonBed: 'old' })).toBe(9);
-    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4, canyonBed: 'old' })).toBe(RIDE_LINEUP_OFFSET);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9, canyonBed: 'old' })).toBe(6);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4, canyonBed: 'old' })).toBe(3);
   });
 
   it('passes the others\' pushes on to the water', () => {

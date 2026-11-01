@@ -1,5 +1,5 @@
 import { DEV_TOOLS, devParam } from '../../devTools';
-import { canyonSandDepth, canyonShape, canyonTerraceDepth, smoothstep, type CanyonBed, type CanyonShape, type SpotName } from '../../wave/Bathymetry';
+import { canyonRockDepth, canyonSandDepth, canyonShape, smoothstep, type CanyonBed, type CanyonShape, type SpotName } from '../../wave/Bathymetry';
 
 /**
  * A rock floor under the water (the owner's playtest, 2026-10-22: "There is also a white colour on the left side of the
@@ -21,6 +21,12 @@ import { canyonSandDepth, canyonShape, canyonTerraceDepth, smoothstep, type Cany
  * half up it is bare rock.
  */
 export const ROCK_RELIEF = [0.3, 1.5] as const;
+
+/**
+ * Version B's bowl (canyon-b) stands 0.4–0.7 m above its sand bar at its crest and top: its relief counts this many times
+ * a ledge's, so it is rock from 0.1 m proud and wholly from 0.5 m.
+ */
+export const BOWL_RELIEF = 3;
 
 /**
  * How the rock's floor reads, as factors on its cover (1 plain rock), all on lattices fixed to the world:
@@ -138,8 +144,11 @@ export function canyonRockCover(c: CanyonShape): (x: number, z: number) => numbe
     const offshore = -z;
     if (offshore <= 0) return 0;
     const sand = canyonSandDepth(x, z, c);
-    const terrace = canyonTerraceDepth(x, z, c);
-    const cover = reliefCover(sand - terrace);
+    // The reef's terrace, or version B's bowl (canyon-b): the bed where the rock raises it above the sand. The bowl stands
+    // at most 0.7 m above the bar it is built on (no sand banked against a ledge's toe): its rock shows from a tenth of the
+    // relief a ledge needs (`BOWL_RELIEF`).
+    const terrace = canyonRockDepth(x, z, c);
+    const cover = reliefCover((sand - terrace) * (c.reef ? 1 : BOWL_RELIEF));
     return cover > 0 ? Math.min(ROCK_DARKEST, cover * rockTexture(x, z, Math.min(sand, terrace))) : 0;
   };
 }

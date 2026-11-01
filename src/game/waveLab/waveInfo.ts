@@ -35,7 +35,11 @@ function peelText(peel: PeelEstimate | undefined): { text: string; skill?: strin
   if (peel.fit < MIXED_PEAK_FIT) return { text: t('lab.peel.mixed') };
   const angle = Math.round(peel.angleDegrees);
   if (peel.peak) {
-    const text = t('lab.peel.peak', { left: Math.round(peel.peak.left), right: Math.round(peel.peak.right) });
+    // The Canyon's upcoast peak runs into a reef bowl (canyon-b): "spilling peak into a plunging reef bowl, …".
+    const angles = { left: Math.round(peel.peak.left), right: Math.round(peel.peak.right) };
+    const text = peel.bowl
+      ? t('lab.peel.peakBowl', { ...angles, bowl: t(`lab.breaker.${peel.bowl}` as StringKey).toLowerCase() })
+      : t('lab.peel.peak', angles);
     return { text, skill: t(`lab.skill.${skill}` as StringKey), peak: true };
   }
   return { text: t(peel.direction > 0 ? 'lab.peel.left' : 'lab.peel.right', { angle }), skill: t(`lab.skill.${skill}` as StringKey) };

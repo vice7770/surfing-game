@@ -12,7 +12,7 @@
  * `--swell practice|small|medium|big`, `--seed`, `--seconds` (600), `--spreading` and `--direction` (override the
  * swell's), `--components` (64, the GPU tier's; 24 is the CPU tier's), `--offset` (30 m seaward of the take-off),
  * `--quiet` (no per-crest lines), `--json <file>` (the crests and summary), `--canyon key=value,...` (reshape the Canyon, as
- * the canyon peel report's sweep), `--bed old` (the Canyon's layout before canyon-layout, `?canyonBed=old`).
+ * the canyon peel report's sweep), `--bed old` (the Canyon's layout before canyon-b, `?canyonBed=old`).
  *
  * Each crest's two halves along shore (split at its middle point) are also fitted on their own: their angles' difference,
  * the bend, shows a crest that runs two ways at once (an A-frame, or a crest turned by one side of the bed).
@@ -36,7 +36,7 @@ import { writeFileSync } from 'node:fs';
 import { GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../src/game/SurfConditions';
 import type { SpotName } from '../src/wave/Bathymetry';
-import { CANYON_OLD, canyonBars, canyonReefEndX, canyonShape } from '../src/wave/Bathymetry';
+import { canyonBars, canyonReefSpan, canyonShape } from '../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../src/wave/BoussinesqSolver';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from './canyonShape';
@@ -233,17 +233,16 @@ const stations: number[] = [windowMin + EDGE_STATION];
 for (let x = Math.ceil((windowMin + EDGE_STATION + 5) / STATION_STEP) * STATION_STEP; x <= windowMax - EDGE_STATION - 5; x += STATION_STEP) stations.push(x);
 stations.push(windowMax - EDGE_STATION);
 /** The Canyon's arm's footprint (its upcoast end to its taper) ± 10 m; other spots have none. */
-const shape = spot === 'canyon' ? (bed === 'old' ? CANYON_OLD : canyonShape()) : undefined;
-const footprint = shape
-  ? { from: shape.peakX - (shape.shelfDepth - shape.crestDepth) / shape.endSlope - 10, to: canyonReefEndX(shape) + shape.endTaper + 10 }
-  : undefined;
+const shape = spot === 'canyon' ? canyonShape(bed === 'old' ? 'old' : 'reef') : undefined;
+// The reef's footprint (version B's bowl's, canyon-b) ± 10 m.
+const footprint = shape ? { from: canyonReefSpan(shape).from - 10, to: canyonReefSpan(shape).to + 10 } : undefined;
 // With its beach peaks (canyon-beach-break), each bar's arms apart: its −x arm, its +x arm, the reef ('arm'), the rest open.
 const bars = shape ? canyonBars(shape) : [];
 const groupOf = (x: number) => {
   if (!footprint) return 'window';
   for (const [k, bar] of bars.entries()) {
     const u = x - bar.x;
-    if (Math.abs(u) <= bar.reach + shape!.barTaper) return `${k === 0 ? 'peak −x' : 'peak +x'} ${u < 0 ? 'right arm' : 'left arm'}`;
+    if (u < 0 ? -u <= bar.reach + shape!.barTaper : u <= bar.plusReach + bar.plusTaper) return `${k === 0 ? 'peak −x' : 'peak +x'} ${u < 0 ? 'right arm' : 'left arm'}`;
   }
   if (bars.length && x >= footprint.from && x <= footprint.to) return 'arm';
   return bars.length ? 'open' : x < footprint.from ? 'open −x' : x > footprint.to ? 'open +x' : 'arm';

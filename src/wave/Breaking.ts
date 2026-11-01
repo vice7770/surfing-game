@@ -189,6 +189,11 @@ export interface PeelEstimate {
    * the steeper arm's, its direction the arm on the asker's side of the peak.
    */
   peak?: { left: number; right: number };
+  /**
+   * The peak's +x arm runs into a reef bowl (the Canyon's version B, canyon-b): the bowl's breaker type, so the readout
+   * says "spilling peak into a plunging reef bowl".
+   */
+  bowl?: 'spilling' | 'plunging' | 'surging' | 'none';
 }
 
 export type PeelSkill = 'beginner' | 'intermediate' | 'advanced' | 'professional' | 'closeout';

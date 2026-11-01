@@ -43,7 +43,7 @@ describe('the swept barrel’s spots (Part B, PR 7)', () => {
       expect(sweptBarrelOn({ spot, sweptBarrel: true })).toBe(BARREL_SPOTS[spot] !== undefined);
     }
     // The Canyon's tubes (canyon-beach-break): off by default, on with `?canyonTube=on` (the config's say), on either layout
-    // (`?canyonBed=old&canyonTube=on` is main's Canyon at b11d63ef, tube and all).
+    // (`?canyonBed=old&canyonTube=on` is main's Canyon at 376d9cd4 with its reef's tube).
     expect(sweptBarrelOn({ spot: 'canyon' })).toBe(false);
     expect(sweptBarrelOn({ spot: 'canyon', sweptBarrel: true })).toBe(true);
     expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old' })).toBe(false);

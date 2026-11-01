@@ -226,11 +226,9 @@ export interface SurfZoneConfig {
   startOut?: number;
   /**
    * The Canyon's layout (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, today's
-   * (canyon-long-wave's planar arm 120 m out whose break runs into the beach, with canyon-wave-r2's breaking-age join, in a
-   * 260 m window); 'old', the whole layout before canyon-wave-r2 (`CANYON_OLD`: the same arm with rule A's breaking age,
-   * in its 240 m window, with its take-off `CANYON_TAKE_OFF_DEPTH_OLD` and starts `CANYON_RIDE_LINEUP_OLD`), main's
-   * Canyon at 578202fd, without the swept barrel wired after it. Every other spot ignores it; online rooms always run the
-   * default.
+   * (version B, canyon-b: the upcoast beach peak's +x arm runs into a reef bowl, `CANYON`); 'old', the layout before it
+   * (`CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's Canyon at 376d9cd4), with the same
+   * take-off and starts at the upcoast peak. Every other spot ignores it; online rooms always run the default.
    */
   canyonBed?: CanyonBed;
   /**
@@ -372,7 +370,7 @@ export const ALONG_SHORE = 160;
 
 /**
  * The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), the Wave
- * Pool's, or the Canyon's layout's (`CANYON.alongShore`, 260 m since canyon-wave-r2; `CANYON_OLD`'s 240 m on 'old'), else
+ * Pool's, or the Canyon's layout's (`CANYON.alongShore`, 400 m since canyon-beach-break, on either layout), else
  * ALONG_SHORE.
  */
 export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore' | 'canyonBed'>): number {
@@ -729,8 +727,7 @@ export const CANYON_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
  * Where the Canyon's reef's sets start breaking on its arm, m deep, against Hs: canyon-wave-r2's fit (2026-10-22,
  * docs/research/canyon-wave-r2-2026-10-22: 3 seeds × 14 periods each; 2.34, 2.73 and 3.47 m for Small, Medium and Big,
  * within 0.01 m of the line) in the take-off's column (x −9 ± 4 m). The reef's own take-off (`canyonReefTakeOff`), where
- * its readout reads its breaker; and the take-off of the layout before canyon-beach-break (`CANYON_TAKE_OFF_DEPTH_OLD`),
- * main's at b11d63ef, whose riders started on the reef.
+ * its readout reads its breaker, on the layout before canyon-b (`CANYON_BEACH`, the `?canyonBed=old` dev switch).
  * - With the breaking age's diagonal join (`CANYON.ageJoin`) the crest beside the peak's break no longer breaks early on
  *   the age it inherited, so the sets start breaking shallower: on the same face canyon-long-wave's fit was 1.50 + 1.00 Hs
  *   (2.39, 2.86 and 4.00 m), Big's most of all.
@@ -741,13 +738,12 @@ export const CANYON_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
  */
 export const CANYON_REEF_TAKE_OFF_DEPTH = { base: 1.67, perMetre: 0.75 } as const;
 
-/** `CANYON_TAKE_OFF_DEPTH` on the layout before canyon-beach-break (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`): the reef's. */
-export const CANYON_TAKE_OFF_DEPTH_OLD = CANYON_REEF_TAKE_OFF_DEPTH;
-
-/** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`), on a bed. */
-export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
-  const fit = bed === 'old' ? CANYON_TAKE_OFF_DEPTH_OLD : CANYON_TAKE_OFF_DEPTH;
-  return fit.base + fit.perMetre * significantHeight;
+/**
+ * How deep the Canyon's sets of significant height Hs start breaking at its default start, m (`CANYON_TAKE_OFF_DEPTH`).
+ * Either layout (`bed`): canyon-b's bowl leaves the upcoast peak's tip, where riders start, as it was.
+ */
+export function canyonTakeOffDepth(significantHeight: number, _bed: CanyonBed = 'reef'): number {
+  return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
 }
 
 /**
@@ -781,23 +777,14 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
 ];
 
 /**
- * `CANYON_RIDE_LINEUP` on the layout before canyon-beach-break (`SurfZoneConfig.canyonBed` 'old', `CANYON_OLD`):
- * canyon-wave-r2's starts on the reef (2026-10-22), main's at b11d63ef: 9, 11 and 11 m out at Small, Medium and Big.
- */
-export const CANYON_RIDE_LINEUP_OLD: readonly { readonly significantHeight: number; readonly offset: number }[] = [
-  { significantHeight: 0.9, offset: 9 },
-  { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: RIDE_LINEUP_OFFSET },
-];
-
-/**
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
 export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed'>): number {
   if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
-  const sizes = config.canyonBed === 'old' ? CANYON_RIDE_LINEUP_OLD : CANYON_RIDE_LINEUP;
+  // Either layout: canyon-b leaves the upcoast peak, where riders start, as it was.
+  const sizes = CANYON_RIDE_LINEUP;
   const height = config.significantHeight;
   if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
   for (let i = 1; i < sizes.length; i += 1) {
@@ -863,6 +850,18 @@ export function canyonReefTakeOff(config: SurfZoneConfig): { x: number; z: numbe
   const c = canyonShape(config.canyonBed);
   const depth = CANYON_REEF_TAKE_OFF_DEPTH.base + CANYON_REEF_TAKE_OFF_DEPTH.perMetre * config.significantHeight;
   return { x: c.reefTakeOffX, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), c.reefTakeOffX, depth + config.tide, config.tide) };
+}
+
+/**
+ * Version B's reef bowl's take-off (canyon-b), where the readout reads its breaker: midway along the whole bowl, where its
+ * bed first reaches the depth the default start's sets break at (`canyonTakeOffDepth`), no deeper than just above its
+ * platform (Big's sets would read the bar's slope seaward of it; they break on the bowl's face, the advisor).
+ */
+export function canyonBowlTakeOff(config: SurfZoneConfig): { x: number; z: number } {
+  const c = canyonShape(config.canyonBed);
+  const x = c.upPeakX + 0.5 * (c.bowlFrom + c.bowlRamp + c.bowlEnd);
+  const target = Math.min(canyonTakeOffDepth(config.significantHeight, config.canyonBed), c.bowlPlatform - 0.2) + config.tide;
+  return { x, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), x, target, config.tide) };
 }
 
 /**
@@ -1012,9 +1011,9 @@ export class SurfZoneSimulation {
    * The Canyon's beach peaks (canyon-beach-break): each arm's peel, over the breaks on its own bar. One tracker across both
    * arms of an A-frame reads as a close-out (the Wave Pool's note), so the left arm (toward +x) and the right have one each.
    */
-  private readonly beachPeel?: { x: number; left: PeelTracker; right: PeelTracker; onBar: (x: number, z: number) => boolean }[];
+  private readonly beachPeel?: { x: number; left: PeelTracker; right: PeelTracker; onBar: (x: number, z: number) => boolean; bowl: boolean }[];
   /** The Canyon's readout per peak with its beach peaks, built when first asked: each peak's take-off x and breaker there. */
-  private peakBreakers?: { x: number; breaker: { value: number; type: BreakerType } }[];
+  private peakBreakers?: { x: number; breaker: { value: number; type: BreakerType }; bowl?: { value: number; type: BreakerType } }[];
   lastStepMs = 0;
   /** Latest step's wall time by stage, including the device readback wait in `water`. */
   readonly stepCosts = { water: 0, breaking: 0, roller: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
@@ -1127,15 +1126,15 @@ export class SurfZoneSimulation {
       const span = canyonReefSpan(canyon);
       this.reefAt = (x) => x >= span.from && x <= span.to;
       this.beachPeel = canyonBars(canyon).map((bar, k) => {
-        const reach = bar.reach + canyon.barTaper;
-        // An arm's columns: from the tip's (a metre either side) out to the end of its taper.
+        // An arm's columns: from the tip's (a metre either side) out to the end of its taper (version B's upcoast bar's +x
+        // arm on into its bowl, canyon-b).
         const arm = (side: 1 | -1) => (column: number) => {
           const u = side * (xCenters[column] - bar.x);
-          return u >= -1 && u <= reach;
+          return u >= -1 && u <= (side > 0 ? bar.plusReach + bar.plusTaper : bar.reach + canyon.barTaper);
         };
         return {
           x: bar.x, left: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(1)), right: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(-1)),
-          onBar: (x: number, z: number) => canyonBarAt(x, z, canyon) === k,
+          onBar: (x: number, z: number) => canyonBarAt(x, z, canyon) === k, bowl: bar.bowl,
         };
       });
     }
@@ -1210,7 +1209,9 @@ export class SurfZoneSimulation {
         ? canyonBars(canyon).flatMap((bar) => ([-1, 1] as const).map((direction) => ({
           direction, ...CANYON_BEACH_LOOK,
           // Each arm's span: from its tip to the end of its bar's taper.
-          span: direction < 0 ? { from: bar.x - bar.reach - canyon.barTaper, to: bar.x } : { from: bar.x, to: bar.x + bar.reach + canyon.barTaper },
+          span: direction < 0 ? { from: bar.x - bar.reach - canyon.barTaper, to: bar.x }
+            // Version B's upcoast +x arm hands on to the bowl's own front where it ramps in (canyon-b).
+            : { from: bar.x, to: bar.bowl ? canyon.upPeakX + canyon.bowlFrom : bar.x + bar.reach + canyon.barTaper },
         })))
         : [];
       if (beachGroups.length) this.beachLook = canyonBars(canyon).map((bar) => bar.x);
@@ -1651,7 +1652,10 @@ export class SurfZoneSimulation {
     // Each arm's fit leaves out the open edge's levelled band, where the bed is no longer the bar's.
     const margin = OPEN_EDGE_RAMP / (this.solver.nx * this.solver.dx);
     const celerity = this.breakerCelerity();
-    return aFrameEstimate(peak.left.estimate(this.solver.time, celerity, margin), peak.right.estimate(this.solver.time, celerity, margin), x! < peak.x ? -1 : 1);
+    const estimate = aFrameEstimate(peak.left.estimate(this.solver.time, celerity, margin), peak.right.estimate(this.solver.time, celerity, margin), x! < peak.x ? -1 : 1);
+    // Version B's upcoast peak runs into its reef bowl (canyon-b): the readout names the bowl's breaker too.
+    const bowl = peak.bowl ? this.peakBreakerAt(peak.x)?.bowl : undefined;
+    return estimate && bowl ? { ...estimate, bowl: bowl.type } : estimate;
   }
 
   /**
@@ -1663,18 +1667,19 @@ export class SurfZoneSimulation {
     const c = canyonShape(this.config.canyonBed);
     const reef = canyonReefSpan(c);
     const middle = 0.5 * (reef.from + reef.to);
+    // Version B (canyon-b) has no reef of its own: its bowl is the upcoast peak's, whose stretch runs on into it.
     return [
-      { from: reef.from, to: reef.to, breaker: this.breakerNear(middle)!, peel: this.peelEstimate(middle) },
-      ...canyonBars(c).map((bar) => {
-        const reach = bar.reach + c.barTaper;
-        return { from: bar.x - reach, to: bar.x + reach, breaker: this.breakerNear(bar.x)!, peel: this.peelEstimate(bar.x) };
-      }),
+      ...(c.reef ? [{ from: reef.from, to: reef.to, breaker: this.breakerNear(middle)!, peel: this.peelEstimate(middle) }] : []),
+      ...canyonBars(c).map((bar) => ({
+        from: bar.x - bar.reach - c.barTaper, to: bar.x + bar.plusReach + bar.plusTaper, breaker: this.breakerNear(bar.x)!, peel: this.peelEstimate(bar.x),
+      })),
     ];
   }
 
   /** The beach peak nearest along-shore position x, or none: off the Canyon's beach, or on its reef's footprint. */
   private beachPeakNear(x: number): NonNullable<SurfZoneSimulation['beachPeel']>[number] | undefined {
-    if (!this.beachPeel || this.reefAt?.(x)) return undefined;
+    // On version B's bowl (canyon-b) the upcoast peak's: the bowl is its +x arm's end, not a reef of its own.
+    if (!this.beachPeel || (this.canyonShape.reef && this.reefAt?.(x))) return undefined;
     let best = this.beachPeel[0];
     for (const peak of this.beachPeel) if (Math.abs(x - peak.x) < Math.abs(x - best.x)) best = peak;
     return best;
@@ -1687,12 +1692,25 @@ export class SurfZoneSimulation {
    */
   breakerNear(x: number): { value: number; type: BreakerType } | undefined {
     if (!this.beachPeel) return undefined;
-    this.peakBreakers ??= [
-      { x: Number.NaN, breaker: this.iribarren(canyonReefTakeOff(this.config)) },
-      ...this.beachPeel.map((peak) => ({ x: peak.x, breaker: this.iribarren(canyonBeachTakeOff(this.config, peak.x)) })),
-    ];
     const peak = this.beachPeakNear(x);
-    return { ...(this.peakBreakers.find((p) => p.x === peak?.x) ?? this.peakBreakers[0]).breaker };
+    return { ...(this.peakBreakerAt(peak?.x) ?? this.peakBreakers![0]).breaker };
+  }
+
+  /**
+   * The readout's breakers, built when first asked: the reef's at its take-off (none on version B), each beach peak's at
+   * its tip, and version B's bowl's at its take-off (`canyonBowlTakeOff`) beside its upcoast peak's. The entry for a peak
+   * at x (the reef's: none).
+   */
+  private peakBreakerAt(x: number | undefined): NonNullable<SurfZoneSimulation['peakBreakers']>[number] | undefined {
+    if (!this.beachPeel) return undefined;
+    this.peakBreakers ??= [
+      ...(this.canyonShape.reef ? [{ x: Number.NaN, breaker: this.iribarren(canyonReefTakeOff(this.config)) }] : []),
+      ...this.beachPeel.map((peak) => ({
+        x: peak.x, breaker: this.iribarren(canyonBeachTakeOff(this.config, peak.x)),
+        ...(peak.bowl ? { bowl: this.iribarren(canyonBowlTakeOff(this.config)) } : {}),
+      })),
+    ];
+    return this.peakBreakers.find((p) => p.x === x);
   }
 
   /** Share of wet surf-zone cells breaking with B > 0.3. */
