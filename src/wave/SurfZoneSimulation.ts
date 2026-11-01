@@ -14,7 +14,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout } from './pool';
+import { POOL, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout, type PoolWaves } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -54,6 +54,10 @@ export interface LipThrowEvent {
   height: number;
   /** Where along shore the crest threw, m. */
   x: number;
+  /** Where across shore the crest stood, m, the still depth there, m, and the breaker-point Iribarren number the throw read. */
+  z?: number;
+  depth?: number;
+  iribarren?: number;
   tube: TubeGeometry;
   /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured, and the gradient it climbs. */
   vortexRatio?: number;
@@ -231,6 +235,13 @@ export interface SurfZoneConfig {
    * take-off and starts at the upcoast peak. Every other spot ignores it; online rooms always run the default.
    */
   canyonBed?: CanyonBed;
+  /**
+   * The Wave Pool's kind of wave (the Surf screen's Waves row, the pool-barrel decisions of 2026-10-31): 'training', the
+   * default, its A-frame for faces of 1.0–1.5 m (`POOL`); 'barrel', the same machine onto a floor whose arms plunge a tube
+   * (`POOL_BARREL`), with its own take-off depth and ridden arm. Every other spot ignores it; online rooms carry it in
+   * their conditions.
+   */
+  poolWaves?: PoolWaves;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
@@ -481,7 +492,7 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     return { offshore: zoneInner - c.zoneLength, zoneInner, blendEnd: zoneInner + c.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: c.edgeDepth };
   }
   // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
-  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore), edgeDepth: today.edgeDepth };
+  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore, config.poolWaves), edgeDepth: today.edgeDepth };
   // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
   // lies inside it, with the zone lengthened to absorb its long waves.
   if (config.spot === 'reef') {
@@ -806,7 +817,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -816,7 +827,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   // estimate from its Hs put the take-off 14 m seaward of the break, and 1.5 H put it 13–23 m inside it.
   // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
   // inside the measured breaks.
-  const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
+  const target = config.spot === 'pool' ? (config.poolWaves === 'barrel' ? poolBarrelBreakDepth : poolBreakDepth)(height / Math.SQRT2)
     : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => firstReaching(spot, tank, x, target, config.tide);
@@ -1066,7 +1077,7 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
@@ -1124,7 +1135,7 @@ export class SurfZoneSimulation {
     const xCenters = this.solver.xCenters;
     const canyon = canyonShape(config.canyonBed);
     this.canyonShape = canyon;
-    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? (config.poolWaves === 'barrel' ? poolBarrelRiddenAt : poolRiddenAt)
       : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     // The Canyon's lagoon and its beach face behind the arm are not its wave (`CANYON.peelReach`; every break on the old layout).
@@ -1946,7 +1957,7 @@ export class SurfZoneSimulation {
       jetFlightTime(shape.shape, height), height,
     );
     this.onThrow?.({
-      asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
+      asked: shape.volume, thrown, height, x, z: zCenters[crestRow], depth: stillDepth, iribarren, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
       speedOverCrest: speed / motion.speed,
     });
     if (thrown > 0) {

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The Canyon's tube runs, end to end: per case a coarse scout, the two phases, the analysis; then the barrel library's
 files and a report. tools/basilisk/run_canyon.sh checks the prerequisites and starts this; it can also run on its own:
+(TUBE_SET=pool, as tools/basilisk/run_pool.sh sets it: the Wave Pool's Barrel cases instead, the same steps; SETS below.)
 
   python3 tools/basilisk/canyon_pipeline.py run [-j N] [--smoke]   start or resume (in the foreground)
   python3 tools/basilisk/canyon_pipeline.py status [--smoke]       where each case is, with an ETA
@@ -35,12 +36,58 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 ANALYSIS = os.path.join(HERE, "analysis")
-CASES = ["canyon23_a49", "canyon23_a38", "canyon23_a29"]  # the costliest first
-WHAT = {
-    "canyon23_a29": ("x −9 (take-off), planar 1:23", "Medium's sets"),
-    "canyon23_a38": ("x −9 (take-off), planar 1:23", "Big's typical wave"),
-    "canyon23_a49": ("x −9 (take-off), planar 1:23", "Big's sets"),
+# Each set of tube runs: its cases (the costliest first), what each sources, its runs' folder, its report's folder, its
+# spot, the script that starts it, and its report's words. TUBE_SET picks one (default: the Canyon's, as before).
+SETS = {
+    "canyon": {
+        "cases": ["canyon23_a49", "canyon23_a38", "canyon23_a29"],
+        "what": {
+            "canyon23_a29": ("x −9 (take-off), planar 1:23", "Medium's sets"),
+            "canyon23_a38": ("x −9 (take-off), planar 1:23", "Big's typical wave"),
+            "canyon23_a49": ("x −9 (take-off), planar 1:23", "Big's sets"),
+        },
+        "state": "canyon", "out": "canyon-tube-runs", "spot": "canyon", "script": "run_canyon.sh", "smoke": "canyon23_a29",
+        "title": "The Canyon's tube runs", "label": "Canyon",
+        "bed": "Each case is a two-crest cnoidal train on the Canyon's reef bed along the wave's path",
+        "bed_detail": "Bed: h0 = 6 m, one planar face at 1:23 to 1.0 m (0.167 h0), flat to the closed right wall.",
+        "fits": "S1 = 1/23 (the reef-bed README's 0.052–0.059)",
+        "foot": "the 6 m foot",
+        "wiring": [
+            "- The cases' `.bin` files are written but listed in no game index: `src/wave/barrel/barrelLibraryIndex.ts` still "
+            "holds the eight shipped cases. Wiring adds them (`npm run barrels` with every shipped case `--keep`ed and these "
+            "`--run` from `data/`, `--spot canyon --flat 0.1666667` and each `--a0`), a `canyon` entry in `BARREL_SPOTS` "
+            "(slope 1/23, foot 6 m, its join and throw tables: the throw from the depths above), and `canyon` in `SWEPT_BARREL`.",
+            "- The arm's face is planar (canyon-long-wave), one transect at every column, so the cases are three A0 of it, "
+            "the loft's own key (slope 1/23, A0); down the line the same face carries smaller waves.",
+        ],
+    },
+    "pool": {
+        "cases": ["pool_barrel_big", "pool_barrel_small"],
+        "what": {
+            "pool_barrel_small": ("the barrel arm's ray (|x| 15–45, mirrored), platform to crest", "Barrel 1.5 m faces"),
+            "pool_barrel_big": ("the barrel arm's ray (|x| 15–45, mirrored), platform to crest", "Barrel 1.8 m faces"),
+        },
+        "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_barrel_small",
+        "title": "The Wave Pool's Barrel tube runs", "label": "Wave Pool Barrel",
+        "bed": "Each case is a two-crest cnoidal train of the pool's 10 s machine wave on its Barrel floor along each arm's ray",
+        "bed_detail": "Bed (docs/research/pool-barrel-2026-11-01/README.md, the Basilisk cases): h0 = the platform's depth, "
+                      "one planar face along the ray (S1) to the reef crest (HS), flat to the closed right wall.",
+        "fits": "S1 = the face's slope along the ray (the solver's measured Mead & Black X)",
+        "foot": "the platform (h0)",
+        "wiring": [
+            "- The cases' `.bin` files are written but listed in no game index: step 3 (the drawing) wires them, "
+            "with a `pool` entry in `BARREL_SPOTS` and the Barrel floor's tube on.",
+            "- The arms are mirrored and their barrel section (|x| 15–45) is one transect, so one case per size covers both arms.",
+        ],
+    },
 }
+SET_NAME = os.environ.get("TUBE_SET", "canyon")
+if SET_NAME not in SETS:
+    sys.exit(f"TUBE_SET must be one of {', '.join(SETS)}, not {SET_NAME}")
+SET = SETS[SET_NAME]
+CASES = SET["cases"]
+WHAT = SET["what"]
+SCRIPT = SET["script"]
 SMOKE_WINDOW = {"tswitch": 1.0, "tmax": 2.0}  # the smoke test's phases: a second of each, at levels 7 and 8
 EXTEND = float(os.environ.get("CANYON_EXTEND", 4.0))  # phase 2 carried on this much (sqrt(h0/g)) once, if it broke late
 
@@ -55,10 +102,10 @@ class Config:
         self.level2 = int(env.get("LEVEL2", 8 if smoke else 13))
         self.scout_level = int(env.get("SCOUT_LEVEL", 7 if smoke else 10))
         self.scout_tmax = env.get("SCOUT_TMAX", "2" if smoke else "")
-        self.cases = env.get("CANYON_CASES", "canyon23_a29" if smoke else " ".join(CASES)).split()
-        self.state = os.path.join(self.runs, "canyon")
+        self.cases = env.get("CANYON_CASES" if SET_NAME == "canyon" else "POOL_CASES", SET["smoke"] if smoke else " ".join(CASES)).split()
+        self.state = os.path.join(self.runs, SET["state"])
         self.out = env.get("CANYON_OUT", os.path.join(self.state, "smoke-out") if smoke
-                           else os.path.join(REPO, "docs", "research", "canyon-tube-runs"))
+                           else os.path.join(REPO, "docs", "research", SET["out"]))
         self.assets = env.get("CANYON_ASSETS", os.path.join(self.out, "barrels") if smoke
                               else os.path.join(REPO, "public", "barrels"))
         self.cases_file = os.path.join(self.state, "cases.txt")
@@ -325,7 +372,7 @@ class Pipeline:
             p2 = d["p2"]
             if os.path.exists(p2 + "_case.json") and os.path.getmtime(p2 + "_case.json") > os.path.getmtime(
                     os.path.join(p2, "done")):
-                self.log("already analysed (run_canyon.sh analyse redoes it)", name)
+                self.log(f"already analysed ({SCRIPT} analyse redoes it)", name)
             else:
                 self.stage[name] = "analysing"
                 self.analyse(name)
@@ -422,7 +469,7 @@ class Pipeline:
             if info["tube"] and self.has_matplotlib():
                 crest = plunge["pre_touchdown"]["crest_m"]
                 self.py(name, "render.py", p2 + "_library.json", p2 + "_strip.png", p2 + "_tube.png", f"{crest:.3f}",
-                        f"Canyon {name}, level {cfg.level2}", os.path.join(p2, "bed.dat"))
+                        f"{SET['label']} {name}, level {cfg.level2}", os.path.join(p2, "bed.dat"))
         else:
             self.log("no tube to build a case from: " + ("the face never went vertical" if plunge.get("t_vertical") is None
                      else "the lip never enclosed air before the end"), name)
@@ -438,7 +485,7 @@ class Pipeline:
         if not hasattr(self, "_mpl"):
             self._mpl = subprocess.run([self.cfg.python, "-c", "import matplotlib"], capture_output=True).returncode == 0
             if not self._mpl:
-                self.log("matplotlib is missing, so no figures (pip install matplotlib, then run_canyon.sh analyse)")
+                self.log(f"matplotlib is missing, so no figures (pip install matplotlib, then {SCRIPT} analyse)")
         return self._mpl
 
     def export(self, name):
@@ -475,12 +522,12 @@ class Pipeline:
                 info = json.load(open(p2 + "_case.json")) if os.path.exists(p2 + "_case.json") else {}
                 if info.get("tube"):
                     hs = read_params(os.path.join(p2, "params.txt")).get("HS", 1 / 6)
-                    built.append((cfg.run_name(name), info["a0"], hs, "canyon"))
+                    built.append((cfg.run_name(name), info["a0"], hs, SET["spot"]))
         if not built:
             self.log("no case threw a tube, so no barrel case files")
             return False
         if not shutil.which("npm") or not os.path.exists(os.path.join(REPO, "node_modules", ".bin", "rolldown")):
-            self.log("npm or the repo's node_modules is missing (npm ci), so no barrel case files; then run_canyon.sh analyse")
+            self.log(f"npm or the repo's node_modules is missing (npm ci), so no barrel case files; then {SCRIPT} analyse")
             return False
         args = ["npm", "run", "--silent", "barrels", "--", "--runs", runs_dir, "--assets", cfg.assets,
                 "--index", os.path.join(cfg.out, "barrel-index.json"), "--cases", os.path.join(cfg.out, "barrel-cases.md")]
@@ -555,7 +602,7 @@ class Pipeline:
         signal.signal(signal.SIGTERM, self.stop)
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
-        self.log(f"the Canyon's tube runs{' (smoke test)' if cfg.smoke else ''}: {', '.join(cfg.cases)}; scout level "
+        self.log(f"{SET['title'][0].lower() + SET['title'][1:]}{' (smoke test)' if cfg.smoke else ''}: {', '.join(cfg.cases)}; scout level "
                  f"{cfg.scout_level}, phases {cfg.level1} and {cfg.level2}; {cfg.jobs} at once"
                  + (f", {cfg.threads} OpenMP threads each" if cfg.omp else ", one core each") + f"; {machine()}")
         self.log(f"logs: {self.logdir}")
@@ -603,7 +650,7 @@ class Pipeline:
 
 
 def supervisor_alive(cfg):
-    """The pid in runs/canyon/pipeline.pid, if that process is still this supervisor."""
+    """The pid in runs/<set>/pipeline.pid, if that process is still this supervisor."""
     path = os.path.join(cfg.state, "pipeline.pid")
     try:
         pid = int(open(path).read().strip())
@@ -723,14 +770,13 @@ def write_report(cfg, summary, rows):
     out = os.path.join(cfg.out, "report.md")
     built = [n for n, c in summary["cases"].items() if c.get("tube")]
     lines = [
-        "# The Canyon's tube runs" + (" (smoke test)" if cfg.smoke else ""),
+        f"# {SET['title']}" + (" (smoke test)" if cfg.smoke else ""),
         "",
-        f"Generated by `tools/basilisk/run_canyon.sh` on {summary['generated']} ({summary['machine']}; Basilisk "
-        f"{summary['basilisk']}). Each case is a two-crest cnoidal train on the Canyon's reef bed along the wave's path "
+        f"Generated by `tools/basilisk/{SCRIPT}` on {summary['generated']} ({summary['machine']}; Basilisk "
+        f"{summary['basilisk']}). {SET['bed']} "
         "(`tools/basilisk/run_periodic.sh`), the second crest studied: a scout at level "
         f"{cfg.scout_level} placed the switch and the window, phase 1 ran at level {cfg.level1} and phase 2 at level "
-        f"{cfg.level2} inside the window. Bed: h0 = 6 m, one planar face at 1:23 to 1.0 m (0.167 h0), flat to the closed "
-        "right wall. Numbers are [measured] in the model.",
+        f"{cfg.level2} inside the window. {SET['bed_detail']} Numbers are [measured] in the model.",
         "",
         "| Case | Transect; what | H/h0 at T | A0, the foot crest (m; from) | Face vertical | H at vertical (crest, trough ahead) | Tube | "
         "Open, vertical to touchdown (s) | Jet A_J/H² (fit) | Tube A_O/H² (fit) | L/W (fit) | Tilt (fit) | Lip, cells across | "
@@ -741,11 +787,11 @@ def write_report(cfg, summary, rows):
         "- **Per H at vertical:** H is crest minus the trough ahead at the frame the face goes vertical (`plunge_measure.py`), "
         "the height the game sizes its jets with; the jet and tube are just before touchdown (the last overturned frame with "
         "the jet at least 3 cells off the face).",
-        "- **Fits:** Pick & Feddersen's, at ψ0 = S1/A0^¼ with S1 = 1/23 (the reef-bed README's 0.052–0.059), as "
+        f"- **Fits:** Pick & Feddersen's, at ψ0 = S1/A0^¼ with {SET['fits']}, as "
         "`scripts/barrel-library.ts` takes them. They are plane-slope fits; Padang Padang's reef cases ran under them in area.",
         "- **Cells across the lip:** basilisk-profiles.md's rule asks for about 6. Under 4, rerun phase 2 one level finer "
-        "(`LEVEL2=14 tools/basilisk/run_canyon.sh`; phase 1 is reused).",
-        "- **A0** is the second crest's height as it passes the 6 m foot (phase 1, interpolated), the key the swept barrel "
+        f"(`LEVEL2=14 tools/basilisk/{SCRIPT}`; phase 1 is reused).",
+        f"- **A0** is the second crest's height as it passes {SET['foot']} (phase 1, interpolated), the key the swept barrel "
         "blends cases by; `train` means the foot crest wasn't tracked and the cnoidal train's crest stands in.",
         "",
         "## Files",
@@ -760,18 +806,13 @@ def write_report(cfg, summary, rows):
         "",
         "## For the swept barrel's wiring",
         "",
-        "- The cases' `.bin` files are written but listed in no game index: `src/wave/barrel/barrelLibraryIndex.ts` still "
-        "holds the eight shipped cases. Wiring adds them (`npm run barrels` with every shipped case `--keep`ed and these "
-        "`--run` from `data/`, `--spot canyon --flat 0.1666667` and each `--a0`), a `canyon` entry in `BARREL_SPOTS` "
-        "(slope 1/23, foot 6 m, its join and throw tables: the throw from the depths above), and `canyon` in `SWEPT_BARREL`.",
-        "- The arm's face is planar (canyon-long-wave), one transect at every column, so the cases are three A0 of it, "
-        "the loft's own key (slope 1/23, A0); down the line the same face carries smaller waves.",
+        *SET["wiring"],
     ]
     open(out, "w").write("\n".join(lines) + "\n")
 
 
 def main():
-    ap = argparse.ArgumentParser(description="The Canyon's tube runs")
+    ap = argparse.ArgumentParser(description=SET["title"])
     ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "analyse"])
     ap.add_argument("-j", "--jobs", type=int)
     ap.add_argument("--smoke", action="store_true")
@@ -779,14 +820,14 @@ def main():
     cfg = Config(smoke=a.smoke, jobs=a.jobs)
     if a.cmd == "status":
         alive = supervisor_alive(cfg)
-        print(f"The supervisor is running (pid {alive})." if alive else "The supervisor is not running (run_canyon.sh resumes it).")
+        print(f"The supervisor is running (pid {alive})." if alive else f"The supervisor is not running ({SCRIPT} resumes it).")
         for line in status_lines(cfg):
             print(line)
         return 0
     os.makedirs(cfg.state, exist_ok=True)
     other = supervisor_alive(cfg)
     if other:
-        print(f"The supervisor is already running (pid {other}); see run_canyon.sh status.")
+        print(f"The supervisor is already running (pid {other}); see {SCRIPT} status.")
         return 1
     p = Pipeline(cfg)
     if a.cmd == "analyse":

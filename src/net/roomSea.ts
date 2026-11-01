@@ -28,6 +28,8 @@ export function roomSurfZoneConfig(room: RoomSea, startSeaTime: number, compute:
     bandwidth: swell.bandwidth,
     tide: settings.tide,
     windSpeed: settings.windSpeed,
+    // The Wave Pool's Barrel floor when the room chose it (a room from before the Barrel mode has none: Training).
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? { poolWaves: 'barrel' as const } : {}),
     stage: 2,
     compute,
     // Practice's groundswell is given at the tank's edge, as the Surf screen's is (the wave-sizes spec).

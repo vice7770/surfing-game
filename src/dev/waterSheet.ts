@@ -12,7 +12,7 @@
  */
 import { PerspectiveCamera, Vector3, type Color } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
-import { swellChoice, type TimeOfDay } from '../game/SurfConditions';
+import { physicalSettingsFor, swellChoice, type TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
@@ -301,7 +301,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.textContent = 'Water sheet: settling the sea…';
   document.body.append(status);
   const compute = COMPUTE === 'cpu' ? 'cpu' : 'auto';
-  const settings: PhysicalSettings = SWELL
+  // The Wave Pool's sizes are its machine's (`&waves=barrel`: its Barrel floor and sizes, Small 1.5 m and Big 1.8 m).
+  const settings: PhysicalSettings = SWELL && SPOT === 'pool'
+    ? physicalSettingsFor('pool', { swell: SWELL, tide: 'mid', wind: 'calm', time: 'midday', ...(PARAMETERS.get('waves') === 'barrel' ? { waves: 'barrel' as const } : {}) }, { stage: 2, compute })
+    : SWELL
     ? { ...DEFAULT_PHYSICAL_SETTINGS, ...swellChoice(SPOT, SWELL), spot: SPOT, source: 'buoy', compute }
     : BUOY.height || BUOY.period
       ? {

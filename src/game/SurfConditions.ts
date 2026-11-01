@@ -4,7 +4,7 @@ import type { SpotName } from '../wave/Bathymetry';
 import { PRACTICE_SURF, SWELL_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
 import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, REFRACTED_SPREADING, type PhysicalSettings } from './PhysicalMode';
 import { solverStage } from '../wave/SurfZoneSimulation';
-import { POOL, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolSize } from '../wave/pool';
+import { POOL, POOL_BARREL_EDGE_HEIGHT, POOL_BARREL_FACES, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolBarrelSize, type PoolSize, type PoolWaves } from '../wave/pool';
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings: the Wave Pool first, where the riding is learned. */
 export const SURF_SPOTS: readonly SpotName[] = ['pool', 'beach', 'point', 'reef', 'canyon', 'padang'];
@@ -28,6 +28,19 @@ export function poolSize(swell: SwellSize): PoolSize {
 }
 
 /**
+ * The Wave Pool's Barrel size for a swell choice (the pool-barrel decisions, 2026-10-31): Big is its 1.8 m face, every
+ * other choice its 1.5 m, the smallest a crouched rider fits.
+ */
+export function poolBarrelSize(swell: SwellSize): PoolBarrelSize {
+  return swell === 'big' ? 'big' : 'small';
+}
+
+/** The Wave Pool's face for a choice, m: its Training sizes, or its Barrel sizes when `waves` is 'barrel'. */
+export function poolFace(swell: SwellSize, waves?: PoolWaves): number {
+  return waves === 'barrel' ? POOL_BARREL_FACES[poolBarrelSize(swell)] : POOL_FACES[poolSize(swell)];
+}
+
+/**
  * Whether a choice rides as practice (the balance meter, the pocket reflex, the hints): the Practice swell, or
  * the Wave Pool at any size, since the pool is where the riding is practised.
  */
@@ -45,6 +58,11 @@ export interface SurfConditions {
   tide: TideLevel;
   wind: WindKind;
   time: TimeOfDay;
+  /**
+   * The Wave Pool's waves (its Waves row): 'training', its A-frame, or 'barrel', its tube wave. Missing means training,
+   * as in rooms and logbooks from before the Barrel mode; every other spot ignores it.
+   */
+  waves?: PoolWaves;
 }
 
 export const DEFAULT_CONDITIONS: SurfConditions = { swell: 'practice', tide: 'mid', wind: 'calm', time: 'midday' };
@@ -110,9 +128,9 @@ export function swellChoice(spot: SpotName, swell: Exclude<SwellSize, 'practice'
  * The surf a swell size makes at a spot (the wave-sizes spec): the practice groundswell as measured, and a spot's own
  * swells as measured where its forecast can't follow them (SWELL_SURF: the Canyon), the others forecast.
  */
-export function surfForecastFor(spot: SpotName, swell: SwellSize): SurfForecast {
+export function surfForecastFor(spot: SpotName, swell: SwellSize, waves?: PoolWaves): SurfForecast {
   // The Wave Pool's faces are its sizes: every wave the same.
-  if (spot === 'pool') return { typical: POOL_FACES[poolSize(swell)], sets: POOL_FACES[poolSize(swell)] };
+  if (spot === 'pool') return { typical: poolFace(swell, waves), sets: poolFace(swell, waves) };
   if (swell === 'practice') return { ...PRACTICE_SURF[spot] };
   const measured = SWELL_SURF[spot]?.[swell];
   if (measured) return { ...measured };
@@ -122,7 +140,7 @@ export function surfForecastFor(spot: SpotName, swell: SwellSize): SurfForecast 
 
 /** The Surf screen's line for a choice: "Surf: 1.8–2.3 m · head high". */
 export function surfForecastText(choice: { spot: SpotName; conditions: SurfConditions }, words: SurfWords): string {
-  return t('surf.forecast', { surf: describeSurf(surfForecastFor(choice.spot, choice.conditions.swell), words) });
+  return t('surf.forecast', { surf: describeSurf(surfForecastFor(choice.spot, choice.conditions.swell, choice.conditions.waves), words) });
 }
 
 /** Tide, m, on the Wave Lab's −1…1 m slider. */
@@ -170,12 +188,15 @@ export const BACKDROP_TIME: TimeOfDay = 'sunset';
 type WaterTier = { stage: 1 | 2; compute: 'auto' | 'cpu' };
 
 export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, water: WaterTier): PhysicalSettings {
-  // The Wave Pool's machine: one regular wave of the size's height, square to the tank, in still air at a fixed level.
+  // The Wave Pool's machine: one regular wave of the size's height, square to the tank, in still air at a fixed level; onto
+  // the Barrel floor at its own sizes when the choice says so.
   if (spot === 'pool') {
+    const barrel = conditions.waves === 'barrel';
+    const height = barrel ? POOL_BARREL_EDGE_HEIGHT[poolBarrelSize(conditions.swell)] : POOL_EDGE_HEIGHT[poolSize(conditions.swell)];
     return {
       ...DEFAULT_PHYSICAL_SETTINGS, spot, ...raisedWater(spot, water), source: 'buoy',
-      significantHeight: regularSignificantHeight(POOL_EDGE_HEIGHT[poolSize(conditions.swell)]), peakPeriod: POOL.period,
-      directionDegrees: 0, spread: 0, tide: 0, windSpeed: 0,
+      significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period,
+      directionDegrees: 0, spread: 0, tide: 0, windSpeed: 0, ...(barrel ? { poolWaves: 'barrel' as const } : {}),
     };
   }
   const swell = conditions.swell === 'practice' ? undefined : swellChoice(spot, conditions.swell);

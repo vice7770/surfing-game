@@ -1,4 +1,4 @@
-import { SURF_SPOTS, poolSize, type SurfConditions } from '../game/SurfConditions';
+import { SURF_SPOTS, poolBarrelSize, poolSize, type SurfConditions } from '../game/SurfConditions';
 import type { SpotName } from '../wave/Bathymetry';
 import { el, icon } from './dom';
 import { ICONS } from './icons';
@@ -17,7 +17,12 @@ const CONDITION_OPTIONS: Record<ConditionId, readonly string[]> = {
   tide: ['low', 'mid', 'high'],
   wind: ['offshore', 'calm', 'onshore'],
   time: ['dawn', 'midday', 'sunset'],
+  waves: ['training', 'barrel'],
 };
+
+/** The rows each kind of spot shows: the Wave Pool its waves, its sizes and the time of day; the sea spots their four conditions. */
+const POOL_ROWS: readonly ConditionId[] = ['waves', 'swell', 'time'];
+const SEA_ROWS: readonly ConditionId[] = ['swell', 'tide', 'wind', 'time'];
 
 export interface SurfModel {
   spots: { id: SpotName; name: StringKey; blurb: StringKey; selected: boolean }[];
@@ -27,16 +32,30 @@ export interface SurfModel {
 /**
  * The Surf screen as data (plan P8): the spots on offer and the four condition rows, with the choices marked. The
  * Wave Pool (the movement-flow spec) has its sizes in place of the swell and no tide or wind: its machine sends the
- * same wave in still air.
+ * same wave in still air. Its Waves row picks Training (its A-frame, 1.0–1.5 m) or Barrel (its tube wave, 1.5 and 1.8 m;
+ * the pool-barrel decisions, 2026-10-31), and its size row shows that kind's sizes.
  */
 export function surfModel(choice: SurfChoice): SurfModel {
   const pool = choice.spot === 'pool';
-  const ids = (Object.keys(CONDITION_OPTIONS) as ConditionId[]).filter((id) => !pool || (id !== 'tide' && id !== 'wind'));
+  const barrel = choice.conditions.waves === 'barrel';
   return {
     spots: SURF_SPOTS.map((id) => ({
       id, name: `spot.${id}` as StringKey, blurb: `spot.${id}.blurb` as StringKey, selected: id === choice.spot,
     })),
-    rows: ids.map((id) => {
+    rows: (pool ? POOL_ROWS : SEA_ROWS).map((id) => {
+      if (pool && id === 'waves') {
+        return {
+          id, label: 'cond.waves' as StringKey,
+          options: CONDITION_OPTIONS.waves.map((value) => ({ value, label: `cond.waves.${value}` as StringKey, selected: (barrel ? 'barrel' : 'training') === value })),
+        };
+      }
+      if (pool && id === 'swell' && barrel) {
+        const size = poolBarrelSize(choice.conditions.swell);
+        return {
+          id, label: 'cond.size' as StringKey,
+          options: (['small', 'big'] as const).map((value) => ({ value, label: `cond.swell.barrel.${value}` as StringKey, selected: size === value })),
+        };
+      }
       if (pool && id === 'swell') {
         const size = poolSize(choice.conditions.swell);
         return {
@@ -103,6 +122,8 @@ export function createSurfChoices(
             click: () => {
               (choice.conditions as unknown as Record<string, string>)[row.id] = option.value;
               press(group, button);
+              // The pool's Waves choice changes which sizes its size row offers.
+              if (row.id === 'waves') renderRows();
               changed({ ...choice, conditions: { ...choice.conditions } });
             },
           },

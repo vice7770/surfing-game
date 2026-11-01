@@ -186,8 +186,149 @@ export function poolDepth(x: number, z: number): number {
   return Math.min(bed, beach);
 }
 
-export function poolSpot(): SurfSpot {
-  return { name: 'pool', depthAt: poolDepth };
+/**
+ * The Wave Pool's two kinds of wave (the pool-barrel decisions, 2026-10-31): 'training', the A-frame above (faces 1.0,
+ * 1.25 and 1.5 m, unchanged), and 'barrel', a mirrored A-frame whose arms plunge a tube a crouched rider fits
+ * (`POOL_BARREL`, faces 1.5 and 1.8 m). The same machine sends the same regular wave onto either.
+ */
+export type PoolWaves = 'training' | 'barrel';
+
+/**
+ * The Barrel mode's floor (docs/research/pool-barrel-2026-11-01; the water-physics advisor's design, 2026-11-01): the
+ * training finger's planform (its tip, its arms at `POOL.armAngle` easing to `POOL.outerArmAngle`, `poolCrestZ`) under the
+ * same machine (its feed, zone, ramp foot and terrace edge, so `poolTankLayout` is the same), with the face made a tube's:
+ * - **a level platform** `platformDepth` deep from `platformLead` m seaward of the terrace's edge (`poolBarrelPlatformZ`) to the face's knee, so the 1.8 m
+ *   faces cross it unbroken (H/h about 0.48–0.52 on it; Nelson's and Gourlay's 0.55 limit on a level bed and a reef flat,
+ *   via Saket et al. 2017; the training terrace's 2.5 m would hold them at 0.65–0.68), and crests reach the knee straight;
+ * - **no ridges seaward of it:** seaward of the platform the bed is the ramp alone, square to the crests, from the
+ *   machine's floor at the training ramp's foot (`poolRampFootZ`) up to the platform: the finger's faces don't run on as
+ *   the training's do (on a 1:9.5 face they would reach the zone's edge about 6 m deep), so the zone's inner edge is the
+ *   plain feed and has no step;
+ * - **one steep face** square to the crest line from the knee to the crest: `gradient` about 1:9.5, so along the breaking
+ *   ray (α_b about 50°) it is about 1:14.5, Mead & Black's (2001) X 14–15 and vortex ratio Y = 0.065 X + 0.821 of
+ *   1.73–1.80, their "extreme" class (Pipeline 1.56–1.92), and ξb about 0.64–0.70 at 1.5–1.8 m faces (plunging; Battjes
+ *   1974). One slope, not two: Mead & Black's band (h_b ± 2.5 m) spans the whole face at both sizes, so a gentler lower
+ *   part would soften Y. At the tip, met square, it is `tipGradient` (X 15 there too), easing to `gradient` by |x|
+ *   `tipEase`. The knee is rounded over ±`kneeRounding` m;
+ * - **its crest** `crestDepth` deep at the tip, easing to `armCrestDepth` by |x| `crestEase`: a low relative crest
+ *   submergence (h_c/H 0.5–0.6; Blenkinsopp & Chaplin's 1:10 reef broke more intensely as it fell; Surf Ranch's bar is at
+ *   0.48), no shallower than 0.8 m so the 1.8 m wave's trough and backwash leave water on the top;
+ * - **a reef top** `flatWidth` m wide square to the crest line, then the lagoon's inner slope at `lagoonSlope` down to
+ *   `lagoonDepth`;
+ * - **the barrel section** along each arm to |x| `armLength` (u 24–103 m along the arm from the tip; riders wait at the
+ *   training's `POOL.takeOffX`, x 27, on it), then **a back-off** over `taperWidth` m, the crest deepening to the platform with the face's
+ *   gradient held, so the wave backs off into a shoulder to kick out on and the lagoon drains through the channels beside
+ *   it; past the taper the platform runs level to the beach face, the same across the window's open side edges.
+ * Mutable for the probes.
+ */
+export const POOL_BARREL = {
+  platformDepth: 3.25,
+  gradient: 1 / 9.5,
+  tipGradient: 1 / 15,
+  tipEase: 15,
+  crestDepth: 1.0,
+  armCrestDepth: 0.9,
+  crestEase: 25,
+  kneeRounding: 3,
+  flatWidth: 6,
+  lagoonSlope: 1 / 18,
+  lagoonDepth: 1.8,
+  armLength: 45,
+  taperWidth: 25,
+  /** How far seaward of the training terrace's edge (`poolTerraceZ`) the platform begins, m: room for the knee near the tip. */
+  platformLead: 0,
+};
+
+/** Where the barrel floor's platform begins, z, m: the ramp below it, the platform shoreward of it. */
+export function poolBarrelPlatformZ(): number {
+  return poolTerraceZ() - POOL_BARREL.platformLead;
+}
+
+/** The barrel floor's ramp, from the machine's floor at the training ramp's foot to the platform at the terrace's edge, m deep. */
+function barrelRamp(z: number): number {
+  const p = POOL;
+  const foot = poolRampFootZ();
+  const edge = poolBarrelPlatformZ();
+  if (z <= foot) return p.feedDepth;
+  return POOL_BARREL.platformDepth + ((edge - z) * (p.feedDepth - POOL_BARREL.platformDepth)) / (edge - foot);
+}
+
+/**
+ * The barrel face's depth `seaward` m out from its crest square to the crest line: the face at `gradient` from `crest`
+ * down to the platform, its knee rounded by a parabola tangent to both over ±`kneeRounding` m (never wider than the face).
+ */
+function barrelFace(crest: number, gradient: number, seaward: number): number {
+  const b = POOL_BARREL;
+  const knee = (b.platformDepth - crest) / gradient;
+  const half = Math.min(b.kneeRounding, knee);
+  if (seaward <= knee - half) return crest + seaward * gradient;
+  if (seaward >= knee + half) return b.platformDepth;
+  const left = knee + half - seaward;
+  return b.platformDepth - (gradient * left * left) / (4 * half);
+}
+
+/** How far each barrel arm has backed off into the platform at along-shore position x: 0 on its barrel section, 1 past its taper. */
+export function poolBarrelTaper(x: number): number {
+  return ease(POOL_BARREL.armLength, POOL_BARREL.armLength + POOL_BARREL.taperWidth, Math.abs(x));
+}
+
+/** The barrel floor's face gradient square to the crest line at along-shore position x: `tipGradient` at the tip, `gradient` from |x| `tipEase`. */
+export function poolBarrelGradient(x: number): number {
+  const b = POOL_BARREL;
+  return b.tipGradient + (b.gradient - b.tipGradient) * ease(0, b.tipEase, Math.abs(x));
+}
+
+/** The barrel floor's crest depth at along-shore position x, m: easing from the tip's to the arm's, then backing off to the platform. */
+export function poolBarrelCrestDepth(x: number): number {
+  const b = POOL_BARREL;
+  const arm = b.crestDepth + (b.armCrestDepth - b.crestDepth) * ease(0, b.crestEase, Math.abs(x));
+  return arm + (b.platformDepth - arm) * poolBarrelTaper(x);
+}
+
+/** The Barrel mode's still depth below datum at (x, z), m; negative on the deck (`POOL_BARREL`). */
+export function poolBarrelDepth(x: number, z: number): number {
+  const p = POOL;
+  const b = POOL_BARREL;
+  const beach = Math.max(-p.deck, -z * p.shoreSlope);
+  // Seaward of the terrace's edge, the ramp alone, square to the crests: no ridges run on (the advisor, 2026-11-01).
+  if (z < poolBarrelPlatformZ()) return Math.min(barrelRamp(z), beach);
+  const crest = poolBarrelCrestDepth(x);
+  const crestLine = poolCrestZ(x);
+  const normal = poolNormalShare(x);
+  let reef: number;
+  if (z <= crestLine) reef = barrelFace(crest, poolBarrelGradient(x), (crestLine - z) * normal);
+  else {
+    // The top, square to the crest line, then the lagoon's inner slope down to the lagoon (the platform past the taper).
+    const lagoon = b.lagoonDepth + (b.platformDepth - b.lagoonDepth) * poolBarrelTaper(x);
+    const inside = Math.max(0, (z - crestLine) * normal - b.flatWidth);
+    reef = Math.min(lagoon, crest + inside * b.lagoonSlope);
+  }
+  return Math.min(reef, beach);
+}
+
+/** The Barrel mode's two sizes, as faces at the break, m (decision Q6): a crouched rider fits from 1.5 m, the smallest. */
+export const POOL_BARREL_FACES = { small: 1.5, big: 1.8 } as const;
+export type PoolBarrelSize = keyof typeof POOL_BARREL_FACES;
+
+/** The wave height the machine makes at the tank's edge for each Barrel size, m: set so the surf meter reads its face (the size probe). */
+export const POOL_BARREL_EDGE_HEIGHT: Record<PoolBarrelSize, number> = { small: 1.05, big: 1.3 };
+
+/** Where the machine's wave starts breaking at the barrel's take-off, m deep for a wave H m high at the feed (the size probe). */
+export const POOL_BARREL_BREAK_DEPTH = { base: 0.27, perMetre: 1.08 } as const;
+
+/** How deep the pool's wave of height H at the feed first breaks at the barrel's take-off, m. */
+export function poolBarrelBreakDepth(height: number): number {
+  return POOL_BARREL_BREAK_DEPTH.base + POOL_BARREL_BREAK_DEPTH.perMetre * height;
+}
+
+/** The arm the barrel's peel is measured on: the right one (riders wait there), out to where its back-off ends. */
+export function poolBarrelRiddenAt(x: number): boolean {
+  return x >= 0 && x <= POOL_BARREL.armLength + POOL_BARREL.taperWidth;
+}
+
+/** The pool's bed for its kind of wave: the training A-frame (the default) or the Barrel mode's. */
+export function poolSpot(waves: PoolWaves = 'training'): SurfSpot {
+  return { name: 'pool', depthAt: waves === 'barrel' ? poolBarrelDepth : poolDepth };
 }
 
 /**
@@ -206,8 +347,10 @@ const POOL_ZONE_WAVELENGTHS = 1.75;
  * The pool's tank across shore, m (a TankLayout without its edge depth): the relaxation zone over the machine's
  * floor ending just seaward of the ramp, the fine grid from just seaward of the terrace to the shore.
  */
-export function poolTankLayout(shore: number): { offshore: number; zoneInner: number; blendEnd: number; fineFrom: number; shore: number } {
+export function poolTankLayout(shore: number, waves: PoolWaves = 'training'): { offshore: number; zoneInner: number; blendEnd: number; fineFrom: number; shore: number } {
   const zoneInner = poolRampFootZ() - 10;
   const zone = POOL_ZONE_WAVELENGTHS * waveKinematics(POOL.period, POOL.feedDepth).wavelength;
-  return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + 10, fineFrom: poolTerraceZ() - 10, shore };
+  // The Barrel floor's platform begins seaward of the terrace's edge: its 1 m cells from 10 m seaward of it, as the terrace's.
+  const fineFrom = (waves === 'barrel' ? Math.min(poolTerraceZ(), poolBarrelPlatformZ()) : poolTerraceZ()) - 10;
+  return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + 10, fineFrom, shore };
 }
