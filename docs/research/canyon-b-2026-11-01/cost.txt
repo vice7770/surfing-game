@@ -1,0 +1,10 @@
+canyon medium (today): 400 × 451 = 180400 cells, 64 components; spun up in 55.6 s
+step (1/30 s), 150 steps: p50 83.14 ms, mean 83.16 ms, p95 83.39 ms; 0.461 µs a cell (p50)
+canyon medium (old): 400 × 451 = 180400 cells, 64 components; spun up in 58.7 s
+step (1/30 s), 150 steps: p50 161.78 ms, mean 127.43 ms, p95 162.41 ms; 0.897 µs a cell (p50)
+canyon medium (today): 400 × 451 = 180400 cells, 64 components; spun up in 55.3 s
+step (1/30 s), 150 steps: p50 82.84 ms, mean 82.93 ms, p95 83.29 ms; 0.459 µs a cell (p50)
+canyon medium (old): 400 × 451 = 180400 cells, 64 components; spun up in 58.3 s
+step (1/30 s), 150 steps: p50 160.40 ms, mean 126.35 ms, p95 161.25 ms; 0.889 µs a cell (p50)
+
+CFL check (the same sea, 150 steps after spin-up, no warm-up steps): B 0 of 150 steps needing two solver substeps, p50 82.5 ms, p90 82.9; old 71 of 150, p50 85.4, p90 161.8. No lip jets on either.
