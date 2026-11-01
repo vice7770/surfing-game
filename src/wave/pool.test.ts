@@ -5,7 +5,7 @@ import {
   poolBarrelPlatformZ, poolBarrelRiddenAt, poolCrestZ, poolDeckZ, poolDepth, poolNormalShare, poolRampFootZ, poolRiddenAt, poolSea, poolSpot, poolTankLayout, poolTerraceZ,
   regularSignificantHeight,
 } from './pool';
-import { SurfZoneSimulation, takeOffPoint, tankLayout } from './SurfZoneSimulation';
+import { RIDE_LINEUP_OFFSET, SurfZoneSimulation, rideLineupOffset, takeOffPoint, tankLayout } from './SurfZoneSimulation';
 
 describe('the Wave Pool (the movement-flow spec)', () => {
   it('is the same on both arms, so every wave peels both ways alike', () => {
@@ -152,11 +152,15 @@ describe('the Wave Pool’s Barrel floor (the pool-barrel decisions, 2026-10-31)
 
   it('waits on the right arm’s barrel section, where its first breaks are', () => {
     const takeOff = takeOffPoint(barrel);
-    expect(takeOff.x).toBeCloseTo(POOL.takeOffX, 6);
+    expect(takeOff.x).toBeCloseTo(POOL_BARREL.takeOffX, 6);
     expect(poolBarrelDepth(takeOff.x, takeOff.z)).toBeCloseTo(poolBarrelBreakDepth(POOL_BARREL_EDGE_HEIGHT.small), 1);
     expect(takeOff.z).toBeLessThan(poolCrestZ(POOL.takeOffX, POOL_BARREL));
-    expect(poolBarrelRiddenAt(POOL.takeOffX)).toBe(true);
-    expect(poolBarrelRiddenAt(-POOL.takeOffX)).toBe(false);
+    expect(poolBarrelRiddenAt(POOL_BARREL.takeOffX)).toBe(true);
+    expect(poolBarrelRiddenAt(-POOL_BARREL.takeOffX)).toBe(false);
+    // Riders start nearer the break than at the other spots: the face along +z is steep there.
+    expect(rideLineupOffset(barrel)).toBe(POOL_BARREL.startOut);
+    const { poolWaves: _, ...training } = barrel;
+    expect(rideLineupOffset(training)).toBe(RIDE_LINEUP_OFFSET);
     expect(POOL_BARREL_EDGE_HEIGHT.small).toBeLessThan(POOL_BARREL_EDGE_HEIGHT.big);
     expect(POOL_BARREL_FACES).toEqual({ small: 1.5, big: 1.8 });
   });

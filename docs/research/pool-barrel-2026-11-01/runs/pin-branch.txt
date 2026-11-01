@@ -7,5 +7,5 @@ pool shared swell: sea 042a89cb grid 280×359 take-off 27.000,-214.500 start 11 
 pool small: sea b68588f4 grid 280×359 take-off 27.000,-193.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 126
 pool medium: sea 564d0e2f grid 280×359 take-off 27.000,-205.000 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 242
 pool big: sea 1b0d2434 grid 280×359 take-off 27.000,-217.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} jets 226
-pool barrel small: sea 428fcd86 grid 280×374 take-off 27.000,-197.000 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-287,"shore":30,"edgeDepth":9} jets 210
-pool barrel big: sea 39f8522b grid 280×374 take-off 27.000,-202.000 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-287,"shore":30,"edgeDepth":9} jets 242
+pool barrel small: sea 24232e3f grid 280×374 take-off 27.000,-176.500 start 6 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-287,"shore":30,"edgeDepth":9} jets 222
+pool barrel big: sea bcdaf2e6 grid 280×374 take-off 27.000,-190.500 start 6 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-287,"shore":30,"edgeDepth":9} jets 247

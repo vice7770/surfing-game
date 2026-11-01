@@ -26,6 +26,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../../../src/game/SurfConditions';
+import { POOL_BARREL } from '../../../src/wave/pool';
 import { PhysicalSurfWater } from '../../../src/physics/PhysicalSurfWater';
 import { RideSession } from '../../../src/physics/RideSession';
 import { createWaterSample, type SurfWater } from '../../../src/physics/SurfWater';
@@ -83,6 +84,11 @@ const ALL: Script[] = STROKES.flatMap((stroke) => [
 const wanted = option('scripts')?.split(',');
 const SCRIPTS = wanted ? ALL.filter((script) => wanted.includes(script.name)) : ALL;
 
+// `--barrel key=value,...`: the Barrel floor's keys (`POOL_BARREL`, e.g. takeOffX=20) for a sweep.
+for (const pair of (option('barrel') ?? '').split(',').filter(Boolean)) {
+  const [key, value] = pair.split('=');
+  (POOL_BARREL as Record<string, number>)[key] = Number(value);
+}
 const spotName = (option('spot') ?? 'canyon') as 'canyon' | 'pool';
 const settings = physicalSettingsFor(spotName, {
   swell: size, tide: 'mid', wind: 'calm', time: 'midday', ...(option('waves') === 'barrel' ? { waves: 'barrel' as const } : {}),

@@ -724,8 +724,9 @@ export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.
 export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
 /** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak (its layout's). */
-export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed): number {
-  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : spot === 'canyon' ? canyonShape(canyonBed).takeOffX : REEF.takeOffX;
+export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed, poolWaves?: PoolWaves): number {
+  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? (poolWaves === 'barrel' ? POOL_BARREL.takeOffX : POOL.takeOffX)
+    : spot === 'canyon' ? canyonShape(canyonBed).takeOffX : REEF.takeOffX;
 }
 
 /**
@@ -797,8 +798,10 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
-export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed'>): number {
+export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed' | 'poolWaves'>): number {
   if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
+  // The Wave Pool's Barrel floor: its own start (`POOL_BARREL.startOut`, the catch probe's).
+  if (config.spot === 'pool' && config.poolWaves === 'barrel') return POOL_BARREL.startOut;
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
   // Either layout: canyon-b leaves the upcoast peak, where riders start, as it was.
   const sizes = CANYON_RIDE_LINEUP;
@@ -841,7 +844,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
-    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed)));
+    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed, config.poolWaves)));
     return { x, z: breakZ(x) };
   }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;

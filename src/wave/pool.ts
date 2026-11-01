@@ -224,8 +224,8 @@ export type PoolWaves = 'training' | 'barrel';
  *   0.48), no shallower than 0.8 m so the 1.8 m wave's trough and backwash leave water on the top;
  * - **a reef top** `flatWidth` m wide square to the crest line, then the lagoon's inner slope at `lagoonSlope` down to
  *   `lagoonDepth`;
- * - **the barrel section** along each arm to |x| `armLength` (u 24–103 m along the arm from the tip; riders wait at the
- *   training's `POOL.takeOffX`, x 27, on it), then **a back-off** over `taperWidth` m, the crest deepening to the platform with the face's
+ * - **the barrel section** along each arm to |x| `armLength` (u 24–103 m along the arm from the tip; riders wait at
+ *   `takeOffX` on it), then **a back-off** over `taperWidth` m, the crest deepening to the platform with the face's
  *   gradient held, so the wave backs off into a shoulder to kick out on and the lagoon drains through the channels beside
  *   it; past the taper the platform runs level to the beach face, the same across the window's open side edges.
  * Mutable for the probes.
@@ -263,6 +263,14 @@ export const POOL_BARREL = {
    * crest breaks at its own threshold, as in nature (Dally 1990; Goda 1992's sideways spread, 0–C_b; the advisor).
    */
   ageJoin: 0.5,
+  /** Where riders wait, x, m: on the right arm's plunging section (the training's `POOL.takeOffX` unless measured otherwise). */
+  takeOffX: 27,
+  /**
+   * Where riders start, m seaward (along −z) of the take-off: 6, not the other spots' 11 (`RIDE_LINEUP_OFFSET`). The face
+   * along +z at x 27 is 1:26, so 11 m out is only 0.4 m deeper, and the headless riders there were left on the crest by
+   * most 1.8 m waves (0–2 of 12 rides against 3–6 of 12 from 4–8 m out; the catch probe, pool-barrel 2026-11-01).
+   */
+  startOut: 6,
   /** How far seaward of the training terrace's edge (`poolTerraceZ`) the platform begins, m: room for the knee near the tip. */
   platformLead: 20,
 };

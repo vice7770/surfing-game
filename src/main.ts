@@ -504,7 +504,7 @@ class SurfGame {
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
     // 4–19 m beyond the solo start (`rideLineupOffset`: 15–30 m outside the break line, nearer at the Canyon's Big).
-    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...startOutSwitch() });
+    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...(settings.poolWaves ? { poolWaves: settings.poolWaves } : {}), ...startOutSwitch() });
     const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: start + 4 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
