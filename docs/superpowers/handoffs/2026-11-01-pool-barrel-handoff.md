@@ -41,6 +41,23 @@ Main is at 9f4a9eb1 (PR #180). Merged today, in order:
 
 ## In progress: Pool Barrel step 3, the tube drawing
 
+**Update at 98 % usage (2026-11-01 evening): step 3 is built and pushed, but not merged** (`claude/pool-barrel-drawing`,
+head 51188fc8 or later).
+- **Built:**
+  - the straight Barrel's swept tube (the provisional a38 case, its front on the plunging section, the crash on);
+  - T3 on every swept spot;
+  - the Rich pale-band fix;
+  - the A/B switches.
+- **Checks so far:**
+  - tsc (app and server) clean;
+  - the main suite passed (3,008 tests);
+  - the SurfZoneSimulation subset was still running at the checkpoint.
+- **Next:**
+  1. Read the branch's notes ("Where it stands").
+  2. Run the merge flow below. Rerun the SurfZoneSimulation subset if its result isn't in the notes.
+  3. Merge, then tell the owner with the notes' shot list.
+  4. Start queue item 2.
+
 - **Branch:** `claude/pool-barrel-drawing`, worked in `.claude/worktrees/canyon-beach-break`.
 - **State:** its notes, `docs/research/pool-barrel-drawing-2026-11-01/README.md`, say where it stands, the next steps and how to
   verify. Read them first. The agent was told to keep them current and to commit and push often.
