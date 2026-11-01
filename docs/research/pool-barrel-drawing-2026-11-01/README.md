@@ -228,8 +228,11 @@ At 0.5 / 0.8 / 0.95 of touchdown, as the drawing holds each case. H is the drawn
   1.5 m face draws it.
 - **`pool-big-sheet-view.jpg`:** `?barrelView=sheet` at 1.8 m. The lip shows white to pale blue (0.2–0.4 m thick), the
   rest grey.
-- **Not shot:** T3's `brokenFoam` pair on the Lab sea (see the tests for its logic). The Padang stills' held curl is on a
-  clean crest, so they show the landing's white and the cap, not carried foam.
+- **`padang-lab-t3-rich.jpg`:** T3's pair on the T note's Lab sea (`?inpage&waterSheet&spot=padang&compute=gpu&height=1.4&period=12&direction=0`),
+  the held 14.2 m open curl. Arms: `brokenFoam` false, main's foam (`lipFoam` old), and T3. The sheet held the longest open
+  curl, which was on a clean crest: none of its 2,813 lifted vertices carries foam, so the three arms match. A broken
+  crest's carried foam is covered by the tests (`brokenCrest.test.ts`), not by a still. The Padang Medium stills' curl is
+  clean too, so they show the landing's white and the cap, not carried foam.
 
 ## A/B switches
 
