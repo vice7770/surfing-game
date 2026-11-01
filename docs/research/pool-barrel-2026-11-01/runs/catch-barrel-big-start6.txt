@@ -1,0 +1,12 @@
+pool barrel big seed 1: take-off (27, -190.5), default start 6 m out; starts 6 m out (2.13 m deep); t 20.0 s after the spin-up (22 s wall)
+stepped to t 145.9 s; 12 waves from 6 m out (631 s wall)
+-- from 6 m out (2.13 m deep), set faces ≥ 1.68 m:
+good      sets 4: rode 1, no cue 0, left on the crest 1, white water 2, fell 0; rides: pop 2.07 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.50 up; paddling top speed 5.23 m/s
+good      all  12: rode 3, no cue 0, left on the crest 5, white water 4, fell 0; rides: pop 1.37 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.76 up; paddling top speed 5.09 m/s
+early     sets 4: rode 1, no cue 0, left on the crest 2, white water 1, fell 0; rides: pop 2.08 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.50 up; paddling top speed 5.52 m/s
+early     all  12: rode 3, no cue 0, left on the crest 7, white water 2, fell 0; rides: pop 1.50 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.67 up; paddling top speed 5.21 m/s
+late      sets 4: rode 1, no cue 1, left on the crest 0, white water 2, fell 0; rides: pop 2.03 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.50 up; paddling top speed 3.88 m/s
+late      all  12: rode 3, no cue 1, left on the crest 1, white water 7, fell 0; rides: pop 1.37 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.75 up; paddling top speed 3.75 m/s
+lift      sets 4: rode 1, no cue 0, left on the crest 1, white water 2, fell 0; rides: pop 2.07 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.50 up; paddling top speed 4.09 m/s
+lift      all  12: rode 3, no cue 0, left on the crest 6, white water 3, fell 0; rides: pop 1.37 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.76 up; paddling top speed 4.13 m/s
+wall 631 s

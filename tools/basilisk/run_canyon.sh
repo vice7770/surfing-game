@@ -28,7 +28,12 @@ BASILISK="$BASILISK_HOME/basilisk-source/src"
 VENV="$HERE/.venv"
 if [ -n "${PYTHON:-}" ]; then PY="$PYTHON"; elif [ -x "$VENV/bin/python" ]; then PY="$VENV/bin/python"; else PY="python3"; fi
 export PYTHON="$PY" BASILISK_HOME
-STATE="${RUNS:-$HERE/runs}/canyon"
+# TUBE_SET=pool (tools/basilisk/run_pool.sh): the Wave Pool's Barrel cases instead (canyon_pipeline.py's SETS), in runs/pool.
+TUBE_SET="${TUBE_SET:-canyon}"
+ME="${TUBE_SCRIPT:-tools/basilisk/run_canyon.sh}"
+PREFIX="${TUBE_PREFIX:-canyon23}"
+export TUBE_SET
+STATE="${RUNS:-$HERE/runs}/$TUBE_SET"
 
 JOBS_ARG=()
 CMD=""
@@ -57,19 +62,19 @@ check() {
   fi
   if [ ! -x "$BASILISK/qcc" ]; then
     problem "Basilisk's qcc compiler (looked in $BASILISK)" \
-      "tools/basilisk/run_canyon.sh setup    # clones github.com/comphy-lab/basilisk-C into $BASILISK_HOME and builds it: about a minute, 2.8 GB"
+      "$ME setup    # clones github.com/comphy-lab/basilisk-C into $BASILISK_HOME and builds it: about a minute, 2.8 GB"
   fi
   if ! "$PY" -c 'import sys; assert sys.version_info >= (3, 9)' 2> /dev/null; then
-    problem "Python 3.9 or newer (tried $PY)" "brew install python    # then: tools/basilisk/run_canyon.sh setup"
+    problem "Python 3.9 or newer (tried $PY)" "brew install python    # then: $ME setup"
   elif ! "$PY" -c 'import numpy, scipy.special, scipy.optimize, scipy.spatial' 2> /dev/null; then
     problem "numpy and scipy for $PY" \
-      "tools/basilisk/run_canyon.sh setup    # makes tools/basilisk/.venv from tools/basilisk/analysis/requirements.txt"
+      "$ME setup    # makes tools/basilisk/.venv from tools/basilisk/analysis/requirements.txt"
   elif ! "$PY" -c 'import matplotlib' 2> /dev/null; then
-    echo "  (matplotlib is missing for $PY: the runs go ahead, without figures. tools/basilisk/run_canyon.sh setup adds it.)"
+    echo "  (matplotlib is missing for $PY: the runs go ahead, without figures. $ME setup adds it.)"
   fi
   if ! command -v npm > /dev/null || [ ! -e "$REPO/node_modules/.bin/rolldown" ]; then
     echo "  (npm or the repo's node_modules is missing: the runs go ahead, but the last step, the game's case files,"
-    echo "   needs them: run 'npm ci' in $REPO, then tools/basilisk/run_canyon.sh analyse.)"
+    echo "   needs them: run 'npm ci' in $REPO, then $ME analyse.)"
   fi
   mkdir -p "$STATE"
   local free_gb
@@ -85,7 +90,7 @@ check() {
   fi
   command -v caffeinate > /dev/null || echo "  (caffeinate is missing: keep the Mac from sleeping yourself.)"
   if [ "$problems" -gt 0 ]; then
-    printf '\n%s prerequisite(s) missing; install them as above, then run tools/basilisk/run_canyon.sh again.\n' "$problems"
+    printf '\n%s prerequisite(s) missing; install them as above, then run %s again.\n' "$problems" "$ME"
     return 1
   fi
   echo "  All there: $("$PY" --version 2>&1), Basilisk in $BASILISK_HOME, $(sysctl -n hw.perflevel0.physicalcpu 2> /dev/null || echo '?') performance cores."
@@ -120,10 +125,10 @@ follow() {
   for i in $(seq 1 20); do [ -f "$log" ] && break; sleep 0.5; done
   [ -f "$log" ] || { echo "No log yet in $STATE/logs."; return; }
   pid=$(supervisor) || { tail -n 30 "$log"; return; }
-  echo "Following $log (Ctrl-C stops following; the runs go on: tools/basilisk/run_canyon.sh status)."
+  echo "Following $log (Ctrl-C stops following; the runs go on: $ME status)."
   tail -n 40 -F "$log" &
   local tail_pid=$!
-  trap 'kill $tail_pid 2> /dev/null; echo; echo "Stopped following; the runs go on. tools/basilisk/run_canyon.sh status or log."; exit 0' INT
+  trap 'kill $tail_pid 2> /dev/null; echo; echo "Stopped following; the runs go on. $ME status or log."; exit 0' INT
   while kill -0 "$pid" 2> /dev/null; do sleep 5; done
   sleep 1; kill "$tail_pid" 2> /dev/null
   echo "The supervisor has finished (its last lines above say where the report is)."
@@ -145,13 +150,13 @@ case "$CMD" in
   log) follow ;;
   stop)
     if pid=$(supervisor); then kill -TERM "$pid"; echo "Stopping the supervisor (pid $pid)…"; sleep 5; fi
-    pkill -f "^(/bin/)?bash .*run_periodic\.sh (fg|scout) canyon23" 2> /dev/null
-    pkill -f "^\./periodic_canyon23[a-z0-9_]*_(scout|p1|p2)( |$)" 2> /dev/null
-    echo "Stopped. tools/basilisk/run_canyon.sh resumes from the last checkpoints."
+    pkill -f "^(/bin/)?bash .*run_periodic\.sh (fg|scout) $PREFIX" 2> /dev/null
+    pkill -f "^\./periodic_$PREFIX[a-z0-9_]*_(scout|p1|p2)( |$)" 2> /dev/null
+    echo "Stopped. $ME resumes from the last checkpoints."
     ;;
   analyse) check || exit 1; "$PY" "$HERE/canyon_pipeline.py" analyse ;;
   check) check ;;
   setup) setup ;;
   smoke) NEED_GB="${NEED_GB:-1}"; check || exit 1; "$PY" "$HERE/canyon_pipeline.py" run --smoke ${JOBS_ARG[@]+"${JOBS_ARG[@]}"} ;;
-  *) sed -n '2,24p' "$0"; exit 1 ;;
+  *) sed -n '2,24p' "${TUBE_USAGE:-$0}"; exit 1 ;;
 esac

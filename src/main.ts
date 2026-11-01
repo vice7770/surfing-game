@@ -504,7 +504,7 @@ class SurfGame {
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
     // 4–19 m beyond the solo start (`rideLineupOffset`: 15–30 m outside the break line, nearer at the Canyon's Big).
-    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...startOutSwitch() });
+    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...(settings.poolWaves ? { poolWaves: settings.poolWaves } : {}), ...startOutSwitch() });
     const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: start + 4 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
@@ -512,7 +512,7 @@ class SurfGame {
     if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
     // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
-    // `?canyonBed`, `?canyonAgeJoin`, `?canyonReefSeq` or `?canyonBeachLook` say (its old layout, breaking, onsets and beach
+    // `?canyonBed`, `?canyonAgeJoin`, `?poolAgeJoin`, `?canyonReefSeq` or `?canyonBeachLook` say (its old layout, breaking, onsets and beach
     // look are solo dev switches), and
     // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
     // sample moving through their step whatever `?surfaceMotion` says, the swim back to the board whatever `?swim` says,
@@ -522,7 +522,7 @@ class SurfGame {
     // must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
-      canyonBed: 'reef', canyonAgeJoin: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
+      canyonBed: 'reef', canyonAgeJoin: undefined, poolAgeJoin: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
       sweptBarrel: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {

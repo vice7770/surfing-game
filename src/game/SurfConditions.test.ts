@@ -4,8 +4,9 @@ import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
   DEFAULT_CONDITIONS, DEFAULT_SPOT, PADANG_SWELLS, PADANG_TIDES, PADANG_WINDS, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings,
-  nextBackdropSpot, physicalSettingsFor, ridesAsPractice, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
+  nextBackdropSpot, physicalSettingsFor, poolBarrelSize, ridesAsPractice, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
 } from './SurfConditions';
+import { POOL_BARREL_EDGE_HEIGHT } from '../wave/pool';
 import { readFileSync, readdirSync } from 'node:fs';
 import type { SizeRun } from '../wave/sizeReport';
 import { PRACTICE_SURF, SWELL_SURF, forecastSurf } from '../wave/surfForecast';
@@ -162,6 +163,29 @@ describe('surf conditions', () => {
     expect(ridesAsPractice('pool', 'big')).toBe(true);
     expect(ridesAsPractice('beach', 'big')).toBe(false);
     expect(ridesAsPractice('beach', 'practice')).toBe(true);
+  });
+
+  // The pool-barrel decisions (2026-10-31): a Barrel mode on its own floor, at faces of 1.5 and 1.8 m; Training untouched.
+  it("gives the Wave Pool's Barrel waves their own floor and sizes, Training as before", () => {
+    expect(surfForecastFor('pool', 'small', 'barrel')).toEqual({ typical: 1.5, sets: 1.5 });
+    expect(surfForecastFor('pool', 'practice', 'barrel')).toEqual({ typical: 1.5, sets: 1.5 });
+    expect(surfForecastFor('pool', 'big', 'barrel')).toEqual({ typical: 1.8, sets: 1.8 });
+    expect(surfForecastFor('pool', 'big', 'training')).toEqual({ typical: 1.5, sets: 1.5 });
+    expect(poolBarrelSize('medium')).toBe('small');
+    expect(poolBarrelSize('big')).toBe('big');
+    const conditions = { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const training = physicalSettingsFor('pool', conditions, water);
+    const barrel = physicalSettingsFor('pool', { ...conditions, waves: 'barrel' }, water);
+    expect(training.poolWaves).toBeUndefined();
+    expect(physicalSettingsFor('pool', { ...conditions, waves: 'training' }, water)).toEqual(training);
+    expect(barrel).toMatchObject({ spot: 'pool', poolWaves: 'barrel', peakPeriod: training.peakPeriod, tide: 0, windSpeed: 0 });
+    expect(barrel.significantHeight).toBeCloseTo(Math.SQRT2 * POOL_BARREL_EDGE_HEIGHT.big, 12);
+    expect(physicalSettingsFor('pool', { ...conditions, swell: 'small', waves: 'barrel' }, water).significantHeight).toBeLessThan(barrel.significantHeight);
+    // Every other spot ignores it.
+    expect(physicalSettingsFor('canyon', { ...conditions, waves: 'barrel' }, water)).toEqual(physicalSettingsFor('canyon', conditions, water));
+    const words = { units: 'metric' as const, scale: 'face' as const, surferHeight: 1.75 };
+    expect(surfForecastText({ spot: 'pool', conditions: { ...conditions, waves: 'barrel' } }, words)).toContain('1.8');
+    expect(surfForecastText({ spot: 'pool', conditions }, words)).toContain('1.5');
   });
 
   it('shows the menu a different spot each time, on calm practice water', () => {

@@ -83,3 +83,7 @@ So it is kept, as found. The advisor ruled on 2026-10-01 to keep it:
 ## Cost
 
 The pool's tank (a 250 m window, the fine grid from the terrace, a 9 m feed) runs at about 0.3× real time on the M1's CPU alone, and 0.08–0.13× with other runs beside it. The game steps stage 2 on the GPU where WebGPU allows.
+
+## The Barrel mode's floor
+
+The Barrel mode (2026-11-01) runs its own floor under the same machine (`POOL_BARREL`, `poolBarrelDepth`): a 4.5 m platform, a 1:9.5 face, the breaking age gated along its crests. Its design and measurements: [pool-barrel-2026-11-01](pool-barrel-2026-11-01/README.md). This bed is unchanged.

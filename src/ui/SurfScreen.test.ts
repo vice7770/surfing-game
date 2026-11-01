@@ -17,11 +17,27 @@ describe('surfModel', () => {
   });
 
   // The movement-flow spec: the pool's three sizes in place of the swell, no tide or wind; Practice rides Medium.
-  it('gives the Wave Pool its sizes and time of day only', () => {
+  it('gives the Wave Pool its waves, sizes and time of day only', () => {
     const model = surfModel({ spot: 'pool', conditions: DEFAULT_CONDITIONS });
-    expect(model.rows.map((row) => row.id)).toEqual(['swell', 'time']);
-    expect(model.rows[0].label).toBe('cond.size');
-    expect(model.rows[0].options.map((option) => option.value)).toEqual(['small', 'medium', 'big']);
-    expect(model.rows[0].options.find((option) => option.selected)?.value).toBe('medium');
+    expect(model.rows.map((row) => row.id)).toEqual(['waves', 'swell', 'time']);
+    expect(model.rows[0].label).toBe('cond.waves');
+    expect(model.rows[0].options.map((option) => option.value)).toEqual(['training', 'barrel']);
+    expect(model.rows[0].options.find((option) => option.selected)?.value).toBe('training');
+    expect(model.rows[1].label).toBe('cond.size');
+    expect(model.rows[1].options.map((option) => option.value)).toEqual(['small', 'medium', 'big']);
+    expect(model.rows[1].options.find((option) => option.selected)?.value).toBe('medium');
+  });
+
+  // The pool-barrel decisions (2026-10-31): Barrel's two sizes, 1.5 and 1.8 m; Big is 1.8 m, anything else 1.5 m.
+  it("gives the Wave Pool's Barrel waves their two sizes", () => {
+    const model = surfModel({ spot: 'pool', conditions: { ...DEFAULT_CONDITIONS, waves: 'barrel' } });
+    expect(model.rows.map((row) => row.id)).toEqual(['waves', 'swell', 'time']);
+    expect(model.rows[0].options.find((option) => option.selected)?.value).toBe('barrel');
+    expect(model.rows[1].options.map((option) => [option.value, option.label])).toEqual([['small', 'cond.swell.barrel.small'], ['big', 'cond.swell.barrel.big']]);
+    expect(model.rows[1].options.find((option) => option.selected)?.value).toBe('small');
+    const big = surfModel({ spot: 'pool', conditions: { ...DEFAULT_CONDITIONS, swell: 'big', waves: 'barrel' } });
+    expect(big.rows[1].options.find((option) => option.selected)?.value).toBe('big');
+    // The sea spots never show the pool's Waves row, whatever the conditions carry.
+    expect(surfModel({ spot: 'reef', conditions: { ...DEFAULT_CONDITIONS, waves: 'barrel' } }).rows.map((row) => row.id)).toEqual(['swell', 'tide', 'wind', 'time']);
   });
 });

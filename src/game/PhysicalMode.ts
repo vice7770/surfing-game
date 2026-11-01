@@ -27,7 +27,7 @@ import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { PoolScenery } from '../scene/PoolScenery';
-import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight } from '../wave/pool';
+import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight, type PoolWaves } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { SpillingCurlMesh } from '../scene/SpillingCurlMesh';
@@ -75,6 +75,8 @@ export interface PhysicalSettings {
   tide: number;
   /** Local wind, m/s: positive onshore, negative offshore. */
   windSpeed: number;
+  /** The Wave Pool's floor and sizes when its Barrel waves are chosen (`SurfZoneConfig.poolWaves`); unset is its Training. */
+  poolWaves?: PoolWaves;
   /** Storm mode: wind over the fetch, m/s. */
   stormWindSpeed: number;
   stormFetchKm: number;
@@ -378,6 +380,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     windSpeed: settings.windSpeed,
     stage,
     compute,
+    // The Wave Pool's Barrel floor, when its Barrel waves are chosen (the Surf screen's Waves row; a room's conditions).
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? { poolWaves: 'barrel' as const } : {}),
     // Ordinary Padang seas halve alongshore work, keeping the original 1 m cross-shore grid.
     // Supplied room/replay/report configurations retain their own grid, including legacy defaults.
     ...(settings.spot === 'padang' && Object.keys(overrides).length === 0 ? { dx: 2, fineSpacing: 1 } : {}),
@@ -404,6 +408,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'canyon' ? canyonTubeSwitch() : {}),
     // `?canyonAgeJoin=<J>`: the Canyon's breaking-age join (0: rule A, as before canyon-wave-r2), for A/Bs.
     ...(settings.spot === 'canyon' ? canyonAgeJoinSwitch() : {}),
+    // `?poolAgeJoin=<J>`: the Wave Pool's Barrel floor's breaking-age join (0: rule A, as its training floor), for A/Bs.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolAgeJoinSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -460,6 +466,16 @@ export function canyonAgeJoinSwitch(search?: string): { canyonAgeJoin?: number }
   const text = devParam('canyonAgeJoin', search)?.trim();
   const join = text ? Number(text) : Number.NaN;
   return Number.isFinite(join) && join >= 0 ? { canyonAgeJoin: join } : {};
+}
+
+/**
+ * The `?poolAgeJoin=<J>` dev switch (`SurfZoneConfig.poolAgeJoin`): the Wave Pool's Barrel floor's breaking age passed along
+ * its crests at J (0: rule A, as before pool-barrel's gate and as its training floor runs), in place of `POOL_BARREL.ageJoin`.
+ */
+export function poolAgeJoinSwitch(search?: string): { poolAgeJoin?: number } {
+  const text = devParam('poolAgeJoin', search)?.trim();
+  const join = text ? Number(text) : Number.NaN;
+  return Number.isFinite(join) && join >= 0 ? { poolAgeJoin: join } : {};
 }
 
 /**
@@ -889,7 +905,7 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     this.curtains.setOptics(SPOT_OPTICS[settings.spot]);
-    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
+    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
     const offshoreDepth = tank.edgeDepth;

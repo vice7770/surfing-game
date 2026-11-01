@@ -12,7 +12,8 @@
  * `--swell practice|small|medium|big`, `--seed`, `--seconds` (600), `--spreading` and `--direction` (override the
  * swell's), `--components` (64, the GPU tier's; 24 is the CPU tier's), `--offset` (30 m seaward of the take-off),
  * `--quiet` (no per-crest lines), `--json <file>` (the crests and summary), `--canyon key=value,...` (reshape the Canyon, as
- * the canyon peel report's sweep), `--bed old` (the Canyon's layout before canyon-b, `?canyonBed=old`).
+ * the canyon peel report's sweep), `--bed old` (the Canyon's layout before canyon-b, `?canyonBed=old`), `--waves barrel` (the Wave
+ * Pool's Barrel floor and sizes, with `--spot pool`).
  *
  * Each crest's two halves along shore (split at its middle point) are also fitted on their own: their angles' difference,
  * the bend, shows a crest that runs two ways at once (an A-frame, or a crest turned by one side of the bed).
@@ -83,7 +84,9 @@ const EDGE_STATION = 12;
 /** A crest leaning more than this, degrees, either way over both outer thirds of the window runs two ways at once (provisional). */
 const TWO_SIDED = 5;
 
-const settings = physicalSettingsFor(spot, { swell: swellSize, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+// `--waves barrel`: the Wave Pool's Barrel floor and sizes (pool-barrel, 2026-11-01: `--swell small` 1.5 m, `--swell big` 1.8 m).
+const poolWaves = spot === 'pool' && option('waves') === 'barrel' ? 'barrel' as const : undefined;
+const settings = physicalSettingsFor(spot, { swell: swellSize, tide: 'mid', wind: 'calm', time: 'midday', ...(poolWaves ? { waves: poolWaves } : {}) }, { stage: 2, compute: 'cpu' });
 const swell = swellFor(settings);
 const config: SurfZoneConfig = {
   spot, seed,
@@ -95,6 +98,7 @@ const config: SurfZoneConfig = {
   ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
   componentCount: numberOption('components') ?? GPU_TIER_COMPONENTS,
   ...(bed ? { canyonBed: bed } : {}),
+  ...(poolWaves ? { poolWaves } : {}),
 };
 
 /**

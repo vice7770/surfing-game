@@ -1,0 +1,2 @@
+# The probes' JSON (frame tracks, onsets, jets) is large: kept local; the .txt summaries are committed.
+*.json

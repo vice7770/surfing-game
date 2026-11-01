@@ -23,6 +23,17 @@ describe('protocol', () => {
     expect(parseRoomSettings(null)).toBeUndefined();
   });
 
+  // The pool-barrel decisions (2026-10-31): a room carries the Wave Pool's waves; a room without them runs Training.
+  it("carries the Wave Pool's waves, and takes a room without them as before", () => {
+    const pool = { ...settings, spot: 'pool', conditions: { ...settings.conditions, waves: 'barrel' } };
+    expect(parseRoomSettings(pool)).toEqual(pool);
+    expect(parseRoomSettings({ ...pool, conditions: { ...pool.conditions, waves: 'training' } })?.conditions.waves).toBe('training');
+    expect(parseRoomSettings({ ...settings, spot: 'pool' })).toEqual({ ...settings, spot: 'pool' });
+    expect(parseRoomSettings({ ...settings, spot: 'pool' })?.conditions).not.toHaveProperty('waves');
+    expect(parseRoomSettings({ ...pool, conditions: { ...pool.conditions, waves: 'tube' } })).toBeUndefined();
+    expect(parseRoomSettings({ ...pool, conditions: { ...pool.conditions, waves: 1 } })).toBeUndefined();
+  });
+
   it('accepts a Padang Padang room and still accepts every older spot', () => {
     for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang']) expect(parseRoomSettings({ ...settings, spot })?.spot).toBe(spot);
   });

@@ -29,6 +29,8 @@
 #   point21_a08/a15/a23/a30  the Point's 7 m foot, 1:21.5 along the contours' normal to a 0.35 m flat, foot crests A0
 #              0.08 at 9 s, 0.15 at 11 s, 0.23 at 12 s, 0.30 at 14 s (PR 7; switch, end and window from level-9 scouts)
 #   reef42_a35  the Reef's 1:4.2 ledge with a 3.5 m foot crest at 16 s (A0 0.35), its throw line's second point (PR 7)
+#   pool_barrel_small, pool_barrel_big  the Wave Pool's Barrel floor (pool-barrel, 2026-11-01): its 4.5 m platform up one
+#              face along each arm's ray to the 0.9 m crest, the 1.5 and 1.8 m faces at 10 s (run_pool.sh scouts each case)
 #   canyon23_a29, canyon23_a38, canyon23_a49  the Canyon's reef bed (2026-10-22) from the arm's 6 m foot: since
 #              canyon-long-wave one planar face, 1:23 all the way to the 1.0 m crest (0.167 h0), at every column of the
 #              arm, the take-off's too (8 m downcoast of the peak: x -9; x -2 on canyon-layout's short arm, x -30 before,
@@ -64,6 +66,12 @@ CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.1666
 # The Canyon (2026-10-22's reef bed, canyon-long-wave's planar face: one slope to the flat): provisional windows, from
 # the bed alone (run_canyon.sh scouts each case).
 CASES_ALL="$CASES_ALL canyon23_a29:6:0.29:11:0.0434783:0.1666667:56:26.5:41.5:31.5:52.5 canyon23_a38:6:0.38:14:0.0434783:0.1666667:64:25:40:35:56 canyon23_a49:6:0.49:14:0.0434783:0.1666667:64:22:37:34:55"
+# The Wave Pool's Barrel floor (pool-barrel, 2026-11-01; docs/research/pool-barrel-2026-11-01/README.md, the Basilisk cases):
+# each arm's ray at the take-off, from the level platform (h0, its depth) up one planar face (S1, the slope along the ray
+# the solver's crests climb, its Mead & Black X measured) to the reef crest (HS), flat to the wall; H/h0 the machine
+# wave's height on the platform at the knee, measured, at the pool's 10 s. Small: the 1.5 m faces; big: the 1.8 m.
+# Provisional windows from the bed alone: run_pool.sh scouts each case.
+CASES_ALL="$CASES_ALL pool_barrel_small:4.5:0.268:10:0.0733:0.1933:64:20:34:24:48 pool_barrel_big:4.5:0.333:10:0.0565:0.1933:64:20:34:24:50"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.
