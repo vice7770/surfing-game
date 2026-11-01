@@ -19,7 +19,7 @@ behind `?poolBarrel=aframe` for A/B (its own hashes match main's Barrel too); on
 
 The machine now sends its regular wave at an angle, 39° at the feed, onto one straight reef laid at 40° from the +x
 wall's corner (s 0 at x 115, z −221) in toward the beach at −x (s 235 at x −65, z −70). Every crest is one straight
-line, tilted the same way from the machine to the beach (39° at the machine, 32° at the take-off, 27° inside, 15–19° on
+line, tilted the same way from the machine to the beach (39° at the machine, 32° at the take-off, 27° inside, 13–19° on
 the beach's last metres), and never from two sides. Each wave starts breaking at the same place, at the same moment
 (x 93–94, sd 1–2 m; 8.3–8.8 s into the period, sd 0.2 s), and its white runs down the reef as one travelling line for a
 median 120 m of reef (to u ≈ 150) in about 18 s, then fades as the wave is spent. It plunges (lip jets on 90–100 % of
@@ -38,8 +38,8 @@ past the take-off, then 6.5 (1.5 m) / 7.1 (1.8 m) m/s down the barrel section, a
   edges. Measured first (`runs/e1-*.txt`, small wave, 8 periods): with open sides at 40° the zone's +x corner shaded the
   start and the break began somewhere new every wave (sd 2.9 s and 50 m), and the line passed u 100 on 2 of 11 waves; at
   20° the start held, but the line passed u 150 on 3 of 10 and never u 200. Periodic sides keep every crest whole: n = 1
-  (18°) carried the line furthest but its crests meet the reef nearly square to the machine and the peel is too fast to
-  make; n = 2 (kx·W = 4π, 39.1° at the 9 m feed) is the advisor's pick and the layout built. The solver's own k and W
+  (18°) carried the line furthest, but with the crests only 18° off the machine the peel along a 40° reef is faster
+  (about c_p / sin 53° ≈ 1.25 c_p, some 8 m/s); n = 2 (kx·W = 4π, 39.1° at the 9 m feed) is the advisor's pick and the layout built. The solver's own k and W
   set the angle (`poolStraightDirection`), so the crest's phase matches across the wrap.
 - **The reef.** Step 1's 4.5 m platform (20 m lead) and 1:9.5 face (knee rounded ±3 m), now one straight ridge: its
   crest 4.5 → 1.6 m deep over s 0–30 (the start's convex end), 1.6 → 0.9 m to s 65 (the take-off section), 0.9 m to
@@ -50,8 +50,8 @@ past the take-off, then 6.5 (1.5 m) / 7.1 (1.8 m) m/s down the barrel section, a
   the targets 1.5 / 1.8 m (`runs/e2-*.txt`, `runs/e3-base*.txt`; the advisor's 1.25–1.55 m guess was high). The A-frame,
   behind `?poolBarrel=aframe`, now also runs at these heights (its own were 0.99 / 1.24).
 - **The rider.** Riders wait at s 40 (x 84) on the face, 18 m (1.5 m) / 13.5 m (1.8 m) seaward of the take-off (both at
-  z −213.5, 3.1 m deep: the spot where the catch probe found the most rides), nose to the beach; the overview camera sits on the beach's −x side looking back up the reef toward the
-  start (`SpectatorCamera.overviewSide`). The readout, the Surf screen's blurb ("…an A-frame to practise on, or a
+  z −213.5, 3.1 m deep: the spot where the catch probe found the most rides), nose to the beach; the overview camera
+  sits on the beach's −x side looking back up the reef toward the start (`SpectatorCamera.overviewSide`). The readout, the Surf screen's blurb ("…an A-frame to practise on, or a
   barrelling right") and the size words are the straight floor's.
 
 Code: `src/wave/pool.ts` (`POOL_STRAIGHT`, `poolStraightDepth`, `poolStraightDirection`, `poolStraightStartOut`,
@@ -207,8 +207,9 @@ Afterwards commit `public/barrels/periodic-pool-straight-*.bin` and `docs/resear
 ## Tests
 
 `npx tsc --noEmit -p .`, `npx tsc -p server/tsconfig.json --noEmit`: clean. Main suite (`npx vitest run src
---maxWorkers=2 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`): MAIN_SUITE. The
-SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Rr]oller|[Bb]oard|[Rr]ider"`): SZS_SUITE.
+--maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`): 314 files passed, 2996 tests passed (20 expected fails, 36 skipped); the first run's one failure was
+`SurfConditions.test.ts` still reading the A-frame's heights, fixed. The
+SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Rr]oller|[Bb]oard|[Rr]ider"`): 20 passed (84 skipped by the filter).
 
 ## Open items and risks
 
