@@ -482,10 +482,12 @@ export const CANYON = {
    * than where the waves break, then a ridge, a wedge's steep face, Mead 2000): seaward, the bar's own slope down to
    * `bowlPlatform` m; level there (up to 0.35 m deeper than the bar beside it) to a knee rounded ±`bowlKnee` m; a face
    * climbing at `bowlFace` to a crest `bowlCrest` m deep on the bar's `bowlCrestContour` m contour (so its contours run
-   * with the arm's, at `barAngle`); a top level for `bowlTop` m, then down at `bowlBack` to meet the bar, no lagoon.
-   * ξb about 0.53–0.58 along +z at Medium and Big (the advisor's arithmetic, γ ≈ 1).
+   * with the arm's, at `bowlArmAngle`); a top level for `bowlTop` m, then down at `bowlBack` to meet the bar, no lagoon.
+   * The advisor's 1:21 (ξb 0.53–0.58 along +z at Medium and Big by its arithmetic, γ ≈ 1) measured 0.43–0.52 at the
+   * median of the bowl's onsets at Medium (3 seeds), its waves 1.2–1.9 m at breaking; 1:18 measured 0.52–0.60 (seeds 1
+   * and 3), with the same reach into the bowl.
    */
-  bowlCrestContour: 1.9, bowlCrest: 1.2, bowlPlatform: 3, bowlFace: 1 / 21, bowlKnee: 4, bowlTop: 9, bowlBack: 1 / 30,
+  bowlCrestContour: 1.9, bowlCrest: 1.2, bowlPlatform: 3, bowlFace: 1 / 18, bowlKnee: 4, bowlTop: 9, bowlBack: 1 / 30,
 };
 
 /**
