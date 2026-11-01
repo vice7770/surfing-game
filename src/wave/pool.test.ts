@@ -144,6 +144,12 @@ describe('the Wave Pool’s Barrel floor (the pool-barrel decisions, 2026-10-31)
     expect(layout({ ...training, poolAgeJoin: 0.5 }) ?? 0).toBe(0);
   });
 
+  it("reads its take-off as plunging, from its bed's steepest slope (its arm's along +z would call it spilling)", () => {
+    const sim = new SurfZoneSimulation({ ...barrel, componentCount: 1, spinUpPeriods: 0 } as never, 'warm');
+    expect(sim.iribarren().type).toBe('plunging');
+    expect(sim.iribarren().value).toBeGreaterThan(0.6);
+  });
+
   it('waits on the right arm’s barrel section, where its first breaks are', () => {
     const takeOff = takeOffPoint(barrel);
     expect(takeOff.x).toBeCloseTo(POOL.takeOffX, 6);

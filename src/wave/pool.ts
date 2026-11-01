@@ -343,8 +343,12 @@ export type PoolBarrelSize = keyof typeof POOL_BARREL_FACES;
 /** The wave height the machine makes at the tank's edge for each Barrel size, m: set so the surf meter reads its face (the size probe). */
 export const POOL_BARREL_EDGE_HEIGHT: Record<PoolBarrelSize, number> = { small: 0.99, big: 1.24 };
 
-/** Where the machine's wave starts breaking at the barrel's take-off, m deep for a wave H m high at the feed (the size probe). */
-export const POOL_BARREL_BREAK_DEPTH = { base: 1.36, perMetre: 0.88 } as const;
+/**
+ * Where the machine's wave starts breaking at the barrel's take-off, m deep for a wave H m high at the feed: the frame
+ * probe's first breaks at x 26–28 (pool-barrel, 2026-11-01) were 1.36 and 1.90 m deep for H 0.99 and 1.24 (1.5 and 1.8 m
+ * faces), a line through the two (the bigger wave breaks further down the face, on its steeper ray).
+ */
+export const POOL_BARREL_BREAK_DEPTH = { base: -0.78, perMetre: 2.16 } as const;
 
 /** How deep the pool's wave of height H at the feed first breaks at the barrel's take-off, m. */
 export function poolBarrelBreakDepth(height: number): number {

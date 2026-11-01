@@ -127,3 +127,49 @@ git push
 ```
 
 A case that threw no tube has no `.bin` (its row in the report says so, as `point21_a08` did at the Point); its analysis files are in `data/` all the same.
+
+## The Wave Pool's Barrel tube runs
+
+Step 2 of the Wave Pool's Barrel mode (pool-barrel, 2026-11-01; `docs/research/pool-barrel-2026-11-01/README.md`): the
+Barrel floor's transect along each arm's ray, as Navier–Stokes cases, so step 3 can draw the tube from them. The arms are
+mirrored and their barrel section is one transect, so there is one case per size:
+
+| Case | Transect | H/h0 | T | What it sources |
+|---|---|---|---|---|
+| `pool_barrel_small` | the right arm's ray at the take-off (x 27), the 4.5 m platform up one face to the crest | the platform's height | 10 s | Barrel 1.5 m faces |
+| `pool_barrel_big` | the same | the platform's height | 10 s | Barrel 1.8 m faces |
+
+The numbers (h0, H/h0, the face's slope along the ray S1 and the crest HS) are in `run_periodic.sh`'s case table, from the
+solver's own measurements on the floor (the README's "The Basilisk cases").
+
+`tools/basilisk/run_pool.sh` (or `npm run barrels:pool`) is `run_canyon.sh` for these cases (`TUBE_SET=pool`): the same
+scout, two phases, analysis, case files and report, with the runs in `tools/basilisk/runs/pool/` and the report in
+`docs/research/pool-tube-runs/`. On the M4 Pro, from the repo:
+
+```
+git fetch origin
+git checkout claude/pool-barrel      # or main, once it is merged
+git pull
+npm run barrels:pool -- check        # what's missing, and how to install it
+npm run barrels:pool -- setup        # only if check asked: Basilisk into ~/basilisk-C, numpy/scipy/matplotlib into tools/basilisk/.venv
+npm run barrels:pool -- smoke        # optional, about a minute: levels 7 and 8, proves the plumbing
+npm run barrels:pool                 # the runs, in the background, kept awake; Ctrl-C stops following, not the runs
+npm run barrels:pool -- status       # each case's phase and ETA
+```
+
+- **How long** (an estimate, not measured on the M4): the scouts and phase 1 about 10–20 minutes; phase 2 at level 13
+  roughly 2–4 h per case on one performance core, both at once; the analysis 10–20 minutes. So about 2.5–4.5 hours for
+  the pair. Each domain is 64 h0 = 288 m, so level 13 gives 3.5 cm cells: a 0.15–0.25 m lip spans about 4–7 cells. If the
+  report shows fewer than about 4 across the lip, `LEVEL2=14 npm run barrels:pool` reruns phase 2 one level finer (about
+  5× the cost; phase 1 is reused).
+- **Stop and resume:** `npm run barrels:pool -- stop`, then `npm run barrels:pool` again; after a restart or crash just
+  run it again (10-minute checkpoints). One case only: `POOL_CASES=pool_barrel_small npm run barrels:pool`.
+- **Afterwards,** commit and push the case files and the report:
+
+```
+git add public/barrels/periodic-pool-barrel-*.bin docs/research/pool-tube-runs
+git commit -m "data(pool): the Wave Pool's Barrel tube runs at level 13"
+git push
+```
+
+The `.bin` files are listed in no game index: step 3 (the drawing) wires them, with a `pool` entry in `BARREL_SPOTS`.

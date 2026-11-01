@@ -1665,7 +1665,12 @@ export class SurfZoneSimulation {
   /** Breaker-point Iribarren number from the bed slope at the break line and H_b = γ h_b. */
   iribarren(point = this.breakPoint()): { value: number; type: BreakerType } {
     const bed = (z: number) => tankDepth(this.spot, this.tank.edgeDepth, point.x, z, this.tank);
-    const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
+    const alongZ = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
+    // The Wave Pool's Barrel floor reads its bed's steepest slope, square to its arm's contours, as its lip throws do
+    // (`throwLip`): along +z its 71° arm reads a third of it, 1:26 for 1:9.5, and called its plunging take-off spilling.
+    const barrel = this.config.spot === 'pool' && this.config.poolWaves === 'barrel';
+    const across = barrel ? Math.abs(tankDepth(this.spot, this.tank.edgeDepth, point.x - 2, point.z, this.tank) - tankDepth(this.spot, this.tank.edgeDepth, point.x + 2, point.z, this.tank)) / 4 : 0;
+    const slope = barrel ? Math.hypot(alongZ, across) : alongZ;
     const depth = this.breakerDepth();
     const overCrest = submergedCrest((ahead) => bed(point.z + ahead) + this.config.tide, depth, slope);
     const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope, submergedCrest: overCrest });

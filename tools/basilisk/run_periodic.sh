@@ -71,7 +71,7 @@ CASES_ALL="$CASES_ALL canyon23_a29:6:0.29:11:0.0434783:0.1666667:56:26.5:41.5:31
 # the solver's crests climb, its Mead & Black X measured) to the reef crest (HS), flat to the wall; H/h0 the machine
 # wave's height on the platform at the knee, measured, at the pool's 10 s. Small: the 1.5 m faces; big: the 1.8 m.
 # Provisional windows from the bed alone: run_pool.sh scouts each case.
-CASES_ALL="$CASES_ALL POOL_CASES_HERE"
+CASES_ALL="$CASES_ALL pool_barrel_small:4.5:0.268:10:0.0733:0.1933:64:20:34:24:48 pool_barrel_big:4.5:0.333:10:0.0565:0.1933:64:20:34:24:50"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.

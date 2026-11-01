@@ -1,0 +1,1 @@
+pool big seed 1: take-off (27, -217.5), default start 11 m out; starts 11 m out (2.15 m deep); t 20.0 s after the spin-up (35 s wall)

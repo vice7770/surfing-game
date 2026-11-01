@@ -51,7 +51,7 @@ const casesPath = options('cases')[0] ?? 'docs/research/barrel-cases.md';
 const flatOf = perCase('flat');
 const spotOf = perCase('spot');
 const a0Of = perCase('a0');
-const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
+const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang', 'pool'];
 const missing = [
   ...runs.filter((run) => !Number.isFinite(Number(flatOf(run)))).map((run) => `${run}: --flat`),
   ...[...runs, ...keeps].filter((name) => !SPOTS.includes(spotOf(name) as SpotName)).map((name) => `${name}: --spot`),
