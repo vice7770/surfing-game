@@ -158,7 +158,7 @@ describe('the swept barrel’s mesh', () => {
         expect(fragment).not.toContain('sweptSkyTransmission * PI * textureCubeUV');
         // Per view ray (the pale band's fix): the sky only where the ray leaves the tube, else the wall; the underside keeps
         // its far side's view of the sky; weighed by the exit's Fresnel transmission, none past total internal reflection.
-        expect(fragment).toContain('float sweptRayLeaves = sweptLeaves( sweptSkyRay, sweptExitTip ) ? 1.0 : 0.0;');
+        expect(fragment).toContain('float sweptRayLeaves = sweptLeavesAlong( sweptSkyRay, sweptExitTip ) ? 1.0 : 0.0;');
         expect(fragment).toContain('float sweptSkyShare = mix( sweptRayLeaves, clamp( vSweptSheetBack, 0.0, 1.0 ), clamp( vSweptThroat.w, 0.0, 1.0 ) ) * sweptExitT;');
         expect(fragment).toContain('if ( sweptSkyTransmission > 0.0 && sweptExitSin < 1.0 ) {');
         expect(fragment).not.toContain('float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;');
@@ -288,7 +288,7 @@ describe('the swept barrel’s mesh', () => {
     expect(old).toContain('float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;');
     expect(old).not.toContain('sweptLeaves( sweptSkyRay');
     expect(old).toContain(RICH_LIP_GLOW);
-    expect(old).not.toContain('sweptSunIn');
+    expect(old).not.toContain('vSweptWallView.z');
     expect(old).toContain('float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );');
     swept.lipBack = 'ray';
     expect(swept.mesh.material.customProgramCacheKey()).not.toContain('-lip-back-old');
@@ -310,8 +310,8 @@ describe('the swept barrel’s mesh', () => {
     // The glow: the sun on the sheet's far side, through k = 8 times its thickness, on the water's absorption alone.
     expect(fragment).toContain(RICH_LIP_GLOW_GATED);
     expect(RICH_LIP_GLOW).toContain('max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance');
-    // On the outer run only where the sun reaches the sheet's far side (`sweptSunIn`); the underside keeps it.
-    expect(RICH_LIP_GLOW_GATED).toContain('* mix( sweptSunIn, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) ) * waterSunRadiance');
+    // On the outer run only where the sun gets into the tube (`vSweptWallView.z`); the underside keeps it.
+    expect(RICH_LIP_GLOW_GATED).toContain('* mix( vSweptWallView.z, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) ) * waterSunRadiance');
     expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 8.0 * vSweptSheet )`);
     expect(fragment.indexOf(RICH_LIP_GLOW_GATED)).toBeGreaterThan(fragment.indexOf(RICH_SHEET_BODY_PER_RAY));
     expect(fragment.indexOf(RICH_LIP_GLOW_GATED)).toBeLessThan(fragment.indexOf('float waterCover'));

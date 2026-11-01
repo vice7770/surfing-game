@@ -30,26 +30,26 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     expect(blend.scale).toBeCloseTo(0.84 / library.cases[0].nonlinearity, 9);
   });
 
-  it('follows crests on its reef only: from s 20 to 205 along it and no further inside than 30 m behind its crest line', () => {
+  it('follows crests on its reef’s plunging section only: from s 20 to 100 along it and no further inside than 30 m behind its crest line', () => {
     // `n` m seaward of the reef's crest line, square to it, at `s` along it.
     const phi = (POOL_STRAIGHT.reefAngle * Math.PI) / 180;
     const at = (s: number, n: number) => {
       const { x, z } = poolStraightAt(s);
       return [x - POOL_STRAIGHT.side * n * Math.sin(phi), z - n * Math.cos(phi)] as const;
     };
-    for (const s of [25, 40, 100, 200]) {
+    for (const s of [25, 40, 70, 99]) {
       // On the platform seaward of the face, on the face, on the top and just behind it.
       for (const n of [80, 30, 0, -10, -29]) expect(poolStraightFrontAt(...at(s, n))).toBe(true);
       // The lagoon and the beach's shore break inside it.
       expect(poolStraightFrontAt(...at(s, -31))).toBe(false);
       expect(poolStraightFrontAt(poolStraightAt(s).x, -25)).toBe(false);
     }
-    // Past the reef's ends: its start's convex end and the shore break by the +x wrap, and past its back-off.
-    for (const s of [0, 10, 215, 240]) expect(poolStraightFrontAt(...at(s, 20))).toBe(false);
-    const { s, n } = poolStraightFrame(poolStraightAt(100).x, poolStraightAt(100).z);
-    expect(s).toBeCloseTo(100, 9);
+    // Past the reef's ends: its start's convex end and the shore break by the +x wrap; its spilling section and back-off.
+    for (const s of [0, 10, 101, 150, 215, 240]) expect(poolStraightFrontAt(...at(s, 20))).toBe(false);
+    const { s, n } = poolStraightFrame(poolStraightAt(60).x, poolStraightAt(60).z);
+    expect(s).toBeCloseTo(60, 9);
     expect(n).toBeCloseTo(0, 9);
-    expect(POOL_FRONT_REACH).toEqual({ from: 20, to: 205, behind: 30 });
+    expect(POOL_FRONT_REACH).toEqual({ from: 20, to: 100, behind: 30 });
   });
 
   it('sizes its crests on the face’s knee, reads them over 3.86–3.21 m and throws them where they join (zero lag)', () => {
@@ -58,7 +58,7 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     expect(POOL_FOOT_DEPTH).toBeLessThan(POOL_STRAIGHT.platformDepth);
     expect(POOL_FOOT_DEPTH).toBeGreaterThan(POOL_STRAIGHT.platformDepth - POOL_STRAIGHT.kneeRounding * POOL_STRAIGHT.gradient);
     expect(pool.frontFrom).toBe('fine');
-    expect(pool.front).toEqual({ joinPast: 1.5 });
+    expect(pool.front).toEqual({ joinPast: 3 });
     expect(pool.crash).toBeUndefined();
     const timing = onsetTiming(pool.footDepth, 10, true, pool.onset);
     expect(timing.band[0]).toBeCloseTo(3.857, 3);

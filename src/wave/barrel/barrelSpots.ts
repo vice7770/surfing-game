@@ -244,8 +244,11 @@ export const POOL_FOOT_DEPTH = 4.4;
  *   of the plunging section's columns, 0.3–0.8 m shallower than the white the player sees, and a tube thrown there would
  *   trail the white line by 4–10 m (measured; the advisor to confirm).
  * - **The throw:** at the join (zero lag) until step 2's Navier–Stokes vertical depths give a line through both cases, as
- *   the Canyon's; with `joinPast` 1.5 H (the Canyon's and the Reef's rule), a crest the solver breaks just past its depth
- *   joins and throws there rather than being dropped as unbroken (bar: at most about 20 % unbroken).
+ *   the Canyon's; with `joinPast` 3 H, a crest the solver breaks just past its depth joins and throws there rather than
+ *   being dropped as unbroken: the Canyon's and the Reef's 1.5 H joined 0.67–0.83 of the waves in each column of the
+ *   plunging section at 1.5 m faces and 0.17–0.5 past s 70 at 1.8 m; 3 H joins every wave there (measured; the white's
+ *   onset depth spreads 1.11–1.70 m at 1.5 m faces, p10–p90, so 1.5 H, 0.15 m of depth on the 1:12.4 face, misses its
+ *   shallower third).
  */
 export const POOL_JOIN: OnsetTables['join'] = [
   { period: 10, rows: [[0.76, 1.43], [0.82, 1.60], [0.88, 1.83], [0.89, 1.91], [0.92, 1.96]] },
@@ -259,11 +262,16 @@ const POOL_ONSET: OnsetTables = {
 
 /**
  * Where the Wave Pool's straight reef's front follows crests (the advisor, 2026-11-01): along the reef from `from` to
- * `to` m of its length (s; its convex start whitens s 0–30 as one section, its end backs off from s 175), and no further
- * inside than `behind` m behind its crest line (n; its 6 m top and the slope down behind it), so the beach's shore break,
- * past the reef's ends and inside it, is never the barrel's.
+ * `to` m of its length (s), and no further inside than `behind` m behind its crest line (n; its 6 m top and the slope down
+ * behind it), so the beach's shore break, past the reef's ends and inside it, is never the barrel's. `to` is where the
+ * reef stops plunging: the solver throws lip jets on under half its onsets from s 90–100 at both sizes
+ * (docs/research/pool-barrel-straight-2026-11-01, frame-*.txt), and past it its smaller waves break over the 0.9 m crest
+ * and spill, so a tube joined there late (`joinPast`) would draw on a spilling bore (measured: 0.17–0.33 of the waves at
+ * s 120–180 with the front to 205). The advisor's gate on the solver's own plunge test, by the floor's measured place:
+ * the throw's test does not run at a swept spot with the crash (`throwLip`). Its convex start whitens s 0–30 as one
+ * section.
  */
-export const POOL_FRONT_REACH = { from: 20, to: 205, behind: 30 } as const;
+export const POOL_FRONT_REACH = { from: 20, to: 100, behind: 30 } as const;
 
 /** Whether a crest at (x, z) is on the Wave Pool's straight reef, as its front follows them (`POOL_FRONT_REACH`). */
 export function poolStraightFrontAt(x: number, z: number): boolean {
@@ -295,6 +303,6 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   // The Wave Pool's straight Barrel only (`sweptBarrelOn`): its 1.5 m case's 1:18.7 along the ray as the family's slope.
   pool: {
     slope: 1 / 18.7, footDepth: POOL_FOOT_DEPTH, onset: POOL_ONSET, frontFrom: 'fine',
-    front: { joinPast: 1.5 }, family: true, frontAt: poolStraightFrontAt,
+    front: { joinPast: 3 }, family: true, frontAt: poolStraightFrontAt,
   },
 };

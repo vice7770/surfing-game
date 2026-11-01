@@ -134,6 +134,28 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
     const settle = Number(process.env.SETTLE ?? 50);
     const log = process.env.LOG ?? `pool-tube-${mode}-${height}.txt`;
     writeFileSync(log, '');
+    if (mode === 'cost') {
+      // The straight Barrel's step on the CPU with its swept tube (front, clocks, crash) and without (`?poolTube=off`, main's),
+      // each spun up SETTLE s, then 300 steps of 1/30 s timed one by one, the two alternately in blocks of 50.
+      const make = (swept: boolean) => new SurfZoneSimulation({
+        spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
+        tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(swept ? {} : { sweptBarrel: false }),
+      } as unknown as SurfZoneConfig, 'spun-up', swept ? libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool') : undefined);
+      const sims = { with: make(true), without: make(false) };
+      for (const sim of Object.values(sims)) while (sim.solver.time < settle) sim.step(1 / 30);
+      const times: Record<string, number[]> = { with: [], without: [] };
+      for (let block = 0; block < 12; block += 1) {
+        for (const [name, sim] of Object.entries(sims)) {
+          for (let k = 0; k < 25; k += 1) {
+            const t = performance.now();
+            sim.step(1 / 30);
+            times[name].push(performance.now() - t);
+          }
+        }
+      }
+      appendFileSync(log, `pool straight, H ${height} m, the CPU step (ms, p10 / p50 / p90): with its swept tube ${quantiles(times.with)}, without (?poolTube=off) ${quantiles(times.without)}; the front's own ${quantiles(sims.with.stepCosts.front ? [sims.with.stepCosts.front] : [])}\n`);
+      return;
+    }
     if (mode === 'shape') {
       // T1's table: each library at its foot crests, at 0.5, 0.8 and 0.95 of touchdown, as the drawing holds it (`FEET`:
       // the pool's measured foot crests, m, comma-separated).
@@ -169,6 +191,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       onset.join = [{ period: POOL.period, rows: [[0, -1], [9, -1]] }];
     }
     if (process.env.FOOT) Object.defineProperty(BARREL_SPOTS.pool!, 'footDepth', { value: Number(process.env.FOOT) });
+    // JOIN_PAST: the front's join reach past the throw depth, in wave heights, in place of the pool's 1.5 (a diagnostic).
+    if (process.env.JOIN_PAST) BARREL_SPOTS.pool!.front = { ...BARREL_SPOTS.pool!.front, joinPast: Number(process.env.JOIN_PAST) };
+    // JUMP: the front's crest-jump reach, m (Padang Padang's and the Reef's 10), in place of the pool's (a diagnostic).
+    if (process.env.JUMP) BARREL_SPOTS.pool!.front = { ...BARREL_SPOTS.pool!.front, jumpReach: Number(process.env.JUMP) };
     const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
     const simulation = new SurfZoneSimulation({
       spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
@@ -295,6 +321,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
     const foamyTau: number[] = [];
     let points = 0;
     const joinsAt: number[] = [];
+    const firstSeen = new Set<number>();
+    const joinDepths: number[] = [];
+    const lastJoin = new Map<number, number>();
+    const joinedWaves = new Map<number, number>();
+    const preFoam: number[] = [];
     let joins0 = 0;
     let unbroken0 = 0;
     let late0 = 0;
@@ -313,6 +344,14 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       for (const p of front.points) {
         fronts.add(Math.floor(p.front / 1));
         if (p.tau < 0.04 && p.tau >= 0) joinsAt.push(poolStraightFrame(p.x, p.z).s);
+        if (!firstSeen.has(p.id)) {
+          firstSeen.add(p.id);
+          joinDepths.push(p.crestDepth);
+          // Each column's waves with a join: a join more than 5 s after the column's last is a new wave's.
+          const last = lastJoin.get(p.column);
+          if (last === undefined || p.joined - last > 5) joinedWaves.set(p.column, (joinedWaves.get(p.column) ?? 0) + 1);
+          lastJoin.set(p.column, p.joined);
+        }
       }
       if (n % 3 !== 0) continue;
       const count = simulation.writeTubeRecords(records);
@@ -334,6 +373,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
         if (s < result.sliceCount) {
           if (result.sliceAfter[s] <= 0 && result.sliceWeight[s] >= STANDING) {
             preSlices += 1;
+            preFoam.push(Math.max(broken.outer[s], broken.face[s]));
             if (broken.outer[s] > 0.01 || broken.face[s] > 0.01) {
               preFoamy += 1;
               const o = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
@@ -383,16 +423,32 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
     const unbroken = front.unbroken - unbroken0;
     const waves = [...waveOpen.values()];
     const meter = simulation.surf;
+    // Per 10 m of reef (its crest line's s at the column), the share of the waves each column joined, its median.
+    const coverage: string[] = [];
+    const reefS = (column: number) => {
+      // The column's crossing of the reef's crest line: s along it where x matches.
+      const x = solver.xCenters[column];
+      return (POOL_STRAIGHT.startX - POOL_STRAIGHT.side * x) / Math.cos((POOL_STRAIGHT.reefAngle * Math.PI) / 180);
+    };
+    for (let s0 = 20; s0 < 200; s0 += 10) {
+      const shares: number[] = [];
+      for (let c = 0; c < solver.nx; c += 1) {
+        const at = reefS(c);
+        if (at >= s0 && at < s0 + 10) shares.push((joinedWaves.get(c) ?? 0) / periods);
+      }
+      if (shares.length) coverage.push(`s ${s0}–${s0 + 10} ${median(shares).toFixed(2)}`);
+    }
     const lines = [
       `pool straight, H ${height} m at the feed (Hs ${regularSignificantHeight(height).toFixed(3)}), ${periods} periods after ${settle} s, ${((Date.now() - t0) / 1000).toFixed(0)} s wall; footDepth ${BARREL_SPOTS.pool!.footDepth}; crash ${process.env.CRASH === 'off' ? 'off' : 'on'}; join rows ${JSON.stringify(POOL_JOIN)}`,
       `the meter: ${JSON.stringify(meter.reading(solver.time, periods * POOL.period))}`.slice(0, 300),
       `front: joins ${joins} (late, past the throw depth: ${front.latePasses - late0}), unbroken ${unbroken} (${((100 * unbroken) / Math.max(1, joins + unbroken)).toFixed(1)} %; the bar about 20 %), lost ${front.lost}, unsized ${front.unsized}, splits ${front.splits}; points a frame ${(points / Math.max(1, frames)).toFixed(1)}; front ids seen ${fronts.size}`,
-      `joins by s: ${quantiles(joinsAt, 0)}; touchdowns by s ${quantiles(touchdownS, 0)}`,
+      `waves joined per column (of ${periods}), by the reef's s: ${coverage.join(', ')}`,
+      `joins by s: ${quantiles(joinsAt, 0)}; touchdowns by s ${quantiles(touchdownS, 0)}; the crest's still depth where each point joined ${quantiles(joinDepths)} m`,
       `drawn H, open standing slices ${quantiles(drawnH)} m; per wave medians ${quantiles([...heightsByWave.values()].map(median))} m (the meter's face: 1.52 m at 1.5 m, 1.79 m at 1.8 m)`,
       `vertical air gap, open standing slices ${quantiles(gaps)} m; per wave p90 ${quantiles([...gapsByWave.values()].map((g) => [...g].sort((a, b) => a - b)[Math.floor(0.9 * g.length)]))} m`,
       `open runs ${quantiles(openRuns)} m; per wave longest ${quantiles(waves.map((w) => w.length))} m, in H ${quantiles(waves.map((w) => w.inH))}, where (s) ${quantiles(waves.map((w) => w.s), 0)}; ${waves.length} waves`,
       `lofts ${builds}: folds (overlaps) a build ${(overlaps / Math.max(1, builds)).toFixed(3)}, holes (open overlaps) ${(overlapsOpen / Math.max(1, builds)).toFixed(3)}, clamps ${clamped}, budget-clamped refinement ${((100 * budget) / Math.max(1, builds)).toFixed(1)} %`,
-      `lip foam before touchdown: ${preSlices} standing slices, carrying foam ${preFoamy} (${((100 * preFoamy) / Math.max(1, preSlices)).toFixed(1)} %; the bar ≤ 5 %), at s ${quantiles(foamyAt, 0)}, τ ${quantiles(foamyTau)} s`,
+      `lip foam before touchdown: ${preSlices} standing slices, foam carried (outer or face) p50 / p90 / p99 ${[0.5, 0.9, 0.99].map((q) => [...preFoam].sort((a, b) => a - b)[Math.floor(q * (preFoam.length - 1))]?.toFixed(3)).join(' / ')}, carrying foam ${preFoamy} (${((100 * preFoamy) / Math.max(1, preSlices)).toFixed(1)} %; the bar ≤ 5 %), at s ${quantiles(foamyAt, 0)}, τ ${quantiles(foamyTau)} s`,
       `CPU ms (Node, this M1): the front a step ${quantiles(frontMs)}; the loft a build ${quantiles(loftMs)}`,
     ];
     appendFileSync(log, lines.join('\n') + '\n');

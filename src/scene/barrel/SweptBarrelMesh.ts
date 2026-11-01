@@ -269,18 +269,18 @@ const RICH_SHEET_WALL_SHADED = /* glsl */ `vec3 sweptWallThrough = exp( -waterAt
  * scatters strongly forward (Petzold's backscatter fraction 0.0183, via Mobley 1994), so the sheet's lobe narrows from
  * pow 4 (6 % at 60° off the sun: the band from in front at midday) to pow 16 (nothing at 60°, 0.37 at 20°, 0.78 at 10°)
  * [the exponent inferred]; and on the lip's outer run (the inner face's weight, `vSweptThroat.w`, keeps it) only where the
- * sun is behind the wave or leaves the tube from the sheet's far side, so a lit lip seen toward a low sun stays lit.
+ * sun is behind the wave or gets into the tube (`vSweptWallView.z`, from the slice's wall point: from a point on the sheet
+ * near the tip the tip's vector shrinks to nothing and the test flips, measured), so a lit lip seen toward a low sun stays lit.
  */
-const RICH_SHEET_SUN_GATED = /* glsl */ `vec3 sweptFar = vWaterWorld - waterN * vSweptSheet;
-    vec2 sweptFarTip = vec2( dot( vSweptTube.xz - sweptFar.xz, vSweptRay.xy ), vSweptTube.y - sweptFar.y );
-    float sweptSunIn = sweptLeaves( waterSunDirection, sweptFarTip ) ? 1.0 : 0.0;
-    float sweptSunBack = dot( waterSunDirection.xz, vSweptRay.xy ) < 0.0 ? 1.0 : sweptSunIn;
+const RICH_SHEET_SUN_GATED = /* glsl */ `float sweptSunBack = dot( waterSunDirection.xz, vSweptRay.xy ) < 0.0 ? 1.0 : vSweptWallView.z;
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 16.0 ) * mix( sweptSunBack, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) );`;
 
 /**
  * What the Rich lip shows behind it, per view ray (the pale band's fix; the water-physics advisor, 2026-11-01): the sky
- * only where the ray, having crossed the lip, leaves the tube (`sweptLeaves`, from the fragment, as the throat's
- * reflections test it), the wall otherwise, weighed by the far surface's Fresnel transmission water to air, so the
+ * only where the ray, having crossed the lip and left it through its underside into the cavity, leaves the tube along the
+ * crest out of its mouth (`sweptLeavesAlong`, from the exit point: the cavity's opening in the slice's plane lies below the
+ * tip, facing the water ahead, so a ray through the outer run reaches the sky only out of the mouth; the full test from a
+ * point near the tip flipped with the tip's vanishing vector and let 0.1 of sky through, measured), the wall otherwise, weighed by the far surface's Fresnel transmission water to air, so the
  * curtain fades to total internal reflection rather than switching off there. Before it, every point of the lip's outer
  * surface took the underside's diffuse view of the sky (`sheetAcross`) and sampled the sky along the exit ray: from in
  * front, level with the lip, that ray meets the back wall, yet the lip showed the horizon through 0.3–1 m of clear water,
@@ -296,8 +296,9 @@ const RICH_SHEET_BACK_PER_RAY = /* glsl */ `float sweptExitCos = max( 0.0, -dot(
       float sweptRp = ( sweptAirCos - ${WATER_IOR.toFixed(6)} * sweptExitCos ) / ( sweptAirCos + ${WATER_IOR.toFixed(6)} * sweptExitCos );
       sweptExitT = 1.0 - 0.5 * ( sweptRs * sweptRs + sweptRp * sweptRp );
     }
-    vec2 sweptExitTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay.xy ), vSweptTube.y - vWaterWorld.y );
-    float sweptRayLeaves = sweptLeaves( sweptSkyRay, sweptExitTip ) ? 1.0 : 0.0;
+    vec3 sweptExitPoint = vWaterWorld - waterN * vSweptSheet;
+    vec2 sweptExitTip = vec2( dot( vSweptTube.xz - sweptExitPoint.xz, vSweptRay.xy ), vSweptTube.y - sweptExitPoint.y );
+    float sweptRayLeaves = sweptLeavesAlong( sweptSkyRay, sweptExitTip ) ? 1.0 : 0.0;
     float sweptSkyShare = mix( sweptRayLeaves, clamp( vSweptSheetBack, 0.0, 1.0 ), clamp( vSweptThroat.w, 0.0, 1.0 ) ) * sweptExitT;`;
 
 export const SWEPT_SHEET_BODY = sweptSheetBody();
@@ -360,6 +361,12 @@ bool sweptLeaves( vec3 direction, vec2 tip ) {
   float along = abs( dot( direction.xz, vec2( vSweptRay.y, -vSweptRay.x ) ) );
   bool opening = across.y >= 0.0 && across.x * tip.y - across.y * tip.x >= 0.0;
   return opening || along * length( tip ) > vSweptTube.w * length( across );
+}
+// Whether a direction leaves the tube along the crest, out of its mouth, from a point that sees its tip at \`tip\`.
+bool sweptLeavesAlong( vec3 direction, vec2 tip ) {
+  vec2 across = vec2( dot( direction.xz, vSweptRay.xy ), direction.y );
+  float along = abs( dot( direction.xz, vec2( vSweptRay.y, -vSweptRay.x ) ) );
+  return along * length( tip ) > vSweptTube.w * length( across );
 }`;
 
 /**
@@ -377,14 +384,14 @@ export const RICH_LIP_GLOW = /* glsl */ `
  * The glow on the lip's outer run only where the sun reaches the sheet's far side (the pale band's first term; the
  * advisor's re-ruling, 2026-11-01): `max(0, −n·L)` assumes a flat sheet whose far side faces the sun, but the outer run's
  * far side is the underside, which faces the cavity and sees the sun only through the opening or out of the mouth
- * (`sweptLeaves`, from the far point: from the fragment the tip's vector shrinks to nothing at the tip). Near the tip
- * both faces turn from a high sun, and the glow fired on the curl's front at midday. The underside (the inner face's
- * weight) keeps it: its far side is the top, which faces the sun (the lit lip from inside). Needs `RICH_SHEET_SUN_GATED`'s
- * `sweptSunIn` (the sheet body's), so it follows it.
+ * (whether the sun gets into the tube, `vSweptWallView.z`, tested from the slice's wall point: from a point on the
+ * sheet near the tip, even its far point, the tip's vector shrinks to nothing and the opening test flips, measured).
+ * Near the tip both faces turn from a high sun, and the glow fired on the curl's front at midday. The underside (the inner
+ * face's weight) keeps it: its far side is the top, which faces the sun (the lit lip from inside).
  */
 export const RICH_LIP_GLOW_GATED = RICH_LIP_GLOW.replace(
   '* max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance',
-  '* max( 0.0, -dot( waterN, waterSunDirection ) ) * mix( sweptSunIn, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) ) * waterSunRadiance',
+  '* max( 0.0, -dot( waterN, waterSunDirection ) ) * mix( vSweptWallView.z, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) ) * waterSunRadiance',
 );
 
 /**
