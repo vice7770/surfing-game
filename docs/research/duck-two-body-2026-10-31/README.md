@@ -138,6 +138,17 @@ What they show:
   and rolls it 44°. At 4 s the pair is still under, 0.85 m deep.
 - **The old pose:** the arms flung past the nose, the legs folded through the board.
 
+**Tests (step 6).**
+- **New:**
+  - `bodyFilm.test.ts`: the two-body dive drawn: the grips, the knee, the deck, against the old pose; and its pace at
+    60 and 120 Hz, here and for another player.
+  - `RemoteSurferViews.test.ts`, `ownPose.test.ts`: the duck-diving flag.
+  - `riderVisualState.test.ts`: the ducking bit.
+  - `PhysicalMode.test.ts`: `?duckDrawn=old`.
+- **tsc:** clean.
+- **Main suite** (with the globs): 314 files passed (30 skipped); 2977 tests passed (20 expected fail, 36 skipped).
+- **SZS filter:** 11 passed (93 skipped by the filter), 913 s.
+
 ## Measured
 
 ### Flat water and the test bore
