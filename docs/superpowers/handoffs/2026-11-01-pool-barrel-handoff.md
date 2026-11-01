@@ -41,26 +41,17 @@ Main is at 9f4a9eb1 (PR #180). Merged today, in order:
 
 ## In progress: Pool Barrel step 3, the tube drawing
 
-**Update at 98 % usage (2026-11-01 evening): step 3 is built and pushed, but not merged** (`claude/pool-barrel-drawing`,
-head 51188fc8 or later).
-- **Built:**
-  - the straight Barrel's swept tube (the provisional a38 case, its front on the plunging section, the crash on);
-  - T3 on every swept spot;
-  - the Rich pale-band fix;
-  - the A/B switches.
-- **Checks so far:**
-  - tsc (app and server) clean;
-  - the main suite passed (3,008 tests);
-  - the SurfZoneSimulation subset was still running at the checkpoint.
-- **Next:**
-  1. Read the branch's notes ("Where it stands").
-  2. Run the merge flow below. Rerun the SurfZoneSimulation subset if its result isn't in the notes.
-  3. Merge, then tell the owner with the notes' shot list.
-  4. Start queue item 2.
-
-- **Branch:** `claude/pool-barrel-drawing`, worked in `.claude/worktrees/canyon-beach-break`.
-- **State:** its notes, `docs/research/pool-barrel-drawing-2026-11-01/README.md`, say where it stands, the next steps and how to
-  verify. Read them first. The agent was told to keep them current and to commit and push often.
+**Update, 2026-11-01 late evening: step 3 is finished** (`claude/pool-barrel-drawing` at 538c5f9b; its notes have the
+measurements, A/B switches and the owner's shot list).
+- **Agent's tests:** tsc clean, the main suite 3,008 passed, the SurfZoneSimulation subset 36 passed.
+- **The merge:** main plus step 3 plus this note is on `claude/playtest-1101f`, pushed. A background run of both suites on
+  it pushes it to main by itself if they pass (PR "Wave Pool Barrel step 3: the tube drawing").
+- **If main doesn't contain 538c5f9b,** the run didn't finish:
+  1. Rerun the two suites on `claude/playtest-1101f`.
+  2. Open the PR from `claude/pool-barrel-drawing`.
+  3. Push `claude/playtest-1101f` to main.
+  4. Tell the owner, using the notes' shot list.
+- **Then** start queue item 2, the Barrel's current.
 
 **What was already on main:**
 - T1 (draw each case's own Basilisk frames) has been on main since 566531c0. The bounded-C shape is only behind
