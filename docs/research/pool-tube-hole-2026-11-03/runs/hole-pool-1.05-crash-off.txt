@@ -1,0 +1,53 @@
+pool straight Barrel, H 1.05 m at the feed, cases the pool's two level-13 cases (default); crash off; 4 periods after 50 s; CPU, 1/60 s steps; 271 s wall; contact 0.8 ms a step, reads 0.1 ms a frame
+reads: 806 (column-frames), fronts 42; columns s 30–95 every 2.5 m; loft slices read 21940: weight < 0.5 51 %, standing but not joined to the next (left out) 0 %; before the throw (τ < 0) 0 (standing 0)
+solver face H_s 0.94 / 1.08 / 1.25 m, its width crest to trough along the ray 6.70 / 10.00 / 10.00 m; drawn H 1.17 / 1.51 / 1.76 m (p10 / p50 / p90)
+
+## 1–2. The support at the solver's face points (0.1 the trough … 0.9 under the crest): d = swept floor − solver surface, m, p10 / p50; [share d < −0.1 m]; a board point 2 cm over the solver surface is to the contact: S solver (no loft), W in swept water, C in its air under a roof, A in open air (%)
+- life 0–0.25 (thrown) (n 252): H_s 1.10 m; 0.1 (ξ 6.4 m): -0.04 / 0.00 [4 %] S35 W0 C0 A65 | 0.3 (ξ 5.5 m): -0.28 / -0.08 [46 %] S18 W0 C0 A82 | 0.5 (ξ 4.8 m): -0.53 / -0.33 [78 %] S6 W0 C0 A94 | 0.7 (ξ 4.1 m): -0.77 / -0.55 [90 %] S3 W0 C0 A97 | 0.9 (ξ 3.1 m): -0.98 / -0.70 [95 %] S1 W2 C0 A97
+- life 0.25–0.5 (n 329): H_s 1.07 m; 0.1 (ξ 7.4 m): 0.00 / 0.00 [5 %] S73 W0 C0 A26 | 0.3 (ξ 6.4 m): -0.25 / 0.00 [19 %] S44 W0 C0 A56 | 0.5 (ξ 5.7 m): -0.55 / -0.00 [36 %] S22 W0 C0 A78 | 0.7 (ξ 5.1 m): -0.79 / -0.37 [62 %] S14 W0 C0 A86 | 0.9 (ξ 4.2 m): -1.03 / -0.77 [82 %] S4 W1 C0 A95
+- life 0.5–0.8 (open) (n 169): H_s 1.08 m; 0.1 (ξ 7.5 m): 0.00 / 0.00 [2 %] S77 W0 C0 A23 | 0.3 (ξ 6.6 m): -0.21 / 0.00 [15 %] S57 W0 C0 A43 | 0.5 (ξ 6.0 m): -0.46 / 0.00 [25 %] S36 W0 C0 A64 | 0.7 (ξ 5.5 m): -0.69 / -0.00 [40 %] S27 W0 C0 A73 | 0.9 (ξ 4.8 m): -0.92 / -0.54 [67 %] S7 W1 C0 A92
+- life 0.8–1 (closing) (n 45): H_s 1.08 m; 0.1 (ξ 5.9 m): -0.04 / 0.00 [0 %] S38 W0 C0 A62 | 0.3 (ξ 4.4 m): -0.25 / -0.09 [44 %] S24 W0 C0 A76 | 0.5 (ξ 3.7 m): -0.45 / -0.23 [64 %] S22 W0 C0 A78 | 0.7 (ξ 3.0 m): -0.65 / -0.36 [73 %] S11 W0 C0 A89 | 0.9 (ξ 1.9 m): -0.78 / -0.44 [80 %] S7 W0 C0 A93
+- landed, collapse 0–0.5 (n 11): H_s 1.09 m; 0.1 (ξ 5.8 m): -0.03 / 0.00 [0 %] S27 W0 C0 A73 | 0.3 (ξ 4.1 m): -0.23 / -0.16 [73 %] S0 W0 C0 A100 | 0.5 (ξ 3.1 m): -0.45 / -0.34 [91 %] S0 W0 C0 A100 | 0.7 (ξ 2.2 m): -0.64 / -0.48 [100 %] S0 W0 C0 A100 | 0.9 (ξ 1.3 m): -0.82 / -0.44 [100 %] S0 W0 C0 A100
+
+## 2. The same in H_s (d / H_s, p10 / p50)
+- life 0–0.25 (thrown) (n 252): 0.1: -0.035 / 0.000 | 0.3: -0.240 / -0.074 | 0.5: -0.472 / -0.304 | 0.7: -0.678 / -0.483 | 0.9: -0.887 / -0.641
+- life 0.25–0.5 (n 329): 0.1: 0.000 / 0.000 | 0.3: -0.226 / 0.000 | 0.5: -0.488 / -0.000 | 0.7: -0.709 / -0.323 | 0.9: -0.930 / -0.715
+- life 0.5–0.8 (open) (n 169): 0.1: 0.000 / 0.000 | 0.3: -0.198 / 0.000 | 0.5: -0.394 / 0.000 | 0.7: -0.628 / -0.004 | 0.9: -0.860 / -0.499
+- life 0.8–1 (closing) (n 45): 0.1: -0.039 / 0.000 | 0.3: -0.246 / -0.086 | 0.5: -0.427 / -0.213 | 0.7: -0.594 / -0.343 | 0.9: -0.734 / -0.418
+- landed, collapse 0–0.5 (n 11): 0.1: -0.029 / 0.000 | 0.3: -0.220 / -0.126 | 0.5: -0.450 / -0.323 | 0.7: -0.653 / -0.465 | 0.9: -0.789 / -0.468
+
+## The median sections: along the ray, m from the drawn crest (-1, 0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8): the solver's surface | the support (the swept floor, the solver's where no loft), over the solver's crest, m
+- life 0–0.25 (thrown) (n 252): -0.05 -0.01 -0.02 -0.04 -0.05 -0.05 -0.06 -0.09 -0.30 -0.63 -0.90 -1.08 | -0.05 0.51 -0.18 -0.50 -0.71 -0.85 -0.94 -0.99 -1.03 -0.96 -0.90 -1.08
+- life 0.25–0.5 (n 329): -0.08 -0.01 -0.01 -0.02 -0.03 -0.04 -0.04 -0.03 -0.07 -0.28 -0.63 -1.02 | -0.08 0.48 -0.21 -0.60 -0.82 -0.94 -1.01 -1.04 -1.05 -0.86 -0.63 -1.02
+- life 0.5–0.8 (open) (n 169): -0.04 -0.00 -0.01 -0.02 -0.03 -0.04 -0.04 -0.04 -0.05 -0.17 -0.54 -0.99 | -0.04 0.37 0.25 -0.59 -0.83 -0.94 -0.98 -1.01 -1.01 -0.63 -0.54 -0.99
+- life 0.8–1 (closing) (n 45): -0.03 -0.00 -0.01 -0.03 -0.07 -0.13 -0.21 -0.33 -0.62 -0.88 -0.97 -1.04 | -0.03 0.25 0.14 -0.36 -0.72 -0.82 -0.87 -0.89 -0.91 -0.93 -0.96 -1.04
+- landed, collapse 0–0.5 (n 11): -0.03 -0.00 -0.02 -0.05 -0.13 -0.24 -0.38 -0.52 -0.75 -0.88 -0.96 -1.05 | -0.03 0.26 0.14 -0.39 -0.73 -0.85 -0.91 -0.93 -0.93 -0.95 -0.96 -1.05
+
+## 5. The mismatch, p10 / p50 / p90 per bin
+crest offset (solver crest − drawn crest along the ray, m, + shoreward); drawn crest over the solver crest, m; mid-face offset (swept − solver, m, + shoreward); steepest slope solver | swept; swept lowest − solver trough, m; solver trough at ξ, m
+- life 0–0.25 (thrown) (n 252): -0.50 / 0.00 / 2.00; 0.23 / 0.52 / 0.75; -5.33 / -3.40 / -1.52 (found 100 %); 0.25 / 0.36 / 0.43 | 0.25 / 2.91 / 5.43; -0.10 / 0.03 / 0.14; 6.9 / 8.6 / 11.2
+- life 0.25–0.5 (n 329): -0.30 / 0.40 / 2.00; 0.27 / 0.48 / 0.65; -6.95 / -4.66 / -2.39 (found 98 %); 0.24 / 0.36 / 0.47 | 0.30 / 1.32 / 6.29; -0.22 / 0.02 / 0.21; 7.9 / 9.9 / 12.0
+- life 0.5–0.8 (open) (n 169): -0.40 / 0.10 / 2.00; 0.17 / 0.38 / 0.49; -6.71 / -4.99 / -2.18 (found 98 %); 0.32 / 0.39 / 0.52 | 0.38 / 4.22 / 6.75; -0.03 / 0.09 / 0.27; 8.1 / 9.9 / 11.0
+- life 0.8–1 (closing) (n 45): -0.50 / 0.10 / 0.70; 0.15 / 0.25 / 0.33; -5.64 / -2.45 / -1.22 (found 100 %); 0.32 / 0.33 / 0.43 | 1.34 / 2.07 / 3.28; 0.01 / 0.06 / 0.22; 7.4 / 10.0 / 10.7
+- landed, collapse 0–0.5 (n 11): -0.30 / -0.10 / 0.30; 0.06 / 0.27 / 0.31; -4.01 / -1.68 / -1.48 (found 100 %); 0.30 / 0.32 / 0.40 | 1.65 / 2.44 / 3.11; 0.01 / 0.07 / 0.13; 9.7 / 9.9 / 10.3
+drawn landmarks along the ray from the drawn crest (m, p50) and their height over the solver surface there (m, p10 / p50 / p90): tip, throat, toe; d under the tip (m); the forward rest's toe climb (the solver over the drawn trough at the toe, m) and its hold (m past the toe)
+- life 0–0.25 (thrown) (n 252): tip 0.36 m, 0.14 / 0.34 / 0.53; throat 0.25 m, 0.05 / 0.23 / 0.40; toe 1.96 m, -0.94 / -0.72 / -0.44; d under the tip -0.20 / -0.03 / 0.12; toe climb 0.88 / 1.00 / 1.12, hold 2.33 / 2.79 / 3.01
+- life 0.25–0.5 (n 329): tip 0.60 m, -0.08 / 0.16 / 0.35; throat 0.33 m, -0.19 / 0.05 / 0.21; toe 1.82 m, -1.01 / -0.84 / -0.48; d under the tip -0.54 / -0.31 / -0.13; toe climb 0.89 / 1.02 / 1.19, hold 2.65 / 2.89 / 3.12
+- life 0.5–0.8 (open) (n 169): tip 0.77 m, -0.58 / -0.21 / 0.01; throat 0.69 m, -0.62 / -0.33 / -0.14; toe 1.60 m, -0.93 / -0.83 / -0.59; d under the tip -0.66 / -0.42 / -0.17; toe climb 0.89 / 0.99 / 1.10, hold 2.73 / 2.96 / 3.11
+- life 0.8–1 (closing) (n 45): tip 1.64 m, -0.54 / -0.39 / -0.22; throat 1.13 m, -0.66 / -0.51 / -0.34; toe 1.70 m, -0.88 / -0.65 / -0.40; d under the tip -0.79 / -0.64 / -0.39; toe climb 0.67 / 0.90 / 0.98, hold 1.84 / 2.79 / 3.10
+- landed, collapse 0–0.5 (n 11): tip 2.17 m, -0.82 / -0.39 / -0.30; throat 1.19 m, -0.61 / -0.44 / -0.35; toe 2.17 m, -0.94 / -0.47 / -0.39; d under the tip -0.91 / -0.48 / -0.38; toe climb 0.48 / 0.79 / 1.05, hold 1.27 / 2.49 / 3.11
+the void (the tip ahead of the throat): share of reads with one; its height (m) and the solver water's fill of it (0 none, 1 to the roof), p10 / p50 / p90; breaking strength at the solver crest | at mid-face
+- life 0–0.25 (thrown) (n 252): 94 %; 0.12 / 0.24 / 0.33 m; fill -1.25 / -0.24 / 0.57; 0.00 / 0.00 / 0.00 | 0.00 / 1.00 / 1.00
+- life 0.25–0.5 (n 329): 100 %; 0.13 / 0.23 / 0.30 m; fill 0.02 / 0.70 / 2.22; 0.00 / 0.00 / 0.00 | 0.12 / 1.00 / 1.00
+- life 0.5–0.8 (open) (n 169): 69 %; 0.04 / 0.07 / 0.13 m; fill 2.50 / 6.76 / 16.79; 0.00 / 0.00 / 0.00 | 1.00 / 1.00 / 1.00
+- life 0.8–1 (closing) (n 45): 100 %; 0.07 / 0.11 / 0.13 m; fill 4.87 / 5.77 / 7.47; 0.00 / 0.00 / 0.00 | 0.99 / 1.00 / 1.00
+- landed, collapse 0–0.5 (n 11): 100 %; 0.09 / 0.11 / 0.14 m; fill 7.04 / 9.20 / 11.02; 0.00 / 0.00 / 0.00 | 1.00 / 1.00 / 1.00
+
+## 2. The holes per column-wave (d < −0.1 m at a face point): column-waves with one; the deepest (m; in H_s); the span from its first hole read to its last (s) and the share of the reads within it in the hole; its first and last hole read on the clock (τ s; life); the column-wave's first read (τ s) and d there
+the drawn clock in a column runs 0.82 / 1.23 / 1.62 s of τ a second (p10 / p50 / p90 over the column-waves with 5 reads or more)
+column-waves 97, reads each 1 / 7 / 16; their first read at τ 0.08 / 0.21 / 0.89 s, d there at 0.3 / 0.5 / 0.7: -0.09 / -0.32 / -0.50 m
+- face 0.1: 8 of 97; deepest 0.12 / 0.16 / 0.29 m, 0.098 / 0.137 / 0.283 H_s; span 0.03 / 0.10 / 0.50 s, in the hole 0.57 / 1.00 / 1.00; first τ 0.08 / 0.26 / 0.69 s (life 0.06 / 0.21 / 0.54), last τ 0.18 / 0.42 / 0.72 s (life 0.14 / 0.32 / 0.57)
+- face 0.3: 57 of 97; deepest 0.14 / 0.26 / 0.45 m, 0.128 / 0.222 / 0.375 H_s; span 0.03 / 0.13 / 0.37 s, in the hole 0.75 / 1.00 / 1.00; first τ 0.08 / 0.17 / 0.91 s (life 0.06 / 0.13 / 0.72), last τ 0.14 / 0.35 / 1.04 s (life 0.12 / 0.28 / 0.87)
+- face 0.5: 69 of 97; deepest 0.22 / 0.50 / 0.69 m, 0.209 / 0.429 / 0.563 H_s; span 0.03 / 0.23 / 0.43 s, in the hole 0.67 / 1.00 / 1.00; first τ 0.08 / 0.17 / 0.91 s (life 0.06 / 0.14 / 0.72), last τ 0.21 / 0.46 / 1.11 s (life 0.17 / 0.36 / 0.92)
+- face 0.7: 80 of 97; deepest 0.42 / 0.71 / 0.90 m, 0.390 / 0.630 / 0.814 H_s; span 0.03 / 0.30 / 0.50 s, in the hole 0.79 / 1.00 / 1.00; first τ 0.08 / 0.18 / 0.79 s (life 0.06 / 0.15 / 0.65), last τ 0.29 / 0.56 / 1.11 s (life 0.22 / 0.45 / 0.92)
+- face 0.9: 86 of 97; deepest 0.51 / 0.93 / 1.07 m, 0.447 / 0.823 / 1.025 H_s; span 0.03 / 0.30 / 0.53 s, in the hole 0.83 / 1.00 / 1.00; first τ 0.08 / 0.18 / 0.79 s (life 0.06 / 0.14 / 0.65), last τ 0.25 / 0.67 / 1.11 s (life 0.21 / 0.51 / 0.92)
