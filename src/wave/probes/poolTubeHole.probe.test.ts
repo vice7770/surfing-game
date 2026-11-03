@@ -38,12 +38,13 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  *
  * Bodies (`BODIES=1`, default on), at reef column `PLACE_S` (55 m), on each front's first standing slice there: a body
  * 0.3 s × the peel ahead down the line (the curl approaching), one at the column (the join, the curl arriving), and, as its
- * slice reaches life 0.3, one there (inside the open tube). Each is a standing rider with no input (`RideSession`) and a
- * lone board (`BoardBody`), placed on the solver's face at 0.3 and 0.6 of H_s, heading along the front toward the side not
- * yet thrown at the measured peel speed over the water's flow (no autopilot), on the game's water (with the contact) and
- * on the solver's alone (no contact, no carve): the A/B. Their reactions are not applied: the sea stays shared and as is.
+ * slice reaches life 0.3, one there (inside the open tube). Each is a rider with no input (`RideSession`), standing and lying
+ * prone, and a lone board (`BoardBody`), placed on the solver's face at 0.3 and 0.6 of H_s in trim: moving shoreward with the crest
+ * (√(g h) there) and along the front toward the side not yet thrown at the measured peel, pointed along its motion through
+ * the water (no autopilot, no input), on the game's water (with the contact) and on the solver's alone (no contact, no
+ * carve): the A/B. Their reactions are not applied: the sea stays shared and as is.
  *
- * H (1.05 | 1.32), CASE (pool | a38), PERIODS (12), SETTLE (50 s), LOG.
+ * H (1.05 | 1.32), CASE (pool | a38), PERIODS (12), SETTLE (50 s), CRASH (off: `?poolCrash=off`), BODIES (0: none), LOG.
  */
 
 const quantile = (values: number[], q: number) => {
@@ -124,7 +125,7 @@ interface Read {
 }
 
 interface Body {
-  kind: 'rider' | 'board';
+  kind: 'rider' | 'prone' | 'board';
   water: 'swept' | 'solver';
   target: string;
   face: number;
@@ -167,6 +168,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     const simulation = new SurfZoneSimulation({
       spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
       tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(caseName === 'a38' ? { poolTubeCase: 'a38' } : {}),
+      // CRASH=off: the barrel's jets and pace off (`?poolCrash=off`), a diagnostic of the crash's part.
+      ...(process.env.CRASH === 'off' ? { sweptCrash: false } : {}),
     } as unknown as SurfZoneConfig, 'spun-up', library);
     const { solver } = simulation;
     // The game's contact and water (SurfZoneRunner: a plain SweptContact away from Padang's worker), and the solver's alone.
@@ -217,15 +220,21 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
       const P = loft.positions;
       const base = s * S + E;
       const c = 3 * (base + LANDMARK.crest);
-      const cx = P[c];
+      // A point exactly on a slice's ray can round off its strip (float32 positions): read 2 cm into the strip, toward the
+      // next slice's crest, as a board would stand.
+      const n = c + 3 * S;
+      const along = Math.hypot(P[n] - P[c], P[n + 2] - P[c + 2]);
+      const inX = along > 0 ? (0.02 * (P[n] - P[c])) / along : 0;
+      const inZ = along > 0 ? (0.02 * (P[n + 2] - P[c + 2])) / along : 0;
+      const cx = P[c] + inX;
       const cy = P[c + 1];
-      const cz = P[c + 2];
+      const cz = P[c + 2] + inZ;
       const rx = loft.sliceRayX[s];
       const rz = loft.sliceRayZ[s];
       const at = (xi: number) => [cx + xi * rx, cz + xi * rz] as const;
       const { ic, it, Hs } = section(cx, cz, rx, rz);
       if (!(Hs > 0.2)) return undefined;
-      const along = (index: number) => (P[3 * (base + index)] - cx) * rx + (P[3 * (base + index) + 2] - cz) * rz;
+      const alongRay = (index: number) => (P[3 * (base + index)] - cx) * rx + (P[3 * (base + index) + 2] - cz) * rz;
       const yOf = (index: number) => P[3 * (base + index) + 1];
       const etaAt = (xi: number) => {
         const [x, z] = at(xi);
@@ -265,9 +274,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
       }
       const sectionS = SECTION.map((xi) => eta[iOf(xi)] - eta[ic]);
       const sectionW = SECTION.map((xi) => (floor[iOf(xi)] === floor[iOf(xi)] ? floor[iOf(xi)] : eta[iOf(xi)]) - eta[ic]);
-      const tipXi = along(LANDMARK.lip);
-      const throatXi = along(LANDMARK.throat);
-      const toeXi = along(LANDMARK.toe);
+      const tipXi = alongRay(LANDMARK.lip);
+      const throatXi = alongRay(LANDMARK.throat);
+      const toeXi = alongRay(LANDMARK.toe);
       const tipAt = at(tipXi);
       const fTip = contact.floorAt(tipAt[0], tipAt[1]);
       // The void, where the tip stands ahead of the throat: its fill by the solver's water at three points across.
@@ -313,6 +322,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     const bodies: Body[] = [];
     const finished: Body[] = [];
     const peels: number[] = [];
+    const celerities: number[] = [];
     const input: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0 };
     const sample: WaterSample = createWaterSample();
     const part = new Vector3();
@@ -320,18 +330,32 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     const place = (cx: number, cz: number, rx: number, rz: number, target: string, front: number, peel: number, tangent: [number, number]) => {
       const { ic, it, Hs } = section(cx, cz, rx, rz);
       if (!(Hs > 0.2)) return;
+      // In trim the board keeps its place on the wave: it moves shoreward with the crest (its long-wave speed √(g h) there)
+      // and along the line with the curl (the peel).
+      const crestX = cx + xiOf(ic) * rx;
+      const crestZ = cz + xiOf(ic) * rz;
+      const celerity = Math.sqrt(9.81 * Math.max(0, solver.sampleCentered(solver.h, crestX, crestZ)));
+      celerities.push(celerity);
+      const vx = celerity * rx + peel * tangent[0];
+      const vz = celerity * rz + peel * tangent[1];
       for (const face of [0.3, 0.6]) {
         const { xi } = faceXi(ic, it, face);
         const x = cx + xi * rx;
         const z = cz + xi * rz;
-        const heading = Math.atan2(tangent[0], tangent[1]);
-        for (const kind of ['rider', 'board'] as const) {
+        // The board points along its motion through the water (its velocity less the surface water's), at that speed.
+        const surface0 = plain.surfaceAt(x, z);
+        const flow = plain.sampleAt(x, surface0 - 0.05, z, sample);
+        const relX = vx - flow.flowX;
+        const relZ = vz - flow.flowZ;
+        const heading = Math.atan2(relX, relZ);
+        const speed = Math.hypot(relX, relZ);
+        for (const kind of ['rider', 'prone', 'board'] as const) {
           for (const which of ['swept', 'solver'] as const) {
-            const session = kind === 'rider' ? new RideSession() : undefined;
+            const session = kind !== 'board' ? new RideSession() : undefined;
             const board = session ? session.board : new BoardBody();
             // Placed by the solver's water either way: the same start for the A and the B.
             if (session) {
-              session.place({ x, z, heading, speed: peel, phase: 'standing', followSurface: true }, waters.solver);
+              session.place({ x, z, heading, speed, phase: kind === 'prone' ? 'prone' : 'standing', followSurface: true }, waters.solver);
             } else {
               const surface = plain.surfaceAt(x, z);
               const s0 = plain.sampleAt(x, surface - 0.05, z, sample);
@@ -339,7 +363,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
               const forward = new Vector3(Math.sin(heading), -(up.x * Math.sin(heading) + up.z * Math.cos(heading)) / up.y, Math.cos(heading)).normalize();
               const left = new Vector3().crossVectors(up, forward);
               const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, up, forward));
-              const velocity = new Vector3(s0.flowX + Math.sin(heading) * peel, 0, s0.flowZ + Math.cos(heading) * peel);
+              const velocity = new Vector3(vx, 0, vz);
               const top = plain.sampleAt(x, surface, z, sample);
               velocity.y = top.flowY + velocity.x * top.slopeX + velocity.z * top.slopeZ;
               board.place(new Vector3(x, surface + board.shape.centerOfMass.y - 0.05, z), orientation, velocity);
@@ -458,6 +482,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     let slicesPre = 0;
     let slicesLight = 0;
     let slicesPreStanding = 0;
+    let slicesUnjoined = 0;
     for (let n = 1; n <= steps; n += 1) {
       simulation.step(dt);
       const started = performance.now();
@@ -481,6 +506,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
         }
         if (!(loft.sliceWeight[s] >= 0.5)) {
           slicesLight += 1;
+          continue;
+        }
+        // A strip's first slice only: a point on its ray is the strip's (`SweptContact.strip`, half-open).
+        if (loft.sliceJoined[s] !== 1) {
+          slicesUnjoined += 1;
           continue;
         }
         const c = 3 * (s * S + E + LANDMARK.crest);
@@ -532,9 +562,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
 
     // The tables.
     const lines: string[] = [];
-    lines.push(`pool straight Barrel, H ${height} m at the feed, cases ${caseName === 'a38' ? 'a38 (the stand-in, ?poolTubeCase=a38)' : 'the pool\'s two level-13 cases (default)'}; ${periods} periods after ${settle} s; CPU, 1/60 s steps; ${((Date.now() - t0) / 1000).toFixed(0)} s wall; contact ${(contactMs / steps).toFixed(1)} ms a step, reads ${(measureMs / (steps / 2)).toFixed(1)} ms a frame`);
+    lines.push(`pool straight Barrel, H ${height} m at the feed, cases ${caseName === 'a38' ? 'a38 (the stand-in, ?poolTubeCase=a38)' : 'the pool\'s two level-13 cases (default)'}; crash ${process.env.CRASH === 'off' ? 'off' : 'on'}; ${periods} periods after ${settle} s; CPU, 1/60 s steps; ${((Date.now() - t0) / 1000).toFixed(0)} s wall; contact ${(contactMs / steps).toFixed(1)} ms a step, reads ${(measureMs / (steps / 2)).toFixed(1)} ms a frame`);
     const fronts = new Set(reads.map((r) => r.front));
-    lines.push(`reads: ${reads.length} (column-frames), fronts ${fronts.size}; columns s ${cFrom}–${cTo} every ${cStep} m; loft slices read ${slicesSeen}: weight < 0.5 ${((100 * slicesLight) / Math.max(1, slicesSeen)).toFixed(0)} %, before the throw (τ < 0) ${slicesPre} (standing ${slicesPreStanding})`);
+    lines.push(`reads: ${reads.length} (column-frames), fronts ${fronts.size}; columns s ${cFrom}–${cTo} every ${cStep} m; loft slices read ${slicesSeen}: weight < 0.5 ${((100 * slicesLight) / Math.max(1, slicesSeen)).toFixed(0)} %, standing but not joined to the next (left out) ${((100 * slicesUnjoined) / Math.max(1, slicesSeen)).toFixed(0)} %; before the throw (τ < 0) ${slicesPre} (standing ${slicesPreStanding})`);
     lines.push(`solver face H_s ${q3(reads.map((r) => r.Hs))} m, its width crest to trough along the ray ${q3(reads.map((r) => r.width))} m; drawn H ${q3(reads.map((r) => r.Hd))} m (p10 / p50 / p90)`);
     const bins: [string, (r: Read) => boolean][] = [
       ['τ < 0 (before the throw)', (r) => r.tau < 0],
@@ -618,11 +648,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     // The bodies.
     if (bodiesOn) {
       lines.push('');
-      lines.push(`## 4. The bodies at s ${placeS} (A/B: the game's water with the contact | the solver's alone), placed on the solver's face, no input; the peel ${q3(peels)} m/s (the bodies' along-line speed, capped at ${PEEL_CAP})`);
+      lines.push(`## 4. The bodies at s ${placeS} (A/B: the game's water with the contact | the solver's alone), placed on the solver's face, no input, moving with the crest (√(g h) at it, ${q3(celerities)} m/s) and along the line at the peel, ${q3(peels)} m/s (capped at ${PEEL_CAP}), pointed along their motion through the water`);
       lines.push('per group: n; riders attached at 3 s; separated at (s) and causes; the lip in a rider part (count, first at s); the board\'s bottom dropping more than 0.1 m under the solver surface from where it started (count, first at s, for s), the most it dropped (m); first on the loft (s); covered (count); the life at the drop; the contact state at the end');
       for (const target of ['ahead 0.3 s', 'join', 'open, life 0.3']) {
         for (const face of [0.3, 0.6]) {
-          for (const kind of ['rider', 'board'] as const) {
+          for (const kind of ['rider', 'prone', 'board'] as const) {
             for (const which of ['swept', 'solver'] as const) {
               const group = finished.filter((b) => b.target === target && b.face === face && b.kind === kind && b.water === which);
               if (!group.length) continue;
@@ -633,16 +663,16 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
               const states = new Map<string, number>();
               for (const b of group) states.set(b.stateAtEnd || '—', (states.get(b.stateAtEnd || '—') ?? 0) + 1);
               lines.push(`- ${target}, face ${face}, ${kind}, ${which}: n ${group.length}; `
-                + (kind === 'rider' ? `attached ${group.filter((b) => !(b.separatedAt === b.separatedAt)).length}; separated at ${q3(group.map((b) => b.separatedAt).filter((v) => v === v))} s (${[...causes].map(([c, k]) => `${c} ${k}`).join(', ') || 'none'}); lip ${lipped.length} (first ${q3(lipped.map((b) => b.firstLip))} s); ` : '')
+                + (kind !== 'board' ? `attached ${group.filter((b) => !(b.separatedAt === b.separatedAt)).length}; separated at ${q3(group.map((b) => b.separatedAt).filter((v) => v === v))} s (${[...causes].map(([c, k]) => `${c} ${k}`).join(', ') || 'none'}); lip ${lipped.length} (first ${q3(lipped.map((b) => b.firstLip))} s); ` : '')
                 + `dropped ${holed.length} (first ${q3(holed.map((b) => b.firstHole))} s, for ${q3(holed.map((b) => b.holeTime))} s), most ${q3(group.map((b) => -b.minGap))} m; on the loft ${q3(group.map((b) => b.firstLoft).filter((v) => v === v))} s; covered ${group.filter((b) => b.coveredTime > 0).length}; life at the drop ${q3(holed.map((b) => b.lifeAtHole).filter((v) => v === v))}; end ${[...states].map(([c, k]) => `${c} ${k}`).join(', ')}`);
             }
           }
         }
       }
-      lines.push('each rider on the game\'s water: target, face, front: separated at (s) cause | first on the loft (s), first drop (s), life there, most dropped (m) | first lip (s) | end state, d at the end (m), max life | its twin on the solver\'s water');
-      for (const b of finished.filter((x) => x.kind === 'rider' && x.water === 'swept')) {
-        const twin = finished.find((x) => x.kind === 'rider' && x.water === 'solver' && x.target === b.target && x.face === b.face && x.front === b.front && x.t0 === b.t0);
-        lines.push(`  ${b.target}, ${b.face}, ${b.front}: ${fmt(b.separatedAt)} ${b.cause || 'attached'} | ${fmt(b.firstLoft)}, ${fmt(b.firstHole)}, ${fmt(b.lifeAtHole)}, ${fmt(-b.minGap)} | ${fmt(b.firstLip)} | ${b.stateAtEnd}, ${fmt(b.dAtEnd)}, ${fmt(b.maxLife)} | ${twin ? `${fmt(twin.separatedAt)} ${twin.cause || 'attached'}, most dropped ${fmt(-twin.minGap)}` : '—'}`);
+      lines.push('each rider (standing, prone) on the game\'s water: kind, target, face, front: separated at (s) cause | first on the loft (s), first drop (s), life there, most dropped (m) | first lip (s) | end state, d at the end (m), max life | its twin on the solver\'s water');
+      for (const b of finished.filter((x) => x.kind !== 'board' && x.water === 'swept')) {
+        const twin = finished.find((x) => x.kind === b.kind && x.water === 'solver' && x.target === b.target && x.face === b.face && x.front === b.front && x.t0 === b.t0);
+        lines.push(`  ${b.kind}, ${b.target}, ${b.face}, ${b.front}: ${fmt(b.separatedAt)} ${b.cause || 'attached'} | ${fmt(b.firstLoft)}, ${fmt(b.firstHole)}, ${fmt(b.lifeAtHole)}, ${fmt(-b.minGap)} | ${fmt(b.firstLip)} | ${b.stateAtEnd}, ${fmt(b.dAtEnd)}, ${fmt(b.maxLife)} | ${twin ? `${fmt(twin.separatedAt)} ${twin.cause || 'attached'}, most dropped ${fmt(-twin.minGap)}` : '—'}`);
       }
     }
     appendFileSync(log, lines.join('\n') + '\n');
