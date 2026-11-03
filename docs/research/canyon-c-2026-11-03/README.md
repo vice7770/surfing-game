@@ -6,22 +6,25 @@ no tube work at the Canyon.
 
 ## Where it stands
 
-- **Built and pinned** (commit 61e3fb14 and after): version C is the default Canyon; `?canyonBed=b` is version B byte for
-  byte (sea hash 316bb67a, main's Canyon at 4eee1e5f) and `?canyonBed=old` version A (110c2d83); every other spot hashes as
-  on main (`runs/pin.txt`).
-- **Provisional:** the take-off depth and the starts at x +75 (`CANYON_BANK_TAKE_OFF_DEPTH`, `CANYON_BANK_RIDE_LINEUP`
-  carry B's numbers until measured there) and `SWELL_SURF.canyon` (B's faces).
-- **Measuring:** the frame probe at Medium, seeds 1 and 2 (rule A on the bank).
+- **Built and pinned:** version C is the default Canyon; `?canyonBed=b` is version B byte for byte (sea hash 316bb67a,
+  main's Canyon at 4eee1e5f) and `?canyonBed=old` version A (110c2d83); every other spot hashes as on main
+  (`runs/pin.txt`).
+- **Rule A triggered the gate** (Medium, seeds 1–2, `runs/ruleA-medium-s*.txt`): white ran more than 10 m up the line
+  on 64–69 % of waves. The age gate is on the take-off zone, x > +31 (`bankGateFrom`), as the ruling says. It holds each
+  line's own +x end (≤ 10 m on 92 % of waves, all sets; rule A: 52 %, 20 % of sets), but other white still breaks up the
+  line on the same crest (35 % of waves clear), and the line stalls: its −x end travels 20 m at the median, no set's
+  line reaches the bowl, and the bowl breaks on its own on most waves. That is the "line stalling, bowl first" case the
+  brief names: **no shape changes here; this goes back to the advisor** (the write-up below).
+- **Provisional:** the take-off depth and the starts at x +75 (`CANYON_BANK_TAKE_OFF_DEPTH`, `CANYON_BANK_RIDE_LINEUP`)
+  and `SWELL_SURF.canyon` (B's faces).
+- **Running:** frame probe Medium seed 3 and Big seed 1; `crest-current.ts` Medium seed 1 to 1800 s (bars 6–7).
 
 ## Next steps
 
-1. Medium seeds 1–2: bar 1 (white up the line). If more than 10 % of waves run white more than 10 m up the line, put
-   the age gate on the take-off zone (`bankGateFrom` 31) and re-run.
-2. The frame probe for Medium seed 3, Small and Big × 3 seeds (`frame-probe.ts`; 12 periods, 2 at a time).
-3. Fit `CANYON_BANK_TAKE_OFF_DEPTH` from the runs' take-off column (x 75 ± 4: each wave's most seaward break, p90 depth),
-   then the catch probe at several starts for `CANYON_BANK_RIDE_LINEUP` (canyon-catch's `catch-probe.ts`).
-4. `crest-current.ts` at Medium, seed 1, 1800 s (bars 6 and 7, health); Big 600 s for bar 6.
-5. The cost (canyon-beach-break's `step-bench.ts`, C against B), the stills, the notes, the tests.
+1. Pool Medium's three seeds; Big and Small, one seed each (`pool.mjs`).
+2. The take-off fit from the probes' take-off column; one catch probe at Medium.
+3. The current at 600 / 1200 / 1800 s; the cost bench (C against B); the main suite and the Canyon tests.
+4. The write-up for the advisor: the bars table and what the numbers say.
 
 ## How to verify
 

@@ -521,11 +521,15 @@ export const CANYON = {
   bankAngle: 45, bankTipX: 140, bankFade: 25, bankFace: 1 / 44,
   bankEdge: 1.2, bankRampFrom: 31, bankEdgeTip: 3.6, bankTop: 8, bankBack: 1 / 30, bankInside: 2, bankInsideOver: 0.5,
   /**
-   * Version C's breaking age on the bank: rule A everywhere (`barJoin`), the reef's gate (`ageJoin`) only on the bowl.
-   * The advisor's call, only if measured: if white runs more than 10 m up the line on more than 10 % of waves, the gate
-   * goes on the take-off zone, x > `bankGateFrom` (+31). Infinity: no gate on the bank.
+   * Version C's breaking age on the bank: rule A (`barJoin`) to `bankGateFrom`, the reef's gate (`ageJoin`, 0.5) up the
+   * line from there, blended in over `bowlRulesBlend` m, and on the bowl. The advisor's call, only if measured (the
+   * ruling's §2): if white runs more than 10 m up the line (+x of the first break) on more than 10 % of waves, the gate
+   * goes on the take-off zone only, x > +31. With rule A all along the bank it did on 64–69 % of Medium's waves (seeds 1
+   * and 2 × 12 periods, frame by frame: runs/ruleA-medium-s*.txt): a broken crest's age, passed along it through the
+   * diagonals, broke the crest up the line over the bank's top and inside, deeper than its own breaking depth, 24–29 m on
+   * the median wave and 82–125 m on one in ten. Infinity: rule A on the whole bank.
    */
-  bankGateFrom: Infinity,
+  bankGateFrom: 31,
 };
 
 /**
@@ -1126,9 +1130,11 @@ export function canyonBeachShare(x: number, c: CanyonShape = CANYON): number {
  */
 export function canyonJoin(x: number, join: number, c: CanyonShape = CANYON): number {
   if (!c.beach || c.barJoin === join) return join;
-  // Version C: the reef's gate on the bank's take-off zone only if measured (`bankGateFrom`; Infinity: none).
-  if (canyonBankOn(c) && x > c.bankGateFrom) return join;
   const along = canyonBeachShare(x, c);
+  // Version C: the reef's gate on the bank's take-off zone, up the line from `bankGateFrom` (the ruling's §2, measured).
+  if (canyonBankOn(c) && along > 0 && x > c.bankGateFrom) {
+    return join + (c.barJoin - join) * along * (1 - smoothstep(c.bankGateFrom, c.bankGateFrom + c.bowlRulesBlend, x));
+  }
   return along > 0 ? join + (c.barJoin - join) * along : join;
 }
 

@@ -30,7 +30,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { SWELLS } from '../../../src/game/SurfConditions';
-import { canyonArmEndX, canyonBankEdge, canyonBankJoin, canyonBars, canyonReefSpan, canyonShape } from '../../../src/wave/Bathymetry';
+import { canyonArmEndX, canyonBankEdge, canyonBankJoin, canyonBars, canyonBreakLineZ, canyonReefSpan, canyonShape } from '../../../src/wave/Bathymetry';
 import { GRAVITY } from '../../../src/wave/dispersion';
 import { SurfMeter, TAKE_OFF_BAND } from '../../../src/wave/SurfMeter';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
@@ -289,7 +289,7 @@ const lastWhite = new Float64Array(nx).fill(Number.NaN);
 const onsetBins = new Map<number, { depth: number; height: number; face: number; slope: number; xi: number }[]>();
 const insideBins = new Map<number, number>();
 /** Each column's crest speeds at its onsets (the crest followed for CREST_FOLLOW s), m/s, and the onsets still followed. */
-const CREST_FOLLOW = 0.5;
+const CREST_FOLLOW = 1;
 const crestSpeeds: number[][] = Array.from({ length: nx }, () => []);
 const following: { col: number; t: number; z: number }[] = [];
 const crestRowNear = (col: number, from: number, to: number) => {
@@ -300,6 +300,14 @@ const crestRowNear = (col: number, from: number, to: number) => {
     if (e > top) { top = e; best = iz; }
   }
   return best;
+};
+/** The crest's z in a row's neighbourhood, refined by a parabola through the rows either side (as the crest report's). */
+const crestZ = (col: number, row: number) => {
+  if (row <= firstRow || row >= nz - 1) return zCenters[row];
+  const a = eta(row - 1, col); const b = eta(row, col); const d = eta(row + 1, col);
+  const den = a - 2 * b + d;
+  const shift = den < 0 ? Math.max(-0.5, Math.min(0.5, (0.5 * (a - d)) / den)) : 0;
+  return zCenters[row] + shift * (zCenters[row + 1] - zCenters[row]);
 };
 /** The crests' own speed over the STRETCH m ending at `edge` (the run's median over its columns' onsets), m/s. */
 function crestSpeedIn(edge: number): number {
@@ -313,8 +321,8 @@ function onsetShapes(): void {
     const f = following[k];
     if (now - f.t < CREST_FOLLOW - 1e-6) continue;
     following.splice(k, 1);
-    const row = crestRowNear(f.col, solver.rowBelow(f.z - 1), solver.rowBelow(f.z + 8));
-    if (row >= 0) crestSpeeds[f.col].push((zCenters[row] - f.z) / (now - f.t));
+    const row = crestRowNear(f.col, solver.rowBelow(f.z - 1), solver.rowBelow(f.z + 10));
+    if (row >= 0) crestSpeeds[f.col].push((crestZ(f.col, row) - f.z) / (now - f.t));
   }
   const values = sim.breaking.strength;
   const c0 = columnOf(bowl.from);
@@ -341,10 +349,12 @@ function onsetShapes(): void {
     const height = crest - trough;
     const bin = Math.floor(xCenters[col] / BIN) * BIN;
     const crestRow = crestRowNear(col, row - 4, row + 4);
-    if (crestRow >= 0) following.push({ col, t: now, z: zCenters[crestRow] });
-    // Inside the bank's edge (its level top, its back and the inside), where the bores re-break: counted, not shaped.
-    const onsetDepth = solver.restLevel - solver.bed[row * nx + col];
-    if (xCenters[col] > join && onsetDepth < canyonBankEdge(Math.min(xCenters[col], bank.x), c) - 0.05) {
+    if (crestRow >= 0) following.push({ col, t: now, z: crestZ(col, crestRow) });
+    // Inside the bank's edge (its level top, its back and the inside, shoreward of where its face reaches the edge's
+    // depth), where the bores re-break: counted, not shaped.
+    const x = xCenters[col];
+    const edgeZ = canyonBreakLineZ(x, c) - (canyonBankEdge(x, c) - c.bowlCrestContour) / c.bankFace;
+    if (x > join && x < bank.x + bank.plusTaper && z > edgeZ + 0.5) {
       insideBins.set(bin, (insideBins.get(bin) ?? 0) + 1);
       continue;
     }

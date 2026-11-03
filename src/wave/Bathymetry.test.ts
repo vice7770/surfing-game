@@ -678,16 +678,19 @@ describe('surf spot bathymetry', () => {
       for (let z = -330; z < 0; z += 5) expect(canyonOnset(x, z, 0.65)).toBe(0.65);
       expect(canyonJoin(x, 0.5)).toBe(0.5);
     }
-    // The bank: the beach's 0.40 onset where it is 3 m deep or shallower, easing to the spot's 0.65 by 4.5 m; rule A
-    // everywhere along it (`bankGateFrom` Infinity: no gate on the take-off zone).
+    // The bank: the beach's 0.40 onset where it is 3 m deep or shallower, easing to the spot's 0.65 by 4.5 m.
     for (const x of [span.to + C.bowlRulesBlend + 1, 31, 75, 140]) {
       const edge = canyonBreakLineZ(x) - (canyonBankEdge(x) - C.bowlCrestContour) / C.bankFace;
       expect(canyonOnset(x, edge - 20, 0.65)).toBeCloseTo(canyonBankEdge(x) + 20 * C.bankFace <= C.onsetShallow ? C.barOnset : canyonOnset(x, edge - 20, 0.65), 9);
-      expect(canyonJoin(x, 0.5)).toBe(C.barJoin);
     }
     expect(canyonOnset(75, canyonBreakLineZ(75) + 20, 0.65)).toBe(C.barOnset);
     expect(canyonOnset(75, -420, 0.65)).toBe(0.65);
-    expect([C.barOnset, C.barJoin, C.bankGateFrom]).toEqual([0.4, 0, Infinity]);
+    // Rule A down the line from x +31; the reef's gate (0.5) on the take-off zone up the line, blended in over 5 m (the
+    // ruling's §2: measured, white ran up the line on 64–69 % of Medium's waves with rule A all along).
+    for (const x of [span.to + C.bowlRulesBlend + 1, 0, 20, 31]) expect(canyonJoin(x, 0.5)).toBe(C.barJoin);
+    for (const x of [36, 75, 140, 160]) expect(canyonJoin(x, 0.5)).toBe(0.5);
+    expect(canyonJoin(33.5, 0.5)).toBeCloseTo(0.25, 9);
+    expect([C.barOnset, C.barJoin, C.bankGateFrom]).toEqual([0.4, 0, 31]);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {
