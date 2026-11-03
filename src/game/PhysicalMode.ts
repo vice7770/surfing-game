@@ -400,7 +400,7 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...startOutSwitch(),
     // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
-    // `?canyonBed=old`: the Canyon's whole layout before canyon-beach-break, with its take-off and starts (main's until 2026-10-23).
+    // `?canyonBed=b` or `=old`: the Canyon's version B or A, with its take-off and starts (main's until 2026-11-03 or 2026-11-01).
     ...canyonBedSwitch(),
     // `?tubeShape=c`: the swept barrel drawn and felt as the authored bounded-C (2026-10-05 to 2026-10-22), for A/Bs.
     ...tubeShapeSwitch(),
@@ -644,12 +644,14 @@ export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
 }
 
 /**
- * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-b (2026-11-01,
- * `CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's at 376d9cd4), to ride the two side by side;
- * nothing otherwise (today's layout, version B: the upcoast peak's +x arm runs into a reef bowl).
+ * The `?canyonBed` dev switch (`SurfZoneConfig.canyonBed`), to ride the layouts side by side: 'b', version B (canyon-b,
+ * 2026-11-01, `CANYON_B`: the upcoast peak's +x arm runs into the reef bowl, main's at 4eee1e5f); 'old', the whole layout
+ * before it (`CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's at 376d9cd4); nothing otherwise
+ * (today's layout, version C, canyon-c: one straight bank peeling from +x into the flipped reef bowl).
  */
-export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
-  return devParam('canyonBed', search)?.trim() === 'old' ? { canyonBed: 'old' } : {};
+export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' } {
+  const bed = devParam('canyonBed', search)?.trim();
+  return bed === 'old' || bed === 'b' ? { canyonBed: bed } : {};
 }
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */

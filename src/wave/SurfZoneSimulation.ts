@@ -1,5 +1,5 @@
 import {
-  PADANG, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type CanyonShape, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonBankEdge, canyonBankJoin, canyonBankOn, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type CanyonShape, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, aFrameEstimate, breakerDepthFor, type PeelEstimate } from './Breaking';
@@ -317,9 +317,22 @@ export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
  */
 export const CANYON_BEACH_LOOK = { peelAngleDegrees: 20, upcoastMargin: Infinity, lifetime: 20 } as const;
 
-/** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
+/**
+ * Version C's bank's group of the spilling front (canyon-c, 2026-11-03): the beach peaks' (`CANYON_BEACH_LOOK`: the 20°
+ * cap, so the front keeps up with the solver's break, and no upcoast gate, so rule A's spread up the line shows as the
+ * solver breaks it), one group peeling −x from the tip to the bowl, each wave kept 30 s: the bank's line runs 162 m
+ * along shore from its tip to the bowl at about c_b / sin α · cos 45°, 6.3–8.6 m/s from Small to Big (the advisor's peel
+ * speeds, 8.9–12.1 m/s along the line), 19–26 s from the tip, where an A-frame's 45–55 m arm took 10–15 s.
+ */
+export const CANYON_BANK_LOOK = { ...CANYON_BEACH_LOOK, lifetime: 30 } as const;
+
+/**
+ * Each spilling spot's front: the Canyon's own waves (its reef bowl's) peel right to left seen from the beach (−x), at a
+ * 55° visible peel, since canyon-c (2026-11-03) flipped the bowl to peel with the bank; left to right (+x) on versions B
+ * and A (`?canyonBed=b`, `?canyonBed=old`).
+ */
 export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {
-  canyon: { direction: 1, peelAngleDegrees: 55, drawnEdges: true },
+  canyon: { direction: -1, peelAngleDegrees: 55, drawnEdges: true },
 };
 
 /**
@@ -789,10 +802,22 @@ export const CANYON_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
 export const CANYON_REEF_TAKE_OFF_DEPTH = { base: 1.67, perMetre: 0.75 } as const;
 
 /**
- * How deep the Canyon's sets of significant height Hs start breaking at its default start, m (`CANYON_TAKE_OFF_DEPTH`).
- * Either layout (`bed`): canyon-b's bowl leaves the upcoast peak's tip, where riders start, as it was.
+ * Where version C's sets start breaking at its start on the bank (canyon-c, 2026-11-03: x +75, a third of the way from the
+ * tip to the bowl), m deep, against Hs: provisional, the upcoast bar's fit (`CANYON_TAKE_OFF_DEPTH`) until measured there.
  */
-export function canyonTakeOffDepth(significantHeight: number, _bed: CanyonBed = 'reef'): number {
+export const CANYON_BANK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
+
+/**
+ * How deep the Canyon's sets of significant height Hs start breaking at its default start, m: on version C's bank
+ * (`CANYON_BANK_TAKE_OFF_DEPTH`), no shallower than the bank's edge there (its face's top: shallower water lies only on the
+ * beach face, 150 m inshore), or at the upcoast peak's tip on versions B and A (`CANYON_TAKE_OFF_DEPTH`; canyon-b's bowl
+ * left the tip, where riders start, as it was).
+ */
+export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
+  const c = canyonShape(bed);
+  if (canyonBankOn(c)) {
+    return Math.max(canyonBankEdge(c.takeOffX, c), CANYON_BANK_TAKE_OFF_DEPTH.base + CANYON_BANK_TAKE_OFF_DEPTH.perMetre * significantHeight);
+  }
   return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
 }
 
@@ -827,6 +852,16 @@ export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; 
 ];
 
 /**
+ * Version C's start on its bank (canyon-c, 2026-11-03), m seaward of its take-off (`CANYON_BANK_TAKE_OFF_DEPTH`), against
+ * Hs, as `CANYON_RIDE_LINEUP`: provisional, the upcoast peak's until measured there.
+ */
+export const CANYON_BANK_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
+];
+
+/**
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
@@ -837,8 +872,9 @@ export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'signific
     return poolFloorOf(config) === 'aframe' ? POOL_BARREL.startOut : poolStraightStartOut(config.significantHeight / Math.SQRT2);
   }
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
-  // Either layout: canyon-b leaves the upcoast peak, where riders start, as it was.
-  const sizes = CANYON_RIDE_LINEUP;
+  // Version C's start on its bank (canyon-c); versions B and A at the upcoast peak (canyon-b left it as it was).
+  const c = canyonShape(config.canyonBed);
+  const sizes = canyonBankOn(c) ? CANYON_BANK_RIDE_LINEUP : CANYON_RIDE_LINEUP;
   const height = config.significantHeight;
   if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
   for (let i = 1; i < sizes.length; i += 1) {
@@ -1073,7 +1109,7 @@ export class SurfZoneSimulation {
    * The Canyon's beach peaks (canyon-beach-break): each arm's peel, over the breaks on its own bar. One tracker across both
    * arms of an A-frame reads as a close-out (the Wave Pool's note), so the left arm (toward +x) and the right have one each.
    */
-  private readonly beachPeel?: { x: number; left: PeelTracker; right: PeelTracker; onBar: (x: number, z: number) => boolean; bowl: boolean }[];
+  private readonly beachPeel?: { x: number; left: PeelTracker; right: PeelTracker; onBar: (x: number, z: number) => boolean; bowl: boolean; bank: boolean }[];
   /** The Canyon's readout per peak with its beach peaks, built when first asked: each peak's take-off x and breaker there. */
   private peakBreakers?: { x: number; breaker: { value: number; type: BreakerType }; bowl?: { value: number; type: BreakerType } }[];
   lastStepMs = 0;
@@ -1193,14 +1229,14 @@ export class SurfZoneSimulation {
       this.reefAt = (x) => x >= span.from && x <= span.to;
       this.beachPeel = canyonBars(canyon).map((bar, k) => {
         // An arm's columns: from the tip's (a metre either side) out to the end of its taper (version B's upcoast bar's +x
-        // arm on into its bowl, canyon-b).
+        // arm on into its bowl, canyon-b; version C's bank's −x arm on through the flipped bowl to its −x end, canyon-c).
         const arm = (side: 1 | -1) => (column: number) => {
           const u = side * (xCenters[column] - bar.x);
-          return u >= -1 && u <= (side > 0 ? bar.plusReach + bar.plusTaper : bar.reach + canyon.barTaper);
+          return u >= -1 && u <= (side > 0 ? bar.plusReach + bar.plusTaper : bar.bank ? bar.x - span.from : bar.reach + canyon.barTaper);
         };
         return {
           x: bar.x, left: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(1)), right: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(-1)),
-          onBar: (x: number, z: number) => canyonBarAt(x, z, canyon) === k, bowl: bar.bowl,
+          onBar: (x: number, z: number) => canyonBarAt(x, z, canyon) === k, bowl: bar.bowl, bank: bar.bank,
         };
       });
     }
@@ -1215,7 +1251,9 @@ export class SurfZoneSimulation {
       const { nx } = this.solver;
       const zone = (x: number) => {
         if (x >= span.from && x <= span.to) return reefSeq ? 1 : 0;
-        const k = bars.findIndex((bar) => Math.abs(x - bar.x) <= bar.reach + canyon.barTaper);
+        // Version C's bank (canyon-c): from the bowl to the end of its fade past the tip.
+        const k = bars.findIndex((bar) => (bar.bank ? x >= bar.x - bar.reach - bar.minusTaper && x <= bar.x + bar.plusReach + bar.plusTaper
+          : Math.abs(x - bar.x) <= bar.reach + canyon.barTaper));
         return beachSeq && k >= 0 ? 2 + k : 0;
       };
       this.reefOnsets = {
@@ -1271,7 +1309,12 @@ export class SurfZoneSimulation {
     }
     if (spillingFrontOn(config) && !this.crash) {
       // The Canyon's beach peaks: a group of the front's waves per arm, each peeling away from its tip (canyon-beach-look).
-      const beachGroups = config.spot === 'canyon' && canyon.beach && config.canyonBeachLook !== false
+      // Version C's bank (canyon-c): one group peeling −x from the end of its fade past the tip to the flipped bowl, whose
+      // own front (the front's own waves, `SPILLING_FRONT`) takes over where it ramps in.
+      const bankGroups = config.spot === 'canyon' && canyonBankOn(canyon) && config.canyonBeachLook !== false
+        ? canyonBars(canyon).map((bar) => ({ direction: -1 as const, ...CANYON_BANK_LOOK, span: { from: canyonBankJoin(canyon).x, to: bar.x + bar.plusTaper } }))
+        : undefined;
+      const beachGroups = bankGroups ?? (config.spot === 'canyon' && canyon.beach && config.canyonBeachLook !== false
         ? canyonBars(canyon).flatMap((bar) => ([-1, 1] as const).map((direction) => ({
           direction, ...CANYON_BEACH_LOOK,
           // Each arm's span: from its tip to the end of its bar's taper.
@@ -1279,10 +1322,13 @@ export class SurfZoneSimulation {
             // Version B's upcoast +x arm hands on to the bowl's own front where it ramps in (canyon-b).
             : { from: bar.x, to: bar.bowl ? canyon.upPeakX + canyon.bowlFrom : bar.x + bar.reach + canyon.barTaper },
         })))
-        : [];
+        : []);
       if (beachGroups.length) this.beachLook = canyonBars(canyon).map((bar) => bar.x);
       this.spilling = new SpillingFront(this.solver, {
-        ...SPILLING_FRONT[config.spot], ...(config.drawnEdges === false ? { drawnEdges: false } : {}), ...(beachGroups.length ? { groups: beachGroups } : {}),
+        ...SPILLING_FRONT[config.spot],
+        // Versions B and A's reef bowl and reef peel +x (canyon-b and before).
+        ...(config.spot === 'canyon' && !canyonBankOn(canyon) ? { direction: 1 as const } : {}),
+        ...(config.drawnEdges === false ? { drawnEdges: false } : {}), ...(beachGroups.length ? { groups: beachGroups } : {}),
       });
       this.whitewater = new Float64Array(this.solver.h.length);
       if (config.roller !== false) {
@@ -1731,6 +1777,13 @@ export class SurfZoneSimulation {
     // Each arm's fit leaves out the open edge's levelled band, where the bed is no longer the bar's.
     const margin = OPEN_EDGE_RAMP / (this.solver.nx * this.solver.dx);
     const celerity = this.breakerCelerity();
+    // Version C's bank (canyon-c) peels one way, −x from its tip into the flipped bowl: its one arm's peel, and the readout
+    // says "spilling bank into a plunging reef bowl, right …°".
+    if (peak.bank) {
+      const bank = peak.right.estimate(this.solver.time, celerity, margin);
+      const bowl = this.peakBreakerAt(peak.x)?.bowl;
+      return bank && { ...bank, bank: true, ...(bowl ? { bowl: bowl.type } : {}) };
+    }
     const estimate = aFrameEstimate(peak.left.estimate(this.solver.time, celerity, margin), peak.right.estimate(this.solver.time, celerity, margin), x! < peak.x ? -1 : 1);
     // Version B's upcoast peak runs into its reef bowl (canyon-b): the readout names the bowl's breaker too.
     const bowl = peak.bowl ? this.peakBreakerAt(peak.x)?.bowl : undefined;
@@ -1749,8 +1802,9 @@ export class SurfZoneSimulation {
     // Version B (canyon-b) has no reef of its own: its bowl is the upcoast peak's, whose stretch runs on into it.
     return [
       ...(c.reef ? [{ from: reef.from, to: reef.to, breaker: this.breakerNear(middle)!, peel: this.peelEstimate(middle) }] : []),
+      // Version C's bank's (canyon-c) runs on through the flipped bowl to its −x end.
       ...canyonBars(c).map((bar) => ({
-        from: bar.x - bar.reach - c.barTaper, to: bar.x + bar.plusReach + bar.plusTaper, breaker: this.breakerNear(bar.x)!, peel: this.peelEstimate(bar.x),
+        from: bar.bank ? reef.from : bar.x - bar.reach - c.barTaper, to: bar.x + bar.plusReach + bar.plusTaper, breaker: this.breakerNear(bar.x)!, peel: this.peelEstimate(bar.x),
       })),
     ];
   }
@@ -1776,8 +1830,9 @@ export class SurfZoneSimulation {
   }
 
   /**
-   * The readout's breakers, built when first asked: the reef's at its take-off (none on version B), each beach peak's at
-   * its tip, and version B's bowl's at its take-off (`canyonBowlTakeOff`) beside its upcoast peak's. The entry for a peak
+   * The readout's breakers, built when first asked: the reef's at its take-off (none on versions B and C), each beach
+   * peak's at its tip (version C's bank's at the start), and the bowl's at its take-off (`canyonBowlTakeOff`) beside its
+   * peak's. The entry for a peak
    * at x (the reef's: none).
    */
   private peakBreakerAt(x: number | undefined): NonNullable<SurfZoneSimulation['peakBreakers']>[number] | undefined {
@@ -1785,7 +1840,8 @@ export class SurfZoneSimulation {
     this.peakBreakers ??= [
       ...(this.canyonShape.reef ? [{ x: Number.NaN, breaker: this.iribarren(canyonReefTakeOff(this.config)) }] : []),
       ...this.beachPeel.map((peak) => ({
-        x: peak.x, breaker: this.iribarren(canyonBeachTakeOff(this.config, peak.x)),
+        // Version C's bank's at the start (`takeOffPoint`), a third of the way along it (canyon-c).
+        x: peak.x, breaker: this.iribarren(peak.bank ? this.breakPoint() : canyonBeachTakeOff(this.config, peak.x)),
         ...(peak.bowl ? { bowl: this.iribarren(canyonBowlTakeOff(this.config)) } : {}),
       })),
     ];
@@ -1883,7 +1939,8 @@ export class SurfZoneSimulation {
     }
     if (!this.beachLook) return;
     const bar = canyonBarAt(x, z, this.canyonShape);
-    if (bar >= 0) front.observeOnset(column, this.solver.time, z, 1 + 2 * bar + (x >= this.beachLook[bar] ? 1 : 0));
+    // Version C's bank (canyon-c) has one group, peeling −x.
+    if (bar >= 0) front.observeOnset(column, this.solver.time, z, canyonBankOn(this.canyonShape) ? 1 : 1 + 2 * bar + (x >= this.beachLook[bar] ? 1 : 0));
   }
 
   /** Where each column's outermost breaking cell lies across shore, z (Infinity when the column is not breaking). */
