@@ -388,6 +388,8 @@ export class SweptLoft {
   private readonly faceAnchor?: FaceAnchor;
   private recordRaw = new Float64Array(0);
   private recordShift = new Float64Array(0);
+  /** Per record, its case's lower-face crossing's speed along its ray, m per clock second (`FaceAnchor.caseFace`). */
+  private recordSpeed = new Float64Array(0);
   private readonly recordSigma: number[] = [];
   private readonly faceScratch = new Float64Array(3);
   private readonly measureSheet: boolean;
@@ -1165,7 +1167,7 @@ export class SweptLoft {
           // Its motion, per second of the clock (the advisor, 2026-09-30 and 2026-10-03): K̇ = Ṡ − ċ n. Under the face
           // ruling the case's lower-face crossing moves the anchor where its crest did: K̇ = Ṡ − ẋ_c n.
           const follow = this.faceAnchor && shift === shift
-            ? this.facePointVelocity(s, tau, nx, nz)
+            ? this.facePointVelocity(s, this.recordLerp(records, f, sigma, (k) => this.recordSpeed[k - f.start]), nx, nz)
             : this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
           anchorVX = follow[0];
           anchorVZ = follow[1];
@@ -1522,6 +1524,7 @@ export class SweptLoft {
     if (this.recordRaw.length < n) {
       this.recordRaw = new Float64Array(2 * n);
       this.recordShift = new Float64Array(2 * n);
+      this.recordSpeed = new Float64Array(2 * n);
     }
     const sigmas = this.recordSigma;
     sigmas.length = n;
@@ -1533,6 +1536,7 @@ export class SweptLoft {
       this.rayPlan.rayAt(sigma, this.plannedRay);
       this.recordRaw[k] = anchor.shift(records[o + FRONT_FIELD.footHeight], records[o + FRONT_FIELD.footDepth], records[o + FRONT_FIELD.tau],
         hold, records[o + FRONT_FIELD.x], records[o + FRONT_FIELD.z], this.plannedRay[0], this.plannedRay[1], heightAt, this.faceScratch);
+      this.recordSpeed[k] = this.faceScratch[2];
     }
     smoothShifts(sigmas, this.recordRaw, n, this.recordShift);
   }
@@ -1568,15 +1572,14 @@ export class SweptLoft {
 
   /**
    * Under the face ruling, a thrown slice's anchor's velocity, m per second of its clock (x, z): its point's, Ṡ, less its
-   * case's lower-face crossing's along the ray, ẋ_c n (`FaceAnchor.caseFace`; 0 for a held shape, its mean speed once
-   * extrapolated), as the crest's was (`crestPointVelocity`).
+   * case's lower-face crossing's along the ray, ẋ_c n (`speed`: its records' `FaceAnchor.caseFace`, interpolated; 0 for a
+   * held shape, its mean speed once extrapolated), as the crest's was (`crestPointVelocity`).
    */
-  private facePointVelocity(s: Sample, tau: number, nx: number, nz: number): Float64Array {
+  private facePointVelocity(s: Sample, speed: number, nx: number, nz: number): Float64Array {
     const pace = s.pace === s.pace ? s.pace : 0;
-    const face = this.faceAnchor!.caseFace(s.footHeight, s.footDepth, tau, 'contact', this.faceScratch);
     const out = this.velocity;
-    out[0] = -face[2] * nx;
-    out[1] = pace - face[2] * nz;
+    out[0] = -speed * nx;
+    out[1] = pace - speed * nz;
     return out;
   }
 

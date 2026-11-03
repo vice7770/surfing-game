@@ -183,9 +183,21 @@ export class FaceAnchor {
     }
     let high = 0;
     for (let k = 1; k <= low; k += 1) if (reads[k] > reads[high]) high = k;
-    const span = reads[high] - reads[low];
+    // The extremes' levels refined by the parabola through each and its neighbours, so the level moves smoothly as the
+    // sea does rather than in steps as the extreme passes from one read to the next.
+    const extreme = (k: number) => {
+      if (k <= 0 || k >= count - 1) return reads[k];
+      const a = reads[k - 1];
+      const b = reads[k];
+      const c = reads[k + 1];
+      const curve = a - 2 * b + c;
+      return curve !== 0 ? b - ((a - c) * (a - c)) / (8 * curve) : b;
+    };
+    const top = extreme(high);
+    const bottom = extreme(low);
+    const span = top - bottom;
     if (!(span > 0.1 * height)) return Number.NaN;
-    const level = reads[low] + fraction * span;
+    const level = bottom + fraction * span;
     for (let k = high; k < low; k += 1) {
       if (reads[k] >= level && reads[k + 1] < level) return -behind + (k + (reads[k] - level) / (reads[k] - reads[k + 1])) * step;
     }

@@ -1,0 +1,90 @@
+pool straight Barrel, H 1.05 m at the feed, cases a38, switches {}, tubeFace {"anchor":true,"union":true,"lag":true,"clockRate":1.25,"thrownEnds":true}; 12 periods after 50 s; CPU 1/60 s; 1001 s wall
+reads 7035, fronts 78; H_s 0.95 / 1.17 / 1.41 m; drawn H (its crest over the solver's trough) 1.20 / 1.47 / 1.77 m; shift (the drawn crest ahead of the point) 1.88 / 2.24 / 2.70 m; the cases' own lowest less the solver's trough -0.07 / 0.00 / 0.04 m
+the contact's face anchor: {"shifts":173672,"solverMisses":5278,"caseMisses":0}; the front: joins 996, unbroken 0, lost 409
+
+## Bar 1, support − solver ≥ −0.02 m on 100 % of face reads (0.05–1.0 H_s): 100.0 % of 77385; min -0.000 m; p0.1 -0.000
+- τ −1…0 s (n 4161): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.3: 0.00 (min -0.00) | 0.4: 0.05 (min -0.00) | 0.5: 0.21 (min -0.00) | 0.6: 0.48 (min -0.00) | 0.7: 0.54 (min -0.00) | 0.8: 0.30 (min 0.00) | 0.9: 0.01 (min 0.00) | 1: 0.00 (min -0.00)
+- life 0–0.3 (n 939): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.3: 0.00 (min -0.00) | 0.4: 0.00 (min -0.00) | 0.5: 0.05 (min -0.00) | 0.6: 0.35 (min -0.00) | 0.7: 0.59 (min -0.00) | 0.8: 0.32 (min -0.00) | 0.9: 0.02 (min 0.00) | 1: 0.00 (min -0.00)
+- life 0.3–0.6 (n 556): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.3: 0.00 (min -0.00) | 0.4: 0.00 (min -0.00) | 0.5: 0.01 (min -0.00) | 0.6: 0.50 (min -0.00) | 0.7: 0.33 (min -0.00) | 0.8: 0.03 (min -0.00) | 0.9: 0.00 (min -0.00) | 1: 0.00 (min -0.00)
+- life 0.6–1 (n 754): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.3: 0.00 (min -0.00) | 0.4: 0.00 (min -0.00) | 0.5: 0.08 (min -0.00) | 0.6: 0.45 (min -0.00) | 0.7: 0.14 (min -0.00) | 0.8: 0.00 (min -0.00) | 0.9: 0.00 (min -0.00) | 1: 0.00 (min -0.00)
+- landed (n 625): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.3: 0.00 (min -0.00) | 0.4: 0.00 (min -0.00) | 0.5: 0.00 (min -0.00) | 0.6: 0.27 (min -0.00) | 0.7: 0.11 (min -0.00) | 0.8: 0.00 (min -0.00) | 0.9: 0.00 (min -0.00) | 1: 0.00 (min -0.00)
+
+## Bar 3, the cases' own lower face against the solver's (|gap| / H_s over 0.05–0.4 H_s, through life 0.6): p50 0.066 (≤ 0.05), p95 0.278 (≤ 0.15); n 27796
+- τ −1…0 s: 0.05: -0.13 / -0.00 / 0.01 | 0.1: -0.15 / -0.03 / 0.05 | 0.2: -0.19 / -0.05 / 0.10 | 0.3: -0.20 / -0.02 / 0.17 | 0.4: -0.19 / 0.05 / 0.34 m (case floor − solver, p10 / p50 / p90)
+- life 0–0.3: 0.05: -0.07 / 0.00 / 0.02 | 0.1: -0.13 / -0.01 / 0.08 | 0.2: -0.19 / -0.06 / 0.13 | 0.3: -0.25 / -0.07 / 0.20 | 0.4: -0.30 / -0.04 / 0.38 m (case floor − solver, p10 / p50 / p90)
+- life 0.3–0.6: 0.05: -0.08 / 0.00 / 0.01 | 0.1: -0.15 / -0.01 / 0.04 | 0.2: -0.23 / -0.07 / 0.08 | 0.3: -0.29 / -0.10 / 0.14 | 0.4: -0.35 / -0.06 / 0.29 m (case floor − solver, p10 / p50 / p90)
+- life 0.6–1: 0.05: -0.05 / 0.00 / 0.00 | 0.1: -0.16 / -0.00 / 0.03 | 0.2: -0.25 / -0.08 / 0.07 | 0.3: -0.30 / -0.10 / 0.14 | 0.4: -0.35 / -0.05 / 0.76 m (case floor − solver, p10 / p50 / p90)
+- landed: 0.05: -0.02 / 0.00 / 0.00 | 0.1: -0.11 / -0.00 / 0.00 | 0.2: -0.19 / -0.08 / 0.00 | 0.3: -0.25 / -0.12 / 0.01 | 0.4: -0.29 / -0.12 / 0.13 m (case floor − solver, p10 / p50 / p90)
+
+## Bar 4, the support over the solver at points fixed in the wave's frame (-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5): (m from the solver's face crossing at 0.3 H_s): rise per 1/60 s step p50 / p99 / p99.9 / max 0.0129 / 0.3972 / 0.5098 / 0.614 m (≤ 0.02); steps over 0.02 m 17.3 % of 51712; under the solver by more than 0.02 m 0.0 %
+- on the lower face (−0.5…0.5 m): rise p99 / p99.9 / max 0.360 / 0.496 / 0.559 m; steps over 0.02 m 10.8 %
+- up the face (−3…−1 m): rise p99 / p99.9 / max 0.406 / 0.511 / 0.614 m; steps over 0.02 m 21.2 %
+the largest rises (over 0.2 m), up to 40: 
+  t 50.10 col 3 front 42:3 at -1 m: 0.00 → 0.59 m, τ -0.18, life —, weight 1.00, shift 1.85, slice σ 7.0
+  t 50.27 col 3 front 42:3 at -1 m: 0.09 → 0.70 m, τ -0.10, life —, weight 1.00, shift 2.07, slice σ 9.7
+  t 50.33 col 4 front 42:4 at -1.5 m: 0.01 → 0.56 m, τ -0.15, life —, weight 1.00, shift 1.86, slice σ 5.5
+  t 50.47 col 3 front 42:3 at -1 m: 0.01 → 0.56 m, τ 0.50, life 0.71, weight 1.00, shift 2.20, slice σ 15.4
+  t 50.50 col 5 front 42:5 at -1.5 m: 0.04 → 0.56 m, τ -0.24, life —, weight 0.53, shift 1.85, slice σ 2.9
+  t 50.50 col 5 front 42:5 at -1 m: 0.00 → 0.46 m, τ -0.24, life —, weight 0.53, shift 1.85, slice σ 2.9
+  t 50.60 col 3 front 42:3 at -1 m: 0.10 → 0.69 m, τ 0.71, life 1.01, weight 0.97, shift 2.15, slice σ 15.5
+  t 50.60 col 4 front 42:4 at -1.5 m: 0.00 → 0.69 m, τ -0.09, life —, weight 1.00, shift 2.14, slice σ 10.0
+  t 50.67 col 5 front 42:5 at -1.5 m: 0.13 → 0.54 m, τ -0.06, life —, weight 0.93, shift 2.14, slice σ 4.9
+  t 51.03 col 6 front 42:6 at -1 m: 0.05 → 0.80 m, τ 0.08, life 0.12, weight 0.96, shift 2.28, slice σ 5.2
+  t 52.00 col 8 front 42:8 at -0.5 m: 0.31 → 0.79 m, τ 0.58, life 0.85, weight 1.00, shift 2.52, slice σ 9.7
+  t 52.10 col 9 front 42:9 at -1 m: 0.09 → 0.75 m, τ 0.02, life 0.03, weight 0.95, shift 2.12, slice σ 4.9
+  t 52.10 col 9 front 42:9 at -0.5 m: 0.00 → 0.42 m, τ 0.02, life 0.03, weight 0.95, shift 2.12, slice σ 4.9
+  t 52.43 col 10 front 42:10 at -1 m: 0.05 → 0.73 m, τ -0.09, life —, weight 0.95, shift 2.07, slice σ 4.5
+  t 52.43 col 10 front 42:10 at -0.5 m: 0.00 → 0.41 m, τ -0.09, life —, weight 0.95, shift 2.07, slice σ 4.5
+  t 52.73 col 11 front 42:11 at -0.5 m: 0.09 → 0.61 m, τ -0.25, life —, weight 0.58, shift 1.85, slice σ 2.9
+  t 52.90 col 11 front 42:11 at -1 m: 0.34 → 0.76 m, τ -0.02, life —, weight 0.97, shift 2.09, slice σ 5.2
+  t 53.27 col 12 front 42:12 at -1 m: 0.06 → 0.72 m, τ 0.01, life 0.02, weight 0.99, shift 2.08, slice σ 6.7
+  t 53.77 col 13 front 42:13 at -1 m: 0.21 → 0.71 m, τ 0.35, life 0.53, weight 1.00, shift 2.23, slice σ 7.5
+  t 54.03 col 14 front 42:14 at -1 m: 0.33 → 0.79 m, τ 0.15, life 0.22, weight 1.00, shift 2.00, slice σ 6.6
+  t 54.03 col 14 front 42:14 at -0.5 m: 0.00 → 0.46 m, τ 0.15, life 0.22, weight 1.00, shift 2.00, slice σ 6.6
+  t 54.20 col 15 front 42:15 at -1 m: 0.11 → 0.63 m, τ -0.36, life —, weight 0.64, shift 1.78, slice σ 2.0
+  t 54.37 col 15 front 42:15 at -1 m: 0.14 → 0.77 m, τ -0.05, life —, weight 1.00, shift 1.92, slice σ 5.2
+  t 54.37 col 15 front 42:15 at -0.5 m: 0.00 → 0.46 m, τ -0.05, life —, weight 1.00, shift 1.92, slice σ 5.2
+  t 54.50 col 16 front 42:16 at -1 m: 0.02 → 0.42 m, τ -0.26, life —, weight 0.53, shift 1.82, slice σ 1.7
+  t 54.67 col 16 front 42:16 at -1 m: 0.19 → 0.66 m, τ -0.16, life —, weight 0.95, shift 1.99, slice σ 3.5
+  t 54.67 col 16 front 42:16 at -0.5 m: 0.02 → 0.42 m, τ -0.16, life —, weight 0.95, shift 1.99, slice σ 3.5
+  t 54.87 col 16 front 42:16 at -1 m: 0.12 → 0.84 m, τ 0.17, life 0.24, weight 1.00, shift 2.17, slice σ 6.7
+  t 54.87 col 16 front 42:16 at -0.5 m: 0.00 → 0.49 m, τ 0.17, life 0.24, weight 1.00, shift 2.17, slice σ 6.7
+  t 54.97 col 17 front 42:17 at -1 m: 0.17 → 0.70 m, τ -0.32, life —, weight 0.65, shift 1.94, slice σ 2.0
+  t 55.13 col 17 front 42:17 at -1 m: 0.26 → 0.85 m, τ -0.04, life —, weight 1.00, shift 2.05, slice σ 5.4
+  t 55.13 col 17 front 42:17 at -0.5 m: 0.04 → 0.49 m, τ -0.04, life —, weight 1.00, shift 2.05, slice σ 5.4
+  t 55.27 col 18 front 42:18 at -1 m: 0.00 → 0.40 m, τ -0.25, life —, weight 0.51, shift 1.97, slice σ 1.6
+  t 55.33 col 17 front 42:17 at -1 m: 0.04 → 0.89 m, τ 0.19, life 0.28, weight 1.00, shift 2.28, slice σ 6.9
+  t 55.43 col 18 front 42:18 at -1 m: 0.02 → 0.73 m, τ -0.18, life —, weight 0.96, shift 2.18, slice σ 4.5
+  t 55.43 col 18 front 42:18 at -0.5 m: 0.00 → 0.42 m, τ -0.18, life —, weight 0.96, shift 2.18, slice σ 4.5
+  t 55.60 col 18 front 42:18 at -1 m: 0.05 → 0.90 m, τ -0.00, life —, weight 1.00, shift 2.25, slice σ 6.7
+  t 55.70 col 19 front 42:19 at -1 m: 0.05 → 0.59 m, τ -0.33, life —, weight 0.64, shift 1.98, slice σ 3.0
+  t 55.80 col 18 front 42:18 at -1 m: 0.00 → 0.92 m, τ 0.26, life 0.38, weight 1.00, shift 2.44, slice σ 8.3
+  t 55.90 col 18 front 42:18 at -2 m: 0.01 → 0.64 m, τ 0.62, life 0.90, weight 1.00, shift 2.58, slice σ 10.6
+each point's first clock -0.39 / -0.29 / -0.17 s; its time from first seen to its throw 0.75 / 1.00 / 1.65 s (n 475)
+
+## Bar 5, air under the lip over the support at life 0.1–0.8: > 0 on 98.6 % (≥ 90 %); p10 / p50 / p90 0.20 / 0.48 / 0.71 m; the cases' own gap 0.42 / 0.66 / 0.84 m; p50 ratio 0.73 (0.7–1.3)
+- life 0–0.3: air 0.00 / 0.25 / 0.54 m, > 0 75.1 %; the cases' own 0.10 / 0.36 / 0.63 m
+- life 0.3–0.6: air 0.21 / 0.59 / 0.77 m, > 0 98.2 %; the cases' own 0.51 / 0.75 / 0.89 m
+- life 0.6–1: air 0.12 / 0.46 / 0.62 m, > 0 97.6 %; the cases' own 0.47 / 0.58 / 0.74 m
+
+## Bar 6, touchdown (each column-wave's first read past life 1; n 200): the solver's breaking ≥ 0.3 within ±0.5 H_s of the tip on 87.5 % (≥ 90 %), its strength 0.00 / 1.00 / 1.00; the tip ahead of the drawn crest 0.87 / 1.02 / 1.26 H_s, within 0.6–1.5 on 100.0 %; in the drawn H 0.83 / 0.94 / 1.07, within 0.6–1.5 on 100.0 %
+
+## Bar 7, the clock after the throw (every thrown point, step to step): p50 1.000× (0.95–1.05), p95 1.250× (≤ 1.25), max 1.250×, at the cap (≥ 1.24×) 16.5 %, n 18396; open time in the solver's time per point (its τ 0 → touchdown) 0.60 / 0.67 / 0.73 s against its case's 0.67 / 0.70 / 0.77 s, ratio p50 0.964, within ±15 % 97.4 % (n 467); at a fixed reef column (points travel along the reef as they come shoreward) 0.22 / 0.33 / 0.51 s (n 158)
+
+## Bar 8, geometry: folds (overlaps) a build 0.611, holes (open overlaps) 0.104, least ray advance 0.0026 m; |dδ/dσ| p50 / p95 0.058 / 0.167 (≤ 0.3); slices with no face crossing (the crest anchor stood) 3.1 %; the saddle 0.03 / 0.11 / 0.24 m, in H_s p50 / p95 / max 0.097 / 0.228 / 0.380 (≤ 0.1)
+
+## Bar 10, the ledger over the run: throws 402, thrown 176.22 m³ of 186.05 asked, crashes 395, foreseen 2, exits 0, missed 0; lip launches 600; the meter {"typical":1.6031950327259143,"sets":1.6154555798058414,"waves":12}
+the crash's counts (cumulative from the start): {"onsets":2416,"throws":600,"asked":258.4707606270456,"thrown":246.4985959365974,"starved":92,"starvedVolume":11.972164690448116,"crashes":590,"late":0,"missed":0,"covered":2,"foreseen":4,"exits":0,"exitJets":0,"fadeExits":0,"fadeExitJets":0,"lost":0,"paceSlow":0,"paceFast":0,"paceUnmeasured":0,"gated":95170}
+
+## Bar 12, cost (Node, this M1, under shared load): the contact's update a step p50 / p90 3.95 / 6.43 ms; the drawing's loft build p50 / p90 3.55 / 5.46 ms
+
+## Bars 2 and 9, bodies at s 55 in trim (peel 6.93 / 7.69 / 182.06 m/s), no input: game's water | solver's alone
+- ahead 0.3 s, board: n 16; dropped > 0.1 m 0 | 0; most dropped p90 0.06 | 0.00 m
+- ahead 0.3 s, prone: n 16; dropped > 0.1 m 2 | 0; most dropped p90 0.11 | 0.01 m; on at 3 s 2 | 16; fell at p50 0.08 | — s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- ahead 0.3 s, rider: n 16; dropped > 0.1 m 2 | 0; most dropped p90 0.14 | 0.00 m; on at 3 s 0 | 0; fell at p50 0.12 | 0.42 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- throw, board: n 18; dropped > 0.1 m 0 | 0; most dropped p90 0.03 | 0.00 m
+- throw, prone: n 18; dropped > 0.1 m 3 | 3; most dropped p90 0.19 | 0.19 m; on at 3 s 0 | 13; fell at p50 0.32 | 1.40 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- throw, rider: n 18; dropped > 0.1 m 0 | 0; most dropped p90 0.03 | 0.01 m; on at 3 s 0 | 0; fell at p50 0.33 | 0.38 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- open, life 0.3, board: n 20; dropped > 0.1 m 0 | 0; most dropped p90 0.05 | 0.04 m
+- open, life 0.3, prone: n 20; dropped > 0.1 m 3 | 5; most dropped p90 0.20 | 0.37 m; on at 3 s 3 | 16; fell at p50 0.22 | 1.52 s; lip on head or torso before touchdown 1, of them fell within 0.5 s 0
+- open, life 0.3, rider: n 20; dropped > 0.1 m 0 | 0; most dropped p90 0.03 | 0.01 m; on at 3 s 0 | 2; fell at p50 0.47 | 0.42 s; lip on head or torso before touchdown 2, of them fell within 0.5 s 2
