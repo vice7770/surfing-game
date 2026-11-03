@@ -1,0 +1,189 @@
+pool straight Barrel, H 1.05 m at the feed, cases a38 (the stand-in, ?poolTubeCase=a38); crash on; 12 periods after 50 s; CPU, 1/60 s steps; 677 s wall; contact 0.8 ms a step, reads 0.1 ms a frame
+reads: 1909 (column-frames), fronts 18; columns s 30–95 every 2.5 m; loft slices read 55490: weight < 0.5 41 %, standing but not joined to the next (left out) 0 %; before the throw (τ < 0) 0 (standing 0)
+solver face H_s 1.12 / 1.40 / 1.58 m, its width crest to trough along the ray 5.80 / 8.50 / 10.00 m; drawn H 1.24 / 1.45 / 1.75 m (p10 / p50 / p90)
+
+## 1–2. The support at the solver's face points (0.1 the trough … 0.9 under the crest): d = swept floor − solver surface, m, p10 / p50; [share d < −0.1 m]; a board point 2 cm over the solver surface is to the contact: S solver (no loft), W in swept water, C in its air under a roof, A in open air (%)
+- life 0–0.25 (thrown) (n 173): H_s 1.40 m; 0.1 (ξ 4.4 m): -0.11 / -0.00 [12 %] S0 W0 C0 A100 | 0.3 (ξ 3.3 m): -0.37 / -0.24 [100 %] S0 W0 C0 A100 | 0.5 (ξ 2.6 m): -0.61 / -0.44 [100 %] S0 W0 C0 A100 | 0.7 (ξ 1.9 m): -0.80 / -0.60 [100 %] S0 W0 C0 A100 | 0.9 (ξ 1.0 m): -0.88 / -0.65 [100 %] S0 W0 C0 A100
+- life 0.25–0.5 (n 449): H_s 1.40 m; 0.1 (ξ 4.3 m): -0.11 / -0.01 [11 %] S1 W0 C0 A99 | 0.3 (ξ 3.3 m): -0.41 / -0.29 [100 %] S0 W0 C0 A100 | 0.5 (ξ 2.5 m): -0.67 / -0.51 [100 %] S0 W0 C0 A100 | 0.7 (ξ 1.9 m): -0.88 / -0.68 [100 %] S0 W0 C0 A100 | 0.9 (ξ 1.0 m): -1.01 / -0.73 [100 %] S0 W2 C1 A97
+- life 0.5–0.8 (open) (n 463): H_s 1.41 m; 0.1 (ξ 4.2 m): -0.12 / -0.01 [13 %] S5 W0 C0 A95 | 0.3 (ξ 3.2 m): -0.47 / -0.34 [100 %] S0 W0 C0 A100 | 0.5 (ξ 2.5 m): -0.76 / -0.60 [100 %] S0 W0 C0 A100 | 0.7 (ξ 1.8 m): -1.01 / -0.83 [100 %] S0 W0 C0 A100 | 0.9 (ξ 1.0 m): -1.15 / -0.89 [99 %] S0 W17 C1 A82
+- life 0.8–1 (closing) (n 355): H_s 1.40 m; 0.1 (ξ 4.3 m): -0.13 / -0.00 [14 %] S13 W0 C0 A87 | 0.3 (ξ 3.2 m): -0.46 / -0.32 [97 %] S0 W0 C0 A100 | 0.5 (ξ 2.6 m): -0.77 / -0.59 [100 %] S0 W1 C0 A99 | 0.7 (ξ 1.9 m): -1.02 / -0.82 [100 %] S0 W1 C2 A98 | 0.9 (ξ 1.0 m): -1.22 / -0.90 [96 %] S0 W19 C0 A81
+- landed, collapse 0–0.5 (n 469): H_s 1.40 m; 0.1 (ξ 4.4 m): -0.09 / 0.00 [10 %] S21 W0 C0 A79 | 0.3 (ξ 3.4 m): -0.35 / -0.23 [90 %] S0 W0 C0 A100 | 0.5 (ξ 2.7 m): -0.59 / -0.44 [100 %] S0 W1 C0 A99 | 0.7 (ξ 2.0 m): -0.82 / -0.61 [100 %] S0 W1 C1 A98 | 0.9 (ξ 1.1 m): -0.97 / -0.68 [96 %] S0 W14 C0 A86
+
+## 2. The same in H_s (d / H_s, p10 / p50)
+- life 0–0.25 (thrown) (n 173): 0.1: -0.076 / -0.003 | 0.3: -0.273 / -0.167 | 0.5: -0.433 / -0.315 | 0.7: -0.559 / -0.437 | 0.9: -0.608 / -0.456
+- life 0.25–0.5 (n 449): 0.1: -0.075 / -0.011 | 0.3: -0.298 / -0.205 | 0.5: -0.486 / -0.365 | 0.7: -0.643 / -0.497 | 0.9: -0.711 / -0.539
+- life 0.5–0.8 (open) (n 463): 0.1: -0.089 / -0.010 | 0.3: -0.333 / -0.250 | 0.5: -0.536 / -0.439 | 0.7: -0.711 / -0.600 | 0.9: -0.813 / -0.649
+- life 0.8–1 (closing) (n 355): 0.1: -0.090 / -0.000 | 0.3: -0.333 / -0.246 | 0.5: -0.533 / -0.449 | 0.7: -0.722 / -0.611 | 0.9: -0.856 / -0.668
+- landed, collapse 0–0.5 (n 469): 0.1: -0.068 / 0.000 | 0.3: -0.259 / -0.168 | 0.5: -0.442 / -0.325 | 0.7: -0.598 / -0.455 | 0.9: -0.711 / -0.495
+
+## The median sections: along the ray, m from the drawn crest (-1, 0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8): the solver's surface | the support (the swept floor, the solver's where no loft), over the solver's crest, m
+- life 0–0.25 (thrown) (n 173): -0.05 -0.00 -0.04 -0.13 -0.28 -0.48 -0.69 -0.89 -1.18 -1.33 -1.38 -1.38 | -0.04 0.23 -0.53 -0.78 -0.94 -1.06 -1.16 -1.20 -1.27 -1.33 -1.38 -1.38
+- life 0.25–0.5 (n 449): -0.06 -0.00 -0.04 -0.14 -0.28 -0.47 -0.68 -0.89 -1.21 -1.34 -1.38 -1.36 | -0.05 0.20 -0.65 -0.90 -1.04 -1.14 -1.21 -1.25 -1.29 -1.34 -1.38 -1.36
+- life 0.5–0.8 (open) (n 463): -0.05 -0.01 -0.04 -0.14 -0.30 -0.50 -0.71 -0.92 -1.21 -1.35 -1.38 -1.37 | -0.05 0.15 -0.79 -1.07 -1.22 -1.29 -1.32 -1.34 -1.33 -1.35 -1.38 -1.37
+- life 0.8–1 (closing) (n 355): -0.06 -0.01 -0.04 -0.14 -0.29 -0.47 -0.68 -0.88 -1.18 -1.31 -1.35 -1.33 | -0.06 0.07 -0.81 -1.11 -1.25 -1.30 -1.32 -1.33 -1.29 -1.32 -1.35 -1.33
+- landed, collapse 0–0.5 (n 469): -0.06 -0.01 -0.03 -0.11 -0.24 -0.42 -0.63 -0.84 -1.15 -1.29 -1.33 -1.35 | -0.06 0.01 -0.60 -0.84 -0.96 -1.05 -1.12 -1.18 -1.24 -1.30 -1.33 -1.35
+
+## 5. The mismatch, p10 / p50 / p90 per bin
+crest offset (solver crest − drawn crest along the ray, m, + shoreward); drawn crest over the solver crest, m; mid-face offset (swept − solver, m, + shoreward); steepest slope solver | swept; swept lowest − solver trough, m; solver trough at ξ, m
+- life 0–0.25 (thrown) (n 173): -0.50 / -0.10 / 0.10; 0.09 / 0.23 / 0.45; -2.24 / -1.71 / -1.13 (found 100 %); 0.37 / 0.43 / 0.48 | 3.28 / 5.06 / 6.58; -0.00 / 0.02 / 0.07; 5.7 / 6.6 / 9.9
+- life 0.25–0.5 (n 449): -0.50 / -0.10 / 0.20; 0.05 / 0.20 / 0.43; -2.40 / -1.88 / -1.43 (found 100 %); 0.37 / 0.44 / 0.48 | 1.41 / 5.37 / 8.57; -0.02 / 0.01 / 0.06; 5.6 / 6.5 / 9.9
+- life 0.5–0.8 (open) (n 463): -0.60 / -0.20 / 0.20; -0.03 / 0.15 / 0.32; -2.62 / -2.06 / -1.52 (found 100 %); 0.35 / 0.44 / 0.49 | 3.37 / 6.80 / 8.21; -0.06 / 0.01 / 0.07; 5.5 / 7.5 / 10.1
+- life 0.8–1 (closing) (n 355): -0.70 / -0.20 / 0.30; -0.14 / 0.07 / 0.24; -2.80 / -2.14 / -1.50 (found 100 %); 0.34 / 0.43 / 0.49 | 1.48 / 6.06 / 7.80; -0.06 / 0.01 / 0.08; 5.5 / 9.3 / 10.2
+- landed, collapse 0–0.5 (n 469): -0.70 / -0.10 / 0.40; -0.14 / 0.01 / 0.16; -2.72 / -1.91 / -1.30 (found 100 %); 0.34 / 0.43 / 0.49 | 0.65 / 4.33 / 5.68; 0.00 / 0.04 / 0.18; 5.9 / 9.4 / 10.2
+drawn landmarks along the ray from the drawn crest (m, p50) and their height over the solver surface there (m, p10 / p50 / p90): tip, throat, toe; d under the tip (m); the forward rest's toe climb (the solver over the drawn trough at the toe, m) and its hold (m past the toe)
+- life 0–0.25 (thrown) (n 173): tip 0.35 m, -0.05 / 0.06 / 0.26; throat 0.23 m, -0.25 / -0.13 / 0.06; toe 1.50 m, -0.88 / -0.64 / -0.42; d under the tip -0.53 / -0.36 / -0.14; toe climb 0.84 / 1.01 / 1.21, hold 1.79 / 2.28 / 2.53
+- life 0.25–0.5 (n 449): tip 0.46 m, -0.11 / 0.02 / 0.20; throat 0.19 m, -0.39 / -0.22 / -0.06; toe 1.34 m, -1.01 / -0.72 / -0.52; d under the tip -0.83 / -0.57 / -0.36; toe climb 0.93 / 1.06 / 1.25, hold 1.99 / 2.32 / 2.58
+- life 0.5–0.8 (open) (n 463): tip 0.82 m, -0.42 / -0.17 / 0.03; throat 0.24 m, -0.57 / -0.37 / -0.20; toe 1.30 m, -1.15 / -0.91 / -0.60; d under the tip -1.07 / -0.86 / -0.60; toe climb 0.92 / 1.06 / 1.29, hold 1.98 / 2.36 / 2.63
+- life 0.8–1 (closing) (n 355): tip 1.12 m, -0.88 / -0.57 / -0.30; throat 0.27 m, -0.62 / -0.40 / -0.20; toe 1.22 m, -1.22 / -0.93 / -0.70; d under the tip -1.21 / -0.93 / -0.70; toe climb 0.88 / 1.05 / 1.34, hold 1.99 / 2.41 / 2.74
+- landed, collapse 0–0.5 (n 469): tip 1.20 m, -0.80 / -0.55 / -0.40; throat 0.27 m, -0.48 / -0.30 / -0.19; toe 1.21 m, -0.99 / -0.72 / -0.53; d under the tip -0.98 / -0.70 / -0.51; toe climb 0.88 / 1.08 / 1.38, hold 1.99 / 2.45 / 2.82
+the void (the tip ahead of the throat): share of reads with one; its height (m) and the solver water's fill of it (0 none, 1 to the roof), p10 / p50 / p90; breaking strength at the solver crest | at mid-face
+- life 0–0.25 (thrown) (n 173): 98 %; 0.19 / 0.28 / 0.38 m; fill 0.39 / 1.08 / 1.56; 0.00 / 0.00 / 0.00 | 0.00 / 0.00 / 1.00
+- life 0.25–0.5 (n 449): 100 %; 0.28 / 0.40 / 0.55 m; fill 0.77 / 1.21 / 1.57; 0.00 / 0.00 / 0.00 | 0.00 / 0.18 / 1.00
+- life 0.5–0.8 (open) (n 463): 100 %; 0.38 / 0.48 / 0.57 m; fill 1.15 / 1.53 / 2.01; 0.00 / 0.00 / 0.00 | 0.22 / 1.00 / 1.00
+- life 0.8–1 (closing) (n 355): 100 %; 0.31 / 0.38 / 0.46 m; fill 1.84 / 2.97 / 6.59; 0.00 / 0.00 / 0.00 | 0.65 / 1.00 / 1.00
+- landed, collapse 0–0.5 (n 469): 100 %; 0.19 / 0.25 / 0.32 m; fill 5.81 / 7.26 / 9.54; 0.00 / 0.00 / 0.00 | 1.00 / 1.00 / 1.00
+
+## 2. The holes per column-wave (d < −0.1 m at a face point): column-waves with one; the deepest (m; in H_s); the span from its first hole read to its last (s) and the share of the reads within it in the hole; its first and last hole read on the clock (τ s; life); the column-wave's first read (τ s) and d there
+the drawn clock in a column runs 1.39 / 1.76 / 2.21 s of τ a second (p10 / p50 / p90 over the column-waves with 5 reads or more)
+column-waves 168, reads each 7 / 12 / 15; their first read at τ 0.09 / 0.17 / 0.34 s, d there at 0.3 / 0.5 / 0.7: -0.25 / -0.44 / -0.59 m
+- face 0.1: 37 of 168; deepest 0.11 / 0.17 / 0.23 m, 0.081 / 0.117 / 0.167 H_s; span 0.07 / 0.20 / 0.37 s, in the hole 0.85 / 1.00 / 1.00; first τ 0.10 / 0.31 / 0.60 s (life 0.14 / 0.44 / 0.84), last τ 0.24 / 0.69 / 0.89 s (life 0.32 / 0.97 / 1.21)
+- face 0.3: 168 of 168; deepest 0.25 / 0.36 / 0.49 m, 0.172 / 0.265 / 0.358 H_s; span 0.23 / 0.37 / 0.47 s, in the hole 1.00 / 1.00 / 1.00; first τ 0.09 / 0.17 / 0.34 s (life 0.13 / 0.25 / 0.50), last τ 0.57 / 0.77 / 0.89 s (life 0.78 / 1.13 / 1.21)
+- face 0.5: 168 of 168; deepest 0.51 / 0.62 / 0.78 m, 0.368 / 0.458 / 0.552 H_s; span 0.23 / 0.40 / 0.50 s, in the hole 1.00 / 1.00 / 1.00; first τ 0.09 / 0.17 / 0.34 s (life 0.13 / 0.25 / 0.50), last τ 0.62 / 0.78 / 0.89 s (life 0.86 / 1.14 / 1.22)
+- face 0.7: 168 of 168; deepest 0.68 / 0.86 / 1.03 m, 0.512 / 0.620 / 0.727 H_s; span 0.23 / 0.40 / 0.50 s, in the hole 1.00 / 1.00 / 1.00; first τ 0.09 / 0.17 / 0.34 s (life 0.13 / 0.25 / 0.50), last τ 0.62 / 0.78 / 0.89 s (life 0.86 / 1.14 / 1.22)
+- face 0.9: 168 of 168; deepest 0.66 / 0.94 / 1.23 m, 0.503 / 0.689 / 0.864 H_s; span 0.23 / 0.40 / 0.50 s, in the hole 1.00 / 1.00 / 1.00; first τ 0.09 / 0.17 / 0.34 s (life 0.13 / 0.25 / 0.50), last τ 0.57 / 0.77 / 0.89 s (life 0.82 / 1.13 / 1.22)
+
+## 4. The bodies at s 55 (A/B: the game's water with the contact | the solver's alone), placed on the solver's face, no input, moving with the crest (√(g h) at it, 4.83 / 5.07 / 5.29 m/s) and along the line at the peel, 5.47 / 6.33 / 7.00 m/s (capped at 12), pointed along their motion through the water
+per group: n; riders attached at 3 s; separated at (s) and causes; the lip in a rider part (count, first at s); the board's bottom dropping more than 0.1 m under the solver surface from where it started (count, first at s, for s), the most it dropped (m); first on the loft (s); covered (count); the life at the drop; the contact state at the end
+- ahead 0.3 s, face 0.3, rider, swept: n 8; attached 3; separated at 0.22 / 0.45 / 0.67 s (lost board 3, balance 2); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.09 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end air 1, solver 7
+- ahead 0.3 s, face 0.3, rider, solver: n 8; attached 4; separated at 0.42 / 0.62 / 0.67 s (balance 3, lost board 1); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.07 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end solver 8
+- ahead 0.3 s, face 0.3, prone, swept: n 8; attached 8; separated at — s (none); lip 0 (first — s); dropped 1 (first 2.00 / 2.00 / 2.00 s, for 0.12 / 0.12 / 0.12 s), most 0.01 / 0.02 / 0.10 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end water 1, solver 7
+- ahead 0.3 s, face 0.3, prone, solver: n 8; attached 8; separated at — s (none); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.01 / 0.02 / 0.10 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end water 1, solver 7
+- ahead 0.3 s, face 0.3, board, swept: n 8; dropped 3 (first 0.82 / 2.13 / 2.88 s, for 0.15 / 0.28 / 1.27 s), most 0.00 / 0.04 / 0.52 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop 0.48 / 0.69 / 0.73; end solver 6, air 2
+- ahead 0.3 s, face 0.3, board, solver: n 8; dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end air 4, solver 4
+- ahead 0.3 s, face 0.6, rider, swept: n 8; attached 1; separated at 0.20 / 0.50 / 0.72 s (lost board 6, balance 1); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end air 1, solver 7
+- ahead 0.3 s, face 0.6, rider, solver: n 8; attached 1; separated at 0.43 / 0.52 / 0.77 s (lost board 7); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end air 1, solver 7
+- ahead 0.3 s, face 0.6, prone, swept: n 8; attached 8; separated at — s (none); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.01 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end solver 8
+- ahead 0.3 s, face 0.6, prone, solver: n 8; attached 8; separated at — s (none); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.01 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end solver 8
+- ahead 0.3 s, face 0.6, board, swept: n 8; dropped 2 (first 0.65 / 2.87 / 2.87 s, for 0.08 / 1.55 / 1.55 s), most 0.00 / 0.00 / 0.56 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop 0.46 / 0.50 / 0.50; end solver 6, air 2
+- ahead 0.3 s, face 0.6, board, solver: n 8; dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.15 s; covered 0; life at the drop —; end air 4, solver 4
+- join, face 0.3, rider, swept: n 8; attached 0; separated at 0.17 / 0.35 / 0.62 s (lost board 8); lip 0 (first — s); dropped 1 (first 0.13 / 0.13 / 0.13 s, for 0.32 / 0.32 / 0.32 s), most 0.00 / 0.00 / 0.26 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.46 / 0.46 / 0.46; end air 8
+- join, face 0.3, rider, solver: n 8; attached 3; separated at 0.43 / 0.47 / 1.40 s (lost board 4, balance 1); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end solver 4, air 4
+- join, face 0.3, prone, swept: n 8; attached 6; separated at 1.10 / 2.63 / 2.63 s (lost board 2); lip 0 (first — s); dropped 2 (first 0.15 / 0.75 / 0.75 s, for 1.28 / 1.90 / 1.90 s), most 0.00 / 0.08 / 0.73 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.48 / 0.48 / 0.48; end air 1, solver 4, water 3
+- join, face 0.3, prone, solver: n 8; attached 7; separated at 1.88 / 1.88 / 1.88 s (lost board 1); lip 0 (first — s); dropped 3 (first 0.97 / 0.98 / 1.87 s, for 0.85 / 0.92 / 2.07 s), most 0.01 / 0.05 / 0.73 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.29 / 0.29 / 0.29; end water 4, solver 4
+- join, face 0.3, board, swept: n 8; dropped 4 (first 0.15 / 1.22 / 2.70 s, for 0.33 / 1.82 / 2.07 s), most 0.00 / 0.25 / 1.20 m; on the loft 0.02 / 0.02 / 0.02 s; covered 1; life at the drop 0.47 / 0.55 / 0.60; end solver 6, air 2
+- join, face 0.3, board, solver: n 8; dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 4, solver 4
+- join, face 0.6, rider, swept: n 8; attached 0; separated at 0.20 / 0.27 / 0.50 s (lost board 8); lip 0 (first — s); dropped 1 (first 0.13 / 0.13 / 0.13 s, for 0.38 / 0.38 / 0.38 s), most 0.00 / 0.00 / 0.52 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.47 / 0.47 / 0.47; end air 8
+- join, face 0.6, rider, solver: n 8; attached 0; separated at 0.40 / 0.47 / 0.70 s (lost board 8); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 7, solver 1
+- join, face 0.6, prone, swept: n 8; attached 5; separated at 1.03 / 1.63 / 2.38 s (lost board 3); lip 2 (first 0.03 / 0.23 / 0.23 s); dropped 4 (first 0.12 / 1.43 / 1.52 s, for 0.03 / 1.52 / 2.17 s), most 0.00 / 0.11 / 0.80 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.26 / 0.47 / 0.47; end air 1, solver 4, water 3
+- join, face 0.6, prone, solver: n 8; attached 8; separated at — s (none); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.02 / 0.06 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end solver 8
+- join, face 0.6, board, swept: n 8; dropped 3 (first 0.13 / 0.62 / 0.85 s, for 0.73 / 2.08 / 2.42 s), most 0.00 / 0.06 / 1.10 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.25 / 0.47 / 0.62; end solver 6, air 2
+- join, face 0.6, board, solver: n 8; dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 4, solver 4
+- open, life 0.3, face 0.3, rider, swept: n 8; attached 0; separated at 0.23 / 0.30 / 0.43 s (lost board 8); lip 0 (first — s); dropped 2 (first 0.15 / 0.15 / 0.15 s, for 0.13 / 0.20 / 0.20 s), most 0.00 / 0.02 / 0.24 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.38 / 0.46 / 0.46; end air 8
+- open, life 0.3, face 0.3, rider, solver: n 8; attached 3; separated at 0.42 / 0.67 / 0.98 s (lost board 4, balance 1); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.03 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 3, solver 5
+- open, life 0.3, face 0.3, prone, swept: n 8; attached 3; separated at 0.85 / 1.08 / 2.63 s (lost board 5); lip 0 (first — s); dropped 3 (first 0.13 / 0.15 / 1.13 s, for 0.83 / 1.15 / 1.52 s), most 0.02 / 0.08 / 0.70 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.38 / 0.46 / 0.46; end air 2, solver 4, water 2
+- open, life 0.3, face 0.3, prone, solver: n 8; attached 7; separated at 1.13 / 1.13 / 1.13 s (lost board 1); lip 0 (first — s); dropped 3 (first 0.98 / 1.12 / 1.37 s, for 0.15 / 1.65 / 1.92 s), most 0.01 / 0.05 / 0.64 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end water 4, solver 4
+- open, life 0.3, face 0.3, board, swept: n 8; dropped 4 (first 0.15 / 0.97 / 0.97 s, for 1.88 / 2.08 / 2.52 s), most 0.00 / 0.54 / 0.90 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.38 / 0.54 / 0.65; end solver 7, air 1
+- open, life 0.3, face 0.3, board, solver: n 8; dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 4, solver 4
+- open, life 0.3, face 0.6, rider, swept: n 8; attached 0; separated at 0.20 / 0.30 / 0.43 s (lost board 8); lip 1 (first 0.40 / 0.40 / 0.40 s); dropped 2 (first 0.13 / 0.15 / 0.15 s, for 0.30 / 0.32 / 0.32 s), most 0.00 / 0.02 / 0.36 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.39 / 0.46 / 0.46; end air 8
+- open, life 0.3, face 0.6, rider, solver: n 8; attached 0; separated at 0.42 / 0.55 / 0.68 s (lost board 7, balance 1); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 7, solver 1
+- open, life 0.3, face 0.6, prone, swept: n 8; attached 4; separated at 0.37 / 1.28 / 1.70 s (impact 1, lost board 3); lip 1 (first 0.03 / 0.03 / 0.03 s); dropped 5 (first 0.13 / 0.78 / 1.45 s, for 0.02 / 0.27 / 2.07 s), most 0.00 / 0.20 / 0.89 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop 0.27 / 0.40 / 0.46; end air 2, solver 3, water 3
+- open, life 0.3, face 0.6, prone, solver: n 8; attached 8; separated at — s (none); lip 0 (first — s); dropped 0 (first — s, for — s), most 0.00 / 0.01 / 0.07 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end solver 7, water 1
+- open, life 0.3, face 0.6, board, swept: n 8; dropped 4 (first 0.13 / 0.48 / 0.53 s, for 0.75 / 2.02 / 2.55 s), most 0.00 / 0.30 / 1.06 m; on the loft 0.02 / 0.02 / 0.02 s; covered 1; life at the drop 0.27 / 0.40 / 0.46; end solver 7, air 1
+- open, life 0.3, face 0.6, board, solver: n 8; dropped 0 (first — s, for — s), most 0.00 / 0.00 / 0.00 m; on the loft 0.02 / 0.02 / 0.02 s; covered 0; life at the drop —; end air 4, solver 4
+each rider (standing, prone) on the game's water: kind, target, face, front: separated at (s) cause | first on the loft (s), first drop (s), life there, most dropped (m) | first lip (s) | end state, d at the end (m), max life | its twin on the solver's water
+  rider, ahead 0.3 s, 0.6, 16: 0.20 lost board | 0.02, —, —, 0.00 | — | air, -0.11, 0.22 | 0.67 lost board, most dropped 0.00
+  rider, ahead 0.3 s, 0.3, 16: 0.22 lost board | 0.02, —, —, 0.00 | — | air, -0.02, 0.22 | — attached, most dropped 0.07
+  rider, open, life 0.3, 0.6, 16: 0.43 lost board | 0.02, 0.13, 0.39, 0.36 | — | air, -0.52, 0.62 | 0.48 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 16: 0.43 lost board | 0.02, 0.15, 0.38, 0.17 | — | air, -0.10, 0.59 | 0.98 lost board, most dropped 0.00
+  rider, join, 0.6, 16: 0.50 lost board | 0.02, 0.13, 0.47, 0.52 | — | air, -0.48, 0.68 | 0.47 lost board, most dropped 0.00
+  rider, join, 0.3, 16: 0.62 lost board | 0.02, 0.13, 0.46, 0.26 | — | air, -0.17, 0.72 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.6, 16: — attached | 0.02, —, —, 0.01 | — | solver, 0.00, 0.35 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 16: — attached | 0.02, —, —, 0.02 | — | water, 0.00, 0.43 | — attached, most dropped 0.02
+  prone, join, 0.6, 16: — attached | 0.02, 0.13, 0.47, 0.55 | — | air, -0.13, 0.95 | — attached, most dropped 0.00
+  prone, join, 0.3, 16: — attached | 0.02, 0.15, 0.48, 0.24 | — | air, -0.02, 1.28 | — attached, most dropped 0.73
+  prone, open, life 0.3, 0.6, 16: — attached | 0.02, 0.13, 0.40, 0.53 | — | air, -0.12, 1.03 | — attached, most dropped 0.03
+  prone, open, life 0.3, 0.3, 16: — attached | 0.02, 0.15, 0.38, 0.22 | — | air, -0.28, 0.97 | — attached, most dropped 0.02
+  rider, join, 0.6, 17: 0.28 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.31 | 0.43 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.6, 17: 0.30 lost board | 0.02, —, —, 0.00 | — | air, -0.01, 0.34 | 0.42 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 17: 0.30 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.34 | 0.42 lost board, most dropped 0.00
+  rider, join, 0.3, 17: 0.40 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.31 | 0.45 lost board, most dropped 0.00
+  rider, ahead 0.3 s, 0.3, 17: 0.42 lost board | 0.02, —, —, 0.00 | — | solver, 0.00, 0.12 | 0.42 balance, most dropped 0.00
+  rider, ahead 0.3 s, 0.6, 17: 0.45 lost board | 0.02, —, —, 0.00 | — | solver, 0.00, 0.09 | 0.45 lost board, most dropped 0.00
+  prone, open, life 0.3, 0.3, 17: 1.03 lost board | 0.02, —, —, 0.08 | — | solver, 0.00, 0.34 | — attached, most dropped 0.01
+  prone, ahead 0.3 s, 0.6, 17: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.09 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 17: — attached | 0.02, —, —, 0.01 | — | solver, 0.00, 0.12 | — attached, most dropped 0.01
+  prone, join, 0.6, 17: — attached | 0.02, 1.52, —, 0.80 | — | solver, 0.00, 0.31 | — attached, most dropped 0.00
+  prone, join, 0.3, 17: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.31 | — attached, most dropped 0.01
+  prone, open, life 0.3, 0.6, 17: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.34 | — attached, most dropped 0.00
+  rider, join, 0.3, 28: 0.17 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.28 | — attached, most dropped 0.00
+  rider, join, 0.6, 28: 0.20 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.32 | 0.47 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 28: 0.27 lost board | 0.02, —, —, 0.00 | — | air, -0.15, 0.49 | — attached, most dropped 0.00
+  rider, open, life 0.3, 0.6, 28: 0.28 lost board | 0.02, —, —, 0.00 | — | air, -0.47, 0.48 | 0.67 balance, most dropped 0.00
+  rider, ahead 0.3 s, 0.6, 28: 0.62 lost board | 0.02, —, —, 0.00 | — | solver, 0.00, 0.14 | 0.67 lost board, most dropped 0.00
+  prone, ahead 0.3 s, 0.6, 28: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.11 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 28: — attached | 0.02, —, —, 0.02 | — | solver, 0.00, 0.10 | — attached, most dropped 0.02
+  rider, ahead 0.3 s, 0.3, 28: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.11 | — attached, most dropped 0.00
+  prone, join, 0.6, 28: — attached | 0.02, —, —, 0.00 | — | water, 0.00, 0.35 | — attached, most dropped 0.06
+  prone, join, 0.3, 28: — attached | 0.02, —, —, 0.09 | — | water, 0.00, 0.38 | — attached, most dropped 0.05
+  prone, open, life 0.3, 0.6, 28: — attached | 0.02, —, —, 0.04 | — | water, 0.00, 1.34 | — attached, most dropped 0.07
+  prone, open, life 0.3, 0.3, 28: — attached | 0.02, —, —, 0.05 | — | water, 0.01, 0.68 | — attached, most dropped 0.05
+  rider, join, 0.6, 30: 0.27 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.23 | 0.43 lost board, most dropped 0.00
+  rider, join, 0.3, 30: 0.35 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.25 | 0.43 lost board, most dropped 0.00
+  rider, ahead 0.3 s, 0.3, 30: 0.45 lost board | 0.02, —, —, 0.00 | — | solver, 0.00, 0.10 | 0.42 lost board, most dropped 0.00
+  rider, ahead 0.3 s, 0.6, 30: 0.47 lost board | 0.02, —, —, 0.00 | — | solver, 0.00, 0.08 | 0.43 lost board, most dropped 0.00
+  prone, open, life 0.3, 0.6, 30: 0.37 impact | 0.02, 0.15, 0.46, 0.22 | — | air, -0.00, 0.47 | — attached, most dropped 0.00
+  rider, open, life 0.3, 0.6, 30: 0.43 lost board | 0.02, 0.15, 0.46, 0.33 | 0.40 | air, -0.65, 0.52 | 0.47 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 30: 0.43 lost board | 0.02, 0.15, 0.46, 0.24 | — | air, -0.25, 0.48 | 0.45 lost board, most dropped 0.00
+  prone, join, 0.6, 30: 1.63 lost board | 0.02, —, —, 0.02 | — | solver, 0.00, 0.25 | — attached, most dropped 0.00
+  prone, open, life 0.3, 0.3, 30: 1.57 lost board | 0.02, 0.13, 0.46, 0.70 | — | air, -0.84, 0.93 | — attached, most dropped 0.01
+  prone, ahead 0.3 s, 0.6, 30: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.08 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 30: — attached | 0.02, —, —, 0.01 | — | solver, 0.00, 0.08 | — attached, most dropped 0.01
+  prone, join, 0.3, 30: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.25 | — attached, most dropped 0.01
+  rider, join, 0.6, 33: 0.22 lost board | 0.02, —, —, 0.00 | — | air, -0.53, 0.45 | 0.70 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.6, 33: 0.20 lost board | 0.02, —, —, 0.00 | — | air, -0.53, 0.46 | 0.68 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 33: 0.23 lost board | 0.02, —, —, 0.00 | — | air, -0.15, 0.47 | — attached, most dropped 0.03
+  rider, join, 0.3, 33: 0.32 lost board | 0.02, —, —, 0.00 | — | air, -0.07, 0.45 | — attached, most dropped 0.00
+  prone, open, life 0.3, 0.6, 33: 0.78 lost board | 0.02, 0.78, 0.27, 0.11 | — | water, 0.00, 0.40 | — attached, most dropped 0.03
+  prone, ahead 0.3 s, 0.6, 33: — attached | 0.15, —, —, 0.00 | — | solver, 0.00, 0.05 | — attached, most dropped 0.01
+  rider, ahead 0.3 s, 0.6, 33: — attached | 0.15, —, —, 0.00 | — | solver, 0.00, 0.05 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 33: — attached | 0.15, —, —, 0.01 | — | solver, 0.00, 0.09 | — attached, most dropped 0.01
+  rider, ahead 0.3 s, 0.3, 33: — attached | 0.15, —, —, 0.00 | — | solver, 0.00, 0.09 | — attached, most dropped 0.00
+  prone, join, 0.6, 33: — attached | 0.02, —, —, 0.03 | — | water, 0.00, 0.72 | — attached, most dropped 0.03
+  prone, join, 0.3, 33: — attached | 0.02, —, —, 0.04 | — | water, 0.00, 0.53 | — attached, most dropped 0.03
+  prone, open, life 0.3, 0.3, 33: — attached | 0.02, —, —, 0.02 | — | water, 0.00, 0.76 | — attached, most dropped 0.03
+  rider, join, 0.6, 41: 0.27 lost board | 0.02, —, —, 0.00 | — | air, -0.03, 0.31 | 0.52 lost board, most dropped 0.00
+  rider, join, 0.3, 41: 0.40 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.34 | 0.47 balance, most dropped 0.00
+  rider, open, life 0.3, 0.6, 41: 0.40 lost board | 0.02, —, —, 0.05 | — | air, -0.55, 0.39 | 0.55 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 41: 0.40 lost board | 0.02, —, —, 0.04 | — | air, -0.20, 0.38 | 0.93 lost board, most dropped 0.00
+  rider, ahead 0.3 s, 0.6, 41: 0.72 balance | 0.02, —, —, 0.00 | — | solver, 0.00, 0.10 | 0.77 lost board, most dropped 0.00
+  prone, open, life 0.3, 0.3, 41: 0.85 lost board | 0.02, —, —, 0.08 | — | solver, 0.00, 0.54 | — attached, most dropped 0.64
+  prone, ahead 0.3 s, 0.6, 41: — attached | 0.02, —, —, 0.00 | — | solver, 0.00, 0.10 | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 41: — attached | 0.02, —, —, 0.02 | — | solver, 0.00, 0.10 | — attached, most dropped 0.02
+  rider, ahead 0.3 s, 0.3, 41: — attached | 0.02, —, —, 0.09 | — | solver, 0.00, 0.10 | — attached, most dropped 0.00
+  prone, join, 0.6, 41: — attached | 0.02, —, —, 0.03 | 0.03 | water, 0.00, 0.36 | — attached, most dropped 0.04
+  prone, join, 0.3, 41: — attached | 0.02, —, —, 0.08 | — | water, -0.02, 0.41 | — attached, most dropped 0.04
+  prone, open, life 0.3, 0.6, 41: — attached | 0.02, 1.20, —, 0.89 | 0.03 | water, -0.63, 0.94 | — attached, most dropped 0.01
+  rider, join, 0.6, 55: 0.30 lost board | 0.02, —, —, 0.00 | — | air, -0.51, 0.35 | 0.53 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.6, 55: 0.27 lost board | 0.02, —, —, 0.02 | — | air, -0.40, 0.36 | 0.55 lost board, most dropped 0.00
+  rider, join, 0.3, 55: 0.33 lost board | 0.02, —, —, 0.01 | — | air, -0.13, 0.35 | 0.47 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 55: 0.28 lost board | 0.02, —, —, 0.02 | — | air, -0.14, 0.36 | 0.67 balance, most dropped 0.00
+  rider, ahead 0.3 s, 0.3, 55: 0.48 balance | 0.03, —, —, 0.00 | — | solver, 0.00, 0.07 | 0.62 balance, most dropped 0.00
+  rider, ahead 0.3 s, 0.6, 55: 0.50 lost board | 0.03, —, —, 0.00 | — | solver, 0.00, 0.10 | 0.45 lost board, most dropped 0.00
+  prone, join, 0.6, 55: 1.03 lost board | 0.02, 0.12, 0.26, 0.11 | — | solver, 0.00, 0.53 | — attached, most dropped 0.00
+  prone, join, 0.3, 55: 1.10 lost board | 0.02, —, —, 0.02 | — | solver, 0.00, 0.51 | — attached, most dropped 0.12
+  prone, open, life 0.3, 0.3, 55: 1.08 lost board | 0.02, —, —, 0.02 | — | solver, 0.00, 0.71 | 1.13 lost board, most dropped 0.14
+  prone, open, life 0.3, 0.6, 55: 1.28 lost board | 0.02, —, —, 0.05 | — | solver, 0.00, 0.87 | — attached, most dropped 0.01
+  prone, ahead 0.3 s, 0.6, 55: — attached | 0.03, —, —, 0.00 | — | solver, 0.00, 0.10 | — attached, most dropped 0.01
+  prone, ahead 0.3 s, 0.3, 55: — attached | 0.03, —, —, 0.03 | — | solver, 0.00, 0.07 | — attached, most dropped 0.02
+  rider, join, 0.6, 58: 0.23 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.88 | 0.40 lost board, most dropped 0.00
+  rider, join, 0.3, 58: 0.25 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.90 | 1.40 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.6, 58: 0.27 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.96 | 0.43 lost board, most dropped 0.00
+  rider, open, life 0.3, 0.3, 58: 0.27 lost board | 0.02, —, —, 0.00 | — | air, 0.00, 0.96 | — attached, most dropped 0.00
+  rider, ahead 0.3 s, 0.6, 58: 0.53 lost board | 0.02, —, —, 0.00 | — | solver, 0.00, 0.60 | 0.52 lost board, most dropped 0.00
+  rider, ahead 0.3 s, 0.3, 58: 0.67 balance | —, —, —, 0.00 | — | solver, 0.00, — | 0.67 balance, most dropped 0.00
+  prone, open, life 0.3, 0.6, 58: 1.70 lost board | 0.02, 1.45, —, 0.20 | — | solver, 0.00, 1.13 | — attached, most dropped 0.01
+  prone, join, 0.6, 58: 2.38 lost board | 0.02, 1.43, —, 0.34 | 0.23 | solver, 0.00, 1.11 | — attached, most dropped 0.02
+  prone, join, 0.3, 58: 2.63 lost board | 0.02, 0.75, —, 0.73 | — | solver, 0.00, 1.13 | 1.88 lost board, most dropped 0.47
+  prone, open, life 0.3, 0.3, 58: 2.63 lost board | 0.02, 1.13, —, 0.53 | — | solver, 0.00, 1.16 | — attached, most dropped 0.45
+  prone, ahead 0.3 s, 0.6, 58: — attached | —, —, —, 0.00 | — | solver, 0.00, — | — attached, most dropped 0.00
+  prone, ahead 0.3 s, 0.3, 58: — attached | —, 2.00, —, 0.10 | — | solver, 0.00, — | — attached, most dropped 0.10
