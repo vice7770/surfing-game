@@ -36,6 +36,8 @@ interface Controls {
   trim?: number;
   crouch?: number;
   compress?: number;
+  /** Snap held (the snap stance, 2026-11-03), 0–1. */
+  snap?: number;
   hand?: boolean;
   /** Lying, the paddle held (the arms stroke). */
   paddle?: boolean;
@@ -305,7 +307,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       }
       session.step(STEP, water, {
         paddle: controls.paddle === true || controls.swim === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch,
-        compress: controls.compress, hand: controls.hand, reel: controls.reel === true,
+        compress: controls.compress, ...(controls.snap === undefined ? {} : { snap: controls.snap }), hand: controls.hand, reel: controls.reel === true,
       });
       if (throwing && session.surfer.active) {
         throwing = false;
@@ -317,6 +319,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       rider.trim = controls.trim ?? 0;
       rider.crouch = controls.crouch ?? 0;
       rider.compress = controls.compress ?? 0;
+      rider.snap = controls.snap ?? 0;
       rider.hand = controls.hand ?? false;
       board.step(STEP, water);
     }

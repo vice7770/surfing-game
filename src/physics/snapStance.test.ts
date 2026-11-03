@@ -259,6 +259,62 @@ describe('the snap stance', () => {
   });
 });
 
+// The pinned turns (`AttachedRider.test.ts`: the snap, the cutback, a bottom turn carried into a top turn), made with
+// Snap. None passes; each is pinned with what it measures (docs/research/snap-stance-2026-11-03/README.md).
+describe('the pinned turns, with Snap', () => {
+  // The pinned snap's climb, Snap held 0.6 s and let go: 136° by 1 s and 150° at 1.07 s (peak 295°/s), on against the
+  // steer's 44° and S's 109°. Forsyth et al. 2024's cutbacks and top turns: 152° in 0.96 s. Short by about 0.1 s: the
+  // first 0.3 s still lean in the wrong way (the balance's lean-in, the deep U's root).
+  it.fails('snaps back down the face from a climb, 150° within 1 s', () => {
+    const snap = snapTurn(acrossFace(150, 6.7), { snap: true, hold: 0.6 });
+    expect(snap.fell).toBeNaN();
+    expect(snap.turned[snap.at(1)]).toBeGreaterThan(150);
+  });
+
+  // The pinned cutback (80° across at 9 m/s, 2 s), carved 0.4 s and then Snap for 0.6 s: 76° by 1 s and the rider falls at
+  // 1.77 s, the board below planing climbing the static face (7 m/s: 145°, falling at 1.25 s).
+  it.fails('cuts back from across the face, turning 150° and staying on', () => {
+    const setup = acrossFace(80, 9);
+    const { board, rider, water } = setup;
+    let last = headingOf(board);
+    let turned = 0;
+    for (let n = 0; n < 132; n += 1) {
+      const t = n * STEP;
+      if (t >= 0.2) {
+        rider.steer = -1;
+        rider.snap = t >= 0.6 && t < 1.2 ? 1 : 0;
+      }
+      board.step(STEP, water);
+      if (!rider.attached) break;
+      const now = headingOf(board);
+      turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+      last = now;
+    }
+    expect(rider.attached).toBe(true);
+    expect((-turned * 180) / Math.PI).toBeGreaterThan(150);
+  });
+
+  // A compressed bottom turn carried up the face to 120° from the fall line, then Snap with the steer back for 0.6 s: the
+  // body still leans into the old turn and the board pivots on it (9 m/s: the turn back is 30°, the rider falls at 1.17
+  // s; 10 m/s with the steer a fifth of a second after Snap: back down to 18° from the fall line, falling at 1.97 s).
+  it.fails('carries a bottom turn up the face into a snap back down it', () => {
+    const { board, rider, water } = acrossFace(90, 9);
+    for (let n = 0; n < 12; n += 1) board.step(STEP, water);
+    const fromFallLine = () => Math.abs((headingOf(board) * 180) / Math.PI);
+    Object.assign(rider, { steer: -1, compress: 1, crouch: 0.6 });
+    for (let n = 0; n < 180 && rider.attached && fromFallLine() < 120; n += 1) board.step(STEP, water);
+    Object.assign(rider, { steer: 1, compress: 0, crouch: 0 });
+    let lowest = 180;
+    for (let n = 0; n < 120 && rider.attached; n += 1) {
+      rider.snap = n * STEP < 0.6 ? 1 : 0;
+      board.step(STEP, water);
+      if (rider.attached) lowest = Math.min(lowest, fromFallLine());
+    }
+    expect(rider.attached).toBe(true);
+    expect(lowest).toBeLessThan(90);
+  });
+});
+
 function rideKept(speed: number, reference: number): number {
   return speed / reference;
 }
