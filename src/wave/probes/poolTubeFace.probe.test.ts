@@ -144,6 +144,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const bodiesOn = process.env.BODIES !== '0';
     // LIGHT=1: the sea, its crash and clocks alone (bars 7 and 10, and the cost), for the A/B's ledger.
     const light = process.env.LIGHT === '1';
+    // BODIES_ONLY=1: bars 2 and 9 alone (the reads skipped but the placements' own).
+    const bodiesOnly = process.env.BODIES_ONLY === '1';
     const [cFrom, cTo, cStep] = (process.env.COLUMNS ?? '30,95,2.5').split(',').map(Number);
     const placeS = Number(process.env.PLACE_S ?? 55);
     const switches: Record<string, unknown> = {};
@@ -303,23 +305,25 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         const { xi } = faceXi(ic, it, fraction);
         const x = x0 + xi * rx;
         const z = z0 + xi * rz;
-        const surface0 = plain.surfaceAt(x, z);
-        const flow = plain.sampleAt(x, surface0 - 0.05, z, sample);
-        const heading = Math.atan2(vx - flow.flowX, vz - flow.flowZ);
-        const speed = Math.hypot(vx - flow.flowX, vz - flow.flowZ);
         for (const kind of ['rider', 'prone', 'board'] as const) {
           for (const which of ['swept', 'solver'] as const) {
+            // Each on its own water's surface there (the game's: the union, never under the solver's surface).
+            const own = which === 'swept' ? water : plain;
+            const surface0 = own.surfaceAt(x, z);
+            const flow = own.sampleAt(x, surface0 - 0.05, z, sample);
+            const heading = Math.atan2(vx - flow.flowX, vz - flow.flowZ);
+            const speed = Math.hypot(vx - flow.flowX, vz - flow.flowZ);
             const session = kind !== 'board' ? new RideSession() : undefined;
             const board = session ? session.board : new BoardBody();
-            if (session) session.place({ x, z, heading, speed, phase: kind === 'prone' ? 'prone' : 'standing', followSurface: true }, waters.solver);
+            if (session) session.place({ x, z, heading, speed, phase: kind === 'prone' ? 'prone' : 'standing', followSurface: true }, waters[which]);
             else {
-              const s0 = plain.sampleAt(x, surface0 - 0.05, z, sample);
+              const s0 = own.sampleAt(x, surface0 - 0.05, z, sample);
               const up = new Vector3(s0.normalX, s0.normalY, s0.normalZ).normalize();
               const forward = new Vector3(Math.sin(heading), -(up.x * Math.sin(heading) + up.z * Math.cos(heading)) / up.y, Math.cos(heading)).normalize();
               const left = new Vector3().crossVectors(up, forward);
               const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, up, forward));
               const velocity = new Vector3(vx, 0, vz);
-              const top = plain.sampleAt(x, surface0, z, sample);
+              const top = own.sampleAt(x, surface0, z, sample);
               velocity.y = top.flowY + velocity.x * top.slopeX + velocity.z * top.slopeZ;
               board.place(new Vector3(x, surface0 + board.shape.centerOfMass.y - 0.05, z), orientation, velocity);
             }
@@ -344,7 +348,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           continue;
         }
         // The board's bottom against the solver's surface under it, from where it started.
-        const gap = p.y - body.board.shape.centerOfMass.y - water.plainSurfaceAt(p.x, p.z);
+        // Against its own water's support under it (the game's: the union's floor).
+        const gap = p.y - body.board.shape.centerOfMass.y - (body.water === 'swept' ? water : plain).surfaceAt(p.x, p.z);
         if (!(body.baseGap === body.baseGap)) body.baseGap = gap;
         body.minGap = Math.min(body.minGap, gap - body.baseGap);
         if (gap - body.baseGap < -0.1 && !(body.firstDrop === body.firstDrop)) body.firstDrop = age;
@@ -498,7 +503,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       }
       if (n % 2 !== 0) continue;
       water.withSurfaceNodeCache(() => {
-        for (let k = 0; k < columns; k += 1) {
+        for (let k = 0; k < columns && !bodiesOnly; k += 1) {
           const s = best[k];
           if (s < 0) continue;
           // Bar 4: the support less the solver's at points fixed in the wave's frame, every step: along the solver's own
@@ -661,17 +666,19 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // Bars 2 and 9.
     if (bodiesOn) {
       lines.push('');
-      lines.push(`## Bars 2 and 9, bodies at s ${placeS} in trim (peel ${q3(peels)} m/s), no input: game's water | solver's alone`);
+      lines.push(`## Bars 2 and 9, bodies at s ${placeS} in trim (peel ${q3(peels)} m/s), no input, each on its own water's surface: game's water | solver's alone; "dropped": its bottom more than 0.1 m under its water's support from where it started`);
+      const causes = (g: Body[]) => [...g.reduce((m, b) => (b.cause ? m.set(b.cause, (m.get(b.cause) ?? 0) + 1) : m), new Map<string, number>())].map(([c, k]) => `${c} ${k}`).join(', ');
+      lines.push(`the game's riders' causes: ${causes(finished.filter((b) => b.kind !== 'board' && b.water === 'swept'))}; the solver's: ${causes(finished.filter((b) => b.kind !== 'board' && b.water === 'solver'))}`);
       for (const target of ['ahead 0.3 s', 'throw', 'open, life 0.3']) {
-        for (const kind of ['board', 'prone', 'rider'] as const) {
-          const game = finished.filter((b) => b.target === target && b.kind === kind && b.water === 'swept');
-          const solo = finished.filter((b) => b.target === target && b.kind === kind && b.water === 'solver');
+        for (const [kind, face] of [['board', 0.3], ['board', 0.6], ['prone', 0.3], ['prone', 0.6], ['rider', 0.3], ['rider', 0.6]] as const) {
+          const game = finished.filter((b) => b.target === target && b.kind === kind && b.face === face && b.water === 'swept');
+          const solo = finished.filter((b) => b.target === target && b.kind === kind && b.face === face && b.water === 'solver');
           if (!game.length) continue;
           const drops = (g: Body[]) => g.filter((b) => b.firstDrop === b.firstDrop).length;
           const on = (g: Body[]) => g.filter((b) => !(b.separatedAt === b.separatedAt)).length;
           const lipped = game.filter((b) => b.lipHead === b.lipHead);
           const fellSoon = lipped.filter((b) => b.separatedAt === b.separatedAt && b.separatedAt - b.lipHead <= 0.5).length;
-          lines.push(`- ${target}, ${kind}: n ${game.length}; dropped > 0.1 m ${drops(game)} | ${drops(solo)}; most dropped p90 ${fmt(quantile(game.map((b) => -b.minGap), 0.9))} | ${fmt(quantile(solo.map((b) => -b.minGap), 0.9))} m`
+          lines.push(`- ${target}, ${kind} at ${face} of the face: n ${game.length}; dropped > 0.1 m ${drops(game)} | ${drops(solo)}; most dropped p90 ${fmt(quantile(game.map((b) => -b.minGap), 0.9))} | ${fmt(quantile(solo.map((b) => -b.minGap), 0.9))} m`
             + (kind !== 'board' ? `; on at 3 s ${on(game)} | ${on(solo)}; fell at p50 ${fmt(quantile(game.map((b) => b.separatedAt).filter((v) => v === v), 0.5))} | ${fmt(quantile(solo.map((b) => b.separatedAt).filter((v) => v === v), 0.5))} s; lip on head or torso before touchdown ${lipped.length}, of them fell within 0.5 s ${fellSoon}` : ''));
         }
       }
