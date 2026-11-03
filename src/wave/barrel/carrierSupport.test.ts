@@ -76,7 +76,7 @@ describe('C provider-derived geometric carrier support', () => {
     for (const epoch of fixture.epochs) {
       expect(epoch.locked.stationX).toBe(16.25);
       const records = Float32Array.from(epoch.packetRows.flatMap(row => [row.x, row.z, row.front, row.sigma, row.tau,
-        row.footHeight, row.footDepth, row.throwZ ?? NaN, row.pace ?? NaN]));
+        row.footHeight, row.footDepth, row.throwZ ?? NaN, row.pace ?? NaN, 0]));
       const words = records.slice(), raw15 = epoch.packetRows.find(row => row.x === 15)!;
       const ownTimes = lib.profileTimes({ slope: c.slope, footHeight: raw15.footHeight, footDepth: raw15.footDepth });
       expect(collapseFade(raw15.tau, ownTimes.touchdownSeconds, ownTimes.collapseSeconds)).toBeGreaterThan(0);
@@ -296,7 +296,7 @@ describe('C provider-derived geometric carrier support', () => {
       else { expect(identities).toEqual(owned); expect(hold).toHaveBeenCalledTimes(fundingCalls); }
       for (const p of f.points) expect(p.carrierSupport).toBeUndefined();
       const records = packet(f.points), expected = Float32Array.from(f.points.flatMap(p => [p.x, p.z, p.front, p.sigma, p.tau,
-        p.footHeight, p.footDepth, p.throwZ ?? NaN, p.tau < p.jetUntil! ? p.jetPace! : NaN]));
+        p.footHeight, p.footDepth, p.throwZ ?? NaN, p.tau < p.jetUntil! ? p.jetPace! : NaN, 0]));
       expect(new Uint32Array(records.buffer)).toEqual(new Uint32Array(expected.buffer));
       const exported = f.exportState(); expect(exported.points).toEqual(f.points);
       expect(exported.points.every((p, k) => p !== f.points[k])).toBe(true);

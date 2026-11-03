@@ -177,7 +177,7 @@ describe('parallel C physical normal and extrusion width', () => {
       const records = new Float32Array(p.length * FRONT_STRIDE);
       writeFrontRecords(p, records);
       const expected = Float32Array.from(p.flatMap(point => [point.x, point.z, point.front, point.sigma, point.tau, point.footHeight,
-        point.footDepth, point.throwZ ?? NaN, point.tau < point.jetUntil! ? point.jetPace! : NaN]));
+        point.footDepth, point.throwZ ?? NaN, point.tau < point.jetUntil! ? point.jetPace! : NaN, 0]));
       expect(new Uint32Array(records.buffer)).toEqual(new Uint32Array(expected.buffer));
       if (age >= p[0].jetUntil!) expect(Number.isNaN(records[FRONT_FIELD.pace])).toBe(true);
       lip.step(dt);

@@ -454,11 +454,11 @@ describe('PhysicalSurfWater\'s turbulence', () => {
 });
 
 /** The toy tube (h0 3 m: foot crest 0.9 m at A0 0.3) on a straight front along +x at z = 0, thrown there, at τ `tau`, s. */
-function sweptChannel(tau = 0.05) {
+function sweptChannel(tau = 0.05, sweptUnion = false) {
   const { solver, breaking } = channel(3, 1);
   const library = new ProfileLibrary([tubeCase(0.3)]);
   const contact = new SweptContact(library, 0.05);
-  const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, swept: contact });
+  const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, swept: contact, ...(sweptUnion ? { sweptUnion } : {}) });
   const n = 17;
   const records = new Float32Array(n * FRONT_STRIDE);
   for (let k = 0; k < n; k += 1) {
@@ -468,7 +468,7 @@ function sweptChannel(tau = 0.05) {
     records[o + FRONT_FIELD.throwZ] = 0;
   }
   contact.update(records, n, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z));
-  return { water, solver, times: library.profileTimes({ slope: 0.05, footHeight: 0.9, footDepth: 3 }) };
+  return { water, solver, contact, times: library.profileTimes({ slope: 0.05, footHeight: 0.9, footDepth: 3 }) };
 }
 // At x = 0.9 h0 = 2.7 m ahead (z 2.7): the flat below, the underside at 0.55 h0 and the top at 0.575 h0 over still
 // water; the top crosses there at profile index 32 + 32 × 0.75, three quarters of the way to the tip.
@@ -476,6 +476,27 @@ const UNDER = 0.55 * 3;
 const TOP = 0.575 * 3;
 
 describe('the swept contact through the water (Padang Padang, Part B, PR 4)', () => {
+  it('with the union (the surfable tube\'s step 3 ruling), never answers under the solver\'s surface', () => {
+    const { water, solver, contact } = sweptChannel(0.05, true);
+    const before = new PhysicalSurfWater(solver, { peakPeriod: 10, swept: contact });
+    // The solver's water stands 0.3 m over the loft built on it: the loft's floor lies under it ahead of the face.
+    for (let i = 0; i < solver.h.length; i += 1) solver.h[i] += 0.3;
+    const plain = water.plainSurfaceAt(0, 2.7);
+    expect(plain).toBeCloseTo(solver.restLevel + 0.3, 2);
+    expect(before.surfaceAt(0, 2.7)).toBeCloseTo(solver.restLevel, 2);
+    expect(water.surfaceAt(0, 2.7)).toBeCloseTo(plain, 6);
+    // Under the solver's surface: its water, whatever the loft says.
+    const under = water.sampleAt(0, plain - 0.1, 2.7, createWaterSample());
+    expect(under.surfaceY).toBeCloseTo(plain, 6);
+    expect(under.covered).toBe(false);
+    expect(under.ceilingY).toBeUndefined();
+    // In the tube's air over it: the floor raised to the solver's, the curl still over it.
+    const air = water.sampleAt(0, solver.restLevel + 1, 2.7, createWaterSample());
+    expect(air.surfaceY).toBeCloseTo(plain, 6);
+    expect(air.ceilingY).toBeCloseTo(solver.restLevel + UNDER, 2);
+    expect(air.covered).toBe(true);
+  });
+
   it('answers the tube’s air with the face below and the curl above, covered and open', () => {
     const { water, solver } = sweptChannel();
     const sample = water.sampleAt(0, solver.restLevel + 1, 2.7, createWaterSample());
