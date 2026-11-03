@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { blendOverturn, overturnAt } from './heldOverturn';
+import { BARREL_CASES } from './barrelLibraryIndex';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { heldFrame } from './ProfileLibrary';
@@ -40,15 +41,35 @@ describe('a frame’s jet and void, as metrics.py measures them (the crash’s w
       'periodic-point21-a30-l12': { jet: 0.15 * 0.479 * 0.479, air: 0.145 * 0.479 * 0.479 },
       // The Canyon's drawn case (2026-10-22): A_J and A_O per H_I² at 0.495 h0, as barrel-cases.md has them.
       'periodic-canyon23-a38-l13': { jet: 0.172 * 0.495 * 0.495, air: 0.166 * 0.495 * 0.495 },
+      // The Wave Pool's straight Barrel's small case (pool-tube-runs, 2026-11-02), as barrel-cases.md has it.
+      'periodic-pool-straight-small-l13': { jet: 0.116 * 0.43 * 0.43, air: 0.076 * 0.43 * 0.43 },
     };
+    // The pool's big case is checked below: its cavity closes in the 0.05 √(h0/g) between its held frame and touchdown,
+    // where the metrics frame reads it (A_O 0.001 H_I²).
+    const separate = new Set(['periodic-pool-straight-big-l13']);
     for (const bytes of readBarrelCases()) {
       const c = decodeCase(bytes);
+      if (separate.has(c.id)) continue;
       const o = overturnAt(c.frames, Math.round((heldFrame(c).tau - c.tauStart) / c.tauStep));
       expect(o.jetArea / metrics[c.id].jet, c.id).toBeGreaterThan(0.88);
       expect(o.jetArea / metrics[c.id].jet, c.id).toBeLessThan(1.12);
       expect(o.voidArea / metrics[c.id].air, c.id).toBeGreaterThan(0.88);
       expect(o.voidArea / metrics[c.id].air, c.id).toBeLessThan(1.13);
     }
+  });
+
+  it('holds the pool’s big case on an open void that closes only at touchdown (its metrics frame, 0.001 H_I²)', () => {
+    const [bytes] = readBarrelCases(undefined, BARREL_CASES.filter((entry) => entry.id === 'periodic-pool-straight-big-l13'));
+    const c = decodeCase(bytes);
+    const held = heldFrame(c);
+    expect(held.clear).toBe(true);
+    expect(c.touchdown - held.tau).toBeLessThan(0.06);
+    const o = overturnAt(c.frames, Math.round((held.tau - c.tauStart) / c.tauStep));
+    // In H_I² (H_I 0.552 h0): a void of about 0.13 and a jet of about 0.25 at the held frame.
+    expect(o.voidArea / (0.552 * 0.552)).toBeGreaterThan(0.1);
+    expect(o.voidArea / (0.552 * 0.552)).toBeLessThan(0.16);
+    expect(o.jetArea / (0.552 * 0.552)).toBeGreaterThan(0.2);
+    expect(o.jetArea / (0.552 * 0.552)).toBeLessThan(0.3);
   });
 
   it('blends two overturns by weight, the axis kept a unit vector', () => {
