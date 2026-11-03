@@ -44,7 +44,8 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  * the water (no autopilot, no input), on the game's water (with the contact) and on the solver's alone (no contact, no
  * carve): the A/B. Their reactions are not applied: the sea stays shared and as is.
  *
- * H (1.05 | 1.32), CASE (pool | a38), PERIODS (12), SETTLE (50 s), CRASH (off: `?poolCrash=off`), BODIES (0: none), LOG.
+ * H (1.05 | 1.32), CASE (pool | a38), PERIODS (12), SETTLE (50 s), CRASH (off: `?poolCrash=off`), BODIES (0: none), DUMP (a
+ * file for one section at `PLACE_S`), LOG.
  */
 
 const quantile = (values: number[], q: number) => {
@@ -160,6 +161,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     const [cFrom, cTo, cStep] = (process.env.COLUMNS ?? '30,95,2.5').split(',').map(Number);
     const placeS = Number(process.env.PLACE_S ?? 55);
     const bodiesOn = process.env.BODIES !== '0';
+    const dumpPath = process.env.DUMP;
+    let dumped = false;
     const log = process.env.LOG ?? `pool-tube-hole-${caseName}-${height}.txt`;
     writeFileSync(log, '');
     const t0 = Date.now();
@@ -532,6 +535,23 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
           if (best[k] < 0) continue;
           const read = readSlice(loft, best[k], k, solver.time);
           if (read) reads.push(read);
+          // DUMP: one section at the placement column, its slice at life 0.35–0.5, 10 s into the run: the solver's surface,
+          // the support and the drawn profile (the contact's), over the solver's crest, along the ray (m).
+          if (read && dumpPath && !dumped && k === columnOf(placeS) && read.life >= 0.35 && read.life < 0.5 && solver.time > settle + 10) {
+            dumped = true;
+            const crest = eta[iOf(read.crestOffset)];
+            const P = loft.positions;
+            const s0 = best[k];
+            const c = 3 * (s0 * S + E + LANDMARK.crest);
+            const out = [`# ${caseName} H ${height}: t ${solver.time.toFixed(2)} s, front ${read.front}, column s ${cFrom + k * cStep}, τ ${read.tau.toFixed(3)} s, life ${read.life.toFixed(3)}, H_s ${read.Hs.toFixed(3)} m, drawn H ${read.Hd.toFixed(3)} m`, '# xi (m from the drawn crest), solver surface, support (swept floor; the solver where no loft), over the solver crest (m)'];
+            for (let i = iOf(-1); i <= iOf(8); i += 1) out.push(`${xiOf(i).toFixed(1)} ${(eta[i] - crest).toFixed(3)} ${((floor[i] === floor[i] ? floor[i] : eta[i]) - crest).toFixed(3)}`);
+            out.push('# the drawn profile (the contact loft\'s slice): index, along the ray (m from the drawn crest), height over the solver crest (m)');
+            for (let j = 0; j < S; j += 1) {
+              const v = 3 * (s0 * S + j);
+              out.push(`${j - E} ${((P[v] - P[c]) * loft.sliceRayX[s0] + (P[v + 2] - P[c + 2]) * loft.sliceRayZ[s0]).toFixed(3)} ${(P[v + 1] - crest).toFixed(3)}`);
+            }
+            writeFileSync(dumpPath, out.join('\n') + '\n');
+          }
         }
         if (!bodiesOn || placeSlice < 0) return;
         const s = placeSlice;
