@@ -273,8 +273,8 @@ function still(path: string): void {
       }
       const level = (kk: number) => Math.floor(solver.restLevel - solver.bed[kk]);
       if (depth > 0.5 && depth < 6.5 && ii + 1 < w && jj + 1 < h && (level(k) !== level(k + 1) || level(k) !== level(k + nx))) { r = r * 0.6 + 60; g = g * 0.6 + 40; b *= 0.6; }
-      // +x to the left, as a surfer on the beach looking out sees it.
-      const o = (jj * W + f * (w + 6) + (w - 1 - ii)) * 3;
+      // +x to the right, as a surfer on the beach looking out sees it (the bank's tip far out on the right).
+      const o = (jj * W + f * (w + 6) + ii) * 3;
       rgb[o] = r; rgb[o + 1] = g; rgb[o + 2] = b;
     }
   });

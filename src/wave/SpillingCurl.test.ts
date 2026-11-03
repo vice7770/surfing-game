@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CANYON, CANYON_BEACH, canyonArmAt } from './Bathymetry';
+import { CANYON, CANYON_B, CANYON_BEACH, canyonArmAt, canyonBankJoin } from './Bathymetry';
 import { overturn, overturnParameter, overturnSize } from './Overturn';
 import {
   BAND_LOOK_FIELD, BAND_LOOK_OLD, BAND_LOOK_STRIDE, CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, SpillingCurl, curlSize, curlStage,
@@ -533,25 +533,53 @@ describe('the spilling lip at the Canyon', () => {
   // Version B (canyon-b, 2026-11-01): the up-coast peak's +x arm runs into a reef bowl. On the arm the curl is the bar's;
   // over the whole bowl it stands 0.40 H at Medium and at Big, whose waves the platform carries unbroken to the face (sized
   // at the sea's breaker depth, Big's would read the bar's 1:50 seaward of the platform).
+  // Version B's since canyon-c (2026-11-03, `?canyonBed=b`).
   it('stands the curl 0.40 H over version B\'s whole reef bowl at Medium and Big, about a quarter of H on the arm before it', () => {
+    const B = CANYON_B;
     for (const [significantHeight, peakPeriod] of [[1.4, 11], [2.4, 14]] as const) {
       const simulation = new SurfZoneSimulation({
         spot: 'canyon', seed: 1, significantHeight, peakPeriod, directionDegrees: 0, spreading: 150, tide: 0,
-        componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+        componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'b',
       }, 'warm');
       const curl = simulation.curl!;
       const { xCenters, nx } = simulation.solver;
       let whole = 0;
       for (let column = 0; column < nx; column += 1) {
-        const u = xCenters[column] - CANYON.upPeakX;
-        if (u >= CANYON.bowlFrom + CANYON.bowlRamp + 5 && u <= CANYON.bowlEnd) {
+        const u = xCenters[column] - B.upPeakX;
+        if (u >= B.bowlFrom + B.bowlRamp + 5 && u <= B.bowlEnd) {
           whole += 1;
           expect(curl.size(column, 1).width).toBeGreaterThan(0.39);
         }
-        if (u >= 25 && u <= CANYON.bowlFrom - 5) {
+        if (u >= 25 && u <= B.bowlFrom - 5) {
           expect(curl.size(column, 1).width).toBeGreaterThan(0.2);
           expect(curl.size(column, 1).width).toBeLessThan(0.27);
         }
+      }
+      expect(whole).toBeGreaterThan(8);
+    }
+  });
+
+  // Version C (canyon-c, 2026-11-03): the same bowl, its planform flipped about its middle: the curl stands 0.40 H over
+  // the whole bowl at Medium and Big, as B's, its columns mirrored.
+  it('stands the curl 0.40 H over version C\'s whole flipped bowl at Medium and Big, as B\'s', () => {
+    const middle = CANYON.upPeakX + 0.5 * (CANYON.bowlFrom + CANYON.bowlRamp + CANYON.bowlEnd);
+    for (const [significantHeight, peakPeriod] of [[1.4, 11], [2.4, 14]] as const) {
+      const build = (canyonBed?: 'b') => new SurfZoneSimulation({
+        spot: 'canyon', seed: 1, significantHeight, peakPeriod, directionDegrees: 0, spreading: 150, tide: 0,
+        componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, ...(canyonBed ? { canyonBed } : {}),
+      }, 'warm');
+      const c = build();
+      const b = build('b');
+      const { xCenters, nx } = c.solver;
+      let whole = 0;
+      for (let column = 0; column < nx; column += 1) {
+        const x = xCenters[column];
+        if (!(x <= canyonBankJoin().x - CANYON.bowlRamp - 5 && x >= middle - (CANYON.bowlEnd - CANYON.bowlFrom - CANYON.bowlRamp) / 2)) continue;
+        whole += 1;
+        expect(canyonArmAt(x)).toBe(true);
+        expect(c.curl!.size(column, 1).width).toBeGreaterThan(0.39);
+        const mirror = b.solver.xCenters.findIndex((bx) => Math.abs(bx - (2 * middle - x)) < 0.5);
+        expect(c.curl!.size(column, 1).width).toBeCloseTo(b.curl!.size(mirror, 1).width, 2);
       }
       expect(whole).toBeGreaterThan(8);
     }

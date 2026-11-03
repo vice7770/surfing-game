@@ -38,6 +38,17 @@ describe('wave info', () => {
     expect(info.rows.find((row) => row.label === 'Peel')!.value).toBe('peak into a plunging reef bowl, left 35° and right 52°');
   });
 
+  // canyon-c (2026-11-03): the Canyon's bank peels one way into its reef bowl, "spilling bank into a plunging reef bowl,
+  // right 39°" (−x, a right to a surfer riding in).
+  it('names the reef bowl a bank peels into, one way, with the bowl\'s breaker', () => {
+    const peel = { angleDegrees: 39, direction: -1, peelSpeed: 10, columns: 120, fit: 0.9, lineSlope: -1, bank: true, bowl: 'plunging' as const };
+    const info = waveInfo({ ...base, breaker: 'spilling', peel }, 'metric');
+    expect(info.summary).toBe('Spilling bank into a plunging reef bowl, right 39° · fast, for good surfers');
+    expect(info.rows.find((row) => row.label === 'Peel')!.value).toBe('bank into a plunging reef bowl, right 39°');
+    expect(waveInfo({ ...base, breaker: 'spilling', peel: { ...peel, direction: 1 } }, 'metric').rows.find((row) => row.label === 'Peel')!.value)
+      .toBe('bank into a plunging reef bowl, left 39°');
+  });
+
   it('says so when there is no face, no break yet, or a steady swell', () => {
     const info = waveInfo({ ...base, face: undefined, breaker: 'none', steady: true }, 'imperial');
     expect(info.rows[1].value).toBe('Flat here');

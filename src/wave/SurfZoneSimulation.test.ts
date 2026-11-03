@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { CANYON, CANYON_BEACH, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonBreakLineZ, canyonFootZ, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
+import { CANYON, CANYON_B, CANYON_BEACH, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonBreakLineZ, canyonFootZ, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  CANYON_BEACH_LOOK, CANYON_RIDE_LINEUP, CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  CANYON_BANK_LOOK, CANYON_BEACH_LOOK, CANYON_RIDE_LINEUP, CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint, canyonReefTakeOff, canyonBowlTakeOff,
   alongShoreOf, tankDepth, tankLayout, tankRiderBounds,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
@@ -886,37 +886,39 @@ describe('SurfZoneSimulation', () => {
   });
 
   // canyon-beach-break (2026-10-23): riders start at the upcoast beach peak, the one nearest the reef's take-off (the
-  // owner's decision 5); the reef keeps its own take-off for its readout (`canyonReefTakeOff`).
-  it('seats the Canyon take-off at its upcoast beach peak\'s tip, where its sets break, and keeps the reef\'s own', () => {
-    const canyon = createSpot('canyon', 1);
+  // owner's decision 5); the reef keeps its own take-off for its readout (`canyonReefTakeOff`). Version B's since canyon-c
+  // (2026-11-03, `?canyonBed=b`).
+  it('seats version B\'s Canyon take-off at its upcoast beach peak\'s tip, where its sets break, and keeps the reef\'s own', () => {
+    const B = CANYON_B;
+    const canyon = createSpot('canyon', 1, { canyonBed: 'b' });
     expect(TAKE_OFF.canyon).toBe('peak');
     for (const [significantHeight, peakPeriod, directionDegrees] of [[1.4, 11, 0], [0.9, 9, -10], [2.4, 14, 10]]) {
-      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: CANYON.alongShore, significantHeight, peakPeriod, directionDegrees };
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', canyonBed: 'b', alongShore: B.alongShore, significantHeight, peakPeriod, directionDegrees };
       const tank = tankLayout(config);
       const bed = (x: number, z: number) => tankDepth(canyon, tank.edgeDepth, x, z, tank);
       const point = takeOffPoint(config);
-      expect(point.x).toBe(CANYON.takeOffX);
-      expect(point.x).toBe(CANYON.upPeakX);
-      expect(canyonBarAt(point.x, point.z)).toBe(0);
+      expect(point.x).toBe(B.takeOffX);
+      expect(point.x).toBe(B.upPeakX);
+      expect(canyonBarAt(point.x, point.z, B)).toBe(0);
       // On the bar where it is as deep as this size's sets were measured starting to break.
-      expect(bed(point.x, point.z)).toBeCloseTo(canyonTakeOffDepth(significantHeight), 1);
+      expect(bed(point.x, point.z)).toBeCloseTo(canyonTakeOffDepth(significantHeight, 'b'), 1);
     }
     // Where nine in ten of each size's waves had started breaking in the tip's column (3 seeds × 14 periods, the game's
     // onsets without their filters): 1.87, 2.61 and 3.57 m; the line within 0.12 m of each.
     for (const [significantHeight, ninetiethDepth] of [[0.9, 1.87], [1.4, 2.61], [2.4, 3.57]]) {
-      expect(Math.abs(canyonTakeOffDepth(significantHeight) - ninetiethDepth)).toBeLessThan(0.12);
+      expect(Math.abs(canyonTakeOffDepth(significantHeight, 'b') - ninetiethDepth)).toBeLessThan(0.12);
     }
     // The take-offs: 97, 125 and 180.5 m from the waterline, on the bar's 1:50; the reef's own as canyon-wave-r2 seated it
     // (on the old layout since canyon-b); version B's bowl's on its face, above its platform.
     for (const [significantHeight, peakPeriod, z, reefZ] of [[0.9, 9, -97, -128.5], [1.4, 11, -125, -137.5], [2.4, 14, -180.5, -154.5]]) {
-      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: undefined, significantHeight, peakPeriod, directionDegrees: 0 };
-      expect(takeOffPoint(config)).toEqual({ x: CANYON.takeOffX, z });
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', canyonBed: 'b', alongShore: undefined, significantHeight, peakPeriod, directionDegrees: 0 };
+      expect(takeOffPoint(config)).toEqual({ x: B.takeOffX, z });
       expect(canyonReefTakeOff({ ...config, canyonBed: 'old' })).toEqual({ x: CANYON_BEACH.reefTakeOffX, z: reefZ });
       const bowl = canyonBowlTakeOff(config);
       const tank = tankLayout(config);
-      expect(canyonArmAt(bowl.x)).toBe(true);
-      expect(tankDepth(canyon, tank.edgeDepth, bowl.x, bowl.z, tank)).toBeLessThan(CANYON.bowlPlatform);
-      expect(bowl.z).toBeGreaterThan(canyonBreakLineZ(bowl.x) - (CANYON.bowlPlatform - CANYON.bowlCrest) / CANYON.bowlFace);
+      expect(canyonArmAt(bowl.x, B)).toBe(true);
+      expect(tankDepth(canyon, tank.edgeDepth, bowl.x, bowl.z, tank)).toBeLessThan(B.bowlPlatform);
+      expect(bowl.z).toBeGreaterThan(canyonBreakLineZ(bowl.x, B) - (B.bowlPlatform - B.bowlCrest) / B.bowlFace);
     }
   });
 
@@ -931,18 +933,18 @@ describe('SurfZoneSimulation', () => {
     // Medium 9 m (80 %), Big 3 m (86 %; at both one in ten breaks inside the take-off); linear between, held beyond.
     expect(CANYON_RIDE_LINEUP.map(({ offset }) => offset)).toEqual([6, 9, 3]);
     for (const [significantHeight, offset] of [[0.6, 6], [0.9, 6], [1.15, 7.5], [1.4, 9], [1.9, 6], [2.4, 3], [3, 3]]) {
-      expect(rideLineupOffset({ spot: 'canyon', significantHeight })).toBeCloseTo(offset, 9);
+      for (const canyonBed of ['b', 'old'] as const) expect(rideLineupOffset({ spot: 'canyon', significantHeight, canyonBed })).toBeCloseTo(offset, 9);
     }
     for (const { offset } of CANYON_RIDE_LINEUP) expect(offset).toBeGreaterThanOrEqual(0);
-    // The starts' depth and their distance to the waterline: 103, 134 and 183.5 m, on the bar's 1:50.
-    const canyon = createSpot('canyon', 1);
+    // The starts' depth and their distance to the waterline: 103, 134 and 183.5 m, on the bar's 1:50 (version B's, `?canyonBed=b`).
+    const canyon = createSpot('canyon', 1, { canyonBed: 'b' });
     for (const [significantHeight, peakPeriod, startDepth, fromShore] of [[0.9, 9, 2.06, 103], [1.4, 11, 2.68, 134], [2.4, 14, 3.67, 183.5]]) {
-      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: CANYON.alongShore, significantHeight, peakPeriod, directionDegrees: 0 };
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', canyonBed: 'b', alongShore: CANYON.alongShore, significantHeight, peakPeriod, directionDegrees: 0 };
       const takeOff = takeOffPoint(config);
       const start = takeOff.z - rideLineupOffset(config);
       const tank = tankLayout(config);
       const depth = tankDepth(canyon, tank.edgeDepth, takeOff.x, start, tank);
-      expect(depth).toBeGreaterThan(canyonTakeOffDepth(significantHeight));
+      expect(depth).toBeGreaterThan(canyonTakeOffDepth(significantHeight, 'b'));
       expect(depth).toBeCloseTo(startDepth, 2);
       expect(-start).toBeCloseTo(fromShore, 6);
     }
@@ -957,7 +959,7 @@ describe('SurfZoneSimulation', () => {
     expect(CANYON_BEACH).toMatchObject({ peakX: -17, peakZ: -120, angle: 70, takeOffX: -112, alongShore: 400, ageJoin: 0.5, beach: 1, reef: 1, bowl: 0, upReach: 55 });
     expect(Object.isFrozen(CANYON_BEACH)).toBe(true);
     const old = createSpot('canyon', 1, { canyonBed: 'old' });
-    const today = createSpot('canyon', 1);
+    const b = createSpot('canyon', 1, { canyonBed: 'b' });
     const depths: [number, number, number][] = [
       [-50, -150, 4.5705821720191695], [-30, -200, 4.25], [-25, -180, 3], [-17, -130, 1.4347826086956523], [-17, -120, 1], [-9, -150, 3.25999214589726],
       [-9, -100, 1.086079102418999], [5, -120, 3.628021879478334], [5, -60, 1.0193262273044208], [20, -95, 4.332898457383522], [28, -40, 2.6666666666666665], [35, -60, 4],
@@ -970,11 +972,11 @@ describe('SurfZoneSimulation', () => {
     for (const [x, z, depth] of depths) expect(old.depthAt(x, z)).toBe(depth);
     // canyon-b leaves the upcoast peak's −x arm and tip, and the downcoast peak, as they were (its +x arm runs at its own
     // angle into the bowl; its channel replaces the reef).
-    for (const [x, z, depth] of depths) if (x <= CANYON.upPeakX || x >= CANYON.downPeakX - CANYON.downReach) expect(today.depthAt(x, z)).toBe(depth);
+    for (const [x, z, depth] of depths) if (x <= CANYON_B.upPeakX || x >= CANYON_B.downPeakX - CANYON_B.downReach) expect(b.depthAt(x, z)).toBe(depth);
     expect(createSpot('beach', 1, { canyonBed: 'old' }).depthAt(0, -200)).toBe(createSpot('beach', 1).depthAt(0, -200));
-    // Main's window, tank, rider bounds, take-offs and starts at Small, Medium, Big and between; the same on today's.
+    // Main's window, tank, rider bounds, take-offs and starts at Small, Medium, Big and between; the same on version B.
     for (const [significantHeight, peakPeriod, z, offset] of [[0.9, 9, -97, 6], [1.4, 11, -125, 9], [2.4, 14, -180.5, 3], [1.9, 12, -152.5, 6]]) {
-      for (const canyonBed of ['old', undefined] as const) {
+      for (const canyonBed of ['old', 'b'] as const) {
         const config: SurfZoneConfig = {
           ...small, spot: 'canyon', alongShore: undefined, dx: 1, fineSpacing: 1, coarseSpacing: 4, significantHeight, peakPeriod, directionDegrees: 0, tide: 0, ...(canyonBed ? { canyonBed } : {}),
         };
@@ -984,7 +986,7 @@ describe('SurfZoneSimulation', () => {
         expect(takeOffPoint(config)).toEqual({ x: -112, z });
         expect(rideLineupOffset(config)).toBe(offset);
       }
-      expect(canyonTakeOffDepth(significantHeight, 'old')).toBe(canyonTakeOffDepth(significantHeight));
+      expect(canyonTakeOffDepth(significantHeight, 'old')).toBe(canyonTakeOffDepth(significantHeight, 'b'));
     }
     // Its grid, drawn curl, readout and breaking fields, at Big.
     const simulation = new SurfZoneSimulation({
@@ -1008,6 +1010,55 @@ describe('SurfZoneSimulation', () => {
     // The readout: the reef's footprint, then each beach peak's, with their breakers.
     expect(simulation.readoutPeaks()!.map((peak) => [peak.from, peak.to, peak.breaker])).toEqual([[-37, 47.77568396859935, {value: 0.46487176340760294, type: 'plunging' }], [-179, -45, {value: 0.2138410111674977, type: 'spilling' }], [64, 178, {value: 0.2430011490539742, type: 'spilling' }]]);
     expect([-112, -9, 121, -45].map((x) => simulation.breakerNear(x))).toEqual([{value: 0.2138410111674977, type: 'spilling' }, {value: 0.46487176340760294, type: 'plunging' }, {value: 0.2430011490539742, type: 'spilling' }, {value: 0.2138410111674977, type: 'spilling' }]);
+  });
+
+  // The `?canyonBed=b` dev switch (canyon-c, 2026-11-03): version B, main's Canyon at 4eee1e5f, to ride the two side by
+  // side. The values are main's own (read off its build by docs/research/canyon-c-2026-11-03/pin-values.ts; the branch's 'b'
+  // prints the same JSON, byte for byte, and its sea hashes as main's Canyon, 316bb67a: runs/pin.txt).
+  it('rebuilds main\'s Canyon from before canyon-c with `canyonBed: \'b\'`: its bed, window, take-off, start, curl and readout, exactly', () => {
+    expect(CANYON_B).toMatchObject({ takeOffX: -112, zoneInner: -390, alongShore: 400, ageJoin: 0.5, beach: 1, reef: 0, bowl: 1, bank: 0, upReach: 55, bowlArmAngle: 32 });
+    expect(Object.isFrozen(CANYON_B)).toBe(true);
+    const b = createSpot('canyon', 1, { canyonBed: 'b' });
+    const depths: [number, number, number][] = [
+      [-50, -150, 3.639249015592236], [-30, -200, 4.885732278273984], [-25, -180, 4.547597963224122], [-17, -130, 4.255794782694714], [-17, -120, 4.14580959750953],
+      [-9, -150, 5], [-9, -100, 5], [5, -120, 5], [5, -60, 4], [20, -95, 5], [28, -40, 2.6666666666666665], [35, -60, 4], [40, -30, 2], [45, -80, 5],
+      [0, -40, 2.6666666666666665], [-70, -350, 6], [70, -20, 1.279093253084509], [5, -250, 5.7407407407407405], [15, -170, 5], [30, -120, 5],
+      [-60, -200, 4.516975113713169], [10, -120, 5], [-112, -150, 3], [-112, -100, 2], [-80, -90, 2.077142242185556], [-62, -70, 1.8926450040711282],
+      [-57, -60, 1.753557659056347], [-52, -55, 1.468038658102575], [-45, -60, 1.201889736299988], [-45, -48, 1.2988661582200072], [-37, -45, 1.2384344266038119],
+      [-29, -40, 1.493038225226016], [-20, -60, 3.0535627673773216], [-14, -80, 4.481481481481481], [-150, -100, 2.467373756847156], [-165, -120, 3.110574953411385],
+      [121, -120, 2.7272727272727275], [100, -100, 2.5051344757962064], [150, -90, 2.4151296072788493], [80, -60, 1.9494808268917918], [64, -70, 4.666666666666667],
+    ];
+    for (const [x, z, depth] of depths) expect(b.depthAt(x, z)).toBe(depth);
+    for (const [significantHeight, peakPeriod, z, offset, depth] of [[0.9, 9, -97, 6, 1.949], [1.4, 11, -125, 9, 2.504], [2.4, 14, -180.5, 3, 3.614], [1.9, 12, -152.5, 6, 3.059]]) {
+      const config: SurfZoneConfig = {
+        ...small, spot: 'canyon', canyonBed: 'b', alongShore: undefined, dx: 1, fineSpacing: 1, coarseSpacing: 4, significantHeight, peakPeriod, directionDegrees: 0, tide: 0,
+      };
+      expect(alongShoreOf(config)).toBe(400);
+      expect(tankLayout(config)).toEqual({ offshore: -480, zoneInner: -390, blendEnd: -330, fineFrom: -390, shore: 30, edgeDepth: 7.9 });
+      expect(tankRiderBounds(config)).toEqual({ xMin: -179, xMax: 179, zMin: -386, zMax: 28 });
+      expect(takeOffPoint(config)).toEqual({ x: -112, z });
+      expect(rideLineupOffset(config)).toBe(offset);
+      expect(canyonTakeOffDepth(significantHeight, 'b')).toBe(depth);
+    }
+    const simulation = new SurfZoneSimulation({
+      spot: 'canyon', seed: 1, significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: 150, tide: 0,
+      componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'b',
+    }, 'warm');
+    expect([simulation.solver.nx, simulation.solver.nz]).toEqual([400, 451]);
+    expect(simulation.breakPoint()).toEqual({ x: -112, z: -180.5 });
+    const curl = simulation.curl!;
+    expect(curl.landingShare).toBe(0.7504564066600995);
+    expect(curl.size(40, 2.5).ahead).toBe(1.8761410166502488);
+    expect([40, 80, 120, 180, 250, 320].map((column) => curl.size(column, 1).width)).toEqual([0.22707735477102892, 0.22707735477102892, 0.227077354771029, 0.3783372798142243, 0.3970425178726579, 0.25024931425772207]);
+    let sum = 0;
+    for (let column = 0; column < simulation.solver.nx; column += 1) sum += curl.size(column, 1).width;
+    expect(sum).toBe(121.30414068540752);
+    expect(simulation.iribarren()).toEqual({ value: 0.2138410111674977, type: 'spilling' });
+    const layout = (simulation.solver as BoussinesqSolver).deviceLayout();
+    expect([layout.breaking?.diagonalJoin, layout.breaking?.onsetFactor !== undefined, layout.breaking?.joinField !== undefined]).toEqual([0.5, true, true]);
+    expect(simulation.spilling!.options.direction).toBe(1);
+    expect(simulation.readoutPeaks()!.map((peak) => [peak.from, peak.to, peak.breaker])).toEqual([[-179, -9, { value: 0.2138410111674977, type: 'spilling' }], [64, 178, { value: 0.2430011490539742, type: 'spilling' }]]);
+    expect([-112, -9, 121, -45].map((x) => simulation.breakerNear(x))).toEqual([{ value: 0.2138410111674977, type: 'spilling' }, { value: 0.2138410111674977, type: 'spilling' }, { value: 0.2430011490539742, type: 'spilling' }, { value: 0.2138410111674977, type: 'spilling' }]);
   });
 
   // canyon-wave-r2 (2026-10-22): the Canyon's breaking age passes through the diagonal parents only where the cell rises at
@@ -1098,12 +1149,15 @@ describe('SurfZoneSimulation', () => {
       const internals = simulation as unknown as { markBreakingOnsets(): void; onsetsArmed: boolean; spilling: { waves: { group: number; direction: number }[] } };
       const { solver } = simulation;
       internals.onsetsArmed = true;
-      // On the up peak's bar 10 m either side of its tip, and on the reef's face at its take-off.
-      const up = canyonBars(CANYON)[0];
-      const breaks = [up.x - 10, up.x + 10].map((x) => {
+      // On the up peak's bar 10 m either side of its tip (version B's; version C's: its bank 10 m and 60 m down the line
+      // from the take-off, 5 m seaward of its edge).
+      const shape = config.canyonBed === 'b' ? CANYON_B : CANYON;
+      const up = canyonBars(shape)[0];
+      const xs = up.bank ? [shape.takeOffX - 10, shape.takeOffX - 60] : [up.x - 10, up.x + 10];
+      const breaks = xs.map((x) => {
         const column = solver.xCenters.findIndex((c) => Math.abs(c - x) <= solver.dx / 2);
         let row = 0;
-        while (!(canyonBarAt(solver.xCenters[column], solver.zCenters[row]) === 0 && solver.restLevel - solver.bed[row * solver.nx + column] < 2.5)) row += 1;
+        while (!(canyonBarAt(solver.xCenters[column], solver.zCenters[row], shape) === 0 && solver.restLevel - solver.bed[row * solver.nx + column] < (up.bank ? 3 : 2.5))) row += 1;
         return { column, row };
       });
       solver.time = 10;
@@ -1113,7 +1167,11 @@ describe('SurfZoneSimulation', () => {
       return internals.spilling.waves.map((wave) => [wave.group, wave.direction]);
     };
     expect(CANYON_BEACH_LOOK).toEqual({ peelAngleDegrees: 20, upcoastMargin: Infinity, lifetime: 20 });
-    expect(groupsOf({})).toEqual([[1, -1], [2, 1]]);
+    expect(groupsOf({ canyonBed: 'b' })).toEqual([[1, -1], [2, 1]]);
+    expect(groupsOf({ canyonBed: 'b', canyonBeachLook: false })).toEqual([]);
+    // Version C's bank (canyon-c): one group, peeling −x, its waves kept 30 s.
+    expect(CANYON_BANK_LOOK).toEqual({ peelAngleDegrees: 20, upcoastMargin: Infinity, lifetime: 30 });
+    expect(groupsOf({})).toEqual([[1, -1], [1, -1]]);
     expect(groupsOf({ canyonBeachLook: false })).toEqual([]);
   });
 
