@@ -5,6 +5,7 @@ import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import type { CrestRayPlan } from './crestRays';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
+import type { TubeFace } from './faceAnchor';
 import type { ProfileLibrary } from './ProfileLibrary';
 import { CarrierSupport, geometricPaceActive } from './carrierSupport';
 
@@ -171,8 +172,12 @@ export class SweptCrash {
   private readonly observedVoids = new Set<number>();
   private readonly presentVoids = new Set<number>();
 
-  constructor(library: ProfileLibrary, slope: number) {
-    this.geometry = new CrashCurve(library, slope);
+  /** Per point, its smoothed shift under the face ruling (`CrashCurve.prepareShifts`); NaN without it. */
+  private shifts = new Float64Array(0);
+
+  /** `face`: the step 3 ruling's tube (`TubeFace`), its slices anchored and their ends blended as the loft's. */
+  constructor(library: ProfileLibrary, slope: number, face?: TubeFace) {
+    this.geometry = new CrashCurve(library, slope, face);
     this.columnSections = library.options.geometry === 'bounded-C';
     this.carrier = this.columnSections ? new CarrierSupport(library, slope) : undefined;
   }
@@ -272,8 +277,9 @@ export class SweptCrash {
       this.measureArc(points);
       for (let r = 0; r < runs.length; r += 2) this.geometry.prepareRays(points, runs[r], runs[r + 1], this.rayPlans[r / 2]);
     }
-    // Each live point as drawn, and its footprint.
+    // Each live point as drawn, and its footprint; under the face ruling its anchor's shift first, along its run.
     for (let r = 0; r < runs.length; r += 2) {
+      this.geometry.prepareShifts(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], this.shifts);
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         const p = points[k];
         if (!this.live[k]) {
@@ -284,7 +290,7 @@ export class SweptCrash {
           }
           continue;
         }
-        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k], {}, this.rayPlans[r / 2]));
+        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k], { shift: this.shifts[k] }, this.rayPlans[r / 2]));
       }
     }
     this.dropOverlaps(runs);
@@ -485,7 +491,7 @@ export class SweptCrash {
     }
     // Where it will land, foreseen: the slice at its touchdown, on the anchor's own rule there with the paced z then.
     const tau = Math.max(p.tau, s.touchdown);
-    const f = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.foreseen, { tau, z: p.jetBase! + p.jetPace! * tau }, rays);
+    const f = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.foreseen, { tau, z: p.jetBase! + p.jetPace! * tau, shift: this.shifts[k] }, rays);
     const { strip, thrown } = sea.lip.holdJet({
       cell, velocityX: motion.tipAlong * s.rayX, velocityZ: motion.tipAlong * s.rayZ, volume, waveHeight,
       launchX: s.crestX, launchY: s.crestY, launchZ: s.crestZ,
@@ -541,6 +547,7 @@ export class SweptCrash {
       this.throwHeight = new Float64Array(size);
       this.corners = new Float64Array(8 * size);
       this.boxes = new Float64Array(4 * size);
+      this.shifts = new Float64Array(size);
     }
     this.live.fill(0, 0, count);
     this.covered.fill(0, 0, count);

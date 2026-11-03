@@ -29,6 +29,7 @@ import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { BARREL_SPOTS, tubeFootMax } from './barrel/barrelSpots';
+import { tubeFaceOf, type TubeFace } from './barrel/faceAnchor';
 import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
@@ -292,6 +293,20 @@ export interface SurfZoneConfig {
    * them to the surf zone, so both draw and feel the same. Online rooms always run the default.
    */
   poolTubeCase?: PoolTubeCase;
+  /**
+   * The surfable tube's switches (the water-physics advisor's step 3 ruling, 2026-11-03; `TubeFace`), at a spot whose
+   * barrel is `faceAnchor`'s (the Wave Pool's straight Barrel); the page and the worker read them alike, online rooms pin
+   * the defaults:
+   * - `tubeFace` 'old' (`?tubeFace=old`): the support is the loft's floor wherever the loft is, as before;
+   * - `tubeFrom` 'piece' (`?tubeFrom=piece`): the fitted piece as before: the crest anchor and the forward rest, the join at
+   *   the white with zero lag, the 2× catch-up clock, thrown ends over 1 m. With `tubeFace` 'old': exactly the build before;
+   * - `tubeLag` 0 (`?tubeLag=0`): the join at the white, zero lag;
+   * - `tubeClock` 'old' (`?tubeClock=old`): a thrown clock catches up at 2×.
+   */
+  tubeFace?: 'old';
+  tubeFrom?: 'piece';
+  tubeLag?: 0;
+  tubeClock?: 'old';
 }
 
 /**
@@ -1009,6 +1024,8 @@ export class SurfZoneSimulation {
    * library: they replace Kennedy's lip there, and the whitewater waits for their touchdown.
    */
   readonly crash?: SweptCrash;
+  /** The step 3 ruling's tube at a `faceAnchor` spot (`tubeFaceOf`); undefined elsewhere, and with both old switches. */
+  readonly tubeFace?: TubeFace;
   /** The spilling front, at a spilling spot (`SPILLING_SPOTS`): it holds the whitewater back ahead of each wave's peel. */
   readonly spilling?: SpillingFront;
   /**
@@ -1250,13 +1267,19 @@ export class SurfZoneSimulation {
       // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
       const record = BARREL_SPOTS[config.spot]!;
       this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
+      // The step 3 ruling at the pool (`TubeFace`): the thrown clock's cap, the lagged join, the crash's anchor.
+      const face = barrel?.options.geometry === 'bounded-C' ? undefined : tubeFaceOf(record.faceAnchor !== undefined, config);
+      this.tubeFace = face;
+      if (face) this.onsetTiming.thrownRate = face.clockRate;
+      const lead = face?.lag ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
       const crash = sweptCrashOn(config);
       const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front, carrier);
+      const frontOptions = config.barrelFront ?? record.front;
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, lead ? { ...frontOptions, lead } : frontOptions, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
       if (barrel && slope !== undefined && crash) {
-        this.crash = new SweptCrash(barrel, slope);
+        this.crash = new SweptCrash(barrel, slope, face);
         this.whitewater = new Float64Array(this.solver.h.length);
       }
       // A spot whose waves plunge a tube only from a regime (the Canyon): the rest are its own look's, and the tube's

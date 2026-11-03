@@ -448,7 +448,9 @@ export class SurfZoneRunner {
         this.ordinaryContactOwner = SweptContact.forOrdinaryWorker(library, slope!);
         this.contactQueries = this.ordinaryContactOwner.queries;
       } else {
-        this.contact = new SweptContact(library, slope!);
+        // The step 3 ruling's tube at the pool's straight Barrel (`TubeFace`): its contact's loft as its drawing's.
+        const face = this.simulation.tubeFace;
+        this.contact = new SweptContact(library, slope!, face ? { face } : {});
         this.contactQueries = this.contact;
       }
     }

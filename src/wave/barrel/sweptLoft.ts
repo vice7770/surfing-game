@@ -2,6 +2,7 @@ import type { SpotName } from '../Bathymetry';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
+import { FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
@@ -62,8 +63,10 @@ function restHeight(crestY: number, toeY: number, frontY: number): number {
  */
 export function endBlendLength(
   library: ProfileLibrary, slope: number, footHeight: number, footDepth: number, tau: number, profile: Float32Array,
+  thrownEnds = false,
 ): number {
-  if (!(tau < 0)) return LOFT.endBlend;
+  // A thrown end under the face ruling carries a 0.8–1.0 m wall: it blends over at least its height too (`TubeFace`).
+  if (!(tau < 0) && !thrownEnds) return LOFT.endBlend;
   library.profileAt({ slope, footHeight, footDepth, seconds: tau }, profile);
   const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
   return Math.max(LOFT.endBlend, height);
@@ -222,6 +225,12 @@ export interface LoftResult {
   sliceStretch: Float32Array;
   /** Per slice, s since its lip touched down (τ less its touchdown time; ≤ 0 before). */
   sliceAfter: Float32Array;
+  /**
+   * Per slice, its shift (the face anchor, `LoftOptions.face`): where its drawn crest stands along its ray from its
+   * point, m (0 with the crest anchor, and where the face anchor found no crossing); and the slices that fell back.
+   */
+  sliceShift: Float32Array;
+  shiftMisses: number;
 }
 
 export interface LoftOptions {
@@ -231,6 +240,11 @@ export interface LoftOptions {
   sheet?: boolean;
   /** Hold each drawn case at its last clear profile, with the existing touchdown/collapse clock. Off by default; ignored in contact mode. */
   holdClearDrawing?: boolean;
+  /**
+   * The step 3 ruling's tube (`TubeFace`; the pool's straight Barrel): the face anchor, the floor never under the
+   * solver's surface, and thrown ends blended over their height. None: as before. Raw Basilisk cases only.
+   */
+  face?: TubeFace;
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
@@ -369,6 +383,13 @@ export class SweptLoft {
   private readonly boxes = new Float64Array(4 * (MAX_SLICES + 1));
 
   private readonly contact: boolean;
+  /** The step 3 ruling's (`LoftOptions.face`); the face anchor's arithmetic, and each front's records' smoothed shifts. */
+  private readonly face?: TubeFace;
+  private readonly faceAnchor?: FaceAnchor;
+  private recordRaw = new Float64Array(0);
+  private recordShift = new Float64Array(0);
+  private readonly recordSigma: number[] = [];
+  private readonly faceScratch = new Float64Array(3);
   private readonly measureSheet: boolean;
   private readonly holdClearDrawing: boolean;
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
@@ -383,6 +404,10 @@ export class SweptLoft {
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
+    if (options.face && library.options.geometry !== 'bounded-C') {
+      this.face = options.face;
+      if (options.face.anchor) this.faceAnchor = new FaceAnchor(library, slope);
+    }
     this.measureSheet = options.sheet ?? !this.contact;
     this.holdClearDrawing = !this.contact && (options.holdClearDrawing ?? false);
     this.rayPlan = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
@@ -406,6 +431,7 @@ export class SweptLoft {
       sliceTipTransportAlong: new Float32Array(slices), sliceTipTransportUp: new Float32Array(slices),
       sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
       sliceMouth: new Float32Array(slices), sliceStretch: new Float32Array(slices), sliceAfter: new Float32Array(slices),
+      sliceShift: new Float32Array(slices), shiftMisses: 0,
     };
   }
 
@@ -473,6 +499,7 @@ export class SweptLoft {
     r.rayMaxBlend = 0;
     r.rayMinAdvance = 0;
     r.rayInvalidIntervals = 0;
+    r.shiftMisses = 0;
     const boundedC = this.library.options.geometry === 'bounded-C';
     if (boundedC) this.retirementRow.fill(0);
     if (boundedC) r.cSampling = { policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1', mandatoryRawKnots: 0, plannedStations: 0,
@@ -1032,11 +1059,13 @@ export class SweptLoft {
       runStart = -1;
     };
     const plannedCount = this.planRays(records, f, n, budgeted);
-    // Each end's blend: 1 m where its end point has thrown, at least its height H at a young end (`endBlendLength`).
+    if (this.faceAnchor) this.recordShifts(records, f, heightAt);
+    // Each end's blend: 1 m where its end point has thrown, at least its height H at a young end (`endBlendLength`); under
+    // the face ruling, at least H at a thrown end too.
     const end = (k: number) => {
       const o = k * FRONT_STRIDE;
       return endBlendLength(this.library, this.slope, records[o + FRONT_FIELD.footHeight], records[o + FRONT_FIELD.footDepth],
-        records[o + FRONT_FIELD.tau], this.endProfile);
+        records[o + FRONT_FIELD.tau], this.endProfile, this.face?.thrownEnds);
     };
     const blendFirst = end(f.start);
     const blendLast = end(f.end - 1);
@@ -1105,7 +1134,8 @@ export class SweptLoft {
       const wEnd = endWeight(sigma, f.first, f.last, blendFirst, blendLast);
       // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
       // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
-      const w = wEnd * wFade * wFormation;
+      // Under the face ruling a lagged join the solver never broke fades out as it retires (`FrontPoint.retire`).
+      const w = wEnd * wFade * wFormation * (this.face ? 1 - this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.retire]) : 1);
       let overturned = 0;
       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
         if (profile[2 * (i + 1)] < profile[2 * i]) {
@@ -1118,17 +1148,25 @@ export class SweptLoft {
       if (lookup.clamped) r.clampedLookups += 1;
       // The anchor, the profile's x origin in the world: the crest point K = S − c n, so the profile's crest landmark
       // sits on the point's crest, before the throw and from it alike (the advisor, 2026-10-03: u = 1 from the throw).
+      // Under the face ruling the crest stands at the point's shift along its ray instead, K = S + (δ − c) n: where its
+      // case's lower face sits on the solver's (`FaceAnchor`); with no crossing, on the crest as before.
       const crest = profile[2 * LANDMARK.crest];
-      const ax = s.x - crest * nx;
-      const az = s.z - crest * nz;
+      const shift = this.faceAnchor ? this.shiftAt(records, f, sigma) : 0;
+      if (this.faceAnchor && !(shift === shift)) r.shiftMisses += 1;
+      const along0 = shift === shift ? shift - crest : -crest;
+      const ax = s.x + along0 * nx;
+      const az = s.z + along0 * nz;
       let life = Number.NaN;
       let anchorVX = 0;
       let anchorVZ = 0;
       if (tau >= 0) {
         life = tau / touchdown;
         if (this.contact) {
-          // Its motion, per second of the clock (the advisor, 2026-09-30 and 2026-10-03): K̇ = Ṡ − ċ n.
-          const follow = this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
+          // Its motion, per second of the clock (the advisor, 2026-09-30 and 2026-10-03): K̇ = Ṡ − ċ n. Under the face
+          // ruling the case's lower-face crossing moves the anchor where its crest did: K̇ = Ṡ − ẋ_c n.
+          const follow = this.faceAnchor && shift === shift
+            ? this.facePointVelocity(s, tau, nx, nz)
+            : this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
           anchorVX = follow[0];
           anchorVZ = follow[1];
         }
@@ -1172,6 +1210,7 @@ export class SweptLoft {
       r.sliceCollapse[slice] = lookup.collapseSeconds;
       r.sliceFade[slice] = wFade;
       r.sliceAfter[slice] = tau - touchdown;
+      r.sliceShift[slice] = shift === shift ? shift : 0;
       r.sliceStretch[slice] = this.measureSheet && w > 0 && tau > 0 ? this.stretchOf(profile) : 1;
       r.sliceTipGap[slice] = tipGap;
       if (tipGap > r.tipGap) r.tipGap = tipGap;
@@ -1291,17 +1330,21 @@ export class SweptLoft {
         }
         const e = w * (1 - pin);
         r.positions[3 * v] = px;
+        // Under the face ruling a floor vertex never lies under the solver's surface: the back slope, the face from the
+        // throat on and the extensions, and the whole profile before it overturns; the lip's are left as they are.
+        const floor = this.face?.union === true && (overturned === 0 || profileIndex <= LANDMARK.crest || profileIndex >= LANDMARK.throat);
         if (this.normalDemand) {
           this.initialX[v] = px;
           this.initialZ[v] = pz;
           this.targetY[v] = stillLevel + above;
           this.initialBlend[v] = e;
         } else if (e === 1) {
-          r.positions[3 * v + 1] = stillLevel + above;
+          r.positions[3 * v + 1] = floor ? Math.max(stillLevel + above, heightAt(px, pz)) : stillLevel + above;
         } else {
           const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
           if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-          r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
+          const y = e === 0 ? h : h + e * (stillLevel + above - h);
+          r.positions[3 * v + 1] = floor && y < h ? h : y;
         }
         r.positions[3 * v + 2] = pz;
         r.mask[v] = maskSlice * maskAlong;
@@ -1467,6 +1510,74 @@ export class SweptLoft {
       this.finishRun(first, last);
       first = last + 1;
     }
+  }
+
+  /**
+   * Front f's records' shifts under the face ruling (`FaceAnchor.shift`), each along its own ray at its own clock, smoothed
+   * along σ (`smoothShifts`), for `shiftAt`. The rays are the front's planned ones (`planRays` has prepared them).
+   */
+  private recordShifts(records: Float32Array, f: Front, heightAt: (x: number, z: number) => number): void {
+    const anchor = this.faceAnchor!;
+    const n = f.end - f.start;
+    if (this.recordRaw.length < n) {
+      this.recordRaw = new Float64Array(2 * n);
+      this.recordShift = new Float64Array(2 * n);
+    }
+    const sigmas = this.recordSigma;
+    sigmas.length = n;
+    const hold = this.contact || this.holdClearDrawing ? 'contact' : 'drawing';
+    for (let k = 0; k < n; k += 1) {
+      const o = (f.start + k) * FRONT_STRIDE;
+      const sigma = records[o + FRONT_FIELD.sigma];
+      sigmas[k] = sigma;
+      this.rayPlan.rayAt(sigma, this.plannedRay);
+      this.recordRaw[k] = anchor.shift(records[o + FRONT_FIELD.footHeight], records[o + FRONT_FIELD.footDepth], records[o + FRONT_FIELD.tau],
+        hold, records[o + FRONT_FIELD.x], records[o + FRONT_FIELD.z], this.plannedRay[0], this.plannedRay[1], heightAt, this.faceScratch);
+    }
+    smoothShifts(sigmas, this.recordRaw, n, this.recordShift);
+  }
+
+  /** Front f's smoothed shift at σ (`recordShifts`), linear between its records, its ends' past them; NaN with none there. */
+  private shiftAt(records: Float32Array, f: Front, sigma: number): number {
+    return this.recordLerp(records, f, sigma, (k) => this.recordShift[k - f.start]);
+  }
+
+  /**
+   * A per-record value of front f (`value(k)`, k its record) at σ: linear between its records, its ends' past them; across
+   * a NaN, the other's.
+   */
+  private recordLerp(records: Float32Array, f: Front, sigma: number, value: (k: number) => number): number {
+    const sigmaOf = (k: number) => records[k * FRONT_STRIDE + FRONT_FIELD.sigma];
+    if (sigma <= sigmaOf(f.start)) return value(f.start);
+    if (sigma >= sigmaOf(f.end - 1)) return value(f.end - 1);
+    let low = f.start + 1;
+    let high = f.end - 1;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (sigmaOf(middle) < sigma) low = middle + 1;
+      else high = middle;
+    }
+    const k = low - 1;
+    const s0 = sigmaOf(k);
+    const s1 = sigmaOf(k + 1);
+    const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
+    const a = value(k);
+    const b = value(k + 1);
+    return a === a ? (b === b ? a + t * (b - a) : a) : b;
+  }
+
+  /**
+   * Under the face ruling, a thrown slice's anchor's velocity, m per second of its clock (x, z): its point's, Ṡ, less its
+   * case's lower-face crossing's along the ray, ẋ_c n (`FaceAnchor.caseFace`; 0 for a held shape, its mean speed once
+   * extrapolated), as the crest's was (`crestPointVelocity`).
+   */
+  private facePointVelocity(s: Sample, tau: number, nx: number, nz: number): Float64Array {
+    const pace = s.pace === s.pace ? s.pace : 0;
+    const face = this.faceAnchor!.caseFace(s.footHeight, s.footDepth, tau, 'contact', this.faceScratch);
+    const out = this.velocity;
+    out[0] = -face[2] * nx;
+    out[1] = pace - face[2] * nz;
+    return out;
   }
 
   /**

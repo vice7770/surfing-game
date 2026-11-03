@@ -131,6 +131,12 @@ export interface PhysicalSurfWaterOptions {
    */
   swept?: SweptSurfaceQueries;
   /**
+   * With `swept`: the step 3 ruling's support (`TubeFace.union`; the pool's straight Barrel): never under the solver's
+   * surface. The water is the union of the solver's and the swept surface's: a point under the solver's surface is in
+   * water, and over it the swept surface answers as before, its floor raised to the solver's where it lies under it.
+   */
+  sweptUnion?: boolean;
+  /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
@@ -367,6 +373,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     return new PhysicalSurfWater(simulation.solver, {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.feltBreaking, nodeSpacing,
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
+      ...(swept && simulation.tubeFace?.union ? { sweptUnion: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
@@ -428,7 +435,14 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const contact = swept !== undefined && swept.query(x, y, z, this.hit);
     // The surface's rise rate (continuity), m/s: found here when the sample's time needs it, else with the flow below.
     let rise = Number.NaN;
-    if (contact) this.fromContact(y, out);
+    if (contact && this.options.sweptUnion) {
+      // The solver's surface at the sample's time, as below without the contact.
+      if (this.sampleTime !== 0 && out.wet) {
+        rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
+        out.surfaceY += rise * this.sampleTime;
+      }
+      this.unionContact(y, out);
+    } else if (contact) this.fromContact(y, out);
     else if (this.sampleTime !== 0 && out.wet) {
       rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
       out.surfaceY += rise * this.sampleTime;
@@ -487,8 +501,14 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const { swept } = this.options;
     if (swept && !this.outside(x, z)) {
       const floor = swept.floorAt(x, z);
-      if (floor === floor) return floor;
+      // Under the face ruling, never under the solver's surface (`sweptUnion`).
+      if (floor === floor) return this.options.sweptUnion ? Math.max(floor, this.plainAtSampleTime(x, z)) : floor;
     }
+    return this.plainAtSampleTime(x, z);
+  }
+
+  /** The render nodes' surface at (x, z), moved to the bodies' sample time at its rise rate (`setSampleTime`). */
+  private plainAtSampleTime(x: number, z: number): number {
     const surface = this.plainSurfaceAt(x, z);
     if (this.sampleTime === 0 || this.outside(x, z)) return surface;
     this.cellWeights(x, z);
@@ -613,6 +633,58 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     }
     out.tube = tubeState(hit.life);
     out.covered = !hit.inWater && hit.ceilingY === hit.ceilingY && !(hit.life >= 1);
+  }
+
+  /**
+   * The swept surface's answer united with the solver's water (`sweptUnion`), `out` holding the solver's surface at the
+   * sample's time. Under the solver's surface the point is in water: the solver's surface answers, unless the swept
+   * water stands higher over it; the curl's water reaching down into the solver's is no longer a falling jet over air.
+   * Over it the swept surface answers, its floor raised to the solver's where it lies under it (the tube's air stays
+   * over the solver's water).
+   */
+  private unionContact(y: number, out: WaterSample): void {
+    const { hit } = this;
+    const plainY = out.surfaceY;
+    const slopeX = out.slopeX;
+    const slopeZ = out.slopeZ;
+    const normalX = out.normalX;
+    const normalY = out.normalY;
+    const normalZ = out.normalZ;
+    const plain = () => {
+      out.surfaceY = plainY;
+      out.slopeX = slopeX;
+      out.slopeZ = slopeZ;
+      out.normalX = normalX;
+      out.normalY = normalY;
+      out.normalZ = normalZ;
+    };
+    if (y < plainY) {
+      if (hit.inWater && hit.surfaceY >= plainY) {
+        this.fromContact(y, out);
+        if (out.waterFloorY !== undefined && out.waterFloorY <= plainY) out.waterFloorY = undefined;
+        return;
+      }
+      // The solver's water: the swept surface says air or lies under it here.
+      plain();
+      out.tube = tubeState(hit.life);
+      out.covered = false;
+      return;
+    }
+    this.fromContact(y, out);
+    if (hit.inWater) {
+      if (out.waterFloorY !== undefined && out.waterFloorY <= plainY) out.waterFloorY = undefined;
+      return;
+    }
+    // In air over the swept surface: the floor under the point is the higher of it and the solver's.
+    if (hit.surfaceY < plainY) {
+      plain();
+      if (out.ceilingY !== undefined && !(out.ceilingY > plainY)) {
+        out.ceilingY = undefined;
+        out.ceilingTopY = undefined;
+        out.clearance = undefined;
+        out.covered = false;
+      }
+    }
   }
 
   /**

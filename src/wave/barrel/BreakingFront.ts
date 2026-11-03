@@ -93,7 +93,21 @@ export interface FrontOptions {
    * the clocks smoothed along them.
    */
   clockLink?: boolean;
+  /**
+   * The lagged join (the water-physics advisor's step 3 ruling, 2026-11-03; the pool's straight Barrel, `TubeFace.lag`):
+   * m deeper than its throw depth for a crest of foot height `footHeight` (m), a sized crest joins there whether or not
+   * the solver breaks it yet, so its slice starts at its case's earliest frame, the wall growing before the throw. It
+   * throws at the later of its crest's throw-depth crossing and the solver's break (`FrontPoint.unbroken` until then), and
+   * one the solver hasn't broken by its foreseen throw + `LEAD_RETIRE.after` s retires over `LEAD_RETIRE.over` s.
+   */
+  lead?: (footHeight: number) => number;
 }
+
+/**
+ * A lagged join's guard (the advisor's step 3 ruling, provisional): a point the solver hasn't broken by its foreseen throw
+ * plus `after` s fades out over `over` s (`FrontPoint.retire`) and leaves the front.
+ */
+export const LEAD_RETIRE = { after: 0.3, over: 0.5 } as const;
 
 /** A crest followed shoreward from the wedge's foot until it joins a front, or is dropped. */
 export interface CrestTrack {
@@ -192,6 +206,13 @@ export interface FrontPoint {
   crestZ?: number;
   /** Its crest's speed along its column over the last few frames, m/s (`crestMotion`, PACE_SECONDS); absent unmeasured. */
   crestSpeed?: number;
+  /**
+   * With `FrontOptions.lead`: joined ahead of the solver's break, which hasn't come yet (its `broke` is its join's time
+   * until then). Its slice's clock holds short of its throw meanwhile (`advanceClocks`).
+   */
+  unbroken?: true;
+  /** With `FrontOptions.lead`: how far it has retired, 0–1, unbroken past its foreseen throw (`LEAD_RETIRE`); absent: none. */
+  retire?: number;
 }
 
 export interface FrontState {
@@ -328,17 +349,25 @@ export class BreakingFront {
       // On a front: it stays while its segment breaks at all.
       const point = this.nearest(plainOf.get(s.column), matched, s.z);
       if (point) {
-        if (!(s.strength > 0)) continue;
+        // A lagged join waits for the solver's break (`lead`); a retired one leaves the front.
+        if (!(s.strength > 0) && !(point.unbroken && !(point.retire! >= 1))) continue;
+        if (point.retire! >= 1) continue;
         matched.add(point);
         const fresh = point.fresh ?? (s.rise >= FRESH ? s.depth : null);
         // Its crest's speed over the last few frames: the pace its slice runs on once its jet is thrown (PR 5).
         const crestSpeed = s.speed > 0
           ? point.crestSpeed === undefined ? s.speed : point.crestSpeed + (s.speed - point.crestSpeed) * Math.min(1, (time - point.seen) / PACE_SECONDS)
           : point.crestSpeed;
-        const next = {
+        const next: FrontPoint = {
           ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, seen: time, fresh,
           ...(crestSpeed === undefined ? {} : { crestSpeed }),
         };
+        if (next.unbroken && s.strength > 0) {
+          // The solver's break has come: its throw may now.
+          next.broke = time;
+          delete next.unbroken;
+          delete next.retire;
+        }
         recordOwnThrow(next, point, s, time, point.z);
         points.push(next);
         continue;
@@ -368,7 +397,32 @@ export class BreakingFront {
       if (track.footHeight !== null && s.depth <= deeper && (s.depth >= shallower || next.refHeight === null)) {
         next.refHeight = Math.max(next.refHeight ?? s.eta, s.eta);
       }
-      if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower) {
+      if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower && this.options.lead) {
+        // The lagged join (`lead`): a set depth past its throw depth, ahead of the solver's break.
+        const throwDepth = this.timing.throwDepth(next.footHeight);
+        const joinDepth = throwDepth + this.options.lead(next.footHeight);
+        if (next.crossed === null) {
+          const joinF = crossingFraction(track.depth, s.depth, joinDepth);
+          if (joinF !== null) next.crossed = track.seen + joinF * (time - track.seen);
+        }
+        if (next.crossed !== null) {
+          this.joins += 1;
+          this.sizes?.joined.push(next.refHeight);
+          const throwF = crossingFraction(track.depth, s.depth, throwDepth);
+          const broken = s.strength > 0;
+          points.push({
+            id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
+            joined: next.crossed, depth: joinDepth, throwDepth, crestDepth: s.depth,
+            thrown: throwF === null ? null : track.seen + throwF * (time - track.seen),
+            throwZ: throwF === null ? null : track.z + throwF * (s.z - track.z),
+            footHeight: next.footHeight, footDepth: this.timing.h0,
+            broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
+            ...(broken ? {} : { unbroken: true as const }),
+            ...(next.jumped ? { jumped: next.jumped } : {}),
+          });
+          continue;
+        }
+      } else if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower) {
         const joinDepth = this.timing.joinDepth(next.refHeight);
         const throwDepth = Math.min(joinDepth, this.timing.throwDepth(next.footHeight));
         if (next.crossed === null) {

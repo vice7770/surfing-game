@@ -1,5 +1,6 @@
 import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import type { TubeFace } from './faceAnchor';
 import type { OwnedPlainSurface, PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
 import { createTubeApproachObservation, resetTubeRouteObservation, routeForStrip, validTubeApproachRequest,
   type TubeApproachCue, type TubeApproachRequest, type TubeApproachObservation, type TubeCapProjectionObservation,
@@ -46,6 +47,8 @@ export const CONTACT = { cell: 2, closing: 0.8, crossings: 16, bucket: 0.5 } as 
 export interface ContactOptions {
   /** The quads' bucket along the ray, m (`CONTACT.bucket`); Infinity scans every quad of a strip. */
   bucket?: number;
+  /** The step 3 ruling's tube (`LoftOptions.face`): the contact's loft is built as the drawing's. */
+  face?: TubeFace;
 }
 
 export type TubeState = 'open' | 'closing' | 'closed';
@@ -193,7 +196,7 @@ export class SweptContact {
       this.loft = queryLoft;
       this.prepareRow = queryLoft.prepareRow;
       this.prepareNormal = queryLoft.prepareNormal;
-    } else this.loft = new SweptLoft(library, slope, { contact: true });
+    } else this.loft = new SweptLoft(library, slope, { contact: true, ...(options.face ? { face: options.face } : {}) });
     this.bucket = options.bucket ?? CONTACT.bucket;
     this.boundedC = library.options.geometry === 'bounded-C';
   }

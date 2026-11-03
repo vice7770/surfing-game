@@ -1,7 +1,8 @@
 import type { SpotName } from '../../wave/Bathymetry';
 import { barrelCasesFor, loadBarrelLibrary } from '../../wave/barrel/barrelLibrary';
 import type { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
-import { BARREL_SLOPE, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { BARREL_SLOPE, SweptLoft, type LoftOptions, type LoftResult } from '../../wave/barrel/sweptLoft';
+import type { TubeFace } from '../../wave/barrel/faceAnchor';
 import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
 import { sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
@@ -30,6 +31,8 @@ export class SweptBarrel {
   private mask = new Uint8Array(0);
   private look?: WaterLook;
   private holdClearDrawing = true;
+  /** The step 3 ruling's tube (`TubeFace`; the pool's straight Barrel), as the surf zone's: drawn as it is felt. */
+  private face?: TubeFace;
   private readonly cameraWater = new BarrelWater();
   private cameraWaterRevision = 0;
   /** Which slices' curls keep the solver's foam: those on a crest already white (drawing only, `brokenCrest.ts`). */
@@ -56,7 +59,8 @@ export class SweptBarrel {
    * On at a swept spot with a barrel transect (`BARREL_SLOPE`), off at any other or none. `swept` is the spot's switch:
    * SWEPT_BARREL's say unless the caller (the surf zone's config) says otherwise.
    */
-  setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot)): void {
+  setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot), face?: TubeFace): void {
+    this.face = face;
     this.drawn = undefined;
     this.broken.clear();
     this.cameraWater.prepare(undefined, undefined);
@@ -64,7 +68,7 @@ export class SweptBarrel {
     this.spot = on ? spot : undefined;
     this.water.setBarrelEnabled(on);
     const library = on ? this.libraries.get(spot) : undefined;
-    this.loft = on && library ? new SweptLoft(library, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing }) : undefined;
+    this.loft = on && library ? new SweptLoft(library, BARREL_SLOPE[spot]!, this.loftOptions()) : undefined;
     if (!on) {
       this.lastLoft = undefined;
       this.mesh.update(undefined);
@@ -76,7 +80,7 @@ export class SweptBarrel {
     this.load(spot).then((loaded) => {
       this.libraries.set(spot, loaded);
       this.loading.delete(spot);
-      if (this.spot === spot) this.loft = new SweptLoft(loaded, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing });
+      if (this.spot === spot) this.loft = new SweptLoft(loaded, BARREL_SLOPE[spot]!, this.loftOptions());
       this.resolveReady();
     }, (error: unknown) => console.warn('The barrel library did not load; the swept barrel stays off.', error));
   }
@@ -87,7 +91,7 @@ export class SweptBarrel {
     if (this.spot !== spot) return;
     this.drawn = undefined;
     this.cameraWater.prepare(undefined, undefined);
-    this.loft = new SweptLoft(library, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing });
+    this.loft = new SweptLoft(library, BARREL_SLOPE[spot]!, this.loftOptions());
   }
 
   /** Keep the last clear roof shape; changing the drawing hold rebuilds geometry and its water mask together. */
@@ -98,8 +102,13 @@ export class SweptBarrel {
     this.cameraWater.prepare(undefined, undefined);
     const library = this.spot !== undefined ? this.libraries.get(this.spot) : undefined;
     this.loft = library && this.spot !== undefined
-      ? new SweptLoft(library, BARREL_SLOPE[this.spot]!, { holdClearDrawing: enabled })
+      ? new SweptLoft(library, BARREL_SLOPE[this.spot]!, this.loftOptions())
       : undefined;
+  }
+
+  /** The drawing loft's options: the clear-roof hold, and the step 3 ruling's tube where the surf zone has it. */
+  private loftOptions(): LoftOptions {
+    return { holdClearDrawing: this.holdClearDrawing, ...(this.face ? { face: this.face } : {}) };
   }
 
   get holdsClearDrawing(): boolean {

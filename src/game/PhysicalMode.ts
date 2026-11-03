@@ -48,6 +48,8 @@ import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptB
 import { devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
 import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, type PoolTubeCase, type TubeShape } from '../wave/barrel/barrelLibrary';
+import { BARREL_SPOTS } from '../wave/barrel/barrelSpots';
+import { tubeFaceOf } from '../wave/barrel/faceAnchor';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -416,6 +418,9 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
     // `?poolTubeCase=a38`: the straight Barrel's tube from the Canyon's a38, its stand-in before its own runs, for A/Bs.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeCaseSwitch() : {}),
+    // `?tubeFace=old`, `?tubeFrom=piece`, `?tubeLag=0`, `?tubeClock=old`: the surfable tube's A/Bs (the advisor's step 3
+    // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? tubeFaceSwitches() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -501,6 +506,23 @@ export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
 export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCrash?: false } {
   if (devParam('poolTube', search)?.trim().toLowerCase() === 'off') return { sweptBarrel: false };
   return devParam('poolCrash', search)?.trim().toLowerCase() === 'off' ? { sweptCrash: false } : {};
+}
+
+/**
+ * The surfable tube's dev switches (`SurfZoneConfig.tubeFace`, `.tubeFrom`, `.tubeLag`, `.tubeClock`; pool-tube-face,
+ * 2026-11-03, the water-physics advisor's step 3 ruling): `?tubeFace=old`, the support the loft's floor wherever it is;
+ * `?tubeFrom=piece`, the fitted piece (the crest anchor, the forward rest, zero lag, the 2× clock); both together, the
+ * build before; `?tubeLag=0`, the join at the white; `?tubeClock=old`, the 2× catch-up after the throw. Online rooms run
+ * the defaults.
+ */
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock'> {
+  const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
+  return {
+    ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
+    ...(value('tubeFrom') === 'piece' ? { tubeFrom: 'piece' as const } : {}),
+    ...(value('tubeLag') === '0' ? { tubeLag: 0 as const } : {}),
+    ...(value('tubeClock') === 'old' ? { tubeClock: 'old' as const } : {}),
+  };
 }
 
 /**
@@ -943,7 +965,9 @@ export class PhysicalMode {
       if (lipBackOld()) this.sweptBarrel.mesh.lipBack = 'old';
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
-    this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept);
+    // The surfable tube's (the advisor's step 3 ruling) drawn as the surf zone feels it, switches and all.
+    const face = this.swept && this.config.tubeShape !== 'bounded-C' ? tubeFaceOf(BARREL_SPOTS[config.spot]?.faceAnchor !== undefined, config) : undefined;
+    this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept, face);
     if (!this.spillingCurl) {
       this.spillingCurl = { mesh: new SpillingCurlMesh(water.materialUniforms), water };
       this.spillingCurl.mesh.rockBed = () => water.rockBed;

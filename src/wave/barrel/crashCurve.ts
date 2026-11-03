@@ -1,6 +1,7 @@
 import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
+import { FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, collapseFade, endBlendLength, endWeight } from './sweptLoft';
@@ -79,6 +80,8 @@ export interface JetMotion {
 export interface SliceClock {
   tau?: number;
   z?: number;
+  /** Under the face ruling, the point's smoothed shift (`prepareShifts`), m; absent or NaN: the crest anchor. */
+  shift?: number;
 }
 
 const LAST = PROFILE_POINTS - 1;
@@ -141,7 +144,19 @@ export class CrashCurve {
   private readonly ends = new Float64Array(2);
   private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
 
-  constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
+  /** The step 3 ruling's tube (`TubeFace`): the face anchor's arithmetic and the thrown ends' blend, as the loft's. */
+  private readonly face?: TubeFace;
+  private readonly faceAnchor?: FaceAnchor;
+  private faceRaw = new Float64Array(0);
+  private faceSigma = new Float64Array(0);
+  private readonly faceScratch = new Float64Array(3);
+  private readonly faceRay = { x: 0, z: 0 };
+
+  constructor(private readonly library: ProfileLibrary, private readonly slope: number, face?: TubeFace) {
+    if (face && library.options.geometry !== 'bounded-C') {
+      this.face = face;
+      if (face.anchor) this.faceAnchor = new FaceAnchor(library, slope);
+    }
     this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     for (const c of library.options.geometry === 'bounded-C' ? [] : library.cases) {
       const held = library.heldFrameOf(c);
@@ -186,11 +201,14 @@ export class CrashCurve {
     into.collapse = lookup.collapseSeconds;
     into.fade = collapseFade(tau, touchdown, lookup.collapseSeconds);
     into.weight = into.endWeight * into.fade;
-    // The anchor, as the loft places it: the crest point K = S − c n, at the point's z or the one asked.
+    // The anchor, as the loft places it: the crest point K = S − c n, at the point's z or the one asked; under the face
+    // ruling at the point's shift, K = S + (δ − c) n (`prepareShifts`).
     const z = clock.z ?? p.z;
     const crest = profile[2 * LANDMARK.crest];
-    const ax = p.x - crest * nx;
-    const az = z - crest * nz;
+    const shift = this.faceAnchor ? clock.shift ?? Number.NaN : Number.NaN;
+    const along0 = shift === shift ? shift - crest : -crest;
+    const ax = p.x + along0 * nx;
+    const az = z + along0 * nz;
     into.anchorX = ax;
     into.anchorZ = az;
     // The drawn tip and crest (lifted by the drawing's weight); the landing at the touchdown frame's own height (lifted by
@@ -298,8 +316,8 @@ export class CrashCurve {
       this.endB = b;
       this.endTauA = a.tau;
       this.endTauB = b.tau;
-      this.ends[0] = endBlendLength(this.library, this.slope, a.footHeight, a.footDepth, a.tau, this.endProfile);
-      this.ends[1] = endBlendLength(this.library, this.slope, b.footHeight, b.footDepth, b.tau, this.endProfile);
+      this.ends[0] = endBlendLength(this.library, this.slope, a.footHeight, a.footDepth, a.tau, this.endProfile, this.face?.thrownEnds);
+      this.ends[1] = endBlendLength(this.library, this.slope, b.footHeight, b.footDepth, b.tau, this.endProfile, this.face?.thrownEnds);
     }
     return this.ends;
   }
@@ -329,6 +347,30 @@ export class CrashCurve {
     into.x = this.raySample[0];
     into.z = this.raySample[1];
     return into;
+  }
+
+  /**
+   * Under the face ruling, the run's points' shifts (`FaceAnchor.shift`, the drawing's hold, each on its own ray), smoothed
+   * along σ as the loft's (`smoothShifts`), into `out[start, end)`; NaN everywhere without the face anchor.
+   */
+  prepareShifts(points: readonly FrontPoint[], start: number, end: number, heightAt: (x: number, z: number) => number, rays: CrestRayPlan | undefined, out: Float64Array): void {
+    if (!this.faceAnchor) {
+      out.fill(Number.NaN, start, end);
+      return;
+    }
+    const n = end - start;
+    if (this.faceRaw.length < n) {
+      this.faceRaw = new Float64Array(2 * n);
+      this.faceSigma = new Float64Array(2 * n);
+    }
+    for (let k = start; k < end; k += 1) {
+      const p = points[k];
+      const ray = this.ray(points, start, end, k, this.faceRay, rays);
+      this.faceSigma[k - start] = p.sigma;
+      this.faceRaw[k - start] = this.faceAnchor.shift(p.footHeight, p.footDepth, p.tau, 'drawing', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch);
+    }
+    smoothShifts(this.faceSigma, this.faceRaw, n, this.faceRaw.subarray(n, 2 * n));
+    for (let k = 0; k < n; k += 1) out[start + k] = this.faceRaw[n + k];
   }
 
   /** A point's touchdown and collapse times, s, without building its profile. */

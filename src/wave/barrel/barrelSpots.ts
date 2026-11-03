@@ -73,6 +73,13 @@ export interface BarrelSpot {
    * whose shore break past the reef's ends would join on the band and draw tubes from the reef's cases). None: anywhere.
    */
   frontAt?: (x: number, z: number) => boolean;
+  /**
+   * The surfable tube (the water-physics advisor's step 3 ruling, 2026-11-03; `TubeFace`, the config's switches): its
+   * cases stand on the solver's lower face, the support never under the solver's surface, slices from the cases' earliest
+   * frames on a join `lead(footHeight)` m deeper than the throw (`FrontOptions.lead`), the thrown clock capped. None: the
+   * fitted piece (every spot but the Wave Pool's straight Barrel).
+   */
+  faceAnchor?: { lead: (footHeight: number) => number };
 }
 
 /**
@@ -290,6 +297,21 @@ const POOL_ONSET: OnsetTables = {
  */
 export const POOL_FRONT_REACH = { from: 20, to: 100, behind: 30 } as const;
 
+/**
+ * The straight Barrel's lagged join (the advisor's step 3 ruling, 2026-11-03): Δd = |τ_e| C S_ray m deeper than the throw,
+ * so a slice starts at its case's earliest frame (τ_e = −3 √(h0/g): 1.69 s before the throw at 1.5 m, 1.91 s at 1.8 m)
+ * with its crest coming shoreward at C up the ray's slope: 0.45 m at the 1.5 m faces' foot crest (0.84 m on the knee)
+ * and 0.50 m at the 1.8 m faces' (1.08 m), linear between, clamped. Provisional.
+ */
+export const POOL_LEAD = { heights: [0.84, 1.08], depths: [0.45, 0.5] } as const;
+
+/** The straight Barrel's lagged join's depth past its throw for a crest of foot height `footHeight`, m (`POOL_LEAD`). */
+export function poolLead(footHeight: number): number {
+  const [low, high] = POOL_LEAD.heights;
+  const t = Math.min(1, Math.max(0, (footHeight - low) / (high - low)));
+  return POOL_LEAD.depths[0] + t * (POOL_LEAD.depths[1] - POOL_LEAD.depths[0]);
+}
+
 /** Whether a crest at (x, z) is on the Wave Pool's straight reef, as its front follows them (`POOL_FRONT_REACH`). */
 export function poolStraightFrontAt(x: number, z: number): boolean {
   const { s, n } = poolStraightFrame(x, z);
@@ -320,6 +342,6 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   // The Wave Pool's straight Barrel only (`sweptBarrelOn`): its 1.5 m case's 1:18.7 along the ray as the family's slope.
   pool: {
     slope: 1 / 18.7, footDepth: POOL_FOOT_DEPTH, onset: POOL_ONSET, frontFrom: 'fine',
-    front: { joinPast: 3 }, family: true, frontAt: poolStraightFrontAt,
+    front: { joinPast: 3 }, family: true, frontAt: poolStraightFrontAt, faceAnchor: { lead: poolLead },
   },
 };

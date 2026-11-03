@@ -6,10 +6,11 @@ import { geometricPaceActive } from './carrierSupport';
  * front and how far along it, its clock, its foot crest and depth (which size and scale its profile), its crest's z
  * where it crossed its throw depth (NaN until then), where its pace starts (PR 5), and, while it runs on that pace, the
  * pace along its column, m per second of its clock (NaN otherwise, and always without the crash): the contact's Ṡ (the
- * advisor, 2026-10-03).
+ * advisor, 2026-10-03). And how far a lagged join the solver never broke has retired, 0–1 (`FrontPoint.retire`; 0 for
+ * every other point): its slice fades out by as much.
  */
-export const FRONT_STRIDE = 9;
-export const FRONT_FIELD = { x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight: 5, footDepth: 6, throwZ: 7, pace: 8 } as const;
+export const FRONT_STRIDE = 10;
+export const FRONT_FIELD = { x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight: 5, footDepth: 6, throwZ: 7, pace: 8, retire: 9 } as const;
 /** Most front points a snapshot carries: about one per metre of breaking crest, several fronts across a 320 m window. */
 export const FRONT_CAPACITY = 2048;
 
@@ -58,6 +59,7 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
     out[o + FRONT_FIELD.throwZ] = p.throwZ ?? Number.NaN;
     if (p.carrierSupport) out[o + FRONT_FIELD.pace] = geometricPaceActive(p) ? p.jetPace! : Number.NaN;
     else out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
+    out[o + FRONT_FIELD.retire] = p.retire ?? 0;
     count += 1;
   }
   return count;

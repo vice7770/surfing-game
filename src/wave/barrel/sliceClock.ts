@@ -1,4 +1,4 @@
-import type { FrontPoint } from './BreakingFront';
+import { LEAD_RETIRE, type FrontPoint } from './BreakingFront';
 import { GRAVITY } from '../dispersion';
 
 /**
@@ -104,6 +104,11 @@ export interface OnsetTiming {
   throwDepth(footHeight: number): number;
   lagged: boolean;
   earliest: number;
+  /**
+   * The fastest a thrown point's clock catches up on its fit, × real time: 2 (the advisor's fifth ruling, 2026-10-22), or
+   * the step 3 ruling's 1.25 at the pool's straight Barrel (`TubeFace.clockRate`). Absent: 2.
+   */
+  thrownRate?: number;
 }
 
 /**
@@ -182,10 +187,18 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
   while (start < points.length) {
     let end = start + 1;
     while (end < points.length && points[end].front === points[start].front) end += 1;
+    const rate = timing.thrownRate ?? 2;
     for (let k = start; k < end; k += 1) {
       const point = points[k];
       const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
-      if (point.tau >= 0) point.tau = step > 0 ? Math.min(Math.max(shown, point.tau + step), point.tau + 2 * step) : Math.max(shown, point.tau);
+      if (point.unbroken) {
+        // A lagged join the solver hasn't broken yet (`FrontOptions.lead`) holds short of its throw, never running back;
+        // past its own foreseen throw by `LEAD_RETIRE.after` it retires over `LEAD_RETIRE.over`.
+        if (shown < point.tau) pauses += 1;
+        else point.tau = Math.min(shown, UNBROKEN_HOLD);
+        const late = time - ownThrow(point, time, timing) - LEAD_RETIRE.after;
+        if (late > 0) point.retire = Math.min(1, late / LEAD_RETIRE.over);
+      } else if (point.tau >= 0) point.tau = step > 0 ? Math.min(Math.max(shown, point.tau + step), point.tau + rate * step) : Math.max(shown, point.tau);
       else if (shown < point.tau) pauses += 1;
       else point.tau = shown >= 0 && step > 0 ? Math.min(shown, Math.max(0, point.tau + 2 * step)) : shown;
     }
@@ -201,12 +214,26 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
  */
 function throwTime(point: FrontPoint, time: number, timing: OnsetTiming): number {
   if (!timing.lagged) return Math.max(point.joined, point.broke);
+  // A lagged join not yet broken (`FrontOptions.lead`): its own crest's, the break still to come.
+  if (point.unbroken) return ownThrow(point, time, timing);
   if (point.thrown !== null) return Math.max(point.thrown, point.broke);
   const latest = time - timing.earliest;
   const come = point.depth - point.crestDepth;
   const foreseen = come > 0 ? point.joined + ((point.depth - point.throwDepth) * (time - point.joined)) / come : latest;
   return Math.max(Math.min(foreseen, latest), point.broke);
 }
+
+/** A point's own crest's throw, s: when it crossed its throw depth, or when it will at the pace it has come since it joined. */
+function ownThrow(point: FrontPoint, time: number, timing: OnsetTiming): number {
+  if (point.thrown !== null) return point.thrown;
+  const latest = time - timing.earliest;
+  const come = point.depth - point.crestDepth;
+  const foreseen = come > 0 ? point.joined + ((point.depth - point.throwDepth) * (time - point.joined)) / come : latest;
+  return Math.min(foreseen, latest);
+}
+
+/** Where a lagged join's clock holds while the solver hasn't broken it, s: just short of its throw. */
+const UNBROKEN_HOLD = -1e-3;
 
 /**
  * Point k's throw time from a biweight-weighted line through the throw times of points[start, end) near it: once its
