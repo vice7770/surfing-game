@@ -29,7 +29,7 @@ import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { BARREL_SPOTS, tubeFootMax } from './barrel/barrelSpots';
-import type { TubeShape } from './barrel/barrelLibrary';
+import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
@@ -286,6 +286,12 @@ export interface SurfZoneConfig {
    * always run the default.
    */
   tubeShape?: TubeShape;
+  /**
+   * The Wave Pool's straight Barrel's tube cases (`PoolTubeCase`): its own level-13 runs, the default, or 'a38', the
+   * Canyon's case it was drawn from before them (the `?poolTubeCase=a38` dev A/B). The page loads the cases and hands
+   * them to the surf zone, so both draw and feel the same. Online rooms always run the default.
+   */
+  poolTubeCase?: PoolTubeCase;
 }
 
 /**

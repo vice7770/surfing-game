@@ -85,9 +85,10 @@ describe.each(SPOTS)('the swept barrel at %s, switched on inside the test', (spo
   const barrel = BARREL_SPOTS[spot]!;
   const bytes = readBarrelCases(spot);
   const cases = bytes.map(decodeCase);
-  const library = libraryFromBytes(bytes);
+  // At a spot whose cases are one family (the Wave Pool) each takes the spot's slope, as the game loads them.
+  const library = libraryFromBytes(bytes, 'basilisk', spot);
   // A case in the middle of the spot's own slope's range, by its H0/h0.
-  const own = cases.filter((c) => Math.abs(c.slope - barrel.slope) <= 1e-6 * barrel.slope).sort((a, b) => a.nonlinearity - b.nonlinearity);
+  const own = library.cases.filter((c) => Math.abs(c.slope - barrel.slope) <= 1e-6 * barrel.slope).sort((a, b) => a.nonlinearity - b.nonlinearity);
   const middle = own[Math.floor(own.length / 2)];
   const footDepth = barrel.footDepth;
   const footHeight = middle.nonlinearity * footDepth;
@@ -144,6 +145,8 @@ describe.each(SPOTS)('the swept barrel at %s, switched on inside the test', (spo
     const config: SurfZoneConfig = {
       spot, seed: 1, significantHeight: 1, peakPeriod: 12, directionDegrees: 0, spreading: 24, tide: 0,
       componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+      // The Wave Pool's transect is its straight Barrel's (its Training floor never draws a tube).
+      ...(spot === 'pool' ? { poolWaves: 'barrel' as const } : {}),
     };
     expect(new SurfZoneSimulation({ ...config, sweptBarrel: true }, 'warm').front).toBeDefined();
     expect(new SurfZoneSimulation({ ...config, sweptBarrel: false }, 'warm').front).toBeUndefined();

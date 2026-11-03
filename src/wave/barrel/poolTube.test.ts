@@ -11,12 +11,15 @@ import { BARREL_SLOPE, SweptLoft, crestToTip } from './sweptLoft';
 
 /** The Wave Pool's straight Barrel's swept tube (pool-barrel-drawing, 2026-11-01). */
 describe('the Wave Pool’s straight Barrel tube', () => {
-  it('loads only its own list of cases, provisional until step 2’s land, and reads them as one family by A0', () => {
+  it('loads only its own two level-13 cases, or the a38 stand-in when asked, and reads them as one family by A0', () => {
     const entries = barrelCasesFor('pool');
     expect(entries.map((entry) => entry.id).sort()).toEqual([...POOL_TUBE_CASES].sort());
-    // The stand-in is the Canyon's a38 (provisional); the Canyon's own list is unchanged.
-    expect(POOL_TUBE_CASES).toEqual(['periodic-canyon23-a38-l13']);
+    expect(POOL_TUBE_CASES).toEqual(['periodic-pool-straight-small-l13', 'periodic-pool-straight-big-l13']);
+    expect(entries.every((entry) => entry.spot === 'pool')).toBe(true);
+    // `?poolTubeCase=a38`: the Canyon's a38, the stand-in before them; the Canyon's own list is unchanged.
+    expect(barrelCasesFor('pool', undefined, 'a38').map((entry) => entry.id)).toEqual(['periodic-canyon23-a38-l13']);
     expect(barrelCasesFor('canyon').map((entry) => entry.id)).toContain('periodic-canyon23-a38-l13');
+    expect(barrelCasesFor('canyon').some((entry) => entry.spot === 'pool')).toBe(false);
     const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
     // One family: every case takes the pool's slope, so a slice brackets them by its A0 alone.
     expect(new Set(library.cases.map((c) => c.slope))).toEqual(new Set([BARREL_SPOTS.pool!.slope]));
@@ -24,10 +27,13 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     // Their files keep their own slopes; the library without the spot does too.
     expect(readBarrelCases('pool').map((bytes) => decodeCase(bytes).slope)).toEqual(entries.map((entry) => entry.slope));
     expect(libraryFromBytes(readBarrelCases('pool')).cases.map((c) => c.slope)).toEqual(entries.map((entry) => entry.slope));
-    // One case: a slice's foot crest scales it by Froude (h0 = η_foot / its A0), as the Canyon's.
-    const blend = library.frameBlend({ slope: BARREL_SLOPE.pool!, footHeight: 0.84, footDepth: 4.4, seconds: 0 }, {} as never);
-    expect([blend.lower.id, blend.upper.id]).toEqual(['periodic-canyon23-a38-l13', 'periodic-canyon23-a38-l13']);
-    expect(blend.scale).toBeCloseTo(0.84 / library.cases[0].nonlinearity, 9);
+    // Between the two cases' A0 a slice blends them; under the smaller's (the game's own foot crests: 0.84 and 1.08 m on
+    // the knee) it takes that case alone, Froude-scaled by its foot crest (h0 = η_foot / its A0).
+    const between = library.frameBlend({ slope: BARREL_SLOPE.pool!, footHeight: 0.31 * 4.4, footDepth: 4.4, seconds: 0 }, {} as never);
+    expect([between.lower.id, between.upper.id]).toEqual(['periodic-pool-straight-small-l13', 'periodic-pool-straight-big-l13']);
+    const under = library.frameBlend({ slope: BARREL_SLOPE.pool!, footHeight: 0.84, footDepth: 4.4, seconds: 0 }, {} as never);
+    expect([under.lower.id, under.upper.id]).toEqual(['periodic-pool-straight-small-l13', 'periodic-pool-straight-small-l13']);
+    expect(under.scale).toBeCloseTo(0.84 / 0.2706, 3);
   });
 
   it('follows crests on its reef’s plunging section only: from s 20 to 100 along it and no further inside than 30 m behind its crest line', () => {
@@ -52,7 +58,7 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     expect(POOL_FRONT_REACH).toEqual({ from: 20, to: 100, behind: 30 });
   });
 
-  it('sizes its crests on the face’s knee, reads them over 3.86–3.21 m and throws them where they join (zero lag)', () => {
+  it('sizes its crests on the face’s knee, reads them over 3.86–3.21 m and throws them on the runs’ line, here where they join', () => {
     const pool = BARREL_SPOTS.pool!;
     expect(pool.footDepth).toBe(POOL_FOOT_DEPTH);
     expect(POOL_FOOT_DEPTH).toBeLessThan(POOL_STRAIGHT.platformDepth);
@@ -63,7 +69,13 @@ describe('the Wave Pool’s straight Barrel tube', () => {
     const timing = onsetTiming(pool.footDepth, 10, true, pool.onset);
     expect(timing.band[0]).toBeCloseTo(3.857, 3);
     expect(timing.band[1]).toBeCloseTo(3.214, 3);
-    for (const height of [0.8, 1.1, 1.4, 1.8]) expect(timing.throwDepth(height)).toBe(Infinity);
+    // The line through the two runs' vertical depths (2.19 m at a 1.22 m foot crest, 2.54 at 1.60), clamped to them.
+    expect(timing.throwDepth(1.2175797780000002)).toBeCloseTo(2.1865, 4);
+    expect(timing.throwDepth(1.5961954500000002)).toBeCloseTo(2.5440, 4);
+    expect(timing.throwDepth(0.84)).toBeCloseTo(2.1865, 4);
+    expect(timing.throwDepth(2.5)).toBeCloseTo(2.5440, 4);
+    // Deeper than every join row: the lip throws where the crest joins.
+    for (const [, depth] of pool.onset.join[0].rows) expect(depth).toBeLessThan(timing.throwDepth(0.84));
     // Its join deepens with the band crest, never extrapolated.
     const rows = pool.onset.join[0].rows;
     for (let k = 1; k < rows.length; k += 1) expect(rows[k][1]).toBeGreaterThanOrEqual(rows[k - 1][1]);
