@@ -38,11 +38,11 @@ The swept tube's piece replaces the water under the board, and its face lies far
 - **Where the board stands:** wherever the piece's loft is, the board's support is the loft's lowest crossing, not the
   solver's surface.
 - **The piece's shape:** it hangs from the solver's crest and draws the Basilisk wave's own face, near vertical and only
-  1.3–2.5 m from crest to toe. Past the toe it holds the case's trough level for another 2–3.4 m before easing onto the
+  1.3–2.0 m from crest to toe in the open tube. Past the toe it holds the case's trough level for another 2–3.4 m before easing onto the
   water.
 - **The solver's shape:** its face is 6–10 m wide and never steeper than about 24°.
 - **The result:** from the moment a column joins the front (the lip throws at the join, so there are no gentler pre-throw
-  frames) until its tube has collapsed, the support under the solver's face lies 0.4–1.1 m (0.3–0.65 H) lower. A board on
+  frames) until its tube has collapsed, the support under the solver's face lies 0.3–1.1 m (0.25–0.65 H_s) lower. A board on
   the face is in open air over the piece, not under its lip, and falls into that wedge. The piece's own lip and void sit
   inside the solver's water.
 
@@ -73,16 +73,16 @@ run), in the open tube (life 0.5–0.8) unless said. d is the support minus the 
 | Its span in the solver's time | 0.57 s | 0.67 s | 0.40 s | 0.43 s |
 
 - **Every bin is a hole.** d is just as negative after the throw (life 0–0.25: −0.48 m at mid-face at 1.5 m) and
-  through the collapse (−0.48 m). The support rejoins the solver only at the trough (0.1 of the face: −0.01 to −0.1 m)
-  and past the forward rest.
-- **Under the crest (0.9 of the face),** 10–25 % of the reads lie in the piece's water instead: its crest stands 0.1–0.3 m
+  through the collapse (−0.48 m). The support comes back near the solver only at the trough (0.1 of the face: 0 to
+  −0.24 m) and past the forward rest.
+- **Under the crest (0.9 of the face),** 12–24 % of the reads lie in the piece's water instead: its crest stands 0.1–0.3 m
   over the solver's. Only 0–8 % of reads anywhere are under the piece's roof.
 
 ### 5. The mismatch
 
 | | pool cases, 1.5 m | pool cases, 1.8 m | a38, 1.5 m | a38, 1.8 m |
 | --- | --- | --- | --- | --- |
-| Solver: face width crest to trough; steepest slope | 9.9 m; 0.43 (23°) | 10 m; 0.42 (23°) | 8.5 m; 0.44 (24°) | 10 m; 0.45 (24°) |
+| Solver: face width crest to trough (read to 10 m at most); steepest slope | 9.9 m; 0.43 (23°) | 10 m; 0.42 (23°) | 8.5 m; 0.44 (24°) | 10 m; 0.45 (24°) |
 | Piece: toe from its crest; steepest slope | 1.56 m; 4.5 (77°) | 2.03 m; 6.1 (81°) | 1.30 m; 6.8 (82°) | 1.68 m; 8.8 (84°) |
 | Mid-face offset, the piece's face behind the solver's | 1.81 m | 2.12 m | 2.06 m | 2.37 m |
 | Crests: the solver's from the drawn, along the ray; the drawn's height over it | −0.1 m; +0.07 m | −0.1 m; +0.20 m | −0.2 m; +0.15 m | −0.2 m; +0.22 m |
@@ -94,7 +94,7 @@ run), in the open tube (life 0.5–0.8) unless said. d is the support minus the 
 | The drawn clock in a column, s of τ a second | 2.03 (4-period run) | — | 1.96 | 1.76 |
 
 - **Heights and levels agree; the horizontal shape doesn't.** The drawn crest, height and trough are within 0.0–0.3 m of
-  the solver's (H +3 to +16 %). The piece is the solver's wave squeezed 4–6× toward its crest: a vertical wall where the
+  the solver's (H +3 to +16 %). The piece is the solver's wave squeezed 4–8× toward its crest: a vertical wall where the
   solver has a 23° slope, and a flat trough shelf where the solver still has the lower half of its face.
 - **The piece's hollow is where the solver has water.** The drawn tip curls down 0.2–0.6 m into the solver's water, and the
   void, 0.1–0.6 m tall, lies under the solver's surface: filled 1.5–10 times its own height over.
@@ -114,22 +114,22 @@ Placed at reef s 55 on the solver's face (0.3 and 0.6 of H_s), in trim:
 - placed as the column's slice reaches life 0.3 (in the open tube), on the game's water (with the contact) and on the
   solver's alone (the A/B, on the same sea; the bodies' reactions not applied).
 
-The counts are of 16 placements at 1.5 m and 24 at 1.8 m, except the lone board's (8 and 12).
+The counts are of 16 placements at 1.5 m and 24 at 1.8 m (8 or 12 waves, two face heights).
 
 | In the open tube | pool cases, 1.5 m | pool cases, 1.8 m | a38, 1.5 m | a38, 1.8 m |
 | --- | --- | --- | --- | --- |
 | Lone board: dropped > 0.1 m under the face, game / solver | 12 of 16 / 0 | 24 of 24 / 0 | 8 of 16 / 0 | 22 of 24 / 0 |
-| ...first drop after; by (p50) | 0.15 s; 0.55 m | 0.15 s; 0.74–0.84 m | 0.5–1.0 s; 0.3–0.5 m | 0.5–0.7 s; 0.5–0.8 m |
+| ...first drop after; by (p50) | 0.15 s; 0.52–0.57 m | 0.15 s; 0.74–0.84 m | 0.5–1.0 s; 0.3–0.5 m | 0.5–0.7 s; 0.5–0.8 m |
 | Prone rider still on at 3 s, game / solver | 4 / 15 | 3 / 24 | 7 / 15 | 3 / 24 |
 | ...of the game's falls, after the board dropped | 10 of 12 | 21 of 21 | 5 of 9 | 11 of 21 |
 | Standing rider: fell at (p50), game / solver | 0.38 / 0.55 s | 0.45 / 0.43 s | 0.29 / 0.55 s | 0.32 / 0.47 s |
 | ...dropped before falling, game | 13 of 16 | 24 of 24 | 4 of 16 | 12 of 24 |
-| The lip in a rider's part before the fall | 1 | 0 | 1 | 0 |
+| The lip in a rider's part before the fall | 1 | 0 | 2 | 0 |
 
 - **It falls.** On the solver's water no lone board drops and almost every prone rider is still on after 3 s. On the
   game's water the board drops 0.3–0.8 m within 0.15 s at the pool's cases: a free fall (½ g t² is 0.11 m at 0.15 s).
   Most riders come off right after the drop, with `lost board` (the flight limit), `impact` or `foot slip`.
-- **It isn't crashed.** The lip reached a rider's part before the fall in 2 of 160 placements in the tube. Riders are
+- **It isn't crashed.** The lip reached a rider's part before the fall in 3 of 160 placements in the tube. Riders are
   seldom under the roof (`covered`) at all.
 - **Placed ahead of the curl,** 0.3 s down the line and moving with it, bodies stay ahead and seldom drop: prone riders
   stay on 15–24 of 16–24 on both waters. At the join, the drops come later and fewer (3–7 of 8–12 boards).
@@ -195,14 +195,14 @@ The facts each option in the plan's direction hinges on:
      face to H_s 1.08 m.
 3. **"The M4 cases add detail only."**
    - The cases' scale is right in height (drawn H within +3 to +16 % of the solver's, troughs within 0.03 m).
-   - Their horizontal shape is 4–6× narrower than the solver's wave (toe 1.3–2.0 m from the crest against a 6–10 m
+   - Their horizontal shape is 4–8× narrower than the solver's wave (toe 1.3–2.0 m from the crest against a 6–10 m
      face). Their lip and void hang 0.2–0.6 m inside the solver's water.
-   - Their hollow (0.1–0.3 m for the pool's cases, 0.5–0.6 m for a38) is smaller than the solver's water over it. Decide
+   - Their hollow (0.1–0.3 m for the pool's cases, 0.5–0.65 m for a38) is smaller than the solver's water over it. Decide
      what of a case can be carried onto a face this broad (lip thickness, tip, curl), and in what frame (from the
      crest, from the face, scaled by H or by the face's width).
 4. **"The lip's contact is an impact."**
-   - Today the lip seldom touches a rider: 2 of 160 placements in the tube, against 60–90 % falling into the hole
-     first.
+   - Today the lip seldom touches a rider: 3 of 160 placements in the tube. Of the falls, 66 % of the standing riders'
+     and 75 % of the prone riders' came after the board dropped into the hole.
    - The drawn clock runs at about 2× (1.76–2.03 s of τ a second, its catch-up cap), so the lip's flight plays in about
      0.6–0.7 s instead of 1.24–1.40 s. Inferred: the drawn lip falls at about 4 g.
    - Decide whether the impact keys on the drawn lip's place and time, or on the solver's crest and its jets, and
