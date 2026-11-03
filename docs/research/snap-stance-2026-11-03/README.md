@@ -4,26 +4,30 @@ Branch `claude/snap-stance` (from `origin/claude/playtest-1103b`: main 632f3f13 
 
 ## Where it stands
 
-- **Research:** done (below, with links).
-- **Design and the plant:** measured on still water and the 15° plane face (below). The physics is in `src/physics/AttachedRider.ts` (`snap`, the SNAP_* constants). It does nothing while Snap is not held.
-- **Build:** in progress. Next is the input (Q, RB, R3 for the camera, the pad layout 4 migration), the session, `?snap=off`, the drawing, the help line and the tests.
+- **Built** on `claude/snap-stance` (no PR; the owner merges):
+  - **The physics** (`src/physics/AttachedRider.ts`: `snap`, SNAP_PRESSURE, SNAP_FREEDOM, SNAP_DEPTH, SNAP_RADIUS, the twist toward the steer). It does nothing unless Snap is held: a scripted ride reproduces the pre-snap code bit for bit (`snapStance.test.ts`).
+  - **The input:** Q and RB, held, standing only; the camera moved from RB to R3; pad layout 4 with its migration (`Bindings.ts`, `Settings.ts`, `Controls.ts`); a touch button beside Compress (`index.html`, `App.ts`).
+  - **The session and the switch:** `RideInput.snap`; `?snap=off` (`SurfZoneConfig.snap` → `RideSessionOptions.snap`); online rooms pin to the default (`main.ts`). The pocket reflex stands aside while Snap is held.
+  - **The UI:** the Controls help line, a Practice hint after Compress's (`hints.ts`), the HUD's stance readout ("Snap", the weight dot on the tail).
+  - **Drawn and online:** no new drawing; the drawn body reads the physics (below). No wire change.
+  - **Dev:** the character sheet's `?motion=snap` and `?motion=snap-backside` films (flat water, 8 m/s, Snap 0.6 s).
+- **Measured** (section 4): peaks of 192–324°/s; 150° at 1.07 s off the climb; the speed drops; the fins let go when held on; the pinned turns still fail (section 5).
+- **Tests:** see section 6.
 
 ## Next steps
 
-1. The input: `Bindings.ts` (`snap`, Q / RB; camera to R3), `Settings.ts` (`padLayout` 4 and its migration), `Controls.ts` (the axis and a touch button), `RideInput.snap`, and the pocket reflex standing aside.
-2. `?snap=off` (`SurfZoneConfig.snap` → `RideSessionOptions.snap`); online rooms pin to the default.
-3. The drawn body and online: the snap reads from the physics' points (the pelvis low and over the back foot) and the yaw rate, so remote surfers show it with no wire change. Check the stages it blends (`stageBlend.ts`: redirect, cutback).
-4. The spray: the existing board spray reads the hull's drift. Measure the sheets in a snap against a carve.
-5. Help line (`strings.ts`), a Practice hint (`hints.ts`), the HUD's stance readout.
-6. Tests: the bindings migration, the precedence, `?snap=off`, byte identity; the measurement tables below, as a lab section.
-7. The full suites (`--maxWorkers=3`).
+1. The owner's ride (the shot list, section 7).
+2. If the snap's spray needs a bigger fan than the existing board spray throws, that is a shape change for the water-physics advisor (section 4, the spray).
+3. Open physics (the owner's call): the deep U's root (a bottom turn carried up into the snap still falls), the lean-in's first 0.3 s, and the static face giving nothing back.
 
 ## How to verify
 
 - `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`.
 - `npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`.
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts --maxWorkers=3 -t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`.
-- The probes in `probes/` measure the tables: copy `snapLab.ts` to `src/physics/zz-snapLab.ts` and a `zz-*.test.ts` beside it, run it with `OUT=<file.json>`, then `python3 probes/show.py <file.json>`. Delete the copies afterwards (they are not part of the suite).
+- Snap's own tests: `npx vitest run src/physics/snapStance.test.ts` (byte identity, `?snap=off`, precedence, the physics, and the pinned turns with Snap).
+- The probes in `probes/` measure the tables: copy `snapLab.ts` to `src/physics/zz-snapLab.ts` and a `zz-*.test.ts` beside it, run it with `OUT=<file.json>`, then `python3 probes/show.py <file.json>`. Delete the copies afterwards (they are not part of the suite). `report.json` and `report-order.json` are section 4's raw rows.
+- The byte-identity hash (`BEFORE_SNAP` in `snapStance.test.ts`) was measured by swapping in 4eee1e5f's `AttachedRider.ts` and `RideSession.ts`.
 
 ---
 
@@ -141,3 +145,93 @@ The probes (`probes/`): a standing rider (`AttachedRider` on `BoardBody`), full 
 ### Straight on flat water, Snap held, no steer
 
 From 7 m/s the board trims from 4° to 15–20° nose up within 0.5 s and slows at 0.3–0.5 g (0.15–0.2 g in level trim), 7 → 4.8 m/s in 0.8 s; the pressure settles at 0.25–0.3 on the front foot with the balance at its reach. The front foot is loaded for the first 0.15 s (0.88): moving the body back pushes the feet forward first.
+
+---
+
+## 4. Measured (headless, the probes; Snap held 0.6 s and let go, the steer held on)
+
+Times are from the steer. "Kept" is the speed over the speed at the steer. Still water and the 15° plane face give nothing back: on a wave the face's gravity and the water's own motion feed the climb.
+
+### Against the targets
+
+| | Target | Snap | The steer alone | Full S (today's weight back) |
+|---|---|---|---|---|
+| Peak yaw rate, the climb 150° at 6.7 / 8 m/s | 200–300°/s (US 9697743; Forsyth's 3.0 rad/s is a mean) | **295 / 324°/s** | 174 / 133 | 345 / 199 |
+| Peak yaw rate, flat water at 7 / 9 m/s | | 192 / 154°/s | 115 / 98 | — |
+| Heading, the climb at 6.7 m/s | 150–180° in well under 1 s (Forsyth: 152° in 0.96 s) | **80° at 0.8 s, 136° at 1.0 s, 150° at 1.07 s** | 36°, 44°, never | 60°, 109°, 1.15 s |
+| Heading, the climb at 8 m/s | | 94° at 0.8 s, 124° at 1.0 s (120° at 0.98 s) | 34°, 50° | 64°, 82° |
+| Heading, flat water at 7 m/s | | 65° at 0.8 s; let go, the fins grip and the heading comes back 55° to the path | 27° | — |
+| Speed kept at 0.8 s, flat water 7 / 9 m/s | drops (no published snap number; Forsyth's wave-fed turn flow 0.92 bounds it) | **0.55 / 0.74** | 0.89 / 0.91 (Compress: 1.00 / 0.98, its carry) | — |
+| Speed kept, the climb at 6.7 m/s | | 0.67 at 0.8 s, 0.08 at the apex | 0.58, 0.20 | 0.68, 0.06 |
+| The fins let go | when pushed too hard | held on (flat 7 m/s): the centre fin's attack to 90°, the board sliding 106° off its path; let go at 0.6 s: 49°, 51° | 3°, 7° | — |
+| Stays on, let go in time | yes | the climb at 6.7: on; flat 7 and 9: on; the climb at 8: falls at 1.15 s | on | on |
+| Stays on, held on | the physics decides | the climbs: falls at 1.27–1.28 s (stalled, sliding); flat: on, sliding | — | — |
+
+- **The rates meet the target, and the turn off the climb comes within about 0.1 s of Forsyth's** (150° at 1.07 s against 152° in 0.96 s). Its first 0.3 s still turn the wrong way (8–12°): the body leans in first (the balance's 0.49 s time constant, the don't-retry wall).
+- **The speed drops:** on still water at 7 m/s it costs about 1.7 times a carve's speed per degree turned (0.45 of the speed for 65° against 0.11 for 27°), where Compress, fed by its gameplay carry, keeps all of it.
+- **Off the climb the snap keeps more speed at 0.8 s than the steer alone,** because it turns back down sooner; then it stalls at the apex (the static face). On a wave the face feeds it.
+- **Held on, the fins let go** past their 18° stall and the board slides (drift to 106–179°), and on a climb the rider falls about 1.3 s in. Nothing scripts it.
+
+### The cutback (80° across the 15° face)
+
+| | 7 m/s | 9 m/s |
+|---|---|---|
+| The steer alone | −42° by 1 s, falls 1.30 s | −40°, falls 1.38 s |
+| Snap from the steer | −52°, peak 206°/s, falls 1.53 s | −27°, falls 1.75 s |
+| A carve 0.4 s, then Snap 0.6 s | **−93° by 1 s, −145° at the end, peak 255°/s**, falls 1.25 s | −76°, peak 178°/s, falls 1.77 s |
+| Snap held | −67°, falls 1.58 s | −39°, falls 1.72 s |
+
+Every cutback on the static face falls (the pinned cutback's root: the board, climbing a face that gives nothing back, slows off the plane). Snap taken in the carve turns it about twice as far by 1 s before the fall.
+
+### In surfing order (a compressed bottom turn from 90° across to 120° from the fall line, then the turn back)
+
+| | 8 m/s | 9 m/s | 10 m/s |
+|---|---|---|---|
+| The bottom turn | 0.62 s, 127°/s peak, kept 0.91 | 0.68 s, 125°/s, 0.88 | 0.73 s, 137°/s, 0.87 |
+| Steer back | −24° (carried on), falls 0.83 s | −32°, 0.83 s | −31°, 0.97 s |
+| Snap 0.6 s with the steer back | −43°, falls 0.95 s | **+30°**, back to 91° from the fall line, falls 1.17 s | **+32°**, 88°, falls 1.45 s |
+| A neutral 0.3 s, then Snap | −44°, 0.87 s | −63°, 0.90 s | −82°, 1.18 s |
+| Snap, the steer 0.2 s after it | −96°, 1.02 s | −32°, 1.07 s | **+102°, back to 18°**, falls 1.97 s |
+
+- **The deep U's root holds:** the body still leans into the bottom turn, and Snap pivots the board on the rail it is on, the old one. At 9–10 m/s Snap reverses the carry-on (the board turns back the new way), but the rider still falls 1.2–2 s later.
+
+### The spray (the existing board spray, `boardSpray.ts`, fed by the hull's drift)
+
+| | Peak flux | Mean flux | The sheet's fastest rise |
+|---|---:|---:|---:|
+| Flat 7 m/s: carve / Snap 0.6 s | 93 / 75 | 48 / 33 | 3.0 / **4.6 m/s** |
+| Flat 9 m/s: carve / Snap 0.6 s | 126 / 124 | 69 / 43 | 3.3 / **5.6 m/s** |
+| The climb at 8 m/s: steer / Snap 0.6 s | 22 / 40 | 10 / 9 | 3.3 / 3.6 m/s |
+
+The spray answers the snap with no new code: the drift turns the trim into the tail's jet, which leaves 50–70 % faster upward. It throws less water than a fast carve because the board slows. A bigger fan off the tail would be a shape change: the advisor's call, noted for the owner.
+
+### The drawn body (`stageBlend.ts`, read from the physics' points and motion, so online alike)
+
+Read from a snap climbing the 15° face (the probe `zz-snapDrawn.test.ts`), frontside and backside alike: the weight on the back foot (`back` 1.0 from 0.2 s into the snap), the redirect pose in full by 0.3 s, the low pelvis (`depth` 0.2), and, climbing nose-up and slowing, the kick-out's pose (front leg long, back knee bent, arms out). On flat water (the sheet's films) the kick-out's pose stays out: it needs the climb. The shoulders turn with the twist (the local surfer's `twist`); another player's surfer turns its chest with the yaw rate (the twist is not on the wire). No wire change: older clients draw a snapping surfer from the points as they draw any other.
+
+## 5. The pinned `it.fails`
+
+| Pin | Today | With Snap |
+|---|---|---|
+| The snap (the climb, 150° in 1 s) | 61° by 0.8 s with full S | **136° at 1 s, 150° at 1.07 s**: short by 0.07 s (`snapStance.test.ts`, pinned) |
+| The cutback (80°, 9 m/s, 150° in 2 s, on) | 74°, falls | −76° (a carve then Snap), falls 1.77 s (pinned) |
+| A bottom turn carried into a top turn | falls 0.8–1 s | turns back at 9–10 m/s but falls 1.2–2 s later (pinned) |
+| The hard turn (60° in 1.2 s keeping 0.7) | 52° | not Snap's: it sheds speed by design |
+| Compress mid-turn at 11 m/s | unchanged | unchanged |
+
+None turns into a pass. The two roots are unchanged: the balance's lean-in (0.3 s the wrong way) and a face that gives nothing back.
+
+## 6. Tests
+
+(Filled in at the end of the build.)
+
+## 7. The owner's shot list
+
+1. **The Wave Pool, the Training wave, the chase camera, a right (frontside for a regular foot).** Drop crouched (Shift), Compress (Space / RT) and lean at the base for the bottom turn, let go climbing, and at the top hold **Q (RB)** with a **full steer** back down for about half a second, then let go. *Feel and see:* the hips drop over the back foot, the back knee bends, the nose lifts and the board pivots on its tail (a fast heading change, 200–300°/s at its peak), the speed falls away, a sheet of spray leaves the tail higher than a carve's, and the shoulders turn first. Let go, the fins grip again and the board comes down the face.
+2. **The same, holding Q too long at the lip.** *See:* the tail slides out (the fins let go), the board stalls nose-up, and you fall about 1.3 s in.
+3. **The same, Q without steering.** *See:* the board sits back on its tail and slows (a kick-out-like stall).
+4. **The Canyon (a beach peak), the same sequence, frontside and backside.** Then a **cutback** from the shoulder: carve back toward the curl and take Q in the carve. *Feel:* the cutback tightens and slows.
+5. **The A/B:** the same rides with **`?snap=off`** in the address bar: Q and RB do nothing, and every ride is as before.
+6. **The camera** is on **R3** (the right-stick click) now; RB is Snap. A saved pad layout moves itself once.
+7. **Touch:** the Snap button beside Compress, standing.
+
