@@ -1,6 +1,6 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { AttachedRider } from './AttachedRider';
+import { AttachedRider, CROUCH_DEPTH } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { FIN_STALL } from './finForces';
 import { PlaneWater } from './PlaneWater';
@@ -189,9 +189,10 @@ describe('the snap stance', () => {
       const snap = run({ snap: 1 });
       const all = run({ snap: 1, compress: 1, crouch: 1, trim: 1 });
       const compress = run({ compress: 1, crouch: 0.6 });
-      // Snap's legs (half Compress's depth), not Compress's; and no gameplay pull.
+      // Snap's legs, loaded as deep as Compress's (round 2: the owner's "load itself ready for the movement"); and no
+      // gameplay pull.
       expect(all.rest).toBeCloseTo(snap.rest, 6);
-      expect(compress.rest).toBeLessThan(snap.rest - 0.1);
+      expect(snap.rest).toBeLessThan(-0.95 * CROUCH_DEPTH);
       expect(all.pull).toBe(0);
       expect(compress.pull).toBeGreaterThan(0);
       // The weight on the tail whatever the trim; the shoulders turned toward the steer.
@@ -226,14 +227,30 @@ describe('the snap stance', () => {
     });
 
     // The snap's start (the pinned snap's climb, 150° from the fall line at 6.7 m/s) held 0.6 s and let go: the board
-    // pivots on its tail faster than the steer alone turns it (measured 295°/s against 174°/s; 82° by 0.8 s against 38°).
-    // Turned back down sooner, it climbs less, so here it keeps more speed at 0.8 s than the carve climbing on.
-    it('pivots faster than the steer alone off a climb, and the rider stays on when let go in time', () => {
+    // pivots on its tail faster than the steer alone turns it (measured 283°/s against 174°/s; 127° by 1 s against 44°).
+    // The static face gives the climb nothing back: the board stops dead at the apex (0.09 of its speed) and the rider
+    // falls 0.8 s after letting go (1.37 s), as the pinned snap's does.
+    it('pivots faster than the steer alone off a climb', () => {
       const steer = snapTurn(acrossFace(150, 6.7), { snap: false, hold: 0 });
       const snap = snapTurn(acrossFace(150, 6.7), { snap: true, hold: 0.6 });
       expect(snap.peak).toBeGreaterThan(200);
       expect(snap.peak).toBeGreaterThan(steer.peak + 50);
-      expect(snap.turned[snap.at(0.8)]).toBeGreaterThan(steer.turned[steer.at(0.8)] + 20);
+      expect(snap.turned[snap.at(1)]).toBeGreaterThan(steer.turned[steer.at(1)] + 50);
+    });
+
+    // A bottom turn in the trough (still water, 7 and 9 m/s): Snap held 0.6 s and let go turns sharper than the steer
+    // alone and than Compress, sheds speed, and the rider stays on.
+    it.each([7, 9])('turns sharper than the steer alone and Compress at %i m/s, and stays on when let go in time', (speed) => {
+      const steer = snapTurn(flat(speed), { snap: false, hold: 0 });
+      const snap = snapTurn(flat(speed), { snap: true, hold: 0.6 });
+      const compressed = flat(speed);
+      Object.assign(compressed.rider, { compress: 1, crouch: 0.6 });
+      const compress = snapTurn(compressed, { snap: false, hold: 0 });
+      const at = snap.at(0.8);
+      expect(snap.turned[at]).toBeGreaterThan(steer.turned[at] + 15);
+      expect(snap.turned[at]).toBeGreaterThan(compress.turned[at] + 5);
+      expect(snap.peak).toBeGreaterThan(Math.max(steer.peak, compress.peak) + 30);
+      expect(snap.speeds[at]).toBeLessThan(compress.speeds[at] - 1);
       expect(snap.fell).toBeNaN();
     });
 

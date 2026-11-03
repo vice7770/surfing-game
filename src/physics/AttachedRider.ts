@@ -658,11 +658,14 @@ const TRIM_SHIFT = 0.25;
  *   leans back as full S does (TRIM_SHIFT). The hull trims nose up until its lift sits under the load (the
  *   Exploratorium's surfing physics; Savitsky 1964): the wetted length shortens into the rockered tail, the nose leaves
  *   the water, the yaw it resisted goes, and the trim's drag slows the board.
- * - **The back knee deep:** the legs come down SNAP_DEPTH of CROUCH_DEPTH (0.15 m): the back knee bent about 90°, the
- *   front leg long (about 30°), the hips over the back foot (the kick-out's and the top turn's sourced knees, the
- *   animation-realism plan §5.11, §5.15), which lowers the load the board's braking tips forward.
- * - **The shoulders turning first:** the upper body's twist (TWIST_RANGE, through the feet's grip) toward the steer
- *   (Rapture: the head and shoulders rotate first; de Sousa 2022: the trunk rotates, the chest to the lip).
+ * - **The body loaded:** the legs come down SNAP_DEPTH of CROUCH_DEPTH (0.3 m, Compress's depth) as fast as Compress
+ *   takes them (no slower than the load falls, the legs only pushing), and let go they extend as Compress's do (the
+ *   projection). With the hips over the back foot the back knee closes past 90° and the front leg stays long (the
+ *   kick-out's and the top turn's sourced knees, the animation-realism plan §5.11, §5.15; round 2: the owner's "the
+ *   rider should load itself ready for the movement like the other stances", where 0.15 m read as standing).
+ * - **The shoulders turning first:** the upper body's twist (TWIST_RANGE, through the feet's grip) wound at once toward
+ *   where the turn ends (`snapAim`) and unwound as the board comes round under it (Rapture: the head and shoulders
+ *   rotate first; de Sousa 2022: the trunk rotates, the chest to the lip).
  * - **The lean the turn can hold:** the rider leans for a turn of SNAP_RADIUS, m, in place of TURN_RADIUS: the tail's
  *   rocker carves tighter than the whole rail, and real cutbacks and top turns run on a 2.2 m radius (Forsyth et al.
  *   2024).
@@ -671,7 +674,9 @@ const TRIM_SHIFT = 0.25;
  */
 const SNAP_PRESSURE = 0.7;
 const SNAP_FREEDOM = 0.05;
-const SNAP_DEPTH = 0.5;
+const SNAP_DEPTH = 1;
+/** A face tilted less than this, its slope's sine, has no fall line for Snap's aim (flat water, a swell's back). */
+const SNAP_FACE = Math.sin((5 * Math.PI) / 180);
 const SNAP_RADIUS = 2.2;
 /**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
@@ -1066,6 +1071,10 @@ export class AttachedRider {
   compress = 0;
   /** Standing, Snap (the snap stance): 0 (none) to 1 (held): the weight on the tail, the back knee deep, the shoulders turning toward the steer; it wins over the crouch, Compress and the trim. */
   snap = 0;
+  /** Snap's aim, latched as it is taken: the side the turn goes (+1 the board's left), and where on the face it ends (level, unit; zero on flat water). */
+  private snapSide = 0;
+  private readonly snapTarget = new Vector3();
+  private snapHeld = false;
   /** Standing, the upper body's rotation asked for (`RideInput.rotate`), −1 to 1 toward the board's +x; NaN when none is (the body turns with the ride). */
   rotate = Number.NaN;
   /** Standing, the wave-side hand reaches for the water. */
@@ -2083,8 +2092,9 @@ export class AttachedRider {
    */
   private twistStep(h: number): void {
     const snap = this.snapping;
+    if (!(snap > 0)) this.snapHeld = false;
     const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE
-      : snap > 0 ? snap * Math.max(-1, Math.min(1, this.steer)) * TWIST_RANGE : 0;
+      : snap > 0 ? snap * this.snapAim() : 0;
     const most = Math.min(TWIST_TORQUE, FOOT_FRICTION * this.legLoad * TWIST_GRIP_RADIUS);
     const wanted = TWIST_INERTIA * (TWIST_FREQUENCY * TWIST_FREQUENCY * (asked - this.twist.angle) - 2 * TWIST_FREQUENCY * this.twist.rate);
     this.twistTorque = Math.max(-most, Math.min(most, wanted));
@@ -2094,6 +2104,36 @@ export class AttachedRider {
       this.twist.angle = Math.sign(this.twist.angle) * TWIST_RANGE;
       if (this.twist.rate * this.twist.angle > 0) this.twist.rate = 0;
     }
+  }
+
+  /**
+   * Snap's aim, rad: the shoulders wound toward where the turn ends. Taken with Snap (and again when the steer changes
+   * side), the turn goes the steer's way (or, unsteered, the way to the face's fall line reversed) and ends on the fall
+   * line reversed: straight up the face from below, straight down it from above (the owner's two moves, the video's).
+   * The shoulders lead the board by as much as the spine turns (TWIST_RANGE) and unwind as the board comes round under
+   * them, the hips taking it round through the feet. On flat water the turn has no end: they lead by the whole range.
+   */
+  private snapAim(): number {
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    const steer = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : 0;
+    if (!this.snapHeld || (steer !== 0 && steer !== this.snapSide)) {
+      const downhill = this.scratch2.set(this.waterUp.x, 0, this.waterUp.z);
+      const slope = downhill.length();
+      if (!this.snapHeld) this.snapTarget.set(0, 0, 0);
+      if (slope > SNAP_FACE && (!this.snapHeld || this.snapTarget.lengthSq() === 0)) {
+        downhill.divideScalar(slope);
+        // The fall line the other way to the board's.
+        this.snapTarget.copy(downhill).multiplyScalar(forward.dot(downhill) > 0 ? -1 : 1);
+      }
+      const across = forward.x * this.snapTarget.z - forward.z * this.snapTarget.x;
+      this.snapSide = steer !== 0 ? steer : this.snapTarget.lengthSq() > 0 ? (across < 0 ? 1 : -1) : 0;
+      this.snapHeld = true;
+    }
+    if (this.snapTarget.lengthSq() === 0) return this.snapSide * TWIST_RANGE;
+    // How far the target lies round the turn's way, 0 to 2π (the board's left, +, turns from +z toward +x).
+    const toward = Math.atan2(this.snapTarget.x, this.snapTarget.z) - Math.atan2(forward.x, forward.z);
+    const round = ((this.snapSide * toward) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    return this.snapSide * Math.min(TWIST_RANGE, round > 1.5 * Math.PI ? 0 : round);
   }
 
   /**
@@ -2167,7 +2207,7 @@ export class AttachedRider {
     const asked = -(snap > 0 ? Math.max(crouch, compress, snap * SNAP_DEPTH) : Math.max(crouch, compress)) * CROUCH_DEPTH;
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
-    if (compress > 0) this.fromCompress = true;
+    if (compress > 0 || snap > 0) this.fromCompress = true;
     else if (asked < 0) this.fromCompress = false;
     if (asked < 0 || !this.fromCompress || this.phase !== 'standing' || !this.planing) {
       this.tall = 0;
@@ -2183,7 +2223,8 @@ export class AttachedRider {
     if (this.tallReached) this.tall = Math.max(0, this.tall - h / EXTENSION_SETTLE);
     const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
-    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
+    // Snap loads as Compress does: down at least as fast as the load, the legs only pushing.
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * SNAP_DEPTH > crouch;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).

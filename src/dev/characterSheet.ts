@@ -323,12 +323,12 @@ const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
   tube: { ...STANCE_RECIPES['tube-frontside'], seconds: 1.8 },
   'tube-backside': { ...STANCE_RECIPES['tube-backside'], seconds: 1.6 },
   'kick-out': { ...STANCE_RECIPES['kick-out'], seconds: 1.3 },
-  // The snap stance (2026-11-03): on flat water at 8 m/s, Snap and a full steer onto the heels (frontside) or the toes
-  // (backside) held 0.6 s, then let go with the steer held: the weight on the tail, the back knee deep, the shoulders
-  // first, the board pivoting on its tail and slowing (`docs/research/snap-stance-2026-11-03/README.md`). Straight up the
-  // 15° face (the kick-out's water) the rider falls about 0.75 s into it: the plane face gives the climb nothing back.
-  snap: { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, steer: -1, snap: 1 }, { at: 0.9, steer: -1, snap: 0 }], seconds: 1.8 },
-  'snap-backside': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, steer: 1, snap: 1 }, { at: 0.9, steer: 1, snap: 0 }], seconds: 1.8 },
+  // The snap stance (2026-11-03; round 2): on flat water at 8 m/s, Snap taken alone (the body loads: the legs down, the
+  // hips over the back foot), then with a full steer onto the heels (frontside) or the toes (backside) (the shoulders
+  // wound toward the turn, the board coming round under them), let go at 1.2 s with the steer held
+  // (`docs/research/snap-stance-2026-11-03/README.md`).
+  snap: { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1 }, { at: 0.6, snap: 1, steer: -1 }, { at: 1.2, snap: 0, steer: -1 }], seconds: 2 },
+  'snap-backside': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1 }, { at: 0.6, snap: 1, steer: 1 }, { at: 1.2, snap: 0, steer: 1 }], seconds: 2 },
   // The animation-realism plan's phase 3: paddling from rest (a look-up every eight strokes); the catch down a 15° face
   // into the pop-up and the landing; sitting up after 2 s still (the scan's full cycle), then paddling off; and a ride
   // let go with Enter, lying back down (the prone kick-out).
