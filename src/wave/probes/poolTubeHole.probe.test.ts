@@ -636,6 +636,21 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
       (byKey.get(key) ?? byKey.set(key, []).get(key)!).push(r);
     }
     const firstReads = [...byKey.values()].map((list) => list.reduce((m, r) => (r.t < m.t ? r : m), list[0]));
+    // The drawn clock's rate in a column: τ's slope against the solver's time over each column-wave's reads (1: real time).
+    const rates: number[] = [];
+    for (const list of byKey.values()) {
+      if (list.length < 5) continue;
+      const mt = list.reduce((a, r) => a + r.t, 0) / list.length;
+      const mtau = list.reduce((a, r) => a + r.tau, 0) / list.length;
+      let num = 0;
+      let den = 0;
+      for (const r of list) {
+        num += (r.t - mt) * (r.tau - mtau);
+        den += (r.t - mt) ** 2;
+      }
+      if (den > 0) rates.push(num / den);
+    }
+    lines.push(`the drawn clock in a column runs ${q3(rates)} s of τ a second (p10 / p50 / p90 over the column-waves with 5 reads or more)`);
     lines.push(`column-waves ${byKey.size}, reads each ${q3([...byKey.values()].map((l) => l.length), 0)}; their first read at τ ${q3(firstReads.map((r) => r.tau))} s, d there at 0.3 / 0.5 / 0.7: ${[1, 2, 3].map((j) => fmt(quantile(firstReads.map((r) => r.d[j]), 0.5))).join(' / ')} m`);
     for (let j = 0; j < FACES.length; j += 1) {
       const depth: number[] = [];
