@@ -156,6 +156,46 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const log = process.env.LOG ?? `pool-tube-face-${caseName}-${height}.txt`;
     writeFileSync(log, '');
     const t0 = Date.now();
+    if (process.env.COST === '1') {
+      // Bar 12: the step, the contact's update and the drawing's build, the face build against the build before
+      // (`?tubeFace=old&tubeFrom=piece`), each sea spun up SETTLE s, then 600 steps of 1/60 s alternately in blocks of 25.
+      const lib = libraryFromBytes(caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool'), 'basilisk', 'pool');
+      const arms = (['face', 'before'] as const).map((arm) => {
+        const sim = new SurfZoneSimulation({
+          spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
+          tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(caseName === 'a38' ? { poolTubeCase: 'a38' } : {}),
+          ...(arm === 'before' ? { tubeFace: 'old', tubeFrom: 'piece' } : {}),
+        } as unknown as SurfZoneConfig, 'spun-up', lib);
+        const tubeFace = sim.tubeFace;
+        const contact = new SweptContact(lib, BARREL_SLOPE.pool!, tubeFace ? { face: tubeFace } : {});
+        const water = PhysicalSurfWater.forSimulation(sim, contact, 1);
+        const drawing = new SweptLoft(lib, BARREL_SLOPE.pool!, { holdClearDrawing: true, ...(tubeFace ? { face: tubeFace } : {}) });
+        const grid = sim.renderGrid(1);
+        return { arm, sim, contact, water, drawing, grid, surface: new Float32Array(grid.nx * grid.nz * 2), records: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE), step: [] as number[], update: [] as number[], draw: [] as number[] };
+      });
+      for (const a of arms) while (a.sim.solver.time < settle) a.sim.step(1 / 30);
+      for (let block = 0; block < 24; block += 1) {
+        for (const a of arms) {
+          for (let k = 0; k < 25; k += 1) {
+            let t = performance.now();
+            a.sim.step(1 / 60);
+            a.step.push(performance.now() - t);
+            const count = a.sim.writeTubeRecords(a.records);
+            t = performance.now();
+            a.water.withSurfaceNodeCache(() => a.contact.update(a.records, count, a.sim.solver.restLevel, (x, z) => a.water.plainSurfaceAt(x, z)));
+            a.update.push(performance.now() - t);
+            a.grid.xMin = a.sim.windowXMin;
+            a.sim.writeUniformSurface(a.surface, a.grid, false);
+            t = performance.now();
+            a.drawing.build(a.records, count, a.sim.solver.restLevel, (x, z) => sampleSurfaceHeight(a.surface, a.grid, x, z));
+            a.draw.push(performance.now() - t);
+          }
+        }
+      }
+      appendFileSync(log, `pool straight Barrel, H ${height} m, cases ${caseName}: the cost on this M1 (Node, shared load), p10 / p50 / p90 ms, 600 steps each after ${settle} s, alternating\n`
+        + arms.map((a) => `- ${a.arm}: the sea's step ${q3(a.step)}; the contact's update ${q3(a.update)}; the drawing's loft build ${q3(a.draw)}`).join('\n') + '\n');
+      return;
+    }
     const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool');
     const library = libraryFromBytes(bytes, 'basilisk', 'pool');
     const simulation = new SurfZoneSimulation({
