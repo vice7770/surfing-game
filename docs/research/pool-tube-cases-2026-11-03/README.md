@@ -137,9 +137,19 @@ Inferred from the runs and these measurements:
 5. **The 2D domain is flat to a closed wall behind the 0.9 m crest** (`slope.c`). The advisor's caveat: its backwash is
    stronger than the real lagoon's sideways drain, and may choke the cavity.
 
-## Stills
+## Stills (the water sheet, the straight Barrel's own CPU water, Rich; shot in a hidden pane)
 
-See `stills/`: ride-camera strips at Barrel 1.5 and 1.8 m on the real cases against `?poolTubeCase=a38` (when shot).
+- `pool-small-cases-ride-strip.jpg` and `pool-big-cases-ride-strip.jpg`: from the ride camera (`curl-ride`, 8 m down the
+  line, 3 m in front of the toe, 1.8 m up), held on the longest open curl (4.4 m at 1.5 m, 7.6 m at 1.8 m), six frames
+  0.25 s apart as the wave passes the fixed camera.
+  - **1.5 m:** a small, thick curl with a dark slit of a mouth.
+  - **1.8 m:** a long, thick lip throwing over the camera, its lit edge a white band, with a crumpled run toward the
+    curl's leading end.
+  - **Defects to look into:** thin dark seam lines along the face (both sizes), and at 1.8 m, at +1.0 s, a loose sliver of
+    lip left behind after the curl passed.
+- `pool-small-cases-views.jpg`, `pool-big-cases-views.jpg`: the ride, front, close and inside views at midday and sunset.
+- The stand-in's looks are step 3's stills (`docs/research/pool-barrel-drawing-2026-11-01/stills/pool-small-rich.jpg`);
+  the `?poolTubeCase=a38` A/B was not reshot on these seas.
 
 ## Tests
 
