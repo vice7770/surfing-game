@@ -13,7 +13,7 @@ describe('the front records the snapshot carries', () => {
     const out = new Float32Array(2 * FRONT_STRIDE);
     expect(writeFrontRecords([point(0, -151.5), point(1, null), point(2, null)], out)).toBe(2);
     expect(Array.from(out.subarray(0, FRONT_FIELD.pace))).toEqual([0.5, -150, 3, 0, 0, 1.600000023841858, 7, -151.5]);
-    expect(out[FRONT_FIELD.retire]).toBe(0);
+    expect(out[FRONT_FIELD.fade]).toBe(0);
     expect(out[FRONT_STRIDE + FRONT_FIELD.throwZ]).toBeNaN();
     expect(out[FRONT_STRIDE + FRONT_FIELD.tau]).toBeCloseTo(0.25, 6);
   });

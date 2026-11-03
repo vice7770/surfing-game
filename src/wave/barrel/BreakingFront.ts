@@ -213,6 +213,11 @@ export interface FrontPoint {
   unbroken?: true;
   /** With `FrontOptions.lead`: how far it has retired, 0–1, unbroken past its foreseen throw (`LEAD_RETIRE`); absent: none. */
   retire?: number;
+  /**
+   * With `OnsetTiming.formationRamp` (the lagged join's): how far its slice has formed since its join, 0–1 (`advanceClocks`;
+   * the advisor's step 3 fallback); absent: formed.
+   */
+  formation?: number;
 }
 
 export interface FrontState {

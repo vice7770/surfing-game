@@ -1134,8 +1134,8 @@ export class SweptLoft {
       const wEnd = endWeight(sigma, f.first, f.last, blendFirst, blendLast);
       // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
       // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
-      // Under the face ruling a lagged join the solver never broke fades out as it retires (`FrontPoint.retire`).
-      const w = wEnd * wFade * wFormation * (this.face ? 1 - this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.retire]) : 1);
+      // Under the face ruling a lagged join's slice fades in as it forms and out as it retires unbroken (`FRONT_FIELD.fade`).
+      const w = wEnd * wFade * wFormation * (this.face ? 1 - this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.fade]) : 1);
       let overturned = 0;
       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
         if (profile[2 * (i + 1)] < profile[2 * i]) {
@@ -1704,6 +1704,18 @@ export class SweptLoft {
             // A resting strip is the water: a lifted one over an earlier resting one keeps its place, and the water goes.
             if (!resting(s) && resting(t)) {
               r.sliceJoined[t] = 0;
+              continue;
+            }
+            // Under the face ruling a weaker earlier strip gives way too (a lagged join retiring unbroken, or a young end:
+            // pieces of a front the solver split off), so it never cuts a hole in the tube beside it; it is counted as dropped.
+            if (this.face && Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) < Math.max(r.sliceWeight[s], r.sliceWeight[s + 1])) {
+              r.sliceJoined[t] = 0;
+              r.overlaps += 1;
+              const open = (r.slicePhase[t] === 1 && r.sliceOverturned[t] === 1) || (r.slicePhase[t + 1] === 1 && r.sliceOverturned[t + 1] === 1);
+              if (open && Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) > 0) {
+                r.overlapsOpen += 1;
+                r.overlapOpenWeight = Math.max(r.overlapOpenWeight, r.sliceWeight[t], r.sliceWeight[t + 1]);
+              }
               continue;
             }
             r.sliceJoined[s] = 0;

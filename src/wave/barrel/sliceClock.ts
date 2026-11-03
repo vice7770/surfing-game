@@ -65,6 +65,13 @@ export interface OnsetTables {
      * peak period from `reference`, the period clamped to `periods` (the runs' own), so none is extrapolated.
      */
     period?: { slope: number; reference: number; periods: readonly [shortest: number, longest: number] };
+    /**
+     * Under the lowest run's foot crest, the lowest run's depth scaled by Froude with the foot crest (a wave the run's
+     * shape at a smaller size goes vertical proportionally shallower) in place of clamping to it: the depth the drawn case
+     * itself goes vertical, when the drawn case is the lowest run scaled (the pool's straight Barrel under the step 3
+     * ruling's lagged join, whose clock keys on it; pool-tube-face, 2026-11-03). None: clamped.
+     */
+    froude?: true;
   };
   /**
    * The shallowest a lip throws, m at mid tide: the transect's flat (a reef's top), which a tide shifts rather than
@@ -105,6 +112,11 @@ export interface OnsetTiming {
   lagged: boolean;
   earliest: number;
   /**
+   * The lagged join's formation ramp (the advisor's step 3 fallback; the pool's straight Barrel, `TubeFace.lag`): s over
+   * which a joined point's slice forms from its join (smoothstep, `FrontPoint.formation`), by its foot height; absent: none.
+   */
+  formationRamp?: (footHeight: number) => number;
+  /**
    * The fastest a thrown point's clock catches up on its fit, × real time: 2 (the advisor's fifth ruling, 2026-10-22), or
    * the step 3 ruling's 1.25 at the pool's straight Barrel (`TubeFace.clockRate`). Absent: 2.
    */
@@ -143,7 +155,8 @@ export function onsetTiming(h0: number, period: number, lagged = true, tables: O
     band: [band[0] * scale, band[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
     throwDepth: (footHeight) => {
-      const depth = (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale)) + byPeriod) * scale;
+      const below = throwDepth.froude && footHeight / scale < lowest ? footHeight / scale / lowest : 1;
+      const depth = (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale)) + byPeriod) * below * scale;
       return tables.floor === undefined ? depth : Math.max(depth, tables.floor + h0 - tables.h0);
     },
     lagged,
@@ -190,6 +203,11 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
     const rate = timing.thrownRate ?? 2;
     for (let k = start; k < end; k += 1) {
       const point = points[k];
+      if (timing.formationRamp && !(point.formation! >= 1)) {
+        // A lagged join's slice forms over its ramp from its join (smoothstep): it never appears at once.
+        const u = Math.min(1, Math.max(0, (time - point.joined) / timing.formationRamp(point.footHeight)));
+        point.formation = u * u * (3 - 2 * u);
+      }
       const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
       if (point.unbroken) {
         // A lagged join the solver hasn't broken yet (`FrontOptions.lead`) holds short of its throw, never running back;

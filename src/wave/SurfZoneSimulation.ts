@@ -1266,11 +1266,14 @@ export class SurfZoneSimulation {
     if (sweptBarrelOn(config)) {
       // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
       const record = BARREL_SPOTS[config.spot]!;
-      this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
-      // The step 3 ruling at the pool (`TubeFace`): the thrown clock's cap, the lagged join, the crash's anchor.
+      // The step 3 ruling at the pool (`TubeFace`): the thrown clock's cap, the lagged join, the crash's anchor. Its lagged
+      // join keys on where the drawn case goes vertical: the lowest run scaled by Froude to the foot crest (`froude`).
       const face = barrel?.options.geometry === 'bounded-C' ? undefined : tubeFaceOf(record.faceAnchor !== undefined, config);
+      const tables = face?.lag ? { ...record.onset, throwDepth: { ...record.onset.throwDepth, froude: true as const } } : record.onset;
+      this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', tables);
       this.tubeFace = face;
       if (face) this.onsetTiming.thrownRate = face.clockRate;
+      if (face?.lag) this.onsetTiming.formationRamp = record.faceAnchor!.ramp;
       const lead = face?.lag ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
       const crash = sweptCrashOn(config);
