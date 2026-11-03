@@ -1706,9 +1706,17 @@ export class SweptLoft {
               r.sliceJoined[t] = 0;
               continue;
             }
-            // Under the face ruling a weaker earlier strip gives way too (a lagged join retiring unbroken, or a young end:
-            // pieces of a front the solver split off), so it never cuts a hole in the tube beside it; it is counted as dropped.
-            if (this.face && Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) < Math.max(r.sliceWeight[s], r.sliceWeight[s + 1])) {
+            // Under the face ruling a lagged join's piece not yet thrown gives way to a thrown one, and else a weaker earlier
+            // strip gives way too: where the retire guard splits a front (a point left unbroken leaves a gap), its leading
+            // piece never cuts a hole in the tube beside it. It is counted as dropped.
+            const unthrown = (k: number) => r.slicePhase[k] === 0 && r.slicePhase[k + 1] === 0;
+            if (this.face && !unthrown(t) && unthrown(s)) {
+              r.sliceJoined[s] = 0;
+              r.overlaps += 1;
+              break;
+            }
+            if (this.face && (unthrown(t) && !unthrown(s)
+              || Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) < Math.max(r.sliceWeight[s], r.sliceWeight[s + 1]))) {
               r.sliceJoined[t] = 0;
               r.overlaps += 1;
               const open = (r.slicePhase[t] === 1 && r.sliceOverturned[t] === 1) || (r.slicePhase[t + 1] === 1 && r.sliceOverturned[t + 1] === 1);

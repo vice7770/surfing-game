@@ -57,7 +57,10 @@ const S = LOFT_SAMPLES;
 const E = LOFT.extensionSamples;
 /** The solver's face points read, of its height over its trough. */
 const FACES = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] as const;
-/** Points fixed in the wave's frame: m along the ray from the solver's face crossing at 0.3 of its height (its lower face, which moves smoothly). */
+/**
+ * Points fixed in the wave's frame: m along the solver's own column (z, which its crests travel along) from its face
+ * crossing at 0.3 of its height (its lower face, which moves smoothly), on one line per column-wave.
+ */
 const FIXED = [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5] as const;
 const BEHIND = 4;
 const AHEAD = 12;
@@ -139,6 +142,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const periods = Number(process.env.PERIODS ?? 12);
     const settle = Number(process.env.SETTLE ?? 50);
     const bodiesOn = process.env.BODIES !== '0';
+    // LIGHT=1: the sea, its crash and clocks alone (bars 7 and 10, and the cost), for the A/B's ledger.
+    const light = process.env.LIGHT === '1';
     const [cFrom, cTo, cStep] = (process.env.COLUMNS ?? '30,95,2.5').split(',').map(Number);
     const placeS = Number(process.env.PLACE_S ?? 55);
     const switches: Record<string, unknown> = {};
@@ -406,7 +411,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     /** The lower face (−0.5–0.5 m about the 0.3 H_s crossing) and up the face behind it (−3 to −1 m). */
     const risesLow: number[] = [];
     const risesHigh: number[] = [];
-    const lastFixed = new Map<string, { n: number; gaps: number[] }>();
+    const lastFixed = new Map<string, { n: number; gaps: number[]; x: number }>();
     const fixedBelow: number[] = [];
     let builds = 0, overlaps = 0, overlapsOpen = 0, minAdvance = Infinity, shiftMisses = 0, slices = 0;
     const shiftSlopes: number[] = [];
@@ -420,7 +425,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       let started = performance.now();
       water.withSurfaceNodeCache(() => contact.update(records, count, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z)));
       contactMs.push(performance.now() - started);
-      water.withSurfaceNodeCache(() => raw.update(records, count, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z)));
+      if (!light && n % 2 === 0) water.withSurfaceNodeCache(() => raw.update(records, count, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z)));
       if (n % 30 === 0 && count > 0) {
         // The drawing's loft build over the drawn surface (bilinear, as the Classic look; the page's cost, bar 12).
         grid.xMin = simulation.windowXMin;
@@ -453,7 +458,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         }
       }
       if (bodiesOn) stepBodies(dt);
-      if (count === 0) continue;
+      if (count === 0 || light) continue;
       const loft = contact.last!;
       // Bar 8's per-build geometry.
       builds += 1;
@@ -491,13 +496,17 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           best[k] = s;
         }
       }
+      if (n % 2 !== 0) continue;
       water.withSurfaceNodeCache(() => {
         for (let k = 0; k < columns; k += 1) {
           const s = best[k];
           if (s < 0) continue;
-          // Bar 4: the support less the solver's at points fixed in the wave's frame, every step.
+          // Bar 4: the support less the solver's at points fixed in the wave's frame, every step: along the solver's own
+          // column (z) through the column-wave's first point, which its crests travel along, from their lower face.
           const o = origin(loft, s);
-          const { ic, it, Hs } = section(o.x, o.z, o.rx, o.rz);
+          const key = `${loft.sliceFront[s] % FRONT_PIECE}:${k}`;
+          const lineX = lastFixed.get(key)?.x ?? o.x;
+          const { ic, it, Hs } = section(lineX, o.z, 0, 1);
           if (!(Hs > 0.2)) continue;
           // The wave's frame: the solver's lower face, its crossing at 0.3 of its height, interpolated between reads.
           const lower = faceXi(ic, it, 0.3).xi;
@@ -509,18 +518,17 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           };
           const gaps = FIXED.map((ahead) => gapAt(lower + ahead));
           for (const g of gaps) fixedBelow.push(g);
-          const key = `${loft.sliceFront[s] % FRONT_PIECE}:${k}`;
           const last = lastFixed.get(key);
-          if (last && last.n === n - 1) {
+          if (last && last.n === n - 2) {
             for (let j = 0; j < gaps.length; j += 1) {
-              const rise = gaps[j] - last.gaps[j];
+              // Per 1/60 s step, over the two steps between reads.
+              const rise = (gaps[j] - last.gaps[j]) / 2;
               rises.push(rise);
               (FIXED[j] >= -0.5 ? risesLow : risesHigh).push(rise);
               if (rise > 0.2 && bigRises.length < 40) bigRises.push(`t ${solver.time.toFixed(2)} col ${k} front ${key} at ${FIXED[j]} m: ${fmt(last.gaps[j])} → ${fmt(gaps[j])} m, τ ${fmt(loft.sliceTau[s])}, life ${fmt(loft.sliceLife[s])}, weight ${fmt(loft.sliceWeight[s])}, shift ${fmt(loft.sliceShift[s])}, slice σ ${fmt(loft.sliceSigma[s], 1)}`);
             }
           }
-          lastFixed.set(key, { n, gaps });
-          if (n % 2 !== 0) continue;
+          lastFixed.set(key, { n, gaps, x: lineX });
           const read = readSlice(loft, raw.last, s, k, solver.time);
           if (read) reads.push(read);
         }
