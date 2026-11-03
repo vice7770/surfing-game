@@ -243,8 +243,12 @@ export const POOL_FOOT_DEPTH = 4.4;
  *   peel the white reaches a column along the crest before its own crest rises fresh, so fresh onsets fire on only 10–67 %
  *   of the plunging section's columns, 0.3–0.8 m shallower than the white the player sees, and a tube thrown there would
  *   trail the white line by 4–10 m (measured; the advisor to confirm).
- * - **The throw:** at the join (zero lag) until step 2's Navier–Stokes vertical depths give a line through both cases, as
- *   the Canyon's; with `joinPast` 3 H, a crest the solver breaks just past its depth joins and throws there rather than
+ * - **The throw:** where the Navier–Stokes face goes vertical, the line through the owner's two level-13 runs (`POOL_RUNS`,
+ *   pool-tube-runs, 2026-11-02), clamped to their foot crests, as the Canyon's. It lies deeper than the join for every crest
+ *   the game sizes (its foot crests 0.84 / 1.08 m on the knee against the runs' 1.22 / 1.60 m on the 2D platform: a 2D ray
+ *   has no spreading), so the lip still throws where it joins (zero lag). Scaled by Froude to the game's foot crests the
+ *   runs go vertical at 1.51 and 1.94 m, by the solver's white at 1.43 and 1.91 m (pool-tube-cases, 2026-11-03). With
+ *   `joinPast` 3 H, a crest the solver breaks just past its depth joins and throws there rather than
  *   being dropped as unbroken: the Canyon's and the Reef's 1.5 H joined 0.67–0.83 of the waves in each column of the
  *   plunging section at 1.5 m faces and 0.17–0.5 past s 70 at 1.8 m; 3 H joins every wave there (measured; the white's
  *   onset depth spreads 1.11–1.70 m at 1.5 m faces, p10–p90, so 1.5 H, 0.15 m of depth on the 1:12.4 face, misses its
@@ -253,11 +257,24 @@ export const POOL_FOOT_DEPTH = 4.4;
 export const POOL_JOIN: OnsetTables['join'] = [
   { period: 10, rows: [[0.76, 1.43], [0.82, 1.60], [0.88, 1.83], [0.89, 1.91], [0.92, 1.96]] },
 ];
+/**
+ * The Wave Pool's straight Barrel's two level-13 runs (docs/research/pool-tube-runs/summary.json, the owner's M4 Pro,
+ * 2026-11-02): each case's foot crest on the 4.5 m platform (its A0 × 4.5 m) and the still depth where its face went
+ * vertical, m (`plunge_measure.py`).
+ */
+const POOL_RUNS = {
+  small: { foot: 1.2175797780000002, vertical: 2.186503564818101 },
+  big: { foot: 1.5961954500000002, vertical: 2.5439602165335673 },
+} as const;
+const POOL_THROW_SLOPE = (POOL_RUNS.big.vertical - POOL_RUNS.small.vertical) / (POOL_RUNS.big.foot - POOL_RUNS.small.foot);
 const POOL_ONSET: OnsetTables = {
   h0: POOL_FOOT_DEPTH,
   band: [(6 / 7) * 4.5, (5 / 7) * 4.5],
   join: POOL_JOIN,
-  throwDepth: { intercept: Number.POSITIVE_INFINITY, slope: 0, heights: [0, Number.POSITIVE_INFINITY] },
+  throwDepth: {
+    intercept: POOL_RUNS.small.vertical - POOL_THROW_SLOPE * POOL_RUNS.small.foot, slope: POOL_THROW_SLOPE,
+    heights: [POOL_RUNS.small.foot, POOL_RUNS.big.foot],
+  },
 };
 
 /**

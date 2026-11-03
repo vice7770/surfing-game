@@ -47,7 +47,7 @@ import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
 import { devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
-import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, type TubeShape } from '../wave/barrel/barrelLibrary';
+import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, type PoolTubeCase, type TubeShape } from '../wave/barrel/barrelLibrary';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -414,6 +414,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
     // `?poolTube=off` / `?poolCrash=off`: the straight Barrel without its swept tube, or with it and the solver's own lip.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
+    // `?poolTubeCase=a38`: the straight Barrel's tube from the Canyon's a38, its stand-in before its own runs, for A/Bs.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeCaseSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -499,6 +501,15 @@ export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
 export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCrash?: false } {
   if (devParam('poolTube', search)?.trim().toLowerCase() === 'off') return { sweptBarrel: false };
   return devParam('poolCrash', search)?.trim().toLowerCase() === 'off' ? { sweptCrash: false } : {};
+}
+
+/**
+ * The `?poolTubeCase=a38` dev switch (`SurfZoneConfig.poolTubeCase`; pool-tube-cases, 2026-11-03): the Wave Pool's straight
+ * Barrel's tube drawn and felt from the Canyon's a38, its provisional stand-in (pool-barrel-drawing), in place of the
+ * owner's level-13 runs on its own reef, to compare the two. Online rooms run the default.
+ */
+export function poolTubeCaseSwitch(search?: string): { poolTubeCase?: PoolTubeCase } {
+  return devParam('poolTubeCase', search)?.trim().toLowerCase() === 'a38' ? { poolTubeCase: 'a38' } : {};
 }
 
 /**
@@ -644,22 +655,24 @@ export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
 export const localSurfZone: SurfZoneHostFactory = (config, extra) => new LocalSurfZone(config, { rider: true, ...extra });
 
-const barrelBytes = new Map<SpotName, Promise<Uint8Array[] | undefined>>();
+const barrelBytes = new Map<string, Promise<Uint8Array[] | undefined>>();
 
 /**
  * A spot's barrel case files, fetched once for the page's drawing and the surf zone's contact (the Padang Padang spec,
  * Part B, PR 4; each spot its own transect's, PR 7). A failed fetch leaves the swept barrel off for that start and is
  * tried again at the next.
  */
-export function barrelCaseBytes(spot: SpotName): Promise<Uint8Array[] | undefined> {
-  let bytes = barrelBytes.get(spot);
+export function barrelCaseBytes(spot: SpotName, poolTubeCase?: PoolTubeCase): Promise<Uint8Array[] | undefined> {
+  // The pool's stand-in (`?poolTubeCase=a38`) is fetched and kept apart from its own cases.
+  const key = spot === 'pool' && poolTubeCase ? `${spot}:${poolTubeCase}` : spot;
+  let bytes = barrelBytes.get(key);
   if (!bytes) {
-    bytes = loadBarrelCaseBytes(barrelCasesFor(spot)).catch((error: unknown) => {
+    bytes = loadBarrelCaseBytes(barrelCasesFor(spot, undefined, spot === 'pool' ? poolTubeCase : undefined)).catch((error: unknown) => {
       console.warn('The barrel library did not load; the swept barrel stays off.', error);
-      barrelBytes.delete(spot);
+      barrelBytes.delete(key);
       return undefined;
     });
-    barrelBytes.set(spot, bytes);
+    barrelBytes.set(key, bytes);
   }
   return bytes;
 }
@@ -886,7 +899,7 @@ export class PhysicalMode {
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
     if (start !== this.starts) return false;
     // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
-    const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
+    const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot, config.poolTubeCase) : undefined;
     if (start !== this.starts) return false;
     const host = createHost(config, barrelCases ? { barrelCases } : undefined);
     // A superseded spin-up is let go at once, so its worker stops competing with the next one.
@@ -920,7 +933,7 @@ export class PhysicalMode {
       // `?barrelView=phase|front`: the curl flat-coloured by its slices' phase or front (a dev view, the tube review).
       const view = SWEPT_BARREL_VIEWS.find((candidate) => candidate === devParam('barrelView'));
       this.sweptBarrel = new SweptBarrel(water, async (spot) => {
-        const bytes = await barrelCaseBytes(spot);
+        const bytes = await barrelCaseBytes(spot, this.config?.poolTubeCase);
         if (!bytes) throw new Error('No barrel case files');
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
         return libraryFromBytes(bytes, this.config?.tubeShape, spot);
@@ -1310,7 +1323,7 @@ export class PhysicalMode {
    */
   async setDrawnTubeShape(shape: TubeShape): Promise<boolean> {
     const spot = this.config?.spot;
-    const bytes = spot && this.swept ? await barrelCaseBytes(spot) : undefined;
+    const bytes = spot && this.swept ? await barrelCaseBytes(spot, this.config?.poolTubeCase) : undefined;
     if (!spot || !bytes || !this.sweptBarrel) return false;
     this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot));
     return true;

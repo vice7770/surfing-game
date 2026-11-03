@@ -89,5 +89,21 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = [
     "nonlinearity": 0.4199,
     "flatDepth": 0.1666667,
     "asset": "barrels/periodic-canyon23-a49-l13.bin"
+  },
+  {
+    "id": "periodic-pool-straight-small-l13",
+    "spot": "pool",
+    "slope": 0.0535,
+    "nonlinearity": 0.2706,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-straight-small-l13.bin"
+  },
+  {
+    "id": "periodic-pool-straight-big-l13",
+    "spot": "pool",
+    "slope": 0.0463,
+    "nonlinearity": 0.3547,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-straight-big-l13.bin"
   }
 ];

@@ -36,26 +36,33 @@ export function barrelCaseNote(id: string): { drawn: false; note: string } | und
 }
 
 /**
- * The Wave Pool's straight Barrel's tube cases, by id (pool-barrel-drawing, T5: the pool loads only its own). Until the
- * owner's level-13 runs on its reef land (`pool_straight_small` and `pool_straight_big`, step 2), a PROVISIONAL stand-in:
- * the Canyon's `periodic-canyon23-a38-l13` alone, Froude-scaled by each slice's foot crest. The advisor's rule (2026-11-01):
- * a stand-in must draw its breaker on the solver's face, within about 10 % of the surf meter's. At the foot crests the
- * game's front measures on the face's knee (0.84 m at the 1.5 m faces, 1.08 m at 1.8 m) a38 draws 1.35–1.52 m and
- * 1.74–1.96 m (the meter's 1.52 and 1.79 m), while Padang Padang's four cases on 1:19 draw 1.30–1.33 and 1.45–1.52 m, 13–19 %
- * under it (the advisor picked them on inferred foot crests 40 % higher). a38 is level 13, periodic, over a submerged crest
- * at 0.17 h0 (the pool's 0.2), on a gentler 1:23, so its void is longer (L/W 2.5–2.9 against Mead & Black's 1.8–2.2 here).
- * When the real cases land, this is the one line to change, to their ids (`periodic-pool-straight-small-l13`,
- * `periodic-pool-straight-big-l13`, as `npm run barrels` names them), and the pool reads them as one family by A0
- * (`BarrelSpot.family`).
+ * The Wave Pool's straight Barrel's tube cases, by id (pool-barrel-drawing, T5: the pool loads only its own): the owner's
+ * level-13 runs on its reef's ray (pool-tube-runs, the M4 Pro, 2026-11-02; docs/research/pool-tube-runs/report.md),
+ * `pool_straight_small` (A0 0.271, the 1.5 m faces) and `pool_straight_big` (A0 0.355, the 1.8 m faces), read as one
+ * family by A0 (`BarrelSpot.family`: one reef at two sizes; the advisor, 2026-11-01). Both throw a tube (the big one's
+ * nearly closed: a void of 0.20 × 0.04 m), so both are drawn.
  */
-export const POOL_TUBE_CASES: readonly string[] = ['periodic-canyon23-a38-l13'];
+export const POOL_TUBE_CASES: readonly string[] = ['periodic-pool-straight-small-l13', 'periodic-pool-straight-big-l13'];
+
+/**
+ * The pool's provisional stand-in before its own runs (pool-barrel-drawing, 2026-11-01): the Canyon's a38 alone,
+ * Froude-scaled by each slice's foot crest (it drew within about 10 % of the meter's face at the foot crests the game
+ * measures). Kept for the `?poolTubeCase=a38` A/B (`SurfZoneConfig.poolTubeCase`); online rooms run the default.
+ */
+export const POOL_TUBE_STAND_IN: readonly string[] = ['periodic-canyon23-a38-l13'];
+
+/** Which cases the pool's tube is drawn and felt from: its own (the default) or the stand-in, `'a38'`. */
+export type PoolTubeCase = 'a38';
 
 /**
  * The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws; the
- * Wave Pool, its own list (`POOL_TUBE_CASES`).
+ * Wave Pool, its own list (`POOL_TUBE_CASES`), or the stand-in's (`poolTubeCase` 'a38').
  */
-export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES): BarrelCaseEntry[] {
-  if (spot === 'pool') return cases.filter((entry) => POOL_TUBE_CASES.includes(entry.id));
+export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES, poolTubeCase?: PoolTubeCase): BarrelCaseEntry[] {
+  if (spot === 'pool') {
+    const ids = poolTubeCase === 'a38' ? POOL_TUBE_STAND_IN : POOL_TUBE_CASES;
+    return cases.filter((entry) => ids.includes(entry.id));
+  }
   return cases.filter((entry) => entry.spot === spot && !barrelCaseNote(entry.id));
 }
 
@@ -88,9 +95,9 @@ export type TubeShape = 'basilisk' | 'bounded-C';
 
 /**
  * The bounded-C's evaluated domain (bc0b489f): the eight cases shipped with it, Padang Padang's, the Reef's and the
- * Point's. The Canyon's cases came after it, so the `?tubeShape=c` A/B draws them raw.
+ * Point's. The Canyon's and the Wave Pool's cases came after it, so the `?tubeShape=c` A/B draws them raw.
  */
-export const BOUNDED_C_CASES: readonly BarrelCaseEntry[] = BARREL_CASES.filter((entry) => entry.spot !== 'canyon');
+export const BOUNDED_C_CASES: readonly BarrelCaseEntry[] = BARREL_CASES.filter((entry) => entry.spot !== 'canyon' && entry.spot !== 'pool');
 
 /**
  * Case files decoded into one library, drawn as `shape` says (`TubeShape`). At a spot whose cases are one family

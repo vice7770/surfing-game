@@ -163,9 +163,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       const lines: string[] = ['library, foot crest (m) / foot depth (m), case: at 0.5 / 0.8 / 0.95 of touchdown, H (m), lip (H), tip (H), void (H²), L/W, tilt (°), air gap (m); touchdown s'];
       const sets: [string, ProfileLibrary, number, number[]][] = [
         ['Padang Padang (its four cases, 7 m foot)', libraryFromBytes(readBarrelCases('padang')), 7, [0.99, 1.4, 2.1, 3.15]],
-        ['the pool on Padang Padang\'s four cases (the advisor\'s second pick, 4.5 m foot)', libraryFromBytes(readBarrelCases('padang'), 'basilisk', 'pool'), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
+        ['the pool on its own two level-13 cases (one family by A0, 4.4 m foot)', libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool'), 4.4, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
         // The Canyon's a38 alone (the first stand-in, the advisor's A1 of 2026-11-01 on the A-frame), for comparison.
-        ['the pool on the Canyon\'s a38 alone (the provisional stand-in, 4.5 m foot)', libraryFromBytes(readBarrelCases(undefined, BARREL_CASES.filter((entry) => entry.id === 'periodic-canyon23-a38-l13'))), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
+        ['the pool on the Canyon\'s a38 alone (the stand-in, `?poolTubeCase=a38`, 4.5 m foot)', libraryFromBytes(readBarrelCases(undefined, BARREL_CASES.filter((entry) => entry.id === 'periodic-canyon23-a38-l13'))), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
       ];
       for (const [name, lib, depth, feet] of sets) {
         lines.push(`## ${name}`);
