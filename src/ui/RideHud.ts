@@ -57,19 +57,21 @@ export function maneuverCallout(live: Maneuver | undefined, shown: string): { ke
   return key === shown ? { key } : { key, text: t(MANEUVER_LABELS[live.kind]).toUpperCase() };
 }
 
-/** The stance readout's height: Compress past half its travel, the crouch past CROUCH_SHOWN, else normal. */
+/** The stance readout's height: Snap past half its travel (it wins), Compress past half, the crouch past CROUCH_SHOWN, else normal. */
 const CROUCH_SHOWN = 0.3;
-export type StanceLevel = 'normal' | 'crouch' | 'compress';
+export type StanceLevel = 'normal' | 'crouch' | 'compress' | 'snap';
 
 /**
  * What the stance readout shows (the movement-flow spec): the height asked for, the weight (−1 back to 1 forward)
  * and the rotation (−1 left to 1 right, as the stick is pushed; undefined when the body turns by itself). Inputs
  * only: it names no manoeuvre.
  */
-export function stanceReadout(input: Pick<RideInput, 'crouch' | 'compress' | 'trim' | 'rotate'>): { level: StanceLevel; weight: number; rotate?: number } {
-  const level = (input.compress ?? 0) >= 0.5 ? 'compress' : (input.crouch ?? 0) >= CROUCH_SHOWN ? 'crouch' : 'normal';
+export function stanceReadout(input: Pick<RideInput, 'crouch' | 'compress' | 'snap' | 'trim' | 'rotate'>): { level: StanceLevel; weight: number; rotate?: number } {
+  const snapping = (input.snap ?? 0) >= 0.5;
+  const level = snapping ? 'snap' : (input.compress ?? 0) >= 0.5 ? 'compress' : (input.crouch ?? 0) >= CROUCH_SHOWN ? 'crouch' : 'normal';
   const clamp = (x: number) => Math.max(-1, Math.min(1, x));
-  return { level, weight: clamp(input.trim ?? 0), ...(input.rotate === undefined ? {} : { rotate: clamp(input.rotate) }) };
+  // Snap's weight is on the tail, whatever the trim says.
+  return { level, weight: snapping ? -1 : clamp(input.trim ?? 0), ...(input.rotate === undefined ? {} : { rotate: clamp(input.rotate) }) };
 }
 
 /** The balance meter turns to the accent colour below this reserve. */

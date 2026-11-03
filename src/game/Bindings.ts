@@ -4,14 +4,14 @@
  * standard mapping. Escape and Start always pause and cannot be rebound.
  */
 export const ACTIONS = [
-  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'compress', 'hand', 'duckDive', 'retry', 'camera', 'mute',
+  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'compress', 'snap', 'hand', 'duckDive', 'retry', 'camera', 'mute',
   'callLeft', 'callRight', 'callParty', 'callNice', 'pause',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
 /**
  * When an action does anything (spec P9): paddling and the duck-dive lying down
- * (and in the water), trim, crouch, Compress and the hand standing, the rest
+ * (and in the water), trim, crouch, Compress, Snap and the hand standing, the rest
  * always. A key may serve one action per context, so ArrowUp paddles lying down
  * and trims forward standing, Space paddles lying down and compresses standing,
  * and S duck-dives lying down and trims back standing.
@@ -19,7 +19,7 @@ export type Action = (typeof ACTIONS)[number];
 export type ActionContext = 'prone' | 'standing' | 'always';
 export const ACTION_CONTEXT: Record<Action, ActionContext> = {
   paddle: 'prone', popUp: 'always', steerLeft: 'always', steerRight: 'always',
-  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', compress: 'standing', hand: 'standing', duckDive: 'prone',
+  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', compress: 'standing', snap: 'standing', hand: 'standing', duckDive: 'prone',
   retry: 'always', camera: 'always', mute: 'always', pause: 'always',
   callLeft: 'always', callRight: 'always', callParty: 'always', callNice: 'always',
 };
@@ -50,6 +50,8 @@ export const DEFAULT_BINDINGS: Bindings = {
     crouch: ['ShiftLeft', 'ShiftRight'],
     // The stances spec: the bottom turn's stance, on the paddle's key standing.
     compress: ['Space'],
+    // The snap stance (2026-11-03): the sharp turn off the top, weight on the tail; Q was free.
+    snap: ['KeyQ'],
     hand: ['KeyE'],
     // The wipeout spec: S and ↓ duck-dive lying down (they trim back standing).
     duckDive: ['KeyS', 'ArrowDown'],
@@ -64,6 +66,7 @@ export const DEFAULT_BINDINGS: Bindings = {
     pause: ['Escape'],
   },
   // C1: the hand on LB (the right thumb trims), so the party call takes X; on the Steam Controller L4 also reaches and R4 also pops up.
+  // Layout 4 (the snap stance, 2026-11-03): Snap on RB, the camera from RB to R3 (the right-stick click).
   // An action may have no default button (the left and right calls), and is bound on the Controls screen.
   gamepad: {
     paddle: [7],
@@ -74,11 +77,12 @@ export const DEFAULT_BINDINGS: Bindings = {
     trimBack: [13],
     crouch: [6],
     compress: [7],
+    snap: [5],
     hand: [4, 17],
     // L3 and the D-pad's down (duck-dive-l3, 2026-10-31: LT crouches only, as before the wipeout spec).
     duckDive: [10, 13],
     retry: [3],
-    camera: [5],
+    camera: [11],
     mute: [8],
     // Online, the left and right calls are on 1 and 2 only (duck-dive-l3: L3 is the duck-dive's); rebindable to any button.
     callLeft: [],

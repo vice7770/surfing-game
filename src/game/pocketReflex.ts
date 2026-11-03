@@ -41,12 +41,12 @@ export function pocketTrim(frame: WaveFrame): number {
 }
 
 /**
- * The input with the reflex's weight, standing, with no weight held, no hard steer and no Compress (its
- * weight is the stance's, over the front foot); otherwise the input itself.
+ * The input with the reflex's weight, standing, with no weight held, no hard steer, no Compress (its
+ * weight is the stance's, over the front foot) and no Snap (its weight is on the tail); otherwise the input itself.
  */
 export function withPocketReflex<T extends RideInput>(input: T, frame: WaveFrame | undefined, phase: RiderPhase | 'fallen'): T {
   if (!frame || phase !== 'standing' || (input.trim ?? 0) !== 0 || Math.abs(input.steer) >= POCKET_STEER) return input;
-  if ((input.compress ?? 0) > 0) return input;
+  if ((input.compress ?? 0) > 0 || (input.snap ?? 0) > 0) return input;
   return { ...input, trim: pocketTrim(frame) };
 }
 

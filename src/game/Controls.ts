@@ -53,20 +53,22 @@ export class Controls {
   private padSwingValue = 0;
   private padCrouchValue = 0;
   private padCompressValue = 0;
+  private padSnapValue = 0;
   private padDuckValue = 0;
   private touchPaddle = false;
   private touchLeft = false;
   private touchRight = false;
   private touchCrouch = false;
   private touchCompress = false;
+  private touchSnap = false;
   /** Compress held since lying down (Space and RT paddle): it waits for a fresh press standing. */
   private compressStale = false;
   /** The paddle double-pressed and held, on any device: the sprint paddle (`SprintPress`). */
   private readonly sprintPress = new SprintPress();
   /** Keys held → the ride's axes, ramped (spec P9). */
-  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp(), duckDive: new AxisRamp() };
+  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp(), snap: new AxisRamp(), duckDive: new AxisRamp() };
   /** The latest ride request, for the hints to see what the player holds. */
-  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, duckDive: 0, reel: false };
+  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, compress: 0, snap: 0, hand: false, duckDive: 0, reel: false };
   private getUpRequested = false;
   private active = true;
   /** The device the player last pressed something on, so hints can name its keys or buttons. */
@@ -94,6 +96,7 @@ export class Controls {
       this.bindTouchButton(page, 'touch-right', (held) => { this.touchRight = held; });
       this.bindTouchButton(page, 'touch-crouch', (held) => { this.touchCrouch = held; });
       this.bindTouchButton(page, 'touch-compress', (held) => { this.touchCompress = held; });
+      this.bindTouchButton(page, 'touch-snap', (held) => { this.touchSnap = held; });
     }
   }
 
@@ -121,8 +124,8 @@ export class Controls {
 
   /**
    * The ride's request for this frame (spec P9): paddling, the duck-dive and the
-   * pop-up key's hold (the reel, in the water) lying down; trim, crouch, Compress
-   * and the hand standing; steering always. Keys and touch ramp in and out over
+   * pop-up key's hold (the reel, in the water) lying down; trim, crouch, Compress,
+   * Snap (held, like Compress: the snap stance) and the hand standing; steering always. Keys and touch ramp in and out over
    * RAMP_TIME, so a digital input feels analog; a pad's stick and trigger pass
    * straight through. Disabled, every axis ramps back to rest. No device asks for
    * the upper body's rotation: the pad's right stick across swings the camera
@@ -142,6 +145,8 @@ export class Controls {
     else if (!compressHeld) this.compressStale = false;
     const compressing = standing && !this.compressStale;
     const compressKeys = compressing && (has('compress') || touch(this.touchCompress)) ? 1 : 0;
+    // Snap (the snap stance): held standing; Q and RB do nothing lying down, so a press held through the pop-up counts.
+    const snapKeys = standing && (has('snap') || touch(this.touchSnap)) ? 1 : 0;
     // The keyboard's duck-dive ramps; a pad's buttons (L3 and the D-pad, at full; an analog trigger if rebound to one) pass straight through.
     const duckKeys = !standing && this.active && keys.has('duckDive') ? 1 : 0;
     const steer = this.ramps.steer.update(steerKeys, dt);
@@ -150,6 +155,7 @@ export class Controls {
     if (compressKeys) this.ramps.compress.raise(this.ramps.crouch.value);
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
     const compress = this.ramps.compress.update(compressKeys, dt);
+    const snap = this.ramps.snap.update(snapKeys, dt);
     const duck = this.ramps.duckDive.update(duckKeys, dt);
     const pad = this.active;
     const paddle = !standing && (has('paddle') || touch(this.touchPaddle));
@@ -161,6 +167,7 @@ export class Controls {
       trim: standing && pad && this.padTrimValue !== 0 ? this.padTrimValue : trim,
       crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
       compress: compressing && pad ? Math.max(this.padCompressValue, compress) : compress,
+      snap: standing && pad ? Math.max(this.padSnapValue, snap) : snap,
       hand: standing && has('hand'),
       duckDive: standing ? 0 : Math.max(pad ? this.padDuckValue : 0, duck),
       reel: !standing && has('popUp'),
@@ -201,6 +208,9 @@ export class Controls {
       // A trigger resting just off its stop is not a press (the Steam Controller reports raw travel).
       const compressValue = padValue(pads, this.bindings().gamepad.compress[0]);
       this.padCompressValue = compressValue < TRIGGER_REST ? 0 : compressValue;
+      // RB by default (a button: 1 pressed); a trigger rebound to it presses by its travel.
+      const snapValue = padValue(pads, this.bindings().gamepad.snap[0]);
+      this.padSnapValue = snapValue < TRIGGER_REST ? 0 : snapValue;
       this.padDuckValue = Math.max(0, ...this.bindings().gamepad.duckDive.map((button) => padValue(pads, button)));
     }
     this.padPrevious = now;
@@ -236,12 +246,14 @@ export class Controls {
     this.padSwingValue = 0;
     this.padCrouchValue = 0;
     this.padCompressValue = 0;
+    this.padSnapValue = 0;
     this.padDuckValue = 0;
     this.touchPaddle = false;
     this.touchLeft = false;
     this.touchRight = false;
     this.touchCrouch = false;
     this.touchCompress = false;
+    this.touchSnap = false;
     this.getUpRequested = false;
   }
 

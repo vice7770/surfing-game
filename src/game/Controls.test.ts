@@ -202,6 +202,26 @@ describe('the ride request (P9)', () => {
     expect(controls.rideRequest(0.2, true).compress).toBe(1);
   });
 
+  // The snap stance (2026-11-03): Snap held on Q or RB standing only (nothing lying down); ramped from the keyboard, at
+  // once from the pad's button; let go on a pause; and the touch button beside Compress.
+  it('snaps on Q or RB standing, held, and does nothing lying down', () => {
+    const prone = setup();
+    prone.key('keydown', 'KeyQ');
+    expect(prone.controls.rideRequest(0.2, false).snap).toBe(0);
+    const { controls, key, setPads } = setup();
+    key('keydown', 'KeyQ');
+    expect(controls.rideRequest(1 / 60, true).snap).toBeGreaterThan(0);
+    expect(controls.rideRequest(0.2, true).snap).toBe(1);
+    key('keyup', 'KeyQ');
+    expect(controls.rideRequest(0.2, true).snap).toBe(0);
+    setPads([pad([5])]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).snap).toBe(1);
+    expect(controls.rideRequest(1 / 60, false).snap).toBe(0);
+    controls.enabled = false;
+    expect(controls.rideRequest(0.2, true).snap).toBe(0);
+  });
+
   it('touches the stances with the touch buttons, and lets Compress go on a pause', () => {
     const buttons = new Map<string, EventTarget & { setPointerCapture: () => void; classList: { add: () => void; remove: () => void } }>();
     const page = {
@@ -213,9 +233,11 @@ describe('the ride request (P9)', () => {
     const controls = new Controls(() => DEFAULT_BINDINGS, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() }, { target: new EventTarget(), pads: () => [], document: page });
     buttons.get('touch-compress')!.dispatchEvent(Object.assign(new Event('pointerdown'), { pointerId: 1 }));
     expect(controls.rideRequest(0.2, true).compress).toBe(1);
+    buttons.get('touch-snap')!.dispatchEvent(Object.assign(new Event('pointerdown'), { pointerId: 2 }));
+    expect(controls.rideRequest(0.2, true).snap).toBe(1);
     controls.enabled = false;
     controls.enabled = true;
-    expect(controls.rideRequest(0.2, true).compress).toBe(0);
+    expect(controls.rideRequest(0.2, true)).toMatchObject({ compress: 0, snap: 0 });
   });
 
   // The owner, 2026-10-22: the pad's right stick across swings the camera in every stage, and no longer asks for the

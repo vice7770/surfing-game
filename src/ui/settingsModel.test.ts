@@ -73,10 +73,12 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists two keys and two gamepad buttons for each of the seventeen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress; the wipeout spec the duck-dive)', () => {
+  it('lists two keys and two gamepad buttons for each of the eighteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress; the wipeout spec the duck-dive; the snap stance Snap)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(68);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(17);
+    expect(bindings).toHaveLength(72);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(18);
+    const snap = bindings.find((row) => row.kind === 'binding' && row.action === 'snap');
+    expect(snap).toMatchObject({ help: expect.stringContaining('the snap off the top') });
     const duck = bindings.find((row) => row.kind === 'binding' && row.action === 'duckDive');
     expect(duck).toMatchObject({ help: expect.stringContaining('push the board under') });
   });
@@ -123,9 +125,10 @@ describe('applyRow', () => {
   it('rebinds through the swap rules, and refuses a reserved key', () => {
     expect(applyRow(defaultSettings(), 'bind:keyboard:paddle:0', 'KeyW')).toMatchObject({ tab: 'controls' });
     expect(applyRow(defaultSettings(), 'bind:keyboard:paddle:0', 'Escape')).toBeUndefined();
-    // An action with no pad button by default takes one in either slot (duck-dive-l3: the left and right calls).
-    const first = applyRow(defaultSettings(), 'bind:gamepad:callLeft:0', 11);
-    expect(first?.patch).toMatchObject({ bindings: { gamepad: { callLeft: [11] } } });
+    // An action with no pad button by default takes one in either slot (duck-dive-l3: the left and right calls; R3 is the
+    // camera's since the snap stance, so L5).
+    const first = applyRow(defaultSettings(), 'bind:gamepad:callLeft:0', 19);
+    expect(first?.patch).toMatchObject({ bindings: { gamepad: { callLeft: [19] } } });
     const second = applyRow(defaultSettings(), 'bind:gamepad:callRight:1', 16);
     expect(second?.patch).toMatchObject({ bindings: { gamepad: { callRight: [16] } } });
   });

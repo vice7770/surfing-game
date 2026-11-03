@@ -34,7 +34,7 @@ describe('HintBook', () => {
 });
 
 describe('HintCoach', () => {
-  const idle = { steer: 0, trim: 0, crouch: 0, compress: 0, hand: false };
+  const idle = { steer: 0, trim: 0, crouch: 0, compress: 0, snap: 0, hand: false };
   const standing = (input = idle, crestBreaking = 0): HintState => ({ standing: true, crestBreaking, input });
   const ride = (coach: HintCoach, seconds: number, state: HintState) => {
     let shown: ReturnType<HintCoach['update']>;
@@ -52,8 +52,10 @@ describe('HintCoach', () => {
     expect(ride(coach, 0.6, standing({ ...idle, trim: -1 }))).toBe('crouch');
     // The stances spec: Compress after the crouch, as the bottom turn's sequence goes, and only where it may be offered.
     expect(ride(coach, 0.6, standing({ ...idle, crouch: 1 }))).toBe('compress');
-    expect(coach.update(0.1, standing(), (id) => id !== 'compress')).toBeUndefined();
-    expect(ride(coach, 0.6, standing({ ...idle, compress: 1 }))).toBeUndefined();
+    expect(coach.update(0.1, standing(), (id) => id !== 'compress' && id !== 'snap')).toBeUndefined();
+    // The snap stance (2026-11-03): Snap after Compress, the turn off the top after the bottom turn.
+    expect(ride(coach, 0.6, standing({ ...idle, compress: 1 }))).toBe('snap');
+    expect(ride(coach, 0.6, standing({ ...idle, snap: 1 }))).toBeUndefined();
   });
 
   it('teaches the hand when the crest breaks beside the rider, and forgets the clock on a fall', () => {
@@ -108,5 +110,8 @@ describe('offersHint', () => {
     expect(offersHint('compress', 'practice')).toBe(true);
     expect(offersHint('compress', 'medium')).toBe(false);
     expect(offersHint('crouch', 'medium')).toBe(true);
+    // The snap stance: Snap too, where the riding is taught.
+    expect(offersHint('snap', 'practice')).toBe(true);
+    expect(offersHint('snap', 'medium')).toBe(false);
   });
 });

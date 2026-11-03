@@ -68,6 +68,9 @@ describe('stanceReadout', () => {
     expect(stanceReadout({ crouch: 0.4, compress: 0.2 }).level).toBe('crouch');
     expect(stanceReadout({ crouch: 0.1 }).level).toBe('normal');
     expect(stanceReadout({}).level).toBe('normal');
+    // The snap stance: Snap wins over Compress and the crouch held with it, and its weight is on the tail.
+    expect(stanceReadout({ crouch: 1, compress: 1, snap: 0.6, trim: 0.5 })).toEqual({ level: 'snap', weight: -1 });
+    expect(stanceReadout({ compress: 1, snap: 0.4 }).level).toBe('compress');
   });
 
   it('shows the weight always, and the rotation only when the pad asks for one', () => {

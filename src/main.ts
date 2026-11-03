@@ -516,14 +516,14 @@ class SurfGame {
     // look are solo dev switches), and
     // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
     // sample moving through their step whatever `?surfaceMotion` says, the swim back to the board whatever `?swim` says,
-    // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, and
+    // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, Snap whatever `?snap` says, and
     // the boards' spray and its curtains whatever `?boardSpray` and `?spraySheet` say, the duck-dive's two bodies whatever `?duckBody` says;
     // and the cases' own tubes, whatever `?tubeShape`, `?canyonTube`, `?poolTube`, `?poolCrash` or `?poolTubeCase` say (the spot's own swept
     // barrel and its crash: what a rider hits must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
+      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,

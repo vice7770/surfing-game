@@ -133,7 +133,7 @@ describe('SettingsStore', () => {
       new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings: { gamepad }, ...extra } }) })).value;
     const moved = saved({ duckDive: [6, 13], callLeft: [10], callRight: [11] });
     expect(moved.controls.bindings.gamepad).toMatchObject({ duckDive: [10, 13], callLeft: [], callRight: [], crouch: [6], trimBack: [13] });
-    expect(moved.controls.padLayout).toBe(3);
+    expect(moved.controls.padLayout).toBe(4);
     // A save from before C1 takes both layouts' moves.
     expect(saved({ hand: [2], duckDive: [6, 13], callLeft: [10], callRight: [11] }, {}).controls.bindings.gamepad)
       .toMatchObject({ hand: [4, 17], duckDive: [10, 13], callLeft: [] });
@@ -146,6 +146,28 @@ describe('SettingsStore', () => {
     // Already on layout 3: kept as saved.
     expect(saved({ duckDive: [6, 13], callLeft: [10], callRight: [11] }, { padLayout: 3 }).controls.bindings.gamepad)
       .toMatchObject({ duckDive: [6, 13], callLeft: [10], callRight: [11] });
+  });
+
+  // The snap stance (2026-11-03): a save on layout 3 or older still holding the camera on RB moves it to R3, once, and the
+  // new Snap takes RB and Q where they are free; a player's own choices stay.
+  it('moves a saved camera from RB to R3 and gives Snap RB and Q where they are free, just once', () => {
+    const saved = (bindings: object, extra: object = { padLayout: 3 }) =>
+      new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings, ...extra } }) })).value.controls;
+    const moved = saved({ gamepad: { camera: [5] } });
+    expect(moved.bindings.gamepad).toMatchObject({ camera: [11], snap: [5] });
+    expect(moved.bindings.keyboard.snap).toEqual(['KeyQ']);
+    expect(moved.padLayout).toBe(4);
+    // A save from before C1 takes every layout's moves.
+    expect(saved({ gamepad: { hand: [2], camera: [5] } }, {}).bindings.gamepad).toMatchObject({ hand: [4, 17], camera: [11], snap: [5] });
+    // The player's own camera stays, and RB, free, goes to Snap.
+    expect(saved({ gamepad: { camera: [3], retry: [12] } }).bindings.gamepad).toMatchObject({ camera: [3], retry: [12], snap: [5] });
+    // R3 already taken by the player: the camera stays on RB, and Snap waits unbound on the pad.
+    expect(saved({ gamepad: { camera: [5], retry: [11] } }).bindings.gamepad).toMatchObject({ camera: [5], retry: [11], snap: [] });
+    // RB put to another standing action: Snap waits unbound on the pad; Q taken: unbound on the keyboard.
+    expect(saved({ gamepad: { camera: [12], hand: [5] }, keyboard: { hand: ['KeyQ'] } }).bindings)
+      .toMatchObject({ gamepad: { hand: [5], snap: [] }, keyboard: { hand: ['KeyQ'], snap: [] } });
+    // Already on layout 4: kept as saved (a camera on RB stays there; the saved Snap with it).
+    expect(saved({ gamepad: { camera: [5], snap: [3], retry: [12] } }, { padLayout: 4 }).bindings.gamepad).toMatchObject({ camera: [5], snap: [3] });
   });
 
   it('leaves the new Duck-dive unbound when a save took both its defaults', () => {
