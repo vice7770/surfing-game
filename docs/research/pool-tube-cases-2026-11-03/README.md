@@ -19,7 +19,7 @@ bigger tube (see "Why the tubes came out small"). No rider sessions were run.
   - the cost;
   - byte identity: every spot, Training and the A-frame hash exactly as main's.
 - **Ride-camera strips:** see "Stills".
-- **Tests:** see "Tests".
+- **Tests:** tsc clean; the main suite and the SurfZoneSimulation subset pass (see "Tests").
 
 ## Next steps
 
@@ -154,7 +154,13 @@ Inferred from the runs and these measurements:
 ## Tests
 
 - **Type-check:** `npx tsc --noEmit -p .` and the server's are clean.
-- **Main suite** and the SurfZoneSimulation subset: in the hand-back.
+- **Main suite** (`npx vitest run src --maxWorkers=3`, without SurfZoneSimulation and SurfZoneRunner): 314 files passed, 1
+  failed, 31 skipped; 3,011 tests passed. The one failure, `heldOverturn.test.ts`'s check of every shipped case's held frame
+  against its metrics frame, was stale. It now takes the pool's small case (0.99 / 1.01 of its metrics), and checks the big
+  case apart: its held frame holds a 0.13 H_I² void and a 0.25 H_I² jet, 0.05 √(h0/g) before touchdown, and the cavity
+  closes in between (the report's 0.001 H_I² is that closing). The file passes.
+- **SurfZoneSimulation subset** (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): 36 passed, 68
+  skipped by the filter (6,917 s).
 - **Changed:**
   - `poolTube.test.ts`: the two cases; a38 by the switch; one family (a blend between their A0, the small one alone
     under it); the throw line through the runs, deeper than every join row.
