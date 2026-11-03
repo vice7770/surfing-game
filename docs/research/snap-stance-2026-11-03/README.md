@@ -12,7 +12,7 @@ Branch `claude/snap-stance` (from `origin/claude/playtest-1103b`: main 632f3f13 
   - **Drawn and online:** no new drawing; the drawn body reads the physics (below). No wire change.
   - **Dev:** the character sheet's `?motion=snap` and `?motion=snap-backside` films (flat water, 8 m/s, Snap 0.6 s).
 - **Measured** (section 4): peaks of 192–324°/s; 150° at 1.07 s off the climb; the speed drops; the fins let go when held on; the pinned turns still fail (section 5).
-- **Tests:** see section 6.
+- **Tests:** all green (section 6): tsc clean; the main suite 3,026 passed, 23 expected fails (3 new pins), 0 failed; the Wave Pool subset 36 passed.
 
 ## Next steps
 
@@ -223,7 +223,11 @@ None turns into a pass. The two roots are unchanged: the balance's lean-in (0.3 
 
 ## 6. Tests
 
-(Filled in at the end of the build.)
+- `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
+- The main suite (`--maxWorkers=3`, without `SurfZoneSimulation` and `SurfZoneRunner`): **316 files passed (31 skipped); 3,026 tests passed, 23 expected fails (3 of them Snap's new pins), 37 skipped, 0 failed** (580 s on the M1 Air, beside another session's run).
+- The Wave Pool subset of `SurfZoneSimulation.test.ts` (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): **36 passed, 68 filtered out, 0 failed** (7,500 s beside another session's run).
+- New: `src/physics/snapStance.test.ts` (12: byte identity against the pre-snap code, Snap at 0 and absent alike, `?snap=off`, nothing lying down, precedence over the crouch, Compress and the trim, the slowing straight, the pivot off the climb, the speed shed on still water, the fins letting go held on; and three pinned `it.fails`); Snap's cases in `Bindings.test.ts`, `Settings.test.ts` (the layout 4 migration: moved once, the player's own choices kept, unbound where taken), `Controls.test.ts`, `hints.test.ts`, `pocketReflex.test.ts`, `PhysicalMode.test.ts` (`?snap=off`, online pinned), `RideHud.test.ts`, `settingsModel.test.ts`.
+- Updated because the owner moved the camera to R3: `Bindings.test.ts` (R3 is the camera's), `settingsModel.test.ts` (a call rebound to L5 in place of R3; eighteen actions), `Settings.test.ts` (the layout is 4).
 
 ## 7. The owner's shot list
 
