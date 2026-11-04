@@ -1,6 +1,6 @@
 # Snap: the fourth stance (2026-11-03; round 2 2026-11-04)
 
-Round 1: branch `claude/snap-stance`, merged as PR #186. Round 2: branch `claude/snap-load` (from main 60451f1e), worktree `.claude/worktrees/canyon-beach-break`. No PR; the owner merges.
+Round 1: branch `claude/snap-stance`, merged as PR #186. Round 2: branch `claude/snap-load` (from main 60451f1e), worktree `.claude/worktrees/canyon-beach-break`. Merged into main through `claude/playtest-1104a` (the owner: "merge when done").
 
 ## Where it stands (round 2)
 
