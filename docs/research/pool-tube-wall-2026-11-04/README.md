@@ -234,7 +234,11 @@ Values are p50.
     the wave's frame;
   - `src/game/PhysicalMode.test.ts`: the URL switches and the online pin;
   - then the main suite and the SZS subset.
-  - **This head:** TESTS_LINE
+  - **This head (4a17eb3b):**
+    - both type checks clean;
+    - the main suite: 318 files passed, 34 skipped; 3,061 tests passed, 23 expected fails, 40 skipped (531 s);
+    - the SZS subset: 37 passed, 70 filtered out (6,688 s). It ran on f1b5721a, which differs from this head only in
+      `tubeFaceOf`'s crash switch; no SZS test turns the crash off at the pool.
 - **The bars:**
   `PROBE=1 H=1.05 CASE=a38 LOG=runs/wall-a38-1.05.txt npx vitest run src/wave/probes/poolTubeFace.probe.test.ts --maxWorkers=2`
   - `H=1.32`; `CASE=pool`;
