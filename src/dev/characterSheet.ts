@@ -323,12 +323,15 @@ const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
   tube: { ...STANCE_RECIPES['tube-frontside'], seconds: 1.8 },
   'tube-backside': { ...STANCE_RECIPES['tube-backside'], seconds: 1.6 },
   'kick-out': { ...STANCE_RECIPES['kick-out'], seconds: 1.3 },
-  // The snap stance (2026-11-03): on flat water at 8 m/s, Snap and a full steer onto the heels (frontside) or the toes
-  // (backside) held 0.6 s, then let go with the steer held: the weight on the tail, the back knee deep, the shoulders
-  // first, the board pivoting on its tail and slowing (`docs/research/snap-stance-2026-11-03/README.md`). Straight up the
-  // 15° face (the kick-out's water) the rider falls about 0.75 s into it: the plane face gives the climb nothing back.
-  snap: { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, steer: -1, snap: 1 }, { at: 0.9, steer: -1, snap: 0 }], seconds: 1.8 },
-  'snap-backside': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, steer: 1, snap: 1 }, { at: 0.9, steer: 1, snap: 0 }], seconds: 1.8 },
+  // The snap stance (2026-11-03; round 2): on flat water at 8 m/s, Snap and a full steer onto the heels (frontside) or the
+  // toes (backside) at 0.3 s (the legs loading, the hips over the back foot, the shoulders wound toward the turn, the
+  // board coming round under them), let go at 0.9 s with the steer held; `snap-long` holds it to 1.2 s, taken alone at
+  // 0.3 s and steered from 0.6 s: the board slows from 7.4 to 5.9 m/s turning 90° by 2 s, and the rider stays on (with
+  // the upper body leaning back past the hips, as before round 2's fix, it slowed to 4.2 m/s, turned 56° and the rider
+  // fell at 1.9 s; `docs/research/snap-stance-2026-11-03/README.md`, Round 2).
+  snap: { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1, steer: -1 }, { at: 0.9, snap: 0, steer: -1 }], seconds: 2 },
+  'snap-backside': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1, steer: 1 }, { at: 0.9, snap: 0, steer: 1 }], seconds: 2 },
+  'snap-long': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1 }, { at: 0.6, snap: 1, steer: -1 }, { at: 1.2, snap: 0, steer: -1 }], seconds: 2 },
   // The animation-realism plan's phase 3: paddling from rest (a look-up every eight strokes); the catch down a 15° face
   // into the pop-up and the landing; sitting up after 2 s still (the scan's full cycle), then paddling off; and a ride
   // let go with Enter, lying back down (the prone kick-out).

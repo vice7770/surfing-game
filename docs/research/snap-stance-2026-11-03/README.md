@@ -1,35 +1,223 @@
-# Snap: the fourth stance (2026-11-03)
+# Snap: the fourth stance (2026-11-03; round 2 2026-11-04)
 
-Branch `claude/snap-stance` (from `origin/claude/playtest-1103b`: main 632f3f13 plus the pool tube case swap). Worktree `.claude/worktrees/canyon-beach-break`. No PR; the owner merges.
+Round 1: branch `claude/snap-stance`, merged as PR #186. Round 2: branch `claude/snap-load` (from main 60451f1e), worktree `.claude/worktrees/canyon-beach-break`. No PR; the owner merges.
 
-## Where it stands
+## Where it stands (round 2)
 
-- **Built** on `claude/snap-stance` (no PR; the owner merges):
-  - **The physics** (`src/physics/AttachedRider.ts`: `snap`, SNAP_PRESSURE, SNAP_FREEDOM, SNAP_DEPTH, SNAP_RADIUS, the twist toward the steer). It does nothing unless Snap is held: a scripted ride reproduces the pre-snap code bit for bit (`snapStance.test.ts`).
-  - **The input:** Q and RB, held, standing only; the camera moved from RB to R3; pad layout 4 with its migration (`Bindings.ts`, `Settings.ts`, `Controls.ts`); a touch button beside Compress (`index.html`, `App.ts`).
-  - **The session and the switch:** `RideInput.snap`; `?snap=off` (`SurfZoneConfig.snap` → `RideSessionOptions.snap`); online rooms pin to the default (`main.ts`). The pocket reflex stands aside while Snap is held.
-  - **The UI:** the Controls help line, a Practice hint after Compress's (`hints.ts`), the HUD's stance readout ("Snap", the weight dot on the tail).
-  - **Drawn and online:** no new drawing; the drawn body reads the physics (below). No wire change.
-  - **Dev:** the character sheet's `?motion=snap` and `?motion=snap-backside` films (flat water, 8 m/s, Snap 0.6 s).
-- **Measured** (section 4): peaks of 192–324°/s; 150° at 1.07 s off the climb; the speed drops; the fins let go when held on; the pinned turns still fail (section 5).
-- **Tests:** all green (section 6): tsc clean; the main suite 3,026 passed, 23 expected fails (3 new pins), 0 failed; the Wave Pool subset 36 passed.
+- **The owner's round-1 ride:** "doesn't even turn or move deeply. just stays standing and the board moves by itself. The rider falls after." Diagnosed with numbers in **Round 2** below.
+- **Built on `claude/snap-load`:**
+  - d49c1c87 (the stopped agent's): the legs load as deep (0.3 m) and as fast as Compress; the shoulders wound toward where the turn ends (`snapAim`); the dev films carry the twist.
+  - b15ce8af (this round's fix): **the hips over the back foot, not behind it.** Snap no longer leans the upper body back as full S does (`AttachedRider.balanceStep`). That lean put the centre of mass 0.14 m behind the back foot. Under braking it made the board pivot nose-up about the rider, run 60–70° off its path and spin back 100° when let go, and the drawn crouch read half its depth.
+- **Measured** (Round 2, R2.4): the drawn crouch reads 0.80–0.82 of Compress's full depth, against 0.10–0.13 in round 1 and 0.53–0.55 at d49c1c87. On still water the rider no longer falls with the keys' input (0 of 6 falls; d49c1c87: 5 of 6). Off a climb Snap turns twice as far as the steer alone, with no falls (round 1 and d49c1c87 fell in 2–3 of 4).
+- **Not solved: the two moves back to back.** A bottom turn up a face followed by a turn back down falls for every stance, Snap's included: 0 of 8 with Snap, 0 of 8 steering alone, 2 of 8 with Compress (which has its gameplay lean-out pull). R2.3 explains the physics and gives the owner's options.
+- **Tests:** tsc clean; the main suite 3,030 passed, 23 expected fails, 0 failed; the Wave Pool subset 36 passed (R2.6).
 
 ## Next steps
 
-1. The owner's ride (the shot list, section 7).
-2. If the snap's spray needs a bigger fan than the existing board spray throws, that is a shape change for the water-physics advisor (section 4, the spray).
-3. Open physics (the owner's call): the deep U's root (a bottom turn carried up into the snap still falls), the lean-in's first 0.3 s, and the static face giving nothing back.
+1. The owner rides round 2 (the shot list, R2.7).
+2. **The owner's decision on the two moves** (R2.3): (a) leave it, and accept that the top move works from an upright climb but not straight out of a leaning bottom turn; (b) let Snap borrow Compress's lean-out pull, a gameplay rule; measured in a probe, it brought 4 of 8 snaps back down the face, all falling 1.5–2 s later; (c) the physical fix: give the body its own yaw, so that the board can pivot under a lean that stays put in the world (a solver change).
+3. Still open from round 1: the lean-in's first 0.3 s (the wall on the don't-retry list), the spray's fan (the water-physics advisor), and the static face giving nothing back.
 
 ## How to verify
 
 - `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`.
 - `npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`.
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts --maxWorkers=3 -t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`.
-- Snap's own tests: `npx vitest run src/physics/snapStance.test.ts` (byte identity, `?snap=off`, precedence, the physics, and the pinned turns with Snap).
-- The probes in `probes/` measure the tables: copy `snapLab.ts` to `src/physics/zz-snapLab.ts` and a `zz-*.test.ts` beside it, run it with `OUT=<file.json>`, then `python3 probes/show.py <file.json>`. Delete the copies afterwards (they are not part of the suite). `report.json` and `report-order.json` are section 4's raw rows.
-- The byte-identity hash (`BEFORE_SNAP` in `snapStance.test.ts`) was measured by swapping in 4eee1e5f's `AttachedRider.ts` and `RideSession.ts`.
+- Snap's own tests: `npx vitest run src/physics/snapStance.test.ts`. They cover byte identity, `?snap=off`, precedence, the physics including round 2's back-foot, fins-held and no-spin-back tests, and the pinned turns. The new tests fail on d49c1c87: 4 of 13.
+- Round 2's probes (`probes/round2/`):
+  1. Copy `zz-r2Lab.ts` and a `zz-r2*.test.ts` into `src/physics/`.
+  2. Run with `OUT=<file>`:
+     - `zz-r2Diag` with `CASE=load|flat|climb|two`. `RAMP=0` gives the pad's instant input; the default 0.2 s ramp is the keys'. `TRACE=1` adds per-frame rows.
+     - `zz-r2Drawn` measures the drawn body (the GLB rig, the stance gauge).
+     - `zz-r2Values` gives the values the tests assert.
+     - `zz-r2Com` gives the centre of mass over the back foot.
+  3. `python3 probes/round2/table.py round1-60451f1e round2-d49c1c87 round2-final` prints the three versions side by side from `probes/round2/data/`.
+  4. Delete the copies afterwards: `src/**/zz-*.test.ts` is git-excluded, but `zz-r2Lab.ts` is not.
+- The byte-identity hash (`BEFORE_SNAP`) is unchanged: every round-2 term runs only while Snap is held.
 
 ---
+
+## Round 2 (2026-11-04)
+
+The owner rode round 1 and tried both moves of the reference clip back to back (Surfers of Bali, "Snap In The Lip Over Shallow Reef"):
+1. At the bottom, take the stance and turn up the face.
+2. At the top, take it again and turn sharply back.
+
+Verdict: "doesn't even turn or move deeply. just stays standing and the board moves by itself. The rider falls after ... the rider should load itself ready for the movement like the other stances".
+
+All numbers below are headless (`probes/round2/`, data in `probes/round2/data/`), with no browser pane. Three versions are compared:
+- round 1 (60451f1e);
+- d49c1c87 (the first round-2 commit: the legs as deep and fast as Compress, the shoulders aimed at the turn's end);
+- round 2's final (b15ce8af: the hips over the back foot).
+
+Inputs ramp over 0.2 s as the keys do (`InputAxes`) unless marked "pad".
+
+### R2.1 Diagnosis
+
+**"Just stands".**
+
+| Snap taken riding straight, 8 m/s, still water | round 1 | d49c1c87 | round 2 | Compress | the pumping crouch |
+|---|---|---|---|---|---|
+| The legs (physics, the centre of mass's drop) at 0.3 / 0.5 / 0.7 s | 0.09 / 0.14 / 0.15 m | 0.11 / 0.23 / 0.29 m | 0.11 / 0.23 / 0.29 m | 0.11 / 0.23 / 0.29 m | 0.11 / 0.19 / 0.20 m |
+| The front foot's share of the load at 1 s | 0.24 | 0.21 | 0.40 | 0.69 | — |
+| Board pitch, nose up, at 1 s | 19° | 21° | 14° | 11° | 10° |
+| **Drawn** at 0.9 s, no steer / full steer: how deep the drawn crouch reads (`stanceBlend.depth`, Compress's full depth 1) | **0.10 / 0.13** | 0.53 / 0.55 | **0.82 / 0.80** | 0.98 | 0.67 |
+| Drawn: the pelvis's drop over the back foot, level | **0.04 / 0.16 m** | 0.17 / 0.26 m | 0.21 / 0.28 m | 0.22 m | 0.14 m |
+| Drawn: the hips over the back foot, level (+ ahead of it) | −0.17 / −0.16 m | −0.15 / −0.15 m | **+0.07 / +0.06 m** | +0.29 m | +0.28 m |
+| Drawn: back knee / front knee | 111° / 153° (79° / 125°) | 86° / 117° (62° / 105°) | 76° / 90° (63° / 85°) | 75° / 72° | 90° / 88° |
+| Drawn: head yaw / chest twist, full steer (90 / 29 riding straight) | 168 / 83 | 165 / 86 | 167 / 87 | — | — |
+
+- **Round 1 really did just stand.** Its legs went down only 0.15 m, and the upper body leaned 0.25 m back as full S does. The hips ended up 0.17 m behind the back foot on a board pitched 19° nose up. The back foot sank with the tail and the front foot rose with the nose, so the drawn pelvis came down only 4 cm over the back foot. The front leg stayed straight (153°) and the crouch read 0.10 of its depth.
+- d49c1c87 doubled the depth, but kept the lean back: the drawn crouch read half.
+- In round 2 the hips sit over the back foot. The crouch reads 0.8, the back knee closes to 63–76° (the target was 90° or less), and the front leg is bent, not braced.
+- The head and shoulders were already wound toward the turn in every version: the head turns about 75°, the chest about 58°.
+
+**"The board moves by itself".** Still water, 7 m/s, Snap and a full steer for 0.6 s, then Snap let go with the steer held (d49c1c87; round 1 alike):
+- The shoulders wind first: −21° by 0.3 s, −36° by 0.5 s.
+- Then the board pivots at 160–240°/s about the rider standing over its tail.
+- The rider's own path (the centre of mass's velocity) turns only about 30°/s. The bank reaches −30° against the −50° the balance asks for, which is the balance's lean-in time.
+- By 0.8 s the heading has turned 70° and the rider's path 24°. The board's heading runs 60–70° off the system's path, the nose is up 26–47°, the centre fin's attack is 45–85° (stalled), and the speed falls from 7.2 to 0.2 m/s.
+- Let go, the fins weathervane the board back +100° the other way, and the rider falls ("lost board", 1.85 s).
+- **Cause:** the lean back past the back foot made the board pivot under a body whose path cannot follow. The path is limited by the lean, and the lean by the balance's ~0.5 s lean-in. The board spins under the rider.
+- In round 2 the same run turns −119° by 2 s, and the rider's path turns −111° with it. The heading stays within 24° of the path, the nose comes up 28° at most, and the rider stays on.
+
+**"Falls after", the two moves.** The owner's sequence, headless:
+- Setups: the static 15° plane at 8/9/10 m/s along it; a moving analytic face (`FaceWater`) 1.2 m high at 20° at 7/8/9 m/s from a quarter up it heading 45° from the fall line; the Wave Pool's size, 0.85 m at 14° (4.7 m/s crest), at 7/8 m/s.
+- The moves: the stance and a full steer up for 0.8 s, 0.15 s neutral, then the stance and a full steer back down for 0.8 s.
+- Every stance falls (R2.4). Two causes stack up:
+  1. **The deep U's root (all stances).** Move 1 ends with the body banked 37–42° into the bottom turn, while the board heads only 85–100° from the fall line, along the face, not up it. On a face, the rail's angle to the water is the body's lean plus the face's tilt, so the rail sits 55–60° into the face, past its 48° bite (RAIL_BITE, read against the water).
+     - The feet's room to roll the board further and bring the body back up (the counter-steer) closes.
+     - The upper body's swing is already spent braking the lean-in, and hits its 69° range within 0.3 s.
+     - With the steer reversed or let go, nothing brings the body up, and it falls into the old turn (bank −70°) within 0.3–0.6 s.
+     - It happens even for a bottom turn followed by a neutral steer: 30 of 45 such runs fell before any second move, the rider carried over the top of the face. In the two-move runs Compress stays on in 2 of 8, with its gameplay lean-out pull.
+  2. **Snap's own (round 1, d49c1c87): the stall-spin above.** On the static plane, d49c1c87's second move pivoted the board 85–95° back, with drift 55–113°, the nose up 63°, and a fall.
+
+### R2.2 The change (physics only)
+
+- **The hips over the back foot, not behind it** (`balanceStep`: while Snap is held the upper body stays over the hips; full S keeps its TRIM_SHIFT). The pressure target still asks 85/15 on the back foot (Rapture: 80/20–90/10 at the lip), held within 0.05 m, and the balance's reach (0.25 m) carries the hips over the back foot.
+- Under the board's braking (0.3–0.4 g) the load tips forward by the height times the deceleration. The feet then feel 0.40–0.47 of the load on the front foot riding straight, and 0.43 turning: the most the hips over the back foot give against the braking. Getting 85/15 under that braking takes the centre of mass about 0.2 m behind the back foot. That posture is the stall (the kick-out's), and it was the runaway: the further back, the more nose-up, the more braking.
+- Sources:
+  - the owner ("the hips low over the back foot");
+  - Rapture (the weight on the back foot is the feet's pressure);
+  - the coaching's sequence ("centre the weight, re-engage the fins": the fins must keep working);
+  - the physics measured above.
+- Kept from d49c1c87:
+  - the depth: SNAP_DEPTH 1, 0.3 m, as fast as Compress, extending as Compress does when let go;
+  - the shoulders' aim (`snapAim`);
+  - SNAP_RADIUS 2.2 m;
+  - SNAP_PRESSURE and SNAP_FREEDOM.
+- The dev film's comment (`characterSheet.ts`, `snap-long`) carries the new numbers.
+
+### R2.3 The two moves: why they still fall, physically
+
+- The top move works when it starts from a climb with the body upright: from 150° or 120° up the static face, Snap turns twice as far as the steer alone, with no falls (R2.4).
+- What fails is reversing straight out of a bottom turn's lean. In this model:
+  1. **The lean is held in the board's frame.** The rider's centre of mass is carried rigidly with the board (`coupleStanding`); the body's bank is a roll about the board's heading.
+     - In a real snap the board pivots under a body whose lean stays put in the world. After a pivot of 90° or more, the old lean (toward the bottom turn's centre) lies on the new turn's inside: the pivot itself changes the rails.
+     - Here the lean turns with the board, so after any pivot the body still leans to the old side.
+  2. **The counter-steer is blocked on a face.** Bringing the body up from 40° of lean needs the board rolled further onto the old rail. Climbing a 15–20° face, that rail is already past its bite against the water.
+  3. **The swing's range is spent.** The upper body's swing is a rotor with a 69° range, and its momentum is used up braking the lean-in.
+- Compress gets out of this only through its gameplay lean-out pull. Snap, physics only, has no way out.
+- **Tried and rejected in round 2:**
+  - Letting the board's yaw not carry the centre of mass round the feet (a 'yaw slip' in the solve) while Snap is held: the board did not pivot toward the new turn at all, because the old rail kept carving.
+  - Easing the snap's radius or its tail weight out over 0.3–0.6 s after letting go.
+  - Dropping the projection (the extension) when Snap is let go.
+  - Each of these left the falls as they were or made them worse.
+  - Snap borrowing Compress's lean-out pull (a gameplay rule, probe only): 4 of 8 snaps came back down the face (to 0–41° from the fall line), all falling 1.5–2 s later.
+- **The physical fix** would give the body its own yaw against the board (the legs' and hips' rotation, limited and torque-coupled): the board pivots under a lean that stays in the world. It is a change to the 8-unknown standing solve, and the owner's call (Next steps 2c).
+
+### R2.4 Measured: round 1, d49c1c87 and round 2
+
+**The bottom move** (the trough, still water): the stance and a full steer for 0.6 s, then let go with the steer held on. Values are 7 m/s / 9 m/s.
+
+| | Turned by 0.8 s | Peak | By 2 s (board / rider's path) | Speed kept at 0.8 s / 2 s | Heading off path, most | Nose up, most | Falls |
+|---|---|---|---|---|---|---|---|
+| The steer alone | −24° / −20° | 115 / 99°/s | −118° / −102° | 0.88 / 0.38; 0.91 / 0.57 | 25° / 11° | 20° / 13° | — |
+| Compress (gameplay pull and carry) | −54° / −33° | 146 / 111°/s | −135° / −104° | 0.99 / 0.48; 0.94 / 0.69 | 16° / 7° | 18° / 12° | — |
+| Snap, round 1 | −75° / −38° | 269 / 129°/s | **+23°** (rider −37°) / −68° | 0.51 / 0.05; 0.72 / 0.51 | 69° / 9° | 43° / 18° | 1.80 s / — |
+| Snap, d49c1c87 | −70° / −45° | 242 / 148°/s | **+31°** (rider −34°) / −73° | 0.53 / 0.04; 0.74 / 0.75 | 68° / 27° | 47° / 21° | 1.85 s / 1.85 s |
+| **Snap, round 2** | −44° / −29° | 123 / 148°/s | **−119° (rider −111°) / −119°** | 0.76 / 0.31; 0.83 / 0.55 | 24° / 12° | 28° / 16° | **—** |
+
+- The shoulders lead the board by 39–43° in every Snap.
+- **Falls** over 12 runs each (7 and 9 m/s; the steer held, eased to half, or let go with Snap; keys or pad): round 2 3 of 12, all with the pad's instant input; d49c1c87 10 of 12.
+- The dev film (`snap-long`, pad, 8 m/s): d49c1c87 slowed to 4.2 m/s, turned 56° and fell at 1.9 s; round 2 slows to 5.9 m/s, turns 90° and stays on.
+
+**The top move** (the static 15° face, climbing 150° or 120° from the fall line): the stance and a full steer back down for 0.6 s, the steer held. Each cell gives the heading by 1 s, the speed kept at 1.4 s and any fall.
+
+| | 150°, 6.7 m/s | 150°, 8 m/s | 120°, 6.7 m/s | 120°, 8 m/s |
+|---|---|---|---|---|
+| The steer alone | 42°, 0.20 | 46°, 0.33 | 37°, 0.48 | 36°, 0.58 |
+| Compress | 80°, 0.37 | 84°, 0.64 | 52°, 0.72 | 50°, 0.81 |
+| Snap, round 1 | 112° (150° at 1.18 s), 0.24 | 130°, 0.04, **falls 1.35 s** | 156°, 0.08, **falls 1.27 s** | 66°, 0.21, **falls 1.48 s** |
+| Snap, d49c1c87 | 124° (150° at 1.15 s), 0.18, sliding (heading 143° off path) | 144°, 0.10, **falls 1.37 s** | 150°, 0.28, **falls 1.37 s** | 63°, 0.56 |
+| **Snap, round 2** | **89°, 0.20** | **62°, 0.40** | **62°, 0.42** | **43°, 0.60** |
+
+Round 2's top move:
+- it turns 1.2–2.1 times as far by 1 s as the steer alone, at the steer's or a greater speed cost, and never falls;
+- it is weaker than Compress's gameplay-assisted turn in two of the four cases;
+- its peak yaw rate is 144–214°/s.
+
+The earlier versions pivoted further, but by sliding: the heading ran up to 180° off the path. The board stalled and the rider fell in 2–3 of 4.
+
+**The two moves back to back** (the plane at 8/9/10 m/s, the 1.2 m moving face at 7/8/9 m/s, the 0.85 m moving face at 7/8 m/s; R2.1's setup). Riders on through the whole sequence:
+
+| | round 1 | d49c1c87 | round 2 |
+|---|---|---|---|
+| Steer, then steer back | 0 of 8 | 0 of 8 | 0 of 8 |
+| Compress, then Compress | 2 of 8 (the 0.85 m face) | 2 of 8 | 2 of 8 |
+| Snap, then Snap | 0 of 8 | 0 of 8 | 0 of 8 |
+| Snap's first move (the bottom turn up the face) | −23° to −64° in 0.8 s | −24° to −64° | −23° to −50° (steer −17° to −31°, Compress −30° to −42°) |
+
+The falls are R2.1's deep U.
+
+### R2.5 Coaching check
+
+- de Sousa 2022's final phase of the bottom turn, which leads into the snap: knee and hip extension, the weight to the back foot, the rail released, the trunk rotating.
+  - Round 2 loads and lets go as Compress does: deep, then the projection.
+  - The weight goes to the back foot with the hips over it.
+  - The trunk rotates first.
+  - What the model cannot do is release the rail out of a deep lean on a face (R2.3).
+- Rapture's snap:
+  - the weight 80/20–90/10 on the back foot: round 2 holds 85/15 when not braking, and 57/43 against the board's braking;
+  - the head and shoulders rotating first: yes, by about 75° and 58°;
+  - the fins releasing and the tail sliding: no longer while the rider is on, in round 2 (held on at 7 m/s, the centre fin's attack stays within 7°). The spray comes from the 12–24° of drift that is left;
+  - centre the weight and re-engage the fins: yes, the board carries on round.
+
+### R2.6 Tests
+
+- `snapStance.test.ts` rewritten to round 2's physics (the numbers are in each test's comment):
+  - the weight on the tail: 0.43 on the front foot, against Compress's 0.70 and S's 0.49;
+  - the straight run slowing nose-up;
+  - the centre of mass over the back foot, not behind it (new);
+  - the climb turning twice as far as the steer, the rider on;
+  - the trough turn: sharper than the steer, as far as Compress, peaking 50°/s past both, costing speed;
+  - more speed shed than a carve;
+  - held on: the fins kept, slowing toward a stall, the rider on (this replaced "the fins let go");
+  - let go: carrying on round, not spinning back (new).
+- The pinned `it.fails` still fail.
+- On d49c1c87's code 4 of the 13 fail: the back foot, the climb, the fins and the spin-back.
+- `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
+- The main suite (`--maxWorkers=3`, without `SurfZoneSimulation` and `SurfZoneRunner`): **316 files passed (31 skipped); 3,030 tests passed, 23 expected fails, 37 skipped, 0 failed** (415 s).
+- The Wave Pool subset of `SurfZoneSimulation.test.ts` (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): **36 passed, 68 filtered out, 0 failed** (6,102 s).
+
+### R2.7 The owner's shot list (round 2)
+
+1. **Wave Pool, the Training wave, chase camera, a right (frontside for a regular foot).**
+   - Drop, and at the bottom hold **Q (R1)** with a **full steer toward the wave** for about half a second, then let go of Q.
+   - *See:* the rider sinks at once into a deep crouch: the hips over the back foot, the back knee well bent, the front leg bent too, not braced straight. The head and shoulders turn toward the top of the wave before the board does, the board comes round under them, and the nose lifts a little.
+   - *Feel:* a turn about as sharp as Compress's, more than steering alone, that costs speed.
+   - Let go: the rider rises as after Compress, and the board carries on up the face. It does not spin back the other way.
+2. **The same, then at the top:** hold Q again with a **full steer back down**.
+   - From an upright climb, *see* the shoulders lead and the board come round twice as far as steering alone, slowing hard.
+   - **Expect a fall if the bottom turn is still leaning when you reverse.** That is R2.3 (it happens with steering alone too, and with Compress in most cases). Try it both ways: straight out of the bottom turn, and after letting the board run straight up the face for a moment.
+   - Tell us which it was.
+3. **The Canyon, the same two moves, frontside and backside.**
+4. **Hold Q too long at the bottom.** *See:* the board keeps slowing toward a stall with its fins under it and the rider stays on; it does not spin. On a pad (instant input), letting go of a full steer instantly at low speed can still throw you into the turn.
+5. **A/B:** the same rides with **`?snap=off`**: Q and R1 do nothing.
+
+---
+
+# Round 1 (2026-11-03, PR #186)
 
 ## 1. Research
 
@@ -229,7 +417,7 @@ None turns into a pass. The two roots are unchanged: the balance's lean-in (0.3 
 - New: `src/physics/snapStance.test.ts` (12: byte identity against the pre-snap code, Snap at 0 and absent alike, `?snap=off`, nothing lying down, precedence over the crouch, Compress and the trim, the slowing straight, the pivot off the climb, the speed shed on still water, the fins letting go held on; and three pinned `it.fails`); Snap's cases in `Bindings.test.ts`, `Settings.test.ts` (the layout 4 migration: moved once, the player's own choices kept, unbound where taken), `Controls.test.ts`, `hints.test.ts`, `pocketReflex.test.ts`, `PhysicalMode.test.ts` (`?snap=off`, online pinned), `RideHud.test.ts`, `settingsModel.test.ts`.
 - Updated because the owner moved the camera to R3: `Bindings.test.ts` (R3 is the camera's), `settingsModel.test.ts` (a call rebound to L5 in place of R3; eighteen actions), `Settings.test.ts` (the layout is 4).
 
-## 7. The owner's shot list
+## 7. The owner's shot list (round 1; superseded by R2.7)
 
 1. **The Wave Pool, the Training wave, the chase camera, a right (frontside for a regular foot).** Drop crouched (Shift), Compress (Space / RT) and lean at the base for the bottom turn, let go climbing, and at the top hold **Q (RB)** with a **full steer** back down for about half a second, then let go. *Feel and see:* the hips drop over the back foot, the back knee bends, the nose lifts and the board pivots on its tail (a fast heading change, 200–300°/s at its peak), the speed falls away, a sheet of spray leaves the tail higher than a carve's, and the shoulders turn first. Let go, the fins grip again and the board comes down the face.
 2. **The same, holding Q too long at the lip.** *See:* the tail slides out (the fins let go), the board stalls nose-up, and you fall about 1.3 s in.

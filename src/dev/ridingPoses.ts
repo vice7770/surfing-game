@@ -388,6 +388,8 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
     out.phase = rider.attached ? rider.phase : 'fallen';
     out.weight = rider.attached ? rider.contact.weight : Number.NaN;
+    // As the snapshot carries it (`RIDER_SNAPSHOT.twist`): the upper body's twist, Snap's wound shoulders.
+    out.twist = rider.attached ? rider.twist.angle : 0;
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
     out.heading = Math.atan2(forward.x, forward.z);
     out.boardPosition.copy(board.position);
@@ -483,7 +485,7 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   Object.assign(to, {
     phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, leanRate: from.leanRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
-    separation: from.separation, stance: from.stance, weight: from.weight,
+    separation: from.separation, stance: from.stance, weight: from.weight, twist: from.twist,
   });
   to.boardPosition.copy(from.boardPosition);
   to.boardQuaternion.copy(from.boardQuaternion);

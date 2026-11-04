@@ -1,0 +1,5 @@
+film 8: legs at 0.15 s -0.05, 0.3 s -0.13; speed at the steer 7.4, at the release 5.9; turned -90°; bank max 36°; fell NaN
+film 8, both let go: legs at 0.15 s -0.05, 0.3 s -0.13; speed at the steer 7.4, at the release 5.9; turned -37°; bank max 34°; fell NaN
+film 8, let go at 1.0: legs at 0.15 s -0.05, 0.3 s -0.13; speed at the steer 7.4, at the release 6.6; turned -103°; bank max 46°; fell NaN
+film 6: legs at 0.15 s -0.05, 0.3 s -0.14; speed at the steer 5.5, at the release 4.1; turned -9°; bank max 54°; fell NaN
+film 10: legs at 0.15 s -0.05, 0.3 s -0.11; speed at the steer 9.4, at the release 7.9; turned -81°; bank max 51°; fell NaN
