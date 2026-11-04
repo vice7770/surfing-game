@@ -70,6 +70,11 @@ export interface TubeFaceSwitches {
   tubeClock?: 'old';
   /** Step 7, Q1's (`TubeFace.continuity`, `.distance`, `.contour`, `.wallFlow`). */
   tubeAnchor?: 'old';
+  /**
+   * The crash's switch (`SurfZoneConfig.sweptCrash`, `?poolCrash=off`): the anchor's continuity is kept by the crash
+   * (`CrashCurve.prepareAnchors`), so without it the anchor is computed afresh each build, as step 6's.
+   */
+  sweptCrash?: boolean;
   tubeForm?: 'old';
   tubeThrow?: 'break';
   wallFlow?: 'old';
@@ -90,7 +95,8 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
   return {
     anchor: !piece, union, lag,
     clockRate: !piece && switches.tubeClock !== 'old' ? THROWN_RATE.face : THROWN_RATE.old, thrownEnds: !piece,
-    continuity: !piece && switches.tubeAnchor !== 'old', distance, contour: distance && switches.tubeThrow !== 'break',
+    continuity: !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false, distance,
+    contour: distance && switches.tubeThrow !== 'break',
     wallFlow: !piece && union && switches.wallFlow !== 'old',
   };
 }

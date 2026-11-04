@@ -35,6 +35,8 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     // Formation by distance needs the lag, the wall's water the union.
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ distance: false, contour: false, continuity: true });
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ wallFlow: false, continuity: true, distance: true });
+    // Without the crash (`?poolCrash=off`) nothing keeps the anchor: it is computed each build, as step 6's.
+    expect(tubeFaceOf(true, { sweptCrash: false })).toMatchObject({ continuity: false, distance: true, wallFlow: true });
   });
 
   it('keeps a point\'s shift step to step in the wave\'s frame: capped, held on a miss, never back to the crest anchor, eased from it', () => {

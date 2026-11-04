@@ -338,6 +338,9 @@ marked *(built so)* with its cause.
   pin all four (`src/main.ts:527`).
 - Formation by distance needs the lag (`?tubeLag=0` turns it off with it); the wall's water needs the union
   (`?tubeFace=old` turns it off with it). `?tubeFrom=piece` turns all of step 7 off.
+- The anchor's continuity is kept by the crash, so `?poolCrash=off` turns it off too (the anchor is then computed each
+  build, as step 6's; page and worker alike). The wall's water then takes the anchor as fixed in the bed (the case's own
+  motion alone).
 - The records grow from 10 to 13 floats (`FRONT_STRIDE`); the three new ones are NaN at every other spot and with the
   switches off.
 
