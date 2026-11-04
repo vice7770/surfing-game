@@ -1,0 +1,134 @@
+[
+ {
+  "case": "8 m/s: steer back",
+  "bottom": "0.62 s, 127°/s",
+  "kept": 0.91,
+  "topTurned": -24,
+  "peak": 68,
+  "lowestFromFall": 122,
+  "t120": null,
+  "leastSpeed": 2.6,
+  "fell": 0.83
+ },
+ {
+  "case": "8 m/s: Snap 0.6 s",
+  "bottom": "0.62 s, 127°/s",
+  "kept": 0.91,
+  "topTurned": -43,
+  "peak": 130,
+  "lowestFromFall": 123,
+  "t120": null,
+  "leastSpeed": 1,
+  "fell": 0.95
+ },
+ {
+  "case": "8 m/s: neutral 0.3 s, Snap 0.6 s",
+  "bottom": "0.62 s, 127°/s",
+  "kept": 0.91,
+  "topTurned": -44,
+  "peak": 78,
+  "lowestFromFall": 122,
+  "t120": null,
+  "leastSpeed": 3,
+  "fell": 0.87
+ },
+ {
+  "case": "8 m/s: Snap 0.6 s, no steer first 0.2 s",
+  "bottom": "0.62 s, 127°/s",
+  "kept": 0.91,
+  "topTurned": -96,
+  "peak": 153,
+  "lowestFromFall": 122,
+  "t120": null,
+  "leastSpeed": 2.1,
+  "fell": 1.02
+ },
+ {
+  "case": "9 m/s: steer back",
+  "bottom": "0.68 s, 125°/s",
+  "kept": 0.88,
+  "topTurned": -32,
+  "peak": 60,
+  "lowestFromFall": 122,
+  "t120": null,
+  "leastSpeed": 3.7,
+  "fell": 0.83
+ },
+ {
+  "case": "9 m/s: Snap 0.6 s",
+  "bottom": "0.68 s, 125°/s",
+  "kept": 0.88,
+  "topTurned": 30,
+  "peak": 212,
+  "lowestFromFall": 91,
+  "t120": null,
+  "leastSpeed": 1.4,
+  "fell": 1.17
+ },
+ {
+  "case": "9 m/s: neutral 0.3 s, Snap 0.6 s",
+  "bottom": "0.68 s, 125°/s",
+  "kept": 0.88,
+  "topTurned": -63,
+  "peak": 117,
+  "lowestFromFall": 122,
+  "t120": null,
+  "leastSpeed": 3.9,
+  "fell": 0.9
+ },
+ {
+  "case": "9 m/s: Snap 0.6 s, no steer first 0.2 s",
+  "bottom": "0.68 s, 125°/s",
+  "kept": 0.88,
+  "topTurned": -32,
+  "peak": 160,
+  "lowestFromFall": 122,
+  "t120": null,
+  "leastSpeed": 1.1,
+  "fell": 1.07
+ },
+ {
+  "case": "10 m/s: steer back",
+  "bottom": "0.73 s, 137°/s",
+  "kept": 0.87,
+  "topTurned": -31,
+  "peak": 69,
+  "lowestFromFall": 121,
+  "t120": null,
+  "leastSpeed": 4.6,
+  "fell": 0.97
+ },
+ {
+  "case": "10 m/s: Snap 0.6 s",
+  "bottom": "0.73 s, 137°/s",
+  "kept": 0.87,
+  "topTurned": 32,
+  "peak": 139,
+  "lowestFromFall": 88,
+  "t120": null,
+  "leastSpeed": 3.9,
+  "fell": 1.45
+ },
+ {
+  "case": "10 m/s: neutral 0.3 s, Snap 0.6 s",
+  "bottom": "0.73 s, 137°/s",
+  "kept": 0.87,
+  "topTurned": -82,
+  "peak": 100,
+  "lowestFromFall": 121,
+  "t120": null,
+  "leastSpeed": 4,
+  "fell": 1.18
+ },
+ {
+  "case": "10 m/s: Snap 0.6 s, no steer first 0.2 s",
+  "bottom": "0.73 s, 137°/s",
+  "kept": 0.87,
+  "topTurned": 102,
+  "peak": 174,
+  "lowestFromFall": 18,
+  "t120": null,
+  "leastSpeed": 0.4,
+  "fell": 1.97
+ }
+]

@@ -142,6 +142,11 @@ export interface SurfZoneConfig {
    */
   extension?: 'old';
   /**
+   * 'off': the riders' Snap input is ignored, as before the snap stance (2026-11-03; `RideSessionOptions.snap`). Every
+   * spot. The `?snap=off` dev switch, for A/Bs; online rooms run the default.
+   */
+  snap?: 'off';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

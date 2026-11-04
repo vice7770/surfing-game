@@ -56,6 +56,20 @@ describe('bindings', () => {
     expect(onShift.keyboard.crouch).toEqual(['Space', 'ShiftRight']);
   });
 
+  // The snap stance (the owner, 2026-11-03): Snap on Q and RB standing; the camera moves from RB to R3. Rebindable.
+  it('snaps on Q and RB standing, the camera on R3, clashing with nothing', () => {
+    expect(ACTION_CONTEXT.snap).toBe('standing');
+    expect(DEFAULT_BINDINGS.keyboard.snap).toEqual(['KeyQ']);
+    expect(DEFAULT_BINDINGS.gamepad.snap).toEqual([5]);
+    expect(DEFAULT_BINDINGS.gamepad.camera).toEqual([11]);
+    expect(heldActions(new Set(['KeyQ']), [], DEFAULT_BINDINGS)).toEqual(new Set(['snap']));
+    expect(heldActions(new Set(), [pad([5])], DEFAULT_BINDINGS)).toEqual(new Set(['snap']));
+    expect(REBINDABLE).toContain('snap');
+    const onE = rebind(DEFAULT_BINDINGS, 'keyboard', 'snap', 0, 'KeyE');
+    expect(onE.keyboard.snap).toEqual(['KeyE']);
+    expect(onE.keyboard.hand).toEqual(['KeyQ']);
+  });
+
   it('never binds Escape or Start, and never leaves an action without a key', () => {
     expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'paddle', 0, 'Escape')).toBe(DEFAULT_BINDINGS);
     expect(rebind(DEFAULT_BINDINGS, 'gamepad', 'paddle', 0, 9)).toBe(DEFAULT_BINDINGS);
@@ -102,7 +116,8 @@ describe('bindings', () => {
     expect(heldActions(new Set(), [pad([2, 1])], DEFAULT_BINDINGS)).toEqual(new Set(['callParty', 'callNice']));
     expect(DEFAULT_BINDINGS.gamepad.callLeft).toEqual([]);
     expect(DEFAULT_BINDINGS.gamepad.callRight).toEqual([]);
-    expect(heldActions(new Set(), [pad([11])], DEFAULT_BINDINGS)).toEqual(new Set());
+    // R3 left the calls (duck-dive-l3) and is the camera's since the snap stance.
+    expect(heldActions(new Set(), [pad([11])], DEFAULT_BINDINGS)).toEqual(new Set(['camera']));
     for (const call of ['callLeft', 'callRight', 'callParty', 'callNice'] as const) {
       expect(REBINDABLE).toContain(call);
       for (const code of DEFAULT_BINDINGS.keyboard[call]) expect(heldActions(new Set([code]), [], DEFAULT_BINDINGS)).toEqual(new Set([call]));

@@ -36,6 +36,8 @@ interface Controls {
   trim?: number;
   crouch?: number;
   compress?: number;
+  /** Snap held (the snap stance, 2026-11-03), 0–1. */
+  snap?: number;
   hand?: boolean;
   /** Lying, the paddle held (the arms stroke). */
   paddle?: boolean;
@@ -305,7 +307,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       }
       session.step(STEP, water, {
         paddle: controls.paddle === true || controls.swim === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch,
-        compress: controls.compress, hand: controls.hand, reel: controls.reel === true,
+        compress: controls.compress, ...(controls.snap === undefined ? {} : { snap: controls.snap }), hand: controls.hand, reel: controls.reel === true,
       });
       if (throwing && session.surfer.active) {
         throwing = false;
@@ -317,6 +319,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       rider.trim = controls.trim ?? 0;
       rider.crouch = controls.crouch ?? 0;
       rider.compress = controls.compress ?? 0;
+      rider.snap = controls.snap ?? 0;
       rider.hand = controls.hand ?? false;
       board.step(STEP, water);
     }
@@ -385,6 +388,8 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
     out.phase = rider.attached ? rider.phase : 'fallen';
     out.weight = rider.attached ? rider.contact.weight : Number.NaN;
+    // As the snapshot carries it (`RIDER_SNAPSHOT.twist`): the upper body's twist, Snap's wound shoulders.
+    out.twist = rider.attached ? rider.twist.angle : 0;
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
     out.heading = Math.atan2(forward.x, forward.z);
     out.boardPosition.copy(board.position);
@@ -480,7 +485,7 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   Object.assign(to, {
     phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, leanRate: from.leanRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
-    separation: from.separation, stance: from.stance, weight: from.weight,
+    separation: from.separation, stance: from.stance, weight: from.weight, twist: from.twist,
   });
   to.boardPosition.copy(from.boardPosition);
   to.boardQuaternion.copy(from.boardQuaternion);

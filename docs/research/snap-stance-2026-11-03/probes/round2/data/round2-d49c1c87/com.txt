@@ -1,0 +1,10 @@
+0.10 com-over-rear 0.291 pelvis-over-rear 0.285
+0.20 com-over-rear 0.218 pelvis-over-rear 0.194
+0.30 com-over-rear 0.121 pelvis-over-rear 0.074
+0.40 com-over-rear 0.033 pelvis-over-rear -0.034
+0.50 com-over-rear -0.030 pelvis-over-rear -0.110
+0.60 com-over-rear -0.075 pelvis-over-rear -0.164
+0.70 com-over-rear -0.095 pelvis-over-rear -0.190
+0.80 com-over-rear -0.112 pelvis-over-rear -0.210
+0.90 com-over-rear -0.122 pelvis-over-rear -0.221
+1.00 com-over-rear -0.136 pelvis-over-rear -0.236

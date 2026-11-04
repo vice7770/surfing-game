@@ -61,6 +61,9 @@ describe('pocket reflex', () => {
   it('stands aside while the rider compresses', () => {
     const compressing = { ...ride, compress: 1 };
     expect(withPocketReflex(compressing, at(20), 'standing')).toBe(compressing);
+    // The snap stance: Snap's weight is on the tail.
+    const snapping = { ...ride, snap: 1 };
+    expect(withPocketReflex(snapping, at(20), 'standing')).toBe(snapping);
   });
 
   it('is on in Practice by default, always, or never', () => {

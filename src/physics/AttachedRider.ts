@@ -649,6 +649,44 @@ const STEER_DEADBAND = 0.05;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
+ * Snap (the snap stance, the owner's decisions of 2026-11-03; docs/research/snap-stance-2026-11-03/README.md): held
+ * standing, the weight goes onto the tail for a sharp turn that sheds speed. Nothing here pushes the board: each term
+ * is the rider's own posture, and the turn and the speed it costs are the hull's and the fins' (`BoardBody`).
+ * - **The weight on the tail:** the balance holds the feet's pressure SNAP_PRESSURE of half the stance toward the back
+ *   foot, over the side fins (0.7: 85/15 on the back foot; Rapture's snap, 80/20 to 90/10), within SNAP_FREEDOM, m,
+ *   where the trim lets it wander TRIM_FREEDOM (the coaching's "commit to extreme back-foot loading"). The hull trims
+ *   nose up until its lift sits under the load (the Exploratorium's surfing physics; Savitsky 1964): the wetted length
+ *   shortens into the rockered tail, the nose leaves the water, the yaw it resisted goes, and the trim's drag slows the
+ *   board. The hips go over the back foot, not behind it: the upper body stays over them (no TRIM_SHIFT, which S keeps).
+ *   Round 2 (the owner's "the board moves by itself ... the rider falls after"): leaning the upper body back as full S
+ *   does on top of the pressure put the centre of mass 0.15 m behind the back foot. Under the board's braking the
+ *   balance then kept the pressure on the tail only by sitting further back, the nose rose 20–47°, and the board
+ *   pivoted about the rider at about 200°/s while the rider's own path turned at about 30°/s: its heading ran 60–70°
+ *   off its path, the fins stalled (attack 45–85°), the speed fell to 0.2 m/s, and let go, the fins weathervaned it
+ *   back 100° and the rider fell (flat water, 7 m/s). The drawn hips sat behind the back foot on a pitched board and
+ *   the crouch read half its depth. Over the back foot, the same turn keeps its fins (the heading within 25–30° of the
+ *   path) and the rider stays on (docs/research/snap-stance-2026-11-03/README.md, Round 2).
+ * - **The body loaded:** the legs come down SNAP_DEPTH of CROUCH_DEPTH (0.3 m, Compress's depth) as fast as Compress
+ *   takes them (no slower than the load falls, the legs only pushing), and let go they extend as Compress's do (the
+ *   projection). With the hips over the back foot the back knee closes past 90° and the front leg stays long (the
+ *   kick-out's and the top turn's sourced knees, the animation-realism plan §5.11, §5.15; round 2: the owner's "the
+ *   rider should load itself ready for the movement like the other stances", where 0.15 m read as standing).
+ * - **The shoulders turning first:** the upper body's twist (TWIST_RANGE, through the feet's grip) wound at once toward
+ *   where the turn ends (`snapAim`) and unwound as the board comes round under it (Rapture: the head and shoulders
+ *   rotate first; de Sousa 2022: the trunk rotates, the chest to the lip).
+ * - **The lean the turn can hold:** the rider leans for a turn of SNAP_RADIUS, m, in place of TURN_RADIUS: the tail's
+ *   rocker carves tighter than the whole rail, and real cutbacks and top turns run on a 2.2 m radius (Forsyth et al.
+ *   2024).
+ * Snap wins over the crouch, Compress and the trim held with it. The fins stall past FIN_STALL (`finForces`): pivoted
+ * hard enough, the tail slides.
+ */
+const SNAP_PRESSURE = 0.7;
+const SNAP_FREEDOM = 0.05;
+const SNAP_DEPTH = 1;
+/** A face tilted less than this, its slope's sine, has no fall line for Snap's aim (flat water, a swell's back). */
+const SNAP_FACE = Math.sin((5 * Math.PI) / 180);
+const SNAP_RADIUS = 2.2;
+/**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
  * and, under a tube's curl, a deeper manual tuck. Compress shortens the leg by up
  * to CROUCH_DEPTH, m, and full manual crouch by CROUCH_SHARE of it (the pumping
@@ -1039,6 +1077,12 @@ export class AttachedRider {
   crouch = 0;
   /** Standing, Compress: 0 (none) to 1 (full depth; the weight stays the trim's), taken alone or over the crouch. */
   compress = 0;
+  /** Standing, Snap (the snap stance): 0 (none) to 1 (held): the weight on the tail, the back knee deep, the shoulders turning toward the steer; it wins over the crouch, Compress and the trim. */
+  snap = 0;
+  /** Snap's aim, latched as it is taken: the side the turn goes (+1 the board's left), and where on the face it ends (level, unit; zero on flat water). */
+  private snapSide = 0;
+  private readonly snapTarget = new Vector3();
+  private snapHeld = false;
   /** Standing, the upper body's rotation asked for (`RideInput.rotate`), −1 to 1 toward the board's +x; NaN when none is (the body turns with the ride). */
   rotate = Number.NaN;
   /** Standing, the wave-side hand reaches for the water. */
@@ -1306,6 +1350,22 @@ export class AttachedRider {
    */
   private get banking(): boolean {
     return this.upright && this.phase === 'standing' && this.banked;
+  }
+
+  /** Snap held, 0–1 (the snap stance): standing only; it wins over the crouch, Compress and the trim. */
+  private get snapping(): number {
+    return this.upright && this.phase === 'standing' && this.snap > 0 ? Math.min(1, this.snap) : 0;
+  }
+
+  /** The crouch and Compress asked for, as the stance takes them: Snap held wins over both. */
+  private get crouchAsked(): number {
+    const snap = this.snapping;
+    return snap > 0 ? this.crouch * (1 - snap) : this.crouch;
+  }
+
+  private get compressAsked(): number {
+    const snap = this.snapping;
+    return snap > 0 ? this.compress * (1 - snap) : this.compress;
   }
 
   get stanceSign(): number {
@@ -1985,7 +2045,9 @@ export class AttachedRider {
     // The bank asked for, no more than a turn at the board's speed through the water can hold, eased in.
     const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
     const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
-    const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS))) : 0;
+    // Snap: the lean a tail-weighted turn can hold (SNAP_RADIUS).
+    const radius = this.snapping > 0 ? TURN_RADIUS + this.snapping * (SNAP_RADIUS - TURN_RADIUS) : TURN_RADIUS;
+    const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius))) : 0;
     const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
@@ -2037,7 +2099,10 @@ export class AttachedRider {
    * the hips' torque no more than they give and the feet's grip holds.
    */
   private twistStep(h: number): void {
-    const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE : 0;
+    const snap = this.snapping;
+    if (!(snap > 0)) this.snapHeld = false;
+    const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE
+      : snap > 0 ? snap * this.snapAim() : 0;
     const most = Math.min(TWIST_TORQUE, FOOT_FRICTION * this.legLoad * TWIST_GRIP_RADIUS);
     const wanted = TWIST_INERTIA * (TWIST_FREQUENCY * TWIST_FREQUENCY * (asked - this.twist.angle) - 2 * TWIST_FREQUENCY * this.twist.rate);
     this.twistTorque = Math.max(-most, Math.min(most, wanted));
@@ -2050,6 +2115,36 @@ export class AttachedRider {
   }
 
   /**
+   * Snap's aim, rad: the shoulders wound toward where the turn ends. Taken with Snap (and again when the steer changes
+   * side), the turn goes the steer's way (or, unsteered, the way to the face's fall line reversed) and ends on the fall
+   * line reversed: straight up the face from below, straight down it from above (the owner's two moves, the video's).
+   * The shoulders lead the board by as much as the spine turns (TWIST_RANGE) and unwind as the board comes round under
+   * them, the hips taking it round through the feet. On flat water the turn has no end: they lead by the whole range.
+   */
+  private snapAim(): number {
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    const steer = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : 0;
+    if (!this.snapHeld || (steer !== 0 && steer !== this.snapSide)) {
+      const downhill = this.scratch2.set(this.waterUp.x, 0, this.waterUp.z);
+      const slope = downhill.length();
+      if (!this.snapHeld) this.snapTarget.set(0, 0, 0);
+      if (slope > SNAP_FACE && (!this.snapHeld || this.snapTarget.lengthSq() === 0)) {
+        downhill.divideScalar(slope);
+        // The fall line the other way to the board's.
+        this.snapTarget.copy(downhill).multiplyScalar(forward.dot(downhill) > 0 ? -1 : 1);
+      }
+      const across = forward.x * this.snapTarget.z - forward.z * this.snapTarget.x;
+      this.snapSide = steer !== 0 ? steer : this.snapTarget.lengthSq() > 0 ? (across < 0 ? 1 : -1) : 0;
+      this.snapHeld = true;
+    }
+    if (this.snapTarget.lengthSq() === 0) return this.snapSide * TWIST_RANGE;
+    // How far the target lies round the turn's way, 0 to 2π (the board's left, +, turns from +z toward +x).
+    const toward = Math.atan2(this.snapTarget.x, this.snapTarget.z) - Math.atan2(forward.x, forward.z);
+    const round = ((this.snapSide * toward) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    return this.snapSide * Math.min(TWIST_RANGE, round > 1.5 * Math.PI ? 0 : round);
+  }
+
+  /**
    * COMPRESS_PULL: compressing into a turn, planing, the body is pulled in across the board's path by the lean asked
    * for; CARVE_CARRY pushes it along the path; LEAN_OUT_PULL pulls a body still leaning the other way toward the new rail.
    */
@@ -2058,8 +2153,8 @@ export class AttachedRider {
     this.carryForce.set(0, 0, 0);
     this.leanOutForce.set(0, 0, 0);
     // Compress keeps its pumping-stance activation; a deeper manual tuck does not disable a pressed turn control.
-    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
-    const compress = Math.max(0, Math.min(1, this.compress));
+    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouchAsked));
+    const compress = Math.max(0, Math.min(1, this.compressAsked));
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
     // The board's path through the water: the carve's and the drag's (on moving water the path over the ground is off it).
     const along = this.scratch.set(board.velocity.x - this.waterFlow.x, 0, board.velocity.z - this.waterFlow.z);
@@ -2113,12 +2208,14 @@ export class AttachedRider {
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
     // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
-    const crouch = this.covered ? manualCrouchShare(this.crouch, this.compress) : CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
-    const compress = Math.max(0, Math.min(1, this.compress));
-    const asked = -Math.max(crouch, compress) * CROUCH_DEPTH;
+    const crouchAsked = this.crouchAsked;
+    const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
+    const compress = Math.max(0, Math.min(1, this.compressAsked));
+    const snap = this.snapping;
+    const asked = -(snap > 0 ? Math.max(crouch, compress, snap * SNAP_DEPTH) : Math.max(crouch, compress)) * CROUCH_DEPTH;
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
-    if (compress > 0) this.fromCompress = true;
+    if (compress > 0 || snap > 0) this.fromCompress = true;
     else if (asked < 0) this.fromCompress = false;
     if (asked < 0 || !this.fromCompress || this.phase !== 'standing' || !this.planing) {
       this.tall = 0;
@@ -2134,7 +2231,8 @@ export class AttachedRider {
     if (this.tallReached) this.tall = Math.max(0, this.tall - h / EXTENSION_SETTLE);
     const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
-    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
+    // Snap loads as Compress does: down at least as fast as the load, the legs only pushing.
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * SNAP_DEPTH > crouch;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
@@ -2922,6 +3020,10 @@ export class AttachedRider {
     // Standing, W/S set the pressure the rider holds along the board (TRIM_PRESSURE); landing and lying, the middle.
     this.copTarget.z = this.upright && this.phase === 'standing'
       ? (Math.max(-1, Math.min(1, this.trim)) * TRIM_PRESSURE * (this.feet.front - this.feet.rear)) / 2 : 0;
+    // Snap: the pressure onto the back foot, over the fins (SNAP_PRESSURE), held closer (SNAP_FREEDOM).
+    const snap = this.snapping;
+    if (snap > 0) this.copTarget.z += snap * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
+    const freedom = snap > 0 ? TRIM_FREEDOM + snap * (SNAP_FREEDOM - TRIM_FREEDOM) : TRIM_FREEDOM;
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (!this.upright && this.inContact) {
@@ -2961,7 +3063,7 @@ export class AttachedRider {
       // Standing, the bank balances across the board (`prepareBank`); landing, as along it, balance only keeps the load clear of the feet's edges.
       const keepX = this.upright ? Math.min(wantX + LATERAL_FREEDOM, Math.max(wantX - LATERAL_FREEDOM, this.smoothedCop.x)) : wantX;
       const targetX = this.banking ? 0 : Math.min(reach.x, Math.max(-reach.x, this.balance.x + (keepX - this.smoothedCop.x) / share));
-      const keepZ = Math.min(wantZ + TRIM_FREEDOM, Math.max(wantZ - TRIM_FREEDOM, this.smoothedCop.z));
+      const keepZ = Math.min(wantZ + freedom, Math.max(wantZ - freedom, this.smoothedCop.z));
       const targetZ = Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
       this.shiftAxis('x', targetX, reach.x, h);
       this.shiftAxis('z', targetZ, reach.z, h);
@@ -2971,7 +3073,9 @@ export class AttachedRider {
     }
     // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
-    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    const level = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    // Snap: the upper body over the hips, which the pressure has put over the back foot (no lean back past it).
+    const trim = snap > 0 ? level * (1 - snap) : level;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
   }
@@ -3018,7 +3122,7 @@ export class AttachedRider {
     this.handSide = 0;
     if (this.phase !== 'standing' || !this.attached) return;
     if (!this.hand) {
-      if (this.compress >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
+      if (this.compressAsked >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
       return;
     }
     const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation).setY(0);

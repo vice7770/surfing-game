@@ -433,6 +433,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...frothSwitch(),
     // `?extension=old`: the legs extending at their full pace letting Compress go, as before compress-exit, for A/Bs.
     ...extensionSwitch(),
+    // `?snap=off`: the riders' Snap input ignored, as before the snap stance, for A/Bs.
+    ...snapSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -603,6 +605,14 @@ export function frothSwitch(search?: string): { froth?: 'old' } {
  */
 export function extensionSwitch(search?: string): { extension?: 'old' } {
   return devParam('extension', search)?.trim().toLowerCase() === 'old' ? { extension: 'old' } : {};
+}
+
+/**
+ * The `?snap=off` dev switch (`SurfZoneConfig.snap`, the snap stance 2026-11-03): every spot's rider ignores Snap's
+ * input (Q, RB, the touch button), as before the stance.
+ */
+export function snapSwitch(search?: string): { snap?: 'off' } {
+  return devParam('snap', search)?.trim().toLowerCase() === 'off' ? { snap: 'off' } : {};
 }
 
 /**

@@ -89,9 +89,10 @@ export interface ControlSettings extends StickSettings {
   handedness: 'right' | 'left';
   /**
    * Which default pad layout the bindings started from: 2 since C1 moved the hand to LB, 3 since duck-dive-l3 moved the
-   * duck-dive to L3 and took the calls off the stick clicks. An older save is migrated once.
+   * duck-dive to L3 and took the calls off the stick clicks, 4 since the snap stance put Snap on RB and the camera on R3.
+   * An older save is migrated once.
    */
-  padLayout: 3;
+  padLayout: 4;
 }
 
 export interface AccessibilitySettings {
@@ -149,7 +150,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     graphics: {
       preset: 'auto', ...PRESETS.medium, glow: false, glowAntialias: 2,
     },
-    controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 3 },
+    controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 4 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
     accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false, monoAudio: false },
     surfer: { ...DEFAULT_SURFER },
@@ -180,10 +181,13 @@ function within(value: unknown, min: number, max: number, fallback: number): num
  * Each pad layout's moves, by the layout they replaced: a save from before it still holds the old defaults unless the
  * player changed them. Layout 2 (C1): the hand off X (the party call only exists since N1). Layout 3 (duck-dive-l3,
  * 2026-10-31): the duck-dive from LT to L3, the left and right calls off the stick clicks (keys only by default).
+ * Layout 4 (the snap stance, 2026-11-03): the camera from RB to R3, which frees RB for Snap (an action new to the save,
+ * given its defaults below where they are free).
  */
 const LEGACY_PAD_DEFAULTS: readonly { layout: number; old: Partial<Record<Action, number[]>> }[] = [
   { layout: 2, old: { hand: [2], popUp: [0], callParty: [4] } },
   { layout: 3, old: { duckDive: [6, 13], callLeft: [10], callRight: [11] } },
+  { layout: 4, old: { camera: [5] } },
 ];
 
 function sanitizeBindings(raw: unknown, defaults: Bindings, layout: number): Bindings {
@@ -299,7 +303,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       stickResponse: oneOf(controls.stickResponse, ['linear', 'precise'] as const, defaults.controls.stickResponse),
       deadzoneSteam: within(controls.deadzoneSteam, 0, MAX_DEADZONE, defaults.controls.deadzoneSteam),
       deadzoneGamepad: within(controls.deadzoneGamepad, 0, MAX_DEADZONE, defaults.controls.deadzoneGamepad),
-      padLayout: 3,
+      padLayout: 4,
     },
     audio: {
       master: within(audio.master, 0, 1, defaults.audio.master),

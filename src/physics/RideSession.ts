@@ -36,6 +36,11 @@ export interface RideInput {
   crouch?: number;
   /** Standing, Compress selects the sharp-turn stance, easing out a deeper tube tuck; weight stays the trim's. */
   compress?: number;
+  /**
+   * Standing, Snap (the snap stance, 2026-11-03): 0 to 1, held. The weight on the tail, the back knee deep, the shoulders
+   * turning toward the steer: with a full steer, the snap off the top. It wins over the crouch, Compress and the trim.
+   */
+  snap?: number;
   /** Standing, the wave-side hand in the water. */
   hand?: boolean;
   /**
@@ -99,6 +104,11 @@ export interface RideSessionOptions {
    * rider is the swimmer's own body held to the rails; 'old' (the `?duckBody=old` dev switch): as before.
    */
   duckBody?: 'old';
+  /**
+   * The snap stance (2026-11-03): 'off' (the `?snap=off` dev switch, for A/Bs) ignores Snap's input, so the rider rides as
+   * before it.
+   */
+  snap?: 'off';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -165,6 +175,8 @@ export class RideSession {
   readonly duckBody = new DuckingBody();
   /** 'old' (`?duckBody=old`): the duck-dive is the rigid rider's posture, as before. */
   private readonly duckOld: boolean;
+  /** 'off' (`?snap=off`): Snap's input is ignored. */
+  private readonly snapOff: boolean;
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
   readonly started = { momentum: new Vector3(), center: new Vector3() };
   private field?: SurfWaterBodyField;
@@ -175,6 +187,7 @@ export class RideSession {
   constructor(options: RideSessionOptions = {}) {
     this.board = new BoardBody({ ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}) });
     this.duckOld = options.duckBody === 'old';
+    this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
     });
@@ -289,6 +302,7 @@ export class RideSession {
       rider.trim = input.trim ?? 0;
       rider.crouch = input.crouch ?? 0;
       rider.compress = input.compress ?? 0;
+      rider.snap = this.snapOff ? 0 : input.snap ?? 0;
       rider.rotate = input.rotate ?? Number.NaN;
       rider.hand = input.hand ?? false;
       rider.duckDive = input.duckDive ?? 0;

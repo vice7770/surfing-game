@@ -314,7 +314,7 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
-      // The touch buttons show for the rider's phase: paddle lying down, Crouch and Compress standing.
+      // The touch buttons show for the rider's phase: paddle lying down, Crouch, Compress and Snap standing.
       this.root.dataset.phase = ride?.phase ?? '';
       // Broken water coming at the rider: a breaking crest seaward of it (the wipeout spec's duck-dive hint).
       const coming = ride?.wave.valid && ride.wave.crestBreaking > 0.3 && ride.wave.aheadOfCrest > 0 ? ride.wave.aheadOfCrest : Infinity;
@@ -828,6 +828,7 @@ export class App {
       if (id === 'lean') return t('hint.lean', { keys: '← →' });
       if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
       if (id === 'compress') return t('hint.compress', { keys: t('touch.compress') });
+      if (id === 'snap') return t('hint.snap', { keys: t('touch.snap') });
       // Touch has no duck-dive (the milestone spec's touch subset); its pop-up button reels the leash.
       if (id === 'reel') return t('hint.reel', { keys: t('touch.popUp') });
       return '';
@@ -850,7 +851,7 @@ export class App {
   private readonly actionLabel: ActionLabel = (action) => {
     if (this.touchActive()) {
       const touch: Partial<Record<Action, StringKey>> = {
-        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', steerLeft: 'touch.left', steerRight: 'touch.right',
+        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', snap: 'touch.snap', steerLeft: 'touch.left', steerRight: 'touch.right',
       };
       const key = touch[action];
       return key ? t(key) : '—';
@@ -1052,6 +1053,7 @@ export class App {
     label('touch-popup', 'touch.popUp');
     label('touch-crouch', 'touch.crouch');
     label('touch-compress', 'touch.compress');
+    label('touch-snap', 'touch.snap');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {
