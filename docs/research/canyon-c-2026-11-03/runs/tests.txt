@@ -1,0 +1,38 @@
+# Tests, 2026-11-04 (branch claude/canyon-c after 97e6664a; the Canyon subset at the same code)
+## npx tsc --noEmit -p . ; npx tsc -p server/tsconfig.json --noEmit
+tsc root ok
+tsc server ok
+
+## npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/canyon-xl
+
+ ❯ src/wave/barrel/barrelLibrary.test.ts (0 test)
+ ❯ src/wave/barrel/caseFromLibrary.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/barrelLibrary.test.ts [ src/wave/barrel/barrelLibrary.test.ts ]
+Error: ENOENT: no such file or directory, open 'docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/wave/barrel/caseFromLibrary.test.ts [ src/wave/barrel/caseFromLibrary.test.ts ]
+Error: ENOENT: no such file or directory, open 'docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json'
+
+
+ Test Files  2 failed | 313 passed | 31 skipped (346)
+      Tests  3008 passed | 20 expected fail | 37 skipped (3065)
+   Start at  06:38:52
+   Duration  432.48s (tests 97%, import 3%)
+
+exit 1
+The two failed suites are this sparse worktree's: they read docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json, which is tracked but outside the sparse checkout. With the file restored from HEAD they pass (2 files, 16 tests), and the file was removed again.
+
+## npx vitest run src/wave/SurfZoneSimulation.test.ts --maxWorkers=3 -t "[Cc]anyon"
+ Test Files  1 passed (1)
+      Tests  21 passed | 86 skipped (107)
+   Start at  06:46:37
+   Duration  1408.58s (tests 100%)
+
+exit 0

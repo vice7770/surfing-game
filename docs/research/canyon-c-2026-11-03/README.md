@@ -182,6 +182,12 @@ What the numbers say:
   `git archive ca567450` and the branch (`pin-values.ts` with `--bed b`, then `--bed old`) and compare (`runs/pin-2.txt`).
 - The bars: bundle `frame-probe.ts` and run it per size and seed with `--periods 12 --json <file>` (`--bed half` for
   (b), `--join zone` for the head), then `node pool.mjs <a.json>,<b.json>,…`; `strip.mjs` tiles its `--stills`.
+- **Last run** (`runs/tests.txt`): both type-checks clean; the main suite 313 files passed, 3008 tests passed, 20 expected
+  fails (as before), 37 skipped, and 2 suites failed only because this sparse worktree lacks a tracked data file
+  (`round6-tube-profiles/data/padang-ray-L11-profiles.json`; with it restored they pass, 16 tests); the Canyon subset 21
+  passed. New tests: the join on and off the face, the zone rule, the half ramp's geometry and starts, the two switches,
+  the per-cell field (B and A unchanged by the rule) and the device's z-keyed field. Changed: `Bathymetry.test.ts`'s
+  `canyonJoin` calls take z (the signature), and its version C join test is split into the bed rule and the zone rule.
 
 ## The stills (`top-*.jpg`, the solver's white from above, seaward up, +x to the right, one set's line every 3–8 s)
 
