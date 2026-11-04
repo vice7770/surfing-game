@@ -60,6 +60,23 @@ const quantile = (values: number[], q: number) => {
   const sorted = [...values].sort((a, b) => a - b);
   return sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
 };
+/** The largest and smallest of a list, by a loop (a spread overflows the stack on a 12-period run's samples). */
+const most = (...lists: (number[] | number)[]) => {
+  let best = -Infinity;
+  for (const list of lists) {
+    if (typeof list === 'number') { if (list > best) best = list; continue; }
+    for (const v of list) if (v > best) best = v;
+  }
+  return best;
+};
+const least = (...lists: (number[] | number)[]) => {
+  let best = Infinity;
+  for (const list of lists) {
+    if (typeof list === 'number') { if (list < best) best = list; continue; }
+    for (const v of list) if (v < best) best = v;
+  }
+  return best;
+};
 const fmt = (value: number, digits = 2) => (value === value ? value.toFixed(digits) : '—');
 const q3 = (values: number[], digits = 2) => (values.length ? `${fmt(quantile(values, 0.1), digits)} / ${fmt(quantile(values, 0.5), digits)} / ${fmt(quantile(values, 0.9), digits)}` : '—');
 const pct = (part: number, whole: number) => (whole > 0 ? `${((100 * part) / whole).toFixed(1)} %` : '—');
@@ -860,11 +877,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // Bar 1.
     const all1 = reads.flatMap((r) => r.d);
     lines.push('');
-    lines.push(`## Bar 1, support − solver ≥ −0.02 m on 100 % of face reads (0.05–1.0 H_s): ${pct(all1.filter((v) => v >= -0.02).length, all1.length)} of ${all1.length}; min ${fmt(Math.min(...all1), 3)} m; p0.1 ${fmt(quantile(all1, 0.001), 3)}`);
+    lines.push(`## Bar 1, support − solver ≥ −0.02 m on 100 % of face reads (0.05–1.0 H_s): ${pct(all1.filter((v) => v >= -0.02).length, all1.length)} of ${all1.length}; min ${fmt(least(all1), 3)} m; p0.1 ${fmt(quantile(all1, 0.001), 3)}`);
     for (const [name, test] of bins) {
       const bin = reads.filter(test);
       if (!bin.length) continue;
-      lines.push(`- ${name} (n ${bin.length}): ` + FACES.map((f, j) => { const v = bin.map((r) => r.d[j]); return `${f}: ${fmt(quantile(v, 0.5), 2)} (min ${fmt(Math.min(...v), 2)})`; }).join(' | '));
+      lines.push(`- ${name} (n ${bin.length}): ` + FACES.map((f, j) => { const v = bin.map((r) => r.d[j]); return `${f}: ${fmt(quantile(v, 0.5), 2)} (min ${fmt(least(v), 2)})`; }).join(' | '));
     }
     // The wall the ruling foresees over today's slope (0.76 / 1.02 m at the throw at 1.5 / 1.8 m on the pool's case): each
     // read's most support over the solver's surface along the solver's face (its 11 face points, so a lower bound).
@@ -874,7 +891,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       ['life 0.3–0.6', (r) => r.life >= 0.3 && r.life < 0.6], ['life 0.6–1', (r) => r.life >= 0.6 && r.life < 1],
     ];
     lines.push(`- the wall over the solver's slope (each read's most support − solver over its face points), p10 / p50 / p90 m: ` + walls.map(([name, test]) => {
-      const v = reads.filter(test).map((r) => Math.max(...r.d.filter((x) => x === x)));
+      const v = reads.filter(test).map((r) => most(r.d.filter((x) => x === x)));
       return `${name} ${q3(v.filter((x) => Number.isFinite(x)))} (n ${v.length})`;
     }).join(' | '));
     // Bar 3.
@@ -893,10 +910,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // Bar 4.
     const rising = rises.filter((v) => v > 0);
     lines.push('');
-    lines.push(`## Bar 4, the support over the solver at points fixed in the wave's frame (${FIXED.join(', ')}): (m from the solver's face crossing at 0.3 H_s): rise per 1/60 s step p50 / p99 / p99.9 / max ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(rising, q), 4)).join(' / ')} / ${fmt(Math.max(...rising, 0), 3)} m (≤ 0.02); steps over 0.02 m ${pct(rising.filter((v) => v > 0.02).length, rises.length)} of ${rises.length}; under the solver by more than 0.02 m ${pct(fixedBelow.filter((v) => v < -0.02).length, fixedBelow.length)}`);
+    lines.push(`## Bar 4, the support over the solver at points fixed in the wave's frame (${FIXED.join(', ')}): (m from the solver's face crossing at 0.3 H_s): rise per 1/60 s step p50 / p99 / p99.9 / max ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(rising, q), 4)).join(' / ')} / ${fmt(most(rising, 0), 3)} m (≤ 0.02); steps over 0.02 m ${pct(rising.filter((v) => v > 0.02).length, rises.length)} of ${rises.length}; under the solver by more than 0.02 m ${pct(fixedBelow.filter((v) => v < -0.02).length, fixedBelow.length)}`);
     for (const [name, list] of [['on the lower face (−0.5…0.5 m)', risesLow], ['up the face (−3…−1 m)', risesHigh]] as const) {
       const up = list.filter((v) => v > 0);
-      lines.push(`- ${name}: rise p99 / p99.9 / max ${[0.99, 0.999].map((q) => fmt(quantile(up, q), 3)).join(' / ')} / ${fmt(Math.max(...up, 0), 3)} m; steps over 0.02 m ${pct(up.filter((v) => v > 0.02).length, list.length)}`);
+      lines.push(`- ${name}: rise p99 / p99.9 / max ${[0.99, 0.999].map((q) => fmt(quantile(up, q), 3)).join(' / ')} / ${fmt(most(up, 0), 3)} m; steps over 0.02 m ${pct(up.filter((v) => v > 0.02).length, list.length)}`);
     }
     lines.push(`the largest rises (over 0.2 m), up to 40: \n  ${bigRises.join('\n  ')}`);
     lines.push(`each point's first clock ${q3(firstTau)} s; its time from first seen to its throw ${q3(leadTimes)} s (n ${leadTimes.length})`);
@@ -948,9 +965,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     lines.push('');
     lines.push(`## Bar 6, touchdown (each column-wave's first read past life 1; n ${tipAhead.length}): the solver's breaking ≥ 0.3 within ±0.5 H_s of the tip on ${pct(tipBreak.filter((v) => v >= 0.3).length, tipBreak.length)} (≥ 90 %), its strength ${q3(tipBreak)}; the tip ahead of the drawn crest ${q3(tipAhead)} H_s, within 0.6–1.5 on ${pct(tipAhead.filter((v) => v >= 0.6 && v <= 1.5).length, tipAhead.length)}; in the drawn H ${q3(tipAheadD)}, within 0.6–1.5 on ${pct(tipAheadD.filter((v) => v >= 0.6 && v <= 1.5).length, tipAheadD.length)}`);
     lines.push('');
-    lines.push(`## Bar 7, the clock after the throw (every thrown point, step to step): p50 ${fmt(quantile(rates, 0.5), 3)}× (0.95–1.05), p95 ${fmt(quantile(rates, 0.95), 3)}× (≤ 1.25), max ${fmt(Math.max(...rates), 3)}×, at the cap (≥ 1.24×) ${pct(rates.filter((v) => v >= 1.24).length, rates.length)}, n ${rates.length}; open time in the solver's time per point (its τ 0 → touchdown) ${q3(pointOpen)} s against its case's ${q3(pointCase)} s, ratio p50 ${fmt(quantile(pointOpen.map((v, i) => v / pointCase[i]), 0.5), 3)}, within ±15 % ${pct(pointOpen.filter((v, i) => Math.abs(v / pointCase[i] - 1) <= 0.15).length, pointOpen.length)} (n ${pointOpen.length}); at a fixed reef column (points travel along the reef as they come shoreward) ${q3(openTimes)} s (n ${openTimes.length})`);
+    lines.push(`## Bar 7, the clock after the throw (every thrown point, step to step): p50 ${fmt(quantile(rates, 0.5), 3)}× (0.95–1.05), p95 ${fmt(quantile(rates, 0.95), 3)}× (≤ 1.25), max ${fmt(most(rates), 3)}×, at the cap (≥ 1.24×) ${pct(rates.filter((v) => v >= 1.24).length, rates.length)}, n ${rates.length}; open time in the solver's time per point (its τ 0 → touchdown) ${q3(pointOpen)} s against its case's ${q3(pointCase)} s, ratio p50 ${fmt(quantile(pointOpen.map((v, i) => v / pointCase[i]), 0.5), 3)}, within ±15 % ${pct(pointOpen.filter((v, i) => Math.abs(v / pointCase[i] - 1) <= 0.15).length, pointOpen.length)} (n ${pointOpen.length}); at a fixed reef column (points travel along the reef as they come shoreward) ${q3(openTimes)} s (n ${openTimes.length})`);
     lines.push('');
-    lines.push(`## Bar 8, geometry: folds (overlaps) a build ${(overlaps / Math.max(1, builds)).toFixed(3)}, holes (open overlaps) ${(overlapsOpen / Math.max(1, builds)).toFixed(3)}, least ray advance ${fmt(minAdvance, 4)} m; |dδ/dσ| p50 / p95 ${fmt(quantile(shiftSlopes, 0.5), 3)} / ${fmt(quantile(shiftSlopes, 0.95), 3)} (≤ 0.3); slices with no face crossing (the crest anchor stood) ${pct(shiftMisses, slices)}; the saddle ${q3(reads.map((r) => r.saddle))} m, in H_s p50 / p95 / max ${[0.5, 0.95].map((q) => fmt(quantile(reads.map((r) => r.saddle / r.Hs), q), 3)).join(' / ')} / ${fmt(Math.max(...reads.map((r) => r.saddle / r.Hs)), 3)} (≤ 0.1)`);
+    lines.push(`## Bar 8, geometry: folds (overlaps) a build ${(overlaps / Math.max(1, builds)).toFixed(3)}, holes (open overlaps) ${(overlapsOpen / Math.max(1, builds)).toFixed(3)}, least ray advance ${fmt(minAdvance, 4)} m; |dδ/dσ| p50 / p95 ${fmt(quantile(shiftSlopes, 0.5), 3)} / ${fmt(quantile(shiftSlopes, 0.95), 3)} (≤ 0.3); slices with no face crossing (the crest anchor stood) ${pct(shiftMisses, slices)}; the saddle ${q3(reads.map((r) => r.saddle))} m, in H_s p50 / p95 / max ${[0.5, 0.95].map((q) => fmt(quantile(reads.map((r) => r.saddle / r.Hs), q), 3)).join(' / ')} / ${fmt(most(reads.map((r) => r.saddle / r.Hs)), 3)} (≤ 0.1)`);
     // Bar 10.
     const c1 = simulation.crash?.counts;
     const ledger = c1 && crash0 ? `throws ${c1.throws - crash0.throws}, thrown ${(c1.thrown - crash0.thrown).toFixed(2)} m³ of ${(c1.asked - crash0.asked).toFixed(2)} asked, crashes ${c1.crashes - crash0.crashes}, foreseen ${c1.foreseen - crash0.foreseen}, exits ${c1.exits - crash0.exits}, missed ${c1.missed - crash0.missed}` : 'no crash';
@@ -989,7 +1006,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       const game = finished.filter((b) => b.water === 'swept');
       const under = game.flatMap((b) => b.under);
       const runs = game.filter((b) => b.longestUnder > 0.1);
-      lines.push(`## Bar 2a, no overrun: outside the lip's water, the bottom under the support p99 ${fmt(quantile(under, 0.99), 3)} m (≤ 0.15), p99.9 ${fmt(quantile(under, 0.999), 3)}, max ${fmt(Math.max(...under, 0), 3)} m, n ${under.length}; bodies more than 0.15 m under for over 0.1 s: ${runs.length} of ${game.length}, the longest ${fmt(Math.max(...game.map((b) => b.longestUnder), 0), 3)} s`);
+      lines.push(`## Bar 2a, no overrun: outside the lip's water, the bottom under the support p99 ${fmt(quantile(under, 0.99), 3)} m (≤ 0.15), p99.9 ${fmt(quantile(under, 0.999), 3)}, max ${fmt(most(under, 0), 3)} m, n ${under.length}; bodies more than 0.15 m under for over 0.1 s: ${runs.length} of ${game.length}, the longest ${fmt(most(game.map((b) => b.longestUnder), 0), 3)} s`);
       for (const target of ['ahead 0.3 s', 'throw', 'open, life 0.3']) {
         const g = game.filter((b) => b.target === target);
         if (!g.length) continue;
@@ -1019,13 +1036,13 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     }
     lines.push(`## Bar 3, the cases' own lower face against the solver's over 0.05–0.25 H_s (below the anchor), through life 0.6: p50 ${fmt(quantile(lowerB, 0.5), 3)} (≤ 0.05), p95 ${fmt(quantile(lowerB, 0.95), 3)} (≤ 0.15), n ${lowerB.length}; over 0.3–0.4 H_s (information) p50 ${fmt(quantile(upperB, 0.5), 3)}, p95 ${fmt(quantile(upperB, 0.95), 3)}`);
     const belowUp = risesBelow.filter((v) => v > 0);
-    lines.push(`## Bar 4a, below the anchor (${FIXED.filter((f) => f >= BELOW).join(', ')} m shoreward of the solver's 0.3 H_s crossing): rise p99 ${fmt(quantile(belowUp, 0.99), 4)} m a step (≤ 0.02), p99.9 ${fmt(quantile(belowUp, 0.999), 4)}, max ${fmt(Math.max(...belowUp, 0), 3)}; steps over 0.02 m ${pct(belowUp.filter((v) => v > 0.02).length, risesBelow.length)} of ${risesBelow.length}`);
-    lines.push(`## Bar 4b, continuity: the case's crest's place along each point's ray (W = S·n + δ, the shift as the contact placed its case) against the wave's advance C Δt, |ΔW − C Δt| a step p50 / p99 / p99.9 / max ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(frameSteps, q), 4)).join(' / ')} / ${fmt(Math.max(...frameSteps, 0), 3)} m (p99 ≤ 0.03), over 0.03 m ${pct(frameSteps.filter((v) => v > 0.03).length, frameSteps.length)} of ${frameSteps.length}${unordered ? ` (${unordered} steps unread: records not in the front's order)` : ''}`);
+    lines.push(`## Bar 4a, below the anchor (${FIXED.filter((f) => f >= BELOW).join(', ')} m shoreward of the solver's 0.3 H_s crossing): rise p99 ${fmt(quantile(belowUp, 0.99), 4)} m a step (≤ 0.02), p99.9 ${fmt(quantile(belowUp, 0.999), 4)}, max ${fmt(most(belowUp, 0), 3)}; steps over 0.02 m ${pct(belowUp.filter((v) => v > 0.02).length, risesBelow.length)} of ${risesBelow.length}`);
+    lines.push(`## Bar 4b, continuity: the case's crest's place along each point's ray (W = S·n + δ, the shift as the contact placed its case) against the wave's advance C Δt, |ΔW − C Δt| a step p50 / p99 / p99.9 / max ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(frameSteps, q), 4)).join(' / ')} / ${fmt(most(frameSteps, 0), 3)} m (p99 ≤ 0.03), over 0.03 m ${pct(frameSteps.filter((v) => v > 0.03).length, frameSteps.length)} of ${frameSteps.length}${unordered ? ` (${unordered} steps unread: records not in the front's order)` : ''}`);
     lines.push(`- the case's crest's speed along the ray over the wave's advance there, p5 / p50 / p95 ${[0.05, 0.5, 0.95].map((q) => fmt(quantile(frameRates, q), 3)).join(' / ')}`);
-    lines.push(`- the shift δ itself (from the point, a crest cell's centre stepping 1 m rows along its column), its change a step p50 / p99 / max ${fmt(quantile(shiftSteps, 0.5), 4)} / ${fmt(quantile(shiftSteps, 0.99), 4)} / ${fmt(Math.max(...shiftSteps, 0), 3)} m, over 0.03 m ${pct(shiftSteps.filter((v) => v > 0.03).length, shiftSteps.length)}`);
+    lines.push(`- the shift δ itself (from the point, a crest cell's centre stepping 1 m rows along its column), its change a step p50 / p99 / max ${fmt(quantile(shiftSteps, 0.5), 4)} / ${fmt(quantile(shiftSteps, 0.99), 4)} / ${fmt(most(shiftSteps, 0), 3)} m, over 0.03 m ${pct(shiftSteps.filter((v) => v > 0.03).length, shiftSteps.length)}`);
     lines.push(`- crest-anchor fallbacks after a point's first face anchor (0): ${fallbacks} steps, ${fellBack.size} of ${faced.size} faced points`);
     lines.push(`- the pre-throw clock (0.5–1.5× real time; no holds over 0.1 s): p1 / p5 / p50 / p95 / p99 ${[0.01, 0.05, 0.5, 0.95, 0.99].map((q) => fmt(quantile(preRates, q), 3)).join(' / ')}×, within 0.5–1.5 ${pct(preRates.filter((v) => v >= 0.5 - 1e-6 && v <= 1.5 + 1e-6).length, preRates.length)} of ${preRates.length}; holds over 0.1 s ${holds} (${holdPoints.size} points)`);
-    lines.push(`- the slice's weight (formation and retirement), its change a step p99 / max ${fmt(quantile(weightSteps, 0.99), 4)} / ${fmt(Math.max(...weightSteps, 0), 4)} (≤ 1/18 = 0.0556), over it ${pct(weightSteps.filter((v) => v > 1 / 18 + 1e-6).length, weightSteps.length)} of ${weightSteps.length}`);
+    lines.push(`- the slice's weight (formation and retirement), its change a step p99 / max ${fmt(quantile(weightSteps, 0.99), 4)} / ${fmt(most(weightSteps, 0), 4)} (≤ 1/18 = 0.0556), over it ${pct(weightSteps.filter((v) => v > 1 / 18 + 1e-6).length, weightSteps.length)} of ${weightSteps.length}`);
     // The 40 largest rises by cause.
     const top = candidates.sort((a, b) => b.rise - a.rise).slice(0, 40);
     const causeOf = (r: Rise) => {
