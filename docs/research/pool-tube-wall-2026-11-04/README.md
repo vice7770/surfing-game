@@ -35,7 +35,7 @@ water by the probe with no input. The bigger tube's floor and the M4 case lines 
   - **bar 4b's** 0.03 m: the shift's change sits at its cap at p50, and p99 is 0.050–0.053 m, the cap at the faster crests.
   - **bar 8:** holes 0.011–0.035 a build (step 6: 0.061–0.343), folds 0.13–0.34 (step 6: 0.54–1.35). The saddle passes
     with the pool's cases and is at its edge on a38 (0.20–0.21 H_s).
-  - **the ledger:** about +50 % jets against main, from the throw at the contour; the meter stays within 2 %.
+  - **the ledger:** 46–79 % more jets than main, from the throw at the contour; the meter stays within 2 %.
 - **Information:** bar 2c, bar 5 (usable clearance 0.29 / 0.42 m on a38), the max gap.
 - **Not measured:** the M4 Pro's cost; ride-camera strips (they need the page's renderer).
 
@@ -159,8 +159,8 @@ before it, the wall forming.
   - **On the pool's own cases** (a thicker, lower curl with no clear cavity), 2b passes at 1.5 m (85 %) and reaches 66 % at
     1.8 m.
 - **Bar 3, the lower face.**
-  - **After the throw step 7 is closer** than step 6 (life 0–0.6 at 0.2 H_s, p10 / p50: −0.17 / −0.07 m against
-    −0.20 / −0.04, and −0.16 / −0.04 against −0.23 / −0.06).
+  - **After the throw step 7's tails are closer** and its medians about the same (a38 1.5 m, at 0.2 H_s, p10 / p50: life
+    0–0.3 −0.17 / −0.07 m against step 6's −0.20 / −0.04; life 0.3–0.6 −0.16 / −0.04 against −0.23 / −0.06).
   - **The worse overall figure comes from formation.** Step 7 now draws the case's frames from its earliest, and there its
     own lower face sits under the solver's: at τ < −1 s, at 0.2–0.25 H_s, p50 −0.11 to −0.13 m and p10 −0.34 to −0.36 m
     (a38 1.5 m). Step 6 had no reads before τ −0.38 s.
@@ -173,7 +173,7 @@ before it, the wall forming.
     0.050–0.053 m is the cap at the faster crests: C along the ray runs up to about 8 m/s, and 0.3 × 8 / 60 + 0.005 =
     0.045 m.
   - **The target runs at or past the cap's ceiling.** The case's crest moves 1.24–1.35× the wave's advance (p50) and
-    1.37× at p95, so the cap engages on about 60 % of steps. Near the throw the drawn crest therefore lags the case's own
+    1.37× at p95, so the cap engages on about 65 % of steps. Near the throw the drawn crest therefore lags the case's own
     frames by up to the cap's shortfall.
   - **Tried, not kept:** capping the lower-face anchor instead and putting the case's crest offset back exactly (4 periods,
     a38 1.5 m and pool 1.8 m). The crest followed its frames (p50 1.02–1.14×), but the anchor's own place still sat at its
@@ -205,7 +205,8 @@ Values are p50.
   the drawing and up to +0.65 ms on the sea's step.
 - **Where it goes:**
   - the contact: the wall's water's extra profile per slice and its per-vertex velocities;
-  - the drawing: more live slices, which now form from τ_e (about 1.6 s before the throw rather than about 0.3 s);
+  - the drawing: more live slices, which now form from τ_e (about 1.6 s before the throw rather than about 0.3 s;
+    *inferred*);
   - the sea's step: the anchor's reads per point (moved from the lofts) and the contour's bed reads.
 - The M4 Pro was not measured (not this machine).
 
@@ -220,7 +221,7 @@ Values are p50.
    frames? (Tried on 4 periods: the anchor still pins, bar 3 unchanged.)
 3. **The case's early frames** sit 0.1–0.13 m (p50) under the solver's lower face at 0.2–0.25 H_s before τ −1 s. The union
    hides it. Is a match at 0.3 H right this early?
-4. **Jets +50 %** from the throw at the contour (call 5). `?tubeThrow=break` gives 409 at 1.5 m and 490 at 1.8 m (main: 412 / 463).
+4. **Jets +46–79 %** from the throw at the contour (call 5). `?tubeThrow=break` gives 409 at 1.5 m and 490 at 1.8 m (main: 412 / 463).
 
 ## How to verify
 
@@ -266,8 +267,10 @@ marked *(built so)* with its cause.
   cap holds the place the case's crest stands along the point's ray, W = S·n + δ, within that of the wave's own advance
   there, C·Δt (C the crest's pace along its column projected on the ray, `crashCurve.ts:433`).
   - **Cause:** a front's point is its crest cell's centre and steps along its column in the solver's 1 m rows (traced: z
-    −199.5 → −198.5 → …, one step every ~0.18 s, while the wave moves on). A cap on δ relative to that point fought every
-    step: it engaged on 70–80 % of steps and moved the wall with the point.
+    −199.5 → −198.5 → …, one step every ~0.18 s, while the wave moves on). A cap on δ relative to that point fought those
+    steps: traced, the kept shift climbed at its cap (±1.9 m/s, alternating) for 1.5 s and the wall moved with the point.
+    On a 4-period run its change sat at the cap at p50 (0.027 m), and the fixed-point rise p99 was 0.23 m against 0.05 m
+    after this change.
   - **The smoothing too** *(built so)*: the shifts are smoothed as the places they put the case's crest
     (`smoothPlaces`, `faceAnchor.ts:451`): a neighbour's row step changes its own shift but not where its case's crest
     stands, so it stays out of the point's.
