@@ -512,8 +512,8 @@ class SurfGame {
     if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
     // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
-    // `?canyonBed`, `?canyonAgeJoin`, `?poolAgeJoin`, `?canyonReefSeq` or `?canyonBeachLook` say (its old layout, breaking, onsets and beach
-    // look are solo dev switches), and
+    // `?canyonBed`, `?canyonRamp`, `?canyonJoin`, `?canyonAgeJoin`, `?poolAgeJoin`, `?canyonReefSeq` or `?canyonBeachLook` say (its
+    // old layouts, its halved ramp, breaking, onsets and beach look are solo dev switches), and
     // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
     // sample moving through their step whatever `?surfaceMotion` says, the swim back to the board whatever `?swim` says,
     // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, and
@@ -522,7 +522,7 @@ class SurfGame {
     // barrel and its crash: what a rider hits must match on every client).
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
-      canyonBed: 'reef', canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
+      canyonBed: 'reef', canyonJoin: undefined, canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
       sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {

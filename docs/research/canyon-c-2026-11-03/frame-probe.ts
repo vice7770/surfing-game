@@ -1,5 +1,6 @@
 /**
- * canyon-c (2026-11-03): canyon-b's frame probe for version C (the bank peeling −x from its tip into the flipped bowl),
+ * canyon-c (2026-11-03; revised 2026-11-04 for the advisor's second ruling: the frame is 8 steps, 0.267 s, not the 0.25 s
+ * its label said; both jump limits, 6 m and 15 m; `--bed half|b|old` and `--join zone`): canyon-b's frame probe for version C (the bank peeling −x from its tip into the flipped bowl),
  * the ruling's bars 1–5 frame by frame (wave only, no riders). Every FRAME s, for the solver's breaking (strength > 0.3)
  * and the white drawn (`drawnWhitewater` > 0.3), in each region:
  * - `line`: the bank and the bowl together, from the bowl's −x end (where its base bar has faded, x −70) to the end of the
@@ -10,7 +11,11 @@
  * within LINK m across shore (one column may be skipped), PATCH columns or more; a wave's runs are those within CREST m
  * across shore of where its crest should be; its line is the longest, the rest patches; a new wave starts when a run
  * seaward of every live wave by NEW_WAVE m appears. Each end of a wave's line travels while it never vanishes and never
- * jumps more than JUMP m (after the first SECTION s, when a breaking section may spread at any speed).
+ * jumps more than JUMP m (after the first SECTION s, when a breaking section may spread at any speed). Each end is followed with
+ * two limits (the second ruling, §7.3): JUMP, 6 m a frame (about 22.5 m/s along shore), the end stopping too in any frame
+ * the wave's white is not seen; and JUMP_SECTION, 15 m (a section a rider at 10 m/s crosses in about 1.5 s, counted as
+ * continuous), by the advisor's relaxed rule (offprobe.mjs): the end holds through frames its wave is not seen (the
+ * tracker keeps a wave 1 s unseen) and stops at the first jump of more than 15 m.
  *
  * Per wave, besides canyon-b's measures:
  * - **the first break** (bar 2): its first frame's run, its x (the run's middle) and its distance from the waterline, and
@@ -24,13 +29,13 @@
  * And each column's onsets binned along shore (`--bins`): depth, height, face, the bed's slope along +z and ξb.
  *
  *   rolldown docs/research/canyon-c-2026-11-03/frame-probe.ts -o dist/scripts/frame-probe-c.mjs --format esm --platform node \
- *     && node dist/scripts/frame-probe-c.mjs --size medium --seed 1 --periods 12 [--canyon key=value,...] [--json <file>]
+ *     && node dist/scripts/frame-probe-c.mjs --size medium --seed 1 --periods 12 [--bed half|b|old] [--join zone] [--canyon key=value,...] [--json <file>]
  *        [--stills <dir> --from <s> --to <s> --every <s> --x <x0,x1> --z <z0,z1>]
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { SWELLS } from '../../../src/game/SurfConditions';
-import { canyonArmEndX, canyonBankEdge, canyonBankJoin, canyonBars, canyonBreakLineZ, canyonReefSpan, canyonShape } from '../../../src/wave/Bathymetry';
+import { canyonArmEndX, canyonBankEdgeZ, canyonBankJoin, canyonBars, canyonReefSpan, canyonShape, type CanyonBed } from '../../../src/wave/Bathymetry';
 import { GRAVITY } from '../../../src/wave/dispersion';
 import { SurfMeter, TAKE_OFF_BAND } from '../../../src/wave/SurfMeter';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
@@ -42,7 +47,13 @@ const swell = SWELLS[size];
 const seed = Number(option('seed') ?? 1);
 const periods = Number(option('periods') ?? 12);
 applyCanyonShape(option('canyon'));
-const FRAME = 0.25;
+// The layout (`?canyonBed`; 'half', `?canyonRamp=half`) and the bank's join (`?canyonJoin=zone`).
+const bed = (['half', 'b', 'old'] as const).find((b) => b === option('bed')) as CanyonBed | undefined;
+const joinRule = option('join') === 'zone' ? 'zone' as const : undefined;
+/** The solver's step and the frame: every PER_FRAME steps, 8 × 1/30 = 0.267 s (the label said 0.25 s until 2026-11-04). */
+const STEP = 1 / 30;
+const PER_FRAME = 8;
+const FRAME = PER_FRAME * STEP;
 const THRESHOLD = 0.3;
 const SWASH = 0.5;
 const LINK = 4;
@@ -50,6 +61,7 @@ const PATCH = 3;
 const CREST = 12;
 const NEW_WAVE = 15;
 const JUMP = 6;
+const JUMP_SECTION = 15;
 const SECTION = 1.5;
 const SECTION_CHECK = 2;
 const STRETCH = 20;
@@ -57,10 +69,10 @@ const TAKE_OFF_X = 75;
 
 const sim = new SurfZoneSimulation({
   spot: 'canyon', seed, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: 0, spreading: swell.spreading ?? 150,
-  tide: 0, windSpeed: 0, stage: 2, compute: 'cpu',
+  tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', ...(bed ? { canyonBed: bed } : {}), ...(joinRule ? { canyonJoin: joinRule } : {}),
 } as unknown as SurfZoneConfig);
 const { solver } = sim;
-const c = canyonShape();
+const c = canyonShape(bed);
 const { nx, nz, xCenters, zCenters } = solver;
 const firstRow = solver.rowBelow(sim.tank.fineFrom);
 const columnOf = (x: number) => Math.min(nx - 1, Math.max(0, Math.round((x - xCenters[0]) / solver.dx)));
@@ -122,6 +134,8 @@ function runsIn(values: ArrayLike<number>, region: Region): { c0: number; white:
 
 interface Wave {
   start: number; z: number; speed: number; seen: number; frames: Line[]; first: Line; reached: Map<number, { x: number; ok: boolean; t?: number }>;
+  /** Each end with the 15 m limit, the advisor's relaxed rule (JUMP_SECTION), and the −x end's path while it held. */
+  relaxed: Map<number, { x: number; ok: boolean }>; path15: [number, number, number][];
   gap: number; split: number; streak: number;
   /** The first break: its run's middle x, its most seaward white z, the wave's height there. */
   firstX: number; firstZ: number; firstH: number;
@@ -182,6 +196,13 @@ function record(time: number): void {
           else if (side * (x - end.x) > 0) wave.reached.set(side, { x, ok: true, t: time });
         }
         if (wave.reached.get(-1)?.ok) wave.path.push([time, line.from, line.zFrom]);
+        for (const [side, end] of wave.relaxed) {
+          if (!end.ok) continue;
+          const x = side > 0 ? line.to : line.from;
+          if (side * (x - end.x) > JUMP_SECTION && time - wave.start > SECTION) end.ok = false;
+          else if (side * (x - end.x) > 0) end.x = x;
+        }
+        if (wave.relaxed.get(-1)?.ok) wave.path15.push([time, line.from, line.zFrom]);
         // Up the line and the take-off column: over all its runs on its crest.
         for (const r of mine) {
           wave.up = Math.max(wave.up, xCenters[c0 + r.high] - wave.first.to);
@@ -209,13 +230,14 @@ function record(time: number): void {
         const wave: Wave = {
           start: time, z: r.z, speed: 4, seen: time, frames: [line], first: line, reached: new Map(), gap: 0, split: 0, streak: 0,
           firstX: 0.5 * (line.from + line.to), firstZ: white[outer], firstH: heightAt(rows[outer], c0 + outer), up: 0, path: [[time, line.from, line.zFrom]],
-          takeOffZ: Infinity, takeOffDepth: Number.NaN,
+          takeOffZ: Infinity, takeOffDepth: Number.NaN, relaxed: new Map(), path15: [[time, line.from, line.zFrom]],
         };
         for (let k = r.low; k <= r.high; k += 1) {
           if (white[k] !== white[k]) continue;
           if (Math.abs(xCenters[c0 + k] - TAKE_OFF_X) <= 4 && white[k] < wave.takeOffZ) { wave.takeOffZ = white[k]; wave.takeOffDepth = depthAt(rows[k], c0 + k); }
         }
         for (const end of region.ends) wave.reached.set(end.side, { x: end.side > 0 ? line.to : line.from, ok: true, t: time });
+        for (const end of region.ends) wave.relaxed.set(end.side, { x: end.side > 0 ? line.to : line.from, ok: true });
         (waves.get(key) ?? waves.set(key, []).get(key)!).push(wave);
         active.push(wave);
         (frames.get(key) ?? frames.set(key, []).get(key)!).push({ length: line.along, patches: 0 });
@@ -287,6 +309,8 @@ const L0 = (GRAVITY * swell.peakPeriod * swell.peakPeriod) / (2 * Math.PI);
 const lastWhite = new Float64Array(nx).fill(Number.NaN);
 /** Onsets seaward of the bank's edge (on its face, or the bowl's bed) and inside it (the bores re-breaking over its inside). */
 const onsetBins = new Map<number, { depth: number; height: number; face: number; slope: number; xi: number }[]>();
+/** The same onsets one by one, for pooling over seeds (pool.mjs's bar 6): [x, depth, H, face °, ξb]. */
+const onsetList: [number, number, number, number, number][] = [];
 const insideBins = new Map<number, number>();
 /** Each column's crest speeds at its onsets (the crest followed for CREST_FOLLOW s), m/s, and the onsets still followed. */
 const CREST_FOLLOW = 1;
@@ -353,20 +377,22 @@ function onsetShapes(): void {
     // Inside the bank's edge (its level top, its back and the inside, shoreward of where its face reaches the edge's
     // depth), where the bores re-break: counted, not shaped.
     const x = xCenters[col];
-    const edgeZ = canyonBreakLineZ(x, c) - (canyonBankEdge(x, c) - c.bowlCrestContour) / c.bankFace;
+    const edgeZ = canyonBankEdgeZ(x, c);
     if (x > join && x < bank.x + bank.plusTaper && z > edgeZ + 0.5) {
       insideBins.set(bin, (insideBins.get(bin) ?? 0) + 1);
       continue;
     }
-    (onsetBins.get(bin) ?? onsetBins.set(bin, []).get(bin)!).push({
+    const shape = {
       depth: solver.restLevel - solver.bed[row * nx + col], height, face: (Math.atan(face) * 180) / Math.PI, slope,
       xi: height > 0 ? slope / Math.sqrt(height / L0) : Number.NaN,
-    });
+    };
+    (onsetBins.get(bin) ?? onsetBins.set(bin, []).get(bin)!).push(shape);
+    onsetList.push([+x.toFixed(1), +shape.depth.toFixed(3), +height.toFixed(3), +shape.face.toFixed(2), +shape.xi.toFixed(4)]);
   }
 }
 
-const step = 1 / 30;
-const perFrame = Math.round(FRAME / step);
+const step = STEP;
+const perFrame = PER_FRAME;
 const perStill = Math.round(stillEvery / step);
 const steps = Math.round((periods * swell.peakPeriod) / step);
 const t0 = Date.now();
@@ -392,9 +418,8 @@ function spearman(a: number[], b: number[]): number {
   return num / Math.sqrt(da * db);
 }
 /** Hutt's peel per STRETCH m along shore over a wave's −x end's path: [stretch's +x edge, α°, V, c]. */
-function peels(wave: Wave): [number, number, number, number][] {
+function peels(wave: Wave, path = wave.path): [number, number, number, number][] {
   const out: [number, number, number, number][] = [];
-  const path = wave.path;
   if (path.length < 3) return out;
   const at = (x: number) => path.findIndex((p) => p[1] <= x);
   for (let edge = Math.floor(path[0][1] / STRETCH) * STRETCH; edge - STRETCH >= path[path.length - 1][1] - 1e-9; edge -= STRETCH) {
@@ -410,9 +435,10 @@ function peels(wave: Wave): [number, number, number, number][] {
   return out;
 }
 
-console.log(`canyon C ${size} seed ${seed}, ${periods} periods after ${spinUp.toFixed(0)} s of spin-up (${((Date.now() - t0) / 1000).toFixed(0)} s wall); frames every ${FRAME} s; ${option('canyon') ?? ''}`);
+console.log(`canyon C ${size} seed ${seed}${bed ? ` (--bed ${bed})` : ''}${joinRule ? ` (--join ${joinRule})` : ''}, ${periods} periods after ${spinUp.toFixed(0)} s of spin-up (${((Date.now() - t0) / 1000).toFixed(0)} s wall); `
+  + `frames every ${FRAME.toFixed(3)} s (${PER_FRAME} steps); jump limits ${JUMP} m and ${JUMP_SECTION} m; ${option('canyon') ?? ''}`);
 console.log(`grid ${nx}×${nz}; regions: line ${bowl.from}…${lineTo} (the bowl's end x ${bowlEnd}), bank ${join}…${lineTo}, bowl ${bowl.from}…${bowl.to}; take-off column x ${TAKE_OFF_X} ± 4`);
-const json: Record<string, unknown> = { size, seed, periods, grid: [nx, nz] };
+const json: Record<string, unknown> = { size, seed, periods, grid: [nx, nz], bed: bed ?? 'reef', join: joinRule ?? 'bed', frame: FRAME, jumps: [JUMP, JUMP_SECTION] };
 for (const field of fields) {
   for (const region of regions) {
     const key = `${field.name} ${region.name}`;
@@ -425,7 +451,10 @@ for (const field of fields) {
     const ends = region.ends.map((end) => {
       const ok = list.filter((w) => end.side * (w.reached.get(end.side)!.x - end.x) >= -LINK);
       const travel = list.map((w) => end.side * (w.reached.get(end.side)!.x - (end.side > 0 ? w.first.to : w.first.from)));
-      return `${end.side > 0 ? '+x' : '−x'} end: travelled median ${fmt(median(travel))} m (90th ${fmt(quantile(travel, 0.9))}), reached x ${fmt(end.x)} in ${ok.length} of ${list.length}`;
+      const ok15 = list.filter((w) => end.side * (w.relaxed.get(end.side)!.x - end.x) >= -LINK);
+      const travel15 = list.map((w) => end.side * (w.relaxed.get(end.side)!.x - (end.side > 0 ? w.first.to : w.first.from)));
+      return `${end.side > 0 ? '+x' : '−x'} end: travelled median ${fmt(median(travel))} / ${fmt(median(travel15))} m (6 m / 15 m; 90th ${fmt(quantile(travel, 0.9))} / ${fmt(quantile(travel15, 0.9))}), `
+        + `reached x ${fmt(end.x)} in ${ok.length} / ${ok15.length} of ${list.length}`;
     });
     console.log(`${key}: ${list.length} waves; frames breaking ${lines.length}, frames with a patch ${fmt((100 * lines.filter((l) => l.patches > 0).length) / Math.max(1, lines.length))} %; `
       + `per wave: longest line p50 ${fmt(median(longest))} m (90th ${fmt(quantile(longest, 0.9))}), typical ${fmt(median(typical))} m, frames with a patch p50 ${fmt(100 * median(patchy))} %; `
@@ -437,13 +466,15 @@ for (const field of fields) {
       const setH = quantile(hs, 2 / 3);
       const sets = list.filter((w) => w.firstH >= setH);
       const toEnd = (w: Wave) => w.reached.get(-1)!.x - bowlEnd <= LINK;
+      const toEnd15 = (w: Wave) => w.relaxed.get(-1)!.x - bowlEnd <= LINK;
       const ps = list.flatMap((w) => peels(w));
       console.log(`  bar 1, up the line: white ≤ 10 m +x of the first break in ${list.filter((w) => w.up <= 10).length} of ${list.length} (${fmt((100 * list.filter((w) => w.up <= 10).length) / Math.max(1, list.length))} %); `
         + `up p50 ${fmt(median(up))} m, p90 ${fmt(quantile(up, 0.9))} m`);
       console.log(`  bar 2, first breaks: all x p10/p50/p90 ${fmt(quantile(xs, 0.1))}/${fmt(median(xs))}/${fmt(quantile(xs, 0.9))}, out p50 ${fmt(-median(list.map((w) => w.firstZ)))} m; `
         + `sets (top third by H ≥ ${fmt(setH, 2)} m, ${sets.length}) x p10/p50/p90 ${fmt(quantile(sets.map((w) => w.firstX), 0.1))}/${fmt(median(sets.map((w) => w.firstX)))}/${fmt(quantile(sets.map((w) => w.firstX), 0.9))}, `
         + `out p50 ${fmt(-median(sets.map((w) => w.firstZ)))} m; Spearman(x*, H) ${fmt(spearman(xs, hs), 2)} (n ${list.length}); within 10 m of the tip ${list.filter((w) => w.firstX >= bank.x - 10).length} of ${list.length}`);
-      console.log(`  bar 3, one line from the first break to the bowl's end (x ${bowlEnd}): ${list.filter(toEnd).length} of ${list.length}, sets ${sets.filter(toEnd).length} of ${sets.length}`);
+      console.log(`  bar 3, one line from the first break to the bowl's end (x ${bowlEnd}), 6 m / 15 m: ${list.filter(toEnd).length} / ${list.filter(toEnd15).length} of ${list.length}, `
+        + `sets ${sets.filter(toEnd).length} / ${sets.filter(toEnd15).length} of ${sets.length}`);
       const stretchRows: string[] = [];
       for (let edge = Math.ceil(lineTo / STRETCH) * STRETCH; edge > bowl.from; edge -= STRETCH) {
         const here = ps.filter((p) => p[0] === edge);
@@ -458,7 +489,8 @@ for (const field of fields) {
       start: w.start, firstX: +w.firstX.toFixed(1), firstZ: +w.firstZ.toFixed(1), firstH: +w.firstH.toFixed(3), up: +w.up.toFixed(1),
       reached: [...w.reached].map(([side, r]) => [side, +r.x.toFixed(1), r.ok]), frames: w.frames.length, patchy: +(w.frames.filter((l) => l.patches > 0).length / w.frames.length).toFixed(3),
       longest: Math.max(...w.frames.map((l) => l.along)), typical: median(w.frames.map((l) => l.along)), split: w.split, gap: w.gap,
-      peels: peels(w).map((p) => p.map((v) => +v.toFixed(2))), takeOffZ: Number.isFinite(w.takeOffZ) ? +w.takeOffZ.toFixed(1) : null,
+      peels: peels(w).map((p) => p.map((v) => +v.toFixed(2))), peels15: peels(w, w.path15).map((p) => p.map((v) => +v.toFixed(2))),
+      reached15: [...w.relaxed].map(([side, r]) => [side, +r.x.toFixed(1), r.ok]), takeOffZ: Number.isFinite(w.takeOffZ) ? +w.takeOffZ.toFixed(1) : null,
       takeOffDepth: Number.isFinite(w.takeOffDepth) ? +w.takeOffDepth.toFixed(3) : null,
       lines: w.frames.map((l) => [+l.t.toFixed(2), +l.from.toFixed(1), +l.to.toFixed(1), +l.z.toFixed(1), l.patches]),
     }));
@@ -474,6 +506,8 @@ for (const bin of [...onsetBins.keys()].sort((a, b) => b - a)) {
     + `ξb p50 ${fmt(xi, 2)} (p90 ${fmt(quantile(list.map((o) => o.xi), 0.9), 2)}), ξb ≥ 0.5 in ${fmt((100 * list.filter((o) => o.xi >= 0.5).length) / list.length)} %`);
 }
 json.bins = bins;
+json.onsets = onsetList;
+json.inside = Object.fromEntries(insideBins);
 const surf = meter.reading(solver.time, Infinity);
 console.log(`surf at the start's band (x ${TAKE_OFF_X} ± ${TAKE_OFF_BAND}): typical ${fmt(surf?.typical ?? Number.NaN, 2)} m, sets ${fmt(surf?.sets ?? Number.NaN, 2)} m, ${surf?.waves ?? 0} waves`);
 json.surf = surf ?? null;

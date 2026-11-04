@@ -1,5 +1,6 @@
 /**
- * canyon-c (2026-11-03): scripts/crest-angle-report.ts for version C, with the ruling's bar 7 (the current) and the take-off's
+ * canyon-c (2026-11-03; `--bed half` and `--join zone` since 2026-11-04, `?canyonRamp=half` and `?canyonJoin=zone`):
+ * scripts/crest-angle-report.ts for version C, with the ruling's bar 7 (the current) and the take-off's
  * waves over a long session. Its crests and health are summarised over the first `--summary` s (600, canyon-b's), the
  * currents and the take-off's Hs over every 100 s to `--seconds` (1800). The station groups are version C's: the open
  * water +x of the bank, the bank (its tip's fade to the join), the flipped bowl, the channel.
@@ -51,7 +52,7 @@ import { writeFileSync } from 'node:fs';
 import { GPU_TIER_COMPONENTS, swellFor } from '../../../src/game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../../../src/game/SurfConditions';
 import type { SpotName } from '../../../src/wave/Bathymetry';
-import { canyonBankEdge, canyonBankJoin, canyonBars, canyonBreakLineZ, canyonReefSpan, canyonShape } from '../../../src/wave/Bathymetry';
+import { canyonBankEdge, canyonBankEdgeZ, canyonBankJoin, canyonBankOn, canyonBars, canyonBreakLineZ, canyonReefSpan, canyonShape } from '../../../src/wave/Bathymetry';
 import { BoussinesqSolver } from '../../../src/wave/BoussinesqSolver';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
 import { applyCanyonShape } from '../../../scripts/canyonShape';
@@ -68,7 +69,9 @@ const seconds = Number(option('seconds') ?? 1800);
 const summaryAt = Number(option('summary') ?? 600);
 const offset = Number(option('offset') ?? 30);
 const quiet = process.argv.includes('--quiet');
-const bed = option('bed') === 'old' || option('bed') === 'b' ? option('bed') as 'old' | 'b' : undefined;
+const bed = option('bed') === 'old' || option('bed') === 'b' || option('bed') === 'half' ? option('bed') as 'old' | 'b' | 'half' : undefined;
+// `--join zone`: version C's bank's join by its take-off zone (`?canyonJoin=zone`, the head at ca567450), not by the bed.
+const joinRule = option('join') === 'zone' ? 'zone' as const : undefined;
 applyCanyonShape(option('canyon'));
 
 /** The worker's step, s. */
@@ -113,6 +116,7 @@ const config: SurfZoneConfig = {
   ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
   componentCount: numberOption('components') ?? GPU_TIER_COMPONENTS,
   ...(bed ? { canyonBed: bed } : {}),
+  ...(joinRule ? { canyonJoin: joinRule } : {}),
   ...(poolWaves ? { poolWaves } : {}),
 };
 
@@ -261,7 +265,7 @@ const join = shape ? canyonBankJoin(shape).x : 0;
 const groupOf = (x: number) => {
   if (!footprint) return 'window';
   // Version C (canyon-c): the bank, the flipped bowl, the channel, the open water past the bank's tip.
-  if (shape!.bank && !bed) return x > bars[0].x + bars[0].plusTaper ? 'open +x' : x > join ? 'bank' : x >= canyonReefSpan(shape!).from - 2 ? 'bowl' : 'channel';
+  if (canyonBankOn(shape!)) return x > bars[0].x + bars[0].plusTaper ? 'open +x' : x > join ? 'bank' : x >= canyonReefSpan(shape!).from - 2 ? 'bowl' : 'channel';
   for (const [k, bar] of bars.entries()) {
     const u = x - bar.x;
     if (u < 0 ? -u <= bar.reach + shape!.barTaper : u <= bar.plusReach + bar.plusTaper) return `${k === 0 ? 'peak −x' : 'peak +x'} ${u < 0 ? 'right arm' : 'left arm'}`;
@@ -338,7 +342,7 @@ const sumQz = new Float64Array(cells);
 const sumH = new Float64Array(cells);
 let samples = 0;
 const c = shape!;
-const edgeZ = (x: number) => canyonBreakLineZ(x, c) - (canyonBankEdge(x, c) - c.bowlCrestContour) / c.bankFace;
+const edgeZ = (x: number) => canyonBankEdgeZ(x, c);
 const regionOf = (x: number, z: number): string | undefined => {
   if (x >= join && x <= 140 && z >= edgeZ(x) - 20 && z <= edgeZ(x) + 40) return 'bank';
   if (x >= 31 && x <= 140 && z > edgeZ(x) + 15 && z < -Math.max(c.bankInside, canyonBankEdge(x, c) + c.bankInsideOver) / c.shoreSlope - 5) return 'inside';

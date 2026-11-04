@@ -521,24 +521,43 @@ export const CANYON = {
   bankAngle: 45, bankTipX: 140, bankFade: 25, bankFace: 1 / 44,
   bankEdge: 1.2, bankRampFrom: 31, bankEdgeTip: 3.6, bankTop: 8, bankBack: 1 / 30, bankInside: 2, bankInsideOver: 0.5,
   /**
-   * Version C's breaking age on the bank: rule A (`barJoin`) to `bankGateFrom`, the reef's gate (`ageJoin`, 0.5) up the
-   * line from there, blended in over `bowlRulesBlend` m, and on the bowl. The advisor's call, only if measured (the
-   * ruling's §2): if white runs more than 10 m up the line (+x of the first break) on more than 10 % of waves, the gate
-   * goes on the take-off zone only, x > +31. With rule A all along the bank it did on 64–69 % of Medium's waves (seeds 1
-   * and 2 × 12 periods, frame by frame: runs/ruleA-medium-s*.txt): a broken crest's age, passed along it through the
-   * diagonals, broke the crest up the line over the bank's top and inside, deeper than its own breaking depth, 24–29 m on
-   * the median wave and 82–125 m on one in ten. Infinity: rule A on the whole bank.
+   * Version C's breaking age on the bank, keyed to the bed (`canyonJoin`; the water-physics advisor's second ruling, §2a,
+   * 2026-11-04): rule A (`barJoin`) on the bank's face, seaward of its edge line (`canyonBankEdgeZ`), and the reef's gate
+   * (`ageJoin`, 0.5) on its top, back and inside, blended across the edge line over `bankJoinBlend` m; the bowl keeps its
+   * own (the reef's gate). Breaking then spreads sideways (Goda's lateral spread) into water still shoaling toward its own
+   * break on the face, but not into water past its shallowest point, where a bore decays toward a stable 0.4–0.5 h and
+   * reforms (Dally & Dean 1986): up the line the crest stands shoreward of its edge when the first break happens, on gated
+   * cells, so the white does not run back up the line, and down the line the face carries it toward the bowl. The face
+   * fades with the bank past its tip (`bankFade`), the gate beyond it. Measured by the advisor on one seed (92 s): the line's
+   * −x end travelled 26 / 46 m at Medium (6 m / 15 m jump limits) against 16 / 19 m with the take-off zone's gate.
+   */
+  bankJoinBlend: 3,
+  /**
+   * The take-off zone's gate (canyon-c's first ruling, §2, measured 2026-11-03; the `?canyonJoin=zone` dev switch since the
+   * second ruling): rule A (`barJoin`) on the whole bank to `bankGateFrom`, the reef's gate (`ageJoin`, 0.5) up the line from
+   * there, blended in over `bowlRulesBlend` m. With rule A all along the bank, white ran more than 10 m up the line on 64–69 %
+   * of Medium's waves (seeds 1 and 2 × 12 periods, runs/ruleA-medium-s*.txt); with this gate it held each line's own +x end
+   * but the line stalled (its −x end travelled 20 m at the median): the gate sat above the bank's 0.40 onset there, so it
+   * passed the age only to cells that would break anyway (the second ruling, §1.6).
    */
   bankGateFrom: 31,
 };
 
 /**
  * Which Canyon layout a sea runs (`SurfZoneConfig.canyonBed`, the `?canyonBed` dev switch): 'reef', today's (version C,
- * canyon-c: one straight bank peeling from +x into the flipped reef bowl, `CANYON`); 'b', the layout before it
- * (`CANYON_B`: version B, the upcoast bar's +x arm running into the bowl, main's at 4eee1e5f); or 'old', the one before
- * that (`CANYON_BEACH`: version A, the reef 120 m out with a beach peak either side, main's at 376d9cd4).
+ * canyon-c: one straight bank peeling from +x into the flipped reef bowl, `CANYON`); 'half', today's with its edge ramp
+ * halved (`CANYON_HALF_RAMP`, the `?canyonRamp=half` dev switch: the advisor's option (b), the owner's call); 'b', the
+ * layout before it (`CANYON_B`: version B, the upcoast bar's +x arm running into the bowl, main's at 4eee1e5f); or 'old',
+ * the one before that (`CANYON_BEACH`: version A, the reef 120 m out with a beach peak either side, main's at 376d9cd4).
  */
-export type CanyonBed = 'reef' | 'b' | 'old';
+export type CanyonBed = 'reef' | 'half' | 'b' | 'old';
+
+/**
+ * How version C's bank passes its breaking age along its crests (`canyonJoin`, `SurfZoneConfig.canyonJoin`): 'bed', the
+ * default, keyed to the bed (rule A on its face, the gate behind its edge: `CANYON.bankJoinBlend`); 'zone', the take-off
+ * zone's gate (`CANYON.bankGateFrom`, the `?canyonJoin=zone` dev switch: the branch's head at ca567450).
+ */
+export type CanyonJoinRule = 'bed' | 'zone';
 
 /** The Canyon's shape: `CANYON`, or a layout before it (`canyonShape`). */
 export type CanyonShape = typeof CANYON;
@@ -561,11 +580,21 @@ export const CANYON_B: CanyonShape = Object.freeze({ ...CANYON, bank: 0, takeOff
 export const CANYON_BEACH: CanyonShape = Object.freeze({ ...CANYON, reef: 1, bowl: 0, bank: 0, takeOffX: -112, zoneInner: -390 });
 
 /**
- * The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else `CANYON_B` or
- * `CANYON_BEACH`.
+ * Version C with its bank's edge ramp halved (the water-physics advisor's second ruling, option (b), 2026-11-04; the
+ * `?canyonRamp=half` dev switch, the owner's call): the edge deepens from `bankEdge` at `bankRampFrom` to 2.4 m at the tip,
+ * 0.011 m per m, not 3.6 m. The edge line then runs at 56° to the shore, not 63°, so the along-shore depth gradient that
+ * focused the swell onto the edge (edge Hs 1.19–1.45 m at x 60–90, Medium) weakens (1.02–1.21 m), and Medium's sets break
+ * back on the face, 3–49 m seaward of the edge, from x −20 to 130; the cost, its first breaks near the tip (x 120–132) and
+ * all of Big's at the tip. Taken when the module loads, as `CANYON_B`.
+ */
+export const CANYON_HALF_RAMP: CanyonShape = Object.freeze({ ...CANYON, bankEdgeTip: 2.4 });
+
+/**
+ * The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else
+ * `CANYON_HALF_RAMP`, `CANYON_B` or `CANYON_BEACH`.
  */
 export function canyonShape(bed: CanyonBed = 'reef'): CanyonShape {
-  return bed === 'old' ? CANYON_BEACH : bed === 'b' ? CANYON_B : CANYON;
+  return bed === 'old' ? CANYON_BEACH : bed === 'b' ? CANYON_B : bed === 'half' ? CANYON_HALF_RAMP : CANYON;
 }
 
 /** Whether a layout is version C's (canyon-c): the bank into the flipped bowl. */
@@ -634,6 +663,14 @@ function bankLineZ(x: number, c: CanyonShape): number {
 export function canyonBankEdge(x: number, c: CanyonShape = CANYON): number {
   const share = Math.min(1, Math.max(0, (x - c.bankRampFrom) / (c.bankTipX - c.bankRampFrom)));
   return c.bankEdge + (c.bankEdgeTip - c.bankEdge) * share;
+}
+
+/**
+ * Version C's bank's edge line at along-shore position x, z: where its face reaches the edge's depth (`canyonBankEdge`),
+ * the top of the face; its level top, its back and the inside lie shoreward of it (the frame probe's edgeZ).
+ */
+export function canyonBankEdgeZ(x: number, c: CanyonShape = CANYON): number {
+  return canyonBreakLineZ(x, c) - (canyonBankEdge(x, c) - c.bowlCrestContour) / c.bankFace;
 }
 
 /**
@@ -1125,15 +1162,34 @@ export function canyonBeachShare(x: number, c: CanyonShape = CANYON): number {
 }
 
 /**
- * The Canyon's breaking-age join at along-shore position x (`KennedyOptions.joinAt`), given the reef's `join`
- * (`CANYON.ageJoin`): the reef's over its footprint and `onsetPin` m beside it, the beach's `barJoin` past the blend.
+ * How much of version C's bank's face is at (x, z) for its breaking-age join (`canyonJoin`), 0–1: 1 seaward of its edge
+ * line (`canyonBankEdgeZ`), 0 shoreward (its top, back and inside), smoothly over `bankJoinBlend` m centred on the line,
+ * and fading with the bank into the floor past its tip (`bankFade`).
  */
-export function canyonJoin(x: number, join: number, c: CanyonShape = CANYON): number {
+export function canyonBankFaceShare(x: number, z: number, c: CanyonShape = CANYON): number {
+  const edgeZ = canyonBankEdgeZ(x, c);
+  const half = 0.5 * c.bankJoinBlend;
+  return (1 - smoothstep(edgeZ - half, edgeZ + half, z)) * (1 - smoothstep(c.bankTipX, c.bankTipX + c.bankFade, x));
+}
+
+/**
+ * The Canyon's breaking-age join at (x, z) (`KennedyOptions.joinAt`), given the reef's `join` (`CANYON.ageJoin`): the
+ * reef's over its footprint and `onsetPin` m beside it, the beach's `barJoin` past the blend. On version C's bank, by
+ * `rule`: 'bed' (the default), the beach's on its face and the reef's behind its edge (`canyonBankFaceShare`; the
+ * advisor's second ruling, §2a); 'zone', the beach's to `bankGateFrom` and the reef's up the line from there (the first
+ * ruling's §2, the `?canyonJoin=zone` dev switch).
+ */
+export function canyonJoin(x: number, z: number, join: number, c: CanyonShape = CANYON, rule: CanyonJoinRule = 'bed'): number {
   if (!c.beach || c.barJoin === join) return join;
   const along = canyonBeachShare(x, c);
-  // Version C: the reef's gate on the bank's take-off zone, up the line from `bankGateFrom` (the ruling's §2, measured).
-  if (canyonBankOn(c) && along > 0 && x > c.bankGateFrom) {
-    return join + (c.barJoin - join) * along * (1 - smoothstep(c.bankGateFrom, c.bankGateFrom + c.bowlRulesBlend, x));
+  if (canyonBankOn(c) && along > 0) {
+    // Version C, 'zone': the reef's gate on the bank's take-off zone, up the line from `bankGateFrom`.
+    if (rule === 'zone') {
+      if (x > c.bankGateFrom) return join + (c.barJoin - join) * along * (1 - smoothstep(c.bankGateFrom, c.bankGateFrom + c.bowlRulesBlend, x));
+    } else if (x > canyonBankJoin(c).x) {
+      // Version C, 'bed': on the bank's side of the bowl, rule A on its face, the reef's gate behind its edge.
+      return join + (c.barJoin - join) * along * canyonBankFaceShare(x, z, c);
+    }
   }
   return along > 0 ? join + (c.barJoin - join) * along : join;
 }

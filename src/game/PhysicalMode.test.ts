@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonJoinSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -129,6 +129,43 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonRamp=half` dev switch (canyon-c, 2026-11-04: the water-physics advisor's option (b), the owner's call):
+  // today's Canyon with its bank's edge ramp halved, as the 'half' layout, so the worker builds that bed and its own take-off
+  // and starts; `?canyonBed=b` or `=old` win over it; an online room's config fixes the default.
+  it('halves the Canyon bank\'s edge ramp with `?canyonRamp=half` (a dev switch), and keeps the default otherwise', () => {
+    expect(canyonBedSwitch('?canyonRamp=half')).toEqual({ canyonBed: 'half' });
+    expect(canyonBedSwitch('?canyonRamp=HALF')).toEqual({ canyonBed: 'half' });
+    expect(canyonBedSwitch('?canyonBed=b&canyonRamp=half')).toEqual({ canyonBed: 'b' });
+    expect(canyonBedSwitch('?canyonBed=half')).toEqual({});
+    for (const search of ['', '?canyonRamp', '?canyonRamp=', '?canyonRamp=full', '?canyonRamp=0.5']) expect(canyonBedSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonRamp=half' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBe('half');
+      expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonJoin=zone` dev switch (canyon-c, 2026-11-04): version C's bank passing its breaking age by its take-off zone
+  // (the branch's head at ca567450) in place of its bed, carried in the config to the worker at the Canyon only; online
+  // rooms run the default.
+  it('passes the Canyon bank\'s breaking age by its take-off zone with `?canyonJoin=zone` (a dev switch), and by its bed otherwise', () => {
+    expect(canyonJoinSwitch('?canyonJoin=zone')).toEqual({ canyonJoin: 'zone' });
+    expect(canyonJoinSwitch('?canyonJoin=ZONE')).toEqual({ canyonJoin: 'zone' });
+    for (const search of ['', '?canyonJoin', '?canyonJoin=', '?canyonJoin=bed', '?canyonJoin=0']) expect(canyonJoinSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?canyonJoin=zone' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonJoin).toBe('zone');
+      expect(surfZoneConfigFor(physicalSettingsFor('beach', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonJoin).toBeUndefined();
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { canyonJoin: undefined }).canyonJoin).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

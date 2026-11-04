@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { CANYON, CANYON_B, CANYON_BEACH, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBarAt, canyonBars, canyonBreakLineZ, canyonFootZ, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
+import { CANYON, CANYON_B, CANYON_BEACH, CANYON_HALF_RAMP, PADANG, POINT_ONSET, REEF, canyonArmAt, canyonBankEdgeZ, canyonBarAt, canyonBars, canyonBreakLineZ, canyonJoin, canyonFootZ, createSpot, padangForeFootZ, padangReefAt, pointOnset, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -12,6 +12,7 @@ import {
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { BoussinesqSolver } from './BoussinesqSolver';
+import { OPEN_EDGE_RAMP } from './ShallowWaterSolver';
 import { PSI_RANGE, REEF_OVERTURN, overturn, overturnParameter, reefOverturn } from './Overturn';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { PADANG_SWELLS, PADANG_TIDES, REEF_SWELLS } from '../game/SurfConditions';
@@ -1073,6 +1074,36 @@ describe('SurfZoneSimulation', () => {
     expect(join({ canyonAgeJoin: 0.35 })).toBe(0.35);
     expect(join({ canyonBed: 'old' })).toBe(0.5);
     expect(join({ spot: 'beach', canyonAgeJoin: 0.5 })).toBe(0);
+  });
+
+  // canyon-c (2026-11-04, the water-physics advisor's second ruling, §2a): version C's bank passes its breaking age keyed to
+  // the bed, cell by cell at their centres: rule A on its face, the reef's gate behind its edge line (`canyonJoin`). The
+  // solver's per-cell field (`KennedyOptions.joinAt`, now given z) is what the CPU step reads and what the device uploads
+  // (`deviceLayout().breaking.joinField`, read per cell in WGSL), so the two agree by construction. `canyonJoin: 'zone'`
+  // (the `?canyonJoin=zone` dev switch) is the take-off zone's gate, the branch's head at ca567450; B and A ignore it.
+  it('fills the Canyon\'s per-cell breaking-age join by version C\'s bed, by its take-off zone with `canyonJoin: \'zone\'`, and leaves B and A as they were', () => {
+    const tiny = { seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0, componentCount: 4, alongShore: 80, dx: 4, fineSpacing: 4, coarseSpacing: 8, spinUpPeriods: 0.1 };
+    const build = (config: Partial<SurfZoneConfig>) => {
+      const solver = new SurfZoneSimulation({ ...tiny, spot: 'canyon', ...config } as SurfZoneConfig, 'warm').solver as BoussinesqSolver;
+      return { solver, join: solver.deviceLayout().breaking!.joinField! };
+    };
+    const inside = tiny.alongShore / 2 - OPEN_EDGE_RAMP;
+    const clamp = (x: number) => Math.min(inside, Math.max(-inside, x));
+    for (const [config, shape, rule] of [[{}, CANYON, 'bed'], [{ canyonJoin: 'zone' }, CANYON, 'zone'], [{ canyonBed: 'half' }, CANYON_HALF_RAMP, 'bed']] as const) {
+      const { solver, join } = build(config);
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        for (let ix = 0; ix < solver.nx; ix += 1) expect(join[iz * solver.nx + ix]).toBe(canyonJoin(clamp(solver.xCenters[ix]), solver.zCenters[iz], 0.5, shape, rule));
+      }
+    }
+    // By the bed, one column holds both: rule A on the face, the gate on the bank's top, back and inside.
+    const { solver, join } = build({});
+    const column = solver.xCenters.findIndex((x) => Math.abs(x) <= solver.dx / 2);
+    const edge = canyonBankEdgeZ(clamp(solver.xCenters[column]));
+    const at = (z: number) => join[solver.rowBelow(z) * solver.nx + column];
+    expect([at(edge - 30), at(edge + 30)]).toEqual([0, 0.5]);
+    // By the take-off zone, at x ≤ +31 the whole column is rule A.
+    expect([edge - 30, edge + 30].map((z) => build({ canyonJoin: 'zone' }).join[solver.rowBelow(z) * solver.nx + column])).toEqual([0, 0]);
+    for (const canyonBed of ['b', 'old'] as const) expect(Array.from(build({ canyonBed, canyonJoin: 'zone' }).join)).toEqual(Array.from(build({ canyonBed }).join));
   });
 
   // canyon-reef-sequence (2026-10-27): in the reef's columns a bore dropping out under B 0.3 for less than

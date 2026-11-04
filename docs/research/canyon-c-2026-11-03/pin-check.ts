@@ -3,13 +3,14 @@
  * small sea (Medium, seed 1, stage 2 on the CPU, one period's spin-up) stepped STEPS times at 1/30 s, then an FNV-1a hash
  * over its solver's bed, water depth and fluxes and its breaking, with its take-off, start offset and bounds. Run the same
  * file bundled against two trees (main's and the branch's) and compare the lines: every other spot, and the B and old Canyons
- * against main's Canyon, must match exactly.
+ * against main's Canyon, must match exactly. `--switches` (2026-11-04) adds `?canyonJoin=zone` (it must hash as the head at
+ * ca567450's Canyon), `?canyonRamp=half` and B with `canyonJoin: 'zone'` (as B).
  *   rolldown docs/research/canyon-c-2026-11-03/pin-check.ts -o dist/scripts/pin-check.mjs --format esm --platform node && node dist/scripts/pin-check.mjs
  */
 import { SWELLS } from '../../../src/game/SurfConditions';
 import { SurfZoneSimulation, rideLineupOffset, takeOffPoint, tankLayout, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
 
-const STEPS = Number(process.argv[2] ?? 60);
+const STEPS = Number(process.argv.find((a, i) => i >= 2 && /^\d+$/.test(a)) ?? 60);
 const swell = SWELLS.medium;
 function hash(arrays: ArrayLike<number>[]): string {
   let h = 0x811c9dc5;
@@ -25,6 +26,11 @@ function hash(arrays: ArrayLike<number>[]): string {
 const cases: [string, Partial<SurfZoneConfig>][] = [
   ['beach', { spot: 'beach' }], ['point', { spot: 'point' }], ['reef', { spot: 'reef' }], ['padang', { spot: 'padang' }], ['pool', { spot: 'pool' }],
   ['canyon', { spot: 'canyon' }], ['canyon b', { spot: 'canyon', canyonBed: 'b' }], ['canyon old', { spot: 'canyon', canyonBed: 'old' }],
+  // Since 2026-11-04 (the second ruling): `?canyonJoin=zone`, the head at ca567450's Canyon; `?canyonRamp=half`, option (b).
+  ...(process.argv.includes('--switches') ? [
+    ['canyon zone', { spot: 'canyon', canyonJoin: 'zone' }], ['canyon half', { spot: 'canyon', canyonBed: 'half' }],
+    ['canyon b zone', { spot: 'canyon', canyonBed: 'b', canyonJoin: 'zone' }],
+  ] as [string, Partial<SurfZoneConfig>][] : []),
 ];
 for (const [name, extra] of cases) {
   const config = {

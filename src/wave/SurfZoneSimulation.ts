@@ -1,5 +1,5 @@
 import {
-  PADANG, REEF, canyonArmAt, canyonBankEdge, canyonBankJoin, canyonBankOn, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type CanyonShape, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonBankEdge, canyonBankJoin, canyonBankOn, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type CanyonJoinRule, type CanyonShape, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, aFrameEstimate, breakerDepthFor, type PeelEstimate } from './Breaking';
@@ -232,10 +232,12 @@ export interface SurfZoneConfig {
    */
   startOut?: number;
   /**
-   * The Canyon's layout (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, today's
-   * (version B, canyon-b: the upcoast beach peak's +x arm runs into a reef bowl, `CANYON`); 'old', the layout before it
-   * (`CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's Canyon at 376d9cd4), with the same
-   * take-off and starts at the upcoast peak. Every other spot ignores it; online rooms always run the default.
+   * The Canyon's layout (the `?canyonBed` and `?canyonRamp=half` dev switches, to ride them side by side): 'reef', the
+   * default, today's (version C, canyon-c: one straight bank peeling from +x into the flipped reef bowl, `CANYON`); 'half',
+   * today's with its bank's edge ramp halved (`CANYON_HALF_RAMP`, the advisor's option (b), with its own take-off depth and
+   * starts); 'b', version B (`CANYON_B`, main's Canyon at 4eee1e5f); 'old', version A (`CANYON_BEACH`, main's at 376d9cd4),
+   * B and A with their take-off and starts at the upcoast peak. Every other spot ignores it; online rooms always run the
+   * default.
    */
   canyonBed?: CanyonBed;
   /**
@@ -258,6 +260,13 @@ export interface SurfZoneConfig {
    * other spot ignores it; online rooms always run the default.
    */
   canyonAgeJoin?: number;
+  /**
+   * How version C's bank passes its breaking age along its crests (`canyonJoin`, the water-physics advisor's second ruling,
+   * 2026-11-04): 'bed', the default, keyed to the bed (rule A on its face, the reef's gate on its top, back and inside); 'zone',
+   * the take-off zone's gate up the line from x +31 (the `?canyonJoin=zone` dev switch: the branch's head at ca567450). Every
+   * other layout and spot ignores it; online rooms always run the default.
+   */
+  canyonJoin?: CanyonJoinRule;
   /**
    * The Wave Pool's Barrel floor's breaking-age join, in place of its own (`POOL_BARREL.ageJoin`): the `?poolAgeJoin=<J>`
    * dev switch, 0 for rule A as the training floor runs, to A/B the gate alone. Every other floor and spot ignores it;
@@ -808,6 +817,13 @@ export const CANYON_REEF_TAKE_OFF_DEPTH = { base: 1.67, perMetre: 0.75 } as cons
 export const CANYON_BANK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
 
 /**
+ * Where version C's sets start breaking at its start with its bank's edge ramp halved (`CANYON_HALF_RAMP`, the
+ * `?canyonRamp=half` dev switch, the advisor's option (b)), m deep, against Hs: PROVISIONAL, refitted below from the frame
+ * probe's take-off column.
+ */
+export const CANYON_HALF_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
+
+/**
  * How deep the Canyon's sets of significant height Hs start breaking at its default start, m: on version C's bank
  * (`CANYON_BANK_TAKE_OFF_DEPTH`), no shallower than the bank's edge there (its face's top: shallower water lies only on the
  * beach face, 150 m inshore), or at the upcoast peak's tip on versions B and A (`CANYON_TAKE_OFF_DEPTH`; canyon-b's bowl
@@ -816,7 +832,9 @@ export const CANYON_BANK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as cons
 export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
   const c = canyonShape(bed);
   if (canyonBankOn(c)) {
-    return Math.max(canyonBankEdge(c.takeOffX, c), CANYON_BANK_TAKE_OFF_DEPTH.base + CANYON_BANK_TAKE_OFF_DEPTH.perMetre * significantHeight);
+    // With its edge ramp halved (`?canyonRamp=half`), its own fit (`CANYON_HALF_TAKE_OFF_DEPTH`).
+    const fit = bed === 'half' ? CANYON_HALF_TAKE_OFF_DEPTH : CANYON_BANK_TAKE_OFF_DEPTH;
+    return Math.max(canyonBankEdge(c.takeOffX, c), fit.base + fit.perMetre * significantHeight);
   }
   return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
 }
@@ -862,6 +880,16 @@ export const CANYON_BANK_RIDE_LINEUP: readonly { readonly significantHeight: num
 ];
 
 /**
+ * Version C's start with its bank's edge ramp halved (`?canyonRamp=half`), m seaward of its take-off
+ * (`CANYON_HALF_TAKE_OFF_DEPTH`), against Hs: PROVISIONAL, refitted below from the frame probe's take-off column.
+ */
+export const CANYON_HALF_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
+];
+
+/**
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
@@ -874,7 +902,7 @@ export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'signific
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
   // Version C's start on its bank (canyon-c); versions B and A at the upcoast peak (canyon-b left it as it was).
   const c = canyonShape(config.canyonBed);
-  const sizes = canyonBankOn(c) ? CANYON_BANK_RIDE_LINEUP : CANYON_RIDE_LINEUP;
+  const sizes = config.canyonBed === 'half' ? CANYON_HALF_RIDE_LINEUP : canyonBankOn(c) ? CANYON_BANK_RIDE_LINEUP : CANYON_RIDE_LINEUP;
   const height = config.significantHeight;
   if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
   for (let i = 1; i < sizes.length; i += 1) {
@@ -1186,9 +1214,12 @@ export class SurfZoneSimulation {
       ? (x: number, z: number) => canyonOnset(Math.min(inside, Math.max(-inside, x)), z, onset, shape)
       : config.spot === 'point' && config.breakingOnset === undefined && config.onsetRule !== 'old'
         ? (x: number, z: number) => pointOnset(depthAt(Math.min(inside, Math.max(-inside, x)), z) + config.tide, onset) : undefined;
-    // …and passes its breaking age along its crests by the beach's rule (`canyonJoin`: rule A), the reef keeping its gate.
+    // …and passes its breaking age along its crests by the beach's rule (`canyonJoin`: rule A), the reef keeping its gate;
+    // on version C's bank by the bed, at each cell's centre (rule A on its face, the gate behind its edge), or by its take-off
+    // zone (`SurfZoneConfig.canyonJoin` 'zone').
+    const joinRule = config.canyonJoin === 'zone' ? 'zone' as const : 'bed' as const;
     const joinAt = config.spot === 'canyon' && config.canyonAgeJoin === undefined && shape.beach && shape.barJoin !== diagonalJoin
-      ? (x: number) => canyonJoin(Math.min(inside, Math.max(-inside, x)), diagonalJoin, shape) : undefined;
+      ? (x: number, z: number) => canyonJoin(Math.min(inside, Math.max(-inside, x)), z, diagonalJoin, shape, joinRule) : undefined;
     const kennedy = { onset, ...(diagonalJoin > 0 ? { diagonalJoin } : {}), ...(onsetAt ? { onsetAt } : {}), ...(joinAt ? { joinAt } : {}) };
     this.solver = solverStage(config.spot, config.stage) === 2
       ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: kennedy })

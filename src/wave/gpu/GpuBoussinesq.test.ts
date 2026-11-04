@@ -436,6 +436,14 @@ describe('GpuBoussinesq host', () => {
     expect(Array.from(gatedLayout.breaking!.joinField!.subarray(0, 8))).toEqual([0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0]);
     writeParams(gated, gatedLayout, undefined, 0.02, 0.04, bytes);
     expect([words[23], words[24]]).toEqual([0, 1]);
+    // …and across shore (canyon-c, 2026-11-04: version C's bank keyed to its bed, rule A on its face, the gate behind its
+    // edge): the field the CPU step reads is the one the device uploads, cell by cell.
+    const keyed = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, {
+      breaking: { onset: 0.65, diagonalJoin: 0.5, joinAt: (_x, z) => (z < 4 ? 0 : 0.5) },
+    });
+    const keyedField = keyed.deviceLayout().breaking!.joinField!;
+    expect(Array.from({ length: 8 }, (_, iz) => keyedField[iz * 8 + 3])).toEqual([0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5]);
+    expect(keyedField).toBe((keyed as unknown as { joinField: Float64Array }).joinField);
   });
 
   it('reads back the surface rise rate, which a lip needs to find its crest\'s motion', () => {
