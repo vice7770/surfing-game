@@ -142,7 +142,14 @@ Wave Pool → Waves: **Barrel**, at **1.5 m** and at **1.8 m** (dev build, so th
 - **Types:** `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`.
 - **Tests:** `src/game/PhysicalMode.test.ts` (the switches; `?poolTubeCase` and the face's), `src/game/PhysicalMode.barrel.test.ts`
   (the fetch: the default and a38 once, the pool's own apart), `src/wave/barrel/poolTube.test.ts` (the default case),
-  `src/wave/barrel/faceAnchor.test.ts` (the ruling's parts); then the main suite and the SZS subset (`TEST_COUNTS`).
+  `src/wave/barrel/faceAnchor.test.ts` (the ruling's parts), `src/wave/barrel/sweptLoftClearRoof.test.ts` (both of the
+  pool's case lists); then the main suite and the SZS subset.
+  - **This head (f9cda828):** both type checks clean. The main suite (`npx vitest run src --maxWorkers=3 --exclude
+    "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`): 317 files passed, 34 skipped; 3,050 tests
+    passed, 23 expected fails, 40 skipped (528 s). Its first run failed one test, the clear-roof hold's every-case check,
+    which read the pool's default list only; it now visits both. The SZS subset (`npx vitest run src/wave/SurfZoneSimulation.test.ts --maxWorkers=3 -t
+    "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`, on e9c70bd5, whose source and SZS tests this head
+    keeps): 37 passed, 70 filtered out (6,975 s).
 - **The bars:**
   `PROBE=1 H=1.05 CASE=a38 LOG=runs/face-a38-1.05.txt npx vitest run src/wave/probes/poolTubeFace.probe.test.ts --maxWorkers=2`
   - `H=1.32`; `CASE=pool`;
