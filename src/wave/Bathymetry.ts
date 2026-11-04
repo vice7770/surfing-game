@@ -528,8 +528,11 @@ export const CANYON = {
    * break on the face, but not into water past its shallowest point, where a bore decays toward a stable 0.4–0.5 h and
    * reforms (Dally & Dean 1986): up the line the crest stands shoreward of its edge when the first break happens, on gated
    * cells, so the white does not run back up the line, and down the line the face carries it toward the bowl. The face
-   * fades with the bank past its tip (`bankFade`), the gate beyond it. Measured by the advisor on one seed (92 s): the line's
-   * −x end travelled 26 / 46 m at Medium (6 m / 15 m jump limits) against 16 / 19 m with the take-off zone's gate.
+   * fades with the bank past its tip (`bankFade`), the gate beyond it. Measured (frame probe, 12 periods a seed): at Medium
+   * (3 seeds) the line's −x end travelled 19 / 39 m (6 m / 15 m jump limits) against the zone's gate's 19 / 22 m, 30 / 41 %
+   * of waves reached the join, its own +x end stayed within 10 m on 92 %; at Big (2 seeds) 78 / 95 m and 91 % of the sets
+   * to the join, but Hutt's peel fell to 24–27° on every 20 m stretch (the zone's gate: 35–45°), the ruling's §5.2 risk,
+   * open with the advisor.
    */
   bankJoinBlend: 3,
   /**

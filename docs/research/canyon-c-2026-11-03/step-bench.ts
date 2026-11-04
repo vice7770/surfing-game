@@ -11,7 +11,7 @@
  * roller and curl). Prints the cells and the step's p50, mean and p95, ms.
  *
  *   rolldown docs/research/canyon-c-2026-11-03/step-bench.ts -o dist/scripts/step-bench-bb.mjs --format esm --platform node \
- *     && node dist/scripts/step-bench-bb.mjs --size medium --steps 300 [--bed old] [--canyon key=value,...] [--tube on|off]
+ *     && node dist/scripts/step-bench-bb.mjs --size medium --steps 300 [--bed b|old|half] [--canyon key=value,...] [--tube on|off]
  */
 import { performance } from 'node:perf_hooks';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
@@ -26,7 +26,7 @@ const option = (name: string) => {
 };
 const size = (option('size') ?? 'medium') as SwellSize;
 const steps = Number(option('steps') ?? 300);
-const bed = option('bed') === 'old' || option('bed') === 'b' ? option('bed') as 'old' | 'b' : undefined;
+const bed = (['old', 'b', 'half'] as const).find((b) => b === option('bed'));
 applyCanyonShape(option('canyon'));
 const settings = physicalSettingsFor('canyon', { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
 const config: SurfZoneConfig = {

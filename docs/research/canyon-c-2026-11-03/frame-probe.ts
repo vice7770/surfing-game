@@ -397,9 +397,24 @@ const perStill = Math.round(stillEvery / step);
 const steps = Math.round((periods * swell.peakPeriod) / step);
 const t0 = Date.now();
 const spinUp = sim.solver.time;
+// The run's health (as crest-current.ts's): the fastest water (|q|/h where h > 5 cm), every frame, NaN anywhere, the
+// Froude caps and the volume.
+const boussinesq = solver as unknown as { froudeCaps?: number; froudeCapsInWater?: number; totalVolume(): number; qx: Float64Array; qz: Float64Array };
+const caps0 = boussinesq.froudeCaps ?? 0;
+const capsInWater0 = boussinesq.froudeCapsInWater ?? 0;
+const volume0 = boussinesq.totalVolume();
+let fastest = 0;
+let finite = true;
 for (let n = 1; n <= steps; n += 1) {
   sim.step(step);
-  if (n % perFrame === 0) { record(solver.time); onsetShapes(); }
+  if (n % perFrame === 0) {
+    record(solver.time); onsetShapes();
+    for (let i = 0; i < solver.h.length; i += 1) {
+      const h = solver.h[i];
+      if (!Number.isFinite(h) || !Number.isFinite(boussinesq.qx[i]) || !Number.isFinite(boussinesq.qz[i])) finite = false;
+      if (h > 0.05) fastest = Math.max(fastest, Math.hypot(boussinesq.qx[i], boussinesq.qz[i]) / h);
+    }
+  }
   if (stills && n % perStill === 0 && solver.time >= stillFrom && solver.time <= stillTo) still(`${stills}/${size}-s${seed}-t${solver.time.toFixed(2).padStart(7, '0')}.png`);
 }
 const quantile = (values: number[], q: number) => {
@@ -512,6 +527,9 @@ const surf = meter.reading(solver.time, Infinity);
 console.log(`surf at the start's band (x ${TAKE_OFF_X} ± ${TAKE_OFF_BAND}): typical ${fmt(surf?.typical ?? Number.NaN, 2)} m, sets ${fmt(surf?.sets ?? Number.NaN, 2)} m, ${surf?.waves ?? 0} waves`);
 json.surf = surf ?? null;
 json.faces = meter.waves().map((w) => +w.face.toFixed(3));
+const health = { fastest, finite, caps: (boussinesq.froudeCaps ?? 0) - caps0, capsInWater: (boussinesq.froudeCapsInWater ?? 0) - capsInWater0, volumeDrift: boussinesq.totalVolume() / volume0 - 1 };
+console.log(`health: fastest water ${fastest.toFixed(2)} m/s; Froude caps ${health.caps} (${health.capsInWater} in water); volume ${(100 * health.volumeDrift).toFixed(2)} %; finite ${finite}`);
+json.health = health;
 console.log(`wall ${((Date.now() - t0) / 1000).toFixed(0)} s`);
 const out = option('json');
 if (out) writeFileSync(out, JSON.stringify(json));

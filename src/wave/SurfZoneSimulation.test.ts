@@ -6,7 +6,7 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  CANYON_BANK_LOOK, CANYON_BEACH_LOOK, CANYON_RIDE_LINEUP, CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  CANYON_BANK_LOOK, CANYON_BANK_RIDE_LINEUP, CANYON_BEACH_LOOK, CANYON_HALF_RIDE_LINEUP, CANYON_HALF_TAKE_OFF_DEPTH, CANYON_RIDE_LINEUP, CANYON_SWELL_DEPTH, canyonTakeOffDepth, FOAM_DECAY, RIDE_LINEUP_OFFSET, rideLineupOffset, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint, canyonReefTakeOff, canyonBowlTakeOff,
   alongShoreOf, tankDepth, tankLayout, tankRiderBounds,
   windOnsetScale, type RenderGrid, type SurfZoneConfig,
@@ -1074,6 +1074,29 @@ describe('SurfZoneSimulation', () => {
     expect(join({ canyonAgeJoin: 0.35 })).toBe(0.35);
     expect(join({ canyonBed: 'old' })).toBe(0.5);
     expect(join({ spot: 'beach', canyonAgeJoin: 0.5 })).toBe(0);
+  });
+
+  // canyon-c (2026-11-04): with its bank's edge ramp halved (`?canyonRamp=half`, the advisor's option (b)) the sets break on
+  // the face at the start, 23 m seaward of its 1.68 m edge at Medium's median: their own take-off fit (the frame probe's
+  // take-off column) and the bank's offsets, each start seaward of where one wave in ten first broke there. The full ramp's
+  // starts are as before (provisional, the ruling's §4).
+  it('starts the Canyon\'s half-ramp riders on the bank\'s face by their own take-off fit, the full ramp\'s as before', () => {
+    expect(CANYON_HALF_TAKE_OFF_DEPTH).toEqual({ base: 1.30, perMetre: 1.06 });
+    expect(CANYON_HALF_RIDE_LINEUP).toEqual(CANYON_BANK_RIDE_LINEUP);
+    const at = (canyonBed: 'reef' | 'half', significantHeight: number, peakPeriod: number) => {
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', canyonBed, alongShore: undefined, significantHeight, peakPeriod, directionDegrees: 0, tide: 0 };
+      return { takeOff: takeOffPoint(config), offset: rideLineupOffset(config) };
+    };
+    for (const [significantHeight, peakPeriod, reefZ, halfZ, offset, firstTenth] of [[0.9, 9, -176, -179.5, 6, -163.5], [1.4, 11, -190.5, -203, 9, -211.5], [2.4, 14, -239.5, -249.5, 3, -251.5]]) {
+      expect(canyonTakeOffDepth(significantHeight, 'half')).toBeCloseTo(CANYON_HALF_TAKE_OFF_DEPTH.base + CANYON_HALF_TAKE_OFF_DEPTH.perMetre * significantHeight, 12);
+      expect(at('reef', significantHeight, peakPeriod)).toEqual({ takeOff: { x: 75, z: reefZ }, offset });
+      const half = at('half', significantHeight, peakPeriod);
+      expect(half).toEqual({ takeOff: { x: 75, z: halfZ }, offset });
+      // Further out than the full ramp's, on the face (deeper than the half ramp's edge there), seaward of the tenth.
+      expect(halfZ).toBeLessThan(reefZ);
+      expect(halfZ).toBeLessThan(canyonBankEdgeZ(75, CANYON_HALF_RAMP));
+      expect(halfZ - offset).toBeLessThan(firstTenth);
+    }
   });
 
   // canyon-c (2026-11-04, the water-physics advisor's second ruling, §2a): version C's bank passes its breaking age keyed to

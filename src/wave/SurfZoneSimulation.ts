@@ -818,10 +818,14 @@ export const CANYON_BANK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as cons
 
 /**
  * Where version C's sets start breaking at its start with its bank's edge ramp halved (`CANYON_HALF_RAMP`, the
- * `?canyonRamp=half` dev switch, the advisor's option (b)), m deep, against Hs: PROVISIONAL, refitted below from the frame
- * probe's take-off column.
+ * `?canyonRamp=half` dev switch, the advisor's option (b), 2026-11-04), m deep, against Hs: a least-squares line through
+ * the depth by which nine in ten of each size's waves have started breaking in the take-off's column (x 75 ± 4 m; each
+ * wave's most seaward break there, the frame probe's), 2.18, 2.89 and 3.80 m for Small, Medium and Big (seed 1, seeds 1–2
+ * and seed 1 × 12 periods; the line gives 2.25, 2.78 and 3.84 m). With the ramp halved the edge there is 1.68 m deep and the
+ * sets break on the face, 23 m seaward of it at Medium's median: the take-off lies 3.5, 12.5 and 10 m further out than the
+ * full ramp's (`CANYON_BANK_TAKE_OFF_DEPTH`). Provisional: one to two seeds a size.
  */
-export const CANYON_HALF_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
+export const CANYON_HALF_TAKE_OFF_DEPTH = { base: 1.30, perMetre: 1.06 } as const;
 
 /**
  * How deep the Canyon's sets of significant height Hs start breaking at its default start, m: on version C's bank
@@ -881,7 +885,10 @@ export const CANYON_BANK_RIDE_LINEUP: readonly { readonly significantHeight: num
 
 /**
  * Version C's start with its bank's edge ramp halved (`?canyonRamp=half`), m seaward of its take-off
- * (`CANYON_HALF_TAKE_OFF_DEPTH`), against Hs: PROVISIONAL, refitted below from the frame probe's take-off column.
+ * (`CANYON_HALF_TAKE_OFF_DEPTH`), against Hs: the bank's offsets (`CANYON_BANK_RIDE_LINEUP`), checked against the rule they
+ * keep (seaward of where one wave in ten starts breaking): in the take-off's column one wave in ten broke first at z −163.5,
+ * −211.5 and −251.5 at Small, Medium and Big (the frame probe, as the fit's), and these starts lie at −185.5, −212 and
+ * −252.5. No catch was measured (the owner rides): provisional.
  */
 export const CANYON_HALF_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
   { significantHeight: 0.9, offset: 6 },
