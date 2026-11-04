@@ -73,6 +73,7 @@ The owner asked for them (2026-09-30) to source the Reef's lip and tube, which a
 - **Two phases per case:** level 10 until the second crest nears the break, then level 12 inside a window around it.
 - **Cases:** `reef42` and `reef60` (the Reef's ledge at 1:4.2 and 1:6); `padang19`, `padang19b` and `padang19c` (Padang's 16 s, 18 s and 14 s swells, which give the swept barrel its onset lag for swell); `padang19s` (the Small swell, for the barrel library); `point21_a08`, `point21_a15`, `point21_a23` and `point21_a30` (the Point's transect at four sizes, for PR 7); `reef42_a35` (a 3.5 m crest on the Reef's ledge, the second point of its throw line); `canyon23_a29`, `canyon23_a38` and `canyon23_a49` (the Canyon's reef bed, below). PR 7's records say which of them the library uses, and why.
 - **Two-slope beds:** a case may end with `:HMID:S2`, the depth where the first slope ends (in h0) and the second slope from there to the flat, as `slope.c` takes them. Without them the bed is one slope to the flat, and the old cases build exactly as before (their qcc command lines were checked byte for byte, 2026-10-21).
+- **A reef top (2026-11-04):** after those, `:TOP:SBACK` ends the flat `TOP` h0 past the last slope, then drops at `SBACK` (default 1/20) back to the deep bed's depth (h0) and runs flat to the wall: a reef crest with a lagoon behind it, instead of a flat to the closed wall that over-drains the wave studied. It is `periodic.c`'s `REEFTOP` and `SBACK`. Leave the two-slope fields empty for a one-slope bed (`name:…:w1:::2.7:0.05`). Off by default: every older case's qcc line is unchanged (checked byte for byte), and a level-8 run of `pool_straight_small` with and without the change wrote identical facets, bed and dump. `analysis/crest_track.py` reads the reef top from `params.txt` for the still depth.
 - **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib. For a supervisor: `fg` (both phases in the foreground), `scout` (the whole case at `SCOUT_LEVEL`, 10, every frame written, which `analysis/crest_track.py` reads to place the switch, end and window), `compile`, `cases` and `flags` (the qcc command lines). `CASES_FILE` replaces or adds case definitions by name; `RUNS` moves the runs' folder; `OMP=1` builds with OpenMP.
 - **Overview figure:** `analysis/train_overview.py` draws a run's surface along the whole domain at chosen times.
 
@@ -166,6 +167,7 @@ npm run barrels:pool -- status       # each case's phase and ETA
   5× the cost; phase 1 is reused).
 - **Stop and resume:** `npm run barrels:pool -- stop`, then `npm run barrels:pool` again; after a restart or crash just
   run it again (10-minute checkpoints). One case only: `POOL_CASES=pool_straight_small npm run barrels:pool`.
+  `stop` stops every pool case (`pool_*`).
 - **Afterwards,** commit and push the case files and the report:
 
 ```
@@ -175,3 +177,56 @@ git push
 ```
 
 The `.bin` files are listed in no game index: step 3 (the drawing) wires them, with a `pool` entry in `BARREL_SPOTS`.
+
+## The Wave Pool's bigger-tube batch (2026-11-04)
+
+The advisor's step-7 ruling on the pool's surfable tube (`docs/research/pool-tube-wall-2026-11-04/advisor-ruling.md`, §2.2
+items 2–3) asks one question of the M4: does a Reef-type ledge, one face at 1:4.5 along the reef's ray from the 4.5 m
+platform to the 0.9 m crest, give the Barrel a clearly bigger usable tube than today's knee face? The floor changes only
+if it does. The owner chose the six cases (2026-11-04). The plan, the beds and the decision rule are in
+`docs/research/pool-tube-runs-2/README.md`.
+
+| Case | Face along the ray | H/h0 | What it tests |
+|---|---|---|---|
+| `pool_knee_small`, `pool_knee_big` | today's knee: 1:18.7 / 1:21.6 | 0.26 / 0.32 | the reference: today's floor at the game's own crests (A0 ≈ 0.19 / 0.245) |
+| `pool_ledge_small`, `pool_ledge_big` | the ledge: 1:4.5 | 0.32 / 0.37 | the candidate, sized for the same faces (A0 ≈ 0.24 / 0.29) |
+| `pool_steep9_small`, `pool_steep9_big` | 1:9 | 0.26 / 0.32 | the trend between them (the optional pair) |
+
+Every case, the knee's too, has the same reef top along the ray: the 0.9 m crest 2.7 h0 (12.2 m) long, then 1:20 back
+down to 4.5 m and flat to the wall. That is the floor's 6 m `flatWidth` and 1/10 `backSlope` (`POOL_STRAIGHT`) crossed at
+cos α ≈ 0.5, so the knee and the ledge differ in the face alone. The domain stays 64 h0 (288 m), so level 13 gives the
+earlier pool runs' 3.5 cm cells; it holds every back slope (the knee's big case has the least deep water before the wall,
+0.57 h0).
+
+**On the M4 Pro**, from the repo:
+
+```
+git pull                                    # main, once claude/pool-tube-runs-2 is merged
+npm run barrels:pool -- check               # the prerequisites (setup installs what's missing)
+JOBS=6 POOL_CASES="pool_ledge_big pool_ledge_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
+npm run barrels:pool -- status              # the last run's cases: phase, t and ETA
+```
+
+- **What it does:** each case as the earlier pool runs: a level-10 scout places its switch, end and window; phase 1 at
+  level 10, phase 2 at level 13 (`LEVEL2` stays 13) in the window; then the analysis, the case files and the report.
+- **Where it writes:** the runs in `tools/basilisk/runs/` (git-ignored; the windows frozen in `runs/pool/cases.txt` beside
+  the earlier pool cases', which keep theirs). The report, `summary.json`, `data/`, the figures, `barrel-index.json`,
+  `barrel-cases.md` and the case files (`barrels/*.bin`) all go to `docs/research/pool-tube-runs-2/`. Nothing goes to
+  `public/barrels` or the game's index: the batch's cases are candidates until the decision rule picks. (Naming any of
+  them in `POOL_CASES` does that; the pipeline refuses to write their report over `docs/research/pool-tube-runs`.)
+- **How long:** about 2.5–3 h with `JOBS=6` (an estimate). The earlier pair's phase 2 took 2h01 and 2h21 on the M4 at the
+  same level, domain and kind of window; the scouts and phase 1 take minutes, the analysis about 10 minutes. Six at once
+  give each case its own performance core, but share the memory bandwidth.
+- **Stop and resume:** `npm run barrels:pool -- stop` (it stops every pool case), then the same run command again; after a
+  restart or a crash just run it again (10-minute checkpoints). `POOL_CASES="…" npm run barrels:pool -- analyse` redoes
+  the analysis and the report from the finished runs.
+- **Send back** the report folder, and nothing else:
+
+```
+git add docs/research/pool-tube-runs-2
+git commit -m "data(pool): the bigger-tube batch at level 13"
+git push
+```
+
+  `git status` should then show nothing under `public/barrels` or `src/`. A case that threw no tube has no `.bin`; its
+  analysis files are in `data/` all the same.

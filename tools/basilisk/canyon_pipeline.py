@@ -100,8 +100,8 @@ SETS = {
                 "- Candidates, not the game's cases: their `.bin` files are in `barrels/` here, not in `public/barrels`, "
                 "and no game index lists them.",
                 "- **The decision rule** (the advisor's step-7 ruling, §2.2): the ledge is adopted if its usable "
-                "clearance (held over a 0.3 m depth along the ray, p50 at life 0.5–0.9, game scale) is at least 1.3× "
-                "the knee case's at the same face height, and its lip lands within 0.6–1.6 H. Then the floor change "
+                "clearance (the clearance held over a 0.3 m depth along the ray, a crouched body, at life 0.5–0.9, at "
+                "game scale) is at least 1.3× the knee case's at the same face height, and its lip lands within 0.6–1.6 H. Then the floor change "
                 "(`POOL_STRAIGHT`), its probes, and these cases into the game.",
             ],
         },
@@ -114,6 +114,7 @@ SET = SETS[SET_NAME]
 CASES = SET["cases"]
 WHAT = SET["what"]
 SCRIPT = SET["script"]
+CASES_ENV = "CANYON_CASES" if SET_NAME == "canyon" else "POOL_CASES"  # the cases to run, by name (default: the set's)
 SMOKE_WINDOW = {"tswitch": 1.0, "tmax": 2.0}  # the smoke test's phases: a second of each, at levels 7 and 8
 EXTEND = float(os.environ.get("CANYON_EXTEND", 4.0))  # phase 2 carried on this much (sqrt(h0/g)) once, if it broke late
 
@@ -128,7 +129,7 @@ class Config:
         self.level2 = int(env.get("LEVEL2", 8 if smoke else 13))
         self.scout_level = int(env.get("SCOUT_LEVEL", 7 if smoke else 10))
         self.scout_tmax = env.get("SCOUT_TMAX", "2" if smoke else "")
-        self.cases = env.get("CANYON_CASES" if SET_NAME == "canyon" else "POOL_CASES", SET["smoke"] if smoke else " ".join(CASES)).split()
+        self.cases = env.get(CASES_ENV, SET["smoke"] if smoke else " ".join(CASES)).split()
         self.state = os.path.join(self.runs, SET["state"])
         batch = SET.get("batch")
         self.batch = bool(batch) and any(n in batch["cases"] for n in self.cases)
@@ -637,6 +638,7 @@ class Pipeline:
         os.makedirs(cfg.state, exist_ok=True)
         pidfile = os.path.join(cfg.state, "pipeline.pid")
         open(pidfile, "w").write(str(os.getpid()))
+        open(os.path.join(cfg.state, "last-cases.txt"), "w").write(" ".join(cfg.cases) + "\n")  # for status
         signal.signal(signal.SIGTERM, self.stop)
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
@@ -858,6 +860,10 @@ def main():
     a = ap.parse_args()
     cfg = Config(smoke=a.smoke, jobs=a.jobs)
     if a.cmd == "status":
+        # without the cases named, the last run's (a batch's status needs no POOL_CASES)
+        last = os.path.join(cfg.state, "last-cases.txt")
+        if CASES_ENV not in os.environ and os.path.exists(last):
+            cfg.cases = open(last).read().split() or cfg.cases
         alive = supervisor_alive(cfg)
         print(f"The supervisor is running (pid {alive})." if alive else f"The supervisor is not running ({SCRIPT} resumes it).")
         for line in status_lines(cfg):
