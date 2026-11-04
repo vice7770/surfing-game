@@ -63,7 +63,7 @@ probe's light runs (`runs/old-*.txt`).
 | 9. *(Dropped, 2026-11-04.)* The lip's water on a placed rider's head or torso before touchdown, and of those, falls within 0.5 s | standing 3 → 3 fell; prone 0 | standing 11 → 9; prone 1 → 1 | standing 4 → 1; prone 1 → 1 | standing 2 → 0; prone 2 → 2 | 3 of 160 placements in the tube | Information: 17 of 24 fell within 0.5 s under the drag rule |
 | 10. The ledger within ±5 % of main: jets thrown and poured; the meter's H | 412 jets, 181.8 of 192.2 m³; meter 1.592 m (main 1.633: −2.5 %) | 463 jets, 331.6 of 353.4 m³; 1.885 m (1.982: −4.9 %) | 379 jets, 117.2 of 118.8 m³; 1.612 m (1.633: −1.3 %) | 388 jets, 193.4 of 197.5 m³; 1.897 m (1.992: −4.7 %) | 0 jets in the 12 periods (see above) | Meter **pass** (the 1.8 m runs at the edge); jets **fail**: main throws none |
 | 11. Pin check: identical for every other spot; two pool runs identical | Against main 135782d6 (`runs/pin-main.txt`, `runs/pin-branch.txt`): 17 of 20 lines identical: the ten water-only seas (beach, point, reef, Padang, Canyon, the pool's four Training seas, its A-frame), the three other swept barrels (Padang; the Canyon, tube on; the Reef), and the Barrel with the old switches on both case lists at 1.5 and 1.8 m. Only the Barrel's default differs, as intended (a38 under the face ruling: 39 / 77 jets in 240 steps against main's 2 / 6). Each tree's two default runs are identical. | | | | | **Pass** |
-| 12. Cost on the M1 and the M4 Pro | COST_ROW |
+| 12. Cost on the M1 and the M4 Pro | The A/B on this M1 (`COST=1`, `runs/cost-a38-*.txt`: the face build against the build before on the same a38 sea, 600 steps each in alternating blocks, Node, under the SZS suite's load), p50: the contact's update 2.93 / 2.49 ms against 1.02 / 1.11 (+1.9 / +1.4 ms a step, the worker); the drawing's loft build 2.59 / 2.27 ms against 1.08 / 1.19 (+1.5 / +1.1 ms a build, the page); the sea's step 57 ms either way (the CPU solver). The ruling estimated +0.5–1 ms. The M4 Pro was not measured (not this machine). | | | | | **Measured on the M1**: about 1.5–2× the estimate; M4 Pro open |
 | 13. Ride-camera strips at the throw, mid-open and touchdown | Not made: a ride camera needs the page's renderer (WebGPU in a browser), and the owner ruled out the browser pane and the dev server for this work. The headless frame probes write top-down maps only. | | | | | **Not measured** |
 
 **Against the ruling's expected values** (`advisor-ruling.md`, "What the owner will see"):
@@ -76,8 +76,9 @@ probe's light runs (`runs/old-*.txt`).
 | Open (per point, τ 0 → touchdown, solver time) | pool case 1.24 / 1.40 s; a38 0.70 / 0.79 s | 0.68 / 0.76 s | 1.22 / 1.37 s |
 
 - **The wall** stands where the ruling foresaw at a38 and a little low at the pool's cases. It doesn't grow from the case's
-  earliest frame: each point's clock starts 0.29–0.30 s before its throw (its fitted start, as step 2's), so slices form
-  over the fallback's ramp (0.85 / 0.96 s) and the wall is already 0.4–0.6 m high 0.1–0.5 s before the throw.
+  earliest frame: each point's clock starts 0.29–0.30 s before its throw (the clock's fit along σ starts a new point near
+  its neighbours' clocks: §4 below), so slices form over the fallback's ramp (0.85 / 0.96 s) and the wall is already
+  0.4–0.6 m high 0.1–0.5 s before the throw.
 - **The air** is the case's own less about 30 % at a38 (the ratio 0.72–0.73, inside the bar) and 40 % at the pool's
   cases (0.58–0.62, outside it): the union raises the floor under the lip to the solver's surface.
 - **The open time** follows each case's own to within 2–4 %.
@@ -106,9 +107,10 @@ The owner's Barrel goal (pool-barrel, 2026-11-01): 1.5–1.8 m faces with a 1–
 - **Where it lands:** a38's tip lands 1.0–1.1 H_s ahead of the drawn crest (inside 0.6–1.5 H, as Surf Ranch's 0.9–1.0 H),
   where the solver breaks on 87–89 % (the bar is 90 %). The pool's cases land 1.8–1.9 H_s out, where the bar fails. The
   bigger tube's case should land as a38's does.
-- **The lower face:** the case's lower face sits 0.06–0.16 m under the solver's at 0.2–0.3 H_s in the open tube (p50; bar 3:
-  p50 0.065–0.093 H_s over 0.05–0.4 H_s). The union lifts it to the solver's, so the board rides the solver's face there. Runs on the game's own reef sized by the game's crest (the ruling's A0 ≈ 0.19 / 0.245) should
-  match it closer. *Inferred.*
+- **The lower face:** the case's lower face sits 0.06–0.16 m under the solver's at 0.2–0.3 H_s in the open tube (p50;
+  bar 3: p50 0.065–0.093 H_s over 0.05–0.4 H_s). The union lifts it to the solver's, so the board rides the solver's
+  face there. Runs on the game's own reef sized by the game's crest (the ruling's A0 ≈ 0.19 / 0.245) should match it
+  closer. *Inferred.*
 - **The wall:** a bigger tube means a bigger wall over the solver's slope (0.83 / 1.01 m at the throw at a38 now). Bars 2
   and 4 already fail on today's wall: what bodies and riders meet there grows with it.
 - **Formation:** slices start 0.3 s before the throw on their clock, not at the case's earliest frame (1.7–1.9 s), so the
