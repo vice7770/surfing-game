@@ -37,7 +37,11 @@ no tube work at the Canyon.
     caps). **The cost:** C's CPU step 129 ms against B's 111 ms (mean, Medium), (b) 149 ms.
 - **Provisional:** the full ramp's take-off depth and starts (`CANYON_BANK_TAKE_OFF_DEPTH`, `CANYON_BANK_RIDE_LINEUP`; the
   ruling's §4: keep them), the half ramp's (one to two seeds a size, no catch measured), `SWELL_SURF.canyon`.
-- **For the owner:** ride the four layouts (the shot list at the end); the calls in the ruling's §7 and the Big peel.
+- **The owner's calls (2026-11-04):** the physics accepted (§7.1: the line reaches the reef on about 1 in 4–10 Medium
+  sets; sections ≤ 15 m, about 1.5 s, count as one line); (b) stays behind `?canyonRamp=half`, the owner rides both and
+  decides later. Merged through `claude/playtest-1104b`.
+- **For the owner:** ride the four layouts (the shot list at the end); the Big peel (24–27°) waits on their ride before
+  it goes back to the advisor.
 
 ## The bars: (a) and (a) + (b) against the ruling's predictions, the head and B
 
