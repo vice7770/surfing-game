@@ -249,6 +249,33 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
   return pauses;
 }
 
+/**
+ * Step 7's throw-contour distance (`OnsetTiming.distance.to`, `FrontOptions.distance`): the still depth `stillAt` read every
+ * `step` m along (dx, dz) from (x, z), linear between reads, to where it is `depth`: ahead while it is deeper (to `ahead` m:
+ * |τ_e| C_p ≤ 1.91 s × 1.5 √(g 3 m) ≈ 15.5 m at the 1.8 m faces; Infinity past it), behind once it is shallower (negative,
+ * to `behind` m; NaN past it). NaN where the depth can't be read.
+ */
+export const THROW_CONTOUR = { step: 0.5, ahead: 16, behind: 8 } as const;
+export function throwContourDistance(stillAt: (x: number, z: number) => number, x: number, z: number, dx: number, dz: number, depth: number): number {
+  const { step, ahead, behind } = THROW_CONTOUR;
+  let before = stillAt(x, z);
+  if (!(before === before)) return Number.NaN;
+  if (before > depth) {
+    for (let t = step; t <= ahead; t += step) {
+      const after = stillAt(x + t * dx, z + t * dz);
+      if (after <= depth) return t - step + (step * (before - depth)) / (before - after);
+      before = after;
+    }
+    return Infinity;
+  }
+  for (let t = -step; t >= -behind; t -= step) {
+    const after = stillAt(x + t * dx, z + t * dz);
+    if (after > depth) return t + step - (step * (depth - before)) / (after - before);
+    before = after;
+  }
+  return Number.NaN;
+}
+
 /** Per point of a front, its distance to its throw contour (m), and smoothed along σ (`distanceClocks`). */
 let distances = new Float64Array(0);
 let smoothed = new Float64Array(0);

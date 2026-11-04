@@ -144,6 +144,29 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // Step 7, Q1's switches (pool-tube-wall, 2026-11-04): each piece's A/B alone; the Barrel's alone; online rooms pin them.
+  it('takes step 7\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
+    expect(tubeFaceSwitches('?tubeAnchor=old')).toEqual({ tubeAnchor: 'old' });
+    expect(tubeFaceSwitches('?tubeForm=old&tubeThrow=break')).toEqual({ tubeForm: 'old', tubeThrow: 'break' });
+    expect(tubeFaceSwitches('?wallFlow=OLD')).toEqual({ wallFlow: 'old' });
+    expect(tubeFaceSwitches('?tubeAnchor=old&tubeForm=old&wallFlow=old&tubeFace=old')).toEqual({ tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old', tubeFace: 'old' });
+    for (const search of ['?tubeAnchor=new', '?tubeForm=1', '?tubeThrow=contour', '?tubeThrow=old', '?wallFlow=new', '?wallFlow']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const unset = surfZoneConfigFor(barrel, 5, false);
+      expect([unset.tubeAnchor, unset.tubeForm, unset.tubeThrow, unset.wallFlow]).toEqual([undefined, undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?tubeAnchor=old&tubeForm=old&tubeThrow=break&wallFlow=old' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeAnchor: 'old', tubeForm: 'old', tubeThrow: 'break', wallFlow: 'old' });
+      const plain = surfZoneConfigFor(training, 5, false);
+      expect([plain.tubeAnchor, plain.tubeForm, plain.tubeThrow, plain.wallFlow]).toEqual([undefined, undefined, undefined, undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined });
+      expect([online.tubeAnchor, online.tubeForm, online.tubeThrow, online.wallFlow]).toEqual([undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22; repointed by canyon-b, 2026-11-01): main's Canyon from before
   // version B (the reef with a beach peak either side), carried in the config, so the worker builds that bed and the
   // seabed is drawn from it; absent or anything else, today's (version B).

@@ -232,8 +232,8 @@ export interface LoftResult {
   sliceShift: Float32Array;
   shiftMisses: number;
   /**
-   * A diagnostic (a probe's): per record, its smoothed shift as this build placed its case, m (NaN: the crest anchor), for
-   * the records the face anchor read this build.
+   * A diagnostic (a probe's): per record, its smoothed shift as this build placed its case, m (NaN: the crest anchor;
+   * Infinity: a record the face anchor did not read this build).
    */
   recordShift?: Float32Array;
   /**
@@ -538,6 +538,8 @@ export class SweptLoft {
     r.rayMinAdvance = 0;
     r.rayInvalidIntervals = 0;
     r.shiftMisses = 0;
+    // The diagnostic's records not read this build stay Infinity (NaN: read, on the crest anchor).
+    r.recordShift?.fill(Infinity, 0, Math.min(count, r.recordShift.length));
     const boundedC = this.library.options.geometry === 'bounded-C';
     if (boundedC) this.retirementRow.fill(0);
     if (boundedC) r.cSampling = { policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1', mandatoryRawKnots: 0, plannedStations: 0,

@@ -1,5 +1,5 @@
 import type { BedMaterial } from '../wave/Bathymetry';
-import { createContactHit, tubeState, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
+import { createContactHit, tubeState, type ContactHit, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
 import { waveNumber } from '../wave/dispersion';
 import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
 import type { LensPoint, RollerLens } from '../wave/SpillingRoller';
@@ -726,32 +726,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
    */
   private wallFlow(out: WaterSample, y: number): void {
     const h = this.hit;
-    const weight = h.wallWeight;
-    if (!(weight > 0) || !(h.wallSpeed === h.wallSpeed) || !(h.wallAlong === h.wallAlong)) return;
-    // The ray: the front's normal, square to its tangent.
-    const rx = -h.tangentZ;
-    const rz = h.tangentX;
-    const along = out.flowX * rx + out.flowZ * rz;
-    const span = h.wallTop - h.wallLow;
-    const r = span > 0 ? Math.min(1, Math.max(0, (y - h.wallLow) / span)) : 1;
-    let flowAlong = along + r * (h.wallB * h.wallSpeed - along);
-    let flowUp = (1 - r) * out.flowY;
-    // The swept surface's normal in the ray–vertical plane; the water's component along it is the surface's own.
-    let na = h.normalX * rx + h.normalZ * rz;
-    let ny = h.normalY;
-    const length = Math.sqrt(na * na + ny * ny);
-    if (length > 1e-9) {
-      na /= length;
-      ny /= length;
-      const excess = flowAlong * na + flowUp * ny - (h.wallAlong * na + h.wallUp * ny);
-      flowAlong -= excess * na;
-      flowUp -= excess * ny;
-    }
-    const w = Math.min(1, weight);
-    const change = w * (flowAlong - along);
-    out.flowX += change * rx;
-    out.flowZ += change * rz;
-    out.flowY += w * (flowUp - out.flowY);
+    if (!(h.wallWeight > 0) || !(h.wallSpeed === h.wallSpeed) || !(h.wallAlong === h.wallAlong)) return;
+    wallWaterFlow(out, y, h);
   }
 
   /** The four cells and bilinear weights `sampleCentered` would use at (x, z). */
@@ -849,4 +825,43 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.breaking = 0;
     return out;
   }
+}
+
+/**
+ * Step 7's wall water (`PhysicalSurfWaterOptions.sweptWall`; the advisor's 2026-11-04 ruling §1.4.3) at height `y` into
+ * `out`, which holds the solver's flow there; `wall` is the swept surface's answer (its normal, the front's tangent, and its
+ * `wall…` fields). In the ray–vertical plane the flow ramps from the solver's at the anchor's height (`wallLow`) to
+ * (B·C along the ray, 0 up) at the crest (`wallTop`): the crest's water moves forward at B·C (Derakhti et al. 2020: B 0.85
+ * as the face goes vertical, 1 soon after; the ramp between inferred). Its component along the surface's normal is then
+ * set to that surface's own normal speed (the kinematic condition: water does not cross its own free surface). The whole
+ * is weighed by the slices' weight; along the crest the solver's flow is kept.
+ */
+export function wallWaterFlow(
+  out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, y: number,
+  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallAlong' | 'wallUp' | 'wallLow' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>,
+): void {
+  // The ray: the front's normal, square to its tangent.
+  const rx = -wall.tangentZ;
+  const rz = wall.tangentX;
+  const along = out.flowX * rx + out.flowZ * rz;
+  const span = wall.wallTop - wall.wallLow;
+  const r = span > 0 ? Math.min(1, Math.max(0, (y - wall.wallLow) / span)) : 1;
+  let flowAlong = along + r * (wall.wallB * wall.wallSpeed - along);
+  let flowUp = (1 - r) * out.flowY;
+  // The swept surface's normal in the ray–vertical plane; the water's component along it is the surface's own.
+  let na = wall.normalX * rx + wall.normalZ * rz;
+  let ny = wall.normalY;
+  const length = Math.sqrt(na * na + ny * ny);
+  if (length > 1e-9) {
+    na /= length;
+    ny /= length;
+    const excess = flowAlong * na + flowUp * ny - (wall.wallAlong * na + wall.wallUp * ny);
+    flowAlong -= excess * na;
+    flowUp -= excess * ny;
+  }
+  const w = Math.min(1, Math.max(0, wall.wallWeight));
+  const change = w * (flowAlong - along);
+  out.flowX += change * rx;
+  out.flowZ += change * rz;
+  out.flowY += w * (flowUp - out.flowY);
 }

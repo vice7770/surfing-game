@@ -33,7 +33,7 @@ import { tubeFaceOf, type TubeFace } from './barrel/faceAnchor';
 import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
-import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
+import { advanceClocks, onsetTiming, throwContourDistance, type OnsetTiming } from './barrel/sliceClock';
 import { SweptCrash } from './barrel/SweptCrash';
 import { CarrierSupport } from './barrel/carrierSupport';
 import { latchTubeSpans, writeFrontRecords } from './barrel/frontRecords';
@@ -456,13 +456,6 @@ export function sweptCrashOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
 const FRONT_MIN_HEIGHT = 0.25;
 
-/**
- * Step 7's throw-contour distance (`SurfZoneSimulation.throwDistance`): the bed read every `THROW_STEP` m, to `THROW_AHEAD` m
- * ahead (|τ_e| C_p ≤ 1.91 s × 1.5 √(g 3 m) ≈ 15.5 m at the 1.8 m faces) and `THROW_BEHIND` m behind.
- */
-const THROW_STEP = 0.5;
-const THROW_AHEAD = 16;
-const THROW_BEHIND = 8;
 
 /** Columns at each open along-shore edge where no lip is thrown: the reach of the solver's stencils. */
 const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
@@ -1772,30 +1765,11 @@ export class SurfZoneSimulation {
 
   /**
    * Step 7's formation by distance (`FrontOptions.distance`, `OnsetTiming.distance`): the signed distance along (dx, dz)
-   * from (x, z) to where the still depth is `depth`, m, read on the solver's bed every THROW_STEP m, linear between reads:
-   * ahead of the point while it is deeper (to THROW_AHEAD; Infinity past it), behind it once it is shallower (negative, to
-   * THROW_BEHIND; NaN past it).
+   * from (x, z) to where the still depth is `depth`, m, on the solver's bed (`throwContourDistance`).
    */
   private readonly throwDistance = (x: number, z: number, dx: number, dz: number, depth: number): number => {
     const { solver } = this;
-    const rest = solver.restLevel;
-    const still = (t: number) => rest - solver.sampleCentered(solver.bed, x + t * dx, z + t * dz);
-    let before = still(0);
-    if (!(before === before)) return Number.NaN;
-    if (before > depth) {
-      for (let t = THROW_STEP; t <= THROW_AHEAD; t += THROW_STEP) {
-        const after = still(t);
-        if (after <= depth) return t - THROW_STEP + (THROW_STEP * (before - depth)) / (before - after);
-        before = after;
-      }
-      return Infinity;
-    }
-    for (let t = -THROW_STEP; t >= -THROW_BEHIND; t -= THROW_STEP) {
-      const after = still(t);
-      if (after > depth) return t + THROW_STEP - (THROW_STEP * (depth - before)) / (after - before);
-      before = after;
-    }
-    return Number.NaN;
+    return throwContourDistance((px, pz) => solver.restLevel - solver.sampleCentered(solver.bed, px, pz), x, z, dx, dz, depth);
   };
 
   /** The front's records as the page draws them and the contact feels them: the tube regime's and, with a span, the spanned pieces' (`writeFrontRecords`). */
