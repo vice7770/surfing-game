@@ -34,6 +34,11 @@ function peelText(peel: PeelEstimate | undefined): { text: string; skill?: strin
   if (skill === 'closeout') return { text: t('lab.peel.closeout') };
   if (peel.fit < MIXED_PEAK_FIT) return { text: t('lab.peel.mixed') };
   const angle = Math.round(peel.angleDegrees);
+  // The Canyon's bank peels one way into its reef bowl (canyon-c): "spilling bank into a plunging reef bowl, right 39°".
+  if (peel.bank && peel.bowl) {
+    const bowl = t(`lab.breaker.${peel.bowl}` as StringKey).toLowerCase();
+    return { text: t(peel.direction > 0 ? 'lab.peel.bankBowlLeft' : 'lab.peel.bankBowlRight', { angle, bowl }), skill: t(`lab.skill.${skill}` as StringKey), peak: true };
+  }
   if (peel.peak) {
     // The Canyon's upcoast peak runs into a reef bowl (canyon-b): "spilling peak into a plunging reef bowl, …".
     const angles = { left: Math.round(peel.peak.left), right: Math.round(peel.peak.right) };

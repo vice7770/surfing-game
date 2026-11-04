@@ -1,0 +1,27 @@
+medium, seeds 1, 2, 3 × 12 periods; the solver's white; 39 waves on the line (15 sets), 33 in the bowl
+1. One direction: any white on its crest ≤ 10 m up the line (+x) of the first break on 17 of 39 (44 %) (sets 9 of 15 (60 %)); up the line p50 19 m, p90 96 m. The line's own +x end ≤ 10 m on 36 of 39 (92 %) (sets 15 of 15 (100 %)), p90 7 m; its −x end travelled p50 19 m (90th 43)
+2. First break: sets x p10/p50/p90 77/106/123 (p10–p90 47 m), 222 m out (p10–p90 176–263); all waves x p10/p50/p90 -4/58/116; Spearman(x*, H) 0.87 (all 39), per seed 0.86 / 0.81 / 0.85; within 10 m of the tip 0 of 39 (0 %)
+3. Continuity: one line from the first break to the bowl's end (x -55) on 0 of 15 (0 %) of the sets, 2 of 39 (5 %) of all; to the join (x -22) 0 of 15 (0 %) of the sets; frames with a patch, median per wave 22 % (sets 21 %); longest line p50 53 m, typical 21 m
+4. Peel (Hutt, sin α = c / V): median 47° on the bank over 17 stretches; by 20 m stretch: 100…120 47° (1; V 6.7, c 4.9); 60…80 57° (4; V 6.4, c 5.3); 40…60 59° (1; V 5.6, c 4.8); 20…40 58° (4; V 8.8, c 4.9); 0…20 31° (4; V 10.1, c 4.7); -20…0 48° (2; V 8.7, c 4.8); -40…-20 22° (1; V 13.7, c 5.1); stretches below 30°: none (of those with 3 or more)
+5. The bowl: 33 waves breaking on it, 17 starting inside it rather than arriving from the bank's line; of those, 3 ran 10 m or more toward +x (up toward the bank); its waves' −x end travelled p50 14 m, the +x end p50 0 m
+Take-off column (x 75 ± 4): 24 of 39 waves break there; start depth p50 2.25, p90 2.59 m; most seaward break z p10 -191.5, p50 -168.5
+Surf at the start's band (x 75 ± 10): typical 1.85 m, sets 2.00 m (44 waves)
+
+medium, seeds 1, 2, 3 × 12 periods; the drawn's white; 49 waves on the line (18 sets), 33 in the bowl
+1. One direction: any white on its crest ≤ 10 m up the line (+x) of the first break on 21 of 49 (43 %) (sets 14 of 18 (78 %)); up the line p50 22 m, p90 107 m. The line's own +x end ≤ 10 m on 43 of 49 (88 %) (sets 17 of 18 (94 %)), p90 22 m; its −x end travelled p50 20 m (90th 42)
+2. First break: sets x p10/p50/p90 66/103/124 (p10–p90 58 m), 200 m out (p10–p90 148–256); all waves x p10/p50/p90 -30/50/113; Spearman(x*, H) 0.87 (all 49), per seed 0.86 / 0.82 / 0.88; within 10 m of the tip 0 of 49 (0 %)
+3. Continuity: one line from the first break to the bowl's end (x -55) on 0 of 18 (0 %) of the sets, 1 of 49 (2 %) of all; to the join (x -22) 0 of 18 (0 %) of the sets; frames with a patch, median per wave 32 % (sets 22 %); longest line p50 38 m, typical 20 m
+4. Peel (Hutt, sin α = c / V): median 47° on the bank over 15 stretches; by 20 m stretch: 100…120 47° (1; V 6.7, c 4.9); 80…100 51° (1; V 6.8, c 5.3); 60…80 57° (3; V 6.3, c 5.3); 20…40 57° (4; V 8.4, c 4.9); 0…20 30° (3; V 9.4, c 4.7); -20…0 46° (3; V 6.5, c 4.6); stretches below 30°: none (of those with 3 or more)
+5. The bowl: 33 waves breaking on it, 17 starting inside it rather than arriving from the bank's line; of those, 3 ran 10 m or more toward +x (up toward the bank); its waves' −x end travelled p50 16 m, the +x end p50 1 m
+Take-off column (x 75 ± 4): 24 of 49 waves break there; start depth p50 2.35, p90 2.59 m; most seaward break z p10 -187.5, p50 -163.5
+Surf at the start's band (x 75 ± 10): typical 1.85 m, sets 2.00 m (44 waves)
+
+== rule A on the whole bank (before the gate), seeds 1-2
+medium, seeds 1, 2 × 12 periods; the solver's white; 27 waves on the line (10 sets), 20 in the bowl
+1. One direction: any white on its crest ≤ 10 m up the line (+x) of the first break on 9 of 27 (33 %) (sets 1 of 10 (10 %)); up the line p50 24 m, p90 117 m. The line's own +x end ≤ 10 m on 14 of 27 (52 %) (sets 2 of 10 (20 %)), p90 24 m; its −x end travelled p50 34 m (90th 63)
+2. First break: sets x p10/p50/p90 47/104/122 (p10–p90 75 m), 186 m out (p10–p90 122–264); all waves x p10/p50/p90 10/70/113; Spearman(x*, H) 0.66 (all 27), per seed 0.67 / 0.73; within 10 m of the tip 0 of 27 (0 %)
+3. Continuity: one line from the first break to the bowl's end (x -55) on 0 of 10 (0 %) of the sets, 2 of 27 (7 %) of all; to the join (x -22) 1 of 10 (10 %) of the sets; frames with a patch, median per wave 40 % (sets 25 %); longest line p50 64 m, typical 33 m
+4. Peel (Hutt, sin α = c / V): median 52° on the bank over 21 stretches; by 20 m stretch: 100…120 21° (1; V 10.6, c 3.8); 80…100 51° (3; V 7.2, c 5.6); 60…80 69° (5; V 6.0, c 5.6); 40…60 35° (5; V 9.8, c 5.6); 20…40 52° (3; V 5.6, c 5.6); 0…20 24° (3; V 9.3, c 3.8); -20…0 38° (1; V 6.1, c 3.8); stretches below 30°: 0…20 (of those with 3 or more)
+5. The bowl: 20 waves breaking on it, 14 starting inside it rather than arriving from the bank's line; of those, 2 ran 10 m or more toward +x (up toward the bank); its waves' −x end travelled p50 10 m, the +x end p50 3 m
+Take-off column (x 75 ± 4): 18 of 27 waves break there; start depth p50 2.59, p90 2.80 m; most seaward break z p10 -207.5, p50 -173.5
+Surf at the start's band (x 75 ± 10): typical 1.60 m, sets 1.84 m (28 waves)

@@ -400,8 +400,11 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...startOutSwitch(),
     // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
-    // `?canyonBed=old`: the Canyon's whole layout before canyon-beach-break, with its take-off and starts (main's until 2026-10-23).
+    // `?canyonBed=b` or `=old`: the Canyon's version B or A, with its take-off and starts (main's until 2026-11-03 or 2026-11-01);
+    // `?canyonRamp=half`: today's with its bank's edge ramp halved, with its own take-off and starts (the advisor's option (b)).
     ...canyonBedSwitch(),
+    // `?canyonJoin=zone`: version C's bank passing its breaking age by its take-off zone, as before the bed-keyed join.
+    ...(settings.spot === 'canyon' ? canyonJoinSwitch() : {}),
     // `?tubeShape=c`: the swept barrel drawn and felt as the authored bounded-C (2026-10-05 to 2026-10-22), for A/Bs.
     ...tubeShapeSwitch(),
     // `?canyonTube=on`: the Canyon with its swept tubes on the reef (its default until canyon-beach-break, 2026-10-23).
@@ -654,12 +657,26 @@ export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
 }
 
 /**
- * The `?canyonBed=old` dev switch (`SurfZoneConfig.canyonBed`): the Canyon's whole layout before canyon-b (2026-11-01,
- * `CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's at 376d9cd4), to ride the two side by side;
- * nothing otherwise (today's layout, version B: the upcoast peak's +x arm runs into a reef bowl).
+ * The `?canyonBed` dev switch (`SurfZoneConfig.canyonBed`), to ride the layouts side by side: 'b', version B (canyon-b,
+ * 2026-11-01, `CANYON_B`: the upcoast peak's +x arm runs into the reef bowl, main's at 4eee1e5f); 'old', the whole layout
+ * before it (`CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's at 376d9cd4); nothing otherwise
+ * (today's layout, version C, canyon-c: one straight bank peeling from +x into the flipped reef bowl). And the
+ * `?canyonRamp=half` dev switch, on today's layout only: its bank's edge ramp halved (`CANYON_HALF_RAMP`, 'half'; the
+ * water-physics advisor's option (b), 2026-11-04, the owner's call), with its own take-off depth and starts.
  */
-export function canyonBedSwitch(search?: string): { canyonBed?: 'old' } {
-  return devParam('canyonBed', search)?.trim() === 'old' ? { canyonBed: 'old' } : {};
+export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' | 'half' } {
+  const bed = devParam('canyonBed', search)?.trim();
+  if (bed === 'old' || bed === 'b') return { canyonBed: bed };
+  return devParam('canyonRamp', search)?.trim().toLowerCase() === 'half' ? { canyonBed: 'half' } : {};
+}
+
+/**
+ * The `?canyonJoin=zone` dev switch (`SurfZoneConfig.canyonJoin`): version C's bank passes its breaking age by its take-off
+ * zone (rule A to x +31, the reef's gate up the line from there: the branch's head at ca567450), in place of its bed (rule A
+ * on its face, the gate behind its edge; the water-physics advisor's second ruling, 2026-11-04). 'zone', else nothing.
+ */
+export function canyonJoinSwitch(search?: string): { canyonJoin?: 'zone' } {
+  return devParam('canyonJoin', search)?.trim().toLowerCase() === 'zone' ? { canyonJoin: 'zone' } : {};
 }
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */

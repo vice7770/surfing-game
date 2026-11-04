@@ -1,0 +1,61 @@
+Crest angles: canyon, medium (Hs 1.4 m, Tp 11 s, 0°, s 150), seed 1, 64 components, 1800 s. Take-off (75, -191); lines z = -442, -221, -143, -96, -48; crests followed over x -180…181.
+  0–100 s: bank u -0.10 w 0.21 |v| 0.32 (p90 0.54) along 0.22; inside u 0.04 w 0.13 |v| 0.25 (p90 0.42) along 0.06; channel u -0.01 w -0.03 |v| 0.03 (p90 0.05); bowl u -0.14 w 0.06 |v| 0.33 (p90 0.65) m/s; Hs take-off 1.77 m, zone 1.50 m (1.180); 554 s wall
+  100–200 s: bank u -0.14 w 0.29 |v| 0.43 (p90 0.68) along 0.31; inside u 0.05 w 0.17 |v| 0.34 (p90 0.56) along 0.09; channel u 0.01 w -0.01 |v| 0.02 (p90 0.05); bowl u -0.25 w 0.17 |v| 0.36 (p90 0.55) m/s; Hs take-off 1.15 m, zone 1.22 m (0.937); 918 s wall
+  200–300 s: bank u -0.14 w 0.31 |v| 0.44 (p90 0.69) along 0.32; inside u 0.01 w 0.21 |v| 0.35 (p90 0.61) along 0.14; channel u -0.01 w -0.02 |v| 0.03 (p90 0.05); bowl u -0.33 w 0.16 |v| 0.42 (p90 0.72) m/s; Hs take-off 1.29 m, zone 1.09 m (1.186); 1284 s wall
+  300–400 s: bank u -0.11 w 0.29 |v| 0.40 (p90 0.64) along 0.28; inside u 0.00 w 0.19 |v| 0.36 (p90 0.59) along 0.13; channel u 0.02 w 0.01 |v| 0.03 (p90 0.06); bowl u -0.27 w 0.28 |v| 0.44 (p90 0.78) m/s; Hs take-off 1.24 m, zone 1.45 m (0.856); 1669 s wall
+  400–500 s: bank u -0.18 w 0.34 |v| 0.44 (p90 0.74) along 0.37; inside u -0.05 w 0.19 |v| 0.34 (p90 0.54) along 0.17; channel u -0.00 w -0.00 |v| 0.02 (p90 0.03); bowl u -0.31 w 0.18 |v| 0.39 (p90 0.67) m/s; Hs take-off 1.27 m, zone 1.16 m (1.097); 2044 s wall
+  500–600 s: bank u -0.24 w 0.27 |v| 0.43 (p90 0.69) along 0.36; inside u -0.10 w 0.20 |v| 0.29 (p90 0.49) along 0.21; channel u -0.00 w -0.01 |v| 0.03 (p90 0.05); bowl u -0.37 w 0.10 |v| 0.44 (p90 0.66) m/s; Hs take-off 1.38 m, zone 1.35 m (1.019); 2525 s wall
+  600–700 s: bank u -0.26 w 0.35 |v| 0.50 (p90 0.78) along 0.43; inside u -0.07 w 0.23 |v| 0.27 (p90 0.48) along 0.22; channel u -0.05 w -0.01 |v| 0.06 (p90 0.07); bowl u -0.49 w 0.24 |v| 0.58 (p90 0.82) m/s; Hs take-off 1.61 m, zone 1.83 m (0.877); 2983 s wall
+  700–800 s: bank u -0.25 w 0.39 |v| 0.54 (p90 0.89) along 0.45; inside u 0.03 w 0.12 |v| 0.25 (p90 0.53) along 0.06; channel u -0.01 w -0.02 |v| 0.04 (p90 0.07); bowl u -0.57 w 0.31 |v| 0.67 (p90 0.97) m/s; Hs take-off 1.31 m, zone 1.32 m (0.992); 3343 s wall
+  800–900 s: bank u -0.21 w 0.35 |v| 0.49 (p90 0.78) along 0.39; inside u -0.03 w 0.14 |v| 0.28 (p90 0.65) along 0.12; channel u -0.00 w 0.03 |v| 0.03 (p90 0.06); bowl u -0.43 w 0.31 |v| 0.57 (p90 0.89) m/s; Hs take-off 1.46 m, zone 1.19 m (1.232); 3726 s wall
+  900–1000 s: bank u -0.14 w 0.32 |v| 0.41 (p90 0.67) along 0.32; inside u -0.02 w 0.18 |v| 0.26 (p90 0.54) along 0.14; channel u -0.02 w 0.00 |v| 0.04 (p90 0.07); bowl u -0.27 w 0.28 |v| 0.46 (p90 0.79) m/s; Hs take-off 1.55 m, zone 1.66 m (0.930); 4185 s wall
+  1000–1100 s: bank u -0.18 w 0.37 |v| 0.49 (p90 0.80) along 0.39; inside u 0.02 w 0.16 |v| 0.32 (p90 0.69) along 0.10; channel u -0.00 w 0.01 |v| 0.03 (p90 0.05); bowl u -0.34 w 0.33 |v| 0.52 (p90 0.97) m/s; Hs take-off 1.47 m, zone 1.27 m (1.157); 4616 s wall
+  1100–1200 s: bank u -0.15 w 0.29 |v| 0.40 (p90 0.62) along 0.31; inside u -0.02 w 0.13 |v| 0.28 (p90 0.60) along 0.11; channel u -0.02 w 0.01 |v| 0.03 (p90 0.05); bowl u -0.24 w 0.22 |v| 0.41 (p90 0.76) m/s; Hs take-off 0.96 m, zone 1.11 m (0.863); 4955 s wall
+  1200–1300 s: bank u -0.23 w 0.31 |v| 0.43 (p90 0.65) along 0.38; inside u -0.07 w 0.14 |v| 0.25 (p90 0.41) along 0.15; channel u -0.05 w 0.00 |v| 0.06 (p90 0.08); bowl u -0.27 w 0.19 |v| 0.37 (p90 0.64) m/s; Hs take-off 1.49 m, zone 1.06 m (1.409); 5364 s wall
+  1300–1400 s: bank u -0.21 w 0.25 |v| 0.40 (p90 0.63) along 0.33; inside u -0.08 w 0.10 |v| 0.21 (p90 0.38) along 0.13; channel u -0.05 w -0.00 |v| 0.05 (p90 0.07); bowl u -0.28 w 0.16 |v| 0.37 (p90 0.71) m/s; Hs take-off 1.26 m, zone 1.37 m (0.921); 5740 s wall
+  1400–1500 s: bank u -0.27 w 0.31 |v| 0.47 (p90 0.72) along 0.41; inside u -0.10 w 0.10 |v| 0.22 (p90 0.38) along 0.15; channel u -0.07 w -0.00 |v| 0.07 (p90 0.09); bowl u -0.29 w 0.25 |v| 0.42 (p90 0.69) m/s; Hs take-off 1.55 m, zone 1.10 m (1.406); 6174 s wall
+  1500–1600 s: bank u -0.28 w 0.28 |v| 0.46 (p90 0.76) along 0.40; inside u -0.10 w 0.08 |v| 0.20 (p90 0.32) along 0.13; channel u -0.08 w -0.01 |v| 0.08 (p90 0.09); bowl u -0.37 w 0.16 |v| 0.43 (p90 0.72) m/s; Hs take-off 1.25 m, zone 1.11 m (1.127); 6545 s wall
+  1600–1700 s: bank u -0.28 w 0.24 |v| 0.42 (p90 0.66) along 0.36; inside u -0.13 w 0.06 |v| 0.19 (p90 0.29) along 0.13; channel u -0.07 w -0.01 |v| 0.08 (p90 0.09); bowl u -0.33 w 0.13 |v| 0.40 (p90 0.73) m/s; Hs take-off 1.24 m, zone 0.95 m (1.302); 6937 s wall
+  1700–1800 s: bank u -0.34 w 0.30 |v| 0.47 (p90 0.65) along 0.45; inside u -0.16 w 0.09 |v| 0.21 (p90 0.33) along 0.18; channel u -0.10 w -0.00 |v| 0.10 (p90 0.12); bowl u -0.37 w 0.15 |v| 0.42 (p90 0.64) m/s; Hs take-off 1.53 m, zone 1.18 m (1.292); 7360 s wall
+
+7360 s elapsed.
+| Line | Crests (short) | Mean angle ° | Mean \|angle\| ° | Max \|angle\| ° | Std ° | First 3 \|angle\| ° | Later \|angle\| ° | Straightness m | \|angle\| per 100 s ° | Bend mean / max \|right − left\| ° (crests) | Mean angle per 100 s ° |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| edge | 45 (3) | 1.0 | 2.7 | 10.0 | 3.2 | 2.9 | 2.7 | 2.68 | 3.2 · 3.9 · 2.0 · 1.7 · 2.8 · 2.8 | 4.8 / 17.3 (45) | 1.6 · 3.7 · 1.6 · 0.7 · -0.0 · -0.9 |
+| take-off | 41 (9) | -1.9 | 3.2 | 8.7 | 3.3 | 3.2 | 3.2 | 4.54 | 2.3 · 5.9 · 2.8 · 2.2 · 3.0 · 4.2 | 6.2 / 21.4 (41) | -1.9 · 2.5 · -1.1 · -2.0 · -2.9 · -3.7 |
+| in-25 | 32 (22) | -3.9 | 4.3 | 11.8 | 3.4 | 2.2 | 4.5 | 5.35 | 2.7 · 5.8 · 3.1 · 5.4 · 5.4 · 4.3 | 8.8 / 26.6 (32) | -2.7 · -4.1 · -2.0 · -5.0 · -5.4 · -4.2 |
+| in-50 | 25 (31) | -4.1 | 4.5 | 9.6 | 3.5 | 4.1 | 4.5 | 6.02 | 3.1 · 5.2 · 3.8 · 7.5 · 5.6 · 4.1 | 12.9 / 27.3 (25) | -3.1 · -4.1 · -3.3 · -7.5 · -5.6 · -2.2 |
+| in-75 | 19 (37) | -4.7 | 5.7 | 12.3 | 4.7 | 6.4 | 5.6 | 7.44 | 6.4 · 8.7 · 3.1 · 8.7 · 4.2 · — | 13.2 / 33.2 (19) | -6.4 · -1.4 · -1.9 · -8.7 · -4.2 · — |
+
+Crest lines every second: 10227 over the first 600 s; stations -188, -180, -165, -150, -135, -120, -105, -90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 188 (channel: -188 -180 -165 -150 -135 -120 -105 -90 -75; bowl: -60 -45 -30; bank: -15 0 15 30 45 60 75 90 105 120 135 150 165; open +x: 180 188). |angle| p50 / p90 °:
+| Band | channel | bowl | bank | open +x | Edge chevron −x / +x (2 \|angle\| at x -188 / 188) | Signed median, outer thirds −x / +x (a V: − / +) | Two-sided (outer thirds past ±5°) |
+|---|---|---|---|---|---|---|---|
+| seaward | 2.9 / 7.3 (11785) | 2.6 / 7.1 (3776) | 2.9 / 9.6 (16808) | 2.2 / 7.2 (2361) | 3.7 / 10.3 · 3.7 / 11.7 | 1.8 / 0.5 | 6 of 683 |
+| take-off | 2.7 / 6.9 (1829) | 2.9 / 6.4 (578) | 6.6 / 15.3 (2742) | 4.7 / 10.0 (307) | 3.1 / 8.1 · 8.7 / 17.3 | 1.7 / 4.0 | 5 of 106 |
+| inside | 2.6 / 7.2 (5824) | 4.1 / 11.0 (2220) | 8.6 / 19.1 (9768) | 4.2 / 10.0 (847) | 2.7 / 8.0 · 7.4 / 19.0 | 1.2 / 5.8 | 37 of 330 |
+| inner | 2.4 / 8.1 (8175) | 14.8 / 25.5 (2796) | 10.7 / 23.0 (13248) | 4.1 / 9.9 (1049) | 2.5 / 7.2 · 8.3 / 19.3 | 0.0 / 5.5 | 13 of 200 |
+
+Health over the first 600 s: fastest water 4.56 m/s; Froude caps 0 (0 in water); volume 0.45 %; finite true.
+
+The current, every 100 s (mean flow per cell, averaged over each region's wet cells, m/s):
+| 0–100 s | bank: u -0.10, w 0.21, |v| 0.32 (p90 0.54), along the bank 0.22 | inside: u 0.04, w 0.13, |v| 0.25 (p90 0.42), along the bank 0.06 | channel: u -0.01, w -0.03, |v| 0.03 (p90 0.05) | bowl: u -0.14, w 0.06, |v| 0.33 (p90 0.65) | Hs 1.77 / 1.50 = 1.180 |
+| 100–200 s | bank: u -0.14, w 0.29, |v| 0.43 (p90 0.68), along the bank 0.31 | inside: u 0.05, w 0.17, |v| 0.34 (p90 0.56), along the bank 0.09 | channel: u 0.01, w -0.01, |v| 0.02 (p90 0.05) | bowl: u -0.25, w 0.17, |v| 0.36 (p90 0.55) | Hs 1.15 / 1.22 = 0.937 |
+| 200–300 s | bank: u -0.14, w 0.31, |v| 0.44 (p90 0.69), along the bank 0.32 | inside: u 0.01, w 0.21, |v| 0.35 (p90 0.61), along the bank 0.14 | channel: u -0.01, w -0.02, |v| 0.03 (p90 0.05) | bowl: u -0.33, w 0.16, |v| 0.42 (p90 0.72) | Hs 1.29 / 1.09 = 1.186 |
+| 300–400 s | bank: u -0.11, w 0.29, |v| 0.40 (p90 0.64), along the bank 0.28 | inside: u 0.00, w 0.19, |v| 0.36 (p90 0.59), along the bank 0.13 | channel: u 0.02, w 0.01, |v| 0.03 (p90 0.06) | bowl: u -0.27, w 0.28, |v| 0.44 (p90 0.78) | Hs 1.24 / 1.45 = 0.856 |
+| 400–500 s | bank: u -0.18, w 0.34, |v| 0.44 (p90 0.74), along the bank 0.37 | inside: u -0.05, w 0.19, |v| 0.34 (p90 0.54), along the bank 0.17 | channel: u -0.00, w -0.00, |v| 0.02 (p90 0.03) | bowl: u -0.31, w 0.18, |v| 0.39 (p90 0.67) | Hs 1.27 / 1.16 = 1.097 |
+| 500–600 s | bank: u -0.24, w 0.27, |v| 0.43 (p90 0.69), along the bank 0.36 | inside: u -0.10, w 0.20, |v| 0.29 (p90 0.49), along the bank 0.21 | channel: u -0.00, w -0.01, |v| 0.03 (p90 0.05) | bowl: u -0.37, w 0.10, |v| 0.44 (p90 0.66) | Hs 1.38 / 1.35 = 1.019 |
+| 600–700 s | bank: u -0.26, w 0.35, |v| 0.50 (p90 0.78), along the bank 0.43 | inside: u -0.07, w 0.23, |v| 0.27 (p90 0.48), along the bank 0.22 | channel: u -0.05, w -0.01, |v| 0.06 (p90 0.07) | bowl: u -0.49, w 0.24, |v| 0.58 (p90 0.82) | Hs 1.61 / 1.83 = 0.877 |
+| 700–800 s | bank: u -0.25, w 0.39, |v| 0.54 (p90 0.89), along the bank 0.45 | inside: u 0.03, w 0.12, |v| 0.25 (p90 0.53), along the bank 0.06 | channel: u -0.01, w -0.02, |v| 0.04 (p90 0.07) | bowl: u -0.57, w 0.31, |v| 0.67 (p90 0.97) | Hs 1.31 / 1.32 = 0.992 |
+| 800–900 s | bank: u -0.21, w 0.35, |v| 0.49 (p90 0.78), along the bank 0.39 | inside: u -0.03, w 0.14, |v| 0.28 (p90 0.65), along the bank 0.12 | channel: u -0.00, w 0.03, |v| 0.03 (p90 0.06) | bowl: u -0.43, w 0.31, |v| 0.57 (p90 0.89) | Hs 1.46 / 1.19 = 1.232 |
+| 900–1000 s | bank: u -0.14, w 0.32, |v| 0.41 (p90 0.67), along the bank 0.32 | inside: u -0.02, w 0.18, |v| 0.26 (p90 0.54), along the bank 0.14 | channel: u -0.02, w 0.00, |v| 0.04 (p90 0.07) | bowl: u -0.27, w 0.28, |v| 0.46 (p90 0.79) | Hs 1.55 / 1.66 = 0.930 |
+| 1000–1100 s | bank: u -0.18, w 0.37, |v| 0.49 (p90 0.80), along the bank 0.39 | inside: u 0.02, w 0.16, |v| 0.32 (p90 0.69), along the bank 0.10 | channel: u -0.00, w 0.01, |v| 0.03 (p90 0.05) | bowl: u -0.34, w 0.33, |v| 0.52 (p90 0.97) | Hs 1.47 / 1.27 = 1.157 |
+| 1100–1200 s | bank: u -0.15, w 0.29, |v| 0.40 (p90 0.62), along the bank 0.31 | inside: u -0.02, w 0.13, |v| 0.28 (p90 0.60), along the bank 0.11 | channel: u -0.02, w 0.01, |v| 0.03 (p90 0.05) | bowl: u -0.24, w 0.22, |v| 0.41 (p90 0.76) | Hs 0.96 / 1.11 = 0.863 |
+| 1200–1300 s | bank: u -0.23, w 0.31, |v| 0.43 (p90 0.65), along the bank 0.38 | inside: u -0.07, w 0.14, |v| 0.25 (p90 0.41), along the bank 0.15 | channel: u -0.05, w 0.00, |v| 0.06 (p90 0.08) | bowl: u -0.27, w 0.19, |v| 0.37 (p90 0.64) | Hs 1.49 / 1.06 = 1.409 |
+| 1300–1400 s | bank: u -0.21, w 0.25, |v| 0.40 (p90 0.63), along the bank 0.33 | inside: u -0.08, w 0.10, |v| 0.21 (p90 0.38), along the bank 0.13 | channel: u -0.05, w -0.00, |v| 0.05 (p90 0.07) | bowl: u -0.28, w 0.16, |v| 0.37 (p90 0.71) | Hs 1.26 / 1.37 = 0.921 |
+| 1400–1500 s | bank: u -0.27, w 0.31, |v| 0.47 (p90 0.72), along the bank 0.41 | inside: u -0.10, w 0.10, |v| 0.22 (p90 0.38), along the bank 0.15 | channel: u -0.07, w -0.00, |v| 0.07 (p90 0.09) | bowl: u -0.29, w 0.25, |v| 0.42 (p90 0.69) | Hs 1.55 / 1.10 = 1.406 |
+| 1500–1600 s | bank: u -0.28, w 0.28, |v| 0.46 (p90 0.76), along the bank 0.40 | inside: u -0.10, w 0.08, |v| 0.20 (p90 0.32), along the bank 0.13 | channel: u -0.08, w -0.01, |v| 0.08 (p90 0.09) | bowl: u -0.37, w 0.16, |v| 0.43 (p90 0.72) | Hs 1.25 / 1.11 = 1.127 |
+| 1600–1700 s | bank: u -0.28, w 0.24, |v| 0.42 (p90 0.66), along the bank 0.36 | inside: u -0.13, w 0.06, |v| 0.19 (p90 0.29), along the bank 0.13 | channel: u -0.07, w -0.01, |v| 0.08 (p90 0.09) | bowl: u -0.33, w 0.13, |v| 0.40 (p90 0.73) | Hs 1.24 / 0.95 = 1.302 |
+| 1700–1800 s | bank: u -0.34, w 0.30, |v| 0.47 (p90 0.65), along the bank 0.45 | inside: u -0.16, w 0.09, |v| 0.21 (p90 0.33), along the bank 0.18 | channel: u -0.10, w -0.00, |v| 0.10 (p90 0.12) | bowl: u -0.37, w 0.15, |v| 0.42 (p90 0.64) | Hs 1.53 / 1.18 = 1.292 |
+
+Health over 1800 s: fastest water 6.24 m/s; Froude caps 0 (0 in water); volume 0.33 %; finite true.
+Wrote crest-a-medium-s1.json.
