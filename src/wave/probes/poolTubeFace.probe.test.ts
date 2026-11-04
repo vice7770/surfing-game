@@ -127,6 +127,13 @@ interface Body {
   board: BoardBody;
   done: boolean;
   minGap: number;
+  /**
+   * Its bottom against the solver's surface under it, from where it started (a fall through the face), m; and the most the
+   * game's support stood over the solver's there meanwhile (the case's water over it), m.
+   */
+  minSolverGap: number;
+  baseSolverGap: number;
+  over: number;
   baseGap: number;
   firstDrop: number;
   separatedAt: number;
@@ -368,7 +375,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
               board.place(new Vector3(x, surface0 + board.shape.centerOfMass.y - 0.05, z), orientation, velocity);
             }
             bodies.push({
-              kind, water: which, target, face: fraction, front, t0: solver.time, session, board, done: false, minGap: Infinity, baseGap: Number.NaN,
+              kind, water: which, target, face: fraction, front, t0: solver.time, session, board, done: false, minGap: Infinity, baseGap: Number.NaN, minSolverGap: Infinity, baseSolverGap: Number.NaN, over: 0,
               firstDrop: Number.NaN, separatedAt: Number.NaN, cause: '', lipHead: Number.NaN,
             });
           }
@@ -392,6 +399,12 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         const gap = p.y - body.board.shape.centerOfMass.y - (body.water === 'swept' ? water : plain).surfaceAt(p.x, p.z);
         if (!(body.baseGap === body.baseGap)) body.baseGap = gap;
         body.minGap = Math.min(body.minGap, gap - body.baseGap);
+        // The same against the solver's surface: a fall through the face, told apart from the case's water standing over it.
+        const solverY = plain.surfaceAt(p.x, p.z);
+        const solverGap = p.y - body.board.shape.centerOfMass.y - solverY;
+        if (!(body.baseSolverGap === body.baseSolverGap)) body.baseSolverGap = solverGap;
+        body.minSolverGap = Math.min(body.minSolverGap, solverGap - body.baseSolverGap);
+        if (body.water === 'swept') body.over = Math.max(body.over, water.surfaceAt(p.x, p.z) - solverY);
         if (gap - body.baseGap < -0.1 && !(body.firstDrop === body.firstDrop)) body.firstDrop = age;
         // Bar 9: the lip's water at the head or torso (render points 1 and 2), before its slice's touchdown.
         if (body.session && body.water === 'swept' && body.session.rider.attached && !(body.lipHead === body.lipHead)) {
@@ -622,6 +635,17 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       if (!bin.length) continue;
       lines.push(`- ${name} (n ${bin.length}): ` + FACES.map((f, j) => { const v = bin.map((r) => r.d[j]); return `${f}: ${fmt(quantile(v, 0.5), 2)} (min ${fmt(Math.min(...v), 2)})`; }).join(' | '));
     }
+    // The wall the ruling foresees over today's slope (0.76 / 1.02 m at the throw at 1.5 / 1.8 m on the pool's case): each
+    // read's most support over the solver's surface along the solver's face (its 11 face points, so a lower bound).
+    const walls: [string, (r: Read) => boolean][] = [
+      ['τ −1…−0.5 s', (r) => r.tau >= -1 && r.tau < -0.5], ['τ −0.5…−0.1 s', (r) => r.tau >= -0.5 && r.tau < -0.1],
+      ['at the throw (|τ| < 0.1 s)', (r) => Math.abs(r.tau) < 0.1], ['life 0–0.3', (r) => r.life >= 0 && r.life < 0.3],
+      ['life 0.3–0.6', (r) => r.life >= 0.3 && r.life < 0.6], ['life 0.6–1', (r) => r.life >= 0.6 && r.life < 1],
+    ];
+    lines.push(`- the wall over the solver's slope (each read's most support − solver over its face points), p10 / p50 / p90 m: ` + walls.map(([name, test]) => {
+      const v = reads.filter(test).map((r) => Math.max(...r.d.filter((x) => x === x)));
+      return `${name} ${q3(v.filter((x) => Number.isFinite(x)))} (n ${v.length})`;
+    }).join(' | '));
     // Bar 3.
     const lower: number[] = [];
     for (const r of reads) {
@@ -706,7 +730,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // Bars 2 and 9.
     if (bodiesOn) {
       lines.push('');
-      lines.push(`## Bars 2 and 9, bodies at s ${placeS} in trim (peel ${q3(peels)} m/s), no input, each on its own water's surface: game's water | solver's alone; "dropped": its bottom more than 0.1 m under its water's support from where it started`);
+      lines.push(`## Bars 2 and 9, bodies at s ${placeS} in trim (peel ${q3(peels)} m/s), no input, each on its own water's surface: game's water | solver's alone; "dropped": its bottom more than 0.1 m under its water's support from where it started; "under the solver's surface": the same against the solver's surface (a fall through the face)`);
       const causes = (g: Body[]) => [...g.reduce((m, b) => (b.cause ? m.set(b.cause, (m.get(b.cause) ?? 0) + 1) : m), new Map<string, number>())].map(([c, k]) => `${c} ${k}`).join(', ');
       lines.push(`the game's riders' causes: ${causes(finished.filter((b) => b.kind !== 'board' && b.water === 'swept'))}; the solver's: ${causes(finished.filter((b) => b.kind !== 'board' && b.water === 'solver'))}`);
       for (const target of ['ahead 0.3 s', 'throw', 'open, life 0.3']) {
@@ -718,7 +742,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           const on = (g: Body[]) => g.filter((b) => !(b.separatedAt === b.separatedAt)).length;
           const lipped = game.filter((b) => b.lipHead === b.lipHead);
           const fellSoon = lipped.filter((b) => b.separatedAt === b.separatedAt && b.separatedAt - b.lipHead <= 0.5).length;
+          const falls = (g: Body[]) => g.filter((b) => b.minSolverGap < -0.1).length;
           lines.push(`- ${target}, ${kind} at ${face} of the face: n ${game.length}; dropped > 0.1 m ${drops(game)} | ${drops(solo)}; most dropped p90 ${fmt(quantile(game.map((b) => -b.minGap), 0.9))} | ${fmt(quantile(solo.map((b) => -b.minGap), 0.9))} m`
+            + `; under the solver's surface > 0.1 m ${falls(game)} | ${falls(solo)}, most p90 ${fmt(quantile(game.map((b) => -b.minSolverGap), 0.9))} | ${fmt(quantile(solo.map((b) => -b.minSolverGap), 0.9))} m; the game's support over the solver's under it, most p50 / p90 ${fmt(quantile(game.map((b) => b.over), 0.5))} / ${fmt(quantile(game.map((b) => b.over), 0.9))} m`
             + (kind !== 'board' ? `; on at 3 s ${on(game)} | ${on(solo)}; fell at p50 ${fmt(quantile(game.map((b) => b.separatedAt).filter((v) => v === v), 0.5))} | ${fmt(quantile(solo.map((b) => b.separatedAt).filter((v) => v === v), 0.5))} s; lip on head or torso before touchdown ${lipped.length}, of them fell within 0.5 s ${fellSoon}` : ''));
         }
       }
