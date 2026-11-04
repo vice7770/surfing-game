@@ -1,0 +1,19 @@
+small (reef), seeds 1 × 12 periods; the solver's white; 11 waves on the line (4 sets), 8 in the bowl
+1. One direction: any white on its crest ≤ 10 m up the line (+x) of the first break on 5 of 11 (45 %) (sets 2 of 4 (50 %)); up the line p50 22 m, p90 80 m. The line's own +x end ≤ 10 m on 11 of 11 (100 %) (sets 4 of 4 (100 %)), p90 2 m
+2. First break: sets x p10/p50/p90 34/50/57 (p10–p90 23 m), 135 m out (p10–p90 128–156); all waves x p10/p50/p90 5/36/50; Spearman(x*, H) 0.80 (all 11), per seed 0.80; within 10 m of the tip 0 of 11 (0 %) (sets 0 of 4 (0 %))
+3. Continuity (6 m / 15 m jump limits): the −x end travelled p50 37 / 47 m (90th 55 / 60; sets p50 40 / 48); to the join (x -22) 4 / 6 of 11 (36 / 55 %), sets 0 / 0 of 4 (0 / 0 %); to the bowl's end (x -55) 0 / 0 of 11 (0 / 0 %), sets 0 / 0 of 4 (0 / 0 %); frames with a patch, median per wave 26 % (sets 27 %); white per wave: typical p50 17 m, longest p50 42 m (90th 70); sets typical 21, longest 57 m
+4. Peel (Hutt, sin α = c / V), on the 6 m end's path: median 36° on the bank over 9 stretches; by 20 m stretch: 20…40 36° (4; V 8.9, c 4.4); 0…20 68° (3; V 5.0, c 4.7); -20…0 70° (2; V 11.8, c 4.5); stretches below 30°: none (of those with 3 or more)
+5. The bowl: 8 waves breaking on it, 4 starting inside it rather than arriving from the bank's line; of those, 1 ran 10 m or more toward +x (up toward the bank); its waves' −x end travelled p50 8 m, the +x end p50 5 m
+6. Onsets (≈, the 10 m bins' medians weighted by count): the bank's face (x −20…140) 542 onsets, face ≈ 14°, ξb ≈ 0.25; the bowl (x −60…−20) face ≈ 20°, ξb ≈ 0.32
+7. Take-off column (x 75 ± 4): 5 of 11 waves break there (sets 2 of 4); start depth p10/p50/p90 0.57/0.90/1.57 m (sets 0.57/1.57/1.57); most seaward break z p10 -23.5, p50 -13.5 (sets p10 -23.5, p50 -8.5)
+Surf at the start's band (x 75 ± 10): typical 1.36 m, sets 1.47 m (9 waves)
+
+small (reef), seeds 1 × 12 periods; the drawn's white; 12 waves on the line (4 sets), 7 in the bowl
+1. One direction: any white on its crest ≤ 10 m up the line (+x) of the first break on 6 of 12 (50 %) (sets 2 of 4 (50 %)); up the line p50 20 m, p90 80 m. The line's own +x end ≤ 10 m on 12 of 12 (100 %) (sets 4 of 4 (100 %)), p90 1 m
+2. First break: sets x p10/p50/p90 34/50/57 (p10–p90 23 m), 129 m out (p10–p90 123–151); all waves x p10/p50/p90 7/35/50; Spearman(x*, H) 0.81 (all 12), per seed 0.81; within 10 m of the tip 0 of 12 (0 %) (sets 0 of 4 (0 %))
+3. Continuity (6 m / 15 m jump limits): the −x end travelled p50 40 / 42 m (90th 50 / 59; sets p50 48 / 48); to the join (x -22) 3 / 5 of 12 (25 / 42 %), sets 0 / 0 of 4 (0 / 0 %); to the bowl's end (x -55) 0 / 0 of 12 (0 / 0 %), sets 0 / 0 of 4 (0 / 0 %); frames with a patch, median per wave 32 % (sets 37 %); white per wave: typical p50 12 m, longest p50 35 m (90th 67); sets typical 18, longest 39 m
+4. Peel (Hutt, sin α = c / V), on the 6 m end's path: median 39° on the bank over 7 stretches; by 20 m stretch: 20…40 33° (3; V 8.2, c 4.4); 0…20 72° (3; V 4.9, c 4.7); -20…0 73° (1; V 4.8, c 4.5); stretches below 30°: none (of those with 3 or more)
+5. The bowl: 7 waves breaking on it, 5 starting inside it rather than arriving from the bank's line; of those, 0 ran 10 m or more toward +x (up toward the bank); its waves' −x end travelled p50 7 m, the +x end p50 3 m
+6. Onsets (≈, the 10 m bins' medians weighted by count): the bank's face (x −20…140) 542 onsets, face ≈ 14°, ξb ≈ 0.25; the bowl (x −60…−20) face ≈ 20°, ξb ≈ 0.32
+7. Take-off column (x 75 ± 4): 4 of 12 waves break there (sets 2 of 4); start depth p10/p50/p90 0.57/1.23/1.57 m (sets 0.57/1.57/1.57); most seaward break z p10 -23.5, p50 -13.5 (sets p10 -23.5, p50 -8.5)
+Surf at the start's band (x 75 ± 10): typical 1.36 m, sets 1.47 m (9 waves)

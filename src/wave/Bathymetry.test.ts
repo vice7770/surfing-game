@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_BEACH, PADANG, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBarAt, canyonBarDepth, canyonBars, canyonBreakLineZ, canyonFloorDepth, canyonFootZ, canyonJoin, canyonOnset, canyonReefEndX, canyonReefSpan, canyonSandDepth, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_B, CANYON_BEACH, CANYON_HALF_RAMP, PADANG, canyonBankEdge, canyonBankEdgeZ, canyonBankFaceShare, canyonBankJoin, canyonShape, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBarAt, canyonBarDepth, canyonBars, canyonBreakLineZ, canyonFloorDepth, canyonFootZ, canyonJoin, canyonOnset, canyonReefEndX, canyonReefSpan, canyonSandDepth, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -492,15 +492,17 @@ describe('surf spot bathymetry', () => {
     const reef = canyonReefSpan(A);
     // The reef keeps the spot's onset and join exactly, over its footprint and onsetPin m beside it, at every depth.
     for (let x = reef.from - A.onsetPin; x <= reef.to + A.onsetPin; x += 1) {
-      for (let z = -330; z < 0; z += 5) expect(canyonOnset(x, z, 0.65, A)).toBe(0.65);
-      expect(canyonJoin(x, 0.5, A)).toBe(0.5);
+      for (let z = -330; z < 0; z += 5) {
+        expect(canyonOnset(x, z, 0.65, A)).toBe(0.65);
+        expect(canyonJoin(x, z, 0.5, A)).toBe(0.5);
+      }
     }
     // The beach: its own onset where the bed is onsetShallow m deep or shallower, the spot's past onsetDeep; rule A.
     const [up, down] = canyonBars(A);
     for (const bar of [up, down]) {
       expect(canyonOnset(bar.x, -60, 0.65, A)).toBe(A.barOnset);
       expect(canyonOnset(bar.x, -300, 0.65, A)).toBe(0.65);
-      expect(canyonJoin(bar.x, 0.5, A)).toBe(A.barJoin);
+      for (const z of [-300, -60]) expect(canyonJoin(bar.x, z, 0.5, A)).toBe(A.barJoin);
     }
     expect(A.barOnset).toBeLessThan(0.65);
     expect(A.barJoin).toBe(0);
@@ -508,9 +510,11 @@ describe('surf spot bathymetry', () => {
 
   // canyon-b (2026-11-01, docs/research/canyon-b-2026-11-01; the water-physics advisor's design): the upcoast beach peak's
   // +x arm runs on, with no rip, into a reef bowl, then backs off into a channel; no reef of its own.
+  // Version B is the `?canyonBed=b` dev switch's since canyon-c (2026-11-03).
+  const B = CANYON_B;
   it('runs version B\'s upcoast bar\'s +x arm into a reef bowl: the arm as it was, then the bowl\'s transect, its crest backing off, the channel', () => {
-    const canyon = createSpot('canyon', 1);
-    const [up, down] = canyonBars();
+    const canyon = createSpot('canyon', 1, { canyonBed: 'b' });
+    const [up, down] = canyonBars(B);
     const bowlX = (u: number) => up.x + u;
     // The tip and the whole −x arm, and the downcoast bar, value for value; the +x arm, its contours at its own angle, the
     // plain bar to where the bowl ramps in.
@@ -519,64 +523,249 @@ describe('surf spot bathymetry', () => {
       for (const u of [-60, -30, -10, 0]) expect(canyon.depthAt(bowlX(u), z)).toBe(old.depthAt(bowlX(u), z));
       for (const x of [down.x - 50, down.x, down.x + 50]) expect(canyon.depthAt(x, z)).toBe(old.depthAt(x, z));
       // No bowl yet: the bed is the sand's (the bars without it).
-      for (const u of [20, 40, CANYON.bowlFrom - 1]) expect(canyon.depthAt(bowlX(u), z)).toBe(canyonSandDepth(bowlX(u), z));
+      for (const u of [20, 40, B.bowlFrom - 1]) expect(canyon.depthAt(bowlX(u), z)).toBe(canyonSandDepth(bowlX(u), z, B));
     }
     const tan = (degrees: number) => Math.tan((degrees * Math.PI) / 180);
     const arm = Math.sqrt(40 ** 2 + up.rounding ** 2) - up.rounding;
-    expect(canyonBarDepth(up, bowlX(40), -120 + arm * tan(CANYON.bowlArmAngle))).toBeCloseTo(canyonBarDepth(up, up.x, -120), 9);
-    expect(canyonBarDepth(up, bowlX(-40), -120 + arm * tan(CANYON.barAngle))).toBeCloseTo(canyonBarDepth(up, up.x, -120), 9);
-    expect([up.plusReach, up.plusTaper, up.bowl, down.plusReach, down.bowl]).toEqual([CANYON.bowlEnd + CANYON.bowlBackOff, CANYON.bowlFade, true, down.reach, false]);
+    expect(canyonBarDepth(up, bowlX(40), -120 + arm * tan(B.bowlArmAngle), B)).toBeCloseTo(canyonBarDepth(up, up.x, -120, B), 9);
+    expect(canyonBarDepth(up, bowlX(-40), -120 + arm * tan(B.barAngle), B)).toBeCloseTo(canyonBarDepth(up, up.x, -120, B), 9);
+    expect([up.plusReach, up.plusTaper, up.bowl, down.plusReach, down.bowl]).toEqual([B.bowlEnd + B.bowlBackOff, B.bowlFade, true, down.reach, false]);
     // The whole bowl's transect along +z (its middle): the bar's 1:50 to the platform, level at it, the 1:21 face to the
     // crest on the bar's 1.9 m contour, a level top, then down to meet the bar.
-    const u = 0.5 * (CANYON.bowlFrom + CANYON.bowlRamp + CANYON.bowlEnd);
+    const u = 0.5 * (B.bowlFrom + B.bowlRamp + B.bowlEnd);
     const x = bowlX(u);
-    const crestZ = canyonBreakLineZ(x);
+    const crestZ = canyonBreakLineZ(x, B);
     const run = Math.sqrt(u * u + up.rounding ** 2) - up.rounding;
-    expect(crestZ).toBeCloseTo(run * Math.tan((CANYON.bowlArmAngle * Math.PI) / 180) - CANYON.bowlCrestContour / up.slope, 9);
-    expect(canyon.depthAt(x, crestZ)).toBeCloseTo(CANYON.bowlCrest, 6);
-    expect(canyon.depthAt(x, crestZ + CANYON.bowlTop - 3)).toBeCloseTo(CANYON.bowlCrest, 6);
-    const knee = crestZ - (CANYON.bowlPlatform - CANYON.bowlCrest) / CANYON.bowlFace;
-    expect((canyon.depthAt(x, crestZ - 25) - canyon.depthAt(x, crestZ - 5)) / 20).toBeCloseTo(CANYON.bowlFace, 6);
-    expect(canyon.depthAt(x, knee - CANYON.bowlKnee - 1)).toBeCloseTo(CANYON.bowlPlatform, 6);
+    expect(crestZ).toBeCloseTo(run * Math.tan((B.bowlArmAngle * Math.PI) / 180) - B.bowlCrestContour / up.slope, 9);
+    expect(canyon.depthAt(x, crestZ)).toBeCloseTo(B.bowlCrest, 6);
+    expect(canyon.depthAt(x, crestZ + B.bowlTop - 3)).toBeCloseTo(B.bowlCrest, 6);
+    const knee = crestZ - (B.bowlPlatform - B.bowlCrest) / B.bowlFace;
+    expect((canyon.depthAt(x, crestZ - 25) - canyon.depthAt(x, crestZ - 5)) / 20).toBeCloseTo(B.bowlFace, 6);
+    expect(canyon.depthAt(x, knee - B.bowlKnee - 1)).toBeCloseTo(B.bowlPlatform, 6);
     // The platform is no shallower than the bar beside it (it carries the waves unbroken to the face), at most 0.4 m deeper.
-    const plain = (z: number) => canyonBarDepth(up, x, z, CANYON, false);
-    for (let z = knee - CANYON.bowlKnee - 1; z > knee - 25; z -= 1) {
+    const plain = (z: number) => canyonBarDepth(up, x, z, B, false);
+    for (let z = knee - B.bowlKnee - 1; z > knee - 25; z -= 1) {
       expect(canyon.depthAt(x, z)).toBeGreaterThanOrEqual(plain(z) - 1e-9);
       expect(canyon.depthAt(x, z) - plain(z)).toBeLessThan(0.4);
     }
     expect(canyon.depthAt(x, crestZ - 100)).toBeCloseTo(plain(crestZ - 100), 6);
     // Along shore: the crest backs off at the bowl's end; past the fade the plain floor and beach face, the channel.
-    expect(canyon.depthAt(bowlX(CANYON.bowlEnd + CANYON.bowlBackOff), canyonBreakLineZ(bowlX(CANYON.bowlEnd + CANYON.bowlBackOff)))).toBeCloseTo(CANYON.bowlBackCrest, 1);
+    expect(canyon.depthAt(bowlX(B.bowlEnd + B.bowlBackOff), canyonBreakLineZ(bowlX(B.bowlEnd + B.bowlBackOff), B))).toBeCloseTo(B.bowlBackCrest, 1);
     const channel = up.x + up.plusReach + up.plusTaper + 1;
-    for (const cx of [channel, 20, 60]) for (let z = CANYON.floorEdge; z < -1; z += 5) expect(canyon.depthAt(cx, z)).toBeCloseTo(Math.min(CANYON.floorDepth, -z * CANYON.shoreSlope), 9);
+    for (const cx of [channel, 20, 60]) for (let z = B.floorEdge; z < -1; z += 5) expect(canyon.depthAt(cx, z)).toBeCloseTo(Math.min(B.floorDepth, -z * B.shoreSlope), 9);
     // Rock where the bowl stands above the bar (its face, top and back), sand elsewhere: the bars stay sand.
-    expect(canyonSandDepth(x, crestZ) - canyon.depthAt(x, crestZ)).toBeGreaterThan(0.5);
-    expect(canyonSandDepth(x, crestZ - 60)).toBeCloseTo(canyon.depthAt(x, crestZ - 60), 9);
-    expect(canyonSandDepth(up.x, -100)).toBe(canyon.depthAt(up.x, -100));
+    expect(canyonSandDepth(x, crestZ, B) - canyon.depthAt(x, crestZ)).toBeGreaterThan(0.5);
+    expect(canyonSandDepth(x, crestZ - 60, B)).toBeCloseTo(canyon.depthAt(x, crestZ - 60), 9);
+    expect(canyonSandDepth(up.x, -100, B)).toBe(canyon.depthAt(up.x, -100));
     // The reef's footprint is the bowl's, its readout and front columns; the arm (its peel's columns) from where it ramps
     // in to where its crest has backed off.
-    expect(canyonReefSpan()).toEqual({ from: bowlX(CANYON.bowlFrom), to: channel - 1 });
-    expect(canyonArmAt(bowlX(CANYON.bowlFrom + 1))).toBe(true);
-    expect(canyonArmAt(bowlX(CANYON.bowlFrom - 1))).toBe(false);
-    expect(canyonPeelAt(x, crestZ - 20)).toBe(true);
-    expect(canyonPeelAt(x, crestZ + CANYON.peelReach + 1)).toBe(false);
+    expect(canyonReefSpan(B)).toEqual({ from: bowlX(B.bowlFrom), to: channel - 1 });
+    expect(canyonArmAt(bowlX(B.bowlFrom + 1), B)).toBe(true);
+    expect(canyonArmAt(bowlX(B.bowlFrom - 1), B)).toBe(false);
+    expect(canyonPeelAt(x, crestZ - 20, B)).toBe(true);
+    expect(canyonPeelAt(x, crestZ + B.peelReach + 1, B)).toBe(false);
   });
 
   it('breaks version B\'s bowl by the reef\'s rules from where it ramps in, the arm by the beach\'s, blended on the arm\'s side', () => {
-    const [up] = canyonBars();
-    const from = up.x + CANYON.bowlFrom;
+    const [up] = canyonBars(B);
+    const from = up.x + B.bowlFrom;
     // The bowl: the spot's onset at every depth and the reef's gate, from where it ramps in to past its fade.
-    for (let x = from; x <= canyonReefSpan().to + CANYON.onsetPin; x += 1) {
-      for (let z = -330; z < 0; z += 5) expect(canyonOnset(x, z, 0.65)).toBe(0.65);
-      expect(canyonJoin(x, 0.5)).toBe(0.5);
+    for (let x = from; x <= canyonReefSpan(B).to + B.onsetPin; x += 1) {
+      for (let z = -330; z < 0; z += 5) {
+        expect(canyonOnset(x, z, 0.65, B)).toBe(0.65);
+        expect(canyonJoin(x, z, 0.5, B)).toBe(0.5);
+      }
     }
     // The arm: the beach's, from bowlRulesBlend m before the bowl.
-    for (const x of [up.x, from - CANYON.bowlRulesBlend - 1]) {
-      expect(canyonOnset(x, -60, 0.65)).toBe(CANYON.barOnset);
-      expect(canyonJoin(x, 0.5)).toBe(CANYON.barJoin);
+    for (const x of [up.x, from - B.bowlRulesBlend - 1]) {
+      expect(canyonOnset(x, -60, 0.65, B)).toBe(B.barOnset);
+      for (const z of [-300, -60]) expect(canyonJoin(x, z, 0.5, B)).toBe(B.barJoin);
     }
     // The −x arm and the downcoast peak as on the old layout.
-    for (const x of [up.x - 40, 121, 150]) expect([canyonOnset(x, -60, 0.65), canyonJoin(x, 0.5)]).toEqual([canyonOnset(x, -60, 0.65, CANYON_BEACH), canyonJoin(x, 0.5, CANYON_BEACH)]);
+    for (const x of [up.x - 40, 121, 150]) expect([canyonOnset(x, -60, 0.65, B), canyonJoin(x, -60, 0.5, B)]).toEqual([canyonOnset(x, -60, 0.65, CANYON_BEACH), canyonJoin(x, -60, 0.5, CANYON_BEACH)]);
+    // Neither has a bank: the join rule (`canyonJoin`'s 'bed' or 'zone') leaves them as they were.
+    for (const shape of [B, CANYON_BEACH]) {
+      for (let x = -200; x <= 200; x += 5) for (let z = -440; z < 0; z += 20) expect(canyonJoin(x, z, 0.5, shape, 'zone')).toBe(canyonJoin(x, z, 0.5, shape));
+    }
+  });
+
+  // canyon-c (2026-11-03, docs/research/canyon-c-2026-11-03; the water-physics advisor's ruling with the owner's
+  // decisions): one straight bank peeling from +x into the reef bowl, its planform flipped; a channel past it.
+  it('lays version C\'s bank: a straight 45° crest contour from the flipped bowl\'s seaward end to its tip, a 1:44 face, the edge ramp, the inside', () => {
+    const C = CANYON;
+    const canyon = createSpot('canyon', 1);
+    const join = canyonBankJoin();
+    const middle = C.upPeakX + 0.5 * (C.bowlFrom + C.bowlRamp + C.bowlEnd);
+    // The join: the flipped bowl's seaward (+x) end, B's −x end mirrored about the bowl's middle, on its crest contour.
+    expect(middle).toBe(-39.5);
+    expect(join.x).toBe(2 * middle - (C.upPeakX + C.bowlFrom));
+    expect(join.z).toBeCloseTo(canyonBreakLineZ(C.upPeakX + C.bowlFrom, CANYON_B), 9);
+    // The crest contour runs at 45° from the join to the tip, seaward toward +x: the tip far out, the bowl near the beach.
+    const [bank] = canyonBars();
+    expect([bank.x, bank.bank, bank.reach, bank.plusTaper]).toEqual([C.bankTipX, true, C.bankTipX - join.x, C.bankFade]);
+    for (const x of [join.x, 0, 31, 75, 120, C.bankTipX]) expect(canyonBreakLineZ(x)).toBeCloseTo(join.z - (x - join.x), 9);
+    expect(-canyonBreakLineZ(C.bankTipX)).toBeGreaterThan(220);
+    // Along +z the face climbs at 1:44 up to the edge; the edge is 1.2 m deep to x +31, deepening linearly to 3.6 m at the tip.
+    expect([canyonBankEdge(join.x), canyonBankEdge(31)]).toEqual([1.2, 1.2]);
+    for (const x of [140, 160]) expect(canyonBankEdge(x)).toBeCloseTo(3.6, 12);
+    expect(canyonBankEdge(85.5)).toBeCloseTo(2.4, 9);
+    for (const x of [0, 31, 75, 120]) {
+      const line = canyonBreakLineZ(x);
+      const edge = canyonBankEdge(x);
+      const edgeZ = line - (edge - C.bowlCrestContour) / C.bankFace;
+      for (const [a, b] of [[edgeZ - 40, edgeZ - 10], [edgeZ - 80, edgeZ - 50]]) expect((canyon.depthAt(x, a) - canyon.depthAt(x, b)) / (b - a)).toBeCloseTo(C.bankFace, 6);
+      // The edge and the level top behind it, then the inside, max(2 m, edge + 0.5 m), until the 1:15 beach face.
+      expect(canyon.depthAt(x, edgeZ)).toBeCloseTo(edge, 6);
+      expect(canyon.depthAt(x, edgeZ + C.bankTop - 1)).toBeCloseTo(edge, 6);
+      const inside = Math.max(C.bankInside, edge + C.bankInsideOver);
+      const lagoon = edgeZ + C.bankTop + (inside - edge) / C.bankBack + 2;
+      if (lagoon < -inside / C.shoreSlope) expect(canyon.depthAt(x, lagoon)).toBeCloseTo(inside, 6);
+      expect(canyon.depthAt(x, -10)).toBeCloseTo(10 * C.shoreSlope, 9);
+      // Never deeper than the floor.
+      for (let z = -440; z < 0; z += 5) expect(canyon.depthAt(x, z)).toBeLessThanOrEqual(Math.min(canyonFloorDepth(x, z), -z * C.shoreSlope) + 1e-9);
+    }
+    // Each depth between the edge's two ends: its contour straight at 45°, ending where the edge reaches it (the first break).
+    for (const depth of [1.5, 2.0, 2.5, 3.0, 3.5]) {
+      const ends = 31 + (depth - C.bankEdge) / ((C.bankEdgeTip - C.bankEdge) / (C.bankTipX - C.bankRampFrom));
+      const outermost = (x: number) => { let z = -440; while (z < 0 && canyon.depthAt(x, z) > depth) z += 0.25; return z; };
+      // Down the line of its end (toward the bowl) the contour lies on the face, straight at 45°…
+      for (const x of [ends - 5, ends - 15]) if (x > 0) expect(outermost(x)).toBeCloseTo(canyonBreakLineZ(x) - (depth - C.bowlCrestContour) / C.bankFace, 0);
+      // …and up the line the bank's top is deeper: no water that shallow until the beach face.
+      if (ends + 10 < C.bankTipX) expect(outermost(ends + 10)).toBeCloseTo(-depth / C.shoreSlope, 0);
+    }
+    // The tip fades into the floor over 25 m, clear of the +x open edge's levelling.
+    for (let z = -440; z < -5; z += 5) {
+      const x = C.bankTipX + C.bankFade;
+      expect(canyon.depthAt(x, z)).toBeCloseTo(Math.min(canyonFloorDepth(x, z), -z * C.shoreSlope), 9);
+    }
+    expect(C.bankTipX + C.bankFade).toBeLessThan(C.alongShore / 2 - OPEN_EDGE_RAMP);
+    // The tank's blend ends 20 m seaward of the tip's 5 m foot.
+    expect(canyonFootZ()).toBeCloseTo(canyonBreakLineZ(C.bankTipX) - (C.floorDepth - C.bowlCrestContour) / C.bankFace, 9);
+    expect(C.zoneInner + C.blendLength).toBeLessThanOrEqual(canyonFootZ() - 20);
+    expect(C.zoneInner + C.blendLength).toBeGreaterThan(canyonFootZ() - 21);
+    // The bank is sand and its own peak's (`canyonBarAt`); the bars are gone.
+    expect(canyonBarAt(75, canyonBreakLineZ(75))).toBe(0);
+    expect(canyonSandDepth(75, canyonBreakLineZ(75))).toBe(canyon.depthAt(75, canyonBreakLineZ(75)));
+  });
+
+  it('flips version C\'s bowl: B\'s bowl and the bar under it, mirrored along shore about its middle, the channel past it', () => {
+    const C = CANYON;
+    const canyon = createSpot('canyon', 1);
+    const b = createSpot('canyon', 1, { canyonBed: 'b' });
+    const middle = C.upPeakX + 0.5 * (C.bowlFrom + C.bowlRamp + C.bowlEnd);
+    const span = canyonReefSpan();
+    // The whole bowl and its back-off, value for value B's at the mirrored x: its transect, rock and curl kept.
+    for (let x = canyonArmEndX(); x <= canyonBankJoin().x - C.bowlRamp; x += 1) {
+      for (let z = -300; z < 0; z += 2) expect(canyon.depthAt(x, z)).toBe(b.depthAt(2 * middle - x, z));
+    }
+    // It ramps in at its +x end, where the bank joins, and backs off at its −x end: its arm, peel and readout columns.
+    expect(span).toEqual({ from: 2 * middle - (C.upPeakX + C.bowlEnd + C.bowlBackOff + C.bowlFade), to: canyonBankJoin().x });
+    expect(canyonArmEndX()).toBe(2 * middle - (C.upPeakX + C.bowlEnd + C.bowlBackOff));
+    expect(canyonArmAt(middle)).toBe(true);
+    expect(canyonArmAt(span.to + 1)).toBe(false);
+    expect(canyonArmAt(canyonArmEndX() - 1)).toBe(false);
+    expect(canyonPeelAt(middle, canyonBreakLineZ(middle) - 20)).toBe(true);
+    // Its crest contour is on the bowl's base bar's 1.9 m contour, B's mirrored: seaward at its +x end, where the bank joins.
+    for (const x of [-50, -40, -30]) expect(canyonBreakLineZ(x)).toBeCloseTo(canyonBreakLineZ(2 * middle - x, CANYON_B), 9);
+    expect(canyonBreakLineZ(-25)).toBeLessThan(canyonBreakLineZ(-50));
+    // The channel: past the bowl's −x end, the plain floor and beach face to the −x edge; both A-frames are gone.
+    for (const x of [span.from - 2, -112, -150, -C.alongShore / 2]) {
+      for (let z = -440; z < 0; z += 5) expect(canyon.depthAt(x, z)).toBeCloseTo(Math.min(canyonFloorDepth(x, z), -z * C.shoreSlope), 9);
+      expect(canyonBarAt(x, -100)).toBe(-1);
+    }
+    for (let z = C.floorEdge; z < -C.floorDepth / C.shoreSlope; z += 5) expect(canyon.depthAt(-150, z)).toBe(C.floorDepth);
+    // The bowl stands on its base bar (the bed's own peak's), rock above the sand.
+    expect(canyonBarAt(middle, canyonBreakLineZ(middle))).toBe(0);
+    expect(canyonSandDepth(middle, canyonBreakLineZ(middle)) - canyon.depthAt(middle, canyonBreakLineZ(middle))).toBeGreaterThan(0.5);
+  });
+
+  it('breaks version C\'s flipped bowl by the reef\'s rules and its bank by the beach\'s onset', () => {
+    const C = CANYON;
+    const span = canyonReefSpan();
+    for (let x = span.from - C.onsetPin; x <= span.to; x += 1) {
+      for (let z = -330; z < 0; z += 5) {
+        expect(canyonOnset(x, z, 0.65)).toBe(0.65);
+        expect(canyonJoin(x, z, 0.5)).toBe(0.5);
+        expect(canyonJoin(x, z, 0.5, C, 'zone')).toBe(0.5);
+      }
+    }
+    // The bank: the beach's 0.40 onset where it is 3 m deep or shallower, easing to the spot's 0.65 by 4.5 m.
+    for (const x of [span.to + C.bowlRulesBlend + 1, 31, 75, 140]) {
+      const edge = canyonBankEdgeZ(x);
+      expect(canyonOnset(x, edge - 20, 0.65)).toBeCloseTo(canyonBankEdge(x) + 20 * C.bankFace <= C.onsetShallow ? C.barOnset : canyonOnset(x, edge - 20, 0.65), 9);
+    }
+    expect(canyonOnset(75, canyonBreakLineZ(75) + 20, 0.65)).toBe(C.barOnset);
+    expect(canyonOnset(75, -420, 0.65)).toBe(0.65);
+    expect([C.barOnset, C.barJoin]).toEqual([0.4, 0]);
+  });
+
+  // The water-physics advisor's second ruling (2026-11-04, §2a): the bank's breaking-age join keyed to the bed. With the
+  // take-off zone's gate (the first ruling's §2) the line stalled: the gate sat above the bank's 0.40 onset, so it passed
+  // the age only to cells that would break anyway, and the peak's white died over the inside before the shoulder broke.
+  it('passes version C\'s breaking age by its bed: rule A on the bank\'s face, the reef\'s gate behind its edge line', () => {
+    const C = CANYON;
+    const span = canyonReefSpan();
+    const canyon = createSpot('canyon', 1);
+    expect(C.bankJoinBlend).toBe(3);
+    for (const x of [span.to + C.bowlRulesBlend + 1, 0, 31, 75, 120, C.bankTipX]) {
+      // The edge line: the top of the bank's face, where the face reaches the edge's depth (the frame probe's edgeZ).
+      const edge = canyonBankEdgeZ(x);
+      expect(edge).toBeCloseTo(canyonBreakLineZ(x) - (canyonBankEdge(x) - C.bowlCrestContour) / C.bankFace, 9);
+      expect(canyon.depthAt(x, edge)).toBeCloseTo(canyonBankEdge(x), 6);
+      // Rule A on the face, seaward of it; the gate on its top, its back and the inside, shoreward; blended over 3 m.
+      for (const dz of [-80, -20, -C.bankJoinBlend / 2 - 0.01]) expect(canyonJoin(x, edge + dz, 0.5)).toBe(C.barJoin);
+      for (const dz of [C.bankJoinBlend / 2 + 0.01, C.bankTop, 40]) expect(canyonJoin(x, edge + dz, 0.5)).toBe(0.5);
+      expect(canyonJoin(x, edge, 0.5)).toBeCloseTo(0.25, 9);
+      for (let dz = -C.bankJoinBlend; dz < C.bankJoinBlend; dz += 0.25) {
+        expect(canyonJoin(x, edge + dz + 0.25, 0.5)).toBeGreaterThanOrEqual(canyonJoin(x, edge + dz, 0.5));
+        expect(canyonBankFaceShare(x, edge + dz)).toBeCloseTo((0.5 - canyonJoin(x, edge + dz, 0.5)) / 0.5, 12);
+      }
+    }
+    // Past the tip the face fades with the bank into the floor: the gate beyond it, at every depth.
+    for (let z = -440; z < 0; z += 5) expect(canyonJoin(C.bankTipX + C.bankFade, z, 0.5)).toBe(0.5);
+    expect(canyonJoin(C.bankTipX + 0.5 * C.bankFade, canyonBankEdgeZ(C.bankTipX + 0.5 * C.bankFade) - 20, 0.5)).toBeCloseTo(0.25, 9);
+    // Between the bowl and the bank the bowl's rules blend in over bowlRulesBlend m, on the face only.
+    const middle = span.to + 0.5 * C.bowlRulesBlend;
+    expect(canyonJoin(middle, canyonBankEdgeZ(middle) - 20, 0.5)).toBeCloseTo(0.25, 9);
+    expect(canyonJoin(middle, canyonBankEdgeZ(middle) + 20, 0.5)).toBe(0.5);
+    // The channel past the bowl's −x end keeps the beach's rule A at every depth.
+    for (const x of [span.from - C.onsetPin - C.onsetBlend - 1, -150]) for (let z = -440; z < 0; z += 20) expect(canyonJoin(x, z, 0.5)).toBe(C.barJoin);
+  });
+
+  // `canyonJoin` 'zone' (the `?canyonJoin=zone` dev switch): the branch's head at ca567450, the first ruling's §2.
+  it('passes version C\'s breaking age by its take-off zone with the \'zone\' rule: rule A to x +31, the gate up the line', () => {
+    const C = CANYON;
+    const span = canyonReefSpan();
+    for (let z = -440; z < 0; z += 10) {
+      for (const x of [span.to + C.bowlRulesBlend + 1, 0, 20, 31]) expect(canyonJoin(x, z, 0.5, C, 'zone')).toBe(C.barJoin);
+      for (const x of [36, 75, 140, 160]) expect(canyonJoin(x, z, 0.5, C, 'zone')).toBe(0.5);
+      expect(canyonJoin(33.5, z, 0.5, C, 'zone')).toBeCloseTo(0.25, 9);
+    }
+    expect(C.bankGateFrom).toBe(31);
+  });
+
+  // The advisor's option (b), the owner's call (`?canyonRamp=half`): the edge ramp halved.
+  it('halves version C\'s edge ramp with \'half\': the edge 2.4 m at the tip, its line at 56° to the shore, not 63°, and the join keyed to it', () => {
+    const H = CANYON_HALF_RAMP;
+    expect(Object.isFrozen(H)).toBe(true);
+    expect(canyonShape('half')).toBe(H);
+    expect({ ...H, bankEdgeTip: CANYON.bankEdgeTip }).toEqual({ ...CANYON });
+    expect([canyonBankEdge(31, H), canyonBankEdge(140, H)]).toEqual([1.2, 2.4]);
+    expect(canyonBankEdge(85.5, H)).toBeCloseTo(1.8, 12);
+    expect((H.bankEdgeTip - H.bankEdge) / (H.bankTipX - H.bankRampFrom)).toBeCloseTo(0.011, 3);
+    const angle = (shape: typeof CANYON) => (Math.atan((canyonBankEdgeZ(31, shape) - canyonBankEdgeZ(140, shape)) / (140 - 31)) * 180) / Math.PI;
+    expect(angle(CANYON)).toBeCloseTo(63, 0);
+    expect(angle(H)).toBeCloseTo(56, 0);
+    // The bed: as today's to x +31 and on the bowl, the edge shallower up the line.
+    const half = createSpot('canyon', 1, { canyonBed: 'half' });
+    const today = createSpot('canyon', 1);
+    for (let x = -200; x <= 31; x += 7) for (let z = -440; z < 0; z += 13) expect(half.depthAt(x, z)).toBe(today.depthAt(x, z));
+    expect(half.depthAt(100, canyonBankEdgeZ(100, H) + 2)).toBeCloseTo(canyonBankEdge(100, H), 6);
+    // Its join follows its own edge line.
+    for (const x of [75, 120]) {
+      expect(canyonJoin(x, canyonBankEdgeZ(x, H) - 5, 0.5, H)).toBe(0);
+      expect(canyonJoin(x, canyonBankEdgeZ(x, H) + 5, 0.5, H)).toBe(0.5);
+    }
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

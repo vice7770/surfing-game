@@ -1,0 +1,6 @@
+canyon medium (today): 400 × 507 = 202800 cells, 64 components; spun up in 83.1 s
+step (1/30 s), 300 steps: p50 92.19 ms, mean 129.43 ms, p95 174.83 ms; 0.455 µs a cell (p50); 136 of 300 steps took more than one solver substep
+canyon medium (b): 400 × 451 = 180400 cells, 64 components; spun up in 55.5 s
+step (1/30 s), 300 steps: p50 83.26 ms, mean 110.51 ms, p95 160.52 ms; 0.462 µs a cell (p50); 106 of 300 steps took more than one solver substep
+canyon medium (half): 400 × 507 = 202800 cells, 64 components; spun up in 77.2 s
+step (1/30 s), 300 steps: p50 174.51 ms, mean 149.11 ms, p95 175.14 ms; 0.861 µs a cell (p50); 207 of 300 steps took more than one solver substep

@@ -105,6 +105,8 @@ export const EN = {
   'lab.peel.mixed': 'mixed peaks',
   'lab.peel.peak': 'peak, left {left}° and right {right}°',
   'lab.peel.peakBowl': 'peak into a {bowl} reef bowl, left {left}° and right {right}°',
+  'lab.peel.bankBowlLeft': 'bank into a {bowl} reef bowl, left {angle}°',
+  'lab.peel.bankBowlRight': 'bank into a {bowl} reef bowl, right {angle}°',
   'lab.summary.peak': '{breaker} {peak}',
   'lab.skill.beginner': 'easy to surf',
   'lab.skill.intermediate': 'good for surfing',

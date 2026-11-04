@@ -194,6 +194,11 @@ export interface PeelEstimate {
    * says "spilling peak into a plunging reef bowl".
    */
   bowl?: 'spilling' | 'plunging' | 'surging' | 'none';
+  /**
+   * A straight bank peeling one way into the reef bowl (the Canyon's version C, canyon-c): the readout says "spilling bank
+   * into a plunging reef bowl, right …°", the estimate's own angle and direction.
+   */
+  bank?: boolean;
 }
 
 export type PeelSkill = 'beginner' | 'intermediate' | 'advanced' | 'professional' | 'closeout';
