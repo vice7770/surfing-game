@@ -1,8 +1,8 @@
 import type { SpotName } from '../Bathymetry';
 import { BARREL_SPOTS } from './barrelSpots';
-import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { FRONT_CAPACITY, FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
-import { FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
+import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
@@ -231,7 +231,37 @@ export interface LoftResult {
    */
   sliceShift: Float32Array;
   shiftMisses: number;
+  /**
+   * A diagnostic (a probe's): per record, its smoothed shift as this build placed its case, m (NaN: the crest anchor), for
+   * the records the face anchor read this build.
+   */
+  recordShift?: Float32Array;
+  /**
+   * Step 7's wall water (`TubeFace.wallFlow`, the contact's loft only; absent otherwise): per slice, the anchor's height (the
+   * case's crossing at 0.3 of its height over its trough, m in the world), its crest landmark's height, m, its drawn crest's
+   * speed along its ray C (m/s) and B = U/C at the crest (0.85 before the throw, 1 from it; Derakhti et al. 2020); per
+   * vertex, the case's surface's own velocity along its ray and up, m/s (its frames at its clock's rate, carried by its
+   * anchor), from which the water there takes its normal component (the kinematic condition).
+   */
+  wall?: WallWater;
 }
+
+/** Step 7's wall water's per-slice and per-vertex fields (`LoftResult.wall`). */
+export interface WallWater {
+  low: Float32Array;
+  top: Float32Array;
+  speed: Float32Array;
+  b: Float32Array;
+  along: Float32Array;
+  up: Float32Array;
+}
+
+/**
+ * Step 7's wall water (`LoftResult.wall`; the advisor's 2026-11-04 ruling §1.4.3): B = U/C, the crest water's speed over
+ * the crest's, as the face goes vertical (`before`, 0.85) and from the throw (`thrown`, 1): Derakhti, Kirby, Banner, Grilli
+ * & Thomson 2020, §4 (LES and BEM).
+ */
+export const WALL_FLOW = { before: 0.85, thrown: 1 } as const;
 
 export interface LoftOptions {
   /** Build for the contact (Part B, PR 4): see `SweptLoft`. */
@@ -392,6 +422,8 @@ export class SweptLoft {
   private recordSpeed = new Float64Array(0);
   private readonly recordSigma: number[] = [];
   private readonly faceScratch = new Float64Array(3);
+  /** Step 7's wall water: a slice's profile a frame on (`LoftResult.wall`). */
+  private readonly wallProfile = new Float32Array(2 * PROFILE_POINTS);
   private readonly measureSheet: boolean;
   private readonly holdClearDrawing: boolean;
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
@@ -408,7 +440,7 @@ export class SweptLoft {
     this.contact = options.contact ?? false;
     if (options.face && library.options.geometry !== 'bounded-C') {
       this.face = options.face;
-      if (options.face.anchor) this.faceAnchor = new FaceAnchor(library, slope);
+      if (options.face.anchor) this.faceAnchor = new FaceAnchor(library, slope, options.face.continuity);
     }
     this.measureSheet = options.sheet ?? !this.contact;
     this.holdClearDrawing = !this.contact && (options.holdClearDrawing ?? false);
@@ -433,7 +465,11 @@ export class SweptLoft {
       sliceTipTransportAlong: new Float32Array(slices), sliceTipTransportUp: new Float32Array(slices),
       sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
       sliceMouth: new Float32Array(slices), sliceStretch: new Float32Array(slices), sliceAfter: new Float32Array(slices),
-      sliceShift: new Float32Array(slices), shiftMisses: 0,
+      sliceShift: new Float32Array(slices), shiftMisses: 0, recordShift: new Float32Array(FRONT_CAPACITY),
+      ...(this.contact && options.face?.wallFlow === true && library.options.geometry !== 'bounded-C' ? { wall: {
+        low: new Float32Array(slices), top: new Float32Array(slices), speed: new Float32Array(slices), b: new Float32Array(slices),
+        along: new Float32Array(vertices), up: new Float32Array(vertices),
+      } } : {}),
     };
   }
 
@@ -1099,6 +1135,24 @@ export class SweptLoft {
       const lookup = this.library.profileAt(query, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
+      // Step 7's wall water: the same shape a frame on, at the same hold, for its surface's own motion.
+      const wall = this.result.wall;
+      let wallEpsilon = 0;
+      let wallRate = 1;
+      let wallCrest = 0;
+      let wallCarry = 0;
+      if (wall && wFade !== 0) {
+        wallEpsilon = Math.max(1e-3, lookup.frameSeconds);
+        query.seconds = tau + wallEpsilon;
+        this.library.profileAt(query, this.wallProfile);
+        query.seconds = tau;
+        const rate = this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.tauRate]);
+        wallRate = rate === rate ? rate : 1;
+        wallCrest = (this.wallProfile[2 * LANDMARK.crest] - profile[2 * LANDMARK.crest]) / wallEpsilon;
+        // The anchor carries the shape: its drawn crest's speed less the case's crest's own (lab-frame) motion.
+        const speed = this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.crestSpeed]);
+        wallCarry = speed === speed ? speed - wallCrest * wallRate : 0;
+      }
       // Before the C contour forms, the ordinary surface keeps drawing and contact ownership.
       const wFormation = lookup.analytic?.formation ?? 1;
       if (retirementSupport && wFade !== 0) throw new Error('C retirement closure clocks disagree with its profile lookup');
@@ -1251,6 +1305,17 @@ export class SweptLoft {
       }
       r.sliceAnchorVX[slice] = anchorVX;
       r.sliceAnchorVZ[slice] = anchorVZ;
+      if (wall) {
+        // The anchor's height (the case's crossing at 0.3 of its height over its trough) and its crest's, in the world; its
+        // drawn crest's speed; B at the crest (Derakhti et al. 2020: 0.85 as the face goes vertical, 1 soon after).
+        let trough = Infinity;
+        for (let i = LANDMARK.crest; i <= LAST; i += 1) if (profile[2 * i + 1] < trough) trough = profile[2 * i + 1];
+        const top = profile[2 * LANDMARK.crest + 1];
+        wall.low[slice] = stillLevel + trough + FACE_ANCHOR.fraction * (top - trough);
+        wall.top[slice] = stillLevel + top;
+        wall.speed[slice] = wallEpsilon > 0 ? wallCarry + wallCrest * wallRate : Number.NaN;
+        wall.b[slice] = tau < 0 ? WALL_FLOW.before : WALL_FLOW.thrown;
+      }
       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
       // ahead of the toe held as the forward rest says first.
       const profileCrestX = profile[2 * LANDMARK.crest];
@@ -1322,6 +1387,12 @@ export class SweptLoft {
         }
         const v = slice * LOFT_SAMPLES + j;
         const profileIndex = j - E;
+        if (wall && wallEpsilon > 0) {
+          // The case's surface's velocity there: its frames' motion at the clock's rate, carried by its anchor.
+          const i = Math.min(LAST, Math.max(0, profileIndex));
+          wall.along[v] = wallCarry + ((this.wallProfile[2 * i] - profile[2 * i]) / wallEpsilon) * wallRate;
+          wall.up[v] = ((this.wallProfile[2 * i + 1] - profile[2 * i + 1]) / wallEpsilon) * wallRate;
+        }
         const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
         const px = sharedUnder >= 0 ? this.sharedSheetX[sharedUnder] : ax + along * nx;
@@ -1529,6 +1600,30 @@ export class SweptLoft {
     const sigmas = this.recordSigma;
     sigmas.length = n;
     const hold = this.contact || this.holdClearDrawing ? 'contact' : 'drawing';
+    if (this.face!.continuity) {
+      // Step 7: the shift the simulation kept for each point (`continueAnchor`, the records' `anchor`), under the contact's
+      // hold; a drawing without the clear-roof hold moves it by its case's crest-over-crossing at its own hold.
+      for (let k = 0; k < n; k += 1) {
+        const o = (f.start + k) * FRONT_STRIDE;
+        sigmas[k] = records[o + FRONT_FIELD.sigma];
+        const fh = records[o + FRONT_FIELD.footHeight];
+        const fd = records[o + FRONT_FIELD.footDepth];
+        const tau = records[o + FRONT_FIELD.tau];
+        const kept = records[o + FRONT_FIELD.anchor];
+        anchor.caseFace(fh, fd, tau, hold, this.faceScratch);
+        this.recordSpeed[k] = this.faceScratch[2];
+        let shift = kept;
+        if (hold === 'drawing' && kept === kept) {
+          const drawing = this.faceScratch[1] - this.faceScratch[0];
+          anchor.caseFace(fh, fd, tau, 'contact', this.faceScratch);
+          const contact = this.faceScratch[1] - this.faceScratch[0];
+          if (drawing === drawing && contact === contact) shift = kept - contact + drawing;
+        }
+        this.recordShift[k] = shift;
+        if (this.result.recordShift) this.result.recordShift[f.start + k] = shift;
+      }
+      return;
+    }
     for (let k = 0; k < n; k += 1) {
       const o = (f.start + k) * FRONT_STRIDE;
       const sigma = records[o + FRONT_FIELD.sigma];
@@ -1539,6 +1634,7 @@ export class SweptLoft {
       this.recordSpeed[k] = this.faceScratch[2];
     }
     smoothShifts(sigmas, this.recordRaw, n, this.recordShift);
+    if (this.result.recordShift) for (let k = 0; k < n; k += 1) this.result.recordShift[f.start + k] = this.recordShift[k];
   }
 
   /** Front f's smoothed shift at σ (`recordShifts`), linear between its records, its ends' past them; NaN with none there. */
@@ -1898,3 +1994,4 @@ export class SweptLoft {
     }
   }
 }
+

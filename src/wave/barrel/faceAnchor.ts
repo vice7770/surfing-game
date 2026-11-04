@@ -38,6 +38,25 @@ export interface TubeFace {
   lag: boolean;
   clockRate: number;
   thrownEnds: boolean;
+  /**
+   * Step 7, Q1 (the water-physics advisor's 2026-11-04 ruling, docs/research/pool-tube-wall-2026-11-04/advisor-ruling.md
+   * §1.4: the wall's continuity, formation and flow), each piece with its own switch, all on by default:
+   * - `continuity` (`?tubeAnchor=old`: off; with `anchor`): each front point's shift is kept step to step in the
+   *   simulation (`continueAnchor`), its change capped, held on a miss, never back to the crest anchor once faced, and
+   *   the case's crossing's life-0.5 extrapolation blended in over life 0.45–0.55; the loft reads it from the records;
+   * - `distance` (`?tubeForm=old`: off; with `lag`): a point joins, and its clock runs before its throw, by its crest's
+   *   distance to its throw contour (τ = −D/C_p from the case's earliest frame, at 0.5–1.5× real time), and its slice's
+   *   weight ramps over the case's first 0.3 s of τ;
+   * - `contour` (`?tubeThrow=break`: off; with `distance`): its lip throws when its clock reaches 0, at the contour,
+   *   without waiting for the solver's break (the retire guard kept); off: the later of the contour and the break;
+   * - `wallFlow` (`?wallFlow=old`: off; with `anchor` and `union`): the case's water above the solver's surface (the
+   *   wall, with no air under it) flows as a wave face does: normal to the case's surface at that surface's own speed,
+   *   along the ray ramping from the solver's flow at the anchor's height to B·C at the crest (Derakhti et al. 2020).
+   */
+  continuity: boolean;
+  distance: boolean;
+  contour: boolean;
+  wallFlow: boolean;
 }
 
 /** The thrown clock's catch-up before the ruling, × real time (`advanceClocks`), and after it. */
@@ -49,6 +68,11 @@ export interface TubeFaceSwitches {
   tubeFrom?: 'piece';
   tubeLag?: 0;
   tubeClock?: 'old';
+  /** Step 7, Q1's (`TubeFace.continuity`, `.distance`, `.contour`, `.wallFlow`). */
+  tubeAnchor?: 'old';
+  tubeForm?: 'old';
+  tubeThrow?: 'break';
+  wallFlow?: 'old';
 }
 
 /**
@@ -61,10 +85,101 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
   const piece = switches.tubeFrom === 'piece';
   const union = switches.tubeFace !== 'old';
   if (piece && !union) return undefined;
+  const lag = !piece && switches.tubeLag !== 0;
+  const distance = lag && switches.tubeForm !== 'old';
   return {
-    anchor: !piece, union, lag: !piece && switches.tubeLag !== 0,
+    anchor: !piece, union, lag,
     clockRate: !piece && switches.tubeClock !== 'old' ? THROWN_RATE.face : THROWN_RATE.old, thrownEnds: !piece,
+    continuity: !piece && switches.tubeAnchor !== 'old', distance, contour: distance && switches.tubeThrow !== 'break',
+    wallFlow: !piece && union && switches.wallFlow !== 'old',
   };
+}
+
+/**
+ * The anchor's continuity (step 7, Q1's first piece; the advisor's 2026-11-04 ruling §1.4.1), per front point, step to step:
+ * - `crest`, `slack`: the smoothed shift's change is capped at (`crest` C + `slack`) Δt a step, C its crest's speed along
+ *   its ray: 0.3 C is the case's own crest outrunning its lower face (step 3), and the slack 0.005 m a 1/60 s step
+ *   (0.3 m/s), about 0.03 m a step at C ≈ 5 m/s;
+ * - `hold`, s: on a miss (no point within the smoothing's reach has a clean crossing) the last shift runs on at its last
+ *   rate for up to this long, then stands; a point never goes back to the crest anchor once it has had a face anchor;
+ * - `ease`, s: a point that stood on the crest anchor before its first face anchor eases from it to the face anchor over
+ *   this long (smoothstep), uncapped meanwhile;
+ * - `blend`: the case's crossing's extrapolation from life 0.5 (`FACE_ANCHOR.extrapolate`) blended in over these shares of
+ *   touchdown (smoothstep) rather than switched on at once.
+ * Only + − × ÷, for online determinism.
+ */
+export const ANCHOR_CONTINUITY = { crest: 0.3, slack: 0.3, hold: 0.5, ease: 0.3, blend: [0.45, 0.55] } as const;
+
+/** A front point's anchor track (`continueAnchor`; `FrontPoint`'s, travelling with it). */
+export interface AnchorTrack {
+  /** Its shift as last kept, m (absent: it has never had a face anchor), and its rate, m/s. */
+  anchorShift?: number;
+  anchorRate?: number;
+  /** When it was last kept, and when it last had a clean (smoothed) shift, s. */
+  anchorTime?: number;
+  anchorGood?: number;
+  /** When its ease from the crest anchor began, s (a point that stood on the crest anchor first). */
+  anchorEase?: number;
+  /** It has stood on the crest anchor (no face anchor yet). */
+  anchorNone?: true;
+}
+
+/** Counts of `continueAnchor`'s outcomes (a probe's; none in the game). */
+export const anchorCounts = { kept: 0, capped: 0, held: 0, stood: 0, eased: 0, crest: 0 };
+
+/**
+ * A point's shift this step from its smoothed shift `smoothed` (m; NaN with none in reach) at `time` (s), its crest's speed
+ * along its ray `celerity` (m/s): see `ANCHOR_CONTINUITY`. NaN while it has never had a face anchor (the crest anchor).
+ * `capped` false keeps the smoothed shift as it is (the rate alone is tracked: `?tubeAnchor=old` with the wall's flow on).
+ */
+export function continueAnchor(track: AnchorTrack, smoothed: number, time: number, celerity: number, capped = true): number {
+  const previous = track.anchorShift;
+  const dt = track.anchorTime === undefined ? 0 : time - track.anchorTime;
+  track.anchorTime = time;
+  if (!capped) {
+    track.anchorRate = smoothed === smoothed && previous !== undefined && previous === previous && dt > 0 ? (smoothed - previous) / dt : 0;
+    track.anchorShift = smoothed;
+    return smoothed;
+  }
+  const { crest, slack, hold, ease } = ANCHOR_CONTINUITY;
+  if (!(smoothed === smoothed)) {
+    if (previous === undefined) {
+      track.anchorNone = true;
+      anchorCounts.crest += 1;
+      return Number.NaN;
+    }
+    // A miss: the last shift runs on at its rate for up to `hold`, then stands.
+    if (time - track.anchorGood! <= hold) {
+      track.anchorShift = previous + track.anchorRate! * dt;
+      anchorCounts.held += 1;
+    } else {
+      track.anchorRate = 0;
+      anchorCounts.stood += 1;
+    }
+    return track.anchorShift!;
+  }
+  track.anchorGood = time;
+  let shift: number;
+  if (previous === undefined && track.anchorNone) track.anchorEase = time;
+  const easing = track.anchorEase !== undefined && time - track.anchorEase < ease;
+  if (easing) {
+    // From the crest anchor (a shift of 0) to the face anchor, uncapped.
+    const u = (time - track.anchorEase!) / ease;
+    shift = u * u * (3 - 2 * u) * smoothed;
+    anchorCounts.eased += 1;
+  } else if (previous === undefined) {
+    // Faced from its first step: it starts there.
+    shift = smoothed;
+    anchorCounts.kept += 1;
+  } else {
+    const cap = (crest * celerity + slack) * dt;
+    shift = previous + Math.min(cap, Math.max(-cap, smoothed - previous));
+    if (shift !== smoothed) anchorCounts.capped += 1;
+    else anchorCounts.kept += 1;
+  }
+  track.anchorRate = previous !== undefined && dt > 0 ? (shift - previous) / dt : 0;
+  track.anchorShift = shift;
+  return shift;
 }
 
 /**
@@ -99,7 +214,11 @@ export class FaceAnchor {
   /** Shifts asked, and those with no clean crossing on the solver's face or the case's (the crest anchor stands). */
   readonly stats = { shifts: 0, solverMisses: 0, caseMisses: 0 };
 
-  constructor(private readonly library: ProfileLibrary, slope: number) {
+  /**
+   * `blend`: the crossing's extrapolation from life 0.5 blended in over `ANCHOR_CONTINUITY.blend` (step 7's continuity),
+   * not switched on at once.
+   */
+  constructor(private readonly library: ProfileLibrary, slope: number, private readonly blend = false) {
     this.query = { slope, footHeight: 0, footDepth: 0, seconds: 0 };
   }
 
@@ -144,6 +263,7 @@ export class FaceAnchor {
     for (let i = LANDMARK.crest; i <= LAST; i += 1) if (this.profile[2 * i + 1] < trough) trough = this.profile[2 * i + 1];
     this.height = this.profile[2 * LANDMARK.crest + 1] - trough;
     const frozen = shape !== tau;
+    if (this.blend) return this.blendedFace(shape, frozen, touchdown, times.frameSeconds, out);
     if (shape >= late * touchdown && touchdown > 0) {
       const a = this.crossingAt(early * touchdown);
       const b = this.crossingAt(late * touchdown);
@@ -163,6 +283,52 @@ export class FaceAnchor {
     const ahead = this.crossingAt(shape + window);
     const behind = this.crossingAt(shape - window);
     out[2] = ahead === ahead && behind === behind ? (ahead - behind) / (2 * window) : 0;
+    return out;
+  }
+
+  /**
+   * `caseFace`'s crossing and speed under `blend` (the profile at `shape` already in `this.profile`): the instantaneous
+   * crossing and its motion over ±4 frames before life `ANCHOR_CONTINUITY.blend[0]`, the extrapolation's line from
+   * `blend[1]` on, and between them the two blended by a smoothstep, so the crossing never steps.
+   */
+  private blendedFace(shape: number, frozen: boolean, touchdown: number, frameSeconds: number, out: Float64Array): Float64Array {
+    const [early, late] = FACE_ANCHOR.extrapolate;
+    const [from, to] = ANCHOR_CONTINUITY.blend;
+    let line = Number.NaN;
+    let lineSpeed = Number.NaN;
+    if (touchdown > 0 && shape >= from * touchdown) {
+      const a = this.crossingAt(early * touchdown);
+      const b = this.crossingAt(late * touchdown);
+      lineSpeed = (b - a) / ((late - early) * touchdown);
+      line = b + lineSpeed * (shape - late * touchdown);
+      if (shape >= to * touchdown) {
+        out[0] = line;
+        out[2] = frozen ? 0 : lineSpeed;
+        return out;
+      }
+    }
+    // `crossingAt` reloads the profile: the instantaneous crossing first, from the shape's own frame.
+    this.query.seconds = shape;
+    this.query.hold = undefined;
+    this.library.profileAt(this.query, this.profile);
+    const own = caseCrossing(this.profile, shape < 0 ? LANDMARK.crest : LANDMARK.throat);
+    const at = own === own || shape < 0 ? own : caseCrossing(this.profile, LANDMARK.crest);
+    let speed = 0;
+    if (!frozen) {
+      const window = 4 * frameSeconds;
+      const ahead = this.crossingAt(shape + window);
+      const behind = this.crossingAt(shape - window);
+      speed = ahead === ahead && behind === behind ? (ahead - behind) / (2 * window) : 0;
+    }
+    if (!(line === line)) {
+      out[0] = at;
+      out[2] = speed;
+      return out;
+    }
+    const u = (shape - from * touchdown) / ((to - from) * touchdown);
+    const b = u * u * (3 - 2 * u);
+    out[0] = at === at ? at + b * (line - at) : line;
+    out[2] = frozen ? 0 : speed + b * (lineSpeed - speed);
     return out;
   }
 

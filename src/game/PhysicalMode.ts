@@ -423,7 +423,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     // answers to `?poolTubeCase=a38` as well).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeCaseSwitch() : {}),
     // `?tubeFace=old`, `?tubeFrom=piece`, `?tubeLag=0`, `?tubeClock=old`: the surfable tube's A/Bs (the advisor's step 3
-    // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before.
+    // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before. Step 7's: `?tubeAnchor=old`,
+    // `?tubeForm=old`, `?tubeThrow=break`, `?wallFlow=old` (each piece alone; the three old together, step 6).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? tubeFaceSwitches() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
@@ -518,16 +519,23 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * The surfable tube's dev switches (`SurfZoneConfig.tubeFace`, `.tubeFrom`, `.tubeLag`, `.tubeClock`; pool-tube-face,
  * 2026-11-03, the water-physics advisor's step 3 ruling): `?tubeFace=old`, the support the loft's floor wherever it is;
  * `?tubeFrom=piece`, the fitted piece (the crest anchor, the forward rest, zero lag, the 2× clock); both together, the
- * build before; `?tubeLag=0`, the join at the white; `?tubeClock=old`, the 2× catch-up after the throw. Online rooms run
- * the defaults.
+ * build before; `?tubeLag=0`, the join at the white; `?tubeClock=old`, the 2× catch-up after the throw. Step 7, Q1's
+ * (pool-tube-wall, 2026-11-04, the advisor's ruling): `?tubeAnchor=old`, the anchor's shift afresh each build (no
+ * continuity); `?tubeForm=old`, the lagged join and clock of step 6 (no formation by distance); `?tubeThrow=break`, by
+ * distance, the throw waits for the solver's break too; `?wallFlow=old`, the wall's water the solver's flow. The first three
+ * of those old together are step 6's build. Online rooms run the defaults.
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   return {
     ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
     ...(value('tubeFrom') === 'piece' ? { tubeFrom: 'piece' as const } : {}),
     ...(value('tubeLag') === '0' ? { tubeLag: 0 as const } : {}),
     ...(value('tubeClock') === 'old' ? { tubeClock: 'old' as const } : {}),
+    ...(value('tubeAnchor') === 'old' ? { tubeAnchor: 'old' as const } : {}),
+    ...(value('tubeForm') === 'old' ? { tubeForm: 'old' as const } : {}),
+    ...(value('tubeThrow') === 'break' ? { tubeThrow: 'break' as const } : {}),
+    ...(value('wallFlow') === 'old' ? { wallFlow: 'old' as const } : {}),
   };
 }
 

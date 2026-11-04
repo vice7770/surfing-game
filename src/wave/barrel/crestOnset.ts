@@ -40,6 +40,12 @@ export interface CrestSample {
   b: number;
   /** The crest's speed, m/s (0 unmeasured). */
   speed: number;
+  /**
+   * The direction it travels (its face's steepest descent, `crestMotion`), x and z of a unit vector; NaN unmeasured (absent
+   * on a sample made elsewhere). Step 7's formation reads its distance to its throw contour along it.
+   */
+  dirX?: number;
+  dirZ?: number;
 }
 
 /** The solver's breaking strength per cell (`BreakingModel`'s). */
@@ -79,7 +85,7 @@ export function columnCrests(
     }
     const found = crestMotion(solver, i);
     const motion = found && found.speed >= MIN_CREST_FROUDE * Math.sqrt(GRAVITY * h[i]) ? found : undefined;
-    const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, wave: 0, strength: 0, rise: 0, depth: 0, b: NaN, speed: 0 });
+    const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, wave: 0, strength: 0, rise: 0, depth: 0, b: NaN, speed: 0, dirX: NaN, dirZ: NaN });
     sample.column = ix;
     sample.row = iz;
     sample.x = xCenters[ix];
@@ -91,6 +97,8 @@ export function columnCrests(
     sample.depth = restLevel - bed[i];
     sample.b = motion ? (qx[i] * motion.direction.x + qz[i] * motion.direction.z) / h[i] / motion.speed : NaN;
     sample.speed = motion ? motion.speed : 0;
+    sample.dirX = motion ? motion.direction.x : NaN;
+    sample.dirZ = motion ? motion.direction.z : NaN;
     count += 1;
   }
   return count;

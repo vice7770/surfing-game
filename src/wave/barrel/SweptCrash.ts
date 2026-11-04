@@ -176,8 +176,12 @@ export class SweptCrash {
   private shifts = new Float64Array(0);
 
   /** `face`: the step 3 ruling's tube (`TubeFace`), its slices anchored and their ends blended as the loft's. */
+  /** Step 7's anchors kept on the points (`CrashCurve.prepareAnchors`): with the face anchor and its continuity or wall flow. */
+  private readonly anchoring: boolean;
+
   constructor(library: ProfileLibrary, slope: number, face?: TubeFace) {
     this.geometry = new CrashCurve(library, slope, face);
+    this.anchoring = face !== undefined && face.anchor && (face.continuity || face.wallFlow) && library.options.geometry !== 'bounded-C';
     this.columnSections = library.options.geometry === 'bounded-C';
     this.carrier = this.columnSections ? new CarrierSupport(library, slope) : undefined;
   }
@@ -279,7 +283,9 @@ export class SweptCrash {
     }
     // Each live point as drawn, and its footprint; under the face ruling its anchor's shift first, along its run.
     for (let r = 0; r < runs.length; r += 2) {
-      this.geometry.prepareShifts(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], this.shifts);
+      // Step 7: each point's anchor kept step to step on the point (`TubeFace.continuity`, `.wallFlow`), else as before.
+      if (this.anchoring) this.geometry.prepareAnchors(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], solver.time, this.shifts);
+      else this.geometry.prepareShifts(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], this.shifts);
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         const p = points[k];
         if (!this.live[k]) {

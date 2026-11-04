@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FrontPoint } from './BreakingFront';
 import { BARREL_SPOTS, poolLead, poolRamp } from './barrelSpots';
-import { caseCrossing, smoothShifts, THROWN_RATE, tubeFaceOf } from './faceAnchor';
+import { ANCHOR_CONTINUITY, caseCrossing, continueAnchor, smoothShifts, THROWN_RATE, tubeFaceOf, type AnchorTrack } from './faceAnchor';
 import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
 import { advanceClocks, type OnsetTiming } from './sliceClock';
@@ -12,12 +12,63 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     for (const spot of ['padang', 'canyon', 'point', 'reef'] as const) expect(BARREL_SPOTS[spot]!.faceAnchor).toBeUndefined();
     expect(tubeFaceOf(false, {})).toBeUndefined();
     expect(tubeFaceOf(true, { tubeFace: 'old', tubeFrom: 'piece' })).toBeUndefined();
-    expect(tubeFaceOf(true, {})).toEqual({ anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true });
+    expect(tubeFaceOf(true, {})).toEqual({
+      anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: true, distance: true, contour: true, wallFlow: true,
+    });
     // The piece, never below the solver's surface: the union alone.
-    expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({ anchor: false, union: true, lag: false, clockRate: THROWN_RATE.old, thrownEnds: false });
+    expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({
+      anchor: false, union: true, lag: false, clockRate: THROWN_RATE.old, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: false,
+    });
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ anchor: true, union: false, lag: true });
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ anchor: true, lag: false, clockRate: THROWN_RATE.face });
     expect(tubeFaceOf(true, { tubeClock: 'old' })).toMatchObject({ lag: true, clockRate: THROWN_RATE.old });
+  });
+
+  it('turns each of step 7\'s pieces off by its own switch, and all three off give step 6', () => {
+    expect(tubeFaceOf(true, { tubeAnchor: 'old' })).toMatchObject({ continuity: false, distance: true, contour: true, wallFlow: true });
+    expect(tubeFaceOf(true, { tubeForm: 'old' })).toMatchObject({ continuity: true, distance: false, contour: false, wallFlow: true });
+    expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ continuity: true, distance: true, contour: false, wallFlow: true });
+    expect(tubeFaceOf(true, { wallFlow: 'old' })).toMatchObject({ continuity: true, distance: true, contour: true, wallFlow: false });
+    expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' })).toEqual({
+      anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: false, distance: false, contour: false, wallFlow: false,
+    });
+    // Formation by distance needs the lag, the wall's water the union.
+    expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ distance: false, contour: false, continuity: true });
+    expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ wallFlow: false, continuity: true, distance: true });
+  });
+
+  it('keeps a point\'s shift step to step: capped, held on a miss, never back to the crest anchor, eased from it', () => {
+    const { crest, slack, hold, ease } = ANCHOR_CONTINUITY;
+    const dt = 1 / 60;
+    const c = 5;
+    const cap = (crest * c + slack) * dt;
+    expect(cap).toBeCloseTo(0.03, 9);
+    // Faced from its first step: it starts there, then follows within the cap.
+    const a: AnchorTrack = {};
+    expect(continueAnchor(a, 2, 0, c)).toBe(2);
+    expect(continueAnchor(a, 2.5, dt, c)).toBeCloseTo(2 + cap, 12);
+    expect(continueAnchor(a, 2.01, 2 * dt, c)).toBeCloseTo(2.01, 12);
+    // A miss: it runs on at its last rate (its last step's) for up to `hold`, then stands; never NaN.
+    const rate = a.anchorRate!;
+    expect(rate).toBeCloseTo((2.01 - 2 - cap) / dt, 9);
+    expect(continueAnchor(a, Number.NaN, 3 * dt, c)).toBeCloseTo(2.01 + rate * dt, 12);
+    let t = 3 * dt;
+    while (t < 2 * dt + hold + 0.1) t += dt;
+    const after = continueAnchor(a, Number.NaN, t, c);
+    expect(after).toBe(after);
+    expect(continueAnchor(a, Number.NaN, t + dt, c)).toBe(after);
+    // On the crest anchor first: NaN, then eased from 0 to its face anchor over `ease`, then capped.
+    const b: AnchorTrack = {};
+    expect(continueAnchor(b, Number.NaN, 0, c)).toBeNaN();
+    expect(continueAnchor(b, 2, 1, c)).toBe(0);
+    expect(continueAnchor(b, 2, 1 + ease / 2, c)).toBeCloseTo(1, 12);
+    expect(continueAnchor(b, 2, 1 + ease, c)).toBeCloseTo(Math.min(2, 1 + (crest * c + slack) * (ease / 2)), 12);
+    // Uncapped (`?tubeAnchor=old` with the wall's water): as smoothed, its rate tracked.
+    const d: AnchorTrack = {};
+    continueAnchor(d, 2, 0, c, false);
+    expect(continueAnchor(d, 3, dt, c, false)).toBe(3);
+    expect(d.anchorRate).toBeCloseTo(60, 9);
+    expect(continueAnchor(d, Number.NaN, 2 * dt, c, false)).toBeNaN();
   });
 
   it('leads the pool\'s join by the advisor\'s depths and forms over his ramps, clamped', () => {

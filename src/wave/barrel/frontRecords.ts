@@ -8,9 +8,17 @@ import { geometricPaceActive } from './carrierSupport';
  * pace along its column, m per second of its clock (NaN otherwise, and always without the crash): the contact's Ṡ (the
  * advisor, 2026-10-03). And how far its slice has faded, 0–1: under the step 3 ruling's lagged join, as it forms from
  * its join (`FrontPoint.formation`) and as it retires unbroken (`FrontPoint.retire`); 0 for every other point.
+ *
+ * Step 7's three (the advisor's 2026-11-04 ruling; NaN where the simulation keeps none, at every spot but the pool's
+ * straight Barrel, and there with their switches off): its anchor's shift as the simulation keeps it, m (the case's crest
+ * along its ray from the point under the contact's hold, `continueAnchor`; NaN: the crest anchor), read by the loft with
+ * `TubeFace.continuity`; its drawn crest's speed along its ray, m/s (its crest's pace and its shift's rate), and its
+ * clock's rate, × real time: the wall's water's (`TubeFace.wallFlow`).
  */
-export const FRONT_STRIDE = 10;
-export const FRONT_FIELD = { x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight: 5, footDepth: 6, throwZ: 7, pace: 8, fade: 9 } as const;
+export const FRONT_STRIDE = 13;
+export const FRONT_FIELD = {
+  x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight: 5, footDepth: 6, throwZ: 7, pace: 8, fade: 9, anchor: 10, crestSpeed: 11, tauRate: 12,
+} as const;
 /** Most front points a snapshot carries: about one per metre of breaking crest, several fronts across a 320 m window. */
 export const FRONT_CAPACITY = 2048;
 
@@ -60,6 +68,9 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
     if (p.carrierSupport) out[o + FRONT_FIELD.pace] = geometricPaceActive(p) ? p.jetPace! : Number.NaN;
     else out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
     out[o + FRONT_FIELD.fade] = 1 - (1 - (p.retire ?? 0)) * (p.formation ?? 1);
+    out[o + FRONT_FIELD.anchor] = p.anchorShift ?? Number.NaN;
+    out[o + FRONT_FIELD.crestSpeed] = p.wallSpeed ?? Number.NaN;
+    out[o + FRONT_FIELD.tauRate] = p.tauRate ?? Number.NaN;
     count += 1;
   }
   return count;

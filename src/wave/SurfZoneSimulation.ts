@@ -322,6 +322,20 @@ export interface SurfZoneConfig {
   tubeFrom?: 'piece';
   tubeLag?: 0;
   tubeClock?: 'old';
+  /**
+   * Step 7, Q1's switches (the water-physics advisor's 2026-11-04 ruling, `TubeFace.continuity`, `.distance`, `.contour`,
+   * `.wallFlow`), each piece's A/B alone, at the same `faceAnchor` spot; the page and the worker read them alike, online
+   * rooms pin the defaults (all on). All three of `tubeAnchor`, `tubeForm` and `wallFlow` 'old' give step 6's build:
+   * - `tubeAnchor` 'old' (`?tubeAnchor=old`): the anchor's shift computed afresh each build, as step 6;
+   * - `tubeForm` 'old' (`?tubeForm=old`): the lagged join at its lead's depth, the clock's fit before the throw, the
+   *   formation ramp from the join, the throw at the later of the crossing and the break, as step 6;
+   * - `tubeThrow` 'break' (`?tubeThrow=break`): by distance, the throw waits for the solver's break as well;
+   * - `wallFlow` 'old' (`?wallFlow=old`): the wall's water carries the solver's flow, as step 6.
+   */
+  tubeAnchor?: 'old';
+  tubeForm?: 'old';
+  tubeThrow?: 'break';
+  wallFlow?: 'old';
 }
 
 /**
@@ -441,6 +455,14 @@ export function sweptCrashOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'
 
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
 const FRONT_MIN_HEIGHT = 0.25;
+
+/**
+ * Step 7's throw-contour distance (`SurfZoneSimulation.throwDistance`): the bed read every `THROW_STEP` m, to `THROW_AHEAD` m
+ * ahead (|τ_e| C_p ≤ 1.91 s × 1.5 √(g 3 m) ≈ 15.5 m at the 1.8 m faces) and `THROW_BEHIND` m behind.
+ */
+const THROW_STEP = 0.5;
+const THROW_AHEAD = 16;
+const THROW_BEHIND = 8;
 
 /** Columns at each open along-shore edge where no lip is thrown: the reach of the solver's stencils. */
 const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
@@ -1355,13 +1377,16 @@ export class SurfZoneSimulation {
       this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', tables);
       this.tubeFace = face;
       if (face) this.onsetTiming.thrownRate = face.clockRate;
-      if (face?.lag) this.onsetTiming.formationRamp = record.faceAnchor!.ramp;
-      const lead = face?.lag ? record.faceAnchor!.lead : undefined;
+      if (face?.lag && !face.distance) this.onsetTiming.formationRamp = record.faceAnchor!.ramp;
+      // Step 7's formation by distance (`TubeFace.distance`): the join and the pre-throw clock by the throw contour.
+      if (face?.distance) this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour };
+      const lead = face?.lag && !face.distance ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
       const crash = sweptCrashOn(config);
       const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
       const frontOptions = config.barrelFront ?? record.front;
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, lead ? { ...frontOptions, lead } : frontOptions, carrier);
+      const options = face?.distance ? { ...frontOptions, distance: this.throwDistance } : lead ? { ...frontOptions, lead } : frontOptions;
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, options, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
       if (barrel && slope !== undefined && crash) {
         this.crash = new SweptCrash(barrel, slope, face);
@@ -1744,6 +1769,34 @@ export class SurfZoneSimulation {
   }
 
   private readonly heightPoint = new Float64Array(2);
+
+  /**
+   * Step 7's formation by distance (`FrontOptions.distance`, `OnsetTiming.distance`): the signed distance along (dx, dz)
+   * from (x, z) to where the still depth is `depth`, m, read on the solver's bed every THROW_STEP m, linear between reads:
+   * ahead of the point while it is deeper (to THROW_AHEAD; Infinity past it), behind it once it is shallower (negative, to
+   * THROW_BEHIND; NaN past it).
+   */
+  private readonly throwDistance = (x: number, z: number, dx: number, dz: number, depth: number): number => {
+    const { solver } = this;
+    const rest = solver.restLevel;
+    const still = (t: number) => rest - solver.sampleCentered(solver.bed, x + t * dx, z + t * dz);
+    let before = still(0);
+    if (!(before === before)) return Number.NaN;
+    if (before > depth) {
+      for (let t = THROW_STEP; t <= THROW_AHEAD; t += THROW_STEP) {
+        const after = still(t);
+        if (after <= depth) return t - THROW_STEP + (THROW_STEP * (before - depth)) / (before - after);
+        before = after;
+      }
+      return Infinity;
+    }
+    for (let t = -THROW_STEP; t >= -THROW_BEHIND; t -= THROW_STEP) {
+      const after = still(t);
+      if (after > depth) return t + THROW_STEP - (THROW_STEP * (depth - before)) / (after - before);
+      before = after;
+    }
+    return Number.NaN;
+  };
 
   /** The front's records as the page draws them and the contact feels them: the tube regime's and, with a span, the spanned pieces' (`writeFrontRecords`). */
   writeTubeRecords(out: Float32Array): number {

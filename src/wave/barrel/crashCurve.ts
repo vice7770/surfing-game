@@ -1,7 +1,7 @@
 import { GRAVITY } from '../dispersion';
-import type { FrontPoint } from './BreakingFront';
+import { crestCelerity, type FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
-import { FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
+import { continueAnchor, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, collapseFade, endBlendLength, endWeight } from './sweptLoft';
@@ -149,13 +149,15 @@ export class CrashCurve {
   private readonly faceAnchor?: FaceAnchor;
   private faceRaw = new Float64Array(0);
   private faceSigma = new Float64Array(0);
+  /** Per point of a run, its case's crest over its crossing at the contact's hold, m (`prepareAnchors`). */
+  private faceCase = new Float64Array(0);
   private readonly faceScratch = new Float64Array(3);
   private readonly faceRay = { x: 0, z: 0 };
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, face?: TubeFace) {
     if (face && library.options.geometry !== 'bounded-C') {
       this.face = face;
-      if (face.anchor) this.faceAnchor = new FaceAnchor(library, slope);
+      if (face.anchor) this.faceAnchor = new FaceAnchor(library, slope, face.continuity);
     }
     this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     for (const c of library.options.geometry === 'bounded-C' ? [] : library.cases) {
@@ -371,6 +373,60 @@ export class CrashCurve {
     }
     smoothShifts(this.faceSigma, this.faceRaw, n, this.faceRaw.subarray(n, 2 * n));
     for (let k = 0; k < n; k += 1) out[start + k] = this.faceRaw[n + k];
+  }
+
+  /**
+   * Step 7 (the advisor's 2026-11-04 ruling; `TubeFace.continuity`, `.wallFlow`): the run's points' anchors kept step to
+   * step. Each point's raw shift under the contact's hold (the shape the drawing, clear-roof hold, and the contact draw),
+   * smoothed along σ as before, then kept by `continueAnchor` (with `continuity`: capped, held on a miss, never back to
+   * the crest anchor; without, as smoothed, its rate alone tracked) on the point (`FrontPoint.anchorShift`, the records'
+   * `anchor`). Into `out[start, end)` each point's shift for the crash's own slices, under the drawing's hold: the kept
+   * shift moved by its case's crest-over-crossing at that hold against the contact's (or, without `continuity`, the
+   * drawing's own smoothed shifts, as `prepareShifts`). And for the wall's water, each point's drawn crest's speed along its
+   * ray (its crest's pace and its shift's rate) and its clock's rate since its last step (`wallSpeed`, `tauRate`).
+   */
+  prepareAnchors(
+    points: FrontPoint[], start: number, end: number, heightAt: (x: number, z: number) => number, rays: CrestRayPlan | undefined,
+    time: number, out: Float64Array,
+  ): void {
+    const anchor = this.faceAnchor!;
+    const continuity = this.face!.continuity;
+    if (!continuity) this.prepareShifts(points, start, end, heightAt, rays, out);
+    const n = end - start;
+    if (this.faceRaw.length < 2 * n) {
+      this.faceRaw = new Float64Array(4 * n);
+      this.faceSigma = new Float64Array(2 * n);
+    }
+    if (this.faceCase.length < n) this.faceCase = new Float64Array(2 * n);
+    for (let k = start; k < end; k += 1) {
+      const p = points[k];
+      const ray = this.ray(points, start, end, k, this.faceRay, rays);
+      this.faceSigma[k - start] = p.sigma;
+      this.faceRaw[k - start] = anchor.shift(p.footHeight, p.footDepth, p.tau, 'contact', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch);
+      // The case's crest over its crossing at the contact's hold (NaN without a crossing).
+      this.faceCase[k - start] = this.faceScratch[1] - this.faceScratch[0];
+    }
+    const kept = this.faceRaw.subarray(n, 2 * n);
+    smoothShifts(this.faceSigma, this.faceRaw, n, kept);
+    for (let k = start; k < end; k += 1) {
+      const p = points[k];
+      const celerity = crestCelerity(p.crestSpeed, p.crestDepth, p.height);
+      const dt = p.anchorTime === undefined ? 0 : time - p.anchorTime;
+      p.tauRate = p.anchorTau !== undefined && dt > 0 ? (p.tau - p.anchorTau) / dt : 1;
+      p.anchorTau = p.tau;
+      const shift = continueAnchor(p, kept[k - start], time, celerity, continuity);
+      p.wallSpeed = celerity + (p.anchorRate ?? 0);
+      if (!continuity) continue;
+      if (!(shift === shift)) {
+        out[k] = Number.NaN;
+        continue;
+      }
+      // The crash's own slices under the drawing's hold: the case's crest over its crossing there, against the contact's.
+      const contact = this.faceCase[k - start];
+      anchor.caseFace(p.footHeight, p.footDepth, p.tau, 'drawing', this.faceScratch);
+      const drawing = this.faceScratch[1] - this.faceScratch[0];
+      out[k] = contact === contact && drawing === drawing ? shift - contact + drawing : shift;
+    }
   }
 
   /** A point's touchdown and collapse times, s, without building its profile. */

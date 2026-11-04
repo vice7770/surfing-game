@@ -90,13 +90,26 @@ export interface ContactHit {
   tangentZ: number;
   /** τ over touchdown where the tube has thrown (NaN before). */
   life: number;
+  /**
+   * Step 7's wall water (`LoftResult.wall`, `TubeFace.wallFlow`), in the swept surface's water (NaN otherwise, and without
+   * it): the surface's own velocity at its crossing above the point, along the ray and up, m/s; the anchor's and the crest's
+   * heights, m; the drawn crest's speed C, m/s; B at the crest; and the slices' weight there.
+   */
+  wallAlong: number;
+  wallUp: number;
+  wallLow: number;
+  wallTop: number;
+  wallSpeed: number;
+  wallB: number;
+  wallWeight: number;
 }
 
 export function createContactHit(): ContactHit {
   return {
     inWater: false, surfaceY: Number.NaN, normalX: 0, normalY: 1, normalZ: 0, floorY: Number.NaN, waterFloorY: Number.NaN,
     ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, lipWeight: 0, tangentX: 1, tangentZ: 0,
-    life: Number.NaN,
+    life: Number.NaN, wallAlong: Number.NaN, wallUp: Number.NaN, wallLow: Number.NaN, wallTop: Number.NaN, wallSpeed: Number.NaN,
+    wallB: Number.NaN, wallWeight: 0,
   };
 }
 
@@ -336,6 +349,28 @@ export class SweptContact {
       hit.lipVZ = (along * rayZ) / length + (loft.sliceAnchorVZ[strip] + f * (loft.sliceAnchorVZ[next] - loft.sliceAnchorVZ[strip]));
       hit.lipVY = loft.sliceTipUp[strip] + f * (loft.sliceTipUp[next] - loft.sliceTipUp[strip]);
       hit.lipWeight = loft.sliceWeight[strip] + f * (loft.sliceWeight[next] - loft.sliceWeight[strip]);
+    }
+    const { wall } = loft;
+    if (wall && hit.inWater) {
+      // The wall water: the surface's own velocity at its crossing above, by its triangle's weights; the rest across the strip.
+      let along = 0;
+      let up = 0;
+      for (let m = 0; m < 3; m += 1) {
+        const v = this.at[3 * surface + m];
+        const w = this.weights[3 * surface + m];
+        along += w * wall.along[v];
+        up += w * wall.up[v];
+      }
+      hit.wallAlong = along;
+      hit.wallUp = up;
+      hit.wallLow = wall.low[strip] + f * (wall.low[next] - wall.low[strip]);
+      hit.wallTop = wall.top[strip] + f * (wall.top[next] - wall.top[strip]);
+      hit.wallSpeed = wall.speed[strip] + f * (wall.speed[next] - wall.speed[strip]);
+      hit.wallB = wall.b[strip] + f * (wall.b[next] - wall.b[strip]);
+      hit.wallWeight = loft.sliceWeight[strip] + f * (loft.sliceWeight[next] - loft.sliceWeight[strip]);
+    } else {
+      hit.wallSpeed = Number.NaN;
+      hit.wallWeight = 0;
     }
     this.stats.hits += 1;
     return true;

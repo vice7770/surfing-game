@@ -137,6 +137,15 @@ export interface PhysicalSurfWaterOptions {
    */
   sweptUnion?: boolean;
   /**
+   * With `sweptUnion`: step 7's wall water (`TubeFace.wallFlow`; the advisor's 2026-11-04 ruling §1.4.3). In the swept
+   * surface's water above the solver's surface with no air under it (the case's wall), the flow is a wave face's: its
+   * component normal to the swept surface is that surface's own normal speed (the kinematic condition), and along the ray
+   * it ramps from the solver's at the anchor's height to B·C at the crest (B 0.85 before the throw, 1 from it: Derakhti et
+   * al. 2020; the ramp itself inferred), by the slices' weight; along the crest the solver's is kept. Without it, the
+   * solver's flow there, as before.
+   */
+  sweptWall?: boolean;
+  /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
@@ -358,6 +367,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
    * barrel's contact answers its own).
    */
   private sampleTime = 0;
+  /** This sample is in the case's wall water (`sweptWall`): set by `unionContact`. */
+  private inWall = false;
 
   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
     super(solver, options.nodeSpacing ?? 1, options);
@@ -374,6 +385,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.feltBreaking, nodeSpacing,
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       ...(swept && simulation.tubeFace?.union ? { sweptUnion: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow ? { sweptWall: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
@@ -433,6 +445,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.wet = depth > WET;
     this.surface(x, z, out);
     const contact = swept !== undefined && swept.query(x, y, z, this.hit);
+    this.inWall = false;
     // The surface's rise rate (continuity), m/s: found here when the sample's time needs it, else with the flow below.
     let rise = Number.NaN;
     if (contact && this.options.sweptUnion) {
@@ -494,6 +507,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.flowY = rise * vertical;
     if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w, this.options.froth !== 'old');
     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
+    else if (this.inWall) this.wallFlow(out, y);
     return out;
   }
 
@@ -673,6 +687,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     this.fromContact(y, out);
     if (hit.inWater) {
       if (out.waterFloorY !== undefined && out.waterFloorY <= plainY) out.waterFloorY = undefined;
+      // Over the solver's surface in the swept water with no air under it: the case's wall (`sweptWall`).
+      this.inWall = this.options.sweptWall === true && out.waterFloorY === undefined;
       return;
     }
     // In air over the swept surface: the floor under the point is the higher of it and the solver's.
@@ -700,6 +716,42 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     out.flowX = along * tx + (1 - r) * (out.flowX - along * tx) + r * (lipVX - lipAlong * tx);
     out.flowZ = along * tz + (1 - r) * (out.flowZ - along * tz) + r * (lipVZ - lipAlong * tz);
     out.flowY = (1 - r) * out.flowY + r * lipVY;
+  }
+
+  /**
+   * Step 7's wall water (`sweptWall`) at height `y`, `out` holding the solver's flow: the ray–vertical plane's flow ramps
+   * from the solver's at the anchor's height to (B·C along the ray, 0 up) at the crest, its component along the swept
+   * surface's normal then set to that surface's own normal speed, the whole weighed by the slices' weight; along the crest
+   * the solver's is kept.
+   */
+  private wallFlow(out: WaterSample, y: number): void {
+    const h = this.hit;
+    const weight = h.wallWeight;
+    if (!(weight > 0) || !(h.wallSpeed === h.wallSpeed) || !(h.wallAlong === h.wallAlong)) return;
+    // The ray: the front's normal, square to its tangent.
+    const rx = -h.tangentZ;
+    const rz = h.tangentX;
+    const along = out.flowX * rx + out.flowZ * rz;
+    const span = h.wallTop - h.wallLow;
+    const r = span > 0 ? Math.min(1, Math.max(0, (y - h.wallLow) / span)) : 1;
+    let flowAlong = along + r * (h.wallB * h.wallSpeed - along);
+    let flowUp = (1 - r) * out.flowY;
+    // The swept surface's normal in the ray–vertical plane; the water's component along it is the surface's own.
+    let na = h.normalX * rx + h.normalZ * rz;
+    let ny = h.normalY;
+    const length = Math.sqrt(na * na + ny * ny);
+    if (length > 1e-9) {
+      na /= length;
+      ny /= length;
+      const excess = flowAlong * na + flowUp * ny - (h.wallAlong * na + h.wallUp * ny);
+      flowAlong -= excess * na;
+      flowUp -= excess * ny;
+    }
+    const w = Math.min(1, weight);
+    const change = w * (flowAlong - along);
+    out.flowX += change * rx;
+    out.flowZ += change * rz;
+    out.flowY += w * (flowUp - out.flowY);
   }
 
   /** The four cells and bilinear weights `sampleCentered` would use at (x, z). */

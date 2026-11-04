@@ -1,4 +1,4 @@
-import { LEAD_RETIRE, type FrontPoint } from './BreakingFront';
+import { crestCelerity, LEAD_RETIRE, type FrontPoint } from './BreakingFront';
 import { GRAVITY } from '../dispersion';
 
 /**
@@ -121,7 +121,26 @@ export interface OnsetTiming {
    * the step 3 ruling's 1.25 at the pool's straight Barrel (`TubeFace.clockRate`). Absent: 2.
    */
   thrownRate?: number;
+  /**
+   * Step 7's formation by distance (the advisor's 2026-11-04 ruling §1.4.2; `TubeFace.distance`): before its throw a point's
+   * clock is τ = −D/C_p, D its crest's distance along its travel to its throw contour (`to`: the front's `distance`),
+   * smoothed along σ, C_p its crest's pace (`crestCelerity`), within [τ_e, 0), never falling, at `FORMATION.rate` of
+   * real time; its slice's weight ramps over the case's first `FORMATION.ramp` s of τ. `contour`: its lip throws when its
+   * clock reaches 0 (the retire guard kept: unbroken `LEAD_RETIRE.after` s past its throw, it retires); without, an
+   * unbroken point holds short of 0 until the solver breaks it (`?tubeThrow=break`). Absent: none of it.
+   */
+  distance?: { to: (x: number, z: number, dx: number, dz: number, depth: number) => number; contour: boolean };
 }
+
+/**
+ * Step 7's formation by distance (`OnsetTiming.distance`; the advisor's 2026-11-04 ruling §1.4.2):
+ * - `rate`: a pre-throw clock runs at 0.5–1.5 × real time, so it neither holds nor jumps;
+ * - `ramp`, s: the slice's weight ramps (smoothstep) over the case's first 0.3 s of τ, the frames within 0.07–0.10 m of
+ *   the solver's surface;
+ * - `weightRate`, per s: and changes by at most 1/18 a 1/60 s step (bar 4b);
+ * - `reach`, s: points this far past their throw still read their distance, for their neighbours' smoothing.
+ */
+export const FORMATION = { rate: [0.5, 1.5], ramp: 0.3, weightRate: 60 / 18, reach: 1 } as const;
 
 /**
  * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth, at the tide) under swell of
@@ -201,6 +220,11 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
     let end = start + 1;
     while (end < points.length && points[end].front === points[start].front) end += 1;
     const rate = timing.thrownRate ?? 2;
+    if (timing.distance) {
+      pauses += distanceClocks(points, start, end, time, timing, step, rate);
+      start = end;
+      continue;
+    }
     for (let k = start; k < end; k += 1) {
       const point = points[k];
       if (timing.formationRamp && !(point.formation! >= 1)) {
@@ -225,12 +249,116 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
   return pauses;
 }
 
+/** Per point of a front, its distance to its throw contour (m), and smoothed along σ (`distanceClocks`). */
+let distances = new Float64Array(0);
+let smoothed = new Float64Array(0);
+
+/**
+ * One front's clocks, points[start, end), by distance (`OnsetTiming.distance`, step 7): before its throw each point's τ
+ * follows −D/C_p (D smoothed along σ by the clock's biweight line, as the throw times are) within the rate's bounds, its
+ * weight ramping with it; it throws when τ reaches 0, by `contour`, or once the solver has broken it too. After its
+ * throw, as `advanceClocks` (its fit over its thrown neighbours, at most `thrownRate` × real time), its throw its clock's.
+ * Returns the steps held (unbroken, short of 0).
+ */
+function distanceClocks(points: FrontPoint[], start: number, end: number, time: number, timing: OnsetTiming, step: number, rate: number): number {
+  const { to, contour } = timing.distance!;
+  const n = end - start;
+  if (distances.length < n) {
+    distances = new Float64Array(2 * n);
+    smoothed = new Float64Array(2 * n);
+  }
+  for (let k = start; k < end; k += 1) {
+    const p = points[k];
+    distances[k - start] = p.tau < FORMATION.reach
+      ? to(p.x, p.z, p.dirX ?? 0, p.dirZ ?? 1, p.throwDepth)
+      : Number.NaN;
+  }
+  for (let k = start; k < end; k += 1) smoothed[k - start] = fitAlong(points, start, end, k, distances);
+  const [slowest, fastest] = FORMATION.rate;
+  let pauses = 0;
+  for (let k = start; k < end; k += 1) {
+    const point = points[k];
+    if (point.tau < 0) {
+      const d = smoothed[k - start];
+      const target = d === d ? -d / crestCelerity(point.crestSpeed, point.crestDepth, point.height) : Number.NaN;
+      let next = point.tau;
+      if (step > 0) {
+        // No distance in reach: real time.
+        const want = target === target ? target : point.tau + step;
+        next = Math.min(point.tau + fastest * step, Math.max(point.tau + slowest * step, want));
+      }
+      if (point.unbroken && !contour) {
+        // `?tubeThrow=break`: it waits short of its throw for the solver's break, and retires past its foreseen throw.
+        if (next > UNBROKEN_HOLD) {
+          next = Math.max(point.tau, UNBROKEN_HOLD);
+          pauses += 1;
+        }
+        const late = (target === target ? target : 0) - LEAD_RETIRE.after;
+        if (late > 0) point.retire = Math.min(1, late / LEAD_RETIRE.over);
+      }
+      const u = Math.min(1, Math.max(0, (next - timing.earliest) / FORMATION.ramp));
+      const was = point.formation ?? 0;
+      point.formation = Math.max(was, Math.min(u * u * (3 - 2 * u), was + FORMATION.weightRate * step));
+      if (next >= 0) point.thrown = time - next;
+      point.tau = next;
+      continue;
+    }
+    // Thrown, by its clock: unbroken this long past its throw, it retires (the guard).
+    if (point.unbroken) {
+      const late = point.tau - LEAD_RETIRE.after;
+      if (late > 0) point.retire = Math.min(1, late / LEAD_RETIRE.over);
+    }
+    if (point.formation !== undefined && point.formation < 1) point.formation = Math.min(1, point.formation + FORMATION.weightRate * step);
+    const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
+    point.tau = step > 0 ? Math.min(Math.max(shown, point.tau + step), point.tau + rate * step) : Math.max(shown, point.tau);
+  }
+  return pauses;
+}
+
+/**
+ * Point k's value of `values` (by its index from `start`; NaN or infinite: none) from a biweight-weighted line through its
+ * neighbours' along σ, as `fittedThrow`'s, clamped to the window's values; NaN with none in reach.
+ */
+function fitAlong(points: readonly FrontPoint[], start: number, end: number, k: number, values: Float64Array): number {
+  const centre = points[k].sigma;
+  let s0 = 0;
+  let s1 = 0;
+  let s2 = 0;
+  let t0 = 0;
+  let t1 = 0;
+  let low = Infinity;
+  let high = -Infinity;
+  let from = k;
+  while (from > start && centre - points[from - 1].sigma < RADIUS) from -= 1;
+  for (let j = from; j < end && points[j].sigma - centre < RADIUS; j += 1) {
+    const v = values[j - start];
+    if (!(v === v) || v === Infinity || v === -Infinity) continue;
+    const d = points[j].sigma - centre;
+    const u = d / RADIUS;
+    const w = (1 - u * u) * (1 - u * u);
+    s0 += w;
+    s1 += w * d;
+    s2 += w * d * d;
+    t0 += w * v;
+    t1 += w * d * v;
+    if (v < low) low = v;
+    if (v > high) high = v;
+  }
+  if (!(s0 > 0)) return values[k - start] === Infinity ? Infinity : Number.NaN;
+  const mean = t0 / s0;
+  const spread = s2 / s0 - (s1 / s0) * (s1 / s0);
+  const fitted = spread < CLOCK.bunched ? mean : (s2 * t0 - s1 * t1) / (s0 * s2 - s1 * s1);
+  return Math.min(high, Math.max(low, fitted));
+}
+
 /**
  * When `point`'s lip throws, s, as known at `time`: when its crest crossed its throw depth, or, before it has, when it
  * will at the pace it has come shoreward since it joined, no later than its clock's earliest frame from now (a crest
- * not yet moving throws no sooner than that); unlagged, when it joined. Never before the solver broke it.
+ * not yet moving throws no sooner than that); unlagged, when it joined. Never before the solver broke it. By distance
+ * (step 7), when its clock reached 0.
  */
 function throwTime(point: FrontPoint, time: number, timing: OnsetTiming): number {
+  if (timing.distance && point.thrown !== null) return point.thrown;
   if (!timing.lagged) return Math.max(point.joined, point.broke);
   // A lagged join not yet broken (`FrontOptions.lead`): its own crest's, the break still to come.
   if (point.unbroken) return ownThrow(point, time, timing);
