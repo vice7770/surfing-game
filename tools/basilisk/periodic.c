@@ -19,6 +19,12 @@
    timing log is kept. Units: h0 = 1, g = 1.
    It checkpoints to ./restart every 10 minutes of wall time and resumes from
    it when restarted in the same directory.
+   Optional reef top (2026-11-04, the Wave Pool's bigger-tube batch): with
+   REEFTOP defined, the flat at HS ends REEFTOP (h0) past the last slope, and
+   the bed falls from there at SBACK (default 1/20) back to the deep bed's depth
+   (y = -1), then runs flat to the closed right wall. A reef crest with a
+   lagoon behind it, instead of a flat that runs to the wall and over-drains
+   the wave studied. Without REEFTOP the bed is exactly as before.
    Licence: GNU GPL version 3 (see COPYING in this folder). Basilisk is
    GPL-3.0 (its src/COPYING) and this file is a derivative of its sandbox code.
 */
@@ -47,6 +53,9 @@
 #endif
 #ifndef A0
 #define A0 0.6
+#endif
+#if defined(REEFTOP) && !defined(SBACK)
+#define SBACK (1./20.)
 #endif
 #ifndef XTOE
 #define XTOE 15.0
@@ -90,7 +99,13 @@ double bedProfile (double x) {
   if (x < XTOE) return -1.0;
   if (x < x1) return -1.0 + S1*(x - XTOE);
   if (x < x2) return -HMID + S2*(x - x1);
+#ifdef REEFTOP
+  double x3 = x2 + REEFTOP;                 // end of the reef top
+  if (x < x3) return -HS;
+  return max(-1.0, -HS - SBACK*(x - x3));   // the back slope, then the deep bed to the wall
+#else
   return -HS;
+#endif
 }
 
 int main() {

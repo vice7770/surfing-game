@@ -32,6 +32,11 @@
 #   pool_straight_small, pool_straight_big  the Wave Pool's Barrel straight reef (pool-barrel-straight, 2026-11-01): its 4.5 m
 #              platform up one face along the reef's ray to the 0.9 m crest, the 1.5 and 1.8 m faces at 10 s (run_pool.sh
 #              scouts each case)
+#   pool_knee_*, pool_kneeface_*, pool_ledge_*, pool_steep9_*  the Wave Pool's bigger-tube batch (2026-11-04; docs/research/pool-tube-runs-2/
+#              README.md): today's knee face (1:18.7 / 1:21.6 along the ray), the Reef-type ledge (1:4.5) and the 1:9 trend
+#              pair, from the 4.5 m platform to the 0.9 m crest, each with the reef top and back slope (2.7 h0 at the crest,
+#              then 1:20 back down to the platform's depth); sized by the game's crest on the knee, with the knee face
+#              again at the ledge's 2D faces (pool_kneeface_*) for the decision rule (run_pool.sh scouts each)
 #   canyon23_a29, canyon23_a38, canyon23_a49  the Canyon's reef bed (2026-10-22) from the arm's 6 m foot: since
 #              canyon-long-wave one planar face, 1:23 all the way to the 1.0 m crest (0.167 h0), at every column of the
 #              arm, the take-off's too (8 m downcoast of the peak: x -9; x -2 on canyon-layout's short arm, x -30 before,
@@ -63,6 +68,9 @@ SCOUT_EXTRA="${SCOUT_EXTRA:-10}"
 # name:h0 m:H/h0:period s:slope:flat depth/h0:domain/h0:switch t:end t:window from:window to (h0 and sqrt(h0/g))
 # [:mid depth/h0:second slope] — a two-slope bed: `slope` down to the mid depth, then the second slope to the flat
 # (slope.c's HMID and S2). Without them the bed is one slope to the flat (HMID = HS).
+# [:reef top/h0:back slope] — a reef top (periodic.c's REEFTOP and SBACK): the flat ends this long past the last slope,
+# then the bed falls at the back slope (default 1/20) to the deep bed's depth (h0) and runs flat to the wall. Leave the
+# two-slope fields empty for a one-slope bed (name:…:window to:::2.7:0.05). Without them the flat runs to the wall.
 CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56 padang19b:7:0.42:18:0.0526316:0.1785714:72:32:42:45:64 padang19c:7:0.24:14:0.0526316:0.1785714:64:31:41:38:52 padang19s:7:0.195:16:0.0526316:0.1785714:64:35:46:42:56 point21_a08:7:0.141:9:0.0465116:0.05:52:31:44:27:47 point21_a15:7:0.229:11:0.0465116:0.05:60:31:41.5:29:49 point21_a23:7:0.318:12:0.0465116:0.05:60:28:37.5:29:49 point21_a30:7:0.38:14:0.0465116:0.05:68:26:39:34:54 reef42_a35:10:0.439:16:0.238095:0.15:64:18.5:28:24:44"
 # The Canyon (2026-10-22's reef bed, canyon-long-wave's planar face: one slope to the flat): provisional windows, from
 # the bed alone (run_canyon.sh scouts each case).
@@ -74,6 +82,21 @@ CASES_ALL="$CASES_ALL canyon23_a29:6:0.29:11:0.0434783:0.1666667:56:26.5:41.5:31
 # pool's 10 s. Small: the 1.5 m faces; big: the 1.8 m. (Step 1's A-frame cases, pool_barrel_*, were never run: replaced.)
 # Provisional windows from the bed alone: run_pool.sh scouts each case.
 CASES_ALL="$CASES_ALL pool_straight_small:4.5:0.352:10:0.0535:0.2:64:20:34:24:48 pool_straight_big:4.5:0.437:10:0.0463:0.2:64:20:34:24:50"
+# The Wave Pool's bigger-tube batch (2026-11-04; the advisor's step-7 ruling, §2.2 items 2–3; docs/research/pool-tube-runs-2/
+# README.md): the same ray from the 4.5 m platform (h0) to the 0.9 m crest (HS 0.2) on three faces, each at two sizes, H/h0
+# sized so the foot crest A0 is the game's on the knee (0.19 / 0.245; the ledge's 0.24 / 0.29, for the same faces). knee:
+# today's face, 1:18.7 / 1:21.6 along the ray; ledge: the Reef-type ledge, one face at 1:4.5; steep9: one face at 1:9, the
+# trend between them. Every one ends in the reef top along the ray, 2.7 h0 (the floor's 6 m flatWidth square to the reef,
+# crossed at cos α ≈ 0.5), then 1:20 (its backSlope 1/10 square to it) back down to the platform's depth: the knee and the
+# ledge differ in the face alone. The switch, end and window are the M1's level-10 scouts' (2026-11-04: the advisor's
+# provisional 20:34:24:48/50 ended the knee pair before its touchdown and started the ledge pair under 3 before vertical);
+# run_pool.sh scouts each case again and freezes its own.
+CASES_ALL="$CASES_ALL pool_knee_small:4.5:0.26:10:0.0535:0.2:64:27:37.5:33:48:::2.7:0.05 pool_knee_big:4.5:0.32:10:0.0463:0.2:64:26.5:37:33:48:::2.7:0.05"
+CASES_ALL="$CASES_ALL pool_ledge_small:4.5:0.32:10:0.2222:0.2:64:17.5:28:24:40:::2.7:0.05 pool_ledge_big:4.5:0.37:10:0.2222:0.2:64:17.5:28:24:41:::2.7:0.05"
+CASES_ALL="$CASES_ALL pool_steep9_small:4.5:0.26:10:0.1111:0.2:64:22.5:33:28:43:::2.7:0.05 pool_steep9_big:4.5:0.32:10:0.1111:0.2:64:21.5:32:28:43:::2.7:0.05"
+# The face-matched knee comparators (the advisor, 2026-11-04): today's knee face at the ledge's 2D faces (about 1.62 / 1.86 m;
+# H/h0 from level-10 scouts at 0.215-0.255), so the decision rule compares ledge and knee at equal faces.
+CASES_ALL="$CASES_ALL pool_kneeface_small:4.5:0.23:10:0.0535:0.2:64:28.5:39:34:48:::2.7:0.05 pool_kneeface_big:4.5:0.245:10:0.0463:0.2:64:29.5:40:35:50:::2.7:0.05"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.
@@ -116,14 +139,16 @@ selected() {  # the cases named on the command line, or all
 dirs() { P1="$RUNS/periodic_${1}_p1_L$LEVEL1"; P2="$RUNS/periodic_${1}_L$LEVEL2"; PS="$RUNS/periodic_${1}_scout_L$SCOUT_LEVEL"; }
 
 parse() {  # a case's fields into globals
-  name="" h0="" hh="" period="" slope="" hs="" domain="" tsw="" tmax="" w0="" w1="" hmid="" s2=""
-  IFS=: read -r name h0 hh period slope hs domain tsw tmax w0 w1 hmid s2 <<< "$1"
+  name="" h0="" hh="" period="" slope="" hs="" domain="" tsw="" tmax="" w0="" w1="" hmid="" s2="" top="" back=""
+  IFS=: read -r name h0 hh period slope hs domain tsw tmax w0 w1 hmid s2 top back <<< "$1"
   dirs "$name"
 }
 
-bed_flags() {  # the bed: one slope to the flat as before, or two (to HMID at S1, then S2 to HS)
-  if [ -z "$hmid" ] && [ -z "$s2" ]; then echo "-DS1=$slope -DHMID=$hs -DHS=$hs"
-  else echo "-DS1=$slope -DHMID=${hmid:-$hs} -DS2=${s2:-$slope} -DHS=$hs"; fi
+bed_flags() {  # the bed: one slope to the flat as before, or two (to HMID at S1, then S2 to HS); then the reef top, if any
+  local reef=""
+  [ -n "$top" ] && reef=" -DREEFTOP=$top${back:+ -DSBACK=$back}"
+  if [ -z "$hmid" ] && [ -z "$s2" ]; then echo "-DS1=$slope -DHMID=$hs -DHS=$hs$reef"
+  else echo "-DS1=$slope -DHMID=${hmid:-$hs} -DS2=${s2:-$slope} -DHS=$hs$reef"; fi
 }
 
 train() {  # the cnoidal train into $1 (once), and its celerity and the slope's toe as $c and $xtoe
@@ -157,6 +182,8 @@ xwin1=$7
 xtoe=$xtoe
 train_c=$c
 EOF
+  # the reef top and back slope (crest_track.py's still depth), only when the case has them: the others' files as before
+  [ -z "$top" ] || printf 'REEFTOP=%s\nSBACK=%s\n' "$top" "${back:-0.05}" >> "$1/params.txt"
 }
 
 prepare() {  # the trains, the flags and both phases' builds (each compiled once)

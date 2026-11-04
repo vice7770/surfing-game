@@ -42,7 +42,8 @@ def read_params(run):
 
 
 def bed_depth(p, x):
-    """Still depth over the bed at x, h0 (slope.c's bedProfile)."""
+    """Still depth over the bed at x, h0 (periodic.c's bedProfile, with its reef top and back slope when the case has
+    them: REEFTOP and SBACK in params.txt)."""
     x1 = p["xtoe"] + (1.0 - p["HMID"]) / p["S1"]
     x2 = x1 + (p["HMID"] - p["HS"]) / p["S2"]
     if x < p["xtoe"]:
@@ -51,6 +52,10 @@ def bed_depth(p, x):
         return 1.0 - p["S1"] * (x - p["xtoe"])
     if x < x2:
         return p["HMID"] - p["S2"] * (x - x1)
+    if isinstance(p.get("REEFTOP"), float):
+        x3 = x2 + p["REEFTOP"]
+        if x >= x3:
+            return min(1.0, p["HS"] + p.get("SBACK", 0.05) * (x - x3))
     return p["HS"]
 
 
