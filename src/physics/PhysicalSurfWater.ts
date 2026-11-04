@@ -830,12 +830,20 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
 /**
  * Step 7's wall water (`PhysicalSurfWaterOptions.sweptWall`; the advisor's 2026-11-04 ruling §1.4.3) at height `y` into
  * `out`, which holds the solver's flow there; `wall` is the swept surface's answer (its normal, the front's tangent, and its
- * `wall…` fields). In the ray–vertical plane the flow ramps from the solver's at the anchor's height (`wallLow`) to
- * (B·C along the ray, 0 up) at the crest (`wallTop`): the crest's water moves forward at B·C (Derakhti et al. 2020: B 0.85
- * as the face goes vertical, 1 soon after; the ramp between inferred). Its component along the surface's normal is then
- * set to that surface's own normal speed (the kinematic condition: water does not cross its own free surface). The whole
- * is weighed by the slices' weight; along the crest the solver's flow is kept.
+ * `wall…` fields). In the ray–vertical plane two components are set and the third follows:
+ * - normal to the swept surface: that surface's own normal speed (the kinematic condition: water does not cross its own
+ *   free surface);
+ * - along the ray: a ramp from the solver's at the anchor's height (`wallLow`) to B·C at the crest (`wallTop`), the crest's
+ *   water moving forward at B·C (Derakhti et al. 2020: B 0.85 as the face goes vertical, 1 soon after; the ramp inferred);
+ * - so the component along the face (up it, toward the crest) is what meets both: on a steep face moving forward faster than
+ *   its water, the water climbs it, as a wave face's water streams up toward its crest in the wave's frame. *(Built so)*
+ *   Where the face is steeper than `WALL_WATER.steepest` from level (and overhanging) the along-ray target can no longer be
+ *   met at a finite climb: its normal's vertical share is held at that face's, and the climb at most C either way (the
+ *   water at a wave face moves no faster than the wave; inferred).
+ * The whole is weighed by the slices' weight; along the crest the solver's flow is kept.
  */
+export const WALL_WATER = { steepest: 0.2 } as const;
+
 export function wallWaterFlow(
   out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, y: number,
   wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallAlong' | 'wallUp' | 'wallLow' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>,
@@ -846,18 +854,23 @@ export function wallWaterFlow(
   const along = out.flowX * rx + out.flowZ * rz;
   const span = wall.wallTop - wall.wallLow;
   const r = span > 0 ? Math.min(1, Math.max(0, (y - wall.wallLow) / span)) : 1;
-  let flowAlong = along + r * (wall.wallB * wall.wallSpeed - along);
-  let flowUp = (1 - r) * out.flowY;
-  // The swept surface's normal in the ray–vertical plane; the water's component along it is the surface's own.
+  const target = along + r * (wall.wallB * wall.wallSpeed - along);
+  // The swept surface's normal in the ray–vertical plane, and its tangent up the face (its upward one).
   let na = wall.normalX * rx + wall.normalZ * rz;
   let ny = wall.normalY;
   const length = Math.sqrt(na * na + ny * ny);
+  let flowAlong = target;
+  let flowUp = out.flowY;
   if (length > 1e-9) {
     na /= length;
     ny /= length;
-    const excess = flowAlong * na + flowUp * ny - (wall.wallAlong * na + wall.wallUp * ny);
-    flowAlong -= excess * na;
-    flowUp -= excess * ny;
+    const side = na >= 0 ? 1 : -1;
+    const normal = wall.wallAlong * na + wall.wallUp * ny;
+    // u = (normal) n̂ + climb t̂, t̂ = side (−n_y, n_a): its along-ray part normal n_a − climb side n_y is the target.
+    const bound = Math.abs(wall.wallSpeed);
+    const climb = Math.min(bound, Math.max(-bound, (side * (normal * na - target)) / Math.max(WALL_WATER.steepest, ny)));
+    flowAlong = normal * na - climb * side * ny;
+    flowUp = normal * ny + climb * side * na;
   }
   const w = Math.min(1, Math.max(0, wall.wallWeight));
   const change = w * (flowAlong - along);

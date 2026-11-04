@@ -1,9 +1,10 @@
 import { GRAVITY } from '../dispersion';
-import { crestCelerity, type FrontPoint } from './BreakingFront';
+import type { FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
-import { continueAnchor, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
+import { continueAnchor, FaceAnchor, smoothPlaces, smoothShifts, type TubeFace } from './faceAnchor';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
+import { pathPace } from './sliceClock';
 import { LOFT, collapseFade, endBlendLength, endWeight } from './sweptLoft';
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
@@ -149,8 +150,12 @@ export class CrashCurve {
   private readonly faceAnchor?: FaceAnchor;
   private faceRaw = new Float64Array(0);
   private faceSigma = new Float64Array(0);
-  /** Per point of a run, its case's crest over its crossing at the contact's hold, m (`prepareAnchors`). */
+  /** Per point of a run, its case's crest over its crossing at the contact's hold, m, its place and its ray (`prepareAnchors`). */
   private faceCase = new Float64Array(0);
+  private faceX = new Float64Array(0);
+  private faceZ = new Float64Array(0);
+  private faceRayX = new Float64Array(0);
+  private faceRayZ = new Float64Array(0);
   private readonly faceScratch = new Float64Array(3);
   private readonly faceRay = { x: 0, z: 0 };
 
@@ -397,25 +402,43 @@ export class CrashCurve {
       this.faceRaw = new Float64Array(4 * n);
       this.faceSigma = new Float64Array(2 * n);
     }
-    if (this.faceCase.length < n) this.faceCase = new Float64Array(2 * n);
+    if (this.faceCase.length < n) {
+      this.faceCase = new Float64Array(2 * n);
+      this.faceX = new Float64Array(2 * n);
+      this.faceZ = new Float64Array(2 * n);
+      this.faceRayX = new Float64Array(2 * n);
+      this.faceRayZ = new Float64Array(2 * n);
+    }
     for (let k = start; k < end; k += 1) {
       const p = points[k];
       const ray = this.ray(points, start, end, k, this.faceRay, rays);
-      this.faceSigma[k - start] = p.sigma;
-      this.faceRaw[k - start] = anchor.shift(p.footHeight, p.footDepth, p.tau, 'contact', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch);
+      const i = k - start;
+      this.faceSigma[i] = p.sigma;
+      this.faceX[i] = p.x;
+      this.faceZ[i] = p.z;
+      this.faceRayX[i] = ray.x;
+      this.faceRayZ[i] = ray.z;
+      this.faceRaw[i] = anchor.shift(p.footHeight, p.footDepth, p.tau, 'contact', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch);
       // The case's crest over its crossing at the contact's hold (NaN without a crossing).
-      this.faceCase[k - start] = this.faceScratch[1] - this.faceScratch[0];
+      this.faceCase[i] = this.faceScratch[1] - this.faceScratch[0];
     }
     const kept = this.faceRaw.subarray(n, 2 * n);
-    smoothShifts(this.faceSigma, this.faceRaw, n, kept);
+    // With continuity, the places the shifts put the case's crest are smoothed (`smoothPlaces`), as before without.
+    if (continuity) smoothPlaces(this.faceSigma, this.faceX, this.faceZ, this.faceRaw, this.faceRayX, this.faceRayZ, n, kept);
+    else smoothShifts(this.faceSigma, this.faceRaw, n, kept);
     for (let k = start; k < end; k += 1) {
       const p = points[k];
-      const celerity = crestCelerity(p.crestSpeed, p.crestDepth, p.height);
+      const i = k - start;
+      // The wave's advance along the point's ray: its crest's pace along its column, projected on the ray.
+      const celerity = pathPace(p.crestSpeed, p.crestDepth, p.height, p.dirZ) * Math.max(0, this.faceRayZ[i]);
       const dt = p.anchorTime === undefined ? 0 : time - p.anchorTime;
       p.tauRate = p.anchorTau !== undefined && dt > 0 ? (p.tau - p.anchorTau) / dt : 1;
       p.anchorTau = p.tau;
-      const shift = continueAnchor(p, kept[k - start], time, celerity, continuity);
-      p.wallSpeed = celerity + (p.anchorRate ?? 0);
+      const shift = continueAnchor(p, kept[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], continuity);
+      // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray.
+      p.wallSpeed = p.anchorRate ?? celerity;
+      p.anchorRayX = this.faceRayX[i];
+      p.anchorRayZ = this.faceRayZ[i];
       if (!continuity) continue;
       if (!(shift === shift)) {
         out[k] = Number.NaN;

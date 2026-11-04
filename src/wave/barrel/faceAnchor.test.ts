@@ -37,38 +37,47 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ wallFlow: false, continuity: true, distance: true });
   });
 
-  it('keeps a point\'s shift step to step: capped, held on a miss, never back to the crest anchor, eased from it', () => {
+  it('keeps a point\'s shift step to step in the wave\'s frame: capped, held on a miss, never back to the crest anchor, eased from it', () => {
     const { crest, slack, hold, ease } = ANCHOR_CONTINUITY;
     const dt = 1 / 60;
     const c = 5;
     const cap = (crest * c + slack) * dt;
+    const advance = c * dt;
     expect(cap).toBeCloseTo(0.03, 9);
-    // Faced from its first step: it starts there, then follows within the cap.
+    // On a ray along +z. Faced from its first step: it starts there.
     const a: AnchorTrack = {};
-    expect(continueAnchor(a, 2, 0, c)).toBe(2);
-    expect(continueAnchor(a, 2.5, dt, c)).toBeCloseTo(2 + cap, 12);
-    expect(continueAnchor(a, 2.01, 2 * dt, c)).toBeCloseTo(2.01, 12);
-    // A miss: it runs on at its last rate (its last step's) for up to `hold`, then stands; never NaN.
+    let z = 0;
+    expect(continueAnchor(a, 2, 0, c, 0, z, 0, 1)).toBe(2);
+    // The wave moves on C Δt while the point (a crest cell's centre) stands: the target's shift grows by C Δt, kept.
+    expect(continueAnchor(a, 2 + advance, dt, c, 0, z, 0, 1)).toBeCloseTo(2 + advance, 12);
+    // The point steps a 1 m row forward and the target's place moves on C Δt: the shift drops by the step, uncapped.
+    z += 1;
+    expect(continueAnchor(a, 1 + 2 * advance, 2 * dt, c, 0, z, 0, 1)).toBeCloseTo(1 + 2 * advance, 12);
+    // A jump of the target's place along the ray (0.5 m) is held to the cap about the wave's advance.
+    expect(continueAnchor(a, 1.5 + 3 * advance, 3 * dt, c, 0, z, 0, 1)).toBeCloseTo(1 + 3 * advance + cap, 12);
+    expect(a.anchorRate).toBeCloseTo(c + cap / dt, 9);
+    // A miss: the case's crest runs on along the ray at its last rate (the point standing, the shift grows by it).
     const rate = a.anchorRate!;
-    expect(rate).toBeCloseTo((2.01 - 2 - cap) / dt, 9);
-    expect(continueAnchor(a, Number.NaN, 3 * dt, c)).toBeCloseTo(2.01 + rate * dt, 12);
-    let t = 3 * dt;
-    while (t < 2 * dt + hold + 0.1) t += dt;
-    const after = continueAnchor(a, Number.NaN, t, c);
+    const before = a.anchorShift!;
+    expect(continueAnchor(a, Number.NaN, 4 * dt, c, 0, z, 0, 1)).toBeCloseTo(before + rate * dt, 12);
+    // Past `hold`, the shift stands with the point; never NaN.
+    let t = 4 * dt;
+    while (t < 3 * dt + hold + 0.1) t += dt;
+    const after = continueAnchor(a, Number.NaN, t, c, 0, z, 0, 1);
     expect(after).toBe(after);
-    expect(continueAnchor(a, Number.NaN, t + dt, c)).toBe(after);
-    // On the crest anchor first: NaN, then eased from 0 to its face anchor over `ease`, then capped.
+    expect(continueAnchor(a, Number.NaN, t + dt, c, 0, z + 1, 0, 1)).toBe(after);
+    // On the crest anchor first: NaN, then eased from 0 to its face anchor over `ease`, then capped about the advance.
     const b: AnchorTrack = {};
-    expect(continueAnchor(b, Number.NaN, 0, c)).toBeNaN();
-    expect(continueAnchor(b, 2, 1, c)).toBe(0);
-    expect(continueAnchor(b, 2, 1 + ease / 2, c)).toBeCloseTo(1, 12);
-    expect(continueAnchor(b, 2, 1 + ease, c)).toBeCloseTo(Math.min(2, 1 + (crest * c + slack) * (ease / 2)), 12);
-    // Uncapped (`?tubeAnchor=old` with the wall's water): as smoothed, its rate tracked.
+    expect(continueAnchor(b, Number.NaN, 0, c, 0, 0, 0, 1)).toBeNaN();
+    expect(continueAnchor(b, 2, 1, c, 0, 0, 0, 1)).toBe(0);
+    expect(continueAnchor(b, 2, 1 + ease / 2, c, 0, 0, 0, 1)).toBeCloseTo(1, 12);
+    expect(continueAnchor(b, 2, 1 + ease, c, 0, 0, 0, 1)).toBeCloseTo(Math.min(2, 1 + (c + crest * c + slack) * (ease / 2)), 12);
+    // Uncapped (`?tubeAnchor=old` with the wall's water): as smoothed, the case's crest's speed along the ray tracked.
     const d: AnchorTrack = {};
-    continueAnchor(d, 2, 0, c, false);
-    expect(continueAnchor(d, 3, dt, c, false)).toBe(3);
-    expect(d.anchorRate).toBeCloseTo(60, 9);
-    expect(continueAnchor(d, Number.NaN, 2 * dt, c, false)).toBeNaN();
+    continueAnchor(d, 2, 0, c, 0, 0, 0, 1, false);
+    expect(continueAnchor(d, 2.05, dt, c, 0, 0.05, 0, 1, false)).toBe(2.05);
+    expect(d.anchorRate).toBeCloseTo(6, 9);
+    expect(continueAnchor(d, Number.NaN, 2 * dt, c, 0, 0.1, 0, 1, false)).toBeNaN();
   });
 
   it('leads the pool\'s join by the advisor\'s depths and forms over his ramps, clamped', () => {

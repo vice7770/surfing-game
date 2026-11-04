@@ -461,15 +461,18 @@ export class ProfileLibrary {
   /** A slice's scale and times, s, as `profileAt` finds them, without building its profile (the loft's refinement and budget). */
   profileTimes(query: Omit<ProfileQuery, 'seconds'>): {
     scale: number; clamped: boolean; touchdownSeconds: number; frameSeconds: number; clearSeconds: number; collapseSeconds: number;
+    /** The blended cases' earliest frame, s (the later of the two's first frames: before it, one is held at its first). */
+    startSeconds: number;
   } {
     const b = this.bracket(query);
+    const startSeconds = Math.max(b.lower.tauStart, b.upper.tauStart) * b.unit;
     if (this.options.geometry === 'bounded-C') {
       const clock = this.analyticClock(query, b);
-      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit };
+      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit, startSeconds };
     }
     return {
       scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: b.clear * b.unit,
-      collapseSeconds: b.collapse,
+      collapseSeconds: b.collapse, startSeconds,
     };
   }
 

@@ -106,8 +106,9 @@ export interface FrontOptions {
    * Step 7's formation by distance (the advisor's 2026-11-04 ruling §1.4.2; the pool's straight Barrel, `TubeFace.distance`),
    * in place of `lead`: the signed distance along (dx, dz) from (x, z) to where the still depth is `depth`, m (positive
    * ahead; Infinity past its reach, NaN with none). A sized crest joins when its distance to its throw contour along its
-   * travel is at most |τ_e| C_p (its crest's pace, `crestCelerity`): on a plane face the `lead`'s depth, and right on a
-   * ledge. Its lip is thrown by its clock (`advanceClocks`), not by its crest's crossing.
+   * path (its column) is at most |τ_e| C_p (its crest's pace along it, `pathPace`; τ_e its case's earliest frame,
+   * `OnsetTiming.distance.earliest`): on a plane face the `lead`'s depth, and right on a ledge. Its lip is thrown by its
+   * clock (`advanceClocks`), not by its crest's crossing.
    */
   distance?: (x: number, z: number, dx: number, dz: number, depth: number) => number;
 }
@@ -254,6 +255,10 @@ export interface FrontPoint {
   anchorGood?: number;
   anchorEase?: number;
   anchorNone?: true;
+  anchorX?: number;
+  anchorZ?: number;
+  anchorRayX?: number;
+  anchorRayZ?: number;
   wallSpeed?: number;
   tauRate?: number;
   anchorTau?: number;
@@ -451,12 +456,14 @@ export class BreakingFront {
         next.refHeight = Math.max(next.refHeight ?? s.eta, s.eta);
       }
       if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower && this.options.distance) {
-        // Step 7's join by distance: its crest within |τ_e| C_p of its throw contour along its travel (`distance`).
+        // Step 7's join by distance: its crest within |τ_e| C_p of its throw contour along its path, its column (`distance`).
         const throwDepth = this.timing.throwDepth(next.footHeight);
         const dirX = next.dirX ?? 0;
         const dirZ = next.dirZ ?? 1;
-        const reach = this.options.distance(s.x, s.z, dirX, dirZ, throwDepth);
-        if (next.crossed === null && reach <= -this.timing.earliest * crestCelerity(s.speed, s.depth, s.eta)) next.crossed = time;
+        const earliest = this.timing.distance?.earliest?.(next.footHeight, this.timing.h0) ?? this.timing.earliest;
+        const reach = this.options.distance(s.x, s.z, 0, 1, throwDepth);
+        const pace = crestCelerity(s.speed, s.depth, s.eta) / Math.max(0.5, dirZ);
+        if (next.crossed === null && reach <= -earliest * pace) next.crossed = time;
         if (next.crossed !== null) {
           this.joins += 1;
           this.sizes?.joined.push(next.refHeight);
@@ -464,7 +471,7 @@ export class BreakingFront {
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
             joined: next.crossed, depth: s.depth, throwDepth, crestDepth: s.depth, thrown: null, throwZ: null,
             footHeight: next.footHeight, footDepth: this.timing.h0,
-            broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh, dirX, dirZ,
+            broke: time, tau: earliest, seen: time, fresh: next.fresh, dirX, dirZ,
             ...(s.speed > 0 ? { crestSpeed: s.speed } : {}),
             ...(s.strength > 0 ? {} : { unbroken: true as const }),
             ...(next.jumped ? { jumped: next.jumped } : {}),

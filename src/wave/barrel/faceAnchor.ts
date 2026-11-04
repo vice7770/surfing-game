@@ -96,12 +96,17 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
 }
 
 /**
- * The anchor's continuity (step 7, Q1's first piece; the advisor's 2026-11-04 ruling §1.4.1), per front point, step to step:
- * - `crest`, `slack`: the smoothed shift's change is capped at (`crest` C + `slack`) Δt a step, C its crest's speed along
- *   its ray: 0.3 C is the case's own crest outrunning its lower face (step 3), and the slack 0.005 m a 1/60 s step
- *   (0.3 m/s), about 0.03 m a step at C ≈ 5 m/s;
- * - `hold`, s: on a miss (no point within the smoothing's reach has a clean crossing) the last shift runs on at its last
- *   rate for up to this long, then stands; a point never goes back to the crest anchor once it has had a face anchor;
+ * The anchor's continuity (step 7, Q1's first piece; the advisor's 2026-11-04 ruling §1.4.1), per front point, step to step,
+ * in the wave's frame: the case's crest's place along the point's ray, W = S·n + δ, against the wave's own advance C Δt.
+ * - `crest`, `slack`: W's change is held within (`crest` C + `slack`) Δt of C Δt a step, C the wave's advance along the
+ *   point's ray (its crest's pace along its column, projected on the ray: `pathPace` n_z): 0.3 C is the case's own crest
+ *   outrunning its lower face (step 3), and the slack 0.005 m a 1/60 s step (0.3 m/s),
+ *   about 0.03 m a step at C ≈ 5 m/s. *(Built so)* In the wave's frame rather than on δ alone: a front's point is its
+ *   crest cell's centre, so it moves along its column in the solver's 1 m row steps while the wave moves on; a cap on δ
+ *   relative to it would fight those steps and move the wall with them;
+ * - `hold`, s: on a miss (no point within the smoothing's reach has a clean crossing) W runs on at its last rate for up
+ *   to this long, then the shift stands with the point; a point never goes back to the crest anchor once it has had a face
+ *   anchor;
  * - `ease`, s: a point that stood on the crest anchor before its first face anchor eases from it to the face anchor over
  *   this long (smoothstep), uncapped meanwhile;
  * - `blend`: the case's crossing's extrapolation from life 0.5 (`FACE_ANCHOR.extrapolate`) blended in over these shares of
@@ -112,12 +117,15 @@ export const ANCHOR_CONTINUITY = { crest: 0.3, slack: 0.3, hold: 0.5, ease: 0.3,
 
 /** A front point's anchor track (`continueAnchor`; `FrontPoint`'s, travelling with it). */
 export interface AnchorTrack {
-  /** Its shift as last kept, m (absent: it has never had a face anchor), and its rate, m/s. */
+  /** Its shift as last kept, m (absent: it has never had a face anchor), and its case's crest's speed along its ray, m/s. */
   anchorShift?: number;
   anchorRate?: number;
   /** When it was last kept, and when it last had a clean (smoothed) shift, s. */
   anchorTime?: number;
   anchorGood?: number;
+  /** Where the point was when last kept (x, z), m. */
+  anchorX?: number;
+  anchorZ?: number;
   /** When its ease from the crest anchor began, s (a point that stood on the crest anchor first). */
   anchorEase?: number;
   /** It has stood on the crest anchor (no face anchor yet). */
@@ -128,16 +136,24 @@ export interface AnchorTrack {
 export const anchorCounts = { kept: 0, capped: 0, held: 0, stood: 0, eased: 0, crest: 0 };
 
 /**
- * A point's shift this step from its smoothed shift `smoothed` (m; NaN with none in reach) at `time` (s), its crest's speed
- * along its ray `celerity` (m/s): see `ANCHOR_CONTINUITY`. NaN while it has never had a face anchor (the crest anchor).
- * `capped` false keeps the smoothed shift as it is (the rate alone is tracked: `?tubeAnchor=old` with the wall's flow on).
+ * A point's shift this step from its smoothed shift `smoothed` (m; NaN with none in reach) at `time` (s), the point at
+ * (x, z) on its ray (rayX, rayZ), its crest's speed along the ray `celerity` (m/s): see `ANCHOR_CONTINUITY`. NaN while it
+ * has never had a face anchor (the crest anchor). `capped` false keeps the smoothed shift as it is (the case's crest's speed
+ * alone is tracked: `?tubeAnchor=old` with the wall's flow on).
  */
-export function continueAnchor(track: AnchorTrack, smoothed: number, time: number, celerity: number, capped = true): number {
+export function continueAnchor(
+  track: AnchorTrack, smoothed: number, time: number, celerity: number, x: number, z: number, rayX: number, rayZ: number, capped = true,
+): number {
   const previous = track.anchorShift;
   const dt = track.anchorTime === undefined ? 0 : time - track.anchorTime;
+  // How far the point moved along its ray since it was last kept.
+  const moved = track.anchorX === undefined ? 0 : (x - track.anchorX) * rayX + (z - track.anchorZ!) * rayZ;
   track.anchorTime = time;
+  track.anchorX = x;
+  track.anchorZ = z;
+  const valid = previous !== undefined && previous === previous;
   if (!capped) {
-    track.anchorRate = smoothed === smoothed && previous !== undefined && previous === previous && dt > 0 ? (smoothed - previous) / dt : 0;
+    track.anchorRate = smoothed === smoothed && valid && dt > 0 ? (moved + smoothed - previous!) / dt : celerity;
     track.anchorShift = smoothed;
     return smoothed;
   }
@@ -148,12 +164,13 @@ export function continueAnchor(track: AnchorTrack, smoothed: number, time: numbe
       anchorCounts.crest += 1;
       return Number.NaN;
     }
-    // A miss: the last shift runs on at its rate for up to `hold`, then stands.
     if (time - track.anchorGood! <= hold) {
-      track.anchorShift = previous + track.anchorRate! * dt;
+      // A miss: the case's crest runs on along the ray at its last rate.
+      track.anchorShift = previous + track.anchorRate! * dt - moved;
       anchorCounts.held += 1;
     } else {
-      track.anchorRate = 0;
+      // Then it stands with the point.
+      track.anchorRate = dt > 0 ? moved / dt : track.anchorRate;
       anchorCounts.stood += 1;
     }
     return track.anchorShift!;
@@ -172,12 +189,16 @@ export function continueAnchor(track: AnchorTrack, smoothed: number, time: numbe
     shift = smoothed;
     anchorCounts.kept += 1;
   } else {
+    // In the wave's frame: the target's change along the ray against the wave's own advance, within the cap.
+    const advance = celerity * dt;
     const cap = (crest * celerity + slack) * dt;
-    shift = previous + Math.min(cap, Math.max(-cap, smoothed - previous));
-    if (shift !== smoothed) anchorCounts.capped += 1;
+    const target = moved + smoothed - previous;
+    const change = advance + Math.min(cap, Math.max(-cap, target - advance));
+    shift = previous + change - moved;
+    if (change !== target) anchorCounts.capped += 1;
     else anchorCounts.kept += 1;
   }
-  track.anchorRate = previous !== undefined && dt > 0 ? (shift - previous) / dt : 0;
+  track.anchorRate = previous !== undefined && dt > 0 ? (moved + shift - previous) / dt : celerity;
   track.anchorShift = shift;
   return shift;
 }
@@ -412,6 +433,36 @@ export function smoothShifts(sigma: ArrayLike<number>, raw: ArrayLike<number>, n
       const u = (sigma[j] - sigma[k]) / RADIUS;
       const w = (1 - u * u) * (1 - u * u);
       total += w * raw[j];
+      weights += w;
+    }
+    out[k] = weights > 0 ? total / weights : Number.NaN;
+    if (!(out[k] === out[k])) misses += 1;
+  }
+  return misses;
+}
+
+/**
+ * Step 7's continuity: the shifts smoothed along σ as `smoothShifts`, but of the places they put the case's crest along
+ * point k's ray (`rayX`, `rayZ` per point), not of their distances from each point: neighbour j's counts as
+ * (S_j − S_k)·n_k + δ_j. A front's points are their crest cells' centres, stepping along their columns in the solver's
+ * 1 m rows; a neighbour's step moves its own shift by the step but not the place its case's crest stands, so this keeps
+ * the steps out of point k's smoothed shift. Returns how many stay NaN.
+ */
+export function smoothPlaces(
+  sigma: ArrayLike<number>, x: ArrayLike<number>, z: ArrayLike<number>, raw: ArrayLike<number>, rayX: ArrayLike<number>,
+  rayZ: ArrayLike<number>, n: number, out: Float64Array,
+): number {
+  let misses = 0;
+  let from = 0;
+  for (let k = 0; k < n; k += 1) {
+    while (from < n && sigma[k] - sigma[from] >= RADIUS) from += 1;
+    let total = 0;
+    let weights = 0;
+    for (let j = from; j < n && sigma[j] - sigma[k] < RADIUS; j += 1) {
+      if (!(raw[j] === raw[j])) continue;
+      const u = (sigma[j] - sigma[k]) / RADIUS;
+      const w = (1 - u * u) * (1 - u * u);
+      total += w * ((x[j] - x[k]) * rayX[k] + (z[j] - z[k]) * rayZ[k] + raw[j]);
       weights += w;
     }
     out[k] = weights > 0 ? total / weights : Number.NaN;

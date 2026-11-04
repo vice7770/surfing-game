@@ -4,7 +4,7 @@ import { wallWaterFlow } from '../../physics/PhysicalSurfWater';
 import { libraryFromBytes } from './barrelLibrary';
 import { BreakingFront, type FrontPoint } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
-import { ANCHOR_CONTINUITY, FaceAnchor } from './faceAnchor';
+import { ANCHOR_CONTINUITY, FaceAnchor, smoothPlaces, smoothShifts } from './faceAnchor';
 import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { advanceClocks, FORMATION, throwContourDistance, type OnsetTiming } from './sliceClock';
@@ -164,16 +164,20 @@ describe('step 7: the wall\'s continuity, formation and flow', () => {
     expect(newStep).toBeLessThanOrEqual(oldStep * 1.01 + 1e-4);
   });
 
-  it('gives the wall\'s water the surface\'s own normal speed, and ramps it along the ray from the solver\'s to B·C', () => {
+  it('gives the wall\'s water the surface\'s own normal speed and the ramp along the ray, the climb up the face following', () => {
     const hit = createContactHit();
-    // The ray along +z (the front's tangent along +x); a 60° face, its normal (0, cos 60°, sin 60°) out of the water... toward +z.
+    // The ray along +z (the front's tangent along +x); a 60° face, its normal (0, cos 60°, sin 60°) out of the water, forward.
     hit.tangentX = 1;
     hit.tangentZ = 0;
-    const angle = Math.PI / 3;
-    hit.normalX = 0;
-    hit.normalY = Math.cos(angle);
-    hit.normalZ = Math.sin(angle);
-    Object.assign(hit, { wallAlong: 4, wallUp: 1, wallLow: 0, wallTop: 1, wallSpeed: 5, wallB: WALL_FLOW.before, wallWeight: 1 });
+    const face = (degrees: number) => {
+      const angle = (degrees * Math.PI) / 180;
+      hit.normalX = 0;
+      hit.normalY = Math.cos(angle);
+      hit.normalZ = Math.sin(angle);
+    };
+    face(60);
+    // The face moving forward at 5 m/s (its own normal speed 5 sin 60°), the crest's water at B·C.
+    Object.assign(hit, { wallAlong: 5, wallUp: 0, wallLow: 0, wallTop: 1, wallSpeed: 5, wallB: WALL_FLOW.before, wallWeight: 1 });
     const flow = createWaterSample();
     const at = (y: number, weight = 1) => {
       flow.flowX = 0.3;
@@ -184,19 +188,50 @@ describe('step 7: the wall\'s continuity, formation and flow', () => {
       return { ...flow };
     };
     const normal = (f: { flowY: number; flowZ: number }) => f.flowZ * hit.normalZ + f.flowY * hit.normalY;
-    const surface = 4 * hit.normalZ + 1 * hit.normalY;
-    for (const y of [0, 0.5, 1]) {
+    for (const y of [0, 0.25, 0.5, 1]) {
       const f = at(y);
       // The kinematic condition, at every height; along the crest the solver's kept.
-      expect(normal(f)).toBeCloseTo(surface, 9);
+      expect(normal(f)).toBeCloseTo(5 * hit.normalZ, 9);
       expect(f.flowX).toBeCloseTo(0.3, 12);
     }
-    // At the crest the tangential part is B·C's: its component along the surface's tangent in the ray–vertical plane.
-    const tangent = (f: { flowY: number; flowZ: number }) => f.flowZ * hit.normalY - f.flowY * hit.normalZ;
-    expect(tangent(at(1))).toBeCloseTo(WALL_FLOW.before * 5 * hit.normalY, 9);
-    expect(tangent(at(0))).toBeCloseTo(1 * hit.normalY - 0.2 * hit.normalZ, 9);
+    // Along the ray: the solver's at the anchor's height, B·C at the crest, where the climb is within C.
+    expect(at(1).flowZ).toBeCloseTo(WALL_FLOW.before * 5, 9);
+    expect(at(0.5).flowZ).toBeCloseTo(1 + 0.5 * (WALL_FLOW.before * 5 - 1), 9);
+    // The water climbs the face (up), the more the slower it moves forward.
+    expect(at(0.5).flowY).toBeGreaterThan(0);
+    expect(at(1).flowY).toBeGreaterThan(0);
+    // Low on the face, the climb needed passes C: held to C, the normal condition still met.
+    const low = at(0);
+    expect(normal(low)).toBeCloseTo(5 * hit.normalZ, 9);
+    const climb = -low.flowZ * hit.normalY + low.flowY * hit.normalZ;
+    expect(climb).toBeCloseTo(5, 9);
+    // A vertical face: the normal condition (forward at its speed), the climb at most C; no blow-up.
+    face(90);
+    const wall = at(0.5);
+    expect(wall.flowZ).toBeCloseTo(5, 9);
+    expect(Math.abs(wall.flowY)).toBeLessThanOrEqual(5 + 1e-9);
     // No weight: the solver's flow.
+    face(60);
     expect(at(0.5, 0)).toMatchObject({ flowX: 0.3, flowY: 0.2, flowZ: 1 });
+  });
+
+  it('smooths the places the shifts put the case\'s crest, so a neighbour\'s row step stays out of a point\'s shift', () => {
+    // A straight front along x, its rays along +z; the case's crest stands at z 3 everywhere; the points' crests sit on
+    // 1 m rows (z 0 or 1), so each one's own shift is 3 − z.
+    const n = 9;
+    const sigma = Array.from({ length: n }, (_, k) => k);
+    const x = sigma.slice();
+    const z = sigma.map((k) => (k % 3 === 0 ? 1 : 0));
+    const raw = z.map((v) => 3 - v);
+    const ones = sigma.map(() => 1);
+    const zeros = sigma.map(() => 0);
+    const out = new Float64Array(n);
+    smoothPlaces(sigma, x, z, raw, zeros, ones, n, out);
+    for (let k = 0; k < n; k += 1) expect(out[k] + z[k]).toBeCloseTo(3, 12);
+    // Smoothing the shifts themselves would carry the neighbours' steps.
+    const plain = new Float64Array(n);
+    smoothShifts(sigma, raw, n, plain);
+    expect(Math.max(...Array.from(plain, (v, k) => Math.abs(v + z[k] - 3)))).toBeGreaterThan(0.2);
   });
 
   it('carries step 7\'s fields in the records, NaN where the simulation keeps none', () => {

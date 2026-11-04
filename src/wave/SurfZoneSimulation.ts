@@ -1372,7 +1372,14 @@ export class SurfZoneSimulation {
       if (face) this.onsetTiming.thrownRate = face.clockRate;
       if (face?.lag && !face.distance) this.onsetTiming.formationRamp = record.faceAnchor!.ramp;
       // Step 7's formation by distance (`TubeFace.distance`): the join and the pre-throw clock by the throw contour.
-      if (face?.distance) this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour };
+      if (face?.distance) {
+        // τ_e: each point's case's earliest frame at its size (the library's), as its drawn slice reads it.
+        const library = barrel;
+        const earliest = library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
+          ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).startSeconds
+          : undefined;
+        this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}) };
+      }
       const lead = face?.lag && !face.distance ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
       const crash = sweptCrashOn(config);

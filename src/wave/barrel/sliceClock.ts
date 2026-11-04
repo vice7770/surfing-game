@@ -123,13 +123,21 @@ export interface OnsetTiming {
   thrownRate?: number;
   /**
    * Step 7's formation by distance (the advisor's 2026-11-04 ruling §1.4.2; `TubeFace.distance`): before its throw a point's
-   * clock is τ = −D/C_p, D its crest's distance along its travel to its throw contour (`to`: the front's `distance`),
-   * smoothed along σ, C_p its crest's pace (`crestCelerity`), within [τ_e, 0), never falling, at `FORMATION.rate` of
-   * real time; its slice's weight ramps over the case's first `FORMATION.ramp` s of τ. `contour`: its lip throws when its
-   * clock reaches 0 (the retire guard kept: unbroken `LEAD_RETIRE.after` s past its throw, it retires); without, an
-   * unbroken point holds short of 0 until the solver breaks it (`?tubeThrow=break`). Absent: none of it.
+   * clock is τ = −D/C_p, D its crest's distance along its path to its throw contour (`to`: the front's `distance`),
+   * smoothed along σ, C_p its crest's pace along that path (`pathPace`), within [τ_e, 0), never falling, at
+   * `FORMATION.rate` of real time, τ_e its case's earliest frame (`earliest`, s, by its foot crest and depth; absent:
+   * `OnsetTiming.earliest`); its slice's weight ramps over the case's first `FORMATION.ramp` s of τ. `contour`: its lip
+   * throws when its clock reaches 0 (the retire guard kept: unbroken `LEAD_RETIRE.after` s past its throw, it retires);
+   * without, an unbroken point holds short of 0 until the solver breaks it (`?tubeThrow=break`). Absent: none of it.
+   *
+   * *(Built so)* The path is the point's own: a front's points travel along their solver columns (x fixed, +z shoreward),
+   * and that is where each one's crest crosses its throw contour. Along the crest's travel direction instead, in a trace
+   * at a38 1.5 m the distance fell 1.45 m per metre the point moved, so −D/C ran at about 1.47× real time.
    */
-  distance?: { to: (x: number, z: number, dx: number, dz: number, depth: number) => number; contour: boolean };
+  distance?: {
+    to: (x: number, z: number, dx: number, dz: number, depth: number) => number; contour: boolean;
+    earliest?: (footHeight: number, footDepth: number) => number;
+  };
 }
 
 /**
@@ -279,10 +287,12 @@ export function throwContourDistance(stillAt: (x: number, z: number) => number, 
 /** Per point of a front, its distance to its throw contour (m), and smoothed along σ (`distanceClocks`). */
 let distances = new Float64Array(0);
 let smoothed = new Float64Array(0);
+let places = new Float64Array(0);
 
 /**
  * One front's clocks, points[start, end), by distance (`OnsetTiming.distance`, step 7): before its throw each point's τ
- * follows −D/C_p (D smoothed along σ by the clock's biweight line, as the throw times are) within the rate's bounds, its
+ * follows −D/C_p (D the throw contour's place along the points' columns less the front's own, each smoothed along σ by
+ * the clock's biweight line, as the throw times are) within the rate's bounds, its
  * weight ramping with it; it throws when τ reaches 0, by `contour`, or once the solver has broken it too. After its
  * throw, as `advanceClocks` (its fit over its thrown neighbours, at most `thrownRate` × real time), its throw its clock's.
  * Returns the steps held (unbroken, short of 0).
@@ -294,20 +304,24 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
     distances = new Float64Array(2 * n);
     smoothed = new Float64Array(2 * n);
   }
+  if (places.length < n) places = new Float64Array(2 * n);
   for (let k = start; k < end; k += 1) {
     const p = points[k];
-    distances[k - start] = p.tau < FORMATION.reach
-      ? to(p.x, p.z, p.dirX ?? 0, p.dirZ ?? 1, p.throwDepth)
-      : Number.NaN;
+    // Along its path, its column (+z), to where it crosses its throw contour: that contour's place (z).
+    const d = p.tau < FORMATION.reach ? to(p.x, p.z, 0, 1, p.throwDepth) : Number.NaN;
+    distances[k - start] = d + p.z;
+    places[k - start] = d === d && d !== Infinity ? p.z : Number.NaN;
   }
-  for (let k = start; k < end; k += 1) smoothed[k - start] = fitAlong(points, start, end, k, distances);
+  // The contour's place and the front's own, each smoothed along σ (the points are crest cells' centres, stepping along
+  // their columns in the solver's 1 m rows): D is the one less the other.
+  for (let k = start; k < end; k += 1) smoothed[k - start] = fitAlong(points, start, end, k, distances) - fitAlong(points, start, end, k, places);
   const [slowest, fastest] = FORMATION.rate;
   let pauses = 0;
   for (let k = start; k < end; k += 1) {
     const point = points[k];
     if (point.tau < 0) {
       const d = smoothed[k - start];
-      const target = d === d ? -d / crestCelerity(point.crestSpeed, point.crestDepth, point.height) : Number.NaN;
+      const target = d === d ? -d / pathPace(point.crestSpeed, point.crestDepth, point.height, point.dirZ) : Number.NaN;
       let next = point.tau;
       if (step > 0) {
         // No distance in reach: real time.
@@ -323,7 +337,8 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
         const late = (target === target ? target : 0) - LEAD_RETIRE.after;
         if (late > 0) point.retire = Math.min(1, late / LEAD_RETIRE.over);
       }
-      const u = Math.min(1, Math.max(0, (next - timing.earliest) / FORMATION.ramp));
+      const earliest = timing.distance!.earliest?.(point.footHeight, point.footDepth) ?? timing.earliest;
+      const u = Math.min(1, Math.max(0, (next - earliest) / FORMATION.ramp));
       const was = point.formation ?? 0;
       point.formation = Math.max(was, Math.min(u * u * (3 - 2 * u), was + FORMATION.weightRate * step));
       if (next >= 0) point.thrown = time - next;
@@ -340,6 +355,14 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
     point.tau = step > 0 ? Math.min(Math.max(shown, point.tau + step), point.tau + rate * step) : Math.max(shown, point.tau);
   }
   return pauses;
+}
+
+/**
+ * A crest's pace along its column, m/s (step 7's formation): its pace along its travel (`crestCelerity`) over the travel's
+ * component along +z, at least 0.5 (`SweptCrash`'s PACE.leastRayZ), as the crash paces a thrown point along its column.
+ */
+export function pathPace(speed: number | undefined, depth: number, height: number, dirZ: number | undefined): number {
+  return crestCelerity(speed, depth, height) / Math.max(0.5, dirZ === undefined || !(dirZ === dirZ) ? 1 : dirZ);
 }
 
 /**
