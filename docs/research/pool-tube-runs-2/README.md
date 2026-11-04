@@ -18,9 +18,10 @@ The water-physics advisor's step-7 ruling on the pool's surfable tube
   case gave a 0.40 H gap, against 0.24 H at level 13. Only the M4's level 13 can answer.
 
 The owner's calls (2026-11-04): the bigger tube goes "within physics", the steep reef ledge adopted only if these runs show
-it wins; six cases, after the run program's fix (the reef top below).
+it wins; six cases, after the run program's fix (the reef top below). The advisor's sizes ruling (2026-11-04, below) adds
+two face-matched knee cases: eight in all.
 
-## The six cases (`tools/basilisk/run_periodic.sh`, `CASES_ALL`)
+## The eight cases (`tools/basilisk/run_periodic.sh`, `CASES_ALL`)
 
 Every case is a two-crest cnoidal train of the pool's 10 s machine wave along the straight reef's ray, the second crest
 studied, from the 4.5 m platform (h0) to the 0.9 m crest (HS 0.2).
@@ -33,6 +34,8 @@ studied, from the 4.5 m platform (h0) to the 0.9 m crest (HS 0.2).
 | `pool_ledge_big` | the ledge, 1:4.5 | 0.37 | 0.29 | the candidate, 1.8 m faces |
 | `pool_steep9_small` | one face at 1:9 (S1 0.1111) | 0.26 | 0.19 | the trend between knee and ledge (the optional pair), 1.5 m |
 | `pool_steep9_big` | one face at 1:9 | 0.32 | 0.245 | the same, 1.8 m |
+| `pool_kneeface_small` | today's knee, 1:18.7 | 0.23 | — | the decision rule's comparator: the knee at the ledge's 2D face (about 1.62 m) |
+| `pool_kneeface_big` | today's knee, 1:21.6 | 0.245 | — | the same at about 1.86 m |
 
 - **The sizes:** the earlier pool cases were sized by the platform's wave height and came out 1.45× the game's crest on
   the knee. These are sized by that crest: H/h0 0.26 / 0.32 gave A0 0.187–0.191 / 0.242–0.248 in the advisor's scouts.
@@ -124,27 +127,49 @@ Open time is vertical to touchdown, × √(h0/g) = 0.677 s.
 - **The faces, for "the same face height".** The ledge pair's faces at vertical, 1.63 / 1.84 m, sit 7 / 3 % over the
   game's meter (1.52 / 1.79 m); the knee pair's, 1.91 / 2.29 m, 26 / 28 % over it, the 2D overshoot the ruling measured on
   today's floor. H/A0 is 1.72 / 1.63 on the ledge and 2.27 / 2.10 on the knee, at or inside the ruling's 1.4–1.7 and 2.0–2.3.
-  So the knee's clearance must be scaled to the game's faces (by its foot crest, as the ruling's measurements were)
-  before the 1.3× comparison; the raw 2D faces don't match.
+  The raw 2D faces don't match, so the advisor's sizes ruling (below) adds face-matched knee cases and compares at equal
+  2D faces.
 - **The ledge's foot crest reads under its sizing:** A0 0.211 / 0.250 against the ruling's 0.24 / 0.29 (−12 / −14 %).
   The knee and 1:9 pairs land on theirs (0.187–0.191, 0.242–0.246). On the ledge the toe is only 3.6 h0 before the
   crest, so the crest passing it already feels the ledge (its reflection and the first wave's backwash; inferred). The
   swept barrel keys cases by this A0, so a wired ledge case would key lower than its size suggests.
 
+## The advisor's sizes ruling (2026-11-04, after the scouts)
+
+- **Keep all six lines as they are.** The ledge pair's faces at vertical, 1.63 / 1.84 m, are what the owner sized for
+  (7 / 3 % over the meter's 1.52 / 1.79 m); raising it to reach A0 0.24 / 0.29 would push its faces to about 1.85 /
+  2.1 m. The knee pair, sized by the game's knee crest, is what the game would key if the knee wins.
+- **Add two face-matched knee comparators,** today's knee face at about 1.62 / 1.86 m (level-10 scouts at H/h0
+  0.215–0.255 put the faces at 1.56–1.91 m; 0.23 interpolated): `pool_kneeface_small` (4.5:0.23:10:0.0535:0.2:64:
+  28.5:39:34:48:::2.7:0.05) and `pool_kneeface_big` (4.5:0.245:10:0.0463:0.2:64:29.5:40:35:50:::2.7:0.05). Eight
+  cases with `JOBS=8` cost no extra wall time on the M4's performance cores.
+- **The ledge's low foot crest doesn't change what the ledge means:** the run's A0 is read 3.6 h0 (16 m) along the ray
+  from the crest edge, where the game's own knee (`POOL_FOOT_DEPTH` 4.4 m) also sits on a ledge floor (inferred). And a
+  correction to the step-7 ruling: on a ledge the machine needs about **0–10 %** taller waves, not 25–35 % (the game's
+  faces on today's floor sit about 20 % under the 2D faces, put down to 3D refraction over the 34 m face; a 7 m ledge
+  leaves little room for that; inferred). Rerun the ledge pair after the floor change only if the game's knee crest at
+  1.5 / 1.8 m faces falls outside 0.86–1.04 / 1.02–1.24 m.
+
 ## The decision rule (the advisor's ruling, §2.2 item 3)
 
 **The ledge is adopted if both hold:**
 
-1. its **usable clearance** is at least **1.3×** the knee case's at the same face height (small against small, big
-   against big);
-2. its **lip lands within 0.6–1.6 H**.
+1. its **usable clearance over its face height** (at vertical) is at least **1.3×** the face-matched knee's
+   (`pool_ledge_small` against `pool_kneeface_small`, `pool_ledge_big` against `pool_kneeface_big`);
+2. its **lip lands within 0.6–1.6 of its face height**.
+
+*(The advisor's sizes ruling, 2026-11-04: compare at equal 2D faces, not by foot crest. The knee's 2D faces overshoot the
+game's meter by 26–28 %, the ledge's by 3–7 %, so scaling by foot crest would set a 1.9 m knee wave against a 1.6 m
+ledge wave, and a bigger wave on the same slope has a relatively smaller tube: a bias toward the ledge.)*
 
 - **Usable clearance:** the clearance held over a 0.3 m depth along the ray (a crouched body), at life 0.5–0.9, at game
   scale, each case's own. It is not the max vertical gap: that counts a vertical wall under a few centimetres of
   overhang as air.
 - **Where it is read from:** each case's 128-point profiles, `data/periodic_<case>_L13_library.json` and
-  `barrels/periodic-<case>-l13.bin` here, each Froude-scaled to the game's 1.5 / 1.8 m faces, as in the ruling's table.
-- **The 1:9 pair** is information: the trend, not part of the rule.
+  `barrels/periodic-<case>-l13.bin` here. Report both at the game's faces too (× meter ÷ face height, 0.93 and 0.97 for
+  each pair; within a pair the faces differ by at most 2 %, so the verdict is the same).
+- **Information, not the rule:** the 1:9 pair (the trend), and the original knee pair: if its clearance per face height
+  differs from the face-matched knee's by more than 20 %, that is size sensitivity, reported.
 
 **If the ledge wins** (the ruling's order): the floor change in `POOL_STRAIGHT` (`gradient` from 1/9.5 to about 1/2.0
 square to the reef, `kneeRounding` from 3 to 1, the crest profile kept), then the probes (sizes, X, break depth, the
@@ -158,13 +183,13 @@ From the repo, on main once `claude/pool-tube-runs-2` is merged:
 ```
 git pull
 npm run barrels:pool -- check               # the prerequisites (setup installs what's missing)
-JOBS=6 POOL_CASES="pool_ledge_big pool_ledge_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
+JOBS=8 POOL_CASES="pool_ledge_big pool_ledge_small pool_kneeface_big pool_kneeface_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
 npm run barrels:pool -- status              # the last run's cases: phase, t and ETA
 ```
 
 - **What runs:** per case, a level-10 scout places the switch, end and window; phase 1 at level 10, phase 2 at level 13
   (`LEVEL2` 13) inside the window; then the analysis, the case files and the report.
-- **How long:** about 2.5–3 h with `JOBS=6` (an estimate). The earlier pair's phase 2 took 2h01 and 2h21 on the M4
+- **How long:** about 2.5–3 h with `JOBS=8` (an estimate). The earlier pair's phase 2 took 2h01 and 2h21 on the M4
   at the same level and domain; the scouts and phase 1 take minutes, the analysis about 10 minutes.
 - **What it writes here:** `report.md`, `summary.json`, `data/`, the figures, `barrel-index.json`, `barrel-cases.md` and
   `barrels/*.bin`. Nothing goes to `public/barrels` or the game's index until the rule picks.

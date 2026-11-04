@@ -32,10 +32,11 @@
 #   pool_straight_small, pool_straight_big  the Wave Pool's Barrel straight reef (pool-barrel-straight, 2026-11-01): its 4.5 m
 #              platform up one face along the reef's ray to the 0.9 m crest, the 1.5 and 1.8 m faces at 10 s (run_pool.sh
 #              scouts each case)
-#   pool_knee_*, pool_ledge_*, pool_steep9_*  the Wave Pool's bigger-tube batch (2026-11-04; docs/research/pool-tube-runs-2/
+#   pool_knee_*, pool_kneeface_*, pool_ledge_*, pool_steep9_*  the Wave Pool's bigger-tube batch (2026-11-04; docs/research/pool-tube-runs-2/
 #              README.md): today's knee face (1:18.7 / 1:21.6 along the ray), the Reef-type ledge (1:4.5) and the 1:9 trend
 #              pair, from the 4.5 m platform to the 0.9 m crest, each with the reef top and back slope (2.7 h0 at the crest,
-#              then 1:20 back down to the platform's depth); sized by the game's crest on the knee (run_pool.sh scouts each)
+#              then 1:20 back down to the platform's depth); sized by the game's crest on the knee, with the knee face
+#              again at the ledge's 2D faces (pool_kneeface_*) for the decision rule (run_pool.sh scouts each)
 #   canyon23_a29, canyon23_a38, canyon23_a49  the Canyon's reef bed (2026-10-22) from the arm's 6 m foot: since
 #              canyon-long-wave one planar face, 1:23 all the way to the 1.0 m crest (0.167 h0), at every column of the
 #              arm, the take-off's too (8 m downcoast of the peak: x -9; x -2 on canyon-layout's short arm, x -30 before,
@@ -93,6 +94,9 @@ CASES_ALL="$CASES_ALL pool_straight_small:4.5:0.352:10:0.0535:0.2:64:20:34:24:48
 CASES_ALL="$CASES_ALL pool_knee_small:4.5:0.26:10:0.0535:0.2:64:27:37.5:33:48:::2.7:0.05 pool_knee_big:4.5:0.32:10:0.0463:0.2:64:26.5:37:33:48:::2.7:0.05"
 CASES_ALL="$CASES_ALL pool_ledge_small:4.5:0.32:10:0.2222:0.2:64:17.5:28:24:40:::2.7:0.05 pool_ledge_big:4.5:0.37:10:0.2222:0.2:64:17.5:28:24:41:::2.7:0.05"
 CASES_ALL="$CASES_ALL pool_steep9_small:4.5:0.26:10:0.1111:0.2:64:22.5:33:28:43:::2.7:0.05 pool_steep9_big:4.5:0.32:10:0.1111:0.2:64:21.5:32:28:43:::2.7:0.05"
+# The face-matched knee comparators (the advisor, 2026-11-04): today's knee face at the ledge's 2D faces (about 1.62 / 1.86 m;
+# H/h0 from level-10 scouts at 0.215-0.255), so the decision rule compares ledge and knee at equal faces.
+CASES_ALL="$CASES_ALL pool_kneeface_small:4.5:0.23:10:0.0535:0.2:64:28.5:39:34:48:::2.7:0.05 pool_kneeface_big:4.5:0.245:10:0.0463:0.2:64:29.5:40:35:50:::2.7:0.05"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.

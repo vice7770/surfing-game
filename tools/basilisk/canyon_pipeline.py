@@ -72,6 +72,8 @@ SETS = {
             "pool_ledge_big": ("the Reef-type ledge, 1:4.5 along the ray, reef top and back slope", "1.8 m faces (A0 ≈ 0.29)"),
             "pool_steep9_small": ("one face at 1:9 along the ray (the trend), reef top and back slope", "1.5 m faces (A0 ≈ 0.19)"),
             "pool_steep9_big": ("one face at 1:9 along the ray (the trend), reef top and back slope", "1.8 m faces (A0 ≈ 0.245)"),
+            "pool_kneeface_small": ("today's knee face, 1:18.7, at the ledge's 2D face (the decision rule's comparator)", "about 1.62 m 2D faces"),
+            "pool_kneeface_big": ("today's knee face, 1:21.6, at the ledge's 2D face (the decision rule's comparator)", "about 1.86 m 2D faces"),
         },
         "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_straight_small",
         "title": "The Wave Pool's Barrel tube runs", "label": "Wave Pool Barrel",
@@ -89,8 +91,8 @@ SETS = {
         # the game's. Selecting any of them (POOL_CASES) puts the report in its own folder, and every case file beside
         # it (barrels/ there), never in public/barrels: the decision rule picks first.
         "batch": {
-            "cases": ["pool_ledge_big", "pool_ledge_small", "pool_knee_big", "pool_knee_small", "pool_steep9_big",
-                      "pool_steep9_small"],
+            "cases": ["pool_ledge_big", "pool_ledge_small", "pool_kneeface_big", "pool_kneeface_small", "pool_knee_big",
+                      "pool_knee_small", "pool_steep9_big", "pool_steep9_small"],
             "out": "pool-tube-runs-2",
             "title": "The Wave Pool's bigger-tube batch",
             "bed_detail": "Bed (docs/research/pool-tube-runs-2/README.md): h0 = the platform's depth (4.5 m), one planar "

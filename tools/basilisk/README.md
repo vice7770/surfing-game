@@ -183,7 +183,7 @@ The `.bin` files are listed in no game index: step 3 (the drawing) wires them, w
 The advisor's step-7 ruling on the pool's surfable tube (`docs/research/pool-tube-wall-2026-11-04/advisor-ruling.md`, §2.2
 items 2–3) asks one question of the M4: does a Reef-type ledge, one face at 1:4.5 along the reef's ray from the 4.5 m
 platform to the 0.9 m crest, give the Barrel a clearly bigger usable tube than today's knee face? The floor changes only
-if it does. The owner chose the six cases (2026-11-04). The plan, the beds and the decision rule are in
+if it does. The owner chose the six cases (2026-11-04); the advisor's sizes ruling added the two face-matched knee cases. The plan, the beds and the decision rule are in
 `docs/research/pool-tube-runs-2/README.md`.
 
 | Case | Face along the ray | H/h0 | What it tests |
@@ -191,6 +191,7 @@ if it does. The owner chose the six cases (2026-11-04). The plan, the beds and t
 | `pool_knee_small`, `pool_knee_big` | today's knee: 1:18.7 / 1:21.6 | 0.26 / 0.32 | the reference: today's floor at the game's own crests (A0 ≈ 0.19 / 0.245) |
 | `pool_ledge_small`, `pool_ledge_big` | the ledge: 1:4.5 | 0.32 / 0.37 | the candidate, sized for the same faces (A0 ≈ 0.24 / 0.29) |
 | `pool_steep9_small`, `pool_steep9_big` | 1:9 | 0.26 / 0.32 | the trend between them (the optional pair) |
+| `pool_kneeface_small`, `pool_kneeface_big` | today's knee | 0.23 / 0.245 | the decision rule's comparator: the knee at the ledge's 2D faces (about 1.62 / 1.86 m; the advisor's sizes ruling) |
 
 Every case, the knee's too, has the same reef top along the ray: the 0.9 m crest 2.7 h0 (12.2 m) long, then 1:20 back
 down to 4.5 m and flat to the wall. That is the floor's 6 m `flatWidth` and 1/10 `backSlope` (`POOL_STRAIGHT`) crossed at
@@ -203,7 +204,7 @@ earlier pool runs' 3.5 cm cells; it holds every back slope (the knee's big case 
 ```
 git pull                                    # main, once claude/pool-tube-runs-2 is merged
 npm run barrels:pool -- check               # the prerequisites (setup installs what's missing)
-JOBS=6 POOL_CASES="pool_ledge_big pool_ledge_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
+JOBS=8 POOL_CASES="pool_ledge_big pool_ledge_small pool_kneeface_big pool_kneeface_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
 npm run barrels:pool -- status              # the last run's cases: phase, t and ETA
 ```
 
@@ -216,7 +217,7 @@ npm run barrels:pool -- status              # the last run's cases: phase, t and
   `barrel-cases.md` and the case files (`barrels/*.bin`) all go to `docs/research/pool-tube-runs-2/`. Nothing goes to
   `public/barrels` or the game's index: the batch's cases are candidates until the decision rule picks. (Naming any of
   them in `POOL_CASES` does that; the pipeline refuses to write their report over `docs/research/pool-tube-runs`.)
-- **How long:** about 2.5–3 h with `JOBS=6` (an estimate). The earlier pair's phase 2 took 2h01 and 2h21 on the M4 at the
+- **How long:** about 2.5–3 h with `JOBS=8` (an estimate). The earlier pair's phase 2 took 2h01 and 2h21 on the M4 at the
   same level, domain and kind of window; the scouts and phase 1 take minutes, the analysis about 10 minutes. Six at once
   give each case its own performance core, but share the memory bandwidth.
 - **Stop and resume:** `npm run barrels:pool -- stop` (it stops every pool case), then the same run command again; after a
