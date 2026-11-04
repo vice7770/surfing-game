@@ -47,7 +47,7 @@ import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
 import { devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
-import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, type PoolTubeCase, type TubeShape } from '../wave/barrel/barrelLibrary';
+import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, poolTubeCaseOf, type PoolTubeCase, type TubeShape } from '../wave/barrel/barrelLibrary';
 import { BARREL_SPOTS } from '../wave/barrel/barrelSpots';
 import { tubeFaceOf } from '../wave/barrel/faceAnchor';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -416,7 +416,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
     // `?poolTube=off` / `?poolCrash=off`: the straight Barrel without its swept tube, or with it and the solver's own lip.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
-    // `?poolTubeCase=a38`: the straight Barrel's tube from the Canyon's a38, its stand-in before its own runs, for A/Bs.
+    // `?poolTubeCase=pool`: the straight Barrel's tube from its own runs, for A/Bs (a38, the default since 2026-11-04,
+    // answers to `?poolTubeCase=a38` as well).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeCaseSwitch() : {}),
     // `?tubeFace=old`, `?tubeFrom=piece`, `?tubeLag=0`, `?tubeClock=old`: the surfable tube's A/Bs (the advisor's step 3
     // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before.
@@ -528,12 +529,15 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
 }
 
 /**
- * The `?poolTubeCase=a38` dev switch (`SurfZoneConfig.poolTubeCase`; pool-tube-cases, 2026-11-03): the Wave Pool's straight
- * Barrel's tube drawn and felt from the Canyon's a38, its provisional stand-in (pool-barrel-drawing), in place of the
- * owner's level-13 runs on its own reef, to compare the two. Online rooms run the default.
+ * The `?poolTubeCase` dev switch (`SurfZoneConfig.poolTubeCase`; pool-tube-cases, 2026-11-03; pool-tube-face, 2026-11-04):
+ * which cases draw and feel the Wave Pool's straight Barrel's tube. The default is the Canyon's a38 (the owner, 2026-11-04,
+ * until the bigger-tube work lands); `?poolTubeCase=pool` draws the owner's level-13 runs on the pool's own reef instead,
+ * to compare the two, and `?poolTubeCase=a38` names the default. Anything else is the default. Online rooms run the
+ * default.
  */
 export function poolTubeCaseSwitch(search?: string): { poolTubeCase?: PoolTubeCase } {
-  return devParam('poolTubeCase', search)?.trim().toLowerCase() === 'a38' ? { poolTubeCase: 'a38' } : {};
+  const value = devParam('poolTubeCase', search)?.trim().toLowerCase();
+  return value === 'pool' || value === 'a38' ? { poolTubeCase: value } : {};
 }
 
 /**
@@ -695,8 +699,8 @@ const barrelBytes = new Map<string, Promise<Uint8Array[] | undefined>>();
  * tried again at the next.
  */
 export function barrelCaseBytes(spot: SpotName, poolTubeCase?: PoolTubeCase): Promise<Uint8Array[] | undefined> {
-  // The pool's stand-in (`?poolTubeCase=a38`) is fetched and kept apart from its own cases.
-  const key = spot === 'pool' && poolTubeCase ? `${spot}:${poolTubeCase}` : spot;
+  // The pool's two case lists (a38, the default, and its own, `?poolTubeCase=pool`) are fetched and kept apart.
+  const key = spot === 'pool' ? `${spot}:${poolTubeCaseOf(poolTubeCase)}` : spot;
   let bytes = barrelBytes.get(key);
   if (!bytes) {
     bytes = loadBarrelCaseBytes(barrelCasesFor(spot, undefined, spot === 'pool' ? poolTubeCase : undefined)).catch((error: unknown) => {

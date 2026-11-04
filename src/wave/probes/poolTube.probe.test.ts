@@ -140,7 +140,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       const make = (swept: boolean) => new SurfZoneSimulation({
         spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
         tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(swept ? {} : { sweptBarrel: false }),
-      } as unknown as SurfZoneConfig, 'spun-up', swept ? libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool') : undefined);
+      } as unknown as SurfZoneConfig, 'spun-up', swept ? libraryFromBytes(readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool') : undefined);
       const sims = { with: make(true), without: make(false) };
       for (const sim of Object.values(sims)) while (sim.solver.time < settle) sim.step(1 / 30);
       const times: Record<string, number[]> = { with: [], without: [] };
@@ -163,7 +163,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
       const lines: string[] = ['library, foot crest (m) / foot depth (m), case: at 0.5 / 0.8 / 0.95 of touchdown, H (m), lip (H), tip (H), void (H²), L/W, tilt (°), air gap (m); touchdown s'];
       const sets: [string, ProfileLibrary, number, number[]][] = [
         ['Padang Padang (its four cases, 7 m foot)', libraryFromBytes(readBarrelCases('padang')), 7, [0.99, 1.4, 2.1, 3.15]],
-        ['the pool on its own two level-13 cases (one family by A0, 4.4 m foot)', libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool'), 4.4, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
+        ['the pool on its own two level-13 cases (one family by A0, 4.4 m foot)', libraryFromBytes(readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool'), 4.4, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
         // The Canyon's a38 alone (the first stand-in, the advisor's A1 of 2026-11-01 on the A-frame), for comparison.
         ['the pool on the Canyon\'s a38 alone (the stand-in, `?poolTubeCase=a38`, 4.5 m foot)', libraryFromBytes(readBarrelCases(undefined, BARREL_CASES.filter((entry) => entry.id === 'periodic-canyon23-a38-l13'))), 4.5, (process.env.FEET ?? '1.0,1.17,1.3,1.51').split(',').map(Number)],
       ];
@@ -195,7 +195,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel tube probe', ()
     if (process.env.JOIN_PAST) BARREL_SPOTS.pool!.front = { ...BARREL_SPOTS.pool!.front, joinPast: Number(process.env.JOIN_PAST) };
     // JUMP: the front's crest-jump reach, m (Padang Padang's and the Reef's 10), in place of the pool's (a diagnostic).
     if (process.env.JUMP) BARREL_SPOTS.pool!.front = { ...BARREL_SPOTS.pool!.front, jumpReach: Number(process.env.JUMP) };
-    const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
+    const library = libraryFromBytes(readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
     const simulation = new SurfZoneSimulation({
       spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
       tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel',

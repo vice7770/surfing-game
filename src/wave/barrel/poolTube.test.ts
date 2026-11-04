@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { POOL_STRAIGHT, poolStraightAt, poolStraightFrame } from '../pool';
-import { POOL_TUBE_CASES, barrelCasesFor, libraryFromBytes } from './barrelLibrary';
+import { DEFAULT_POOL_TUBE_CASE, POOL_TUBE_CASES, barrelCasesFor, libraryFromBytes, poolTubeCaseOf } from './barrelLibrary';
 import { BARREL_SPOTS, POOL_FOOT_DEPTH, POOL_FRONT_REACH, poolStraightFrontAt } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
@@ -11,22 +11,31 @@ import { BARREL_SLOPE, SweptLoft, crestToTip } from './sweptLoft';
 
 /** The Wave Pool's straight Barrel's swept tube (pool-barrel-drawing, 2026-11-01). */
 describe('the Wave Pool’s straight Barrel tube', () => {
-  it('loads only its own two level-13 cases, or the a38 stand-in when asked, and reads them as one family by A0', () => {
-    const entries = barrelCasesFor('pool');
+  it('loads the a38 by default, or its own two level-13 cases when asked, and reads them as one family by A0', () => {
+    // The default since the owner's call of 2026-11-04 (until the bigger-tube work): the Canyon's a38 alone, as
+    // `?poolTubeCase=a38` names it; the Canyon's own list is unchanged.
+    expect(DEFAULT_POOL_TUBE_CASE).toBe('a38');
+    expect(poolTubeCaseOf(undefined)).toBe('a38');
+    expect(poolTubeCaseOf('pool')).toBe('pool');
+    expect(barrelCasesFor('pool').map((entry) => entry.id)).toEqual(['periodic-canyon23-a38-l13']);
+    expect(barrelCasesFor('pool', undefined, 'a38')).toEqual(barrelCasesFor('pool'));
+    expect(barrelCasesFor('canyon').map((entry) => entry.id)).toContain('periodic-canyon23-a38-l13');
+    expect(barrelCasesFor('canyon').some((entry) => entry.spot === 'pool')).toBe(false);
+    expect(readBarrelCases('pool')).toEqual(readBarrelCases('pool', undefined, 'a38'));
+    // `?poolTubeCase=pool`: its own two runs.
+    const entries = barrelCasesFor('pool', undefined, 'pool');
     expect(entries.map((entry) => entry.id).sort()).toEqual([...POOL_TUBE_CASES].sort());
     expect(POOL_TUBE_CASES).toEqual(['periodic-pool-straight-small-l13', 'periodic-pool-straight-big-l13']);
     expect(entries.every((entry) => entry.spot === 'pool')).toBe(true);
-    // `?poolTubeCase=a38`: the Canyon's a38, the stand-in before them; the Canyon's own list is unchanged.
-    expect(barrelCasesFor('pool', undefined, 'a38').map((entry) => entry.id)).toEqual(['periodic-canyon23-a38-l13']);
-    expect(barrelCasesFor('canyon').map((entry) => entry.id)).toContain('periodic-canyon23-a38-l13');
-    expect(barrelCasesFor('canyon').some((entry) => entry.spot === 'pool')).toBe(false);
-    const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
-    // One family: every case takes the pool's slope, so a slice brackets them by its A0 alone.
+    const own = readBarrelCases('pool', undefined, 'pool');
+    const library = libraryFromBytes(own, 'basilisk', 'pool');
+    // One family: every case takes the pool's slope, so a slice brackets them by its A0 alone (the a38 too).
     expect(new Set(library.cases.map((c) => c.slope))).toEqual(new Set([BARREL_SPOTS.pool!.slope]));
+    expect(libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool').cases.map((c) => c.slope)).toEqual([BARREL_SPOTS.pool!.slope]);
     expect(BARREL_SLOPE.pool).toBe(BARREL_SPOTS.pool!.slope);
     // Their files keep their own slopes; the library without the spot does too.
-    expect(readBarrelCases('pool').map((bytes) => decodeCase(bytes).slope)).toEqual(entries.map((entry) => entry.slope));
-    expect(libraryFromBytes(readBarrelCases('pool')).cases.map((c) => c.slope)).toEqual(entries.map((entry) => entry.slope));
+    expect(own.map((bytes) => decodeCase(bytes).slope)).toEqual(entries.map((entry) => entry.slope));
+    expect(libraryFromBytes(own).cases.map((c) => c.slope)).toEqual(entries.map((entry) => entry.slope));
     // Between the two cases' A0 a slice blends them; under the smaller's (the game's own foot crests: 0.84 and 1.08 m on
     // the knee) it takes that case alone, Froude-scaled by its foot crest (h0 = η_foot / its A0).
     const between = library.frameBlend({ slope: BARREL_SLOPE.pool!, footHeight: 0.31 * 4.4, footDepth: 4.4, seconds: 0 }, {} as never);
@@ -86,7 +95,7 @@ describe('the Wave Pool’s straight Barrel tube', () => {
 
 describe('the loft’s stretch (T3)', () => {
   it('reads 1 before the throw and the crest-to-tip arc at τ = 0 over its own as the lip flies', () => {
-    const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
+    const library = libraryFromBytes(readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
     const loft = new SweptLoft(library, BARREL_SLOPE.pool!, { holdClearDrawing: true });
     const query = { slope: BARREL_SLOPE.pool!, footHeight: 0.84, footDepth: 4.4 };
     const touchdown = library.profileTimes(query).touchdownSeconds;

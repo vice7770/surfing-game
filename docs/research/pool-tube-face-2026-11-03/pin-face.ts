@@ -3,12 +3,14 @@
  * pool-barrel-straight's pin check (water only); and every swept barrel's whole path with its own library: the sea, the
  * front's points, the crash's ledger, the contact's loft and the drawing's loft (the clear-roof hold, over the solver's
  * surface), each hashed (FNV-1a over float64s) after STEPS steps of 1/30 s from a spun-up start. The Wave Pool's straight
- * Barrel runs with `?tubeFace=old&tubeFrom=piece` (on main the keys are unknown and ignored), and as the branch's default
- * once more for the record. Bundle against both trees and compare the lines:
+ * Barrel runs with `?tubeFace=old&tubeFrom=piece` (on main the keys are unknown and ignored) on each case list named
+ * (its own runs, `poolTubeCase` 'pool', and the a38), and as each tree's default for the record, twice (the branch's
+ * default is the a38 under the face ruling since the owner's call of 2026-11-04; main's, its own runs as before). Bundle
+ * against both trees and compare the lines:
  *   rolldown docs/research/pool-tube-face-2026-11-03/pin-face.ts -o dist/scripts/face-pin.mjs --format esm --platform node && node dist/scripts/face-pin.mjs [steps]
  */
 import { SWELLS, physicalSettingsFor, type SurfConditions } from '../../../src/game/SurfConditions';
-import { libraryFromBytes, POOL_TUBE_STAND_IN } from '../../../src/wave/barrel/barrelLibrary';
+import { libraryFromBytes, POOL_TUBE_CASES, POOL_TUBE_STAND_IN } from '../../../src/wave/barrel/barrelLibrary';
 import { BARREL_CASES } from '../../../src/wave/barrel/barrelLibraryIndex';
 import { FRONT_CAPACITY, FRONT_STRIDE } from '../../../src/wave/barrel/frontRecords';
 import { readBarrelCases } from '../../../src/wave/barrel/nodeBarrelCases';
@@ -53,16 +55,21 @@ for (const [name, extra] of plain) {
   const t = takeOffPoint(config);
   console.log(`${name}: sea ${hash([s.bed, s.h, s.qx, s.qz, sim.breaking.strength])} grid ${sim.solver.nx}×${sim.solver.nz} take-off ${t.x.toFixed(3)},${t.z.toFixed(3)} start ${rideLineupOffset(config)} tank ${JSON.stringify(tankLayout(config))} jets ${sim.lipJets}`);
 }
-// Every swept barrel's whole path, with its own library.
+// Every swept barrel's whole path, with its own library; the pool's two case lists by name, as both trees list them.
+const ownCases = readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_CASES.includes(entry.id)));
+const a38Cases = readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id)));
 const swept: [string, Partial<SurfZoneConfig>, SpotName, Uint8Array[], number][] = [
   ['padang swept', { ...shared, spot: 'padang' }, 'padang', readBarrelCases('padang'), STEPS],
   ['canyon swept (canyonTube on)', { ...shared, spot: 'canyon', sweptBarrel: true }, 'canyon', readBarrelCases('canyon'), STEPS],
   ['reef swept', { ...shared, spot: 'reef', sweptBarrel: true }, 'reef', readBarrelCases('reef'), STEPS],
-  ['pool barrel 1.5 m, old switches', barrel(1.05, old) as Partial<SurfZoneConfig>, 'pool', readBarrelCases('pool'), 4 * STEPS],
-  ['pool barrel 1.8 m, old switches', barrel(1.32, old) as Partial<SurfZoneConfig>, 'pool', readBarrelCases('pool'), 4 * STEPS],
-  ['pool barrel 1.5 m a38, old switches', barrel(1.05, { ...old, poolTubeCase: 'a38' }) as Partial<SurfZoneConfig>, 'pool',
-    readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))), 4 * STEPS],
+  ['pool barrel 1.5 m, old switches', barrel(1.05, { ...old, poolTubeCase: 'pool' }) as Partial<SurfZoneConfig>, 'pool', ownCases, 4 * STEPS],
+  ['pool barrel 1.8 m, old switches', barrel(1.32, { ...old, poolTubeCase: 'pool' }) as Partial<SurfZoneConfig>, 'pool', ownCases, 4 * STEPS],
+  ['pool barrel 1.5 m a38, old switches', barrel(1.05, { ...old, poolTubeCase: 'a38' }) as Partial<SurfZoneConfig>, 'pool', a38Cases, 4 * STEPS],
+  ['pool barrel 1.8 m a38, old switches', barrel(1.32, { ...old, poolTubeCase: 'a38' }) as Partial<SurfZoneConfig>, 'pool', a38Cases, 4 * STEPS],
+  // Each tree's default, twice (two runs identical).
   ['pool barrel 1.5 m, default', barrel(1.05) as Partial<SurfZoneConfig>, 'pool', readBarrelCases('pool'), 4 * STEPS],
+  ['pool barrel 1.5 m, default again', barrel(1.05) as Partial<SurfZoneConfig>, 'pool', readBarrelCases('pool'), 4 * STEPS],
+  ['pool barrel 1.8 m, default', barrel(1.32) as Partial<SurfZoneConfig>, 'pool', readBarrelCases('pool'), 4 * STEPS],
 ];
 for (const [name, extra, spot, bytes, steps] of swept) {
   const config = { stage: 2, compute: 'cpu', spinUpPeriods: 1, componentCount: 24, ...extra } as unknown as SurfZoneConfig;

@@ -166,11 +166,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
     const log = process.env.LOG ?? `pool-tube-hole-${caseName}-${height}.txt`;
     writeFileSync(log, '');
     const t0 = Date.now();
-    const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool');
+    const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool');
     const library = libraryFromBytes(bytes, 'basilisk', 'pool');
     const simulation = new SurfZoneSimulation({
       spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
-      tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(caseName === 'a38' ? { poolTubeCase: 'a38' } : {}),
+      tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
       // CRASH=off: the barrel's jets and pace off (`?poolCrash=off`), a diagnostic of the crash's part.
       ...(process.env.CRASH === 'off' ? { sweptCrash: false } : {}),
     } as unknown as SurfZoneConfig, 'spun-up', library);
@@ -582,7 +582,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the hole probe
 
     // The tables.
     const lines: string[] = [];
-    lines.push(`pool straight Barrel, H ${height} m at the feed, cases ${caseName === 'a38' ? 'a38 (the stand-in, ?poolTubeCase=a38)' : 'the pool\'s two level-13 cases (default)'}; crash ${process.env.CRASH === 'off' ? 'off' : 'on'}; ${periods} periods after ${settle} s; CPU, 1/60 s steps; ${((Date.now() - t0) / 1000).toFixed(0)} s wall; contact ${(contactMs / steps).toFixed(1)} ms a step, reads ${(measureMs / (steps / 2)).toFixed(1)} ms a frame`);
+    lines.push(`pool straight Barrel, H ${height} m at the feed, cases ${caseName === 'a38' ? 'a38 (the default since 2026-11-04, ?poolTubeCase=a38)' : 'the pool\'s two level-13 cases (?poolTubeCase=pool)'}; crash ${process.env.CRASH === 'off' ? 'off' : 'on'}; ${periods} periods after ${settle} s; CPU, 1/60 s steps; ${((Date.now() - t0) / 1000).toFixed(0)} s wall; contact ${(contactMs / steps).toFixed(1)} ms a step, reads ${(measureMs / (steps / 2)).toFixed(1)} ms a frame`);
     const fronts = new Set(reads.map((r) => r.front));
     lines.push(`reads: ${reads.length} (column-frames), fronts ${fronts.size}; columns s ${cFrom}–${cTo} every ${cStep} m; loft slices read ${slicesSeen}: weight < 0.5 ${((100 * slicesLight) / Math.max(1, slicesSeen)).toFixed(0)} %, standing but not joined to the next (left out) ${((100 * slicesUnjoined) / Math.max(1, slicesSeen)).toFixed(0)} %; before the throw (τ < 0) ${slicesPre} (standing ${slicesPreStanding})`);
     lines.push(`solver face H_s ${q3(reads.map((r) => r.Hs))} m, its width crest to trough along the ray ${q3(reads.map((r) => r.width))} m; drawn H ${q3(reads.map((r) => r.Hd))} m (p10 / p50 / p90)`);

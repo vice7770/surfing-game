@@ -293,9 +293,10 @@ export interface SurfZoneConfig {
    */
   tubeShape?: TubeShape;
   /**
-   * The Wave Pool's straight Barrel's tube cases (`PoolTubeCase`): its own level-13 runs, the default, or 'a38', the
-   * Canyon's case it was drawn from before them (the `?poolTubeCase=a38` dev A/B). The page loads the cases and hands
-   * them to the surf zone, so both draw and feel the same. Online rooms always run the default.
+   * The Wave Pool's straight Barrel's tube cases (`PoolTubeCase`): 'a38', the Canyon's case, the default since the
+   * owner's call of 2026-11-04 (unset or `?poolTubeCase=a38`), or 'pool', its own level-13 runs (the `?poolTubeCase=pool`
+   * dev A/B). The page loads the cases and hands them to the surf zone, so both draw and feel the same. Online rooms
+   * always run the default.
    */
   poolTubeCase?: PoolTubeCase;
   /**

@@ -15,7 +15,7 @@ describe.runIf(process.env.PROBE)('fronts diag', () => {
     writeFileSync(log, '');
     const switches: Record<string, unknown> = {};
     for (const item of (process.env.SWITCHES ?? '').split(',').filter(Boolean)) { const [k, v] = item.split('='); switches[k] = v === '0' ? 0 : v; }
-    const library = libraryFromBytes(readBarrelCases('pool'), 'basilisk', 'pool');
+    const library = libraryFromBytes(readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
     const sim = new SurfZoneSimulation({ spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(1.05), peakPeriod: 10, directionDegrees: 0, spreading: 1000, tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...switches } as unknown as SurfZoneConfig, 'spun-up', library);
     const face = sim.tubeFace;
     const contact = new SweptContact(library, BARREL_SLOPE.pool!, face ? { face } : {});

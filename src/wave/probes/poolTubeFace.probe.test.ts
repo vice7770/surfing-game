@@ -159,11 +159,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     if (process.env.COST === '1') {
       // Bar 12: the step, the contact's update and the drawing's build, the face build against the build before
       // (`?tubeFace=old&tubeFrom=piece`), each sea spun up SETTLE s, then 600 steps of 1/60 s alternately in blocks of 25.
-      const lib = libraryFromBytes(caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool'), 'basilisk', 'pool');
+      const lib = libraryFromBytes(caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
       const arms = (['face', 'before'] as const).map((arm) => {
         const sim = new SurfZoneSimulation({
           spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
-          tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(caseName === 'a38' ? { poolTubeCase: 'a38' } : {}),
+          tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
           ...(arm === 'before' ? { tubeFace: 'old', tubeFrom: 'piece' } : {}),
         } as unknown as SurfZoneConfig, 'spun-up', lib);
         const tubeFace = sim.tubeFace;
@@ -196,11 +196,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         + arms.map((a) => `- ${a.arm}: the sea's step ${q3(a.step)}; the contact's update ${q3(a.update)}; the drawing's loft build ${q3(a.draw)}`).join('\n') + '\n');
       return;
     }
-    const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool');
+    const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool');
     const library = libraryFromBytes(bytes, 'basilisk', 'pool');
     const simulation = new SurfZoneSimulation({
       spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
-      tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', ...(caseName === 'a38' ? { poolTubeCase: 'a38' } : {}), ...switches,
+      tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName, ...switches,
     } as unknown as SurfZoneConfig, 'spun-up', library);
     const { solver } = simulation;
     const face = simulation.tubeFace;

@@ -2,9 +2,9 @@ import { Scene } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { WaterSurface } from '../scene/WaterSurface';
-import { loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
+import { POOL_TUBE_CASES, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, resetBarrelCaseBytes, type HostExtras } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, barrelCaseBytes, resetBarrelCaseBytes, type HostExtras } from './PhysicalMode';
 import type { SurfZoneHost } from './SurfZoneHost';
 
 // The page's fetch of the barrel files, stubbed: a module mock, so this file keeps it to itself.
@@ -46,6 +46,18 @@ describe('the barrel files for the contact (the Padang Padang spec, Part B, PR 4
     vi.mocked(loadBarrelCaseBytes).mockClear();
     await extrasFor(['padang', 'padang']);
     expect(loadBarrelCaseBytes).toHaveBeenCalledTimes(1);
+  });
+
+  it('fetches the Wave Pool\'s a38 by default and by name once, and its own cases apart (`?poolTubeCase=pool`)', async () => {
+    resetBarrelCaseBytes();
+    vi.mocked(loadBarrelCaseBytes).mockClear();
+    await barrelCaseBytes('pool');
+    await barrelCaseBytes('pool', 'a38');
+    expect(loadBarrelCaseBytes).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(loadBarrelCaseBytes).mock.calls[0][0]!.map((entry) => entry.id)).toEqual(['periodic-canyon23-a38-l13']);
+    await barrelCaseBytes('pool', 'pool');
+    expect(loadBarrelCaseBytes).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(loadBarrelCaseBytes).mock.calls[1][0]!.map((entry) => entry.id)).toEqual([...POOL_TUBE_CASES]);
   });
 
   it('starts a swept spot without the contact when the files fail to load, and tries again next time', async () => {

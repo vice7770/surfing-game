@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, surfZoneConfigFor, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -110,6 +110,35 @@ describe('PhysicalMode', () => {
       vi.stubGlobal('location', { search: '?tubeShape=c' });
       expect(surfZoneConfigFor(padang, 5, false).tubeShape).toBe('bounded-C');
       expect(surfZoneConfigFor(padang, 5, false, { tubeShape: 'basilisk' }).tubeShape).toBe('basilisk');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The Wave Pool's straight Barrel's tube switches (pool-tube-cases, 2026-11-03; pool-tube-face, 2026-11-04): its tube
+  // case, the Canyon's a38 by default since the owner's call (`?poolTubeCase=pool` for its own runs, `=a38` the default
+  // by name), and the surfable tube's A/Bs; the Barrel's alone, and an online room's config keeps the defaults.
+  it('draws the Barrel\'s tube from a38 unless `?poolTubeCase=pool`, and takes the surfable tube\'s switches (dev switches)', () => {
+    expect(poolTubeCaseSwitch('?poolTubeCase=pool')).toEqual({ poolTubeCase: 'pool' });
+    expect(poolTubeCaseSwitch('?poolTubeCase=POOL')).toEqual({ poolTubeCase: 'pool' });
+    expect(poolTubeCaseSwitch('?poolTubeCase=a38')).toEqual({ poolTubeCase: 'a38' });
+    for (const search of ['', '?poolTubeCase', '?poolTubeCase=', '?poolTubeCase=a49', '?poolTubeCase=own']) expect(poolTubeCaseSwitch(search), search).toEqual({});
+    expect(tubeFaceSwitches('?tubeFace=old&tubeFrom=piece')).toEqual({ tubeFace: 'old', tubeFrom: 'piece' });
+    expect(tubeFaceSwitches('?tubeLag=0&tubeClock=old')).toEqual({ tubeLag: 0, tubeClock: 'old' });
+    for (const search of ['', '?tubeFace=new', '?tubeFrom=lip', '?tubeLag=1', '?tubeClock=new']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      // Unset: the default, a38 (`barrelCasesFor`), as every online room runs it.
+      expect(surfZoneConfigFor(barrel, 5, false).poolTubeCase).toBeUndefined();
+      vi.stubGlobal('location', { search: '?poolTubeCase=pool&tubeFace=old&tubeFrom=piece' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ poolTubeCase: 'pool', tubeFace: 'old', tubeFrom: 'piece' });
+      // Only the Barrel's: Training and the other spots ignore them.
+      expect(surfZoneConfigFor(training, 5, false).poolTubeCase).toBeUndefined();
+      expect(surfZoneConfigFor(training, 5, false).tubeFace).toBeUndefined();
+      // An online room's overrides pin the defaults.
+      const online = surfZoneConfigFor(barrel, 5, false, { poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined });
+      expect([online.poolTubeCase, online.tubeFace, online.tubeFrom, online.tubeLag, online.tubeClock]).toEqual([undefined, undefined, undefined, undefined, undefined]);
     } finally {
       vi.unstubAllGlobals();
     }

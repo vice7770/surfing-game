@@ -36,31 +36,45 @@ export function barrelCaseNote(id: string): { drawn: false; note: string } | und
 }
 
 /**
- * The Wave Pool's straight Barrel's tube cases, by id (pool-barrel-drawing, T5: the pool loads only its own): the owner's
- * level-13 runs on its reef's ray (pool-tube-runs, the M4 Pro, 2026-11-02; docs/research/pool-tube-runs/report.md),
- * `pool_straight_small` (A0 0.271, the 1.5 m faces) and `pool_straight_big` (A0 0.355, the 1.8 m faces), read as one
- * family by A0 (`BarrelSpot.family`: one reef at two sizes; the advisor, 2026-11-01). Both throw a tube (the big one's
- * nearly closed: a void of 0.20 × 0.04 m), so both are drawn.
+ * The Wave Pool's straight Barrel's own tube cases, by id (pool-barrel-drawing, T5): the owner's level-13 runs on its
+ * reef's ray (pool-tube-runs, the M4 Pro, 2026-11-02; docs/research/pool-tube-runs/report.md), `pool_straight_small`
+ * (A0 0.271, the 1.5 m faces) and `pool_straight_big` (A0 0.355, the 1.8 m faces), read as one family by A0
+ * (`BarrelSpot.family`: one reef at two sizes; the advisor, 2026-11-01). Both throw a tube (the big one's nearly closed:
+ * a void of 0.20 × 0.04 m). The default from 2026-11-03 to 2026-11-04; now behind `?poolTubeCase=pool` (`PoolTubeCase`).
  */
 export const POOL_TUBE_CASES: readonly string[] = ['periodic-pool-straight-small-l13', 'periodic-pool-straight-big-l13'];
 
 /**
- * The pool's provisional stand-in before its own runs (pool-barrel-drawing, 2026-11-01): the Canyon's a38 alone,
- * Froude-scaled by each slice's foot crest (it drew within about 10 % of the meter's face at the foot crests the game
- * measures). Kept for the `?poolTubeCase=a38` A/B (`SurfZoneConfig.poolTubeCase`); online rooms run the default.
+ * The Canyon's a38 alone, Froude-scaled by each slice's foot crest (it drew within about 10 % of the meter's face at the
+ * foot crests the game measures): the pool's provisional stand-in before its own runs (pool-barrel-drawing, 2026-11-01),
+ * and the Wave Pool's default tube case since the owner's call of 2026-11-04, until the bigger-tube work lands
+ * (pool-tube-face: under the face anchor its air under the lip is 0.48 / 0.58 m p50 at the 1.5 / 1.8 m faces, the pool's
+ * own cases' 0.21 / 0.27 m; docs/research/pool-tube-face-2026-11-03). `?poolTubeCase=a38` names it.
  */
 export const POOL_TUBE_STAND_IN: readonly string[] = ['periodic-canyon23-a38-l13'];
 
-/** Which cases the pool's tube is drawn and felt from: its own (the default) or the stand-in, `'a38'`. */
-export type PoolTubeCase = 'a38';
+/**
+ * Which cases the pool's tube is drawn and felt from (`SurfZoneConfig.poolTubeCase`): `'a38'`, the default
+ * (`DEFAULT_POOL_TUBE_CASE`, `POOL_TUBE_STAND_IN`), or `'pool'`, its own two level-13 runs (`POOL_TUBE_CASES`; the
+ * `?poolTubeCase=pool` A/B). Online rooms run the default.
+ */
+export type PoolTubeCase = 'a38' | 'pool';
+
+/** The Wave Pool's default tube case (the owner, 2026-11-04: a38 until the bigger-tube work lands). */
+export const DEFAULT_POOL_TUBE_CASE: PoolTubeCase = 'a38';
+
+/** The pool's tube case a config asks for: its own, or the default when it names none. */
+export function poolTubeCaseOf(poolTubeCase?: PoolTubeCase): PoolTubeCase {
+  return poolTubeCase ?? DEFAULT_POOL_TUBE_CASE;
+}
 
 /**
  * The index's cases for one spot (Part B, PR 7): a spot loads only its own transect's cases, and only those it draws; the
- * Wave Pool, its own list (`POOL_TUBE_CASES`), or the stand-in's (`poolTubeCase` 'a38').
+ * Wave Pool, the a38 stand-in's (`POOL_TUBE_STAND_IN`, the default) or its own (`POOL_TUBE_CASES`, `poolTubeCase` 'pool').
  */
 export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES, poolTubeCase?: PoolTubeCase): BarrelCaseEntry[] {
   if (spot === 'pool') {
-    const ids = poolTubeCase === 'a38' ? POOL_TUBE_STAND_IN : POOL_TUBE_CASES;
+    const ids = poolTubeCaseOf(poolTubeCase) === 'pool' ? POOL_TUBE_CASES : POOL_TUBE_STAND_IN;
     return cases.filter((entry) => ids.includes(entry.id));
   }
   return cases.filter((entry) => entry.spot === spot && !barrelCaseNote(entry.id));
