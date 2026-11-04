@@ -158,5 +158,5 @@ case "$CMD" in
   check) check ;;
   setup) setup ;;
   smoke) NEED_GB="${NEED_GB:-1}"; check || exit 1; "$PY" "$HERE/canyon_pipeline.py" run --smoke ${JOBS_ARG[@]+"${JOBS_ARG[@]}"} ;;
-  *) sed -n '2,24p' "${TUBE_USAGE:-$0}"; exit 1 ;;
+  *) awk 'NR > 1 && /^#/ { print; next } NR > 1 { exit }' "${TUBE_USAGE:-$0}"; exit 1 ;;   # the header's comment
 esac

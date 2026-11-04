@@ -66,6 +66,12 @@ SETS = {
         "what": {
             "pool_straight_small": ("the straight reef's ray over its barrel section (s 65–175), platform to crest", "Barrel 1.5 m faces"),
             "pool_straight_big": ("the straight reef's ray over its barrel section (s 65–175), platform to crest", "Barrel 1.8 m faces"),
+            "pool_knee_small": ("today's knee face, 1:18.7 along the ray, reef top and back slope", "1.5 m faces (A0 ≈ 0.19)"),
+            "pool_knee_big": ("today's knee face, 1:21.6 along the ray, reef top and back slope", "1.8 m faces (A0 ≈ 0.245)"),
+            "pool_ledge_small": ("the Reef-type ledge, 1:4.5 along the ray, reef top and back slope", "1.5 m faces (A0 ≈ 0.24)"),
+            "pool_ledge_big": ("the Reef-type ledge, 1:4.5 along the ray, reef top and back slope", "1.8 m faces (A0 ≈ 0.29)"),
+            "pool_steep9_small": ("one face at 1:9 along the ray (the trend), reef top and back slope", "1.5 m faces (A0 ≈ 0.19)"),
+            "pool_steep9_big": ("one face at 1:9 along the ray (the trend), reef top and back slope", "1.8 m faces (A0 ≈ 0.245)"),
         },
         "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_straight_small",
         "title": "The Wave Pool's Barrel tube runs", "label": "Wave Pool Barrel",
@@ -79,6 +85,26 @@ SETS = {
             "with a `pool` entry in `BARREL_SPOTS` and the Barrel floor's tube on.",
             "- The straight reef is uniform along its barrel section (s 65–175), so one case per size covers it.",
         ],
+        # The bigger-tube batch (2026-11-04; docs/research/pool-tube-runs-2/README.md): candidates for a new floor, not
+        # the game's. Selecting any of them (POOL_CASES) puts the report in its own folder, and every case file beside
+        # it (barrels/ there), never in public/barrels: the decision rule picks first.
+        "batch": {
+            "cases": ["pool_ledge_big", "pool_ledge_small", "pool_knee_big", "pool_knee_small", "pool_steep9_big",
+                      "pool_steep9_small"],
+            "out": "pool-tube-runs-2",
+            "title": "The Wave Pool's bigger-tube batch",
+            "bed_detail": "Bed (docs/research/pool-tube-runs-2/README.md): h0 = the platform's depth (4.5 m), one planar "
+                          "face along the ray (S1) to the 0.9 m reef crest (HS 0.2), the reef top 2.7 h0 along the ray, "
+                          "then 1:20 back down to h0 and flat to the closed right wall (periodic.c's REEFTOP and SBACK).",
+            "wiring": [
+                "- Candidates, not the game's cases: their `.bin` files are in `barrels/` here, not in `public/barrels`, "
+                "and no game index lists them.",
+                "- **The decision rule** (the advisor's step-7 ruling, §2.2): the ledge is adopted if its usable "
+                "clearance (held over a 0.3 m depth along the ray, p50 at life 0.5–0.9, game scale) is at least 1.3× "
+                "the knee case's at the same face height, and its lip lands within 0.6–1.6 H. Then the floor change "
+                "(`POOL_STRAIGHT`), its probes, and these cases into the game.",
+            ],
+        },
     },
 }
 SET_NAME = os.environ.get("TUBE_SET", "canyon")
@@ -104,10 +130,21 @@ class Config:
         self.scout_tmax = env.get("SCOUT_TMAX", "2" if smoke else "")
         self.cases = env.get("CANYON_CASES" if SET_NAME == "canyon" else "POOL_CASES", SET["smoke"] if smoke else " ".join(CASES)).split()
         self.state = os.path.join(self.runs, SET["state"])
-        self.out = env.get("CANYON_OUT", os.path.join(self.state, "smoke-out") if smoke
-                           else os.path.join(REPO, "docs", "research", SET["out"]))
-        self.assets = env.get("CANYON_ASSETS", os.path.join(self.out, "barrels") if smoke
-                              else os.path.join(REPO, "public", "barrels"))
+        batch = SET.get("batch")
+        self.batch = bool(batch) and any(n in batch["cases"] for n in self.cases)
+        self.words = dict(SET, **{k: batch[k] for k in ("title", "bed_detail", "wiring")}) if self.batch else SET
+        own = os.path.join(REPO, "docs", "research", SET["out"])
+        # CANYON_OUT and CANYON_ASSETS: absolute, or relative to the repo (npm runs from there)
+        self.out = os.path.join(REPO, env.get("CANYON_OUT", os.path.join(self.state, "smoke-out") if smoke
+                                else os.path.join(REPO, "docs", "research", batch["out"]) if self.batch else own))
+        if self.batch and not smoke and os.path.realpath(self.out) == os.path.realpath(own):
+            sys.exit(f"{', '.join(n for n in self.cases if n in batch['cases'])}: a batch's report goes in its own folder "
+                     f"(docs/research/{batch['out']}), not over {rel(own)}'s; set CANYON_OUT to another folder")
+        # The game's case files (public/barrels) only for a set's own report: a smoke test's, a batch's or a report moved
+        # with CANYON_OUT keeps its case files beside it, in barrels/ there.
+        beside = smoke or self.batch or os.path.realpath(self.out) != os.path.realpath(own)
+        self.assets = os.path.join(REPO, env.get("CANYON_ASSETS", os.path.join(self.out, "barrels") if beside
+                                                 else os.path.join(REPO, "public", "barrels")))
         self.cases_file = os.path.join(self.state, "cases.txt")
         pcores, ram_gb = machine_cores(), machine_ram_gb()
         auto = max(1, min(len(self.cases), pcores, int(ram_gb // 4) or 1))
@@ -571,7 +608,8 @@ class Pipeline:
             a0 = info.get("a0")
             c = {"what": WHAT.get(name, ("", ""))[1], "transect": WHAT.get(name, ("", ""))[0], "H_over_h0": par.get("H_over_h0"),
                  "period_s": par.get("period"), "S1": par.get("S1"), "S2": par.get("S2"), "HMID": par.get("HMID"),
-                 "HS": par.get("HS"), "domain_h0": par.get("domain"), "window": [par.get("xwin0"), par.get("xwin1")],
+                 "HS": par.get("HS"), "reef_top_h0": par.get("REEFTOP"), "back_slope": par.get("SBACK"),
+                 "domain_h0": par.get("domain"), "window": [par.get("xwin0"), par.get("xwin1")],
                  "tswitch": par.get("tout0"), "tmax": par.get("tmax"), "dx_m": par.get("domain", 0) / 2 ** cfg.level2 * h0,
                  "A0": a0, "A0_from": info.get("a0_from"), "foot_crest_m": a0 * h0 if a0 else None,
                  "t_vertical": pl.get("t_vertical"), "t_touchdown": pl.get("t_touchdown"), "tube": info.get("tube", False),
@@ -602,10 +640,11 @@ class Pipeline:
         signal.signal(signal.SIGTERM, self.stop)
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
-        self.log(f"{SET['title'][0].lower() + SET['title'][1:]}{' (smoke test)' if cfg.smoke else ''}: {', '.join(cfg.cases)}; scout level "
+        title = cfg.words["title"]
+        self.log(f"{title[0].lower() + title[1:]}{' (smoke test)' if cfg.smoke else ''}: {', '.join(cfg.cases)}; scout level "
                  f"{cfg.scout_level}, phases {cfg.level1} and {cfg.level2}; {cfg.jobs} at once"
                  + (f", {cfg.threads} OpenMP threads each" if cfg.omp else ", one core each") + f"; {machine()}")
-        self.log(f"logs: {self.logdir}")
+        self.log(f"logs: {self.logdir}; report and case files: {rel(cfg.out)}, {rel(cfg.assets)}")
         t0 = time.time()
         with ThreadPoolExecutor(max_workers=cfg.jobs) as pool:
             futures = [pool.submit(self.case, n) for n in cfg.cases]
@@ -770,13 +809,13 @@ def write_report(cfg, summary, rows):
     out = os.path.join(cfg.out, "report.md")
     built = [n for n, c in summary["cases"].items() if c.get("tube")]
     lines = [
-        f"# {SET['title']}" + (" (smoke test)" if cfg.smoke else ""),
+        f"# {cfg.words['title']}" + (" (smoke test)" if cfg.smoke else ""),
         "",
         f"Generated by `tools/basilisk/{SCRIPT}` on {summary['generated']} ({summary['machine']}; Basilisk "
         f"{summary['basilisk']}). {SET['bed']} "
         "(`tools/basilisk/run_periodic.sh`), the second crest studied: a scout at level "
         f"{cfg.scout_level} placed the switch and the window, phase 1 ran at level {cfg.level1} and phase 2 at level "
-        f"{cfg.level2} inside the window. {SET['bed_detail']} Numbers are [measured] in the model.",
+        f"{cfg.level2} inside the window. {cfg.words['bed_detail']} Numbers are [measured] in the model.",
         "",
         "| Case | Transect; what | H/h0 at T | A0, the foot crest (m; from) | Face vertical | H at vertical (crest, trough ahead) | Tube | "
         "Open, vertical to touchdown (s) | Jet A_J/H² (fit) | Tube A_O/H² (fit) | L/W (fit) | Tilt (fit) | Lip, cells across | "
@@ -806,7 +845,7 @@ def write_report(cfg, summary, rows):
         "",
         "## For the swept barrel's wiring",
         "",
-        *SET["wiring"],
+        *cfg.words["wiring"],
     ]
     open(out, "w").write("\n".join(lines) + "\n")
 

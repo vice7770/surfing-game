@@ -21,6 +21,13 @@
 # performance core and per 4 GB of memory). LEVEL2=14 runs phase 2 one level finer (phase 1 is reused). OMP=1 gives each
 # case its share of the performance cores with OpenMP (brew install libomp). PYTHON, BASILISK_HOME and RUNS as for the
 # Canyon's. POOL_CASES="pool_straight_small" runs one case only. Safe to rerun at any point.
+#
+# The bigger-tube batch (2026-11-04; docs/research/pool-tube-runs-2/README.md): name its cases in POOL_CASES (pool_knee_*,
+# pool_ledge_*, pool_steep9_*) and its report goes to docs/research/pool-tube-runs-2, its case files to barrels/ there,
+# never public/barrels:
+#   JOBS=6 POOL_CASES="pool_ledge_big pool_ledge_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" \
+#     CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
+# (give status the same POOL_CASES). stop stops every pool case (the prefix is pool).
 HERE="$(cd "$(dirname "$0")" && pwd)"
-export TUBE_SET=pool TUBE_SCRIPT="npm run barrels:pool --" TUBE_PREFIX=pool_straight TUBE_USAGE="$HERE/run_pool.sh"
+export TUBE_SET=pool TUBE_SCRIPT="npm run barrels:pool --" TUBE_PREFIX=pool TUBE_USAGE="$HERE/run_pool.sh"
 exec bash "$HERE/run_canyon.sh" "$@"
