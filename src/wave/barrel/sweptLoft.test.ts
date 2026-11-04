@@ -344,8 +344,11 @@ describe('the swept loft', () => {
     const times = library().profileTimes(query);
     expect(times).toEqual({
       scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds,
-      collapseSeconds: lookup.collapseSeconds,
+      collapseSeconds: lookup.collapseSeconds, startSeconds: times.startSeconds,
     });
+    // Its earliest frame (step 7's τ_e): the toy cases' first frame, −0.5 √(h0/g), at the slice's time scale.
+    const unit = lookup.frameSeconds / 0.25;
+    expect(times.startSeconds).toBeCloseTo(-0.5 * unit, 9);
   });
 });
 
