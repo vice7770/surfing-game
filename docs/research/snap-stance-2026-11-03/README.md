@@ -10,7 +10,7 @@ Round 1: branch `claude/snap-stance`, merged as PR #186. Round 2: branch `claude
   - b15ce8af (this round's fix): **the hips over the back foot, not behind it.** Snap no longer leans the upper body back as full S does (`AttachedRider.balanceStep`). That lean put the centre of mass 0.14 m behind the back foot. Under braking it made the board pivot nose-up about the rider, run 60–70° off its path and spin back 100° when let go, and the drawn crouch read half its depth.
 - **Measured** (Round 2, R2.4): the drawn crouch reads 0.80–0.82 of Compress's full depth, against 0.10–0.13 in round 1 and 0.53–0.55 at d49c1c87. On still water the rider no longer falls with the keys' input (0 of 6 falls; d49c1c87: 5 of 6). Off a climb Snap turns twice as far as the steer alone, with no falls (round 1 and d49c1c87 fell in 2–3 of 4).
 - **Not solved: the two moves back to back.** A bottom turn up a face followed by a turn back down falls for every stance, Snap's included: 0 of 8 with Snap, 0 of 8 steering alone, 2 of 8 with Compress (which has its gameplay lean-out pull). R2.3 explains the physics and gives the owner's options.
-- **Tests:** see R2.6.
+- **Tests:** tsc clean; the main suite 3,030 passed, 23 expected fails, 0 failed; the Wave Pool subset 36 passed (R2.6).
 
 ## Next steps
 
@@ -196,7 +196,9 @@ The falls are R2.1's deep U.
   - let go: carrying on round, not spinning back (new).
 - The pinned `it.fails` still fail.
 - On d49c1c87's code 4 of the 13 fail: the back foot, the climb, the fins and the spin-back.
-- Results: see the commit that adds this section (the test run's counts are filled in there).
+- `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
+- The main suite (`--maxWorkers=3`, without `SurfZoneSimulation` and `SurfZoneRunner`): **316 files passed (31 skipped); 3,030 tests passed, 23 expected fails, 37 skipped, 0 failed** (415 s).
+- The Wave Pool subset of `SurfZoneSimulation.test.ts` (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): **36 passed, 68 filtered out, 0 failed** (6,102 s).
 
 ### R2.7 The owner's shot list (round 2)
 
