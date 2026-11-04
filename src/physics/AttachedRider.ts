@@ -654,10 +654,18 @@ const TRIM_SHIFT = 0.25;
  * is the rider's own posture, and the turn and the speed it costs are the hull's and the fins' (`BoardBody`).
  * - **The weight on the tail:** the balance holds the feet's pressure SNAP_PRESSURE of half the stance toward the back
  *   foot, over the side fins (0.7: 85/15 on the back foot; Rapture's snap, 80/20 to 90/10), within SNAP_FREEDOM, m,
- *   where the trim lets it wander TRIM_FREEDOM (the coaching's "commit to extreme back-foot loading"), and the upper body
- *   leans back as full S does (TRIM_SHIFT). The hull trims nose up until its lift sits under the load (the
- *   Exploratorium's surfing physics; Savitsky 1964): the wetted length shortens into the rockered tail, the nose leaves
- *   the water, the yaw it resisted goes, and the trim's drag slows the board.
+ *   where the trim lets it wander TRIM_FREEDOM (the coaching's "commit to extreme back-foot loading"). The hull trims
+ *   nose up until its lift sits under the load (the Exploratorium's surfing physics; Savitsky 1964): the wetted length
+ *   shortens into the rockered tail, the nose leaves the water, the yaw it resisted goes, and the trim's drag slows the
+ *   board. The hips go over the back foot, not behind it: the upper body stays over them (no TRIM_SHIFT, which S keeps).
+ *   Round 2 (the owner's "the board moves by itself ... the rider falls after"): leaning the upper body back as full S
+ *   does on top of the pressure put the centre of mass 0.15 m behind the back foot. Under the board's braking the
+ *   balance then kept the pressure on the tail only by sitting further back, the nose rose 20–47°, and the board
+ *   pivoted about the rider at about 200°/s while the rider's own path turned at about 30°/s: its heading ran 60–70°
+ *   off its path, the fins stalled (attack 45–85°), the speed fell to 0.2 m/s, and let go, the fins weathervaned it
+ *   back 100° and the rider fell (flat water, 7 m/s). The drawn hips sat behind the back foot on a pitched board and
+ *   the crouch read half its depth. Over the back foot, the same turn keeps its fins (the heading within 25–30° of the
+ *   path) and the rider stays on (docs/research/snap-stance-2026-11-03/README.md, Round 2).
  * - **The body loaded:** the legs come down SNAP_DEPTH of CROUCH_DEPTH (0.3 m, Compress's depth) as fast as Compress
  *   takes them (no slower than the load falls, the legs only pushing), and let go they extend as Compress's do (the
  *   projection). With the hips over the back foot the back knee closes past 90° and the front leg stays long (the
@@ -3066,7 +3074,8 @@ export class AttachedRider {
     // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
     const level = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
-    const trim = snap > 0 ? level + snap * (-TRIM_SHIFT - level) : level;
+    // Snap: the upper body over the hips, which the pressure has put over the back foot (no lean back past it).
+    const trim = snap > 0 ? level * (1 - snap) : level;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
   }

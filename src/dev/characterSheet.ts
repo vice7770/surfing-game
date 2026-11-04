@@ -326,8 +326,9 @@ const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
   // The snap stance (2026-11-03; round 2): on flat water at 8 m/s, Snap and a full steer onto the heels (frontside) or the
   // toes (backside) at 0.3 s (the legs loading, the hips over the back foot, the shoulders wound toward the turn, the
   // board coming round under them), let go at 0.9 s with the steer held; `snap-long` holds it to 1.2 s, taken alone at
-  // 0.3 s and steered from 0.6 s: the board slows to 4 m/s under a body leaning in, and the rider falls 0.7 s after
-  // letting go (`docs/research/snap-stance-2026-11-03/README.md`).
+  // 0.3 s and steered from 0.6 s: the board slows from 7.4 to 5.9 m/s turning 90° by 2 s, and the rider stays on (with
+  // the upper body leaning back past the hips, as before round 2's fix, it slowed to 4.2 m/s, turned 56° and the rider
+  // fell at 1.9 s; `docs/research/snap-stance-2026-11-03/README.md`, Round 2).
   snap: { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1, steer: -1 }, { at: 0.9, snap: 0, steer: -1 }], seconds: 2 },
   'snap-backside': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1, steer: 1 }, { at: 0.9, snap: 0, steer: 1 }], seconds: 2 },
   'snap-long': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1 }, { at: 0.6, snap: 1, steer: -1 }, { at: 1.2, snap: 0, steer: -1 }], seconds: 2 },
