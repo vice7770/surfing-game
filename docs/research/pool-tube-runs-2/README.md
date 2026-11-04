@@ -177,3 +177,18 @@ git add docs/research/pool-tube-runs-2
 git commit -m "data(pool): the bigger-tube batch at level 13"
 git push
 ```
+
+## Checks on this branch (the M1, 2026-11-04)
+
+- **The option is off by default:** every older case's qcc line (`run_periodic.sh flags`, 16 cases) is byte for byte
+  main's, and a level-8 run of `pool_straight_small` (t 0–3) with main's `periodic.c` and this one wrote identical facets
+  (42 frames), `bed.dat` and `final`.
+- **The runner:** `npm run barrels:pool -- check` passes; `-- smoke` passes (the converter's `.bin` matches the
+  committed one byte for byte), and so does a smoke of the six batch cases at levels 7 and 8 (its report under the
+  batch's title, every case file beside it). The batch's folders: report and `barrels/` in `docs/research/pool-tube-runs-2`
+  by default; `CANYON_OUT=docs/research/pool-tube-runs` with a batch case is refused; the earlier pool and Canyon runs
+  still write to their own folders and `public/barrels`.
+- **Types and tests:** `npx tsc --noEmit -p .` clean; the main suite (`npx vitest run src --maxWorkers=3`, without
+  SurfZoneSimulation and SurfZoneRunner) 317 files passed, 34 skipped; 3050 tests passed, 23 expected fails, 40 skipped.
+  No `src/` change, so no SurfZoneSimulation subset. No test covers `tools/basilisk` itself; the smoke runs are its check.
+- **The M1's Basilisk time:** about 15 minutes (levels 7–10 only).
