@@ -87,10 +87,12 @@ CASES_ALL="$CASES_ALL pool_straight_small:4.5:0.352:10:0.0535:0.2:64:20:34:24:48
 # today's face, 1:18.7 / 1:21.6 along the ray; ledge: the Reef-type ledge, one face at 1:4.5; steep9: one face at 1:9, the
 # trend between them. Every one ends in the reef top along the ray, 2.7 h0 (the floor's 6 m flatWidth square to the reef,
 # crossed at cos α ≈ 0.5), then 1:20 (its backSlope 1/10 square to it) back down to the platform's depth: the knee and the
-# ledge differ in the face alone. Provisional windows: run_pool.sh scouts each case.
-CASES_ALL="$CASES_ALL pool_knee_small:4.5:0.26:10:0.0535:0.2:64:20:34:24:48:::2.7:0.05 pool_knee_big:4.5:0.32:10:0.0463:0.2:64:20:34:24:50:::2.7:0.05"
-CASES_ALL="$CASES_ALL pool_ledge_small:4.5:0.32:10:0.2222:0.2:64:20:34:24:48:::2.7:0.05 pool_ledge_big:4.5:0.37:10:0.2222:0.2:64:20:34:24:50:::2.7:0.05"
-CASES_ALL="$CASES_ALL pool_steep9_small:4.5:0.26:10:0.1111:0.2:64:20:34:24:48:::2.7:0.05 pool_steep9_big:4.5:0.32:10:0.1111:0.2:64:20:34:24:50:::2.7:0.05"
+# ledge differ in the face alone. The switch, end and window are the M1's level-10 scouts' (2026-11-04: the advisor's
+# provisional 20:34:24:48/50 ended the knee pair before its touchdown and started the ledge pair under 3 before vertical);
+# run_pool.sh scouts each case again and freezes its own.
+CASES_ALL="$CASES_ALL pool_knee_small:4.5:0.26:10:0.0535:0.2:64:27:37.5:33:48:::2.7:0.05 pool_knee_big:4.5:0.32:10:0.0463:0.2:64:26.5:37:33:48:::2.7:0.05"
+CASES_ALL="$CASES_ALL pool_ledge_small:4.5:0.32:10:0.2222:0.2:64:17.5:28:24:40:::2.7:0.05 pool_ledge_big:4.5:0.37:10:0.2222:0.2:64:17.5:28:24:41:::2.7:0.05"
+CASES_ALL="$CASES_ALL pool_steep9_small:4.5:0.26:10:0.1111:0.2:64:22.5:33:28:43:::2.7:0.05 pool_steep9_big:4.5:0.32:10:0.1111:0.2:64:21.5:32:28:43:::2.7:0.05"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.

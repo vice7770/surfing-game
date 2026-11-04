@@ -209,6 +209,8 @@ npm run barrels:pool -- status              # the last run's cases: phase, t and
 
 - **What it does:** each case as the earlier pool runs: a level-10 scout places its switch, end and window; phase 1 at
   level 10, phase 2 at level 13 (`LEVEL2` stays 13) in the window; then the analysis, the case files and the report.
+  The M1's level-10 scouts (2026-11-04) broke all six in the domain, the knee on its face and the ledge at the crest
+  edge; the case lines carry their windows, and the M4's scout places its own.
 - **Where it writes:** the runs in `tools/basilisk/runs/` (git-ignored; the windows frozen in `runs/pool/cases.txt` beside
   the earlier pool cases', which keep theirs). The report, `summary.json`, `data/`, the figures, `barrel-index.json`,
   `barrel-cases.md` and the case files (`barrels/*.bin`) all go to `docs/research/pool-tube-runs-2/`. Nothing goes to
