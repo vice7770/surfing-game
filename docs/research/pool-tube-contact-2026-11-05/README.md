@@ -333,8 +333,10 @@ their touchdown and 433 of them poured their jets; per jet, only 53.5 % landed o
     against `?tubeCap=old`;
   - `src/game/PhysicalMode.test.ts`: the URL switches and the online pin;
   - then the main suite and the SZS subset.
-  - **This head:** both type checks clean; the main suite: 320 files passed, 34 skipped; 3,078 tests passed, 23 expected
-    fails, 40 skipped (723 s); the SZS subset: 37 passed, 70 filtered out (6,594 s). (The first main-suite run caught the
+  - **This head (the guard opt-in):** both type checks clean; the main suite: 320 files passed, 34 skipped; 3,078 tests
+    passed, 23 expected fails, 40 skipped (676 s). The SZS subset (37 passed, 70 filtered out, 6,594 s) ran with the guard on
+    by default, before it became opt-in, and was not re-run: no SurfZoneSimulation test steps the pool's straight Barrel (its
+    three lines only build one), and the guard acts nowhere else. (The first main-suite run caught the
     clear-roof drawing test comparing the loft's new plain-array diagnostic, `openDrops`, by identity; it now compares plain
     arrays by value.)
 - **The bars:** `PROBE=1 H=1.05 CASE=a38 LOG=runs/default-a38-1.05.txt npx vitest run src/wave/probes/poolTubeFace.probe.test.ts --maxWorkers=2`
@@ -347,11 +349,11 @@ their touchdown and 433 of them poured their jets; per jet, only 53.5 % landed o
   - 11–13 min a run on this M1, two at a time (12 periods).
 - **The pin check:** `pin-contact.ts` (its header has the command). Bundle it against main (a `git archive` of 108d97c3's
   `src` with `node_modules` and `public` linked in) and against the branch, then compare: every line matches but the
-  Barrel's defaults (`runs/pin-main.txt`, `runs/pin-branch.txt`): every other spot; the Barrel with the four switches old, and
-  with step 7's three old too, on both case lists at both sizes, including the water the bodies feel (`sampleAt` on a grid
-  through the waves: its surface, normal, slope, flow and layers). The branch's default runs twice identically.
-
-
+  Barrel's defaults (`runs/pin-main.txt`, `runs/pin-branch.txt`, the branch's re-run after the guard became opt-in): every other
+  spot; the Barrel with the three switches old (the guard off, its default), and with step 7's three old too, on both case
+  lists at both sizes, including the water the bodies feel (`sampleAt` on a grid through the waves: its surface, normal,
+  slope, flow and layers). The branch's default runs twice identically. Its `?tubeGuard=on` line hashes as its default over the
+  pin's 8 s (no jet returned yet, `returned: 0` in its ledger: the guard is on but has not acted that soon).
 ## The owner's shot list
 
 Wave Pool → Waves: **Barrel**, at **1.5 m** and at **1.8 m**, dev build (the URL switches are read). Record each. The probe's
