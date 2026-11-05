@@ -170,6 +170,33 @@ describe('the step 7 follow-up: the retire guard by the case\'s open time', () =
 });
 
 describe('the step 7 follow-up: no holes in the tube', () => {
+  it('joins a crest beside a front\'s end to that front, within 1.5 slice spacings and 0.3 s of its clock (`merge`)', () => {
+    const front = new BreakingFront(1, { h0: 4.4, band: [3.8, 3.2], joinDepth: () => 2.5, throwDepth: () => 2, lagged: true, earliest: -1.7 }, { merge: true });
+    const point = (id: number, column: number, z: number, tau: number, f = 7): FrontPoint => ({
+      id, front: f, column, sigma: column, x: column + 0.5, z, b: Number.NaN, height: 0.8, joined: 10 + column, depth: 2.5, throwDepth: 2,
+      crestDepth: 2.4, thrown: null, throwZ: null, footHeight: 0.84, footDepth: 4.4, broke: 0, tau, seen: 0, fresh: null,
+    });
+    const byColumn = (points: FrontPoint[]) => {
+      const map = new Map<number, FrontPoint[]>();
+      for (const p of points) map.set(p.column, [...(map.get(p.column) ?? []), p]);
+      return map;
+    };
+    const endBeside = (front as unknown as { endBeside(m: Map<number, FrontPoint[]>, s: CrestSample, tau: number): FrontPoint | undefined }).endBeside.bind(front);
+    const crest = (column: number, z: number): CrestSample => ({
+      column, row: 0, x: column + 0.5, z, eta: 0.8, wave: 1.2, strength: 0, rise: 0, depth: 2.4, b: Number.NaN, speed: 4, dirX: 0, dirZ: 1,
+    });
+    // A front over columns 0–4, its end at column 4: a crest in column 5 beside it, 0.5 m on in z, joins it.
+    const points = [0, 1, 2, 3, 4].map((k) => point(k, k, 20, -1.55));
+    expect(endBeside(byColumn(points), crest(5, 20.5), -1.7)?.id).toBe(4);
+    // Too far along the crest (1.5 slice spacings: 1.5 m), or its clock more than 0.3 s apart: no.
+    expect(endBeside(byColumn(points), crest(5, 21.2), -1.7)).toBeUndefined();
+    expect(endBeside(byColumn(points), crest(5, 20.5), -1.9)).toBeUndefined();
+    // Not an end: its front already has a point in the crest's column.
+    expect(endBeside(byColumn([...points, point(9, 5, 25, -1.55)]), crest(5, 20.5), -1.7)).toBeUndefined();
+    // From the other side, the front's start.
+    expect(endBeside(byColumn(points.map((p) => ({ ...p, column: p.column + 1, x: p.x + 1 }))), crest(0, 20.3), -1.7)?.id).toBe(0);
+  });
+
   const STILL = 0.5;
   /** Two fronts along +x, overlapping over x 7–10 a little apart in z, each thrown at its own clock. */
   function records(tauA: number, tauB: number): Float32Array {
@@ -191,23 +218,16 @@ describe('the step 7 follow-up: no holes in the tube', () => {
   }
   const library = () => new ProfileLibrary([lipCase(0.3, 0.04)]);
 
-  it('never drops an open strip at weight 0.5 or more, and between thrown strips keeps the earlier-thrown (`TubeFace.merge`)', () => {
-    for (const [tauA, tauB] of [[0.3, 0.1], [0.1, 0.3]]) {
+  it('never drops an open strip at weight 0.5 or more (`TubeFace.merge`); `?tubeMerge=old` as before', () => {
+    for (const [tauA, tauB] of [[0.3, 0.1], [0.1, 0.3], [0.3, 0.3]]) {
       const merged = new SweptLoft(library(), 0.05, { contact: true, face: face({ merge: true }) }).build(records(tauA, tauB), 20, STILL, () => STILL);
+      const old = new SweptLoft(library(), 0.05, { contact: true, face: face({}) }).build(records(tauA, tauB), 20, STILL, () => STILL);
       expect(merged.overlaps + merged.overlapsKept).toBeGreaterThan(0);
       expect(merged.overlapsOpenHeavy).toBe(0);
-      // Every dropped thrown strip belongs to the later-thrown front (the smaller clock), unless it is the light one.
-      const later = tauA < tauB ? 1 : 2;
-      for (let m = 0; m < merged.openDrops.length; m += 2) {
-        const gone = merged.openDrops[m];
-        const kept = merged.openDrops[m + 1];
-        const heavy = (s: number) => Math.max(merged.sliceWeight[s], merged.sliceWeight[s + 1]) >= 0.5;
-        if (!heavy(kept)) expect(merged.sliceFront[gone]).toBe(later);
-      }
-      // `?tubeMerge=old`: the rule before (the weaker strip gives way), the cut ends over 1 m.
-      const old = new SweptLoft(library(), 0.05, { contact: true, face: face({}) }).build(records(tauA, tauB), 20, STILL, () => STILL);
       expect(old.overlapsKept).toBe(0);
       expect(old.overlaps).toBeGreaterThan(0);
+      // Where the rule before dropped none at weight 0.5, the two agree on every strip.
+      if (old.overlapsOpenHeavy === 0) expect([...merged.sliceJoined.subarray(0, merged.sliceCount)]).toEqual([...old.sliceJoined.subarray(0, old.sliceCount)]);
     }
     expect(LOFT.endBlend).toBe(1);
   });

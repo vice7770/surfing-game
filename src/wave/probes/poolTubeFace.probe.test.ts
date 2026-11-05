@@ -256,18 +256,21 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       // (`?tubeAnchor=old&tubeForm=old&wallFlow=old`), each sea spun up SETTLE s, then 600 steps of 1/60 s alternately in
       // blocks of 25.
       const lib = libraryFromBytes(caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
-      const arms = (['step 7', 'step 6'] as const).map((arm) => {
+      // COST_ARMS=followUp (the 2026-11-05 follow-up): the default against main's build before it (its four switches old).
+      const followUp = process.env.COST_ARMS === 'followUp';
+      const arms = (followUp ? ['default', 'follow-up off'] as const : ['step 7', 'step 6'] as const).map((arm) => {
         const sim = new SurfZoneSimulation({
           spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
           tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
           ...(arm === 'step 6' ? { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' } : {}),
+          ...(arm === 'follow-up off' ? { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'old' } : {}),
         } as unknown as SurfZoneConfig, 'spun-up', lib);
         const tubeFace = sim.tubeFace;
         const contact = new SweptContact(lib, BARREL_SLOPE.pool!, tubeFace ? { face: tubeFace } : {});
         const water = PhysicalSurfWater.forSimulation(sim, contact, 1);
         const drawing = new SweptLoft(lib, BARREL_SLOPE.pool!, { holdClearDrawing: true, ...(tubeFace ? { face: tubeFace } : {}) });
         const grid = sim.renderGrid(1);
-        return { arm, sim, contact, water, drawing, grid, surface: new Float32Array(grid.nx * grid.nz * 2), records: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE), step: [] as number[], update: [] as number[], draw: [] as number[] };
+        return { arm, sim, contact, water, drawing, grid, surface: new Float32Array(grid.nx * grid.nz * 2), records: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE), step: [] as number[], update: [] as number[], draw: [] as number[], felt: [] as number[] };
       });
       for (const a of arms) while (a.sim.solver.time < settle) a.sim.step(1 / 30);
       for (let block = 0; block < 24; block += 1) {
@@ -285,11 +288,36 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
             t = performance.now();
             a.drawing.build(a.records, count, a.sim.solver.restLevel, (x, z) => sampleSurfaceHeight(a.surface, a.grid, x, z));
             a.draw.push(performance.now() - t);
+            // The bodies' water (the follow-up's nearest surface is per sample): 64 samples through the middle standing slice's
+            // wave, 1 m behind its point to 2 m ahead along its ray, from its trough to its crest, ms per 1000 samples.
+            const loft = a.contact.last;
+            if (loft && loft.sliceCount > 0) {
+              let mid = -1;
+              for (let q = 0; q < loft.sliceCount; q += 1) if (loft.sliceWeight[q] >= 0.5 && loft.sliceJoined[q] === 1 && (mid < 0 || Math.abs(q - loft.sliceCount / 2) < Math.abs(mid - loft.sliceCount / 2))) mid = q;
+              if (mid >= 0) {
+                const c = 3 * (mid * S + E + LANDMARK.crest);
+                const rx = loft.sliceRayX[mid];
+                const rz = loft.sliceRayZ[mid];
+                const x0 = loft.positions[c] - loft.sliceShift[mid] * rx;
+                const z0 = loft.positions[c + 2] - loft.sliceShift[mid] * rz;
+                const top = loft.positions[c + 1];
+                const bottom = a.sim.solver.restLevel - 0.5;
+                const out = createWaterSample();
+                t = performance.now();
+                a.water.withSurfaceNodeCache(() => {
+                  for (let i = 0; i < 8; i += 1) for (let j = 0; j < 8; j += 1) {
+                    const xi = -1 + (3 * i) / 7;
+                    a.water.sampleAt(x0 + xi * rx, bottom + ((top - bottom) * j) / 7, z0 + xi * rz, out);
+                  }
+                });
+                a.felt.push(((performance.now() - t) * 1000) / 64);
+              }
+            }
           }
         }
       }
       appendFileSync(log, `pool straight Barrel, H ${height} m, cases ${caseName}: the cost on this M1 (Node, shared load), p10 / p50 / p90 ms, 600 steps each after ${settle} s, alternating\n`
-        + arms.map((a) => `- ${a.arm}: the sea's step ${q3(a.step)}; the contact's update ${q3(a.update)}; the drawing's loft build ${q3(a.draw)}`).join('\n') + '\n');
+        + arms.map((a) => `- ${a.arm}: the sea's step ${q3(a.step)}; the contact's update ${q3(a.update)}; the drawing's loft build ${q3(a.draw)}; the bodies' water through the wave, ms per 1000 samples ${q3(a.felt, 3)}`).join('\n') + '\n');
       return;
     }
     const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool');
@@ -440,8 +468,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     };
 
     // The bodies (bars 2 and 9): their reactions not applied, so the sea stays shared and as is.
+    let sampleCalls = 0;
+    let bodySteps = 0;
     const quiet = (w: PhysicalSurfWater): SurfWater => ({
-      sampleAt: (x, y, z, out) => w.sampleAt(x, y, z, out),
+      sampleAt: (x, y, z, out) => { sampleCalls += 1; return w.sampleAt(x, y, z, out); },
       surfaceAt: (x, z) => w.surfaceAt(x, z),
       addReaction: () => {},
       setSampleTime: (offset) => w.setSampleTime(offset),
@@ -539,6 +569,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       return inside ? best : -best;
     };
     const stepBodies = (dt: number) => {
+      bodySteps += bodies.length;
       for (const body of bodies) {
         const real = body.water === 'swept' ? water : plain;
         if (body.session) real.withSurfaceNodeCache(() => body.session!.step(dt, waters[body.water], input));
@@ -749,6 +780,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const lastDW = new Map<number, { n: number; dW: number }>();
     const jitters: number[] = [];
     const ownPace: number[] = [];
+    const targetInside: number[] = [];
+    const targetEnds: number[] = [];
     const bigSteps: { step: number; text: string }[] = [];
     /** |ΔW − C Δt| over consecutive steps only, and over a gap (the point unread for a step or more: not one step's change). */
     const consecutiveSteps: number[] = [];
@@ -840,6 +873,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         const placed = contact.last?.recordShift;
         if (placed && count === simulation.front.points.length) {
           const pts = simulation.front.points;
+          // Each point's front's first and last index in the list (points are by front, then σ).
+          const i0Of = (k: number) => { let i = k; while (i > 0 && pts[i - 1].front === pts[k].front) i -= 1; return i; };
+          const i1Of = (k: number) => { let i = k; while (i < pts.length - 1 && pts[i + 1].front === pts[k].front) i += 1; return i; };
           pts.forEach((p, k) => {
             const shift = placed[k];
             if (shift === Infinity) return;
@@ -894,7 +930,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
                   lastDW.set(p.id, { n, dW });
                   const target = p.anchorTarget;
                   if (target !== undefined && target === target && was.target === was.target) {
-                    ownPace.push(Math.abs(dW - ((p.x - was.x) * nx + (p.z - was.z) * nz + target - was.target)));
+                    const dTarget = (p.x - was.x) * nx + (p.z - was.z) * nz + target - was.target;
+                    ownPace.push(Math.abs(dW - dTarget));
+                    // The target's own step against the wave's advance, inside a front and within 3 points of its ends.
+                    const fromEnd = Math.min(k - i0Of(k), i1Of(k) - k);
+                    (fromEnd >= 3 ? targetInside : targetEnds).push(Math.abs(dTarget - advance));
                   }
                 }
               }
@@ -959,6 +999,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       for (const p of simulation.front?.points ?? []) {
         if (p.crashedAt === undefined || p.jetStrip === undefined || p.jetStrip < 0 || crashedIds.has(p.id)) continue;
         crashedIds.add(p.id);
+        // A jet the guard returned to its crest lands nowhere (`TubeFace.guard`).
+        if (p.jetReturned) continue;
         let near = -1;
         for (let q = 0; q < loft.sliceCount; q += 1) {
           if (loft.sliceFront[q] % FRONT_PIECE !== p.front) continue;
@@ -1104,7 +1146,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     lines.push(`pool straight Barrel, H ${height} m at the feed, cases ${caseName}, switches ${JSON.stringify(switches)}, tubeFace ${JSON.stringify(face)}; ${periods} periods after ${settle} s; CPU 1/60 s; ${((Date.now() - t0) / 1000).toFixed(0)} s wall`);
     lines.push(`reads ${reads.length}, fronts ${new Set(reads.map((r) => r.front)).size}; H_s ${q3(reads.map((r) => r.Hs))} m; drawn H (its crest over the solver's trough) ${q3(reads.map((r) => r.Hd))} m; shift (the drawn crest ahead of the point) ${q3(reads.map((r) => r.shift))} m; the cases' own lowest less the solver's trough ${q3(reads.map((r) => r.troughGap).filter((v) => Number.isFinite(v)))} m`);
     const anchorStats = (contact as unknown as { loft: { faceAnchor?: { stats: object } } }).loft.faceAnchor?.stats;
-    lines.push(`the contact's face anchor: ${JSON.stringify(anchorStats ?? 'none')}; the front: joins ${simulation.front?.joins}, unbroken ${simulation.front?.unbroken}, lost ${simulation.front?.lost}`);
+    lines.push(`the contact's face anchor: ${JSON.stringify(anchorStats ?? 'none')}; the front: joins ${simulation.front?.joins}, unbroken ${simulation.front?.unbroken}, lost ${simulation.front?.lost}, joined beside a front's end (\`TubeFace.merge\`) ${simulation.front?.merges}`);
     const bins: [string, (r: Read) => boolean][] = [
       ['τ < −1 s', (r) => r.tau < -1], ['τ −1…0 s', (r) => r.tau >= -1 && r.tau < 0], ['life 0–0.3', (r) => r.life >= 0 && r.life < 0.3],
       ['life 0.3–0.6', (r) => r.life >= 0.3 && r.life < 0.6], ['life 0.6–1', (r) => r.life >= 0.6 && r.life < 1], ['landed', (r) => r.after >= 0],
@@ -1331,6 +1373,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       const boards = game.filter((b) => b.kind === 'board');
       const flipped = (g: Body[], key: 'forceFlips' | 'normalFlips') => g.reduce((t, b) => t + b[key], 0);
       const stepsOf = (g: Body[]) => g.reduce((t, b) => t + b.flipSteps, 0);
+      lines.push(`## Cost (information): the bodies' water samples a body step ${fmt(sampleCalls / Math.max(1, bodySteps), 1)} on average (${bodySteps} body steps)`);
       lines.push(`## The risks: lone boards clear of the water before touchdown by more than 0.1 / 0.3 m (flung): ${boards.filter((b) => b.clearest < -0.1).length} / ${boards.filter((b) => b.clearest < -0.3).length} of ${boards.length}, most clear p90 / max ${fmt(quantile(boards.map((b) => -b.clearest).filter((v) => Number.isFinite(v)), 0.9), 3)} / ${fmt(most(boards.map((b) => -b.clearest).filter((v) => Number.isFinite(v)), 0), 3)} m; the water's force on the hull turning past 90° in a step (both over half the board's weight): ` + (['board', 'prone', 'rider'] as const).map((kind) => { const g = game.filter((b) => b.kind === kind); return `${kind} ${flipped(g, 'forceFlips')} in ${stepsOf(g)} steps`; }).join(', ') + `; the sampled normal turning over 30° in a step: ` + (['board', 'prone', 'rider'] as const).map((kind) => { const g = game.filter((b) => b.kind === kind); return `${kind} ${flipped(g, 'normalFlips')}`; }).join(', '));
     }
     // Bar 3, one-sided, below the anchor (0.05–0.25 H_s), through life 0.6.
@@ -1349,6 +1392,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const counted = Object.fromEntries(Object.entries(anchorCounts).map(([key, value]) => [key, value - (anchor0 as Record<string, number>)[key]]));
     const facedSteps = counted.kept + counted.capped;
     lines.push(`## Bar 4b, re-ruled: jitter |ΔW_n − ΔW_(n−1)| p99 ${fmt(quantile(jitters, 0.99), 4)} m (≤ 0.005), max ${fmt(most(jitters, 0), 3)} (≤ 0.02), n ${jitters.length}; against the case's own pace |ΔW − ΔW*| p99 ${fmt(quantile(ownPace, 0.99), 4)} m (≤ 0.01), n ${ownPace.length}; single steps |ΔW − C Δt| over 0.1 m (consecutive steps): ${consecutiveSteps.filter((v) => v > 0.1).length} (0), max ${fmt(most(consecutiveSteps, 0), 3)} m, p99.9 ${fmt(quantile(consecutiveSteps, 0.999), 4)}; across a gap of unread steps (not one step's change) ${skippedSteps.length} reads, over 0.1 m ${skippedBig}, max ${fmt(most(skippedSteps, 0), 3)}; all reads as step 7 measured them, over 0.1 m ${frameSteps.filter((v) => v > 0.1).length}, max ${fmt(most(frameSteps, 0), 3)}; the cap engaged on ${pct(counted.capped, facedSteps)} of ${facedSteps} faced steps (≤ 10 %); the anchor's outcomes this run ${JSON.stringify(counted)}; |ΔW − C Δt| (information) p50 / p99 / p99.9 ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(frameSteps, q), 4)).join(' / ')}`);
+    lines.push(`- (information) the target's own step against the wave's advance |ΔW* − C Δt|, p50 / p90 / p99: inside a front (3 points or more from its ends) ${[0.5, 0.9, 0.99].map((q) => fmt(quantile(targetInside, q), 4)).join(' / ')} m (n ${targetInside.length}); within 3 points of its ends ${[0.5, 0.9, 0.99].map((q) => fmt(quantile(targetEnds, q), 4)).join(' / ')} m (n ${targetEnds.length})`);
     for (const big of bigSteps.slice(0, 12)) lines.push(`  - ${big.text}`);
     // The ledger.
     const twice = [...throwsOf.values()].filter((v) => v > 1).length;

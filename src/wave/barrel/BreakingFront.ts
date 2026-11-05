@@ -8,6 +8,12 @@ const LINK_ROWS = 3;
 /** A crest this close in z to last step's in its column is the same point, m (provisional: 20 m/s × 0.1 s), plus a row, its cell's jump. */
 const MATCH_REACH = 2;
 /**
+ * The step 7 follow-up's join (`FrontOptions.merge`; the advisor's 2026-11-05 ruling §5.1): a crest joining by distance
+ * beside a front's end point within `reach` slice spacings (the front's, a column) along the crest and `clock` s of its
+ * clock (τ_e as it joins) joins that front: its join taken as the end's.
+ */
+export const MERGE = { reach: 1.5, clock: 0.3 } as const;
+/**
  * A crest on its way in, not yet breaking, is the same one this close, m: a long swell's crest is broad and flat on
  * the ramp, so its highest cell jumps metres between steps, while crests there stand a wavelength (100 m and more) apart
  * (provisional).
@@ -372,6 +378,9 @@ export class BreakingFront {
   bridges = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
+  private readonly cell: number;
+  /** With `merge`: crests that joined a front beside them (a diagnostic). */
+  merges = 0;
 
   /**
    * `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock);
@@ -380,6 +389,7 @@ export class BreakingFront {
   constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}, private readonly carrier?: CarrierSupport) {
     this.linkReach = LINK_ROWS * cell;
     this.matchReach = MATCH_REACH + cell;
+    this.cell = cell;
   }
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
@@ -490,9 +500,15 @@ export class BreakingFront {
         if (next.crossed !== null) {
           this.joins += 1;
           this.sizes?.joined.push(next.refHeight);
+          // The follow-up's join (`merge`): beside a front's end, within a slice spacing and a half along the crest and
+          // 0.3 s of its clock, it joins that front: its join the end's, so the split by joins never parts the two.
+          // *(Built so)* Its own clock, τ_e as it joins: a trial by its distance clock (−D/C_p) merged 930 of 1,000 joins at
+          // a38 1.5 m, chaining waves the split keeps apart (holes 0.157 a build, folds 0.99), so the ruling's literal rule.
+          const end = this.options.merge ? this.endBeside(pointsOf, s, earliest) : undefined;
+          if (end) this.merges += 1;
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
-            joined: next.crossed, depth: s.depth, throwDepth, crestDepth: s.depth, thrown: null, throwZ: null,
+            joined: end ? end.joined : next.crossed, depth: s.depth, throwDepth, crestDepth: s.depth, thrown: null, throwZ: null,
             footHeight: next.footHeight, footDepth: this.timing.h0,
             broke: time, tau: earliest, seen: time, fresh: next.fresh, dirX, dirZ,
             ...(s.speed > 0 ? { crestSpeed: s.speed } : {}),
@@ -643,6 +659,27 @@ export class BreakingFront {
       start = end;
     }
     return leading;
+  }
+
+  /**
+   * With `merge` (the step 7 follow-up): the end point of a front beside crest `s` (in a neighbouring column, its front with no
+   * point in `s`'s), nearest it within `MERGE.reach` slice spacings and `MERGE.clock` s of `tau`, the joining crest's clock.
+   */
+  private endBeside(pointsOf: Map<number, FrontPoint[]>, s: CrestSample, tau: number): FrontPoint | undefined {
+    let best: FrontPoint | undefined;
+    let nearest = MERGE.reach * this.cell;
+    const own = pointsOf.get(s.column) ?? [];
+    for (const column of [s.column - 1, s.column + 1]) {
+      for (const p of pointsOf.get(column) ?? []) {
+        if (!(Math.abs(p.tau - tau) <= MERGE.clock) || own.some((q) => q.front === p.front)) continue;
+        const distance = Math.sqrt((p.x - s.x) * (p.x - s.x) + (p.z - s.z) * (p.z - s.z));
+        if (distance <= nearest) {
+          nearest = distance;
+          best = p;
+        }
+      }
+    }
+    return best;
   }
 
   /** Without `jumpReach`: counts a new crest first seen ahead of a sized one in its column within TRACK_REACH. */

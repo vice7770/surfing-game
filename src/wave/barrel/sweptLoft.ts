@@ -1825,8 +1825,10 @@ export class SweptLoft {
             const unthrown = (k: number) => r.slicePhase[k] === 0 && r.slicePhase[k + 1] === 0;
             if (this.face?.merge) {
               // The step 7 follow-up (the advisor's 2026-11-05 ruling §5.2): an open strip at weight ≥ 0.5 is never dropped
-              // (two of them both stay: a fold, which the contact's first front answers); else between two thrown strips the
-              // earlier-thrown (the later clock) stays, and the other's cut end blends over max(1 m, H) (`sealRuns`).
+              // (two of them both stay: a fold, which the contact's first front answers), and a thrown cut end blends over
+              // max(1 m, H) (`sealRuns`). *(Built so)* Between two thrown strips the lighter still gives way, as before: keeping
+              // the earlier-thrown instead raised the holes 9× at a38 1.5 m in 12 periods (0.009 → 0.083 a build), the earlier
+              // piece being mostly the short one already faded (weight 0.00–0.02) beside a live one.
               const openAt = (k: number) => (r.slicePhase[k] === 1 && r.sliceOverturned[k] === 1) || (r.slicePhase[k + 1] === 1 && r.sliceOverturned[k + 1] === 1);
               const heavy = (k: number) => openAt(k) && Math.max(r.sliceWeight[k], r.sliceWeight[k + 1]) >= 0.5;
               const hs = heavy(s);
@@ -1835,9 +1837,7 @@ export class SweptLoft {
                 r.overlapsKept += 1;
                 continue;
               }
-              let dropEarlier: boolean | undefined;
-              if (hs !== ht) dropEarlier = hs;
-              else if (!unthrown(s) && !unthrown(t)) dropEarlier = Math.max(r.sliceTau[s], r.sliceTau[s + 1]) > Math.max(r.sliceTau[t], r.sliceTau[t + 1]);
+              const dropEarlier: boolean | undefined = hs !== ht ? hs : undefined;
               if (dropEarlier !== undefined) {
                 const gone = dropEarlier ? t : s;
                 r.sliceJoined[gone] = 0;
