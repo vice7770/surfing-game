@@ -86,7 +86,7 @@ export interface TubeFace {
   guard: boolean;
   /**
    * The step 7 follow-up's ruling 3 (the water-physics advisor's 2026-11-05 ruling on the five open questions,
-   * docs/research/pool-tube-contact-2026-11-05/advisor-ruling-3.md), each piece with its own switch, all on by default:
+   * docs/research/pool-tube-contact-2026-11-05/advisor-ruling-3.md), each piece with its own switch (the first three on by default, the last two opt-in: measured, they did not help):
    * - `track` (`?tubeTrack=old`: off; with `continuity`): a smooth wall. The solver's crossing is read against its real
    *   trough, the lowest water within half a wavelength ahead of its crest (`FaceAnchor.solverCrossing`'s `halfWave`, the
    *   meter's own measure); W is tracked by an α–β filter (`trackAnchor`, `ANCHOR_TRACK`) with the cap kept as its gate;
@@ -96,10 +96,12 @@ export interface TubeFace {
    *   the hull's added mass (`BoardBody`, `WATER_INERTIA`; Maxey & Riley 1983, Auton, Hunt & Prud'homme 1988) (§2);
    * - `retire` (`?tubeRetire=old`: off; with `contour`): a contour-thrown point is never retired for being unbroken (§4);
    *   `?tubeThrow=break` keeps that retire, and the opt-in guard keeps its own;
-   * - `buoy` (`?tubeBuoy=old`: off; with `wallFlow`): in the wall water, past the slope clamp, the buoyancy along the true
-   *   normal at the clamp's size, not a fixed 60° up the face (§1, rank 5);
-   * - `drop` (`?tubeDrop=old`: off; with `anchor`): where two fronts' strips overlap the lighter gives way, whatever its
-   *   phase or front; on a tie the first front's stays (§5).
+   * - `buoy` (opt-in, `?tubeBuoy=on`; with `wallFlow`): in the wall water, past the slope clamp, the buoyancy along the true
+   *   normal at the clamp's size, not a fixed 60° up the face (§1, rank 5). Off by default: measured, no help (2a, 2b, flips
+   *   within a run's spread at both case lists, docs/research/pool-tube-track-2026-11-05/README.md);
+   * - `drop` (opt-in, `?tubeDrop=on`; with `anchor`): where two fronts' strips overlap the lighter gives way, whatever its
+   *   phase or front; on a tie the first front's stays (§5). Off by default: measured, it raised the holes (pool 1.5 m, 12
+   *   periods: 0.013 → 0.022 a build, visible 24 → 38).
    */
   track: boolean;
   inertia: boolean;
@@ -137,8 +139,9 @@ export interface TubeFaceSwitches {
   tubeTrack?: 'old';
   tubeInertia?: 'old';
   tubeRetire?: 'old';
-  tubeBuoy?: 'old';
-  tubeDrop?: 'old';
+  /** Opt-in: 'on' turns each on (`TubeFace.buoy`, `.drop`); absent, or anything else, it is off (they measured no help). */
+  tubeBuoy?: 'on';
+  tubeDrop?: 'on';
 }
 
 /**
@@ -168,8 +171,8 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     track: continuity && switches.tubeTrack !== 'old',
     inertia: wallFlow && switches.tubeInertia !== 'old',
     retire: contour && switches.tubeRetire !== 'old',
-    buoy: wallFlow && switches.tubeBuoy !== 'old',
-    drop: !piece && switches.tubeDrop !== 'old',
+    buoy: wallFlow && switches.tubeBuoy === 'on',
+    drop: !piece && switches.tubeDrop === 'on',
   };
 }
 

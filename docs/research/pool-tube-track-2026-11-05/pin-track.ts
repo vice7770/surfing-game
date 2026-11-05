@@ -5,10 +5,10 @@
  * straight Barrel also the water the bodies feel, `PhysicalSurfWater.sampleAt` on a grid through the waves), and, as ruling
  * 3 touches the hull (`BoardBody`, `patchForce`), lone boards stepped on the water: twelve at the Barrel (x 0, z −190…−107.5
  * every 7.5 m, placed on the support at 1 s and stepped at 60 Hz with the sea) and six on the Beach, each board's position,
- * velocity, spin and forces hashed every 15 steps. The Barrel runs with ruling 3's five switches old
- * (`?tubeTrack=old&tubeInertia=old&tubeRetire=old&tubeBuoy=old&tubeDrop=old`; on main the keys are unknown and ignored, so
- * main's default), alone and with the follow-up's three and step 7's three old too, on each case list at 1.5 and 1.8 m; and
- * each tree's default, twice. Bundle against both trees and compare the lines (every line but the defaults must match):
+ * velocity, spin and forces hashed every 15 steps. The Barrel runs with ruling 3's three default switches old
+ * (`?tubeTrack=old&tubeInertia=old&tubeRetire=old`; the buoyancy and the drop rule are opt-in, `?tubeBuoy=on`,
+ * `?tubeDrop=on`, so off; on main the keys are unknown and ignored, so main's default), alone and with the follow-up's
+ * three and step 7's three old too, on each case list at 1.5 and 1.8 m; and each tree's default, twice. Bundle against both trees and compare the lines (every line but the defaults must match):
  *   rolldown docs/research/pool-tube-track-2026-11-05/pin-track.ts -o dist/scripts/track-pin.mjs --format esm --platform node && node dist/scripts/track-pin.mjs [steps]
  */
 import { Quaternion, Vector3 } from 'three';
@@ -44,8 +44,8 @@ const pool = (swellSize: 'small' | 'medium' | 'big') => {
 const barrel = (height: number, extra: Record<string, unknown> = {}) => ({
   spot: 'pool', seed: 1, significantHeight: Math.SQRT2 * height, peakPeriod: 10, directionDegrees: 0, spreading: 1000, tide: 0, windSpeed: 0, poolWaves: 'barrel', ...extra,
 });
-// Ruling 3's five switches old: main's build before it. The follow-up's three and step 7's three old: the builds before those.
-const trackOld = { tubeTrack: 'old', tubeInertia: 'old', tubeRetire: 'old', tubeBuoy: 'old', tubeDrop: 'old' };
+// Ruling 3's three default switches old (the other two opt-in, off): main's build before it. The follow-up's three and step 7's three old: the builds before those.
+const trackOld = { tubeTrack: 'old', tubeInertia: 'old', tubeRetire: 'old' };
 const followUpOld = { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' };
 const wallOld = { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' };
 

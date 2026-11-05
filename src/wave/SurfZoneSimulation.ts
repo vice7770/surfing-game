@@ -372,20 +372,22 @@ export interface SurfZoneConfig {
   tubeGuard?: 'on';
   /**
    * Ruling 3's switches (the water-physics advisor's 2026-11-05 ruling on step 7's five open questions; `TubeFace.track`,
-   * `.inertia`, `.retire`, `.buoy`, `.drop`), each piece's A/B alone; online rooms pin the defaults (all on). All five
-   * 'old' give main's build before it:
+   * `.inertia`, `.retire`, `.buoy`, `.drop`), each piece's A/B alone; online rooms pin the defaults (the first three on, the
+   * last two off). The first three 'old' (and neither 'on') give main's build before it:
    * - `tubeTrack` 'old' (`?tubeTrack=old`): the anchor read against its window's end, capped step by step, its per-step rate
    *   the wall water's speed, the wall water at full weight up to the solver's surface, as before;
    * - `tubeInertia` 'old' (`?tubeInertia=old`): no water acceleration on a hull's added mass in the wall water, as before;
    * - `tubeRetire` 'old' (`?tubeRetire=old`): a contour-thrown point still unbroken retires 0.3 s past its throw, as before;
-   * - `tubeBuoy` 'old' (`?tubeBuoy=old`): the wall water's buoyancy along the clamped slope past 60°, as before;
-   * - `tubeDrop` 'old' (`?tubeDrop=old`): overlapping strips dropped by phase, then weight, as before.
+   * - `tubeBuoy` 'on' (`?tubeBuoy=on`, opt-in): the wall water's buoyancy along the true normal past the clamp; off (the
+   *   default), along the clamped slope past 60°, as before;
+   * - `tubeDrop` 'on' (`?tubeDrop=on`, opt-in): the lighter of two overlapping strips gives way; off (the default),
+   *   overlapping strips dropped by phase, then weight, as before.
    */
   tubeTrack?: 'old';
   tubeInertia?: 'old';
   tubeRetire?: 'old';
-  tubeBuoy?: 'old';
-  tubeDrop?: 'old';
+  tubeBuoy?: 'on';
+  tubeDrop?: 'on';
 }
 
 /**
