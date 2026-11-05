@@ -1,0 +1,3 @@
+pool straight Barrel, H 1.32 m, cases a38: the cost on this M1 (Node, shared load), p10 / p50 / p90 ms, 600 steps each after 50 s, alternating
+- default: the sea's step 102.24 / 112.82 / 127.57; the contact's update 7.35 / 10.05 / 14.76; the drawing's loft build 4.69 / 6.08 / 9.83; the bodies' water through the wave, ms per 1000 samples 2.865 / 3.861 / 7.480
+- ruling 3 off: the sea's step 100.92 / 112.27 / 126.62; the contact's update 5.36 / 7.30 / 10.93; the drawing's loft build 4.69 / 6.06 / 9.39; the bodies' water through the wave, ms per 1000 samples 2.956 / 4.145 / 7.655
