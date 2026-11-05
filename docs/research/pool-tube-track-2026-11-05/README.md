@@ -148,10 +148,10 @@ is the default plus the smooth wall (`?tubeTrack=on`). The buoyancy and the drop
 
 ### Each switch alone from all five on (pool 1.5 m; a38 1.5 m)
 
-The leave-one-out the task asked for, measured from the build as first made (all five on). `runs/default-*.txt` is that
-build; `runs/<piece>Old-*.txt` turns one piece off.
+The leave-one-out, measured from the build as first made (all five on, when every switch was `=old`). `runs/default-*.txt` is
+that build; `runs/<piece>Old-*.txt` turns one piece off.
 
-| Bar (pool 1.5 m; a38 1.5 m) | All five on (as first built) | `?tubeTrack=old` | `?tubeInertia=old` | `?tubeRetire=old` | The buoyancy off | The drop rule off | Main (all off) |
+| Bar (pool 1.5 m; a38 1.5 m) | All five on (as first built) | The smooth wall off | The inertia off | The retire back | The buoyancy off | The drop rule off | Main (all off) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | wall-water step in the wall p50/p90/p99 (m/s) | 0.082 / 1.138 / 6.923; 0.118 / 1.698 / 5.771 | 0.648 / 2.768 / 8.067; 0.747 / 2.836 / 8.402 | 0.098 / 1.281 / 6.459; 0.147 / 1.679 / 5.665 | 0.052 / 0.700 / 4.791; 0.139 / 1.799 / 6.235 | 0.082 / 1.086 / 7.431; 0.112 / 1.623 / 5.893 | 0.082 / 1.138 / 6.923; 0.118 / 1.698 / 5.771 | 0.343 / 1.589 / 5.459; 0.720 / 3.122 / 8.504 |
 | wall-water step crossing p50/p90/p99 | 0.022 / 0.032 / 0.209; 0.022 / 0.044 / 0.086 | 1.085 / 2.280 / 3.547; 0.669 / 2.087 / 3.503 | 0.022 / 0.034 / 0.457; 0.022 / 0.052 / 0.085 | 0.020 / 0.042 / 0.285; 0.021 / 0.048 / 0.084 | 0.022 / 0.032 / 0.209; 0.022 / 0.043 / 0.086 | 0.022 / 0.032 / 0.209; 0.022 / 0.044 / 0.086 | 0.826 / 2.808 / 3.897; 0.604 / 2.038 / 3.419 |
@@ -249,8 +249,8 @@ alternating blocks of 25 (`runs/cost-a38-*.txt`; p50 ms):
 ## What was built
 
 Ruling 3's pieces at the Wave Pool's straight Barrel (`BarrelSpot.faceAnchor`), each behind its own switch: the inertia and
-no retire on by default, the smooth wall, the buoyancy and the drop rule opt-in (the bars above). Where the ruling left something open, or a measurement showed its words needed a frame,
-the choice is marked *(built so)* with its cause. Only + − × ÷ and √ in everything the sea, the contact and the drawing run.
+no retire on by default, the smooth wall, the buoyancy and the drop rule opt-in (the bars above). Where the ruling left
+something open, or a measurement showed its words needed a frame, the choice is marked *(built so)* with its cause. Only + − × ÷ and √ in everything the sea, the contact and the drawing run.
 
 ### 1. A smooth wall (opt-in: `?tubeTrack=on`)
 
@@ -263,7 +263,7 @@ the choice is marked *(built so)* with its cause. Only + − × ÷ and √ in ev
   - the window's end: the crest plus half a wavelength, √(g d) T/2 at the still depth under the crest (the meter's own
     measure; `TroughWave`, `:351`, from the crash's sea, `SweptCrash.troughWave`, `src/wave/barrel/SweptCrash.ts:193`);
   - *(built so)* no further than the case's own profile reaches ahead of its crest (`FaceAnchor.reach`, `:529`). The case's
-    trough is its profile's lowest point and lies on its last point on 23–29 % of reads ("check the case's trough the same
+    trough is its profile's lowest point and lies on its last point on 24–44 % of reads ("check the case's trough the same
     way"): the two heights the 0.3 crossings are matched at must be measured alike. Against the solver's trough at half a
     wavelength alone, the case's own lower face stood off the solver's by p95 0.44–0.49 H_s, max 2 H_s (main 0.03 / 0.16),
     and bar 4a rose to 0.13–0.17 m a step (pool 1.5 m, 3 periods). Capped at the case's reach: 0.11 / 0.60 H_s and 0.011 m.
@@ -274,7 +274,7 @@ the choice is marked *(built so)* with its cause. Only + − × ÷ and √ in ev
   - the steady-state Kalman filter of a constant-velocity target (Kalata's tracking index λ = σ_w T²/σ_v);
   - σ_v measured after the read's fix: the raw target's second difference inside a front, |Δ²| p50 0.022 m, so σ_v ≈
     0.022/(0.674 √6) ≈ 0.014 m (the rms is 0.026–0.044 m, from heavy tails); σ_w 0.3 m/s², the advisor's lower end (1 m/s²
-    measured too: jitter p99 0.037 against 0.028 m, the wall water's step p99 8.3 against 12.5 m/s at the time; at a38 1.5 m, 12 periods, 2b 54 % against 52 %);
+    measured too: W's jitter p99 0.041 against 0.028 m at a38 1.5 m, 12 periods, 2b 54 % against 52 %);
   - *(built so)* σ_v grows as the face flattens (`readNoise`, `:367`): σ_v (0.2/slope) under a slope of 0.2. The crossing
     of a level moves by the level's error over the slope; the read's noise measured p90 0.04 m a step on slopes over 0.15
     and 0.11 m under, with tails to 0.6 m (collapsed and forming faces);
