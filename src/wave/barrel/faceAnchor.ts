@@ -57,6 +57,24 @@ export interface TubeFace {
   distance: boolean;
   contour: boolean;
   wallFlow: boolean;
+  /**
+   * The step 7 follow-up (the water-physics advisor's 2026-11-05 ruling, docs/research/pool-tube-wall-2026-11-04/
+   * advisor-ruling-2.md), each piece with its own switch, all on by default:
+   * - `contact` (`?tubeContact=old`: off; with `union`): a body in the case's wall water takes its water from the nearest
+   *   surface along its own normal, the crossing above or the face just ahead along the ray (`SweptContact.query`'s
+   *   horizontal cast), its immersion the distance along that normal, its kinematic normal speed faded out 0.3–0.6 m deep,
+   *   and the wall's water under the solver's surface too where the case's surface stands over it (§1);
+   * - `cap` (`?tubeCap=old`: off; with `continuity`): the anchor's continuity cap at 0.45 C (`ANCHOR_CONTINUITY.crestWide`)
+   *   rather than 0.3 C (§3);
+   * - `merge` (`?tubeMerge=old`: off; with `anchor`): a crest joining by distance beside a front's end joins that front,
+   *   and the loft never drops an open strip at weight ≥ 0.5, two thrown strips keeping the earlier-thrown (§5);
+   * - `guard` (`?tubeGuard=old`: off; with `contour`): the retire guard scaled to the case's open time, a thrown point's
+   *   flag cleared when the solver breaks its crest, and the jet of a point retired unbroken returned to its crest (§4).
+   */
+  contact: boolean;
+  cap: boolean;
+  merge: boolean;
+  guard: boolean;
 }
 
 /** The thrown clock's catch-up before the ruling, × real time (`advanceClocks`), and after it. */
@@ -78,6 +96,11 @@ export interface TubeFaceSwitches {
   tubeForm?: 'old';
   tubeThrow?: 'break';
   wallFlow?: 'old';
+  /** The step 7 follow-up's (`TubeFace.contact`, `.cap`, `.merge`, `.guard`). */
+  tubeContact?: 'old';
+  tubeCap?: 'old';
+  tubeMerge?: 'old';
+  tubeGuard?: 'old';
 }
 
 /**
@@ -92,12 +115,17 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
   if (piece && !union) return undefined;
   const lag = !piece && switches.tubeLag !== 0;
   const distance = lag && switches.tubeForm !== 'old';
+  const continuity = !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false;
+  const contour = distance && switches.tubeThrow !== 'break';
   return {
     anchor: !piece, union, lag,
     clockRate: !piece && switches.tubeClock !== 'old' ? THROWN_RATE.face : THROWN_RATE.old, thrownEnds: !piece,
-    continuity: !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false, distance,
-    contour: distance && switches.tubeThrow !== 'break',
+    continuity, distance, contour,
     wallFlow: !piece && union && switches.wallFlow !== 'old',
+    contact: !piece && union && switches.tubeContact !== 'old',
+    cap: continuity && switches.tubeCap !== 'old',
+    merge: !piece && switches.tubeMerge !== 'old',
+    guard: contour && switches.tubeGuard !== 'old',
   };
 }
 

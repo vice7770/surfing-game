@@ -425,7 +425,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeCaseSwitch() : {}),
     // `?tubeFace=old`, `?tubeFrom=piece`, `?tubeLag=0`, `?tubeClock=old`: the surfable tube's A/Bs (the advisor's step 3
     // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before. Step 7's: `?tubeAnchor=old`,
-    // `?tubeForm=old`, `?tubeThrow=break`, `?wallFlow=old` (each piece alone; the three old together, step 6).
+    // `?tubeForm=old`, `?tubeThrow=break`, `?wallFlow=old` (each piece alone; the three old together, step 6). The step 7
+    // follow-up's: `?tubeContact=old`, `?tubeCap=old`, `?tubeMerge=old`, `?tubeGuard=old` (all four old: main before it).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? tubeFaceSwitches() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
@@ -524,9 +525,12 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * (pool-tube-wall, 2026-11-04, the advisor's ruling): `?tubeAnchor=old`, the anchor's shift afresh each build (no
  * continuity); `?tubeForm=old`, the lagged join and clock of step 6 (no formation by distance); `?tubeThrow=break`, by
  * distance, the throw waits for the solver's break too; `?wallFlow=old`, the wall's water the solver's flow. The first three
- * of those old together are step 6's build. Online rooms run the defaults.
+ * of those old together are step 6's build. The step 7 follow-up's (pool-tube-contact, 2026-11-05, the advisor's second
+ * ruling): `?tubeContact=old`, a body's water from the vertical line through it; `?tubeCap=old`, the anchor's cap at 0.3 C;
+ * `?tubeMerge=old`, joins and overlap drops as before; `?tubeGuard=old`, the retire guard at 0.3 s + 0.5 s. All four old
+ * together are main's build before it. Online rooms run the defaults.
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   return {
     ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
@@ -537,6 +541,10 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeForm') === 'old' ? { tubeForm: 'old' as const } : {}),
     ...(value('tubeThrow') === 'break' ? { tubeThrow: 'break' as const } : {}),
     ...(value('wallFlow') === 'old' ? { wallFlow: 'old' as const } : {}),
+    ...(value('tubeContact') === 'old' ? { tubeContact: 'old' as const } : {}),
+    ...(value('tubeCap') === 'old' ? { tubeCap: 'old' as const } : {}),
+    ...(value('tubeMerge') === 'old' ? { tubeMerge: 'old' as const } : {}),
+    ...(value('tubeGuard') === 'old' ? { tubeGuard: 'old' as const } : {}),
   };
 }
 

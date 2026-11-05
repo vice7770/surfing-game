@@ -336,6 +336,18 @@ export interface SurfZoneConfig {
   tubeForm?: 'old';
   tubeThrow?: 'break';
   wallFlow?: 'old';
+  /**
+   * The step 7 follow-up's switches (the water-physics advisor's 2026-11-05 ruling, `TubeFace.contact`, `.cap`, `.merge`,
+   * `.guard`), each piece's A/B alone; online rooms pin the defaults (all on). All four 'old' give main's build before it:
+   * - `tubeContact` 'old' (`?tubeContact=old`): a body takes its water from the vertical line through it, as before;
+   * - `tubeCap` 'old' (`?tubeCap=old`): the anchor's continuity cap at 0.3 C, as before;
+   * - `tubeMerge` 'old' (`?tubeMerge=old`): joins and overlap drops as before;
+   * - `tubeGuard` 'old' (`?tubeGuard=old`): the retire guard at 0.3 s + 0.5 s, as before.
+   */
+  tubeContact?: 'old';
+  tubeCap?: 'old';
+  tubeMerge?: 'old';
+  tubeGuard?: 'old';
 }
 
 /**
