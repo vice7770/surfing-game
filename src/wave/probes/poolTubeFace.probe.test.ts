@@ -61,8 +61,8 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  * passive lone boards and prone riders at 0.3 H_s; the risks (boards flung clear of the water, the hull force's flips); bar 3
  * one-sided; bar 4b's jitter, own pace, single steps (reads across unread steps apart), cap engagement and the anchor's
  * outcomes; the ledger (throws per crest, unbroken at touchdown, starved share, bar 6 per jet); holes at weight ≥ 0.5 with
- * the first holes' fronts. SWITCHES also takes `tubeContact=old`, `tubeCap=old`, `tubeMerge=old`, `tubeGuard=old` (all four:
- * main before the follow-up). COST=1 COST_ARMS=followUp compares the default against those four old.
+ * the first holes' fronts. SWITCHES also takes `tubeContact=old`, `tubeCap=old`, `tubeMerge=old` (all three: main before the
+ * follow-up) and the opt-in `tubeGuard=on`. COST=1 COST_ARMS=followUp compares the default against those three old.
  */
 
 const quantile = (values: number[], q: number) => {
@@ -273,7 +273,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
           tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
           ...(arm === 'step 6' ? { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' } : {}),
-          ...(arm === 'follow-up off' ? { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'old' } : {}),
+          ...(arm === 'follow-up off' ? { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' } : {}),
         } as unknown as SurfZoneConfig, 'spun-up', lib);
         const tubeFace = sim.tubeFace;
         const contact = new SweptContact(lib, BARREL_SLOPE.pool!, tubeFace ? { face: tubeFace } : {});

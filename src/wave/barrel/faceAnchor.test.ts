@@ -14,7 +14,7 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeFace: 'old', tubeFrom: 'piece' })).toBeUndefined();
     expect(tubeFaceOf(true, {})).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: true, distance: true, contour: true, wallFlow: true,
-      contact: true, cap: true, merge: true, guard: true,
+      contact: true, cap: true, merge: true, guard: false,
     });
     // The piece, never below the solver's surface: the union alone.
     expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({
@@ -42,18 +42,20 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { sweptCrash: false })).toMatchObject({ continuity: false, distance: true, wallFlow: true });
   });
 
-  it('turns each of the step 7 follow-up\'s pieces off by its own switch, and all four off give the build before it', () => {
-    expect(tubeFaceOf(true, { tubeContact: 'old' })).toMatchObject({ contact: false, cap: true, merge: true, guard: true, wallFlow: true });
-    expect(tubeFaceOf(true, { tubeCap: 'old' })).toMatchObject({ contact: true, cap: false, merge: true, guard: true, continuity: true });
-    expect(tubeFaceOf(true, { tubeMerge: 'old' })).toMatchObject({ contact: true, cap: true, merge: false, guard: true });
-    expect(tubeFaceOf(true, { tubeGuard: 'old' })).toMatchObject({ contact: true, cap: true, merge: true, guard: false, contour: true });
+  it('turns each of the step 7 follow-up\'s pieces off by its own switch, the guard on by its own, and all old give the build before it', () => {
+    expect(tubeFaceOf(true, { tubeContact: 'old' })).toMatchObject({ contact: false, cap: true, merge: true, guard: false, wallFlow: true });
+    expect(tubeFaceOf(true, { tubeCap: 'old' })).toMatchObject({ contact: true, cap: false, merge: true, guard: false, continuity: true });
+    expect(tubeFaceOf(true, { tubeMerge: 'old' })).toMatchObject({ contact: true, cap: true, merge: false, guard: false });
+    // The guard is opt-in (`?tubeGuard=on`): off by default.
+    expect(tubeFaceOf(true, {})).toMatchObject({ contact: true, cap: true, merge: true, guard: false, contour: true });
+    expect(tubeFaceOf(true, { tubeGuard: 'on' })).toMatchObject({ contact: true, cap: true, merge: true, guard: true, contour: true });
     const before = { ...tubeFaceOf(true, {})!, contact: false, cap: false, merge: false, guard: false };
-    expect(tubeFaceOf(true, { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'old' })).toEqual(before);
+    expect(tubeFaceOf(true, { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' })).toEqual(before);
     // Each with what it builds on: the contact with the union, the cap with the continuity, the guard with the contour.
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ contact: false });
     expect(tubeFaceOf(true, { tubeAnchor: 'old' })).toMatchObject({ cap: false });
-    expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ guard: false });
-    expect(tubeFaceOf(true, { tubeForm: 'old' })).toMatchObject({ guard: false, merge: true });
+    expect(tubeFaceOf(true, { tubeThrow: 'break', tubeGuard: 'on' })).toMatchObject({ guard: false });
+    expect(tubeFaceOf(true, { tubeForm: 'old', tubeGuard: 'on' })).toMatchObject({ guard: false, merge: true });
   });
 
   it('caps the follow-up\'s shift at 0.45 C and runs a long miss on at the wave\'s advance (`?tubeCap=old`: 0.3 C, standing)', () => {

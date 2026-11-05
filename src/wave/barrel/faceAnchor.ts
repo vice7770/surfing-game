@@ -68,8 +68,9 @@ export interface TubeFace {
    *   rather than 0.3 C (§3);
    * - `merge` (`?tubeMerge=old`: off; with `anchor`): a crest joining by distance beside a front's end joins that front,
    *   and the loft never drops an open strip at weight ≥ 0.5, two thrown strips keeping the earlier-thrown (§5);
-   * - `guard` (`?tubeGuard=old`: off; with `contour`): the retire guard scaled to the case's open time, a thrown point's
-   *   flag cleared when the solver breaks its crest, and the jet of a point retired unbroken returned to its crest (§4).
+   * - `guard` (opt-in, `?tubeGuard=on`; with `contour`): the retire guard scaled to the case's open time, a thrown point's
+   *   flag cleared when the solver breaks its crest, and the jet of a point retired unbroken returned to its crest (§4). Off
+   *   by default (the coordinator, 2026-11-05): it raised the meter 8.1 % at a38 1.5 m, past the owner's ±5 % of main.
    */
   contact: boolean;
   cap: boolean;
@@ -100,7 +101,8 @@ export interface TubeFaceSwitches {
   tubeContact?: 'old';
   tubeCap?: 'old';
   tubeMerge?: 'old';
-  tubeGuard?: 'old';
+  /** Opt-in: 'on' turns the guard on (`TubeFace.guard`); absent, or anything else, it is off. */
+  tubeGuard?: 'on';
 }
 
 /**
@@ -125,7 +127,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     contact: !piece && union && switches.tubeContact !== 'old',
     cap: continuity && switches.tubeCap !== 'old',
     merge: !piece && switches.tubeMerge !== 'old',
-    guard: contour && switches.tubeGuard !== 'old',
+    guard: contour && switches.tubeGuard === 'on',
   };
 }
 

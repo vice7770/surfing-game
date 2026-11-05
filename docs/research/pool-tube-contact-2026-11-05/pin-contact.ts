@@ -5,7 +5,8 @@
  * at the pool's straight Barrel also the water the bodies feel: `PhysicalSurfWater.sampleAt` on a grid through the waves
  * (three columns, z −200…−100 every 0.5 m, eight heights from 0.5 m under the still level to 2 m over it): its surface,
  * normal, slope, flow and layers. The Barrel runs with the follow-up's four switches old
- * (`?tubeContact=old&tubeCap=old&tubeMerge=old&tubeGuard=old`; on main the keys are unknown and ignored, so main's default),
+ * (`?tubeContact=old&tubeCap=old&tubeMerge=old`, the guard off by default since it became opt-in; on main the keys are unknown
+ * and ignored, so main's default),
  * alone and with step 7's three old too, on each case list at 1.5 and 1.8 m; and each tree's default, twice. Bundle against
  * both trees and compare the lines (every line but the defaults must match):
  *   rolldown docs/research/pool-tube-contact-2026-11-05/pin-contact.ts -o dist/scripts/contact-pin.mjs --format esm --platform node && node dist/scripts/contact-pin.mjs [steps]
@@ -41,7 +42,8 @@ const pool = (swellSize: 'small' | 'medium' | 'big') => {
 const barrel = (height: number, extra: Record<string, unknown> = {}) => ({
   spot: 'pool', seed: 1, significantHeight: Math.SQRT2 * height, peakPeriod: 10, directionDegrees: 0, spreading: 1000, tide: 0, windSpeed: 0, poolWaves: 'barrel', ...extra,
 });
-const followUpOld = { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'old' };
+// The guard is opt-in since 2026-11-05 (`?tubeGuard=on`), so off by default: the three old are main's build.
+const followUpOld = { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' };
 const wallOld = { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' };
 const plain: [string, Partial<SurfZoneConfig>][] = [
   ['beach', { ...shared, spot: 'beach' }], ['point', { ...shared, spot: 'point' }], ['reef', { ...shared, spot: 'reef' }], ['padang', { ...shared, spot: 'padang' }],
@@ -72,6 +74,7 @@ for (const [cases, bytes] of [['a38', a38Cases], ['pool cases', ownCases]] as co
   }
 }
 swept.push(
+  ['pool barrel 1.5 m, the guard on', barrel(1.05, { tubeGuard: 'on' }) as Partial<SurfZoneConfig>, 'pool', a38Cases, 4 * STEPS],
   ['pool barrel 1.5 m, default', barrel(1.05) as Partial<SurfZoneConfig>, 'pool', a38Cases, 4 * STEPS],
   ['pool barrel 1.5 m, default again', barrel(1.05) as Partial<SurfZoneConfig>, 'pool', a38Cases, 4 * STEPS],
   ['pool barrel 1.8 m, default', barrel(1.32) as Partial<SurfZoneConfig>, 'pool', a38Cases, 4 * STEPS],
