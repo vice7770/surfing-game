@@ -96,6 +96,27 @@ switches old, byte for byte main's build, re-measured with the same probe). Runs
 | 7. Formation within 0.1 s of τ_e | **96.7 %** (98.3 %) | **95.2 %** (97.4 %) | **96.2 %** (97.9 %) | **94.7 %** (97.1 %) |
 | 5. (Information) usable clearance p50, m | **0.34** (0.29) | **0.53** (0.42) | **0.00** (0.00) | **0.00** (0.01) |
 
+### The measure (the probe, `src/wave/probes/poolTubeFace.probe.test.ts`)
+
+- **Along the nearest normal** (`signedNormal`): a body's bottom's signed distance to the game's water's surface (the union:
+  under the solver's surface, or in the swept surface's water), searched in the ray–vertical plane along 24 directions every
+  0.025 m and bisected to 1.6 mm, out to the vertical distance to the support. Probe-only (its own contact hit), so it reads
+  main's build and the branch's alike.
+- **Before the body's σ touchdown:** the contact's life at the body's own place reaching 1, latched (off the loft, its
+  placement slice's touchdown); outside the lip's water (no water floor under it).
+- **2b's outcomes,** to touchdown, the first that happens: *pitched* into the lip's water, or off the surface (a prone rider
+  separating within 0.1 m of where it started along the normal; a lone board more than 0.1 m clear of the water); *overrun*
+  more than 0.1 m deeper along the normal than it started; else *carried*. A lone board "off the surface" includes boards
+  flung out through the face: they left it at p50 0.6–2.4 m/s up and 3.8–5.0 m/s shoreward (the probe's information line),
+  so 2b's "pitched" for boards is not all over the falls. Lip hits on a prone rider's head or torso are counted apart (none).
+- **4b:** W is the case's crest's place along each point's ray (as step 7); its jitter |ΔW_n − ΔW_(n−1)|, its change against
+  the smoothed target's (ΔW*, the case's own pace) and against C Δt, over consecutive steps only (a step across reads the probe
+  missed is listed apart); the cap's engagement from `continueAnchor`'s outcomes over the run.
+- **The ledger:** throws per crest (`SweptCrash.paced`, by point); each point's touchdown (its clock crossing its case's),
+  flagged unbroken or not, and whether its jet then poured; bar 6 per jet at each pouring jet's crash (its slice's lip tip,
+  the solver's breaking within ±0.5 / ±1 H_s).
+- **Holes at weight ≥ 0.5:** counted in `dropOverlaps` (`LoftResult.overlapsOpenHeavy`), with each hole's two fronts logged.
+
 ### What each piece does (a38, its switch alone)
 
 Each cell is 1.5 m; 1.8 m. The default against each piece's switch old, and main (all four old).
