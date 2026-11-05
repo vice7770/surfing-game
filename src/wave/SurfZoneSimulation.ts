@@ -153,6 +153,12 @@ export interface SurfZoneConfig {
    */
   snapQuick?: 'old';
   /**
+   * 'lean': the riders' Snap leans for its own turn, up to 70° (snap-lean, 2026-11-05; `RideSessionOptions.snapPivot`),
+   * opt-in; by default the steer's 50°, as before. Every spot. The `?snapPivot=lean` dev switch, to ride; online rooms run
+   * the default.
+   */
+  snapPivot?: 'lean';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

@@ -115,6 +115,11 @@ export interface RideSessionOptions {
    * balance's calm pace, as before.
    */
   snapQuick?: 'old';
+  /**
+   * Snap leaning for its own turn (snap-lean, 2026-11-05; `AttachedRiderOptions.snapPivot`), opt-in: 'lean' (the
+   * `?snapPivot=lean` dev switch) lets a full steer under Snap lean up to 70°; by default the steer's 50°, as before.
+   */
+  snapPivot?: 'lean';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -196,7 +201,7 @@ export class RideSession {
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
-      ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}),
+      ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});

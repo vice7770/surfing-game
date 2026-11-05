@@ -445,6 +445,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapSwitch(),
     // `?snapQuick=old`: the riders' Snap set up at the balance's calm pace, as before snap-quick, for A/Bs.
     ...snapQuickSwitch(),
+    // `?snapPivot=lean`: the riders' Snap leaning for its own turn, up to 70° (snap-lean), opt-in, to ride.
+    ...snapPivotSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -651,6 +653,14 @@ export function snapSwitch(search?: string): { snap?: 'off' } {
  */
 export function snapQuickSwitch(search?: string): { snapQuick?: 'old' } {
   return devParam('snapQuick', search)?.trim().toLowerCase() === 'old' ? { snapQuick: 'old' } : {};
+}
+
+/**
+ * The `?snapPivot=lean` dev switch (`SurfZoneConfig.snapPivot`, snap-lean 2026-11-05, the owner's pick): every spot's
+ * rider leans Snap as far as its tight turn holds, up to 70°, in place of the steer's 50°. Opt-in, to ride on waves.
+ */
+export function snapPivotSwitch(search?: string): { snapPivot?: 'lean' } {
+  return devParam('snapPivot', search)?.trim().toLowerCase() === 'lean' ? { snapPivot: 'lean' } : {};
 }
 
 /**

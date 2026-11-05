@@ -706,6 +706,16 @@ const SNAP_RADIUS = 2.2;
  *   tenths of a m/s), so Snap keeps a little more speed than at the calm pace (still water, 7 m/s: 5.0 m/s at 0.8 s
  *   against 4.7), still more than a carve sheds, in time and per degree.
  */
+/**
+ * Snap leaning for its own turn (snap-lean, the owner's pick of 2026-11-05, opt-in with `snapPivot: 'lean'`;
+ * docs/research/snap-fan-2026-11-05/README.md): a full steer under Snap asks for up to SNAP_RAIL_RANGE of bank, still no
+ * more than its SNAP_RADIUS turn holds at the board's speed, in place of the steer's RAIL_RANGE (50°). Top turns and
+ * cutbacks ride a 75 ± 3° rail, against 42 ± 3° in bottom turns (Forsyth et al. 2024, 214 waves, a board-mounted IMU).
+ * Measured headless (round 3): every Snap turns sharper (192–239°/s at the peak, against 151–237), and the still-water
+ * fan's apex doubles (2.3 m vacuum); on still water, past the rail's bite, the board bogs and the rider falls at the stall
+ * in 7 of 12 runs (2 by default). On a wave the face feeds the speed back; the owner rides it.
+ */
+const SNAP_RAIL_RANGE = MAX_BANK;
 const SNAP_TWIST_FREQUENCY = 11;
 const SNAP_SHIFT_TIME = 0.09;
 const SNAP_SHIFT_SPEED = 1.2;
@@ -879,6 +889,11 @@ export interface AttachedRiderOptions {
    * (the `?snapQuick=old` dev switch, for A/Bs).
    */
   snapQuick?: 'old';
+  /**
+   * Snap's lean (snap-lean, 2026-11-05; SNAP_RAIL_RANGE), opt-in: 'lean' lets a full steer under Snap lean as far as its
+   * tight turn holds, up to MAX_BANK, in place of the steer's RAIL_RANGE (the `?snapPivot=lean` dev switch, to ride).
+   */
+  snapPivot?: 'lean';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1188,6 +1203,8 @@ export class AttachedRider {
   private readonly catches: boolean;
   /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
   private readonly quick: boolean;
+  /** Snap leans for its own turn (SNAP_RAIL_RANGE); only with `snapPivot: 'lean'`. */
+  private readonly snapLean: boolean;
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1348,6 +1365,7 @@ export class AttachedRider {
     this.feathers = (options.stroke ?? 'feather') === 'feather';
     this.catches = options.extension !== 'old';
     this.quick = options.snapQuick !== 'old';
+    this.snapLean = options.snapPivot === 'lean';
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -2080,7 +2098,9 @@ export class AttachedRider {
     // Snap: the lean a tail-weighted turn can hold (SNAP_RADIUS).
     const radius = this.snapping > 0 ? TURN_RADIUS + this.snapping * (SNAP_RADIUS - TURN_RADIUS) : TURN_RADIUS;
     const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius))) : 0;
-    const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
+    // `snapPivot: 'lean'`: under Snap the steer asks for as much lean as the tight turn holds (SNAP_RAIL_RANGE).
+    const railRange = this.snapLean && this.snapping > 0 ? RAIL_RANGE + this.snapping * (SNAP_RAIL_RANGE - RAIL_RANGE) : RAIL_RANGE;
+    const asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
