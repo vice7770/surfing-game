@@ -718,7 +718,7 @@ export class SurfZoneRunner {
     const sheets = this.sheetsInUse;
     sheets.length = 0;
     if (!this.boardSprays) return;
-    const count = this.board ? this.board.spraySheets(this.boardSheets, this.config.windSpeed ?? 0) : 0;
+    const count = this.board ? this.board.spraySheets(this.boardSheets, this.config.windSpeed ?? 0, this.config.snapFan) : 0;
     // The tear where the water went (spray-sheet): each side's root lines lately.
     const now = this.simulation.solver.time;
     for (let n = 0; n < count; n += 1) {

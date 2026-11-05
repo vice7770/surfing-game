@@ -447,6 +447,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
     ...spraySheetSwitch(),
+    // `?snapFan=old`: the boards' spray as before snap-fan (a steep jet's exit; other players' spin is the page's), for A/Bs.
+    ...snapFanSwitch(),
     // `?duckBody=old`: the duck-dive's single rigid rider and the board's planing law at any depth, as before duck-two-body.
     ...duckBodySwitch(),
     // `?canyonBeachLook=off`: the Canyon's beach peaks drawn and felt as the solver breaks them, as before canyon-beach-look.
@@ -692,6 +694,16 @@ export function lipBackOld(search?: string): boolean {
  */
 export function spraySheetSwitch(search?: string): { spraySheet?: 'off' } {
   return devParam('spraySheet', search)?.trim().toLowerCase() === 'off' ? { spraySheet: 'off' } : {};
+}
+
+/**
+ * The `?snapFan=old` dev switch (`SurfZoneConfig.snapFan`, snap-fan 2026-11-05): the boards' spray as before. A jet
+ * steeper than 45° off its path leaves where its run through a negative tan(2α) put it, in place of the high rail of its
+ * own station; and on the page (`RemoteSpray`), other players' hulls throw at their board's velocity alone, without their
+ * spin.
+ */
+export function snapFanSwitch(search?: string): { snapFan?: 'old' } {
+  return devParam('snapFan', search)?.trim().toLowerCase() === 'old' ? { snapFan: 'old' } : {};
 }
 
 /**

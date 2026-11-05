@@ -47,6 +47,15 @@ const LAUNCH_TILT = 8 * DEGREE;
 /** Below FLAT the bottom throws the flat blister, over JET the jet; between, both blend. */
 const FLAT = 5 * DEGREE;
 const JET = 15 * DEGREE;
+/**
+ * The jet's run over the dry bottom goes at 2α from the path (spray-sheet): from 2α of EXIT_ACROSS (90°) it runs straight
+ * across its station, so it leaves at the high rail where it rose (the run's limit at 90°; snap-fan, 2026-11-05). Before,
+ * past 90° tan(2α) turned negative and was floored at 1e-3, so the run reached a thousand times across the beam and the
+ * exit was put over the tail along the negative slope: Snap's nose-up trim over the nearly flat stations ahead of the tail
+ * (β 5–13°) gives α of 45–68°, and on still water at 7 m/s a sheet's root was drawn 1–220 m to the side of its board, its
+ * curtain timed by that run. A carve's sunk low rail can do it too (6 m/s, 10° trim, 14° bank, 15 cm deep: 10 m).
+ */
+const EXIT_ACROSS = Math.PI / 2;
 /** Spawned this far above the surface, m: a sheet heading down a face is not taken back at once. */
 const LIFT_OFF = 0.04;
 /** The drops' velocities spread this share of the sheet's either way (provisional). */
@@ -179,6 +188,12 @@ export interface HullSprayState {
   lift: number;
   /** The wind over the water, m/s along +z (onshore): the sheet tears by its speed through the air. */
   wind: number;
+  /**
+   * Where a jet steeper than 45° off its path leaves (snap-fan, 2026-11-05; `EXIT_ACROSS`): by default at the high rail
+   * of its own station; 'old' as before, placed by a run whose length went through tan(2α) < 0 (the `?snapFan=old` dev
+   * switch, for A/Bs).
+   */
+  exits?: 'old';
 }
 
 /** A `HullSprayState` to fill: its arrays made for `stations` × `lanes` patches. */
@@ -392,9 +407,11 @@ export function hullSpraySheets(hull: HullSprayState, out: BoardSpraySheet[]): n
     dx += tilt * axisY[0]; dy += tilt * axisY[1]; dz += tilt * axisY[2];
     const norm = Math.hypot(dx, dy, dz) || 1;
     // Where it leaves: from the root (the waterline) over the dry bottom at 2α from the path, at the high rail, or over the tail.
+    // A jet at 45° or more off its path (2α of 90° or more: a high trim over a nearly flat station) runs straight across
+    // to the high rail at its own station (EXIT_ACROSS).
     const root = -station.depth0 / station.slope;
     const reach = Math.abs(side * station.half - root);
-    const back = reach / Math.max(1e-3, Math.tan(2 * alpha));
+    const back = hull.exits !== 'old' && 2 * alpha >= EXIT_ACROSS ? 0 : reach / Math.max(1e-3, Math.tan(2 * alpha));
     let exitAcross = side * station.half;
     let exitAlong = station.z - back;
     if (exitAlong < tail) {

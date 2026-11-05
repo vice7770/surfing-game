@@ -26,7 +26,7 @@ import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Se
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, snapFanSwitch, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
 import type { OnlineController } from './net/OnlineController';
 import { ONLINE_QUEUE } from './net/OnlinePacer';
@@ -231,8 +231,11 @@ class SurfGame {
   private soundSnapped?: boolean;
   private readonly listenerForward = new Vector3();
   /** Online play (spec N1): the session, its frame logic, and the other surfers as drawn with their tags. */
-  /** Other players' boards' spray from their poses (board-spray). */
-  private readonly remoteSpray = new RemoteSpray();
+  /**
+   * Other players' boards' spray from their poses (board-spray), each patch with its board's spin (snap-fan). The
+   * `?snapFan=old` switch reaches it online too: it is drawn on this page only and changes nothing the room shares.
+   */
+  private readonly remoteSpray = new RemoteSpray(snapFanSwitch());
   private online?: {
     controller: OnlineController; play: OnlinePlay; views: RemoteSurferViews; tags: NameTags;
     state: RemoteState; anchors: Vector3[]; rebuilding: boolean;
@@ -524,7 +527,7 @@ class SurfGame {
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonJoin: undefined, canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined, tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, snapQuick: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
+      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined, tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined, stroke: undefined, surfaceMotion: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, snapQuick: undefined, snapFan: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,

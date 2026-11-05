@@ -12,10 +12,22 @@ const FALLEN = RIDER_PHASES.indexOf('fallen');
 /** The board's velocity is read over this much of the drawn past, s: a pose's span (20 a second). */
 const VELOCITY_SPAN = 0.05;
 
+/** How other players' hulls throw (`RemoteSpray`): 'old' as before snap-fan, every patch at the board's own velocity. */
+export interface RemoteSprayOptions {
+  /** The `?snapFan=old` dev switch (`SurfZoneConfig.snapFan`). */
+  snapFan?: 'old';
+}
+
 /**
  * Other players' spray (board-spray, 2026-10-29): each board's sheets from its drawn pose on this player's own water,
  * by the same hull model as the player's own (`hullSpraySheets`), its velocity from the pose a span before. The water's
  * own flow is not known on the page and is taken as still. Packed for the worker's spray (`PhysicalMode.setRemoteSheets`).
+ *
+ * Each patch moves at the board's velocity plus its spin about the board's centre (snap-fan, 2026-11-05; the
+ * water-physics advisor's ruling, §3a): ω from the same two poses, the turn q·q₀⁻¹ between them as an axis and angle over
+ * the span, and each patch at v + ω × (R·local), the station-by-station velocity the player's own hull throws by (2D+t;
+ * `BoardBody.spraySheets`). Without it every patch moved at v, and a turning tail lost its sweep: 3–4.5 m/s at 200–300°/s.
+ * Nothing new goes on the wire: the pose already carries the quaternion.
  */
 export class RemoteSpray {
   private readonly layout = hullSprayLayout(buildBoardShape());
@@ -25,8 +37,12 @@ export class RemoteSpray {
   private readonly all: BoardSpraySheet[] = [];
   /** Each player's sides' root lines lately (spray-sheet): where their water tears. */
   private readonly history = new SheetHistory();
+  /** Each patch with the board's spin (false with `snapFan: 'old'`). */
+  private readonly spins: boolean;
 
-  constructor() {
+  constructor(options: RemoteSprayOptions = {}) {
+    this.spins = options.snapFan !== 'old';
+    if (!this.spins) this.hull.exits = 'old';
     this.hull.width.set(this.layout.width);
     for (let o = 0; o < this.layout.stations * this.layout.lanes; o += 1) {
       this.hull.across[o] = this.layout.local[o * 3];
@@ -61,6 +77,20 @@ export class RemoteSpray {
     const vx = (state.x - this.before.x) / VELOCITY_SPAN;
     const vy = (y - yBefore) / VELOCITY_SPAN;
     const vz = (state.z - this.before.z) / VELOCITY_SPAN;
+    // The spin over the span: the turn from the pose before to this one, r = q q₀⁻¹ (world), the shorter way round.
+    let wx = 0; let wy = 0; let wz = 0;
+    if (this.spins) {
+      const [bx, by, bz, bw] = this.before.quaternion;
+      let rw = qw * bw + qx * bx + qy * by + qz * bz;
+      let rx = bw * qx - qw * bx - (qy * bz - qz * by);
+      let ry = bw * qy - qw * by - (qz * bx - qx * bz);
+      let rz = bw * qz - qw * bz - (qx * by - qy * bx);
+      if (rw < 0) { rw = -rw; rx = -rx; ry = -ry; rz = -rz; }
+      const sine = Math.hypot(rx, ry, rz);
+      // ω = axis × angle / span, the angle 2 atan2(|r⃗|, r_w); 2 r⃗ / span as the turn goes to nothing.
+      const scale = sine > 1e-9 ? (2 * Math.atan2(sine, rw)) / (sine * VELOCITY_SPAN) : 2 / VELOCITY_SPAN;
+      wx = rx * scale; wy = ry * scale; wz = rz * scale;
+    }
     for (let o = 0; o < layout.stations * layout.lanes; o += 1) {
       const lx = layout.local[o * 3];
       const ly = layout.local[o * 3 + 1];
@@ -75,9 +105,19 @@ export class RemoteSpray {
       hull.water[o * 3] = 0;
       hull.water[o * 3 + 1] = 0;
       hull.water[o * 3 + 2] = 0;
-      hull.hull[o * 3] = vx;
-      hull.hull[o * 3 + 1] = vy;
-      hull.hull[o * 3 + 2] = vz;
+      if (this.spins) {
+        // v + ω × r, r the patch from the board's centre.
+        const rx = px - state.x;
+        const ry = py - y;
+        const rz = pz - state.z;
+        hull.hull[o * 3] = vx + wy * rz - wz * ry;
+        hull.hull[o * 3 + 1] = vy + wz * rx - wx * rz;
+        hull.hull[o * 3 + 2] = vz + wx * ry - wy * rx;
+      } else {
+        hull.hull[o * 3] = vx;
+        hull.hull[o * 3 + 1] = vy;
+        hull.hull[o * 3 + 2] = vz;
+      }
       hull.sea[o] = 1;
     }
     hull.wind = wind;

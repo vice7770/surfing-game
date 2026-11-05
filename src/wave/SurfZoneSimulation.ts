@@ -164,6 +164,13 @@ export interface SurfZoneConfig {
    */
   boardSpray?: 'off' | 'old';
   /**
+   * 'old': the boards' spray as before snap-fan (2026-11-05): a jet steeper than 45° off its path leaves where its run
+   * through a negative tan(2α) put it, not at the high rail of its own station (`HullSprayState.exits`), and other players'
+   * hulls throw at their board's velocity alone, not with their spin (`RemoteSpray`, on the page). Visual only. The
+   * `?snapFan=old` dev switch, for A/Bs; online rooms run the default here (the page's other players' spin follows it).
+   */
+  snapFan?: 'old';
+  /**
    * 'off': the boards' spray leaves the hull as drops, as before spray-sheet (2026-10-30); by default it leaves as a
    * curtain of water that tears into the drops a little way out, drawn on the page (`SpraySheetMesh`). The
    * `?spraySheet=off` dev switch, for A/Bs; online rooms run the default.

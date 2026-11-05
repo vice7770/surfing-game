@@ -1,0 +1,141 @@
+diff --git a/src/physics/BoardBody.ts b/src/physics/BoardBody.ts
+index 4c46d1b8..d37ad1f1 100644
+--- a/src/physics/BoardBody.ts
++++ b/src/physics/BoardBody.ts
+@@ -251,6 +251,11 @@ export class BoardBody implements BoardContactBody {
+     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
+     fins: new Vector3(), rails: new Vector3(), froth: new Vector3(),
+   };
++  /** PROBE (snap-fan, never commit): the step's yaw impulses about the composite centre, by part (see zz-yawBudget). */
++  yawLedger?: Float64Array;
++  /** PROBE (snap-fan, never commit): a pure yaw couple on the board, N·m (world y). */
++  probeCouple = 0;
++  private ledgerP = { x: 0, z: 0 };
+   /** Hull volume under water and wetted bottom area at the latest substep. */
+   submergedVolume = 0;
+   wettedArea = 0;
+@@ -754,6 +759,12 @@ export class BoardBody implements BoardContactBody {
+       this.foilNormal[k * 3 + 2] = nz;
+       this.foilDamping[k] = damping * h;
+       const base = foil.kind === 'fin' ? 0 : 6;
++      if (this.yawLedger) {
++        const slot = foil.kind === 'fin' ? 24 + k : 12 + Math.floor((k - 3) / 2);
++        this.yawLedger[slot] += h * ((pz - this.ledgerP.z) * fx - (px - this.ledgerP.x) * fz);
++        const fa = Math.atan2(this.rotation[2], this.rotation[8]);
++        this.yawLedger[foil.kind === 'fin' ? 36 : 37] += h * (fx * Math.cos(fa) - fz * Math.sin(fa));
++      }
+       ft[base] += fx;
+       ft[base + 1] += fy;
+       ft[base + 2] += fz;
+@@ -809,6 +820,14 @@ export class BoardBody implements BoardContactBody {
+       const mean = avx * nx + avy * ny + avz * nz + awx * cx + awy * cy + awz * cz;
+       const impulse = -damping * change;
+       const fin = this.foils[k].kind === 'fin';
++      if (this.yawLedger) {
++        const slot = fin ? 24 + k : 12 + Math.floor((k - 3) / 2);
++        const Rx = this.centerOfMass.x + rx - this.ledgerP.x;
++        const Rz = this.centerOfMass.z + rz - this.ledgerP.z;
++        this.yawLedger[slot] += Rz * impulse * nx - Rx * impulse * nz;
++        const fa = Math.atan2(this.rotation[2], this.rotation[8]);
++        this.yawLedger[fin ? 36 : 37] += impulse * (nx * Math.cos(fa) - nz * Math.sin(fa));
++      }
+       if (fin) this.work.fins += impulse * mean;
+       else this.work.rails += impulse * mean;
+       const force = fin ? this.forces.fins : this.forces.rails;
+@@ -884,6 +903,18 @@ export class BoardBody implements BoardContactBody {
+       }
+     }
+     const wettedLength = wetMax >= wetMin ? wetMax - wetMin + this.stationLength : this.stationLength;
++    const L = this.yawLedger;
++    const LP = this.ledgerP;
++    if (L) {
++      const rm = this.rider?.attached ? this.rider.mass : 0;
++      const rp = this.rider?.position ?? c;
++      LP.x = (this.mass * c.x + rm * rp.x) / (this.mass + rm);
++      LP.z = (this.mass * c.z + rm * rp.z) / (this.mass + rm);
++    }
++    const st = (k: number) => this.stationPatches.findIndex((list) => list.includes(k));
++    const fwdX = Math.sin(Math.atan2(this.rotation[2], this.rotation[8]));
++    const fwdZ = Math.cos(Math.atan2(this.rotation[2], this.rotation[8]));
++    // left = (fwdZ, 0, -fwdX)
+     this.placePressure();
+     // With the rigid rider on it (lying, climbing on, standing) the board keeps the hull law the rider was calibrated on:
+     // a rigid body perched on a deep board is no physical pair (it is top-heavy; a real one moves), and its climb back
+@@ -964,6 +995,15 @@ export class BoardBody implements BoardContactBody {
+       this.reaction[k * 3] += (b.x + p.x + f.x) * h;
+       this.reaction[k * 3 + 1] += (b.y + p.y + f.y) * h;
+       this.reaction[k * 3 + 2] += (b.z + p.z + f.z) * h;
++      if (L) {
++        const Rx = point[k * 3] - LP.x;
++        const Rz = point[k * 3 + 2] - LP.z;
++        L[st(k)] += h * (Rz * p.x - Rx * p.z);
++        L[27] += h * ((force.buoyancyPoint.z - LP.z) * b.x - (force.buoyancyPoint.x - LP.x) * b.z);
++        L[28] += h * (Rz * f.x - Rx * f.z);
++        L[35] += h * ((p.x + b.x) * fwdZ - (p.z + b.z) * fwdX);
++        L[40 + st(k)] += h * (p.x * fwdZ - p.z * fwdX);
++      }
+       // Froth drag, its own ledger (`forces.froth`, `work.froth`): in a roller lens's footprint only (the Canyon roller
+       // lens, S3; the owner's decision of 2026-10-07, option B; provisional). A stand-in for the turbulence the thin lens
+       // cannot represent: a board in whitewater is surrounded by turbulent, aerated water travelling with the bore, and
+@@ -1013,6 +1053,7 @@ export class BoardBody implements BoardContactBody {
+           frothTx += ry * fz;
+           frothTy += rz * fx - rx * fz;
+           frothTz += -ry * fx;
++          if (L) L[30] += h * ((point[k * 3 + 2] - LP.z) * fx - (point[k * 3] - LP.x) * fz);
+           this.reaction[k * 3] += fx * h;
+           this.reaction[k * 3 + 2] += fz * h;
+         }
+@@ -1077,6 +1118,7 @@ export class BoardBody implements BoardContactBody {
+       waterX += push * ux;
+       waterY += push * uy;
+       waterZ += push * uz;
++      if (L) L[29] += (point[k * 3 + 2] - LP.z) * push * ux - (point[k * 3] - LP.x) * push * uz;
+       waterTx += push * cx;
+       waterTy += push * cy;
+       waterTz += push * cz;
+@@ -1108,6 +1150,7 @@ export class BoardBody implements BoardContactBody {
+     rhs[3] = h * (totals.btx + totals.ptx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
+     rhs[4] = h * (totals.bty + totals.pty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
+     rhs[5] = h * (totals.btz + totals.ptz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
++    if (this.probeCouple) rhs[4] += h * this.probeCouple;
+     if (frothX !== 0 || frothZ !== 0) {
+       rhs[0] += h * frothX;
+       rhs[2] += h * frothZ;
+@@ -1204,6 +1247,14 @@ export class BoardBody implements BoardContactBody {
+       this.forces.addedMass.x += inertia * ux;
+       this.forces.addedMass.y += inertia * uy;
+       this.forces.addedMass.z += inertia * uz;
++      if (L) {
++        const Rx = point[k * 3] - LP.x;
++        const Rz = point[k * 3 + 2] - LP.z;
++        L[st(k)] += Rz * pressure * nx - Rx * pressure * nz;
++        L[29] += Rz * water * ux - Rx * water * uz;
++        L[35] += pressure * (nx * fwdZ - nz * fwdX);
++        L[40 + st(k)] += pressure * (nx * fwdZ - nz * fwdX);
++      }
+       this.reaction[k * 3] += pressure * nx + water * ux;
+       this.reaction[k * 3 + 1] += pressure * ny + water * uy;
+       this.reaction[k * 3 + 2] += pressure * nz + water * uz;
+@@ -1244,6 +1295,22 @@ export class BoardBody implements BoardContactBody {
+     q.set(q.x + spin.x, q.y + spin.y, q.z + spin.z, q.w + spin.w).normalize();
+     this.updateRotation();
+     this.syncPosition();
++    if (L && rider?.attached) {
++      const rr = rider as unknown as { arm: Vector3; up: Vector3; rollAxis: Vector3; twistTorque: number; swingTorque: number; handYaw: number; upright: boolean };
++      const ax = c.x - h * v.x + rr.arm.x - LP.x;
++      const az = c.z - h * v.z + rr.arm.z - LP.z;
++      rider.finish(h, this);
++      const j = (rider as unknown as { impulse: Vector3 }).impulse;
++      L[34] += az * -j.x - ax * -j.z;
++      L[38] += -j.x * fwdZ + j.z * fwdX;
++      if (rr.upright) {
++        L[31] += -h * rr.twistTorque * rr.up.y;
++        L[32] += -h * rr.swingTorque * rr.rollAxis.y;
++        L[33] += h * rr.handYaw;
++      }
++      L[39] += h;
++      return;
++    }
+     if (rider?.attached) rider.finish(h, this);
+   }
+ 

@@ -7,6 +7,8 @@ import {
 
 const DEGREE = Math.PI / 180;
 const layout = hullSprayLayout(buildBoardShape());
+/** `hullSpraySheets` over the steep-jet sweep (below), packed, on the code before snap-fan (main 0b515dff). */
+const BEFORE_SNAP_FAN = 3332981973;
 
 /**
  * The reference board's hull planing on still, flat water at `speed` m/s, rolled `bank` onto its −x rail (its +x side
@@ -141,6 +143,55 @@ describe('the spray off a planing board (board-spray)', () => {
     expect(sheetDrops(4)).toEqual({ fall: 7.5, mist: 0.05 });
     expect(sheetDrops(12).fall).toBeCloseTo(5.25, 6);
     expect(sheetDrops(12).mist).toBeCloseTo(0.22, 6);
+  });
+
+  // snap-fan (2026-11-05): a jet at 45° or more off its path (a high trim over a nearly flat station: Snap's nose-up trim,
+  // or a deeply sunk low rail at a moderate bank) ran its exit through a negative tan(2α) and was drawn off the board.
+  it('leaves a jet steeper than 45° off its path at the high rail of its own station, on the board (snap-fan)', () => {
+    const steep = { speed: 6, bank: 14 * DEGREE, trim: 10 * DEGREE, sink: 0.15 };
+    const half = Math.max(...layout.width) * 2;
+    const sheets = sheetsOf(hullAt(steep));
+    expect(sheets.length).toBeGreaterThan(0);
+    for (const sheet of sheets) {
+      // Across the board's frame (world x here: no yaw), within its beam; its curtain timed by a run of no more than it.
+      expect(Math.abs(sheet.x)).toBeLessThan(half);
+      expect(sheet.breakup).toBeLessThan(CURTAIN_CLOCK.longest + 1e-9);
+    }
+    // As before (`exits: 'old'`): the same water, its root put metres to the side.
+    const old = hullAt(steep);
+    old.exits = 'old';
+    const before = sheetsOf(old);
+    expect(before.map((sheet) => sheet.flux)).toEqual(sheets.map((sheet) => sheet.flux));
+    expect(Math.max(...before.map((sheet) => Math.abs(sheet.x)))).toBeGreaterThan(5);
+  });
+
+  it('throws as before snap-fan with `exits: \'old\'`, bit for bit, and unchanged wherever every jet is under 45°', () => {
+    const hash = (all: number[]) => {
+      let h = 0x811c9dc5;
+      const view = new DataView(new ArrayBuffer(8));
+      for (const value of all) {
+        view.setFloat64(0, value);
+        for (let i = 0; i < 8; i += 1) h = Math.imul(h ^ view.getUint8(i), 0x01000193) >>> 0;
+      }
+      return h >>> 0;
+    };
+    const sweep = (exits?: 'old') => {
+      const all: number[] = [];
+      for (const trim of [4, 10, 16, 25]) for (const bank of [0, 8, 14, 33]) for (const sink of [0.03, 0.08, 0.15]) for (const drift of [0, 6]) {
+        const hull = hullAt({ speed: 7, bank: bank * DEGREE, trim: trim * DEGREE, sink, drift: drift * DEGREE });
+        if (exits) hull.exits = exits;
+        all.push(...packBoardSheets(sheetsOf(hull)));
+      }
+      return all;
+    };
+    // The same sweep on the code before snap-fan (main 0b515dff).
+    expect(hash(sweep('old'))).toBe(BEFORE_SNAP_FAN);
+    // A carve whose jets all run under 45° off their paths: the default is the old, exactly.
+    for (const options of [{ speed: 12, bank: 33 * DEGREE, drift: 6 * DEGREE, sink: 0.04 }, { speed: 10 }, { speed: 9, bank: 40 * DEGREE, sink: 0.08 }]) {
+      const old = hullAt(options);
+      old.exits = 'old';
+      expect(packBoardSheets(sheetsOf(hullAt(options)))).toEqual(packBoardSheets(sheetsOf(old)));
+    }
   });
 
   it('packs sheets for a message and back', () => {
