@@ -1,0 +1,204 @@
+{
+ "level": 10,
+ "dx_h0": 0.0625,
+ "frames": 19,
+ "xtoe": 27.456,
+ "h0_m": 4.5,
+ "foot_crest_h0": null,
+ "train_crest_h0": 0.2355022907872923,
+ "vertical_found": false,
+ "error": "the crest never reached the slope",
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_ledge_small_p1_L10",
+ "track": [
+  {
+   "t": 0.0,
+   "x": 7.625,
+   "y": 0.235457,
+   "trough": -0.0252132,
+   "angle": 6.8843408565253945,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 8.9375
+  },
+  {
+   "t": 1.0,
+   "x": 8.625,
+   "y": 0.233209,
+   "trough": -0.0257194,
+   "angle": 7.104386205755166,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 10.1875
+  },
+  {
+   "t": 2.0,
+   "x": 9.75,
+   "y": 0.234825,
+   "trough": -0.0291044,
+   "angle": 7.418586207458586,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 11.0625
+  },
+  {
+   "t": 3.0,
+   "x": 10.8125,
+   "y": 0.235534,
+   "trough": -0.0321344,
+   "angle": 7.5737488669365325,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 11.625
+  },
+  {
+   "t": 4.0,
+   "x": 11.875,
+   "y": 0.23644,
+   "trough": -0.0349981,
+   "angle": 7.755061263852701,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 12.5625
+  },
+  {
+   "t": 5.0,
+   "x": 12.8125,
+   "y": 0.241723,
+   "trough": -0.0315409,
+   "angle": 7.311633422366756,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 13.561
+  },
+  {
+   "t": 6.0,
+   "x": 13.8125,
+   "y": 0.24415,
+   "trough": -0.0316029,
+   "angle": 7.267587060844923,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 15.0625
+  },
+  {
+   "t": 7.0,
+   "x": 14.8125,
+   "y": 0.242991,
+   "trough": -0.0283832,
+   "angle": 7.549302370691479,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 15.9375
+  },
+  {
+   "t": 8.0,
+   "x": 15.8125,
+   "y": 0.243192,
+   "trough": -0.030574,
+   "angle": 7.330421891354527,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 16.8125
+  },
+  {
+   "t": 9.0,
+   "x": 16.8125,
+   "y": 0.244566,
+   "trough": -0.030789,
+   "angle": 7.4729620149743035,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 17.875
+  },
+  {
+   "t": 10.0,
+   "x": 17.875,
+   "y": 0.240793,
+   "trough": -0.0282011,
+   "angle": 7.5247061517971305,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 19.1875
+  },
+  {
+   "t": 11.0,
+   "x": 18.9375,
+   "y": 0.241451,
+   "trough": -0.0186825,
+   "angle": 7.018749366916779,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 19.6839
+  },
+  {
+   "t": 12.0,
+   "x": 20.0,
+   "y": 0.253865,
+   "trough": -0.0148416,
+   "angle": 8.089535900607073,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.0
+  },
+  {
+   "t": 13.0,
+   "x": 20.875,
+   "y": 0.266404,
+   "trough": -0.0124817,
+   "angle": 7.7097790850025945,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.3092
+  },
+  {
+   "t": 14.0,
+   "x": 21.875,
+   "y": 0.275867,
+   "trough": -0.0160529,
+   "angle": 7.236614137304253,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 22.375
+  },
+  {
+   "t": 15.0,
+   "x": 22.8125,
+   "y": 0.265183,
+   "trough": -0.0247651,
+   "angle": 7.390684582406261,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 28.875
+  },
+  {
+   "t": 16.0,
+   "x": 23.75,
+   "y": 0.251225,
+   "trough": -0.0429547,
+   "angle": 7.451681930672719,
+   "overturned": true,
+   "loop": false,
+   "lip_x": 23.8691
+  },
+  {
+   "t": 17.0,
+   "x": 24.75,
+   "y": 0.227782,
+   "trough": -0.0566774,
+   "angle": 7.847564978244374,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 26.0625
+  },
+  {
+   "t": 17.5,
+   "x": 25.25,
+   "y": 0.213304,
+   "trough": -0.0583207,
+   "angle": 9.66007315799793,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 29.9375
+  }
+ ]
+}

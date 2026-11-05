@@ -1,0 +1,37 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_steep9_big_L13",
+ "t_vertical": 24.7,
+ "t_impact": 27.5,
+ "timing": "plunge_measure.py: the local trough as the water level, the crest looked for at x >= XMIN, touchdown = first enclosed tube, the frame before it with the jet >= 3 cells off the face",
+ "at_vertical": {
+  "crest_m": 1.127466,
+  "x_m": 147.2697,
+  "trough_m": -0.7042725000000001,
+  "H_m": 1.8317385
+ },
+ "pre_touchdown": {
+  "t": 27.475,
+  "crest_m": 1.80639,
+  "trough_m": -0.37056375,
+  "H_m": 2.17695375,
+  "jet_m2": 0.1791213289632978,
+  "tube_m2": 0.01639358898749066,
+  "tube_L_m": 0.5399672421751541,
+  "tube_W_m": 0.07773265671808716,
+  "L/W": 6.9464658095175125,
+  "tilt_deg": 57.82328733055241,
+  "lip_m": 0.3317262881387804,
+  "lip_cells": 9.435769973725309,
+  "per H at touchdown": {
+   "jet": 0.037796266098227,
+   "tube": 0.0034591997237979457,
+   "lip": 0.15238095349466216
+  },
+  "per H at vertical": {
+   "jet": 0.05338513625241057,
+   "tube": 0.0048859283639109815,
+   "lip": 0.18109915151031677
+  },
+  "open_s": 1.8963992921400703
+ }
+}

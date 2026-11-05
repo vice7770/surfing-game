@@ -1,0 +1,36 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_knee_big_L13",
+ "t_vertical": 30.65,
+ "t_touchdown": 33.325,
+ "at_vertical": {
+  "crest_m": 1.6839045000000001,
+  "x_m": 172.8279,
+  "trough_m": -0.436032,
+  "H_m": 2.1199365
+ },
+ "pre_touchdown": {
+  "t": 33.3,
+  "crest_m": 1.2054420000000001,
+  "trough_m": -0.4713975,
+  "H_m": 1.6768395,
+  "jet_m2": 0.033983751892403546,
+  "tube_m2": 0.08218142954964947,
+  "tube_L_m": 0.3964655775855452,
+  "tube_W_m": 0.34134077906371496,
+  "L/W": 1.1614949103738366,
+  "tilt_deg": 0.5079095533761164,
+  "lip_m": 0.08571677798451718,
+  "lip_cells": 2.4381661293373775,
+  "per H at touchdown": {
+   "jet": 0.012086159822111144,
+   "tube": 0.029227434777990353,
+   "lip": 0.051118057503128464
+  },
+  "per H at vertical": {
+   "jet": 0.007561807538931609,
+   "tube": 0.018286390375502594,
+   "lip": 0.0404336535478856
+  },
+  "open_s": 1.8117386094552481
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_ledge_big_L13",
+ "t_vertical": 19.55,
+ "t_touchdown": 23.675,
+ "at_vertical": {
+  "crest_m": 1.131462,
+  "x_m": 125.9649,
+  "trough_m": -0.9627885,
+  "H_m": 2.0942505
+ },
+ "pre_touchdown": {
+  "t": 23.65,
+  "crest_m": 1.230453,
+  "trough_m": -0.34776450000000003,
+  "H_m": 1.5782175,
+  "jet_m2": 1.1427198378653145,
+  "tube_m2": 0.6258666543794709,
+  "tube_L_m": 1.6741352273333177,
+  "tube_W_m": 0.6425436491402587,
+  "L/W": 2.605480934366649,
+  "tilt_deg": 23.10048600691853,
+  "lip_m": 0.6825731991109945,
+  "lip_cells": 19.4154154413794,
+  "per H at touchdown": {
+   "jet": 0.4587816694780956,
+   "tube": 0.25127431856199817,
+   "lip": 0.43249628084278274
+  },
+  "per H at vertical": {
+   "jet": 0.26054486084902884,
+   "tube": 0.1427001920960491,
+   "lip": 0.3259271988288863
+  },
+  "open_s": 2.79380252859921
+ }
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "id": "periodic-pool-ledge-big-l13",
+    "spot": "pool",
+    "slope": 0.2222,
+    "nonlinearity": 0.2503,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-ledge-big-l13.bin"
+  },
+  {
+    "id": "periodic-pool-ledge-small-l13",
+    "spot": "pool",
+    "slope": 0.2222,
+    "nonlinearity": 0.211,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-ledge-small-l13.bin"
+  },
+  {
+    "id": "periodic-pool-kneeface-big-l13",
+    "spot": "pool",
+    "slope": 0.0463,
+    "nonlinearity": 0.1731,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-kneeface-big-l13.bin"
+  },
+  {
+    "id": "periodic-pool-kneeface-small-l13",
+    "spot": "pool",
+    "slope": 0.0535,
+    "nonlinearity": 0.1603,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-kneeface-small-l13.bin"
+  },
+  {
+    "id": "periodic-pool-knee-big-l13",
+    "spot": "pool",
+    "slope": 0.0463,
+    "nonlinearity": 0.2416,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-knee-big-l13.bin"
+  },
+  {
+    "id": "periodic-pool-knee-small-l13",
+    "spot": "pool",
+    "slope": 0.0535,
+    "nonlinearity": 0.1868,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-knee-small-l13.bin"
+  },
+  {
+    "id": "periodic-pool-steep9-big-l13",
+    "spot": "pool",
+    "slope": 0.1111,
+    "nonlinearity": 0.2456,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-steep9-big-l13.bin"
+  },
+  {
+    "id": "periodic-pool-steep9-small-l13",
+    "spot": "pool",
+    "slope": 0.1111,
+    "nonlinearity": 0.1911,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-steep9-small-l13.bin"
+  }
+]

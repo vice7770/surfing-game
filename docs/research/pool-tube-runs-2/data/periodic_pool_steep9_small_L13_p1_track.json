@@ -1,0 +1,274 @@
+{
+ "level": 10,
+ "dx_h0": 0.0625,
+ "frames": 24,
+ "xtoe": 27.148,
+ "h0_m": 4.5,
+ "foot_crest_h0": 0.19096964549999998,
+ "train_crest_h0": 0.18357151518707815,
+ "vertical_found": false,
+ "note": "the face never went vertical (steepest 9 deg at t 22.50); the break is placed at its steepest frame; that is the last frame, so the run may have ended before the break",
+ "t_vertical": 22.5,
+ "x_vertical": 29.9375,
+ "depth_vertical_h0": 0.69008655,
+ "t_touchdown": null,
+ "crest_at_vertical_h0": 0.177644,
+ "trough_at_vertical_h0": -0.134089,
+ "depth_vertical_m": 3.105389475,
+ "suggest": {
+  "tswitch": 17.5,
+  "tmax": 29.0,
+  "xwin0": 24,
+  "xwin1": 40
+ },
+ "analysis": {
+  "t_from": 21.5,
+  "t_to": 27.5,
+  "xmin_plunge": 28.5625,
+  "tmin": 19.5,
+  "xmin_library": 26.5625
+ },
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_steep9_small_p1_L10",
+ "track": [
+  {
+   "t": 0.0,
+   "x": 7.5,
+   "y": 0.183534,
+   "trough": -0.0163108,
+   "angle": 5.098514310444533,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 8.9375
+  },
+  {
+   "t": 1.0,
+   "x": 8.625,
+   "y": 0.181867,
+   "trough": -0.0239681,
+   "angle": 5.247718352986641,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 10.375
+  },
+  {
+   "t": 2.0,
+   "x": 9.4375,
+   "y": 0.182819,
+   "trough": -0.0155858,
+   "angle": 5.522919878459476,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 10.9375
+  },
+  {
+   "t": 3.0,
+   "x": 10.625,
+   "y": 0.181251,
+   "trough": -0.0235077,
+   "angle": 5.409822454071571,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 11.75
+  },
+  {
+   "t": 4.0,
+   "x": 11.625,
+   "y": 0.181227,
+   "trough": -0.0221668,
+   "angle": 5.334997835598084,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 12.9375
+  },
+  {
+   "t": 5.0,
+   "x": 12.625,
+   "y": 0.183628,
+   "trough": -0.0213966,
+   "angle": 5.316707520996451,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 13.6875
+  },
+  {
+   "t": 6.0,
+   "x": 13.625,
+   "y": 0.185697,
+   "trough": -0.0218329,
+   "angle": 5.4361324114510845,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 14.9375
+  },
+  {
+   "t": 7.0,
+   "x": 14.5625,
+   "y": 0.186943,
+   "trough": -0.0177053,
+   "angle": 5.401917669428154,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 15.875
+  },
+  {
+   "t": 8.0,
+   "x": 15.625,
+   "y": 0.187576,
+   "trough": -0.020716,
+   "angle": 5.561260294142797,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 16.9375
+  },
+  {
+   "t": 9.0,
+   "x": 16.5625,
+   "y": 0.188666,
+   "trough": -0.0206904,
+   "angle": 5.768011727631774,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 17.875
+  },
+  {
+   "t": 10.0,
+   "x": 17.5625,
+   "y": 0.187486,
+   "trough": -0.0195258,
+   "angle": 5.713892762472876,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 18.8125
+  },
+  {
+   "t": 11.0,
+   "x": 18.625,
+   "y": 0.186523,
+   "trough": -0.0182488,
+   "angle": 5.072735661927077,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 20.1875
+  },
+  {
+   "t": 12.0,
+   "x": 19.6875,
+   "y": 0.192137,
+   "trough": -0.0170917,
+   "angle": 6.1098972202678095,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.0625
+  },
+  {
+   "t": 13.0,
+   "x": 20.625,
+   "y": 0.194841,
+   "trough": -0.0161942,
+   "angle": 5.472084316583876,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.5
+  },
+  {
+   "t": 14.0,
+   "x": 21.625,
+   "y": 0.1983,
+   "trough": -0.0178668,
+   "angle": 5.66054170254608,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.935
+  },
+  {
+   "t": 15.0,
+   "x": 22.5,
+   "y": 0.195705,
+   "trough": -0.0126908,
+   "angle": 5.345942276358568,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 23.6847
+  },
+  {
+   "t": 16.0,
+   "x": 23.5625,
+   "y": 0.189184,
+   "trough": -0.01558,
+   "angle": 5.245430049196035,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 24.9375
+  },
+  {
+   "t": 17.0,
+   "x": 24.5,
+   "y": 0.187254,
+   "trough": -0.0145446,
+   "angle": 5.357357003978024,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 26.3479
+  },
+  {
+   "t": 18.0,
+   "x": 25.625,
+   "y": 0.184405,
+   "trough": -0.021953,
+   "angle": 5.645764070913167,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 26.8125
+  },
+  {
+   "t": 19.0,
+   "x": 26.5625,
+   "y": 0.188791,
+   "trough": -0.0351627,
+   "angle": 5.887878536304119,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 27.6875
+  },
+  {
+   "t": 20.0,
+   "x": 27.5625,
+   "y": 0.192512,
+   "trough": -0.0538218,
+   "angle": 6.792807602731358,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 28.8125
+  },
+  {
+   "t": 21.0,
+   "x": 28.5625,
+   "y": 0.189544,
+   "trough": -0.0916547,
+   "angle": 7.97567929624611,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 30.0625
+  },
+  {
+   "t": 22.0,
+   "x": 29.5625,
+   "y": 0.181185,
+   "trough": -0.129433,
+   "angle": 9.270778730850491,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 30.6875
+  },
+  {
+   "t": 22.5,
+   "x": 29.9375,
+   "y": 0.177644,
+   "trough": -0.134089,
+   "angle": 9.433081408588592,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 32.0486
+  }
+ ]
+}
