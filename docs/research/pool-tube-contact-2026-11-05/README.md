@@ -303,6 +303,10 @@ their touchdown and 433 of them poured their jets; per jet, only 53.5 % landed o
     against `?tubeCap=old`;
   - `src/game/PhysicalMode.test.ts`: the URL switches and the online pin;
   - then the main suite and the SZS subset.
+  - **This head:** both type checks clean; the main suite: 320 files passed, 34 skipped; 3,078 tests passed, 23 expected
+    fails, 40 skipped (723 s); the SZS subset: 37 passed, 70 filtered out (6,594 s). (The first main-suite run caught the
+    clear-roof drawing test comparing the loft's new plain-array diagnostic, `openDrops`, by identity; it now compares plain
+    arrays by value.)
 - **The bars:** `PROBE=1 H=1.05 CASE=a38 LOG=runs/default-a38-1.05.txt npx vitest run src/wave/probes/poolTubeFace.probe.test.ts --maxWorkers=2`
   - `H=1.32`; `CASE=pool`;
   - `SWITCHES=tubeContact=old,tubeCap=old,tubeMerge=old,tubeGuard=old` for main's build (the re-measure only);
