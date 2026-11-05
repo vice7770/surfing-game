@@ -3,6 +3,7 @@ import { heldActions, padValue, readPads, type Action, type Bindings, type PadKi
 import { AxisRamp, SprintPress } from './InputAxes';
 import { DEFAULT_STICK, drivingPad, padKey, padSticks, touched, type StickSettings } from './Sticks';
 import type { CallId } from '../net/protocol';
+import { devParam } from '../devTools';
 
 /** One frame's paddle, steer and pop-up press, as `input` reads them. */
 export interface BoardInput {
@@ -32,6 +33,17 @@ export interface ControlEnvironment {
   document?: Document;
   /** The stick settings (spec C1): which stick trims, the response and the dead zones; the defaults without. */
   stick?: () => StickSettings;
+  /** 'old': the stance keys' ramps cross-fade when one takes over from another, as before stance-handover (`stanceHandoverSwitch`). */
+  stanceHandover?: 'old';
+}
+
+/**
+ * The `?stanceHandover=old` dev switch (stance-handover, 2026-11-05): the keyboard's and touch's stance ramps cross-fade
+ * when Snap takes over from Compress or the crouch held with it (or hands back to them), as before, the legs rising
+ * about 6 cm for 0.3 s in between. Only the local player's keys: the pad's buttons, and the sea, are the same either way.
+ */
+export function stanceHandoverSwitch(search?: string): { stanceHandover?: 'old' } {
+  return devParam('stanceHandover', search)?.trim().toLowerCase() === 'old' ? { stanceHandover: 'old' } : {};
 }
 
 const EDITABLE = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA']);
@@ -78,12 +90,15 @@ export class Controls {
   /** The pad whose sticks steer and trim: the one touched last (spec C1). */
   private driving?: string;
   private readonly stick: () => StickSettings;
+  /** The deepest stance held wins at once from the keys (stance-handover); false with `stanceHandover: 'old'`. */
+  private readonly handover: boolean;
   private readonly pads: () => PadState[];
 
   constructor(private readonly bindings: () => Bindings, private readonly handlers: ControlHandlers, environment: ControlEnvironment = {}) {
     const target = environment.target ?? globalThis.window;
     this.pads = environment.pads ?? (() => readPads());
     this.stick = environment.stick ?? (() => DEFAULT_STICK);
+    this.handover = environment.stanceHandover !== 'old';
     target.addEventListener('keydown', (event) => this.keyDown(event as KeyboardEvent));
     target.addEventListener('keyup', (event) => {
       this.held.delete((event as KeyboardEvent).code);
@@ -153,6 +168,22 @@ export class Controls {
     const trim = this.ramps.trim.update(trimKeys, dt);
     // Switching from crouch starts Compress at the current input ramp, avoiding a delayed turn request.
     if (compressKeys) this.ramps.compress.raise(this.ramps.crouch.value);
+    // The deepest stance held wins (the owner, 2026-11-05: hold Compress, press Snap on top, let Compress go). Snap, which
+    // wins over Compress and the crouch held with it, starts at their ramp; let go with either still held, it hands back
+    // to them at once. Cross-faded, the 0.2 s ramps asked half the depth at their crossing: the legs rose about 6 cm for
+    // 0.3 s and the weight came forward between the two stances. The pad's buttons pass straight through already.
+    if (this.handover) {
+      const compressHeld = compressing && (compressKeys > 0 || (this.active && this.padCompressValue > 0));
+      const crouchHeld = crouchKeys > 0 || (standing && this.active && this.padCrouchValue > 0);
+      if (snapKeys) {
+        const held = Math.max(this.ramps.compress.value, this.ramps.crouch.value, compressHeld ? this.padCompressValue : 0, crouchHeld ? this.padCrouchValue : 0);
+        this.ramps.snap.raise(held);
+      } else if (compressHeld || crouchHeld) {
+        if (compressHeld) this.ramps.compress.raise(this.ramps.snap.value);
+        if (crouchHeld) this.ramps.crouch.raise(this.ramps.snap.value);
+        this.ramps.snap.reset();
+      }
+    }
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
     const compress = this.ramps.compress.update(compressKeys, dt);
     const snap = this.ramps.snap.update(snapKeys, dt);

@@ -1,17 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_BINDINGS, type PadState } from './Bindings';
-import { Controls } from './Controls';
+import { CROUCH_SHARE } from '../physics/AttachedRider';
+import { Controls, stanceHandoverSwitch } from './Controls';
 import type { StickSettings } from './Sticks';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
   buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
 });
 
-function setup(stick?: StickSettings) {
+function setup(stick?: StickSettings, stanceHandover?: 'old') {
   const target = new EventTarget();
   let pads: PadState[] = [];
   const handlers = { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() };
-  const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads, ...(stick ? { stick: () => stick } : {}) });
+  const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads, ...(stick ? { stick: () => stick } : {}), ...(stanceHandover ? { stanceHandover } : {}) });
   const key = (type: 'keydown' | 'keyup', code: string, repeat = false) =>
     target.dispatchEvent(Object.assign(new Event(type), { code, repeat }));
   return { controls, handlers, key, target, setPads: (next: PadState[]) => { pads = next; } };
@@ -188,6 +189,71 @@ describe('the ride request (P9)', () => {
       lowest = Math.min(lowest, Math.max(request.crouch ?? 0, request.compress ?? 0));
     }
     expect(lowest).toBeGreaterThan(0.99);
+  });
+
+  // stance-handover (the owner, 2026-11-05): the deepest stance held wins. Compress held on Space, Snap pressed on Q on
+  // top takes over at once, and letting Space go keeps it; Q let go with Space still held hands back to Compress at once;
+  // from the crouch, Snap goes straight down. The depth is the one the rider asks for: Snap wins over the crouch and
+  // Compress held with it (`AttachedRider`), the crouch at CROUCH_SHARE of the full depth. Cross-faded (the old ramps),
+  // it fell to half at the ramps' crossing.
+  describe('the deepest stance held wins', () => {
+    const depth = (request: { crouch?: number; compress?: number; snap?: number }) => {
+      const snap = request.snap ?? 0;
+      return Math.max(CROUCH_SHARE * (request.crouch ?? 0) * (1 - snap), (request.compress ?? 0) * (1 - snap), snap);
+    };
+    const lowestOver = (controls: Controls, frames = 30) => {
+      let lowest = 1;
+      for (let i = 0; i < frames; i += 1) lowest = Math.min(lowest, depth(controls.rideRequest(1 / 60, true)));
+      return lowest;
+    };
+    it('hands Compress over to Snap pressed on top at once, and keeps Snap when Compress is let go', () => {
+      const { controls, key } = setup();
+      key('keydown', 'Space');
+      controls.rideRequest(0.3, true);
+      key('keydown', 'KeyQ');
+      expect(controls.rideRequest(1 / 60, true).snap).toBe(1);
+      expect(lowestOver(controls)).toBe(1);
+      key('keyup', 'Space');
+      expect(lowestOver(controls)).toBe(1);
+      expect(controls.rideRequest(1 / 60, true).snap).toBe(1);
+    });
+    it('hands Snap back to Compress at once when Q is let go with Space held', () => {
+      const { controls, key } = setup();
+      key('keydown', 'Space');
+      key('keydown', 'KeyQ');
+      controls.rideRequest(0.3, true);
+      key('keyup', 'KeyQ');
+      const request = controls.rideRequest(1 / 60, true);
+      expect(request).toMatchObject({ snap: 0, compress: 1 });
+      expect(lowestOver(controls)).toBe(1);
+    });
+    it('goes from the crouch straight down into Snap, and back to the crouch without rising past it', () => {
+      const { controls, key } = setup();
+      key('keydown', 'ShiftLeft');
+      controls.rideRequest(0.3, true);
+      key('keydown', 'KeyQ');
+      expect(lowestOver(controls)).toBe(1);
+      key('keyup', 'KeyQ');
+      expect(lowestOver(controls)).toBeCloseTo(CROUCH_SHARE, 9);
+    });
+    it('ramps Snap from nothing as before, and lets it go as before', () => {
+      const { controls, key } = setup();
+      key('keydown', 'KeyQ');
+      expect(controls.rideRequest(0.1, true).snap).toBeCloseTo(0.5, 9);
+      controls.rideRequest(0.2, true);
+      key('keyup', 'KeyQ');
+      expect(controls.rideRequest(0.1, true).snap).toBeCloseTo(0.5, 9);
+    });
+    it('cross-fades the ramps as before with `?stanceHandover=old` (a dev switch)', () => {
+      expect(stanceHandoverSwitch('?stanceHandover=old')).toEqual({ stanceHandover: 'old' });
+      expect(stanceHandoverSwitch('?stanceHandover=OLD')).toEqual({ stanceHandover: 'old' });
+      for (const search of ['', '?stanceHandover', '?stanceHandover=new', '?snap=off']) expect(stanceHandoverSwitch(search), search).toEqual({});
+      const { controls, key } = setup(undefined, 'old');
+      key('keydown', 'Space');
+      controls.rideRequest(0.3, true);
+      key('keydown', 'KeyQ');
+      expect(lowestOver(controls)).toBeLessThan(0.55);
+    });
   });
 
   // The final review: paddling on Space and popping up on Enter, the player still holds Space as the rider lands.

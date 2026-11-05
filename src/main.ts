@@ -16,7 +16,7 @@ import {
   type Texture,
 } from 'three';
 import { addPadSource } from './game/Bindings';
-import { Controls } from './game/Controls';
+import { Controls, stanceHandoverSwitch } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { advanceFrameClock, frameDue } from './game/frameLimit';
 import { ownSurferDetail, PRESETS, resolveGraphics, withGlowOverride, withPreset, type ResolvedGraphics } from './game/Graphics';
@@ -1318,6 +1318,6 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
-}, { stick: () => settings.value.controls });
+}, { stick: () => settings.value.controls, ...stanceHandoverSwitch() });
 const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);
