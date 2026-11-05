@@ -53,6 +53,16 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  * face anchor; the pre-throw clock's rate and holds; the slice's weight's change; the 40 largest rises by cause); bar 5's
  * usable clearance over a 0.3 m depth along the ray; bar 6 within ±1 H_s; bar 7's formation (the first clock against τ_e).
  * COST=1 compares the default against step 6's build (`tubeAnchor=old,tubeForm=old,wallFlow=old`).
+ *
+ * The step 7 follow-up (pool-tube-contact, 2026-11-05; the advisor's re-ruled bars, advisor-ruling-2.md) adds, under "# The
+ * 2026-11-05 re-ruled bars": bar 2a along the nearest surface's normal (`signedNormal`: a direction search in the ray–vertical
+ * plane on the game's union water, probe-only, so it reads main's build and the branch's alike), before the body's own σ's
+ * touchdown and outside the lip's water, after it as information; 2b's three outcomes (carried, pitched, overrun) for the
+ * passive lone boards and prone riders at 0.3 H_s; the risks (boards flung clear of the water, the hull force's flips); bar 3
+ * one-sided; bar 4b's jitter, own pace, single steps (reads across unread steps apart), cap engagement and the anchor's
+ * outcomes; the ledger (throws per crest, unbroken at touchdown, starved share, bar 6 per jet); holes at weight ≥ 0.5 with
+ * the first holes' fronts. SWITCHES also takes `tubeContact=old`, `tubeCap=old`, `tubeMerge=old`, `tubeGuard=old` (all four:
+ * main before the follow-up). COST=1 COST_ARMS=followUp compares the default against those four old.
  */
 
 const quantile = (values: number[], q: number) => {
