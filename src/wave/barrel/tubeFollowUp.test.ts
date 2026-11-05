@@ -181,7 +181,7 @@ describe('the step 7 follow-up: no holes in the tube', () => {
       for (const p of points) map.set(p.column, [...(map.get(p.column) ?? []), p]);
       return map;
     };
-    const endBeside = (front as unknown as { endBeside(m: Map<number, FrontPoint[]>, s: CrestSample, tau: number): FrontPoint | undefined }).endBeside.bind(front);
+    const endBeside = (front as unknown as { endBeside(m: Map<number, FrontPoint[]>, s: CrestSample, tau: number, joined?: number): FrontPoint | undefined }).endBeside.bind(front);
     const crest = (column: number, z: number): CrestSample => ({
       column, row: 0, x: column + 0.5, z, eta: 0.8, wave: 1.2, strength: 0, rise: 0, depth: 2.4, b: Number.NaN, speed: 4, dirX: 0, dirZ: 1,
     });
@@ -191,6 +191,9 @@ describe('the step 7 follow-up: no holes in the tube', () => {
     // Too far along the crest (1.5 slice spacings: 1.5 m), or its clock more than 0.3 s apart: no.
     expect(endBeside(byColumn(points), crest(5, 21.2), -1.7)).toBeUndefined();
     expect(endBeside(byColumn(points), crest(5, 20.5), -1.9)).toBeUndefined();
+    // Joined within the split's 1 s/m of the end: they link as they are, nothing to merge.
+    expect(endBeside(byColumn(points), crest(5, 20.5), -1.7, 14.5)).toBeUndefined();
+    expect(endBeside(byColumn(points), crest(5, 20.5), -1.7, 16)?.id).toBe(4);
     // Not an end: its front already has a point in the crest's column.
     expect(endBeside(byColumn([...points, point(9, 5, 25, -1.55)]), crest(5, 20.5), -1.7)).toBeUndefined();
     // From the other side, the front's start.

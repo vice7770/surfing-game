@@ -503,8 +503,10 @@ export class BreakingFront {
           // The follow-up's join (`merge`): beside a front's end, within a slice spacing and a half along the crest and
           // 0.3 s of its clock, it joins that front: its join the end's, so the split by joins never parts the two.
           // *(Built so)* Its own clock, τ_e as it joins: a trial by its distance clock (−D/C_p) merged 930 of 1,000 joins at
-          // a38 1.5 m, chaining waves the split keeps apart (holes 0.157 a build, folds 0.99), so the ruling's literal rule.
-          const end = this.options.merge ? this.endBeside(pointsOf, s, earliest) : undefined;
+          // a38 1.5 m, chaining waves the split keeps apart (holes 0.157 a build, folds 0.99), so the ruling's literal rule;
+          // and only where the split would part the two (else they link anyway): taking the end's join on every join beside
+          // one (903 of 1,000) carried the first join down the whole peel, so the split never parted two waves (folds 0.75).
+          const end = this.options.merge ? this.endBeside(pointsOf, s, earliest, next.crossed) : undefined;
           if (end) this.merges += 1;
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
@@ -663,9 +665,10 @@ export class BreakingFront {
 
   /**
    * With `merge` (the step 7 follow-up): the end point of a front beside crest `s` (in a neighbouring column, its front with no
-   * point in `s`'s), nearest it within `MERGE.reach` slice spacings and `MERGE.clock` s of `tau`, the joining crest's clock.
+   * point in `s`'s), nearest it within `MERGE.reach` slice spacings and `MERGE.clock` s of `tau`, the joining crest's clock,
+   * whose join differs from `joined` (the crest's) by more than the split allows (`SPLIT`).
    */
-  private endBeside(pointsOf: Map<number, FrontPoint[]>, s: CrestSample, tau: number): FrontPoint | undefined {
+  private endBeside(pointsOf: Map<number, FrontPoint[]>, s: CrestSample, tau: number, joined = -Infinity): FrontPoint | undefined {
     let best: FrontPoint | undefined;
     let nearest = MERGE.reach * this.cell;
     const own = pointsOf.get(s.column) ?? [];
@@ -673,6 +676,8 @@ export class BreakingFront {
       for (const p of pointsOf.get(column) ?? []) {
         if (!(Math.abs(p.tau - tau) <= MERGE.clock) || own.some((q) => q.front === p.front)) continue;
         const distance = Math.sqrt((p.x - s.x) * (p.x - s.x) + (p.z - s.z) * (p.z - s.z));
+        // Only where the split by joins would part them (`link`); else they link as they are.
+        if (!(Math.abs(p.joined - joined) > SPLIT * distance)) continue;
         if (distance <= nearest) {
           nearest = distance;
           best = p;
