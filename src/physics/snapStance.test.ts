@@ -390,6 +390,45 @@ describe('the snap set up from Compress', () => {
   });
 });
 
+// snap-lean (the owner's pick, 2026-11-05; opt-in with `snapPivot: 'lean'`, the `?snapPivot=lean` dev switch): a full
+// steer under Snap leans as far as its tight turn holds, up to 70°, in place of the steer's 50° (top turns ride a 75 ± 3°
+// rail, Forsyth et al. 2024). Round 3 measured it sharper everywhere (still water at 7 m/s, keys: 92° by 1 s at up to
+// 215°/s, against 61° at 151°/s), at the cost of more falls at the stall on still water. Here, with instant input, it
+// leans 47° against 36° and turns 93° by 1 s at up to 236°/s, against 50° at 199°/s. By default nothing changes.
+describe('Snap leaning for its own turn (opt-in)', () => {
+  const trough = (snapPivot?: 'lean') => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 7));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', ...(snapPivot ? { snapPivot } : {}) });
+    board.attach(rider);
+    const water = new PlaneWater() as SurfWater;
+    for (let n = 0; n < 12; n += 1) board.step(STEP, water);
+    let last = headingOf(board);
+    let turned = 0;
+    let peak = 0;
+    let bank = 0;
+    for (let n = 0; n < 60; n += 1) {
+      Object.assign(rider, { steer: 1, snap: n * STEP < 0.6 ? 1 : 0 });
+      board.step(STEP, water);
+      if (!rider.attached) break;
+      const now = headingOf(board);
+      const d = Math.atan2(Math.sin(now - last), Math.cos(now - last));
+      last = now;
+      turned += d;
+      peak = Math.max(peak, Math.abs(d) / STEP);
+      bank = Math.max(bank, Math.abs(rider.bank.angle));
+    }
+    return { turned: (Math.abs(turned) * 180) / Math.PI, peak: (peak * 180) / Math.PI, bank: (bank * 180) / Math.PI };
+  };
+  it('leans further and turns sharper', () => {
+    const steerCap = trough();
+    const lean = trough('lean');
+    expect(lean.bank).toBeGreaterThan(steerCap.bank + 8);
+    expect(lean.turned).toBeGreaterThan(steerCap.turned + 15);
+    expect(lean.peak).toBeGreaterThan(steerCap.peak + 30);
+  });
+});
+
 // The pinned turns (`AttachedRider.test.ts`: the snap, the cutback, a bottom turn carried into a top turn), made with
 // Snap. None passes; each is pinned with what it measures (docs/research/snap-stance-2026-11-03/README.md).
 describe('the pinned turns, with Snap', () => {

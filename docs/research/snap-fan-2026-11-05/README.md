@@ -4,6 +4,7 @@ Branch `claude/snap-fan`, from main 0b515dff plus the advisor's ruling (9808fc75
 
 ## Where it stands
 
+- **The owner's pick (2026-11-05): option 2, built opt-in as `?snapPivot=lean`** (`claude/snap-lean`; `SNAP_RAIL_RANGE` in `AttachedRider.ts`). Under Snap a full steer asks for up to 70° of bank (MAX_BANK) in place of the steer's 50°, still no more than Snap's 2.2 m turn holds at the board's speed. The default is unchanged (the hash test). `snapStance.test.ts`, "Snap leaning for its own turn": still water at 7 m/s, instant input, it leans 47° against 36° and turns 93° by 1 s at up to 236°/s, against 50° at 199°/s. The owner rides it on waves, where the face feeds the speed back; on still water it falls at the stall in 7 of 12 (2 by default).
 - **The sharper pivot: not built.** Every physical lever measured either adds little or trades the rider's balance for the pivot (the tables below). The owner's rule applies: "If the sharper pivot can't be had without falls, don't force it." The options are in **Options for the owner**. Snap is #195's, unchanged.
 - **Built (default on, `?snapFan=old` restores today's spray bit for bit):**
   1. **Other players' boards spin** (the advisor's §3a, `src/net/remoteSpray.ts`). ω comes from the two poses already sampled 0.05 s apart, and each patch moves at v + ω × (R·local). Replaying the local board's poses at 20 Hz now lands within 11–12 % of its aft apex (19–31 % before) and 0.005–0.007 of its `fluxMean` (0.03–0.05 before), by the median over the throw.
