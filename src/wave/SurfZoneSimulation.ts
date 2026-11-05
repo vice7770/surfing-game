@@ -1390,14 +1390,20 @@ export class SurfZoneSimulation {
         const earliest = library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
           ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).startSeconds
           : undefined;
-        this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}) };
+        // The step 7 follow-up's guard (`TubeFace.guard`): the retire guard by each point's case's open time.
+        const openTime = face.guard && library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
+          ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).touchdownSeconds
+          : undefined;
+        this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}), ...(openTime ? { openTime } : {}) };
       }
       const lead = face?.lag && !face.distance ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
       const crash = sweptCrashOn(config);
       const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
       const frontOptions = config.barrelFront ?? record.front;
-      const options = face?.distance ? { ...frontOptions, distance: this.throwDistance } : lead ? { ...frontOptions, lead } : frontOptions;
+      const options = face?.distance
+        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}) }
+        : lead ? { ...frontOptions, lead } : frontOptions;
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, options, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
       if (barrel && slope !== undefined && crash) {

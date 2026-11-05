@@ -145,9 +145,13 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
  *   this long (smoothstep), uncapped meanwhile;
  * - `blend`: the case's crossing's extrapolation from life 0.5 (`FACE_ANCHOR.extrapolate`) blended in over these shares of
  *   touchdown (smoothstep) rather than switched on at once.
+ * - `crestWide`: the cap's share under the step 7 follow-up (`TubeFace.cap`; the advisor's 2026-11-05 ruling §3): the case's
+ *   crest runs at 0.64 / 1.24–1.35 / 1.37 of the wave's advance (p5 / p50 / p95), so 0.3 C (a ceiling of about 1.35 C at
+ *   6–8 m/s) shaped the wall on about 65 % of steps; at 0.45 C the ceiling is about 1.5 C and the floor about 0.5 C, outside
+ *   the case's p5–p95, so the cap catches only jumps. `?tubeCap=old`: `crest`.
  * Only + − × ÷, for online determinism.
  */
-export const ANCHOR_CONTINUITY = { crest: 0.3, slack: 0.3, hold: 0.5, ease: 0.3, blend: [0.45, 0.55] } as const;
+export const ANCHOR_CONTINUITY = { crest: 0.3, crestWide: 0.45, slack: 0.3, hold: 0.5, ease: 0.3, blend: [0.45, 0.55] } as const;
 
 /** A front point's anchor track (`continueAnchor`; `FrontPoint`'s, travelling with it). */
 export interface AnchorTrack {
@@ -179,10 +183,13 @@ export const anchorCounts = { kept: 0, capped: 0, held: 0, stood: 0, eased: 0, c
  * A point's shift this step from its smoothed shift `smoothed` (m; NaN with none in reach) at `time` (s), the point at
  * (x, z) on its ray (rayX, rayZ), its crest's speed along the ray `celerity` (m/s): see `ANCHOR_CONTINUITY`. NaN while it
  * has never had a face anchor (the crest anchor). `capped` false keeps the smoothed shift as it is (the case's crest's speed
- * alone is tracked: `?tubeAnchor=old` with the wall's flow on).
+ * alone is tracked: `?tubeAnchor=old` with the wall's flow on). `crestShare`: the cap's share of C (`ANCHOR_CONTINUITY.crest`, or
+ * `.crestWide` under `TubeFace.cap`). `runOn` (`TubeFace.cap`): past the hold a miss runs on at C rather than standing with the
+ * point.
  */
 export function continueAnchor(
   track: AnchorTrack, smoothed: number, time: number, celerity: number, x: number, z: number, rayX: number, rayZ: number, capped = true,
+  crestShare: number = ANCHOR_CONTINUITY.crest, runOn = false,
 ): number {
   const previous = track.anchorShift;
   const dt = track.anchorTime === undefined ? 0 : time - track.anchorTime;
@@ -199,7 +206,8 @@ export function continueAnchor(
     track.anchorShift = smoothed;
     return smoothed;
   }
-  const { crest, slack, hold, ease } = ANCHOR_CONTINUITY;
+  const { slack, hold, ease } = ANCHOR_CONTINUITY;
+  const crest = crestShare;
   if (!(smoothed === smoothed)) {
     if (previous === undefined) {
       track.anchorNone = true;
@@ -212,6 +220,14 @@ export function continueAnchor(
       track.anchorShift = previous + track.anchorRate! * dt - moved;
       track.anchorLast = 'held';
       anchorCounts.held += 1;
+    } else if (runOn) {
+      // Then (the step 7 follow-up, `TubeFace.cap`) it runs on with the wave's own advance C along the ray: in the wave's
+      // frame, as the cap holds it. Standing with the point, the drawn crest stepped with the point's 1–2 m row steps (its
+      // crest cell's centre, once its pace has ended): the follow-up's traced 0.6–1.9 m single steps, all after a miss.
+      track.anchorShift = previous + celerity * dt - moved;
+      track.anchorRate = celerity;
+      track.anchorLast = 'stood';
+      anchorCounts.stood += 1;
     } else {
       // Then it stands with the point.
       track.anchorRate = dt > 0 ? moved / dt : track.anchorRate;

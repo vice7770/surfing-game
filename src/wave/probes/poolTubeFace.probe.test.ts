@@ -207,6 +207,9 @@ interface Body {
   forceFlips: number;
   normalFlips: number;
   flipSteps: number;
+  /** Its velocity up and shoreward along the ray as it left the surface ('pitched-off'), m/s. */
+  offUp?: number;
+  offOut?: number;
   lastForce?: [number, number, number];
   lastNormal?: [number, number, number];
 }
@@ -597,7 +600,13 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           if (!body.landed && body.outcome === '') {
             if (lip) body.outcome = 'pitched-lip';
             else if (normal - body.normal0 > 0.1) body.outcome = 'overrun';
-            else if (body.session ? separatedNow : normal < -0.1) body.outcome = 'pitched-off';
+            else if (body.session ? separatedNow : normal < -0.1) {
+              body.outcome = 'pitched-off';
+              // Which way it left: its velocity up, and along the ray (shoreward, out through the face).
+              const v = body.board.velocity;
+              body.offUp = v.y;
+              body.offOut = v.x * rx + v.z * rz;
+            }
           }
           if (body.landed && body.outcome === '') body.outcome = 'carried';
           // The risks: the water's force on the hull (buoyancy and pressure) turning past 90° in a step, both over half the
@@ -741,6 +750,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const jitters: number[] = [];
     const ownPace: number[] = [];
     const bigSteps: { step: number; text: string }[] = [];
+    /** |ΔW − C Δt| over consecutive steps only, and over a gap (the point unread for a step or more: not one step's change). */
+    const consecutiveSteps: number[] = [];
+    const skippedSteps: number[] = [];
+    let skippedBig = 0;
     const throwsOf = new Map<number, number>();
     let touchdowns = 0, unbrokenAtTouchdown = 0, unbrokenJets = 0, staleAtTouchdown = 0;
     const retireAtTouchdown: number[] = [];
@@ -749,6 +762,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const jetBreak1: number[] = [];
     let jetUnread = 0;
     let heavyHoles = 0;
+    let keptFolds = 0;
     const holeLog: string[] = [];
     for (let n = 1; n <= steps; n += 1) {
       simulation.step(dt);
@@ -789,7 +803,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
             touchdowns += 1;
             if (p.unbroken) {
               unbrokenAtTouchdown += 1;
-              if (p.jetStrip !== undefined && p.jetStrip >= 0) unbrokenJets += 1;
+              if (p.jetStrip !== undefined && p.jetStrip >= 0 && !p.jetReturned) unbrokenJets += 1;
               // Its flag against the solver's own breaking at its crest now (±2 m along its column): a stale flag (the solver
               // broke it after its throw) or truly unbroken; and its retirement then.
               let strongest = 0;
@@ -861,6 +875,19 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
                 frameRates.push(dW / Math.max(1e-9, advance));
                 // The 2026-11-05 bar 4b: its jitter (step to step), against the case's own pace (the smoothed target's
                 // place, W* = S·n + δ*, step to step), and the largest single steps with what the anchor did.
+                const gapSteps = n - was.n;
+                if (gapSteps !== 1) {
+                  skippedSteps.push(Math.abs(dW - advance));
+                  if (Math.abs(dW - advance) > 0.1) skippedBig += 1;
+                }
+                if (was.n === n - 1) consecutiveSteps.push(Math.abs(dW - advance));
+                const big = Math.abs(dW - advance);
+                if (big > 0.1) {
+                  const at = k === 0 || pts[k - 1].front !== p.front ? 'start' : k === pts.length - 1 || pts[k + 1].front !== p.front ? 'end' : 'inside';
+                  bigSteps.push({ step: big, text: `t ${solver.time.toFixed(3)} (over ${gapSteps} step${gapSteps === 1 ? '' : 's'}) point ${p.id} front ${p.front}${was.front !== p.front ? ` (was ${was.front})` : ''} at its front's ${at}: |ΔW − CΔt| ${big.toFixed(3)} m; Δshift ${(shift - last).toFixed(3)}, moved along the ray ${((p.x - was.x) * nx + (p.z - was.z) * nz).toFixed(3)} (Δx ${(p.x - was.x).toFixed(2)}, Δz ${(p.z - was.z).toFixed(2)}), anchor ${p.anchorLast ?? '-'}, target ${fmt(p.anchorTarget ?? Number.NaN, 3)} (was ${fmt(was.target, 3)}), τ ${p.tau.toFixed(3)}, thrown ${p.jetStrip !== undefined}, C Δt ${advance.toFixed(4)}` });
+                  bigSteps.sort((a, b) => b.step - a.step);
+                  if (bigSteps.length > 16) bigSteps.length = 16;
+                }
                 if (was.n === n - 1) {
                   const before = lastDW.get(p.id);
                   if (before && before.n === n - 1) jitters.push(Math.abs(dW - before.dW));
@@ -868,13 +895,6 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
                   const target = p.anchorTarget;
                   if (target !== undefined && target === target && was.target === was.target) {
                     ownPace.push(Math.abs(dW - ((p.x - was.x) * nx + (p.z - was.z) * nz + target - was.target)));
-                  }
-                  const big = Math.abs(dW - advance);
-                  if (big > 0.1) {
-                    const at = k === 0 || pts[k - 1].front !== p.front ? 'start' : k === pts.length - 1 || pts[k + 1].front !== p.front ? 'end' : 'inside';
-                    bigSteps.push({ step: big, text: `t ${solver.time.toFixed(3)} point ${p.id} front ${p.front}${was.front !== p.front ? ` (was ${was.front})` : ''} at its front's ${at}: |ΔW − CΔt| ${big.toFixed(3)} m; Δshift ${(shift - last).toFixed(3)}, moved along the ray ${((p.x - was.x) * nx + (p.z - was.z) * nz).toFixed(3)} (Δx ${(p.x - was.x).toFixed(2)}, Δz ${(p.z - was.z).toFixed(2)}), anchor ${p.anchorLast ?? '-'}, target ${fmt(target ?? Number.NaN, 3)} (was ${fmt(was.target, 3)}), τ ${p.tau.toFixed(3)}, thrown ${p.jetStrip !== undefined}, C Δt ${advance.toFixed(4)}` });
-                    bigSteps.sort((a, b) => b.step - a.step);
-                    if (bigSteps.length > 16) bigSteps.length = 16;
                   }
                 }
               }
@@ -900,6 +920,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       shiftMisses += loft.shiftMisses;
       slices += loft.sliceCount;
       heavyHoles += loft.overlapsOpenHeavy;
+      keptFolds += loft.overlapsKept ?? 0;
       if (loft.openDrops.length && holeLog.length < 30) {
         // Each hole: the dropped strip and the one kept, their fronts' σ spans, and the gap between the two fronts' nearest ends.
         const span = (front: number) => {
@@ -916,7 +937,22 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           let gap = Infinity;
           for (const u of [a0, a1]) for (const v of [b0, b1]) { const [ux, uz] = at(u); const [vx, vz] = at(v); gap = Math.min(gap, Math.hypot(ux - vx, uz - vz)); }
           const desc = (q: number, lo: number, hi: number) => `front ${loft.sliceFront[q]} σ ${fmt(loft.sliceSigma[q], 1)} (its σ ${fmt(loft.sliceSigma[lo], 1)}–${fmt(loft.sliceSigma[hi], 1)}, ${hi - lo + 1} slices) τ ${fmt(loft.sliceTau[q])} life ${fmt(loft.sliceLife[q])} weight ${fmt(Math.max(loft.sliceWeight[q], loft.sliceWeight[q + 1]))} phase ${loft.slicePhase[q]}`;
-          holeLog.push(`t ${solver.time.toFixed(2)}: dropped ${desc(a, a0, a1)}; kept ${desc(b, b0, b1)}; the fronts' nearest ends ${fmt(gap)} m apart, their τ there ${fmt(loft.sliceTau[a0])}/${fmt(loft.sliceTau[a1])} and ${fmt(loft.sliceTau[b0])}/${fmt(loft.sliceTau[b1])}`);
+          // The two fronts' end points (their records): where, their clocks, and how far apart their nearest ends are.
+          const endsOf = (front: number) => {
+            let first = -1, last = -1;
+            for (let q = 0; q < count; q += 1) if (records[q * FRONT_STRIDE + 2] === front) { if (first < 0) first = q; last = q; }
+            return [first, last] as const;
+          };
+          const rec = (q: number, field: number) => records[q * FRONT_STRIDE + field];
+          const [ra0, ra1] = endsOf(loft.sliceFront[a]);
+          const [rb0, rb1] = endsOf(loft.sliceFront[b]);
+          let pointGap = Infinity;
+          let pair = '';
+          if (ra0 >= 0 && rb0 >= 0) for (const u of [ra0, ra1]) for (const v of [rb0, rb1]) {
+            const d = Math.hypot(rec(u, 0) - rec(v, 0), rec(u, 1) - rec(v, 1));
+            if (d < pointGap) { pointGap = d; pair = `(${fmt(rec(u, 0), 1)}, ${fmt(rec(u, 1), 1)}) τ ${fmt(rec(u, 4))} and (${fmt(rec(v, 0), 1)}, ${fmt(rec(v, 1), 1)}) τ ${fmt(rec(v, 4))}`; }
+          }
+          holeLog.push(`t ${solver.time.toFixed(2)}: dropped ${desc(a, a0, a1)}; kept ${desc(b, b0, b1)}; the fronts' nearest end slices ${fmt(gap)} m apart; their nearest end points ${fmt(pointGap)} m apart, ${pair}; records ${ra1 - ra0 + 1} and ${rb1 - rb0 + 1}`);
         }
       }
       // Bar 6 per jet (the 2026-11-05 ledger): each jet's landing, its point's slice at its crash.
@@ -1281,6 +1317,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       const low = game.filter((b) => b.face === 0.3 && (b.kind === 'board' || b.kind === 'prone') && (b.target === 'ahead 0.3 s' || b.target === 'throw'));
       const outcome = (g: Body[], o: string) => g.filter((b) => (b.outcome || 'carried') === o).length;
       const describe = (g: Body[]) => `carried ${outcome(g, 'carried')} (of them never touched down ${g.filter((b) => b.outcome === '').length}), pitched ${outcome(g, 'pitched-lip') + outcome(g, 'pitched-off')} (into the lip's water ${outcome(g, 'pitched-lip')}, off the surface ${outcome(g, 'pitched-off')}), overrun ${outcome(g, 'overrun')} of ${g.length}`;
+      const off = low.filter((b) => b.outcome === 'pitched-off');
+      lines.push(`- (information) leaving the surface, velocity up / shoreward along the ray p10 / p50 / p90: boards ${q3(off.filter((b) => b.kind === 'board').map((b) => b.offUp!))} / ${q3(off.filter((b) => b.kind === 'board').map((b) => b.offOut!))} m/s; prone ${q3(off.filter((b) => b.kind === 'prone').map((b) => b.offUp!))} / ${q3(off.filter((b) => b.kind === 'prone').map((b) => b.offOut!))} m/s`);
       const lipHits = low.filter((b) => b.lipHead === b.lipHead);
       lines.push(`## Bar 2b, passive lone boards and prone riders at 0.3 H_s, ahead and at the throw, to touchdown: overrun ${pct(outcome(low, 'overrun'), low.length)} (≤ 20 %), carried + pitched ${pct(low.length - outcome(low, 'overrun'), low.length)} (≥ 80 %); ${describe(low)}; lip on head or torso (prone, kept apart) ${lipHits.length}, overrun without them ${pct(outcome(low.filter((b) => !(b.lipHead === b.lipHead)), 'overrun'), low.length - lipHits.length)}`);
       for (const kind of ['board', 'prone'] as const) for (const target of ['ahead 0.3 s', 'throw']) {
@@ -1310,16 +1348,16 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // Bar 4b.
     const counted = Object.fromEntries(Object.entries(anchorCounts).map(([key, value]) => [key, value - (anchor0 as Record<string, number>)[key]]));
     const facedSteps = counted.kept + counted.capped;
-    lines.push(`## Bar 4b, re-ruled: jitter |ΔW_n − ΔW_(n−1)| p99 ${fmt(quantile(jitters, 0.99), 4)} m (≤ 0.005), max ${fmt(most(jitters, 0), 3)} (≤ 0.02), n ${jitters.length}; against the case's own pace |ΔW − ΔW*| p99 ${fmt(quantile(ownPace, 0.99), 4)} m (≤ 0.01), n ${ownPace.length}; single steps |ΔW − C Δt| over 0.1 m: ${frameSteps.filter((v) => v > 0.1).length} (0), max ${fmt(most(frameSteps, 0), 3)} m; the cap engaged on ${pct(counted.capped, facedSteps)} of ${facedSteps} faced steps (≤ 10 %); the anchor's outcomes this run ${JSON.stringify(counted)}; |ΔW − C Δt| (information) p50 / p99 / p99.9 ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(frameSteps, q), 4)).join(' / ')}`);
+    lines.push(`## Bar 4b, re-ruled: jitter |ΔW_n − ΔW_(n−1)| p99 ${fmt(quantile(jitters, 0.99), 4)} m (≤ 0.005), max ${fmt(most(jitters, 0), 3)} (≤ 0.02), n ${jitters.length}; against the case's own pace |ΔW − ΔW*| p99 ${fmt(quantile(ownPace, 0.99), 4)} m (≤ 0.01), n ${ownPace.length}; single steps |ΔW − C Δt| over 0.1 m (consecutive steps): ${consecutiveSteps.filter((v) => v > 0.1).length} (0), max ${fmt(most(consecutiveSteps, 0), 3)} m, p99.9 ${fmt(quantile(consecutiveSteps, 0.999), 4)}; across a gap of unread steps (not one step's change) ${skippedSteps.length} reads, over 0.1 m ${skippedBig}, max ${fmt(most(skippedSteps, 0), 3)}; all reads as step 7 measured them, over 0.1 m ${frameSteps.filter((v) => v > 0.1).length}, max ${fmt(most(frameSteps, 0), 3)}; the cap engaged on ${pct(counted.capped, facedSteps)} of ${facedSteps} faced steps (≤ 10 %); the anchor's outcomes this run ${JSON.stringify(counted)}; |ΔW − C Δt| (information) p50 / p99 / p99.9 ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(frameSteps, q), 4)).join(' / ')}`);
     for (const big of bigSteps.slice(0, 12)) lines.push(`  - ${big.text}`);
     // The ledger.
     const twice = [...throwsOf.values()].filter((v) => v > 1).length;
     const c2 = simulation.crash?.counts;
     const asked = c2 && crash0 ? c2.asked - crash0.asked : Number.NaN;
     const thrownV = c2 && crash0 ? c2.thrown - crash0.thrown : Number.NaN;
-    lines.push(`## The ledger, re-ruled: crests thrown more than once ${twice} of ${throwsOf.size} (0); thrown points unbroken at touchdown ${unbrokenAtTouchdown} of ${touchdowns} touchdowns, holding a jet ${unbrokenJets} (0), of them flagged while the solver breaks at their crest ${staleAtTouchdown}, their retirement then ${q3(retireAtTouchdown)}; starved ${fmt((100 * (asked - thrownV)) / asked, 2)} % of the ${fmt(asked, 1)} m³ asked (≤ 5 %); bar 6 per jet: on the solver's breaking ≥ 0.3 within ±0.5 H_s ${pct(jetBreak.filter((v) => v >= 0.3).length, jetBreak.length)}, within ±1 H_s ${pct(jetBreak1.filter((v) => v >= 0.3).length, jetBreak1.length)} of ${jetBreak.length} jets (${jetUnread} unread); the meter as above (±5 % of main); the jets against main (information): ${c2 && crash0 ? c2.throws - crash0.throws : '—'}`);
+    lines.push(`## The ledger, re-ruled: crests thrown more than once ${twice} of ${throwsOf.size} (0); thrown points unbroken at touchdown ${unbrokenAtTouchdown} of ${touchdowns} touchdowns, their jets pouring ${unbrokenJets} (0) (returned to their crests by the guard: ${c2 && crash0 && c2.returned !== undefined ? c2.returned - (crash0.returned ?? 0) : '—'}), of them flagged while the solver breaks at their crest ${staleAtTouchdown}, their retirement then ${q3(retireAtTouchdown)}; starved ${fmt((100 * (asked - thrownV)) / asked, 2)} % of the ${fmt(asked, 1)} m³ asked (≤ 5 %); bar 6 per jet: on the solver's breaking ≥ 0.3 within ±0.5 H_s ${pct(jetBreak.filter((v) => v >= 0.3).length, jetBreak.length)}, within ±1 H_s ${pct(jetBreak1.filter((v) => v >= 0.3).length, jetBreak1.length)} of ${jetBreak.length} jets (${jetUnread} unread); the meter as above (±5 % of main); the jets against main (information): ${c2 && crash0 ? c2.throws - crash0.throws : '—'}`);
     // Bar 8.
-    lines.push(`## Bar 8, re-ruled: holes ${(overlapsOpen / Math.max(1, builds)).toFixed(4)} a build (≤ 0.01), at weight ≥ 0.5 ${heavyHoles} (0); folds (information) ${(overlaps / Math.max(1, builds)).toFixed(3)}; the first holes:`);
+    lines.push(`## Bar 8, re-ruled: holes ${(overlapsOpen / Math.max(1, builds)).toFixed(4)} a build (≤ 0.01), at weight ≥ 0.5 ${heavyHoles} (0); folds (information) ${(overlaps / Math.max(1, builds)).toFixed(3)}, overlapping open strips both kept (\`TubeFace.merge\`) ${(keptFolds / Math.max(1, builds)).toFixed(4)} a build; the first holes:`);
     for (const hole of holeLog.slice(0, 20)) lines.push(`  - ${hole}`);
     appendFileSync(log, lines.join('\n') + '\n');
     if (traceBodies) writeFileSync(`${log}.bodies`, bodyTrace.join('\n') + '\n');

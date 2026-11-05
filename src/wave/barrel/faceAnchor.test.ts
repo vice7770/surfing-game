@@ -14,10 +14,12 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeFace: 'old', tubeFrom: 'piece' })).toBeUndefined();
     expect(tubeFaceOf(true, {})).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: true, distance: true, contour: true, wallFlow: true,
+      contact: true, cap: true, merge: true, guard: true,
     });
     // The piece, never below the solver's surface: the union alone.
     expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({
       anchor: false, union: true, lag: false, clockRate: THROWN_RATE.old, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: false,
+      contact: false, cap: false, merge: false, guard: false,
     });
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ anchor: true, union: false, lag: true });
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ anchor: true, lag: false, clockRate: THROWN_RATE.face });
@@ -29,14 +31,62 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeForm: 'old' })).toMatchObject({ continuity: true, distance: false, contour: false, wallFlow: true });
     expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ continuity: true, distance: true, contour: false, wallFlow: true });
     expect(tubeFaceOf(true, { wallFlow: 'old' })).toMatchObject({ continuity: true, distance: true, contour: true, wallFlow: false });
-    expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' })).toEqual({
+    expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old', tubeContact: 'old', tubeMerge: 'old' })).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: false, distance: false, contour: false, wallFlow: false,
+      contact: false, cap: false, merge: false, guard: false,
     });
     // Formation by distance needs the lag, the wall's water the union.
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ distance: false, contour: false, continuity: true });
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ wallFlow: false, continuity: true, distance: true });
     // Without the crash (`?poolCrash=off`) nothing keeps the anchor: it is computed each build, as step 6's.
     expect(tubeFaceOf(true, { sweptCrash: false })).toMatchObject({ continuity: false, distance: true, wallFlow: true });
+  });
+
+  it('turns each of the step 7 follow-up\'s pieces off by its own switch, and all four off give the build before it', () => {
+    expect(tubeFaceOf(true, { tubeContact: 'old' })).toMatchObject({ contact: false, cap: true, merge: true, guard: true, wallFlow: true });
+    expect(tubeFaceOf(true, { tubeCap: 'old' })).toMatchObject({ contact: true, cap: false, merge: true, guard: true, continuity: true });
+    expect(tubeFaceOf(true, { tubeMerge: 'old' })).toMatchObject({ contact: true, cap: true, merge: false, guard: true });
+    expect(tubeFaceOf(true, { tubeGuard: 'old' })).toMatchObject({ contact: true, cap: true, merge: true, guard: false, contour: true });
+    const before = { ...tubeFaceOf(true, {})!, contact: false, cap: false, merge: false, guard: false };
+    expect(tubeFaceOf(true, { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'old' })).toEqual(before);
+    // Each with what it builds on: the contact with the union, the cap with the continuity, the guard with the contour.
+    expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ contact: false });
+    expect(tubeFaceOf(true, { tubeAnchor: 'old' })).toMatchObject({ cap: false });
+    expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ guard: false });
+    expect(tubeFaceOf(true, { tubeForm: 'old' })).toMatchObject({ guard: false, merge: true });
+  });
+
+  it('caps the follow-up\'s shift at 0.45 C and runs a long miss on at the wave\'s advance (`?tubeCap=old`: 0.3 C, standing)', () => {
+    const { crest, crestWide, slack, hold } = ANCHOR_CONTINUITY;
+    expect([crest, crestWide]).toEqual([0.3, 0.45]);
+    const dt = 1 / 60;
+    const c = 6;
+    const advance = c * dt;
+    for (const share of [crest, crestWide]) {
+      const a: AnchorTrack = {};
+      continueAnchor(a, 2, 0, c, 0, 0, 0, 1, true, share, share === crestWide);
+      // The case's crest outrunning the wave by 1.4: within 0.45 C, beyond 0.3 C.
+      const got = continueAnchor(a, 2 + 1.4 * advance, dt, c, 0, 0, 0, 1, true, share, share === crestWide);
+      const cap = (share * c + slack) * dt;
+      expect(got).toBeCloseTo(2 + Math.min(1.4 * advance, advance + cap), 12);
+      expect(a.anchorLast).toBe(share === crestWide ? 'kept' : 'capped');
+    }
+    // A miss past the hold: standing with the point, its 1 m row step moves the drawn crest 1 m; run on, the crest moves C Δt.
+    for (const runOn of [false, true]) {
+      const a: AnchorTrack = {};
+      let t = 0;
+      continueAnchor(a, 2, t, c, 0, 0, 0, 1, true, crestWide, runOn);
+      while (t < hold + 0.1) {
+        t += dt;
+        continueAnchor(a, Number.NaN, t, c, 0, 0, 0, 1, true, crestWide, runOn);
+      }
+      const shift = a.anchorShift!;
+      const next = continueAnchor(a, Number.NaN, t + dt, c, 0, 1, 0, 1, true, crestWide, runOn);
+      expect(a.anchorLast).toBe('stood');
+      // W = z + shift: the change of the drawn crest's place along the ray this step.
+      const dW = 1 + next - shift;
+      expect(dW).toBeCloseTo(runOn ? advance : 1, 12);
+    }
   });
 
   it('keeps a point\'s shift step to step in the wave\'s frame: capped, held on a miss, never back to the crest anchor, eased from it', () => {

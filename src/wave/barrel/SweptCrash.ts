@@ -81,6 +81,11 @@ export interface CrashCounts {
   paceUnmeasured: number;
   /** Cells whose breaking the whitewater waited on, summed over steps. */
   gated: number;
+  /**
+   * The step 7 follow-up's guard (`TubeFace.guard`): held jets returned to their crests, their points retired unbroken by
+   * their touchdown (`PlungingLip.returnJet`). Absent without it.
+   */
+  returned?: number;
 }
 
 /** A throw this step (a diagnostic): its point, the solver's crest z it stood on, which its jet's water leaves (#86), and the ray's z part its pace was turned by. */
@@ -178,10 +183,14 @@ export class SweptCrash {
   /** `face`: the step 3 ruling's tube (`TubeFace`), its slices anchored and their ends blended as the loft's. */
   /** Step 7's anchors kept on the points (`CrashCurve.prepareAnchors`): with the face anchor and its continuity or wall flow. */
   private readonly anchoring: boolean;
+  /** The step 7 follow-up's guard (`TubeFace.guard`): a point retired unbroken by its touchdown returns its jet. */
+  private readonly guard: boolean;
 
   constructor(library: ProfileLibrary, slope: number, face?: TubeFace) {
     this.geometry = new CrashCurve(library, slope, face);
     this.anchoring = face !== undefined && face.anchor && (face.continuity || face.wallFlow) && library.options.geometry !== 'bounded-C';
+    this.guard = face?.guard === true && library.options.geometry !== 'bounded-C';
+    if (this.guard) this.counts.returned = 0;
     this.columnSections = library.options.geometry === 'bounded-C';
     this.carrier = this.columnSections ? new CarrierSupport(library, slope) : undefined;
   }
@@ -352,7 +361,16 @@ export class SweptCrash {
       }
     }
     const strip = p.jetStrip ?? -1;
-    if (strip >= 0 && s.analytic) {
+    if (this.guard && strip >= 0 && p.crashedAt === undefined && p.unbroken && ((p.retire ?? 0) >= 1 || p.tau >= s.touchdown)) {
+      // The guard (the step 7 follow-up): the solver never broke this crest by its touchdown, so its lip never plunged and
+      // its slice has faded out (`GUARD`: whole by then); its held jet goes back to the crest it left, and nothing lands on
+      // the clear water ahead.
+      sea.lip.returnJet(strip, p.x, p.z);
+      p.crashedAt = sea.solver.time;
+      p.jetReturned = true;
+      this.counts.returned! += 1;
+    }
+    if (strip >= 0 && s.analytic && !p.jetReturned) {
       this.analyticVoids.add(strip);
       this.observedVoids.add(strip);
       sea.lip.setSweptVoid(strip, {
@@ -367,7 +385,7 @@ export class SweptCrash {
       this.counts.crashes += 1;
       if (throwing) this.counts.late += 1;
     }
-    if (strip >= 0 && p.crashedAt !== undefined && p.tau < s.touchdown + s.collapse) {
+    if (strip >= 0 && p.crashedAt !== undefined && !p.jetReturned && p.tau < s.touchdown + s.collapse) {
       sea.lip.movePour(strip, s.landX, s.landY, s.landZ);
       this.pour(p, s);
     }
@@ -505,7 +523,7 @@ export class SweptCrash {
       voidLength: s.voidLength, axisX: s.axisX, axisY: s.axisY, voidHeight: s.voidHeight, voidArea: s.voidArea,
       span: s.width * (s.analytic ? 1 : s.endWeight),
       dirX: s.rayX, dirZ: s.rayZ, crestSpeed: motion.crestSpeed, relativeSpeed: motion.tipAlong - motion.crestSpeed,
-    });
+    }, this.guard);
     p.jetStrip = strip;
     this.counts.asked += volume;
     if (strip >= 0) {

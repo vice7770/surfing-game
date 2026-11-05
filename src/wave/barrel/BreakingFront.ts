@@ -111,6 +111,19 @@ export interface FrontOptions {
    * clock (`advanceClocks`), not by its crest's crossing.
    */
   distance?: (x: number, z: number, dx: number, dz: number, depth: number) => number;
+  /**
+   * The step 7 follow-up's guard (the advisor's 2026-11-05 ruling §4; `TubeFace.guard`): a point thrown before the solver
+   * broke it (`FrontPoint.unbroken`) is broken once the crest it claims on its pace breaks (its strength over 0), as a point
+   * off its pace already is. Without it the flag stood on every paced point to its touchdown: 154–156 of the 458–466 points
+   * still flagged at touchdown in 12 periods at a38 stood on the solver's breaking then, and retired by the guard all the same.
+   */
+  paceBreak?: boolean;
+  /**
+   * The step 7 follow-up's join (the advisor's 2026-11-05 ruling §5.1; `TubeFace.merge`): a crest joining by distance beside
+   * a front's end point, within `MERGE.reach` slice spacings along the crest and `MERGE.clock` s of its clock, joins that
+   * front (its join time taken as the end's, so the split never parts them).
+   */
+  merge?: boolean;
 }
 
 /**
@@ -262,6 +275,8 @@ export interface FrontPoint {
   wallSpeed?: number;
   tauRate?: number;
   anchorTau?: number;
+  /** With `TubeFace.guard` (the step 7 follow-up): its held jet went back to its crest (`SweptCrash`), retired unbroken. */
+  jetReturned?: true;
   /** Diagnostics (`AnchorTrack`; a probe's): its last smoothed shift and what `continueAnchor` did with it. */
   anchorTarget?: number;
   anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free';
@@ -390,10 +405,15 @@ export class BreakingFront {
       if (holder && !matched.has(holder)) {
         // Its slice runs on from the throw at its own pace: the crest says its wave is still there (SweptCrash).
         matched.add(holder);
-        const next = {
+        const next: FrontPoint = {
           ...holder, sigma: 0, x: s.x, z: holder.z + holder.jetPace! * (time - holder.seen), b: s.b, height: s.eta, crestDepth: s.depth,
           seen: time, crestZ: s.z,
         };
+        if (this.options.paceBreak && next.unbroken && s.strength > 0) {
+          // The solver's break has come to the crest it claims (the guard's follow-up): no longer unbroken.
+          next.broke = time;
+          delete next.unbroken;
+        }
         recordOwnThrow(next, holder, s, time, holder.crestZ);
         points.push(next);
         continue;
