@@ -367,7 +367,10 @@ something open, or a measurement showed its words needed a frame, the choice is 
 - `src/wave/barrel/faceAnchor.test.ts`, `tubeContact.test.ts`, `tubeFollowUp.test.ts`: `TubeFace` with the five new keys.
 - `src/game/PhysicalMode.test.ts`: the URL switches (the two `=old`, the three opt-in `=on`) and the online pin.
 - **This head:** both type checks clean; the new and changed files above pass (96 tests); the main suite: 321 files passed,
-  34 skipped; 3,108 tests passed, 23 expected fails, 40 skipped (551 s). SZSLINE
+  34 skipped; 3,108 tests passed, 23 expected fails, 40 skipped (551 s). The SurfZoneSimulation subset: 37 passed, 70
+  filtered out (11,550 s, under the probes' load); it ran on c720030a (every piece on by default; `BoardBody`, `hullForces`
+  and `PhysicalSurfWater` as at this head), and no SurfZoneSimulation test steps the pool's straight Barrel, so the later
+  default switches do not reach it.
 
 ## For the advisor
 
