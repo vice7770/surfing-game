@@ -687,6 +687,29 @@ const SNAP_DEPTH = 1;
 const SNAP_FACE = Math.sin((5 * Math.PI) / 180);
 const SNAP_RADIUS = 2.2;
 /**
+ * Snap taken at full effort (snap-quick, the owner's research of 2026-11-05; docs/research/snap-quick-2026-11-05/README.md).
+ * From Compress, with the legs already loaded, a snap is set up and started in about 0.2–0.5 s: the head and shoulders
+ * turn first, abruptly, then the hips, and the weight is slammed onto the tail (surf coaching the owner gathered; Rapture:
+ * the head and shoulders rotate "as fast as possible", and that rotation sets the snap's speed). Here the shoulders took
+ * 0.55 s to 90 % of their wind and the weight 0.67 s to the tail (the drawn hips 0.85 s, all of it 1.3 s), at the
+ * balance's calm pace, which every other stance keeps. While Snap is held the body goes about as fast as it can, from
+ * Compress with the steer on: the shoulders 90 % in 0.35 s, the weight on the tail and the hips over it in 0.42 s.
+ * - SNAP_TWIST_FREQUENCY, rad/s: the shoulders' wind critically damped at this, within the hips' torque and the feet's
+ *   grip (TWIST_TORQUE, the grip at TWIST_GRIP_RADIUS). At 16 they took the 45° in 0.27 s, but the twist's reaction,
+ *   which first turns the board away from the turn, grew with it and cut the snap's turn (its peak 132°/s at 9 m/s
+ *   against 148).
+ * - SNAP_SHIFT_TIME, s, and SNAP_SHIFT_SPEED, m/s: the weight's shift along the board, critically damped at this within
+ *   an inverted pendulum's acceleration, g times how far the pressure can go ahead of the body (to the front foot, half
+ *   the stance) over the body's height above the feet (Winter 1995; Hof et al. 2005): about 4 m/s² crouched in Compress
+ *   against the calm 3 (STANDING_SHIFT_ACCELERATION). The speed is no tighter than that acceleration reaches over the
+ *   shift (about 1 m/s over Snap's 0.25 m). The body moving back that fast pushes the board on under it a moment (a few
+ *   tenths of a m/s), so Snap keeps a little more speed than at the calm pace (still water, 7 m/s: 5.0 m/s at 0.8 s
+ *   against 4.7), still more than a carve sheds, in time and per degree.
+ */
+const SNAP_TWIST_FREQUENCY = 11;
+const SNAP_SHIFT_TIME = 0.09;
+const SNAP_SHIFT_SPEED = 1.2;
+/**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
  * and, under a tube's curl, a deeper manual tuck. Compress shortens the leg by up
  * to CROUCH_DEPTH, m, and full manual crouch by CROUCH_SHARE of it (the pumping
@@ -850,6 +873,12 @@ export interface AttachedRiderOptions {
    * catch the body; 'old' at the legs' full pace, as before compress-exit (the `?extension=old` dev switch, for A/Bs).
    */
   extension?: 'old';
+  /**
+   * Snap taken at full effort (snap-quick, 2026-11-05; SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME): by default the shoulders
+   * and the weight go as fast as the body can take them while Snap is held; 'old' at the balance's calm pace, as before
+   * (the `?snapQuick=old` dev switch, for A/Bs).
+   */
+  snapQuick?: 'old';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1157,6 +1186,8 @@ export class AttachedRider {
   private readonly feathers: boolean;
   /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
   private readonly catches: boolean;
+  /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
+  private readonly quick: boolean;
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1316,6 +1347,7 @@ export class AttachedRider {
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
     this.catches = options.extension !== 'old';
+    this.quick = options.snapQuick !== 'old';
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -2104,7 +2136,9 @@ export class AttachedRider {
     const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE
       : snap > 0 ? snap * this.snapAim() : 0;
     const most = Math.min(TWIST_TORQUE, FOOT_FRICTION * this.legLoad * TWIST_GRIP_RADIUS);
-    const wanted = TWIST_INERTIA * (TWIST_FREQUENCY * TWIST_FREQUENCY * (asked - this.twist.angle) - 2 * TWIST_FREQUENCY * this.twist.rate);
+    // Snap held, the shoulders turn as fast as the hips and the feet's grip take them (SNAP_TWIST_FREQUENCY).
+    const frequency = this.quick && snap > 0 ? TWIST_FREQUENCY + snap * (SNAP_TWIST_FREQUENCY - TWIST_FREQUENCY) : TWIST_FREQUENCY;
+    const wanted = TWIST_INERTIA * (frequency * frequency * (asked - this.twist.angle) - 2 * frequency * this.twist.rate);
     this.twistTorque = Math.max(-most, Math.min(most, wanted));
     this.twist.rate += (h * this.twistTorque) / TWIST_INERTIA;
     this.twist.angle += h * this.twist.rate;
@@ -3203,9 +3237,19 @@ export class AttachedRider {
   /** Critically damped motion of the balance shift toward `target`, within speed, acceleration and reach limits. */
   private shiftAxis(axis: 'x' | 'z', target: number, reach: number, h: number): void {
     // Standing, the whole body leans quickly into a turn; lying down, the hips shift gently.
-    const frequency = 1 / (this.upright ? STANDING_BALANCE_TIME : BALANCE_TIME);
-    const maxAcceleration = this.upright ? STANDING_SHIFT_ACCELERATION : MAX_SHIFT_ACCELERATION;
-    const maxSpeed = this.upright ? STANDING_SHIFT_SPEED : MAX_SHIFT_SPEED;
+    let frequency = 1 / (this.upright ? STANDING_BALANCE_TIME : BALANCE_TIME);
+    let maxAcceleration = this.upright ? STANDING_SHIFT_ACCELERATION : MAX_SHIFT_ACCELERATION;
+    let maxSpeed = this.upright ? STANDING_SHIFT_SPEED : MAX_SHIFT_SPEED;
+    const snap = axis === 'z' && this.quick ? this.snapping : 0;
+    if (snap > 0) {
+      // Snap held, the weight goes onto the tail as fast as the body can take it: the inverted pendulum's acceleration,
+      // the pressure at the front foot ahead of the body over its height above the feet (SNAP_SHIFT_TIME).
+      const height = Math.max(0.4, this.leg.height + this.leg.extension);
+      const pendulum = (WATER.gravity * (this.feet.front - this.feet.rear)) / 2 / height;
+      frequency += snap * (1 / SNAP_SHIFT_TIME - frequency);
+      maxAcceleration += snap * (Math.max(maxAcceleration, pendulum) - maxAcceleration);
+      maxSpeed += snap * (SNAP_SHIFT_SPEED - maxSpeed);
+    }
     const acceleration = Math.min(maxAcceleration, Math.max(-maxAcceleration,
       frequency * frequency * (target - this.balance[axis]) - 2 * frequency * this.balanceRate[axis]));
     const rate = Math.min(maxSpeed, Math.max(-maxSpeed, this.balanceRate[axis] + acceleration * h));

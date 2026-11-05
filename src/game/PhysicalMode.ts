@@ -441,6 +441,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...extensionSwitch(),
     // `?snap=off`: the riders' Snap input ignored, as before the snap stance, for A/Bs.
     ...snapSwitch(),
+    // `?snapQuick=old`: the riders' Snap set up at the balance's calm pace, as before snap-quick, for A/Bs.
+    ...snapQuickSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -629,6 +631,15 @@ export function extensionSwitch(search?: string): { extension?: 'old' } {
  */
 export function snapSwitch(search?: string): { snap?: 'off' } {
   return devParam('snap', search)?.trim().toLowerCase() === 'off' ? { snap: 'off' } : {};
+}
+
+/**
+ * The `?snapQuick=old` dev switch (`SurfZoneConfig.snapQuick`, snap-quick 2026-11-05): every spot's rider sets Snap up
+ * at the balance's calm pace, as before, in place of the shoulders and the weight going onto the tail as fast as the body
+ * can take them.
+ */
+export function snapQuickSwitch(search?: string): { snapQuick?: 'old' } {
+  return devParam('snapQuick', search)?.trim().toLowerCase() === 'old' ? { snapQuick: 'old' } : {};
 }
 
 /**

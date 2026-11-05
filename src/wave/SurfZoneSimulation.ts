@@ -147,6 +147,12 @@ export interface SurfZoneConfig {
    */
   snap?: 'off';
   /**
+   * 'old': the riders' Snap set up at the balance's calm pace, as before snap-quick (2026-11-05); by default the shoulders
+   * and the weight go onto the tail as fast as the body can take them (`RideSessionOptions.snapQuick`). Every spot. The
+   * `?snapQuick=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  snapQuick?: 'old';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

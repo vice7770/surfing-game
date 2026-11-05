@@ -109,6 +109,12 @@ export interface RideSessionOptions {
    * before it.
    */
   snap?: 'off';
+  /**
+   * Snap at full effort (snap-quick, 2026-11-05; `AttachedRiderOptions.snapQuick`): by default the shoulders and the weight
+   * go onto the tail as fast as the body can take them while Snap is held; 'old' (the `?snapQuick=old` dev switch) at the
+   * balance's calm pace, as before.
+   */
+  snapQuick?: 'old';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -190,6 +196,7 @@ export class RideSession {
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
+      ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});

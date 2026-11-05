@@ -286,12 +286,13 @@ describe('the snap stance', () => {
     });
 
     // On still water, where no face's gravity mixes in, the tail-loaded turn costs more speed than a carve does, in time
-    // and per degree (round 2: 6.8 → 4.7 m/s turning 51° by 0.8 s, where the carve keeps 6.1 m/s turning 27°).
+    // and per degree (round 2: 6.8 → 4.7 m/s turning 51° by 0.8 s, where the carve keeps 6.1 m/s turning 27°). Taken at
+    // full effort (snap-quick), the body moving back onto the tail pushes the board on under it a moment: 5.0 m/s at 0.8 s.
     it('sheds more speed than a carve on still water', () => {
       const carve = snapTurn(flat(7), { snap: false, hold: 0 });
       const snap = snapTurn(flat(7), { snap: true, hold: 0.6 });
       const at = snap.at(0.8);
-      expect(snap.speeds[at]).toBeLessThan(0.8 * carve.speeds[at]);
+      expect(snap.speeds[at]).toBeLessThan(0.85 * carve.speeds[at]);
       expect((snap.speed - snap.speeds[at]) / snap.turned[at]).toBeGreaterThan((carve.speed - carve.speeds[at]) / carve.turned[at]);
       expect(snap.turned[at]).toBeGreaterThan(carve.turned[at] + 20);
     });
@@ -340,6 +341,52 @@ describe('the snap stance', () => {
       expect((least * 180) / Math.PI).toBeLessThan(5);
       expect((drift * 180) / Math.PI).toBeLessThan(30);
     });
+  });
+});
+
+// snap-quick (the owner's research, 2026-11-05): from Compress, with the legs already loaded, a snap is set up in about
+// 0.2–0.5 s, the head and shoulders first, then the weight slammed onto the tail. Taken at full effort while Snap is held
+// (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME), from Compress at full steer on still water at 8 m/s, the shoulders reach 90 %
+// of their wind and the body 90 % of its way back over the tail in 0.35 and 0.43 s, against 0.48 and 0.52 s at the
+// balance's calm pace (`snapQuick: 'old'`, the `?snapQuick=old` dev switch).
+describe('the snap set up from Compress', () => {
+  const setUp = (snapQuick?: 'old') => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 8));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', ...(snapQuick ? { snapQuick } : {}) });
+    board.attach(rider);
+    const water = new PlaneWater() as SurfWater;
+    const rear = stanceFeet(board.shape).rear;
+    const back = () => {
+      const foot = board.toWorld(new Vector3(0, 0, rear), new Vector3());
+      const level = new Vector3(0, 0, 1).applyQuaternion(board.orientation).setY(0).normalize();
+      return rider.position.clone().sub(foot).dot(level);
+    };
+    Object.assign(rider, { compress: 1, steer: -1 });
+    for (let n = 0; n < 24; n += 1) board.step(STEP, water);
+    const twist: number[] = [];
+    const over: number[] = [];
+    const from = back();
+    Object.assign(rider, { compress: 0, snap: 1 });
+    for (let n = 0; n < 42; n += 1) {
+      board.step(STEP, water);
+      twist.push(rider.twist.angle);
+      over.push(back());
+    }
+    const reach = (series: number[], start: number) => {
+      const end = series.slice(-6).reduce((a, x) => a + x, 0) / 6;
+      return (series.findIndex((x) => (x - start) / (end - start) >= 0.9) + 1) * STEP;
+    };
+    return { twist: reach(twist, 0), weight: reach(over, from), attached: rider.attached };
+  };
+  it('winds the shoulders and puts the weight on the tail within the coaching\'s half second, sooner than the calm pace', () => {
+    const quick = setUp();
+    const calm = setUp('old');
+    expect(quick.attached).toBe(true);
+    expect(quick.twist).toBeLessThan(0.4);
+    expect(quick.weight).toBeLessThan(0.47);
+    expect(quick.twist).toBeLessThan(calm.twist - 0.05);
+    expect(quick.weight).toBeLessThan(calm.weight - 0.03);
   });
 });
 
