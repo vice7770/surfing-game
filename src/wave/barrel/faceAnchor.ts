@@ -1,3 +1,4 @@
+import { GRAVITY } from '../dispersion';
 import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { CLOCK } from './sliceClock';
 
@@ -17,6 +18,13 @@ import { CLOCK } from './sliceClock';
  * All provisional (the advisor). Only + − × ÷ and √, for online determinism.
  */
 export const FACE_ANCHOR = { fraction: 0.3, step: 0.25, behind: 1, reach: 3, extrapolate: [0.3, 0.5], smoothing: CLOCK.smoothing } as const;
+/**
+ * Ruling 3's read of the solver's trough (`TubeFace.track`, `FaceAnchor.solverCrossing`'s `halfWave`): up to `back` reads
+ * further behind for a crest at the window's start, a read every `coarse` m past the fine window (in the wave's frame, from
+ * the crest), and the trough read again every `FACE_ANCHOR.step` m within ±`refine` m of a coarse one, the whole gap to its
+ * neighbours (the advisor: "1 m beyond 3 H, 0.25 m near the minimum").
+ */
+export const TROUGH = { back: 12, coarse: 1, refine: 1, box: 0.5 } as const;
 /** The biweight's radius, m: a 2 m standard deviation (`CLOCK.smoothing`), as the slice clock's. */
 const RADIUS = FACE_ANCHOR.smoothing * Math.sqrt(7);
 const LAST = PROFILE_POINTS - 1;
@@ -76,6 +84,28 @@ export interface TubeFace {
   cap: boolean;
   merge: boolean;
   guard: boolean;
+  /**
+   * The step 7 follow-up's ruling 3 (the water-physics advisor's 2026-11-05 ruling on the five open questions,
+   * docs/research/pool-tube-contact-2026-11-05/advisor-ruling-3.md), each piece with its own switch, all on by default:
+   * - `track` (`?tubeTrack=old`: off; with `continuity`): a smooth wall. The solver's crossing is read against its real
+   *   trough, the lowest water within half a wavelength ahead of its crest (`FaceAnchor.solverCrossing`'s `halfWave`, the
+   *   meter's own measure); W is tracked by an α–β filter (`trackAnchor`, `ANCHOR_TRACK`) with the cap kept as its gate;
+   *   the wall water's speed is the tracker's rate; and the wall water blends into the solver's flow across the solver's
+   *   surface, by the wall's height over it (`WALL_WATER.blend`) (§1, §3);
+   * - `inertia` (`?tubeInertia=old`: off; with `wallFlow`): in the case's wall water only, the water's own acceleration on
+   *   the hull's added mass (`BoardBody`, `WATER_INERTIA`; Maxey & Riley 1983, Auton, Hunt & Prud'homme 1988) (§2);
+   * - `retire` (`?tubeRetire=old`: off; with `contour`): a contour-thrown point is never retired for being unbroken (§4);
+   *   `?tubeThrow=break` keeps that retire, and the opt-in guard keeps its own;
+   * - `buoy` (`?tubeBuoy=old`: off; with `wallFlow`): in the wall water, past the slope clamp, the buoyancy along the true
+   *   normal at the clamp's size, not a fixed 60° up the face (§1, rank 5);
+   * - `drop` (`?tubeDrop=old`: off; with `anchor`): where two fronts' strips overlap the lighter gives way, whatever its
+   *   phase or front; on a tie the first front's stays (§5).
+   */
+  track: boolean;
+  inertia: boolean;
+  retire: boolean;
+  buoy: boolean;
+  drop: boolean;
 }
 
 /** The thrown clock's catch-up before the ruling, × real time (`advanceClocks`), and after it. */
@@ -103,6 +133,12 @@ export interface TubeFaceSwitches {
   tubeMerge?: 'old';
   /** Opt-in: 'on' turns the guard on (`TubeFace.guard`); absent, or anything else, it is off. */
   tubeGuard?: 'on';
+  /** Ruling 3's (`TubeFace.track`, `.inertia`, `.retire`, `.buoy`, `.drop`). */
+  tubeTrack?: 'old';
+  tubeInertia?: 'old';
+  tubeRetire?: 'old';
+  tubeBuoy?: 'old';
+  tubeDrop?: 'old';
 }
 
 /**
@@ -119,15 +155,21 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
   const distance = lag && switches.tubeForm !== 'old';
   const continuity = !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false;
   const contour = distance && switches.tubeThrow !== 'break';
+  const wallFlow = !piece && union && switches.wallFlow !== 'old';
   return {
     anchor: !piece, union, lag,
     clockRate: !piece && switches.tubeClock !== 'old' ? THROWN_RATE.face : THROWN_RATE.old, thrownEnds: !piece,
     continuity, distance, contour,
-    wallFlow: !piece && union && switches.wallFlow !== 'old',
+    wallFlow,
     contact: !piece && union && switches.tubeContact !== 'old',
     cap: continuity && switches.tubeCap !== 'old',
     merge: !piece && switches.tubeMerge !== 'old',
     guard: contour && switches.tubeGuard === 'on',
+    track: continuity && switches.tubeTrack !== 'old',
+    inertia: wallFlow && switches.tubeInertia !== 'old',
+    retire: contour && switches.tubeRetire !== 'old',
+    buoy: wallFlow && switches.tubeBuoy !== 'old',
+    drop: !piece && switches.tubeDrop !== 'old',
   };
 }
 
@@ -175,11 +217,14 @@ export interface AnchorTrack {
    * and what `continueAnchor` did with it.
    */
   anchorTarget?: number;
-  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free';
+  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free' | 'gated' | 'reacquired';
 }
 
-/** Counts of `continueAnchor`'s outcomes (a probe's; none in the game). */
-export const anchorCounts = { kept: 0, capped: 0, held: 0, stood: 0, eased: 0, crest: 0 };
+/**
+ * Counts of `continueAnchor`'s and `trackAnchor`'s outcomes (a probe's; none in the game): `gated`, a reading outside the
+ * tracker's gate held as a miss; `reacquired`, one taken after the gate had held for `ANCHOR_CONTINUITY.hold`.
+ */
+export const anchorCounts = { kept: 0, capped: 0, held: 0, stood: 0, eased: 0, crest: 0, gated: 0, reacquired: 0 };
 
 /**
  * A point's shift this step from its smoothed shift `smoothed` (m; NaN with none in reach) at `time` (s), the point at
@@ -270,6 +315,119 @@ export function continueAnchor(
 }
 
 /**
+ * Ruling 3's tracker (`TubeFace.track`; the water-physics advisor's advisor-ruling-3.md §3). The anchor, the solver's lower
+ * face matched to the case's, moves smoothly (3.9–4.4 m/s at 1.5 m; shoaling on the 1:9.5 face alone changes that by about
+ * (g/2)/9.5 ≈ 0.5 m/s², inferred), but is read with noise. So it is tracked by an α–β filter, the steady-state Kalman filter of
+ * a constant-velocity target under white acceleration (Kalata 1983): its gains from the tracking index λ = σ_w T²/σ_v,
+ * α = −(λ² + 8λ − (λ + 4)√(λ² + 8λ))/8, β = (λ² + 4λ − λ√(λ² + 8λ))/4, T the step.
+ * - `sigmaW`, m/s²: the anchor's acceleration noise, 0.3–1 (the advisor, provisional);
+ * - `sigmaV`, m: the read's noise along the ray on a face of slope `steep` or steeper, as measured after the read's fix
+ *   (docs/research/pool-tube-track-2026-11-05/README.md); *(built so)* on a gentler face it grows as `steep`/slope, as the
+ *   crossing of a level moves by the level's error over the slope (measured: per-step read noise p90 0.04 m at slopes over
+ *   0.15, 0.11 m under, with tails to 0.6 m), so a read on a flat or collapsed face moves the track little.
+ * W, the case's crest's place, is tracked whole, its reading the smoothed anchor (the solver's crossing matched to the case's,
+ * smoothed along σ) plus the point's own case's crest over its crossing. *(Built so, tried)* Tracking the anchor alone and
+ * adding the case part as it is left the case's own frame-to-frame steps in W (its crest over its crossing moves up to
+ * 0.19 m a step at p99 as the wave forms, τ < −0.5 s): W's jitter p99 0.092 m against 0.031 m tracked whole (pool 1.5 m,
+ * 3 periods); a 3-step mean of the case part, 0.045 m.
+ * The cap is kept as the gate (`ANCHOR_CONTINUITY.crestWide`): W's rate stays within (0.45 C + slack) of the wave's own
+ * advance C, and a reading that would move W further than that from C Δt in a step is held as a miss (W runs on at its
+ * tracked rate). Once the gate has let nothing in for `ANCHOR_CONTINUITY.hold`, the readings are taken again, W moving toward
+ * them at most at the cap's rate, until one is let in: the track never locks out. Only + − × ÷ and √.
+ */
+export const ANCHOR_TRACK = { sigmaW: 0.3, sigmaV: 0.014, steep: 0.2 } as const;
+
+/**
+ * Ruling 3's read of the solver's trough (`FaceAnchor.shift`): the sea's peak period T, s, and its still depth at (x, z), m;
+ * the window reaches √(g d) T/2 ahead of the solver's crest, d the still depth under that crest.
+ */
+export interface TroughWave {
+  period: number;
+  depthAt: (x: number, z: number) => number;
+}
+
+/** The α–β gains for a step `dt`, s (`ANCHOR_TRACK`), into `out` [α, β]. */
+export function trackGains(dt: number, out: Float64Array, sigmaW: number = ANCHOR_TRACK.sigmaW, sigmaV: number = ANCHOR_TRACK.sigmaV): Float64Array {
+  const lambda = (sigmaW * dt * dt) / sigmaV;
+  const root = Math.sqrt(lambda * lambda + 8 * lambda);
+  out[0] = -(lambda * lambda + 8 * lambda - (lambda + 4) * root) / 8;
+  out[1] = (lambda * lambda + 4 * lambda - lambda * root) / 4;
+  return out;
+}
+const gains = new Float64Array(2);
+
+/** The read's noise σ_v (m) on a face of `slope` (`ANCHOR_TRACK`): `sigmaV` on a steep face, growing as it flattens. */
+export function readNoise(slope: number): number {
+  const { sigmaV, steep } = ANCHOR_TRACK;
+  return slope >= steep ? sigmaV : sigmaV * (steep / Math.max(0.1 * steep, slope === slope ? slope : 0));
+}
+
+/**
+ * A point's shift this step under the tracker (`ANCHOR_TRACK`), as `continueAnchor`'s arguments: `smoothed`, the reading of
+ * its case's crest's place along its ray from the point (m; NaN with none in reach). NaN while it has never had a face anchor
+ * (the crest anchor), eased from it as before; then W tracked, its rate (`AnchorTrack.anchorRate`) the tracker's estimate,
+ * which the wall water's speed takes (`CrashCurve.prepareAnchors`). A miss runs W on at its tracked rate. `crestShare`: the
+ * gate's share of C; `sigmaV`: this read's noise (`readNoise`).
+ */
+export function trackAnchor(
+  track: AnchorTrack, smoothed: number, time: number, celerity: number, x: number, z: number, rayX: number, rayZ: number,
+  crestShare: number = ANCHOR_CONTINUITY.crestWide, sigmaV: number = ANCHOR_TRACK.sigmaV,
+): number {
+  const previous = track.anchorShift;
+  const dt = track.anchorTime === undefined ? 0 : time - track.anchorTime;
+  const moved = track.anchorX === undefined ? 0 : (x - track.anchorX) * rayX + (z - track.anchorZ!) * rayZ;
+  track.anchorTime = time;
+  track.anchorX = x;
+  track.anchorZ = z;
+  track.anchorTarget = smoothed;
+  const { slack, hold, ease } = ANCHOR_CONTINUITY;
+  const keep = (shift: number, rate: number, outcome: NonNullable<AnchorTrack['anchorLast']>): number => {
+    track.anchorShift = shift;
+    track.anchorRate = rate;
+    track.anchorLast = outcome;
+    anchorCounts[outcome as keyof typeof anchorCounts] += 1;
+    return shift;
+  };
+  if (!(smoothed === smoothed)) {
+    if (previous === undefined) {
+      track.anchorNone = true;
+      track.anchorLast = 'crest';
+      anchorCounts.crest += 1;
+      return Number.NaN;
+    }
+    // A miss: W runs on at its tracked rate.
+    return keep(previous + track.anchorRate! * dt - moved, track.anchorRate!, 'held');
+  }
+  if (previous === undefined && track.anchorNone) track.anchorEase = time;
+  if (track.anchorEase !== undefined && time - track.anchorEase < ease) {
+    // From the crest anchor (a shift of 0) to the face anchor, as before; the placement's correction, not the wave's
+    // motion, so the rate is the wave's own advance.
+    const u = (time - track.anchorEase) / ease;
+    track.anchorGood = time;
+    return keep(u * u * (3 - 2 * u) * smoothed, celerity, 'eased');
+  }
+  if (previous === undefined || !(dt > 0)) {
+    // Faced from its first step (or asked twice at one time): it starts there, at the wave's advance.
+    track.anchorGood = time;
+    return keep(previous === undefined ? smoothed : previous - moved, previous === undefined ? celerity : track.anchorRate!, 'kept');
+  }
+  // The cap's band about the wave's own advance, m/s: W's rate, and its change in a step, stay within it.
+  const bound = crestShare * celerity + slack;
+  const rate = Math.min(celerity + bound, Math.max(celerity - bound, track.anchorRate ?? celerity));
+  // The reading's change of W since the last estimate, in the world along the ray, and its residual on the prediction.
+  const residual = moved + smoothed - previous - rate * dt;
+  trackGains(dt, gains, ANCHOR_TRACK.sigmaW, sigmaV);
+  let change = rate * dt + gains[0] * residual;
+  const outside = Math.abs(change - celerity * dt) > bound * dt;
+  // `anchorGood`: the last reading the gate let in.
+  if (outside && time - track.anchorGood! <= hold) return keep(previous + rate * dt - moved, rate, 'gated');
+  if (outside) change = celerity * dt + Math.min(bound * dt, Math.max(-bound * dt, change - celerity * dt));
+  else track.anchorGood = time;
+  const next = Math.min(celerity + bound, Math.max(celerity - bound, rate + (gains[1] * residual) / dt));
+  return keep(previous + change - moved, next, outside ? 'reacquired' : 'kept');
+}
+
+/**
  * The case's lowest face crossing at `fraction` of its height over its trough, m along its profile (`profile`, m): searched
  * forward from `from` (the crest before the throw, the throat after it) on the profile's own points, its trough the lowest
  * point from there on; NaN without a crossing.
@@ -296,10 +454,21 @@ export class FaceAnchor {
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
   private readonly query: ProfileQuery;
   private reads = new Float64Array(64);
-  /** The last `caseFace`'s shape's height, crest over trough, m. */
+  /** Ruling 3's read (`troughCrossing`): each read's place along the ray, m, and the refine's reads about a coarse trough. */
+  private alongs = new Float64Array(64);
+  private lows = new Float64Array(64);
+  private readonly near = new Float64Array(2 * Math.round(TROUGH.refine / FACE_ANCHOR.step) + 1);
+  /** The solver's face's slope at the last `troughCrossing`'s crossing (NaN without one): how well that read is placed. */
+  slope = Number.NaN;
+  /** The last `caseFace`'s shape's height, crest over trough, m, and how far its profile reaches ahead of its crest, m. */
   private height = 0;
-  /** Shifts asked, and those with no clean crossing on the solver's face or the case's (the crest anchor stands). */
-  readonly stats = { shifts: 0, solverMisses: 0, caseMisses: 0 };
+  private reach = Infinity;
+  /**
+   * Shifts asked, and those with no clean crossing on the solver's face or the case's (the crest anchor stands). Under the
+   * tracker's read (`solverCrossing`'s `halfWave`; diagnostics, a probe's): the solver's reads taken, those whose trough was
+   * the window's last read, and the case's shapes whose trough was its profile's last point.
+   */
+  readonly stats = { shifts: 0, solverMisses: 0, caseMisses: 0, reads: 0, troughAtEnd: 0, caseTroughAtEnd: 0 };
 
   /**
    * `blend`: the crossing's extrapolation from life 0.5 blended in over `ANCHOR_CONTINUITY.blend` (step 7's continuity),
@@ -348,7 +517,9 @@ export class FaceAnchor {
     out[1] = this.profile[2 * LANDMARK.crest];
     let trough = Infinity;
     for (let i = LANDMARK.crest; i <= LAST; i += 1) if (this.profile[2 * i + 1] < trough) trough = this.profile[2 * i + 1];
+    if (this.profile[2 * LAST + 1] === trough) this.stats.caseTroughAtEnd += 1;
     this.height = this.profile[2 * LANDMARK.crest + 1] - trough;
+    this.reach = this.profile[2 * LAST] - this.profile[2 * LANDMARK.crest];
     const frozen = shape !== tau;
     if (this.blend) return this.blendedFace(shape, frozen, touchdown, times.frameSeconds, out);
     if (shape >= late * touchdown && touchdown > 0) {
@@ -423,7 +594,10 @@ export class FaceAnchor {
    * The solver's face crossing at `fraction` of its height along the ray (nx, nz) from the point (x, z), m from the point;
    * NaN without a clean one. `height` (m) sets how far ahead its trough is looked for.
    */
-  solverCrossing(x: number, z: number, nx: number, nz: number, height: number, heightAt: (x: number, z: number) => number): number {
+  solverCrossing(
+    x: number, z: number, nx: number, nz: number, height: number, heightAt: (x: number, z: number) => number, wave?: TroughWave, caseReach = Infinity,
+  ): number {
+    if (wave !== undefined) return this.troughCrossing(x, z, nx, nz, height, heightAt, wave, caseReach);
     const { step, behind, reach, fraction } = FACE_ANCHOR;
     const count = Math.floor((behind + reach * height) / step) + 1;
     if (this.reads.length < count) this.reads = new Float64Array(2 * count);
@@ -458,13 +632,156 @@ export class FaceAnchor {
   }
 
   /**
+   * Ruling 3's read (`TubeFace.track`; the advisor's advisor-ruling-3.md §3.1), `solverCrossing` with `wave`: the
+   * solver's trough is the lowest water within half a wavelength ahead of its crest, √(g d) T/2, the meter's own measure
+   * (`SurfZoneSimulation.measureBreak`), not the read window's last read (98.8 % of the reads before: the 0.3 H level rode
+   * on the window's end, which moved through the wave between the point's 1 m row steps and jumped at each). In the wave's
+   * frame, from the solver's crest:
+   * - the crest: the highest of the `step` m reads from `behind` m behind the point to `reach` H ahead (read on behind while
+   *   the water still rises there, up to `TROUGH.back` reads), refined by the parabola through it and its neighbours;
+   * - the trough: past those, a read every `TROUGH.coarse` m to the crest's place plus `halfWave`, and one exactly there (so
+   *   the window's end moves with the crest, not the point); the lowest, if it is a coarse read, read again every `step` m
+   *   within ±`TROUGH.refine` m of it, and refined by the parabola (the end read as it is).
+   * The crossing at `fraction` of the crest over the trough is searched from the crest to the trough. Only + − × ÷ and √.
+   */
+  private troughCrossing(
+    x: number, z: number, nx: number, nz: number, height: number, heightAt: (x: number, z: number) => number, wave: TroughWave, caseReach: number,
+  ): number {
+    const { step, behind, reach, fraction } = FACE_ANCHOR;
+    const { back, coarse: spacing, refine } = TROUGH;
+    const fine = Math.floor((behind + reach * height) / step) + 1;
+    // Half a wavelength at most: at the point's still depth or the deepest a crest stands over before it (a wall's bed).
+    const most = 0.5 * wave.period * Math.sqrt(GRAVITY * Math.max(0, wave.depthAt(x - behind * nx, z - behind * nz), wave.depthAt(x, z)));
+    const size = back + fine + Math.ceil(Math.max(0, most) / spacing) + 4;
+    if (this.reads.length < size || this.alongs.length < size) {
+      this.reads = new Float64Array(2 * size);
+      this.alongs = new Float64Array(2 * size);
+      this.lows = new Float64Array(2 * size);
+    }
+    const { reads, alongs } = this;
+    let first: number = back;
+    let n: number = back;
+    for (let k = 0; k < fine; k += 1) {
+      const along = -behind + k * step;
+      alongs[n] = along;
+      reads[n] = heightAt(x + along * nx, z + along * nz);
+      n += 1;
+    }
+    const fineLast = n - 1;
+    let crest = first;
+    for (let k = first + 1; k < n; k += 1) if (reads[k] > reads[crest]) crest = k;
+    // At the window's start: the crest lies further behind (a paced point runs ahead of the solver's crest).
+    while (crest === first && first > 0) {
+      const along = alongs[first] - step;
+      const value = heightAt(x + along * nx, z + along * nz);
+      first -= 1;
+      alongs[first] = along;
+      reads[first] = value;
+      if (value > reads[crest]) crest = first;
+      else break;
+    }
+    let top = reads[crest];
+    let crestAlong = alongs[crest];
+    if (crest > first && crest < fineLast) {
+      const a = reads[crest - 1];
+      const b = reads[crest];
+      const c = reads[crest + 1];
+      const curve = a - 2 * b + c;
+      if (curve < 0) {
+        top = b - ((a - c) * (a - c)) / (8 * curve);
+        crestAlong += (0.5 * (a - c) * step) / curve;
+      }
+    }
+    // The window's end in the wave's frame: the crest's place plus half a wavelength at the still depth there, or as far as
+    // the case's own profile reaches ahead of its crest, whichever is nearer: the case's trough is its profile's lowest
+    // point (on its last on 23–29 % of reads), and the two heights the 0.3 crossings are matched at must be measured alike
+    // (*built so*: against the solver's trough at half a wavelength alone, the case's own lower face stood off the solver's
+    // by p95 0.44–0.49 H_s, max 2 H_s, against main's 0.03 / 0.16, pool 1.5 m, 3 periods).
+    const end = crestAlong + Math.min(caseReach, most, 0.5 * wave.period * Math.sqrt(GRAVITY * Math.max(0, wave.depthAt(x + crestAlong * nx, z + crestAlong * nz))));
+    const fineEnd = alongs[fineLast];
+    let endRead = -1;
+    if (end > fineEnd) {
+      // In the wave's frame: every `spacing` m from the crest's place, past the fine window (not on the point's lattice,
+      // which steps 1 m with the point's rows and moved the refine's reach with it).
+      for (let m = Math.floor((fineEnd - crestAlong) / spacing) + 1; crestAlong + m * spacing < end; m += 1) {
+        const along = crestAlong + m * spacing;
+        alongs[n] = along;
+        reads[n] = heightAt(x + along * nx, z + along * nz);
+        n += 1;
+      }
+      alongs[n] = end;
+      reads[n] = heightAt(x + end * nx, z + end * nz);
+      endRead = n;
+      n += 1;
+    }
+    // The trough on the surface averaged over ±`TROUGH.box` m (the wave's own trough, not a jet's landing or splash in it:
+    // over 1 m, a crater 0.2 m deep moved the lowest read by up to 0.2 m in a step, measured), coarse then refined.
+    const box = TROUGH.box;
+    const lowAt = (along: number) => (heightAt(x + (along - box) * nx, z + (along - box) * nz) + heightAt(x + along * nx, z + along * nz)
+      + heightAt(x + (along + box) * nx, z + (along + box) * nz)) / 3;
+    let reads0 = n - first;
+    let low = -1;
+    let lowValue = Infinity;
+    const lows = this.lows;
+    for (let k = crest + 1; k < n; k += 1) {
+      if (alongs[k] > end) break;
+      const value = lowAt(alongs[k]);
+      lows[k] = value;
+      reads0 += 2;
+      if (value < lowValue) {
+        low = k;
+        lowValue = value;
+      }
+    }
+    if (low < 0) {
+      this.stats.reads += reads0;
+      return Number.NaN;
+    }
+    let bottom = lowValue;
+    if (low === endRead) this.stats.troughAtEnd += 1;
+    else {
+      // Read again every `step` m about it, over the gap to its neighbours, and refine by the parabola.
+      const centre = alongs[low];
+      const span = Math.round((low <= fineLast ? step : refine) / step);
+      const near = this.near;
+      let best = span;
+      for (let j = 0; j <= 2 * span; j += 1) {
+        near[j] = j === span ? lowValue : lowAt(centre + (j - span) * step);
+        if (near[j] < near[best]) best = j;
+      }
+      reads0 += 6 * span;
+      bottom = near[best];
+      if (best > 0 && best < 2 * span) {
+        const a = near[best - 1];
+        const c = near[best + 1];
+        const curve = a - 2 * bottom + c;
+        if (curve > 0) bottom -= ((a - c) * (a - c)) / (8 * curve);
+      }
+    }
+    this.stats.reads += reads0;
+    const span = top - bottom;
+    this.slope = Number.NaN;
+    if (!(span > 0.1 * height)) return Number.NaN;
+    const level = bottom + fraction * span;
+    for (let k = crest; k < low; k += 1) {
+      if (reads[k] >= level && reads[k + 1] < level) {
+        const run = alongs[k + 1] - alongs[k];
+        this.slope = (reads[k] - reads[k + 1]) / run;
+        return alongs[k] + ((reads[k] - level) / (reads[k] - reads[k + 1])) * run;
+      }
+    }
+    return Number.NaN;
+  }
+
+  /**
    * A point's shift, m: where its case's crest stands along its ray (nx, nz) from the point (x, z), its case's lower face
    * crossing sitting on the solver's (`heightAt`); NaN where either has no clean crossing (the crest anchor stands: 0).
-   * `face` is scratch, left holding `caseFace`'s.
+   * `face` is scratch, left holding `caseFace`'s. `wave` (ruling 3's tracker): the solver's trough read within half a
+   * wavelength ahead of its crest (`troughCrossing`); absent, within the window as before.
    */
   shift(
     footHeight: number, footDepth: number, tau: number, hold: ProfileQuery['hold'], x: number, z: number, nx: number, nz: number,
-    heightAt: (x: number, z: number) => number, face: Float64Array,
+    heightAt: (x: number, z: number) => number, face: Float64Array, wave?: TroughWave,
   ): number {
     this.stats.shifts += 1;
     this.caseFace(footHeight, footDepth, tau, hold, face);
@@ -473,7 +790,7 @@ export class FaceAnchor {
       return Number.NaN;
     }
     // The case's height sets the solver's search: its crest over its trough.
-    const solver = this.solverCrossing(x, z, nx, nz, Math.max(0.2, this.height), heightAt);
+    const solver = this.solverCrossing(x, z, nx, nz, Math.max(0.2, this.height), heightAt, wave, this.reach);
     if (!(solver === solver)) {
       this.stats.solverMisses += 1;
       return Number.NaN;

@@ -191,9 +191,19 @@ export function patchForce(
   // Aerated water (the wipeout spec, Part B): the hull floats, planes and drags in the mixture, ρ(1 − α).
   const density = WATER.density * (1 - (water.voidFraction ?? 0));
   const support = density * WATER.gravity * area * thickness * submerged;
-  out.buoyancy.x = -support * water.slopeX;
-  out.buoyancy.y = support;
-  out.buoyancy.z = -support * water.slopeZ;
+  if (water.buoyancyNormal !== undefined) {
+    // Ruling 3's rank 5 (`WaterSample.buoyancyNormal`, the case's wall water past the slope clamp): along the surface's own
+    // normal at the clamp's size, so under an overhang it points down and out, as the water there accelerates downward
+    // faster than g (the advisor, provisional).
+    const along = support * water.buoyancyNormal;
+    out.buoyancy.x = along * water.normalX;
+    out.buoyancy.y = along * water.normalY;
+    out.buoyancy.z = along * water.normalZ;
+  } else {
+    out.buoyancy.x = -support * water.slopeX;
+    out.buoyancy.y = support;
+    out.buoyancy.z = -support * water.slopeZ;
+  }
   // Halfway up the immersed part, measured from the bottom face toward the deck.
   const centroid = bottomLow ? (thickness * submerged) / 2 : thickness * (1 - submerged / 2);
   out.buoyancyPoint.x = position.x - normal.x * centroid;

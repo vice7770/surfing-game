@@ -293,6 +293,13 @@ const C_CAP_REFINEMENT = { levels: 3, minimumSpan: 0.0625, maximumSagitta: 0.015
 const E = LOFT.extensionSamples;
 const EXTENSION_STEP = LOFT.extension / E;
 const LAST = PROFILE_POINTS - 1;
+/** Ruling 3's surface normal speed (`SweptLoft.normalSpeed`): its next frame is searched within this many segments. */
+const NORMAL_REACH = 6;
+/** Ruling 3's surface normal speed: the most a case's surface moves along its normal, m per second of its clock (inferred: the
+ * crest's own speed plus a falling jet's, about 5 + 5 m/s at 1.5–1.8 m). */
+const NORMAL_SPEED = 10;
+/** Ruling 3's case crest's own motion for the wall water's carry (`TubeFace.track`): over ±this many frames. */
+const CREST_SPAN = 4;
 const PHASE = { pre: 0, open: 1, post: 2 } as const;
 
 /**
@@ -432,6 +439,11 @@ export class SweptLoft {
   private readonly faceScratch = new Float64Array(3);
   /** Step 7's wall water: a slice's profile a frame on (`LoftResult.wall`). */
   private readonly wallProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** Ruling 3's crest motion over ±`CREST_SPAN` frames (`TubeFace.track`): scratch. */
+  private readonly crestProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** `normalSpeed`'s unit normal (along the ray, up), and its frame step, s. */
+  private readonly normalScratch = new Float64Array(2);
+  private wallStep = 0;
   private readonly measureSheet: boolean;
   private readonly holdClearDrawing: boolean;
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
@@ -1156,12 +1168,26 @@ export class SweptLoft {
       let wallCarry = 0;
       if (wall && wFade !== 0) {
         wallEpsilon = Math.max(1e-3, lookup.frameSeconds);
+        this.wallStep = wallEpsilon;
         query.seconds = tau + wallEpsilon;
         this.library.profileAt(query, this.wallProfile);
         query.seconds = tau;
         const rate = this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.tauRate]);
         wallRate = rate === rate ? rate : 1;
         wallCrest = (this.wallProfile[2 * LANDMARK.crest] - profile[2 * LANDMARK.crest]) / wallEpsilon;
+        if (this.face?.track) {
+          // Ruling 3 (`TubeFace.track`; *built so*): the case's crest's own motion over ±`CREST_SPAN` frames, as the
+          // drawing's landmarks' (`landmarkVelocity`): its landmark slides along a flat top from frame to frame, and over one
+          // frame it moved over 12 m/s on 5 % of the wall's slices (pool 1.5 m, measured), carrying every vertex of the
+          // slice's wall water with it through the anchor's carry below.
+          query.seconds = tau + CREST_SPAN * wallEpsilon;
+          this.library.profileAt(query, this.crestProfile);
+          const ahead = this.crestProfile[2 * LANDMARK.crest];
+          query.seconds = tau - CREST_SPAN * wallEpsilon;
+          this.library.profileAt(query, this.crestProfile);
+          wallCrest = (ahead - this.crestProfile[2 * LANDMARK.crest]) / (2 * CREST_SPAN * wallEpsilon);
+          query.seconds = tau;
+        }
         // The anchor carries the shape: its drawn crest's speed less the case's crest's own (lab-frame) motion.
         const speed = this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.crestSpeed]);
         wallCarry = speed === speed ? speed - wallCrest * wallRate : 0;
@@ -1403,8 +1429,17 @@ export class SweptLoft {
         if (wall && wallEpsilon > 0) {
           // The case's surface's velocity there: its frames' motion at the clock's rate, carried by its anchor.
           const i = Math.min(LAST, Math.max(0, profileIndex));
-          wall.along[v] = wallCarry + ((this.wallProfile[2 * i] - profile[2 * i]) / wallEpsilon) * wallRate;
-          wall.up[v] = ((this.wallProfile[2 * i + 1] - profile[2 * i + 1]) / wallEpsilon) * wallRate;
+          if (this.face?.track) {
+            // Ruling 3 (`TubeFace.track`): the surface's own normal speed, its displacement along its normal to the next
+            // frame (`normalSpeed`), not its point's: the profile's points slide along it from frame to frame. Where it has
+            // none (an end, or no crossing in reach), the anchor's carry alone.
+            const normal = this.normalSpeed(profile, i);
+            wall.along[v] = normal === normal ? wallCarry + normal * this.normalScratch[0] * wallRate : wallCarry;
+            wall.up[v] = normal === normal ? normal * this.normalScratch[1] * wallRate : 0;
+          } else {
+            wall.along[v] = wallCarry + ((this.wallProfile[2 * i] - profile[2 * i]) / wallEpsilon) * wallRate;
+            wall.up[v] = ((this.wallProfile[2 * i + 1] - profile[2 * i + 1]) / wallEpsilon) * wallRate;
+          }
         }
         const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
@@ -1756,6 +1791,64 @@ export class SweptLoft {
   }
 
   /**
+   * Ruling 3 (`TubeFace.track`; the water-physics advisor's advisor-ruling-3.md §1): the case's surface's own speed along its
+   * normal at profile point i (m per second of its clock), its unit normal (along the ray, up) left in `normalScratch`; NaN
+   * where its next frame (`wallProfile`) does not cross the normal within `NORMAL_REACH` segments and `NORMAL_SPEED` of it
+   * (*tried*: a reach of 12 segments found other parts of the folded lip, 35 m/s off), or it has no normal. *(Built so)* A profile
+   * point is not a material point: from frame to frame the points slide along the surface, fastest about the lip, so the
+   * difference at one index carried a tangential part that the barycentric blend of three vertices turned into normal speed
+   * (measured in the probe's largest wall-water steps: the surface's speed up 20–26 m/s either way between neighbouring
+   * steps at life 0.55–0.6). The kinematic condition needs only the normal speed, so it is the displacement of the surface
+   * along the normal to the next frame, over the frame step. Only + − × ÷ and √.
+   */
+  private normalSpeed(profile: Float32Array, i: number): number {
+    const next = this.wallProfile;
+    const px = profile[2 * i];
+    const py = profile[2 * i + 1];
+    // The tangent from the nearest points apart from it each way: before the lip forms, the profile's lip-to-throat points
+    // (64–88) all lie at one place, whose index differences moved up to 31 m/s from frame to frame (measured).
+    let a = i;
+    let b = i;
+    while (a > 0 && profile[2 * a - 2] === px && profile[2 * a - 1] === py) a -= 1;
+    while (b < LAST && profile[2 * b + 2] === px && profile[2 * b + 3] === py) b += 1;
+    a = Math.max(0, a - 1);
+    b = Math.min(LAST, b + 1);
+    const tx = profile[2 * b] - profile[2 * a];
+    const ty = profile[2 * b + 1] - profile[2 * a + 1];
+    const length = Math.sqrt(tx * tx + ty * ty);
+    if (!(length > 1e-9)) return Number.NaN;
+    // The normal, square to the tangent (either way: the displacement along it is signed alike).
+    const nx = -ty / length;
+    const ny = tx / length;
+    let best = Number.NaN;
+    // The next frame's segments about it, `NORMAL_REACH` of length each way past its own run of points at one place.
+    let from = a;
+    for (let count = 0; from > 0 && count < NORMAL_REACH; from -= 1) if (next[2 * from - 2] !== next[2 * from] || next[2 * from - 1] !== next[2 * from + 1]) count += 1;
+    let to = b;
+    for (let count = 0; to < LAST && count < NORMAL_REACH; to += 1) if (next[2 * to + 2] !== next[2 * to] || next[2 * to + 3] !== next[2 * to + 1]) count += 1;
+    for (let k = from; k < to; k += 1) {
+      const ax = next[2 * k];
+      const ay = next[2 * k + 1];
+      const bx = next[2 * k + 2] - ax;
+      const by = next[2 * k + 3] - ay;
+      // p + s n = a + u b: s and u by Cramer's rule.
+      const det = bx * ny - by * nx;
+      if (det === 0) continue;
+      const qx = ax - px;
+      const qy = ay - py;
+      const u = (nx * qy - ny * qx) / det;
+      if (u < 0 || u > 1) continue;
+      const sDist = (bx * qy - qx * by) / det;
+      // A crossing further than the surface moves in a frame is another part of a folded profile, not this one's next place.
+      if (Math.abs(sDist) > NORMAL_SPEED * this.wallStep) continue;
+      if (!(best === best) || Math.abs(sDist) < Math.abs(best)) best = sDist;
+    }
+    this.normalScratch[0] = nx;
+    this.normalScratch[1] = ny;
+    return best === best ? best / this.wallStep : Number.NaN;
+  }
+
+  /**
    * Overlapping fronts (the advisor, 2026-09-30): the first front wins. A later front's strip whose footprint overlaps
    * an earlier front's kept strip is dropped, from the drawing, its mask and the contact alike, and counted. A footprint
    * is the convex hull of its two slices' lifted spans as drawn (from the start of the rest ramp behind the crest to
@@ -1852,6 +1945,29 @@ export class SweptLoft {
                 if (dropEarlier) continue;
                 break;
               }
+            }
+            if (this.face?.drop) {
+              // Ruling 3 (`TubeFace.drop`; the advisor's advisor-ruling-3.md §5): every hole the probe logged was a strip that
+              // had faded (weight 0.00–0.22) dropped over a lighter one kept; a continuously breaking crest has one surface,
+              // and where two descriptions overlap the more developed one is the water (inferred). So the lighter gives way,
+              // whatever its phase or front; on a tie the first front's stays. (Two open strips at 0.5 or more both stay,
+              // under `merge`, above.)
+              const ws = Math.max(r.sliceWeight[s], r.sliceWeight[s + 1]);
+              const wt = Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]);
+              const gone = wt < ws ? t : s;
+              r.sliceJoined[gone] = 0;
+              if (gone === s && resting(s)) break;
+              r.overlaps += 1;
+              const weight = gone === t ? wt : ws;
+              const open = (r.slicePhase[gone] === 1 && r.sliceOverturned[gone] === 1) || (r.slicePhase[gone + 1] === 1 && r.sliceOverturned[gone + 1] === 1);
+              if (open && weight > 0) {
+                r.overlapsOpen += 1;
+                r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+                if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+                r.openDrops.push(gone, gone === t ? s : t);
+              }
+              if (gone === t) continue;
+              break;
             }
             if (this.face && !unthrown(t) && unthrown(s)) {
               r.sliceJoined[s] = 0;

@@ -18,7 +18,7 @@ import { lipCase, tubeCase } from './toyCase';
  */
 const face = (over: Partial<TubeFace>): TubeFace => ({
   anchor: false, union: false, lag: false, clockRate: 2, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: false,
-  contact: false, cap: false, merge: false, guard: false, ...over,
+  contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false, ...over,
 });
 
 describe('the step 7 follow-up: the retire guard by the case\'s open time', () => {

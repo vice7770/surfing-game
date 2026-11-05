@@ -427,7 +427,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before. Step 7's: `?tubeAnchor=old`,
     // `?tubeForm=old`, `?tubeThrow=break`, `?wallFlow=old` (each piece alone; the three old together, step 6). The step 7
     // follow-up's: `?tubeContact=old`, `?tubeCap=old`, `?tubeMerge=old` (all three old: main before it), and the opt-in
-    // `?tubeGuard=on`.
+    // `?tubeGuard=on`. Ruling 3's: `?tubeTrack=old`, `?tubeInertia=old`, `?tubeRetire=old`, `?tubeBuoy=old`, `?tubeDrop=old`
+    // (all five old: main before it).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? tubeFaceSwitches() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
@@ -535,9 +536,13 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * of those old together are step 6's build. The step 7 follow-up's (pool-tube-contact, 2026-11-05, the advisor's second
  * ruling): `?tubeContact=old`, a body's water from the vertical line through it; `?tubeCap=old`, the anchor's cap at 0.3 C;
  * `?tubeMerge=old`, joins and overlap drops as before; all three old together are main's build before it. `?tubeGuard=on`
- * (opt-in) turns on the retire guard by the case's open time. Online rooms run the defaults (the guard off).
+ * (opt-in) turns on the retire guard by the case's open time. Ruling 3's (pool-tube-track, 2026-11-05, the advisor's third
+ * ruling): `?tubeTrack=old`, the anchor's read, cap and per-step rate as before; `?tubeInertia=old`, no water acceleration on
+ * the added mass in the wall water; `?tubeRetire=old`, contour-thrown points retired unbroken as before; `?tubeBuoy=old`, the
+ * clamped slope's buoyancy; `?tubeDrop=old`, overlap drops by phase as before; all five old together are main's build
+ * before it. Online rooms run the defaults (the guard off).
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   return {
     ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
@@ -552,6 +557,11 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeCap') === 'old' ? { tubeCap: 'old' as const } : {}),
     ...(value('tubeMerge') === 'old' ? { tubeMerge: 'old' as const } : {}),
     ...(value('tubeGuard') === 'on' ? { tubeGuard: 'on' as const } : {}),
+    ...(value('tubeTrack') === 'old' ? { tubeTrack: 'old' as const } : {}),
+    ...(value('tubeInertia') === 'old' ? { tubeInertia: 'old' as const } : {}),
+    ...(value('tubeRetire') === 'old' ? { tubeRetire: 'old' as const } : {}),
+    ...(value('tubeBuoy') === 'old' ? { tubeBuoy: 'old' as const } : {}),
+    ...(value('tubeDrop') === 'old' ? { tubeDrop: 'old' as const } : {}),
   };
 }
 

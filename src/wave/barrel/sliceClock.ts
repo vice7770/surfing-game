@@ -145,6 +145,14 @@ export interface OnsetTiming {
      * 0.3 s + 0.5 s, which outlasts a38's 0.70–0.79 s open time, so a point the solver never broke still poured.
      */
     openTime?: (footHeight: number, footDepth: number) => number;
+    /**
+     * Ruling 3 (`TubeFace.retire`; the advisor's advisor-ruling-3.md §4): under the contour throw a thrown point is never
+     * retired for being unbroken. The case throws at its contour after its face goes vertical, and every crest whose B
+     * passes 0.85 also reaches 1 and breaks (Derakhti et al. 2020), so its lip plunges whatever the solver's (lagging)
+     * onset says: it keeps its full weight to its touchdown and its jet pours where foreseen. `?tubeThrow=break` keeps the
+     * retire, and the opt-in guard (`openTime`) its own. Absent: `LEAD_RETIRE`'s retire, as before.
+     */
+    keepThrown?: boolean;
   };
 }
 
@@ -363,7 +371,7 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
     // Thrown, by its clock: unbroken this long past its throw, it retires (the guard); with the follow-up's guard, by its
     // case's open time, and broken since, it recovers its weight.
     const open = timing.distance!.openTime?.(point.footHeight, point.footDepth);
-    if (point.unbroken) {
+    if (point.unbroken && !(timing.distance!.keepThrown && contour && open === undefined)) {
       const after = open === undefined ? LEAD_RETIRE.after : GUARD.after * open;
       const over = open === undefined ? LEAD_RETIRE.over : GUARD.over * open;
       const late = point.tau - after;

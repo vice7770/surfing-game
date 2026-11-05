@@ -14,12 +14,12 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeFace: 'old', tubeFrom: 'piece' })).toBeUndefined();
     expect(tubeFaceOf(true, {})).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: true, distance: true, contour: true, wallFlow: true,
-      contact: true, cap: true, merge: true, guard: false,
+      contact: true, cap: true, merge: true, guard: false, track: true, inertia: true, retire: true, buoy: true, drop: true,
     });
     // The piece, never below the solver's surface: the union alone.
     expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({
       anchor: false, union: true, lag: false, clockRate: THROWN_RATE.old, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: false,
-      contact: false, cap: false, merge: false, guard: false,
+      contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false,
     });
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ anchor: true, union: false, lag: true });
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ anchor: true, lag: false, clockRate: THROWN_RATE.face });
@@ -31,9 +31,9 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeForm: 'old' })).toMatchObject({ continuity: true, distance: false, contour: false, wallFlow: true });
     expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ continuity: true, distance: true, contour: false, wallFlow: true });
     expect(tubeFaceOf(true, { wallFlow: 'old' })).toMatchObject({ continuity: true, distance: true, contour: true, wallFlow: false });
-    expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old', tubeContact: 'old', tubeMerge: 'old' })).toEqual({
+    expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old', tubeContact: 'old', tubeMerge: 'old', tubeDrop: 'old' })).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: false, distance: false, contour: false, wallFlow: false,
-      contact: false, cap: false, merge: false, guard: false,
+      contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false,
     });
     // Formation by distance needs the lag, the wall's water the union.
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ distance: false, contour: false, continuity: true });
@@ -51,6 +51,7 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeGuard: 'on' })).toMatchObject({ contact: true, cap: true, merge: true, guard: true, contour: true });
     const before = { ...tubeFaceOf(true, {})!, contact: false, cap: false, merge: false, guard: false };
     expect(tubeFaceOf(true, { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' })).toEqual(before);
+    // (Ruling 3's pieces, on by default, are each their own switch: tubeTrack.test.ts.)
     // Each with what it builds on: the contact with the union, the cap with the continuity, the guard with the contour.
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ contact: false });
     expect(tubeFaceOf(true, { tubeAnchor: 'old' })).toMatchObject({ cap: false });

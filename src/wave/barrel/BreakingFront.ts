@@ -285,7 +285,7 @@ export interface FrontPoint {
   jetReturned?: true;
   /** Diagnostics (`AnchorTrack`; a probe's): its last smoothed shift and what `continueAnchor` did with it. */
   anchorTarget?: number;
-  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free';
+  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free' | 'gated' | 'reacquired';
 }
 
 export interface FrontState {

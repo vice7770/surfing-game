@@ -31,7 +31,7 @@ function records(n: number, tau: number): Float32Array {
 /** Only the nearest surface on (the loft is built as without it: no anchor, union or the rest). */
 const face = (contact: boolean): TubeFace => ({
   anchor: false, union: false, lag: false, clockRate: 2, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: false,
-  contact, cap: false, merge: false, guard: false,
+  contact, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false,
 });
 const library = () => new ProfileLibrary([lipCase(0.3, 0.04)]);
 const contactWith = (on: boolean, tau = -0.3) => {

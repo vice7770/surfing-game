@@ -63,6 +63,20 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  * outcomes; the ledger (throws per crest, unbroken at touchdown, starved share, bar 6 per jet); holes at weight ≥ 0.5 with
  * the first holes' fronts. SWITCHES also takes `tubeContact=old`, `tubeCap=old`, `tubeMerge=old` (all three: main before the
  * follow-up) and the opt-in `tubeGuard=on`. COST=1 COST_ARMS=followUp compares the default against those three old.
+ *
+ * Ruling 3 (pool-tube-track, 2026-11-05; the advisor's advisor-ruling-3.md) adds, under "# Ruling 3's bars": the water at a
+ * body step to step (its bottom's water, in the case's wall, crossing in or out of it, and in the solver's: ≤ 1 m/s a step
+ * at p99 in the wall and crossing it); flings (lone boards more than 0.1 m clear of the water before touchdown, outside the
+ * lip's water and with no lip over them: ≤ 10 %); 2a and 2b for both placements of the lone boards (the default: at rest
+ * draft, 5 mm along the nearest surface's normal, moving with their water along it; `old`: 5 cm under the support with the
+ * surface's vertical speed, as before; both placed in each run, the old ones on the game's water only); bar 4b's own pace
+ * against the tracker's rate (|ΔW − v̂ Δt|, v̂ the rate before the step), the raw target's step inside a front as a bar
+ * (p90 ≤ 0.02 m), the read's noise σ_v (the raw target's second difference, rms/√6), the gate's engagement with the cap's,
+ * and the read's trough at its window's end; bar 6 per jet measured after the pour (the solver's breaking ≥ 0.3 within
+ * ±0.5 H_s of the tip at the crash within 0.2 s of it) and per column at all weights; visible holes (a dropped open strip
+ * heavier than the kept one by over 0.1, or drawn more than 0.1 m off the solver's surface). SWITCHES also takes
+ * `tubeTrack=old`, `tubeInertia=old`, `tubeRetire=old`, `tubeBuoy=old`, `tubeDrop=old` (all five: main before ruling 3).
+ * COST_ARMS=track compares the default against those five old.
  */
 
 const quantile = (values: number[], q: number) => {
@@ -104,6 +118,8 @@ const FIXED = [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5] as const;
 const BELOW = 0.5;
 /** Bar 5 (step 7): the depth along the ray a crouched body needs its clearance held over, m. */
 const CROUCH = 0.3;
+/** Ruling 3's placement of the lone boards: their rest draft along the nearest normal, m (the advisor: about 5 mm). */
+const DRAFT = 0.005;
 const BEHIND = 4;
 const AHEAD = 12;
 const STEP = 0.1;
@@ -222,6 +238,15 @@ interface Body {
   offOut?: number;
   lastForce?: [number, number, number];
   lastNormal?: [number, number, number];
+  /**
+   * Ruling 3: how a lone board was placed (absent: the default, at rest draft along the nearest normal with its water's
+   * velocity; 'old': 5 cm under the support with the surface's vertical speed); its most clear of the water before
+   * touchdown outside the lip's water and with no lip over it (m, the least signed distance); the water at its bottom at
+   * its last step (flow, and whether in the case's wall or the lip's water, or out of the water).
+   */
+  placement?: 'old';
+  clearestOut: number;
+  lastWater?: { x: number; y: number; z: number; wall: boolean; lip: boolean; note: string };
 }
 
 /** One of the largest rises at a fixed point (bar 4b, step 7), with what changed between its two reads. */
@@ -268,12 +293,15 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       const lib = libraryFromBytes(caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
       // COST_ARMS=followUp (the 2026-11-05 follow-up): the default against main's build before it (its four switches old).
       const followUp = process.env.COST_ARMS === 'followUp';
-      const arms = (followUp ? ['default', 'follow-up off'] as const : ['step 7', 'step 6'] as const).map((arm) => {
+      // COST_ARMS=track (ruling 3): the default against main's build before it (its five switches old).
+      const trackArms = process.env.COST_ARMS === 'track';
+      const arms = (trackArms ? ['default', 'ruling 3 off'] as const : followUp ? ['default', 'follow-up off'] as const : ['step 7', 'step 6'] as const).map((arm) => {
         const sim = new SurfZoneSimulation({
           spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
           tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
           ...(arm === 'step 6' ? { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' } : {}),
           ...(arm === 'follow-up off' ? { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' } : {}),
+          ...(arm === 'ruling 3 off' ? { tubeTrack: 'old', tubeInertia: 'old', tubeRetire: 'old', tubeBuoy: 'old', tubeDrop: 'old' } : {}),
         } as unknown as SurfZoneConfig, 'spun-up', lib);
         const tubeFace = sim.tubeFace;
         const contact = new SweptContact(lib, BARREL_SLOPE.pool!, tubeFace ? { face: tubeFace } : {});
@@ -480,6 +508,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // The bodies (bars 2 and 9): their reactions not applied, so the sea stays shared and as is.
     let sampleCalls = 0;
     let bodySteps = 0;
+    /** Ruling 3's cost: the game's water's bodies' own steps (their water, forces and solve), ms. */
+    const bodyMs = { total: 0, steps: 0 };
     const quiet = (w: PhysicalSurfWater): SurfWater => ({
       sampleAt: (x, y, z, out) => { sampleCalls += 1; return w.sampleAt(x, y, z, out); },
       surfaceAt: (x, z) => w.surfaceAt(x, z),
@@ -489,6 +519,11 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const waters = { swept: quiet(water), solver: quiet(plain) };
     const bodies: Body[] = [];
     const finished: Body[] = [];
+    /** Ruling 3's wall-water step (m/s a step): by where the body's bottom's water was, both steps; boards apart. */
+    const wallBig: { step: number; text: string }[] = [];
+    const fastWall = new Map<string, number>();
+    let fastAll = 0;
+    const waterSteps = { wall: [] as number[], crossing: [] as number[], solver: [] as number[], lip: [] as number[], boardWall: [] as number[], boardCrossing: [] as number[], boardOther: [] as number[] };
     const peels: number[] = [];
     const input: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0 };
     const sample: WaterSample = createWaterSample();
@@ -509,18 +544,21 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         const { xi } = faceXi(ic, it, fraction);
         const x = x0 + xi * rx;
         const z = z0 + xi * rz;
-        for (const kind of ['rider', 'prone', 'board'] as const) {
+        for (const kind of ['rider', 'prone', 'board', 'board-old'] as const) {
           for (const which of ['swept', 'solver'] as const) {
+            // Ruling 3: the old placement's lone boards on the game's water only, beside the default's.
+            if (kind === 'board-old' && which === 'solver') continue;
             // Each on its own water's surface there (the game's: the union, never under the solver's surface).
             const own = which === 'swept' ? water : plain;
             const surface0 = own.surfaceAt(x, z);
             const flow = own.sampleAt(x, surface0 - 0.05, z, sample);
             const heading = Math.atan2(vx - flow.flowX, vz - flow.flowZ);
             const speed = Math.hypot(vx - flow.flowX, vz - flow.flowZ);
-            const session = kind !== 'board' ? new RideSession() : undefined;
+            const session = kind === 'rider' || kind === 'prone' ? new RideSession() : undefined;
             const board = session ? session.board : new BoardBody();
             if (session) session.place({ x, z, heading, speed, phase: kind === 'prone' ? 'prone' : 'standing', followSurface: true }, waters[which]);
-            else {
+            else if (kind === 'board-old') {
+              // As before ruling 3: 5 cm under the support, the surface's vertical speed.
               const s0 = own.sampleAt(x, surface0 - 0.05, z, sample);
               const up = new Vector3(s0.normalX, s0.normalY, s0.normalZ).normalize();
               const forward = new Vector3(Math.sin(heading), -(up.x * Math.sin(heading) + up.z * Math.cos(heading)) / up.y, Math.cos(heading)).normalize();
@@ -530,13 +568,28 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
               const top = own.sampleAt(x, surface0, z, sample);
               velocity.y = top.flowY + velocity.x * top.slopeX + velocity.z * top.slopeZ;
               board.place(new Vector3(x, surface0 + board.shape.centerOfMass.y - 0.05, z), orientation, velocity);
+            } else {
+              // Ruling 3 (the advisor's §2.1): at rest draft (5 mm) along the nearest surface's normal there, moving with its
+              // water along that normal (in trim along it, as before).
+              const s0 = own.sampleAt(x, surface0 - DRAFT, z, sample);
+              const up = new Vector3(s0.normalX, s0.normalY, s0.normalZ).normalize();
+              if (!(up.y > 0.05)) up.set(0, 1, 0);
+              const forward = new Vector3(Math.sin(heading), -(up.x * Math.sin(heading) + up.z * Math.cos(heading)) / up.y, Math.cos(heading)).normalize();
+              const left = new Vector3().crossVectors(up, forward);
+              const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, up, forward));
+              const velocity = new Vector3(vx, 0, vz);
+              const into = (s0.flowX - velocity.x) * up.x + (s0.flowY - velocity.y) * up.y + (s0.flowZ - velocity.z) * up.z;
+              velocity.addScaledVector(up, into);
+              // The bottom 5 mm under the surface along the normal; the centre of mass that far up the board's normal.
+              const bottom = new Vector3(x, surface0, z).addScaledVector(up, -DRAFT);
+              board.place(bottom.addScaledVector(up, board.shape.centerOfMass.y), orientation, velocity);
             }
             bodies.push({
-              kind, water: which, target, face: fraction, front, t0: solver.time, session, board, done: false, minGap: Infinity, baseGap: Number.NaN, minSolverGap: Infinity, baseSolverGap: Number.NaN, over: 0,
+              kind: kind === 'board-old' ? 'board' : kind, water: which, target, face: fraction, front, t0: solver.time, session, board, done: false, minGap: Infinity, baseGap: Number.NaN, minSolverGap: Infinity, baseSolverGap: Number.NaN, over: 0,
               firstDrop: Number.NaN, separatedAt: Number.NaN, cause: '', lipHead: Number.NaN,
               touchdownAt, under: [], underRun: 0, longestUnder: 0, inLip: false, dropToTouchdown: 0, offBeforeTouchdown: false,
               landed: false, normalBefore: [], normalAfter: [], normalRun: 0, longestNormal: 0, normal0: Number.NaN, outcome: '', clearest: Infinity,
-              forceFlips: 0, normalFlips: 0, flipSteps: 0,
+              forceFlips: 0, normalFlips: 0, flipSteps: 0, clearestOut: Infinity, ...(kind === 'board-old' ? { placement: 'old' as const } : {}),
             });
           }
         }
@@ -582,8 +635,13 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       bodySteps += bodies.length;
       for (const body of bodies) {
         const real = body.water === 'swept' ? water : plain;
+        const began = performance.now();
         if (body.session) real.withSurfaceNodeCache(() => body.session!.step(dt, waters[body.water], input));
         else real.withSurfaceNodeCache(() => body.board.step(dt, waters[body.water]));
+        if (body.water === 'swept') {
+          bodyMs.total += performance.now() - began;
+          bodyMs.steps += 1;
+        }
         const age = solver.time - body.t0;
         const p = body.board.position;
         if (!Number.isFinite(p.x + p.y + p.z) || body.board.outsideDomain) {
@@ -624,6 +682,26 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           const bottom = p.y - body.board.shape.centerOfMass.y;
           const lip = water.sampleAt(p.x, bottom + 0.02, p.z, lipSample).waterFloorY !== undefined;
           const sampledNormal: [number, number, number] = [lipSample.normalX, lipSample.normalY, lipSample.normalZ];
+          // Ruling 3's wall-water step: the water at its bottom, step to step, in the case's wall, crossing it, or the solver's
+          // (in the water only: its bottom under the sample's surface, both steps), before its touchdown.
+          const wallNow = (water as unknown as { inWall: boolean }).inWall === true;
+          const inWater = bottom + 0.02 < lipSample.surfaceY;
+          const wh = (water as unknown as { hit: ReturnType<typeof createContactHit>; plainY: number });
+          const note = `y ${(bottom + 0.02).toFixed(3)} plain ${fmt(wh.plainY, 3)} case ${fmt(wh.hit.surfaceY, 3)} low ${fmt(wh.hit.wallLow, 2)} top ${fmt(wh.hit.wallTop, 2)} along ${fmt(wh.hit.wallAlong, 2)} up ${fmt(wh.hit.wallUp, 2)} C ${fmt(wh.hit.wallSpeed, 2)} B ${fmt(wh.hit.wallB, 2)} w ${fmt(wh.hit.wallWeight, 2)} n ${fmt(wh.hit.normalX, 2)},${fmt(wh.hit.normalY, 2)},${fmt(wh.hit.normalZ, 2)} depth ${fmt(wh.hit.normalDepth, 3)} ahead ${fmt(wh.hit.aheadWeight, 2)} life ${fmt(wh.hit.life, 2)} flow ${lipSample.flowX.toFixed(2)},${lipSample.flowY.toFixed(2)},${lipSample.flowZ.toFixed(2)}`;
+          const now = inWater ? { x: lipSample.flowX, y: lipSample.flowY, z: lipSample.flowZ, wall: wallNow, lip, note } : undefined;
+          const was = body.lastWater;
+          if (now && was && !body.landed && body.placement === undefined) {
+            const step = Math.hypot(now.x - was.x, now.y - was.y, now.z - was.z);
+            if (now.wall && was.wall && step > 3) {
+              wallBig.push({ step, text: `${step.toFixed(2)} m/s, ${body.kind} ${body.target} ${body.face} t ${solver.time.toFixed(3)}:\n      before ${was.note}\n      after  ${now.note}` });
+              wallBig.sort((a, b) => b.step - a.step);
+              if (wallBig.length > 12) wallBig.length = 12;
+            }
+            const list = now.lip || was.lip ? waterSteps.lip : now.wall && was.wall ? waterSteps.wall : now.wall !== was.wall ? waterSteps.crossing : waterSteps.solver;
+            list.push(step);
+            if (body.kind === 'board') (now.wall && was.wall ? waterSteps.boardWall : now.wall !== was.wall ? waterSteps.boardCrossing : waterSteps.boardOther).push(step);
+          }
+          body.lastWater = now;
           const onLoft = contact.query(p.x, bottom, p.z, probeHit);
           const rx = onLoft ? -probeHit.tangentZ : 0;
           const rz = onLoft ? probeHit.tangentX : 1;
@@ -631,6 +709,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           const normal = water.withSurfaceNodeCache(() => signedNormal(p.x, bottom, p.z, rx, rz, -gap));
           if (!(body.normal0 === body.normal0)) body.normal0 = normal;
           if (!body.landed) body.clearest = Math.min(body.clearest, normal);
+          // Ruling 3's flings: clear of the water outside the lip's water and with no lip over it.
+          if (!body.landed && !lip && lipSample.ceilingY === undefined) body.clearestOut = Math.min(body.clearestOut, normal);
           if (!lip) {
             (body.landed ? body.normalAfter : body.normalBefore).push(normal);
             if (!body.landed) {
@@ -787,9 +867,13 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const crash0 = simulation.crash ? { ...simulation.crash.counts } : undefined;
     // The 2026-11-05 ruling's re-ruled bars 4b, the ledger and 8 (advisor-ruling-2.md).
     const anchor0 = { ...anchorCounts };
-    const lastDW = new Map<number, { n: number; dW: number }>();
+    const lastDW = new Map<number, { n: number; dW: number; rate: number; dTarget: number }>();
     const jitters: number[] = [];
     const ownPace: number[] = [];
+    /** Ruling 3's 4b: |ΔW − v̂ Δt|; the raw target's second difference and its step against the tracker, inside a front. */
+    const trackerPace: number[] = [];
+    const targetSecond: number[] = [];
+    const targetVsTracker: number[] = [];
     const targetInside: number[] = [];
     const targetEnds: number[] = [];
     const bigSteps: { step: number; text: string }[] = [];
@@ -803,12 +887,31 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const crashedIds = new Set<number>();
     const jetBreak: number[] = [];
     const jetBreak1: number[] = [];
+    /** Ruling 3: bar 6 per jet after the pour (each jet's tip at its crash, read for 0.2 s); per column at all weights. */
+    const pouring: { x: number; z: number; rx: number; rz: number; tipXi: number; Hs: number; until: number; best: number }[] = [];
+    const jetBreakAfter: number[] = [];
+    const columnAll: number[] = [];
+    const landedAll = new Set<string>();
+    /** Ruling 3's visible holes: a dropped open strip heavier than the kept by over 0.1, or drawn over 0.1 m off the solver. */
+    let visibleHoles = 0;
+    let rawHoles = 0;
+    const visibleLog: string[] = [];
     let jetUnread = 0;
     let heavyHoles = 0;
     let keptFolds = 0;
     const holeLog: string[] = [];
     for (let n = 1; n <= steps; n += 1) {
       simulation.step(dt);
+      // Ruling 3's bar 6 per jet, after the pour: the solver's strongest breaking within ±0.5 H_s of each jet's tip at its
+      // crash, over the 0.2 s after it.
+      for (let j = pouring.length - 1; j >= 0; j -= 1) {
+        const jet = pouring[j];
+        for (let xi = jet.tipXi - 0.5 * jet.Hs; xi <= jet.tipXi + 0.5 * jet.Hs; xi += 0.25) jet.best = Math.max(jet.best, strengthAt(jet.x + xi * jet.rx, jet.z + xi * jet.rz));
+        if (solver.time >= jet.until) {
+          jetBreakAfter.push(jet.best);
+          pouring.splice(j, 1);
+        }
+      }
       // The ledger: each joined crest's throws (its point's id).
       for (const thrown of simulation.crash?.paced ?? []) throwsOf.set(thrown.point.id, (throwsOf.get(thrown.point.id) ?? 0) + 1);
       const count = simulation.writeTubeRecords(records);
@@ -936,16 +1039,25 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
                 }
                 if (was.n === n - 1) {
                   const before = lastDW.get(p.id);
-                  if (before && before.n === n - 1) jitters.push(Math.abs(dW - before.dW));
-                  lastDW.set(p.id, { n, dW });
+                  const consecutive = before !== undefined && before.n === n - 1;
+                  if (consecutive) jitters.push(Math.abs(dW - before.dW));
+                  // Ruling 3: against the tracker's own pace, its rate before this step (the rate it predicted with).
+                  if (consecutive && before.rate === before.rate) trackerPace.push(Math.abs(dW - before.rate * dt));
                   const target = p.anchorTarget;
+                  let dTarget = Number.NaN;
                   if (target !== undefined && target === target && was.target === was.target) {
-                    const dTarget = (p.x - was.x) * nx + (p.z - was.z) * nz + target - was.target;
+                    dTarget = (p.x - was.x) * nx + (p.z - was.z) * nz + target - was.target;
                     ownPace.push(Math.abs(dW - dTarget));
                     // The target's own step against the wave's advance, inside a front and within 3 points of its ends.
                     const fromEnd = Math.min(k - i0Of(k), i1Of(k) - k);
                     (fromEnd >= 3 ? targetInside : targetEnds).push(Math.abs(dTarget - advance));
+                    if (fromEnd >= 3 && consecutive) {
+                      // Ruling 3: the read's noise σ_v (its second difference, inside a front), and its step against the tracker.
+                      if (before.dTarget === before.dTarget) targetSecond.push(dTarget - before.dTarget);
+                      if (before.rate === before.rate) targetVsTracker.push(Math.abs(dTarget - before.rate * dt));
+                    }
                   }
+                  lastDW.set(p.id, { n, dW, rate: p.anchorRate ?? Number.NaN, dTarget });
                 }
               }
             }
@@ -971,6 +1083,40 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       slices += loft.sliceCount;
       heavyHoles += loft.overlapsOpenHeavy;
       keptFolds += loft.overlapsKept ?? 0;
+      // Ruling 3 (information): where the case's surface's own speed is fast (over 12 m/s up or down), by profile index.
+      if (loft.wall && n % 10 === 0) {
+        for (let q = 0; q < loft.sliceCount; q += 1) {
+          if (!(loft.sliceWeight[q] > 0.5)) continue;
+          for (let j = 0; j < S; j += 1) {
+            const v = q * S + j;
+            if (Math.abs(loft.wall.up[v]) > 12 || Math.abs(loft.wall.along[v] - loft.wall.speed[q]) > 12) {
+              const key = `${Math.floor((j - E) / 8) * 8}`;
+              fastWall.set(key, (fastWall.get(key) ?? 0) + 1);
+            }
+            fastAll += 1;
+          }
+        }
+      }
+      for (let m = 0; m + 1 < loft.openDrops.length; m += 2) {
+        const gone = loft.openDrops[m];
+        const kept = loft.openDrops[m + 1];
+        const wd = Math.max(loft.sliceWeight[gone], loft.sliceWeight[gone + 1]);
+        const wk = Math.max(loft.sliceWeight[kept], loft.sliceWeight[kept + 1]);
+        // As drawn, the strip's vertices are lerped toward the water by its weight: its height off the solver's surface is
+        // its weight × lift.
+        let lift = 0;
+        water.withSurfaceNodeCache(() => {
+          for (const q of [gone, gone + 1]) for (let j = 0; j < S; j += 1) {
+            const v = 3 * (q * S + j);
+            lift = Math.max(lift, loft.positions[v + 1] - water.plainSurfaceAt(loft.positions[v], loft.positions[v + 2]));
+          }
+        });
+        rawHoles += 1;
+        if (wd - wk > 0.1 || lift > 0.1) {
+          visibleHoles += 1;
+          if (visibleLog.length < 12) visibleLog.push(`t ${solver.time.toFixed(2)}: dropped front ${loft.sliceFront[gone]} weight ${fmt(wd)} phase ${loft.slicePhase[gone]} drawn ${fmt(lift)} m off the solver's surface; kept front ${loft.sliceFront[kept]} weight ${fmt(wk)} phase ${loft.slicePhase[kept]}`);
+        }
+      }
       if (loft.openDrops.length && holeLog.length < 30) {
         // Each hole: the dropped strip and the one kept, their fronts' σ spans, and the gap between the two fronts' nearest ends.
         const span = (front: number) => {
@@ -1035,6 +1181,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         for (let xi = tipXi - Hs; xi <= tipXi + Hs; xi += 0.25) b1 = Math.max(b1, strengthAt(...alongAt(xi)));
         jetBreak.push(b05);
         jetBreak1.push(b1);
+        pouring.push({ x: o.x, z: o.z, rx: o.rx, rz: o.rz, tipXi, Hs, until: solver.time + 0.2, best: b05 });
       }
       if (n % 2 === 0) {
         for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
@@ -1048,7 +1195,20 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       const bestDist = new Float64Array(columns).fill(Infinity);
       let placeSlice = -1;
       let placeDist = Infinity;
+      const bestAll = new Int32Array(columns).fill(-1);
+      const bestAllDist = new Float64Array(columns).fill(Infinity);
       for (let s = 0; s < loft.sliceCount; s += 1) {
+        if (loft.sliceJoined[s] === 1 && loft.sliceWeight[s] > 0) {
+          // Ruling 3's bar 6 per column at all weights: each column's nearest joined slice of any weight.
+          const c = 3 * (s * S + E + LANDMARK.crest);
+          const reefS = poolStraightFrame(loft.positions[c] - loft.sliceShift[s] * loft.sliceRayX[s], loft.positions[c + 2] - loft.sliceShift[s] * loft.sliceRayZ[s]).s;
+          const k = columnOf(reefS);
+          const dist = Math.abs(reefS - (cFrom + k * cStep));
+          if (k >= 0 && k < columns && dist < 0.5 && dist < bestAllDist[k]) {
+            bestAllDist[k] = dist;
+            bestAll[k] = s;
+          }
+        }
         if (!(loft.sliceWeight[s] >= 0.5) || loft.sliceJoined[s] !== 1) continue;
         const c = 3 * (s * S + E + LANDMARK.crest);
         const shift = loft.sliceShift[s];
@@ -1066,6 +1226,23 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         }
       }
       if (n % 2 !== 0) continue;
+      water.withSurfaceNodeCache(() => {
+        for (let k = 0; k < columns; k += 1) {
+          const s = bestAll[k];
+          if (s < 0 || !(loft.sliceLife[s] >= 1)) continue;
+          const key = `${loft.sliceFront[s] % FRONT_PIECE}:${k}`;
+          if (landedAll.has(key)) continue;
+          landedAll.add(key);
+          const o = origin(loft, s);
+          const { Hs } = section(o.x, o.z, o.rx, o.rz);
+          if (!(Hs > 0.2)) continue;
+          const tip = 3 * (s * S + E + LANDMARK.lip);
+          const tipXi = (loft.positions[tip] - o.x) * o.rx + (loft.positions[tip + 2] - o.z) * o.rz;
+          let b = 0;
+          for (let xi = tipXi - 0.5 * Hs; xi <= tipXi + 0.5 * Hs; xi += 0.25) b = Math.max(b, strengthAt(o.x + xi * o.rx, o.z + xi * o.rz));
+          columnAll.push(b);
+        }
+      });
       // Each front's ends along σ (bar 4b's causes: a rise within the end's blend).
       const ends = new Map<number, [number, number]>();
       for (let s = 0; s < loft.sliceCount; s += 1) {
@@ -1150,6 +1327,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       });
     }
     for (const body of bodies) finished.push(body);
+    // Ruling 3: the old placement's lone boards apart (their own block below); every other bar reads the default's.
+    const finishedAll = [...finished];
+    finished.length = 0;
+    for (const body of finishedAll) if (body.placement !== 'old') finished.push(body);
 
     // The tables.
     const lines: string[] = [];
@@ -1413,6 +1594,50 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     // Bar 8.
     lines.push(`## Bar 8, re-ruled: holes ${(overlapsOpen / Math.max(1, builds)).toFixed(4)} a build (≤ 0.01), at weight ≥ 0.5 ${heavyHoles} (0); folds (information) ${(overlaps / Math.max(1, builds)).toFixed(3)}, overlapping open strips both kept (\`TubeFace.merge\`) ${(keptFolds / Math.max(1, builds)).toFixed(4)} a build; the first holes:`);
     for (const hole of holeLog.slice(0, 20)) lines.push(`  - ${hole}`);
+    // Ruling 3's bars (the advisor's advisor-ruling-3.md).
+    lines.push('');
+    lines.push('# Ruling 3\'s bars (the advisor\'s advisor-ruling-3.md)');
+    const q3x = (v: number[], digits = 3) => (v.length ? [0.5, 0.9, 0.99].map((f) => fmt(quantile(v, f), digits)).join(' / ') : '—');
+    if (bodiesOn) {
+      const w = waterSteps;
+      lines.push(`## The wall-water step, the water at a body's bottom step to step before its touchdown, p50 / p90 / p99 m/s: in the case's wall ${q3x(w.wall)} (p99 ≤ 1), n ${w.wall.length}; crossing in or out of it ${q3x(w.crossing)} (p99 ≤ 1), n ${w.crossing.length}; the solver's (information) ${q3x(w.solver)}, n ${w.solver.length}; the lip's water (information) ${q3x(w.lip)}, n ${w.lip.length}; lone boards alone: in the wall ${q3x(w.boardWall)} (n ${w.boardWall.length}), crossing ${q3x(w.boardCrossing)} (n ${w.boardCrossing.length}), elsewhere ${q3x(w.boardOther)}`);
+      lines.push(`- (information) the case's surface's own speed over 12 m/s (up, or along the ray off C), by profile index (8 a bin; E ${E}, the crest ${LANDMARK.crest}, the lip ${LANDMARK.lip}, the throat ${LANDMARK.throat}, the toe ${LANDMARK.toe}): ${[...fastWall].sort((a, b) => Number(a[0]) - Number(b[0])).map(([k, v]) => `${k}: ${v}`).join(', ')} of ${fastAll} vertices`);
+      lines.push(`- (information) the 12 largest steps in the wall, before and after:`);
+      for (const big of wallBig) lines.push(`  - ${big.text}`);
+      const placements: [string, Body[]][] = [
+        ['the default placement (lone boards at rest draft, 5 mm along the nearest normal, with their water along it)', finished],
+        ['the old placement (lone boards 5 cm under the support, the surface\'s vertical speed)', finishedAll.filter((b) => b.placement === 'old' || b.kind !== 'board')],
+      ];
+      for (const [name, pop] of placements) {
+        const game = pop.filter((b) => b.water === 'swept');
+        const before = game.flatMap((b) => b.normalBefore);
+        const long = game.filter((b) => b.longestNormal > 0.1);
+        const low = game.filter((b) => b.face === 0.3 && (b.kind === 'board' || b.kind === 'prone') && (b.target === 'ahead 0.3 s' || b.target === 'throw'));
+        const outcome = (g: Body[], o: string) => g.filter((b) => (b.outcome || 'carried') === o).length;
+        const describe = (g: Body[]) => `carried ${outcome(g, 'carried')}, pitched ${outcome(g, 'pitched-lip') + outcome(g, 'pitched-off')} (into the lip's water ${outcome(g, 'pitched-lip')}, off the surface ${outcome(g, 'pitched-off')}), overrun ${outcome(g, 'overrun')} of ${g.length}`;
+        const boards = game.filter((b) => b.kind === 'board');
+        const flips = boards.reduce((t, b) => t + b.forceFlips, 0);
+        const flipSteps = boards.reduce((t, b) => t + b.flipSteps, 0);
+        lines.push(`## ${name}`);
+        lines.push(`- 2a (along the nearest normal, before touchdown, outside the lip's water): p99 ${fmt(quantile(before, 0.99), 3)} m (≤ 0.15), n ${before.length}; bodies over 0.15 m for more than 0.1 s ${long.length} of ${game.length}; boards p99 ${fmt(quantile(boards.flatMap((b) => b.normalBefore), 0.99), 3)} m`);
+        lines.push(`- 2b (lone boards and prone riders at 0.3 H_s, ahead and at the throw): overrun ${pct(outcome(low, 'overrun'), low.length)} (≤ 20 %); ${describe(low)}; boards at the throw: ${describe(low.filter((b) => b.kind === 'board' && b.target === 'throw'))}; boards ahead: ${describe(low.filter((b) => b.kind === 'board' && b.target === 'ahead 0.3 s'))}`);
+        lines.push(`- flings (lone boards more than 0.1 m clear of the water before touchdown, outside the lip's water, no lip over them): ${boards.filter((b) => b.clearestOut < -0.1).length} of ${boards.length}, ${pct(boards.filter((b) => b.clearestOut < -0.1).length, boards.length)} (≤ 10 %); more than 0.3 m ${boards.filter((b) => b.clearestOut < -0.3).length}; anywhere before touchdown (as before) > 0.1 / 0.3 m ${boards.filter((b) => b.clearest < -0.1).length} / ${boards.filter((b) => b.clearest < -0.3).length}`);
+        lines.push(`- (information) the hull force turning past 90° in a step, lone boards: ${flips} in ${flipSteps} steps (${pct(flips, flipSteps)})`);
+      }
+    }
+    {
+      const counted = Object.fromEntries(Object.entries(anchorCounts).map(([key, value]) => [key, value - ((anchor0 as Record<string, number>)[key] ?? 0)]));
+      const faced = counted.kept + counted.capped + (counted.gated ?? 0) + (counted.reacquired ?? 0);
+      const rms = targetSecond.length ? Math.sqrt(targetSecond.reduce((t, v) => t + v * v, 0) / targetSecond.length) : Number.NaN;
+      const reads = (simulation.crash as unknown as { geometry?: { faceAnchor?: { stats: { shifts: number; reads: number; troughAtEnd: number; caseTroughAtEnd: number } } } } | undefined)?.geometry?.faceAnchor?.stats;
+      lines.push(`## Bar 4b, ruling 3: jitter p99 ${fmt(quantile(jitters, 0.99), 4)} m (≤ 0.005), max ${fmt(most(jitters, 0), 3)} (≤ 0.02); own pace against the tracker |ΔW − v̂ Δt| p99 ${fmt(quantile(trackerPace, 0.99), 4)} m (≤ 0.01), n ${trackerPace.length}; the raw target's step inside a front |ΔW* − C Δt| p50 / p90 / p99 ${q3x(targetInside, 4)} m (p90 ≤ 0.02); single steps over 0.1 m ${consecutiveSteps.filter((v) => v > 0.1).length} (0), max ${fmt(most(consecutiveSteps, 0), 3)} m; the cap (or the tracker's gate) engaged ${pct((counted.capped ?? 0) + (counted.gated ?? 0), faced)} of ${faced} faced steps (≤ 10 %)`);
+      lines.push(`- (information) the read's noise σ_v, the raw target's second difference inside a front rms/√6: ${fmt(rms / Math.sqrt(6), 4)} m (n ${targetSecond.length}; its |Δ²| p50 / p90 / p99 ${q3x(targetSecond.map(Math.abs), 4)}); the raw target's step against the tracker |ΔW* − v̂ Δt| p50 / p90 / p99 ${q3x(targetVsTracker, 4)}; own pace against the raw target (as before) p99 ${fmt(quantile(ownPace, 0.99), 4)}; the outcomes ${JSON.stringify(counted)}; the read ${reads ? `${fmt(reads.reads / Math.max(1, reads.shifts), 1)} reads a shift, its trough at its window's end on ${pct(reads.troughAtEnd, reads.shifts)}, the case's trough at its profile's last point on ${pct(reads.caseTroughAtEnd, reads.shifts)} (cumulative)` : '—'}`);
+    }
+    lines.push(`## Bar 6, ruling 3: per jet, the solver's breaking ≥ 0.3 within ±0.5 H_s of the tip within 0.2 s after the pour starts ${pct(jetBreakAfter.filter((v) => v >= 0.3).length, jetBreakAfter.length)} of ${jetBreakAfter.length} (≥ 85 %); at the crash itself (as before) ${pct(jetBreak.filter((v) => v >= 0.3).length, jetBreak.length)}; per column at all weights (each column-wave's nearest slice of any weight, its first read past life 1) ${pct(columnAll.filter((v) => v >= 0.3).length, columnAll.length)} of ${columnAll.length}`);
+    lines.push(`## Holes, ruling 3: visible holes ${visibleHoles} (0), ${(visibleHoles / Math.max(1, builds)).toFixed(4)} a build; at weight ≥ 0.5 ${heavyHoles} (0); the raw count (information) ${rawHoles}, ${(overlapsOpen / Math.max(1, builds)).toFixed(4)} a build; the first visible:`);
+    for (const hole of visibleLog) lines.push(`  - ${hole}`);
+    lines.push(`## The ledger, ruling 3 (information): thrown points unbroken at touchdown ${unbrokenAtTouchdown} of ${touchdowns}, their retirement then ${q3(retireAtTouchdown)}`);
+    lines.push(`## Cost, ruling 3 (this M1, Node, under the probes' load): a body's step on the game's water ${fmt(bodyMs.steps ? (1000 * bodyMs.total) / bodyMs.steps : Number.NaN, 1)} µs mean over ${bodyMs.steps} body steps; the contact's update p50 ${fmt(quantile(contactMs, 0.5), 2)} ms`);
     appendFileSync(log, lines.join('\n') + '\n');
     if (traceBodies) writeFileSync(`${log}.bodies`, bodyTrace.join('\n') + '\n');
   }, 14_400_000);

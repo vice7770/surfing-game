@@ -111,6 +111,19 @@ const PLATE_ADDED_MASS = Math.PI / 8;
  * board's (as the plate): with the rigid rider on it the hull law stands as calibrated.
  */
 const RADIATED_WAVENUMBER = (2 * Math.PI / 1.5) ** 2 / 9.81;
+/**
+ * The water's own acceleration on the added mass (ruling 3, the water-physics advisor's advisor-ruling-3.md §2; the Wave
+ * Pool's straight Barrel only, `WaterSample.wallWater`). In a fluid that accelerates, a body also feels that acceleration
+ * acting on its added mass, not only on the mass it displaces (Maxey & Riley 1983; Auton, Hunt & Prud'homme 1988): the
+ * hull law left the water's acceleration to the hydrostatic slope force, which covers only the displaced mass, and a flat
+ * board's added mass (100–180 kg) dominates its own 2.54 kg. So each wetted patch in the case's wall water takes its added
+ * mass times the water's acceleration along the surface's normal ν, m_a (Du/Dt·ν) ν, and a submerged plate's stations the
+ * same on their other side along the board's normal. Du/Dt is the change of the water sampled along the patch's path,
+ * smoothed over `smoothing` s (about three 1/60 s steps: the sea and the case change at steps) and capped at `cap` m/s²
+ * (5 g, just above the 4.7 g computed in overturning faces, Peregrine, Cokelet & McIver 1980). Provisional. Only in the
+ * wall water: anywhere else it would change the hull law riders are tuned on, the owner's call (not made).
+ */
+const WATER_INERTIA = { smoothing: 3 / 60, cap: 5 * 9.81 } as const;
 /** A submerged plate lies under a plain surface: one whose normal is within 45° of straight up. */
 const PLATE_SURFACE_NORMAL = Math.SQRT1_2;
 /**
@@ -316,6 +329,19 @@ export class BoardBody implements BoardContactBody {
   /** This substep: each station's plate added mass along the board's normal, and its arm (world). */
   private readonly stationHeave: Float64Array;
   private readonly stationArm: Float64Array;
+  /**
+   * The water's acceleration on the added mass (`WATER_INERTIA`), by patch: whether it was in the wall water at its last
+   * sample, the water's velocity there, its smoothed acceleration, and this substep's impulse along ν (N·s); and whether any
+   * patch is in the wall water this substep, and the plate's share of the impulse (force and torque).
+   */
+  private readonly wallSeen: Uint8Array;
+  private readonly wallFlow: Float64Array;
+  private readonly wallAccel: Float64Array;
+  private readonly wallPush: Float64Array;
+  private wallAny = false;
+  /** This substep's length, s (the plate's share of `WATER_INERTIA`'s impulse). */
+  private substepSpan = 0;
+  private readonly plateWall = new Float64Array(6);
 
   private readonly pressureScale: Float64Array;
   private readonly stripShares: Float64Array;
@@ -415,6 +441,10 @@ export class BoardBody implements BoardContactBody {
       this.radiationPerArea[k] = WATER.density * 2 * RADIATION_DAMPING * Math.sqrt((WATER.gravity * Math.PI * b) / 8);
     });
     this.addedMass = new Float64Array(count);
+    this.wallSeen = new Uint8Array(count);
+    this.wallFlow = new Float64Array(3 * count);
+    this.wallAccel = new Float64Array(3 * count);
+    this.wallPush = new Float64Array(count);
     this.plateShare = new Float64Array(count);
     // The stations, tail to nose: each one's patches, its beam and its centre at mid-thickness, area-weighted.
     const stationZs = [...beam.keys()].sort((a, b) => a - b);
@@ -866,6 +896,7 @@ export class BoardBody implements BoardContactBody {
   }
 
   private substep(h: number, water: SurfWater): void {
+    this.substepSpan = h;
     this.updateRotation();
     const { count, arm, normal, point, samples, centerOfMass: c, velocity: v, angularVelocity: w } = this;
     let wetMin = Infinity;
@@ -911,6 +942,7 @@ export class BoardBody implements BoardContactBody {
     let waterTx = 0;
     let waterTy = 0;
     let waterTz = 0;
+    this.wallAny = false;
     for (let k = 0; k < count; k += 1) {
       const rx = arm[k * 3];
       const ry = arm[k * 3 + 1];
@@ -1092,10 +1124,38 @@ export class BoardBody implements BoardContactBody {
         a[5] = cz;
         for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += inertia * a[i] * a[j];
       }
+      // Ruling 3 (`WATER_INERTIA`): in the case's wall water, the water's own acceleration on the added mass, along ν.
+      if (sample.wallWater) {
+        const push = this.wallInertia(k, sample, h, ux, uy, uz) * addedMass * h;
+        this.wallPush[k] = push;
+        waterX += push * ux;
+        waterY += push * uy;
+        waterZ += push * uz;
+        waterTx += push * cx;
+        waterTy += push * cy;
+        waterTz += push * cz;
+        this.reaction[k * 3] += push * ux;
+        this.reaction[k * 3 + 1] += push * uy;
+        this.reaction[k * 3 + 2] += push * uz;
+      } else if (this.wallSeen[k] !== 0) {
+        this.wallSeen[k] = 0;
+        this.wallPush[k] = 0;
+        this.wallAccel[3 * k] = 0;
+        this.wallAccel[3 * k + 1] = 0;
+        this.wallAccel[3 * k + 2] = 0;
+      }
     }
     this.submergedVolume = submerged;
     this.wettedArea = wetted;
     this.plateInertia(system);
+    if (this.wallAny) {
+      waterX += this.plateWall[0];
+      waterY += this.plateWall[1];
+      waterZ += this.plateWall[2];
+      waterTx += this.plateWall[3];
+      waterTy += this.plateWall[4];
+      waterTz += this.plateWall[5];
+    }
     this.applyFoils(h, water, system);
     const ft = this.foilTotals;
 
@@ -1196,6 +1256,14 @@ export class BoardBody implements BoardContactBody {
       this.work.pressure += pressure * mean;
       this.work.radiation += radiated * surfaceMean;
       this.work.addedMass += inertia * surfaceMean;
+      if (this.wallAny && this.samples[k].wallWater) {
+        // Ruling 3's push (`WATER_INERTIA`), already in the solve and the water's reaction: its ledgers.
+        const push = this.wallPush[k];
+        this.work.addedMass += push * surfaceMean;
+        this.forces.addedMass.x += push * ux;
+        this.forces.addedMass.y += push * uy;
+        this.forces.addedMass.z += push * uz;
+      }
       this.forces.pressure.x += pressure * nx;
       this.forces.pressure.y += pressure * ny;
       this.forces.pressure.z += pressure * nz;
@@ -1429,6 +1497,7 @@ export class BoardBody implements BoardContactBody {
   private plateInertia(system: Float64Array): void {
     const { stationPatches, stationBeam, stationLocal, stationHeave, stationArm, rotation: r } = this;
     stationHeave.fill(0);
+    if (this.wallAny) this.plateWall.fill(0);
     if (!this.plate) return;
     // The board's normal (its y axis), world.
     const nx = r[1]; const ny = r[4]; const nz = r[7];
@@ -1455,7 +1524,44 @@ export class BoardBody implements BoardContactBody {
       a[0] = nx; a[1] = ny; a[2] = nz;
       a[3] = ry * nz - rz * ny; a[4] = rz * nx - rx * nz; a[5] = rx * ny - ry * nx;
       for (let p = 0; p < 6; p += 1) for (let q = 0; q < 6; q += 1) system[p * 6 + q] += heave * a[p] * a[q];
+      if (this.wallAny) {
+        // Ruling 3 (`WATER_INERTIA`): the other side's added mass takes the wall water's acceleration along the board's
+        // normal, from the station's patches in it (their smoothed accelerations, by their share of the station).
+        let along = 0;
+        for (const k of list) if (this.samples[k].wallWater) along += this.wallAccel[3 * k] * nx + this.wallAccel[3 * k + 1] * ny + this.wallAccel[3 * k + 2] * nz;
+        const push = (heave * along * this.substepSpan) / list.length;
+        for (let d = 0; d < 6; d += 1) this.plateWall[d] += push * a[d];
+      }
     }
+  }
+
+  /**
+   * Ruling 3 (`WATER_INERTIA`): patch k's wall water's smoothed acceleration along the surface's normal (ux, uy, uz), m/s²,
+   * from its sample this substep of length `h`; its state kept for the next.
+   */
+  private wallInertia(k: number, sample: WaterSample, h: number, ux: number, uy: number, uz: number): number {
+    const o = 3 * k;
+    const acc = this.wallAccel;
+    const flow = this.wallFlow;
+    if (this.wallSeen[k] !== 0 && h > 0) {
+      const share = Math.min(1, h / WATER_INERTIA.smoothing);
+      acc[o] += ((sample.flowX - flow[o]) / h - acc[o]) * share;
+      acc[o + 1] += ((sample.flowY - flow[o + 1]) / h - acc[o + 1]) * share;
+      acc[o + 2] += ((sample.flowZ - flow[o + 2]) / h - acc[o + 2]) * share;
+      const size = Math.sqrt(acc[o] * acc[o] + acc[o + 1] * acc[o + 1] + acc[o + 2] * acc[o + 2]);
+      if (size > WATER_INERTIA.cap) {
+        const scale = WATER_INERTIA.cap / size;
+        acc[o] *= scale;
+        acc[o + 1] *= scale;
+        acc[o + 2] *= scale;
+      }
+    }
+    this.wallSeen[k] = 1;
+    this.wallAny = true;
+    flow[o] = sample.flowX;
+    flow[o + 1] = sample.flowY;
+    flow[o + 2] = sample.flowZ;
+    return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
   }
 
   /** The submerged plate's inertia impulses this substep: the ledgers, and the water's reaction, spread over each station. */

@@ -86,6 +86,16 @@ export interface WaterSample {
   covered?: boolean;
   clearance?: number;
   tube?: TubeState;
+  /**
+   * Ruling 3 at the Wave Pool's straight Barrel (`PhysicalSurfWaterOptions.sweptInertia`; absent elsewhere): the point is in
+   * the case's wall water, where a hull takes the water's own acceleration on its added mass (`BoardBody`).
+   */
+  wallWater?: true;
+  /**
+   * Ruling 3's rank 5 (`PhysicalSurfWaterOptions.sweptBuoy`; absent elsewhere): in the wall water past the slope clamp, the
+   * buoyancy acts along the sample's normal at this many times the support (`patchForce`), not along the clamped slope.
+   */
+  buoyancyNormal?: number;
 }
 
 export type { TubeState };

@@ -1,11 +1,17 @@
 import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
-import { ANCHOR_CONTINUITY, continueAnchor, FaceAnchor, smoothPlaces, smoothShifts, type TubeFace } from './faceAnchor';
+import { ANCHOR_CONTINUITY, continueAnchor, FaceAnchor, readNoise, smoothPlaces, smoothShifts, trackAnchor, type TroughWave, type TubeFace } from './faceAnchor';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
 import { pathPace } from './sliceClock';
 import { LOFT, collapseFade, endBlendLength, endWeight } from './sweptLoft';
+
+/**
+ * Ruling 3's smooth wall (`TubeFace.track`): the clock's rate the wall water's shape moves at is smoothed over this long, s
+ * (an exponential mean; *built so*, provisional): `CrashCurve.prepareAnchors`.
+ */
+export const WALL_CLOCK = 0.2;
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
 export interface CrashSlice {
@@ -156,6 +162,8 @@ export class CrashCurve {
   private faceZ = new Float64Array(0);
   private faceRayX = new Float64Array(0);
   private faceRayZ = new Float64Array(0);
+  /** Ruling 3's tracker: per point of a run, the solver's face's slope at its read's crossing, then smoothed along σ. */
+  private faceSlope = new Float64Array(0);
   private readonly faceScratch = new Float64Array(3);
   private readonly faceRay = { x: 0, z: 0 };
 
@@ -388,22 +396,26 @@ export class CrashCurve {
    * `anchor`). Into `out[start, end)` each point's shift for the crash's own slices, under the drawing's hold: the kept
    * shift moved by its case's crest-over-crossing at that hold against the contact's (or, without `continuity`, the
    * drawing's own smoothed shifts, as `prepareShifts`). And for the wall's water, each point's drawn crest's speed along its
-   * ray (its crest's pace and its shift's rate) and its clock's rate since its last step (`wallSpeed`, `tauRate`).
+   * ray (its crest's pace and its shift's rate) and its clock's rate since its last step (`wallSpeed`, `tauRate`). `wave`:
+   * the sea's period and still depth, for ruling 3's read of the solver's trough (`TubeFace.track`).
    */
   prepareAnchors(
     points: FrontPoint[], start: number, end: number, heightAt: (x: number, z: number) => number, rays: CrestRayPlan | undefined,
-    time: number, out: Float64Array,
+    time: number, out: Float64Array, wave?: TroughWave,
   ): void {
     const anchor = this.faceAnchor!;
     const continuity = this.face!.continuity;
     // The step 7 follow-up's cap (`TubeFace.cap`): 0.45 C rather than 0.3 C.
     const crestShare = this.face!.cap ? ANCHOR_CONTINUITY.crestWide : ANCHOR_CONTINUITY.crest;
+    // Ruling 3's tracker (`TubeFace.track`): the solver's trough within half a wavelength ahead, W tracked, its rate the wall's.
+    const track = this.face!.track;
     if (!continuity) this.prepareShifts(points, start, end, heightAt, rays, out);
     const n = end - start;
     if (this.faceRaw.length < 2 * n) {
       this.faceRaw = new Float64Array(4 * n);
       this.faceSigma = new Float64Array(2 * n);
     }
+    if (track && this.faceSlope.length < 2 * n) this.faceSlope = new Float64Array(4 * n);
     if (this.faceCase.length < n) {
       this.faceCase = new Float64Array(2 * n);
       this.faceX = new Float64Array(2 * n);
@@ -420,24 +432,42 @@ export class CrashCurve {
       this.faceZ[i] = p.z;
       this.faceRayX[i] = ray.x;
       this.faceRayZ[i] = ray.z;
-      this.faceRaw[i] = anchor.shift(p.footHeight, p.footDepth, p.tau, 'contact', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch);
+      this.faceRaw[i] = anchor.shift(p.footHeight, p.footDepth, p.tau, 'contact', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch, track ? wave : undefined);
       // The case's crest over its crossing at the contact's hold (NaN without a crossing).
       this.faceCase[i] = this.faceScratch[1] - this.faceScratch[0];
+      if (track) this.faceSlope[i] = this.faceRaw[i] === this.faceRaw[i] ? anchor.slope : Number.NaN;
     }
     const kept = this.faceRaw.subarray(n, 2 * n);
-    // With continuity, the places the shifts put the case's crest are smoothed (`smoothPlaces`), as before without.
-    if (continuity) smoothPlaces(this.faceSigma, this.faceX, this.faceZ, this.faceRaw, this.faceRayX, this.faceRayZ, n, kept);
-    else smoothShifts(this.faceSigma, this.faceRaw, n, kept);
+    if (track) {
+      // Ruling 3's tracker: the anchors' places (the solver's crossing matched to the case's: each raw shift less its case's
+      // crest over its crossing) smoothed along σ as the shifts were, each point's own case part added back for W's reading
+      // (`trackAnchor`), and the read's slope there for its noise (`readNoise`).
+      for (let i = 0; i < n; i += 1) this.faceRaw[i] -= this.faceCase[i];
+      smoothPlaces(this.faceSigma, this.faceX, this.faceZ, this.faceRaw, this.faceRayX, this.faceRayZ, n, kept);
+      smoothShifts(this.faceSigma, this.faceSlope, n, this.faceSlope.subarray(n, 2 * n));
+    } else if (continuity) {
+      // With continuity, the places the shifts put the case's crest are smoothed (`smoothPlaces`), as before without.
+      smoothPlaces(this.faceSigma, this.faceX, this.faceZ, this.faceRaw, this.faceRayX, this.faceRayZ, n, kept);
+    } else smoothShifts(this.faceSigma, this.faceRaw, n, kept);
     for (let k = start; k < end; k += 1) {
       const p = points[k];
       const i = k - start;
       // The wave's advance along the point's ray: its crest's pace along its column, projected on the ray.
       const celerity = pathPace(p.crestSpeed, p.crestDepth, p.height, p.dirZ) * Math.max(0, this.faceRayZ[i]);
       const dt = p.anchorTime === undefined ? 0 : time - p.anchorTime;
-      p.tauRate = p.anchorTau !== undefined && dt > 0 ? (p.tau - p.anchorTau) / dt : 1;
+      const tauRate = p.anchorTau !== undefined && dt > 0 ? (p.tau - p.anchorTau) / dt : 1;
+      // Ruling 3 (`TubeFace.track`; *built so*): the wall water's shape moves at the clock's rate smoothed over
+      // `WALL_CLOCK` s. Before the throw the clock follows −D/C_p within 0.5–1.5× real time and sits on either bound on 5 %
+      // of steps each (pool 1.5 m), so its rate step to step swung the case's surface's own speed by half of itself: over
+      // 12 m/s on 0.6 % of the wall's vertices at the lip, and the wall water 12 m/s a step at p99.
+      p.tauRate = track && p.tauRate !== undefined && dt > 0 ? p.tauRate + (tauRate - p.tauRate) * Math.min(1, dt / WALL_CLOCK) : tauRate;
       p.anchorTau = p.tau;
-      const shift = continueAnchor(p, kept[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], continuity, crestShare, this.face!.cap);
-      // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray.
+      const shift = track
+        ? trackAnchor(p, kept[i] + this.faceCase[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], crestShare, readNoise(this.faceSlope[n + i]))
+        : continueAnchor(p, kept[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], continuity, crestShare, this.face!.cap);
+      // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray. Under the
+      // tracker (ruling 3, §1) its rate is the tracker's estimate (`trackAnchor`), not W's change in one step, which carried
+      // the read's noise into the wall water: 0.12 m a step of jitter is a 7.2 m/s change in that rate.
       p.wallSpeed = p.anchorRate ?? celerity;
       p.anchorRayX = this.faceRayX[i];
       p.anchorRayZ = this.faceRayZ[i];

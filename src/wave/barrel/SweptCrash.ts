@@ -5,7 +5,7 @@ import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import type { CrestRayPlan } from './crestRays';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
-import type { TubeFace } from './faceAnchor';
+import type { TroughWave, TubeFace } from './faceAnchor';
 import type { ProfileLibrary } from './ProfileLibrary';
 import { CarrierSupport, geometricPaceActive } from './carrierSupport';
 
@@ -185,8 +185,22 @@ export class SweptCrash {
   private readonly anchoring: boolean;
   /** The step 7 follow-up's guard (`TubeFace.guard`): a point retired unbroken by its touchdown returns its jet. */
   private readonly guard: boolean;
+  /** Ruling 3's read of the solver's trough (`TubeFace.track`): the sea's period and still depth, made once per sea. */
+  private troughOf?: { sea: CrashSea; wave: TroughWave };
+  private readonly track: boolean;
+
+  /** Ruling 3's (`TubeFace.track`): the sea's peak period, and its still depth at (x, z) from the solver's bed, m. */
+  private troughWave(sea: CrashSea): TroughWave | undefined {
+    if (!this.track) return undefined;
+    if (this.troughOf?.sea !== sea) {
+      const { solver } = sea;
+      this.troughOf = { sea, wave: { period: sea.period, depthAt: (x, z) => sea.stillLevel - solver.sampleCentered(solver.bed, x, z) } };
+    }
+    return this.troughOf.wave;
+  }
 
   constructor(library: ProfileLibrary, slope: number, face?: TubeFace) {
+    this.track = face?.track === true;
     this.geometry = new CrashCurve(library, slope, face);
     this.anchoring = face !== undefined && face.anchor && (face.continuity || face.wallFlow) && library.options.geometry !== 'bounded-C';
     this.guard = face?.guard === true && library.options.geometry !== 'bounded-C';
@@ -293,7 +307,7 @@ export class SweptCrash {
     // Each live point as drawn, and its footprint; under the face ruling its anchor's shift first, along its run.
     for (let r = 0; r < runs.length; r += 2) {
       // Step 7: each point's anchor kept step to step on the point (`TubeFace.continuity`, `.wallFlow`), else as before.
-      if (this.anchoring) this.geometry.prepareAnchors(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], solver.time, this.shifts);
+      if (this.anchoring) this.geometry.prepareAnchors(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], solver.time, this.shifts, this.troughWave(sea));
       else this.geometry.prepareShifts(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], this.shifts);
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         const p = points[k];

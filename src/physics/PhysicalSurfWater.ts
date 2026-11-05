@@ -157,6 +157,27 @@ export interface PhysicalSurfWaterOptions {
    */
   sweptNearest?: boolean;
   /**
+   * With `sweptWall`: ruling 3's smooth wall (`TubeFace.track`; the advisor's advisor-ruling-3.md §1). The wall water blends
+   * into the solver's flow across the solver's surface: its share is the smoothstep of the wall's height over the solver's
+   * surface in that column (the case's surface over the solver's) over `WALL_WATER.blend`, so a body crossing between the
+   * two waters (where the case's surface meets the solver's, about the anchor's height) sees one continuous flow. Without
+   * it, the wall water at full weight wherever the case's surface stands over the solver's, as before.
+   */
+  sweptBlend?: boolean;
+  /**
+   * With `sweptWall`: ruling 3's added-mass inertia (`TubeFace.inertia`; §2). Samples in the case's wall water are marked
+   * (`WaterSample.wallWater`), and a hull there takes the water's own acceleration on its added mass (`BoardBody`). Without
+   * it, no sample is marked, as before.
+   */
+  sweptInertia?: boolean;
+  /**
+   * With `sweptWall`: ruling 3's rank 5 (`TubeFace.buoy`; §1). In the wall water, where the surface's normal is steeper than
+   * the slope clamp (`MIN_NORMAL_Y`) or overhangs, the buoyancy acts along that normal at the clamp's size,
+   * ρgV/`MIN_NORMAL_Y` (`WaterSample.buoyancyNormal`), not along the clamped slope's fixed 60° up the face. Without it, the
+   * clamped slope, as before.
+   */
+  sweptBuoy?: boolean;
+  /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
@@ -380,6 +401,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private sampleTime = 0;
   /** This sample is in the case's wall water (`sweptWall`): set by `unionContact`. */
   private inWall = false;
+  /** The solver's surface at this sample (`unionContact`), m: the wall water's blend (`sweptBlend`) reads it. */
+  private plainY = Number.NaN;
 
   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
     super(solver, options.nodeSpacing ?? 1, options);
@@ -398,6 +421,9 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept && simulation.tubeFace?.union ? { sweptUnion: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow ? { sweptWall: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.contact ? { sweptNearest: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.track ? { sweptBlend: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.inertia ? { sweptInertia: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.buoy ? { sweptBuoy: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
@@ -424,6 +450,9 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const { solver } = this;
     const { swept } = this.options;
     if (swept) this.clearLayers(out);
+    // Ruling 3's marks (`sweptInertia`, `sweptBuoy`): a reused sample leaves its last point's behind.
+    if (this.options.sweptInertia) out.wallWater = undefined;
+    if (this.options.sweptBuoy) out.buoyancyNormal = undefined;
     // A reused sample leaves the lens of its last point behind: only a lens here sets it again.
     if (this.options.roller) {
       out.lensShare = undefined;
@@ -521,6 +550,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w, this.options.froth !== 'old');
     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
     else if (this.inWall) this.wallFlow(out, y);
+    if (this.options.sweptInertia && this.inWall) out.wallWater = true;
+    if (this.options.sweptBuoy && this.inWall && out.normalY < MIN_NORMAL_Y) out.buoyancyNormal = 1 / MIN_NORMAL_Y;
     return out;
   }
 
@@ -672,6 +703,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private unionContact(y: number, out: WaterSample): void {
     const { hit } = this;
     const plainY = out.surfaceY;
+    this.plainY = plainY;
     const slopeX = out.slopeX;
     const slopeZ = out.slopeZ;
     const normalX = out.normalX;
@@ -798,7 +830,18 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private wallFlow(out: WaterSample, y: number): void {
     const h = this.hit;
     if (!(h.wallWeight > 0) || !(h.wallSpeed === h.wallSpeed) || !(h.wallAlong === h.wallAlong)) return;
-    wallWaterFlow(out, y, h);
+    if (!this.options.sweptBlend) {
+      wallWaterFlow(out, y, h);
+      return;
+    }
+    // Ruling 3 (`sweptBlend`): by the wall's height over the solver's surface in this column, and by how far the case's
+    // surface faces the wave's own plane (the ray and up).
+    const u = Math.min(1, Math.max(0, (h.surfaceY - this.plainY) / WALL_WATER.blend));
+    const na = h.normalX * -h.tangentZ + h.normalZ * h.tangentX;
+    const facing = Math.sqrt(na * na + h.normalY * h.normalY);
+    const [least, whole] = WALL_WATER.facing;
+    const f = Math.min(1, Math.max(0, (facing - least) / (whole - least)));
+    wallWaterFlow(out, y, h, u * u * (3 - 2 * u) * f * f * (3 - 2 * f));
   }
 
   /** The four cells and bilinear weights `sampleCentered` would use at (x, z). */
@@ -912,13 +955,23 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
  *   met at a finite climb: its normal's vertical share is held at that face's, and the climb at most C either way (the
  *   water at a wave face moves no faster than the wave; inferred).
  * The whole is weighed by the slices' weight; along the crest the solver's flow is kept.
+ * - `blend`, m (ruling 3, `sweptBlend`; *built so*): the wall water's share is the smoothstep of the wall's height over the
+ *   solver's surface over this band (`share`). Where the case's surface meets the solver's (about the anchor's height) the
+ *   wall water was 2.9–6.0 m/s off the solver's flow at p90 (the advisor's traces); over 0.25 m, a body moving 1–3 m/s across
+ *   it at 60 Hz meets about 1 m/s a step at most (inferred). Provisional.
+ * - `facing` (ruling 3, `sweptBlend`; *built so*): the wall water is a wave face's flow in the wave's own plane (the ray and
+ *   up), so its share is also the smoothstep of the case's surface's normal's part in that plane, from `facing[0]` (60° out
+ *   of it) to `facing[1]` (37°). Where the nearest surface faces along the crest (a strip's side, at a front's end or a fold),
+ *   its part in the plane is short and its direction there turned with every step: the largest wall-water steps measured
+ *   (10–19 m/s, pool 1.5 m) were at normals 60–80° out of the plane, the climb's bound swinging the flow from −C to +C.
  */
-export const WALL_WATER = { steepest: 0.2, fade: [0.3, 0.6] } as const;
+export const WALL_WATER = { steepest: 0.2, fade: [0.3, 0.6], blend: 0.25, facing: [0.5, 0.8] } as const;
 
 export function wallWaterFlow(
   out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, y: number,
   wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallAlong' | 'wallUp' | 'wallLow' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>
     & Partial<Pick<ContactHit, 'normalDepth'>>,
+  share = 1,
 ): void {
   // The ray: the front's normal, square to its tangent.
   const rx = -wall.tangentZ;
@@ -951,7 +1004,7 @@ export function wallWaterFlow(
     flowAlong = normal * na - climb * side * ny;
     flowUp = normal * ny + climb * side * na;
   }
-  const w = Math.min(1, Math.max(0, wall.wallWeight));
+  const w = share === 1 ? Math.min(1, Math.max(0, wall.wallWeight)) : Math.min(1, Math.max(0, wall.wallWeight)) * share;
   const change = w * (flowAlong - along);
   out.flowX += change * rx;
   out.flowZ += change * rz;
