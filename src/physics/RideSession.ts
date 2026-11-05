@@ -109,6 +109,12 @@ export interface RideSessionOptions {
    * before it.
    */
   snap?: 'off';
+  /**
+   * The body's own yaw (snap-body-yaw, 2026-11-05; `AttachedRiderOptions.bodyYaw`), opt-in: 'on' (the `?bodyYaw=on` dev
+   * switch) lets the board turn under the leaning body, the hips bringing it round after; by default the lean turns with
+   * the board, as before.
+   */
+  bodyYaw?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -190,6 +196,7 @@ export class RideSession {
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
+      ...(options.bodyYaw ? { bodyYaw: options.bodyYaw } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});

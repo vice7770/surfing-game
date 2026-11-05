@@ -441,6 +441,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...extensionSwitch(),
     // `?snap=off`: the riders' Snap input ignored, as before the snap stance, for A/Bs.
     ...snapSwitch(),
+    // `?bodyYaw=on`: the riders' bodies turning on their own over the board (snap-body-yaw), opt-in, to ride.
+    ...bodyYawSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -629,6 +631,15 @@ export function extensionSwitch(search?: string): { extension?: 'old' } {
  */
 export function snapSwitch(search?: string): { snap?: 'off' } {
   return devParam('snap', search)?.trim().toLowerCase() === 'off' ? { snap: 'off' } : {};
+}
+
+/**
+ * The `?bodyYaw=on` dev switch (`SurfZoneConfig.bodyYaw`, snap-body-yaw 2026-11-05, the owner's call (c)): every spot's
+ * rider turns its body on its own over the board, the board's yaw carrying the feet round and the hips the leaning body
+ * after it. Opt-in: by default the lean turns with the board, as before.
+ */
+export function bodyYawSwitch(search?: string): { bodyYaw?: 'on' } {
+  return devParam('bodyYaw', search)?.trim().toLowerCase() === 'on' ? { bodyYaw: 'on' } : {};
 }
 
 /**

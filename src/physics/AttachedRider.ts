@@ -687,6 +687,26 @@ const SNAP_DEPTH = 1;
 const SNAP_FACE = Math.sin((5 * Math.PI) / 180);
 const SNAP_RADIUS = 2.2;
 /**
+ * The body's own yaw (snap-body-yaw, the owner's call (c) of 2026-11-04; docs/research/snap-body-yaw-2026-11-05/README.md),
+ * opt-in (`bodyYaw: 'on'`). Standing on a planing board, the board's yaw turns the stance point, not the body's lean: the feet turn on the deck under
+ * a body whose lean keeps its place in the world, and the hips turn the body after the board. Carried rigidly, a board
+ * pivoting under a leaning rider had to swing the whole body round the stance with it (75 kg at 0.6 m, about 28 kg m²
+ * against the board's 1–2), so it could not pivot out from under the lean of a bottom turn (Snap's Round 2, R2.3).
+ * - BODY_YAW_RANGE, rad: how far the pelvis turns over planted feet: the hips' internal and external rotation, 30–45°
+ *   each (AAOS norms; Roach & Miles 1991), with the flexed knees' tibial rotation. Past it the body is dragged round.
+ * - HIP_TORQUE, N m: the hips' rotators with both legs, about 40–60 N m each (isometric external and internal rotation
+ *   in adults), and no more than the feet's grip gives (FOOT_FRICTION over the stance's half span).
+ * - BODY_YAW_FREQUENCY, rad/s: the hips bring the body round after the board critically damped at this, as fast as the
+ *   balance's own lean-in (STANDING_BALANCE_TIME 0.15 s).
+ * - BODY_YAW_INERTIA, kg m²: the standing body's own moment about its long axis, arms in (1.0–1.5; Zatsiorsky 2002).
+ *   The lean's swing round the stance point (the mass at its lever) adds to it.
+ */
+const BODY_YAW_RANGE = (45 * Math.PI) / 180;
+const HIP_TORQUE = 100;
+const BODY_YAW_FREQUENCY = 1 / 0.15;
+const BODY_YAW_INERTIA = 1.2;
+const BODY_YAW_GRIP_RADIUS = 0.25;
+/**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
  * and, under a tube's curl, a deeper manual tuck. Compress shortens the leg by up
  * to CROUCH_DEPTH, m, and full manual crouch by CROUCH_SHARE of it (the pumping
@@ -850,6 +870,13 @@ export interface AttachedRiderOptions {
    * catch the body; 'old' at the legs' full pace, as before compress-exit (the `?extension=old` dev switch, for A/Bs).
    */
   extension?: 'old';
+  /**
+   * The body's own yaw (`BODY_YAW_RANGE`, the owner's call (c), 2026-11-04), opt-in: 'on' lets the board's yaw carry the
+   * feet round while the hips turn the leaning body after it (the `?bodyYaw=on` dev switch, to ride). By default the lean
+   * is carried round with the board, as before snap-body-yaw: on the headless probes the opt-in did not keep the owner's
+   * two moves on (docs/research/snap-body-yaw-2026-11-05/README.md).
+   */
+  bodyYaw?: 'on';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1183,6 +1210,7 @@ export class AttachedRider {
   private readonly scratch = new Vector3();
   private readonly scratch2 = new Vector3();
   private readonly localScratch = new Vector3();
+  private readonly scratch3 = new Vector3();
   private readonly spin = new Quaternion();
   private readonly heading = new Quaternion();
   private flex = 0;
@@ -1302,6 +1330,20 @@ export class AttachedRider {
   protected swingTorque = 0;
   /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
   private twistTorque = 0;
+  /** The body's own yaw (BODY_YAW_RANGE): only with `bodyYaw: 'on'`. */
+  private readonly yaws: boolean;
+  /** Standing, the body's own heading (rad from +z toward +x) and its rate, rad/s; the board's while not banking. */
+  readonly bodyYaw = { heading: 0, rate: 0 };
+  /** The hips' torque turning the body after the board, N m about the vertical; the board takes its reaction through the feet. */
+  private hipTorque = 0;
+  /** This substep the board's yaw carries the stance point but not the lean (within BODY_YAW_RANGE); otherwise, rigidly. */
+  private yawFree = false;
+  /** The body turns on its own this substep (standing, banking): its frame is on its own heading. */
+  private yawOwn = false;
+  /** The lean's level offset from the stance point: the centre of mass's (`arm`'s) and the carried point's (`carried`'s). */
+  private readonly leanA = new Vector3();
+  private readonly leanB = new Vector3();
+  private readonly bodyHeading = new Quaternion();
   /** The compressed turn's assist on the body, N (world): COMPRESS_PULL. */
   private readonly assistForce = new Vector3();
   /** The carve's carry on the body, N (world): CARVE_CARRY. */
@@ -1316,6 +1358,7 @@ export class AttachedRider {
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
     this.catches = options.extension !== 'old';
+    this.yaws = options.bodyYaw === 'on';
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -1718,7 +1761,7 @@ export class AttachedRider {
   private swung(index: number, out: Vector3, share: number): Vector3 {
     if (index === 0 || this.phase !== 'standing' || this.swing.angle === 0) return out;
     const pelvis = this.partPosition(0, this.swingPivot);
-    this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.heading), share * this.swing.angle);
+    this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.yawOwn ? this.bodyHeading : this.heading), share * this.swing.angle);
     return out.sub(pelvis).applyQuaternion(this.swingTurn).add(pelvis);
   }
 
@@ -1946,6 +1989,7 @@ export class AttachedRider {
     this.boardVelocity.copy(board.velocity);
     this.boardSpin.copy(board.angularVelocity);
     this.arm.subVectors(this.position, board.centerOfMass);
+    this.bodyYawStep(h, board);
     this.frame(board);
     // Back from the air, the knees take up the approach speed along the body's up (standing, the leg does).
     if (!this.inContact && !this.upright) {
@@ -1970,9 +2014,16 @@ export class AttachedRider {
       this.carried.addScaledVector(this.up, off.dot(this.up));
       if (this.banking) this.carried.addScaledVector(this.across, off.dot(this.across));
     }
+    if (this.yawFree) {
+      // The lean's level offsets from the stance point, which the board's yaw no longer carries round (BODY_YAW_RANGE).
+      this.leanA.subVectors(this.position, this.baseWorld).setY(0);
+      this.leanB.copy(this.carried).add(board.centerOfMass).sub(this.baseWorld).setY(0);
+    }
     // Drive: keeping the body's bank as the board rolls and pitches under the feet, the knees' flex, and a
     // bounded correction toward the posture.
     this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
+    // The body's own yaw turns the lean round the stance point.
+    if (this.yawFree) this.drive.add(this.scratch.set(this.bodyYaw.rate * this.leanB.z, 0, -this.bodyYaw.rate * this.leanB.x));
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
     this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x + this.armsGiveRate) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
@@ -2007,6 +2058,62 @@ export class AttachedRider {
     }
   }
 
+  /**
+   * The body's own yaw (BODY_YAW_RANGE): standing banked, the hips turn the body after the board's heading, critically
+   * damped (BODY_YAW_FREQUENCY) within their torque and the feet's grip, its inertia its own and its lean's round the
+   * stance point. At the range's end, turning further out, the body is carried round rigidly with the board this substep.
+   * Otherwise (and without `bodyYaw: 'on'`) it keeps the board's heading.
+   */
+  private bodyYawStep(h: number, board: BoardBody): void {
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+    const heading = Math.atan2(forward.x, forward.z);
+    const was = this.yawOwn;
+    this.yawOwn = this.yaws && this.banking && this.attached;
+    this.yawFree = false;
+    this.hipTorque = 0;
+    if (!this.yawOwn || !was) {
+      // Until it turns on its own, and as it starts to, the body keeps the board's heading.
+      this.bodyYaw.heading = heading;
+      this.bodyYaw.rate = board.angularVelocity.y;
+      if (!this.yawOwn) return;
+    }
+    let off = this.bodyYaw.heading - heading;
+    off -= 2 * Math.PI * Math.round(off / (2 * Math.PI));
+    const lean = this.scratch2.subVectors(this.position, this.baseWorld).setY(0).lengthSq();
+    const inertia = BODY_YAW_INERTIA + this.mass * lean;
+    const most = Math.min(HIP_TORQUE, FOOT_FRICTION * this.legLoad * BODY_YAW_GRIP_RADIUS);
+    const relative = this.bodyYaw.rate - board.angularVelocity.y;
+    const wanted = inertia * (-BODY_YAW_FREQUENCY * BODY_YAW_FREQUENCY * off - 2 * BODY_YAW_FREQUENCY * relative);
+    const torque = Math.max(-most, Math.min(most, wanted));
+    if (Math.abs(off) >= BODY_YAW_RANGE && (relative + (h * torque) / inertia) * off >= 0) {
+      this.bodyYaw.heading = heading + Math.sign(off) * BODY_YAW_RANGE;
+      return;
+    }
+    this.hipTorque = torque;
+    this.bodyYaw.rate += (h * torque) / inertia;
+    this.yawFree = true;
+  }
+
+  /** The board's spin carrying the rider's carried point (`carried`): with the body's own yaw, its yaw turns the stance point, not the lean. */
+  private carriedBy(spin: V3, out: Vector3): Vector3 {
+    cross(spin, this.carried, out);
+    if (this.yawFree) {
+      out.x -= spin.y * this.leanB.z;
+      out.z += spin.y * this.leanB.x;
+    }
+    return out;
+  }
+
+  /** The board's spin at the rider's line of action (`arm`), as `carriedBy` carries it. */
+  private armBy(spin: V3, out: Vector3): Vector3 {
+    cross(spin, this.arm, out);
+    if (this.yawFree) {
+      out.x -= spin.y * this.leanA.z;
+      out.z += spin.y * this.leanA.x;
+    }
+    return out;
+  }
+
   /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
   private planingStep(board: BoardBody, water: SurfWater): void {
     const under = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
@@ -2031,16 +2138,18 @@ export class AttachedRider {
    */
   private prepareBank(h: number, board: BoardBody): void {
     this.legLength = Math.max(0.4, this.leg.height + this.leg.extension);
-    const carried = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive);
+    const carried = this.carriedBy(this.boardSpin, this.scratch2).add(this.boardVelocity).add(this.drive);
     this.bankSpeed = this.localScratch.subVectors(this.velocity, carried).dot(this.across);
     this.bank.rate = this.bankSpeed / this.legLength;
     // The board's roll about the heading, positive with the +x rail down: from the world's level (the ankle's) and
     // into the water, from its surface under the board (the rail's bite, RAIL_BITE).
-    const side = this.scratch.set(1, 0, 0).applyQuaternion(this.heading);
+    // With the body's own yaw, the roll the ankles hold is the board's in the body's lean, and the rail's bite its own.
+    const side = this.scratch.set(1, 0, 0).applyQuaternion(this.yawOwn ? this.bodyHeading : this.heading);
     const boardUp = this.scratch2.set(0, 1, 0).applyQuaternion(board.orientation);
     const roll = Math.atan2(boardUp.dot(side), boardUp.y);
-    const rail = roll - Math.atan2(this.waterUp.dot(side), this.waterUp.y);
-    this.rollAxis.set(0, 0, -1).applyQuaternion(this.heading);
+    if (this.yawOwn) side.set(1, 0, 0).applyQuaternion(this.heading);
+    const rail = (this.yawOwn ? Math.atan2(boardUp.dot(side), boardUp.y) : roll) - Math.atan2(this.waterUp.dot(side), this.waterUp.y);
+    this.rollAxis.set(0, 0, -1).applyQuaternion(this.yawOwn ? this.bodyHeading : this.heading);
     const rollRate = this.rollAxis.dot(this.boardSpin);
     // The bank asked for, no more than a turn at the board's speed through the water can hold, eased in.
     const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
@@ -2265,7 +2374,7 @@ export class AttachedRider {
     this.leg.height = this.localCenter.y - this.base.y;
     // Where the centre of mass is along the leg, and how fast it moves along it relative to where it is carried.
     this.leg.extension = this.scratch2.subVectors(this.position, this.target).dot(this.up);
-    const carried = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive);
+    const carried = this.carriedBy(this.boardSpin, this.scratch2).add(this.boardVelocity).add(this.drive);
     this.leg.rate = this.localScratch.subVectors(this.velocity, carried).dot(this.up);
     this.leg.force = this.legLoad - this.legStiffness * (this.leg.extension - this.leg.rest) - this.legDamping * this.leg.rate;
   }
@@ -2567,6 +2676,15 @@ export class AttachedRider {
     const bn = cross(b, n, this.scratch).toArray();
     const at = cross(a, t, this.localScratch).toArray();
     const bt = cross(b, t, this.scratch).toArray();
+    // The body's own yaw: the board's yaw carries the stance point (the arms less the lean's level offsets), not the lean.
+    const oa = this.leanA;
+    const ob = this.leanB;
+    if (this.yawFree) {
+      an[1] -= oa.z * n.x - oa.x * n.z;
+      bn[1] -= ob.z * n.x - ob.x * n.z;
+      at[1] -= oa.z * t.x - oa.x * t.z;
+      bt[1] -= ob.z * t.x - ob.x * t.z;
+    }
     for (let i = 0; i < 3; i += 1) {
       system[i * N + i] += m;
       // Columns and rows 6 and 7: m G_f^T up and m up^T G_v, and the same across.
@@ -2580,36 +2698,61 @@ export class AttachedRider {
       system[(3 + i) * N + 7] += m * at[i];
       system[7 * N + 3 + i] += m * bt[i];
     }
-    system[0 * N + 4] += m * b.z;
-    system[0 * N + 5] += -m * b.y;
-    system[1 * N + 3] += -m * b.z;
-    system[1 * N + 5] += m * b.x;
-    system[2 * N + 3] += m * b.y;
-    system[2 * N + 4] += -m * b.x;
-    system[3 * N + 1] += -m * a.z;
-    system[3 * N + 2] += m * a.y;
-    system[4 * N + 0] += m * a.z;
-    system[4 * N + 2] += -m * a.x;
-    system[5 * N + 0] += -m * a.y;
-    system[5 * N + 1] += m * a.x;
-    for (let i = 0; i < 3; i += 1) {
-      for (let j = 0; j < 3; j += 1) system[(3 + i) * N + 3 + j] += m * ((i === j ? ab : 0) - bv[i] * av[j]);
+    if (!this.yawFree) {
+      system[0 * N + 4] += m * b.z;
+      system[0 * N + 5] += -m * b.y;
+      system[1 * N + 3] += -m * b.z;
+      system[1 * N + 5] += m * b.x;
+      system[2 * N + 3] += m * b.y;
+      system[2 * N + 4] += -m * b.x;
+      system[3 * N + 1] += -m * a.z;
+      system[3 * N + 2] += m * a.y;
+      system[4 * N + 0] += m * a.z;
+      system[4 * N + 2] += -m * a.x;
+      system[5 * N + 0] += -m * a.y;
+      system[5 * N + 1] += m * a.x;
+      for (let i = 0; i < 3; i += 1) {
+        for (let j = 0; j < 3; j += 1) system[(3 + i) * N + 3 + j] += m * ((i === j ? ab : 0) - bv[i] * av[j]);
+      }
+    } else {
+      // The map from the board's spin to the rider's velocity, column by column (e_i x arm), the yaw's with the lean taken off.
+      const columns = (arm: Vector3, lean: Vector3) => [
+        [0, -arm.z, arm.y],
+        [arm.z - lean.z, 0, -(arm.x - lean.x)],
+        [-arm.y, arm.x, 0],
+      ];
+      const ca = columns(a, oa);
+      const cb = columns(b, ob);
+      for (let j = 0; j < 3; j += 1) {
+        for (let i = 0; i < 3; i += 1) {
+          system[i * N + 3 + j] += m * cb[j][i];
+          system[(3 + j) * N + i] += m * ca[j][i];
+        }
+      }
+      for (let i = 0; i < 3; i += 1) {
+        for (let j = 0; j < 3; j += 1) {
+          system[(3 + i) * N + 3 + j] += m * (ca[i][0] * cb[j][0] + ca[i][1] * cb[j][1] + ca[i][2] * cb[j][2]);
+        }
+      }
     }
     system[6 * N + 6] += m + h * this.legDamping + h * h * this.legStiffness;
     const length = this.legLength;
     // Landing, the bank's unknown is held at nothing: the body is carried upright.
     system[7 * N + 7] += this.banking ? m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length) : 1;
     // The momentum the constraint must supply: v_rider' = v' + w' x carried + drive + up s'' + across u'.
-    const mismatch = cross(this.boardSpin, b, this.scratch).add(this.boardVelocity).add(this.drive)
+    const mismatch = this.carriedBy(this.boardSpin, this.scratch).add(this.boardVelocity).add(this.drive)
       .addScaledVector(n, this.leg.rate).addScaledVector(t, this.bankSpeed).sub(this.velocity);
     const f = this.scratch2.copy(this.external).multiplyScalar(h).addScaledVector(mismatch, -m);
     rhs[0] += f.x;
     rhs[1] += f.y;
     rhs[2] += f.z;
     const torque = cross(a, f, this.scratch);
+    if (this.yawFree) torque.y -= oa.z * f.x - oa.x * f.z;
     rhs[3] += torque.x;
     rhs[4] += torque.y + h * this.handYaw;
     rhs[5] += torque.z;
+    // The hips turn the body after the board, which takes their reaction through the feet.
+    if (this.yawFree) rhs[4] -= h * this.hipTorque;
     // Backward Euler on the leg: its force now, less what the current rate adds to the stretch over the substep.
     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
     // The ankle pushes the body back across the leg by its torque over the leg's length.
@@ -2629,7 +2772,7 @@ export class AttachedRider {
     const spin = this.scratch.set(this.boardSpin.x + x[3], this.boardSpin.y + x[4], this.boardSpin.z + x[5]);
     this.legRateAfter = this.leg.rate + x[6];
     this.bankSpeedAfter = this.bankSpeed + x[7];
-    const velocity = cross(spin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive)
+    const velocity = this.carriedBy(spin, this.scratch2).add(this.boardVelocity).add(this.drive)
       .addScaledVector(this.up, this.legRateAfter).addScaledVector(this.across, this.bankSpeedAfter);
     velocity.x += x[0];
     velocity.y += x[1];
@@ -2647,6 +2790,7 @@ export class AttachedRider {
     rhs[1] -= j.y;
     rhs[2] -= j.z;
     const torque = cross(this.arm, j, this.scratch);
+    if (this.yawFree) torque.y -= this.leanA.z * j.x - this.leanA.x * j.z;
     rhs[3] -= torque.x;
     rhs[4] -= torque.y;
     rhs[5] -= torque.z;
@@ -2656,15 +2800,15 @@ export class AttachedRider {
   finish(h: number, board: BoardBody): void {
     const before = this.scratch.copy(this.velocity);
     // Power of the contact on the board is the same at any point of its line; use the centre of mass.
-    const boardBefore = cross(this.boardSpin, this.arm, this.localScratch).add(this.boardVelocity);
-    const boardAfter = cross(board.angularVelocity, this.arm, this.target).add(board.velocity);
+    const boardBefore = this.armBy(this.boardSpin, this.localScratch).add(this.boardVelocity);
+    const boardAfter = this.armBy(board.angularVelocity, this.target).add(board.velocity);
     const contact = this.impulse;
     if (this.feasible) {
-      this.velocity.copy(cross(board.angularVelocity, this.carried, this.scratch2).add(board.velocity).add(this.drive));
+      this.velocity.copy(this.carriedBy(board.angularVelocity, this.scratch2).add(board.velocity).add(this.drive));
       if (this.upright) this.velocity.addScaledVector(this.up, this.legRateAfter).addScaledVector(this.across, this.bankSpeedAfter);
       contact.copy(this.velocity).sub(before).multiplyScalar(this.mass).addScaledVector(this.external, -h);
       if (this.upright) {
-        this.angularVelocity.set(0, board.angularVelocity.y, 0).addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
+        this.angularVelocity.set(0, this.yawFree ? this.bodyYaw.rate : board.angularVelocity.y, 0).addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
       } else {
         this.angularImpulseWork(board);
         this.angularVelocity.copy(board.angularVelocity);
@@ -2697,6 +2841,10 @@ export class AttachedRider {
       // The twist's reaction, which turned the board through the feet.
       board.work.rider -= (h * this.twistTorque * this.up.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
     }
+    if (this.yawFree && this.feasible && this.hipTorque !== 0) {
+      // The hips' reaction, which turned the board through the feet.
+      board.work.rider -= (h * this.hipTorque * (this.boardSpin.y + board.angularVelocity.y)) / 2;
+    }
     if (this.upright && this.feasible && this.handYaw !== 0) {
       // The hand's moment turned the board through the feet.
       this.work.water += (h * this.handYaw * (this.boardSpin.y + board.angularVelocity.y)) / 2;
@@ -2712,6 +2860,11 @@ export class AttachedRider {
     this.up.set(0, 1, 0).applyQuaternion(board.orientation);
     this.stepLoad = Math.max(this.stepLoad, contact.dot(this.up) / (h * this.mass * WATER.gravity));
     this.position.addScaledVector(this.velocity, h);
+    if (this.yawOwn) {
+      // Dragged round at the range's end (or let go of), the body turns with the board.
+      if (!this.yawFree || !this.feasible) this.bodyYaw.rate = board.angularVelocity.y;
+      this.bodyYaw.heading += h * this.bodyYaw.rate;
+    }
     this.frame(board);
     if (this.inContact) {
       this.orientation.copy(this.upright ? this.bodyFrame : board.orientation);
@@ -2772,19 +2925,28 @@ export class AttachedRider {
     if (this.upright) {
       board.toWorld(this.base, this.baseWorld);
       const sway = this.localScratch.set(this.sway.x, 0, this.sway.z).applyQuaternion(board.orientation);
+      const yaw = this.yawOwn ? this.bodyHeading.setFromAxisAngle(Y, this.bodyYaw.heading) : this.heading;
       if (measure && this.banking) {
         const lean = this.scratch2.subVectors(this.position, this.baseWorld).sub(sway);
-        const side = this.scratch.copy(X).applyQuaternion(this.heading);
+        const side = this.scratch.copy(X).applyQuaternion(yaw);
         const angle = Math.atan2(lean.dot(side), lean.y) - Math.atan2(this.localCenter.x - this.base.x, this.localCenter.y - this.base.y);
         this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, angle));
       } else if (!this.banking) {
         this.bank.angle = 0;
         this.bank.rate = 0;
       }
-      this.bodyFrame.copy(this.heading).multiply(this.bankTurn.setFromAxisAngle(Z, -this.bank.angle));
+      this.bodyFrame.copy(yaw).multiply(this.bankTurn.setFromAxisAngle(Z, -this.bank.angle));
       this.up.copy(Y).applyQuaternion(this.bodyFrame);
       this.across.copy(X).applyQuaternion(this.bodyFrame);
-      this.target.copy(this.localCenter).sub(this.base).applyQuaternion(this.bodyFrame).add(this.baseWorld).add(sway);
+      this.target.copy(this.localCenter).sub(this.base);
+      if (this.yawOwn) {
+        // Turned on its own, the body leans in its frame, and its weight along the board stays along the board.
+        const along = this.scratch3.set(0, 0, this.target.z).applyQuaternion(this.heading);
+        this.target.setZ(0).applyQuaternion(this.bodyFrame).add(along);
+      } else {
+        this.target.applyQuaternion(this.bodyFrame);
+      }
+      this.target.add(this.baseWorld).add(sway);
     } else {
       this.bank.angle = 0;
       this.bank.rate = 0;

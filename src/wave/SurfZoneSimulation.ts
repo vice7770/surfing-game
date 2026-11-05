@@ -147,6 +147,12 @@ export interface SurfZoneConfig {
    */
   snap?: 'off';
   /**
+   * 'on': the riders' bodies turn on their own over the board (snap-body-yaw, 2026-11-05; `RideSessionOptions.bodyYaw`),
+   * opt-in; by default the lean turns with the board, as before. Every spot. The `?bodyYaw=on` dev switch, to ride;
+   * online rooms run the default.
+   */
+  bodyYaw?: 'on';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */
