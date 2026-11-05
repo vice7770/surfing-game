@@ -136,6 +136,12 @@ export interface AnchorTrack {
   anchorEase?: number;
   /** It has stood on the crest anchor (no face anchor yet). */
   anchorNone?: true;
+  /**
+   * Diagnostics (a probe's; nothing reads them in the game): the smoothed shift it was last given, m (NaN: none in reach),
+   * and what `continueAnchor` did with it.
+   */
+  anchorTarget?: number;
+  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free';
 }
 
 /** Counts of `continueAnchor`'s outcomes (a probe's; none in the game). */
@@ -158,7 +164,9 @@ export function continueAnchor(
   track.anchorX = x;
   track.anchorZ = z;
   const valid = previous !== undefined && previous === previous;
+  track.anchorTarget = smoothed;
   if (!capped) {
+    track.anchorLast = 'free';
     track.anchorRate = smoothed === smoothed && valid && dt > 0 ? (moved + smoothed - previous!) / dt : celerity;
     track.anchorShift = smoothed;
     return smoothed;
@@ -167,16 +175,19 @@ export function continueAnchor(
   if (!(smoothed === smoothed)) {
     if (previous === undefined) {
       track.anchorNone = true;
+      track.anchorLast = 'crest';
       anchorCounts.crest += 1;
       return Number.NaN;
     }
     if (time - track.anchorGood! <= hold) {
       // A miss: the case's crest runs on along the ray at its last rate.
       track.anchorShift = previous + track.anchorRate! * dt - moved;
+      track.anchorLast = 'held';
       anchorCounts.held += 1;
     } else {
       // Then it stands with the point.
       track.anchorRate = dt > 0 ? moved / dt : track.anchorRate;
+      track.anchorLast = 'stood';
       anchorCounts.stood += 1;
     }
     return track.anchorShift!;
@@ -189,10 +200,12 @@ export function continueAnchor(
     // From the crest anchor (a shift of 0) to the face anchor, uncapped.
     const u = (time - track.anchorEase!) / ease;
     shift = u * u * (3 - 2 * u) * smoothed;
+    track.anchorLast = 'eased';
     anchorCounts.eased += 1;
   } else if (previous === undefined) {
     // Faced from its first step: it starts there.
     shift = smoothed;
+    track.anchorLast = 'kept';
     anchorCounts.kept += 1;
   } else {
     // In the wave's frame: the target's change along the ray against the wave's own advance, within the cap.
@@ -201,6 +214,7 @@ export function continueAnchor(
     const target = moved + smoothed - previous;
     const change = advance + Math.min(cap, Math.max(-cap, target - advance));
     shift = previous + change - moved;
+    track.anchorLast = change !== target ? 'capped' : 'kept';
     if (change !== target) anchorCounts.capped += 1;
     else anchorCounts.kept += 1;
   }

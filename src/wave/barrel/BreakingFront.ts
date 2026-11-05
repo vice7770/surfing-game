@@ -262,6 +262,9 @@ export interface FrontPoint {
   wallSpeed?: number;
   tauRate?: number;
   anchorTau?: number;
+  /** Diagnostics (`AnchorTrack`; a probe's): its last smoothed shift and what `continueAnchor` did with it. */
+  anchorTarget?: number;
+  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free';
 }
 
 export interface FrontState {

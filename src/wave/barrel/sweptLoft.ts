@@ -179,6 +179,12 @@ export interface LoftResult {
   overlaps: number;
   overlapsOpen: number;
   overlapOpenWeight: number;
+  /**
+   * Of `overlapsOpen`, those at weight ≥ 0.5 (the advisor's 2026-11-05 bar 8: none), and each open drop's strips this build
+   * as pairs (the dropped strip's first slice, the kept one's): diagnostics.
+   */
+  overlapsOpenHeavy: number;
+  openDrops: number[];
   /** The clock refinement's depth this build (`LOFT.levels` unless the budget clamped it; 0: none). */
   refineLevels: number;
   /** Ray stabilization: slices corrected, largest shared blend, minimum stored row advance, and invalid input pairs. */
@@ -457,7 +463,7 @@ export class SweptLoft {
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
-      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, refineLevels: 0,
+      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, overlapsOpenHeavy: 0, openDrops: [], refineLevels: 0,
       rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
@@ -532,6 +538,8 @@ export class SweptLoft {
     r.overlaps = 0;
     r.overlapsOpen = 0;
     r.overlapOpenWeight = 0;
+    r.overlapsOpenHeavy = 0;
+    r.openDrops.length = 0;
     r.restSamples = 0;
     r.rayCorrections = 0;
     r.rayMaxBlend = 0;
@@ -1824,6 +1832,8 @@ export class SweptLoft {
               if (open && Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) > 0) {
                 r.overlapsOpen += 1;
                 r.overlapOpenWeight = Math.max(r.overlapOpenWeight, r.sliceWeight[t], r.sliceWeight[t + 1]);
+                if (Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) >= 0.5) r.overlapsOpenHeavy += 1;
+                r.openDrops.push(t, s);
               }
               continue;
             }
@@ -1837,6 +1847,8 @@ export class SweptLoft {
             if (open && weight > 0) {
               r.overlapsOpen += 1;
               r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+              if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+              r.openDrops.push(s, t);
             }
             break;
           }
