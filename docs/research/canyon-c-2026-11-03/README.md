@@ -40,6 +40,9 @@ no tube work at the Canyon.
 - **The owner's calls (2026-11-04):** the physics accepted (§7.1: the line reaches the reef on about 1 in 4–10 Medium
   sets; sections ≤ 15 m, about 1.5 s, count as one line); (b) stays behind `?canyonRamp=half`, the owner rides both and
   decides later. Merged through `claude/playtest-1104b`.
+- **The owner's ride (2026-11-05):** "improved in some areas, but it is really not surfable as waves are too scattered. It
+  is fine for future work". They asked for an option to ride the previous waves: `?canyonWaves=true` gives version B (the
+  waves C replaced), `?canyonWaves=a` version A. C stays the default for now.
 - **For the owner:** ride the four layouts (the shot list at the end); the Big peel (24–27°) waits on their ride before
   it goes back to the advisor.
 
@@ -171,6 +174,8 @@ What the numbers say:
 
 ## The switches
 
+- `?canyonWaves=true` (or `=b`; the name in either case): version B, the waves before C (the owner, 2026-11-05);
+  `?canyonWaves=a` (or `=old`): version A. `?canyonBed` wins over it, and it over `?canyonRamp`.
 - `?canyonJoin=zone`: the bank's join by its take-off zone (rule A to x +31, the gate up the line), the head at ca567450.
 - `?canyonRamp=half`: the edge ramp halved (`canyonBed` 'half'), with its own take-off and starts; with `?canyonBed=b` or
   `=old` those win.

@@ -403,6 +403,7 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     // `?rollerFront=off`: no roller front's toe spray (its ribbon is the page's, off with the same switch), for A/Bs.
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
     // `?canyonBed=b` or `=old`: the Canyon's version B or A, with its take-off and starts (main's until 2026-11-03 or 2026-11-01);
+    // `?canyonWaves=true` (or `=b`): version B, the waves before version C; `?canyonWaves=a`: version A;
     // `?canyonRamp=half`: today's with its bank's edge ramp halved, with its own take-off and starts (the advisor's option (b)).
     ...canyonBedSwitch(),
     // `?canyonJoin=zone`: version C's bank passing its breaking age by its take-off zone, as before the bed-keyed join.
@@ -696,11 +697,17 @@ export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
  * before it (`CANYON_BEACH`: the reef 120 m out with a sandbar A-frame either side, main's at 376d9cd4); nothing otherwise
  * (today's layout, version C, canyon-c: one straight bank peeling from +x into the flipped reef bowl). And the
  * `?canyonRamp=half` dev switch, on today's layout only: its bank's edge ramp halved (`CANYON_HALF_RAMP`, 'half'; the
- * water-physics advisor's option (b), 2026-11-04, the owner's call), with its own take-off depth and starts.
+ * water-physics advisor's option (b), 2026-11-04, the owner's call), with its own take-off depth and starts. And the
+ * `?canyonWaves` dev switch (the owner, 2026-11-05: version C "is really not surfable as waves are too scattered", "give me
+ * like an option like ?canyonwaves=true to allow me to use the previous waves"): 'true' (or 'b'), version B, the waves C
+ * replaced; 'a' (or 'old'), version A; the name in either case. `?canyonBed` wins over it, and it over `?canyonRamp`.
  */
 export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' | 'half' } {
   const bed = devParam('canyonBed', search)?.trim();
   if (bed === 'old' || bed === 'b') return { canyonBed: bed };
+  const waves = (devParam('canyonWaves', search) ?? devParam('canyonwaves', search))?.trim().toLowerCase();
+  if (waves === 'true' || waves === 'b') return { canyonBed: 'b' };
+  if (waves === 'a' || waves === 'old') return { canyonBed: 'old' };
   return devParam('canyonRamp', search)?.trim().toLowerCase() === 'half' ? { canyonBed: 'half' } : {};
 }
 

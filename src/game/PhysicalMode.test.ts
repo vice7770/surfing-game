@@ -186,6 +186,26 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // The `?canyonWaves` dev switch (the owner, 2026-11-05: "an option like ?canyonwaves=true to allow me to use the previous
+  // waves"): 'true' or 'b', version B (the waves version C replaced); 'a' or 'old', version A; either spelling of the name;
+  // `?canyonBed` wins over it, it over `?canyonRamp`; an online room's config fixes the default.
+  it('brings back the Canyon\'s previous waves with `?canyonWaves=true` (a dev switch), and keeps the default otherwise', () => {
+    for (const search of ['?canyonWaves=true', '?canyonwaves=true', '?canyonWaves=TRUE', '?canyonWaves=b', '?canyonWaves=true&canyonRamp=half']) {
+      expect(canyonBedSwitch(search), search).toEqual({ canyonBed: 'b' });
+    }
+    for (const search of ['?canyonWaves=a', '?canyonwaves=old']) expect(canyonBedSwitch(search), search).toEqual({ canyonBed: 'old' });
+    expect(canyonBedSwitch('?canyonBed=old&canyonWaves=true')).toEqual({ canyonBed: 'old' });
+    for (const search of ['?canyonWaves', '?canyonWaves=', '?canyonWaves=false', '?canyonWaves=c']) expect(canyonBedSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonwaves=true' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBe('b');
+      expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The `?canyonRamp=half` dev switch (canyon-c, 2026-11-04: the water-physics advisor's option (b), the owner's call):
   // today's Canyon with its bank's edge ramp halved, as the 'half' layout, so the worker builds that bed and its own take-off
   // and starts; `?canyonBed=b` or `=old` win over it; an online room's config fixes the default.
