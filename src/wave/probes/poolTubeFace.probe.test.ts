@@ -53,6 +53,16 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  * face anchor; the pre-throw clock's rate and holds; the slice's weight's change; the 40 largest rises by cause); bar 5's
  * usable clearance over a 0.3 m depth along the ray; bar 6 within ±1 H_s; bar 7's formation (the first clock against τ_e).
  * COST=1 compares the default against step 6's build (`tubeAnchor=old,tubeForm=old,wallFlow=old`).
+ *
+ * The step 7 follow-up (pool-tube-contact, 2026-11-05; the advisor's re-ruled bars, advisor-ruling-2.md) adds, under "# The
+ * 2026-11-05 re-ruled bars": bar 2a along the nearest surface's normal (`signedNormal`: a direction search in the ray–vertical
+ * plane on the game's union water, probe-only, so it reads main's build and the branch's alike), before the body's own σ's
+ * touchdown and outside the lip's water, after it as information; 2b's three outcomes (carried, pitched, overrun) for the
+ * passive lone boards and prone riders at 0.3 H_s; the risks (boards flung clear of the water, the hull force's flips); bar 3
+ * one-sided; bar 4b's jitter, own pace, single steps (reads across unread steps apart), cap engagement and the anchor's
+ * outcomes; the ledger (throws per crest, unbroken at touchdown, starved share, bar 6 per jet); holes at weight ≥ 0.5 with
+ * the first holes' fronts. SWITCHES also takes `tubeContact=old`, `tubeCap=old`, `tubeMerge=old` (all three: main before the
+ * follow-up) and the opt-in `tubeGuard=on`. COST=1 COST_ARMS=followUp compares the default against those three old.
  */
 
 const quantile = (values: number[], q: number) => {
@@ -189,6 +199,29 @@ interface Body {
   inLip: boolean;
   dropToTouchdown: number;
   offBeforeTouchdown: boolean;
+  /**
+   * The 2026-11-05 ruling's bar 2 (the advisor's advisor-ruling-2.md, re-ruled bars): the bottom's signed distance along the
+   * nearest surface's normal (m, positive in water; `signedNormal`) outside the lip's water, before and after the body's
+   * own σ's touchdown (the contact's life at its place reaching 1, latched; off the loft its slice's touchdown), the longest
+   * run over 0.15 m before it (s), its first value, its 2b outcome to touchdown ('' while undecided), its most clear of the
+   * water before touchdown (m, the least signed distance), and its force and sampled-normal flips (steps).
+   */
+  landed: boolean;
+  normalBefore: number[];
+  normalAfter: number[];
+  normalRun: number;
+  longestNormal: number;
+  normal0: number;
+  outcome: '' | 'carried' | 'pitched-lip' | 'pitched-off' | 'overrun';
+  clearest: number;
+  forceFlips: number;
+  normalFlips: number;
+  flipSteps: number;
+  /** Its velocity up and shoreward along the ray as it left the surface ('pitched-off'), m/s. */
+  offUp?: number;
+  offOut?: number;
+  lastForce?: [number, number, number];
+  lastNormal?: [number, number, number];
 }
 
 /** One of the largest rises at a fixed point (bar 4b, step 7), with what changed between its two reads. */
@@ -233,18 +266,21 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       // (`?tubeAnchor=old&tubeForm=old&wallFlow=old`), each sea spun up SETTLE s, then 600 steps of 1/60 s alternately in
       // blocks of 25.
       const lib = libraryFromBytes(caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool'), 'basilisk', 'pool');
-      const arms = (['step 7', 'step 6'] as const).map((arm) => {
+      // COST_ARMS=followUp (the 2026-11-05 follow-up): the default against main's build before it (its four switches old).
+      const followUp = process.env.COST_ARMS === 'followUp';
+      const arms = (followUp ? ['default', 'follow-up off'] as const : ['step 7', 'step 6'] as const).map((arm) => {
         const sim = new SurfZoneSimulation({
           spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(height), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
           tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
           ...(arm === 'step 6' ? { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' } : {}),
+          ...(arm === 'follow-up off' ? { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' } : {}),
         } as unknown as SurfZoneConfig, 'spun-up', lib);
         const tubeFace = sim.tubeFace;
         const contact = new SweptContact(lib, BARREL_SLOPE.pool!, tubeFace ? { face: tubeFace } : {});
         const water = PhysicalSurfWater.forSimulation(sim, contact, 1);
         const drawing = new SweptLoft(lib, BARREL_SLOPE.pool!, { holdClearDrawing: true, ...(tubeFace ? { face: tubeFace } : {}) });
         const grid = sim.renderGrid(1);
-        return { arm, sim, contact, water, drawing, grid, surface: new Float32Array(grid.nx * grid.nz * 2), records: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE), step: [] as number[], update: [] as number[], draw: [] as number[] };
+        return { arm, sim, contact, water, drawing, grid, surface: new Float32Array(grid.nx * grid.nz * 2), records: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE), step: [] as number[], update: [] as number[], draw: [] as number[], felt: [] as number[] };
       });
       for (const a of arms) while (a.sim.solver.time < settle) a.sim.step(1 / 30);
       for (let block = 0; block < 24; block += 1) {
@@ -262,11 +298,36 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
             t = performance.now();
             a.drawing.build(a.records, count, a.sim.solver.restLevel, (x, z) => sampleSurfaceHeight(a.surface, a.grid, x, z));
             a.draw.push(performance.now() - t);
+            // The bodies' water (the follow-up's nearest surface is per sample): 64 samples through the middle standing slice's
+            // wave, 1 m behind its point to 2 m ahead along its ray, from its trough to its crest, ms per 1000 samples.
+            const loft = a.contact.last;
+            if (loft && loft.sliceCount > 0) {
+              let mid = -1;
+              for (let q = 0; q < loft.sliceCount; q += 1) if (loft.sliceWeight[q] >= 0.5 && loft.sliceJoined[q] === 1 && (mid < 0 || Math.abs(q - loft.sliceCount / 2) < Math.abs(mid - loft.sliceCount / 2))) mid = q;
+              if (mid >= 0) {
+                const c = 3 * (mid * S + E + LANDMARK.crest);
+                const rx = loft.sliceRayX[mid];
+                const rz = loft.sliceRayZ[mid];
+                const x0 = loft.positions[c] - loft.sliceShift[mid] * rx;
+                const z0 = loft.positions[c + 2] - loft.sliceShift[mid] * rz;
+                const top = loft.positions[c + 1];
+                const bottom = a.sim.solver.restLevel - 0.5;
+                const out = createWaterSample();
+                t = performance.now();
+                a.water.withSurfaceNodeCache(() => {
+                  for (let i = 0; i < 8; i += 1) for (let j = 0; j < 8; j += 1) {
+                    const xi = -1 + (3 * i) / 7;
+                    a.water.sampleAt(x0 + xi * rx, bottom + ((top - bottom) * j) / 7, z0 + xi * rz, out);
+                  }
+                });
+                a.felt.push(((performance.now() - t) * 1000) / 64);
+              }
+            }
           }
         }
       }
       appendFileSync(log, `pool straight Barrel, H ${height} m, cases ${caseName}: the cost on this M1 (Node, shared load), p10 / p50 / p90 ms, 600 steps each after ${settle} s, alternating\n`
-        + arms.map((a) => `- ${a.arm}: the sea's step ${q3(a.step)}; the contact's update ${q3(a.update)}; the drawing's loft build ${q3(a.draw)}`).join('\n') + '\n');
+        + arms.map((a) => `- ${a.arm}: the sea's step ${q3(a.step)}; the contact's update ${q3(a.update)}; the drawing's loft build ${q3(a.draw)}; the bodies' water through the wave, ms per 1000 samples ${q3(a.felt, 3)}`).join('\n') + '\n');
       return;
     }
     const bytes = caseName === 'a38' ? readBarrelCases(undefined, BARREL_CASES.filter((entry) => POOL_TUBE_STAND_IN.includes(entry.id))) : readBarrelCases('pool', undefined, 'pool');
@@ -417,8 +478,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     };
 
     // The bodies (bars 2 and 9): their reactions not applied, so the sea stays shared and as is.
+    let sampleCalls = 0;
+    let bodySteps = 0;
     const quiet = (w: PhysicalSurfWater): SurfWater => ({
-      sampleAt: (x, y, z, out) => w.sampleAt(x, y, z, out),
+      sampleAt: (x, y, z, out) => { sampleCalls += 1; return w.sampleAt(x, y, z, out); },
       surfaceAt: (x, z) => w.surfaceAt(x, z),
       addReaction: () => {},
       setSampleTime: (offset) => w.setSampleTime(offset),
@@ -472,12 +535,51 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
               kind, water: which, target, face: fraction, front, t0: solver.time, session, board, done: false, minGap: Infinity, baseGap: Number.NaN, minSolverGap: Infinity, baseSolverGap: Number.NaN, over: 0,
               firstDrop: Number.NaN, separatedAt: Number.NaN, cause: '', lipHead: Number.NaN,
               touchdownAt, under: [], underRun: 0, longestUnder: 0, inLip: false, dropToTouchdown: 0, offBeforeTouchdown: false,
+              landed: false, normalBefore: [], normalAfter: [], normalRun: 0, longestNormal: 0, normal0: Number.NaN, outcome: '', clearest: Infinity,
+              forceFlips: 0, normalFlips: 0, flipSteps: 0,
             });
           }
         }
       }
     };
+    // The 2026-11-05 ruling's measure (bar 2): a point's signed distance to the game's water's surface along its nearest
+    // normal, in the ray–vertical plane (the ray `rx, rz`), m, positive in water: the nearest change between water and air,
+    // searched along 24 directions (every 0.025 m, then bisected to 1.6 mm) out to `cap`, the vertical distance to the
+    // support (straight up or down reaches it). The water is the union the game's support is: under the solver's surface,
+    // or in the swept surface's water. Probe-only (its own contact hit), so it reads main's build and the branch's alike.
+    const probeHit = createContactHit();
+    const unionWet = (x: number, y: number, z: number) => y < water.plainSurfaceAt(x, z) || (contact.query(x, y, z, probeHit) && probeHit.inWater);
+    const DIRECTIONS = 24;
+    const dirCos = Array.from({ length: DIRECTIONS }, (_, k) => Math.cos(Math.PI / 2 + (2 * Math.PI * k) / DIRECTIONS));
+    const dirSin = Array.from({ length: DIRECTIONS }, (_, k) => Math.sin(Math.PI / 2 + (2 * Math.PI * k) / DIRECTIONS));
+    const signedNormal = (x: number, y: number, z: number, rx: number, rz: number, vertical: number): number => {
+      const inside = unionWet(x, y, z);
+      if (inside !== vertical > 0) return vertical;
+      let best = Math.min(1.5, Math.abs(vertical));
+      for (let k = 0; k < DIRECTIONS; k += 1) {
+        const c = dirCos[k];
+        const sn = dirSin[k];
+        let previous = 0;
+        for (let r = 0.025; r < best; r += 0.025) {
+          if (unionWet(x + r * c * rx, y + r * sn, z + r * c * rz) === inside) {
+            previous = r;
+            continue;
+          }
+          let lo = previous;
+          let hi = r;
+          for (let b = 0; b < 4; b += 1) {
+            const mid = 0.5 * (lo + hi);
+            if (unionWet(x + mid * c * rx, y + mid * sn, z + mid * c * rz) === inside) lo = mid;
+            else hi = mid;
+          }
+          best = Math.min(best, hi);
+          break;
+        }
+      }
+      return inside ? best : -best;
+    };
     const stepBodies = (dt: number) => {
+      bodySteps += bodies.length;
       for (const body of bodies) {
         const real = body.water === 'swept' ? water : plain;
         if (body.session) real.withSurfaceNodeCache(() => body.session!.step(dt, waters[body.water], input));
@@ -516,6 +618,56 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           }
         }
         if (before) body.dropToTouchdown = Math.max(body.dropToTouchdown, -(gap - body.baseGap));
+        const separatedNow = body.session !== undefined && !body.session.rider.attached;
+        if (body.water === 'swept') {
+          // The 2026-11-05 ruling's bar 2: along the nearest surface's normal, before the body's own σ's touchdown.
+          const bottom = p.y - body.board.shape.centerOfMass.y;
+          const lip = water.sampleAt(p.x, bottom + 0.02, p.z, lipSample).waterFloorY !== undefined;
+          const sampledNormal: [number, number, number] = [lipSample.normalX, lipSample.normalY, lipSample.normalZ];
+          const onLoft = contact.query(p.x, bottom, p.z, probeHit);
+          const rx = onLoft ? -probeHit.tangentZ : 0;
+          const rz = onLoft ? probeHit.tangentX : 1;
+          if (onLoft ? probeHit.life >= 1 : solver.time > body.touchdownAt) body.landed = true;
+          const normal = water.withSurfaceNodeCache(() => signedNormal(p.x, bottom, p.z, rx, rz, -gap));
+          if (!(body.normal0 === body.normal0)) body.normal0 = normal;
+          if (!body.landed) body.clearest = Math.min(body.clearest, normal);
+          if (!lip) {
+            (body.landed ? body.normalAfter : body.normalBefore).push(normal);
+            if (!body.landed) {
+              body.normalRun = normal > 0.15 ? body.normalRun + dt : 0;
+              body.longestNormal = Math.max(body.longestNormal, body.normalRun);
+            }
+          } else body.normalRun = 0;
+          if (!body.landed && body.outcome === '') {
+            if (lip) body.outcome = 'pitched-lip';
+            else if (normal - body.normal0 > 0.1) body.outcome = 'overrun';
+            else if (body.session ? separatedNow : normal < -0.1) {
+              body.outcome = 'pitched-off';
+              // Which way it left: its velocity up, and along the ray (shoreward, out through the face).
+              const v = body.board.velocity;
+              body.offUp = v.y;
+              body.offOut = v.x * rx + v.z * rz;
+            }
+          }
+          if (body.landed && body.outcome === '') body.outcome = 'carried';
+          // The risks: the water's force on the hull (buoyancy and pressure) turning past 90° in a step, both over half the
+          // board's weight; the sampled normal turning more than 30° in a step (before touchdown, outside the lip's water).
+          if (!body.landed && !lip) {
+            const f = body.board.forces;
+            const force: [number, number, number] = [f.buoyancy.x + f.pressure.x, f.buoyancy.y + f.pressure.y, f.buoyancy.z + f.pressure.z];
+            const weight = 0.5 * body.board.mass * 9.81;
+            const last = body.lastForce;
+            if (last && Math.hypot(...force) > weight && Math.hypot(...last) > weight && force[0] * last[0] + force[1] * last[1] + force[2] * last[2] < 0) body.forceFlips += 1;
+            const ln = body.lastNormal;
+            if (ln && sampledNormal[0] * ln[0] + sampledNormal[1] * ln[1] + sampledNormal[2] * ln[2] < Math.cos(Math.PI / 6)) body.normalFlips += 1;
+            body.flipSteps += 1;
+            body.lastForce = force;
+            body.lastNormal = sampledNormal;
+          } else {
+            body.lastForce = undefined;
+            body.lastNormal = undefined;
+          }
+        }
         // TRACE_BODIES=1: the first lone boards on the game's water, step by step (a diagnostic).
         if (traceBodies && body.kind === 'board' && body.water === 'swept' && age < 1.5) {
           const key = bodies.indexOf(body);
@@ -610,7 +762,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const lastFixed = new Map<string, { n: number; gaps: number[]; x: number; weight: number; shift: number; tau: number; place: number }>();
     // Step 7's (bar 4b, bar 7): per point, the shift the contact placed its case at, its weight and its pre-throw clock.
     const lastShift = new Map<number, number>();
-    const lastPlace = new Map<number, { x: number; z: number }>();
+    const lastPlace = new Map<number, { x: number; z: number; n: number; target: number; front: number }>();
     const frameSteps: number[] = [];
     const frameRates: number[] = [];
     const faced = new Set<number>();
@@ -633,8 +785,32 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     const placedOpen = new Set<number>();
     const lastPlaceTau = new Map<number, number>();
     const crash0 = simulation.crash ? { ...simulation.crash.counts } : undefined;
+    // The 2026-11-05 ruling's re-ruled bars 4b, the ledger and 8 (advisor-ruling-2.md).
+    const anchor0 = { ...anchorCounts };
+    const lastDW = new Map<number, { n: number; dW: number }>();
+    const jitters: number[] = [];
+    const ownPace: number[] = [];
+    const targetInside: number[] = [];
+    const targetEnds: number[] = [];
+    const bigSteps: { step: number; text: string }[] = [];
+    /** |ΔW − C Δt| over consecutive steps only, and over a gap (the point unread for a step or more: not one step's change). */
+    const consecutiveSteps: number[] = [];
+    const skippedSteps: number[] = [];
+    let skippedBig = 0;
+    const throwsOf = new Map<number, number>();
+    let touchdowns = 0, unbrokenAtTouchdown = 0, unbrokenJets = 0, staleAtTouchdown = 0;
+    const retireAtTouchdown: number[] = [];
+    const crashedIds = new Set<number>();
+    const jetBreak: number[] = [];
+    const jetBreak1: number[] = [];
+    let jetUnread = 0;
+    let heavyHoles = 0;
+    let keptFolds = 0;
+    const holeLog: string[] = [];
     for (let n = 1; n <= steps; n += 1) {
       simulation.step(dt);
+      // The ledger: each joined crest's throws (its point's id).
+      for (const thrown of simulation.crash?.paced ?? []) throwsOf.set(thrown.point.id, (throwsOf.get(thrown.point.id) ?? 0) + 1);
       const count = simulation.writeTubeRecords(records);
       let started = performance.now();
       water.withSurfaceNodeCache(() => contact.update(records, count, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z)));
@@ -666,6 +842,19 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
             const joined = joinedAt.get(p.id);
             if (joined !== undefined) leadTimes.push(thrownAt.get(p.id)! - joined);
           }
+          if (previous !== undefined && previous < times.touchdownSeconds && p.tau >= times.touchdownSeconds) {
+            touchdowns += 1;
+            if (p.unbroken) {
+              unbrokenAtTouchdown += 1;
+              if (p.jetStrip !== undefined && p.jetStrip >= 0 && !p.jetReturned) unbrokenJets += 1;
+              // Its flag against the solver's own breaking at its crest now (±2 m along its column): a stale flag (the solver
+              // broke it after its throw) or truly unbroken; and its retirement then.
+              let strongest = 0;
+              for (let dz = -2; dz <= 2; dz += 0.5) strongest = Math.max(strongest, strengthAt(p.x, p.z + dz));
+              if (strongest > 0) staleAtTouchdown += 1;
+              retireAtTouchdown.push(p.retire ?? 0);
+            }
+          }
           const from = thrownAt.get(p.id);
           if (previous !== undefined && from !== undefined && previous < times.touchdownSeconds && p.tau >= times.touchdownSeconds) {
             const landed = solver.time - dt * ((p.tau - times.touchdownSeconds) / Math.max(1e-9, p.tau - previous));
@@ -694,6 +883,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
         const placed = contact.last?.recordShift;
         if (placed && count === simulation.front.points.length) {
           const pts = simulation.front.points;
+          // Each point's front's first and last index in the list (points are by front, then σ).
+          const i0Of = (k: number) => { let i = k; while (i > 0 && pts[i - 1].front === pts[k].front) i -= 1; return i; };
+          const i1Of = (k: number) => { let i = k; while (i < pts.length - 1 && pts[i + 1].front === pts[k].front) i += 1; return i; };
           pts.forEach((p, k) => {
             const shift = placed[k];
             if (shift === Infinity) return;
@@ -727,9 +919,37 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
                 const dW = (p.x - was.x) * nx + (p.z - was.z) * nz + shift - last;
                 frameSteps.push(Math.abs(dW - advance));
                 frameRates.push(dW / Math.max(1e-9, advance));
+                // The 2026-11-05 bar 4b: its jitter (step to step), against the case's own pace (the smoothed target's
+                // place, W* = S·n + δ*, step to step), and the largest single steps with what the anchor did.
+                const gapSteps = n - was.n;
+                if (gapSteps !== 1) {
+                  skippedSteps.push(Math.abs(dW - advance));
+                  if (Math.abs(dW - advance) > 0.1) skippedBig += 1;
+                }
+                if (was.n === n - 1) consecutiveSteps.push(Math.abs(dW - advance));
+                const big = Math.abs(dW - advance);
+                if (big > 0.1) {
+                  const at = k === 0 || pts[k - 1].front !== p.front ? 'start' : k === pts.length - 1 || pts[k + 1].front !== p.front ? 'end' : 'inside';
+                  bigSteps.push({ step: big, text: `t ${solver.time.toFixed(3)} (over ${gapSteps} step${gapSteps === 1 ? '' : 's'}) point ${p.id} front ${p.front}${was.front !== p.front ? ` (was ${was.front})` : ''} at its front's ${at}: |ΔW − CΔt| ${big.toFixed(3)} m; Δshift ${(shift - last).toFixed(3)}, moved along the ray ${((p.x - was.x) * nx + (p.z - was.z) * nz).toFixed(3)} (Δx ${(p.x - was.x).toFixed(2)}, Δz ${(p.z - was.z).toFixed(2)}), anchor ${p.anchorLast ?? '-'}, target ${fmt(p.anchorTarget ?? Number.NaN, 3)} (was ${fmt(was.target, 3)}), τ ${p.tau.toFixed(3)}, thrown ${p.jetStrip !== undefined}, C Δt ${advance.toFixed(4)}` });
+                  bigSteps.sort((a, b) => b.step - a.step);
+                  if (bigSteps.length > 16) bigSteps.length = 16;
+                }
+                if (was.n === n - 1) {
+                  const before = lastDW.get(p.id);
+                  if (before && before.n === n - 1) jitters.push(Math.abs(dW - before.dW));
+                  lastDW.set(p.id, { n, dW });
+                  const target = p.anchorTarget;
+                  if (target !== undefined && target === target && was.target === was.target) {
+                    const dTarget = (p.x - was.x) * nx + (p.z - was.z) * nz + target - was.target;
+                    ownPace.push(Math.abs(dW - dTarget));
+                    // The target's own step against the wave's advance, inside a front and within 3 points of its ends.
+                    const fromEnd = Math.min(k - i0Of(k), i1Of(k) - k);
+                    (fromEnd >= 3 ? targetInside : targetEnds).push(Math.abs(dTarget - advance));
+                  }
+                }
               }
             }
-            lastPlace.set(p.id, { x: p.x, z: p.z });
+            lastPlace.set(p.id, { x: p.x, z: p.z, n, target: p.anchorTarget ?? Number.NaN, front: p.front });
             if (!(shift === shift) && faced.has(p.id)) {
               fallbacks += 1;
               fellBack.add(p.id);
@@ -749,6 +969,73 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
       minAdvance = Math.min(minAdvance, loft.rayMinAdvance);
       shiftMisses += loft.shiftMisses;
       slices += loft.sliceCount;
+      heavyHoles += loft.overlapsOpenHeavy;
+      keptFolds += loft.overlapsKept ?? 0;
+      if (loft.openDrops.length && holeLog.length < 30) {
+        // Each hole: the dropped strip and the one kept, their fronts' σ spans, and the gap between the two fronts' nearest ends.
+        const span = (front: number) => {
+          let lo = -1, hi = -1;
+          for (let q = 0; q < loft.sliceCount; q += 1) if (loft.sliceFront[q] === front) { if (lo < 0) lo = q; hi = q; }
+          return [lo, hi] as const;
+        };
+        const at = (q: number) => { const c = 3 * (q * S + E + LANDMARK.crest); return [loft.positions[c], loft.positions[c + 2]] as const; };
+        for (let m = 0; m + 1 < loft.openDrops.length && holeLog.length < 30; m += 2) {
+          const a = loft.openDrops[m];
+          const b = loft.openDrops[m + 1];
+          const [a0, a1] = span(loft.sliceFront[a]);
+          const [b0, b1] = span(loft.sliceFront[b]);
+          let gap = Infinity;
+          for (const u of [a0, a1]) for (const v of [b0, b1]) { const [ux, uz] = at(u); const [vx, vz] = at(v); gap = Math.min(gap, Math.hypot(ux - vx, uz - vz)); }
+          const desc = (q: number, lo: number, hi: number) => `front ${loft.sliceFront[q]} σ ${fmt(loft.sliceSigma[q], 1)} (its σ ${fmt(loft.sliceSigma[lo], 1)}–${fmt(loft.sliceSigma[hi], 1)}, ${hi - lo + 1} slices) τ ${fmt(loft.sliceTau[q])} life ${fmt(loft.sliceLife[q])} weight ${fmt(Math.max(loft.sliceWeight[q], loft.sliceWeight[q + 1]))} phase ${loft.slicePhase[q]}`;
+          // The two fronts' end points (their records): where, their clocks, and how far apart their nearest ends are.
+          const endsOf = (front: number) => {
+            let first = -1, last = -1;
+            for (let q = 0; q < count; q += 1) if (records[q * FRONT_STRIDE + 2] === front) { if (first < 0) first = q; last = q; }
+            return [first, last] as const;
+          };
+          const rec = (q: number, field: number) => records[q * FRONT_STRIDE + field];
+          const [ra0, ra1] = endsOf(loft.sliceFront[a]);
+          const [rb0, rb1] = endsOf(loft.sliceFront[b]);
+          let pointGap = Infinity;
+          let pair = '';
+          if (ra0 >= 0 && rb0 >= 0) for (const u of [ra0, ra1]) for (const v of [rb0, rb1]) {
+            const d = Math.hypot(rec(u, 0) - rec(v, 0), rec(u, 1) - rec(v, 1));
+            if (d < pointGap) { pointGap = d; pair = `(${fmt(rec(u, 0), 1)}, ${fmt(rec(u, 1), 1)}) τ ${fmt(rec(u, 4))} and (${fmt(rec(v, 0), 1)}, ${fmt(rec(v, 1), 1)}) τ ${fmt(rec(v, 4))}`; }
+          }
+          holeLog.push(`t ${solver.time.toFixed(2)}: dropped ${desc(a, a0, a1)}; kept ${desc(b, b0, b1)}; the fronts' nearest end slices ${fmt(gap)} m apart; their nearest end points ${fmt(pointGap)} m apart, ${pair}; records ${ra1 - ra0 + 1} and ${rb1 - rb0 + 1}`);
+        }
+      }
+      // Bar 6 per jet (the 2026-11-05 ledger): each jet's landing, its point's slice at its crash.
+      for (const p of simulation.front?.points ?? []) {
+        if (p.crashedAt === undefined || p.jetStrip === undefined || p.jetStrip < 0 || crashedIds.has(p.id)) continue;
+        crashedIds.add(p.id);
+        // A jet the guard returned to its crest lands nowhere (`TubeFace.guard`).
+        if (p.jetReturned) continue;
+        let near = -1;
+        for (let q = 0; q < loft.sliceCount; q += 1) {
+          if (loft.sliceFront[q] % FRONT_PIECE !== p.front) continue;
+          if (near < 0 || Math.abs(loft.sliceSigma[q] - p.sigma) < Math.abs(loft.sliceSigma[near] - p.sigma)) near = q;
+        }
+        if (near < 0 || Math.abs(loft.sliceSigma[near] - p.sigma) > 1) {
+          jetUnread += 1;
+          continue;
+        }
+        const o = origin(loft, near);
+        const { Hs } = section(o.x, o.z, o.rx, o.rz);
+        if (!(Hs > 0.2)) {
+          jetUnread += 1;
+          continue;
+        }
+        const tip = 3 * (near * S + E + LANDMARK.lip);
+        const tipXi = (loft.positions[tip] - o.x) * o.rx + (loft.positions[tip + 2] - o.z) * o.rz;
+        const alongAt = (xi: number) => [o.x + xi * o.rx, o.z + xi * o.rz] as const;
+        let b05 = 0;
+        for (let xi = tipXi - 0.5 * Hs; xi <= tipXi + 0.5 * Hs; xi += 0.25) b05 = Math.max(b05, strengthAt(...alongAt(xi)));
+        let b1 = 0;
+        for (let xi = tipXi - Hs; xi <= tipXi + Hs; xi += 0.25) b1 = Math.max(b1, strengthAt(...alongAt(xi)));
+        jetBreak.push(b05);
+        jetBreak1.push(b1);
+      }
       if (n % 2 === 0) {
         for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
           if (loft.sliceJoined[s] !== 1 || !(loft.sliceWeight[s] >= 0.5)) continue;
@@ -869,7 +1156,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     lines.push(`pool straight Barrel, H ${height} m at the feed, cases ${caseName}, switches ${JSON.stringify(switches)}, tubeFace ${JSON.stringify(face)}; ${periods} periods after ${settle} s; CPU 1/60 s; ${((Date.now() - t0) / 1000).toFixed(0)} s wall`);
     lines.push(`reads ${reads.length}, fronts ${new Set(reads.map((r) => r.front)).size}; H_s ${q3(reads.map((r) => r.Hs))} m; drawn H (its crest over the solver's trough) ${q3(reads.map((r) => r.Hd))} m; shift (the drawn crest ahead of the point) ${q3(reads.map((r) => r.shift))} m; the cases' own lowest less the solver's trough ${q3(reads.map((r) => r.troughGap).filter((v) => Number.isFinite(v)))} m`);
     const anchorStats = (contact as unknown as { loft: { faceAnchor?: { stats: object } } }).loft.faceAnchor?.stats;
-    lines.push(`the contact's face anchor: ${JSON.stringify(anchorStats ?? 'none')}; the front: joins ${simulation.front?.joins}, unbroken ${simulation.front?.unbroken}, lost ${simulation.front?.lost}`);
+    lines.push(`the contact's face anchor: ${JSON.stringify(anchorStats ?? 'none')}; the front: joins ${simulation.front?.joins}, unbroken ${simulation.front?.unbroken}, lost ${simulation.front?.lost}, joined beside a front's end (\`TubeFace.merge\`) ${simulation.front?.merges}`);
     const bins: [string, (r: Read) => boolean][] = [
       ['τ < −1 s', (r) => r.tau < -1], ['τ −1…0 s', (r) => r.tau >= -1 && r.tau < 0], ['life 0–0.3', (r) => r.life >= 0 && r.life < 0.3],
       ['life 0.3–0.6', (r) => r.life >= 0.3 && r.life < 0.6], ['life 0.6–1', (r) => r.life >= 0.6 && r.life < 1], ['landed', (r) => r.after >= 0],
@@ -1065,6 +1352,67 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
     lines.push(`## Bar 8, re-ruled: holes ${(overlapsOpen / Math.max(1, builds)).toFixed(3)} a build (≤ 0.01), folds ${(overlaps / Math.max(1, builds)).toFixed(3)} (≤ 0.05), saddle p95 ${fmt(quantile(reads.map((r) => r.saddle / r.Hs), 0.95), 3)} H_s (≤ 0.2); the rest as above`);
     const simAnchor = (simulation.crash as unknown as { geometry?: { faceAnchor?: { stats: object } } } | undefined)?.geometry?.faceAnchor?.stats;
     lines.push(`the simulation's anchors (continueAnchor, cumulative over the process): ${JSON.stringify(anchorCounts)}; its face anchor's reads ${JSON.stringify(simAnchor ?? 'none')}`);
+    // The 2026-11-05 ruling's re-ruled bars (advisor-ruling-2.md, "Re-ruled bars").
+    lines.push('');
+    lines.push('# The 2026-11-05 re-ruled bars (the advisor\'s advisor-ruling-2.md)');
+    if (bodiesOn) {
+      const game = finished.filter((b) => b.water === 'swept');
+      const before = game.flatMap((b) => b.normalBefore);
+      const after = game.flatMap((b) => b.normalAfter);
+      const long = game.filter((b) => b.longestNormal > 0.1);
+      lines.push(`## Bar 2a, along the nearest surface's normal, before the body's σ touchdown, outside the lip's water: p99 ${fmt(quantile(before, 0.99), 3)} m (≤ 0.15), p99.9 ${fmt(quantile(before, 0.999), 3)}, max ${fmt(most(before, 0), 3)}, n ${before.length}; bodies over 0.15 m for more than 0.1 s: ${long.length} of ${game.length} (0), the longest ${fmt(most(game.map((b) => b.longestNormal), 0), 3)} s; after touchdown (information, wipeouts): p50 / p99 ${fmt(quantile(after, 0.5), 3)} / ${fmt(quantile(after, 0.99), 3)} m, n ${after.length}`);
+      for (const kind of ['board', 'prone', 'rider'] as const) {
+        const g = game.filter((b) => b.kind === kind);
+        const u = g.flatMap((b) => b.normalBefore);
+        lines.push(`- ${kind}: p99 ${fmt(quantile(u, 0.99), 3)} m, over 0.15 m for more than 0.1 s ${g.filter((b) => b.longestNormal > 0.1).length} of ${g.length}; ` + ['ahead 0.3 s', 'throw', 'open, life 0.3'].map((target) => `${target} ${fmt(quantile(g.filter((b) => b.target === target).flatMap((b) => b.normalBefore), 0.99), 3)}`).join(', '));
+      }
+      const low = game.filter((b) => b.face === 0.3 && (b.kind === 'board' || b.kind === 'prone') && (b.target === 'ahead 0.3 s' || b.target === 'throw'));
+      const outcome = (g: Body[], o: string) => g.filter((b) => (b.outcome || 'carried') === o).length;
+      const describe = (g: Body[]) => `carried ${outcome(g, 'carried')} (of them never touched down ${g.filter((b) => b.outcome === '').length}), pitched ${outcome(g, 'pitched-lip') + outcome(g, 'pitched-off')} (into the lip's water ${outcome(g, 'pitched-lip')}, off the surface ${outcome(g, 'pitched-off')}), overrun ${outcome(g, 'overrun')} of ${g.length}`;
+      const off = low.filter((b) => b.outcome === 'pitched-off');
+      lines.push(`- (information) leaving the surface, velocity up / shoreward along the ray p10 / p50 / p90: boards ${q3(off.filter((b) => b.kind === 'board').map((b) => b.offUp!))} / ${q3(off.filter((b) => b.kind === 'board').map((b) => b.offOut!))} m/s; prone ${q3(off.filter((b) => b.kind === 'prone').map((b) => b.offUp!))} / ${q3(off.filter((b) => b.kind === 'prone').map((b) => b.offOut!))} m/s`);
+      const lipHits = low.filter((b) => b.lipHead === b.lipHead);
+      lines.push(`## Bar 2b, passive lone boards and prone riders at 0.3 H_s, ahead and at the throw, to touchdown: overrun ${pct(outcome(low, 'overrun'), low.length)} (≤ 20 %), carried + pitched ${pct(low.length - outcome(low, 'overrun'), low.length)} (≥ 80 %); ${describe(low)}; lip on head or torso (prone, kept apart) ${lipHits.length}, overrun without them ${pct(outcome(low.filter((b) => !(b.lipHead === b.lipHead)), 'overrun'), low.length - lipHits.length)}`);
+      for (const kind of ['board', 'prone'] as const) for (const target of ['ahead 0.3 s', 'throw']) {
+        const g = low.filter((b) => b.kind === kind && b.target === target);
+        if (g.length) lines.push(`- ${kind}, ${target}: ${describe(g)}`);
+      }
+      const high = game.filter((b) => b.face === 0.6);
+      lines.push(`## Bar 2c (information), 0.6 H_s bodies to touchdown: ${describe(high)}`);
+      // The risks: flings and force flips (lone boards and prone riders, before touchdown, outside the lip's water).
+      const boards = game.filter((b) => b.kind === 'board');
+      const flipped = (g: Body[], key: 'forceFlips' | 'normalFlips') => g.reduce((t, b) => t + b[key], 0);
+      const stepsOf = (g: Body[]) => g.reduce((t, b) => t + b.flipSteps, 0);
+      lines.push(`## Cost (information): the bodies' water samples a body step ${fmt(sampleCalls / Math.max(1, bodySteps), 1)} on average (${bodySteps} body steps)`);
+      lines.push(`## The risks: lone boards clear of the water before touchdown by more than 0.1 / 0.3 m (flung): ${boards.filter((b) => b.clearest < -0.1).length} / ${boards.filter((b) => b.clearest < -0.3).length} of ${boards.length}, most clear p90 / max ${fmt(quantile(boards.map((b) => -b.clearest).filter((v) => Number.isFinite(v)), 0.9), 3)} / ${fmt(most(boards.map((b) => -b.clearest).filter((v) => Number.isFinite(v)), 0), 3)} m; the water's force on the hull turning past 90° in a step (both over half the board's weight): ` + (['board', 'prone', 'rider'] as const).map((kind) => { const g = game.filter((b) => b.kind === kind); return `${kind} ${flipped(g, 'forceFlips')} in ${stepsOf(g)} steps`; }).join(', ') + `; the sampled normal turning over 30° in a step: ` + (['board', 'prone', 'rider'] as const).map((kind) => { const g = game.filter((b) => b.kind === kind); return `${kind} ${flipped(g, 'normalFlips')}`; }).join(', '));
+    }
+    // Bar 3, one-sided, below the anchor (0.05–0.25 H_s), through life 0.6.
+    const over: number[] = [];
+    const underBy: [string, number[]][] = [['τ < −1 s', []], ['τ −1…0 s', []], ['life 0–0.6', []]];
+    for (const r of reads) {
+      if (!(r.life < 0.6) && !(r.tau < 0)) continue;
+      FACES.forEach((f, j) => {
+        if (f > 0.25 || !(r.raw[j] === r.raw[j])) return;
+        over.push(Math.max(0, r.raw[j]) / r.Hs);
+        if (r.raw[j] < 0) (r.tau < -1 ? underBy[0][1] : r.tau < 0 ? underBy[1][1] : underBy[2][1]).push(-r.raw[j] / r.Hs);
+      });
+    }
+    lines.push(`## Bar 3, one-sided below the anchor (0.05–0.25 H_s, through life 0.6): the case over the solver (a felt bump) p95 ${fmt(quantile(over, 0.95), 3)} H_s (≤ 0.05), max ${fmt(most(over, 0), 3)} (≤ 0.1), over at all on ${pct(over.filter((v) => v > 0).length, over.length)} of ${over.length}; the case under the solver (information) p50 / p95 by τ: ${underBy.map(([name, v]) => `${name} ${fmt(quantile(v, 0.5), 3)} / ${fmt(quantile(v, 0.95), 3)} (n ${v.length})`).join(', ')}`);
+    // Bar 4b.
+    const counted = Object.fromEntries(Object.entries(anchorCounts).map(([key, value]) => [key, value - (anchor0 as Record<string, number>)[key]]));
+    const facedSteps = counted.kept + counted.capped;
+    lines.push(`## Bar 4b, re-ruled: jitter |ΔW_n − ΔW_(n−1)| p99 ${fmt(quantile(jitters, 0.99), 4)} m (≤ 0.005), max ${fmt(most(jitters, 0), 3)} (≤ 0.02), n ${jitters.length}; against the case's own pace |ΔW − ΔW*| p99 ${fmt(quantile(ownPace, 0.99), 4)} m (≤ 0.01), n ${ownPace.length}; single steps |ΔW − C Δt| over 0.1 m (consecutive steps): ${consecutiveSteps.filter((v) => v > 0.1).length} (0), max ${fmt(most(consecutiveSteps, 0), 3)} m, p99.9 ${fmt(quantile(consecutiveSteps, 0.999), 4)}; across a gap of unread steps (not one step's change) ${skippedSteps.length} reads, over 0.1 m ${skippedBig}, max ${fmt(most(skippedSteps, 0), 3)}; all reads as step 7 measured them, over 0.1 m ${frameSteps.filter((v) => v > 0.1).length}, max ${fmt(most(frameSteps, 0), 3)}; the cap engaged on ${pct(counted.capped, facedSteps)} of ${facedSteps} faced steps (≤ 10 %); the anchor's outcomes this run ${JSON.stringify(counted)}; |ΔW − C Δt| (information) p50 / p99 / p99.9 ${[0.5, 0.99, 0.999].map((q) => fmt(quantile(frameSteps, q), 4)).join(' / ')}`);
+    lines.push(`- (information) the target's own step against the wave's advance |ΔW* − C Δt|, p50 / p90 / p99: inside a front (3 points or more from its ends) ${[0.5, 0.9, 0.99].map((q) => fmt(quantile(targetInside, q), 4)).join(' / ')} m (n ${targetInside.length}); within 3 points of its ends ${[0.5, 0.9, 0.99].map((q) => fmt(quantile(targetEnds, q), 4)).join(' / ')} m (n ${targetEnds.length})`);
+    for (const big of bigSteps.slice(0, 12)) lines.push(`  - ${big.text}`);
+    // The ledger.
+    const twice = [...throwsOf.values()].filter((v) => v > 1).length;
+    const c2 = simulation.crash?.counts;
+    const asked = c2 && crash0 ? c2.asked - crash0.asked : Number.NaN;
+    const thrownV = c2 && crash0 ? c2.thrown - crash0.thrown : Number.NaN;
+    lines.push(`## The ledger, re-ruled: crests thrown more than once ${twice} of ${throwsOf.size} (0); thrown points unbroken at touchdown ${unbrokenAtTouchdown} of ${touchdowns} touchdowns, their jets pouring ${unbrokenJets} (0) (returned to their crests by the guard: ${c2 && crash0 && c2.returned !== undefined ? c2.returned - (crash0.returned ?? 0) : '—'}), of them flagged while the solver breaks at their crest ${staleAtTouchdown}, their retirement then ${q3(retireAtTouchdown)}; starved ${fmt((100 * (asked - thrownV)) / asked, 2)} % of the ${fmt(asked, 1)} m³ asked (≤ 5 %); bar 6 per jet: on the solver's breaking ≥ 0.3 within ±0.5 H_s ${pct(jetBreak.filter((v) => v >= 0.3).length, jetBreak.length)}, within ±1 H_s ${pct(jetBreak1.filter((v) => v >= 0.3).length, jetBreak1.length)} of ${jetBreak.length} jets (${jetUnread} unread); the meter as above (±5 % of main); the jets against main (information): ${c2 && crash0 ? c2.throws - crash0.throws : '—'}`);
+    // Bar 8.
+    lines.push(`## Bar 8, re-ruled: holes ${(overlapsOpen / Math.max(1, builds)).toFixed(4)} a build (≤ 0.01), at weight ≥ 0.5 ${heavyHoles} (0); folds (information) ${(overlaps / Math.max(1, builds)).toFixed(3)}, overlapping open strips both kept (\`TubeFace.merge\`) ${(keptFolds / Math.max(1, builds)).toFixed(4)} a build; the first holes:`);
+    for (const hole of holeLog.slice(0, 20)) lines.push(`  - ${hole}`);
     appendFileSync(log, lines.join('\n') + '\n');
     if (traceBodies) writeFileSync(`${log}.bodies`, bodyTrace.join('\n') + '\n');
   }, 14_400_000);

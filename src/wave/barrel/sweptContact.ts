@@ -102,6 +102,26 @@ export interface ContactHit {
   wallSpeed: number;
   wallB: number;
   wallWeight: number;
+  /**
+   * The step 7 follow-up's nearest surface (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1), in the case's water
+   * with no water floor (the wall), NaN otherwise and without it. The crossing above answers as before (`surfaceY`, the
+   * normal, `wallAlong`, `wallUp`); beside it, the first crossing of a horizontal cast shoreward along the ray from the point,
+   * within `NEAREST.reach`: its depth along its own normal (m), that normal, its surface's velocity along the ray and up
+   * (m/s), and where it is (x, z, m). `verticalDepth` is the crossing above's depth along its normal, d_v |n_y| (m), and
+   * `aheadWeight` the face ahead's share, 0–1 (0: none, or the crossing above nearer by `NEAREST.blend`; 1: the face ahead
+   * nearer by it; smoothstep between). `normalDepth` is the two blended by it, m.
+   */
+  normalDepth: number;
+  verticalDepth: number;
+  aheadWeight: number;
+  aheadDepth: number;
+  aheadNormalX: number;
+  aheadNormalY: number;
+  aheadNormalZ: number;
+  aheadAlong: number;
+  aheadUp: number;
+  aheadX: number;
+  aheadZ: number;
 }
 
 export function createContactHit(): ContactHit {
@@ -109,9 +129,18 @@ export function createContactHit(): ContactHit {
     inWater: false, surfaceY: Number.NaN, normalX: 0, normalY: 1, normalZ: 0, floorY: Number.NaN, waterFloorY: Number.NaN,
     ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, lipWeight: 0, tangentX: 1, tangentZ: 0,
     life: Number.NaN, wallAlong: Number.NaN, wallUp: Number.NaN, wallLow: Number.NaN, wallTop: Number.NaN, wallSpeed: Number.NaN,
-    wallB: Number.NaN, wallWeight: 0,
+    wallB: Number.NaN, wallWeight: 0, normalDepth: Number.NaN, verticalDepth: Number.NaN, aheadWeight: 0, aheadDepth: Number.NaN,
+    aheadNormalX: 0, aheadNormalY: 1, aheadNormalZ: 0, aheadAlong: Number.NaN, aheadUp: Number.NaN, aheadX: Number.NaN, aheadZ: Number.NaN,
   };
 }
+
+/**
+ * The nearest surface's constants (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1): the horizontal cast's reach
+ * shoreward along the ray, m (1), and the band over which the crossing above and the face ahead are blended by their depths
+ * along their own normals, m (within 0.05 m of each other), so the force on a body does not flip between them. *(Built so)*
+ * the face ahead also fades out over the cast's last `fade` m (0.1), so its answer never steps where it leaves the reach.
+ */
+export const NEAREST = { reach: 1, blend: 0.05, fade: 0.1 } as const;
 
 const S = LOFT_SAMPLES;
 /** Quads a strip has: one fewer than a slice's samples. */
@@ -202,6 +231,8 @@ export class SweptContact {
   private sideA = 0;
   private sideB = 0;
   private found = 0;
+  /** `TubeFace.contact`: the nearest surface in the wall (a horizontal cast ahead beside the crossing above). */
+  private readonly nearest: boolean;
 
   constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS) {
     if (internal === ORDINARY_QUERY_NORMALS) {
@@ -212,6 +243,7 @@ export class SweptContact {
     } else this.loft = new SweptLoft(library, slope, { contact: true, ...(options.face ? { face: options.face } : {}) });
     this.bucket = options.bucket ?? CONTACT.bucket;
     this.boundedC = library.options.geometry === 'bounded-C';
+    this.nearest = options.face?.contact === true;
   }
 
   /** Internal worker construction, never a posted option or public lazy-output mode. */
@@ -372,8 +404,111 @@ export class SweptContact {
       hit.wallSpeed = Number.NaN;
       hit.wallWeight = 0;
     }
+    hit.normalDepth = Number.NaN;
+    hit.verticalDepth = Number.NaN;
+    hit.aheadWeight = 0;
+    if (this.nearest && hit.inWater && below === 0) this.nearestSurface(loft, strip, x, y, z, rayX / length, rayZ / length, hit);
     this.stats.hits += 1;
     return true;
+  }
+
+  /**
+   * The step 7 follow-up's nearest surface (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1) at a point in the wall
+   * (in the case's water, no water floor), `hit` holding the crossing above (crossing 0): a body there takes the surface
+   * nearest it along its own normal, not the one its vertical line meets. Each strip is a 2D profile in the ray–vertical
+   * plane, so a horizontal cast shoreward along the ray (rx, rz) at the point's height, within `NEAREST.reach`, through the
+   * strip's buckets, finds the face just ahead; of it and the crossing above, the nearer by depth along its own normal
+   * answers (d_h |n_a| against d_v |n_y|), blended within `NEAREST.blend` (smoothstep). Only + − × ÷ and √.
+   */
+  private nearestSurface(loft: LoftResult, strip: number, x: number, y: number, z: number, rx: number, rz: number, hit: ContactHit): void {
+    hit.verticalDepth = (hit.surfaceY - y) * Math.abs(hit.normalY);
+    hit.normalDepth = hit.verticalDepth;
+    hit.aheadDepth = Number.NaN;
+    const p = loft.positions;
+    const o = strip * S;
+    // Along slice s's ray, as the vertical crossings (`crossings`) bucket it.
+    const q = (x - p[3 * o]) * loft.sliceRayX[strip] + (z - p[3 * o + 2]) * loft.sliceRayZ[strip];
+    const reach = NEAREST.reach;
+    const from = Math.max(0, Math.floor((q - this.stripLow[strip]) / this.bucket));
+    const to = Math.min(this.stripBuckets[strip] - 1, Math.floor((q + reach - this.stripLow[strip]) / this.bucket));
+    let best: number = reach;
+    let found = -1;
+    let bu = 0;
+    let bv = 0;
+    const base = strip * Q;
+    const indices = loft.indices;
+    for (let b = from; b <= to; b += 1) {
+      const k = this.stripFirst[strip] + b;
+      for (let e = this.bucketStart[k]; e < this.bucketStart[k + 1]; e += 1) {
+        const j = this.bucketQuads[e];
+        if (this.quadHigh[base + j] < q || this.quadLow[base + j] > q + reach) continue;
+        const t = this.stripIndex[strip] + 6 * j;
+        for (let m = 0; m < 6; m += 3) {
+          const a = indices[t + m];
+          const bb = indices[t + m + 1];
+          const c = indices[t + m + 2];
+          // Möller–Trumbore along (rx, 0, rz) from (x, y, z): E1 = B − A, E2 = C − A, P = D × E2.
+          const e1x = p[3 * bb] - p[3 * a];
+          const e1y = p[3 * bb + 1] - p[3 * a + 1];
+          const e1z = p[3 * bb + 2] - p[3 * a + 2];
+          const e2x = p[3 * c] - p[3 * a];
+          const e2y = p[3 * c + 1] - p[3 * a + 1];
+          const e2z = p[3 * c + 2] - p[3 * a + 2];
+          const px = -rz * e2y;
+          const py = rz * e2x - rx * e2z;
+          const pz = rx * e2y;
+          const det = e1x * px + e1y * py + e1z * pz;
+          if (det === 0) continue;
+          const tx = x - p[3 * a];
+          const ty = y - p[3 * a + 1];
+          const tz = z - p[3 * a + 2];
+          const u = (tx * px + ty * py + tz * pz) / det;
+          if (u < 0 || u > 1) continue;
+          const qx = ty * e1z - tz * e1y;
+          const qy = tz * e1x - tx * e1z;
+          const qz = tx * e1y - ty * e1x;
+          const v = (rx * qx + rz * qz) / det;
+          if (v < 0 || u + v > 1) continue;
+          const along = (e2x * qx + e2y * qy + e2z * qz) / det;
+          if (!(along > 0) || !(along < best)) continue;
+          best = along;
+          found = t + m;
+          bu = u;
+          bv = v;
+        }
+      }
+    }
+    if (found < 0) return;
+    const a = indices[found];
+    const b = indices[found + 1];
+    const c = indices[found + 2];
+    const wa = 1 - bu - bv;
+    this.prepareNormal?.(a);
+    this.prepareNormal?.(b);
+    this.prepareNormal?.(c);
+    const n = loft.normals;
+    let nx = wa * n[3 * a] + bu * n[3 * b] + bv * n[3 * c];
+    let ny = wa * n[3 * a + 1] + bu * n[3 * b + 1] + bv * n[3 * c + 1];
+    let nz = wa * n[3 * a + 2] + bu * n[3 * b + 2] + bv * n[3 * c + 2];
+    const size = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (!(size > 1e-12)) return;
+    nx /= size;
+    ny /= size;
+    nz /= size;
+    hit.aheadNormalX = nx;
+    hit.aheadNormalY = ny;
+    hit.aheadNormalZ = nz;
+    hit.aheadDepth = best * Math.abs(nx * rx + nz * rz);
+    hit.aheadX = x + best * rx;
+    hit.aheadZ = z + best * rz;
+    const { wall } = loft;
+    hit.aheadAlong = wall ? wa * wall.along[a] + bu * wall.along[b] + bv * wall.along[c] : Number.NaN;
+    hit.aheadUp = wall ? wa * wall.up[a] + bu * wall.up[b] + bv * wall.up[c] : Number.NaN;
+    // The face ahead's share: 1 where it is nearer by the blend, 0 where the crossing above is, smoothstep between.
+    const share = Math.min(1, Math.max(0, 0.5 + (hit.verticalDepth - hit.aheadDepth) / (2 * NEAREST.blend)));
+    const near = Math.min(1, (reach - best) / NEAREST.fade);
+    hit.aheadWeight = share * share * (3 - 2 * share) * near * near * (3 - 2 * near);
+    hit.normalDepth = hit.verticalDepth + hit.aheadWeight * (hit.aheadDepth - hit.verticalDepth);
   }
 
   /** The lowest crossing at (x, z): the face; NaN where the loft is not. */

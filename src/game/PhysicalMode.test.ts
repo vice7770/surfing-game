@@ -167,6 +167,28 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // The step 7 follow-up's switches (pool-tube-contact, 2026-11-05): each piece's A/B alone; the Barrel's alone; online pins.
+  it('takes the step 7 follow-up\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
+    expect(tubeFaceSwitches('?tubeContact=old')).toEqual({ tubeContact: 'old' });
+    expect(tubeFaceSwitches('?tubeCap=OLD&tubeMerge=old')).toEqual({ tubeCap: 'old', tubeMerge: 'old' });
+    expect(tubeFaceSwitches('?tubeGuard=ON&wallFlow=old')).toEqual({ wallFlow: 'old', tubeGuard: 'on' });
+    // The guard is opt-in: `=old` and anything else leave it off (no key).
+    for (const search of ['?tubeContact=new', '?tubeCap=0.3', '?tubeMerge', '?tubeGuard=1', '?tubeGuard=old', '?tubeGuard']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const keys = (c: Record<string, unknown>) => [c.tubeContact, c.tubeCap, c.tubeMerge, c.tubeGuard];
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?tubeContact=old&tubeCap=old&tubeMerge=old&tubeGuard=on' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'on' });
+      expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22; repointed by canyon-b, 2026-11-01): main's Canyon from before
   // version B (the reef with a beach peak either side), carried in the config, so the worker builds that bed and the
   // seabed is drawn from it; absent or anything else, today's (version B).

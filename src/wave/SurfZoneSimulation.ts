@@ -349,6 +349,21 @@ export interface SurfZoneConfig {
   tubeForm?: 'old';
   tubeThrow?: 'break';
   wallFlow?: 'old';
+  /**
+   * The step 7 follow-up's switches (the water-physics advisor's 2026-11-05 ruling, `TubeFace.contact`, `.cap`, `.merge`,
+   * `.guard`), each piece's A/B alone; online rooms pin the defaults (the first three on, the guard off). The first three
+   * 'old' (and no `tubeGuard`) give main's build before it:
+   * - `tubeContact` 'old' (`?tubeContact=old`): a body takes its water from the vertical line through it, as before;
+   * - `tubeCap` 'old' (`?tubeCap=old`): the anchor's continuity cap at 0.3 C, as before;
+   * - `tubeMerge` 'old' (`?tubeMerge=old`): joins and overlap drops as before;
+   * - `tubeGuard` 'on' (`?tubeGuard=on`, opt-in): the retire guard by the case's open time, the paced points' breaks and the
+   *   unbroken jets returned to their crests; off (the default), the guard at 0.3 s + 0.5 s, as before (the coordinator,
+   *   2026-11-05: on, it raised the meter 8.1 % at a38 1.5 m, past the owner's ±5 %).
+   */
+  tubeContact?: 'old';
+  tubeCap?: 'old';
+  tubeMerge?: 'old';
+  tubeGuard?: 'on';
 }
 
 /**
@@ -1391,14 +1406,20 @@ export class SurfZoneSimulation {
         const earliest = library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
           ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).startSeconds
           : undefined;
-        this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}) };
+        // The step 7 follow-up's guard (`TubeFace.guard`): the retire guard by each point's case's open time.
+        const openTime = face.guard && library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
+          ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).touchdownSeconds
+          : undefined;
+        this.onsetTiming.distance = { to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}), ...(openTime ? { openTime } : {}) };
       }
       const lead = face?.lag && !face.distance ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
       const crash = sweptCrashOn(config);
       const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
       const frontOptions = config.barrelFront ?? record.front;
-      const options = face?.distance ? { ...frontOptions, distance: this.throwDistance } : lead ? { ...frontOptions, lead } : frontOptions;
+      const options = face?.distance
+        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}) }
+        : lead ? { ...frontOptions, lead } : frontOptions;
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, options, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
       if (barrel && slope !== undefined && crash) {

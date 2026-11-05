@@ -1,7 +1,7 @@
 import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
-import { continueAnchor, FaceAnchor, smoothPlaces, smoothShifts, type TubeFace } from './faceAnchor';
+import { ANCHOR_CONTINUITY, continueAnchor, FaceAnchor, smoothPlaces, smoothShifts, type TubeFace } from './faceAnchor';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
 import { pathPace } from './sliceClock';
@@ -396,6 +396,8 @@ export class CrashCurve {
   ): void {
     const anchor = this.faceAnchor!;
     const continuity = this.face!.continuity;
+    // The step 7 follow-up's cap (`TubeFace.cap`): 0.45 C rather than 0.3 C.
+    const crestShare = this.face!.cap ? ANCHOR_CONTINUITY.crestWide : ANCHOR_CONTINUITY.crest;
     if (!continuity) this.prepareShifts(points, start, end, heightAt, rays, out);
     const n = end - start;
     if (this.faceRaw.length < 2 * n) {
@@ -434,7 +436,7 @@ export class CrashCurve {
       const dt = p.anchorTime === undefined ? 0 : time - p.anchorTime;
       p.tauRate = p.anchorTau !== undefined && dt > 0 ? (p.tau - p.anchorTau) / dt : 1;
       p.anchorTau = p.tau;
-      const shift = continueAnchor(p, kept[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], continuity);
+      const shift = continueAnchor(p, kept[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], continuity, crestShare, this.face!.cap);
       // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray.
       p.wallSpeed = p.anchorRate ?? celerity;
       p.anchorRayX = this.faceRayX[i];

@@ -137,8 +137,23 @@ export interface OnsetTiming {
   distance?: {
     to: (x: number, z: number, dx: number, dz: number, depth: number) => number; contour: boolean;
     earliest?: (footHeight: number, footDepth: number) => number;
+    /**
+     * The step 7 follow-up's guard (`TubeFace.guard`; the advisor's 2026-11-05 ruling §4): each point's case's open time,
+     * its touchdown, s (by its foot crest and depth). With it, a thrown point still unbroken retires from `GUARD.after` of
+     * it over `GUARD.over` of it, so it has faded out by its touchdown (its jet goes back to its crest, `SweptCrash`); and
+     * one the solver has broken since its throw recovers its weight at `FORMATION.weightRate`. Absent: `LEAD_RETIRE`'s
+     * 0.3 s + 0.5 s, which outlasts a38's 0.70–0.79 s open time, so a point the solver never broke still poured.
+     */
+    openTime?: (footHeight: number, footDepth: number) => number;
   };
 }
+
+/**
+ * The step 7 follow-up's guard (`OnsetTiming.distance.openTime`), in shares of the case's open time T: `LEAD_RETIRE`'s own
+ * 0.3 s : 0.5 s, its 0.8 s scaled to T, so a point the solver has not broken by its touchdown has retired whole then
+ * (*built so*: the guard's proportions kept, its length the case's own).
+ */
+export const GUARD = { after: 0.3 / 0.8, over: 0.5 / 0.8 } as const;
 
 /**
  * Step 7's formation by distance (`OnsetTiming.distance`; the advisor's 2026-11-04 ruling §1.4.2):
@@ -345,10 +360,16 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
       point.tau = next;
       continue;
     }
-    // Thrown, by its clock: unbroken this long past its throw, it retires (the guard).
+    // Thrown, by its clock: unbroken this long past its throw, it retires (the guard); with the follow-up's guard, by its
+    // case's open time, and broken since, it recovers its weight.
+    const open = timing.distance!.openTime?.(point.footHeight, point.footDepth);
     if (point.unbroken) {
-      const late = point.tau - LEAD_RETIRE.after;
-      if (late > 0) point.retire = Math.min(1, late / LEAD_RETIRE.over);
+      const after = open === undefined ? LEAD_RETIRE.after : GUARD.after * open;
+      const over = open === undefined ? LEAD_RETIRE.over : GUARD.over * open;
+      const late = point.tau - after;
+      if (late > 0) point.retire = Math.min(1, late / over);
+    } else if (open !== undefined && point.retire !== undefined && point.retire > 0) {
+      point.retire = Math.max(0, point.retire - FORMATION.weightRate * step);
     }
     if (point.formation !== undefined && point.formation < 1) point.formation = Math.min(1, point.formation + FORMATION.weightRate * step);
     const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));

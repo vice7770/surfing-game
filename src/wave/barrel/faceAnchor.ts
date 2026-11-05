@@ -57,6 +57,25 @@ export interface TubeFace {
   distance: boolean;
   contour: boolean;
   wallFlow: boolean;
+  /**
+   * The step 7 follow-up (the water-physics advisor's 2026-11-05 ruling, docs/research/pool-tube-wall-2026-11-04/
+   * advisor-ruling-2.md), each piece with its own switch, all on by default:
+   * - `contact` (`?tubeContact=old`: off; with `union`): a body in the case's wall water takes its water from the nearest
+   *   surface along its own normal, the crossing above or the face just ahead along the ray (`SweptContact.query`'s
+   *   horizontal cast), its immersion the distance along that normal, its kinematic normal speed faded out 0.3–0.6 m deep,
+   *   and the wall's water under the solver's surface too where the case's surface stands over it (§1);
+   * - `cap` (`?tubeCap=old`: off; with `continuity`): the anchor's continuity cap at 0.45 C (`ANCHOR_CONTINUITY.crestWide`)
+   *   rather than 0.3 C (§3);
+   * - `merge` (`?tubeMerge=old`: off; with `anchor`): a crest joining by distance beside a front's end joins that front,
+   *   and the loft never drops an open strip at weight ≥ 0.5, two thrown strips keeping the earlier-thrown (§5);
+   * - `guard` (opt-in, `?tubeGuard=on`; with `contour`): the retire guard scaled to the case's open time, a thrown point's
+   *   flag cleared when the solver breaks its crest, and the jet of a point retired unbroken returned to its crest (§4). Off
+   *   by default (the coordinator, 2026-11-05): it raised the meter 8.1 % at a38 1.5 m, past the owner's ±5 % of main.
+   */
+  contact: boolean;
+  cap: boolean;
+  merge: boolean;
+  guard: boolean;
 }
 
 /** The thrown clock's catch-up before the ruling, × real time (`advanceClocks`), and after it. */
@@ -78,6 +97,12 @@ export interface TubeFaceSwitches {
   tubeForm?: 'old';
   tubeThrow?: 'break';
   wallFlow?: 'old';
+  /** The step 7 follow-up's (`TubeFace.contact`, `.cap`, `.merge`, `.guard`). */
+  tubeContact?: 'old';
+  tubeCap?: 'old';
+  tubeMerge?: 'old';
+  /** Opt-in: 'on' turns the guard on (`TubeFace.guard`); absent, or anything else, it is off. */
+  tubeGuard?: 'on';
 }
 
 /**
@@ -92,12 +117,17 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
   if (piece && !union) return undefined;
   const lag = !piece && switches.tubeLag !== 0;
   const distance = lag && switches.tubeForm !== 'old';
+  const continuity = !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false;
+  const contour = distance && switches.tubeThrow !== 'break';
   return {
     anchor: !piece, union, lag,
     clockRate: !piece && switches.tubeClock !== 'old' ? THROWN_RATE.face : THROWN_RATE.old, thrownEnds: !piece,
-    continuity: !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false, distance,
-    contour: distance && switches.tubeThrow !== 'break',
+    continuity, distance, contour,
     wallFlow: !piece && union && switches.wallFlow !== 'old',
+    contact: !piece && union && switches.tubeContact !== 'old',
+    cap: continuity && switches.tubeCap !== 'old',
+    merge: !piece && switches.tubeMerge !== 'old',
+    guard: contour && switches.tubeGuard === 'on',
   };
 }
 
@@ -117,9 +147,13 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
  *   this long (smoothstep), uncapped meanwhile;
  * - `blend`: the case's crossing's extrapolation from life 0.5 (`FACE_ANCHOR.extrapolate`) blended in over these shares of
  *   touchdown (smoothstep) rather than switched on at once.
+ * - `crestWide`: the cap's share under the step 7 follow-up (`TubeFace.cap`; the advisor's 2026-11-05 ruling §3): the case's
+ *   crest runs at 0.64 / 1.24–1.35 / 1.37 of the wave's advance (p5 / p50 / p95), so 0.3 C (a ceiling of about 1.35 C at
+ *   6–8 m/s) shaped the wall on about 65 % of steps; at 0.45 C the ceiling is about 1.5 C and the floor about 0.5 C, outside
+ *   the case's p5–p95, so the cap catches only jumps. `?tubeCap=old`: `crest`.
  * Only + − × ÷, for online determinism.
  */
-export const ANCHOR_CONTINUITY = { crest: 0.3, slack: 0.3, hold: 0.5, ease: 0.3, blend: [0.45, 0.55] } as const;
+export const ANCHOR_CONTINUITY = { crest: 0.3, crestWide: 0.45, slack: 0.3, hold: 0.5, ease: 0.3, blend: [0.45, 0.55] } as const;
 
 /** A front point's anchor track (`continueAnchor`; `FrontPoint`'s, travelling with it). */
 export interface AnchorTrack {
@@ -136,6 +170,12 @@ export interface AnchorTrack {
   anchorEase?: number;
   /** It has stood on the crest anchor (no face anchor yet). */
   anchorNone?: true;
+  /**
+   * Diagnostics (a probe's; nothing reads them in the game): the smoothed shift it was last given, m (NaN: none in reach),
+   * and what `continueAnchor` did with it.
+   */
+  anchorTarget?: number;
+  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free';
 }
 
 /** Counts of `continueAnchor`'s outcomes (a probe's; none in the game). */
@@ -145,10 +185,13 @@ export const anchorCounts = { kept: 0, capped: 0, held: 0, stood: 0, eased: 0, c
  * A point's shift this step from its smoothed shift `smoothed` (m; NaN with none in reach) at `time` (s), the point at
  * (x, z) on its ray (rayX, rayZ), its crest's speed along the ray `celerity` (m/s): see `ANCHOR_CONTINUITY`. NaN while it
  * has never had a face anchor (the crest anchor). `capped` false keeps the smoothed shift as it is (the case's crest's speed
- * alone is tracked: `?tubeAnchor=old` with the wall's flow on).
+ * alone is tracked: `?tubeAnchor=old` with the wall's flow on). `crestShare`: the cap's share of C (`ANCHOR_CONTINUITY.crest`, or
+ * `.crestWide` under `TubeFace.cap`). `runOn` (`TubeFace.cap`): past the hold a miss runs on at C rather than standing with the
+ * point.
  */
 export function continueAnchor(
   track: AnchorTrack, smoothed: number, time: number, celerity: number, x: number, z: number, rayX: number, rayZ: number, capped = true,
+  crestShare: number = ANCHOR_CONTINUITY.crest, runOn = false,
 ): number {
   const previous = track.anchorShift;
   const dt = track.anchorTime === undefined ? 0 : time - track.anchorTime;
@@ -158,25 +201,39 @@ export function continueAnchor(
   track.anchorX = x;
   track.anchorZ = z;
   const valid = previous !== undefined && previous === previous;
+  track.anchorTarget = smoothed;
   if (!capped) {
+    track.anchorLast = 'free';
     track.anchorRate = smoothed === smoothed && valid && dt > 0 ? (moved + smoothed - previous!) / dt : celerity;
     track.anchorShift = smoothed;
     return smoothed;
   }
-  const { crest, slack, hold, ease } = ANCHOR_CONTINUITY;
+  const { slack, hold, ease } = ANCHOR_CONTINUITY;
+  const crest = crestShare;
   if (!(smoothed === smoothed)) {
     if (previous === undefined) {
       track.anchorNone = true;
+      track.anchorLast = 'crest';
       anchorCounts.crest += 1;
       return Number.NaN;
     }
     if (time - track.anchorGood! <= hold) {
       // A miss: the case's crest runs on along the ray at its last rate.
       track.anchorShift = previous + track.anchorRate! * dt - moved;
+      track.anchorLast = 'held';
       anchorCounts.held += 1;
+    } else if (runOn) {
+      // Then (the step 7 follow-up, `TubeFace.cap`) it runs on with the wave's own advance C along the ray: in the wave's
+      // frame, as the cap holds it. Standing with the point, the drawn crest stepped with the point's 1–2 m row steps (its
+      // crest cell's centre, once its pace has ended): the follow-up's traced 0.6–1.9 m single steps, all after a miss.
+      track.anchorShift = previous + celerity * dt - moved;
+      track.anchorRate = celerity;
+      track.anchorLast = 'stood';
+      anchorCounts.stood += 1;
     } else {
       // Then it stands with the point.
       track.anchorRate = dt > 0 ? moved / dt : track.anchorRate;
+      track.anchorLast = 'stood';
       anchorCounts.stood += 1;
     }
     return track.anchorShift!;
@@ -189,10 +246,12 @@ export function continueAnchor(
     // From the crest anchor (a shift of 0) to the face anchor, uncapped.
     const u = (time - track.anchorEase!) / ease;
     shift = u * u * (3 - 2 * u) * smoothed;
+    track.anchorLast = 'eased';
     anchorCounts.eased += 1;
   } else if (previous === undefined) {
     // Faced from its first step: it starts there.
     shift = smoothed;
+    track.anchorLast = 'kept';
     anchorCounts.kept += 1;
   } else {
     // In the wave's frame: the target's change along the ray against the wave's own advance, within the cap.
@@ -201,6 +260,7 @@ export function continueAnchor(
     const target = moved + smoothed - previous;
     const change = advance + Math.min(cap, Math.max(-cap, target - advance));
     shift = previous + change - moved;
+    track.anchorLast = change !== target ? 'capped' : 'kept';
     if (change !== target) anchorCounts.capped += 1;
     else anchorCounts.kept += 1;
   }

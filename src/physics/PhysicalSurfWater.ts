@@ -1,5 +1,5 @@
 import type { BedMaterial } from '../wave/Bathymetry';
-import { createContactHit, tubeState, type ContactHit, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
+import { createContactHit, NEAREST, tubeState, type ContactHit, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
 import { waveNumber } from '../wave/dispersion';
 import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
 import type { LensPoint, RollerLens } from '../wave/SpillingRoller';
@@ -145,6 +145,17 @@ export interface PhysicalSurfWaterOptions {
    * solver's flow there, as before.
    */
   sweptWall?: boolean;
+  /**
+   * With `sweptUnion`: the step 7 follow-up's nearest surface (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1). In
+   * the case's wall (its water with no air under it, over the solver's surface or under it where the case's surface stands
+   * over it), a body takes the surface nearest it along its own normal (`SweptContact`'s crossing above or the face just
+   * ahead, blended): its immersion is the depth along that normal (the surface reported that far above the point), its
+   * normal and its surface's speed that surface's; the face ahead counts only where the solver's water does not stand over
+   * the point's height there (faded over `NEAREST.blend`). The wall's water (`sweptWall`) applies under the solver's surface
+   * too where the case's surface stands over it, and its kinematic normal part fades to the solver's flow from 0.3 to 0.6 m
+   * deep (`WALL_WATER.fade`). Without it, the vertical line through the point answers, as before.
+   */
+  sweptNearest?: boolean;
   /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
@@ -386,6 +397,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       ...(swept && simulation.tubeFace?.union ? { sweptUnion: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow ? { sweptWall: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.contact ? { sweptNearest: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
@@ -455,6 +467,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
         out.surfaceY += rise * this.sampleTime;
       }
       this.unionContact(y, out);
+      if (this.options.sweptNearest) this.cellWeights(x, z);
     } else if (contact) this.fromContact(y, out);
     else if (this.sampleTime !== 0 && out.wet) {
       rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
@@ -676,6 +689,11 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       if (hit.inWater && hit.surfaceY >= plainY) {
         this.fromContact(y, out);
         if (out.waterFloorY !== undefined && out.waterFloorY <= plainY) out.waterFloorY = undefined;
+        if (this.options.sweptNearest && out.waterFloorY === undefined) {
+          // The case's wall standing over the solver's surface (the step 7 follow-up): its water and its nearest surface.
+          this.inWall = this.options.sweptWall === true;
+          this.nearestSurface(y, out);
+        }
         return;
       }
       // The solver's water: the swept surface says air or lies under it here.
@@ -689,6 +707,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       if (out.waterFloorY !== undefined && out.waterFloorY <= plainY) out.waterFloorY = undefined;
       // Over the solver's surface in the swept water with no air under it: the case's wall (`sweptWall`).
       this.inWall = this.options.sweptWall === true && out.waterFloorY === undefined;
+      if (this.options.sweptNearest && out.waterFloorY === undefined) this.nearestSurface(y, out);
       return;
     }
     // In air over the swept surface: the floor under the point is the higher of it and the solver's.
@@ -701,6 +720,58 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
         out.covered = false;
       }
     }
+  }
+
+  /**
+   * The step 7 follow-up's nearest surface (`sweptNearest`) at height `y` in the case's wall, `out` holding the crossing
+   * above (`fromContact`): the face ahead's share (`ContactHit.aheadWeight`) where the solver's surface there stands under
+   * the point's height (by `NEAREST.blend`; else the solver's water goes on past that face), and the two answers blended by
+   * it: the depth along the normal (the surface reported that far above the point, so a hull reads its true immersion), the
+   * normal with the slope clamp, and the surface's velocity for the wall's water (into the hit). Only + − × ÷ and √. The
+   * caller restores the cell weights (`cellWeights`), which the solver's surface at the face ahead reads.
+   */
+  private nearestSurface(y: number, out: WaterSample): void {
+    const hit = this.hit;
+    if (!(hit.normalDepth === hit.normalDepth)) return;
+    let w = hit.aheadWeight;
+    if (w > 0) {
+      const clear = y - this.plainAtSampleTime(hit.aheadX, hit.aheadZ);
+      w *= Math.min(1, Math.max(0, clear / NEAREST.blend));
+    }
+    let nx = hit.normalX + w * (hit.aheadNormalX - hit.normalX);
+    let ny = hit.normalY + w * (hit.aheadNormalY - hit.normalY);
+    let nz = hit.normalZ + w * (hit.aheadNormalZ - hit.normalZ);
+    const length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (length > 1e-12) {
+      nx /= length;
+      ny /= length;
+      nz /= length;
+    } else {
+      nx = hit.normalX;
+      ny = hit.normalY;
+      nz = hit.normalZ;
+    }
+    const depth = w > 0 ? hit.verticalDepth + w * (hit.aheadDepth - hit.verticalDepth) : hit.verticalDepth;
+    if (w > 0 && hit.aheadAlong === hit.aheadAlong && hit.wallAlong === hit.wallAlong) {
+      hit.wallAlong += w * (hit.aheadAlong - hit.wallAlong);
+      hit.wallUp += w * (hit.aheadUp - hit.wallUp);
+    }
+    hit.normalX = nx;
+    hit.normalY = ny;
+    hit.normalZ = nz;
+    hit.normalDepth = depth;
+    out.surfaceY = y + depth;
+    if (ny >= MIN_NORMAL_Y) {
+      out.slopeX = -nx / ny;
+      out.slopeZ = -nz / ny;
+    } else {
+      const across = Math.sqrt(nx * nx + nz * nz);
+      out.slopeX = across > 0 ? (-nx / across) * STEEPEST : 0;
+      out.slopeZ = across > 0 ? (-nz / across) * STEEPEST : 0;
+    }
+    out.normalX = nx;
+    out.normalY = ny;
+    out.normalZ = nz;
   }
 
   /**
@@ -842,11 +913,12 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
  *   water at a wave face moves no faster than the wave; inferred).
  * The whole is weighed by the slices' weight; along the crest the solver's flow is kept.
  */
-export const WALL_WATER = { steepest: 0.2 } as const;
+export const WALL_WATER = { steepest: 0.2, fade: [0.3, 0.6] } as const;
 
 export function wallWaterFlow(
   out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, y: number,
-  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallAlong' | 'wallUp' | 'wallLow' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>,
+  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallAlong' | 'wallUp' | 'wallLow' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>
+    & Partial<Pick<ContactHit, 'normalDepth'>>,
 ): void {
   // The ray: the front's normal, square to its tangent.
   const rx = -wall.tangentZ;
@@ -865,7 +937,14 @@ export function wallWaterFlow(
     na /= length;
     ny /= length;
     const side = na >= 0 ? 1 : -1;
-    const normal = wall.wallAlong * na + wall.wallUp * ny;
+    let normal = wall.wallAlong * na + wall.wallUp * ny;
+    // The step 7 follow-up (`sweptNearest`): deep in the wall the kinematic condition gives way to the solver's flow, faded
+    // linearly over `WALL_WATER.fade` of the depth along the normal (inferred); NaN depth (without it): no fade.
+    const depth = wall.normalDepth;
+    if (depth !== undefined && depth === depth && depth > WALL_WATER.fade[0]) {
+      const k = Math.max(0, (WALL_WATER.fade[1] - depth) / (WALL_WATER.fade[1] - WALL_WATER.fade[0]));
+      normal = k * normal + (1 - k) * (along * na + out.flowY * ny);
+    }
     // u = (normal) n̂ + climb t̂, t̂ = side (−n_y, n_a): its along-ray part normal n_a − climb side n_y is the target.
     const bound = Math.abs(wall.wallSpeed);
     const climb = Math.min(bound, Math.max(-bound, (side * (normal * na - target)) / Math.max(WALL_WATER.steepest, ny)));

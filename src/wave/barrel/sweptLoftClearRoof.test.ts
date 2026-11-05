@@ -58,7 +58,8 @@ function equalResults(a: LoftResult, b: LoftResult): void {
       expect(Buffer.from(value.buffer, value.byteOffset, value.byteLength).equals(
         Buffer.from(view.buffer, view.byteOffset, view.byteLength),
       ), key).toBe(true);
-    } else expect(Object.is(value, other), key).toBe(true);
+    } else if (Array.isArray(value)) expect(other, key).toEqual(value);
+    else expect(Object.is(value, other), key).toBe(true);
   }
 }
 

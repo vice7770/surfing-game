@@ -179,6 +179,14 @@ export interface LoftResult {
   overlaps: number;
   overlapsOpen: number;
   overlapOpenWeight: number;
+  /**
+   * Of `overlapsOpen`, those at weight ≥ 0.5 (the advisor's 2026-11-05 bar 8: none), and each open drop's strips this build
+   * as pairs (the dropped strip's first slice, the kept one's): diagnostics.
+   */
+  overlapsOpenHeavy: number;
+  openDrops: number[];
+  /** Under `TubeFace.merge`: overlapping strips both kept, both open at weight ≥ 0.5 (a fold the contact's first front answers). */
+  overlapsKept: number;
   /** The clock refinement's depth this build (`LOFT.levels` unless the budget clamped it; 0: none). */
   refineLevels: number;
   /** Ray stabilization: slices corrected, largest shared blend, minimum stored row advance, and invalid input pairs. */
@@ -457,7 +465,7 @@ export class SweptLoft {
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
-      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, refineLevels: 0,
+      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, overlapsOpenHeavy: 0, openDrops: [], overlapsKept: 0, refineLevels: 0,
       rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
@@ -532,6 +540,9 @@ export class SweptLoft {
     r.overlaps = 0;
     r.overlapsOpen = 0;
     r.overlapOpenWeight = 0;
+    r.overlapsOpenHeavy = 0;
+    r.openDrops.length = 0;
+    r.overlapsKept = 0;
     r.restSamples = 0;
     r.rayCorrections = 0;
     r.rayMaxBlend = 0;
@@ -1551,8 +1562,9 @@ export class SweptLoft {
       const cutLast = r.sliceWeight[last] > 0;
       if (cutFirst || cutLast) {
         for (let s = first; s <= last; s += 1) {
-          // A young cut end (its slice not thrown) blends over at least its height, as a front's own young end does.
-          const blend = (end: number) => (r.sliceTau[end] < 0 ? Math.max(LOFT.endBlend, this.sliceHeight[end]) : LOFT.endBlend);
+          // A young cut end (its slice not thrown) blends over at least its height, as a front's own young end does; under the
+          // step 7 follow-up's merge (`TubeFace.merge`) a thrown one too, as a front's own thrown end does (`thrownEnds`).
+          const blend = (end: number) => (r.sliceTau[end] < 0 || this.face?.merge ? Math.max(LOFT.endBlend, this.sliceHeight[end]) : LOFT.endBlend);
           const u = Math.min(1, Math.max(0, Math.min(
             cutFirst ? (r.sliceSigma[s] - r.sliceSigma[first]) / blend(first) : Infinity,
             cutLast ? (r.sliceSigma[last] - r.sliceSigma[s]) / blend(last) : Infinity,
@@ -1811,6 +1823,36 @@ export class SweptLoft {
             // strip gives way too: where the retire guard splits a front (a point left unbroken leaves a gap), its leading
             // piece never cuts a hole in the tube beside it. It is counted as dropped.
             const unthrown = (k: number) => r.slicePhase[k] === 0 && r.slicePhase[k + 1] === 0;
+            if (this.face?.merge) {
+              // The step 7 follow-up (the advisor's 2026-11-05 ruling §5.2): an open strip at weight ≥ 0.5 is never dropped
+              // (two of them both stay: a fold, which the contact's first front answers), and a thrown cut end blends over
+              // max(1 m, H) (`sealRuns`). *(Built so)* Between two thrown strips the lighter still gives way, as before: keeping
+              // the earlier-thrown instead raised the holes 9× at a38 1.5 m in 12 periods (0.009 → 0.083 a build), the earlier
+              // piece being mostly the short one already faded (weight 0.00–0.02) beside a live one.
+              const openAt = (k: number) => (r.slicePhase[k] === 1 && r.sliceOverturned[k] === 1) || (r.slicePhase[k + 1] === 1 && r.sliceOverturned[k + 1] === 1);
+              const heavy = (k: number) => openAt(k) && Math.max(r.sliceWeight[k], r.sliceWeight[k + 1]) >= 0.5;
+              const hs = heavy(s);
+              const ht = heavy(t);
+              if (hs && ht) {
+                r.overlapsKept += 1;
+                continue;
+              }
+              const dropEarlier: boolean | undefined = hs !== ht ? hs : undefined;
+              if (dropEarlier !== undefined) {
+                const gone = dropEarlier ? t : s;
+                r.sliceJoined[gone] = 0;
+                r.overlaps += 1;
+                const weight = Math.max(r.sliceWeight[gone], r.sliceWeight[gone + 1]);
+                if (openAt(gone) && weight > 0) {
+                  r.overlapsOpen += 1;
+                  r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+                  if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+                  r.openDrops.push(gone, dropEarlier ? s : t);
+                }
+                if (dropEarlier) continue;
+                break;
+              }
+            }
             if (this.face && !unthrown(t) && unthrown(s)) {
               r.sliceJoined[s] = 0;
               r.overlaps += 1;
@@ -1824,6 +1866,8 @@ export class SweptLoft {
               if (open && Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) > 0) {
                 r.overlapsOpen += 1;
                 r.overlapOpenWeight = Math.max(r.overlapOpenWeight, r.sliceWeight[t], r.sliceWeight[t + 1]);
+                if (Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) >= 0.5) r.overlapsOpenHeavy += 1;
+                r.openDrops.push(t, s);
               }
               continue;
             }
@@ -1837,6 +1881,8 @@ export class SweptLoft {
             if (open && weight > 0) {
               r.overlapsOpen += 1;
               r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+              if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+              r.openDrops.push(s, t);
             }
             break;
           }
