@@ -191,18 +191,18 @@ describe('PhysicalMode', () => {
 
   // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
   it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
-    expect(tubeFaceSwitches('?tubeTrack=old')).toEqual({ tubeTrack: 'old' });
+    expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });
     expect(tubeFaceSwitches('?tubeInertia=OLD&tubeRetire=old')).toEqual({ tubeInertia: 'old', tubeRetire: 'old' });
-    // The buoyancy and the drop rule are opt-in: `=on` turns each on; `=old` and anything else leave them off (no key).
+    // The smooth wall, the buoyancy and the drop rule are opt-in: `=on` turns each on; `=old` and anything else leave them off.
     expect(tubeFaceSwitches('?tubeBuoy=ON&tubeDrop=on&tubeCap=old')).toEqual({ tubeCap: 'old', tubeBuoy: 'on', tubeDrop: 'on' });
-    for (const search of ['?tubeTrack=new', '?tubeInertia', '?tubeRetire=1', '?tubeBuoy=old', '?tubeDrop=', '?tubeDrop=old']) expect(tubeFaceSwitches(search), search).toEqual({});
+    for (const search of ['?tubeTrack=old', '?tubeTrack=new', '?tubeInertia', '?tubeRetire=1', '?tubeBuoy=old', '?tubeDrop=', '?tubeDrop=old']) expect(tubeFaceSwitches(search), search).toEqual({});
     const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
     const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
     const keys = (c: Record<string, unknown>) => [c.tubeTrack, c.tubeInertia, c.tubeRetire, c.tubeBuoy, c.tubeDrop];
     try {
       expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined, undefined]);
-      vi.stubGlobal('location', { search: '?tubeTrack=old&tubeInertia=old&tubeRetire=old&tubeBuoy=on&tubeDrop=on' });
-      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeTrack: 'old', tubeInertia: 'old', tubeRetire: 'old', tubeBuoy: 'on', tubeDrop: 'on' });
+      vi.stubGlobal('location', { search: '?tubeTrack=on&tubeInertia=old&tubeRetire=old&tubeBuoy=on&tubeDrop=on' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeTrack: 'on', tubeInertia: 'old', tubeRetire: 'old', tubeBuoy: 'on', tubeDrop: 'on' });
       expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined, undefined]);
       const online = surfZoneConfigFor(barrel, 5, false, { tubeTrack: undefined, tubeInertia: undefined, tubeRetire: undefined, tubeBuoy: undefined, tubeDrop: undefined });
       expect(keys(online as never)).toEqual([undefined, undefined, undefined, undefined, undefined]);

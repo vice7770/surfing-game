@@ -28,20 +28,20 @@ const face = (over: Partial<TubeFace>): TubeFace => ({
 describe('ruling 3: the switches', () => {
   it('turns each piece off by its own switch, all five old the build before it, each with what it builds on', () => {
     const all = tubeFaceOf(true, {})!;
-    // The tracked wall, the inertia and no retire on by default; the buoyancy and the drop rule opt-in.
-    expect(all).toMatchObject({ track: true, inertia: true, retire: true, buoy: false, drop: false });
-    expect(tubeFaceOf(true, { tubeTrack: 'old' })).toEqual({ ...all, track: false });
+    // The inertia and no retire on by default; the smooth wall, the buoyancy and the drop rule opt-in.
+    expect(all).toMatchObject({ track: false, inertia: true, retire: true, buoy: false, drop: false });
+    expect(tubeFaceOf(true, { tubeTrack: 'on' })).toEqual({ ...all, track: true });
     expect(tubeFaceOf(true, { tubeInertia: 'old' })).toEqual({ ...all, inertia: false });
     expect(tubeFaceOf(true, { tubeRetire: 'old' })).toEqual({ ...all, retire: false });
     expect(tubeFaceOf(true, { tubeBuoy: 'on' })).toEqual({ ...all, buoy: true });
     expect(tubeFaceOf(true, { tubeDrop: 'on' })).toEqual({ ...all, drop: true });
-    const before = { ...all, track: false, inertia: false, retire: false };
-    expect(tubeFaceOf(true, { tubeTrack: 'old', tubeInertia: 'old', tubeRetire: 'old' })).toEqual(before);
+    const before = { ...all, inertia: false, retire: false };
+    expect(tubeFaceOf(true, { tubeInertia: 'old', tubeRetire: 'old' })).toEqual(before);
     // The tracker with the continuity; the inertia and the buoyancy with the wall water; no retire with the contour throw.
-    expect(tubeFaceOf(true, { tubeAnchor: 'old' })).toMatchObject({ track: false });
-    expect(tubeFaceOf(true, { wallFlow: 'old', tubeBuoy: 'on' })).toMatchObject({ inertia: false, buoy: false, track: true });
+    expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeTrack: 'on' })).toMatchObject({ track: false });
+    expect(tubeFaceOf(true, { wallFlow: 'old', tubeBuoy: 'on', tubeTrack: 'on' })).toMatchObject({ inertia: false, buoy: false, track: true });
     expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ retire: false });
-    expect(tubeFaceOf(true, { tubeFrom: 'piece', tubeBuoy: 'on', tubeDrop: 'on' })).toMatchObject({ track: false, inertia: false, retire: false, buoy: false, drop: false });
+    expect(tubeFaceOf(true, { tubeFrom: 'piece', tubeTrack: 'on', tubeBuoy: 'on', tubeDrop: 'on' })).toMatchObject({ track: false, inertia: false, retire: false, buoy: false, drop: false });
     expect(tubeFaceOf(false, {})).toBeUndefined();
   });
 });

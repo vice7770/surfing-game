@@ -86,12 +86,16 @@ export interface TubeFace {
   guard: boolean;
   /**
    * The step 7 follow-up's ruling 3 (the water-physics advisor's 2026-11-05 ruling on the five open questions,
-   * docs/research/pool-tube-contact-2026-11-05/advisor-ruling-3.md), each piece with its own switch (the first three on by default, the last two opt-in: measured, they did not help):
-   * - `track` (`?tubeTrack=old`: off; with `continuity`): a smooth wall. The solver's crossing is read against its real
-   *   trough, the lowest water within half a wavelength ahead of its crest (`FaceAnchor.solverCrossing`'s `halfWave`, the
-   *   meter's own measure); W is tracked by an α–β filter (`trackAnchor`, `ANCHOR_TRACK`) with the cap kept as its gate;
-   *   the wall water's speed is the tracker's rate; and the wall water blends into the solver's flow across the solver's
-   *   surface, by the wall's height over it (`WALL_WATER.blend`) (§1, §3);
+   * docs/research/pool-tube-contact-2026-11-05/advisor-ruling-3.md), each piece with its own switch (the inertia and no
+   * retire on by default; the smooth wall, the buoyancy and the drop rule opt-in: measured, they made bars worse or did not
+   * help, docs/research/pool-tube-track-2026-11-05/README.md):
+   * - `track` (opt-in, `?tubeTrack=on`; with `continuity`): a smooth wall. Off by default: it smooths the wall water (its
+   *   step a body meets p50 0.08–0.15 against 0.34–0.75 m/s) and W (jitter 0.028 against 0.12 m), but doubles bar 2a on
+   *   all four (0.60–0.77 against 0.29–0.52 m) and overruns a38 1.5 m's boards just down the line (2b 50 % against 15 %).
+   *   On, the solver's crossing is read against its real trough, the lowest water within half a wavelength ahead of its
+   *   crest and the case's reach (`FaceAnchor.troughCrossing`); W is tracked by an α–β filter (`trackAnchor`,
+   *   `ANCHOR_TRACK`) with the cap kept as its gate; the wall water's speed is the tracker's rate, its surface's own normal
+   *   speed (`SweptLoft.normalSpeed`); and it blends into the solver's flow across the solver's surface (`WALL_WATER`) (§1, §3);
    * - `inertia` (`?tubeInertia=old`: off; with `wallFlow`): in the case's wall water only, the water's own acceleration on
    *   the hull's added mass (`BoardBody`, `WATER_INERTIA`; Maxey & Riley 1983, Auton, Hunt & Prud'homme 1988) (§2);
    * - `retire` (`?tubeRetire=old`: off; with `contour`): a contour-thrown point is never retired for being unbroken (§4);
@@ -135,8 +139,8 @@ export interface TubeFaceSwitches {
   tubeMerge?: 'old';
   /** Opt-in: 'on' turns the guard on (`TubeFace.guard`); absent, or anything else, it is off. */
   tubeGuard?: 'on';
-  /** Ruling 3's (`TubeFace.track`, `.inertia`, `.retire`, `.buoy`, `.drop`). */
-  tubeTrack?: 'old';
+  /** Ruling 3's (`TubeFace.track`, `.inertia`, `.retire`, `.buoy`, `.drop`); the smooth wall opt-in, as the last two. */
+  tubeTrack?: 'on';
   tubeInertia?: 'old';
   tubeRetire?: 'old';
   /** Opt-in: 'on' turns each on (`TubeFace.buoy`, `.drop`); absent, or anything else, it is off (they measured no help). */
@@ -168,7 +172,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     cap: continuity && switches.tubeCap !== 'old',
     merge: !piece && switches.tubeMerge !== 'old',
     guard: contour && switches.tubeGuard === 'on',
-    track: continuity && switches.tubeTrack !== 'old',
+    track: continuity && switches.tubeTrack === 'on',
     inertia: wallFlow && switches.tubeInertia !== 'old',
     retire: contour && switches.tubeRetire !== 'old',
     buoy: wallFlow && switches.tubeBuoy === 'on',

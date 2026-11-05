@@ -427,8 +427,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     // ruling); `?tubeFace=old&tubeFrom=piece` is the fitted piece exactly as before. Step 7's: `?tubeAnchor=old`,
     // `?tubeForm=old`, `?tubeThrow=break`, `?wallFlow=old` (each piece alone; the three old together, step 6). The step 7
     // follow-up's: `?tubeContact=old`, `?tubeCap=old`, `?tubeMerge=old` (all three old: main before it), and the opt-in
-    // `?tubeGuard=on`. Ruling 3's: `?tubeTrack=old`, `?tubeInertia=old`, `?tubeRetire=old` (all three old: main before it),
-    // and the opt-in `?tubeBuoy=on`, `?tubeDrop=on`.
+    // `?tubeGuard=on`. Ruling 3's: `?tubeInertia=old`, `?tubeRetire=old` (both old: main before it), and the opt-in
+    // `?tubeTrack=on`, `?tubeBuoy=on`, `?tubeDrop=on`.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? tubeFaceSwitches() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
@@ -537,11 +537,11 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * ruling): `?tubeContact=old`, a body's water from the vertical line through it; `?tubeCap=old`, the anchor's cap at 0.3 C;
  * `?tubeMerge=old`, joins and overlap drops as before; all three old together are main's build before it. `?tubeGuard=on`
  * (opt-in) turns on the retire guard by the case's open time. Ruling 3's (pool-tube-track, 2026-11-05, the advisor's third
- * ruling): `?tubeTrack=old`, the anchor's read, cap and per-step rate as before; `?tubeInertia=old`, no water acceleration on
- * the added mass in the wall water; `?tubeRetire=old`, contour-thrown points retired unbroken as before; all three old
- * together are main's build before it; `?tubeBuoy=on` (opt-in), the wall water's buoyancy along the true normal past the
- * clamp; `?tubeDrop=on` (opt-in), the lighter of two overlapping strips gives way. Online rooms run the defaults (the guard,
- * the buoyancy and the drop rule off).
+ * ruling): `?tubeInertia=old`, no water acceleration on the added mass in the wall water; `?tubeRetire=old`, contour-thrown
+ * points retired unbroken as before; both old together are main's build before it; `?tubeTrack=on` (opt-in), the smooth
+ * wall (the trough read, the tracked anchor, the wall water's speed, normal speed and blend); `?tubeBuoy=on` (opt-in), the
+ * wall water's buoyancy along the true normal past the clamp; `?tubeDrop=on` (opt-in), the lighter of two overlapping strips
+ * gives way. Online rooms run the defaults (the guard, the smooth wall, the buoyancy and the drop rule off).
  */
 export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
@@ -558,7 +558,7 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeCap') === 'old' ? { tubeCap: 'old' as const } : {}),
     ...(value('tubeMerge') === 'old' ? { tubeMerge: 'old' as const } : {}),
     ...(value('tubeGuard') === 'on' ? { tubeGuard: 'on' as const } : {}),
-    ...(value('tubeTrack') === 'old' ? { tubeTrack: 'old' as const } : {}),
+    ...(value('tubeTrack') === 'on' ? { tubeTrack: 'on' as const } : {}),
     ...(value('tubeInertia') === 'old' ? { tubeInertia: 'old' as const } : {}),
     ...(value('tubeRetire') === 'old' ? { tubeRetire: 'old' as const } : {}),
     ...(value('tubeBuoy') === 'on' ? { tubeBuoy: 'on' as const } : {}),

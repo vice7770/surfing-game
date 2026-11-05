@@ -75,8 +75,8 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
  * and the read's trough at its window's end; bar 6 per jet measured after the pour (the solver's breaking ≥ 0.3 within
  * ±0.5 H_s of the tip at the crash within 0.2 s of it) and per column at all weights; visible holes (a dropped open strip
  * heavier than the kept one by over 0.1, or drawn more than 0.1 m off the solver's surface). SWITCHES also takes
- * `tubeTrack=old`, `tubeInertia=old`, `tubeRetire=old` (all three: main before ruling 3) and the opt-in `tubeBuoy=on`,
- * `tubeDrop=on`. COST_ARMS=track compares the default against those three old.
+ * `tubeInertia=old`, `tubeRetire=old` (both: main before ruling 3) and the opt-in `tubeTrack=on`, `tubeBuoy=on`,
+ * `tubeDrop=on`. COST_ARMS=track compares the smooth wall, the inertia and no retire on against all three off (main).
  */
 
 const quantile = (values: number[], q: number) => {
@@ -301,7 +301,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: the surfable t
           tide: 0, windSpeed: 0, stage: 2, compute: 'cpu', poolWaves: 'barrel', poolTubeCase: caseName,
           ...(arm === 'step 6' ? { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old' } : {}),
           ...(arm === 'follow-up off' ? { tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old' } : {}),
-          ...(arm === 'ruling 3 off' ? { tubeTrack: 'old', tubeInertia: 'old', tubeRetire: 'old' } : {}),
+          ...(arm === 'ruling 3 off' ? { tubeInertia: 'old', tubeRetire: 'old' } : {}),
+          ...(trackArms && arm === 'default' ? { tubeTrack: 'on' } : {}),
         } as unknown as SurfZoneConfig, 'spun-up', lib);
         const tubeFace = sim.tubeFace;
         const contact = new SweptContact(lib, BARREL_SLOPE.pool!, tubeFace ? { face: tubeFace } : {});

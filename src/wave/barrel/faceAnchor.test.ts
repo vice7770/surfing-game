@@ -14,7 +14,7 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeFace: 'old', tubeFrom: 'piece' })).toBeUndefined();
     expect(tubeFaceOf(true, {})).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: true, distance: true, contour: true, wallFlow: true,
-      contact: true, cap: true, merge: true, guard: false, track: true, inertia: true, retire: true, buoy: false, drop: false,
+      contact: true, cap: true, merge: true, guard: false, track: false, inertia: true, retire: true, buoy: false, drop: false,
     });
     // The piece, never below the solver's surface: the union alone.
     expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({
