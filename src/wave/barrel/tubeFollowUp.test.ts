@@ -169,6 +169,43 @@ describe('the step 7 follow-up: the retire guard by the case\'s open time', () =
   });
 });
 
+describe('the step 7 follow-up: the guard on the crash\'s foreseen path', () => {
+  it('returns the jet of an unbroken point left alone on its front at its touchdown, and crashes it as foreseen without', () => {
+    const library = () => new ProfileLibrary([tubeCase(0.2), tubeCase(0.4)]);
+    const TOUCHDOWN = 0.5 * Math.sqrt(2 / 9.81);
+    for (const guard of [true, false]) {
+      const solver = new ShallowWaterSolver({ nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => 2, { manning: 0 });
+      for (let iz = 10; iz < 14; iz += 1) for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] += 0.8;
+      const lip = new PlungingLip(solver);
+      const crash = new SweptCrash(library(), 0.05, face({ guard }));
+      const s: CrashSea = { solver, lip, stillLevel: 0, period: 16, strength: new Float64Array(solver.h.length), whitewater: new Float64Array(solver.h.length) };
+      const points: FrontPoint[] = Array.from({ length: 9 }, (_, k) => ({
+        id: k, front: 1, column: k, sigma: k, x: k + 0.5, z: 11.5, b: 0, height: 0.8, joined: 0, depth: 2, throwDepth: 1.8, crestDepth: 1.8,
+        thrown: 0, throwZ: 11.5, footHeight: 0.6, footDepth: 2, broke: 0, tau: 0, fresh: null, seen: 0, unbroken: true,
+      }));
+      for (let t = 0; t < 0.05; t += 0.01) {
+        for (const p of points) p.tau = t;
+        solver.time += 0.01;
+        crash.update(points, s);
+        lip.step(0.01);
+      }
+      expect(points[4].jetStrip).toBeGreaterThan(0);
+      // Alone on its front past its touchdown: no run draws it, so the foreseen path takes its jet.
+      const alone = [points[4]];
+      alone[0].tau = TOUCHDOWN + 0.01;
+      solver.time += 0.01;
+      crash.update(alone, s);
+      if (guard) {
+        expect(crash.counts.returned).toBe(1);
+        expect(crash.counts.foreseen).toBe(0);
+        expect(alone[0].jetReturned).toBe(true);
+      } else {
+        expect(crash.counts.foreseen).toBe(1);
+      }
+    }
+  });
+});
+
 describe('the step 7 follow-up: no holes in the tube', () => {
   it('joins a crest beside a front\'s end to that front, within 1.5 slice spacings and 0.3 s of its clock (`merge`)', () => {
     const front = new BreakingFront(1, { h0: 4.4, band: [3.8, 3.2], joinDepth: () => 2.5, throwDepth: () => 2, lagged: true, earliest: -1.7 }, { merge: true });

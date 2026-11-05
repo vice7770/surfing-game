@@ -330,8 +330,15 @@ export class SweptCrash {
     for (const p of points) {
       if (p.jetStrip === undefined || p.jetStrip < 0 || p.crashedAt !== undefined) continue;
       if (p.tau < this.geometry.times(p).touchdownSeconds) continue;
-      lip.closeJet(p.jetStrip);
       p.crashedAt = sea.solver.time;
+      if (this.guard && p.unbroken) {
+        // The guard here too (the step 7 follow-up): unbroken at its touchdown, its jet goes back to its crest.
+        lip.returnJet(p.jetStrip, p.x, p.z);
+        p.jetReturned = true;
+        this.counts.returned! += 1;
+        continue;
+      }
+      lip.closeJet(p.jetStrip);
       this.counts.foreseen += 1;
     }
     this.updateMs += performance.now() - started;
