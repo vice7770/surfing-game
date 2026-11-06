@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonJoinSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonJoinSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -184,6 +184,34 @@ describe('PhysicalMode', () => {
       expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined]);
       const online = surfZoneConfigFor(barrel, 5, false, { tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined });
       expect(keys(online as never)).toEqual([undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // pool-barrel-perf's switches (2026-11-06): each output-identical speed-up's old path; the contact's at the Barrel alone, the
+  // plain surface's everywhere; online rooms pin both worker ones; the three drawing ones are the page's own.
+  it('takes pool-barrel-perf\'s switches, the worker\'s in the config and pinned online, the drawing\'s on the page (dev switches)', () => {
+    expect(plainHeightSwitch('?plainHeight=OLD')).toEqual({ plainHeight: 'old' });
+    expect(contactRowsSwitch('?contactRows=old')).toEqual({ contactRows: 'old' });
+    for (const search of ['', '?plainHeight=new', '?plainHeight', '?contactRows=on']) {
+      expect(plainHeightSwitch(search), search).toEqual({});
+      expect(contactRowsSwitch(search), search).toEqual({});
+    }
+    expect([barrelHeightOld('?barrelHeight=old'), cameraWaterOld('?cameraWater=Old'), barrelMeshOld('?barrelMesh=old')]).toEqual([true, true, true]);
+    expect([barrelHeightOld(''), cameraWaterOld('?cameraWater=fast'), barrelMeshOld('?barrelMesh')]).toEqual([false, false, false]);
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const reef = physicalSettingsFor('reef', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const keys = (c: Record<string, unknown>) => [c.plainHeight, c.contactRows];
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual([undefined, undefined]);
+      vi.stubGlobal('location', { search: '?plainHeight=old&contactRows=old' });
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual(['old', 'old']);
+      expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual(['old', undefined]);
+      expect(keys(surfZoneConfigFor(reef, 5, false) as never)).toEqual(['old', undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { plainHeight: undefined, contactRows: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined]);
     } finally {
       vi.unstubAllGlobals();
     }
