@@ -19,6 +19,7 @@
     "report:sound": "rolldown scripts/sound-report.ts -o dist/scripts/sound-report.mjs --format esm --platform node && node dist/scripts/sound-report.mjs",
     "record:session": "node scripts/browser/record-session.mjs",
     "survey:fps": "node scripts/browser/fps-survey.mjs",
+    "survey:barrel": "bash scripts/browser/barrel-fps.sh",
     "report:fps": "node scripts/browser/fps-report.mjs",
     "lesson:wave": "rolldown scripts/lesson-wave.ts -o dist/scripts/lesson-wave.mjs --format esm --platform node && node dist/scripts/lesson-wave.mjs",
     "barrels:canyon": "bash tools/basilisk/stage_canyon.sh",

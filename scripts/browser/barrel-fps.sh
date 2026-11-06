@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# The Wave Pool Barrel's frame-rate check on this machine (pool-barrel-perf, 2026-11-06), in real Chrome:
+# build the game, serve it locally, run the fps survey on the Barrel for the default and each A/B, stop the server,
+# and print one table. Run from the repo root, with Chrome installed and nothing else heavy running:
+#   npm run survey:barrel                       the M4 Pro, 1.5 m
+#   npm run survey:barrel -- m4-pro "1.8 m"     another label or swell
+# Each run writes docs/research/fps/<date>-<label>-barrel-<swell>-<variant>.json; commit and push that folder.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+LABEL="${1:-m4-pro}"
+SWELL="${2:-1.5 m}"
+SECONDS_PER_RIDE="${RIDE_SECONDS:-30}"
+PORT=4173
+DATE="$(date +%Y-%m-%d)"
+COMMIT="$(git rev-parse --short HEAD)"
+OUT_DIR="docs/research/fps"
+STEM="$OUT_DIR/$DATE-$LABEL-barrel-${SWELL// /}"
+mkdir -p "$OUT_DIR"
+
+echo "Building $COMMIT…"
+npm run build
+
+echo "Serving the build on http://127.0.0.1:$PORT…"
+npx vite preview --host 127.0.0.1 --port "$PORT" --strictPort > "${TMPDIR:-/tmp}/barrel-fps-preview.log" 2>&1 &
+PREVIEW=$!
+trap 'kill "$PREVIEW" 2>/dev/null || true' EXIT
+for _ in $(seq 1 60); do
+  if curl -sf "http://127.0.0.1:$PORT/" > /dev/null; then break; fi
+  sleep 1
+done
+curl -sf "http://127.0.0.1:$PORT/" > /dev/null || { echo "The preview server did not start; see ${TMPDIR:-/tmp}/barrel-fps-preview.log"; exit 1; }
+
+FILES=()
+# One survey run: a variant's name, its URL switches (empty for the default) and the settings rows to sample.
+run() {
+  local name="$1" query="$2" only="$3"
+  local out="$STEM-$name.json"
+  echo
+  echo "=== $name ${query:-(the default)}"
+  npm run survey:fps -- "$out" --commit="$COMMIT" --features --spot="Wave Pool" --waves=Barrel --swell="$SWELL" \
+    --only="$only" --rideSeconds="$SECONDS_PER_RIDE" --url="http://127.0.0.1:$PORT/$query"
+  FILES+=("$out")
+}
+
+# The default, then whether the spray or the resolution is the limit.
+run default "" "High (baseline),Particles: low,Render scale 0.5"
+# The owner's own M4 cases.
+run pool "?poolTubeCase=pool" "High (baseline)"
+# The Barrel before the tube work: the fitted piece exactly as before.
+run pretube "?tubeFace=old&tubeFrom=piece" "High (baseline)"
+# PR #200's speed-ups off.
+run perfold "?plainHeight=old&contactRows=old&barrelHeight=old&cameraWater=old&barrelMesh=old" "High (baseline)"
+# The wall formed late and fast, as before step 7 (fewer slices).
+run tubeformold "?tubeForm=old" "High (baseline)"
+
+echo
+echo "=== Summary ($LABEL, the Barrel at $SWELL, $COMMIT)"
+node -e '
+const fs = require("fs");
+const cell = (v) => (v === undefined || v === null ? "-" : String(v));
+console.log(["variant", "setting", "fps", "1% low", "gpu ms", "main ms", "solver ms", "sea ×", "triangles"].join("\t"));
+for (const file of process.argv.slice(1)) {
+  const name = file.replace(/^.*-barrel-[^-]+-/, "").replace(/\.json$/, "");
+  for (const r of JSON.parse(fs.readFileSync(file, "utf8")).results) {
+    if (!r.screen.startsWith("Ride")) continue;
+    console.log([name, r.setting, cell(r.renderedFps ?? r.fps), cell(r.fps1Low), cell(r.gpuMsP50), cell(r.mainThreadMsP50),
+      cell(r.solverMsP50), cell(r.simulationSecondsPerWallSecond), cell(r.renderedTrianglesP50 ?? r.trianglesK)].join("\t"));
+  }
+}' "${FILES[@]}"
+echo
+echo "Done. Commit and push $OUT_DIR (the $DATE-$LABEL-barrel-* files) so the numbers can be read."

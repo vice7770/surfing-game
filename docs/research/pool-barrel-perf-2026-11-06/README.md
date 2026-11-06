@@ -305,6 +305,10 @@ brought over. The Canyon's beach look is not an optimization.
 
 ## 6. How the owner checks the frame rate on the M4
 
+**In one command** (added after the merge, `scripts/browser/barrel-fps.sh`): `npm run survey:barrel` builds the game, serves it on port 4173, runs the survey on the Barrel at 1.5 m for the default (High, Particles: low, Render scale 0.5), `?poolTubeCase=pool`, the pre-tube piece (`?tubeFace=old&tubeFrom=piece`), #200's speed-ups off and `?tubeForm=old`, stops the server and prints one table (fps, 1 % low, GPU, main thread, solver, the sea's rate, triangles). `npm run survey:barrel -- m4-pro "1.8 m"` for another size; `RIDE_SECONDS=60` for longer rides. The files land in `docs/research/fps/<date>-<label>-barrel-<swell>-<variant>.json`: commit and push them.
+
+The steps it runs, by hand:
+
 **The quick look (the in-game telemetry).**
 1. Settings → Gameplay → Show telemetry: on.
 2. Surf → Wave Pool → Waves: Barrel → 1.5 m → Paddle out.
