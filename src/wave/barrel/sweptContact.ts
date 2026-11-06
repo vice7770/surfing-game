@@ -33,6 +33,8 @@ export interface OrdinaryContactOwner {
   updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void;
 }
 const ORDINARY_QUERY_NORMALS = Symbol('ordinary query normals');
+/** The worker's face-ruling contact (`SweptContact.forFaceWorker`): its rows' heights and normals found on demand. */
+const FACE_QUERY_ROWS = Symbol('face query rows');
 
 /**
  * The contact's constants (the Padang Padang spec, Part B, PR 4):
@@ -234,9 +236,9 @@ export class SweptContact {
   /** `TubeFace.contact`: the nearest surface in the wall (a horizontal cast ahead beside the crossing above). */
   private readonly nearest: boolean;
 
-  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS) {
-    if (internal === ORDINARY_QUERY_NORMALS) {
-      const queryLoft = SweptLoft.forContactQueries(library, slope);
+  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS | typeof FACE_QUERY_ROWS) {
+    if (internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS) {
+      const queryLoft = SweptLoft.forContactQueries(library, slope, internal === FACE_QUERY_ROWS ? options.face : undefined);
       this.loft = queryLoft;
       this.prepareRow = queryLoft.prepareRow;
       this.prepareNormal = queryLoft.prepareNormal;
@@ -244,6 +246,19 @@ export class SweptContact {
     this.bucket = options.bucket ?? CONTACT.bucket;
     this.boundedC = library.options.geometry === 'bounded-C';
     this.nearest = options.face?.contact === true;
+  }
+
+  /**
+   * The worker's contact under the face ruling (the pool's straight Barrel; pool-barrel-perf, 2026-11-06): the same loft,
+   * crossings, normals and answers as `new SweptContact(library, slope, { face })`, but each row's heights (with the
+   * floor's rule) and each vertex's normal are found when a query first needs them, as Padang's ordinary worker contact
+   * finds them (`forOrdinaryWorker`), from the same `heightAt`. Every query of a step comes before its water changes again
+   * (the bodies push only discharge; the next update starts a new generation), so the heights read later are the same.
+   * Its `last` loft carries those rows only once queried (the rest stand at the previous build's, `sliceTipY` NaN): the
+   * game reads it only through the queries. `?contactRows=old` builds every row at the update, as before.
+   */
+  static forFaceWorker(library: ProfileLibrary, slope: number, face: TubeFace): SweptContact {
+    return new SweptContact(library, slope, { face }, FACE_QUERY_ROWS);
   }
 
   /** Internal worker construction, never a posted option or public lazy-output mode. */

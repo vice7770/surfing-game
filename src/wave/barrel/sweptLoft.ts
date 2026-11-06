@@ -374,6 +374,8 @@ export class SweptLoft {
   private heightReady = new Uint8Array(0);
   private rowHeightAt?: (x: number, z: number) => number;
   private normalReady = new Uint8Array(0);
+  /** Per vertex, 1 where the face ruling's floor holds it on the solver's surface (`TubeFace.union`), for `prepareRow`. */
+  private floorRows = new Uint8Array(0);
   private normalFirst = new Int32Array(0);
   private normalLast = new Int32Array(0);
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
@@ -493,11 +495,14 @@ export class SweptLoft {
     };
   }
 
-  /** Internal query backend only: no mutable LoftResult escapes the worker owner. */
-  static forContactQueries(library: ProfileLibrary, slope: number): {
+  /**
+   * Internal query backend only: no mutable LoftResult escapes the worker owner. `face`: the pool's straight Barrel's tube
+   * (`TubeFace`), its rows' heights and normals found on demand too, its floor rule kept per vertex (pool-barrel-perf).
+   */
+  static forContactQueries(library: ProfileLibrary, slope: number, face?: TubeFace): {
     build: SweptLoft['build']; prepareRow(row: number): void; prepareNormal(vertex: number): void;
   } {
-    const loft = new SweptLoft(library, slope, { contact: true });
+    const loft = new SweptLoft(library, slope, { contact: true, ...(face ? { face } : {}) });
     loft.normalDemand = true;
     const vertices = loft.result.positions.length / 3;
     loft.initialX = new Float64Array(vertices);
@@ -508,6 +513,7 @@ export class SweptLoft {
     loft.sealApplies = new Uint8Array(vertices);
     loft.heightReady = new Uint8Array(MAX_SLICES + 1);
     loft.normalReady = new Uint8Array(loft.result.positions.length / 3);
+    loft.floorRows = new Uint8Array(loft.result.positions.length / 3);
     loft.normalFirst = new Int32Array(MAX_SLICES + 1);
     loft.normalLast = new Int32Array(MAX_SLICES + 1);
     return {
@@ -1459,6 +1465,7 @@ export class SweptLoft {
           this.initialZ[v] = pz;
           this.targetY[v] = stillLevel + above;
           this.initialBlend[v] = e;
+          this.floorRows[v] = floor ? 1 : 0;
         } else if (e === 1) {
           r.positions[3 * v + 1] = floor ? Math.max(stillLevel + above, heightAt(px, pz)) : stillLevel + above;
         } else {
@@ -2053,14 +2060,17 @@ export class SweptLoft {
       const v = row * LOFT_SAMPLES + j;
       const o = 3 * v;
       const e = this.initialBlend[v];
-      if (e === 1) r.positions[o + 1] = this.targetY[v];
+      // The face ruling's floor (`TubeFace.union`) as `loftFront` holds it: never under the solver's surface.
+      const floor = this.floorRows[v] === 1;
+      if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
       else {
         const profileIndex = j - E;
         const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
         const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
         if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-        r.positions[o + 1] = e === 0 ? h : h + e * (this.targetY[v] - h);
+        const y = e === 0 ? h : h + e * (this.targetY[v] - h);
+        r.positions[o + 1] = floor && y < h ? h : y;
       }
       if (this.sealApplies[v] === 1) {
         const water = heightAt(r.positions[o], r.positions[o + 2]);

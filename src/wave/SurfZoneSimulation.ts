@@ -121,6 +121,20 @@ export interface SurfZoneConfig {
    */
   surfaceMotion?: 'old';
   /**
+   * 'old': the plain surface's heights read as before pool-barrel-perf (2026-11-06; `PhysicalSurfWaterOptions.plainHeight`):
+   * every sample gathers its 16 render nodes again and weighs them through arrays. By default a sample in a cache scope
+   * (the swept contact's build, the bodies' step) that needs the last sample's nodes keeps them: the same bits, faster.
+   * The `?plainHeight=old` dev switch, for A/Bs. Every spot's water; online rooms run the default.
+   */
+  plainHeight?: 'old';
+  /**
+   * 'old': the worker's swept contact under the face ruling (the Wave Pool's straight Barrel) builds every row's heights
+   * and normals at each update, as before pool-barrel-perf (2026-11-06); by default it finds them as its queries need
+   * them (`SweptContact.forFaceWorker`): the same answers. The `?contactRows=old` dev switch, for A/Bs; online rooms run
+   * the default.
+   */
+  contactRows?: 'old';
+  /**
    * 'old': back on the board after a wipeout as before swim-back (2026-10-29): the reel to the ankle, and the hands' and
    * chest's springs pulling the body onto the deck (`RideSessionOptions.swim`); by default the reel brings the tail to
    * the hand and the swimmer climbs on from where the body is. The `?swim=old` dev switch, for A/Bs; online rooms run

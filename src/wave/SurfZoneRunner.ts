@@ -448,9 +448,13 @@ export class SurfZoneRunner {
         this.ordinaryContactOwner = SweptContact.forOrdinaryWorker(library, slope!);
         this.contactQueries = this.ordinaryContactOwner.queries;
       } else {
-        // The step 3 ruling's tube at the pool's straight Barrel (`TubeFace`): its contact's loft as its drawing's.
+        // The step 3 ruling's tube at the pool's straight Barrel (`TubeFace`): its contact's loft as its drawing's. In the
+        // worker its rows' heights and normals are found as the queries need them (pool-barrel-perf; the same answers), as
+        // before with `?contactRows=old`.
         const face = this.simulation.tubeFace;
-        this.contact = new SweptContact(library, slope!, face ? { face } : {});
+        this.contact = face && internal === WORKER_CONTACT_OWNER && config.contactRows !== 'old'
+          ? SweptContact.forFaceWorker(library, slope!, face)
+          : new SweptContact(library, slope!, face ? { face } : {});
         this.contactQueries = this.contact;
       }
     }

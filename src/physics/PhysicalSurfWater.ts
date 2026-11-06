@@ -189,6 +189,12 @@ export interface PhysicalSurfWaterOptions {
    */
   surfaceMotion?: 'old';
   /**
+   * 'old': the plain surface's heights read as before pool-barrel-perf (2026-11-06; the `?plainHeight=old` dev switch): each
+   * sample gathers its 16 nodes again and weighs them through `catmullRomWeights`' arrays. By default a sample inside a
+   * cache scope whose stencil is the last one's keeps its nodes, and the weights are computed inline: the same bits.
+   */
+  plainHeight?: 'old';
+  /**
    * 'old': the samples carry no lens thickness, reach, own speed or grip, so the board's froth drag acts on its whole
    * wetted hull anywhere in a lens's footprint, past the g-blended flow and uncapped, as before bottom-stop (2026-10-29;
    * the `?froth=old` dev switch, for A/Bs).
@@ -217,10 +223,22 @@ class PlainHeightSurface {
   private surfaceCacheZMin = Number.NaN;
   private surfaceCacheLastX = -1;
   private surfaceCacheLastZ = -1;
+  /**
+   * The stencil `nodes` holds (pool-barrel-perf, 2026-11-06): its first node's indices and the cache epoch it was read in
+   * (−1: none). Inside a cache scope a sample whose stencil starts at the same node, in the same epoch, reads the same 16
+   * cached heights, so `gatherNodes` keeps them; outside one, or with `plainHeight` 'old', it reads them again, as before.
+   */
+  private stencilI0 = 0;
+  private stencilJ0 = 0;
+  private stencilEpoch = -1;
+  private readonly fastHeights: boolean;
+  /** `gatherNodes`' node-space coordinates, one reused object (its callers read them at once). */
+  private readonly gathered = { gx: 0, gz: 0 };
 
   constructor(private readonly heightState: PlainHeightState, protected readonly spacing: number,
-    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve' | 'roller'> = {}, owned = false) {
+    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve' | 'roller' | 'plainHeight'> = {}, owned = false) {
     this.surfaceCacheActive = owned;
+    this.fastHeights = heightOptions.plainHeight !== 'old';
   }
 
   /**
@@ -242,6 +260,7 @@ class PlainHeightSurface {
 
   /** Explicitly discard node heights after a water, bed or grid change within a scoped build. */
   invalidateSurfaceNodeCache(): void {
+    this.stencilEpoch = -1;
     this.surfaceCacheEpoch = (this.surfaceCacheEpoch + 1) >>> 0;
     if (this.surfaceCacheEpoch === 0) {
       this.surfaceCacheStamps.fill(0);
@@ -254,10 +273,33 @@ class PlainHeightSurface {
     if (this.outside(x, z)) return this.heightState.restLevel;
     const { nodes } = this;
     const { gx, gz } = this.gatherNodes(x, z);
-    const wx = catmullRomWeights(gx - Math.floor(gx));
-    const wz = catmullRomWeights(gz - Math.floor(gz));
+    if (!this.fastHeights) {
+      const wx = catmullRomWeights(gx - Math.floor(gx));
+      const wz = catmullRomWeights(gz - Math.floor(gz));
+      let value = 0;
+      for (let j = 0; j < 4; j += 1) for (let i = 0; i < 4; i += 1) value += wz[j] * wx[i] * nodes[j * 4 + i];
+      return value;
+    }
+    // The same weights (`catmullRomWeights`' expressions) and the same sum in the same order, without their arrays.
+    const tx = gx - Math.floor(gx);
+    const tx2 = tx * tx;
+    const tx3 = tx2 * tx;
+    const wx0 = (-tx3 + 2 * tx2 - tx) / 2;
+    const wx1 = (3 * tx3 - 5 * tx2 + 2) / 2;
+    const wx2 = (-3 * tx3 + 4 * tx2 + tx) / 2;
+    const wx3 = (tx3 - tx2) / 2;
+    const tz = gz - Math.floor(gz);
+    const tz2 = tz * tz;
+    const tz3 = tz2 * tz;
     let value = 0;
-    for (let j = 0; j < 4; j += 1) for (let i = 0; i < 4; i += 1) value += wz[j] * wx[i] * nodes[j * 4 + i];
+    for (let j = 0; j < 4; j += 1) {
+      const wz = j === 0 ? (-tz3 + 2 * tz2 - tz) / 2 : j === 1 ? (3 * tz3 - 5 * tz2 + 2) / 2 : j === 2 ? (-3 * tz3 + 4 * tz2 + tz) / 2 : (tz3 - tz2) / 2;
+      const o = j * 4;
+      value += wz * wx0 * nodes[o];
+      value += wz * wx1 * nodes[o + 1];
+      value += wz * wx2 * nodes[o + 2];
+      value += wz * wx3 * nodes[o + 3];
+    }
     return value;
   }
 
@@ -301,7 +343,15 @@ class PlainHeightSurface {
         this.surfaceCacheHeights = new Float64Array(size);
         this.surfaceCacheStamps = new Uint32Array(size);
       }
+      // The same 16 cached heights as the last stencil's (the grid unchanged, or the epoch would have moved).
+      if (this.fastHeights && this.stencilEpoch === this.surfaceCacheEpoch && i0 === this.stencilI0 && j0 === this.stencilJ0) {
+        const gathered = this.gathered;
+        gathered.gx = gx;
+        gathered.gz = gz;
+        return gathered;
+      }
     }
+    const epoch = this.surfaceCacheEpoch;
     for (let j = 0; j < 4; j += 1) {
       const nz = Math.min(lastZ, Math.max(0, j0 + j - 1));
       for (let i = 0; i < 4; i += 1) {
@@ -318,7 +368,15 @@ class PlainHeightSurface {
         }
       }
     }
-    return { gx, gz };
+    if (!this.fastHeights) return { gx, gz };
+    // Kept only if all 16 came from the cache within one epoch.
+    this.stencilEpoch = this.surfaceCacheActive && epoch === this.surfaceCacheEpoch ? epoch : -1;
+    this.stencilI0 = i0;
+    this.stencilJ0 = j0;
+    const gathered = this.gathered;
+    gathered.gx = gx;
+    gathered.gz = gz;
+    return gathered;
   }
 
   protected outside(x: number, z: number): boolean {
@@ -427,6 +485,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
+      ...(simulation.config.plainHeight ? { plainHeight: simulation.config.plainHeight } : {}),
       ...(simulation.config.froth ? { froth: simulation.config.froth } : {}),
     });
   }
@@ -438,7 +497,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   /** Internal ordinary swept owner only: copy fresh fields before building, retain them through later demand. */
   createOwnedPlainSurface(): OwnedPlainSurface {
     const state = new OwnedHeightState(this.solver);
-    const surface = new PlainHeightSurface(state, this.spacing, {}, true);
+    const surface = new PlainHeightSurface(state, this.spacing, this.options.plainHeight ? { plainHeight: this.options.plainHeight } : {}, true);
     return Object.freeze({
       capture: () => { state.capture(this.solver); surface.invalidateSurfaceNodeCache(); },
       // The cache stays active for this owned generation. It never reads live flow, carve or height fields.
