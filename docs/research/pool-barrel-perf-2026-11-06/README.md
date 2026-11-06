@@ -27,10 +27,11 @@ session, catch report or autopilot check was run: everything below is Node on th
   +1.7–2.3 ms to +0.7–1.1 ms on the page.
 - **These numbers do not reach 10 fps on an M4 Pro.** Scaled to the M4 (about 1.6× this M1 on one core: an estimate from
   published single-core benchmarks, not a measurement), the tube work cost about +1.4–1.8 ms a worker step and +1.1–1.4 ms
-  a page frame; the step stays well inside its 16.7 ms. What Node cannot see is the GPU and the WebGPU device. The
+  a page frame; the worker's CPU stages stay well inside a step's 16.7 ms. What Node cannot see is the GPU and the WebGPU device. The
   estimates point at the GPU's fill when the camera is in the tube (the jets' spray: up to 1–1.7 M blended fragments a
   frame at 1280 × 720, 3× that at High). Only the owner's M4 run can say which (§6 gives the commands).
-- **Not changed:** the default a38, the physics and the look. Online rooms pin all five switches to the default.
+- **Not changed:** the default a38, the physics and the look. Online rooms pin the worker's two switches to the default;
+  the page's three are each page's own, and draw the same either way.
 - **Added for the owner's check:** a WORKER row in the telemetry (the worker's whole step), and `--waves` in the fps survey
   (§6).
 
@@ -351,9 +352,10 @@ From the numbers:
 
 - `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
 - The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`):
-  322 files passed (34 skipped), 3117 tests passed (23 expected fail, 40 skipped), 522 s.
+  322 files passed (34 skipped), 3118 tests passed (23 expected fail, 40 skipped), 546 s, on the final head.
 - The SurfZoneSimulation subset (`npx vitest run src/wave/SurfZoneSimulation.test.ts --maxWorkers=3 -t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`):
-  SZS_RESULT.
+  37 passed, 70 filtered out (6,911 s). It ran on the head before the contact's own cache (`1cc09765`), which only the
+  worker's runner at the Barrel uses; no SurfZoneSimulation test steps the pool's straight Barrel.
 - The pin check (`docs/research/pool-tube-track-2026-11-05/pin-track.ts`, bundled against `main` in `.m1-cpu-main/` and
   against this branch): all 26 lines identical (`runs/pin-main.txt`, `runs/pin-branch.txt`). They cover every spot's sea;
   every swept barrel's front, crash, contact loft and drawn loft; the Barrel's water as the bodies feel it; and lone
