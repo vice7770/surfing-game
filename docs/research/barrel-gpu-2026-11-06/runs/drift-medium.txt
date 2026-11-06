@@ -1,0 +1,23 @@
+Barrel water, device (translated WGSL, f32 fields) against the CPU, medium, 4 s, plunge zones held, Node v22.17.0
+straight: 280 × 374 cells, x boundary 1; one 0.0223 s substep in doubles, max |device − CPU|: H 7.1e-15 of 9.6e+0 · QX 3.6e-14 of 6.5e+0 · QZ 4.4e-14 of 6.4e+0 · RATEH 4.4e-15 of 3.6e+0 · STRENGTH 2.9e-15 of 1.0e+0 · AGE 0.0e+0 of 2.9e+1 · NU 1.4e-14 of 4.1e+0 · PREDX 2.5e-13 of 4.5e+0 · PREDZ 1.4e-13 of 8.2e+0
+  straight t +0.02 s · max |Δh| 1.08e-6 m · rms Δh / rms η 4.12e-7 · max |Δq| 4.25e-6 m²/s · breaking disagrees on 0.00 % of wet cells (696 breaking) · plunge zone 51 cells, max |Δh| there 6.38e-8 m · 1 substeps
+  straight t +0.50 s · max |Δh| 8.87e-6 m · rms Δh / rms η 1.19e-6 · max |Δq| 5.08e-5 m²/s · breaking disagrees on 0.00 % of wet cells (749 breaking) · plunge zone 52 cells, max |Δh| there 4.43e-7 m · 1 substeps
+  straight t +1.00 s · max |Δh| 1.12e-5 m · rms Δh / rms η 1.98e-6 · max |Δq| 7.66e-5 m²/s · breaking disagrees on 0.00 % of wet cells (796 breaking) · plunge zone 53 cells, max |Δh| there 6.83e-7 m · 1 substeps
+  straight t +1.50 s · max |Δh| 1.27e-5 m · rms Δh / rms η 2.63e-6 · max |Δq| 9.93e-5 m²/s · breaking disagrees on 0.00 % of wet cells (875 breaking) · plunge zone 44 cells, max |Δh| there 9.77e-7 m · 1 substeps
+  straight t +2.00 s · max |Δh| 1.17e-5 m · rms Δh / rms η 3.20e-6 · max |Δq| 1.12e-4 m²/s · breaking disagrees on 0.00 % of wet cells (936 breaking) · plunge zone 45 cells, max |Δh| there 9.49e-7 m · 1 substeps
+  straight t +2.50 s · max |Δh| 1.23e-5 m · rms Δh / rms η 3.89e-6 · max |Δq| 1.46e-4 m²/s · breaking disagrees on 0.00 % of wet cells (983 breaking) · plunge zone 45 cells, max |Δh| there 1.34e-6 m · 1 substeps
+  straight t +3.00 s · max |Δh| 1.58e-5 m · rms Δh / rms η 4.57e-6 · max |Δq| 1.58e-4 m²/s · breaking disagrees on 0.00 % of wet cells (999 breaking) · plunge zone 44 cells, max |Δh| there 2.04e-6 m · 1 substeps
+  straight t +3.50 s · max |Δh| 1.69e-5 m · rms Δh / rms η 5.17e-6 · max |Δq| 1.69e-4 m²/s · breaking disagrees on 0.00 % of wet cells (978 breaking) · plunge zone 44 cells, max |Δh| there 2.14e-6 m · 1 substeps
+  straight t +4.00 s · max |Δh| 1.67e-5 m · rms Δh / rms η 5.68e-6 · max |Δq| 1.63e-4 m²/s · breaking disagrees on 0.00 % of wet cells (952 breaking) · plunge zone 38 cells, max |Δh| there 2.06e-6 m · 1 substeps
+  straight: 569 ms a frame in Node (the CPU step and the emulated device's)
+aframe: 280 × 374 cells, x boundary 2; one 0.0232 s substep in doubles, max |device − CPU|: H 1.8e-15 of 9.5e+0 · QX 8.9e-16 of 3.3e+0 · QZ 1.4e-14 of 6.5e+0 · RATEH 3.6e-15 of 2.7e+0 · STRENGTH 5.8e-15 of 1.0e+0 · AGE 0.0e+0 of 4.4e+1 · NU 1.0e-14 of 4.2e+0 · PREDX 5.7e-14 of 1.0e+1 · PREDZ 1.7e-13 of 3.8e+1
+  aframe t +0.02 s · max |Δh| 9.45e-7 m · rms Δh / rms η 3.86e-7 · max |Δq| 6.44e-6 m²/s · breaking disagrees on 0.00 % of wet cells (1270 breaking) · plunge zone 868 cells, max |Δh| there 1.27e-7 m · 1 substeps
+  aframe t +0.50 s · max |Δh| 7.75e-6 m · rms Δh / rms η 1.13e-6 · max |Δq| 3.74e-5 m²/s · breaking disagrees on 0.00 % of wet cells (1262 breaking) · plunge zone 377 cells, max |Δh| there 6.19e-7 m · 1 substeps
+  aframe t +1.00 s · max |Δh| 7.31e-6 m · rms Δh / rms η 1.90e-6 · max |Δq| 5.99e-5 m²/s · breaking disagrees on 0.00 % of wet cells (1309 breaking) · plunge zone 222 cells, max |Δh| there 2.08e-6 m · 1 substeps
+  aframe t +1.50 s · max |Δh| 9.38e-6 m · rms Δh / rms η 2.65e-6 · max |Δq| 7.81e-5 m²/s · breaking disagrees on 0.00 % of wet cells (1325 breaking) · plunge zone 160 cells, max |Δh| there 1.26e-6 m · 1 substeps
+  aframe t +2.00 s · max |Δh| 7.37e-6 m · rms Δh / rms η 3.18e-6 · max |Δq| 8.53e-5 m²/s · breaking disagrees on 0.00 % of wet cells (1484 breaking) · plunge zone 67 cells, max |Δh| there 1.14e-6 m · 1 substeps
+  aframe t +2.50 s · max |Δh| 1.06e-5 m · rms Δh / rms η 3.82e-6 · max |Δq| 9.75e-5 m²/s · breaking disagrees on 0.00 % of wet cells (1467 breaking) · plunge zone 43 cells, max |Δh| there 1.24e-6 m · 1 substeps
+  aframe t +3.00 s · max |Δh| 1.14e-5 m · rms Δh / rms η 4.47e-6 · max |Δq| 1.10e-4 m²/s · breaking disagrees on 0.00 % of wet cells (1393 breaking) · plunge zone 53 cells, max |Δh| there 1.50e-6 m · 1 substeps
+  aframe t +3.50 s · max |Δh| 1.46e-5 m · rms Δh / rms η 5.26e-6 · max |Δq| 1.04e-4 m²/s · breaking disagrees on 0.00 % of wet cells (1337 breaking) · plunge zone 52 cells, max |Δh| there 8.71e-7 m · 1 substeps
+  aframe t +4.00 s · max |Δh| 1.43e-5 m · rms Δh / rms η 5.91e-6 · max |Δq| 1.06e-4 m²/s · breaking disagrees on 0.00 % of wet cells (1281 breaking) · plunge zone 46 cells, max |Δh| there 2.07e-6 m · 1 substeps
+  aframe: 626 ms a frame in Node (the CPU step and the emulated device's)

@@ -135,6 +135,31 @@ export interface SurfZoneConfig {
    */
   contactRows?: 'old';
   /**
+   * 'old': the device gets the water the CPU changed between its steps as one span, from the first changed cell to the
+   * last, as before barrel-gpu (2026-11-06; `GpuBoussinesq.configure`); by default each run of changed cells. The
+   * same water on the device either way. The `?deviceWater=old` dev switch, for A/Bs. Every spot on the device; online
+   * rooms run the default.
+   */
+  deviceWater?: 'old';
+  /**
+   * 'old': a lip's launch marks the whole water changed, so the device gets all of it, as before barrel-gpu
+   * (`PlungingLip.launchMarks`); by default the cells the launch takes water and momentum from. The same water either way.
+   * The `?launchWater=old` dev switch, for A/Bs. Every spot with a lip; online rooms run the default.
+   */
+  launchWater?: 'old';
+  /**
+   * 'old': the device gets the whole plunge zone whenever a cell enters or leaves it, as before barrel-gpu; by
+   * default those cells alone. The device reads only whether a cell's hold runs, which is the same either way. The
+   * `?devicePlunge=old` dev switch, for A/Bs. Every spot on the device; online rooms run the default.
+   */
+  devicePlunge?: 'old';
+  /**
+   * 'off': a sea periodic along shore (the Wave Pool's straight Barrel) steps on the CPU, as before barrel-gpu (2026-11-06),
+   * where by default the GPU steps it as every other spot (its rows' cyclic solves on the device). The `?barrelGpu=off` dev
+   * switch, for A/Bs; online rooms run the default.
+   */
+  barrelGpu?: 'off';
+  /**
    * 'old': back on the board after a wipeout as before swim-back (2026-10-29): the reel to the ankle, and the hands' and
    * chest's springs pulling the body onto the deck (`RideSessionOptions.swim`); by default the reel brings the tail to
    * the hand and the swimmer climbs on from where the body is. The `?swim=old` dev switch, for A/Bs; online rooms run
@@ -576,10 +601,26 @@ export interface SolverDevice {
   readonly diagnostics?: { substeps: number; pack: number; cfl: number; encode: number; map: number; unpack: number };
   /** Optional traffic of its latest step: bytes uploaded and read back, readback maps and queue submissions. */
   readonly transfer?: DeviceTransfer;
+  /** Optional: how it sends the CPU's changes, from its next step (barrel-gpu's switches). */
+  configure?(options: SolverDeviceTraffic): void;
 }
 
-/** What a device step moved between the CPU and the GPU, and how many round trips it took. */
-export interface DeviceTransfer { uploadBytes: number; readbackBytes: number; maps: number; submits: number }
+/**
+ * What a device step moved between the CPU and the GPU, and how many round trips it took; and of its uploads, how many
+ * sent the whole water (h, qx, qz), the whole plunge zone, or the whole layout (barrel-gpu, 2026-11-06).
+ */
+export interface DeviceTransfer {
+  uploadBytes: number; readbackBytes: number; maps: number; submits: number;
+  fullWater: number; fullPlunge: number; layouts: number;
+}
+
+/** How a device sends the CPU's changes (`GpuBoussinesq.configure`): each change's old path, for A/Bs (barrel-gpu). */
+export interface SolverDeviceTraffic {
+  /** 'span': the water the CPU changed goes up as one span from the first changed cell to the last. */
+  water?: 'runs' | 'span';
+  /** 'whole': the plunge zone goes up whole whenever a cell enters or leaves it. */
+  plunge?: 'cells' | 'whole';
+}
 
 /** A surf zone built spun up (on the CPU, at once), or only warm-started, to spin up later on its device (`spinUp`). */
 export type SurfZoneStart = 'spun-up' | 'warm';
@@ -1405,6 +1446,8 @@ export class SurfZoneSimulation {
       };
     }
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
+    // `?launchWater=old`: a launch marks the whole water for the device, as before barrel-gpu (the same water).
+    if (config.launchWater === 'old') this.lip.launchMarks = 'all';
     this.foam = new FoamField(this.solver, config.foamDecay ?? (spillingCurlOn(config) ? SPILLING_CURL_FOAM_DECAY : FOAM_DECAY[config.spot]));
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {

@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonJoinSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, canyonBedSwitch, canyonJoinSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -215,6 +215,55 @@ describe('PhysicalMode', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  // barrel-gpu's switches (2026-11-06): each output-identical change's old path, at every spot; online rooms pin them.
+  it('takes barrel-gpu\'s switches at every spot, and an online room pins their defaults (dev switches)', () => {
+    expect(deviceTrafficSwitches('?deviceWater=OLD&launchWater=old&devicePlunge=old')).toEqual({ deviceWater: 'old', launchWater: 'old', devicePlunge: 'old' });
+    expect(deviceTrafficSwitches('?launchWater=old')).toEqual({ launchWater: 'old' });
+    for (const search of ['', '?deviceWater=runs', '?launchWater', '?devicePlunge=on']) expect(deviceTrafficSwitches(search), search).toEqual({});
+    const keys = (c: Record<string, unknown>) => [c.deviceWater, c.launchWater, c.devicePlunge];
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const reef = physicalSettingsFor('reef', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, true) as never)).toEqual([undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?deviceWater=old&launchWater=old&devicePlunge=old' });
+      expect(keys(surfZoneConfigFor(barrel, 5, true) as never)).toEqual(['old', 'old', 'old']);
+      expect(keys(surfZoneConfigFor(reef, 5, true) as never)).toEqual(['old', 'old', 'old']);
+      const online = surfZoneConfigFor(reef, 5, true, { deviceWater: undefined, launchWater: undefined, devicePlunge: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // barrel-gpu's switch (2026-11-06): the straight Barrel's periodic sea back on the CPU, at the Barrel alone; online pins it.
+  it('takes barrel-gpu\'s switch at the Barrel alone, and an online room pins its default (dev switch)', () => {
+    expect(barrelGpuSwitch('?barrelGpu=OFF')).toEqual({ barrelGpu: 'off' });
+    for (const search of ['', '?barrelGpu=on', '?barrelGpu', '?barrelGpu=old']) expect(barrelGpuSwitch(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, true).barrelGpu).toBeUndefined();
+      vi.stubGlobal('location', { search: '?barrelGpu=off' });
+      expect(surfZoneConfigFor(barrel, 5, true).barrelGpu).toBe('off');
+      expect(surfZoneConfigFor(training, 5, true).barrelGpu).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, true, { barrelGpu: undefined }).barrelGpu).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The DEVICE row (barrel-gpu): where the water steps and, on the GPU, what its step moves.
+  it('says in the DEVICE row where the water steps, why the CPU, and the GPU step\'s traffic', () => {
+    const config = { spot: 'pool', compute: 'auto', stage: 2 } as SurfZoneConfig;
+    const pipeline = { deviceUploadBytes: 12 * 1024, deviceUploadMean: 30 * 1024, deviceReadbackBytes: 3682 * 1024, deviceFullWater: 0, deviceFullPlunge: 1, deviceLayouts: 0 };
+    const status = (extra: Record<string, unknown>) => ({ compute: 'gpu', pipelineMs: pipeline, ...extra }) as never;
+    expect(formatDevice(config, status({}))).toBe('GPU · 12 kB up (30 mean), 3,682 kB back a step · whole water 0, plunge zone 1, layout 0 in the last second');
+    expect(formatDevice(config, status({ compute: 'cpu', deviceNote: 'periodic along shore, kept on the CPU (?barrelGpu=off)' })))
+      .toBe('CPU · the water steps here: periodic along shore, kept on the CPU (?barrelGpu=off)');
+    expect(formatDevice({ ...config, compute: 'cpu' }, status({ compute: 'cpu' }))).toBe('CPU · the water steps here: Water simulation: fast');
+    expect(formatDevice(config, status({ compute: 'cpu' }))).toBe('CPU · the water steps here');
   });
 
   // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
@@ -1099,6 +1148,8 @@ describe('PhysicalMode', () => {
     expect(value('SOLVER')).toMatch(/cells · \d+\.\d ms\/step$/);
     // The worker's whole step (pool-barrel-perf): the telemetry's way to tell the worker from the page.
     expect(value('WORKER')).toMatch(/^\d+\.\d ms a step \(16\.7 keeps real time\) · water \d+\.\d · contact \d+\.\d · snapshot \d+\.\d$/);
+    // The water's device (barrel-gpu): this local host steps it on the CPU.
+    expect(value('DEVICE')).toMatch(/^CPU · the water steps here/);
     expect(value('NEXT SET')).toBe('in 25 s');
     expect(value('BREAKER')).toMatch(/^ξ \d+\.\d\d · (SPILLING|PLUNGING|SURGING)$/);
     // The Canyon's terrace (the canyon spilling prototype) may already have broken a wave during the spin-up.

@@ -14,6 +14,7 @@ import { inTakeOffWindow } from '../physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
+import { deviceStepRefusal } from './gpu/GpuBoussinesq';
 import { BubbleCloud } from './BubbleCloud';
 import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
 import { BOARD_SHEETS, BOARD_SHEET_STRIDE, SheetHistory, createBoardSpraySheet, packBoardSheets, unpackBoardSheets } from '../physics/boardSpray';
@@ -34,6 +35,8 @@ export { surfZoneSea } from './SurfZoneSimulation';
 
 /** Fixed simulation step, s: the game's physics rate. */
 export const SURF_ZONE_STEP = 1 / 60;
+/** Device steps the DEVICE row's whole-upload counts cover: a second of sea (barrel-gpu). */
+export const DEVICE_WINDOW = 60;
 const WORKER_CONTACT_OWNER = Symbol('private worker contact owner');
 /** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7), its volume, m³, and its kind: 0 a jet's water, 1 a splash-up's (G9). */
 export const LIP_STRIDE = 9;
@@ -207,9 +210,16 @@ export interface SurfZoneStatus {
     deviceSubsteps: number; devicePack: number; deviceCfl: number; deviceEncode: number; deviceMap: number; deviceUnpack: number;
     /** The latest device step's traffic: bytes written to and read back from the GPU, readback maps and queue submissions. */
     deviceUploadBytes: number; deviceReadbackBytes: number; deviceMaps: number; deviceSubmits: number;
+    /**
+     * Over the last DEVICE_WINDOW device steps (a second of sea; barrel-gpu, 2026-11-06): how many sent the whole
+     * water, the whole plunge zone, or the whole layout, and the mean bytes uploaded a step.
+     */
+    deviceFullWater: number; deviceFullPlunge: number; deviceLayouts: number; deviceUploadMean: number;
   };
   /** Where the water steps: on the GPU (plan P6) or the CPU. */
   compute: 'gpu' | 'cpu';
+  /** Why the water steps on the CPU where a device was asked for (`deviceStepRefusal`, or none came); undefined otherwise. */
+  deviceNote?: string;
   cells: number;
   breakPoint: { x: number; z: number };
   /** Still depth at the break point, including tide, m. */
@@ -405,6 +415,11 @@ export class SurfZoneRunner {
   private pipelineStepMs = 0;
   private batchMs = 0;
   private batchSteps = 0;
+  /** Why the water stays on the CPU though a device was asked for (`useDevice`), for the DEVICE row. */
+  private deviceNote?: string;
+  /** The last DEVICE_WINDOW device steps' whole uploads and bytes (barrel-gpu), a ring. */
+  private readonly deviceWindow = { fullWater: new Uint8Array(DEVICE_WINDOW), fullPlunge: new Uint8Array(DEVICE_WINDOW),
+    layouts: new Uint8Array(DEVICE_WINDOW), bytes: new Float64Array(DEVICE_WINDOW), next: 0, filled: 0 };
   private fillMs = 0;
   private snapshotFieldsMs = 0;
   /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
@@ -579,6 +594,7 @@ export class SurfZoneRunner {
     for (let step = 0; step < steps; step += 1) {
       const start = performance.now();
       await this.simulation.stepAsync(SURF_ZONE_STEP);
+      this.countDeviceStep();
       this.afterWater(step, input);
       // Synchronous pack/CFL/encode/submit is real current CPU work: include it in step and batch wall times.
       if (steps === 1 && reactions === undefined) this.simulation.prefetchWater(SURF_ZONE_STEP);
@@ -586,6 +602,29 @@ export class SurfZoneRunner {
     }
     this.batchMs = performance.now() - batchStart;
     this.batchSteps = steps;
+  }
+
+  /** The window's whole uploads and mean bytes a step (all 0 without a device step yet). */
+  private deviceWindowCounts(): { deviceFullWater: number; deviceFullPlunge: number; deviceLayouts: number; deviceUploadMean: number } {
+    const w = this.deviceWindow;
+    let fullWater = 0, fullPlunge = 0, layouts = 0, bytes = 0;
+    for (let k = 0; k < w.filled; k += 1) {
+      fullWater += w.fullWater[k]; fullPlunge += w.fullPlunge[k]; layouts += w.layouts[k]; bytes += w.bytes[k];
+    }
+    return { deviceFullWater: fullWater, deviceFullPlunge: fullPlunge, deviceLayouts: layouts, deviceUploadMean: w.filled ? bytes / w.filled : 0 };
+  }
+
+  /** The device step just taken into the window of whole uploads (the DEVICE row). */
+  private countDeviceStep(): void {
+    const transfer = this.simulation.device?.transfer;
+    if (!transfer) return;
+    const w = this.deviceWindow;
+    w.fullWater[w.next] = transfer.fullWater > 0 ? 1 : 0;
+    w.fullPlunge[w.next] = transfer.fullPlunge > 0 ? 1 : 0;
+    w.layouts[w.next] = transfer.layouts > 0 ? 1 : 0;
+    w.bytes[w.next] = transfer.uploadBytes;
+    w.next = (w.next + 1) % DEVICE_WINDOW;
+    w.filled = Math.min(DEVICE_WINDOW, w.filled + 1);
   }
 
   /** Other players' boards pushing on this water (spec N1): x, z, jx, jz each (`REACTION_STRIDE`). */
@@ -602,6 +641,11 @@ export class SurfZoneRunner {
   ): Promise<boolean> {
     const { solver } = this.simulation;
     if (!(solver instanceof BoussinesqSolver)) return false;
+    // `?barrelGpu=off`: the periodic sea on the CPU, as before barrel-gpu.
+    if (this.config.barrelGpu === 'off' && solver.periodicAlongShore) {
+      this.deviceNote = 'periodic along shore, kept on the CPU (?barrelGpu=off)';
+      return false;
+    }
     try {
       // A GPU process that never answers (seen when WebGPU wedges) would leave the sea unbuilt: step on the CPU.
       let late = false;
@@ -613,8 +657,15 @@ export class SurfZoneRunner {
         void request.then((arrived) => arrived?.dispose(), () => undefined);
       }
       if (!late) this.simulation.device = device as SolverDevice | undefined;
+      // barrel-gpu's switches: how the CPU's changes go up (the same water on the device either way).
+      this.simulation.device?.configure?.({
+        water: this.config.deviceWater === 'old' ? 'span' : 'runs', plunge: this.config.devicePlunge === 'old' ? 'whole' : 'cells',
+      });
+      // Why the water stays on the CPU, for the DEVICE row: a setup the kernels do not cover, or no device at all.
+      this.deviceNote = this.simulation.device ? undefined : late ? 'no WebGPU device in time' : deviceStepRefusal(solver) ?? 'no WebGPU device';
     } catch (error) {
       console.warn('No surf zone device; stepping on the CPU.', error);
+      this.deviceNote = 'the WebGPU device failed';
     }
     return this.simulation.device !== undefined;
   }
@@ -1020,6 +1071,7 @@ export class SurfZoneRunner {
       timeToSet: simulation.timeToSet,
       stepMs: simulation.lastStepMs + this.boardMs,
       compute: simulation.device ? 'gpu' : 'cpu',
+      ...(simulation.device || !this.deviceNote ? {} : { deviceNote: this.deviceNote }),
       cells: simulation.solver.nx * simulation.solver.nz,
       breakPoint: { ...this.focus },
       breakDepth: this.breakDepth,
@@ -1087,6 +1139,7 @@ export class SurfZoneRunner {
       deviceEncode: device?.encode ?? 0, deviceMap: device?.map ?? 0, deviceUnpack: device?.unpack ?? 0,
       deviceUploadBytes: transfer?.uploadBytes ?? 0, deviceReadbackBytes: transfer?.readbackBytes ?? 0,
       deviceMaps: transfer?.maps ?? 0, deviceSubmits: transfer?.submits ?? 0,
+      ...this.deviceWindowCounts(),
     };
     return status;
   }

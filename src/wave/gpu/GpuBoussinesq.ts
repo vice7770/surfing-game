@@ -1,5 +1,5 @@
 import { BoussinesqSolver, type BoussinesqDeviceLayout } from '../BoussinesqSolver';
-import type { DeviceTransfer, PreparedWaterStep } from '../SurfZoneSimulation';
+import type { DeviceTransfer, PreparedWaterStep, SolverDeviceTraffic } from '../SurfZoneSimulation';
 import { SeaStateBoundary } from '../SeaStateBoundary';
 import { SideFeed } from '../SideFeed';
 import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
@@ -8,6 +8,14 @@ import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KER
 const WORKGROUP = 64;
 /** Params blocks a device starts with (frames with more substeps grow it). */
 const PARAM_SLOTS = 4;
+/**
+ * Two runs of changed cells closer than this go up as one (barrel-gpu, 2026-11-06): the cells between them, which the
+ * device already holds, go up as the same bits. A write's own cost is taken as about 4 kB of copying (an estimate, not a
+ * measure), so a gap of up to 1024 cells (12 kB over the three fields) costs less than three more writes: the rows of a
+ * lip's launch or a board's push go up together, a jet landing at the window's other end apart.
+ */
+export const RUN_GAP = 1024;
+
 const TAU = 2 * Math.PI;
 /** Fields the CPU writes every frame (board reactions, lip landings), then reads back with the breaking and predictor state. */
 export const DEVICE_UPLOAD = [FIELD.H, FIELD.QX, FIELD.QZ] as const;
@@ -23,6 +31,11 @@ interface DeviceZone {
   rows: number;
   /** The window's side strips fed with the incoming sea (the wave-sizes spec). */
   feed?: SideFeed;
+}
+
+/** A step's traffic before any of it. */
+export function emptyTransfer(): DeviceTransfer {
+  return { uploadBytes: 0, readbackBytes: 0, maps: 0, submits: 0, fullWater: 0, fullPlunge: 0, layouts: 0 };
 }
 
 /** The solver array a device field reads back into. */
@@ -41,10 +54,14 @@ export function readbackTarget(solver: BoussinesqSolver, index: number): Float64
   }
 }
 
-/** Why the device step cannot run this solver, or undefined when it can. */
+/**
+ * Why the device step cannot run this solver, or undefined when it can. Periodic along shore (the Wave Pool's straight
+ * Barrel) it runs since barrel-gpu (2026-11-06): each row's cyclic system by Sherman–Morrison as the CPU (`cyclicRow`),
+ * the stencils wrapping as they already did; a row needs three columns for its two ends to be distinct neighbours.
+ */
 export function deviceStepRefusal(solver: BoussinesqSolver): string | undefined {
   const layout = solver.deviceLayout();
-  if (layout.xBoundary === PERIODIC) return 'periodic along shore (cyclic solves stay on the CPU)';
+  if (layout.xBoundary === PERIODIC && solver.nx < 3) return 'periodic along shore on fewer than 3 columns';
   if (!layout.dispersive && !layout.breaking) return 'stage 1 (no dispersion or breaking)';
   const [first, second, ...rest] = layout.zones;
   const covered = (!first || first instanceof SeaStateBoundary) && (!second || second instanceof SideFeed) && rest.length === 0;
@@ -222,9 +239,17 @@ export class GpuBoussinesq {
   /** CPU preparation, CFL scan, submission, readback wait and unpacking, ms, from the latest frame. */
   readonly diagnostics = { substeps: 0, pack: 0, cfl: 0, encode: 0, map: 0, unpack: 0 };
   /** The latest frame's traffic: bytes written to the device and read back, readback maps and queue submissions. */
-  readonly transfer: DeviceTransfer = { uploadBytes: 0, readbackBytes: 0, maps: 0, submits: 0 };
+  readonly transfer: DeviceTransfer = emptyTransfer();
   /** The traffic of the frame being prepared, counted by `write`, `submit` and the map. */
-  private counting: DeviceTransfer = { uploadBytes: 0, readbackBytes: 0, maps: 0, submits: 0 };
+  private counting: DeviceTransfer = emptyTransfer();
+  /** How the CPU's changes go up (barrel-gpu): each change's old path with `configure`. */
+  private waterRule: 'runs' | 'span' = 'runs';
+  private plungeRule: 'cells' | 'whole' = 'cells';
+  /** The changed cells, sorted, for `writeRuns`. */
+  private runCells = new Int32Array(0);
+  /** The water's fields and the plunge zone's, as `writeRuns` sends them. */
+  private readonly waterFields: readonly { index: number; values: Float64Array }[];
+  private readonly holdField: readonly { index: number; values: Float64Array }[];
 
   private constructor(readonly solver: BoussinesqSolver, readonly device: GPUDevice, module: GPUShaderModule) {
     const { nx, nz } = solver;
@@ -242,6 +267,8 @@ export class GpuBoussinesq {
     this.staging = device.createBuffer({ size: DEVICE_READBACK.length * this.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
     this.upload = new Float32Array(DEVICE_UPLOAD.length * this.n);
     this.field = new Float32Array(this.n);
+    this.waterFields = DEVICE_UPLOAD.map((index) => ({ index, values: readbackTarget(solver, index) }));
+    this.holdField = [{ index: FIELD.HOLD, values: solver.plungeHold }];
     const bindLayout = device.createBindGroupLayout({
       entries: [
         { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } },
@@ -299,6 +326,36 @@ export class GpuBoussinesq {
     this.counting.uploadBytes += (size ?? elements - dataOffset) * unit;
   }
 
+  /** How the CPU's changes go up (`SurfZoneConfig.deviceWater`, `devicePlunge`), from the next step. */
+  configure(options: SolverDeviceTraffic): void {
+    this.waterRule = options.water ?? 'runs';
+    this.plungeRule = options.plunge ?? 'cells';
+  }
+
+  /**
+   * Up the solver's `cells` of each of `fields` (solver arrays, at `index`, staged at `k · n` in `staging`), as runs
+   * merged across gaps of up to RUN_GAP cells. The device then holds the solver's f32 bits in every cell it was sent,
+   * and its own in the rest, which a whole upload would have sent as the same bits.
+   */
+  private writeRuns(cells: Int32Array, fields: readonly { index: number; values: Float64Array }[], staging: Float32Array<ArrayBuffer>): void {
+    const { n } = this;
+    const count = cells.length;
+    if (this.runCells.length < count) this.runCells = new Int32Array(Math.max(count, 2 * this.runCells.length));
+    const sorted = this.runCells.subarray(0, count);
+    sorted.set(cells);
+    sorted.sort();
+    for (let k = 0; k < count;) {
+      const first = sorted[k];
+      let last = first;
+      for (k += 1; k < count && sorted[k] - last <= RUN_GAP; k += 1) last = sorted[k];
+      const length = last - first + 1;
+      fields.forEach(({ index, values }, j) => {
+        staging.set(values.subarray(first, first + length), j * n + first);
+        this.write(this.fields, (index * n + first) * 4, staging, j * n + first, length);
+      });
+    }
+  }
+
   /** Pack and upload the side feed's tables (after a slide they are rebuilt), growing its buffer when it must. */
   private writeFeed(): void {
     const feed = this.zone?.feed;
@@ -323,7 +380,8 @@ export class GpuBoussinesq {
     const device = await adapter.requestDevice({
       requiredLimits: { maxStorageBufferBindingSize: size, maxBufferSize: size },
     });
-    const module = device.createShaderModule({ code: boussinesqWgsl() });
+    // The rows' cyclic solve only where the sea is periodic along shore (barrel-gpu): elsewhere the shader as before.
+    const module = device.createShaderModule({ code: boussinesqWgsl(solver.deviceLayout().xBoundary === PERIODIC) });
     const info = await module.getCompilationInfo();
     const errors = info.messages.filter((message) => message.type === 'error');
     if (errors.length) {
@@ -364,18 +422,27 @@ export class GpuBoussinesq {
       const layout = solver.deviceLayout();
       const sourceTime = solver.time, sourceVersion = layout.version, sourcePlunge = solver.plungeVersion;
       const diagnostics = deferred ? { substeps: 0, pack: 0, cfl: 0, encode: 0, map: 0, unpack: 0 } : this.diagnostics;
-      const transfer: DeviceTransfer = { uploadBytes: 0, readbackBytes: 0, maps: 0, submits: 0 };
+      const transfer = emptyTransfer();
       this.counting = transfer;
       const readback = this.readback;
       if (layout.version !== this.version) {
         this.writeLayout(layout);
         this.version = layout.version;
+        transfer.layouts += 1;
       } else if (solver.plungeVersion !== this.plungeVersion) {
-        // A cell entered or left the plunge zone: the mask reads only whether its hold is running.
-        this.field.set(solver.plungeHold);
-        this.write(this.fields, FIELD.HOLD * n * 4, this.field);
+        // A cell entered or left the plunge zone: the mask reads only whether its hold is running. Only those cells go up
+        // (barrel-gpu, 2026-11-06): no other cell's hold has started or run out since the device last took the zone,
+        // so the device then reads the same held cells a whole upload would give it.
+        if (this.plungeRule === 'cells' && !solver.plungeChangedOverflow) {
+          this.writeRuns(solver.plungeChangedCells, this.holdField, this.field);
+        } else {
+          this.field.set(solver.plungeHold);
+          this.write(this.fields, FIELD.HOLD * n * 4, this.field);
+          transfer.fullPlunge += 1;
+        }
       }
       this.plungeVersion = solver.plungeVersion;
+      solver.plungeHeld();
       // The water: all of it when the device may hold other water, else the cells the CPU changed since it last held the
       // solver's (a board's push, a lip's landing), the same f32 values either way: a cell that came back from the device
       // goes up as the bits it came back as (canyon-perf, 2026-10-29).
@@ -385,6 +452,11 @@ export class GpuBoussinesq {
           this.upload.set(source, k * n);
         });
         this.write(this.fields, FIELD.H * n * 4, this.upload);
+        transfer.fullWater += 1;
+      } else if (this.waterRule === 'runs' && !solver.waterChangedOverflow && solver.waterChangedCount > 0) {
+        // Each run of the cells the CPU marked, not the span from the first to the last (barrel-gpu, 2026-11-06):
+        // a jet landing at one end of the window and a board's push at the other spanned thousands of cells.
+        this.writeRuns(solver.waterChangedCells, this.waterFields, this.upload);
       } else if (solver.waterChangedFrom <= solver.waterChangedTo) {
         const from = solver.waterChangedFrom;
         const count = solver.waterChangedTo - from + 1;
