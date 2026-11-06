@@ -58,14 +58,18 @@ echo
 echo "=== Summary ($LABEL, the Barrel at $SWELL, $COMMIT)"
 node -e '
 const fs = require("fs");
-const cell = (v) => (v === undefined || v === null ? "-" : String(v));
-console.log(["variant", "setting", "fps", "1% low", "gpu ms", "main ms", "solver ms", "sea ×", "triangles"].join("\t"));
+const cell = (v, d) => (v === undefined || v === null || !Number.isFinite(Number(v)) ? "-" : (d === undefined ? String(v) : Number(v).toFixed(d)));
+const kb = (b) => (Number.isFinite(b) ? (b / 1024).toFixed(0) : "-");
+console.log(["variant", "setting", "fps", "1% low", "gpu ms", "main ms", "worker ms", "water ms", "map ms", "upload kB p50/p95", "readback kB", "sea ×", "snap ms p95"].join("\t"));
 for (const file of process.argv.slice(1)) {
   const name = file.replace(/^.*-barrel-[^-]+-/, "").replace(/\.json$/, "");
   for (const r of JSON.parse(fs.readFileSync(file, "utf8")).results) {
     if (!r.screen.startsWith("Ride")) continue;
+    const p = r.pipelineMsP50 ?? {};
+    const q = r.pipelineMsP95 ?? {};
     console.log([name, r.setting, cell(r.renderedFps ?? r.fps), cell(r.fps1Low), cell(r.gpuMsP50), cell(r.mainThreadMsP50),
-      cell(r.solverMsP50), cell(r.simulationSecondsPerWallSecond), cell(r.renderedTrianglesP50 ?? r.trianglesK)].join("\t"));
+      cell(p.total, 1), cell(p.water, 1), cell(p.deviceMap, 1), `${kb(p.deviceUploadBytes)}/${kb(q.deviceUploadBytes)}`, kb(p.deviceReadbackBytes),
+      cell(r.simulationSecondsPerWallSecond), cell(r.snapshotIntervalMsP95)].join("\t"));
   }
 }' "${FILES[@]}"
 echo
