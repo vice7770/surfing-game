@@ -10,8 +10,8 @@ import { BubbleCloud } from './BubbleCloud';
 import {
   LEASH_BITS, LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
-import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
-import { FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
+import { RIDE_LINEUP_OFFSET, SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
+import { BOARD_SPRAY_CAPACITY, FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 20, spreading: 24, tide: 0,
@@ -238,11 +238,13 @@ describe('SurfZoneRunner', () => {
       return balls;
     };
     expect(foamBalls(runner) - foamBalls(twin)).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
-    // The snapshot carries the spray's pool and the tube's whitewater's beside it.
+    // The snapshot carries the spray's pool and the tube's whitewater's beside it, and the boards' own since board-spray
+    // (#170, 32b4afb9: the sea's spray filled its pool on busy Reef steps).
     const buffers = runner.createBuffers();
-    expect(buffers.spray.length).toBe((SPRAY_CAPACITY + WHITEWATER_CAPACITY) * SPRAY_STRIDE);
+    expect(buffers.spray.length).toBe((SPRAY_CAPACITY + WHITEWATER_CAPACITY + BOARD_SPRAY_CAPACITY) * SPRAY_STRIDE);
     expect(runner.spray.capacity).toBe(SPRAY_CAPACITY);
     expect(runner.spray.whitewaterCapacity).toBe(WHITEWATER_CAPACITY);
+    expect(runner.spray.boardCapacity).toBe(BOARD_SPRAY_CAPACITY);
   });
 
   it('hands the spray each landing’s whole water and kind, and the look it is drawn in', () => {
@@ -385,6 +387,11 @@ describe('SurfZoneRunner with a rider', () => {
     expect(buffers.rider[RIDER_SNAPSHOT.duck]).toBeGreaterThan(0.5);
     expect(runner.status().ride?.duck).toBeGreaterThan(0.5);
     const session = runner.session!;
+    // Since the two-body duck-dive (#176, ede9aefe) the dive is the swimmer's own body, and only its own exits end it: a
+    // fall forced mid-dive, as this test made before, leaves it pressing. Let go, and fall once it is back on the board.
+    for (let step = 0; step < 600 && session.ducking; step += 1) runner.advance(1, idle);
+    expect(session.ducking).toBe(false);
+    expect(session.phase).toBe('prone');
     session.separate('balance');
     runner.advance(30, { ...idle, paddle: true });
     buffers = runner.createBuffers();
@@ -428,10 +435,11 @@ describe('SurfZoneRunner with a rider', () => {
     expect(buffers.rider[RIDER_SNAPSHOT.breath]).toBe(1);
   });
 
+  // 11 m out since the owner's playtest of 2026-10-11 (#112, ca4820d1): 6 m sat on top of the breaking at the Canyon.
   it('starts the rider just outside the break line, where catches happen', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
     const board = runner.session!.board.position;
-    expect(runner.focus.z - board.z).toBeCloseTo(6, 6);
+    expect(runner.focus.z - board.z).toBeCloseTo(RIDE_LINEUP_OFFSET, 6);
     expect(board.x).toBeCloseTo(runner.focus.x, 6);
   });
 
@@ -522,8 +530,9 @@ describe('SurfZoneRunner with a rider', () => {
   });
 
   it('reads each ride from its trace, and reports the finished ride as plain data', () => {
-    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: the wave dies under a ride there at once.
-    const runner = new SurfZoneRunner(calm, { rider: true });
+    // On a flat sea the break line, and 6 m outside it, lie in the shallows: the wave dies under a ride there at once. The
+    // ride's start moved out to 11 m (#112, ca4820d1), 0.61 m deep here, so this ride starts at the old 6 m.
+    const runner = new SurfZoneRunner(calm, { rider: true, spawnOut: 6 });
     runner.advance(1);
     expect(runner.status().ride!.report).toBeUndefined();
     const { rider, board } = runner.session!;
