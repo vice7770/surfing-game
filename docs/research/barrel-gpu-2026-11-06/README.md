@@ -5,8 +5,8 @@ why: every variant, the pre-tube one too, reported `Boussinesq · CPU · 104,720
 step and the sea at 0.40–0.45× real time. `deviceStepRefusal` refused the straight Barrel's periodic sides, so its sea
 never ran on the GPU. Task: run the periodic sea on the device, matched to the CPU within the GPU tier's tolerance, with
 a switch back. The first brief (cut the jets' uploads to the device) is kept where it helps the other GPU spots.
-Branch `claude/barrel-gpu` from `main` at `2b90efd7`, `origin/main` (`0aa04154`) merged in. No browser, dev
-server, rider session, catch report or autopilot check was run: everything below is Node on the M1 Air.
+Branch `claude/pool-gpu-traffic` from `main` at `0aa04154` (#202). No browser, dev server, rider session, catch report
+or autopilot check was run: everything below is Node on the M1 Air.
 
 ## Status
 
@@ -20,7 +20,7 @@ server, rider session, catch report or autopilot check was run: everything below
     already ran: 1.7e-5 against 1.4e-5 m after 4 s, no breaking cell disagreeing.
 - **Switch:** `?barrelGpu=off` keeps the CPU path. Online rooms run the default (the GPU, as at every spot).
 - **Expected on the M4 (an estimate, not a measure):** the water from 30–35 ms a step to about 3–8 ms, the worker's step
-  from 37–41 ms to about 9–15 ms, under the 16.7 ms that keeps real time. The owner's run (§7) measures it.
+  from 37–41 ms to about 8–15 ms, under the 16.7 ms that keeps real time. The owner's run (§7) measures it.
 - **The upload fixes are kept** (output-identical, each behind its switch): with the jets the device was sent 451 kB a
   step at the Barrel (7 kB before the tube work), now 11 kB; 580 → 15 kB on the A-frame. They help every GPU spot whose
   lips throw jets, and the Barrel now that it is on the GPU.
@@ -64,8 +64,9 @@ Why this method:
 - **A halo wrap** is not needed: the stencils wrap by index already.
 
 The new code is emitted only for a periodic sea (`boussinesqWgsl(true)`, chosen in `GpuBoussinesq.create`). The text the
-other spots compile is the same as `main`'s, byte for byte (compared in Node). A mistake in the new code could only send
-the Barrel back to the CPU (`create` throws, the runner steps on the CPU, as today), never the other spots.
+other spots compile is the same as `main`'s, byte for byte (compared in Node). So a mistake in the new code touches the
+Barrel alone: a compile error sends it back to the CPU (`create` throws, the runner steps on the CPU, as today, and the
+DEVICE row says "the WebGPU device failed"); a wrong result would show at the Barrel only.
 
 ## 3. Checked against the CPU
 
@@ -135,10 +136,11 @@ What is measured:
 The estimate:
 - The cell kernels scale with the cells (2.8×); the row and column solves with the rows' and columns' lengths; the readback
   with the cells (3.7 MB a step against 1.3 MB). Part of the 3 ms at 37 k cells is fixed (the submission, the map's round
-  trip). The M1 ran 100 k cells' device step in about 6 ms; the M4 Pro's 20-core GPU has about 2.5× its compute.
+  trip). The M1 ran 100 k cells' device step in about 6 ms; the M4 Pro's 20-core GPU has about 2.5–3× its compute
+  (published figures).
 - So **about 3–8 ms a step on the M4 Pro**, most likely near 5 ms. The cyclic rows add about 1.5× one kernel of 15.
-- The worker's step would then be about 5 ms of water plus its CPU stages (37–41 minus 30–35 ms, so 5–7 ms): **about
-  9–15 ms, under 16.7**. The sea would keep real time, where it ran at 0.43×. The solo worker's prefetch also overlaps
+- The worker's step would then be 3–8 ms of water plus its CPU stages (37–41 minus 30–35 ms, so 5–7 ms): **about
+  8–15 ms, under 16.7**. The sea would keep real time, where it ran at 0.43×. The solo worker's prefetch also overlaps
   the next device step with the page's round trip.
 - An estimate from other spots' measures, not a measure of this code.
 
@@ -230,9 +232,13 @@ In the game (Settings → Show telemetry, Wave Pool → Barrel):
 
 - `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
 - The main suite (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`):
-  MAIN_SUITE.
+  325 files passed (34 skipped), 3134 tests passed (23 expected fail, 40 skipped), 602 s. It ran before the last change
+  (the changes' labels renamed pool-gpu-traffic → barrel-gpu in comments and test names); the 11 changed test files
+  again on the committed head: 220 passed.
 - The SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): SIM_SUBSET.
-- `src/wave/SurfZoneRunner.test.ts`: RUNNER_SUITE.
+- `src/wave/SurfZoneRunner.test.ts`: 39 passed, 4 failed. The same 4 fail on `main` (`0aa04154`, run from a copy of its
+  tree): the spray buffer's size (G9), the leash and duck-dive snapshot, the rider's start, the ride report. None touches
+  the device.
 - New:
   - `src/wave/gpu/GpuBoussinesq.periodic.test.ts`: the shader against the CPU in doubles at open, wall and periodic edges
     with breaking and plunge zones (≤ 1e-12); the cyclic code in the periodic shader alone, and the shader before it
