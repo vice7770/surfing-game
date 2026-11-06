@@ -4,7 +4,7 @@ import type { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
 import { BARREL_SLOPE, SweptLoft, type LoftOptions, type LoftResult } from '../../wave/barrel/sweptLoft';
 import type { TubeFace } from '../../wave/barrel/faceAnchor';
 import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
-import { sampleCubicSurface } from '../water/cubicSurface';
+import { sampleCubicHeight, sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
 import { sampleSurfaceFoam, sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
@@ -33,10 +33,16 @@ export class SweptBarrel {
   private holdClearDrawing = true;
   /** The step 3 ruling's tube (`TubeFace`; the pool's straight Barrel), as the surf zone's: drawn as it is felt. */
   private face?: TubeFace;
-  private readonly cameraWater = new BarrelWater();
+  private readonly cameraWater: BarrelWater;
   private cameraWaterRevision = 0;
   /** Which slices' curls keep the solver's foam: those on a crest already white (drawing only, `brokenCrest.ts`). */
   private readonly broken = new BrokenCrests();
+  /**
+   * How the Rich drawing reads the water's height at each vertex (pool-barrel-perf, 2026-11-06): 'fast', the default,
+   * `sampleCubicHeight` (the same bits, no slopes or allocations); 'old', the `?barrelHeight=old` dev switch,
+   * `sampleCubicSurface(...).height` as before. Drawing only.
+   */
+  heights: 'fast' | 'old' = 'fast';
   private drawn?: {
     loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
     look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
@@ -48,8 +54,11 @@ export class SweptBarrel {
     private readonly water: WaterSurface,
     private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot), undefined, undefined, spot),
     view?: SweptBarrelView,
+    cameraWater: 'fast' | 'old' = 'fast',
   ) {
     this.mesh = new SweptBarrelMesh(water.materialUniforms, view);
+    // `?cameraWater=old`: the camera's water/air test keeps its strips as objects, as before pool-barrel-perf (the same answers).
+    this.cameraWater = new BarrelWater(cameraWater);
     this.ready = new Promise((resolve) => {
       this.resolveReady = resolve;
     });
@@ -138,9 +147,9 @@ export class SweptBarrel {
       mesh.syncScreenFallback();
       return;
     }
-    const heightAt = look === 'rich'
-      ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
-      : (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z);
+    const heightAt = look !== 'rich' ? (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z)
+      : this.heights === 'old' ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
+        : (x: number, z: number) => sampleCubicHeight(surfaceData, grid, x, z);
     const loft = this.loft.build(front, count, stillLevel, heightAt);
     if (this.mask.length !== maskGrid.nx * maskGrid.nz) this.mask = new Uint8Array(maskGrid.nx * maskGrid.nz);
     const set = rasterizeBarrelMask(loft, maskGrid, this.mask);

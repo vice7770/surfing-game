@@ -436,6 +436,10 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...strokeSwitch(),
     // `?surfaceMotion=old`: the sea's surface held still through the bodies' step, as before popup-moving-face, for A/Bs.
     ...surfaceMotionSwitch(),
+    // `?plainHeight=old`: the water's heights gathered for every sample, as before pool-barrel-perf (the same bits, slower).
+    ...plainHeightSwitch(),
+    // `?contactRows=old`: the Barrel's worker contact builds all its rows each step, as before pool-barrel-perf (the same answers).
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? contactRowsSwitch() : {}),
     // `?swim=old`: back on the board after a wipeout as before swim-back (the reel to the ankle, the springs' pull), for A/Bs.
     ...swimSwitch(),
     // `?froth=old`: a roller's froth dragging a board anywhere in its footprint, uncapped, as before bottom-stop, for A/Bs.
@@ -614,6 +618,24 @@ export function strokeSwitch(search?: string): { stroke?: 'old' } {
 }
 
 /**
+ * The `?plainHeight=old` dev switch (`SurfZoneConfig.plainHeight`, pool-barrel-perf 2026-11-06): every spot's water reads
+ * its plain surface's heights as before, gathering a sample's 16 render nodes every time, in place of keeping the last
+ * sample's within a cache scope. The same bits either way; only the speed differs.
+ */
+export function plainHeightSwitch(search?: string): { plainHeight?: 'old' } {
+  return devParam('plainHeight', search)?.trim().toLowerCase() === 'old' ? { plainHeight: 'old' } : {};
+}
+
+/**
+ * The `?contactRows=old` dev switch (`SurfZoneConfig.contactRows`, pool-barrel-perf 2026-11-06): the Wave Pool's straight
+ * Barrel's worker contact builds every row's heights and normals at each step, as before, in place of finding them as the
+ * bodies' queries need them. The same answers either way; only the speed differs. 'old', else nothing.
+ */
+export function contactRowsSwitch(search?: string): { contactRows?: 'old' } {
+  return devParam('contactRows', search)?.trim().toLowerCase() === 'old' ? { contactRows: 'old' } : {};
+}
+
+/**
  * The `?surfaceMotion=old` dev switch (`SurfZoneConfig.surfaceMotion`, popup-moving-face 2026-10-29): every spot's
  * boards and riders sample the sea's surface held still through their step, as before, in place of moving at its rise
  * rate to each substep's time.
@@ -716,6 +738,33 @@ export function lipFoamOld(search?: string): boolean {
  */
 export function lipBackOld(search?: string): boolean {
   return devParam('lipBack', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?barrelHeight=old` dev switch (pool-barrel-perf, 2026-11-06; Rich only): the swept barrel's drawing reads the water's
+ * height at each vertex through `sampleCubicSurface`, slopes and all, as before, in place of `sampleCubicHeight` (the same
+ * bits without the slopes or allocations). Drawing only; the output is the same either way.
+ */
+export function barrelHeightOld(search?: string): boolean {
+  return devParam('barrelHeight', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?cameraWater=old` dev switch (pool-barrel-perf, 2026-11-06): the camera's water/air test in the drawn barrel
+ * (`BarrelWater`) keeps its strips and their triangle ranges as objects and arrays, as before, in place of typed arrays.
+ * The same strips in the same order, so the same answers. Drawing only.
+ */
+export function cameraWaterOld(search?: string): boolean {
+  return devParam('cameraWater', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?barrelMesh=old` dev switch (pool-barrel-perf, 2026-11-06): the swept barrel's mesh turns its triangles to face out
+ * (`SweptBarrelMesh.facesOut`) building three small arrays per triangle, as before, in place of plain locals. The same
+ * indices. Drawing only.
+ */
+export function barrelMeshOld(search?: string): boolean {
+  return devParam('barrelMesh', search)?.trim().toLowerCase() === 'old';
 }
 
 /**
@@ -1058,10 +1107,14 @@ export class PhysicalMode {
         if (!bytes) throw new Error('No barrel case files');
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
         return libraryFromBytes(bytes, this.config?.tubeShape, spot);
-      }, view);
+      }, view, cameraWaterOld() ? 'old' : 'fast');
       // `?lipFoam=old` and `?lipBack=old`: the curl's foam and the Rich lip's background as before pool-barrel-drawing.
       if (lipFoamOld()) this.sweptBarrel.mesh.lipFoam = 'old';
       if (lipBackOld()) this.sweptBarrel.mesh.lipBack = 'old';
+      // `?barrelHeight=old`: the Rich drawing reads the water's heights as before pool-barrel-perf (the same bits, slower).
+      if (barrelHeightOld()) this.sweptBarrel.heights = 'old';
+      // `?barrelMesh=old`: the mesh turns its triangles to face out as before pool-barrel-perf (the same indices, slower).
+      if (barrelMeshOld()) this.sweptBarrel.mesh.faces = 'old';
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     // The surfable tube's (the advisor's step 3 ruling) drawn as the surf zone feels it, switches and all.

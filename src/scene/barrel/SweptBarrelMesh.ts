@@ -485,6 +485,11 @@ export class SweptBarrelMesh {
    */
   lipFoam: 'carried' | 'old' = 'carried';
   /**
+   * How `update` turns the loft's triangles to face out (pool-barrel-perf, 2026-11-06): 'fast', the default, without the
+   * three-element arrays it built per triangle; 'old', the `?barrelMesh=old` dev switch, as before. The same indices.
+   */
+  faces: 'fast' | 'old' = 'fast';
+  /**
    * Rich only: what the lip shows behind it (`RICH_SHEET_BACK_PER_RAY`): 'ray', the default, per view ray; 'old', the
    * `?lipBack=old` dev switch, the underside's diffuse view of the sky everywhere (the pale band from in front).
    */
@@ -711,7 +716,29 @@ export class SweptBarrelMesh {
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
     const index = this.index.array as Uint32Array;
-    if (this.facesOut) {
+    if (this.facesOut && this.faces === 'fast') {
+      const { positions: p, normals: n, indices: from } = loft;
+      for (let i = 0; i + 2 < indices; i += 3) {
+        const a = from[i];
+        const b = from[i + 1];
+        const c = from[i + 2];
+        const a3 = 3 * a;
+        const b3 = 3 * b;
+        const c3 = 3 * c;
+        const e1x = p[b3] - p[a3];
+        const e1y = p[b3 + 1] - p[a3 + 1];
+        const e1z = p[b3 + 2] - p[a3 + 2];
+        const e2x = p[c3] - p[a3];
+        const e2y = p[c3 + 1] - p[a3 + 1];
+        const e2z = p[c3 + 2] - p[a3 + 2];
+        // The loft's order's front face against its vertices' normals (their sum): turn it round, else keep it.
+        const facing = (e1y * e2z - e1z * e2y) * (n[a3] + n[b3] + n[c3]) + (e1z * e2x - e1x * e2z) * (n[a3 + 1] + n[b3 + 1] + n[c3 + 1])
+          + (e1x * e2y - e1y * e2x) * (n[a3 + 2] + n[b3 + 2] + n[c3 + 2]);
+        index[i] = a;
+        index[i + 1] = facing < 0 ? c : b;
+        index[i + 2] = facing < 0 ? b : c;
+      }
+    } else if (this.facesOut) {
       const { positions: p, normals: n, indices: from } = loft;
       for (let i = 0; i + 2 < indices; i += 3) {
         const a = from[i];
