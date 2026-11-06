@@ -235,6 +235,8 @@ export class SweptContact {
   private found = 0;
   /** `TubeFace.contact`: the nearest surface in the wall (a horizontal cast ahead beside the crossing above). */
   private readonly nearest: boolean;
+  /** Its rows' heights and normals are found as its queries need them (`forFaceWorker`, `forOrdinaryWorker`). */
+  readonly rowsOnDemand: boolean;
 
   constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS | typeof FACE_QUERY_ROWS) {
     if (internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS) {
@@ -246,6 +248,7 @@ export class SweptContact {
     this.bucket = options.bucket ?? CONTACT.bucket;
     this.boundedC = library.options.geometry === 'bounded-C';
     this.nearest = options.face?.contact === true;
+    this.rowsOnDemand = internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS;
   }
 
   /**
@@ -255,7 +258,9 @@ export class SweptContact {
    * finds them (`forOrdinaryWorker`), from the same `heightAt`. Every query of a step comes before its water changes again
    * (the bodies push only discharge; the next update starts a new generation), so the heights read later are the same.
    * Its `last` loft carries those rows only once queried (the rest stand at the previous build's, `sliceTipY` NaN): the
-   * game reads it only through the queries. `?contactRows=old` builds every row at the update, as before.
+   * game reads it only through the queries. Its `heightAt` must answer the same through the generation: the runner gives
+   * it the water's heights through a cache of their own (`PhysicalSurfWater.createCachedPlainSurface`), emptied at each
+   * update, as some queries come outside any cache scope. `?contactRows=old` builds every row at the update, as before.
    */
   static forFaceWorker(library: ProfileLibrary, slope: number, face: TubeFace): SweptContact {
     return new SweptContact(library, slope, { face }, FACE_QUERY_ROWS);

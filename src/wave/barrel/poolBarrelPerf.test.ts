@@ -14,7 +14,7 @@ import { lipCase } from './toyCase';
 /**
  * The Wave Pool Barrel's frame-rate fixes (pool-barrel-perf, 2026-11-06) give the same bits as the paths they replace,
  * each against its `?…=old` switch: the worker's lazy face contact rows (`?contactRows=old`), the plain surface's kept
- * stencil (`?plainHeight=old`), the camera's water test in typed arrays (`?cameraWater=old`) and the mesh's faces-out
+ * stencil (`?plainHeight=old`) and the face contact's own cached heights, the camera's water test in typed arrays (`?cameraWater=old`) and the mesh's faces-out
  * loop (`?barrelMesh=old`). The drawing's cubic height (`?barrelHeight=old`) is pinned in cubicSurface.test.ts.
  */
 const STILL = 0.5;
@@ -146,6 +146,27 @@ describe('pool-barrel-perf: the plain surface keeps a stencil it may and reads t
       }
     }));
     for (let k = 4000; k < 6000; k += 1) compare(k);
+  });
+});
+
+describe('pool-barrel-perf: the face contact\'s own cached heights are the water\'s', () => {
+  it('reads plainSurfaceAt\'s bits through its own cache, and the new water once emptied', () => {
+    const s = new ShallowWaterSolver({ nx: 41, xMin: -10, dx: 1, zEdges: uniformEdges(-130, -70, 60) }, () => 4, { waterLevel: STILL });
+    for (let i = 0; i < s.h.length; i += 1) s.h[i] = Math.max(0, s.h[i] + 0.7 * Math.sin(1.3 * i));
+    const water = new PhysicalSurfWater(s, { peakPeriod: 10, nodeSpacing: 1 });
+    const cached = water.createCachedPlainSurface();
+    for (let round = 0; round < 3; round += 1) {
+      cached.invalidate();
+      for (let x = -12; x < 33; x += 0.37) for (let z = -132; z < -68; z += 0.53) {
+        expect(Object.is(cached.heightAt(x, z), water.plainSurfaceAt(x, z))).toBe(true);
+      }
+      // The water's next step: the contact empties the cache at its next update.
+      for (let i = 0; i < s.h.length; i += 3) s.h[i] += 0.04;
+    }
+    // Not emptied, it keeps the last generation's heights (the reason it is emptied at each update).
+    let stale = 0;
+    for (let x = -12; x < 33; x += 0.37) if (!Object.is(cached.heightAt(x, -100.25), water.plainSurfaceAt(x, -100.25))) stale += 1;
+    expect(stale).toBeGreaterThan(10);
   });
 });
 

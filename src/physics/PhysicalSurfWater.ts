@@ -505,6 +505,19 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     });
   }
 
+  /**
+   * The worker's face contact's own plain surface (pool-barrel-perf, 2026-11-06): this water's render-node heights, the same
+   * as `plainSurfaceAt`'s, through a node cache of its own that is always on and that `invalidate` empties. The contact
+   * empties it at each update, after the water's step, and its rows on demand read it until the next: in between, the
+   * water's heights, bed and window hold (the bodies push only discharge), so a node's height is found once a step,
+   * whether the update or a body's query first needs it.
+   */
+  createCachedPlainSurface(): { invalidate(): void; heightAt(x: number, z: number): number } {
+    const { carve, roller, plainHeight } = this.options;
+    const surface = new PlainHeightSurface(this.solver, this.spacing, { ...(carve ? { carve } : {}), ...(roller ? { roller } : {}), ...(plainHeight ? { plainHeight } : {}) }, true);
+    return Object.freeze({ invalidate: () => surface.invalidateSurfaceNodeCache(), heightAt: surface.plainSurfaceAt.bind(surface) });
+  }
+
   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
     const { solver } = this;
     const { swept } = this.options;

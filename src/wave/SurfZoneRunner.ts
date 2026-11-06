@@ -371,6 +371,8 @@ export class SurfZoneRunner {
   readonly contact?: SweptContact;
   private readonly contactQueries?: SweptSurfaceQueries;
   private readonly ordinaryContactOwner?: OrdinaryContactOwner;
+  /** The worker's face contact's heights (`SweptContact.forFaceWorker`): the water's, through a cache of their own. */
+  private readonly faceHeights?: { invalidate(): void; heightAt(x: number, z: number): number };
   /** Built by `forWorker`: only the worker's own runner may take the solo water prefetch. */
   private readonly workerOwned: boolean;
   /** The contact's last update, ms. */
@@ -459,6 +461,9 @@ export class SurfZoneRunner {
       }
     }
     this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contactQueries, renderSpacing);
+    // Its rows are found as the bodies' queries need them, some outside any cache scope (a lone board's step): they read the
+    // water through a node cache of their own, emptied at each update.
+    if (this.contact && this.contact.rowsOnDemand) this.faceHeights = this.water.createCachedPlainSurface();
     this.bounds = tankRiderBounds(this.simulation.config);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     // The rider starts, and relaunches, `rideLineupOffset` seaward of the break line (11 m; nearer at the Canyon's Big).
@@ -626,7 +631,10 @@ export class SurfZoneRunner {
     const count = simulation.writeTubeRecords(this.contactRecords);
     // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
     if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
-    else this.water.withSurfaceNodeCache(() => {
+    else if (this.faceHeights) {
+      this.faceHeights.invalidate();
+      contact!.update(this.contactRecords, count, this.config.tide, this.faceHeights.heightAt);
+    } else this.water.withSurfaceNodeCache(() => {
       contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
     });
     this.contactMs = performance.now() - start;
