@@ -200,7 +200,8 @@ zones per 100 steps; A-frame 654 kB, 14.2 and 78.7; before the tube work 7.3 kB.
 counts) and, at every submission, the device's water, carried breaking and predictor fields and the plunge zone's held
 cells. The three switches old against all on, and against `main`'s code: the same hashes at 1.5 m (a38, the pool's cases,
 the A-frame) and 1.8 m (a38 with the switches old; a38, the pool's cases and the A-frame against `main`), 600 steps each
-(`runs/traffic-*.txt`; `main`'s runs bundled from the tree before these changes).
+(`runs/traffic-*.txt`; `main`'s runs bundled from the tree before these changes). The final head again at 1.5 m (a38,
+the switches on and old): `main`'s hashes (`runs/traffic-final-medium.txt`).
 
 ## 7. The owner's check on the M4
 
@@ -235,7 +236,8 @@ In the game (Settings → Show telemetry, Wave Pool → Barrel):
   325 files passed (34 skipped), 3134 tests passed (23 expected fail, 40 skipped), 602 s. It ran before the last change
   (the changes' labels renamed pool-gpu-traffic → barrel-gpu in comments and test names); the 11 changed test files
   again on the committed head: 220 passed.
-- The SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): SIM_SUBSET.
+- The SurfZoneSimulation subset (`-t "[Pp]ool|[Bb]arrel|[Tt]ube|[Pp]adang|[Rr]oller|[Bb]oard|[Rr]ider"`): 37 passed, 70
+  skipped, 6,569 s, on the head before the label rename.
 - `src/wave/SurfZoneRunner.test.ts`: 39 passed, 4 failed. The same 4 fail on `main` (`0aa04154`, run from a copy of its
   tree): the spray buffer's size (G9), the leash and duck-dive snapshot, the rider's start, the ride report. None touches
   the device.
