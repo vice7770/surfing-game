@@ -53,6 +53,10 @@ run pretube "?tubeFace=old&tubeFrom=piece" "High (baseline)"
 run perfold "?plainHeight=old&contactRows=old&barrelHeight=old&cameraWater=old&barrelMesh=old" "High (baseline)"
 # The wall formed late and fast, as before step 7 (fewer slices).
 run tubeformold "?tubeForm=old" "High (baseline)"
+# The Barrel's water back on the CPU, as before barrel-gpu (its periodic sea was refused the graphics card): the gain.
+run barrelgpuoff "?barrelGpu=off" "High (baseline)"
+# barrel-gpu's three upload fixes off: the water the graphics card is sent each step as before (the same water).
+run uploadsold "?deviceWater=old&launchWater=old&devicePlunge=old" "High (baseline)"
 
 echo
 echo "=== Summary ($LABEL, the Barrel at $SWELL, $COMMIT)"
@@ -60,15 +64,17 @@ node -e '
 const fs = require("fs");
 const cell = (v, d) => (v === undefined || v === null || !Number.isFinite(Number(v)) ? "-" : (d === undefined ? String(v) : Number(v).toFixed(d)));
 const kb = (b) => (Number.isFinite(b) ? (b / 1024).toFixed(0) : "-");
-console.log(["variant", "setting", "fps", "1% low", "gpu ms", "main ms", "worker ms", "water ms", "map ms", "upload kB p50/p95", "readback kB", "sea ×", "snap ms p95"].join("\t"));
+console.log(["variant", "setting", "water on", "fps", "1% low", "gpu ms", "main ms", "worker ms", "water ms", "map ms", "upload kB p50/p95", "whole/s", "readback kB", "sea ×", "snap ms p95"].join("\t"));
 for (const file of process.argv.slice(1)) {
   const name = file.replace(/^.*-barrel-[^-]+-/, "").replace(/\.json$/, "");
   for (const r of JSON.parse(fs.readFileSync(file, "utf8")).results) {
     if (!r.screen.startsWith("Ride")) continue;
     const p = r.pipelineMsP50 ?? {};
     const q = r.pipelineMsP95 ?? {};
-    console.log([name, r.setting, cell(r.renderedFps ?? r.fps), cell(r.fps1Low), cell(r.gpuMsP50), cell(r.mainThreadMsP50),
-      cell(p.total, 1), cell(p.water, 1), cell(p.deviceMap, 1), `${kb(p.deviceUploadBytes)}/${kb(q.deviceUploadBytes)}`, kb(p.deviceReadbackBytes),
+    const on = r.observed?.compute ?? (/ GPU /.test(r.solver ?? "") ? "gpu" : / CPU /.test(r.solver ?? "") ? "cpu" : "-");
+    console.log([name, r.setting, on.toUpperCase(), cell(r.renderedFps ?? r.fps), cell(r.fps1Low), cell(r.gpuMsP50), cell(r.mainThreadMsP50),
+      cell(p.total, 1), cell(p.water, 1), cell(p.deviceMap, 1), `${kb(p.deviceUploadBytes)}/${kb(q.deviceUploadBytes)}`,
+      `${cell(p.deviceFullWater, 0)}+${cell(p.deviceFullPlunge, 0)}`, kb(p.deviceReadbackBytes),
       cell(r.simulationSecondsPerWallSecond), cell(r.snapshotIntervalMsP95)].join("\t"));
   }
 }' "${FILES[@]}"
