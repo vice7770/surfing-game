@@ -1097,6 +1097,8 @@ describe('PhysicalMode', () => {
     expect(value('SPOT')).toBe('CANYON');
     expect(value('SWELL')).toMatch(/^Hs 1\.8 m · Tp 12\.0 s · 10°$/);
     expect(value('SOLVER')).toMatch(/cells · \d+\.\d ms\/step$/);
+    // The worker's whole step (pool-barrel-perf): the telemetry's way to tell the worker from the page.
+    expect(value('WORKER')).toMatch(/^\d+\.\d ms a step \(16\.7 keeps real time\) · water \d+\.\d · contact \d+\.\d · snapshot \d+\.\d$/);
     expect(value('NEXT SET')).toBe('in 25 s');
     expect(value('BREAKER')).toMatch(/^ξ \d+\.\d\d · (SPILLING|PLUNGING|SURGING)$/);
     // The Canyon's terrace (the canyon spilling prototype) may already have broken a wave during the spin-up.

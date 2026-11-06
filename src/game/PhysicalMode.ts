@@ -327,6 +327,9 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'TIDE', value: `${config.tide.toFixed(1)} m` },
     { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${status.breakDepth.toFixed(2)} m deep` },
     { label: 'SOLVER', value: `${(config.stage ?? 2) === 2 ? 'Boussinesq' : 'shallow water'} · ${status.compute === 'gpu' ? 'GPU' : 'CPU'} · ${config.componentCount ?? SEA_COMPONENTS} components · ${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
+    // The worker's whole time a step (pool-barrel-perf): the water, its CPU stages and the snapshot; over 16.7 ms the sea
+    // falls behind real time. The SOLVER row's is the water and the board alone.
+    ...(status.pipelineMs ? [{ label: 'WORKER', value: `${status.pipelineMs.total.toFixed(1)} ms a step (16.7 keeps real time) · water ${status.pipelineMs.water.toFixed(1)} · contact ${status.pipelineMs.contact.toFixed(1)} · snapshot ${status.pipelineMs.snapshot.toFixed(1)}` }] : []),
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
