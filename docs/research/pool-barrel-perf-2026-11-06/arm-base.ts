@@ -1,3 +1,4 @@
+// Generated: arm.ts with its imports pointed at the pre-tube tree (.m1-cpu-base/src), by the sed in bench.ts's header.
 /**
  * One arm of the Barrel's frame-rate bench (pool-barrel-perf, 2026-11-06): the Wave Pool's straight Barrel as the game
  * runs it, from one tree's src (this file's imports; `bench.ts` makes a copy that imports the pre-tube tree's), in Node.
@@ -266,6 +267,8 @@ export async function createArm(o: ArmOptions) {
     const vertices = loft?.vertexCount ?? 0;
     const indices = loft?.indexCount ?? 0;
     const contactLast = contact?.last;
+    let probeStart = 0;
+    let probeMs = Number.NaN;
     if (o.hash) {
       for (const array of [buffers.surface, buffers.flow, buffers.aeration, buffers.lip, buffers.tubes, buffers.bubbles, buffers.spray,
         buffers.board, buffers.rider, buffers.lipHits, buffers.strokeHits, buffers.roar, buffers.reaction, buffers.front, buffers.roller, buffers.curl]) {
@@ -284,6 +287,7 @@ export async function createArm(o: ArmOptions) {
       // The worker's answers through the tube (identity of the contact's lazy rows): at every 5th drawn slice, 12 points along
       // its profile 5 cm either side of it, the contact's query and floor, and the water's full sample there.
       if (loft && contact) {
+        probeStart = performance.now();
         const P = loft.positions;
         const hit = createContactHit() as unknown as Record<string, unknown>;
         const sample = createWaterSample() as unknown as Record<string, unknown>;
@@ -301,6 +305,7 @@ export async function createArm(o: ArmOptions) {
             }
           }
         }
+        probeMs = performance.now() - probeStart;
         snapshotHash.update(new Uint8Array(Float64Array.from(answers).buffer));
       }
       const mask = b.mask as Uint8Array;
@@ -343,7 +348,7 @@ export async function createArm(o: ArmOptions) {
       contactSlices: contactLast?.sliceCount ?? 0, contactVertices: contactLast?.vertexCount ?? 0,
       uploadRich: barrel.mesh.mesh.visible ? 4 * RICH_FLOATS_PER_VERTEX * vertices + 4 * indices : 0,
       transfer: transferBytes(),
-      deviceUpload, uploadAll, tubeFragments: frags ? frags.tube : Number.NaN, tubeCovered: frags ? frags.tubeCovered : Number.NaN, sprayFragments: frags ? frags.spray : Number.NaN, inTubeMesh: tubeFrags ? tubeFrags.tube : Number.NaN, inTubeSpray: tubeFrags ? tubeFrags.spray : Number.NaN, sprayCount: buffers.sprayCount, bubbleCount: buffers.bubbleCount, lipCount: buffers.lipCount, lipLaunches: status.lipLaunches,
+      probeQueries: probeMs, deviceUpload, uploadAll, tubeFragments: frags ? frags.tube : Number.NaN, tubeCovered: frags ? frags.tubeCovered : Number.NaN, sprayFragments: frags ? frags.spray : Number.NaN, inTubeMesh: tubeFrags ? tubeFrags.tube : Number.NaN, inTubeSpray: tubeFrags ? tubeFrags.spray : Number.NaN, sprayCount: buffers.sprayCount, bubbleCount: buffers.bubbleCount, lipCount: buffers.lipCount, lipLaunches: status.lipLaunches,
       maskBytes: (b.mask as Uint8Array).length,
     };
   }

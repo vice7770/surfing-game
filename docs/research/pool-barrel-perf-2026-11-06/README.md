@@ -205,7 +205,7 @@ and online rooms pin them to the default (`main.ts`); the page's three are the p
 
 | Fix | Switch | Saving on this M1, 1.5 m, alone | What it does |
 |---|---|---|---|
-| The worker's face contact finds its rows on demand | `?contactRows=old` | the contact −1.1 ms | `SweptContact.forFaceWorker`: the loft's heights (with the floor's rule) and normals are found when a body's query first needs a row, as Padang's worker contact does (`forOrdinaryWorker`); a lone board in the lineup needs almost none |
+| The worker's face contact finds its rows on demand | `?contactRows=old` | the contact −1.0 to −1.1 ms | `SweptContact.forFaceWorker`: the loft's heights (with the floor's rule) and normals are found when a body's query first needs a row, as Padang's worker contact does (`forOrdinaryWorker`), through a node cache of its own emptied at each update; a lone board in the lineup needs almost none |
 | The plain surface keeps a stencil it may | `?plainHeight=old` | the contact −0.9 ms | `PlainHeightSurface`: inside a cache scope a sample whose 4 × 4 nodes are the last sample's keeps them; the weights inline, no arrays. Every spot's water |
 | The drawing's cubic height | `?barrelHeight=old` | the page −0.7 ms | `sampleCubicHeight`: `sampleCubicSurface`'s height alone, the same sum in the same order, without the slopes or allocations |
 | The camera's water test in typed arrays | `?cameraWater=old` | the page −0.3 to −0.4 ms | `BarrelWater`: the same strips, boxes and triangle ranges, in the same order, without an object, a map entry or an array each |
@@ -232,15 +232,21 @@ The contact's two overlap: with the rows on demand there are fewer reads left fo
 On the M4 (÷1.6, an estimate) that is about −1.0–1.2 ms a worker step and −0.6–0.7 ms a page frame.
 
 **Why the output is the same:**
-- **The lazy rows** compute each row's heights with the same arithmetic as the full build, from the same `heightAt`, when
-  first queried. Every query in a step comes before the water's heights change again: the bodies push only discharge, and
-  the next update starts a new generation. The floor's rule is kept per vertex (`floorRows`). Only the worker's runner
-  uses it (`SurfZoneRunner.forWorker`); `new SweptContact(…)`, the probes and the tests keep the full build.
+- **The lazy rows** compute each row's heights with the same arithmetic as the full build, when first queried. Their
+  heights are the water's render nodes through a node cache of their own (`PhysicalSurfWater.createCachedPlainSurface`),
+  emptied at each update. Every query in a step comes before the water's heights change again: the bodies push only
+  discharge, and the next update empties the cache and starts a new generation. The floor's rule is kept per vertex
+  (`floorRows`). Only the worker's runner uses it (`SurfZoneRunner.forWorker`); `new SweptContact(…)`, the probes and the
+  tests keep the full build.
+  - *Found on the way:* without a cache of its own, a row first queried outside a cache scope (a lone board's step, the
+    bench's probes) gathered every node afresh: queries through every row then took 10 ms against 3.5 ms.
+  - With it, in the worst case (queries through every row of the tube every step) the queries take 0.8 ms more (4.5
+    against 3.7 ms), a little less than the 1.0 ms the update saves. A rider touches a few rows a step.
 - **The kept stencil** is kept only inside a cache scope and its epoch, where the 16 cached heights cannot change. The
   weights are `catmullRomWeights`' expressions and the sum runs in the same order.
 - **The other three** are the same arithmetic in the same order, without allocations.
 
-**Identity, checked** (`runs/identity-*.txt`):
+**Identity, checked** (`runs/identity-*.txt`; again on the final head, `runs/identity2-*.txt`):
 - `bench.ts --hash 1` hashes, every step:
   - every snapshot array, the drawn mesh's attributes, index and mask;
   - the camera's water answers through the tube (every 7th drawn slice, 9 points from its lip-to-toe middle up past its
@@ -248,7 +254,7 @@ On the M4 (÷1.6, an estimate) that is about −1.0–1.2 ms a worker step and �
   - the worker's contact answers (every field of `query`, and `floorAt`) and the water's full sample
     (`PhysicalSurfWater.sampleAt`) at every 5th drawn slice, 12 points along its profile, 5 cm either side of it.
 - All five switches old against all five on: every hash the same, at 1.5 and 1.8 m, on a38, the pool's cases and the old
-  piece, 300 steps each.
+  piece, 300 steps each. The final head hashes as the first run did.
 - The tube work's pin check (`pin-track.ts`) against `main`: every spot's 26 lines identical (§7). It runs the public
   contact (the full build), and builds it and steps its boards inside cache scopes, so it pins the kept stencil at every
   swept barrel and on the Beach's boards.
@@ -359,12 +365,15 @@ From the numbers:
     differs;
   - the plain surface's kept stencil answers `plainSurfaceAt` and every `sampleAt` field as before, in and out of cache
     scopes, across invalidations and the grid's edges;
+  - the face contact's own cached heights are `plainSurfaceAt`'s bits, and the new water's once emptied;
   - the camera's water test answers the same in typed arrays, including lofts whose strips' triangles interleave;
   - the mesh's faces-out loop gives the same indices.
 - `src/scene/water/cubicSurface.test.ts`: `sampleCubicHeight` equals `sampleCubicSurface(…).height` bit for bit at 12,000
   scrambled points and every node, past every edge, at three spacings.
 - `src/game/PhysicalMode.test.ts`: the five switches parse, the worker's two reach the config (the contact's at the Barrel
-  alone) and an online room's overrides pin them.
+  alone) and an online room's overrides pin them; the readout's WORKER row.
+- After the last change (the contact's own cache): `src/game` and `src/wave/barrel`, 85 files, 895 tests passed; the
+  identity hashes again (`runs/identity2-*.txt`).
 
 ## Tools
 
