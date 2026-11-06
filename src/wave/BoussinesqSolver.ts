@@ -1,6 +1,6 @@
 import { GRAVITY } from './dispersion';
 import { inheritedAge } from './breakingAge';
-import { OPEN, PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
+import { OPEN, PERIODIC, ShallowWaterSolver, WALL, WATER_LIST, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
 
 /** Madsen & Sørensen (1992) dispersion coefficient: the [2,2] Padé fit to Airy. */
 export const MADSEN_SORENSEN_B = 1 / 15;
@@ -30,6 +30,7 @@ const SWITCH_FROUDE = 2;
  * number falls below 1.3 (Tissier et al. 2012). Advice from the water-physics advisor (the wave-shape-advisor note).
  */
 const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
+const NO_CELLS = new Int32Array(0);
 /**
  * FUNWAVE-TVD's Froude cap (`capFroude`): the largest Froude number a wet cell keeps, the depth under which it is
  * left alone (FUNWAVE's wet depth, MinDepth), and the depth above which a capped cell counts as water, m.
@@ -195,6 +196,15 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   readonly plungeHold: Float64Array;
   /** Changes whenever a cell enters or leaves the plunge zone: a device uploads the zone again. */
   plungeVersion = 0;
+  /**
+   * The cells that entered or left the plunge zone since a device last took it (`plungeHeld`), once each
+   * (barrel-gpu, 2026-11-06): a device sends only those. Past WATER_LIST cells, `plungeChangedOverflow`: it sends
+   * the zone whole.
+   */
+  plungeChangedCount = 0;
+  plungeChangedOverflow = false;
+  private plungeList?: Int32Array;
+  private plungeListed?: Uint8Array;
   /** Cells the Froude cap has slowed so far, and those among them deeper than 5 cm (a health metric). */
   froudeCaps = 0;
   froudeCapsInWater = 0;
@@ -297,7 +307,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
         if (Math.hypot(along - s * ux, across - s * uz) > dx + 1e-9) continue;
         const i = iz * nx + ix;
         const hold = PLUNGE.hold * Math.sqrt(Math.max(DISPERSIVE_DEPTH, still[i]) / g);
-        if (!(plungeHold[i] > 0)) this.plungeVersion += 1;
+        if (!(plungeHold[i] > 0)) this.plungeChanged(i);
         if (hold > plungeHold[i]) plungeHold[i] = hold;
       }
     }
@@ -310,8 +320,35 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     for (let i = 0; i < plungeHold.length; i += 1) {
       if (!(plungeHold[i] > 0)) continue;
       plungeHold[i] = Math.max(0, plungeHold[i] - dt);
-      if (plungeHold[i] === 0) this.plungeVersion += 1;
+      if (plungeHold[i] === 0) this.plungeChanged(i);
     }
+  }
+
+  /** Cell `cell` entered or left the plunge zone (`plungeVersion`, `plungeChangedCells`). */
+  private plungeChanged(cell: number): void {
+    this.plungeVersion += 1;
+    if (this.plungeChangedOverflow) return;
+    const listed = (this.plungeListed ??= new Uint8Array(this.nx * this.nz));
+    if (listed[cell]) return;
+    listed[cell] = 1;
+    if (this.plungeChangedCount < WATER_LIST) (this.plungeList ??= new Int32Array(WATER_LIST))[this.plungeChangedCount++] = cell;
+    else this.plungeChangedOverflow = true;
+  }
+
+  /** The cells that entered or left the plunge zone since a device last took it (a view, not a copy). */
+  get plungeChangedCells(): Int32Array {
+    return (this.plungeList ?? NO_CELLS).subarray(0, this.plungeChangedCount);
+  }
+
+  /** A device now holds the plunge zone: whole, or the cells that entered or left it since. */
+  plungeHeld(): void {
+    const listed = this.plungeListed;
+    if (listed) {
+      if (this.plungeChangedOverflow) listed.fill(0);
+      else for (let k = 0; k < this.plungeChangedCount; k += 1) listed[this.plungeList![k]] = 0;
+    }
+    this.plungeChangedCount = 0;
+    this.plungeChangedOverflow = false;
   }
 
   protected override advance(dt: number): void {

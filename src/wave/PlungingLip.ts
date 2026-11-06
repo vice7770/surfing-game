@@ -485,6 +485,13 @@ export class PlungingLip implements LipParcelSource {
   private tubeRows = 0;
 
   /**
+   * What a launch marks changed for a device (`ShallowWaterSolver.markWater`): 'cells', the cells its water and momentum
+   * come from (barrel-gpu, 2026-11-06); 'all', the whole water, as canyon-perf did (the `?launchWater=old` switch).
+   * The water is the same either way: only what goes up to the device differs.
+   */
+  launchMarks: 'cells' | 'all' = 'cells';
+
+  /**
    * `sourceShare` is the most of a source cell's water above the wave's trough one throw may take
    * (`drawFromCrest`): SOURCE_SHARE, or the spot's own.
    */
@@ -611,8 +618,9 @@ export class PlungingLip implements LipParcelSource {
     const surface = (index: number) => h[index] + bed[index];
     const height = waveHeight > 0 ? waveHeight : surface(cell) - restLevel;
     if (!(height > 0) || !(h[cell] > 0)) return 0;
-    // A launch takes water and momentum from its window and rings: the device gets all of the water again (canyon-perf).
-    this.solver.markAllWater();
+    // A launch takes water and momentum from its window and rings: with `?launchWater=old` the device gets all of the water
+    // again (canyon-perf); by default the rings' cells, below, which hold every cell it changes.
+    if (this.launchMarks === 'all') this.solver.markAllWater();
     const trough = surface(cell) - height;
     const reach = SOURCE_REACH * height;
     const column = cell % nx;
@@ -627,6 +635,8 @@ export class PlungingLip implements LipParcelSource {
       const ring = [...(back ? [(row - k) * nx + column] : []), ...(ahead ? [(row + k) * nx + column] : [])];
       if (ring.length > 0) rings.push(ring);
     }
+    // Its water comes from the window (within the rings) and its momentum from the rings: no other cell changes.
+    if (this.launchMarks === 'cells') for (const ring of rings) for (const index of ring) this.solver.markWater(index);
     // Its water: within SOURCE_REACH wave heights of the crest, tapered to none there.
     const window: number[] = [];
     const weights: number[] = [];

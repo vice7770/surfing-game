@@ -302,6 +302,21 @@ function crestRows(wave: WaveFrame): ReadoutRow[] {
   return [{ label: 'CREST', value: `c ${wave.crestSpeed.toFixed(1)} m/s · ${need}` }, { label: 'FACE', value: face }];
 }
 
+/**
+ * The DEVICE row (barrel-gpu, 2026-11-06): "GPU · 12 kB up, 3,682 kB back a step · whole water 0 · plunge zone 0 ·
+ * layout 0 in the last second", or "CPU · the water steps here: periodic along shore, kept on the CPU (?barrelGpu=off)".
+ */
+export function formatDevice(config: SurfZoneConfig, status: SurfZoneStatus): string {
+  if (status.compute !== 'gpu') {
+    const why = status.deviceNote ?? ((config.compute ?? 'auto') === 'cpu' ? 'Water simulation: fast' : (config.stage ?? 2) === 1 ? 'shallow water on the CPU' : undefined);
+    return `CPU · the water steps here${why ? `: ${why}` : ''}`;
+  }
+  const p = status.pipelineMs;
+  if (!p) return 'GPU';
+  const kb = (bytes: number) => Math.round(bytes / 1024).toLocaleString('en-US');
+  return `GPU · ${kb(p.deviceUploadBytes)} kB up (${kb(p.deviceUploadMean)} mean), ${kb(p.deviceReadbackBytes)} kB back a step · whole water ${p.deviceFullWater}, plunge zone ${p.deviceFullPlunge}, layout ${p.deviceLayouts} in the last second`;
+}
+
 /** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
 export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell, practice = false): ReadoutRow[] {
   const { breakPoint, breaker, peel } = status;
@@ -330,6 +345,9 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     // The worker's whole time a step (pool-barrel-perf): the water, its CPU stages and the snapshot; over 16.7 ms the sea
     // falls behind real time. The SOLVER row's is the water and the board alone.
     ...(status.pipelineMs ? [{ label: 'WORKER', value: `${status.pipelineMs.total.toFixed(1)} ms a step (16.7 keeps real time) · water ${status.pipelineMs.water.toFixed(1)} · contact ${status.pipelineMs.contact.toFixed(1)} · snapshot ${status.pipelineMs.snapshot.toFixed(1)}` }] : []),
+    // Where the water steps and what the GPU's step moves (barrel-gpu): on the CPU, the reason; on the GPU, the
+    // latest step's kB up and back, and over the last second of sea how many steps sent the whole water.
+    { label: 'DEVICE', value: formatDevice(config, status) },
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
@@ -443,6 +461,11 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...plainHeightSwitch(),
     // `?contactRows=old`: the Barrel's worker contact builds all its rows each step, as before pool-barrel-perf (the same answers).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? contactRowsSwitch() : {}),
+    // `?deviceWater=old`, `?launchWater=old`, `?devicePlunge=old`: the GPU gets the CPU's changes as before barrel-gpu
+    // (one span of water, all of it at a launch, the plunge zone whole); the same water on the device.
+    ...deviceTrafficSwitches(),
+    // `?barrelGpu=off`: the straight Barrel's periodic sea steps on the CPU, as before barrel-gpu.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? barrelGpuSwitch() : {}),
     // `?swim=old`: back on the board after a wipeout as before swim-back (the reel to the ankle, the springs' pull), for A/Bs.
     ...swimSwitch(),
     // `?froth=old`: a roller's froth dragging a board anywhere in its footprint, uncapped, as before bottom-stop, for A/Bs.
@@ -627,6 +650,29 @@ export function strokeSwitch(search?: string): { stroke?: 'old' } {
  */
 export function plainHeightSwitch(search?: string): { plainHeight?: 'old' } {
   return devParam('plainHeight', search)?.trim().toLowerCase() === 'old' ? { plainHeight: 'old' } : {};
+}
+
+/**
+ * barrel-gpu's dev switches (2026-11-06; `SurfZoneConfig.deviceWater`, `launchWater`, `devicePlunge`), every spot:
+ * `?deviceWater=old` sends the water the CPU changed as one span from the first changed cell to the last; `?launchWater=old`
+ * has each lip launch mark the whole water; `?devicePlunge=old` sends the whole plunge zone when a cell enters or leaves
+ * it. Each 'old', else nothing. The device holds the same water either way; only the bytes it is sent differ.
+ */
+export function deviceTrafficSwitches(search?: string): { deviceWater?: 'old'; launchWater?: 'old'; devicePlunge?: 'old' } {
+  const old = (name: string) => devParam(name, search)?.trim().toLowerCase() === 'old';
+  return {
+    ...(old('deviceWater') ? { deviceWater: 'old' as const } : {}),
+    ...(old('launchWater') ? { launchWater: 'old' as const } : {}),
+    ...(old('devicePlunge') ? { devicePlunge: 'old' as const } : {}),
+  };
+}
+
+/**
+ * The `?barrelGpu=off` dev switch (`SurfZoneConfig.barrelGpu`, barrel-gpu 2026-11-06): the Wave Pool's straight Barrel, whose
+ * sea is periodic along shore, steps its water on the CPU as before, in place of the GPU. 'off', else nothing.
+ */
+export function barrelGpuSwitch(search?: string): { barrelGpu?: 'off' } {
+  return devParam('barrelGpu', search)?.trim().toLowerCase() === 'off' ? { barrelGpu: 'off' } : {};
 }
 
 /**

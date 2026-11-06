@@ -507,7 +507,9 @@ describe('GpuBoussinesq host', () => {
   it('refuses setups the kernels do not cover', () => {
     const grid = { nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(-8, 0, 8) };
     const flat = () => 2;
-    expect(deviceStepRefusal(new BoussinesqSolver({ ...grid, xBoundary: 'periodic' }, flat))).toMatch(/periodic/);
+    // Periodic along shore it runs since barrel-gpu (GpuBoussinesq.periodic.test.ts), on rows of three columns or more.
+    expect(deviceStepRefusal(new BoussinesqSolver({ ...grid, xBoundary: 'periodic' }, flat))).toBeUndefined();
+    expect(deviceStepRefusal(new BoussinesqSolver({ ...grid, nx: 2, xBoundary: 'periodic' }, flat))).toMatch(/periodic/);
     expect(deviceStepRefusal(new BoussinesqSolver(grid, flat, { dispersion: false }))).toMatch(/stage 1/);
     expect(deviceStepRefusal(new BoussinesqSolver(grid, flat))).toBeUndefined();
     expect(deviceStepRefusal(new SurfZoneSimulation(quick).solver as BoussinesqSolver)).toBeUndefined();
