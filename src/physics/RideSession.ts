@@ -87,6 +87,8 @@ export interface RideSessionOptions {
   stance?: StanceName;
   /** How the paddler's hands meet water outrunning them (`AttachedRiderOptions.stroke`; 'old': the `?stroke=old` dev switch). */
   stroke?: 'feather' | 'old';
+  /** How a still prone board turns (`AttachedRiderOptions.stillTurn`; 'old': the `?stillTurn=old` dev switch). */
+  stillTurn?: 'old';
   /**
    * Back to the board after a wipeout (swim-back, 2026-10-29): by default the reel brings the board's tail to the hand
    * and the swimmer climbs on from where the body is (`BoardRecovery`, `AttachedRider.climbFrom`); 'old' (the
@@ -220,7 +222,7 @@ export class RideSession {
     this.duckOld = options.duckBody === 'old';
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
-      stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
+      stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.stillTurn ? { stillTurn: options.stillTurn } : {}), ...(options.extension ? { extension: options.extension } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),

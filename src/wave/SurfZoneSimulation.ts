@@ -114,6 +114,8 @@ export interface SurfZoneConfig {
    * rider; online rooms run the default.
    */
   stroke?: 'feather' | 'old';
+  /** How a still prone board turns (`AttachedRiderOptions.stillTurn`): 'old', the sweep's stroke alone (`?stillTurn=old`). Online rooms run the default. */
+  stillTurn?: 'old';
   /**
    * 'old': the sea's surface held still through the bodies' step, as before popup-moving-face (2026-10-29); by default
    * the bodies sample it moving at its rise rate to each substep's time (`PhysicalSurfWaterOptions.surfaceMotion`). The

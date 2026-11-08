@@ -205,6 +205,17 @@ const FEATHER_DRAG = 0.2;
  */
 const STEER_STROKE = 0.6;
 /**
+ * Steering lying still (not paddling): a surfer spins a still board with a wide sweep of the outside arm, the other hand
+ * back-sculling and the legs kicking across, a couple of water forces about the board's middle (a seated spin of 180°
+ * takes about 1–1.5 s, 120–180°/s; lying, the legs reach less water, so somewhat slower). On top of the stroke's own
+ * drag, the sweep and kick turn the board by STILL_MOMENT, N·m at full steer, falling off as the board's yaw rate nears
+ * the limbs' own sweep, STILL_RATE, rad/s (the water can't be pushed faster than the hand moves), and coming in over
+ * STILL_RAMP, s, so it doesn't snap. Without it the sweep alone turned a still board about 17°/s (`?stillTurn=old`).
+ */
+const STILL_MOMENT = 250;
+const STILL_RATE = (130 * Math.PI) / 180;
+const STILL_RAMP = 0.3;
+/**
  * A paddler keeps its line: with no steering asked for, the arm on the side to
  * turn toward pulls softer and the other harder, in proportion to the heading
  * error over HOLD_ANGLE, rad, and to the yaw rate over HOLD_ANGLE / HOLD_RATE_TIME
@@ -929,6 +940,8 @@ export interface AttachedRiderOptions {
    * before canyon-catch (the `?stroke=old` dev switch, for A/Bs).
    */
   stroke?: 'feather' | 'old';
+  /** How a still prone board turns to a sweep (`STILL_MOMENT`); 'old': the sweep's stroke alone (the `?stillTurn=old` dev switch). */
+  stillTurn?: 'old';
   /**
    * How the legs extend letting Compress go (`projectionCatch`): by default no faster than the stance's spring can
    * catch the body; 'old' at the legs' full pace, as before compress-exit (the `?extension=old` dev switch, for A/Bs).
@@ -1274,6 +1287,9 @@ export class AttachedRider {
   /** A hand is pulling this substep (`paddleStep`): one the board outruns feathers (`FEATHER_DRAG`), unless the stroke is 'old'. */
   private pulling = false;
   private readonly feathers: boolean;
+  private readonly stillKick: boolean;
+  /** How far the still sweep's moment has come in (STILL_RAMP), 0–1. */
+  private stillShare = 0;
   /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
   private readonly catches: boolean;
   /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
@@ -1454,6 +1470,7 @@ export class AttachedRider {
     this.stance = options.stance ?? 'regular';
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
+    this.stillKick = options.stillTurn !== 'old';
     this.catches = options.extension !== 'old';
     this.quick = options.snapQuick !== 'old';
     this.snapLean = options.snapPivot === 'lean';
@@ -2470,6 +2487,13 @@ export class AttachedRider {
     if (this.upright && this.handSide !== 0) this.standingHand(h, board, water);
     // The player's sprint comes in over SPRINT_PADDLE_TIME while paddling lying down, and goes as it stops.
     this.paddleSprintShare += ((this.sprintPaddling ? 1 : 0) - this.paddleSprintShare) * Math.min(1, h / SPRINT_PADDLE_TIME);
+    const still = this.stillKick && this.phase === 'prone' && !this.climbing && !this.paddle && this.sweeping && this.duck.press <= DUCK_BUSY;
+    this.stillShare = still ? Math.min(1, this.stillShare + h / STILL_RAMP) : 0;
+    if (still) {
+      const steer = Math.max(-1, Math.min(1, this.steer));
+      const catchUp = Math.max(0, 1 - (Math.sign(steer) * board.angularVelocity.y) / STILL_RATE);
+      this.waterMoment.y += STILL_MOMENT * steer * catchUp * this.stillShare;
+    }
     if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping)) {
       this.line = undefined;
       this.hold = 0;
