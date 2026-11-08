@@ -56,3 +56,24 @@ The Wave Pool Barrel now runs at full speed on the M4 Pro (below), but the owner
 - **One agent at a time:** the owner's credit limit, with exceptions only when the owner asks.
 - **The merge flow:** in a worktree, branch from `origin/main`, merge, run tsc for the app and the server, then the main suite with `--maxWorkers=3`, excluding SurfZoneSimulation and SurfZoneRunner. Run the SurfZoneSimulation subset when the sea's step changes. Then `gh pr create`, push to main fast-forward, and fast-forward the main checkout.
 - **Tests:** never run rider sessions, catch reports or autopilot rides. Passive probe bodies are fine.
+
+## Update 2026-11-08 (91 % of the week)
+
+**Merged since:**
+- #205: Snap recentres after release.
+- #206: Snap's arms follow the turn; the deep load is opt-in as `?snapDepth=deep`.
+- Ruling 4 is on main (`docs/research/pool-tube-track-2026-11-05/advisor-ruling-4.md`). The cause: the formation clock's rate switching lurches the wave body and tears the board from a prone rider. `?tubeForm=old` can be ridden now.
+
+**The owner on Snap:** the balance and the release are better, but no stance turns sharply enough to break the top of the wave. The owner's model, agreed: the stick sets the sharpness.
+- Partial stick: a rail carve, with the fins holding.
+- Full stick: a short stamp on the tail (about 0.2–0.3 s), the tail slides, the board pivots sharply, then the recentre (#205) re-grips.
+- It costs speed, so measure it on moving faces.
+- Round 3's "stamp" lever (`docs/research/snap-fan-2026-11-05/README.md`) is the starting point: 305°/s off a climb, but it stalled.
+
+**Keep in mind for all wave work (the owner):** the reference tricks happen on 60–80° lips, and the solver holds faces at about 15–20°.
+
+**After the reset (11-10), the owner's order:**
+1. Snap round 4: stick-proportional sharpness and the balance through it.
+2. The wave-body build: ruling 4's ranks 1–3.
+
+Agents run at `effort: "medium"` when near the limit.
