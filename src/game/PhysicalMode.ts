@@ -481,6 +481,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapPivotSwitch(),
     // `?snapRecentre=old`: Snap let go, the riders' weight left over the tail, as before snap-recentre, for A/Bs.
     ...snapRecentreSwitch(),
+    // `?snapUpturn=old`: with `?snapPivot=lean`, the riders' Snap up the face leaning as far as a top turn, as before snap-upturn, for A/Bs.
+    ...snapUpturnSwitch(),
     // `?snapDepth=deep`: the riders' Snap loading to the tube tuck's 0.45 m (snap-carve), opt-in, to ride.
     ...snapDepthSwitch(),
     // `?snapStamp=on`: a full steer under Snap stamps the riders' weight past the tail, then back over the fins (snap-stamp), opt-in, to ride.
@@ -758,6 +760,15 @@ export function snapPivotSwitch(search?: string): { snapPivot?: 'lean' } {
  */
 export function snapRecentreSwitch(search?: string): { snapRecentre?: 'old' } {
   return devParam('snapRecentre', search)?.trim().toLowerCase() === 'old' ? { snapRecentre: 'old' } : {};
+}
+
+/**
+ * The `?snapUpturn=old` dev switch (`SurfZoneConfig.snapUpturn`, snap-upturn 2026-11-08, the owner's "I can't turn UP
+ * the wave"): with `?snapPivot=lean`, every spot's rider leans a Snap up the face as far as a top turn, as before, in
+ * place of the steer's rail.
+ */
+export function snapUpturnSwitch(search?: string): { snapUpturn?: 'old' } {
+  return devParam('snapUpturn', search)?.trim().toLowerCase() === 'old' ? { snapUpturn: 'old' } : {};
 }
 
 /**

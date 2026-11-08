@@ -952,6 +952,12 @@ export interface AttachedRiderOptions {
    */
   snapRecentre?: 'old';
   /**
+   * snap-upturn (2026-11-08, the owner: "I can't turn UP the wave"): with `snapPivot: 'lean'`, a Snap turning the board
+   * up the face asks for the steer's RAIL_RANGE, the top turn's lean kept for turns down it; 'old' leans every Snap (the
+   * `?snapUpturn=old` dev switch, for A/Bs).
+   */
+  snapUpturn?: 'old';
+  /**
    * Snap's deeper load (snap-carve, 2026-11-08, the owner: "doesn't lower the center of gravity so much"; SNAP_DEPTH_DEEP),
    * opt-in: 'deep' loads Snap's legs to the tube tuck's depth (MANUAL_CROUCH_DEPTH, 0.45 m) in place of Compress's 0.3 m
    * (the `?snapDepth=deep` dev switch, to ride). By default as deep as Compress, as before.
@@ -1274,6 +1280,8 @@ export class AttachedRider {
   private readonly quick: boolean;
   /** Snap leans for its own turn (SNAP_RAIL_RANGE); only with `snapPivot: 'lean'`. */
   private readonly snapLean: boolean;
+  /** Snap turning up the face asks for the steer's rail (snap-upturn); false with `snapUpturn: 'old'`. */
+  private readonly upturnKept: boolean;
   /** Snap let go, the weight is centred again (RECENTRE_TIME); false with `snapRecentre: 'old'`. */
   private readonly recentres: boolean;
   /** Snap's load, of CROUCH_DEPTH (SNAP_DEPTH; SNAP_DEPTH_DEEP with `snapDepth: 'deep'`). */
@@ -1449,6 +1457,7 @@ export class AttachedRider {
     this.catches = options.extension !== 'old';
     this.quick = options.snapQuick !== 'old';
     this.snapLean = options.snapPivot === 'lean';
+    this.upturnKept = options.snapUpturn !== 'old';
     this.recentres = options.snapRecentre !== 'old';
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
     this.stamps = options.snapStamp === 'on';
@@ -2185,7 +2194,9 @@ export class AttachedRider {
     const radius = this.snapping > 0 ? TURN_RADIUS + this.snapping * (SNAP_RADIUS - TURN_RADIUS) : TURN_RADIUS;
     const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius))) : 0;
     // `snapPivot: 'lean'`: under Snap the steer asks for as much lean as the tight turn holds (SNAP_RAIL_RANGE).
-    const railRange = this.snapLean && this.snapping > 0 ? RAIL_RANGE + this.snapping * (SNAP_RAIL_RANGE - RAIL_RANGE) : RAIL_RANGE;
+    // snap-upturn: a Snap turning the board up the face (a bottom turn) asks for the steer's rail, not the top turn's.
+    const snapLeans = this.snapLean && this.snapping > 0 && !(this.upturnKept && this.turningUp());
+    const railRange = snapLeans ? RAIL_RANGE + this.snapping * (SNAP_RAIL_RANGE - RAIL_RANGE) : RAIL_RANGE;
     const asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
@@ -2207,6 +2218,20 @@ export class AttachedRider {
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
     this.ankleTorque = ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate);
+  }
+
+  /**
+   * snap-upturn: the turn asked for takes the board up the face, toward its fall line reversed (the steer's way, or
+   * unsteered Snap's latched side). On a face shallower than SNAP_FACE, false.
+   */
+  private turningUp(): boolean {
+    const side = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : this.snapHeld ? this.snapSide : 0;
+    const slope = Math.hypot(this.waterUp.x, this.waterUp.z);
+    if (side === 0 || !(slope > SNAP_FACE)) return false;
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    // Up the face is −waterUp's level part; the board's left (+) turns from +z toward +x, as in snapAim.
+    const across = forward.x * -this.waterUp.z - forward.z * -this.waterUp.x;
+    return (across < 0 ? 1 : -1) === side;
   }
 
   /**

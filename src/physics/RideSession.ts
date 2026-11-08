@@ -126,6 +126,11 @@ export interface RideSessionOptions {
    */
   snapRecentre?: 'old';
   /**
+   * Snap turning up the face (snap-upturn, 2026-11-08; `AttachedRiderOptions.snapUpturn`): with `snapPivot: 'lean'`, by
+   * default it asks for the steer's rail; 'old' (the `?snapUpturn=old` dev switch) leans as far as a top turn, as before.
+   */
+  snapUpturn?: 'old';
+  /**
    * Snap's deeper load (snap-carve, 2026-11-08; `AttachedRiderOptions.snapDepth`): 'deep' (the `?snapDepth=deep` dev
    * switch) loads Snap's legs to the tube tuck's 0.45 m; by default as deep as Compress, as before.
    */
@@ -219,6 +224,7 @@ export class RideSession {
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),
+      ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});

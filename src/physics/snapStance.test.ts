@@ -645,3 +645,55 @@ describe('the pinned turns, with Snap', () => {
 function rideKept(speed: number, reference: number): number {
   return speed / reference;
 }
+
+// snap-upturn (2026-11-08, the owner on a pad with `?snapPivot=lean&snapStamp=on&snapDepth=deep`: "I can't turn UP the
+// wave ... the surfer gets confused and falls"; docs/research/snap-upturn-2026-11-08/README.md). A bottom turn: on the
+// 15° face heading 35° off the fall line, a full steer up the face under Snap for 0.6 s, then everything let go. Before,
+// Snap leaned the top turn's 70° rail into the climb (44° of bank at the release against the steer's 32°); the climb
+// took the speed that held it and the rider fell in 1.2–1.4 s after the press. Now it asks for the steer's rail.
+describe('Snap turning up the face (bottom turn)', () => {
+  const upturn = (speed: number, snapUpturn?: 'old') => {
+    const yaw = (35 * Math.PI) / 180;
+    const normal = new Vector3(0, 1, Math.tan(FACE)).normalize();
+    const fall = new Vector3(0, -Math.sin(FACE), Math.cos(FACE));
+    const side = new Vector3().crossVectors(normal, fall).normalize();
+    const forward = fall.clone().multiplyScalar(Math.cos(yaw)).addScaledVector(side, -Math.sin(yaw)).normalize();
+    const left = new Vector3().crossVectors(normal, forward).normalize();
+    const board = new BoardBody();
+    board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)), forward.clone().multiplyScalar(speed));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', snapPivot: 'lean', snapStamp: 'on', snapDepth: 'deep', ...(snapUpturn ? { snapUpturn } : {}) });
+    board.attach(rider);
+    const water = new PlaneWater({ slopeZ: -Math.tan(FACE) }) as SurfWater;
+    for (let n = 0; n < 12; n += 1) board.step(STEP, water);
+    const fromFall = () => {
+      const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation).setY(0).normalize();
+      return (Math.acos(Math.max(-1, Math.min(1, f.z))) * 180) / Math.PI;
+    };
+    const start = fromFall();
+    let fell = Number.NaN;
+    let twist = 0;
+    let most = start;
+    for (let n = 0; n < 120; n += 1) {
+      const on = n * STEP < 0.6;
+      // Heading toward −x with the board's left down the face, up the face is the board's right: the steer −1.
+      Object.assign(rider, { steer: on ? -1 : 0, snap: on ? 1 : 0 });
+      board.step(STEP, water);
+      if (!rider.attached) {
+        fell = (n + 1) * STEP;
+        break;
+      }
+      if (on) twist = Math.min(twist, rider.twist.angle);
+      most = Math.max(most, fromFall());
+    }
+    return { fell, twist, climbed: most - start };
+  };
+  it.each([8, 9])('stays on at %i m/s, the shoulders wound toward the turn, the board come round up the face', (speed) => {
+    const now = upturn(speed);
+    expect(now.fell).toBeNaN();
+    // The shoulders wind the turn's way (the steer's sign), most of the spine's range.
+    expect(now.twist).toBeLessThan(-0.5);
+    expect(now.climbed).toBeGreaterThan(15);
+    // Before (`snapUpturn: 'old'`), the rider fell inside 1.6 s of the press.
+    expect(upturn(speed, 'old').fell).toBeLessThan(1.6);
+  });
+});

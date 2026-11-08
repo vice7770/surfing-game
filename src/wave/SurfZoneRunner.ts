@@ -492,6 +492,7 @@ export class SurfZoneRunner {
         ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
         ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
         ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}),
+        ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
       });
       this.board = this.session.board;
     } else if (options.board) {

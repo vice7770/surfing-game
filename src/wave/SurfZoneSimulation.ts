@@ -204,6 +204,12 @@ export interface SurfZoneConfig {
    */
   snapRecentre?: 'old';
   /**
+   * 'old': with `snapPivot: 'lean'`, a Snap turning up the face leans as far as a top turn, as before snap-upturn
+   * (2026-11-08; `RideSessionOptions.snapUpturn`); by default it asks for the steer's rail. The `?snapUpturn=old` dev
+   * switch, for A/Bs.
+   */
+  snapUpturn?: 'old';
+  /**
    * 'deep': Snap's legs load to the tube tuck's 0.45 m (snap-carve, 2026-11-08; `RideSessionOptions.snapDepth`); by
    * default as deep as Compress. Every spot. The `?snapDepth=deep` dev switch, opt-in, to ride; online rooms run the default.
    */
