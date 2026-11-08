@@ -26,7 +26,7 @@ import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } fro
 import { cloneTubeApproachObservation, createTubeApproachObservation,
   type TubeApproachCue, type TubeApproachRequest, type TubeBodyPoint, type TubeApproachObservation } from './barrel/tubeApproach';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
-import { SurfZoneSimulation, rideLineupOffset, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import { SurfZoneSimulation, rideLineupAlong, rideLineupOffset, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { RiderBounds } from '../physics/riderBounds';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
@@ -482,7 +482,7 @@ export class SurfZoneRunner {
     this.bounds = tankRiderBounds(this.simulation.config);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     // The rider starts, and relaunches, `rideLineupOffset` seaward of the break line (11 m; nearer at the Canyon's Big).
-    this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? rideLineupOffset(config)));
+    this.rideLineup = new Vector3(this.focus.x + rideLineupAlong(config) + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? rideLineupOffset(config)));
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });

@@ -361,6 +361,12 @@ export interface SurfZoneConfig {
    */
   canyonJoin?: CanyonJoinRule;
   /**
+   * The Canyon's start along the shore: by default CANYON_START_ALONG m along x from its take-off (screen-left in the start's
+   * front view), clear of the waves breaking on the rider; 'old' (the `?canyonStart=old` dev switch) at the take-off, as
+   * before 2026-11-08. Every other spot ignores it; online rooms always run the default.
+   */
+  canyonStart?: 'old';
+  /**
    * The Wave Pool's Barrel floor's breaking-age join, in place of its own (`POOL_BARREL.ageJoin`): the `?poolAgeJoin=<J>`
    * dev switch, 0 for rule A as the training floor runs, to A/B the gate alone. Every other floor and spot ignores it;
    * online rooms always run the default.
@@ -1092,6 +1098,14 @@ export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'signific
     }
   }
   return sizes[sizes.length - 1].offset;
+}
+
+/** The Canyon's start, m along x from its take-off: −x is screen-left in the start's front view (the owner, 2026-11-08). */
+export const CANYON_START_ALONG = -10;
+
+/** Where the rider starts along the shore from the take-off, m (`canyonStart`): CANYON_START_ALONG at the Canyon, else 0. */
+export function rideLineupAlong(config: Pick<SurfZoneConfig, 'spot' | 'canyonStart'>): number {
+  return config.spot === 'canyon' && config.canyonStart !== 'old' ? CANYON_START_ALONG : 0;
 }
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */

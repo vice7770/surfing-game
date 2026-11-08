@@ -430,6 +430,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...canyonBedSwitch(),
     // `?canyonJoin=zone`: version C's bank passing its breaking age by its take-off zone, as before the bed-keyed join.
     ...(settings.spot === 'canyon' ? canyonJoinSwitch() : {}),
+    // `?canyonStart=old`: the Canyon's rider starting at its take-off, as before 2026-11-08 (now 10 m screen-left of it).
+    ...(settings.spot === 'canyon' ? canyonStartSwitch() : {}),
     // `?tubeShape=c`: the swept barrel drawn and felt as the authored bounded-C (2026-10-05 to 2026-10-22), for A/Bs.
     ...tubeShapeSwitch(),
     // `?canyonTube=on`: the Canyon with its swept tubes on the reef (its default until canyon-beach-break, 2026-10-23).
@@ -931,6 +933,11 @@ export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' | 'h
  * zone (rule A to x +31, the reef's gate up the line from there: the branch's head at ca567450), in place of its bed (rule A
  * on its face, the gate behind its edge; the water-physics advisor's second ruling, 2026-11-04). 'zone', else nothing.
  */
+export function canyonStartSwitch(search?: string): { canyonStart?: 'old' } {
+  return devParam('canyonStart', search)?.trim().toLowerCase() === 'old' ? { canyonStart: 'old' } : {};
+}
+
+/** See canyonStartSwitch above for `?canyonStart=old`; below, `?canyonJoin=zone`. */
 export function canyonJoinSwitch(search?: string): { canyonJoin?: 'zone' } {
   return devParam('canyonJoin', search)?.trim().toLowerCase() === 'zone' ? { canyonJoin: 'zone' } : {};
 }
