@@ -13,6 +13,12 @@ import { POINT, type RiderVisualState } from './riderVisualState';
  */
 export const SNAP_FROM = -0.05;
 export const SNAP_FULL = -0.3;
+/**
+ * The drawing's dev switches, set once by the page (`PhysicalMode`): every rider drawn on this page reads them alike,
+ * the player's and other players'. `snapArms: 'old'` (`?snapArms=old`): Snap drawn as before snap-carve (its arms, and
+ * the tube's pose for a deep Snap: `HumanoidRig`'s `RIG_DETAIL.snapArms`, `StageBlend`'s tube).
+ */
+export const RIG_SWITCHES: { snapArms?: 'old' } = {};
 /** A turn this fast, rad/s, is a full one for the stance's shapes (Part B's leading arm). */
 export const TURN_FULL = 1.5;
 
@@ -45,6 +51,16 @@ export function stanceBlend(state: RiderVisualState, out: StanceBlend = { stance
   out.back = weightBack(state);
   return out;
 }
+
+/**
+ * How far into Snap the drawn state is, 0 to 1 (snap-carve): the weight back (`weightBack`) with the shoulders wound
+ * (`state.twist`, Snap's aim, full at SNAP_TWIST, TWIST_RANGE). Either alone is not Snap: a tube's backside crouch sits
+ * the pelvis back on a pitched board, and the pad's rotation stick winds the shoulders.
+ */
+export function snapShare(state: RiderVisualState): number {
+  return weightBack(state) * Math.min(1, Math.abs(state.twist) / SNAP_TWIST);
+}
+const SNAP_TWIST = (45 * Math.PI) / 180;
 
 /** How far the weight is back, 0 to 1: where the pelvis sits over the stance, level. */
 export function weightBack(state: RiderVisualState): number {

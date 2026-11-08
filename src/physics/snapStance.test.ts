@@ -1,6 +1,6 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { AttachedRider, CROUCH_DEPTH } from './AttachedRider';
+import { AttachedRider, CROUCH_DEPTH, MANUAL_CROUCH_DEPTH } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { FIN_STALL } from './finForces';
 import { PlaneWater } from './PlaneWater';
@@ -475,6 +475,51 @@ describe('Snap leaning for its own turn (opt-in)', () => {
     // snap-recentre (2026-11-06): the weight is centred again once Snap is let go; round 2's figures carried it left
     // over the tail after the release (the owner's "stuck in snap stance"): 20°/s over (36° before).
     expect(lean.peak).toBeGreaterThan(steerCap.peak + 15);
+  });
+});
+
+describe('Snap\'s deeper load (opt-in)', () => {
+  // snap-carve (2026-11-08, the owner's "doesn't lower the center of gravity so much"): `snapDepth: 'deep'` loads Snap's
+  // legs toward the tube tuck's 0.45 m. Still water at 7 m/s, instant input, Snap held 0.6 s with the steer on.
+  const turn = (snapDepth?: 'deep', snapPivot?: 'lean') => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 7));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', ...(snapDepth ? { snapDepth } : {}), ...(snapPivot ? { snapPivot } : {}) });
+    board.attach(rider);
+    const water = new PlaneWater() as SurfWater;
+    for (let n = 0; n < 12; n += 1) board.step(STEP, water);
+    let last = headingOf(board);
+    let turned = 0;
+    let peak = 0;
+    let rest = 0;
+    for (let n = 0; n < 60; n += 1) {
+      Object.assign(rider, { steer: 1, snap: n * STEP < 0.6 ? 1 : 0 });
+      board.step(STEP, water);
+      if (!rider.attached) break;
+      const now = headingOf(board);
+      const d = Math.atan2(Math.sin(now - last), Math.cos(now - last));
+      last = now;
+      turned += d;
+      peak = Math.max(peak, Math.abs(d) / STEP);
+      rest = Math.min(rest, rider.leg.rest);
+    }
+    return { attached: rider.attached, turned: (Math.abs(turned) * 180) / Math.PI, peak: (peak * 180) / Math.PI, rest };
+  };
+  // Measured: the legs 0.34–0.35 m down by 1 s against 0.28; the turn by 1 s 46° against 43° (with `snapPivot: 'lean'` 73°
+  // against 77°), the peak 193°/s against 198 (211 against 218): no sharper. Both stay on here; round 2's still-water
+  // protocol (7 and 9 m/s, the steer held, eased or let go, keys or pad) falls in 5 of 12 against 2 (11 of 12 either way
+  // leaning): docs/research/snap-carve-2026-11-08/README.md.
+  it('loads deeper than Compress, within the tuck, and turns about as far', () => {
+    for (const pivot of [undefined, 'lean'] as const) {
+      const as = turn(undefined, pivot);
+      const deep = turn('deep', pivot);
+      expect(as.rest).toBeGreaterThan(-CROUCH_DEPTH - 1e-9);
+      expect(deep.rest).toBeLessThan(as.rest - 0.05);
+      expect(deep.rest).toBeGreaterThan(-MANUAL_CROUCH_DEPTH - 1e-9);
+      expect(deep.attached).toBe(as.attached);
+      expect(Math.abs(deep.turned - as.turned)).toBeLessThan(5);
+      expect(Math.abs(deep.peak - as.peak)).toBeLessThan(10);
+    }
   });
 });
 

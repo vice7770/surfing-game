@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import { BOARD_CENTRE, deckAt, railHalfWidth } from './boardDeck';
 import { STANDING_PELVIS, pelvisOverDeck } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
-import type { StanceBlend } from './stanceBlend';
+import { RIG_SWITCHES, snapShare, type StanceBlend } from './stanceBlend';
 import { TAKE_OFF, type StageWeights, type WaterWeights } from './stagePoses';
 
 /**
@@ -241,8 +241,10 @@ export class StageBlend {
     else if (this.weights.turn > 0.5 && redirect < 0.5) this.bottomRail = this.rail;
     if (this.bottomRail === this.rail) redirect = 0;
     const low = ramp(blend.depth, R.lowFrom, R.lowFull);
-    // The tube: the pelvis past Compress's full depth.
-    const tube = ramp(STANDING_PELVIS - pelvisOverDeck(state), R.tubeFrom, R.tubeFull);
+    // The tube: the pelvis past Compress's full depth. Snap loaded as deep (`snapDepth: 'deep'`) is no tube: its weight is
+    // back over the tail and its shoulders wound (`snapShare`; snap-carve; `RIG_SWITCHES.snapArms`).
+    const snapping = RIG_SWITCHES.snapArms === 'old' ? 0 : snapShare(state);
+    const tube = ramp(STANDING_PELVIS - pelvisOverDeck(state), R.tubeFrom, R.tubeFull) * (1 - snapping);
     // The kick-out: climbing straight up, nose up, the weight back, slowing; out as the nose comes down.
     if (fresh) {
       this.slowing = 0;

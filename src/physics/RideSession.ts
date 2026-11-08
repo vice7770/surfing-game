@@ -125,6 +125,11 @@ export interface RideSessionOptions {
    * when Snap is let go; 'old' (the `?snapRecentre=old` dev switch) leaves it over the tail, as before.
    */
   snapRecentre?: 'old';
+  /**
+   * Snap's deeper load (snap-carve, 2026-11-08; `AttachedRiderOptions.snapDepth`): 'deep' (the `?snapDepth=deep` dev
+   * switch) loads Snap's legs to the tube tuck's 0.45 m; by default as deep as Compress, as before.
+   */
+  snapDepth?: 'deep';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -207,7 +212,7 @@ export class RideSession {
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
-      ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}),
+      ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});

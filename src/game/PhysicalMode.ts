@@ -8,6 +8,7 @@ import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
 import { RiderMotion } from '../scene/rig/riderMotion';
+import { RIG_SWITCHES } from '../scene/rig/stanceBlend';
 import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
@@ -480,6 +481,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapPivotSwitch(),
     // `?snapRecentre=old`: Snap let go, the riders' weight left over the tail, as before snap-recentre, for A/Bs.
     ...snapRecentreSwitch(),
+    // `?snapDepth=deep`: the riders' Snap loading to the tube tuck's 0.45 m (snap-carve), opt-in, to ride.
+    ...snapDepthSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -756,6 +759,15 @@ export function snapRecentreSwitch(search?: string): { snapRecentre?: 'old' } {
 }
 
 /**
+ * The `?snapDepth=deep` dev switch (`SurfZoneConfig.snapDepth`, snap-carve 2026-11-08, the owner's "doesn't lower the
+ * center of gravity so much"): opt-in, every spot's rider loads Snap's legs to the tube tuck's 0.45 m in place of
+ * Compress's 0.3 m.
+ */
+export function snapDepthSwitch(search?: string): { snapDepth?: 'deep' } {
+  return devParam('snapDepth', search)?.trim().toLowerCase() === 'deep' ? { snapDepth: 'deep' } : {};
+}
+
+/**
  * The `?boardSpray=off` dev switch (`SurfZoneConfig.boardSpray`, board-spray 2026-10-29): no board throws spray, as before,
  * in place of the sheets a planing board throws off its rails and tail.
  */
@@ -780,6 +792,15 @@ export function duckBodySwitch(search?: string): { duckBody?: 'old' } {
  */
 export function duckDrawnOld(search?: string): boolean {
   return devParam('duckDrawn', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?snapArms=old` dev switch (snap-carve 2026-11-08, the owner's "the surfer doesn't move the arms"): Snap's arms drawn
+ * as before (the trailing arm hanging, the leading arm by the yaw rate alone, no hand at the water), for A/Bs of the
+ * drawing; the physics is the same. Drawing only: every rider on this page, the player's and other players'.
+ */
+export function snapArmsSwitch(search?: string): { snapArms?: 'old' } {
+  return devParam('snapArms', search)?.trim().toLowerCase() === 'old' ? { snapArms: 'old' } : {};
 }
 
 /**
@@ -1075,6 +1096,8 @@ export class PhysicalMode {
   }
 
   constructor(scene: Scene) {
+    // `?snapArms=old`: Snap's arms drawn as before snap-carve (`RIG_SWITCHES`, every rider this page draws).
+    RIG_SWITCHES.snapArms = snapArmsSwitch().snapArms;
     this.scene = scene;
     scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object, this.curtains.mesh, this.fan.group);
     this.leash.object.visible = false;

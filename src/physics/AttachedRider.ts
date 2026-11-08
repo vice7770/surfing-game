@@ -670,7 +670,8 @@ const TRIM_SHIFT = 0.25;
  *   takes them (no slower than the load falls, the legs only pushing), and let go they extend as Compress's do (the
  *   projection). With the hips over the back foot the back knee closes past 90° and the front leg stays long (the
  *   kick-out's and the top turn's sourced knees, the animation-realism plan §5.11, §5.15; round 2: the owner's "the
- *   rider should load itself ready for the movement like the other stances", where 0.15 m read as standing).
+ *   rider should load itself ready for the movement like the other stances", where 0.15 m read as standing). Opt-in,
+ *   `snapDepth: 'deep'` loads them to the tube tuck's depth (SNAP_DEPTH_DEEP; snap-carve, 2026-11-08).
  * - **The shoulders turning first:** the upper body's twist (TWIST_RANGE, through the feet's grip) wound at once toward
  *   where the turn ends (`snapAim`) and unwound as the board comes round under it (Rapture: the head and shoulders
  *   rotate first; de Sousa 2022: the trunk rotates, the chest to the lip).
@@ -749,6 +750,19 @@ const SNAP_SHIFT_SPEED = 1.2;
 export const CROUCH_DEPTH = 0.3;
 export const CROUCH_SHARE = 0.65;
 export const MANUAL_CROUCH_DEPTH = 0.45;
+/**
+ * Snap's deeper load (snap-carve, the owner's feedback of 2026-11-08, opt-in with `snapDepth: 'deep'`;
+ * docs/research/snap-carve-2026-11-08/README.md): Snap's legs come down to the tube tuck's depth (MANUAL_CROUCH_DEPTH),
+ * SNAP_DEPTH_DEEP of CROUCH_DEPTH. The cause: a loaded bottom turn and a full rail carve sit in the deepest surf crouch,
+ * the knees and the hips at 90° or less (de Sousa 2022's fundamental phase; Kerr read at the turn's base: knees about 80° or
+ * less, the lead hand at the water), as deep as the tuck the tube asks for. The owner's reference, Surf Analytica's "JJF and
+ * one perfect full rail carve": the hips near the board through the bottom turn. The leg model goes there already (the
+ * tuck's own travel), and within a 0.6 s Snap the legs reach 0.33–0.37 m (CROUCH_SPEED, the load). Measured headless
+ * (round 2's single moves): the turn by 1 s within ±4° of Compress's depth and the peak up to 29°/s higher, but on still
+ * water 5 of 12 riders fall after the release (2 at Compress's depth) and a snap taken deep turns less on a second snap; with
+ * `snapPivot: 'lean'` 11 of 12 fall at either depth. So it is opt-in, to ride.
+ */
+const SNAP_DEPTH_DEEP = MANUAL_CROUCH_DEPTH / CROUCH_DEPTH;
 const PUMPING_CROUCH_LIMIT = 0.6;
 const MAX_LEG_SPEED = 2.5;
 const CROUCH_SOFTENING = 0.5;
@@ -911,6 +925,12 @@ export interface AttachedRiderOptions {
    * as before (the `?snapRecentre=old` dev switch, for A/Bs).
    */
   snapRecentre?: 'old';
+  /**
+   * Snap's deeper load (snap-carve, 2026-11-08, the owner: "doesn't lower the center of gravity so much"; SNAP_DEPTH_DEEP),
+   * opt-in: 'deep' loads Snap's legs to the tube tuck's depth (MANUAL_CROUCH_DEPTH, 0.45 m) in place of Compress's 0.3 m
+   * (the `?snapDepth=deep` dev switch, to ride). By default as deep as Compress, as before.
+   */
+  snapDepth?: 'deep';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1224,6 +1244,8 @@ export class AttachedRider {
   private readonly snapLean: boolean;
   /** Snap let go, the weight is centred again (RECENTRE_TIME); false with `snapRecentre: 'old'`. */
   private readonly recentres: boolean;
+  /** Snap's load, of CROUCH_DEPTH (SNAP_DEPTH; SNAP_DEPTH_DEEP with `snapDepth: 'deep'`). */
+  private readonly snapDepth: number;
   /** Snap's share the latest step, and how long the centring after it has run, s (NaN while none runs). */
   private snapBefore = 0;
   private recentreTime = Number.NaN;
@@ -1389,6 +1411,7 @@ export class AttachedRider {
     this.quick = options.snapQuick !== 'old';
     this.snapLean = options.snapPivot === 'lean';
     this.recentres = options.snapRecentre !== 'old';
+    this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -2289,7 +2312,7 @@ export class AttachedRider {
     const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
     const compress = Math.max(0, Math.min(1, this.compressAsked));
     const snap = this.snapping;
-    const asked = -(snap > 0 ? Math.max(crouch, compress, snap * SNAP_DEPTH) : Math.max(crouch, compress)) * CROUCH_DEPTH;
+    const asked = -(snap > 0 ? Math.max(crouch, compress, snap * this.snapDepth) : Math.max(crouch, compress)) * CROUCH_DEPTH;
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
     if (compress > 0 || snap > 0) this.fromCompress = true;
@@ -2309,7 +2332,7 @@ export class AttachedRider {
     const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
     // Snap loads as Compress does: down at least as fast as the load, the legs only pushing.
-    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * SNAP_DEPTH > crouch;
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * this.snapDepth > crouch;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).

@@ -204,6 +204,11 @@ export interface SurfZoneConfig {
    */
   snapRecentre?: 'old';
   /**
+   * 'deep': Snap's legs load to the tube tuck's 0.45 m (snap-carve, 2026-11-08; `RideSessionOptions.snapDepth`); by
+   * default as deep as Compress. Every spot. The `?snapDepth=deep` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  snapDepth?: 'deep';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

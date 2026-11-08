@@ -14,7 +14,7 @@ import { FALL_READING, FallStages, type FallWeights } from './fallStages';
 import { StageBlend, WaterStages } from './stageBlend';
 import { HEAD_CENTRE, RAIL_MIDDLE } from './stanceGauge';
 import { LEASH } from '../../physics/Leash';
-import { TURN_FULL, stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
+import { RIG_SWITCHES, TURN_FULL, snapShare, stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
 import {
   FALL_POSES, LYING_POSES, SIT, TAKE_OFF, createStandingPose, lyingPose, sitScan, stagePose,
   type HandOffset, type LegAngles, type LyingPose, type StageWeights, type StandingPose, type WaterWeights,
@@ -98,6 +98,8 @@ interface Rest {
  * The code-driven layer: what the physics does not say about the body (art
  * direction from surf photography, not measured). Angles in degrees.
  */
+export { RIG_SWITCHES };
+
 export const RIG_DETAIL = {
   /**
    * The stance's own numbers (the feet's angles, the knees standing tall, the
@@ -375,6 +377,25 @@ export const RIG_DETAIL = {
   reachBend: 60,
   reachFade: 0.1,
   reachHandover: 0.25,
+  /**
+   * Snap's arms (snap-carve, the owner's feedback of 2026-11-08: "the surfer doesn't move the arms"; drawn only, from the
+   * drawn state, so other players' riders draw them alike; `RIG_SWITCHES.snapArms`). The poses are read from the owner's
+   * reference, Surf Analytica's "JJF and one perfect full rail carve", and the animation-realism plan's §5.11:
+   * - **The shoulders lead, the arms with them:** Snap read from the drawn state (`snapShare`: the weight back with the
+   *   shoulders wound) counts as the turn for the arms' share (`armTurn`),
+   *   as a yaw rate does: the leading arm points along the look, which the twist turns (Rapture: the head and shoulders
+   *   rotate first; de Sousa 2022: the chest and the leading arm to the lip), before the board comes round.
+   * - **The trailing arm swings up and back** (the reference's 6–9 s): opposite the look, `trailSwing`° from the
+   *   trunk's down (the plan's top turn: 55° at most, the arms at chest height or below), the elbow soft (`arms.elbow`).
+   * - **The inside hand at the water** (the reference's 0–2 s; de Sousa 2022: the body leans in until the inside hand
+   *   nears the water; Kerr at the turn's base: the lead hand at the water): with the weight back, the legs loaded
+   *   (`stanceBlend` depth from `depthFrom` to `depthFull`) and the board on its rail (rolled `rollFrom`° to
+   *   `rollFull`°), in a bottom turn (not yet climbing: the board rising slower than `climbFrom` to `climbFull` m/s; the
+   *   stage reader reads a weight-back turn as a redirect), the inside arm (frontside the trailing, backside the leading:
+   *   the physics' own rule for Compress's hand, `REACH_ALONG`) reaches for the water off the low rail, `railOut` m out
+   *   and `along` m toward its own end of the board; the spine bends toward it as for Compress's hand (`reachBend`).
+   */
+  snapArms: { trailSwing: 55, depthFrom: 0.6, depthFull: 0.9, rollFrom: 10, rollFull: 25, climbFrom: 0.3, climbFull: 1, railOut: 0.08, along: 0.2 },
   /** The tube's grabbing wrist over its rail's edge, m (the hand's thickness on the rail). */
   grabAbove: 0.035,
   /**
@@ -676,6 +697,10 @@ export class HumanoidRig {
   private readonly leadAim = new Vector3();
   /** Each hand's reach down this solve, handed over at `reachHandover` (`followReach`), and at which clock. */
   private readonly reaching: Record<Side, number> = { left: 0, right: 0 };
+  /** Standing, how far into Snap the drawn state reads this solve (`snapShare`; 0 with `snapArms: 'old'`). */
+  private snapBack = 0;
+  /** Each hand this solve: the physics' point, or toward the water in Snap's loaded bottom turn (`snapArms`). */
+  private readonly drawnHand: Record<Side, Vector3> = { left: new Vector3(), right: new Vector3() };
   private reachClock = Number.NaN;
   /** The body's line this solve, before the hinge: the physics' trunk, followed; and less its pitch along the board (the standing lift's). */
   private readonly bodyUp = new Vector3();
@@ -1006,6 +1031,7 @@ export class HumanoidRig {
       this.pitchFollower2.seed(0, state.clock);
     }
     this.orientSpine(chestUp);
+    this.snapHands(state);
     this.followReach(state);
     if (state.phase === 'standing') this.bendToReach(state, chestUp);
     else {
@@ -1153,7 +1179,7 @@ export class HumanoidRig {
       // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
       this.restLocal(BONES.shoulder[side]);
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
-      const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
+      const hand = state.phase === 'standing' ? this.drawnHand[side] : p[side === 'left' ? POINT.leftHand : POINT.rightHand];
       if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
       // Ducking, the elbows out to the sides, back off the chest and toward the hips, in the body's own frame (`DIVE_DRAWN.elbow`):
       // square enough to wherever the arm reaches its rail from, ahead, below or outboard of it (a pole along the board
@@ -1417,7 +1443,8 @@ export class HumanoidRig {
    * takes it all.
    */
   private followArmTurn(state: RiderVisualState): void {
-    const now = Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    // In Snap the wound shoulders count as the turn (`snapArms`): the arms go with them before the board comes round.
+    const now = Math.min(1, Math.max(Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate, this.snapBack));
     const dt = state.clock - this.armClock;
     const up = RIG_DETAIL.armRate * dt;
     const down = RIG_DETAIL.armFall * dt;
@@ -1921,6 +1948,38 @@ export class HumanoidRig {
   }
 
   /**
+   * Each hand this solve (`drawnHand`): the physics' point; standing in Snap's loaded bottom turn (`snapArms`), the
+   * inside hand toward the water off the low rail, by how far the weight is back, the legs loaded and the board on its
+   * rail, before it climbs. Sets `snapBack` for the arms' turn and the trailing arm's swing.
+   */
+  private snapHands(state: RiderVisualState): void {
+    const { snapArms } = RIG_DETAIL;
+    for (const side of SIDES) this.drawnHand[side].copy(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand]);
+    this.snapBack = RIG_SWITCHES.snapArms === 'old' || state.phase !== 'standing' ? 0 : state.standingBlend * snapShare(state);
+    if (this.snapBack <= 0) return;
+    const ramp = (x: number, from: number, full: number) => Math.max(0, Math.min(1, (x - from) / (full - from)));
+    const across = this.handScratch.set(1, 0, 0).applyQuaternion(state.boardQuaternion);
+    const roll = Math.asin(Math.max(-1, Math.min(1, across.y))) / DEG;
+    const share = this.snapBack * ramp(this.blend.depth, snapArms.depthFrom, snapArms.depthFull)
+      * ramp(Math.abs(roll), snapArms.rollFrom, snapArms.rollFull) * (1 - ramp(state.climb, snapArms.climbFrom, snapArms.climbFull));
+    if (share <= 0) return;
+    // The low rail: the board's local +x side when it is rolled down (Regular's toes are on its −x rail).
+    const low = roll < 0 ? 1 : -1;
+    const toes = this.blend.stance === 'regular' ? -1 : 1;
+    const frontside = low === toes;
+    for (const side of SIDES) {
+      if (this.isRearFoot(state, side) !== frontside) continue;
+      const end = frontside ? -1 : 1;
+      // In the board's shape frame (`boardDeck`): beside the hips, toward the arm's own end, out off the low rail at its
+      // bottom (the water line of a board on its rail).
+      const z = this.scratch.copy(state.points[POINT.pelvis]).sub(state.boardPosition).applyQuaternion(this.boardInverse.copy(state.boardQuaternion).invert()).add(BOARD_CENTRE).z
+        + end * snapArms.along;
+      const water = this.scratch.set(low * (railHalfWidth(z) + snapArms.railOut), 0, z).sub(BOARD_CENTRE).applyQuaternion(state.boardQuaternion).add(state.boardPosition);
+      this.drawnHand[side].lerp(water, share);
+    }
+  }
+
+  /**
    * Each hand's reach down (`reachDepth`), handed over no faster than in
    * `reachHandover` s (the animation-realism plan: the relaxed hand at the knee
    * and the physics' spread hand dipping to the water in a banked carve are far
@@ -1932,7 +1991,7 @@ export class HumanoidRig {
     this.reachClock = state.clock;
     if (dt === 0) return;
     for (const side of SIDES) {
-      const now = state.phase === 'standing' ? this.reachDepth(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand]) : 0;
+      const now = state.phase === 'standing' ? this.reachDepth(this.drawnHand[side]) : 0;
       if (dt > 0 && dt < 0.25) {
         const most = dt / RIG_DETAIL.reachHandover;
         this.reaching[side] += Math.max(-most, Math.min(most, now - this.reaching[side]));
@@ -1983,7 +2042,7 @@ export class HumanoidRig {
     let short = 0;
     let depth = 0;
     for (const candidate of SIDES) {
-      const hand = state.points[candidate === 'left' ? POINT.leftHand : POINT.rightHand];
+      const hand = this.drawnHand[candidate];
       const down = this.reaching[candidate];
       if (down <= 0) continue;
       const gap = (this.bones.get(BONES.arm[candidate])!.getWorldPosition(this.target).distanceTo(hand) - reach) * down;
@@ -1994,7 +2053,7 @@ export class HumanoidRig {
       }
     }
     if (!side) return false;
-    const hand = middle.subVectors(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand], pivot);
+    const hand = middle.subVectors(this.drawnHand[side], pivot);
     const shoulderOf = () => this.bones.get(BONES.arm[side])!.getWorldPosition(this.target).sub(pivot);
     bendAxis.crossVectors(shoulderOf(), hand);
     if (bendAxis.lengthSq() < 1e-10) return false;
@@ -2165,6 +2224,17 @@ export class HumanoidRig {
       if (ahead.lengthSq() > 1e-8) ahead.normalize().lerp(out, 0.3).normalize();
       else ahead.copy(out);
       this.blendAim(shoulder, relaxed, this.spreadArm(shoulder, down, ahead, trail.swing, arms.elbow, this.spreadAt), swingUp, most);
+    }
+    // In Snap the trailing arm swings up and back, opposite where the shoulders lead (`snapArms`).
+    const snapTrail = this.isRearFoot(state, side) ? this.snapBack * this.armTurn : 0;
+    if (snapTrail > 0) {
+      const behind = this.handNose.copy(this.look).negate().addScaledVector(down, this.look.dot(down));
+      if (behind.lengthSq() > 1e-8) {
+        behind.normalize();
+        const swung = this.spreadArm(shoulder, down, behind, RIG_DETAIL.snapArms.trailSwing, arms.elbow, this.spreadAt);
+        most = Math.max(most, swung.distanceTo(shoulder));
+        this.blendAim(shoulder, relaxed, swung, snapTrail, most);
+      }
     }
     // Losing balance the arms go out, straightening: out to the straight arm's own reach.
     if (this.alarm > 0) {

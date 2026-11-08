@@ -1,0 +1,356 @@
+[
+ {
+  "lean": false,
+  "depth": 1,
+  "flat7": {
+   "at1": 59,
+   "end": 94,
+   "peak": 151,
+   "kept": 0.41,
+   "rest": -0.282,
+   "fell": null,
+   "cause": ""
+  },
+  "flat9": {
+   "at1": 30,
+   "end": 100,
+   "peak": 122,
+   "kept": 0.49,
+   "rest": -0.277,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_6.7": {
+   "at1": 104,
+   "end": 108,
+   "peak": 238,
+   "kept": 0.32,
+   "rest": -0.274,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_8": {
+   "at1": 68,
+   "end": 61,
+   "peak": 179,
+   "kept": 0.42,
+   "rest": -0.275,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_6.7": {
+   "at1": 58,
+   "end": 71,
+   "peak": 157,
+   "kept": 0.46,
+   "rest": -0.281,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_8": {
+   "at1": 39,
+   "end": 72,
+   "peak": 148,
+   "kept": 0.57,
+   "rest": -0.282,
+   "fell": null,
+   "cause": ""
+  },
+  "falls": "2 (2)"
+ },
+ {
+  "lean": false,
+  "depth": 1.25,
+  "flat7": {
+   "at1": 61,
+   "end": 56,
+   "peak": 174,
+   "kept": 0.38,
+   "rest": -0.332,
+   "fell": 1.88,
+   "cause": "balance"
+  },
+  "flat9": {
+   "at1": 30,
+   "end": 88,
+   "peak": 124,
+   "kept": 0.61,
+   "rest": -0.323,
+   "fell": 1.87,
+   "cause": "balance"
+  },
+  "climb150_6.7": {
+   "at1": 103,
+   "end": 101,
+   "peak": 240,
+   "kept": 0.34,
+   "rest": -0.312,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_8": {
+   "at1": 68,
+   "end": 58,
+   "peak": 180,
+   "kept": 0.4,
+   "rest": -0.312,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_6.7": {
+   "at1": 59,
+   "end": 62,
+   "peak": 177,
+   "kept": 0.47,
+   "rest": -0.326,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_8": {
+   "at1": 40,
+   "end": 66,
+   "peak": 175,
+   "kept": 0.65,
+   "rest": -0.328,
+   "fell": null,
+   "cause": ""
+  },
+  "falls": "6 (3)"
+ },
+ {
+  "lean": false,
+  "depth": 1.5,
+  "flat7": {
+   "at1": 63,
+   "end": 50,
+   "peak": 174,
+   "kept": 0.29,
+   "rest": -0.371,
+   "fell": 1.92,
+   "cause": "balance"
+  },
+  "flat9": {
+   "at1": 31,
+   "end": 85,
+   "peak": 125,
+   "kept": 0.61,
+   "rest": -0.365,
+   "fell": 1.85,
+   "cause": "balance"
+  },
+  "climb150_6.7": {
+   "at1": 102,
+   "end": 96,
+   "peak": 242,
+   "kept": 0.38,
+   "rest": -0.332,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_8": {
+   "at1": 68,
+   "end": 61,
+   "peak": 175,
+   "kept": 0.39,
+   "rest": -0.337,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_6.7": {
+   "at1": 60,
+   "end": 57,
+   "peak": 186,
+   "kept": 0.46,
+   "rest": -0.354,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_8": {
+   "at1": 42,
+   "end": 63,
+   "peak": 178,
+   "kept": 0.65,
+   "rest": -0.354,
+   "fell": null,
+   "cause": ""
+  },
+  "falls": "5 (2)"
+ },
+ {
+  "lean": true,
+  "depth": 1,
+  "flat7": {
+   "at1": 89,
+   "end": 57,
+   "peak": 217,
+   "kept": 0.1,
+   "rest": -0.28,
+   "fell": 1.73,
+   "cause": "balance"
+  },
+  "flat9": {
+   "at1": 60,
+   "end": 64,
+   "peak": 192,
+   "kept": 0.62,
+   "rest": -0.275,
+   "fell": 1.68,
+   "cause": "balance"
+  },
+  "climb150_6.7": {
+   "at1": 95,
+   "end": 96,
+   "peak": 217,
+   "kept": 0.16,
+   "rest": -0.272,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_8": {
+   "at1": 101,
+   "end": 98,
+   "peak": 240,
+   "kept": 0.15,
+   "rest": -0.272,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_6.7": {
+   "at1": 80,
+   "end": 67,
+   "peak": 222,
+   "kept": 0.36,
+   "rest": -0.28,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_8": {
+   "at1": 67,
+   "end": 85,
+   "peak": 188,
+   "kept": 0.61,
+   "rest": -0.28,
+   "fell": null,
+   "cause": ""
+  },
+  "falls": "11 (6)"
+ },
+ {
+  "lean": true,
+  "depth": 1.25,
+  "flat7": {
+   "at1": 88,
+   "end": 47,
+   "peak": 225,
+   "kept": 0.05,
+   "rest": -0.328,
+   "fell": 1.73,
+   "cause": "balance"
+  },
+  "flat9": {
+   "at1": 67,
+   "end": 45,
+   "peak": 208,
+   "kept": 0.37,
+   "rest": -0.318,
+   "fell": 1.65,
+   "cause": "balance"
+  },
+  "climb150_6.7": {
+   "at1": 94,
+   "end": 91,
+   "peak": 216,
+   "kept": 0.17,
+   "rest": -0.305,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_8": {
+   "at1": 101,
+   "end": 96,
+   "peak": 245,
+   "kept": 0.12,
+   "rest": -0.307,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_6.7": {
+   "at1": 84,
+   "end": 70,
+   "peak": 222,
+   "kept": 0.3,
+   "rest": -0.323,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_8": {
+   "at1": 67,
+   "end": 81,
+   "peak": 188,
+   "kept": 0.6,
+   "rest": -0.322,
+   "fell": null,
+   "cause": ""
+  },
+  "falls": "11 (6)"
+ },
+ {
+  "lean": true,
+  "depth": 1.5,
+  "flat7": {
+   "at1": 86,
+   "end": 40,
+   "peak": 230,
+   "kept": 0.07,
+   "rest": -0.364,
+   "fell": 1.73,
+   "cause": "lost board"
+  },
+  "flat9": {
+   "at1": 68,
+   "end": 42,
+   "peak": 214,
+   "kept": 0.33,
+   "rest": -0.355,
+   "fell": 1.65,
+   "cause": "balance"
+  },
+  "climb150_6.7": {
+   "at1": 92,
+   "end": 87,
+   "peak": 214,
+   "kept": 0.18,
+   "rest": -0.322,
+   "fell": null,
+   "cause": ""
+  },
+  "climb150_8": {
+   "at1": 101,
+   "end": 94,
+   "peak": 246,
+   "kept": 0.13,
+   "rest": -0.327,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_6.7": {
+   "at1": 83,
+   "end": 67,
+   "peak": 224,
+   "kept": 0.29,
+   "rest": -0.349,
+   "fell": null,
+   "cause": ""
+  },
+  "climb120_8": {
+   "at1": 68,
+   "end": 76,
+   "peak": 184,
+   "kept": 0.59,
+   "rest": -0.346,
+   "fell": null,
+   "cause": ""
+  },
+  "falls": "11 (6)"
+ }
+]
