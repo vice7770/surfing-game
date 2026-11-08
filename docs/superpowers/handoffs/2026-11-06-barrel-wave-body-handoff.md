@@ -77,3 +77,10 @@ The Wave Pool Barrel now runs at full speed on the M4 Pro (below), but the owner
 2. The wave-body build: ruling 4's ranks 1–3.
 
 Agents run at `effort: "medium"` when near the limit.
+
+## Update 2026-11-08, later: the ledge rule applied
+
+The step-7 rule on the M4's level-13 batch (`docs/research/pool-tube-runs-2/decision.md`):
+- **1.8 m faces: passes.** The ledge has 2.3× the knee's usable clearance (0.56 m against 0.24 m; the bar is 1.3×), and its lip lands at 0.66 H.
+- **1.5 m faces: fails on the landing only.** The clearance is 2.0×, but the lip lands at 0.54 H, under the 0.6 H bar. That may be within the estimate's error, since the landing is read from the profiles and not from the jet's tip.
+- **Open for the owner, with the advisor:** whether the 1.5 m shortfall blocks the floor change. If it doesn't, the floor change goes in together with ruling 4's wave-body build.
