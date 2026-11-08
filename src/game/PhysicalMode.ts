@@ -426,7 +426,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(devParam('rollerFront') === 'off' ? { rollerFront: false } : {}),
     // `?canyonBed=b` or `=old`: the Canyon's version B or A, with its take-off and starts (main's until 2026-11-03 or 2026-11-01);
     // `?canyonWaves=true` (or `=b`): version B, the waves before version C; `?canyonWaves=a`: version A;
-    // `?canyonRamp=half`: today's with its bank's edge ramp halved, with its own take-off and starts (the advisor's option (b)).
+    // `?canyonRamp=half`: today's with its bank's edge ramp halved, with its own take-off and starts (the advisor's option (b));
+    // `?canyonPeak=on`: today's with its take-off peak, with its own take-off and starts (`&canyonPeakFace=steep`: its 1:26 face).
     ...canyonBedSwitch(),
     // `?canyonJoin=zone`: version C's bank passing its breaking age by its take-off zone, as before the bed-keyed join.
     ...(settings.spot === 'canyon' ? canyonJoinSwitch() : {}),
@@ -893,14 +894,21 @@ export function tubeShapeSwitch(search?: string): { tubeShape?: 'bounded-C' } {
  * water-physics advisor's option (b), 2026-11-04, the owner's call), with its own take-off depth and starts. And the
  * `?canyonWaves` dev switch (the owner, 2026-11-05: version C "is really not surfable as waves are too scattered", "give me
  * like an option like ?canyonwaves=true to allow me to use the previous waves"): 'true' (or 'b'), version B, the waves C
- * replaced; 'a' (or 'old'), version A; the name in either case. `?canyonBed` wins over it, and it over `?canyonRamp`.
+ * replaced; 'a' (or 'old'), version A; the name in either case. And the `?canyonPeak=on` dev switch, on today's layout
+ * only: its take-off peak (`CANYON_PEAK`, 'peak'; the advisor's third ruling, rank 1, the owner's call, 2026-11-08), with
+ * its own take-off depth and starts; with `&canyonPeakFace=steep` the lobe's face at 1:26 (`CANYON_PEAK_STEEP`,
+ * 'peak-steep', rank 3; nothing without the peak). `?canyonBed` wins over them, `?canyonWaves` over the peak, and the
+ * peak over `?canyonRamp`.
  */
-export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' | 'half' } {
+export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' | 'half' | 'peak' | 'peak-steep' } {
   const bed = devParam('canyonBed', search)?.trim();
   if (bed === 'old' || bed === 'b') return { canyonBed: bed };
   const waves = (devParam('canyonWaves', search) ?? devParam('canyonwaves', search))?.trim().toLowerCase();
   if (waves === 'true' || waves === 'b') return { canyonBed: 'b' };
   if (waves === 'a' || waves === 'old') return { canyonBed: 'old' };
+  if (devParam('canyonPeak', search)?.trim().toLowerCase() === 'on') {
+    return { canyonBed: devParam('canyonPeakFace', search)?.trim().toLowerCase() === 'steep' ? 'peak-steep' : 'peak' };
+  }
   return devParam('canyonRamp', search)?.trim().toLowerCase() === 'half' ? { canyonBed: 'half' } : {};
 }
 

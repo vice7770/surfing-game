@@ -346,6 +346,30 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // The `?canyonPeak=on` and `?canyonPeakFace=steep` dev switches (canyon-peak, 2026-11-08: the advisor's third ruling,
+  // ranks 1 and 3, the owner's calls): today's Canyon with its take-off peak, as the 'peak' layout (with its 1:26 face,
+  // 'peak-steep'), so the worker builds that bed and its own take-off and starts; the steep face means nothing without the
+  // peak; `?canyonBed` and `?canyonWaves` win over it, it over `?canyonRamp`; an online room's config fixes the default.
+  it('builds the Canyon\'s take-off peak with `?canyonPeak=on` (and its steep face with `&canyonPeakFace=steep`), and keeps the default otherwise', () => {
+    expect(canyonBedSwitch('?canyonPeak=on')).toEqual({ canyonBed: 'peak' });
+    expect(canyonBedSwitch('?canyonPeak=ON')).toEqual({ canyonBed: 'peak' });
+    expect(canyonBedSwitch('?canyonPeak=on&canyonPeakFace=steep')).toEqual({ canyonBed: 'peak-steep' });
+    expect(canyonBedSwitch('?canyonPeak=on&canyonPeakFace=soft')).toEqual({ canyonBed: 'peak' });
+    expect(canyonBedSwitch('?canyonPeak=on&canyonRamp=half')).toEqual({ canyonBed: 'peak' });
+    expect(canyonBedSwitch('?canyonBed=b&canyonPeak=on')).toEqual({ canyonBed: 'b' });
+    expect(canyonBedSwitch('?canyonWaves=true&canyonPeak=on')).toEqual({ canyonBed: 'b' });
+    expect(canyonBedSwitch('?canyonBed=peak')).toEqual({});
+    for (const search of ['', '?canyonPeak', '?canyonPeak=', '?canyonPeak=off', '?canyonPeakFace=steep']) expect(canyonBedSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonPeak=on&canyonPeakFace=steep' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBe('peak-steep');
+      expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The `?canyonJoin=zone` dev switch (canyon-c, 2026-11-04): version C's bank passing its breaking age by its take-off zone
   // (the branch's head at ca567450) in place of its bed, carried in the config to the worker at the Canyon only; online
   // rooms run the default.

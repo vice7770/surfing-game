@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_B, CANYON_BEACH, CANYON_HALF_RAMP, PADANG, canyonBankEdge, canyonBankEdgeZ, canyonBankFaceShare, canyonBankJoin, canyonShape, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBarAt, canyonBarDepth, canyonBars, canyonBreakLineZ, canyonFloorDepth, canyonFootZ, canyonJoin, canyonOnset, canyonReefEndX, canyonReefSpan, canyonSandDepth, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, CANYON_B, CANYON_BEACH, CANYON_HALF_RAMP, CANYON_PEAK, CANYON_PEAK_STEEP, PADANG, canyonBankEdge, canyonBankEdgeZ, canyonBankFaceShare, canyonBankJoin, canyonShape, canyonArmAt, canyonPeelAt, canyonArmEndX, canyonBarAt, canyonBarDepth, canyonBars, canyonBreakLineZ, canyonFloorDepth, canyonFootZ, canyonJoin, canyonOnset, canyonReefEndX, canyonReefSpan, canyonSandDepth, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -766,6 +766,52 @@ describe('surf spot bathymetry', () => {
       expect(canyonJoin(x, canyonBankEdgeZ(x, H) - 5, 0.5, H)).toBe(0);
       expect(canyonJoin(x, canyonBankEdgeZ(x, H) + 5, 0.5, H)).toBe(0.5);
     }
+  });
+
+  // The take-off peak (canyon-peak, 2026-11-08: the advisor's third ruling, ranks 1 and 3, the owner's calls;
+  // `?canyonPeak=on`, `&canyonPeakFace=steep`): a lobe of the bank centred on the start, opt-in.
+  it('raises version C\'s take-off peak with \'peak\': the crest contour 25 m seaward at x 75, the edge 1.6 m, a 1:30 face (1:26 steep), the bank unchanged off it', () => {
+    for (const [bed, P, face] of [['peak', CANYON_PEAK, 1 / 30], ['peak-steep', CANYON_PEAK_STEEP, 1 / 26]] as const) {
+      expect(Object.isFrozen(P)).toBe(true);
+      expect(canyonShape(bed)).toBe(P);
+      expect({ ...P, peak: 0, peakFace: CANYON.peakFace }).toEqual({ ...CANYON });
+      expect(CANYON.peak).toBe(0);
+      const peak = createSpot('canyon', 1, { canyonBed: bed });
+      const today = createSpot('canyon', 1);
+      // Off the lobe (±36 m) the bed is today's; on it, a mound: nowhere deeper.
+      for (let x = -200; x <= 200; x += 3) {
+        for (let z = -440; z < 0; z += 7) {
+          if (Math.abs(x - P.takeOffX) >= P.peakWidth) expect(peak.depthAt(x, z)).toBe(today.depthAt(x, z));
+          else expect(peak.depthAt(x, z)).toBeLessThanOrEqual(today.depthAt(x, z) + 1e-12);
+        }
+      }
+      // At the centre: the crest contour 25 m seaward of the bank's line, the edge 1.6 m deep, the face at its slope.
+      expect(peak.depthAt(75, canyonBreakLineZ(75) - 25)).toBeCloseTo(1.9, 9);
+      expect(canyonBankEdge(75, P)).toBeCloseTo(1.6, 12);
+      expect(canyonBankEdge(75)).toBeCloseTo(2.17, 2);
+      const edgeZ = canyonBankEdgeZ(75, P);
+      expect(edgeZ).toBeLessThan(canyonBankEdgeZ(75));
+      expect((peak.depthAt(75, edgeZ - 20) - 1.6) / 20).toBeCloseTo(face, 9);
+      // The edge blends back over ±25 m, its line kept in step with the bed.
+      for (const x of [50, 100, 120]) expect(canyonBankEdge(x, P)).toBe(canyonBankEdge(x));
+      for (let x = 40; x <= 110; x += 5) expect(peak.depthAt(x, canyonBankEdgeZ(x, P)), `x ${x}`).toBeCloseTo(canyonBankEdge(x, P), 6);
+    }
+  });
+
+  // With every switch off the Canyon's bed is main's at 07164a7c byte for byte (canyon-peak, 2026-11-08): a hash of its
+  // depths over the whole window at 1 m.
+  it('keeps the default Canyon\'s bed as main\'s at 07164a7c, byte for byte', () => {
+    const spot = createSpot('canyon', 1);
+    const bytes = new Uint8Array(new Float64Array(1).buffer);
+    const value = new Float64Array(bytes.buffer);
+    let hash = 0x811c9dc5;
+    for (let x = -200; x <= 200; x += 1) {
+      for (let z = -446; z <= 0; z += 1) {
+        value[0] = spot.depthAt(x, z);
+        for (const byte of bytes) hash = Math.imul(hash ^ byte, 0x01000193) >>> 0;
+      }
+    }
+    expect(hash.toString(16)).toBe('4cf4fbef');
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

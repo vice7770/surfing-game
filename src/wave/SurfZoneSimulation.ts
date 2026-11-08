@@ -989,6 +989,13 @@ export const CANYON_BANK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as cons
 export const CANYON_HALF_TAKE_OFF_DEPTH = { base: 1.30, perMetre: 1.06 } as const;
 
 /**
+ * Where version C's sets start breaking at its start on its take-off peak (`CANYON_PEAK`, the `?canyonPeak=on` dev switch,
+ * the advisor's third ruling, rank 2, 2026-11-08), m deep, against Hs; the steep face's too (`?canyonPeakFace=steep`).
+ * PEAK_FIT
+ */
+export const CANYON_PEAK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
+
+/**
  * How deep the Canyon's sets of significant height Hs start breaking at its default start, m: on version C's bank
  * (`CANYON_BANK_TAKE_OFF_DEPTH`), no shallower than the bank's edge there (its face's top: shallower water lies only on the
  * beach face, 150 m inshore), or at the upcoast peak's tip on versions B and A (`CANYON_TAKE_OFF_DEPTH`; canyon-b's bowl
@@ -998,7 +1005,8 @@ export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = '
   const c = canyonShape(bed);
   if (canyonBankOn(c)) {
     // With its edge ramp halved (`?canyonRamp=half`), its own fit (`CANYON_HALF_TAKE_OFF_DEPTH`).
-    const fit = bed === 'half' ? CANYON_HALF_TAKE_OFF_DEPTH : CANYON_BANK_TAKE_OFF_DEPTH;
+    // With its take-off peak (`?canyonPeak=on`, either face), its own (`CANYON_PEAK_TAKE_OFF_DEPTH`).
+    const fit = bed === 'half' ? CANYON_HALF_TAKE_OFF_DEPTH : bed === 'peak' || bed === 'peak-steep' ? CANYON_PEAK_TAKE_OFF_DEPTH : CANYON_BANK_TAKE_OFF_DEPTH;
     return Math.max(canyonBankEdge(c.takeOffX, c), fit.base + fit.perMetre * significantHeight);
   }
   return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
@@ -1058,6 +1066,16 @@ export const CANYON_HALF_RIDE_LINEUP: readonly { readonly significantHeight: num
 ];
 
 /**
+ * Version C's start on its take-off peak (`?canyonPeak=on`, either face), m seaward of its take-off
+ * (`CANYON_PEAK_TAKE_OFF_DEPTH`), against Hs, as `CANYON_RIDE_LINEUP`: PEAK_LINEUP
+ */
+export const CANYON_PEAK_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
+];
+
+/**
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
@@ -1070,7 +1088,8 @@ export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'signific
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
   // Version C's start on its bank (canyon-c); versions B and A at the upcoast peak (canyon-b left it as it was).
   const c = canyonShape(config.canyonBed);
-  const sizes = config.canyonBed === 'half' ? CANYON_HALF_RIDE_LINEUP : canyonBankOn(c) ? CANYON_BANK_RIDE_LINEUP : CANYON_RIDE_LINEUP;
+  const peak = config.canyonBed === 'peak' || config.canyonBed === 'peak-steep';
+  const sizes = config.canyonBed === 'half' ? CANYON_HALF_RIDE_LINEUP : peak ? CANYON_PEAK_RIDE_LINEUP : canyonBankOn(c) ? CANYON_BANK_RIDE_LINEUP : CANYON_RIDE_LINEUP;
   const height = config.significantHeight;
   if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
   for (let i = 1; i < sizes.length; i += 1) {

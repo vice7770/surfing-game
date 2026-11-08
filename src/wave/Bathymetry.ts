@@ -544,6 +544,19 @@ export const CANYON = {
    * passed the age only to cells that would break anyway (the second ruling, §1.6).
    */
   bankGateFrom: 31,
+  /**
+   * Version C's take-off peak (canyon-peak, 2026-11-08; the water-physics advisor's third ruling, rank 1, the owner's call;
+   * the `?canyonPeak=on` dev switch, `CANYON_PEAK`; 0 off, the default). On the straight bank nothing gathers the swell at
+   * the start (H 0.86 m at Medium, faces 7.6°: the ruling's §2.1). A seaward lobe of the bank's crest contour centred on
+   * `takeOffX` refracts the crests onto it, as version B's V-tip did (Mead & Black 2001, the focus component; Mead 2000):
+   * - the crest contour bulges `peakBulge` m seaward at the centre, a biweight (1 − u²)² over ±`peakWidth` m, so its tip
+   *   is rounded r = peakWidth² / (4 peakBulge) ≈ 13 m like B's tip and half as far out at ±19.5 m;
+   * - the edge, the top of its face, shallows to `peakEdge` m at the centre, blending back over ±`peakEdgeWidth` m;
+   * - the face climbs at `peakFace` (1:30, ξb 0.3–0.4, Battjes 1974) on the lobe, easing to the bank's 1:44 with the bulge.
+   * The lobe is a mound on the bank: the shallower of the two beds, so off it, and below about 3.8 m on it, the bank is
+   * unchanged.
+   */
+  peak: 0, peakBulge: 25, peakWidth: 36, peakEdge: 1.6, peakEdgeWidth: 25, peakFace: 1 / 30,
 };
 
 /**
@@ -553,7 +566,7 @@ export const CANYON = {
  * layout before it (`CANYON_B`: version B, the upcoast bar's +x arm running into the bowl, main's at 4eee1e5f); or 'old',
  * the one before that (`CANYON_BEACH`: version A, the reef 120 m out with a beach peak either side, main's at 376d9cd4).
  */
-export type CanyonBed = 'reef' | 'half' | 'b' | 'old';
+export type CanyonBed = 'reef' | 'half' | 'peak' | 'peak-steep' | 'b' | 'old';
 
 /**
  * How version C's bank passes its breaking age along its crests (`canyonJoin`, `SurfZoneConfig.canyonJoin`): 'bed', the
@@ -593,11 +606,25 @@ export const CANYON_BEACH: CanyonShape = Object.freeze({ ...CANYON, reef: 1, bow
 export const CANYON_HALF_RAMP: CanyonShape = Object.freeze({ ...CANYON, bankEdgeTip: 2.4 });
 
 /**
+ * Version C with its take-off peak (`CANYON.peak`; the `?canyonPeak=on` dev switch, 'peak': the advisor's third ruling,
+ * rank 1, the owner's call), taken when the module loads, as `CANYON_B`.
+ */
+export const CANYON_PEAK: CanyonShape = Object.freeze({ ...CANYON, peak: 1 });
+
+/**
+ * Version C's take-off peak with a steeper face on the lobe (the `?canyonPeak=on&canyonPeakFace=steep` dev switches,
+ * 'peak-steep': the third ruling's rank 3, the owner's "yes, steeper"): 1:26 (the ruling's 1:25–1:28), whose onsets on
+ * the canyon-c sweep's 1:27 face stood at 24°, toward plunging (Battjes 1974: ξb rising with the slope).
+ */
+export const CANYON_PEAK_STEEP: CanyonShape = Object.freeze({ ...CANYON, peak: 1, peakFace: 1 / 26 });
+
+/**
  * The Canyon's shape for a layout: `CANYON` itself by default (so the design sweeps' changes hold), else
  * `CANYON_HALF_RAMP`, `CANYON_B` or `CANYON_BEACH`.
  */
 export function canyonShape(bed: CanyonBed = 'reef'): CanyonShape {
-  return bed === 'old' ? CANYON_BEACH : bed === 'b' ? CANYON_B : bed === 'half' ? CANYON_HALF_RAMP : CANYON;
+  return bed === 'old' ? CANYON_BEACH : bed === 'b' ? CANYON_B : bed === 'half' ? CANYON_HALF_RAMP
+    : bed === 'peak' ? CANYON_PEAK : bed === 'peak-steep' ? CANYON_PEAK_STEEP : CANYON;
 }
 
 /** Whether a layout is version C's (canyon-c): the bank into the flipped bowl. */
@@ -664,16 +691,45 @@ function bankLineZ(x: number, c: CanyonShape): number {
  * deepening linearly to `bankEdgeTip` at the tip, and held past it, where the bank fades.
  */
 export function canyonBankEdge(x: number, c: CanyonShape = CANYON): number {
+  const edge = rampEdge(x, c);
+  // With the take-off peak, its lobe's edge, shallowed toward `peakEdge` (`peakLobe`).
+  return c.peak && peakShare(x, c.peakWidth, c) > 0 ? peakLobe(x, c).edge : edge;
+}
+
+/** The bank's edge's ramp, m deep at along-shore position x (`canyonBankEdge` without the take-off peak). */
+function rampEdge(x: number, c: CanyonShape): number {
   const share = Math.min(1, Math.max(0, (x - c.bankRampFrom) / (c.bankTipX - c.bankRampFrom)));
   return c.bankEdge + (c.bankEdgeTip - c.bankEdge) * share;
 }
 
 /**
  * Version C's bank's edge line at along-shore position x, z: where its face reaches the edge's depth (`canyonBankEdge`),
- * the top of the face; its level top, its back and the inside lie shoreward of it (the frame probe's edgeZ).
+ * the top of the face; its level top, its back and the inside lie shoreward of it (the frame probe's edgeZ). With the
+ * take-off peak, its lobe's (`peakLobe`), seaward of the bank's.
  */
 export function canyonBankEdgeZ(x: number, c: CanyonShape = CANYON): number {
+  if (c.peak && peakShare(x, c.peakWidth, c) > 0) return peakLobe(x, c).edgeZ;
   return canyonBreakLineZ(x, c) - (canyonBankEdge(x, c) - c.bowlCrestContour) / c.bankFace;
+}
+
+/** The take-off peak's biweight along shore, 0–1: (1 − u²)² for u = (x − `takeOffX`) / width inside ±width, else 0. */
+function peakShare(x: number, width: number, c: CanyonShape): number {
+  const u = (x - c.takeOffX) / width;
+  return Math.abs(u) >= 1 ? 0 : (1 - u * u) ** 2;
+}
+
+/**
+ * The take-off peak's lobe at along-shore position x (`CANYON.peak`): its crest contour (`bowlCrestContour` m deep) z,
+ * bulged `peakBulge` m seaward at the centre; its face's slope, `bankFace` easing to `peakFace` with the bulge; its edge,
+ * m deep, shallowed toward `peakEdge` over ±`peakEdgeWidth`, never deeper than the bank's; and its edge line z.
+ */
+function peakLobe(x: number, c: CanyonShape): { line: number; face: number; edge: number; edgeZ: number } {
+  const share = peakShare(x, c.peakWidth, c);
+  const line = bankLineZ(x, c) - c.peakBulge * share;
+  const face = c.bankFace + (c.peakFace - c.bankFace) * share;
+  const ramp = rampEdge(x, c);
+  const edge = ramp + (Math.min(c.peakEdge, ramp) - ramp) * peakShare(x, c.peakEdgeWidth, c);
+  return { line, face, edge, edgeZ: line - (edge - c.bowlCrestContour) / face };
 }
 
 /**
@@ -682,8 +738,18 @@ export function canyonBankEdgeZ(x: number, c: CanyonShape = CANYON): number {
  * to the inside, `bankInside` deep or `bankInsideOver` below the edge, whichever is deeper.
  */
 function bankDepth(x: number, z: number, c: CanyonShape): number {
+  const bank = straightBankDepth(x, z, c);
+  // The take-off peak (`CANYON.peak`): its lobe, a mound on the bank, the shallower of the two beds.
+  if (!c.peak || !(peakShare(x, c.peakWidth, c) > 0)) return bank;
+  const lobe = peakLobe(x, c);
+  const face = c.bowlCrestContour + (lobe.line - z) * lobe.face;
+  return Math.min(bank, face >= lobe.edge ? face : lobe.edge + Math.max(0, z - lobe.edgeZ - c.bankTop) * c.bankBack);
+}
+
+/** Version C's straight bank's own depth at (x, z), m (`bankDepth` without the take-off peak). */
+function straightBankDepth(x: number, z: number, c: CanyonShape): number {
   const line = bankLineZ(x, c);
-  const edge = canyonBankEdge(x, c);
+  const edge = rampEdge(x, c);
   const face = c.bowlCrestContour + (line - z) * c.bankFace;
   if (face >= edge) return face;
   const edgeZ = line - (edge - c.bowlCrestContour) / c.bankFace;
