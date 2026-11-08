@@ -523,6 +523,69 @@ describe('Snap\'s deeper load (opt-in)', () => {
   });
 });
 
+// snap-stamp (the owner's ask of 2026-11-08: "turn less or very sharply with snap"; opt-in with `snapStamp: 'on'`, the
+// `?snapStamp=on` dev switch): under Snap a steer past STAMP_STEER (0.8) stamps the weight past the tail for 0.25 s once
+// Snap has set the hips over it (0.3 s), then back over the fins; a partial steer is Snap's carve as before. Round 2's
+// climbs of the static 15° face, instant input, Snap held 0.6 s with the steer held on: docs/research/snap-stamp-2026-11-08/README.md.
+describe('Snap\'s stamp (opt-in)', () => {
+  const climb = (across: number, speed: number, steer: number, snapStamp?: 'on') => {
+    const setup = acrossFace(across, speed);
+    const rider = new AttachedRider(setup.board.shape, { phase: 'standing', ...(snapStamp ? { snapStamp } : {}) });
+    setup.board.attach(rider);
+    for (let n = 0; n < 12; n += 1) setup.board.step(STEP, setup.water);
+    let last = headingOf(setup.board);
+    let turned = 0;
+    let at1 = 0;
+    let peak = 0;
+    let slid = 0;
+    let fell = Number.NaN;
+    let least = Infinity;
+    for (let n = 0; n < 96; n += 1) {
+      Object.assign(rider, { steer, snap: n * STEP < 0.6 ? 1 : 0 });
+      setup.board.step(STEP, setup.water);
+      if (!rider.attached) { fell = (n + 1) * STEP; break; }
+      least = Math.min(least, setup.board.velocity.length());
+      const now = headingOf(setup.board);
+      const d = Math.atan2(Math.sin(now - last), Math.cos(now - last));
+      last = now;
+      turned += d;
+      if (n * STEP < 1) {
+        at1 = turned;
+        peak = Math.max(peak, Math.abs(d) / STEP);
+        if (finAttack(setup.board) > (18 * Math.PI) / 180) slid += STEP;
+      }
+    }
+    return { attached: rider.attached, at1: (Math.abs(at1) * 180) / Math.PI, peak: (peak * 180) / Math.PI, slid, turned, fell, least };
+  };
+  // Measured here: from 150° at 6.7 m/s 90° by 1 s at up to 222°/s against 76° at 172°/s; both stall near the apex (the
+  // static face gives nothing back) and fall, the stamp's 0.05 s later. From 120°, 70° at 268°/s against 51° at 214°/s,
+  // both on, the centre fin past its stall 0.23 s against 0.07.
+  it('turns a full steer sharper, the tail sliding a moment, and keeps the rider on', () => {
+    for (const across of [150, 120]) {
+      const today = climb(across, 6.7, 1);
+      const stamp = climb(across, 6.7, 1, 'on');
+      // No more falls than today's Snap: from 150° at 6.7 m/s both stall at the static face's apex and fall, the stamp's later.
+      if (!stamp.attached) expect(today.attached, `${across}`).toBe(false);
+      if (!stamp.attached) expect(stamp.fell, `${across}`).toBeGreaterThan(today.fell);
+      expect(stamp.at1, `${across}`).toBeGreaterThan(today.at1 + 12);
+      expect(stamp.peak, `${across}`).toBeGreaterThan(Math.max(200, today.peak + 25));
+    }
+    // From 120° the centre fin passes its stall (FIN_STALL, 18°) for a moment, then grips again.
+    const slide = climb(120, 6.7, 1, 'on').slid;
+    expect(slide).toBeGreaterThan(0.1);
+    expect(slide).toBeLessThan(0.4);
+  });
+  it('leaves a partial steer under Snap as it was, bit for bit', () => {
+    for (const across of [150, 120]) {
+      expect(climb(across, 6.7, 0.6, 'on').turned).toBe(climb(across, 6.7, 0.6).turned);
+      expect(climb(across, 8, 0.75, 'on').turned).toBe(climb(across, 8, 0.75).turned);
+    }
+  });
+  it('rides the same with the switch and no Snap', () => {
+    expect(scriptedRide({}, { snapStamp: 'on' })).toBe(BEFORE_SNAP);
+  });
+});
+
 // The pinned turns (`AttachedRider.test.ts`: the snap, the cutback, a bottom turn carried into a top turn), made with
 // Snap. None passes; each is pinned with what it measures (docs/research/snap-stance-2026-11-03/README.md).
 describe('the pinned turns, with Snap', () => {

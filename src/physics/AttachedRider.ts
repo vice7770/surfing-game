@@ -728,6 +728,32 @@ const SNAP_RAIL_RANGE = MAX_BANK;
  */
 const RECENTRE_TIME = 1;
 const RECENTRE_HOME = 0.02;
+/**
+ * Snap's stamp (snap-stamp, the owner's ask of 2026-11-08: "turn less or very sharply with snap", opt-in with
+ * `snapStamp: 'on'`; docs/research/snap-stamp-2026-11-08/README.md). The stick sets the sharpness. Under Snap a steer up
+ * to STAMP_STEER is Snap's rail carve, the fins holding, as before. Past it the rider stamps: the upper body slams back
+ * past the hips (already over the back foot) by up to STAMP_BACK, m, for STAMP_TIME, s, then comes back over the hips and
+ * the side fins (the coaching: "slam the weight onto the tail, then centre it"; Rapture's snap: the fins "momentarily
+ * lose grip", the tail slides, then the weight re-engages them). Nothing here turns the board: the weight behind the
+ * fins unloads the nose and lets the centre fin's attack pass FIN_STALL (`finForces`), so the tail slides and the hull
+ * pivots about the rider; back over the fins, they grip again. The cost is the speed the slide sheds.
+ * - STAMP_STEER: the last fifth of the stick's throw. The owner's "all the way" is the stick at its rim; a pad's stick
+ *   reads 0.8–1 there after its deadzone and the keys reach 1, while a held carve sits well inside it.
+ * - STAMP_SET, s: the stamp waits for Snap's set-up, the weight on the tail and the hips over it (snap-quick: 0.42 s at
+ *   full effort, the shoulders 90 % wound in 0.35 s). Stamped at once (round 3's lever), the lean came before the hips
+ *   were over the tail, and the turns were shorter than without it.
+ * - STAMP_BACK and STAMP_TIME: round 3's stamp (the whole TRIM_SHIFT, 0.25 m, for 0.3 s) turned the 150° climb at up to
+ *   305°/s but stalled the board. Here, measured on the 15° plane's climbs: 0.15 m for 0.25 s keeps every rider on (0 of
+ *   4 falls, today's Snap 1); 0.25 m turns more and falls as today does; 0.15 s turns less than 0.25 s.
+ * - STAMP_REARM: the steer must come back under STAMP_STEER − this before another stamp, so a held stick stamps once.
+ * - STAMP_RETURN, s: the lean's way back runs at the stamp's pace (Snap's own shift, SNAP_SHIFT_TIME) for this long.
+ */
+const STAMP_STEER = 0.8;
+const STAMP_REARM = 0.2;
+const STAMP_TIME = 0.25;
+const STAMP_RETURN = 0.4;
+const STAMP_SET = 0.3;
+const STAMP_BACK = 0.15;
 const SNAP_TWIST_FREQUENCY = 11;
 const SNAP_SHIFT_TIME = 0.09;
 const SNAP_SHIFT_SPEED = 1.2;
@@ -931,6 +957,12 @@ export interface AttachedRiderOptions {
    * (the `?snapDepth=deep` dev switch, to ride). By default as deep as Compress, as before.
    */
   snapDepth?: 'deep';
+  /**
+   * Snap's stamp (snap-stamp, 2026-11-08, the owner: "turn less or very sharply with snap"; STAMP_STEER), opt-in: 'on'
+   * makes a full steer under Snap slam the weight back past the tail for a moment, then over the fins again (the
+   * `?snapStamp=on` dev switch, to ride). A partial steer is today's Snap, as is every Snap by default.
+   */
+  snapStamp?: 'on';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1249,6 +1281,13 @@ export class AttachedRider {
   /** Snap's share the latest step, and how long the centring after it has run, s (NaN while none runs). */
   private snapBefore = 0;
   private recentreTime = Number.NaN;
+  /** Snap's stamp (STAMP_STEER); only with `snapStamp: 'on'`. */
+  private readonly stamps: boolean;
+  /** The stamp running: its time, s (NaN while none runs), its depth 0–1, and whether a new press-and-turn may start one. */
+  private stampTime = Number.NaN;
+  private stampDepth = 0;
+  private stampArmed = true;
+  private snapHeldTime = 0;
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1412,6 +1451,7 @@ export class AttachedRider {
     this.snapLean = options.snapPivot === 'lean';
     this.recentres = options.snapRecentre !== 'old';
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
+    this.stamps = options.snapStamp === 'on';
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -3123,6 +3163,8 @@ export class AttachedRider {
     // Snap: the pressure onto the back foot, over the fins (SNAP_PRESSURE), held closer (SNAP_FREEDOM).
     const snap = this.snapping;
     if (snap > 0) this.copTarget.z += snap * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
+    // Snap's stamp (`snapStamp: 'on'`): a full steer slams the weight past the tail for STAMP_TIME, then back over the fins.
+    const stamp = this.stamps ? this.stampStep(h, snap) : 0;
     // Snap let go standing, the weight is centred again, held as close as Snap held it, for up to RECENTRE_TIME.
     if (this.recentres) {
       if (snap > 0 || !this.upright || this.phase !== 'standing') this.recentreTime = Number.NaN;
@@ -3186,10 +3228,44 @@ export class AttachedRider {
     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
     const level = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
     // Snap: the upper body over the hips, which the pressure has put over the back foot (no lean back past it).
-    const trim = snap > 0 ? level * (1 - snap) : level;
+    const trim = snap > 0 ? level * (1 - snap) - snap * stamp * STAMP_BACK : level;
     this.leanAxis('x', lean, h);
-    this.leanAxis('z', trim, h);
+    // The stamp and its return at Snap's full-effort pace (SNAP_SHIFT_TIME), the weight's own shift.
+    if (this.stamps && snap > 0 && this.stampTime >= 0 && this.quick) this.leanAxis('z', trim, h, snap);
+    else this.leanAxis('z', trim, h);
   }
+
+  /**
+   * Snap's stamp (snap-stamp; STAMP_STEER): returns how far the upper body is asked back past the hips now, 0–1. It starts
+   * once per press-and-turn, when the steer passes STAMP_STEER with Snap held at least STAMP_SET; its depth is the steer
+   * past the threshold, and it lasts STAMP_TIME (half of it for a steer just past). Then the return runs at the same pace
+   * for STAMP_RETURN, the body back over the hips and the fins.
+   */
+  private stampStep(h: number, snap: number): number {
+    if (snap <= 0) {
+      this.snapHeldTime = 0;
+      this.stampArmed = true;
+      this.stampTime = Number.NaN;
+      return 0;
+    }
+    this.snapHeldTime += h;
+    const steer = Math.abs(this.steer);
+    if (steer < STAMP_STEER - STAMP_REARM) this.stampArmed = true;
+    if (this.stampArmed && steer > STAMP_STEER && this.snapHeldTime >= STAMP_SET) {
+      this.stampArmed = false;
+      this.stampTime = 0;
+      this.stampDepth = Math.min(1, (steer - STAMP_STEER) / (1 - STAMP_STEER));
+    }
+    if (!(this.stampTime >= 0)) return 0;
+    this.stampTime += h;
+    const length = STAMP_TIME * (0.5 + 0.5 * this.stampDepth);
+    if (this.stampTime > length + STAMP_RETURN) {
+      this.stampTime = Number.NaN;
+      return 0;
+    }
+    return this.stampTime <= length ? this.stampDepth : 0;
+  }
+
 
   /**
    * Pushing up (the pop-up; the paddle-balance fix, 2026-10-22), the hips keep the
@@ -3246,11 +3322,21 @@ export class AttachedRider {
   }
 
   /** Critically damped motion of the lean toward `target` along one axis, within the shift's speed and acceleration. */
-  private leanAxis(axis: 'x' | 'z', target: number, h: number): void {
-    const frequency = 1 / BALANCE_TIME;
-    const acceleration = Math.min(MAX_SHIFT_ACCELERATION, Math.max(-MAX_SHIFT_ACCELERATION,
+  private leanAxis(axis: 'x' | 'z', target: number, h: number, quick = 0): void {
+    let frequency = 1 / BALANCE_TIME;
+    let maxAcceleration = MAX_SHIFT_ACCELERATION;
+    let maxSpeed = MAX_SHIFT_SPEED;
+    if (quick > 0) {
+      // Snap's stamp: as fast as Snap's own shift (`shiftAxis`): SNAP_SHIFT_TIME within the inverted pendulum's acceleration.
+      const height = Math.max(0.4, this.leg.height + this.leg.extension);
+      const pendulum = (WATER.gravity * (this.feet.front - this.feet.rear)) / 2 / height;
+      frequency += quick * (1 / SNAP_SHIFT_TIME - frequency);
+      maxAcceleration += quick * (Math.max(maxAcceleration, pendulum) - maxAcceleration);
+      maxSpeed += quick * (Math.max(maxSpeed, SNAP_SHIFT_SPEED) - maxSpeed);
+    }
+    const acceleration = Math.min(maxAcceleration, Math.max(-maxAcceleration,
       frequency * frequency * (target - this.lean[axis]) - 2 * frequency * this.leanRate[axis]));
-    this.leanRate[axis] = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.leanRate[axis] + acceleration * h));
+    this.leanRate[axis] = Math.min(maxSpeed, Math.max(-maxSpeed, this.leanRate[axis] + acceleration * h));
     this.lean[axis] += this.leanRate[axis] * h;
   }
 

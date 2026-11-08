@@ -483,6 +483,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapRecentreSwitch(),
     // `?snapDepth=deep`: the riders' Snap loading to the tube tuck's 0.45 m (snap-carve), opt-in, to ride.
     ...snapDepthSwitch(),
+    // `?snapStamp=on`: a full steer under Snap stamps the riders' weight past the tail, then back over the fins (snap-stamp), opt-in, to ride.
+    ...snapStampSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -765,6 +767,15 @@ export function snapRecentreSwitch(search?: string): { snapRecentre?: 'old' } {
  */
 export function snapDepthSwitch(search?: string): { snapDepth?: 'deep' } {
   return devParam('snapDepth', search)?.trim().toLowerCase() === 'deep' ? { snapDepth: 'deep' } : {};
+}
+
+/**
+ * The `?snapStamp=on` dev switch (`SurfZoneConfig.snapStamp`, snap-stamp 2026-11-08, the owner's "turn less or very
+ * sharply with snap"): opt-in, every spot's rider stamps the weight past the tail for a moment on a full steer under Snap,
+ * then back over the fins; a partial steer is Snap's carve as before.
+ */
+export function snapStampSwitch(search?: string): { snapStamp?: 'on' } {
+  return devParam('snapStamp', search)?.trim().toLowerCase() === 'on' ? { snapStamp: 'on' } : {};
 }
 
 /**

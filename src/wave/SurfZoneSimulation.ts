@@ -209,6 +209,12 @@ export interface SurfZoneConfig {
    */
   snapDepth?: 'deep';
   /**
+   * 'on': a full steer under Snap stamps the weight past the tail for a moment, then back over the fins (snap-stamp,
+   * 2026-11-08; `RideSessionOptions.snapStamp`); by default Snap as before. Every spot. The `?snapStamp=on` dev switch,
+   * opt-in, to ride; online rooms run the default.
+   */
+  snapStamp?: 'on';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

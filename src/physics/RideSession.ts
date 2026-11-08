@@ -130,6 +130,11 @@ export interface RideSessionOptions {
    * switch) loads Snap's legs to the tube tuck's 0.45 m; by default as deep as Compress, as before.
    */
   snapDepth?: 'deep';
+  /**
+   * Snap's stamp (snap-stamp, 2026-11-08; `AttachedRiderOptions.snapStamp`): 'on' (the `?snapStamp=on` dev switch) makes
+   * a full steer under Snap stamp the weight past the tail for a moment, then back over the fins; by default as before.
+   */
+  snapStamp?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -213,6 +218,7 @@ export class RideSession {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
+      ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});
