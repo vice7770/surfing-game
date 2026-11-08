@@ -1,0 +1,3 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 325 passed | 34 skipped (360)
+      Tests  1 failed | 3150 passed | 23 expected fail | 40 skipped (3214)

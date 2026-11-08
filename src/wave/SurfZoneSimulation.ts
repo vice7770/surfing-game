@@ -991,9 +991,14 @@ export const CANYON_HALF_TAKE_OFF_DEPTH = { base: 1.30, perMetre: 1.06 } as cons
 /**
  * Where version C's sets start breaking at its start on its take-off peak (`CANYON_PEAK`, the `?canyonPeak=on` dev switch,
  * the advisor's third ruling, rank 2, 2026-11-08), m deep, against Hs; the steep face's too (`?canyonPeakFace=steep`).
- * PEAK_FIT
+ * Fitted to the catch model (canyon-wave-r2's `catch-model.mjs`, a point-mass paddler on the solver's own waves, wave
+ * metrics only; docs/research/canyon-peak-2026-11-08), Medium seed 1 × 12 periods in the column x 75: the best start is
+ * 2.36 m deep (5 of 5 sets and 11 of 14 waves caught, none breaking on the paddler; 2.46 m caught 3 of 5 sets, 2.26 m
+ * let 1 in 5 sets break on the paddler). The line runs through it with the bank's slope (1.11 per metre of Hs): Small and
+ * Big are provisional, not measured on the peak. Riders start at the take-off (`CANYON_PEAK_RIDE_LINEUP`). The lobe's
+ * edge (1.6 m) floors it.
  */
-export const CANYON_PEAK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
+export const CANYON_PEAK_TAKE_OFF_DEPTH = { base: 0.806, perMetre: 1.11 } as const;
 
 /**
  * How deep the Canyon's sets of significant height Hs start breaking at its default start, m: on version C's bank
@@ -1067,11 +1072,12 @@ export const CANYON_HALF_RIDE_LINEUP: readonly { readonly significantHeight: num
 
 /**
  * Version C's start on its take-off peak (`?canyonPeak=on`, either face), m seaward of its take-off
- * (`CANYON_PEAK_TAKE_OFF_DEPTH`), against Hs, as `CANYON_RIDE_LINEUP`: PEAK_LINEUP
+ * (`CANYON_PEAK_TAKE_OFF_DEPTH`), against Hs, as `CANYON_RIDE_LINEUP`: at Medium at the take-off itself, the catch
+ * model's best start (the fit's depth is the start's); Small and Big keep the bank's offsets (6 m, 3 m), provisional.
  */
 export const CANYON_PEAK_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
   { significantHeight: 0.9, offset: 6 },
-  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 1.4, offset: 0 },
   { significantHeight: 2.4, offset: 3 },
 ];
 

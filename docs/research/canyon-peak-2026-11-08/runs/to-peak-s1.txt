@@ -1,0 +1,19 @@
+canyon peak small seed 1: take-off (75.0, -190.5) depth 1.92 m; start 6.0 m out at z -196.5, depth 2.12 m; column x 75.5; dz 1.00
+t 21.6 H 0.59 c 30.0 face max 4.1° mean 0.4° unbroken past 25 m
+t 25.2 H 0.85 c 30.0 face max 3.6° mean 2.0° unbroken past 25 m
+t 31.2 H 1.24 c 30.0 face max 14.1° mean 10.5° breaks 12 m in at 18.3°
+t 40.1 H 0.59 c 30.0 face max 6.7° mean 4.9° unbroken past 25 m
+t 52.7 H 0.42 c 30.0 face max 4.6° mean 3.6° unbroken past 25 m
+t 64.7 H 0.33 c 30.0 face max 2.7° mean 2.0° unbroken past 25 m
+t 78.2 H 1.11 c 30.0 face max 7.9° mean 0.9° unbroken past 25 m
+t 86.7 H 0.83 c 30.0 face max 7.7° mean 4.8° unbroken past 25 m
+t 95.2 H 0.86 c 30.0 face max 10.0° mean 7.8° breaks 13 m in at 15.3°
+t 104.3 H 0.95 c 30.0 face max 9.5° mean 6.8° breaks 9 m in at 13.7°
+waves H>0.3: 10; broken at start 0; break within 25 m 3; pass unbroken 7
+unbroken at start: H p50 0.85 p90 1.24; face max p50 7.7° p90 14.1°; mean p50 4.8°; c p50 30.0
+  unbroken with max face ≥ 8° and H ≥ 0.8 m: 3 of 10
+  unbroken with max face ≥ 10° and H ≥ 0.8 m: 1 of 10
+  unbroken with max face ≥ 12° and H ≥ 0.8 m: 1 of 10
+  unbroken with max face ≥ 15° and H ≥ 0.8 m: 0 of 10
+break 5–25 m inside: 3 of 10; with the break's face ≥ 15°: 2; with the start's face ≥ 15°: 0; break faces p50 15.3°
+all H p50 0.85 p90 1.24

@@ -12,7 +12,7 @@ import {
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
-import { rideLineupOffset, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { canyonTakeOffDepth, rideLineupOffset, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
@@ -360,6 +360,14 @@ describe('PhysicalMode', () => {
     expect(canyonBedSwitch('?canyonWaves=true&canyonPeak=on')).toEqual({ canyonBed: 'b' });
     expect(canyonBedSwitch('?canyonBed=peak')).toEqual({});
     for (const search of ['', '?canyonPeak', '?canyonPeak=', '?canyonPeak=off', '?canyonPeakFace=steep']) expect(canyonBedSwitch(search), search).toEqual({});
+    // Its own start (the catch model's refit): at Medium 2.36 m deep, at the take-off; the default's as before.
+    for (const bed of ['peak', 'peak-steep'] as const) {
+      expect(canyonTakeOffDepth(1.4, bed)).toBeCloseTo(2.36, 2);
+      expect(rideLineupOffset({ spot: 'canyon', significantHeight: 1.4, canyonBed: bed })).toBeCloseTo(0, 9);
+      expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9, canyonBed: bed })).toBe(6);
+    }
+    expect(canyonTakeOffDepth(1.4)).toBeCloseTo(0.95 + 1.11 * 1.4, 12);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 1.4 })).toBe(9);
     const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
     try {
       vi.stubGlobal('location', { search: '?canyonPeak=on&canyonPeakFace=steep' });

@@ -1,0 +1,22 @@
+canyon peak-steep medium seed 1: take-off (75.0, -205.0) depth 2.50 m; start 9.0 m out at z -214.0, depth 2.85 m; column x 75.5; dz 1.00
+t 25.0 H 0.87 c 30.0 face max 7.4° mean 5.5° breaks 17 m in at 10.8°
+t 37.0 H 1.14 c 30.0 face max 9.6° mean 6.7° breaks 24 m in at 14.4°
+t 42.9 H 0.64 c 30.0 face max 4.4° mean 0.6° unbroken past 25 m
+t 49.6 H 0.80 c 30.0 face max 5.9° mean 4.3° unbroken past 25 m
+t 60.4 H 0.66 c 30.0 face max 4.4° mean 3.1° unbroken past 25 m
+t 70.9 H 0.71 c 30.0 face max 3.2° mean 0.7° unbroken past 25 m
+t 92.6 H 1.00 c 30.0 face max 9.4° mean 7.1° breaks 24 m in at 17.8°
+t 100.8 H 0.66 c 30.0 face max 5.1° mean 3.7° unbroken past 25 m
+t 108.7 H 0.83 c 30.0 face max 6.4° mean 4.9° unbroken past 25 m
+t 123.8 H 0.71 c 30.0 face max 1.9° mean 1.0° unbroken past 25 m
+t 131.2 H 1.10 c 30.0 face max 9.0° mean 6.7° unbroken past 25 m
+t 139.0 H 1.48 c 30.0 face max 13.2° mean 10.0° breaks 16 m in at 17.2°
+t 149.4 H 1.40 c 30.0 face max 10.0° mean 7.3° breaks 10 m in at 12.1°
+waves H>0.3: 13; broken at start 0; break within 25 m 5; pass unbroken 8
+unbroken at start: H p50 0.83 p90 1.40; face max p50 6.4° p90 10.0°; mean p50 4.9°; c p50 30.0
+  unbroken with max face ≥ 8° and H ≥ 0.8 m: 5 of 13
+  unbroken with max face ≥ 10° and H ≥ 0.8 m: 2 of 13
+  unbroken with max face ≥ 12° and H ≥ 0.8 m: 1 of 13
+  unbroken with max face ≥ 15° and H ≥ 0.8 m: 0 of 13
+break 5–25 m inside: 5 of 13; with the break's face ≥ 15°: 2; with the start's face ≥ 15°: 0; break faces p50 14.4°
+all H p50 0.83 p90 1.40
