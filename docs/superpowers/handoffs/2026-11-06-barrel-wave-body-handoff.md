@@ -84,3 +84,7 @@ The step-7 rule on the M4's level-13 batch (`docs/research/pool-tube-runs-2/deci
 - **1.8 m faces: passes.** The ledge has 2.3× the knee's usable clearance (0.56 m against 0.24 m; the bar is 1.3×), and its lip lands at 0.66 H.
 - **1.5 m faces: fails on the landing only.** The clearance is 2.0×, but the lip lands at 0.54 H, under the 0.6 H bar. That may be within the estimate's error, since the landing is read from the profiles and not from the jet's tip.
 - **Open for the owner, with the advisor:** whether the 1.5 m shortfall blocks the floor change. If it doesn't, the floor change goes in together with ruling 4's wave-body build.
+- **The owner's call (2026-11-08): adopt the ledge anyway.** The building started at 95 % of the week, on branch `claude/pool-ledge-floor`:
+  - `?poolFloor=ledge`, opt-in: `POOL_STRAIGHT` `gradient` about 1/2.0 square to the reef and `kneeRounding` 1, per the step-7 ruling's §2;
+  - its passive probes.
+  If the branch isn't merged, its README says where it stopped. Next after it: the re-probes the ruling lists, then the ledge cases into the tube, together with ruling 4.
