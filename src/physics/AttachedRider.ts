@@ -716,6 +716,17 @@ const SNAP_RADIUS = 2.2;
  * in 7 of 12 runs (2 by default). On a wave the face feeds the speed back; the owner rides it.
  */
 const SNAP_RAIL_RANGE = MAX_BANK;
+/**
+ * Snap let go, the rider centres the weight and re-engages the fins (Rapture's snap: "centre the weight and re-engage the
+ * fins"; de Sousa 2022's re-entry): the hips go back over the stance's middle, the shift's own place before Snap, at the
+ * balance's pace, for up to RECENTRE_TIME, s, or until within RECENTRE_HOME, m; then the balance's band (TRIM_FREEDOM)
+ * again. Before (snap-recentre, 2026-11-06), let go riding straight the body stayed over the tail, the centre of mass
+ * 0.06–0.08 m ahead of the back foot against 0.30 before the snap: the pressure under it sat at the stance's middle, inside
+ * the balance's band (which moves the body only for a pressure past 0.2 m), so nothing brought it back, and the owner saw
+ * the surfer "stuck in snap stance" with the stance changed.
+ */
+const RECENTRE_TIME = 1;
+const RECENTRE_HOME = 0.02;
 const SNAP_TWIST_FREQUENCY = 11;
 const SNAP_SHIFT_TIME = 0.09;
 const SNAP_SHIFT_SPEED = 1.2;
@@ -894,6 +905,12 @@ export interface AttachedRiderOptions {
    * tight turn holds, up to MAX_BANK, in place of the steer's RAIL_RANGE (the `?snapPivot=lean` dev switch, to ride).
    */
   snapPivot?: 'lean';
+  /**
+   * After Snap (snap-recentre, 2026-11-06, the owner: "snap gets stuck in snap stance"; RECENTRE_TIME): by default the
+   * rider centres the weight again when Snap is let go; 'old' leaves it over the tail until the balance's band is crossed,
+   * as before (the `?snapRecentre=old` dev switch, for A/Bs).
+   */
+  snapRecentre?: 'old';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1205,6 +1222,11 @@ export class AttachedRider {
   private readonly quick: boolean;
   /** Snap leans for its own turn (SNAP_RAIL_RANGE); only with `snapPivot: 'lean'`. */
   private readonly snapLean: boolean;
+  /** Snap let go, the weight is centred again (RECENTRE_TIME); false with `snapRecentre: 'old'`. */
+  private readonly recentres: boolean;
+  /** Snap's share the latest step, and how long the centring after it has run, s (NaN while none runs). */
+  private snapBefore = 0;
+  private recentreTime = Number.NaN;
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1366,6 +1388,7 @@ export class AttachedRider {
     this.catches = options.extension !== 'old';
     this.quick = options.snapQuick !== 'old';
     this.snapLean = options.snapPivot === 'lean';
+    this.recentres = options.snapRecentre !== 'old';
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -3077,6 +3100,15 @@ export class AttachedRider {
     // Snap: the pressure onto the back foot, over the fins (SNAP_PRESSURE), held closer (SNAP_FREEDOM).
     const snap = this.snapping;
     if (snap > 0) this.copTarget.z += snap * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
+    // Snap let go standing, the weight is centred again, held as close as Snap held it, for up to RECENTRE_TIME.
+    if (this.recentres) {
+      if (snap > 0 || !this.upright || this.phase !== 'standing') this.recentreTime = Number.NaN;
+      else if (this.snapBefore > 0) this.recentreTime = 0;
+      else if (this.recentreTime >= 0) this.recentreTime += h;
+      if (this.recentreTime > RECENTRE_TIME) this.recentreTime = Number.NaN;
+      this.snapBefore = snap;
+    }
+    const recentring = this.recentreTime >= 0;
     const freedom = snap > 0 ? TRIM_FREEDOM + snap * (SNAP_FREEDOM - TRIM_FREEDOM) : TRIM_FREEDOM;
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
@@ -3118,7 +3150,9 @@ export class AttachedRider {
       const keepX = this.upright ? Math.min(wantX + LATERAL_FREEDOM, Math.max(wantX - LATERAL_FREEDOM, this.smoothedCop.x)) : wantX;
       const targetX = this.banking ? 0 : Math.min(reach.x, Math.max(-reach.x, this.balance.x + (keepX - this.smoothedCop.x) / share));
       const keepZ = Math.min(wantZ + freedom, Math.max(wantZ - freedom, this.smoothedCop.z));
-      const targetZ = Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
+      // After Snap the hips go back over the stance's middle (the posture's own place); there, the balance's band again.
+      if (recentring && Math.abs(this.balance.z) <= RECENTRE_HOME) this.recentreTime = Number.NaN;
+      const targetZ = recentring ? 0 : Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
       this.shiftAxis('x', targetX, reach.x, h);
       this.shiftAxis('z', targetZ, reach.z, h);
     } else {

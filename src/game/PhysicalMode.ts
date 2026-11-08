@@ -478,6 +478,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapQuickSwitch(),
     // `?snapPivot=lean`: the riders' Snap leaning for its own turn, up to 70° (snap-lean), opt-in, to ride.
     ...snapPivotSwitch(),
+    // `?snapRecentre=old`: Snap let go, the riders' weight left over the tail, as before snap-recentre, for A/Bs.
+    ...snapRecentreSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -743,6 +745,14 @@ export function snapQuickSwitch(search?: string): { snapQuick?: 'old' } {
  */
 export function snapPivotSwitch(search?: string): { snapPivot?: 'lean' } {
   return devParam('snapPivot', search)?.trim().toLowerCase() === 'lean' ? { snapPivot: 'lean' } : {};
+}
+
+/**
+ * The `?snapRecentre=old` dev switch (`SurfZoneConfig.snapRecentre`, snap-recentre 2026-11-06, the owner's "stuck in snap
+ * stance"): every spot's rider, letting Snap go, leaves the weight over the tail, as before, in place of centring it again.
+ */
+export function snapRecentreSwitch(search?: string): { snapRecentre?: 'old' } {
+  return devParam('snapRecentre', search)?.trim().toLowerCase() === 'old' ? { snapRecentre: 'old' } : {};
 }
 
 /**

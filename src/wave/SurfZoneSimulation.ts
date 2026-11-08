@@ -198,6 +198,12 @@ export interface SurfZoneConfig {
    */
   snapPivot?: 'lean';
   /**
+   * 'old': Snap let go, the riders' weight stays over the tail until the balance's band is crossed, as before
+   * snap-recentre (2026-11-06; `RideSessionOptions.snapRecentre`); by default it is centred again. Every spot. The
+   * `?snapRecentre=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  snapRecentre?: 'old';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

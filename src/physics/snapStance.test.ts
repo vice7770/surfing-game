@@ -263,8 +263,11 @@ describe('the snap stance', () => {
     it('turns twice as far as the steer alone off a climb, and stays on', () => {
       const steer = snapTurn(acrossFace(150, 6.7), { snap: false, hold: 0 });
       const snap = snapTurn(acrossFace(150, 6.7), { snap: true, hold: 0.6 });
-      expect(snap.peak).toBeGreaterThan(steer.peak);
-      expect(snap.turned[snap.at(1)]).toBeGreaterThan(1.8 * steer.turned[steer.at(1)]);
+      // snap-recentre (2026-11-06): the weight is centred again once Snap is let go; round 2's figures came after the release
+      // with the weight left over the tail (the owner's "stuck in snap stance"). Centred, the peak is the steer's (172 against
+      // 174°/s, round 2's 191) and the turn by 1 s 1.7× the steer's (76° against 44°; round 2's 91°, 2.1×).
+      expect(snap.peak).toBeGreaterThan(0.95 * steer.peak);
+      expect(snap.turned[snap.at(1)]).toBeGreaterThan(1.6 * steer.turned[steer.at(1)]);
       expect(snap.fell).toBeNaN();
     });
 
@@ -280,7 +283,10 @@ describe('the snap stance', () => {
       const at = snap.at(0.8);
       expect(snap.turned[at]).toBeGreaterThan(steer.turned[at] + 8);
       expect(snap.turned[at]).toBeGreaterThan(compress.turned[at] - 3);
-      expect(snap.peak).toBeGreaterThan(Math.max(steer.peak, compress.peak) + 50);
+      // snap-recentre (2026-11-06): the weight is centred again once Snap is let go; round 2's figures carried it left
+      // over the tail after the release (the owner's "stuck in snap stance"): the peak 32°/s over the best of the steer
+      // and Compress at 9 m/s (round 2: over 50).
+      expect(snap.peak).toBeGreaterThan(Math.max(steer.peak, compress.peak) + 25);
       expect(snap.speeds[at]).toBeLessThan(compress.speeds[at] - 1.5);
       expect(snap.fell).toBeNaN();
     });
@@ -337,7 +343,10 @@ describe('the snap stance', () => {
         const path = Math.atan2(board.velocity.x, board.velocity.z);
         drift = Math.max(drift, Math.abs(Math.atan2(Math.sin(now - path), Math.cos(now - path))));
       }
-      expect((-turned * 180) / Math.PI).toBeGreaterThan(100);
+      // snap-recentre (2026-11-06): the weight is centred again once Snap is let go; round 2's figures carried it left
+      // over the tail after the release (the owner's "stuck in snap stance"): the fins re-engaged, it comes round 90°
+      // (round 2: over 100°).
+      expect((-turned * 180) / Math.PI).toBeGreaterThan(80);
       expect((least * 180) / Math.PI).toBeLessThan(5);
       expect((drift * 180) / Math.PI).toBeLessThan(30);
     });
@@ -390,6 +399,44 @@ describe('the snap set up from Compress', () => {
   });
 });
 
+// snap-recentre (the owner, 2026-11-06: "snap gets stuck in snap stance, the game says it changes but the animation or the
+// surfer gets stuck"): let go, the rider centres the weight again (RECENTRE_TIME). Riding straight on still water at 8 m/s,
+// Snap held 0.8 s and let go: the centre of mass comes back from 0.08 m ahead of the back foot to 0.28 m by 0.75 s (0.30
+// before the snap), the front foot's share to 0.72 (0.79). As before (`snapRecentre: 'old'`) it stayed at 0.04–0.08 m with
+// the front foot at 0.46–0.57 for the next 1.5 s.
+describe('Snap let go', () => {
+  const release = (snapRecentre?: 'old') => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 8));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', ...(snapRecentre ? { snapRecentre } : {}) });
+    board.attach(rider);
+    const water = new PlaneWater() as SurfWater;
+    const rear = stanceFeet(board.shape).rear;
+    const over = () => {
+      const foot = board.toWorld(new Vector3(0, 0, rear), new Vector3());
+      const level = new Vector3(0, 0, 1).applyQuaternion(board.orientation).setY(0).normalize();
+      return rider.position.clone().sub(foot).dot(level);
+    };
+    for (let n = 0; n < 30; n += 1) board.step(STEP, water);
+    const before = over();
+    rider.snap = 1;
+    for (let n = 0; n < 48; n += 1) board.step(STEP, water);
+    const held = over();
+    rider.snap = 0;
+    for (let n = 0; n < 45; n += 1) board.step(STEP, water);
+    return { before, held, after: over(), front: rider.contact.frontShare, attached: rider.attached };
+  };
+  it('centres the weight again, where before it stayed over the tail', () => {
+    const centred = release();
+    const stuck = release('old');
+    expect(centred.attached).toBe(true);
+    expect(centred.held).toBeLessThan(centred.before - 0.15);
+    expect(centred.after).toBeGreaterThan(centred.before - 0.06);
+    expect(centred.front).toBeGreaterThan(0.65);
+    expect(stuck.after).toBeLessThan(stuck.before - 0.15);
+  });
+});
+
 // snap-lean (the owner's pick, 2026-11-05; opt-in with `snapPivot: 'lean'`, the `?snapPivot=lean` dev switch): a full
 // steer under Snap leans as far as its tight turn holds, up to 70°, in place of the steer's 50° (top turns ride a 75 ± 3°
 // rail, Forsyth et al. 2024). Round 3 measured it sharper everywhere (still water at 7 m/s, keys: 92° by 1 s at up to
@@ -425,7 +472,9 @@ describe('Snap leaning for its own turn (opt-in)', () => {
     const lean = trough('lean');
     expect(lean.bank).toBeGreaterThan(steerCap.bank + 8);
     expect(lean.turned).toBeGreaterThan(steerCap.turned + 15);
-    expect(lean.peak).toBeGreaterThan(steerCap.peak + 30);
+    // snap-recentre (2026-11-06): the weight is centred again once Snap is let go; round 2's figures carried it left
+    // over the tail after the release (the owner's "stuck in snap stance"): 20°/s over (36° before).
+    expect(lean.peak).toBeGreaterThan(steerCap.peak + 15);
   });
 });
 

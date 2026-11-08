@@ -120,6 +120,11 @@ export interface RideSessionOptions {
    * `?snapPivot=lean` dev switch) lets a full steer under Snap lean up to 70°; by default the steer's 50°, as before.
    */
   snapPivot?: 'lean';
+  /**
+   * After Snap (snap-recentre, 2026-11-06; `AttachedRiderOptions.snapRecentre`): by default the weight is centred again
+   * when Snap is let go; 'old' (the `?snapRecentre=old` dev switch) leaves it over the tail, as before.
+   */
+  snapRecentre?: 'old';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -202,6 +207,7 @@ export class RideSession {
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
+      ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}),
     });
     this.swimOld = options.swim === 'old';
     this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});
