@@ -1,4 +1,4 @@
-import { poolSpot, type PoolBarrelLayout, type PoolWaves } from './pool';
+import { poolSpot, type PoolBarrelLayout, type PoolFloorFace, type PoolWaves } from './pool';
 import { seededRandom } from './random';
 
 export type SpotName = 'beach' | 'point' | 'reef' | 'canyon' | 'padang' | 'pool';
@@ -1213,13 +1213,13 @@ function canyon(c: CanyonShape): SurfSpot {
  * A spot's bed; `canyonBed` picks the Canyon's (the reef bed unless 'old'), `poolWaves` the Wave Pool's (the training
  * A-frame unless 'barrel'), and every other spot ignores them.
  */
-export function createSpot(name: SpotName, seed: number, options: { canyonBed?: CanyonBed; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout } = {}): SurfSpot {
+export function createSpot(name: SpotName, seed: number, options: { canyonBed?: CanyonBed; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolFloor?: PoolFloorFace } = {}): SurfSpot {
   switch (name) {
     case 'beach': return beach(seed);
     case 'point': return point();
     case 'reef': return reef();
     case 'canyon': return canyon(canyonShape(options.canyonBed));
     case 'padang': return padang();
-    case 'pool': return poolSpot(options.poolWaves, options.poolBarrel);
+    case 'pool': return poolSpot(options.poolWaves, options.poolBarrel, options.poolFloor);
   }
 }

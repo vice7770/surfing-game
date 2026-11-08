@@ -440,6 +440,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolAgeJoinSwitch() : {}),
     // `?poolBarrel=aframe`: the Wave Pool's Barrel on step 1's A-frame (pool-barrel, merged 2026-11-01), for A/Bs.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
+    // `?poolFloor=ledge`: the straight Barrel on the advisor's steeper reef ledge (pool-ledge-floor, the owner's call 2026-11-08).
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolFloorSwitch() : {}),
     // `?poolTube=off` / `?poolCrash=off`: the straight Barrel without its swept tube, or with it and the solver's own lip.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
     // `?poolTubeCase=pool`: the straight Barrel's tube from its own runs, for A/Bs (a38, the default since 2026-11-04,
@@ -551,6 +553,15 @@ export function poolAgeJoinSwitch(search?: string): { poolAgeJoin?: number } {
  */
 export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
   return devParam('poolBarrel', search)?.trim() === 'aframe' ? { poolBarrel: 'aframe' } : {};
+}
+
+/**
+ * The `?poolFloor=ledge` dev switch (`SurfZoneConfig.poolFloor`, pool-ledge-floor 2026-11-08): the straight Barrel's reef
+ * face as the advisor's step-7 ledge (`POOL_LEDGE`), which the owner adopted on the M4 L13 batch; anything else keeps
+ * today's face. Online rooms always run the default.
+ */
+export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' } {
+  return devParam('poolFloor', search)?.trim().toLowerCase() === 'ledge' ? { poolFloor: 'ledge' } : {};
 }
 
 /**
@@ -1241,7 +1252,7 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     this.curtains.setOptics(SPOT_OPTICS[settings.spot]);
-    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel });
+    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
     const offshoreDepth = tank.edgeDepth;

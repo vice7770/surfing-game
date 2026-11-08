@@ -16,7 +16,7 @@ import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type Tub
 import { SeaState } from './SeaState';
 import {
   POOL, POOL_BARREL, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolRiddenAt, poolSea, poolStraightBreakDepth,
-  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolWaves,
+  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolWaves,
 } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -341,6 +341,12 @@ export interface SurfZoneConfig {
    * for A/Bs. Only with `poolWaves` 'barrel'; online rooms always run the default.
    */
   poolBarrel?: PoolBarrelLayout;
+  /**
+   * The straight Barrel's reef face (pool-ledge-floor, 2026-11-08): today's 1/9.5 face (undefined, the default) or 'ledge',
+   * the advisor's step-7 ledge (`POOL_LEDGE`: about 1:4.5 along the ray, its knee rounded ±1 m), the `?poolFloor=ledge`
+   * dev switch. Only on the straight Barrel floor; online rooms always run the default.
+   */
+  poolFloor?: PoolFloorFace;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
@@ -1098,7 +1104,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -1361,7 +1367,7 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel });
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;

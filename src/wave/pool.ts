@@ -478,10 +478,32 @@ export function poolStraightCrestDepth(s: number): number {
   return d0 + (d1 - d0) * ease(s0, s1, s);
 }
 
+/**
+ * The straight Barrel's steeper reef ledge (`?poolFloor=ledge`, pool-ledge-floor 2026-11-08; the advisor's step-7 ruling,
+ * docs/research/pool-tube-wall-2026-11-04/advisor-ruling.md, adopted by the owner on the M4 L13 batch): the reef42-type
+ * face from the platform to the crest at about 1:4.5 along the wave's ray, `gradient` square to the reef (× cos α, about
+ * 0.4–0.5), its knee rounded ±`kneeRounding` m. The crest profile, `flatWidth` and `backSlope` stay `POOL_STRAIGHT`'s.
+ * Mutable for the probes.
+ */
+export const POOL_LEDGE = { gradient: 1 / 2.0, kneeRounding: 1 };
+
+/** The straight Barrel's floor, by `?poolFloor`: today's face (undefined, the default) or the steeper ledge. */
+export type PoolFloorFace = 'ledge';
+
 /** The Barrel mode's straight floor's still depth below datum at (x, z), m; negative on the deck (`POOL_STRAIGHT`). */
 export function poolStraightDepth(x: number, z: number): number {
+  return poolStraightDepthWith(x, z, POOL_STRAIGHT);
+}
+
+/** The straight floor with its steeper ledge (`POOL_LEDGE`, `?poolFloor=ledge`), m. */
+export function poolStraightLedgeDepth(x: number, z: number): number {
+  return poolStraightDepthWith(x, z, POOL_LEDGE);
+}
+
+/** The straight floor's still depth with its reef face's `gradient` and `kneeRounding` from `face`, m. */
+export function poolStraightDepthWith(x: number, z: number, face: { gradient: number; kneeRounding: number }): number {
   const p = POOL;
-  const r = POOL_STRAIGHT;
+  const r = { ...POOL_STRAIGHT, gradient: face.gradient, kneeRounding: face.kneeRounding };
   const beach = Math.max(-p.deck, -z * p.shoreSlope);
   const edge = poolStraightPlatformZ();
   if (z < edge) {
@@ -552,9 +574,10 @@ export function poolStraightDirection(waveNumber: number, alongShore = POOL.alon
 }
 
 /** The pool's bed for its floor: the training A-frame (the default), the Barrel's straight reef or its A-frame. */
-export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout): SurfSpot {
+export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace): SurfSpot {
   const floor = poolFloorOf({ poolWaves: waves, poolBarrel: barrel });
-  return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : poolStraightDepth };
+  const straight = face === 'ledge' ? poolStraightLedgeDepth : poolStraightDepth;
+  return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : straight };
 }
 
 /**

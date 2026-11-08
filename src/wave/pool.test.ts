@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import {
   POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolFloorOf, poolStraightAt, poolStraightBreakDepth, poolStraightCrestDepth, poolStraightDepth, poolStraightFrame,
-  poolStraightPlatformZ, poolStraightRiddenAt,
+  poolStraightPlatformZ, poolStraightRiddenAt, POOL_LEDGE, poolStraightLedgeDepth,
   POOL, POOL_BARREL, POOL_BARREL_EDGE_HEIGHT, POOL_BARREL_FACES, POOL_EDGE_HEIGHT, poolBarrelBreakDepth, poolBarrelCrestDepth, poolBarrelDepth, poolBarrelGradient,
   poolBarrelPlatformZ, poolBarrelRiddenAt, poolCrestZ, poolDeckZ, poolDepth, poolNormalShare, poolRampFootZ, poolRiddenAt, poolSea, poolSpot, poolTankLayout, poolTerraceZ,
   regularSignificantHeight,
@@ -227,6 +227,23 @@ describe('the Wave Pool’s Barrel straight reef (pool-barrel-straight, 2026-11-
     expect(back(60)).toBeCloseTo(r.platformDepth, 9);
     expect(poolStraightRiddenAt(start.x - 1)).toBe(true);
     expect(poolStraightRiddenAt(-139)).toBe(false);
+  });
+
+  // pool-ledge-floor (2026-11-08, `?poolFloor=ledge`): the same reef with the advisor's steeper face; the default unchanged.
+  it('runs the steeper ledge with `poolFloor` ledge alone: its face at `POOL_LEDGE`, its crest, top and back as today', () => {
+    const r = POOL_STRAIGHT;
+    expect(r.gradient).toBeCloseTo(1 / 9.5, 12);
+    expect(r.kneeRounding).toBe(3);
+    expect(poolSpot('barrel').depthAt).toBe(poolStraightDepth);
+    expect(poolSpot('barrel', undefined, 'ledge').depthAt).toBe(poolStraightLedgeDepth);
+    expect(poolSpot('training', undefined, 'ledge').depthAt).toBe(poolDepth);
+    const phi = (r.reefAngle * Math.PI) / 180;
+    const p = poolStraightAt(120);
+    const at = (n: number) => poolStraightLedgeDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi));
+    expect(at(0)).toBeCloseTo(0.9, 9);
+    expect((at(1.5) - at(0.5))).toBeCloseTo(POOL_LEDGE.gradient, 9);
+    expect(at((r.platformDepth - 0.9) / POOL_LEDGE.gradient + POOL_LEDGE.kneeRounding)).toBeCloseTo(r.platformDepth, 9);
+    for (const n of [-3, -20, -60]) expect(poolStraightLedgeDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi))).toBeCloseTo(poolStraightDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi)), 12);
   });
 
   it("sends the machine's wave obliquely, its along-shore wavelength fitting the window n times", () => {
