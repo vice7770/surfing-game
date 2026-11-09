@@ -712,6 +712,101 @@ describe('the agile legs (opt-in)', () => {
     expect(agile.pelvis.distanceTo(agile.front)).toBeLessThan(today.pelvis.distanceTo(today.front) - 0.01);
     expect(agile.hand.x).toBeLessThan(today.hand.x - 0.05);
   });
+
+  // Stage 2a (docs/research/rider-agile-2026-11-09/README.md): Snap held with the hand button takes the toes' rail.
+  describe('the rail grab (Snap with the hand button)', () => {
+    const GRIP = 450;
+    const grabRide = (steer: number, each?: (rider: AttachedRider, board: BoardBody, t: number) => void, plan: (t: number) => { snap: number; hand: boolean } = () => ({ snap: 1, hand: true })) => {
+      const setup = flat(8);
+      const rider = new AttachedRider(setup.board.shape, { phase: 'standing', agile: 'on' });
+      setup.board.attach(rider);
+      for (let n = 0; n < 12; n += 1) setup.board.step(STEP, setup.water);
+      for (let n = 0; n < 72 && rider.attached; n += 1) {
+        Object.assign(rider, { steer, ...plan(n * STEP) });
+        setup.board.step(STEP, setup.water);
+        each?.(rider, setup.board, (n + 1) * STEP);
+      }
+      return { rider, board: setup.board };
+    };
+    // Measured on stage 1's code (main 0e54ef4a) with this helper: the four climbs' turns, rad.
+    it('leaves the agile legs without the hand button as they were, bit for bit', () => {
+      const before = [1.5479012735983415, 1.9794174489951115, 1.8049282226528067, 1.502058699424341];
+      const now: number[] = [];
+      for (const across of [150, 120]) for (const speed of [6.7, 8]) now.push(climb(across, speed, 1, 'on').turned);
+      expect(now).toEqual(before);
+    });
+    // The hand is a third entry in the ledger only while it holds the rail, drawn there, within a hand's grip; the
+    // launch waits for it; the feet's couple is still equal and opposite.
+    it('holds the rail with the drawn hand, within its grip, once the body is low enough to reach', () => {
+      for (const steer of [1, -1]) {
+        let heldAt = Number.NaN;
+        let most = 0;
+        let hand = 0;
+        grabRide(steer, (rider, board, t) => {
+          const [front, back, third] = rider.limbs;
+          expect(front.force.clone().add(back.force).length()).toBeLessThan(1e-9);
+          if (!rider.grab.held) {
+            expect(third).toBeUndefined();
+            expect(rider.grab.force).toBe(0);
+            if (Number.isNaN(heldAt)) expect(rider.hip.angle).toBe(0);
+            return;
+          }
+          if (Number.isNaN(heldAt)) heldAt = t;
+          expect(third.name).toBe('hand');
+          expect(third.force.length()).toBeLessThanOrEqual(GRIP + 1e-6);
+          most = Math.max(most, third.force.length());
+          // On the toes' rail (Regular's −x), between the feet, and one drawn hand is on that point.
+          expect(third.point.x).toBeLessThan(-0.15);
+          const rail = board.toWorld(third.point, new Vector3());
+          const drawn = [3, 4].map((i) => rider.renderPoint(i, board, new Vector3()).distanceTo(rail));
+          hand = drawn[0] < drawn[1] ? 3 : 4;
+          expect(Math.min(...drawn)).toBeLessThan(1e-9);
+          expect(Math.max(...drawn)).toBeGreaterThan(0.3);
+        });
+        expect(heldAt, `${steer}`).toBeGreaterThan(0.4);
+        expect(heldAt, `${steer}`).toBeLessThan(0.75);
+        expect(most, `${steer}`).toBeGreaterThan(100);
+        // Regular: a left turn (steer +) is backside, the trailing (right) hand's pigdog; frontside the leading hand.
+        expect(hand, `${steer}`).toBe(steer > 0 ? 4 : 3);
+      }
+    });
+    it('levers the rail up backside only, and lets go with the button or out of reach', () => {
+      const pull = (steer: number) => { let most = 0; grabRide(steer, (rider) => { most = Math.max(most, rider.grab.pull); }); return most; };
+      expect(pull(1)).toBeGreaterThan(0.5 * GRIP);
+      expect(pull(1)).toBeLessThanOrEqual(0.6 * GRIP + 1e-9);
+      expect(pull(-1)).toBe(0);
+      // The button let go at 0.9 s: the hand is off the rail at once and gives nothing.
+      const released = grabRide(0, (rider, _board, t) => { if (t > 0.92) { expect(rider.grab.held).toBe(false); expect(rider.limbs.length).toBe(2); } }, (t) => ({ snap: 1, hand: t < 0.9 }));
+      expect(released.rider.grab.reach).toBe(0);
+      // Pressed for 0.3 s only: the body is not down yet, and the hand never held.
+      let held = false;
+      grabRide(0, (rider) => { held ||= rider.grab.held; }, (t) => ({ snap: t < 0.3 ? 1 : 0, hand: t < 0.3 }));
+      expect(held).toBe(false);
+    });
+    // Free of the water (the sea swapped for air under a held grab), a full steer's pull and launch: the board's and
+    // the rider's momentum together change by gravity's alone. (Their angular momentum with the rotors' is not closed
+    // in the air, with or without the hand: see the README.)
+    it('keeps the linear momentum of board and rider through a pull and a launch in the air', () => {
+      const { rider, board } = grabRide(0, undefined, () => ({ snap: 1, hand: true }));
+      expect(rider.grab.held).toBe(true);
+      const air = new PlaneWater({ inside: () => false }) as SurfWater;
+      const momentum = () => board.velocity.clone().multiplyScalar(board.mass).addScaledVector(rider.velocity, rider.mass);
+      const before = momentum();
+      let most = 0;
+      let wound = 0;
+      for (let n = 1; n <= 18; n += 1) {
+        Object.assign(rider, { steer: 1, snap: 1, hand: true });
+        board.step(STEP, air);
+        const change = momentum().sub(before);
+        change.y += (board.mass + rider.mass) * 9.81 * n * STEP;
+        expect(change.length()).toBeLessThan(1e-9);
+        most = Math.max(most, rider.grab.force);
+        wound = Math.max(wound, Math.abs(rider.hip.angle));
+      }
+      expect(most).toBeGreaterThan(200);
+      expect(wound).toBeGreaterThan((15 * Math.PI) / 180);
+    });
+  });
 });
 
 // The pinned turns (`AttachedRider.test.ts`: the snap, the cutback, a bottom turn carried into a top turn), made with

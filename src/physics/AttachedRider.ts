@@ -802,6 +802,37 @@ const TRUNK_RANGE = (10 * Math.PI) / 180;
 const TRUNK_TORQUE = 150;
 const AGILE_PRESSURE = 0.2;
 const AGILE_FREQUENCY = 14;
+/**
+ * The rail grab (rider-agile stage 2a, 2026-11-09; with `agile: 'on'`, Snap held with the hand button): a hand on the
+ * toes' rail beside the body, a third contact in the limbs' ledger and the only one that pulls.
+ * - **Reach:** the hand takes the rail only where the arm reaches it (ARM_LENGTH) from the shoulder of the upper body
+ *   bent over toward the rail (HAND_TORSO from the hips at GRAB_TORSO_ANGLE from the body's line), so the legs come down
+ *   toward the tube tuck's depth first (SNAP_DEPTH_DEEP; the arm reaches about 0.34 m down, 0.55 s after the press, with
+ *   the legs' own pace); out of reach, it lets go (GRAB_SLACK of give once held). The hand is GRAB_TIME on its way,
+ *   setting off within GRAB_NEAR of reaching and waiting GRAB_SHORT of the way there, and no force acts before it holds.
+ * - **The hold:** what the feet on the deck cannot give of the contact's impulse (a push across past their grip, a line
+ *   of force outside the support, a pull toward the board) the hand gives (`projectGrab`), up to HAND_GRIP, N, in any
+ *   direction that does not push the body off the deck (a hand holds on and shoves across; it is no third foot). The
+ *   grip: a man's one-handed grip on a dynamometer is about 460 N (Mathiowetz et al. 1985, means by age 400–540 N; a
+ *   woman's about 280 N); 450 N, a strong hand on a wet 6 cm rail likely less.
+ * - **The lever:** turning to the heels' side (backside, the toes' rail the outside one: the pigdog) the arm pulls the
+ *   rail up along itself by GRAB_PULL of the grip at full stick (GRAB_PULL_TIME to come in). The body takes the opposite:
+ *   pulled down onto its feet, which press the more, and rolled the other way about the board's length, as the ankles'
+ *   torque is (the bank's row). Frontside the toes' rail is the inside one and the hand only holds.
+ * - **The launch:** a full steer's launch waits for the hand (`stampStep`), and with it holding, the hips and the trunk
+ *   wind further (GRAB_HIP_RANGE, GRAB_TRUNK_RANGE: 40° and 20° spun the board past 90° of fin attack and lost three
+ *   riders of four on the climbs; see docs/research/rider-agile-2026-11-09, stage 2a).
+ */
+const HAND_GRIP = 450;
+const GRAB_PULL = 0.6;
+const GRAB_PULL_TIME = 0.1;
+const GRAB_TIME = 0.15;
+const GRAB_SLACK = 0.03;
+const GRAB_NEAR = 0.12;
+const GRAB_SHORT = 0.9;
+const GRAB_TORSO_ANGLE = (75 * Math.PI) / 180;
+const GRAB_HIP_RANGE = (25 * Math.PI) / 180;
+const GRAB_TRUNK_RANGE = (14 * Math.PI) / 180;
 const SNAP_SHIFT_TIME = 0.09;
 const SNAP_SHIFT_SPEED = 1.2;
 /**
@@ -1372,6 +1403,22 @@ export class AttachedRider {
   private readonly footEntries = [{ name: 'front foot', point: new Vector3(), force: new Vector3() }, { name: 'back foot', point: new Vector3(), force: new Vector3() }];
   /** Agile: the front foot's share from the line of force alone, before the legs' split. */
   private lineShare = 0.5;
+  /** The rail grab (HAND_GRIP): the hand's way to the rail, 0–1 (drawn; it holds at 1, `grabHeld`), which drawn hand (3 or 4; 0 none), and the lever's pull, of the grip. */
+  private grabReach = 0;
+  private grabHeld = false;
+  private grabHand = 0;
+  private grabPull = 0;
+  /** The grab's rail point in the board's shape frame, the arm's line from it to the shoulder (world), and the hand's forces, N: the lever's pull on the board (world), and what the hold gave the body in the latest solve. */
+  private readonly grabLocal = new Vector3();
+  private readonly grabArm = new Vector3();
+  private readonly grabShoulder = new Vector3();
+  private readonly handForce = new Vector3();
+  private readonly handHeld = new Vector3();
+  /** The hand's couple on the board about its length (as the ankles' torque), N·m, and the rest of its moment (the hips and the trunk take the opposite). */
+  private handRoll = 0;
+  private readonly handCouple = new Vector3();
+  private readonly grabEntry = { name: 'hand', point: new Vector3(), force: new Vector3() };
+  private readonly grabScratch = { a: new Vector3(), b: new Vector3(), c: new Vector3(), d: new Vector3() };
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1583,6 +1630,21 @@ export class AttachedRider {
   private get crouchAsked(): number {
     const snap = this.snapping;
     return snap > 0 ? this.crouch * (1 - snap) : this.crouch;
+  }
+
+  /** The rail grab asked for: with the agile legs, Snap held with the hand button. */
+  private get grabAsked(): boolean {
+    return this.agile && this.hand && this.snapping > 0;
+  }
+
+  /** Snap's load, of CROUCH_DEPTH: reaching for the rail, the tube tuck's depth (the arm does not reach it from higher). */
+  private get snapLoad(): number {
+    return this.grabAsked ? Math.max(this.snapDepth, SNAP_DEPTH_DEEP) : this.snapDepth;
+  }
+
+  /** The rail grab as it stands: the hand holding the rail, its way there (0–1), the lever's pull along the arm and all the hand gave the latest substep, N. */
+  get grab(): { held: boolean; reach: number; pull: number; force: number } {
+    return { held: this.grabHeld, reach: this.grabReach, pull: this.handForce.length(), force: this.grabHeld ? this.grabEntry.force.length() : 0 };
   }
 
   private get compressAsked(): number {
@@ -1911,7 +1973,10 @@ export class AttachedRider {
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
       out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
-      return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
+      this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
+      // The rail grab: the hand on its rail point (on its way there, or back, over GRAB_TIME).
+      if (this.grabReach > 0 && index === this.grabHand) out.lerp(board.toWorld(this.grabLocal, this.handRail), minimumJerk(this.grabReach));
+      return out;
     }
     if (upright) {
       const front = (index === 5) === (this.stance === 'regular');
@@ -2243,7 +2308,10 @@ export class AttachedRider {
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
-      if (this.agile) this.legsStep(h, board);
+      if (this.agile) {
+        this.grabStep(h, board);
+        this.legsStep(h, board);
+      }
       if (this.banking) {
         this.prepareBank(h, board);
       } else {
@@ -2464,6 +2532,81 @@ export class AttachedRider {
     this.limbForce.set(0, 0, 0);
     this.limbTorque.set(0, 0, 0);
     this.limbs.length = 0;
+    this.grabReach = 0;
+    this.grabHeld = false;
+    this.grabHand = 0;
+    this.grabPull = 0;
+    this.handForce.set(0, 0, 0);
+    this.handHeld.set(0, 0, 0);
+    this.handRoll = 0;
+    this.handCouple.set(0, 0, 0);
+  }
+
+  /** The grab's drawn hand: backside (turning to the heels' side) the trailing one, the pigdog; frontside the leading one, between the feet. */
+  private handFor(): number {
+    const front = this.stance === 'regular' ? 3 : 4;
+    return this.stanceSign * this.snapSide > 0 ? 7 - front : front;
+  }
+
+  /**
+   * The rail grab (HAND_GRIP) before the board's solve: whether the hand reaches the rail and holds it, the lever's pull
+   * along the arm, and the hand's moment on the board (the pull's, and that of what the hold gave in the latest solve,
+   * which the solve took along the body's line): about the board's length through the bank's row, the rest through the
+   * ledger with its reaction on the hips and the trunk.
+   */
+  private grabStep(h: number, board: BoardBody): void {
+    this.handForce.set(0, 0, 0);
+    this.handRoll = 0;
+    this.handCouple.set(0, 0, 0);
+    let reach = false;
+    let near = false;
+    if (this.grabAsked && this.banking) {
+      // The rail point: the toes' rail beside the body's centre of mass, between the feet (Regular's toes are the −x rail).
+      const z = Math.max(this.feet.rear, Math.min(this.feet.front, board.toLocal(this.position, this.grabScratch.a).z));
+      this.grabLocal.set(-this.stanceSign * this.halfWidth(z), deckHeight(this.shape, z), z);
+      const rail = board.toWorld(this.grabLocal, this.grabScratch.a);
+      // The shoulder: out from the hips along the upper body bent toward the rail (as the hand in the face's).
+      const shoulder = this.partPosition(0, this.grabShoulder);
+      const out = this.grabArm.subVectors(rail, shoulder);
+      out.addScaledVector(this.up, -out.dot(this.up));
+      if (out.lengthSq() > 1e-12) out.normalize();
+      shoulder.addScaledVector(this.up, HAND_TORSO * Math.cos(GRAB_TORSO_ANGLE)).addScaledVector(out, HAND_TORSO * Math.sin(GRAB_TORSO_ANGLE));
+      const arm = this.grabArm.subVectors(shoulder, rail);
+      const length = arm.length();
+      reach = length <= ARM_LENGTH + (this.grabHeld ? GRAB_SLACK : 0);
+      near = length <= ARM_LENGTH + GRAB_NEAR;
+      arm.multiplyScalar(1 / Math.max(1e-6, length));
+    }
+    if (!reach) {
+      // Out of reach, or let go: the hand gives nothing. Nearly there (the body on its way down) it is already on its way,
+      // stopping short of the rail; else it comes off (drawn back over GRAB_TIME).
+      this.grabReach = near && !this.grabHeld ? Math.min(GRAB_SHORT, this.grabReach + h / GRAB_TIME) : Math.max(0, this.grabReach - h / GRAB_TIME);
+      if (near && this.grabHand === 0) this.grabHand = this.handFor();
+      if (this.grabReach === 0) this.grabHand = 0;
+      this.grabHeld = false;
+      this.grabPull = 0;
+      this.handHeld.set(0, 0, 0);
+      return;
+    }
+    if (this.grabHand === 0) this.grabHand = this.handFor();
+    this.grabReach = Math.min(1, this.grabReach + h / GRAB_TIME);
+    this.grabHeld = this.grabReach >= 1;
+    if (!this.grabHeld) return;
+    // The lever: turning to the heels' side, the arm pulls the toes' rail up along itself.
+    const lever = Math.max(0, Math.min(1, this.stanceSign * this.steer));
+    this.grabPull += (GRAB_PULL * lever - this.grabPull) * Math.min(1, h / GRAB_PULL_TIME);
+    this.handForce.copy(this.grabArm).multiplyScalar(HAND_GRIP * this.grabPull);
+    // All the hand does to the board at the rail (the hold's share from the latest solve), and its moment about the body's line.
+    const force = this.grabEntry.force.copy(this.handForce).sub(this.handHeld);
+    this.grabEntry.point.copy(this.grabLocal);
+    const lever3 = this.grabScratch.b.copy(this.grabScratch.a).sub(board.position).sub(this.arm);
+    const couple = cross(lever3, force, this.grabScratch.c);
+    this.handRoll = couple.dot(this.rollAxis);
+    this.handCouple.copy(couple).addScaledVector(this.rollAxis, -this.handRoll);
+    this.hip.rate -= (h * this.handCouple.dot(this.hipAxis)) / HIP_INERTIA;
+    this.trunk.rate -= (h * this.handCouple.dot(this.trunkAxis)) / TRUNK_INERTIA;
+    // What is left of it (the axes are not quite square to the board's length) stays out of the board's solve.
+    this.handCouple.copy(this.hipAxis).multiplyScalar(couple.dot(this.hipAxis)).addScaledVector(this.trunkAxis, couple.dot(this.trunkAxis));
   }
 
   /** Agile, a launch running (`stampStep`'s clock): 1 while the tail is thrown, 0 in the recovery and otherwise. */
@@ -2480,16 +2623,22 @@ export class AttachedRider {
   private legsStep(h: number, board: BoardBody): void {
     const launch = this.launching;
     const span = this.feet.front - this.feet.rear;
-    const load = this.legLoad;
+    // The feet's load: the body's on the leg, and what the hand's pull on the rail presses them down by.
+    const load = this.legLoad + this.handForce.dot(this.up);
     const share = this.lineShare;
+    // With a hand on the rail the launch winds further.
+    const trunkRange = this.grabHeld ? GRAB_TRUNK_RANGE : TRUNK_RANGE;
+    const hipRange = this.grabHeld ? GRAB_HIP_RANGE : HIP_RANGE;
+    const trunkStop = Math.max(trunkRange, Math.abs(this.trunk.angle));
+    const hipStop = Math.max(hipRange, Math.abs(this.hip.angle));
     // The trunk back for the launch: the front leg presses and the back leg lightens, neither past nothing.
-    const trunkAsked = -launch * TRUNK_RANGE;
+    const trunkAsked = -launch * trunkRange;
     let wanted = TRUNK_INERTIA * (AGILE_FREQUENCY * AGILE_FREQUENCY * (trunkAsked - this.trunk.angle) - 2 * AGILE_FREQUENCY * this.trunk.rate);
     this.trunkTorque = Math.max(-Math.min(TRUNK_TORQUE, (1 - share) * span * load), Math.min(Math.min(TRUNK_TORQUE, share * span * load), wanted));
     this.trunk.rate += (h * this.trunkTorque) / TRUNK_INERTIA;
     this.trunk.angle += h * this.trunk.rate;
-    if (Math.abs(this.trunk.angle) > TRUNK_RANGE) {
-      this.trunk.angle = Math.sign(this.trunk.angle) * TRUNK_RANGE;
+    if (Math.abs(this.trunk.angle) > trunkStop) {
+      this.trunk.angle = Math.sign(this.trunk.angle) * trunkStop;
       if (this.trunk.rate * this.trunk.angle > 0) this.trunk.rate = 0;
     }
     // The feet's loads with the split, and the couple the weaker foot's push across the deck allows.
@@ -2497,13 +2646,13 @@ export class AttachedRider {
     const strength = LEG_SIDE_STRENGTH * this.mass * WATER.gravity;
     const most = span * Math.min(strength, FOOT_FRICTION * front, FOOT_FRICTION * (load - front));
     // The hips against the turn for the launch (the board comes round under them), square again after.
-    const hipAsked = -launch * this.snapSide * HIP_RANGE;
+    const hipAsked = -launch * this.snapSide * hipRange;
     wanted = HIP_INERTIA * (AGILE_FREQUENCY * AGILE_FREQUENCY * (hipAsked - this.hip.angle) - 2 * AGILE_FREQUENCY * this.hip.rate);
     this.hipTorque = Math.max(-most, Math.min(most, wanted));
     this.hip.rate += (h * this.hipTorque) / HIP_INERTIA;
     this.hip.angle += h * this.hip.rate;
-    if (Math.abs(this.hip.angle) > HIP_RANGE) {
-      this.hip.angle = Math.sign(this.hip.angle) * HIP_RANGE;
+    if (Math.abs(this.hip.angle) > hipStop) {
+      this.hip.angle = Math.sign(this.hip.angle) * hipStop;
       if (this.hip.rate * this.hip.angle > 0) this.hip.rate = 0;
     }
     // The ledger: each foot's push on the board (the hips' couple across the body, the trunk's along its up),
@@ -2525,6 +2674,7 @@ export class AttachedRider {
       this.limbForce.add(entry.force);
     }
     this.limbTorque.copy(up).multiplyScalar(-this.hipTorque).addScaledVector(side, -this.trunkTorque);
+    if (this.grabHeld) this.limbs.push(this.grabEntry);
   }
 
   /** Standing: the leg's state and load before the board's solve. */
@@ -2553,7 +2703,7 @@ export class AttachedRider {
     const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
     const compress = Math.max(0, Math.min(1, this.compressAsked));
     const snap = this.snapping;
-    const asked = -(snap > 0 ? Math.max(crouch, compress, snap * this.snapDepth) : Math.max(crouch, compress)) * CROUCH_DEPTH;
+    const asked = -(snap > 0 ? Math.max(crouch, compress, snap * this.snapLoad) : Math.max(crouch, compress)) * CROUCH_DEPTH;
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
     if (compress > 0 || snap > 0) this.fromCompress = true;
@@ -2573,7 +2723,7 @@ export class AttachedRider {
     const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
     // Snap loads as Compress does: down at least as fast as the load, the legs only pushing.
-    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * this.snapDepth > crouch;
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * this.snapLoad > crouch;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
@@ -2979,6 +3129,17 @@ export class AttachedRider {
       rhs[5] += h * (this.limbTorque.z - lever.z);
       rhs[6] -= h * n.dot(force);
       if (this.banking) rhs[7] -= h * t.dot(force);
+      if (this.grabHeld) {
+        // The hand on the rail: the lever's pull draws the body down its line onto the feet; its moment about the
+        // board's length rolls the board against the body's bank, as the ankles' torque does; the rest turns and
+        // pitches the board against the hips and the trunk (`grabStep`).
+        const pull = this.handForce;
+        rhs[3] += h * this.handCouple.x;
+        rhs[4] += h * this.handCouple.y;
+        rhs[5] += h * this.handCouple.z;
+        rhs[6] -= h * n.dot(pull);
+        if (this.banking) rhs[7] -= h * t.dot(pull) + (h * this.handRoll) / length;
+      }
     }
   }
 
@@ -2993,9 +3154,35 @@ export class AttachedRider {
     velocity.y += x[1];
     velocity.z += x[2];
     this.impulse.copy(velocity).sub(this.velocity).multiplyScalar(this.mass).addScaledVector(this.external, -h);
-    this.project(this.impulse, h, board, this.projected);
+    if (this.grabHeld) this.projectGrab(this.impulse, h, board, this.projected);
+    else this.project(this.impulse, h, board, this.projected);
     this.feasible = this.projected.distanceTo(this.impulse) <= 1e-9 * Math.max(1, this.impulse.length());
     return this.feasible;
+  }
+
+  /**
+   * The contact's impulse with a hand on the rail (HAND_GRIP): the lever's pull is the hand's, the feet give what they
+   * can of the rest (`project`), and the hand holds what they cannot, up to its grip, never pushing the body off the deck.
+   */
+  private projectGrab(impulse: Vector3, h: number, board: BoardBody, out: Vector3): Vector3 {
+    const { a: need, b: hand, c: deck, d: active } = this.grabScratch;
+    const cap = HAND_GRIP * h;
+    deck.set(0, 1, 0).applyQuaternion(board.orientation);
+    // On the body: the pull draws it toward the rail.
+    active.copy(this.handForce).multiplyScalar(-h);
+    hand.copy(active);
+    for (let pass = 0; pass < 4; pass += 1) {
+      this.project(need.copy(impulse).sub(hand), h, board, out);
+      need.sub(out);
+      if (pass === 3 || need.lengthSq() <= 1e-18 * Math.max(1, impulse.lengthSq())) break;
+      hand.add(need);
+      const off = hand.dot(deck);
+      if (off > 0) hand.addScaledVector(deck, -off);
+      const size = hand.length();
+      if (size > cap) hand.multiplyScalar(cap / size);
+    }
+    this.handHeld.copy(hand).sub(active).multiplyScalar(1 / h);
+    return out.add(hand);
   }
 
   /** The projected contact impulse acts on the board along the rider's line of action. */
@@ -3484,7 +3671,7 @@ export class AttachedRider {
     this.snapHeldTime += h;
     const steer = Math.abs(this.steer);
     if (steer < STAMP_STEER - STAMP_REARM) this.stampArmed = true;
-    if (this.stampArmed && steer > STAMP_STEER && this.snapHeldTime >= STAMP_SET) {
+    if (this.stampArmed && steer > STAMP_STEER && this.snapHeldTime >= STAMP_SET && (!this.grabAsked || this.grabHeld)) {
       this.stampArmed = false;
       this.stampTime = 0;
       this.stampDepth = Math.min(1, (steer - STAMP_STEER) / (1 - STAMP_STEER));
@@ -3540,7 +3727,7 @@ export class AttachedRider {
    */
   private waveSide(board: BoardBody, water: SurfWater): void {
     this.handSide = 0;
-    if (this.phase !== 'standing' || !this.attached) return;
+    if (this.phase !== 'standing' || !this.attached || this.grabAsked) return;
     if (!this.hand) {
       if (this.compressAsked >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
       return;
