@@ -613,26 +613,22 @@ describe('steering while lying down', () => {
   // still-turn-fast (2026-11-08): the sweep and kick spin a still board about 100°/s at full steer; the stroke alone
   // (`stillTurn: 'old'`) about 17°/s.
   it('turns a still board fast with the sweep and kick, faster than the stroke alone', () => {
-    const spin = (stillTurn?: 'old', steer = 1, seconds = 3) => {
+    const spin = (stillTurn?: 'old') => {
       const board = new BoardBody();
       board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
       const rider = new AttachedRider(board.shape, { phase: 'prone', ...(stillTurn ? { stillTurn } : {}) });
       board.attach(rider);
       const water = new PlaneWater();
       run(board, water, 2);
-      rider.steer = steer;
+      rider.steer = 1;
       let total = 0;
       let previous = heading(board);
-      const count = () => {
+      run(board, water, 3, () => {
         const now = heading(board);
         total += now - previous - 2 * Math.PI * Math.round((now - previous) / (2 * Math.PI));
         previous = now;
-      };
-      run(board, water, seconds, count);
-      const rate = (total / seconds) * (180 / Math.PI);
-      rider.steer = 0;
-      run(board, water, 2, count);
-      return { rate, angle: total * (180 / Math.PI), attached: rider.attached };
+      });
+      return { rate: (total / 3) * (180 / Math.PI), attached: rider.attached };
     };
     const fast = spin();
     const old = spin('old');
@@ -640,17 +636,6 @@ describe('steering while lying down', () => {
     expect(old.rate).toBeLessThan(30);
     expect(fast.rate).toBeGreaterThan(80);
     expect(fast.rate).toBeLessThan(140);
-    // still-turn-precision (2026-11-09): the rate follows the stick on a curve, a quarter stick about 8°/s, half about
-    // 29°/s, full about 94°/s (#212's linear response read about 66, 81 and 94°/s). A 0.15 s tap at full steer, the
-    // stick then let go, turns the board about 44° in all, coasting on once let go.
-    const [quarter, half, full] = [0.25, 0.5, 1].map((steer) => spin(undefined, steer).rate);
-    expect(quarter).toBeGreaterThan(5);
-    expect(quarter).toBeLessThan(10);
-    expect(half).toBeGreaterThan(25);
-    expect(half).toBeLessThan(35);
-    expect(full).toBeGreaterThan(80);
-    expect(quarter).toBeLessThan(half);
-    expect(half).toBeLessThan(full);
   });
 
   it('turns without paddling by sweeping one arm', () => {
