@@ -85,6 +85,12 @@ export interface RiderVisualState {
    * the wire, and nothing drawn reads it).
    */
   weight: number;
+  /**
+   * Snap held, 0–1 (the physics' `snapping`; snap-arms-gate): Snap's arms are drawn only on it, as Compress's
+   * tail-heavy, twisted turns read as Snap from the pose alone. NaN where unknown (another player's: not on the wire),
+   * and the rig infers Snap from the pose (`snapShare`).
+   */
+  snap: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -112,6 +118,7 @@ export function createRiderVisualState(): RiderVisualState {
     breath: 1,
     twist: 0,
     weight: Number.NaN,
+    snap: Number.NaN,
   };
 }
 
@@ -135,6 +142,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.breath = rider[RIDER_SNAPSHOT.breath] ?? 1;
   out.twist = rider[RIDER_SNAPSHOT.twist] ?? 0;
   out.weight = rider[RIDER_SNAPSHOT.weight] ?? Number.NaN;
+  out.snap = rider[RIDER_SNAPSHOT.snap] ?? Number.NaN;
   const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;

@@ -388,6 +388,7 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
     out.phase = rider.attached ? rider.phase : 'fallen';
     out.weight = rider.attached ? rider.contact.weight : Number.NaN;
+    out.snap = rider.attached ? rider.snapping : 0;
     // As the snapshot carries it (`RIDER_SNAPSHOT.twist`): the upper body's twist, Snap's wound shoulders.
     out.twist = rider.attached ? rider.twist.angle : 0;
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);

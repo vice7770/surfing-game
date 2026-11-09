@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { STANCE_RECIPES, drawnRecipe, type StanceRecipe } from '../../dev/ridingPoses';
 import type { StanceName } from '../../physics/riderPosture';
 import { RIG_SWITCHES } from './HumanoidRig';
+import { snapShare } from './stanceBlend';
 import { PosedBody } from './posedBody';
 import { StanceGauge } from './stanceGauge';
 import { createTestHumanoid } from './testHumanoid';
@@ -95,5 +96,38 @@ describe('Snap\'s arms follow the turn (snap-carve)', () => {
 
   it('draws every other stance as before: Compress\'s arms are the same with `snapArms: \'old\'`', () => {
     for (const after of [0.3, 0.6, 0.9]) expect(drawn(compress, 'regular', after).wrists).toEqual(drawn(compress, 'regular', after, 'old').wrists);
+  });
+});
+
+// snap-arms-gate (the owner, 2026-11-09: "in Compress ... the arms are swinging again"): Compress is tail-heavy and its
+// shoulders twist in a turn, so the pose alone read it as Snap. Snap's arms now wait on Snap held (`state.snap`).
+describe('Compress alone draws no Snap arms (snap-arms-gate)', () => {
+  const wound = (recipe: StanceRecipe, held: boolean | undefined, arms?: 'old') => {
+    RIG_SWITCHES.snapArms = arms;
+    const { bones } = createTestHumanoid();
+    const body = new PosedBody(bones);
+    const out: { share: number[]; wrists: number[] } = { share: [], wrists: [] };
+    drawnRecipe(recipe, 'regular', new Vector3(0, 0.03, 0), (state) => {
+      state.twist = 0.8; // a turning twist past SNAP_TWIST
+      // Compress's weight back: the bisect's centre of pressure 0.22–0.31 m behind centre; the pelvis 0.25 m back.
+      if (recipe === compress && state.phase === 'standing') state.points[0].addScaledVector(new Vector3(0, 0, 1).applyQuaternion(state.boardQuaternion).setY(0).normalize(), -0.25);
+      if (held === undefined) state.snap = Number.NaN; // as before: inferred from the pose
+      body.update(state);
+      if (state.phase === 'standing' && state.clock > SNAP_AT + 0.3) {
+        out.share.push(snapShare(state));
+        out.wrists.push(...[...bones.values()].flatMap((b) => b.getWorldPosition(new Vector3()).toArray()));
+      }
+    });
+    RIG_SWITCHES.snapArms = undefined;
+    return out;
+  };
+  it('the pose alone reads Compress as Snap; held, it is 0 and draws as snapArms old', () => {
+    expect(Math.max(...wound(compress, undefined).share)).toBeGreaterThan(0.2);
+    const gated = wound(compress, false);
+    expect(Math.max(...gated.share)).toBe(0);
+    expect(gated.wrists).toEqual(wound(compress, false, 'old').wrists);
+  });
+  it('Snap held still reads as Snap', () => {
+    expect(Math.max(...wound(snap(1), true).share)).toBeGreaterThan(0.2);
   });
 });

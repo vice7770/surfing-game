@@ -63,6 +63,8 @@ export function remoteRiderState(
   // Another player's breath is not sent: drawn as full. Nor is the weight it feels: none.
   rider[RIDER_SNAPSHOT.breath] = 1;
   rider[RIDER_SNAPSHOT.weight] = Number.NaN;
+  // Nor whether Snap is held: unknown, so the rig infers Snap from the drawn pose (`snapShare`).
+  rider[RIDER_SNAPSHOT.snap] = Number.NaN;
   turn.set(board[3], board[4], board[5], board[6]);
   plugAt.copy(PLUG).applyQuaternion(turn);
   plugAt.x += board[0];

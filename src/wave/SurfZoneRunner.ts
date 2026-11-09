@@ -159,7 +159,7 @@ export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 
  * feels, the front foot's share of the load smoothed (`AttachedRider.contact.weight`,
  * the phase-5 physics plan's W1; NaN unless upright; local only, not on the wire).
  */
-export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, weight: 33, length: 34 } as const;
+export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, weight: 33, snap: 34, length: 35 } as const;
 /** `RIDER_SNAPSHOT.leash`: the leash is worn whole, has snapped, is being reeled in. */
 export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
 /**
@@ -187,6 +187,8 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   out[RIDER_SNAPSHOT.breath] = session.breath.level;
   out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.twist.angle : 0;
   out[RIDER_SNAPSHOT.weight] = session.rider.attached ? session.rider.contact.weight : Number.NaN;
+  // Snap held, 0–1 (snap-arms-gate): the rig draws Snap's arms only on it, so Compress's tail-heavy turns are not Snap.
+  out[RIDER_SNAPSHOT.snap] = session.rider.attached ? session.rider.snapping : 0;
   session.leashPlug(point).toArray(out, RIDER_SNAPSHOT.plug);
   const { leash, surfer } = session;
   out[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);

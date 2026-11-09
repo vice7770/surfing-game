@@ -58,6 +58,8 @@ export function stanceBlend(state: RiderVisualState, out: StanceBlend = { stance
  * the pelvis back on a pitched board, and the pad's rotation stick winds the shoulders.
  */
 export function snapShare(state: RiderVisualState): number {
+  // Snap held where the drawing knows it (snap-arms-gate): Compress alone is no Snap, however far back and wound.
+  if (state.snap === 0) return 0;
   return weightBack(state) * Math.min(1, Math.abs(state.twist) / SNAP_TWIST);
 }
 const SNAP_TWIST = (45 * Math.PI) / 180;

@@ -1516,8 +1516,8 @@ export class AttachedRider {
     return this.upright && this.phase === 'standing' && this.banked;
   }
 
-  /** Snap held, 0–1 (the snap stance): standing only; it wins over the crouch, Compress and the trim. */
-  private get snapping(): number {
+  /** Snap held, 0–1 (the snap stance): standing only; it wins over the crouch, Compress and the trim. The rig gates Snap's arms on it. */
+  get snapping(): number {
     return this.upright && this.phase === 'standing' && this.snap > 0 ? Math.min(1, this.snap) : 0;
   }
 
