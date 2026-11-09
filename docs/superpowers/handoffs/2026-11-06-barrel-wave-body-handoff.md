@@ -97,3 +97,4 @@ The step-7 rule on the M4's level-13 batch (`docs/research/pool-tube-runs-2/deci
   - **Rates:** 17 / 30 / 66°/s at ¼ / ½ / full stick. A tap turns 6.5°, and a full spin stops 0.4 s after release.
   - **Waiting on the owner's ride:** small sticks are faster than #213's (17°/s against 8°/s at a quarter); slow them down via `STILL_REACH_SHORT` / `STILL_CYCLE_SLOW`.
   - **The owner's rule:** no hidden motors; motion only from visible limbs, with the speed from the movement's intensity.
+- **#216 (later on 2026-11-09) replaced #215:** the owner said the pivot's back-paddle and the check stroke killed the glide's momentum ("against physics"). #212–#215 are reverted, and the pre-#212 one-arm side paddle is back with a fast mode from half to full stick: the cycle 1.2 → 0.48 s and the sweep 0.15 m wider, giving 39°/s at full against 19°/s. The glide is kept (1.63 m/s against the old 1.52). There is no switch.
