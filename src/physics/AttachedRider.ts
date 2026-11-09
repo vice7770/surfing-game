@@ -205,32 +205,42 @@ const FEATHER_DRAG = 0.2;
  */
 const STEER_STROKE = 0.6;
 /**
- * Steering lying still (not paddling): a surfer spins a still board with a wide sweep of the outside arm, the other hand
- * back-sculling and the legs kicking across, a couple of water forces about the board's middle (a seated spin of 180°
- * takes about 1–1.5 s, 120–180°/s; lying, the legs reach less water, so somewhat slower). On top of the stroke's own
- * drag, the sweep and kick turn the board by STILL_MOMENT, N·m at full steer, falling off as the board's yaw rate nears
- * the limbs' own sweep, STILL_RATE, rad/s (the water can't be pushed faster than the hand moves), and coming in over
- * STILL_RAMP, s, so it doesn't snap. Without it the sweep alone turned a still board about 17°/s (`?stillTurn=old`).
+ * Steering lying still (not paddling): the pivot stroke (still-turn-strokes, 2026-11-09). The outside arm strokes
+ * forward, its hand moving aft and pushing water back, while the inside arm back-paddles, its hand moving forward and
+ * pushing water ahead; both pull together, so their pushes along the board cancel and their yaw about the board's
+ * middle (the hands about 0.35 m out from the stringer) adds up. Nothing else turns the board: the hands' own drag,
+ * (hand speed through the water)², at their own places, is the moment, one pulse a stroke.
+ *
+ * The stick is the stroke's intensity: its cycle runs from STILL_CYCLE_SLOW, s, at the smallest stick to
+ * STILL_CYCLE_FAST at full, and its reach along the rail, half-length about STILL_MID, from STILL_REACH_SHORT, m, to
+ * STILL_REACH_FULL, so a small stick sculls slow and short, full stick strokes fast and long. Each arm pulls for
+ * STILL_PULL of the cycle and lifts out to swing back over the rest. Let go, nothing but the water stops the spin.
+ *
+ * Why the old sweep (`?stillTurn=old`) hardly turned: one arm pulled for 0.34 s of every 1.2 s with a peak hand speed of
+ * 4.5 m/s, so its drag hit the 0.4 body-weight arm limit (HAND_FORCE_LIMIT; hence a bigger hand changed nothing), and
+ * all of it pushed along the board: it surged ahead at 0.6–1.1 m/s, and the moving hull's grip killed each ~55°/s pulse
+ * within about 0.3 s.
  */
-const STILL_MOMENT = 250;
-const STILL_RATE = (130 * Math.PI) / 180;
-const STILL_RAMP = 0.3;
+const STILL_CYCLE_SLOW = 1.6;
+const STILL_CYCLE_FAST = 0.8;
+const STILL_PULL = 0.5;
+const STILL_MID = 0.1;
+const STILL_REACH_SHORT = 0.12;
+const STILL_REACH_FULL = 0.45;
+/** The stroke's cadence and reach follow the stick over this, s, so the drawn hands never jump. */
+const STILL_EASE = 0.15;
+/** Pivot stroking, the hands sweep this far, m, further out past the rail than paddling's (a wide sweep). */
+const STILL_OUT = 0.15;
 /**
- * Letting the stick go on a still board, the hands and feet drag in the water against the spin and stop it: a yaw
- * moment of STILL_BRAKE × |rate|, N·m per rad/s, capped at STILL_BRAKE_MAX, N·m (so nearly a steady drag until the spin
- * is almost out), coming in over STILL_BRAKE_RAMP, s, so a tap is a nudge rather than a coast: a 0.15 s full tap turns
- * about 11° (57° before), a full spin stops in about 0.5 s running on about 23° (`?stillTurn=old` keeps the coast).
+ * Let go, the spin is checked by a pivot stroke the other way, as hard as the spin is fast (full at CHECK_FULL_RATE,
+ * rad/s), until it is under CHECK_STOP_RATE: the hull's own yaw drag at the board's few tenths of a m/s hardly stops it
+ * (a full spin, let go, coasted on over 4 s). Only the hands' drag in the drawn check stroke stops it.
  */
-const STILL_BRAKE = 1000;
-const STILL_BRAKE_MAX = 15;
-const STILL_BRAKE_RAMP = 0.1;
-/** The let-go drag stays ready this long, s, after the spin is out (the finishing stroke can nudge the board again). */
-const STILL_BRAKE_HOLD = 1;
-/**
- * still-turn-precision (2026-11-09): a small correction is a gentle hand scull, and the slower limb can't push the water
- * as fast, so the rate the moment falls off at scales with the stick squared (STILL_RATE × steer²): a small stick turns
- * slowly and precisely, full stick stays fast. The moment and the sweeping hand's reach follow the stick on a curve too.
- */
+const CHECK_FULL_RATE = (60 * Math.PI) / 180;
+const CHECK_STOP_RATE = (3 * Math.PI) / 180;
+/** Within CHECK_HOLD, s, of a pivot stroke, a spin picking up again past CHECK_AGAIN_RATE, rad/s, is checked again. */
+const CHECK_HOLD = 1;
+const CHECK_AGAIN_RATE = (6 * Math.PI) / 180;
 /**
  * A paddler keeps its line: with no steering asked for, the arm on the side to
  * turn toward pulls softer and the other harder, in proportion to the heading
@@ -956,7 +966,7 @@ export interface AttachedRiderOptions {
    * before canyon-catch (the `?stroke=old` dev switch, for A/Bs).
    */
   stroke?: 'feather' | 'old';
-  /** How a still prone board turns to a sweep (`STILL_MOMENT`); 'old': the sweep's stroke alone (the `?stillTurn=old` dev switch). */
+  /** How a still prone board turns: the pivot stroke (`STILL_PULL`); 'old': one arm's sweep alone (the `?stillTurn=old` dev switch). */
   stillTurn?: 'old';
   /**
    * How the legs extend letting Compress go (`projectionCatch`): by default no faster than the stance's spring can
@@ -1303,15 +1313,19 @@ export class AttachedRider {
   /** A hand is pulling this substep (`paddleStep`): one the board outruns feathers (`FEATHER_DRAG`), unless the stroke is 'old'. */
   private pulling = false;
   private readonly feathers: boolean;
-  private readonly stillKick: boolean;
-  /** How far the still sweep's moment has come in (STILL_RAMP), 0–1. */
-  private stillShare = 0;
-  /** How far the let-go drag (STILL_BRAKE_RAMP) has come in, 0–1. */
-  private brakeShare = 0;
-  /** A still sweep turned the board and the drag stops it once let go; cleared when the spin is out (so a prone board otherwise is untouched). */
-  private stillSpun = false;
-  /** How long, s, the let-go board has sat out of the spin (STILL_BRAKE_HOLD clears stillSpun). */
-  private stillQuiet = 0;
+  private readonly stillStrokes: boolean;
+  /** Pivot stroking this substep (steering a still prone board, `STILL_PULL`). */
+  private pivot = false;
+  /** The pivot stroke's intensity eased toward |steer| (STILL_EASE), 0–1. */
+  private pivotIntensity = 0;
+  /** The pivot stroke's turn: +1 the right arm strokes forward and the left back-paddles (turning left, steer > 0), −1 the other way. */
+  private pivotTurn = 1;
+  /** The intensity the pivot stroke is easing toward: |steer|, or checking a let-go spin, its rate (CHECK_FULL_RATE). */
+  private pivotWanted = 0;
+  /** Checking a let-go spin (CHECK_FULL_RATE). */
+  private checking = false;
+  /** How long, s, since the last pivot stroke (CHECK_HOLD). */
+  private pivotAgo = Infinity;
   /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
   private readonly catches: boolean;
   /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
@@ -1492,7 +1506,7 @@ export class AttachedRider {
     this.stance = options.stance ?? 'regular';
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
-    this.stillKick = options.stillTurn !== 'old';
+    this.stillStrokes = options.stillTurn !== 'old';
     this.catches = options.extension !== 'old';
     this.quick = options.snapQuick !== 'old';
     this.snapLean = options.snapPivot === 'lean';
@@ -1857,7 +1871,7 @@ export class AttachedRider {
         return this.partPosition(index, out).lerp(rail, reach);
       }
       if (this.phase === 'prone') {
-        const stroking = (this.paddle || this.sweeping) && this.strokeEffort(side) > 0;
+        const stroking = (this.paddle || this.sweeping || this.pivot) && this.strokeEffort(side) > 0;
         // Ducking, the hands hold the rails where the arms reach; otherwise beside the chest.
         const reach = this.duck.press > DUCK_BUSY ? this.parts[index * 3 + 2] + 0.15 * this.duck.press : this.parts[1 * 3 + 2];
         const z = stroking ? this.handLocal(side, this.localScratch) : this.localScratch.set(0, 0, reach).z;
@@ -1922,6 +1936,28 @@ export class AttachedRider {
     let swing = 0;
     let along = 0;
     const pull = this.pullShare;
+    if (this.pivot) {
+      // The outside arm (the right, side 1, turning left) strokes forward: reach to hip under water; the inside arm
+      // back-paddles, hip to reach. Out of the water each swings back to its start.
+      const half = STILL_REACH_SHORT + (STILL_REACH_FULL - STILL_REACH_SHORT) * this.pivotIntensity;
+      const forward = (side === 1) === (this.pivotTurn > 0);
+      const start = STILL_MID + (forward ? half : -half);
+      const end = STILL_MID + (forward ? -half : half);
+      if (phase < pull) {
+        const s = phase / pull;
+        z = start + ((end - start) * (1 - Math.cos(Math.PI * s))) / 2;
+        height = -this.handDepth;
+        along = ((end - start) * Math.PI * Math.sin(Math.PI * s)) / (2 * pull * this.strokeCycle);
+      } else {
+        const s = (phase - pull) / (1 - pull);
+        z = end + ((start - end) * (1 - Math.cos(Math.PI * s))) / 2;
+        const arc = (1 - Math.cos(2 * Math.PI * s)) / 2;
+        height = -this.handDepth + (this.handDepth + RECOVERY_HEIGHT) * arc;
+        swing = RECOVERY_SWING * arc;
+      }
+      out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL + STILL_OUT + swing), deckHeight(this.shape, z) + height, z);
+      return along;
+    }
     if (phase < pull) {
       const s = phase / pull;
       z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
@@ -1947,6 +1983,7 @@ export class AttachedRider {
 
   /** The share of each arm's cycle spent pulling: more as the strokes go over to the player's sprint (SPRINT_PADDLE_PULL). */
   private get pullShare(): number {
+    if (this.pivot) return STILL_PULL;
     return PULL_SHARE + (SPRINT_PADDLE_PULL - PULL_SHARE) * this.paddleSprintShare;
   }
 
@@ -1957,6 +1994,8 @@ export class AttachedRider {
 
   /** How far through its cycle arm `side` (0 left, 1 right, half a cycle on) is, 0–1: pulling below PULL_SHARE. */
   private armPhase(side: number): number {
+    // The pivot stroke's arms pull together, so their pushes along the board cancel.
+    if (this.pivot) return this.strokePhase;
     return (this.strokePhase + side * 0.5) % 1;
   }
 
@@ -1978,6 +2017,11 @@ export class AttachedRider {
     this.sprint += (wanted - this.sprint) * Math.min(1, h / SPRINT_TIME);
     const caught = ARM_CYCLE + (SPRINT_CYCLE - ARM_CYCLE) * this.sprint;
     this.strokeCycle = caught + (Math.min(caught, SPRINT_PADDLE_CYCLE) - caught) * this.paddleSprintShare;
+    if (this.pivot) {
+      // The pivot stroke's intensity follows the stick: a faster, longer stroke the further it goes.
+      this.pivotIntensity += (this.pivotWanted - this.pivotIntensity) * Math.min(1, h / STILL_EASE);
+      this.strokeCycle = STILL_CYCLE_SLOW + (STILL_CYCLE_FAST - STILL_CYCLE_SLOW) * this.pivotIntensity;
+    }
     this.strokePhase = (this.strokePhase + h / this.strokeCycle) % 1;
   }
 
@@ -2509,22 +2553,34 @@ export class AttachedRider {
     if (this.upright && this.handSide !== 0) this.standingHand(h, board, water);
     // The player's sprint comes in over SPRINT_PADDLE_TIME while paddling lying down, and goes as it stops.
     this.paddleSprintShare += ((this.sprintPaddling ? 1 : 0) - this.paddleSprintShare) * Math.min(1, h / SPRINT_PADDLE_TIME);
-    const still = this.stillKick && this.phase === 'prone' && !this.climbing && !this.paddle && this.sweeping && this.duck.press <= DUCK_BUSY;
-    this.stillShare = still ? Math.min(1, this.stillShare + h / STILL_RAMP) : 0;
-    if (still) {
-      const steer = Math.max(-1, Math.min(1, this.steer));
-      const limit = STILL_RATE * steer * steer;
-      const catchUp = limit > 0 ? Math.max(0, 1 - (Math.sign(steer) * board.angularVelocity.y) / limit) : 0;
-      this.waterMoment.y += STILL_MOMENT * steer * Math.abs(steer) * catchUp * this.stillShare;
-    }
+    const lying = this.stillStrokes && this.phase === 'prone' && !this.climbing && !this.paddle && this.duck.press <= DUCK_BUSY;
     const yawRate = board.angularVelocity.y;
-    if (still || (this.stillKick && this.phase === 'prone' && !this.climbing && !this.paddle && Math.abs(this.steer) >= 0.1)) this.stillSpun = true;
-    const brake = this.stillSpun && this.stillKick && this.phase === 'prone' && !this.climbing && !this.paddle && Math.abs(this.steer) < 0.1 && this.duck.press <= DUCK_BUSY && Math.abs(yawRate) > 0.01;
-    this.brakeShare = brake ? Math.min(1, this.brakeShare + h / STILL_BRAKE_RAMP) : 0;
-    this.stillQuiet = brake || still ? 0 : this.stillQuiet + h;
-    if (this.stillQuiet > STILL_BRAKE_HOLD || this.paddle || this.climbing || this.phase !== 'prone') this.stillSpun = false;
-    if (brake) this.waterMoment.y -= Math.sign(yawRate) * Math.min(STILL_BRAKE_MAX, STILL_BRAKE * Math.abs(yawRate)) * this.brakeShare;
-    if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping)) {
+    // Let go, a pivot under way goes on the other way to check the spin, until it is out or turns over.
+    const ready = this.pivot ? Math.abs(yawRate) > CHECK_STOP_RATE : this.pivotAgo < CHECK_HOLD && Math.abs(yawRate) > CHECK_AGAIN_RATE;
+    const checking = lying && !this.sweeping && ready && (!this.checking || -Math.sign(yawRate) === this.pivotTurn);
+    this.checking = checking;
+    const pivot = lying && (this.sweeping || checking);
+    if (pivot) {
+      const turn = this.sweeping ? Math.sign(this.steer) : -Math.sign(yawRate);
+      this.pivotWanted = this.sweeping ? Math.min(1, Math.abs(this.steer)) : Math.min(1, Math.abs(yawRate) / CHECK_FULL_RATE);
+      if (!this.pivot) {
+        // From rest the first stroke's pull starts at once, at the stick's own intensity.
+        this.strokePhase = 0;
+        this.pivotIntensity = this.pivotWanted;
+      } else if (turn !== this.pivotTurn) {
+        // Turned the other way, each hand takes up the other arm's stroke from where it is (the same point of the
+        // mirrored path), so neither jumps.
+        const pull = STILL_PULL;
+        const phase = this.strokePhase;
+        this.strokePhase = phase < pull ? pull - phase : pull + (1 - phase);
+        if (this.strokePhase >= 1) this.strokePhase -= 1;
+      }
+      this.pivotTurn = turn;
+    }
+    this.pivot = pivot;
+    this.pivotAgo = pivot ? 0 : this.pivotAgo + h;
+    if (!pivot) this.pivotWanted = 0;
+    if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping && !this.pivot)) {
       this.line = undefined;
       this.hold = 0;
       return;
@@ -2541,7 +2597,8 @@ export class AttachedRider {
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
       // Sprinting, the arm deeper in the catch pushes broadside along the stroke (SPRINT_PADDLE_AREA).
       this.bladeArea = HAND_DRAG_AREA * (this.sprintArea - 1) * this.paddleSprintShare * effort;
-      this.pulling = this.feathers;
+      // The back-paddling hand meets the water from in front by design: it pushes it, palm on, rather than feathering.
+      this.pulling = this.feathers && !this.pivot;
       this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA * effort, h, 1);
       this.pulling = false;
       this.bladeArea = 0;
@@ -2587,9 +2644,9 @@ export class AttachedRider {
     const steer = Math.max(-1, Math.min(1, this.steer + this.hold));
     const outside = side === 1 ? steer : -steer;
     if (this.paddle) return 1 + STEER_STROKE * outside;
-    // A still board's small correction is a gentle scull: the slower hand meets the water as the square of the stick.
-    const sweep = Math.max(0, outside);
-    return this.stillKick ? sweep * sweep * sweep : sweep;
+    // The pivot stroke: both arms, one forward, one back; its intensity is the hands' speed (`handLocal`).
+    if (this.pivot) return 1;
+    return Math.max(0, outside);
   }
 
   /** Paddling straight, the correction that brings the board back to its line; steering, a new line. */
