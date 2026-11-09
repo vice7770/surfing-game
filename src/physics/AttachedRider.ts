@@ -205,6 +205,15 @@ const FEATHER_DRAG = 0.2;
  */
 const STEER_STROKE = 0.6;
 /**
+ * The side paddle's fast mode: not paddling, past SWEEP_FAST_FROM of the stick the sweeping arm quickens to
+ * SWEEP_FAST_CADENCE times its strokes a second at full steer, and its pull reaches SWEEP_FAST_WIDE, m, further out from
+ * the rail (a wider sweep, a longer arm about the board). Small steer keeps the old stroke for precision. The turn still
+ * comes only from the hand's own drag, pulling water aft, so the glide is kept.
+ */
+const SWEEP_FAST_FROM = 0.5;
+const SWEEP_FAST_CADENCE = 2.5;
+const SWEEP_FAST_WIDE = 0.15;
+/**
  * A paddler keeps its line: with no steering asked for, the arm on the side to
  * turn toward pulls softer and the other harder, in proportion to the heading
  * error over HOLD_ANGLE, rad, and to the yaw rate over HOLD_ANGLE / HOLD_RATE_TIME
@@ -1887,6 +1896,7 @@ export class AttachedRider {
       const s = phase / pull;
       z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
       height = -this.handDepth;
+      swing = SWEEP_FAST_WIDE * this.sweepFast * Math.sin(Math.PI * s);
       along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * pull * this.strokeCycle);
     } else {
       // Out of the water at the hip, over it and out, and back in at the reach, rising and settling with no speed at
@@ -1939,6 +1949,7 @@ export class AttachedRider {
     this.sprint += (wanted - this.sprint) * Math.min(1, h / SPRINT_TIME);
     const caught = ARM_CYCLE + (SPRINT_CYCLE - ARM_CYCLE) * this.sprint;
     this.strokeCycle = caught + (Math.min(caught, SPRINT_PADDLE_CYCLE) - caught) * this.paddleSprintShare;
+    this.strokeCycle /= 1 + (SWEEP_FAST_CADENCE - 1) * this.sweepFast;
     this.strokePhase = (this.strokePhase + h / this.strokeCycle) % 1;
   }
 
@@ -2519,6 +2530,12 @@ export class AttachedRider {
   /** The hand in the face bends the body toward it; the hand reaching in a turn follows the lean and bends none. */
   private get handBend(): number {
     return this.hand ? this.handSide : 0;
+  }
+
+  /** The side paddle's fast share, 0–1: steering without paddling, from SWEEP_FAST_FROM of the stick to full. */
+  private get sweepFast(): number {
+    if (this.paddle) return 0;
+    return Math.min(1, Math.max(0, (Math.abs(this.steer) - SWEEP_FAST_FROM) / (1 - SWEEP_FAST_FROM)));
   }
 
   /** Steering without paddling: one arm sweeps. */

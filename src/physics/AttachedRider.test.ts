@@ -558,6 +558,9 @@ describe('standing on the leg', () => {
   });
 });
 
+/** The forward speed a 1.5 m/s glide keeps after 2 s of full-steer sweeping, m/s: the old stroke's, measured (1.52; it was 1.47 at the start, 0.86 coasting straight). */
+const MOMENTUM_FLOOR = 1.51;
+
 describe('steering while lying down', () => {
   const heading = (board: BoardBody) => {
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
@@ -616,6 +619,54 @@ describe('steering while lying down', () => {
     expect(left.heading).toBeGreaterThan(0.2);
     expect(right.heading).toBeLessThan(-0.2);
     expect(turn(0, false).heading).toBeCloseTo(0, 6);
+  });
+
+  /** Heading turned, rad/s, over `seconds` of steering from still water without paddling. */
+  const stillRate = (steer: number, seconds: number) => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    const start = heading(board);
+    rider.steer = steer;
+    run(board, water, seconds);
+    rider.steer = 0;
+    run(board, water, 1);
+    return heading(board) - start;
+  };
+
+  /** Forward speed, m/s, after paddling up to a glide and then steering `steer` for 2 s without paddling. */
+  const glide = (steer: number) => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    rider.paddle = true;
+    run(board, water, 6);
+    rider.paddle = false;
+    const before = new Vector3(0, 0, 1).applyQuaternion(board.orientation).dot(board.velocity);
+    rider.steer = steer;
+    run(board, water, 2);
+    const after = new Vector3(0, 0, 1).applyQuaternion(board.orientation).dot(board.velocity);
+    return { before, after };
+  };
+
+  // The side paddle's fast mode (owner, 2026-11-09): small steer is the old stroke, full steer strokes about twice as
+  // often with a wider sweep; the turn is the hand's own drag, pulling water aft, so the glide is not braked.
+  it('turns faster at full steer than at half without paddling, half no faster than the old stroke', () => {
+    const quarter = stillRate(0.25, 3) / 3;
+    const half = stillRate(0.5, 3) / 3;
+    const full = stillRate(1, 3) / 3;
+    if (process.env.SWEEP_LOG) process.stderr.write(JSON.stringify([[quarter, half, full].map((r) => (r * 180) / Math.PI), 'tap', (stillRate(1, 0.15) * 180) / Math.PI]) + '\n');
+    expect(full).toBeGreaterThan(half * 1.5);
+    expect(full).toBeGreaterThan((30 * Math.PI) / 180);
+    expect(half).toBeLessThan((20 * Math.PI) / 180);
+  });
+
+  it('keeps the glide from paddling while sweeping hard', () => {
+    const fast = glide(1);
+    const coast = glide(0);
+    if (process.env.SWEEP_LOG) process.stderr.write(JSON.stringify({ fast, coast }) + '\n');
+    expect(fast.before).toBeGreaterThan(1.2);
+    expect(fast.after).toBeGreaterThan(MOMENTUM_FLOOR);
   });
 });
 
