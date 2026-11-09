@@ -88,3 +88,12 @@ The step-7 rule on the M4's level-13 batch (`docs/research/pool-tube-runs-2/deci
   - `?poolFloor=ledge`, opt-in: `POOL_STRAIGHT` `gradient` about 1/2.0 square to the reef and `kneeRounding` 1, per the step-7 ruling's §2;
   - its passive probes.
   If the branch isn't merged, its README says where it stopped. Next after it: the re-probes the ruling lists, then the ledge cases into the tube, together with ruling 4.
+
+## Update 2026-11-09: small rider changes (all merged)
+
+- **#211:** the Canyon start moved 10 m screen-left (−x); `?canyonStart=old`. The online spawn band doesn't follow the shift yet.
+- **#212–#214:** a faster still prone turn, built with a hidden yaw moment and a hidden brake. The owner judged it "a motor", so #215 replaced it.
+- **#215:** the still turn now comes only from a drawn pivot stroke: the outside arm strokes aft and the inside arm back-paddles. The stick sets the cadence (1.6 → 0.8 s) and the reach. A drawn check stroke stops the board on release.
+  - **Rates:** 17 / 30 / 66°/s at ¼ / ½ / full stick. A tap turns 6.5°, and a full spin stops 0.4 s after release.
+  - **Waiting on the owner's ride:** small sticks are faster than #213's (17°/s against 8°/s at a quarter); slow them down via `STILL_REACH_SHORT` / `STILL_CYCLE_SLOW`.
+  - **The owner's rule:** no hidden motors; motion only from visible limbs, with the speed from the movement's intensity.
