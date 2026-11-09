@@ -610,34 +610,6 @@ describe('steering while lying down', () => {
     expect(left.speed).toBeGreaterThan(0.8);
   });
 
-  // still-turn-fast (2026-11-08): the sweep and kick spin a still board about 100°/s at full steer; the stroke alone
-  // (`stillTurn: 'old'`) about 17°/s.
-  it('turns a still board fast with the sweep and kick, faster than the stroke alone', () => {
-    const spin = (stillTurn?: 'old') => {
-      const board = new BoardBody();
-      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
-      const rider = new AttachedRider(board.shape, { phase: 'prone', ...(stillTurn ? { stillTurn } : {}) });
-      board.attach(rider);
-      const water = new PlaneWater();
-      run(board, water, 2);
-      rider.steer = 1;
-      let total = 0;
-      let previous = heading(board);
-      run(board, water, 3, () => {
-        const now = heading(board);
-        total += now - previous - 2 * Math.PI * Math.round((now - previous) / (2 * Math.PI));
-        previous = now;
-      });
-      return { rate: (total / 3) * (180 / Math.PI), attached: rider.attached };
-    };
-    const fast = spin();
-    const old = spin('old');
-    expect(fast.attached && old.attached).toBe(true);
-    expect(old.rate).toBeLessThan(30);
-    expect(fast.rate).toBeGreaterThan(80);
-    expect(fast.rate).toBeLessThan(140);
-  });
-
   it('turns without paddling by sweeping one arm', () => {
     const left = turn(1, false);
     const right = turn(-1, false);

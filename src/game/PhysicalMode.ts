@@ -460,8 +460,6 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
     ...strokeSwitch(),
-    // `?stillTurn=old`: a still prone board turned by the sweep's stroke alone, as before still-turn-fast, for A/Bs.
-    ...stillTurnSwitch(),
     // `?surfaceMotion=old`: the sea's surface held still through the bodies' step, as before popup-moving-face, for A/Bs.
     ...surfaceMotionSwitch(),
     // `?plainHeight=old`: the water's heights gathered for every sample, as before pool-barrel-perf (the same bits, slower).
@@ -665,14 +663,6 @@ export function onsetSwitch(search?: string): { onsetRule?: 'old' } {
  */
 export function strokeSwitch(search?: string): { stroke?: 'old' } {
   return devParam('stroke', search)?.trim().toLowerCase() === 'old' ? { stroke: 'old' } : {};
-}
-
-/**
- * The `?stillTurn=old` dev switch (`SurfZoneConfig.stillTurn`): every spot's still prone board turned by the sweeping
- * arm's stroke alone (about 17°/s), as before still-turn-fast (2026-11-08). 'old', else nothing.
- */
-export function stillTurnSwitch(search?: string): { stillTurn?: 'old' } {
-  return devParam('stillTurn', search)?.trim().toLowerCase() === 'old' ? { stillTurn: 'old' } : {};
 }
 
 /**
