@@ -491,6 +491,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapDepthSwitch(),
     // `?snapStamp=on`: a full steer under Snap stamps the riders' weight past the tail, then back over the fins (snap-stamp), opt-in, to ride.
     ...snapStampSwitch(),
+    // `?agile=on`: the riders' two legs act apart; a full steer under Snap launches the tail with the feet's couple (rider-agile), opt-in, to ride.
+    ...agileSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -791,6 +793,15 @@ export function snapUpturnSwitch(search?: string): { snapUpturn?: 'old' } {
  */
 export function snapDepthSwitch(search?: string): { snapDepth?: 'deep' } {
   return devParam('snapDepth', search)?.trim().toLowerCase() === 'deep' ? { snapDepth: 'deep' } : {};
+}
+
+/**
+ * The `?agile=on` dev switch (`SurfZoneConfig.agile`, rider-agile 2026-11-09, the owner's "the movement work that allows
+ * for snap"): opt-in, every spot's rider uses its two legs apart, and a full steer under Snap launches the tail with the
+ * feet's couple in place of the stamp; a partial steer is Snap's carve as before.
+ */
+export function agileSwitch(search?: string): { agile?: 'on' } {
+  return devParam('agile', search)?.trim().toLowerCase() === 'on' ? { agile: 'on' } : {};
 }
 
 /**

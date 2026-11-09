@@ -772,6 +772,36 @@ const STAMP_RETURN = 0.4;
 const STAMP_SET = 0.3;
 const STAMP_BACK = 0.15;
 const SNAP_TWIST_FREQUENCY = 11;
+/**
+ * The agile legs (rider-agile, 2026-11-09, the owner: "surfers have incredible agility and balance and stretching
+ * abilities, right now the playable surfer is a bit static"; `agile: 'on'`, opt-in; docs/research/rider-agile-2026-11-09).
+ * The two feet act apart on the board, each force with its reaction on the body (no hidden motors):
+ * - the feet's couple about the deck's normal (one foot pushes across the deck one way, the other the other way) turns
+ *   the board, and its reaction turns the hips the other way (HIP_INERTIA, kg·m²: the pelvis, the thighs and the trunk's
+ *   lower half about the body's long axis, de Leva 1996's segments; HIP_RANGE, the hips' rotation on fixed feet, Neumann's
+ *   35–45° at each hip). Each foot pushes across the deck no harder than its grip (FOOT_FRICTION times its own load) and
+ *   the leg's strength sideways (LEG_SIDE_STRENGTH body weights, hip abduction and adduction, Bohannon 1997; to be
+ *   re-sourced), so the couple is at most the feet's span times the weaker foot's push;
+ * - the legs' split along the board (one leg presses, the other lightens) pitches the board under the feet, and its
+ *   reaction pitches the trunk the other way (TRUNK_INERTIA, kg·m², the trunk, head and arms about the hips' axis;
+ *   TRUNK_RANGE). Neither foot pulls: the split is at most what takes one foot's load to nothing (TRUNK_TORQUE at most).
+ * A full steer under Snap (STAMP_STEER, timed as the stamp is: once per press-and-turn, the stick's throw past the
+ * threshold its depth) launches the tail: the pressure goes forward off the fins (toward AGILE_PRESSURE), the trunk
+ * goes back, and the hips whip against the turn, their reaction throwing the board round under them; then the recovery
+ * for STAMP_RETURN, all three back (the hips square over the board, the pressure over the fins).
+ * AGILE_FREQUENCY, rad/s: how fast the hips and the trunk are asked to go, within those torques.
+ * HIP_RANGE and TRUNK_RANGE are the launch's, measured on the 15° plane's climbs, not the joints' (40° and more): the
+ * hips' 40° with the trunk's 20° reached 219–309°/s and threw every rider; 15° and 10° keep all four on, turning 48–87°
+ * in the 0.8 s after the launch against today's 39–84°, the fins never past their stall.
+ */
+const HIP_INERTIA = 2.5;
+const HIP_RANGE = (15 * Math.PI) / 180;
+const LEG_SIDE_STRENGTH = 0.35;
+const TRUNK_INERTIA = 8;
+const TRUNK_RANGE = (10 * Math.PI) / 180;
+const TRUNK_TORQUE = 150;
+const AGILE_PRESSURE = 0.2;
+const AGILE_FREQUENCY = 14;
 const SNAP_SHIFT_TIME = 0.09;
 const SNAP_SHIFT_SPEED = 1.2;
 /**
@@ -986,6 +1016,12 @@ export interface AttachedRiderOptions {
    * `?snapStamp=on` dev switch, to ride). A partial steer is today's Snap, as is every Snap by default.
    */
   snapStamp?: 'on';
+  /**
+   * The agile legs (rider-agile, 2026-11-09; HIP_INERTIA), opt-in: 'on' lets the two feet act apart on the board (the
+   * feet's couple against the hips, the legs' split against the trunk), and a full steer under Snap launches the tail
+   * with them in place of the stamp (the `?agile=on` dev switch, to ride). By default as before.
+   */
+  agile?: 'on';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1315,6 +1351,27 @@ export class AttachedRider {
   private stampDepth = 0;
   private stampArmed = true;
   private snapHeldTime = 0;
+  /** The agile legs (HIP_INERTIA); only with `agile: 'on'`. */
+  private readonly agile: boolean;
+  /** Agile: the hips' turn about the body's up against the board, rad (positive toward the board's left), and the trunk's pitch about the body's side axis (the board's +x on a level body; positive forward), with their rates. */
+  readonly hip = { angle: 0, rate: 0 };
+  readonly trunk = { angle: 0, rate: 0 };
+  /** Agile: the torques on the hips and the trunk this substep, N·m, and their axes in the world (the body's up square to the board's length, and across the body). */
+  private hipTorque = 0;
+  private trunkTorque = 0;
+  private readonly trunkAxis = new Vector3(1, 0, 0);
+  private readonly hipAxis = new Vector3(0, 1, 0);
+  /**
+   * The limbs' ledger this substep: what the body's contacts other than the line of force (each foot's push across and
+   * along the deck; later a hand on a rail) do to the board, as a force and a moment about its centre of mass, N and
+   * N·m in the world. The body takes the opposite. `limbs` lists each contact's point (board frame) and force (world).
+   */
+  private readonly limbForce = new Vector3();
+  private readonly limbTorque = new Vector3();
+  readonly limbs: { name: string; point: Vector3; force: Vector3 }[] = [];
+  private readonly footEntries = [{ name: 'front foot', point: new Vector3(), force: new Vector3() }, { name: 'back foot', point: new Vector3(), force: new Vector3() }];
+  /** Agile: the front foot's share from the line of force alone, before the legs' split. */
+  private lineShare = 0.5;
   /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
   private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
@@ -1479,7 +1536,8 @@ export class AttachedRider {
     this.upturnKept = options.snapUpturn !== 'old';
     this.recentres = options.snapRecentre !== 'old';
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
-    this.stamps = options.snapStamp === 'on';
+    this.agile = options.agile === 'on';
+    this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
@@ -1824,7 +1882,7 @@ export class AttachedRider {
    * the rails, the feet on the deck while standing).
    */
   renderPoint(index: number, board: BoardBody, out: Vector3): Vector3 {
-    if (index < 3) return this.swung(index, this.partPosition(index, out), SWING_DRAWN_CHEST);
+    if (index < 3) return this.turned(this.swung(index, this.partPosition(index, out), SWING_DRAWN_CHEST));
     const upright = this.phase === 'landing' || this.phase === 'standing';
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
@@ -1853,7 +1911,7 @@ export class AttachedRider {
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
       out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
-      return this.swung(index, out, SWING_DRAWN_CHEST);
+      return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
     }
     if (upright) {
       const front = (index === 5) === (this.stance === 'regular');
@@ -1884,6 +1942,29 @@ export class AttachedRider {
     const pelvis = this.partPosition(0, this.swingPivot);
     this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.heading), share * this.swing.angle);
     return out.sub(pelvis).applyQuaternion(this.swingTurn).add(pelvis);
+  }
+
+  /**
+   * Agile: a drawn point of the body above the feet turned as the hips and the trunk are (`hip`, `trunk`): about the
+   * body's up and its side axis, through the pelvis (the hips turn on the legs; the trunk pitches from them).
+   */
+  private turned(out: Vector3): Vector3 {
+    if (!this.agile || this.phase !== 'standing' || (this.hip.angle === 0 && this.trunk.angle === 0)) return out;
+    const pelvis = this.partPosition(0, this.swingPivot);
+    this.swingTurn.setFromAxisAngle(this.trunkAxis, this.trunk.angle);
+    out.sub(pelvis).applyQuaternion(this.swingTurn);
+    this.swingTurn.setFromAxisAngle(this.hipAxis, this.hip.angle);
+    return out.applyQuaternion(this.swingTurn).add(pelvis);
+  }
+
+  /** Agile: the torques on the hips (about the body's up) and the trunk (about the body's side axis) the latest substep, N·m; the feet's forces in `limbs` are their reaction on the board. */
+  get legTorques(): { hip: number; trunk: number } {
+    return { hip: this.hipTorque, trunk: this.trunkTorque };
+  }
+
+  /** The upper body's turn against the board as the rig draws it, rad: the twist, and with the agile legs the hips' turn. */
+  get drawnTwist(): number {
+    return this.agile ? this.twist.angle + this.hip.angle : this.twist.angle;
   }
 
   private halfWidth(z: number): number {
@@ -2162,6 +2243,7 @@ export class AttachedRider {
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
+      if (this.agile) this.legsStep(h, board);
       if (this.banking) {
         this.prepareBank(h, board);
       } else {
@@ -2373,6 +2455,76 @@ export class AttachedRider {
     this.twist.angle = 0;
     this.twist.rate = 0;
     this.twistTorque = 0;
+    this.hip.angle = 0;
+    this.hip.rate = 0;
+    this.trunk.angle = 0;
+    this.trunk.rate = 0;
+    this.hipTorque = 0;
+    this.trunkTorque = 0;
+    this.limbForce.set(0, 0, 0);
+    this.limbTorque.set(0, 0, 0);
+    this.limbs.length = 0;
+  }
+
+  /** Agile, a launch running (`stampStep`'s clock): 1 while the tail is thrown, 0 in the recovery and otherwise. */
+  private get launching(): number {
+    if (!this.agile || !(this.stampTime >= 0)) return 0;
+    return this.stampTime <= STAMP_TIME * (0.5 + 0.5 * this.stampDepth) ? this.stampDepth : 0;
+  }
+
+  /**
+   * The agile legs (HIP_INERTIA) before the board's solve: the trunk's pitch and the hips' turn toward where the launch
+   * or its recovery asks, each by a torque the legs can give, and the feet's forces on the board that make them (the
+   * limbs' ledger). The trunk first: its split sets each foot's load, which bounds the feet's couple.
+   */
+  private legsStep(h: number, board: BoardBody): void {
+    const launch = this.launching;
+    const span = this.feet.front - this.feet.rear;
+    const load = this.legLoad;
+    const share = this.lineShare;
+    // The trunk back for the launch: the front leg presses and the back leg lightens, neither past nothing.
+    const trunkAsked = -launch * TRUNK_RANGE;
+    let wanted = TRUNK_INERTIA * (AGILE_FREQUENCY * AGILE_FREQUENCY * (trunkAsked - this.trunk.angle) - 2 * AGILE_FREQUENCY * this.trunk.rate);
+    this.trunkTorque = Math.max(-Math.min(TRUNK_TORQUE, (1 - share) * span * load), Math.min(Math.min(TRUNK_TORQUE, share * span * load), wanted));
+    this.trunk.rate += (h * this.trunkTorque) / TRUNK_INERTIA;
+    this.trunk.angle += h * this.trunk.rate;
+    if (Math.abs(this.trunk.angle) > TRUNK_RANGE) {
+      this.trunk.angle = Math.sign(this.trunk.angle) * TRUNK_RANGE;
+      if (this.trunk.rate * this.trunk.angle > 0) this.trunk.rate = 0;
+    }
+    // The feet's loads with the split, and the couple the weaker foot's push across the deck allows.
+    const front = load * Math.min(1, Math.max(0, share - this.trunkTorque / Math.max(1e-6, span * load)));
+    const strength = LEG_SIDE_STRENGTH * this.mass * WATER.gravity;
+    const most = span * Math.min(strength, FOOT_FRICTION * front, FOOT_FRICTION * (load - front));
+    // The hips against the turn for the launch (the board comes round under them), square again after.
+    const hipAsked = -launch * this.snapSide * HIP_RANGE;
+    wanted = HIP_INERTIA * (AGILE_FREQUENCY * AGILE_FREQUENCY * (hipAsked - this.hip.angle) - 2 * AGILE_FREQUENCY * this.hip.rate);
+    this.hipTorque = Math.max(-most, Math.min(most, wanted));
+    this.hip.rate += (h * this.hipTorque) / HIP_INERTIA;
+    this.hip.angle += h * this.hip.rate;
+    if (Math.abs(this.hip.angle) > HIP_RANGE) {
+      this.hip.angle = Math.sign(this.hip.angle) * HIP_RANGE;
+      if (this.hip.rate * this.hip.angle > 0) this.hip.rate = 0;
+    }
+    // The ledger: each foot's push on the board (the hips' couple across the body, the trunk's along its up),
+    // equal and opposite at the two feet, so their sum is no force and their moment is the torques' reaction.
+    // The axes: across the body (its up crossed with the board's length), and the body's up square to the board's length.
+    const along = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+    const side = this.trunkAxis.crossVectors(this.up, along).normalize();
+    const up = this.hipAxis.crossVectors(along, side);
+    this.limbForce.set(0, 0, 0);
+    this.limbTorque.set(0, 0, 0);
+    this.limbs.length = 0;
+    for (let foot = 0; foot < 2; foot += 1) {
+      const sign = foot === 0 ? 1 : -1;
+      const entry = this.footEntries[foot];
+      entry.point.set(0, 0, foot === 0 ? this.feet.front : this.feet.rear);
+      // About the up: the front foot pushes the board across, −torque / span; about the side axis: it presses down, torque / span.
+      entry.force.copy(side).multiplyScalar((-sign * this.hipTorque) / span).addScaledVector(up, (sign * this.trunkTorque) / span);
+      this.limbs.push(entry);
+      this.limbForce.add(entry.force);
+    }
+    this.limbTorque.copy(up).multiplyScalar(-this.hipTorque).addScaledVector(side, -this.trunkTorque);
   }
 
   /** Standing: the leg's state and load before the board's solve. */
@@ -2817,6 +2969,17 @@ export class AttachedRider {
     rhs[3] -= h * this.twistTorque * n.x;
     rhs[4] -= h * this.twistTorque * n.y;
     rhs[5] -= h * this.twistTorque * n.z;
+    if (this.agile) {
+      // The limbs' ledger: the feet's forces on the board (and so on the two together, nothing: the body takes the
+      // opposite). Rows 0–2 and 3–5 are the pair's momentum, so only the body's own rows and its arm's share see a net force.
+      const force = this.limbForce;
+      const lever = cross(a, force, this.scratch);
+      rhs[3] += h * (this.limbTorque.x - lever.x);
+      rhs[4] += h * (this.limbTorque.y - lever.y);
+      rhs[5] += h * (this.limbTorque.z - lever.z);
+      rhs[6] -= h * n.dot(force);
+      if (this.banking) rhs[7] -= h * t.dot(force);
+    }
   }
 
   /** Standing, after the 8 x 8 solve: the contact impulse the motion needs, and whether feet on a deck can give it (as `settle`). */
@@ -2876,6 +3039,11 @@ export class AttachedRider {
     }
     this.balanceMargin = this.upright ? this.balanceMargin + (this.rawMargin - this.balanceMargin) * (1 - Math.exp(-h / MARGIN_TIME)) : 1;
     const felt = this.contact;
+    if (this.agile) {
+      // The legs' split moves the feet's shares past the line of force's.
+      this.lineShare = felt.frontShare;
+      if (this.upright && this.legLoad > 0) felt.frontShare = Math.min(1, Math.max(0, felt.frontShare - this.trunkTorque / ((this.feet.front - this.feet.rear) * this.legLoad)));
+    }
     felt.weight = !this.upright ? Number.NaN
       : Number.isNaN(felt.weight) ? felt.frontShare : felt.weight + (felt.frontShare - felt.weight) * (1 - Math.exp(-h / WEIGHT_TIME));
     const mean = before.add(this.velocity).multiplyScalar(0.5);
@@ -2891,6 +3059,10 @@ export class AttachedRider {
     if (this.upright && this.feasible && this.twistTorque !== 0) {
       // The twist's reaction, which turned the board through the feet.
       board.work.rider -= (h * this.twistTorque * this.up.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
+    }
+    if (this.agile && this.upright && this.feasible && (this.hipTorque !== 0 || this.trunkTorque !== 0)) {
+      // The agile legs' couples, which turned and pitched the board through the feet.
+      board.work.rider += (h * this.limbTorque.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
     }
     if (this.upright && this.feasible && this.handYaw !== 0) {
       // The hand's moment turned the board through the feet.
@@ -3220,6 +3392,12 @@ export class AttachedRider {
     if (snap > 0) this.copTarget.z += snap * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
     // Snap's stamp (`snapStamp: 'on'`): a full steer slams the weight past the tail for STAMP_TIME, then back over the fins.
     const stamp = this.stamps ? this.stampStep(h, snap) : 0;
+    // The agile launch (`agile: 'on'`, in the stamp's place and on its clock): the pressure forward off the fins while the tail is thrown.
+    if (this.agile) {
+      this.stampStep(h, snap);
+      const span = this.feet.front - this.feet.rear;
+      this.copTarget.z += snap * this.launching * ((-AGILE_PRESSURE * span) / 2 - this.copTarget.z);
+    }
     // Snap let go standing, the weight is centred again, held as close as Snap held it, for up to RECENTRE_TIME.
     if (this.recentres) {
       if (snap > 0 || !this.upright || this.phase !== 'standing') this.recentreTime = Number.NaN;

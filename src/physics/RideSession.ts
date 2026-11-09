@@ -140,6 +140,8 @@ export interface RideSessionOptions {
    * a full steer under Snap stamp the weight past the tail for a moment, then back over the fins; by default as before.
    */
   snapStamp?: 'on';
+  /** The agile legs (rider-agile, 2026-11-09; `AttachedRiderOptions.agile`): 'on' (the `?agile=on` dev switch); by default as before. */
+  agile?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -224,6 +226,7 @@ export class RideSession {
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),
+      ...(options.agile ? { agile: options.agile } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

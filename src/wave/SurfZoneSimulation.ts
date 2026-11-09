@@ -221,6 +221,12 @@ export interface SurfZoneConfig {
    */
   snapStamp?: 'on';
   /**
+   * 'on': the riders' two legs act apart (rider-agile, 2026-11-09; `RideSessionOptions.agile`): a full steer under Snap
+   * launches the tail with the feet's couple in place of the stamp. Every spot. The `?agile=on` dev switch, opt-in, to
+   * ride; online rooms run the default.
+   */
+  agile?: 'on';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

@@ -586,6 +586,134 @@ describe('Snap\'s stamp (opt-in)', () => {
   });
 });
 
+// rider-agile (the owner, 2026-11-08: "surfers have incredible agility and balance and stretching abilities, right now the
+// playable surfer is a bit static"; opt-in with `agile: 'on'`, the `?agile=on` dev switch): the two feet act apart on the
+// board (the feet's couple against the hips, the legs' split against the trunk), and under Snap a steer past 0.8 launches
+// the tail with them in the stamp's place. The same climbs as the stamp's: docs/research/rider-agile-2026-11-09/README.md.
+describe('the agile legs (opt-in)', () => {
+  const climb = (across: number, speed: number, steer: number, agile?: 'on', each?: (rider: AttachedRider, board: BoardBody, t: number) => void) => {
+    const setup = acrossFace(across, speed);
+    const rider = new AttachedRider(setup.board.shape, { phase: 'standing', ...(agile ? { agile } : {}) });
+    setup.board.attach(rider);
+    for (let n = 0; n < 12; n += 1) setup.board.step(STEP, setup.water);
+    let last = headingOf(setup.board);
+    let turned = 0;
+    let at1 = 0;
+    let slid = 0;
+    for (let n = 0; n < 96; n += 1) {
+      Object.assign(rider, { steer, snap: n * STEP < 0.6 ? 1 : 0 });
+      setup.board.step(STEP, setup.water);
+      if (!rider.attached) break;
+      each?.(rider, setup.board, (n + 1) * STEP);
+      const now = headingOf(setup.board);
+      turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+      last = now;
+      if (n * STEP < 1) {
+        at1 = turned;
+        if (finAttack(setup.board) > FIN_STALL) slid += STEP;
+      }
+    }
+    return { attached: rider.attached, at1: (Math.abs(at1) * 180) / Math.PI, turned, slid };
+  };
+  // Measured here (the README's table is the probe's): by 1 s the launch turns the climb from 120° further and the one
+  // from 150° as far (75° both), and no rider falls where today's from 150° does; the fins grip throughout (no slide:
+  // the bars' 200–300°/s and 120° are not met).
+  it('turns a full steer under Snap as far as today or further, with no more falls', () => {
+    for (const across of [150, 120]) {
+      const today = climb(across, 6.7, 1);
+      const agile = climb(across, 6.7, 1, 'on');
+      if (today.attached) expect(agile.attached, `${across}`).toBe(true);
+      expect(agile.at1, `${across}`).toBeGreaterThan(today.at1 + (across === 120 ? 8 : -3));
+      expect(agile.slid, `${across}`).toBeLessThan(0.1);
+    }
+  });
+  it('leaves a partial steer under Snap as it was, bit for bit', () => {
+    for (const across of [150, 120]) {
+      expect(climb(across, 6.7, 0.6, 'on').turned).toBe(climb(across, 6.7, 0.6).turned);
+      expect(climb(across, 8, 0.75, 'on').turned).toBe(climb(across, 8, 0.75).turned);
+    }
+  });
+  it('rides the same with the switch and no Snap', () => {
+    expect(scriptedRide({}, { agile: 'on' })).toBe(BEFORE_SNAP);
+  });
+  // No hidden motors: what turns and pitches the board is two feet's forces, equal and opposite (no net force on the
+  // pair), whose moment is the hips' and the trunk's torques reversed; each foot pushes across no harder than a leg can.
+  it('moves the board only by the feet\'s forces, equal and opposite, with their reaction on the hips and the trunk', () => {
+    let worked = 0;
+    let most = 0;
+    climb(120, 6.7, 1, 'on', (rider, board) => {
+      const [front, back] = rider.limbs;
+      const torques = rider.legTorques;
+      expect(front.force.clone().add(back.force).length()).toBeLessThan(1e-9);
+      const lever = front.point.clone().sub(back.point).applyQuaternion(board.orientation);
+      const moment = lever.clone().cross(front.force);
+      const along = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+      const push = front.force.clone().addScaledVector(along, -front.force.dot(along));
+      // The moment has nothing about the board's length (the feet stand on its line), and its size is the two torques'.
+      expect(Math.abs(moment.dot(along))).toBeLessThan(1e-6);
+      expect(moment.length()).toBeCloseTo(Math.hypot(torques.hip, torques.trunk), 3);
+      expect(push.length() * lever.length()).toBeCloseTo(Math.hypot(torques.hip, torques.trunk), 3);
+      if (torques.hip !== 0 || torques.trunk !== 0) worked += 1;
+      most = Math.max(most, Math.abs(torques.hip));
+    });
+    expect(worked).toBeGreaterThan(10);
+    // The feet's couple: within the legs' strength sideways (0.35 body weights a foot over the feet's 0.63 m).
+    expect(most).toBeGreaterThan(20);
+    expect(most).toBeLessThanOrEqual(0.35 * 75 * 9.81 * 0.63 + 1e-9);
+  });
+  // The hips and the trunk start and end at rest and come home: over a launch and its recovery the feet's couples give
+  // the board no net angular impulse (what turns it for good is the water).
+  it('gives the board no net angular impulse over a launch and its recovery', () => {
+    const setup = flat(8);
+    const rider = new AttachedRider(setup.board.shape, { phase: 'standing', agile: 'on' });
+    setup.board.attach(rider);
+    for (let n = 0; n < 12; n += 1) setup.board.step(STEP, setup.water);
+    let peak = 0;
+    for (let n = 0; n < 150 && rider.attached; n += 1) {
+      Object.assign(rider, { steer: 1, snap: n < 60 ? 1 : 0 });
+      setup.board.step(STEP, setup.water);
+      peak = Math.max(peak, Math.abs(rider.hip.angle));
+    }
+    expect(peak).toBeGreaterThan((8 * Math.PI) / 180);
+    expect(peak).toBeLessThanOrEqual((15 * Math.PI) / 180 + 1e-12);
+    // Home and at rest: the momentum the hips and the trunk took from the board is all given back.
+    expect(Math.abs(rider.hip.angle)).toBeLessThan(0.01);
+    expect(Math.abs(rider.hip.rate)).toBeLessThan(0.02);
+    expect(Math.abs(rider.trunk.angle)).toBeLessThan(0.01);
+    expect(Math.abs(rider.trunk.rate)).toBeLessThan(0.02);
+  });
+  // The drawing follows the physics: at the launch's end the drawn head is back over the tail of the pelvis, the pelvis
+  // is forward (the back leg longer, the front leg shorter than today's Snap at the same moment), the hands swung
+  // against the turn with the hips.
+  it('shows the launch in the drawn points', () => {
+    const drawn = (agile?: 'on') => {
+      const setup = flat(8);
+      const rider = new AttachedRider(setup.board.shape, { phase: 'standing', ...(agile ? { agile } : {}) });
+      setup.board.attach(rider);
+      for (let n = 0; n < 12; n += 1) setup.board.step(STEP, setup.water);
+      for (let n = 0; n < 33; n += 1) {
+        Object.assign(rider, { steer: 1, snap: 1 });
+        setup.board.step(STEP, setup.water);
+      }
+      const point = (i: number) => setup.board.toLocal(rider.renderPoint(i, setup.board, new Vector3()), new Vector3());
+      const regular = rider.stance === 'regular';
+      return { pelvis: point(0), head: point(2), front: point(regular ? 5 : 6), back: point(regular ? 6 : 5), hand: point(3), hip: rider.hip.angle, trunk: rider.trunk.angle, twist: rider.drawnTwist - rider.twist.angle };
+    };
+    const today = drawn();
+    const agile = drawn('on');
+    expect(today.hip).toBe(0);
+    expect(today.twist).toBe(0);
+    // A left turn: the hips to the right (negative), the trunk back (negative).
+    expect(agile.hip).toBeLessThan((-8 * Math.PI) / 180);
+    expect(agile.trunk).toBeLessThan((-5 * Math.PI) / 180);
+    expect(agile.twist).toBeCloseTo(agile.hip, 12);
+    expect(agile.head.z - agile.pelvis.z).toBeLessThan(today.head.z - today.pelvis.z - 0.05);
+    expect(agile.pelvis.distanceTo(agile.back)).toBeGreaterThan(today.pelvis.distanceTo(today.back) + 0.005);
+    expect(agile.pelvis.distanceTo(agile.front)).toBeLessThan(today.pelvis.distanceTo(today.front) - 0.01);
+    expect(agile.hand.x).toBeLessThan(today.hand.x - 0.05);
+  });
+});
+
 // The pinned turns (`AttachedRider.test.ts`: the snap, the cutback, a bottom turn carried into a top turn), made with
 // Snap. None passes; each is pinned with what it measures (docs/research/snap-stance-2026-11-03/README.md).
 describe('the pinned turns, with Snap', () => {

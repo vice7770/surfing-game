@@ -185,7 +185,7 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   out[RIDER_SNAPSHOT.heading] = session.heading;
   out[RIDER_SNAPSHOT.duck] = session.duckPress;
   out[RIDER_SNAPSHOT.breath] = session.breath.level;
-  out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.twist.angle : 0;
+  out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.drawnTwist : 0;
   out[RIDER_SNAPSHOT.weight] = session.rider.attached ? session.rider.contact.weight : Number.NaN;
   // Snap held, 0–1 (snap-arms-gate): the rig draws Snap's arms only on it, so Compress's tail-heavy turns are not Snap.
   out[RIDER_SNAPSHOT.snap] = session.rider.attached ? session.rider.snapping : 0;
@@ -493,7 +493,7 @@ export class SurfZoneRunner {
         ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
         ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
         ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
-        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}),
+        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}),
         ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
       });
       this.board = this.session.board;
