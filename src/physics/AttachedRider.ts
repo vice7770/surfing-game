@@ -216,6 +216,17 @@ const STILL_MOMENT = 250;
 const STILL_RATE = (130 * Math.PI) / 180;
 const STILL_RAMP = 0.3;
 /**
+ * Letting the stick go on a still board, the hands and feet drag in the water against the spin and stop it: a yaw
+ * moment of STILL_BRAKE × |rate|, N·m per rad/s, capped at STILL_BRAKE_MAX, N·m (so nearly a steady drag until the spin
+ * is almost out), coming in over STILL_BRAKE_RAMP, s, so a tap is a nudge rather than a coast: a 0.15 s full tap turns
+ * about 11° (57° before), a full spin stops in about 0.5 s running on about 23° (`?stillTurn=old` keeps the coast).
+ */
+const STILL_BRAKE = 1000;
+const STILL_BRAKE_MAX = 15;
+const STILL_BRAKE_RAMP = 0.1;
+/** The let-go drag stays ready this long, s, after the spin is out (the finishing stroke can nudge the board again). */
+const STILL_BRAKE_HOLD = 1;
+/**
  * still-turn-precision (2026-11-09): a small correction is a gentle hand scull, and the slower limb can't push the water
  * as fast, so the rate the moment falls off at scales with the stick squared (STILL_RATE × steer²): a small stick turns
  * slowly and precisely, full stick stays fast. The moment and the sweeping hand's reach follow the stick on a curve too.
@@ -1295,6 +1306,12 @@ export class AttachedRider {
   private readonly stillKick: boolean;
   /** How far the still sweep's moment has come in (STILL_RAMP), 0–1. */
   private stillShare = 0;
+  /** How far the let-go drag (STILL_BRAKE_RAMP) has come in, 0–1. */
+  private brakeShare = 0;
+  /** A still sweep turned the board and the drag stops it once let go; cleared when the spin is out (so a prone board otherwise is untouched). */
+  private stillSpun = false;
+  /** How long, s, the let-go board has sat out of the spin (STILL_BRAKE_HOLD clears stillSpun). */
+  private stillQuiet = 0;
   /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
   private readonly catches: boolean;
   /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
@@ -2500,6 +2517,13 @@ export class AttachedRider {
       const catchUp = limit > 0 ? Math.max(0, 1 - (Math.sign(steer) * board.angularVelocity.y) / limit) : 0;
       this.waterMoment.y += STILL_MOMENT * steer * Math.abs(steer) * catchUp * this.stillShare;
     }
+    const yawRate = board.angularVelocity.y;
+    if (still || (this.stillKick && this.phase === 'prone' && !this.climbing && !this.paddle && Math.abs(this.steer) >= 0.1)) this.stillSpun = true;
+    const brake = this.stillSpun && this.stillKick && this.phase === 'prone' && !this.climbing && !this.paddle && Math.abs(this.steer) < 0.1 && this.duck.press <= DUCK_BUSY && Math.abs(yawRate) > 0.01;
+    this.brakeShare = brake ? Math.min(1, this.brakeShare + h / STILL_BRAKE_RAMP) : 0;
+    this.stillQuiet = brake || still ? 0 : this.stillQuiet + h;
+    if (this.stillQuiet > STILL_BRAKE_HOLD || this.paddle || this.climbing || this.phase !== 'prone') this.stillSpun = false;
+    if (brake) this.waterMoment.y -= Math.sign(yawRate) * Math.min(STILL_BRAKE_MAX, STILL_BRAKE * Math.abs(yawRate)) * this.brakeShare;
     if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping)) {
       this.line = undefined;
       this.hold = 0;
