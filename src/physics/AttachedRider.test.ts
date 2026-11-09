@@ -642,7 +642,7 @@ describe('steering while lying down', () => {
     expect(fast.rate).toBeLessThan(140);
     // still-turn-precision (2026-11-09): the rate follows the stick on a curve, a quarter stick about 8°/s, half about
     // 29°/s, full about 94°/s (#212's linear response read about 66, 81 and 94°/s). A 0.15 s tap at full steer, the
-    // stick then let go, turned the board about 44° in all, coasting on once let go (still-turn-brake stops it now).
+    // stick then let go, turns the board about 44° in all, coasting on once let go.
     const [quarter, half, full] = [0.25, 0.5, 1].map((steer) => spin(undefined, steer).rate);
     expect(quarter).toBeGreaterThan(5);
     expect(quarter).toBeLessThan(10);
@@ -651,53 +651,6 @@ describe('steering while lying down', () => {
     expect(full).toBeGreaterThan(80);
     expect(quarter).toBeLessThan(half);
     expect(half).toBeLessThan(full);
-  });
-
-  // still-turn-brake (2026-11-09): let go, the hands and feet drag against the spin and stop it, so a 0.15 s tap at
-  // full steer turns about 5–12° (it coasted on to about 44° before; `stillTurn: 'old'` still does), and a full spin
-  // stops within about 0.4–0.6 s, running on about 15–30°.
-  it('stops a still board soon after the stick is let go', () => {
-    const release = (seconds: number, stillTurn?: 'old') => {
-      const board = new BoardBody();
-      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
-      const rider = new AttachedRider(board.shape, { phase: 'prone', ...(stillTurn ? { stillTurn } : {}) });
-      board.attach(rider);
-      const water = new PlaneWater();
-      run(board, water, 2);
-      rider.steer = 1;
-      let total = 0;
-      let previous = headingOf(board);
-      const count = () => {
-        const now = headingOf(board);
-        total += now - previous - 2 * Math.PI * Math.round((now - previous) / (2 * Math.PI));
-        previous = now;
-      };
-      run(board, water, seconds, count);
-      const held = total;
-      rider.steer = 0;
-      let stop = Infinity;
-      let time = 0;
-      run(board, water, 3, () => {
-        count();
-        time += STEP;
-        if (stop === Infinity && Math.abs(board.angularVelocity.y) < (5 * Math.PI) / 180) stop = time;
-      });
-      return { angle: total * (180 / Math.PI), overshoot: (total - held) * (180 / Math.PI), stop };
-    };
-    const tap = release(0.15);
-    const oldTap = release(0.15, 'old');
-    const spin = release(3);
-    const oldSpin = release(3, 'old');
-    expect(tap.angle).toBeGreaterThan(5);
-    expect(tap.angle).toBeLessThan(12);
-    expect(spin.stop).toBeGreaterThan(0.4);
-    expect(spin.stop).toBeLessThan(0.6);
-    expect(spin.overshoot).toBeGreaterThan(15);
-    expect(spin.overshoot).toBeLessThan(30);
-    // `stillTurn: 'old'` is as before: the stroke alone barely moves the board in a tap, and a spin runs on unbraked.
-    expect(Math.abs(oldTap.angle)).toBeLessThan(1);
-    expect(oldSpin.angle).toBeGreaterThan(50);
-    expect(oldSpin.angle).toBeLessThan(62);
   });
 
   it('turns without paddling by sweeping one arm', () => {
