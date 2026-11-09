@@ -211,8 +211,16 @@ const STEER_STROKE = 0.6;
  * comes only from the hand's own drag, pulling water aft, so the glide is kept.
  */
 const SWEEP_FAST_FROM = 0.5;
-const SWEEP_FAST_CADENCE = 2.5;
-const SWEEP_FAST_WIDE = 0.15;
+const SWEEP_FAST_CADENCE = 1.8;
+const SWEEP_FAST_WIDE = 0.2;
+/**
+ * The fast sweep's shape (owner, 2026-11-09: "the arms look broken"): a long, flat pull through the water, SWEEP_FAST_PULL
+ * of the cycle (0.28 slow), and a low recovery, RECOVERY_HEIGHT scaled by SWEEP_FAST_LOW, the kayak sweep's. The fast share eases
+ * toward the stick over SWEEP_FAST_EASE, s, so stick noise never reshapes a stroke mid-way.
+ */
+const SWEEP_FAST_PULL = 0.45;
+const SWEEP_FAST_LOW = 0.4;
+const SWEEP_FAST_EASE = 0.25;
 /**
  * A paddler keeps its line: with no steering asked for, the arm on the side to
  * turn toward pulls softer and the other harder, in proportion to the heading
@@ -1272,6 +1280,8 @@ export class AttachedRider {
   /** How far through its cycle the left arm is (the right half a cycle on), 0–1; and the cycle now, s. */
   private strokePhase = 0;
   private strokeCycle = ARM_CYCLE;
+  /** The side paddle's fast share eased toward the stick's (SWEEP_FAST_EASE). */
+  private sweepEase = 0;
   /** Paddling, the sprint: 0 cruising to 1 at SPRINT_CYCLE (read only). */
   sprint = 0;
   /** Lying down, the player's sprint paddle (SPRINT_PADDLE_CYCLE): asked for, with the reserve to give it (`RideSession`). */
@@ -1896,7 +1906,7 @@ export class AttachedRider {
       const s = phase / pull;
       z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
       height = -this.handDepth;
-      swing = SWEEP_FAST_WIDE * this.sweepFast * Math.sin(Math.PI * s);
+      swing = SWEEP_FAST_WIDE * this.sweepEase * Math.sin(Math.PI * s);
       along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * pull * this.strokeCycle);
     } else {
       // Out of the water at the hip, over it and out, and back in at the reach, rising and settling with no speed at
@@ -1904,7 +1914,7 @@ export class AttachedRider {
       const s = (phase - pull) / (1 - pull);
       z = HIP + ((REACH - HIP) * (1 - Math.cos(Math.PI * s))) / 2;
       const arc = (1 - Math.cos(2 * Math.PI * s)) / 2;
-      height = -this.handDepth + (this.handDepth + RECOVERY_HEIGHT) * arc;
+      height = -this.handDepth + (this.handDepth + RECOVERY_HEIGHT * (1 - (1 - SWEEP_FAST_LOW) * this.sweepEase)) * arc;
       swing = RECOVERY_SWING * arc;
     }
     out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL + swing), deckHeight(this.shape, z) + height, z);
@@ -1918,7 +1928,8 @@ export class AttachedRider {
 
   /** The share of each arm's cycle spent pulling: more as the strokes go over to the player's sprint (SPRINT_PADDLE_PULL). */
   private get pullShare(): number {
-    return PULL_SHARE + (SPRINT_PADDLE_PULL - PULL_SHARE) * this.paddleSprintShare;
+    const base = PULL_SHARE + (SPRINT_PADDLE_PULL - PULL_SHARE) * this.paddleSprintShare;
+    return base + (SWEEP_FAST_PULL - base) * this.sweepEase;
   }
 
   /** How deep the pulling hand goes, m: deeper as the strokes go over to the player's sprint. */
@@ -1949,7 +1960,9 @@ export class AttachedRider {
     this.sprint += (wanted - this.sprint) * Math.min(1, h / SPRINT_TIME);
     const caught = ARM_CYCLE + (SPRINT_CYCLE - ARM_CYCLE) * this.sprint;
     this.strokeCycle = caught + (Math.min(caught, SPRINT_PADDLE_CYCLE) - caught) * this.paddleSprintShare;
-    this.strokeCycle /= 1 + (SWEEP_FAST_CADENCE - 1) * this.sweepFast;
+    this.sweepEase += (this.sweepFast - this.sweepEase) * Math.min(1, h / SWEEP_FAST_EASE);
+    if (this.sweepEase < 1e-9) this.sweepEase = 0;
+    this.strokeCycle /= 1 + (SWEEP_FAST_CADENCE - 1) * this.sweepEase;
     this.strokePhase = (this.strokePhase + h / this.strokeCycle) % 1;
   }
 

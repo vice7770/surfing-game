@@ -661,6 +661,41 @@ describe('steering while lying down', () => {
     expect(half).toBeLessThan((20 * Math.PI) / 180);
   });
 
+  // The fast sweep is one smooth stroke (owner, 2026-11-09: "the arms look broken"): the drawn hand, in the board's frame
+  // at 120 Hz over 3 s of full steer, peaks near 5.1 m/s (#216's flick: 11.3), no step spikes past twice the median
+  // (#216: 2.6), and its height path has no jump where the pull meets the recovery. Under 3 m/s the pull's hand would
+  // be slower than the glide and brake it (measured: 1.09 m/s kept), so the glide sets the floor on the hand's speed.
+  it('draws the full-steer sweep as a smooth stroke', () => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    rider.steer = 1;
+    const h = 1 / 120;
+    const inverse = new Quaternion();
+    const point = new Vector3();
+    const local = (index: number) => {
+      rider.renderPoint(index, board, point).sub(board.position);
+      return point.applyQuaternion(inverse.copy(board.orientation).invert()).clone();
+    };
+    const paths: Vector3[][] = [[], []];
+    for (let i = 0; i < 3 / h; i += 1) {
+      board.step(h, water);
+      paths[0].push(local(3));
+      paths[1].push(local(4));
+    }
+    const worst = paths.map((path) => {
+      const steps = path.slice(1).map((p, i) => p.distanceTo(path[i]));
+      const heights = path.slice(1).map((p, i) => Math.abs(p.y - path[i].y));
+      const sorted = [...steps].sort((a, b) => a - b);
+      return { peak: Math.max(...steps) / h, spike: Math.max(...steps) / sorted[sorted.length >> 1], rise: Math.max(...heights) / h };
+    });
+    if (process.env.SWEEP_LOG) process.stderr.write(JSON.stringify(worst) + '\n');
+    const sweeping = worst[0].peak > worst[1].peak ? worst[0] : worst[1];
+    expect(sweeping.peak).toBeLessThan(5.5);
+    expect(sweeping.spike).toBeLessThan(2);
+    expect(sweeping.rise).toBeLessThan(3);
+  });
+
   it('keeps the glide from paddling while sweeping hard', () => {
     const fast = glide(1);
     const coast = glide(0);
