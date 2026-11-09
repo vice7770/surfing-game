@@ -563,13 +563,13 @@ describe('steering while lying down', () => {
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
     return Math.atan2(forward.x, forward.z);
   };
-  const turn = (steer: number, paddle: boolean, seconds = 4) => {
+  const turn = (steer: number, paddle: boolean) => {
     const { board, rider } = mounted('prone');
     const water = new PlaneWater();
     run(board, water, 2);
     rider.paddle = paddle;
     rider.steer = steer;
-    run(board, water, seconds);
+    run(board, water, 4);
     return { heading: heading(board), speed: board.velocity.length(), attached: rider.attached };
   };
 
@@ -610,139 +610,99 @@ describe('steering while lying down', () => {
     expect(left.speed).toBeGreaterThan(0.8);
   });
 
-  // still-turn-strokes (2026-11-09): a still board turns only by the pivot stroke, the outside arm stroking forward and
-  // the inside back-paddling, together; the stick is the stroke's intensity (cadence and reach, so the hands' speed).
-  const still = (stillTurn?: 'old') => {
-    const board = new BoardBody();
-    board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
-    const rider = new AttachedRider(board.shape, { phase: 'prone', ...(stillTurn ? { stillTurn } : {}) });
-    board.attach(rider);
-    const water = new PlaneWater();
-    run(board, water, 2);
-    let total = 0;
-    let previous = heading(board);
-    const count = () => {
-      const now = heading(board);
-      total += now - previous - 2 * Math.PI * Math.round((now - previous) / (2 * Math.PI));
-      previous = now;
+  // still-turn-fast (2026-11-08): the sweep and kick spin a still board about 100°/s at full steer; the stroke alone
+  // (`stillTurn: 'old'`) about 17°/s.
+  it('turns a still board fast with the sweep and kick, faster than the stroke alone', () => {
+    const spin = (stillTurn?: 'old', steer = 1, seconds = 3) => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+      const rider = new AttachedRider(board.shape, { phase: 'prone', ...(stillTurn ? { stillTurn } : {}) });
+      board.attach(rider);
+      const water = new PlaneWater();
+      run(board, water, 2);
+      rider.steer = steer;
+      let total = 0;
+      let previous = heading(board);
+      const count = () => {
+        const now = heading(board);
+        total += now - previous - 2 * Math.PI * Math.round((now - previous) / (2 * Math.PI));
+        previous = now;
+      };
+      run(board, water, seconds, count);
+      const rate = (total / seconds) * (180 / Math.PI);
+      rider.steer = 0;
+      run(board, water, 2, count);
+      return { rate, angle: total * (180 / Math.PI), attached: rider.attached };
     };
-    return { board, rider, water, count, angle: () => total * (180 / Math.PI) };
-  };
-  const spin = (steer: number, seconds = 3, stillTurn?: 'old') => {
-    const s = still(stillTurn);
-    s.rider.steer = steer;
-    run(s.board, s.water, seconds, s.count);
-    return { rate: s.angle() / seconds, attached: s.rider.attached };
-  };
-
-  // Measured: a quarter stick about 17°/s, half about 30°/s, full about 66°/s (strokes every 1.4, 1.2 and 0.8 s); the old
-  // one-arm sweep (`stillTurn: 'old'`) about 19°/s.
-  it('turns a still board by the pivot stroke, faster the further the stick goes', () => {
-    const [quarter, half, full] = [0.25, 0.5, 1].map((steer) => spin(steer));
-    expect(quarter.attached && half.attached && full.attached).toBe(true);
-    expect(quarter.rate).toBeGreaterThan(8);
-    expect(quarter.rate).toBeLessThan(25);
-    expect(half.rate).toBeGreaterThan(22);
-    expect(half.rate).toBeLessThan(38);
-    expect(full.rate).toBeGreaterThan(55);
-    expect(full.rate).toBeLessThan(90);
-    expect(quarter.rate).toBeLessThan(half.rate);
-    expect(half.rate).toBeLessThan(full.rate);
-    expect(spin(-1).rate).toBeCloseTo(-full.rate, 0);
-    const old = spin(1, 3, 'old');
-    expect(old.attached).toBe(true);
-    expect(old.rate).toBeGreaterThan(10);
+    const fast = spin();
+    const old = spin('old');
+    expect(fast.attached && old.attached).toBe(true);
     expect(old.rate).toBeLessThan(30);
+    expect(fast.rate).toBeGreaterThan(80);
+    expect(fast.rate).toBeLessThan(140);
+    // still-turn-precision (2026-11-09): the rate follows the stick on a curve, a quarter stick about 8°/s, half about
+    // 29°/s, full about 94°/s (#212's linear response read about 66, 81 and 94°/s). A 0.15 s tap at full steer, the
+    // stick then let go, turned the board about 44° in all, coasting on once let go (still-turn-brake stops it now).
+    const [quarter, half, full] = [0.25, 0.5, 1].map((steer) => spin(undefined, steer).rate);
+    expect(quarter).toBeGreaterThan(5);
+    expect(quarter).toBeLessThan(10);
+    expect(half).toBeGreaterThan(25);
+    expect(half).toBeLessThan(35);
+    expect(full).toBeGreaterThan(80);
+    expect(quarter).toBeLessThan(half);
+    expect(half).toBeLessThan(full);
   });
 
-  // No hidden moment: the yaw only picks up while the hands are in the water, once a stroke (0.8 s at full stick).
-  it('turns a still board in pulses at the stroke cadence', () => {
-    const s = still();
-    s.rider.steer = 1;
-    let pulls = 0;
-    let wet = false;
-    let gainedDry = 0;
-    let rate = s.board.angularVelocity.y;
-    run(s.board, s.water, 3, () => {
-      const loaded = s.rider.handLoad[0] > 0 || s.rider.handLoad[1] > 0;
-      if (loaded && !wet) pulls += 1;
-      wet = loaded;
-      if (!loaded) gainedDry = Math.max(gainedDry, s.board.angularVelocity.y - rate);
-      rate = s.board.angularVelocity.y;
-    });
-    expect(pulls).toBe(4);
-    expect(gainedDry).toBeLessThan((1 * Math.PI) / 180);
-  });
-
-  // Let go, a pivot stroke the other way checks the spin, as hard as it is fast: a 0.15 s tap at full stick turns about
-  // 6.5° in all, a full spin stops (under 5°/s) about 0.4 s after, running on about 20°. `stillTurn: 'old'` coasts on.
-  it('stops a still board soon after the stick is let go, by a check stroke', () => {
+  // still-turn-brake (2026-11-09): let go, the hands and feet drag against the spin and stop it, so a 0.15 s tap at
+  // full steer turns about 5–12° (it coasted on to about 44° before; `stillTurn: 'old'` still does), and a full spin
+  // stops within about 0.4–0.6 s, running on about 15–30°.
+  it('stops a still board soon after the stick is let go', () => {
     const release = (seconds: number, stillTurn?: 'old') => {
-      const s = still(stillTurn);
-      s.rider.steer = 1;
-      run(s.board, s.water, seconds, s.count);
-      const held = s.angle();
-      s.rider.steer = 0;
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+      const rider = new AttachedRider(board.shape, { phase: 'prone', ...(stillTurn ? { stillTurn } : {}) });
+      board.attach(rider);
+      const water = new PlaneWater();
+      run(board, water, 2);
+      rider.steer = 1;
+      let total = 0;
+      let previous = headingOf(board);
+      const count = () => {
+        const now = headingOf(board);
+        total += now - previous - 2 * Math.PI * Math.round((now - previous) / (2 * Math.PI));
+        previous = now;
+      };
+      run(board, water, seconds, count);
+      const held = total;
+      rider.steer = 0;
       let stop = Infinity;
       let time = 0;
-      run(s.board, s.water, 3, () => {
-        s.count();
+      run(board, water, 3, () => {
+        count();
         time += STEP;
-        if (Math.abs(s.board.angularVelocity.y) >= (5 * Math.PI) / 180) stop = Infinity;
-        else if (stop === Infinity) stop = time;
+        if (stop === Infinity && Math.abs(board.angularVelocity.y) < (5 * Math.PI) / 180) stop = time;
       });
-      return { angle: s.angle(), overshoot: s.angle() - held, stop };
+      return { angle: total * (180 / Math.PI), overshoot: (total - held) * (180 / Math.PI), stop };
     };
     const tap = release(0.15);
-    const spun = release(3);
-    expect(tap.angle).toBeGreaterThan(3);
-    expect(tap.angle).toBeLessThan(12);
-    expect(tap.stop).toBeLessThan(0.8);
-    expect(spun.stop).toBeLessThan(0.6);
-    expect(spun.overshoot).toBeGreaterThan(5);
-    expect(spun.overshoot).toBeLessThan(30);
-    // `stillTurn: 'old'` is as before: the stroke alone barely moves the board in a tap, and a spin runs on unbraked.
-    expect(Math.abs(release(0.15, 'old').angle)).toBeLessThan(1);
+    const oldTap = release(0.15, 'old');
+    const spin = release(3);
     const oldSpin = release(3, 'old');
+    expect(tap.angle).toBeGreaterThan(5);
+    expect(tap.angle).toBeLessThan(12);
+    expect(spin.stop).toBeGreaterThan(0.4);
+    expect(spin.stop).toBeLessThan(0.6);
+    expect(spin.overshoot).toBeGreaterThan(15);
+    expect(spin.overshoot).toBeLessThan(30);
+    // `stillTurn: 'old'` is as before: the stroke alone barely moves the board in a tap, and a spin runs on unbraked.
+    expect(Math.abs(oldTap.angle)).toBeLessThan(1);
     expect(oldSpin.angle).toBeGreaterThan(50);
     expect(oldSpin.angle).toBeLessThan(62);
   });
 
-  // The drawn hands (`renderPoint`, the rig's hand targets) are the hands the water pushes: in the water while they pull,
-  // the outside (right) hand moving aft and the inside (left) one forward, and above the water while they swing back.
-  it('draws the pivot stroke the physics pulls', () => {
-    const s = still();
-    s.rider.steer = 1;
-    const hand = [new Vector3(), new Vector3()];
-    const before = [new Vector3(), new Vector3()];
-    let pulling = 0;
-    let swinging = 0;
-    const was = [false, false];
-    for (let i = 0; i < 2.4 * 60; i += 1) {
-      for (let side = 0; side < 2; side += 1) s.board.toLocal(s.rider.renderPoint(3 + side, s.board, hand[side]), before[side]);
-      s.board.step(STEP, s.water);
-      for (let side = 0; side < 2; side += 1) {
-        s.board.toLocal(s.rider.renderPoint(3 + side, s.board, hand[side]), hand[side]);
-        const deck = deckHeight(s.board.shape, hand[side].z);
-        const loaded = s.rider.handLoad[side] > 1;
-        if (loaded) {
-          pulling += 1;
-          expect(hand[side].y).toBeLessThan(deck - 0.1);
-          if (was[side] && side === 1) expect(hand[side].z).toBeLessThan(before[side].z);
-          else if (was[side]) expect(hand[side].z).toBeGreaterThan(before[side].z);
-        } else if (hand[side].y > deck) swinging += 1;
-        was[side] = loaded;
-      }
-      expect(s.rider.handLoad[0] > 1).toBe(s.rider.handLoad[1] > 1);
-    }
-    expect(pulling).toBeGreaterThan(60);
-    expect(swinging).toBeGreaterThan(40);
-  });
-
   it('turns without paddling by sweeping one arm', () => {
-    // Over 1 s: the pivot stroke turns a still board past 180° in 4 s.
-    const left = turn(1, false, 1);
-    const right = turn(-1, false, 1);
+    const left = turn(1, false);
+    const right = turn(-1, false);
     expect(left.heading).toBeGreaterThan(0.2);
     expect(right.heading).toBeLessThan(-0.2);
     expect(turn(0, false).heading).toBeCloseTo(0, 6);
