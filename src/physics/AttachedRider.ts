@@ -216,6 +216,11 @@ const STILL_MOMENT = 250;
 const STILL_RATE = (130 * Math.PI) / 180;
 const STILL_RAMP = 0.3;
 /**
+ * still-turn-precision (2026-11-09): a small correction is a gentle hand scull, and the slower limb can't push the water
+ * as fast, so the rate the moment falls off at scales with the stick squared (STILL_RATE × steer²): a small stick turns
+ * slowly and precisely, full stick stays fast. The moment and the sweeping hand's reach follow the stick on a curve too.
+ */
+/**
  * A paddler keeps its line: with no steering asked for, the arm on the side to
  * turn toward pulls softer and the other harder, in proportion to the heading
  * error over HOLD_ANGLE, rad, and to the yaw rate over HOLD_ANGLE / HOLD_RATE_TIME
@@ -2491,8 +2496,9 @@ export class AttachedRider {
     this.stillShare = still ? Math.min(1, this.stillShare + h / STILL_RAMP) : 0;
     if (still) {
       const steer = Math.max(-1, Math.min(1, this.steer));
-      const catchUp = Math.max(0, 1 - (Math.sign(steer) * board.angularVelocity.y) / STILL_RATE);
-      this.waterMoment.y += STILL_MOMENT * steer * catchUp * this.stillShare;
+      const limit = STILL_RATE * steer * steer;
+      const catchUp = limit > 0 ? Math.max(0, 1 - (Math.sign(steer) * board.angularVelocity.y) / limit) : 0;
+      this.waterMoment.y += STILL_MOMENT * steer * Math.abs(steer) * catchUp * this.stillShare;
     }
     if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping)) {
       this.line = undefined;
@@ -2556,7 +2562,10 @@ export class AttachedRider {
     if (this.duck.press > DUCK_BUSY) return 0;
     const steer = Math.max(-1, Math.min(1, this.steer + this.hold));
     const outside = side === 1 ? steer : -steer;
-    return this.paddle ? 1 + STEER_STROKE * outside : Math.max(0, outside);
+    if (this.paddle) return 1 + STEER_STROKE * outside;
+    // A still board's small correction is a gentle scull: the slower hand meets the water as the square of the stick.
+    const sweep = Math.max(0, outside);
+    return this.stillKick ? sweep * sweep * sweep : sweep;
   }
 
   /** Paddling straight, the correction that brings the board back to its line; steering, a new line. */
