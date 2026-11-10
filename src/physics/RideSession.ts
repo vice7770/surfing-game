@@ -142,6 +142,8 @@ export interface RideSessionOptions {
   snapStamp?: 'on';
   /** The agile legs (rider-agile, 2026-11-09; `AttachedRiderOptions.agile`): 'on' (the `?agile=on` dev switch); by default as before. */
   agile?: 'on';
+  /** The leg drive (leg-drive, 2026-11-10; `AttachedRiderOptions.legDrive`): 'on' (the `?legDrive=on` dev switch); by default as before. */
+  legDrive?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -227,6 +229,7 @@ export class RideSession {
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),
       ...(options.agile ? { agile: options.agile } : {}),
+      ...(options.legDrive ? { legDrive: options.legDrive } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

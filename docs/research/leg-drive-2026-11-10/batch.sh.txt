@@ -1,0 +1,19 @@
+# Note: the ZLD_* variables were scratch knobs in AttachedRider.ts during the study (strength, reach and grip
+# variants). They are not in the shipped source, so those lines now all run the shipped leg drive.
+#!/bin/zsh
+cd /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/snap-arms-gate/wt
+C="START=trim AT=0.75 MATCH=canyon SPEEDS=0,1.5"
+ARM="HEIGHTS=1.4,1.95"
+ON='OPTS={"legDrive":"on"}'
+for v in "a035 ZLD_S=0.35" "a1 ZLD_S=1"; do set -- ${=v}
+  STEERS="0.3 1" UPS=55 ../sp/run2.sh $1-mild ${=C} $ARM CONTROLS=release,steer,compress $ON $2
+  STEERS=1 UPS=0 ../sp/run2.sh $1-unt ${=C} $ARM PLANS=none CONTROLS=release,steer,compress,snap,agile $ON $2
+  STEERS="0.5 1" UPS="65 80" ../sp/run2.sh $1-med ${=C} $ARM CONTROLS=release,steer,compress $ON $2
+  STEERS="0.5 1" UPS="65 80" ../sp/run2.sh $1-bowl ${=C} HEIGHTS=2.1 CONTROLS=release,steer,compress $ON $2
+  STEERS="0.5 1" UPS="65 80" ../sp/run2.sh $1-big ${=C} HEIGHTS=2.3,2.85 CONTROLS=release,steer,compress $ON $2
+done
+STEERS="0.5 1" UPS="65 80" ../sp/run2.sh base-bowl ${=C} HEIGHTS=2.1 CONTROLS=release,steer,compress
+STEERS="0.5 1" UPS="65 80" ../sp/run2.sh base-big ${=C} HEIGHTS=2.3,2.85 CONTROLS=release,steer,compress
+STEERS="0.3 1" UPS=55 ../sp/run2.sh base-mild ${=C} $ARM CONTROLS=release,steer,compress
+STEERS=1 UPS=0 ../sp/run2.sh base-unt ${=C} $ARM PLANS=none CONTROLS=release,steer,compress,snap,agile
+echo DONE

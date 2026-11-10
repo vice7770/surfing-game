@@ -227,6 +227,12 @@ export interface SurfZoneConfig {
    */
   agile?: 'on';
   /**
+   * 'on': at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in
+   * the lean-out pull's place (leg-drive, 2026-11-10; `RideSessionOptions.legDrive`). Every spot. The `?legDrive=on` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  legDrive?: 'on';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

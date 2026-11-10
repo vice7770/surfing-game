@@ -577,6 +577,24 @@ const PULL_FULL_SPEED = 5;
  * 1.5 more rebounds fell, changing rails from the cutback's deeper lean.
  */
 const LEAN_OUT_PULL = 1;
+/**
+ * The leg drive (leg-drive, 2026-11-10; `legDrive: 'on'`, opt-in; docs/research/leg-drive-2026-11-10): the rail
+ * change's righting push made by the legs, in LEAN_OUT_PULL's place. The cause: LEAN_OUT_PULL pushes the body's centre
+ * of mass from outside, a force with no reaction; a rider leaning toward the wave is righted when the feet go under the
+ * body, the back leg driving the tail out, away from the new rail. So under LEAN_OUT_PULL's gate less Compress (the
+ * board planes, the rider steers, the body still leans the other way by more than UPRIGHT_BANK) the legs push the body
+ * toward the new rail, level and across the board's path, and the board takes the equal and opposite push at the back
+ * foot: nothing on the two together, and the push behind the board's centre is the yaw that goes with it. The limbs
+ * bound it three ways:
+ * - strength: LEG_SIDE_STRENGTH of the body's weight (the back leg's push sideways, as the agile legs'), by the steer;
+ * - grip: FOOT_FRICTION times the back foot's own load (an unloaded foot pushes nothing: unbounded, a body weight
+ *   threw the board from under every rider in 0.2 s);
+ * - reach: the push ends when the feet have gone as far from under the body, since it began, as the legs reach
+ *   sideways at this pelvis height: sqrt(straight² − pelvis²), the straight leg being the stance's pelvis height with
+ *   LEG_EXTENSION, so 0.41 m standing (pelvis 0.78 m) and 0.72 m in Compress's crouch (0.48 m).
+ * The two forces do not share a line, so they are also a couple (the push times the body's height over the back foot)
+ * that a real body takes at the hips; the point-mass body has nowhere to take it (the doc's open point).
+ */
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -1022,6 +1040,12 @@ export interface AttachedRiderOptions {
    * with them in place of the stamp (the `?agile=on` dev switch, to ride). By default as before.
    */
   agile?: 'on';
+  /**
+   * The leg drive (leg-drive, 2026-11-10; LEAN_OUT_PULL's note), opt-in: 'on' makes the rail change's righting push a
+   * pair through the legs, on the body toward the new rail and the opposite on the board at the back foot, in
+   * LEAN_OUT_PULL's place and without Compress's gate (the `?legDrive=on` dev switch, to ride). By default as before.
+   */
+  legDrive?: 'on';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1156,6 +1180,8 @@ export interface RiderWork {
   carry: number;
   /** Done by the rail change's lean-out pull (LEAN_OUT_PULL), a gameplay rule's. */
   leanOut: number;
+  /** Done on the body by the legs' drive at a rail change (`legDrive: 'on'`): the legs' own work, with the board's share in its ledger. */
+  legDrive: number;
 }
 
 type V3 = { x: number; y: number; z: number };
@@ -1219,7 +1245,7 @@ export class AttachedRider {
    * touches down (the swept contact's `covered`). Only then does full manual crouch fold into the deep tuck.
    */
   covered = false;
-  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0 };
+  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0, legDrive: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
   /** The water's latest force on each stroking hand (left, right), N. */
@@ -1523,6 +1549,16 @@ export class AttachedRider {
   private readonly carryForce = new Vector3();
   /** The rail change's lean-out pull on the body, N (world): LEAN_OUT_PULL. */
   private readonly leanOutForce = new Vector3();
+  /** The leg drive; only with `legDrive: 'on'`. */
+  private readonly legDrive: boolean;
+  /** The leg drive on the body, N (world); the board takes the opposite at the back foot, `driveFoot` from its centre (world). */
+  private readonly driveForce = new Vector3();
+  private readonly driveFoot = new Vector3();
+  private readonly driveDirection = new Vector3();
+  private driveStep = 0;
+  private driveSide = 0;
+  private driveUsed = 0;
+  private driveReach = 0;
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -1537,6 +1573,7 @@ export class AttachedRider {
     this.recentres = options.snapRecentre !== 'old';
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
     this.agile = options.agile === 'on';
+    this.legDrive = options.legDrive === 'on';
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
@@ -1808,6 +1845,10 @@ export class AttachedRider {
     this.work.assist = 0;
     this.work.carry = 0;
     this.work.leanOut = 0;
+    this.work.legDrive = 0;
+    this.driveUsed = 0;
+    this.driveSide = 0;
+    this.driveForce.set(0, 0, 0);
     this.struckBy.clear();
     this.lastLipImpulse.set(0, 0, 0);
     this.sway.set(0, 0, 0);
@@ -2239,7 +2280,9 @@ export class AttachedRider {
     this.gravity.set(0, -this.mass * WATER.gravity, 0);
     this.waterForces(h, board, water);
     this.compressAssist(board);
+    this.legDriveStep(h, board);
     this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce).add(this.carryForce).add(this.leanOutForce);
+    if (this.legDrive) this.external.add(this.driveForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
@@ -2444,11 +2487,50 @@ export class AttachedRider {
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
     this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
+    // With the leg drive the legs make this push (`legDriveStep`), never both.
     const side = Math.sign(this.steer);
-    if (-this.bank.angle * side > UPRIGHT_BANK) {
+    if (!this.legDrive && -this.bank.angle * side > UPRIGHT_BANK) {
       this.leanOutForce.crossVectors(Y, along)
         .multiplyScalar(side * Math.min(1, Math.abs(this.steer)) * speedFade * compress * LEAN_OUT_PULL * this.mass * WATER.gravity);
     }
+  }
+
+  /** The leg drive (LEG_SIDE_STRENGTH's push at a rail change): the legs' push on the body this substep, within their strength, the back foot's grip and their reach. */
+  private legDriveStep(h: number, board: BoardBody): void {
+    this.driveForce.set(0, 0, 0);
+    if (!this.legDrive) return;
+    const side = Math.sign(this.steer);
+    const open = this.upright && this.banking && this.planing && Math.abs(this.steer) > STEER_DEADBAND && -this.bank.angle * side > UPRIGHT_BANK;
+    if (!open || side !== this.driveSide) {
+      this.driveUsed = 0;
+      this.driveSide = open ? side : 0;
+    }
+    if (!open) return;
+    const along = this.scratch.set(board.velocity.x - this.waterFlow.x, 0, board.velocity.z - this.waterFlow.z);
+    if (along.lengthSq() < 1e-6) return;
+    along.normalize();
+    const direction = this.driveDirection.crossVectors(Y, along).multiplyScalar(side);
+    const stance = this.parts[1] - this.base.y;
+    const pelvis = stance + this.scratch2.subVectors(this.position, this.target).dot(this.up);
+    const straight = stance + LEG_EXTENSION;
+    this.driveReach = Math.sqrt(Math.max(0, straight * straight - pelvis * pelvis));
+    const foot = board.toWorld(this.localScratch.set(0, deckHeight(this.shape, this.feet.rear), this.feet.rear), this.driveFoot).sub(board.centerOfMass);
+    const slide = cross(board.angularVelocity, foot, this.scratch2).add(board.velocity).sub(this.velocity);
+    this.driveUsed = Math.max(0, this.driveUsed - h * slide.dot(direction));
+    if (this.driveUsed >= this.driveReach) return;
+    const share = Number.isFinite(this.contact.frontShare) ? this.contact.frontShare : 0.5;
+    const strength = LEG_SIDE_STRENGTH * this.mass * WATER.gravity * Math.min(1, Math.abs(this.steer));
+    const grip = FOOT_FRICTION * this.legLoad * (1 - share);
+    this.driveForce.copy(direction).multiplyScalar(Math.min(strength, grip));
+  }
+
+  /**
+   * The leg drive's state the latest substep: the push on the body, N (world; the board takes the opposite at `foot`,
+   * the back foot from the board's centre of mass, world), how far the feet have gone from under the body since the
+   * push began and the legs' sideways reach at this pelvis height, m. For the rig: the pelvis `used` off the feet's line.
+   */
+  get legPush(): { force: Readonly<Vector3>; foot: Readonly<Vector3>; used: number; reach: number } {
+    return { force: this.driveForce, foot: this.driveFoot, used: this.driveUsed, reach: this.driveReach };
   }
 
   private resetTwist(): void {
@@ -2961,6 +3043,8 @@ export class AttachedRider {
     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
     // The ankle pushes the body back across the leg by its torque over the leg's length.
     if (this.banking) rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
+    this.driveStep = h;
+    if (this.legDrive) this.pushDrive(rhs);
     // The upper body's swing turns the body on its feet; the board feels only the push at the feet, not its couple.
     rhs[3] -= h * this.swingTorque * this.rollAxis.x;
     rhs[4] -= h * this.swingTorque * this.rollAxis.y;
@@ -3008,6 +3092,20 @@ export class AttachedRider {
     rhs[3] -= torque.x;
     rhs[4] -= torque.y;
     rhs[5] -= torque.z;
+    if (this.legDrive && this.upright) this.pushDrive(rhs);
+  }
+
+  /** The leg drive's reaction on the board: the opposite push at the back foot, so the pair is nothing on the two together. */
+  private pushDrive(rhs: Float64Array): void {
+    const h = this.driveStep;
+    const force = this.driveForce;
+    const torque = cross(this.driveFoot, force, this.localScratch);
+    rhs[0] -= h * force.x;
+    rhs[1] -= h * force.y;
+    rhs[2] -= h * force.z;
+    rhs[3] -= h * torque.x;
+    rhs[4] -= h * torque.y;
+    rhs[5] -= h * torque.z;
   }
 
   /** After the board has moved: the rider's own motion and ledgers. */
@@ -3052,6 +3150,12 @@ export class AttachedRider {
     this.work.assist += h * this.assistForce.dot(mean);
     this.work.carry += h * this.carryForce.dot(mean);
     this.work.leanOut += h * this.leanOutForce.dot(mean);
+    if (this.legDrive && this.driveForce.lengthSq() > 0) {
+      this.work.legDrive += h * this.driveForce.dot(mean);
+      const footBefore = cross(this.boardSpin, this.driveFoot, this.scratch2).add(this.boardVelocity);
+      const footAfter = cross(board.angularVelocity, this.driveFoot, this.localScratch).add(board.velocity);
+      board.work.rider -= (h * this.driveForce.dot(footBefore.add(footAfter))) / 2;
+    }
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;

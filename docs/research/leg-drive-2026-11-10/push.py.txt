@@ -1,0 +1,9 @@
+# usage: push.py trace.json ; the push in a trace: its span, force, used reach, the bank and the board's yaw through it
+import json,sys
+for k,v in json.load(open(sys.argv[1]))['traces'].items():
+  on=[f for f in v if f.get('dr',0)>0 and f['t']>0.5]
+  if not on: print(k,'no push'); continue
+  t0,t1=on[0]['t'],on[-1]['t']; span=[f for f in v if t0-0.1<=f['t']<=t1+0.6]
+  dt=v[1]['t']-v[0]['t']
+  yaw=sum(f['yw']*dt for f in on)
+  print(k, f"push {t0:.2f}-{t1:.2f} s, force {min(f['dr'] for f in on):.2f}-{max(f['dr'] for f in on):.2f} mean {sum(f['dr'] for f in on)/len(on):.2f} BW, used {max(f['du'] for f in on):.2f} of reach {on[0]['dR']:.2f}-{max(f['dR'] for f in on):.2f} m, bank {on[0]['bank']}->{on[-1]['bank']}, peak bank rate {max(f['bkr'] for f in span):.0f} deg/s, yaw rate {min(f['yw'] for f in on):.0f}..{max(f['yw'] for f in on):.0f} deg/s, yawed {yaw:.0f} deg in the push, speed {on[0]['speed']}->{min(f['speed'] for f in span)} m/s (least), limits {sorted(set(f['lim'] for f in on))}")

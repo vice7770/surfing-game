@@ -493,6 +493,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...snapStampSwitch(),
     // `?agile=on`: the riders' two legs act apart; a full steer under Snap launches the tail with the feet's couple (rider-agile), opt-in, to ride.
     ...agileSwitch(),
+    // `?legDrive=on`: at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in the lean-out pull's place (leg-drive), opt-in, to ride.
+    ...legDriveSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -802,6 +804,15 @@ export function snapDepthSwitch(search?: string): { snapDepth?: 'deep' } {
  */
 export function agileSwitch(search?: string): { agile?: 'on' } {
   return devParam('agile', search)?.trim().toLowerCase() === 'on' ? { agile: 'on' } : {};
+}
+
+/**
+ * The `?legDrive=on` dev switch (`SurfZoneConfig.legDrive`, leg-drive 2026-11-10, "no force without its reaction"):
+ * opt-in, every spot's rider rights itself at a rail change by its legs, a push on the body toward the new rail with its
+ * equal and opposite on the board at the back foot, in the place of the lean-out pull on the body alone.
+ */
+export function legDriveSwitch(search?: string): { legDrive?: 'on' } {
+  return devParam('legDrive', search)?.trim().toLowerCase() === 'on' ? { legDrive: 'on' } : {};
 }
 
 /**

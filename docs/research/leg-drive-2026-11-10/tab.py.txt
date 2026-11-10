@@ -1,0 +1,18 @@
+# usage: tab.py <tag>... ; per tag and control: sudden / stall / other / stay, topFrom, the speed at the top (vTop) and the least speed of those that stay on
+import json,sys,re,glob,os
+here=os.path.dirname(os.path.abspath(__file__))
+def kind(o):
+  if o['fell'] is None: return 'stay'
+  m=re.search(r'v ([-\d.]+) ff ([-\d.]+) bank ([-\d.]+)',o['fellAt']); v=float(m.group(1)); bank=float(m.group(3))
+  if abs(bank)>=45: return 'sudden'
+  if o['cause']=='balance' and abs(bank)<=20 and v<2.5: return 'stall'
+  return 'other'
+rg=lambda v,f='%.0f': (f%min(v)+'-'+f%max(v)) if v else '-'
+for tag in sys.argv[1:]:
+  rows=[]
+  for p in sorted(glob.glob(f'{here}/../cal/{tag}-*.json')): rows+=json.load(open(p))['out']
+  for c in sorted(set(o['control'] for o in rows)):
+    sel=[o for o in rows if o['control']==c]; k=[kind(o) for o in sel]
+    on=[o for o in sel if o['fell'] is None]; rnd=[o for o in on if o['round'] is not None]
+    tf=[o['topFrom'] for o in sel if o.get('topFrom') is not None]
+    print(f"{tag:12s} {c:9s} n {len(sel):2d} sudden {k.count('sudden'):2d} stall {k.count('stall'):2d} other {k.count('other'):2d} stay {k.count('stay'):2d} | topFrom {rg(tf)} | round {len(rnd)}: turned {rg([abs(o['turned']) for o in rnd])} deg, vTop {rg([o['vTop'] for o in rnd],'%.1f')}, least {rg([o['least'] for o in rnd],'%.1f')} m/s, in {rg([o['round'] for o in rnd],'%.1f')} s")
