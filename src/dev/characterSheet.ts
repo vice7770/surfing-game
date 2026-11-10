@@ -24,7 +24,8 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SkinnedSurfer } from '../scene/character/SkinnedSurfer';
-import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
+import { RIG_DETAIL, RIG_SWITCHES } from '../scene/rig/HumanoidRig';
+import { turnBodySwitches } from '../scene/rig/stanceBlend';
 import type { OutfitId } from '../scene/character/outfits';
 import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
@@ -32,12 +33,14 @@ import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
 import { StanceGauge, measureJoints, type StanceJoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
-import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
+import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, TURN_FILMS, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
 import { drawRealism } from './realismSheet';
 import { figureAngles, figureLengths, figurePlan, referenceJoints } from './stanceFigure';
 import { MEASURE_LABEL, compareStance, formatMeasure } from './stanceReport';
 
 const params = new URLSearchParams(window.location.search);
+// The turning body's switches, as in the game (`?turnTrunk=lean`, `?turnLead=on`, `?cutbackHand=back`, or `?turnBody=on`).
+Object.assign(RIG_SWITCHES, turnBodySwitches(window.location.search));
 const timeOfDay = (params.get('sky') ?? 'midday') as TimeOfDay;
 const SURFERS = ['surfer1', 'surfer2', 'surfer3', 'surfer4'];
 /** One outfit each, so the sheet shows all four: the women in the full suit and the bikini, the men in the shorts and the spring suit. */
@@ -299,6 +302,8 @@ function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, r
 
 /** Motions for the films beside the map's stances: a pump's three pulses, a held bottom turn released, a weave with the weight back. */
 const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
+  // The turning body's films (`TURN_FILMS`): the carves each side and the cutbacks, for the drawn switches (`?turnBody=on`).
+  ...TURN_FILMS,
   pumping: {
     ...STANCE_RECIPES['pump-compression'],
     controls: [{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }, { at: 1.2, crouch: 1 }, { at: 1.6, crouch: 0 }, { at: 2.0, crouch: 1 }, { at: 2.4, crouch: 0 }],

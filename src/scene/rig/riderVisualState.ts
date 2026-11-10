@@ -69,6 +69,12 @@ export interface RiderVisualState {
    * another player's fall is read from its motion. Undefined riding, or unknown.
    */
   separation: RiderSeparation | undefined;
+  /**
+   * The player's stick, −1 to 1 (+ turns the board toward its left, the heading growing), as the page last sent it to
+   * the ride (`RIG_SWITCHES.turnLead`: the body turns into the turn before the board does). Local only: it is not in
+   * the snapshot nor on the wire, so another player's is 0 and their body waits on the board as before.
+   */
+  steer: number;
   /** The rider's stance where the drawing knows it (the player's own setting); undefined, the rig reads it from the feet. */
   stance: StanceName | undefined;
   /** A running clock, s, for the code-driven cycles (the swimmer's crawl and kick). */
@@ -113,6 +119,7 @@ export function createRiderVisualState(): RiderVisualState {
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false, grip: new Vector3(), gripped: false },
     swim: { stroking: false, diving: false, under: false, holding: false, climbing: false, ducking: false },
     separation: undefined,
+    steer: 0,
     stance: undefined,
     clock: 0,
     breath: 1,

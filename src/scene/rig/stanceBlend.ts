@@ -18,7 +18,31 @@ export const SNAP_FULL = -0.3;
  * the player's and other players'. `snapArms: 'old'` (`?snapArms=old`): Snap drawn as before snap-carve (its arms, and
  * the tube's pose for a deep Snap: `HumanoidRig`'s `RIG_DETAIL.snapArms`, `StageBlend`'s tube).
  */
-export const RIG_SWITCHES: { snapArms?: 'old' } = {};
+export const RIG_SWITCHES: RigSwitches = {};
+/**
+ * `snapArms: 'old'` as above. The turning body (2026-11-10, the owner's "the movement of the surfer is very off"; the
+ * study in docs/research/turn-body-2026-11-10), each opt-in and drawn only:
+ * - `turnTrunk: 'lean'` (`?turnTrunk=lean`): in a turn the trunk leans with the physics' lean line, not folded over the toes.
+ * - `turnLead: 'on'` (`?turnLead=on`): the stick (`RiderVisualState.steer`) turns the head, then the chest, then the hips,
+ *   and starts the turn's pose, before the board comes round. Another player's stick is not on the wire (0): as before.
+ * - `cutbackHand: 'back'` (`?cutbackHand=back`): in a frontside cutback the back hand reaches for the water, the front arm
+ *   points where the board goes.
+ * `?turnBody=on` sets all three (`turnBodySwitches`).
+ */
+export interface RigSwitches { snapArms?: 'old'; turnTrunk?: 'lean'; turnLead?: 'on'; cutbackHand?: 'back' }
+
+/** The turning body's switches from a page's address (`RIG_SWITCHES`); `enabled` false (the dev tools off), none. */
+export function turnBodySwitches(search: string, enabled = true): Pick<RigSwitches, 'turnTrunk' | 'turnLead' | 'cutbackHand'> {
+  if (!enabled) return {};
+  const params = new URLSearchParams(search);
+  const is = (name: string, value: string) => params.get(name)?.trim().toLowerCase() === value;
+  const all = is('turnBody', 'on');
+  return {
+    ...(all || is('turnTrunk', 'lean') ? { turnTrunk: 'lean' as const } : {}),
+    ...(all || is('turnLead', 'on') ? { turnLead: 'on' as const } : {}),
+    ...(all || is('cutbackHand', 'back') ? { cutbackHand: 'back' as const } : {}),
+  };
+}
 /** A turn this fast, rad/s, is a full one for the stance's shapes (Part B's leading arm). */
 export const TURN_FULL = 1.5;
 

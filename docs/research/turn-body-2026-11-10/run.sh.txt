@@ -12,3 +12,4 @@ done
 rm src/dev/zz-turnbody.test.ts
 for f in $O/*.json; do python3 docs/research/turn-body-2026-11-10/tab.py.txt $f 0.25; done > results-tables.txt
 for f in $O/*.json; do python3 docs/research/turn-body-2026-11-10/onset.py.txt $f; done > results-onset.txt
+# With the drawn switches on (drawn-fixes.md): add SW=turnBody=on (or turnTrunk=lean, turnLead=on, cutbackHand=back) to each run.

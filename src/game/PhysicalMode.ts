@@ -8,7 +8,7 @@ import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
 import { RiderMotion } from '../scene/rig/riderMotion';
-import { RIG_SWITCHES } from '../scene/rig/stanceBlend';
+import { RIG_SWITCHES, turnBodySwitches } from '../scene/rig/stanceBlend';
 import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
@@ -46,7 +46,7 @@ import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/Spectato
 import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, sweptCrashOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
-import { devParam } from '../devTools';
+import { DEV_TOOLS, devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
 import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, poolTubeCaseOf, type PoolTubeCase, type TubeShape } from '../wave/barrel/barrelLibrary';
 import { BARREL_SPOTS } from '../wave/barrel/barrelSpots';
@@ -1061,6 +1061,8 @@ export class PhysicalMode {
   private visualLipLook?: WaterLook;
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
+  /** The stick last sent to the ride (the drawn body's lead into a turn, `RIG_SWITCHES.turnLead`). */
+  private steerSent = 0;
   /**
    * The pop-up key asked this frame and the dive past half (the hold's reading), and whether the fallen surfer holds
    * the board (the animation-realism plan's phase 4: the snapshot does not carry it): drawn, and sent to the others.
@@ -1171,6 +1173,9 @@ export class PhysicalMode {
   constructor(scene: Scene) {
     // `?snapArms=old`: Snap's arms drawn as before snap-carve (`RIG_SWITCHES`, every rider this page draws).
     RIG_SWITCHES.snapArms = snapArmsSwitch().snapArms;
+    // `?turnTrunk=lean`, `?turnLead=on`, `?cutbackHand=back`, or `?turnBody=on` for all three: the turning body (drawn only;
+    // every rider this page draws, another player's without the stick's lead: their stick is not on the wire).
+    Object.assign(RIG_SWITCHES, { turnTrunk: undefined, turnLead: undefined, cutbackHand: undefined }, turnBodySwitches(globalThis.location?.search ?? '', DEV_TOOLS));
     this.scene = scene;
     scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object, this.curtains.mesh, this.fan.group);
     this.leash.object.visible = false;
@@ -1448,6 +1453,8 @@ export class PhysicalMode {
       this.placePending = undefined;
     }
     if (input) this.paddling = input.paddle;
+    // The stick as the ride gets it, for the drawing only (`RiderVisualState.steer`).
+    if (input) this.steerSent = input.steer;
     this.asking = Boolean(input && (input.popUp || input.reel));
     this.diving = (input?.duckDive ?? 0) > 0.3;
     const request = input || retry || place
@@ -1532,6 +1539,7 @@ export class PhysicalMode {
       // drawn fall's shape), and the player's stance (the leash's hand).
       this.riderState.separation = status.ride?.separation;
       this.riderState.stance = this.stance ?? 'regular';
+      this.riderState.steer = this.steerSent;
       this.riderState.swim.holding = this.holds.update({
         fallen: this.riderState.phase === 'fallen', asked: this.asking, diving: this.diving, status: status.ride,
         chest: this.riderState.points[POINT.torso], board: this.riderState.boardPosition, turn: this.riderState.boardQuaternion,

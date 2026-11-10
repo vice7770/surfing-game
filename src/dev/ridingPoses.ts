@@ -182,6 +182,26 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen', swim: 'old' }),
 };
 
+
+/**
+ * The turning body's films (2026-11-10; `docs/research/turn-body-2026-11-10/drawn-fixes.md`): on flat water at 8 m/s, the
+ * stick alone or with Compress from 0.3 s onto the toes' rail (`steer` +1) or the heels', let go at 1.8 s; and the
+ * cutbacks, a Compress carve for 1 s, then Snap with the stick thrown the other way for 1.2 s (frontside: off the toes'
+ * rail onto the heels'). The character sheet plays them (`?motion=turn-toe`), with the drawn switches of the address
+ * (`?turnBody=on`), and the turning body's tests read them.
+ */
+const turnFilm = (controls: Controls[], seconds: number): StanceRecipe => ({ phase: 'standing', water: 'flat', start: 'standing', speed: 8, controls, seconds });
+const carveFilm = (steer: number, compress: number) => turnFilm([{ at: 0.3, compress, steer }, { at: 1.8, compress: 0, steer: 0 }], 2.4);
+const cutbackFilm = (steer: number) => turnFilm([{ at: 0.3, compress: 1, steer }, { at: 1.3, compress: 0, snap: 1, steer: -steer }, { at: 2.5, snap: 0, steer: 0 }], 2.9);
+export const TURN_FILMS: Record<string, StanceRecipe> = {
+  'turn-toe': carveFilm(1, 1),
+  'turn-heel': carveFilm(-1, 1),
+  'turn-stand-toe': carveFilm(1, 0),
+  'turn-stand-heel': carveFilm(-1, 0),
+  'turn-cutback': cutbackFilm(1),
+  'turn-cutback-backside': cutbackFilm(-1),
+};
+
 /**
  * Crouched trim (Shift held) across the face, frontside: the owner's reference
  * photo of 2026-10-22 (the arms framing the knees), not a stance of the map.
@@ -397,6 +417,8 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
     out.boardQuaternion.copy(board.orientation);
   }
   out.stroking = 0;
+  // As the page does (`PhysicalMode`): the stick last sent, for the drawing's lead into a turn.
+  out.steer = rider.steer;
   return out;
 }
 
@@ -486,7 +508,7 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   Object.assign(to, {
     phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, leanRate: from.leanRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
-    separation: from.separation, stance: from.stance, weight: from.weight, twist: from.twist,
+    separation: from.separation, stance: from.stance, weight: from.weight, twist: from.twist, steer: from.steer,
   });
   to.boardPosition.copy(from.boardPosition);
   to.boardQuaternion.copy(from.boardQuaternion);

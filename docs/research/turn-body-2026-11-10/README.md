@@ -2,6 +2,9 @@
 
 **Measurement and diagnosis only. No source change, no default changed.**
 
+The three drawn changes built from this study (opt-in switches) and their before/after numbers are in
+[`drawn-fixes.md`](drawn-fixes.md).
+
 The owner rode Canyon and said: *"I was able to make a cutback on a wave but the movement of the
 surfer is very off. Also not able to turn as sharp as the video."* This study takes each thing
 seen in the owner's clip, checks it against the game's own numbers, and says whether the cause is
