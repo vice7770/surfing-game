@@ -1975,7 +1975,10 @@ export class HumanoidRig {
       const z = this.scratch.copy(state.points[POINT.pelvis]).sub(state.boardPosition).applyQuaternion(this.boardInverse.copy(state.boardQuaternion).invert()).add(BOARD_CENTRE).z
         + end * snapArms.along;
       const water = this.scratch.set(low * (railHalfWidth(z) + snapArms.railOut), 0, z).sub(BOARD_CENTRE).applyQuaternion(state.boardQuaternion).add(state.boardPosition);
-      this.drawnHand[side].lerp(water, share);
+      // A hand on the rail (the physics' rail grab) stays there: the reach toward the water fades out within 0.25 m of the rail.
+      const hand = this.handScratch.copy(this.drawnHand[side]).sub(state.boardPosition).applyQuaternion(this.boardInverse).add(BOARD_CENTRE);
+      const off = Math.hypot(Math.abs(hand.x) - railHalfWidth(hand.z), hand.y - deckAt(hand.z));
+      this.drawnHand[side].lerp(water, share * ramp(off, 0.03, 0.25));
     }
   }
 
