@@ -1,0 +1,71 @@
+# face-hold calibration, Canyon version B: summary of wave-measure-canyon's JSON (one or more seeds of one swell, pooled).
+# usage: python3 wmc.py wm-practice-1.json wm-practice-2.json ...
+# Per column: crests tracked frame to frame; a wave counts where its crest starts breaking (strength > 0.3) after a clean
+# approach. Per wave: medians over 3.0..0.4 s before the onset ("pre") and 0.8..2.0 s after ("post"). Then across waves:
+# median, 10th-90th percentile, and the biggest quarter by height ("sets"). Peel: the same wave's onsets in neighbouring columns.
+import json,sys,math,statistics as st
+med=lambda v: st.median(v) if v else float('nan')
+def pct(v,p):
+  v=sorted(v); 
+  if not v: return float('nan')
+  k=(len(v)-1)*p; i=int(k); j=min(i+1,len(v)-1); return v[i]+(v[j]-v[i])*(k-i)
+KEYS=['H','Lz','cs','slope','steepFrac','fall','dSteep','dTrough','etaT','uCrest','uSteep','uTrough','aCrest','aSteep','aTrough']
+waves={}; posts={}; onsets={}; cols=None; info=None; nobreak={}
+for path in sys.argv[1:]:
+  d=json.load(open(path)); cols=d['columns']; info=d
+  for x in cols:
+    rows=[f for f in d['frames'] if f['x']==x]; tracks=[]; live=[]
+    for f in rows:
+      best=None
+      live=[tr for tr in live if f['t']-tr[-1]['t']<=0.45]
+      for tr in live:
+        l=tr[-1]; dt=f['t']-l['t']
+        if 0<dt<=0.45 and -0.6<=f['z']-l['z']<=11*dt+0.6:
+          if best is None or abs(f['z']-l['z'])<abs(f['z']-best[-1]['z']): best=tr
+      if best is not None: best.append(f)
+      else: tr=[f]; tracks.append(tr); live.append(tr)
+    for tr in tracks:
+      if len(tr)<15: continue
+      on=next((i for i,f in enumerate(tr) if f['brk']>0.3),None)
+      if on is None:
+        if max(f['H'] for f in tr)>=0.8: nobreak[x]=nobreak.get(x,0)+1
+        continue
+      if on<10 or any(f['brk']>0.05 for f in tr[max(0,on-15):on-2]): continue
+      t0=tr[on]['t']
+      a=[f for f in tr if -3.0<=f['t']-t0<=-0.4 and f['Lz']>2]; b=[f for f in tr if 0.8<=f['t']-t0<=2.0 and f['Lz']>2]
+      if len(a)<6: continue
+      w={k:med([f[k] for f in a]) for k in KEYS if k!='cs'}
+      w['cs']=med([f['zs']-f['z'] for f in a]); w['slopeMax']=max(f['slope'] for f in a)
+      fall=math.radians(w['fall'])
+      w['c']=(a[-1]['z']-a[0]['z'])/(a[-1]['t']-a[0]['t'])*math.cos(fall); w['cz']=(a[-1]['z']-a[0]['z'])/(a[-1]['t']-a[0]['t'])
+      w['t0']=t0; w['z0']=tr[on]['z']; w['seed']=d['seed']
+      waves.setdefault(x,[]).append(w)
+      if len(b)>=4:
+        p={k:med([f[k] for f in b]) for k in KEYS if k!='cs'}; p['c']=(b[-1]['z']-b[0]['z'])/(b[-1]['t']-b[0]['t'])*math.cos(math.radians(p['fall'])); p['slopeMax']=max(f['slope'] for f in b)
+        posts.setdefault(x,[]).append(p)
+print('##',info['swell'],'seeds',[json.load(open(p))['seed'] for p in sys.argv[1:]],'take-off',info['takeOff'],'start',info['start'],'config',{k:info['config'][k] for k in ('significantHeight','peakPeriod','spreading')})
+def line(name,ws):
+  if not ws: return f'{name}: none'
+  o=f'{name} n {len(ws):2d}'
+  for k,lab,fm in [('H','H','.2f'),('c','c','.1f'),('slope','slope','.1f'),('slopeMax','slopeMax','.1f'),('steepFrac','frac','.2f'),('cs','cr>st','.1f'),('Lz','Lz','.1f'),('fall','fall','.0f'),('dSteep','d','.2f'),('etaT','etaT','.2f'),('uCrest','uC','.2f'),('uSteep','uS','.2f'),('uTrough','uT','.2f'),('aCrest','aC','.2f'),('aSteep','aS','.2f')]:
+    v=[w[k] for w in ws if k in w]
+    if v: o+=f' | {lab} {format(med(v),fm)} ({format(pct(v,0.1),fm)}..{format(pct(v,0.9),fm)})'
+  return o
+for x in cols:
+  ws=waves.get(x,[])
+  print(f'-- x {x} (dx {x-info["takeOff"]["x"]:+d}): broke cleanly {len(ws)}, passed unbroken (H>=0.8) {nobreak.get(x,0)}; onset z median {med([w["z0"] for w in ws]):.1f} ({pct([w["z0"] for w in ws],0.1):.1f}..{pct([w["z0"] for w in ws],0.9):.1f})')
+  print('  ',line('pre  all ',ws))
+  big=sorted(ws,key=lambda w:-w['H'])[:max(1,len(ws)//4)] if ws else []
+  print('  ',line('pre  sets',big))
+  print('  ',line('post all ',posts.get(x,[])))
+# Peel: the same wave's onset in neighbouring columns (same seed, within 5 s). Positive dt: the break reaches x+10 later (runs +x).
+print('-- peel between neighbouring columns: n pairs | dt median (10..90) s | along-x speed from median dt | z step')
+for a,b in zip(cols,cols[1:]):
+  pairs=[]
+  for w in waves.get(a,[]):
+    c=[v for v in waves.get(b,[]) if v['seed']==w['seed'] and abs(v['t0']-w['t0'])<5]
+    if c:
+      v=min(c,key=lambda v:abs(v['t0']-w['t0'])); pairs.append((v['t0']-w['t0'],v['z0']-w['z0']))
+  if not pairs: print(f'   {a}->{b}: none'); continue
+  dts=[p[0] for p in pairs]; m=med(dts)
+  print(f'   {a}->{b}: n {len(pairs)} | dt {m:.2f} ({pct(dts,0.1):.2f}..{pct(dts,0.9):.2f}) s | {(b-a)/m if abs(m)>0.05 else float("inf"):.1f} m/s | dz {med([p[1] for p in pairs]):.1f} m | same instant (|dt|<=0.4 s) {sum(1 for t in dts if abs(t)<=0.4)}')

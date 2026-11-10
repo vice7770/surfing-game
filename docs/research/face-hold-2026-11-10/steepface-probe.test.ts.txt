@@ -24,12 +24,18 @@ const SECONDS = Number(process.env.SECONDS ?? 4);
 const TRACE = process.env.TRACE ?? '';
 const FALL = new Vector3(0, 0, 1);
 /** The Wave Pool's wave 3.0-0.4 s before it breaks at x 20-27 (the solver, wave-measure.ts.txt): Medium (H 1.17) and Big (H 1.47). */
+// MATCH=canyon: the Canyon's version B (`?canyonWaves=true`), calibration-canyon.md: HEIGHTS=1.4 (Practice, typical, on the arm), 1.95 (Practice, a set's
+// big one), 2.1 (Practice, in the bowl), 2.3 (Big, typical), 2.85 (Big, a set's big one). Depths are fitted to the measured crest current.
+const CANYON_B_MATCH: Record<string, { depth: number; slope: number; speed: number }> = {
+  '1.4': { depth: 2.6, slope: 16, speed: 5.7 }, '1.95': { depth: 3.7, slope: 16, speed: 6.8 }, '2.1': { depth: 3.4, slope: 21, speed: 6.1 },
+  '2.3': { depth: 3.5, slope: 19, speed: 6.7 }, '2.85': { depth: 3.95, slope: 21, speed: 7.4 },
+};
 const POOL_MATCH: Record<string, { depth: number; slope: number; speed: number }> = { '1.17': { depth: 1.65, slope: 19, speed: 4.9 }, '1.47': { depth: 1.65, slope: 21, speed: 5.4 } };
 
 it('probe', () => {
   const out: unknown[] = []; const traces: Record<string, unknown[]> = {};
   for (const slope0 of SLOPES) for (const height of HEIGHTS) for (const speed of SPEEDS) for (const plan of PLANS) for (const control of plan === 'top' ? CONTROLS : ['-']) {
-    const match = process.env.MATCH === 'pool' ? POOL_MATCH[String(height)] : undefined;
+    const match = process.env.MATCH === 'pool' ? POOL_MATCH[String(height)] : process.env.MATCH === 'canyon' ? CANYON_B_MATCH[String(height)] : undefined;
     if (process.env.MATCH && !match) throw new Error(`no match for H ${height}`);
     const slope = match?.slope ?? slope0;
     const water = new FaceWater({ depth: match?.depth ?? (process.env.DEPTH ? Number(process.env.DEPTH) : Math.max(2, 1.3 * height)), height, slope, ...(match ? { speed: match.speed } : process.env.WAVE ? { speed: Number(process.env.WAVE) } : {}) });
