@@ -245,6 +245,12 @@ export interface SurfZoneConfig {
    */
   snapLegs?: 'drive';
   /**
+   * 'on': a Snap taken on the other rail keeps the riders' weight where it is until the body has come over the board,
+   * the back foot pushing it across, and only then weights the tail (snap-cross, 2026-11-10;
+   * `RideSessionOptions.snapCross`). Every spot. The `?snapCross=on` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  snapCross?: 'on';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

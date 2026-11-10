@@ -1110,6 +1110,12 @@ export interface AttachedRiderOptions {
    * as long as it is held (the `?snapLegs=drive` dev switch, to ride). By default Snap holds its depth, as before.
    */
   snapLegs?: 'drive';
+  /**
+   * Snap's rail change (snap-cross, 2026-11-10), opt-in: 'on' has a Snap taken on the other rail keep the weight where
+   * it is until the body has come over the board, and has the back foot push the body across (the leg drive) meanwhile
+   * (the `?snapCross=on` dev switch, to ride). By default Snap puts the weight on the tail at once, as before.
+   */
+  snapCross?: 'on';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1552,6 +1558,26 @@ export class AttachedRider {
   private readonly carveFlexes: boolean;
   /** The leg was last brought down by the carve's flex: the load easing, it rises at the projection's catch. */
   private fromFlex = false;
+  /**
+   * Snap's rail change (snap-cross, 2026-11-10; `snapCross: 'on'`, opt-in; docs/research/snap-rail-change-2026-11-10).
+   * Snap taken with the stick thrown against a carve put the weight on the tail within 0.3 s, the body still leaning
+   * 40° into the old turn: the old carve tightened (75 -> 110-155°/s the old way) for the 0.4-0.5 s the body takes to
+   * come over the board, and ran the heading 35° further the wrong way. A surfer comes out of the bottom turn with the
+   * weight even, the body crossing the board, and weights the tail on the new rail (the stance map: Knox's cutback,
+   * "weight more even" up the face; Hobgood: back on the tail into the snap). So while the body still leans against
+   * the stick's side under Snap (more than UPRIGHT_BANK, measured as Snap or the stick's side begins), Snap's weight
+   * shift waits (the balance holds where it was), and the back foot pushes the body across as the leg drive does
+   * (`legDriveStep`: the same push, grip and reach, with or without `legDrive: 'on'`). Once the body is over the board
+   * the weight goes back as before. A Snap taken upright, or on the rail it is already on, is unchanged.
+   */
+  private readonly snapCrosses: boolean;
+  /** The side the Snap's stick asks (+1 the board's left; 0 before it says), and whether the body has come over to it. */
+  private crossSide = 0;
+  private crossed = true;
+  /** The back foot's push at a rail change: the leg drive, or Snap's rail change under Snap. */
+  private get drives(): boolean {
+    return this.legDrive || (this.snapCrosses && this.snapping > 0);
+  }
   /** Snap's driving legs (SNAP_DRIVE_DEPTH); only with `snapLegs: 'drive'`. */
   private readonly snapDrives: boolean;
   /** The side Snap's turn goes while it is held (+1 the board's left; 0 before the stick says), and the board's level heading the latest step, rad. */
@@ -1657,6 +1683,7 @@ export class AttachedRider {
     this.legDrive = options.legDrive === 'on';
     this.carveFlexes = options.carveFlex === 'on';
     this.snapDrives = options.snapLegs === 'drive';
+    this.snapCrosses = options.snapCross === 'on';
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
@@ -1932,6 +1959,8 @@ export class AttachedRider {
     this.driveUsed = 0;
     this.driveSide = 0;
     this.driveForce.set(0, 0, 0);
+    this.crossSide = 0;
+    this.crossed = true;
     this.struckBy.clear();
     this.lastLipImpulse.set(0, 0, 0);
     this.sway.set(0, 0, 0);
@@ -2368,7 +2397,7 @@ export class AttachedRider {
     this.compressAssist(board);
     this.legDriveStep(h, board);
     this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce).add(this.carryForce).add(this.leanOutForce);
-    if (this.legDrive) this.external.add(this.driveForce);
+    if (this.drives) this.external.add(this.driveForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
@@ -2584,7 +2613,7 @@ export class AttachedRider {
   /** The leg drive (LEG_SIDE_STRENGTH's push at a rail change): the legs' push on the body this substep, within their strength, the back foot's grip and their reach. */
   private legDriveStep(h: number, board: BoardBody): void {
     this.driveForce.set(0, 0, 0);
-    if (!this.legDrive) return;
+    if (!this.drives) return;
     const side = Math.sign(this.steer);
     const open = this.upright && this.banking && this.planing && Math.abs(this.steer) > STEER_DEADBAND && -this.bank.angle * side > UPRIGHT_BANK;
     if (!open || side !== this.driveSide) {
@@ -3213,7 +3242,7 @@ export class AttachedRider {
     // The ankle pushes the body back across the leg by its torque over the leg's length.
     if (this.banking) rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
     this.driveStep = h;
-    if (this.legDrive) this.pushDrive(rhs);
+    if (this.drives) this.pushDrive(rhs);
     // The upper body's swing turns the body on its feet; the board feels only the push at the feet, not its couple.
     rhs[3] -= h * this.swingTorque * this.rollAxis.x;
     rhs[4] -= h * this.swingTorque * this.rollAxis.y;
@@ -3261,7 +3290,7 @@ export class AttachedRider {
     rhs[3] -= torque.x;
     rhs[4] -= torque.y;
     rhs[5] -= torque.z;
-    if (this.legDrive && this.upright) this.pushDrive(rhs);
+    if (this.drives && this.upright) this.pushDrive(rhs);
   }
 
   /** The leg drive's reaction on the board: the opposite push at the back foot, so the pair is nothing on the two together. */
@@ -3319,7 +3348,7 @@ export class AttachedRider {
     this.work.assist += h * this.assistForce.dot(mean);
     this.work.carry += h * this.carryForce.dot(mean);
     this.work.leanOut += h * this.leanOutForce.dot(mean);
-    if (this.legDrive && this.driveForce.lengthSq() > 0) {
+    if (this.drives && this.driveForce.lengthSq() > 0) {
       this.work.legDrive += h * this.driveForce.dot(mean);
       const footBefore = cross(this.boardSpin, this.driveFoot, this.scratch2).add(this.boardVelocity);
       const footAfter = cross(board.angularVelocity, this.driveFoot, this.localScratch).add(board.velocity);
@@ -3641,6 +3670,26 @@ export class AttachedRider {
     this.localCenter.set(center.x, center.y, center.z);
   }
 
+  /**
+   * Snap's weight as its rail change lets it through (`snapCross: 'on'`): none while the body still leans against the
+   * stick's side, as it did when Snap or that side began; all of it once it has come over, and for the rest of that Snap.
+   */
+  private crossStep(snap: number): number {
+    if (!(snap > 0)) {
+      this.crossSide = 0;
+      this.crossed = true;
+      return snap;
+    }
+    const side = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : this.crossSide;
+    const against = this.banking ? -this.bank.angle * side : 0;
+    if (side !== this.crossSide) {
+      this.crossSide = side;
+      this.crossed = false;
+    }
+    if (against <= UPRIGHT_BANK) this.crossed = true;
+    return this.crossed ? snap : 0;
+  }
+
   /** Standing, the feet stay put and the upper body shifts; lying down, the whole body does. */
   private shifts(part: number): boolean {
     return !this.upright || (RIDER_PARTS[part] !== 'leftLeg' && RIDER_PARTS[part] !== 'rightLeg');
@@ -3662,7 +3711,9 @@ export class AttachedRider {
       ? (Math.max(-1, Math.min(1, this.trim)) * TRIM_PRESSURE * (this.feet.front - this.feet.rear)) / 2 : 0;
     // Snap: the pressure onto the back foot, over the fins (SNAP_PRESSURE), held closer (SNAP_FREEDOM).
     const snap = this.snapping;
-    if (snap > 0) this.copTarget.z += snap * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
+    // Snap's rail change (`snapCross: 'on'`): the weight waits until the body is over the board.
+    const weighted = this.snapCrosses ? this.crossStep(snap) : snap;
+    if (weighted > 0) this.copTarget.z += weighted * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
     // Snap's stamp (`snapStamp: 'on'`): a full steer slams the weight past the tail for STAMP_TIME, then back over the fins.
     const stamp = this.stamps ? this.stampStep(h, snap) : 0;
     // The agile launch (`agile: 'on'`, in the stamp's place and on its clock): the pressure forward off the fins while the tail is thrown.
@@ -3680,7 +3731,7 @@ export class AttachedRider {
       this.snapBefore = snap;
     }
     const recentring = this.recentreTime >= 0;
-    const freedom = snap > 0 ? TRIM_FREEDOM + snap * (SNAP_FREEDOM - TRIM_FREEDOM) : TRIM_FREEDOM;
+    const freedom = weighted > 0 ? TRIM_FREEDOM + weighted * (SNAP_FREEDOM - TRIM_FREEDOM) : TRIM_FREEDOM;
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (!this.upright && this.inContact) {

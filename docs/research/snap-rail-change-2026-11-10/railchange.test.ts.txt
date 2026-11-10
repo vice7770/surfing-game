@@ -1,7 +1,7 @@
 // The rail-change trace (2026-11-10; not part of the suite). Copy to src/physics/zz-railchange.test.ts to run (never commit it there).
 // Physics only (no drawn rig): scripted carve -> Snap + opposite stick on flat water (WATER=flat) or FaceWater matched to Canyon B (WATER=canyon),
 // every 1/60 s step logged with the rider's private state (read through `as any`; nothing is changed). Writes every frame to OUT (JSON).
-//   PLAN=cutback (Compress carve first) | standcut (stick-only carve first)   SPEEDS=6,8   SIDES=toe,heel   CARVE=1.0   SNAP=1.5   OPTS='{"legDrive":"on"}' (the rider's options; `snapCross` needs snap-cross.patch.txt applied)
+//   PLAN=cutback (Compress carve first) | standcut (stick-only carve first)   SPEEDS=6,8   SIDES=toe,heel   CARVE=1.0   SNAP=1.5   OPTS='{"legDrive":"on"}' (the rider's options)
 //   All signed columns are in the NEW turn's frame: + = the way the Snap's stick asks (so the old way is negative).
 import { writeFileSync } from 'node:fs';
 import { Matrix4, Quaternion, Vector3 } from 'three';

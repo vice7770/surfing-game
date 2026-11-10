@@ -4,9 +4,9 @@ The owner's cutback (Snap held, stick thrown the other way after a carve) is "ve
 turns harder the OLD way for about half a second before it reverses, it barely leans on the new rail,
 and almost every scripted cutback falls. This study traces both faults frame by frame and tries a fix.
 
-**Outcome: nothing is shipped in `src/`.** A candidate (`?snapCross=on`) cuts the wrong-way turn by
+**Outcome: first written up with nothing shipped; then shipped as an opt-in, default off (last section).** A candidate (`?snapCross=on`) cuts the wrong-way turn by
 about half, but it misses the pass bar on the roll and on the heading turned, and it does not cut the
-falls. Its code is kept here as `snap-cross.patch.txt` so it can be revived.
+falls. 
 
 Nothing here was seen on screen. Everything is scripted probes on flat water and on the Canyon-matched
 test wave (`FaceWater({ depth: 2.6, height: 1.4, slope: 16, speed: 5.7 })`); no rides on the real sea.
@@ -89,7 +89,7 @@ caused by the wrong-way turn**, and shortening it does not remove them.
 
 ## C. The candidate, and why it is not shipped
 
-`?snapCross=on` (in `snap-cross.patch.txt`, wired like `?snapLegs=drive`): under Snap, (1) the weight
+`?snapCross=on` (wired like `?snapLegs=drive`): under Snap, (1) the weight
 waits over the middle of the board until the body has come over, then goes to the tail on the new
 rail, and (2) the back foot pushes the body toward the new rail (the existing leg drive, 250 N, with
 its equal and opposite push on the tail). Both act through the feet; no added moment or brake.
@@ -132,7 +132,7 @@ Against the pass bar:
 - heading turned not less: **no** by the earlier study's measure (55 → 42°, 68 → 50°), because the board no longer swings as far the old way first; yes by net heading from Snap (35 → 47° at 1.5 s);
 - falls not more: **equal** (42 → 42 of 48; fewer inside the hold, 22 → 13).
 
-Two of four, so by the brief nothing goes into `src/`.
+Two of four, so by the brief nothing went into `src/` at first. It was shipped afterwards as an opt-in; see the last section.
 
 ### Candidates dropped
 
@@ -169,4 +169,36 @@ Numbers are for the 29 matched runs: peak old-way yaw °/s / heading run on ° (
 
 - `results.txt`: every table (means, the 29 matched runs, falls by cause, every run, frame tables).
 - `railchange.test.ts.txt`: the probe. `run.sh.txt` runs the 48-run set; `sum.py.txt`, `share.py.txt`, `falls.py.txt`, `frames.py.txt` make the tables.
-- `snap-cross.patch.txt`: the candidate against main cdf76a4e (`git apply`), switch `?snapCross=on`, default off. No unit tests were written for it beyond the switch test in the patch.
+- The candidate's patch file is gone: the code is in `src/` now (see "Shipped as opt-in").
+
+## Shipped as opt-in
+
+`?snapCross=on` is in the game, default off (`AttachedRiderOptions.snapCross: 'on'`; online rooms run the
+default). The code is the candidate's patch unchanged, plus `src/physics/snapCross.test.ts`. With the
+switch off the output is byte-identical to before.
+
+Why, although it missed the bar (the parent session's reason): the bar's "turned from the extreme"
+measure penalises the very thing being fixed, since less swing the old way leaves less to turn back
+from. By net heading from Snap it turns more (35 → 47° at 1.5 s), the old-way kick halves (146 →
+83 °/s), falls in the hold drop (22 → 13) and all falls are equal (42 → 42). The lower roll on the new
+rail (28 → 23°, 29 → 19°) is a real drawback and stays. It is opt-in so the owner can judge the feel.
+
+The numbers above are unchanged: the Compress cutback row was run again on the shipped code and its
+results are byte-identical to the candidate's.
+
+With the other switches (Compress cutback, 24 runs, the earlier study's scripts):
+
+| | wrong-way s | roll ° | peak yaw °/s | turned ° | speed kept | pelvis height mid / exit m | falls in the hold | falls in all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| all off | 0.41 | 28 | 112 | 55 | 0.46 | 0.52 / 0.52 | 7 | 21 |
+| `snapCross=on` | 0.22 | 23 | 115 | 42 | 0.49 | 0.50 / 0.51 | 5 | 20 |
+| `snapLegs=drive` | 0.41 | 31 | 126 | 55 | 0.51 | 0.60 / 0.64 | 7 | 22 |
+| both | 0.22 | 25 | 126 | 42 | 0.52 | 0.59 / 0.61 | 5 | 21 |
+
+- **With `snapLegs=drive` the two add up without getting in each other's way:** the rail change is
+  snapCross's (0.22 s, 42°), the rising legs and the speed kept are snapLegs's (0.52), and the roll
+  lands between (25°).
+- **With `legDrive=on` on top nothing changes:** byte-identical to `snapCross=on` alone, on flat water
+  and on the wave. Under Snap the push is the same one.
+
+Still not seen on screen.

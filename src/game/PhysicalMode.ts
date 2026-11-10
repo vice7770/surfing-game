@@ -499,6 +499,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...carveFlexSwitch(),
     // `?snapLegs=drive`: under Snap the riders' legs load and then extend as the board comes round, in place of holding the full depth (snap-legs), opt-in, to ride.
     ...snapLegsSwitch(),
+    // `?snapCross=on`: a Snap taken on the other rail weights the tail only once the body has come over the board, the back foot pushing it across (snap-cross), opt-in, to ride.
+    ...snapCrossSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -837,6 +839,15 @@ export function carveFlexSwitch(search?: string): { carveFlex?: 'on' } {
  */
 export function snapLegsSwitch(search?: string): { snapLegs?: 'drive' } {
   return devParam('snapLegs', search)?.trim().toLowerCase() === 'drive' ? { snapLegs: 'drive' } : {};
+}
+
+/**
+ * The `?snapCross=on` dev switch (`SurfZoneConfig.snapCross`, snap-cross 2026-11-10, the owner on a cutback: "very off",
+ * not as sharp as a surfer's): opt-in, every spot's rider taking Snap on the other rail keeps the weight where it is
+ * until the body has come over the board, the back foot pushing it across, and only then weights the tail.
+ */
+export function snapCrossSwitch(search?: string): { snapCross?: 'on' } {
+  return devParam('snapCross', search)?.trim().toLowerCase() === 'on' ? { snapCross: 'on' } : {};
 }
 
 /**
