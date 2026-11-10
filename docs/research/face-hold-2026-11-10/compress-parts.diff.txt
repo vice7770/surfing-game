@@ -1,0 +1,63 @@
+diff --git a/src/physics/AttachedRider.ts b/src/physics/AttachedRider.ts
+index c3921c71..ad4d55ec 100644
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -496,6 +496,9 @@ const TWIST_GRIP_RADIUS = 0.15;
+  * the same on any uniformly moving water as on still water.
+  */
+ const COMPRESS_PULL = 0.5;
++// ZZ scratch (compress-diagnosis): ZPARTS=<list> keeps only the named parts of Compress: legs, soft, pull, carry, leanout, reach.
++const ZP: Set<string> | null = process.env.ZPARTS !== undefined ? new Set(process.env.ZPARTS.split(',')) : null;
++const zp = (name: string, value: number): number => (!ZP || ZP.has(name) ? value : 0);
+ /**
+  * The pull leads the lean in, and must never carry the body past it: it fades out as the body leans past the
+  * lean asked for by up to PULL_OVERLEAN, rad, and as the board slows from PULL_FULL_SPEED to PLANING_DROP, m/s.
+@@ -2439,15 +2442,15 @@ export class AttachedRider {
+     const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
+     const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
+     this.assistForce.crossVectors(Y, along)
+-      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
++      .multiplyScalar(Math.sign(this.bankReference) * fade * zp('pull', compress) * this.mass * WATER.gravity
+         * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
+     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
+-    this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
++    this.carryForce.copy(along).multiplyScalar(zp('carry', compress) * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
+     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
+     const side = Math.sign(this.steer);
+     if (-this.bank.angle * side > UPRIGHT_BANK) {
+       this.leanOutForce.crossVectors(Y, along)
+-        .multiplyScalar(side * Math.min(1, Math.abs(this.steer)) * speedFade * compress * LEAN_OUT_PULL * this.mass * WATER.gravity);
++        .multiplyScalar(side * Math.min(1, Math.abs(this.steer)) * speedFade * zp('leanout', compress) * LEAN_OUT_PULL * this.mass * WATER.gravity);
+     }
+   }
+ 
+@@ -2549,9 +2552,9 @@ export class AttachedRider {
+     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
+     // have to pull the body down, and unloaded feet lose their grip.
+     // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
+-    const crouchAsked = this.crouchAsked;
++    const crouchAsked = zp('legs', this.crouchAsked);
+     const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
+-    const compress = Math.max(0, Math.min(1, this.compressAsked));
++    const compress = zp('legs', Math.max(0, Math.min(1, this.compressAsked)));
+     const snap = this.snapping;
+     const asked = -(snap > 0 ? Math.max(crouch, compress, snap * this.snapDepth) : Math.max(crouch, compress)) * CROUCH_DEPTH;
+     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
+@@ -2601,7 +2604,7 @@ export class AttachedRider {
+     if ((this.leg.rest === tallest && this.restRate > 0) || this.leg.rest === -deepest) this.restRate = 0;
+     this.extending = this.restRate > 0 && this.leg.rest < rest;
+     // The deeper tuck keeps the current bent-leg stiffness rather than softening below it; standing tall, the riding stance's.
+-    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, Math.max(0, -this.leg.rest))) / CROUCH_DEPTH);
++    this.legStiffness = LEG_STIFFNESS * (1 - (zp('soft', CROUCH_SOFTENING) * Math.min(CROUCH_DEPTH, Math.max(0, -this.leg.rest))) / CROUCH_DEPTH);
+     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
+     this.leg.height = this.localCenter.y - this.base.y;
+     // Where the centre of mass is along the leg, and how fast it moves along it relative to where it is carried.
+@@ -3542,7 +3545,7 @@ export class AttachedRider {
+     this.handSide = 0;
+     if (this.phase !== 'standing' || !this.attached) return;
+     if (!this.hand) {
+-      if (this.compressAsked >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
++      if (zp('reach', this.compressAsked) >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
+       return;
+     }
+     const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation).setY(0);
