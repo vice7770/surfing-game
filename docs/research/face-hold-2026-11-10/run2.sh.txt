@@ -1,0 +1,9 @@
+#!/bin/zsh
+# usage: run2.sh <tag> [ENV=...] ; one table: STEERS x UPS, each a probe call over HEIGHTS x SPEEDS x CONTROLS; then kinds.py
+cd /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/snap-arms-gate/wt
+tag=$1; shift
+mkdir -p ../sp/cal; rm -f ../sp/cal/$tag-*.json(N)
+for S in ${=STEERS:-0.5 1}; do for U in ${=UPS:-65 80}; do
+  env SLOPES=20 PLANS=top CONTROLS=release,steer,compress,snap SECONDS=8 "$@" STEER=$S UP=$U OUT=$PWD/../sp/cal/$tag-$S-$U.json npx vitest run src/physics/zz-steepface.test.ts > ../sp/cal/$tag.log 2>&1 || tail -20 ../sp/cal/$tag.log
+done; done
+python3 ../sp/kinds.py $tag ../sp/cal/$tag-*.json

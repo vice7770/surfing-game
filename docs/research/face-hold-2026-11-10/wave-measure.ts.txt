@@ -1,0 +1,88 @@
+/**
+ * face-hold calibration (2026-11-10): the Wave Pool's wave where it is ridden, from the solver only (no rider, no runner).
+ * The sea is built as the game builds the pool's (physicalSettingsFor: one regular wave, POOL_EDGE_HEIGHT, T 10 s, stage 2),
+ * stepped on the CPU at 1/30 s, and read through the water the bodies read (PhysicalSurfWater.forSimulation), at the
+ * surface, every FRAME s along z in a few columns of the right arm. Per frame and column: the wave's crest in the window,
+ * the trough ahead of it, the face between them (length, steepest slope and where, the downhill direction there), the
+ * still depth, and the water's horizontal flow at the crest, the steepest point and the trough.
+ *   (copy to scripts/wave-measure.ts)
+ *   rolldown scripts/wave-measure.ts -o dist/scripts/wave-measure.mjs --format esm --platform node \
+ *     && node dist/scripts/wave-measure.mjs --size medium|small|big [--settle 40] [--seconds 20] [--json out.json]
+ */
+import { writeFileSync } from 'node:fs';
+import { PhysicalSurfWater } from '../src/physics/PhysicalSurfWater';
+import { createWaterSample } from '../src/physics/SurfWater';
+import { POOL, POOL_EDGE_HEIGHT, poolCrestZ, poolDepth, regularSignificantHeight, type PoolSize } from '../src/wave/pool';
+import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
+
+const option = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] : undefined; };
+const size = (option('size') ?? 'medium') as PoolSize;
+const settle = Number(option('settle') ?? 40);
+const seconds = Number(option('seconds') ?? 20);
+const COLUMNS = (option('columns') ?? '20,27,35,45,55,65,80').split(',').map(Number);
+const FRAME = 0.1; const DZ = 0.25; const SEAWARD = Number(option('seaward') ?? 100); const SHOREWARD = 10;
+const DEG = 180 / Math.PI;
+
+const t0 = Date.now();
+const sim = new SurfZoneSimulation({
+  spot: 'pool', seed: 1, significantHeight: regularSignificantHeight(POOL_EDGE_HEIGHT[size]), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000,
+  tide: 0, windSpeed: 0, stage: 2, compute: 'cpu',
+} as unknown as SurfZoneConfig);
+const { solver } = sim;
+const water = PhysicalSurfWater.forSimulation(sim);
+const strength = sim.breaking.strength;
+console.error(`built ${size}: nx ${solver.nx} nz ${solver.nz} dx ${solver.dx} t ${solver.time.toFixed(1)} s, ${((Date.now() - t0) / 1000).toFixed(1)} s wall; fine dz near the reef ${solver.dz[solver.rowBelow(POOL.apexZ)]}`);
+
+const sample = createWaterSample();
+interface Point { z: number; eta: number; sx: number; sz: number; u: number; w: number; still: number; brk: number }
+const read = (x: number, z: number): Point => {
+  water.sampleAt(x, 50, z, sample);
+  return { z, eta: sample.surfaceY, sx: sample.slopeX, sz: sample.slopeZ, u: sample.flowX, w: sample.flowZ, still: sample.stillDepth, brk: strength[solver.cellIndex(x, z)] ?? 0 };
+};
+const frames: Record<string, unknown>[] = [];
+const step = 1 / 30;
+const every = Math.round(FRAME / step);
+const total = Math.round((settle + seconds) / step);
+for (let n = 0; n < total; n += 1) {
+  sim.step(step);
+  if (solver.time < settle || n % every) continue;
+  for (const x of COLUMNS) {
+    const line = poolCrestZ(x);
+    const points: Point[] = [];
+    for (let z = line - SEAWARD; z <= line + SHOREWARD; z += DZ) points.push(read(x, z));
+    // Every crest in the window: a local maximum standing 0.25 m over the lower of its neighbouring troughs.
+    for (let i = 2; i < points.length - 2; i += 1) {
+      const p = points[i];
+      if (!(p.eta >= points[i - 1].eta && p.eta > points[i + 1].eta)) continue;
+      // The trough ahead (shoreward): down the face until the surface has risen 0.05 m off its lowest.
+      let trough = i;
+      for (let k = i + 1; k < points.length; k += 1) {
+        if (points[k].eta < points[trough].eta) trough = k;
+        else if (points[k].eta > points[trough].eta + 0.05) break;
+      }
+      const height = p.eta - points[trough].eta;
+      if (height < 0.3) continue;
+      let steep = i; let grade = 0; let brk = 0;
+      for (let k = i; k <= trough; k += 1) {
+        const g = Math.hypot(points[k].sx, points[k].sz);
+        if (g > grade) { grade = g; steep = k; }
+        brk = Math.max(brk, points[k].brk);
+      }
+      const s = points[steep];
+      // Downhill at the steepest point: the face's fall line, the way the crest travels; its angle from +z toward +x.
+      const nxDir = -s.sx / grade; const nzDir = -s.sz / grade;
+      const along = (q: Point) => q.u * nxDir + q.w * nzDir;
+      const mid = points[Math.round((i + trough) / 2)];
+      const r = (v: number, d = 2) => Math.round(v * 10 ** d) / 10 ** d;
+      frames.push({
+        t: r(solver.time), x, zc: r(p.z - line), etaC: r(p.eta), etaT: r(points[trough].eta), H: r(height), Lz: r(points[trough].z - p.z), slope: r(Math.atan(grade) * DEG, 1), slopeZ: r(Math.atan(Math.abs(s.sz)) * DEG, 1),
+        fall: r(Math.atan2(nxDir, nzDir) * DEG, 1), steepFrac: r((s.eta - points[trough].eta) / height), zs: r(s.z - line),
+        dCrest: r(p.still), dSteep: r(s.still), dTrough: r(points[trough].still),
+        uCrest: r(along(p)), uSteep: r(along(s)), uMid: r(along(mid)), uTrough: r(along(points[trough])), wCrest: r(p.w), wSteep: r(s.w), xSteep: r(s.u),
+        brkCrest: r(p.brk), brk: r(brk),
+      });
+    }
+  }
+}
+console.error(`ran to ${solver.time.toFixed(1)} s in ${((Date.now() - t0) / 1000).toFixed(1)} s wall`);
+writeFileSync(option('json') ?? '/dev/stdout', JSON.stringify({ size, edgeHeight: POOL_EDGE_HEIGHT[size], columns: COLUMNS.map((x) => ({ x, crestLine: poolCrestZ(x), crestDepth: poolDepth(x, poolCrestZ(x)) })), frames }));

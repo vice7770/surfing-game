@@ -1,0 +1,29 @@
+# Splits a table's falls into kinds: (a) the sudden fall into the face: the body's bank past 45 deg at the end (the contact's last limit 'flight';
+# cause 'lost board', or 'balance' when the sway's limit is passed first); (b) the slow stall: cause 'balance' with the bank within 20 deg of upright and the speed through the water under 2.5 m/s; (c) anything else.
+import json,sys,re,statistics as st
+tag=sys.argv[1]; rows=[]
+for p in sys.argv[2:]: rows+=json.load(open(p))['out']
+def kind(o):
+  if o['fell'] is None: return None
+  m=re.search(r'v ([-\d.]+) ff ([-\d.]+) bank ([-\d.]+)',o['fellAt']); v=float(m.group(1)); bank=float(m.group(3))
+  if abs(bank)>=45: return 'a'
+  if o['cause']=='balance' and abs(bank)<=20 and v<2.5: return 'b'
+  return 'c'
+def line(name,sel):
+  n=len(sel); ks=[kind(o) for o in sel]; a=[o for o,k in zip(sel,ks) if k=='a']; b=[o for o,k in zip(sel,ks) if k=='b']; c=[o for o,k in zip(sel,ks) if k=='c']
+  since=lambda o: o['fell']-(o['downAt'] if o.get('downAt') is not None else 0.2)
+  rg=lambda v: f"{min(v):.1f}-{max(v):.1f}" if v else '-'
+  on=[o for o in sel if o['fell'] is None]; rnd=[o for o in on if o['round'] is not None]
+  s=f"{name:14s} n {n:2d} falls {n-len(on):2d} | a {len(a):2d} (after {rg([since(o) for o in a])} s) | b {len(b):2d} (after {rg([since(o) for o in b])} s) | other {len(c)}"
+  s+=f" | stay on {len(on):2d}, of them round {len(rnd)}"
+  if rnd: s+=f" (turned {min(abs(o['turned']) for o in rnd):.0f}-{max(abs(o['turned']) for o in rnd):.0f} deg, peak {min(o['peak'] for o in rnd):.0f}-{max(o['peak'] for o in rnd):.0f} deg/s, in {rg([o['round'] for o in rnd])} s)"
+  no=[o for o in on if o['round'] is None]
+  if no and sel[0]['plan']=='top': s+=f"; not round {len(no)} (end {min(o['endFrom'] for o in no):.0f}-{max(o['endFrom'] for o in no):.0f} deg off the fall line, {min(o['vEnd'] for o in no):.1f}-{max(o['vEnd'] for o in no):.1f} m/s)"
+  if c: s+=' | other: '+'; '.join(f"{o['cause']} {o['fellAt']}" for o in c[:3])
+  print(s)
+print(f"== {tag}: entry {sorted(set(o['entry'] for o in rows))} m/s, wave {sorted(set((o['height'],o['wave'],o['depth'],o['slope'],o['front']) for o in rows))}")
+line('all',rows)
+for c in sorted(set(o['control'] for o in rows)):
+  if c!='-': line(c,[o for o in rows if o['control']==c])
+for h in sorted(set(o['height'] for o in rows)): line(f'H {h}',[o for o in rows if o['height']==h])
+for v in sorted(set(o['speed'] for o in rows)): line(f'speed {v}',[o for o in rows if o['speed']==v])

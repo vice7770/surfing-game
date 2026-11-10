@@ -1,0 +1,34 @@
+import json,sys,math,statistics as st
+d=json.load(open(sys.argv[1])); fr=d['frames']
+print('##',d['size'],'edge H',d['edgeHeight'])
+med=lambda v: st.median(v) if v else float('nan')
+ons={}
+def tracks_of(x):
+  rows=[f for f in fr if f['x']==x]; tracks=[]
+  for f in rows:
+    best=None
+    for tr in tracks:
+      l=tr[-1]
+      if 0<f['t']-l['t']<=0.31 and -0.5<=f['zc']-l['zc']<=1.2*(f['t']-l['t'])/0.1+0.5:
+        if best is None or abs(f['zc']-l['zc'])<abs(f['zc']-best[-1]['zc']): best=tr
+    if best is not None: best.append(f)
+    else: tracks.append([f])
+  return tracks
+print('x   n  | pre-break (3.0..0.4 s before): H     Lz    cr->steep slope(min-max) frac  c_n   fall  dSteep etaT  | uCrest uSteep uTrough | broken (0.8..2 s after): H  slope uCrest uSteep c_n')
+for c in d['columns']:
+  x=c['x']; pre=[]; post=[]; n=0; cs=[]; cp=[]
+  for tr in tracks_of(x):
+    if len(tr)<25: continue
+    on=next((i for i,f in enumerate(tr) if f['brk']>0.3),None)
+    if on is None or on<20 or any(f['brk']>0.05 for f in tr[max(0,on-30):on-3]): continue
+    n+=1; t0=tr[on]['t']; ons.setdefault(x,[]).append((t0,tr[on]['zc']+c['crestLine']))
+    a=[f for f in tr if -3.0<=f['t']-t0<=-0.4 and f['Lz']>3]; b=[f for f in tr if 0.8<=f['t']-t0<=2.0 and f['Lz']>3]
+    pre+=a; post+=b
+    if len(a)>5: cs.append((a[-1]['zs']-a[0]['zs'])/(a[-1]['t']-a[0]['t'])*math.cos(math.radians(med([f['fall'] for f in a]))))
+    if len(b)>5: cp.append((b[-1]['zc']-b[0]['zc'])/(b[-1]['t']-b[0]['t'])*math.cos(math.radians(med([f['fall'] for f in b]))))
+  if not pre: print(x,'no clean onset'); continue
+  m=lambda k,s=pre: med([f[k] for f in s])
+  sl=[f['slope'] for f in pre]
+  print(f"{x:3d} {n:2d} | H {m('H'):.2f} Lz {m('Lz'):.1f} cr->st {med([f['zs']-f['zc'] for f in pre]):.1f} slope {m('slope'):.1f} ({min(sl):.1f}-{max(sl):.1f}) frac {m('steepFrac'):.2f} cn {med(cs):.1f} fall {m('fall'):.0f} dSt {m('dSteep'):.2f} dTr {m('dTrough'):.2f} etaT {m('etaT'):.2f} etaC {m('etaC'):.2f} | u {m('uCrest'):.2f} {m('uSteep'):.2f} {m('uTrough'):.2f} | H {m('H',post):.2f} slope {m('slope',post):.1f} u {m('uCrest',post):.2f} {m('uSteep',post):.2f} cn {med(cp):.1f} Lz {m('Lz',post):.1f}")
+xs=sorted(ons)
+print('onsets (t, z):',{x:[(round(t,1),round(z,1)) for t,z in ons[x]] for x in xs})

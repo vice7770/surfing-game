@@ -1,4 +1,8 @@
 // The steep moving-face probe (2026-11-09; not part of the suite): a rider low on FaceWater's face, 45 deg from the fall line.
+// The wave: WAVE=<m/s> the crest's speed, DEPTH=<m> the still depth under the trough (else FaceWater's and max(2, 1.3 H)); MATCH=pool the Wave Pool's
+// measured wave by height (calibration.md: POOL_MATCH; give HEIGHTS=1.17,1.47 and any SLOPES entry, which it replaces).
+// START=flat (default) | face (low on the face, SPEEDS m/s through the water) | trim (AT of the face's length ahead of the crest, default 0.5,
+// at the speed that keeps pace with the crest 45 deg off the fall line, (c - u) / cos 45, plus SPEEDS m/s).
 // PLAN=none (no input) | up (a full steer up the face for HOLD s, then none) | top (up until TOP of the face or UP deg, then a full steer back down, CONTROL with it)
 import { writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
@@ -19,14 +23,21 @@ const TOP = Number(process.env.TOP ?? 0.7); const UP = Number(process.env.UP ?? 
 const SECONDS = Number(process.env.SECONDS ?? 4);
 const TRACE = process.env.TRACE ?? '';
 const FALL = new Vector3(0, 0, 1);
+/** The Wave Pool's wave 3.0-0.4 s before it breaks at x 20-27 (the solver, wave-measure.ts.txt): Medium (H 1.17) and Big (H 1.47). */
+const POOL_MATCH: Record<string, { depth: number; slope: number; speed: number }> = { '1.17': { depth: 1.65, slope: 19, speed: 4.9 }, '1.47': { depth: 1.65, slope: 21, speed: 5.4 } };
 
 it('probe', () => {
   const out: unknown[] = []; const traces: Record<string, unknown[]> = {};
-  for (const slope of SLOPES) for (const height of HEIGHTS) for (const speed of SPEEDS) for (const plan of PLANS) for (const control of plan === 'top' ? CONTROLS : ['-']) {
-    const water = new FaceWater({ depth: Math.max(2, 1.3 * height), height, slope });
+  for (const slope0 of SLOPES) for (const height of HEIGHTS) for (const speed of SPEEDS) for (const plan of PLANS) for (const control of plan === 'top' ? CONTROLS : ['-']) {
+    const match = process.env.MATCH === 'pool' ? POOL_MATCH[String(height)] : undefined;
+    if (process.env.MATCH && !match) throw new Error(`no match for H ${height}`);
+    const slope = match?.slope ?? slope0;
+    const water = new FaceWater({ depth: match?.depth ?? (process.env.DEPTH ? Number(process.env.DEPTH) : Math.max(2, 1.3 * height)), height, slope, ...(match ? { speed: match.speed } : process.env.WAVE ? { speed: Number(process.env.WAVE) } : {}) });
     // START=flat: on the flat just ahead of the toe, the wave overtaking at `speed` m/s (the face picks the rider up); START=face: low on the face at `speed`.
-    const flat = (process.env.START ?? 'flat') === 'flat';
-    const base = flat ? onWater(water, 0, water.crestZ() + 1.1 * water.front, -45, (water.speed - speed) / Math.cos(45 / DEG)) : onWater(water, 0, water.crestZ() + 0.75 * water.front, -45, speed);
+    const flat = (process.env.START ?? 'flat') === 'flat'; const trim = process.env.START === 'trim';
+    const atZ = water.crestZ() + Number(process.env.AT ?? (trim ? 0.5 : 0.75)) * water.front;
+    const entry = trim ? (water.speed - water.sampleAt(0, 10, atZ, createWaterSample()).flowZ) / Math.cos(45 / DEG) + speed : speed;
+    const base = flat ? onWater(water, 0, water.crestZ() + 1.1 * water.front, -45, (water.speed - speed) / Math.cos(45 / DEG)) : onWater(water, 0, atZ, -45, entry);
     const board = base.board as BoardBody;
     board.attach(new AttachedRider(board.shape, { phase: 'standing', ...(control === 'agile' ? { agile: 'on' } : {}), ...JSON.parse(process.env.OPTS ?? '{}') }));
     const rig = { board, get rider() { return board.rider as AttachedRider; }, get heading() { const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation); return Math.atan2(f.x, f.z); } } as Rig;
@@ -69,7 +80,7 @@ it('probe', () => {
       }
     }
     const end = frames[frames.length - 1];
-    out.push({ slope, height, speed, plan, control, high: r(high, 2), steep: r(steep), least: r(least, 1), vEnd: r(end?.speed ?? Number.NaN, 1), endFrac: r(end?.frac ?? Number.NaN, 2), topFrac: r(topFrac, 2), topFrom: r(topFrom), vTop: r(vTop, 1), turned: r(turned), peak: r(peak), fin: r(fin), round: r(round, 2), fell: r(fell, 2), fellIn, cause, fellAt });
+    out.push({ slope, height, speed, plan, control, high: r(high, 2), steep: r(steep), least: r(least, 1), vEnd: r(end?.speed ?? Number.NaN, 1), endFrac: r(end?.frac ?? Number.NaN, 2), topFrac: r(topFrac, 2), topFrom: r(topFrom), vTop: r(vTop, 1), turned: r(turned), peak: r(peak), fin: r(fin), round: r(round, 2), fell: r(fell, 2), fellIn, cause, fellAt, downAt: r(downAt, 2), entry: r(flat ? (water.speed - speed) / Math.cos(45 / DEG) : entry, 1), wave: r(water.speed, 2), depth: water.options.depth, front: r(water.front, 2), endBank: r(end?.bank ?? Number.NaN), endFrom: r(end?.fromFall ?? Number.NaN) });
     if (TRACE && name === TRACE) traces[name] = frames.filter((_, i) => i % Number(process.env.EVERY ?? 6) === 0).map((f) => ({ t: r(f.t, 2), ph: f.phase, frac: r(f.frac, 2), local: r(f.local), fromFall: r(f.fromFall), rate: r(f.rate), speed: r(f.speed, 1), fin: r(f.fin), bank: r(f.bank), ref: r(f.bankRef), roll: r(f.roll), pitch: r(f.pitch), load: r(f.load, 2), front: r(f.front, 2), lim: f.lim, arest: r(f.arest), sw: r(f.sw), zn: r((f as unknown as {zn:number}).zn), pl: f.pl ? 1 : 0, leg: r(f.drop, 2), sway: r(f.sway, 2), err: r(f.err, 2), fly: r(f.fly, 2), by: r(f.by, 2), vy: r(f.vy, 1), ...Object.fromEntries(Object.entries((f as any).dbg ?? {}).map(([k, v]) => [k, k === 'tq' || k === 'ld' ? r(v as number) : k === 'yr' ? r(v as number, 2) : r((v as number) * DEG)])) }));
   }
   writeFileSync(OUT, JSON.stringify({ out, traces }, null, 1));
