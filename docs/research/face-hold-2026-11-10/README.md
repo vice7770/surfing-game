@@ -23,7 +23,7 @@ the face (stick 0.5 or 1) until the heading is 65° or 80° off the fall line, t
 
 | setting (scratch env) | falls /64 | release+steer falls /32 | runs that come round |
 |---|---|---|---|
-| today (main, 0e54ef4a) | 61 | 32 | 3-4, Compress only (46-60° in ~0.65 s) |
+| today (main, 0e54ef4a; the brief's count, one quarter re-run here: 15 of 16) | 61 | 32 | a few, with Compress (46-60° in ~0.65 s) |
 | 1. lean toward the face capped by rail room (`FH_SPAN=30`, flow neutral off) | 62 | 32 | - |
 | 2. neutral lean from the water's acceleration under the board | 63 | 32 | 19 (all fall after) |
 | 2 + cap 34° | 64 | 32 | 20 (all fall after) |
@@ -37,7 +37,7 @@ the face (stick 0.5 or 1) until the heading is 65° or 80° off the fall line, t
 "Cap N°" = the asked lean no further toward the face than N° from the water's
 normal across the board. The best honest row is 4 + cap 22°: 58 falls (3 fewer
 than today) and 31 runs come round (35-79° turned, peak 73-227°/s, in 0.5-0.7 s),
-but 26 of those fall within about half a second of coming round. That is not
+but 25 of those fall afterwards (the 6 that stay on are all Compress runs). That is not
 worth a switch.
 
 Guard measured for reference: untouched riders (`PLANS=none`) on main fall 1 of 4
