@@ -1,0 +1,18 @@
+# How the numbers in README.md were produced. Copy turnpair.test.ts.txt to src/physics/zz-turnpair.test.ts and
+# ../face-hold-2026-11-10/r2Lab.ts.txt to src/physics/zz-r2Lab.ts (scratch files, never committed), then:
+T=/path/to/out
+run() { npx vitest run src/physics/zz-turnpair.test.ts; }
+# set A: the pair by heading only (no waiting for the wave: it happens on the flat ahead of the wave)
+TOPS=50/9,65/9 OUT=$T/pairA.json run
+# set B: the pair on the face (stick centred until the wave has lifted the rider to TOP of the face)
+for d in 20 35; do SECONDS=16 WAIT=1 LOW=0.25 DROP=$d TOPS=60/0.5,60/0.7 OUT=$T/pairB-$d.json run; done
+# set C: the same, Compress held, the top turn begun early (0.3 of the face)
+SECONDS=16 WAIT=1 LOW=0.25 DROP=20 CLIMBS=hold TOPS=60/0.3,45/0.3 OUT=$T/pairC.json run
+# cutbacks
+PLAN=cutback CUTS=150,180 ATS=0.5,0.75 OUT=$T/cut.json run
+PLAN=cutback CUTS=90,120 OUT=$T/cut2.json run
+# traces
+WAIT=1 LOW=0.25 DROP=20 TOPS=60/0.5 CLIMBS=release STEERS=1 SPEEDS=0 DRIVES=off TRACE="pair 1.4 0 1 0.75 release 60/0.5 off" OUT=$T/t1.json run
+for d in off on; do WAIT=1 LOW=0.25 DROP=20 TOPS=60/0.5 CLIMBS=hold STEERS=1 SPEEDS=0 DRIVES=$d TRACE="pair 1.4 0 1 0.75 hold 60/0.5 $d" OUT=$T/t2$d.json run; done
+for d in off on; do PLAN=cutback CUTS=150 STEERS=1 SPEEDS=0 DRIVES=$d TRACE="cutback 1.4 0 1 0.75 cut 150 $d" EVERY=6 OUT=$T/tc$d.json run; done
+# tables: python3 pairsum.py <json>...; python3 pairtab.py <json>...; python3 cuttab.py <json>...; python3 tr.py <trace json> <t0> <t1>

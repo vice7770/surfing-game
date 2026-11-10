@@ -1,0 +1,30 @@
+# usage: pairsum.py <json>... ; the pair plan by climb and leg drive: pairs made, where the first pair fails, timings
+import json,sys,collections
+rows=[]
+for p in sys.argv[1:]: rows+=json.load(open(p))['out']
+rg=lambda v,f='%.1f': '-' if not v else (f%min(v)+' to '+f%max(v)) if min(v)!=max(v) else f%v[0]
+def info(o):
+  ev=o['events']; us=[e for e in ev if e['step']=='up']; ds=[e for e in ev if e['step']=='down'][1:]  # the first down is the drop from trim
+  d={'pairs':max(0,len(us)-1) if ds else 0}
+  if us and ds: d.update(bt=ds[0]['t']-us[0]['t'],topFrac=ds[0]['frac'],topFf=ds[0]['ff'],vB=us[0]['v'],vT=ds[0]['v'])
+  if len(us)>1: d.update(pair=us[1]['t']-us[0]['t'],vB2=us[1]['v'])
+  if len(us)>2: d.update(pair2=us[2]['t']-us[1]['t'])
+  if len(us)>1 and len(ds)>1: d.update(bt2=ds[1]['t']-us[1]['t'])
+  s=o['segs'].get('down2')
+  if s and len(us)>1: d.update(topT=s['t'],topPeak=s['peak'],topSwing=s['ffmax']-s['ff1'],topHigh=s['fracMax'])
+  s=o['segs'].get('up1')
+  if s: d.update(upT=s['t'],upAhead=s['aheadMax'])
+  return d
+def where(o):
+  if o['fell'] is not None: return f"{o['kind']} fall in {o['fellIn']}"
+  return o['kind']
+for key in sorted(set((o['variant'].split()[0],o['drive']) for o in rows)):
+  sel=[o for o in rows if (o['variant'].split()[0],o['drive'])==key]; inf=[info(o) for o in sel]
+  g=lambda k: [i[k] for i in inf if k in i]
+  print(f"\n{key[0]} / leg drive {key[1]}: n {len(sel)}; top turn begun {sum(1 for i in inf if 'bt' in i)}; 1 pair {sum(1 for i in inf if i['pairs']>=1)}; 2 pairs {sum(1 for i in inf if i['pairs']>=2)}; high {rg([o['high'] for o in sel],'%.2f')}")
+  print('  first-pair failures:',dict(collections.Counter(where(o) for o,i in zip(sel,inf) if i['pairs']<1)))
+  print('  later ends:',dict(collections.Counter(where(o) for o,i in zip(sel,inf) if i['pairs']>=1)))
+  print(f"  bottom turn (stick up -> UP deg): {rg(g('upT'),'%.2f')} s, ends {rg(g('upAhead'),'%.2f')} face lengths ahead of the crest; v at bottom {rg(g('vB'))}")
+  print(f"  bottom->top {rg(g('bt'),'%.2f')} s; at the top: frac {rg(g('topFrac'),'%.2f')}, heading {rg(g('topFf'),'%.0f')}, v {rg(g('vT'))}")
+  print(f"  top turn: {rg(g('topT'),'%.2f')} s, swing {rg(g('topSwing'),'%.0f')} deg, peak {rg(g('topPeak'),'%.0f')} deg/s, highest {rg(g('topHigh'),'%.2f')}")
+  print(f"  pair 1 {rg(g('pair'),'%.2f')} s (v at 2nd bottom {rg(g('vB2'))}); pair 2 {rg(g('pair2'),'%.2f')} s; 2nd bottom->top {rg(g('bt2'),'%.2f')} s")

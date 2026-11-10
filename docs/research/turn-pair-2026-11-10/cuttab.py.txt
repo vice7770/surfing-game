@@ -1,0 +1,6 @@
+# usage: cuttab.py <json> ; one line per cutback run
+import json,sys
+for p in sys.argv[1:]:
+  for o in json.load(open(p))['out']:
+    c=o['cut'] or {}; b=o['back'] or {}
+    print(f"{o['name'][8:]:30s} {o['kind'][:10]:10s} fell {o['fell']} in {o['fellIn']:4s}| cut: turned {o['farTurn']} in {c.get('t')}s R {o['cutRadius']} v {c.get('v0')}>{c.get('vmin')}>{o['farV']} peak {c.get('peak')} far ahead {o['farAhead']} | back: turned {o['backTurn']} in {b.get('t')}s R {o['backRadius']} v>{b.get('vmin')}>{b.get('v1')} peak {b.get('peak')} | end turned {o['endTurned']} ahead {o['endAhead']} frac {o['endFrac']} v {o['vEnd']} x-span {o['xSpan']} | {o['fellAt']}")
