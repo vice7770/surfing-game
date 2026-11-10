@@ -1,0 +1,48 @@
+# usage: carrysum.py pair|cut|trim <json>... ; the carve-carry tables: one block per file group
+import json,sys,collections,math
+mode=sys.argv[1]; rows=[]
+for p in sys.argv[2:]: rows+=json.load(open(p))['out']
+rg=lambda v,f='%.1f': '-' if not v else (f%min(v)+'–'+f%max(v)) if min(v)!=max(v) else f%v[0]
+med=lambda v: sorted(v)[len(v)//2] if v else float('nan')
+if mode=='pair':
+  def info(o):
+    ev=o['events']; us=[e for e in ev if e['step']=='up']; ds=[e for e in ev if e['step']=='down'][1:]; ws=[e for e in ev if e['step']=='wait']
+    d={'pairs':max(0,len(us)-1) if ds else 0}
+    if us and ds: d.update(bt=ds[0]['t']-us[0]['t'],vB=us[0]['v'],vT=ds[0]['v'])
+    if ws and ds and ds[0]['t']>ws[0]['t']: d.update(wait=ds[0]['t']-ws[0]['t'])
+    if len(us)>1: d.update(pair=us[1]['t']-us[0]['t'])
+    if len(us)>2: d.update(pair2=us[2]['t']-us[1]['t'])
+    s=o['segs'].get('up1')
+    if s and us and (ds or ws):
+      ang=(s['ff0']-s['ffmin'])+(s['ff1']-s['ffmin'])
+      if ang>20: d.update(rB=(s['v0']+s['v1'])/2*s['t']/math.radians(ang),upT=s['t'],upAhead=s['aheadMax'])
+    s=o['segs'].get('down2')
+    if s and len(us)>1:
+      ang=(s['ffmax']-s['ff0'])+(s['ffmax']-s['ff1'])
+      if ang>20: d.update(rT=(s['v0']+s['v1'])/2*s['t']/math.radians(ang),topT=s['t'])
+    return d
+  def where(o):
+    if o['fell'] is not None: return f"{o['kind']} fall in {o['fellIn']}"
+    return o['kind']
+  inf=[info(o) for o in rows]; g=lambda k: [i[k] for i in inf if k in i]
+  print(f"n {len(rows)}; top turn begun {len(g('bt'))}; 1 pair {sum(1 for i in inf if i['pairs']>=1)}; 2 pairs {sum(1 for i in inf if i['pairs']>=2)}")
+  print('  first-pair failures:',dict(collections.Counter(where(o) for o,i in zip(rows,inf) if i['pairs']<1)))
+  print('  ends after one pair:',dict(collections.Counter(where(o) for o,i in zip(rows,inf) if i['pairs']==1)))
+  print('  ends after two pairs:',dict(collections.Counter(where(o) for o,i in zip(rows,inf) if i['pairs']>=2)))
+  print(f"  pair 1 {rg(g('pair'),'%.2f')} s (median {med(g('pair')):.2f}); pair 2 {rg(g('pair2'),'%.2f')} s (median {med(g('pair2')):.2f}); bottom->top {rg(g('bt'),'%.2f')} s (median {med(g('bt')):.2f}); waiting on the flat {rg(g('wait'),'%.2f')} s (median {med(g('wait')):.2f})")
+  print(f"  bottom turn {rg(g('upT'),'%.2f')} s, ends {rg(g('upAhead'),'%.2f')} face lengths ahead, radius about {rg(g('rB'))} m (median {med(g('rB')):.1f}); top turn {rg(g('topT'),'%.2f')} s, radius about {rg(g('rT'))} m (median {med(g('rT')):.1f})")
+  print(f"  v at the bottom turn {rg(g('vB'))} (median {med(g('vB')):.1f}); v at the top turn {rg(g('vT'))} (median {med(g('vT')):.1f})")
+elif mode=='cut':
+  c=collections.Counter()
+  for o in rows:
+    done=o['kind']=='done'
+    k='falls in the first arc' if o['fellIn']=='cut' else 'completes' if done else 'dropped behind the crest' if o['kind'].startswith('behind') else f"falls in the turn back ({o['kind']})" if o['fellIn'] in('back','out') else o['kind']
+    c[k]+=1
+  print(f"n {len(rows)}:",dict(c))
+  f=lambda k,sub=None: [ (o[sub] or {}).get(k) if sub else o[k] for o in rows if ((o[sub] or {}).get(k) if sub else o[k]) is not None]
+  print(f"  first arc: {rg(f('t','cut'),'%.2f')} s, radius {rg(f('cutRadius'))} m (median {med(f('cutRadius')):.1f}), v at the start {rg(f('v0','cut'))}, lowest {rg(f('vmin','cut'))}, at the far end {rg(f('farV'))} (median {med(f('farV')):.1f}), far end {rg(f('farAhead'),'%.2f')} face lengths ahead")
+  dn=[o for o in rows if o['kind']=='done']
+  if dn: print('  completed runs:',[(o['name'][8:],'cut',o['cut']['t'],'s R',o['cutRadius'],'back',o['back']['t'],'s R',o['backRadius'],'end ahead',o['endAhead'],'frac',o['endFrac'],'v',o['vEnd'],'vmin back',o['back']['vmin']) for o in dn])
+else:
+  for o in rows:
+    l=o['last4']; print(f"{o['name']:24s} entry {o['entry']} | {o['end'][:36]:36s} at {o['t']} s | last 4 s: v {l['v']} ({l['vmin']}–{l['vmax']}), toward shore {l['vz']}, {l['ff']} deg off the fall line, face fraction {l['frac']}, ahead {l['ahead']} | face fraction range {o['fracRange']} | carry max {o['caMax']} bw")

@@ -1,0 +1,13 @@
+diff --git a/src/physics/AttachedRider.ts b/src/physics/AttachedRider.ts
+index ec75c534..6116a3fd 100644
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -554,7 +554,7 @@ const TURN_PULL_LIMIT = 1.41;
+  * 0.63 after 1 s: on flat water the carry gives back the planing drag a wave's
+  * face would feed.
+  */
+-const CARVE_CARRY = 0.4;
++const CARVE_CARRY = process.env.CARRY !== undefined ? Number(process.env.CARRY) : 0.4; // SCRATCH (carve-carry probe): never commit
+ const PULL_FULL_SPEED = 5;
+ /**
+  * The rail change's lean-out pull (the movement-flow spec's cutback, a gameplay rule, not physics), under

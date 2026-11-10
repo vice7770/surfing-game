@@ -1,0 +1,92 @@
+// The carve-carry probe on flat water (2026-11-10; not part of the suite). CARRY=<n> is read by the scratch override in AttachedRider.ts.
+// PLAN=arc: Compress + stick held one way until the heading has turned ARC deg (or 8 s, or the turn dies, or a fall).
+// PLAN=linked: Compress held, the stick reversed each time the heading is SWING deg off the start heading on the stick's side, for PAIRS pairs.
+// PLAN=trim: on the Canyon-matched FaceWater, from trim (AT of a face length ahead of the crest, 45 deg off the fall line, the wave's pace + SPEEDS).
+//   STANCES stand | compress; HOLDS free (no stick) | line (the stick holds the heading LINE deg off the fall line, gain 1 per 20 deg).
+import { writeFileSync } from 'node:fs';
+import { Vector3 } from 'three';
+import { it } from 'vitest';
+import { AttachedRider } from './AttachedRider';
+import { BoardBody } from './BoardBody';
+import { PlaneWater } from './PlaneWater';
+import { createWaterSample } from './SurfWater';
+import { FaceWater } from './testing/FaceWater';
+import { DEG, STEP, diff, onWater, r } from './zz-r2Lab';
+
+const OUT = process.env.OUT ?? '/dev/null';
+const num = (k: string, d: string) => (process.env[k] ?? d).split(',').map(Number);
+const str = (k: string, d: string) => (process.env[k] ?? d).split(',');
+const PLAN = process.env.PLAN ?? 'arc';
+const SPEEDS = num('SPEEDS', '6,7.5'); const STEERS = num('STEERS', '0.5,1');
+const ARC = Number(process.env.ARC ?? 180); const SWINGS = num('SWINGS', '30,45'); const PAIRS = Number(process.env.PAIRS ?? 3);
+const STANCES = str('STANCES', 'stand,compress'); const HOLDS = str('HOLDS', 'free,line'); const LINE = Number(process.env.LINE ?? 45); const AT = Number(process.env.AT ?? 0.75);
+const SECONDS = Number(process.env.SECONDS ?? 16); const TRACE = process.env.TRACE ?? ''; const EVERY = Number(process.env.EVERY ?? 6);
+const G = 9.81;
+
+it('probe', () => {
+  const out: unknown[] = []; const traces: Record<string, unknown[]> = {};
+  if (PLAN === 'trim') {
+    for (const speed of SPEEDS) for (const stance of STANCES) for (const hold of HOLDS) {
+      const water = new FaceWater({ depth: 2.6, height: 1.4, slope: 16, speed: 5.7 });
+      const atZ = water.crestZ() + AT * water.front;
+      const entry = (water.speed - water.sampleAt(0, 10, atZ, createWaterSample()).flowZ) / Math.cos(45 / DEG) + speed;
+      const rig = onWater(water, 0, atZ, -45, entry); const board = rig.board as BoardBody; const rider = rig.rider as AttachedRider; const q = rider as any;
+      const name = `trim ${speed} ${stance} ${hold}`; const sample = createWaterSample(); const frames: any[] = [];
+      let end = 'time up'; let behindFor = 0; let aheadFor = 0;
+      for (let n = 0; n < Math.round(SECONDS / STEP); n += 1) {
+        const t = n * STEP;
+        const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation); const fh = f.clone().setY(0).normalize();
+        const ff = Math.acos(Math.max(-1, Math.min(1, fh.z))) * DEG;
+        rider.trim = 0; rider.snap = 0;
+        rider.steer = hold === 'line' && t >= 0.2 ? Math.max(-1, Math.min(1, (ff - LINE) / 20)) * (f.x < 0 ? 1 : -1) : 0;
+        const c = stance === 'compress' ? 1 : 0; rider.compress = c; rider.crouch = c ? 0.6 : 0;
+        water.advance(STEP); board.step(STEP, water);
+        water.sampleAt(board.position.x, board.position.y, board.position.z, sample);
+        const v = Math.hypot(board.velocity.x - sample.flowX, board.velocity.z - sample.flowZ);
+        const ahead = (board.position.z - water.crestZ()) / water.front;
+        frames.push({ t: t + STEP, v, vz: board.velocity.z, vx: board.velocity.x, ff, frac: water.faceFraction(board.position.z), ahead, bank: rider.bank.angle * DEG, st: rider.steer, ca: q.carryForce.length() / (q.mass * G), slope: Math.atan(Math.abs(sample.slopeZ)) * DEG });
+        if (!rider.attached) { end = `fall (${String(rider.separation)}) bank ${r(rider.bank.angle * DEG)} v ${r(v, 1)}`; break; }
+        behindFor = ahead < 0 ? behindFor + STEP : 0; aheadFor = ahead > 1.5 ? aheadFor + STEP : 0;
+        if (behindFor > 1) { end = 'dropped behind the crest'; break; }
+        if (aheadFor > 2) { end = 'ran off the front'; break; }
+      }
+      const at = (t: number) => { const f = frames.find((x) => x.t >= t); return f ? { v: r(f.v, 1), vz: r(f.vz, 1), ff: r(f.ff), frac: r(f.frac, 2), ahead: r(f.ahead, 2) } : null; };
+      const tail = frames.filter((f) => f.t >= frames[frames.length - 1].t - 4);
+      const mean = (k: string, fs = tail) => fs.reduce((a, f) => a + f[k], 0) / fs.length;
+      out.push({ name, speed, stance, hold, entry: r(entry, 1), end, t: r(frames[frames.length - 1].t, 2), at2: at(2), at4: at(4), at8: at(8), at12: at(12), last4: { v: r(mean('v'), 1), vmin: r(Math.min(...tail.map((f) => f.v)), 1), vmax: r(Math.max(...tail.map((f) => f.v)), 1), vz: r(mean('vz'), 1), ff: r(mean('ff')), frac: r(mean('frac'), 2), ahead: r(mean('ahead'), 2), bank: r(mean('bank')), ca: r(mean('ca'), 3) },
+        fracRange: [r(Math.min(...frames.map((f) => f.frac)), 2), r(Math.max(...frames.map((f) => f.frac)), 2)], caMax: r(Math.max(...frames.map((f) => f.ca)), 3) });
+      if (TRACE && name === TRACE) traces[name] = frames.filter((_, i) => i % EVERY === 0).map((f) => Object.fromEntries(Object.entries(f).map(([k, x]) => [k, r(x as number, 2)])));
+    }
+  } else {
+    const variants = PLAN === 'arc' ? [ARC] : SWINGS;
+    for (const speed of SPEEDS) for (const steer of STEERS) for (const variant of variants) {
+      const water = new PlaneWater({ depth: 3 });
+      const rig = onWater(water, 0, 0, 0, speed); const board = rig.board as BoardBody; const rider = rig.rider as AttachedRider; const q = rider as any;
+      const name = `${PLAN} ${speed} ${steer} ${variant}`;
+      const frames: any[] = []; let last = rig.heading; let turned = 0; let side = 1; let fell = Number.NaN; let cause = ''; let slowFor = 0; let end = 'time up';
+      const flips: { t: number; v: number; turned: number; bank: number }[] = []; let phase = 'pre';
+      for (let n = 0; n < Math.round(SECONDS / STEP); n += 1) {
+        const t = n * STEP; const v0 = Math.hypot(board.velocity.x, board.velocity.z);
+        if (phase === 'pre' && t >= 0.2) { phase = 'turn'; flips.push({ t, v: v0, turned, bank: rider.bank.angle * DEG }); }
+        else if (phase === 'turn' && PLAN === 'arc' && (Math.abs(turned) >= ARC || slowFor > 0.5 || t > 8.2)) { end = Math.abs(turned) >= ARC ? 'done' : slowFor > 0.5 ? 'turn died' : 'timeout'; flips.push({ t, v: v0, turned, bank: rider.bank.angle * DEG }); break; }
+        else if (phase === 'turn' && PLAN === 'linked' && side * turned >= variant) { side = -side; flips.push({ t, v: v0, turned, bank: rider.bank.angle * DEG }); if (flips.length > 2 * PAIRS + 1) { end = 'done'; break; } }
+        else if (phase === 'turn' && PLAN === 'linked' && t - flips[flips.length - 1].t > 6) { end = 'timeout'; break; }
+        rider.trim = 0; rider.snap = 0; rider.steer = phase === 'turn' ? side * steer : 0; rider.compress = 1; rider.crouch = 0.6;
+        board.step(STEP, water);
+        const v = Math.hypot(board.velocity.x, board.velocity.z); const d = diff(rig.heading * DEG, last * DEG); last = rig.heading; turned += d;
+        slowFor = Math.abs(d / STEP) < 5 && phase === 'turn' ? slowFor + STEP : 0;
+        frames.push({ t: t + STEP, ph: phase, v, turned, rate: d / STEP, bank: rider.bank.angle * DEG, ref: q.bankReference * DEG, st: rider.steer, pl: q.planing ? 1 : 0, load: rider.contact.load, ca: q.carryForce.length() / (q.mass * G), as: q.assistForce.length() / (q.mass * G), lo: q.leanOutForce.length() / (q.mass * G), x: board.position.x, z: board.position.z });
+        if (!rider.attached) { fell = t + STEP; cause = String(rider.separation); end = `fall (${cause}) bank ${r(rider.bank.angle * DEG)} v ${r(v, 1)}`; break; }
+      }
+      const turn = frames.filter((f) => f.ph === 'turn');
+      const segStat = (fs: any[]) => { if (fs.length < 2) return null; const ang = Math.abs(fs[fs.length - 1].turned - fs[0].turned); const path = fs.reduce((a, f) => a + f.v * STEP, 0);
+        return { t: r(fs.length * STEP, 2), turned: r(ang), v0: r(fs[0].v, 1), vmin: r(Math.min(...fs.map((f) => f.v)), 1), vmax: r(Math.max(...fs.map((f) => f.v)), 1), v1: r(fs[fs.length - 1].v, 1), radius: ang > 5 ? r(path / (ang / DEG), 1) : null, mean: r(ang / (fs.length * STEP)), peak: r(Math.max(...fs.map((f) => Math.abs(f.rate)))), bankMax: r(Math.max(...fs.map((f) => Math.abs(f.bank)))), caMean: r(fs.reduce((a, f) => a + f.ca, 0) / fs.length, 2), work: r(fs.reduce((a, f) => a + f.ca * q.mass * G * f.v * STEP, 0)) }; };
+      const row: any = { name, speed, steer, variant, end, fell: r(fell, 2), mass: r(q.mass, 1), whole: segStat(turn), flips: flips.map((f) => ({ t: r(f.t, 2), v: r(f.v, 1), turned: r(f.turned), bank: r(f.bank) })) };
+      if (PLAN === 'arc') { const at = (deg: number) => { const f = turn.find((x) => Math.abs(x.turned) >= deg); return f ? { t: r(f.t - turn[0].t, 2), v: r(f.v, 1) } : null; }; row.at90 = at(90); row.at180 = at(180); row.first90 = segStat(turn.filter((f) => Math.abs(f.turned) <= 90)); row.steady = segStat(turn.filter((f) => Math.abs(f.turned) > 45 && Math.abs(f.turned) <= 135)); }
+      else { row.arcs = []; for (let k = 1; k < flips.length - 1; k += 1) row.arcs.push(segStat(frames.filter((f) => f.t > flips[k].t && f.t <= flips[k + 1].t))); row.pairs = []; for (let k = 1; k + 2 < flips.length; k += 2) row.pairs.push(r(flips[k + 2].t - flips[k].t, 2)); }
+      out.push(row);
+      if (TRACE && name === TRACE) traces[name] = frames.filter((_, i) => i % EVERY === 0).map((f) => Object.fromEntries(Object.entries(f).map(([k, x]) => [k, typeof x === 'number' ? r(x, 2) : x])));
+    }
+  }
+  writeFileSync(OUT, JSON.stringify({ out, traces }, null, 1));
+});

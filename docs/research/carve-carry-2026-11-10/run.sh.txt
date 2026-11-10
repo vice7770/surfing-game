@@ -1,0 +1,22 @@
+# How the numbers in README.md were produced. Apply scratch-carry.diff.txt to src/physics/AttachedRider.ts (scratch, never committed), copy
+# ../turn-pair-2026-11-10/turnpair.test.ts.txt to src/physics/zz-turnpair.test.ts, ../face-hold-2026-11-10/r2Lab.ts.txt to src/physics/zz-r2Lab.ts
+# and carryflat.test.ts.txt to src/physics/zz-carryflat.test.ts, then for each carry:
+T=/path/to/out
+for c in 0 0.2 0.4; do
+  export CARRY=$c
+  pair() { DRIVES=off CLIMBS=hold npx vitest run src/physics/zz-turnpair.test.ts; }   # leg drive off, Compress held (the wave is the probe's own Canyon match: 1.4 m, 16 deg, 5.7 m/s; start trim, AT 0.75, SPEEDS 0,1.5)
+  flat() { npx vitest run src/physics/zz-carryflat.test.ts; }
+  # the pair: set B (two DROPs), set C (top turn begun at 0.3 of the face), set A (heading only, on the flat ahead of the wave)
+  for d in 20 35; do SECONDS=16 WAIT=1 LOW=0.25 DROP=$d TOPS=60/0.5,60/0.7 OUT=$T/pairB-$d-c$c.json pair; done
+  SECONDS=16 WAIT=1 LOW=0.25 DROP=20 TOPS=60/0.3,45/0.3 OUT=$T/pairC-c$c.json pair
+  TOPS=50/9,65/9 OUT=$T/pairA-c$c.json pair
+  # cutbacks
+  PLAN=cutback CUTS=150,180 ATS=0.5,0.75 OUT=$T/cut-c$c.json pair
+  PLAN=cutback CUTS=90,120 OUT=$T/cut2-c$c.json pair
+  # flat water (PlaneWater): one arc, linked arcs; then trim on the wave
+  PLAN=arc OUT=$T/arc-c$c.json flat; PLAN=arc SPEEDS=9 OUT=$T/arc9-c$c.json flat
+  PLAN=linked OUT=$T/linked-c$c.json flat
+  PLAN=trim SPEEDS=0,1.5 OUT=$T/trim-c$c.json flat
+  # trace: PLAN=arc SPEEDS=7.5 STEERS=1 TRACE="arc 7.5 1 180" EVERY=12 OUT=$T/tarc-c$c.json flat
+done
+# tables: python3 carrysum.py pair|cut|trim <json>...; python3 flattab.py <json>...; ../turn-pair-2026-11-10/pairtab.py and cuttab.py for one line per run
