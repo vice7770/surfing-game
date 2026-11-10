@@ -1,0 +1,23 @@
+# usage: tab.py <json>... ; the drag ledger (along the path, in g of the whole system = N / (M g)), the turning ledger and the state, one row per 0.2 s bin
+import json,sys
+G=9.81
+for p in sys.argv[1:]:
+  for o in json.load(open(p)):
+    M=o['mass']['board']+o['mass']['rider']; W=M*G
+    print(f"\n## {o['name']}  end: {o['end']}  turned {o['turned']}  v0 {o['v0']}  marks {{" + ', '.join(f"{k}: t {m['t']} v {m['v']} kept {m['kept']}" for k,m in o['marks'].items()) + "}")
+    g=lambda b,k: b.get(k,0)/W
+    print("drag along the path, g (negative = slows):")
+    print(" t1   deg  | meas   sum   | hullP  hullF  deckP  deckF  addM   rad    rails  buoy  | finL   finR   finC  (profile) | legs   pelvis torso  arms   hands | assist carry leanOut")
+    for b in o['bins']:
+      fins=[g(b,f'fin_{n}_t') for n in ('left','right','centre')]; prof=sum(b.get(f'fin_{n}_profile',0) for n in ('left','right','centre'))/W
+      print(f"{b['t1']:4.1f} {b['turned']:5.0f} | {g(b,'measured_t'):+.3f} {g(b,'sum_t'):+.3f} | {g(b,'pressure_t'):+.3f} {g(b,'friction_t'):+.3f} {g(b,'deckPressure_t'):+.3f} {g(b,'deckFriction_t'):+.3f} {g(b,'addedMass_t'):+.3f} {g(b,'radiation_t'):+.3f} {g(b,'rails_t'):+.3f} {g(b,'buoyancy_t'):+.3f} | {fins[0]:+.3f} {fins[1]:+.3f} {fins[2]:+.3f} ({-prof:+.3f}) | {g(b,'body_leftLeg_t')+g(b,'body_rightLeg_t'):+.3f} {g(b,'body_pelvis_t'):+.3f} {g(b,'body_torso_t')+g(b,'body_head_t'):+.3f} {g(b,'body_leftArm_t')+g(b,'body_rightArm_t'):+.3f} {g(b,'body_handL_t')+g(b,'body_handR_t'):+.3f} | {g(b,'assist_t'):+.3f} {g(b,'carry_t'):+.3f} {g(b,'leanOut_t'):+.3f}")
+    print("turning (toward the turn's centre), g:")
+    print(" t1   deg  | meas   sum   | hullP  hullF  deckP  addM   rad    rails | fins   | body   | assist leanOut | vertical: hullP  buoy  addM+rad bodyBuoy")
+    for b in o['bins']:
+      body=g(b,'bodyWater_n')
+      print(f"{b['t1']:4.1f} {b['turned']:5.0f} | {g(b,'measured_n'):+.3f} {g(b,'sum_n'):+.3f} | {g(b,'pressure_n'):+.3f} {g(b,'friction_n'):+.3f} {g(b,'deckPressure_n'):+.3f} {g(b,'addedMass_n'):+.3f} {g(b,'radiation_n'):+.3f} {g(b,'rails_n'):+.3f} | {g(b,'finsAll_n'):+.3f} | {body:+.3f} | {g(b,'assist_n'):+.3f} {g(b,'leanOut_n'):+.3f} | {g(b,'pressure_y'):+.3f} {g(b,'buoyancy_y'):+.3f} {g(b,'addedMass_y')+g(b,'radiation_y'):+.3f} {g(b,'bodyWater_y'):+.3f}")
+    print("state (bin means):")
+    print(" t1   deg  | v    rate bank ref  roll pitch attack trimP leeway | load front bodyZ  cop   | wetLen wetArea deckWet sub(l) wetX       | yTail  yMid   yNose  yRailIn yRailOut yDeckRear yDeckRearIn pelvisY legExt | fins attack L/R/C  imm L/R/C | plan hand")
+    for b in o['bins']:
+      print(f"{b['t1']:4.1f} {b['turned']:5.0f} | {b['v']:4.2f} {b['rate']:4.0f} {b['bank']:4.0f} {b['bankRef']:4.0f} {b['roll']:4.0f} {b['pitch']:+5.1f} {b['attack']:5.1f} {b['trimPath']:5.1f} {b['leeway']:+5.1f} | {b['load']:4.2f} {b['front']:4.2f} {b['bodyZ']:+.3f} {b['cop']:+.3f} | {b['wetLen']:5.2f} {b['wetArea']:6.3f} {b['deckWet']:6.3f} {b['sub']*1000:5.1f} {b['wetX0']:+.2f}..{b['wetX1']:+.2f} | {b['yTail']:+.3f} {b['yMid']:+.3f} {b['yNose']:+.3f} {b['yRailIn']:+.3f} {b['yRailOut']:+.3f} {b['yDeckRear']:+.3f} {b['yDeckRearIn']:+.3f} {b['pelvisY']:.2f} {b['legExt']:+.2f} | {b['fin_left_attack']:+4.0f} {b['fin_right_attack']:+4.0f} {b['fin_centre_attack']:+4.0f}  {b['fin_left_imm']:.2f} {b['fin_right_imm']:.2f} {b['fin_centre_imm']:.2f} | {b['planing']:.1f} {b['hand']:.1f}")
+    if '90' in o['marks']: print("work to 90 deg, J:", o['marks']['90']['work'])

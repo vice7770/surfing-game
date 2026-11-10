@@ -1,0 +1,12 @@
+# How the numbers were made (2026-11-10). From the repo root, with scratch-ledger.diff.txt applied (git apply), ledger.test.ts.txt copied to
+# src/physics/zz-ledger.test.ts and docs/research/face-hold-2026-11-10/r2Lab.ts.txt copied to src/physics/zz-r2Lab.ts. Nothing here is shipped.
+O=/tmp/ledger-out; mkdir -p $O
+CARRY=0 OUT=$O/compress.json npx vitest run src/physics/zz-ledger.test.ts                                  # 4 Compress arcs
+CARRY=0 STANCE=stand OUT=$O/stand.json npx vitest run src/physics/zz-ledger.test.ts                        # 4 standing arcs
+CARRY=0 DRYLEGS=1 DRYDECK=1 OUT=$O/wi-dry.json npx vitest run src/physics/zz-ledger.test.ts                # what-if 1
+CARRY=0 DRYLEGS=1 OUT=$O/wi-drylegs.json npx vitest run src/physics/zz-ledger.test.ts                      # what-if 1, legs only
+CARRY=0 TRIM=1 OUT=$O/wi-trim.json npx vitest run src/physics/zz-ledger.test.ts                            # what-if 2
+CARRY=0 TRIM=1 DRYLEGS=1 DRYDECK=1 OUT=$O/wi-dry-trim.json npx vitest run src/physics/zz-ledger.test.ts    # both together
+python3 tab.py $O/*.json > results.txt            # every bin, every run
+python3 mdtab.py $O/compress.json $O/stand.json   # the README's tables
+python3 savitsky.py $O/compress.json $O/stand.json $O/wi-dry.json $O/wi-dry-trim.json > savitsky-results.txt
