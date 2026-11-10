@@ -1,0 +1,94 @@
+diff --git a/src/physics/AttachedRider.ts b/src/physics/AttachedRider.ts
+index c3921c71..bff7107d 100644
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -1022,6 +1022,7 @@ export interface AttachedRiderOptions {
+    * with them in place of the stamp (the `?agile=on` dev switch, to ride). By default as before.
+    */
+   agile?: 'on';
++  faceHold?: 'on';
+ }
+ 
+ /** The rider's phase: a posture, or lying back down after a failed pop-up. */
+@@ -1353,6 +1354,7 @@ export class AttachedRider {
+   private snapHeldTime = 0;
+   /** The agile legs (HIP_INERTIA); only with `agile: 'on'`. */
+   private readonly agile: boolean;
++  private readonly faceHold: boolean;
+   /** Agile: the hips' turn about the body's up against the board, rad (positive toward the board's left), and the trunk's pitch about the body's side axis (the board's +x on a level body; positive forward), with their rates. */
+   readonly hip = { angle: 0, rate: 0 };
+   readonly trunk = { angle: 0, rate: 0 };
+@@ -1537,6 +1539,7 @@ export class AttachedRider {
+     this.recentres = options.snapRecentre !== 'old';
+     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
+     this.agile = options.agile === 'on';
++    this.faceHold = options.faceHold === 'on';
+     this.stamps = options.snapStamp === 'on' && !this.agile;
+     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
+     this.partMasses = riderPartMasses(this.mass);
+@@ -2303,7 +2306,47 @@ export class AttachedRider {
+     // snap-upturn: a Snap turning the board up the face (a bottom turn) asks for the steer's rail, not the top turn's.
+     const snapLeans = this.snapLean && this.snapping > 0 && !(this.upturnKept && this.turningUp());
+     const railRange = snapLeans ? RAIL_RANGE + this.snapping * (SNAP_RAIL_RANGE - RAIL_RANGE) : RAIL_RANGE;
+-    const asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
++    let asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
++    if (this.faceHold) {
++      const E = (globalThis as unknown as { process: { env: Record<string, string | undefined> } }).process.env;
++      const Z = this as unknown as { zpx?: number; zpz?: number; zax: number; zaz: number; zn: number };
++      if (Z.zpx === undefined) { Z.zax = 0; Z.zaz = 0; }
++      else {
++        const k = 1 - Math.exp(-h / Number(E.FH_TAU ?? 0.15));
++        Z.zax += ((this.waterFlow.x - Z.zpx) / h - Z.zax) * k;
++        Z.zaz += ((this.waterFlow.z - (Z.zpz ?? 0)) / h - Z.zaz) * k;
++      }
++      Z.zpx = this.waterFlow.x; Z.zpz = this.waterFlow.z;
++      const Y = this as unknown as { yvx?: number; yvz: number; ya: number };
++      const fwdV = this.boardVelocity.dot(forward);
++      if (Y.yvx === undefined) Y.ya = 0;
++      else {
++        const raw = ((this.boardVelocity.x - Y.yvx) * side.x + (this.boardVelocity.z - Y.yvz) * side.z) / h - this.boardSpin.y * fwdV;
++        Y.ya += (raw - Y.ya) * (1 - Math.exp(-h / Number(E.FH_TAU ?? 0.15)));
++      }
++      Y.yvx = this.boardVelocity.x; Y.yvz = this.boardVelocity.z;
++      const lat = E.FH_NEU === 'acc' ? Y.ya : Z.zax * side.x + Z.zaz * side.z;
++      const share = Number(E.FH_FLOW ?? 1);
++      const neutral = this.planing ? Math.atan((share * lat) / WATER.gravity) : 0;
++      Z.zn = neutral;
++      const hull = this.planing ? (speed * speed) / radius : 0;
++      const hi = Math.min(MAX_BANK, Math.atan((hull + share * lat) / WATER.gravity));
++      const lo = Math.max(-MAX_BANK, Math.atan((-hull + share * lat) / WATER.gravity));
++      asked = Math.max(lo, Math.min(hi, neutral + this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
++      if (E.FH_LEAD) {
++        const C = this as unknown as { yc?: number };
++        C.yc = (C.yc ?? 0) + (this.boardSpin.y * fwdV - (C.yc ?? 0)) * (1 - Math.exp(-h / Number(E.FH_TAU ?? 0.15)));
++        const bal = this.planing ? Math.atan((share * lat + C.yc) / WATER.gravity) : 0;
++        const lead = (Number(E.FH_LEAD) * Math.PI) / 180;
++        asked = Math.max(bal - lead, Math.min(bal + lead, asked));
++        Z.zn = bal;
++      }
++      if (E.FH_SPAN) {
++        const tilt = Math.atan2(this.waterUp.dot(side), this.waterUp.y);
++        const span = (Number(E.FH_SPAN) * Math.PI) / 180;
++        asked = Math.max(Math.min(neutral, tilt - span), Math.min(Math.max(neutral, tilt + span), asked));
++      }
++    }
+     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
+     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
+@@ -2319,7 +2362,15 @@ export class AttachedRider {
+     // The projection: extending out of a crouch or Compress with no lean asked for, the feet hold the board neutral.
+     const projecting = this.extending && this.planing && Math.abs(this.steer) <= STEER_DEADBAND && !this.hand
+       && Math.abs(this.bank.angle) > UPRIGHT_BANK;
+-    const lean = projecting ? 0 : reach * asking > 0 && lagging ? 0 : reach;
++    let lean = projecting ? 0 : reach * asking > 0 && lagging ? 0 : reach;
++    if (this.faceHold && !projecting && reach * asking > 0 && lagging) {
++      const E = (globalThis as unknown as { process: { env: Record<string, string | undefined> } }).process.env;
++      const mode = Number(E.FH_CATCH ?? 0);
++      if (mode === 1) lean = reach;
++      if (mode === 2) { const c = -BANK_RATE_GAIN * this.bank.rate; if (c * reach > 0) lean = Math.sign(reach) * Math.min(Math.abs(reach), Math.abs(c)); }
++      if (mode === 3 && this.bank.angle * asking < 0) lean = reach;
++    }
++    (this as unknown as { dbg: unknown }).dbg = { bk: this.bank.angle, rf: this.bankReference, rl: roll, ra: rail, wa: wanted, re: reach, tq: this.ankleTorque, yr: this.boardSpin.y, ld: this.legLoad };
+     this.swingStep(h, wanted - lean);
+     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
+     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.

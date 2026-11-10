@@ -1,0 +1,76 @@
+// The steep moving-face probe (2026-11-09; not part of the suite): a rider low on FaceWater's face, 45 deg from the fall line.
+// PLAN=none (no input) | up (a full steer up the face for HOLD s, then none) | top (up until TOP of the face or UP deg, then a full steer back down, CONTROL with it)
+import { writeFileSync } from 'node:fs';
+import { Vector3 } from 'three';
+import { it } from 'vitest';
+import { AttachedRider } from './AttachedRider';
+import { BoardBody } from './BoardBody';
+import { createWaterSample } from './SurfWater';
+import { FaceWater } from './testing/FaceWater';
+import { DEG, STEP, diff, frameOf, onWater, r, type Frame, type Rig } from './zz-r2Lab';
+
+const OUT = process.env.OUT ?? '/dev/null';
+const SLOPES = (process.env.SLOPES ?? '20,30,45,60').split(',').map(Number);
+const HEIGHTS = (process.env.HEIGHTS ?? '1.2,2').split(',').map(Number);
+const SPEEDS = (process.env.SPEEDS ?? '7,9').split(',').map(Number);
+const PLANS = (process.env.PLANS ?? 'none,up,top').split(',');
+const CONTROLS = (process.env.CONTROLS ?? 'steer').split(',');
+const TOP = Number(process.env.TOP ?? 0.7); const UP = Number(process.env.UP ?? 150); const HOLD = Number(process.env.HOLD ?? 0.8);
+const SECONDS = Number(process.env.SECONDS ?? 4);
+const TRACE = process.env.TRACE ?? '';
+const FALL = new Vector3(0, 0, 1);
+
+it('probe', () => {
+  const out: unknown[] = []; const traces: Record<string, unknown[]> = {};
+  for (const slope of SLOPES) for (const height of HEIGHTS) for (const speed of SPEEDS) for (const plan of PLANS) for (const control of plan === 'top' ? CONTROLS : ['-']) {
+    const water = new FaceWater({ depth: Math.max(2, 1.3 * height), height, slope });
+    // START=flat: on the flat just ahead of the toe, the wave overtaking at `speed` m/s (the face picks the rider up); START=face: low on the face at `speed`.
+    const flat = (process.env.START ?? 'flat') === 'flat';
+    const base = flat ? onWater(water, 0, water.crestZ() + 1.1 * water.front, -45, (water.speed - speed) / Math.cos(45 / DEG)) : onWater(water, 0, water.crestZ() + 0.75 * water.front, -45, speed);
+    const board = base.board as BoardBody;
+    board.attach(new AttachedRider(board.shape, { phase: 'standing', ...(control === 'agile' ? { agile: 'on' } : {}), ...JSON.parse(process.env.OPTS ?? '{}') }));
+    const rig = { board, get rider() { return board.rider as AttachedRider; }, get heading() { const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation); return Math.atan2(f.x, f.z); } } as Rig;
+    const name = `${slope} ${height} ${speed} ${plan} ${control}`;
+    const frames: (Frame & { frac: number; local: number; lim: string; arest: number; sw: number; pl: boolean; ax: number; sway: number; err: number; fly: number; wet: number; by: number; vy: number })[] = [];
+    let last = rig.heading; let fell = Number.NaN; let cause = ''; let phase = 'pre'; let t0 = 0; let downAt = Number.NaN; let fellIn = ''; let fellAt = '';
+    const sample = createWaterSample();
+    const fromFall = () => { const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation).setY(0).normalize(); return Math.acos(Math.max(-1, Math.min(1, f.dot(FALL)))) * DEG; };
+    for (let n = 0; n < Math.round(SECONDS / STEP); n += 1) {
+      const t = n * STEP;
+      const rider = board.rider as AttachedRider;
+      const frac = water.faceFraction(board.position.z);
+      if (phase === 'pre' && (flat ? frac >= Number(process.env.FROM ?? 0.1) : t >= 0.2)) { phase = plan === 'none' ? 'none' : 'up'; t0 = t; }
+      if (phase === 'up' && plan === 'up' && t - t0 >= HOLD) { phase = 'none'; t0 = t; }
+      if (phase === 'up' && plan === 'top' && (frac >= TOP || fromFall() >= UP || t - t0 >= 2.5)) { phase = 'down'; t0 = t; downAt = t; }
+      if (phase === 'down' && fromFall() <= 30) { phase = 'out'; t0 = t; }
+      rider.steer = phase === 'up' ? -Number(process.env.STEER ?? 1) : phase === 'down' && control !== 'release' ? 1 : 0; rider.trim = 0;
+      rider.snap = phase === 'down' && (control === 'snap' || control === 'agile') ? 1 : 0;
+      rider.compress = phase === 'down' && control === 'compress' ? 1 : 0; rider.crouch = phase === 'down' && control === 'compress' ? 0.6 : 0;
+      water.advance(STEP);
+      board.step(STEP, water);
+      if (!rider.attached) { fell = t + STEP; cause = String(rider.separation); fellIn = phase; const l = frames[frames.length - 1]; if (l) fellAt = `frac ${r(l.frac, 2)} local ${r(l.local)} v ${r(l.speed, 1)} ff ${r(l.fromFall)} bank ${r(l.bank)} lim ${l.lim}`; break; }
+      water.sampleAt(board.position.x, board.position.y, board.position.z, sample);
+      const f = frameOf({ board, rider, heading: rig.heading } as Rig, water, t + STEP, phase, FALL, last) as (typeof frames)[number];
+      const pr = rider as unknown as { zn: number; ankleRest: number; planing: boolean; limit: string; sway: { x: number; z: number }; postureError: number; flightTime: number };
+      (f as any).dbg = { ...(pr as any).dbg }; f.lim = pr.limit; f.arest = pr.ankleRest * DEG; f.sw = rider.swing.angle * DEG; (f as unknown as {zn:number}).zn = (pr.zn ?? 0) * DEG; f.pl = pr.planing; f.sway = Math.hypot(pr.sway.x, pr.sway.z); f.err = pr.postureError; f.fly = pr.flightTime; f.by = board.position.y - sample.surfaceY; f.vy = board.velocity.y; f.wet = (board as unknown as { wettedArea?: number }).wettedArea ?? Number.NaN;
+      f.frac = water.faceFraction(board.position.z); f.local = Math.atan(Math.abs(sample.slopeZ)) * DEG;
+      frames.push(f);
+      last = rig.heading;
+    }
+    let high = 0; let steep = 0; let least = Infinity; let peak = 0; let turned = 0; let fin = 0; let round = Number.NaN; let vTop = Number.NaN; let topFrom = Number.NaN; let topFrac = Number.NaN;
+    for (let i = 0; i < frames.length; i += 1) {
+      const f = frames[i];
+      high = Math.max(high, f.frac); steep = Math.max(steep, f.local); least = Math.min(least, f.speed);
+      if (!Number.isNaN(downAt) && f.t > downAt + 1e-9) {
+        if (Number.isNaN(vTop)) { vTop = f.speed; topFrom = f.fromFall; topFrac = f.frac; }
+        if (i > 0) turned += diff(f.heading, frames[i - 1].heading);
+        peak = Math.max(peak, f.rate); fin = Math.max(fin, f.fin);
+        if (Number.isNaN(round) && f.fromFall <= 30) round = f.t - downAt;
+      }
+    }
+    const end = frames[frames.length - 1];
+    out.push({ slope, height, speed, plan, control, high: r(high, 2), steep: r(steep), least: r(least, 1), vEnd: r(end?.speed ?? Number.NaN, 1), endFrac: r(end?.frac ?? Number.NaN, 2), topFrac: r(topFrac, 2), topFrom: r(topFrom), vTop: r(vTop, 1), turned: r(turned), peak: r(peak), fin: r(fin), round: r(round, 2), fell: r(fell, 2), fellIn, cause, fellAt });
+    if (TRACE && name === TRACE) traces[name] = frames.filter((_, i) => i % Number(process.env.EVERY ?? 6) === 0).map((f) => ({ t: r(f.t, 2), ph: f.phase, frac: r(f.frac, 2), local: r(f.local), fromFall: r(f.fromFall), rate: r(f.rate), speed: r(f.speed, 1), fin: r(f.fin), bank: r(f.bank), ref: r(f.bankRef), roll: r(f.roll), pitch: r(f.pitch), load: r(f.load, 2), front: r(f.front, 2), lim: f.lim, arest: r(f.arest), sw: r(f.sw), zn: r((f as unknown as {zn:number}).zn), pl: f.pl ? 1 : 0, leg: r(f.drop, 2), sway: r(f.sway, 2), err: r(f.err, 2), fly: r(f.fly, 2), by: r(f.by, 2), vy: r(f.vy, 1), ...Object.fromEntries(Object.entries((f as any).dbg ?? {}).map(([k, v]) => [k, k === 'tq' || k === 'ld' ? r(v as number) : k === 'yr' ? r(v as number, 2) : r((v as number) * DEG)])) }));
+  }
+  writeFileSync(OUT, JSON.stringify({ out, traces }, null, 1));
+});

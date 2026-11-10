@@ -1,0 +1,8 @@
+#!/bin/zsh
+# usage: run.sh <tag> [env...]  -> runs the 4 calls and prints fall counts
+cd /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/snap-arms-gate/wt
+tag=$1; shift
+for S in 0.5 1; do for U in 65 80; do
+  env "$@" STEER=$S UP=$U SLOPES=${SLOPES:-20} SPEEDS=0.7,1.7 PLANS=${PLANS:-top} CONTROLS=${CONTROLS:-release,steer,compress,snap} SECONDS=8 OUT=$PWD/../fh/$tag-$S-$U.json npx vitest run src/physics/zz-steepface.test.ts > ../fh/$tag.log 2>&1 || tail -20 ../fh/$tag.log
+done; done
+python3 ../fh/sum.py ../fh/$tag-*.json

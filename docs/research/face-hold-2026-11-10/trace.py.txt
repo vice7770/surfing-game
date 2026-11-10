@@ -1,0 +1,9 @@
+import json,sys
+d=json.load(open(sys.argv[1]))
+for o in d['out']: print(o['control'],'round',o['round'],'turned',o['turned'],'peak',o['peak'],'fell',o['fell'],o['fellIn'],o['cause'],o.get('fellAt',''))
+keys=['t','ph','frac','local','fromFall','rate','speed','fin','load','front','lim','sw','zn','by','bk','rf','rl','ra','wa','re','arest','tq','ld']
+for k,v in d['traces'].items():
+  print(' '.join(x[:5].rjust(5) for x in keys))
+  for f in v:
+    if f['ph']=='pre' and f['t']<float(sys.argv[2] if len(sys.argv)>2 else 1.4): continue
+    print(' '.join(str(f.get(x,''))[:5].rjust(5) for x in keys))
