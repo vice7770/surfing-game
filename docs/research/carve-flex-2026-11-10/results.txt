@@ -1,0 +1,336 @@
+##### switch: off
+## stick 0.5, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-0.5-off carve flat 6 toe | 0.76 -> 0.68 -> nan | 0.000 | 119/140 -> 75/137 | 23 | 4.5* | - | - | 87 | falls 2.90 s (lost board) |
+| stand-flat-0.5-off carve flat 6 heel | 0.76 -> 0.68 -> nan | 0.000 | 119/140 -> 57/133 | 23 | 4.5* | - | - | 87 | falls 2.90 s (lost board) |
+| stand-flat-0.5-off carve flat 8 toe | 0.77 -> 0.71 -> nan | 0.000 | 124/139 -> 86/144 | 25 | 6.9 | 1.95 | 0.50 | 121 | falls 3.52 s (balance) |
+| stand-flat-0.5-off carve flat 8 heel | 0.77 -> 0.71 -> nan | 0.000 | 124/139 -> 75/150 | 25 | 6.9 | 1.95 | 0.50 | 121 | falls 3.52 s (balance) |
+| stand-flat-0.5-off carve flat 11 toe | 0.78 -> 0.76 -> 0.73 | 0.000 | 132/138 -> 109/129 | 26 | 16.0* | - | - | 108 | rides |
+| stand-flat-0.5-off carve flat 11 heel | 0.78 -> 0.76 -> 0.73 | 0.000 | 132/138 -> 128/180 | 26 | 16.0* | - | - | 108 | rides |
+## stick 1, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-1-off carve flat 6 toe | 0.76 -> 0.69 -> nan | 0.000 | 119/140 -> 76/138 | 22 | 4.3* | - | - | 88 | falls 2.87 s (balance) |
+| stand-flat-1-off carve flat 6 heel | 0.76 -> 0.69 -> nan | 0.000 | 119/140 -> 59/135 | 22 | 4.3* | - | - | 88 | falls 2.87 s (balance) |
+| stand-flat-1-off carve flat 8 toe | 0.77 -> 0.76 -> nan | 0.000 | 124/139 -> 106/142 | 45 | 5.7 | 1.42 | 0.64 | 135 | falls 2.63 s (balance) |
+| stand-flat-1-off carve flat 8 heel | 0.77 -> 0.76 -> nan | 0.000 | 124/139 -> 104/155 | 45 | 5.7 | 1.42 | 0.64 | 135 | falls 2.63 s (balance) |
+| stand-flat-1-off carve flat 11 toe | 0.78 -> 0.78 -> nan | 0.000 | 132/138 -> 123/131 | 50 | 10.0* | - | - | 123 | falls 2.77 s (balance) |
+| stand-flat-1-off carve flat 11 heel | 0.78 -> 0.78 -> nan | 0.000 | 132/138 -> 137/149 | 50 | 10.0* | - | - | 123 | falls 2.77 s (balance) |
+## stick 0.5, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-0.5-off carve canyon 6 toe | 0.78 -> 0.76 -> nan | 0.000 | 139/138 -> 115/132 | 29 | 11.3* | - | - | 54 | falls 2.65 s (lost board) |
+| stand-canyon-0.5-off carve canyon 6 heel | 0.78 -> 0.78 -> 0.77 | 0.000 | 139/138 -> 159/126 | 25 | 15.2* | - | - | 89 | rides |
+| stand-canyon-0.5-off carve canyon 8 toe | 0.78 -> 0.76 -> nan | 0.000 | 144/131 -> 113/132 | 31 | 14.7* | - | - | 70 | falls 3.27 s (lost board) |
+| stand-canyon-0.5-off carve canyon 8 heel | 0.78 -> 0.77 -> 0.74 | 0.000 | 144/131 -> 128/180 | 25 | 15.8* | - | - | 115 | rides |
+| stand-canyon-0.5-off carve canyon 11 toe | 0.78 -> 0.76 -> nan | 0.000 | 141/136 -> 102/135 | 30 | 17.3* | - | - | 82 | falls 3.57 s (lost board) |
+| stand-canyon-0.5-off carve canyon 11 heel | 0.78 -> 0.77 -> 0.76 | 0.000 | 141/136 -> 133/161 | 25 | 22.0* | - | - | 82 | rides |
+## stick 1, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-1-off carve canyon 6 toe | 0.78 -> 0.78 -> nan | 0.000 | 139/138 -> 132/125 | 36 | 11.1* | - | - | 56 | falls 1.87 s (balance) |
+| stand-canyon-1-off carve canyon 6 heel | 0.78 -> 0.78 -> nan | 0.000 | 139/138 -> 165/136 | 49 | 7.5 | 1.68 | 1.16 | 149 | falls 2.88 s (balance) |
+| stand-canyon-1-off carve canyon 8 toe | 0.78 -> 0.78 -> nan | 0.000 | 144/131 -> 130/129 | 43 | 13.2* | - | - | 82 | falls 2.00 s (balance) |
+| stand-canyon-1-off carve canyon 8 heel | 0.78 -> 0.78 -> nan | 0.000 | 144/131 -> 127/156 | 50 | 8.9 | 1.70 | 0.83 | 135 | falls 2.80 s (balance) |
+| stand-canyon-1-off carve canyon 11 toe | 0.78 -> 0.77 -> nan | 0.000 | 141/136 -> 111/127 | 48 | 13.8* | - | - | 98 | falls 2.42 s (balance) |
+| stand-canyon-1-off carve canyon 11 heel | 0.78 -> 0.78 -> nan | 0.000 | 141/136 -> 140/154 | 51 | 11.4 | 1.92 | 0.65 | 138 | falls 3.07 s (balance) |
+##### switch: on
+## stick 0.5, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-0.5-on carve flat 6 toe | 0.76 -> 0.68 -> nan | -0.019 | 119/140 -> 73/133 | 22 | 4.5* | - | - | 86 | falls 2.92 s (lost board) |
+| stand-flat-0.5-on carve flat 6 heel | 0.76 -> 0.68 -> nan | -0.019 | 119/140 -> 56/130 | 22 | 4.5* | - | - | 86 | falls 2.92 s (lost board) |
+| stand-flat-0.5-on carve flat 8 toe | 0.77 -> 0.69 -> nan | -0.027 | 124/139 -> 83/137 | 25 | 6.9 | 1.95 | 0.50 | 120 | falls 3.50 s (balance) |
+| stand-flat-0.5-on carve flat 8 heel | 0.77 -> 0.69 -> nan | -0.027 | 124/139 -> 71/137 | 25 | 6.9 | 1.95 | 0.50 | 120 | falls 3.50 s (balance) |
+| stand-flat-0.5-on carve flat 11 toe | 0.78 -> 0.74 -> 0.70 | -0.024 | 132/138 -> 104/123 | 26 | 16.2* | - | - | 111 | rides |
+| stand-flat-0.5-on carve flat 11 heel | 0.78 -> 0.74 -> 0.70 | -0.024 | 132/138 -> 125/171 | 26 | 16.2* | - | - | 111 | rides |
+## stick 1, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-1-on carve flat 6 toe | 0.76 -> 0.68 -> nan | -0.021 | 119/140 -> 74/134 | 22 | 4.4* | - | - | 87 | falls 2.87 s (lost board) |
+| stand-flat-1-on carve flat 6 heel | 0.76 -> 0.68 -> nan | -0.021 | 119/140 -> 57/131 | 22 | 4.4* | - | - | 87 | falls 2.87 s (lost board) |
+| stand-flat-1-on carve flat 8 toe | 0.77 -> 0.67 -> nan | -0.091 | 124/139 -> 90/117 | 46 | 5.6 | 1.40 | 0.60 | 131 | falls 2.67 s (balance) |
+| stand-flat-1-on carve flat 8 heel | 0.77 -> 0.67 -> nan | -0.091 | 124/139 -> 87/120 | 46 | 5.6 | 1.40 | 0.60 | 131 | falls 2.67 s (balance) |
+| stand-flat-1-on carve flat 11 toe | 0.78 -> 0.69 -> nan | -0.094 | 132/138 -> 98/112 | 49 | 9.7 | 1.77 | 0.64 | 130 | falls 2.83 s (balance) |
+| stand-flat-1-on carve flat 11 heel | 0.78 -> 0.69 -> nan | -0.094 | 132/138 -> 99/114 | 49 | 9.7 | 1.77 | 0.64 | 130 | falls 2.83 s (balance) |
+## stick 0.5, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-0.5-on carve canyon 6 toe | 0.78 -> 0.73 -> nan | -0.034 | 139/138 -> 108/122 | 29 | 11.2* | - | - | 56 | falls 2.68 s (lost board) |
+| stand-canyon-0.5-on carve canyon 6 heel | 0.78 -> 0.74 -> 0.76 | -0.037 | 139/138 -> 127/153 | 25 | 15.1* | - | - | 97 | rides |
+| stand-canyon-0.5-on carve canyon 8 toe | 0.78 -> 0.72 -> nan | -0.051 | 144/131 -> 103/118 | 33 | 14.5* | - | - | 71 | falls 3.30 s (lost board) |
+| stand-canyon-0.5-on carve canyon 8 heel | 0.78 -> 0.75 -> 0.73 | -0.028 | 144/131 -> 128/149 | 25 | 15.6* | - | - | 114 | rides |
+| stand-canyon-0.5-on carve canyon 11 toe | 0.78 -> 0.70 -> nan | -0.060 | 141/136 -> 90/119 | 28 | 17.1* | - | - | 79 | falls 3.58 s (lost board) |
+| stand-canyon-0.5-on carve canyon 11 heel | 0.78 -> 0.76 -> 0.74 | -0.018 | 141/136 -> 130/156 | 25 | 22.2* | - | - | 83 | rides |
+## stick 1, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-1-on carve canyon 6 toe | 0.78 -> 0.73 -> nan | -0.046 | 139/138 -> 115/124 | 35 | 11.4* | - | - | 58 | falls 1.85 s (balance) |
+| stand-canyon-1-on carve canyon 6 heel | 0.78 -> 0.66 -> nan | -0.117 | 139/138 -> 100/108 | 48 | 7.5 | 1.68 | 1.15 | 147 | falls 2.90 s (balance) |
+| stand-canyon-1-on carve canyon 8 toe | 0.78 -> 0.69 -> nan | -0.093 | 144/131 -> 102/112 | 43 | 13.2* | - | - | 84 | falls 2.00 s (balance) |
+| stand-canyon-1-on carve canyon 8 heel | 0.78 -> 0.66 -> nan | -0.119 | 144/131 -> 96/111 | 48 | 8.7 | 1.67 | 0.81 | 152 | falls 2.95 s (balance) |
+| stand-canyon-1-on carve canyon 11 toe | 0.78 -> 0.69 -> nan | -0.085 | 141/136 -> 97/109 | 47 | 13.6* | - | - | 96 | falls 2.38 s (balance) |
+| stand-canyon-1-on carve canyon 11 heel | 0.78 -> 0.67 -> nan | -0.111 | 141/136 -> 98/113 | 50 | 11.3 | 1.88 | 0.64 | 136 | falls 3.05 s (balance) |
+##### switch: ld
+## stick 0.5, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-0.5-ld carve flat 6 toe | 0.76 -> 0.68 -> nan | 0.000 | 119/140 -> 75/137 | 23 | 4.5* | - | - | 87 | falls 2.90 s (lost board) |
+| stand-flat-0.5-ld carve flat 6 heel | 0.76 -> 0.68 -> nan | 0.000 | 119/140 -> 57/133 | 23 | 4.5* | - | - | 87 | falls 2.90 s (lost board) |
+| stand-flat-0.5-ld carve flat 8 toe | 0.77 -> 0.71 -> nan | 0.000 | 124/139 -> 86/144 | 25 | 6.9 | 1.95 | 0.50 | 121 | falls 3.52 s (balance) |
+| stand-flat-0.5-ld carve flat 8 heel | 0.77 -> 0.71 -> nan | 0.000 | 124/139 -> 75/150 | 25 | 6.9 | 1.95 | 0.50 | 121 | falls 3.52 s (balance) |
+| stand-flat-0.5-ld carve flat 11 toe | 0.78 -> 0.76 -> 0.73 | 0.000 | 132/138 -> 109/129 | 26 | 16.0* | - | - | 108 | rides |
+| stand-flat-0.5-ld carve flat 11 heel | 0.78 -> 0.76 -> 0.73 | 0.000 | 132/138 -> 128/180 | 26 | 16.0* | - | - | 108 | rides |
+## stick 1, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-1-ld carve flat 6 toe | 0.76 -> 0.69 -> nan | 0.000 | 119/140 -> 76/138 | 22 | 4.3* | - | - | 88 | falls 2.87 s (balance) |
+| stand-flat-1-ld carve flat 6 heel | 0.76 -> 0.69 -> nan | 0.000 | 119/140 -> 59/135 | 22 | 4.3* | - | - | 88 | falls 2.87 s (balance) |
+| stand-flat-1-ld carve flat 8 toe | 0.77 -> 0.76 -> nan | 0.000 | 124/139 -> 106/142 | 45 | 5.7 | 1.42 | 0.64 | 135 | falls 2.63 s (balance) |
+| stand-flat-1-ld carve flat 8 heel | 0.77 -> 0.76 -> nan | 0.000 | 124/139 -> 104/155 | 45 | 5.7 | 1.42 | 0.64 | 135 | falls 2.63 s (balance) |
+| stand-flat-1-ld carve flat 11 toe | 0.78 -> 0.78 -> nan | 0.000 | 132/138 -> 123/131 | 50 | 10.0* | - | - | 123 | falls 2.77 s (balance) |
+| stand-flat-1-ld carve flat 11 heel | 0.78 -> 0.78 -> nan | 0.000 | 132/138 -> 137/149 | 50 | 10.0* | - | - | 123 | falls 2.77 s (balance) |
+## stick 0.5, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-0.5-ld carve canyon 6 toe | 0.78 -> 0.76 -> nan | 0.000 | 139/138 -> 115/132 | 29 | 11.3* | - | - | 54 | falls 2.65 s (lost board) |
+| stand-canyon-0.5-ld carve canyon 6 heel | 0.78 -> 0.78 -> 0.77 | 0.000 | 139/138 -> 159/126 | 25 | 15.2* | - | - | 89 | rides |
+| stand-canyon-0.5-ld carve canyon 8 toe | 0.78 -> 0.76 -> nan | 0.000 | 144/131 -> 113/132 | 31 | 14.7* | - | - | 70 | falls 3.27 s (lost board) |
+| stand-canyon-0.5-ld carve canyon 8 heel | 0.78 -> 0.77 -> 0.74 | 0.000 | 144/131 -> 128/180 | 25 | 15.8* | - | - | 115 | rides |
+| stand-canyon-0.5-ld carve canyon 11 toe | 0.78 -> 0.76 -> nan | 0.000 | 141/136 -> 102/135 | 30 | 17.3* | - | - | 82 | falls 3.57 s (lost board) |
+| stand-canyon-0.5-ld carve canyon 11 heel | 0.78 -> 0.77 -> 0.76 | 0.000 | 141/136 -> 133/161 | 25 | 22.0* | - | - | 82 | rides |
+## stick 1, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-1-ld carve canyon 6 toe | 0.78 -> 0.78 -> nan | 0.000 | 139/138 -> 132/125 | 36 | 11.1* | - | - | 56 | falls 1.87 s (balance) |
+| stand-canyon-1-ld carve canyon 6 heel | 0.78 -> 0.78 -> nan | 0.000 | 139/138 -> 165/136 | 49 | 7.5 | 1.68 | 1.16 | 149 | falls 2.88 s (balance) |
+| stand-canyon-1-ld carve canyon 8 toe | 0.78 -> 0.78 -> nan | 0.000 | 144/131 -> 130/129 | 43 | 13.2* | - | - | 82 | falls 2.00 s (balance) |
+| stand-canyon-1-ld carve canyon 8 heel | 0.78 -> 0.78 -> nan | 0.000 | 144/131 -> 127/156 | 50 | 8.9 | 1.70 | 0.83 | 135 | falls 2.80 s (balance) |
+| stand-canyon-1-ld carve canyon 11 toe | 0.78 -> 0.77 -> nan | 0.000 | 141/136 -> 111/127 | 48 | 13.8* | - | - | 98 | falls 2.42 s (balance) |
+| stand-canyon-1-ld carve canyon 11 heel | 0.78 -> 0.78 -> nan | 0.000 | 141/136 -> 140/154 | 51 | 11.4 | 1.92 | 0.65 | 138 | falls 3.07 s (balance) |
+##### switch: ldon
+## stick 0.5, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-0.5-ldon carve flat 6 toe | 0.76 -> 0.68 -> nan | -0.019 | 119/140 -> 73/133 | 22 | 4.5* | - | - | 86 | falls 2.92 s (lost board) |
+| stand-flat-0.5-ldon carve flat 6 heel | 0.76 -> 0.68 -> nan | -0.019 | 119/140 -> 56/130 | 22 | 4.5* | - | - | 86 | falls 2.92 s (lost board) |
+| stand-flat-0.5-ldon carve flat 8 toe | 0.77 -> 0.69 -> nan | -0.027 | 124/139 -> 83/137 | 25 | 6.9 | 1.95 | 0.50 | 120 | falls 3.50 s (balance) |
+| stand-flat-0.5-ldon carve flat 8 heel | 0.77 -> 0.69 -> nan | -0.027 | 124/139 -> 71/137 | 25 | 6.9 | 1.95 | 0.50 | 120 | falls 3.50 s (balance) |
+| stand-flat-0.5-ldon carve flat 11 toe | 0.78 -> 0.74 -> 0.70 | -0.024 | 132/138 -> 104/123 | 26 | 16.2* | - | - | 111 | rides |
+| stand-flat-0.5-ldon carve flat 11 heel | 0.78 -> 0.74 -> 0.70 | -0.024 | 132/138 -> 125/171 | 26 | 16.2* | - | - | 111 | rides |
+## stick 1, flat
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-1-ldon carve flat 6 toe | 0.76 -> 0.68 -> nan | -0.021 | 119/140 -> 74/134 | 22 | 4.4* | - | - | 87 | falls 2.87 s (lost board) |
+| stand-flat-1-ldon carve flat 6 heel | 0.76 -> 0.68 -> nan | -0.021 | 119/140 -> 57/131 | 22 | 4.4* | - | - | 87 | falls 2.87 s (lost board) |
+| stand-flat-1-ldon carve flat 8 toe | 0.77 -> 0.67 -> nan | -0.091 | 124/139 -> 90/117 | 46 | 5.6 | 1.40 | 0.60 | 131 | falls 2.67 s (balance) |
+| stand-flat-1-ldon carve flat 8 heel | 0.77 -> 0.67 -> nan | -0.091 | 124/139 -> 87/120 | 46 | 5.6 | 1.40 | 0.60 | 131 | falls 2.67 s (balance) |
+| stand-flat-1-ldon carve flat 11 toe | 0.78 -> 0.69 -> nan | -0.094 | 132/138 -> 98/112 | 49 | 9.7 | 1.77 | 0.64 | 130 | falls 2.83 s (balance) |
+| stand-flat-1-ldon carve flat 11 heel | 0.78 -> 0.69 -> nan | -0.094 | 132/138 -> 99/114 | 49 | 9.7 | 1.77 | 0.64 | 130 | falls 2.83 s (balance) |
+## stick 0.5, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-0.5-ldon carve canyon 6 toe | 0.78 -> 0.73 -> nan | -0.034 | 139/138 -> 108/122 | 29 | 11.2* | - | - | 56 | falls 2.68 s (lost board) |
+| stand-canyon-0.5-ldon carve canyon 6 heel | 0.78 -> 0.74 -> 0.76 | -0.037 | 139/138 -> 127/153 | 25 | 15.1* | - | - | 97 | rides |
+| stand-canyon-0.5-ldon carve canyon 8 toe | 0.78 -> 0.72 -> nan | -0.051 | 144/131 -> 103/118 | 33 | 14.5* | - | - | 71 | falls 3.30 s (lost board) |
+| stand-canyon-0.5-ldon carve canyon 8 heel | 0.78 -> 0.75 -> 0.73 | -0.028 | 144/131 -> 128/149 | 25 | 15.6* | - | - | 114 | rides |
+| stand-canyon-0.5-ldon carve canyon 11 toe | 0.78 -> 0.70 -> nan | -0.060 | 141/136 -> 90/119 | 28 | 17.1* | - | - | 79 | falls 3.58 s (lost board) |
+| stand-canyon-0.5-ldon carve canyon 11 heel | 0.78 -> 0.76 -> 0.74 | -0.018 | 141/136 -> 130/156 | 25 | 22.2* | - | - | 83 | rides |
+## stick 1, canyon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-canyon-1-ldon carve canyon 6 toe | 0.78 -> 0.73 -> nan | -0.046 | 139/138 -> 115/124 | 35 | 11.4* | - | - | 58 | falls 1.85 s (balance) |
+| stand-canyon-1-ldon carve canyon 6 heel | 0.78 -> 0.66 -> nan | -0.117 | 139/138 -> 100/108 | 48 | 7.5 | 1.68 | 1.15 | 147 | falls 2.90 s (balance) |
+| stand-canyon-1-ldon carve canyon 8 toe | 0.78 -> 0.69 -> nan | -0.093 | 144/131 -> 102/112 | 43 | 13.2* | - | - | 84 | falls 2.00 s (balance) |
+| stand-canyon-1-ldon carve canyon 8 heel | 0.78 -> 0.66 -> nan | -0.119 | 144/131 -> 96/111 | 48 | 8.7 | 1.67 | 0.81 | 152 | falls 2.95 s (balance) |
+| stand-canyon-1-ldon carve canyon 11 toe | 0.78 -> 0.69 -> nan | -0.085 | 141/136 -> 97/109 | 47 | 13.6* | - | - | 96 | falls 2.38 s (balance) |
+| stand-canyon-1-ldon carve canyon 11 heel | 0.78 -> 0.67 -> nan | -0.111 | 141/136 -> 98/113 | 50 | 11.3 | 1.88 | 0.64 | 136 | falls 3.05 s (balance) |
+##### pair: release, carve flex off
+
+release / leg drive off: n 16; top turn begun 10; 1 pair 0; 2 pairs 0; high 0.48 to 1.00
+  first-pair failures: {'sudden fall in down': 9, 'sudden fall in wait': 6, 'stall fall in down': 1}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 1.40 to 2.05 s, ends 1.03 to 1.37 face lengths ahead of the crest; v at bottom 8.2 to 10.0
+  bottom->top 2.20 to 3.47 s; at the top: frac 0.50 to 0.71, heading 75 to 140, v 1.0 to 3.4
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+
+release / leg drive on: n 16; top turn begun 14; 1 pair 0; 2 pairs 0; high 0.54 to 1.00
+  first-pair failures: {'sudden fall in down': 14, 'sudden fall in wait': 2}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 1.18 to 2.00 s, ends 1.01 to 1.37 face lengths ahead of the crest; v at bottom 8.2 to 10.3
+  bottom->top 2.12 to 3.39 s; at the top: frac 0.50 to 0.71, heading 68 to 138, v 0.4 to 3.7
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+##### pair: stand, carve flex off
+
+release / leg drive off: n 16; top turn begun 14; 1 pair 0; 2 pairs 0; high 0.53 to 1.00
+  first-pair failures: {'sudden fall in down': 14, 'sudden fall in wait': 2}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 1.37 to 1.85 s, ends 1.00 to 1.23 face lengths ahead of the crest; v at bottom 8.0 to 9.6
+  bottom->top 2.15 to 3.03 s; at the top: frac 0.51 to 0.71, heading 62 to 128, v 0.4 to 3.8
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+
+release / leg drive on: n 16; top turn begun 8; 1 pair 0; 2 pairs 0; high 0.15 to 1.00
+  first-pair failures: {'sudden fall in down': 8, 'other fall in up': 8}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 0.57 to 1.80 s, ends 0.89 to 1.22 face lengths ahead of the crest; v at bottom 8.0 to 9.1
+  bottom->top 2.47 to 3.00 s; at the top: frac 0.51 to 0.71, heading 73 to 103, v 0.9 to 4.3
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+##### pair: hold, carve flex off
+
+hold / leg drive off: n 16; top turn begun 15; 1 pair 14; 2 pairs 6; high 0.58 to 1.00
+  first-pair failures: {'sudden fall in run': 1, 'timeout in wait': 1}
+  later ends: {'time up': 4, 'done': 2, 'sudden fall in run': 2, 'timeout in wait': 5, 'sudden fall in down': 1}
+  bottom turn (stick up -> UP deg): 0.88 to 1.43 s, ends 0.91 to 1.26 face lengths ahead of the crest; v at bottom 8.2 to 10.3
+  bottom->top 1.85 to 3.75 s; at the top: frac 0.50 to 0.71, heading 57 to 100, v 4.3 to 6.9
+  top turn: 0.77 to 1.65 s, swing 22 to 78 deg, peak 42 to 122 deg/s, highest 0.58 to 0.99
+  pair 1 3.29 to 6.42 s (v at 2nd bottom 8.6 to 10.1); pair 2 4.92 to 7.22 s; 2nd bottom->top 3.07 to 4.62 s
+
+hold / leg drive on: n 16; top turn begun 16; 1 pair 5; 2 pairs 3; high 0.66 to 1.00
+  first-pair failures: {'stall fall in run': 1, 'behind the crest in run': 9, 'behind the crest in down': 1}
+  later ends: {'timeout in wait': 3, 'done': 1, 'time up': 1}
+  bottom turn (stick up -> UP deg): 1.08 to 1.62 s, ends 0.97 to 1.47 face lengths ahead of the crest; v at bottom 8.2 to 10.3
+  bottom->top 2.19 to 3.57 s; at the top: frac 0.50 to 0.71, heading 64 to 103, v 3.5 to 6.2
+  top turn: 0.98 to 1.23 s, swing 31 to 57 deg, peak 43 to 92 deg/s, highest 0.66 to 0.94
+  pair 1 4.10 to 5.04 s (v at 2nd bottom 8.9 to 9.6); pair 2 4.57 to 5.69 s; 2nd bottom->top 3.25 to 4.53 s
+##### pair: release, carve flex on
+
+release / leg drive off: n 16; top turn begun 12; 1 pair 0; 2 pairs 0; high 0.43 to 0.99
+  first-pair failures: {'sudden fall in down': 12, 'sudden fall in wait': 4}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 1.42 to 2.05 s, ends 1.03 to 1.37 face lengths ahead of the crest; v at bottom 8.2 to 10.0
+  bottom->top 2.22 to 3.54 s; at the top: frac 0.50 to 0.71, heading 74 to 134, v 0.4 to 3.3
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+
+release / leg drive on: n 16; top turn begun 12; 1 pair 0; 2 pairs 0; high 0.49 to 1.00
+  first-pair failures: {'sudden fall in down': 12, 'sudden fall in wait': 4}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 1.28 to 2.00 s, ends 1.01 to 1.38 face lengths ahead of the crest; v at bottom 8.2 to 10.0
+  bottom->top 2.12 to 3.47 s; at the top: frac 0.50 to 0.71, heading 63 to 128, v 0.4 to 3.6
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+##### pair: stand, carve flex on
+
+release / leg drive off: n 16; top turn begun 14; 1 pair 0; 2 pairs 0; high 0.59 to 0.96
+  first-pair failures: {'sudden fall in down': 14, 'sudden fall in wait': 2}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 1.38 to 1.85 s, ends 1.00 to 1.22 face lengths ahead of the crest; v at bottom 8.0 to 9.6
+  bottom->top 2.17 to 3.03 s; at the top: frac 0.50 to 0.71, heading 75 to 123, v 0.6 to 3.7
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+
+release / leg drive on: n 16; top turn begun 10; 1 pair 0; 2 pairs 0; high 0.15 to 0.99
+  first-pair failures: {'sudden fall in down': 10, 'sudden fall in up': 4, 'other fall in up': 2}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 0.57 to 1.80 s, ends 0.89 to 1.21 face lengths ahead of the crest; v at bottom 8.0 to 9.6
+  bottom->top 2.45 to 2.98 s; at the top: frac 0.50 to 0.71, heading 71 to 101, v 0.6 to 4.2
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s
+##### pair: hold, carve flex on
+
+hold / leg drive off: n 16; top turn begun 15; 1 pair 14; 2 pairs 6; high 0.58 to 1.00
+  first-pair failures: {'sudden fall in run': 1, 'timeout in wait': 1}
+  later ends: {'time up': 4, 'done': 2, 'sudden fall in run': 2, 'timeout in wait': 5, 'sudden fall in down': 1}
+  bottom turn (stick up -> UP deg): 0.88 to 1.43 s, ends 0.91 to 1.26 face lengths ahead of the crest; v at bottom 8.2 to 10.3
+  bottom->top 1.85 to 3.75 s; at the top: frac 0.50 to 0.71, heading 57 to 100, v 4.3 to 6.9
+  top turn: 0.77 to 1.65 s, swing 22 to 78 deg, peak 42 to 122 deg/s, highest 0.58 to 0.99
+  pair 1 3.29 to 6.42 s (v at 2nd bottom 8.6 to 10.1); pair 2 4.92 to 7.22 s; 2nd bottom->top 3.07 to 4.62 s
+
+hold / leg drive on: n 16; top turn begun 16; 1 pair 5; 2 pairs 3; high 0.66 to 1.00
+  first-pair failures: {'stall fall in run': 1, 'behind the crest in run': 9, 'behind the crest in down': 1}
+  later ends: {'timeout in wait': 3, 'done': 1, 'time up': 1}
+  bottom turn (stick up -> UP deg): 1.08 to 1.62 s, ends 0.97 to 1.47 face lengths ahead of the crest; v at bottom 8.2 to 10.3
+  bottom->top 2.19 to 3.57 s; at the top: frac 0.50 to 0.71, heading 64 to 103, v 3.5 to 6.2
+  top turn: 0.98 to 1.23 s, swing 31 to 57 deg, peak 43 to 92 deg/s, highest 0.66 to 0.94
+  pair 1 4.10 to 5.04 s (v at 2nd bottom 8.9 to 9.6); pair 2 4.57 to 5.69 s; 2nd bottom->top 3.25 to 4.53 s
+##### exits
+{} falls 5 of 45: 7/0.7/1.3@2.43 7/1/1.3@2.48 8/1/1.3@2.02 9/1/1.3@2.02 10/1/1.3@2.33
+{"carveFlex":"on"} falls 7 of 45: 7/0.7/1.3@2.42 7/1/1@2.45 7/1/1.3@2.40 8/1/1@2.27 8/1/1.3@2.03 9/1/1@2.47 9/1/1.3@2.15
+{"legDrive":"on"} falls 5 of 45: 7/0.7/1.3@2.43 7/1/1.3@2.48 8/1/1.3@2.02 9/1/1.3@2.02 10/1/1.3@2.33
+{"legDrive":"on","carveFlex":"on"} falls 7 of 45: 7/0.7/1.3@2.42 7/1/1@2.45 7/1/1.3@2.40 8/1/1@2.27 8/1/1.3@2.03 9/1/1@2.47 9/1/1.3@2.15
+## Compress carve, flat, switch off
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-flat-off carve flat 6 toe | 0.76 -> 0.42 -> nan | -0.300 | 119/140 -> 43/77 | 27 | 3.2 | 1.03 | 0.64 | 114 | falls 2.72 s (balance) |
+| compress-flat-off carve flat 6 heel | 0.76 -> 0.43 -> nan | -0.300 | 119/140 -> 29/76 | 27 | 3.2 | 1.03 | 0.65 | 114 | falls 2.68 s (balance) |
+| compress-flat-off carve flat 8 toe | 0.77 -> 0.45 -> nan | -0.300 | 124/139 -> 49/78 | 41 | 5.4 | 1.22 | 0.87 | 208 | falls 3.70 s (balance) |
+| compress-flat-off carve flat 8 heel | 0.77 -> 0.46 -> nan | -0.300 | 124/139 -> 43/73 | 42 | 5.6 | 1.25 | 0.89 | 218 | falls 3.53 s (balance) |
+| compress-flat-off carve flat 11 toe | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 49/51 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+| compress-flat-off carve flat 11 heel | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 76/86 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+## Compress carve, canyon, switch off
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-canyon-off carve canyon 6 toe | 0.78 -> 0.48 -> nan | -0.295 | 139/138 -> 67/71 | 36 | 7.2* | - | - | 68 | falls 1.82 s (balance) |
+| compress-canyon-off carve canyon 6 heel | 0.78 -> 0.46 -> nan | -0.300 | 139/138 -> 70/81 | 50 | 7.6 | 1.47 | 1.61 | 206 | falls 3.70 s (lost board) |
+| compress-canyon-off carve canyon 8 toe | 0.78 -> 0.47 -> nan | -0.300 | 144/131 -> 55/65 | 49 | 7.8* | - | - | 93 | falls 2.45 s (lost board) |
+| compress-canyon-off carve canyon 8 heel | 0.78 -> 0.48 -> 0.81 | -0.300 | 144/131 -> 70/75 | 48 | 9.7 | 1.63 | 1.26 | 136 | rides |
+| compress-canyon-off carve canyon 11 toe | 0.78 -> 0.46 -> nan | -0.300 | 141/136 -> 45/59 | 48 | 11.3* | - | - | 100 | falls 2.67 s (lost board) |
+| compress-canyon-off carve canyon 11 heel | 0.78 -> 0.47 -> 0.81 | -0.300 | 141/136 -> 70/71 | 47 | 17.7* | - | - | 92 | rides |
+## Compress carve, flat, switch on
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-flat-on carve flat 6 toe | 0.76 -> 0.42 -> nan | -0.300 | 119/140 -> 43/77 | 27 | 3.2 | 1.03 | 0.64 | 114 | falls 2.72 s (balance) |
+| compress-flat-on carve flat 6 heel | 0.76 -> 0.43 -> nan | -0.300 | 119/140 -> 29/76 | 27 | 3.2 | 1.03 | 0.65 | 114 | falls 2.68 s (balance) |
+| compress-flat-on carve flat 8 toe | 0.77 -> 0.45 -> nan | -0.300 | 124/139 -> 49/78 | 41 | 5.4 | 1.22 | 0.87 | 208 | falls 3.70 s (balance) |
+| compress-flat-on carve flat 8 heel | 0.77 -> 0.46 -> nan | -0.300 | 124/139 -> 43/73 | 42 | 5.6 | 1.25 | 0.89 | 218 | falls 3.53 s (balance) |
+| compress-flat-on carve flat 11 toe | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 49/51 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+| compress-flat-on carve flat 11 heel | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 76/86 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+## Compress carve, canyon, switch on
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-canyon-on carve canyon 6 toe | 0.78 -> 0.48 -> nan | -0.295 | 139/138 -> 67/71 | 36 | 7.2* | - | - | 68 | falls 1.82 s (balance) |
+| compress-canyon-on carve canyon 6 heel | 0.78 -> 0.46 -> nan | -0.300 | 139/138 -> 70/81 | 50 | 7.6 | 1.47 | 1.61 | 206 | falls 3.70 s (lost board) |
+| compress-canyon-on carve canyon 8 toe | 0.78 -> 0.47 -> nan | -0.300 | 144/131 -> 55/65 | 49 | 7.8* | - | - | 93 | falls 2.45 s (lost board) |
+| compress-canyon-on carve canyon 8 heel | 0.78 -> 0.48 -> 0.81 | -0.300 | 144/131 -> 70/75 | 48 | 9.7 | 1.63 | 1.26 | 136 | rides |
+| compress-canyon-on carve canyon 11 toe | 0.78 -> 0.46 -> nan | -0.300 | 141/136 -> 45/59 | 48 | 11.3* | - | - | 100 | falls 2.67 s (lost board) |
+| compress-canyon-on carve canyon 11 heel | 0.78 -> 0.47 -> 0.81 | -0.300 | 141/136 -> 70/71 | 47 | 17.7* | - | - | 92 | rides |
+## Compress carve, flat, switch ld
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-flat-ld carve flat 6 toe | 0.76 -> 0.42 -> nan | -0.300 | 119/140 -> 43/77 | 27 | 3.2 | 1.03 | 0.64 | 114 | falls 2.72 s (balance) |
+| compress-flat-ld carve flat 6 heel | 0.76 -> 0.43 -> nan | -0.300 | 119/140 -> 29/76 | 27 | 3.2 | 1.03 | 0.65 | 114 | falls 2.68 s (balance) |
+| compress-flat-ld carve flat 8 toe | 0.77 -> 0.45 -> nan | -0.300 | 124/139 -> 49/78 | 41 | 5.4 | 1.22 | 0.87 | 208 | falls 3.70 s (balance) |
+| compress-flat-ld carve flat 8 heel | 0.77 -> 0.46 -> nan | -0.300 | 124/139 -> 43/73 | 42 | 5.6 | 1.25 | 0.89 | 218 | falls 3.53 s (balance) |
+| compress-flat-ld carve flat 11 toe | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 49/51 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+| compress-flat-ld carve flat 11 heel | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 76/86 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+## Compress carve, canyon, switch ld
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-canyon-ld carve canyon 6 toe | 0.78 -> 0.48 -> nan | -0.295 | 139/138 -> 67/71 | 36 | 7.2* | - | - | 68 | falls 1.82 s (balance) |
+| compress-canyon-ld carve canyon 6 heel | 0.78 -> 0.46 -> nan | -0.300 | 139/138 -> 70/81 | 50 | 7.6 | 1.47 | 1.61 | 206 | falls 3.70 s (lost board) |
+| compress-canyon-ld carve canyon 8 toe | 0.78 -> 0.47 -> nan | -0.300 | 144/131 -> 55/65 | 49 | 7.8* | - | - | 93 | falls 2.45 s (lost board) |
+| compress-canyon-ld carve canyon 8 heel | 0.78 -> 0.48 -> 0.81 | -0.300 | 144/131 -> 70/75 | 48 | 9.7 | 1.63 | 1.26 | 136 | rides |
+| compress-canyon-ld carve canyon 11 toe | 0.78 -> 0.46 -> nan | -0.300 | 141/136 -> 45/59 | 48 | 11.3* | - | - | 100 | falls 2.67 s (lost board) |
+| compress-canyon-ld carve canyon 11 heel | 0.78 -> 0.47 -> 0.81 | -0.300 | 141/136 -> 70/71 | 47 | 18.9* | - | - | 87 | rides |
+## Compress carve, flat, switch ldon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-flat-ldon carve flat 6 toe | 0.76 -> 0.42 -> nan | -0.300 | 119/140 -> 43/77 | 27 | 3.2 | 1.03 | 0.64 | 114 | falls 2.72 s (balance) |
+| compress-flat-ldon carve flat 6 heel | 0.76 -> 0.43 -> nan | -0.300 | 119/140 -> 29/76 | 27 | 3.2 | 1.03 | 0.65 | 114 | falls 2.68 s (balance) |
+| compress-flat-ldon carve flat 8 toe | 0.77 -> 0.45 -> nan | -0.300 | 124/139 -> 49/78 | 41 | 5.4 | 1.22 | 0.87 | 208 | falls 3.70 s (balance) |
+| compress-flat-ldon carve flat 8 heel | 0.77 -> 0.46 -> nan | -0.300 | 124/139 -> 43/73 | 42 | 5.6 | 1.25 | 0.89 | 218 | falls 3.53 s (balance) |
+| compress-flat-ldon carve flat 11 toe | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 49/51 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+| compress-flat-ldon carve flat 11 heel | 0.78 -> 0.46 -> 0.81 | -0.300 | 132/138 -> 76/86 | 52 | 12.5 | 1.90 | 1.11 | 138 | rides |
+## Compress carve, canyon, switch ldon
+| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| compress-canyon-ldon carve canyon 6 toe | 0.78 -> 0.48 -> nan | -0.295 | 139/138 -> 67/71 | 36 | 7.2* | - | - | 68 | falls 1.82 s (balance) |
+| compress-canyon-ldon carve canyon 6 heel | 0.78 -> 0.46 -> nan | -0.300 | 139/138 -> 70/81 | 50 | 7.6 | 1.47 | 1.61 | 206 | falls 3.70 s (lost board) |
+| compress-canyon-ldon carve canyon 8 toe | 0.78 -> 0.47 -> nan | -0.300 | 144/131 -> 55/65 | 49 | 7.8* | - | - | 93 | falls 2.45 s (lost board) |
+| compress-canyon-ldon carve canyon 8 heel | 0.78 -> 0.48 -> 0.81 | -0.300 | 144/131 -> 70/75 | 48 | 9.7 | 1.63 | 1.26 | 136 | rides |
+| compress-canyon-ldon carve canyon 11 toe | 0.78 -> 0.46 -> nan | -0.300 | 141/136 -> 45/59 | 48 | 11.3* | - | - | 100 | falls 2.67 s (lost board) |
+| compress-canyon-ldon carve canyon 11 heel | 0.78 -> 0.47 -> 0.81 | -0.300 | 141/136 -> 70/71 | 47 | 18.9* | - | - | 87 | rides |
+##### same bytes with the switch on?
+trim flat: identical
+trim flat (legDrive): identical
+compress flat: identical
+compress flat (legDrive): identical
+trim canyon: identical
+trim canyon (legDrive): identical
+compress canyon: identical
+compress canyon (legDrive): identical

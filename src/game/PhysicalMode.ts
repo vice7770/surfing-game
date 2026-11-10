@@ -495,6 +495,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...agileSwitch(),
     // `?legDrive=on`: at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in the lean-out pull's place (leg-drive), opt-in, to ride.
     ...legDriveSwitch(),
+    // `?carveFlex=on`: on a standing, stick-only carve the riders' legs flex with the turn's load, low at the bottom and taller as it ends (carve-flex), opt-in, to ride.
+    ...carveFlexSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -815,6 +817,15 @@ export function agileSwitch(search?: string): { agile?: 'on' } {
  */
 export function legDriveSwitch(search?: string): { legDrive?: 'on' } {
   return devParam('legDrive', search)?.trim().toLowerCase() === 'on' ? { legDrive: 'on' } : {};
+}
+
+/**
+ * The `?carveFlex=on` dev switch (`SurfZoneConfig.carveFlex`, carve-flex 2026-11-10, the owner: the surfer's movement in
+ * turns is "very off"): opt-in, every spot's standing rider flexes the legs with a steered turn's load, the knees sinking
+ * as the load comes on and extending as it ends, to a moderate crouch at most; Compress stays the deeper stance.
+ */
+export function carveFlexSwitch(search?: string): { carveFlex?: 'on' } {
+  return devParam('carveFlex', search)?.trim().toLowerCase() === 'on' ? { carveFlex: 'on' } : {};
 }
 
 /**

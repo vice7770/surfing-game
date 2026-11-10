@@ -1,0 +1,21 @@
+// Scratch probe (carve-flex, 2026-11-10): copy to src/physics/zz-exit.test.ts to run; see run.sh.txt.
+// A standing rider on flat water steers for a while, lets the stick go, and has 1.5 s to stand back up: who falls.
+import { Quaternion, Vector3 } from 'three';
+import { it } from 'vitest'; import { appendFileSync } from 'node:fs';
+import { AttachedRider } from './AttachedRider';
+import { BoardBody } from './BoardBody';
+import { PlaneWater } from './PlaneWater';
+it('x', () => {
+  let falls = 0; let n0 = 0; const who: string[] = [];
+  for (const speed of [7, 8, 9, 10, 11]) for (const steer of [0.5, 0.7, 1]) for (const hold of [0.7, 1.0, 1.3]) {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', ...JSON.parse(process.env.OPTS ?? '{}') });
+    board.attach(rider); const water = new PlaneWater();
+    for (let i = 0; i < 18; i += 1) board.step(1 / 60, water);
+    let n = 0;
+    for (; n < Math.round((hold + 1.5) * 60) && rider.attached; n += 1) { rider.steer = n / 60 < hold ? steer : 0; board.step(1 / 60, water); }
+    n0 += 1; if (!rider.attached) { falls += 1; who.push(`${speed}/${steer}/${hold}@${(n / 60).toFixed(2)}`); }
+  }
+  appendFileSync(process.env.OUT!, `${process.env.OPTS ?? '{}'} falls ${falls} of ${n0}: ${who.join(' ')}\n`);
+});

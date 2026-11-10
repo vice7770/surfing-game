@@ -1,0 +1,133 @@
+// The turning-body probe (2026-11-10; not part of the suite). Copy to src/dev/zz-turnbody.test.ts to run (never commit it there).
+// Scripted stick / Compress / Snap on flat water (WATER=flat) or on FaceWater matched to the Canyon's version B arm wave (WATER=canyon),
+// every 1/60 s step passed through the drawn pipeline as the page does it: the rider's seven points -> RiderMotion -> PosedBody (PointInertia,
+// CauseFilter, HumanoidRig.solve, BodyInertia) on a surfer's own skeleton, read by the stance gauge. The physics' own points are read
+// before the drawing touches them. Writes every frame to OUT (JSON).
+//   SW=turnBody=on (or any of turnTrunk=lean, turnLead=on, cutbackHand=back joined by &): the drawn fixes of drawn-fixes.md; none = as before.
+//   PLAN=trim | carve | cutback | standcut     SPEEDS=8,11     SIDES=toe,heel     STANCE=regular|goofy     SURFER=surfer1
+// carve:   0.5 s trim -> Compress (compress 1, crouch CROUCH: the page sends 0 with Compress alone; STAND=1: no Compress, stick only) + full stick for CARVE s (or until TURN deg) -> everything let go for 1.5 s.
+// cutback: 0.5 s trim -> Compress + full stick for CARVE s -> Snap held + full opposite stick for SNAP s -> everything let go for 1.5 s.
+// standcut: as cutback, the first carve standing (stick only).
+import { readFileSync, writeFileSync } from 'node:fs';
+import { Matrix4, Quaternion, Vector3 } from 'three';
+import { it } from 'vitest';
+import { AttachedRider } from '../physics/AttachedRider';
+import { BoardBody } from '../physics/BoardBody';
+import { PlaneWater } from '../physics/PlaneWater';
+import { createWaterSample, type SurfWater } from '../physics/SurfWater';
+import { FaceWater } from '../physics/testing/FaceWater';
+import { readGlbSkeleton } from '../scene/rig/glbSkeleton';
+import { PosedBody } from '../scene/rig/posedBody';
+import { pelvisOverDeck } from '../scene/rig/posturePoints';
+import { RiderMotion } from '../scene/rig/riderMotion';
+import { POINT, createRiderVisualState } from '../scene/rig/riderVisualState';
+import { StanceGauge, measurePoints } from '../scene/rig/stanceGauge';
+import { RIG_SWITCHES, turnBodySwitches } from '../scene/rig/stanceBlend';
+
+const STEP = 1 / 60; const DEG = 180 / Math.PI;
+const OUT = process.env.OUT ?? '/dev/null';
+const list = (k: string, d: string) => (process.env[k] ?? d).split(',');
+const PLAN = process.env.PLAN ?? 'carve'; const WATER = process.env.WATER ?? 'flat';
+const SPEEDS = list('SPEEDS', '8,11').map(Number); const SIDES = list('SIDES', 'toe,heel');
+const STANCE = (process.env.STANCE ?? 'regular') as 'regular' | 'goofy'; const SURFER = process.env.SURFER ?? 'surfer1';
+const CARVE = Number(process.env.CARVE ?? 2.5); const TURN = Number(process.env.TURN ?? 400); const SNAP = Number(process.env.SNAP ?? 1.5);
+const CROUCH = Number(process.env.CROUCH ?? 0); const STAND = process.env.STAND === '1'; const STICK = Number(process.env.STICK ?? 1); // STICK: how far the stick is pushed in the carve (carve-flex)
+const OPTS = JSON.parse(process.env.OPTS ?? '{}');
+// SW: the turning body's switches as the page's address has them (drawn-fixes.md), e.g. SW='turnBody=on' or SW='turnTrunk=lean&turnLead=on'.
+Object.assign(RIG_SWITCHES, turnBodySwitches(`?${process.env.SW ?? ''}`));
+const r = (x: number, d = 1) => (Number.isFinite(x) ? +x.toFixed(d) : null);
+const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
+it('probe', () => {
+  const runs: unknown[] = [];
+  for (const speed of SPEEDS) for (const side of PLAN === 'trim' ? ['none'] : SIDES) {
+    const water: SurfWater & { advance?: (dt: number) => void } = WATER === 'canyon' ? new FaceWater({ depth: 2.6, height: 1.4, slope: 16, speed: 5.7 }) : new PlaneWater();
+    const sample = createWaterSample();
+    // On the wave: 0.75 of a face length ahead of the crest, heading 45 deg off the fall line toward -x, as the turn-pair probe starts.
+    const face = water instanceof FaceWater ? water : undefined;
+    const z0 = face ? face.crestZ() + 0.75 * face.front : 0; const head0 = face ? -45 / DEG : 0;
+    const s = water.sampleAt(0, 10, z0, sample);
+    const normal = new Vector3(s.normalX, s.normalY, s.normalZ).normalize();
+    const level = new Vector3(Math.sin(head0), 0, Math.cos(head0));
+    const forward = level.addScaledVector(normal, -level.dot(normal)).normalize();
+    const left = new Vector3().crossVectors(normal, forward).normalize();
+    const board = new BoardBody();
+    board.place(new Vector3(0, s.surfaceY, z0).addScaledVector(normal, board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)),
+      forward.clone().multiplyScalar(speed).add(new Vector3(s.flowX, s.flowY, s.flowZ)));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', stance: STANCE, ...OPTS });
+    board.attach(rider);
+    // steer +1 turns toward the board's +x (its left): Regular's toes are at -x, Goofy's at +x.
+    const toes = STANCE === 'regular' ? -1 : 1;
+    const dir = side === 'toe' ? toes : side === 'heel' ? -toes : 0; // the first turn's steer
+    const bytes = readFileSync(`public/assets/surfers/${SURFER}.glb`);
+    const { bones } = readGlbSkeleton(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    const gauge = new StanceGauge(bones); const body = new PosedBody(bones); const motion = new RiderMotion();
+    const state = createRiderVisualState();
+    const frames: unknown[] = []; let fell: number | null = null; let cause = '';
+    let phase = 'trim'; let t0 = 0; let turned = 0; let last = head0;
+    const total = PLAN === 'trim' ? 2.5 : 0.5 + CARVE + (PLAN === 'carve' ? 0 : SNAP) + 1.5;
+    for (let n = 0; n < Math.round(total / STEP); n += 1) {
+      const t = n * STEP;
+      if (PLAN !== 'trim') {
+        if (phase === 'trim' && t >= 0.5) { phase = 'carve'; t0 = t; turned = 0; }
+        else if (phase === 'carve' && (t - t0 >= CARVE || Math.abs(turned) >= TURN)) { phase = PLAN === 'carve' ? 'release' : 'snap'; t0 = t; }
+        else if (phase === 'snap' && t - t0 >= SNAP) { phase = 'release'; t0 = t; }
+        else if (phase === 'release' && t - t0 >= 1.5) break;
+      }
+      const crouched = phase === 'carve' && PLAN !== 'standcut' && !STAND;
+      rider.steer = phase === 'carve' ? dir * STICK : phase === 'snap' ? -dir : 0;
+      rider.compress = crouched ? 1 : 0; rider.crouch = crouched ? CROUCH : 0; rider.snap = phase === 'snap' ? 1 : 0; rider.trim = 0;
+      water.advance?.(STEP);
+      board.step(STEP, water);
+      const time = t + STEP;
+      if (!rider.attached) { fell = time; cause = String(rider.separation); break; }
+      // The drawn state, as the snapshot carries it (`writeRiderSnapshot`) and the page completes it (`PhysicalMode`).
+      for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, state.points[i]);
+      state.phase = rider.phase; state.weight = rider.contact.weight; state.snap = rider.snapping; state.twist = rider.drawnTwist;
+      const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+      state.heading = Math.atan2(f.x, f.z); state.boardPosition.copy(board.position); state.boardQuaternion.copy(board.orientation);
+      state.stance = STANCE; state.stroking = 0; state.steer = rider.steer; // the stick, as the page hands it to the drawing
+      motion.update(state, time); state.clock = time;
+      // The physics' own body, before the drawing blends and filters its points.
+      const pts = state.points.map((p) => p.clone());
+      const phys = measurePoints(state, STANCE); const physPelvis = pelvisOverDeck(state);
+      body.update(state);
+      const j = gauge.joints(); const m = gauge.measure(state, STANCE);
+      // Frames: the board's level heading and its level left; the turn's way is the steer's (+1 = toward the left).
+      const fh = new Vector3(f.x, 0, f.z).normalize(); const lh = new Vector3().crossVectors(new Vector3(0, 1, 0), fh).normalize();
+      const bl = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
+      const tilt = (v: Vector3) => ({ left: Math.atan2(v.dot(lh), v.y) * DEG, nose: Math.atan2(v.dot(fh), v.y) * DEG, any: Math.acos(Math.max(-1, Math.min(1, v.y / v.length()))) * DEG });
+      const yawOf = (v: Vector3) => wrap(Math.atan2(v.x, v.z) - state.heading) * DEG;
+      const surf = (p: Vector3) => water.sampleAt(p.x, p.y, p.z, sample).surfaceY;
+      const hand = (p: Vector3, from: Vector3) => ({ water: r(p.y - surf(p), 2), left: r(p.clone().sub(from).dot(lh), 2), nose: r(p.clone().sub(from).dot(fh), 2), up: r(p.y - from.y, 2) });
+      const front = STANCE === 'regular' ? 'left' : 'right'; const rear = front === 'left' ? 'right' : 'left';
+      const feet = j.ankle.left.clone().add(j.ankle.right).multiplyScalar(0.5);
+      water.sampleAt(board.position.x, board.position.y, board.position.z, sample);
+      const heading = state.heading; turned += wrap(heading - last) * DEG; last = heading;
+      frames.push({
+        t: r(time, 3), phase, steer: rider.steer, v: r(Math.hypot(board.velocity.x - sample.flowX, board.velocity.z - sample.flowZ), 2),
+        heading: r(heading * DEG), turned: r(turned), yaw: r(board.angularVelocity.y * DEG), roll: r(-Math.asin(Math.max(-1, Math.min(1, bl.y))) * DEG),
+        pitch: r(Math.asin(Math.max(-1, Math.min(1, f.y))) * DEG), bank: r(rider.bank.angle * DEG), swing: r(rider.swing.angle * DEG), twist: r(rider.drawnTwist * DEG),
+        legRest: r(rider.leg.rest, 3), legExt: r(rider.leg.extension, 3), margin: r(rider.balanceMargin, 2), weight: r(rider.contact.weight, 2), load: r(rider.contact.load, 2),
+        motionYaw: r(state.yawRate * DEG), motionLean: r(state.leanRate * DEG),
+        p: { // the physics' points
+          pelvisDeck: r(physPelvis, 3), trunk: Object.fromEntries(Object.entries(tilt(pts[POINT.torso].clone().sub(pts[POINT.pelvis]))).map(([k, x]) => [k, r(x)])),
+          body: Object.fromEntries(Object.entries(tilt(pts[POINT.head].clone().sub(pts[POINT.leftFoot].clone().add(pts[POINT.rightFoot]).multiplyScalar(0.5)))).map(([k, x]) => [k, r(x)])),
+          lead: hand(pts[front === 'left' ? POINT.leftHand : POINT.rightHand], pts[POINT.pelvis]), trail: hand(pts[rear === 'left' ? POINT.leftHand : POINT.rightHand], pts[POINT.pelvis]),
+          flex: r(phys.trunkFlexion), hipsOver: r(phys.hipsOver, 2),
+        },
+        d: { // the drawn body
+          kneeF: r(m.kneeFront), kneeR: r(m.kneeRear), hipF: r(m.hipFront), hipR: r(m.hipRear), ankleF: r(m.ankleFront), ankleR: r(m.ankleRear),
+          hipsDeck: r(m.hipsDeck, 3), trunk: Object.fromEntries(Object.entries(tilt(j.neck.clone().sub(j.spine))).map(([k, x]) => [k, r(x)])),
+          body: Object.fromEntries(Object.entries(tilt(j.neck.clone().sub(feet))).map(([k, x]) => [k, r(x)])),
+          com: Object.fromEntries(Object.entries(tilt(j.hips.clone().sub(feet))).map(([k, x]) => [k, r(x)])),
+          flex: r(m.trunkFlexion), tpitch: r(m.trunkPitch), headYaw: r(yawOf(j.headFacing)), chestYaw: r(yawOf(j.chestFacing)), hipYaw: r(yawOf(j.pelvisFacing)), headPitch: r(m.headPitch),
+          lead: hand(j.wrist[front], j.hips), trail: hand(j.wrist[rear], j.hips), leadArm: r(m.leadArm), trailArm: r(m.trailArm), leadElbow: r(m.leadElbow), trailElbow: r(m.trailElbow),
+          shoulderDrop: r(m.shoulderDrop), hipsOver: r(m.hipsOver, 2), stance: r(m.stanceWidth, 2),
+        },
+      });
+    }
+    runs.push({ name: `${PLAN} ${WATER} ${speed} ${side}`, plan: PLAN, water: WATER, speed, side, dir, stance: STANCE, surfer: SURFER, fell, cause, frames });
+  }
+  writeFileSync(OUT, JSON.stringify(runs));
+});

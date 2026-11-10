@@ -943,6 +943,29 @@ const COMPRESS_KEEP = 0.9;
  * the aim at once.
  */
 export const EXTENSION_TALL = 0.04;
+/**
+ * The carve's flexing legs (carve-flex, 2026-11-10; `carveFlex: 'on'`, opt-in; docs/research/carve-flex-2026-11-10): on
+ * a standing, stick-only carve the legs never bent (the turning-body study: the pelvis 0.77–0.78 m over the deck all
+ * the way round, a tall body folded at the hips), where a surfer's knees sink through the bottom of a turn as its load
+ * comes on and rise as it ends. So while the rider steers, the legs yield to the turn's load: the leg's rest comes down
+ * by the load along the leg over the rider's weight (1 / cos of the lean in a steady turn; nothing riding straight or
+ * across a face), reaching CARVE_FLEX of CROUCH_DEPTH at the load a full stick's lean carries (1 / cos RAIL_RANGE,
+ * 1.56 body weights), and never more than the stick's own share of it: no stick, no flex. The stick let go mid-turn, the
+ * legs sink no further and stand up as the board rolls back flat under them (its bank over RAIL_RANGE): standing up at
+ * once, or as the load eased, threw the slowed rider back into its lean (the exit probe: 27 and 15 falls of 45, to 5
+ * with straight legs and 7 this way). Either way the legs push the body up no faster than the stance's spring can catch
+ * it (`projectionCatch`).
+ *
+ * It is the leg's own rest length, the one the crouch and Compress move, so all it does to the board goes through the
+ * leg's spring at the feet: the board is unloaded while the body sinks and pressed while the legs push it back up.
+ * It drops as Compress does (no faster than the body falls onto the legs, the feet only pushing).
+ *
+ * CARVE_FLEX 0.4 is 0.12 m: the deep end of the surf stance's half-squat (knees flexed 30–80°, Borgonovo-Santos et al.
+ * 2021; de Sousa 2022's preparation, knees 90–110°), which the stance map reads at the pumping crouch's 0.117 m (knees
+ * 102–104° drawn). River-wave turns peak at 45–51° of knee flexion (Weiss et al. 2025), inside it. Compress (0.3 m)
+ * and the crouch stay the player's deeper stances: the deeper of them and the flex is the one the legs take.
+ */
+const CARVE_FLEX = 0.4;
 const EXTENSION_SETTLE = 0.5;
 const TALL_FROM = 0.05;
 const TALL_START = 0.02;
@@ -1046,6 +1069,12 @@ export interface AttachedRiderOptions {
    * LEAN_OUT_PULL's place and without Compress's gate (the `?legDrive=on` dev switch, to ride). By default as before.
    */
   legDrive?: 'on';
+  /**
+   * The carve's flexing legs (carve-flex, 2026-11-10; CARVE_FLEX), opt-in: 'on' lets a standing rider's legs yield to a
+   * steered turn's load, the knees sinking as it comes on and extending as it ends, to a moderate crouch at most (the
+   * `?carveFlex=on` dev switch, to ride). By default the stick alone never bends the legs, as before.
+   */
+  carveFlex?: 'on';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1484,6 +1513,10 @@ export class AttachedRider {
   private tallFrom = false;
   /** The leg was last brought down by Compress (not the crouch alone): letting it go is the projection. */
   private fromCompress = false;
+  /** The carve's flexing legs; only with `carveFlex: 'on'`. */
+  private readonly carveFlexes: boolean;
+  /** The leg was last brought down by the carve's flex: the load easing, it rises at the projection's catch. */
+  private fromFlex = false;
 
   private legFresh = true;
   private legDamping = 0;
@@ -1578,6 +1611,7 @@ export class AttachedRider {
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
     this.agile = options.agile === 'on';
     this.legDrive = options.legDrive === 'on';
+    this.carveFlexes = options.carveFlex === 'on';
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
@@ -1867,6 +1901,7 @@ export class AttachedRider {
     this.tallReached = false;
     this.tallFrom = false;
     this.fromCompress = false;
+    this.fromFlex = false;
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
@@ -2613,6 +2648,22 @@ export class AttachedRider {
     this.limbTorque.copy(up).multiplyScalar(-this.hipTorque).addScaledVector(side, -this.trunkTorque);
   }
 
+  /**
+   * The carve's flex asked of the legs, of CROUCH_DEPTH (CARVE_FLEX): the load along the leg over the rider's weight, of
+   * what a full stick's lean carries, and no more than the stick's share.
+   */
+  private carveFlex(): number {
+    const stick = Math.abs(this.steer) > STEER_DEADBAND ? Math.abs(this.steer) : 0;
+    const depth = CARVE_FLEX * CROUCH_DEPTH;
+    // The stick let go mid-turn: the legs sink no further, and stand up as the board rolls back flat under them.
+    if (stick === 0) {
+      if (!this.fromFlex) return 0;
+      return CARVE_FLEX * Math.max(0, Math.min(1, -this.leg.rest / depth, Math.abs(this.bank.angle) / RAIL_RANGE));
+    }
+    const over = this.legLoad / (this.mass * WATER.gravity) - 1;
+    return CARVE_FLEX * Math.max(0, Math.min(1, stick, over / (1 / Math.cos(RAIL_RANGE) - 1)));
+  }
+
   /** Standing: the leg's state and load before the board's solve. */
   private prepareLeg(h: number, board: BoardBody, water: SurfWater): void {
     const stance = board.velocityAt(this.baseWorld, this.localScratch);
@@ -2639,7 +2690,13 @@ export class AttachedRider {
     const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
     const compress = Math.max(0, Math.min(1, this.compressAsked));
     const snap = this.snapping;
-    const asked = -(snap > 0 ? Math.max(crouch, compress, snap * this.snapDepth) : Math.max(crouch, compress)) * CROUCH_DEPTH;
+    const held = snap > 0 ? Math.max(crouch, compress, snap * this.snapDepth) : Math.max(crouch, compress);
+    // The carve's flex (CARVE_FLEX): steering, the legs yield to the turn's load, as far as the stick asks at most.
+    const flex = this.carveFlexes ? this.carveFlex() : 0;
+    const flexing = flex > held;
+    if (flexing) this.fromFlex = true;
+    else if (held > 0) this.fromFlex = false;
+    const asked = -(flexing ? flex : held) * CROUCH_DEPTH;
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
     if (compress > 0 || snap > 0) this.fromCompress = true;
@@ -2659,11 +2716,12 @@ export class AttachedRider {
     const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
     // Snap loads as Compress does: down at least as fast as the load, the legs only pushing.
-    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * this.snapDepth > crouch;
+    // The flex yields to the load as Compress does.
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * this.snapDepth > crouch || flexing;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
-    const caught = this.catches && !down && this.fromCompress ? projectionCatch(this.mass, this.legStiffness) : Infinity;
+    const caught = (this.catches && !down && this.fromCompress) || (!down && this.fromFlex) ? projectionCatch(this.mass, this.legStiffness) : Infinity;
     const speedLimit = down ? CROUCH_SPEED : Math.min(MAX_LEG_SPEED, caught);
     // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
     const hold = this.banking && !compressing

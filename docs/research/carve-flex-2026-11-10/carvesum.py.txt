@@ -1,0 +1,23 @@
+# python3 carvesum.py <json>... : one row per run of the turning-body probe's carve plan (carve-flex, 2026-11-10).
+# pelvis = the physics' pelvis over the deck, m (trim -> lowest in the carve -> 1 s after the stick is let go); knees = the drawn front/rear knee,
+# included angle (180 straight), in trim -> at the lowest pelvis; lean = the physics' largest lean into the turn; radius = path / heading over the
+# (the last 0.5 s before a fall is left out of pelvis, knees and lean)
+# carve's first 90 deg (or all of it); v90 = speed kept at 90 deg of heading; arc = the largest heading turned; end = the fall's time, or 'rides'.
+import json, sys, math
+print('| run | pelvis trim -> low -> after | leg rest low | knees F/R trim -> low | lean max | radius m | t90 s | v90 kept | arc deg | end |')
+print('|' + ' --- |' * 10)
+for path in sys.argv[1:]:
+    for run in json.load(open(path)):
+        fr = run['frames']; tag = path.split('/')[-1].replace('.json', '')
+        trim = [f for f in fr if f['phase'] == 'trim']; carve = [f for f in fr if f['phase'] == 'carve' and not (run['fell'] and f['t'] > run['fell'] - 0.5)]; rel = [f for f in fr if f['phase'] == 'release']
+        if not carve: print(f"| {tag} {run['name']} | trim only: pelvis {min(f['p']['pelvisDeck'] for f in fr):.2f}-{max(f['p']['pelvisDeck'] for f in fr):.2f}, leg rest {min(f['legRest'] for f in fr):.3f} | | | | | | | | {'falls %.2f s' % run['fell'] if run['fell'] else 'rides'} |"); continue
+        t0 = trim[-1]; low = min(carve, key=lambda f: f['p']['pelvisDeck']); s = 1 if run['dir'] > 0 else -1
+        lean = max(s * f['bank'] for f in carve)
+        path_m = 0; r90 = None; t90 = None; v90 = None
+        for a, b in zip(carve, carve[1:]):
+            path_m += b['v'] / 60
+            if r90 is None and abs(b['turned']) >= 90: r90 = path_m / (math.pi / 2); t90 = b['t'] - carve[0]['t']; v90 = b['v'] / carve[0]['v']
+        arc = max(abs(f['turned']) for f in fr)
+        rad = r90 if r90 else (path_m / math.radians(abs(carve[-1]['turned'])) if abs(carve[-1]['turned']) > 5 else float('nan'))
+        after = [f for f in rel if f['t'] - rel[0]['t'] >= 1.0] if rel else []
+        print(f"| {tag} {run['name']} | {t0['p']['pelvisDeck']:.2f} -> {low['p']['pelvisDeck']:.2f} -> {after[0]['p']['pelvisDeck'] if after else float('nan'):.2f} | {min(f['legRest'] for f in carve):.3f} | {t0['d']['kneeF']:.0f}/{t0['d']['kneeR']:.0f} -> {low['d']['kneeF']:.0f}/{low['d']['kneeR']:.0f} | {lean:.0f} | {rad:.1f}{'' if r90 else '*'} | {'%.2f' % t90 if t90 else '-'} | {'%.2f' % v90 if v90 else '-'} | {arc:.0f} | {'falls %.2f s (%s)' % (run['fell'], run['cause']) if run['fell'] else 'rides'} |")

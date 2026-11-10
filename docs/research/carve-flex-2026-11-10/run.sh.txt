@@ -1,0 +1,37 @@
+# Carve-flex probes (2026-11-10). Run from the repo root: sh docs/research/carve-flex-2026-11-10/run.sh.txt <out-dir>
+# Copies the scratch probes into src/ as zz-* files, runs them with the switch off and on, and removes them.
+set -e
+D=docs/research/carve-flex-2026-11-10; O=${1:?out dir}; mkdir -p "$O"; O=$(cd "$O" && pwd)
+cp $D/turnbody.test.ts.txt src/dev/zz-turnbody.test.ts
+cp $D/exit.test.ts.txt src/physics/zz-exit.test.ts
+cp docs/research/turn-pair-2026-11-10/turnpair.test.ts.txt src/physics/zz-turnpair.test.ts
+cp docs/research/face-hold-2026-11-10/r2Lab.ts.txt src/physics/zz-r2Lab.ts
+# run <test file> VAR=value...: `env`, not shell assignments (those outlive a function call, and SECONDS is the shell's clock).
+run() { f=$1; shift; env "$@" npx vitest run "$f" 2>&1 | grep -E "Tests|rror" || true; }
+opts() { case $1 in off) echo '{}';; on) echo '{"carveFlex":"on"}';; ld) echo '{"legDrive":"on"}';; ldon) echo '{"legDrive":"on","carveFlex":"on"}';; esac; }
+for sw in off on ld ldon; do export OPTS="$(opts $sw)"
+  # 1. stick-only carves, half and full stick, both sides, 6/8/11 m/s, flat and the Canyon-matched wave
+  for W in flat canyon; do for S in 0.5 1; do run src/dev/zz-turnbody.test.ts PLAN=carve WATER=$W SPEEDS=6,8,11 STAND=1 STICK=$S OUT=$O/stand-$W-$S-$sw.json; done
+    # 3. trim with no stick, and Compress carves
+    run src/dev/zz-turnbody.test.ts PLAN=trim WATER=$W SPEEDS=6,8,11 OUT=$O/trim-$W-$sw.json
+    run src/dev/zz-turnbody.test.ts PLAN=carve WATER=$W SPEEDS=6,8,11 OUT=$O/compress-$W-$sw.json
+  done
+  # exits on flat water: steer, let go, stand up
+  run src/physics/zz-exit.test.ts OUT=$O/exit.txt
+  # 2. the turn pair (16 runs each, the probe runs the leg drive off and on itself): Compress down then released,
+  # standing all the way, Compress held.
+  if [ $sw = off ] || [ $sw = on ]; then for d in 20 35; do
+    for cl in release hold; do run src/physics/zz-turnpair.test.ts SECONDS=16 WAIT=1 LOW=0.25 DROP=$d CLIMBS=$cl TOPS=60/0.5,60/0.7 OUT=$O/pair-$cl-$d-$sw.json; done
+    run src/physics/zz-turnpair.test.ts DOWN=steer SECONDS=16 WAIT=1 LOW=0.25 DROP=$d CLIMBS=release TOPS=60/0.5,60/0.7 OUT=$O/pair-stand-$d-$sw.json
+  done; fi
+done
+rm src/dev/zz-turnbody.test.ts src/physics/zz-exit.test.ts src/physics/zz-turnpair.test.ts src/physics/zz-r2Lab.ts
+cd $O
+for sw in off on ld ldon; do echo "##### switch: $sw"
+  for W in flat canyon; do for S in 0.5 1; do echo "## stick $S, $W"; python3 $OLDPWD/$D/carvesum.py.txt stand-$W-$S-$sw.json; done; done
+done
+for sw in off on; do for k in release stand hold; do echo "##### pair: $k, carve flex $sw"; python3 $OLDPWD/docs/research/turn-pair-2026-11-10/pairsum.py.txt pair-$k-20-$sw.json pair-$k-35-$sw.json; done; done
+echo "##### exits"; cat exit.txt
+for sw in off on ld ldon; do for W in flat canyon; do echo "## Compress carve, $W, switch $sw"; python3 $OLDPWD/$D/carvesum.py.txt compress-$W-$sw.json; done; done
+echo "##### same bytes with the switch on?"
+for W in flat canyon; do for k in trim compress; do cmp $k-$W-off.json $k-$W-on.json && echo "$k $W: identical"; cmp $k-$W-ld.json $k-$W-ldon.json && echo "$k $W (legDrive): identical"; done; done

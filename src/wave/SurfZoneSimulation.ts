@@ -233,6 +233,12 @@ export interface SurfZoneConfig {
    */
   legDrive?: 'on';
   /**
+   * 'on': on a standing, stick-only carve the riders' legs flex with the turn's load, to a moderate crouch at most
+   * (carve-flex, 2026-11-10; `RideSessionOptions.carveFlex`). Every spot. The `?carveFlex=on` dev switch, opt-in, to
+   * ride; online rooms run the default.
+   */
+  carveFlex?: 'on';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.
