@@ -495,6 +495,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...agileSwitch(),
     // `?legDrive=on`: at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in the lean-out pull's place (leg-drive), opt-in, to ride.
     ...legDriveSwitch(),
+    // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
+    ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
@@ -813,6 +815,15 @@ export function agileSwitch(search?: string): { agile?: 'on' } {
  */
 export function legDriveSwitch(search?: string): { legDrive?: 'on' } {
   return devParam('legDrive', search)?.trim().toLowerCase() === 'on' ? { legDrive: 'on' } : {};
+}
+
+/**
+ * The `?deckHollow=on` dev switch (`SurfZoneConfig.deckHollow`, deck-hollow 2026-11-10, the Compress turn's drag): opt-in,
+ * every spot's banked planing board keeps its deck, and the standing rider's legs over it, dry below the surface line
+ * while the hollow behind the low rail's entry is open, where by default they are wet wherever the surface is above them.
+ */
+export function deckHollowSwitch(search?: string): { deckHollow?: 'on' } {
+  return devParam('deckHollow', search)?.trim().toLowerCase() === 'on' ? { deckHollow: 'on' } : {};
 }
 
 /**

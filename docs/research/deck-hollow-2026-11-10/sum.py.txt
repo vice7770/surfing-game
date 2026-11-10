@@ -1,0 +1,20 @@
+# usage: sum.py <json>... ; one line per arc: speed kept at 90 deg, peak drag (g), arc, end; then the legs / deck-friction terms per 0.2 s bin
+import json,sys
+G=9.81
+for p in sys.argv[1:]:
+  print('\n#',p.split('/')[-1])
+  for o in json.load(open(p)):
+    W=(o['mass']['board']+o['mass']['rider'])*G; m=o['marks']
+    g=lambda b,k: b.get(k,0)/W
+    pl=[b for b in o['bins'] if b['v']>=2 and b['planing']>=0.5 and b['pelvisY']>=0.1]
+    peak=max((-g(b,'measured_t') for b in pl),default=0)
+    k90=f"{m['90']['v']} ({m['90']['kept']}) at {m['90']['t']} s" if '90' in m else '-'
+    print(f"{o['name']:18s} v0 {o['v0']:.2f} | 90deg: {k90:26s} | peak drag {peak:.2f} g | arc {o['turned']:.0f} | {o['end'].split(' bank')[0]}")
+    print('   t   :'+' '.join(f"{b['t1']:5.1f}" for b in pl))
+    print('   v   :'+' '.join(f"{b['v']:5.2f}" for b in pl))
+    print('   drag:'+' '.join(f"{-g(b,'measured_t'):5.2f}" for b in pl))
+    print('   legs:'+' '.join(f"{-(g(b,'body_leftLeg_t')+g(b,'body_rightLeg_t')):5.2f}" for b in pl))
+    print('   deck:'+' '.join(f"{-g(b,'deckFriction_t'):5.3f}" for b in pl))
+    print('   hull:'+' '.join(f"{-g(b,'pressure_t')-g(b,'deckPressure_t'):5.2f}" for b in pl))
+    print('   dkWt:'+' '.join(f"{b['deckWet']:5.2f}" for b in pl))
+    print('   yDkR:'+' '.join(f"{b['yDeckRear']:5.2f}" for b in pl))

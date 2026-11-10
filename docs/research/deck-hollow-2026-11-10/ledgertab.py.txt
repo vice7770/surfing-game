@@ -1,0 +1,22 @@
+# usage: ledgertab.py <off.json> <on.json> ; one markdown row per arc: off -> on. Drag terms are along the path, in body weights (rider + board),
+# averaged over the 0.2 s bins up to the bin where the arc passes 90 deg (planing bins only); peak = the largest bin of the whole arc.
+import json,sys
+G=9.81
+def row(o):
+    W=(o['mass']['board']+o['mass']['rider'])*G; m=o['marks']
+    g=lambda b,k: -b.get(k,0)/W
+    pl=[b for b in o['bins'] if b['v']>=2 and b['planing']>=0.5 and b['pelvisY']>=0.1]
+    t90=m['90']['t'] if '90' in m else 1e9
+    to=[b for b in pl if b['t0']<t90] or pl
+    mean=lambda f: sum(f(b) for b in to)/len(to)
+    legs=lambda b: g(b,'body_leftLeg_t')+g(b,'body_rightLeg_t')
+    return dict(name=o['name'],v0=o['v0'],v90=m['90']['v'] if '90' in m else None,kept=m['90']['kept'] if '90' in m else None,
+      peak=max(g(b,'measured_t') for b in pl),arc=o['turned'],end=o['end'].split(' bank')[0],
+      drag=mean(lambda b:g(b,'measured_t')),legs=mean(legs),legsPk=max(legs(b) for b in pl),deck=mean(lambda b:g(b,'deckFriction_t')),
+      fr=mean(lambda b:g(b,'friction_t')),hull=mean(lambda b:g(b,'pressure_t')+g(b,'deckPressure_t')),dw=mean(lambda b:b['deckWet']))
+a=[row(o) for o in json.load(open(sys.argv[1]))]; b=[row(o) for o in json.load(open(sys.argv[2]))]
+print('| Run (stance, entry, stick) | Speed at 90° (share kept) | Peak drag, g | Arc before the fall | Mean drag to 90°, g | Legs: mean / peak, g | Deck friction, g | Hull pressure, g | Deck wet share |')
+print('| --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+for x,y in zip(a,b):
+    f=lambda k,p='%.2f': (p%x[k])+' → '+(p%y[k])
+    print(f"| {x['name']} | {x['v90']:.1f} ({x['kept']:.2f}) → {y['v90']:.1f} ({y['kept']:.2f}) | {f('peak')} | {x['arc']:.0f}° → {y['arc']:.0f}° | {f('drag')} | {x['legs']:.2f} / {x['legsPk']:.2f} → {y['legs']:.2f} / {y['legsPk']:.2f} | {f('deck','%.3f')} | {f('hull')} | {f('dw')} |")

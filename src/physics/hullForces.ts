@@ -161,10 +161,11 @@ function zero(v: Vec): void {
  * - ITTC skin friction on the tangential flow over both wetted faces.
  * `relative` is the patch's velocity minus the water's; `wettedLength` sets the
  * Reynolds number, and `pressureScale` places the patch in the pressure
- * distribution (`planingScales`).
+ * distribution (`planingScales`). `deckWet` (1 by default) scales the deck's wetting: its skin friction, its
+ * pressure and its share of the wetted area; buoyancy stays the slab's own volume under the surface line.
  */
 export function patchForce(
-  patch: WorldPatch, water: WaterSample, relative: Vec, wettedLength: number, out: PatchForce, pressureScale = 1, submergedShareHere = 0,
+  patch: WorldPatch, water: WaterSample, relative: Vec, wettedLength: number, out: PatchForce, pressureScale = 1, submergedShareHere = 0, deckWet = 1,
 ): PatchForce {
   zero(out.buoyancy);
   zero(out.pressure);
@@ -180,7 +181,8 @@ export function patchForce(
   if (!water.wet || water.outsideDomain) return out;
   const deckY = position.y - normal.y * thickness;
   const bottom = wettedShare(water.surfaceY - position.y);
-  const deck = wettedShare(water.surfaceY - deckY);
+  // `deckWet`: the deck's wet share where it lies under the surface line in a planing board's open hollow (`hollowWetShare`).
+  const deck = wettedShare(water.surfaceY - deckY) * deckWet;
   if (bottom === 0 && deck === 0) return out;
 
   const bottomLow = position.y <= deckY;

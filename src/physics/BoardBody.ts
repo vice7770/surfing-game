@@ -3,6 +3,7 @@ import type { AttachedRider } from './AttachedRider';
 import type { BoardContactBody } from './DetachedSurfer';
 import { buildBoardShape, type BoardShape } from './boardShape';
 import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
+import { hollowWetShare, railDepth } from './deckHollow';
 import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
@@ -67,6 +68,12 @@ export interface BoardBodyOptions {
    * hull's one-sided law at any depth (`?duckBody=old`).
    */
   submerged?: 'plate' | 'old';
+  /**
+   * The hollow over a banked planing deck (deck-hollow, 2026-11-10; `HOLLOW`'s note), opt-in: 'on' keeps the deck, and
+   * an upright rider's parts over it, dry below the surface line while the hollow behind the low rail's entry is open
+   * (the `?deckHollow=on` dev switch, to ride). By default as before: wet wherever the sampled surface is above them.
+   */
+  deckHollow?: 'on';
 }
 
 /**
@@ -272,6 +279,18 @@ export class BoardBody implements BoardContactBody {
   /** Substeps taken in the latest step, with water-entry refinement. */
   substepsTaken = 0;
 
+  /**
+   * The hollow over the deck at the latest substep (`deckHollow: 'on'`; `placeHollow`): whether one can stand, where
+   * along the board the low rail goes under (board frame z, m), the water's speed along the board, m/s, and each
+   * station's air path (its low rail's deck edge under the surface, its high rail's above).
+   */
+  hollowOpen = false;
+  private readonly hollow: boolean;
+  private hollowEntry = 0;
+  private hollowSpeed = 0;
+  private readonly hollowVent: Uint8Array;
+  /** The wetted patches' mean flow along the board, m/s (positive: the water meets the nose first). */
+  private alongFlow = 0;
   private readonly substeps: number;
   /** This step's length and the time into it the next substep starts, s: when its samples are taken (`setSampleTime`). */
   private stepSpan = 0;
@@ -387,6 +406,7 @@ export class BoardBody implements BoardContactBody {
     this.shape = shape;
     this.substeps = options.substeps ?? 4;
     this.plate = options.submerged !== 'old';
+    this.hollow = options.deckHollow === 'on';
     this.mass = shape.mass + payloads.reduce((sum, payload) => sum + payload.mass, 0);
     this.inverseMass = 1 / this.mass;
     const maxThickness = Math.max(...shape.patches.map((patch) => patch.thickness));
@@ -460,6 +480,7 @@ export class BoardBody implements BoardContactBody {
       }
       for (let d = 0; d < 3; d += 1) this.stationLocal[i * 3 + d] /= weight || 1;
     });
+    this.hollowVent = new Uint8Array(stationZs.length);
     this.stationHeave = new Float64Array(stationZs.length);
     this.stationArm = new Float64Array(stationZs.length * 3);
     this.entrained = new Float64Array(count);
@@ -917,6 +938,7 @@ export class BoardBody implements BoardContactBody {
     }
     const wettedLength = wetMax >= wetMin ? wetMax - wetMin + this.stationLength : this.stationLength;
     this.placePressure();
+    if (this.hollow) this.placeHollow();
     // With the rigid rider on it (lying, climbing on, standing) the board keeps the hull law the rider was calibrated on:
     // a rigid body perched on a deep board is no physical pair (it is top-heavy; a real one moves), and its climb back
     // on leaned on that law's damping. The plate is the free board's, and the ducking board's under the two-body dive.
@@ -967,7 +989,8 @@ export class BoardBody implements BoardContactBody {
       // (`plateDepth`, from the patches sampled above), never a buried rail or a deep tail of a board still in the surface.
       const share = this.plateShareNow;
       this.plateShare[k] = share;
-      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k], share);
+      const deckWet = this.hollowOpen ? this.hollowWetAt(this.alongBoard[k], sample.surfaceY - (patch.position.y - ny * patch.thickness), sample) : 1;
+      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k], share, deckWet);
       submerged += force.submerged * patch.area * patch.thickness;
       wetted += force.wettedArea;
       const b = force.buoyancy;
@@ -1325,10 +1348,12 @@ export class BoardBody implements BoardContactBody {
     let flowX = 0;
     let flowY = 0;
     let flowZ = 0;
+    let shares = 0;
     for (let k = 0; k < this.count; k += 1) {
       const sample = samples[k];
       const share = sample.wet && !sample.outsideDomain ? wettedShare(sample.surfaceY - point[k * 3 + 1]) : 0;
       if (!(share > 0)) continue;
+      shares += share;
       const rx = arm[k * 3];
       const ry = arm[k * 3 + 1];
       const rz = arm[k * 3 + 2];
@@ -1338,9 +1363,11 @@ export class BoardBody implements BoardContactBody {
     }
     this.pressureScale.fill(1);
     const speed = Math.hypot(flowX, flowY, flowZ);
+    this.alongFlow = 0;
     if (!(speed > 0)) return;
     // The board's long axis is the rotation's third column.
     const along = (flowX * r[2] + flowY * r[5] + flowZ * r[8]) / speed;
+    this.alongFlow = (along * speed) / shares;
     const noseFirst = along > 0;
     for (const strip of this.strips) {
       const n = strip.length;
@@ -1353,6 +1380,64 @@ export class BoardBody implements BoardContactBody {
       planingScales(this.stripShares, this.stationLength, this.stripBeams, along * along, this.stripScales);
       for (let i = 0; i < n; i += 1) this.pressureScale[strip[noseFirst ? n - 1 - i : i]] = this.stripScales[i];
     }
+  }
+
+  /**
+   * The hollow over the deck this substep (`HOLLOW`'s note), from the patches' samples. One can stand only under an
+   * upright rider (never lying, climbing on or duck-diving: those bodies and their board are in the water) on a board
+   * the right way up with water running along it. Walking the stations from the end the flow meets first:
+   * - each rail's deck edge is placed against the surface sampled at its own patches (`railDepth`);
+   * - the hollow opens where the lower one first goes under, between that station and the one ahead of it (the board's
+   *   end, if the first station is already under);
+   * - a station has its air path while its low rail is under and its high rail is out. Both under: no vent, wet.
+   */
+  private placeHollow(): void {
+    this.hollowOpen = false;
+    const { rider, stationPatches, stationLength, rotation } = this;
+    if (!rider?.attached || !rider.upright || !(rotation[4] > 0) || this.alongFlow === 0) return;
+    const noseFirst = this.alongFlow > 0;
+    const lead = noseFirst ? 1 : -1;
+    const n = stationPatches.length;
+    let entry = Number.NaN;
+    let before = 0;
+    for (let i = 0; i < n; i += 1) {
+      const s = noseFirst ? n - 1 - i : i;
+      const list = stationPatches[s];
+      const last = list.length - 1;
+      const left = railDepth(this.deckDepth(list[0]), this.deckDepth(list[Math.min(1, last)]));
+      const right = railDepth(this.deckDepth(list[last]), this.deckDepth(list[Math.max(0, last - 1)]));
+      const low = Math.max(left, right);
+      this.hollowVent[s] = low > 0 && Math.min(left, right) < 0 ? 1 : 0;
+      if (Number.isNaN(entry) && low > 0) {
+        const z = this.alongBoard[list[0]];
+        entry = i === 0 || !Number.isFinite(before) ? z + (lead * stationLength) / 2 : z + (lead * stationLength * low) / (low - before);
+      }
+      before = low;
+    }
+    if (Number.isNaN(entry)) return;
+    this.hollowEntry = entry;
+    this.hollowSpeed = Math.abs(this.alongFlow);
+    this.hollowOpen = true;
+  }
+
+  /** How far patch `k`'s deck lies under the surface sampled at the patch, m (−∞ out of the water). */
+  private deckDepth(k: number): number {
+    const sample = this.samples[k];
+    if (!sample.wet || sample.outsideDomain) return -Infinity;
+    return sample.surfaceY - (this.point[k * 3 + 1] - this.normal[k * 3 + 1] * this.thickness[k]);
+  }
+
+  /**
+   * The wet share (`hollowWetShare`) of what stands over the deck at `z` along the board (board frame, m), the deck
+   * there `depth` m under the surface of `sample`, taken at the thing itself: a deck patch, or an upright rider's part
+   * inside the planform. 1 (wet as the surface line says) with no hollow, at a station without an air path, and under
+   * a lip or in a tube, whose water covers it from above. Broken water is the plume's air or a roller lens's own flow.
+   */
+  hollowWetAt(z: number, depth: number, sample: WaterSample): number {
+    if (!this.hollowOpen || sample.covered || sample.waterFloorY !== undefined || sample.ceilingY !== undefined) return 1;
+    const station = Math.min(this.hollowVent.length - 1, Math.max(0, Math.floor((z + this.shape.length / 2) / this.stationLength)));
+    if (!this.hollowVent[station]) return 1;
+    return hollowWetShare((this.hollowEntry - z) * Math.sign(this.alongFlow), this.hollowSpeed, depth, Math.max(sample.voidFraction ?? 0, sample.lensShare ?? 0));
   }
 
   /**

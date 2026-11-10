@@ -233,6 +233,12 @@ export interface SurfZoneConfig {
    */
   legDrive?: 'on';
   /**
+   * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
+   * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
+   * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  deckHollow?: 'on';
+  /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
    * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
    */

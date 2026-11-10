@@ -1,0 +1,124 @@
+diff --git a/src/physics/AttachedRider.ts b/src/physics/AttachedRider.ts
+index a55b98c9..6f799ddf 100644
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -554,7 +554,7 @@ const TURN_PULL_LIMIT = 1.41;
+  * 0.63 after 1 s: on flat water the carry gives back the planing drag a wave's
+  * face would feed.
+  */
+-const CARVE_CARRY = 0.4;
++const CARVE_CARRY = process.env.CARRY !== undefined ? Number(process.env.CARRY) : 0.4; // SCRATCH: never commit
+ const PULL_FULL_SPEED = 5;
+ /**
+  * The rail change's lean-out pull (the movement-flow spec's cutback, a gameplay rule, not physics), under
+@@ -1245,6 +1245,8 @@ export class AttachedRider {
+    * touches down (the swept contact's `covered`). Only then does full manual crouch fold into the deep tuck.
+    */
+   covered = false;
++  // SCRATCH (compress-drag ledger): never commit
++  readonly dbg = { part: new Float64Array((RIDER_PARTS.length + 2) * 3), wet: new Float64Array(RIDER_PARTS.length + 2), y: new Float64Array(RIDER_PARTS.length + 2), assist: new Vector3(), carry: new Vector3(), leanOut: new Vector3(), water: new Vector3(), contact: new Vector3() };
+   readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0, legDrive: 0 };
+   /** Impulse the lip gave the body since the latest step began, N·s. */
+   readonly lastLipImpulse = new Vector3();
+@@ -2860,6 +2862,8 @@ export class AttachedRider {
+       if (share < 1) wet = share * wet + (1 - share) * submergedFraction(this.hollowY - p.y, radius);
+     }
+     // The curl's water is a falling jet, its pressure near the air's: it drags and does not float (the advisor, 2026-09-30).
++    // SCRATCH what-if (never commit): while the board planes, the legs stand in the hull's open hollow, dry.
++    if (process.env.DRYLEGS === '1' && this.planing && (RIDER_PARTS[slot] === 'leftLeg' || RIDER_PARTS[slot] === 'rightLeg')) return;
+     if (wet > 0) this.wetForce(slot, sample, wet, volume, dragArea, h, shelter, sample.waterFloorY === undefined);
+     // A part in the tube's air whose sphere reaches the curl's underside feels the lip: its share between the underside
+     // and the top, in the curl's water's own flow (the advisor's ruling 4), drag alone. Centre-only sampling would jump.
+@@ -2913,6 +2917,7 @@ export class AttachedRider {
+       stroke.speed = relative.length();
+       this.handWet[slot - RIDER_PARTS.length] = true;
+     }
++    { const D = this.dbg; D.part[slot * 3] += force.x * h; D.part[slot * 3 + 1] += force.y * h; D.part[slot * 3 + 2] += force.z * h; D.wet[slot] += wet * h; D.y[slot] = p.y - sample.surfaceY; }
+     this.waterForce.add(force);
+     const arm = this.scratch.subVectors(p, this.position);
+     this.waterMoment.add(cross(arm, force, this.scratch2));
+@@ -3174,6 +3179,7 @@ export class AttachedRider {
+     felt.weight = !this.upright ? Number.NaN
+       : Number.isNaN(felt.weight) ? felt.frontShare : felt.weight + (felt.frontShare - felt.weight) * (1 - Math.exp(-h / WEIGHT_TIME));
+     const mean = before.add(this.velocity).multiplyScalar(0.5);
++    { const D = this.dbg; D.assist.addScaledVector(this.assistForce, h); D.carry.addScaledVector(this.carryForce, h); D.leanOut.addScaledVector(this.leanOutForce, h); D.water.addScaledVector(this.waterForce, h); D.contact.add(contact); }
+     this.work.gravity += h * this.gravity.dot(mean);
+     this.work.water += h * this.waterForce.dot(mean);
+     this.work.assist += h * this.assistForce.dot(mean);
+diff --git a/src/physics/BoardBody.ts b/src/physics/BoardBody.ts
+index 0dbd5987..7fa59bd7 100644
+--- a/src/physics/BoardBody.ts
++++ b/src/physics/BoardBody.ts
+@@ -291,6 +291,8 @@ export class BoardBody implements BoardContactBody {
+   private readonly hollowVent: Uint8Array;
+   /** The wetted patches' mean flow along the board, m/s (positive: the water meets the nose first). */
+   private alongFlow = 0;
++  // SCRATCH (compress-drag ledger): never commit
++  readonly dbg = { foil: new Float64Array(64 * 3), finAttack: new Float64Array(8), finImm: new Float64Array(8), finDrag: new Float64Array(8), finLift: new Float64Array(8), finProfile: new Float64Array(8), deckFriction: new Vector3(), deckPressure: new Vector3(), deckFace: new Uint8Array(512), wetMin: 0, wetMax: 0, wetLen: 0, xMin: 0, xMax: 0, deckWet: 0, cop: 0, copW: 0, copX: 0, normalImpulse: 0 };
+   private readonly substeps: number;
+   /** This step's length and the time into it the next substep starts, s: when its samples are taken (`setSampleTime`). */
+   private stepSpan = 0;
+@@ -406,7 +408,7 @@ export class BoardBody implements BoardContactBody {
+     this.shape = shape;
+     this.substeps = options.substeps ?? 4;
+     this.plate = options.submerged !== 'old';
+-    this.hollow = options.deckHollow === 'on';
++    this.hollow = options.deckHollow === 'on' || process.env.HOLLOW === 'on'; // SCRATCH env
+     this.mass = shape.mass + payloads.reduce((sum, payload) => sum + payload.mass, 0);
+     this.inverseMass = 1 / this.mass;
+     const maxThickness = Math.max(...shape.patches.map((patch) => patch.thickness));
+@@ -766,6 +768,7 @@ export class BoardBody implements BoardContactBody {
+           v.z + w.x * ry - w.y * rx - sample.flowZ,
+         ).applyQuaternion(inverse);
+         const out = finForce(foil.fin, relative, immersed, this.finOut);
++        { const D = this.dbg; D.finAttack[k] = out.attack; D.finImm[k] = immersed; D.finDrag[k] += out.drag * h; D.finLift[k] += out.lift * h; D.finProfile[k] += 0.5 * WATER.density * foil.fin.area * immersed * (relative.x * relative.x + relative.z * relative.z) * 0.012 * h; }
+         const force = this.foilScratch.set(out.force.x, out.force.y, out.force.z).applyQuaternion(q);
+         fx = force.x;
+         fy = force.y;
+@@ -806,6 +809,7 @@ export class BoardBody implements BoardContactBody {
+       this.foilNormal[k * 3 + 2] = nz;
+       this.foilDamping[k] = damping * h;
+       const base = foil.kind === 'fin' ? 0 : 6;
++      this.dbg.foil[k * 3] += fx * h; this.dbg.foil[k * 3 + 1] += fy * h; this.dbg.foil[k * 3 + 2] += fz * h;
+       ft[base] += fx;
+       ft[base + 1] += fy;
+       ft[base + 2] += fz;
+@@ -860,6 +864,7 @@ export class BoardBody implements BoardContactBody {
+       const change = dvx * nx + dvy * ny + dvz * nz + dwx * cx + dwy * cy + dwz * cz;
+       const mean = avx * nx + avy * ny + avz * nz + awx * cx + awy * cy + awz * cz;
+       const impulse = -damping * change;
++      this.dbg.foil[k * 3] += impulse * nx; this.dbg.foil[k * 3 + 1] += impulse * ny; this.dbg.foil[k * 3 + 2] += impulse * nz;
+       const fin = this.foils[k].kind === 'fin';
+       if (fin) this.work.fins += impulse * mean;
+       else this.work.rails += impulse * mean;
+@@ -937,6 +942,7 @@ export class BoardBody implements BoardContactBody {
+       }
+     }
+     const wettedLength = wetMax >= wetMin ? wetMax - wetMin + this.stationLength : this.stationLength;
++    this.dbg.wetMin = wetMin; this.dbg.wetMax = wetMax; this.dbg.wetLen = wettedLength;
+     this.placePressure();
+     if (this.hollow) this.placeHollow();
+     // With the rigid rider on it (lying, climbing on, standing) the board keeps the hull law the rider was calibrated on:
+@@ -1011,6 +1017,13 @@ export class BoardBody implements BoardContactBody {
+       totals.pty += rz * p.x - rx * p.z;
+       totals.ptz += rx * p.y - ry * p.x;
+       const f = force.friction;
++      { const D = this.dbg; const tot = force.wettedArea + force.deckWettedArea; const ds = tot > 0 ? force.deckWettedArea / tot : 0;
++        D.deckFriction.x += f.x * ds * h; D.deckFriction.y += f.y * ds * h; D.deckFriction.z += f.z * ds * h; D.deckWet = (k === 0 ? 0 : D.deckWet) + force.deckWettedArea;
++        const ns = relative.x * nx + relative.y * ny + relative.z * nz; D.deckFace[k] = ns < 0 ? 1 : 0;
++        if (ns < 0) { D.deckPressure.x += p.x * h; D.deckPressure.y += p.y * h; D.deckPressure.z += p.z * h; }
++        const pn = -(p.x * nx + p.y * ny + p.z * nz); if (k === 0) { D.cop = 0; D.copW = 0; D.copX = 0; D.xMin = Infinity; D.xMax = -Infinity; }
++        D.cop += pn * this.alongBoard[k]; D.copX += pn * this.local[k * 3]; D.copW += pn; D.normalImpulse += pn * h;
++        if (force.wettedArea > 0) { D.xMin = Math.min(D.xMin, this.local[k * 3]); D.xMax = Math.max(D.xMax, this.local[k * 3]); } }
+       totals.fx += f.x;
+       totals.fy += f.y;
+       totals.fz += f.z;
+@@ -1287,6 +1300,8 @@ export class BoardBody implements BoardContactBody {
+         this.forces.addedMass.y += push * uy;
+         this.forces.addedMass.z += push * uz;
+       }
++      if (this.dbg.deckFace[k]) { this.dbg.deckPressure.x += pressure * nx; this.dbg.deckPressure.y += pressure * ny; this.dbg.deckPressure.z += pressure * nz; }
++      this.dbg.normalImpulse += pressure;
+       this.forces.pressure.x += pressure * nx;
+       this.forces.pressure.y += pressure * ny;
+       this.forces.pressure.z += pressure * nz;

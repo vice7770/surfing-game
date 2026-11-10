@@ -1549,6 +1549,10 @@ export class AttachedRider {
   private readonly carryForce = new Vector3();
   /** The rail change's lean-out pull on the body, N (world): LEAN_OUT_PULL. */
   private readonly leanOutForce = new Vector3();
+  /** The board whose hollow the part in hand stands over (`overHollow`), where along it, m, and the deck plane's height under the part, m. */
+  private hollowBoard?: BoardBody;
+  private hollowZ = 0;
+  private hollowY = 0;
   /** The leg drive; only with `legDrive: 'on'`. */
   private readonly legDrive: boolean;
   /** The leg drive on the body, N (world); the board takes the opposite at the back foot, `driveFoot` from its centre (world). */
@@ -2719,7 +2723,10 @@ export class AttachedRider {
       const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2 && (!this.climbing || Math.abs(this.parts[i * 3]) <= this.halfWidth(z));
       const deckY = onDeck ? board.toWorld(this.localScratch.set(this.parts[i * 3], deckHeight(this.shape, z), z), this.scratch2).y : -Infinity;
       const inWake = !this.upright && z < -this.shape.length / 2;
+      this.hollowBoard = undefined;
+      if (this.upright && board.hollowOpen) this.overHollow(board);
       this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, inWake ? shelter * WAKE_SHELTER : shelter, deckY);
+      this.hollowBoard = undefined;
     }
     this.stroking = false;
     this.handLoad[0] = 0;
@@ -2820,6 +2827,22 @@ export class AttachedRider {
     this.hold = Math.max(-1, Math.min(1, -(this.lineError + HOLD_RATE_TIME * this.lineRate) / HOLD_ANGLE));
   }
 
+  /**
+   * The hollow over a banked planing deck (deck-hollow, 2026-11-10; `HOLLOW`'s note; only on a board with
+   * `deckHollow: 'on'`): whether the standing rider's part at `partWorld` is over the deck, inside its planform (a part
+   * outboard of the rail is in the water), and if so the deck plane's height straight under it, for `applyWater`.
+   */
+  private overHollow(board: BoardBody): void {
+    const p = this.partWorld;
+    const local = board.toLocal(p, this.localScratch);
+    if (Math.abs(local.z) >= this.shape.length / 2 || Math.abs(local.x) > this.halfWidth(local.z)) return;
+    this.hollowZ = local.z;
+    const up = this.scratch.set(0, 1, 0).applyQuaternion(board.orientation);
+    const deck = board.toWorld(local.setY(deckHeight(this.shape, local.z)), this.scratch2);
+    this.hollowY = deck.y - ((p.x - deck.x) * up.x + (p.z - deck.z) * up.z) / up.y;
+    this.hollowBoard = board;
+  }
+
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */
   private applyWater(slot: number, water: SurfWater, radius: number, volume: number, dragArea: number, h: number, shelter: number, deckY = -Infinity): void {
     const p = this.partWorld;
@@ -2829,7 +2852,13 @@ export class AttachedRider {
     // Wet between the surface and what lies under the part: the deck it rests on, or the curl's underside where the
     // part is in the curl's water (the swept barrel, the Padang Padang spec, Part B, PR 4).
     const bottom = Math.min(sample.surfaceY, Math.max(deckY, sample.waterFloorY ?? -Infinity));
-    const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(bottom) ? submergedFraction(bottom - p.y, radius) : 0);
+    let wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(bottom) ? submergedFraction(bottom - p.y, radius) : 0);
+    // Over a planing board's open hollow the part is dry from the surface line down to the deck plane, by the hollow's
+    // open share: no water there to float it or drag it (`overHollow`).
+    if (this.hollowBoard && wet > 0 && sample.surfaceY > this.hollowY) {
+      const share = this.hollowBoard.hollowWetAt(this.hollowZ, sample.surfaceY - this.hollowY, sample);
+      if (share < 1) wet = share * wet + (1 - share) * submergedFraction(this.hollowY - p.y, radius);
+    }
     // The curl's water is a falling jet, its pressure near the air's: it drags and does not float (the advisor, 2026-09-30).
     if (wet > 0) this.wetForce(slot, sample, wet, volume, dragArea, h, shelter, sample.waterFloorY === undefined);
     // A part in the tube's air whose sphere reaches the curl's underside feels the lip: its share between the underside

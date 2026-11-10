@@ -144,6 +144,8 @@ export interface RideSessionOptions {
   agile?: 'on';
   /** The leg drive (leg-drive, 2026-11-10; `AttachedRiderOptions.legDrive`): 'on' (the `?legDrive=on` dev switch); by default as before. */
   legDrive?: 'on';
+  /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
+  deckHollow?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
   shape?: BoardShape;
 }
@@ -220,7 +222,7 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
-    this.board = new BoardBody({ ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}) });
+    this.board = new BoardBody({ ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}), ...(options.deckHollow ? { deckHollow: options.deckHollow } : {}) });
     this.duckOld = options.duckBody === 'old';
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
