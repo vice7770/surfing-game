@@ -1,0 +1,14 @@
+# How the tables were made (2026-11-10). From the repo's root; the probe is copied into src/dev only to run and removed after.
+cp docs/research/turn-body-2026-11-10/turnbody.test.ts.txt src/dev/zz-turnbody.test.ts
+O=/tmp/tb-out; mkdir -p $O
+run(){ out=$1; shift; env "$@" OUT=$O/$out npx vitest run src/dev/zz-turnbody.test.ts; }
+for W in flat canyon; do
+  run trim-$W.json     PLAN=trim     WATER=$W SPEEDS=8,11
+  run carve-$W.json    PLAN=carve    WATER=$W SPEEDS=8,11            # Compress + full stick
+  run stand-$W.json    PLAN=carve    WATER=$W SPEEDS=8,11 STAND=1    # full stick only
+  run cut1-$W.json     PLAN=cutback  WATER=$W SPEEDS=8.5 CARVE=1.0   # Compress carve 1 s, then Snap + full opposite stick 1.5 s
+  run standcut1-$W.json PLAN=standcut WATER=$W SPEEDS=8.5 CARVE=1.0  # standing carve 1 s, then Snap
+done
+rm src/dev/zz-turnbody.test.ts
+for f in $O/*.json; do python3 docs/research/turn-body-2026-11-10/tab.py.txt $f 0.25; done > results-tables.txt
+for f in $O/*.json; do python3 docs/research/turn-body-2026-11-10/onset.py.txt $f; done > results-onset.txt

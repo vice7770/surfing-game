@@ -1,0 +1,20 @@
+# python3 tab.py <json> [every=0.25] : one table per run. Angles in degrees; "in" = toward the inside of the turn in progress
+# (the steer's side; in trim and release the last steer's side). Lead = the part's yaw against the board, less its yaw in trim (first 0.4 s), toward the turn.
+import json, sys
+runs = json.load(open(sys.argv[1])); every = float(sys.argv[2]) if len(sys.argv) > 2 else 0.25
+def g(f, path):
+    for k in path.split('.'): f = f[k]
+    return f
+for run in runs:
+    fr = run['frames']; d0 = run['dir'] or 1
+    base = {k: sum(f['d'][k] for f in fr[:24]) / 24 for k in ('headYaw', 'chestYaw', 'hipYaw')}
+    print(f"\n### {run['name']} ({run['stance']}, {run['surfer']})" + (f" FELL at {run['fell']:.2f} s ({run['cause']})" if run['fell'] else ''))
+    print('| t | phase | m/s | turned | yaw/s | roll in | bank in | swing in | P pelvis | P trunk in | P trunk nose | P body in | D knee F/R | D hip F/R | D hips | D trunk in | D trunk nose | D trunk any | D body in | head/chest/hips lead | D lead hand water/in | D trail hand water/in | P lead/trail hand water |')
+    print('|' + ' --- |' * 23)
+    s = d0; step = max(1, round(every * 60))
+    for i, f in enumerate(fr):
+        if f['steer']: s = 1 if f['steer'] > 0 else -1
+        if i % step and not (i > 0 and fr[i-1]['phase'] != f['phase']): continue
+        d = f['d']; p = f['p']
+        lead = '/'.join(f"{s * (d[k] - base[k]):.0f}" for k in ('headYaw', 'chestYaw', 'hipYaw'))
+        print(f"| {f['t']:.2f} | {f['phase']} | {f['v']:.1f} | {f['turned']:.0f} | {f['yaw']:.0f} | {s*f['roll']:.0f} | {s*f['bank']:.0f} | {s*f['swing']:.0f} | {p['pelvisDeck']:.2f} | {s*p['trunk']['left']:.0f} | {p['trunk']['nose']:.0f} | {s*p['body']['left']:.0f} | {d['kneeF']:.0f}/{d['kneeR']:.0f} | {d['hipF']:.0f}/{d['hipR']:.0f} | {d['hipsDeck']:.2f} | {s*d['trunk']['left']:.0f} | {d['trunk']['nose']:.0f} | {d['trunk']['any']:.0f} | {s*d['body']['left']:.0f} | {lead} | {d['lead']['water']:.2f}/{s*d['lead']['left']:.2f} | {d['trail']['water']:.2f}/{s*d['trail']['left']:.2f} | {p['lead']['water']:.2f}/{p['trail']['water']:.2f} |")
