@@ -1,0 +1,98 @@
+// The rail-change trace (2026-11-10; not part of the suite). Copy to src/physics/zz-railchange.test.ts to run (never commit it there).
+// Physics only (no drawn rig): scripted carve -> Snap + opposite stick on flat water (WATER=flat) or FaceWater matched to Canyon B (WATER=canyon),
+// every 1/60 s step logged with the rider's private state (read through `as any`; nothing is changed). Writes every frame to OUT (JSON).
+//   PLAN=cutback (Compress carve first) | standcut (stick-only carve first)   SPEEDS=6,8   SIDES=toe,heel   CARVE=1.0   SNAP=1.5   OPTS='{"legDrive":"on"}' (the rider's options; `snapCross` needs snap-cross.patch.txt applied)
+//   All signed columns are in the NEW turn's frame: + = the way the Snap's stick asks (so the old way is negative).
+import { writeFileSync } from 'node:fs';
+import { Matrix4, Quaternion, Vector3 } from 'three';
+import { it } from 'vitest';
+import { AttachedRider } from '../physics/AttachedRider';
+import { BoardBody } from '../physics/BoardBody';
+import { PlaneWater } from '../physics/PlaneWater';
+import { createWaterSample, type SurfWater } from '../physics/SurfWater';
+import { FaceWater } from '../physics/testing/FaceWater';
+
+const STEP = 1 / 60; const DEG = 180 / Math.PI;
+const OUT = process.env.OUT ?? '/dev/null';
+const list = (k: string, d: string) => (process.env[k] ?? d).split(',');
+const PLAN = process.env.PLAN ?? 'cutback'; const WATER = process.env.WATER ?? 'flat';
+const SPEEDS = list('SPEEDS', '6,8').map(Number); const SIDES = list('SIDES', 'toe,heel');
+const CARVE = Number(process.env.CARVE ?? 1.0); const SNAP = Number(process.env.SNAP ?? 1.5); const SNAPSTICK = Number(process.env.SNAPSTICK ?? 1);
+const TAIL = Number(process.env.TAIL ?? 1.5); // how long everything is let go after Snap, s
+const NOTWIST = process.env.NOTWIST === '1'; // ablation: the pad's rotation held at 0, so Snap winds no twist
+const OPTS = JSON.parse(process.env.OPTS ?? '{}');
+const r = (x: number, d = 1) => (Number.isFinite(x) ? +x.toFixed(d) : null);
+const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
+it('probe', () => {
+  const runs: unknown[] = [];
+  for (const speed of SPEEDS) for (const side of SIDES) {
+    const water: SurfWater & { advance?: (dt: number) => void } = WATER === 'canyon' ? new FaceWater({ depth: 2.6, height: 1.4, slope: 16, speed: 5.7 }) : new PlaneWater();
+    const sample = createWaterSample();
+    const face = water instanceof FaceWater ? water : undefined;
+    const z0 = face ? face.crestZ() + 0.75 * face.front : 0; const head0 = face ? -45 / DEG : 0;
+    const s0 = water.sampleAt(0, 10, z0, sample);
+    const normal = new Vector3(s0.normalX, s0.normalY, s0.normalZ).normalize();
+    const level = new Vector3(Math.sin(head0), 0, Math.cos(head0));
+    const forward = level.addScaledVector(normal, -level.dot(normal)).normalize();
+    const left = new Vector3().crossVectors(normal, forward).normalize();
+    const board = new BoardBody();
+    board.place(new Vector3(0, s0.surfaceY, z0).addScaledVector(normal, board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)),
+      forward.clone().multiplyScalar(speed).add(new Vector3(s0.flowX, s0.flowY, s0.flowZ)));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', stance: 'regular', ...OPTS });
+    board.attach(rider);
+    const R = rider as any; const B = board as any;
+    const dir = side === 'toe' ? -1 : 1; // Regular's toes are at -x
+    const s = -dir; // the new way
+    const frames: unknown[] = []; let fell: number | null = null; let cause = '';
+    let phase = 'trim'; let t0 = 0; let turned = 0; let last = head0;
+    const total = 0.5 + CARVE + SNAP + TAIL;
+    const mg = rider.mass * 9.81;
+    for (let n = 0; n < Math.round(total / STEP); n += 1) {
+      const t = n * STEP;
+      if (phase === 'trim' && t >= 0.5) { phase = 'carve'; t0 = t; }
+      else if (phase === 'carve' && t - t0 >= CARVE) { phase = 'snap'; t0 = t; }
+      else if (phase === 'snap' && t - t0 >= SNAP) { phase = 'release'; t0 = t; }
+      const crouched = phase === 'carve' && PLAN !== 'standcut';
+      rider.steer = phase === 'carve' ? dir : phase === 'snap' ? -dir * SNAPSTICK : 0;
+      rider.compress = crouched ? 1 : 0; rider.crouch = 0; rider.snap = phase === 'snap' ? 1 : 0; rider.trim = 0;
+      if (NOTWIST) (rider as any).rotate = 0;
+      water.advance?.(STEP);
+      board.step(STEP, water);
+      const time = t + STEP;
+      const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+      const heading = Math.atan2(f.x, f.z); turned += wrap(heading - last) * DEG; last = heading;
+      const fh = new Vector3(f.x, 0, f.z).normalize(); const lh = new Vector3().crossVectors(new Vector3(0, 1, 0), fh).normalize();
+      const bl = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
+      water.sampleAt(board.position.x, board.position.y, board.position.z, sample);
+      const rel = new Vector3(board.velocity.x - sample.flowX, 0, board.velocity.z - sample.flowZ);
+      const v = rel.length();
+      // slip: how far the board's path points off its heading toward the new side (+: the board slides toward the new side, so the water pushes it the old way)
+      const slip = s * Math.atan2(rel.dot(lh), rel.dot(fh)) * DEG;
+      const ft = B.foilTotals as Float64Array;
+      const fins = board.forces.fins; const rails = board.forces.rails;
+      const cf = rider.contact.force; // mean force on the rider, world, N
+      const arm = (R.arm as Vector3);
+      const riderYaw = -(arm.z * cf.x - arm.x * cf.z); // the yaw moment of the rider's contact on the board (the opposite force at the rider's arm), N·m about world up
+      const pelvisLocal = board.toLocal(rider.position, new Vector3());
+      frames.push({
+        t: r(time, 3), ts: phase === 'snap' ? r(time - (t0 + 0), 3) : null, phase, v: r(v, 2), turned: r(s * turned),
+        yaw: r(s * yawRate * DEG), yawAcc: 0, roll: r(-s * Math.asin(Math.max(-1, Math.min(1, bl.y))) * DEG),
+        pitch: r(Math.asin(Math.max(-1, Math.min(1, f.y))) * DEG),
+        ref: r(s * R.bankReference * DEG), bank: r(s * rider.bank.angle * DEG), bankRate: r(s * rider.bank.rate * DEG),
+        ankleRest: r(s * R.ankleRest * DEG), ankleTq: r(s * R.ankleTorque), swing: r(s * rider.swing.angle * DEG), swingTq: r(s * R.swingTorque),
+        twist: r(s * R.twist.angle * DEG), twistTq: r(s * R.twistTorque), // the board takes -twistTq
+        balZ: r(R.balance.z, 3), copZ: r(rider.contact.centreOfPressure.z, 3), comZ: r(pelvisLocal.z, 3), comX: r(s * pelvisLocal.x, 3), front: r(rider.contact.frontShare, 2),
+        load: r(R.legLoad / mg, 2), legRest: r(rider.leg.rest, 3), legExt: r(rider.leg.extension, 3), margin: r(rider.balanceMargin, 2), limit: R.limit, feasible: R.feasible,
+        slip: r(slip), finLat: r(s * (fins.x * lh.x + fins.z * lh.z)), finDrag: r(-(fins.x * fh.x + fins.z * fh.z)), railLat: r(s * (rails.x * lh.x + rails.z * lh.z)),
+        finYaw: r(s * ft[4]), railYaw: r(s * ft[10]), riderYaw: r(s * riderYaw), riderLat: r(-s * (cf.x * lh.x + cf.z * lh.z)), // the rider's sideways push on the board, + toward the new side
+        armZ: r(arm.dot(fh), 3), planing: R.planing, postErr: r(R.postureError, 3), drive: r(s * (R.driveForce.x * lh.x + R.driveForce.z * lh.z)),
+        wet: r(board.wettedArea, 3), sub: r(board.submergedVolume * 1000, 1),
+      });
+      if (!rider.attached) { fell = time; cause = String(rider.separation); break; }
+      if (phase === 'release' && t - t0 >= TAIL) break;
+    }
+    runs.push({ name: `${PLAN} ${WATER} ${speed} ${side}`, plan: PLAN, water: WATER, speed, side, dir, fell, cause, frames });
+  }
+  writeFileSync(OUT, JSON.stringify(runs));
+});

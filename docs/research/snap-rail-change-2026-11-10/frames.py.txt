@@ -1,0 +1,11 @@
+# python3 frames.py <json> "<run name>" [every=3] [span=0.75] : the frame table round Snap (markdown), all signs in the NEW turn's frame
+import json, sys
+cols = 'ts,v,yaw,roll,ref,bank,ankleRest,twistTq,balZ,front,load,legRest,slip,finLat,finYaw,railYaw,riderYaw,drive,margin,limit'.split(',')
+run = [r for r in json.load(open(sys.argv[1])) if r['name'] == sys.argv[2]][0]
+every = int(sys.argv[3]) if len(sys.argv) > 3 else 3; span = float(sys.argv[4]) if len(sys.argv) > 4 else 0.75
+fr = run['frames']; i0 = next(i for i, f in enumerate(fr) if f['phase'] == 'snap')
+print('| ' + ' | '.join(cols) + ' |'); print('|' + ' --- |' * len(cols))
+for i, f in enumerate(fr[i0 - 1:], i0 - 1):
+    if i < i0: f = dict(f, ts=0.0)
+    if f['ts'] is None or f['ts'] > span: break
+    if (i - i0) % every == 0 or i <= i0 + 1: print('| ' + ' | '.join(str(f[c]) for c in cols) + ' |')

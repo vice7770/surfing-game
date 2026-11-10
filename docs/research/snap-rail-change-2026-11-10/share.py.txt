@@ -1,0 +1,19 @@
+# python3 share.py <tag>... : the old-way turn after Snap by setting, over the runs whose body crosses in the base (so the same runs in every row)
+import json, statistics as st, sys
+def rows(tag):
+    out = {}
+    for P in ['cutback', 'standcut']:
+        for W in ['flat', 'canyon']:
+            for run in json.load(open(f'{tag}-{P}-{W}.json')):
+                fr = run['frames']; snap = [f for f in fr if f['phase'] == 'snap']; t0 = snap[0]['t'] - 1/60; h0 = snap[0]['turned']
+                pre = [f for f in fr if f['phase'] == 'carve'][-1]
+                at = lambda T: [f for f in snap if f['t'] - t0 <= T + 1e-6][-1]['turned'] - h0
+                out[run['name']] = dict(before=-pre['yaw'], first=-snap[0]['yaw'], peak=-min(f['yaw'] for f in snap if f['t'] - t0 <= 0.6), old=next((f['t'] - t0 for f in snap if f['yaw'] > 0), 1.5),
+                    over=h0 - min(f['turned'] for f in snap), cross=next((f['t'] - t0 for f in snap if f['bank'] > 0), 1.5), roll=max(f['roll'] for f in snap), h10=at(1.0), h15=at(1.5), crossed=any(f['bank'] > 2 for f in snap))
+    return out
+base = rows('base'); keep = [k for k in base if base[k]['crossed']]
+print(f'{len(keep)} of {len(base)} runs (the body crosses with the switches off)')
+print('| setting | yaw before Snap | yaw in Snap\'s first step | peak old-way yaw | first turns the new way s | heading run on | body over s | roll new rail | heading at 1.0 s | at 1.5 s |'); print('|' + ' --- |' * 10)
+for tag in sys.argv[1:]:
+    r = rows(tag); m = lambda k: st.mean(r[x][k] for x in keep)
+    print(f"| {tag} | {m('before'):.0f} | {m('first'):.0f} | {m('peak'):.0f} | {m('old'):.2f} | {m('over'):.0f} | {m('cross'):.2f} | {m('roll'):.0f} | {m('h10'):.0f} | {m('h15'):.0f} |")
