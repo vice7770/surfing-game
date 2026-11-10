@@ -239,6 +239,12 @@ export interface SurfZoneConfig {
    */
   carveFlex?: 'on';
   /**
+   * 'drive': under Snap with the stick pushed, the riders' legs load as the Snap begins and extend as the board comes
+   * round, in place of holding Snap's full depth (snap-legs, 2026-11-10; `RideSessionOptions.snapLegs`). Every spot.
+   * The `?snapLegs=drive` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  snapLegs?: 'drive';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

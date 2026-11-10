@@ -966,6 +966,35 @@ export const EXTENSION_TALL = 0.04;
  * and the crouch stay the player's deeper stances: the deeper of them and the flex is the one the legs take.
  */
 const CARVE_FLEX = 0.4;
+/**
+ * Snap's driving legs (snap-legs, 2026-11-10; `snapLegs: 'drive'`, opt-in; docs/research/snap-legs-2026-11-10): held,
+ * Snap kept the legs at its full depth, a tight ball over the tail for as long as the button was down (the turning-body
+ * study's cutback: the pelvis 0.47–0.55 m over the deck all the way round, drawn knees 51–100°), where a surfer comes
+ * into the turn low and drives the legs out through it (the stance map: the front knee "extending through the snap",
+ * de Sousa 2022; the turning-body study's cutback: knees 100–130° / 110–140°; Knox's cutback: low in the bottom turn, then pushing on
+ * the back foot with the body held more upright). So under Snap with the stick
+ * pushed, the legs load as before, and then extend as the board comes round under the wound shoulders: the leg's rest
+ * rises from Snap's depth toward SNAP_DRIVE_DEPTH of CROUCH_DEPTH by how far the board's heading has turned the
+ * stick's way since the furthest it went the other way (a Snap taken on the other rail first turns the old way for
+ * 0.25–0.5 s: the load), over SNAP_DRIVE_TURN, and by how far the stick is pushed (half a stick, half the move; no
+ * stick, Snap's held load as before). Once driven the legs stay out for that turn; the stick thrown the other way, or
+ * Snap taken again, loads them anew.
+ *
+ * It is the leg's own rest length, the one the crouch, Compress and Snap move, so all it does to the board goes through
+ * the leg's spring at the feet: the board is pressed while the legs push the body up. They rise no faster than the
+ * stance's spring can catch the body (`projectionCatch`, as Compress let go).
+ *
+ * - SNAP_DRIVE_TURN is TWIST_RANGE (45°): the shoulders lead the board by as much as the spine turns, and the legs are
+ *   out when the board has come round to where the shoulders pointed. Measured against 90° (the move half as big by the
+ *   time Snap is let go, nothing better), the body's lean come over to the new rail in its place (earlier, 0.16 s sooner
+ *   to fall), a 0.4 s clock from the rail change (as the heading, but a bare timer), and the twist unwinding (it never
+ *   unwinds on flat water or across a face: no move).
+ * - SNAP_DRIVE_DEPTH is CARVE_FLEX (0.4: 0.12 m, the pumping crouch's depth, the deep end of the surf stance's
+ *   half-squat): the pelvis 0.68–0.70 m over the deck. Standing all the way up (0) drew the knees 3–7° straighter
+ *   for a full-height body in a 2 m turn.
+ */
+const SNAP_DRIVE_DEPTH = CARVE_FLEX;
+const SNAP_DRIVE_TURN = TWIST_RANGE;
 const EXTENSION_SETTLE = 0.5;
 const TALL_FROM = 0.05;
 const TALL_START = 0.02;
@@ -1075,6 +1104,12 @@ export interface AttachedRiderOptions {
    * `?carveFlex=on` dev switch, to ride). By default the stick alone never bends the legs, as before.
    */
   carveFlex?: 'on';
+  /**
+   * Snap's driving legs (snap-legs, 2026-11-10; SNAP_DRIVE_DEPTH), opt-in: 'drive' lets the legs of a rider turning
+   * under Snap extend as the board comes round, pressing it through the feet, in place of holding Snap's full depth for
+   * as long as it is held (the `?snapLegs=drive` dev switch, to ride). By default Snap holds its depth, as before.
+   */
+  snapLegs?: 'drive';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1517,6 +1552,15 @@ export class AttachedRider {
   private readonly carveFlexes: boolean;
   /** The leg was last brought down by the carve's flex: the load easing, it rises at the projection's catch. */
   private fromFlex = false;
+  /** Snap's driving legs (SNAP_DRIVE_DEPTH); only with `snapLegs: 'drive'`. */
+  private readonly snapDrives: boolean;
+  /** The side Snap's turn goes while it is held (+1 the board's left; 0 before the stick says), and the board's level heading the latest step, rad. */
+  private snapDriveSide = 0;
+  private snapDriveYaw = 0;
+  /** How far the board's heading has turned that side since, rad; the furthest it went the other way first; and how far round it has come from there, of SNAP_DRIVE_TURN (0–1, never back). */
+  private snapDriveTurn = 0;
+  private snapDriveLow = 0;
+  private snapDriven = 0;
 
   private legFresh = true;
   private legDamping = 0;
@@ -1612,6 +1656,7 @@ export class AttachedRider {
     this.agile = options.agile === 'on';
     this.legDrive = options.legDrive === 'on';
     this.carveFlexes = options.carveFlex === 'on';
+    this.snapDrives = options.snapLegs === 'drive';
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
@@ -1902,6 +1947,8 @@ export class AttachedRider {
     this.tallFrom = false;
     this.fromCompress = false;
     this.fromFlex = false;
+    this.snapDriveSide = 0;
+    this.snapDriven = 0;
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
@@ -2664,6 +2711,39 @@ export class AttachedRider {
     return CARVE_FLEX * Math.max(0, Math.min(1, stick, over / (1 / Math.cos(RAIL_RANGE) - 1)));
   }
 
+  /**
+   * Snap's load on the legs now, of CROUCH_DEPTH, with `snapLegs: 'drive'` (SNAP_DRIVE_DEPTH): Snap's own depth until
+   * the board turns the stick's way, then let out toward the drive's depth by how far the board has come round from
+   * the furthest it went the other way (of SNAP_DRIVE_TURN, never back), as far as the stick is pushed.
+   */
+  private snapLoad(snap: number): number {
+    if (!(snap > 0)) {
+      this.snapDriveSide = 0;
+      this.snapDriven = 0;
+      return this.snapDepth;
+    }
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    const yaw = Math.atan2(forward.x, forward.z);
+    const stick = Math.abs(this.steer) > STEER_DEADBAND ? Math.min(1, Math.abs(this.steer)) : 0;
+    const side = stick > 0 ? Math.sign(this.steer) : this.snapDriveSide;
+    if (side !== this.snapDriveSide) {
+      // Snap taken with the stick, or the stick thrown the other way under it: a new turn, loaded again.
+      this.snapDriveSide = side;
+      this.snapDriveTurn = 0;
+      this.snapDriveLow = 0;
+      this.snapDriven = 0;
+    } else if (side !== 0) {
+      // The board's left (+) turns from +z toward +x, as in `snapAim`.
+      const by = yaw - this.snapDriveYaw;
+      this.snapDriveTurn += side * Math.atan2(Math.sin(by), Math.cos(by));
+      this.snapDriveLow = Math.min(this.snapDriveLow, this.snapDriveTurn);
+      this.snapDriven = Math.max(this.snapDriven, Math.min(1, (this.snapDriveTurn - this.snapDriveLow) / SNAP_DRIVE_TURN));
+    }
+    this.snapDriveYaw = yaw;
+    const drive = Math.min(this.snapDepth, SNAP_DRIVE_DEPTH);
+    return this.snapDepth - stick * this.snapDriven * (this.snapDepth - drive);
+  }
+
   /** Standing: the leg's state and load before the board's solve. */
   private prepareLeg(h: number, board: BoardBody, water: SurfWater): void {
     const stance = board.velocityAt(this.baseWorld, this.localScratch);
@@ -2690,7 +2770,9 @@ export class AttachedRider {
     const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
     const compress = Math.max(0, Math.min(1, this.compressAsked));
     const snap = this.snapping;
-    const held = snap > 0 ? Math.max(crouch, compress, snap * this.snapDepth) : Math.max(crouch, compress);
+    // Snap's driving legs (`snapLegs: 'drive'`): its load let out as the board comes round (SNAP_DRIVE_DEPTH).
+    const snapLoad = this.snapDrives ? this.snapLoad(snap) : this.snapDepth;
+    const held = snap > 0 ? Math.max(crouch, compress, snap * snapLoad) : Math.max(crouch, compress);
     // The carve's flex (CARVE_FLEX): steering, the legs yield to the turn's load, as far as the stick asks at most.
     const flex = this.carveFlexes ? this.carveFlex() : 0;
     const flexing = flex > held;

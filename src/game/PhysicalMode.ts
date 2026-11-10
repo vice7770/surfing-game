@@ -497,6 +497,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...legDriveSwitch(),
     // `?carveFlex=on`: on a standing, stick-only carve the riders' legs flex with the turn's load, low at the bottom and taller as it ends (carve-flex), opt-in, to ride.
     ...carveFlexSwitch(),
+    // `?snapLegs=drive`: under Snap the riders' legs load and then extend as the board comes round, in place of holding the full depth (snap-legs), opt-in, to ride.
+    ...snapLegsSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -826,6 +828,15 @@ export function legDriveSwitch(search?: string): { legDrive?: 'on' } {
  */
 export function carveFlexSwitch(search?: string): { carveFlex?: 'on' } {
   return devParam('carveFlex', search)?.trim().toLowerCase() === 'on' ? { carveFlex: 'on' } : {};
+}
+
+/**
+ * The `?snapLegs=drive` dev switch (`SurfZoneConfig.snapLegs`, snap-legs 2026-11-10, the owner on a cutback: the
+ * surfer's movement "is very off"): opt-in, every spot's rider under Snap with the stick pushed loads the legs as the
+ * Snap begins and extends them as the board comes round, in place of holding Snap's full depth for as long as it is held.
+ */
+export function snapLegsSwitch(search?: string): { snapLegs?: 'drive' } {
+  return devParam('snapLegs', search)?.trim().toLowerCase() === 'drive' ? { snapLegs: 'drive' } : {};
 }
 
 /**
