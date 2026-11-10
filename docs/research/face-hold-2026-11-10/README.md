@@ -143,3 +143,46 @@ Cap the lean by rail room alone; neutral lean from the water's acceleration unde
 the board; neutral lean from the board's own acceleration (reactive); keeping the
 feet's catch on a stick reversal; a lean that may only lead the turn's pull; a palm
 brace as the fix for a standing rider.
+
+## Addendum: three follow-up runs (same day, main's physics, no levers)
+
+Run after the report above, to test its closing claim that the fall is "the physics
+of this water" (a 5 m/s rider on a 6-7 m/s wave). The claim explains why the climb
+stalls. It does not explain the fall:
+
+1. **Speed is not the cure.** `START=face SPEEDS=8,10,12` (the rider low on the face
+   at 8-12 m/s through the water; the up-turn ends at 8.7-11.5 m/s), stick 0.5 and
+   1, up-turn to 65° and 80°, `release` and `steer`: **47 of 48 fall**, the same way
+   (`bank -70 ... flight`, or `balance` stalled on the crest), 1.3-2.5 s after the
+   stick leaves the face side. With full reverse stick held for over a second the
+   heading still ends 76-108° off the fall line in most runs.
+2. **A mild climb falls too.** Stick 0.3 or 1 until the heading is 52° or 58° off
+   the fall line (7-13° past the 45° start), at the table's speeds: `release` and
+   `steer` fall **32 of 32**; Compress falls 11 of 16. Untouched riders from the
+   same start stand 3 of 4. So on this water any steer toward the face ends in a
+   fall toward the face, whatever its size.
+3. **Trace of the mildest case** (H 2 m, overtaking 0.7 m/s, stick 0.3 for 0.5 s,
+   then full reverse): in the up-turn the lean reference goes to -15°, the body to
+   -10°, the board's roll against the water from 8° to 31°, the ankle's rest to its
+   14° stop, and the feet's centre of pressure to the edge of their support
+   (`tip`). On the reversal the ankle's rest drops to 0, the board unrolls
+   (32° → 7° in 0.5 s) and yaws down the face at up to 108°/s (68° → 27° off the
+   fall line), while the body gets only to +2° before the swing reaches its 69°
+   stop. The board has turned down the face under a body still on the face side:
+   bank -24° → -63°, load 0, `lost board` 0.85 s after the reversal.
+4. **The "cap 8°" row re-run.** Its riders stay on because the stick toward the
+   face now turns them *down* the face (heading 28° off the fall line, 8.6-9.9 m/s
+   ahead of the wave): a body held within 8° of the face's normal leans shoreward
+   of the vertical, and the board carves that way. It is not a slower climb.
+
+What this changes: the next attempt should not be judged on reaching 65-80°, and
+should not assume more speed or a smaller turn avoids the fall. The failing step is
+always the same one: the board comes back round (the face's own pull and the fins
+turn it down the fall line) before the body has crossed to the shore side, and
+neither the feet (at the edge of their support, with no tighter carve to stand the
+body up) nor the upper body's swing can bring it across in time.
+
+Open: the owner does turn on the game's faces without falling every time, so this
+analytic wave (crest at √(g(d+H)) = 5.6-6.7 m/s, face 4.9-8.2 m long, the same along
+the crest) may be harsher than the game's. The table has not been checked against
+the game's own waves.
