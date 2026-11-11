@@ -471,7 +471,9 @@ export class CrashCurve {
       // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray. Under the
       // tracker (ruling 3, §1) its rate is the tracker's estimate (`trackAnchor`), not W's change in one step, which carried
       // the read's noise into the wall water: 0.12 m a step of jitter is a 7.2 m/s change in that rate.
-      p.wallSpeed = p.anchorRate ?? celerity;
+      // Ruling 6 (`TubeFace.stream`): the wave's own advance instead. The drawn crest's rate ran at 7.5–8.8 m/s before the
+      // throw on a wave doing 5, and changed by up to 0.8 m/s in a step; the streamline wall water needs the wave's speed.
+      p.wallSpeed = this.face?.stream ? celerity : p.anchorRate ?? celerity;
       p.anchorRayX = this.faceRayX[i];
       p.anchorRayZ = this.faceRayZ[i];
       if (!continuity) continue;

@@ -516,6 +516,13 @@ export interface SurfZoneConfig {
   tubeSeam?: 'blend';
   seamTau?: readonly [number, number];
   seamBand?: number;
+  /**
+   * Ruling 6's streamline wall water, opt-in (the water-physics advisor's advisor-ruling-6.md §4; `TubeFace.stream`,
+   * docs/research/wall-body-2026-11-11/README.md): 'stream' (`?wallBody=stream`, read with `?tubeSeam=blend` alone) gives
+   * the case's water the flow of a streamline along its surface at the wave's own speed. Absent: off, exactly as before.
+   * Online rooms pin it absent.
+   */
+  wallBody?: 'stream';
 }
 
 /**

@@ -133,6 +133,15 @@ export interface TubeFace {
    * absent: off, the build exactly as before.
    */
   seam?: TubeSeam;
+  /**
+   * Ruling 6's streamline wall water (the water-physics advisor's advisor-ruling-6.md §4,
+   * docs/research/wall-body-2026-11-11), with `seam`: the wall water's flow is the surface's streamline in the wave's
+   * frame, its speed from the height under the crest (`streamWallFlow`), and the wave speed it reads is the wave's own
+   * advance (not the drawn crest's rate). It replaces the two noisy inputs ruling 6 measured: the case surface's speed
+   * differenced between frames, and the anchor's rate. Opt-in (`?wallBody=stream` with `?tubeSeam=blend`); absent: off,
+   * the build exactly as before.
+   */
+  stream?: true;
 }
 
 /**
@@ -180,6 +189,8 @@ export interface TubeFaceSwitches {
   /** With `tubeSeam`: the τ course's start and end, s (`TUBE_SEAM.tau` absent), and the height band, m (`TUBE_SEAM.band`). */
   seamTau?: readonly [number, number];
   seamBand?: number;
+  /** Ruling 6's streamline wall water (`TubeFace.stream`), opt-in and with `tubeSeam` alone: 'stream' turns it on. */
+  wallBody?: 'stream';
 }
 
 /**
@@ -213,6 +224,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     drop: !piece && switches.tubeDrop === 'on',
     formClock: distance && (switches.formClock === 'c1' || (FORM_CLOCK_DEFAULT && switches.formClock !== 'old')),
     ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band } } : {}),
+    ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { stream: true as const } : {}),
   };
 }
 

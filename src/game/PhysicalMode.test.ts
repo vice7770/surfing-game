@@ -330,6 +330,26 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // Ruling 6 (wall-body, 2026-11-11): the streamline wall water's switch; read with the seam blend alone; online rooms pin it.
+  it('takes `?wallBody=stream` with `?tubeSeam=blend` alone, at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?tubeSeam=blend&wallBody=stream')).toEqual({ tubeSeam: 'blend', wallBody: 'stream' });
+    expect(tubeFaceSwitches('?wallBody=Stream&tubeSeam=blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend', wallBody: 'stream' });
+    for (const search of ['?wallBody=stream', '?wallBody', '?wallBody=on&tubeSeam=blend', '?wallBody=old&tubeSeam=blend']) expect('wallBody' in tubeFaceSwitches(search), search).toBe(false);
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).wallBody).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeSeam=blend&wallBody=stream' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeSeam: 'blend', wallBody: 'stream' });
+      expect(surfZoneConfigFor(training, 5, false).wallBody).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeSeam: undefined, seamTau: undefined, seamBand: undefined, wallBody: undefined });
+      expect(room.tubeSeam).toBeUndefined();
+      expect(room.wallBody).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
   it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
     expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });

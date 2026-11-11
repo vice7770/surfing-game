@@ -185,6 +185,12 @@ export interface PhysicalSurfWaterOptions {
    */
   sweptSeam?: boolean;
   /**
+   * With `sweptSeam`: ruling 6's streamline wall water (`TubeFace.stream`; the advisor's advisor-ruling-6.md §4,
+   * docs/research/wall-body-2026-11-11). The wall water's target is `streamWallFlow`'s (the surface a streamline in the
+   * wave's frame, its speed from the height under the crest) in place of the case surface's own differenced speed.
+   */
+  sweptStream?: boolean;
+  /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
@@ -490,6 +496,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.inertia ? { sweptInertia: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.buoy ? { sweptBuoy: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam ? { sweptSeam: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam && simulation.tubeFace.stream ? { sweptStream: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
@@ -927,6 +934,11 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       seam = Math.min(1, h.seam);
       if (!(seam > 0)) return;
     }
+    // Ruling 6 (`sweptStream`): the streamline flow on the surface the rider touches, in place of the kinematic target.
+    if (this.options.sweptStream) {
+      streamWallFlow(out, out.surfaceY, h, seam);
+      return;
+    }
     if (!this.options.sweptBlend) {
       wallWaterFlow(out, y, h, seam);
       return;
@@ -1063,6 +1075,43 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
  *   (10–19 m/s, pool 1.5 m) were at normals 60–80° out of the plane, the climb's bound swinging the flow from −C to +C.
  */
 export const WALL_WATER = { steepest: 0.2, fade: [0.3, 0.6], blend: 0.25, facing: [0.5, 0.8] } as const;
+
+/**
+ * Ruling 6's streamline wall water (`sweptStream`, `?wallBody=stream`; the advisor's advisor-ruling-6.md §4), `out`
+ * holding the solver's flow. In the frame moving with the wave (c along the ray: `wallSpeed`, there the wave's own
+ * advance) the forming face is nearly steady, so its surface is a streamline and the speed along it follows the height
+ * under the crest: q² = q_c² + 2 g (y_top − y_surface), with q_c = (1 − B) c at the crest (B: `wallB`, the crest water's
+ * share of the wave's speed). Back in the lab frame the flow is c r̂ + q t̂, t̂ = (−n_y, n_a) in the ray–vertical plane
+ * (back over the crest, up the face, forward and down along a roof): along the ray c − q n_y, up q n_a. No profile point
+ * is differenced between frames. The whole is weighed by the slices' weight times `share` (the seam's); along the crest
+ * the solver's is kept. It has no fade with depth: a point a few decimetres under the surface takes the flow of the
+ * surface over it (*measured*: `wallWaterFlow`'s 0.3–0.6 m fade, applied to this weight, put the jolts back as boards
+ * sank through it, felt p99 0.55 → 2.71 m/s; docs/research/wall-body-2026-11-11/README.md).
+ */
+export function streamWallFlow(
+  out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, surfaceY: number,
+  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>,
+  share = 1,
+): void {
+  const rx = -wall.tangentZ;
+  const rz = wall.tangentX;
+  let na = wall.normalX * rx + wall.normalZ * rz;
+  let ny = wall.normalY;
+  const length = Math.sqrt(na * na + ny * ny);
+  if (!(length > 1e-9)) return;
+  na /= length;
+  ny /= length;
+  const c = wall.wallSpeed;
+  const crest = (1 - wall.wallB) * c;
+  const q = Math.sqrt(crest * crest + 2 * GRAVITY * Math.max(0, wall.wallTop - surfaceY));
+  const w = Math.min(1, Math.max(0, wall.wallWeight)) * share;
+  if (!(w > 0)) return;
+  const along = out.flowX * rx + out.flowZ * rz;
+  const change = w * (c - q * ny - along);
+  out.flowX += change * rx;
+  out.flowZ += change * rz;
+  out.flowY += w * (q * na - out.flowY);
+}
 
 export function wallWaterFlow(
   out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, y: number,
