@@ -72,6 +72,14 @@ The owner (2026-11-11, after the stills): the tube sits between the wave before 
 - The sheet's stills hold at the pool's first waves (31 s). For a steady sea, let it hold at a later tube. The sheet's `status.txt` now lists the drawn band's runs.
 - Known flaws: two fronts on one crest give two lenses in a column; no spray at the lens's toe.
 
+## 6. The owner's reference for the pool wave (the newest ask, 2026-11-11 evening)
+
+The owner filmed the ride URL and sent a reference clip (Surf Abu Dhabi, https://youtu.be/JNbgaMo9PZo?t=13, 10 s). "The wave is too fast to catch as the tunnel reaches the surfer quite fast. But I want to focus on the wave itself. It needs to match this video more."
+
+- The brief, with what both films show and the ranked gaps: `docs/research/pool-look-reference-2026-11-11/README.md`.
+- In short: the game's wave shows only as a short blue box where the tube is, on a flat pale sea, with flat beige whitewater. The reference has a long dark 2 m wall ahead of the tube, a thin lip, a tall white pile right behind the tube, and a break that moves at the surfer's pace.
+- Nothing built yet (stopped at 97 to 98 % of the weekly usage). Start with the brief's step 1 (numbers from both), then the advisor on the wall and the peel's pace.
+
 ## Rules that still hold
 
 - The owner rides. No rider sessions, catch reports or autopilot rides by agents; no browser pane, no dev server by agents. Headless stills and solver probes are fine.
