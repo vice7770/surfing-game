@@ -1,0 +1,66 @@
+# Handoff, 2026-11-11: the Barrel's look, its speed next to the tube, and the wave body
+
+Written at 81 % of the weekly Fable usage (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
+
+## Where the owner stands (2026-11-11)
+
+The owner rode the Wave Pool Barrel with every switch and reported:
+
+1. **`wallBody=stream` made it rideable.** The ride URL is `?tubeSeam=blend&wallBody=stream` on the pool's Barrel.
+2. **It is slow.** On the M4 they went from Ultra to Medium, and next to the tube the frame rate still dropped a lot. They ask whether the sea is on the CPU again.
+3. **It is ugly.** The falling lip is thick from the start. In a pool it should start thin with foam, then get thicker, still with foam.
+4. **"Is there a way that the tube and the rest of the wave merge seamlessly?"**
+
+So the order of work is now: speed next to the tube, the lip's look, the tube's joins with the wave. The wave-body thread (ruling 8) waits behind these.
+
+## 1. Speed next to the tube
+
+- **Found, not yet confirmed on the M4:** a standing rider runs 32 substeps a step against 4 lying (`STANDING_SUBSTEPS`, `src/physics/BoardBody.ts`). Each substep samples the water under every hull patch, the fins and the body. In the tube's water each sample goes through the case's contact (`sweptContact.query`).
+- Measured headless on the M1 (probe run, rideable build): the rider's step is 0.44 ms lying, 4.7 ms standing (median), 9.7 ms at the 90th percentile in the case's water. The M4's worker was at 7.5 ms a step with a lying rider (the 11-06 survey). A step has 16.7 ms.
+- Medium only changes the drawing. Still slow on Medium fits the worker (CPU) running over its 16.7 ms, so the sea falls behind real time. This is a reading, not a measurement.
+- **Built in this PR: `?perfLog=on`.** A row a second of riding: frames a second, the worst frame, sea seconds per second, GPU or CPU, the worker's time and its dearest stages, the rider's phase. F9 saves it as a text file and copies it. The badge sits top-left.
+- **The ask to the owner:** ride with `&perfLog=on`, press F9 after a slow stretch next to the tube, send the file. `npm run survey:barrel` now also has a `rideable` row.
+- **Then:** if the log shows the worker's `board` or `contact` stage, make the standing step near the tube cheaper behind a switch (sample the water less often within a step and carry it by its slope; or a cheaper contact query). A bit-identical speed-up of the 32 substeps was not found. If the log shows the drawing, look at the tube's shader up close.
+
+## 2. The lip's look (ruling 9, filed)
+
+`docs/research/lip-look-2026-11-11/README.md`. The owner is right about the start of the fall and the foam, not about the total water. Ranked:
+
+1. **`?lipLook=fray`, render only (next build):** whiten by the sheet's thickness (white under about 4 cm, clean over 15 cm), a toothed tip (fixed cut-outs in the last 15 % of the underside), drops from the finger ends through `SprayCloud` (at most 400 live points), a crest veil through `feather()`, and `SHEET.formed` eased from 0.035 to about 0.15 h0. Bars are in the ruling.
+2. Ride `?poolTubeCase=pool` (the pool's own case, thinner lip).
+3. A Bo 4000 Basilisk case on the M4 (about a day).
+4. `?lipCap=off-underside`, provisional.
+
+## 3. The tube's joins with the wave (ruling 10)
+
+- Headless stills of the rideable build show the joins (take them again with `node scripts/browser/headless-shot.mjs sheet --url=http://127.0.0.1:<port>/ --port=<port> --out=<dir> --spot="pool&waves=barrel&swell=medium&tubeSeam=blend&wallBody=stream" --shots=curl-close:rich:midday,curl-front:rich:midday,curl-ride:rich:midday,curl-inside:rich:midday,curl-channel:rich:midday,curl-behind:rich:midday`; the pool's shots are named `curl-*`):
+  1. the tube is a saturated mid blue, the face and sea a pale hazy cyan;
+  2. the lip is a white rounded roll with a flat lid;
+  3. hard ends along the crest (a vertical edge at the shoulder, a flat grey-green foam patch at the broken end);
+  4. a dark seam line from behind;
+  5. staircase stripes on the wall and a jagged underside seen from inside;
+  6. thin dark dashed lines on the sea near the joins;
+  7. the broken water behind the peel is a flat matt patch.
+- The water-physics advisor was asked for ruling 10 on these (causes in the shaders and the loft, ranked fixes, bars from stills). Filed: `docs/research/tube-merge-2026-11-11/README.md`. The body colour already agrees across the join; the causes are navy outline lines (a missing normal guard), a wrongly sky-lit lip, ripple stripes on the wall, a lip that starts at full size, a roof that stops at touchdown, and missing surface detail. Build ranks 1–3 behind `?tubeLook=merge` first (render only), then `?lipLook=fray`.
+
+## 4. The wave body (ruling 8, merged with #247)
+
+`docs/research/crest-line-2026-11-11/ruling-8/README.md`. Order: (1) trace the anchor, log only, with carried places every 5 m of crest; (2) the anchor takes its target while the share is zero; (3) `top`'s 0.3 H throw offset; (4) carry the rise as a probe run. Probe: `PROBE=1 H=1.05 CASE=pool SWITCHES=tubeSeam=blend,wallBody=stream[,crestLine=top][,formClock=c1] LOG=<file> npx vitest run src/wave/probes/ruling7.probe.test.ts`.
+
+## Rules that still hold
+
+- The owner rides. No rider sessions, catch reports or autopilot rides by agents; no browser pane, no dev server by agents. Headless stills and solver probes are fine.
+- Every change behind a URL switch; the default build stays identical; online rooms pinned to the default.
+- Physics with named causes; no hidden motors; no time low-pass of the flow; the throw stays at the throw depth.
+- Consult the water-physics advisor before any wave, lip, tube or foam shape, and log it in `docs/research/water-physics/consult-log.md`.
+- Merge by PR when the tests pass (`npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`, both `tsc` configs). One agent at a time.
+- Disk is short: reuse the one shared worktree; ask before removing others.
+
+## The owner's open calls
+
+- Make `tubeSeam=blend` + `wallBody=stream` the default.
+- Ruling 9: tip cut-outs up to 0.10 m, riding the pool's own case, the Bo 4000 run, `lipCap`.
+- Ruling 8's four calls and ruling 7's six.
+- Which join bothers most.
+- Whether extra usage is on (the card says no).
+- The Basilisk velocity run: when its data lands in `docs/research/pool-tube-flow/data`, commit and use it.

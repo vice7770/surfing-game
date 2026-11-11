@@ -45,6 +45,8 @@ run() {
 
 # The default, then whether the spray or the resolution is the limit.
 run default "" "High (baseline),Particles: low,Render scale 0.5"
+# The build the owner rides (2026-11-11): the seam blend and the streamline wall water, at High and at Ultra's resolution.
+run rideable "?tubeSeam=blend&wallBody=stream" "High (baseline),Render scale 1.25"
 # The owner's own M4 cases.
 run pool "?poolTubeCase=pool" "High (baseline)"
 # The Barrel before the tube work: the fitted piece exactly as before.
