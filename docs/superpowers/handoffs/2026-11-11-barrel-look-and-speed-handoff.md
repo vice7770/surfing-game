@@ -67,6 +67,7 @@ The owner (2026-11-11, after the stills): the tube sits between the wave before 
   - Not measured: Froude caps, 600 s, the 1.8 m wave on the shelf, peel speed, bars D and E.
 - **Next:** the owner's calls on the floor (below). Then the roller's slot overflow (712 on the default floor, 1653 on the inside floor over 300 s; two fronts on one crest make two lenses), ruling 10 rank 5 (one foam make-up across the join; the roof whitening over its last 0.2 s), a drawn collapsing tube after touchdown, the lens felt by the rider.
 - The owner's ride URL: `?tubeSeam=blend&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolFloor=inside` on the pool's Barrel.
+- **No stills of the inside floor yet.** After the merge `scripts/browser/headless-shot.mjs` hung twice without logging anything (sheet: "no upload water-sheet.png in 900000 ms"; page mode: no output). Leftover headless Chrome processes were found and stopped; try again first. Until then the inside floor is checked by tests and solver probes only, not in a browser.
 - Probe: `PROBE=1 [FLOOR=inside] [FROUDE=depths|height] SETTLE=27 SECONDS=30 LOG=<file> npx vitest run src/wave/probes/afterTube.probe.test.ts`.
 - The sheet's stills hold at the pool's first waves (31 s). For a steady sea, let it hold at a later tube. The sheet's `status.txt` now lists the drawn band's runs.
 - Known flaws: two fronts on one crest give two lenses in a column; no spray at the lens's toe.
