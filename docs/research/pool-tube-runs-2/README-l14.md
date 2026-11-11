@@ -11,4 +11,4 @@
 | `pool_knee_big` | 2.4 -> 7.2 | 0.018 -> 0.031 | 0.008 -> 0.020 | 1.81 -> 1.66 |
 | `pool_kneeface_big` | 3.9 -> 21.1 | 0.001 -> 0.024 | 0.009 -> 0.087 | 1.61 -> 1.54 |
 
-Both lips are now resolved (7.2 and 21.1 cells). `decision.md`'s caveat (the knee's cavity would more likely grow than shrink with a finer lip) held: the knee's tube area grew. The ledge's decision numbers (`decision.md`) use level 13 for the knee; re-applying the rule on these L14 knee profiles is not done.
+Both lips are now resolved (7.2 and 21.1 cells). `decision.md`'s caveat (the knee's cavity would more likely grow than shrink with a finer lip) held: the knee's tube area grew. The ledge's decision numbers (`decision.md`) use level 13 for the knee; the rule was re-applied on these L14 knee profiles on 2026-11-11 (`decision.md`, last section): the big pair passes with more margin (2.8× the knee-face, 1.8× the knee).

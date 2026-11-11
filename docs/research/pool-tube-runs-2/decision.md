@@ -38,3 +38,33 @@ level-13 batch (branch `claude/pool-tube-runs-2`, 7e327af3, `data/`).
   but at 2.3× the margin is large.
 - The landing measure (the cavity's length at touchdown) is a proxy from the profiles, not a tracked jet tip. At 0.54 H
   the small ledge is within its uncertainty of the bar.
+
+## The rule on the level-14 knees (2026-11-11)
+
+The first caveat above is now closed. The knee cases' level-14 reruns (`README-l14.md`, lips 7.2 and 21.1 cells) went
+through the same rule, with the method rewritten as `ledge_rule.py` beside this file. The script reproduces the table
+above to within 0.01 m, so the two tables are comparable. The ledge rows are level 13 as before (their lips were already
+19 and 25 cells).
+
+| Case | Level | H at vertical | Usable p50 (best) | Ledge's ratio to it | Landing | Lip cells |
+|---|---|---|---|---|---|---|
+| `pool_ledge_big` | 13 | 2.09 m | 0.56 m (0.85) | — | 1.37 m, 0.66 H | 19.4 |
+| `pool_kneeface_big` | 13 | 1.76 m | 0.24 m (0.30) | 2.3× | 1.00 m, 0.57 H | 3.9 |
+| `pool_kneeface_big` | 14 | 1.75 m | 0.20 m (0.32) | 2.8× | 0.77 m, 0.44 H | 21.1 |
+| `pool_knee_big` | 13 | 2.12 m | 0.38 m (0.59) | 1.5× | 0.68 m, 0.32 H | 2.4 |
+| `pool_knee_big` | 14 | 2.11 m | 0.31 m (0.55) | 1.8× | 0.27 m, 0.13 H | 7.2 |
+
+- **The big pair's pass stands, with more margin.** With the knee's lip resolved, the ledge holds 2.8× the knee-face's
+  usable clearance (2.3× at level 13) and 1.8× the plain knee's (1.5×). The bar is 1.3×.
+- **The caveat's guess was wrong in the measure that counts.** The knee's tube area grew at level 14 (`README-l14.md`),
+  but its usable clearance, the height a rider could fit in over a 0.3 m width, shrank (0.24 → 0.20 m and 0.38 → 0.31 m).
+  The finer lip is thinner and lands closer to the face (0.57 → 0.44 H and 0.32 → 0.13 H), so the extra area is a low,
+  short pocket.
+- **Nothing changes for the small pair.** It has no level-14 run. Its miss was the ledge's own landing (0.54 H against
+  0.6 H), which a knee rerun cannot move.
+- **What this does not settle.** The rule compares simulated profiles. In the game the ledge floor (`?poolFloor=ledge`,
+  PR #210) still loses the plunge (jets on 5–48 % of the line). That is the solver's sea on the ledge, not these
+  profiles, and it is the open question for the advisor.
+
+Run it: `python3 docs/research/pool-tube-runs-2/ledge_rule.py <case>…`, where each `<case>` is the path of a case's
+files without `_library.json` / `_plunge.json` (the level-13 batch's are on the branch `claude/pool-tube-runs-2`).
