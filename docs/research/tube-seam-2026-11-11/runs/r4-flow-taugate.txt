@@ -1,0 +1,154 @@
+# prone riders through the forming tube: pool straight Barrel, H 1.05 m at the feed, cases pool, switches {}
+tubeFace {"anchor":true,"union":true,"lag":true,"clockRate":1.25,"thrownEnds":true,"continuity":true,"distance":true,"contour":true,"wallFlow":true,"contact":true,"cap":true,"merge":true,"guard":false,"track":false,"inertia":true,"retire":true,"buoy":false,"drop":false,"formClock":false}
+4 waves of riders after 50 s; measured 44.2 s; CPU 1/60 s; 223 s of wall time; take-off (84.4, -195.5), s 39.9; first throw there at 50.70 s; game start 18.0 m out
+
+## The clock (every front point, every step)
+before the throw: rate p50 1.124, p95 1.500, p99 1.500, max 1.500 (n 25382); on a rate bound 84.11 % of steps (0.5×: 40.04 %, 1.5×: 44.06 %) [bar: ≤ 1 %]
+on a bound by the clock's reading: τ to -1.5 s: 90.68 % of 2778; τ -1.5 to -1 s: 86.11 % of 7353; τ -1 to -0.5 s: 82.18 % of 7628; τ -0.5 to -0.25 s: 82.58 % of 3811; τ -0.25 to 0 s: 80.82 % of 3812
+|Δτ̇| a step, before the throw: p50 0.0000, p95 1.0000, p99 1.0000, max 1.0000 (n 25109) [bar: p99 ≤ 0.02]
+|Δτ̇| a step, every step (the throw and after it too): p50 0.0000, p95 0.7326, p99 1.0000, max 1.0000 (n 95164)
+the wall water's rate (tauRate), its change a step: p50 0.0000, p95 0.7330, p99 1.0000, max 1.2500 (n 94867); against the step the clock then took: p50 0.0000, p95 0.7365, p99 1.0000, max 1.2500 (n 94867)
+formation bar 7: each point's first clock less its case's τ_e: p5 0.008, p50 0.025, p95 2.868, p99 7.689, max 8.127 (n 292) s; within 0.1 s on 90.07 % of 292
+the contour throw: the crest's own distance to its contour as its clock crosses 0: p5 -0.82, p50 -0.06, p95 0.37 m, within 1 m on 95.63 % of 252; thrown before the solver broke it 60.71 %
+throws by reef column (n seaward of the reef line, less the take-off's 0.16 m): s 30: 0.16 (n 23); s 45: 2.08 (n 68); s 60: 4.83 (n 62); s 75: 5.80 (n 47); s 90: 5.61 (n 44); s 105: 4.72 (n 8)
+the surf meter over the measured time: {"typical":1.5969484428863712,"sets":1.6209055655322597,"waves":4}
+
+## The felt water at the board (attached riders, its change a step, m/s)
+every step: p50 0.010, p95 0.046, p99 0.521, max 4.162 (n 24209)
+in the case's water: p50 0.033, p95 0.856, p99 1.826, max 2.652 (n 561) [bar: p99 ≤ 0.2]
+
+## Passive prone: fell 7 of 32 [bar: ≤ 3 of 32] (lost board 7); in the case's water as they fell 6
+  wave 0 s 40 3 m out: held
+  wave 0 s 40 12 m out: held
+  wave 0 s 55 0 m out: fell at 7.52 s (lost board; -0.0 m seaward of the take-off's line; in the case's water)
+  wave 0 s 55 6 m out: held
+  wave 0 s 55 12 m out: held
+  wave 0 s 55 18 m out: held
+  wave 0 s 70 3 m out: held
+  wave 0 s 70 12 m out: held
+  wave 1 s 40 3 m out: fell at 5.05 s (lost board; 1.9 m seaward of the take-off's line; in the case's water)
+  wave 1 s 40 12 m out: held
+  wave 1 s 55 0 m out: fell at 7.55 s (lost board; 0.4 m seaward of the take-off's line; in the case's water)
+  wave 1 s 55 6 m out: held
+  wave 1 s 55 12 m out: held
+  wave 1 s 55 18 m out: held
+  wave 1 s 70 3 m out: fell at 0.22 s (lost board; 1.7 m seaward of the take-off's line)
+  wave 1 s 70 12 m out: held
+  wave 2 s 40 3 m out: fell at 5.20 s (lost board; 1.5 m seaward of the take-off's line; in the case's water)
+  wave 2 s 40 12 m out: held
+  wave 2 s 55 0 m out: fell at 7.68 s (lost board; 0.3 m seaward of the take-off's line; in the case's water)
+  wave 2 s 55 6 m out: held
+  wave 2 s 55 12 m out: held
+  wave 2 s 55 18 m out: held
+  wave 2 s 70 3 m out: held
+  wave 2 s 70 12 m out: held
+  wave 3 s 40 3 m out: held
+  wave 3 s 40 12 m out: held
+  wave 3 s 55 0 m out: fell at 7.50 s (lost board; 0.8 m seaward of the take-off's line; in the case's water)
+  wave 3 s 55 6 m out: held
+  wave 3 s 55 12 m out: held
+  wave 3 s 55 18 m out: held
+  wave 3 s 70 3 m out: held
+  wave 3 s 70 12 m out: held
+
+## Scripted rides: 24; popped up 22; stood 4; failed pop-ups 18 of 22 [bar: ≤ 2 of 16] (balance 6, lost board 12); fell after standing 4 (balance 4); fell paddling, before any pop-up 0 (none); never popped up and held 2
+  wave 0 18.0 m out steer 0: cue 3.65 s, up from 3.65 s; fell at 4.55 s (balance, landing); carried -9.2 m past the take-off
+  wave 0 18.0 m out steer -0.5: cue 3.65 s, up from 3.65 s; fell at 4.55 s (balance, landing); carried -9.2 m past the take-off
+  wave 0 15.0 m out steer 0: cue 3.73 s, up from 3.73 s, stood 4.93 s; fell at 6.22 s (balance, standing); carried -3.9 m past the take-off
+  wave 0 15.0 m out steer -0.5: cue 3.73 s, up from 3.73 s, stood 4.93 s; fell at 5.20 s (balance, standing); carried -5.3 m past the take-off
+  wave 0 12.0 m out steer 0: cue 3.97 s, up from 3.97 s; fell at 4.57 s (lost board, push); carried -5.0 m past the take-off
+  wave 0 12.0 m out steer -0.5: cue 3.97 s, up from 3.97 s; fell at 4.57 s (lost board, push); carried -5.0 m past the take-off
+  wave 1 18.0 m out steer 0: cue 3.62 s, up from 3.62 s; fell at 4.57 s (balance, landing); carried -8.8 m past the take-off
+  wave 1 18.0 m out steer -0.5: cue 3.62 s, up from 3.62 s; fell at 4.57 s (balance, landing); carried -8.8 m past the take-off
+  wave 1 15.0 m out steer 0: cue 3.67 s, up from 3.67 s; fell at 4.33 s (lost board, push, in the case's water); carried -7.6 m past the take-off
+  wave 1 15.0 m out steer -0.5: cue 3.67 s, up from 3.67 s; fell at 4.33 s (lost board, push, in the case's water); carried -7.6 m past the take-off
+  wave 1 12.0 m out steer 0: cue 3.85 s, up from 3.85 s; fell at 4.57 s (lost board, push); carried -4.7 m past the take-off
+  wave 1 12.0 m out steer -0.5: cue 3.85 s, up from 3.85 s; fell at 4.57 s (lost board, push); carried -4.7 m past the take-off
+  wave 2 18.0 m out steer 0: no cue; on the board to the end; carried 0.9 m past the take-off
+  wave 2 18.0 m out steer -0.5: no cue; on the board to the end; carried 0.9 m past the take-off
+  wave 2 15.0 m out steer 0: cue 3.80 s, up from 3.80 s; fell at 4.35 s (lost board, push, in the case's water); carried -8.3 m past the take-off
+  wave 2 15.0 m out steer -0.5: cue 3.80 s, up from 3.80 s; fell at 4.35 s (lost board, push, in the case's water); carried -8.3 m past the take-off
+  wave 2 12.0 m out steer 0: cue 4.07 s, up from 4.07 s; fell at 4.55 s (lost board, push, in the case's water); carried -5.3 m past the take-off
+  wave 2 12.0 m out steer -0.5: cue 4.07 s, up from 4.07 s; fell at 4.55 s (lost board, push, in the case's water); carried -5.3 m past the take-off
+  wave 3 18.0 m out steer 0: cue 4.23 s, up from 4.23 s; fell at 5.22 s (balance, landing); carried -7.8 m past the take-off
+  wave 3 18.0 m out steer -0.5: cue 4.23 s, up from 4.23 s; fell at 5.20 s (balance, landing); carried -7.8 m past the take-off
+  wave 3 15.0 m out steer 0: cue 4.23 s, up from 4.23 s, stood 5.43 s; fell at 6.17 s (balance, standing); carried -4.6 m past the take-off
+  wave 3 15.0 m out steer -0.5: cue 4.23 s, up from 4.23 s, stood 5.43 s; fell at 5.75 s (balance, standing); carried -5.3 m past the take-off
+  wave 3 12.0 m out steer 0: cue 4.30 s, up from 4.30 s; fell at 5.02 s (lost board, push); carried -4.1 m past the take-off
+  wave 3 12.0 m out steer -0.5: cue 4.30 s, up from 4.30 s; fell at 5.02 s (lost board, push); carried -4.1 m past the take-off
+
+## Attribution (MODE flow, TAU_ON -0.5, TAU_FULL 0, ARC 0)
+attached steps 24265; by answering source: S 21288, W 2977 (S solver, W case wall, C case surface not wall, L curl)
+jumps > 0.2 m/s a step: 546 (2.25 % of steps), sum 414.7 m/s; in the case (hc > 0.02) 139
+class | n | share n | share sum | jump p50/p90/max | tau p10/p50/p90 | hc p10/p50/p90 | arc p10/p50/p90 | ahead of crest pt p10/p50/p90 | stage
+b wall: crest speed @hc0 | 197 | 36.08 % | 26.15 % | 0.39/0.95/3.37 | -0.12/0.26/1.24 | 0.00/0.00/0.00 | 0.20/0.43/0.65 | -5.4/-3.2/-0.3 | forming, solver unbroken 9, thrown 155, forming, solver broken 33
+b wall: surface speed | 72 | 13.19 % | 10.16 % | 0.46/1.03/2.40 | -0.39/0.12/0.38 | 0.05/0.19/0.47 | -0.34/0.07/0.94 | 0.3/2.3/3.8 | forming, solver broken 4, thrown 43, forming, solver unbroken 25
+a switch W>S @hc0 | 66 | 12.09 % | 23.47 % | 1.39/2.87/4.16 | -0.21/0.28/1.00 | 0.00/0.00/0.00 | none/none/none | -6.5/-2.3/-0.0 | no slice 1, thrown 46, forming, solver broken 9, forming, solver unbroken 10
+a switch S>W @hc0 | 55 | 10.07 % | 20.60 % | 1.44/2.64/3.74 | -0.20/0.10/0.98 | 0.00/0.00/0.00 | 0.20/0.45/0.70 | -4.6/-2.0/-0.1 | thrown 39, forming, solver unbroken 8, forming, solver broken 8
+b wall: surface speed @hc0 | 45 | 8.24 % | 4.76 % | 0.31/0.80/1.27 | -0.37/-0.11/0.36 | 0.00/0.00/0.00 | -0.49/0.12/0.41 | -5.8/-4.3/4.2 | no slice 16, thrown 8, forming, solver unbroken 15, forming, solver broken 6
+b wall: normal turning | 23 | 4.21 % | 2.87 % | 0.29/1.20/2.65 | -0.38/-0.25/0.14 | 0.06/0.36/0.56 | -0.14/0.85/0.95 | 0.0/0.7/3.0 | forming, solver broken 5, thrown 5, forming, solver unbroken 13
+d solver | 23 | 4.21 % | 2.85 % | 0.35/0.91/1.70 | -0.16/0.01/0.30 | 0.00/0.00/0.22 | -0.23/0.20/0.57 | -0.5/-0.1/3.0 | thrown 16, forming, solver broken 5, forming, solver unbroken 2
+b wall: crest speed | 15 | 2.75 % | 3.38 % | 1.13/1.83/1.89 | -0.43/-0.35/-0.25 | 0.02/0.14/0.22 | 0.75/0.91/0.95 | 0.0/0.4/0.7 | forming, solver unbroken 6, forming, solver broken 9
+b nearest-surface switch | 12 | 2.20 % | 1.26 % | 0.38/0.75/0.90 | -0.39/0.01/0.14 | 0.05/0.14/0.75 | -0.41/-0.14/0.95 | 0.6/3.5/4.2 | thrown 6, forming, solver unbroken 6
+b wall: ramp height | 12 | 2.20 % | 1.46 % | 0.33/1.18/1.37 | -0.40/-0.25/-0.17 | 0.10/0.27/0.57 | 0.44/0.78/0.89 | 0.3/0.6/1.3 | forming, solver unbroken 10, thrown 1, forming, solver broken 1
+b wall: ramp height @hc0 | 12 | 2.20 % | 1.31 % | 0.46/0.72/0.92 | -0.48/-0.35/-0.09 | 0.00/0.00/0.00 | 0.16/0.23/0.33 | -4.9/-4.2/-3.5 | forming, solver unbroken 10, forming, solver broken 2
+b wall: slice weight @hc0 | 7 | 1.28 % | 1.07 % | 0.31/1.30/1.30 | -1.68/1.71/1.71 | 0.00/0.00/0.00 | -0.50/-0.35/0.11 | -7.1/5.0/5.0 | no slice 5, forming, solver unbroken 1, thrown 1
+b wall: normal turning @hc0 | 7 | 1.28 % | 0.67 % | 0.31/0.91/0.91 | -0.30/-0.12/-0.06 | 0.00/0.00/0.01 | -0.53/-0.45/0.66 | -7.2/4.0/4.8 | forming, solver unbroken 6, forming, solver broken 1
+jumps by stage: no slice: 22 (4.03 %; sum 2.48 %); forming, solver unbroken: 121 (22.16 %; sum 20.79 %); forming, solver broken: 83 (15.20 %; sum 17.31 %); thrown: 320 (58.61 %; sum 59.42 %)
+wall-flow reconstruction error at classified wall jumps: p50 0.000, p95 3.404, p99 4.265, max 4.805 (n 390)
+
+### The case against the solver under the board, by the slice clock (steps with hc > 0.02 m)
+tau bin | steps | unbroken share | hc p50/p90 m | |case flow - solver flow| p50/p90 m/s | d(hc)/dt |p90| m/s | case normal from vertical p50/p90 deg | solver p50/p90 deg | jump p50/p99 | share > 0.2
+-9 to -1.5 | 54 | 100.00 % | 0.05/0.20 | 0.00/0.00 | 3.08 | 11/21 | 3/10 | 0.02/0.03 | 0.00 %
+-1.5 to -1 | 148 | 100.00 % | 0.06/0.23 | 0.00/0.00 | 1.73 | 7/21 | 2/9 | 0.02/0.04 | 0.00 %
+-1 to -0.75 | 45 | 100.00 % | 0.16/0.30 | 0.00/0.00 | 3.25 | 29/38 | 8/17 | 0.03/0.04 | 0.00 %
+-0.75 to -0.5 | 90 | 95.56 % | 0.23/0.37 | 0.00/0.00 | 3.06 | 26/41 | 12/16 | 0.03/0.87 | 3.33 %
+-0.5 to -0.25 | 88 | 78.41 % | 0.24/0.55 | 0.48/1.56 | 3.08 | 18/39 | 10/15 | 0.21/2.65 | 55.68 %
+-0.25 to 0 | 38 | 71.05 % | 0.19/0.54 | 1.98/3.26 | 2.86 | 20/42 | 9/14 | 0.33/2.40 | 68.42 %
+0 to 0.25 | 65 | 46.15 % | 0.09/0.19 | 0.42/1.11 | 0.91 | 17/37 | 15/25 | 0.21/0.89 | 53.85 %
+0.25 to 0.5 | 29 | 68.97 % | 0.18/0.31 | 0.54/1.45 | 1.11 | 33/39 | 22/23 | 0.46/1.03 | 79.31 %
+0.5 to 1 | 4 | 100.00 % | 0.24/0.26 | 0.60/0.73 | 1.25 | 42/45 | 22/23 | 0.38/0.53 | 75.00 %
+
+### The solver alone under the board (steps with hc <= 0.02 m, wet): solver flow change a step, by slice clock
+-9 to -1.5 | 1083 | jump p50/p99 0.016/0.057
+-1.5 to -1 | 1151 | jump p50/p99 0.019/0.054
+-1 to -0.75 | 525 | jump p50/p99 0.022/0.041
+-0.75 to -0.5 | 416 | jump p50/p99 0.016/0.103
+-0.5 to -0.25 | 401 | jump p50/p99 0.017/0.866
+-0.25 to 0 | 427 | jump p50/p99 0.042/2.304
+0 to 0.25 | 392 | jump p50/p99 0.022/3.494
+0.25 to 0.5 | 346 | jump p50/p99 0.013/2.786
+0.5 to 1 | 821 | jump p50/p99 0.010/1.461
+1 to 9 | 3932 | jump p50/p99 0.008/0.339
+
+### Falls: the 0.3 s before the hold let go (flight onset) to the fall
+  passive wave 0 s 55 0 m out: lost board (prone) at 7.52 s, hold let go 7.40; dominant b wall: surface speed (b nearest-surface switch 0.7, b wall: surface speed 6.6, b wall: normal turning 0.3, d solver 0.9); biggest 0.93 m/s b wall: surface speed at 7.48 s, tau 0.38, thrown, hc 0.22, arc 0.10, 2.3 m ahead of the crest pt, state W; at the end: tau 0.40, hc 0.22, state W, solver slope 22 deg, case 39 deg
+  ride wave 0 18.0 m out steer 0: balance (landing) at 4.55 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -1.58, hc 0.00, state S, solver slope 6 deg, case 6 deg
+  ride wave 0 18.0 m out steer -0.5: balance (landing) at 4.55 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -1.58, hc 0.00, state S, solver slope 6 deg, case 6 deg
+  ride wave 0 15.0 m out steer 0: balance (standing) at 6.22 s, hold let go n/a; dominant a switch W>S @hc0 (b wall: surface speed @hc0 3.0, a switch W>S @hc0 6.2, a switch S>W @hc0 4.3, b wall: crest speed @hc0 5.1); biggest 1.90 m/s a switch W>S @hc0 at 5.73 s, tau -0.03, forming, solver broken, hc 0.00, arc none, -4.4 m ahead of the crest pt, state S; at the end: tau 0.28, hc 0.00, state S, solver slope 2 deg, case 2 deg
+  ride wave 0 15.0 m out steer -0.5: balance (standing) at 5.20 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -0.80, hc 0.00, state S, solver slope 8 deg, case 8 deg
+  ride wave 0 12.0 m out steer 0: lost board (push) at 4.57 s, hold let go 4.47; dominant no jump > 0.2 (); biggest none; at the end: tau -0.96, hc 0.00, state S, solver slope 12 deg, case 12 deg
+  ride wave 0 12.0 m out steer -0.5: lost board (push) at 4.57 s, hold let go 4.47; dominant no jump > 0.2 (); biggest none; at the end: tau -0.96, hc 0.00, state S, solver slope 12 deg, case 12 deg
+  passive wave 1 s 40 3 m out: lost board (prone) at 5.05 s, hold let go 4.88; dominant b wall: surface speed (b wall: ramp height 2.3, b wall: surface speed 3.4, b wall: normal turning 1.1, b nearest-surface switch 1.1); biggest 1.56 m/s b wall: surface speed at 4.88 s, tau -0.38, forming, solver unbroken, hc 0.31, arc 0.59, 1.1 m ahead of the crest pt, state W; at the end: tau -0.22, hc 0.72, state W, solver slope 10 deg, case 11 deg
+  passive wave 1 s 55 0 m out: lost board (prone) at 7.55 s, hold let go 7.42; dominant b wall: surface speed (b nearest-surface switch 0.9, b wall: surface speed 6.0, b wall: normal turning 0.5); biggest 0.89 m/s b wall: surface speed at 7.42 s, tau 0.23, thrown, hc 0.25, arc -0.02, 2.8 m ahead of the crest pt, state W; at the end: tau 0.35, hc 0.33, state W, solver slope 21 deg, case 41 deg
+  passive wave 1 s 70 3 m out: lost board (prone) at 0.22 s, hold let go 0.00; dominant no jump > 0.2 (); biggest none; at the end: tau 1.00, hc 0.00, state S, solver slope 7 deg, case 7 deg
+  ride wave 1 18.0 m out steer 0: balance (landing) at 4.57 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -1.51, hc 0.00, state S, solver slope 4 deg, case 4 deg
+  ride wave 1 18.0 m out steer -0.5: balance (landing) at 4.57 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -1.51, hc 0.00, state S, solver slope 4 deg, case 4 deg
+  ride wave 1 15.0 m out steer 0: lost board (push) at 4.33 s, hold let go 4.18; dominant no jump > 0.2 (); biggest none; at the end: tau -1.35, hc 0.29, state W, solver slope 4 deg, case 7 deg
+  ride wave 1 15.0 m out steer -0.5: lost board (push) at 4.33 s, hold let go 4.18; dominant no jump > 0.2 (); biggest none; at the end: tau -1.35, hc 0.29, state W, solver slope 4 deg, case 7 deg
+  ride wave 1 12.0 m out steer 0: lost board (push) at 4.57 s, hold let go 4.47; dominant no jump > 0.2 (); biggest none; at the end: tau -0.83, hc 0.00, state S, solver slope 12 deg, case 12 deg
+  ride wave 1 12.0 m out steer -0.5: lost board (push) at 4.57 s, hold let go 4.47; dominant no jump > 0.2 (); biggest none; at the end: tau -0.83, hc 0.00, state S, solver slope 12 deg, case 12 deg
+  passive wave 2 s 40 3 m out: lost board (prone) at 5.20 s, hold let go 4.95; dominant b wall: surface speed (b nearest-surface switch 1.5, b wall: surface speed 9.0, b wall: normal turning 1.7, b wall: ramp height 0.9, d solver 0.3); biggest 2.40 m/s b wall: surface speed at 4.97 s, tau -0.17, forming, solver unbroken, hc 0.54, arc 0.94, 0.0 m ahead of the crest pt, state W; at the end: tau 0.05, hc 0.17, state W, solver slope 6 deg, case 37 deg
+  passive wave 2 s 55 0 m out: lost board (prone) at 7.68 s, hold let go 7.50; dominant b wall: surface speed (b wall: surface speed 7.0, b wall: normal turning 0.2, d solver 0.6); biggest 1.03 m/s b wall: surface speed at 7.45 s, tau 0.33, thrown, hc 0.12, arc -0.10, 2.5 m ahead of the crest pt, state W; at the end: tau 0.55, hc 0.26, state W, solver slope 23 deg, case 45 deg
+  ride wave 2 15.0 m out steer 0: lost board (push) at 4.35 s, hold let go 4.27; dominant no jump > 0.2 (); biggest none; at the end: tau -1.41, hc 0.22, state W, solver slope 2 deg, case 16 deg
+  ride wave 2 15.0 m out steer -0.5: lost board (push) at 4.35 s, hold let go 4.27; dominant no jump > 0.2 (); biggest none; at the end: tau -1.41, hc 0.22, state W, solver slope 2 deg, case 16 deg
+  ride wave 2 12.0 m out steer 0: lost board (push) at 4.55 s, hold let go 4.47; dominant no jump > 0.2 (); biggest none; at the end: tau -0.92, hc 0.16, state W, solver slope 6 deg, case 29 deg
+  ride wave 2 12.0 m out steer -0.5: lost board (push) at 4.55 s, hold let go 4.47; dominant no jump > 0.2 (); biggest none; at the end: tau -0.92, hc 0.16, state W, solver slope 6 deg, case 29 deg
+  passive wave 3 s 55 0 m out: lost board (prone) at 7.50 s, hold let go 7.38; dominant d solver (d solver 1.9, b wall: surface speed 1.9, b wall: surface speed @hc0 0.5, b nearest-surface switch 0.5, b wall: normal turning 0.4, b wall: ramp height 0.4); biggest 0.61 m/s b wall: surface speed at 7.12 s, tau -0.12, forming, solver broken, hc 0.04, arc -0.36, 4.2 m ahead of the crest pt, state W; at the end: tau 0.23, hc 0.12, state W, solver slope 25 deg, case 41 deg
+  ride wave 3 18.0 m out steer 0: balance (landing) at 5.22 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -1.12, hc 0.00, state W, solver slope 7 deg, case 7 deg
+  ride wave 3 18.0 m out steer -0.5: balance (landing) at 5.20 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -1.14, hc 0.00, state W, solver slope 7 deg, case 7 deg
+  ride wave 3 15.0 m out steer 0: balance (standing) at 6.17 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -0.53, hc 0.00, state S, solver slope 3 deg, case 3 deg
+  ride wave 3 15.0 m out steer -0.5: balance (standing) at 5.75 s, hold let go n/a; dominant no jump > 0.2 (); biggest none; at the end: tau -0.79, hc 0.00, state W, solver slope 4 deg, case 4 deg
+  ride wave 3 12.0 m out steer 0: lost board (push) at 5.02 s, hold let go 4.82; dominant no jump > 0.2 (); biggest none; at the end: tau -1.47, hc 0.00, state S, solver slope 3 deg, case 3 deg
+  ride wave 3 12.0 m out steer -0.5: lost board (push) at 5.02 s, hold let go 4.82; dominant no jump > 0.2 (); biggest none; at the end: tau -1.47, hc 0.00, state S, solver slope 3 deg, case 3 deg
+falls by dominant class: ride lost board: no jump > 0.2: 12; ride balance: no jump > 0.2: 9; passive lost board: b wall: surface speed: 5; ride balance: a switch W>S @hc0: 1; passive lost board: no jump > 0.2: 1; passive lost board: d solver: 1
