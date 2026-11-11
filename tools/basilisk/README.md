@@ -233,3 +233,41 @@ git push
 
   `git status` should then show nothing under `public/barrels` or `src/`. A case that threw no tube has no `.bin`; its
   analysis files are in `data/` all the same.
+
+## The velocity under the surface (2026-11-11)
+
+Every run above kept the surface only (`output_facets`), so the game has no measured flow for its tube's water. With
+`VELOUT` defined, `periodic.c` also writes `vel/v<t>.dat` at every fine frame: one row per surface cell of open water
+inside the window,
+
+```
+x y nx ny Delta   u v w   u v w   …
+```
+
+the cell's centre, the surface's unit normal out of the water and the cell's size, then one `u v w` per sample depth:
+the velocity that deep into the water along the normal, and the water's fraction there (under 0.5 the sample is in air,
+spray or the bed). The first sample is 1.5 cells deep, clear of the mixed cells whose velocity is part air's; the rest
+are at `VELDEPTHS` (0.01, 0.02, 0.05 and 0.1 h0). Units as the run's: h0 = 1, g = 1, the fixed frame. Without `VELOUT`
+the run and its files are exactly as before (a level-9 smoke case wrote identical facets with and without it).
+
+`tools/basilisk/run_velocity.sh` reruns the game's three pool-tube cases this way, in one command, on the M4 Pro:
+
+```
+tools/basilisk/run_velocity.sh
+```
+
+- It takes each case's definition from the `params.txt` stored beside its library in `docs/research/*/data`, so the
+  rerun is the run the game's profiles came from, whatever `run_periodic.sh`'s built-in line says today.
+- It runs in `tools/basilisk/runs/vel`, a folder of its own: no finished run is touched. Phase 1 (level 10, about a
+  minute) runs again there.
+- The three cases run side by side, one core each (`OMP=1` as elsewhere). At level 13 they took 2 h 01, 2 h 21 and
+  3 h 13 on the M4 Pro.
+- Then `analysis/profile_velocity.py` (standard library only) gives every point of every stored 128-point profile the
+  nearest surface cell's samples, and writes `docs/research/pool-tube-flow/data/periodic_<case>_L13_velocity.json`
+  (about 3 MB a case). Each frame's `match` says how far its points were from the cells they took; a rerun that drifted
+  from the stored profiles shows there.
+- `status`, `pack` (the packing again) and `cases` (the definitions) as subcommands. `VEL_CASES` and `LEVEL2` choose
+  other cases: `LEVEL2=14 VEL_CASES="pool_knee_big pool_kneeface_big" tools/basilisk/run_velocity.sh` for the level-14
+  knees (about 22 hours).
+
+Not run yet at full size: the compile, a level-9 smoke run and the packing were checked on the M1 (2026-11-11).

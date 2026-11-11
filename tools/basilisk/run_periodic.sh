@@ -51,6 +51,8 @@
 # Environment: LEVEL1, LEVEL2, PYTHON (with numpy and scipy; matplotlib for the figures), BASILISK_HOME, RUNS (the runs'
 # folder, tools/basilisk/runs), CASES_FILE (a file of case definitions, which replace the ones below by name or add to
 # them), SCOUT_LEVEL (10), SCOUT_DTOUT (0.1), SCOUT_TMAX (the scout's end; default the case's end + SCOUT_EXTRA, 10).
+# VELOUT=1 builds phase 2 with periodic.c's VELOUT: each fine frame also writes vel/v<t>.dat, the water's velocity under
+# the surface (run_velocity.sh drives it, in a runs folder of its own). A phase 2 already compiled keeps its build.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -191,9 +193,10 @@ prepare() {  # the trains, the flags and both phases' builds (each compiled once
   train "$P1"
   mkdir -p "$P2/facets"
   [ -f "$P2/train.json" ] || cp "$P1/train.dat" "$P1/train.json" "$P2/"
-  local common omp
+  local common omp velo=""
   omp="$(omp_flags)"
   common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025"
+  if [ "${VELOUT:-0}" = 1 ]; then velo=" -DVELOUT"; mkdir -p "$P2/vel"; fi
   if [ ! -x "$P1/periodic_${name}_p1" ]; then
     # shellcheck disable=SC2086
     (cd "$P1" && cp "$HERE/periodic.c" . && \
@@ -202,7 +205,7 @@ prepare() {  # the trains, the flags and both phases' builds (each compiled once
   if [ ! -x "$P2/periodic_${name}_p2" ]; then
     # shellcheck disable=SC2086
     (cd "$P2" && cp "$HERE/periodic.c" . && \
-      qcc -O2 $omp -DLEVEL="$LEVEL2" $common -DTMAX="$tmax" -DTOUT0="$tsw" -DXWIN0="$w0" -DXWIN1="$w1" \
+      qcc -O2 $omp -DLEVEL="$LEVEL2" $common$velo -DTMAX="$tmax" -DTOUT0="$tsw" -DXWIN0="$w0" -DXWIN1="$w1" \
         periodic.c -o "periodic_${name}_p2" -lm)
   fi
   [ -f "$P1/params.txt" ] || params "$P1" "$LEVEL1" p1 "$tsw" "$tsw" "" ""
@@ -283,7 +286,8 @@ flags() {  # the qcc command lines, computed in a scratch folder (nothing is com
   common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025"
   local omp; omp="$(omp_flags)"
   echo "$name p1: qcc -O2 ${omp:+$omp }-DLEVEL=$LEVEL1 $common -DTMAX=$tsw -DTOUT0=$tsw periodic.c -o periodic_${name}_p1 -lm"
-  echo "$name p2: qcc -O2 ${omp:+$omp }-DLEVEL=$LEVEL2 $common -DTMAX=$tmax -DTOUT0=$tsw -DXWIN0=$w0 -DXWIN1=$w1 periodic.c -o periodic_${name}_p2 -lm"
+  local velo=""; if [ "${VELOUT:-0}" = 1 ]; then velo=" -DVELOUT"; fi
+  echo "$name p2: qcc -O2 ${omp:+$omp }-DLEVEL=$LEVEL2 $common$velo -DTMAX=$tmax -DTOUT0=$tsw -DXWIN0=$w0 -DXWIN1=$w1 periodic.c -o periodic_${name}_p2 -lm"
   rm -rf "$tmp"
 }
 

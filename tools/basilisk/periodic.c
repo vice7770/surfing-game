@@ -25,6 +25,10 @@
    (y = -1), then runs flat to the closed right wall. A reef crest with a
    lagoon behind it, instead of a flat that runs to the wall and over-drains
    the wave studied. Without REEFTOP the bed is exactly as before.
+   Optional velocity output (2026-11-11, the Wave Pool Barrel's one interior
+   flow): with VELOUT defined, every fine frame also writes vel/v<t>.dat, the
+   water's velocity under the surface (see output_surface_velocity below).
+   Without VELOUT the run and its files are exactly as before.
    Licence: GNU GPL version 3 (see COPYING in this folder). Basilisk is
    GPL-3.0 (its src/COPYING) and this file is a derivative of its sandbox code.
 */
@@ -223,6 +227,67 @@ event logfile (i += 10) {
   fflush (fp);
 }
 
+#ifdef VELOUT
+/** The water's velocity under the surface, for the game's wall water. One row
+    per interfacial cell of open water (inside XWIN0..XWIN1 when the run has a
+    window):
+      x y nx ny Delta   then, per sample depth,   u v w
+    (x, y) the cell's centre, (nx, ny) the surface's unit normal out of the
+    water, Delta the cell's size; (u, v) the velocity a depth d into the water
+    along the normal, and w the water's fraction there (f less the bed's; under
+    0.5 the sample is in air, spray or the bed and is to be dropped). The first
+    sample is at 1.5 Delta, just under the surface, clear of the mixed cells
+    whose velocity is part air's; the others at VELDEPTHS (h0). Units as the
+    run's: h0 = 1, g = 1. */
+#ifndef VELDEPTHS
+#define VELDEPTHS 0.01, 0.02, 0.05, 0.1
+#endif
+#ifdef XWIN0
+#define VELX0 XWIN0
+#define VELX1 XWIN1
+#else
+#define VELX0 (-HUGE)
+#define VELX1 HUGE
+#endif
+static void output_surface_velocity (FILE * fp) {
+  static const double depths[] = {VELDEPTHS};
+  int nd = sizeof(depths)/sizeof(depths[0]) + 1;
+  int cap = 1 << 14, n = 0;
+  double * rows = malloc (cap*5*sizeof(double));
+  foreach (serial)
+    if (f[] > 1e-6 && f[] < 1. - 1e-6 && beach[] < 0.5 && x > VELX0 && x < VELX1) {
+      coord m = mycs (point, f);   /* from the water towards the air */
+      double len = sqrt (sq(m.x) + sq(m.y));
+      if (len > 0.) {
+	if (n == cap) { cap *= 2; rows = realloc (rows, cap*5*sizeof(double)); }
+	double * c = rows + 5*n++;
+	c[0] = x; c[1] = y; c[2] = m.x/len; c[3] = m.y/len; c[4] = Delta;
+      }
+    }
+  coord * at = malloc (max(1, n*nd)*sizeof(coord));
+  double * val = malloc (max(1, n*nd)*4*sizeof(double));
+  for (int k = 0; k < n; k++) {
+    double * c = rows + 5*k;
+    for (int j = 0; j < nd; j++) {
+      double d = j == 0 ? 1.5*c[4] : depths[j - 1];
+      at[k*nd + j] = (coord){c[0] - d*c[2], c[1] - d*c[3], 0.};
+    }
+  }
+  interpolate_array ({u.x, u.y, f, beach}, at, n*nd, val, true);
+  for (int k = 0; k < n; k++) {
+    double * c = rows + 5*k;
+    fprintf (fp, "%.6g %.6g %.4f %.4f %.4g", c[0], c[1], c[2], c[3], c[4]);
+    for (int j = 0; j < nd; j++) {
+      double * v = val + 4*(k*nd + j);
+      if (v[0] == nodata) fprintf (fp, " 0 0 0");   /* outside the domain */
+      else fprintf (fp, " %.5g %.5g %.3f", v[0], v[1], clamp (v[2] - v[3], 0., 1.));
+    }
+    fputc ('\n', fp);
+  }
+  free (rows); free (at); free (val);
+}
+#endif
+
 event out_coarse (t = 0; t <= TMAX; t += 1.0) {
   if (t >= TOUT0) return 0;
   char name[80];
@@ -238,6 +303,11 @@ event out_fine (t = TOUT0; t <= TMAX; t += DTOUT) {
   FILE * fp = fopen (name, "w");
   output_facets (f, fp);
   fclose (fp);
+#ifdef VELOUT
+  sprintf (name, "vel/v%07.3f.dat", t);
+  fp = fopen (name, "w");
+  if (fp) { output_surface_velocity (fp); fclose (fp); }
+#endif
 }
 
 /* Checkpoint for resuming after a container restart. */
