@@ -1,0 +1,80 @@
+t	points	down	live	scale med	scale max	length med	length max	thick med	thick max	columns
+280.02	35	13	123	0.96	1.00	6.23	11.56	0.10	0.23	187-219
+280.52	33	11	123	0.60	1.00	6.70	11.96	0.10	0.18	175-218
+281.02	31	12	114	0.55	1.00	6.95	11.93	0.08	0.19	175-232
+281.52	29	9	106	0.34	1.00	6.94	11.93	0.08	0.22	175-232
+282.02	30	10	98	0.20	1.00	7.30	11.27	0.08	0.19	175-232
+282.52	32	13	60	0.20	1.00	7.38	11.24	0.08	0.22	175-232
+283.02	34	17	39	0.40	1.00	7.67	11.58	0.08	0.25	175-232
+283.52	36	20	26	1.00	1.00	6.64	8.22	0.16	0.22	175-232
+284.02	38	23	30	1.00	1.00	6.08	7.61	0.15	0.19	175-232
+284.52	42	26	33	1.00	1.00	5.73	7.66	0.14	0.19	175-232
+285.02	46	30	36	1.00	1.00	5.53	7.46	0.13	0.18	175-232
+285.52	45	31	38	1.00	1.00	5.35	8.52	0.12	0.16	175-232
+286.02	44	31	40	1.00	1.00	5.37	10.06	0.12	0.16	175-232
+286.52	44	31	42	1.00	1.00	5.58	10.90	0.12	0.18	175-232
+287.02	43	32	45	1.00	1.00	5.81	11.85	0.12	0.18	175-232
+287.52	42	31	42	1.00	1.00	5.88	11.83	0.11	0.18	190-231
+288.02	48	32	42	1.00	1.00	5.88	12.13	0.10	0.16	187-228
+288.52	43	23	101	0.66	1.00	5.78	12.00	0.10	0.16	185-225
+289.02	41	21	117	0.92	1.00	5.90	11.52	0.09	0.13	183-222
+289.52	39	18	117	1.00	1.00	5.85	11.29	0.09	0.21	181-220
+290.02	38	15	121	0.80	1.00	6.52	11.55	0.10	0.23	179-219
+290.52	36	16	130	0.76	1.00	6.74	11.51	0.10	0.20	175-232
+291.02	32	14	126	0.79	1.00	6.83	11.25	0.09	0.17	175-232
+291.52	30	12	122	0.40	1.00	6.99	11.36	0.08	0.19	175-232
+292.02	29	10	116	0.40	1.00	6.91	11.46	0.07	0.19	175-232
+292.52	32	14	90	0.44	1.00	6.55	11.20	0.06	0.21	175-232
+293.02	34	17	71	0.48	1.00	5.78	8.67	0.04	0.23	175-232
+293.52	36	20	35	0.80	1.00	6.28	8.24	0.12	0.23	175-232
+294.02	37	23	32	1.00	1.00	6.20	7.62	0.15	0.22	175-232
+294.52	41	26	34	1.00	1.00	5.92	7.43	0.14	0.19	175-232
+295.02	46	29	37	1.00	1.00	5.93	7.50	0.12	0.16	175-232
+295.52	46	31	39	1.00	1.00	5.67	8.45	0.12	0.15	175-232
+296.02	45	31	41	1.00	1.00	5.69	10.60	0.12	0.14	175-232
+296.52	44	31	44	1.00	1.00	5.77	10.77	0.10	0.15	175-232
+297.02	44	32	47	1.00	1.00	6.01	11.87	0.11	0.18	175-232
+297.52	42	31	42	1.00	1.00	5.75	11.97	0.11	0.17	190-231
+298.02	48	32	42	1.00	1.00	5.89	12.00	0.11	0.16	187-228
+298.52	38	22	56	1.00	1.00	5.95	11.40	0.10	0.14	185-225
+299.02	34	18	69	0.96	1.00	6.02	11.78	0.08	0.14	183-222
+299.52	31	17	69	1.00	1.00	6.10	11.84	0.07	0.16	181-220
+300.02	29	14	68	0.65	1.00	6.23	11.49	0.08	0.20	180-219
+counts {"born":5968,"shed":4479,"overflow":1653,"masked":0,"disagree":179056,"crowded":0}
+
+touchdowns 120, of them 98 over 5 s old; median (p10–p90; count)
+touchdown place: s along the reef, m	68.98 (42.90–95.34; 120)
+touchdown place: behind the crest line, m	1.58 (-1.10–6.83; 120)
+foot height, m	0.84 (0.78–0.91; 120)
+case drawn H at its throw, m	1.65 (1.53–1.78; 120)
+roof top at touchdown over its low water, m	1.31 (1.22–1.42; 120)
+roof top / thrown crest	0.80 (0.80–0.80; 120)
+solver H_s at touchdown, m	1.20 (0.99–1.55; 120)
+solver crest over still water, m	0.91 (0.70–1.16; 120)
+H_s / case drawn H	0.76 (0.61–0.92; 120)
+H_s / roof top	0.95 (0.77–1.16; 120)
+Fr1 at touchdown	2.14 (1.58–2.62; 120)
+B at touchdown	1.00 (1.00–1.00; 120)
+passing B >= 0.3 and Fr >= 1.45 at touchdown	118 of 120
+with a lens at touchdown	119 of 120
+lens length at touchdown / H_s	4.69 (3.85–5.64; 119)
+lens H at +0.5 s / case drawn H	0.73 (0.64–0.82; 98)
+lens H at +1 s / case drawn H	0.70 (0.60–0.78; 91)
+lens H at +3 s / case drawn H	0.60 (0.45–0.66; 78)
+lens H at +5 s / case drawn H	0.64 (0.45–0.74; 73)
+started to shed, s after touchdown (of the 98)	6.18 (3.52–6.93; 75)
+shed before 1 s / 2 s	2 / 2 of 98
+shed by froude	314 of 320	Fr 1.23 (1.05–1.28; 314)	B 1.00 (0.48–1.00; 314)	still depth 1.21 (1.20–2.12; 314)	age 3.20 (1.73–6.53; 314)	behind the crest line 25.17 (20.29–34.02; 314)	s 92.50 (77.35–109.51; 314)	H / h trough 0.32 (0.07–0.38; 314)
+shed by strength	6 of 320	Fr 1.32 (1.30–1.33; 6)	B 0.00 (0.00–0.00; 6)	still depth 2.02 (1.93–2.06; 6)	age 6.63 (1.35–6.70; 6)	behind the crest line 33.04 (32.34–33.67; 6)	s 78.75 (75.90–79.33; 6)	H / h trough 0.43 (0.41–0.44; 6)
+shed by lost	0 of 320	Fr NaN (NaN–NaN; 0)	B NaN (NaN–NaN; 0)	still depth NaN (NaN–NaN; 0)	age NaN (NaN–NaN; 0)	behind the crest line NaN (NaN–NaN; 0)	s NaN (NaN–NaN; 0)	H / h trough NaN (NaN–NaN; 0)
+shed by stall	0 of 320	Fr NaN (NaN–NaN; 0)	B NaN (NaN–NaN; 0)	still depth NaN (NaN–NaN; 0)	age NaN (NaN–NaN; 0)	behind the crest line NaN (NaN–NaN; 0)	s NaN (NaN–NaN; 0)	H / h trough NaN (NaN–NaN; 0)
+all sheds: lens age, s	3.22 (1.72–6.58; 320)	behind the crest line, m	25.66 (20.29–34.02; 320)
+live table entries per 0.5 s (columns of broken crest, all waves)	median 47
+
+the run's last wave period (floor inside, Froude by height, sea time 300 s)
+wave height 30 m seaward of the crest line, m, at s 70, 85, 100, 115, 130, 145, 160, 175	0.93 1.07 1.22 0.89 1.13 0.93 1.22 0.95	mean 1.043
+seaward	mean level -0.006 m	least water 3.55 m	mean flow along the reef -0.11 m/s	across it, shoreward 0.03 m/s	fastest 1.1 m/s
+crestLine	mean level -0.034 m	least water 0.25 m	mean flow along the reef 0.12 m/s	across it, shoreward -0.00 m/s	fastest 2.8 m/s
+top	mean level -0.035 m	least water 0.28 m	mean flow along the reef 0.31 m/s	across it, shoreward 0.06 m/s	fastest 3.2 m/s
+shelf	mean level 0.002 m	least water 0.52 m	mean flow along the reef 1.32 m/s	across it, shoreward 0.30 m/s	fastest 3.5 m/s
+behind	mean level -0.015 m	least water 1.65 m	mean flow along the reef 0.43 m/s	across it, shoreward -0.06 m/s	fastest 3.5 m/s

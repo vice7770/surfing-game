@@ -1,6 +1,6 @@
 # Handoff, 2026-11-11: the Barrel's look, its speed next to the tube, and the wave body
 
-Written at 81 % of the weekly Fable usage (86 % at the lip-fray PR, 92 % at the after-tube PR) (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
+Written at 81 % of the weekly Fable usage (86 % at the lip-fray PR, 92 % at the after-tube PR, 95 % at the inside-floor PR: stop at 99 %) (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
 
 ## Where the owner stands (2026-11-11)
 
@@ -59,8 +59,15 @@ The owner (2026-11-11, after the stills): the tube sits between the wave before 
 
 - `docs/research/after-tube-2026-11-11/README.md`, the advisor's ruling 11 beside it.
 - **Built and merged, opt-in: `?afterTube=roller`.** The Canyon's roller lens, seeded where the lip touches down, drawn only.
-- **It changes little, and the cause is the floor.** Behind the reef the floor drops into the lagoon (2–3.4 m). The bore's Froude number falls to 1.03 and every lens is shed about 1.2 s after touchdown (479 of 479 by that test). The bore itself is not low at touchdown (0.89 of the roof top).
-- **Next is the owner's call:** let the whitewater run on behind the reef (a shallow inside in place of the lagoon, behind a switch, sized with the advisor), or leave it dying in the lagoon. Then ruling 10 rank 5 (one foam make-up across the join; the roof whitening over its last 0.2 s).
+- **It changed little at first, and the cause was the floor.** The default floor has no lagoon: behind its 6 m top it slopes 1:10 straight down to the 4.5 m platform. On that slope every lens was shed about 1.2 s after touchdown.
+- **Ruling 12 (`docs/research/after-tube-2026-11-11/ruling-12.md`), built and merged, opt-in:**
+  - Step 0, inside `?afterTube=roller`: the pool's roller reads its Froude number by the wave's height over the trough's depth (`AFTER_TUBE.froudeBy`). Lens life 1.17 → about 3 s.
+  - `?poolFloor=inside` (`POOL_INSIDE`, `src/wave/pool.ts`): a 1.2 m shelf from 9 to 25 m behind the crest line. Lens life about 6 s; the white ends 25 m behind the crest line. The touchdown place holds within 1 m.
+  - **It misses bars, so it stays opt-in:** the current along the reef on the shelf is 1.32 m/s (bar 0.5; the same strip on the default floor 0.87); the wave 30 m seaward is +14 % against the default at 300 s (the default loses 10 % over 300 s, the inside floor does not); the mean flow over the crest line changed (0.21 → 0.00 m/s shoreward).
+  - Not measured: Froude caps, 600 s, the 1.8 m wave on the shelf, peel speed, bars D and E.
+- **Next:** the owner's calls on the floor (below). Then the roller's slot overflow (712 on the default floor, 1653 on the inside floor over 300 s; two fronts on one crest make two lenses), ruling 10 rank 5 (one foam make-up across the join; the roof whitening over its last 0.2 s), a drawn collapsing tube after touchdown, the lens felt by the rider.
+- The owner's ride URL: `?tubeSeam=blend&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolFloor=inside` on the pool's Barrel.
+- Probe: `PROBE=1 [FLOOR=inside] [FROUDE=depths|height] SETTLE=27 SECONDS=30 LOG=<file> npx vitest run src/wave/probes/afterTube.probe.test.ts`.
 - The sheet's stills hold at the pool's first waves (31 s). For a steady sea, let it hold at a later tube. The sheet's `status.txt` now lists the drawn band's runs.
 - Known flaws: two fronts on one crest give two lenses in a column; no spray at the lens's toe.
 
@@ -79,6 +86,7 @@ The owner (2026-11-11, after the stills): the tube sits between the wave before 
 - Ruling 9: tip cut-outs up to 0.10 m, riding the pool's own case, the Bo 4000 run, `lipCap`.
 - Ruling 8's four calls and ruling 7's six.
 - Which join bothers most.
-- Ruling 11's five: the lens drawn only for now; the pool's whitewater running on behind the reef or dying in the lagoon (the floor); a drawn collapsing tube after touchdown; a low bore's fix if one shows; Rich only or Classic too.
+- Ruling 11's five: the lens drawn only for now; the pool's whitewater running on behind the reef or dying on the back slope (the floor; see ruling 12); a drawn collapsing tube after touchdown; a low bore's fix if one shows; Rich only or Classic too.
+- Ruling 12's: a shelf strip as built or a full bay rising to a beach; the current along the shelf (accept, a wall at the wrap side, or a deeper channel); if kept, default and the A-frame too.
 - Whether extra usage is on (the card says no).
 - The Basilisk velocity run: when its data lands in `docs/research/pool-tube-flow/data`, commit and use it.

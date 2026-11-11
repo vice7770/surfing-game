@@ -381,7 +381,8 @@ export interface SurfZoneConfig {
   /**
    * The straight Barrel's reef face (pool-ledge-floor, 2026-11-08): today's 1/9.5 face (undefined, the default) or 'ledge',
    * the advisor's step-7 ledge (`POOL_LEDGE`: about 1:4.5 along the ray, its knee rounded ±1 m), the `?poolFloor=ledge`
-   * dev switch. Only on the straight Barrel floor; online rooms always run the default.
+   * dev switch, or 'inside', a shallow shelf behind the reef's top (`POOL_INSIDE`, ruling 12), `?poolFloor=inside`.
+   * Only on the straight Barrel floor; online rooms always run the default.
    */
   poolFloor?: PoolFloorFace;
   /**
@@ -1641,7 +1642,7 @@ export class SurfZoneSimulation {
           // shed inside its first splash cycle, 2√(2 H_b / g) with H_b = 0.85 h_b. The Canyon's own are untouched.
           const splashCycle = 2 * Math.sqrt((2 * AFTER_TUBE.breakerHeight * this.breakerDepth()) / GRAVITY);
           this.afterRoller = new SpillingRoller(this.solver, {
-            mask: 'solver', birthBy: 'seed', birthScale: AFTER_TUBE.birthScale, growthDepths: AFTER_TUBE.growthDepths, shedAfter: splashCycle,
+            mask: 'solver', birthBy: 'seed', birthScale: AFTER_TUBE.birthScale, growthDepths: AFTER_TUBE.growthDepths, shedAfter: splashCycle, froudeBy: AFTER_TUBE.froudeBy,
           });
           this.afterSeeds = new TouchdownSeeds(this.solver.nx, (p) => barrel.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds);
         }

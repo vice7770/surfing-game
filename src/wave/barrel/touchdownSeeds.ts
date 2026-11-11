@@ -12,9 +12,14 @@ export type SeedPoint = Pick<FrontPoint, 'front' | 'column' | 'z' | 'tau' | 'foo
  *   (Svendsen 1984, ICCE 19, §5; the 0.5 is provisional);
  * - `growthDepths`: it grows over this many breaker depths of travel: one splash cycle's travel, c · 2√(2 H_b / g)
  *   ≈ 3 h_b (reasoned from Watanabe et al. 2005's cycle);
- * - `breakerHeight`: H_b over h_b, for that cycle's length, the time it is kept from shedding (0.85).
+ * - `breakerHeight`: H_b over h_b, for that cycle's length, the time it is kept from shedding (0.85);
+ * - `froudeBy`: its bore's Froude number is read from its height over its trough's depth (`RollerOptions.froudeBy`;
+ *   ruling 12): behind the pool's reef the bed falls away under the bore, and the Canyon's reading from the two depths
+ *   shed every lens at Fr 1.03 while the solver's own breaking was still on (B 0.46). Mutable for the probe.
  */
-export const AFTER_TUBE = { lead: 0.2, birthScale: 0.5, growthDepths: 3, breakerHeight: 0.85 } as const;
+export const AFTER_TUBE: { lead: number; birthScale: number; growthDepths: number; breakerHeight: number; froudeBy: 'depths' | 'height' } = {
+  lead: 0.2, birthScale: 0.5, growthDepths: 3, breakerHeight: 0.85, froudeBy: 'height',
+};
 
 /**
  * The after-tube whitewater's seeds (after-tube, 2026-11-11; `?afterTube=roller`; ruling 11): where a swept barrel's lip

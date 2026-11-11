@@ -257,6 +257,8 @@ describe('PhysicalMode', () => {
   // pool-ledge-floor's switch (2026-11-08): the straight Barrel on the steeper ledge, at the Barrel alone; online pins it.
   it('takes pool-ledge-floor\'s switch at the Barrel alone, and an online room pins its default (dev switch)', () => {
     expect(poolFloorSwitch('?poolFloor=LEDGE')).toEqual({ poolFloor: 'ledge' });
+    // after-tube's shallow inside (2026-11-11, ruling 12): the same switch's other value.
+    expect(poolFloorSwitch('?poolFloor=Inside')).toEqual({ poolFloor: 'inside' });
     for (const search of ['', '?poolFloor=old', '?poolFloor', '?poolFloor=knee']) expect(poolFloorSwitch(search), search).toEqual({});
     const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
     const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import {
   POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolFloorOf, poolStraightAt, poolStraightBreakDepth, poolStraightCrestDepth, poolStraightDepth, poolStraightFrame,
-  poolStraightPlatformZ, poolStraightRiddenAt, POOL_LEDGE, poolStraightLedgeDepth,
+  poolStraightPlatformZ, poolStraightRiddenAt, POOL_LEDGE, poolStraightLedgeDepth, POOL_INSIDE, poolStraightInsideDepth,
   POOL, POOL_BARREL, POOL_BARREL_EDGE_HEIGHT, POOL_BARREL_FACES, POOL_EDGE_HEIGHT, poolBarrelBreakDepth, poolBarrelCrestDepth, poolBarrelDepth, poolBarrelGradient,
   poolBarrelPlatformZ, poolBarrelRiddenAt, poolCrestZ, poolDeckZ, poolDepth, poolNormalShare, poolRampFootZ, poolRiddenAt, poolSea, poolSpot, poolTankLayout, poolTerraceZ,
   regularSignificantHeight,
@@ -244,6 +244,41 @@ describe('the Wave Pool’s Barrel straight reef (pool-barrel-straight, 2026-11-
     expect((at(1.5) - at(0.5))).toBeCloseTo(POOL_LEDGE.gradient, 9);
     expect(at((r.platformDepth - 0.9) / POOL_LEDGE.gradient + POOL_LEDGE.kneeRounding)).toBeCloseTo(r.platformDepth, 9);
     for (const n of [-3, -20, -60]) expect(poolStraightLedgeDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi))).toBeCloseTo(poolStraightDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi)), 12);
+  });
+
+  // after-tube (2026-11-11, `?poolFloor=inside`; ruling 12): a level shelf behind the reef's top; the default unchanged.
+  it('runs the shallow inside with `poolFloor` inside alone: a shelf behind the top, all seaward of it as today', () => {
+    const r = POOL_STRAIGHT;
+    expect(POOL_INSIDE).toEqual({ step: 0.3, width: 16 });
+    expect(poolSpot('barrel', undefined, 'inside').depthAt).toBe(poolStraightInsideDepth);
+    expect(poolSpot('training', undefined, 'inside').depthAt).toBe(poolDepth);
+    expect(poolSpot('barrel', 'aframe', 'inside').depthAt).toBe(poolBarrelDepth);
+    const phi = (r.reefAngle * Math.PI) / 180;
+    const behind = (s: number, m: number, depth = poolStraightInsideDepth) => {
+      const p = poolStraightAt(s);
+      const n = -(r.flatWidth + m);
+      return depth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi));
+    };
+    // On the barrel (crest 0.9 m): the top, 1:10 down to the 1.2 m shelf, the shelf for 16 m, then 1:10 to the platform.
+    expect(behind(120, -3)).toBeCloseTo(0.9, 9);
+    expect(behind(120, 2)).toBeCloseTo(1.1, 9);
+    for (const m of [3, 10, 19]) expect(behind(120, m), `${m} m behind the top`).toBeCloseTo(1.2, 9);
+    expect(behind(120, 29)).toBeCloseTo(2.2, 9);
+    expect(behind(120, 60)).toBeCloseTo(r.platformDepth, 9);
+    // Today's floor is already 2 m deeper at the shelf's end.
+    expect(behind(120, 19, poolStraightDepth)).toBeCloseTo(2.8, 9);
+    // It follows the crest's own profile along the reef: nothing at the reef's deep ends.
+    expect(behind(0, 10)).toBeCloseTo(r.platformDepth, 9);
+    expect(behind(240, 10)).toBeCloseTo(r.platformDepth, 9);
+    // Seaward of the top's inner edge it is today's floor, to the bit.
+    for (const s of [10, 40, 80, 120, 200]) {
+      const p = poolStraightAt(s);
+      for (const n of [-6, -3, 0, 5, 20, 60]) {
+        const x = p.x - n * Math.sin(phi);
+        const z = p.z - n * Math.cos(phi);
+        expect(poolStraightInsideDepth(x, z), `s ${s}, n ${n}`).toBe(poolStraightDepth(x, z));
+      }
+    }
   });
 
   it("sends the machine's wave obliquely, its along-shore wavelength fitting the window n times", () => {

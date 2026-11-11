@@ -487,8 +487,22 @@ export function poolStraightCrestDepth(s: number): number {
  */
 export const POOL_LEDGE = { gradient: 1 / 2.0, kneeRounding: 1 };
 
-/** The straight Barrel's floor, by `?poolFloor`: today's face (undefined, the default) or the steeper ledge. */
-export type PoolFloorFace = 'ledge';
+/**
+ * The straight Barrel's shallow inside (`?poolFloor=inside`, after-tube 2026-11-11; the advisor's ruling 12,
+ * docs/research/after-tube-2026-11-11/ruling-12.md): behind the reef's top a level shelf `step` m deeper than the crest
+ * (never deeper than the platform), `width` m across square to the reef, then `POOL_STRAIGHT.backSlope` down to the
+ * platform as today. The default floor drops from the top straight to 4.5 m, so the bore behind the tube is in over 2 m
+ * of water within 1.2 s and stops breaking; real pools keep a shallow inside behind the reef (Wavegarden Cove's bays
+ * average 0.5–1.2 m; Lost Shore's reef waves "enter the bay as whitewater") with a deep channel for the return flow.
+ * Ours: the shelf follows the crest's own profile along the reef, so it is 1.2 m behind the barrel and gone at the
+ * reef's deep ends, which with the trough before the beach are the return channels. Everything seaward of the top's
+ * inner edge is `POOL_STRAIGHT`'s, unchanged. A level shelf holds a bore only to H about 0.4–0.55 h: the white runs on
+ * some 30–40 m behind the tube, not to the shore. Provisional sizes; mutable for the probes.
+ */
+export const POOL_INSIDE = { step: 0.3, width: 16 };
+
+/** The straight Barrel's floor, by `?poolFloor`: today's (undefined, the default), the steeper ledge, or the shallow inside. */
+export type PoolFloorFace = 'ledge' | 'inside';
 
 /** The Barrel mode's straight floor's still depth below datum at (x, z), m; negative on the deck (`POOL_STRAIGHT`). */
 export function poolStraightDepth(x: number, z: number): number {
@@ -500,8 +514,16 @@ export function poolStraightLedgeDepth(x: number, z: number): number {
   return poolStraightDepthWith(x, z, POOL_LEDGE);
 }
 
-/** The straight floor's still depth with its reef face's `gradient` and `kneeRounding` from `face`, m. */
-export function poolStraightDepthWith(x: number, z: number, face: { gradient: number; kneeRounding: number }): number {
+/** The straight floor with its shallow inside behind the reef (`POOL_INSIDE`, `?poolFloor=inside`), m. */
+export function poolStraightInsideDepth(x: number, z: number): number {
+  return poolStraightDepthWith(x, z, POOL_STRAIGHT, POOL_INSIDE);
+}
+
+/**
+ * The straight floor's still depth with its reef face's `gradient` and `kneeRounding` from `face`, m; with `inside`, a
+ * level shelf behind the top (`POOL_INSIDE`).
+ */
+export function poolStraightDepthWith(x: number, z: number, face: { gradient: number; kneeRounding: number }, inside?: { step: number; width: number }): number {
   const p = POOL;
   const r = { ...POOL_STRAIGHT, gradient: face.gradient, kneeRounding: face.kneeRounding };
   const beach = Math.max(-p.deck, -z * p.shoreSlope);
@@ -527,6 +549,12 @@ export function poolStraightDepthWith(x: number, z: number, face: { gradient: nu
       const left = knee + half - n;
       reef = r.platformDepth - (r.gradient * left * left) / (4 * half);
     }
+  } else if (inside) {
+    // The top, down to the shelf, the shelf, then back down to the platform (ruling 12).
+    const behind = Math.max(0, -n - r.flatWidth);
+    const shelf = Math.min(r.platformDepth, crest + inside.step);
+    const end = inside.step / r.backSlope + inside.width;
+    reef = behind <= end ? Math.min(shelf, crest + behind * r.backSlope) : Math.min(r.platformDepth, shelf + (behind - end) * r.backSlope);
   } else {
     // The top, then straight back down to the platform.
     reef = Math.min(r.platformDepth, crest + Math.max(0, -n - r.flatWidth) * r.backSlope);
@@ -576,7 +604,7 @@ export function poolStraightDirection(waveNumber: number, alongShore = POOL.alon
 /** The pool's bed for its floor: the training A-frame (the default), the Barrel's straight reef or its A-frame. */
 export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace): SurfSpot {
   const floor = poolFloorOf({ poolWaves: waves, poolBarrel: barrel });
-  const straight = face === 'ledge' ? poolStraightLedgeDepth : poolStraightDepth;
+  const straight = face === 'ledge' ? poolStraightLedgeDepth : face === 'inside' ? poolStraightInsideDepth : poolStraightDepth;
   return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : straight };
 }
 

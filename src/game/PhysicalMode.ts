@@ -573,10 +573,13 @@ export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
 /**
  * The `?poolFloor=ledge` dev switch (`SurfZoneConfig.poolFloor`, pool-ledge-floor 2026-11-08): the straight Barrel's reef
  * face as the advisor's step-7 ledge (`POOL_LEDGE`), which the owner adopted on the M4 L13 batch; anything else keeps
- * today's face. Online rooms always run the default.
+ * today's face. `?poolFloor=inside` (after-tube, 2026-11-11; ruling 12): today's face with a shallow shelf behind the
+ * reef's top (`POOL_INSIDE`), so the whitewater behind the tube runs on. One or the other, not both. Online rooms always
+ * run the default.
  */
-export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' } {
-  return devParam('poolFloor', search)?.trim().toLowerCase() === 'ledge' ? { poolFloor: 'ledge' } : {};
+export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' | 'inside' } {
+  const value = devParam('poolFloor', search)?.trim().toLowerCase();
+  return value === 'ledge' || value === 'inside' ? { poolFloor: value } : {};
 }
 
 /**
