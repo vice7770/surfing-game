@@ -395,6 +395,32 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.textContent = `Water sheet: ${SPOT} ${swellLabel}${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
+  // The drawn band's table as the sea holds it (in-page seas only): what a still should show, said in numbers.
+  const sea = (hooks.mode.host as { runner?: { simulation?: SurfZoneSimulation } } | undefined)?.runner?.simulation;
+  if (sea && sea.rollerColumns > 0) {
+    const nx = sea.solver.nx;
+    const table = new Float32Array(ROLLER_SLOTS * nx * ROLLER_STRIDE);
+    sea.writeRoller(table);
+    const runs: string[] = [];
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      let from = -1;
+      for (let c = 0; c <= nx; c += 1) {
+        const o = (slot * nx + c) * ROLLER_STRIDE;
+        const live = c < nx && table[o + ROLLER_FIELD.scale] > 0.1;
+        if (live && from < 0) from = c;
+        if (!live && from >= 0) {
+          const a = (slot * nx + from) * ROLLER_STRIDE;
+          const b = (slot * nx + c - 1) * ROLLER_STRIDE;
+          runs.push(`slot ${slot} x ${sea.solver.xCenters[from].toFixed(1)}..${sea.solver.xCenters[c - 1].toFixed(1)} crest z ${table[a + ROLLER_FIELD.crest].toFixed(1)}..${table[b + ROLLER_FIELD.crest].toFixed(1)} length ${table[a + ROLLER_FIELD.length].toFixed(1)}..${table[b + ROLLER_FIELD.length].toFixed(1)}`);
+          from = -1;
+        }
+      }
+    }
+    status.textContent += ` · band (scale over 0.1): ${runs.length > 0 ? runs.join('; ') : 'none'}`;
+    const points = (sea as unknown as { front?: { points: readonly { x: number; z: number; crashedAt?: number }[] } }).front?.points ?? [];
+    const crashed = points.filter((q) => q.crashedAt !== undefined);
+    if (crashed.length > 0) status.textContent += ` · crashed points ${crashed.length}: ${crashed.slice(0, 12).map((q) => `(${q.x.toFixed(1)}, ${q.z.toFixed(1)}, ${(sea.solver.time - q.crashedAt!).toFixed(1)} s)`).join(' ')}`;
+  }
   /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
   const closeUp = document.createElement('canvas');
   closeUp.width = RENDER.width;

@@ -35,6 +35,7 @@ import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, throwContourDistance, type OnsetTiming } from './barrel/sliceClock';
 import { SweptCrash } from './barrel/SweptCrash';
+import { AFTER_TUBE, TouchdownSeeds } from './barrel/touchdownSeeds';
 import { CarrierSupport } from './barrel/carrierSupport';
 import { latchTubeSpans, writeFrontRecords } from './barrel/frontRecords';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
@@ -523,6 +524,13 @@ export interface SurfZoneConfig {
    * Online rooms pin it absent.
    */
   wallBody?: 'stream';
+  /**
+   * The water behind the Barrel's tube (after-tube, 2026-11-11; ruling 11, docs/research/after-tube-2026-11-11/README.md):
+   * 'roller' (`?afterTube=roller`, dev, opt-in) gives each column the Canyon's roller lens from its tube's touchdown on
+   * (`TouchdownSeeds`, `SpillingRoller` with the 'solver' mask), drawn as the Canyon's band. Drawn only: the rider's
+   * water is unchanged. Absent: the sea's flat foam there, as before.
+   */
+  afterTube?: 'roller';
   /**
    * Ruling 7's step 1, opt-in (the water-physics advisor's ruling 7; `TubeFace.crestLine`,
    * docs/research/crest-line-2026-11-11/README.md): each front point stands where its crest stands within its cell
@@ -1337,6 +1345,9 @@ export class SurfZoneSimulation {
   readonly crash?: SweptCrash;
   /** The step 3 ruling's tube at a `faceAnchor` spot (`tubeFaceOf`); undefined elsewhere, and with both old switches. */
   readonly tubeFace?: TubeFace;
+  /** The Barrel's after-tube roller (`SurfZoneConfig.afterTube`) and its seeds: drawn, never felt. */
+  private readonly afterRoller?: SpillingRoller;
+  private readonly afterSeeds?: TouchdownSeeds;
   /** The spilling front, at a spilling spot (`SPILLING_SPOTS`): it holds the whitewater back ahead of each wave's peel. */
   readonly spilling?: SpillingFront;
   /**
@@ -1624,6 +1635,16 @@ export class SurfZoneSimulation {
       if (barrel && slope !== undefined && crash) {
         this.crash = new SweptCrash(barrel, slope, face);
         this.whitewater = new Float64Array(this.solver.h.length);
+        if (config.afterTube === 'roller' && config.spot === 'pool') {
+          // Ruling 11 (after-tube, 2026-11-11): the lens after a plunge is born on its slice's clock, part-grown (a plunge
+          // hands its energy to the roller at once), grows over 3 breaker depths (one splash cycle's travel), and does not
+          // shed inside its first splash cycle, 2√(2 H_b / g) with H_b = 0.85 h_b. The Canyon's own are untouched.
+          const splashCycle = 2 * Math.sqrt((2 * AFTER_TUBE.breakerHeight * this.breakerDepth()) / GRAVITY);
+          this.afterRoller = new SpillingRoller(this.solver, {
+            mask: 'solver', birthBy: 'seed', birthScale: AFTER_TUBE.birthScale, growthDepths: AFTER_TUBE.growthDepths, shedAfter: splashCycle,
+          });
+          this.afterSeeds = new TouchdownSeeds(this.solver.nx, (p) => barrel.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds);
+        }
       }
       // A spot whose waves plunge a tube only from a regime (the Canyon): the rest are its own look's, and the tube's
       // columns hold its white until the tube's own touchdown (`markTubeColumns`).
@@ -1792,6 +1813,7 @@ export class SurfZoneSimulation {
     else this.spilling?.reset();
     if (state.spilling?.roller) this.roller?.importState(state.spilling.roller);
     else this.roller?.reset();
+    this.afterRoller?.reset();
     // The spilling lip keeps nothing of its own: it is rebuilt from the front and lenses taken over, as the donor's was.
     if (this.curl) {
       this.markTubeColumns();
@@ -1915,6 +1937,8 @@ export class SurfZoneSimulation {
     phase = end;
     // Its roller lenses (S3) read the water and the front, after the front's step.
     if (this.roller) this.roller.update(this.solver.time, dt, this.spilling!, this.breaking.strength, this.breakerDepth());
+    // The Barrel's after-tube lenses: born where its lips have touched down (the front's last step), then the water's.
+    if (this.afterRoller && this.front) this.afterRoller.update(this.solver.time, dt, this.afterSeeds!.read(this.front.points), this.breaking.strength, this.breakerDepth());
     // The spilling lip's columns, after the lenses' step: what the next step's drawn whitewater and the snapshot read.
     if (this.curl) {
       this.markTubeColumns();
@@ -2452,7 +2476,12 @@ export class SurfZoneSimulation {
 
   /** S3: the solver columns the roller's table spans (0 without a roller), the first one's centre x and their width, m. */
   get rollerColumns(): number {
-    return this.roller ? this.solver.nx : 0;
+    return this.band ? this.solver.nx : 0;
+  }
+
+  /** The roller that is drawn: a spilling spot's own (felt too), else the Barrel's after-tube one (drawn only). */
+  private get band(): SpillingRoller | undefined {
+    return this.roller ?? this.afterRoller;
   }
 
   get rollerColumn0(): number {
@@ -2470,9 +2499,9 @@ export class SurfZoneSimulation {
    * curl landed and its wave's H, for the roller front (drawn only; left as it is without the lip).
    */
   writeRoller(into: Float32Array, look?: Float32Array): number {
-    if (!this.roller) return 0;
-    into.set(this.roller.table);
-    if (this.curl) {
+    if (!this.band) return 0;
+    into.set(this.band.table);
+    if (this.curl && this.roller) {
       this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time, look && look.length > 0 ? look : undefined);
       // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a), its
       // peel-side end, where the lip lands, only a column while young (the Canyon lip, round 5).
@@ -2656,7 +2685,7 @@ export class SurfZoneSimulation {
    * (`PhysicalSurfWater`'s node heights). Where `riseAt` finds no lens it adds 0, which leaves the main pass's height.
    */
   private writeLensTops(surface: Float32Array, grid: RenderGrid): void {
-    const { roller } = this;
+    const roller = this.band;
     const lenses = this.rollerReach();
     if (!roller || !(lenses.low <= lenses.high)) return;
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
@@ -2743,7 +2772,7 @@ export class SurfZoneSimulation {
         if (aeration) fraction![i] = this.curl ? this.aeration.voidFraction(i) * this.curl.airShare(i, dense[i] + residual[i]) : this.aeration.voidFraction(i);
       }
     }
-    const { roller } = this;
+    const roller = this.band;
     const lenses = this.rollerReach();
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
@@ -2781,7 +2810,7 @@ export class SurfZoneSimulation {
   /** The roller's lenses' reach across shore for a pass over the render nodes; none without a roller. */
   private rollerReach(): { low: number; high: number } {
     const reach = this.rollerExtent;
-    if (this.roller) return this.roller.extentZ(reach);
+    if (this.band) return this.band.extentZ(reach);
     reach.low = Number.POSITIVE_INFINITY;
     reach.high = Number.NEGATIVE_INFINITY;
     return reach;

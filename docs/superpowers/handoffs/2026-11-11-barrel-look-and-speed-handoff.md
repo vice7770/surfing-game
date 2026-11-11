@@ -1,6 +1,6 @@
 # Handoff, 2026-11-11: the Barrel's look, its speed next to the tube, and the wave body
 
-Written at 81 % of the weekly Fable usage (86 % at the lip-fray PR) (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
+Written at 81 % of the weekly Fable usage (86 % at the lip-fray PR, 92 % at the after-tube PR) (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
 
 ## Where the owner stands (2026-11-11)
 
@@ -53,6 +53,17 @@ So the order of work is now: speed next to the tube (waits for the owner's log),
 
 `docs/research/crest-line-2026-11-11/ruling-8/README.md`. Order: (1) trace the anchor, log only, with carried places every 5 m of crest; (2) the anchor takes its target while the share is zero; (3) `top`'s 0.3 H throw offset; (4) carry the rise as a probe run. Probe: `PROBE=1 H=1.05 CASE=pool SWITCHES=tubeSeam=blend,wallBody=stream[,crestLine=top][,formClock=c1] LOG=<file> npx vitest run src/wave/probes/ruling7.probe.test.ts`.
 
+## 5. After the tube (ruling 11, the owner's newest ask)
+
+The owner (2026-11-11, after the stills): the tube sits between the wave before it and the "old" after-tube part, out of place, with wrong sizes; "the after tube part needs to be redone, maybe look at how canyon has it for the foam part".
+
+- `docs/research/after-tube-2026-11-11/README.md`, the advisor's ruling 11 beside it.
+- **Built and merged, opt-in: `?afterTube=roller`.** The Canyon's roller lens, seeded where the lip touches down, drawn only.
+- **It changes little, and the cause is the floor.** Behind the reef the floor drops into the lagoon (2–3.4 m). The bore's Froude number falls to 1.03 and every lens is shed about 1.2 s after touchdown (479 of 479 by that test). The bore itself is not low at touchdown (0.89 of the roof top).
+- **Next is the owner's call:** let the whitewater run on behind the reef (a shallow inside in place of the lagoon, behind a switch, sized with the advisor), or leave it dying in the lagoon. Then ruling 10 rank 5 (one foam make-up across the join; the roof whitening over its last 0.2 s).
+- The sheet's stills hold at the pool's first waves (31 s). For a steady sea, let it hold at a later tube. The sheet's `status.txt` now lists the drawn band's runs.
+- Known flaws: two fronts on one crest give two lenses in a column; no spray at the lens's toe.
+
 ## Rules that still hold
 
 - The owner rides. No rider sessions, catch reports or autopilot rides by agents; no browser pane, no dev server by agents. Headless stills and solver probes are fine.
@@ -68,5 +79,6 @@ So the order of work is now: speed next to the tube (waits for the owner's log),
 - Ruling 9: tip cut-outs up to 0.10 m, riding the pool's own case, the Bo 4000 run, `lipCap`.
 - Ruling 8's four calls and ruling 7's six.
 - Which join bothers most.
+- Ruling 11's five: the lens drawn only for now; the pool's whitewater running on behind the reef or dying in the lagoon (the floor); a drawn collapsing tube after touchdown; a low bore's fix if one shows; Rich only or Classic too.
 - Whether extra usage is on (the card says no).
 - The Basilisk velocity run: when its data lands in `docs/research/pool-tube-flow/data`, commit and use it.

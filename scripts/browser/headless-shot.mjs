@@ -5,7 +5,8 @@
 //     Runs the water sheet dev view (?inpage&waterSheet), saves water-sheet.png (3 times x 2 looks x N shots),
 //     prints the available shot names, then saves each requested close-up as <name>-<look>-<time>.png (1280x720).
 //     Shot names come from the page (e.g. lineup, tube-beside, tube-shoulder, tube-inside, horizon, below,
-//     ww-beside, ww-shoulder, ww-behind, ww-below). A custom view: name "view@ex,ey,ez@tx,ty,tz".
+//     ww-beside, ww-shoulder, ww-behind, ww-below). A custom view: name "view@ex,ey,ez@tx,ty,tz"
+//     (then separate the shots with ";").
 //     look: classic|rich. time: dawn|midday|sunset.
 //
 //   node scripts/browser/headless-shot.mjs page --serve=<worktree> --port=<vitePort> --out=<file.png> [--path=/?query] [--wait=ms]
@@ -125,7 +126,8 @@ async function sheet() {
   const names = await page.eval('window.waterSheetShots.map((s) => s.name)');
   log(`sheet ready in ${((Date.now() - t0) / 1000).toFixed(0)} s; shots: ${names.join(', ')}`);
   writeFileSync(join(out, 'status.txt'), `${status}\nshots: ${names.join(', ')}\n`);
-  const wanted = (args.shots ?? '').split(',').filter(Boolean);
+  // A custom view's own commas: with one in the list, shots are separated by ';'.
+  const wanted = (args.shots ?? '').split((args.shots ?? '').includes('@') ? ';' : ',').filter(Boolean);
   for (const spec of wanted) {
     const [name, look = 'rich', time = 'midday'] = spec.split(':');
     let view = JSON.stringify(name);

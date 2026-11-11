@@ -53,6 +53,16 @@ export const ROLLER_FIELD = {
   roughness: 7,
 } as const;
 
+/**
+ * What a roller needs of a front to be born on it: its waves, and each one's crest per column (NaN where it has none).
+ * A spilling front is one; so are a swept barrel's touchdowns (`TouchdownSeeds`, after-tube 2026-11-11), with the
+ * 'solver' mask alone (the 'front' mask reads the spilling front's reach).
+ */
+export interface RollerSeeds {
+  readonly waves: readonly { readonly id: number }[];
+  crestAt(wave: number, column: number): number;
+}
+
 /** The solver fields the roller reads: its cell centres (row-major, iz * nx + ix; z toward the beach), depth and bed. */
 export interface RollerGrid {
   readonly nx: number;
@@ -112,6 +122,18 @@ export interface RollerOptions {
   edgeColumns: number;
   /** Where it is drawn and felt: behind the visible front ('front', the advisor's Q1), or wherever the solver breaks. */
   mask: 'front' | 'solver';
+  /**
+   * What decides a birth at a seed: the solver's breaking and the bore's Froude number there ('solver', R3 §1.4–1.5), or
+   * the seed alone ('seed': after a plunge the slice's own clock decides, R3 §1.4; ruling 11, after-tube 2026-11-11).
+   */
+  birthBy: 'solver' | 'seed';
+  /**
+   * Its scale at birth, 0–1: a spilling lens grows from nothing (0); a plunge hands its energy to the roller at once
+   * (Svendsen 1984 §5), so the lens after one starts part-grown (ruling 11: 0.5, provisional).
+   */
+  birthScale: number;
+  /** It does not start to shed sooner than this after its birth, s, but for a stall (ruling 11: one splash cycle after a plunge). */
+  shedAfter: number;
 }
 
 /** The Canyon's roller: the plan's §2 with the advisor's rulings (§9). */
@@ -138,6 +160,9 @@ export const ROLLER_DEFAULTS: RollerOptions = {
   minG: 0.01,
   edgeColumns: OPEN_EDGE_REACH,
   mask: 'front',
+  birthBy: 'solver',
+  birthScale: 0,
+  shedAfter: 0,
 };
 
 /** One wave's lens in a column as it stands, for the look (`SpillingCurl`, the Canyon spilling lip): read only. */
@@ -694,7 +719,7 @@ export class SpillingRoller implements RollerLens {
    * crest, each wave seeds lenses where it breaks, then each lens's speed, life and shape, and the table.
    * `strength` is the solver's breaking (ungated); `breakerDepth` is h_b, m.
    */
-  update(time: number, dt: number, front: SpillingFront, strength: ArrayLike<number>, breakerDepth: number): void {
+  update(time: number, dt: number, front: SpillingFront | RollerSeeds, strength: ArrayLike<number>, breakerDepth: number): void {
     const { grid, options, section, reader } = this;
     const { nx } = grid;
     const first = Math.min(nx, Math.max(0, options.edgeColumns));
@@ -730,7 +755,7 @@ export class SpillingRoller implements RollerLens {
         const kennedy = section.strength >= options.birthStrength;
         const froude = swash || section.froude2 >= options.birthFroude2;
         if (!swash && kennedy !== froude) this.counts.disagree += 1;
-        if (!(kennedy && froude)) continue;
+        if (options.birthBy === 'solver' && !(kennedy && froude)) continue;
         if (this.state[lens] !== NONE) {
           this.counts.overflow += 1;
           this.clearLens(lens);
@@ -738,9 +763,9 @@ export class SpillingRoller implements RollerLens {
         this.state[lens] = ACTIVE;
         this.wave[lens] = id;
         this.birth[lens] = time;
-        this.travel[lens] = 0;
+        this.travel[lens] = options.birthScale > 0 ? options.birthScale * options.growthDepths * (breakerDepth > 0 ? breakerDepth : 0) : 0;
         this.hold[lens] = 0;
-        this.scale[lens] = 0;
+        this.scale[lens] = options.birthScale > 0 ? options.birthScale : 0;
         this.speed[lens] = Math.sqrt(GRAVITY * (breakerDepth > 0 ? breakerDepth : 0));
         this.length[lens] = Number.NaN;
         this.crest[lens] = section.crest;
@@ -1082,7 +1107,7 @@ export class SpillingRoller implements RollerLens {
         this.startShedding(lens, column, slot, time, 'stall');
       } else if (reason) {
         this.hold[lens] += step;
-        if (this.hold[lens] >= options.shedHold - HOLD_SLACK) this.startShedding(lens, column, slot, time, reason);
+        if (this.hold[lens] >= options.shedHold - HOLD_SLACK && !(time - this.birth[lens] < options.shedAfter)) this.startShedding(lens, column, slot, time, reason);
       } else {
         this.hold[lens] = 0;
       }
@@ -1136,7 +1161,7 @@ export class SpillingRoller implements RollerLens {
    * two waves never meet in a slot; else in one whose last run ends just before it (they meet at a seam, where
    * `alongCrest` empties the older wave's column); else nowhere, undrawn and unfelt (`counts.crowded`).
    */
-  private writeTable(time: number, front: SpillingFront, first: number, last: number): void {
+  private writeTable(time: number, front: SpillingFront | RollerSeeds, first: number, last: number): void {
     const { grid, options, table, drawnScale, drawnLength, lensRun, runStart, runEnd, runSlot, openWaves, openRuns, slotEnd } = this;
     const { nx, dx } = grid;
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
@@ -1146,7 +1171,7 @@ export class SpillingRoller implements RollerLens {
         if (this.state[lens] === NONE || !(this.length[lens] > 0)) continue;
         let g = this.scale[lens];
         let length = this.length[lens];
-        if (options.mask === 'front') {
+        if (options.mask === 'front' && 'options' in front) {
           // The lens's wave: a dropped one counts as reached, long ago.
           let wave = -1;
           for (let k = 0; k < front.waves.length; k += 1) if (front.waves[k].id === this.wave[lens]) wave = k;

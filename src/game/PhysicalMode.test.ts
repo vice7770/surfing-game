@@ -369,6 +369,23 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('takes `?afterTube=roller` at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?afterTube=roller')).toEqual({ afterTube: 'roller' });
+    expect(tubeFaceSwitches('?afterTube=Roller&tubeSeam=blend')).toEqual({ tubeSeam: 'blend', afterTube: 'roller' });
+    for (const search of ['', '?afterTube', '?afterTube=on', '?afterTube=old']) expect('afterTube' in tubeFaceSwitches(search), search).toBe(false);
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).afterTube).toBeUndefined();
+      vi.stubGlobal('location', { search: '?afterTube=roller' });
+      expect(surfZoneConfigFor(barrel, 5, false).afterTube).toBe('roller');
+      expect(surfZoneConfigFor(training, 5, false).afterTube).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, false, { afterTube: undefined }).afterTube).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
   it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
     expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });
