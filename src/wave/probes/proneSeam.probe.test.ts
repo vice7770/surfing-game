@@ -133,6 +133,8 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
       flow: [number, number, number] | null;
       source: boolean | null;
       farthest: number;
+      /** Where the board was a step ago, and the surface's height there then (the surface's rise, below). */
+      eta: [number, number, number, number] | null;
     }
     const riders: Rider[] = [];
     const sample = createWaterSample();
@@ -140,6 +142,58 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
     // Ruling 5's readings.
     const seam5 = { steps: 0, jumps: 0, jumpsLow: 0, switches: 0, switchJumps: 0, switchSizes: [] as number[], wallSteps: 0 };
     const footHeights: number[] = [];
+    // The surface's rise against the water's (the kinematic condition at a free surface: a water particle on the surface
+    // stays on it, so ∂η/∂t + u ∂η/∂x + w ∂η/∂z = v). Read at the point the board was at a step ago: the surface's rise
+    // there over the step, its slope now (0.1 m each way), and the felt water 0.05 m under it. The miss is how fast
+    // the surface moves through the water the board is told about. By the slice clock, in the case's water and out of it
+    // (out of it: the solver's sea, the control).
+    const riseBins = [-Infinity, -1, -0.5, 0, 0.5, Infinity];
+    const riseLabels = ['τ under −1 s', 'τ −1 to −0.5 s', 'τ −0.5 to 0 s', 'τ 0 to 0.5 s', 'τ 0.5 s on', 'no slice by it'];
+    const riseOf = () => riseLabels.map(() => ({ rise: [] as number[], need: [] as number[], up: [] as number[], miss: [] as number[], own: [] as number[], ownSea: [] as number[], slip: [] as number[] }));
+    const rise = { inCase: riseOf(), sea: riseOf() };
+    const riseSample = createWaterSample();
+    /** The front point `tauAt` reads, itself (its wave speed and ray). */
+    const pointAt = (x: number, z: number) => {
+      let best: NonNullable<typeof simulation.front>['points'][number] | null = null;
+      let nearest = 2;
+      for (const p of simulation.front?.points ?? []) {
+        if (Math.abs(p.z - z) > 8) continue;
+        const d = Math.abs(p.x - x);
+        if (d < nearest) { nearest = d; best = p; }
+      }
+      return best;
+    };
+    const readRise = (x: number, z: number, before: number, beforeSea: number) => {
+      const now = water.surfaceAt(x, z);
+      const got = water.sampleAt(x, now - 0.05, z, riseSample);
+      if (!got.wet || got.outsideDomain) return;
+      const e = 0.1;
+      const slopeX = (water.surfaceAt(x + e, z) - water.surfaceAt(x - e, z)) / (2 * e);
+      const slopeZ = (water.surfaceAt(x, z + e) - water.surfaceAt(x, z - e)) / (2 * e);
+      const rate = (now - before) / dt;
+      const need = rate + got.flowX * slopeX + got.flowZ * slopeZ;
+      const tau = tauAt(x, z);
+      let bin = riseLabels.length - 1;
+      if (tau === tau) {
+        bin = 0;
+        while (bin + 1 < riseBins.length - 1 && tau >= riseBins[bin + 1]) bin += 1;
+      }
+      const into = (now - water.plainSurfaceAt(x, z) > 0.02 ? rise.inCase : rise.sea)[bin];
+      into.rise.push(rate);
+      into.need.push(need);
+      into.up.push(got.flowY);
+      into.miss.push(Math.abs(need - got.flowY));
+      // The same, split in the frame that travels with the wave (the nearest front point's wave speed c along its ray):
+      // the surface's own rise there (0 on a wave of steady shape), the solver's sea's, and how far the felt water is
+      // from running along the surface in that frame ((u − c)·∇η − v; 0 on a streamline). The miss is their sum.
+      const point = pointAt(x, z);
+      if (!point || point.wallSpeed === undefined || point.anchorRayX === undefined || point.anchorRayZ === undefined) return;
+      const cx = point.wallSpeed * point.anchorRayX;
+      const cz = point.wallSpeed * point.anchorRayZ;
+      into.own.push((water.surfaceAt(x + cx * dt, z + cz * dt) - before) / dt);
+      into.ownSea.push((water.plainSurfaceAt(x + cx * dt, z + cz * dt) - beforeSea) / dt);
+      into.slip.push((got.flowX - cx) * slopeX + (got.flowZ - cz) * slopeZ - got.flowY);
+    };
     /** The slice clock at (x, z): the nearest front point along the crest (x) within 8 m along the ray (z); NaN: none. */
     const tauAt = (x: number, z: number) => {
       let best = Number.NaN;
@@ -191,7 +245,7 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
       const add = (kind: Rider['kind'], label: string, x: number, z: number, steer: number) => {
         const session = new RideSession();
         session.reset(new Vector3(x, 0, z), 0, quiet);
-        riders.push({ kind, label, wave, session, steer, active: true, placed: solver.time, fast: 0, pressed: null, taken: null, stood: null, fell: null, flow: null, source: null, farthest: z });
+        riders.push({ kind, label, wave, session, steer, active: true, placed: solver.time, fast: 0, pressed: null, taken: null, stood: null, fell: null, flow: null, source: null, farthest: z, eta: null });
       };
       for (const [s, outs] of [[40, [3, 12]], [55, [0, 6, 12, 18]], [70, [3, 12]]] as const) {
         const at = lineAt(s);
@@ -318,12 +372,14 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
             if (r.pressed !== null && session.phase === 'prone') input.popUp = true;
           } else input.steer = r.steer;
         }
+        if (r.eta) readRise(r.eta[0], r.eta[1], r.eta[2], r.eta[3]);
         const phaseBefore = session.phase;
         water.withSurfaceNodeCache(() => session.step(dt, quiet, input));
         if (r.kind === 'ride' && r.taken === null && session.phase !== 'prone' && session.phase !== 'fallen') r.taken = since;
         if (r.stood === null && rider.popUpReport.outcome === 'stood') r.stood = since;
         if (board.position.z > r.farthest) r.farthest = board.position.z;
         const surface = water.surfaceAt(board.position.x, board.position.z);
+        r.eta = [board.position.x, board.position.z, surface, water.plainSurfaceAt(board.position.x, board.position.z)];
         const inCase = surface - water.plainSurfaceAt(board.position.x, board.position.z) > 0.02;
         const tau = tauAt(board.position.x, board.position.z);
         if (!rider.attached) {
@@ -392,6 +448,17 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
     lines.push(`for τ < −0.5 s (the nearest front point's clock): ${q(felt.early)} [ruling 5's bar: p99 ≤ 0.1]`);
     lines.push(`jumps over 0.2 m/s a step: ${seam5.jumps} of ${seam5.steps} steps (${pct(seam5.jumps, seam5.steps)}) [ruling 5's bar: ≤ 0.6 %]; where the case is not above the solver (hc ≤ 0.02 m): ${seam5.jumpsLow} (${pct(seam5.jumpsLow, seam5.jumps)} of the jumps)`);
     lines.push(`the answering source (the case's wall water or the solver's): in the wall water on ${seam5.wallSteps} steps; switches where hc ≤ 0.02 m: ${seam5.switches}, with a jump over 0.2 m/s: ${seam5.switchJumps} [ruling 5's bar: 0]; the felt water's change at those switches: ${q(seam5.switchSizes)}`);
+    lines.push('');
+    lines.push('## The surface\'s rise against the water\'s (at the board\'s place a step ago; m/s; a free surface needs ∂η/∂t + u·∇η = v)');
+    const signed = (values: number[]) => `p5 ${f(quantile(values, 0.05), 2)}, p50 ${f(quantile(values, 0.5), 2)}, p95 ${f(quantile(values, 0.95), 2)}`;
+    for (const [name, set] of [['in the case\'s water', rise.inCase], ['on the solver\'s sea', rise.sea]] as const) {
+      riseLabels.forEach((label, i) => {
+        const b = set[i];
+        if (b.miss.length === 0) return;
+        lines.push(`${name}, ${label}: the surface's rise ${signed(b.rise)}; the up-flow it needs ${signed(b.need)}; the up-flow felt ${signed(b.up)}; the miss ${q(b.miss, 2)}`);
+        if (b.own.length > 0) lines.push(`  in the wave's frame: the surface's own rise ${signed(b.own)}, size ${q(b.own.map(Math.abs), 2)}; the solver's sea's own rise ${signed(b.ownSea)}; the felt water off the surface's line ${signed(b.slip)}, size ${q(b.slip.map(Math.abs), 2)}`);
+      });
+    }
     lines.push('');
     lines.push('## The seam (columns s 45 and s 60, every 0.1 s, the surface every 0.05 m along the ray; where the case leaves the solver\'s surface, hc crossing 1 mm)');
     lines.push(`the front points' foot height there: ${q(footHeights)} m`);
