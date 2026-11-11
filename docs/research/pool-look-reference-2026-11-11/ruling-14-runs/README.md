@@ -11,7 +11,7 @@ Re-run, from the repo root:
 
 ```
 rolldown docs/research/pool-look-reference-2026-11-11/ruling-14-runs/r14-probe.ts -o dist/scripts/r14-probe.mjs --format esm --platform node
-node dist/scripts/r14-probe.mjs --ref --periods 14 --out /tmp/ref-base.json
-node dist/scripts/r14-probe.mjs --ref --periods 14 --width 311 --out /tmp/ref-w311.json
+node dist/scripts/r14-probe.mjs --ref --periods 14 --json /tmp/ref-base.json
+node dist/scripts/r14-probe.mjs --ref --periods 14 --width 311 --json /tmp/ref-w311.json
 node docs/research/pool-look-reference-2026-11-11/ruling-14-runs/analyse.mjs /tmp/ref-base.json 10.5
 ```
