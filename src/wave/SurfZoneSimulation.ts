@@ -523,6 +523,14 @@ export interface SurfZoneConfig {
    * Online rooms pin it absent.
    */
   wallBody?: 'stream';
+  /**
+   * Ruling 7's step 1, opt-in (the water-physics advisor's ruling 7; `TubeFace.crestLine`,
+   * docs/research/crest-line-2026-11-11/README.md): each front point stands where its crest stands within its cell
+   * before its throw, so the crest line moves with the crest; 'sub' (`?crestLine=sub`) by the parabola through the
+   * crest's cell and its neighbours, 'top' (`?crestLine=top`) by the centre of the crest's top quarter. Absent: off,
+   * exactly as before. Online rooms pin it absent.
+   */
+  crestLine?: 'sub' | 'top';
 }
 
 /**
@@ -1609,7 +1617,7 @@ export class SurfZoneSimulation {
       const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
       const frontOptions = config.barrelFront ?? record.front;
       const options = face?.distance
-        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}), ...(face.formClock ? { subCrest: true } : {}) }
+        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}), ...(face.formClock ? { subCrest: true } : {}), ...(face.crestLine ? { crestLine: face.crestLine } : {}) }
         : lead ? { ...frontOptions, lead } : frontOptions;
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, options, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);

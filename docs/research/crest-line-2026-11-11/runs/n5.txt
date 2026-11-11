@@ -1,0 +1,134 @@
+# prone riders through the forming tube: pool straight Barrel, H 1.05 m at the feed, cases pool, switches {"tubeSeam":"blend","wallBody":"stream","crestLine":"top"}
+tubeFace {"anchor":true,"union":true,"lag":true,"clockRate":1.25,"thrownEnds":true,"continuity":true,"distance":true,"contour":true,"wallFlow":true,"contact":true,"cap":true,"merge":true,"guard":false,"track":false,"inertia":true,"retire":true,"buoy":false,"drop":false,"formClock":false,"seam":{"tau":[-0.5,0],"band":0.25},"stream":true,"crestLine":"top"}
+4 waves of riders after 50 s; measured 44.2 s; CPU 1/60 s; 273 s of wall time; take-off (84.4, -195.5), s 39.9; first throw there at 50.73 s; game start 18.0 m out
+
+## The clock (every front point, every step)
+before the throw: rate p50 1.131, p95 1.500, p99 1.500, max 1.500 (n 24858); on a rate bound 40.82 % of steps (0.5×: 22.95 %, 1.5×: 17.87 %) [bar: ≤ 1 %]
+on a bound by the clock's reading: τ to -1.5 s: 68.06 % of 2492; τ -1.5 to -1 s: 59.66 % of 7214; τ -1 to -0.5 s: 40.29 % of 7640; τ -0.5 to -0.25 s: 20.07 % of 3802; τ -0.25 to 0 s: 8.25 % of 3710
+|Δτ̇| a step, before the throw: p50 0.0348, p95 0.6737, p99 1.0000, max 1.0000 (n 24585) [bar: p99 ≤ 0.02]
+|Δτ̇| a step, every step (the throw and after it too): p50 0.0000, p95 0.2332, p99 0.7706, max 1.0000 (n 91672)
+the wall water's rate (tauRate), its change a step: p50 0.0000, p95 0.2450, p99 0.7775, max 1.1667 (n 90868); against the step the clock then took: p50 0.0000, p95 0.2450, p99 0.7769, max 1.1667 (n 90868)
+formation bar 7: each point's first clock less its case's τ_e: p5 0.008, p50 0.024, p95 2.852, p99 7.639, max 8.069 (n 293) s; within 0.1 s on 90.10 % of 293
+the contour throw: the crest's own distance to its contour as its clock crosses 0: p5 -0.84, p50 -0.35, p95 0.25 m, within 1 m on 96.41 % of 251; thrown before the solver broke it 55.78 %
+throws by reef column (n seaward of the reef line, less the take-off's 0.16 m): s 30: 0.50 (n 24); s 45: 2.17 (n 67); s 60: 4.92 (n 62); s 75: 6.12 (n 46); s 90: 5.80 (n 45); s 105: 5.40 (n 7)
+the surf meter over the measured time: {"typical":1.6026427006317139,"sets":1.6351602506128589,"waves":4}
+
+## The felt water at the board (attached riders, its change a step, m/s)
+every step: p50 0.011, p95 0.037, p99 0.088, max 1.447 (n 25803)
+in the case's water: p50 0.141, p95 0.441, p99 0.591, max 0.768 (n 178) [bar: p99 ≤ 0.2]
+for τ < −0.5 s (the nearest front point's clock): p50 0.020, p95 0.044, p99 0.055, max 0.140 (n 3462) [ruling 5's bar: p99 ≤ 0.1]
+jumps over 0.2 m/s a step: 69 of 25803 steps (0.27 %) [ruling 5's bar: ≤ 0.6 %]; where the case is not above the solver (hc ≤ 0.02 m): 25 (36.23 % of the jumps)
+the answering source (the case's wall water or the solver's): in the wall water on 326 steps; switches where hc ≤ 0.02 m: 27, with a jump over 0.2 m/s: 0 [ruling 5's bar: 0]; the felt water's change at those switches: p50 0.032, p95 0.055, p99 0.093, max 0.093 (n 27)
+
+## The surface's rise against the water's (at the board's place a step ago; m/s; a free surface needs ∂η/∂t + u·∇η = v)
+in the case's water, τ −1 to −0.5 s: the surface's rise p5 2.19, p50 4.99, p95 5.45; the up-flow it needs p5 1.69, p50 3.52, p95 3.80; the up-flow felt p5 0.87, p50 1.52, p95 1.62; the miss p50 1.96, p95 2.28, p99 2.28, max 2.28 (n 5)
+  in the wave's frame: the surface's own rise p5 0.61, p50 1.55, p95 1.88, size p50 1.55, p95 1.88, p99 1.88, max 1.88 (n 5); the solver's sea's own rise p5 0.09, p50 0.10, p95 0.11; the felt water off the surface's line p5 -0.01, p50 0.41, p95 0.56, size p50 0.41, p95 0.56, p99 0.56, max 0.56 (n 5)
+in the case's water, τ −0.5 to 0 s: the surface's rise p5 -6.04, p50 0.82, p95 8.72; the up-flow it needs p5 -3.31, p50 1.07, p95 6.01; the up-flow felt p5 -1.53, p50 0.18, p95 1.85; the miss p50 1.27, p95 5.08, p99 7.03, max 7.59 (n 126)
+  in the wave's frame: the surface's own rise p5 -1.36, p50 0.70, p95 3.42, size p50 0.89, p95 3.42, p99 5.16, max 5.36 (n 126); the solver's sea's own rise p5 -0.17, p50 0.04, p95 0.13; the felt water off the surface's line p5 -1.00, p50 -0.08, p95 0.72, size p50 0.32, p95 1.00, p99 1.57, max 1.79 (n 126)
+in the case's water, τ 0 to 0.5 s: the surface's rise p5 1.88, p50 3.80, p95 6.03; the up-flow it needs p5 1.31, p50 2.41, p95 4.01; the up-flow felt p5 1.62, p50 2.74, p95 3.11; the miss p50 0.42, p95 1.62, p99 1.96, max 1.96 (n 51)
+  in the wave's frame: the surface's own rise p5 -1.23, p50 -0.01, p95 1.03, size p50 0.42, p95 1.24, p99 1.37, max 1.37 (n 51); the solver's sea's own rise p5 -0.32, p50 -0.09, p95 -0.01; the felt water off the surface's line p5 0.00, p50 0.26, p95 0.71, size p50 0.26, p95 0.71, p99 0.74, max 0.74 (n 51)
+on the solver's sea, τ under −1 s: the surface's rise p5 -0.83, p50 0.23, p95 1.40; the up-flow it needs p5 -0.63, p50 0.18, p95 1.10; the up-flow felt p5 -0.82, p50 0.24, p95 1.36; the miss p50 0.16, p95 0.40, p99 0.53, max 0.67 (n 2307)
+  in the wave's frame: the surface's own rise p5 -0.25, p50 0.03, p95 0.17, size p50 0.09, p95 0.27, p99 0.31, max 0.40 (n 2292); the solver's sea's own rise p5 -0.25, p50 0.03, p95 0.17; the felt water off the surface's line p5 -0.55, p50 -0.09, p95 0.41, size p50 0.28, p95 0.55, p99 0.66, max 0.82 (n 2292)
+on the solver's sea, τ −1 to −0.5 s: the surface's rise p5 -0.92, p50 -0.32, p95 1.42; the up-flow it needs p5 -0.61, p50 -0.18, p95 0.91; the up-flow felt p5 -0.94, p50 -0.32, p95 1.41; the miss p50 0.20, p95 0.53, p99 0.68, max 0.78 (n 1158)
+  in the wave's frame: the surface's own rise p5 -0.18, p50 0.01, p95 0.31, size p50 0.10, p95 0.31, p99 0.48, max 0.53 (n 1158); the solver's sea's own rise p5 -0.18, p50 0.01, p95 0.29; the felt water off the surface's line p5 -0.64, p50 0.05, p95 0.37, size p50 0.27, p95 0.64, p99 0.83, max 0.91 (n 1158)
+on the solver's sea, τ −0.5 to 0 s: the surface's rise p5 -1.06, p50 -0.47, p95 0.85; the up-flow it needs p5 -0.71, p50 -0.34, p95 0.70; the up-flow felt p5 -1.02, p50 -0.45, p95 0.82; the miss p50 0.16, p95 0.43, p99 1.34, max 5.04 (n 944)
+  in the wave's frame: the surface's own rise p5 -0.25, p50 -0.05, p95 0.17, size p50 0.08, p95 0.28, p99 1.02, max 2.19 (n 944); the solver's sea's own rise p5 -0.24, p50 -0.05, p95 0.14; the felt water off the surface's line p5 -0.36, p50 0.14, p95 0.48, size p50 0.19, p95 0.51, p99 0.74, max 1.43 (n 944)
+on the solver's sea, τ 0 to 0.5 s: the surface's rise p5 -0.80, p50 -0.30, p95 0.19; the up-flow it needs p5 -0.55, p50 -0.23, p95 0.20; the up-flow felt p5 -0.97, p50 -0.35, p95 0.14; the miss p50 0.10, p95 0.83, p99 2.13, max 3.52 (n 717)
+  in the wave's frame: the surface's own rise p5 -0.33, p50 -0.01, p95 0.26, size p50 0.09, p95 0.36, p99 2.21, max 2.75 (n 717); the solver's sea's own rise p5 -0.32, p50 -0.01, p95 0.26; the felt water off the surface's line p5 -0.14, p50 0.12, p95 0.84, size p50 0.13, p95 0.86, p99 1.09, max 1.32 (n 717)
+on the solver's sea, τ 0.5 s on: the surface's rise p5 -0.69, p50 -0.33, p95 0.03; the up-flow it needs p5 -0.49, p50 -0.22, p95 0.06; the up-flow felt p5 -0.68, p50 -0.31, p95 0.05; the miss p50 0.08, p95 0.23, p99 0.29, max 0.33 (n 1179)
+  in the wave's frame: the surface's own rise p5 -0.14, p50 0.06, p95 0.24, size p50 0.10, p95 0.25, p99 0.42, max 0.47 (n 1179); the solver's sea's own rise p5 -0.14, p50 0.06, p95 0.24; the felt water off the surface's line p5 -0.20, p50 0.03, p95 0.27, size p50 0.08, p95 0.30, p99 0.38, max 0.40 (n 1179)
+on the solver's sea, no slice by it: the surface's rise p5 -0.24, p50 -0.02, p95 1.04; the up-flow it needs p5 -0.23, p50 -0.02, p95 0.88; the up-flow felt p5 -0.23, p50 -0.02, p95 1.02; the miss p50 0.02, p95 0.20, p99 0.33, max 0.61 (n 19344)
+
+## RULING 7: the surface's own rise by its parts (in the case, wave frame; R = sea + Atau + Ah + shape + slip + resid)
+tau -1 to 0 s: n 131, with shares readable 130; anchor outcomes capped 129, kept 2
+  R p5 -1.36, p50 0.70, p95 3.42; size p50 0.94, p95 3.42, p99 5.16, max 5.36 (n 130)
+  sea: p5 -0.06, p50 0.01, p95 0.08; size p50 0.02, p95 0.09, p99 0.18, max 0.36 (n 130)
+  Atau: p5 -0.09, p50 0.69, p95 1.20; size p50 0.73, p95 1.20, p99 1.42, max 1.84 (n 130)
+  Ah: p5 -0.22, p50 0.00, p95 0.52; size p50 0.00, p95 0.62, p99 0.96, max 1.07 (n 130)
+  shape: p5 -0.62, p50 0.10, p95 0.63; size p50 0.22, p95 0.73, p99 0.85, max 0.95 (n 130)
+  slip: p5 -2.23, p50 -0.02, p95 2.80; size p50 0.48, p95 3.06, p99 4.35, max 4.70 (n 130)
+  resid: p5 -0.00, p50 0.00, p95 0.00; size p50 0.00, p95 0.00, p99 0.00, max 0.00 (n 130)
+  anchor rate less c: p5 2.43, p50 2.61, p95 2.81; clock step rate: p5 0.80, p50 1.27, p95 1.50; slope along the ray: p5 -1.04, p50 0.02, p95 0.96
+  the tail (|R| > 2 m/s): 21; largest part: slip 19, Atau 2
+  the tail's mean signed parts as R's sign: sea 0.02, Atau 0.77, Ah 0.05, shape -0.16, slip 2.49, resid 0.00; mean |R| 3.18
+tau 0 to 0.5 s: n 51, with shares readable 51; anchor outcomes kept 39, capped 12
+  R p5 -1.23, p50 -0.01, p95 1.03; size p50 0.42, p95 1.24, p99 1.37, max 1.37 (n 51)
+  sea: p5 -0.13, p50 -0.02, p95 0.00; size p50 0.02, p95 0.13, p99 0.14, max 0.14 (n 51)
+  Atau: p5 -0.01, p50 0.00, p95 0.04; size p50 0.01, p95 0.04, p99 0.10, max 0.10 (n 51)
+  Ah: p5 -0.39, p50 0.00, p95 0.57; size p50 0.20, p95 0.57, p99 0.57, max 0.57 (n 51)
+  shape: p5 -1.23, p50 -0.24, p95 0.15; size p50 0.25, p95 1.23, p99 1.83, max 1.83 (n 51)
+  slip: p5 -0.23, p50 0.17, p95 1.30; size p50 0.21, p95 1.30, p99 1.64, max 1.64 (n 51)
+  resid: p5 -0.00, p50 -0.00, p95 0.00; size p50 0.00, p95 0.00, p99 0.00, max 0.00 (n 51)
+  anchor rate less c: p5 -0.44, p50 0.52, p95 2.63; clock step rate: p5 1.00, p50 1.00, p95 1.00; slope along the ray: p5 -1.14, p50 -0.84, p95 -0.40
+  the tail (|R| > 2 m/s): 0; largest part: 
+  the tail's mean signed parts as R's sign: sea none, Atau none, Ah none, shape none, slip none, resid none; mean |R| none
+bar A, the share at a point carried with the wave, τ −1 to 0 s: fell by over 0.005 on 6 of 130 steps [bar: 0]
+bar B, the clock rate that share stands for: p5 -0.37, p50 0.65, p95 1.21; the front point's own: p5 0.80, p50 1.27, p95 1.50; over 20 % off it on 119 of 129 steps [bar: 0]
+
+## The seam (columns s 45 and s 60, every 0.1 s, the surface every 0.05 m along the ray; where the case leaves the solver's surface, hc crossing 1 mm)
+the front points' foot height there: p50 0.855, p95 0.932, p99 0.932, max 0.932 (n 627) m
+τ under -1 s: height step p50 0.000, p90 0.001, max 0.001 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.3, p90 0.9, max 1.3° [bar: ≤ 3]; flow across 0.25 m p50 0.22, p90 0.26, max 0.27 m/s [bar: ≤ 0.2] (n 55)
+τ -1 to -0.5 s: height step p50 0.000, p90 0.001, max 0.002 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.5, p90 1.4, max 2.7° [bar: ≤ 3]; flow across 0.25 m p50 0.23, p90 0.29, max 0.33 m/s [bar: ≤ 0.2] (n 114)
+τ -0.5 to 0 s: height step p50 0.000, p90 0.002, max 0.011 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.6, p90 5.2, max 28.7° [bar: ≤ 3]; flow across 0.25 m p50 0.22, p90 0.34, max 2.28 m/s [bar: ≤ 0.2] (n 278)
+τ 0 to 0.5 s: height step p50 0.000, p90 0.001, max 0.581 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.5, p90 2.5, max 68.3° [bar: ≤ 3]; flow across 0.25 m p50 0.20, p90 0.44, max 3.27 m/s [bar: ≤ 0.2] (n 468)
+τ 0.5 to on: height step p50 0.001, p90 0.008, max 0.432 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.4, p90 18.1, max 67.7° [bar: ≤ 3]; flow across 0.25 m p50 0.20, p90 0.86, max 5.63 m/s [bar: ≤ 0.2] (n 659)
+
+## Passive prone: fell 6 of 32 [bar: ≤ 3 of 32] (lost board 6); in the case's water as they fell 5; before the throw (τ < 0) 1 [ruling 5's bar: ≤ 3], after it (τ ≥ 0) 5, no slice by them 0
+  wave 0 s 40 3 m out: held
+  wave 0 s 40 12 m out: held
+  wave 0 s 55 0 m out: fell at 7.48 s (lost board; -0.0 m seaward of the take-off's line; in the case's water; τ 0.36 s)
+  wave 0 s 55 6 m out: held
+  wave 0 s 55 12 m out: held
+  wave 0 s 55 18 m out: held
+  wave 0 s 70 3 m out: held
+  wave 0 s 70 12 m out: held
+  wave 1 s 40 3 m out: fell at 5.08 s (lost board; 1.8 m seaward of the take-off's line; in the case's water; τ -0.13 s)
+  wave 1 s 40 12 m out: held
+  wave 1 s 55 0 m out: fell at 7.53 s (lost board; 0.5 m seaward of the take-off's line; in the case's water; τ 0.33 s)
+  wave 1 s 55 6 m out: held
+  wave 1 s 55 12 m out: held
+  wave 1 s 55 18 m out: held
+  wave 1 s 70 3 m out: held
+  wave 1 s 70 12 m out: held
+  wave 2 s 40 3 m out: fell at 6.08 s (lost board; 0.8 m seaward of the take-off's line; τ 0.65 s)
+  wave 2 s 40 12 m out: held
+  wave 2 s 55 0 m out: fell at 7.60 s (lost board; 0.6 m seaward of the take-off's line; in the case's water; τ 0.43 s)
+  wave 2 s 55 6 m out: held
+  wave 2 s 55 12 m out: held
+  wave 2 s 55 18 m out: held
+  wave 2 s 70 3 m out: held
+  wave 2 s 70 12 m out: held
+  wave 3 s 40 3 m out: held
+  wave 3 s 40 12 m out: held
+  wave 3 s 55 0 m out: fell at 7.47 s (lost board; 0.9 m seaward of the take-off's line; in the case's water; τ 0.04 s)
+  wave 3 s 55 6 m out: held
+  wave 3 s 55 12 m out: held
+  wave 3 s 55 18 m out: held
+  wave 3 s 70 3 m out: held
+  wave 3 s 70 12 m out: held
+
+## Scripted rides: 24; popped up 22; stood 16; failed pop-ups 6 of 22 [ruling 4's bar: ≤ 2 of 16; ruling 5's: ≤ 8 of 22 and stood ≥ 14] (balance 6); fell after standing 16 (balance 14, lost board 2); fell paddling, before any pop-up 0 (none); never popped up and held 2
+  wave 0 18.0 m out steer 0: cue 3.63 s, up from 3.63 s; fell at 4.52 s (balance, landing); carried -9.2 m past the take-off
+  wave 0 18.0 m out steer -0.5: cue 3.63 s, up from 3.63 s; fell at 4.52 s (balance, landing); carried -9.2 m past the take-off
+  wave 0 15.0 m out steer 0: cue 3.72 s, up from 3.72 s, stood 4.92 s; fell at 6.32 s (balance, standing); carried -3.5 m past the take-off
+  wave 0 15.0 m out steer -0.5: cue 3.72 s, up from 3.72 s, stood 4.92 s; fell at 5.20 s (balance, standing); carried -5.2 m past the take-off
+  wave 0 12.0 m out steer 0: cue 3.87 s, up from 3.87 s, stood 5.07 s; fell at 6.70 s (balance, standing); carried 3.1 m past the take-off
+  wave 0 12.0 m out steer -0.5: cue 3.87 s, up from 3.87 s, stood 5.07 s; fell at 5.68 s (balance, standing); carried -0.1 m past the take-off
+  wave 1 18.0 m out steer 0: cue 3.62 s, up from 3.62 s; fell at 4.53 s (balance, landing); carried -8.8 m past the take-off
+  wave 1 18.0 m out steer -0.5: cue 3.62 s, up from 3.62 s; fell at 4.55 s (balance, landing); carried -8.8 m past the take-off
+  wave 1 15.0 m out steer 0: cue 3.67 s, up from 3.67 s, stood 4.87 s; fell at 6.08 s (balance, standing); carried -2.7 m past the take-off
+  wave 1 15.0 m out steer -0.5: cue 3.67 s, up from 3.67 s, stood 4.87 s; fell at 5.18 s (balance, standing); carried -4.4 m past the take-off
+  wave 1 12.0 m out steer 0: cue 3.83 s, up from 3.83 s, stood 5.03 s; fell at 5.43 s (lost board, standing, in the case's water); carried -0.5 m past the take-off
+  wave 1 12.0 m out steer -0.5: cue 3.83 s, up from 3.83 s, stood 5.03 s; fell at 5.53 s (lost board, standing, in the case's water); carried -0.3 m past the take-off
+  wave 2 18.0 m out steer 0: no cue; on the board to the end; carried 0.9 m past the take-off
+  wave 2 18.0 m out steer -0.5: no cue; on the board to the end; carried 0.9 m past the take-off
+  wave 2 15.0 m out steer 0: cue 3.78 s, up from 3.78 s, stood 4.98 s; fell at 6.68 s (balance, standing); carried -4.1 m past the take-off
+  wave 2 15.0 m out steer -0.5: cue 3.78 s, up from 3.78 s, stood 4.98 s; fell at 5.32 s (balance, standing); carried -5.8 m past the take-off
+  wave 2 12.0 m out steer 0: cue 4.03 s, up from 4.03 s, stood 5.23 s; fell at 6.93 s (balance, standing); carried 0.8 m past the take-off
+  wave 2 12.0 m out steer -0.5: cue 4.03 s, up from 4.03 s, stood 5.23 s; fell at 5.58 s (balance, standing); carried -1.9 m past the take-off
+  wave 3 18.0 m out steer 0: cue 4.23 s, up from 4.23 s; fell at 5.30 s (balance, landing); carried -7.6 m past the take-off
+  wave 3 18.0 m out steer -0.5: cue 4.23 s, up from 4.23 s; fell at 5.27 s (balance, landing); carried -7.6 m past the take-off
+  wave 3 15.0 m out steer 0: cue 4.22 s, up from 4.22 s, stood 5.42 s; fell at 5.88 s (balance, standing); carried -5.0 m past the take-off
+  wave 3 15.0 m out steer -0.5: cue 4.22 s, up from 4.22 s, stood 5.42 s; fell at 5.70 s (balance, standing); carried -5.4 m past the take-off
+  wave 3 12.0 m out steer 0: cue 4.27 s, up from 4.27 s, stood 5.47 s; fell at 6.65 s (balance, standing); carried -0.1 m past the take-off
+  wave 3 12.0 m out steer -0.5: cue 4.27 s, up from 4.27 s, stood 5.47 s; fell at 5.70 s (balance, standing); carried -1.6 m past the take-off

@@ -61,6 +61,36 @@ describe('each column’s crests, their breaking and their U/C', () => {
     }
   });
 
+  it('reads the centre of the crest\'s top: at a symmetric crest\'s peak, steady across cells, and steadier than the parabola on a flat-topped one', () => {
+    // A symmetric bump: the top's centre is its peak within 0.1 m (four cells' heights stand in for the top's water),
+    // and it moves as the peak does where the highest cell changes.
+    const out: CrestSample[] = [];
+    let last = Number.NaN;
+    for (let peak = 30.5; peak <= 31.5001; peak += 0.05) {
+      const { solver, breaking } = bumps([peak]);
+      columnCrests(solver, breaking, 0, 0.1, out);
+      const place = out[3].z + out[3].top!;
+      expect(Math.abs(place - peak)).toBeLessThan(0.1);
+      if (last === last) expect(Math.abs(place - last - 0.05)).toBeLessThan(0.03);
+      last = place;
+    }
+    // A broad crest a cell wide whose front rises as its back falls (the sea's before a throw: the highest cell changes
+    // with the crest's body hardly moved: here its front cell 8 mm up). The parabola's top leaps over a quarter of a
+    // row; the top's centre moves under 0.05 m.
+    const flat = (front: number) => {
+      const { solver, breaking } = bumps([30.5]);
+      const shape = [0.3, 0.52, 0.6, 0.66, 0.672, front, 0.4, 0.1, -0.15, -0.2];
+      for (let k = 0; k < shape.length; k += 1) for (let ix = 0; ix < solver.nx; ix += 1) solver.h[(26 + k) * solver.nx + ix] = DEPTH + shape[k];
+      for (let iz = 0; iz < solver.nz; iz += 1) if (iz < 26 || iz >= 26 + shape.length) for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] = DEPTH + (iz < 26 ? 0.3 : -0.2);
+      columnCrests(solver, breaking, 0, 0.1, out);
+      return { sub: out[3].z + out[3].sub!, top: out[3].z + out[3].top! };
+    };
+    const before = flat(0.668);
+    const after = flat(0.676);
+    expect(after.sub - before.sub).toBeGreaterThan(0.25);
+    expect(Math.abs(after.top - before.top)).toBeLessThan(0.05);
+  });
+
   it('reads the breaking over the crest’s segment: its strongest', () => {
     const { solver, breaking } = bumps([30.5]);
     const column = 4;

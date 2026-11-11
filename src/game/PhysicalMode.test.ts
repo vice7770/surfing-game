@@ -331,6 +331,25 @@ describe('PhysicalMode', () => {
   });
 
   // Ruling 6 (wall-body, 2026-11-11): the streamline wall water's switch; read with the seam blend alone; online rooms pin it.
+  // Ruling 7's step 1 (crest-line, 2026-11-11): the crest line's switch; the Barrel's alone; online rooms pin it.
+  it('takes `?crestLine=sub` or `top` at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?crestLine=sub')).toEqual({ crestLine: 'sub' });
+    expect(tubeFaceSwitches('?crestLine=Sub&formClock=c1')).toEqual({ formClock: 'c1', crestLine: 'sub' });
+    expect(tubeFaceSwitches('?crestLine=top')).toEqual({ crestLine: 'top' });
+    for (const search of ['?crestLine', '?crestLine=', '?crestLine=on', '?crestLine=old', '?crestLine=1']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).crestLine).toBeUndefined();
+      vi.stubGlobal('location', { search: '?crestLine=sub' });
+      expect(surfZoneConfigFor(barrel, 5, false).crestLine).toBe('sub');
+      expect(surfZoneConfigFor(training, 5, false).crestLine).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, false, { crestLine: undefined }).crestLine).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('takes `?wallBody=stream` with `?tubeSeam=blend` alone, at the Barrel alone, and an online room pins the default (dev switch)', () => {
     expect(tubeFaceSwitches('?tubeSeam=blend&wallBody=stream')).toEqual({ tubeSeam: 'blend', wallBody: 'stream' });
     expect(tubeFaceSwitches('?wallBody=Stream&tubeSeam=blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend', wallBody: 'stream' });

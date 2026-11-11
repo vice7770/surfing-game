@@ -136,6 +136,16 @@ export interface FrontOptions {
    * distance from there too, so neither steps a row at a time.
    */
   subCrest?: boolean;
+  /**
+   * Ruling 7's step 1 (the water-physics advisor's ruling 7, docs/research/surface-rise-2026-11-11/ruling-7; notes in
+   * docs/research/crest-line-2026-11-11/README.md; `TubeFace.crestLine`), with `distance`: before its throw a point stands
+   * where its crest stands within its cell, not on the cell's centre, as it already does after its throw (its slice's
+   * own pace). So the line through the points (σ, the rays, the anchors, the clock's spread along the crest) moves with
+   * the crest and doesn't hop a row at a time. `crestSub` is then 0 (the place is already in `z`). 'sub': the top of the
+   * parabola through the crest's cell and its neighbours (`CrestSample.sub`); 'top': the centre of the crest's top
+   * (`CrestSample.top`), which doesn't leap where a broad crest's highest cell changes.
+   */
+  crestLine?: 'sub' | 'top';
 }
 
 /**
@@ -454,14 +464,14 @@ export class BreakingFront {
           ? point.crestSpeed === undefined ? s.speed : point.crestSpeed + (s.speed - point.crestSpeed) * Math.min(1, (time - point.seen) / PACE_SECONDS)
           : point.crestSpeed;
         const next: FrontPoint = {
-          ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, seen: time, fresh,
+          ...point, sigma: 0, x: s.x, z: this.options.crestLine ? crestPlace(s, this.options.crestLine) : s.z, b: s.b, height: s.eta, crestDepth: s.depth, seen: time, fresh,
           ...(crestSpeed === undefined ? {} : { crestSpeed }),
         };
         if (this.options.distance && s.dirX === s.dirX && s.dirZ === s.dirZ && s.dirX !== undefined) {
           next.dirX = s.dirX;
           next.dirZ = s.dirZ;
         }
-        if (this.options.subCrest) next.crestSub = s.sub ?? 0;
+        if (this.options.subCrest) next.crestSub = this.options.crestLine ? 0 : s.sub ?? 0;
         if (next.unbroken && s.strength > 0) {
           // The solver's break has come: its throw may now.
           next.broke = time;
@@ -508,7 +518,7 @@ export class BreakingFront {
         const dirX = next.dirX ?? 0;
         const dirZ = next.dirZ ?? 1;
         const earliest = this.timing.distance?.earliest?.(next.footHeight, this.timing.h0) ?? this.timing.earliest;
-        const reach = this.options.distance(s.x, this.options.subCrest ? s.z + (s.sub ?? 0) : s.z, 0, 1, throwDepth);
+        const reach = this.options.distance(s.x, this.options.crestLine ? crestPlace(s, this.options.crestLine) : this.options.subCrest ? s.z + (s.sub ?? 0) : s.z, 0, 1, throwDepth);
         const pace = crestCelerity(s.speed, s.depth, s.eta) / Math.max(0.5, dirZ);
         if (next.crossed === null && reach <= -earliest * pace) next.crossed = time;
         if (next.crossed !== null) {
@@ -523,11 +533,11 @@ export class BreakingFront {
           const end = this.options.merge ? this.endBeside(pointsOf, s, earliest, next.crossed) : undefined;
           if (end) this.merges += 1;
           points.push({
-            id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
+            id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: this.options.crestLine ? crestPlace(s, this.options.crestLine) : s.z, b: s.b, height: s.eta,
             joined: end ? end.joined : next.crossed, depth: s.depth, throwDepth, crestDepth: s.depth, thrown: null, throwZ: null,
             footHeight: next.footHeight, footDepth: this.timing.h0,
             broke: time, tau: earliest, seen: time, fresh: next.fresh, dirX, dirZ,
-            ...(this.options.subCrest ? { crestSub: s.sub ?? 0 } : {}),
+            ...(this.options.subCrest ? { crestSub: this.options.crestLine ? 0 : s.sub ?? 0 } : {}),
             ...(s.speed > 0 ? { crestSpeed: s.speed } : {}),
             ...(s.strength > 0 ? {} : { unbroken: true as const }),
             ...(next.jumped ? { jumped: next.jumped } : {}),
@@ -910,6 +920,11 @@ export class BreakingFront {
  * σ carried on straight across the gap. Chains go in the order they began, so a parent comes before its child, and a
  * chain end is continued once, so a front's last point is always the end its next chain continues.
  */
+/** Where a crest stands along its column under `FrontOptions.crestLine`: its cell's centre and its place within it. */
+function crestPlace(sample: CrestSample, by: 'sub' | 'top'): number {
+  return sample.z + ((by === 'top' ? sample.top : undefined) ?? sample.sub ?? 0);
+}
+
 function joinChains(chains: readonly FrontPoint[][], parents: ReadonlyMap<FrontPoint[], FrontPoint[]>): FrontPoint[][] {
   const fronts: FrontPoint[][] = [];
   const frontOf = new Map<FrontPoint[], FrontPoint[]>();

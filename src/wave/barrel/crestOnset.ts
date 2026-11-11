@@ -52,7 +52,20 @@ export interface CrestSample {
    * absent on a sample made elsewhere).
    */
   sub?: number;
+  /**
+   * The same by the crest's top instead: the centre of the water standing in the top `CREST_TOP` of the wave's height
+   * (crest over trough) along the column, about the highest cell, m along +z from `z`. On a broad, flat crest a cell
+   * wide the parabola's top leaps as the highest cell changes (0.8 m in two steps before a throw, measured:
+   * docs/research/crest-line-2026-11-11/README.md); the top's centre takes each cell in and out by its height, so it
+   * moves at the crest's own pace (ruling 7's step 1, `?crestLine=top`; absent on a sample made elsewhere).
+   */
+  top?: number;
 }
+
+/** The share of the wave's height (crest over trough) whose water `CrestSample.top` is the centre of. */
+export const CREST_TOP = 0.25;
+/** How far either way along the column `CrestSample.top` reads, rows. */
+const CREST_TOP_ROWS = 6;
 
 /** The solver's breaking strength per cell (`BreakingModel`'s). */
 export interface BreakingField {
@@ -110,6 +123,21 @@ export function columnCrests(
     const after = h[i + nx] + bed[i + nx];
     const row = 0.5 * (zCenters[iz + 1] - zCenters[iz - 1]);
     sample.sub = Math.min(0.5, Math.max(-0.5, (0.5 * (before - after)) / (before - 2 * eta + after))) * row;
+    // The top's centre: the cells either way while they stand over the top's floor, each by its height over it.
+    const floor = eta - CREST_TOP * Math.max(eta - trough, 1e-6);
+    let weight = eta - floor;
+    let moment = 0;
+    for (const way of [-1, 1]) {
+      for (let k = 1; k <= CREST_TOP_ROWS; k += 1) {
+        const r = iz + way * k;
+        if (r < 0 || r >= nz) break;
+        const over = h[r * nx + ix] + bed[r * nx + ix] - floor;
+        if (!(h[r * nx + ix] > WET) || !(over > 0)) break;
+        weight += over;
+        moment += over * (zCenters[r] - zCenters[iz]);
+      }
+    }
+    sample.top = moment / weight;
     count += 1;
   }
   return count;

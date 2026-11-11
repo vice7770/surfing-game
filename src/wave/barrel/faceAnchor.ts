@@ -142,6 +142,16 @@ export interface TubeFace {
    * the build exactly as before.
    */
   stream?: true;
+  /**
+   * Ruling 7's step 1 (the water-physics advisor's ruling 7, docs/research/surface-rise-2026-11-11/ruling-7; notes in
+   * docs/research/crest-line-2026-11-11/README.md), with `distance`: before its throw a front point stands where its crest
+   * stands within its cell, not on the cell's centre (`FrontOptions.crestLine`), so the crest line the slices, rays,
+   * anchors and clocks are laid along doesn't hop a row at a time. Opt-in: 'sub' (`?crestLine=sub`), the top of the
+   * parabola through the crest's cell and its neighbours; 'top' (`?crestLine=top`), the centre of the crest's top
+   * quarter (`CrestSample.top`), which doesn't leap where a broad crest's highest cell changes. Absent: off, the build
+   * exactly as before.
+   */
+  crestLine?: 'sub' | 'top';
 }
 
 /**
@@ -191,6 +201,8 @@ export interface TubeFaceSwitches {
   seamBand?: number;
   /** Ruling 6's streamline wall water (`TubeFace.stream`), opt-in and with `tubeSeam` alone: 'stream' turns it on. */
   wallBody?: 'stream';
+  /** Ruling 7's step 1 (`TubeFace.crestLine`), opt-in: 'sub' or 'top' turns it on; absent, or anything else, it is off. */
+  crestLine?: 'sub' | 'top';
 }
 
 /**
@@ -225,6 +237,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     formClock: distance && (switches.formClock === 'c1' || (FORM_CLOCK_DEFAULT && switches.formClock !== 'old')),
     ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band } } : {}),
     ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { stream: true as const } : {}),
+    ...(distance && (switches.crestLine === 'sub' || switches.crestLine === 'top') ? { crestLine: switches.crestLine } : {}),
   };
 }
 
