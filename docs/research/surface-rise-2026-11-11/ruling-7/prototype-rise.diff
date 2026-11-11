@@ -1,0 +1,128 @@
+diff --git a/src/physics/PhysicalSurfWater.ts b/src/physics/PhysicalSurfWater.ts
+index 427f816a..3451bbec 100644
+--- a/src/physics/PhysicalSurfWater.ts
++++ b/src/physics/PhysicalSurfWater.ts
+@@ -1088,9 +1088,12 @@ export const WALL_WATER = { steepest: 0.2, fade: [0.3, 0.6], blend: 0.25, facing
+  * surface over it (*measured*: `wallWaterFlow`'s 0.3–0.6 m fade, applied to this weight, put the jolts back as boards
+  * sank through it, felt p99 0.55 → 2.71 m/s; docs/research/wall-body-2026-11-11/README.md).
+  */
++/** Ruling 7 prototype (not for merge): carry the hand-over's rise in the stream flow; `form` 'normal' or 'up'. */
++export const STREAM_RISE = { on: false, form: 'normal' as 'normal' | 'up', gain: 1 };
++
+ export function streamWallFlow(
+   out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, surfaceY: number,
+-  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>,
++  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'> & { seamRise?: number },
+   share = 1,
+ ): void {
+   const rx = -wall.tangentZ;
+@@ -1111,6 +1114,17 @@ export function streamWallFlow(
+   out.flowX += change * rx;
+   out.flowZ += change * rz;
+   out.flowY += w * (q * na - out.flowY);
++  // Ruling 7 prototype: the surface's own rise R (the hand-over's rate) as the water's speed along the surface's normal,
++  // R n_y n (or straight up), so the water rises with the surface it is drawn under.
++  const rise = STREAM_RISE.on && wall.seamRise === wall.seamRise && wall.seamRise !== undefined ? STREAM_RISE.gain * wall.seamRise : 0;
++  if (rise !== 0) {
++    if (STREAM_RISE.form === 'up') out.flowY += rise;
++    else {
++      out.flowX += rise * ny * na * rx;
++      out.flowZ += rise * ny * na * rz;
++      out.flowY += rise * ny * ny;
++    }
++  }
+ }
+ 
+ export function wallWaterFlow(
+diff --git a/src/wave/barrel/sweptContact.ts b/src/wave/barrel/sweptContact.ts
+index 2415942b..9c12dc01 100644
+--- a/src/wave/barrel/sweptContact.ts
++++ b/src/wave/barrel/sweptContact.ts
+@@ -130,6 +130,8 @@ export interface ContactHit {
+    */
+   seam?: number;
+   aheadSeam?: number;
++  /** Ruling 7 prototype: the hand-over's own rise at the crossing above the point, m/s (`WallWater.rise`). */
++  seamRise?: number;
+ }
+ 
+ export function createContactHit(): ContactHit {
+@@ -426,6 +428,11 @@ export class SweptContact {
+         for (let m = 0; m < 3; m += 1) seam += this.weights[3 * surface + m] * wall.seam[this.at[3 * surface + m]];
+         hit.seam = seam;
+       }
++      if (wall.rise) {
++        let rise = 0;
++        for (let m = 0; m < 3; m += 1) rise += this.weights[3 * surface + m] * wall.rise[this.at[3 * surface + m]];
++        hit.seamRise = rise;
++      }
+       hit.wallLow = wall.low[strip] + f * (wall.low[next] - wall.low[strip]);
+       hit.wallTop = wall.top[strip] + f * (wall.top[next] - wall.top[strip]);
+       hit.wallSpeed = wall.speed[strip] + f * (wall.speed[next] - wall.speed[strip]);
+@@ -435,6 +442,7 @@ export class SweptContact {
+       hit.wallSpeed = Number.NaN;
+       hit.wallWeight = 0;
+       if (wall?.seam) hit.seam = Number.NaN;
++      hit.seamRise = 0;
+     }
+     hit.normalDepth = Number.NaN;
+     hit.verticalDepth = Number.NaN;
+diff --git a/src/wave/barrel/sweptLoft.ts b/src/wave/barrel/sweptLoft.ts
+index e32e0ed0..5cce4369 100644
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -268,6 +268,8 @@ export interface WallWater {
+    * its surface is the solver's; the wall water's flow is weighed by it (`ContactHit.seam`).
+    */
+   seam?: Float32Array;
++  /** Ruling 7 prototype: the hand-over's own rise at the vertex, m/s: the share's time rate times its height. */
++  rise?: Float32Array;
+ }
+ 
+ /**
+@@ -392,6 +394,8 @@ export class SweptLoft {
+   /** Ruling 5's seam blend (`TubeFace.seam`), per slice: its clock's share α_τ and its height band b, m (`seamBand`). */
+   private readonly seamTauRow = new Float64Array(MAX_SLICES + 1);
+   private readonly seamBandRow = new Float64Array(MAX_SLICES + 1);
++  private readonly seamRateRow = new Float64Array(MAX_SLICES + 1);
++  private seamRate = 0;
+   /** Per slice, its library's frame time, s (the refinement's unit; read by probes). */
+   private readonly sliceFrame = new Float64Array(MAX_SLICES + 1);
+   private readonly sliceTouchdown = new Float64Array(MAX_SLICES + 1);
+@@ -500,7 +504,7 @@ export class SweptLoft {
+       ...(this.contact && options.face?.wallFlow === true && library.options.geometry !== 'bounded-C' ? { wall: {
+         low: new Float32Array(slices), top: new Float32Array(slices), speed: new Float32Array(slices), b: new Float32Array(slices),
+         along: new Float32Array(vertices), up: new Float32Array(vertices),
+-        ...(options.face.seam ? { seam: new Float32Array(vertices) } : {}),
++        ...(options.face.seam ? { seam: new Float32Array(vertices), rise: new Float32Array(vertices) } : {}),
+       } } : {}),
+     };
+   }
+@@ -1377,6 +1381,10 @@ export class SweptLoft {
+       const seamReach = seam ? seamBand(seam.band, s.footHeight) : 0;
+       if (seam) {
+         this.seamTauRow[slice] = seamTau;
++        // Ruling 7 prototype: d(alpha_tau)/dt = S'(u) / (full - on) x the slice clock's rate.
++        const seamU = (tau - seam.tau[0]) / (seam.tau[1] - seam.tau[0]);
++        this.seamRateRow[slice] = seamU > 0 && seamU < 1 ? (6 * seamU * (1 - seamU) / (seam.tau[1] - seam.tau[0])) * wallRate : 0;
++        this.seamRate = this.seamRateRow[slice];
+         this.seamBandRow[slice] = seamReach;
+       }
+       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
+@@ -2081,6 +2089,8 @@ export class SweptLoft {
+   private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number): number {
+     const share = this.result.wall?.seam;
+     const delta = e * (target - h);
++    const rise = this.result.wall?.rise;
++    if (rise) rise[v] = this.seamRate * (floor ? seamHeightWeight(delta, band) : 1) * delta;
+     if (!floor) {
+       if (share) share[v] = tau;
+       return tau === 1 ? (e === 1 ? target : h + delta) : h + tau * delta;
+@@ -2111,6 +2121,7 @@ export class SweptLoft {
+         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
+         const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
+         if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
++        this.seamRate = this.seamRateRow[row];
+         r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row]);
+       } else if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
+       else {

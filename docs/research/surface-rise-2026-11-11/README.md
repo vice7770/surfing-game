@@ -77,3 +77,8 @@ For scale, the same readings elsewhere (blend + stream):
 
 `runs/k1`–`k5`. Command: `PROBE=1 H=1.05 CASE=pool SWITCHES=tubeSeam=blend,wallBody=stream LOG=<file> npx vitest run
 src/wave/probes/proneSeam.probe.test.ts` (`H=1.32` for 1.8 m).
+
+## What came next
+
+The advisor's ruling 7 answers the two open points above: [ruling-7/README.md](ruling-7/README.md). In short: the water
+should carry the rise, but the surface's hand-over must be made smooth at its source first.
