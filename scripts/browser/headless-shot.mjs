@@ -2,6 +2,7 @@
 //
 //   node scripts/browser/headless-shot.mjs sheet --serve=<worktree> --port=<vitePort> --out=<dir> [--spot=padang|reef|beach|point]
 //        [--whitewater] [--compute=cpu|gpu|auto] [--shots=name:look:time,...] [--cdp=9420] [--recv=5290]
+//        [--advance=<s>,<s>...] steps the sea on after the first hold and shoots again (<name>-<look>-<time>-at<N>s.png); --first=skip drops the first hold's shots
 //     Runs the water sheet dev view (?inpage&waterSheet), saves water-sheet.png (3 times x 2 looks x N shots),
 //     prints the available shot names, then saves each requested close-up as <name>-<look>-<time>.png (1280x720).
 //     Shot names come from the page (e.g. lineup, tube-beside, tube-shoulder, tube-inside, horizon, below,
@@ -128,6 +129,17 @@ async function sheet() {
   writeFileSync(join(out, 'status.txt'), `${status}\nshots: ${names.join(', ')}\n`);
   // A custom view's own commas: with one in the list, shots are separated by ';'.
   const wanted = (args.shots ?? '').split((args.shots ?? '').includes('@') ? ';' : ',').filter(Boolean);
+  // --advance=60,60: after the first hold, step the sea on by each (to the next hold) and shoot again, as <name>-...-plus<N>.png.
+  const advances = (args.advance ?? '').split(',').filter(Boolean).map(Number);
+  for (let round = 0; round <= advances.length; round += 1) {
+  let suffix = '';
+  if (round > 0) {
+    await page.eval(`window.waterSheetAdvance(${advances[round - 1]})`, 1800000);
+    const seconds = await page.eval('window.waterSheetSeconds');
+    suffix = `-at${Math.round(seconds)}s`;
+    log(`advanced to ${Number(seconds).toFixed(1)} s`);
+    writeFileSync(join(out, 'status.txt'), `advanced to ${Number(seconds).toFixed(1)} s of stepping; shots: ${(await page.eval('window.waterSheetShots.map((s) => s.name)')).join(', ')}\n`, { flag: 'a' });
+  } else if (advances.length && args.first === 'skip') continue;
   for (const spec of wanted) {
     const [name, look = 'rich', time = 'midday'] = spec.split(':');
     let view = JSON.stringify(name);
@@ -137,8 +149,9 @@ async function sheet() {
       const ok = await page.eval(`window.waterSheetShot(${view}, ${JSON.stringify(look)}, ${JSON.stringify(time)})`);
       if (!ok) { log(`no shot named ${name}`); waiting?.cancel?.(); waiting = null; shot.catch(() => undefined); break; }
       const png = await shot;
-      if (k === 1) { const file = join(out, `${name.replace(/[^a-z0-9-]+/gi, '_')}-${look}-${time}.png`); writeFileSync(file, png); log(`saved ${file}`); }
+      if (k === 1) { const file = join(out, `${name.replace(/[^a-z0-9-]+/gi, '_')}-${look}-${time}${suffix}.png`); writeFileSync(file, png); log(`saved ${file}`); }
     }
+  }
   }
   server.close();
 }

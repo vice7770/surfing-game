@@ -502,7 +502,11 @@ export const POOL_LEDGE = { gradient: 1 / 2.0, kneeRounding: 1 };
 export const POOL_INSIDE = { step: 0.3, width: 16 };
 
 /** What sizes the straight reef across its line: its platform, its crest along it and its top (`POOL_STRAIGHT`'s, or `POOL_REF`'s). */
-export interface PoolStraightShape { platformDepth: number; crestProfile: [number, number][]; flatWidth: number }
+export interface PoolStraightShape {
+  platformDepth: number; crestProfile: [number, number][]; flatWidth: number;
+  /** Its wrapped window's width, m, where it is not `POOL.alongShore` (the reference size's): where the wrap's wall stands. */
+  alongShore?: number;
+}
 
 /**
  * The straight Barrel re-sized to the owner's reference (`?poolSize=ref`; ruling 13,
@@ -511,7 +515,10 @@ export interface PoolStraightShape { platformDepth: number; crestProfile: [numbe
  * the knee's rounding × 1.11, the period × √1.11; slopes, the reef's angle and line, the lengths along the reef, the
  * machine's floor and its direction's rule unchanged. `edgeHeight`: the machine's wave at the tank's edge, m, tuned so the
  * foot crest on the knee is 1.11 × the 1.8 m Barrel's (the ref probe). `startOut` and the first break's depth are the
- * 1.8 m Barrel's × 1.11 (`poolStraightBreakDepth`, `poolStraightStartOut`). Opt-in; provisional. Mutable for the probes.
+ * 1.8 m Barrel's × 1.11 (`poolStraightBreakDepth`, `poolStraightStartOut`). `alongShore`: its wrapped window's width, m
+ * (ruling 14, ruling-14.md beside it): the default's 280 m × 1.11, so two of the 10.5 s wave's along-shore wavelengths
+ * cross it at the copy's direction (36.8° at the feed, `poolStraightDirection`; kept at 280 m the sea turned to 41.8°).
+ * Read by `alongShoreOf`; `POOL.alongShore` is every other pool's. Opt-in; provisional. Mutable for the probes.
  */
 export const POOL_REF = {
   scale: 1.11,
@@ -522,6 +529,7 @@ export const POOL_REF = {
   crestProfile: [[0, 5.0], [30, 1.78], [65, 1.0], [175, 1.0], [205, 2.2], [235, 5.0]] as [number, number][],
   flatWidth: 6.7,
   kneeRounding: 3.3,
+  alongShore: 311,
 };
 
 /** The straight Barrel's size switch (`SurfZoneConfig.poolSize`): 'ref', the reference's 2 m faces (`POOL_REF`); none, the Small / Big sizes. */
@@ -537,11 +545,15 @@ export function poolPeriodOf(config: { spot?: string; poolWaves?: PoolWaves; poo
   return poolRefOn(config) ? POOL_REF.period : POOL.period;
 }
 
-/** The straight floor at the reference size (`POOL_REF`, `?poolSize=ref`), m; with `inside`, `POOL_INSIDE`'s shelf × its scale. */
-export function poolStraightRefDepth(x: number, z: number, inside = false): number {
+/**
+ * The straight floor at the reference size (`POOL_REF`, `?poolSize=ref`), m; with `inside`, `POOL_INSIDE`'s shelf × its
+ * scale; `alongShore`, its window's width (`POOL_REF.alongShore`, or `?poolWindow`'s), which only the wrap's wall reads.
+ */
+export function poolStraightRefDepth(x: number, z: number, inside = false, alongShore: number = POOL_REF.alongShore): number {
   const r = POOL_REF;
   return poolStraightDepthWith(x, z, { gradient: POOL_STRAIGHT.gradient, kneeRounding: r.kneeRounding },
-    inside ? { step: POOL_INSIDE.step * r.scale, width: POOL_INSIDE.width * r.scale } : undefined, r);
+    inside ? { step: POOL_INSIDE.step * r.scale, width: POOL_INSIDE.width * r.scale } : undefined,
+    { platformDepth: r.platformDepth, crestProfile: r.crestProfile, flatWidth: r.flatWidth, alongShore });
 }
 
 /** The straight Barrel's floor, by `?poolFloor`: today's (undefined, the default), the steeper ledge, or the shallow inside. */
@@ -579,7 +591,7 @@ export function poolStraightDepthWith(x: number, z: number, face: { gradient: nu
     return Math.min(ramp, beach);
   }
   // The wrap's land barrier (none by default): the deck, from the beach out to `wrapWallFrom`.
-  if (r.wrapWallWidth > 0 && z > r.wrapWallFrom && Math.abs(x) >= p.alongShore / 2 - r.wrapWallWidth / 2) return -p.deck;
+  if (r.wrapWallWidth > 0 && z > r.wrapWallFrom && Math.abs(x) >= (shape?.alongShore ?? p.alongShore) / 2 - r.wrapWallWidth / 2) return -p.deck;
   const { s, n } = poolStraightFrame(x, z);
   const crest = shape ? poolStraightCrestDepth(s, shape) : poolStraightCrestDepth(s);
   let reef: number;
@@ -650,10 +662,11 @@ export function poolStraightDirection(waveNumber: number, alongShore = POOL.alon
 }
 
 /** The pool's bed for its floor: the training A-frame (the default), the Barrel's straight reef or its A-frame. */
-export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace, size?: PoolSizeSwitch): SurfSpot {
+export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace, size?: PoolSizeSwitch, window?: number): SurfSpot {
   const floor = poolFloorOf({ poolWaves: waves, poolBarrel: barrel });
-  // The reference size (`?poolSize=ref`, the straight floor's): its own shape, with the shallow inside if asked; never the ledge.
-  if (size === 'ref' && floor === 'straight') return { name: 'pool', depthAt: (x, z) => poolStraightRefDepth(x, z, face === 'inside') };
+  // The reference size (`?poolSize=ref`, the straight floor's): its own shape, with the shallow inside if asked; never the
+  // ledge. `window`: its wrapped window's width, m (`alongShoreOf`), read at this size alone.
+  if (size === 'ref' && floor === 'straight') return { name: 'pool', depthAt: (x, z) => poolStraightRefDepth(x, z, face === 'inside', window) };
   const straight = face === 'ledge' ? poolStraightLedgeDepth : face === 'inside' ? poolStraightInsideDepth : poolStraightDepth;
   return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : straight };
 }

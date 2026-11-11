@@ -15,7 +15,7 @@ import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotio
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import {
-  POOL, POOL_BARREL, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
+  POOL, POOL_BARREL, POOL_REF, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
   poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolSizeSwitch, type PoolWaves,
 } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
@@ -680,11 +680,11 @@ export const ALONG_SHORE = 160;
 
 /**
  * The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), the Wave
- * Pool's, or the Canyon's layout's (`CANYON.alongShore`, 400 m since canyon-beach-break, on either layout), else
- * ALONG_SHORE.
+ * Pool's (its straight Barrel's at the reference size has its own, `POOL_REF.alongShore`: ruling 14), or the Canyon's
+ * layout's (`CANYON.alongShore`, 400 m since canyon-beach-break, on either layout), else ALONG_SHORE.
  */
-export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore' | 'canyonBed'>): number {
-  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? POOL.alongShore
+export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore' | 'canyonBed' | 'poolWaves' | 'poolBarrel' | 'poolSize'>): number {
+  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? (poolRefOn(config) ? POOL_REF.alongShore : POOL.alongShore)
     : config.spot === 'canyon' ? canyonShape(config.canyonBed).alongShore : ALONG_SHORE);
 }
 
@@ -1203,7 +1203,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config) });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -1470,7 +1470,7 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize });
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config) });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;

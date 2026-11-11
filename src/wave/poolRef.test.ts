@@ -6,9 +6,9 @@ import { onsetTiming } from './barrel/sliceClock';
 import {
   POOL, POOL_INSIDE, POOL_REF, POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolPeriodOf, poolRampFootZ, poolRefOn, poolSea, poolSpot, poolStraightAt,
   poolStraightBreakDepth, poolStraightCrestDepth, poolStraightDepth, poolStraightInsideDepth, poolStraightLedgeDepth, poolStraightPlatformZ, poolStraightRefDepth,
-  poolStraightStartOut, poolTankLayout, regularSignificantHeight,
+  poolStraightDepthWith, poolStraightStartOut, poolTankLayout, regularSignificantHeight,
 } from './pool';
-import { rideLineupOffset, surfZoneSea, takeOffPoint, tankLayout, type SurfZoneConfig } from './SurfZoneSimulation';
+import { alongShoreOf, rideLineupOffset, surfZoneSea, takeOffPoint, tankLayout, tankRiderBounds, type SurfZoneConfig } from './SurfZoneSimulation';
 
 /** The straight Barrel at the owner's reference size (`?poolSize=ref`; ruling 13, docs/research/pool-look-reference-2026-11-11). */
 describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref)', () => {
@@ -131,15 +131,76 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
     const sea = surfZoneSea(ref).components[0];
     expect(sea.omega).toBe((2 * Math.PI) / 10.5);
     expect(sea.amplitude).toBeCloseTo(POOL_REF.edgeHeight / 2, 12);
-    // Two along-shore wavelengths in the window, at the feed: k sin θ = 2π × 2 / 280.
+    // Two along-shore wavelengths in its own window, at the feed: k sin θ = 2π × 2 / 311 (ruling 14).
     const k = madsenSorensenWaveNumber((2 * Math.PI) / 10.5, tankLayout(ref).edgeDepth);
-    expect(k * Math.sin(-sea.direction)).toBeCloseTo((2 * Math.PI * 2) / POOL.alongShore, 9);
-    // A longer wave turns a little more: 41° at the feed against today's 39°.
-    expect((-sea.direction * 180) / Math.PI).toBeGreaterThan((-surfZoneSea(barrel).components[0].direction * 180) / Math.PI);
-    expect((-sea.direction * 180) / Math.PI).toBeLessThan(43);
+    expect(POOL_REF.alongShore).toBe(311);
+    expect(k * Math.sin(-sea.direction)).toBeCloseTo((2 * Math.PI * 2) / 311, 9);
+    // The wider window gives the copy's direction: 36.8° at the feed (today 39.1°); kept at 280 m the sea turned to 41.8°.
+    const degrees = (config: SurfZoneConfig) => (-surfZoneSea(config).components[0].direction * 180) / Math.PI;
+    expect(degrees(ref)).toBeCloseTo(36.8, 1);
+    expect(degrees(barrel)).toBeCloseTo(39.1, 1);
+    expect(degrees({ ...ref, alongShore: 280 })).toBeCloseTo(41.8, 1);
     // The tank is the machine's own: the same zone, feed and fine grid (the zone is 1.67 of the 10.5 s wave's lengths).
     expect(tankLayout(ref)).toEqual(tankLayout(barrel));
     expect(poolTankLayout(0, 'straight')).toEqual(poolTankLayout(0, 'straight'));
+  });
+
+  // Step 2 (ruling 14): the reference size's own wrapped window, 280 m × 1.11; every other pool keeps 280 m.
+  it('wraps a 311 m window at the reference size alone; the config\'s own width (`?poolWindow`) overrides it', () => {
+    expect(POOL.alongShore).toBe(280);
+    expect(alongShoreOf(ref)).toBe(311);
+    expect(alongShoreOf({ ...ref, alongShore: 280 })).toBe(280);
+    expect(alongShoreOf(barrel)).toBe(280);
+    expect(alongShoreOf({ ...barrel, poolWaves: 'training' })).toBe(280);
+    // Asked for where it does not apply, the width stays the pool's.
+    expect(alongShoreOf({ ...ref, poolBarrel: 'aframe' })).toBe(280);
+    expect(alongShoreOf({ ...ref, poolWaves: 'training' })).toBe(280);
+    expect(alongShoreOf({ spot: 'canyon', poolSize: 'ref', poolWaves: 'barrel' })).toBe(alongShoreOf({ spot: 'canyon' }));
+    expect(alongShoreOf({ spot: 'reef', poolSize: 'ref', poolWaves: 'barrel' })).toBe(160);
+    // The rider's bounds follow the window; the take-off is the reef's own place, the same in either window.
+    expect(tankRiderBounds(ref).xMax - tankRiderBounds(ref).xMin).toBeCloseTo(tankRiderBounds(barrel).xMax - tankRiderBounds(barrel).xMin + 31, 9);
+    expect(tankRiderBounds({ ...ref, alongShore: 280 })).toEqual(tankRiderBounds(barrel));
+    expect(takeOffPoint(ref)).toEqual(takeOffPoint({ ...ref, alongShore: 280 }));
+  });
+
+  it('keeps the floor continuous across the wrap: the same bed at both walls, in the 280 m default and the 311 m reference', () => {
+    const jump = (depthAt: (x: number, z: number) => number, width: number) => {
+      let worst = 0;
+      // The wrap joins the last column (centre W/2 − 0.5) to the first (−W/2 + 0.5); the walls themselves too.
+      for (let z = tankLayout(ref).offshore; z <= 6; z += 0.5) {
+        worst = Math.max(worst, Math.abs(depthAt(width / 2, z) - depthAt(-width / 2, z)), Math.abs(depthAt(width / 2 - 0.5, z) - depthAt(-width / 2 + 0.5, z)));
+      }
+      return worst;
+    };
+    expect(jump(poolStraightDepth, 280)).toBe(0);
+    expect(jump(poolSpot('barrel', undefined, undefined, 'ref', 311).depthAt, 311)).toBe(0);
+    expect(jump(poolSpot('barrel', undefined, undefined, 'ref', 280).depthAt, 280)).toBe(0);
+    expect(jump(poolSpot('barrel', undefined, 'inside', 'ref', 311).depthAt, 311)).toBe(0);
+    // The reef and its slopes end well inside either wall: the wall columns are the plain ramp, platform and beach.
+    for (const x of [-155.5, -140, 140, 155.5]) expect(poolStraightRefDepth(x, -150)).toBe(POOL_REF.platformDepth);
+    // The window's width moves nothing on the floor (only the wrap's wall, which is off, reads it).
+    for (const [x, z] of [[84, -195], [40, -160], [0, -120], [-60, -60], [130, -100]]) {
+      expect(poolSpot('barrel', undefined, undefined, 'ref', 311).depthAt(x, z)).toBe(poolSpot('barrel', undefined, undefined, 'ref', 280).depthAt(x, z));
+      expect(poolSpot('barrel', undefined, undefined, 'ref').depthAt(x, z)).toBe(poolStraightRefDepth(x, z));
+      // Today's floor does not read a window passed without the size.
+      expect(poolSpot('barrel', undefined, undefined, undefined, 311).depthAt(x, z)).toBe(poolStraightDepth(x, z));
+    }
+  });
+
+  it('stands the wrap\'s wall (off by default) at its own window\'s edge', () => {
+    const before = POOL_STRAIGHT.wrapWallWidth;
+    try {
+      POOL_STRAIGHT.wrapWallWidth = 2;
+      expect(poolStraightRefDepth(155, -100)).toBe(-POOL.deck);
+      expect(poolStraightRefDepth(-155, -100)).toBe(-POOL.deck);
+      expect(poolStraightRefDepth(140, -100)).toBe(POOL_REF.platformDepth);
+      expect(poolStraightRefDepth(139.5, -100, false, 280)).toBe(-POOL.deck);
+      // Today's stays at 140 m.
+      expect(poolStraightDepth(139.5, -100)).toBe(-POOL.deck);
+      expect(poolStraightDepthWith(139.5, -100, POOL_STRAIGHT)).toBe(-POOL.deck);
+    } finally {
+      POOL_STRAIGHT.wrapWallWidth = before;
+    }
   });
 
   it('seats the take-off and the start 1.11 times the 1.8 m Barrel\'s', () => {

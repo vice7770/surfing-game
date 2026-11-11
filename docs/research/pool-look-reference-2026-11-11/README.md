@@ -71,3 +71,14 @@ Nothing was built in this round. This page is the brief for the next one. The re
 - **The wall will not steepen with size.** Slopes do not change when a wave is scaled (14°, 11°, 9° at 10, 20, 30 m ahead). Steepness belongs to `?tubeForm=early` or a new Basilisk case.
 - **The owner's calls:** whether "2 m" means the measured face or the drawn tube; a wall at the wrap against a slow drift over a session; where the rider waits (u 40 or about u 70); the fastest water at the limit.
 - Next: the advisor on the period and the direction, before the owner rides it and before `?tubeForm=early`.
+
+## Step 2: the 311 m window for `?poolSize=ref` (built 2026-11-11, opt-in)
+
+- The write-up is `step2/README.md`, with the probe, its three outputs and four stills beside it.
+- **Built:** under `?poolSize=ref` the wrapped window is 311 m wide. Period, feed and floor are unchanged. `?poolSize=ref&poolWindow=280` gives the first build again. The default pool is untouched.
+- **What held:** the sea leaves at 36.8°. The height along the reef is even (2.01, 2.06, 1.97 m). The foot crest reads 1.14 m (about 1.21 m with the probe's 6 %). The GPU runs the 311-column grid.
+- **What missed:** the reef's face is 2.13 m (bar 2.0 ± 0.1). The peel is 6.78 m/s (inside the bar) but from 9 waves, not 20: most white lines end near u 148. The first break is 1.85 m deep (aim 2.1 ± 0.15). The lip throws at the reef on only 55.6 % of column-waves on u 40 to 110 (bar 90 %).
+- **Why the lip count is low:** a column throws at most once per 0.7 period. The beach's own break (150 m shoreward) throws first and takes the column's turn. Ruling 14's count by u did not see this. Today's pool reads 87.1 % by the same count, with the same loss from u 90 on.
+- **Fastest water:** 8.01 m/s at the reef on waves of 60 to 180 s (the limit is 8.02). Once later, 8.12 m/s in the beach's swash.
+- The 600 s drift run was not done, because the 60 to 180 s bars do not all pass. Nothing was tuned.
+- Next: the advisor on bar D (the beach's break taking the reef's throw), before the reef's along-line lengths are scaled.

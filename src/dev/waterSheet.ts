@@ -677,7 +677,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     await settle(seconds);
     held = heldShots();
     shots = held.shots;
-    Object.assign(window, { waterSheetShots: shots });
+    Object.assign(window, { waterSheetShots: shots, waterSheetSeconds: simulated });
     return shots.map((shot) => shot.name);
   };
   /** Steps the sea on by `seconds` exactly, with no hold (for shooting a sequence, e.g. a spilling wave's peel). */
