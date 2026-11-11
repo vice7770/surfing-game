@@ -1,4 +1,6 @@
-# Step 1: `?poolSize=ref` (built 2026-11-11, opt-in, not merged)
+# Step 1: `?poolSize=ref` (built 2026-11-11, opt-in)
+
+**Read `../ruling-14.md` with this page.** The advisor re-read these numbers the same night. Two of the misses below are the way the probe and the meter count, not the wave: the lip still throws once per wave in every column (93 %, bar D), and at the reef the best faces have a median of 1.97 m (bar A). The real fault is the wave's direction, from the 280 m wrapped window. Ruling 14's first choice is a 311 m window for this size.
 
 Ruling 13's first step (`../ruling-13.md`). The Wave Pool's straight Barrel, made 1.11 times larger. The aim was 2 m faces.
 

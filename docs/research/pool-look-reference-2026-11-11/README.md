@@ -58,4 +58,16 @@ Nothing was built in this round. This page is the brief for the next one. The re
 - It runs 600 s without a blow-up, and the fastest water is 1.11 × today's.
 - It misses most bars. Faces at the take-off 2.3 to 2.7 m (aim 2.0). Peel 6.2 m/s (aim 7 to 8; today 6.45). Lip jets on 56 to 60 % of onsets (aim 90 %; today 90 to 96 %). The wall ahead of the tube is 1.3 to 1.5 m tall, as today.
 - Likely cause: with the pool's wrapped sides, the 10.5 s wave leaves the machine at 41.8° where the 10 s wave leaves at 39.1°. The reef lies at 40°.
+
+## Ruling 14: why step 1 missed, and what is next (2026-11-11)
+
+- The ruling is `ruling-14.md` beside this page. Its two probe runs are in `ruling-14-runs/`.
+- **The cause.** The build is not an exact larger copy, because the wrapped window stayed 280 m wide. Two wavelengths must fit across it, so the longer 10.5 s wave turned (41.8° at the machine, 30.6° on the platform, against 39.1° and 27.4°). That made the height uneven along the reef (2.42, 2.04, 1.92 m).
+- **Two misses were the counting, not the wave.** The lip still throws once per wave in every column (93 % on u 40 to 90). The probe counted a second break line near the beach as failed throws. And the meter's 2.3 m came from that second line in 5 of 16 waves; at the reef the best faces have a median of 1.97 m.
+- **The pace is not settled.** The probe's time step is too coarse to tell 6.2 from 6.45 m/s.
+- **Next build: widen the window to 311 m for this size only** (280 × 1.11), period 10.5 s and feed 1.47 m unchanged. The advisor's short run with it: height along the reef 2.01, 2.06, 2.09 m; lip jets in every column out to u 110; peel 6.65 m/s (5 waves only); fastest water 8.01 m/s, right at the limit of 8.02.
+- **Then**, if those hold: the reef's lengths along its line × 1.11 too.
+- **The bars are re-stated** (A: the reef's own largest face per wave, 2.0 ± 0.1 m; B: 6.5 to 7.2 m/s over at least 20 waves at a 1/30 s frame; D: jets per column per wave on u 40 to 110, at least 90 %; E: a height share only; new: readings at 480 to 600 s within 10 % of 60 to 180 s).
+- **The wall will not steepen with size.** Slopes do not change when a wave is scaled (14°, 11°, 9° at 10, 20, 30 m ahead). Steepness belongs to `?tubeForm=early` or a new Basilisk case.
+- **The owner's calls:** whether "2 m" means the measured face or the drawn tube; a wall at the wrap against a slow drift over a session; where the rider waits (u 40 or about u 70); the fastest water at the limit.
 - Next: the advisor on the period and the direction, before the owner rides it and before `?tubeForm=early`.
