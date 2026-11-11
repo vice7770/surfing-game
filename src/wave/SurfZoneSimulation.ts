@@ -506,6 +506,16 @@ export interface SurfZoneConfig {
    * (`?formClock=c1`) the C1 clock; absent, `FORM_CLOCK_DEFAULT`'s. Online rooms pin the default.
    */
   formClock?: 'old' | 'c1';
+  /**
+   * Ruling 5's seam blend, opt-in (the water-physics advisor's advisor-ruling-5.md §4; `TubeFace.seam`,
+   * docs/research/tube-seam-2026-11-11/README.md): 'blend' (`?tubeSeam=blend`) gives the case's drawn loft, its collided
+   * surface and its water's flow one weight over the solver's, by the case's height over the solver's surface and by its
+   * slice clock; `seamTau` (`?seamTau=on,full`, s) and `seamBand` (`?seamBand=m`) are its tuning inputs, read with it
+   * alone. Absent: off, exactly as before. Online rooms pin all three absent.
+   */
+  tubeSeam?: 'blend';
+  seamTau?: readonly [number, number];
+  seamBand?: number;
 }
 
 /**

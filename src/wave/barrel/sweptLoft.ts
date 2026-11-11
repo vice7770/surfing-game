@@ -4,6 +4,7 @@ import { FRONT_CAPACITY, FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
 import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
+import { seamB, seamBand, seamHeightWeight, seamTauWeight } from './tubeSeam';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
 export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
@@ -262,6 +263,11 @@ export interface WallWater {
   b: Float32Array;
   along: Float32Array;
   up: Float32Array;
+  /**
+   * Ruling 5's seam blend (`TubeFace.seam`; absent without it), per vertex: the case's share α = α_h · α_τ there, 0 where
+   * its surface is the solver's; the wall water's flow is weighed by it (`ContactHit.seam`).
+   */
+  seam?: Float32Array;
 }
 
 /**
@@ -383,6 +389,9 @@ export class SweptLoft {
   private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
   /** Per slice, the drawn height H (`restHeight`), m: the seal's young cut ends blend over it (`endBlendLength`). */
   private readonly sliceHeight = new Float64Array(MAX_SLICES + 1);
+  /** Ruling 5's seam blend (`TubeFace.seam`), per slice: its clock's share α_τ and its height band b, m (`seamBand`). */
+  private readonly seamTauRow = new Float64Array(MAX_SLICES + 1);
+  private readonly seamBandRow = new Float64Array(MAX_SLICES + 1);
   /** Per slice, its library's frame time, s (the refinement's unit; read by probes). */
   private readonly sliceFrame = new Float64Array(MAX_SLICES + 1);
   private readonly sliceTouchdown = new Float64Array(MAX_SLICES + 1);
@@ -491,6 +500,7 @@ export class SweptLoft {
       ...(this.contact && options.face?.wallFlow === true && library.options.geometry !== 'bounded-C' ? { wall: {
         low: new Float32Array(slices), top: new Float32Array(slices), speed: new Float32Array(slices), b: new Float32Array(slices),
         along: new Float32Array(vertices), up: new Float32Array(vertices),
+        ...(options.face.seam ? { seam: new Float32Array(vertices) } : {}),
       } } : {}),
     };
   }
@@ -1359,7 +1369,15 @@ export class SweptLoft {
         wall.low[slice] = stillLevel + trough + FACE_ANCHOR.fraction * (top - trough);
         wall.top[slice] = stillLevel + top;
         wall.speed[slice] = wallEpsilon > 0 ? wallCarry + wallCrest * wallRate : Number.NaN;
-        wall.b[slice] = tau < 0 ? WALL_FLOW.before : WALL_FLOW.thrown;
+        // Ruling 5 (`TubeFace.seam`): 0.85 to the throw, then to 1 over 0.2 s, no step (`seamB`).
+        wall.b[slice] = this.face?.seam ? seamB(tau, WALL_FLOW.before, WALL_FLOW.thrown) : tau < 0 ? WALL_FLOW.before : WALL_FLOW.thrown;
+      }
+      const seam = this.face?.seam;
+      const seamTau = seam ? seamTauWeight(tau, seam.tau[0], seam.tau[1]) : 1;
+      const seamReach = seam ? seamBand(seam.band, s.footHeight) : 0;
+      if (seam) {
+        this.seamTauRow[slice] = seamTau;
+        this.seamBandRow[slice] = seamReach;
       }
       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
       // ahead of the toe held as the forward rest says first.
@@ -1466,6 +1484,11 @@ export class SweptLoft {
           this.targetY[v] = stillLevel + above;
           this.initialBlend[v] = e;
           this.floorRows[v] = floor ? 1 : 0;
+        } else if (seam) {
+          // Ruling 5's seam blend (`TubeFace.seam`, `seamY`), in place of the clamp below.
+          const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
+          if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
+          r.positions[3 * v + 1] = this.seamY(v, h, stillLevel + above, e, floor, seamTau, seamReach);
         } else if (e === 1) {
           r.positions[3 * v + 1] = floor ? Math.max(stillLevel + above, heightAt(px, pz)) : stillLevel + above;
         } else {
@@ -2048,6 +2071,25 @@ export class SweptLoft {
     return true;
   }
 
+  /**
+   * Ruling 5's seam blend (`TubeFace.seam`) at vertex `v`: its height over the solver's surface `h`, from the case's
+   * `target` at the slice's weight `e`, and its share α into `WallWater.seam`. A floor vertex (`TubeFace.union`'s) stands
+   * α_τ · S(δ / b) of its height δ over the solver's surface, and on it where it lies under it: δ S(δ / b) leaves the
+   * solver's surface with its own height and slope, so the back slope and the foot need no case of their own. A lip vertex
+   * (crest to throat of an overturned slice: air under it) keeps its place, by α_τ alone (whole from the throw).
+   */
+  private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number): number {
+    const share = this.result.wall?.seam;
+    const delta = e * (target - h);
+    if (!floor) {
+      if (share) share[v] = tau;
+      return tau === 1 ? (e === 1 ? target : h + delta) : h + tau * delta;
+    }
+    const alpha = tau * seamHeightWeight(delta, band);
+    if (share) share[v] = alpha;
+    return alpha === 1 ? (e === 1 ? target : h + delta) : h + alpha * delta;
+  }
+
   /** Materialize the original initial F32 Y store, then its separate cut-seal F32 store, once for this row. */
   private prepareRow(row: number): void {
     if (this.heightReady[row] === 1) return;
@@ -2062,7 +2104,15 @@ export class SweptLoft {
       const e = this.initialBlend[v];
       // The face ruling's floor (`TubeFace.union`) as `loftFront` holds it: never under the solver's surface.
       const floor = this.floorRows[v] === 1;
-      if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
+      if (this.face?.seam) {
+        // Ruling 5's seam blend (`TubeFace.seam`, `seamY`), as `loftFront` holds it.
+        const profileIndex = j - E;
+        const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
+        const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
+        const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
+        if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
+        r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row]);
+      } else if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
       else {
         const profileIndex = j - E;
         const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;

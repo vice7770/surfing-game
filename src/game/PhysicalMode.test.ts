@@ -303,6 +303,33 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // Ruling 5 (tube-seam, 2026-11-11): the seam blend's switch and its two tuning inputs; the Barrel's alone; online rooms pin it.
+  it('takes `?tubeSeam=blend` (with `?seamTau=on,full`, `?seamBand=m`) at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?tubeSeam=blend')).toEqual({ tubeSeam: 'blend' });
+    expect(tubeFaceSwitches('?tubeSeam=Blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend' });
+    expect(tubeFaceSwitches('?tubeSeam=blend&seamTau=-0.75,0&seamBand=0.3')).toEqual({ tubeSeam: 'blend', seamTau: [-0.75, 0], seamBand: 0.3 });
+    expect(tubeFaceSwitches('?tubeSeam=blend&seamTau=0,-1&seamBand=x')).toEqual({ tubeSeam: 'blend' });
+    // The tuning inputs do nothing without the switch.
+    for (const search of ['?tubeSeam', '?tubeSeam=', '?tubeSeam=on', '?tubeSeam=old', '?seamTau=-0.75,0', '?seamBand=0.3', '?seamTau=-0.75,0&seamBand=0.3']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.tubeSeam).toBeUndefined();
+      expect(plain.seamTau).toBeUndefined();
+      expect(plain.seamBand).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeSeam=blend&seamTau=-0.75,0&seamBand=0.3' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeSeam: 'blend', seamTau: [-0.75, 0], seamBand: 0.3 });
+      expect(surfZoneConfigFor(training, 5, false).tubeSeam).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeSeam: undefined, seamTau: undefined, seamBand: undefined });
+      expect(room.tubeSeam).toBeUndefined();
+      expect(room.seamTau).toBeUndefined();
+      expect(room.seamBand).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
   it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
     expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });

@@ -124,6 +124,12 @@ export interface ContactHit {
   aheadUp: number;
   aheadX: number;
   aheadZ: number;
+  /**
+   * Ruling 5's seam blend (`TubeFace.seam`, `WallWater.seam`; absent without it): the case's share α at the crossing above
+   * the point, 0 where its surface is the solver's (NaN out of its water), and at the face ahead (`aheadAlong`'s place).
+   */
+  seam?: number;
+  aheadSeam?: number;
 }
 
 export function createContactHit(): ContactHit {
@@ -415,6 +421,11 @@ export class SweptContact {
       }
       hit.wallAlong = along;
       hit.wallUp = up;
+      if (wall.seam) {
+        let seam = 0;
+        for (let m = 0; m < 3; m += 1) seam += this.weights[3 * surface + m] * wall.seam[this.at[3 * surface + m]];
+        hit.seam = seam;
+      }
       hit.wallLow = wall.low[strip] + f * (wall.low[next] - wall.low[strip]);
       hit.wallTop = wall.top[strip] + f * (wall.top[next] - wall.top[strip]);
       hit.wallSpeed = wall.speed[strip] + f * (wall.speed[next] - wall.speed[strip]);
@@ -423,6 +434,7 @@ export class SweptContact {
     } else {
       hit.wallSpeed = Number.NaN;
       hit.wallWeight = 0;
+      if (wall?.seam) hit.seam = Number.NaN;
     }
     hit.normalDepth = Number.NaN;
     hit.verticalDepth = Number.NaN;
@@ -524,6 +536,7 @@ export class SweptContact {
     const { wall } = loft;
     hit.aheadAlong = wall ? wa * wall.along[a] + bu * wall.along[b] + bv * wall.along[c] : Number.NaN;
     hit.aheadUp = wall ? wa * wall.up[a] + bu * wall.up[b] + bv * wall.up[c] : Number.NaN;
+    if (wall?.seam) hit.aheadSeam = wa * wall.seam[a] + bu * wall.seam[b] + bv * wall.seam[c];
     // The face ahead's share: 1 where it is nearer by the blend, 0 where the crossing above is, smoothstep between.
     const share = Math.min(1, Math.max(0, 0.5 + (hit.verticalDepth - hit.aheadDepth) / (2 * NEAREST.blend)));
     const near = Math.min(1, (reach - best) / NEAREST.fade);

@@ -51,6 +51,7 @@ import type { LoftResult } from '../wave/barrel/sweptLoft';
 import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, poolTubeCaseOf, type PoolTubeCase, type TubeShape } from '../wave/barrel/barrelLibrary';
 import { BARREL_SPOTS } from '../wave/barrel/barrelSpots';
 import { tubeFaceOf } from '../wave/barrel/faceAnchor';
+import { parseSeamBand, parseSeamTau } from '../wave/barrel/tubeSeam';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -607,11 +608,16 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * wall water's buoyancy along the true normal past the clamp; `?tubeDrop=on` (opt-in), the lighter of two overlapping strips
  * gives way. Ruling 4's rank 1 (form-clock, 2026-11-11, the advisor's fourth ruling): `?formClock=old`, step 7's formation
  * clock exactly; `?formClock=c1`, the C1 clock (a rate that follows −D/C_p critically damped, a sub-cell crest, the wall
- * water on the same rate); neither: `FORM_CLOCK_DEFAULT`'s. Online rooms run the defaults (the guard, the smooth wall, the
- * buoyancy and the drop rule off).
+ * water on the same rate); neither: `FORM_CLOCK_DEFAULT`'s. Ruling 5's (tube-seam, 2026-11-11), opt-in: `?tubeSeam=blend`,
+ * the seam blend (one weight for the case's loft, contact and flow, by its height over the solver's surface and its slice
+ * clock), with `?seamTau=on,full` (the clock's course, s; −0.5,0 without it) and `?seamBand=m` (the height band; 0.25),
+ * both read with it alone. Online rooms run the defaults (the guard, the smooth wall, the buoyancy, the drop rule and the
+ * seam blend off).
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock' | 'tubeSeam' | 'seamTau' | 'seamBand'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
+  const seamTau = parseSeamTau(value('seamTau'));
+  const seamBand = parseSeamBand(value('seamBand'));
   return {
     ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
     ...(value('tubeFrom') === 'piece' ? { tubeFrom: 'piece' as const } : {}),
@@ -631,6 +637,7 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeBuoy') === 'on' ? { tubeBuoy: 'on' as const } : {}),
     ...(value('tubeDrop') === 'on' ? { tubeDrop: 'on' as const } : {}),
     ...(value('formClock') === 'old' ? { formClock: 'old' as const } : value('formClock') === 'c1' ? { formClock: 'c1' as const } : {}),
+    ...(value('tubeSeam') === 'blend' ? { tubeSeam: 'blend' as const, ...(seamTau ? { seamTau } : {}), ...(seamBand !== undefined ? { seamBand } : {}) } : {}),
   };
 }
 

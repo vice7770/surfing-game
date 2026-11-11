@@ -1,6 +1,7 @@
 import { GRAVITY } from '../dispersion';
 import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { CLOCK } from './sliceClock';
+import { TUBE_SEAM, type TubeSeam } from './tubeSeam';
 
 /**
  * The face anchor (the surfable-tube plan's step 4; the water-physics advisor's step 3 ruling, 2026-11-03,
@@ -121,6 +122,17 @@ export interface TubeFace {
    * on by default; `?formClock=old` is always step 7's clock, exactly, and `?formClock=c1` always this one. Absent: off.
    */
   formClock?: boolean;
+  /**
+   * Ruling 5's seam blend (the water-physics advisor's advisor-ruling-5.md §4, docs/research/tube-seam-2026-11-11), with
+   * `union` and `wallFlow`: one weight α = α_h · α_τ for the case's drawn loft, its collided surface and its water's flow
+   * (`TUBE_SEAM`, tubeSeam.ts). A floor vertex stands S(δ / b) · α_τ of its height δ over the solver's surface (in place of
+   * the clamp max(case, solver)); the wall water's share is that same weight, so it has none where the case's surface is
+   * the solver's (in place of the source flag); and the crest water's share of the crest's speed goes 0.85 → 1 over 0.2 s
+   * after the throw (in place of the step). The lip's vertices from the crest to the throat of an overturned slice (air
+   * under them) keep the plain union, by α_τ alone. Opt-in (`?tubeSeam=blend`, with `?seamTau=on,full` and `?seamBand=m`);
+   * absent: off, the build exactly as before.
+   */
+  seam?: TubeSeam;
 }
 
 /**
@@ -163,6 +175,11 @@ export interface TubeFaceSwitches {
   tubeDrop?: 'on';
   /** Ruling 4's rank 1 (`TubeFace.formClock`): 'old', step 7's clock; 'c1', the C1 clock; absent, `FORM_CLOCK_DEFAULT`. */
   formClock?: 'old' | 'c1';
+  /** Ruling 5's seam blend (`TubeFace.seam`), opt-in: 'blend' turns it on; absent, or anything else, it is off. */
+  tubeSeam?: 'blend';
+  /** With `tubeSeam`: the τ course's start and end, s (`TUBE_SEAM.tau` absent), and the height band, m (`TUBE_SEAM.band`). */
+  seamTau?: readonly [number, number];
+  seamBand?: number;
 }
 
 /**
@@ -195,6 +212,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     buoy: wallFlow && switches.tubeBuoy === 'on',
     drop: !piece && switches.tubeDrop === 'on',
     formClock: distance && (switches.formClock === 'c1' || (FORM_CLOCK_DEFAULT && switches.formClock !== 'old')),
+    ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band } } : {}),
   };
 }
 

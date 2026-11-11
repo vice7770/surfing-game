@@ -178,6 +178,13 @@ export interface PhysicalSurfWaterOptions {
    */
   sweptBuoy?: boolean;
   /**
+   * With `sweptWall`: ruling 5's seam blend (`TubeFace.seam`; the advisor's advisor-ruling-5.md §4). The wall water's
+   * flow is weighed by the case's share α at the surface over the point (`ContactHit.seam`), the same weight its loft's
+   * height took, and where that share is 0 with no air under the case (its surface is the solver's) the solver's water
+   * answers whole: the answering source no longer switches on which of two equal surfaces reads a hair higher.
+   */
+  sweptSeam?: boolean;
+  /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
@@ -482,6 +489,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.track ? { sweptBlend: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.inertia ? { sweptInertia: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.buoy ? { sweptBuoy: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam ? { sweptSeam: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
@@ -789,6 +797,15 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       out.normalY = normalY;
       out.normalZ = normalZ;
     };
+    // Ruling 5 (`sweptSeam`): the case's surface here is the solver's (share 0, no air under it): the solver's water.
+    const seamless = this.options.sweptSeam === true && hit.inWater && hit.seam !== undefined && hit.seam <= 0
+      && !(hit.waterFloorY === hit.waterFloorY) && !(hit.ceilingY === hit.ceilingY);
+    if (seamless) {
+      plain();
+      out.tube = tubeState(hit.life);
+      out.covered = false;
+      return;
+    }
     if (y < plainY) {
       if (hit.inWater && hit.surfaceY >= plainY) {
         this.fromContact(y, out);
@@ -859,6 +876,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     if (w > 0 && hit.aheadAlong === hit.aheadAlong && hit.wallAlong === hit.wallAlong) {
       hit.wallAlong += w * (hit.aheadAlong - hit.wallAlong);
       hit.wallUp += w * (hit.aheadUp - hit.wallUp);
+      // Ruling 5 (`sweptSeam`): the share with the surface's velocity it weighs.
+      if (hit.seam !== undefined && hit.aheadSeam !== undefined) hit.seam += w * (hit.aheadSeam - hit.seam);
     }
     hit.normalX = nx;
     hit.normalY = ny;
@@ -902,8 +921,14 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private wallFlow(out: WaterSample, y: number): void {
     const h = this.hit;
     if (!(h.wallWeight > 0) || !(h.wallSpeed === h.wallSpeed) || !(h.wallAlong === h.wallAlong)) return;
+    // Ruling 5 (`sweptSeam`): by the case's share at the surface over the point, the weight its height took.
+    let seam = 1;
+    if (this.options.sweptSeam && h.seam !== undefined) {
+      seam = Math.min(1, h.seam);
+      if (!(seam > 0)) return;
+    }
     if (!this.options.sweptBlend) {
-      wallWaterFlow(out, y, h);
+      wallWaterFlow(out, y, h, seam);
       return;
     }
     // Ruling 3 (`sweptBlend`): by the wall's height over the solver's surface in this column, and by how far the case's
@@ -913,7 +938,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const facing = Math.sqrt(na * na + h.normalY * h.normalY);
     const [least, whole] = WALL_WATER.facing;
     const f = Math.min(1, Math.max(0, (facing - least) / (whole - least)));
-    wallWaterFlow(out, y, h, u * u * (3 - 2 * u) * f * f * (3 - 2 * f));
+    wallWaterFlow(out, y, h, u * u * (3 - 2 * u) * f * f * (3 - 2 * f) * seam);
   }
 
   /** The four cells and bilinear weights `sampleCentered` would use at (x, z). */

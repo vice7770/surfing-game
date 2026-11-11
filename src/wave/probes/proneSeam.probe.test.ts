@@ -11,6 +11,7 @@ import { readBarrelCases } from '../barrel/nodeBarrelCases';
 import { SweptContact } from '../barrel/sweptContact';
 import { FORMATION } from '../barrel/sliceClock';
 import { BARREL_SLOPE } from '../barrel/sweptLoft';
+import { parseSeamBand, parseSeamTau } from '../barrel/tubeSeam';
 import { POOL, poolStraightAt, poolStraightFrame, regularSignificantHeight } from '../pool';
 import { rideLineupAlong, rideLineupOffset, SurfZoneSimulation, type SurfZoneConfig } from '../SurfZoneSimulation';
 
@@ -43,10 +44,19 @@ import { rideLineupAlong, rideLineupOffset, SurfZoneSimulation, type SurfZoneCon
  *   and whether the solver had broken it;
  * - the felt water: the water's velocity at each attached rider's board (5 cm under the surface there), its change a
  *   step, over every step and over the steps in the case's water (its surface over the solver's by more than 2 cm);
- * - the surf meter over the measured time.
+ * - the surf meter over the measured time;
+ * - ruling 5's readings (advisor-ruling-5.md, docs/research/tube-seam-2026-11-11): each rider's slice clock τ (the
+ *   nearest front point along the crest within 8 m along the ray), the case's height over the solver's surface under the
+ *   board (hc), and the answering source (the case's wall water, `WaterSample.wallWater`, or the solver's): the felt
+ *   water's jumps over 0.2 m/s as a share of steps, the felt water for τ < −0.5 s, the source's switches where hc ≤ 0.02 m
+ *   (and those with a jump), and each fall's τ (before the throw or after it);
+ * - the seam (ruling 4's scan): every 0.1 s, along the ray through the front points at reef columns s 45 and s 60, the
+ *   surface every 0.05 m from 8 m behind the point to 6 m ahead; at each place the case's surface leaves the solver's
+ *   (hc crossing 1 mm): the height step across that 0.05 m, the slope's turn from the 0.05 m before it to the 0.05 m
+ *   after it less the solver's own turn there, and the felt water's change across 0.25 m centred on it.
  *
  * H (1.05: "1.5 m" | 1.32: "1.8 m"), CASE (pool | a38), SWITCHES (comma-separated config switches, as
- * `poolTubeFace.probe.test.ts`: `formClock=old`, `formClock=c1`, `tubeForm=old`, `tubeFace=old,tubeFrom=piece`, …), WAVES
+ * `poolTubeFace.probe.test.ts`: `formClock=old`, `formClock=c1`, `tubeForm=old`, `tubeFace=old,tubeFrom=piece`, `tubeSeam=blend,seamTau=-0.75,0,seamBand=0.25`, …), WAVES
  * (4), SETTLE (50 s), LEAD (6 s), T0 (s: the take-off's first throw, for a build whose clocks never cross 0, the
  * pre-tube's; read it from the default's run), LOG.
  */
@@ -58,9 +68,10 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
     const settle = Number(process.env.SETTLE ?? 50);
     const lead = Number(process.env.LEAD ?? 6);
     const switches: Record<string, unknown> = {};
-    for (const item of (process.env.SWITCHES ?? '').split(',').filter(Boolean)) {
+    // A comma before a name starts the next switch; one before a number stays in its value (`seamTau=-0.5,0`).
+    for (const item of (process.env.SWITCHES ?? '').split(/,(?=[A-Za-z])/).filter(Boolean)) {
       const [key, value] = item.split('=');
-      switches[key] = value === '0' ? 0 : value;
+      switches[key] = key === 'seamTau' ? parseSeamTau(value) : key === 'seamBand' ? parseSeamBand(value) : value === '0' ? 0 : value;
     }
     const log = process.env.LOG ?? `prone-seam-${caseName}-${height}.txt`;
     writeFileSync(log, '');
@@ -118,18 +129,69 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
       pressed: number | null;
       taken: number | null;
       stood: number | null;
-      fell: { at: number; cause: string; phase: string; n: number; inCase: boolean } | null;
+      fell: { at: number; cause: string; phase: string; n: number; inCase: boolean; tau: number } | null;
       flow: [number, number, number] | null;
+      source: boolean | null;
       farthest: number;
     }
     const riders: Rider[] = [];
     const sample = createWaterSample();
-    const felt = { all: [] as number[], inCase: [] as number[] };
+    const felt = { all: [] as number[], inCase: [] as number[], early: [] as number[] };
+    // Ruling 5's readings.
+    const seam5 = { steps: 0, jumps: 0, jumpsLow: 0, switches: 0, switchJumps: 0, switchSizes: [] as number[], wallSteps: 0 };
+    const footHeights: number[] = [];
+    /** The slice clock at (x, z): the nearest front point along the crest (x) within 8 m along the ray (z); NaN: none. */
+    const tauAt = (x: number, z: number) => {
+      let best = Number.NaN;
+      let nearest = 2;
+      for (const p of simulation.front?.points ?? []) {
+        if (Math.abs(p.z - z) > 8) continue;
+        const d = Math.abs(p.x - x);
+        if (d < nearest) { nearest = d; best = p.tau; }
+      }
+      return best;
+    };
+    const seamBins = [-Infinity, -1, -0.5, 0, 0.5, Infinity];
+    const seamScan = seamBins.slice(0, -1).map(() => ({ step: [] as number[], turn: [] as number[], flow: [] as number[] }));
+    const SCAN = { step: 0.05, behind: 8, ahead: 6, edge: 0.001, across: 0.25 } as const;
+    const scanN = Math.round((SCAN.behind + SCAN.ahead) / SCAN.step) + 1;
+    const scanY = new Float64Array(scanN);
+    const scanPlain = new Float64Array(scanN);
+    const scanSample = createWaterSample();
+    const flowAt = (x: number, z: number): [number, number, number] | null => {
+      const y = water.surfaceAt(x, z);
+      const got = water.sampleAt(x, y - 0.05, z, scanSample);
+      return got.wet && !got.outsideDomain ? [got.flowX, got.flowY, got.flowZ] : null;
+    };
+    const scanSeam = (x: number, z: number, tau: number) => {
+      let bin = 0;
+      while (bin + 1 < seamBins.length - 1 && tau >= seamBins[bin + 1]) bin += 1;
+      for (let i = 0; i < scanN; i += 1) {
+        const at = z - SCAN.behind + i * SCAN.step;
+        scanY[i] = water.surfaceAt(x, at);
+        scanPlain[i] = water.plainSurfaceAt(x, at);
+      }
+      for (let i = 2; i + 1 < scanN; i += 1) {
+        const before = scanY[i - 1] - scanPlain[i - 1];
+        const after = scanY[i] - scanPlain[i];
+        if ((before > SCAN.edge) === (after > SCAN.edge)) continue;
+        seamScan[bin].step.push(Math.abs(after - before));
+        const angle = (a: number, b: number) => (Math.atan((b - a) / SCAN.step) * 180) / Math.PI;
+        const turn = angle(scanY[i], scanY[i + 1]) - angle(scanY[i - 2], scanY[i - 1]);
+        const own = angle(scanPlain[i], scanPlain[i + 1]) - angle(scanPlain[i - 2], scanPlain[i - 1]);
+        seamScan[bin].turn.push(Math.abs(turn - own));
+        const at = z - SCAN.behind + (i - 0.5) * SCAN.step;
+        const a = flowAt(x, at - SCAN.across / 2);
+        const b = flowAt(x, at + SCAN.across / 2);
+        if (a && b) seamScan[bin].flow.push(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]));
+      }
+    };
+    const scanColumns = [45, 60].map((s) => lineAt(s).x);
     const place = (wave: number) => {
       const add = (kind: Rider['kind'], label: string, x: number, z: number, steer: number) => {
         const session = new RideSession();
         session.reset(new Vector3(x, 0, z), 0, quiet);
-        riders.push({ kind, label, wave, session, steer, active: true, placed: solver.time, fast: 0, pressed: null, taken: null, stood: null, fell: null, flow: null, farthest: z });
+        riders.push({ kind, label, wave, session, steer, active: true, placed: solver.time, fast: 0, pressed: null, taken: null, stood: null, fell: null, flow: null, source: null, farthest: z });
       };
       for (const [s, outs] of [[40, [3, 12]], [55, [0, 6, 12, 18]], [70, [3, 12]]] as const) {
         const at = lineAt(s);
@@ -217,6 +279,20 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
         }
         lastTau.set(p.id, p.tau);
       }
+      // The seam's scan (ruling 4's, ruling 5's bars): every 0.1 s, the front points on the scan's columns.
+      if (guard % 6 === 0 && T0 === T0) {
+        water.withSurfaceNodeCache(() => {
+          for (const x of scanColumns) {
+            const seen = new Set<number>();
+            for (const p of simulation.front?.points ?? []) {
+              if (Math.abs(p.x - x) > 0.51 || seen.has(p.front)) continue;
+              seen.add(p.front);
+              footHeights.push(p.footHeight);
+              scanSeam(x, p.z, p.tau);
+            }
+          }
+        });
+      }
       // A build whose points never cross 0 (the pre-tube's): the phase handed in (T0, another build's reading).
       if (!(T0 === T0) && fallback === fallback && solver.time >= fallback) T0 = fallback;
       // The riders: placed `lead` s before the take-off's next throw, each wave.
@@ -249,8 +325,9 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
         if (board.position.z > r.farthest) r.farthest = board.position.z;
         const surface = water.surfaceAt(board.position.x, board.position.z);
         const inCase = surface - water.plainSurfaceAt(board.position.x, board.position.z) > 0.02;
+        const tau = tauAt(board.position.x, board.position.z);
         if (!rider.attached) {
-          r.fell = { at: since, cause: session.separation ?? '?', phase: phaseBefore, n: poolStraightFrame(board.position.x, board.position.z).n - poolStraightFrame(focus.x, focus.z).n, inCase };
+          r.fell = { at: since, cause: session.separation ?? '?', phase: phaseBefore, n: poolStraightFrame(board.position.x, board.position.z).n - poolStraightFrame(focus.x, focus.z).n, inCase, tau };
           r.active = false;
           continue;
         }
@@ -260,9 +337,25 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
             const change = Math.hypot(s.flowX - r.flow[0], s.flowY - r.flow[1], s.flowZ - r.flow[2]);
             felt.all.push(change);
             if (inCase) felt.inCase.push(change);
+            if (tau < -0.5) felt.early.push(change);
+            seam5.steps += 1;
+            if (change > 0.2) {
+              seam5.jumps += 1;
+              if (!inCase) seam5.jumpsLow += 1;
+            }
+            if (r.source !== null && r.source !== (s.wallWater === true) && !inCase) {
+              seam5.switches += 1;
+              seam5.switchSizes.push(change);
+              if (change > 0.2) seam5.switchJumps += 1;
+            }
           }
+          if (s.wallWater === true) seam5.wallSteps += 1;
           r.flow = [s.flowX, s.flowY, s.flowZ];
-        } else r.flow = null;
+          r.source = s.wallWater === true;
+        } else {
+          r.flow = null;
+          r.source = null;
+        }
       }
       if (placedWaves >= waves && !riders.some((r) => r.active)) break;
     }
@@ -296,6 +389,17 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
     lines.push('## The felt water at the board (attached riders, its change a step, m/s)');
     lines.push(`every step: ${q(felt.all)}`);
     lines.push(`in the case's water: ${q(felt.inCase)} [bar: p99 ≤ 0.2]`);
+    lines.push(`for τ < −0.5 s (the nearest front point's clock): ${q(felt.early)} [ruling 5's bar: p99 ≤ 0.1]`);
+    lines.push(`jumps over 0.2 m/s a step: ${seam5.jumps} of ${seam5.steps} steps (${pct(seam5.jumps, seam5.steps)}) [ruling 5's bar: ≤ 0.6 %]; where the case is not above the solver (hc ≤ 0.02 m): ${seam5.jumpsLow} (${pct(seam5.jumpsLow, seam5.jumps)} of the jumps)`);
+    lines.push(`the answering source (the case's wall water or the solver's): in the wall water on ${seam5.wallSteps} steps; switches where hc ≤ 0.02 m: ${seam5.switches}, with a jump over 0.2 m/s: ${seam5.switchJumps} [ruling 5's bar: 0]; the felt water's change at those switches: ${q(seam5.switchSizes)}`);
+    lines.push('');
+    lines.push('## The seam (columns s 45 and s 60, every 0.1 s, the surface every 0.05 m along the ray; where the case leaves the solver\'s surface, hc crossing 1 mm)');
+    lines.push(`the front points' foot height there: ${q(footHeights)} m`);
+    seamScan.forEach((bin, k) => {
+      const most = (values: number[]) => values.reduce((a, b) => Math.max(a, b), -Infinity);
+      const three = (values: number[], digits: number) => `p50 ${f(quantile(values, 0.5), digits)}, p90 ${f(quantile(values, 0.9), digits)}, max ${f(most(values), digits)}`;
+      lines.push(`τ ${seamBins[k] === -Infinity ? 'under' : `${seamBins[k]} to`} ${seamBins[k + 1] === Infinity ? 'on' : `${seamBins[k + 1]} s`}: height step ${three(bin.step, 3)} m [bar: ≤ 0.01]; slope's turn less the solver's ${three(bin.turn, 1)}° [bar: ≤ 3]; flow across 0.25 m ${three(bin.flow, 2)} m/s [bar: ≤ 0.2] (n ${bin.step.length})`);
+    });
     lines.push('');
     const passive = riders.filter((r) => r.kind === 'passive');
     const passiveFell = passive.filter((r) => r.fell);
@@ -304,15 +408,15 @@ describe.runIf(process.env.PROBE)('the Wave Pool straight Barrel: prone riders t
       for (const r of list) by.set(r.fell!.cause, (by.get(r.fell!.cause) ?? 0) + 1);
       return [...by.entries()].map(([cause, n]) => `${cause} ${n}`).join(', ') || 'none';
     };
-    lines.push(`## Passive prone: fell ${passiveFell.length} of ${passive.length} [bar: ≤ 3 of 32] (${causes(passiveFell)}); in the case's water as they fell ${passiveFell.filter((r) => r.fell!.inCase).length}`);
-    for (const r of passive) lines.push(`  wave ${r.wave} ${r.label}: ${r.fell ? `fell at ${r.fell.at.toFixed(2)} s (${r.fell.cause}; ${r.fell.n.toFixed(1)} m seaward of the take-off's line${r.fell.inCase ? '; in the case\'s water' : ''})` : 'held'}`);
+    lines.push(`## Passive prone: fell ${passiveFell.length} of ${passive.length} [bar: ≤ 3 of 32] (${causes(passiveFell)}); in the case's water as they fell ${passiveFell.filter((r) => r.fell!.inCase).length}; before the throw (τ < 0) ${passiveFell.filter((r) => r.fell!.tau < 0).length} [ruling 5's bar: ≤ 3], after it (τ ≥ 0) ${passiveFell.filter((r) => r.fell!.tau >= 0).length}, no slice by them ${passiveFell.filter((r) => !(r.fell!.tau === r.fell!.tau)).length}`);
+    for (const r of passive) lines.push(`  wave ${r.wave} ${r.label}: ${r.fell ? `fell at ${r.fell.at.toFixed(2)} s (${r.fell.cause}; ${r.fell.n.toFixed(1)} m seaward of the take-off's line${r.fell.inCase ? '; in the case\'s water' : ''}; τ ${f(r.fell.tau, 2)} s)` : 'held'}`);
     lines.push('');
     const rides = riders.filter((r) => r.kind === 'ride');
     const took = rides.filter((r) => r.taken !== null);
     const failed = took.filter((r) => r.fell && r.stood === null);
     const later = took.filter((r) => r.fell && r.stood !== null);
     const proneFell = rides.filter((r) => r.taken === null && r.fell);
-    lines.push(`## Scripted rides: ${rides.length}; popped up ${took.length}; stood ${took.filter((r) => r.stood !== null).length}; failed pop-ups ${failed.length} of ${took.length} [bar: ≤ 2 of 16] (${causes(failed)}); fell after standing ${later.length} (${causes(later)}); fell paddling, before any pop-up ${proneFell.length} (${causes(proneFell)}); never popped up and held ${rides.filter((r) => r.taken === null && !r.fell).length}`);
+    lines.push(`## Scripted rides: ${rides.length}; popped up ${took.length}; stood ${took.filter((r) => r.stood !== null).length}; failed pop-ups ${failed.length} of ${took.length} [ruling 4's bar: ≤ 2 of 16; ruling 5's: ≤ 8 of 22 and stood ≥ 14] (${causes(failed)}); fell after standing ${later.length} (${causes(later)}); fell paddling, before any pop-up ${proneFell.length} (${causes(proneFell)}); never popped up and held ${rides.filter((r) => r.taken === null && !r.fell).length}`);
     for (const r of rides) {
       lines.push(`  wave ${r.wave} ${r.label}: ${r.pressed === null ? 'no cue' : `cue ${r.pressed.toFixed(2)} s`}${r.taken === null ? '' : `, up from ${r.taken.toFixed(2)} s`}${r.stood === null ? '' : `, stood ${r.stood.toFixed(2)} s`}; ${r.fell ? `fell at ${r.fell.at.toFixed(2)} s (${r.fell.cause}, ${r.fell.phase}${r.fell.inCase ? ', in the case\'s water' : ''})` : 'on the board to the end'}; carried ${(r.farthest - (focus.z)).toFixed(1)} m past the take-off`);
     }
