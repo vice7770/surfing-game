@@ -94,3 +94,15 @@ Nothing was built in this round. This page is the brief for the next one. The re
 - **311 m is better than 280 m. No falling back.**
 - **Next, in this order:** (1) a probe with the library, today and ref 311: the crash's own throw counts become bar D; (2) the join table's row for ref (times × 1.054, lengths × 1.11): the likely cause of the folded leading end in the stills, not traced; (3) the reef's along-line lengths × 1.11, with `POOL_FRONT_REACH` (22.2 / 111 / 33.3); (4) an opt-in onset clock per break line.
 - **The owner's calls:** margin on the fastest water or not; keep the hard break on the pool's beach or try a gentler beach; whether the ride should reach about u 165.
+
+## Step 3: the lip count on the game's path (probe only, 2026-11-11)
+
+Full write-up: `step3/README.md`. Raw outputs beside it.
+
+- **Ruling 15's claim held.** With the tube library the pool has the swept crash, and the solver's own lip throws 0 times. Step 2's 55.6 % was on a path the game does not use.
+- **Bar D, count: passes.** On s 20 to 100, 94.0 % of ref's front points that reached their throw did throw (today 93.1 %). Missed 0, lost 0.
+- **Bar D, water: misses.** Ref throws 0.860 of the water it asks for (today 0.974). The crest runs short on s 60 to 100.
+- **Bar A: misses.** Ref's face is 2.23 m (aim 2.0 ± 0.1). Today 1.87 m.
+- **Bar B: pace in range, count misses.** 6.63 m/s, but from 12 of 20 waves (needs 15). Today 6.25 m/s from 18 of 21.
+- **Bar F: passes.** 7.60 m/s at the reef, all finite. The beach swash reaches 7.58 m/s and does not grow.
+- **The 600 s drift run was skipped**, because A, B and D's water share miss.
