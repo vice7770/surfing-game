@@ -54,11 +54,19 @@ export const POOL_TUBE_CASES: readonly string[] = ['periodic-pool-straight-small
 export const POOL_TUBE_STAND_IN: readonly string[] = ['periodic-canyon23-a38-l13'];
 
 /**
+ * The pool's 1.8 m run alone (`pool_straight_big`, A0 0.355), Froude-scaled by each slice's foot crest: the reference
+ * size's tube (`?poolSize=ref`, ruling 13). On the reference floor the foot crest is 1.11 × the 1.8 m Barrel's, so the
+ * case is drawn and felt 1.11 × larger in every length and √1.11 slower, its shape unchanged.
+ */
+export const POOL_TUBE_BIG: readonly string[] = ['periodic-pool-straight-big-l13'];
+
+/**
  * Which cases the pool's tube is drawn and felt from (`SurfZoneConfig.poolTubeCase`): `'a38'`, the default
  * (`DEFAULT_POOL_TUBE_CASE`, `POOL_TUBE_STAND_IN`), or `'pool'`, its own two level-13 runs (`POOL_TUBE_CASES`; the
- * `?poolTubeCase=pool` A/B). Online rooms run the default.
+ * `?poolTubeCase=pool` A/B), or `'big'`, its 1.8 m run alone (`POOL_TUBE_BIG`; set by `?poolSize=ref`, no switch of its
+ * own). Online rooms run the default.
  */
-export type PoolTubeCase = 'a38' | 'pool';
+export type PoolTubeCase = 'a38' | 'pool' | 'big';
 
 /** The Wave Pool's default tube case (the owner, 2026-11-04: a38 until the bigger-tube work lands). */
 export const DEFAULT_POOL_TUBE_CASE: PoolTubeCase = 'a38';
@@ -74,7 +82,8 @@ export function poolTubeCaseOf(poolTubeCase?: PoolTubeCase): PoolTubeCase {
  */
 export function barrelCasesFor(spot: SpotName, cases: readonly BarrelCaseEntry[] = BARREL_CASES, poolTubeCase?: PoolTubeCase): BarrelCaseEntry[] {
   if (spot === 'pool') {
-    const ids = poolTubeCaseOf(poolTubeCase) === 'pool' ? POOL_TUBE_CASES : POOL_TUBE_STAND_IN;
+    const which = poolTubeCaseOf(poolTubeCase);
+    const ids = which === 'pool' ? POOL_TUBE_CASES : which === 'big' ? POOL_TUBE_BIG : POOL_TUBE_STAND_IN;
     return cases.filter((entry) => ids.includes(entry.id));
   }
   return cases.filter((entry) => entry.spot === spot && !barrelCaseNote(entry.id));

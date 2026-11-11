@@ -15,8 +15,8 @@ import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotio
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import {
-  POOL, POOL_BARREL, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolRiddenAt, poolSea, poolStraightBreakDepth,
-  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolWaves,
+  POOL, POOL_BARREL, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
+  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolSizeSwitch, type PoolWaves,
 } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -28,7 +28,7 @@ import { riderBounds, sideMargin, type RiderBounds } from '../physics/riderBound
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
-import { BARREL_SPOTS, tubeFootMax } from './barrel/barrelSpots';
+import { BARREL_SPOTS, barrelSpotOf, tubeFootMax } from './barrel/barrelSpots';
 import { tubeFaceOf, type TubeFace } from './barrel/faceAnchor';
 import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
@@ -385,6 +385,14 @@ export interface SurfZoneConfig {
    * Only on the straight Barrel floor; online rooms always run the default.
    */
   poolFloor?: PoolFloorFace;
+  /**
+   * The straight Barrel at the owner's reference size (ruling 13, pool-look-reference 2026-11-11): 'ref', today's 1.8 m
+   * Barrel made 1.11 times larger by Froude for 2 m faces (`POOL_REF`: the floor, the machine's period, the first break and
+   * the start; the tube's transect, `barrelSpotOf`), the `?poolSize=ref` dev switch. The config's `significantHeight`,
+   * `peakPeriod` and `poolTubeCase` are set with it (`surfZoneConfigFor`). Only on the straight Barrel floor; with
+   * `poolFloor` 'inside' its shelf is scaled too, 'ledge' is ignored. Online rooms always run the default.
+   */
+  poolSize?: PoolSizeSwitch;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
@@ -988,8 +996,8 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     // when they wrap (its along-shore wavelength fitting the window).
     const depth = tank.edgeDepth + config.tide;
     const direction = poolFloorOf(config) === 'straight'
-      ? poolStraightDirection(madsenSorensenWaveNumber((2 * Math.PI) / POOL.period, depth), alongShoreOf(config)) : 0;
-    return poolSea(edgeHeight(config, tank.edgeDepth), depth, madsenSorensenWaveNumber, direction);
+      ? poolStraightDirection(madsenSorensenWaveNumber((2 * Math.PI) / poolPeriodOf(config), depth), alongShoreOf(config)) : 0;
+    return poolSea(edgeHeight(config, tank.edgeDepth), depth, madsenSorensenWaveNumber, direction, poolPeriodOf(config));
   }
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && solverStage(config.spot, config.stage) === 2;
   return SeaState.fromSpectrum({
@@ -1156,11 +1164,11 @@ export const CANYON_HALF_RIDE_LINEUP: readonly { readonly significantHeight: num
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
-export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): number {
+export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed' | 'poolWaves' | 'poolBarrel' | 'poolSize'>): number {
   if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
   // The Wave Pool's Barrel floors: their own starts (`POOL_STRAIGHT.startOut`, `POOL_BARREL.startOut`, the catch probe's).
   if (config.spot === 'pool' && config.poolWaves === 'barrel') {
-    return poolFloorOf(config) === 'aframe' ? POOL_BARREL.startOut : poolStraightStartOut(config.significantHeight / Math.SQRT2);
+    return poolFloorOf(config) === 'aframe' ? POOL_BARREL.startOut : poolStraightStartOut(config.significantHeight / Math.SQRT2, poolRefOn(config) ? 'ref' : undefined);
   }
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
   // Version C's start on its bank (canyon-c); versions B and A at the upcoast peak (canyon-b left it as it was).
@@ -1195,7 +1203,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -1206,7 +1214,8 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
   // inside the measured breaks.
   const floor = poolFloorOf(config);
-  const target = config.spot === 'pool' ? (floor === 'straight' ? poolStraightBreakDepth : floor === 'aframe' ? poolBarrelBreakDepth : poolBreakDepth)(height / Math.SQRT2)
+  const target = config.spot === 'pool' ? (poolRefOn(config) ? poolStraightBreakDepth(height / Math.SQRT2, 'ref')
+    : (floor === 'straight' ? poolStraightBreakDepth : floor === 'aframe' ? poolBarrelBreakDepth : poolBreakDepth)(height / Math.SQRT2))
     : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => firstReaching(spot, tank, x, target, config.tide);
@@ -1461,7 +1470,7 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor });
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
@@ -1595,7 +1604,7 @@ export class SurfZoneSimulation {
     this.frontFrom = tank.fineFrom;
     if (sweptBarrelOn(config)) {
       // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
-      const record = BARREL_SPOTS[config.spot]!;
+      const record = barrelSpotOf(config)!;
       // The step 3 ruling at the pool (`TubeFace`): the thrown clock's cap, the lagged join, the crash's anchor. Its lagged
       // join keys on where the drawn case goes vertical: the lowest run scaled by Froude to the foot crest (`froude`).
       const face = barrel?.options.geometry === 'bounded-C' ? undefined : tubeFaceOf(record.faceAnchor !== undefined, config);

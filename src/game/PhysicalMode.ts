@@ -28,7 +28,7 @@ import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { PoolScenery } from '../scene/PoolScenery';
-import { POOL, POOL_EDGE_HEIGHT, POOL_STRAIGHT, poolDeckZ, poolFloorOf, regularSignificantHeight, type PoolWaves } from '../wave/pool';
+import { POOL, POOL_EDGE_HEIGHT, POOL_REF, POOL_STRAIGHT, poolDeckZ, poolFloorOf, poolRefOn, regularSignificantHeight, type PoolWaves } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { SpillingCurlMesh } from '../scene/SpillingCurlMesh';
@@ -388,6 +388,24 @@ export interface HostExtras {
  * the page decides. Shared with the dev pages that time the game's own seas (gpu-check's `?mode=pipeline`).
  */
 export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier: boolean, overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig {
+  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides));
+}
+
+/**
+ * A config at the straight Barrel's reference size (`poolSize` 'ref', ruling 13): the machine's wave and period are
+ * `POOL_REF`'s in place of the Small / Big choice's, its tube the pool's 1.8 m case alone (scaled by the bigger foot
+ * crest), and the steeper ledge (`poolFloor` 'ledge') is dropped. Any other config, as given.
+ */
+export function poolRefConfig(config: SurfZoneConfig): SurfZoneConfig {
+  if (!poolRefOn(config)) return config;
+  const { poolFloor, ...rest } = config;
+  return {
+    ...rest, significantHeight: regularSignificantHeight(POOL_REF.edgeHeight), peakPeriod: POOL_REF.period, poolTubeCase: 'big',
+    ...(poolFloor === 'inside' ? { poolFloor } : {}),
+  };
+}
+
+function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boolean, overrides: Partial<SurfZoneConfig>): SurfZoneConfig {
   const swell = swellFor(settings);
   const stage = solverStage(settings.spot, settings.stage);
   const compute = stage !== settings.stage ? 'auto' : settings.compute;
@@ -445,6 +463,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolBarrelSwitch() : {}),
     // `?poolFloor=ledge`: the straight Barrel on the advisor's steeper reef ledge (pool-ledge-floor, the owner's call 2026-11-08).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolFloorSwitch() : {}),
+    // `?poolSize=ref`: the straight Barrel re-sized to the owner's reference, 2 m faces (ruling 13), opt-in (`poolRefConfig`).
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolSizeSwitch() : {}),
     // `?poolTube=off` / `?poolCrash=off`: the straight Barrel without its swept tube, or with it and the solver's own lip.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? poolTubeSwitch() : {}),
     // `?poolTubeCase=pool`: the straight Barrel's tube from its own runs, for A/Bs (a38, the default since 2026-11-04,
@@ -577,6 +597,15 @@ export function poolBarrelSwitch(search?: string): { poolBarrel?: 'aframe' } {
  * reef's top (`POOL_INSIDE`), so the whitewater behind the tube runs on. One or the other, not both. Online rooms always
  * run the default.
  */
+/**
+ * The `?poolSize=ref` dev switch (`SurfZoneConfig.poolSize`, pool-look-reference 2026-11-11; ruling 13): the straight
+ * Barrel re-sized to the owner's reference, today's 1.8 m Barrel 1.11 times larger for 2 m faces (`POOL_REF`), in place of
+ * the Small / Big choice. Anything else keeps today's sizes. Online rooms always run the default.
+ */
+export function poolSizeSwitch(search?: string): { poolSize?: 'ref' } {
+  return devParam('poolSize', search)?.trim().toLowerCase() === 'ref' ? { poolSize: 'ref' } : {};
+}
+
 export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' | 'inside' } {
   const value = devParam('poolFloor', search)?.trim().toLowerCase();
   return value === 'ledge' || value === 'inside' ? { poolFloor: value } : {};
@@ -1353,7 +1382,7 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     this.curtains.setOptics(SPOT_OPTICS[settings.spot]);
-    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor });
+    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
     const offshoreDepth = tank.edgeDepth;

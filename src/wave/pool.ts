@@ -468,9 +468,9 @@ export function poolStraightAt(s: number): { x: number; z: number } {
 }
 
 /** The straight reef's crest depth s m along it, m: `crestProfile`'s knots eased, the platform's depth beyond them. */
-export function poolStraightCrestDepth(s: number): number {
-  const knots = POOL_STRAIGHT.crestProfile;
-  if (s <= knots[0][0] || s >= knots[knots.length - 1][0]) return POOL_STRAIGHT.platformDepth;
+export function poolStraightCrestDepth(s: number, shape: PoolStraightShape = POOL_STRAIGHT): number {
+  const knots = shape.crestProfile;
+  if (s <= knots[0][0] || s >= knots[knots.length - 1][0]) return shape.platformDepth;
   let k = 1;
   while (s > knots[k][0]) k += 1;
   const [s0, d0] = knots[k - 1];
@@ -501,6 +501,49 @@ export const POOL_LEDGE = { gradient: 1 / 2.0, kneeRounding: 1 };
  */
 export const POOL_INSIDE = { step: 0.3, width: 16 };
 
+/** What sizes the straight reef across its line: its platform, its crest along it and its top (`POOL_STRAIGHT`'s, or `POOL_REF`'s). */
+export interface PoolStraightShape { platformDepth: number; crestProfile: [number, number][]; flatWidth: number }
+
+/**
+ * The straight Barrel re-sized to the owner's reference (`?poolSize=ref`; ruling 13,
+ * docs/research/pool-look-reference-2026-11-11/ruling-13.md): today's 1.8 m Barrel made `scale` times larger by Froude,
+ * for faces of 2 m. Depths × 1.11 (the platform, the crest's profile, written out as the ruling gives them), the top and
+ * the knee's rounding × 1.11, the period × √1.11; slopes, the reef's angle and line, the lengths along the reef, the
+ * machine's floor and its direction's rule unchanged. `edgeHeight`: the machine's wave at the tank's edge, m, tuned so the
+ * foot crest on the knee is 1.11 × the 1.8 m Barrel's (the ref probe). `startOut` and the first break's depth are the
+ * 1.8 m Barrel's × 1.11 (`poolStraightBreakDepth`, `poolStraightStartOut`). Opt-in; provisional. Mutable for the probes.
+ */
+export const POOL_REF = {
+  scale: 1.11,
+  face: 2.0,
+  period: 10.5,
+  edgeHeight: 1.47,
+  platformDepth: 5.0,
+  crestProfile: [[0, 5.0], [30, 1.78], [65, 1.0], [175, 1.0], [205, 2.2], [235, 5.0]] as [number, number][],
+  flatWidth: 6.7,
+  kneeRounding: 3.3,
+};
+
+/** The straight Barrel's size switch (`SurfZoneConfig.poolSize`): 'ref', the reference's 2 m faces (`POOL_REF`); none, the Small / Big sizes. */
+export type PoolSizeSwitch = 'ref';
+
+/** Whether a sea runs the reference size: only the straight Barrel floor takes it (`?poolSize=ref`). */
+export function poolRefOn(config: { spot?: string; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch }): boolean {
+  return config.poolSize === 'ref' && (config.spot === undefined || config.spot === 'pool') && poolFloorOf(config) === 'straight';
+}
+
+/** The machine's period for a sea, s: `POOL.period`, or the reference size's (`POOL_REF.period`). */
+export function poolPeriodOf(config: { spot?: string; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch }): number {
+  return poolRefOn(config) ? POOL_REF.period : POOL.period;
+}
+
+/** The straight floor at the reference size (`POOL_REF`, `?poolSize=ref`), m; with `inside`, `POOL_INSIDE`'s shelf × its scale. */
+export function poolStraightRefDepth(x: number, z: number, inside = false): number {
+  const r = POOL_REF;
+  return poolStraightDepthWith(x, z, { gradient: POOL_STRAIGHT.gradient, kneeRounding: r.kneeRounding },
+    inside ? { step: POOL_INSIDE.step * r.scale, width: POOL_INSIDE.width * r.scale } : undefined, r);
+}
+
 /** The straight Barrel's floor, by `?poolFloor`: today's (undefined, the default), the steeper ledge, or the shallow inside. */
 export type PoolFloorFace = 'ledge' | 'inside';
 
@@ -521,11 +564,12 @@ export function poolStraightInsideDepth(x: number, z: number): number {
 
 /**
  * The straight floor's still depth with its reef face's `gradient` and `kneeRounding` from `face`, m; with `inside`, a
- * level shelf behind the top (`POOL_INSIDE`).
+ * level shelf behind the top (`POOL_INSIDE`); with `shape`, its platform, crest profile and top in place of
+ * `POOL_STRAIGHT`'s (`POOL_REF`).
  */
-export function poolStraightDepthWith(x: number, z: number, face: { gradient: number; kneeRounding: number }, inside?: { step: number; width: number }): number {
+export function poolStraightDepthWith(x: number, z: number, face: { gradient: number; kneeRounding: number }, inside?: { step: number; width: number }, shape?: PoolStraightShape): number {
   const p = POOL;
-  const r = { ...POOL_STRAIGHT, gradient: face.gradient, kneeRounding: face.kneeRounding };
+  const r = { ...POOL_STRAIGHT, gradient: face.gradient, kneeRounding: face.kneeRounding, ...(shape ? { platformDepth: shape.platformDepth, flatWidth: shape.flatWidth } : {}) };
   const beach = Math.max(-p.deck, -z * p.shoreSlope);
   const edge = poolStraightPlatformZ();
   if (z < edge) {
@@ -537,7 +581,7 @@ export function poolStraightDepthWith(x: number, z: number, face: { gradient: nu
   // The wrap's land barrier (none by default): the deck, from the beach out to `wrapWallFrom`.
   if (r.wrapWallWidth > 0 && z > r.wrapWallFrom && Math.abs(x) >= p.alongShore / 2 - r.wrapWallWidth / 2) return -p.deck;
   const { s, n } = poolStraightFrame(x, z);
-  const crest = poolStraightCrestDepth(s);
+  const crest = shape ? poolStraightCrestDepth(s, shape) : poolStraightCrestDepth(s);
   let reef: number;
   if (n >= 0) {
     // The face square to the crest line, from the crest down to the platform, its knee rounded.
@@ -572,14 +616,18 @@ export const POOL_STRAIGHT_EDGE_HEIGHT: Record<PoolBarrelSize, number> = { small
 export const POOL_STRAIGHT_BREAK_DEPTH = { base: 0.01, perMetre: 1.44 } as const;
 
 /** How far seaward of the straight floor's take-off riders start for a machine wave H m high at the feed, m (`startOut`). */
-export function poolStraightStartOut(height: number): number {
+export function poolStraightStartOut(height: number, size?: PoolSizeSwitch): number {
+  // The reference size (`POOL_REF`): the 1.8 m Barrel's start × its scale.
+  if (size === 'ref') return POOL_STRAIGHT.startOut.big * POOL_REF.scale;
   const { small, big } = POOL_STRAIGHT.startOut;
   const t = Math.min(1, Math.max(0, (height - POOL_STRAIGHT_EDGE_HEIGHT.small) / (POOL_STRAIGHT_EDGE_HEIGHT.big - POOL_STRAIGHT_EDGE_HEIGHT.small)));
   return small + (big - small) * t;
 }
 
 /** How deep the pool's wave of height H at the feed first breaks at the straight floor's take-off, m. */
-export function poolStraightBreakDepth(height: number): number {
+export function poolStraightBreakDepth(height: number, size?: PoolSizeSwitch): number {
+  // The reference size (`POOL_REF`): the 1.8 m Barrel's first break × its scale (the fit is not read past its sizes).
+  if (size === 'ref') return poolStraightBreakDepth(POOL_STRAIGHT_EDGE_HEIGHT.big) * POOL_REF.scale;
   return POOL_STRAIGHT_BREAK_DEPTH.base + POOL_STRAIGHT_BREAK_DEPTH.perMetre * height;
 }
 
@@ -602,20 +650,23 @@ export function poolStraightDirection(waveNumber: number, alongShore = POOL.alon
 }
 
 /** The pool's bed for its floor: the training A-frame (the default), the Barrel's straight reef or its A-frame. */
-export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace): SurfSpot {
+export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace, size?: PoolSizeSwitch): SurfSpot {
   const floor = poolFloorOf({ poolWaves: waves, poolBarrel: barrel });
+  // The reference size (`?poolSize=ref`, the straight floor's): its own shape, with the shallow inside if asked; never the ledge.
+  if (size === 'ref' && floor === 'straight') return { name: 'pool', depthAt: (x, z) => poolStraightRefDepth(x, z, face === 'inside') };
   const straight = face === 'ledge' ? poolStraightLedgeDepth : face === 'inside' ? poolStraightInsideDepth : poolStraightDepth;
   return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : straight };
 }
 
 /**
  * The machine's sea: one regular wave of height H = Hs/√2 at the edge, every POOL.period s, square to the tank
- * (`direction` 0, the training and A-frame floors) or oblique (the straight floor's, rad from +z).
+ * (`direction` 0, the training and A-frame floors) or oblique (the straight floor's, rad from +z); `period`, the
+ * reference size's own (`poolPeriodOf`).
  * Every wave is the same one, so the pool needs no seed.
  */
-export function poolSea(significantHeight: number, depth: number, waveNumberAt: WaveNumberFunction, direction = 0): SeaState {
+export function poolSea(significantHeight: number, depth: number, waveNumberAt: WaveNumberFunction, direction = 0, period = POOL.period): SeaState {
   const height = significantHeight / Math.SQRT2;
-  return new SeaState([{ amplitude: height / 2, omega: (2 * Math.PI) / POOL.period, direction, phase: 0 }], depth, waveNumberAt);
+  return new SeaState([{ amplitude: height / 2, omega: (2 * Math.PI) / period, direction, phase: 0 }], depth, waveNumberAt);
 }
 
 /** The machine's relaxation zone is this many wavelengths at its floor long: 1.5–2 absorb a 10 s wave (the advisor). */

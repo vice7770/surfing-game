@@ -51,3 +51,11 @@ Nothing was built in this round. This page is the brief for the next one. The re
 - **Then the pool's colour**, render only.
 - **The warning.** Size alone will likely not make the catch easy: outside the tube's shape the wall stays near 17°.
 - **The owner's calls:** the rider waits further along the reef (about 70 m) or stays at 40; 2 m as a third size or in place of one; period 10.5 or 10 s; one wave or the train; whether a dark 15 to 19° wall is enough or a Basilisk run on a shallower platform is worth it.
+
+## Step 1: `?poolSize=ref` (built 2026-11-11, opt-in)
+
+- Built behind the switch. The default is unchanged. The write-up, the bars, the probe and two stills are in `step1/README.md`.
+- It runs 600 s without a blow-up, and the fastest water is 1.11 × today's.
+- It misses most bars. Faces at the take-off 2.3 to 2.7 m (aim 2.0). Peel 6.2 m/s (aim 7 to 8; today 6.45). Lip jets on 56 to 60 % of onsets (aim 90 %; today 90 to 96 %). The wall ahead of the tube is 1.3 to 1.5 m tall, as today.
+- Likely cause: with the pool's wrapped sides, the 10.5 s wave leaves the machine at 41.8° where the 10 s wave leaves at 39.1°. The reef lies at 40°.
+- Next: the advisor on the period and the direction, before the owner rides it and before `?tubeForm=early`.

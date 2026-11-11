@@ -80,6 +80,7 @@ The owner filmed the ride URL and sent a reference clip (Surf Abu Dhabi, https:/
 - In short: the game's wave shows only as a short blue box where the tube is, on a flat pale sea, with flat beige whitewater. The reference has a long dark 2 m wall ahead of the tube, a thin lip, a tall white pile right behind the tube, and a break that moves at the surfer's pace.
 - The owner chose to re-size the pool to the reference (2 m faces, the break at a surfer's pace). The advisor's ruling 13 is beside the brief (`ruling-13.md`; the brief ends with it in short).
 - Nothing built yet (stopped at 97 to 98 % of the weekly usage). **Start here:** build `?poolSize=ref` with ruling 13's numbers and bars, then `?tubeForm=early`, then the pool's colour.
+- **Built, opt-in (2026-11-11 night): `?poolSize=ref`** on `claude/pool-size-ref`. The default is unchanged. It misses most of ruling 13's bars (faces 2.3 to 2.7 m, peel 6.2 m/s, lip jets on 56 to 60 % of onsets, no taller wall ahead). Likely cause: the 10.5 s wave leaves the machine at 41.8°, not 39.1°. Write-up: `docs/research/pool-look-reference-2026-11-11/step1/README.md`. Next: the advisor on the period and direction.
 
 ## Rules that still hold
 

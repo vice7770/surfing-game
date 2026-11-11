@@ -2,7 +2,7 @@ import { CANYON, PADANG, REEF, type SpotName } from '../Bathymetry';
 import { GRAVITY } from '../dispersion';
 import type { FrontOptions } from './BreakingFront';
 import { PADANG_ONSET, type OnsetTables } from './sliceClock';
-import { poolStraightFrame } from '../pool';
+import { POOL_REF, poolRefOn, poolStraightFrame, type PoolBarrelLayout, type PoolSizeSwitch, type PoolWaves } from '../pool';
 
 /**
  * How far over a reef's top its throw's floor sits, m: the pass's Gaussian tail lifts the flat's still depth by up to
@@ -357,3 +357,24 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
     front: { joinPast: 3 }, family: true, frontAt: poolStraightFrontAt, faceAnchor: { lead: poolLead, ramp: poolRamp },
   },
 };
+
+/**
+ * The Wave Pool's straight Barrel's transect at the reference size (`?poolSize=ref`, ruling 13; `POOL_REF`): the same
+ * transect 1.11 times larger. Its foot is 1.11 × deeper, so the band, the join and the throw scale with it (`onsetTiming`
+ * reads the tables by its foot over the tables'); the lagged join's depths × 1.11 and its ramp × √1.11, at 1.11 × the foot
+ * crest. The slope, the front's reach along the reef (the reef's lengths along its line are unchanged) and its rules are
+ * the pool's.
+ */
+export function poolRefBarrelSpot(): BarrelSpot {
+  const pool = BARREL_SPOTS.pool!;
+  const k = POOL_REF.scale;
+  return {
+    ...pool, footDepth: POOL_FOOT_DEPTH * k,
+    faceAnchor: { lead: (footHeight: number) => k * poolLead(footHeight / k), ramp: (footHeight: number) => Math.sqrt(k) * poolRamp(footHeight / k) },
+  };
+}
+
+/** A sea's barrel transect: its spot's (`BARREL_SPOTS`), or the pool's at the reference size (`SurfZoneConfig.poolSize`). */
+export function barrelSpotOf(config: { spot: SpotName; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch }): BarrelSpot | undefined {
+  return config.spot === 'pool' && poolRefOn(config) ? poolRefBarrelSpot() : BARREL_SPOTS[config.spot];
+}
