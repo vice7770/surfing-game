@@ -14,6 +14,7 @@ import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFrag
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 import { lipFoamAt } from './brokenCrest';
+import { LIP_FRAY_VOLUME, LIP_LOOK_FRAY } from './lipLook';
 import { configureBarrelCoverage } from './barrelFallback';
 import { withNormalGuard, withWallRipple } from '../water/tubeLook';
 
@@ -486,6 +487,11 @@ export class SweptBarrelMesh {
    */
   lipFoam: 'carried' | 'old' = 'carried';
   /**
+   * The lip's look (ruling 9, `lipLook.ts`): 'clean', the default, glass until touchdown; 'fray', the `?lipLook=fray` dev
+   * switch, white where its sheet is thin (the tip), clean where it is thick. Drawing only.
+   */
+  lipLook: 'clean' | 'fray' = LIP_LOOK_FRAY ? 'fray' : 'clean';
+  /**
    * How `update` turns the loft's triangles to face out (pool-barrel-perf, 2026-11-06): 'fast', the default, without the
    * three-element arrays it built per triangle; 'old', the `?barrelMesh=old` dev switch, as before. The same indices.
    */
@@ -521,6 +527,8 @@ export class SweptBarrelMesh {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, uniforms, this.ownUniforms);
       const rich = this.look === 'rich';
+      // `?lipLook=fray`: the frayed tip lit as a volume of drops; without it the program is untouched.
+      const frayed = this.lipLook === 'fray' ? LIP_FRAY_VOLUME : '';
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
         .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
@@ -533,9 +541,9 @@ export class SweptBarrelMesh {
         .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', rich
-          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW)
+          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
             .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
-          : waterBodyFragment(false, true, sweptFoam(CLASSIC_FOAM), SWEPT_SHEET_BODY))
+          : waterBodyFragment(false, true, sweptFoam(CLASSIC_FOAM), SWEPT_SHEET_BODY + frayed))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>')
         // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
@@ -556,7 +564,7 @@ export class SweptBarrelMesh {
         .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
         .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
     };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.look === 'rich' && this.lipBackShown === 'old' ? '-lip-back-old' : ''}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
+    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.lipLook === 'fray' ? '-lip-fray' : ''}${this.look === 'rich' && this.lipBackShown === 'old' ? '-lip-back-old' : ''}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
     onGlitterChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });
@@ -632,6 +640,7 @@ export class SweptBarrelMesh {
     if (carried) {
       // The lift, and the foam its lifted water carries (T3): none on a clean crest's lip before touchdown.
       const own = lip && this.brokenFoam;
+      const fray = this.lipLook === 'fray';
       for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
         const outer = own ? lip.outer[s] : 0;
         const face = own ? lip.face[s] : 0;
@@ -639,7 +648,7 @@ export class SweptBarrelMesh {
         for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
           const v = s * LOFT_SAMPLES + j;
           const point = j - LOFT.extensionSamples;
-          const foam = point < 0 || point >= PROFILE_POINTS ? 0 : lipFoamAt(point, outer, face, stretch, loft.sheetWeight[v], after, collapse);
+          const foam = point < 0 || point >= PROFILE_POINTS ? 0 : lipFoamAt(point, outer, face, stretch, loft.sheetWeight[v], after, collapse, fray ? loft.sheet[v] : undefined);
           lift[v] = packSweptLift(loft.lift[v], foam);
         }
       }

@@ -214,7 +214,7 @@ Switches:
 - O'Dea 2021, Feddersen 2024 and Mostert 2022 are cited through the KB, not re-opened. Pool photographs were not opened.
 - The `sheet` dev-view stills were still being captured when this was written (`merge-look/adv-sheet/`).
 
-## 9. What the build measured (2026-11-11, `?tubeLook=merge`, PR after #248)
+## 9. What the build measured (2026-11-11, `?tubeLook=merge`, PR #249)
 
 Built: ranks 1 and 3, render only, opt-in (`src/scene/water/tubeLook.ts`). Rank 2 was tested before building and is **not** built. Stills: `stills/merge/` (the same four shots and spot string plus `&tubeLook=merge`); the before stills are `stills/`. All numbers below are measured on those 1280×720 stills on the M1, headless, Rich, midday, with the tools in `tools/`.
 
@@ -231,7 +231,7 @@ Built: ranks 1 and 3, render only, opt-in (`src/scene/water/tubeLook.ts`). Rank 
 
 - Gone: the dashes on the sea, the navy part of the seam from behind, most of the dark outline along the lip's edge seen from inside, and the wavy bands at the wall's base that flipped dark.
 - Left, and **not** the fallback navy (10,44,117): teal pixels (8–28, 75–89, 116–133).
-  - A thin dashed line at the lip's tip in curl-close and curl-front (y 364–371, x 560–750). In the `region` dev view it sits on the first pixel row of the region under the lip; with all diffuse light off that row and everything under it go black, so it is lit by diffuse light alone and is darker than the rows below it. Cause not proven. Reading: the under-lip shade (`RICH_THROAT`) or the sheet's thickness at the tip fold. It belongs with the lip's look.
+  - A thin dashed line at the lip's tip in curl-close and curl-front (y 364–371, x 560–750). In the `region` dev view it sits on the first pixel row of the region under the lip; with all diffuse light off that row and everything under it go black, so it is lit by diffuse light alone and is darker than the rows below it. Cause, measured later the same day (ruling 9's section 4): the row has no sheet weight; it is the top of the tube's back wall under the lip, in the roof's shade (`RICH_THROAT`). A shadow line, not a sheet fault.
   - A teal line along the lip's edge in curl-inside.
   - From behind, a thin darker line along the ridge is still there: columns of the ridge (x 470–800) with a line darker than both sides by more than 25 luma went 190 → 149 of 330. Its darkest part was the navy; the rest is rank 7's ridge, not a normal fault.
 - Guarding three's lighting `normal` as well as the body's `waterN` changed 236–710 pixels by at most 24 levels. Not kept: the guard is the ruling's two lines.

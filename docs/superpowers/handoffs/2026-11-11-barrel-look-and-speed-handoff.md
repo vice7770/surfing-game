@@ -1,6 +1,6 @@
 # Handoff, 2026-11-11: the Barrel's look, its speed next to the tube, and the wave body
 
-Written at 81 % of the weekly Fable usage (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
+Written at 81 % of the weekly Fable usage (86 % at the lip-fray PR) (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
 
 ## Where the owner stands (2026-11-11)
 
@@ -11,7 +11,7 @@ The owner rode the Wave Pool Barrel with every switch and reported:
 3. **It is ugly.** The falling lip is thick from the start. In a pool it should start thin with foam, then get thicker, still with foam.
 4. **"Is there a way that the tube and the rest of the wave merge seamlessly?"**
 
-So the order of work is now: speed next to the tube (waits for the owner's log), the tube's joins with the wave (first part merged, `?tubeLook=merge`), the lip's look (`?lipLook=fray`, next build). The wave-body thread (ruling 8) waits behind these.
+So the order of work is now: speed next to the tube (waits for the owner's log), the tube's joins with the wave (first part merged, `?tubeLook=merge`), the lip's look (`?lipLook=fray`, step 1 merged). The wave-body thread (ruling 8) waits behind these.
 
 ## 1. Speed next to the tube
 
@@ -26,7 +26,7 @@ So the order of work is now: speed next to the tube (waits for the owner's log),
 
 `docs/research/lip-look-2026-11-11/README.md`. The owner is right about the start of the fall and the foam, not about the total water. Ranked:
 
-1. **`?lipLook=fray`, render only (next build):** whiten by the sheet's thickness (white under about 4 cm, clean over 15 cm), a toothed tip (fixed cut-outs in the last 15 % of the underside), drops from the finger ends through `SprayCloud` (at most 400 live points), a crest veil through `feather()`, and `SHEET.formed` eased from 0.035 to about 0.15 h0. Bars are in the ruling.
+1. **`?lipLook=fray`, render only (step 1 of 5 merged, opt-in):** built: the lip's foam follows its thickness, and the frayed part is lit from both faces (without that the tip drew near black). Small change so far: a matt white tip. Not built: the teeth (the owner's call on 0.10 m), the drops, the veil, the eased `SHEET.formed` (`src/wave/barrel/lipSheet.ts`; check what else reads `formed` first). Measured: the white roll is the lip's underside passing the sky; the dashed line under the lip is the wall's shade. The ruling's section 4. The whole rank: whiten by the sheet's thickness (white under about 4 cm, clean over 15 cm), a toothed tip (fixed cut-outs in the last 15 % of the underside), drops from the finger ends through `SprayCloud` (at most 400 live points), a crest veil through `feather()`, and `SHEET.formed` eased from 0.035 to about 0.15 h0. Bars are in the ruling.
 2. Ride `?poolTubeCase=pool` (the pool's own case, thinner lip).
 3. A Bo 4000 Basilisk case on the M4 (about a day).
 4. `?lipCap=off-underside`, provisional.
@@ -47,7 +47,7 @@ So the order of work is now: speed next to the tube (waits for the owner's log),
   - the white lip: **the read cause was wrong.** With no sky through the lip at all, the roll did not change. It is the designed light through the thin lip. Nothing was built for it; it goes to `?lipLook=fray`, which must bring the sheet's light down where the sheet is thick;
   - the wall's stripes: 5.4–6.1 → 5.0–5.7 (bar 2). Another source is left; find it with the `region` dev view first (the sea's ripples at grazing, the bed's light pattern, the lace, the loft's steps).
 - **Next for the joins:** the stripes' source; rank 4's eased lip start together with `fray`; then ranks 5 (broken end) and 6 (surface detail, measure its cost).
-- The owner's ride URL to judge it: `?tubeSeam=blend&wallBody=stream&tubeLook=merge` on the pool's Barrel.
+- The owner's ride URL to judge it: `?tubeSeam=blend&wallBody=stream&tubeLook=merge&lipLook=fray` on the pool's Barrel.
 
 ## 4. The wave body (ruling 8, merged with #247)
 

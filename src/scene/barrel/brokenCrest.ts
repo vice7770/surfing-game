@@ -43,6 +43,15 @@ const AFTER_TOUCHDOWN = 2;
  */
 export const LIP_FOAM = { cap: 0.3, flash: 0.15, edge: 0.15 } as const;
 
+/**
+ * The fraying lip (`?lipLook=fray`, ruling 9 rank 1, 2026-11-11): a thin sheet of water breaks up and scatters light, so
+ * it is white; a thick one is clean glass. Thickness across the sheet, m:
+ * - `white`: full white under this [provisional, the ruling's 4 cm];
+ * - `clean`: none over this [provisional, 15 cm].
+ * It takes the place of `LIP_FOAM.cap`: with it a lip's foam is its sheet's own, by thickness, or its crest's if more.
+ */
+export const LIP_FRAY = { white: 0.04, clean: 0.15 } as const;
+
 const ramp = (value: number) => {
   const t = Math.min(1, Math.max(0, value));
   return t * t * (3 - 2 * t);
@@ -54,21 +63,34 @@ const ramp = (value: number) => {
  * by the surface's stretch since the throw (`stretch`, L(0)/L(τ) ≤ 1) and capped as a sheet (`sheetWeight`) until
  * touchdown; the face's own on the back wall (throat to toe), neither thinned nor capped; behind the crest its crest's.
  * From touchdown (`after` s, the collapse `collapse` s) the white of the landing sweeps over the lip and its underside
- * from the tip. `point` is the profile's index (`LANDMARK`).
+ * from the tip. `point` is the profile's index (`LANDMARK`). With `thickness` (the sheet's, m; `?lipLook=fray`) the
+ * sheet is also white where it is thin (`LIP_FRAY`), and its crest's foam is not capped.
  */
 export function lipFoamAt(
   point: number, outer: number, face: number, stretch: number, sheetWeight: number, after: number, collapse: number,
+  thickness?: number,
 ): number {
   if (point < LANDMARK.crest) return outer;
   if (point > LANDMARK.throat) return face;
   const onLip = point <= LANDMARK.lip;
   const carried = (onLip ? outer : face) * stretch;
-  if (!(after > 0)) return carried + sheetWeight * (Math.min(carried, LIP_FOAM.cap) - carried);
+  // The fraying lip: the sheet's own white by its thickness (`thickness`, m; left out, the lip is as before).
+  const frayed = thickness === undefined ? 0 : sheetWeight * frayWhite(thickness);
+  if (!(after > 0)) {
+    return thickness === undefined
+      ? carried + sheetWeight * (Math.min(carried, LIP_FOAM.cap) - carried)
+      : Math.max(carried, frayed);
+  }
   // The run from the tip: 0 at the tip, 1 at the crest (the outer surface) or the throat (the underside).
   const run = onLip ? (LANDMARK.lip - point) / (LANDMARK.lip - LANDMARK.crest) : (point - LANDMARK.lip) / (LANDMARK.throat - LANDMARK.lip);
   const reach = collapse > 0 ? after / collapse : 1;
   const white = ramp(after / LIP_FOAM.flash) * (1 - ramp((run - reach) / LIP_FOAM.edge));
-  return Math.max(carried, white);
+  return Math.max(carried, white, frayed);
+}
+
+/** How white a sheet this thick is, 0–1 (`LIP_FRAY`): 1 under `white`, 0 over `clean`. */
+export function frayWhite(thickness: number): number {
+  return 1 - ramp((thickness - LIP_FRAY.white) / (LIP_FRAY.clean - LIP_FRAY.white));
 }
 
 /**

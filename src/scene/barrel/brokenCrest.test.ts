@@ -5,7 +5,9 @@ import { LANDMARK, ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, type LoftResult } from '../../wave/barrel/sweptLoft';
 import { toyCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
-import { BROKEN_CREST, BrokenCrests, LIP_FOAM, brokenWeight, lipFoamAt } from './brokenCrest';
+import { BROKEN_CREST, BrokenCrests, LIP_FOAM, LIP_FRAY, brokenWeight, frayWhite, lipFoamAt } from './brokenCrest';
+import { LIP_FRAY_THROUGH, LIP_FRAY_VOLUME, LIP_LOOK_FRAY, lipLookFray } from './lipLook';
+import { ROLLER_LOOK } from '../water/rollerLook';
 import { SweptBarrel } from './SweptBarrel';
 import { SWEPT_LIFT_STEPS, SweptBarrelMesh, packSweptLift } from './SweptBarrelMesh';
 
@@ -274,5 +276,67 @@ describe('the swept barrel on a broken crest', () => {
     white.barrel.draw(white.front, 21, 0);
     const old = (white.barrel.mesh.mesh.geometry.getAttribute('sweptLift') as BufferAttribute).array.slice(0, white.loft.vertexCount);
     expect(Math.max(...Array.from(old))).toBe(0);
+  });
+});
+
+describe('the fraying lip (?lipLook=fray, ruling 9 rank 1)', () => {
+  const { crest, lip, throat } = LANDMARK;
+
+  it('is on only for `fray`', () => {
+    expect(lipLookFray('?lipLook=fray')).toBe(true);
+    expect(lipLookFray('?lipLook=on')).toBe(false);
+    expect(lipLookFray('')).toBe(false);
+    expect(LIP_LOOK_FRAY).toBe(false);
+  });
+
+  it('lights the frayed sheet from both faces, so the sun on it has no facing', () => {
+    // Each face takes the sun wrapped as the whitewater's band; the far face's share comes through.
+    const w = ROLLER_LOOK.wrap;
+    for (const sun of [-1, -0.5, 0, 0.5, 1]) {
+      const near = Math.max(0, (sun + w) / (1 + w));
+      const far = Math.max(0, (w - sun) / (1 + w));
+      expect((1 - LIP_FRAY_THROUGH) * near + LIP_FRAY_THROUGH * far).toBeCloseTo(0.5, 12);
+    }
+    // The shader's share is the sheet's weight by its thinness, on the lit foam only, with the light behind the sheet.
+    expect(LIP_FRAY_VOLUME).toContain(`smoothstep( ${LIP_FRAY.white.toFixed(3)}, ${LIP_FRAY.clean.toFixed(3)}, vSweptSheet )`);
+    expect(LIP_FRAY_VOLUME).toContain('vSweptSheetWeight * clamp( vWaterFoam, 0.0, 1.0 )');
+    expect(LIP_FRAY_VOLUME).toContain(`${LIP_FRAY_THROUGH.toFixed(3)} * sweptBack`);
+  });
+
+  it('is white where the sheet is thin and clean where it is thick', () => {
+    expect(frayWhite(0)).toBe(1);
+    expect(frayWhite(LIP_FRAY.white)).toBe(1);
+    expect(frayWhite(LIP_FRAY.clean)).toBe(0);
+    expect(frayWhite(0.5)).toBe(0);
+    const mid = frayWhite((LIP_FRAY.white + LIP_FRAY.clean) / 2);
+    expect(mid).toBeCloseTo(0.5, 6);
+    // Thinner is never less white.
+    for (let t = 0; t < 0.2; t += 0.005) expect(frayWhite(t)).toBeGreaterThanOrEqual(frayWhite(t + 0.005));
+  });
+
+  it('whitens a clean crest’s lip by its thickness before touchdown, only as far as the point is a sheet', () => {
+    // A clean crest: without the thickness the lip carries none; with it the thin tip is white, the thick root clean.
+    expect(lipFoamAt(lip - 1, 0, 0, 1, 1, -0.2, 0.3)).toBe(0);
+    expect(lipFoamAt(lip - 1, 0, 0, 1, 1, -0.2, 0.3, 0.01)).toBe(1);
+    expect(lipFoamAt(lip + 1, 0, 0, 1, 1, -0.2, 0.3, 0.02)).toBe(1);
+    expect(lipFoamAt(crest + 4, 0, 0, 1, 1, -0.2, 0.3, 0.3)).toBe(0);
+    expect(lipFoamAt(lip - 1, 0, 0, 1, 0.4, -0.2, 0.3, 0.01)).toBeCloseTo(0.4, 6);
+    expect(lipFoamAt(lip - 1, 0, 0, 1, 0, -0.2, 0.3, 0.01)).toBe(0);
+    // Behind the crest and on the back wall nothing changes.
+    expect(lipFoamAt(crest - 2, 0.3, 0.2, 1, 1, -0.2, 0.3, 0.01)).toBeCloseTo(0.3, 6);
+    expect(lipFoamAt(throat + 5, 0.3, 0.2, 1, 1, -0.2, 0.3, 0.01)).toBeCloseTo(0.2, 6);
+  });
+
+  it('takes the cap’s place: a white crest’s foam stays on its thick lip, thinned by the stretch only', () => {
+    expect(lipFoamAt(lip - 4, 1, 1, 1, 1, -0.01, 0.3)).toBeCloseTo(LIP_FOAM.cap, 6);
+    expect(lipFoamAt(lip - 4, 1, 1, 1, 1, -0.01, 0.3, 0.3)).toBeCloseTo(1, 6);
+    expect(lipFoamAt(lip - 4, 1, 1, 0.5, 1, -0.01, 0.3, 0.3)).toBeCloseTo(0.5, 6);
+  });
+
+  it('keeps the thin tip white after touchdown, under the landing’s white', () => {
+    // Far up the lip just after touchdown the landing's white has not arrived: the sheet's own shows.
+    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3)).toBeLessThan(0.05);
+    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3, 0.02)).toBe(1);
+    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3, 0.3)).toBeLessThan(0.05);
   });
 });

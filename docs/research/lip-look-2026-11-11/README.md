@@ -149,6 +149,44 @@ Render only. The collided surface, the void and the rider's water do not change,
 - Do not cut the total water at touchdown below 0.10 H²; that amount is already right for a pool.
 - Every change behind its switch, off by default, with its frame cost measured on the M4.
 
+## 4. What the build measured (2026-11-11, `?lipLook=fray`, step 1)
+
+Built, opt-in, drawing only: part 1 of rank 1 (thin water is white). Parts 2 to 5 (teeth, drops, veil, eased start) are not built.
+
+### What the lip is made of on screen (measured first, on the rideable build, close view, one column down the lip)
+
+| Rows down the lip | What it is | Thickness (m) | Drawn as |
+|---|---|---|---|
+| top 3 | the lip's outer run | 0.17 → 0.08 | blue glass, (106, 207, 246) |
+| next 1 | the tip | 0.01 | |
+| next 3 | the lip's underside | 0.06 → 0.23 | near white, (203, 226, 237) → (175, 216, 226) |
+| next 1 | the top of the tube's back wall, under the lip | not a sheet | dark, (16, 102, 146) |
+
+- **The white roll is the lip's underside.** Its far side sees the whole sky, and the sheet is thin, so nearly all of that light comes through (Beer–Lambert on 6 to 23 cm). It is not foam: foam is 0 on the whole lip of a clean crest.
+- **The dashed line under the lip is the back wall's shade under the roof.** It is on the wall, not on the sheet. Ruling 10's section 9 left its cause open; this closes it.
+
+### What step 1 does
+
+- The lip's foam follows the sheet's thickness: full under 4 cm, none over 15 cm (`LIP_FRAY`, `lipFoamAt`, per vertex). The 0.3 cap on a white crest's foam is gone under the switch. The touchdown flash stays.
+- **A finding the ruling did not foresee: foam alone drew the tip near black**, (18, 40, 58) (`stills/close-fray-unlit.jpg`). Both of the tip's faces turn from a high sun, and foam hides the light through the sheet. So the frayed part is lit as a thin sheet of drops (`LIP_FRAY_VOLUME`): each face takes the sun wrapped as the whitewater band does (the 2026-10-07 ruling, w = 1), and half of what the far face takes comes through, with half of the light behind the sheet. At these values the sun on the frayed part has no facing. The half share is provisional.
+- Result (close view, same column): the tip band reads (147, 211, 239) → (181, 223, 241) → (168, 178, 186): a matt pale band where the outer run thins, grey-white at the tip. The glass above and the underside below are unchanged.
+
+### Bars
+
+| Bar | Result |
+|---|---|
+| Tip band foam at least 0.6 | met by the rule wherever the sheet is under 8.7 cm (`frayWhite`); the tip's measured thickness is 1 to 8 cm. Not read at a set time after the throw |
+| Root foam at most 0.2 on a clean crest | met: the root's sheet is over 15 cm (0.17 to 0.23 measured), foam 0 |
+| Nothing else changes | met: against the same build without the switch, changed pixels sit only on the lip (close: x 425–732, y 316–360; front: x 468–859, y 337–375; inside: the lip's edge; from behind: none) |
+| Sea and rider unchanged | by construction: only the mesh's foam attribute and its fragment shader change |
+| Cut-outs, live points | not built |
+
+Stills: `stills/close-off.jpg` and `close-fray.jpg`, `front-*`, `inside-*`.
+
+### Honest size of it
+
+The change is small at this step: a matt white tip in place of glass. The lip still starts thick. What the owner asked for (thin first, with foam) needs the eased start (part 5) and the teeth and drops (parts 2 and 3). The game's foam is also not bright here: fully lit foam on the sea reads about (190, 205, 195) at midday, so "white" is a pale grey.
+
 ## Sources (all opened; PDFs read as text)
 
 - Mostert, Popinet, Deike 2022, "High-resolution direct simulation of deep water breaking waves", JFM 942 A27. https://arxiv.org/abs/2103.05851
