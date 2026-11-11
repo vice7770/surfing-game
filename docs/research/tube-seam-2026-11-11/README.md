@@ -101,7 +101,7 @@ Pool cases, 1.5 m. "c1" is the same with `formClock=c1`.
 | Throw's place and time unchanged (1 m, 0.1 s) | — | identical | identical to c1 alone | **Pass** |
 | Surf meter within ±5 % | 1.597 m | 1.597 m (identical) | 1.604 m (c1's own) | **Pass** |
 | Formation bar 7 (the clock starts within 0.1 s of τ_e) | 90.07 % | 90.07 % | as c1 alone | **Pass** (kept) |
-| Visible holes 0 | — | not measured | — | See 4 below |
+| Visible holes 0 | 31 (none at weight ≥ 0.5) | 31 (none at weight ≥ 0.5) | — | **Unchanged** from the default; see 4 below |
 | Report only: felt p99 in the case's water | 3.82 | 2.12 | 2.97 | Rank 3's bar (≤ 0.2), not this one's |
 
 The throw, exactly: the first throw at the take-off is at 50.70 s in both; the crest's distance to its contour at the
@@ -125,10 +125,12 @@ Reading of the misses:
    of an overturned slice changes from "band" to "no band" between two neighbouring vertices. After the throw the
    scan's maxima (0.5 m steps, 60°+) are the lip's edge; the pre-tube build shows the same (0.58 m), so they are not
    this build's.
-4. **Visible holes.** Not run. The measure lives in `poolTubeFace.probe.test.ts` (about 10 min a run). By the code a
-   hole is a dropped strip, chosen from the slices' plan shape and weights, which the blend does not change, and it
-   counts as visible by its drawn height over the sea, which the blend can only lower [inferred, not measured]. To
-   measure: `PROBE=1 H=1.05 CASE=pool SWITCHES=tubeSeam=blend npx vitest run src/wave/probes/poolTubeFace.probe.test.ts`.
+4. **Visible holes.** Measured after the build with `poolTubeFace.probe.test.ts` (`BODIES=0`, about 7 200 builds each;
+   logs `runs/h0-holes-default-pool.txt`, `runs/h1-holes-blend-pool.txt`). The default and the blend give the same
+   counts: 31 visible holes (0.0043 a build), none at weight ≥ 0.5, raw count 153, folds 0.504 a build. The blend adds
+   no hole and removes none: a hole is a dropped strip, chosen from the slices' plan shape, which the blend does not
+   change. The bar's 0 is missed by the default already, so it is not this build's to meet. The saddle between the
+   solver's and the drawn crest reads p95 0.182 H_s with the blend against 0.162 (bar ≤ 0.2).
 
 **The one variant tried: a longer course, `seamTau=-0.75,0` (`b5`).** Cause tested: the hand-over's rate. A slower
 hand-over should make each step's change smaller. It did the opposite: jumps 0.92 %, and the felt p99 for τ < −0.5 s is
