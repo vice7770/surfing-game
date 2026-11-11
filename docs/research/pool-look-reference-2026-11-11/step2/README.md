@@ -1,5 +1,7 @@
 # Step 2: the 311 m window for `?poolSize=ref` (built 2026-11-11, opt-in)
 
+> **Read `../ruling-15.md` with this page.** It re-reads the misses below: the lip count (bar D), the white line past u 60 and the swash speed were measured on the probe's fallback lip, which the game does not run in the pool. The face (bar A) is within scatter. The pace bar is restated to u 65 to 145.
+
 Ruling 14's first choice, its step 1 only (`../ruling-14.md`). Read that page with this one.
 
 **In short.** Under `?poolSize=ref` the pool's wrapped window is now 311 m wide, not 280 m. Nothing else changed: period 10.5 s, feed 1.47 m, the floor, the reef's lengths. The default pool and every other spot are untouched. The wider window did what the ruling said for the wave's height: it is now even along the reef (2.01, 2.06, 1.97 m) and the sea leaves the machine at 36.8°. But three of the bars are not met, so the 600 s run was **not** done:

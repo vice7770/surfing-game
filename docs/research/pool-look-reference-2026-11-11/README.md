@@ -81,4 +81,16 @@ Nothing was built in this round. This page is the brief for the next one. The re
 - **Why the lip count is low:** a column throws at most once per 0.7 period. The beach's own break (150 m shoreward) throws first and takes the column's turn. Ruling 14's count by u did not see this. Today's pool reads 87.1 % by the same count, with the same loss from u 90 on.
 - **Fastest water:** 8.01 m/s at the reef on waves of 60 to 180 s (the limit is 8.02). Once later, 8.12 m/s in the beach's swash.
 - The 600 s drift run was not done, because the 60 to 180 s bars do not all pass. Nothing was tuned.
-- Next: the advisor on bar D (the beach's break taking the reef's throw), before the reef's along-line lengths are scaled.
+- Asked next: the advisor on bar D (the beach's break taking the reef's throw), before the reef's along-line lengths are scaled.
+
+## Ruling 15: the lip count was read on the wrong path (2026-11-11, the advisor; no run made)
+
+- The ruling is `ruling-15.md`. It rests on reading the code, not on a new run. Its first step tests it.
+- **Main finding:** the probe builds the sea without the tube's profile library. So it runs the old ballistic lip, and that lip also throws at the beach (270 beach jets). The game does not do this in the pool. In the game the lip is thrown from the breaking front on the reef only (`SweptCrash`). So the 55.6 % is a number for water the player never gets. The same holds for the white line past u 60 and the 8.12 m/s swash.
+- **The lock is real, but it is the onset clock:** one break per column per 0.7 period. With two break lines in one column (reef and beach) the reef's wave can lose its onset. In the game this costs only readouts (the surf meter, the peel mark). A switch for it is ranked last.
+- **Face 2.13 m:** scatter of 12 waves (expected 2.07 m). Change nothing; read it again on 20 waves.
+- **Pace bar, restated:** u 65 to 145, 6.5 to 7.2 m/s, at least 15 of 21 waves. The line ends near u 150 today as well.
+- **Fastest water:** passes at the limit (8.01 against 8.02). The swash at the beach is reported apart.
+- **311 m is better than 280 m. No falling back.**
+- **Next, in this order:** (1) a probe with the library, today and ref 311: the crash's own throw counts become bar D; (2) the join table's row for ref (times × 1.054, lengths × 1.11): the likely cause of the folded leading end in the stills, not traced; (3) the reef's along-line lengths × 1.11, with `POOL_FRONT_REACH` (22.2 / 111 / 33.3); (4) an opt-in onset clock per break line.
+- **The owner's calls:** margin on the fastest water or not; keep the hard break on the pool's beach or try a gentler beach; whether the ride should reach about u 165.
