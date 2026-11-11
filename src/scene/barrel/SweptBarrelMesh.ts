@@ -15,6 +15,7 @@ import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 import { lipFoamAt } from './brokenCrest';
 import { configureBarrelCoverage } from './barrelFallback';
+import { withNormalGuard, withWallRipple } from '../water/tubeLook';
 
 /** The most vertices, and triangle indices, a loft fills (its budget and one slice more). */
 const VERTICES = LOFT.budget + LOFT_SAMPLES;
@@ -544,6 +545,8 @@ export class SweptBarrelMesh {
         Object.assign(shader.uniforms, horizonHazeUniforms);
         withHazeLand(shader, { route: haze, pixelToward: 'vWaterWorld - cameraPosition' });
       }
+      // `?tubeLook=merge` (ruling 10): the normal guard and the wall's ripples; without it the program is untouched.
+      shader.fragmentShader = withWallRipple(withNormalGuard(shader.fragmentShader));
       const view = this.currentView;
       if (!view) return;
       shader.vertexShader = shader.vertexShader

@@ -11,7 +11,7 @@ The owner rode the Wave Pool Barrel with every switch and reported:
 3. **It is ugly.** The falling lip is thick from the start. In a pool it should start thin with foam, then get thicker, still with foam.
 4. **"Is there a way that the tube and the rest of the wave merge seamlessly?"**
 
-So the order of work is now: speed next to the tube, the lip's look, the tube's joins with the wave. The wave-body thread (ruling 8) waits behind these.
+So the order of work is now: speed next to the tube (waits for the owner's log), the tube's joins with the wave (first part merged, `?tubeLook=merge`), the lip's look (`?lipLook=fray`, next build). The wave-body thread (ruling 8) waits behind these.
 
 ## 1. Speed next to the tube
 
@@ -41,7 +41,13 @@ So the order of work is now: speed next to the tube, the lip's look, the tube's 
   5. staircase stripes on the wall and a jagged underside seen from inside;
   6. thin dark dashed lines on the sea near the joins;
   7. the broken water behind the peel is a flat matt patch.
-- The water-physics advisor was asked for ruling 10 on these (causes in the shaders and the loft, ranked fixes, bars from stills). Filed: `docs/research/tube-merge-2026-11-11/README.md`. The body colour already agrees across the join; the causes are navy outline lines (a missing normal guard), a wrongly sky-lit lip, ripple stripes on the wall, a lip that starts at full size, a roof that stops at touchdown, and missing surface detail. Build ranks 1–3 behind `?tubeLook=merge` first (render only), then `?lipLook=fray`.
+- The water-physics advisor's ruling 10: `docs/research/tube-merge-2026-11-11/README.md`. The body colour already agrees across the join; the read causes were navy outline lines (a missing normal guard), a wrongly sky-lit lip, ripple stripes on the wall, a lip that starts at full size, a roof that stops at touchdown, and missing surface detail.
+- **Built and merged, opt-in: `?tubeLook=merge`** (`src/scene/water/tubeLook.ts`, render only; ranks 1 and 3). Measured on stills (the ruling's section 9):
+  - the navy lines: gone from behind (34 → 0 pixels) and on the sea; fewer from inside (2054 → 1835) and close (184 → 129). A teal dashed line at the lip's tip and a thin ridge line from behind stay;
+  - the white lip: **the read cause was wrong.** With no sky through the lip at all, the roll did not change. It is the designed light through the thin lip. Nothing was built for it; it goes to `?lipLook=fray`, which must bring the sheet's light down where the sheet is thick;
+  - the wall's stripes: 5.4–6.1 → 5.0–5.7 (bar 2). Another source is left; find it with the `region` dev view first (the sea's ripples at grazing, the bed's light pattern, the lace, the loft's steps).
+- **Next for the joins:** the stripes' source; rank 4's eased lip start together with `fray`; then ranks 5 (broken end) and 6 (surface detail, measure its cost).
+- The owner's ride URL to judge it: `?tubeSeam=blend&wallBody=stream&tubeLook=merge` on the pool's Barrel.
 
 ## 4. The wave body (ruling 8, merged with #247)
 

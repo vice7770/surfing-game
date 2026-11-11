@@ -213,3 +213,62 @@ Switches:
 - Pixel-to-metre scales in the front view are reasoned from the camera distance, not calibrated.
 - O'Dea 2021, Feddersen 2024 and Mostert 2022 are cited through the KB, not re-opened. Pool photographs were not opened.
 - The `sheet` dev-view stills were still being captured when this was written (`merge-look/adv-sheet/`).
+
+## 9. What the build measured (2026-11-11, `?tubeLook=merge`, PR after #248)
+
+Built: ranks 1 and 3, render only, opt-in (`src/scene/water/tubeLook.ts`). Rank 2 was tested before building and is **not** built. Stills: `stills/merge/` (the same four shots and spot string plus `&tubeLook=merge`); the before stills are `stills/`. All numbers below are measured on those 1280×720 stills on the M1, headless, Rich, midday, with the tools in `tools/`.
+
+### Rank 1, the normal guard: works in part
+
+| Still | Navy pixels (R<60 and G<90, whole frame, `dark.py`) before | with the switch |
+|---|---|---|
+| curl-behind | 34 | **0** |
+| curl-inside | 2054 | 1835 |
+| curl-close | 184 | 129 |
+| curl-front | 159 | 158 |
+
+(Section 4's "now" column counted windows; these are whole frames, so the two sets do not compare.)
+
+- Gone: the dashes on the sea, the navy part of the seam from behind, most of the dark outline along the lip's edge seen from inside, and the wavy bands at the wall's base that flipped dark.
+- Left, and **not** the fallback navy (10,44,117): teal pixels (8–28, 75–89, 116–133).
+  - A thin dashed line at the lip's tip in curl-close and curl-front (y 364–371, x 560–750). In the `region` dev view it sits on the first pixel row of the region under the lip; with all diffuse light off that row and everything under it go black, so it is lit by diffuse light alone and is darker than the rows below it. Cause not proven. Reading: the under-lip shade (`RICH_THROAT`) or the sheet's thickness at the tip fold. It belongs with the lip's look.
+  - A teal line along the lip's edge in curl-inside.
+  - From behind, a thin darker line along the ridge is still there: columns of the ridge (x 470–800) with a line darker than both sides by more than 25 luma went 190 → 149 of 330. Its darkest part was the navy; the rest is rank 7's ridge, not a normal fault.
+- Guarding three's lighting `normal` as well as the body's `waterN` changed 236–710 pixels by at most 24 levels. Not kept: the guard is the ruling's two lines.
+- The bar (0 navy in all four stills) is met in one still of four.
+
+### Rank 2, the white lip roll: the read cause is refuted
+
+Section 3 read the roll as sky wrongly let through the lip's outer run (`sweptLeavesAlong` taking the broken end for a mouth). Tested at the roll's pixel, curl-close (500,335), which is (200,216,224) on the rideable build:
+
+| Change (one at a time) | Pixel |
+|---|---|
+| No sky through the lip at all (`sweptRayLeaves = 0`) | unchanged |
+| The sheet's own light off (the emissive term of `sweptSheetBody`) | (169,174,167) |
+| Lip glow off | unchanged |
+| Foam off | unchanged |
+| Sky mirror off, direct highlight off, all diffuse off | unchanged, each |
+
+- So the roll is not the open-end sky. It is the light through the thin lip as designed: the underside's diffuse sky share (`vSweptSheetBack` by `vSweptThroat.w`) and the lip glow, each alone bright enough to stay white after tone mapping (which is why one knock-out at a time shows nothing).
+- **No signed-mouth change was built** and `sliceMouth` is untouched. Section 5's rule held: not shipped on reading alone.
+- What reads wrong on the lip is then its shape (a rounded stub) and its flat, textureless white, not a lighting fault. Both go to `?lipLook=fray`: whitening by thickness needs the thick part to stop being white first, so `fray` has to bring the sheet's light down where the sheet is thick. Section 7's reason "the lip is already white from the wrong back light" stands as a fact about the still, with a different cause.
+
+### Rank 3, the wall's ripples: bar not met
+
+`stripes.py`, curl-inside, wall columns, rows 300–430 (rms luma residual; bar under 2):
+
+| Column | Before | With the switch |
+|---|---|---|
+| 900 | 5.39 | 5.04 |
+| 1000 | 5.79 | 5.30 |
+| 1100 | 6.06 | 5.43 |
+| 1200 | 5.86 | 5.71 |
+
+- The fade is right in kind (a level surface's slope should not be added whole to a wall's normal) and cheap, so it stays in the switch. It moves the stripes by 3–10 %.
+- So most of the stripes at the wall's base are not the tube wall's ripple normal. Not tested yet, in the order to test: the sea's own ripples at the foot of the wall seen at grazing (the window may lie on the sea's mesh, not the case's; the `region` view settles that), the bed's light pattern (`causticLightAt`, also laid in x and z), the foam's lace, the loft's own steps (section 4's loft test).
+
+### What this changes in the ranking
+
+1. `?tubeLook=merge` holds ranks 1 and 3 now. Ranks 4 (render part), 5 and 6 join it as they are built.
+2. Rank 2 leaves this ruling. The lip's white is ruling 9's.
+3. Next for the joins: find the stripes' real source with the `region` view before changing anything else on the wall; then rank 4's eased start with `fray`.

@@ -47,6 +47,7 @@ import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNo
 import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
 import { onRockBedChange, rockBedMode, rockBedProgramKey, withRockBed } from './water/rockBed';
+import { withNormalGuard } from './water/tubeLook';
 import { denseLookOn, foamLookProgramKey, laceLookOn, lightLookOn, onFoamLookChange, waterChurnFreshGlsl, withDenseChurn, withFoamLight } from './water/foamLook';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
@@ -430,6 +431,8 @@ export class WaterSurface {
         if (this.rockBedEnabled) withRockBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
         // The horizon plan: the haze toward the horizon, and the sky mirrored from the slopes' spread.
         withRichHorizon(shader);
+        // `?tubeLook=merge` (ruling 10): no navy dashes where ripples tip the shading normal past the eye.
+        shader.fragmentShader = withNormalGuard(shader.fragmentShader);
         return;
       }
       shader.vertexShader = shader.vertexShader
@@ -448,6 +451,7 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
       if (this.rockBedEnabled) withRockBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
+      shader.fragmentShader = withNormalGuard(shader.fragmentShader);
     };
     material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}` : ''}${rockBedProgramKey(this.rockBedEnabled)}`;
     // The glitter's mode (Sea detail, or a dev switch) changes the Rich program.
