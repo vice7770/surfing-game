@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FrontPoint } from './BreakingFront';
 import { BARREL_SPOTS, poolLead, poolRamp } from './barrelSpots';
-import { ANCHOR_CONTINUITY, caseCrossing, continueAnchor, smoothShifts, THROWN_RATE, tubeFaceOf, type AnchorTrack } from './faceAnchor';
+import { ANCHOR_CONTINUITY, caseCrossing, continueAnchor, FORM_CLOCK_DEFAULT, smoothShifts, THROWN_RATE, tubeFaceOf, type AnchorTrack } from './faceAnchor';
 import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
 import { advanceClocks, type OnsetTiming } from './sliceClock';
@@ -14,12 +14,12 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { tubeFace: 'old', tubeFrom: 'piece' })).toBeUndefined();
     expect(tubeFaceOf(true, {})).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: true, distance: true, contour: true, wallFlow: true,
-      contact: true, cap: true, merge: true, guard: false, track: false, inertia: true, retire: true, buoy: false, drop: false,
+      contact: true, cap: true, merge: true, guard: false, track: false, inertia: true, retire: true, buoy: false, drop: false, formClock: FORM_CLOCK_DEFAULT,
     });
     // The piece, never below the solver's surface: the union alone.
     expect(tubeFaceOf(true, { tubeFrom: 'piece' })).toEqual({
       anchor: false, union: true, lag: false, clockRate: THROWN_RATE.old, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: false,
-      contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false,
+      contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false, formClock: false,
     });
     expect(tubeFaceOf(true, { tubeFace: 'old' })).toMatchObject({ anchor: true, union: false, lag: true });
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ anchor: true, lag: false, clockRate: THROWN_RATE.face });
@@ -33,7 +33,7 @@ describe('the surfable tube (the advisor\'s step 3 ruling)', () => {
     expect(tubeFaceOf(true, { wallFlow: 'old' })).toMatchObject({ continuity: true, distance: true, contour: true, wallFlow: false });
     expect(tubeFaceOf(true, { tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old', tubeContact: 'old', tubeMerge: 'old' })).toEqual({
       anchor: true, union: true, lag: true, clockRate: THROWN_RATE.face, thrownEnds: true, continuity: false, distance: false, contour: false, wallFlow: false,
-      contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false,
+      contact: false, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false, formClock: false,
     });
     // Formation by distance needs the lag, the wall's water the union.
     expect(tubeFaceOf(true, { tubeLag: 0 })).toMatchObject({ distance: false, contour: false, continuity: true });

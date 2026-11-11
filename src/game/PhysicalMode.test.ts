@@ -283,6 +283,26 @@ describe('PhysicalMode', () => {
     expect(formatDevice(config, status({ compute: 'cpu' }))).toBe('CPU · the water steps here');
   });
 
+  // Ruling 4's rank 1 (form-clock, 2026-11-11): the C1 formation clock's switch; the Barrel's alone; online rooms pin it.
+  it('takes `?formClock=old` and `?formClock=c1` at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?formClock=old')).toEqual({ formClock: 'old' });
+    expect(tubeFaceSwitches('?formClock=C1&tubeCap=old')).toEqual({ tubeCap: 'old', formClock: 'c1' });
+    for (const search of ['?formClock', '?formClock=', '?formClock=on', '?formClock=new', '?formClock=1']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).formClock).toBeUndefined();
+      for (const value of ['old', 'c1'] as const) {
+        vi.stubGlobal('location', { search: `?formClock=${value}` });
+        expect(surfZoneConfigFor(barrel, 5, false).formClock).toBe(value);
+        expect(surfZoneConfigFor(training, 5, false).formClock).toBeUndefined();
+        expect(surfZoneConfigFor(barrel, 5, false, { formClock: undefined }).formClock).toBeUndefined();
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
   it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
     expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });

@@ -130,6 +130,12 @@ export interface FrontOptions {
    * front (its join time taken as the end's, so the split never parts them).
    */
   merge?: boolean;
+  /**
+   * Ruling 4's C1 formation clock (`TubeFace.formClock`, `OnsetTiming.distance.c1`), with `distance`: a point carries where
+   * its crest stands within its cell (`FrontPoint.crestSub`, `CrestSample.sub`), and a crest's join by distance reads its
+   * distance from there too, so neither steps a row at a time.
+   */
+  subCrest?: boolean;
 }
 
 /**
@@ -281,6 +287,13 @@ export interface FrontPoint {
   wallSpeed?: number;
   tauRate?: number;
   anchorTau?: number;
+  /**
+   * Ruling 4's C1 formation clock (`OnsetTiming.distance.c1`): the rate its clock's next step advances by, × real time
+   * (`advanceClocks`; none yet: real time), and where its crest stands within its cell, m along +z from `z`
+   * (`FrontOptions.subCrest`).
+   */
+  formRate?: number;
+  crestSub?: number;
   /** With `TubeFace.guard` (the step 7 follow-up): its held jet went back to its crest (`SweptCrash`), retired unbroken. */
   jetReturned?: true;
   /** Diagnostics (`AnchorTrack`; a probe's): its last smoothed shift and what `continueAnchor` did with it. */
@@ -448,6 +461,7 @@ export class BreakingFront {
           next.dirX = s.dirX;
           next.dirZ = s.dirZ;
         }
+        if (this.options.subCrest) next.crestSub = s.sub ?? 0;
         if (next.unbroken && s.strength > 0) {
           // The solver's break has come: its throw may now.
           next.broke = time;
@@ -494,7 +508,7 @@ export class BreakingFront {
         const dirX = next.dirX ?? 0;
         const dirZ = next.dirZ ?? 1;
         const earliest = this.timing.distance?.earliest?.(next.footHeight, this.timing.h0) ?? this.timing.earliest;
-        const reach = this.options.distance(s.x, s.z, 0, 1, throwDepth);
+        const reach = this.options.distance(s.x, this.options.subCrest ? s.z + (s.sub ?? 0) : s.z, 0, 1, throwDepth);
         const pace = crestCelerity(s.speed, s.depth, s.eta) / Math.max(0.5, dirZ);
         if (next.crossed === null && reach <= -earliest * pace) next.crossed = time;
         if (next.crossed !== null) {
@@ -513,6 +527,7 @@ export class BreakingFront {
             joined: end ? end.joined : next.crossed, depth: s.depth, throwDepth, crestDepth: s.depth, thrown: null, throwZ: null,
             footHeight: next.footHeight, footDepth: this.timing.h0,
             broke: time, tau: earliest, seen: time, fresh: next.fresh, dirX, dirZ,
+            ...(this.options.subCrest ? { crestSub: s.sub ?? 0 } : {}),
             ...(s.speed > 0 ? { crestSpeed: s.speed } : {}),
             ...(s.strength > 0 ? {} : { unbroken: true as const }),
             ...(next.jumped ? { jumped: next.jumped } : {}),

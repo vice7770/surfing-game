@@ -153,7 +153,41 @@ export interface OnsetTiming {
      * retire, and the opt-in guard (`openTime`) its own. Absent: `LEAD_RETIRE`'s retire, as before.
      */
     keepThrown?: boolean;
+    /**
+     * Ruling 4's rank 1, the C1 formation clock (`TubeFace.formClock`; advisor-ruling-4.md §4): the clock is advanced by a
+     * rate, τ_{n+1} = τ_n + τ̇ Δt, and the rate is what follows −D/C_p, critically damped (`FORM_CLOCK`), within
+     * `FORMATION.rate` and changing by at most `FORM_CLOCK.accel` a second, so it never switches between its bounds; D is
+     * read from the crest's place within its cell (`FrontPoint.crestSub`). The rate a step advances by was set the step
+     * before (`FrontPoint.formRate`), so the drawn shape and its water (`FRONT_FIELD.tauRate`) read the same τ and the τ̇
+     * it will move by. After its throw the same rate runs on, within real time and `thrownRate`. Absent: step 7's clock,
+     * clamped a step at a time (`?formClock=old`).
+     */
+    c1?: boolean;
   };
+}
+
+/**
+ * Ruling 4's C1 formation clock (`OnsetTiming.distance.c1`):
+ * - `accel`, 1/s: the most the clock's rate changes in a second (the ruling: 0.5 g on a 5 m/s shape speed, inferred), so
+ *   by at most 1/60 a 1/60 s step;
+ * - `omega`, 1/s: the critically damped follower's natural rate, τ̈ = ω² (target − τ) + 2ω (1 − τ̇), the target's own rate
+ *   taken as real time. *(Built so)* 4: a clock coming off a rate bound (τ̇ off real time by 0.5) then slows by at most
+ *   ω · 0.5/e ≈ 0.74 a second, inside `accel`, so the follower lands on its target without overshooting on the limit;
+ *   the limit only bites while it speeds up to a far target. Its lag behind a steady ramp is 2/ω = 0.5 s of error per
+ *   unit of rate mismatch, and it settles in about 1 s.
+ */
+export const FORM_CLOCK = { accel: 1, omega: 4 } as const;
+
+/**
+ * The C1 clock's rate one step on (`FORM_CLOCK`): from `rate` (× real time), `error` s behind its target (target − τ),
+ * over `step` s, towards [`lowest`, `highest`] and changing by at most `accel` × step. Outside the bounds (a thrown
+ * clock's are narrower than a forming one's) it comes inside them at that same most.
+ */
+export function formRate(rate: number, error: number, step: number, lowest: number, highest: number): number {
+  const { accel, omega } = FORM_CLOCK;
+  const wanted = Math.min(highest, Math.max(lowest, rate + (omega * omega * error + 2 * omega * (1 - rate)) * step));
+  const most = accel * step;
+  return rate + Math.min(most, Math.max(-most, wanted - rate));
 }
 
 /**
@@ -321,7 +355,7 @@ let places = new Float64Array(0);
  * Returns the steps held (unbroken, short of 0).
  */
 function distanceClocks(points: FrontPoint[], start: number, end: number, time: number, timing: OnsetTiming, step: number, rate: number): number {
-  const { to, contour } = timing.distance!;
+  const { to, contour, c1 } = timing.distance!;
   const n = end - start;
   if (distances.length < n) {
     distances = new Float64Array(2 * n);
@@ -331,9 +365,11 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
   for (let k = start; k < end; k += 1) {
     const p = points[k];
     // Along its path, its column (+z), to where it crosses its throw contour: that contour's place (z).
-    const d = p.tau < FORMATION.reach ? to(p.x, p.z, 0, 1, p.throwDepth) : Number.NaN;
-    distances[k - start] = d + p.z;
-    places[k - start] = d === d && d !== Infinity ? p.z : Number.NaN;
+    // The C1 clock reads its crest where it stands within its cell (`crestSub`), so D doesn't step a row at a time.
+    const z = c1 ? p.z + (p.crestSub ?? 0) : p.z;
+    const d = p.tau < FORMATION.reach ? to(p.x, z, 0, 1, p.throwDepth) : Number.NaN;
+    distances[k - start] = d + z;
+    places[k - start] = d === d && d !== Infinity ? z : Number.NaN;
   }
   // The contour's place and the front's own, each smoothed along σ (the points are crest cells' centres, stepping along
   // their columns in the solver's 1 m rows): D is the one less the other.
@@ -346,16 +382,23 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
       const d = smoothed[k - start];
       const target = d === d ? -d / pathPace(point.crestSpeed, point.crestDepth, point.height, point.dirZ) : Number.NaN;
       let next = point.tau;
-      if (step > 0) {
+      if (step > 0 && c1) {
+        // The step the rate set a step ago, then the rate the next one takes (no distance in reach: towards real time).
+        const rate = point.formRate ?? 1;
+        next = point.tau + rate * step;
+        point.formRate = formRate(rate, target === target ? target - next : 0, step, slowest, fastest);
+      } else if (step > 0) {
         // No distance in reach: real time.
         const want = target === target ? target : point.tau + step;
         next = Math.min(point.tau + fastest * step, Math.max(point.tau + slowest * step, want));
       }
       if (point.unbroken && !contour) {
         // `?tubeThrow=break`: it waits short of its throw for the solver's break, and retires past its foreseen throw.
-        if (next > UNBROKEN_HOLD) {
+        if (next > UNBROKEN_HOLD || (c1 && next === UNBROKEN_HOLD)) {
           next = Math.max(point.tau, UNBROKEN_HOLD);
           pauses += 1;
+          // Held: its rate is none, and comes back at the clock's most once the solver breaks it.
+          if (c1) point.formRate = 0;
         }
         const late = (target === target ? target : 0) - LEAD_RETIRE.after;
         if (late > 0) point.retire = Math.min(1, late / LEAD_RETIRE.over);
@@ -381,6 +424,14 @@ function distanceClocks(points: FrontPoint[], start: number, end: number, time: 
     }
     if (point.formation !== undefined && point.formation < 1) point.formation = Math.min(1, point.formation + FORMATION.weightRate * step);
     const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
+    if (c1 && step > 0) {
+      // The same rate runs on through the throw: at least real time and at most `thrownRate`, reached at the clock's most
+      // a second, so a catch-up is a speed-up with no jump in rate either.
+      const now = point.formRate ?? 1;
+      point.tau += now * step;
+      point.formRate = formRate(now, shown - point.tau, step, 1, rate);
+      continue;
+    }
     point.tau = step > 0 ? Math.min(Math.max(shown, point.tau + step), point.tau + rate * step) : Math.max(shown, point.tau);
   }
   return pauses;

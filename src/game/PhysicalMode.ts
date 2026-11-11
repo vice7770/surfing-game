@@ -605,9 +605,12 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * points retired unbroken as before; both old together are main's build before it; `?tubeTrack=on` (opt-in), the smooth
  * wall (the trough read, the tracked anchor, the wall water's speed, normal speed and blend); `?tubeBuoy=on` (opt-in), the
  * wall water's buoyancy along the true normal past the clamp; `?tubeDrop=on` (opt-in), the lighter of two overlapping strips
- * gives way. Online rooms run the defaults (the guard, the smooth wall, the buoyancy and the drop rule off).
+ * gives way. Ruling 4's rank 1 (form-clock, 2026-11-11, the advisor's fourth ruling): `?formClock=old`, step 7's formation
+ * clock exactly; `?formClock=c1`, the C1 clock (a rate that follows −D/C_p critically damped, a sub-cell crest, the wall
+ * water on the same rate); neither: `FORM_CLOCK_DEFAULT`'s. Online rooms run the defaults (the guard, the smooth wall, the
+ * buoyancy and the drop rule off).
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   return {
     ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
@@ -627,6 +630,7 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeRetire') === 'old' ? { tubeRetire: 'old' as const } : {}),
     ...(value('tubeBuoy') === 'on' ? { tubeBuoy: 'on' as const } : {}),
     ...(value('tubeDrop') === 'on' ? { tubeDrop: 'on' as const } : {}),
+    ...(value('formClock') === 'old' ? { formClock: 'old' as const } : value('formClock') === 'c1' ? { formClock: 'c1' as const } : {}),
   };
 }
 

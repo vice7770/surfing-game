@@ -45,6 +45,22 @@ describe('each column’s crests, their breaking and their U/C', () => {
     }
   });
 
+  it('reads where the crest stands within its cell: the parabola\'s top, continuous as the crest changes cell', () => {
+    // A bump's peak moved through a cell and into the next: the crest's place (cell centre + sub) follows it within
+    // 0.05 m (a Gaussian 4 m wide is a parabola near its top), with no step where the highest cell changes.
+    const out: CrestSample[] = [];
+    let last = Number.NaN;
+    for (let peak = 30.5; peak <= 31.5001; peak += 0.05) {
+      const { solver, breaking } = bumps([peak]);
+      columnCrests(solver, breaking, 0, 0.1, out);
+      const place = out[3].z + out[3].sub!;
+      expect(Math.abs(out[3].sub!)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(place - peak)).toBeLessThan(0.05);
+      if (last === last) expect(Math.abs(place - last - 0.05)).toBeLessThan(0.03);
+      last = place;
+    }
+  });
+
   it('reads the breaking over the crest’s segment: its strongest', () => {
     const { solver, breaking } = bumps([30.5]);
     const column = 4;

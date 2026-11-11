@@ -112,7 +112,22 @@ export interface TubeFace {
   retire: boolean;
   buoy: boolean;
   drop: boolean;
+  /**
+   * Ruling 4's rank 1 (the water-physics advisor's advisor-ruling-4.md, docs/research/pool-tube-track-2026-11-05; notes in
+   * docs/research/form-clock-2026-11-11/README.md), with `distance`: the C1 formation clock. The clock advances by a rate
+   * that follows −D/C_p critically damped, within 0.5–1.5 × real time, changing by at most 1 a second
+   * (`OnsetTiming.distance.c1`, `FORM_CLOCK`); D is read from the crest's place within its cell (`CrestSample.sub`); and
+   * the wall water reads that same rate, set a step ahead (`FrontPoint.formRate`). `FORM_CLOCK_DEFAULT` says whether it is
+   * on by default; `?formClock=old` is always step 7's clock, exactly, and `?formClock=c1` always this one. Absent: off.
+   */
+  formClock?: boolean;
 }
+
+/**
+ * Whether ruling 4's C1 formation clock is on where no switch says (`TubeFace.formClock`): on only if every one of its
+ * bars passed (docs/research/form-clock-2026-11-11/README.md).
+ */
+export const FORM_CLOCK_DEFAULT: boolean = false;
 
 /** The thrown clock's catch-up before the ruling, × real time (`advanceClocks`), and after it. */
 export const THROWN_RATE = { old: 2, face: 1.25 } as const;
@@ -146,6 +161,8 @@ export interface TubeFaceSwitches {
   /** Opt-in: 'on' turns each on (`TubeFace.buoy`, `.drop`); absent, or anything else, it is off (they measured no help). */
   tubeBuoy?: 'on';
   tubeDrop?: 'on';
+  /** Ruling 4's rank 1 (`TubeFace.formClock`): 'old', step 7's clock; 'c1', the C1 clock; absent, `FORM_CLOCK_DEFAULT`. */
+  formClock?: 'old' | 'c1';
 }
 
 /**
@@ -177,6 +194,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     retire: contour && switches.tubeRetire !== 'old',
     buoy: wallFlow && switches.tubeBuoy === 'on',
     drop: !piece && switches.tubeDrop === 'on',
+    formClock: distance && (switches.formClock === 'c1' || (FORM_CLOCK_DEFAULT && switches.formClock !== 'old')),
   };
 }
 

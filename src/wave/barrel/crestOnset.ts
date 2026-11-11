@@ -46,6 +46,12 @@ export interface CrestSample {
    */
   dirX?: number;
   dirZ?: number;
+  /**
+   * Where the crest stands within its cell, m along +z from `z`: the top of the parabola through its cell's surface and
+   * its two neighbours' along the column, within half a row either way (ruling 4's C1 clock reads its distance from it;
+   * absent on a sample made elsewhere).
+   */
+  sub?: number;
 }
 
 /** The solver's breaking strength per cell (`BreakingModel`'s). */
@@ -99,6 +105,11 @@ export function columnCrests(
     sample.speed = motion ? motion.speed : 0;
     sample.dirX = motion ? motion.direction.x : NaN;
     sample.dirZ = motion ? motion.direction.z : NaN;
+    // A strict local maximum along the column (`crestCells`), so the parabola through the three opens downward.
+    const before = h[i - nx] + bed[i - nx];
+    const after = h[i + nx] + bed[i + nx];
+    const row = 0.5 * (zCenters[iz + 1] - zCenters[iz - 1]);
+    sample.sub = Math.min(0.5, Math.max(-0.5, (0.5 * (before - after)) / (before - 2 * eta + after))) * row;
     count += 1;
   }
   return count;

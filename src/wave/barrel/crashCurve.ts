@@ -460,7 +460,10 @@ export class CrashCurve {
       // `WALL_CLOCK` s. Before the throw the clock follows −D/C_p within 0.5–1.5× real time and sits on either bound on 5 %
       // of steps each (pool 1.5 m), so its rate step to step swung the case's surface's own speed by half of itself: over
       // 12 m/s on 0.6 % of the wall's vertices at the lip, and the wall water 12 m/s a step at p99.
-      p.tauRate = track && p.tauRate !== undefined && dt > 0 ? p.tauRate + (tauRate - p.tauRate) * Math.min(1, dt / WALL_CLOCK) : tauRate;
+      // Ruling 4's C1 clock (`OnsetTiming.distance.c1`): the rate its clock's next step advances by, set this step, so the
+      // shape drawn at τ and its water read the τ̇ that shape will move by; no smoothing of its own.
+      p.tauRate = p.formRate !== undefined ? p.formRate
+        : track && p.tauRate !== undefined && dt > 0 ? p.tauRate + (tauRate - p.tauRate) * Math.min(1, dt / WALL_CLOCK) : tauRate;
       p.anchorTau = p.tau;
       const shift = track
         ? trackAnchor(p, kept[i] + this.faceCase[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], crestShare, readNoise(this.faceSlope[n + i]))

@@ -499,6 +499,13 @@ export interface SurfZoneConfig {
   tubeRetire?: 'old';
   tubeBuoy?: 'on';
   tubeDrop?: 'on';
+  /**
+   * Ruling 4's rank 1, the C1 formation clock (the water-physics advisor's advisor-ruling-4.md; `TubeFace.formClock`,
+   * docs/research/form-clock-2026-11-11/README.md): 'old' (`?formClock=old`) is step 7's clock exactly (each step clamped
+   * to 0.5–1.5 × real time, its crest a cell centre, the wall water's rate a difference over the last step); 'c1'
+   * (`?formClock=c1`) the C1 clock; absent, `FORM_CLOCK_DEFAULT`'s. Online rooms pin the default.
+   */
+  formClock?: 'old' | 'c1';
 }
 
 /**
@@ -1575,6 +1582,8 @@ export class SurfZoneSimulation {
           to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}), ...(openTime ? { openTime } : {}),
           // Ruling 3 (`TubeFace.retire`): a contour-thrown point is never retired for being unbroken.
           ...(face.retire ? { keepThrown: true } : {}),
+          // Ruling 4's rank 1 (`TubeFace.formClock`): the C1 formation clock.
+          ...(face.formClock ? { c1: true } : {}),
         };
       }
       const lead = face?.lag && !face.distance ? record.faceAnchor!.lead : undefined;
@@ -1583,7 +1592,7 @@ export class SurfZoneSimulation {
       const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
       const frontOptions = config.barrelFront ?? record.front;
       const options = face?.distance
-        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}) }
+        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}), ...(face.formClock ? { subCrest: true } : {}) }
         : lead ? { ...frontOptions, lead } : frontOptions;
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, options, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
