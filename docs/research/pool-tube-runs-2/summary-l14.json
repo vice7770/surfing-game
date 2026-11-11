@@ -1,0 +1,213 @@
+{
+ "generated": "2026-11-06T15:51:46",
+ "machine": "Apple M4 Pro, 10 performance + 4 efficiency cores, 48 GB, macOS 27.2",
+ "levels": {
+  "scout": 10,
+  "phase1": 10,
+  "phase2": 14
+ },
+ "basilisk": "4ec35831 2026-10-21",
+ "cases": {
+  "pool_knee_big": {
+   "what": "1.8 m faces (A0 \u2248 0.245)",
+   "transect": "today's knee face, 1:21.6 along the ray, reef top and back slope",
+   "H_over_h0": 0.32,
+   "period_s": 10.0,
+   "S1": 0.0463,
+   "S2": 0.0463,
+   "HMID": 0.2,
+   "HS": 0.2,
+   "reef_top_h0": 2.7,
+   "back_slope": 0.05,
+   "domain_h0": 64.0,
+   "window": [
+    33.0,
+    48.0
+   ],
+   "tswitch": 26.5,
+   "tmax": 37.0,
+   "dx_m": 0.017578125,
+   "A0": 0.241618648,
+   "A0_from": "scout",
+   "foot_crest_m": 1.087283916,
+   "t_vertical": 30.425,
+   "t_touchdown": 32.875,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.678086,
+    "x_m": 171.91395,
+    "trough_m": -0.42697260000000004,
+    "H_m": 2.1050586
+   },
+   "pre_touchdown": {
+    "t": 32.85,
+    "crest_m": 1.4224005,
+    "trough_m": -0.47001149999999997,
+    "H_m": 1.8924120000000002,
+    "jet_m2": 0.08761283510638407,
+    "tube_m2": 0.1368520680034777,
+    "tube_L_m": 0.6955127798406304,
+    "tube_W_m": 0.3853529347245619,
+    "L/W": 1.8048721500921252,
+    "tilt_deg": 82.26584137561592,
+    "lip_m": 0.12596869194331647,
+    "lip_cells": 7.166218919442004,
+    "per H at touchdown": {
+     "jet": 0.02446450018833397,
+     "tube": 0.038213778145401146,
+     "lip": 0.06656515174460766
+    },
+    "per H at vertical": {
+     "jet": 0.019771487927463496,
+     "tube": 0.030883249093511096,
+     "lip": 0.059840943118313415
+    },
+    "open_s": 1.6593493806225605
+   },
+   "depth_vertical_m": 2.263346753963408,
+   "wall_s": {
+    "scout": 195.04,
+    "p1": 89.17,
+    "p2": 81094.78
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 384,
+    "clean": 342,
+    "by_phase": {
+     "pre": {
+      "n": 120,
+      "clean": 89,
+      "flags": {
+       "jump_lip": 31
+      }
+     },
+     "open": {
+      "n": 98,
+      "clean": 98,
+      "flags": {}
+     },
+     "post": {
+      "n": 166,
+      "clean": 155,
+      "flags": {
+       "no_cavity": 1,
+       "jump_crest": 3,
+       "jump_lip": 6,
+       "jump_toe": 1,
+       "surface_torn_in_window": 1
+      }
+     }
+    }
+   },
+   "psi0": 0.06603867919060123,
+   "fits": {
+    "A_O/H2": 0.308259734614808,
+    "A_J/H2": 0.1429102595517108,
+    "W/L": 0.40769024613558863,
+    "theta_O": 38.21124443133555
+   }
+  },
+  "pool_kneeface_big": {
+   "what": "about 1.86 m 2D faces",
+   "transect": "today's knee face, 1:21.6, at the ledge's 2D face (the decision rule's comparator)",
+   "H_over_h0": 0.245,
+   "period_s": 10.0,
+   "S1": 0.0463,
+   "S2": 0.0463,
+   "HMID": 0.2,
+   "HS": 0.2,
+   "reef_top_h0": 2.7,
+   "back_slope": 0.05,
+   "domain_h0": 64.0,
+   "window": [
+    35.0,
+    50.0
+   ],
+   "tswitch": 29.5,
+   "tmax": 40.0,
+   "dx_m": 0.017578125,
+   "A0": 0.173068044,
+   "A0_from": "scout",
+   "foot_crest_m": 0.7788061980000001,
+   "t_vertical": 33.7,
+   "t_touchdown": 35.975,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.3418910000000002,
+    "x_m": 180.01755,
+    "trough_m": -0.41219235,
+    "H_m": 1.75408335
+   },
+   "pre_touchdown": {
+    "t": 35.95,
+    "crest_m": 1.1470185,
+    "trough_m": -0.22851539999999998,
+    "H_m": 1.3755339,
+    "jet_m2": 0.26774842928568887,
+    "tube_m2": 0.07418810006304466,
+    "tube_L_m": 0.722430366825862,
+    "tube_W_m": 0.2902761496050843,
+    "L/W": 2.488769290238678,
+    "tilt_deg": 30.728476920630403,
+    "lip_m": 0.37062178111655736,
+    "lip_cells": 21.08426132574193,
+    "per H at touchdown": {
+     "jet": 0.14150908919862273,
+     "tube": 0.039209531489336986,
+     "lip": 0.26943849302191486
+    },
+    "per H at vertical": {
+     "jet": 0.08702148284394551,
+     "tube": 0.024112031185709083,
+     "lip": 0.21129086090268026
+    },
+    "open_s": 1.5408244248638057
+   },
+   "depth_vertical_m": 1.8106578828489979,
+   "wall_s": {
+    "scout": 187.42,
+    "p1": 92.29,
+    "p2": 74555.03
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 373,
+    "clean": 320,
+    "by_phase": {
+     "pre": {
+      "n": 120,
+      "clean": 86,
+      "flags": {
+       "jump_lip": 34,
+       "toe_collapsed": 2
+      }
+     },
+     "open": {
+      "n": 91,
+      "clean": 91,
+      "flags": {}
+     },
+     "post": {
+      "n": 162,
+      "clean": 143,
+      "flags": {
+       "no_cavity": 5,
+       "jump_crest": 3,
+       "jump_toe": 8,
+       "jump_lip": 3,
+       "toe_collapsed": 2
+      }
+     }
+    }
+   },
+   "psi0": 0.07178385370938602,
+   "fits": {
+    "A_O/H2": 0.33881831788022426,
+    "A_J/H2": 0.1688919894063428,
+    "W/L": 0.41723298101129014,
+    "theta_O": 34.9549748664253
+   }
+  }
+ }
+}

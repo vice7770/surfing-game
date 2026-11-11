@@ -1,0 +1,37 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_kneeface_big_L14",
+ "t_vertical": 33.7,
+ "t_impact": 35.975,
+ "timing": "plunge_measure.py: the local trough as the water level, the crest looked for at x >= XMIN, touchdown = first enclosed tube, the frame before it with the jet >= 3 cells off the face",
+ "at_vertical": {
+  "crest_m": 1.3418910000000002,
+  "x_m": 180.01755,
+  "trough_m": -0.41219235,
+  "H_m": 1.75408335
+ },
+ "pre_touchdown": {
+  "t": 35.95,
+  "crest_m": 1.1470185,
+  "trough_m": -0.22851539999999998,
+  "H_m": 1.3755339,
+  "jet_m2": 0.26774842928568887,
+  "tube_m2": 0.07418810006304466,
+  "tube_L_m": 0.722430366825862,
+  "tube_W_m": 0.2902761496050843,
+  "L/W": 2.488769290238678,
+  "tilt_deg": 30.728476920630403,
+  "lip_m": 0.37062178111655736,
+  "lip_cells": 21.08426132574193,
+  "per H at touchdown": {
+   "jet": 0.14150908919862273,
+   "tube": 0.039209531489336986,
+   "lip": 0.26943849302191486
+  },
+  "per H at vertical": {
+   "jet": 0.08702148284394551,
+   "tube": 0.024112031185709083,
+   "lip": 0.21129086090268026
+  },
+  "open_s": 1.5408244248638057
+ }
+}
