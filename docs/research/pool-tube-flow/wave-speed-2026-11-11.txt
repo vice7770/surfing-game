@@ -1,0 +1,63 @@
+
+== pool_straight_small: speed unit sqrt(g h0) = 6.64 m/s
+s from the throw	back-face speed m/s	crest-point speed m/s	water at the crest m/s	water / back-face speed	water / crest-point speed
+-1.35	8.38	8.41	2.88	0.34	0.34
+-1.02	8.18	6.00	3.25	0.40	0.54
+-0.68	6.87	6.22	3.66	0.53	0.59
+-0.51	6.54	6.52	3.99	0.61	0.61
+-0.34	6.78	6.55	4.37	0.65	0.67
+-0.17	7.28	6.31	4.70	0.65	0.74
+0.00	7.47	6.01	5.02	0.67	0.84
+0.17	6.87	5.71	5.18	0.75	0.91
+0.34	5.67	5.47	5.35	0.94	0.98
+0.51	4.59	5.37	5.20	1.13	0.97
+0.68	4.31	5.45	5.30	1.23	0.97
+1.02	5.67	5.20	5.38	0.95	1.03
+back-face speed over 2 tau before to 1 tau after the throw: 4.29 to 8.57 m/s (0.65 to 1.29 sqrt(g h0))
+water at the crest first at 0.85 of the back-face speed: 0.25 s
+water at the crest first at 1.0 of the back-face speed: 0.39 s
+one straight-line speed over the 2 tau before the throw (m/s, and the line's miss in m):
+  crest point: 6.25 m/s (0.940 sqrt(g h0)), miss 0.067 m; crest water's share: -0.68 s 0.59, -0.34 s 0.70, -0.17 s 0.75, +0.00 s 0.80, +0.17 s 0.83, +0.34 s 0.86
+  back face, half height: 7.24 m/s (1.090 sqrt(g h0)), miss 0.159 m; crest water's share: -0.68 s 0.51, -0.34 s 0.60, -0.17 s 0.65, +0.00 s 0.69, +0.17 s 0.72, +0.34 s 0.74
+
+== pool_straight_big: speed unit sqrt(g h0) = 6.64 m/s
+s from the throw	back-face speed m/s	crest-point speed m/s	water at the crest m/s	water / back-face speed	water / crest-point speed
+-1.35	6.62	5.75	3.64	0.55	0.63
+-1.02	6.52	8.90	3.54	0.54	0.40
+-0.68	8.55	8.86	3.92	0.46	0.44
+-0.51	8.78	7.00	4.23	0.48	0.60
+-0.34	8.10	6.78	4.55	0.56	0.67
+-0.17	7.08	6.94	4.93	0.70	0.71
+0.00	6.46	7.08	5.38	0.83	0.76
+0.17	6.35	6.95	5.91	0.93	0.85
+0.34	6.43	6.50	6.11	0.95	0.94
+0.51	6.45	5.99	6.12	0.95	1.02
+0.68	6.33	5.69	6.08	0.96	1.07
+1.02	5.68	5.61	5.80	1.02	1.03
+back-face speed over 2 tau before to 1 tau after the throw: 6.23 to 8.84 m/s (0.94 to 1.33 sqrt(g h0))
+water at the crest first at 0.85 of the back-face speed: 0.02 s
+water at the crest first at 1.0 of the back-face speed: 0.91 s
+one straight-line speed over the 2 tau before the throw (m/s, and the line's miss in m):
+  crest point: 8.10 m/s (1.219 sqrt(g h0)), miss 0.348 m; crest water's share: -0.68 s 0.48, -0.34 s 0.56, -0.17 s 0.61, +0.00 s 0.66, +0.17 s 0.73, +0.34 s 0.76
+  back face, half height: 7.77 m/s (1.170 sqrt(g h0)), miss 0.219 m; crest water's share: -0.68 s 0.50, -0.34 s 0.59, -0.17 s 0.63, +0.00 s 0.69, +0.17 s 0.76, +0.34 s 0.79
+
+== canyon23_a38: speed unit sqrt(g h0) = 7.67 m/s
+s from the throw	back-face speed m/s	crest-point speed m/s	water at the crest m/s	water / back-face speed	water / crest-point speed
+-1.56	7.75	7.17	5.33	0.69	0.74
+-1.17	8.11	7.61	5.64	0.69	0.74
+-0.78	9.26	7.88	5.93	0.64	0.75
+-0.59	9.14	8.04	6.06	0.66	0.75
+-0.39	8.80	8.19	6.21	0.71	0.76
+-0.20	8.25	8.30	6.47	0.78	0.78
+0.00	7.40	8.17	6.74	0.91	0.83
+0.20	6.36	7.63	7.06	1.11	0.93
+0.39	5.45	6.81	7.23	1.33	1.06
+0.59	4.98	6.25	6.80	1.37	1.09
+0.78	5.12	6.15	6.65	1.30	1.08
+1.17	6.60	6.40	6.42	0.97	1.00
+back-face speed over 2 tau before to 1 tau after the throw: 4.96 to 9.27 m/s (0.65 to 1.21 sqrt(g h0))
+water at the crest first at 0.85 of the back-face speed: -0.08 s
+water at the crest first at 1.0 of the back-face speed: 0.1 s
+one straight-line speed over the 2 tau before the throw (m/s, and the line's miss in m):
+  crest point: 7.90 m/s (1.029 sqrt(g h0)), miss 0.073 m; crest water's share: -0.78 s 0.75, -0.39 s 0.79, -0.20 s 0.82, +0.00 s 0.85, +0.20 s 0.89, +0.39 s 0.92
+  back face, half height: 8.76 m/s (1.142 sqrt(g h0)), miss 0.147 m; crest water's share: -0.78 s 0.68, -0.39 s 0.71, -0.20 s 0.74, +0.00 s 0.77, +0.20 s 0.81, +0.39 s 0.83

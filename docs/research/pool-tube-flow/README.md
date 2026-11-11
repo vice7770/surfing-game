@@ -54,3 +54,29 @@ It reruns the game's three cases (`pool_straight_small`, `pool_straight_big`, `c
 **Limits.** The crest's speed is read from the highest profile point over a ±0.17 s window, and that point hops (5.8 to 9.3 m/s in single rows). The shares before 0.7 s are not reliable for that reason. A steadier wave speed is the first thing to fix before any number here goes into the game.
 
 **Next.** (1) A steadier wave speed. (2) Ask the water-physics advisor, then put the measured share (about 0.6 → 0.84 → 1 over 0.85 s) behind a switch in place of 0.85 → 1. (3) Compare `wallBody=stream`'s flow with the measured one point by point.
+
+## A steadier wave speed (2026-11-11, second look)
+
+`python3 tools/basilisk/analysis/velocity_wave_speed.py` prints `wave-speed-2026-11-11.txt`.
+
+**What was tried.**
+- The back face's half-height point, over a ±0.34 s window. It is not steadier: 4.3 to 8.6 m/s in the pool's small case. The back face changes shape as the crest steepens. Dropped.
+- One straight line through the crest point over the 1.4 s before the throw. It fits within 7 cm in the pool's small case and the Canyon, so those waves do travel at one speed. In the pool's big case it misses by 35 cm: that crest does not hold one speed.
+
+**The crest water's share of that one speed.**
+
+| Case | Wave speed, m/s | 0.7 s before | 0.34 s before | 0.17 s before | At the throw | 0.17 s after | 0.34 s after |
+|---|---|---|---|---|---|---|---|
+| Pool small | 6.25 | 0.59 | 0.70 | 0.75 | 0.80 | 0.83 | 0.86 |
+| Pool big (poor fit) | 8.10 | 0.48 | 0.56 | 0.61 | 0.66 | 0.73 | 0.76 |
+| Canyon | 7.90 | 0.75 | 0.79 | 0.82 | 0.85 | 0.89 | 0.92 |
+
+**What it changes.**
+- At the throw the share is 0.80 to 0.85 where the wave holds one speed. The game's 0.85 is right there.
+- Before the throw the pool's share is lower than the game's flat 0.85: about 0.6 at 0.7 s before, 0.7 at 0.34 s before. The Canyon is flatter (0.75 to 0.85).
+- The first look's "reaches 1 about 0.35 s after the throw" was partly the measure. After the throw the highest point falls back as the lip goes forward, so its speed drops to about 5.4 m/s and the share rises. Against the wave's steady speed the crest's top is still at 0.86 to 0.92 then. The water that passes the wave's speed is the lip's front, not the crest's top.
+- So the measured change to try is before the throw only: the pool's share rising from about 0.6 to 0.8 over the last 0.7 s, in place of a flat 0.85. After the throw the game's rise to 1 needs the lip's speed, not the crest's, to be judged.
+
+**Limits.** One fit window. The pool's big case is not settled. The Canyon has 11 % of points without a sample.
+
+**Next.** (1) The advisor on this ramp. (2) The ramp behind a switch. (3) `wallBody=stream`'s flow against the measured one, point by point, with the lip's front read after the throw.
