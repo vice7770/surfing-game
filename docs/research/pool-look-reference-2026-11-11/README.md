@@ -41,4 +41,13 @@ Nothing was built in this round. This page is the brief for the next one. The re
 4. **The pile (gap 3).** The advisor's ruling 11 call 2: land the lip's water so the solver makes the bore, or draw a sourced splash-up body.
 5. **The lip (gap 4).** The rest of `lipLook=fray`.
 
-Open for the owner: whether the pool should be re-sized to this reference (about 2 m faces) or keep its sizes and only match the look.
+**The owner's decision (2026-11-11):** re-size the pool to the reference: faces of about 2 m, the break moving at a surfer's pace (7 to 8 m/s). The advisor's ruling on how is `ruling-13.md` beside this page.
+
+## Ruling 13 in short (2026-11-11, the advisor; nothing measured, nothing built yet)
+
+- **The pace.** A correction to the table above: the barrel section already peels at 6.45 to 7.1 m/s (measured 2026-11-01). Only the start section, where riders wait, runs 8.5 to 10.4 m/s. And 9 m/s is a normal pace for real riders: it is too fast for a 17° wall, not for a 2 m one.
+- **The first step: `?poolSize=ref`.** Today's 1.8 m Barrel made 1.11 times larger in every length (platform 5.0 m, crest 1.0 m, period 10.5 s, a feed wave of about 1.47 m), with the big tube case scaled the same way. No new Basilisk run.
+- **Then `?tubeForm=early`.** The tube's forming shape starts at the library's first frame, about 2.1 s before the throw: about 16 m of wall ahead of the tube against 2.7 m today.
+- **Then the pool's colour**, render only.
+- **The warning.** Size alone will likely not make the catch easy: outside the tube's shape the wall stays near 17°.
+- **The owner's calls:** the rider waits further along the reef (about 70 m) or stays at 40; 2 m as a third size or in place of one; period 10.5 or 10 s; one wave or the train; whether a dark 15 to 19° wall is enough or a Basilisk run on a shallower platform is worth it.

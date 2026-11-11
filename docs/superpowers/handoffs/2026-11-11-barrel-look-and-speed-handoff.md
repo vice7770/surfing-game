@@ -78,7 +78,8 @@ The owner filmed the ride URL and sent a reference clip (Surf Abu Dhabi, https:/
 
 - The brief, with what both films show and the ranked gaps: `docs/research/pool-look-reference-2026-11-11/README.md`.
 - In short: the game's wave shows only as a short blue box where the tube is, on a flat pale sea, with flat beige whitewater. The reference has a long dark 2 m wall ahead of the tube, a thin lip, a tall white pile right behind the tube, and a break that moves at the surfer's pace.
-- Nothing built yet (stopped at 97 to 98 % of the weekly usage). Start with the brief's step 1 (numbers from both), then the advisor on the wall and the peel's pace.
+- The owner chose to re-size the pool to the reference (2 m faces, the break at a surfer's pace). The advisor's ruling 13 is beside the brief (`ruling-13.md`; the brief ends with it in short).
+- Nothing built yet (stopped at 97 to 98 % of the weekly usage). **Start here:** build `?poolSize=ref` with ruling 13's numbers and bars, then `?tubeForm=early`, then the pool's colour.
 
 ## Rules that still hold
 
