@@ -290,3 +290,17 @@ Full text: `step10/README.md`; the run: `step10/cap.txt`; the probe: `step10/cra
 - **The white patches are the sun.** At the sunset sun the 90 s frame shows none. At midday they stay where step 9 had them.
 - Not run: rider sessions, a second run, the default pool, Canyon, the fps trace.
 
+## Step 11: the hand-thinned lip (2026-11-12, ruling 23, branch `claude/pool-lip-thin`, not pushed; one build, one run, the one allowed retry; **misses L1 and L5, handed back**)
+
+Full text: `step11/README.md`; the bars: `step11/lip-bars.txt` (retry: `step11/lip-bars-held02.txt`); the run: `step11/thin.txt`; the stills: `step11/still-thin-front-90s.jpg`, `step11/still-thin-front-150s.jpg`, `step11/still-thin-along-150s.jpg`.
+
+- **Built as ruling 23 says.** The underside (points 65 to 87) of the case `periodic-pool-straight-big-l13` moves toward the top run where the frames are decoded (`src/wave/barrel/lipThin.ts`, called in `libraryFromBytes`). No URL parameter. The code constant `LIP_THIN.on` turns it off. The stored file is unchanged.
+- **L1 misses:** mid-lip at 0.10 s is 0.052 H → 0.049 H (bar 0.04 H). In the young lip the nearest place on the top run is the tip, so the points slide along the underside and do not cross the sheet (6 to 32 mm across it).
+- **L5 misses:** the underside's largest turn goes 43.9° → 92.1° (a kink at points 65 to 68 until 0.32 s: the floor rule piles the points on one 2 cm circle round the tip). The retry at held share 0.2 misses too (the kinks come before the fade).
+- **L2, L3, L4 pass.** L6 passes on the largest move, misses per point (+9.65 mm, bar 5).
+- **L7 passes:** the throws' list is byte-equal on and off, and equal to step 10's. The off run equals `step10/cap.txt`. A to F, J, K and C lines are equal with the cut on. The lip's own mesh prints moved (crease on the lip-to-throat stretch 0/16/21° → 0/18/70°).
+- **The stills show no thinner lip.** The 90 s front still cannot be told from step 10's.
+- The held frame and the crash's jet water still read the stored frames (`storedFrames`), so the solver's jets did not change.
+- The case is reached by `?poolSize=ref` and also by `?poolTubeCase=pool` (the old pair's big half). The default pool (a38), Canyon and the other spots do not reach it.
+- Not run: rider sessions, the default pool, Canyon, the hashes and the fps trace (L8).
+
