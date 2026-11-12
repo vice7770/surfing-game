@@ -119,3 +119,17 @@ Full write-up: `step4/README.md`. The ruling: `ruling-16.md`. All three act only
 - The second break line is at the beach (z about −11) along the whole reef. Near the reef's new end (z −53) it is 43 m shoreward of it.
 - The 600 s drift run was skipped, because B misses.
 - Today's sea, run again with this code, prints step 3's numbers.
+
+## Ruling 17: the white line, the longer tube, the fold, `?tubeForm=early` (2026-11-12, the advisor; three probe runs)
+
+`ruling-17.md`; runs and the probe copies in `ruling-17-runs/`. Nothing built yet.
+
+- **Bar B does not measure the peel.** On two waves in three a second white patch stands at u 155 to 180, 8 to 21 m seaward of the reef line, and the probe jumps to it. Throwing the lip to s 194 did not change the count. What the patch is, is not settled. B is restated: pace on u 72 to 117 (6.42 m/s from 20 of 22 waves: pass) and lips thrown per 10 m (pass).
+- **The longer tube:** it can run to about s 150 today (128 m against 89 m). It shrinks from 2.1 m to 1.7 m, and from s 120 about 6 waves in 10 throw in each column. Past s 160 almost no lips. Build: `?poolReach=long` (reach to s 150).
+- **The fold at the tube's front end:** the whole case shape is switched on over 3.7 m of crest, where it is 51 to 64° steep and the sea 18°. Points 1 m apart are different mixes: pleats.
+- **The step half way along:** each column throws from its own 1 m cell and runs at its own pace; neighbours stand 0.47 m off their line. First test: `&crestLine=top`.
+- **`?tubeForm=early`:** the case and the sea agree best 1 to 1.6 s before the throw, so the hand-over belongs there (share on at −2.3 √(h0/g), full at −0.7 √(h0/g)). Join bars J1 to J6 are in the ruling.
+- **The honest limit:** this smooths the last 8 m before the lip. It cannot give a 2 m wall 20 to 30 m ahead: no case stands there. To remove the two parts fully, the sea's own face must steepen (finer cells in the surf zone, or a face model in the solver). That is a strategy call: see `docs/research/wave-strategy-alternatives/`.
+- **The tube case at 2 m:** the advisor recommends `big` (2.03 m, all bars pass); a38 draws 2.45 m and is short of water. The owner decides.
+- Builds in order: (0) stills and a probe run with `&crestLine=top`, then `&seamTau=-1.64,-0.5` (no code); (1) `?tubeForm=early`; (2) `?poolReach=long`; (3) a probe to trace the patch; (4) only if the step stays, a fit of the throw place along the front.
+
