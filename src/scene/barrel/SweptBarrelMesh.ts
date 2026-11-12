@@ -312,6 +312,24 @@ export const RICH_SHEET_BODY_NORMAL = /* glsl */ `vec3 waterN = normalize( ( vec
   vec3 sweptMeanN = normalize( ( vec4( nonPerturbedNormal, 0.0 ) * viewMatrix ).xyz );
   waterN = normalize( mix( waterN, sweptMeanN, vSweptSheetWeight ) );`;
 /**
+ * The lip's outer face as thick water (Rich, under `?lipLook=fray`; ruling 24, 2026-11-12,
+ * `docs/research/pool-look-reference-2026-11-11/ruling-24.md`): the sheet's shading (its own thin backscatter, the light
+ * behind it, the glow, the slice's mean normal) took the whole lip, though its outer face is 0.21 to 0.25 m of water, and
+ * drew it as a pale band. The sheet's weight now falls with the thickness across (`vSweptSheet`, m): full under 0.06 m,
+ * none over 0.20 m [provisional], where the face takes the wall's own column colour and normal. The inner face (its
+ * weight, `vSweptThroat.w`: the lip's underside, seen from inside the tube) keeps the full weight. The fray's white
+ * (`LIP_FRAY_VOLUME`) and the foam are not weighed by it.
+ */
+export const LIP_FACE = { thin: 0.06, thick: 0.2 } as const;
+export const LIP_FACE_WEIGHT = /* glsl */ `float sweptThin = 1.0 - smoothstep( ${LIP_FACE.thin.toFixed(2)}, ${LIP_FACE.thick.toFixed(2)}, vSweptSheet );
+  float sweptLipW = vSweptSheetWeight * mix( sweptThin, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) );
+  `;
+/** A piece of the Rich sheet's shading with the sheet's weight replaced by the lip face's (`LIP_FACE_WEIGHT`). */
+export function lipFaceWeighed(glsl: string): string {
+  if (!glsl.includes('vSweptSheetWeight')) throw new Error('The sheet shading has no sheet weight to replace');
+  return glsl.replaceAll('vSweptSheetWeight', 'sweptLipW');
+}
+/**
  * The lip glow's path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20; the advisor's
  * start, 8, 2026-10-01): a thin, aerated lip scatters far more than clear water [provisional: to tune by eye against
  * backlit lips].
@@ -529,6 +547,8 @@ export class SweptBarrelMesh {
       const rich = this.look === 'rich';
       // `?lipLook=fray`: the frayed tip lit as a volume of drops; without it the program is untouched.
       const frayed = this.lipLook === 'fray' ? LIP_FRAY_VOLUME : '';
+      // Ruling 24: with the fray, the Rich lip's thick outer face is shaded as the wall (`LIP_FACE_WEIGHT`).
+      const lipFace = rich && this.lipLook === 'fray' && this.lipBackShown === 'ray';
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
         .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
@@ -541,8 +561,8 @@ export class SweptBarrelMesh {
         .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', rich
-          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
-            .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
+          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (lipFace ? lipFaceWeighed(RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED) : this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
+            .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', lipFace ? LIP_FACE_WEIGHT + lipFaceWeighed(RICH_SHEET_BODY_NORMAL) : RICH_SHEET_BODY_NORMAL)
           : waterBodyFragment(false, true, sweptFoam(CLASSIC_FOAM), SWEPT_SHEET_BODY + frayed))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>')
         // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).

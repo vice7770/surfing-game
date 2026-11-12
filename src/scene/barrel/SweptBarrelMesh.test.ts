@@ -7,8 +7,9 @@ import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
 import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
-import { RICH_LIP_GLOW, RICH_LIP_GLOW_GATED, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, packWallViews, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+import { LIP_FACE_WEIGHT, lipFaceWeighed, RICH_LIP_GLOW, RICH_LIP_GLOW_GATED, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, packWallViews, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 import { hazeLandKey, hazeLandRoute } from '../water/hazeLand';
+import { LIP_FRAY_VOLUME } from './lipLook';
 
 /** The barrel's haze key in a look (the haze-land follow-up: Rich adds its route to the program's key). */
 const hazeKey = (look: 'rich' | 'classic') => hazeLandKey(hazeLandRoute('barrel', look));
@@ -293,6 +294,48 @@ describe('the swept barrel’s mesh', () => {
     swept.lipBack = 'ray';
     expect(swept.mesh.material.customProgramCacheKey()).not.toContain('-lip-back-old');
     expect(compiled(swept.mesh.material).fragment).toContain(RICH_SHEET_BODY_PER_RAY);
+  });
+
+  it('shades the Rich lip’s thick outer face as the wall only with the fray (ruling 24); without it the programs are untouched', () => {
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    const classicOff = compiled(swept.mesh.material);
+    swept.setLook('rich');
+    const richOff = compiled(swept.mesh.material);
+    // Off (the default): no trace of the lip face's weight, the sheet's pieces as they were.
+    for (const off of [classicOff, richOff]) {
+      expect(off.fragment).not.toContain('sweptLipW');
+      expect(off.fragment).not.toContain('sweptThin');
+    }
+    expect(richOff.fragment).toContain(RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED);
+    expect(richOff.fragment).toContain(RICH_SHEET_BODY_NORMAL);
+    // On: the weight falls with the thickness across, kept whole on the inner face, in the four places and no others.
+    swept.lipLook = 'fray';
+    const on = compiled(swept.mesh.material);
+    expect(on.vertex).toBe(richOff.vertex);
+    expect(LIP_FACE_WEIGHT).toContain('float sweptThin = 1.0 - smoothstep( 0.06, 0.20, vSweptSheet );');
+    expect(LIP_FACE_WEIGHT).toContain('float sweptLipW = vSweptSheetWeight * mix( sweptThin, 1.0, clamp( vSweptThroat.w, 0.0, 1.0 ) );');
+    expect(on.fragment).toContain(LIP_FACE_WEIGHT + lipFaceWeighed(RICH_SHEET_BODY_NORMAL));
+    expect(on.fragment).toContain(lipFaceWeighed(RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED) + LIP_FRAY_VOLUME);
+    expect(on.fragment).toContain('waterBody = mix( waterBody, waterDeepReflectance * ( 1.0 - sweptReach * sweptReach ), sweptLipW );');
+    expect(on.fragment).toContain('totalEmissiveRadiance += sweptLipW * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (');
+    expect(on.fragment).toContain('waterN = normalize( mix( waterN, sweptMeanN, sweptLipW ) );');
+    expect(on.fragment.split('sweptLipW').length - 1).toBe(5);
+    // The fray's white keeps the sheet's own weight; undoing the replacement gives the fray's program as it was.
+    expect(on.fragment).toContain('float sweptFray = vSweptSheetWeight * clamp( vWaterFoam, 0.0, 1.0 )');
+    swept.lipBack = 'old';
+    const frayOld = compiled(swept.mesh.material).fragment;
+    expect(frayOld).not.toContain('sweptLipW');
+    expect(frayOld).toContain(RICH_SHEET_BODY + RICH_LIP_GLOW + LIP_FRAY_VOLUME);
+    // Classic with the fray: no lip face weight.
+    swept.lipBack = 'ray';
+    swept.setLook('classic');
+    const classicFray = compiled(swept.mesh.material).fragment;
+    expect(classicFray).not.toContain('sweptLipW');
+    expect(classicFray).toBe(classicOff.fragment.replace(SWEPT_SHEET_BODY, SWEPT_SHEET_BODY + LIP_FRAY_VOLUME));
+    swept.lipLook = 'clean';
+    expect(compiled(swept.mesh.material).fragment).toBe(classicOff.fragment);
+    swept.setLook('rich');
+    expect(compiled(swept.mesh.material).fragment).toBe(richOff.fragment);
   });
 
   it('in the Rich look only, lights the lip from behind and darkens the throat (the spec’s item 16); Classic draws neither', () => {
