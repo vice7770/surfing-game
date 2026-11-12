@@ -9,6 +9,7 @@ import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
 import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
 import { RICH_LIP_GLOW, RICH_LIP_GLOW_GATED, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, packWallViews, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 import { hazeLandKey, hazeLandRoute } from '../water/hazeLand';
+import { LIP_FRAY_SHARE, LIP_FRAY_VOLUME, LIP_STREAK, LIP_STREAK_FRAY_SHARE, LIP_STREAK_FOAM, LIP_STREAK_FRAGMENT_PARS, LIP_STREAK_VERTEX, LIP_STREAK_VERTEX_PARS, lipStreakClock, lipStreakCover } from './lipLook';
 
 /** The barrel's haze key in a look (the haze-land follow-up: Rich adds its route to the program's key). */
 const hazeKey = (look: 'rich' | 'classic') => hazeLandKey(hazeLandRoute('barrel', look));
@@ -482,4 +483,79 @@ it('keeps the original swept constructor UUID consumption with no inactive repai
   random.mockRestore();
   original.geometry.dispose(); original.material.dispose();
   swept.mesh.geometry.dispose(); swept.mesh.material.dispose(); water.dispose();
+});
+
+describe('foam streaks round the curl (ruling 25 part (a))', () => {
+  const made = (look: 'classic' | 'rich', lipLook: 'clean' | 'fray') => {
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    swept.lipLook = lipLook;
+    swept.setLook(look);
+    swept.update(oneQuad());
+    return swept;
+  };
+
+  it('is drawn only in Rich with `lipLook` fray: otherwise the program and the vertex data are as before', () => {
+    for (const [look, lipLook] of [['classic', 'clean'], ['classic', 'fray'], ['rich', 'clean']] as const) {
+      const swept = made(look, lipLook);
+      const { vertex, fragment } = compiled(swept.mesh.material);
+      expect(vertex).not.toContain('Streak');
+      expect(fragment).not.toContain('Streak');
+      expect(swept.mesh.geometry.getAttribute('sweptStreak')).toBeUndefined();
+      expect(swept.mesh.material.customProgramCacheKey()).not.toContain('streaks');
+    }
+    // Rich with the fray: the streaks' pieces, and nothing else, over the clean program with the fray's volume.
+    const clean = compiled(made('rich', 'clean').mesh.material);
+    const swept = made('rich', 'fray');
+    const streaked = compiled(swept.mesh.material);
+    expect(swept.mesh.material.customProgramCacheKey()).toContain('-lip-fray-streaks');
+    expect(streaked.vertex.replace(`\n${LIP_STREAK_VERTEX_PARS}`, '').replace(LIP_STREAK_VERTEX, '')).toBe(clean.vertex);
+    expect(streaked.fragment).toContain(LIP_STREAK_FOAM);
+    expect(streaked.fragment).toContain(LIP_STREAK_FRAY_SHARE.split('vWaterFoam').join('sweptStreakLit'));
+    expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').split('sweptStreakLit').join('vWaterFoam').replace(LIP_STREAK_FRAY_SHARE, LIP_FRAY_SHARE).replace(LIP_FRAY_VOLUME, ''))
+      .toBe(clean.fragment);
+    // No free time, no texture: the pattern reads the vertex's four values alone.
+    expect(LIP_STREAK_FRAGMENT_PARS).not.toMatch(/waterTime|texture/);
+    expect(Object.keys(swept.mesh.geometry.attributes).length).toBeLessThanOrEqual(15);
+  });
+
+  it('gives each vertex (u, s − V·τ, cover, clock): nothing at or before the throw, the crest’s x and the arc from it after', () => {
+    const loft = oneQuad();
+    const at = LOFT.extensionSamples + 64;
+    const vertices = at + 1;
+    loft.positions = new Float32Array(3 * vertices);
+    // One slice along z at x = 7: each profile point 0.1 m on from the last.
+    for (let v = 0; v < vertices; v += 1) loft.positions.set([7, 0, 0.1 * v], 3 * v);
+    for (const key of ['normals'] as const) loft[key] = new Float32Array(3 * vertices);
+    for (const key of ['mask', 'lift', 'sheet', 'sheetWeight', 'sheetBack'] as const) loft[key] = new Float32Array(vertices);
+    loft.throat = new Float32Array(4 * vertices);
+    loft.vertexCount = vertices;
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    swept.lipLook = 'fray';
+    swept.setLook('rich');
+    loft.sliceTau[0] = 0;
+    swept.update(loft);
+    const streak = swept.mesh.geometry.getAttribute('sweptStreak').array as Float32Array;
+    expect(Array.from(streak.subarray(4 * at + 1, 4 * at + 4))).toEqual([0, 0, 0]);
+    loft.sliceTau[0] = 0.4;
+    swept.update(loft);
+    expect(streak[4 * at]).toBe(7);
+    expect(streak[4 * at + 1]).toBeCloseTo(3.2 - LIP_STREAK.speed * 0.4, 4);
+    expect(streak[4 * at + 2]).toBeCloseTo(0.8, 6);
+    expect(streak[4 * at + 3]).toBe(1);
+    // At the crest and before it: no cover, so no streak on the wall or the back.
+    expect(streak[4 * (LOFT.extensionSamples + 32) + 2]).toBe(0);
+    expect(streak[4 * (LOFT.extensionSamples + 32) + 3]).toBe(0);
+    // After touchdown the streaks fade over 0.2 s.
+    loft.sliceAfter[0] = 0.1;
+    swept.update(loft);
+    expect(streak[4 * at + 3]).toBeCloseTo(0.5, 6);
+  });
+
+  it('covers the ruling’s points and runs the ruling’s clock', () => {
+    expect([32, 48, 64, 88, 100, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.3, 0.8, 0.2, 0, 0, 0]);
+    expect(lipStreakCover(76)).toBeCloseTo(0.5, 6);
+    expect([-1, 0, 0.075, 0.15, 2].map((tau) => lipStreakClock(tau, -1))).toEqual([0, 0, 0.5, 1, 1]);
+    expect(lipStreakClock(1, 0.2)).toBe(0);
+    expect(lipStreakClock(1, 5)).toBe(0);
+  });
 });

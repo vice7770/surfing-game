@@ -14,7 +14,7 @@ import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFrag
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 import { lipFoamAt } from './brokenCrest';
-import { LIP_FRAY_VOLUME, LIP_LOOK_FRAY } from './lipLook';
+import { LIP_FRAY_VOLUME, LIP_LOOK_FRAY, LIP_STREAK, LIP_STREAK_FRAGMENT_PARS, LIP_STREAK_VERTEX, LIP_STREAK_VERTEX_PARS, lipStreakClock, lipStreakCover, withLipStreaks } from './lipLook';
 import { configureBarrelCoverage } from './barrelFallback';
 import { withNormalGuard, withWallRipple } from '../water/tubeLook';
 
@@ -460,6 +460,8 @@ export class SweptBarrelMesh {
   private readonly sheetProfile = new Float64Array(2 * PROFILE_POINTS);
   private readonly oppositeNormals = new Float32Array(3 * PROFILE_POINTS);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
+  /** Ruling 25 (a)'s streaks (`LIP_STREAK`): per vertex (u, s − V·τ, cover, clock); made with the first streaked update. */
+  private streak?: BufferAttribute;
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
   private currentView?: SweptBarrelView;
@@ -529,20 +531,23 @@ export class SweptBarrelMesh {
       const rich = this.look === 'rich';
       // `?lipLook=fray`: the frayed tip lit as a volume of drops; without it the program is untouched.
       const frayed = this.lipLook === 'fray' ? LIP_FRAY_VOLUME : '';
+      // Ruling 25 (a): foam streaks round the curl, Rich with `?lipLook=fray` only; without them the program is untouched.
+      const streaked = this.streaked;
+      const streaks = (body: string) => (streaked ? withLipStreaks(body) : body);
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
-        .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
+        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}${streaked ? `\n${LIP_STREAK_VERTEX_PARS}` : ''}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
+        .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex + (streaked ? LIP_STREAK_VERTEX : '') : sweptBeginNormal)
         .replace('#include <begin_vertex>', sweptBeginVertex);
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}${streaked ? `\n${LIP_STREAK_FRAGMENT_PARS}` : ''}`
           : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
         .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', rich
-          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
-            .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
+          ? streaks(waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
+            .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL))
           : waterBodyFragment(false, true, sweptFoam(CLASSIC_FOAM), SWEPT_SHEET_BODY + frayed))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>')
         // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).
@@ -564,7 +569,7 @@ export class SweptBarrelMesh {
         .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
         .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
     };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.lipLook === 'fray' ? '-lip-fray' : ''}${this.look === 'rich' && this.lipBackShown === 'old' ? '-lip-back-old' : ''}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
+    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.lipLook === 'fray' ? '-lip-fray' : ''}${this.streaked ? '-streaks' : ''}${this.look === 'rich' && this.lipBackShown === 'old' ? '-lip-back-old' : ''}${this.currentView ? `-view-${this.currentView}` : ''}${this.look === 'rich' ? glitterProgramKey() : ''}${this.currentView ? '' : hazeLandKey(hazeLandRoute('barrel', this.look))}`;
     onGlitterChange(() => {
       if (this.look === 'rich') material.needsUpdate = true;
     });
@@ -592,6 +597,11 @@ export class SweptBarrelMesh {
     this.mesh.material.needsUpdate = true;
   }
 
+  /** Whether the lip carries ruling 25's foam streaks: Rich with `lipLook` 'fray' only. */
+  private get streaked(): boolean {
+    return this.look === 'rich' && this.lipLook === 'fray';
+  }
+
   /** Rich only: what the lip shows behind it, per ray (the default) or as before (`?lipBack=old`); recompiles on a change. */
   get lipBack(): 'ray' | 'old' {
     return this.lipBackShown;
@@ -609,6 +619,41 @@ export class SweptBarrelMesh {
     this.look = look;
     this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
     this.mesh.material.needsUpdate = true;
+  }
+
+  /**
+   * Ruling 25 (a): each vertex's streak values. u is the slice's crest's place on the world axis nearer its crest line
+   * (x where its ray runs mostly along z, else z): fixed in the world, so the streaks stay put along the crest (a front's
+   * own σ starts where the front does, which moves). s is the arc length round the slice's drawn profile from its crest.
+   */
+  private updateStreaks(loft: LoftResult, vertices: number): void {
+    if (!this.streak) {
+      this.streak = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
+      this.mesh.geometry.setAttribute('sweptStreak', this.streak);
+    }
+    const streak = this.streak.array as Float32Array;
+    const p = loft.positions;
+    for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+      const first = s * LOFT_SAMPLES + LOFT.extensionSamples;
+      const crest = first + LANDMARK.crest;
+      const u = crest < vertices ? p[3 * crest + (Math.abs(loft.sliceRayX[s]) > Math.abs(loft.sliceRayZ[s]) ? 2 : 0)] : 0;
+      const tau = loft.sliceTau[s];
+      const clock = lipStreakClock(tau, loft.sliceAfter[s]);
+      let arc = 0;
+      for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
+        const v = s * LOFT_SAMPLES + j;
+        const point = j - LOFT.extensionSamples;
+        if (point > LANDMARK.crest && point < PROFILE_POINTS) arc += Math.hypot(p[3 * v] - p[3 * v - 3], p[3 * v + 1] - p[3 * v - 2], p[3 * v + 2] - p[3 * v - 1]);
+        const cover = clock > 0 ? lipStreakCover(point) : 0;
+        streak[4 * v] = u;
+        streak[4 * v + 1] = clock > 0 ? arc - LIP_STREAK.speed * tau : 0;
+        streak[4 * v + 2] = cover;
+        streak[4 * v + 3] = cover > 0 ? clock : 0;
+      }
+    }
+    this.streak.clearUpdateRanges();
+    this.streak.addUpdateRange(0, 4 * vertices);
+    this.streak.needsUpdate = true;
   }
 
   /** Mark only surviving ORIGINAL fragments. No geometry, colour, depth or discard changes. */
@@ -677,6 +722,7 @@ export class SweptBarrelMesh {
         }
       }
     }
+    if (this.streaked) this.updateStreaks(loft, vertices);
     if (this.look === 'rich') {
       (this.throat.array as Float32Array).set(loft.throat.subarray(0, 4 * vertices));
       const tube = this.tube.array as Float32Array;
