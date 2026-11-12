@@ -216,3 +216,17 @@ Full text: `ruling-20.md`; the measurements: `ruling-20-runs/`. Nothing is built
 - **Build order:** the foot-line probe and a ruling; the second library with `?frameJoin=arc` and the anchor on the same curve; `?wallRise=carry`; the owner rides; remove `anchorLine=smooth`; C2 on the pool (the owner's call).
 - **The owner's call, later:** the default library has the same stand-in frames. Fixing the default changes every tube in the game.
 
+
+## Step 8: the foot-line probe (2026-11-12; a probe only, no game code; branch `claude/pool-foot-line`, not pushed)
+
+Full text: `step8/README.md`; the run: `step8/arc-foot.txt`; the probe: `step8/crash-probe.ts`; the stills: `step8/still-*.jpg`.
+
+- **The bright line is not at the case's toe.** At the profile's toe mark and at the mesh's seaward end (5 m past it) the drawn surface lies on the sea: step 0.000 m, jump 1 to 2° (the sea's own), normals within 0.3° of the sea's.
+- **It is a tight hollow corner at mid-face.** The stored case's lower face is dug 0.3 to 0.4 m under the live sea, and the seam draws the sea wherever the case is under it. So the drawn wall ends where the case dives under: about 2 m up the face from the toe mark, at 0.4 to 0.5 of the wall's height. There the case's 50 to 54° face meets the sea's 17 to 19° face inside about 0.4 m, with no height step (0.01 m).
+- **Its size, in the last 0.5 s before the throw:** 31 to 33° median, 38 to 42° at 90 %, 44 to 49° at 99 %, up to 56°; over 20° on 9 of 10 slices. It starts as the share becomes whole (13° median at −0.9 to −0.5 s) and stays after the throw (25 to 29°). Along the wall: 33° at 0 to 2.5 m ahead of the throw, 15° at 2.5 to 7.5 m, 3° at 7.5 to 15 m; no pre-made wall farther ahead.
+- **The normals:** the mesh normal turns 29 to 35° median (43 to 54° at 90 %) across 0.8 m at the corner.
+- **A second edge at the top of the wall:** before the throw the lip's 25 points lie on one point 0.5 to 0.6 m past the crest, with normals 56 to 67° apart (median; to 89°). It is 0.4 m from the hollow corner. The steep dark wall is only the stretch between the two.
+- **The streak** is the same hollow corner seen along the wall: it climbs the face ahead of the throw and is not straight there (0.4 m off its neighbours' line at 1 m, 0.8 m at 90 %, at −0.9 to −0.5 s).
+- **Geometry first, then the render.** The normals-only view (`barrelView=front`) shows the same edge. The Rich look paints it white (dark body colour on the steep side, the sky and the sun's highlight on the flatter side); the Classic look shows a soft edge with no white line. No foam or edge term draws it (foam 0.00 at the corner).
+- **Not told apart:** the sun's highlight against the sky's reflection in the Rich look (`glitter=off` leaves the line; there is no switch for the sky alone); the coincident lip points against the convex shoulder at the top edge.
+- Not run: rider sessions, the default pool, Canyon, any fix. Questions for the advisor are at the end of `step8/README.md`.
