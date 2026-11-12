@@ -305,3 +305,17 @@ Full text: `step11/README.md`; the bars: `step11/lip-bars.txt` (retry: `step11/l
 - Not run: rider sessions, the default pool, Canyon, the hashes and the fps trace (L8).
 - **Ruling 23b (at the end of `ruling-23.md`):** the young lip is a blunt nose, 0.21 m across; a cut with no crease is 1.5 to 6 cm and faces into the tube, so it will not show. The code stays on the branch (commit d5f804b9), with the two tools `step11/lip-bars.ts` and `step11/crash-probe.ts`. Next for the look: the lip's pale outer face, and the Bo 4000 case.
 
+
+## Step 12: the lip's outer face (2026-11-12, ruling 24, branch `claude/pool-lip-face`, **built, not pushed**; one build, nothing tuned; **P1 misses at midday**)
+
+Full text: `step12/README.md`; the stills: `step12/still-before-front-midday-90s.jpg`, `step12/still-face-front-midday-90s.jpg`, and the same two at sunset; the pixel reader: `step12/px.mjs`.
+
+- **Built as ruling 24 says.** Rich look, only with `?lipLook=fray`; no new URL parameter. The sheet's weight on the lip falls with its thickness (full under 0.06 m, none over 0.20 m) in four places of the shader; the inner face keeps the full weight (`LIP_FACE_WEIGHT` in `src/scene/barrel/SweptBarrelMesh.ts`).
+- The two varyings are what the ruling assumed: `vSweptSheet` is the thickness in metres, `vSweptThroat.w` is the inner face's weight.
+- **P1 misses at midday:** lip face over wall 1.70 → 1.37 (aim 0.85 to 1.15). At sunset 1.01 → 0.97. Read on fixed rectangles, not on a mask.
+- **P2 misses by its number:** the edge is 1.33 times the face (aim 1.5). The edge itself did not change.
+- **P3, small miss:** 399 pixels of the inside view moved, by at most 6 of 255.
+- **What is left (one still with all four terms off: 1.21):** half is the sheet terms still partly on, since much of the face is thinner than 0.20 m in this frame; half is the surface's own shading next to the crest.
+- **The stills:** the pale slab is weaker, not gone. The face is now patchy, with a dark seam low near the touchdown end. The edge is the same grey-white line.
+- With `lipLook` off the program text is unchanged (test). Classic is not touched.
+- Not run: the mask render, P4 as stills, P5 (fps), the Canyon hashes, rider sessions.
