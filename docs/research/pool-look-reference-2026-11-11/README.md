@@ -230,3 +230,18 @@ Full text: `step8/README.md`; the run: `step8/arc-foot.txt`; the probe: `step8/c
 - **Geometry first, then the render.** The normals-only view (`barrelView=front`) shows the same edge. The Rich look paints it white (dark body colour on the steep side, the sky and the sun's highlight on the flatter side); the Classic look shows a soft edge with no white line. No foam or edge term draws it (foam 0.00 at the corner).
 - **Not told apart:** the sun's highlight against the sky's reflection in the Rich look (`glitter=off` leaves the line; there is no switch for the sky alone); the coincident lip points against the convex shoulder at the top edge.
 - Not run: rider sessions, the default pool, Canyon, any fix. Questions for the advisor are at the end of `step8/README.md`.
+
+## Ruling 21: the bright line at the foot of the wall (2026-11-12, the advisor; no run)
+
+Full text: `ruling-21.md`. Nothing is built by it.
+
+- **The cause:** the seam draws the case only where it stands over the sea. The case crosses the sea at 0.4 to 0.5 of the wall's height, so the steep wall before the throw is a 0.45 m strip on the sea's 17 to 19° face, with a 31 to 33° corner under it. The case's dug lower face is the truer water; the sea's fuller face is the solver's smear (the same smear that leaves the sea's crest 0.2 m low).
+- **The fix, `?wallFoot=dug` (opt-in):** on the front of the wave the drawn and collided surface is the case's, also under the sea's. The return to the sea is made ahead of the toe on the flat trough: hold until the sea is within 0.05 H, ease over 2 H, give up at 5 H (provisional; in wave heights so it scales). Step 0 is a probe print; then one build and one run.
+- **It reopens a settled call:** the 2026-11-03 rule "the support is never below the solver's surface". Behind a switch now; the default is the owner's call.
+- **Not chosen:** a longer blend on the face (no room: the case is 0.5 m over the sea), lifting the case (crest 0.55 to 0.7 m over the sea's), moving the case (the throw leaves the throw depth), shading.
+- **Bars K1 to K11:** the drawn turn over the raw case's own 3° median and 8° at 90 % in every clock bin and every distance bin; the trough's largest turn 6° / 10°; drawn less the raw case 0.01 / 0.03 m; the contact within 0.005 m of the drawn (hard: no drawn-only dig); the throws' list byte-equal.
+- **The lip's points on one place:** `?lipEdge=one`, render only, a later build: one normal until the gap opens (spread 2° at most; today 56 to 67°).
+- **The wander** along the wall goes with the dig. **The Classic look's soft edge is not a target.**
+- **The order:** `?wallFoot=dug`; the second library (ruling 20); `?lipEdge=one`; `?wallRise=carry`; the owner rides.
+- **What still shows after all of it:** the wall reaches only about 15 m ahead of the break and grows in over about a second; its crest stands 0.2 m over the sea's; the dug trough ends 5 to 8 m ahead. On a large beach the same, larger. Only C2 removes these.
+- **Corrected:** ruling 19's guess that the line sat at the toe; the 11-03 figure "the case's floor at most 0.03 m under the sea" does not hold on the ref pool (0.3 to 0.4 m).
