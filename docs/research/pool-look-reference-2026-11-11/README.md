@@ -106,3 +106,16 @@ Full write-up: `step3/README.md`. Raw outputs beside it.
 - **Bar B: pace in range, count misses.** 6.63 m/s, but from 12 of 20 waves (needs 15). Today 6.25 m/s from 18 of 21.
 - **Bar F: passes.** 7.60 m/s at the reef, all finite. The beach swash reaches 7.58 m/s and does not grow.
 - **The 600 s drift run was skipped**, because A, B and D's water share miss.
+
+## Step 4: ruling 16's three builds (2026-11-12, opt-in)
+
+Full write-up: `step4/README.md`. The ruling: `ruling-16.md`. All three act only with `?poolSize=ref`. The default is unchanged.
+
+- **Build 1, the held frame.** `big` is now held at frame 175, not 176. Switch back: `?poolHeld=old`. The water share went from 0.860 to 0.993. But the fastest water at the reef read 8.04 m/s (limit 8.02).
+- **Build 2, the reef 1.11 times longer along its line.** Switch back: `?poolReef=short`. Face 2.15 m, drawn tube 2.03 m, first break 1.79 m, points that threw 93.7 %, water share 0.986, fastest water at the reef 6.68 m/s. All pass.
+- **Bar B misses, and worse than before.** Pace 6.64 m/s on u 72 to 161, but from 7 of 22 waves (needs 15). The white line's end is at u 134 (needs u 160).
+- **The fold at the tube's leading end is still in the stills** after build 1 and after build 2.
+- **Build 3, `?poolTubeCase` wins under ref.** With a38 the drawn tube is 2.45 m (expected 2.25 m), 1.03 m³ asked a jet, water share 0.902.
+- The second break line is at the beach (z about −11) along the whole reef. Near the reef's new end (z −53) it is 43 m shoreward of it.
+- The 600 s drift run was skipped, because B misses.
+- Today's sea, run again with this code, prints step 3's numbers.
