@@ -2,6 +2,7 @@ import type { SpotName } from '../Bathymetry';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_CAPACITY, FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
+import { arcPlaces, arcRespace, lipShare, type ArcPlaces } from './arcMesh';
 import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { seamB, seamBand, seamCourseWeight, seamHeightWeight } from './tubeSeam';
@@ -488,6 +489,11 @@ export class SweptLoft {
   private readonly faceScratch = new Float64Array(3);
   /** Step 7's wall water: a slice's profile a frame on (`LoftResult.wall`). */
   private readonly wallProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** Ruling 18's build 2 (`TubeFace.arcMesh`): the slice's profile at its throw, the crest-to-toe arc's lengths, the vertices' places on the curve, and a vertex's wall water (along, up). */
+  private readonly arcProfile = new Float32Array(2 * PROFILE_POINTS);
+  private readonly arcLengths = new Float64Array(LANDMARK.toe - LANDMARK.crest + 1);
+  private readonly arcSlots = arcPlaces();
+  private readonly arcWall = new Float64Array(2);
   /** Ruling 3's crest motion over ±`CREST_SPAN` frames (`TubeFace.track`): scratch. */
   private readonly crestProfile = new Float32Array(2 * PROFILE_POINTS);
   /** `normalSpeed`'s unit normal (along the ray, up), and its frame step, s. */
@@ -1220,7 +1226,17 @@ export class SweptLoft {
       query.footDepth = s.footDepth;
       query.seconds = tau;
       query.hold = this.contact || this.holdClearDrawing ? 'contact' : 'drawing';
+      // Ruling 18's build 2 (`TubeFace.arcMesh`): before the throw, the share of the crest-to-toe arc the lip mark holds
+      // at this slice's throw (clock 0), read first so the slice's own lookup stands after it.
+      let throwShare = Number.NaN;
+      if (this.face?.arcMesh && tau < 0) {
+        query.seconds = 0;
+        if (!this.library.profileAt(query, this.arcProfile).analytic) throwShare = lipShare(this.arcProfile);
+        query.seconds = tau;
+      }
       const lookup = this.library.profileAt(query, profile);
+      // The vertices' places on this profile's own curve under it; undefined: the library's own points.
+      const arc: ArcPlaces | undefined = throwShare === throwShare && !lookup.analytic && arcRespace(profile, throwShare, this.arcLengths, this.arcSlots) ? this.arcSlots : undefined;
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
       // Step 7's wall water: the same shape a frame on, at the same hold, for its surface's own motion.
@@ -1450,8 +1466,16 @@ export class SweptLoft {
           along = profile[0] - (E - j) * EXTENSION_STEP;
         } else if (j < E + PROFILE_POINTS) {
           const i = j - E;
-          along = profile[2 * i];
-          above = profile[2 * i + 1];
+          if (arc && i > LANDMARK.crest && i < LANDMARK.toe) {
+            // The same curve, the vertex at its fixed share of the crest-to-toe arc (`arcMesh.ts`).
+            const m = arc.from[i];
+            const t = arc.share[i];
+            along = profile[2 * m] + t * (profile[2 * m + 2] - profile[2 * m]);
+            above = profile[2 * m + 1] + t * (profile[2 * m + 3] - profile[2 * m + 1]);
+          } else {
+            along = profile[2 * i];
+            above = profile[2 * i + 1];
+          }
           // Past the ramps the profile rests on the water; the mask lets the water draw itself a band beyond them.
           if (i < LANDMARK.crest) {
             const past = profileCrestX - along - REST.behind * height;
@@ -1500,7 +1524,16 @@ export class SweptLoft {
         if (wall && wallEpsilon > 0) {
           // The case's surface's velocity there: its frames' motion at the clock's rate, carried by its anchor.
           const i = Math.min(LAST, Math.max(0, profileIndex));
-          if (this.face?.track) {
+          if (arc && i > LANDMARK.crest && i < LANDMARK.toe) {
+            // The arc mesh: the same field on the same curve, read at the vertex's own place on it.
+            const m = arc.from[i];
+            const t = arc.share[i];
+            this.wallAt(profile, m, wallEpsilon, wallRate, wallCarry);
+            const [along0, up0] = [this.arcWall[0], this.arcWall[1]];
+            this.wallAt(profile, m + 1, wallEpsilon, wallRate, wallCarry);
+            wall.along[v] = along0 + t * (this.arcWall[0] - along0);
+            wall.up[v] = up0 + t * (this.arcWall[1] - up0);
+          } else if (this.face?.track) {
             // Ruling 3 (`TubeFace.track`): the surface's own normal speed, its displacement along its normal to the next
             // frame (`normalSpeed`), not its point's: the profile's points slide along it from frame to frame. Where it has
             // none (an end, or no crossing in reach), the anchor's carry alone.
@@ -1896,6 +1929,18 @@ export class SweptLoft {
         r.indices[i + 5] = reverse ? v00 + 1 : v10 + 1;
         r.indexCount += 6;
       }
+    }
+  }
+
+  /** Ruling 18's build 2: the wall water at profile point `i` (the loft's own two rules), into `arcWall` (along, up). */
+  private wallAt(profile: Float32Array, i: number, wallEpsilon: number, wallRate: number, wallCarry: number): void {
+    if (this.face?.track) {
+      const normal = this.normalSpeed(profile, i);
+      this.arcWall[0] = normal === normal ? wallCarry + normal * this.normalScratch[0] * wallRate : wallCarry;
+      this.arcWall[1] = normal === normal ? normal * this.normalScratch[1] * wallRate : 0;
+    } else {
+      this.arcWall[0] = wallCarry + ((this.wallProfile[2 * i] - profile[2 * i]) / wallEpsilon) * wallRate;
+      this.arcWall[1] = ((this.wallProfile[2 * i + 1] - profile[2 * i + 1]) / wallEpsilon) * wallRate;
     }
   }
 

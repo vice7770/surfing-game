@@ -578,6 +578,13 @@ export interface SurfZoneConfig {
    * pin it absent.
    */
   anchorLine?: 'smooth';
+  /**
+   * Ruling 18's build 2, opt-in (`TubeFace.arcMesh`, `?loftMesh=arc`;
+   * docs/research/pool-look-reference-2026-11-11/step6/README.md): before the throw the loft's vertices stand at fixed
+   * shares of the crest-to-toe arc on the profile's own curve, so the quads between slices do not pleat where the
+   * library's lip mark slides. The curve itself is unchanged. Absent: off, exactly as before. Online rooms pin it absent.
+   */
+  loftMesh?: 'arc';
 }
 
 /**

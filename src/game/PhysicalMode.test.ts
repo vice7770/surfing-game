@@ -594,6 +594,25 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('takes `?loftMesh=arc` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 2)', () => {
+    expect(tubeFaceSwitches('?loftMesh=arc')).toEqual({ loftMesh: 'arc' });
+    expect(tubeFaceSwitches('?tubeForm=early&anchorLine=smooth&loftMesh= Arc ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth', loftMesh: 'arc' });
+    for (const search of ['?loftMesh', '?loftMesh=', '?loftMesh=on', '?loftMesh=old', '?loftmesh=arc']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.loftMesh).toBeUndefined();
+      vi.stubGlobal('location', { search: '?loftMesh=arc' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, loftMesh: 'arc' });
+      expect(surfZoneConfigFor(training, 5, false).loftMesh).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { loftMesh: undefined });
+      expect(room).toEqual({ ...plain, loftMesh: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('takes `?anchorLine=smooth` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 1)', () => {
     expect(tubeFaceSwitches('?anchorLine=smooth')).toEqual({ anchorLine: 'smooth' });
     expect(tubeFaceSwitches('?tubeForm=early&anchorLine= Smooth ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth' });

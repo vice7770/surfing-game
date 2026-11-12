@@ -715,13 +715,14 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * and `?crestLine=top` on by itself (a `?crestLine=sub` given is kept), and a `?seamTau` given with it wins.
  * Ruling 18's build 1 (pool-look-reference step 6, 2026-11-12), opt-in: `?anchorLine=smooth`, the kept anchor shifts
  * smoothed along the crest once more and the loft's records joined by a C1 curve, read with the crest line alone
- * (`?crestLine`, or `?tubeForm=early`).
+ * (`?crestLine`, or `?tubeForm=early`). Its build 2, opt-in: `?loftMesh=arc`, the loft's vertices before the throw at
+ * fixed shares of the crest-to-toe arc (the same curve, no pleats where the lip mark slides).
  * Ruling 11's step 1 (after-tube, 2026-11-11), opt-in: `?afterTube=roller`, the Canyon's roller lens seeded where the
  * lip touches down, drawn only (the rider's water does not read it).
  * Online rooms run the defaults (the guard, the smooth wall, the buoyancy, the drop rule, the seam blend, the streamline
- * wall water, the crest line, the smooth anchor line and the after-tube roller off).
+ * wall water, the crest line, the smooth anchor line, the arc mesh and the after-tube roller off).
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock' | 'tubeSeam' | 'seamTau' | 'seamBand' | 'wallBody' | 'crestLine' | 'anchorLine' | 'afterTube'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock' | 'tubeSeam' | 'seamTau' | 'seamBand' | 'wallBody' | 'crestLine' | 'anchorLine' | 'loftMesh' | 'afterTube'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   const seamTau = parseSeamTau(value('seamTau'));
   const seamBand = parseSeamBand(value('seamBand'));
@@ -752,6 +753,7 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('afterTube') === 'roller' ? { afterTube: 'roller' as const } : {}),
     ...(value('crestLine') === 'sub' || value('crestLine') === 'top' ? { crestLine: value('crestLine') as 'sub' | 'top' } : early ? { crestLine: 'top' as const } : {}),
     ...(value('anchorLine') === 'smooth' ? { anchorLine: 'smooth' as const } : {}),
+    ...(value('loftMesh') === 'arc' ? { loftMesh: 'arc' as const } : {}),
   };
 }
 

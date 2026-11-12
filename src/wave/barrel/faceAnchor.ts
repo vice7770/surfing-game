@@ -166,6 +166,14 @@ export interface TubeFace {
    * in place of straight lines. Absent: off, the build exactly as before.
    */
   anchorLine?: true;
+  /**
+   * Ruling 18's build 2 (ruling-18.md, sections 1 and 3; opt-in, `?loftMesh=arc`; `arcMesh.ts`): before the throw the
+   * loft's vertices between the crest and the toe stand at fixed shares of that arc, the lip's and throat's at the share
+   * the lip mark holds at the throw, on the profile's own polyline; the library's lip mark slides along the face before
+   * the throw (it is the steepest point there, not a material one), which pleated the quads between slices. From the
+   * throw on, and everywhere else, the vertices are the library's own. Absent: off, the build exactly as before.
+   */
+  arcMesh?: true;
 }
 
 /**
@@ -220,6 +228,8 @@ export interface TubeFaceSwitches {
   crestLine?: 'sub' | 'top';
   /** Ruling 18's build 1 (`TubeFace.anchorLine`), opt-in and with `crestLine` alone: 'smooth' turns it on. */
   anchorLine?: 'smooth';
+  /** Ruling 18's build 2 (`TubeFace.arcMesh`), opt-in: 'arc' turns it on. */
+  loftMesh?: 'arc';
 }
 
 /**
@@ -259,6 +269,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { stream: true as const } : {}),
     ...(crestLine ? { crestLine } : {}),
     ...(continuity && crestLine && switches.anchorLine === 'smooth' ? { anchorLine: true as const } : {}),
+    ...(!piece && switches.loftMesh === 'arc' ? { arcMesh: true as const } : {}),
   };
 }
 
