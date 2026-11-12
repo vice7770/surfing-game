@@ -234,3 +234,48 @@ No code change in this task; measuring tools go in the docs folder.
    - (c) spray, last.
 3. If streaks come back, draw them as explicit soft lines, not by thresholding a pattern: a few per metre of crest, at hashed places, wandering slowly round the curl, a few centimetres wide with soft sides [P]. Thresholded patterns gave clouds, stripes and nets.
 4. The owner's ask: foam that follows the conditions (bigger or harder-breaking waves, more foam; fresh pool water fading faster than sea water).
+
+---
+
+# Advisor ruling 25e: the pool's water light
+
+Advisor: this session (Opus 5.5, max effort), 2026-11-12. Read: `foam-light/README.md` (the diagnosis, Opus agent, effort high) and its three-row crops (looked at by eye). No run.
+
+## The diagnosis, accepted
+
+- **The pool water out-shines its foam.** Flat water, linear: (0.71, 1.83, 2.34). The white pile: (0.62, 0.73, 0.74). On screen both read luma 217.
+- **Cause:** `RICH_WATER.bodyGain = 4` (`src/scene/water/richWaterGlsl.ts:148`). It was tuned by eye on 2026-09-26 against ocean reference stills (G8). Over the pool's pale floor the water's body colour is (0.18, 0.55, 0.66), so a gain of 4 lifts the water's albedo above 1. A reflectance cannot be above 1.
+- Real foam is about 1.4 to 3.7 times as bright as clear pool water (the diagnosis's sources: Dierssen 2019; Maritorena, Morel and Gentili 1994; Mobley; the ratio is partly inference).
+- **The clean lip** is 99 % the back wall seen through the sheet, so it follows the same gain.
+- **The tone map hides the overshoot; it does not cause it.** Exposure alone does not separate foam from water.
+- By eye, with the gain at 1 the white crest and the pile stand out from a deeper blue face. With the exposure raised too, the water is a lively turquoise and the foam is white. That is the closest of all our stills to the owner's photo.
+
+## Decision: build proposal 2 for the pool, as one "water light" change
+
+1. **Rich body gain 4 → 1,** in every water mesh that reads it: the sea, the far field, the lip and spray sheets, the roller and the tube. One value everywhere, so there is no seam (the diagnosis showed a tube-only change leaves one).
+2. **Display exposure 1.05 → 1.6:** a camera exposing for the darker water.
+3. **Reach.** On in the 2 m pool (`poolSize=ref`), the owner's pool ride; no new parameter is needed there. A switch `?waterLight=on|off` turns it on in any other spot or off in the pool, for A/B. Everywhere else the default stays byte-identical; online rooms stay on the default.
+   - Why not every spot now: gain 4 was tuned on the ocean spots by eye. In deep water the body colour is darker, and the overshoot may not happen there. The owner judges the other spots with `?waterLight=on`.
+
+## Bars
+
+- **W1, contrast.** Pile over flat-water luminance (as the diagnosis read it): at least 1.3 in `curl-lip` and in `curl-front` at midday (expected 1.50 and 1.33). At sunset the pile is at least as bright as the flat water.
+- **W2, no seam.** Across the join of the tube's back wall and the sea in `curl-front`, the step is no larger than with the switch off.
+- **W3, no clipping.** The rider and the pool's deck and scenery: under 2 % of their pixels at 255 in any channel, and at most 1.5 times the share with the switch off. If the stills cannot show a rider, say "not read".
+- **W4, other spots** with `?waterLight=on`: one midday still each for Canyon (default and B) and one other ocean spot. For the owner to judge; report the foam-to-water ratio, no bar.
+- **W5, off is unchanged.** Pixel-equal stills with the switch off away from the 2 m pool; program text equal (tests); the Canyon hashes; the fps trace.
+
+## Stop rule and merge rule
+
+- One build. One retune of the exposure (1.3 to 1.8) if W3 misses. The gain stays 1.
+- Merge if W1, W2, W3 and W5 pass and the eye check is good. The owner then rides the 2 m pool and looks at Canyon with `?waterLight=on`. Making it the default everywhere is the owner's call.
+
+## Not now
+
+- The half-sky reflection (`RICH_WATER.reflection 0.5`), a possible second, smaller departure: test later.
+
+## After this
+
+1. Look again at step 14's soft streaks under the new light (a held-frame still, cheap): with darker water they may read.
+2. Then the foam shapes: (d) the white pile, (b) the torn edge (its cut-outs are the owner's call), (e) foam lines on the face, (c) spray.
+3. Then the owner's ask: foam that follows the conditions.
