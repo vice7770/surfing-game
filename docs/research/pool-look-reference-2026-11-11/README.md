@@ -186,3 +186,33 @@ Full text: `ruling-19.md`; the run: `ruling-19-runs/frame-true.txt`. Nothing is 
 - **What still shows the pre-made part, and what this method can remove:** the bright line at the foot (yes, first; a probe before any build), the soft wobble near the throw (yes, by a), the surface moving through the felt water (yes, by c), the rounded far end (partly). **Not removable without the sea's own face changing (C2):** the drawn crest 0.2 m over the sea's, and the steep dark wall out of a flatter, paler sea. That is what would show on a large beach.
 - **Build order:** `?frameJoin=arc`; the foot-line probe and a ruling; `?wallRise=carry`; the owner rides; remove `anchorLine=smooth`; C2 on the pool (the owner's call).
 
+## Step 7: `?frameJoin=arc` (2026-11-12, opt-in, on branch `claude/pool-frame-join` only, NOT on main; four hard bars miss, nothing tuned)
+
+Full write-up: `step7/README.md`. Ruling 19's step 1. The default is unchanged (step 3's probe on the default pool is equal line for line). Online rooms pin it off.
+
+- **Built:** before the throw the library spaces both stored frames by arc (the lip and the throat at the throw's share), then joins them. From the throw on, today's join. The stored bytes are unchanged. The mixed case (one frame with a jet, one without) never happens: 0 of 120 frame pairs, in both cases.
+- **A3 passes:** from the throw on no vertex moves (0.000000 m). The crest's largest step before the throw is 0.3547 m, as before. J3 is unchanged.
+- **A1 and A2 miss on the ref pool's case (`big`):** at the stored frames' own times the curve is 0.0128 m off at most in the last 0.6 s (bar 0.005; 3 of 40 frames). Leave-one-out at 90 % in the last 0.6 s: 0.128 → 0.137 m (bar 0.02).
+- **The cause is in the stored library:** the builder replaced 30 of `big`'s 120 frames before the throw (11 of the last 40) with the point-by-point join of their neighbours. The join cannot repair a stored frame. On the frames the run gave, A2 is 0.094 → 0.014 m. Ruling 19's 0.097 → 0.016 m was read on `a38` (2 such frames in the last 0.6 s); it reads the same again.
+- **A4 misses, but is better:** lower-face quads over 90° at the mouth 2.1 % → 1.2 % (bar: none). Crest to lip stays 0 %.
+- **A5 (report):** folds at −0.5 to −0.15 s, crest to lip 12 / 37 → 12 / 34° (median / 90 %), lower face 12 / 30 → 11 / 26°. J2 where the share ends: 6.1 / 41.4 → 4.0 / 41.0°.
+- **The throws' list is not byte-equal** (995 of 1722 lines differ, most in the last digit of the asked water; 55 in time or place). Lines A and D drift a little (A 2.17 → 2.16 m; throws 1293 → 1294).
+- **The reader is the face anchor** (`src/wave/barrel/faceAnchor.ts`): it reads where the curve comes down through the anchor's level, to place the case on the sea's face. The arc join moves that crossing by 0.0012 m median, 0.011 m at 90 %, 0.21 m at most. With the face anchor alone handed today's join (a trace, `join-anchor-today.txt`), the list is byte-equal and lines A to F, J3 and J4 are the base's. `CrashCurve.slice` and `endBlendLength` also read the curve, with no effect on the list.
+- **The stills (A6):** no rib, no slit, nothing new. I see no difference from step 6's stills. The pre-made part can still be pointed to: a wall out of the flat sea, a rounded far end, a bright line at its foot.
+- **For the advisor, not built:** (1) the refilled frames: re-make them by arc at load, or in the builder; (2) the face anchor: keep it on today's join, or let it read the truer curve and take a new base list.
+- Not run: rider sessions, a two-train run, a 600 s run, stills for the trace run. A4's remainder is not traced.
+
+## Ruling 20: the refilled frames and the face anchor (2026-11-12, the advisor; no sea run)
+
+Full text: `ruling-20.md`; the measurements: `ruling-20-runs/`. Nothing is built by it. `?frameJoin=arc` stays on its branch, not merged, until the fixes below are in.
+
+- **The main finding:** the stored tube library replaces about a quarter of the frames before the throw with a stand-in joined from their neighbours (`big` 30 of 120, `small` 18, Canyon `a38` 38). Every one was dropped for a jumped lip mark, which is noise before the throw. The run's own frames are sound: on `big` they lie 0.016 m off the arc join of their neighbours. The stored stand-in lies off them by 0.026 m median, 0.129 m at 90 %, 0.318 m most (at clock −0.05 s). This is in the default game too.
+- **1. The refilled frames:** build a second stored library, loaded only under `?frameJoin=arc`, that keeps the run's own frames (spaced by arc) and refills by arc only the truly broken ones (three on `big`). From the throw on the bytes equal today's. Bars L1 to L5.
+- **2. The face anchor reads the truer curve** (one water). The throws' list is then allowed to move once, within tolerances (count and asked water within 0.5 %, 99 % of jets in the same step and within 0.05 m, A to F and J3, J4 within small bands). The new list becomes the base.
+- **3. Still worth finishing, after the foot-line probe:** by eye there is no gain, but `?wallRise=carry` differences frames and today's stored frames hold steps of about 0.12 m (about 4 m/s of false rise, an estimate).
+- **4. Hold the merge** until 1 and 2 are in and pass.
+- **A new thing to report, not fix:** on `big` the crest mark jumps 1.0 m in one frame at clock −0.86 s on frames flagged clean.
+- **Corrected:** ruling 19's 0.097 → 0.016 m was read on `a38`, not on the ref pool's `big`.
+- **Build order:** the foot-line probe and a ruling; the second library with `?frameJoin=arc` and the anchor on the same curve; `?wallRise=carry`; the owner rides; remove `anchorLine=smooth`; C2 on the pool (the owner's call).
+- **The owner's call, later:** the default library has the same stand-in frames. Fixing the default changes every tube in the game.
+

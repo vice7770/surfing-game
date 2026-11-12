@@ -1,0 +1,27 @@
+../../pool-tube-runs/data/periodic_pool_straight_small_L13_library.json: 120 frames before the throw, 18 flagged; flags: {'jump_lip': 18}; scale 4.06 m
+  clock -1.803 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0210 m, off the arc join of the neighbours 0.0210 m
+  clock -1.787 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0225 m, off the arc join of the neighbours 0.0225 m
+  clock -1.707 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0156 m, off the arc join of the neighbours 0.0156 m
+  clock -1.272 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0107 m, off the arc join of the neighbours 0.0107 m
+  clock -1.256 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0107 m, off the arc join of the neighbours 0.0107 m
+  clock -1.207 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0562 m, off the arc join of the neighbours 0.0158 m
+  clock -1.175 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0106 m, off the arc join of the neighbours 0.0106 m
+  clock -1.159 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0211 m, off the arc join of the neighbours 0.0211 m
+  clock -1.127 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0315 m, off the arc join of the neighbours 0.0315 m
+  clock -1.111 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0314 m, off the arc join of the neighbours 0.0314 m
+  clock -0.982 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0640 m, off the arc join of the neighbours 0.0015 m
+  clock -0.676 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0033 m, off the arc join of the neighbours 0.0016 m
+  clock -0.660 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0034 m, off the arc join of the neighbours 0.0010 m
+  clock -0.612 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0105 m, off the arc join of the neighbours 0.0105 m
+  clock -0.596 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0109 m, off the arc join of the neighbours 0.0109 m
+  clock -0.563 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0124 m, off the arc join of the neighbours 0.0107 m
+  clock -0.547 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0210 m, off the arc join of the neighbours 0.0210 m
+  clock -0.354 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0266 m, off the arc join of the neighbours 0.0160 m
+flagged jump_lip only (18): own curve off the stored refill: median 0.0210, 90 % 0.0562, most 0.0640 m; off the arc join of its clean neighbours: median 0.0156, 90 % 0.0314, most 0.0315 m
+  of these in the last 0.6 s (4): off the refill median 0.0210, most 0.0266 m; off the arc join median 0.0160, most 0.0210 m
+for scale, clean frames rebuilt by arc from their two clean neighbours (81): median 0.0158, 90 % 0.0315, most 0.1269 m
+  clean frame at clock -1.900 s stands 0.0633 m off; crest-to-toe arc of the three: 7.21 7.18 7.03 m; toe x: 145.59 145.68 145.78; crest x: 138.58 138.71 138.96
+  clean frame at clock -1.884 s stands 0.0794 m off; crest-to-toe arc of the three: 7.18 7.03 7.03 m; toe x: 145.68 145.78 145.87; crest x: 138.71 138.96 139.05
+  clean frame at clock -1.529 s stands 0.1269 m off; crest-to-toe arc of the three: 6.87 6.84 6.55 m; toe x: 147.59 147.65 147.71; crest x: 140.96 141.05 141.40
+  clean frame at clock -1.513 s stands 0.1108 m off; crest-to-toe arc of the three: 6.84 6.55 6.52 m; toe x: 147.65 147.71 147.81; crest x: 141.05 141.40 141.53
+  clean frame at clock -1.465 s stands 0.0637 m off; crest-to-toe arc of the three: 6.40 6.21 6.15 m; toe x: 147.87 147.94 148.00; crest x: 141.72 141.97 142.10
