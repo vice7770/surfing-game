@@ -9,7 +9,8 @@ import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
 import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
 import { RICH_LIP_GLOW, RICH_LIP_GLOW_GATED, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, packWallViews, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 import { hazeLandKey, hazeLandRoute } from '../water/hazeLand';
-import { LIP_FRAY_SHARE, LIP_FRAY_VOLUME, LIP_STREAK, LIP_STREAK_FRAY_SHARE, LIP_STREAK_FOAM, LIP_STREAK_FRAGMENT_PARS, LIP_STREAK_VERTEX, LIP_STREAK_VERTEX_PARS, lipStreakClock, lipStreakCover } from './lipLook';
+import { ROLLER_LOOK } from '../water/rollerLook';
+import { LIP_FRAY_SHARE, LIP_FRAY_VOLUME, LIP_STREAK, LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE, LIP_STREAK_FOAM, LIP_STREAK_VOLUME, LIP_STREAK_FRAGMENT_PARS, LIP_STREAK_VERTEX, LIP_STREAK_VERTEX_PARS, lipStreakClock, lipStreakCover } from './lipLook';
 
 /** The barrel's haze key in a look (the haze-land follow-up: Rich adds its route to the program's key). */
 const hazeKey = (look: 'rich' | 'classic') => hazeLandKey(hazeLandRoute('barrel', look));
@@ -510,8 +511,13 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
     expect(swept.mesh.material.customProgramCacheKey()).toContain('-lip-fray-streaks');
     expect(streaked.vertex.replace(`\n${LIP_STREAK_VERTEX_PARS}`, '').replace(LIP_STREAK_VERTEX, '')).toBe(clean.vertex);
     expect(streaked.fragment).toContain(LIP_STREAK_FOAM);
-    expect(streaked.fragment).toContain(LIP_STREAK_FRAY_SHARE.split('vWaterFoam').join('sweptStreakLit'));
-    expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').split('sweptStreakLit').join('vWaterFoam').replace(LIP_STREAK_FRAY_SHARE, LIP_FRAY_SHARE).replace(LIP_FRAY_VOLUME, ''))
+    // The fray's share reads the streaked foam (its light from behind only where the sheet is thin); a streak on the thick
+    // sheet takes the sea whitewater's light (step 14), after the fray's, and fresh whitewater's albedo.
+    expect(streaked.fragment).toContain(LIP_FRAY_SHARE.split('vWaterFoam').join('sweptStreakLit'));
+    expect(streaked.fragment).toContain(LIP_FRAY_VOLUME.split('vWaterFoam').join('sweptStreakLit') + LIP_STREAK_VOLUME);
+    expect(streaked.fragment).toContain(LIP_STREAK_ALBEDO);
+    expect(streaked.fragment).not.toContain(LIP_STREAK_ALBEDO_LINE);
+    expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').replace(LIP_STREAK_VOLUME, '').replace(LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE).split('sweptStreakLit').join('vWaterFoam').replace(LIP_FRAY_VOLUME, ''))
       .toBe(clean.fragment);
     // No free time, no texture: the pattern reads the vertex's four values alone.
     expect(LIP_STREAK_FRAGMENT_PARS).not.toMatch(/waterTime|texture/);
@@ -549,6 +555,20 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
     loft.sliceAfter[0] = 0.1;
     swept.update(loft);
     expect(streak[4 * at + 3]).toBeCloseTo(0.5, 6);
+  });
+
+  it('lights a streak as the sea’s whitewater: no light from behind the sheet, the band’s wrap, the tube’s own sun inside (step 14)', () => {
+    // The light behind the sheet (the back wall's water colour, the sky through the mouth) reaches only the fray's thin share.
+    expect(LIP_STREAK_VOLUME).not.toMatch(/sweptBack|sweptSky|sweptWall|envMap/);
+    expect(LIP_FRAY_VOLUME).toContain(LIP_FRAY_SHARE);
+    // The roller band's volume light (`BAND_VOLUME`): (N·L + w) / (1 + w) − max(0, N·L), w = ROLLER_LOOK.wrap, on what the fray leaves.
+    expect(LIP_STREAK_VOLUME).toContain(`( max( 0.0, ( sweptFraySun + ${ROLLER_LOOK.wrap.toFixed(3)} ) / ${(1 + ROLLER_LOOK.wrap).toFixed(3)} ) - max( 0.0, sweptFraySun ) )`);
+    expect(LIP_STREAK_VOLUME).toContain('max( 0.0, sweptStreakOwn - sweptFray )');
+    // Inside, the sun as RICH_THROAT lets it reach the face: whole where it leaves the tube, else through the lip.
+    expect(LIP_STREAK_VOLUME).toContain('sweptLeaves( waterSunDirection, sweptStreakTip ) ? vec3( 1.0 ) : exp( -waterAttenuation * vSweptThroat.z');
+    expect(RICH_THROAT).toContain('exp( -waterAttenuation * sweptSlant )');
+    // Fresh whitewater's albedo (the band's crest), as a share of the cover.
+    expect(LIP_STREAK_ALBEDO).toContain('vec3( max( waterFoamColor.r, max( waterFoamColor.g, waterFoamColor.b ) ) ), clamp( sweptStreakOwn / max( waterCover, 1e-4 ), 0.0, 1.0 )');
   });
 
   it('covers the ruling’s points and runs the ruling’s clock', () => {
