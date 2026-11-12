@@ -286,6 +286,61 @@ git push
 0.025 m, mid-lip at most 0.04 H at 0.1 s, jet water at touchdown 0.10 to 0.22 H², tube area not below the present
 case's. If it misses them it is not wired in.
 
+## The T5 run: the 2 m pool's case from twice as far out (2026-11-12)
+
+The owner chose the route C2 for a surfable wave (2026-11-12): the whole breaking wave from the Basilisk library
+(`docs/research/wave-strategy-alternatives/README.md`). Its test T5 asks one run: the 2 m pool's case started twice as
+far out, so its frames 2 to 4 s before the throw can be compared with the live sea there (height within 10 %). Today's
+case (`pool_straight_big`, `docs/research/pool-tube-runs/`) runs its fine phase from 5 √(h0/g) (3.4 s) before the face
+goes vertical, and its library keeps only the last 3 (2.0 s). The design and the measure plan:
+`docs/research/wave-strategy-alternatives/t5-run.md`.
+
+**The case, `pool_far_big`:** `pool_straight_big`'s line under its own name (the same bed, wave, domain, Bond and
+Reynolds numbers, levels 10 and 13). Two numbers change, both in `canyon_pipeline.py`'s `EARLY`:
+- the switch to level 13 comes 10 √(h0/g) before vertical, not 5 (`crest_track.py --lead 10`), so the window's back moves
+  from 31 to 25 h0 (the crest then stands about 1 h0 before the face's toe);
+- the library keeps its frames from 8 before vertical, not 3 (`--lib-lead 8`; 5.4 s at 4.5 m).
+
+The name of its own keeps it apart from any other run of `pool_straight_big`: the Bo 4000 run's builds are
+`periodic_pool_straight_big_*`, and a run of the same name would wait for them. Its report goes to
+`docs/research/pool-tube-runs-t5/` (a batch's own folder, as the bigger-tube batch's), its case file beside it in
+`barrels/`, never in `public/barrels`. Every other case runs exactly as before: their qcc lines (all 48, with and without
+`BO`, `LEVEL2` and `VELOUT`) and the scout's placement of `pool_straight_big` (23, 34, 31–47, from its committed scout
+track) were checked unchanged on 2026-11-12.
+
+**On the M4 Pro**, from the repo:
+
+```
+git pull
+npm run barrels:pool -- check
+RUNS="$PWD/tools/basilisk/runs/t5" POOL_CASES="pool_far_big" CANYON_OUT=docs/research/pool-tube-runs-t5 npm run barrels:pool
+RUNS="$PWD/tools/basilisk/runs/t5" npm run barrels:pool -- status
+```
+
+- **What it does:** a level-10 scout (minutes) places the switch, end and window (t 18, 34 and x 25–47 h0: the M1's
+  scout of this case placed exactly these, 2026-11-12); phase 1 at level 10 to the switch; phase 2 at level 13 (3.5 cm cells) in the window; then the
+  analysis, the case file and the report.
+- **How long:** about 3.5 to 6 hours (an estimate; t5-run.md has the reasoning). Today's case's phase 2 took 2h21 on the
+  M4 for 11 √(h0/g); this one runs 16, the extra 5 before the break, in a window 22 h0 long instead of 16.
+- **Beside the Bo 4000 run:** yes. Each run has its own `RUNS` folder, supervisor and case name. T5 takes one
+  performance core and well under 1 GB (a level-11 dry run on the M1 took about 100 MB); the M4 Pro has 10 performance
+  cores and 48 GB. If the Bo 4000 run uses `OMP=1`, its threads share the cores with T5, so it may run a little slower.
+- **Stop and resume:** `RUNS="$PWD/tools/basilisk/runs/t5" POOL_PREFIX=pool_far npm run barrels:pool -- stop` stops
+  only this run (`run_pool.sh`'s `POOL_PREFIX`; unset it is `pool`, as before). The Bo 4000 run's stop line (no
+  `POOL_PREFIX`) stops every pool case, this one too: start it again with the same run command (10-minute checkpoints).
+- **Send back** the report folder, and nothing else:
+
+```
+git add docs/research/pool-tube-runs-t5
+git commit -m "data(pool): the T5 run, the 2 m pool's case from twice as far out"
+git push
+```
+
+  `git status` should then show nothing under `public/barrels` or `src/`.
+
+**After it lands:** `docs/research/wave-strategy-alternatives/t5_case_side.py` prints the case's wave per half second
+before the throw and the overlap with today's library; the sea's side is a solver probe (t5-run.md, the measure plan).
+
 ## The velocity under the surface (2026-11-11)
 
 Every run above kept the surface only (`output_facets`), so the game has no measured flow for its tube's water. With

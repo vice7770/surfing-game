@@ -28,7 +28,8 @@
 #   JOBS=8 POOL_CASES="pool_ledge_big pool_ledge_small pool_kneeface_big pool_kneeface_small pool_knee_big pool_knee_small \
 #     pool_steep9_big pool_steep9_small" \
 #     CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
-# (give status the same POOL_CASES). stop stops every pool case (the prefix is pool).
+# (give status the same POOL_CASES). stop stops every pool case (the prefix is pool). POOL_PREFIX=pool_far stops only the
+# cases whose names start so (the T5 run, pool_far_big; docs/RUN-ON-M4.md), so another pool run (the Bo 4000 run) goes on.
 HERE="$(cd "$(dirname "$0")" && pwd)"
-export TUBE_SET=pool TUBE_SCRIPT="npm run barrels:pool --" TUBE_PREFIX=pool TUBE_USAGE="$HERE/run_pool.sh"
+export TUBE_SET=pool TUBE_SCRIPT="npm run barrels:pool --" TUBE_PREFIX="${POOL_PREFIX:-pool}" TUBE_USAGE="$HERE/run_pool.sh"
 exec bash "$HERE/run_canyon.sh" "$@"

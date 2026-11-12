@@ -37,6 +37,8 @@
 #              pair, from the 4.5 m platform to the 0.9 m crest, each with the reef top and back slope (2.7 h0 at the crest,
 #              then 1:20 back down to the platform's depth); sized by the game's crest on the knee, with the knee face
 #              again at the ledge's 2D faces (pool_kneeface_*) for the decision rule (run_pool.sh scouts each)
+#   pool_far_big  the T5 run (2026-11-12; docs/research/wave-strategy-alternatives/t5-run.md): pool_straight_big's line
+#              under its own name, phase 2 from 10 before vertical (run_pool.sh's scout places it; canyon_pipeline.py's EARLY)
 #   canyon23_a29, canyon23_a38, canyon23_a49  the Canyon's reef bed (2026-10-22) from the arm's 6 m foot: since
 #              canyon-long-wave one planar face, 1:23 all the way to the 1.0 m crest (0.167 h0), at every column of the
 #              arm, the take-off's too (8 m downcoast of the peak: x -9; x -2 on canyon-layout's short arm, x -30 before,
@@ -102,6 +104,11 @@ CASES_ALL="$CASES_ALL pool_steep9_small:4.5:0.26:10:0.1111:0.2:64:22.5:33:28:43:
 # The face-matched knee comparators (the advisor, 2026-11-04): today's knee face at the ledge's 2D faces (about 1.62 / 1.86 m;
 # H/h0 from level-10 scouts at 0.215-0.255), so the decision rule compares ledge and knee at equal faces.
 CASES_ALL="$CASES_ALL pool_kneeface_small:4.5:0.23:10:0.0535:0.2:64:28.5:39:34:48:::2.7:0.05 pool_kneeface_big:4.5:0.245:10:0.0463:0.2:64:29.5:40:35:50:::2.7:0.05"
+# The T5 run (2026-11-12; docs/research/wave-strategy-alternatives/t5-run.md): pool_straight_big again (the same bed, wave,
+# domain, and Bond and Reynolds numbers), its fine phase from twice as far out. A name of its own, so it never waits for
+# or resumes another run of pool_straight_big (the Bo 4000 run's). The switch and window here are provisional, from the
+# M4's level-10 scout of pool_straight_big (vertical at t 28.49): run_pool.sh scouts it and places them 10 before vertical.
+CASES_ALL="$CASES_ALL pool_far_big:4.5:0.437:10:0.0463:0.2:64:18:34:25:47"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.

@@ -74,6 +74,7 @@ SETS = {
             "pool_steep9_big": ("one face at 1:9 along the ray (the trend), reef top and back slope", "1.8 m faces (A0 ≈ 0.245)"),
             "pool_kneeface_small": ("today's knee face, 1:18.7, at the ledge's 2D face (the decision rule's comparator)", "about 1.62 m 2D faces"),
             "pool_kneeface_big": ("today's knee face, 1:21.6, at the ledge's 2D face (the decision rule's comparator)", "about 1.86 m 2D faces"),
+            "pool_far_big": ("pool_straight_big's ray, its fine frames from twice as far out (T5)", "the 2 m pool's wave, 2-5 s before the throw"),
         },
         "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_straight_small",
         "title": "The Wave Pool's Barrel tube runs", "label": "Wave Pool Barrel",
@@ -107,8 +108,31 @@ SETS = {
                 "(`POOL_STRAIGHT`), its probes, and these cases into the game.",
             ],
         },
+        # The T5 run (2026-11-12; docs/research/wave-strategy-alternatives/t5-run.md): pool_straight_big again, the same
+        # bed, wave, Bond and Reynolds numbers and level, its phase 2 switched on and its library started earlier (EARLY
+        # below). A test of the C2 route, not a game case: its report goes in its own folder and its case file beside it.
+        "far": {
+            "cases": ["pool_far_big"],
+            "out": "pool-tube-runs-t5",
+            "title": "The Wave Pool's T5 run: the 2 m pool's case from twice as far out",
+            "bed_detail": "Bed: pool_straight_big's (docs/research/pool-tube-runs/report.md): h0 = the platform's depth "
+                          "(4.5 m), one planar face at 1:21.6 along the ray to the 0.9 m reef crest (HS 0.2), flat to the "
+                          "closed right wall. Phase 2 starts 10 √(h0/g) before the face goes vertical (today's case: 5), "
+                          "and the library's frames 8 before it (today's: 3).",
+            "wiring": [
+                "- A test, not a game case: its `.bin` file is in `barrels/` here, not in `public/barrels`, and no game "
+                "index lists it.",
+                "- **T5's bar** (docs/research/wave-strategy-alternatives/README.md, the decision tests): the case's wave "
+                "height 2 to 4 s before the throw within 10 % of the live sea's at the same point and clock "
+                "(docs/research/wave-strategy-alternatives/t5-run.md, the measure plan).",
+            ],
+        },
     },
 }
+# Cases whose fine frames start earlier than the set's (the T5 run): the switch LEAD and the library's first frame LIB, in
+# sqrt(h0/g) before the face goes vertical (crest_track.py's --lead and --lib-lead). Every other case keeps 5 and 3.
+EARLY = {"pool_far_big": {"lead": 10.0, "lib": 8.0}}
+LIB_LEAD = 3.0  # the library's first frame for every other case, as always
 SET_NAME = os.environ.get("TUBE_SET", "canyon")
 if SET_NAME not in SETS:
     sys.exit(f"TUBE_SET must be one of {', '.join(SETS)}, not {SET_NAME}")
@@ -133,8 +157,9 @@ class Config:
         self.scout_tmax = env.get("SCOUT_TMAX", "2" if smoke else "")
         self.cases = env.get(CASES_ENV, SET["smoke"] if smoke else " ".join(CASES)).split()
         self.state = os.path.join(self.runs, SET["state"])
-        batch = SET.get("batch")
-        self.batch = bool(batch) and any(n in batch["cases"] for n in self.cases)
+        # a batch (the bigger-tube batch, or the T5 run) when any of its cases is named: its report goes in its own folder
+        batch = next((b for b in (SET.get("batch"), SET.get("far")) if b and any(n in b["cases"] for n in self.cases)), None)
+        self.batch = batch is not None
         self.words = dict(SET, **{k: batch[k] for k in ("title", "bed_detail", "wiring")}) if self.batch else SET
         own = os.path.join(REPO, "docs", "research", SET["out"])
         # CANYON_OUT and CANYON_ASSETS: absolute, or relative to the repo (npm runs from there)
@@ -400,7 +425,9 @@ class Pipeline:
                     self.stage[name] = "scout"
                     if not self.periodic(name, "scout", name):
                         raise RuntimeError("the scout failed")
-                    self.py(name, "crest_track.py", d["scout"], "--out", os.path.join(d["scout"], "track.json"))
+                    early = EARLY.get(name)
+                    leads = ["--lead", f"{early['lead']:g}", "--lib-lead", f"{early['lib']:g}"] if early else []
+                    self.py(name, "crest_track.py", d["scout"], *leads, "--out", os.path.join(d["scout"], "track.json"))
                 self.place_window(name)
                 self.stage[name] = "phases"
                 if not self.periodic(name, "fg", name):
@@ -500,7 +527,7 @@ class Pipeline:
             shutil.copy(os.path.join(d["p1"], "bed.dat"), os.path.join(p2, "bed.dat"))
         info = {"a0": a0, "a0_from": a0_from, "tube": False}
         if plunge.get("t_vertical") is not None and plunge.get("t_touchdown") is not None and plunge.get("pre_touchdown"):
-            tmin = max(t_first, plunge["t_vertical"] - 3.0)
+            tmin = max(t_first, plunge["t_vertical"] - EARLY.get(name, {}).get("lib", LIB_LEAD))
             rows = [r for r in frames if r["t"] >= tmin - 1e-9]
             xlib = (rows[0]["x"] - 0.5) if rows else xmin
             ok = self.py(name, "periodic_library.py", p2, cfg.level2, f"{L0:g}", f"{par['S1']:g}", f"{a0:.4f}", f"{h0:g}",
