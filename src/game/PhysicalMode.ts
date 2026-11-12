@@ -7,6 +7,7 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
+import { waterLightSwitch } from '../scene/water/waterLight';
 import { RiderMotion } from '../scene/rig/riderMotion';
 import { RIG_SWITCHES, turnBodySwitches } from '../scene/rig/stanceBlend';
 import { SnapshotTrack } from './snapshotTrack';
@@ -497,6 +498,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...surfaceMotionSwitch(),
     // `?plainHeight=old`: the water's heights gathered for every sample, as before pool-barrel-perf (the same bits, slower).
     ...plainHeightSwitch(),
+    // `?waterLight=on|off`: the water light (ruling 25e) at any spot, or off in the 2 m pool; drawn only (`waterLightOn`).
+    ...waterLightSwitch(),
     // `?contactRows=old`: the Barrel's worker contact builds all its rows each step, as before pool-barrel-perf (the same answers).
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? contactRowsSwitch() : {}),
     // `?deviceWater=old`, `?launchWater=old`, `?devicePlunge=old`: the GPU gets the CPU's changes as before barrel-gpu

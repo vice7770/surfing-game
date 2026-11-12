@@ -14,6 +14,7 @@ import {
 } from 'three';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, RICH_WATER, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
+import { richBodyGain } from './water/waterLight';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -281,8 +282,13 @@ export class FarFieldOcean {
     if (look === this.currentLook) return;
     this.currentLook = look;
     this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
-    this.uniforms.waterBodyGain.value = look === 'rich' ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
+    this.refreshBodyGain();
     this.mesh.material.needsUpdate = true;
+  }
+
+  /** The body gain for the look drawn: Rich's shared one (`richBodyGain`, the water light's) or Classic's. */
+  refreshBodyGain(): void {
+    this.uniforms.waterBodyGain.value = this.currentLook === 'rich' ? richBodyGain.value : WATER_BODY_GAIN;
   }
 
   get look(): WaterLook {

@@ -48,6 +48,7 @@ import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights,
 import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
 import { onRockBedChange, rockBedMode, rockBedProgramKey, withRockBed } from './water/rockBed';
 import { withNormalGuard } from './water/tubeLook';
+import { richBodyGain } from './water/waterLight';
 import { denseLookOn, foamLookProgramKey, laceLookOn, lightLookOn, onFoamLookChange, waterChurnFreshGlsl, withDenseChurn, withFoamLight } from './water/foamLook';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
@@ -805,8 +806,13 @@ export class WaterSurface {
     this.patch.visible = rich;
     this.uniforms.waterPatchActive.value = rich ? 1 : 0;
     this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
-    this.uniforms.waterBodyGain.value = rich ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
+    this.refreshBodyGain();
     this.syncBarrelFallback();
+  }
+
+  /** The body gain for the look drawn: Rich's shared one (`richBodyGain`, the water light's) or Classic's. */
+  refreshBodyGain(): void {
+    this.uniforms.waterBodyGain.value = this.effectiveLook === 'rich' ? richBodyGain.value : WATER_BODY_GAIN;
   }
 
   private readonly patchCamera = new Vector3();

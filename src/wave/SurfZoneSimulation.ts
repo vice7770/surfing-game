@@ -563,6 +563,12 @@ export interface SurfZoneConfig {
    */
   afterTube?: 'roller';
   /**
+   * The water light (ruling 25e, `src/scene/water/waterLight.ts`): Rich body gain 1 and display exposure 1.6. 'on'
+   * (`?waterLight=on`) at any spot, 'off' (`?waterLight=off`) in the 2 m pool, where it is on by default. Drawn only:
+   * the solver never reads it. Absent: the spot's default (on only with `poolSize` 'ref'). Online rooms pin it absent.
+   */
+  waterLight?: 'on' | 'off';
+  /**
    * Ruling 7's step 1, opt-in (the water-physics advisor's ruling 7; `TubeFace.crestLine`,
    * docs/research/crest-line-2026-11-11/README.md): each front point stands where its crest stands within its cell
    * before its throw, so the crest line moves with the crest; 'sub' (`?crestLine=sub`) by the parabola through the

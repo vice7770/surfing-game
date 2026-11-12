@@ -5,6 +5,7 @@ import {
 import { BOARD_SHEET_STRIDE, SHEET_AT, SheetHistory, createSheetRow } from '../physics/boardSpray';
 import { RICH_LIP_REFLECTION, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
 import { RICH_WATER } from './water/richWaterGlsl';
+import { richBodyGain } from './water/waterLight';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import type { WaterLook } from './water/waterLook';
@@ -206,6 +207,8 @@ export class SpraySheetMesh {
   private readonly classicMaterial: ShaderMaterial;
   private readonly richUniforms: Record<string, { value: unknown }> = {
     ...createOpticsUniforms(),
+    // The Rich body gain, shared by every sheet (`richBodyGain`: 4, or the water light's 1).
+    waterBodyGain: richBodyGain,
     waterReflection: { value: RICH_WATER.reflection },
     lipFoamColor: { value: new Color('#d8f2e9') },
   };
@@ -248,7 +251,6 @@ export class SpraySheetMesh {
       blendSrc: OneFactor,
       blendDst: OneMinusSrcAlphaFactor,
     });
-    this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
     // Rougher than the lip: the curtain leaves the rail clear but rough and streaked, never mirror-glassy (the advisor).
     this.richMaterial = new MeshPhysicalMaterial({
       color: '#ffffff', roughness: Math.max(RICH_BASE_ROUGHNESS, CURTAIN_ROUGHNESS), metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
@@ -319,7 +321,6 @@ export class SpraySheetMesh {
 
   setOptics(optics: WaterOptics): void {
     applyOptics(this.richUniforms, optics);
-    this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
   }
 
   /**

@@ -41,6 +41,7 @@ import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, ridesAsPractice, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import { setGlitterForGraphics } from './scene/water/glitter';
+import { DISPLAY_EXPOSURE, setWaterLight, waterLightExposure, waterLightOn } from './scene/water/waterLight';
 import { setFoamStreaksForGraphics } from './scene/water/foamFreshness';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
@@ -259,7 +260,7 @@ class SurfGame {
     this.renderer.outputColorSpace = 'srgb';
     // Photographed skies carry a real sun; neutral tone mapping keeps colours and rolls off its highlights.
     this.renderer.toneMapping = NeutralToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = DISPLAY_EXPOSURE;
     this.renderer.domElement.tabIndex = 0;
     this.renderer.domElement.setAttribute('aria-label', 'Surf game canvas. Click here to use keyboard controls.');
     getElement('#scene').append(this.renderer.domElement);
@@ -434,6 +435,8 @@ class SurfGame {
     // An online room fixes its own sea (components included); otherwise the GPU tier decides.
     const tier = options.overrides || this.graphics?.richSea === false ? undefined : gpuTier;
     if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
+    // The water light (ruling 25e): on in the 2 m pool, or as `?waterLight` says; a room pins the default.
+    this.applyWaterLight(waterLightOn(this.physicalMode.config));
     this.frozen = false;
     this.freezeIn = undefined;
     if (!options.lab) this.leaveLab();
@@ -521,6 +524,7 @@ class SurfGame {
     // sample moving through their step whatever `?surfaceMotion` says, its heights' reads whatever `?plainHeight` says, the Barrel's contact rows whatever `?contactRows` says, the GPU's uploads whatever `?deviceWater`, `?launchWater` or `?devicePlunge` say, the Barrel's water on the GPU whatever `?barrelGpu` says, the swim back to the board whatever `?swim` says,
     // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, Snap whatever `?snap` says, the rail change's push whatever `?legDrive` says, the carve's flexing legs whatever `?carveFlex` says, Snap's driving legs whatever `?snapLegs` says, Snap's rail change whatever `?snapCross` says, the hollow over a banked deck whatever `?deckHollow` says, and
     // the boards' spray and its curtains whatever `?boardSpray` and `?spraySheet` say, the duck-dive's two bodies whatever `?duckBody` says;
+    // the water light (body gain and exposure, ruling 25e) whatever `?waterLight` says, so every client draws the default;
     // and the cases' own tubes, whatever `?tubeShape`, `?canyonTube`, `?poolTube`, `?poolCrash`, `?poolTubeCase`, `?tubeFace`,
     // `?tubeFrom`, `?tubeLag`, `?tubeClock`, `?tubeAnchor`, `?tubeForm`, `?tubeThrow`, `?wallFlow`, `?tubeContact`, `?tubeCap`,
     // `?tubeMerge`, `?tubeGuard`, `?tubeTrack`, `?tubeInertia`, `?tubeRetire`, `?tubeBuoy`, `?tubeDrop`, `?formClock`, `?tubeSeam`, `?seamTau`, `?seamBand`, `?wallBody`, `?crestLine`, `?anchorLine`, `?loftMesh`, `?wallFoot` or `?afterTube` say (the spot's own swept
@@ -528,7 +532,7 @@ class SurfGame {
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
       canyonBed: 'reef', canyonJoin: undefined, canyonStart: undefined, canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, poolFloor: undefined, poolSize: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
-      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined, tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined, tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined, tubeTrack: undefined, tubeInertia: undefined, tubeRetire: undefined, tubeBuoy: undefined, tubeDrop: undefined, formClock: undefined, tubeSeam: undefined, seamTau: undefined, seamBand: undefined, wallBody: undefined, crestLine: undefined, anchorLine: undefined, loftMesh: undefined, wallFoot: undefined, afterTube: undefined, stroke: undefined, surfaceMotion: undefined, plainHeight: undefined, contactRows: undefined, deviceWater: undefined, launchWater: undefined, devicePlunge: undefined, barrelGpu: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, snapQuick: undefined, snapPivot: undefined, snapRecentre: undefined, snapUpturn: undefined, snapDepth: undefined, snapStamp: undefined, agile: undefined, legDrive: undefined, carveFlex: undefined, snapLegs: undefined, snapCross: undefined, deckHollow: undefined, snapFan: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
+      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined, tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined, tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined, tubeTrack: undefined, tubeInertia: undefined, tubeRetire: undefined, tubeBuoy: undefined, tubeDrop: undefined, formClock: undefined, tubeSeam: undefined, seamTau: undefined, seamBand: undefined, wallBody: undefined, crestLine: undefined, anchorLine: undefined, loftMesh: undefined, wallFoot: undefined, afterTube: undefined, waterLight: undefined, stroke: undefined, surfaceMotion: undefined, plainHeight: undefined, contactRows: undefined, deviceWater: undefined, launchWater: undefined, devicePlunge: undefined, barrelGpu: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, snapQuick: undefined, snapPivot: undefined, snapRecentre: undefined, snapUpturn: undefined, snapDepth: undefined, snapStamp: undefined, agile: undefined, legDrive: undefined, carveFlex: undefined, snapLegs: undefined, snapCross: undefined, deckHollow: undefined, snapFan: undefined, boardSpray: undefined, spraySheet: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,
@@ -1090,6 +1094,17 @@ class SurfGame {
       this.renderer.render(this.scene, view);
     }
     this.scene.background = background;
+  }
+
+  /**
+   * The water light (ruling 25e, `waterLight.ts`): the Rich body gain on every water drawing (one shared value, so no
+   * seam) and the display exposure. Off: gain 4 and exposure 1.05, exactly as before.
+   */
+  private applyWaterLight(on: boolean): void {
+    setWaterLight(on);
+    this.renderer.toneMappingExposure = waterLightExposure(on);
+    this.water.refreshBodyGain();
+    this.physicalMode.farField.refreshBodyGain();
   }
 
   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
