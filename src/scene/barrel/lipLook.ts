@@ -124,13 +124,44 @@ float sweptStreakFoam() {
 export const LIP_STREAK_FOAM = /* glsl */ `float sweptStreakOwn = sweptStreakFoam();
 float sweptStreakLit = max( vWaterFoam, sweptStreakOwn );
 `;
-/** GLSL: the frayed share with the streaks: a streak is lit as the fray's white whatever the sheet's thickness. */
-export const LIP_STREAK_FRAY_SHARE = `max( ${LIP_FRAY_SHARE}, sweptStreakOwn )`;
+/** The foam composition's albedo line the streaks change (`CLASSIC_FOAM`, in the tube's Rich foam). */
+export const LIP_STREAK_ALBEDO_LINE = 'diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );';
 /**
- * The body with the streaks: every `vWaterFoam` it reads becomes the streaked foam, and the fray's volume light takes a
- * streak whole (the lip's faces turn from a high sun: as plain lit foam a streak on the thick sheet drew grey, measured
- * 2026-11-12).
+ * GLSL: the albedo with the streaks (step 14): a streak's share of the cover takes fresh whitewater's albedo, flat across
+ * the visible at the foam colour's brightest channel, as the roller band's crest (`BAND_ALBEDO`, `ROLLER_LOOK.wrap`'s
+ * comment): the sea's own freshest foam. The rest keeps the foam colour.
+ */
+export const LIP_STREAK_ALBEDO = /* glsl */ `diffuseColor.rgb = mix( waterBody * waterBodyGain, mix( waterFoamColor, vec3( max( waterFoamColor.r, max( waterFoamColor.g, waterFoamColor.b ) ) ), clamp( sweptStreakOwn / max( waterCover, 1e-4 ), 0.0, 1.0 ) ), waterCover );`;
+/**
+ * GLSL (after `LIP_FRAY_VOLUME`, in its scope): a streak lit as the sea's foam is (step 14, 2026-11-12). Where the sheet
+ * is thin the fray's light already takes the streaked foam (its share reads the streaked foam); the rest of a streak,
+ * on the thick sheet, takes the light the roller band's whitewater takes beyond the surface's N·L (`BAND_VOLUME`): the
+ * sun wrapped round the face, (N·L + w) / (1 + w) − max(0, N·L), at the band's albedo. No light from behind the sheet:
+ * the fray passes what lies behind a sheet only where it is thin. On the inner face the sun is the sun that reaches it,
+ * as `RICH_THROAT` lets it reach the face's direct light: whole where it leaves the tube, else through the lip on the
+ * slant path; so foam in the tube's shade is lit as the water there is, with no glow of its own.
+ * Measured (step 14): as the fray's white, with the light behind it, a streak on the thick sheet took the back wall's
+ * water colour and the sky through the mouth and drew pale blue, (176, 219, 236) at full cover, 1 % white.
+ */
+export const LIP_STREAK_VOLUME = /* glsl */ `
+    vec2 sweptStreakTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay.xy ), vSweptTube.y - vWaterWorld.y );
+    vec2 sweptStreakSunPlane = vec2( dot( waterSunDirection.xz, vSweptRay.xy ), waterSunDirection.y );
+    vec3 sweptStreakSun = sweptLeaves( waterSunDirection, sweptStreakTip ) ? vec3( 1.0 ) : exp( -waterAttenuation * vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptStreakSunPlane ) ) ) );
+    sweptStreakSun = mix( vec3( 1.0 ), sweptStreakSun, clamp( vSweptThroat.w, 0.0, 1.0 ) );
+    totalEmissiveRadiance += max( 0.0, sweptStreakOwn - sweptFray ) * max( waterFoamColor.r, max( waterFoamColor.g, waterFoamColor.b ) ) * waterSunRadiance * sweptStreakSun * RECIPROCAL_PI
+      * ( max( 0.0, ( sweptFraySun + ${ROLLER_LOOK.wrap.toFixed(3)} ) / ${(1 + ROLLER_LOOK.wrap).toFixed(3)} ) - max( 0.0, sweptFraySun ) );`;
+
+function swapOnce(source: string, target: string, replacement: string): string {
+  if (source.split(target).length !== 2) throw new Error(`The lip's streaks need ${target.split('\n').find(Boolean)} once`);
+  return source.replace(target, () => replacement);
+}
+
+/**
+ * The body with the streaks: every `vWaterFoam` it reads becomes the streaked foam (the lit foam, the sheet's light
+ * through it, and the fray's thin share); a streak's albedo is fresh whitewater's; and a streak on the thick sheet is lit
+ * as the sea's whitewater (`LIP_STREAK_VOLUME`), not as the fray. Needs `LIP_FRAY_VOLUME` in the body.
  */
 export function withLipStreaks(body: string): string {
-  return LIP_STREAK_FOAM + body.split(LIP_FRAY_SHARE).join(LIP_STREAK_FRAY_SHARE).split('vWaterFoam').join('sweptStreakLit');
+  const lit = swapOnce(swapOnce(body, LIP_FRAY_VOLUME, LIP_FRAY_VOLUME + LIP_STREAK_VOLUME), LIP_STREAK_ALBEDO_LINE, LIP_STREAK_ALBEDO);
+  return LIP_STREAK_FOAM + lit.split('vWaterFoam').join('sweptStreakLit');
 }
