@@ -44,6 +44,11 @@ export interface BarrelCase {
   frames: Float32Array;
   /** Per frame, the lip tip's velocity (along x, up) in √(g h0), a local line over ±4 frames; absent in a BRL1 file (zero). */
   tipVelocity?: Float32Array;
+  /**
+   * The frames as the file stores them, on a case whose `frames` were cut by hand after decoding (`thinLip`, ruling 23):
+   * the held frame and the crash's water are read from these, so the solver's jets and the tube's clocks stay as stored.
+   */
+  storedFrames?: Float32Array;
 }
 
 /**
@@ -218,6 +223,11 @@ export function heldFrame(c: BarrelCase, refuse?: (frames: Float32Array, frame: 
   return { tau: c.tauStart + f * c.tauStep, voidHeight: voidHeightAt(c.frames, f), clear: false };
 }
 
+/** A case as its file stores it: itself, or a hand-cut case (`BarrelCase.storedFrames`) with its stored frames back. */
+export function storedCase(c: BarrelCase): BarrelCase {
+  return c.storedFrames ? { ...c, frames: c.storedFrames } : c;
+}
+
 /** The cases a slice blends and by how much (its A0 between theirs), its scale h0 (m), and whether it fell outside them. */
 export interface CaseBlend {
   lower: BarrelCase;
@@ -351,14 +361,18 @@ export class ProfileLibrary {
       const frames = c.frames.slice();
       const points = removeLoops(frames);
       moved += points;
-      return points > 0 ? { ...c, frames } : c;
+      if (!c.storedFrames) return points > 0 ? { ...c, frames } : c;
+      // A hand-cut case (`thinLip`): its stored frames' loops close as they always have, for the held frame and the crash.
+      const storedFrames = c.storedFrames.slice();
+      removeLoops(storedFrames);
+      return { ...c, frames, storedFrames };
     });
     this.loopPoints = moved;
     cases = this.cases;
     const groups = new Map<number, BarrelCase[]>();
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
-    for (const c of cases) this.held.set(c, (options.heldFrame ?? heldFrame)(c));
+    for (const c of cases) this.held.set(c, (options.heldFrame ?? heldFrame)(storedCase(c)));
   }
 
   /** The profile for a slice, in metres, into `out` (PROFILE_POINTS (x, y) pairs). */
@@ -481,7 +495,7 @@ export class ProfileLibrary {
 
   /** Raw authored case evidence only. Analytic query lifecycle/void comes from profileAt, not this per-case helper. */
   heldFrameOf(c: BarrelCase): HeldFrame {
-    return this.held.get(c) ?? (this.options.heldFrame ?? heldFrame)(c);
+    return this.held.get(c) ?? (this.options.heldFrame ?? heldFrame)(storedCase(c));
   }
 
   /** The cases a slice blends and by how much, and its scale, as `profileAt` blends and scales them (the crash's held overturn, PR 5). */

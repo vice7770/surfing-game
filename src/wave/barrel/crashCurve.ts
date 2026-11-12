@@ -177,7 +177,7 @@ export class CrashCurve {
     this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     for (const c of library.options.geometry === 'bounded-C' ? [] : library.cases) {
       const held = library.heldFrameOf(c);
-      this.overturns.set(c, overturnAt(c.frames, Math.floor((held.tau - c.tauStart) / c.tauStep + 0.5)));
+      this.overturns.set(c, overturnAt(c.storedFrames ?? c.frames, Math.floor((held.tau - c.tauStart) / c.tauStep + 0.5)));
     }
   }
 
@@ -543,7 +543,7 @@ export class CrashCurve {
     let o = this.overturns.get(c);
     if (!o) {
       const held = this.library.heldFrameOf(c);
-      o = overturnAt(c.frames, Math.floor((held.tau - c.tauStart) / c.tauStep + 0.5));
+      o = overturnAt(c.storedFrames ?? c.frames, Math.floor((held.tau - c.tauStart) / c.tauStep + 0.5));
       this.overturns.set(c, o);
     }
     return o;
