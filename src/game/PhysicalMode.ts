@@ -388,7 +388,7 @@ export interface HostExtras {
  * the page decides. Shared with the dev pages that time the game's own seas (gpu-check's `?mode=pipeline`).
  */
 export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier: boolean, overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig {
-  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides), poolWindowSwitch().poolWindow);
+  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides), poolWindowSwitch().poolWindow, poolHeldOld());
 }
 
 /**
@@ -396,13 +396,16 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
  * `POOL_REF`'s in place of the Small / Big choice's, its tube the pool's 1.8 m case alone (scaled by the bigger foot
  * crest), and the steeper ledge (`poolFloor` 'ledge') is dropped. Its wrapped window is `POOL_REF.alongShore` wide
  * (311 m, ruling 14; `alongShoreOf` gives it, so the config carries no width) unless `window` (`?poolWindow`) says another,
- * which becomes the config's `alongShore`. Any other config, as given: `window` is read at this size alone.
+ * which becomes the config's `alongShore`. Its tube case's held frame is found with the jet-step test (`heldRule`
+ * 'jet-step', ruling 16: `big` holds at frame 175, not 176) unless `heldOld` (`?poolHeld=old`). Any other config, as
+ * given: `window` and `heldOld` are read at this size alone.
  */
-export function poolRefConfig(config: SurfZoneConfig, window?: number): SurfZoneConfig {
+export function poolRefConfig(config: SurfZoneConfig, window?: number, heldOld = false): SurfZoneConfig {
   if (!poolRefOn(config)) return config;
   const { poolFloor, ...rest } = config;
   return {
     ...rest, significantHeight: regularSignificantHeight(POOL_REF.edgeHeight), peakPeriod: POOL_REF.period, poolTubeCase: 'big',
+    ...(heldOld ? {} : { heldRule: 'jet-step' as const }),
     ...(poolFloor === 'inside' ? { poolFloor } : {}),
     ...(window !== undefined ? { alongShore: window } : {}),
   };
@@ -623,6 +626,16 @@ export function poolWindowSwitch(search?: string): { poolWindow?: number } {
   const raw = devParam('poolWindow', search)?.trim();
   const value = raw ? Math.round(Number(raw)) : Number.NaN;
   return value >= POOL_WINDOW_RANGE.min && value <= POOL_WINDOW_RANGE.max ? { poolWindow: value } : {};
+}
+
+/**
+ * The `?poolHeld=old` dev switch (pool-look-reference step 4, 2026-11-11; ruling 16): the reference size's tube case held
+ * at the frame the old rule finds (`big`'s frame 176, whose jet area counts the void too), for A/Bs against the jet-step
+ * test (`heldFrameJetStep`, frame 175). Read only together with `?poolSize=ref` (`poolRefConfig`): without it, and in
+ * online rooms (which pin `poolSize`), it does nothing.
+ */
+export function poolHeldOld(search?: string): boolean {
+  return devParam('poolHeld', search)?.trim().toLowerCase() === 'old';
 }
 
 export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' | 'inside' } {
@@ -1370,7 +1383,7 @@ export class PhysicalMode {
         const bytes = await barrelCaseBytes(spot, this.config?.poolTubeCase);
         if (!bytes) throw new Error('No barrel case files');
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
-        return libraryFromBytes(bytes, this.config?.tubeShape, spot);
+        return libraryFromBytes(bytes, this.config?.tubeShape, spot, this.config?.heldRule);
       }, view, cameraWaterOld() ? 'old' : 'fast');
       // `?lipFoam=old` and `?lipBack=old`: the curl's foam and the Rich lip's background as before pool-barrel-drawing.
       if (lipFoamOld()) this.sweptBarrel.mesh.lipFoam = 'old';
@@ -1768,7 +1781,7 @@ export class PhysicalMode {
     const spot = this.config?.spot;
     const bytes = spot && this.swept ? await barrelCaseBytes(spot, this.config?.poolTubeCase) : undefined;
     if (!spot || !bytes || !this.sweptBarrel) return false;
-    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot));
+    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot, this.config?.heldRule));
     return true;
   }
 

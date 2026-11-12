@@ -199,9 +199,10 @@ function voidHeightAt(frames: Float32Array, f: number): number {
  * A case's held frame (the advisor, 2026-09-30): the last frame, at or before one frame before touchdown, whose tip
  * stands `CLEAR.gap` over the lower surface beneath it (the jet off the face) and `CLEAR.gap` ahead of its throat (the
  * void open, not collapsed onto the face as pad19-a30-l12's last two frames are); its void's height there. With none
- * such, the frame before touchdown, unclear.
+ * such, the frame before touchdown, unclear. `refuse`: one more test a frame must not fail (frames, frame index), for
+ * `heldFrameJetStep` (heldJetStep.ts, the reference pool's); without it, the rule as it has always been.
  */
-export function heldFrame(c: BarrelCase): HeldFrame {
+export function heldFrame(c: BarrelCase, refuse?: (frames: Float32Array, frame: number) => boolean): HeldFrame {
   const count = c.frames.length / FLOATS;
   const last = Math.min(count - 1, Math.floor((c.touchdown - c.tauStart) / c.tauStep + 1e-6) - 1);
   for (let f = last; f >= 0; f -= 1) {
@@ -210,6 +211,7 @@ export function heldFrame(c: BarrelCase): HeldFrame {
     const tipY = c.frames[o + 2 * LANDMARK.lip + 1];
     if (tipX - c.frames[o + 2 * LANDMARK.throat] < CLEAR.gap) continue;
     if (!(tipY - surfaceBeneath(c.frames, f, tipX, tipY) >= CLEAR.gap)) continue;
+    if (refuse?.(c.frames, f)) continue;
     return { tau: c.tauStart + f * c.tauStep, voidHeight: voidHeightAt(c.frames, f), clear: true };
   }
   const f = Math.max(0, last);
@@ -340,7 +342,8 @@ export class ProfileLibrary {
    */
   private readonly analyticClocks = new NumberKeyCache<{ impact: number; retired: number; clear: number; event: BoundedCEvent }>(ANALYTIC_CLOCK_CAPACITY);
 
-  constructor(cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
+  /** `options.heldFrame`: each case's held frame by another rule (`heldFrameJetStep`); without it, `heldFrame`. */
+  constructor(cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C'; heldFrame?: (c: BarrelCase) => HeldFrame } = {}) {
     // The raw path draws and collides the frames themselves, so their loops close once, here, for both. The bounded-C
     // reads only the crest, toe and their tangents, and stays byte for byte as it was (the `?tubeShape=c` A/B).
     let moved = 0;
@@ -355,7 +358,7 @@ export class ProfileLibrary {
     const groups = new Map<number, BarrelCase[]>();
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
-    for (const c of cases) this.held.set(c, heldFrame(c));
+    for (const c of cases) this.held.set(c, (options.heldFrame ?? heldFrame)(c));
   }
 
   /** The profile for a slice, in metres, into `out` (PROFILE_POINTS (x, y) pairs). */
@@ -478,7 +481,7 @@ export class ProfileLibrary {
 
   /** Raw authored case evidence only. Analytic query lifecycle/void comes from profileAt, not this per-case helper. */
   heldFrameOf(c: BarrelCase): HeldFrame {
-    return this.held.get(c) ?? heldFrame(c);
+    return this.held.get(c) ?? (this.options.heldFrame ?? heldFrame)(c);
   }
 
   /** The cases a slice blends and by how much, and its scale, as `profileAt` blends and scales them (the crash's held overturn, PR 5). */

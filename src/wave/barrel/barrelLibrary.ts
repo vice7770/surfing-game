@@ -2,6 +2,7 @@ import type { SpotName } from '../Bathymetry';
 import { BARREL_CASES } from './barrelLibraryIndex';
 import { decodeCase } from './profileFormat';
 import { ProfileLibrary } from './ProfileLibrary';
+import { heldFrameJetStep, type HeldRule } from './heldJetStep';
 import { BARREL_SPOTS } from './barrelSpots';
 
 /** One case in the generated index: the spot whose transect it was run on, what it covers, and where its frames are (public/<asset>). */
@@ -125,12 +126,13 @@ export const BOUNDED_C_CASES: readonly BarrelCaseEntry[] = BARREL_CASES.filter((
 /**
  * Case files decoded into one library, drawn as `shape` says (`TubeShape`). At a spot whose cases are one family
  * (`BarrelSpot.family`: one floor at several sizes), every case takes the spot's slope, so a slice blends them by its A0
- * alone; each case's own slope along its ray stays in its file and notes.
+ * alone; each case's own slope along its ray stays in its file and notes. `held`: the held frames by another rule
+ * (`SurfZoneConfig.heldRule`: 'jet-step', the reference pool's, ruling 16); without it, as always.
  */
-export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk', spot?: SpotName): ProfileLibrary {
+export function libraryFromBytes(bytes: readonly Uint8Array[], shape: TubeShape = 'basilisk', spot?: SpotName, held?: HeldRule): ProfileLibrary {
   const family = spot !== undefined && BARREL_SPOTS[spot]?.family ? BARREL_SPOTS[spot]!.slope : undefined;
   const cases = bytes.map(decodeCase).map((c) => (family === undefined ? c : { ...c, slope: family }));
-  if (shape !== 'bounded-C') return new ProfileLibrary(cases);
+  if (shape !== 'bounded-C') return held === 'jet-step' ? new ProfileLibrary(cases, { heldFrame: heldFrameJetStep }) : new ProfileLibrary(cases);
   // The bounded provider's explicitly evaluated domain is the cases shipped with it. General fixtures stay raw.
   const eligible = cases.every((c) => BOUNDED_C_CASES.some((entry) => entry.id === c.id));
   return new ProfileLibrary(cases, eligible ? { geometry: 'bounded-C' } : {});

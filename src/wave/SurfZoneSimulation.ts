@@ -31,6 +31,7 @@ import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { BARREL_SPOTS, barrelSpotOf, tubeFootMax } from './barrel/barrelSpots';
 import { tubeFaceOf, type TubeFace } from './barrel/faceAnchor';
 import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
+import type { HeldRule } from './barrel/heldJetStep';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, throwContourDistance, type OnsetTiming } from './barrel/sliceClock';
@@ -393,6 +394,13 @@ export interface SurfZoneConfig {
    * `poolFloor` 'inside' its shelf is scaled too, 'ledge' is ignored. Online rooms always run the default.
    */
   poolSize?: PoolSizeSwitch;
+  /**
+   * How the tube cases' held frames are found (ruling 16, pool-look-reference step 4): 'jet-step', `heldFrameJetStep`
+   * (a frame whose jet area jumps over 1.25 × the frame before's is refused: the pool's `big` case holds at frame 175).
+   * Set only with `poolSize` 'ref' (`poolRefConfig`; `?poolHeld=old` leaves it unset); unset, `heldFrame` as always.
+   * Read where the library is built (`libraryFromBytes`): the surf zone's and the page's.
+   */
+  heldRule?: HeldRule;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
