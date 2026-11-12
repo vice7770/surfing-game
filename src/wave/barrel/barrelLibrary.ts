@@ -64,8 +64,8 @@ export const POOL_TUBE_BIG: readonly string[] = ['periodic-pool-straight-big-l13
 /**
  * Which cases the pool's tube is drawn and felt from (`SurfZoneConfig.poolTubeCase`): `'a38'`, the default
  * (`DEFAULT_POOL_TUBE_CASE`, `POOL_TUBE_STAND_IN`), or `'pool'`, its own two level-13 runs (`POOL_TUBE_CASES`; the
- * `?poolTubeCase=pool` A/B), or `'big'`, its 1.8 m run alone (`POOL_TUBE_BIG`; set by `?poolSize=ref`, no switch of its
- * own). Online rooms run the default.
+ * `?poolTubeCase=pool` A/B), or `'big'`, its 1.8 m run alone (`POOL_TUBE_BIG`; set by `?poolSize=ref` when the URL names
+ * no case, no switch of its own). Online rooms run the default.
  */
 export type PoolTubeCase = 'a38' | 'pool' | 'big';
 

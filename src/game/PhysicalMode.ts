@@ -394,7 +394,8 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
 /**
  * A config at the straight Barrel's reference size (`poolSize` 'ref', ruling 13): the machine's wave and period are
  * `POOL_REF`'s in place of the Small / Big choice's, its tube the pool's 1.8 m case alone (scaled by the bigger foot
- * crest), and the steeper ledge (`poolFloor` 'ledge') is dropped. Its wrapped window is `POOL_REF.alongShore` wide
+ * crest) unless `?poolTubeCase=a38|pool` names another (ruling 16's call 1: the switch wins; without it, `big`), and
+ * the steeper ledge (`poolFloor` 'ledge') is dropped. Its wrapped window is `POOL_REF.alongShore` wide
  * (311 m, ruling 14; `alongShoreOf` gives it, so the config carries no width) unless `window` (`?poolWindow`) says another,
  * which becomes the config's `alongShore`. Its tube case's held frame is found with the jet-step test (`heldRule`
  * 'jet-step', ruling 16: `big` holds at frame 175, not 176) unless `heldOld` (`?poolHeld=old`). Its reef's lengths along
@@ -405,7 +406,7 @@ export function poolRefConfig(config: SurfZoneConfig, window?: number, heldOld =
   if (!poolRefOn(config)) return config;
   const { poolFloor, ...rest } = config;
   return {
-    ...rest, significantHeight: regularSignificantHeight(POOL_REF.edgeHeight), peakPeriod: POOL_REF.period, poolTubeCase: 'big',
+    ...rest, significantHeight: regularSignificantHeight(POOL_REF.edgeHeight), peakPeriod: POOL_REF.period, poolTubeCase: config.poolTubeCase ?? 'big',
     ...(heldOld ? {} : { heldRule: 'jet-step' as const }),
     ...(reefShort ? { poolReef: 'short' as const } : {}),
     ...(poolFloor === 'inside' ? { poolFloor } : {}),

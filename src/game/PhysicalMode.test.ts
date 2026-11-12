@@ -306,8 +306,22 @@ describe('PhysicalMode', () => {
       vi.stubGlobal('location', { search: '?poolSize=ref&poolBarrel=aframe' });
       expect(surfZoneConfigFor(barrel, 5, true).peakPeriod).toBe(10);
       expect(surfZoneConfigFor(barrel, 5, true).poolTubeCase).toBeUndefined();
-      vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=ledge&poolTubeCase=pool' });
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=ledge' });
       expect(surfZoneConfigFor(barrel, 5, true)).toEqual(ref);
+      // Step 4, build 3 (ruling 16's call 1): a tube case named in the URL wins over `big`; nothing else changes, and
+      // anything but a38 or pool is no name. The jet-step held rule stays (it moves no case but `big`).
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=ledge&poolTubeCase=pool' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolTubeCase: 'pool' });
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolTubeCase=a38' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolTubeCase: 'a38' });
+      expect(surfZoneConfigFor(barrel, 5, true).heldRule).toBe('jet-step');
+      for (const search of ['?poolSize=ref&poolTubeCase=big', '?poolSize=ref&poolTubeCase=', '?poolSize=ref&poolTubeCase=other']) {
+        vi.stubGlobal('location', { search });
+        expect(surfZoneConfigFor(barrel, 5, true), search).toEqual(ref);
+      }
+      // An online room's pin leaves the default's case choice as it was.
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolTubeCase=a38' });
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined, poolTubeCase: 'a38' });
       vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=inside' });
       expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolFloor: 'inside' });
     } finally {
