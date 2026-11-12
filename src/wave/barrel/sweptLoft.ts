@@ -6,6 +6,7 @@ import { arcPlaces, arcRespace, lipShare, type ArcPlaces } from './arcMesh';
 import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { seamB, seamBand, seamCourseWeight, seamHeightWeight } from './tubeSeam';
+import { REST_DUG, dugAlong, dugCrestRamp, dugPlace, dugShare } from './wallFoot';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
 export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
@@ -269,6 +270,12 @@ export interface WallWater {
    * its surface is the solver's; the wall water's flow is weighed by it (`ContactHit.seam`).
    */
   seam?: Float32Array;
+  /**
+   * Ruling 21's dug foot (`TubeFace.dug`; absent without it), per vertex: the case's share α at a floor vertex past the
+   * crest, where the surface is the case's also under the solver's sea; 0 elsewhere. A body's water there is the
+   * contact's surface, not the sea over it (`ContactHit.dug`).
+   */
+  dug?: Float32Array;
 }
 
 /**
@@ -421,6 +428,10 @@ export class SweptLoft {
   private normalReady = new Uint8Array(0);
   /** Per vertex, 1 where the face ruling's floor holds it on the solver's surface (`TubeFace.union`), for `prepareRow`. */
   private floorRows = new Uint8Array(0);
+  /** Ruling 21 (`TubeFace.dug`), per vertex, for `prepareRow`: its crest ramp (`dugCrestRamp`) and its rest's ease 1 − pin. */
+  private dugRows = new Float64Array(0);
+  private dugEase = new Float64Array(0);
+  private readonly dugAt = new Float64Array(2);
   private normalFirst = new Int32Array(0);
   private normalLast = new Int32Array(0);
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
@@ -545,6 +556,7 @@ export class SweptLoft {
         low: new Float32Array(slices), top: new Float32Array(slices), speed: new Float32Array(slices), b: new Float32Array(slices),
         along: new Float32Array(vertices), up: new Float32Array(vertices),
         ...(options.face.seam ? { seam: new Float32Array(vertices) } : {}),
+        ...(options.face.seam && options.face.dug ? { dug: new Float32Array(vertices) } : {}),
       } } : {}),
     };
   }
@@ -568,6 +580,10 @@ export class SweptLoft {
     loft.heightReady = new Uint8Array(MAX_SLICES + 1);
     loft.normalReady = new Uint8Array(loft.result.positions.length / 3);
     loft.floorRows = new Uint8Array(loft.result.positions.length / 3);
+    if (face?.seam && face.dug) {
+      loft.dugRows = new Float64Array(vertices);
+      loft.dugEase = new Float64Array(vertices);
+    }
     loft.normalFirst = new Int32Array(MAX_SLICES + 1);
     loft.normalLast = new Int32Array(MAX_SLICES + 1);
     return {
@@ -1349,8 +1365,11 @@ export class SweptLoft {
       const maskSlice = this.library.options.geometry === 'bounded-C' ? wFade * maskBand * wFormation : wFade > 0 ? maskBand : 0;
       // The forward rest, from the drawn slice in both modes, so the contact and the overlaps follow the drawing.
       const forward = this.rest;
+      // Ruling 21 (`TubeFace.dug`): the rest's lengths in wave heights, on forward vertices respaced to reach them.
+      const dug = this.face?.seam !== undefined && this.face.dug === true;
       if (w > 0) {
-        this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, drawnFrontX + LOFT.extension - LOFT.band - drawnToeX, heightAt);
+        if (dug) this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, REST_DUG.ahead * drawnHeight, heightAt, REST_DUG);
+        else this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, drawnFrontX + LOFT.extension - LOFT.band - drawnToeX, heightAt);
       } else {
         forward[0] = 0;
         forward[1] = REST.ramp * drawnHeight;
@@ -1462,7 +1481,27 @@ export class SweptLoft {
         let sky = 1;
         let underLip = 0;
         let inner = 0;
-        if (j < E) {
+        let place = -1;
+        let placeShare = 0;
+        if (dug && j > E + LANDMARK.toe) {
+          // Ruling 21: the vertices past the toe stand evenly out to 5 H and the mask's band, on the profile's own line
+          // (its front level past its end), and rest as the forward rest says.
+          along = dugAlong(j - E - LANDMARK.toe, LOFT_SAMPLES - 1 - E - LANDMARK.toe, toeX, drawnHeight, LOFT.band);
+          dugPlace(profile, LANDMARK.toe, LAST, along, this.dugAt);
+          place = this.dugAt[0];
+          placeShare = this.dugAt[1];
+          above = profile[2 * place + 1] + placeShare * (profile[2 * place + 3] - profile[2 * place + 1]);
+          const past = along - toeX;
+          const u = past > restHold ? Math.min(1, (past - restHold) / restSpan) : 0;
+          pin = u * u * (3 - 2 * u);
+          maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
+          if (formed > 0 && along < profile[2 * LAST]) {
+            const i = placeShare < 0.5 ? place : place + 1;
+            sky = this.inside[4 * i];
+            underLip = this.inside[4 * i + 1];
+            inner = formed * this.inside[4 * i + 2];
+          }
+        } else if (j < E) {
           along = profile[0] - (E - j) * EXTENSION_STEP;
         } else if (j < E + PROFILE_POINTS) {
           const i = j - E;
@@ -1524,7 +1563,14 @@ export class SweptLoft {
         if (wall && wallEpsilon > 0) {
           // The case's surface's velocity there: its frames' motion at the clock's rate, carried by its anchor.
           const i = Math.min(LAST, Math.max(0, profileIndex));
-          if (arc && i > LANDMARK.crest && i < LANDMARK.toe) {
+          if (place >= 0) {
+            // Ruling 21's respaced vertex: the same field on the profile's own line, read at the vertex's place on it.
+            this.wallAt(profile, place, wallEpsilon, wallRate, wallCarry);
+            const [along0, up0] = [this.arcWall[0], this.arcWall[1]];
+            this.wallAt(profile, place + 1, wallEpsilon, wallRate, wallCarry);
+            wall.along[v] = along0 + placeShare * (this.arcWall[0] - along0);
+            wall.up[v] = up0 + placeShare * (this.arcWall[1] - up0);
+          } else if (arc && i > LANDMARK.crest && i < LANDMARK.toe) {
             // The arc mesh: the same field on the same curve, read at the vertex's own place on it.
             const m = arc.from[i];
             const t = arc.share[i];
@@ -1558,17 +1604,22 @@ export class SweptLoft {
         // Under the face ruling a floor vertex never lies under the solver's surface: the back slope, the face from the
         // throat on and the extensions, and the whole profile before it overturns; the lip's are left as they are.
         const floor = this.face?.union === true && (overturned === 0 || profileIndex <= LANDMARK.crest || profileIndex >= LANDMARK.throat);
+        const dugRamp = dug ? dugCrestRamp(profileIndex, LANDMARK.crest) : -1;
         if (this.normalDemand) {
           this.initialX[v] = px;
           this.initialZ[v] = pz;
           this.targetY[v] = stillLevel + above;
           this.initialBlend[v] = e;
           this.floorRows[v] = floor ? 1 : 0;
+          if (dug) {
+            this.dugRows[v] = dugRamp;
+            this.dugEase[v] = 1 - pin;
+          }
         } else if (seam) {
           // Ruling 5's seam blend (`TubeFace.seam`, `seamY`), in place of the clamp below.
           const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
           if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-          r.positions[3 * v + 1] = this.seamY(v, h, stillLevel + above, e, floor, seamTau, seamReach);
+          r.positions[3 * v + 1] = this.seamY(v, h, stillLevel + above, e, floor, seamTau, seamReach, dugRamp, 1 - pin);
         } else if (e === 1) {
           r.positions[3 * v + 1] = floor ? Math.max(stillLevel + above, heightAt(px, pz)) : stillLevel + above;
         } else {
@@ -1624,15 +1675,16 @@ export class SweptLoft {
    * ease starts and at the toe, m. The water is read along the ray every `REST.step` m from the toe; the hold ends where
    * it first comes within `REST.near` H of the level (between two readings, where the line between them does), and the
    * ease runs `REST.ramp` H from there, all within `REST.ahead` H and `room`, m past the toe. Only + − × ÷.
+   * Under ruling 21 (`TubeFace.dug`) `lengths` are `REST_DUG`'s; otherwise `REST`'s own.
    */
   private forwardRest(
     ax: number, az: number, nx: number, nz: number, toeX: number, level: number, height: number, room: number,
-    heightAt: (x: number, z: number) => number,
+    heightAt: (x: number, z: number) => number, lengths: { ramp: number; near: number; ahead: number } = REST,
   ): void {
     const out = this.rest;
-    const ramp = REST.ramp * height;
-    const near = REST.near * height;
-    const cap = Math.max(0, Math.min(REST.ahead * height, room));
+    const ramp = lengths.ramp * height;
+    const near = lengths.near * height;
+    const cap = Math.max(0, Math.min(lengths.ahead * height, room));
     // The latest the ease may start and still end within the cap.
     const latest = Math.max(0, cap - ramp);
     let hold = latest;
@@ -2202,9 +2254,20 @@ export class SweptLoft {
    * solver's surface with its own height and slope, so the back slope and the foot need no case of their own. A lip vertex
    * (crest to throat of an overturned slice: air under it) keeps its place, by α_τ alone (whole from the throw).
    */
-  private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number): number {
+  private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number, dug = -1, ease = 1): number {
     const share = this.result.wall?.seam;
+    const marks = this.result.wall?.dug;
     const delta = e * (target - h);
+    if (dug >= 0) {
+      // Ruling 21 (`TubeFace.dug`): past the crest the case's share is the clock's alone, its height signed, so the
+      // front is the case's also under the sea; today's height share eases out over the crest's ramp (`dugShare`).
+      // Its flow's share fades with the rest's ease, so it is the sea's where the surface is.
+      const alpha = dugShare(tau, floor && dug < 1 ? seamHeightWeight(delta, band) : 1, dug);
+      if (share) share[v] = alpha * ease;
+      if (marks) marks[v] = floor ? alpha : 0;
+      return alpha === 1 ? (e === 1 ? target : h + delta) : h + alpha * delta;
+    }
+    if (marks) marks[v] = 0;
     if (!floor) {
       if (share) share[v] = tau;
       return tau === 1 ? (e === 1 ? target : h + delta) : h + tau * delta;
@@ -2235,7 +2298,8 @@ export class SweptLoft {
         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
         const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
         if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-        r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row]);
+        const dug = this.face.dug ? this.dugRows[v] : -1;
+        r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row], dug, dug >= 0 ? this.dugEase[v] : 1);
       } else if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
       else {
         const profileIndex = j - E;

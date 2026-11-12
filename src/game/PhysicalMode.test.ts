@@ -594,6 +594,28 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('takes `?wallFoot=dug` with the seam blend alone, at the Barrel alone, and an online room pins the default (ruling 21)', () => {
+    expect(tubeFaceSwitches('?wallFoot=dug')).toEqual({});
+    expect(tubeFaceSwitches('?tubeSeam=blend&wallFoot=dug')).toEqual({ tubeSeam: 'blend', wallFoot: 'dug' });
+    expect(tubeFaceSwitches('?tubeForm=early&loftMesh=arc&wallFoot= Dug ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', loftMesh: 'arc', wallFoot: 'dug' });
+    for (const search of ['?tubeSeam=blend&wallFoot', '?tubeSeam=blend&wallFoot=', '?tubeSeam=blend&wallFoot=on', '?tubeSeam=blend&wallfoot=dug']) expect(tubeFaceSwitches(search), search).toEqual({ tubeSeam: 'blend' });
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?tubeSeam=blend' });
+      const blend = surfZoneConfigFor(barrel, 5, false);
+      expect(blend.wallFoot).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeSeam=blend&wallFoot=dug' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...blend, wallFoot: 'dug' });
+      expect(surfZoneConfigFor(training, 5, false).wallFoot).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeSeam: undefined, wallFoot: undefined });
+      expect(room.wallFoot).toBeUndefined();
+      expect(room.tubeSeam).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('takes `?loftMesh=arc` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 2)', () => {
     expect(tubeFaceSwitches('?loftMesh=arc')).toEqual({ loftMesh: 'arc' });
     expect(tubeFaceSwitches('?tubeForm=early&anchorLine=smooth&loftMesh= Arc ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth', loftMesh: 'arc' });

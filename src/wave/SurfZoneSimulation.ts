@@ -585,6 +585,13 @@ export interface SurfZoneConfig {
    * library's lip mark slides. The curve itself is unchanged. Absent: off, exactly as before. Online rooms pin it absent.
    */
   loftMesh?: 'arc';
+  /**
+   * Ruling 21, opt-in and with `tubeSeam` alone (`TubeFace.dug`, `?wallFoot=dug`;
+   * docs/research/pool-look-reference-2026-11-11/ruling-21.md): on the wave's front the drawn surface, the collided one and
+   * a body's water are the case's also where it lies under the solver's sea, and the return to the sea is made ahead of
+   * the toe (hold to 0.05 H, ease over 2 H, give up at 5 H). Absent: off, exactly as before. Online rooms pin it absent.
+   */
+  wallFoot?: 'dug';
 }
 
 /**

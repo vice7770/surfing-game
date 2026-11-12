@@ -191,6 +191,13 @@ export interface PhysicalSurfWaterOptions {
    */
   sweptStream?: boolean;
   /**
+   * With `sweptSeam`: ruling 21's dug foot (`TubeFace.dug`, `?wallFoot=dug`;
+   * docs/research/pool-look-reference-2026-11-11/ruling-21.md). Where the swept floor is the case's own front and lies
+   * under the solver's surface (`ContactHit.dug` over 0), a body's water surface is the swept one: its immersion, its
+   * normal and the wall water's share are read from it, and there is no solver water over it (one water, as drawn).
+   */
+  sweptDug?: boolean;
+  /**
    * A spilling spot's roller lenses (the Canyon roller lens, S3): their tops join the render nodes, and in their
    * columns the water is broken, carried by the lens and aerated by it. With a roller the P11 roller push is off.
    */
@@ -459,6 +466,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   private readonly cells = new Int32Array(4);
   private readonly weights = new Float64Array(4);
   private readonly hit = createContactHit();
+  /** Ruling 21 (`sweptDug`): `surfaceAt`'s own hit, so a sample's is left as it stands. */
+  private readonly floorHit = createContactHit();
   private readonly lens: LensPoint = { thickness: 0, rise: 0, g: 0, flowX: 0, flowZ: 0, xi: 0 };
   /**
    * When the bodies' samples are taken, s, relative to the water's state (`setSampleTime`; ≤ 0, the step ends at the
@@ -498,6 +507,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam ? { sweptSeam: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam && simulation.tubeFace.stream ? { sweptStream: true } : {}),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam && simulation.tubeFace.dug ? { sweptDug: true } : {}),
       ...(roller ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
       ...(simulation.config.plainHeight ? { plainHeight: simulation.config.plainHeight } : {}),
@@ -645,6 +655,14 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
   surfaceAt(x: number, z: number): number {
     const { swept } = this.options;
     if (swept && !this.outside(x, z)) {
+      if (this.options.sweptDug) {
+        // Ruling 21: the case's own front under the solver's surface is the water's surface there (`unionContact`).
+        const hit = this.floorHit;
+        if (swept.query(x, Infinity, z, hit) && hit.dug !== undefined && hit.dug > 0) {
+          const plain = this.plainAtSampleTime(x, z);
+          return hit.floorY < plain ? hit.floorY : Math.max(hit.floorY, plain);
+        }
+      }
       const floor = swept.floorAt(x, z);
       // Under the face ruling, never under the solver's surface (`sweptUnion`).
       if (floor === floor) return this.options.sweptUnion ? Math.max(floor, this.plainAtSampleTime(x, z)) : floor;
@@ -811,6 +829,16 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       plain();
       out.tube = tubeState(hit.life);
       out.covered = false;
+      return;
+    }
+    if (this.options.sweptDug === true && hit.dug !== undefined && hit.dug > 0 && hit.floorY < plainY) {
+      // Ruling 21 (`sweptDug`): the floor here is the case's own front, under the solver's surface. The swept surface
+      // answers alone: its water under it, air over it (no solver water over the dug face), its floor not raised.
+      this.fromContact(y, out);
+      if (hit.inWater) {
+        this.inWall = this.options.sweptWall === true && out.waterFloorY === undefined;
+        if (this.options.sweptNearest && out.waterFloorY === undefined) this.nearestSurface(y, out);
+      }
       return;
     }
     if (y < plainY) {

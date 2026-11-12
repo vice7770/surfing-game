@@ -130,6 +130,11 @@ export interface ContactHit {
    */
   seam?: number;
   aheadSeam?: number;
+  /**
+   * Ruling 21's dug foot (`TubeFace.dug`, `WallWater.dug`; absent without it): the case's share α at the lowest crossing
+   * of the point's vertical line (`floorY`), over 0 where that floor is the case's own front also under the solver's sea.
+   */
+  dug?: number;
 }
 
 export function createContactHit(): ContactHit {
@@ -361,6 +366,13 @@ export class SweptContact {
     const below = n - above;
     hit.inWater = (above & 1) === 1;
     hit.floorY = ys[0];
+    const marks = loft.wall?.dug;
+    if (marks) {
+      // Ruling 21 (`TubeFace.dug`): the dug share at the lowest crossing, by its triangle's weights.
+      let dug = 0;
+      for (let m = 0; m < 3; m += 1) dug += this.weights[m] * marks[this.at[m]];
+      hit.dug = dug;
+    }
     hit.waterFloorY = Number.NaN;
     hit.ceilingY = Number.NaN;
     hit.ceilingTopY = Number.NaN;

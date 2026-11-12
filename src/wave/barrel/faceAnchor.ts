@@ -174,6 +174,17 @@ export interface TubeFace {
    * throw on, and everywhere else, the vertices are the library's own. Absent: off, the build exactly as before.
    */
   arcMesh?: true;
+  /**
+   * Ruling 21 (docs/research/pool-look-reference-2026-11-11/ruling-21.md; opt-in, `?wallFoot=dug`), with `seam` alone: a
+   * loft vertex past the crest (the face, the trough, the forward extension) takes the case's share by the clock alone,
+   * α = α_τ, with its height over the solver's surface signed, as the lip's vertices do: the front is the case's own also
+   * where it lies under the sea (the foot, 0.2 to 0.4 m under it on the reference pool), so the hollow corner at mid-face
+   * goes. The return to the sea is made ahead of the toe, in wave heights (`REST_DUG`), on the loft's forward vertices
+   * respaced to reach 5 H; the contact and a body's water follow the dug face (`WallWater.dug`, `ContactHit.dug`). The
+   * crest keeps today's rule, eased into the new one over the first quarter of the crest-to-lip arc (`DUG_CREST`). The
+   * anchor, the clocks, the share's course, the crash and the library are untouched. Absent: off, exactly as before.
+   */
+  dug?: true;
 }
 
 /**
@@ -230,6 +241,8 @@ export interface TubeFaceSwitches {
   anchorLine?: 'smooth';
   /** Ruling 18's build 2 (`TubeFace.arcMesh`), opt-in: 'arc' turns it on. */
   loftMesh?: 'arc';
+  /** Ruling 21 (`TubeFace.dug`), opt-in and with the seam blend alone: 'dug' turns it on. */
+  wallFoot?: 'dug';
 }
 
 /**
@@ -270,6 +283,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     ...(crestLine ? { crestLine } : {}),
     ...(continuity && crestLine && switches.anchorLine === 'smooth' ? { anchorLine: true as const } : {}),
     ...(!piece && switches.loftMesh === 'arc' ? { arcMesh: true as const } : {}),
+    ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallFoot === 'dug' ? { dug: true as const } : {}),
   };
 }
 
