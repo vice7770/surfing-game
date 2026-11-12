@@ -13,8 +13,8 @@
   - It is a field of the sea's config (`SurfZoneConfig.waterLight`, read by `waterLightSwitch()` in `PhysicalMode.ts`). The solver never reads it.
   - Online rooms pin `waterLight` absent (and `poolSize` already), in the same override list as the other switches. So a room draws the default (off).
   - `main.startPhysical` sets the light after each sea starts (`applyWaterLight(waterLightOn(config))`). Off = gain 4 and exposure 1.05, as before.
-- **Classic:** its own gain (3) does not change. The exposure is the frame's, so a Classic pool with the light on gets exposure 1.6 too. Ruling 25e is about Rich; Classic in the 2 m pool may need its own look later.
-- **Glow (AgX grade, off by default):** it has its own exposure. With the glow on, the light gives gain 1 but not exposure 1.6, so the water would look darker. Not handled, not measured.
+- **Rich only (fix after the advisor's review).** The light is in effect only while the water is drawn Rich: `waterLightState(wanted, look)`. In Classic (the Low preset) the gain and the exposure stay as before. `main.applyWaterLight()` runs at every sea start and every look change.
+- **Glow (AgX grade, off by default).** It has its own exposure (2.4). With the light in effect it is scaled by the same 1.6 / 1.05 (to 3.66). The glow pass is rebuilt with that exposure, and the sky photo, the painted sky, the colour under water and the haze's horizon are graded again, so the sky still draws as shot.
 - Files: `src/scene/water/waterLight.ts` (new), `waterLight.test.ts` (new), `src/main.ts`, `src/game/PhysicalMode.ts`, `src/wave/SurfZoneSimulation.ts` (the field), `src/scene/WaterSurface.ts`, `FarFieldOcean.ts`, `LipSheetMesh.ts`, `SpraySheetMesh.ts`.
 
 ## How it was measured
@@ -52,6 +52,8 @@ Whole frame, pixels at 255 (mostly the sky photo, which does not change): `curl-
 - By eye at normal size: I cannot see a line. Zoomed 2× without stretch, a faint dotted band (the dither) shows below the pile.
 - So W2 misses as written. The fix, if wanted, is the sea / barrel-mesh match in that band, not this change.
 
+**W2 decision (advisor).** Accepted. The step is main's own 6.8 % linear mismatch between the sea mesh and the barrel mesh. The old gain hid it on the tone map's shoulder; the water light only shows it. Against the water's own texture beside the join it is unchanged at sunset and 2.45 → 4.74 at midday, and it is not visible at normal size. Nothing changes for it in this step. The mismatch itself is filed as a follow-up.
+
 ## What the stills show (my read)
 
 - `front-midday-off-on.jpg`, `lip-midday-off-on.jpg` (off above, on below): with the light on the pool is a deeper turquoise. The face and the back wall get depth and visible ripples. The white lip and the pile now read white against the water. Off, the water is pale, almost as bright as the foam. Nothing is blown out. The sky does not change.
@@ -75,12 +77,26 @@ Whole frame, pixels at 255 (mostly the sky photo, which does not change): `curl-
 - The ocean spots already had foam brighter than water (1.6–2.0 at the Canyon). With the light on it goes to 3.4–5.0, at or above the top of the real range (1.4–3.7).
 - My read: at the Canyon the clear water turns a dark grey-green teal, (92, 135, 138); it looks murky next to the white foam. The Reef stays turquoise and reads well, close to the pool. This is the owner's call; the gain 4 was tuned on these spots.
 
+## The fix's checks (Rich only, glow)
+
+| Check | Result |
+|---|---|
+| Rich, 2 m pool, `curl-front` and `curl-lip` midday, against the first build's light-on stills | 0 px differ |
+| Classic, 2 m pool, `curl-front` and `curl-lip` midday, against origin/main | 0 px differ; exposure 1.05, sea gain 3 |
+| Rich again after Classic (look switched at runtime) | exposure 1.6, gain 1 everywhere |
+| Glow on, light on, pile / flat water, `curl-lip` / `curl-front` | **1.26 / 1.17** (main's glow: 0.71 / 0.70) |
+
+- The glow ratio is below the 1.3–1.5 hoped for. AgX's own look squeezes the foam's top (pile 206, 214, 215: grey-white), more than the Neutral tone map does. The pile is brighter than on main under the glow (luma 213 against 195), which shows the scaled exposure is in.
+- By eye (glow on, light on): deeper blue water, the white lip reads, the sky is as shot. The pile is a light grey, not a bright white.
+
 ## Checks run
 
 - `npx tsc --noEmit -p .` and the server's: pass.
-- Tests: `waterLight.test.ts` (switch, pool default, room pin, one gain on all four water materials, program text equal on and off, Classic keeps 3) and the related files: 6 files, 151 tests pass.
+- Tests: `waterLight.test.ts` (switch, pool default, room pin, one gain on all four water materials, program text equal on and off, Classic keeps 3; Rich only, the look switched at runtime, the glow's exposure scaled).
+- Full suite (without `SurfZoneSimulation` and `SurfZoneRunner`): 345 files passed, 37 skipped; 3351 tests passed (main: 344 files, 3347 tests; the new file adds 4).
+- Canyon byte check (`light17`, 3600 steps): B snapshots a367d938f15fa934, state 9e5831f80e38abd9; default ea3d57a4d49f4b48 / a1a2555739210f96. All equal to main.
+- fps, 60 s headless, from 10 s on: the 2 m pool ride address mean 60.6, lowest second 60; Canyon (`canyonWaves=true&turnBody=on&snapLegs=drive&snapCross=on`) mean 60.6, lowest second 60 (main: 60.4 / 59).
 
 ## Not run
 
-- W2 missed as written, so I did not run the merge checks: the full suite, the Canyon byte check (`light17`) and the fps traces. The change is a uniform value and the exposure, so no cost is expected; this is not measured.
-- No rider in the pool views; the Classic look; the glow path; dawn.
+- No rider in the pool views; dawn.
