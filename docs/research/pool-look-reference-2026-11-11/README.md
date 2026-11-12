@@ -133,3 +133,17 @@ Full write-up: `step4/README.md`. The ruling: `ruling-16.md`. All three act only
 - **The tube case at 2 m:** the advisor recommends `big` (2.03 m, all bars pass); a38 draws 2.45 m and is short of water. The owner decides.
 - Builds in order: (0) stills and a probe run with `&crestLine=top`, then `&seamTau=-1.64,-0.5` (no code); (1) `?tubeForm=early`; (2) `?poolReach=long`; (3) a probe to trace the patch; (4) only if the step stays, a fit of the throw place along the front.
 
+
+## Step 5: the join probe, `?poolReach=long`, `?tubeForm=early` (2026-11-12, opt-in, not merged yet)
+
+Full write-up: `step5/README.md`. Branch `claude/pool-tube-early`. The default is unchanged.
+
+- **Build 0, no game code.** A probe that reads the join (J1 to J5), the wall ahead of the throw and the surface's rise on the drawn tube surface, with no rider. Runs: base, `&crestLine=top`, `&seamTau=-1.64,-0.5`, and T2 (`&seamTau=-1.64,-1.4`).
+- **`&crestLine=top` removes the step** half way along the tube. The open tube off its line by over 0.5 m: 46.5 % of pairs before, 0.2 % after. Points that threw 97.5 % (before 93.7 %). The fold at the leading end stays.
+- **Build 1, `?poolSize=ref&poolReach=long`:** the lip is thrown to s 150. With the crest line on, all four 10 m pieces of s 111 to 150 pass (threw 86 to 93 %, water share 1.000, tube 1.70 to 1.85 m). Without it the last piece misses: 77.1 % threw (bar 80 %), tube 1.67 m (bar 1.70 m). Fastest water at the reef 6.83 m/s (limit 8.02).
+- **Build 2, `?tubeForm=early`, fails its bars.** The wall 5 m ahead of the throw stands 45° (before 15°) and the height step along the crest is 0.036 m at 90 % (before 0.152 m; bar 0.05). But the surface's rise is 0.61 m/s median and 2.17 m/s at 95 % (bars 0.4 and 1.0; before 1.12 and 3.45). And neighbours 1 m apart differ in share by over 0.2 in 28.6 % of pairs (bar 5 %; before 70.8 %).
+- **Why:** neighbours along the crest differ in clock by 0.135 s per metre, against a course 1.13 s long. And in the last 0.5 s, with the share whole, the case itself still grows over the sea at 0.68 m/s. The share's course cannot change that.
+- **The stills: the pre-made part can still be seen.** It has ribs every few metres that the live sea does not have, and a dark crease stays where the open tube begins. Its far end fades into the sea without a sharp line.
+- **T2** (the share whole 1.4 s before the throw) is worse on the join: J1 0.081 m, J5 82.8 %.
+- The throw, the crash, the clock's rates and the case are untouched: the crash's counts with `?tubeForm=early` equal those with `&crestLine=top`.
+- Not run: rider sessions, the #245 rise probe, a 600 s run. Not built: ruling 17's builds 3 and 4.
