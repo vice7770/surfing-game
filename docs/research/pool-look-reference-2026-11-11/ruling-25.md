@@ -134,3 +134,49 @@ Ruling 25's must-nots stand: no new mesh, pass or particles; no free time; do no
 ## Order after this
 
 As ruling 25: (b) the torn edge (ruling 9 part 2), (d) check the pile against the photo, (e) foam lines on the face (the sea's own field), (c) crest spray last.
+
+---
+
+# Advisor ruling 25c: the streaks after step 15
+
+Advisor: this session (Opus 5.5, max effort), 2026-11-12. Read: step 15's hand-back and `crop-lip-midday-3-rows.jpg` (looked at by eye), `src/scene/water/foamFreshness.ts`. No run.
+
+## What went wrong in 25b
+
+- **My error.** 25b drew the streak from the lace itself, blown up to 0.30 × 1.2 m cells. In the sea's lace the foam is the cell walls. Stretched, a Voronoi net gives diagonals and chevrons, not lines. In the still it reads as tiger stripes and cracked paint [M15].
+- **Icicles.** The inner face near the tip at cover 0.8 (the retune) hangs grey spikes under the lip.
+- The sea itself does not make streaks that way. Its lace keeps its own small cells. A smooth patch value, stretched along the flow, **gathers** the lace into streaks (`freshLace`, `AGED_STREAKS` in `foamFreshness.ts`) [code].
+
+## The physics
+
+Two scales, two causes [R]:
+
+- **The lace** is the bubbles: small, fresh and fine at the crest.
+- **The streaks** are where the stretching flow gathers that foam into lines round the curl.
+
+So the streak must come from a smooth field stretched round the curl. The lace only gives the texture inside it.
+
+## Build spec (on top of step 15's branch, `claude/pool-foam-3`)
+
+1. **Lace (texture).** The sea's lace at a 0.25 m cell, the same both ways (young crest foam is finer than the sea's 0.7 m surf-zone lace) [P].
+2. **Streak (where the foam gathers).** The tile's smooth patch value `.g`, read so that one patch spacing (8 tile cells) is **0.6 m along the crest and 3.0 m round the curl**. That is the sea's aged-streak shape (about 5 to 1), set to the lip's size. Coordinates: u and s − 3 m/s · τ, as before. Offset it from the lace's own read, as `AGED_OFFSET` does.
+3. **Gathering.** Local foam value F′ = clamp(F + F(1 − F)(2v − 1)(1 + 1.5), 0, 1), where F is the cover and v the streak value. This is the sea's aged-foam rule with `gather` 1.5. Then draw the lace at F′ with the sea's thresholds. Reuse the sea's GLSL for this; do not write a new rule.
+4. **Cover.** Outer face as before: 0 at the crest, 0.3 at mid-lip, 0.8 at the tip. **Inner face: 0.3 at the tip, 0.1 at the throat, 0 by point 96.** No icicles.
+5. **Light.** As step 15, including the hard thin-sheet gate. Trace and fix the 45 darker pixels on the underside just inside the tip (points 68 to 79). F7 must pass.
+6. Everything else as 25b: no time, no new pass, Rich with `lipLook=fray` only, Classic and `lipLook` off unchanged.
+
+## Bars
+
+As 25b (pair difference against the streak forced off), with these changes:
+
+- **F1n:** saturation ratio at most 0.65 (0.6 was not sourced; foam turned from the sun under a blue sky is bluish-white).
+- **F2, read on the pattern itself.** A TypeScript mirror on a (u, s) grid, 4 m by 2 m at 1 cm steps, cover 0.3 (`sampleFoamTile` reads the same texels as the GPU). The mask's correlation length round the curl at least 2.5 times the length along the crest. In the stills, the eye check decides.
+- **F4:** underside (points 64 to 88) 10 to 25 %; back wall at most 3 %.
+- **F8, no icicles:** by eye, nothing hangs under the lip in `curl-lip` or `curl-front`.
+- F1, F3, F5, F6, F7 as 25b.
+
+## Stop rule, and what happens if this fails
+
+- One build. One retune: the streak spacing along the crest (0.4 to 0.9 m) or the lace cell (0.15 to 0.35 m).
+- If the eye check fails again, **park part (a)**. Go to (b), the torn white edge, and (d), the white pile. Show the owner the stills of steps 13 to 16 and let the owner say which, if any, reads as foam.
+- If it passes, merge it on under `lipLook=fray`.
