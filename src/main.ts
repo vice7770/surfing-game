@@ -41,7 +41,7 @@ import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, ridesAsPractice, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import { setGlitterForGraphics } from './scene/water/glitter';
-import { DISPLAY_EXPOSURE, setWaterLight, waterLightExposure, waterLightOn } from './scene/water/waterLight';
+import { DISPLAY_EXPOSURE, setWaterLight, waterLightOn, waterLightState } from './scene/water/waterLight';
 import { setFoamStreaksForGraphics } from './scene/water/foamFreshness';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
@@ -203,6 +203,8 @@ class SurfGame {
   /** The glow's MSAA samples, from the Graphics setting (2× or 4×). */
   private glowAntialias = 2;
   private drawnLook?: WaterLook;
+  /** The sea's config wants the water light (ruling 25e, `waterLightOn`); in effect only while the water is drawn Rich. */
+  private waterLightWanted = false;
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
@@ -435,8 +437,9 @@ class SurfGame {
     // An online room fixes its own sea (components included); otherwise the GPU tier decides.
     const tier = options.overrides || this.graphics?.richSea === false ? undefined : gpuTier;
     if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
-    // The water light (ruling 25e): on in the 2 m pool, or as `?waterLight` says; a room pins the default.
-    this.applyWaterLight(waterLightOn(this.physicalMode.config));
+    // The water light (ruling 25e): on in the 2 m pool, or as `?waterLight` says; a room pins the default. Rich only.
+    this.waterLightWanted = waterLightOn(this.physicalMode.config);
+    this.applyWaterLight();
     this.frozen = false;
     this.freezeIn = undefined;
     if (!options.lab) this.leaveLab();
@@ -1097,14 +1100,17 @@ class SurfGame {
   }
 
   /**
-   * The water light (ruling 25e, `waterLight.ts`): the Rich body gain on every water drawing (one shared value, so no
-   * seam) and the display exposure. Off: gain 4 and exposure 1.05, exactly as before.
+   * The water light (ruling 25e, `waterLight.ts`), in effect only while the sea wants it and the water is drawn Rich:
+   * the Rich body gain on every water drawing (one shared value, so no seam), the canvas's exposure and, under the
+   * glow, the grade's (`syncGlow`). Off, or Classic: gain 4 and exposure 1.05, exactly as before.
    */
-  private applyWaterLight(on: boolean): void {
-    setWaterLight(on);
-    this.renderer.toneMappingExposure = waterLightExposure(on);
+  private applyWaterLight(): void {
+    const state = waterLightState(this.waterLightWanted, this.water.drawnLook);
+    setWaterLight(state.on);
+    this.renderer.toneMappingExposure = state.exposure;
     this.water.refreshBodyGain();
     this.physicalMode.farField.refreshBodyGain();
+    this.syncGlow();
   }
 
   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
@@ -1119,7 +1125,8 @@ class SurfGame {
     // The sand, bubbles and riders take the horizon haze with the Rich water (hazeLand.ts).
     setHazeLandLook(look);
     this.drawnLook = look;
-    this.syncGlow();
+    // The water light follows the look (Rich only); it syncs the glow.
+    this.applyWaterLight();
   }
 
   /**
@@ -1131,27 +1138,39 @@ class SurfGame {
     const on = this.glowWanted && this.drawnLook === 'rich';
     // The HDR scene's MSAA: the setting's 2× or 4×; `?glowMsaa=2|4` (dev) overrides it.
     const samples = glowSamples(devParam('glowMsaa'), this.glowAntialias);
-    if (on && this.glow && this.glow.settings.samples !== samples) {
-      // A new anti-aliasing setting: a pass with the new samples, its old targets freed. The grade is unchanged.
+    // The grade's exposure: the water light's, scaled as the canvas's (ruling 25e), else `GLOW`'s.
+    const { glowExposure: exposure } = waterLightState(this.waterLightWanted, this.water.drawnLook);
+    if (on && this.glow && (this.glow.settings.samples !== samples || this.glow.settings.exposure !== exposure)) {
+      // A new anti-aliasing setting or exposure: a pass with them, its old targets freed. The skies are graded again
+      // (their preimages follow the exposure, so they draw as shot), and with a new exposure the colour under water and
+      // the haze's horizon too.
+      const regrade = this.glow.settings.exposure !== exposure;
       this.glow.dispose();
-      this.glow = new GlowPass({ samples });
+      this.glow = new GlowPass({ samples, exposure });
       this.photoBackground.grade(this.glow.settings);
       this.environment.gradeSky(this.glow.settings);
       this.needsRender = true;
+      if (!regrade) return;
+      const below = new Color(UNDERWATER);
+      const { lookPower, lookSaturation } = this.glow.settings;
+      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
+      this.underwaterFog.color.copy(below);
+      this.underwaterColor.copy(below);
+      this.refreshHaze();
       return;
     }
     if (on === (this.glow !== undefined)) return;
     this.needsRender = true;
     const below = new Color(UNDERWATER);
     if (on) {
-      this.glow = new GlowPass({ samples });
+      this.glow = new GlowPass({ samples, exposure });
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
       // The photo and the painted sky, which are already as the canvas shows them, as the light the grade turns back into them.
       this.photoBackground.grade(this.glow.settings);
       this.environment.gradeSky(this.glow.settings);
-      const { exposure, lookPower, lookSaturation } = this.glow.settings;
-      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
+      const { lookPower, lookSaturation } = this.glow.settings;
+      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, this.glow.settings.exposure, lookPower, lookSaturation));
     } else {
       this.glow?.dispose();
       this.glow = undefined;

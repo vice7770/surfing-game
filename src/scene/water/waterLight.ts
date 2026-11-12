@@ -1,6 +1,8 @@
 import { devParam } from '../../devTools';
 import { poolRefOn } from '../../wave/pool';
+import { GLOW } from '../glowMath';
 import { RICH_WATER } from './richWaterGlsl';
+import type { WaterLook } from './waterLook';
 
 /**
  * The "water light" (ruling 25e, 2026-11-12, `docs/research/pool-look-reference-2026-11-11/ruling-25.md` and
@@ -14,8 +16,11 @@ import { RICH_WATER } from './richWaterGlsl';
  * Reach: on in the 2 m pool (`?poolSize=ref`, `poolRefOn`) with no parameter of its own; `?waterLight=on` turns it on
  * at any other spot, `?waterLight=off` off in the pool (A/Bs). Every other sea draws exactly as before. Online rooms
  * pin the switch absent (and `poolSize` too), so a room draws the default. Drawing only: nothing the solver, the rider
- * or the foam field reads changes. The Classic look keeps its own gain (`WATER_BODY_GAIN`); the exposure is the
- * frame's, so it reaches Classic too when the light is on.
+ * or the foam field reads changes.
+ *
+ * Rich only (the advisor, step 17 review): in the Classic look (the Low preset's) neither the gain nor the exposure
+ * changes, so Classic draws exactly as before. Under the glow (AgX grade, its own exposure) the grade's exposure is
+ * scaled by the same ratio, 1.6 / 1.05, so the water at gain 1 is not left dark there (`WaterLightState`).
  */
 export const WATER_LIGHT = { bodyGain: 1, exposure: 1.6 } as const;
 
@@ -43,6 +48,26 @@ export function waterLightOn(config: (Parameters<typeof poolRefOn>[0] & { waterL
  * and on `refreshBodyGain`.
  */
 export const richBodyGain: { value: number } = { value: RICH_WATER.bodyGain };
+
+/** What the frame draws with: the Rich body gain, the canvas's exposure and the glow's (AgX) exposure. */
+export interface WaterLightState {
+  /** The light in effect: wanted by the sea's config and the Rich look drawn. */
+  on: boolean;
+  gain: number;
+  exposure: number;
+  glowExposure: number;
+}
+
+/** The light in effect for a sea that wants it (`waterLightOn`) and the look drawn: Rich alone. */
+export function waterLightState(wanted: boolean, look: WaterLook | undefined): WaterLightState {
+  const on = wanted && look === 'rich';
+  return {
+    on,
+    gain: on ? WATER_LIGHT.bodyGain : RICH_WATER.bodyGain,
+    exposure: waterLightExposure(on),
+    glowExposure: on ? GLOW.exposure * (WATER_LIGHT.exposure / DISPLAY_EXPOSURE) : GLOW.exposure,
+  };
+}
 
 /** Set the water light's gain (the caller sets the exposure: `waterLightExposure`). */
 export function setWaterLight(on: boolean): void {
