@@ -521,7 +521,7 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
     // On the thin sheet the streak does not cut the light through it (ruling 25b): those two lights read the clean foam there.
     const through = LIP_STREAK_THROUGH_LINE.replace('vWaterFoam', 'sweptStreakThrough');
     expect(streaked.fragment.split(through).length).toBe(3);
-    expect(LIP_STREAK_FOAM).toContain(`float sweptStreakThrough = mix( sweptStreakLit, vWaterFoam, ${LIP_STREAK_THIN} );`);
+    expect(LIP_STREAK_FOAM).toContain(`float sweptStreakThrough = ( ${LIP_STREAK_THIN} ) > 0.0 ? vWaterFoam : sweptStreakLit;`);
     expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').replace(LIP_STREAK_VOLUME, '').replace(LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE).split(through).join(LIP_STREAK_THROUGH_LINE).split('sweptStreakLit').join('vWaterFoam').replace(LIP_FRAY_VOLUME, ''))
       .toBe(clean.fragment);
     // No free time, no new texture or noise: the pattern is the sea's own lace (its tile, already bound on the tube's
@@ -585,11 +585,10 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
   });
 
   it('covers the ruling’s points and runs the ruling’s clock', () => {
-    // Ruling 25b: outer face 0 / 0.3 / 0.8 (crest, mid-lip, tip); inner face 0.5 at the tip, 0.1 at the throat, 0 by 96.
-    expect([32, 40, 48, 64, 88, 96, 100, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.15, 0.3, 0.8, 0.1, 0, 0, 0, 0]);
-    expect(lipStreakCover(64.5)).toBeCloseTo(0.5 - 0.4 * 0.5 / 24, 6);
-    expect(lipStreakCover(76)).toBeCloseTo(0.3, 6);
-    expect(lipStreakCover(92)).toBeCloseTo(0.05, 6);
+    // Ruling 25b's outer face 0 / 0.3 / 0.8 (crest, mid-lip, tip); inner face after step 15's retune: 0.8 at the tip,
+    // 0.15 at the throat, 0 by 90.
+    expect([32, 40, 48, 64, 88, 89, 90, 96, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.15, 0.3, 0.8, 0.15, 0.075, 0, 0, 0, 0]);
+    expect(lipStreakCover(76)).toBeCloseTo(0.475, 6);
     expect([-1, 0, 0.075, 0.15, 2].map((tau) => lipStreakClock(tau, -1))).toEqual([0, 0, 0.5, 1, 1]);
     expect(lipStreakClock(1, 0.2)).toBe(0);
     expect(lipStreakClock(1, 5)).toBe(0);
