@@ -274,3 +274,19 @@ Full text: `ruling-22.md`; one light reading of the library file in `ruling-22-r
 - **6. Order:** the cap, the second library, `?lipEdge=one`, `?wallRise=carry`. The owner can ride now.
 - **Corrected:** ruling 21's "the streak goes with the dig".
 
+## Step 10: the soft cap on the dig (2026-11-12, under `?wallFoot=dug` itself, branch `claude/pool-dig-cap`, not pushed; one build, one run, nothing tuned)
+
+Full text: `step10/README.md`; the run: `step10/cap.txt`; the probe: `step10/crash-probe.ts`; the stills: `step10/still-cap-front-90s.jpg`, `step10/still-cap-front-sunset-90s.jpg`.
+
+- **Built as ruling 22 says.** The dig is untouched to 0.35 H, eased so it never passes 0.5 H, and never more than half the sea's depth. No new switch. The contact reads the same capped surface.
+- **C1:** the deepest dig is 0.448 H (bar 0.5 H). In metres 1.000 m, in a slice 2.44 m tall: over the ruling's "0.85 m", which assumed H 1.7 m. H per slice is 1.46 to 2.90 m here.
+- **C2:** the drawn surface always keeps half the sea's depth (least margin +0.139 m, 0 vertices short).
+- **C3:** the cap touches 0.93 % of the dug vertices. The bed rule never acted.
+- **C4:** K1, K2, K5, K6 equal step 9 in every bin. K4 is still 0.000 / 0.000 m at share 1, but its tail moved (99 % 0.007 m, most 0.078 m): the cap's own lift. K3's 90 % moved by up to 0.2°. Read as a pass on the stated numbers; not reverted.
+- **C5:** the old −1.15 m stood at the take-off (u 41, t 186.6 s, clock −0.54 s), on clean water 1.0 m over the rest level, no foam.
+- **The throws' list is byte-equal, switch on and off.** Switch off equals `step9/base.txt` line for line. A to F equal.
+- **The knee:** 1.8 m above the toe mark near the throw (13.8° median), 1.1 m at 7.5 to 15 m ahead (2.4°). Its step to the next slice is 0.45 to 0.65 m at 90 % (later bar 0.15 m).
+- **The fold:** 36 of 659 376 forward quads (0.0055 %), in 8 of 394 builds, 9 to 12 m past the toe mark; least −0.042 m.
+- **The white patches are the sun.** At the sunset sun the 90 s frame shows none. At midday they stay where step 9 had them.
+- Not run: rider sessions, a second run, the default pool, Canyon, the fps trace.
+
