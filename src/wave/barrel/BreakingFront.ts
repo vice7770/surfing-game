@@ -285,6 +285,7 @@ export interface FrontPoint {
    * clock's rate over its last step, × real time, with the clock it was read at (`FRONT_FIELD.tauRate`).
    */
   anchorShift?: number;
+  anchorDrawn?: number;
   anchorRate?: number;
   anchorTime?: number;
   anchorGood?: number;

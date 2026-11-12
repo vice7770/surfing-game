@@ -570,6 +570,14 @@ export interface SurfZoneConfig {
    * exactly as before. Online rooms pin it absent.
    */
   crestLine?: 'sub' | 'top';
+  /**
+   * Ruling 18's build 1, opt-in (`TubeFace.anchorLine`, `?anchorLine=smooth`;
+   * docs/research/pool-look-reference-2026-11-11/step6/README.md): the shifts the points kept are smoothed along the
+   * crest once more into the records' anchor (one water for the drawing, the contact and the wall water; the crash's slices keep the kept places), and
+   * the loft joins its records with a C1 curve. Read with `crestLine` alone. Absent: off, exactly as before. Online rooms
+   * pin it absent.
+   */
+  anchorLine?: 'smooth';
 }
 
 /**

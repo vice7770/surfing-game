@@ -341,6 +341,44 @@ interface Sample {
 }
 
 /**
+ * Ruling 18's build 1 (`TubeFace.anchorLine`): a per-record value at σ between records k and k + 1 on a C1 curve through
+ * the records, a cubic Hermite piece whose slope at each record is the parabola's through it and its two neighbours
+ * (Catmull-Rom on uneven spacing; an end record, or one whose neighbour has no value, takes its one segment's slope).
+ * `sigmaOf(j)`, `value(j)`: record j's σ and value, NaN outside the front or with none. `monotone`: each record's slope is
+ * limited (Fritsch and Carlson 1980: none where its two segments' slopes disagree in sign, at most three times the
+ * smaller), so the curve never turns back between two records. Straight where the segment has no length.
+ */
+export function recordCurve(sigmaOf: (j: number) => number, value: (j: number) => number, k: number, sigma: number, monotone: boolean): number {
+  const s0 = sigmaOf(k);
+  const s1 = sigmaOf(k + 1);
+  const v0 = value(k);
+  const v1 = value(k + 1);
+  const h = s1 - s0;
+  if (!(h > 1e-12)) return v0;
+  const d = (v1 - v0) / h;
+  const slopeAt = (j: number, own: number): number => {
+    // The neighbouring segment's slope on record j's other side: j − 1..j for record k, j..j + 1 for record k + 1.
+    const o = j === k ? j - 1 : j + 1;
+    const span = Math.abs(sigmaOf(o) - sigmaOf(j));
+    const other = (value(o) - value(j)) / (sigmaOf(o) - sigmaOf(j));
+    if (!(span > 1e-12) || !(other === other)) return own;
+    let m = (other * h + own * span) / (h + span);
+    if (monotone) {
+      if (other * own <= 0) return 0;
+      const limit = 3 * Math.min(Math.abs(other), Math.abs(own));
+      if (Math.abs(m) > limit) m = Math.sign(m) * limit;
+    }
+    return m;
+  };
+  const m0 = slopeAt(k, d);
+  const m1 = slopeAt(k + 1, d);
+  const t = (sigma - s0) / h;
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * v0 + (t3 - 2 * t2 + t) * h * m0 + (-2 * t3 + 3 * t2) * v1 + (t3 - t2) * h * m1;
+}
+
+/**
  * The swept barrel's loft (the Padang Padang spec, Part B, PR 3): each breaking front's profiles, looked up by its
  * points' foot crests and clocks, stood along its shoreward normal and sewn into the water.
  * - **Anchor** (the advisor's ruling 2; 2026-10-03, u = 1 from the throw): the profile's crest landmark sits on its
@@ -999,8 +1037,17 @@ export class SweptLoft {
     const lerp = (name: keyof typeof FRONT_FIELD) => field(k, name) + t * (field(k + 1, name) - field(k, name));
     into.x = lerp('x');
     into.z = lerp('z');
-    into.tau = lerp('tau');
-    into.footHeight = lerp('footHeight');
+    if (this.face?.anchorLine) {
+      // Ruling 18's build 1 (`TubeFace.anchorLine`): the clock and the foot height on a C1 curve through the records
+      // (`recordCurve`), the clock kept monotone between two records, in place of straight lines with a corner at each.
+      const value = (name: 'tau' | 'footHeight') => (j: number) => (j >= f.start && j < f.end ? field(j, name) : Number.NaN);
+      const sigmaOf = (j: number) => (j >= f.start && j < f.end ? field(j, 'sigma') : Number.NaN);
+      into.tau = recordCurve(sigmaOf, value('tau'), k, sigma, true);
+      into.footHeight = recordCurve(sigmaOf, value('footHeight'), k, sigma, false);
+    } else {
+      into.tau = lerp('tau');
+      into.footHeight = lerp('footHeight');
+    }
     into.footDepth = lerp('footDepth');
     const pace0 = field(k, 'pace');
     const pace1 = field(k + 1, 'pace');
@@ -1262,7 +1309,7 @@ export class SweptLoft {
       // Under the face ruling the crest stands at the point's shift along its ray instead, K = S + (δ − c) n: where its
       // case's lower face sits on the solver's (`FaceAnchor`); with no crossing, on the crest as before.
       const crest = profile[2 * LANDMARK.crest];
-      const shift = this.faceAnchor ? this.shiftAt(records, f, sigma) : 0;
+      const shift = this.faceAnchor ? this.shiftAt(records, f, sigma, nx, nz) : 0;
       if (this.faceAnchor && !(shift === shift)) r.shiftMisses += 1;
       const along0 = shift === shift ? shift - crest : -crest;
       const ax = s.x + along0 * nx;
@@ -1716,9 +1763,41 @@ export class SweptLoft {
     if (this.result.recordShift) for (let k = 0; k < n; k += 1) this.result.recordShift[f.start + k] = this.recordShift[k];
   }
 
-  /** Front f's smoothed shift at σ (`recordShifts`), linear between its records, its ends' past them; NaN with none there. */
-  private shiftAt(records: Float32Array, f: Front, sigma: number): number {
-    return this.recordLerp(records, f, sigma, (k) => this.recordShift[k - f.start]);
+  /**
+   * Front f's smoothed shift at σ (`recordShifts`), linear between its records, its ends' past them; NaN with none there.
+   * Ruling 18's build 1 (`TubeFace.anchorLine`): between two records with a shift, the place the shift puts the case's
+   * crest along the slice's ray (rayX, rayZ) runs on a C1 curve through its records' places (`recordCurve`) rather than on
+   * straight lines: a record's place is (S_j − S_k)·n + δ_j, as `smoothPlaces` reads a neighbour's, so a record's step
+   * along its column (its own shift moves by the step, its case's crest does not) stays out of the curve.
+   */
+  private shiftAt(records: Float32Array, f: Front, sigma: number, rayX: number, rayZ: number): number {
+    const linear = this.recordLerp(records, f, sigma, (k) => this.recordShift[k - f.start]);
+    if (!this.face?.anchorLine) return linear;
+    const sigmaAt = (j: number) => records[j * FRONT_STRIDE + FRONT_FIELD.sigma];
+    if (!(sigma > sigmaAt(f.start)) || !(sigma < sigmaAt(f.end - 1))) return linear;
+    let low = f.start + 1;
+    let high = f.end - 1;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (sigmaAt(middle) < sigma) low = middle + 1;
+      else high = middle;
+    }
+    const k = low - 1;
+    const a = this.recordShift[k - f.start];
+    const b = this.recordShift[k + 1 - f.start];
+    if (!(a === a) || !(b === b)) return linear;
+    const x0 = records[k * FRONT_STRIDE + FRONT_FIELD.x];
+    const z0 = records[k * FRONT_STRIDE + FRONT_FIELD.z];
+    const sigmaOf = (j: number) => (j >= f.start && j < f.end ? sigmaAt(j) : Number.NaN);
+    const place = (j: number) => (j >= f.start && j < f.end
+      ? (records[j * FRONT_STRIDE + FRONT_FIELD.x] - x0) * rayX + (records[j * FRONT_STRIDE + FRONT_FIELD.z] - z0) * rayZ + this.recordShift[j - f.start]
+      : Number.NaN);
+    const s0 = sigmaAt(k);
+    const s1 = sigmaAt(k + 1);
+    const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
+    const p0 = place(k);
+    const straight = p0 + t * (place(k + 1) - p0);
+    return linear + recordCurve(sigmaOf, place, k, sigma, false) - straight;
   }
 
   /**

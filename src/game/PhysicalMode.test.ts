@@ -594,6 +594,27 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('takes `?anchorLine=smooth` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 1)', () => {
+    expect(tubeFaceSwitches('?anchorLine=smooth')).toEqual({ anchorLine: 'smooth' });
+    expect(tubeFaceSwitches('?tubeForm=early&anchorLine= Smooth ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth' });
+    for (const search of ['?anchorLine', '?anchorLine=', '?anchorLine=on', '?anchorLine=old', '?anchorline=smooth']) expect(tubeFaceSwitches(search), search).toEqual({});
+    // `?tubeForm=early` alone is as it was: the switch adds nothing by itself.
+    expect(tubeFaceSwitches('?tubeForm=early')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.anchorLine).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeForm=early&anchorLine=smooth' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth' });
+      expect(surfZoneConfigFor(training, 5, false).anchorLine).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeForm: undefined, tubeSeam: undefined, crestLine: undefined, anchorLine: undefined });
+      expect(room).toEqual({ ...plain, tubeForm: undefined, tubeSeam: undefined, crestLine: undefined, anchorLine: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('takes `?wallBody=stream` with `?tubeSeam=blend` alone, at the Barrel alone, and an online room pins the default (dev switch)', () => {
     expect(tubeFaceSwitches('?tubeSeam=blend&wallBody=stream')).toEqual({ tubeSeam: 'blend', wallBody: 'stream' });
     expect(tubeFaceSwitches('?wallBody=Stream&tubeSeam=blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend', wallBody: 'stream' });

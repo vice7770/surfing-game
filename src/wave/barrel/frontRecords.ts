@@ -68,7 +68,8 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
     if (p.carrierSupport) out[o + FRONT_FIELD.pace] = geometricPaceActive(p) ? p.jetPace! : Number.NaN;
     else out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
     out[o + FRONT_FIELD.fade] = 1 - (1 - (p.retire ?? 0)) * (p.formation ?? 1);
-    out[o + FRONT_FIELD.anchor] = p.anchorShift ?? Number.NaN;
+    // Ruling 18's build 1 (`TubeFace.anchorLine`): the kept places smoothed along the crest, where the build made them.
+    out[o + FRONT_FIELD.anchor] = p.anchorDrawn ?? p.anchorShift ?? Number.NaN;
     out[o + FRONT_FIELD.crestSpeed] = p.wallSpeed ?? Number.NaN;
     out[o + FRONT_FIELD.tauRate] = p.tauRate ?? Number.NaN;
     count += 1;

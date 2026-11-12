@@ -158,6 +158,8 @@ export class CrashCurve {
   private faceSigma = new Float64Array(0);
   /** Per point of a run, its case's crest over its crossing at the contact's hold, m, its place and its ray (`prepareAnchors`). */
   private faceCase = new Float64Array(0);
+  /** Ruling 18's build 1 (`TubeFace.anchorLine`): per point of a run, its kept shift, then its place smoothed along the crest. */
+  private faceKept = new Float64Array(0);
   private faceX = new Float64Array(0);
   private faceZ = new Float64Array(0);
   private faceRayX = new Float64Array(0);
@@ -486,6 +488,29 @@ export class CrashCurve {
       anchor.caseFace(p.footHeight, p.footDepth, p.tau, 'drawing', this.faceScratch);
       const drawing = this.faceScratch[1] - this.faceScratch[0];
       out[k] = contact === contact && drawing === drawing ? shift - contact + drawing : shift;
+    }
+    if (!continuity || !this.face!.anchorLine) return;
+    // Ruling 18's build 1 (`TubeFace.anchorLine`): the places the points kept, each on its own history, smoothed along the
+    // crest once more with the same kernel, into `anchorDrawn` (the records' `anchor`: the drawn case, the contact, the
+    // wall's water, the online record). The kept shift is left as it is: the cap works on its own state. The crash's own
+    // slices (`out`) stay on the kept places too: moved to the smooth line they changed each jet's asked volume (0.4 % at
+    // the first throws, measured), and with it every later throw, which the ruling forbids (step6/README.md).
+    if (this.faceKept.length < 2 * n) this.faceKept = new Float64Array(4 * n);
+    const keptShifts = this.faceKept;
+    const drawn = this.faceKept.subarray(n, 2 * n);
+    for (let i = 0; i < n; i += 1) {
+      const shift = points[start + i].anchorShift;
+      // A point still on the crest anchor (`continueAnchor` returned NaN) has none.
+      keptShifts[i] = shift !== undefined && out[start + i] === out[start + i] ? shift : Number.NaN;
+    }
+    smoothPlaces(this.faceSigma, this.faceX, this.faceZ, keptShifts, this.faceRayX, this.faceRayZ, n, drawn);
+    for (let i = 0; i < n; i += 1) {
+      const p = points[start + i];
+      if (!(keptShifts[i] === keptShifts[i])) {
+        delete p.anchorDrawn;
+        continue;
+      }
+      p.anchorDrawn = drawn[i];
     }
   }
 

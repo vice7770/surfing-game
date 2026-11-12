@@ -154,6 +154,18 @@ export interface TubeFace {
    * exactly as before.
    */
   crestLine?: 'sub' | 'top';
+  /**
+   * Ruling 18's build 1 (docs/research/pool-look-reference-2026-11-11/ruling-18.md, section 1; opt-in, `?anchorLine=smooth`,
+   * read with `continuity` and `crestLine`): the crest of one wave is one continuous line; the 1 m cell hops are the
+   * grid's, not the wave's. The shifts each point kept on its own history (`continueAnchor`: cap, hold, ease) are rough
+   * along the crest again (0.048 m off the line at 90 % at 1 m, measured), and straight lines between records put a
+   * corner at each. With it the kept places are smoothed along the crest once more (`smoothPlaces`) into the point's
+   * `anchorDrawn` (never back into `anchorShift`: the cap keeps working on its own state), which the records' `anchor`
+   * then carries, so the loft (drawing, contact, wall water) and the online records read one water (the crash's slices stay on the kept places: on the smooth line they changed the jets, step6/README.md); and
+   * the loft joins its records with a C1 curve (`SweptLoft`: the shift's place, the clock kept monotone, the foot height)
+   * in place of straight lines. Absent: off, the build exactly as before.
+   */
+  anchorLine?: true;
 }
 
 /**
@@ -206,6 +218,8 @@ export interface TubeFaceSwitches {
   wallBody?: 'stream';
   /** Ruling 7's step 1 (`TubeFace.crestLine`), opt-in: 'sub' or 'top' turns it on; absent, or anything else, it is off. */
   crestLine?: 'sub' | 'top';
+  /** Ruling 18's build 1 (`TubeFace.anchorLine`), opt-in and with `crestLine` alone: 'smooth' turns it on. */
+  anchorLine?: 'smooth';
 }
 
 /**
@@ -244,6 +258,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band, ...(early ? { depth: TUBE_FORM_EARLY } : {}) } } : {}),
     ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { stream: true as const } : {}),
     ...(crestLine ? { crestLine } : {}),
+    ...(continuity && crestLine && switches.anchorLine === 'smooth' ? { anchorLine: true as const } : {}),
   };
 }
 
@@ -275,6 +290,11 @@ export const ANCHOR_CONTINUITY = { crest: 0.3, crestWide: 0.45, slack: 0.3, hold
 export interface AnchorTrack {
   /** Its shift as last kept, m (absent: it has never had a face anchor), and its case's crest's speed along its ray, m/s. */
   anchorShift?: number;
+  /**
+   * Ruling 18's build 1 (`TubeFace.anchorLine`): the kept shifts' places smoothed along the crest once more, m; what the
+   * records' `anchor` carries then. Set by `CrashCurve.prepareAnchors` alone; `continueAnchor` never reads it.
+   */
+  anchorDrawn?: number;
   anchorRate?: number;
   /** When it was last kept, and when it last had a clean (smoothed) shift, s. */
   anchorTime?: number;
