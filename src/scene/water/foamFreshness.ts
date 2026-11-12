@@ -41,7 +41,7 @@ export const YOUTH_COVER = [0.7, 0.98] as const;
  */
 export const AGED_STREAKS = { along: 3, across: 1.6, gather: 1.5 } as const;
 /** Where the stretched patches are read: offset so they do not line up with the round ones. */
-const AGED_OFFSET = [0.37, 0.61] as const;
+export const AGED_OFFSET = [0.37, 0.61] as const;
 /** Aged foam's extra edge half-width, in cells: a soft translucent margin. */
 export const AGED_SOFTNESS = 0.02;
 /** The edge's half-width per pixel footprint (its larger side), in cells per cell: about half a pixel either side. */

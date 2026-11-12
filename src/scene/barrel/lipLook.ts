@@ -1,5 +1,7 @@
 import { devParam } from '../../devTools';
 import { ROLLER_LOOK } from '../water/rollerLook';
+import { FOAM_TILE, PATCH_CELLS, foamCoverage, sampleFoamTile } from '../foamPattern';
+import { AGED_OFFSET, AGED_STREAKS } from '../water/foamFreshness';
 import { LIP_FRAY } from './brokenCrest';
 
 /**
@@ -58,18 +60,24 @@ export const LIP_STREAK = {
   /** The lip water's speed along the sheet, m/s (about √(2g·drop)). */
   speed: 3,
   /**
-   * Ruling 25b: the sea's own foam lace (`foamPatternPars`), one lace cell per this many metres: across the crest (u),
-   * round the curl (s − V·τ); so the lace's cells are 4 times longer round the curl than across.
+   * Ruling 25c: two scales. The lace (the bubbles) is the sea's own foam network at one lace cell per `lace` metres, the
+   * same both ways (young crest foam, finer than the sea's 0.7 m surf-zone lace). The streak (where the stretching flow
+   * gathers that foam into lines round the curl) is the tile's smooth patch value, read so one patch spacing
+   * (`PATCH_CELLS` tile cells) is `streak.across` m along the crest and `streak.round` m round the curl (s − V·τ): the
+   * sea's aged-streak shape (`AGED_STREAKS`, about 5 to 1), set to the lip's size, offset as `AGED_OFFSET`. It gathers the
+   * lace as the sea's aged foam does (`freshLace`): F' = F + F(1 − F)(1 + gather)(2v − 1).
+   * Ruling 25c's lace was 0.25 m; step 16's one retune: 0.15 m (its range 0.15–0.35 m), so a streak (about 0.3 m
+   * wide at a 0.6 m spacing) holds two cells across, not one. Measured (step 16 README): it still reads as a net.
    */
-  stretch: { across: 0.3, round: 1.2 },
+  lace: 0.15,
+  streak: { across: 0.6, round: 3.0 },
+  gather: AGED_STREAKS.gather,
   /**
    * The cover round the profile, a true area share (the lace's thresholds): (profile point, cover), linear between; zero
-   * outside. Outer face: crest 32, mid-lip 48, tip 64 (ruling 25b). Inner face: ruling 25b's 0.5 at the tip, 0.1 at the
-   * throat 88, 0 by 96 left the underside at 9 % changed in `curl-inside` (bar 15 to 35 %) and the back wall at 5 % (bar
-   * 3 %); step 15's one retune: 0.8 at the tip (as the outer face, so no step there), 0.15 at the throat, 0 by 90.
-   * Measured after it: underside 11 %, back wall 1.8 % (step 15 README).
+   * outside. Outer face: crest 32, mid-lip 48, tip 64 (ruling 25b): 0 / 0.3 / 0.8. Inner face (ruling 25c, no icicles):
+   * 0.3 at the tip, 0.1 at the throat 88, 0 by 96; so the cover steps down at the tip, from the outer face to the inner.
    */
-  cover: [[32, 0], [48, 0.3], [64, 0.8], [88, 0.15], [90, 0]],
+  cover: [[32, 0], [48, 0.3], [64, 0.8], [64, 0.3], [88, 0.1], [96, 0]],
   /** Eased in over this long after the throw, s; faded over this long after touchdown, s. */
   easeIn: 0.15,
   fadeOut: 0.2,
@@ -100,21 +108,46 @@ varying vec4 vSweptStreak;`;
 export const LIP_STREAK_VERTEX = /* glsl */ `
 vSweptStreak = sweptStreak;`;
 
-const lace = (value: number) => (1 / value).toFixed(4);
+/** Where the lace is read, in tile cells, for (u, s − V·τ), m. */
+export function lipLaceCells(u: number, s: number): [number, number] {
+  return [u / LIP_STREAK.lace, s / LIP_STREAK.lace];
+}
+/** Where the streak's patch value is read, in tile cells, for (u, s − V·τ), m (offset as the sea's aged streaks). */
+export function lipStreakCells(u: number, s: number): [number, number] {
+  return [(u * PATCH_CELLS) / LIP_STREAK.streak.across + AGED_OFFSET[0] * FOAM_TILE, (s * PATCH_CELLS) / LIP_STREAK.streak.round + AGED_OFFSET[1] * FOAM_TILE];
+}
+/** The gathered foam value F' for cover F and streak value v (the sea's aged-foam rule, `freshLace` at youth 0). */
+export function lipGathered(cover: number, v: number): number {
+  const f = Math.min(1, Math.max(0, cover));
+  return Math.min(1, Math.max(0, f + f * (1 - f) * (1 + LIP_STREAK.gather) * (2 * v - 1)));
+}
+/** CPU mirror of `sweptStreakFoam`'s lace before its strength and clock: covered (0–1) at (u, s − V·τ), m, at cover F. */
+export function lipStreakLace(u: number, s: number, cover: number): number {
+  if (!(cover > 0)) return 0;
+  const [sx, sz] = lipStreakCells(u, s);
+  const [lx, lz] = lipLaceCells(u, s);
+  return foamCoverage(lipGathered(cover, sampleFoamTile(sx, sz, 1)), sampleFoamTile(lx, lz, 0));
+}
+
+const f4 = (value: number) => value.toFixed(4);
 /**
- * GLSL, fragment pars: the streaks' foam from the vertex's four values, as the sea's own foam lace (ruling 25b,
- * `foamPhaseCover` in `foamPatternPars`: the baked tile `waterFoamTile`, its thresholds so the covered share equals the
- * cover, and its patches) read at (u / 0.30 m, (s − V·τ) / 1.2 m) lace cells. No flow-map phases and no time: the motion
- * is carried by s − V·τ alone. Far away, where a pixel spans the lace's cell, it goes to its mean as the sea's lace does
- * (`waterFoamCover`'s fade). The footprint is taken before any branch, so its derivatives are defined.
+ * GLSL, fragment pars: the streaks' foam from the vertex's four values (ruling 25c). The streak value v is the sea's tile
+ * patch channel (`.g`) stretched round the curl (`lipStreakCells`); it gathers the cover F into F' (`lipGathered`); the
+ * lace is drawn at F' with the sea's own thresholds (`foamCoverage` in `foamPatternPars`) on the sea's tile at a
+ * `LIP_STREAK.lace` cell (`lipLaceCells`). No flow-map phases and no time: the motion is carried by s − V·τ alone. Far
+ * away, where a pixel spans the lace's cell, it goes to its mean as the sea's lace does (`waterFoamCover`'s fade). The
+ * footprint is taken before any branch, so its derivatives are defined. The tile has no mipmaps.
  */
 export const LIP_STREAK_FRAGMENT_PARS = /* glsl */ `varying vec4 vSweptStreak;
 float sweptStreakFoam() {
-  vec2 cells = vSweptStreak.xy * vec2( ${lace(LIP_STREAK.stretch.across)}, ${lace(LIP_STREAK.stretch.round)} );
-  float footprint = max( fwidth( cells.x ), fwidth( cells.y ) );
+  vec2 laceCells = vSweptStreak.xy * ${f4(1 / LIP_STREAK.lace)};
+  float footprint = max( fwidth( laceCells.x ), fwidth( laceCells.y ) );
   if ( vSweptStreak.w <= 0.0 || vSweptStreak.z <= 0.0 ) return 0.0;
   float cover = min( vSweptStreak.z, 1.0 );
-  float laced = mix( foamPhaseCover( cover, cells * FOAM_CELL ), cover, smoothstep( 0.25, 1.0, footprint ) );
+  vec2 streakCells = vSweptStreak.xy * vec2( ${f4(PATCH_CELLS / LIP_STREAK.streak.across)}, ${f4(PATCH_CELLS / LIP_STREAK.streak.round)} ) + vec2( ${f4(AGED_OFFSET[0] * FOAM_TILE)}, ${f4(AGED_OFFSET[1] * FOAM_TILE)} );
+  float streak = texture( waterFoamTile, streakCells / FOAM_TILE ).g;
+  float gathered = clamp( cover + cover * ( 1.0 - cover ) * ${f4(1 + LIP_STREAK.gather)} * ( 2.0 * streak - 1.0 ), 0.0, 1.0 );
+  float laced = mix( foamCoverage( gathered, texture( waterFoamTile, laceCells / FOAM_TILE ).r ), cover, smoothstep( 0.25, 1.0, footprint ) );
   return ${LIP_STREAK.strength.toFixed(3)} * vSweptStreak.w * laced;
 }`;
 /**

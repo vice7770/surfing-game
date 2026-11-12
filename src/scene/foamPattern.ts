@@ -21,7 +21,7 @@ export const FOAM_TILE = 64;
 const TEXELS_PER_CELL = 8;
 export const FOAM_TILE_TEXELS = FOAM_TILE * TEXELS_PER_CELL;
 /** Patch lattice spacing in cells (5.6 m); it divides the tile, so patches tile too. */
-const PATCH_CELLS = 8;
+export const PATCH_CELLS = 8;
 /** Flow-map period, s: each phase drifts with the current for this long before it fades out. */
 export const FOAM_FLOW_PERIOD = 2;
 /** Half-width of the soft network edge, in cells. */

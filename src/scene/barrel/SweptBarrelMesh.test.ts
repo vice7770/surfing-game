@@ -524,12 +524,17 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
     expect(LIP_STREAK_FOAM).toContain(`float sweptStreakThrough = ( ${LIP_STREAK_THIN} ) > 0.0 ? vWaterFoam : sweptStreakLit;`);
     expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').replace(LIP_STREAK_VOLUME, '').replace(LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE).split(through).join(LIP_STREAK_THROUGH_LINE).split('sweptStreakLit').join('vWaterFoam').replace(LIP_FRAY_VOLUME, ''))
       .toBe(clean.fragment);
-    // No free time, no new texture or noise: the pattern is the sea's own lace (its tile, already bound on the tube's
-    // material through the water's uniforms), read once at the vertex's (u, s − V·τ) stretched round the curl.
-    expect(LIP_STREAK_FRAGMENT_PARS).not.toMatch(/waterTime|texture|uniform|Hash|Noise/);
-    expect(LIP_STREAK_FRAGMENT_PARS.split('foamPhaseCover(').length).toBe(2);
-    expect(LIP_STREAK_FRAGMENT_PARS).toContain(`vSweptStreak.xy * vec2( ${(1 / 0.3).toFixed(4)}, ${(1 / 1.2).toFixed(4)} )`);
-    expect(streaked.fragment.indexOf('float foamPhaseCover(')).toBeLessThan(streaked.fragment.indexOf('float sweptStreakFoam()'));
+    // No free time, no new texture or noise (ruling 25c): the lace and the streak are the sea's own tile (already bound on
+    // the tube's material through the water's uniforms), two reads of it, the lace drawn with the sea's thresholds.
+    expect(LIP_STREAK_FRAGMENT_PARS).not.toMatch(/waterTime|uniform|Hash|Noise/);
+    expect(LIP_STREAK_FRAGMENT_PARS.match(/texture\(/g)?.length).toBe(2);
+    expect(LIP_STREAK_FRAGMENT_PARS.match(/texture\( waterFoamTile, /g)?.length).toBe(2);
+    expect(LIP_STREAK_FRAGMENT_PARS.split('foamCoverage(').length).toBe(2);
+    expect(LIP_STREAK_FRAGMENT_PARS).toContain('texture( waterFoamTile, streakCells / FOAM_TILE ).g');
+    expect(LIP_STREAK_FRAGMENT_PARS).toContain(`vSweptStreak.xy * ${(1 / 0.15).toFixed(4)}`);
+    expect(LIP_STREAK_FRAGMENT_PARS).toContain(`vSweptStreak.xy * vec2( ${(8 / 0.6).toFixed(4)}, ${(8 / 3).toFixed(4)} ) + vec2( ${(0.37 * 64).toFixed(4)}, ${(0.61 * 64).toFixed(4)} )`);
+    expect(LIP_STREAK_FRAGMENT_PARS).toContain(`cover * ( 1.0 - cover ) * ${(2.5).toFixed(4)} * ( 2.0 * streak - 1.0 )`);
+    expect(streaked.fragment.indexOf('float foamCoverage(')).toBeLessThan(streaked.fragment.indexOf('float sweptStreakFoam()'));
     // The tile is the sea's own texture object, bound on the tube's program with the water's uniforms (no new texture data).
     const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader } as unknown as WebGLProgramParametersWithUniforms;
     swept.mesh.material.onBeforeCompile(shader, undefined as never);
@@ -585,10 +590,11 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
   });
 
   it('covers the ruling’s points and runs the ruling’s clock', () => {
-    // Ruling 25b's outer face 0 / 0.3 / 0.8 (crest, mid-lip, tip); inner face after step 15's retune: 0.8 at the tip,
-    // 0.15 at the throat, 0 by 90.
-    expect([32, 40, 48, 64, 88, 89, 90, 96, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.15, 0.3, 0.8, 0.15, 0.075, 0, 0, 0, 0]);
-    expect(lipStreakCover(76)).toBeCloseTo(0.475, 6);
+    // Ruling 25b's outer face 0 / 0.3 / 0.8 (crest, mid-lip, tip); ruling 25c's inner face: 0.3 at the tip, 0.1 at the
+    // throat (88), 0 by 96.
+    expect([32, 40, 48, 64, 88, 92, 96, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.15, 0.3, 0.8, 0.1, 0.05, 0, 0, 0]);
+    expect(lipStreakCover(64.0001)).toBeCloseTo(0.3, 3);
+    expect(lipStreakCover(76)).toBeCloseTo(0.2, 6);
     expect([-1, 0, 0.075, 0.15, 2].map((tau) => lipStreakClock(tau, -1))).toEqual([0, 0, 0.5, 1, 1]);
     expect(lipStreakClock(1, 0.2)).toBe(0);
     expect(lipStreakClock(1, 5)).toBe(0);
