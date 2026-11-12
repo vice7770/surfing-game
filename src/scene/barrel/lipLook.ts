@@ -57,12 +57,17 @@ export const LIP_FRAY_VOLUME = /* glsl */ `
 export const LIP_STREAK = {
   /** The lip water's speed along the sheet, m/s (about √(2g·drop)). */
   speed: 3,
-  /** The two layers' cells, m: along the crest, round the curl; the second layer weighs half. */
-  cells: [[0.25, 2.0], [0.7, 3.5]],
-  /** The cover round the profile: (profile point, cover), linear between; zero outside. Crest 32, tip 64, throat 88. */
-  cover: [[32, 0], [48, 0.3], [64, 0.8], [88, 0.2], [100, 0]],
-  /** The threshold's half width. */
-  edge: 0.08,
+  /**
+   * Ruling 25b: the sea's own foam lace (`foamPatternPars`), one lace cell per this many metres: across the crest (u),
+   * round the curl (s − V·τ); so the lace's cells are 4 times longer round the curl than across.
+   */
+  stretch: { across: 0.3, round: 1.2 },
+  /**
+   * The cover round the profile, a true area share (the lace's thresholds): (profile point, cover), linear between; zero
+   * outside. Outer face: crest 32, mid-lip 48, tip 64. Inner face (ruling 25b): 0.5 at the tip, 0.1 at the throat 88,
+   * 0 by 96. The two faces meet at the tip, so the cover steps there.
+   */
+  cover: [[32, 0], [48, 0.3], [64, 0.8], [64, 0.5], [88, 0.1], [96, 0]],
   /** Eased in over this long after the throw, s; faded over this long after touchdown, s. */
   easeIn: 0.15,
   fadeOut: 0.2,
@@ -93,36 +98,38 @@ varying vec4 vSweptStreak;`;
 export const LIP_STREAK_VERTEX = /* glsl */ `
 vSweptStreak = sweptStreak;`;
 
-const cell = (layer: number) => `vec2( ${(1 / LIP_STREAK.cells[layer][0]).toFixed(4)}, ${(1 / LIP_STREAK.cells[layer][1]).toFixed(4)} )`;
-/** GLSL, fragment pars: a smooth 2D value noise, and the streaks' foam from the vertex's four values. */
+const lace = (value: number) => (1 / value).toFixed(4);
+/**
+ * GLSL, fragment pars: the streaks' foam from the vertex's four values, as the sea's own foam lace (ruling 25b,
+ * `foamPhaseCover` in `foamPatternPars`: the baked tile `waterFoamTile`, its thresholds so the covered share equals the
+ * cover, and its patches) read at (u / 0.30 m, (s − V·τ) / 1.2 m) lace cells. No flow-map phases and no time: the motion
+ * is carried by s − V·τ alone. Far away, where a pixel spans the lace's cell, it goes to its mean as the sea's lace does
+ * (`waterFoamCover`'s fade). The footprint is taken before any branch, so its derivatives are defined.
+ */
 export const LIP_STREAK_FRAGMENT_PARS = /* glsl */ `varying vec4 vSweptStreak;
-float sweptStreakHash( vec2 p ) {
-  vec3 q = fract( vec3( p.xyx ) * 0.1031 );
-  q += dot( q, q.yzx + 33.33 );
-  return fract( ( q.x + q.y ) * q.z );
-}
-float sweptStreakNoise( vec2 p ) {
-  vec2 i = floor( p );
-  vec2 f = fract( p );
-  f = f * f * ( 3.0 - 2.0 * f );
-  return mix( mix( sweptStreakHash( i ), sweptStreakHash( i + vec2( 1.0, 0.0 ) ), f.x ),
-    mix( sweptStreakHash( i + vec2( 0.0, 1.0 ) ), sweptStreakHash( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
-}
-// The streaks' foam: the pattern over the cover's threshold; far away, where a pixel spans a cell along the crest, the
-// pattern goes to its mean and the edge widens, so it does not shimmer.
 float sweptStreakFoam() {
+  vec2 cells = vSweptStreak.xy * vec2( ${lace(LIP_STREAK.stretch.across)}, ${lace(LIP_STREAK.stretch.round)} );
+  float footprint = max( fwidth( cells.x ), fwidth( cells.y ) );
   if ( vSweptStreak.w <= 0.0 || vSweptStreak.z <= 0.0 ) return 0.0;
-  vec2 at = vSweptStreak.xy;
-  float pattern = ( sweptStreakNoise( at * ${cell(0)} ) + 0.5 * sweptStreakNoise( at * ${cell(1)} + vec2( 17.0, 5.0 ) ) ) / 1.5;
-  float footprint = fwidth( vSweptStreak.x ) * ${(1 / LIP_STREAK.cells[0][0]).toFixed(4)};
-  pattern = mix( pattern, 0.5, smoothstep( 0.5, 1.5, footprint ) );
-  float edge = ${LIP_STREAK.edge.toFixed(3)} + 0.25 * min( footprint, 1.0 );
-  float cover = vSweptStreak.z;
-  return ${LIP_STREAK.strength.toFixed(3)} * vSweptStreak.w * min( 1.0, cover / 0.05 ) * smoothstep( 1.0 - cover - edge, 1.0 - cover + edge, pattern );
+  float cover = min( vSweptStreak.z, 1.0 );
+  float laced = mix( foamPhaseCover( cover, cells * FOAM_CELL ), cover, smoothstep( 0.25, 1.0, footprint ) );
+  return ${LIP_STREAK.strength.toFixed(3)} * vSweptStreak.w * laced;
 }`;
+/**
+ * GLSL: the sheet's thin share (the fray's, without its foam): 1 under `LIP_FRAY.white`, 0 over `LIP_FRAY.clean`.
+ * Ruling 25b: where the sheet is thin, a streak never darkens the pixel. The thin tip is already aerated white
+ * (ruling 9), so bubbles added there cannot take light away: there the light through the sheet stays the clean lip's
+ * (`sweptStreakThrough`), and the streak only adds (the fray's white, the foam's albedo). Measured in step 14: with the
+ * streak cutting the light through the thin sheet, the rim drew about 8 % darker.
+ */
+export const LIP_STREAK_THIN = `vSweptSheetWeight * ( 1.0 - smoothstep( ${LIP_FRAY.white.toFixed(3)}, ${LIP_FRAY.clean.toFixed(3)}, vSweptSheet ) )`;
+/** The body's light through the sheet, cut by its foam (twice: the light behind and the sun through it). */
+export const LIP_STREAK_THROUGH_LINE = '( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) )';
+
 /** GLSL, fragment, before the body: the foam the body, the lit foam and `LIP_FRAY_VOLUME` read in `vWaterFoam`'s place. */
 export const LIP_STREAK_FOAM = /* glsl */ `float sweptStreakOwn = sweptStreakFoam();
 float sweptStreakLit = max( vWaterFoam, sweptStreakOwn );
+float sweptStreakThrough = mix( sweptStreakLit, vWaterFoam, ${LIP_STREAK_THIN} );
 `;
 /** The foam composition's albedo line the streaks change (`CLASSIC_FOAM`, in the tube's Rich foam). */
 export const LIP_STREAK_ALBEDO_LINE = 'diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );';
@@ -163,5 +170,7 @@ function swapOnce(source: string, target: string, replacement: string): string {
  */
 export function withLipStreaks(body: string): string {
   const lit = swapOnce(swapOnce(body, LIP_FRAY_VOLUME, LIP_FRAY_VOLUME + LIP_STREAK_VOLUME), LIP_STREAK_ALBEDO_LINE, LIP_STREAK_ALBEDO);
-  return LIP_STREAK_FOAM + lit.split('vWaterFoam').join('sweptStreakLit');
+  if (lit.split(LIP_STREAK_THROUGH_LINE).length !== 3) throw new Error('The lip\'s streaks need the sheet\'s two lights through it');
+  const through = lit.split(LIP_STREAK_THROUGH_LINE).join(LIP_STREAK_THROUGH_LINE.replace('vWaterFoam', 'sweptStreakThrough'));
+  return LIP_STREAK_FOAM + through.split('vWaterFoam').join('sweptStreakLit');
 }

@@ -10,7 +10,8 @@ import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
 import { RICH_LIP_GLOW, RICH_LIP_GLOW_GATED, RICH_SHEET_BODY, RICH_SHEET_BODY_NORMAL, RICH_SHEET_BODY_PER_RAY, packWallViews, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 import { hazeLandKey, hazeLandRoute } from '../water/hazeLand';
 import { ROLLER_LOOK } from '../water/rollerLook';
-import { LIP_FRAY_SHARE, LIP_FRAY_VOLUME, LIP_STREAK, LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE, LIP_STREAK_FOAM, LIP_STREAK_VOLUME, LIP_STREAK_FRAGMENT_PARS, LIP_STREAK_VERTEX, LIP_STREAK_VERTEX_PARS, lipStreakClock, lipStreakCover } from './lipLook';
+import { foamTileTexture } from '../foamPattern';
+import { LIP_FRAY_SHARE, LIP_FRAY_VOLUME, LIP_STREAK, LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE, LIP_STREAK_FOAM, LIP_STREAK_VOLUME, LIP_STREAK_FRAGMENT_PARS, LIP_STREAK_THIN, LIP_STREAK_THROUGH_LINE, LIP_STREAK_VERTEX, LIP_STREAK_VERTEX_PARS, lipStreakClock, lipStreakCover } from './lipLook';
 
 /** The barrel's haze key in a look (the haze-land follow-up: Rich adds its route to the program's key). */
 const hazeKey = (look: 'rich' | 'classic') => hazeLandKey(hazeLandRoute('barrel', look));
@@ -517,10 +518,22 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
     expect(streaked.fragment).toContain(LIP_FRAY_VOLUME.split('vWaterFoam').join('sweptStreakLit') + LIP_STREAK_VOLUME);
     expect(streaked.fragment).toContain(LIP_STREAK_ALBEDO);
     expect(streaked.fragment).not.toContain(LIP_STREAK_ALBEDO_LINE);
-    expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').replace(LIP_STREAK_VOLUME, '').replace(LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE).split('sweptStreakLit').join('vWaterFoam').replace(LIP_FRAY_VOLUME, ''))
+    // On the thin sheet the streak does not cut the light through it (ruling 25b): those two lights read the clean foam there.
+    const through = LIP_STREAK_THROUGH_LINE.replace('vWaterFoam', 'sweptStreakThrough');
+    expect(streaked.fragment.split(through).length).toBe(3);
+    expect(LIP_STREAK_FOAM).toContain(`float sweptStreakThrough = mix( sweptStreakLit, vWaterFoam, ${LIP_STREAK_THIN} );`);
+    expect(streaked.fragment.replace(`\n${LIP_STREAK_FRAGMENT_PARS}`, '').replace(LIP_STREAK_FOAM, '').replace(LIP_STREAK_VOLUME, '').replace(LIP_STREAK_ALBEDO, LIP_STREAK_ALBEDO_LINE).split(through).join(LIP_STREAK_THROUGH_LINE).split('sweptStreakLit').join('vWaterFoam').replace(LIP_FRAY_VOLUME, ''))
       .toBe(clean.fragment);
-    // No free time, no texture: the pattern reads the vertex's four values alone.
-    expect(LIP_STREAK_FRAGMENT_PARS).not.toMatch(/waterTime|texture/);
+    // No free time, no new texture or noise: the pattern is the sea's own lace (its tile, already bound on the tube's
+    // material through the water's uniforms), read once at the vertex's (u, s − V·τ) stretched round the curl.
+    expect(LIP_STREAK_FRAGMENT_PARS).not.toMatch(/waterTime|texture|uniform|Hash|Noise/);
+    expect(LIP_STREAK_FRAGMENT_PARS.split('foamPhaseCover(').length).toBe(2);
+    expect(LIP_STREAK_FRAGMENT_PARS).toContain(`vSweptStreak.xy * vec2( ${(1 / 0.3).toFixed(4)}, ${(1 / 1.2).toFixed(4)} )`);
+    expect(streaked.fragment.indexOf('float foamPhaseCover(')).toBeLessThan(streaked.fragment.indexOf('float sweptStreakFoam()'));
+    // The tile is the sea's own texture object, bound on the tube's program with the water's uniforms (no new texture data).
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader } as unknown as WebGLProgramParametersWithUniforms;
+    swept.mesh.material.onBeforeCompile(shader, undefined as never);
+    expect((shader.uniforms as Record<string, { value: unknown }>).waterFoamTile.value).toBe(foamTileTexture());
     expect(Object.keys(swept.mesh.geometry.attributes).length).toBeLessThanOrEqual(15);
   });
 
@@ -572,8 +585,11 @@ describe('foam streaks round the curl (ruling 25 part (a))', () => {
   });
 
   it('covers the ruling’s points and runs the ruling’s clock', () => {
-    expect([32, 48, 64, 88, 100, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.3, 0.8, 0.2, 0, 0, 0]);
-    expect(lipStreakCover(76)).toBeCloseTo(0.5, 6);
+    // Ruling 25b: outer face 0 / 0.3 / 0.8 (crest, mid-lip, tip); inner face 0.5 at the tip, 0.1 at the throat, 0 by 96.
+    expect([32, 40, 48, 64, 88, 96, 100, 112, 0].map(lipStreakCover).map((c) => +c.toFixed(6))).toEqual([0, 0.15, 0.3, 0.8, 0.1, 0, 0, 0, 0]);
+    expect(lipStreakCover(64.5)).toBeCloseTo(0.5 - 0.4 * 0.5 / 24, 6);
+    expect(lipStreakCover(76)).toBeCloseTo(0.3, 6);
+    expect(lipStreakCover(92)).toBeCloseTo(0.05, 6);
     expect([-1, 0, 0.075, 0.15, 2].map((tau) => lipStreakClock(tau, -1))).toEqual([0, 0, 0.5, 1, 1]);
     expect(lipStreakClock(1, 0.2)).toBe(0);
     expect(lipStreakClock(1, 5)).toBe(0);
