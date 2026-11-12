@@ -147,3 +147,15 @@ Full write-up: `step5/README.md`. Branch `claude/pool-tube-early`. The default i
 - **T2** (the share whole 1.4 s before the throw) is worse on the join: J1 0.081 m, J5 82.8 %.
 - The throw, the crash, the clock's rates and the case are untouched: the crash's counts with `?tubeForm=early` equal those with `&crestLine=top`.
 - Not run: rider sessions, the #245 rise probe, a 600 s run. Not built: ruling 17's builds 3 and 4.
+
+## Ruling 18: why `?tubeForm=early` still shows, and what to build (2026-11-12, the advisor; three probe runs)
+
+`ruling-18.md`; runs, the probe and two crops in `ruling-18-runs/`. Nothing built yet.
+
+- **The ribs are not the clock.** The slice clock is smooth along the crest (0.002 s off its line at 0.5 m). Ruling 17's bar "share step over 0.2" measured the ramp's own slope and is dropped. The ribs come from (1) the kept anchor shift, rough between records (0.048 m off its line at 1 m, 0.121 m at 2 m: about a 0.10 m kink on a 64° face) and joined by straight lines, and (2) the profile's lip mark sliding along the face before the throw, so quads joined by index pleat. Neighbouring quads differ by 44° at the median on the upper face; the open tube gives 5 to 10°.
+- **The rise is the case's own growth:** in the last 0.5 s the case goes 1.89 to 2.04 m while the sea stays 1.77 to 1.79 m. The solver's breaking is on at only 3 to 14 % of points, so the sea is not being flattened. The fix is to carry the rise in the felt water (ruling 7), after the ribs. The "wall 1.5 to 1.6 m" bar was wrong: 1.87 m is the case drawn right.
+- **The dark crease at the tube's mouth is a mesh fold:** around the throw 9.8 % of slices have quads turned over 90°.
+- **Plan test T3 passes on a two-train sea:** of 1296 points that threw, none was first seen later than 1 s before its throw (median 1.76 s). Limit: two trains on one reef, not a full spectrum.
+- **For the owner:** the two parts can be hidden on the pool with this method, but are not yet. One limit stays: the drawn crest is about 0.2 m above the sea's. If that still reads as two parts after the builds, it is the case for the library-only surf zone (C2).
+- Builds in order: `?anchorLine=smooth` (bar R1), `?loftMesh=arc` (fold bars), carry the rise (W1, W2), then the owner rides.
+
