@@ -450,21 +450,24 @@ export function poolStraightPlatformZ(): number {
   return poolTerraceZ() - POOL_STRAIGHT.platformLead;
 }
 
-/** The straight reef's along (s, from its start) and seaward (n, square to its line) distances at (x, z), m. */
-export function poolStraightFrame(x: number, z: number): { s: number; n: number } {
+/**
+ * The straight reef's along (s, from its start) and seaward (n, square to its line) distances at (x, z), m; `startX`,
+ * its start where it is not `POOL_STRAIGHT`'s (the reference size's longer reef, `poolRefLine`).
+ */
+export function poolStraightFrame(x: number, z: number, startX: number = POOL_STRAIGHT.startX): { s: number; n: number } {
   const r = POOL_STRAIGHT;
   const phi = (r.reefAngle * Math.PI) / 180;
-  const dx = r.side * x - r.startX;
+  const dx = r.side * x - startX;
   const dz = z - r.startZ;
   // Along the reef: toward −x (mirrored) and shoreward; seaward: square to it, toward −z.
   return { s: -dx * Math.cos(phi) + dz * Math.sin(phi), n: -dx * Math.sin(phi) - dz * Math.cos(phi) };
 }
 
-/** The point on the straight reef's crest line s m from its start, (x, z), m. */
-export function poolStraightAt(s: number): { x: number; z: number } {
+/** The point on the straight reef's crest line s m from its start, (x, z), m; `startX` as `poolStraightFrame`'s. */
+export function poolStraightAt(s: number, startX: number = POOL_STRAIGHT.startX): { x: number; z: number } {
   const r = POOL_STRAIGHT;
   const phi = (r.reefAngle * Math.PI) / 180;
-  return { x: r.side * (r.startX - s * Math.cos(phi)), z: r.startZ + s * Math.sin(phi) };
+  return { x: r.side * (startX - s * Math.cos(phi)), z: r.startZ + s * Math.sin(phi) };
 }
 
 /** The straight reef's crest depth s m along it, m: `crestProfile`'s knots eased, the platform's depth beyond them. */
@@ -506,6 +509,8 @@ export interface PoolStraightShape {
   platformDepth: number; crestProfile: [number, number][]; flatWidth: number;
   /** Its wrapped window's width, m, where it is not `POOL.alongShore` (the reference size's): where the wrap's wall stands. */
   alongShore?: number;
+  /** Its start along shore (s = 0), m, where it is not `POOL_STRAIGHT.startX` (the reference size's longer reef). */
+  startX?: number;
 }
 
 /**
@@ -519,6 +524,12 @@ export interface PoolStraightShape {
  * (ruling 14, ruling-14.md beside it): the default's 280 m × 1.11, so two of the 10.5 s wave's along-shore wavelengths
  * cross it at the copy's direction (36.8° at the feed, `poolStraightDirection`; kept at 280 m the sea turned to 41.8°).
  * Read by `alongShoreOf`; `POOL.alongShore` is every other pool's. Opt-in; provisional. Mutable for the probes.
+ *
+ * Step 4 (ruling 16, ruling-16.md beside it): the lengths ALONG the reef's line × 1.11 as well. `crestProfile`'s knots
+ * stand at s × 1.11 (the reef is 260.9 m long in place of 235 m), `startX` is the 1.8 m Barrel's 115 m × 1.11 (the line
+ * starts 12.7 m nearer the +x side; its end comes out at x −72 and z −53, 17 m nearer the beach than before; `startZ`
+ * is kept), `takeOffS` its 40 m × 1.11. `short` keeps the lengths as they were (the 1.8 m Barrel's own), the
+ * `?poolReef=short` A/B (`poolRefLine`).
  */
 export const POOL_REF = {
   scale: 1.11,
@@ -526,11 +537,23 @@ export const POOL_REF = {
   period: 10.5,
   edgeHeight: 1.47,
   platformDepth: 5.0,
-  crestProfile: [[0, 5.0], [30, 1.78], [65, 1.0], [175, 1.0], [205, 2.2], [235, 5.0]] as [number, number][],
+  crestProfile: [[0, 5.0], [33.3, 1.78], [72.2, 1.0], [194.3, 1.0], [227.6, 2.2], [260.9, 5.0]] as [number, number][],
+  startX: 127.7,
+  takeOffS: 44.4,
   flatWidth: 6.7,
   kneeRounding: 3.3,
   alongShore: 311,
+  short: { crestProfile: [[0, 5.0], [30, 1.78], [65, 1.0], [175, 1.0], [205, 2.2], [235, 5.0]] as [number, number][] },
 };
+
+/** The reference size's reef-length switch (`SurfZoneConfig.poolReef`): 'short', the 1.8 m Barrel's own lengths along the line; none, × 1.11. */
+export type PoolReefSwitch = 'short';
+
+/** The reference size's reef line: its crest knots, its start along shore and its take-off along it (`POOL_REF`; 'short', the lengths before step 4). */
+export function poolRefLine(reef?: PoolReefSwitch): { crestProfile: [number, number][]; startX: number; takeOffS: number } {
+  return reef === 'short' ? { crestProfile: POOL_REF.short.crestProfile, startX: POOL_STRAIGHT.startX, takeOffS: POOL_STRAIGHT.takeOffS }
+    : { crestProfile: POOL_REF.crestProfile, startX: POOL_REF.startX, takeOffS: POOL_REF.takeOffS };
+}
 
 /** The straight Barrel's size switch (`SurfZoneConfig.poolSize`): 'ref', the reference's 2 m faces (`POOL_REF`); none, the Small / Big sizes. */
 export type PoolSizeSwitch = 'ref';
@@ -547,13 +570,15 @@ export function poolPeriodOf(config: { spot?: string; poolWaves?: PoolWaves; poo
 
 /**
  * The straight floor at the reference size (`POOL_REF`, `?poolSize=ref`), m; with `inside`, `POOL_INSIDE`'s shelf × its
- * scale; `alongShore`, its window's width (`POOL_REF.alongShore`, or `?poolWindow`'s), which only the wrap's wall reads.
+ * scale; `alongShore`, its window's width (`POOL_REF.alongShore`, or `?poolWindow`'s), which only the wrap's wall reads;
+ * `reef`, its lengths along the line (`poolRefLine`).
  */
-export function poolStraightRefDepth(x: number, z: number, inside = false, alongShore: number = POOL_REF.alongShore): number {
+export function poolStraightRefDepth(x: number, z: number, inside = false, alongShore: number = POOL_REF.alongShore, reef?: PoolReefSwitch): number {
   const r = POOL_REF;
+  const line = poolRefLine(reef);
   return poolStraightDepthWith(x, z, { gradient: POOL_STRAIGHT.gradient, kneeRounding: r.kneeRounding },
     inside ? { step: POOL_INSIDE.step * r.scale, width: POOL_INSIDE.width * r.scale } : undefined,
-    { platformDepth: r.platformDepth, crestProfile: r.crestProfile, flatWidth: r.flatWidth, alongShore });
+    { platformDepth: r.platformDepth, crestProfile: line.crestProfile, flatWidth: r.flatWidth, alongShore, startX: line.startX });
 }
 
 /** The straight Barrel's floor, by `?poolFloor`: today's (undefined, the default), the steeper ledge, or the shallow inside. */
@@ -592,7 +617,7 @@ export function poolStraightDepthWith(x: number, z: number, face: { gradient: nu
   }
   // The wrap's land barrier (none by default): the deck, from the beach out to `wrapWallFrom`.
   if (r.wrapWallWidth > 0 && z > r.wrapWallFrom && Math.abs(x) >= (shape?.alongShore ?? p.alongShore) / 2 - r.wrapWallWidth / 2) return -p.deck;
-  const { s, n } = poolStraightFrame(x, z);
+  const { s, n } = poolStraightFrame(x, z, shape?.startX);
   const crest = shape ? poolStraightCrestDepth(s, shape) : poolStraightCrestDepth(s);
   let reef: number;
   if (n >= 0) {
@@ -643,11 +668,11 @@ export function poolStraightBreakDepth(height: number, size?: PoolSizeSwitch): n
   return POOL_STRAIGHT_BREAK_DEPTH.base + POOL_STRAIGHT_BREAK_DEPTH.perMetre * height;
 }
 
-/** The straight reef the peel is measured on: its columns from its start to its end. */
-export function poolStraightRiddenAt(x: number): boolean {
-  const knots = POOL_STRAIGHT.crestProfile;
-  const start = poolStraightAt(knots[0][0]).x;
-  const end = poolStraightAt(knots[knots.length - 1][0]).x;
+/** The straight reef the peel is measured on: its columns from its start to its end; `line`, the reference size's (`poolRefLine`). */
+export function poolStraightRiddenAt(x: number, line: { crestProfile: [number, number][]; startX: number } = POOL_STRAIGHT): boolean {
+  const knots = line.crestProfile;
+  const start = poolStraightAt(knots[0][0], line.startX).x;
+  const end = poolStraightAt(knots[knots.length - 1][0], line.startX).x;
   return x <= Math.max(start, end) && x >= Math.min(start, end);
 }
 
@@ -662,11 +687,11 @@ export function poolStraightDirection(waveNumber: number, alongShore = POOL.alon
 }
 
 /** The pool's bed for its floor: the training A-frame (the default), the Barrel's straight reef or its A-frame. */
-export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace, size?: PoolSizeSwitch, window?: number): SurfSpot {
+export function poolSpot(waves: PoolWaves = 'training', barrel?: PoolBarrelLayout, face?: PoolFloorFace, size?: PoolSizeSwitch, window?: number, reef?: PoolReefSwitch): SurfSpot {
   const floor = poolFloorOf({ poolWaves: waves, poolBarrel: barrel });
   // The reference size (`?poolSize=ref`, the straight floor's): its own shape, with the shallow inside if asked; never the
-  // ledge. `window`: its wrapped window's width, m (`alongShoreOf`), read at this size alone.
-  if (size === 'ref' && floor === 'straight') return { name: 'pool', depthAt: (x, z) => poolStraightRefDepth(x, z, face === 'inside', window) };
+  // ledge. `window`: its wrapped window's width, m (`alongShoreOf`), read at this size alone; `reef`, its lengths along the line.
+  if (size === 'ref' && floor === 'straight') return { name: 'pool', depthAt: (x, z) => poolStraightRefDepth(x, z, face === 'inside', window, reef) };
   const straight = face === 'ledge' ? poolStraightLedgeDepth : face === 'inside' ? poolStraightInsideDepth : poolStraightDepth;
   return { name: 'pool', depthAt: floor === 'training' ? poolDepth : floor === 'aframe' ? poolBarrelDepth : straight };
 }

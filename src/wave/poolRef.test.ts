@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { barrelCasesFor } from './barrel/barrelLibrary';
-import { BARREL_SPOTS, POOL_FOOT_DEPTH, barrelSpotOf, poolLead, poolRamp } from './barrel/barrelSpots';
+import { BARREL_SPOTS, POOL_FOOT_DEPTH, POOL_FRONT_REACH, POOL_REF_FRONT_REACH, barrelSpotOf, poolLead, poolRamp, poolStraightFrontAt } from './barrel/barrelSpots';
 import { onsetTiming } from './barrel/sliceClock';
 import {
-  POOL, POOL_INSIDE, POOL_REF, POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolPeriodOf, poolRampFootZ, poolRefOn, poolSea, poolSpot, poolStraightAt,
+  POOL, POOL_INSIDE, POOL_REF, POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolPeriodOf, poolRampFootZ, poolRefLine, poolRefOn, poolSea, poolSpot, poolStraightAt, poolStraightRiddenAt,
   poolStraightBreakDepth, poolStraightCrestDepth, poolStraightDepth, poolStraightInsideDepth, poolStraightLedgeDepth, poolStraightPlatformZ, poolStraightRefDepth,
   poolStraightDepthWith, poolStraightStartOut, poolTankLayout, regularSignificantHeight,
 } from './pool';
-import { alongShoreOf, rideLineupOffset, surfZoneSea, takeOffPoint, tankLayout, tankRiderBounds, type SurfZoneConfig } from './SurfZoneSimulation';
+import { alongShoreOf, peakTakeOffX, rideLineupOffset, surfZoneSea, takeOffPoint, tankLayout, tankRiderBounds, type SurfZoneConfig } from './SurfZoneSimulation';
 
 /** The straight Barrel at the owner's reference size (`?poolSize=ref`; ruling 13, docs/research/pool-look-reference-2026-11-11). */
 describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref)', () => {
@@ -21,13 +21,24 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
   const phi = (r.reefAngle * Math.PI) / 180;
   /** The point s m along the reef and n m seaward of its crest line. */
   const at = (s: number, n: number) => { const p = poolStraightAt(s); return [p.x - n * Math.sin(phi), p.z - n * Math.cos(phi)] as const; };
+  /** The same on the reference size's own line (step 4, ruling 16: its lengths along the reef × 1.11, from x 127.7). */
+  const ar = (s: number, n: number) => { const p = poolStraightAt(s, POOL_REF.startX); return [p.x - n * Math.sin(phi), p.z - n * Math.cos(phi)] as const; };
 
   it('is ruling 13\'s numbers: every depth 1.11 times the 1.8 m Barrel\'s, the period by its root, the slopes unchanged', () => {
     expect(POOL_REF).toMatchObject({ scale: 1.11, face: 2.0, period: 10.5, platformDepth: 5.0, flatWidth: 6.7, kneeRounding: 3.3 });
-    expect(POOL_REF.crestProfile).toEqual([[0, 5.0], [30, 1.78], [65, 1.0], [175, 1.0], [205, 2.2], [235, 5.0]]);
-    // Froude: each knot's depth within 1 % of 1.11 × today's at the same place along the reef; the period within 0.5 % of × √1.11.
+    // Step 4 (ruling 16): the knots stand 1.11 × further along the reef too; `short` keeps them where the 1.8 m Barrel's are.
+    expect(POOL_REF.crestProfile).toEqual([[0, 5.0], [33.3, 1.78], [72.2, 1.0], [194.3, 1.0], [227.6, 2.2], [260.9, 5.0]]);
+    expect(POOL_REF.short.crestProfile).toEqual([[0, 5.0], [30, 1.78], [65, 1.0], [175, 1.0], [205, 2.2], [235, 5.0]]);
+    expect(POOL_REF.startX).toBe(127.7);
+    expect(POOL_REF.startX / r.startX).toBeCloseTo(1.11, 2);
+    expect(POOL_REF.takeOffS).toBe(44.4);
+    expect(POOL_REF.takeOffS / r.takeOffS).toBeCloseTo(1.11, 9);
+    expect(poolRefLine()).toEqual({ crestProfile: POOL_REF.crestProfile, startX: 127.7, takeOffS: 44.4 });
+    expect(poolRefLine('short')).toEqual({ crestProfile: POOL_REF.short.crestProfile, startX: r.startX, takeOffS: r.takeOffS });
+    // Froude: each knot's depth within 1 % of 1.11 × today's at 1.11 × its place along the reef; the period within 0.5 % of × √1.11.
     POOL_REF.crestProfile.forEach(([s, depth], k) => {
-      expect(s).toBe(r.crestProfile[k][0]);
+      expect(Math.abs(s - 1.11 * r.crestProfile[k][0]), `knot ${k}'s place`).toBeLessThanOrEqual(0.051);
+      expect(POOL_REF.short.crestProfile[k]).toEqual([r.crestProfile[k][0], depth]);
       expect(depth / r.crestProfile[k][1], `knot ${k}`).toBeGreaterThan(1.099);
       expect(depth / r.crestProfile[k][1], `knot ${k}`).toBeLessThan(1.121);
     });
@@ -38,22 +49,24 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
   });
 
   it('lays the floor: the 1 m crest, the 6.7 m top, the 1/9.5 face to the 5 m platform, the 1/10 back', () => {
-    expect(poolStraightCrestDepth(120, POOL_REF)).toBeCloseTo(1.0, 9);
+    expect(poolStraightCrestDepth(133.2, POOL_REF)).toBeCloseTo(1.0, 9);
     expect(poolStraightCrestDepth(0, POOL_REF)).toBeCloseTo(5.0, 9);
-    expect(poolStraightCrestDepth(47.5, POOL_REF)).toBeCloseTo((1.78 + 1.0) / 2, 9);
-    expect(poolStraightRefDepth(...at(120, 0))).toBeCloseTo(1.0, 9);
+    expect(poolStraightCrestDepth(52.75, POOL_REF)).toBeCloseTo((1.78 + 1.0) / 2, 9);
+    expect(poolStraightCrestDepth(260.9, POOL_REF)).toBeCloseTo(5.0, 9);
+    expect(poolStraightCrestDepth(250, POOL_REF)).toBeLessThan(5.0);
+    expect(poolStraightRefDepth(...ar(133.2, 0))).toBeCloseTo(1.0, 9);
     // The face square to the reef: 1/9.5.
-    expect(poolStraightRefDepth(...at(120, 19))).toBeCloseTo(1.0 + 19 / 9.5, 9);
+    expect(poolStraightRefDepth(...ar(133.2, 19))).toBeCloseTo(1.0 + 19 / 9.5, 9);
     // The knee, 38 m out, rounded ±3.3 m; the platform beyond.
     const knee = (POOL_REF.platformDepth - 1.0) / r.gradient;
     expect(knee).toBeCloseTo(38, 9);
-    expect(poolStraightRefDepth(...at(120, knee))).toBeCloseTo(5.0 - (r.gradient * POOL_REF.kneeRounding) / 4, 9);
-    expect(poolStraightRefDepth(...at(120, knee + 3.3))).toBeCloseTo(5.0, 9);
-    expect(poolStraightRefDepth(...at(120, knee + 12))).toBeCloseTo(5.0, 9);
+    expect(poolStraightRefDepth(...ar(133.2, knee))).toBeCloseTo(5.0 - (r.gradient * POOL_REF.kneeRounding) / 4, 9);
+    expect(poolStraightRefDepth(...ar(133.2, knee + 3.3))).toBeCloseTo(5.0, 9);
+    expect(poolStraightRefDepth(...ar(133.2, knee + 12))).toBeCloseTo(5.0, 9);
     // The top, then 1/10 down to the platform.
-    expect(poolStraightRefDepth(...at(120, -6.7))).toBeCloseTo(1.0, 9);
-    expect(poolStraightRefDepth(...at(120, -16.7))).toBeCloseTo(2.0, 9);
-    expect(poolStraightRefDepth(...at(120, -60))).toBeCloseTo(5.0, 9);
+    expect(poolStraightRefDepth(...ar(133.2, -6.7))).toBeCloseTo(1.0, 9);
+    expect(poolStraightRefDepth(...ar(133.2, -16.7))).toBeCloseTo(2.0, 9);
+    expect(poolStraightRefDepth(...ar(133.2, -60))).toBeCloseTo(5.0, 9);
     // The machine's floor, the ramp's foot and the beach are the pool's own.
     expect(poolStraightRefDepth(0, poolRampFootZ() - 5)).toBe(POOL.feedDepth);
     expect(poolStraightRefDepth(0, -4)).toBe(poolStraightDepth(0, -4));
@@ -65,9 +78,9 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
     // The rounded knee's outer end, square to the reef: (5 − crest) × 9.5 + 3.3 m seaward of the crest line (41.3 m on the barrel).
     const edge = poolStraightPlatformZ();
     let least = Infinity;
-    for (let s = 0; s <= 235; s += 1) {
+    for (let s = 0; s <= 261; s += 1) {
       const out = (POOL_REF.platformDepth - poolStraightCrestDepth(s, POOL_REF)) / r.gradient + POOL_REF.kneeRounding;
-      least = Math.min(least, at(s, out)[1] - edge);
+      least = Math.min(least, ar(s, out)[1] - edge);
     }
     expect(edge - poolRampFootZ()).toBeGreaterThan(0);
     // At least 5 m of level platform between the ramp's top and the knee's nearest point.
@@ -86,17 +99,17 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
     expect(poolPeriodOf(barrel)).toBe(10);
     expect(poolPeriodOf({ ...ref, poolBarrel: 'aframe' })).toBe(10);
     const spot = poolSpot('barrel', undefined, undefined, 'ref');
-    expect(spot.depthAt(...at(120, 0))).toBeCloseTo(1.0, 9);
+    expect(spot.depthAt(...ar(133.2, 0))).toBeCloseTo(1.0, 9);
     // The ledge is ignored under the reference size: the same floor.
     const ledge = poolSpot('barrel', undefined, 'ledge', 'ref');
-    for (const n of [-30, -10, 0, 10, 20, 38, 45]) expect(ledge.depthAt(...at(120, n)), `n ${n}`).toBe(spot.depthAt(...at(120, n)));
+    for (const n of [-30, -10, 0, 10, 20, 38, 45]) expect(ledge.depthAt(...ar(133.2, n)), `n ${n}`).toBe(spot.depthAt(...ar(133.2, n)));
     // The inside's shelf, 1.11 times larger: 0.333 m under the crest, 17.76 m across; seaward of the top's inner edge unchanged.
     const inside = poolSpot('barrel', undefined, 'inside', 'ref');
     const step = POOL_INSIDE.step * 1.11;
-    expect(inside.depthAt(...at(120, -(6.7 + 10)))).toBeCloseTo(1.0 + step, 9);
-    expect(inside.depthAt(...at(120, -(6.7 + step * 10 + POOL_INSIDE.width * 1.11 - 0.5)))).toBeCloseTo(1.0 + step, 9);
-    expect(inside.depthAt(...at(120, -(6.7 + step * 10 + POOL_INSIDE.width * 1.11 + 10)))).toBeCloseTo(2.0 + step, 9);
-    for (const n of [-6, 0, 10, 38, 45]) expect(inside.depthAt(...at(120, n)), `n ${n}`).toBe(spot.depthAt(...at(120, n)));
+    expect(inside.depthAt(...ar(133.2, -(6.7 + 10)))).toBeCloseTo(1.0 + step, 9);
+    expect(inside.depthAt(...ar(133.2, -(6.7 + step * 10 + POOL_INSIDE.width * 1.11 - 0.5)))).toBeCloseTo(1.0 + step, 9);
+    expect(inside.depthAt(...ar(133.2, -(6.7 + step * 10 + POOL_INSIDE.width * 1.11 + 10)))).toBeCloseTo(2.0 + step, 9);
+    for (const n of [-6, 0, 10, 38, 45]) expect(inside.depthAt(...ar(133.2, n)), `n ${n}`).toBe(spot.depthAt(...ar(133.2, n)));
     // The A-frame and the training floor never take it.
     expect(poolSpot('barrel', 'aframe', undefined, 'ref').depthAt).toBe(poolSpot('barrel', 'aframe').depthAt);
     expect(poolSpot('training', undefined, undefined, 'ref').depthAt).toBe(poolSpot('training').depthAt);
@@ -209,10 +222,54 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
     expect(rideLineupOffset(ref)).toBeCloseTo(14.985, 9);
     const big = takeOffPoint(barrel);
     const point = takeOffPoint(ref);
-    // The same column (s 40 along the reef), where the reference floor is first 2.12 m deep.
-    expect(point.x).toBe(big.x);
+    // Step 4: s 44.4 along its own line (x 93.7, where the 1.8 m Barrel's s 40 is x 84.4), where the reference floor is first 2.12 m deep.
+    expect(point.x).toBe(poolStraightAt(44.4, 127.7).x);
+    expect(point.x).toBeCloseTo(93.69, 2);
+    expect(peakTakeOffX('pool', undefined, 'barrel', undefined, 'ref')).toBe(point.x);
+    // The short reef's (`?poolReef=short`): the 1.8 m Barrel's column; and without the size the switch is not read.
+    expect(takeOffPoint({ ...ref, poolReef: 'short' }).x).toBe(big.x);
+    expect(peakTakeOffX('pool', undefined, 'barrel', undefined, 'ref', 'short')).toBe(big.x);
+    expect(takeOffPoint({ ...barrel, poolReef: 'short' })).toEqual(big);
+    expect(peakTakeOffX('pool', undefined, 'barrel')).toBe(big.x);
+    expect(peakTakeOffX('pool', undefined, 'training', undefined, 'ref')).toBe(peakTakeOffX('pool', undefined, 'training'));
+    expect(peakTakeOffX('pool', undefined, 'barrel', 'aframe', 'ref')).toBe(peakTakeOffX('pool', undefined, 'barrel', 'aframe'));
     expect(poolStraightRefDepth(point.x, point.z)).toBeLessThanOrEqual(1.11 * 1.9108);
     expect(poolStraightRefDepth(point.x, point.z - 1)).toBeGreaterThan(1.11 * 1.9108);
+  });
+
+  it('lays the reef 1.11 times longer along its line; `poolReef` short is the floor before step 4 (ruling 16)', () => {
+    const long = poolSpot('barrel', undefined, undefined, 'ref');
+    const short = poolSpot('barrel', undefined, undefined, 'ref', undefined, 'short');
+    // The floor before step 4, written out: `POOL_REF`'s depths on the 1.8 m Barrel's knots and line.
+    const before = (x: number, z: number) => poolStraightDepthWith(x, z, { gradient: r.gradient, kneeRounding: POOL_REF.kneeRounding }, undefined,
+      { platformDepth: POOL_REF.platformDepth, crestProfile: POOL_REF.short.crestProfile, flatWidth: POOL_REF.flatWidth, alongShore: 311 });
+    let differ = 0;
+    for (let x = -155; x <= 155; x += 5) for (let z = -260; z <= 0; z += 5) {
+      expect(short.depthAt(x, z), `x ${x}, z ${z}`).toBe(before(x, z));
+      if (long.depthAt(x, z) !== short.depthAt(x, z)) differ += 1;
+    }
+    expect(differ).toBeGreaterThan(100);
+    // The long reef is the short one stretched from the same z: the same depth at 1.11 × the place along the line, on the barrel.
+    for (const s of [70, 100, 120, 150, 170]) for (const n of [-20, -5, 0, 10, 30, 45]) expect(long.depthAt(...ar(1.11 * s, n)), `s ${s}, n ${n}`).toBeCloseTo(short.depthAt(...at(s, n)), 9);
+    // Its line starts at x 127.7, z −221 and ends at x −72, z −53 (17 m nearer the beach than the short reef's end, z −70).
+    const end = poolStraightAt(260.9, POOL_REF.startX);
+    expect(end.x).toBeCloseTo(-72.2, 1);
+    expect(end.z).toBeCloseTo(-53.3, 1);
+    expect(poolStraightAt(235).z).toBeCloseTo(-69.9, 1);
+    // The peel's columns follow the line: x −72 to 128 (the short reef's and the default's: −65 to 115).
+    const line = poolRefLine();
+    expect(poolStraightRiddenAt(127, line)).toBe(true);
+    expect(poolStraightRiddenAt(128, line)).toBe(false);
+    expect(poolStraightRiddenAt(-72, line)).toBe(true);
+    expect(poolStraightRiddenAt(-73, line)).toBe(false);
+    for (const x of [-73, -66, -65, 0, 115, 116, 127]) {
+      expect(poolStraightRiddenAt(x, poolRefLine('short')), `x ${x}`).toBe(poolStraightRiddenAt(x));
+      expect(poolStraightRiddenAt(x), `x ${x}`).toBe(x >= -65 && x <= 115);
+    }
+    // The reef stays inside its 311 m window: the wall columns are plain platform, ramp and beach (checked on the wrap above).
+    for (let z = -221; z <= -40; z += 3) for (const x of [-155.5, 155.5]) expect(long.depthAt(x, z), `x ${x}, z ${z}`).toBe(Math.min(POOL_REF.platformDepth, Math.max(-POOL.deck, -z * POOL.shoreSlope)));
+    // The default's floor reads neither the size nor the switch.
+    expect(poolSpot('barrel', undefined, undefined, undefined, undefined, 'short').depthAt).toBe(poolStraightDepth);
   });
 
   it('sizes the tube from the 1.8 m case alone on a transect 1.11 times larger', () => {
@@ -222,7 +279,18 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
     expect(record.footDepth).toBeCloseTo(1.11 * POOL_FOOT_DEPTH, 12);
     expect(record.slope).toBe(pool.slope);
     expect(record.onset).toBe(pool.onset);
-    expect(record.frontAt).toBe(pool.frontAt);
+    // Step 4 (ruling 16): the front's reach × 1.11 on the reference's own line: s 22.2 to 111, to 33.3 m behind it.
+    expect(POOL_REF_FRONT_REACH).toEqual({ from: 22.2, to: 111, behind: 33.3 });
+    expect(record.frontAt).not.toBe(pool.frontAt);
+    for (const [s, n, on] of [[22.3, 0, true], [22.1, 0, false], [110.9, 5, true], [111.1, 5, false], [60, -33.2, true], [60, -33.4, false], [60, 40, true]] as const) {
+      expect(record.frontAt!(...ar(s, n)), `s ${s}, n ${n}`).toBe(on);
+    }
+    // The short reef's (`?poolReef=short`): the pool's own reach on the pool's line; the default's record never changes.
+    expect(barrelSpotOf({ ...ref, poolReef: 'short' })!.frontAt).toBe(pool.frontAt);
+    expect(barrelSpotOf({ ...ref, poolReef: 'short' })!.footDepth).toBe(record.footDepth);
+    expect(barrelSpotOf({ ...barrel, poolReef: 'short' })).toBe(pool);
+    expect(pool.frontAt).toBe(poolStraightFrontAt);
+    expect(POOL_FRONT_REACH).toEqual({ from: 20, to: 100, behind: 30 });
     expect(record.front).toBe(pool.front);
     // The lagged join 1.11 × deeper and √1.11 × longer at 1.11 × the foot crest.
     expect(record.faceAnchor!.lead(1.11 * 1.08)).toBeCloseTo(1.11 * poolLead(1.08), 12);

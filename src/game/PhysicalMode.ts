@@ -388,7 +388,7 @@ export interface HostExtras {
  * the page decides. Shared with the dev pages that time the game's own seas (gpu-check's `?mode=pipeline`).
  */
 export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier: boolean, overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig {
-  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides), poolWindowSwitch().poolWindow, poolHeldOld());
+  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides), poolWindowSwitch().poolWindow, poolHeldOld(), poolReefShort());
 }
 
 /**
@@ -397,15 +397,17 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
  * crest), and the steeper ledge (`poolFloor` 'ledge') is dropped. Its wrapped window is `POOL_REF.alongShore` wide
  * (311 m, ruling 14; `alongShoreOf` gives it, so the config carries no width) unless `window` (`?poolWindow`) says another,
  * which becomes the config's `alongShore`. Its tube case's held frame is found with the jet-step test (`heldRule`
- * 'jet-step', ruling 16: `big` holds at frame 175, not 176) unless `heldOld` (`?poolHeld=old`). Any other config, as
- * given: `window` and `heldOld` are read at this size alone.
+ * 'jet-step', ruling 16: `big` holds at frame 175, not 176) unless `heldOld` (`?poolHeld=old`). Its reef's lengths along
+ * its line are × 1.11 (`POOL_REF`, ruling 16) unless `reefShort` (`?poolReef=short`: `poolReef` 'short', the lengths
+ * before step 4). Any other config, as given: `window`, `heldOld` and `reefShort` are read at this size alone.
  */
-export function poolRefConfig(config: SurfZoneConfig, window?: number, heldOld = false): SurfZoneConfig {
+export function poolRefConfig(config: SurfZoneConfig, window?: number, heldOld = false, reefShort = false): SurfZoneConfig {
   if (!poolRefOn(config)) return config;
   const { poolFloor, ...rest } = config;
   return {
     ...rest, significantHeight: regularSignificantHeight(POOL_REF.edgeHeight), peakPeriod: POOL_REF.period, poolTubeCase: 'big',
     ...(heldOld ? {} : { heldRule: 'jet-step' as const }),
+    ...(reefShort ? { poolReef: 'short' as const } : {}),
     ...(poolFloor === 'inside' ? { poolFloor } : {}),
     ...(window !== undefined ? { alongShore: window } : {}),
   };
@@ -612,7 +614,12 @@ export function poolSizeSwitch(search?: string): { poolSize?: 'ref' } {
   return devParam('poolSize', search)?.trim().toLowerCase() === 'ref' ? { poolSize: 'ref' } : {};
 }
 
-/** The widths `?poolWindow` takes, m: the straight reef and its slopes span x −66 to 118, so the wrap column stays plain platform. */
+/**
+ * The widths `?poolWindow` takes, m: the straight reef and its slopes span x −66 to 118, so the wrap column stays plain
+ * platform. Since step 4 (ruling 16) the reference's reef is × 1.11 along its line and spans x −72 to 128: its own 311 m
+ * window holds it, but a window under about 270 m does not, so A/Bs on narrow windows go with `?poolReef=short` (the
+ * first build's: `?poolSize=ref&poolWindow=280&poolReef=short`).
+ */
 export const POOL_WINDOW_RANGE = { min: 240, max: 400 } as const;
 
 /**
@@ -636,6 +643,16 @@ export function poolWindowSwitch(search?: string): { poolWindow?: number } {
  */
 export function poolHeldOld(search?: string): boolean {
   return devParam('poolHeld', search)?.trim().toLowerCase() === 'old';
+}
+
+/**
+ * The `?poolReef=short` dev switch (pool-look-reference step 4, 2026-11-11; ruling 16): the reference size's reef with
+ * the 1.8 m Barrel's own lengths along its line (235 m long from x 115, take-off at s 40, the front's reach s 20 to 100),
+ * as before step 4, for A/Bs against the lengths × 1.11 (`POOL_REF`). Read only together with `?poolSize=ref`
+ * (`poolRefConfig`): without it, and in online rooms (which pin `poolSize`), it does nothing.
+ */
+export function poolReefShort(search?: string): boolean {
+  return devParam('poolReef', search)?.trim().toLowerCase() === 'short';
 }
 
 export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' | 'inside' } {
@@ -1414,7 +1431,7 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     this.curtains.setOptics(SPOT_OPTICS[settings.spot]);
-    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config) });
+    const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config), poolReef: config.poolReef });
     // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
     const tank = tankLayout(config);
     const offshoreDepth = tank.edgeDepth;

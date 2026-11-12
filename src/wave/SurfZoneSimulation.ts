@@ -15,8 +15,8 @@ import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotio
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import {
-  POOL, POOL_BARREL, POOL_REF, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
-  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolSizeSwitch, type PoolWaves,
+  POOL, POOL_BARREL, POOL_REF, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefLine, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
+  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolReefSwitch, type PoolSizeSwitch, type PoolWaves,
 } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -401,6 +401,12 @@ export interface SurfZoneConfig {
    * Read where the library is built (`libraryFromBytes`): the surf zone's and the page's.
    */
   heldRule?: HeldRule;
+  /**
+   * The reference size's lengths along its reef (ruling 16, pool-look-reference step 4): 'short', the 1.8 m Barrel's
+   * own (235 m, as before step 4), the `?poolReef=short` A/B; unset, × 1.11 (`POOL_REF`, `poolRefLine`). Read only with
+   * `poolSize` 'ref' (the floor, the take-off, the peel's columns and the front's reach, `barrelSpotOf`).
+   */
+  poolReef?: PoolReefSwitch;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
@@ -1048,10 +1054,12 @@ export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.
 export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
 /** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak (its layout's). */
-export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed, poolWaves?: PoolWaves, poolBarrel?: PoolBarrelLayout): number {
+export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed, poolWaves?: PoolWaves, poolBarrel?: PoolBarrelLayout, poolSize?: PoolSizeSwitch, poolReef?: PoolReefSwitch): number {
   const floor = poolFloorOf({ poolWaves, poolBarrel });
+  // The reference size's reef (`?poolSize=ref`): its own line and take-off along it (`poolRefLine`).
+  const ref = spot === 'pool' && poolRefOn({ spot, poolWaves, poolBarrel, poolSize }) ? poolRefLine(poolReef) : undefined;
   return spot === 'padang' ? PADANG.takeOffX
-    : spot === 'pool' ? (floor === 'straight' ? poolStraightAt(POOL_STRAIGHT.takeOffS).x : floor === 'aframe' ? POOL_BARREL.takeOffX : POOL.takeOffX)
+    : spot === 'pool' ? (ref ? poolStraightAt(ref.takeOffS, ref.startX).x : floor === 'straight' ? poolStraightAt(POOL_STRAIGHT.takeOffS).x : floor === 'aframe' ? POOL_BARREL.takeOffX : POOL.takeOffX)
     : spot === 'canyon' ? canyonShape(canyonBed).takeOffX : REEF.takeOffX;
 }
 
@@ -1211,7 +1219,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config) });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config), poolReef: config.poolReef });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -1231,7 +1239,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
-    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed, config.poolWaves, config.poolBarrel)));
+    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed, config.poolWaves, config.poolBarrel, config.poolSize, config.poolReef)));
     return { x, z: breakZ(x) };
   }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
@@ -1478,7 +1486,7 @@ export class SurfZoneSimulation {
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config) });
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config), poolReef: config.poolReef });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
@@ -1543,7 +1551,7 @@ export class SurfZoneSimulation {
     const xCenters = this.solver.xCenters;
     const canyon = canyonShape(config.canyonBed);
     this.canyonShape = canyon;
-    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? { training: poolRiddenAt, aframe: poolBarrelRiddenAt, straight: poolStraightRiddenAt }[poolFloorOf(config)]
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? { training: poolRiddenAt, aframe: poolBarrelRiddenAt, straight: poolRefOn(config) ? ((line) => (x: number) => poolStraightRiddenAt(x, line))(poolRefLine(config.poolReef)) : (x: number) => poolStraightRiddenAt(x) }[poolFloorOf(config)]
       : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     // The Canyon's lagoon and its beach face behind the arm are not its wave (`CANYON.peelReach`; every break on the old layout).
@@ -2073,7 +2081,7 @@ export class SurfZoneSimulation {
     // The Canyon's tube is the reef's (`?canyonTube=on`): its beach peaks spill, so their crests never join its front; the
     // Wave Pool's straight reef's, on its reef alone (`BarrelSpot.frontAt`).
     const ridden = this.reefAt;
-    const at = BARREL_SPOTS[this.config.spot]?.frontAt;
+    const at = barrelSpotOf(this.config)?.frontAt;
     if (ridden || at) {
       let kept = 0;
       for (let k = 0; k < count; k += 1) {

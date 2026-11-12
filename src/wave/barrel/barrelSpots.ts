@@ -2,7 +2,7 @@ import { CANYON, PADANG, REEF, type SpotName } from '../Bathymetry';
 import { GRAVITY } from '../dispersion';
 import type { FrontOptions } from './BreakingFront';
 import { PADANG_ONSET, type OnsetTables } from './sliceClock';
-import { POOL_REF, poolRefOn, poolStraightFrame, type PoolBarrelLayout, type PoolSizeSwitch, type PoolWaves } from '../pool';
+import { POOL_REF, poolRefLine, poolRefOn, poolStraightFrame, type PoolBarrelLayout, type PoolReefSwitch, type PoolSizeSwitch, type PoolWaves } from '../pool';
 
 /**
  * How far over a reef's top its throw's floor sits, m: the pass's Gaussian tail lifts the flat's still depth by up to
@@ -298,6 +298,12 @@ const POOL_ONSET: OnsetTables = {
 export const POOL_FRONT_REACH = { from: 20, to: 100, behind: 30 } as const;
 
 /**
+ * The front's reach at the reference size with its lengths along the reef × 1.11 (`?poolSize=ref`, ruling 16):
+ * `POOL_FRONT_REACH` × 1.11, written out as the ruling gives it, on the reference's own line (`poolRefBarrelSpot`).
+ */
+export const POOL_REF_FRONT_REACH = { from: 22.2, to: 111, behind: 33.3 } as const;
+
+/**
  * The straight Barrel's lagged join (the advisor's step 3 ruling, 2026-11-03): Δd = |τ_e| C S_ray m deeper than the throw,
  * so a slice starts at its case's earliest frame (τ_e = −3 √(h0/g): 1.69 s before the throw at 1.5 m, 1.91 s at 1.8 m)
  * with its crest coming shoreward at C up the ray's slope: 0.45 m at the 1.5 m faces' foot crest (0.84 m on the knee)
@@ -362,19 +368,26 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
  * The Wave Pool's straight Barrel's transect at the reference size (`?poolSize=ref`, ruling 13; `POOL_REF`): the same
  * transect 1.11 times larger. Its foot is 1.11 × deeper, so the band, the join and the throw scale with it (`onsetTiming`
  * reads the tables by its foot over the tables'); the lagged join's depths × 1.11 and its ramp × √1.11, at 1.11 × the foot
- * crest. The slope, the front's reach along the reef (the reef's lengths along its line are unchanged) and its rules are
- * the pool's.
+ * crest. The slope and its rules are the pool's. Step 4 (ruling 16): the reef's lengths along its line are × 1.11 too, so
+ * the front's reach is the reference's own, on its own line (`POOL_REF_FRONT_REACH`, `poolRefLine`); with `reef` 'short'
+ * (`?poolReef=short`) the lengths and the reach are the pool's, as before step 4.
  */
-export function poolRefBarrelSpot(): BarrelSpot {
+export function poolRefBarrelSpot(reef?: PoolReefSwitch): BarrelSpot {
   const pool = BARREL_SPOTS.pool!;
   const k = POOL_REF.scale;
+  const reach = POOL_REF_FRONT_REACH;
+  const { startX } = poolRefLine(reef);
+  const frontAt = reef === 'short' ? pool.frontAt : (x: number, z: number) => {
+    const { s, n } = poolStraightFrame(x, z, startX);
+    return s >= reach.from && s <= reach.to && n >= -reach.behind;
+  };
   return {
-    ...pool, footDepth: POOL_FOOT_DEPTH * k,
+    ...pool, footDepth: POOL_FOOT_DEPTH * k, frontAt,
     faceAnchor: { lead: (footHeight: number) => k * poolLead(footHeight / k), ramp: (footHeight: number) => Math.sqrt(k) * poolRamp(footHeight / k) },
   };
 }
 
 /** A sea's barrel transect: its spot's (`BARREL_SPOTS`), or the pool's at the reference size (`SurfZoneConfig.poolSize`). */
-export function barrelSpotOf(config: { spot: SpotName; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch }): BarrelSpot | undefined {
-  return config.spot === 'pool' && poolRefOn(config) ? poolRefBarrelSpot() : BARREL_SPOTS[config.spot];
+export function barrelSpotOf(config: { spot: SpotName; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch; poolReef?: PoolReefSwitch }): BarrelSpot | undefined {
+  return config.spot === 'pool' && poolRefOn(config) ? poolRefBarrelSpot(config.poolReef) : BARREL_SPOTS[config.spot];
 }

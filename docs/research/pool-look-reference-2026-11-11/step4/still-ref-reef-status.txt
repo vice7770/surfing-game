@@ -1,0 +1,4 @@
+Water sheet: pool medium, 30 s settled, water on the GPU, 64 components · columns classic dawn, rich dawn, classic midday, rich midday, classic sunset, rich sunset · rows lineup, curl-channel, curl-close, curl-front, curl-behind, curl-inside, curl-ride, horizon, below · face slope 0.45 · program breakline-water-surface-rich-barrel-roller-glitter-lite
+shots: lineup, curl-channel, curl-close, curl-front, curl-behind, curl-inside, curl-ride, horizon, below
+advanced to 90.0 s of stepping; shots: lineup, curl-channel, curl-close, curl-front, curl-behind, curl-inside, curl-ride, horizon, below
+advanced to 150.0 s of stepping; shots: lineup, curl-channel, curl-close, curl-front, curl-behind, curl-inside, curl-ride, horizon, below

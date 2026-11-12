@@ -29,9 +29,9 @@
  */
 import { surfZoneConfigFor } from '../../../../src/game/PhysicalMode';
 import { physicalSettingsFor } from '../../../../src/game/SurfConditions';
-import { POOL, POOL_REF, POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolStraightAt, poolStraightFrame } from '../../../../src/wave/pool';
+import { POOL, POOL_REF, POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolRefLine, poolStraightAt as atOnLine, poolStraightFrame as frameOnLine } from '../../../../src/wave/pool';
 import { libraryFromBytes } from '../../../../src/wave/barrel/barrelLibrary';
-import { POOL_FOOT_DEPTH, POOL_FRONT_REACH } from '../../../../src/wave/barrel/barrelSpots';
+import { POOL_FOOT_DEPTH, POOL_FRONT_REACH as POOL_REACH, POOL_REF_FRONT_REACH } from '../../../../src/wave/barrel/barrelSpots';
 import { readBarrelCases } from '../../../../src/wave/barrel/nodeBarrelCases';
 import { LANDMARK } from '../../../../src/wave/barrel/ProfileLibrary';
 import { BARREL_SLOPE } from '../../../../src/wave/barrel/sweptLoft';
@@ -55,12 +55,21 @@ const s = POOL_STRAIGHT;
 const shape = ref ? { platformDepth: POOL_REF.platformDepth, crest: 1.0, kneeRounding: POOL_REF.kneeRounding, footDepth: POOL_FOOT_DEPTH * POOL_REF.scale } : { platformDepth: s.platformDepth, crest: 0.9, kneeRounding: s.kneeRounding, footDepth: POOL_FOOT_DEPTH };
 const cosPhi = Math.cos((s.reefAngle * Math.PI) / 180);
 /** Distance along the reef's crest line from its start, m, at along-shore position x. */
-const u = (x: number) => (s.startX - s.side * x) / cosPhi;
-const U_TAKE_OFF = s.takeOffS;
-const U_END = s.crestProfile[s.crestProfile.length - 1][0];
-const BARREL = [s.crestProfile[2][0], s.crestProfile[3][0]];
-/** Bar B's stretch (ruling 15). */
-const PACE = [65, 145];
+/** Step 4, build 2 (ruling 16): the reference size's reef on its own line, 1.11 times longer (`--reef short`: the line before). */
+const long = ref && (option('reef') ?? '').trim().toLowerCase() !== 'short';
+const reefLine = long ? poolRefLine() : { crestProfile: s.crestProfile, startX: s.startX, takeOffS: s.takeOffS };
+const poolStraightAt = (at: number) => atOnLine(at, reefLine.startX);
+const poolStraightFrame = (x: number, z: number) => frameOnLine(x, z, reefLine.startX);
+const POOL_FRONT_REACH = long ? POOL_REF_FRONT_REACH : POOL_REACH;
+const u = (x: number) => (reefLine.startX - s.side * x) / cosPhi;
+const U_TAKE_OFF = reefLine.takeOffS;
+const U_END = reefLine.crestProfile[reefLine.crestProfile.length - 1][0];
+const BARREL = [reefLine.crestProfile[2][0], reefLine.crestProfile[3][0]];
+/** Bar B's stretch (ruling 15; ruling 16 §4 on the long reef: u 72 to 161). */
+const PACE = long ? [72, 161] : [65, 145];
+/** The places along the reef the probe names, on the short line and × 1.11 on the long one. */
+const AT = long ? { platform: [72, 133, 194], foot: [72, 100, 133, 166.5, 194], mid: 133, marks: [111, 133, 166.5, 227.6], step2: [44, 122], tail: 33.3 }
+  : { platform: [65, 120, 175], foot: [65, 90, 120, 150, 175], mid: 120, marks: [100, 120, 150, 205], step2: [40, 110], tail: 30 };
 
 // The game's own config: the Surf screen's Wave Pool, Barrel waves, Big, on the CPU; `?poolSize=ref` as the page reads it.
 // Step 4's switches ride on the same stand-in `location`: `--held old` (`?poolHeld=old`), `--reef short` (`?poolReef=short`),
@@ -138,9 +147,9 @@ function record(time: number, sample: boolean): void {
       else if (toward * (far - wave.endX) > 0) { wave.endX = far; wave.track.push([time, u(far)]); }
       const farCol = toward < 0 ? main.low : main.high;
       const uFar = u(far);
-      if (sample && wave.ok && time > settle + 1 && uFar >= BARREL[0] && uFar <= BARREL[1] - 30 && white[farCol] === white[farCol]) {
+      if (sample && wave.ok && time > settle + 1 && uFar >= BARREL[0] && uFar <= BARREL[1] - AT.tail && white[farCol] === white[farCol]) {
         AHEAD.forEach((ahead, k) => {
-          const col = Math.round((s.side * (s.startX - (uFar + ahead) * cosPhi) - xCenters[0]) / solver.dx);
+          const col = Math.round((s.side * (reefLine.startX - (uFar + ahead) * cosPhi) - xCenters[0]) / solver.dx);
           if (col < 1 || col > nx - 2) return;
           // Where this crest will break in that column, and the reach seaward of it the crest can be at now.
           const zBreak = white[farCol] + poolStraightAt(uFar + ahead).z - poolStraightAt(uFar).z;
@@ -308,9 +317,9 @@ const cellOut = (at: number, out: number) => {
   const p = poolStraightAt(at);
   return solver.rowBelow(p.z - out * Math.cos(phiR)) * nx + Math.round((p.x - s.side * out * Math.sin(phiR) - xCenters[0]) / solver.dx);
 };
-const platformCells = [65, 120, 175].map((at) => ({ at, cell: cellOut(at, kneeOut) }));
+const platformCells = AT.platform.map((at) => ({ at, cell: cellOut(at, kneeOut) }));
 // The foot crest: the highest water of each period where the face is `footDepth` deep, square to the reef.
-const footCells = [65, 90, 120, 150, 175].map((at) => ({ at, cell: cellOut(at, (shape.footDepth - shape.crest) / s.gradient) }));
+const footCells = AT.foot.map((at) => ({ at, cell: cellOut(at, (shape.footDepth - shape.crest) / s.gradient) }));
 interface Peak { v: number; x: number; z: number; t: number; depth: number }
 const peak = (v: number): Peak => ({ v, x: Number.NaN, z: Number.NaN, t: Number.NaN, depth: Number.NaN });
 const acc = WINDOWS.map(([from, to]) => ({
@@ -432,10 +441,10 @@ const tracked = waves.filter((w) => w.frames >= 30);
 const at = (w: Wave, target: number) => { const p = w.track.find(([, v]) => v >= target); return p ? p[0] - w.start : Number.NaN; };
 const speeds = (list: Wave[], a: number, b: number) => list.map((w) => { const ta = at(w, a); const tb = at(w, b); return tb > ta ? (b - a) / (tb - ta) : Number.NaN; });
 const MID = (PACE[0] + PACE[1]) / 2;
-const SEGMENTS = [[PACE[0], PACE[1]], [U_TAKE_OFF, PACE[0]], [PACE[0], MID], [MID, PACE[1]], [BARREL[0], BARREL[1]], [BARREL[0], 120], [120, BARREL[1]]];
+const SEGMENTS = [[PACE[0], PACE[1]], [U_TAKE_OFF, PACE[0]], [PACE[0], MID], [MID, PACE[1]], [BARREL[0], BARREL[1]], [BARREL[0], AT.mid], [AT.mid, BARREL[1]]];
 function pace(label: string, list: Wave[]): void {
   const reach = list.map((w) => u(w.endX));
-  console.log(`B, pace, ${label}: ${list.length} waves; one travelling line reached ${[U_TAKE_OFF, BARREL[0], 100, 120, PACE[1], 150, BARREL[1], 205].map((m) => `u ${f(m)}: ${reach.filter((r) => r >= m - LINK).length}`).join(', ')}; `
+  console.log(`B, pace, ${label}: ${list.length} waves; one travelling line reached ${[U_TAKE_OFF, BARREL[0], AT.marks[0], AT.marks[1], PACE[1], AT.marks[2], BARREL[1], AT.marks[3]].map((m) => `u ${f(m)}: ${reach.filter((r) => r >= m - LINK).length}`).join(', ')}; `
     + `its end median u ${f(q(reach, 0.5))} (10th ${f(q(reach, 0.1))}); longest line median ${f(q(list.map((w) => w.longest), 0.5))} m`);
   SEGMENTS.forEach(([a, b], k) => { const v = speeds(list, a, b); console.log(`  peel along the reef u ${f(a)}–${f(b)}${k === 0 ? ' (THE BAR)' : k >= 4 ? ' (step 2\'s stretch)' : ''}: ${range(v)} m/s, ${count(v)} waves`); });
 }
@@ -529,15 +538,24 @@ for (const w of acc) {
     const bin = perBin.get(key) ?? { reef: 0, jet: 0, far: 0 };
     bin.reef += reef; bin.jet += jet; bin.far += far;
     perBin.set(key, bin);
-    if (uc >= 40 && uc < 110) { nReef += reef; nJet += jet; nFar += far; columns += 1; }
+    if (uc >= AT.step2[0] && uc < AT.step2[1]) { nReef += reef; nJet += jet; nFar += far; columns += 1; }
   }
   const lipsFar = lips.filter((j) => inWindow(j.t) && j.z === j.z && !near(j.x, j.z));
-  console.log(`D as step 2 counted it, u 40–110 (${columns} columns): waves that broke at the reef (the probe's onsets), summed over the columns ${nReef}; waves whose lip threw there ${nJet} = ${f((100 * nJet) / Math.max(1, nReef), 1)} % `
-    + `(against columns × periods, ${f(columns * periodsIn)}: ${f((100 * nJet) / (columns * periodsIn), 1)} %); lips thrown farther than ${NEAR} m from the reef line, anywhere: ${lipsFar.length}; second-line onsets on u 40–110: ${nFar}`);
+  console.log(`D as step 2 counted it, u ${AT.step2[0]}–${AT.step2[1]} (${columns} columns): waves that broke at the reef (the probe's onsets), summed over the columns ${nReef}; waves whose lip threw there ${nJet} = ${f((100 * nJet) / Math.max(1, nReef), 1)} % `
+    + `(against columns × periods, ${f(columns * periodsIn)}: ${f((100 * nJet) / (columns * periodsIn), 1)} %); lips thrown farther than ${NEAR} m from the reef line, anywhere: ${lipsFar.length}; second-line onsets on u ${AT.step2[0]}–${AT.step2[1]}: ${nFar}`);
   console.log(`   per 10 m of u, waves at the reef / lips thrown at the reef (%) / second-line onsets: ${[...perBin.keys()].sort((x, y) => x - y).filter((key) => perBin.get(key)!.reef || perBin.get(key)!.jet || perBin.get(key)!.far).map((key) => { const b = perBin.get(key)!; return `u ${key}: ${b.reef} / ${b.jet} (${f((100 * b.jet) / Math.max(1, b.reef))} %) / ${b.far}`; }).join('; ')}`);
+  if (ref) {
+    // Step 4 (ruling 16): the second break line near the reef's end (the long reef's end is 17 m nearer the beach, z −53 against −70).
+    const tailFrom = Math.floor((U_END - 60) / BIN) * BIN;
+    const farEnd = onsets.filter((o) => inWindow(o.t) && !near(o.x, o.z) && o.u >= tailFrom && o.u < U_END + 20);
+    const farAll = onsets.filter((o) => inWindow(o.t) && !near(o.x, o.z) && o.u >= -20 && o.u < U_END + 20);
+    console.log(`the second break line (onsets farther than ${NEAR} m from the reef line), whole reef u −20–${f(U_END + 20)}: ${farAll.length}, z ${range(farAll.map((o) => o.z), 1)} m, ${range(farAll.map((o) => o.depth))} m deep; `
+      + `near the reef's end, u ${tailFrom}–${f(U_END + 20)} (the reef line ends at z ${f(poolStraightAt(U_END).z, 1)}): ${farEnd.length}, z ${range(farEnd.map((o) => o.z), 1)} m, ${range(farEnd.map((o) => o.depth))} m deep, `
+      + `${farEnd.filter((o) => o.z < reefZ(o.x)).length} seaward of the line and ${farEnd.filter((o) => o.z >= reefZ(o.x)).length} shoreward`);
+  }
   // E.
   const wallIn = wallSamples.filter((v) => inWindow(v.t));
-  console.log(`E, the wall ahead of the white line's end (its end on u ${BARREL[0]}–${BARREL[1] - 30}; ${wallIn.filter((v) => v.k === 0).length} frames), against bar A's face ${f(faceA, 2)} m: `
+  console.log(`E, the wall ahead of the white line's end (its end on u ${BARREL[0]}–${BARREL[1] - AT.tail}; ${wallIn.filter((v) => v.k === 0).length} frames), against bar A's face ${f(faceA, 2)} m: `
     + AHEAD.map((ahead, k) => { const h = wallIn.filter((v) => v.k === k).map((v) => v.height); const sl = wallIn.filter((v) => v.k === k).map((v) => v.slope); return `${ahead} m ahead H ${range(h)} m = ${f(q(h, 0.5) / faceA, 2)} of the face, steepest ${f(q(sl, 0.5))}° (90th ${f(q(sl, 0.9))}°)`; }).join('; '));
   // F.
   console.log(`F, health: finite ${w.finite}; fastest water within ${REEF_BAND} m of the reef line ${f(w.fastest.v, 2)} m/s, read every step (${where(w.fastest)}); elsewhere (the swash) ${f(w.fastestElse.v, 2)} m/s (${where(w.fastestElse)}); `
