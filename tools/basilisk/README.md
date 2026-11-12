@@ -234,6 +234,58 @@ git push
   `git status` should then show nothing under `public/barrels` or `src/`. A case that threw no tube has no `.bin`; its
   analysis files are in `data/` all the same.
 
+## The Wave Pool's thin-lip run: Bo 4000 at level 14 (2026-11-12)
+
+The owner's note on the 2 m pool (2026-11-12): the falling lip is too thick for the wave's size. The lip-look ruling
+(`docs/research/lip-look-2026-11-11/README.md`, rank 3) names the cause and the fix at the source: every run above
+compiles `periodic.c` with a Bond number of 1000 on h0, so the capillary length is h0/√1000 = 0.032 h0 (14 cm at the
+run's 4.5 m depth, 9 to 11 cm at the size the game shows the case; 2.7 mm in real water), and it holds the lip thick as
+it leaves the crest. Feddersen 2024 ran the Surf Ranch
+at Bo = 4000: the capillary length halves (0.016 h0), about 4 cells of the run's grid at level 14 (2 at level 13, too
+few, hence the finer level). This run is the 2 m pool's own case (`pool_straight_big`) at that Bond number. Nothing else changes:
+the same bed, wave, domain and Reynolds number.
+
+`BO` (and `RE`) are read by `run_periodic.sh`: when set, the scout and both phases compile with `-DBO=…` (`-DRE=…`) and
+each build's `params.txt` records them; unset, the compile lines are the earlier runs' byte for byte. A build already
+compiled keeps its own number, so this run has **a runs folder of its own** (`RUNS`), and a report folder of its own.
+
+**On the M4 Pro**, from the repo:
+
+```
+git pull
+npm run barrels:pool -- check
+RUNS="$PWD/tools/basilisk/runs/bo4k" BO=4000 LEVEL2=14 POOL_CASES="pool_straight_big" CANYON_OUT=docs/research/pool-tube-runs-bo4k npm run barrels:pool
+RUNS="$PWD/tools/basilisk/runs/bo4k" npm run barrels:pool -- status
+```
+
+- **What it does:** as the earlier pool runs: a level-10 scout places the switch, the end and the window; phase 1 at
+  level 10; phase 2 at level 14 (1.76 cm cells) in the window; then the analysis, the case file and the report.
+- **Where it writes:** the runs in `tools/basilisk/runs/bo4k/` (git-ignored; the earlier runs in `tools/basilisk/runs/`
+  are not touched). The report, `summary.json`, `data/`, the figures and the case file (`barrels/*.bin`) go to
+  `docs/research/pool-tube-runs-bo4k/`. Nothing goes to `public/barrels` or the game's index: the case is a candidate
+  until it is measured against the ruling's bars.
+- **How long:** about a day. The earlier level-14 phase 2 runs took 20h42 and 22h31 on the M4
+  (`docs/research/pool-tube-runs-2/report-l14.md`; this case at level 13 took 2h21). A thinner lip may add cells and
+  time. With `brew install libomp`, put `OMP=1` in front of the run command: the one case then gets all the performance
+  cores (how much that saves is not measured). The Mac is kept awake by the script.
+- **Stop and resume:** `RUNS="$PWD/tools/basilisk/runs/bo4k" npm run barrels:pool -- stop`, then the same run command
+  again (10-minute checkpoints; keep `RUNS`, `BO` and `LEVEL2` the same). `stop` stops every pool case on the machine.
+- **Send back** the report folder, and nothing else:
+
+```
+git add docs/research/pool-tube-runs-bo4k
+git commit -m "data(pool): the pool's tube at Bo 4000, level 14"
+git push
+```
+
+  `git status` should then show nothing under `public/barrels` or `src/`. If the wave threw no tube there is no `.bin`;
+  send the folder all the same.
+
+**After it lands** (not built yet): the case goes into the game behind a switch (`?poolTubeCase=bo4k`), and
+`docs/research/lip-look-2026-11-11/tools/lip.mjs` reads it against the ruling's bars: tip thickness at 0.1 s at most
+0.025 m, mid-lip at most 0.04 H at 0.1 s, jet water at touchdown 0.10 to 0.22 H², tube area not below the present
+case's. If it misses them it is not wired in.
+
 ## The velocity under the surface (2026-11-11)
 
 Every run above kept the surface only (`output_facets`), so the game has no measured flow for its tube's water. With

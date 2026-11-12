@@ -53,6 +53,9 @@
 # them), SCOUT_LEVEL (10), SCOUT_DTOUT (0.1), SCOUT_TMAX (the scout's end; default the case's end + SCOUT_EXTRA, 10).
 # VELOUT=1 builds phase 2 with periodic.c's VELOUT: each fine frame also writes vel/v<t>.dat, the water's velocity under
 # the surface (run_velocity.sh drives it, in a runs folder of its own). A phase 2 already compiled keeps its build.
+# BO and RE: the Bond and Reynolds numbers on h0 the builds compile with (periodic.c's own 1000 and 40000 when unset;
+# the lip-look ruling's rank 3 reruns the pool's cases at BO=4000: docs/research/lip-look-2026-11-11/README.md). A build
+# already compiled keeps its own, so give such a run a RUNS folder of its own. Each build's params.txt records them.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -129,6 +132,10 @@ omp_flags() {  # OMP=1: OpenMP (Homebrew's libomp with Apple's clang); otherwise
   echo "-Xpreprocessor -fopenmp -I$p/include -L$p/lib -lomp"
 }
 
+fluid_flags() {  # BO and RE, when set: the builds' Bond and Reynolds numbers (periodic.c's own otherwise); nothing when unset
+  echo "${BO:+ -DBO=$BO}${RE:+ -DRE=$RE}"
+}
+
 selected() {  # the cases named on the command line, or all
   local c w
   for c in $CASES_ALL; do
@@ -186,6 +193,9 @@ train_c=$c
 EOF
   # the reef top and back slope (crest_track.py's still depth), only when the case has them: the others' files as before
   [ -z "$top" ] || printf 'REEFTOP=%s\nSBACK=%s\n' "$top" "${back:-0.05}" >> "$1/params.txt"
+  # the Bond and Reynolds numbers, only when the run sets them: the others' files as before
+  [ -z "${BO:-}" ] || printf 'BO=%s\n' "$BO" >> "$1/params.txt"
+  [ -z "${RE:-}" ] || printf 'RE=%s\n' "$RE" >> "$1/params.txt"
 }
 
 prepare() {  # the trains, the flags and both phases' builds (each compiled once)
@@ -195,7 +205,7 @@ prepare() {  # the trains, the flags and both phases' builds (each compiled once
   [ -f "$P2/train.json" ] || cp "$P1/train.dat" "$P1/train.json" "$P2/"
   local common omp velo=""
   omp="$(omp_flags)"
-  common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025"
+  common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025$(fluid_flags)"
   if [ "${VELOUT:-0}" = 1 ]; then velo=" -DVELOUT"; mkdir -p "$P2/vel"; fi
   if [ ! -x "$P1/periodic_${name}_p1" ]; then
     # shellcheck disable=SC2086
@@ -269,7 +279,7 @@ scout() {  # one coarse run of the whole case, every frame written at SCOUT_DTOU
     # shellcheck disable=SC2046,SC2086
     (cd "$PS" && cp "$HERE/periodic.c" . && \
       qcc -O2 $omp -DLEVEL="$SCOUT_LEVEL" $(bed_flags) -DXTOE="$xtoe" -DDOMAIN="$domain" -DTRAIN_C="$c" \
-        -DTMAX="$end" -DTOUT0=0 -DDTOUT="$SCOUT_DTOUT" periodic.c -o "periodic_${name}_scout" -lm)
+        -DTMAX="$end" -DTOUT0=0 -DDTOUT="$SCOUT_DTOUT"$(fluid_flags) periodic.c -o "periodic_${name}_scout" -lm)
     params "$PS" "$SCOUT_LEVEL" scout 0 "$end" "" ""
   fi
   echo "$name: scout (level $SCOUT_LEVEL, t 0 to $end)$([ -f "$PS/restart" ] && echo ', resuming')."
@@ -283,7 +293,7 @@ flags() {  # the qcc command lines, computed in a scratch folder (nothing is com
   parse "$1"
   local tmp common; tmp="$(mktemp -d)"
   train "$tmp"
-  common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025"
+  common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025$(fluid_flags)"
   local omp; omp="$(omp_flags)"
   echo "$name p1: qcc -O2 ${omp:+$omp }-DLEVEL=$LEVEL1 $common -DTMAX=$tsw -DTOUT0=$tsw periodic.c -o periodic_${name}_p1 -lm"
   local velo=""; if [ "${VELOUT:-0}" = 1 ]; then velo=" -DVELOUT"; fi

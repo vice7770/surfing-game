@@ -128,6 +128,8 @@ Render only. The collided surface, the void and the rider's water do not change,
 
 ### Rank 3. Fix the source: a pool case at a higher Bond number. New case behind `?poolTubeCase=bo4k`
 
+**2026-11-12:** the owner said yes to this run on their M4 (the lip reads too thick on the 2 m pool). The command is ready: `tools/basilisk/README.md`, "The Wave Pool's thin-lip run". `run_periodic.sh` now takes `BO` and `RE`. Not run yet; nothing is wired into the game.
+
 - What: rerun the pool case with Bo = 4000 (the value Feddersen 2024 used for the Surf Ranch) at L14. Capillary length halves: about 4.5 cm at pool size, about 2.5 cells at L14, so still resolved. Expect the capillary share of thickness to halve and the throw to lengthen (direction sourced from Mostert 2022; size inferred).
 - Cost: about one day of wall time per run on the owner's M4 (L14 runs took 21 to 22.5 h). No frame cost.
 - Headless bar: `lip.mjs` on the new file: tip thickness at 0.1 s at most 0.025 m; mid at most 0.04 H at 0.1 s; jet water at touchdown 0.10 to 0.22 H²; tube area not below the present case.
