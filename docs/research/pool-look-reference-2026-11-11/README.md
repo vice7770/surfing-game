@@ -160,7 +160,7 @@ Full write-up: `step5/README.md`. Branch `claude/pool-tube-early`. The default i
 - Builds in order: `?anchorLine=smooth` (bar R1), `?loftMesh=arc` (fold bars), carry the rise (W1, W2), then the owner rides.
 
 
-## Step 6: `?anchorLine=smooth` and `?loftMesh=arc` (2026-11-12, opt-in, not merged yet)
+## Step 6: `?anchorLine=smooth` and `?loftMesh=arc` (2026-11-12, opt-in)
 
 Full write-up: `step6/README.md`. Branch `claude/pool-anchor-line`. The default is unchanged. Ruling 18's builds 1 and 2; build 3 (carry the rise) is not built.
 
@@ -172,4 +172,5 @@ Full write-up: `step6/README.md`. Branch `claude/pool-anchor-line`. The default 
 - **The throw and the crash are untouched:** the list of all 1722 jets (time, place, water) is byte-equal in the three runs. Bars A to F equal line for line. `?tubeForm=early` alone prints step 5's numbers.
 - **The stills.** `anchorLine=smooth` alone: the ribs are not weaker. Both switches: the ribs are gone and the black slit at the tube's mouth is gone (a soft shade stays). **The pre-made part can still be pointed to, but less:** it stands up as a wall from the flat sea, with a rounded far end and a bright line at its foot.
 - **What is left of the folds is the library's frame join** (`step6/frame-blend.txt`): two frames are joined point by point, and before the throw the lip mark jumps between frames, so the curve between frames wobbles by 0.016 m (median) to 0.098 m (most). The next fix, not built: space each frame by arc before joining. It changes the curve by up to 0.10 m, so it needs the advisor's yes.
-- Not run: `&loftMesh=arc` alone, a two-train run for build 2, rider sessions, the #245 rise probe, a 600 s run.
+- **`&loftMesh=arc` alone (run after the review):** the same fold numbers and the same stills as both switches, no step in time (largest move 0.3547 m, the base's), the throws' list byte-equal. **Ride with `&loftMesh=arc` and without `&anchorLine=smooth`.**
+- Not run: a two-train run for build 2, rider sessions, the #245 rise probe, a 600 s run.

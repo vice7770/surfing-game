@@ -70,7 +70,19 @@ How to read the misses:
 - **The fold bars (build 2) miss**, but the folds are 2 to 3.5 times smaller, and none is over 90° above the lip.
 - **The curve bar (build 2) misses on 0.46 % of slices** (largest 0.010 m). The other way round (the old vertices off the new polyline) is 0.0047 m at 90 % and 0.034 m at most: the new vertices cut the corners of the old ones a little where the old ones were bunched.
 - The rise is not addressed here (build 3).
-- `&loftMesh=arc` without `&anchorLine=smooth` was **not run**.
+- `&loftMesh=arc` without `&anchorLine=smooth`: run after the review, see the next section.
+
+## Added after the review: `&loftMesh=arc` alone (no `anchorLine=smooth`)
+
+One more run (`arc.txt`, `arc.throws`) and four stills (`still-arc-*`), made by the main session after the builds.
+
+- **`&loftMesh=arc` alone gives the whole gain.** Its fold numbers equal the "both" column: crest to lip 12 / 37 / 54° at clock −0.5 to −0.15 s, lower face 12 / 30 / 50°; at the mouth 0 % over 90° above the lip, 2.1 % on the lower face.
+- **It adds no step in time.** The drawn crest's largest move in one step is 0.3547 m, the base's own number.
+- The throws' list is byte-equal to the base's. Lines A to F equal the base's.
+- The stills look the same as `still-both-*`: no ribs, no black slit.
+- **So `anchorLine=smooth` is not needed for the look, and it breaks a must-not. Do not ride with it.** It stays in the code as a dev switch, off, until the advisor rules on it.
+
+**To ride it:** `?spot=pool&waves=barrel&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&tubeForm=early&poolReach=long&loftMesh=arc`
 
 ## Why the folds do not go to the bar: the frame join
 
@@ -102,7 +114,7 @@ Compare with `../step5/still-form-early-*.jpg` (the base).
 - `tsc` for the game and the server: clean before each commit.
 - `?tubeForm=early` alone, run again on the final code: see the last section.
 - The merge suite and the default re-run: see the last section.
-- **Not run:** any rider session, catch report or ride. `&loftMesh=arc` alone. A two-train run for build 2. A 600 s run. The #245 rise probe.
+- **Not run:** any rider session, catch report or ride. A two-train run for build 2. A 600 s run. The #245 rise probe.
 - **Not built:** ruling 18's build 3 (carry the rise). The frame-join fix above.
 
 ## Files
@@ -132,7 +144,7 @@ node scripts/browser/headless-shot.mjs sheet --serve=$PWD --port=5199 --out=<dir
   --shots=curl-front:rich:midday,curl-channel:rich:sunset --advance=60,60 --first=skip
 ```
 
-To ride it: `?spot=pool&waves=barrel&poolSize=ref&wallBody=stream&tubeForm=early&poolReach=long&anchorLine=smooth&loftMesh=arc` (add the look switches as wanted). To judge build 2 without build 1's step in time, drop `&anchorLine=smooth`.
+To ride it: `?spot=pool&waves=barrel&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&tubeForm=early&poolReach=long&loftMesh=arc`. Leave `&anchorLine=smooth` out: it adds a step in time and does not help the look.
 
 ## The default, run again at the end
 
