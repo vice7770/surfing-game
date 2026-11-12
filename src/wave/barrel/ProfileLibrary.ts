@@ -1,6 +1,7 @@
 import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
 import { pairInnerSheet } from './sharedUpperRoot';
 import { GRAVITY } from '../dispersion';
+import { arcPlaces, arcRespace, lipShare } from './arcMesh';
 
 let carrierRounding: DataView | undefined;
 function carrierNextUp(value: number): number {
@@ -316,6 +317,62 @@ export function removeLoops(frames: Float32Array, from = 0, to = PROFILE_POINTS 
   return moved;
 }
 
+/**
+ * Ruling 19's frame join (`ProfileLibrary`'s `frameJoin: 'arc'`, `?frameJoin=arc`;
+ * docs/research/pool-look-reference-2026-11-11/ruling-19.md, section (a)): one case's frames up to its throw, each spaced
+ * by arc between the crest and the toe with the lip's and throat's points at the share of that arc the lip mark holds at
+ * the throw (`arcRespace`), beside the case's own frames, which stay as stored.
+ */
+export interface ArcFrames {
+  /** The frames 0 to `last`, as the case's own but for the crest-to-toe points of those `spaced`. */
+  frames: Float32Array;
+  /** Per frame, 1 where it was spaced: its lip has no underside (`jetLength` 0) and the arc has a length. */
+  spaced: Uint8Array;
+  /** The last frame at or before the throw (τ ≤ 0); the lip mark's share of the crest-to-toe arc at the throw. */
+  last: number;
+  share: number;
+}
+
+/**
+ * A case's frames up to its throw spaced by arc (`ArcFrames`); undefined for a case with no frame before its throw or no
+ * lip share there. Before the face overturns the lip mark is the face's steepest point, not a point of the water, and
+ * slides along the face from frame to frame (`arcMesh.ts`): two frames joined point by point then draw a curve neither
+ * frame draws. Spaced by arc first, the same index is the same share of the face in both.
+ */
+export function arcFramesOf(c: BarrelCase): ArcFrames | undefined {
+  const count = c.frames.length / FLOATS;
+  const last = Math.min(count - 1, Math.floor(-c.tauStart / c.tauStep + 1e-6));
+  if (!(last >= 0)) return undefined;
+  // The profile at the throw (τ = 0), linear between its two frames as `frameAt` joins them.
+  const position = Math.min(count - 1, Math.max(0, -c.tauStart / c.tauStep));
+  const f = Math.floor(position);
+  const next = Math.min(count - 1, f + 1);
+  const t = position - f;
+  const thrown = new Float32Array(FLOATS);
+  for (let i = 0; i < FLOATS; i += 1) {
+    const a = c.frames[f * FLOATS + i];
+    thrown[i] = a + t * (c.frames[next * FLOATS + i] - a);
+  }
+  const share = lipShare(thrown);
+  if (!(share > 0 && share < 1)) return undefined;
+  const frames = c.frames.slice(0, (last + 1) * FLOATS);
+  const spaced = new Uint8Array(last + 1);
+  const arc = new Float64Array(LANDMARK.toe - LANDMARK.crest + 1);
+  const places = arcPlaces();
+  for (let k = 0; k <= last; k += 1) {
+    const raw = c.frames.subarray(k * FLOATS, (k + 1) * FLOATS);
+    if (!arcRespace(raw, share, arc, places)) continue;
+    spaced[k] = 1;
+    for (let i = LANDMARK.crest + 1; i < LANDMARK.toe; i += 1) {
+      const m = places.from[i];
+      const u = places.share[i];
+      frames[k * FLOATS + 2 * i] = raw[2 * m] + u * (raw[2 * m + 2] - raw[2 * m]);
+      frames[k * FLOATS + 2 * i + 1] = raw[2 * m + 1] + u * (raw[2 * m + 3] - raw[2 * m + 1]);
+    }
+  }
+  return { frames, spaced, last, share };
+}
+
 export class ProfileLibrary {
   /** The cases as the library draws them: each case's own frames, with their small loops closed (`removeLoops`). */
   readonly cases: readonly BarrelCase[];
@@ -325,6 +382,14 @@ export class ProfileLibrary {
   blendLoops = 0;
   private readonly bySlope: BarrelCase[][];
   private readonly held = new Map<BarrelCase, HeldFrame>();
+  /** Ruling 19's frame join (`options.frameJoin` 'arc'): each case's frames up to its throw, spaced by arc. Empty without it. */
+  private readonly arcFrames = new Map<BarrelCase, ArcFrames>();
+  /**
+   * With the arc join (a diagnostic, counted once when the library loads): the cases' frame pairs before the throw, and
+   * those of them where one frame's lip already has an underside and the other's not, which keep the point-by-point join.
+   */
+  readonly arcJoinPairs: number = 0;
+  readonly arcJoinMixed: number = 0;
   private readonly scratch = new Float32Array(FLOATS);
   private readonly tipLower = new Float64Array(2);
   private readonly tipUpper = new Float64Array(2);
@@ -342,8 +407,13 @@ export class ProfileLibrary {
    */
   private readonly analyticClocks = new NumberKeyCache<{ impact: number; retired: number; clear: number; event: BoundedCEvent }>(ANALYTIC_CLOCK_CAPACITY);
 
-  /** `options.heldFrame`: each case's held frame by another rule (`heldFrameJetStep`); without it, `heldFrame`. */
-  constructor(cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C'; heldFrame?: (c: BarrelCase) => HeldFrame } = {}) {
+  /**
+   * `options.heldFrame`: each case's held frame by another rule (`heldFrameJetStep`); without it, `heldFrame`.
+   * `options.frameJoin` 'arc' (ruling 19, `?frameJoin=arc`; the raw path alone): before a case's throw (τ < 0), two frames
+   * whose lips have no underside are each spaced by arc at the throw's share before they are joined (`arcFramesOf`); from
+   * the throw on, and where one of the two already has a jet, the join is point by point as always. Without it, as always.
+   */
+  constructor(cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C'; heldFrame?: (c: BarrelCase) => HeldFrame; frameJoin?: 'arc' } = {}) {
     // The raw path draws and collides the frames themselves, so their loops close once, here, for both. The bounded-C
     // reads only the crest, toe and their tangents, and stays byte for byte as it was (the `?tubeShape=c` A/B).
     let moved = 0;
@@ -359,6 +429,27 @@ export class ProfileLibrary {
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
     for (const c of cases) this.held.set(c, (options.heldFrame ?? heldFrame)(c));
+    if (options.frameJoin === 'arc' && options.geometry !== 'bounded-C') {
+      for (const c of cases) {
+        const arc = arcFramesOf(c);
+        if (!arc) continue;
+        this.arcFrames.set(c, arc);
+        for (let k = 0; k < arc.last; k += 1) {
+          this.arcJoinPairs += 1;
+          if (arc.spaced[k] !== arc.spaced[k + 1]) this.arcJoinMixed += 1;
+        }
+      }
+    }
+  }
+
+  /**
+   * The frames a case's join between frames `f` and `next` reads at τ: its own, or, before its throw and with neither
+   * frame's lip a jet yet, those spaced by arc (ruling 19's frame join, `options.frameJoin`).
+   */
+  private joinFrames(c: BarrelCase, tau: number, f: number, next: number): Float32Array {
+    if (!(tau < 0)) return c.frames;
+    const arc = this.arcFrames.get(c);
+    return arc && next <= arc.last && arc.spaced[f] === 1 && arc.spaced[next] === 1 ? arc.frames : c.frames;
   }
 
   /** The profile for a slice, in metres, into `out` (PROFILE_POINTS (x, y) pairs). */
@@ -684,22 +775,27 @@ export class ProfileLibrary {
     const f = Math.floor(position);
     const next = Math.min(count - 1, f + 1);
     const t = position - f;
+    const frames = this.joinFrames(c, tau, f, next);
     for (let k = 0; k < 2; k += 1) {
-      const a = c.frames[f * FLOATS + 2 * point + k];
-      out[k] = a + t * (c.frames[next * FLOATS + 2 * point + k] - a);
+      const a = frames[f * FLOATS + 2 * point + k];
+      out[k] = a + t * (frames[next * FLOATS + 2 * point + k] - a);
     }
   }
 
-  /** One case's profile at τ (√(h0/g)), linear between its two nearest frames, clamped to its first and last. */
+  /**
+   * One case's profile at τ (√(h0/g)), linear between its two nearest frames, clamped to its first and last; with the arc
+   * join, before the throw, between the two frames spaced by arc (`joinFrames`).
+   */
   private frameAt(c: BarrelCase, tau: number, out: Float32Array): void {
     const count = c.frames.length / FLOATS;
     const position = Math.min(count - 1, Math.max(0, (tau - c.tauStart) / c.tauStep));
     const f = Math.floor(position);
     const next = Math.min(count - 1, f + 1);
     const t = position - f;
+    const frames = this.joinFrames(c, tau, f, next);
     for (let i = 0; i < FLOATS; i += 1) {
-      const a = c.frames[f * FLOATS + i];
-      out[i] = a + t * (c.frames[next * FLOATS + i] - a);
+      const a = frames[f * FLOATS + i];
+      out[i] = a + t * (frames[next * FLOATS + i] - a);
     }
   }
 

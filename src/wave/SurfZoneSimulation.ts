@@ -585,6 +585,16 @@ export interface SurfZoneConfig {
    * library's lip mark slides. The curve itself is unchanged. Absent: off, exactly as before. Online rooms pin it absent.
    */
   loftMesh?: 'arc';
+  /**
+   * Ruling 19's step 1, opt-in (`ProfileLibrary`'s `frameJoin`, `?frameJoin=arc`;
+   * docs/research/pool-look-reference-2026-11-11/step7/README.md): before a case's throw the library spaces each of its
+   * two frames by arc between the crest and the toe (the lip's points at the share they hold at the throw) and then joins
+   * them, so the curve between two frames no longer carries the sliding lip mark. The stored frames are unchanged; from
+   * the throw on the join is as before. Read where the library is built (`libraryFromBytes`): the surf zone's and the
+   * page's, so the drawing, the wall water, the contact and the crash read one curve. Absent: off, exactly as before.
+   * Online rooms pin it absent.
+   */
+  frameJoin?: 'arc';
 }
 
 /**

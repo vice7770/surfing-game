@@ -613,6 +613,27 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('takes `?frameJoin=arc` at the Barrel alone, and an online room pins the default (dev switch; ruling 19\'s build 1)', () => {
+    expect(tubeFaceSwitches('?frameJoin=arc')).toEqual({ frameJoin: 'arc' });
+    expect(tubeFaceSwitches('?tubeForm=early&loftMesh=arc&frameJoin= Arc ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', loftMesh: 'arc', frameJoin: 'arc' });
+    for (const search of ['?frameJoin', '?frameJoin=', '?frameJoin=on', '?frameJoin=old', '?framejoin=arc']) expect(tubeFaceSwitches(search), search).toEqual({});
+    // `?loftMesh=arc` alone is as it was: the switch adds nothing by itself.
+    expect(tubeFaceSwitches('?loftMesh=arc')).toEqual({ loftMesh: 'arc' });
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.frameJoin).toBeUndefined();
+      vi.stubGlobal('location', { search: '?frameJoin=arc' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, frameJoin: 'arc' });
+      expect(surfZoneConfigFor(training, 5, false).frameJoin).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { frameJoin: undefined });
+      expect(room).toEqual({ ...plain, frameJoin: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('takes `?anchorLine=smooth` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 1)', () => {
     expect(tubeFaceSwitches('?anchorLine=smooth')).toEqual({ anchorLine: 'smooth' });
     expect(tubeFaceSwitches('?tubeForm=early&anchorLine= Smooth ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth' });

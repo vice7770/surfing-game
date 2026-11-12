@@ -17,7 +17,8 @@ import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
  * mark's own there). Every vertex stays on the profile's own polyline; the back slope and the front are as before.
  */
 
-const SPAN = LANDMARK.toe - LANDMARK.crest;
+/** The crest-to-toe span, profile points. A function, not a constant: `ProfileLibrary` reads this module too (ruling 19's frame join). */
+const span = () => LANDMARK.toe - LANDMARK.crest;
 
 /** The arc's length from the crest mark to the toe mark along the profile's polyline, m. */
 function arcTo(profile: ArrayLike<number>, from: number, to: number): number {
@@ -57,6 +58,7 @@ export function arcPlaces(): ArcPlaces {
  */
 export function arcRespace(profile: ArrayLike<number>, share: number, arc: Float64Array, into: ArcPlaces): boolean {
   if (!(share > 0 && share < 1) || jetLength(profile) > 0) return false;
+  const SPAN = span();
   // The arc's length at each of the crest-to-toe points.
   arc[0] = 0;
   for (let k = 0; k < SPAN; k += 1) {

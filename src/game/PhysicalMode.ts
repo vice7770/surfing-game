@@ -717,12 +717,14 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * smoothed along the crest once more and the loft's records joined by a C1 curve, read with the crest line alone
  * (`?crestLine`, or `?tubeForm=early`). Its build 2, opt-in: `?loftMesh=arc`, the loft's vertices before the throw at
  * fixed shares of the crest-to-toe arc (the same curve, no pleats where the lip mark slides).
+ * Ruling 19's step 1 (pool-look-reference step 7, 2026-11-12), opt-in: `?frameJoin=arc`, the library's two frames each
+ * spaced by arc before they are joined, before the throw (read where the library is built, the surf zone's and the page's).
  * Ruling 11's step 1 (after-tube, 2026-11-11), opt-in: `?afterTube=roller`, the Canyon's roller lens seeded where the
  * lip touches down, drawn only (the rider's water does not read it).
  * Online rooms run the defaults (the guard, the smooth wall, the buoyancy, the drop rule, the seam blend, the streamline
- * wall water, the crest line, the smooth anchor line, the arc mesh and the after-tube roller off).
+ * wall water, the crest line, the smooth anchor line, the arc mesh, the arc frame join and the after-tube roller off).
  */
-export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock' | 'tubeSeam' | 'seamTau' | 'seamBand' | 'wallBody' | 'crestLine' | 'anchorLine' | 'loftMesh' | 'afterTube'> {
+export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFace' | 'tubeFrom' | 'tubeLag' | 'tubeClock' | 'tubeAnchor' | 'tubeForm' | 'tubeThrow' | 'wallFlow' | 'tubeContact' | 'tubeCap' | 'tubeMerge' | 'tubeGuard' | 'tubeTrack' | 'tubeInertia' | 'tubeRetire' | 'tubeBuoy' | 'tubeDrop' | 'formClock' | 'tubeSeam' | 'seamTau' | 'seamBand' | 'wallBody' | 'crestLine' | 'anchorLine' | 'loftMesh' | 'frameJoin' | 'afterTube'> {
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   const seamTau = parseSeamTau(value('seamTau'));
   const seamBand = parseSeamBand(value('seamBand'));
@@ -754,6 +756,7 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('crestLine') === 'sub' || value('crestLine') === 'top' ? { crestLine: value('crestLine') as 'sub' | 'top' } : early ? { crestLine: 'top' as const } : {}),
     ...(value('anchorLine') === 'smooth' ? { anchorLine: 'smooth' as const } : {}),
     ...(value('loftMesh') === 'arc' ? { loftMesh: 'arc' as const } : {}),
+    ...(value('frameJoin') === 'arc' ? { frameJoin: 'arc' as const } : {}),
   };
 }
 
@@ -1426,7 +1429,7 @@ export class PhysicalMode {
         const bytes = await barrelCaseBytes(spot, this.config?.poolTubeCase);
         if (!bytes) throw new Error('No barrel case files');
         // The page draws what the surf zone feels: the same cases, as the same shape (`?tubeShape=c`).
-        return libraryFromBytes(bytes, this.config?.tubeShape, spot, this.config?.heldRule);
+        return libraryFromBytes(bytes, this.config?.tubeShape, spot, this.config?.heldRule, this.config?.frameJoin);
       }, view, cameraWaterOld() ? 'old' : 'fast');
       // `?lipFoam=old` and `?lipBack=old`: the curl's foam and the Rich lip's background as before pool-barrel-drawing.
       if (lipFoamOld()) this.sweptBarrel.mesh.lipFoam = 'old';
@@ -1824,7 +1827,7 @@ export class PhysicalMode {
     const spot = this.config?.spot;
     const bytes = spot && this.swept ? await barrelCaseBytes(spot, this.config?.poolTubeCase) : undefined;
     if (!spot || !bytes || !this.sweptBarrel) return false;
-    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot, this.config?.heldRule));
+    this.sweptBarrel.useLibrary(spot, libraryFromBytes(bytes, shape, spot, this.config?.heldRule, this.config?.frameJoin));
     return true;
   }
 
