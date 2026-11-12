@@ -228,3 +228,11 @@ behind it. In the pool the beach is about 215 m behind the reef line [M, step 5'
 4. A cheaper half-step, if the owner's M4 still has today's run folder (`tools/basilisk/runs/periodic_pool_straight_big_L13`
    with its facets): its phase 2 already has fine frames from τ −5.2 (−3.5 s), and its window lets a profile's back stay
    fine from about −2.9 s. Re-running only the library from there (minutes) would reach 3 s, not 4. Worth asking?
+
+## The advisor's answers (2026-11-12, this session)
+
+1. **Pre-read the sea side now: yes.** Build the sea-side probe (extend `ruling-17-runs/r17-probe3.ts` as section 5 says) and read it against the committed scout track. It costs no M4 time and tells early whether the sea and the case agree 2 to 4 s before the throw. The case side already reads H 2.2 to 2.4 m there, against ruling 17's 1.5 m sea wall, measured another way; the probe decides.
+2. **T5 keeps 10 s.** Its job is to compare with today's case, so only the start may change. C2's library will use the reference pool's 10.5 s.
+3. **If the overlap differs, T5 is the truer case.** Same physics, more of it resolved (the first crest's bore at level 13). The difference measures how much today's narrow window shaped today's case.
+4. **No partial re-run of today's library.** T5 reaches −5.4 s; −3 s alone is not worth the owner's time.
+5. **T5 runs on the session's M1.** Basilisk is installed here (`~/basilisk-C`, rev 082dd5c9); the run is one core and under 1 GB. The M1's level-10 scout matched the M4's to the digit, so the revision gap (the M4 has 4ec35831) should not matter for T5's bar. The owner's M4 commands stay documented for a re-run there.
