@@ -162,7 +162,7 @@ Full write-up: `step5/README.md`. Branch `claude/pool-tube-early`. The default i
 
 ## Step 6: `?anchorLine=smooth` and `?loftMesh=arc` (2026-11-12, opt-in)
 
-Full write-up: `step6/README.md`. Branch `claude/pool-anchor-line`. The default is unchanged. Ruling 18's builds 1 and 2; build 3 (carry the rise) is not built.
+Full write-up: `step6/README.md`. Merged as PR #264. The default is unchanged. Ruling 18's builds 1 and 2; build 3 (carry the rise) is not built.
 
 - **Build 1, `&anchorLine=smooth`:** the drawn crest reads a smoothed line of the kept anchor shifts. The kept shift is not changed. **It misses bar R1:** off its line at 1 m, 0.051 → 0.039 m at 90 % (bar 0.010) and 0.116 → 0.080 m at 99 % (bar 0.03); at 2 m 0.127 → 0.101 m (bar 0.03). Two-train sea: 0.050 → 0.038 m.
 - **Build 1 breaks a must-not: a new step in time.** The drawn crest's largest move in one step before the throw went 0.35 → 0.63 m (two trains 0.39 → 1.03 m). The median move is a little smaller (0.085 → 0.079 m). Not tuned.
@@ -174,3 +174,15 @@ Full write-up: `step6/README.md`. Branch `claude/pool-anchor-line`. The default 
 - **What is left of the folds is the library's frame join** (`step6/frame-blend.txt`): two frames are joined point by point, and before the throw the lip mark jumps between frames, so the curve between frames wobbles by 0.016 m (median) to 0.098 m (most). The next fix, not built: space each frame by arc before joining. It changes the curve by up to 0.10 m, so it needs the advisor's yes.
 - **`&loftMesh=arc` alone (run after the review):** the same fold numbers and the same stills as both switches, no step in time (largest move 0.3547 m, the base's), the throws' list byte-equal. **Ride with `&loftMesh=arc` and without `&anchorLine=smooth`.**
 - Not run: a two-train run for build 2, rider sessions, the #245 rise probe, a 600 s run.
+
+## Ruling 19: after `?loftMesh=arc` (2026-11-12, the advisor; one light run)
+
+Full text: `ruling-19.md`; the run: `ruling-19-runs/frame-true.txt`. Nothing is built by it.
+
+- **(a) The frame join: yes, space each frame by arc before joining, before the throw** (`?frameJoin=arc`, in the library's `profileAt`). It is the truer curve: each stored frame rebuilt from its two neighbours lies off the real frame by 0.097 m at 90 % today and 0.016 m arc-first, in the last 0.6 s. Before the throw the lip mark is noise (its share jumps 0.05 to 0.4 in 0.016 s). Interpolating the lip's share gains nothing.
+- **Bars A1 to A6:** at each stored frame's time within 0.005 m of the raw frame; leave-one-out 0.02 m at 90 % in the last 0.6 s; no vertex moves from the throw on; no quad over 90° at the mouth; stills clean. The fold bars 10°/20° become a report.
+- **(b) `anchorLine=smooth` is dropped.** The ribs were the mesh and the frame join, not the anchor line (ruling 18 was wrong on that). It stays off and is removed in the next clean-up.
+- **(c) Carry the rise (`?wallRise=carry`) goes after (a):** it differences frames, and today's join wobbles by 1 to 6 m/s. Spec, bars W1 to W3 and the stop rule are in the ruling.
+- **What still shows the pre-made part, and what this method can remove:** the bright line at the foot (yes, first; a probe before any build), the soft wobble near the throw (yes, by a), the surface moving through the felt water (yes, by c), the rounded far end (partly). **Not removable without the sea's own face changing (C2):** the drawn crest 0.2 m over the sea's, and the steep dark wall out of a flatter, paler sea. That is what would show on a large beach.
+- **Build order:** `?frameJoin=arc`; the foot-line probe and a ruling; `?wallRise=carry`; the owner rides; remove `anchorLine=smooth`; C2 on the pool (the owner's call).
+
