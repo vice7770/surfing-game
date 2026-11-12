@@ -31,6 +31,12 @@ if the shapes still disagree, D4 as the one long shot that removes the seam; C1,
    steeper far ahead of the lip. No drawing route fixes that; it is a generator question.
 3. Is E (a rigged wave, as films do) ruled out for good? I assume yes.
 
+**The owner's answers (2026-11-12 evening), after "the wave still doesnt look surfable": the route is C2, "the whole breaking wave from the Basilisk library".**
+1. Yes, the breaking zone may lose its live water, "as long as it respects the beach and wave direction": the live sea brings each crest in with its real height and direction, the beach's depth sets where it breaks and how it peels, the library gives only the breaking shape per slice, and a simple sea under the zone keeps the currents and the backwash.
+2. Keep a train of many waves: "the video is from real life they only do one wave at a time, we dont have that problem". Each crest is handed to the library on its own. A train's wall far ahead of the curl is gentler than the clip's single wave; that is real physics for beaches.
+3. No hand-shaped wave (E): "I would like the shape if it was possible with physics".
+Next: the C2 plan (steps and bars), with T2 (the case on 12 m earlier) and T5 (a Basilisk run started twice as far out, on the owner's M4) first.
+
 ## Detail
 ### What ruling 17 measured, that every route must face [M]
 - The case and the sea agree best 1-1.6 s before the throw: case crest 0.17-0.21 m over the sea's, height 1.03-1.07.
