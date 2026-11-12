@@ -159,3 +159,17 @@ Full write-up: `step5/README.md`. Branch `claude/pool-tube-early`. The default i
 - **For the owner:** the two parts can be hidden on the pool with this method, but are not yet. One limit stays: the drawn crest is about 0.2 m above the sea's. If that still reads as two parts after the builds, it is the case for the library-only surf zone (C2).
 - Builds in order: `?anchorLine=smooth` (bar R1), `?loftMesh=arc` (fold bars), carry the rise (W1, W2), then the owner rides.
 
+
+## Step 6: `?anchorLine=smooth` and `?loftMesh=arc` (2026-11-12, opt-in, not merged yet)
+
+Full write-up: `step6/README.md`. Branch `claude/pool-anchor-line`. The default is unchanged. Ruling 18's builds 1 and 2; build 3 (carry the rise) is not built.
+
+- **Build 1, `&anchorLine=smooth`:** the drawn crest reads a smoothed line of the kept anchor shifts. The kept shift is not changed. **It misses bar R1:** off its line at 1 m, 0.051 → 0.039 m at 90 % (bar 0.010) and 0.116 → 0.080 m at 99 % (bar 0.03); at 2 m 0.127 → 0.101 m (bar 0.03). Two-train sea: 0.050 → 0.038 m.
+- **Build 1 breaks a must-not: a new step in time.** The drawn crest's largest move in one step before the throw went 0.35 → 0.63 m (two trains 0.39 → 1.03 m). The median move is a little smaller (0.085 → 0.079 m). Not tuned.
+- **One change from the ruling:** the crash's slices stay on the kept places. On the smoothed line each jet's asked water changed by 0.4 %, which breaks "D number for number" (`step6/smooth-crash-on-line.txt`).
+- **Build 2, `&loftMesh=arc`:** before the throw the loft's vertices between the crest and the toe stand by arc length, not by the sliding lip mark. **The folds fall but miss the bars:** crest to lip at clock −0.5 to −0.15 s, 44° → 12° median and 74° → 37° at 90 % (bars 10° and 20°); lower face 40° → 12° and 73° → 30°. At the mouth, quads over 90°: crest to lip 11.1 % → 0 % (pass), lower face 4.9 % → 2.0 % (bar: none). Where the share ends, the slope change at 90 % went 84.9° → 42.2° (bar 10°).
+- **Build 2 keeps the curve** within 0.0044 m at 99 % of slices; the largest is 0.010 m (bar 0.005 m, missed on 0.46 % of slices). From the throw on no vertex moves.
+- **The throw and the crash are untouched:** the list of all 1722 jets (time, place, water) is byte-equal in the three runs. Bars A to F equal line for line. `?tubeForm=early` alone prints step 5's numbers.
+- **The stills.** `anchorLine=smooth` alone: the ribs are not weaker. Both switches: the ribs are gone and the black slit at the tube's mouth is gone (a soft shade stays). **The pre-made part can still be pointed to, but less:** it stands up as a wall from the flat sea, with a rounded far end and a bright line at its foot.
+- **What is left of the folds is the library's frame join** (`step6/frame-blend.txt`): two frames are joined point by point, and before the throw the lip mark jumps between frames, so the curve between frames wobbles by 0.016 m (median) to 0.098 m (most). The next fix, not built: space each frame by arc before joining. It changes the curve by up to 0.10 m, so it needs the advisor's yes.
+- Not run: `&loftMesh=arc` alone, a two-train run for build 2, rider sessions, the #245 rise probe, a 600 s run.
