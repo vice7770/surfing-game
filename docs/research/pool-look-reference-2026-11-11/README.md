@@ -261,3 +261,16 @@ Full text: `step9/README.md`; the runs: `step9/base.txt` (switch off), `step9/du
 - **The dig:** 0.3 to 0.4 m median as expected, up to 1.15 m.
 - Not run: rider sessions, a second run, the default pool, Canyon. `?lipEdge=one` is not built.
 - **For the advisor:** the along-wall line where the dig starts (J2), the white patches in the hollow, K7's 13 mm, the fold.
+
+## Ruling 22: after `?wallFoot=dug` (2026-11-12, the advisor; no probe run)
+
+Full text: `ruling-22.md`; one light reading of the library file in `ruling-22-runs/`. Nothing is built by it.
+
+- **1. The line along the wall is not the dig.** It is the case's own hollow knee, the foot of the steep wall: 2.4° at −1.9 s near the toe, 8.8° at −0.5 s, 21° at −0.05 s at 0.28 of the face (the run's own `big` frames, over 0.4 m each side). It was in step 8's normals still too. It is real water and stays; no ramp is built. Its wobble is the stand-in frames' (the second library). It begins where the pre-made wall begins: that is the hand-over, and only C2 changes it.
+- **2. The white patches** are most likely the sun in the hollow (Classic and the normals view are clean). One still at another sun to check. No fix.
+- **3. Cap the dig** under `wallFoot=dug` itself: untouched to 0.35 H, eased to 0.5 H at most; never more than half the sea's own depth. K7 restated as "at least half the sea's depth". Bars C1 to C5; one build, one run.
+- **4. The fold (−0.042 m once) and the 0.6 m spacing:** leave; count the fold in the cap's run.
+- **5. The 8-point crest ramp:** accepted.
+- **6. Order:** the cap, the second library, `?lipEdge=one`, `?wallRise=carry`. The owner can ride now.
+- **Corrected:** ruling 21's "the streak goes with the dig".
+
