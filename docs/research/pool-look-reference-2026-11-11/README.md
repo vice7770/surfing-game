@@ -245,3 +245,19 @@ Full text: `ruling-21.md`. Nothing is built by it.
 - **The order:** `?wallFoot=dug`; the second library (ruling 20); `?lipEdge=one`; `?wallRise=carry`; the owner rides.
 - **What still shows after all of it:** the wall reaches only about 15 m ahead of the break and grows in over about a second; its crest stands 0.2 m over the sea's; the dug trough ends 5 to 8 m ahead. On a large beach the same, larger. Only C2 removes these.
 - **Corrected:** ruling 19's guess that the line sat at the toe; the 11-03 figure "the case's floor at most 0.03 m under the sea" does not hold on the ref pool (0.3 to 0.4 m).
+
+## Step 9: `?wallFoot=dug` (2026-11-12, opt-in, branch `claude/pool-wall-foot`, not pushed; K7 misses by 13 mm, nothing tuned)
+
+Full text: `step9/README.md`; the runs: `step9/base.txt` (switch off), `step9/dug.txt` (switch on); the probe: `step9/crash-probe.ts`; the stills: `step9/still-dug-*.jpg`.
+
+- **Built as ruling 21 says.** On the wave's front the drawn and collided surface is the case's own, also under the sea's. The return to the sea is ahead of the toe (hold to 0.05 H, ease over 2 H, give up at 5 H). It acts only with `tubeSeam=blend`. Default off; online rooms pinned.
+- **The corner is gone in the numbers.** K1 (the drawn turn at the old corner less the raw case's own): 8 to 14° median before → 0.0 to 0.2°; 90 % 16 to 24° → 0.0 to 0.9°. K2 the same by distance. K3 (the trough) 3.8 to 5.5° / 5.0 to 6.1°. K4 0.000 m. All pass.
+- **K7 misses:** the drawn surface comes to 0.287 m over the bed once after the throw (bar 0.3 m). Not located, not tuned.
+- **K6 (the contact follows the dig):** within 0.005 m at 90 % in every bin; 99 % up to 0.009 m; one point 0.162 m. So the dig is not drawn-only.
+- **The steep wall before the throw is taller:** 0.6 to 0.8 m → 1.0 to 1.1 m median (the raw case's own).
+- **The throws' list is byte-equal, switch on and off.** With the switch off the probe's output equals the run before the build, line for line. Lines A to F, J4, J5 and the crest's largest step (0.3547 m) are equal.
+- **Moved:** J2 where the share starts (most 4.8° → 12.2°), J1 (median 0.004 → 0.009 m), J3 (most 0.030 → 0.035 m). One folded strip (least advance −0.042 m; base +0.027). Vertex spacing ahead of the toe 0.57 to 0.62 m median, over the 0.5 m spec.
+- **The stills:** the thin white line under the wall is gone in the front view. New in the Rich look: broken white patches lower down in the hollow (not in the Classic still, so likely the sun's highlight). The pale curved line in the along view is still there and runs farther; the normals view shows a crease on it. It follows the place where the share starts along the wall, not the old corner.
+- **The dig:** 0.3 to 0.4 m median as expected, up to 1.15 m.
+- Not run: rider sessions, a second run, the default pool, Canyon. `?lipEdge=one` is not built.
+- **For the advisor:** the along-wall line where the dig starts (J2), the white patches in the hollow, K7's 13 mm, the fold.
