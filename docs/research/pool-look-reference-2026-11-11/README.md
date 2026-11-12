@@ -274,7 +274,7 @@ Full text: `ruling-22.md`; one light reading of the library file in `ruling-22-r
 - **6. Order:** the cap, the second library, `?lipEdge=one`, `?wallRise=carry`. The owner can ride now.
 - **Corrected:** ruling 21's "the streak goes with the dig".
 
-## Step 10: the soft cap on the dig (2026-11-12, under `?wallFoot=dug` itself, branch `claude/pool-dig-cap`, not pushed; one build, one run, nothing tuned)
+## Step 10: the soft cap on the dig (2026-11-12, under `?wallFoot=dug` itself, MERGED as PR #272 (Canyon hashes and fps trace equal main's: 60.7 fps mean, lowest second 60); one build, one run, nothing tuned)
 
 Full text: `step10/README.md`; the run: `step10/cap.txt`; the probe: `step10/crash-probe.ts`; the stills: `step10/still-cap-front-90s.jpg`, `step10/still-cap-front-sunset-90s.jpg`.
 

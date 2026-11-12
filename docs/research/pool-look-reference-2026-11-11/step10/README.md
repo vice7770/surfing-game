@@ -1,6 +1,6 @@
 # Step 10: the soft cap on the dig (ruling 22, point 3)
 
-2026-11-12. Branch `claude/pool-dig-cap`, not pushed. One build, one 300 s run, nothing tuned.
+2026-11-12. Branch `claude/pool-dig-cap`, MERGED as PR #272 (Canyon hashes and fps trace equal main's: 60.7 fps mean, lowest second 60). One build, one 300 s run, nothing tuned.
 The cap lives under `?wallFoot=dug` itself. There is no new switch. The default is unchanged.
 
 Files: `cap.txt` (the run with `&wallFoot=dug`), `crash-probe.ts` (step 9's probe plus the C bars and prints),
