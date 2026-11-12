@@ -67,3 +67,70 @@ Then:
 - **Lines on the face:** foam left by the wave before, drawn up and stretched by the face's flow; the sparkle is sun on small ripples [R].
 
 The spacings (0.25 m, 0.7 m) are not sourced. Watanabe's fingers are a lab-scale measure; ours are set for the still's distance.
+
+---
+
+# Advisor ruling 25b: the streaks after step 14
+
+Advisor: this session ("Water physics research", Opus 5.5 at max effort; from 2026-11-12 the owner made this session the advisor and orchestrator). Read: `step14/README.md` and the builder's hand-back, step 14's five-row crop (looked at by eye), `src/scene/foamPattern.ts`, `src/scene/water/foamFreshness.ts`. No run.
+
+Tags: [M14] step 14's prints; [R] reasoned; [P] provisional.
+
+## In short
+
+1. **Keep step 14's light.** Foam on the tube is now lit as the sea's foam would be in the same place. The full-cover row matches the white pile [M14].
+2. **Withdraw ruling 25's F1 test "white = every channel ≥ 200".** In these views the sun is behind the wave. The lip's outer face gets about half the pile's light (N·L about 0.13 against 0.74) [M14]. Foam on a face turned from the sun is grey-white, on the sea too. The eye reads foam by two things: it is neutral against the saturated water, and it has the shape of foam [R].
+3. **The fault left is the shape.** Step 14 draws soft round clouds, not lines round the curl (seen in the crop). Two causes [M14]:
+   - a plain value noise has a narrow spread, so "cover" is not an area share and the ±0.08 edge is wide;
+   - the 2.0 m and 3.5 m cells round the curl are as long as the whole outer face.
+4. **Use the sea's own foam lace, stretched round the curl.** Not a new noise.
+
+## Why the sea's lace
+
+- **Physics.** The lip's white is aerated crest water: the same foam the sea draws, pulled out round the curl by the lip's stretching flow. So: the same lace, stretched along the flow [R].
+- **Cover is an area share by construction.** `FOAM_THRESHOLDS` in `foamPattern.ts` are set so that the covered fraction equals the foam value.
+- **Sharp edges.** The lace has its own narrow edge (`FOAM_EDGE`, 0.04 cell).
+- **One look.** Where the lip's foam meets the sea's foam they match. That serves the owner's wish that the two parts read as one wave.
+- **Cost.** One fetch of the tile the sea already reads (`waterFoamTile`). The sea already stretches this lace for aged foam (`AGED_STREAKS` in `foamFreshness.ts`); follow that code.
+
+## Build spec
+
+1. **Pattern.** Sample the sea's lace (its own GLSL helper from `foamPatternPars`, with the same thresholds and patch value) at:
+   - across the crest: u / 0.30 m;
+   - round the curl: (s − 3 m/s · τ) / 1.2 m.
+   This gives lace cells about 4 times longer round the curl than across [P]. No flow-map phases and no time: the motion is carried by s − 3τ alone.
+2. **Texture.** If the tube's material does not bind `waterFoamTile`, bind the same texture object. No new texture data, no new pass.
+3. **Cover table** (now a true area share):
+   - outer face: 0 at the crest (point 32), 0.3 at mid-lip (48), 0.8 at the tip (64), as in ruling 25;
+   - **inner face: 0.5 at the tip, 0.1 at the throat (88), 0 by point 96** (was 0.8 to 0.2 to 0 by 100). The photo's roof is mostly see-through; the old numbers would whiten about half the roof once cover is an area share [R].
+4. **Clock.** As ruling 25 (zero at or before the throw, eased in over 0.15 s, fading 0.2 s after touchdown).
+5. **Light.** Step 14's model, kept. One addition: **where the sheet is thin (fray share above 0), a streak never darkens the pixel.** Take the brighter of the fray-lit colour and the foam-lit colour, by luma. The thin tip is already aerated white (ruling 9). Bubbles added there cannot take light away. Step 14 darkened the rim by about 8 % [M14].
+6. **Kept from steps 13 and 14:** u as a world axis; the pattern going to its mean far away (use the sea's own way of fading the lace with distance).
+
+## Bars
+
+Read each bar still against the same frame with the streak forced off (the frames repeat exactly [M14]). Use masks drawn by the shader, as step 14 did.
+
+- **F1 (area).** `curl-lip` at midday. Share of the lip's outer face changed by the streak (luma by 6 levels or more, or saturation by 0.06 or more): 20 to 40 %.
+- **F1n (reads as foam, not shadow).** On the changed pixels: mean saturation at most 0.6 times the same pixels without the streak; mean luma not lower than without it; at most 5 % of them darker by more than 8 levels.
+- **F2 (lines, not clouds).** On the change mask on the outer face: the median piece is at least 2.5 times longer round the curl than it is wide along the crest. Along the mid-lip line: 0.7 to 3 crossings per metre of crest, with uneven gaps (their spread over their mean at least 0.3).
+- **F3.** Tip third at least twice the crest third (as before).
+- **F4.** `curl-inside`: on the lip's underside (points 64 to 88) 15 to 35 %; on the back wall (88 to 112) at most 3 %; the rider's pixels equal.
+- **F5.** No drift in u between stills 0.1 s apart (as step 14 read it).
+- **F6.** With `lipLook` off, pixel-equal to main; program text equal (tests). The 2 m pool's headless fps trace with and without `lipLook=fray`: mean within 1 fps.
+- **F7 (rim).** On the thin sheet, no pixel darker than without the streak by more than 2 levels.
+- **Eye check** by the orchestrator on `curl-lip` at midday and sunset and on `curl-inside`: foam lines drawn round the curl, not clouds, paint or a barcode.
+
+## Stop rule and merge rule
+
+- One build. One retune is allowed: the stretch (1.2 m round the curl, between 0.8 and 2.0 m) or the inner cover, if F2's length ratio or F4 misses.
+- If F1n misses (the foam reads darker or greyer than the clean lip), hand back with the light terms. Do not add a glow.
+- If F1, F1n, F2, F4, F6, F7 and the eye check pass, merge it on under `lipLook=fray`. It is in the owner's ride address, so the owner sees it on the next ride.
+
+## Must-nots
+
+Ruling 25's must-nots stand: no new mesh, pass or particles; no free time; do not whiten the wall ahead of the tube; do not hide the rider; do not touch `tubeLook=merge`. Also: do not change the sea's foam or its tile; Classic and `lipLook` off unchanged.
+
+## Order after this
+
+As ruling 25: (b) the torn edge (ruling 9 part 2), (d) check the pile against the photo, (e) foam lines on the face (the sea's own field), (c) crest spray last.
