@@ -567,6 +567,33 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // Ruling 17 (pool-look-reference step 5, 2026-11-12): the early course's switch turns the seam blend and the crest line on.
+  it('takes `?tubeForm=early`, which turns `tubeSeam=blend` and `crestLine=top` on; an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?tubeForm=early')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+    expect(tubeFaceSwitches('?tubeForm= Early &wallBody=stream')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', wallBody: 'stream' });
+    expect(tubeFaceSwitches('?tubeForm=early&tubeSeam=blend&crestLine=top')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+    // A crest line or a course given with it is kept (`tubeFaceOf`: the course given wins).
+    expect(tubeFaceSwitches('?tubeForm=early&crestLine=sub')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'sub' });
+    expect(tubeFaceSwitches('?tubeForm=early&seamTau=-1,-0.25&seamBand=0.3')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', seamTau: [-1, -0.25], seamBand: 0.3 });
+    // `old` is as it was; anything else is nothing.
+    expect(tubeFaceSwitches('?tubeForm=old')).toEqual({ tubeForm: 'old' });
+    for (const search of ['?tubeForm', '?tubeForm=', '?tubeForm=on', '?tubeForm=late', '?tubeform=early']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.tubeForm).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeForm=early' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+      expect(surfZoneConfigFor(training, 5, false).tubeForm).toBeUndefined();
+      // An online room pins all three.
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeForm: undefined, tubeSeam: undefined, crestLine: undefined });
+      expect(room).toEqual({ ...plain, tubeForm: undefined, tubeSeam: undefined, crestLine: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('takes `?wallBody=stream` with `?tubeSeam=blend` alone, at the Barrel alone, and an online room pins the default (dev switch)', () => {
     expect(tubeFaceSwitches('?tubeSeam=blend&wallBody=stream')).toEqual({ tubeSeam: 'blend', wallBody: 'stream' });
     expect(tubeFaceSwitches('?wallBody=Stream&tubeSeam=blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend', wallBody: 'stream' });

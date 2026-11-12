@@ -1,7 +1,7 @@
 import { GRAVITY } from '../dispersion';
 import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { CLOCK } from './sliceClock';
-import { TUBE_SEAM, type TubeSeam } from './tubeSeam';
+import { TUBE_FORM_EARLY, TUBE_SEAM, type TubeSeam } from './tubeSeam';
 
 /**
  * The face anchor (the surfable-tube plan's step 4; the water-physics advisor's step 3 ruling, 2026-11-03,
@@ -130,7 +130,9 @@ export interface TubeFace {
    * the solver's (in place of the source flag); and the crest water's share of the crest's speed goes 0.85 → 1 over 0.2 s
    * after the throw (in place of the step). The lip's vertices from the crest to the throat of an overturned slice (air
    * under them) keep the plain union, by α_τ alone. Opt-in (`?tubeSeam=blend`, with `?seamTau=on,full` and `?seamBand=m`);
-   * absent: off, the build exactly as before.
+   * absent: off, the build exactly as before. Ruling 17's early course (`?tubeForm=early`, with `crestLine`): `seam.depth`
+   * is `TUBE_FORM_EARLY`, so α_τ runs from −2.3 to −0.7 √(h0/g) before the throw at each slice (`seamCourseWeight`);
+   * the case, its frames, the clock, the throw and the crash are untouched. A `?seamTau` given with it wins.
    */
   seam?: TubeSeam;
   /**
@@ -176,7 +178,8 @@ export interface TubeFaceSwitches {
    * (`CrashCurve.prepareAnchors`), so without it the anchor is computed afresh each build, as step 6's.
    */
   sweptCrash?: boolean;
-  tubeForm?: 'old';
+  /** 'old', step 6's formation; 'early' (ruling 17, opt-in), the seam's course by depth (`TubeFace.seam`), with `tubeSeam` and `crestLine`. */
+  tubeForm?: 'old' | 'early';
   tubeThrow?: 'break';
   wallFlow?: 'old';
   /** The step 7 follow-up's (`TubeFace.contact`, `.cap`, `.merge`, `.guard`). */
@@ -220,6 +223,9 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
   const continuity = !piece && switches.tubeAnchor !== 'old' && switches.sweptCrash !== false;
   const contour = distance && switches.tubeThrow !== 'break';
   const wallFlow = !piece && union && switches.wallFlow !== 'old';
+  const crestLine = distance && (switches.crestLine === 'sub' || switches.crestLine === 'top') ? switches.crestLine : undefined;
+  // Ruling 17's early course: read only with the seam blend and the crest line; a `seamTau` given with it wins.
+  const early = switches.tubeForm === 'early' && crestLine !== undefined && !switches.seamTau;
   return {
     anchor: !piece, union, lag,
     clockRate: !piece && switches.tubeClock !== 'old' ? THROWN_RATE.face : THROWN_RATE.old, thrownEnds: !piece,
@@ -235,9 +241,9 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     buoy: wallFlow && switches.tubeBuoy === 'on',
     drop: !piece && switches.tubeDrop === 'on',
     formClock: distance && (switches.formClock === 'c1' || (FORM_CLOCK_DEFAULT && switches.formClock !== 'old')),
-    ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band } } : {}),
+    ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band, ...(early ? { depth: TUBE_FORM_EARLY } : {}) } } : {}),
     ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { stream: true as const } : {}),
-    ...(distance && (switches.crestLine === 'sub' || switches.crestLine === 'top') ? { crestLine: switches.crestLine } : {}),
+    ...(crestLine ? { crestLine } : {}),
   };
 }
 

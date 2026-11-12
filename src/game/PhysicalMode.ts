@@ -710,6 +710,9 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * case's water follows its surface at the wave's own speed), read with `?tubeSeam=blend` alone. Ruling 7's step 1
  * (crest-line, 2026-11-11), opt-in: `?crestLine=sub` or `?crestLine=top`, each front point stands where its crest stands
  * within its cell before its throw (by the parabola through three cells, or by the centre of the crest's top quarter).
+ * Ruling 17's (pool-look-reference step 5, 2026-11-12), opt-in: `?tubeForm=early`, the seam blend's share runs from −2.3
+ * to −0.7 √(h0/g) before the throw (h0 the point's foot depth), not over the last 0.5 s; the switch turns `?tubeSeam=blend`
+ * and `?crestLine=top` on by itself (a `?crestLine=sub` given is kept), and a `?seamTau` given with it wins.
  * Ruling 11's step 1 (after-tube, 2026-11-11), opt-in: `?afterTube=roller`, the Canyon's roller lens seeded where the
  * lip touches down, drawn only (the rider's water does not read it).
  * Online rooms run the defaults (the guard, the smooth wall, the buoyancy, the drop rule, the seam blend, the streamline
@@ -719,13 +722,16 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
   const value = (name: string) => devParam(name, search)?.trim().toLowerCase();
   const seamTau = parseSeamTau(value('seamTau'));
   const seamBand = parseSeamBand(value('seamBand'));
+  // Ruling 17's `?tubeForm=early` turns the seam blend and the crest line on by itself.
+  const early = value('tubeForm') === 'early';
+  const blend = value('tubeSeam') === 'blend' || early;
   return {
     ...(value('tubeFace') === 'old' ? { tubeFace: 'old' as const } : {}),
     ...(value('tubeFrom') === 'piece' ? { tubeFrom: 'piece' as const } : {}),
     ...(value('tubeLag') === '0' ? { tubeLag: 0 as const } : {}),
     ...(value('tubeClock') === 'old' ? { tubeClock: 'old' as const } : {}),
     ...(value('tubeAnchor') === 'old' ? { tubeAnchor: 'old' as const } : {}),
-    ...(value('tubeForm') === 'old' ? { tubeForm: 'old' as const } : {}),
+    ...(value('tubeForm') === 'old' ? { tubeForm: 'old' as const } : early ? { tubeForm: 'early' as const } : {}),
     ...(value('tubeThrow') === 'break' ? { tubeThrow: 'break' as const } : {}),
     ...(value('wallFlow') === 'old' ? { wallFlow: 'old' as const } : {}),
     ...(value('tubeContact') === 'old' ? { tubeContact: 'old' as const } : {}),
@@ -738,10 +744,10 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeBuoy') === 'on' ? { tubeBuoy: 'on' as const } : {}),
     ...(value('tubeDrop') === 'on' ? { tubeDrop: 'on' as const } : {}),
     ...(value('formClock') === 'old' ? { formClock: 'old' as const } : value('formClock') === 'c1' ? { formClock: 'c1' as const } : {}),
-    ...(value('tubeSeam') === 'blend' ? { tubeSeam: 'blend' as const, ...(seamTau ? { seamTau } : {}), ...(seamBand !== undefined ? { seamBand } : {}) } : {}),
-    ...(value('tubeSeam') === 'blend' && value('wallBody') === 'stream' ? { wallBody: 'stream' as const } : {}),
+    ...(blend ? { tubeSeam: 'blend' as const, ...(seamTau ? { seamTau } : {}), ...(seamBand !== undefined ? { seamBand } : {}) } : {}),
+    ...(blend && value('wallBody') === 'stream' ? { wallBody: 'stream' as const } : {}),
     ...(value('afterTube') === 'roller' ? { afterTube: 'roller' as const } : {}),
-    ...(value('crestLine') === 'sub' || value('crestLine') === 'top' ? { crestLine: value('crestLine') as 'sub' | 'top' } : {}),
+    ...(value('crestLine') === 'sub' || value('crestLine') === 'top' ? { crestLine: value('crestLine') as 'sub' | 'top' } : early ? { crestLine: 'top' as const } : {}),
   };
 }
 

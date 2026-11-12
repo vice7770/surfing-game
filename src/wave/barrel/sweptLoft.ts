@@ -4,7 +4,7 @@ import { FRONT_CAPACITY, FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
 import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
-import { seamB, seamBand, seamHeightWeight, seamTauWeight } from './tubeSeam';
+import { seamB, seamBand, seamCourseWeight, seamHeightWeight } from './tubeSeam';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
 export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
@@ -1373,7 +1373,7 @@ export class SweptLoft {
         wall.b[slice] = this.face?.seam ? seamB(tau, WALL_FLOW.before, WALL_FLOW.thrown) : tau < 0 ? WALL_FLOW.before : WALL_FLOW.thrown;
       }
       const seam = this.face?.seam;
-      const seamTau = seam ? seamTauWeight(tau, seam.tau[0], seam.tau[1]) : 1;
+      const seamTau = seam ? seamCourseWeight(tau, seam, s.footDepth) : 1;
       const seamReach = seam ? seamBand(seam.band, s.footHeight) : 0;
       if (seam) {
         this.seamTauRow[slice] = seamTau;

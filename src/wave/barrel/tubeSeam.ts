@@ -1,3 +1,5 @@
+import { GRAVITY } from '../dispersion';
+
 /**
  * Ruling 5's seam blend (the water-physics advisor's advisor-ruling-5.md §4, docs/research/tube-seam-2026-11-11;
  * `TubeFace.seam`, `?tubeSeam=blend`): one weight α = α_h · α_τ for the case's drawn loft, its collided surface and its
@@ -15,10 +17,24 @@
  */
 export const TUBE_SEAM = { tau: [-0.5, 0], band: 0.25, height: 0.85, thrown: 0.2 } as const;
 
-/** The seam blend's settings (`TubeFace.seam`): the τ course's start and end, s, and the band at `TUBE_SEAM.height`, m. */
+/**
+ * The early course (`?tubeForm=early`; the water-physics advisor's ruling 17, Q4,
+ * docs/research/pool-look-reference-2026-11-11/ruling-17.md): the share's course in √(h0/g), h0 the slice's foot depth.
+ * On at −2.3 √(h0/g) and whole at −0.7 √(h0/g) before the throw (−1.62 s to −0.49 s at the reference pool's 4.88 m foot).
+ * *Measured* (ruling 17): the case and the sea under it agree best 1 to 1.6 s before the throw (crest 0.17–0.21 m over
+ * the sea's, height 1.03–1.07 of it, face 24–31° on 13–18°; in the last 0.25 s: 0.42 m, 1.15, 64°), and points join the
+ * front at −1.64 s, so the hand-over is laid there. The times scale as the cases' own clock does (Froude: √(h0/g)).
+ */
+export const TUBE_FORM_EARLY = [-2.3, -0.7] as const;
+
+/**
+ * The seam blend's settings (`TubeFace.seam`): the τ course's start and end, s, and the band at `TUBE_SEAM.height`, m.
+ * With `depth` (`TUBE_FORM_EARLY`) the course's ends are `depth` × √(h0/g) at each slice in place of `tau`.
+ */
 export interface TubeSeam {
   tau: readonly [number, number];
   band: number;
+  depth?: readonly [number, number];
 }
 
 /** Smoothstep: 0 at u ≤ 0, 1 at u ≥ 1, C1 between. */
@@ -32,6 +48,16 @@ export function smoothstep(u: number): number {
 export function seamTauWeight(tau: number, on: number, full: number): number {
   if (!(full > on)) return tau >= on ? 1 : 0;
   return smoothstep((tau - on) / (full - on));
+}
+
+/**
+ * α_τ at a slice of foot depth `footDepth` (m) under a seam's settings: by `seam.tau` (s), or with `seam.depth` by
+ * `depth` × √(footDepth / g) (`TUBE_FORM_EARLY`). Without `depth` it is `seamTauWeight(tau, seam.tau[0], seam.tau[1])`.
+ */
+export function seamCourseWeight(tau: number, seam: TubeSeam, footDepth: number): number {
+  if (!seam.depth) return seamTauWeight(tau, seam.tau[0], seam.tau[1]);
+  const scale = Math.sqrt(Math.max(0, footDepth) / GRAVITY);
+  return seamTauWeight(tau, seam.depth[0] * scale, seam.depth[1] * scale);
 }
 
 /** α_h: the case's share by its height δ (m) over the solver's surface, 0 at δ ≤ 0, 1 from the band b (m). */

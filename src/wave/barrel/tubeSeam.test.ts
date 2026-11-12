@@ -8,7 +8,8 @@ import { ProfileLibrary } from './ProfileLibrary';
 import { createContactHit, SweptContact } from './sweptContact';
 import { WALL_FLOW } from './sweptLoft';
 import { lipCase } from './toyCase';
-import { parseSeamBand, parseSeamTau, seamB, seamBand, seamHeightWeight, seamTauWeight, smoothstep, TUBE_SEAM } from './tubeSeam';
+import { GRAVITY } from '../dispersion';
+import { parseSeamBand, parseSeamTau, seamB, seamBand, seamCourseWeight, seamHeightWeight, seamTauWeight, smoothstep, TUBE_FORM_EARLY, TUBE_SEAM } from './tubeSeam';
 
 /**
  * Ruling 5's seam blend (the water-physics advisor's advisor-ruling-5.md §4, docs/research/tube-seam-2026-11-11;
@@ -88,6 +89,73 @@ describe('ruling 5: the seam blend\'s weights', () => {
     expect(parseSeamBand('0.25')).toBe(0.25);
     expect(parseSeamBand('0.4')).toBe(0.4);
     for (const text of [undefined, '', ' ', '0', '-0.1', 'x', '3', 'Infinity']) expect(parseSeamBand(text), String(text)).toBeUndefined();
+  });
+});
+
+describe('ruling 17: the early course (`?tubeForm=early`)', () => {
+  const seam = { tau: TUBE_SEAM.tau, band: TUBE_SEAM.band };
+  const early = { ...seam, depth: TUBE_FORM_EARLY };
+
+  it('has the ruling\'s constants: on at −2.3 and whole at −0.7 √(h0/g)', () => {
+    expect(TUBE_FORM_EARLY).toEqual([-2.3, -0.7]);
+    // At the reference pool's foot (4.88 m): −1.62 s to −0.49 s, the ruling's −1.64 to −0.5.
+    const t = Math.sqrt(4.88 / GRAVITY);
+    expect(TUBE_FORM_EARLY[0] * t).toBeCloseTo(-1.62, 2);
+    expect(TUBE_FORM_EARLY[1] * t).toBeCloseTo(-0.49, 2);
+  });
+
+  it('without `depth` is the old course exactly, at any depth', () => {
+    for (const tau of [-2, -0.5, -0.4, -0.25, -0.1, 0, 0.3]) for (const depth of [0, 1.5, 4.88, 12]) {
+      expect(seamCourseWeight(tau, seam, depth)).toBe(seamTauWeight(tau, seam.tau[0], seam.tau[1]));
+    }
+    expect(seamCourseWeight(-0.75, { tau: [-1, -0.5], band: 0.25 }, 4.88)).toBe(0.5);
+  });
+
+  it('with `depth` runs the share from −2.3 to −0.7 √(h0/g), C1, rising, whole well before the throw', () => {
+    for (const depth of [1.5, 4.4, 4.88, 9]) {
+      const t = Math.sqrt(depth / GRAVITY);
+      const on = -2.3 * t;
+      const full = -0.7 * t;
+      expect(seamCourseWeight(on - 0.01, early, depth)).toBe(0);
+      expect(seamCourseWeight(on, early, depth)).toBe(0);
+      expect(seamCourseWeight(full, early, depth)).toBe(1);
+      expect(seamCourseWeight(0, early, depth)).toBe(1);
+      expect(seamCourseWeight(0.5 * (on + full), early, depth)).toBeCloseTo(0.5, 12);
+      expect(seamCourseWeight(-1.5 * t, early, depth)).toBeCloseTo(seamTauWeight(-1.5 * t, on, full), 15);
+      // No step and no kink at either end; never falling.
+      expect(seamCourseWeight(on + 1e-3, early, depth)).toBeLessThan(1e-5);
+      expect(1 - seamCourseWeight(full - 1e-3, early, depth)).toBeLessThan(1e-5);
+      let last = 0;
+      for (let k = 0; k <= 200; k += 1) {
+        const w = seamCourseWeight(on + (k / 200) * (full - on), early, depth);
+        expect(w).toBeGreaterThanOrEqual(last);
+        expect(w - last).toBeLessThan(0.01);
+        last = w;
+      }
+    }
+    // The course keeps its place in the cases' own clock: the same share at the same τ / √(h0/g).
+    expect(seamCourseWeight(-1.2 * Math.sqrt(2 / GRAVITY), early, 2)).toBeCloseTo(seamCourseWeight(-1.2 * Math.sqrt(8 / GRAVITY), early, 8), 12);
+    // The old course holds the case out where the early one already shows most of it.
+    expect(seamCourseWeight(-0.6, seam, 4.88)).toBe(0);
+    expect(seamCourseWeight(-0.6, early, 4.88)).toBeGreaterThan(0.95);
+  });
+
+  it('is read only with the seam blend and the crest line, and a `seamTau` given with it wins', () => {
+    const all = tubeFaceOf(true, {})!;
+    // Alone in a config it changes nothing (the URL switch sets the other two; `tubeFaceSwitches`).
+    expect(tubeFaceOf(true, { tubeForm: 'early' })).toEqual(all);
+    expect(tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend' })).toEqual(tubeFaceOf(true, { tubeSeam: 'blend' }));
+    expect(tubeFaceOf(true, { tubeForm: 'early', crestLine: 'top' })).toEqual(tubeFaceOf(true, { crestLine: 'top' }));
+    const both = tubeFaceOf(true, { tubeSeam: 'blend', crestLine: 'top' })!;
+    expect(tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' })).toEqual({ ...both, seam: { ...both.seam!, depth: TUBE_FORM_EARLY } });
+    expect(tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'sub' })).toMatchObject({ crestLine: 'sub', seam: { depth: TUBE_FORM_EARLY } });
+    expect(tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', seamBand: 0.4 })).toMatchObject({ seam: { band: 0.4, depth: TUBE_FORM_EARLY } });
+    // The formation by distance, the throw and the rest are as without it.
+    expect(tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', wallBody: 'stream' })).toMatchObject({ distance: true, contour: true, stream: true });
+    // `seamTau` wins; and without the wall water there is no seam at all.
+    expect(tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', seamTau: [-1, -0.25] })).toEqual({ ...both, seam: { tau: [-1, -0.25], band: TUBE_SEAM.band } });
+    expect('seam' in tubeFaceOf(true, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', wallFlow: 'old' })!).toBe(false);
+    expect(tubeFaceOf(false, { tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' })).toBeUndefined();
   });
 });
 
@@ -215,6 +283,46 @@ describe('ruling 5: the seam blend in the loft, the contact and the flow', () =>
     }
     expect(between).toBeGreaterThan(20);
     expect(moved).toBeGreaterThan(0);
+  });
+
+  it('ruling 17: with the early course the loft, the contact and the flow follow the share by depth', () => {
+    const scale = Math.sqrt(H0 / GRAVITY);
+    const course = [TUBE_FORM_EARLY[0] * scale, TUBE_FORM_EARLY[1] * scale] as const;
+    const make = (tau: number, over: Partial<TubeFace>) => {
+      const solver = new ShallowWaterSolver({ nx: 48, xMin: -12, dx: 1, zEdges: uniformEdges(-130, -70, 60) }, () => H0, { waterLevel: STILL });
+      for (let i = 0; i < solver.qz.length; i += 1) solver.qz[i] = 1.2 * solver.h[i];
+      const contact = new SweptContact(new ProfileLibrary([lipCase(0.3, 0.04)]), 0.05, { face: face(over) });
+      contact.update(records(21, tau), 21, STILL, () => STILL);
+      return { contact, water: new PhysicalSurfWater(solver, { peakPeriod: 18, nodeSpacing: 2, swept: contact, sweptUnion: true, sweptWall: true, sweptNearest: true, sweptSeam: true }) };
+    };
+    const a = createWaterSample();
+    const b = createWaterSample();
+    let stood = 0;
+    for (const tau of [-1.2, -0.6, -0.3]) {
+      // The early course is the same build as the same course written out in seconds at this depth…
+      const early = make(tau, { seam: { ...seam, depth: TUBE_FORM_EARLY } });
+      const written = make(tau, { seam: { tau: course, band: seam.band } });
+      const late = make(tau, { seam });
+      for (let z = -106; z <= -94; z += 0.25) {
+        const floor = early.contact.floorAt(10.25, z);
+        const same = written.contact.floorAt(10.25, z);
+        if (floor === floor || same === same) expect(floor).toBe(same);
+        // …and at −0.6 s it already stands over the water where the old course still gives the water's own surface.
+        if (tau === -0.6) {
+          const old = late.contact.floorAt(10.25, z);
+          if (old === old) expect(old).toBeCloseTo(STILL, 5);
+          if (floor > STILL + 0.05) stood += 1;
+        }
+        for (let y = STILL - 0.3; y <= STILL + 1.5; y += 0.3) {
+          early.water.sampleAt(10.25, y, z, a);
+          written.water.sampleAt(10.25, y, z, b);
+          expect(a.flowX).toBe(b.flowX);
+          expect(a.flowY).toBe(b.flowY);
+          expect(a.flowZ).toBe(b.flowZ);
+        }
+      }
+    }
+    expect(stood).toBeGreaterThan(5);
   });
 
   it('is the build as before from the throw where the case stands a band over the water, and off', () => {

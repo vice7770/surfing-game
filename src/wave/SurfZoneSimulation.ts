@@ -487,12 +487,14 @@ export interface SurfZoneConfig {
    * rooms pin the defaults (all on). All three of `tubeAnchor`, `tubeForm` and `wallFlow` 'old' give step 6's build:
    * - `tubeAnchor` 'old' (`?tubeAnchor=old`): the anchor's shift computed afresh each build, as step 6;
    * - `tubeForm` 'old' (`?tubeForm=old`): the lagged join at its lead's depth, the clock's fit before the throw, the
-   *   formation ramp from the join, the throw at the later of the crossing and the break, as step 6;
+   *   formation ramp from the join, the throw at the later of the crossing and the break, as step 6; 'early'
+   *   (`?tubeForm=early`, ruling 17, opt-in): the formation as now, and the seam blend's share runs from −2.3 to −0.7
+   *   √(h0/g) before the throw (`TUBE_FORM_EARLY`), read with `tubeSeam` 'blend' and `crestLine` (the URL switch sets both);
    * - `tubeThrow` 'break' (`?tubeThrow=break`): by distance, the throw waits for the solver's break as well;
    * - `wallFlow` 'old' (`?wallFlow=old`): the wall's water carries the solver's flow, as step 6.
    */
   tubeAnchor?: 'old';
-  tubeForm?: 'old';
+  tubeForm?: 'old' | 'early';
   tubeThrow?: 'break';
   wallFlow?: 'old';
   /**
