@@ -195,6 +195,9 @@ function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
     { name: 'curl-channel', eye: new Vector3(tip.x + sx * 14 + rx * 6, crest.y - 0.5, tip.z + sz * 14 + rz * 6), target: mouth },
     { name: 'curl-close', eye: new Vector3(tip.x + sx * 7 + rx * 3, crest.y - 0.3, tip.z + sz * 7 + rz * 3), target: mouth },
     { name: 'curl-front', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2), target: mouth },
+    // `curl-front` from closer (step 14, 2026-11-12): the same line of sight at 0.4 of its distance, so the tube fills
+    // about half the frame, as the owner's reference photo of a pool tube from the front.
+    { name: 'curl-lip', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2).sub(mouth).multiplyScalar(0.4).add(mouth), target: mouth },
     { name: 'curl-behind', eye: new Vector3(crest.x - rx * 9 + sx * 5, crest.y + 3, crest.z - rz * 9 + sz * 5), target: tip },
     { name: 'curl-inside', eye: inside, target: new Vector3(inside.x + sx * 8, inside.y, inside.z + sz * 8) },
     // The ride camera's view (the tube from Basilisk, 2026-10-22): a rider's eye 8 m down the line toward the shoulder,
