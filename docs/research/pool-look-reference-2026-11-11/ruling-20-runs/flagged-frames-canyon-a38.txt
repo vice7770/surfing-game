@@ -1,0 +1,43 @@
+../../canyon-tube-runs/data/periodic_canyon23_a38_L13_library.json: 120 frames before the throw, 38 flagged; flags: {'toe_collapsed': 2, 'jump_lip': 38}; scale 4.06 m
+  clock -1.884 s toe_collapsed,jump_lip   neighbours 3 frames apart: own curve off the stored refill 1.3173 m, off the arc join of the neighbours 1.3173 m
+  clock -1.868 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0180 m, off the arc join of the neighbours 0.0043 m
+  clock -1.835 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0335 m, off the arc join of the neighbours 0.0028 m
+  clock -1.803 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.1065 m, off the arc join of the neighbours 0.0028 m
+  clock -1.755 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0273 m, off the arc join of the neighbours 0.0104 m
+  clock -1.739 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0289 m, off the arc join of the neighbours 0.0212 m
+  clock -1.707 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.1414 m, off the arc join of the neighbours 0.0159 m
+  clock -1.690 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.1363 m, off the arc join of the neighbours 0.0025 m
+  clock -1.658 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0019 m, off the arc join of the neighbours 0.0019 m
+  clock -1.642 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0137 m, off the arc join of the neighbours 0.0126 m
+  clock -1.594 s jump_lip                 neighbours 5 frames apart: own curve off the stored refill 0.0257 m, off the arc join of the neighbours 0.0257 m
+  clock -1.578 s jump_lip                 neighbours 5 frames apart: own curve off the stored refill 0.0193 m, off the arc join of the neighbours 0.0193 m
+  clock -1.562 s jump_lip                 neighbours 5 frames apart: own curve off the stored refill 0.0130 m, off the arc join of the neighbours 0.0130 m
+  clock -1.546 s jump_lip                 neighbours 5 frames apart: own curve off the stored refill 0.0067 m, off the arc join of the neighbours 0.0067 m
+  clock -1.497 s jump_lip                 neighbours 4 frames apart: own curve off the stored refill 0.0078 m, off the arc join of the neighbours 0.0078 m
+  clock -1.481 s jump_lip                 neighbours 4 frames apart: own curve off the stored refill 0.0160 m, off the arc join of the neighbours 0.0160 m
+  clock -1.465 s jump_lip                 neighbours 4 frames apart: own curve off the stored refill 0.0239 m, off the arc join of the neighbours 0.0239 m
+  clock -1.385 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.1049 m, off the arc join of the neighbours 0.0039 m
+  clock -1.352 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0854 m, off the arc join of the neighbours 0.0053 m
+  clock -1.207 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0202 m, off the arc join of the neighbours 0.0106 m
+  clock -1.191 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0226 m, off the arc join of the neighbours 0.0055 m
+  clock -1.159 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0174 m, off the arc join of the neighbours 0.0065 m
+  clock -1.143 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0151 m, off the arc join of the neighbours 0.0045 m
+  clock -1.079 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0214 m, off the arc join of the neighbours 0.0043 m
+  clock -1.063 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0225 m, off the arc join of the neighbours 0.0084 m
+  clock -0.998 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0108 m, off the arc join of the neighbours 0.0108 m
+  clock -0.982 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0109 m, off the arc join of the neighbours 0.0109 m
+  clock -0.950 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0210 m, off the arc join of the neighbours 0.0210 m
+  clock -0.934 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0153 m, off the arc join of the neighbours 0.0107 m
+  clock -0.821 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0218 m, off the arc join of the neighbours 0.0218 m
+  clock -0.805 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0146 m, off the arc join of the neighbours 0.0109 m
+  clock -0.757 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0210 m, off the arc join of the neighbours 0.0210 m
+  clock -0.741 s jump_lip                 neighbours 3 frames apart: own curve off the stored refill 0.0108 m, off the arc join of the neighbours 0.0108 m
+  clock -0.644 s jump_lip                 neighbours 4 frames apart: own curve off the stored refill 0.0246 m, off the arc join of the neighbours 0.0079 m
+  clock -0.628 s toe_collapsed,jump_lip   neighbours 4 frames apart: own curve off the stored refill 0.1451 m, off the arc join of the neighbours 0.1451 m
+  clock -0.612 s jump_lip                 neighbours 4 frames apart: own curve off the stored refill 0.0276 m, off the arc join of the neighbours 0.0081 m
+  clock -0.547 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0161 m, off the arc join of the neighbours 0.0161 m
+  clock -0.515 s jump_lip                 neighbours 2 frames apart: own curve off the stored refill 0.0563 m, off the arc join of the neighbours 0.0156 m
+flagged jump_lip only (36): own curve off the stored refill: median 0.0210, 90 % 0.1049, most 0.1414 m; off the arc join of its clean neighbours: median 0.0107, 90 % 0.0212, most 0.0257 m
+  of these in the last 0.6 s (2): off the refill median 0.0563, most 0.0563 m; off the arc join median 0.0161, most 0.0161 m
+flagged with a toe flag (2): off the refill median 1.3173, most 1.3173 m; off the arc join median 1.3173, most 1.3173 m
+for scale, clean frames rebuilt by arc from their two clean neighbours (48): median 0.0160, 90 % 0.0163, most 0.0164 m
