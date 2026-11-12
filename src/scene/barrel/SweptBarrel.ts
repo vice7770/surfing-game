@@ -6,7 +6,7 @@ import type { TubeFace } from '../../wave/barrel/faceAnchor';
 import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
 import { sampleCubicHeight, sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
-import { sampleSurfaceFoam, sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
+import { sampleSurfaceBed, sampleSurfaceFoam, sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
 import { BrokenCrests } from './brokenCrest';
 import { BarrelWater } from './barrelWater';
@@ -150,7 +150,9 @@ export class SweptBarrel {
     const heightAt = look !== 'rich' ? (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z)
       : this.heights === 'old' ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
         : (x: number, z: number) => sampleCubicHeight(surfaceData, grid, x, z);
-    const loft = this.loft.build(front, count, stillLevel, heightAt);
+    // The bed under the drawn sea, for ruling 22's bed rule on the dug foot (`dugCap`); read only where the foot is dug.
+    const bedData = water.bedData;
+    const loft = this.loft.build(front, count, stillLevel, heightAt, (x: number, z: number) => sampleSurfaceBed(bedData, grid, x, z));
     if (this.mask.length !== maskGrid.nx * maskGrid.nz) this.mask = new Uint8Array(maskGrid.nx * maskGrid.nz);
     const set = rasterizeBarrelMask(loft, maskGrid, this.mask);
     water.setBarrelMask(set > 0 ? this.mask : null);

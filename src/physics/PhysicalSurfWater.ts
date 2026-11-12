@@ -537,10 +537,16 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
    * water's heights, bed and window hold (the bodies push only discharge), so a node's height is found once a step,
    * whether the update or a body's query first needs it.
    */
-  createCachedPlainSurface(): { invalidate(): void; heightAt(x: number, z: number): number } {
+  createCachedPlainSurface(): { invalidate(): void; heightAt(x: number, z: number): number; bedAt(x: number, z: number): number } {
     const { carve, roller, plainHeight } = this.options;
     const surface = new PlainHeightSurface(this.solver, this.spacing, { ...(carve ? { carve } : {}), ...(roller ? { roller } : {}), ...(plainHeight ? { plainHeight } : {}) }, true);
-    return Object.freeze({ invalidate: () => surface.invalidateSurfaceNodeCache(), heightAt: surface.plainSurfaceAt.bind(surface) });
+    // `bedAt`: the solver's bed under it (ruling 22's bed rule on the dug foot, `dugCap`); read only where the foot is dug.
+    const { solver } = this;
+    return Object.freeze({
+      invalidate: () => surface.invalidateSurfaceNodeCache(),
+      heightAt: surface.plainSurfaceAt.bind(surface),
+      bedAt: (x: number, z: number) => solver.sampleCentered(solver.bed, x, z),
+    });
   }
 
   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {

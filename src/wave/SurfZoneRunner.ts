@@ -384,7 +384,7 @@ export class SurfZoneRunner {
   private readonly contactQueries?: SweptSurfaceQueries;
   private readonly ordinaryContactOwner?: OrdinaryContactOwner;
   /** The worker's face contact's heights (`SweptContact.forFaceWorker`): the water's, through a cache of their own. */
-  private readonly faceHeights?: { invalidate(): void; heightAt(x: number, z: number): number };
+  private readonly faceHeights?: { invalidate(): void; heightAt(x: number, z: number): number; bedAt(x: number, z: number): number };
   /** Built by `forWorker`: only the worker's own runner may take the solo water prefetch. */
   private readonly workerOwned: boolean;
   /** The contact's last update, ms. */
@@ -688,9 +688,10 @@ export class SurfZoneRunner {
     if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
     else if (this.faceHeights) {
       this.faceHeights.invalidate();
-      contact!.update(this.contactRecords, count, this.config.tide, this.faceHeights.heightAt);
+      contact!.update(this.contactRecords, count, this.config.tide, this.faceHeights.heightAt, this.faceHeights.bedAt);
     } else this.water.withSurfaceNodeCache(() => {
-      contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+      const { solver } = simulation;
+      contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z), (x, z) => solver.sampleCentered(solver.bed, x, z));
     });
     this.contactMs = performance.now() - start;
   }

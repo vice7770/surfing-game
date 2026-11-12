@@ -303,8 +303,9 @@ export class SweptContact {
   }
 
   /** Loft the fronts over the water (`heightAt`, uncarved) and index the strips for this step's queries. */
-  update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): void {
-    const loft = this.loft.build(records, count, stillLevel, heightAt);
+  update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number,
+    bedAt?: (x: number, z: number) => number): void {
+    const loft = this.loft.build(records, count, stillLevel, heightAt, bedAt);
     this.last = loft;
     this.geometryStep += 1;
     const { positions: p, sliceCount } = loft;

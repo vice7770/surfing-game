@@ -6,7 +6,7 @@ import { arcPlaces, arcRespace, lipShare, type ArcPlaces } from './arcMesh';
 import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { seamB, seamBand, seamCourseWeight, seamHeightWeight } from './tubeSeam';
-import { REST_DUG, dugAlong, dugCrestRamp, dugPlace, dugShare } from './wallFoot';
+import { REST_DUG, dugAlong, dugCap, dugCrestRamp, dugPlace, dugShare } from './wallFoot';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
 export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
@@ -196,6 +196,8 @@ export interface LoftResult {
   rayCorrections: number;
   rayMaxBlend: number;
   rayMinAdvance: number;
+  /** Ruling 22: how many vertices' dig the cap (`dugCap`) eased or the bed rule held in this build (a contact's: so far). */
+  dugCapped: number;
   rayInvalidIntervals: number;
   /** Per slice, its ray (the front's shoreward normal, x and z), its weight on the water, and 1 if its profile overhangs. */
   sliceRayX: Float32Array;
@@ -425,6 +427,8 @@ export class SweptLoft {
   private sealApplies = new Uint8Array(0);
   private heightReady = new Uint8Array(0);
   private rowHeightAt?: (x: number, z: number) => number;
+  /** Ruling 22's bed read (`build`'s `bedAt`), for the cap's bed rule; absent, the rule is skipped. */
+  private rowBedAt?: (x: number, z: number) => number;
   private normalReady = new Uint8Array(0);
   /** Per vertex, 1 where the face ruling's floor holds it on the solver's surface (`TubeFace.union`), for `prepareRow`. */
   private floorRows = new Uint8Array(0);
@@ -442,6 +446,8 @@ export class SweptLoft {
   /** Ruling 5's seam blend (`TubeFace.seam`), per slice: its clock's share α_τ and its height band b, m (`seamBand`). */
   private readonly seamTauRow = new Float64Array(MAX_SLICES + 1);
   private readonly seamBandRow = new Float64Array(MAX_SLICES + 1);
+  /** Ruling 22 (`dugCap`), per slice: the drawn height H the cap is measured in. */
+  private readonly dugHeightRow = new Float64Array(MAX_SLICES + 1);
   /** Per slice, its library's frame time, s (the refinement's unit; read by probes). */
   private readonly sliceFrame = new Float64Array(MAX_SLICES + 1);
   private readonly sliceTouchdown = new Float64Array(MAX_SLICES + 1);
@@ -544,7 +550,7 @@ export class SweptLoft {
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
       clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, overlapsOpenHeavy: 0, openDrops: [], overlapsKept: 0, refineLevels: 0,
-      rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
+      rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0, dugCapped: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
@@ -607,9 +613,15 @@ export class SweptLoft {
     return now > 0 ? Math.min(1, crestToTip(this.stretchProfile) / now) : 1;
   }
 
-  /** Loft the records' fronts over the water (`heightAt`). */
-  build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
+  /**
+   * Loft the records' fronts over the water (`heightAt`). `bedAt` is the bed under it (m, the same datum), read only
+   * under ruling 21's dug foot for ruling 22's bed rule (`dugCap`); without it that rule is skipped.
+   */
+  build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number,
+    bedAt?: (x: number, z: number) => number): LoftResult {
     const r = this.result;
+    this.rowBedAt = bedAt;
+    r.dugCapped = 0;
     if (this.normalDemand) {
       this.heightReady.fill(0);
       this.sealBlend.fill(1);
@@ -1460,6 +1472,7 @@ export class SweptLoft {
       if (seam) {
         this.seamTauRow[slice] = seamTau;
         this.seamBandRow[slice] = seamReach;
+        this.dugHeightRow[slice] = drawnHeight;
       }
       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
       // ahead of the toe held as the forward rest says first.
@@ -1619,7 +1632,7 @@ export class SweptLoft {
           // Ruling 5's seam blend (`TubeFace.seam`, `seamY`), in place of the clamp below.
           const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
           if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-          r.positions[3 * v + 1] = this.seamY(v, h, stillLevel + above, e, floor, seamTau, seamReach, dugRamp, 1 - pin);
+          r.positions[3 * v + 1] = this.seamY(v, h, stillLevel + above, e, floor, seamTau, seamReach, dugRamp, 1 - pin, drawnHeight, px, pz);
         } else if (e === 1) {
           r.positions[3 * v + 1] = floor ? Math.max(stillLevel + above, heightAt(px, pz)) : stillLevel + above;
         } else {
@@ -2254,7 +2267,8 @@ export class SweptLoft {
    * solver's surface with its own height and slope, so the back slope and the foot need no case of their own. A lip vertex
    * (crest to throat of an overturned slice: air under it) keeps its place, by α_τ alone (whole from the throw).
    */
-  private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number, dug = -1, ease = 1): number {
+  private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number, dug = -1, ease = 1,
+    height = 0, x = 0, z = 0): number {
     const share = this.result.wall?.seam;
     const marks = this.result.wall?.dug;
     const delta = e * (target - h);
@@ -2265,7 +2279,15 @@ export class SweptLoft {
       const alpha = dugShare(tau, floor && dug < 1 ? seamHeightWeight(delta, band) : 1, dug);
       if (share) share[v] = alpha * ease;
       if (marks) marks[v] = floor ? alpha : 0;
-      return alpha === 1 ? (e === 1 ? target : h + delta) : h + alpha * delta;
+      const y = alpha === 1 ? (e === 1 ? target : h + delta) : h + alpha * delta;
+      // Ruling 22 (`dugCap`): a floor vertex's dig under the sea is capped in the slice's height `height` and, with a
+      // bed read, in the sea's own depth at (`x`, `z`); a dig the cap leaves alone keeps its number.
+      if (!floor || !(y < h)) return y;
+      const dig = h - y;
+      const capped = dugCap(dig, height, this.rowBedAt ? h - this.rowBedAt(x, z) : Infinity);
+      if (!(capped < dig)) return y;
+      this.result.dugCapped += 1;
+      return h - capped;
     }
     if (marks) marks[v] = 0;
     if (!floor) {
@@ -2299,7 +2321,8 @@ export class SweptLoft {
         const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
         if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
         const dug = this.face.dug ? this.dugRows[v] : -1;
-        r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row], dug, dug >= 0 ? this.dugEase[v] : 1);
+        r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row], dug, dug >= 0 ? this.dugEase[v] : 1,
+          this.dugHeightRow[row], this.initialX[v], this.initialZ[v]);
       } else if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
       else {
         const profileIndex = j - E;

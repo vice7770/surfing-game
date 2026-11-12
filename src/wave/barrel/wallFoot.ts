@@ -19,6 +19,35 @@ import { smoothstep } from './tubeSeam';
 export const REST_DUG = { ramp: 2, near: 0.05, ahead: 5 } as const;
 
 /**
+ * Ruling 22's soft cap on the dig (docs/research/pool-look-reference-2026-11-11/ruling-22.md, point 3), in the slice's
+ * height H and the sea's own depth: the dig (sea − drawn, m) is untouched up to `free` H, eased above it so it never
+ * passes `most` H, and never more than `bed` of the sea's depth there. The structural dig is 0.35 H at most (the toe's
+ * 0.3 to 0.4 m plus the trough's 0.18 m, *measured*); more means the sea stood unusually high over the fixed case.
+ * All three are *provisional*.
+ */
+export const DUG_CAP = { free: 0.35, most: 0.5, bed: 0.5 } as const;
+
+/**
+ * The capped dig, m: `dig` itself (the same number) up to a = `DUG_CAP.free` H; above it a + (b − a) x / (1 + x) with
+ * x = (dig − a) / (b − a) and b = `DUG_CAP.most` H, whose value and slope meet the untouched part's at a and which
+ * stays under b; and at most `DUG_CAP.bed` of the sea's `depth` there (sea − bed, m; no rule where it is not finite).
+ */
+export function dugCap(dig: number, height: number, depth: number): number {
+  const a = DUG_CAP.free * height;
+  const b = DUG_CAP.most * height;
+  let capped = dig;
+  if (dig > a && b > a) {
+    const x = (dig - a) / (b - a);
+    capped = a + ((b - a) * x) / (1 + x);
+  }
+  if (depth < Infinity) {
+    const most = DUG_CAP.bed * Math.max(0, depth);
+    if (capped > most) capped = most;
+  }
+  return capped;
+}
+
+/**
  * How many profile points past the crest ease today's height share into the clock's alone: a quarter of the 32 points
  * from the crest to the lip mark (the ruling's item 2: no step between the crest, on today's rule, and the next point).
  */

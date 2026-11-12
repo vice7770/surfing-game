@@ -9,7 +9,7 @@ import { createContactHit, SweptContact } from './sweptContact';
 import { LOFT, LOFT_SAMPLES, REST, SweptLoft } from './sweptLoft';
 import { lipCase } from './toyCase';
 import { TUBE_SEAM } from './tubeSeam';
-import { DUG_CREST, REST_DUG, dugAlong, dugCrestRamp, dugPlace, dugShare } from './wallFoot';
+import { DUG_CAP, DUG_CREST, REST_DUG, dugAlong, dugCap, dugCrestRamp, dugPlace, dugShare } from './wallFoot';
 
 /**
  * Ruling 21's dug foot (`TubeFace.dug`, `?wallFoot=dug`; docs/research/pool-look-reference-2026-11-11/ruling-21.md):
@@ -249,5 +249,148 @@ describe('ruling 21: the dug foot in the loft, the contact and a body\'s water',
       }
     }
     expect(dugPoints).toBeGreaterThan(20);
+  });
+});
+
+/**
+ * Ruling 22's soft cap on the dig (docs/research/pool-look-reference-2026-11-11/ruling-22.md, point 3), under the same
+ * switch: untouched up to 0.35 H, eased so it never passes 0.5 H, never more than half the sea's depth; the contact follows.
+ */
+describe('ruling 22: the cap on the dig', () => {
+  it('leaves a dig up to 0.35 H its own number, and eases above it under 0.5 H with no step and no kink', () => {
+    expect(DUG_CAP).toEqual({ free: 0.35, most: 0.5, bed: 0.5 });
+    const H = 1.7;
+    const a = DUG_CAP.free * H;
+    const b = DUG_CAP.most * H;
+    for (const dig of [0, 0.011, 0.2, 0.41, 0.5949, a]) expect(dugCap(dig, H, Infinity)).toBe(dig);
+    // The ruling's formula above a.
+    for (const dig of [0.6, 0.7, 0.85, 1.15, 3, 50]) {
+      const x = (dig - a) / (b - a);
+      expect(dugCap(dig, H, Infinity)).toBeCloseTo(a + ((b - a) * x) / (1 + x), 12);
+      expect(dugCap(dig, H, Infinity)).toBeLessThan(b);
+      expect(dugCap(dig, H, Infinity)).toBeLessThan(dig);
+    }
+    // Step 9's deepest, 1.15 m at H 1.7 m: 0.77 m.
+    expect(dugCap(1.15, H, Infinity)).toBeCloseTo(0.7697, 3);
+    // Value and slope continuous at a (slope 1 either side), rising all the way.
+    const d = 1e-6;
+    expect(dugCap(a + d, H, Infinity) - a).toBeCloseTo(d, 9);
+    expect((dugCap(a + 2 * d, H, Infinity) - dugCap(a + d, H, Infinity)) / d).toBeCloseTo(1, 4);
+    let last = 0;
+    for (let dig = 0; dig < 4; dig += 0.01) {
+      const capped = dugCap(dig, H, Infinity);
+      expect(capped).toBeGreaterThanOrEqual(last);
+      last = capped;
+    }
+  });
+
+  it('holds the dig to half the sea\'s depth, and leaves a shallower dig its own number', () => {
+    const H = 1.7;
+    expect(dugCap(0.4, H, 0.6)).toBe(0.3);
+    expect(dugCap(0.4, H, 0.8)).toBe(0.4);
+    expect(dugCap(0.4, H, 2)).toBe(0.4);
+    expect(dugCap(1.15, H, 1)).toBe(0.5);
+    expect(dugCap(1.15, H, 9)).toBe(dugCap(1.15, H, Infinity));
+    // A dry place digs nothing.
+    expect(dugCap(0.2, H, 0)).toBe(0);
+    expect(dugCap(0.2, H, -0.1)).toBe(0);
+  });
+
+  const STILL = 0.5;
+  const N = 21;
+  const seam = { tau: TUBE_SEAM.tau, band: TUBE_SEAM.band };
+  const face: TubeFace = {
+    anchor: false, union: true, lag: false, clockRate: 2, thrownEnds: false, continuity: false, distance: false, contour: false, wallFlow: true,
+    contact: true, cap: false, merge: false, guard: false, track: false, inertia: false, retire: false, buoy: false, drop: false, seam, dug: true,
+  };
+  function records(tau: number): Float32Array {
+    const out = new Float32Array(N * FRONT_STRIDE);
+    for (let k = 0; k < N; k += 1) {
+      const o = k * FRONT_STRIDE;
+      out[o + FRONT_FIELD.x] = k + 0.5; out[o + FRONT_FIELD.z] = -100; out[o + FRONT_FIELD.front] = 1; out[o + FRONT_FIELD.sigma] = k;
+      out[o + FRONT_FIELD.tau] = tau; out[o + FRONT_FIELD.footHeight] = 2.1; out[o + FRONT_FIELD.footDepth] = 7;
+      out[o + FRONT_FIELD.throwZ] = tau >= 0 ? -100 : Number.NaN;
+      for (const f of [FRONT_FIELD.pace, FRONT_FIELD.anchor, FRONT_FIELD.crestSpeed, FRONT_FIELD.tauRate]) out[o + f] = Number.NaN;
+    }
+    return out;
+  }
+  const loftOf = (tau: number, sea: number, bed?: number) =>
+    new SweptLoft(new ProfileLibrary([lipCase(0.3, 0.04)]), 0.05, { contact: true, face })
+      .build(records(tau), N, STILL, () => sea, bed === undefined ? undefined : () => bed);
+  const slice = 10;
+  const yAt = (loft: ReturnType<typeof loftOf>, j: number) => loft.positions[3 * (slice * LOFT_SAMPLES + j) + 1];
+  /** The slice's drawn height H, from the forward mesh's reach (5 H and the mask's band past the toe). */
+  const heightOf = (loft: ReturnType<typeof loftOf>) => {
+    const a = 3 * (slice * LOFT_SAMPLES + E + toe);
+    const b = 3 * (slice * LOFT_SAMPLES + LOFT_SAMPLES - 1);
+    return (Math.hypot(loft.positions[b] - loft.positions[a], loft.positions[b + 2] - loft.positions[a + 2]) - LOFT.band) / REST_DUG.ahead;
+  };
+
+  it('under 0.35 H and over a deep bed the build is step 9\'s, number for number', () => {
+    for (const tau of [-0.25, 0.2]) {
+      const plain = loftOf(tau, STILL + 0.3);
+      const deep = loftOf(tau, STILL + 0.3, STILL + 0.3 - 7);
+      expect(0.3).toBeLessThan(DUG_CAP.free * heightOf(plain));
+      expect(plain.dugCapped).toBe(0);
+      expect(deep.dugCapped).toBe(0);
+      expect(Array.from(deep.positions)).toEqual(Array.from(plain.positions));
+      expect(Array.from(deep.wall!.seam!)).toEqual(Array.from(plain.wall!.seam!));
+      expect(Array.from(deep.wall!.dug!)).toEqual(Array.from(plain.wall!.dug!));
+    }
+    // At the throw the trough is the case's own level, 0.3 m under the sea, as step 9 drew it.
+    const on = loftOf(0.2, STILL + 0.3);
+    for (let j = E + toe + 1; j <= E + toe + 6; j += 1) expect(yAt(on, j)).toBeCloseTo(STILL, 5);
+  });
+
+  it('under a sea standing high over the case the dig eases and stays under 0.5 H', () => {
+    const over = 3.5;
+    const sea = STILL + over;
+    const on = loftOf(0.2, sea);
+    const H = heightOf(on);
+    expect(over).toBeGreaterThan(DUG_CAP.most * H);
+    expect(on.dugCapped).toBeGreaterThan(0);
+    // The trough's first vertices: the case's level is `over` under the sea; drawn at the capped dig.
+    for (let j = E + toe + 1; j <= E + toe + 6; j += 1) expect(sea - yAt(on, j)).toBeCloseTo(dugCap(over, H, Infinity), 4);
+    for (let j = E + LANDMARK.throat; j < LOFT_SAMPLES; j += 1) {
+      expect(sea - yAt(on, j)).toBeLessThan(DUG_CAP.most * H);
+      // The marks are step 9's: the face is still a dug floor there.
+      expect(on.wall!.dug![slice * LOFT_SAMPLES + j]).toBe(1);
+    }
+    // The lip (crest to throat, air under it) is not a floor: left as it is.
+    const calm = loftOf(0.2, STILL + 0.3);
+    for (let j = E + crest + 1; j < E + LANDMARK.throat; j += 1) {
+      if (yAt(calm, j) > sea + 2) expect(yAt(on, j)).toBeCloseTo(yAt(calm, j), 4);
+    }
+  });
+
+  it('keeps half the sea\'s depth under the drawn surface where the bed is near', () => {
+    const over = 0.3;
+    const sea = STILL + over;
+    const bed = sea - 0.4;
+    const on = loftOf(0.2, sea, bed);
+    expect(on.dugCapped).toBeGreaterThan(0);
+    for (let j = E + LANDMARK.throat; j < LOFT_SAMPLES; j += 1) expect(yAt(on, j) - bed).toBeGreaterThanOrEqual(0.2 - 1e-6);
+    for (let j = E + toe + 1; j <= E + toe + 6; j += 1) expect(yAt(on, j)).toBeCloseTo(sea - 0.2, 5);
+  });
+
+  it('the contact\'s floor follows the capped surface', () => {
+    const over = 3.5;
+    const sea = STILL + over;
+    const contact = new SweptContact(new ProfileLibrary([lipCase(0.3, 0.04)]), 0.05, { face });
+    contact.update(records(0.2), N, STILL, () => sea, () => sea - 7);
+    const drawn = loftOf(0.2, sea, sea - 7);
+    const H = heightOf(drawn);
+    let deepest = 0;
+    let read = 0;
+    for (let z = -98; z <= -74; z += 0.5) {
+      const floor = contact.floorAt(10.25, z);
+      if (floor !== floor) continue;
+      read += 1;
+      deepest = Math.max(deepest, sea - floor);
+    }
+    expect(read).toBeGreaterThan(20);
+    expect(deepest).toBeGreaterThan(DUG_CAP.free * H);
+    expect(deepest).toBeLessThan(DUG_CAP.most * H);
+    expect(deepest).toBeCloseTo(dugCap(over, H, Infinity), 3);
   });
 });
