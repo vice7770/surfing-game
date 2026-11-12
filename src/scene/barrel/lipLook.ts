@@ -64,10 +64,12 @@ export const LIP_STREAK = {
   stretch: { across: 0.3, round: 1.2 },
   /**
    * The cover round the profile, a true area share (the lace's thresholds): (profile point, cover), linear between; zero
-   * outside. Outer face: crest 32, mid-lip 48, tip 64. Inner face (ruling 25b): 0.5 at the tip, 0.1 at the throat 88,
-   * 0 by 96. The two faces meet at the tip, so the cover steps there.
+   * outside. Outer face: crest 32, mid-lip 48, tip 64 (ruling 25b). Inner face: ruling 25b's 0.5 at the tip, 0.1 at the
+   * throat 88, 0 by 96 left the underside at 9 % changed in `curl-inside` (bar 15 to 35 %) and the back wall at 5 % (bar
+   * 3 %); step 15's one retune: 0.8 at the tip (as the outer face, so no step there), 0.15 at the throat, 0 by 90.
+   * Measured after it: underside 11 %, back wall 1.8 % (step 15 README).
    */
-  cover: [[32, 0], [48, 0.3], [64, 0.8], [64, 0.5], [88, 0.1], [96, 0]],
+  cover: [[32, 0], [48, 0.3], [64, 0.8], [88, 0.15], [90, 0]],
   /** Eased in over this long after the throw, s; faded over this long after touchdown, s. */
   easeIn: 0.15,
   fadeOut: 0.2,
@@ -120,7 +122,9 @@ float sweptStreakFoam() {
  * Ruling 25b: where the sheet is thin, a streak never darkens the pixel. The thin tip is already aerated white
  * (ruling 9), so bubbles added there cannot take light away: there the light through the sheet stays the clean lip's
  * (`sweptStreakThrough`), and the streak only adds (the fray's white, the foam's albedo). Measured in step 14: with the
- * streak cutting the light through the thin sheet, the rim drew about 8 % darker.
+ * streak cutting the light through the thin sheet, the rim drew about 8 % darker. The gate is the ruling's "fray share
+ * above 0", not a ramp: a ramp over the share (step 15's first build) left 2067 thin pixels of `curl-lip` darker by more
+ * than 2 levels, up to 107, where the share is small but the light through the sheet is bright.
  */
 export const LIP_STREAK_THIN = `vSweptSheetWeight * ( 1.0 - smoothstep( ${LIP_FRAY.white.toFixed(3)}, ${LIP_FRAY.clean.toFixed(3)}, vSweptSheet ) )`;
 /** The body's light through the sheet, cut by its foam (twice: the light behind and the sun through it). */
@@ -129,7 +133,7 @@ export const LIP_STREAK_THROUGH_LINE = '( 1.0 - vWaterFoam ) * ( 1.0 - waterFres
 /** GLSL, fragment, before the body: the foam the body, the lit foam and `LIP_FRAY_VOLUME` read in `vWaterFoam`'s place. */
 export const LIP_STREAK_FOAM = /* glsl */ `float sweptStreakOwn = sweptStreakFoam();
 float sweptStreakLit = max( vWaterFoam, sweptStreakOwn );
-float sweptStreakThrough = mix( sweptStreakLit, vWaterFoam, ${LIP_STREAK_THIN} );
+float sweptStreakThrough = ( ${LIP_STREAK_THIN} ) > 0.0 ? vWaterFoam : sweptStreakLit;
 `;
 /** The foam composition's albedo line the streaks change (`CLASSIC_FOAM`, in the tube's Rich foam). */
 export const LIP_STREAK_ALBEDO_LINE = 'diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );';
