@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { barrelCasesFor } from './barrel/barrelLibrary';
-import { BARREL_SPOTS, POOL_FOOT_DEPTH, POOL_FRONT_REACH, POOL_REF_FRONT_REACH, barrelSpotOf, poolLead, poolRamp, poolStraightFrontAt } from './barrel/barrelSpots';
+import { BARREL_SPOTS, POOL_FOOT_DEPTH, POOL_FRONT_REACH, POOL_REF_FRONT_REACH, POOL_REF_FRONT_REACH_LONG, barrelSpotOf, poolLead, poolRamp, poolStraightFrontAt } from './barrel/barrelSpots';
 import { onsetTiming } from './barrel/sliceClock';
 import {
   POOL, POOL_INSIDE, POOL_REF, POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolPeriodOf, poolRampFootZ, poolRefLine, poolRefOn, poolSea, poolSpot, poolStraightAt, poolStraightRiddenAt,
@@ -289,6 +289,16 @@ describe('the Wave Pool\'s straight Barrel at the reference size (`poolSize` ref
     expect(barrelSpotOf({ ...ref, poolReef: 'short' })!.frontAt).toBe(pool.frontAt);
     expect(barrelSpotOf({ ...ref, poolReef: 'short' })!.footDepth).toBe(record.footDepth);
     expect(barrelSpotOf({ ...barrel, poolReef: 'short' })).toBe(pool);
+    // `?poolReach=long` (ruling 17): the long reef's reach ends at s 150; nothing else of the record changes, the short
+    // reef's reach is the pool's either way, and without the size the switch is not read.
+    expect(POOL_REF_FRONT_REACH_LONG).toEqual({ from: 22.2, to: 150, behind: 33.3 });
+    const reached = barrelSpotOf({ ...ref, poolReach: 'long' })!;
+    for (const [s, n, on] of [[22.3, 0, true], [22.1, 0, false], [111.1, 5, true], [149.9, 5, true], [150.1, 5, false], [140, -33.2, true], [140, -33.4, false]] as const) {
+      expect(reached.frontAt!(...ar(s, n)), `long: s ${s}, n ${n}`).toBe(on);
+    }
+    expect({ ...reached, frontAt: undefined, faceAnchor: undefined }).toEqual({ ...record, frontAt: undefined, faceAnchor: undefined });
+    expect(barrelSpotOf({ ...ref, poolReef: 'short', poolReach: 'long' })!.frontAt).toBe(pool.frontAt);
+    expect(barrelSpotOf({ ...barrel, poolReach: 'long' })).toBe(pool);
     expect(pool.frontAt).toBe(poolStraightFrontAt);
     expect(POOL_FRONT_REACH).toEqual({ from: 20, to: 100, behind: 30 });
     expect(record.front).toBe(pool.front);

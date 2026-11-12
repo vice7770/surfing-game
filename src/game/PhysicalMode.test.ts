@@ -8,7 +8,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -449,6 +449,43 @@ describe('PhysicalMode', () => {
       vi.unstubAllGlobals();
     }
     expect(poolRefConfig(before, undefined, false, true)).toBe(before);
+  });
+
+  // pool-look-reference step 5 (ruling 17): `?poolReach=long` takes the reference size's tube front to s 150 along the long reef.
+  it('takes the reference size\'s front to s 150 with `?poolReach=long`, only with `?poolSize=ref` and the long reef (dev switch)', () => {
+    expect(poolReachLong('?poolReach=long')).toBe(true);
+    expect(poolReachLong('?poolReach= LONG ')).toBe(true);
+    for (const search of ['', '?poolReach', '?poolReach=', '?poolReach=short', '?poolreach=long']) expect(poolReachLong(search), search).toBe(false);
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' });
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'auto' });
+    const before = surfZoneConfigFor(barrel, 5, true);
+    const trainingBefore = surfZoneConfigFor(training, 5, true);
+    const canyonBefore = surfZoneConfigFor(canyon, 5, true);
+    try {
+      expect('poolReach' in before).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      const ref = surfZoneConfigFor(barrel, 5, true);
+      expect('poolReach' in ref).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolReach=long' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolReach: 'long' });
+      // An online room pins the size, so the switch does not reach it; nor Training or another spot.
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined });
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+      // The short reef keeps the pool's own reach: the switch is not read with it.
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolReef=short&poolReach=long' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolReef: 'short' });
+      // Without the size the switch does nothing.
+      vi.stubGlobal('location', { search: '?poolReach=long' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual(before);
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(poolRefConfig(before, undefined, false, false, true)).toBe(before);
   });
 
   // The DEVICE row (barrel-gpu): where the water steps and, on the GPU, what its step moves.

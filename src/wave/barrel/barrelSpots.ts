@@ -290,8 +290,10 @@ const POOL_ONSET: OnsetTables = {
  * behind it), so the beach's shore break, past the reef's ends and inside it, is never the barrel's. `to` is where the
  * reef stops plunging: the solver throws lip jets on under half its onsets from s 90–100 at both sizes
  * (docs/research/pool-barrel-straight-2026-11-01, frame-*.txt), and past it its smaller waves break over the 0.9 m crest
- * and spill, so a tube joined there late (`joinPast`) would draw on a spilling bore (measured: 0.17–0.33 of the waves at
- * s 120–180 with the front to 205). The advisor's gate on the solver's own plunge test, by the floor's measured place:
+ * and spill, so a tube joined there late (`joinPast`) would draw on a spilling bore (measured on the solver's own plunge
+ * test, which the game's path does not run: 0.17–0.33 of the waves at s 120–180 with the front to 205. On the game's path,
+ * the crash's lips at the reference size with the front to 194, ruling 17 measured 62–76 % of the waves throwing at
+ * u 120–160: the old number is not the game's). The advisor's gate on the solver's own plunge test, by the floor's measured place:
  * the throw's test does not run at a swept spot with the crash (`throwLip`). Its convex start whitens s 0–30 as one
  * section.
  */
@@ -302,6 +304,17 @@ export const POOL_FRONT_REACH = { from: 20, to: 100, behind: 30 } as const;
  * `POOL_FRONT_REACH` × 1.11, written out as the ruling gives it, on the reference's own line (`poolRefBarrelSpot`).
  */
 export const POOL_REF_FRONT_REACH = { from: 22.2, to: 111, behind: 33.3 } as const;
+
+/**
+ * The reference size's second reach (`?poolReach=long`, ruling 17's build 1; opt-in): the same reach with its end at
+ * s 150 in place of 111, so the tube is drawn 39 m further along the reef. Ruling 17 measured the game's own lips there
+ * (62–76 % of the waves throw at u 120–160 with the front to 194); the reef's flat crest runs to s 194, and 150 is as far
+ * as the ruling lets the reach go. Read only on the long reef (`poolRefBarrelSpot`).
+ */
+export const POOL_REF_FRONT_REACH_LONG = { ...POOL_REF_FRONT_REACH, to: 150 } as const;
+
+/** The reference size's reach switch (`SurfZoneConfig.poolReach`): 'long', the front's reach to s 150; none, to 111. */
+export type PoolReachSwitch = 'long';
 
 /**
  * The straight Barrel's lagged join (the advisor's step 3 ruling, 2026-11-03): Δd = |τ_e| C S_ray m deeper than the throw,
@@ -370,12 +383,13 @@ export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
  * reads the tables by its foot over the tables'); the lagged join's depths × 1.11 and its ramp × √1.11, at 1.11 × the foot
  * crest. The slope and its rules are the pool's. Step 4 (ruling 16): the reef's lengths along its line are × 1.11 too, so
  * the front's reach is the reference's own, on its own line (`POOL_REF_FRONT_REACH`, `poolRefLine`); with `reef` 'short'
- * (`?poolReef=short`) the lengths and the reach are the pool's, as before step 4.
+ * (`?poolReef=short`) the lengths and the reach are the pool's, as before step 4. With `reach` 'long' (`?poolReach=long`)
+ * the long reef's reach ends at s 150 (`POOL_REF_FRONT_REACH_LONG`); the short reef's is the pool's either way.
  */
-export function poolRefBarrelSpot(reef?: PoolReefSwitch): BarrelSpot {
+export function poolRefBarrelSpot(reef?: PoolReefSwitch, long?: PoolReachSwitch): BarrelSpot {
   const pool = BARREL_SPOTS.pool!;
   const k = POOL_REF.scale;
-  const reach = POOL_REF_FRONT_REACH;
+  const reach = long === 'long' ? POOL_REF_FRONT_REACH_LONG : POOL_REF_FRONT_REACH;
   const { startX } = poolRefLine(reef);
   const frontAt = reef === 'short' ? pool.frontAt : (x: number, z: number) => {
     const { s, n } = poolStraightFrame(x, z, startX);
@@ -388,6 +402,6 @@ export function poolRefBarrelSpot(reef?: PoolReefSwitch): BarrelSpot {
 }
 
 /** A sea's barrel transect: its spot's (`BARREL_SPOTS`), or the pool's at the reference size (`SurfZoneConfig.poolSize`). */
-export function barrelSpotOf(config: { spot: SpotName; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch; poolReef?: PoolReefSwitch }): BarrelSpot | undefined {
-  return config.spot === 'pool' && poolRefOn(config) ? poolRefBarrelSpot(config.poolReef) : BARREL_SPOTS[config.spot];
+export function barrelSpotOf(config: { spot: SpotName; poolWaves?: PoolWaves; poolBarrel?: PoolBarrelLayout; poolSize?: PoolSizeSwitch; poolReef?: PoolReefSwitch; poolReach?: PoolReachSwitch }): BarrelSpot | undefined {
+  return config.spot === 'pool' && poolRefOn(config) ? poolRefBarrelSpot(config.poolReef, config.poolReach) : BARREL_SPOTS[config.spot];
 }

@@ -28,7 +28,7 @@ import { riderBounds, sideMargin, type RiderBounds } from '../physics/riderBound
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
-import { BARREL_SPOTS, barrelSpotOf, tubeFootMax } from './barrel/barrelSpots';
+import { BARREL_SPOTS, barrelSpotOf, tubeFootMax, type PoolReachSwitch } from './barrel/barrelSpots';
 import { tubeFaceOf, type TubeFace } from './barrel/faceAnchor';
 import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
 import type { HeldRule } from './barrel/heldJetStep';
@@ -407,6 +407,12 @@ export interface SurfZoneConfig {
    * `poolSize` 'ref' (the floor, the take-off, the peel's columns and the front's reach, `barrelSpotOf`).
    */
   poolReef?: PoolReefSwitch;
+  /**
+   * The reference size's front reach (ruling 17, pool-look-reference step 5): 'long' (`?poolReach=long`), the tube's
+   * front follows crests to s 150 along the long reef in place of 111 (`POOL_REF_FRONT_REACH_LONG`). Read only with
+   * `poolSize` 'ref' and the long reef (`barrelSpotOf`); unset, the reach as before. Online rooms pin `poolSize`.
+   */
+  poolReach?: PoolReachSwitch;
   /**
    * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
    * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every

@@ -388,7 +388,7 @@ export interface HostExtras {
  * the page decides. Shared with the dev pages that time the game's own seas (gpu-check's `?mode=pipeline`).
  */
 export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier: boolean, overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig {
-  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides), poolWindowSwitch().poolWindow, poolHeldOld(), poolReefShort());
+  return poolRefConfig(switchedConfigFor(settings, seed, tier, overrides), poolWindowSwitch().poolWindow, poolHeldOld(), poolReefShort(), poolReachLong());
 }
 
 /**
@@ -400,15 +400,18 @@ export function surfZoneConfigFor(settings: PhysicalSettings, seed: number, tier
  * which becomes the config's `alongShore`. Its tube case's held frame is found with the jet-step test (`heldRule`
  * 'jet-step', ruling 16: `big` holds at frame 175, not 176) unless `heldOld` (`?poolHeld=old`). Its reef's lengths along
  * its line are × 1.11 (`POOL_REF`, ruling 16) unless `reefShort` (`?poolReef=short`: `poolReef` 'short', the lengths
- * before step 4). Any other config, as given: `window`, `heldOld` and `reefShort` are read at this size alone.
+ * before step 4). With `reachLong` (`?poolReach=long`, ruling 17) the long reef's front reach ends at s 150, not 111
+ * (`poolReach` 'long'). Any other config, as given: `window`, `heldOld`, `reefShort` and `reachLong` are read at this
+ * size alone.
  */
-export function poolRefConfig(config: SurfZoneConfig, window?: number, heldOld = false, reefShort = false): SurfZoneConfig {
+export function poolRefConfig(config: SurfZoneConfig, window?: number, heldOld = false, reefShort = false, reachLong = false): SurfZoneConfig {
   if (!poolRefOn(config)) return config;
   const { poolFloor, ...rest } = config;
   return {
     ...rest, significantHeight: regularSignificantHeight(POOL_REF.edgeHeight), peakPeriod: POOL_REF.period, poolTubeCase: config.poolTubeCase ?? 'big',
     ...(heldOld ? {} : { heldRule: 'jet-step' as const }),
     ...(reefShort ? { poolReef: 'short' as const } : {}),
+    ...(reachLong && !reefShort ? { poolReach: 'long' as const } : {}),
     ...(poolFloor === 'inside' ? { poolFloor } : {}),
     ...(window !== undefined ? { alongShore: window } : {}),
   };
@@ -654,6 +657,16 @@ export function poolHeldOld(search?: string): boolean {
  */
 export function poolReefShort(search?: string): boolean {
   return devParam('poolReef', search)?.trim().toLowerCase() === 'short';
+}
+
+/**
+ * The `?poolReach=long` dev switch (pool-look-reference step 5, 2026-11-12; ruling 17): the reference size's tube front
+ * follows crests to s 150 along the long reef, not 111 (`POOL_REF_FRONT_REACH_LONG`), so the tube is 39 m longer. Read
+ * only together with `?poolSize=ref` and without `?poolReef=short` (`poolRefConfig`): otherwise, and in online rooms
+ * (which pin `poolSize`), it does nothing.
+ */
+export function poolReachLong(search?: string): boolean {
+  return devParam('poolReach', search)?.trim().toLowerCase() === 'long';
 }
 
 export function poolFloorSwitch(search?: string): { poolFloor?: 'ledge' | 'inside' } {
