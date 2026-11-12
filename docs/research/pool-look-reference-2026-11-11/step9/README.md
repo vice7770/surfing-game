@@ -1,4 +1,4 @@
-# Step 9: `?wallFoot=dug` (2026-11-12, opt-in, branch `claude/pool-wall-foot`, not pushed, not merged)
+# Step 9: `?wallFoot=dug` (2026-11-12, opt-in, MERGED opt-in as PR #269 (Canyon hashes equal main's; Canyon fps trace 60.5 mean / 60 lowest))
 
 Ruling 21's build. One build, one 300 s run with the switch on. Nothing was tuned.
 
