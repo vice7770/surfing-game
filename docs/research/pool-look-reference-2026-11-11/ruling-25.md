@@ -180,3 +180,57 @@ As 25b (pair difference against the streak forced off), with these changes:
 - One build. One retune: the streak spacing along the crest (0.4 to 0.9 m) or the lace cell (0.15 to 0.35 m).
 - If the eye check fails again, **park part (a)**. Go to (b), the torn white edge, and (d), the white pile. Show the owner the stills of steps 13 to 16 and let the owner say which, if any, reads as foam.
 - If it passes, merge it on under `lipLook=fray`.
+
+---
+
+# Advisor ruling 25d: park the streaks; first find why foam does not stand out
+
+Advisor: this session (Opus 5.5, max effort), 2026-11-12. Read: step 16's hand-back and `step16/crop-lip-midday-3-rows.jpg` (looked at by eye); the brightness readings of steps 13 to 16; the lip-look ruling, section 4. No run.
+
+Tags: [M13] to [M16] the steps' prints; [L] the lip-look ruling's measurement; [R] reasoned; [P] provisional.
+
+## Step 16
+
+- It draws a honeycomb net on the lip, and a net hangs under it. The eye check fails. By 25c's stop rule, **part (a), the streaks, is parked.** Code held on `claude/pool-foam-4`.
+- The builder's point stands: to gather lace into lines, a streak must be 5 to 10 lace cells wide, as on the sea. On this lip that means a lace of a few centimetres, finer than the stills resolve [M16].
+
+## What steps 13 to 16 have in common
+
+**The foam is no brighter than the clean lip it sits on.**
+
+- Step 14: streak pixels luma 208 against 204 for the same pixels without the streak; full cover (177, 210, 229) against the clean lip (140, 219, 249) [M14].
+- Step 16: 205.9 against 190.3 [M16].
+- Only the colour differs: grey-white against cyan. So every pattern reads as paint. Soft shapes read as clouds; hard shapes read as stripes or nets.
+- The game's fully lit sea foam reads only about (190, 205, 195) at midday [L]. "White" is a pale grey here.
+
+In the real world, sunlit foam is the brightest thing in the water. Fresh foam reflects a large share of light; clear water sends back a few percent plus what comes up from the floor [R; to be sourced in the diagnosis]. A light pool floor makes the water bright, but the owner's photo still shows the foam far whiter than the water.
+
+**My order was wrong.** I asked for patterns before checking that foam can stand out at all. No foam shape (streaks, torn edge, lines on the face) can read as foam while foam and water have the same brightness.
+
+## Next: a diagnosis, no game change
+
+1. **One held frame.** 90 s; midday and sunset; `curl-lip` and `curl-front`. Use `hold.mjs` (step 14). Read the linear light, before the tone map, and the display value after it, for:
+   - a cloud;
+   - the sunlit white pile;
+   - sea foam on a slope turned from the sun;
+   - the clean lip at mid-lip;
+   - the flat pool water in front;
+   - the back wall inside the tube.
+2. **Split the clean lip's light into its terms,** as step 14 did: sky reflection, light through the sheet, the fray's light from behind, the water's own colour and scatter, specular. Name the largest.
+3. **Read the foam's light:** its albedo, the sun and sky terms, the tone map's curve and the exposure.
+4. **Compare** the ratios foam : water : cloud with real ones. Open the sources and cite them: fresh foam's reflectance; clear shallow water over a light floor; the Fresnel share.
+5. **Name where the game departs:** water too bright (which term), foam too dim (albedo, missing sky light, the tone map squeezing the top), or both.
+6. **Propose at most two changes.** For each, give its physical cause, the expected ratio after it, and its reach. A change to all water (every spot) needs an A/B switch and the owner's ride. A change to the tube only can go under `lipLook=fray`.
+
+No code change in this task; measuring tools go in the docs folder.
+
+## After the diagnosis
+
+1. The change it names.
+2. Then foam shapes again, in ruling 25's order:
+   - (b) the torn edge. Its cut-outs draw up to 0.10 m less water at the tip than the rider hits; that is the owner's call.
+   - (d) the white pile.
+   - (e) foam lines on the face.
+   - (c) spray, last.
+3. If streaks come back, draw them as explicit soft lines, not by thresholding a pattern: a few per metre of crest, at hashed places, wandering slowly round the curl, a few centimetres wide with soft sides [P]. Thresholded patterns gave clouds, stripes and nets.
+4. The owner's ask: foam that follows the conditions (bigger or harder-breaking waves, more foam; fresh pool water fading faster than sea water).
