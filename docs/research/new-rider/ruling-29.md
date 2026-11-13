@@ -438,3 +438,69 @@ the chop (4 of 12), the save window (too long), and the 20 cm rise at 2 m/s.
    regress.
 4. **Then merge the whole rebuild as one.** Nothing is merged until a rider is worth the owner's time: main's
    `?rider=new` stays 3.1c until then, and the owner has said they will ride and feed back as the work goes.
+
+---
+
+# Ruling 29l: step 3.2g; the chop fall is the fall test, not the pitch loop (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 7 and its traces. The step changed no game code, so 3.2f's bars
+stand unchanged. Branch `claude/rider-new-32g` (072767f3).
+
+## The finding, and it is the advisor's own bar that is wrong
+
+The agent measured the pitch plant, traced a chop fall, and then **did not rebuild the pitch loop**, because the trace
+says the pitch loop is not the fault. That was the right call, and the stop rule earned its keep.
+
+- **The board's pitch swing is the chop's, not the rider's.** Both boards swing about ±12° through the same chop, and
+  the old rider holds. No pitch controller could have held the board flatter.
+- **The difference is the load.** The free body unloads to **0.10 body weight** when the board drops into a trough.
+  The feet's torque is bounded by the load they carry, so a rider that light has almost no ankle authority. The old
+  rider never went under 0.56 body weight, because its drive carried it. A real surfer rides that moment out.
+- **The fall is then called by a test that does not apply there.** `capture` uses ω₀ = √(max(0.5, g)/h). As the felt
+  gravity goes toward zero, ω₀ sits on its floor, and a drift of 0.5 m/s alone puts the capture point 0.67 m along —
+  twice the feet's reach — with the rider perfectly balanced.
+- **Hof's capture point is a theorem about a body on a fixed support under gravity.** A board falling away under the
+  rider is neither. The advisor accepted that test in ruling 29 without a condition on it, so this is the advisor's
+  error, not the build agents'.
+- **The chop and the save window are one fault**, because the same test sets both. The 20 cm rise at 2 m/s is a third
+  thing.
+
+## Two more measured findings
+
+- **The pitch plant bends harder than the rail plant, and it changes sign.** Three degrees nose-down of the trim, the
+  lift per sinkage reverses (Z per heave at 7 m/s: −3910 at the trim, **+606** nose-down). There the bow is buried, and
+  lifting the board adds lift: the heave runs away. That is the pitch twin of 3.2f's slide that feeds itself, and it is
+  the bow burying every surfer knows.
+- **The hull's pitch damping is 7.7–22.7 N·m·s/rad, two to four times smaller than the 20–30 the braced ankle was
+  designed against** — and smallest exactly where the chop bar fails.
+- **At 2 m/s there is no planing plant at all:** the board sinks, stands on its tail at 90°, and reaches the tank
+  floor.
+
+## Decisions
+
+1. **The fall test gets a validity condition.** Below about a fifth of body weight the capture point is frozen, and the
+   posture backstops carry those windows instead. This is a correction to the test, not a loosening of a bar: the test
+   was being read outside the conditions it was proved under.
+2. **The 20 cm rise at 2 m/s stops being a bar and becomes a report.** The board does not plane at 2 m/s, and the old
+   rider falls there too. It was never a fair test of a standing rider's balance.
+3. **The pitch loop is not rebuilt yet.** If the fall test and the legs carry the chop, it does not need to be. Only if
+   chop still fails does the loop come under prediction — and then scheduled by pitch offset as well as speed, because
+   of the sign change, with 3.2f's lesson in hand: a schedule read too far into the bent region made things worse.
+4. **The braced ankle's damping was designed against a hull damping two to four times too large.** Recorded; it is
+   revisited with the loop, not before.
+
+## Decision: step 3.2h, the fall test and the legs (a fresh agent; effort xhigh)
+
+The 3.2g agent is nearly out of context, and Part 7 §4 is written as this brief. In order:
+
+1. **Freeze the capture point while the rider is light** (below about a fifth of body weight), with the posture
+   backstops carrying those windows. Expect the chop and the save window to move together. **Check the push bar does
+   not get easier** — a fall test that never fires would pass everything.
+2. **The legs' absorption.** Three centimetres of knee travel over a 0.2 m chop is not a rider absorbing anything, and
+   the 20,000 N/m knee spring puts a 2.6 Hz mode right on the board's swing. This is a stance question, not a
+   controller one.
+3. **Re-run 3.2's bars.** The ones that must move: the chop (4 of 12) and the save window (tall 0.85 s against
+   0.25–0.35, Compress 0.28–0.33 against 0.15–0.25). Nothing else may regress: the carves stay at 2.83 and 2.98,
+   Mode B passes on its restated bank bar, N0 stays byte-identical.
+4. **If they pass, run the merge checks and hand back with a PR body.** Then the whole rebuild merges as one and the
+   owner rides it.

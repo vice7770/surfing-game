@@ -1417,3 +1417,170 @@ Two rounds, as the stop rule allows [M]: (1) the rail in the schedule, uncapped,
 - `predict.probe.ts`: PART=railmodel. `e32.probe.ts`: PART=kicktrace.
 - `results/`: `bars-new-32f.jsonl`, `bars31-new-32f.jsonl`, `yawstep-32f.jsonl`, `e32-kicktrace-32f.jsonl`,
   `e32-compare-32f.jsonl`, `predict-railmodel-32f.jsonl`, `rounds-32f.txt`; `../roll-plant/results/plant-rail.jsonl`.
+
+---
+
+# Part 7: step 3.2g, the pitch loop — measured and diagnosed, not rebuilt (ruling 29k)
+
+Written 2026-11-13 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32g` (from
+`claude/rider-new-32f`, rebased on main b206cae8). The contract: `../ruling-29.md` 29k.
+
+Tags as above: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **Miss, and I stopped where the stop rule says to stop.** The pitch plant is measured, and the chop fall is traced.
+  **The chop fall is not the pitch loop's gains**, so I did not rebuild the loop and did not tune. No game code changed
+  in this step: the bars are 3.2f's, unchanged, and nothing can have regressed.
+- **The pitch plant bends harder than the rail plant did, and it has a sign change** [M]: at a nose-down trim the
+  hull's **lift per sinkage reverses** — lifting the board then adds lift instead of losing it, so the heave is
+  unstable. That is the bow burying, and it is a finding in its own right.
+- **At 2 m/s there is no pitch plant at all** [M]: the lab's board with a 73 kg rider does not plane, it sinks and
+  stands on its tail (trim 90°, draft 3 m, the tank's floor). The 2 m/s rise bar is a floating board, not a planing one.
+- **The hull's pitch damping is 2 to 4 times smaller than the pitch loop assumed** [M]: 7.7–22.7 N·m·s/rad over
+  5–12 m/s, against the 20–30 the braced damping was designed against (`standingBody.ts` PITCH_DAMPING_TIME's note).
+- **What the chop fall actually is** [M]: the board's pitch swings the same amount under the old rider, which does not
+  fall. The new rider's **load falls to 0.10 of body weight** where the old rider's stays at 0.56, and the fall is then
+  called by the capture point, which **is not valid while the rider is light**: its ω₀ is floored at √(0.5/h), so as
+  the felt gravity goes to zero the capture point runs away on its own.
+- **I am nearly out of context.** The build this step needs (a pitch controller on the measured plant, scheduled by
+  pitch as the rail is, and a fall test that does not fire while unloaded) is a fresh agent's work. The measurement and
+  the diagnosis below are what it needs to start.
+
+## 2. The pitch plant (item 2)
+
+`../roll-plant/plant.probe.ts` PART=pitch, `../roll-plant/results/plant-pitch.jsonl`. The board is towed straight and
+left free in pitch and heave until it settles (the trim); then the pitch and the height are held there and the pitch
+moment M (nose up +, about the board's lateral axis through the deck under the rider) and the vertical force Z (up +)
+are central differences about it: per rad of pitch (±1°), per metre of heave (±2 cm), per rad/s of pitch rate (±0.2) and
+per m/s of heave rate (±0.2). `PITCHES` offsets the held pitch from the trim, in degrees. The lab needed three new
+holds (pitch, height, pitch rate), and the height must be written to the board's **centre of mass**, which is its own
+state; writing `position` does nothing, because `syncPosition` derives it back (that cost me a round) [R].
+
+**At the trim** [M]:
+
+| Speed | Trim | Draft | M per pitch | Z per pitch | M per heave | **Z per heave** | M per pitch rate | Z per heave rate |
+|---|---|---|---|---|---|---|---|---|
+| 5 m/s | 19.3° | 21.5 cm | −1770 N·m/rad | +319 N/rad | −1648 N·m/m | **−701 N/m** | −7.7 N·m·s/rad | −364 N·s/m |
+| 7 m/s | 9.2° | 9.1 cm | −953 | −357 | −1567 | **−3910** | −11.2 | −539 |
+| 9 m/s | 5.8° | 5.1 cm | −410 | +2069 | −3722 | **−10294** | −16.6 | −707 |
+| 12 m/s | 3.8° | 2.4 cm | −1400 | +2343 | −5322 | **−19039** | −22.7 | −899 |
+
+- The base vertical force is 741 N at every speed from 5 up, which is the rider's and the board's weight (740 N): the
+  method's check, as rail 0 was for the roll plant [M].
+- The heave stiffness grows 27 times from 5 to 12 m/s. With the pair's 75.5 kg that is a heave mode at 0.5 Hz at 5 m/s
+  and 2.5 Hz at 12 [I].
+- The pitch stiffness is restoring at every speed but **not monotone** in it (−1770, −953, −410, −1400).
+- **The pitch damping is small:** 7.7 N·m·s/rad at 5 m/s and 11.2 at 7, where `PITCH_DAMPING_TIME`'s note assumed
+  20–30. The braced ankle (0.3 s × k) was chosen against a hull damping that is 2 to 4 times too large at the speeds
+  where the chop bar fails [M, R].
+
+**Does it bend? Yes, and it changes sign** [M]. The same point, with the held pitch offset from the trim:
+
+| Speed | Offset | Pitch | Draft | M per pitch | **Z per heave** |
+|---|---|---|---|---|---|
+| 7 m/s | −3° | 6.2° | 12.6 cm | −204 | **+606** |
+| 7 m/s | trim | 9.2° | 9.1 cm | −953 | −3910 |
+| 7 m/s | +3° | 12.2° | 10.0 cm | −695 | −5588 |
+| 7 m/s | +6° | 15.2° | 12.3 cm | −1713 | −5519 |
+| 9 m/s | −3° / trim | 2.8° / 5.8° | 9.4 / 4.9 cm | −525 / −410 | **+226** / −10294 |
+| 12 m/s | −3° / trim | 0.8° / 3.8° | 5.1 / 2.3 cm | −1895 / −1400 | **−1469** / −19039 |
+| 5 m/s | −3° / trim | 16.3° / 19.3° | 28.6 / 21.5 cm | −14 / −1770 | **+621** / −701 |
+
+- **Three degrees nose-down of the trim, the lift per sinkage changes sign** at 5, 7 and 9 m/s (and falls by 13 times at
+  12). There the bow is buried (the draft grows by 3–4 cm as the nose drops), and lifting the board **adds** lift
+  instead of losing it: the heave runs away from its trim. That is the bow burying the ruling asked me to watch, and it
+  is the pitch plant's equivalent of the rail plant's slide that feeds itself. [M, I]
+- M per pitch varies by 8 times over ±6° at one speed, and not monotonically. The plant is not linear in pitch over the
+  range a chop drives it through, so a controller designed at the trim alone does not hold at the ends — exactly the
+  lesson of the rail plant, in the other axis. [M, I]
+- **At 2 m/s there is no plant.** The board sinks to the tank's floor and stands on its tail (trim 90°). Every
+  derivative there is of a sunk board, and I report them only so nobody mistakes them for a planing hull's. The 20 cm
+  rise bar at 2 m/s is therefore not a test of a planing pitch loop. [M]
+
+## 3. What the chop fall is (item 4, the stop rule)
+
+`e32.probe.ts` PART=trace with CHOP=2, at 7 m/s, from the bars' own steady start
+(`results/trace-chop2-32g.jsonl`, and the old rider's `trace-chop2-old-32g.jsonl`) [M]:
+
+| | The new rider (falls at 0.83 s) | The old rider (3 s, no fall) |
+|---|---|---|
+| The board's pitch | +5° to −13.6° | +4.7° to −12.0°, cycling about 0.55 s |
+| The leg's load | 1.31 → **0.10** body weights | never below **0.56** |
+| The knees' travel | about 3 cm | — |
+| The ankle's angle | 12° → 16° forward, and it stays | — |
+| The capture point along the deck | 0.34 → **0.84 m** (the feet reach 0.32) | — |
+
+- **The board's pitch swing is the chop's, not the rider's.** Both riders' boards swing ±12°, and the old rider holds.
+  So no pitch loop could have held the board flatter: the swing is what a 0.2 m chop does to this hull at 7 m/s. [M, I]
+- **The difference is the load.** The old rider is carried by its drive, so it stays on the deck (0.56 BW). The new
+  rider is a free body: when the board drops away into the trough, it unloads to 0.10 BW. A rider that light has almost
+  no ankle authority (the feet's torque is bounded by the load), so nothing can be done in that window. A real rider
+  rides that out — they go light, and the board comes back up. [M, I]
+- **The fall is then called by the capture point, which is not valid there** [R, M]. `HumanBalance.capture` uses
+  ω₀ = √(max(0.5, g) / h) with g the felt gravity. As the board drops away g goes to zero, ω₀ falls to its floor
+  (0.75 /s at h = 0.9 m), and the capture point is the centre of mass's place plus its speed over ω₀: a drift of
+  0.5 m/s alone then puts it 0.67 m along, twice the feet's reach, **with no loss of balance at all.** The capture
+  point is a theorem about a body on a fixed support under gravity (Hof et al. 2005). It says nothing while the support
+  is falling. [I]
+- **The same test sets the save window**, which is why that bar is long: the window is the time the centre of mass takes
+  to pass the feet's edge after the capture point first leaves them, and the capture point leaves them at the first
+  touch of any shove (0.001 s).
+- **So the chop and the save window are one fault, and it is the fall test, not the pitch loop.** The 2 m/s rise is a
+  third thing: a board that does not plane (section 2).
+
+## 4. What the next agent should build [I]
+
+In this order:
+1. **A fall test that holds while the rider is light.** The capture point should be read only against the support that
+   exists: freeze it (or hold the last valid margin) while the load is under about a fifth of body weight, and let the
+   existing posture backstops (the leg past its travel, the lean past MAX_PITCH, the feet off the deck) carry those
+   windows. Expect the chop and the save window to move together, and check the push bar does not get easier.
+2. **The legs' absorption.** 3 cm of knee travel over a 0.2 m chop is not a rider absorbing it. The knee spring is
+   20,000 N/m, which with 73 kg is a 2.6 Hz mode, right on the board's pitch and heave swing. A rider's legs are much
+   softer in that band. This is the physical half of the chop bar, and it is a stance question (the design's §6
+   strength and travel), not a controller one.
+3. **Then the pitch loop under prediction**, as 29k asks, on the measured plant — but **scheduled by the pitch offset
+   as well as the speed**, because of section 2's sign change, and with the honest knowledge from 3.2f that a
+   schedule read too far into the non-linear region made the carve worse, not better. The plant's own numbers are now
+   in `plant-pitch.jsonl`; a `pitchPlantAt(speed, offset)` beside `plantAt` is the shape of it.
+4. The 2 m/s rise is a non-planing case and should be judged separately, if at all: the old rider falls there too.
+
+## 5. The bars
+
+Unchanged from 3.2f, because no game code changed in this step: the held carves 2.83 / 2.98 s, Mode B passing on its
+restated bar (the bank's envelope halves within two cycles at 5, 7 and 9 m/s), N0 byte-identical, the chop 4 of 12, the
+save window 0.85 s, the 2 m/s rise falling at 0.42 s. `tsc` (app and server) and the four model and rider test files
+(36 tests) pass. The merge checks are not run: the three bars this step was given do not pass.
+
+## 6. How it rides, and what is still missing (for the owner)
+
+Plain words, as the ruling asks.
+
+**What works now** (behind `?rider=new`, not yet merged):
+- The rider stands with no hidden hand holding it. It balances like a person: it feels its body late, predicts, and
+  moves its ankles, hips and shoulders.
+- It holds a hard carve: 2.8 seconds standing and 3.0 in Compress, which the old rider could not do without a hidden
+  push.
+- A shove no longer starts a wobble. The wobble that broke four earlier steps is gone.
+- It answers a push in about 0.1 seconds, like a person, not instantly like a machine.
+
+**What is still missing:**
+- **Small chop throws it.** When the board drops into a trough the rider goes light, and the game calls that a fall
+  even though nothing is wrong. This is the next thing to fix, and it is one rule, not a redesign.
+- **The legs do not soak up bumps.** They are too stiff: about 3 cm of give where a rider would use 10 or more.
+- **No pumping yet.** The rider cannot gain speed by working the board, so after a bottom turn it runs out of speed and
+  cannot climb back up the face. That is why the two-turn test still fails; it is a speed problem, not a balance one.
+- **Slow water, under about 5 m/s, is not covered.** The board does not plane there, and the rider's model has nothing
+  to say about it.
+
+**My honest view:** the side-to-side balance is done, and it is better than the old rider in the hardest thing it was
+asked to do. The front-to-back side is one rule and one spring away from being judgeable, and the pumping is a separate
+piece of work. It is worth a ride once the chop rule is in; riding it today, the first bump would end it. [I]
+
+## Files (3.2g)
+
+- `../roll-plant/plant.ts`: the `pitch`, `height`, `heaveRate` and `pitchRate` holds (and the note that the height is
+  the centre of mass's). `plant.probe.ts`: PART=pitch.
+- `results/trace-chop2-32g.jsonl`, `trace-chop2-old-32g.jsonl`; `../roll-plant/results/plant-pitch.jsonl`.
+- No change to `src/`.

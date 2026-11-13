@@ -1,5 +1,5 @@
 // The board's roll–yaw plant (ruling 29e): the board with a rigid rider, towed on flat water at 5, 7 and 9 m/s.
-// PART=captive,step,decay,kick,rail picks parts (default all but rail; RAILS for it); RIDER=point|human (default point, the game's riders' yaw
+// PART=captive,step,decay,kick,rail,pitch picks parts (default all but rail; RAILS for it); RIDER=point|human (default point, the game's riders' yaw
 // inertia); SPEEDS=5,7,9. One JSON line per row ($OUT). Analytic water only: no ride session, no game page.
 import { appendFileSync } from 'node:fs';
 import { it } from 'vitest';
@@ -186,6 +186,82 @@ it('the plant at a held rail: the trim of the turn it makes, and the derivatives
       base: [r(base.N, 1), r(base.Y, 1), r(base.K, 1)], drift: [r(again.N - base.N, 1), r(again.Y - base.Y, 1), r(again.K - base.K, 1)],
       roll: centre(rollLo, rollHi, 2 / DEG), slip: centre(slipLo, slipHi, 2 / DEG), yaw: centre(yawLo, yawHi, 0.2), rate: centre(rateLo, rateHi, 0.4),
     });
+  }
+});
+
+/**
+ * Step 3.2g (ruling 29k): the PITCH plant, measured as the rail plant was. At each speed the board is towed straight
+ * and left free in pitch and heave until it settles (the trim). Then the pitch and the height are held at the trim and
+ * the derivatives are central differences about it: the pitch moment M (about the board's lateral axis through the deck
+ * under the rider, where the feet are) and the vertical force Z, per rad of pitch (±1°), per metre of heave (±2 cm),
+ * per rad/s of pitch rate (±0.2, nose up +) and per m/s of heave rate (±0.2, up +). M is nose up +, Z is up +. PITCHES adds offsets to the trim (degrees), to see
+ * whether the plant bends: the nose-high end at low speed and the bow burying at the other.
+ */
+it('the pitch plant: the trim, and the derivatives about it', () => {
+  if (!PART.includes('pitch')) return;
+  const OFFSETS = (process.env.PITCHES ?? '0,-3,3,6').split(',').map(Number);
+  const SETTLE2 = Number(process.env.TRIM ?? 6);
+  const HOLD = Number(process.env.HOLD ?? 0.6);
+  const TAIL = Number(process.env.TAIL ?? 0.25);
+  const BACK = Number(process.env.BACK ?? 0.8);
+  const DECK_AT = { x: 0, y: 0.07, z: -0.30 };
+  for (const v of SPEEDS) {
+    // The trim: towed straight, pitch and heave free.
+    const lab = settled(v);
+    lab.hold = { speed: v, roll: 0, yawRate: 0, slip: 0 };
+    const reads: ReturnType<Lab['read']>[] = [];
+    const heights: number[] = [];
+    const n = Math.round(SETTLE2 / STEP);
+    for (let i = 0; i < n; i += 1) {
+      lab.frame();
+      if (i >= n - Math.round(1 / STEP)) { reads.push(lab.read()); heights.push(lab.board.centerOfMass.y); }
+    }
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const spread = (xs: number[]) => Math.max(...xs) - Math.min(...xs);
+    const pitch0 = mean(reads.map((x) => x.pitch)) / DEG;
+    const y0 = mean(heights);
+    emit({ part: 'pitch', rider: RIDER, v, case: 'trim', pitchDeg: r(pitch0 * DEG, 2), heightM: r(y0, 4), draft: r(mean(reads.map((x) => x.draft)), 4), pitchSpread: r(spread(reads.map((x) => x.pitch)), 2), heightSpread: r(spread(heights), 4) });
+    for (const off of OFFSETS) {
+      const base = pitch0 + off / DEG;
+      // The height at this pitch: held free in heave for BACK s with the pitch held, then its own mean.
+      lab.hold = { speed: v, roll: 0, yawRate: 0, slip: 0, pitch: base };
+      const hs: number[] = [];
+      for (let i = 0; i < Math.round(1.5 / STEP); i += 1) { lab.frame(); if (i >= Math.round(1 / STEP)) hs.push(lab.board.centerOfMass.y); }
+      const yBase = mean(hs);
+      const hold = (h: Hold) => {
+        lab.hold = { speed: v, roll: 0, yawRate: 0, slip: 0, pitch: base, height: yBase };
+        for (let i = 0; i < Math.round(BACK / STEP); i += 1) lab.frame();
+        lab.hold = { speed: v, roll: 0, yawRate: 0, slip: 0, pitch: base, height: yBase, ...h };
+        const bs: Ledger[] = [];
+        const m = Math.round(HOLD / STEP);
+        for (let i = 0; i < m; i += 1) { const b = lab.frame(); if (i >= m - Math.round(TAIL / STEP)) bs.push(b); }
+        const book = meanBook(bs);
+        const F = sum(book.force as never, GROUPS.all as never);
+        const M = sum(book.moment as never, GROUPS.all as never);
+        const { left } = lab.axes();
+        const deck = lab.board.toWorld(DECK_AT, new Vector3());
+        const arm = lab.board.centerOfMass.clone().sub(deck);
+        // The pitch moment about the deck under the rider, nose up +: the board's left axis is +x, so nose up is −left.
+        return { M: -M.clone().add(arm.clone().cross(F)).dot(left), Z: F.y, pitch: lab.read().pitch, draft: lab.read().draft };
+      };
+      const centre = (lo: { M: number; Z: number }, hi: { M: number; Z: number }, d: number) => [r((hi.M - lo.M) / d, 1), r((hi.Z - lo.Z) / d, 1)];
+      const b0 = hold({});
+      const pLo = hold({ pitch: base - 1 / DEG });
+      const pHi = hold({ pitch: base + 1 / DEG });
+      const zLo = hold({ height: yBase - 0.02 });
+      const zHi = hold({ height: yBase + 0.02 });
+      const qLo = hold({ pitchRate: -0.2 });
+      const qHi = hold({ pitchRate: 0.2 });
+      const wLo = hold({ heaveRate: -0.2 });
+      const wHi = hold({ heaveRate: 0.2 });
+      const again = hold({});
+      emit({
+        part: 'pitch', rider: RIDER, v, case: 'derivatives', offset: off, pitchDeg: r(base * DEG, 2), heightM: r(yBase, 4), draft: r(b0.draft, 4),
+        base: [r(b0.M, 1), r(b0.Z, 1)], drift: [r(again.M - b0.M, 1), r(again.Z - b0.Z, 1)],
+        pitch: centre(pLo, pHi, 2 / DEG), heave: centre(zLo, zHi, 0.04), pitchRate: centre(qLo, qHi, 0.4), heaveRate: centre(wLo, wHi, 0.4),
+        drafts: { base: r(b0.draft, 4), heaveLo: r(zLo.draft, 4), heaveHi: r(zHi.draft, 4), pitchLo: r(pLo.draft, 4), pitchHi: r(pHi.draft, 4) },
+      });
+    }
   }
 });
 
