@@ -910,3 +910,54 @@ is the advisor choosing which probe to believe.
 **"Too slow to turn and position himself on the proper section of the wave — he can almost only go in front."**
 
 That is the target for step 3.2L and for whatever follows it. Not a number.
+
+---
+
+# Ruling 29s: the turn is back, and the blocker is the rail that does not dig (2026-11-13)
+
+Step 3.2L is merged (PR #318). He turns. He still cannot get round the wave.
+
+## The build agent refused an instruction and was right
+
+The advisor told it to lead with raising `SCHEDULE_RAIL_CAP`, calling it the structural fix. It refused, with
+measurements: caps of 12° and 20° put the standing rider down in 0.3–0.4 s, and **the turn pair stays 0 of 8 at every
+cap**, so the cap is not the blocker. And 3.2f's own plant says why — **past about 15° of rail the sideslip mode has
+changed sign, so gains designed there are designed on a plant no controller can stabilise.** A schedule should be read
+only where the plant is stabilisable. The cap at 5° is a boundary, not a bug.
+
+**That refusal is the behaviour this work needs.** An instruction from the advisor is a hypothesis, and a measurement
+beats it.
+
+## What that leaves, and it is the owner's own question
+
+Put the two findings together:
+
+- Past about 15° of rail, **the side force per degree of sideslip changes sign**: a slide feeds itself (3.2f).
+- A real carve is 20–45° of rail.
+- So **on the plant we have, a committed carve cannot be stabilised by any controller.** Six rounds of controller work
+  could not have succeeded, and the ones that "worked" did so by never letting the rider reach that rail.
+
+**Why does the slide feed itself? Because the rail skims.** The plant was measured on a board whose rail planes across
+the surface instead of burying into it. A rail that digs resists sideslip — that is what a rail is for.
+
+**So the thing blocking the ride is the thing the owner asked to be accounted for.** Two-way coupling — the board and
+the water pushing back on each other, the rail burying in the face — is not a later refinement to be designed around.
+It is a plausible cause of the one failure that has survived every controller change.
+
+**This is a hypothesis, not a finding.** It is testable: measure the plant's sideslip derivative at 20–40° of rail with
+the hull's buried volume resisting, and see whether the sign flip survives. That test comes before any more controller
+work.
+
+## Decisions
+
+1. **Ruling 29o's model work is held again, and for a better reason.** There is no point making a model predict a
+   plant that is about to change.
+2. **Next: test the hypothesis.** Does the sideslip sign flip survive a digging rail? If it does not, the coupling is
+   the fix for the ride and it moves to the front of the queue. If it does, the plant is telling us something about the
+   board itself and that is a different conversation.
+3. **The turn-pair probe is the gate from here**, as ruling 29r says, and it is reported every round whether it is
+   being worked on or not.
+4. **Travel speed is not a bar yet.** Both riders settle at the same speed on the same face — the face sets it. It
+   becomes a bar when pumping exists.
+5. The hand-set numbers are listed in Part 11 for re-check when coupling lands. `SCHEDULE_RAIL_CAP` leads that list,
+   because the plant it reads is a non-digging rail's.
