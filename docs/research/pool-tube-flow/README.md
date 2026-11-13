@@ -23,6 +23,12 @@ It reruns the game's three cases (`pool_straight_small`, `pool_straight_big`, `c
 
 **Status (2026-11-11).** Run at full size on the M4 Pro (4.4 to 4.9 hours a case); the three files are in `data`. Every frame matches its stored profile (median 1.6 to 2.1 cm from the cell it took). Points without a sample: 32 (pool small), 0 (pool big), 4928 of 44288 (canyon).
 
+**Status (2026-11-13).** Two more files, the owner's second overnight run on the M4 Pro (commit 492092bc): the two
+**level-14** knee cases, `periodic_pool_knee_big_L14_velocity.json` and `periodic_pool_kneeface_big_L14_velocity.json`
+(5 depths, 128 points, 384 and 373 frames; 8 to 10 h). Their frames match their stored profiles to a median of 0.8 cm,
+and points without a sample are 0 and 31. **The crest water's share curve does not move at level 14** — see below and
+`../pool-lip-and-flow-2026-11-13.md` §5.
+
 ## First look (2026-11-11)
 
 `python3 tools/basilisk/analysis/velocity_first_look.py` prints `first-look-2026-11-11.txt`. Times are from the moment the face stands vertical (the throw). Speeds in m/s at the case's depth.
@@ -80,3 +86,33 @@ It reruns the game's three cases (`pool_straight_small`, `pool_straight_big`, `c
 **Limits.** One fit window. The pool's big case is not settled. The Canyon has 11 % of points without a sample.
 
 **Next.** (1) The advisor on this ramp. (2) The ramp behind a switch. (3) `wallBody=stream`'s flow against the measured one, point by point, with the lip's front read after the throw.
+
+## Level 14: the two knee cases (2026-11-13)
+
+`python3 docs/research/pool-lip-and-flow-2026-11-13/tools/velocity_look.py pool_knee_big 14 pool_kneeface_big 14`.
+That probe is the two scripts above with the case and the level taken from the command line (they name their three
+level-13 cases in the code), and it reproduces the three rows above exactly, which is its check. The question was
+whether the crest water's share of the wave's speed moves at level 14, because the wave track uses that curve as a bar.
+
+The crest water's share of **one straight-line wave speed**, fitted over the 2 tau before the throw, as above:
+
+| Case | level | wave speed | the line misses | 0.69 s before | 0.34 s before | 0.17 s before | At the throw | 0.17 s after | 0.34 s after |
+|---|---|---|---|---|---|---|---|---|---|
+| Pool small | 13 | 6.25 m/s | 0.067 m | 0.58 | 0.70 | 0.75 | 0.80 | 0.83 | 0.86 |
+| Pool big (poor fit) | 13 | 8.10 m/s | 0.348 m | 0.48 | 0.56 | 0.61 | 0.66 | 0.73 | 0.76 |
+| Canyon | 13 | 7.90 m/s | 0.073 m | 0.75 | 0.79 | 0.82 | 0.85 | 0.89 | 0.92 |
+| **Knee big** | **14** | 6.06 m/s | 0.035 m | 0.60 | 0.67 | 0.71 | 0.75 | 0.81 | 0.87 |
+| **Kneeface big** | **14** | 5.38 m/s | 0.064 m | 0.62 | 0.71 | 0.76 | 0.81 | 0.87 | 0.89 |
+
+- **The curve does not move.** Every level-14 point is within 0.05 of the pool's small case at level 13, the case the
+  ramp was read from. The ramp stands: about 0.6 at 0.7 s before the throw, rising to about 0.8 at the throw.
+- **What level 14 adds is a settled wave speed.** Both new cases hold one speed (the line misses by 3.5 and 6.4 cm),
+  where the level-13 big case missed by 35 cm and was left unsettled. So the ramp is now measured on two waves that
+  travel at one speed, not one.
+- **The "to 1" is still the lip's front, not the crest's top.** At the crest's top the water does not reach the wave's
+  speed until 1.86 s and 2.20 s after the throw. The fastest water anywhere on the profile reaches it at 0.08 s after
+  and at the throw.
+- **Just under the surface.** At the crest's top, the water 45 cm down runs 9 to 15 % slower than the surface, before
+  and after the throw, in all five cases. (The "2 to 6 % slower" above is a mid-face measure, a different place.)
+- **Limit.** These are the knee beds, not the straight one, so a difference would have mixed the level and the case.
+  The result is the safe direction: the curve did not move, on two new beds at a finer level.
