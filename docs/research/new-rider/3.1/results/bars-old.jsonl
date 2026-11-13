@@ -65,10 +65,10 @@
 {"bar":"N3","rider":"old","name":"rises 20 cm at 2 m/s","peakLoad":2.62,"kneesCm":1.2,"fell":"","fellAfter":null}
 {"bar":"N3","rider":"old","name":"rises 20 cm at 4 m/s","peakLoad":4,"kneesCm":2.6,"fell":"balance","fellAfter":0.27}
 {"bar":"N3","rider":"old","name":"rises 5 cm at 4 m/s","peakLoad":3.54,"kneesCm":1.2,"fell":"","fellAfter":null}
-{"bar":"N5 glide","rider":"old","v":5,"fell":"","draftCm":20.8,"pitch":12.2,"decelG":0.212,"ankleDeg":0}
-{"bar":"N5 glide","rider":"old","v":7,"fell":"","draftCm":10.8,"pitch":7.8,"decelG":0.216,"ankleDeg":0}
-{"bar":"N5 glide","rider":"old","v":9,"fell":"","draftCm":5.7,"pitch":5.6,"decelG":0.206,"ankleDeg":0}
-{"bar":"N5 glide","rider":"old","v":12,"fell":"","draftCm":1.7,"pitch":2.5,"decelG":0.221,"ankleDeg":0}
+{"bar":"N5 glide","rider":"old","v":5,"fell":"","draftCm":20.8,"pitch":12.2,"decelG":0.212,"t":3,"ankleDeg":0}
+{"bar":"N5 glide","rider":"old","v":7,"fell":"","draftCm":10.8,"pitch":7.8,"decelG":0.216,"t":3,"ankleDeg":0}
+{"bar":"N5 glide","rider":"old","v":9,"fell":"","draftCm":5.7,"pitch":5.6,"decelG":0.206,"t":3,"ankleDeg":0}
+{"bar":"N5 glide","rider":"old","v":12,"fell":"","draftCm":1.7,"pitch":2.5,"decelG":0.221,"t":3,"ankleDeg":0}
 {"bar":"N5 held carve","rider":"old","stance":"standing","t":2.28,"fell":"balance","speedEnd":2.37,"bank":70}
 {"bar":"N5 held carve","rider":"old","stance":"Compress","t":3,"fell":"","speedEnd":8.43,"bank":50.3}
 {"bar":"N5 full carve 15°","rider":"old","speed":5,"on":2.18,"attached":false,"fell":"balance","yawRate":0.98,"railDeg":45.8,"speedEnd":2.52,"modeB":0.153,"modeA":0.005}

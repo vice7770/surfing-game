@@ -8,6 +8,153 @@ Tags: [M] measured by a probe here; [R] read in the code; [I] my inference.
 All numbers come from probes on analytic water: flat water, planar faces, a face that tilts in, a rising surface. No
 ride session, no catch report, no autopilot ride, no game page.
 
+This page has two parts: **3.1b** (the second round, ruling 29a, sections 10–14) first, then **3.1** (the first build,
+sections 1–9), kept as it was handed back.
+
+# Part 2: step 3.1b (ruling 29a)
+
+## 10. Short answer (3.1b)
+
+- **Built, behind `?rider=new`:** an active pitch ankle (feedback on the body's own lean and lean rate, delayed 0.10 s,
+  motor lag 0.05 s) on top of the passive ankle, which now acts at once on the ankle's own angle; the ankle stiffening
+  with the leg's load (up to 2×); a new start square to the deck across as well. The gains were chosen on a linear model
+  first (`pitchModel.ts`), with the board's numbers measured (`hull.probe.ts`).
+- **Two things the model forced, beyond the ruling's list** (for the advisor):
+  1. **The reference's slow trim now reads the body's own push through the feet**, not the board's specific force. With
+     the board's felt force (3.1's), no gain pair holds the loop unless that part is slowed past about 3 s: the body's
+     own push on the 2.5 kg board tilts the board's felt vertical, and the reference follows (the don't-retry loop, in
+     pitch). Slowed to 3 s, the rider cannot lean back on a braking board and falls over the nose on the flat (traced).
+     The body's push (the line from the centre of pressure to the centre of mass, the soles' sense) is smooth and holds
+     the loop at 0.5 s. The feedback still reads only the lean and its rate.
+  2. **Step 2 (stiffening) is needed:** without it the model is unstable at 1.8 g, and the held carves toppled.
+- **The 45° start is fixed and explained (step 4):** 3.1's start was square to the deck in pitch but plumb across. On a
+  face crossed at 45° that is neither balanced nor the old rider's plumb start; the feet's load fell to 0.5 body weights
+  and the bank ran uphill. Square to the deck in both (the felt vertical of a board sliding down its face), all 18 starts
+  on the 0°, 20° and 45° lines hold 1.5 s at 25–50° (old: the 45° line 3 of 6). The ruling's guess (the free body
+  sliding along the board) was tested and is not the cause: a near-rigid pitch falls the same way.
+- **The bars still miss** (section 12): N3 at 2 m/s falls; the 12 m/s placed glide falls; the standing held carve lasts
+  2.13 s (bar 2.28); the roll's 2.5–4.5 Hz share is 0.2–0.7 (bar: the old's + 0.1); N2's trim over its last 0.5 s is
+  9.1° (bar 5–8°). So, by the stop rule, I hand back. No merge checks were run.
+- **Why, in one line:** with a 0.15 s sensing-to-muscle delay on a 2.5 kg board, only small active gains stay damped
+  (the model: ζ 0.27 at lean gain 0.25; above about 2× the gains it rings). That loop is too weak to lean the body back
+  in time when the board brakes hard (a placed 12 m/s glide settling at 0.45 g, the drag after a rising surface), so the
+  body tips over the nose. The hip (the ruling's step 3) is the next lever; I did not build it in this round.
+
+## 11. What changed in 3.1b
+
+- `src/physics/standingBody.ts`: the active loop (`prepare`, a time-stamped delay line `push`/`at`, the motor lag), the
+  stiffening, the constants and their sources (`PITCH_DELAY`, `PITCH_MOTOR_LAG`, `PITCH_LEAN_GAIN` 0.25,
+  `PITCH_RATE_GAIN` 0.1 s, `PITCH_REFERENCE_TIME` 0.5 s, `PITCH_ACTIVATION_TIME` 0.2 s, `PITCH_ACTIVATION_MAX` 2).
+- The rest is now the delayed, lagged command: (the reference − the deck's pitch − the trim's stretch) + 0.25 (reference
+  − lean) − 0.1 s × lean rate. The passive torque k (ankle angle − rest) + c × rate acts at once. In 3.1 the rest
+  followed the deck's pitch at once, so the spring was really tied to the reference.
+- `src/physics/AttachedRider.ts`: `bodyPush`, the body's own push through the feet low-passed 0.1 s (`finish`, after the
+  contact impulse), fed to the reference; the mount square to the deck across on a planing board (`mount`, `frame`).
+- `pitchModel.ts` and `pitchModel.probe.ts` (the model and the gains), `hull.probe.ts` (the board's numbers).
+
+## 12. The bars, 3.1b (old / 3.1 / 3.1b)
+
+Results: `results/bars-old.jsonl`, `results/bars-new.jsonl` (3.1), `results/bars-new-31b.jsonl` (3.1b).
+
+| Bar | Old | 3.1 | 3.1b | Pass? |
+|---|---|---|---|---|
+| N0, `rider=old` byte-identical | — | yes | yes (20 of 20 files) | yes |
+| N1, legs per frame < ~2 kW (60 rows) | to 30.9 kW | 58 of 60 | 60 of 60 (at most 0.46 kW) | yes |
+| N1, ≤ 1.46 kW over 0.5 s | to 1.57 kW | 0.10 kW | 0.08 kW | yes |
+| N2, 20° from 4 m/s: gain ≥ 3.5 m/s | +1.73 | +3.85 | +3.63 | yes |
+| N2, trim 5–8° to the face | 15.6° (last 0.5 s) | 8.5° / 7.6° end | 9.1° (last 0.5 s) / 7.5° end | no, by 1.1° |
+| N3, 20 cm at 2 m/s: no fall (a bar) | holds | falls 0.48 s | falls 0.40 s | no |
+| N3, 20 cm at 4 m/s (report) | falls 0.27 s, 4.0 BW | falls 0.35 s | falls 0.35 s, 2.93 BW, knees 2.6 cm | — |
+| N3, 20 cm at 1 m/s (not a bar) | holds | holds | falls 0.40 s | — |
+| N4, placed 25–50° down and up: no fall in 0.5 s | 2 of 12 | 12 of 12 | 12 of 12 | yes |
+| N4, the board under 5 g (placed) | to 16.8 g | to 2.2 g | to 5.9 g (one row, up 25°) | no, one row |
+| N4, placed up: hold or slide to 1.5 s | — | all slide back | fall at 0.8–1.4 s after stopping | (see below) |
+| N4, tilted 40° down (report the cause) | falls 1.42 s | falls 1.68 s | falls 1.23 s (section 14) | — |
+| The 45° line placed, 25–50° (step 4) | holds 25–35° | falls ~0.5 s | holds all 6 | yes |
+| N5, glides within ±2 cm draft | 20.8 / 10.8 / 5.7 / 1.7 | 20.9 / 11.6 / 6.8 / 2.1 | 19.4 / 9.0 / 4.9 / falls at 12 m/s | no (12 m/s) |
+| N5, drag at 7 m/s falls | 0.216 g | 0.190 | 0.144 | yes |
+| N5, held carve standing ≥ 2.28 s (old without the carry) | 2.28 | 1.62 | 2.13 | no, by 0.15 s |
+| N5, held carve Compress ≥ 2.30 s | 3.0 (2.30 without the carry) | 1.73 | 3.0 | yes |
+| 15° 4 s full carve (report) | 2.18 / 1.90 / 2.27 s | 1.53 / 1.20 / 1.27 | 1.83 / 1.80 / 2.22 | — |
+| Mode B, damping after a kick > 0 | −0.015 / +0.05 / +0.06 | +0.03 / +0.16 / +0.21 | +0.02 / +0.09 / +0.14 | yes |
+| Mode B, roll 2.5–4.5 Hz share ≤ old + 0.1 (kick) | 0.06 / 0.01 / 0.00 | 0.30 / 0.44 / 0.24 | 0.18 / 0.46 / 0.40 | no |
+| Mode B, the same riding straight (6 / 8 m/s) | 0.12 / 0.03 | 0.18 / 0.04 | 0.68 / 0.14 | no |
+| Mode A, 12–17 Hz share | ≤ 0.08 | ≤ 0.05 | ≤ 0.02 | yes |
+
+The placed starts going up: the board climbs, stops at 0.3–0.8 s and the rider falls as it slides back (3.1: it slid
+back on its feet). Inside the bar's 0.5 s every one holds.
+
+Two gain points were also run on the bars (not kept): lean gain 0.5 holds the 1 m/s rise but drops the 5 m/s glide and
+raises the 6 m/s roll share to 0.83; lean gain 0 drops N2 (falls at 1.1 s) and the full carve at 9 m/s (0.42 s). Step 1 alone (no
+stiffening, gains 0.75 / 0.1 s, the board's felt force at 3 s) held the glides to 9 m/s but rang riding straight
+(roll share 0.81–0.91) and fell at 12 m/s.
+
+## 13. The model: the gains and their margins
+
+`pitchModel.ts`: along the board, linearised about a glide with felt gravity n g. The states:
+- the body's lean on the feet;
+- the board's speed, with its water drag;
+- the board's pitch on the hull;
+- the reference's two low-passes;
+- the motor lag;
+- the 0.10 s delay (a Padé approximant; `simulate` checks it with the delay exact).
+
+The board's numbers measured (`hull.probe.ts`, towed at a steady speed, W/S −1 / 0 / +1):
+
+| Speed | Hull pitch stiffness about the load | Drag's slope (2 D / v) | Loads reachable |
+|---|---|---|---|
+| 5 m/s | 1200 N·m/rad | 77 N·s/m | 1.0–1.2 g |
+| 7 m/s | 1900 | 40 | 1.0–1.5 g |
+| 9 m/s | 2800 | 31 | 1.0–1.8 g |
+
+The hull's pitch damping and the board's pitch inertia (with the water's added mass) are not well measured: a pitch kick
+at 7 m/s gives about 23 N·m·s/rad and 3.5 kg·m², muddied by the old rider's coupling. They are swept (30–300, 0.43–6).
+
+Results (`results/pitch-model.jsonl`):
+- **The felt source.** With the board's specific force in the reference, the best gains' least damping is −0.33 at 0.1 s
+  (3.1's), −0.13 at 0.5 s, −0.04 at 1 s, +0.07 at 3 s (no stiffening). With the body's push: +0.20 at 0.5 s.
+- **The chosen gains** (lean 0.25, rate 0.1 s, the body's push at 0.5 s, stiffening to 2×), at each speed's measured
+  plant: damping ratio 0.27–0.29 at every load from 1.0 to 1.8 g (the least damped mode about 11 Hz); with the delay
+  exact, the lean decays at every load (log-decrement 0.24–0.64).
+- **Margins:** the gains may be scaled by 0.34 to 1.8 and the delay grown to 0.195 s before a mode is undamped.
+- **Corners:** over the hull's damping 30–300, the board's inertia 0.43–6 and the drag × 0.5–2, the least damping is
+  −0.025, at the hull's damping of 30 (+0.044 at 100, +0.097 at 300). So the margin rests on the hull's pitch damping,
+  which is not well measured.
+- **Without stiffening:** 1.8 g is unstable (the felt gravity outgrows the passive ankle; the board slides from under
+  the body faster than a 0.15 s loop can answer).
+
+## 14. 3.1b's N0, the tilted 40° drop, step time, and what was not run
+
+- **N0:** with `rider=old`, the six study probes, A-lite's 12 result files, and B-wall's bars and trace print the same
+  bytes (20 of 20). B-wall's `realwall` was not run.
+- **The tilted 40° drop (`results/trace31b-tilt40.jsonl`): the probe's face falls away from under the board.** The face
+  turns about z = 0 while the board runs down it, so the surface under the board drops at nearly free fall (about 0.8 g
+  downward at 0.45 s, my reckoning from the tilt's rate and the board's speed [I]). The board leaves the water at 0.42 s; the
+  feet then carry nothing (load 0), and at 1.23 s the old rule `MAX_FLIGHT` (0.4 s in the air) separates the rider. The
+  body stays square to the deck through it (the ankle within 7°), at 5–6 m/s. So it is neither a nose-dig from the body
+  leaning too far forward nor a pearl at 41 km/h: the face drops away nearly as fast as the board can fall, and the hull's lift lifts it clear. The
+  old rider fails it the same way (lost board, 1.42 s).
+- **Step time standing** (`time.probe.ts`, median of 5, under the Basilisk load): flat glide 2.62 → 2.49 ms a step,
+  20° face 2.45 → 2.48 ms. The same within the noise; the delay line costs nothing visible.
+- **Not run:** the merge checks (the suite, the Canyon hashes, the fps trace), since the bars miss. Run: `tsc` (app and
+  server), `standingBody.test.ts` (4 pass). No ride, no game page.
+- **Traces of the misses:** `results/trace31b-rise2.jsonl` (the 2 m/s rise), `trace31b-glide12.jsonl` (the 12 m/s
+  placed glide), `trace31b-carve.jsonl` (the standing held carve), `trace31b-cross45.jsonl` (the 45° start, now held),
+  `trace31b-tilt40.jsonl`.
+
+### What I would try next (for the advisor; not built)
+
+1. **The hip in pitch (the ruling's step 3).** The falls are the body tipping over the nose with the feet's pressure
+   at the toes (the 12 m/s settle, the rises, the carve). A trunk rotor in pitch adds torque past the feet's edge
+   without moving the pressure.
+2. **The hull's pitch damping, measured cleanly** (a held rider, as the carve lab measured the roll). The model's margin
+   rests on it: at 30 N·m·s/rad it is gone, at 100 it is +0.04.
+3. **The roll's 3 Hz share** rose with the active loop (riding straight, 0.68 against 0.12). The bank law's `rollAxis`
+   and its roll half of the upright drive are about the level heading, while the body now pitches; that mismatch
+   grows with the lean. I did not trace it.
+
+# Part 1: step 3.1 (the first build, handed back before ruling 29a)
+
 ## Short answer
 
 - **Built, behind `?rider=new`.** Standing, the body is now free along the board too: its speed along its own forward

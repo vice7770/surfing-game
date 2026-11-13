@@ -1,0 +1,36 @@
+{"table":"plant","mass":73,"length":0.79,"boardMass":2.54,"load":1,"drag":40,"boardInertia":3,"hullStiffness":1900,"hullDamping":100,"ankleStiffness":678.89124,"ankleDamping":67.88912400000001,"feltTime":0.1,"referenceTime":0.5,"delay":0.1,"motorLag":0.05,"source":"body","speeds":[{"speed":5,"loads":[1,1.2],"hullStiffness":1200,"drag":77},{"speed":7,"loads":[1,1.25,1.5],"hullStiffness":1900,"drag":40},{"speed":9,"loads":[1,1.4,1.8],"hullStiffness":2800,"drag":31}]}
+{"table":"source","activation":1,"source":"board (3.1)","referenceTime":0.1,"best":{"lean":0.5,"rate":0.1,"damping":-0.331}}
+{"table":"source","activation":1,"source":"board (3.1)","referenceTime":0.5,"best":{"lean":0.75,"rate":0,"damping":-0.128}}
+{"table":"source","activation":1,"source":"board (3.1)","referenceTime":1,"best":{"lean":0.75,"rate":0.05,"damping":-0.036}}
+{"table":"source","activation":1,"source":"board (3.1)","referenceTime":3,"best":{"lean":0.75,"rate":0.1,"damping":0.071}}
+{"table":"source","activation":1,"source":"body push","referenceTime":0.2,"best":{"lean":0.5,"rate":0.15,"damping":0.143}}
+{"table":"source","activation":1,"source":"body push","referenceTime":0.5,"best":{"lean":0.5,"rate":0.1,"damping":0.203}}
+{"table":"source","activation":1,"source":"body push","referenceTime":1,"best":{"lean":0.75,"rate":0.1,"damping":0.173}}
+{"table":"source","activation":2,"source":"board (3.1)","referenceTime":0.1,"best":{"lean":0,"rate":0,"damping":-0.175}}
+{"table":"source","activation":2,"source":"board (3.1)","referenceTime":0.5,"best":{"lean":0,"rate":0.05,"damping":0.091}}
+{"table":"source","activation":2,"source":"board (3.1)","referenceTime":1,"best":{"lean":0,"rate":0.05,"damping":0.252}}
+{"table":"source","activation":2,"source":"board (3.1)","referenceTime":3,"best":{"lean":0,"rate":0.05,"damping":0.337}}
+{"table":"source","activation":2,"source":"body push","referenceTime":0.2,"best":{"lean":0,"rate":0.1,"damping":0.258}}
+{"table":"source","activation":2,"source":"body push","referenceTime":0.5,"best":{"lean":0.25,"rate":0.1,"damping":0.266}}
+{"table":"source","activation":2,"source":"body push","referenceTime":1,"best":{"lean":0.25,"rate":0.1,"damping":0.266}}
+{"table":"chosen","speed":5,"load":1,"damping":0.293,"frequencyHz":11.26,"exactDelay":{"growthOver8s":0.0042,"damping":0.279}}
+{"table":"chosen","speed":5,"load":1.2,"damping":0.284,"frequencyHz":11.41,"exactDelay":{"growthOver8s":0.0083,"damping":0.243}}
+{"table":"chosen","speed":7,"load":1,"damping":0.287,"frequencyHz":11.13,"exactDelay":{"growthOver8s":0.003,"damping":0.546}}
+{"table":"chosen","speed":7,"load":1.25,"damping":0.277,"frequencyHz":11.32,"exactDelay":{"growthOver8s":0.0022,"damping":0.571}}
+{"table":"chosen","speed":7,"load":1.5,"damping":0.27,"frequencyHz":11.48,"exactDelay":{"growthOver8s":0.0016,"damping":0.593}}
+{"table":"chosen","speed":9,"load":1,"damping":0.287,"frequencyHz":11.11,"exactDelay":{"growthOver8s":0.0031,"damping":0.604}}
+{"table":"chosen","speed":9,"load":1.4,"damping":0.273,"frequencyHz":11.4,"exactDelay":{"growthOver8s":0.002,"damping":0.637}}
+{"table":"chosen","speed":9,"load":1.8,"damping":0.266,"frequencyHz":11.6,"exactDelay":{"growthOver8s":0.0014,"damping":0.464}}
+{"table":"corners","chosen":-0.025,"leanZero":0.032}
+{"table":"corners by hull damping","hullDamping":30,"chosen":-0.025}
+{"table":"corners by hull damping","hullDamping":100,"chosen":0.044}
+{"table":"corners by hull damping","hullDamping":300,"chosen":0.097}
+{"table":"margins","gainUp":1.8,"gainDown":0.34,"delayUpToS":0.195}
+{"table":"no stiffening","speed":5,"load":1,"damping":0.293}
+{"table":"no stiffening","speed":5,"load":1.2,"damping":0.189}
+{"table":"no stiffening","speed":7,"load":1,"damping":0.287}
+{"table":"no stiffening","speed":7,"load":1.25,"damping":0.289}
+{"table":"no stiffening","speed":7,"load":1.5,"damping":0.29}
+{"table":"no stiffening","speed":9,"load":1,"damping":0.287}
+{"table":"no stiffening","speed":9,"load":1.4,"damping":0.29}
+{"table":"no stiffening","speed":9,"load":1.8,"damping":-1}

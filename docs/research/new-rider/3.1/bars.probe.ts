@@ -134,7 +134,7 @@ it('N5: flat glides, held carves, the 4 s full carve on the 15° plane', () => {
     const rig = place(flat, 0, 0, v + 0.8, 'standing');
     const f = run(rig, flat, 3);
     const s = atSpeed(f, v, 0.15, 0.25);
-    emit({ bar: 'N5 glide', rider: RIDER, v, fell: f[f.length - 1].fell ?? '', draftCm: s ? r(s.draft * 100, 1) : null, pitch: s ? r(s.pitch, 1) : null, decelG: r((f[10].speed - f[40].speed) / 0.5 / G, 3), ankleDeg: r(ankle(rig), 1) });
+    emit({ bar: 'N5 glide', rider: RIDER, v, fell: f[f.length - 1].fell ?? '', draftCm: s ? r(s.draft * 100, 1) : null, pitch: s ? r(s.pitch, 1) : null, decelG: f.length > 40 ? r((f[10].speed - f[40].speed) / 0.5 / G, 3) : null, t: r(f[f.length - 1].t, 2), ankleDeg: r(ankle(rig), 1) });
   }
   for (const compress of [0, 1]) {
     const rig = place(flat, 0, 0, 7.7, 'standing');

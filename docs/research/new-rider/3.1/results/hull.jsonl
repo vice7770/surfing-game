@@ -1,0 +1,5 @@
+{"speed":5,"attached":true,"trimDeg":[20.13,14.83,11.3],"copM":[-0.069,0.063,0.188],"loadBW":1,"pitchStiffness":1197,"dragN":193.1,"dragSlope":-6.3}
+{"speed":7,"attached":true,"trimDeg":[13.18,6.29,6.3],"copM":[-0.149,0.156,0.169],"loadBW":1,"pitchStiffness":1896,"dragN":139,"dragSlope":-1.8}
+{"speed":9,"attached":true,"trimDeg":[9.56,4.53,4.51],"copM":[-0.188,0.158,0.162],"loadBW":1,"pitchStiffness":2839,"dragN":140.3,"dragSlope":4.6}
+{"speed":7,"frequencyHz":3.69,"damping":0.14,"impliedInertia":3.46,"impliedDamping":23,"attached":true}
+{"speed":9,"frequencyHz":1.78,"damping":0.202,"impliedInertia":21.72,"impliedDamping":100,"attached":true}
