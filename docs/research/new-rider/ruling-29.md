@@ -305,3 +305,63 @@ unchanged). A fresh agent, effort xhigh, because 3.2d's agent already holds a la
    - The next step is then whichever the comparison names: an internal model from the game's own plant (what a rider
      learns by practice), or the rail's yaw about the board's centre (lever 1).
 6. **If the bars pass:** run the merge checks, push the branch, and draft the PR body.
+
+---
+
+# Ruling 29j: step 3.2e; the wobble is beaten, the carve is not (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 5 and its results. The code is held on `claude/rider-new-32e`
+(b8e78843, pushed). It is **not** merged into main: on main `?rider=new` is 3.1c, which rides better than this.
+
+## What 3.2e won (accepted)
+
+- **The weave is damped.** Mode B's damping goes from 3.2b's −0.17 / −0.24 / −0.19 to **+0.030 / +0.018 / +0.058** at
+  5 / 7 / 9 m/s. The kicks die. That was the problem 3.2 opened and four steps could not close.
+- **Push recovery is nearly back:** 138 / 155 / 170 N·s against the old rider's about 190, from 3.2b's 21 / 11 / 5.
+- The model gate passes: a frame of timing error, worst +0.029.
+- **The game matches the model.** A 20 N·s shove at 7 m/s: bank 2.94° against 3.14°, twist 9.4° against 9.1°, torque
+  11.9 against 12.5 N·m.
+- Mode A is not seen; the reaction is 0.103–0.105 s; the plane glides are 4 of 4; N1 passes.
+
+## Two faults found in the earlier steps (accepted, and they matter)
+
+1. **The internal model used a board roll inertia of 0.1 kg·m². The game's, with the water's added mass, is
+   0.55–1.4.** The model was wrong by 5 to 14 times. It now reads the game's own value.
+2. **`COMPRESS_PULL` and `CARVE_CARRY` were still on for the new rider** through 3.2 to 3.2d. Only `LEAN_OUT_PULL` was
+   off. They are the unpaired rule forces ruling 29 sent under the switch, and the owner's standing rule is that motion
+   comes from visible limbs. **So the carve and turn numbers in 3.2 to 3.2d were flattered.** Both are off now. The
+   advisor takes this: it was in ruling 29's list and was not checked at each step.
+
+## Why the carve fails, and it is not the controller
+
+The held carves are 0.30 s and 0.68 s, worse than 3.2b's. The cause is named: **the plant the controller predicts with
+was measured at rails of 0.5° to 5°, straight running. A carve is a rail of 20° to 45°.** The lean asked for reaches
+44° in 0.15 s. So the controller predicts with a model that does not hold there, and counter-steers hard.
+
+The build agent measured two levers and did not adopt them, because they change the reference ruling 29i fixed. **The
+advisor adopts both:**
+- **The steady turn that actually balances the lean** (`turn:'tan'`), not the linear plant's steady turn. A real
+  rider's lean is held by a coordinated turn; the linearised one is only its small-angle shadow. This is a correction,
+  not a lever.
+- **A slower lean-in, about 0.5 rad/s.** 44° in 0.15 s is not a human setting a rail.
+- With both, the held carves are **2.38 s and 2.58 s: both carve bars pass** (2.28 / 2.30). The turn pair stays 0 of 16.
+
+## Decision: step 3.2f, the carve (the same agent continues; effort xhigh)
+
+1. **Adopt both reference levers**, as above. Source the lean-in rate if a source exists; otherwise report the rate the
+   carve needs and leave it a named constant.
+2. **Measure the plant at big rails.** The roll-plant lab (`roll-plant/plant.ts`, `captive`) at held rails of 10°, 20°,
+   30° and 40°, at 5, 7 and 9 m/s, with the rigid rider. Add the rail angle as a key in `plantAt`, so the LQR schedule
+   covers carving as it covers speed and stance. Interpolate; say which points are measured.
+3. **Re-run 3.2's bars**, with the carves and the turn pair the ones that must move.
+4. **Mode B is a near-pass, not a pass.** Its bar stands, but report the kick's time trace beside the fitted damping:
+   the build agent doubts the fit reads the main mode. The owner's ride decides whether a wobble can be felt.
+5. **Not in this step:** the chop (4 of 12) and the save window. Both are the pitch loop's, not this controller's. They
+   are step 3.2g.
+6. **Stop rule:** two rounds. If the turn pair still fails with a plant that covers big rails, say what the trace shows
+   and hand back.
+
+## Not merged
+
+3.2e stays on its branch. Merging it would replace 3.1c under `?rider=new` with a rider that cannot carve, and the owner
+rides that switch. 3.2f is merged when the carves and the turn pair pass, or when the owner asks to feel it as it is.

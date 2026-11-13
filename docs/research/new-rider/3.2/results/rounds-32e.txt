@@ -1,0 +1,32 @@
+# Step 3.2e: the weights' two rounds and the reference's levers (bars.probe parts, RIDER=new, BALANCE as given)
+# kick: Mode B damping / roll decay per cycle at 5, 7, 9 m/s; carve: held s tall/Compress; push: N·s saved tall/crouch/Compress (+x), reaction s, save window s
+## round 1 (rho, filter noises)
+base       kick 0.03/0.538 0.018/1.615 0.058/0.549 | carve 0.3/0.68 | push 138/155/170 react 0.105 win 0.853/0.539/0.327 | glide plane 4/4 chop 4/12
+pn03       kick 0.008/0.792 0.013/0.203 0.043/0.488 | carve 0.3/0.67 | push 139/156/172 react 0.105 win 0.807/0.511/0.31 | glide plane 4/4 chop 4/12
+pn3        kick 0.033/0.499 0.034/1.276 0.041/0.77 | carve 0.3/0.68 | push 138/155/170 react 0.105 win 0.851/0.559/0.321 | glide plane 4/4 chop 2/12
+rho1       kick 0.03/0.59 0.028/0.966 0.07/0.337 | carve 0.25/0.27 | push 134/84/53 react 0.102 win 0.799/0.943/0.7 | glide plane 4/4 chop 5/12
+rho100     kick 0.01/0.905 0.046/1.632 -0.036/0.706 | carve 0.87/0.77 | push 107/121/160 react 0.111 win 1.115/1.049/0.517 | glide plane 4/4 chop 2/12
+sn05       kick 0.033/0.532 0.033/1.213 0.03/0.966 | carve 0.3/0.68 | push 137/155/169 react 0.105 win 0.857/0.544/0.334 | glide plane 4/4 chop 1/12
+## round 2 (rho with the yaw-rate and bank weights)
+bank025    kick 0.039/0.566 0.047/0.879 0.083/0.577 | carve 0.23/0.25 | push 145/160/175 react 0.103 win 0.643/0.47/0.296 | glide plane 4/4 chop 5/12
+r01        kick 0.031/0.336 0.024/0.501 0.091/0.49 | carve 0.33/0.7 | push 141/154/170 react 0.104 win 0.733/0.524/0.319 | glide plane 4/4 chop 5/12
+rho1r01    kick 0.039/0.365 0.035/0.779 0.087/0.71 | carve 0.27/0.23 | push 133/74/133 react 0.102 win 0.97/1.931/ | glide plane 4/4 chop 6/12
+rho3       kick 0.037/0.57 0.033/1.223 0.051/0.432 | carve 0.27/0.58 | push 139/150/99 react 0.103 win 0.759/0.617/0.936 | glide plane 4/4 chop 5/12
+rho3pn3    kick 0.039/0.526 0.04/1.047 0.077/0.51 | carve 0.27/0.6 | push 139/148/172 react 0.103 win 0.771/0.65/0.31 | glide plane 4/4 chop 4/12
+rho3r01    kick 0.038/0.484 0.038/0.699 0.085/4.839 | carve 0.28/0.62 | push 139/156/161 react 0.102 win 0.699/0.487/0.399 | glide plane 4/4 chop 6/12
+## levers (not adopted): the reference's pace (leanRate, rad/s) and the steady turn that balances the lean (turn: tan)
+lin05      carve 2.08/2.03
+lin1       carve 1.23/1.3 | push 138/155/170 react 0.105 win 0.853/0.539/0.327
+tan05      carve 2.38/2.58 | push 138/155/170 react 0.105 win 0.853/0.539/0.327
+tan1       carve 1.43/1.6 | push 138/155/170 react 0.105 win 0.853/0.539/0.327
+## heading hold in the reference (dropped): e32 compare, with (HOLDREF=1) and without (0); measured before the board inertia fix (3.2d's 0.1 kg·m²), with a temporary switch since removed
+HOLDREF=0
+{"part":"compare","speed":7,"stance":"tall","start":"shove","game":{"bankPeakDeg":3.35,"twistPeakDeg":9.61,"twistTorquePeakNm":10.1,"anklePeakNm":10.5,"lateOverEarly":0.172,"yawMode":[1.27,0.111],"bankMode":null},"model":{"bankPeakDeg":3.1,"twistPeakDeg":8.64,"twistTorquePeakNm":11.4,"anklePeakNm":9.8,"lateOverEarly":0,"yawMode":null,"bankMode":null}}
+{"part":"compare","speed":5,"stance":"tall","start":"kick","game":{"bankPeakDeg":0.34,"twistPeakDeg":2.5,"twistTorquePeakNm":2.2,"anklePeakNm":8.4,"lateOverEarly":0.251,"yawMode":[2.62,0.041],"bankMode":[0.93,0.085]},"model":{"bankPeakDeg":0.05,"twistPeakDeg":0.46,"twistTorquePeakNm":0.5,"anklePeakNm":0.6,"lateOverEarly":0.086,"yawMode":null,"bankMode":null}}
+{"part":"compare","speed":7,"stance":"tall","start":"kick","game":{"bankPeakDeg":0.33,"twistPeakDeg":1.5,"twistTorquePeakNm":1.4,"anklePeakNm":7.4,"lateOverEarly":0.118,"yawMode":[1.59,0.086],"bankMode":[1.01,0.125]},"model":{"bankPeakDeg":0.02,"twistPeakDeg":0.14,"twistTorquePeakNm":0.3,"anklePeakNm":0.4,"lateOverEarly":0.006,"yawMode":[1.75,0.21],"bankMode":[1.11,0.136]}}
+{"part":"compare","speed":9,"stance":"tall","start":"kick","game":{"bankPeakDeg":0.15,"twistPeakDeg":0.78,"twistTorquePeakNm":0.8,"anklePeakNm":4.8,"lateOverEarly":0.207,"yawMode":[1.13,0.11],"bankMode":[1.02,0.017]},"model":{"bankPeakDeg":0.02,"twistPeakDeg":0.21,"twistTorquePeakNm":0.2,"anklePeakNm":0.2,"lateOverEarly":0.002,"yawMode":[2.34,0.18],"bankMode":[0.57,-0.037]}}
+HOLDREF=1
+{"part":"compare","speed":7,"stance":"tall","start":"shove","game":{"bankPeakDeg":4.08,"twistPeakDeg":11.45,"twistTorquePeakNm":10.4,"anklePeakNm":10.5,"lateOverEarly":0.605,"yawMode":[0.97,-0.01],"bankMode":[0.64,0.063]},"model":{"bankPeakDeg":3.1,"twistPeakDeg":8.64,"twistTorquePeakNm":11.4,"anklePeakNm":9.8,"lateOverEarly":0,"yawMode":null,"bankMode":null}}
+{"part":"compare","speed":5,"stance":"tall","start":"kick","game":{"bankPeakDeg":9.55,"twistPeakDeg":47.27,"twistTorquePeakNm":71.8,"anklePeakNm":105.3,"lateOverEarly":2.025,"yawMode":[2.75,-0.025],"bankMode":[0.99,0.031]},"model":{"bankPeakDeg":0.05,"twistPeakDeg":0.46,"twistTorquePeakNm":0.5,"anklePeakNm":0.6,"lateOverEarly":0.086,"yawMode":null,"bankMode":null}}
+{"part":"compare","speed":7,"stance":"tall","start":"kick","game":{"bankPeakDeg":2.21,"twistPeakDeg":5.72,"twistTorquePeakNm":1.9,"anklePeakNm":7.4,"lateOverEarly":2.768,"yawMode":[1.03,-0.106],"bankMode":[0.73,-0.094]},"model":{"bankPeakDeg":0.02,"twistPeakDeg":0.14,"twistTorquePeakNm":0.3,"anklePeakNm":0.4,"lateOverEarly":0.006,"yawMode":[1.75,0.21],"bankMode":[1.11,0.136]}}
+{"part":"compare","speed":9,"stance":"tall","start":"kick","game":{"bankPeakDeg":2.89,"twistPeakDeg":4.77,"twistTorquePeakNm":2.7,"anklePeakNm":12.6,"lateOverEarly":12.046,"yawMode":[0.99,-0.112],"bankMode":[0.86,-0.177]},"model":{"bankPeakDeg":0.02,"twistPeakDeg":0.21,"twistTorquePeakNm":0.2,"anklePeakNm":0.2,"lateOverEarly":0.002,"yawMode":[2.34,0.18],"bankMode":[0.57,-0.037]}}

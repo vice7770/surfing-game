@@ -898,3 +898,273 @@ The time runs agree with the modes: the passes and misses are real, not the anal
   (the file's header has the command and the env).
 - `results/`: `plant-speeds.jsonl` (the lab at 14 more speeds), `predict-design.jsonl`, `predict-gate.jsonl`,
   `predict-spread.jsonl`, `predict-time.jsonl`, `predict-weights.jsonl`.
+
+---
+
+# Part 5: step 3.2e, balance by prediction in the game (ruling 29i)
+
+Written 2026-11-13 by the build agent (Opus 5.5, effort xhigh), on branch `claude/rider-new-32e` (from
+`claude/rider-new-32d`, rebased on main 7ae69c18). The contract: `../ruling-29.md` 29i, items 1–6.
+
+Tags as above: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **Miss.** Built in the game behind `?rider=new`; the old rider is byte-identical (N0). The model gate passes. In the
+  game the controller works as the model says for small upsets, but several bars miss, so no merge checks were run.
+- **The model gate passes** [M]: with the true delay one frame off (0.083 and 0.117 s against the 0.1 s predictor), the
+  least damping is at least **+0.029** at 5–12 m/s, all three stances (worst 5.5 m/s Compress, 0.083 s).
+- **Model and game agree on a shove** [M]: 20 N·s at 7 m/s tall peaks at 2.9° of bank, 9.4° of twist and 11.9 N·m of
+  twist torque in the game; the model says 3.1°, 9.1° and 12.5 N·m. It dies away in both.
+- **Passes:** N0; reaction 0.103–0.105 s; plane glides 4 of 4; Mode A not seen; N1; push saves are large again
+  (138–175 N·s, 3.2b had 5–21).
+- **Misses:** Mode B (damping +0.03 / +0.02 / +0.06 at 5 / 7 / 9 m/s; decay per cycle 0.54 / 1.62 / 0.55); the push
+  order (Compress > crouch > tall); the save window (too long); chop 4 of 12 (pitch falls); the held carves (0.30 /
+  0.68 s); the turn pair (0 of 16); N2 (+3.25 m/s, unchanged).
+- **Three things found on the way** [M]:
+  1. The board's roll inertia, as the game's solve meets it (the water's added mass), is **0.55–1.4 kg·m²**, not the
+     model's 0.1. The internal model now uses the game's own value (ruling 29i says it should).
+  2. The old rider's heading hold (`holdLine`), used as a reference, rang with the board's yaw and grew. Left out.
+  3. `COMPRESS_PULL` and `CARVE_CARRY` were still on for the new rider (only `LEAN_OUT_PULL` was off). Now off.
+
+## 2. The model checks (item 1)
+
+**(a) A frame of timing error** (`predict.probe.ts` PART=timing; `results/predict-timing-32e.jsonl`) [M]. The true
+delay 5 and 7 frames, the predictor 6:
+
+| Speed | 0.083 s (tall / crouch / Compress) | 0.117 s (tall / crouch / Compress) |
+|---|---|---|
+| 5 m/s | +0.036 / +0.036 / +0.036 | +0.066 / +0.064 / +0.067 |
+| 6 m/s | +0.095 / +0.086 / +0.088 | +0.111 / +0.103 / +0.101 |
+| 7 m/s | +0.144 / +0.148 / +0.159 | +0.148 / +0.150 / +0.145 |
+| 9 m/s | +0.175 / +0.186 / +0.205 | +0.168 / +0.176 / +0.187 |
+| 12 m/s | +0.188 / +0.197 / +0.206 | +0.168 / +0.176 / +0.185 |
+
+- Worst +0.029 at 5.5 m/s Compress (0.083 s, 5.1 Hz). **Pass.** A delay shorter than the model's is the harder one, at
+  5–5.5 m/s.
+- These use the game's board inertia (section 3). With 3.2d's 0.1 kg·m² the worst was +0.042 (5.5 m/s crouch).
+
+**(b) Errors by contributor** (PART=contrib; `results/predict-contrib-32e.jsonl`; report only) [M]. The roll-plant
+ledger (`../roll-plant/results/plant-point.jsonl`) splits each of the twelve derivatives by contributor. Each
+contributor's part is scaled; the rest of the derivative is kept. Least damping, tall / Compress:
+
+| Speed | Pressure ×0.7 | Pressure ×1.3 | Fins ×0.7 | Fins ×1.3 | Friction ×0.7 / ×1.3 | Feet ×0.7 / ×1.3 | All 16 together |
+|---|---|---|---|---|---|---|---|
+| 5 m/s | −0.06 / −0.37 | +0.18 / +0.15 | +0.11 / +0.08 | +0.25 / +0.24 | ≥ +0.36 | ≥ +0.32 | 11 / 12 of 16 fail |
+| 7 m/s | −1 / −1 | +0.36 / +0.36 | +0.33 / +0.27 | +0.31 / +0.27 | ≥ +0.38 | ≥ +0.32 | 8 of 16 fail |
+| 9 m/s | −1 / −1 | +0.29 / +0.31 | +0.34 / +0.32 | +0.36 / +0.30 | ≥ +0.40 | ≥ +0.33 | 8 of 16 fail |
+
+- Only the hull's pressure ×0.7 fails alone (−1: a slow divergence). At 7 and 9 m/s 8 of the 16 sets fail, as many as
+  have pressure ×0.7.
+- At 9 m/s it is the heel's side force per roll alone (Y per roll ×0.52). Its pressure part is 1.6 times the whole:
+  it is the hull's lift tilted with the board (W φ), which the ledger also showed (roll-plant 3.3) [M].
+- **My reading** [I]: the hull's lift must carry the weight. A pressure ×0.7 is a board that does not carry its
+  rider, so it is not a plant the game can have. Fins, friction and the feet's force ±30 % are held everywhere.
+- At 5 m/s fins ×0.7 with pressure ×1.3 also fail together.
+
+## 3. The board's inertia in the model (found while building)
+
+- The 3.2d model took the board's roll inertia as 0.1 kg·m² (the gate tested 0.03–0.3). The game's own (0.026) is
+  smaller. But the solve meets the hull's added mass too.
+- **Measured** (`e32.probe.ts` PART=inertia, `results/e32-inertia-32e.jsonl`) [M]: the board's 6 × 6 system, projected
+  on its roll and yaw axes, after a steady glide, before the rider's terms:
+
+| Speed | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 m/s |
+|---|---|---|---|---|---|---|---|---|---|
+| Roll, kg·m² | 1.40 | 1.07 | 1.06 | 0.93 | 0.74 | 0.77 | 0.73 | 0.60 | 0.55 |
+| Yaw, kg·m² | 0.70 | 0.56 | 0.56 | 0.55 | 0.57 | 0.56 | 0.58 | 0.59 | 0.60 |
+
+- Crouch and Compress are within 0.15 of these above 4.5 m/s. The implicit damping times the substep is about 0.01.
+- `predictiveBalance.ts` `BOARD_INERTIA` holds this table; `plantAt` uses it by default. 3.2d's numbers used 0.1 and
+  0.449 (pass `rollInertia`, `yawInertia` to rerun them).
+- **Its effect in the model** (PART=inertia, `results/predict-inertia-32e.jsonl`) [M]: 3.2d's design on the game's
+  inertia still holds (+0.08 to +0.32), but less; a design on it gets +0.45 to +0.69.
+- In the game (the kicks), the internal model with the game's inertia matched the game's response better: the kick's
+  bank peak at 7 m/s 0.29° in the game, 0.15° in the model (0.02° with 0.1).
+
+## 4. What was built (item 2; all under `rider: 'new'` and standing free)
+
+**The twist as a body degree of freedom** (`AttachedRider.coupleYaw`, `finish`) [R]:
+- The board's share of the rider's yaw inertia (`stanceAt`'s `lower`: 1.37 / 1.37 / 1.24 kg·m²) turns rigidly with the
+  board, as 3.2b's whole did.
+- The upper body's share (`upper`: 1.44 / 1.68 / 1.96, +0.87 with the arms out) turns on the twist θ_t. The legs put
+  τ_b = τ_a + k θ_t + c θ̇_t on the board and −τ_b on the upper body (k 20 N·m/rad, c 3 N·m·s/rad; past 0.87 rad an end
+  stop, 2000 N·m/rad, not sourced).
+- In the solve: backward Euler, the upper body's spin eliminated. The board meets β n nᵀ, β = I_U α / (I_U + α), α =
+  h (k h + c), and a right-hand side. `finish` moves the twist on. No force but the legs', with its reaction.
+- The active torque τ_a comes from the controller through the muscles' 0.05 s lag, within 100 N·m and the feet's grip
+  (0.9 × the leg's load × 0.315 m).
+- This replaces 3.2b's rigid whole-body coupling and the old twist rotor (`TWIST_INERTIA`, `twistStep`) under
+  `rider=new`. The pad's rotation and Snap's aim become the twist's reference.
+- The legs' twist work is booked in the power ledger (both sides) and in the power window's check.
+
+**The controller** (`predictiveBalance.ts` `PredictiveController`, `AttachedRider.predictiveBank`) [R]:
+- 3.2d's design, unchanged in form: the steady Kalman filter, the predictor over 6 frames with the commands sent, the
+  DLQR gains, the commands' bias. The table (4–12 m/s every 0.5, three stances) is designed lazily, once per page
+  (about 7 ms a point), and read between its points as 3.2d's `between` did (four designs blended).
+- It runs on its own clock: one tick per 1/60 s of simulated time, the commands held between, whatever the substeps.
+- The senses (all 0.1 s late through the filter's line, never the slip): the body's bank; its rate, as the canals
+  sense it (the body's own angular rate: its rate on the board plus the board's roll rate); the head's yaw rate (the
+  upper body's spin); the twist and its rate; the ankle's angle and rate. 3.2's bank rate was the bank's change over a
+  substep: right after a shove it lagged one frame, and the reaction was 0.122 s. With the canals' rate it is 0.104 s.
+- The signs: the model's axes are x forward, y right; the game's +x is the board's left. Every angle and moment is
+  turned over.
+- The ankle's command goes through the feet's reach and the rail's bite as 3.2's did; the hip across takes what the
+  command asks past 80 % of the reach. The predictor is fed what the ankle was sent.
+- **A runtime test** (`predictiveBalance.test.ts`): on the model's own plant the class gives the analysis's loop
+  (`closedLoop`) to 1e-9 over 120 ticks, and holds the plant's steady turn between the table's points.
+
+**The reference** (item 2, the lean asked for) [R, M]:
+- The lean the player asks (the steer, the hand's bend), eased as the old bank reference (0.05 s, at most 5 rad/s),
+  enters as the plant's own steady turn: (Φ − I) x + Γ u = 0 with the bank and the twist set and the rates nothing,
+  from the blended model. The LQR acts on the error: u = u_ref − K (x̂ − x_ref) − b̂.
+- **The line held on its own is left out.** The old rider's `holdLine` (a heading loop: a lean against the heading's
+  error and the yaw rate) is part of the old bank reference. As a reference it made the yaw ring and grow: the kick at
+  7 m/s grew (late over early 2.8; damping −0.11), at 5 m/s the twist reached 47°. Without it the kicks die
+  (`results/rounds-32e.txt`, HOLDREF; measured before the inertia fix of section 3). So the new rider does not hold a line by itself; the player steers.
+
+**The pose** [R]: the drawn twist is the twist body's angle. With `?rider=new`, `RIG_SWITCHES.twistHips` turns the
+hips by the whole twist, as the chest (the old rig turned them by 0.35 of it): the twist is the pelvis's too.
+
+**The pulls** [R]: `compressAssist` now returns at once for the new rider, so `COMPRESS_PULL` and `CARVE_CARRY` are off
+as ruling 29 decided. In 3.2–3.2d they were still on (only `LEAN_OUT_PULL` was off).
+
+## 5. Model against game (item 3; `e32.probe.ts` PART=compare, `results/e32-compare-32e.jsonl`) [M]
+
+From the bars' steady start, 4 s. Peaks are from the start's own values.
+
+| Case | Bank peak (game / model) | Twist peak | Twist torque peak | Ankle peak | Yaw mode (game / model) |
+|---|---|---|---|---|---|
+| Shove 20 N·s, 7 m/s tall | 2.94° / 3.14° | 9.4° / 9.1° | 11.9 / 12.5 N·m | 11.3 / 14.6 N·m | 1.26 Hz, +0.19 / dies before a cycle |
+| Kick 0.5 rad/s, 5 m/s | 0.20° / 0.58° | 0.9° / 5.2° | 1.6 / 3.7 N·m | 8.4 / 12.3 N·m | 2.9 Hz, +0.02 / dies |
+| Kick, 7 m/s | 0.29° / 0.15° | 1.0° / 0.4° | 1.4 / 0.7 N·m | 7.4 / 11.5 N·m | 2.5 Hz, +0.06 / 2.1 Hz, +0.20 |
+| Kick, 9 m/s | 0.15° / 0.10° | 0.3° / 0.2° | 1.2 / 0.4 N·m | 4.8 / 8.9 N·m | 1.3 Hz, +0.08 / 2.1 Hz, +0.24 |
+
+- The shove agrees within 7 % in its peaks. Its decay does not: the game's bank over its last second is 0.19 of its
+  first; the model's is 0.
+- The kick is small in both (the ankle takes it). The game rings longer, at 2.5–2.9 Hz, more lightly damped.
+- **My reading** [I]: the shove's agreement says the build is the model (signs, inertias, the twist, the clock). The
+  rest is the plant: the game has a pitch loop, a hip, a free body on a leg and a hull that the 12 derivatives only
+  approximate.
+
+## 6. The bars (item 4; steady starts, 16 substeps)
+
+Results: `results/bars-new-32e.jsonl`, `bars31-new-32e.jsonl`, `turnpair-B-new-32e.txt`, `yawstep-32e.jsonl`. The old
+rider's rows are `bars-old.jsonl` (unchanged).
+
+| Bar | Old | 3.2b | 3.2e | Pass? |
+|---|---|---|---|---|
+| N0: `rider=old` byte-identical | — | yes | 3.2's `bars-old` and 3.1's `bars-old` the same bytes | yes |
+| Mode B: damping ≥ 0.05 (5 / 7 / 9 m/s) | −0.015 / +0.079 / +0.103 | −0.166 / −0.237 / −0.194 | +0.030 / +0.018 / +0.058 (3.4 / 2.2 / 1.5 Hz) | no |
+| Mode B: roll decay per cycle ≤ the old's | 1.42 / 0.35 / 0.46 | 4.90 / 3.46 / 18.1 | 0.54 / 1.62 / 0.55 | no (5 m/s yes) |
+| Mode A not seen (12–17 Hz share) | 0.000–0.007 | 0.000 | 0.000–0.009 | yes |
+| Push recovery, 7 m/s: tall > crouch > Compress, not tiny | 192 / 188 / 191 N·s | 21 / 11 / 5 | 138 / 155 / 170–175 | no: the order is reversed |
+| Reaction 0.08–0.12 s | 0.001 s | 0.107–0.110 | 0.103–0.105 | yes |
+| Save window: tall 0.25–0.35 s, Compress 0.15–0.25 s | — | 1.47–1.53 / 0.69–0.71 | 0.85 / 0.28–0.33 (hard shoves 0.20 / 0.14) | no |
+| Glides on the plane, 3 s | 4 of 4 | 4 of 4 | 4 of 4 | yes |
+| Glides on chop ≥ 11 of 12 | 11 of 12 | 0 of 12 | 4 of 12 | no |
+| Held carve standing ≥ 2.28 s | 1.93 s | 0.48 s | 0.30 s | no |
+| Held carve Compress ≥ 2.30 s | 3.0 s | 1.27 s | 0.68 s | no |
+| Turn pair set B ≥ 12 of 16 | 14 of 16 | 0 of 16 | 0 of 16 | no |
+| N1: legs < ~2 kW per frame, ≤ 1.46 kW over 0.5 s | to 30.9 kW | 0.55 / 0.27 kW | 0.55 / 0.26 kW | yes |
+| N2: 20° from 4 m/s, gain ≥ 3.5 m/s | +1.7 | +3.25 | +3.25 | no |
+| (report) 20 cm rise at 2 / 4 m/s | falls | falls 0.42 s | falls 0.42 / 0.40 s (1 m/s holds) | — |
+| (report) N4 placed straight down and up | 2 of 12 | 12 of 12 | 12 of 12, the board to 1.8 g | — |
+| (report) the 45° line placed | 3 of 6 | 4 of 6 | 4 of 6 | — |
+
+Notes [M, I]:
+- **Mode B:** the kick is taken at once by the ankle; what is left is small (yaw rate peaks 0.03 rad/s) and dies in
+  about 0.8 s, but the bar's fit reads its last small wiggles. It rings at 2–3.5 Hz, which 3.2b did not show.
+- **The push order** is the capture point's: a lower stance has a higher ω₀, so a given shove puts the capture point
+  less far out (as 3.2 found). ρ 1 reverses it to the bar's order (134 / 84 / 53 N·s) but cuts crouch and Compress
+  and the carves (section 7).
+- **The save window** is still the time for the weight to drift out after the capture point leaves the feet. The fall
+  test is 3.2's.
+- **Chop** falls are pitch falls, mostly while settling on chop 2 and 3 at every speed (the pitch ankle 15° forward,
+  the capture point 0.7 m along). 3.2 and 3.2b fell there too. The roll controller does not reach them.
+- **Held carves and the turn pair** fall early, at 10–27° of bank (0.3–0.7 s): the lean asked reaches 44° in 0.15 s
+  and 49° in 0.25 s, the LQR counter-steers hard (the board turns the wrong way at up to 0.87 rad/s, the twist torque
+  32 N·m), and the feet run out from under the body (`trace` with STEER=1). The plant table is about riding straight; at 40–50° of rail the hull is far
+  from its 12 derivatives. Section 7 has two reference levers that change this; I did not adopt them.
+- **N2** is a straight drop; the number is 3.2b's to the last digit. It is the pitch and the hull's drag, not the roll.
+
+**The yaw step (report;** `yawstep.probe.ts`, `results/yawstep-32e.jsonl`) [M]. Time to 63 % of the first peak, 5 / 7 /
+9 m/s: nominal (k 20) 0.064 / 0.061 / 0.057 s; braced (k 150, c 15) 0.058 / 0.057 / 0.053 s; relaxed (k 5, c 1) 0.067 /
+0.064 / 0.059 s. 3.2b: 0.145 / 0.122 / 0.095 s. The board now meets its own 0.55 kg·m², the lower share 1.37 and a
+little of the upper body's through the twist (2.2 kg·m² in the first 10 ms; 3.2b 3.6). The first peak comes at
+0.134–0.139 s, when the balance answers.
+
+## 7. The tuning rounds (item 5; `results/rounds-32e.txt`)
+
+Each candidate on the kicks, the carves, the push and the glides [M]:
+
+| Round | Weights | Kick damping 5 / 7 / 9 | Decay 5 / 7 / 9 | Carves | Push tall / crouch / Compress | Chop |
+|---|---|---|---|---|---|---|
+| — | 3.2d's (kept) | 0.030 / 0.018 / 0.058 | 0.54 / 1.62 / 0.55 | 0.30 / 0.68 | 138 / 155 / 170 | 4 |
+| 1 | ρ 1 | 0.030 / 0.028 / 0.070 | 0.59 / 0.97 / 0.34 | 0.25 / 0.27 | 134 / 84 / 53 | 5 |
+| 1 | ρ 100 | 0.010 / 0.046 / −0.036 | 0.91 / 1.63 / 0.71 | 0.87 / 0.77 | 107 / 121 / 160 | 2 |
+| 1 | process noise ×3 / ×0.3 | 0.033 / 0.034 / 0.041; 0.008 / 0.013 / 0.043 | 0.50 / 1.28 / 0.77; 0.79 / 0.20 / 0.49 | 0.30 / 0.68 | as kept | 2; 4 |
+| 1 | sense noise ×0.5 | 0.033 / 0.033 / 0.030 | 0.53 / 1.21 / 0.97 | 0.30 / 0.68 | as kept | 1 |
+| 2 | ρ 3 | 0.037 / 0.033 / 0.051 | 0.57 / 1.22 / 0.43 | 0.27 / 0.58 | 139 / 150 / 99 | 5 |
+| 2 | yaw-rate weight ×4 | 0.031 / 0.024 / 0.091 | 0.34 / 0.50 / 0.49 | 0.33 / 0.70 | 141 / 154 / 170 | 5 |
+| 2 | ρ 3 and yaw rate ×4 | 0.038 / 0.038 / 0.085 | 0.48 / 0.70 / 4.84 | 0.28 / 0.62 | 139 / 156 / 161 | 6 |
+| 2 | bank weight ×4 | 0.039 / 0.047 / 0.083 | 0.57 / 0.88 / 0.58 | 0.23 / 0.25 | 145 / 160 / 175 | 5 |
+| 2 | ρ 1 and yaw rate ×4 | 0.039 / 0.035 / 0.087 | 0.37 / 0.78 / 0.71 | 0.27 / 0.23 | 133 / 74 / 133 | 6 |
+
+- No weights pass Mode B at 5 m/s (best +0.039) or its decay at 7 m/s (best 0.20, with chop 4). The kept weights are
+  3.2d's: no round was better on every bar, and the model gate was checked with them.
+- **Not tuning, two levers on the reference, measured and not adopted** (they change what ruling 29i fixed):
+  - the lean asked's pace (`balance.leanRate`): at 1 rad/s the carves hold 1.23 / 1.30 s; at 0.5 rad/s 2.08 / 2.03 s;
+  - the steady turn that balances the lean (`balance.turn: 'tan'`: the linear bank is the lean's tangent in the body's
+    balance; at 49° the linear model's turn is 0.78 rad/s where a lean that size needs about 1.5): with 0.5 rad/s the
+    carves hold **2.38 / 2.58 s** (both bars pass), with 1 rad/s 1.43 / 1.60 s. The falls still come into the turn at the
+    end (bank 60–70°).
+  - On the turn pair neither lever helps: 0 of 16 (with 'tan' at 0.5 rad/s, 4 of 16 come out of the bottom turn and
+    fall climbing).
+- **Tried and reverted:** the senses on a face taken from the water's surface (the rail for the board's roll, the
+  ankle's rest from the board so laid). Chop fell to 0 of 12 (the chop's own slope came in as noise) and the turn pair
+  stayed at 0 of 16.
+- **The stop rule's identification was not run.** The game does not drift as the model's failing sets did: the plane
+  glides hold, the kicks die, and the shove matches the model within 7 %. The misses are of other kinds (pitch on
+  chop, the big lean of a carve, the fall test). I measured the one plant number that was wrong instead (section 3).
+
+## 8. What it means [I]
+
+- **Prediction works in the game for small upsets.** The shove is the model's, and the reaction is a human's.
+- **The board's roll inertia was the model's biggest error,** and it was the game's own value, so it is now in.
+- **What is left is outside the controller's design:**
+  1. **Big leans.** The table is the plant about riding straight. A held carve asks 44° in 0.15 s. The next step could
+     be a plant table about turning (the roll-plant lab at held rails of 10–40°), or a reference that a delayed body
+     can follow (the lean's pace, the turn that balances it). That is the advisor's call.
+  2. **Pitch on chop.** The pitch ankle (3.1c) falls over the nose on chop 2 and 3 while settling. It is not this step's
+     loop.
+  3. **The fall test** sets the save window and the push order; it is 3.2's capture point test.
+  4. **The heading.** With the heading hold left out, nothing keeps a line but the player.
+- Options for the advisor, in my order:
+  1. A turning plant (the lab with the rail held at 10–40°) and the reference from it, then the carves and the pair again.
+  2. Rule on the reference's pace and the balancing turn (both measured above).
+  3. The pitch loop on chop, as its own step.
+
+## 9. What was not run
+
+- **The merge checks** (the full suite, the Canyon byte check, the fps trace): the bars miss. Run here: `tsc` (app and
+  server), `predictiveBalance.test.ts`, `humanBalance.test.ts`, `standingBody.test.ts`, `rollModel.test.ts` (36 tests).
+- The closed-loop identification of the game's plant (section 7).
+- B-wall's long run. No ride, no game page, no Basilisk case.
+- `standingBody.test.ts`'s 3.2b test now checks the lower share (1.24–1.5 kg·m² met per substep; the couple's answer
+  about 2 times slower than the point mass's, was 2.5).
+
+## Files (3.2e)
+
+- `src/physics/predictiveBalance.ts`: `BOARD_INERTIA`, `boardInertiaAt` (`plantAt`'s default now), `plantAt`'s
+  `feetScale` and `yawInertia`, `scheduledDesign`, `steadyTurn`, `PredictiveController` (the runtime controller).
+- `src/physics/AttachedRider.ts`: the twist body (`twistBody`, `coupleYaw`, `finish`), `predictiveBank`, the reference
+  (`leanAsked`), the pulls off for the new rider, the probe-only option `balance` (`weights`, `leanRate`, `turn`,
+  `rateSense`, `twist`). `src/scene/rig/`: `RIG_SWITCHES.twistHips`; `src/game/PhysicalMode.ts` sets it with
+  `?rider=new`.
+- `../../board-in-water/lab.ts`: `BALANCE={...}` (JSON) for the option.
+- `predict.probe.ts`: parts `timing`, `contrib`, `inertia`. `e32.probe.ts`: parts `trace`, `compare`, `inertia` (its
+  header has the env).
+- `results/`: `predict-timing-32e.jsonl`, `predict-contrib-32e.jsonl`, `predict-inertia-32e.jsonl`,
+  `e32-inertia-32e.jsonl`, `e32-compare-32e.jsonl`, `bars-new-32e.jsonl`, `bars31-new-32e.jsonl`, `yawstep-32e.jsonl`,
+  `turnpair-B-new-32e.txt`, `rounds-32e.txt`.
