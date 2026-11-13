@@ -12,7 +12,7 @@ import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, ride
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
 import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, stanceAt, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, railPull, stanceAt, type DesignWeights } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -500,6 +500,30 @@ const TWIST_BODY_ARMS = 0.87;
 const TWIST_GRIP_SPAN = 0.315;
 const TWIST_STOP = 2000;
 const TWIST_STOP_DAMPING = 50;
+/**
+ * How fast the new surfer sets the rail it is asked for, rad/s (step 3.2f, the advisor's ruling 29j): the lean asked
+ * moves toward the player's stick at no more than this. The old rider's REFERENCE_RATE is 5 rad/s, which reaches 44° in
+ * 0.15 s: that is not a human setting a rail, and the balance, predicting over its 0.1 s delay, cannot follow it.
+ * There is no measured roll rate for a rider setting a rail. What is sourced is the turn: a real bottom turn comes
+ * round 99° in 0.96 s (Forsyth et al. 2024, as `COMPRESS_PULL` cites it), and the roll-plant lab's 1.9 rad/s is a yaw
+ * rate on a 42° rail, not a roll rate. If the rail is set over about the first half of such a turn, 0.7 rad in 0.5 s is
+ * about 1.4 rad/s, which is the sourced upper end. The carve bars were measured over 0.5, 1, 1.4, 2 and 5 rad/s
+ * (docs/research/new-rider/3.2 Part 6): the held carves pass at 0.5 (2.38 s and 2.58 s against the bars' 2.28 and 2.30)
+ * and fail from 1 up (1.43 s and 1.60 s). So this is the rate
+ * the carve needs, not a measured human rate: 0.7 rad takes 1.4 s, where a whole bottom turn takes about 1 s.
+ */
+const LEAN_IN_RATE = 0.5;
+/**
+ * How far onto its rail the balance's schedule is trusted, degrees (step 3.2f). The plant was measured at rails of 0 to
+ * 40° (`predictiveBalance.ts` RAIL_PLANT), and a controller designed on it is sound to 20°: beyond that the measured
+ * plant's own sideslip mode diverges (at 7 m/s and 40° the side force per degree of sideslip has changed sign, so a
+ * slide feeds itself, and no gains hold it: the lab's spin-out). Past this cap the schedule holds its design there and
+ * the reference carries the rest. The bars were measured over caps of 0, 5, 10, 12, 15, 20, 30 and 40°
+ * (docs/research/new-rider/3.2 Part 6): the held carves are longest at 5° (2.83 s and 2.98 s), and the turn pair gets
+ * furthest at 10° (its falls move out of the bottom turn), where the Compress carve sits exactly on its bar. So the
+ * measured big-rail plant is in the model and read only to here; that is a finding, not a preference.
+ */
+const SCHEDULE_RAIL_CAP = 5;
 /**
  * The compressed turn's assist (the movement-flow spec's Q4 and Q16, a
  * gameplay rule, not physics). Compress is the sharp turn's stance, and a real
@@ -1185,11 +1209,11 @@ export interface AttachedRiderOptions {
   /**
    * The new surfer's balance by prediction (step 3.2e), for the probes' rounds only: the design's weights (over
    * DEFAULT_WEIGHTS), the lean asked's pace (rad/s; REFERENCE_RATE by default), the reference's steady turn ('linear' by
-   * default, or 'tan'), and the bank rate's sense ('canal' by default: the body's own angular rate; or 'difference': the
+   * default since 3.2f, or 'linear'), and the bank rate's sense ('canal' by default: the body's own angular rate; or 'difference': the
    * bank's change over a substep, 3.2's), and the legs' passive twist in the game (TWIST_STIFFNESS, TWIST_DAMPING: braced or
    * relaxed for the yaw step's report; the internal model keeps its own).
    */
-  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number } };
+  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number };
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1691,8 +1715,12 @@ export class AttachedRider {
   /** The legs' passive twist, N·m/rad and N·m·s/rad (TWIST_STIFFNESS, TWIST_DAMPING unless a probe braces or relaxes it). */
   private readonly twistStiffness: number;
   private readonly twistDamping: number;
+  /** How far onto its rail the balance's schedule is trusted, rad (SCHEDULE_RAIL_CAP). */
+  private readonly railCap: number;
   private controlDue = 0;
   private heldAnkleRaw = 0;
+  /** The rail the balance's schedule is reading, rad (step 3.2f; for the probes). */
+  schedRail = 0;
   private heldTwist = 0;
   /** The latest substep, s (`coupleYaw` has no step of its own). */
   private substep = 0;
@@ -1853,11 +1881,12 @@ export class AttachedRider {
     this.bankRateGain = options.humanGains?.bankRate ?? HUMAN_BANK_RATE_GAIN;
     this.bankForward = options.humanGains?.forward ?? HUMAN_BANK_FORWARD;
     this.predictive = this.newRider && options.humanGains === undefined;
-    this.predictor = new PredictiveController(options.balance?.weights ? { ...DEFAULT_WEIGHTS, ...options.balance.weights } : undefined, options.balance?.turn ?? 'linear');
-    this.leanPace = options.balance?.leanRate ?? REFERENCE_RATE;
+    this.predictor = new PredictiveController(options.balance?.weights ? { ...DEFAULT_WEIGHTS, ...options.balance.weights } : undefined, options.balance?.turn ?? 'tan');
+    this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.rateSense = options.balance?.rateSense ?? 'canal';
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
+    this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -2826,7 +2855,14 @@ export class AttachedRider {
       const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
       const grip = FOOT_FRICTION * Math.max(0, this.legLoad) * TWIST_GRIP_SPAN;
       // The ankle's command is let past the feet's reach (the hip takes the rest); the predictor is fed what the ankle sent.
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: ANKLE_REST_RANGE, twist: Math.min(TWIST_BODY_TORQUE, grip) });
+      // Step 3.2f: the schedule's rail is the rail that holds the lean asked for. The turn's pull at a rail is
+      // `railPull` of what that rail's own lean would balance (0.76-0.88 measured), so the rail is a little more than
+      // the lean: tan(lean) = pull × tan(rail). Two passes, since the pull itself goes with the rail.
+      let rail = Math.abs(this.leanAsked);
+      for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
+      rail = Math.min(this.railCap, rail);
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: ANKLE_REST_RANGE, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail);
+      this.schedRail = rail;
       this.heldAnkleRaw = -this.predictor.raw[0];
       this.heldTwist = -u[1];
     }
