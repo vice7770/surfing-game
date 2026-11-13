@@ -41,8 +41,14 @@ export const ANKLE_HEIGHT = 0.075;
  * 3.1) it was too soft: the body and the board were joined along it by only (k − m g L) / L², about 180 N/m.
  */
 export const PITCH_ANKLE = 1.2;
-/** The pitch ankle's damping over its stiffness, s: the bank ankle's ratio (80 over 800 N·m/rad). */
-export const PITCH_DAMPING_TIME = 0.1;
+/**
+ * The pitch ankle's damping over its stiffness, s. Step 3.1 took the bank ankle's ratio (80 over 800 N·m/rad, 0.1 s);
+ * step 3.2 raises it to 0.3 s for the braced stance (co-contracted muscles are more viscous as well as stiffer: Weiss,
+ * Hunter and Kearney 1988; Kearney and Hunter 1990): on the pitch model (`../../docs/research/new-rider/3.2`), with the
+ * hull's measured pitch damping (20–30 N·m·s/rad), 0.1 s leaves the 1.8 Hz pitch swing at a damping ratio of 0.015,
+ * 0.3 s at 0.18 with 3.1's gains and 0.28 with the rate gain halved.
+ */
+export const PITCH_DAMPING_TIME = 0.3;
 /**
  * The reference's slow trim, s: the face's normal under the board gives the reference, and its difference from the body's
  * own push through the feet (low-passed over SPECIFIC_FORCE_TIME, the line from the centre of pressure to the centre of
@@ -65,7 +71,8 @@ export const PITCH_REFERENCE_TIME = 0.5;
 export const PITCH_DELAY = 0.1;
 export const PITCH_MOTOR_LAG = 0.05;
 export const PITCH_LEAN_GAIN = 0.25;
-export const PITCH_RATE_GAIN = 0.1;
+/** Step 3.2: halved (0.1 → 0.05 s) with the braced damping (the pitch model's best at the measured hull damping). */
+export const PITCH_RATE_GAIN = 0.05;
 /**
  * The ankle stiffening with activation (ruling 29a's step 2: muscles stiffen as they activate): its passive stiffness
  * grows with the leg's load, low-passed over PITCH_ACTIVATION_TIME, s, from one body weight up, to at most
