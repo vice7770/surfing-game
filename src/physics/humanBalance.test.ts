@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BALANCE_DELAY, DelayLine, HumanBalance, SWING_INERTIA_ARMS, SWING_INERTIA_SET, rotorImpulse, stanceRoom } from './humanBalance';
-import { humanReferenceGain, humanRollKick, humanRollModes, type RollParams } from './rollModel';
+import { BALANCE_DELAY, DelayLine, HumanBalance, RIDER_YAW_ARMS_OUT, SWING_INERTIA_ARMS, SWING_INERTIA_SET, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
+import { boardDerivatives, humanReferenceGain, humanRollKick, humanRollModes, humanYawModes, type RollParams, type YawPlant } from './rollModel';
 
 // The new surfer's step 3.2 (`rider: 'new'`; docs/research/new-rider/3.2): the human balance's parts.
 
@@ -113,5 +113,49 @@ describe('the roll model with the human delay (rollModel)', () => {
   it('settles a kicked board with the delay exact, and gives the steady rest for a lean asked', () => {
     expect(humanRollKick(plant, human, { bank: 0, bankRate: 0.1 }).peakBank).toBeLessThan(0.01);
     expect(humanReferenceGain(plant, human, { bank: 0, bankRate: 0.1 })).toBeGreaterThan(0);
+  });
+});
+
+describe('the rider\'s yaw inertia (step 3.2b)', () => {
+  it('turns with the stance\'s depth from de Leva\'s segments, and the arms out add to it', () => {
+    expect(riderYawInertia(0)).toBeCloseTo(2.81, 2);
+    expect(riderYawInertia(0.195)).toBeCloseTo(3.05, 2);
+    expect(riderYawInertia(0.3)).toBeCloseTo(3.2, 2);
+    expect(riderYawInertia(0.45)).toBeCloseTo(3.2, 2);
+    expect(riderYawInertia(0.1)).toBeGreaterThan(2.81);
+    expect(riderYawInertia(0.1)).toBeLessThan(3.05);
+    expect(riderYawInertia(0, 1) - riderYawInertia(0)).toBeCloseTo(RIDER_YAW_ARMS_OUT, 6);
+    expect(riderYawInertia(-0.1, 2)).toBeCloseTo(2.81 + RIDER_YAW_ARMS_OUT, 6);
+  });
+});
+
+describe('the yaw model (rollModel humanYawLoop, step 3.2b)', () => {
+  // The lab's captive derivatives at 7 m/s with the rigid point rider (roll-plant results), [N, Y, K] per roll, slip, yaw rate, roll rate.
+  const lab = { roll: [-104.9, -412.5, -285.3], slip: [-296.2, 1398.0, -530.6], yaw: [-13.1, 63.0, -34.5], rate: [2.65, -19.5, -1.5] };
+  const plant = (rider: number): YawPlant => ({
+    speed: 7, boardRollInertia: 0.1, boardYawInertia: 0.449, riderYawInertia: rider, boardMass: 2.54, mass: 73, height: 0.84,
+    ankleStiffness: 800, ankleDamping: 80, ...boardDerivatives(lab, 7, 0.236), feetForward: 150, feetStation: -0.244, deckHeight: 0.031,
+  });
+
+  it('moves the derivatives to the board\'s own centre of mass: the heel\'s yaw nearly cancels, the fins\' weathercock and damping grow', () => {
+    const d = boardDerivatives(lab, 7, 0.236);
+    expect(d.heelSide).toBeCloseTo(412.5, 6);
+    expect(d.heelYaw).toBeCloseTo(104.9 - 0.236 * 412.5, 6);
+    expect(d.slipSide).toBeCloseTo(-1398, 6);
+    expect(d.slipYaw).toBeCloseTo(296.2 + 0.236 * 1398, 6);
+    expect(d.yawDamping).toBeLessThan(-40);
+    expect(d.heelRoll).toBeCloseTo(-285.3, 6);
+  });
+
+  it('grows the free roll near 1.1 Hz with 3.2\'s gains and no rider yaw inertia, and the inertia slows it without damping it', () => {
+    const delay = { delay: 0.1, motorLag: 0.05 };
+    const gains = { bank: 0, bankRate: 0.1 };
+    const without = humanYawModes(plant(0), delay, gains)[0];
+    expect(without.damping).toBeLessThan(0);
+    expect(without.frequency).toBeGreaterThan(0.9);
+    expect(without.frequency).toBeLessThan(1.3);
+    const withInertia = humanYawModes(plant(2.81), delay, gains)[0];
+    expect(withInertia.frequency).toBeLessThan(without.frequency);
+    expect(withInertia.damping).toBeLessThan(0);
   });
 });
