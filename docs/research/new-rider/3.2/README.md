@@ -2952,3 +2952,516 @@ he cannot hold himself up through a turn once he is in one.
 - `results/`: `turn-old-32L.jsonl` (the bars), `turn-new-32L.jsonl` (the kept cell), `turn-grid-32L.jsonl` (all 90 grid
   rows), `travel-old-32L.jsonl` and `travel-new-32j.jsonl`, `bars-new-32L.jsonl` (all 30 guard rows),
   `suite-32L.txt`, `canyon-byte-32L.txt`, `fps-32L.txt`.
+
+# Part 12: step 3.2m, the plant held until it settles, heave and pitch in the model, and the rail cap (ruling 29t)
+
+Written 2026-11-13 by the rail-dig agent (Opus 5, effort xhigh), on branch `claude/rider-new-32m` (from
+`claude/rail-dig`, rebased on main 5e841464). The contract: `../ruling-29.md` 29t.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **The big-rail plant is re-measured with every hold shown settled, and it replaces 3.2f's** [M]. Each number is the
+  mean of the last second of a **ten-second** hold, and the probe prints a ladder against how long the hold has run
+  beside every one. At 7 m/s the side force per radian of sideslip now runs **+1409, +936, +405, −188, −796, −576**
+  over 0, 10, 15, 20, 30 and 40° of rail, where 3.2f read +1398, +825, —, −1387, −2610, −4143. The 15° row is new.
+- **"Past 15° of rail the plant cannot be stabilised by any controller" is gone** [M]. On this table a controller
+  designed at the rail is positively damped at **every** point: 7 m/s at 40°, which 3.2f read as **−1**, is **+0.49**.
+  It also survives a frame of timing error — the only model gate — to 20° at every speed and stance.
+- **The sign change itself survives**, at about 18° of rail at 7 and 9 m/s, and **at 5 m/s it does not happen at all**
+  up to 20° (+107 where 3.2f read −378) [M].
+- **The pitch plant (3.2g) does not have the same fault and needs no change** [M]. Its holds pin the roll, the yaw, the
+  slip, the pitch *and* the height, which leaves the board no free degree of freedom, so the water's force is algebraic
+  in the state: the ladder is constant to the digit from 0.35 s to 4 s at every point. 3.2g's 5 and 7 m/s rows
+  reproduce exactly; its 9 m/s rows are 5–12 % apart (§2.3).
+- **The balance model now carries the board's heave and pitch as four more states** [R, M]. It confirms the answer —
+  nominal damping positive at every rail — and it finds the next wall: the least damped mode is now the board's own
+  **0.33–0.74 Hz heave and pitch**, and **the rider has no sense of it at all**, so a frame of timing error takes it
+  negative. That is a sensing gap, not a rail problem.
+- **Condensing heave and pitch quasi-statically, as the ten-state plant does, is ill conditioned** [M]: at 20° of rail
+  the answer is the residual of terms **10 to 18 times** larger than itself, and the elimination's own error (260 to
+  1,200 N) is bigger than the answer. That is a second, independent reason not to fold them in.
+- **`SCHEDULE_RAIL_CAP` rises from 5° to 12°, and the game is why** [M]. **Both stances come round 90° for the first
+  time**: standing 1.73 s keeping 0.95 of the speed, Compress 2.02 s keeping 0.88, against the old rider's 1.50 s /
+  0.94 and 1.67 s / 1.32. 3.2L refused 12° because it "costs the standing stance altogether" — on this plant the
+  standing rider survives a held full stick **2.13 s** there, against 1.37 s at the old cap on the old table.
+- **The turn pair, the gate (ruling 29r): still 0 of 8.** But it moved, and in the way the owner described: at caps 9
+  to 13 **no fall happens in the bottom turn any more**, and the earliest fall goes from 0.68 s (cap 5) to 1.52 s
+  (cap 10), with 4 of 8 runs now completing the bottom turn, climbing, and waiting for the wave [M].
+- **Seatbelts held** [M]: `tsc` clean, the suite green, the default game byte-identical, 28 of the 30 old bar rows
+  unchanged (the two that moved are the held carves, which is what this step touches).
+
+## 2. The plant held until it settles (item 1)
+
+### 2.1 How it is measured, and the standing rule
+
+`../rail-dig/settled.probe.ts`, on the roll-plant lab. At each speed and rail the board is held at that roll with its
+**yaw and sideslip free** for 8 s, so it settles into the turn that rail makes (the trim). Each of the twelve
+derivatives is then a central difference about that trim with the triple held — exactly 3.2f's method — except that
+**the hold runs 10 s and the number kept is the mean of its last second**, and the probe reports:
+
+- a **ladder**: the derivative at 0.35, 0.6, 1, 2, 4, 6, 8 and 10 s of hold, so the reader sees it come to rest;
+- a **settled flag**: whether the two halves of that last second agree within 3 % (or 3 units);
+- how far it moved over that last half-second, for the cells that do not settle.
+
+**Ruling 29t's standing rule — a captive hold's number is not used until the hold is shown settled — is met for every
+cell except three, which are named below and cannot meet it in principle.**
+
+Why 0.6 s was not enough, in one table (7 m/s, the side force per radian of sideslip; `results/settled-long.jsonl`) [M]:
+
+| Rail | 0.35 s | **0.6 s** | 1 s | 2 s | 4 s | 6 s | 8 s | **10 s** | 3.2f's reading |
+|---|---|---|---|---|---|---|---|---|---|
+| 0° | 1409 | 1409 | 1409 | 1409 | 1409 | 1409 | 1409 | **1409** | +1398 |
+| 10° | 547 | 963 | 823 | 945 | 936 | 936 | 936 | **936** | +825 |
+| 15° | 287 | −168 | 664 | 365 | 406 | 405 | 404 | **405** | — |
+| 20° | −223 | **−1078** | 273 | −177 | −188 | −188 | −188 | **−188** | **−1387** |
+| 30° | −420 | **−1920** | −442 | −552 | −779 | −797 | −798 | **−796** | **−2610** |
+| 40° | −77 | **−2042** | −846 | −514 | −538 | −573 | −578 | **−576** | **−4143** |
+
+At no rail the hold is already at rest in the first frame. At a rail it rings for one to two seconds, because a slide
+at heel costs the flat bottom its lift and the board answers by sinking (`../rail-dig/README.md`). 3.2f averaged the
+last quarter of a 0.6 s hold, which is where the sink overshoots.
+
+### 2.2 The table
+
+`src/physics/predictiveBalance.ts` `RAIL_PLANT`, every row replaced and a 15° row added (`RAIL_ANGLES` is now
+0, 10, 15, 20, 30, 40). The 0° rows are this method's own; `railCorrection` adds the difference from the 0° row to
+`PLANT_SPEEDS`, so straight running is untouched and the rail's effect is internally consistent.
+
+**The side force per radian of sideslip** — the number ruling 29s turned on [M]:
+
+| Speed | 0° | 10° | 15° | 20° | 30° | 40° |
+|---|---|---|---|---|---|---|
+| 5 m/s, settled | +712 | +521 | +250 | **+107** | — | — |
+| 5 m/s, 3.2f | +705 | +321 | — | **−378** | — | — |
+| 7 m/s, settled | +1409 | +936 | +405 | **−188** | −796 | −576 |
+| 7 m/s, 3.2f | +1398 | +825 | — | **−1387** | −2610 | −4143 |
+| 9 m/s, settled | +2274 | +1582 | +589 | **−152** | −548 | −537 |
+| 9 m/s, 3.2f | +2272 | +1573 | — | **−358** | −418 | −530 |
+
+- **The flip is real and it crosses at about 18° of rail** at 7 and 9 m/s. **At 5 m/s it never crosses** up to 20°,
+  where the board stops holding a turn at all.
+- It is **three to seven times weaker** than published at 7 m/s and it **stops growing past 30°**.
+- At 9 m/s 3.2f's numbers were already modest and the correction is small; the big error was at 7 m/s, which is the
+  ride speed.
+
+**The righting moment about the feet** (K per rad of roll), the other derivative 3.2f reported as changing sign [M]:
+
+| Speed | 0° | 10° | 15° | 20° | 30° | 40° |
+|---|---|---|---|---|---|---|
+| 7 m/s, settled | −283 | −134 | −45 | **+41** | +40 | +60 |
+| 7 m/s, 3.2f | −285 | −180 | — | **+250** | +286 | +435 |
+| 5 m/s, settled | −313 | −81 | −68 | **−82** | — | — |
+
+It still turns over past about 18° at 7 and 9 m/s, but by **a seventh to a twentieth** of what was read, and **at
+5 m/s the water rights the board under the rider at every rail**, where 3.2f read it going over.
+
+**The three cells that do not settle, and why they cannot** [M, I]: 7 m/s at 10° (the roll and roll-rate columns),
+9 m/s at 0° (roll) and 9 m/s at 10° (slip). Their ladders do not decay — they **ripple at 2 to 4 % of the value and
+keep rippling**, because the plant itself has a mode that does not decay there: with the yaw free, a rigid rider on
+this board weaves at about 0.9 Hz with a damping ratio of about zero at 7 m/s (`../roll-plant/README.md` §3.4). The
+number kept is then a mean over about two whole cycles of that ripple, and the row says so in a comment. That is the
+honest reading of the standing rule at a neutrally damped point: it cannot be met, and the size of what is left is on
+the record.
+
+### 2.3 The pitch plant (3.2g) is already settled
+
+Ruling 29t asked whether 3.2g's table has the same problem. **It does not**, and the reason is structural [M, R]:
+
+3.2g holds the roll, the yaw rate, the sideslip, **the pitch and the centre of mass's height**. That is six
+constraints on six degrees of freedom, so the board has none left and the water's force is a function of the state
+alone, with no transient to wait for. Measured here with the same ladder (`../rail-dig/results/settled.jsonl`, the
+`frozen` rows at rail 0), every one of the pitch plant's eight numbers is **constant to the digit from 0.35 s to 4 s**:
+
+| Speed | M per pitch | Z per pitch | M per heave | Z per heave | M per pitch rate | Z per heave rate | 3.2g's |
+|---|---|---|---|---|---|---|---|
+| 5 m/s | −1769.7 | +319.3 | −1648.2 | −701.2 | −7.7 | −364.4 | **all six exact** |
+| 7 m/s | −953.0 | −357.2 | −1566.6 | −3910.4 | −11.2 | −538.5 | **all six exact** |
+| 9 m/s | −498.1 | +2122.5 | −3535.9 | −9064.7 | −16.3 | −702.5 | −410, +2069, −3722, −10294, −16.6, −707 |
+
+5 and 7 m/s reproduce 3.2g to the digit. The 9 m/s rows differ by 5–12 %: the trim there is only 5 cm of draft and the
+two runs read its height over different windows, which at that draft is enough. **No change to 3.2g's table is
+proposed**; its 9 m/s row carries a 10 % uncertainty that is now on the record.
+
+## 3. Heave and pitch in the balance model (item 2)
+
+### 3.1 What was added
+
+`src/physics/rollModel.ts`, **additive and optional**: `YawPlant.heave` (a `HeavePlant`) carries the water's
+[N, Y, K, M, Z] per metre of heave, per m/s of heave rate, per rad of pitch and per rad/s of pitch rate, plus the M
+and Z the four states already there make. `heaveRows` builds the four new rows — ḣ = w, m ẇ = Z, θ̇_b = q,
+I_yy q̇ = M — and `twistRows` appends them at `HEAVE_AT` = 11. Without the block **nothing moves**: every index is
+where it was.
+
+`src/physics/predictiveBalance.ts` is now **size-agnostic**: `continuousPlant` returns ten states as before, or
+fourteen when the plant carries the block (the new states on the end, so the game's own indices are untouched), and
+`design`, `closedLoop`, `senseMatrix` and `captureRow` take their sizes from the matrices instead of the module's
+constants. `DesignWeights` gains `heaveScale` and `heaveNoise`, used only by the fourteen-state path.
+
+**The proof that this changed nothing**: `predict.probe.ts PART=railmodel` on the *shipped* table reproduces all 30 of
+3.2f's recorded rows — damping, frequency and all ten gains — **byte for byte** [M].
+
+The derivatives it is fed are the **captive** ones (`results/settled.jsonl`, the `frozen` rows): the free ones would
+double-count the re-trim this block now models.
+
+### 3.2 What it says about a carve
+
+`heave.probe.ts`, `results/heave-32m.jsonl`. Least damping of the closed loop; negative means a mode grows [M]:
+
+| | 0° | 10° | 15° | 20° | 30° | 40° |
+|---|---|---|---|---|---|---|
+| **Ten-state, corrected free plant** (7 m/s, tall) | +0.699 | +0.655 | +0.670 | +0.562 | +0.449 | **+0.477** |
+| with a frame of timing error | +0.17 | +0.14 | +0.14 | +0.17 | −0.01 | −0.09 |
+| **Fourteen-state, heave and pitch carried** | +0.105 | +0.370 | +0.278 | +0.260 | +0.201 | **+0.301** |
+| its least-damped mode | 0.63 Hz | 0.38 | 0.33 | 0.36 | 0.35 | 0.46 |
+| with a frame of timing error | +0.11 | −0.07 | −0.21 | −0.30 | −0.34 | −0.34 |
+| **the straight (0°) design held on it** | +0.11 | −0.60 | −0.83 | −0.96 | −0.96 | −1 |
+| 3.2f's shipped numbers | +0.681 | +0.679 | — | +0.475 | +0.374 | **−1** |
+
+**The answer to the question asked: the carve's first second stays stabilisable, and it does not stop being so at any
+rail measured.** Both models say so, at every speed and stance (`predict-railmodel-32m.jsonl` has all 54 points).
+
+**Where the margin actually goes thin is somewhere else.** With heave and pitch carried, the least damped mode is no
+longer anything to do with the rail: it is the board's own **0.33 to 0.74 Hz** heave and pitch, and its damping is
++0.105 to +0.64 rather than the ten-state model's +0.45 to +0.70. A frame of timing error takes it negative at almost
+every rail. **The reason is that the rider cannot feel it**: `senseMatrix` gives the balance the body's bank and its
+rate, the head's yaw rate, the twist and its rate, and the ankle's angle and rate — **nothing about the board's height
+or pitch**. So the predictor runs that mode open-loop. The 0.33–0.74 Hz also matches the measured heave ring (one to
+two seconds to settle, §2.1), which is a cross-check that the four states are modelling the right thing [M, I].
+
+**That is this round's new lead, and it is cheap:** the game already measures the load through the feet
+(`rider.contact.load`) and the board's pitch. A sense of either would close the loop on the mode that is now the
+weakest, and it needs no new water force. I did not build it.
+
+At 5 and 9 m/s the fourteen-state eigensolver did not converge at some points (an 84×84 non-symmetric matrix), and
+those cells say "did not converge" rather than a number. Every 7 m/s point converged.
+
+### 3.3 Why folding heave into the twelve derivatives cannot work
+
+`heave.probe.ts PART=check`. The quasi-static elimination says the free derivative should be the captive one plus the
+heave's and pitch's contributions. It is exact at no rail and it falls apart at a rail [M]:
+
+| 7 m/s | captive | via the heave | via the pitch | predicted | **measured** | the error | largest term over the answer |
+|---|---|---|---|---|---|---|---|
+| 0° | +1409 | 0 | 0 | +1409 | **+1409** | 0.2 | 1× |
+| 10° | +1542 | −306 | +82 | +1318 | **+936** | 382 | 1.6× |
+| 15° | +1685 | −1028 | +163 | +820 | **+405** | 415 | 4.2× |
+| 20° | +1816 | −1380 | +224 | +660 | **−188** | 847 | **9.7×** |
+| 40° | +2229 | −2579 | +293 | −57 | **−559** | 502 | 4.6× |
+| 9 m/s, 20° | +2700 | −863 | −1211 | +626 | **−152** | 777 | **17.8×** |
+
+Past 15° of rail the free derivative is the residual of terms ten to eighteen times its own size, and the
+elimination's error is **larger than the answer**. So the condensed number is not something the plant's own linear
+derivatives determine: the measured value is trustworthy (it comes from a ten-second settle, not a subtraction) but it
+carries the plant's nonlinearity inside it. **Carrying the states is not a refinement; it is the only well conditioned
+way to hold that information.** [M, I]
+
+## 4. The rail cap, re-asked on the corrected plant (item 3)
+
+3.2L kept `SCHEDULE_RAIL_CAP` at 5°, and its reason was 3.2f's reading. Both halves of that reason are now withdrawn:
+
+- **the model half** — "past about 15° of rail the plant cannot be stabilised by any controller" — is false on the
+  settled table (§3.2);
+- **the game half** — "every cap over 8° loses the standing stance, falling on a full stick in 0.3–0.4 s" — **does not
+  happen on this plant**. The standing rider survives 1.6 to 2.3 s at every cap up to 25° [M].
+
+And the structural argument the model makes is the opposite of a cap: **the straight (0°) design held on the plant at a
+rail is unstable at every rail above 0**, at every speed and stance (−0.13 to −1). Capping the schedule *is* holding
+the wrong design.
+
+**The grid** (`results/turn-capgrid-32m.jsonl`; the full-stick turn at 7.7 m/s on the bars' own steady start, lean
+1.4 rad/s, and the turn pair at each cap) [M]:
+
+| Cap | tall: peak yaw | to a 30° rail | 90° in | kept | fell | Compress: peak yaw | 90° in | kept | fell | turn pair: falls, and where |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **5° (was)** | 84 °/s | 1.13 s | 2.27 s | 0.945 | 2.30 s | 60 °/s | — | — | 2.80 s | 0.68–1.98 s, **4 of 8 in the bottom turn** |
+| 8° | 91 | 1.85 | — | — | 2.07 | 75 | — | — | 1.52 | 0.93–3.50, 2 in the bottom turn |
+| 9° | 106 | — | — | — | 1.60 | 108 | 2.18 | 0.823 | 2.32 | 1.12–3.58, none in the bottom turn |
+| 10° | 123 | 1.25 | 1.67 | 0.903 | 1.70 | 92 | — | — | 2.07 | **1.52–3.78, none, 4 of 8 reach the wait** |
+| 11° | 118 | 1.30 | 1.68 | 0.959 | 1.83 | 101 | 2.03 | 0.893 | 2.10 | 1.27–3.78, none, 4 of 8 reach the wait |
+| **12° (kept)** | 114 | 1.35 | **1.73** | **0.951** | **2.13** | 112 | **2.02** | 0.875 | **2.17** | 1.13–3.72, none, 2 of 8 reach the wait |
+| 13° | 121 | 1.38 | 1.77 | 0.949 | 1.85 | 106 | 2.00 | 0.882 | 2.10 | 1.05–3.43, none in the bottom turn |
+| 15° | 110 | 1.47 | — | — | 1.78 | 122 | 1.95 | 0.962 | 2.02 | 0.85–3.70, 2 in the bottom turn |
+| 20° | 280 | — | 1.87 | 1.024 | 1.93 | 318 | 1.63 | 0.862 | 1.67 | 0.77–3.47, 2 in the bottom turn |
+| 25° | 120 | 0.98 | — | — | 1.58 | 79 | 2.93 | 0.841 | 3.07 | 0.57–0.88, **8 of 8 in the bottom turn** |
+| 30° | 32 | 1.05 | — | — | 1.10 | 46 | — | — | 1.73 | — |
+| 40° | 27 | 0.90 | — | — | 0.92 | 26 | — | — | 1.02 | — |
+| **the old rider** | **76** | **0.60** | **1.50** | **0.942** | 1.93 | **80** | **1.67** | **1.316** | never | **8 of 8 top turns, 7 of 8 one pair** |
+
+**12° is kept, and the reasons are these** [M, I]:
+
+1. **Both stances come round 90° — the first time the new rider has** (1.73 s and 2.02 s against the old rider's 1.50
+   and 1.67). At 5° Compress never came round at all. That is the owner's own complaint — *"the surfer can almost only
+   go in front"* — moving.
+2. **It survives a held full stick longest of any cap in both stances at once** (2.13 s and 2.17 s).
+3. **Caps 9 to 13 are a plateau in which no turn-pair fall happens in the bottom turn**, and 12 is in the middle of it
+   rather than at its single best cell. 3.2L warned that neighbouring caps differ by half a second; picking a plateau's
+   middle is the answer to that, not picking its peak.
+4. At 20° the board spins out (280–318 °/s peak yaw); at 25° and above the turn goes slow and the rider falls sooner.
+
+**10° and 11° are the turn pair's own best cells** (earliest fall 1.52 and 1.27 s, 4 of 8 reaching the wait step), and
+10° does not bring Compress round. If the advisor or the owner wants the gate's peak rather than the plateau's middle,
+10° is the number, and it is one constant. The whole grid is in the results file.
+
+**The corrected table alone is worth something, before the cap moves**: at the unchanged cap of 5° the standing rider
+goes from falling at 1.37 s to 2.30 s and comes round 90° for the first time (2.27 s), and Compress from 2.23 s to
+2.80 s [M]. So about half of this round's gain is the table and half is the cap.
+
+## 5. The turn pair — the gate (item 4)
+
+`docs/research/turn-pair-2026-11-10`, set B (the pair on the face, Compress held, leg drive off, 8 runs), exactly as
+ruling 29r reads it. `results/turnpair-32m.jsonl` [M]:
+
+| | Top turns begun | One pair | Two pairs | Fell | When | Where the falls are |
+|---|---|---|---|---|---|---|
+| **Old rider** | **8 of 8** | **7 of 8** | **6 of 8** | 2 of 8 | 5.63–11.53 s | — |
+| new, 3.2L (cap 5, old table) | 0 of 8 | 0 | 0 | 8 | 0.72–1.15 s | 2 up, 6 down |
+| **new, 3.2m, cap 5** | 0 of 8 | 0 | 0 | 8 | **0.68–1.98 s** | 2 up, **6 down** |
+| **new, 3.2m, cap 10** | 0 of 8 | 0 | 0 | 8 | **1.52–3.78 s** | 4 **wait**, 4 up, **0 down** |
+| **new, 3.2m, cap 12 (kept)** | 0 of 8 | 0 | 0 | 8 | **1.13–3.72 s** | 2 **wait**, 6 up, **0 down** |
+| new, 3.2m, cap 15 | 0 of 8 | 0 | 0 | 8 | 0.85–3.70 s | 2 wait, 4 up, 2 down |
+| new, 3.2m, cap 20 | 0 of 8 | 0 | 0 | 8 | 0.77–3.47 s | 2 wait, 6 up, 2 down |
+| new, 3.2m, cap 25 | 0 of 8 | 0 | 0 | 8 | 0.57–0.88 s | **8 down** |
+
+**It is still 0 of 8, and I am not going to dress that up.** No run links a bottom turn to a top turn.
+
+**But it moved, and it moved in the direction the owner described.** At the kept cap no fall happens in the bottom turn
+at all — against 6 of 8 at the old cap — the earliest fall doubles from 0.68 s to 1.13 s, the latest reaches 3.72 s,
+and two of the eight runs now finish the bottom turn, climb, and stand there waiting for the wave. The step that fails
+has moved from *"he goes down in the bottom turn"* to *"he gets up the face and loses it in the climb or while
+waiting"*. §3.2 names what is most likely under that: the 0.33–0.74 Hz board mode the rider has no sense of.
+
+## 6. The old bars, as information only (revised orders: no gating)
+
+`results/bars-new-32m.jsonl` against `bars-new-32L.jsonl`, the same 30 rows, **reported and not tuned to**.
+**28 of the 30 are identical row for row.** The two that moved are the held carves — the only rows a rail plant and a
+rail cap can touch [M]:
+
+| | 3.2L | 3.2m | |
+|---|---|---|---|
+| **Held carve, tall** | 1.37 s, bank to 70°, 6.04 m/s at the end | **2.13 s**, bank to 49°, 1.82 m/s | longer, and it no longer banks to 70° |
+| **Held carve, Compress** | 2.23 s, bank to 43°, 5.76 m/s | **2.17 s**, bank to 22°, 6.80 m/s | the same length, flatter, faster |
+| the other 28 rows (glide, rise, push, modes, chop) | — | **identical** | yes |
+
+The travel rows (the speed a rider settles at on a face, 29q's 27–42 km/h band) are **identical to 32j's**: 34.8 and
+35.1 km/h in band on a 12° face, out of band on 8, 10 and 14°. Straight running is untouched by this step, as the
+design intends.
+
+## 7. Seatbelts
+
+These are not bars; they protect what already works (ruling 29r item 3) [M]:
+
+| | Result |
+|---|---|
+| `tsc` clean (app and tests) | **yes**, nothing reported |
+| The full suite | **pass: 361 passed, 37 skipped, 1 failed** - `src/wave/SurfZoneRunner.test.ts`, 4 tests. **The same 4 fail on pristine main**, verified by stashing this step's three `src/` files and re-running that file (4 failed / 39 passed, the same names). They are PR #204's known stale 4, and that file is outside the merge suite |
+| The default game byte-identical (`scripts/m1-cpu-bench.ts`, medium, 3,600 steps, fresh spin-ups) | **yes, all four hashes the same as 3.2L's** from fresh spin-ups: Canyon B snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`; default Canyon snapshots `ea3d57a4d49f4b48`, state `a1a2555739210f96`. `SCHEDULE_RAIL_CAP` and `RAIL_PLANT` are only ever read through `this.predictive`, which is `newRider && …` (`AttachedRider.ts` 1925), so the default rider cannot see them |
+| No unpaired rule forces or hidden motors | **yes, by construction**: this step applies no force at all. Every new number is a measured water derivative or a scheduling constant |
+| The shipped ten-state controller unchanged by the size-agnostic refactor | **yes**: all 30 of 3.2f's `railmodel` rows reproduce byte for byte, gains included |
+
+The fps trace is not in this round's seatbelt list (ruling 29t), and nothing here touches the render or the default
+rider's code path: `SCHEDULE_RAIL_CAP` and `RAIL_PLANT` are read only by the new rider's predictive balance, and the
+byte check covers the default sea and rider.
+
+## 7b. A seatbelt I ran wrong, and what it cost
+
+The first suite run reported **47 failed files and 68 failed tests**, and it was my own measurement at fault, not the
+change. The worktree was a sparse checkout (`docs/`, `src/`, `scripts/`, `*.json`, `*.ts`, `*.js`) with **no `public/`
+pattern**, so `public/assets/surfers/surfers.json` was checked out and the four `surfer*.glb` files were not. Every
+failing file read an asset off disk - `src/scene/rig/` (glbSkeleton 5 of 5, fallReflexes 14 of 14, deepTubePose 4 of 4,
+stanceArms, stanceGauge, stanceExtremities), `scripts/assets/surferAssets.test.ts`, the `src/wave/barrel/` library
+tests, `SurfZoneRunner*`, `sweptEverySpot`, `stanceFigure`, `cueMeasures`, `soundManifest` - and whole files failed in
+5 to 13 ms, which is a missing file and not a logic change. A further 26 files reported "(0 test)" for the same reason
+at collection.
+
+**The worktree recipe in the task is right for probes and wrong for a seatbelt**, and I used it for a seatbelt without
+checking. `git sparse-checkout disable` fixed it. The lesson worth keeping: a suite run in an incomplete tree could not
+have caught a real break in those areas either, so a green tick from it would have been worth nothing.
+
+## 8. What I am not sure about
+
+- **The cap is still a hand-set number off a rough landscape.** The plateau 9–13 is four cells wide and its members
+  differ by half a second in the turn pair. 12 is the plateau's middle, not a derived value. It will have to be
+  re-checked when two-way coupling lands, because digging the rail changes that plant.
+- **Three cells of the table do not settle and cannot** (§2.2). They ripple at 2–4 % on a neutrally damped weave. I
+  kept their mean over whole cycles and said so; a stricter reading of the standing rule would drop those three points
+  and interpolate, and I did not do that because dropping 7 m/s at 10° would remove the ride speed's own first rail.
+- **The fourteen-state model is not in the game.** The capability is in `src/`, the analysis is done, and the shipped
+  controller is still the ten-state one. Wiring it in needs a frozen table in `src/` and a sense of heave or pitch;
+  without the sense it is worse than what ships (§3.2), so I did not wire it.
+- **The fourteen-state eigensolver does not converge at some 5 and 9 m/s points.** Those cells say so. The 7 m/s
+  column, which is the ride speed and where ruling 29s's claim lived, converged at every rail.
+- **3.2g's 9 m/s pitch row carries about 10 % of uncertainty** (§2.3). I did not chase it; the pitch loop is held
+  (ruling 29l).
+- **The turn pair is still 0 of 8.** Nothing here claims the rider can get round the wave. The step that fails has
+  moved out of the bottom turn, which is a different failure, not a solved one.
+
+## 9. What the owner would feel, and what to try
+
+The ride address is unchanged in form; the cap and the table are not switches, they are the new rider's own:
+`?rider=new` as before.
+
+1. **Does the stick come round now?** Slam it in Compress and in standing. Both should turn through about a quarter
+   circle in about two seconds. Compress never did that before.
+2. **Does he still go down in the bottom turn?** He should not — every measured fall has moved past it. What should
+   happen instead is that he gets up the face and loses it in the climb, or while sitting there waiting for the wave.
+   If that is what it feels like, the measurement and the ride agree and the next job is §3.2's missing sense.
+3. **Does the turn feel too loose at a bigger rail?** The cap is one constant and the whole grid is measured, so it can
+   move either way on a word.
+
+
+## 11. The owner's three points from riding 3.2L, and his own acceptance test
+
+Written after the coordinator's messages of 2026-11-13. The owner rode 3.2L and said the body and arms read well, the
+turning is still not fast enough, the body adjusts to the opposite side during the turn, and **the balance is too soft
+when lowered**; and separately that he is stable at low speed and loses the turn as the speed rises, that **a
+compressed turn to take the wave on the side must never fall**, and that falls belong at high speed or in a hard
+reversal and nowhere else.
+
+### 11.1 His acceptance test, built and calibrated (`hold.probe.ts`)
+
+The movement: on the Canyon-matched wave face (`FaceWater`, 1.4 m, 2.6 m deep, 16°, running at 5.7 m/s - the turn-pair
+probe's wave), placed in trim 0.75 face lengths ahead of the crest heading 45° off the fall line at the wave's pace
+plus 0, 1.5 or 3 m/s, Compress or tall, stick 0.5 or 1. Bring the board round until it is **85° off the fall line** -
+the wave on the side - then centre the stick and hold.
+
+**The first version of this test was wrong and I am recording that rather than quietly replacing it.** I built it on
+`Slope`, flat water. With the stick centred a plane gives nothing to hold a line: the board carries on turning until it
+points up the slope, slows and drops the rider. **That version failed the old rider 4 of 20** - the rider the owner
+calls closer to reality - so it was measuring the plane, not the movement.
+
+On the face it calibrates, and the result is stark [M]:
+
+| | Reaches the wave on the side | When | Rail used | Heading actually turned |
+|---|---|---|---|---|
+| **Old rider** | **12 of 12** | 2.2–4.0 s | **41–48°** | **56–92°** |
+| **New rider (3.2m, cap 12, lean 1.4)** | **0 of 12** | — | 24–66° | **1.9–2.7°** (one run 28.6°) |
+
+The new rider puts the board on its rail and **the board does not turn**. Neither rider survives the extra 5 s hold
+afterwards, which I now think nothing can: `FaceWater` is uniform along the crest with no pocket, so with the stick
+centred there is no line to hold (the turn-pair README says the same). **So the gate is "reaches the wave on the side
+without falling", which the old rider passes 12 of 12 and the new rider fails 12 of 12.**
+
+### 11.2 Point 1 refuted: it is not the lean rate, and it is not the cap
+
+The coordinator asked me to re-derive `LEAN_IN_RATE`'s bound with the body thrown, the legs driving and the rail's own
+lift included, on the reading that 1.4 rad/s is a lower bound. **I measured before deriving, and the measurement says
+the rate is not the limit** (`results/hold-grid-32m.jsonl`) [M]:
+
+| lean \ cap | 5° | 8° | 12° | 20° | 30° |
+|---|---|---|---|---|---|
+| 1.4 rad/s | 0/12 | 0/12 | 0/12 | 0/12 | 0/12 |
+| 2.5 | 0/12 | 0/12 | 0/12 | 0/12 | 0/12 |
+| 3.5 | 0/12 | 0/12 | 0/12 | 0/12 | 0/12 |
+| **5 (the old rider's own)** | 0/12 | **1/12** | 0/12 | 0/12 | 0/12 |
+
+**Flat zero across twenty cells**, and the median heading reached barely moves: 47.3° at lean 1.4 to 50.8° at lean 5,
+against the 85° the test asks and the 112–137° the old rider gets. A capture-point cost (§11.4) at 0.05, 0.08, 0.13 and
+0.2 m is also 0 of 12 at every value. **So re-deriving the bound would have raised a number that is not the limit**,
+which is the trap the last six rounds fell into, and I did not build it.
+
+### 11.3 What the limit is: he leans past the rail's bite, not too slowly
+
+The old rider reaches **41–48° of rail and turns 56–92°**. The new rider reaches **60–66° and turns 2°**. `RAIL_BITE` is
+**48°** - and the note on it says the rail is read from **the water's surface under the board**, not the world's level,
+because "the rail bogs against the water it cuts"; it records that on a 30° face a board's downhill rail was past the
+bite 18° into the water while its uphill rail bit on to 78°.
+
+That is the whole asymmetry. **On flat water the same new rider with the same stick turns 90°** (§4, cap 12: 1.73 s
+standing, 2.02 s Compress). On a 16° face the same balance drives the downhill rail past the 48° bite - a face puts the
+rail about its own slope closer to the bite - the board stops carving, and he falls over sideways having changed heading
+by two degrees.
+
+**So the owner's "the turning is still not fast enough" is the symptom of leaning too far, not too slowly.** Raising the
+lean rate gets him past the bite sooner; raising the cap changes which gains he holds while he does it. Neither can
+help, and the measurement says neither does. [M, I]
+
+**What would change it, named and not built:** the balance needs a limit on the rail it may *set*, referenced to the
+water's surface under the board at `RAIL_BITE`, which is a different lever from `SCHEDULE_RAIL_CAP` (that caps which
+gains are looked up, not the rail the rider asks for). The old rider has such a limit in effect and stops at 41–48°.
+This is the next thing to try and it is one bound, not a tune.
+
+### 11.4 Point 3: the schedule designs per stance; the weights are in the wrong units
+
+`stance.probe.ts`, `results/stance-32m.jsonl` [M, R].
+
+**The schedule does design per stance.** `SCHEDULE_DEPTHS = [0, 0.195, 0.3]`, and Compress at 0.3 is a corner, so it
+gets a design made on its own plant - not an interpolated shape. **That branch of the coordinator's question is
+refuted.**
+
+**The weights are the problem, and specifically their units.** There is no capture-point cost in what ships
+(`captureScale` is absent from `DEFAULT_WEIGHTS`; 3.2j built it and did not keep it). The only thing standing for
+"about to fall" is `stateScale[2] = 0.05 rad` - **a 2.9° bank limit, the same for all three stances** - while the lean
+at which the capture point actually leaves the feet is:
+
+| Stance | Height over the feet | ω₀ = √(g/L) | 0.1 s delay as a share of 1/ω₀ | Lean at the feet's edge | Least damping, rail 0, 5 / 7 / 9 m/s |
+|---|---|---|---|---|---|
+| tall | 0.84 m | 3.42 | 0.342 | **8.9°** | 0.579 / 0.681 / 0.675 |
+| crouch | 0.65 | 3.89 | 0.388 | **11.5°** | 0.499 / 0.683 / 0.691 |
+| **Compress** | 0.55 | 4.22 | **0.422** | **13.5°** | **0.452 / 0.598 / 0.660** |
+
+The physics already says a low stance has 53 % more room before the capture point leaves the feet - the owner is right
+that crouching should be *more* stable - and the cost tells the designer all three have the same 2.9°. Compress is also
+the least damped stance at rail 0 at every speed, and the fixed delay is 42 % of its own time constant against 34 % for
+tall. The LQR answers by giving Compress **less gain and less damping** than tall (ankle-bank −1.067 against −0.972,
+ankle-bank-rate −0.089 against −0.111 at 7 m/s), where the coordinator's reading - less gain and *more* damping - is the
+right shape.
+
+**But a capture-point cost does not rescue the acceptance test** (§11.2): 0 of 12 at 0.05, 0.08, 0.13 and 0.2 m. So the
+units are wrong and worth fixing, and they are not what is dropping him on a face. §11.3 is.
+
+### 11.5 Point 2: the counter-steer is not in the reference, and most of it is a 5 m/s saturation
+
+Two separate things, separated by measurement [M]:
+
+- **The reference never asks for the opposite rail.** `steadyTurn`'s board roll has the same sign as the lean asked at
+  all 18 points measured (a 30° lean asks +19° to +39° of rail). So `turn: 'tan'` is not the cause.
+- **The board does go 0.9–2.1° onto the other rail for about 0.13 s**, in the ideal loop with no delay and exact state,
+  so it is the design's own. But it is also **Newton's third law at the ankle**: the ankle applies equal and opposite
+  torques to the board and the body, so a jointed rider banking one way necessarily rolls the board the other until the
+  water answers. A surfer does lean the body and let the board follow; this is not a bicycle's handlebar.
+- **What the owner can actually see is the ankle joint, and that is a 5 m/s saturation.** With the schedule read near
+  rail 0 the reference demands an ankle rest of **−20.5° / −30.8° / −46.2°** for leans of 20° / 30° / 45°, against the
+  ankle's whole range of **±14.3°** (`ANKLE_REST_RANGE` 0.25 rad) - two to three times its range, in the wrong
+  direction. It saturates, and the joint swings +4 to +6° then settles hard the other way. At 7 and 9 m/s the same
+  reference is +1 to +8°, inside range. **Reading the schedule at the rail removes it: at cap 12 the demand is −1.4° to
+  −4.0° at every speed and stance.**
+
+**And that is why the three 5 m/s cells matter the way the owner says and not the way they were argued before.** The
+5 m/s falls are not a settle artefact: at 5 m/s the capped schedule asks the ankle for an impossible angle. The cap
+raise is one fix for the 5 m/s falls, for the visible counter-adjustment, and for part of the slow start.
+
+### 11.6 The fall shape the owner asked for
+
+He wants the fall rate to **rise** with speed. On the acceptance test the new rider fails at every speed, which is flat
+and therefore wrong in shape as well as in level - as the coordinator said. I have not fixed the shape and I am not
+claiming the cap raise does. What is on the record is that the mechanism in §11.3 is **worse at low speed on a face**,
+because a slower board needs more rail for the same turn and therefore reaches the bite sooner, which is the right
+direction for explaining why he is dropped where he should be most solid. That is reasoning, not a measurement, and it
+wants a probe of its own.
+
+## 12. Files (3.2m)
+
+- `src/physics/predictiveBalance.ts`: `RAIL_PLANT` replaced with the settled table and a 15° row (`RAIL_ANGLES` now
+  0, 10, 15, 20, 30, 40), with the account of why 3.2f's numbers were three to nine times too large; `continuousPlant`,
+  `design`, `closedLoop`, `senseMatrix` and `captureRow` take their sizes from the matrices instead of the module's
+  constants, so a fourteen-state plant can be designed on without touching the ten-state one; `plantAt` passes a heave
+  block through; `DesignWeights` gains `heaveScale` and `heaveNoise`.
+- `src/physics/rollModel.ts`: `HeavePlant`, `YawPlant.heave`, `heaveRows`, `twistStateCount`, and the heave and pitch
+  columns in `yawRows`' water rows. All optional: without the block nothing moves.
+- `src/physics/AttachedRider.ts`: `SCHEDULE_RAIL_CAP` 5 → 12, with the account of why 5 was 5 and what withdrew it.
+- `docs/research/new-rider/rail-dig/settled.probe.ts` (new): the rail sweep with every hold shown settled, as a ladder,
+  free and captive, plus the heave and pitch derivatives the model needs.
+- `docs/research/new-rider/3.2/heave.probe.ts` (new): the fourteen-state model against the ten-state one at every rail,
+  and the conditioning of the quasi-static elimination.
+- `docs/research/new-rider/3.2/stance.probe.ts` (new): what the schedule does per stance, and where the counter-steer
+  comes from (the reference against the LQR's own transient).
+- `docs/research/new-rider/3.2/hold.probe.ts` (new): **the owner's acceptance test** - a compressed turn to take the
+  wave on the side, on the Canyon-matched face, with the old rider's score beside it as the test's calibration.
+- `results/`: `stance-32m.jsonl`, `hold-32m.jsonl`, `hold-old-32m.jsonl`, `hold-grid-32m.jsonl`,
+  `hold-capture-32m.jsonl`, `../rail-dig/results/settled-long.jsonl` (the table, ten-second holds) and `settled.jsonl` (the
+  four-second sweep, both sets, and the captive heave and pitch rows), `predict-railmodel-32m.jsonl`, `heave-32m.jsonl`,
+  `turn-new-32m.jsonl` (the kept cell), `turn-capgrid-32m.jsonl` (the whole cap grid), `turnpair-32m.jsonl` (the gate,
+  every cap, with the old rider's row), `bars-new-32m.jsonl` (all 30 guard rows), `suite-32m.txt`,
+  `canyon-byte-32m.txt`.

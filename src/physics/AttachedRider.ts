@@ -535,34 +535,35 @@ const TWIST_STOP_DAMPING = 50;
  */
 const LEAN_IN_RATE = 1.4;
 /**
- * How far onto its rail the balance's schedule is trusted, degrees (step 3.2f). The plant was measured at rails of 0 to
- * 40° (`predictiveBalance.ts` RAIL_PLANT), and a controller designed on it is sound to 20°: beyond that the measured
- * plant's own sideslip mode diverges (at 7 m/s and 40° the side force per degree of sideslip has changed sign, so a
- * slide feeds itself, and no gains hold it: the lab's spin-out). Past this cap the schedule holds its design there and
- * the reference carries the rest. The bars were measured over caps of 0, 5, 10, 12, 15, 20, 30 and 40°
- * (docs/research/new-rider/3.2 Part 6): the held carves are longest at 5° (2.83 s and 2.98 s), and the turn pair gets
- * furthest at 10° (its falls move out of the bottom turn), where the Compress carve sits exactly on its bar. So the
- * measured big-rail plant is in the model and read only to here; that is a finding, not a preference.
+ * How far onto its rail the balance's schedule is trusted, degrees. The plant is measured at rails of 0 to 40°
+ * (`predictiveBalance.ts` RAIL_PLANT); past this cap the schedule holds its design there and the reference carries the
+ * rest.
  *
- * **Step 3.2L swept it against LEAN_IN_RATE as a grid and kept 5°, and the reason is measured rather than structural**
- * (`3.2/README.md`
- * Part 11 §3): at every lean rate that turns, **a cap over 8° loses the standing stance** — it falls on a full stick in
- * 0.3-0.4 s, against 1.4 s at this cap — because past about 15° of rail the measured plant changes sign (3.2f), so a
- * schedule read further is holding the board with gains for a plant that no longer exists. A cap of 12° does give
- * Compress the old rider's whole turn, 90° of direction change included, and it costs the standing stance altogether;
- * that trade is in the grid and it was refused.
+ * **It was 5°, and the reason it was 5° has been withdrawn** (ruling 29t, step 3.2m). 3.2f read the big-rail plant with
+ * each hold kept 0.6 s, which at a rail lands on the overshoot of the board's own heave, and concluded that past about
+ * 15° of rail the side force per sideslip has changed sign so hard that *no controller* can hold a carve. Re-measured
+ * with every hold held until it stops moving, the numbers are three to nine times smaller, and **a controller designed
+ * on the plant at the rail is positively damped at every rail to 40°, at every speed and stance** — 7 m/s at 40°, which
+ * 3.2f read as −1, is +0.49 (`3.2/results/predict-railmodel-32m.jsonl`). It also survives a frame of timing error, the
+ * only model gate, to 20° everywhere. So the structural argument was right all along: the controller should use the
+ * gains for the rail it is actually on.
  *
- * **The structural argument for raising it is right and it is not supported by the measurement** (ruling 29q asked for
- * structure over tuning, so this is worth stating plainly): the controller *should* use the gains for the rail it is
- * actually on, and 5° is far inside the 40° the plant was measured over. But raising it to 12° or 20° makes the
- * standing rider fall in 0.3–0.4 s on a full stick, and **the turn-pair probe reads 0 of 8 top turns begun at caps of
- * 5, 12 and 20 alike** — so the cap is not what is stopping the rider getting round the wave. 3.2f's own reading is
- * why: past about 15° of rail the plant's sideslip mode has changed sign, so gains designed there are designed on a
- * plant that **cannot be stabilised by any controller**. Reading the schedule further is only right where the plant is
- * stabilisable, and it is not. **This stays 5° until the plant past 15° is understood, and it is a hand-set number
- * that needs re-checking when two-way coupling lands** (digging the rail changes that plant).
+ * **12° is what the game measures** (`3.2/results/turn-capgrid-32m.jsonl`, the full-stick turn at 7.7 m/s both stances,
+ * and the turn pair at every cap). On the corrected plant:
+ * - **both stances come round 90° for the first time**: standing 1.73 s keeping 0.95 of the speed, Compress 2.02 s
+ *   keeping 0.88, against the old rider's 1.50 s / 0.94 and 1.67 s / 1.32. At the old cap of 5° Compress never came
+ *   round at all;
+ * - the held full stick survives **2.13 s standing and 2.17 s in Compress**, against 1.37 and 2.23 at the old cap on
+ *   the old table — so 3.2L's reason for refusing 12° ("it costs the standing stance altogether", which was a fall in
+ *   0.3–0.4 s) **no longer happens on this plant**;
+ * - **caps 9 to 13 are a plateau in which no turn-pair fall happens in the bottom turn at all**, and 12 is the middle
+ *   of it rather than its single best cell. Below 9 the falls come back into the bottom turn; at 20 the board spins out
+ *   (peak yaw 280–318°/s); at 25 and above the turn goes slow and the rider falls sooner.
+ *
+ * It stays a hand-set number and it will need re-checking when two-way coupling lands (digging the rail changes that
+ * plant). The whole grid is in the results file, so it can be moved on evidence.
  */
-const SCHEDULE_RAIL_CAP = 5;
+const SCHEDULE_RAIL_CAP = 12;
 /**
  * The compressed turn's assist (the movement-flow spec's Q4 and Q16, a
  * gameplay rule, not physics). Compress is the sharp turn's stance, and a real
