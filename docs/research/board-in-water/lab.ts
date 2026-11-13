@@ -100,8 +100,11 @@ export function place(water: SurfWater, z: number, heading: number, speed: numbe
   const board = new BoardBody(options);
   board.place(new Vector3(x, s.surfaceY, z).addScaledVector(normal, board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)), forward.clone().multiplyScalar(speed).add(new Vector3(s.flowX, s.flowY, s.flowZ)));
   if (phase === 'none' || phase === undefined) return { board };
-  // LEG_POWER=cap runs the probes with ruling 27's A-lite on (`legPower: 'cap'`, a-lite/README.md).
-  const rider = new AttachedRider(board.shape, { phase, ...(process.env.LEG_POWER === 'cap' ? { legPower: 'cap' as const } : {}) });
+  // LEG_POWER=cap runs the probes with ruling 27's A-lite on (`legPower: 'cap'`, a-lite/README.md); RIDER=new with the
+  // new surfer (`rider: 'new'`, docs/research/new-rider/3.1).
+  const rider = new AttachedRider(board.shape, {
+    phase, ...(process.env.LEG_POWER === 'cap' ? { legPower: 'cap' as const } : {}), ...(process.env.RIDER === 'new' ? { rider: 'new' as const } : {}),
+  });
   board.attach(rider);
   return { board, rider };
 }
