@@ -180,6 +180,8 @@ export function place(water: SurfWater, z: number, heading: number, speed: numbe
     ...(process.env.YAW_SCALE ? { yawInertiaScale: Number(process.env.YAW_SCALE) } : {}),
     // GAINS=bank,rate,forward: the new surfer's roll balance gains (step 3.2b's sweeps).
     ...(process.env.GAINS ? { humanGains: (([bank, bankRate, forward]) => ({ bank, bankRate, forward }))(process.env.GAINS.split(',').map(Number)) } : {}),
+    // BALANCE={...}: the new surfer's balance by prediction, the probes' rounds (step 3.2e; `balance` in AttachedRider).
+    ...(process.env.BALANCE ? { balance: JSON.parse(process.env.BALANCE) } : {}),
   });
   board.attach(rider);
   return { board, rider };

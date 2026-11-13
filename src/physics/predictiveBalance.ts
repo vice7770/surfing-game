@@ -193,7 +193,30 @@ export const STANCE_TABLE = [
 ] as const;
 export const TWIST_STIFFNESS = 20;
 export const TWIST_DAMPING = 3;
+/** 3.2d's guess at the board's roll inertia with the water's, kg·m² (the gate's range 0.03–0.3). Step 3.2e uses the game's own (BOARD_INERTIA). */
 export const BOARD_ROLL_INERTIA = 0.1;
+/**
+ * The board's roll and yaw inertia as its own solve meets them, kg·m² about its centre of mass: its own (0.026 and
+ * 0.449) and the water's implicit share (the hull's added mass, mostly), by speed (step 3.2e, docs/research/new-rider/3.2
+ * `e32.probe.ts` PART=inertia: the new rider standing tall, a steady glide on the terminal plane, 16 substeps; crouch
+ * and Compress within 0.15 above 4.5 m/s). The internal model uses the game's own values (ruling 29i).
+ */
+export const BOARD_INERTIA: Record<string, [number, number]> = {
+  '4': [1.396, 0.697], '4.5': [1.218, 0.589], '5': [1.071, 0.559], '5.5': [1.049, 0.559], '6': [1.055, 0.56], '6.5': [1.056, 0.56],
+  '7': [0.933, 0.552], '7.5': [0.991, 0.561], '8': [0.737, 0.566], '8.5': [0.756, 0.559], '9': [0.766, 0.562], '9.5': [0.755, 0.569],
+  '10': [0.728, 0.576], '10.5': [0.638, 0.582], '11': [0.596, 0.586], '11.5': [0.579, 0.591], '12': [0.552, 0.596],
+};
+/** The board's roll and yaw inertia (BOARD_INERTIA) at a speed, linear between the table's speeds, held at its ends. */
+export function boardInertiaAt(speed: number): { roll: number; yaw: number } {
+  const speeds = Object.keys(BOARD_INERTIA).map(Number).sort((x, y) => x - y);
+  const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
+  let i = 0;
+  while (i < speeds.length - 2 && v > speeds[i + 1]) i += 1;
+  const lo = BOARD_INERTIA[String(speeds[i])];
+  const hi = BOARD_INERTIA[String(speeds[i + 1])];
+  const f = (v - speeds[i]) / (speeds[i + 1] - speeds[i]);
+  return { roll: lo[0] + f * (hi[0] - lo[0]), yaw: lo[1] + f * (hi[1] - lo[1]) };
+}
 
 export function stanceAt(depth: number): { height: number; lower: number; upper: number } {
   const d = Math.max(0, Math.min(STANCE_TABLE[2].depth, depth));
@@ -220,16 +243,20 @@ export function labAt(speed: number): LabPlant {
 const FEET_FORWARD_AT_7 = 150;
 const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
 
-/** 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives (the robustness gate). */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[] } = {}): { y: YawPlant; t: TwistPlant } {
+/**
+ * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
+ * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
+ */
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number } = {}): { y: YawPlant; t: TwistPlant } {
   const lab = labAt(speed);
   const s = opts.scales ?? new Array<number>(12).fill(1);
   const scaled = { roll: lab.roll.map((x, k) => x * s[k]), slip: lab.slip.map((x, k) => x * s[3 + k]), yaw: lab.yaw.map((x, k) => x * s[6 + k]), rate: lab.rate.map((x, k) => x * s[9 + k]) };
   const st = stanceAt(depth);
+  const board = boardInertiaAt(speed);
   const y: YawPlant = {
-    speed, boardRollInertia: opts.rollInertia ?? BOARD_ROLL_INERTIA, boardYawInertia: 0.449, riderYawInertia: st.lower, boardMass: 2.54,
+    speed, boardRollInertia: opts.rollInertia ?? board.roll, boardYawInertia: opts.yawInertia ?? board.yaw, riderYawInertia: st.lower, boardMass: 2.54,
     mass: 73, height: st.height, ankleStiffness: 800, ankleDamping: 80, ...boardDerivatives(scaled, speed, 0.236),
-    feetForward: (FEET_FORWARD_AT_7 * lab.drag) / DRAG_AT_7, feetStation: -0.244, deckHeight: 0.031,
+    feetForward: ((opts.feetScale ?? 1) * FEET_FORWARD_AT_7 * lab.drag) / DRAG_AT_7, feetStation: -0.244, deckHeight: 0.031,
   };
   return { y, t: { inertia: st.upper, stiffness: opts.twistStiffness ?? TWIST_STIFFNESS, damping: opts.twistDamping ?? TWIST_DAMPING } };
 }
@@ -380,4 +407,240 @@ export function leastDamping(values: readonly { re: number; im: number }[], step
     if (damping < w.damping) w = { damping, frequency: im / (2 * Math.PI), radius };
   }
   return w;
+}
+
+/**
+ * Step 3.2e (the advisor's ruling 29i): the controller above, run in the game (`AttachedRider` under `rider: 'new'`).
+ * The design's table (4–12 m/s every 0.5, the three stances) is made lazily, once per page, and read between its points
+ * as 3.2d's `between` read it: the four nearest designs blended. Each tick (CONTROL_STEP of simulated time, the commands
+ * held between) it does what `closedLoop` and 3.2d's time runs do:
+ * - the senses (this file's order and signs: the body's bank and its rate, the head's yaw rate, the twist and its rate,
+ *   the ankle's angle and rate) go into a line and come out `steps` ticks later;
+ * - the filter updates the estimate of the state as it was then (and the commands' bias);
+ * - the predictor runs the internal model over the delay with the commands already sent, to now;
+ * - the command is the reference's plus the LQR gains on the error, less the bias: u = u_ref − K (x̂ − x_ref) − b̂.
+ * The reference is the plant's own steady turn for the lean asked for (and the twist asked for), from the same blended
+ * model: (Φ − I) x + Γ u = 0 with the bank and the twist set, the rates nothing. The commands are clamped to what the
+ * body can give (the ankle's reach, the twist's torque), and the predictor is fed what was sent.
+ */
+export const SCHEDULE_SPEEDS = Array.from({ length: 17 }, (_, i) => 4 + 0.5 * i);
+export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
+const designCache = new Map<string, Design>();
+/** The design at a table point (cached for the page; the default weights unless given). */
+export function scheduledDesign(speed: number, depth: number, weights?: DesignWeights): Design {
+  const key = `${speed}|${depth}|${weights ? JSON.stringify(weights) : ''}`;
+  let d = designCache.get(key);
+  if (!d) {
+    const { y, t } = plantAt(speed, depth);
+    d = design(y, t, weights ?? DEFAULT_WEIGHTS);
+    designCache.set(key, d);
+  }
+  return d;
+}
+
+/** Solves the small dense system a x = b in place (Gaussian elimination with partial pivoting); returns x. */
+function solveSmall(a: number[][], b: number[]): number[] {
+  const n = b.length;
+  for (let c = 0; c < n; c += 1) {
+    let p = c;
+    for (let r = c + 1; r < n; r += 1) if (Math.abs(a[r][c]) > Math.abs(a[p][c])) p = r;
+    if (p !== c) { const t = a[p]; a[p] = a[c]; a[c] = t; const u = b[p]; b[p] = b[c]; b[c] = u; }
+    const piv = a[c][c];
+    if (Math.abs(piv) < 1e-14) continue;
+    for (let r = c + 1; r < n; r += 1) {
+      const f = a[r][c] / piv;
+      if (f === 0) continue;
+      for (let k = c; k < n; k += 1) a[r][k] -= f * a[c][k];
+      b[r] -= f * b[c];
+    }
+  }
+  const x = new Array<number>(n).fill(0);
+  for (let r = n - 1; r >= 0; r -= 1) {
+    let s = b[r];
+    for (let k = r + 1; k < n; k += 1) s -= a[r][k] * x[k];
+    x[r] = Math.abs(a[r][r]) < 1e-14 ? 0 : s / a[r][r];
+  }
+  return x;
+}
+
+/**
+ * The steady state of a discrete model (Φ, Γ) with the bank (x[2]) and the twist (x[6]) set and the rates φ̇, θ̇
+ * nothing: (Φ − I) x + Γ u = 0 solved for the rest of x and u, by least squares (the ten rows are consistent).
+ */
+export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number): { x: number[]; u: number[] } {
+  const free = [0, 4, 5, 7, 8, 9];
+  const cols = free.length + N_COMMAND;
+  const m = zeros(N_STATE, cols);
+  const rhs = new Array<number>(N_STATE).fill(0);
+  for (let i = 0; i < N_STATE; i += 1) {
+    free.forEach((j, c) => { m[i][c] = phi[i][j] - (i === j ? 1 : 0); });
+    for (let q = 0; q < N_COMMAND; q += 1) m[i][free.length + q] = gamma[i][q];
+    rhs[i] = -((phi[i][2] - (i === 2 ? 1 : 0)) * bank + (phi[i][6] - (i === 6 ? 1 : 0)) * twist);
+  }
+  const ata = zeros(cols, cols);
+  const atb = new Array<number>(cols).fill(0);
+  for (let a = 0; a < cols; a += 1) {
+    for (let b = 0; b < cols; b += 1) { let s = 0; for (let i = 0; i < N_STATE; i += 1) s += m[i][a] * m[i][b]; ata[a][b] = s; }
+    let s = 0; for (let i = 0; i < N_STATE; i += 1) s += m[i][a] * rhs[i]; atb[a] = s;
+  }
+  const z = solveSmall(ata, atb);
+  const x = new Array<number>(N_STATE).fill(0);
+  free.forEach((j, c) => { x[j] = z[c]; });
+  x[2] = bank;
+  x[6] = twist;
+  return { x, u: [z[free.length], z[free.length + 1]] };
+}
+
+/** The controller's limits on what it sends: the ankle's rest, rad (± or [least, most]), and the twist's torque, N·m (±). */
+export interface ControlLimits { ankle: number | readonly [number, number]; twist: number }
+
+export class PredictiveController {
+  private readonly weights?: DesignWeights;
+  /** The senses' line (newest last) and the commands sent (newest last), at most steps + 1 of each. */
+  private readonly senses: number[][] = [];
+  private readonly commands: number[][] = [];
+  /** The estimate of the state `steps` ticks ago (and the bias). */
+  private estimate: number[] = [];
+  /** The blended design (scratch, refilled each tick). */
+  private blendedDesign?: Design;
+  /** The latest prediction of the state now, the reference and the command sent (this file's signs; for probes). */
+  readonly predicted = new Array<number>(N_STATE).fill(0);
+  readonly reference = { x: new Array<number>(N_STATE).fill(0), u: [0, 0] };
+  readonly sent = [0, 0];
+  /** The command before the clamps (the hip takes what the ankle cannot). */
+  readonly raw = [0, 0];
+  /** The estimated bias on each command (rad, N·m). */
+  readonly bias = [0, 0];
+  /** Ticks run since the reset. */
+  ticks = 0;
+
+  /** The reference's steady turn: the linear model's for the lean asked ('linear', ruling 29i), or the turn that balances it ('tan'; probes only). */
+  private readonly turn: 'linear' | 'tan';
+
+  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'linear') {
+    this.weights = weights;
+    this.turn = turn;
+  }
+
+  reset(): void {
+    this.senses.length = 0;
+    this.commands.length = 0;
+    this.estimate = [];
+    this.ticks = 0;
+    this.sent[0] = 0; this.sent[1] = 0;
+    this.raw[0] = 0; this.raw[1] = 0;
+    this.bias[0] = 0; this.bias[1] = 0;
+  }
+
+  /** The four nearest designs blended at a speed and depth (clamped to the table). */
+  private blend(speed: number, depth: number): Design {
+    const v = Math.max(SCHEDULE_SPEEDS[0], Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 1], speed));
+    const v0 = Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 2], Math.floor(v * 2) / 2);
+    const fv = (v - v0) / 0.5;
+    const dp = Math.max(0, Math.min(SCHEDULE_DEPTHS[2], depth));
+    const i0 = dp <= SCHEDULE_DEPTHS[1] ? SCHEDULE_DEPTHS[0] : SCHEDULE_DEPTHS[1];
+    const i1 = dp <= SCHEDULE_DEPTHS[1] ? SCHEDULE_DEPTHS[1] : SCHEDULE_DEPTHS[2];
+    const fd = (dp - i0) / (i1 - i0);
+    const ds = [scheduledDesign(v0, i0, this.weights), scheduledDesign(v0 + 0.5, i0, this.weights), scheduledDesign(v0, i1, this.weights), scheduledDesign(v0 + 0.5, i1, this.weights)];
+    const ws = [(1 - fv) * (1 - fd), fv * (1 - fd), (1 - fv) * fd, fv * fd];
+    const first = ds[0];
+    let out = this.blendedDesign;
+    if (!out) {
+      const copy = (m: Mat) => m.map((row) => row.slice());
+      out = { ...first, phi: copy(first.phi), gamma: copy(first.gamma), k: copy(first.k), phiE: copy(first.phiE), gammaE: copy(first.gammaE), l: copy(first.l), phiN: copy(first.phiN), pred: first.pred.map(copy) };
+      this.blendedDesign = out;
+    }
+    const mix = (target: Mat, get: (d: Design) => Mat) => {
+      for (let i = 0; i < target.length; i += 1) {
+        const row = target[i];
+        for (let j = 0; j < row.length; j += 1) row[j] = ws[0] * get(ds[0])[i][j] + ws[1] * get(ds[1])[i][j] + ws[2] * get(ds[2])[i][j] + ws[3] * get(ds[3])[i][j];
+      }
+    };
+    mix(out.phi, (d) => d.phi); mix(out.gamma, (d) => d.gamma); mix(out.k, (d) => d.k);
+    mix(out.phiE, (d) => d.phiE); mix(out.gammaE, (d) => d.gammaE); mix(out.l, (d) => d.l); mix(out.phiN, (d) => d.phiN);
+    for (let j = 0; j < out.pred.length; j += 1) mix(out.pred[j], (d) => d.pred[j]);
+    return out;
+  }
+
+  /**
+   * One tick: `sense` now (this file's order and signs), the board's speed through the water, m/s, the leg's depth, m,
+   * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
+   * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
+   */
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits): readonly number[] {
+    const d = this.blend(speed, depth);
+    const n = N_STATE;
+    const N = d.steps;
+    const ne = d.phiE.length;
+    if (this.estimate.length !== ne) this.estimate = new Array<number>(ne).fill(0);
+    this.senses.push(sense.slice());
+    if (this.senses.length > N + 1) this.senses.shift();
+    const e = this.estimate;
+    if (this.senses.length > N) {
+      const yk = this.senses[this.senses.length - 1 - N];
+      const old = this.commands.length > N ? this.commands[this.commands.length - 1 - N] : [0, 0];
+      const pred = new Array<number>(ne);
+      for (let i = 0; i < ne; i += 1) {
+        let s = d.gammaE[i][0] * old[0] + d.gammaE[i][1] * old[1];
+        const row = d.phiE[i];
+        for (let j = 0; j < ne; j += 1) s += row[j] * e[j];
+        pred[i] = s;
+      }
+      const innov = new Array<number>(N_SENSE);
+      for (let i = 0; i < N_SENSE; i += 1) {
+        let s = yk[i];
+        const row = d.cE[i];
+        for (let j = 0; j < ne; j += 1) s -= row[j] * pred[j];
+        innov[i] = s;
+      }
+      for (let i = 0; i < ne; i += 1) {
+        let s = pred[i];
+        const row = d.l[i];
+        for (let j = 0; j < N_SENSE; j += 1) s += row[j] * innov[j];
+        e[i] = s;
+      }
+    }
+    const b0 = d.bias ? e[n] : 0;
+    const b1 = d.bias ? e[n + 1] : 0;
+    const xh = this.predicted;
+    for (let i = 0; i < n; i += 1) {
+      let s = 0;
+      const row = d.phiN[i];
+      for (let j = 0; j < n; j += 1) s += row[j] * e[j];
+      xh[i] = s;
+    }
+    for (let jj = 0; jj < N; jj += 1) {
+      const back = N - jj;
+      const uc = this.commands.length >= back ? this.commands[this.commands.length - back] : [0, 0];
+      const p = d.pred[jj];
+      for (let i = 0; i < n; i += 1) xh[i] += p[i][0] * (uc[0] + b0) + p[i][1] * (uc[1] + b1);
+    }
+    let ref = steadyTurn(d.phi, d.gamma, bankAsked, twistAsked);
+    if (this.turn === 'tan' && Math.abs(bankAsked) > 1e-6) {
+      // The turn that balances the lean asked (the linear model's bank is the lean's tangent in the body's balance), its
+      // angles (the board's roll, the bank, the ankle's rest) brought back to the lean asked.
+      const t = steadyTurn(d.phi, d.gamma, Math.tan(bankAsked), twistAsked);
+      const f = bankAsked / Math.tan(bankAsked);
+      ref = { x: t.x.map((v, i) => (i === 0 || i === 2 || i === 8 ? v * f : v)), u: [t.u[0] * f, t.u[1]] };
+    }
+    for (let i = 0; i < n; i += 1) this.reference.x[i] = ref.x[i];
+    this.reference.u[0] = ref.u[0]; this.reference.u[1] = ref.u[1];
+    const u = [0, 0];
+    for (let q = 0; q < N_COMMAND; q += 1) {
+      let s = ref.u[q] - (q === 0 ? b0 : b1);
+      const row = d.k[q];
+      for (let j = 0; j < n; j += 1) s -= row[j] * (xh[j] - ref.x[j]);
+      u[q] = s;
+    }
+    this.raw[0] = u[0]; this.raw[1] = u[1];
+    const [least, most] = typeof limits.ankle === 'number' ? [-limits.ankle, limits.ankle] : limits.ankle;
+    u[0] = Math.max(least, Math.min(most, u[0]));
+    u[1] = Math.max(-limits.twist, Math.min(limits.twist, u[1]));
+    this.commands.push(u);
+    if (this.commands.length > N + 1) this.commands.shift();
+    this.sent[0] = u[0]; this.sent[1] = u[1];
+    this.bias[0] = b0; this.bias[1] = b1;
+    this.ticks += 1;
+    return this.sent;
+  }
 }
