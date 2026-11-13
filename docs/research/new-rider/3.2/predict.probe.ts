@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { eigenvalues } from '../../../../src/physics/rollModel';
 import {
-  CONTROL_STEP, DEFAULT_WEIGHTS, N_STATE, add, closedLoop, continuousPlant, design, discretise, leastDamping, mul, plantAt,
+  CONTROL_STEP, DEFAULT_WEIGHTS, N_STATE, add, captureRow, closedLoop, continuousPlant, design, discretise, leastDamping, mul, plantAt,
   type Design, type DesignWeights, type Mat,
 } from '../../../../src/physics/predictiveBalance';
 import { emit, r } from '../../board-in-water/lab';
@@ -253,6 +253,115 @@ it('step 3.2d: balance by prediction', () => {
       const opts = { ...(c.opts ?? {}), ...(c.set !== undefined ? { scales: RANDOM_SETS[c.set] } : {}) };
       const m = check(d, c.speed, c.depth, opts, c.delay ?? 0.1);
       emit({ part: 'time', ...c, modes: [r(m.damping, 3), r(m.frequency, 2)], kick: timeRun(d, c.speed, c.depth, opts, c.delay ?? 0.1, 'kick'), shove: timeRun(d, c.speed, c.depth, opts, c.delay ?? 0.1, 'shove') });
+    }
+  }
+  if (PARTS.includes('bound')) {
+    // Step 3.2j (ruling 29n): the model with the commands **bounded**, which no design before this step had. The ankle's
+    // rest is clipped at ANKLE_BOUND and the twist at TWIST_BOUND, the capture point across is read off the state
+    // (`captureRow`), and the disturbance is the chop's shape: a sinusoidal roll acceleration on the board at CHOP_HZ.
+    // For each design the probe bisects the largest amplitude it survives for SECONDS — the disturbance margin — and
+    // reports where the ankle's command first reaches its bound, in degrees of body bank.
+    const ANKLE_BOUND = 0.25;
+    const TWIST_BOUND = 100;
+    const HALF_ACROSS = 0.13;
+    // The game's own fall test, on the model: the capture point past the feet by more than the room the hip can catch
+    // (`AttachedRider.captureStep`'s `reach`, 0.28-0.32 m measured in the game's traces). The model had no fall test at
+    // all, which is why no design before 3.2j could discover the bound.
+    const FALL_XI = HALF_ACROSS + Number(process.env.REACH ?? 0.3);
+    const CHOP_HZ = Number(process.env.CHOP_HZ ?? 1.8);
+    const SECONDS = Number(process.env.BOUND_SECONDS ?? 4);
+    /** One saturated run under a sinusoidal roll acceleration of `amp` rad/s². Returns the fall time or the peaks. */
+    const run = (d: Design, speed: number, depth: number, amp: number, governor: boolean) => {
+      const { y, t } = plantAt(speed, depth);
+      const { a, b } = continuousPlant(y, t);
+      const row = captureRow(y);
+      const n = N_STATE;
+      const x = new Array<number>(n).fill(0);
+      const h = 1 / 1920;
+      const per = Math.round(CONTROL_STEP / h);
+      const senses: number[][] = [];
+      const commands: number[][] = [];
+      const ne = d.phiE.length;
+      let e = new Array<number>(ne).fill(0);
+      let u = [0, 0];
+      const trueSteps = Math.round(0.1 / CONTROL_STEP);
+      let peakXi = 0; let peakCmd = 0; let satFrames = 0; let frames = 0; let bankAtBound = Number.NaN;
+      const steps = Math.round(SECONDS / h);
+      for (let i = 0; i < steps; i += 1) {
+        if (i % per === 0) {
+          senses.push(d.c.map((cr) => cr.reduce((sum, v, j) => sum + v * x[j], 0)));
+          if (senses.length > trueSteps) {
+            const yk = senses[senses.length - 1 - trueSteps];
+            const old = commands.length > d.steps ? commands[commands.length - 1 - d.steps] : [0, 0];
+            const pred = d.phiE.map((cr, ii) => cr.reduce((sum, v, j) => sum + v * e[j], 0) + d.gammaE[ii][0] * old[0] + d.gammaE[ii][1] * old[1]);
+            const innov = yk.map((v, ii) => v - d.cE[ii].reduce((sum, c, j) => sum + c * pred[j], 0));
+            e = pred.map((v, ii) => v + d.l[ii].reduce((sum, l, j) => sum + l * innov[j], 0));
+          }
+          const bh = d.bias ? [e[n], e[n + 1]] : [0, 0];
+          const xh = d.phiN.map((cr) => cr.reduce((sum, v, j) => sum + v * e[j], 0));
+          for (let jj = 0; jj < d.steps; jj += 1) {
+            const back = d.steps - jj;
+            const uc = commands.length >= back ? commands[commands.length - back] : [0, 0];
+            for (let ii = 0; ii < n; ii += 1) xh[ii] += d.pred[jj][ii][0] * (uc[0] + bh[0]) + d.pred[jj][ii][1] * (uc[1] + bh[1]);
+          }
+          u = d.k.map((cr, q) => -cr.reduce((sum, v, j) => sum + v * xh[j], 0) - bh[q]);
+          // The bound-saturation law (the reference governor): while the PREDICTED capture point is outside the feet,
+          // the recoverable set of a bounded-input inverted pendulum is already left, so the only optimal command is
+          // everything the ankle has, toward the side it is going. No gain of its own.
+          if (governor) {
+            const xiHat = row.reduce((sum, v, j) => sum + v * xh[j], 0);
+            if (Math.abs(xiHat) > HALF_ACROSS) u[0] = Math.sign(xiHat) * ANKLE_BOUND;
+          }
+          u = [Math.max(-ANKLE_BOUND, Math.min(ANKLE_BOUND, u[0])), Math.max(-TWIST_BOUND, Math.min(TWIST_BOUND, u[1]))];
+          commands.push(u);
+          frames += 1;
+          peakCmd = Math.max(peakCmd, Math.abs(u[0]));
+          if (Math.abs(u[0]) >= ANKLE_BOUND - 1e-9) { satFrames += 1; if (Number.isNaN(bankAtBound)) bankAtBound = Math.abs(x[2]); }
+        }
+        const dx = a.map((cr, ii) => cr.reduce((sum, v, j) => sum + v * x[j], 0) + b[ii][0] * u[0] + b[ii][1] * u[1]);
+        dx[1] += amp * Math.sin(2 * Math.PI * CHOP_HZ * i * h);
+        for (let k = 0; k < n; k += 1) x[k] += h * dx[k];
+        const xi = row.reduce((sum, v, j) => sum + v * x[j], 0);
+        peakXi = Math.max(peakXi, Math.abs(xi));
+        if (!Number.isFinite(x[2]) || Math.abs(x[2]) > 0.7 || Math.abs(xi) > FALL_XI) return { fell: i * h, peakXi, peakCmd, satShare: satFrames / Math.max(1, frames), bankAtBound };
+      }
+      return { fell: Number.NaN, peakXi, peakCmd, satShare: satFrames / Math.max(1, frames), bankAtBound };
+    };
+    /** The largest sinusoidal roll acceleration the design survives, rad/s², by bisection over 0..AMP_MAX. */
+    const margin = (d: Design, speed: number, depth: number, governor: boolean) => {
+      let lo = 0; let hi = Number(process.env.AMP_MAX ?? 40);
+      if (Number.isNaN(run(d, speed, depth, hi, governor).fell)) return hi;
+      for (let k = 0; k < 11; k += 1) { const mid = (lo + hi) / 2; if (Number.isNaN(run(d, speed, depth, mid, governor).fell)) lo = mid; else hi = mid; }
+      return lo;
+    };
+    const BOUND = [ANKLE_BOUND, DEFAULT_WEIGHTS.commandScale[1]];
+    /** The bank and its rate left loose, so the capture point's own cost carries them instead of two separate limits. */
+    const loose = (scale: number) => { const q = [...DEFAULT_WEIGHTS.stateScale]; q[2] = 0.05 * scale; q[3] = 0.25 * scale; return q; };
+    const SETS: { name: string; w: DesignWeights; governor: boolean }[] = [
+      { name: 'base (3.2h)', w: DEFAULT_WEIGHTS, governor: false },
+      { name: 'ankle at its bound', w: { ...DEFAULT_WEIGHTS, commandScale: [ANKLE_BOUND, DEFAULT_WEIGHTS.commandScale[1]] }, governor: false },
+      { name: 'capture cost', w: { ...DEFAULT_WEIGHTS, captureScale: Number(process.env.CAPTURE_SCALE ?? 0.05) }, governor: false },
+      { name: 'both', w: { ...DEFAULT_WEIGHTS, commandScale: [ANKLE_BOUND, DEFAULT_WEIGHTS.commandScale[1]], captureScale: Number(process.env.CAPTURE_SCALE ?? 0.05) }, governor: false },
+      { name: 'base + governor', w: DEFAULT_WEIGHTS, governor: true },
+      { name: 'both + governor', w: { ...DEFAULT_WEIGHTS, commandScale: [ANKLE_BOUND, DEFAULT_WEIGHTS.commandScale[1]], captureScale: Number(process.env.CAPTURE_SCALE ?? 0.05) }, governor: true },
+      // The principled pair of Bryson scales: the largest acceptable capture point is the feet's edge, the largest
+      // acceptable ankle rest is its range, and the bank and its rate carry no separate limit of their own.
+      { name: 'capture 0.13 only', w: { ...DEFAULT_WEIGHTS, stateScale: loose(6), captureScale: 0.13 }, governor: false },
+      { name: 'capture 0.13 + bound', w: { ...DEFAULT_WEIGHTS, stateScale: loose(6), commandScale: BOUND, captureScale: 0.13 }, governor: false },
+      ...(process.env.CAPS ?? '0.13,0.065,0.03,0.013').split(',').map(Number).map((c) => ({ name: `capture ${c} + bound, loose x${process.env.LOOSE ?? 6}`, w: { ...DEFAULT_WEIGHTS, stateScale: loose(Number(process.env.LOOSE ?? 6)), commandScale: BOUND, captureScale: c }, governor: false })),
+    ];
+    for (const set of SETS) for (const depth of DEPTHS) for (const speed of SPEEDS) {
+      const { y, t } = plantAt(speed, depth);
+      const d = design(y, t, set.w);
+      const m = margin(d, speed, depth, set.governor);
+      const atM = run(d, speed, depth, m * 0.95, set.governor);
+      const gate = check(d, speed, depth);
+      emit({
+        part: 'bound', set: set.name, governor: set.governor, speed, stance: STANCE(depth),
+        marginRadS2: r(m, 2), ankleBankGain: r(-d.k[0][2], 3), ankleRateGain: r(-d.k[0][3], 3),
+        peakXiCm: r(atM.peakXi * 100, 1), peakAnkleDeg: r((atM.peakCmd * 180) / Math.PI, 2), satShare: r(atM.satShare, 3),
+        bankAtBoundDeg: r((atM.bankAtBound * 180) / Math.PI, 1), damping: r(gate.damping, 3),
+      });
     }
   }
   if (PARTS.includes('inertia')) {

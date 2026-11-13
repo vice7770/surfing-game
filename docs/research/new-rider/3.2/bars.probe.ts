@@ -61,11 +61,11 @@ function frame(rig: Rig, water: SurfWater, t: number) {
 }
 
 /** Placed at `speed` heading +z (down the face) on `water`, in `stance`, left SETTLE s: a steady glide. Returns the rig and the time. */
-function steady(water: SurfWater, speed: number, stance: Stance = 'tall'): { rig: Rig; t: number; fell: string } {
+function steady(water: SurfWater, speed: number, stance: Stance = 'tall', settle = SETTLE): { rig: Rig; t: number; fell: string } {
   const rig = place(water, 0, 0, speed, 'standing');
   hold(rig, stance);
   let t = 0;
-  for (let i = 0; i < Math.round(SETTLE / STEP); i += 1) {
+  for (let i = 0; i < Math.round(settle / STEP); i += 1) {
     t = (i + 1) * STEP;
     const s = frame(rig, water, t);
     if (s.fell) return { rig, t, fell: s.fell };
@@ -83,14 +83,23 @@ function pressureShare(rig: Rig): number {
 
 it('glides at 5, 7, 9 and 12 m/s, flat and on chop: hold 3 s from a steady glide', () => each(() => {
   if (!PARTS.includes('glide')) return;
+  // Step 3.2j (ruling 29n): the chop ramps in over CHOP_RAMP s of the settle, so the rider settles on the smooth face
+  // and then meets the chop. Before this, every 5 m/s fall was inside the 2.5 s settle — a rider still being placed.
+  // CHOP_RAMP=0 is the old behaviour (the chop on from the first frame), kept for the comparison.
+  // The chop's own settle: smooth for CHOP_QUIET s, ramping in to CHOP_RAMP s, then at full strength for the rest of
+  // CHOP_SETTLE, so the rider rides the full chop for CHOP_SETTLE − CHOP_RAMP s before the 3 s bar begins.
+  const quiet = Number(process.env.CHOP_QUIET ?? 1);
+  const ramp = Number(process.env.CHOP_RAMP ?? 2.5);
+  const chopSettle = Number(process.env.CHOP_SETTLE ?? 4);
+  const chopAt = (seed: number) => { const c = new Chop(seed); if (ramp > quiet) { c.rampFrom = quiet; c.rampTo = ramp; c.gain = 0; } return c; };
   const waters: { name: string; make: (v: number) => SurfWater }[] = [
     { name: 'plane', make: (v) => new Slope(terminalAngle(v)) },
-    ...[1, 2, 3].map((seed) => ({ name: `chop ${seed}`, make: (v: number) => new OnFace(terminalAngle(v), new Chop(seed)) })),
+    ...[1, 2, 3].map((seed) => ({ name: `chop ${seed}`, make: (v: number) => new OnFace(terminalAngle(v), chopAt(seed)) })),
   ];
   // STANCE=tall,crouch,compress (step 3.2h: the stance the glide is ridden in; the bar is tall).
   for (const stance of (process.env.STANCE ?? 'tall').split(',') as Stance[]) for (const w of waters) for (const v of [5, 7, 9, 12]) {
     const water = w.make(v);
-    const start = steady(water, v, stance);
+    const start = steady(water, v, stance, w.name === 'plane' ? SETTLE : chopSettle);
     const { rig } = start;
     let t = start.t; let fell = start.fell ? `settling: ${start.fell}` : ''; let minReserve = 1; let peakShare = -Infinity; let lowShare = Infinity; let s = state(rig, water, t);
     const from = t;
@@ -104,7 +113,8 @@ it('glides at 5, 7, 9 and 12 m/s, flat and on chop: hold 3 s from a steady glide
         peakShare = Math.max(peakShare, share); lowShare = Math.min(lowShare, share);
       }
     }
-    emit({ bar: 'glide', rider: RIDER, ...(process.env.STANCE ? { stance } : {}), water: w.name, faceDeg: r(terminalAngle(v), 1), v, fell, heldS: r(t - from, 2), speedEnd: r(s.speed, 2), draftCm: r(s.draft * 100, 1), minReserve: r(minReserve, 2), pressureShare: [r(lowShare, 2), r(peakShare, 2)] });
+    const inner = (water as { inner?: { gain?: number } }).inner;
+    emit({ bar: 'glide', rider: RIDER, ...(process.env.STANCE ? { stance } : {}), water: w.name, faceDeg: r(terminalAngle(v), 1), v, fell, heldS: r(t - from, 2), speedEnd: r(s.speed, 2), draftCm: r(s.draft * 100, 1), minReserve: r(minReserve, 2), pressureShare: [r(lowShare, 2), r(peakShare, 2)], ...(w.name !== 'plane' ? { chopSettleS: chopSettle, chopFullFromS: ramp, settleFall: fell.startsWith('settling'), chopGainAtEnd: r(inner?.gain ?? 1, 2) } : {}) });
   }
 }));
 

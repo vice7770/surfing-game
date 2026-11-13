@@ -2284,3 +2284,328 @@ worth keeping.
   (the hip at the knees' scale); `bars-hipneed-32i.jsonl` (the hip at the need); `bars-reachonly-32i.jsonl` (the
   horizon cap alone); `trace-chop1-5-hipfull-32i.jsonl` and `trace-shove-tall-hipfull-32i.jsonl` (the ratchet).
 - No change to what the game does.
+
+---
+
+# Part 10: step 3.2j, the variable the loop was missing (ruling 29n)
+
+Written 2026-11-13 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32j` (from
+`claude/rider-new-32i`, rebased on main 917efc89). The contract: `../ruling-29.md` 29n.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **Miss, at 8 of 12 against a bar of 11 — but the chop doubled, and every cell of that came from the settle, not from
+  the controller.** Fixing the probe's settle (ruling 29n's decision 2) takes the chop from 4 of 12 to **8 of 12** with
+  the rider byte-for-byte as 3.2h left it [M]. The controller change is built, measured and **refuted by the guard bar**,
+  and is not kept.
+- **The quantity the loop was missing is not a state.** On this plant the body is a point mass on its leg, so the
+  capture point across is the **linear functional ξ = L (θ + θ̇/ω₀)** of two states the loop already carries. Adding it
+  would have been a duplicate. What the loop was missing is the **cost**: a diagonal Q penalises θ² and θ̇² separately
+  and can never express the cross term 2 θ θ̇ / ω₀, and that cross term is the whole difference between a bank that is
+  coming back and one that is going over. [I, R]
+- **A second thing was missing, and it is plainer: the design was told the ankle may give a third of what it has.**
+  `commandScale[0]` is 0.09 rad against `ANKLE_REST_RANGE` 0.25 — **36 % of the bound** — and Bryson's rule is that a
+  command's scale is the largest *acceptable* command. That, not the state vector, is the direct reason the loop asks
+  3.8° at 11° of body bank. [R, I]
+- **The model could not have found the bound, because it had neither input saturation nor a fall test.** With the
+  commands clipped at their real bounds and the game's own fall test on it (the capture point past the feet plus the
+  room), the model reproduces the game's pathology exactly: at 5 m/s the base design lets the capture point reach
+  **40.8 cm** while asking **2.65° of a 14.32° ankle**, and 5 m/s is weak by a factor of three (a disturbance margin of
+  47.7 rad/s² against 131.8 at 7 and 174.0 at 9). [M]
+- **On the model the fix works: +51 to +65 % of disturbance margin**, and it is the first design in which the ankle
+  reaches its bound at 5 m/s at all. **In the game it collapses the saved shove in the lower stances** — the crouch
+  2.127 → 0.79–0.89 m/s and Compress 2.326 → 0.42–0.79 — for *every* variant that raises the gain, including the
+  mildest. The model's own robustness warned (the delayed-sense damping at 5 m/s −0.128 → −0.241) and I underweighted
+  it. The guard bar is what caught it, twice in two steps. [M]
+- **Explicit constraint handling is worse, measured.** A reference governor that drives the ankle to its bound whenever
+  the *predicted* capture point is outside the feet — the textbook capture-point balance law — costs **−60 % of
+  disturbance margin at 5 m/s** on the model (18.9 against 47.7). So the ruling's open question has an answer: neither
+  the bang-bang constraint law nor a big re-weighting. **The binding constraint is the loop's robustness on the game's
+  plant, not the ankle's bound.** [M, I]
+
+## 2. The model first (item 2)
+
+`src/physics/predictiveBalance.ts`: `captureRow(y)` and `DesignWeights.captureScale`.
+`docs/research/new-rider/3.2/predict.probe.ts` PART=bound. Results `results/predict-bound-32j.jsonl`.
+
+### What the model was missing
+
+Two things, and both had to be added before any design could be judged [R, M]:
+
+- **No input saturation.** `timeRun` and the gate both ran the commands unclipped, so no design in 3.2d–3.2i could ever
+  meet the ankle's 0.25 rad bound, let alone be designed against it.
+- **No fall test.** The old run stopped only at |θ| > 0.7 rad. The game stops when the capture point passes the feet by
+  more than the room the hip can catch, which in the game's traces is 0.13 + 0.28–0.32 m. With that in, the model's
+  runs end where the game's do.
+
+The disturbance is the chop's shape: a sinusoidal roll acceleration on the board at 1.8 Hz, and the measure is the
+**disturbance margin** — the largest amplitude the design survives for 4 s, by bisection. It is monotone and it compares
+designs cleanly.
+
+### What the base design does, with the bound in
+
+| | 5 m/s | 7 m/s | 9 m/s |
+|---|---|---|---|
+| Disturbance margin, rad/s² | **47.7** | 131.8 | 174.0 |
+| Peak capture point | 40.8 cm | 40.8 | 40.8 |
+| Peak ankle command, of 14.32° | **2.65°** | 10.18° | 8.97° |
+| Share of frames at the bound | **0** | 0 | 0 |
+
+**The model reproduces the game's fault.** At 5 m/s the loop lets the capture point run to 41 cm — three times the
+feet's half-width — while never asking the ankle for more than a fifth of its range, and 5 m/s is weak by a factor of
+three. That is the trace of Part 9 §5, on the model. [M]
+
+### What the new cost buys
+
+The designs: `bound` is `commandScale[0] = 0.25`, the ankle's real range; `capture c` is `captureScale = c` m. Tall
+stance [M]:
+
+| design | margin at 5 m/s | at 7 | at 9 | ankle gain on the bank | kθ / kθ̇ | nominal damping at 5 m/s |
+|---|---|---|---|---|---|---|
+| base (3.2h) | 47.7 | 131.8 | 174.0 | −1.98 | 14.8 | 0.579 |
+| bound only | 48.8 | 155.0 | 199.2 | −4.35 | 14.9 | 0.494 |
+| capture 0.05 only | 50.6 | 137.5 | 183.8 | −2.19 | 13.3 | 0.554 |
+| bound + capture 0.02 | 68.8 | 159.6 | 215.4 | −5.25 | 9.3 | 0.384 |
+| **bound + capture 0.013** | **78.7** | 158.6 | 218.4 | −5.82 | **7.6** | 0.337 |
+| bound + capture 0.008 | 69.1 | 156.1 | 215.8 | −6.42 | 6.3 | 0.301 |
+| bound + capture 0.005 | 62.3 | 153.1 | 207.4 | −6.88 | 5.7 | 0.283 |
+
+- **The margin peaks at `captureScale` 0.013 m in all three stances** and turns over below it: tall 47.7 → **78.7**
+  (+65 %), crouch 48.2 → **78.9** (+64 %), Compress 48.4 → **73.1** (+51 %) [M].
+- **0.013 is picked by a stated condition, not by taste:** it is the tightest value at which the loop reaches the
+  ankle's bound **at 5 m/s** — the speed that fails — before the capture point leaves the feet, which is exactly
+  "spend it early, while it still exists". At 0.02 the ankle still never saturates at 5 m/s; at 0.013 it is at the bound
+  for 40 % of the frames. [M, I]
+- **The gain ratio is the tell.** A controller acting on ξ alone would have kθ/kθ̇ = ω₀ = 3.8. The base design sits at
+  14.8, i.e. it is almost blind to the bank's *rate*, which is half of the capture point. The capture cost walks it from
+  14.8 down toward 7.6. [M, I]
+- **Loosening the bank's own scales barely matters** (the margin goes 77.7 at ×1 to 78.7 at ×12), so the bank and its
+  rate keep their own limits and only two numbers change. [M]
+- **The robustness gate is not worsened, and it was already failing.** 3.2d's gate has missed since it was written
+  (0 of 51 points pass with the base weights, 1530 of 10200 random plants unstable); with the new weights it is 0 of 51
+  and **1541** — within noise of the same. The nominal damping's worst falls from 0.452 to 0.280, still far above the
+  gate's 0.05. So the model gave no reason to stop. [M]
+
+### The governor, which is the structure the ruling asked about
+
+The textbook capture-point law: while the **predicted** capture point is outside the feet, the recoverable set of a
+bounded-input inverted pendulum has already been left, so command the ankle to its bound toward the side it is going.
+No gain of its own. On the model [M]:
+
+| | 5 m/s | 7 m/s | 9 m/s |
+|---|---|---|---|
+| base | 47.7 | 131.8 | 174.0 |
+| base + governor | **18.9** | 60.6 | 72.0 |
+| bound + capture + governor | 22.1 | 90.4 | 98.8 |
+
+**It costs 55–60 % of the margin everywhere.** The reason is the same one the hip hit in 3.2i: the capture point is
+outside the feet routinely and for short stretches, so a law that slams the input every time it happens is a bang-bang
+loop closed on a signal that is already oscillating. **So the answer to 29n's question is: not explicit constraint
+handling, and (below) not a re-weighting either.** [M, I]
+
+## 3. In the game: the guard bar refuses it (item 2's outcome)
+
+Built as the model asked — `commandScale[0] = 0.25`, `captureScale = 0.013` — and then split, because the first
+measurement was a collapse. Each row is one build of the game [M] (`results/predict-weights-32j.jsonl`):
+
+| `commandScale[0]` | `captureScale` | Saved shove, tall / crouch / Compress (m/s) | Held carve tall / Compress (s) | Chop |
+|---|---|---|---|---|
+| **0.09 (kept)** | **off** | **1.887 / 2.127 / 2.326** | **2.85 / 2.98** | 8 of 12 |
+| 0.25 | off | 1.629 / **0.791** / **0.580** | 2.75 / 2.82 | — |
+| 0.09 | 0.013 | 1.975 / **0.891** / **0.785** | 2.58 / 2.87 | — |
+| 0.25 | 0.03 | **0.516 / 0.451 / 0.416** | 2.63 / 2.72 | — |
+| 0.25 | 0.013 | **0.205 / 0.234 / 0.258** | 2.47 / 2.52 | 8 of 12 |
+
+- **Every variant that raises the ankle's gain collapses the crouch and Compress saved shove**, from 2.1–2.3 m/s to
+  0.4–0.9, including the mildest one tried. The tall stance tolerates it, and with the capture cost alone it even
+  improves (1.887 → 1.975) — but the lower stances do not, and they are where a surfer actually rides. [M]
+- **Why the lower stances.** Their centre of mass is 0.65 and 0.55 m against the tall stance's 0.85, so ω₀ is higher and
+  the loop is faster; the same gain rise eats more of the 0.1 s delay's phase margin. The model saw it: the crouch and
+  Compress had the lowest nominal damping of the new design (0.304 and 0.290 against tall's 0.337) and the delayed-sense
+  damping at 5 m/s went −0.128 → −0.241. [M, I]
+- **And it bought nothing on the chop:** 8 of 12 either way, with one cell's held time up (chop 1 at 12 m/s, 0.2 →
+  2.02 s) and one down (chop 2 at 5 m/s, 1.82 → 1.60 s). [M]
+
+**So the honest finding is not that the loop should regulate the capture point — it should — but that this plant will
+not take the gain that doing so costs.** The margin the model gains and the shove the game loses are the same gain
+rise seen from two sides, and the game is the one the owner rides. Not kept.
+
+## 4. The settle, and it is the whole of this step's gain (item 3)
+
+Ruling 29n's decision 2 was right. Before: the board was **placed into** the chop and the clock started 2.5 s later;
+every 5 m/s fall was at 1.07–1.98 s of that settle, i.e. while the rider was still being placed. Now
+(`lab.ts` `Chop.gain` / `rampFrom` / `rampTo`, and the glide bar's own settle):
+
+- the chop's trains are a linear superposition of small-amplitude waves, so **scaling their sum is exactly a smaller
+  chop** — the ramp is a smaller chop, not a different one;
+- the chop glide settles **4 s**: smooth for 1 s, the chop ramping in from 1 to 2.5 s, then **1.5 s at full strength**
+  before the 3 s bar begins. The plane, carve, push and mode rows keep their own 2.5 s settle, untouched;
+- any fall still inside the settle is reported with `settleFall` and the chop's gain at that moment, never dropped.
+
+**With the rider exactly as 3.2h left it, the chop goes 4 of 12 to 8 of 12** [M]. A first attempt (the ramp over the
+first 1.5 s of the old 2.5 s settle) gave 7 of 12 and pushed two falls into the settle *at full chop*, which is why the
+settle is 4 s and not 2.5: a settle has to include time at the disturbance the bar is about.
+
+## 5. The chop by speed and by seed (item 4)
+
+Cells are **old rider / 3.2h on the old settle / 3.2j on the new settle**; `*` marks a fall inside the settle, `s` a
+fall after it, with the held time. [M] (`results/bars-old-32j.jsonl`, `bars-new-32h.jsonl`, `bars-new-32j.jsonl`.)
+
+| Seed | 5 m/s | 7 m/s | 9 m/s | 12 m/s |
+|---|---|---|---|---|
+| chop 1 | hold / 0 s / **hold** | hold / hold / hold | hold / hold / hold | hold / 1.78 s / **0.2 s** |
+| chop 2 | hold / 0 s / **1.82 s** | hold / 1.65 s / **hold** | hold / 0 s / 0 \* | 0.02 s / 0 s / 0 \* |
+| chop 3 | hold / 0 s / **hold** | hold / 2.70 s / **hold** | hold / hold / hold | hold / hold / hold |
+
+| | total | by speed (5 / 7 / 9 / 12) | by seed (1 / 2 / 3) |
+|---|---|---|---|
+| old rider, old settle | 11 of 12 | 3 / 3 / 3 / 2 | 4 / 3 / 4 |
+| **old rider, new settle** | **11 of 12** | 3 / 3 / 3 / 2 | 4 / 3 / 4 |
+| 3.2h, old settle | 4 of 12 | 0 / 1 / 2 / 1 | 2 / 0 / 2 |
+| **3.2j, new settle** | **8 of 12** | **2 / 3 / 2 / 1** | 3 / 1 / 4 |
+
+- **The settle change does not flatter the bar: the old rider scores 11 of 12 on both settles, cell for cell.** It was
+  only ever the new rider that the old settle was hurting, which is what a probe fault looks like. [M]
+- **The 5 m/s column goes 0 of 3 to 2 of 3**, and the one that still falls (chop 2) now falls at 1.82 s *after* a proper
+  settle, so it is a real fall and not a placement. 29n's decision 2 is settled on numbers: three of the four cells it
+  queried were the probe.
+- **12 m/s is now the worst column, 1 of 3**, and one cell got *worse* with the proper settle (chop 1, 1.78 → 0.2 s):
+  the rider meets the chop already trimmed for smooth water at 12 m/s, which is a harder entry than being placed into
+  it. That is honest and I did not smooth it over.
+- **Chop 2 is the hard seed for both riders** (1 of 4 new, 3 of 4 old — it is also the only seed the old rider loses a
+  cell on).
+- The two chop 2 settle falls at 9 and 12 m/s are step 3.2h §4's board-diving case, now inside a 4 s settle; they are
+  reported with `settleFall` and the chop's gain at 1.0.
+
+## 6. The bars (item 5; steady starts, 16 substeps)
+
+Results `results/bars-new-32j.jsonl`, `bars-old-32j.jsonl`. [M]
+
+| Bar | Old | 3.2h | 3.2j | Pass? |
+|---|---|---|---|---|
+| N0: `rider=old` unchanged | — | byte-identical | 3.1's `bars-old` byte-identical; of 3.2's 30 rows only the 12 chop ones move, in their read-outs, **because the probe's water changed** — every hold and fall the same except chop 2 at 12 m/s, whose fall crosses the settle boundary by 0.02 s | yes |
+| Held carve standing ≥ 2.28 s | 1.93 | 2.85 | **2.85** | yes |
+| Held carve Compress ≥ 2.30 s | 3.0 | 2.98 | **2.98** | yes |
+| Glides on the plane | 4 of 4 | 4 of 4 | 4 of 4 | yes |
+| **Glides on chop, bar 11 of 12** | 11 of 12 | 4 of 12 | **8 of 12** | **no** |
+| 20 cm rise at 2 m/s | falls 0.32 s | holds | **holds** | yes |
+| **Saved shove, tall / crouch / Compress (the guard)** | 192 / 188 / 191 N·s | 138 / 155 / 170 | **138 / 155 / 170** | yes, unchanged to the digit |
+| Save window, the asymptote | — | 0.187 / 0.165 / 0.144 | the same | yes |
+| Reaction 0.08–0.12 s | 0.001 | 0.105 | 0.105 | yes |
+| Mode B: the bank's envelope halves within two cycles | — | yes | yes (the kick rows identical) | yes |
+| Mode A not seen | 0.000–0.007 | 0.000–0.009 | 0.000–0.009 | yes |
+| N1: legs < ~2 kW per frame | to 30.9 kW | 1.52 kW | 1.52 kW | yes |
+| Push ordering tall > crouch > Compress | yes | no | no | no (29's own, long-standing) |
+| Turn pair, N2 | 14 of 16, +1.7 | suspended (29k) | suspended | — |
+
+Every row outside the chop is identical to 3.2h's, because the kept change is in the probe's water and in the model, not
+in the rider. The chop is the only bar that moved, and the guard bar is untouched at 138 / 155 / 170 N·s.
+
+## 6b. The 2 Hz ring, measured properly (the advisor's extra)
+
+Step 3.2i measured the capture point's crossings once — one stance, one shove — and called it "about 2 Hz", and I
+flagged that it mattered. Measured across three stances and three shove sizes on the kept build
+(`results/ring-32j.txt`, 2 s each at 7 m/s) [M]:
+
+| shove (m/s) | tall | crouch | Compress |
+|---|---|---|---|
+| 0.3 | 0.76 Hz (outside 1 of 120 frames) | 1.26 (0) | 1.77 (0) |
+| 1.0 | 1.51 (18) | 1.01 (2) | 0.76 (2) |
+| 1.8 | 0.76 (34) | 1.51 (24) | 0.50 (11) |
+
+**It is 0.50–1.77 Hz with no pattern in stance or shove size, so it is not a mode — it is the loop's own wander**, and
+3.2i's "2 Hz" was the top of a spread read from one case. That weakens the phase-lag half of 3.2i's account of the hip's
+ratchet: `BALANCE_DELAY` is between a twentieth and a fifth of a period here, not reliably half of one. **The other two
+causes stand unchanged and they are the structural ones** — the centring switched off above 20 N·m, and the roll a thrown
+hip pays — and they are enough on their own. I am correcting my own [M] to a weaker claim rather than leaving it. [M, I]
+
+What does rise with the shove is how long the capture point spends outside the feet: 1, 18 and 34 of 120 frames in the
+tall stance at 0.3, 1.0 and 1.8 m/s. So the signal a hip would answer is mostly *inside* the feet in ordinary riding and
+only becomes busy under a real shove, which is the right shape for a trigger — the fault was the size asked for, not the
+trigger.
+
+## 7. What is in the tree, and what is not
+
+**Kept:**
+- `lab.ts`: `Chop.gain`, `rampFrom` and `rampTo` — the chop's own settle, with the note that scaling a linear
+  superposition of small waves is exactly a smaller chop.
+- `bars.probe.ts`: the chop glide's own 4 s settle (`CHOP_SETTLE`, `CHOP_QUIET`, `CHOP_RAMP`), and `settleFall` and
+  `chopGainAtEnd` on every chop row so a settle fall is reported and never dropped.
+- `predictiveBalance.ts`: `captureRow` (the capture point as a row over the state, with the note that it is a
+  functional of two existing states and not a new one) and the optional `DesignWeights.captureScale`, which builds the
+  rank-one cost. **The default has it off**, with the measurements recorded on both it and `commandScale[0]`.
+- `predict.probe.ts` PART=bound: the model with its commands bounded, the game's fall test on it, the disturbance
+  margin by bisection, and the reference governor — the first model runs in this rebuild that can see a saturating input.
+
+**Not kept:** `commandScale[0] = 0.25` and `captureScale = 0.013` as defaults, and the governor. All three are measured
+and all three cost the guard bar or the model's own margin.
+
+## 8. What I am unsure of, and what was not run
+
+- **Whether the right structure is MPC after all.** The governor I tried is the crudest constrained law there is
+  (bang-bang on a one-step test). A real receding-horizon controller would trade the bound against the delay instead of
+  ignoring it, and it is the one structure 29n listed that I did not build, because it is a different controller and not
+  a weight. I would want it designed and gated like 3.2d's before it went near the game.
+- **Why the model and the game disagree by this much.** The model says +65 % of margin; the game says the same gains
+  lose four fifths of the saved shove. The gate's random-plant failures (15 % of 10200, unchanged since 3.2d) say the
+  model's plant is not the game's, and until that gate passes the model cannot be trusted to pick gains. **That is the
+  deeper finding of this step**, and I think it outranks the chop.
+- **The two chop 2 settle falls** (9 and 12 m/s) are the board diving nose-down away from the feet, step 3.2h's §4
+  case, now inside a 4 s settle instead of a 2.5 s one. They are honest falls, reported separately. Whether
+  `RECOVERABLE_ERROR`'s 0.25 m is right for a free body is still the open question from 3.2h.
+- **Not run:** the merge checks (the chop misses at 8 of 12), the turn pair and N2 (suspended, 29k), the pitch loop
+  (held, 29l), the hip (refuted, 29n). No ride, no game page, no Basilisk case.
+
+## 9. How it rides, and what is still missing (for the owner)
+
+Plain words, as the ruling asks.
+
+**What changed:**
+- **Choppy water: the rider now holds 8 of 12 tests, up from 4.** All of that came from fixing the *test*, not the
+  rider. The test used to drop the rider onto choppy water and start the stopwatch while it was still finding its feet.
+  Now it starts on smooth water, the chop comes in over a second and a half, and the rider rides it for another second
+  and a half before the stopwatch starts. Four of the falls were never real falls; they were the rider still being put
+  on the board.
+- **Nothing else changed.** Carving is still 2.9 seconds standing and 3.0 crouched, a shove is still saved at
+  1.9 m/s standing, the knees still soak up a rising surface, and the old rider is untouched.
+
+**What I tried and took out:**
+- The rider's balance brain had no idea where its weight sat over its feet — it watched the board and the body's angle.
+  I gave it that, and I also found it had been told its ankles may only use a third of their strength. Fixing both made
+  the rider much better on paper: it could take 65 % more chop before going down, and for the first time it used its
+  ankles fully at slow speed.
+- **In the game it was worse, badly.** A shove that the rider used to save at 2.1 m/s in a crouch took it down at
+  0.8 m/s. Every version I tried did this, even the gentlest. The reason is that asking the ankles for more makes the
+  rider quicker, and a quicker rider with a tenth-of-a-second reaction time starts to fight itself. So it came out.
+
+**Where the rider stands today:**
+- Flat water, any speed: fine.
+- A hard carve: 2.9 s standing, 3.0 crouched. Better than the old rider.
+- A shove: saved at 1.9 m/s standing, 2.1 crouched, 2.3 in a hard crouch; it answers in a tenth of a second.
+- A surface rising fast under the board: fine.
+- **Choppy water: 8 of 12.** The four it still loses are the roughest of the three chops at 9 and 12 m/s, one fast run
+  on another chop, and one slow run. At 7 m/s it holds all three.
+- No pumping yet, so it still cannot link two turns.
+
+**My honest view:** this is the first step in a while where the rider got meaningfully closer, and it got there by my
+finding a fault in the *measurement* rather than in the rider. I would still not ask you to ride it: on a clean face it
+would feel good, but a rough section would drop you about a third of the time. And I have to be straight about one
+thing: the model we design the balance gains on does not agree with the game — it said this change was a big
+improvement and the game said it was a big loss. Until that is sorted out, picking balance gains on the model is
+guesswork, and I think that matters more than the four chop tests.
+
+## Files (3.2j)
+
+- `docs/research/board-in-water/lab.ts`: `Chop.gain`, `rampFrom`, `rampTo`.
+- `docs/research/new-rider/3.2/bars.probe.ts`: the chop glide's own settle (`CHOP_SETTLE` 4 s, `CHOP_QUIET` 1,
+  `CHOP_RAMP` 2.5), `steady`'s settle argument, and `settleFall` / `chopGainAtEnd` / `chopSettleS` on the chop rows.
+- `src/physics/predictiveBalance.ts`: `captureRow`, the optional `DesignWeights.captureScale` and its rank-one term in
+  `design`, and the accounts on `commandScale` and `captureScale` of what was measured and why neither is the default.
+- `docs/research/new-rider/3.2/predict.probe.ts`: PART=bound — the model with bounded commands, the game's fall test,
+  the disturbance margin by bisection, the design sets and the reference governor.
+- `results/`: `bars-new-32j.jsonl`, `bars-old-32j.jsonl`, `predict-bound-32j.jsonl`, `predict-gate-32j.jsonl`,
+  `predict-weights-32j.jsonl` (the five builds of the game), `glide-ramp15-32j.jsonl` (the first settle attempt, 7 of
+  12), `ring-32j.txt`.
+- No change to what the game does.

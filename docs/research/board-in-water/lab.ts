@@ -100,6 +100,16 @@ export class Chop implements SurfWater {
   private readonly trains: SwellWater[] = [];
   private readonly scratch = createWaterSample();
   private offset = 0;
+  /**
+   * The chop's own gain, 0-1 (step 3.2j): the trains are a linear superposition of small-amplitude waves, so scaling
+   * their sum is exactly a smaller chop. `rampTo` raises it from 0 to 1 over that many seconds of the chop's own clock,
+   * so a rider can settle on the smooth face and then meet the chop instead of being placed into it. Ruling 29n: a
+   * rider that has not finished being placed is not riding, and every 5 m/s fall in step 3.2h was inside the settle.
+   */
+  gain = 1;
+  private clock = 0;
+  rampFrom = 0;
+  rampTo = 0;
   constructor(readonly seed = 1, readonly height = 0.1, count = 6) {
     let state = seed * 7919 + 13;
     const random = () => { state = (state * 16807) % 2147483647; return state / 2147483647; };
@@ -109,21 +119,26 @@ export class Chop implements SurfWater {
       this.trains.push(train);
     }
   }
-  advance(dt: number): void { for (const train of this.trains) train.advance(dt); }
+  advance(dt: number): void {
+    for (const train of this.trains) train.advance(dt);
+    this.clock += dt;
+    if (this.rampTo > this.rampFrom) this.gain = Math.max(0, Math.min(1, (this.clock - this.rampFrom) / (this.rampTo - this.rampFrom)));
+  }
   setSampleTime(offset: number): void { this.offset = offset; }
   private shifted<T>(f: () => T): T {
     if (this.offset !== 0) for (const train of this.trains) train.time += this.offset;
     try { return f(); } finally { if (this.offset !== 0) for (const train of this.trains) train.time -= this.offset; }
   }
-  surfaceAt(x: number, z: number): number { return this.shifted(() => this.trains.reduce((s, t) => s + t.surfaceAt(x, z), 0)); }
+  surfaceAt(x: number, z: number): number { return this.gain * this.shifted(() => this.trains.reduce((s, t) => s + t.surfaceAt(x, z), 0)); }
   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
     return this.shifted(() => {
-      const surface = this.trains.reduce((s, t) => s + t.surfaceAt(x, z), 0);
+      const g = this.gain;
+      const surface = g * this.trains.reduce((s, t) => s + t.surfaceAt(x, z), 0);
       let slopeX = 0; let slopeZ = 0; let flowX = 0; let flowY = 0; let flowZ = 0;
       for (const train of this.trains) {
         const own = train.surfaceAt(x, z);
-        const sample = train.sampleAt(x, Math.min(y, surface) - surface + own, z, this.scratch);
-        slopeX += sample.slopeX; slopeZ += sample.slopeZ; flowX += sample.flowX; flowY += sample.flowY; flowZ += sample.flowZ;
+        const sample = train.sampleAt(x, Math.min(y, surface) - surface + g * own, z, this.scratch);
+        slopeX += g * sample.slopeX; slopeZ += g * sample.slopeZ; flowX += g * sample.flowX; flowY += g * sample.flowY; flowZ += g * sample.flowZ;
       }
       this.trains[0].sampleAt(x, y, z, out);
       const norm = Math.hypot(slopeX, 1, slopeZ);

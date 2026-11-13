@@ -369,14 +369,45 @@ export interface DesignWeights {
    * internal model estimates and the commands cancel (offset-free control). Empty: none.
    */
   bias: number[];
+  /**
+   * **The largest acceptable capture point across, m** (step 3.2j, ruling 29n): the cost on where the body's weight
+   * sits over its feet. Omitted or 0: none, which is what every design before 3.2j had.
+   *
+   * The capture point across is **not a new state** — on this plant the body is a point mass on its leg, so it is the
+   * linear functional ξ = L (θ + θ̇/ω₀) of two states the loop already carries (`captureRow`). What the loop was missing
+   * is not the measurement but the **cost**: a diagonal Q penalises θ² and θ̇² separately and never the cross term
+   * 2 θ θ̇ / ω₀, and that cross term is the whole difference between a bank that is coming back and one that is going
+   * over. Weighting ξ² adds it, as a rank-one term.
+   */
+  captureScale?: number;
 }
 export const DEFAULT_WEIGHTS: DesignWeights = {
   stateScale: [0.05, 0.5, 0.05, 0.25, 0.2, 0.02, 0.5, 1],
+  // Step 3.2j (ruling 29n): the ankle's scale is its **actual range**, ANKLE_REST_RANGE 0.25 rad. It was 0.09 — 36 % of
+  // the bound — and Bryson's rule is that the command's scale is the largest *acceptable* command, so the design was
+  // being told the ankle may only give a third of what it has. That is why the loop asked for 3.8° at 11° of body bank
+  // and reached its range only at about 40°, by which time the board was 50° over (`3.2/README.md` Part 9 §5).
+  /**
+   * The ankle's scale, rad. **It is 36 % of the ankle's actual range** (ANKLE_REST_RANGE 0.25), and Bryson's rule is
+   * that a command's scale is the largest *acceptable* command — so the design is told the ankle may give a third of
+   * what it has, which is why the loop asks 3.8° at 11° of body bank and reaches its range only near 40°, with the
+   * board already 50° over (`3.2/README.md` Part 9 §5).
+   *
+   * Step 3.2j raised it to 0.25, with and without the capture point's cost, and **it is not kept**: on the model it buys
+   * up to +65 % of disturbance margin at 5 m/s, and in the game **every variant that raises the ankle's gain collapses
+   * the saved shove in the lower stances** — the crouch from 2.127 to 0.79–0.89 m/s and Compress from 2.326 to
+   * 0.42–0.79, against a tall row that tolerates it. The model's own robustness warned (the delayed-sense damping at
+   * 5 m/s −0.128 → −0.241), and the margin's gain comes from exactly the gain rise the shove bar refuses. Part 10 §4.
+   */
   commandScale: [0.09, 30],
   rho: 10,
   processNoise: [2, 1, 1, 0.2, 1],
   senseNoise: [0.017, 0.009, 0.017, 0.017, 0.05, 0.009, 0.02],
   bias: [0.01, 5],
+  // The capture point's own cost is **off** (step 3.2j): 0.013 m is the tightest value at which the loop reaches the
+  // ankle's bound at 5 m/s before the capture point leaves the feet, and the peak of the model's disturbance margin in
+  // all three stances (tall 47.7 → 78.7 rad/s², crouch 48.2 → 78.9, Compress 48.4 → 73.1). In the game it costs the
+  // crouch and Compress saved shove as above, so it stays a measured design and not the default. Part 10 §2 and §4.
 };
 
 /**
@@ -400,11 +431,29 @@ export interface Design {
   /** The bias states are estimated (the commands add −b̂). */
   bias: boolean;
 }
+/**
+ * The capture point across as a row over the state, m per rad: ξ = L (θ + θ̇/ω₀) with L the centre of mass over the feet
+ * and ω₀ = √(g/L) (Hof, Gazendam and Sinke 2005, on this plant's point-mass body). The feet can bring it back while it
+ * is inside their half-width; past that the ankle has no authority left, whatever rest it is asked for.
+ */
+export function captureRow(y: YawPlant, gravity = 9.81): number[] {
+  const row = new Array<number>(N_STATE).fill(0);
+  row[2] = y.height;
+  row[3] = y.height / Math.sqrt(gravity / y.height);
+  return row;
+}
 export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WEIGHTS, delay = PREDICT_DELAY, step = CONTROL_STEP): Design {
   const { a, b } = continuousPlant(y, t);
   const { phi, gamma } = discretise(a, b, step);
   const q = zeros(N_STATE, N_STATE);
   for (let i = 0; i < 8; i += 1) q[i][i] = 1 / (w.stateScale[i] * w.stateScale[i]);
+  // The capture point's cost (step 3.2j): a rank-one term on ξ = L (θ + θ̇/ω₀), which is where the cross term between
+  // the bank and its rate comes from. A diagonal Q cannot express it.
+  if (w.captureScale) {
+    const row = captureRow(y);
+    const weight = 1 / (w.captureScale * w.captureScale);
+    for (let i = 0; i < N_STATE; i += 1) for (let j = 0; j < N_STATE; j += 1) q[i][j] += weight * row[i] * row[j];
+  }
   // The weights per step (the continuous cost sampled): Q T, R T.
   const qd = scale(q, step);
   const rd = [[(w.rho * step) / (w.commandScale[0] ** 2), 0], [0, (w.rho * step) / (w.commandScale[1] ** 2)]];
