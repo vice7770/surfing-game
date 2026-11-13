@@ -1073,3 +1073,53 @@ and more damping, not the same shape scaled.
    until a source says so.
 4. The three may be one fault. If fixing the stance design also fixes the counter-steer or the turn rate, that is
    expected — all three are the same controller meeting the same stance.
+
+---
+
+# Ruling 29v: the owner's fall taxonomy, and the speed shape (2026-11-13)
+
+> "the surfer actually is quite stable in lower speeds, and as the speed increases he loses the ability to turn as much.
+> This should happen in the game as physics. No surfer falls from turning to get the wave on the side while compressed,
+> he might fall in high speeds or if he tries to cut the wave but never like that"
+
+This replaces several bars the advisor invented. It is a surfer describing what the physics should produce, and it is
+checkable.
+
+## The acceptance test, from now on
+
+**A compressed turn to take the wave on the side must never fall.** It is the most basic and safest thing a surfer
+does. Compress, moderate speed, turn across the wave — holds, every time.
+
+That is the gate. The turn-pair count stays as information; if this test holds and the turn pair still reads 0, the
+probe's framing is wrong and the advisor takes it apart, not the build agent.
+
+## The fall taxonomy — what is a bug and what is surfing
+
+- **Legitimate:** falls at high speed, and falls when trying to cut the wave (a hard reversal).
+- **Never:** a fall from a compressed turn across the wave.
+- Therefore **the fall rate must rise with speed.** Our chop grid half agrees (2 / 3 / 2 / 1 of 3 at 5 / 7 / 9 / 12 m/s,
+  worst at 12), but the turn fails at *every* speed. A flat failure is wrong in shape as well as in level.
+
+## The speed shape is probably already in the water
+
+A turn's radius goes as v²/(g tan φ): at twice the speed the same rail gives four times the radius. The roll-plant
+table already shows the turn rate per degree of rail falling 0.0286 → 0.0214 → 0.0172 rad/s at 5 / 7 / 9 m/s.
+
+**So "loses the ability to turn as much with speed" looks like something we already have.** What is missing is that
+the rider cannot exploit the low-speed end — he falls there, where he should be at his best. Confirm before building:
+if the shape is already there, point 1 needs nothing but a rider who can use it.
+
+## A correction the advisor owes
+
+Step 3.2j found three chop falls at 5 m/s inside the probe's settle, argued they were a settle artefact, and ruling
+29n accepted that and called them a probe fault. **The owner says low speed is where a surfer is most solid.** So a
+fall at 5 m/s is the **strongest** signal we have, not the most excusable. Those three cells are re-read with that
+weighting.
+
+## Standing
+
+With 29u's test, this gives two rules that outrank any probe number:
+
+1. When a stance, a strategy or an input is the one a real surfer would reach for, the game must reward it.
+2. A fall must be explainable as one a surfer would have made. Falls belong at high speed and in hard reversals, not in
+   the basic turn across the wave.
