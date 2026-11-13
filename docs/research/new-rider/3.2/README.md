@@ -2555,46 +2555,81 @@ and all three cost the guard bar or the model's own margin.
 - **The two chop 2 settle falls** (9 and 12 m/s) are the board diving nose-down away from the feet, step 3.2h's §4
   case, now inside a 4 s settle instead of a 2.5 s one. They are honest falls, reported separately. Whether
   `RECOVERABLE_ERROR`'s 0.25 m is right for a free body is still the open question from 3.2h.
-- **Not run:** the merge checks (the chop misses at 8 of 12), the turn pair and N2 (suspended, 29k), the pitch loop
-  (held, 29l), the hip (refuted, 29n). No ride, no game page, no Basilisk case.
+- **The merge checks are run**, because the advisor merges this as opt-in work in progress for the owner to ride even
+  though the chop misses (ruling 29o). All on this M1 with three of ruling 31's Basilisk runs alongside the whole time
+  [M] (`results/suite-32j.txt`, `canyon-byte-32j.txt`, `fps-32j.txt`):
+  - `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: **both clean**.
+  - **The suite** (`npx vitest run src --maxWorkers=3`, without `SurfZoneSimulation.test.ts` and
+    `SurfZoneRunner.test.ts`): 351 of 352 files and **3,425 tests passed**, 23 expected fail, 43 skipped. The one
+    failure is the known flake, `src/wave/barrel/poolBarrelPerf.test.ts`, which ran 77.5 s past its 60 s timeout under
+    this load; **alone with `--testTimeout=300000` it passes in 55.5 s** (8 tests). Neither it nor the code it
+    exercises is in this branch's diff.
+  - **The Canyon byte check** (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, fresh spin-ups): **Canyon B snapshots
+    a367d938f15fa934, state 9e5831f80e38abd9; the default Canyon snapshots ea3d57a4d49f4b48, state a1a2555739210f96 —
+    all four the same as main.**
+  - **The fps trace** (Canyon, `?physical&canyonWaves=true&turnBody=on&snapLegs=drive&snapCross=on`, 60 s, run twice
+    back to back): from 20 s on **48.3 then 47.7 fps mean, lowest second 43 both**, worker 124 and 135 ms mean. The two
+    runs agree; the absolute numbers sit under the wave track's quiet-machine references because three Basilisk runs and
+    the byte check's own 3600 steps were running throughout, so read it as with-against-without, not against a historic
+    number. The trace's rider stays prone, so `?rider=new`'s standing path is never entered by it. A first attempt
+    measured the **menu** rather than the ride (`visualStatus` absent) — the trace now clicks the Surf tile and waits
+    for the ride before it samples, which is what the wave track's own runs did.
+- **Not run:** the turn pair and N2 (suspended, 29k), the pitch loop (held, 29l), the hip (refuted, 29n). No ride, no
+  game page, no Basilisk case.
 
-## 9. How it rides, and what is still missing (for the owner)
+## 9. How it rides, and what to feel for (for the owner)
 
-Plain words, as the ruling asks.
+Plain words. **This is the first step of the rebuild that goes onto main, as opt-in work in progress**, so you can ride
+it and tell me what is wrong. Nothing is on by default: the old rider is byte-identical to what it was.
 
-**What changed:**
-- **Choppy water: the rider now holds 8 of 12 tests, up from 4.** All of that came from fixing the *test*, not the
-  rider. The test used to drop the rider onto choppy water and start the stopwatch while it was still finding its feet.
-  Now it starts on smooth water, the chop comes in over a second and a half, and the rider rides it for another second
-  and a half before the stopwatch starts. Four of the falls were never real falls; they were the rider still being put
-  on the board.
-- **Nothing else changed.** Carving is still 2.9 seconds standing and 3.0 crouched, a shove is still saved at
-  1.9 m/s standing, the knees still soak up a rising surface, and the old rider is untouched.
+**The address.** Add `&rider=new` to the Canyon ride you already use:
 
-**What I tried and took out:**
-- The rider's balance brain had no idea where its weight sat over its feet — it watched the board and the body's angle.
-  I gave it that, and I also found it had been told its ankles may only use a third of their strength. Fixing both made
-  the rider much better on paper: it could take 65 % more chop before going down, and for the first time it used its
-  ankles fully at slow speed.
-- **In the game it was worse, badly.** A shove that the rider used to save at 2.1 m/s in a crouch took it down at
-  0.8 m/s. Every version I tried did this, even the gentlest. The reason is that asking the ankles for more makes the
-  rider quicker, and a quicker rider with a tenth-of-a-second reaction time starts to fight itself. So it came out.
+```
+?physical&canyonWaves=true&turnBody=on&snapLegs=drive&snapCross=on&rider=new
+```
 
-**Where the rider stands today:**
-- Flat water, any speed: fine.
-- A hard carve: 2.9 s standing, 3.0 crouched. Better than the old rider.
-- A shove: saved at 1.9 m/s standing, 2.1 crouched, 2.3 in a hard crouch; it answers in a tenth of a second.
-- A surface rising fast under the board: fine.
-- **Choppy water: 8 of 12.** The four it still loses are the roughest of the three chops at 9 and 12 m/s, one fast run
-  on another chop, and one slow run. At 7 m/s it holds all three.
-- No pumping yet, so it still cannot link two turns.
+Drop `&rider=new` and you are back on the old rider in the same wave, so you can switch back and forth in one session
+and compare.
 
-**My honest view:** this is the first step in a while where the rider got meaningfully closer, and it got there by my
-finding a fault in the *measurement* rather than in the rider. I would still not ask you to ride it: on a clean face it
-would feel good, but a rough section would drop you about a third of the time. And I have to be straight about one
-thing: the model we design the balance gains on does not agree with the game — it said this change was a big
-improvement and the game said it was a big loss. Until that is sorted out, picking balance gains on the model is
-guesswork, and I think that matters more than the four chop tests.
+**What is better than the old rider:**
+- **Carving.** It holds a hard carve 2.9 seconds standing and 3.0 crouched. The old rider managed 1.9 standing, and
+  only did better crouched because it had a hidden push helping it. **This rider has no hidden push at all** — no
+  invisible hand holding it upright, no secret speed.
+- **It balances like a person.** It feels its own body about a tenth of a second late, predicts where it will be, and
+  answers with its ankles first, then its hips, then its knees, then its arms — the order a person uses.
+- **A shove no longer starts a wobble.** The wobble that broke four earlier steps is gone.
+- **The knees soak up a bump.** A surface rising fast under the board used to throw the old rider off in a third of a
+  second; this one rides it out, using about 25 cm of knee travel where the old rider used 2.
+
+**What is worse than the old rider, and it is one thing: chop.**
+- On the twelve chop tests it holds **8**; the old rider holds **11**. At 7 m/s it holds all three chops; at 5 and
+  9 m/s two of three; **at 12 m/s only one of three**. The faster and rougher the water, the more likely it drops you.
+- There is no quick fix waiting. The cause is measured: the balance loop asks its ankles for too little, too late — it
+  only asks for their full strength at about 40° of lean, and the ankles stop working at 11°. Three honest attempts at
+  that are in sections 2 to 4, and each one made something else worse.
+
+**What to feel for — this is what I most want from the ride:**
+1. **A carve.** Set a rail and hold it. Does it feel like it is biting and holding, or sliding away? The numbers say
+   this is the best part; I would like to know whether it feels that way.
+2. **The moment it drops you.** Does it feel like a fall *you* would have made — the board getting away from you — or
+   like the game deciding you fell when you were still fine? That difference is the one thing I cannot measure, and two
+   whole steps were spent on it.
+3. **Chop on a face.** Ride a rough section at speed. Expect to go down about a third of the time. Does it go over
+   **sideways**, or does the board **dive out from under your feet**? Both happen in the tests and they need different
+   fixes, so which one it feels like is worth a lot.
+4. **Slow water**, under about 5 m/s, where the board barely planes: sluggish, or wrong?
+5. **Anything that feels like fighting itself** — a twitch, a shake, a correction that overshoots. The rider has a real
+   reaction delay now, and that is exactly the fault a delay produces.
+
+**What is still missing, so you are not surprised:**
+- **No pumping.** It cannot gain speed by working the board, so after a bottom turn it runs out of speed and cannot
+  climb back up the face. Linking two turns will fail, and that is speed, not balance.
+- The fast crouch-to-crouch moves (snaps, cutbacks) are not rebuilt yet.
+- The front-to-back loop is still the old one: it has not needed rebuilding, but it has not been redesigned either.
+
+**My honest view:** worth a ride, not worth a long session. On a clean face it should feel better than the old rider,
+and that part is real. On anything rough it will drop you more often than the old rider does, and I would rather have
+ten minutes of you telling me how the falls *feel* than an hour of you riding around them.
 
 ## Files (3.2j)
 
@@ -2607,5 +2642,5 @@ guesswork, and I think that matters more than the four chop tests.
   the disturbance margin by bisection, the design sets and the reference governor.
 - `results/`: `bars-new-32j.jsonl`, `bars-old-32j.jsonl`, `predict-bound-32j.jsonl`, `predict-gate-32j.jsonl`,
   `predict-weights-32j.jsonl` (the five builds of the game), `glide-ramp15-32j.jsonl` (the first settle attempt, 7 of
-  12), `ring-32j.txt`.
+  12), `ring-32j.txt`; the merge checks' own `suite-32j.txt`, `canyon-byte-32j.txt` and `fps-32j.txt`.
 - No change to what the game does.
