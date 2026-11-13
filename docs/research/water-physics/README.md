@@ -36,6 +36,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [breaking.md](breaking.md) | Why the solver's face stays near 17°, the crest-speed trigger, the stop rule, directional spread |
 | [solver-stability.md](solver-stability.md) | Why the biggest Reef swells blow up, what published models do, and the options |
 | [solver-rewrite-sketch.md](solver-rewrite-sketch.md) | What option (a)'s rewrite would take, following FUNWAVE-TVD's form |
+| [lip-thickness-and-foam-2026-11-13.md](lip-thickness-and-foam-2026-11-13.md) | Is the lip thin water in a coat of foam? The water in a plunging jet, the 60–99 % air in a whitecap, why a 0.2 m sheet is see-through, the drawing recipe, and the Bond-number ruling |
 | [foam-and-whitewater.md](foam-and-whitewater.md) | Foam contrast and ageing, persistence, the roller, spray |
 | [roller.md](roller.md) and [roller-build.md](roller-build.md) | The roller's measured shape and effect on riders, and how to build it on the barrel's loft |
 | [spray-and-mist.md](spray-and-mist.md) | Spray, spit, the offshore veil and haze: why they read as dots, the numbers, and what to change |
