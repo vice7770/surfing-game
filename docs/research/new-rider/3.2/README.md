@@ -534,3 +534,205 @@ inertia off in the game; that is probe-only (`yawInertiaScale`).
 - `bars.probe.ts` and `trace.probe.ts` as before, with `YAW_SCALE=k` and `GAINS=bank,rate,forward` (`lab.ts`).
 - `results/`: `bars-new-32b.jsonl`, `bars31-new-32b.jsonl`, `kicks-32b.txt`, `trace-kick7-32b.jsonl`,
   `trace-carve-tall-32b.jsonl` (and `-y0`, without the inertia), `turnpair-B-new-32b.txt`.
+
+---
+
+# Part 3: step 3.2c, the twist as the rider's steering (ruling 29g)
+
+Written 2026-11-13 by the build agent (Opus 5.5, effort xhigh), on branch `claude/rider-new-32c` (from
+`claude/rider-new-32b`, rebased on main 18aaace1). The contract: `../ruling-29.md` 29g, items 1–7.
+
+Tags as above: [M] measured by a probe here (on the model); [R] read in the code; [S] from a source; [I] my inference.
+Sources marked "recalled" were not read.
+
+## 1. Short answer
+
+- **Miss at the gate (item 5). Nothing was built in the game**, as the stop rule says. The old rider is untouched: the
+  only `src/` change is the model in `rollModel.ts` (new functions; the game does not call them).
+- **The split (item 1)** [M, from de Leva]: with the board 1.37 / 1.37 / 1.24 kg·m² (tall / crouch / Compress), on the
+  twist 1.44 / 1.68 / 1.96 (+0.87 with the arms out). The old twist rotor's 1.5 is the tall share.
+- **The upper bound (item 4)** [M, model]: full-state feedback, no delay, with the 0.05 s motor lag, efforts within
+  the limits. (a) The ankle alone, the twist passive: +0.26 / +0.26 / +0.25 at 5 / 7 / 9 m/s. (b) The ankle and the
+  twist: **+0.69 / +0.76 / +0.78**. So the twist has the authority; the stop rule's 4(b) bar (+0.05) is met easily.
+- **A human law (item 5)** [M, model]: delay 0.1 s and lag 0.05 s on both channels, the senses the brief allows.
+  - At each speed and stance alone there are laws that pass with the margins (+0.02 to +0.40).
+  - **No single law passes 5, 7 and 9 m/s together** (best −0.33). The gains that work change a lot between speeds and
+    stances, and a table of them fails in between (−0.35 at 6 m/s).
+  - The one law found for 7–9 m/s that passes (+0.015) works only by cancelling the twist's own stiffness with a
+    delayed reflex. With that stiffness halved or doubled (well inside its sourced range) it fails.
+  - So by the stop rule I hand back before building.
+- **A finding beside the brief** [M, model]: the ankle alone, with full-state feedback, damps 3.2b's rigid case well
+  when undelayed (+0.45 to +0.71). 3.2b's "the ankle cannot damp it even undelayed" holds for the bank and bank rate
+  only. The ankle needs the board's yaw rate and slip, which the delay then spoils.
+
+## 2. The split (item 1)
+
+**Method** [M, R] (`inertia.probe.ts`, `yawSplit`; `results/inertia.jsonl`, the `split` rows): the posture and
+segments of Part 2 (de Leva 1996, posed in the game's stance). Two yaw coordinates:
+- the board's turn: the feet, the shanks and the knees go with it (planted);
+- the twist: the pelvis, trunk, arms and head turn as one body about the vertical through the body's centre of mass;
+- the thighs run from the hip (with the twist) to the knee (with the board). Their speed in a twist falls linearly
+  along them, so their share is m [(1 − c)² + r²] d², d the hip's distance from the twist's axis.
+
+| Stance (arms in the pose) | Whole | With the board | On the twist | Of which the thighs | What the board meets, the upper body free |
+|---|---|---|---|---|---|
+| Tall | 2.81 | **1.37** | **1.44** | 0.11 | 1.32 |
+| Pumping crouch | 3.05 | **1.37** | **1.68** | 0.27 | 1.41 |
+| Compress | 3.20 | **1.24** | **1.96** | 0.37 | 1.33 |
+
+- The arms out add 0.85–0.92 to the twist and nothing to the board.
+- The last column uses the exact coupling term. It is within 3–7 % of the lumped share, so the lumped split is used.
+- The twist about the pelvis's vertical instead (the check row) puts most of a crouched trunk's lean on the twist
+  (Compress 3.07 / 0.13). I chose the centre of mass because the game's body spins about its leg line through it, as
+  3.2b's whole inertia did [I].
+- Under `rider=new` this would replace the provisional `TWIST_INERTIA` 1.5, so nothing is counted twice. (Not built.)
+
+## 3. The twist's numbers and their sources (item 2)
+
+A research helper searched; PubMed was blocked, Europe PMC worked. [S] = read in the text or abstract; [S, 2nd] = read
+only through a review or a search result.
+
+- **The trunk's axial stiffness, passive:**
+  - Kosmopoulos et al. 2012, Open Spine J 4:1–4 (https://benthamopenarchives.com/contents/pdf/TOSPINEJ/TOSPINEJ-4-1.pdf):
+    seated, men 19.6–22.6 N·m/rad [S].
+  - McGill, Seguin and Bennett 1994, Spine 19:696: standing, 7.4 N·m/rad near neutral, 37 at 24° [S, 2nd: Watt et al.
+    2022, Med Biol Eng Comput 60:2133, Table 4, https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9293810/fullTextXML].
+- **The hip's rotation, passive:** no value in living people found. A cadaver capsule is slack for about ±50° (van
+  Arkel et al. 2015, J Biomech 48:3803, https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4655836/fullTextXML) [S].
+- **The bent knee's axial rotation:** 47.5 N·m/rad passive, men, knee at 60° (ISB 2005 abstract,
+  https://media.isbweb.org/images/conf/2005/abstracts/0667.pdf) [S]; 9 N·m/rad relaxed to 146 co-contracted (Louie and
+  Mote 1987, J Biomech 20:281, abstract, https://www.bisp-surf.de/Record/PU198706030393) [S].
+- **The lower leg and foot:** 4.9 N·m/rad and 2.25 N·m·s/rad, relaxed, unloaded (Ficanha et al. 2015, Front Bioeng
+  Biotechnol 3:198, https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2015.00198/full) [S].
+  Damping elsewhere: not found.
+- **What the model uses** [I]: each leg is the hip, knee and foot in series; the two legs work in parallel; the trunk
+  sits in series above them. Relaxed, this gives about 5–10 N·m/rad. Co-contraction raises the knee 16-fold. The
+  nominal twist's own (undelayed) stiffness is 20 N·m/rad (about the trunk's own value) and its damping 3 N·m·s/rad;
+  the rider's bracing may pick 5–150 N·m/rad and 1–15 N·m·s/rad (the `BRACE` searches).
+- **Strength:** hip internal rotation 0.72 and external 0.66 N·m/kg (McNabb et al. 2024, PLoS One 19:e0308956,
+  https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11329127/fullTextXML) [S]: 53 and 48 N·m per leg at 73 kg. In a
+  twist one hip turns in and the other out, so **about 100 N·m** for both [I]. The trunk's rotation: 69 N·m, seated
+  [S, 2nd]. The feet's grip for two feet 0.63 m apart pushing opposite ways: 0.9 × 716 N × 0.315 m ≈ 200 N·m [R, I].
+  So the hips are the limit.
+- **Range:** hips in 29–36°, out 36–45° (Simoneau et al. 1998, JOSPT 28:158 [S, 2nd]; Hogg et al. 2018, J Athl Train
+  53:560 [S]); the bent knee about 18–20° at 4 N·m (Lorenz et al. 2015, BMC Musculoskelet Disord 16:373) [S]; the trunk
+  25° (T1 against L1) to 56° (Fujii et al. 2007, Eur Spine J 16:1867) [S, 2nd]. The pelvis against the feet:
+  about 30° + 20° = **50° (0.87 rad)** [I]; the shoulders add the trunk's.
+- **The feet's free moment:** 8–16 N·m per foot in running (Holden and Cavanagh 1991, via Almosnino et al. 2009)
+  [S, 2nd]. That is one foot; the two-foot couple is far larger.
+- **The delay:** no axial value found; trunk responses 50–64 ms [S, 2nd]. The brief's 0.1 s is used.
+- **Bicycles:** Moore 2012, PhD thesis, UC Davis (https://moorepants.github.io/dissertation/control.html) [S, read by
+  the helper]: steering with the roll rate stabilises below the weave speed; roll-angle feedback above the capsize
+  speed; the identified rider's loops are nested (steer, roll rate, roll angle, heading), and **the gains rise roughly
+  linearly with speed**. Schwab, Meijaard and Kooijman 2012, Vehicle Syst Dyn 50:1209: **only the abstract** (the
+  full text refused: TU Delft, Taylor & Francis 403): the bicycle is controllable by steer torque or by the upper
+  body's lean, and steer torque is much easier.
+
+## 4. The model with the twist (item 3)
+
+**What changed** [R] (`rollModel.ts`: `TwistPlant`, `TwistGains`, `twistRows`, `humanTwistLoop`, `humanTwistModes`,
+`humanTwistKick`):
+- 3.2b's `YawPlant`, with `riderYawInertia` now the board's share. The upper body is a second yaw body.
+- The twist θ_t is the upper body's yaw less the board's. The legs put τ_b = τ_a + k θ_t + c θ̇_t on the board and −τ_b
+  on the upper body: the active twist and the legs' own stiffness and damping. A limb's force with its reaction.
+- τ_b enters the board's yaw before the feet's acceleration, so the body's bank feels the turn it makes.
+- The human loop has two commands, each delayed 0.1 s (a Padé) and lagged 0.05 s: the ankle's rest, as before (now
+  also optionally on the head's yaw rate), and the twist torque
+  u_t = K_b θ + K_br θ̇ + K_r ω_u + K_t θ_t + K_tr θ̇_t.
+  The senses: the body's bank and its rate, the head's yaw rate (the head turns with the upper body), the twist and
+  its rate. Never the board's roll or slip.
+
+**Checks** [M] (`twist.probe.ts` PART=check, `results/twist-check.jsonl`; 3.2's gains, no twist law, tall, 7 m/s):
+- a stiff twist is 3.2b's rigid model: −0.266 at 0.59 Hz both (and at 5 and 9 m/s within 0.001);
+- the upper body free (no stiffness): −0.253 at 0.76 Hz;
+- the twist passive (20 N·m/rad, 3 N·m·s/rad): **−0.034 at 0.52 Hz**. The passive twist alone takes much of 3.2b's
+  growth away at 7 and 9 m/s (9 m/s: −0.228 → −0.090), not at 5 m/s (−0.68).
+- Swept (PART=passive): the best passive twist is near 20 N·m/rad and 2–5 N·m·s/rad (−0.06). Stiffer is worse; at
+  400 N·m/rad it is 3.2b's.
+- The time runs with the exact delay (`humanTwistKick`) agree with the Padé modes in sign (`twist-kick.jsonl`).
+- Tests: `humanBalance.test.ts` (the stiff limit, the twist's equal and opposite moments, time against modes).
+
+## 5. The upper bound (item 4)
+
+`twist.probe.ts` PART=lqr, `results/twist-lqr.jsonl`. Full state, no delay. Each plant gets its own gains: the best
+over Bryson weights (ρ 10⁻⁴ to 10⁴, the bank's weight ×1, 10, 100). The efforts must stay within the limits for the
+bars' kick and for a 20 N·s shove of the body: the ankle 72 N·m (the centre of pressure 9 cm off), the twist 100 N·m
+and 0.87 rad. The worst over tall and Compress and the board's roll inertia 0.03 and 0.3 [M]:
+
+| Case | No lag: 5 / 7 / 9 m/s | Lag 0.05 s: 5 / 7 / 9 m/s | Efforts used (lag) |
+|---|---|---|---|
+| (a0) 3.2b's rigid yaw, the ankle alone | +0.71 / +0.45 / +0.45 | +0.71 / +0.53 / +0.55 | ankle 41–60 N·m |
+| (a) the twist passive, the ankle alone | +0.25 / +0.25 / +0.24 | +0.26 / +0.26 / +0.25 | ankle 40–58 N·m |
+| (b) the ankle and the twist | **+0.71 / +0.79 / +0.89** | **+0.69 / +0.76 / +0.78** | ankle 11–33, twist 11–13 N·m, 0.10–0.12 rad |
+
+- In (a) the limit is the twist's own passive mode (its damping c / 2√(k I) is 0.24–0.28), which the ankle cannot
+  reach. The weave itself is damped.
+- In (b) the gains (`lqrgain` rows, 7 m/s tall) push into the fall hard: 200–600 N·m per rad of bank, 30–90 per rad/s
+  of bank rate, −25 to −86 per rad/s of the board's yaw rate, and they soften the twist (−23 to −35 N·m/rad).
+- Keeping only what a human senses (dropping the board's roll, roll rate and slip): +0.32 to +0.60, undelayed.
+
+## 6. A human law (item 5)
+
+`twist.probe.ts` PART=opt (a pattern search, Hooke and Jeeves, from several starts), PART=schedule, PART=margins;
+`results/twist-search.jsonl` (each row says its run), `twist-schedule.jsonl`, `twist-sens.txt`. The margins: gains
+×0.75 / ×1 / ×1.33, delay 0.1 and 0.15 s, the board's roll inertia 0.03 and 0.3, tall and Compress [M]:
+
+| Law | Where | Worst least damping |
+|---|---|---|
+| any of the eight gains, one law | 5, 7, 9 m/s | −0.33 (nominal only: −0.19) |
+| into the fall + the bracing free | 5, 7, 9 m/s | −0.35 |
+| yaw-rate damping + the bracing free | 5, 7, 9 m/s | −0.35 |
+| gains linear in speed (Moore) | 5–9 m/s | −0.33 |
+| one law per speed and stance | each of 5 / 7 / 9 m/s | +0.016 to +0.36 (pass) |
+| that table, linear in between | 5.5–6.5 m/s | down to **−0.35** (miss) |
+| one law per speed and stance | 5.5, 6, 6.5, 8 m/s | +0.14 to +0.39, but in other basins |
+| one law | 7, 8, 9 m/s | **+0.015** (pass), see below |
+| no twist reflex, the bracing free, per speed and stance | 7 / 9 m/s; 5 m/s | +0.30 to +0.40; **−0.05 / −0.08** |
+| no twist reflex, one law | 6–9 m/s; 5–9 m/s | −0.17; −0.34 |
+
+- **The 7–9 m/s law** (ankle 0.007, −0.021 s; twist 52 N·m per rad of bank, 8.4 per rad/s, −7.2 on the head's yaw
+  rate, −15 N·m/rad on the twist, +9 on its rate) passes only because its −15 cancels most of the twist's own 20. With
+  that stiffness at 10 the twist drifts (a static divergence); at 40 it grows (−0.46) (`twist-sens.txt`). The twist's
+  own stiffness is the least sourced number here (no living hip value), so this law is not robust.
+- **Without the reflex** the laws are plainer and hold their own case with the margins: the twist relaxed (10–15
+  N·m/rad, 5–14 N·m·s/rad), the head's yaw rate resisted (−0.3 to −10 N·m·s/rad), the twist damped (+0.6 to +9), the
+  ankle nearly passive (bank gain 0 to −0.1). Three of the four push gently into the fall (10–23 N·m per rad of bank,
+  5–7.5 per rad/s); the fourth (7 m/s Compress) pushes the other way. In time at 7 m/s tall, the tall law's kick dies
+  within a cycle (bank under 0.2°; `twist-kick.jsonl`). The same law grows at 5 m/s (−0.54), and in Compress at 7–9
+  m/s it misses with the margins (−0.11 to −0.13; `twist-schedule.jsonl`).
+- **5 m/s wants other gains:** a positive ankle gain on the bank (0.1–0.8) and more push into the fall. 3.2b found the
+  model too pessimistic at 5 m/s (the model diverged where the game was −0.11).
+- This was one round, as the brief allows. The landscape is rough (neighbouring gains flip sign), and a local search
+  may miss a law; I did not find one.
+
+## 7. What it means [I]
+
+- **The twist is the rider's handlebar, in the model.** With it, full-state feedback damps the weave well, using
+  modest torques (11–13 N·m) and small twists (6–7°). Even passive, a relaxed twist takes much of 3.2b's growth away
+  at 7 and 9 m/s: the upper body works like a tuned absorber on the board's yaw.
+- **The delay is still the problem**, now in a different way. The laws that work push into the fall and damp the yaw,
+  as a bicycle rider does, but their gains must change with speed and stance more sharply than a smooth schedule
+  allows. Moore's riders change gains with speed too, so a schedule is human; this one is not smooth enough.
+- **The ankle can do more than 3.2b thought**, if it reads the yaw rate, but only undelayed.
+- **Options for the advisor**, in my order:
+  1. Rule whether a 7–9 m/s pass (no reflex, the twist relaxed, gains by stance) is enough to build and let the game's
+     bars judge 5 m/s, where the model is least trusted. That bends item 5's gate, so it is the advisor's call.
+  2. The water's small-rail yaw (levers 1 and 2), as item 7 says, if the gate stands.
+  3. A better-sourced passive hip rotation stiffness: every law here leans on the twist's own stiffness.
+
+## 8. What was not run
+
+- **No game build**, so none of 3.2's bars, no yaw step, no pose, no merge checks (the stop rule).
+- `tsc` (app and server) and `humanBalance.test.ts` were run and pass.
+- The 6 and 8 m/s plants are the measured ones interpolated, not measured.
+- No ride, no game page, no Basilisk case.
+
+## Files (3.2c)
+
+- `inertia.probe.ts`: the split (`yawSplit`; the `split` rows of `results/inertia.jsonl`; the older rows unchanged).
+- `twist.probe.ts`: the model with the twist. Parts: `check`, `passive`, `lqr`, `lqrgain`, `opt` (env `CASESET`,
+  `FREE`, `DIMS`, `BRACE`, `NOMINAL`, `CASE_SPEEDS`, `CASE_STANCES`, `STARTS`, `SCALES`), `schedule` (`SCHEDULE`),
+  `margins` and `kick` (`LAW`, `ANKLE`, `KT`, `CT`), `map`, `percase`, `search`. Header of the file for the command.
+- `lqr.ts`: a small dense LQR (the Riccati equation by the matrix sign function) for the probe.
+- `results/`: `twist-check.jsonl`, `twist-lqr.jsonl`, `twist-search.jsonl`, `twist-schedule.jsonl`, `twist-kick.jsonl`,
+  `twist-sens.txt`.
