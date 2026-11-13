@@ -2508,7 +2508,10 @@ export class AttachedRider {
     const rigid = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity);
     const relative = this.localScratch.subVectors(this.velocity, rigid).dot(this.forward);
     this.standingBody.speed = relative - this.drive.dot(this.forward);
-    this.standingBody.prepare(h, this.mass, this.legLength, this.legLoad, this.copTarget.z, relative / this.legLength, this.heading, this.waterUp, this.bodyPush);
+    // The feet's reach from the stance point to the toe and the heel (the support's ends), and the leg's depth (the hip's range).
+    const toe = this.support.zMax - this.base.z;
+    const heel = this.base.z - this.support.zMin;
+    this.standingBody.prepare(h, this.mass, this.legLength, this.legLoad, this.copTarget.z, relative / this.legLength, this.heading, this.waterUp, this.bodyPush, toe, heel, -this.leg.rest);
   }
 
   /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
@@ -3334,7 +3337,7 @@ export class AttachedRider {
     if (free) mismatch.addScaledVector(this.forward, this.standingBody.speed);
     mismatch.sub(this.velocity);
     const f = this.scratch2.copy(this.external).multiplyScalar(h).addScaledVector(mismatch, -m);
-    if (free) this.standingBody.couple(system, rhs, N, h, m, this.forward, a, b, f, this.legLength);
+    if (free) this.standingBody.couple(system, rhs, N, h, m, this.forward, a, b, f, this.legLength, this.across);
     rhs[0] += f.x;
     rhs[1] += f.y;
     rhs[2] += f.z;
@@ -3482,6 +3485,9 @@ export class AttachedRider {
     const sz = ws.z + x[5] / 2;
     if (this.swingTorque !== 0) work -= h * this.swingTorque * (this.rollAxis.x * sx + this.rollAxis.y * sy + this.rollAxis.z * sz);
     if (this.twistTorque !== 0) work -= h * this.twistTorque * (this.up.x * sx + this.up.y * sy + this.up.z * sz);
+    // The new surfer's hip in pitch: its couple on the pair, about the pitch axis.
+    const hip = this.freeBody ? this.standingBody.hip.torque : 0;
+    if (hip !== 0) work -= h * hip * (this.across.x * sx + this.across.y * sy + this.across.z * sz);
     if (this.agile && (this.hipTorque !== 0 || this.trunkTorque !== 0)) work += h * (this.limbTorque.x * sx + this.limbTorque.y * sy + this.limbTorque.z * sz);
     if (!(work > this.powerBudget)) return false;
     this.feasible = false;
@@ -3626,6 +3632,10 @@ export class AttachedRider {
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
+    }
+    if (free && this.feasible && this.standingBody.hip.torque !== 0) {
+      // The new surfer's hip in pitch: the trunk's couple, which the pair took about the pitch axis.
+      board.work.rider -= (h * this.standingBody.hip.torque * this.across.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
     }
     if (this.upright && this.feasible && this.twistTorque !== 0) {
       // The twist's reaction, which turned the board through the feet.

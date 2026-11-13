@@ -74,6 +74,27 @@ export const PITCH_RATE_GAIN = 0.1;
  */
 export const PITCH_ACTIVATION_TIME = 0.2;
 export const PITCH_ACTIVATION_MAX = 2;
+/**
+ * The hip in pitch (ruling 29b, the design's human order: the ankle first, then the hip): the trunk, head and arms as a
+ * rotor about the hips' axis (HIP_PITCH_INERTIA, kg·m², `TRUNK_INERTIA`'s de Leva segments), driven at up to
+ * HIP_PITCH_TORQUE, N·m (the ruling's human 150–250), within the stance's hip range (the design's table: tall ±1.2,
+ * the pumping crouch ±0.8, Compress ±0.4 rad; the tube tuck ±0.3). It takes what the ankle loop asks beyond
+ * HIP_PITCH_SHARE of the feet's reach to the toe or the heel, sensed and acting as the ankle's loop does (PITCH_DELAY,
+ * PITCH_MOTOR_LAG). Its reaction pushes the body's centre of mass back over the feet (the hip strategy: bending at the
+ * hips throws them back). With nothing asked it comes back upright at HIP_PITCH_RETURN, rad/s, critically damped.
+ */
+export const HIP_PITCH_INERTIA = 8;
+export const HIP_PITCH_TORQUE = 200;
+export const HIP_PITCH_SHARE = 0.8;
+export const HIP_PITCH_RETURN = 1.5;
+/** The hip's range at a leg's depth below the riding stance, m (piecewise linear between the design's stances). */
+export function hipRange(depth: number): number {
+  const d = Math.max(0, depth);
+  if (d <= 0.195) return 1.2 - (0.4 * d) / 0.195;
+  if (d <= 0.3) return 0.8 - (0.4 * (d - 0.195)) / 0.105;
+  return Math.max(0.3, 0.4 - (0.1 * (d - 0.3)) / 0.15);
+}
+
 /** The furthest the leg line leans off the deck's normal before the body is off its posture, rad. */
 export const MAX_PITCH = (45 * Math.PI) / 180;
 
@@ -125,6 +146,10 @@ export class StandingBody {
   private clock = 0;
   private times = new Float64Array(512);
   private commands = new Float64Array(512);
+  private excesses = new Float64Array(512);
+  /** The hip in pitch: the trunk's pitch on the legs (forward +), rad, its rate, its torque now, N·m (+ pushes the body back), and the lagged demand. */
+  readonly hip = { angle: 0, rate: 0, torque: 0 };
+  private hipLagged = Number.NaN;
   private head = 0;
   private count = 0;
   private lagged = Number.NaN;
@@ -161,6 +186,10 @@ export class StandingBody {
     this.lastLean = Number.NaN;
     this.activation = Number.NaN;
     this.active = 0;
+    this.hip.angle = 0;
+    this.hip.rate = 0;
+    this.hip.torque = 0;
+    this.hipLagged = Number.NaN;
   }
 
   /** Not standing free (landing, lying): the felt lean starts again when the body next stands free. */
@@ -206,7 +235,7 @@ export class StandingBody {
    * board from their middle (m), `waterUp` the face's normal under the board and `felt` the body's own push through the
    * feet, low-passed (N), both world.
    */
-  prepare(h: number, mass: number, length: number, load: number, cop: number, rate: number, heading: Quaternion, waterUp: Vector3, felt: Vector3): void {
+  prepare(h: number, mass: number, length: number, load: number, cop: number, rate: number, heading: Quaternion, waterUp: Vector3, felt: Vector3, toe = Infinity, heel = Infinity, depth = 0): void {
     this.inverse.copy(heading).invert();
     const face = pitchOf(waterUp, this.inverse, this.scratch);
     const sensed = felt.lengthSq() > 1e-6 ? pitchOf(felt, this.inverse, this.scratch) - face : 0;
@@ -233,9 +262,13 @@ export class StandingBody {
     const feedback = PITCH_LEAN_GAIN * (this.reference - lean) - PITCH_RATE_GAIN * leanRate;
     const command = forward + feedback;
     // Delayed PITCH_DELAY and lagged PITCH_MOTOR_LAG; a fresh loop starts on its command.
+    // What the ankle's own torque (as it stood the latest substep) asked past HIP_PITCH_SHARE of the feet's reach: the
+    // hip's share, sensed with the same delay.
+    const room = HIP_PITCH_SHARE * Math.max(0, load);
+    const excess = this.torque > room * toe ? this.torque - room * toe : this.torque < -room * heel ? this.torque + room * heel : 0;
     this.clock += h;
-    this.push(this.clock, command);
-    const delayed = this.at(this.clock - PITCH_DELAY);
+    this.push(this.clock, command, excess);
+    const delayed = this.at(this.clock - PITCH_DELAY, this.commands);
     if (Number.isNaN(this.lagged)) this.lagged = delayed;
     else this.lagged += (delayed - this.lagged) * (1 - Math.exp(-h / PITCH_MOTOR_LAG));
     this.rest = this.lagged;
@@ -244,10 +277,34 @@ export class StandingBody {
     // Backward Euler on the ankle, as the bank's: over the substep the lean moves at its rate after the solve.
     this.implicit = this.stiffness * h + damping;
     this.torque = this.stiffness * (this.pitch.angle - this.rest) + this.implicit * rate;
+    this.hipStep(h, this.at(this.clock - PITCH_DELAY, this.excesses), hipRange(depth));
+  }
+
+  /**
+   * The trunk's rotor: `demand`, N·m, the hip's delayed share, lagged PITCH_MOTOR_LAG; pushed only while it can still be
+   * braked inside its `range` (a rotor holds no steady torque), and brought back upright once nothing is asked.
+   */
+  private hipStep(h: number, demand: number, range: number): void {
+    if (Number.isNaN(this.hipLagged)) this.hipLagged = 0;
+    this.hipLagged += (demand - this.hipLagged) * (1 - Math.exp(-h / PITCH_MOTOR_LAG));
+    let burst = Math.max(-HIP_PITCH_TORQUE, Math.min(HIP_PITCH_TORQUE, this.hipLagged));
+    // The trunk turns the other way to the body's push: forward for a push back (burst > 0).
+    const outward = burst * (this.hip.angle !== 0 ? Math.sign(this.hip.angle) : Math.sign(burst)) > 0;
+    const braking = (this.hip.rate * Math.abs(this.hip.rate) * HIP_PITCH_INERTIA) / (2 * HIP_PITCH_TORQUE);
+    if (outward && Math.abs(this.hip.angle + braking) >= range) burst = 0;
+    const back = Math.max(0, 1 - Math.abs(this.hipLagged) / (0.1 * HIP_PITCH_TORQUE));
+    const w = HIP_PITCH_RETURN;
+    this.hip.torque = burst - back * HIP_PITCH_INERTIA * w * (w * this.hip.angle + 2 * this.hip.rate);
+    this.hip.rate += (h * this.hip.torque) / HIP_PITCH_INERTIA;
+    this.hip.angle += h * this.hip.rate;
+    if (Math.abs(this.hip.angle) > range) {
+      this.hip.angle = Math.sign(this.hip.angle) * range;
+      if (this.hip.rate * this.hip.angle > 0) this.hip.rate = 0;
+    }
   }
 
   /** Records a command at time `t` and drops those older than the delay needs (keeping one before it). */
-  private push(t: number, value: number): void {
+  private push(t: number, value: number, excess: number): void {
     let capacity = this.times.length;
     while (this.count >= 2 && this.times[(this.head + 1) % capacity] <= t - PITCH_DELAY) {
       this.head = (this.head + 1) % capacity;
@@ -256,35 +313,39 @@ export class StandingBody {
     if (this.count === capacity) {
       const times = new Float64Array(capacity * 2);
       const commands = new Float64Array(capacity * 2);
+      const excesses = new Float64Array(capacity * 2);
       for (let i = 0; i < capacity; i += 1) {
         times[i] = this.times[(this.head + i) % capacity];
         commands[i] = this.commands[(this.head + i) % capacity];
+        excesses[i] = this.excesses[(this.head + i) % capacity];
       }
       this.times = times;
       this.commands = commands;
+      this.excesses = excesses;
       this.head = 0;
       capacity *= 2;
     }
     const at = (this.head + this.count) % capacity;
     this.times[at] = t;
     this.commands[at] = value;
+    this.excesses[at] = excess;
     this.count += 1;
   }
 
-  /** The command at time `t`, interpolated; before the first, the first. */
-  private at(t: number): number {
+  /** A channel's value at time `t`, interpolated; before the first, the first. */
+  private at(t: number, channel: Float64Array): number {
     const capacity = this.times.length;
     const first = this.head;
-    if (t <= this.times[first]) return this.commands[first];
+    if (t <= this.times[first]) return channel[first];
     for (let i = 1; i < this.count; i += 1) {
       const b = (first + i) % capacity;
       if (this.times[b] >= t) {
         const a = (first + i - 1) % capacity;
         const span = this.times[b] - this.times[a];
-        return span > 0 ? this.commands[a] + ((t - this.times[a]) / span) * (this.commands[b] - this.commands[a]) : this.commands[b];
+        return span > 0 ? channel[a] + ((t - this.times[a]) / span) * (channel[b] - channel[a]) : channel[b];
       }
     }
-    return this.commands[(first + this.count - 1) % capacity];
+    return channel[(first + this.count - 1) % capacity];
   }
 
   /**
@@ -292,7 +353,7 @@ export class StandingBody {
    * along `forward` (world). `m` the body's mass, `arm` its line of force from the board's centre of mass, `carried`
    * where it is carried from it, `push` the rider's momentum the constraint must supply (h F − m mismatch), `length` the leg's.
    */
-  couple(system: Float64Array, rhs: Float64Array, N: number, h: number, m: number, forward: Vector3, arm: Vector3, carried: Vector3, push: Vector3, length: number): void {
+  couple(system: Float64Array, rhs: Float64Array, N: number, h: number, m: number, forward: Vector3, arm: Vector3, carried: Vector3, push: Vector3, length: number, across?: Vector3): void {
     const f = forward;
     const af = this.scratch.crossVectors(arm, f);
     const fv = [f.x, f.y, f.z];
@@ -306,7 +367,13 @@ export class StandingBody {
       system[8 * N + 3 + i] += m * bfv[i];
     }
     system[8 * N + 8] += m + (h * this.implicit) / (length * length);
-    // The ankle pushes the body back along its forward axis by its torque over the leg's length.
-    rhs[8] += f.dot(push) - (h * this.torque) / length;
+    // The ankle pushes the body back along its forward axis by its torque over the leg's length, and so does the hip's
+    // reaction; the hip's couple is the pair's (the trunk, outside the solve, takes the opposite), about the pitch axis.
+    rhs[8] += f.dot(push) - (h * (this.torque + this.hip.torque)) / length;
+    if (across && this.hip.torque !== 0) {
+      rhs[3] -= h * this.hip.torque * across.x;
+      rhs[4] -= h * this.hip.torque * across.y;
+      rhs[5] -= h * this.hip.torque * across.z;
+    }
   }
 }
