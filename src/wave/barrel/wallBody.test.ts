@@ -94,7 +94,8 @@ describe('ruling 6: the streamline wall water\'s switch', () => {
     expect(tubeFaceOf(true, { wallBody: 'stream' })).toEqual(all);
     const seam = { tau: TUBE_SEAM.tau, band: TUBE_SEAM.band };
     expect(tubeFaceOf(true, { tubeSeam: 'blend' })).toEqual({ ...all, seam });
-    expect(tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream' })).toEqual({ ...all, seam, stream: true });
+    expect(tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream' })).toEqual({ ...all, seam, stream: true, follow: true });
+    expect(tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream', tubeInertia: 'path' })).toEqual({ ...all, seam, stream: true });
     expect(tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream', formClock: 'c1' })).toMatchObject({ formClock: true, stream: true });
     for (const off of [{ wallFlow: 'old' }, { tubeFrom: 'piece' }, { tubeFace: 'old' }] as const) expect('stream' in tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream', ...off })!).toBe(false);
   });

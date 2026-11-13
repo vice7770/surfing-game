@@ -43,6 +43,14 @@ describe('ruling 3: the switches', () => {
     expect(tubeFaceOf(true, { tubeThrow: 'break' })).toMatchObject({ retire: false });
     expect(tubeFaceOf(true, { tubeFrom: 'piece', tubeTrack: 'on', tubeBuoy: 'on', tubeDrop: 'on' })).toMatchObject({ track: false, inertia: false, retire: false, buoy: false, drop: false });
     expect(tubeFaceOf(false, {})).toBeUndefined();
+    // Step 2 of the surfer track: following the water with the streamline wall water alone; `path` and `old` keep it off.
+    const stream = tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream' })!;
+    expect(stream).toMatchObject({ inertia: true, stream: true, follow: true });
+    const { follow: _, ...withoutFollow } = stream;
+    expect(tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream', tubeInertia: 'path' })).toEqual(withoutFollow);
+    expect(tubeFaceOf(true, { tubeSeam: 'blend', wallBody: 'stream', tubeInertia: 'old' })).toEqual({ ...withoutFollow, inertia: false });
+    expect(tubeFaceOf(true, { tubeSeam: 'blend' })!.follow).toBeUndefined();
+    expect(all.follow).toBeUndefined();
   });
 });
 
@@ -392,6 +400,58 @@ describe('ruling 3: the water\'s acceleration on the added mass, in the wall wat
     inertia(1, sample, h, 0, 1, 0);
     sample.flowY = 1;
     expect(inertia(1, sample, h, 0, 1, 0)).toBeCloseTo((1 / h) * (h / (3 / 60)), 9);
+  });
+});
+
+describe('step 2 of the surfer track: the added mass follows the water (`wallFollow`)', () => {
+  // A board gliding at 7 m/s over wall water whose upward flow steps 0 → 1 m/s over 10 cm, still in time: along the path
+  // that step reads as the water accelerating (7 × 1 / 0.1 = 70 m/s², capped at 5 g, smoothed); following the water, it is none.
+  const stepWater = (follow: boolean, accel = 0): SurfWater & { advance(dt: number): void } => {
+    let time = 0;
+    let offset = 0;
+    return {
+      advance(dt: number) { time += dt; },
+      setSampleTime(o: number) { offset = o; },
+      surfaceAt: () => 0.5 * accel * (time) ** 2,
+      sampleAt(_x: number, _y: number, z: number, out: WaterSample) {
+        const t = time + offset;
+        const s = Math.min(1, Math.max(0, (z - 1) / 0.1));
+        Object.assign(out, {
+          surfaceY: 0.5 * accel * t * t, stillDepth: 3, waterDepth: 3, bedY: -3, wet: true, outsideDomain: false, slopeX: 0, slopeZ: 0,
+          normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: accel * t + s * s * (3 - 2 * s), flowZ: 0, regime: 'profile', breaking: 0, voidFraction: 0,
+          bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand',
+        });
+        out.wallWater = true;
+        out.wallFollow = follow ? true : undefined;
+        return out;
+      },
+      addReaction() {},
+    };
+  };
+  const peakAccel = (follow: boolean, accel = 0) => {
+    const board = new BoardBody();
+    const water = stepWater(follow, accel);
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 7));
+    const acc = (board as unknown as { wallAccel: Float64Array }).wallAccel;
+    let peak = 0;
+    let last = 0;
+    for (let n = 0; n < 20; n += 1) {
+      water.advance(1 / 60);
+      board.step(1 / 60, water);
+      for (let k = 1; k < acc.length; k += 3) peak = Math.max(peak, Math.abs(acc[k] - accel));
+      last = acc[1];
+    }
+    return { peak, last };
+  };
+
+  it('reads no acceleration crossing a still flow step, and the path rule reads the step', () => {
+    expect(peakAccel(true).peak).toBeLessThan(1e-6);
+    expect(peakAccel(false).peak).toBeGreaterThan(10);
+  });
+
+  it('keeps the water\'s own acceleration where it truly accelerates', () => {
+    // 3 m/s² up everywhere: following the water the smoothed acceleration settles on it (the step adds nothing).
+    expect(peakAccel(true, 3).last).toBeCloseTo(3, 2);
   });
 });
 

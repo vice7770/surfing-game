@@ -92,6 +92,11 @@ export interface WaterSample {
    */
   wallWater?: true;
   /**
+   * With `wallWater` (`PhysicalSurfWaterOptions.sweptFollow`; absent elsewhere): the hull takes the water's own material
+   * acceleration there, Du/Dt = ∂u/∂t + (u·∇)u, not the flow's change along its path (`BoardBody`, `WATER_INERTIA`).
+   */
+  wallFollow?: true;
+  /**
    * Ruling 3's rank 5 (`PhysicalSurfWaterOptions.sweptBuoy`; absent elsewhere): in the wall water past the slope clamp, the
    * buoyancy acts along the sample's normal at this many times the support (`patchForce`), not along the clamped slope.
    */

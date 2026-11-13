@@ -129,6 +129,14 @@ const RADIATED_WAVENUMBER = (2 * Math.PI / 1.5) ** 2 / 9.81;
  * smoothed over `smoothing` s (about three 1/60 s steps: the sea and the case change at steps) and capped at `cap` m/s²
  * (5 g, just above the 4.7 g computed in overturning faces, Peregrine, Cokelet & McIver 1980). Provisional. Only in the
  * wall water: anywhere else it would change the hull law riders are tuned on, the owner's call (not made).
+ *
+ * Two rules for Du/Dt (`WaterSample.wallFollow`, step 2 of the surfer track, docs/research/board-in-water/b-wall):
+ * - along the patch's path (the first rule, `?tubeInertia=path`, and without `?wallBody=stream`): the flow sampled where
+ *   the patch is now against the flow where it was a substep before, (u(x, t) − u(x − v h, t − h)) / h = ∂u/∂t + (v·∇)u.
+ *   A fast board crossing a step in the flow reads the step as an acceleration of the water;
+ * - following the water (`wallFollow`, the default with `?wallBody=stream`): the flow where the patch's last water has
+ *   moved to, x_last + u_last h, against u_last, (u(x_last + u_last h, t) − u(x_last, t − h)) / h = ∂u/∂t + (u·∇)u, the
+ *   water's own material acceleration (one more flow sample a wall patch a substep). The board's speed is not in it.
  */
 const WATER_INERTIA = { smoothing: 3 / 60, cap: 5 * 9.81 } as const;
 /** A submerged plate lies under a plain surface: one whose normal is within 45° of straight up. */
@@ -357,6 +365,10 @@ export class BoardBody implements BoardContactBody {
   private readonly wallFlow: Float64Array;
   private readonly wallAccel: Float64Array;
   private readonly wallPush: Float64Array;
+  /** Following the water (`WaterSample.wallFollow`): each patch's place at its last wall sample, and the substep span since. */
+  private readonly wallPoint: Float64Array;
+  private readonly wallScratch = createWaterSample();
+  private lastSpan = 0;
   private wallAny = false;
   /** This substep's length, s (the plate's share of `WATER_INERTIA`'s impulse). */
   private substepSpan = 0;
@@ -465,6 +477,7 @@ export class BoardBody implements BoardContactBody {
     this.wallFlow = new Float64Array(3 * count);
     this.wallAccel = new Float64Array(3 * count);
     this.wallPush = new Float64Array(count);
+    this.wallPoint = new Float64Array(3 * count);
     this.plateShare = new Float64Array(count);
     // The stations, tail to nose: each one's patches, its beam and its centre at mid-thickness, area-weighted.
     const stationZs = [...beam.keys()].sort((a, b) => a - b);
@@ -917,6 +930,7 @@ export class BoardBody implements BoardContactBody {
   }
 
   private substep(h: number, water: SurfWater): void {
+    this.lastSpan = this.substepSpan;
     this.substepSpan = h;
     this.updateRotation();
     const { count, arm, normal, point, samples, centerOfMass: c, velocity: v, angularVelocity: w } = this;
@@ -1149,7 +1163,7 @@ export class BoardBody implements BoardContactBody {
       }
       // Ruling 3 (`WATER_INERTIA`): in the case's wall water, the water's own acceleration on the added mass, along ν.
       if (sample.wallWater) {
-        const push = this.wallInertia(k, sample, h, ux, uy, uz) * addedMass * h;
+        const push = (sample.wallFollow ? this.wallFollowing(k, sample, water, ux, uy, uz) : this.wallInertia(k, sample, h, ux, uy, uz)) * addedMass * h;
         this.wallPush[k] = push;
         waterX += push * ux;
         waterY += push * uy;
@@ -1670,6 +1684,43 @@ export class BoardBody implements BoardContactBody {
     flow[o] = sample.flowX;
     flow[o + 1] = sample.flowY;
     flow[o + 2] = sample.flowZ;
+    return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
+  }
+
+  /**
+   * Ruling 3 (`WATER_INERTIA`), following the water (`WaterSample.wallFollow`): patch k's wall water's smoothed material
+   * acceleration along the surface's normal (ux, uy, uz), m/s². Its last sample's water, at x_last with u_last a substep
+   * (`lastSpan`) ago, has moved to x_last + u_last·lastSpan: the flow there now, less u_last, over lastSpan, is Du/Dt. The
+   * smoothing and the cap are the path rule's (`wallInertia`); its state kept for the next.
+   */
+  private wallFollowing(k: number, sample: WaterSample, water: SurfWater, ux: number, uy: number, uz: number): number {
+    const o = 3 * k;
+    const acc = this.wallAccel;
+    const flow = this.wallFlow;
+    const at = this.wallPoint;
+    const span = this.lastSpan;
+    if (this.wallSeen[k] !== 0 && span > 0) {
+      const moved = water.sampleAt(at[o] + flow[o] * span, at[o + 1] + flow[o + 1] * span, at[o + 2] + flow[o + 2] * span, this.wallScratch);
+      const share = Math.min(1, span / WATER_INERTIA.smoothing);
+      acc[o] += ((moved.flowX - flow[o]) / span - acc[o]) * share;
+      acc[o + 1] += ((moved.flowY - flow[o + 1]) / span - acc[o + 1]) * share;
+      acc[o + 2] += ((moved.flowZ - flow[o + 2]) / span - acc[o + 2]) * share;
+      const size = Math.sqrt(acc[o] * acc[o] + acc[o + 1] * acc[o + 1] + acc[o + 2] * acc[o + 2]);
+      if (size > WATER_INERTIA.cap) {
+        const scale = WATER_INERTIA.cap / size;
+        acc[o] *= scale;
+        acc[o + 1] *= scale;
+        acc[o + 2] *= scale;
+      }
+    }
+    this.wallSeen[k] = 1;
+    this.wallAny = true;
+    flow[o] = sample.flowX;
+    flow[o + 1] = sample.flowY;
+    flow[o + 2] = sample.flowZ;
+    at[o] = this.point[o];
+    at[o + 1] = this.point[o + 1];
+    at[o + 2] = this.point[o + 2];
     return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
   }
 

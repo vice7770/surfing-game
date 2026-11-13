@@ -697,6 +697,8 @@ describe('PhysicalMode', () => {
   it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
     expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });
     expect(tubeFaceSwitches('?tubeInertia=OLD&tubeRetire=old')).toEqual({ tubeInertia: 'old', tubeRetire: 'old' });
+    // Step 2 of the surfer track: `?tubeInertia=path` keeps the path rule under `?wallBody=stream`.
+    expect(tubeFaceSwitches('?tubeInertia=Path')).toEqual({ tubeInertia: 'path' });
     // The smooth wall, the buoyancy and the drop rule are opt-in: `=on` turns each on; `=old` and anything else leave them off.
     expect(tubeFaceSwitches('?tubeBuoy=ON&tubeDrop=on&tubeCap=old')).toEqual({ tubeCap: 'old', tubeBuoy: 'on', tubeDrop: 'on' });
     for (const search of ['?tubeTrack=old', '?tubeTrack=new', '?tubeInertia', '?tubeRetire=1', '?tubeBuoy=old', '?tubeDrop=', '?tubeDrop=old']) expect(tubeFaceSwitches(search), search).toEqual({});

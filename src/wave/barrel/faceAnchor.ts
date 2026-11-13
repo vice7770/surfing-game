@@ -145,6 +145,13 @@ export interface TubeFace {
    */
   stream?: true;
   /**
+   * Step 2 of the surfer track (docs/research/board-in-water/b-wall), with `inertia` and `stream`: the hull's added mass
+   * takes the wall water's own material acceleration, Du/Dt = ∂u/∂t + (u·∇)u, not the flow's change along its path
+   * (`WaterSample.wallFollow`, `BoardBody`'s `WATER_INERTIA`). On with `?wallBody=stream`; `?tubeInertia=path` keeps the
+   * path rule; absent: as before.
+   */
+  follow?: true;
+  /**
    * Ruling 7's step 1 (the water-physics advisor's ruling 7, docs/research/surface-rise-2026-11-11/ruling-7; notes in
    * docs/research/crest-line-2026-11-11/README.md), with `distance`: before its throw a front point stands where its crest
    * stands within its cell, not on the cell's centre (`FrontOptions.crestLine`), so the crest line the slices, rays,
@@ -221,7 +228,7 @@ export interface TubeFaceSwitches {
   tubeGuard?: 'on';
   /** Ruling 3's (`TubeFace.track`, `.inertia`, `.retire`, `.buoy`, `.drop`); the smooth wall opt-in, as the last two. */
   tubeTrack?: 'on';
-  tubeInertia?: 'old';
+  tubeInertia?: 'old' | 'path';
   tubeRetire?: 'old';
   /** Opt-in: 'on' turns each on (`TubeFace.buoy`, `.drop`); absent, or anything else, it is off (they measured no help). */
   tubeBuoy?: 'on';
@@ -280,6 +287,7 @@ export function tubeFaceOf(faceAnchor: boolean | undefined, switches: TubeFaceSw
     formClock: distance && (switches.formClock === 'c1' || (FORM_CLOCK_DEFAULT && switches.formClock !== 'old')),
     ...(wallFlow && switches.tubeSeam === 'blend' ? { seam: { tau: switches.seamTau ?? TUBE_SEAM.tau, band: switches.seamBand ?? TUBE_SEAM.band, ...(early ? { depth: TUBE_FORM_EARLY } : {}) } } : {}),
     ...(wallFlow && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { stream: true as const } : {}),
+    ...(wallFlow && switches.tubeInertia !== 'old' && switches.tubeInertia !== 'path' && switches.tubeSeam === 'blend' && switches.wallBody === 'stream' ? { follow: true as const } : {}),
     ...(crestLine ? { crestLine } : {}),
     ...(continuity && crestLine && switches.anchorLine === 'smooth' ? { anchorLine: true as const } : {}),
     ...(!piece && switches.loftMesh === 'arc' ? { arcMesh: true as const } : {}),

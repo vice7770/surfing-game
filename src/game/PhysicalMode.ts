@@ -702,7 +702,9 @@ export function poolTubeSwitch(search?: string): { sweptBarrel?: false; sweptCra
  * ruling): `?tubeContact=old`, a body's water from the vertical line through it; `?tubeCap=old`, the anchor's cap at 0.3 C;
  * `?tubeMerge=old`, joins and overlap drops as before; all three old together are main's build before it. `?tubeGuard=on`
  * (opt-in) turns on the retire guard by the case's open time. Ruling 3's (pool-tube-track, 2026-11-05, the advisor's third
- * ruling): `?tubeInertia=old`, no water acceleration on the added mass in the wall water; `?tubeRetire=old`, contour-thrown
+ * ruling): `?tubeInertia=old`, no water acceleration on the added mass in the wall water; `?tubeInertia=path`, that
+ * acceleration along the board's path even with `?wallBody=stream` (which takes the water's own, step 2 of the surfer
+ * track, docs/research/board-in-water/b-wall); `?tubeRetire=old`, contour-thrown
  * points retired unbroken as before; both old together are main's build before it; `?tubeTrack=on` (opt-in), the smooth
  * wall (the trough read, the tracked anchor, the wall water's speed, normal speed and blend); `?tubeBuoy=on` (opt-in), the
  * wall water's buoyancy along the true normal past the clamp; `?tubeDrop=on` (opt-in), the lighter of two overlapping strips
@@ -750,7 +752,7 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
     ...(value('tubeMerge') === 'old' ? { tubeMerge: 'old' as const } : {}),
     ...(value('tubeGuard') === 'on' ? { tubeGuard: 'on' as const } : {}),
     ...(value('tubeTrack') === 'on' ? { tubeTrack: 'on' as const } : {}),
-    ...(value('tubeInertia') === 'old' ? { tubeInertia: 'old' as const } : {}),
+    ...(value('tubeInertia') === 'old' ? { tubeInertia: 'old' as const } : value('tubeInertia') === 'path' ? { tubeInertia: 'path' as const } : {}),
     ...(value('tubeRetire') === 'old' ? { tubeRetire: 'old' as const } : {}),
     ...(value('tubeBuoy') === 'on' ? { tubeBuoy: 'on' as const } : {}),
     ...(value('tubeDrop') === 'on' ? { tubeDrop: 'on' as const } : {}),

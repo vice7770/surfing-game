@@ -527,6 +527,8 @@ export interface SurfZoneConfig {
    *   end, capped step by step, its per-step rate the wall water's speed, the wall water at full weight up to the solver's
    *   surface, as before;
    * - `tubeInertia` 'old' (`?tubeInertia=old`): no water acceleration on a hull's added mass in the wall water, as before;
+   *   'path' (`?tubeInertia=path`): with `wallBody` 'stream' too, that acceleration along the hull's path as before, not
+   *   the water's own (`TubeFace.follow`);
    * - `tubeRetire` 'old' (`?tubeRetire=old`): a contour-thrown point still unbroken retires 0.3 s past its throw, as before;
    * - `tubeBuoy` 'on' (`?tubeBuoy=on`, opt-in): the wall water's buoyancy along the true normal past the clamp; off (the
    *   default), along the clamped slope past 60°, as before;
@@ -534,7 +536,7 @@ export interface SurfZoneConfig {
    *   overlapping strips dropped by phase, then weight, as before.
    */
   tubeTrack?: 'on';
-  tubeInertia?: 'old';
+  tubeInertia?: 'old' | 'path';
   tubeRetire?: 'old';
   tubeBuoy?: 'on';
   tubeDrop?: 'on';

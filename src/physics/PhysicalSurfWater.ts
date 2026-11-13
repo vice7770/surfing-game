@@ -171,6 +171,12 @@ export interface PhysicalSurfWaterOptions {
    */
   sweptInertia?: boolean;
   /**
+   * With `sweptInertia`: step 2 of the surfer track (`TubeFace.follow`, docs/research/board-in-water/b-wall). Wall water
+   * samples are also marked `WaterSample.wallFollow`: the hull takes the water's own acceleration, not the change along
+   * its path. Without it, as before.
+   */
+  sweptFollow?: boolean;
+  /**
    * With `sweptWall`: ruling 3's rank 5 (`TubeFace.buoy`; §1). In the wall water, where the surface's normal is steeper than
    * the slope clamp (`MIN_NORMAL_Y`) or overhangs, the buoyancy acts along that normal at the clamp's size,
    * ρgV/`MIN_NORMAL_Y` (`WaterSample.buoyancyNormal`), not along the clamped slope's fixed 60° up the face. Without it, the
@@ -503,6 +509,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.contact ? { sweptNearest: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.track ? { sweptBlend: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.inertia ? { sweptInertia: true } : {}),
+      ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.inertia && simulation.tubeFace.follow ? { sweptFollow: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.buoy ? { sweptBuoy: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam ? { sweptSeam: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam && simulation.tubeFace.stream ? { sweptStream: true } : {}),
@@ -555,6 +562,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     if (swept) this.clearLayers(out);
     // Ruling 3's marks (`sweptInertia`, `sweptBuoy`): a reused sample leaves its last point's behind.
     if (this.options.sweptInertia) out.wallWater = undefined;
+    if (this.options.sweptFollow) out.wallFollow = undefined;
     if (this.options.sweptBuoy) out.buoyancyNormal = undefined;
     // A reused sample leaves the lens of its last point behind: only a lens here sets it again.
     if (this.options.roller) {
@@ -654,6 +662,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
     else if (this.inWall) this.wallFlow(out, y);
     if (this.options.sweptInertia && this.inWall) out.wallWater = true;
+    if (this.options.sweptFollow && this.inWall) out.wallFollow = true;
     if (this.options.sweptBuoy && this.inWall && out.normalY < MIN_NORMAL_Y) out.buoyancyNormal = 1 / MIN_NORMAL_Y;
     return out;
   }
