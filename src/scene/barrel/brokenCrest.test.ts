@@ -5,11 +5,16 @@ import { LANDMARK, ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, type LoftResult } from '../../wave/barrel/sweptLoft';
 import { toyCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
-import { BROKEN_CREST, BrokenCrests, LIP_FOAM, LIP_FRAY, brokenWeight, frayWhite, lipFoamAt } from './brokenCrest';
-import { LIP_FRAY_THROUGH, LIP_FRAY_VOLUME, LIP_LOOK_FRAY, lipLookFray } from './lipLook';
+import {
+  BROKEN_CREST, BrokenCrests, LIP_FOAM, LIP_WHITE, brokenWeight, fallProgress, lipFoamAt, lipSprayAt, whiteAge,
+} from './brokenCrest';
+import {
+  CURL_WHITE, LIP_AGE_MAX, LIP_FRAY_THROUGH, LIP_FRAY_VOLUME, LIP_FRINGE, LIP_LOOK_FRAY, LIP_SPRAY_STEPS,
+  curlWhiteFoam, lipLookFray,
+} from './lipLook';
 import { ROLLER_LOOK } from '../water/rollerLook';
 import { SweptBarrel } from './SweptBarrel';
-import { SWEPT_LIFT_STEPS, SweptBarrelMesh, packSweptLift } from './SweptBarrelMesh';
+import { SWEPT_LIFT_STEPS, SweptBarrelMesh, packSweptLift, packSweptSpray } from './SweptBarrelMesh';
 
 /** A loft of `phases.length` slices, each a full profile, its crest landmark at (x, 0, −100). */
 function slices(xs: readonly number[], phases: readonly number[], front = 1): LoftResult {
@@ -30,6 +35,7 @@ function slices(xs: readonly number[], phases: readonly number[], front = 1): Lo
     sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices),
     throat: new Float32Array(4 * vertices), indices: new Uint32Array([0, 1, LOFT_SAMPLES]), vertexCount: vertices, indexCount: 3, sliceCount: count,
     sliceFront: new Int32Array(count).fill(front), slicePhase: Uint8Array.from(phases),
+    sliceLife: new Float32Array(count).fill(Number.NaN),
   } as unknown as LoftResult;
 }
 
@@ -279,7 +285,7 @@ describe('the swept barrel on a broken crest', () => {
   });
 });
 
-describe('the fraying lip (?lipLook=fray, ruling 9 rank 1)', () => {
+describe('the lip\u2019s white, keyed on the time (?lipLook=fray, ruling 36)', () => {
   const { crest, lip, throat } = LANDMARK;
 
   it('is on only for `fray`', () => {
@@ -289,7 +295,7 @@ describe('the fraying lip (?lipLook=fray, ruling 9 rank 1)', () => {
     expect(LIP_LOOK_FRAY).toBe(false);
   });
 
-  it('lights the frayed sheet from both faces, so the sun on it has no facing', () => {
+  it('lights the torn water from both faces, so the sun on it has no facing', () => {
     // Each face takes the sun wrapped as the whitewater's band; the far face's share comes through.
     const w = ROLLER_LOOK.wrap;
     for (const sun of [-1, -0.5, 0, 0.5, 1]) {
@@ -297,46 +303,102 @@ describe('the fraying lip (?lipLook=fray, ruling 9 rank 1)', () => {
       const far = Math.max(0, (w - sun) / (1 + w));
       expect((1 - LIP_FRAY_THROUGH) * near + LIP_FRAY_THROUGH * far).toBeCloseTo(0.5, 12);
     }
-    // The shader's share is the sheet's weight by its thinness, on the lit foam only, with the light behind the sheet.
-    expect(LIP_FRAY_VOLUME).toContain(`smoothstep( ${LIP_FRAY.white.toFixed(3)}, ${LIP_FRAY.clean.toFixed(3)}, vSweptSheet )`);
-    expect(LIP_FRAY_VOLUME).toContain('vSweptSheetWeight * clamp( vWaterFoam, 0.0, 1.0 )');
+    // The share is the sheet's weight by its torn water, broken into ligaments, at torn water's own albedo.
+    expect(LIP_FRAY_VOLUME).toContain('vSweptSheetWeight * clamp( vSweptSpray, 0.0, 1.0 )');
+    expect(LIP_FRAY_VOLUME).toContain('sweptLigaments( vWaterWorld )');
+    expect(LIP_FRAY_VOLUME).toContain(`${LIP_FRINGE.albedo.toFixed(3)} * RECIPROCAL_PI`);
     expect(LIP_FRAY_VOLUME).toContain(`${LIP_FRAY_THROUGH.toFixed(3)} * sweptBack`);
+    expect(LIP_FRINGE.albedo).toBeGreaterThanOrEqual(0.36);
+    expect(LIP_FRINGE.albedo).toBeLessThanOrEqual(0.55);
+    // Its ligaments are the Squire relation's 2\u20134 cm apart.
+    expect(LIP_FRINGE.ligament).toBeGreaterThanOrEqual(0.02);
+    expect(LIP_FRINGE.ligament).toBeLessThanOrEqual(0.04);
   });
 
-  it('is white where the sheet is thin and clean where it is thick', () => {
-    expect(frayWhite(0)).toBe(1);
-    expect(frayWhite(LIP_FRAY.white)).toBe(1);
-    expect(frayWhite(LIP_FRAY.clean)).toBe(0);
-    expect(frayWhite(0.5)).toBe(0);
-    const mid = frayWhite((LIP_FRAY.white + LIP_FRAY.clean) / 2);
-    expect(mid).toBeCloseTo(0.5, 6);
-    // Thinner is never less white.
-    for (let t = 0; t < 0.2; t += 0.005) expect(frayWhite(t)).toBeGreaterThanOrEqual(frayWhite(t + 0.005));
+  it('does not read the sheet\u2019s thickness any more (the lane steps\u2019 cause)', () => {
+    // The key is gone from the lip's foam (no eighth argument) and from the shader's torn water.
+    expect(lipFoamAt).toHaveLength(7);
+    expect(LIP_FRAY_VOLUME).not.toContain('vSweptSheet ');
+    expect(LIP_FRAY_VOLUME).not.toContain('vSweptSheet,');
   });
 
-  it('whitens a clean crest’s lip by its thickness before touchdown, only as far as the point is a sheet', () => {
-    // A clean crest: without the thickness the lip carries none; with it the thin tip is white, the thick root clean.
+  it('grows the tip\u2019s fringe from about nothing at the throw to the whole tip at touchdown', () => {
+    expect(lipSprayAt(lip, 0, -1)).toBe(0);
+    expect(lipSprayAt(lip, 0.25, -0.5)).toBeLessThan(0.1);
+    expect(lipSprayAt(lip, 1, 0)).toBe(1);
+    // It only reaches back over the last tenth (at the throw) to quarter (at touchdown) of the crest-to-tip arc.
+    const arc = lip - crest;
+    expect(lipSprayAt(lip - Math.ceil(LIP_WHITE.reach[1] * arc), 1, 0)).toBe(0);
+    expect(lipSprayAt(lip - Math.round(0.4 * arc), 1, 0)).toBe(0);
+    expect(lipSprayAt(lip + Math.ceil(LIP_WHITE.reach[1] * arc), 1, 0)).toBe(0);
+    // And it fades as the landing's white takes over.
+    expect(lipSprayAt(lip, 1, LIP_FOAM.flash)).toBe(0);
+  });
+
+  it('keeps the crest\u2019s feather, and leaves the rest of the outer face clear', () => {
+    expect(lipSprayAt(crest, 1, 0)).toBeCloseTo(LIP_WHITE.featherWhite, 6);
+    expect(lipSprayAt(crest + LIP_WHITE.feather, 1, 0)).toBe(0);
+    // Halfway up the lip, between the feather and the fringe, no white at all.
+    expect(lipSprayAt(Math.round(0.5 * (crest + lip)), 1, 0)).toBe(0);
+    // Behind the crest and past the throat it writes none: that water is the solver's own.
+    expect(lipSprayAt(crest - 1, 1, 0)).toBe(0);
+    expect(lipSprayAt(throat + 1, 1, 0)).toBe(0);
+  });
+
+  it('steps no more than its clock does, where the thickness key stepped the whole way', () => {
+    // Neighbouring lanes differ in their clock. The white now follows it, continuously: a 2 % step in the fall moves
+    // it by under a tenth anywhere on the profile (the thickness key jumped 0 to 1 over a 9 cm step in the lip).
+    for (let point = crest; point <= throat; point += 1) {
+      for (let life = 0; life < 1; life += 0.02) {
+        const step = Math.abs(lipSprayAt(point, life + 0.02, -0.1) - lipSprayAt(point, life, -0.1));
+        expect(step).toBeLessThan(0.1);
+      }
+    }
+    expect(fallProgress(Number.NaN)).toBe(0);
+    expect(fallProgress(1.4)).toBe(1);
+    expect(fallProgress(0.3)).toBeCloseTo(0.3, 12);
+  });
+
+  it('carries the lip\u2019s own foam as before: capped as a sheet, and the landing\u2019s white in time', () => {
+    // A clean crest's lip takes no white before it lands, at any thickness: there is no coat.
     expect(lipFoamAt(lip - 1, 0, 0, 1, 1, -0.2, 0.3)).toBe(0);
-    expect(lipFoamAt(lip - 1, 0, 0, 1, 1, -0.2, 0.3, 0.01)).toBe(1);
-    expect(lipFoamAt(lip + 1, 0, 0, 1, 1, -0.2, 0.3, 0.02)).toBe(1);
-    expect(lipFoamAt(crest + 4, 0, 0, 1, 1, -0.2, 0.3, 0.3)).toBe(0);
-    expect(lipFoamAt(lip - 1, 0, 0, 1, 0.4, -0.2, 0.3, 0.01)).toBeCloseTo(0.4, 6);
-    expect(lipFoamAt(lip - 1, 0, 0, 1, 0, -0.2, 0.3, 0.01)).toBe(0);
-    // Behind the crest and on the back wall nothing changes.
-    expect(lipFoamAt(crest - 2, 0.3, 0.2, 1, 1, -0.2, 0.3, 0.01)).toBeCloseTo(0.3, 6);
-    expect(lipFoamAt(throat + 5, 0.3, 0.2, 1, 1, -0.2, 0.3, 0.01)).toBeCloseTo(0.2, 6);
-  });
-
-  it('takes the cap’s place: a white crest’s foam stays on its thick lip, thinned by the stretch only', () => {
+    expect(lipFoamAt(crest + 4, 0, 0, 1, 1, -0.2, 0.3)).toBe(0);
+    // A broken crest's lip keeps its crest's foam, capped as a sheet and thinned by the stretch (the owner's option (a)).
     expect(lipFoamAt(lip - 4, 1, 1, 1, 1, -0.01, 0.3)).toBeCloseTo(LIP_FOAM.cap, 6);
-    expect(lipFoamAt(lip - 4, 1, 1, 1, 1, -0.01, 0.3, 0.3)).toBeCloseTo(1, 6);
-    expect(lipFoamAt(lip - 4, 1, 1, 0.5, 1, -0.01, 0.3, 0.3)).toBeCloseTo(0.5, 6);
+    expect(lipFoamAt(lip - 4, 1, 1, 0.5, 0, -0.01, 0.3)).toBeCloseTo(0.5, 6);
+    // After touchdown the white sweeps from the tip, as before.
+    expect(lipFoamAt(lip, 0, 0, 1, 1, 0.2, 0.3)).toBeGreaterThan(0.9);
+    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3)).toBeLessThan(0.05);
   });
 
-  it('keeps the thin tip white after touchdown, under the landing’s white', () => {
-    // Far up the lip just after touchdown the landing's white has not arrived: the sheet's own shows.
-    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3)).toBeLessThan(0.05);
-    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3, 0.02)).toBe(1);
-    expect(lipFoamAt(crest + 1, 0, 0, 1, 1, 0.01, 0.3, 0.3)).toBeLessThan(0.05);
+  it('ages the landing\u2019s white as Koepke\u2019s foam ages', () => {
+    expect(whiteAge(-1)).toBe(1);
+    expect(whiteAge(0)).toBe(1);
+    expect(whiteAge(1)).toBeCloseTo(LIP_WHITE.age1, 12);
+    expect(whiteAge(10)).toBeCloseTo(LIP_WHITE.age10, 12);
+    expect(whiteAge(30)).toBeCloseTo(LIP_WHITE.age10, 12);
+    expect(LIP_WHITE.age1).toBeCloseTo(0.41 / 0.55, 12);
+    for (let t = 0; t < 12; t += 0.25) expect(whiteAge(t + 0.25)).toBeLessThanOrEqual(whiteAge(t));
+  });
+
+  it('packs the torn water and the white\u2019s age into one attribute', () => {
+    for (const [spray, age] of [[0, 1], [1, 1], [0.5, 0.5], [0.123, 0.29], [0, 0]] as const) {
+      const packed = packSweptSpray(spray, age);
+      expect(Math.floor(packed) / LIP_SPRAY_STEPS).toBeCloseTo(spray, 3);
+      expect((packed - Math.floor(packed)) / LIP_AGE_MAX).toBeCloseTo(age, 6);
+    }
+    expect(packSweptSpray(2, 2)).toBeCloseTo(LIP_SPRAY_STEPS + LIP_AGE_MAX, 6);
+  });
+
+  it('draws the curl\u2019s three whites, not one', () => {
+    const composed = curlWhiteFoam('diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );');
+    // The landing's white carries its age; what is only aerated is the same white through 2 m of water (red goes first).
+    expect(composed).toContain('vec3 sweptCurlWhite = waterFoamColor * vSweptWhiteAge;');
+    expect(composed).toContain(`exp( -waterDiffuseAttenuation * ${CURL_WHITE.path.toFixed(1)} )`);
+    expect(composed).toContain(`smoothstep( ${CURL_WHITE.aerated.toFixed(2)}, ${CURL_WHITE.dense.toFixed(2)}, waterCover )`);
+    // Dierssen's 70 % air is where it stops being a liquid, and the aerated band is the consult's 0.13\u20130.4.
+    expect(CURL_WHITE.dense).toBe(0.7);
+    expect(CURL_WHITE.aerated).toBe(0.4);
+    expect(() => curlWhiteFoam('nothing to swap')).toThrow();
   });
 });

@@ -107,14 +107,36 @@ describe('the swept barrel’s mesh', () => {
         expect(vertex).toContain('vSweptMask = sweptMask;');
         expect(fragment).toContain('varying float vSweptMask;');
         expect(fragment).toContain(SWEPT_BARREL_DISCARD);
-        // Each stored attribute fits one location: 13 normally, 14 after a dev view, below WebGL2's minimum 16.
-        expect(Object.keys(swept.mesh.geometry.attributes).length).toBeLessThanOrEqual(14);
+        // Each stored attribute fits one location: 14 normally (`sweptSpray` is the 14th, ruling 36), 15 after a dev
+        // view, below WebGL2's minimum 16. A 16th would leave none spare, so two values share one attribute instead.
+        expect(Object.keys(swept.mesh.geometry.attributes).length).toBeLessThanOrEqual(15);
         const key = swept.mesh.material.customProgramCacheKey();
         expect(key).toBe(`breakline-swept-barrel-authored-mask-${look}${view ? `-view-${view}` : hazeKey(look)}`);
         keys.add(key);
       }
     }
     expect(keys.size).toBe(10);
+  });
+
+  it('wires the lip\u2019s torn water and the curl\u2019s three whites under `?lipLook=fray` (ruling 36)', () => {
+    for (const look of ['classic', 'rich'] as const) {
+      const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+      swept.setLook(look);
+      const clean = compiled(swept.mesh.material);
+      expect(clean.vertex).not.toContain('sweptSpray');
+      expect(clean.fragment).not.toContain('sweptLigaments');
+      expect(clean.fragment).not.toContain('sweptCurlWhite');
+      swept.lipLook = 'fray';
+      swept.update(oneQuad());
+      const { vertex, fragment } = compiled(swept.mesh.material);
+      expect(vertex).toContain('attribute float sweptSpray;');
+      expect(vertex).toContain('vSweptWhiteAge = ( sweptSpray - sweptSpraySteps )');
+      expect(fragment).toContain('float sweptLigaments( vec3 world )');
+      expect(fragment).toContain('vec3 sweptCurlWhite = waterFoamColor * vSweptWhiteAge;');
+      // The torn water only adds light; it writes no cover, so the curtain stays see-through.
+      expect(fragment).toContain('totalEmissiveRadiance += sweptFray *');
+      expect(swept.mesh.material.customProgramCacheKey()).toContain('-lip-fray');
+    }
   });
 
   it('draws a loft’s triangles, and hides for an empty loft or none', () => {

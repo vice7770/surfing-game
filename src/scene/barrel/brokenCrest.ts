@@ -44,13 +44,32 @@ const AFTER_TOUCHDOWN = 2;
 export const LIP_FOAM = { cap: 0.3, flash: 0.15, edge: 0.15 } as const;
 
 /**
- * The fraying lip (`?lipLook=fray`, ruling 9 rank 1, 2026-11-11): a thin sheet of water breaks up and scatters light, so
- * it is white; a thick one is clean glass. Thickness across the sheet, m:
- * - `white`: full white under this [provisional, the ruling's 4 cm];
- * - `clean`: none over this [provisional, 15 cm].
- * It takes the place of `LIP_FOAM.cap`: with it a lip's foam is its sheet's own, by thickness, or its crest's if more.
+ * Where a drawn curl's water is white, and how white (ruling 36, 2026-11-13; the water-physics consult
+ * `docs/research/water-physics/lip-thickness-and-foam-2026-11-13.md` §3).
+ *
+ * Water turns white at a **time** — the slice's own touchdown — and not at a thickness. Clean water 0.20 m thick passes
+ * 98.9 % of green light (Pope & Fry 1997), so a real 20–40 cm lip is see-through, while about 2 cm of foam is already
+ * fully opaque (Koepke 1984; Dierssen 2019's 0.099 mm equivalent water film). This took the place of `LIP_FRAY`, whose
+ * white-under-4-cm rule painted the sheet wherever the mesh happened to be thin, and stepped from lane to lane, where
+ * neighbouring cases' lips differ in thickness.
+ *
+ * Before a slice lands, its only white is torn water (`lipSprayAt`), drawn as ligaments and drops lit from both faces
+ * (`LIP_FRAY_VOLUME`) and never as a coat:
+ * - `reach`: the tip's fringe, back from the tip as a share of the crest-to-tip arc, at the throw and at touchdown (the
+ *   consult's last 10–25 % of the arc);
+ * - `feather`, `featherWhite`: the crest's feather, in profile points past the crest, and how white it is [provisional].
+ *
+ * After it lands, the landing's white ages: `age1` and `age10` are how bright it stays after 1 s and after 10 s against
+ * its own first instant (Koepke's 0.55 → 0.41 → 0.16, as ratios, so the sea's own foam colour still sets the absolute
+ * and a curl's fresh white matches the whitewater it lands in).
  */
-export const LIP_FRAY = { white: 0.04, clean: 0.15 } as const;
+export const LIP_WHITE = {
+  reach: [0.1, 0.25],
+  feather: 5,
+  featherWhite: 0.45,
+  age1: 0.41 / 0.55,
+  age10: 0.16 / 0.55,
+} as const;
 
 const ramp = (value: number) => {
   const t = Math.min(1, Math.max(0, value));
@@ -63,34 +82,59 @@ const ramp = (value: number) => {
  * by the surface's stretch since the throw (`stretch`, L(0)/L(τ) ≤ 1) and capped as a sheet (`sheetWeight`) until
  * touchdown; the face's own on the back wall (throat to toe), neither thinned nor capped; behind the crest its crest's.
  * From touchdown (`after` s, the collapse `collapse` s) the white of the landing sweeps over the lip and its underside
- * from the tip. `point` is the profile's index (`LANDMARK`). With `thickness` (the sheet's, m; `?lipLook=fray`) the
- * sheet is also white where it is thin (`LIP_FRAY`), and its crest's foam is not capped.
+ * from the tip. `point` is the profile's index (`LANDMARK`). The torn water a sheet carries before it lands is not here:
+ * it covers nothing and is drawn as a volume of ligaments and drops (`lipSprayAt`, ruling 36).
  */
 export function lipFoamAt(
   point: number, outer: number, face: number, stretch: number, sheetWeight: number, after: number, collapse: number,
-  thickness?: number,
 ): number {
   if (point < LANDMARK.crest) return outer;
   if (point > LANDMARK.throat) return face;
   const onLip = point <= LANDMARK.lip;
   const carried = (onLip ? outer : face) * stretch;
-  // The fraying lip: the sheet's own white by its thickness (`thickness`, m; left out, the lip is as before).
-  const frayed = thickness === undefined ? 0 : sheetWeight * frayWhite(thickness);
-  if (!(after > 0)) {
-    return thickness === undefined
-      ? carried + sheetWeight * (Math.min(carried, LIP_FOAM.cap) - carried)
-      : Math.max(carried, frayed);
-  }
+  if (!(after > 0)) return carried + sheetWeight * (Math.min(carried, LIP_FOAM.cap) - carried);
   // The run from the tip: 0 at the tip, 1 at the crest (the outer surface) or the throat (the underside).
   const run = onLip ? (LANDMARK.lip - point) / (LANDMARK.lip - LANDMARK.crest) : (point - LANDMARK.lip) / (LANDMARK.throat - LANDMARK.lip);
   const reach = collapse > 0 ? after / collapse : 1;
   const white = ramp(after / LIP_FOAM.flash) * (1 - ramp((run - reach) / LIP_FOAM.edge));
-  return Math.max(carried, white, frayed);
+  return Math.max(carried, white);
 }
 
-/** How white a sheet this thick is, 0–1 (`LIP_FRAY`): 1 under `white`, 0 over `clean`. */
-export function frayWhite(thickness: number): number {
-  return 1 - ramp((thickness - LIP_FRAY.white) / (LIP_FRAY.clean - LIP_FRAY.white));
+/** A slice's fall, 0 at its throw to 1 at its touchdown (`LoftResult.sliceLife`, NaN before the throw). */
+export function fallProgress(life: number): number {
+  return Number.isFinite(life) ? Math.min(1, Math.max(0, life)) : 0;
+}
+
+/**
+ * The torn water on one lifted profile point of a drawn slice, 0–1 (`LIP_WHITE`, ruling 36): the fringe over the last
+ * tenth to quarter of the lip's arc, which grows from about nothing at the throw as the sheet stretches and tears (as
+ * the fall's progress squared [reasoned]), and the crest's feather. `point` is the profile's index (`LANDMARK`),
+ * `life` the slice's fall and `after` the seconds since its touchdown.
+ *
+ * It is the **time** key: every lane's fringe sits in the same place on the profile and grows on the slice's own clock,
+ * so neighbouring lanes no longer step where their lips differ in thickness. It is drawn as a volume of ligaments and
+ * drops lit from both faces (`LIP_FRAY_VOLUME`), so it covers nothing and the sheet stays see-through; it fades over the
+ * landing's flash (`LIP_FOAM.flash`), where the opaque white takes over.
+ */
+export function lipSprayAt(point: number, life: number, after: number): number {
+  if (point < LANDMARK.crest || point > LANDMARK.throat) return 0;
+  const fall = fallProgress(life);
+  const reach = LIP_WHITE.reach[0] + (LIP_WHITE.reach[1] - LIP_WHITE.reach[0]) * fall;
+  const arc = Math.abs(point - LANDMARK.lip) / (LANDMARK.lip - LANDMARK.crest);
+  const fringe = fall * fall * (1 - ramp((2 * arc) / reach - 1));
+  const feather = LIP_WHITE.featherWhite * fall * (1 - ramp((point - LANDMARK.crest) / LIP_WHITE.feather));
+  const fade = after > 0 ? 1 - ramp(after / LIP_FOAM.flash) : 1;
+  return fade * Math.min(1, Math.max(fringe, feather));
+}
+
+/**
+ * How bright the landing's white is `after` s past its own touchdown, against its first instant (`LIP_WHITE`): Koepke's
+ * ageing, 1 fresh, `age1` after 1 s and `age10` after 10 s, straight to the first and geometric to the second.
+ */
+export function whiteAge(after: number): number {
+  if (!(after > 0)) return 1;
+  if (after <= 1) return 1 + (LIP_WHITE.age1 - 1) * after;
+  return LIP_WHITE.age1 * (LIP_WHITE.age10 / LIP_WHITE.age1) ** Math.min(1, (after - 1) / 9);
 }
 
 /**

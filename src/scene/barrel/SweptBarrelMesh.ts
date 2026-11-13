@@ -13,8 +13,11 @@ import { horizonHazeUniforms } from '../water/horizonHaze';
 import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
-import { lipFoamAt } from './brokenCrest';
-import { LIP_FRAY_VOLUME, LIP_LOOK_FRAY } from './lipLook';
+import { lipFoamAt, lipSprayAt, whiteAge } from './brokenCrest';
+import {
+  LIP_AGE_MAX, LIP_FRAY_PARS, LIP_FRAY_VOLUME, LIP_LOOK_FRAY, LIP_SPRAY_STEPS, LIP_SPRAY_VERTEX, LIP_SPRAY_VERTEX_PARS,
+  curlWhiteFoam,
+} from './lipLook';
 import { configureBarrelCoverage } from './barrelFallback';
 import { withNormalGuard, withWallRipple } from '../water/tubeLook';
 
@@ -118,6 +121,15 @@ export function packWallViews(sky: number, lip: number): number {
 /** `sweptLift` for a vertex lifted `lift` (0–1) whose lifted water carries `foam` (0–1). */
 export function packSweptLift(lift: number, foam: number): number {
   return Math.round(Math.min(1, Math.max(0, lift)) * SWEPT_LIFT_STEPS) + Math.min(LIP_FOAM_MAX, Math.max(0, foam));
+}
+
+/**
+ * `sweptSpray` for a vertex whose torn water is `spray` (0–1, `lipSprayAt`) and whose landing white is `age` as bright
+ * as its first instant (0–1, `whiteAge`): the share in `LIP_SPRAY_STEPS` steps as the whole part, the age as the
+ * fraction (`LIP_AGE_MAX`), as `packSweptLift` packs two values into one attribute.
+ */
+export function packSweptSpray(spray: number, age: number): number {
+  return Math.round(Math.min(1, Math.max(0, spray)) * LIP_SPRAY_STEPS) + LIP_AGE_MAX * Math.min(1, Math.max(0, age));
 }
 
 /** The barrel's foam composition: the water's lace only where the curl rests on the water (`vSweptLace`), a tint elsewhere. */
@@ -450,6 +462,8 @@ export class SweptBarrelMesh {
   private readonly sheet = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetWeight = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetBack = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
+  /** `?lipLook=fray` only: the lip's torn water and the age of its landing white (`packSweptSpray`). */
+  private readonly spray = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly wall = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly wallNormal = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   /** The Rich look's dark throat (`RICH_THROAT`): per vertex, as `richThroatVertexPars` lays them out. */
@@ -514,6 +528,7 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptSheet', this.sheet);
     geometry.setAttribute('sweptSheetWeight', this.sheetWeight);
     geometry.setAttribute('sweptSheetBack', this.sheetBack);
+    geometry.setAttribute('sweptSpray', this.spray);
     geometry.setAttribute('sweptWall', this.wall);
     geometry.setAttribute('sweptWallNormal', this.wallNormal);
     geometry.setAttribute('sweptThroat', this.throat);
@@ -527,23 +542,29 @@ export class SweptBarrelMesh {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, uniforms, this.ownUniforms);
       const rich = this.look === 'rich';
-      // `?lipLook=fray`: the frayed tip lit as a volume of drops; without it the program is untouched.
-      const frayed = this.lipLook === 'fray' ? LIP_FRAY_VOLUME : '';
+      // `?lipLook=fray` (ruling 36): the torn water at the tip and the crest lit as a volume of ligaments and drops, and
+      // the curl's three whites; without it the program is untouched.
+      const fray = this.lipLook === 'fray';
+      const frayed = fray ? LIP_FRAY_VOLUME : '';
+      const sprayPars = fray ? `\n${LIP_SPRAY_VERTEX_PARS}` : '';
+      const frayPars = fray ? `\n${LIP_FRAY_PARS}` : '';
+      // The curl's own foam: three materials where there was one white (`curlWhiteFoam`).
+      const composed = (foam: string) => (fray ? curlWhiteFoam(sweptFoam(foam)) : sweptFoam(foam));
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
-        .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
+        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}${sprayPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}${sprayPars}`)
+        .replace('#include <beginnormal_vertex>', (rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal) + (fray ? LIP_SPRAY_VERTEX : ''))
         .replace('#include <begin_vertex>', sweptBeginVertex);
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
-          : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
+          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}${frayPars}\n${richThroatFragmentPars}`
+          : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}${frayPars}`)
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
         .replace('#include <normal_fragment_begin>', rich ? `${richFarNormal}${RICH_SHEET_GLITTER}` : waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', rich
-          ? waterBodyFragment(false, true, sweptFoam(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
+          ? waterBodyFragment(false, true, composed(RICH_FAR_FOAM), (this.lipBackShown === 'ray' ? RICH_SHEET_BODY_PER_RAY + RICH_LIP_GLOW_GATED : RICH_SHEET_BODY + RICH_LIP_GLOW) + frayed)
             .replace('vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );', RICH_SHEET_BODY_NORMAL)
-          : waterBodyFragment(false, true, sweptFoam(CLASSIC_FOAM), SWEPT_SHEET_BODY + frayed))
+          : waterBodyFragment(false, true, composed(CLASSIC_FOAM), SWEPT_SHEET_BODY + frayed))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>')
         // The sun's glitter about the sheet's own normal, from the screen-space term alone (item 5).
         .replace('#include <lights_physical_pars_fragment>', rich ? richGlitterLights(true) : '#include <lights_physical_pars_fragment>');
@@ -641,15 +662,21 @@ export class SweptBarrelMesh {
       // The lift, and the foam its lifted water carries (T3): none on a clean crest's lip before touchdown.
       const own = lip && this.brokenFoam;
       const fray = this.lipLook === 'fray';
+      const spray = this.spray.array as Float32Array;
       for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
         const outer = own ? lip.outer[s] : 0;
         const face = own ? lip.face[s] : 0;
         const [stretch, after, collapse] = [loft.sliceStretch[s], loft.sliceAfter[s], loft.sliceCollapse[s]];
+        // `?lipLook=fray`: the torn water grows on the slice's own clock, and its landing white ages (ruling 36).
+        const life = fray ? loft.sliceLife[s] : 0;
+        const age = fray ? whiteAge(after) : 1;
         for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
           const v = s * LOFT_SAMPLES + j;
           const point = j - LOFT.extensionSamples;
-          const foam = point < 0 || point >= PROFILE_POINTS ? 0 : lipFoamAt(point, outer, face, stretch, loft.sheetWeight[v], after, collapse, fray ? loft.sheet[v] : undefined);
+          const inProfile = point >= 0 && point < PROFILE_POINTS;
+          const foam = inProfile ? lipFoamAt(point, outer, face, stretch, loft.sheetWeight[v], after, collapse) : 0;
           lift[v] = packSweptLift(loft.lift[v], foam);
+          if (fray) spray[v] = packSweptSpray(inProfile ? lipSprayAt(point, life, after) : 0, age);
         }
       }
     } else if (kept && this.brokenFoam) {
@@ -784,7 +811,10 @@ export class SweptBarrelMesh {
       attribute.addUpdateRange(0, 3 * vertices);
       attribute.needsUpdate = true;
     }
-    for (const attribute of [this.lift, this.mask, this.sheet, this.sheetWeight, this.sheetBack]) {
+    const touched = this.lipLook === 'fray' && this.lipFoam === 'carried'
+      ? [this.lift, this.mask, this.sheet, this.sheetWeight, this.sheetBack, this.spray]
+      : [this.lift, this.mask, this.sheet, this.sheetWeight, this.sheetBack];
+    for (const attribute of touched) {
       attribute.clearUpdateRanges();
       attribute.addUpdateRange(0, vertices);
       attribute.needsUpdate = true;
