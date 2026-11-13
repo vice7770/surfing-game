@@ -197,6 +197,182 @@ export function steadyCarve(aLat: number): { bank: number; rail: number } {
 }
 
 /**
+ * The new surfer, step 3.2 (the advisor's ruling 29, item 5; docs/research/new-rider/3.2): the roll model with a human
+ * balance. The plant is `plantMatrix`'s with the carve lab's numbers (the hull rights the board about the rider's load
+ * line, 850–1,700 N·m/rad; the rail settles in about 0.05 s; the turn's pull follows the rail within 0.03–0.04 s, at
+ * `turnGain` times the rail, 1.3–1.6 measured: `carve-lab.md`, "The plant"), and the felt gravity `load` times g (a
+ * carve's). The balance is a human's:
+ * - it reads only the body's own bank and bank rate (the vestibular sense; the don't-retry list: never the board's
+ *   roll or the felt force);
+ * - what it reads arrives `delay` s late (leg postural responses start at about 90–100 ms; Nashner 1977), and the
+ *   muscles follow the command through a first-order `motorLag`;
+ * - the player's lean asked for (`reference`) is not sensed, so it is not delayed, only lagged.
+ * So δ̇ = (K_ref θ_ref + u(t − d) − δ) / T_m, u = −G θ − G_r θ̇. The passive ankle, τ = k (θ − φ − δ) + c (θ̇ − φ̇),
+ * acts at once. The delay is a Padé approximant of `order` here; `humanRollKick` checks it with the delay exact.
+ *
+ * State: [φ, φ̇, θ, θ̇, a, δ, ι, padé…], ι the integral's own state (ι̇ = −K_i θ, inside the command before the delay).
+ */
+export interface HumanRoll {
+  /** The sensing delay and the motor lag, s. */
+  delay: number;
+  motorLag: number;
+  /** The felt gravity over g (1 riding straight). */
+  load?: number;
+  /** The turn's pull per rad of rail (1 in `plantMatrix`; the carve lab measured 1.3–1.6 planing). */
+  turnGain?: number;
+}
+
+/**
+ * The human balance's gains: rad of ankle rest per rad of the body's bank off the reference, per rad/s of its rate
+ * (s), and per rad·s of the bank's error integrated (1/s; the slow trim that finds the rest a steady carve needs).
+ */
+export interface HumanRollGains {
+  bank: number;
+  bankRate: number;
+  integral?: number;
+}
+
+/** e^{−s d} ≈ N(s) / D(s), Padé (n, n), in controllable canonical form (A, B, C, D). */
+export function padeDelay(order: number, delay: number): { a: number[][]; b: number[]; c: number[]; d: number } {
+  const fact = (k: number): number => (k <= 1 ? 1 : k * fact(k - 1));
+  const coef = (k: number) => (fact(2 * order - k) * fact(order)) / (fact(2 * order) * fact(k) * fact(order - k));
+  const den = Array.from({ length: order + 1 }, (_, k) => coef(k) * delay ** k);
+  const num = Array.from({ length: order + 1 }, (_, k) => coef(k) * (-delay) ** k);
+  const lead = den[order];
+  const d = num[order] / lead;
+  const a = Array.from({ length: order }, (_, i) => Array.from({ length: order }, (_, j) => (i < order - 1 ? (j === i + 1 ? 1 : 0) : -den[j] / lead)));
+  const b = Array.from({ length: order }, (_, i) => (i === order - 1 ? 1 : 0));
+  const c = Array.from({ length: order }, (_, k) => (num[k] - d * den[k]) / lead);
+  return { a, b, c, d };
+}
+
+/** The plant's rows with the rest δ as a sixth state: the ankle's torque row, and ẋ for the first five states. */
+function humanPlant(p: RollParams, h: HumanRoll, n: number): { torque: number[]; rows: number[][] } {
+  const k = p.ankleStiffness;
+  const c = p.ankleDamping;
+  const ib = p.boardInertia;
+  const inertia = p.mass * p.height * p.height;
+  const topple = (h.load ?? 1) * p.mass * GRAVITY * p.height;
+  const gain = h.turnGain ?? 1;
+  const torque = new Array<number>(n).fill(0);
+  torque[0] = -k;
+  torque[1] = -c;
+  torque[2] = k;
+  torque[3] = c;
+  torque[5] = -k;
+  const rows = Array.from({ length: 5 }, () => new Array<number>(n).fill(0));
+  rows[0][1] = 1;
+  for (let j = 0; j < n; j += 1) rows[1][j] = torque[j] / ib;
+  rows[1][0] -= p.hullStiffness / ib;
+  rows[1][2] += p.hullStiffness / ib;
+  rows[1][1] -= p.hullDamping / ib;
+  rows[2][3] = 1;
+  for (let j = 0; j < n; j += 1) rows[3][j] = -torque[j] / inertia;
+  rows[3][2] += topple / inertia;
+  rows[3][4] -= topple / inertia;
+  rows[4][0] = gain / p.turnLag;
+  rows[4][4] = -1 / p.turnLag;
+  return { torque, rows };
+}
+
+/** The closed loop with the human balance: ẋ = M x (the reference held at nothing). */
+export function humanRollLoop(p: RollParams, h: HumanRoll, g: HumanRollGains, order = 5): number[][] {
+  const pd = padeDelay(order, h.delay);
+  const n = 7 + order;
+  const { rows } = humanPlant(p, h, n);
+  const m = Array.from({ length: n }, () => new Array<number>(n).fill(0));
+  for (let i = 0; i < 5; i += 1) m[i] = rows[i];
+  const u = new Array<number>(n).fill(0);
+  u[2] = -g.bank;
+  u[3] = -g.bankRate;
+  u[6] = 1;
+  m[6][2] = -(g.integral ?? 0);
+  for (let i = 0; i < order; i += 1) {
+    for (let k = 0; k < order; k += 1) m[7 + i][7 + k] = pd.a[i][k];
+    for (let j = 0; j < n; j += 1) m[7 + i][j] += pd.b[i] * u[j];
+  }
+  for (let j = 0; j < n; j += 1) m[5][j] = (pd.d * u[j]) / h.motorLag;
+  for (let k = 0; k < order; k += 1) m[5][7 + k] += pd.c[k] / h.motorLag;
+  m[5][5] -= 1 / h.motorLag;
+  return m;
+}
+
+/** Every mode of the human loop: its frequency, Hz, and damping ratio (a negative ratio grows), slowest-damped first. */
+export function humanRollModes(p: RollParams, h: HumanRoll, g: HumanRollGains): { frequency: number; damping: number }[] {
+  return eigenvalues(humanRollLoop(p, h, g))
+    // The integral's own pole at the origin when it is off (no gain): not a mode of the body.
+    .filter((v) => v.im >= 0 && !(g.integral === undefined || g.integral === 0 ? Math.hypot(v.re, v.im) < 1e-9 : false))
+    .map((v) => {
+      const size = Math.hypot(v.re, v.im);
+      return { frequency: Math.abs(v.im) / (2 * Math.PI), damping: size > 0 ? -v.re / size : 1 };
+    })
+    .sort((a, b) => a.damping - b.damping);
+}
+
+/**
+ * The human loop in time with the delay exact (a buffer at `step`): the board's roll rate kicked by `kick`, rad/s (the
+ * carve lab's `wobble`), for `seconds`. Returns the roll rate's decay per cycle (successive peaks of one sign, their
+ * mean ratio over the first three cycles, as the bars probe reads it), the body's largest bank, rad, and whether the
+ * bank ends within a tenth of its peak.
+ */
+export function humanRollKick(p: RollParams, h: HumanRoll, g: HumanRollGains, kick = 0.5, seconds = 3, step = 1 / 1920): { decay: number; peakBank: number; settled: boolean } {
+  const n = 6;
+  const { rows } = humanPlant(p, h, n);
+  const x = new Array<number>(n).fill(0);
+  x[1] = kick;
+  const buffer: number[] = [];
+  const lag = Math.max(1, Math.round(h.delay / step));
+  const rates: number[] = [];
+  let peakBank = 0;
+  let late = 0;
+  for (let i = 0; i < Math.round(seconds / step); i += 1) {
+    buffer.push(-g.bank * x[2] - g.bankRate * x[3]);
+    const delayed = buffer.length > lag ? buffer.shift()! : 0;
+    const dx = rows.map((row) => row.reduce((s, v, j) => s + v * x[j], 0));
+    dx.push((delayed - x[5]) / h.motorLag);
+    for (let k = 0; k < n; k += 1) x[k] += step * dx[k];
+    if (i % 32 === 0) rates.push(x[1]);
+    peakBank = Math.max(peakBank, Math.abs(x[2]));
+    if (i * step > seconds - 0.5) late = Math.max(late, Math.abs(x[2]));
+  }
+  const peaks: number[] = [];
+  for (let i = 1; i < rates.length - 1; i += 1) {
+    if (Math.abs(rates[i]) >= Math.abs(rates[i - 1]) && Math.abs(rates[i]) > Math.abs(rates[i + 1]) && Math.abs(rates[i]) > 1e-4) peaks.push(rates[i]);
+  }
+  const ratios: number[] = [];
+  for (let i = 0; i + 2 < peaks.length && ratios.length < 3; i += 1) if (Math.sign(peaks[i]) === Math.sign(peaks[i + 2])) ratios.push(Math.abs(peaks[i + 2] / peaks[i]));
+  const decay = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 0;
+  return { decay, peakBank, settled: late <= 0.1 * Math.max(peakBank, 1e-9) };
+}
+
+/**
+ * The reference gain K_ref that puts the human loop's steady bank on the lean asked for (the steady state of the plant
+ * with δ = K_ref θ_ref − G θ, the delay and lag gone at steady state), by Gaussian elimination as `referenceGain`.
+ */
+export function humanReferenceGain(p: RollParams, h: HumanRoll, g: HumanRollGains): number {
+  const n = 6;
+  const { rows } = humanPlant(p, h, n);
+  // Unknowns x (6) and the steady δ row: δ − (K θ_ref − G θ) = 0 with θ_ref = 1 and K unknown: solve for x with δ
+  // free, then K = δ + G θ at θ = 1, by linearity solve for a unit δ input and scale.
+  const a = rows.map((row) => row.slice(0, 5));
+  const b = rows.map((row) => -row[5]);
+  const m = a.map((row, i) => [...row, b[i]]);
+  for (let c = 0; c < 5; c += 1) {
+    let pivot = c;
+    for (let r = c + 1; r < 5; r += 1) if (Math.abs(m[r][c]) > Math.abs(m[pivot][c])) pivot = r;
+    [m[c], m[pivot]] = [m[pivot], m[c]];
+    for (let r = 0; r < 5; r += 1) {
+      if (r === c) continue;
+      const f = m[r][c] / m[c][c];
+      for (let j = c; j <= 5; j += 1) m[r][j] -= f * m[c][j];
+    }
+  }
+  // The steady bank per unit of steady rest; the rest that holds a unit bank is its inverse.
+  const bankPerRest = m[2][5] / m[2][2];
+  return 1 / bankPerRest + g.bank;
+}
+
+/**
  * The eigenvalues of a real square matrix: reduction to Hessenberg form by
  * elimination, then the shifted QR iteration (Numerical Recipes' elmhes and
  * hqr, 1-based as there).
