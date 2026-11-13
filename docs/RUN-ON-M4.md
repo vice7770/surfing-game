@@ -208,7 +208,15 @@ Then tell Claude it is pushed.
 
 ---
 
-## 4. The library wave's lip: one case at Bo 4000 (2026-11-13)
+## 4. The library wave's lip: one case at Bo 4000 (2026-11-13) — DO NOT RUN THIS YET
+
+> **Hold off.** On 2026-11-13 the water-physics side answered the owner's point about foam, and this run is no
+> longer the way to a thinner-looking lip. Our lip's water is already in the measured range; it reads thick
+> because of how it is shaded. The fix is free, in the drawing. See `docs/research/ruling-36-lip-and-foam.md`.
+>
+> There is one other reason someone might still want this run, and it is the owner's call: the new water makes
+> the tube's hole 1.5 to 2.8 times bigger, which may help the surfer not fall when he touches the tube. That is
+> about riding, not about looks. The commands below still work if that is wanted.
 
 **What it is.** Section 1's run worked: at the same moment of the throw, its lip is 20 to 45 % thinner than the old
 one, thrown further, with a bigger hole. (The first reading said "thicker". That was the measuring tool, not the wave;
