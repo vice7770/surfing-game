@@ -516,9 +516,17 @@ export interface Slice {
   crestH: Float64Array;
 }
 
+/**
+ * C2 step 4: what one point of a slice's water carries, per stored depth, in `WaveLibrary.flowProfileAt`'s `out`:
+ * (u along the ray, v up) m/s and (du/dt, dv/dt) at the fixed point index, m/s². Four numbers a depth.
+ */
+export const FLOW_VALUES = 4;
+
 export class WaveLibrary {
   readonly cases: readonly LibraryCase[];
   readonly matcher: StateMatcher;
+  /** The stored depths' count, the same in every case; 0 where the files hold no velocity (step 3's). */
+  readonly depthCount: number;
   private readonly taus = new Float64Array(MAX_BLEND);
 
   constructor(cases: readonly WaveCase[]) {
@@ -544,6 +552,19 @@ export class WaveLibrary {
       };
     });
     this.matcher = new StateMatcher(this.cases.map((c) => c.path));
+    const nd = this.cases[0].depths.length;
+    for (const c of this.cases) if (c.depths.length !== nd) throw new Error(`${c.id}: ${c.depths.length} velocity depths, the first case has ${nd}`);
+    this.depthCount = nd;
+  }
+
+  /** The slice's stored depths under the surface, m (Σ w × the case's, × h0), into `out`. */
+  depthsOf(slice: Slice, out: Float64Array): Float64Array {
+    for (let j = 0; j < this.depthCount; j += 1) {
+      let z = 0;
+      for (let k = 0; k < slice.n; k += 1) z += slice.weight[k] * this.cases[slice.caseIndex[k]].depths[j];
+      out[j] = z * slice.h0;
+    }
+    return out;
   }
 
   /** The slice for a hand-over state: its match, scale and clock. */
@@ -673,6 +694,66 @@ export class WaveLibrary {
     out[0] = u * speed;
     out[1] = v * speed;
     return out;
+  }
+
+  /**
+   * C2 step 4: the slice's whole water at time t (s), blended over its cases and frames with the surface's own weights
+   * (`surfaceAt`), in the slice's ray–vertical plane.
+   *
+   * - `out`, at (point × depths + depth) × `FLOW_VALUES`: the water's (u along the ray, v up), m/s, and (du/dt, dv/dt)
+   *   **at the fixed point index**, m/s². The index derivative is not the water's own: a stored point is a share of the
+   *   curve's arc, not a water particle, so the point itself moves. `motion` gives that motion, and the material
+   *   acceleration Du/Dt follows from the three of them (`ZoneSurface.composite`).
+   * - `motion`, at 2 × point: that point's own speed along the ray and up, m/s (the stored x and y differenced the same
+   *   way).
+   *
+   * The library's units do the work: a case's velocity is stored in √(g h0) against τ in √(h0/g), so one unit of
+   * dV/dτ is exactly g, whatever the slice's scale. Each case runs at its own rate before the throw (`Slice.rate`) and
+   * at 1 after it, so the rate multiplies the derivative.
+   */
+  flowProfileAt(slice: Slice, t: number, out: Float64Array, motion: Float64Array): void {
+    const nd = this.depthCount;
+    const taus = this.tausAt(slice, t);
+    const speed = Math.sqrt(GRAVITY * slice.h0);
+    const warp = slice.toThrow > 1e-6;
+    const past = warp && (t - slice.tH) / slice.unit > slice.toThrow;
+    const values = WAVE_POINTS * nd * FLOW_VALUES;
+    out.fill(0, 0, values);
+    motion.fill(0, 0, 2 * WAVE_POINTS);
+    for (let k = 0; k < slice.n; k += 1) {
+      const c = this.cases[slice.caseIndex[k]];
+      const w = slice.weight[k];
+      const rate = past ? 1 : slice.rate[k];
+      const position = Math.min(c.count - 1, Math.max(0, (taus[k] - c.tauStart) / c.tauStep));
+      const f = Math.floor(position);
+      const next = Math.min(c.count - 1, f + 1);
+      const u = position - f;
+      const wa = w * (1 - u);
+      const wb = w * u;
+      // d/dτ of the frames' linear interpolant; 0 at the ends, where there is no next frame.
+      const dw = next > f ? w / c.tauStep : 0;
+      const vf = WAVE_POINTS * nd * 2;
+      const va = f * vf;
+      const vb = next * vf;
+      const fa = f * FLOATS;
+      const fb = next * FLOATS;
+      for (let i = 0; i < WAVE_POINTS; i += 1) {
+        for (let j = 0; j < nd; j += 1) {
+          const at = (i * nd + j) * 2;
+          const o = (i * nd + j) * FLOW_VALUES;
+          for (let comp = 0; comp < 2; comp += 1) {
+            const a = c.velocity[va + at + comp];
+            const b = c.velocity[vb + at + comp];
+            out[o + comp] += (wa * a + wb * b) * speed;
+            out[o + 2 + comp] += dw * (b - a) * GRAVITY * rate;
+          }
+        }
+        const mx = c.frames[fb + 2 * i] - c.frames[fa + 2 * i];
+        const my = c.frames[fb + 2 * i + 1] - c.frames[fa + 2 * i + 1];
+        motion[2 * i] += dw * mx * rate * speed;
+        motion[2 * i + 1] += dw * my * rate * speed;
+      }
+    }
   }
 
   /** One case's profile at τ (√(h0/g)), h0, as the library holds it (refilled), into `out`. */

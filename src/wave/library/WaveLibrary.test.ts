@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from '../dispersion';
 import { decodeWaveCase, encodeWaveCase, PATH, PATH_COLUMNS, WAVE_POINTS, type WaveCase, type WaveCaseHeader } from './caseFormat';
-import { StateMatcher, WaveLibrary, type CasePath, type HandoverState } from './WaveLibrary';
+import { FLOW_VALUES, StateMatcher, WaveLibrary, type CasePath, type HandoverState } from './WaveLibrary';
 
 const FLOATS = 2 * WAVE_POINTS;
 
@@ -147,6 +147,36 @@ describe('WaveLibrary: one case', () => {
     expect(out[0] / speed).toBeCloseTo(0.1 + 0.001 * k, 4);
     lib.velocityAt(slice, 0, 10, 10, out);
     expect(out[0] / speed).toBeCloseTo(0.2 + 0.001 * k, 4);
+  });
+
+  it("gives the whole profile's water and its frames' own derivatives (step 4)", () => {
+    const c = synthetic();
+    const lib = new WaveLibrary([c]);
+    const slice = lib.slice(stateOf(c, -2));
+    expect(lib.depthCount).toBe(2);
+    const flow = new Float64Array(WAVE_POINTS * 2 * FLOW_VALUES);
+    const motion = new Float64Array(2 * WAVE_POINTS);
+    const point = new Float64Array(2);
+    const speed = Math.sqrt(GRAVITY * slice.h0);
+    lib.flowProfileAt(slice, 0, flow, motion);
+    // The same water as `velocityAt` at each stored depth.
+    const depths = lib.depthsOf(slice, new Float64Array(2));
+    for (const i of [0, 10, 64, 127]) {
+      for (let j = 0; j < 2; j += 1) {
+        lib.velocityAt(slice, 0, i, depths[j], point);
+        expect(flow[(i * 2 + j) * FLOW_VALUES]).toBeCloseTo(point[0], 9);
+        expect(flow[(i * 2 + j) * FLOW_VALUES + 1]).toBeCloseTo(point[1], 9);
+      }
+    }
+    // The case's velocity grows 0.001 √(g h0) a frame (0.05 τ), so at this slice's scale du/dt is 0.02 g.
+    expect(flow[(10 * 2) * FLOW_VALUES + 2] / GRAVITY).toBeCloseTo(0.02, 6);
+    // The stored x moves 0.05 h0 a frame (the crest's own 1 h0 per √(h0/g)), so each point runs at √(g h0).
+    expect(motion[2 * 10] / speed).toBeCloseTo(1, 5);
+    // A step in time agrees with the derivative it reports (a one-case slice runs at rate 1).
+    const later = new Float64Array(flow.length);
+    const dt = 0.001;
+    lib.flowProfileAt(slice, dt, later, motion);
+    expect((later[(10 * 2) * FLOW_VALUES] - flow[(10 * 2) * FLOW_VALUES]) / dt).toBeCloseTo(flow[(10 * 2) * FLOW_VALUES + 2], 6);
   });
 });
 

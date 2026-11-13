@@ -137,6 +137,11 @@ const RADIATED_WAVENUMBER = (2 * Math.PI / 1.5) ** 2 / 9.81;
  * - following the water (`wallFollow`, the default with `?wallBody=stream`): the flow where the patch's last water has
  *   moved to, x_last + u_last h, against u_last, (u(x_last + u_last h, t) − u(x_last, t − h)) / h = ∂u/∂t + (u·∇)u, the
  *   water's own material acceleration (one more flow sample a wall patch a substep). The board's speed is not in it.
+ *
+ * A water that knows its own Du/Dt says so (`WaterSample.flowAccel`, C2's ruling 28, decision 8): C2's library zone
+ * reads it from the Basilisk case's own frames (step 4). Then neither rule differences anything: the sample's
+ * acceleration is taken as it comes, smoothed and capped the same way, and it is the water that pushes the added mass,
+ * wherever the library's water is (its own wall is the case's wall). Without the field, the two rules above.
  */
 const WATER_INERTIA = { smoothing: 3 / 60, cap: 5 * 9.81 } as const;
 /** A submerged plate lies under a plain surface: one whose normal is within 45° of straight up. */
@@ -1165,8 +1170,10 @@ export class BoardBody implements BoardContactBody {
         for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += inertia * a[i] * a[j];
       }
       // Ruling 3 (`WATER_INERTIA`): in the case's wall water, the water's own acceleration on the added mass, along ν.
-      if (sample.wallWater) {
-        const push = (sample.wallFollow ? this.wallFollowing(k, sample, water, ux, uy, uz) : this.wallInertia(k, sample, h, ux, uy, uz)) * addedMass * h;
+      if (sample.wallWater || sample.flowAccelX !== undefined) {
+        const push = (sample.flowAccelX !== undefined
+          ? this.waterAccel(k, sample, h, ux, uy, uz)
+          : sample.wallFollow ? this.wallFollowing(k, sample, water, ux, uy, uz) : this.wallInertia(k, sample, h, ux, uy, uz)) * addedMass * h;
         this.wallPush[k] = push;
         waterX += push * ux;
         waterY += push * uy;
@@ -1661,6 +1668,39 @@ export class BoardBody implements BoardContactBody {
         for (let d = 0; d < 6; d += 1) this.plateWall[d] += push * a[d];
       }
     }
+  }
+
+  /**
+   * C2's ruling 28, decision 8 (`WaterSample.flowAccel`): patch k takes the water's own material acceleration, as the
+   * water reports it, along the surface's normal (ux, uy, uz), m/s². Nothing is differenced; the smoothing and the cap
+   * are the other rules' (`WATER_INERTIA`), and the state is kept the same way, so a patch that crosses between a water
+   * that reports its acceleration and one that does not keeps one smoothed history.
+   */
+  private waterAccel(k: number, sample: WaterSample, h: number, ux: number, uy: number, uz: number): number {
+    const o = 3 * k;
+    const acc = this.wallAccel;
+    const flow = this.wallFlow;
+    const share = this.wallSeen[k] !== 0 && h > 0 ? Math.min(1, h / WATER_INERTIA.smoothing) : 1;
+    acc[o] += ((sample.flowAccelX ?? 0) - acc[o]) * share;
+    acc[o + 1] += ((sample.flowAccelY ?? 0) - acc[o + 1]) * share;
+    acc[o + 2] += ((sample.flowAccelZ ?? 0) - acc[o + 2]) * share;
+    const size = Math.sqrt(acc[o] * acc[o] + acc[o + 1] * acc[o + 1] + acc[o + 2] * acc[o + 2]);
+    if (size > WATER_INERTIA.cap) {
+      const scale = WATER_INERTIA.cap / size;
+      acc[o] *= scale;
+      acc[o + 1] *= scale;
+      acc[o + 2] *= scale;
+    }
+    this.wallSeen[k] = 1;
+    this.wallAny = true;
+    flow[o] = sample.flowX;
+    flow[o + 1] = sample.flowY;
+    flow[o + 2] = sample.flowZ;
+    const at = this.wallPoint;
+    at[o] = this.point[o];
+    at[o + 1] = this.point[o + 1];
+    at[o + 2] = this.point[o + 2];
+    return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
   }
 
   /**

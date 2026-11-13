@@ -10,7 +10,9 @@
  *   frames    f32 [frames × 128 × 2]            the profile, h0: x forward from the crest at τ = 0, y up from still water
  *   use       u8  [frames]                      1 for an "own" frame, 0 for "refill" (the reader rebuilds it)
  *   path      f32 [frames × PATH_COLUMNS]       the path table (`PATH`), NaN where c2_library.py wrote null
- *   velocity  f16 [frames × 128 × depths × 2]   per point and depth, the water's (u, v), √(g h0); NaN where none
+ *   velocity  f16 [frames × 128 × depths × 2]   per point and depth, the water's (u, v), √(g h0), in the run's fixed
+ *                                               frame (u toward the shore, v up); NaN where none, and no section at all
+ *                                               where the header's `velocityDepths` is empty
  *   qTime     f32 [columns frames]              QOUT: each column frame's τ
  *   qFlow     f32 [columns frames × nx × 2]     QOUT: per bin, the volume per width h and the flux q, h0 and h0 √(g h0)
  *   qTop      f16 [columns frames × nx]         QOUT: per bin, the highest water, h0 (NaN for an empty bin)
@@ -220,9 +222,13 @@ export function encodeWaveCase(c: WaveCase): Uint8Array {
 /**
  * C2 step 3's game file (`scripts/barrel-library.ts --format brl3 --game`): the case as the game reads it so far, its
  * frames, uses and path to `keepAfter` τ past its touchdown (the slices hand the bore back to the sea by then,
- * `SLICE_LIFE`), without the velocity (step 4) or QOUT and the bore (step 5). The same frames, bit for bit.
+ * `SLICE_LIFE`), without QOUT and the bore (step 5). The same frames, bit for bit.
+ *
+ * C2 step 4 (c2-step4.md): the velocity comes too, `u` and `v` at the case's two depths, as the float16 the whole file
+ * already holds (so the game file's values are the whole case's, bit for bit). `velocity: false` drops it, as step 3's
+ * files did.
  */
-export function gameCase(c: WaveCase, keepAfter: number): WaveCase {
+export function gameCase(c: WaveCase, keepAfter: number, options: { velocity?: boolean } = {}): WaveCase {
   const h = c.header;
   const touchdown = h.touchdown ?? Number.NaN;
   const last = touchdown === touchdown ? Math.min(h.frames, Math.floor((touchdown + keepAfter - h.tauStart) / h.tauStep) + 2) : h.frames;
@@ -230,10 +236,16 @@ export function gameCase(c: WaveCase, keepAfter: number): WaveCase {
   const { sections: _sections, ...meta } = h;
   let own = 0;
   for (let k = 0; k < frames; k += 1) if (c.use[k] === 1) own += 1;
-  const header: WaveCaseHeader = { ...meta, frames, velocityDepths: [], velocityLabels: [], uses: { own, refill: frames - own }, q: null, sections: [] };
+  const keepVelocity = options.velocity !== false && h.velocityDepths.length > 0 && c.velocity.length >= frames * h.points * h.velocityDepths.length * 2;
+  const nd = keepVelocity ? h.velocityDepths.length : 0;
+  const header: WaveCaseHeader = {
+    ...meta, frames, velocityDepths: keepVelocity ? [...h.velocityDepths] : [], velocityLabels: keepVelocity ? [...h.velocityLabels] : [],
+    uses: { own, refill: frames - own }, q: null, sections: [],
+  };
   return {
     header, frames: c.frames.slice(0, frames * h.points * 2), use: c.use.slice(0, frames), path: c.path.slice(0, frames * PATH_COLUMNS),
-    velocity: new Float32Array(0), qTime: new Float32Array(0), qFlow: new Float32Array(0), qTop: new Float32Array(0), qAir: new Float32Array(0),
+    velocity: keepVelocity ? c.velocity.slice(0, frames * h.points * nd * 2) : new Float32Array(0),
+    qTime: new Float32Array(0), qFlow: new Float32Array(0), qTop: new Float32Array(0), qAir: new Float32Array(0),
     bore: new Float32Array(0), boreTop: new Float32Array(0), boreAir: new Float32Array(0),
   };
 }

@@ -239,6 +239,11 @@ export interface ZoneNodes {
   at(node: number, sea: number): number;
   nodeAt(x: number, z: number): number;
   weightAt(x: number, z: number): number;
+  /**
+   * C2 step 4 (`ZoneSurface.flowAt`): the library's own flow (0, 1, 2) and material acceleration (3, 4, 5) at the point,
+   * world axes, and the share of the water there that is the library's. Absent where the cases hold no velocity.
+   */
+  flowAt?(x: number, y: number, z: number, out: Float64Array): number;
 }
 
 /** Only numeric state read by the existing plain-height sampler; no complete solver facade. */
@@ -594,6 +599,12 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     if (this.options.sweptInertia) out.wallWater = undefined;
     if (this.options.sweptFollow) out.wallFollow = undefined;
     if (this.options.sweptBuoy) out.buoyancyNormal = undefined;
+    // C2 step 4: a reused sample leaves its last point's library acceleration behind (`zoneFlow` sets it again).
+    if (this.options.zone?.flowAt) {
+      out.flowAccelX = undefined;
+      out.flowAccelY = undefined;
+      out.flowAccelZ = undefined;
+    }
     // A reused sample leaves the lens of its last point behind: only a lens here sets it again.
     if (this.options.roller) {
       out.lensShare = undefined;
@@ -691,6 +702,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w, this.options.froth !== 'old');
     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
     else if (this.inWall) this.wallFlow(out, y);
+    this.zoneFlow(x, y, z, out);
     if (this.options.sweptInertia && this.inWall) out.wallWater = true;
     if (this.options.sweptFollow && this.inWall) out.wallFollow = true;
     if (this.options.sweptBuoy && this.inWall && out.normalY < MIN_NORMAL_Y) out.buoyancyNormal = 1 / MIN_NORMAL_Y;
@@ -724,6 +736,29 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     const { qx, qz } = this.solver;
     return surface + (0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'))) * this.sampleTime * this.seaShare(x, z);
   }
+
+  /**
+   * C2 step 4 (`ZoneSurface.flowAt`, docs/research/wave-strategy-alternatives/c2-step4.md): the library's water in the
+   * zone. Where a slice is whole the flow is the case's own, read at the nearest place on the slice's own curve and at
+   * the point's depth under it; through the hand-over it is weighed into the sea's by the same share the surface's height took, so a board
+   * crossing the line feels one flow. The library's material acceleration rides on the sample (`WaterSample.flowAccel`),
+   * weighed by the same share: the sea does not report its own, so it fades in with the library's water.
+   */
+  private zoneFlow(x: number, y: number, z: number, out: WaterSample): void {
+    const { zone } = this.options;
+    if (!zone?.flowAt) return;
+    const share = zone.flowAt(x, y, z, this.zoneFlowOut);
+    if (!(share > 0)) return;
+    const f = this.zoneFlowOut;
+    out.flowX += share * (f[0] - out.flowX);
+    out.flowY += share * (f[1] - out.flowY);
+    out.flowZ += share * (f[2] - out.flowZ);
+    out.flowAccelX = share * f[3];
+    out.flowAccelY = share * f[4];
+    out.flowAccelZ = share * f[5];
+  }
+
+  private readonly zoneFlowOut = new Float64Array(6);
 
   /** How much of the surface at (x, z) is the sea's own (1 outside a library zone, `zone`): its rise moves only that share. */
   private seaShare(x: number, z: number): number {

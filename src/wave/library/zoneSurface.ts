@@ -2,6 +2,7 @@ import { LANE, type LaneField, type SeaLevel } from './Handover';
 import { CURVE, CURVE_STRIDE, LIFT } from './libraryLoft';
 import { SLICE_LIFE, type FieldSlice, type SliceField } from './SliceField';
 import { WAVE_LANDMARK, WAVE_POINTS } from './caseFormat';
+import { FLOW_VALUES } from './WaveLibrary';
 
 /**
  * C2 step 3 (docs/research/wave-strategy-alternatives/c2-plan.md §1, "A hybrid surface"; ruling 28 point 3): the
@@ -45,12 +46,30 @@ export const PAD_LANES = 3;
 /** The sea's crest is looked for where it was, carried on at this pace, m/s (a crest's on the pool's face). */
 const SEA_CREST_PACE = 6;
 
+/**
+ * C2 step 4 (c2-step4.md): the water's speed from the library.
+ * - `reach`: a sample is matched to the slice's curve only within this much of it along the lane, m (the overturn spans
+ *   about 2 m; past this the slice's own frame weight is 0 anyway).
+ * - `cap`: the material acceleration is capped at this size, m/s² (`BoardBody`'s `WATER_INERTIA.cap`, 5 g): one bad
+ *   frame pair in a case must not throw a rider.
+ */
+export const FLOW = { reach: 4, cap: 5 * 9.81 } as const;
+
+/** What `ZoneSurface.flowAt` writes: the library's own flow (x, y, z) and its material acceleration (x, y, z), m/s and m/s². */
+export const FLOW_OUT = 6;
+
 const smoothstep = (u: number) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
 
 /** One shown slice this step: its composite's offset, its course to the loft's lift, its run and its lane's span. */
 interface Picked {
   slice: FieldSlice;
   at: number;
+  /** Its share of the surface this step (`SLICE_LIFE`'s blend, in and out), 0–1: the weight its water takes too. */
+  share: number;
+  /** Where its water stands in `flows` (−1 without velocity), and its two stored depths, m. */
+  flow: number;
+  depth0: number;
+  depth1: number;
   /** The steepest segment, °, and whether the curve folds over. */
   steepest: number;
   overturned: boolean;
@@ -102,6 +121,22 @@ export class ZoneSurface {
   /** Per live slice this step, its composite (lane order kept), and what its loft needs. */
   private composites: Float64Array;
   private readonly picked: Picked[] = [];
+  /**
+   * C2 step 4: per shown slice, its water along its curve: per point and stored depth, (u along the ray, v up) m/s and
+   * the material (Du/Dt, Dv/Dt) m/s². Empty where the cases hold no velocity (step 3's files).
+   */
+  private flows: Float64Array;
+  private readonly flowScratch: Float64Array;
+  private readonly motion = new Float64Array(2 * WAVE_POINTS);
+  private readonly sliceDepths = new Float64Array(8);
+  readonly depthCount: number;
+  private readonly flowStride: number;
+  /** Per lane, its first shown slice this step, and the next one on the same lane (a list over `picked`'s indices). */
+  private readonly laneFirst: Int32Array;
+  private laneNext: Int32Array;
+  /** Slices whose water has been filled this step, and this step's time (the lazy fill). */
+  private flowCount = 0;
+  private time = Number.NaN;
   /** Scratch for one slice's stations: how often reached, whether steep, and the heights. */
   private hits = new Uint8Array(256);
   private steep = new Uint8Array(256);
@@ -119,6 +154,12 @@ export class ZoneSurface {
     this.laneHi = new Int32Array(lanes.count).fill(0);
     this.sea = new Float64Array(lanes.stations);
     this.composites = new Float64Array(2 * WAVE_POINTS * 64);
+    this.depthCount = field.library.depthCount;
+    this.flowStride = WAVE_POINTS * this.depthCount * FLOW_VALUES;
+    this.flows = new Float64Array(this.flowStride * 64);
+    this.flowScratch = new Float64Array(this.flowStride);
+    this.laneFirst = new Int32Array(lanes.count).fill(-1);
+    this.laneNext = new Int32Array(64).fill(-1);
     this.curves = new Float32Array(capacity * CURVE_STRIDE);
     const size = grid.nx * grid.nz;
     this.weight = new Float64Array(size);
@@ -259,6 +300,8 @@ export class ZoneSurface {
     }
     this.writtenCount = 0;
     this.picked.length = 0;
+    this.flowCount = 0;
+    this.time = time;
     const stats = this.stats;
     stats.slices = 0; stats.shown = 0; stats.lofted = 0; stats.bridged = 0; stats.nodes = 0; stats.seaMissed = 0; stats.steepest = 0;
     let index = 0;
@@ -278,8 +321,20 @@ export class ZoneSurface {
       // Step 3b (ruling 32, point 7): the loft lifts the tube only, to its touchdown and over its collapse after.
       const collapse = smoothstep((time - slice.throwAt - slice.touchdown) / LIFT.collapse);
       const raw = smoothstep((shape.steepest - LIFT.on) / (LIFT.full - LIFT.on)) * slice.end * (1 - collapse);
-      this.picked.push({ slice, at, ...shape, collapse, raw, chain: 0, taper: 0, lift: 0, bridge: 0, from: 0, to: 0 });
+      // C2 step 4: its water waits until something reads it (`fill`): −1 no velocity at all, −2 not filled yet.
+      this.picked.push({
+        slice, at, share: a, flow: this.depthCount > 0 ? -2 : -1, depth0: 0, depth1: 0,
+        ...shape, collapse, raw, chain: 0, taper: 0, lift: 0, bridge: 0, from: 0, to: 0,
+      });
       index += 1;
+    }
+    // The lanes' lists over this step's shown slices (`flowAt`'s lookup).
+    this.laneFirst.fill(-1);
+    if (this.laneNext.length < this.picked.length) this.laneNext = new Int32Array(2 * this.picked.length);
+    for (let i = this.picked.length - 1; i >= 0; i -= 1) {
+      const k = this.picked[i].slice.lane;
+      this.laneNext[i] = this.laneFirst[k];
+      this.laneFirst[k] = i;
     }
     this.chainRuns();
     for (const p of this.picked) {
@@ -428,6 +483,232 @@ export class ZoneSurface {
     slice.tipS = tipS;
     slice.tipY = tipY;
     slice.tipT = time;
+  }
+
+  /**
+   * C2 step 4: one slice's water along its curve into `flows` from `flow`: the library's velocity at the two stored
+   * depths, and its **material** acceleration there.
+   *
+   * The library gives, per point, the water's (u, v), the change of those at the fixed point index, and the point's own
+   * motion (`WaveLibrary.flowProfileAt`). A stored point is a share of the curve's arc, so it is not a water particle:
+   * Du/Dt = du_i/dt + (q·∇)u, with q = the water's velocity less the point's own. The only gradients the library has
+   * are along the curve (the neighbouring points, at the same depth) and across it (the two depths), so q is split into
+   * its tangential and normal parts and each takes its own gradient. At the surface the normal part is small by the
+   * kinematic condition, so the tangential term carries it. Capped at `FLOW.cap`.
+   */
+  private fillFlow(picked: Picked): void {
+    const library = this.field.library;
+    const nd = this.depthCount;
+    // Only the slices something reads are filled, and each one once a step: a step shows over a hundred slices, and a
+    // rider's samples reach a handful of lanes.
+    const flow = this.flowStride * this.flowCount;
+    this.flowCount += 1;
+    if (flow + this.flowStride > this.flows.length) {
+      const grown = new Float64Array(Math.max(2 * this.flows.length, flow + this.flowStride));
+      grown.set(this.flows);
+      this.flows = grown;
+    }
+    const at = picked.at;
+    library.flowProfileAt(picked.slice.slice, this.time, this.flowScratch, this.motion);
+    library.depthsOf(picked.slice.slice, this.sliceDepths);
+    picked.flow = flow;
+    picked.depth0 = this.sliceDepths[0];
+    picked.depth1 = this.sliceDepths[Math.min(1, nd - 1)];
+    const c = this.composites;
+    const f = this.flowScratch;
+    const m = this.motion;
+    const out = this.flows;
+    const dz = nd > 1 ? this.sliceDepths[1] - this.sliceDepths[0] : 0;
+    for (let i = 0; i < WAVE_POINTS; i += 1) {
+      const a = i > 0 ? i - 1 : 0;
+      const b = i + 1 < WAVE_POINTS ? i + 1 : WAVE_POINTS - 1;
+      const ex = c[at + 2 * b] - c[at + 2 * a];
+      const ey = c[at + 2 * b + 1] - c[at + 2 * a + 1];
+      const len = Math.sqrt(ex * ex + ey * ey);
+      const tx = len > 1e-9 ? ex / len : 1;
+      const ty = len > 1e-9 ? ey / len : 0;
+      // The normal, turned up (the water is under it).
+      let nxv = -ty;
+      let nyv = tx;
+      if (nyv < 0) { nxv = -nxv; nyv = -nyv; }
+      const mx = m[2 * i];
+      const my = m[2 * i + 1];
+      // Across the curve, from the two depths (the shallower less the deeper, over their gap): ∂/∂y.
+      const shallow = i * nd * FLOW_VALUES;
+      const deep = nd > 1 ? shallow + FLOW_VALUES : shallow;
+      const dudy = dz > 1e-9 ? (f[shallow] - f[deep]) / dz : 0;
+      const dvdy = dz > 1e-9 ? (f[shallow + 1] - f[deep + 1]) / dz : 0;
+      for (let j = 0; j < nd; j += 1) {
+        const o = (i * nd + j) * FLOW_VALUES;
+        const u = f[o];
+        const v = f[o + 1];
+        const ua = f[(a * nd + j) * FLOW_VALUES];
+        const ub = f[(b * nd + j) * FLOW_VALUES];
+        const va = f[(a * nd + j) * FLOW_VALUES + 1];
+        const vb = f[(b * nd + j) * FLOW_VALUES + 1];
+        const dudl = len > 1e-9 ? (ub - ua) / len : 0;
+        const dvdl = len > 1e-9 ? (vb - va) / len : 0;
+        const qx = u - mx;
+        const qy = v - my;
+        const qt = qx * tx + qy * ty;
+        const qn = qx * nxv + qy * nyv;
+        let ax = f[o + 2] + qt * dudl + qn * dudy * nyv;
+        let ay = f[o + 3] + qt * dvdl + qn * dvdy * nyv;
+        const size = Math.sqrt(ax * ax + ay * ay);
+        if (size > FLOW.cap) {
+          ax *= FLOW.cap / size;
+          ay *= FLOW.cap / size;
+        }
+        out[flow + o] = u;
+        out[flow + o + 1] = v;
+        out[flow + o + 2] = ax;
+        out[flow + o + 3] = ay;
+      }
+    }
+  }
+
+  /**
+   * C2 step 4: the library's own water at (x, y, z): its flow (0, 1, 2) and material acceleration (3, 4, 5) in world
+   * axes into `out`, m/s and m/s². Returns the share of the water there that is the library's, 0 to 1 (0: none, and
+   * `out` untouched).
+   *
+   * The share is the one the surface took: each slice's frame weight along its lane (`EDGE`, its lane's end weight)
+   * times its blend share, summed over the slices on a lane and capped at 1 as the lane's heights are, then across the
+   * lane pair by the same weights the nodes use. So a board crossing the hand-over feels the sea's flow give way to the
+   * library's exactly as the surface gives way (`PhysicalSurfWater` blends with the sea).
+   *
+   * On a lane, the point is matched to the slice's own curve: **the nearest place on the curve to the point itself**,
+   * which is the surface the body is on, overturned or not (the swept contact's own rule for a body's surface). Its
+   * depth is the distance from the point to that place along the curve's normal, and the water is read between the two
+   * stored depths and held past them.
+   */
+  flowAt(x: number, y: number, z: number, out: Float64Array): number {
+    if (this.depthCount === 0 || this.picked.length === 0) return 0;
+    const { lanes } = this;
+    const found = this.locateLanes(x, z);
+    if (!found) return 0;
+    let share = 0;
+    for (let d = 0; d < 6; d += 1) out[d] = 0;
+    for (let side = 0; side < 2; side += 1) {
+      const k = found.lane + side;
+      const across = side === 0 ? 1 - found.share : found.share;
+      if (!(across > 0) || k >= lanes.count) continue;
+      const s = side === 0 ? found.s0 : found.s1;
+      const rx = lanes.rayX[k];
+      const rz = lanes.rayZ[k];
+      const lane = this.laneFlow;
+      lane.fill(0);
+      let laneShare = 0;
+      for (let p = this.laneFirst[k]; p >= 0; p = this.laneNext[p]) {
+        const picked = this.picked[p];
+        if (picked.flow === -1 || !(picked.share > 0)) continue;
+        const at = picked.at;
+        const back = this.composites[at];
+        const front = this.composites[at + 2 * (WAVE_POINTS - 1)];
+        const frame = picked.slice.end * smoothstep((s - back) / EDGE.band) * smoothstep((front - s) / EDGE.band);
+        const w = frame * picked.share;
+        if (!(w > 0)) continue;
+        if (picked.flow === -2) this.fillFlow(picked);
+        if (!this.onCurve(picked, s, y)) continue;
+        laneShare += w;
+        lane[0] += w * this.curveFlow[0] * rx;
+        lane[1] += w * this.curveFlow[1];
+        lane[2] += w * this.curveFlow[0] * rz;
+        lane[3] += w * this.curveFlow[2] * rx;
+        lane[4] += w * this.curveFlow[3];
+        lane[5] += w * this.curveFlow[2] * rz;
+      }
+      if (!(laneShare > 0)) continue;
+      // Two waves' frames meet at most at their ends: past a weight of 1 they share it, as the lane's heights do.
+      const keep = Math.min(1, laneShare) / laneShare;
+      for (let d = 0; d < 6; d += 1) out[d] += across * keep * lane[d];
+      share += across * Math.min(1, laneShare);
+    }
+    if (!(share > 1e-9)) return 0;
+    for (let d = 0; d < 6; d += 1) out[d] /= share;
+    return Math.min(1, share);
+  }
+
+  /** `flowAt`'s scratch: the water at the matched place on one curve, (u along the ray, v up, Du/Dt along, Dv/Dt up). */
+  private readonly curveFlow = new Float64Array(4);
+  /** `flowAt`'s scratch: one lane's weighted sum (flow and acceleration, world axes). */
+  private readonly laneFlow = new Float64Array(6);
+
+  /**
+   * The place on a slice's curve nearest the point (`s`, `y`), and its water at the point's depth under that place,
+   * into `curveFlow`; false where the curve does not reach the point (`FLOW.reach`).
+   */
+  private onCurve(picked: Picked, s: number, y: number): boolean {
+    const c = this.composites;
+    const at = picked.at;
+    let bestD2 = Infinity;
+    let bestI = -1;
+    let bestU = 0;
+    for (let i = 0; i + 1 < WAVE_POINTS; i += 1) {
+      const ax = c[at + 2 * i];
+      const bx = c[at + 2 * i + 2];
+      if ((ax < s - FLOW.reach && bx < s - FLOW.reach) || (ax > s + FLOW.reach && bx > s + FLOW.reach)) continue;
+      const ay = c[at + 2 * i + 1];
+      const by = c[at + 2 * i + 3];
+      const ex = bx - ax;
+      const ey = by - ay;
+      const len2 = ex * ex + ey * ey;
+      const u = len2 > 1e-12 ? Math.min(1, Math.max(0, ((s - ax) * ex + (y - ay) * ey) / len2)) : 0;
+      const gx = ax + u * ex - s;
+      const gy = ay + u * ey - y;
+      const d2 = gx * gx + gy * gy;
+      if (d2 < bestD2) {
+        bestD2 = d2;
+        bestI = i;
+        bestU = u;
+      }
+    }
+    if (bestI < 0) return false;
+    const ax = c[at + 2 * bestI];
+    const ay = c[at + 2 * bestI + 1];
+    const ex = c[at + 2 * bestI + 2] - ax;
+    const ey = c[at + 2 * bestI + 3] - ay;
+    const len = Math.sqrt(ex * ex + ey * ey);
+    let nxv = len > 1e-9 ? -ey / len : 0;
+    let nyv = len > 1e-9 ? ex / len : 1;
+    if (nyv < 0) { nxv = -nxv; nyv = -nyv; }
+    // The depth under that place, along the curve's normal.
+    const px = ax + bestU * ex;
+    const py = ay + bestU * ey;
+    const depth = Math.max(0, (px - s) * nxv + (py - y) * nyv);
+    const nd = this.depthCount;
+    const zs = nd > 1 && picked.depth1 > picked.depth0 ? Math.min(1, Math.max(0, (depth - picked.depth0) / (picked.depth1 - picked.depth0))) : 0;
+    const flows = this.flows;
+    const o = picked.flow;
+    const a0 = (bestI * nd) * FLOW_VALUES;
+    const b0 = ((bestI + 1) * nd) * FLOW_VALUES;
+    const step = nd > 1 ? FLOW_VALUES : 0;
+    for (let d = 0; d < FLOW_VALUES; d += 1) {
+      const a = flows[o + a0 + d] + zs * (flows[o + a0 + step + d] - flows[o + a0 + d]);
+      const b = flows[o + b0 + d] + zs * (flows[o + b0 + step + d] - flows[o + b0 + d]);
+      this.curveFlow[d] = a + bestU * (b - a);
+    }
+    return true;
+  }
+
+  /** The lane pair at (x, z) (the footprint's rule): lane k, the share of k + 1, and the places along both. */
+  private locateLanes(x: number, z: number): { lane: number; share: number; s0: number; s1: number } | undefined {
+    const { lanes } = this;
+    if (lanes.count < 2) return undefined;
+    const side = (k: number) => (x - lanes.baseX[k]) * lanes.rayZ[k] - (z - lanes.baseZ[k]) * lanes.rayX[k];
+    if (side(0) < 0 || side(lanes.count - 1) >= 0) return undefined;
+    let lo = 0;
+    let hi = lanes.count - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (side(mid) >= 0) lo = mid;
+      else hi = mid;
+    }
+    const a = side(lo);
+    const b = side(lo + 1);
+    const s0 = (x - lanes.baseX[lo]) * lanes.rayX[lo] + (z - lanes.baseZ[lo]) * lanes.rayZ[lo];
+    const s1 = (x - lanes.baseX[lo + 1]) * lanes.rayX[lo + 1] + (z - lanes.baseZ[lo + 1]) * lanes.rayZ[lo + 1];
+    return { lane: lo, share: a - b > 0 ? a / (a - b) : 0, s0, s1 };
   }
 
   /** The sea's crest along lane k nearest `want` (m along it), within ±10 m, a top over ±1 m and 0.1 m over its trough ahead. */
@@ -731,9 +1012,16 @@ export class ZoneSurface {
     this.stats.lofted = count;
   }
 
-  /** The probes' view of this step's shown slices: each one's slice, composite (s, y per point), lift and its run. */
-  shown(): Array<{ slice: FieldSlice; curve: Float64Array; lift: number }> {
-    return this.picked.map((p) => ({ slice: p.slice, curve: this.composites.subarray(p.at, p.at + 2 * WAVE_POINTS), lift: p.lift }));
+  /**
+   * The probes' view of this step's shown slices: each one's slice, composite (s, y per point), lift, share and, with
+   * the velocity, its water along the curve (`fillFlow`'s layout) and the two depths it stands at, m.
+   */
+  shown(): Array<{ slice: FieldSlice; curve: Float64Array; lift: number; share: number; flow?: Float64Array; depths?: [number, number] }> {
+    for (const p of this.picked) if (p.flow === -2) this.fillFlow(p);
+    return this.picked.map((p) => ({
+      slice: p.slice, curve: this.composites.subarray(p.at, p.at + 2 * WAVE_POINTS), lift: p.lift, share: p.share,
+      ...(p.flow >= 0 ? { flow: this.flows.subarray(p.flow, p.flow + this.flowStride), depths: [p.depth0, p.depth1] as [number, number] } : {}),
+    }));
   }
 
   /** Lane k's library surface at s m along it this step: its weight and weighted height there (a probe's). */

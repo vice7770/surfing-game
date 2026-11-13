@@ -32,6 +32,15 @@ export interface WaterSample {
   flowX: number;
   flowY: number;
   flowZ: number;
+  /**
+   * The water's own material acceleration at the point, Du/Dt = ∂u/∂t + (u·∇)u, m/s² (C2's ruling 28, decision 8;
+   * `flowAccel`). A water that knows it says so; absent, a body that needs it differences its own samples
+   * (`BoardBody`'s `WATER_INERTIA`). C2's library zone (step 4) reads it from the case's own frames, weighed into the
+   * sea's by the same share as the flow, so it is 0 where the library has no part in the water.
+   */
+  flowAccelX?: number;
+  flowAccelY?: number;
+  flowAccelZ?: number;
   regime: FlowRegime;
   /** Breaking strength B in [0, 1]. */
   breaking: number;
@@ -108,7 +117,8 @@ export type { TubeState };
 export function createWaterSample(): WaterSample {
   return {
     surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
-    normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
+    normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, flowAccelX: undefined, flowAccelY: undefined, flowAccelZ: undefined,
+    regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
     bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand', lensShare: undefined, lensFlowX: undefined, lensFlowZ: undefined, lensScale: undefined, lensThickness: undefined, lensReach: undefined, lensSpeedX: undefined, lensSpeedZ: undefined, lensGrip: undefined,
     waterFloorY: undefined, ceilingY: undefined, ceilingTopY: undefined, covered: undefined, clearance: undefined, tube: undefined,
   };

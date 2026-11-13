@@ -8,7 +8,7 @@ import { PATH, PATH_COLUMNS, WAVE_POINTS, gameCase, type WaveCase, type WaveCase
 import { buildLanes, fitLine, laneSlope, LANE, outlierRaws, type RawHandover } from './Handover';
 import { CURVE, CURVE_STRIDE, LibraryLoft } from './libraryLoft';
 import { MeanLevel } from './meanLevel';
-import { SliceField } from './SliceField';
+import { SLICE_LIFE, SliceField } from './SliceField';
 import { WaveLibrary } from './WaveLibrary';
 import { ZoneSurface } from './zoneSurface';
 
@@ -19,12 +19,22 @@ const FLOATS = 2 * WAVE_POINTS;
  * platform (d = 1) until τ −5, then shoaling (d = 1 + 0.1 (τ + 5)... down to 0.7 at the throw), its H/d flat on the
  * platform and rising past the toe; a smooth hump around its crest.
  */
-function toeCase(a0 = 0.25, id = 'toe'): WaveCase {
+function toeCase(a0 = 0.25, id = 'toe', flow = false): WaveCase {
   const tauStart = -8;
   const tauStep = 0.05;
   const count = 201;
   const frames = new Float32Array(count * FLOATS);
   const path = new Float32Array(count * PATH_COLUMNS);
+  // C2 step 4: with `flow`, the water at two depths, √(g h0): 0.8 at the crest, rising along the profile, 0.1 slower
+  // at the deeper depth, and still (v = 0), so a sample's reading is known from its point and depth alone.
+  const velocity = flow ? new Float32Array(count * WAVE_POINTS * 2 * 2) : new Float32Array(0);
+  if (flow) {
+    for (let k = 0; k < count; k += 1) {
+      for (let i = 0; i < WAVE_POINTS; i += 1) {
+        for (let j = 0; j < 2; j += 1) velocity[((k * WAVE_POINTS + i) * 2 + j) * 2] = 0.8 + 0.002 * (i - 32) - 0.1 * j;
+      }
+    }
+  }
   for (let k = 0; k < count; k += 1) {
     const tau = tauStart + k * tauStep;
     const d = tau < -5 ? 1 : Math.max(0.7, 1 - 0.06 * (tau + 5));
@@ -48,11 +58,12 @@ function toeCase(a0 = 0.25, id = 'toe'): WaveCase {
   }
   const header: WaveCaseHeader = {
     format: 'brl3 1', id, run: id, level: 12, dx: 0.015625, h0: 5, a0, slope: 0.068, reefDepth: 0.2, period: 14.7, tVertical: 20,
-    touchdown: 1.2, tauStart, tauStep, frames: count, points: WAVE_POINTS, origin: 0, velocityDepths: [], velocityLabels: [],
+    touchdown: 1.2, tauStart, tauStep, frames: count, points: WAVE_POINTS, origin: 0,
+    velocityDepths: flow ? [0.02, 0.1] : [], velocityLabels: flow ? ['1.5 cells', '0.1'] : [],
     arc: { lip: 0.6, throat: 0.62 }, uses: { own: count, refill: 0 }, pathChecks: {}, stats: {}, q: null, sections: [],
   };
   const empty = new Float32Array(0);
-  return { header, frames, use: new Uint8Array(count).fill(1), path, velocity: empty, qTime: empty, qFlow: empty, qTop: empty, qAir: empty, bore: empty, boreTop: empty, boreAir: empty };
+  return { header, frames, use: new Uint8Array(count).fill(1), path, velocity, qTime: empty, qFlow: empty, qTop: empty, qAir: empty, bore: empty, boreTop: empty, boreAir: empty };
 }
 
 /** A straight reef: a 5 m platform to z = 0, then a 1:10 face along +z to 1 m. */
@@ -263,6 +274,76 @@ describe('the zone surface (ZoneSurface) and its slices (SliceField)', () => {
     const far = surface.nodeAt(Math.round(x), Math.round(z) - 30);
     expect(surface.at(far, 0.5)).toBe(0.5);
     void grid;
+  });
+
+  /** C2 step 4: the same zone on cases that hold velocity, and one whole slice on a middle lane from t = −10. */
+  function flowZone() {
+    const solver = new ShallowWaterSolver({ nx: 40, xMin: -20, dx: 1, zEdges: uniformEdges(-60, 40, 100), xBoundary: 'open' }, (x, z) => reefDepth(x, z));
+    const lanes = buildLanes((x, z) => solver.restLevel - solver.sampleCentered(solver.bed, x, z), 0, -55, -8, 8, 5);
+    const library = new WaveLibrary([toeCase(0.25, 'a', true), toeCase(0.35, 'b', true)]);
+    const field = new SliceField(library, lanes, 10.5);
+    const surface = new ZoneSurface(field, lanes, { xMin: -20, zMin: -60, spacing: 1, nx: 41, nz: 101 });
+    const k = Math.floor(lanes.count / 2);
+    const state = { heightOverDepth: 0.3, period: 14.7, slope: 0.068, reefDepth: 0.2, depth: 4.8, time: 0 };
+    const slice = library.slice(state);
+    const made = {
+      id: 0, wave: 0, lane: k, tH: 0, s: lanes.toe[k] + 5, H: 1.5, height: 1, mean: 0, slice, state, end: 1, blendFrom: -10, throwAt: 10,
+      touchdown: 1, goFrom: 100, goneAt: 101, seaS: Number.NaN, seaT: Number.NaN, tipS: Number.NaN, tipY: Number.NaN, tipT: Number.NaN,
+      tipAlong: 0, tipUp: 0, toeShare: 1, own: true,
+    };
+    field.byLane[k].push(made);
+    return { lanes, library, field, surface, lane: k, slice, made };
+  }
+
+  it("reads the library's own water where a slice is whole, and nothing outside it (step 4)", () => {
+    const { lanes, library, surface, lane, slice } = flowZone();
+    expect(surface.depthCount).toBe(2);
+    surface.update(0, () => 0);
+    const crest = new Float64Array(2);
+    library.crestAt(slice, 0, crest);
+    const s = lanes.toe[lane] + 5 + crest[0];
+    const x = lanes.baseX[lane] + s * lanes.rayX[lane];
+    const z = lanes.baseZ[lane] + s * lanes.rayZ[lane];
+    const out = new Float64Array(6);
+    const speed = Math.sqrt(9.81 * slice.h0);
+    // Just under the crest: the whole share, and the case's 0.8 sqrt(g h0) along the ray (+z here).
+    const share = surface.flowAt(x, crest[1] - 0.02 * slice.h0, z, out);
+    expect(share).toBeCloseTo(1, 6);
+    expect(out[2] / speed).toBeCloseTo(0.8, 2);
+    expect(Math.abs(out[0])).toBeLessThan(1e-9);
+    // Deeper: the deeper depth's 0.7, and held past it.
+    surface.flowAt(x, crest[1] - 0.1 * slice.h0, z, out);
+    expect(out[2] / speed).toBeCloseTo(0.7, 2);
+    surface.flowAt(x, crest[1] - 3, z, out);
+    expect(out[2] / speed).toBeCloseTo(0.7, 2);
+    // Far behind the slice's frame, and off the lanes: no share at all.
+    expect(surface.flowAt(x, 0, z - 40, out)).toBe(0);
+    expect(surface.flowAt(x + 500, 0, z, out)).toBe(0);
+  });
+
+  it("brings the water in with the surface's own share, without a step, and says nothing before it (step 4)", () => {
+    const { lanes, library, surface, lane, slice, made } = flowZone();
+    made.blendFrom = 1;
+    const crest = new Float64Array(2);
+    const out = new Float64Array(6);
+    let last = Number.NaN;
+    let biggest = 0;
+    let highest = 0;
+    for (let t = 0.5; t <= 1 + SLICE_LIFE.blend + 0.5; t += 1 / 60) {
+      surface.update(t, () => 0);
+      library.crestAt(slice, t, crest);
+      const s = lanes.toe[lane] + 5 + crest[0];
+      const x = lanes.baseX[lane] + s * lanes.rayX[lane];
+      const z = lanes.baseZ[lane] + s * lanes.rayZ[lane];
+      const share = surface.flowAt(x, crest[1] - 0.05, z, out);
+      if (t < 1) expect(share).toBe(0);
+      if (last === last) biggest = Math.max(biggest, Math.abs(share - last));
+      last = share;
+      highest = Math.max(highest, share);
+    }
+    // It reaches the whole share, and never steps by more than a smoothstep over 2.4 s can in one step.
+    expect(highest).toBeGreaterThan(0.99);
+    expect(biggest).toBeLessThan(0.02);
   });
 
   it('carries its slices through a state round trip', () => {

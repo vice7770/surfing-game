@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeWaveCase, encodeWaveCase, fromHalf, isWaveCase, PATH, PATH_COLUMNS, toHalf, WAVE_POINTS } from './caseFormat';
+import { decodeWaveCase, encodeWaveCase, fromHalf, gameCase, isWaveCase, PATH, PATH_COLUMNS, toHalf, WAVE_POINTS } from './caseFormat';
 import { caseFromC2, type C2File } from './caseFromC2';
 import { encodeCase } from '../barrel/profileFormat';
 
@@ -65,6 +65,24 @@ describe('BRL3', () => {
     }
     expect(encodeWaveCase(back)).toEqual(bytes);
     expect(encodeWaveCase(caseFromC2(syntheticC2(), 'test'))).toEqual(bytes);
+  });
+
+  it("keeps the velocity in the game's file, bit for bit, and drops it on request (step 4)", () => {
+    const whole = decodeWaveCase(encodeWaveCase(caseFromC2(syntheticC2(), 'test')));
+    const game = gameCase(whole, 0.2);
+    expect(game.header.frames).toBeLessThanOrEqual(whole.header.frames);
+    expect(game.header.velocityDepths).toEqual(whole.header.velocityDepths);
+    expect(game.velocity.length).toBe(game.header.frames * 128 * 2 * 2);
+    for (let i = 0; i < game.velocity.length; i += 1) {
+      if (Number.isNaN(whole.velocity[i])) expect(game.velocity[i]).toBeNaN();
+      else expect(game.velocity[i]).toBe(whole.velocity[i]);
+    }
+    // It reads back as it was written, and a file without the velocity still reads (step 3's).
+    expect(decodeWaveCase(encodeWaveCase(game)).velocity.length).toBe(game.velocity.length);
+    const without = gameCase(whole, 0.2, { velocity: false });
+    expect(without.header.velocityDepths).toEqual([]);
+    expect(decodeWaveCase(encodeWaveCase(without)).velocity.length).toBe(0);
+    expect(encodeWaveCase(without).length).toBeLessThan(encodeWaveCase(game).length);
   });
 
   it('refuses another format, and a file cut short', () => {

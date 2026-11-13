@@ -7,8 +7,8 @@
  *
  * --run NAME reads `<runs>/<NAME>_c2.json.gz` (runs: tools/basilisk/runs); --c2 FILE reads that file. Each case is written
  * to `<assets>/<id>.bin`, the id being the run's name in lower case with dashes; --index writes their entries as JSON.
- * --game (C2 step 3) writes the game's files (`gameCase`): frames, uses and path to touchdown + `GAME_KEEP` τ, no velocity
- * or QOUT (public/library).
+ * --game (C2 step 3) writes the game's files (`gameCase`): frames, uses, path and (C2 step 4) velocity to
+ * touchdown + `GAME_KEEP` τ, no QOUT (public/library). --no-velocity drops the velocity, as step 3's files did.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname } from 'node:path';
@@ -36,7 +36,7 @@ export function packBrl3(options: (name: string) => string[]): Brl3Entry[] {
     const c2 = JSON.parse((file.endsWith('.gz') ? gunzipSync(raw) : raw).toString('utf8')) as C2File;
     const id = c2.run.toLowerCase().replaceAll('_', '-');
     const whole = caseFromC2(c2, id);
-    const bytes = encodeWaveCase(process.argv.includes('--game') ? gameCase(whole, GAME_KEEP) : whole);
+    const bytes = encodeWaveCase(process.argv.includes('--game') ? gameCase(whole, GAME_KEEP, { velocity: !process.argv.includes('--no-velocity') }) : whole);
     // The file must read back as written.
     const again = encodeWaveCase(decodeWaveCase(bytes));
     if (again.length !== bytes.length || again.some((b, i) => b !== bytes[i])) throw new Error(`${id}: BRL3 does not read back byte for byte`);
