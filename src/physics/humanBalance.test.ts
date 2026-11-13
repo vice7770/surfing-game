@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BALANCE_DELAY, CAPTURE_LOAD, DelayLine, HumanBalance, RIDER_YAW_ARMS_OUT, SWING_INERTIA_ARMS, SWING_INERTIA_SET, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
+import { BALANCE_DELAY, CAPTURE_LOAD, DelayLine, HumanBalance, rotorReach, RIDER_YAW_ARMS_OUT, SWING_INERTIA_ARMS, SWING_INERTIA_SET, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
 import { boardDerivatives, humanReferenceGain, humanRollKick, humanRollModes, humanTwistKick, humanTwistModes, humanYawModes, twistRows, type RollParams, type TwistGains, type YawPlant } from './rollModel';
 
 // The new surfer's step 3.2 (`rider: 'new'`; docs/research/new-rider/3.2): the human balance's parts.
@@ -76,6 +76,16 @@ describe('HumanBalance', () => {
     expect(s.weightPast).toBe(true);
     expect(balance.fallen).toBe(true);
     expect(s.margin).toBe(0);
+  });
+
+  it('bounds a rotor by what it can deliver inside a horizon (step 3.2i, not wired)', () => {
+    // The hip with the arms out: 1.2 rad of range needs 0.35 s, so a 0.3 s horizon caps it at tau times the horizon.
+    expect(rotorReach(10, 200, 1.2, 10)).toBeCloseTo(Math.sqrt(2 * 10 * 200 * 1.2), 9);
+    expect(rotorReach(10, 200, 1.2, 0.3)).toBeCloseTo(200 * 0.3, 9);
+    // With the arms in (6 kg·m²) the range runs out before a 0.29 s horizon does, so the cap is inert: this is why
+    // wiring it changed nothing on the chop (Part 9 §3).
+    expect(rotorReach(6, 200, 1.2, 0.29)).toBeCloseTo(Math.sqrt(2 * 6 * 200 * 1.2), 9);
+    expect(rotorReach(6, 200, 0, 0.29)).toBe(0);
   });
 
   it('holds the capture point while the feet are light, and reads it again on the way back into load (step 3.2h)', () => {

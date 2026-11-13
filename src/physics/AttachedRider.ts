@@ -4222,6 +4222,10 @@ export class AttachedRider {
     const height = Math.max(0.2, offset.length());
     const omega = Math.sqrt(Math.max(0.5, this.pairFelt.length()) / height);
     const room = stanceRoom(this.stanceDepth);
+    // Step 3.2i measured `rotorReach`'s horizon cap here and did not keep it: it buys nothing on the chop (the cap does
+    // not bind with the arms in, where the hip's inertia is 6 kg·m²) and costs the push bar 44 % of its saved shove,
+    // because under a shove ω₀ is read from a felt gravity the impulse itself inflates to 13–19 m/s², so the horizon
+    // 1/ω₀ is artificially short exactly where the felt gravity is least trustworthy (`3.2/README.md` Part 9 §3).
     const across = rotorImpulse(this.human.swingInertia, SWING_TORQUE, room.hipRange - Math.abs(this.swing.angle)) / (this.mass * height * omega);
     const along = rotorImpulse(HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, room.hipRange - Math.abs(this.standingBody.hip.angle)) / (this.mass * height * omega);
     this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, across, along, load, h);
