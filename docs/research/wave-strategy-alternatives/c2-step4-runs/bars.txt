@@ -1,0 +1,5 @@
+cases 9, stored depths 2 (0.0234, 0.1000 h0)
+
+## A. The library against VELOUT (relative, at the stored points)
+  median 0.00017, 90 % 0.00034, 99 % 0.00044, most 0.00046 (62160); over 2 %: 0.0 %; samples 62160, cases without a source file 0
+  absolute, sqrt(g h0): median 0.000019, 90 % 0.000096, 99 % 0.000238, most 0.000484 (62160)
