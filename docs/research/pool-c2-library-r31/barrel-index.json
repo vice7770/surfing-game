@@ -1,0 +1,66 @@
+[
+  {
+    "id": "periodic-pool-c2-b15-a3-l12",
+    "spot": "pool",
+    "slope": 0.055,
+    "nonlinearity": 0.3569,
+    "flatDepth": 0.199,
+    "asset": "barrels/periodic-pool-c2-b15-a3-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b25-a3-l12",
+    "spot": "pool",
+    "slope": 0.085,
+    "nonlinearity": 0.3597,
+    "flatDepth": 0.249,
+    "asset": "barrels/periodic-pool-c2-b25-a3-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b15-a2-l12",
+    "spot": "pool",
+    "slope": 0.055,
+    "nonlinearity": 0.251,
+    "flatDepth": 0.199,
+    "asset": "barrels/periodic-pool-c2-b15-a2-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b25-a2-l12",
+    "spot": "pool",
+    "slope": 0.085,
+    "nonlinearity": 0.2532,
+    "flatDepth": 0.249,
+    "asset": "barrels/periodic-pool-c2-b25-a2-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b3s-a2-l12",
+    "spot": "pool",
+    "slope": 0.105,
+    "nonlinearity": 0.2546,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-c2-b3s-a2-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b3s-a1-l12",
+    "spot": "pool",
+    "slope": 0.105,
+    "nonlinearity": 0.1545,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-c2-b3s-a1-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b3-a0-l12",
+    "spot": "pool",
+    "slope": 0.105,
+    "nonlinearity": 0.1294,
+    "flatDepth": 0.3,
+    "asset": "barrels/periodic-pool-c2-b3-a0-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b2-a0-l12",
+    "spot": "pool",
+    "slope": 0.068,
+    "nonlinearity": 0.1278,
+    "flatDepth": 0.205,
+    "asset": "barrels/periodic-pool-c2-b2-a0-l12.bin"
+  }
+]
