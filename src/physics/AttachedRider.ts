@@ -507,12 +507,33 @@ const TWIST_STOP_DAMPING = 50;
  * There is no measured roll rate for a rider setting a rail. What is sourced is the turn: a real bottom turn comes
  * round 99° in 0.96 s (Forsyth et al. 2024, as `COMPRESS_PULL` cites it), and the roll-plant lab's 1.9 rad/s is a yaw
  * rate on a 42° rail, not a roll rate. If the rail is set over about the first half of such a turn, 0.7 rad in 0.5 s is
- * about 1.4 rad/s, which is the sourced upper end. The carve bars were measured over 0.5, 1, 1.4, 2 and 5 rad/s
- * (docs/research/new-rider/3.2 Part 6): the held carves pass at 0.5 (2.38 s and 2.58 s against the bars' 2.28 and 2.30)
- * and fail from 1 up (1.43 s and 1.60 s). So this is the rate
- * the carve needs, not a measured human rate: 0.7 rad takes 1.4 s, where a whole bottom turn takes about 1 s.
+ * about 1.4 rad/s, which is the sourced upper end.
+ *
+ * **It was 0.5 rad/s, and that was wrong** (rulings 29p and 29q, step 3.2L). 0.5 was adopted off a ladder because the
+ * held-carve bar was longest there — but **that bar rewards leaning slowly**, since a rider who leans slowly spends
+ * longer leaning. At 0.5 a 45° rail takes 1.6 s and the owner rode it: *"the surfer is no longer able to turn sharply.
+ * Even in compress and snap the surfer barely turn... Now its too stiff barely turn in compress."* Measured, the new
+ * rider took **2.55 s to a 30° rail standing and never reached one in Compress**, against the old rider's 0.60 and
+ * 0.58 s. The held-carve bar is demoted to a report.
+ *
+ * **1.4 rad/s is also what the body's own limits give, which is why it is this and not a feel** (ruling 29q's steer:
+ * derive it, because a hand-set number will have to be re-picked when two-way coupling lands). The rider's lean is its
+ * mass turning about its feet: the inertia is m h² = 73 × 0.68² = 33.8 kg·m², and the **largest moment the feet can
+ * apply is the load times their half-width**, m g d = 716 N × 0.13 m = 93 N·m (the same bound that puts the ankle's
+ * authority at 11° of lean, step 3.2i). So the body's own angular acceleration is g d / h² = 9.81 × 0.13 / 0.68² =
+ * **2.76 rad/s²**, and over the half of a bottom turn in which the rail is set — about 0.5 s of Forsyth et al.'s 0.96 s
+ * — it reaches **1.38 rad/s**. Mass, centre-of-mass height, feet width and gravity: **no water in it, so the coupling
+ * cannot invalidate it.** The sourced turn geometry and the body's own torque bound agree to within 2 %.
+ *
+ * **In the measurements:** a 30° rail now comes in 0.85 s standing and
+ * 0.97 s in Compress, with peak turn rates of 94.7 and 60.8 °/s against the old rider's 76.4 and 79.8. It was chosen
+ * off a grid against SCHEDULE_RAIL_CAP, which 29p found had never been swept with it (`3.2/README.md` Part 11 §3):
+ * faster values turn no better in Compress and fall sooner, and **every cap over 8° loses the standing stance
+ * entirely** at these rates. The cost is on a held full stick, where the rider now falls at 1.4 s standing and 2.2 s in
+ * Compress instead of 2.85 and 2.98 — accepted, because ruling 29q puts playability before the bar: a rider nobody can
+ * turn produces no feedback.
  */
-const LEAN_IN_RATE = 0.5;
+const LEAN_IN_RATE = 1.4;
 /**
  * How far onto its rail the balance's schedule is trusted, degrees (step 3.2f). The plant was measured at rails of 0 to
  * 40° (`predictiveBalance.ts` RAIL_PLANT), and a controller designed on it is sound to 20°: beyond that the measured
@@ -522,6 +543,24 @@ const LEAN_IN_RATE = 0.5;
  * (docs/research/new-rider/3.2 Part 6): the held carves are longest at 5° (2.83 s and 2.98 s), and the turn pair gets
  * furthest at 10° (its falls move out of the bottom turn), where the Compress carve sits exactly on its bar. So the
  * measured big-rail plant is in the model and read only to here; that is a finding, not a preference.
+ *
+ * **Step 3.2L swept it against LEAN_IN_RATE as a grid and kept 5°, and the reason is measured rather than structural**
+ * (`3.2/README.md`
+ * Part 11 §3): at every lean rate that turns, **a cap over 8° loses the standing stance** — it falls on a full stick in
+ * 0.3-0.4 s, against 1.4 s at this cap — because past about 15° of rail the measured plant changes sign (3.2f), so a
+ * schedule read further is holding the board with gains for a plant that no longer exists. A cap of 12° does give
+ * Compress the old rider's whole turn, 90° of direction change included, and it costs the standing stance altogether;
+ * that trade is in the grid and it was refused.
+ *
+ * **The structural argument for raising it is right and it is not supported by the measurement** (ruling 29q asked for
+ * structure over tuning, so this is worth stating plainly): the controller *should* use the gains for the rail it is
+ * actually on, and 5° is far inside the 40° the plant was measured over. But raising it to 12° or 20° makes the
+ * standing rider fall in 0.3–0.4 s on a full stick, and **the turn-pair probe reads 0 of 8 top turns begun at caps of
+ * 5, 12 and 20 alike** — so the cap is not what is stopping the rider getting round the wave. 3.2f's own reading is
+ * why: past about 15° of rail the plant's sideslip mode has changed sign, so gains designed there are designed on a
+ * plant that **cannot be stabilised by any controller**. Reading the schedule further is only right where the plant is
+ * stabilisable, and it is not. **This stays 5° until the plant past 15° is understood, and it is a hand-set number
+ * that needs re-checking when two-way coupling lands** (digging the rail changes that plant).
  */
 const SCHEDULE_RAIL_CAP = 5;
 /**

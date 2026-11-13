@@ -1,0 +1,6 @@
+Canyon byte check, step 3.2L: scripts/m1-cpu-bench.ts medium, 3600 steps, fresh spin-ups
+== Canyon B
+spun up on the CPU in 88.8 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s32L/b.sea
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 64.2 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s32L/c.sea

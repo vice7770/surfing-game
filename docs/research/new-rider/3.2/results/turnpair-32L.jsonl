@@ -1,0 +1,5 @@
+{"set": "old", "n": 8, "topTurnBegun": 8, "onePair": 7, "twoPairs": 6, "fellOf": 2, "fellRangeS": [5.63, 11.53], "outcomes": {"time up": 4, "done": 2, "sudden fall in run": 2}}
+{"set": "new-L05-C5", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [1.18, 1.67], "outcomes": {"sudden fall in up": 4, "sudden fall in down": 4}}
+{"set": "new-L14-C5", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.72, 1.15], "outcomes": {"sudden fall in up": 2, "other fall in down": 4, "sudden fall in down": 2}}
+{"set": "new-L14-C12", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.72, 2.62], "outcomes": {"sudden fall in up": 2, "other fall in down": 2, "other fall in up": 4}}
+{"set": "new-L14-C20", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.53, 2.25], "outcomes": {"other fall in down": 4, "other fall in up": 4}}

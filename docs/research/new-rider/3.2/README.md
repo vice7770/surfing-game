@@ -2644,3 +2644,306 @@ ten minutes of you telling me how the falls *feel* than an hour of you riding ar
   `predict-weights-32j.jsonl` (the five builds of the game), `glide-ramp15-32j.jsonl` (the first settle attempt, 7 of
   12), `ring-32j.txt`; the merge checks' own `suite-32j.txt`, `canyon-byte-32j.txt` and `fps-32j.txt`.
 - No change to what the game does.
+
+---
+
+# Part 11: step 3.2L, the turn restored (rulings 29p and 29q)
+
+Written 2026-11-13 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32L` (from
+`claude/rider-new-32j`, rebased on main 8aa55380). The contract: `../ruling-29.md` 29p and 29q.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+**Can he turn? Yes. Can he get around the wave? No — and at no corner of the grid.**
+
+- **The turn start is restored and measured.** `LEAN_IN_RATE` 0.5 → **1.4 rad/s**: the time from full stick to a 30°
+  rail goes **2.55 s → 0.85 s standing**, and in Compress from **never reaching one at all → 0.97 s** (the old rider:
+  0.60 and 0.58 s). Peak turn rate 56 → 95 °/s standing and 41 → 61 °/s in Compress (old: 76 and 80). In a held
+  Compress carve the board now reaches **42.8° of bank where it reached 23.4°** [M].
+- **And the turn-pair probe — the one that measures what the owner actually asked for — still reads 0.** Top turns
+  begun: **old rider 8 of 8, two pairs linked in 6 of 8. The new rider 0 of 8, at lean 0.5 and 1.4 and at caps of 5,
+  12 and 20 alike** [M]. He starts a turn now; he falls 0.5–2.6 s later, in the bottom turn or the first climb, every
+  single run. **So "he can almost only go in front" is not fixed by this step.**
+- **It is not speed, and I checked before saying so** (ruling 29q item 5): the new rider enters the bottom turn at
+  **7.4 m/s against the old rider's 7.5**, comes out of the stick-up at **8.5 against 8.8**, and reaches the **same
+  height on the face (frac 0.05 against 0.03)**. Then it falls across in the climb. **`CARVE_CARRY`'s speed is not the
+  blocker here** — the across-axis balance is, which is steps 3.2h–3.2j's finding and ruling 29o's model work.
+- **1.4 rad/s is derived from the body, not fitted to a feel** (29q's steer). The rider's lean is its mass turning
+  about its feet: inertia m h² = 33.8 kg·m², and the largest moment the feet can apply is m g d = 716 × 0.13 =
+  93 N·m — so the body's own angular acceleration is **g d / h² = 2.76 rad/s²**, and over the ~0.5 s in which a bottom
+  turn sets its rail that reaches **1.38 rad/s**. Mass, centre-of-mass height, feet width, gravity: **no water in it,
+  so two-way coupling cannot invalidate it.** The sourced turn geometry gives 1.4 by a different route; they agree to
+  within 2 %.
+- **The structural cap change is right and the measurement does not support it, so I did not make it.** `SCHEDULE_RAIL_CAP`
+  stays 5°. Raising it to 12° or 20° makes the standing rider fall in 0.3–0.4 s on a full stick **and the turn pair is
+  0 of 8 at every cap**, so the cap is not what is stopping him. 3.2f's own measurement says why: past about 15° of
+  rail the plant's sideslip mode has changed sign, and gains designed there are designed on a plant that cannot be
+  stabilised by any controller. **Reading the schedule further is only correct where the plant is stabilisable.** That
+  is a finding against my own instruction to lead with it, and it is in §3's grid.
+- **Seatbelts, all held:** `tsc` clean on both projects; the suite **352 files and 3,426 tests passing, zero failures**;
+  the Canyon hashes unchanged; 3.1's old-rider bars byte-identical; and **no new force of any kind** — the step changes
+  one constant that is a rate limit on a reference, so there is nothing for the owner's "no hidden motors" rule to
+  catch.
+- **Hand-set numbers that will need re-checking when two-way coupling lands**, as 29q asks: `SCHEDULE_RAIL_CAP` (5°,
+  the plant it reads is a non-digging rail's), `KNEE_STIFFNESS` (20 kN/m, step 3.2h's sources disagree with its bars),
+  `CAPTURE_LOAD` (0.2 body weights, reasoned not measured), `RECOVERABLE_ERROR` (0.25 m, set for a rigid rider), and
+  `LEAN_IN_RATE`'s own 0.5 s rail-set window — the 1.4 rad/s follows from the body, but the **0.5 s** it is multiplied
+  by comes from a turn's geometry and a digging rail may set its rail in a different time.
+
+
+## 2. The old rider's four numbers, which are the bars (29p item 1)
+
+`turn.probe.ts` PART=turn, from the bars' own steady start on the 10.8° terminal plane at 7.7 m/s, full stick slammed
+and held for 4 s. Results `results/turn-old-32L.jsonl` [M]:
+
+| | Standing | Compress |
+|---|---|---|
+| **Peak turn rate** | 76.4 °/s | **79.8 °/s** |
+| **Full stick to a 30° rail** | 0.60 s | **0.58 s** |
+| **Turn radius at the peak** | 6.5 m | **6.1 m** |
+| **90° of direction change** | 1.50 s, speed kept 0.94 | **1.67 s, speed kept 1.32** |
+| Peak rail, and whether it fell in 4 s | 85.1°, fell at 1.93 s | 48.3°, **did not fall** |
+
+**What the owner would feel if each improved** (29p's standing instruction, and I am applying it to my own bars):
+- peak turn rate: *the board comes round quicker under the same stick*;
+- time to a 30° rail: *the stick bites at once instead of after a beat* — this is the "too stiff" complaint;
+- turn radius: *a tighter line off the bottom, so the section ahead is still makeable*;
+- 90° with speed kept: *still having drive at the top of the turn instead of stalling* — the "wave navigation";
+- travel speed in km/h: *a ride that is neither sluggish nor a rocket*.
+
+Each of those is something the owner can report on without a probe. The held carve — "how long a lean is held" — is not,
+and that is why it failed as a bar.
+
+## 3. The grid (29p item 2) — the whole of it, not the best corner
+
+`turn.probe.ts` with `BALANCE='{"leanRate":L,"railCap":C}'`; 10 lean rates × up to 8 caps, both stances, 90 rows in
+`results/turn-grid-32L.jsonl`. Each cell is **time to a 30° rail / peak turn rate °/s / when it fell**, and `-` means
+it never reached a 30° rail in 4 s of held full stick [M].
+
+**Standing:**
+
+| lean \ cap | 5° | 8° | 10° | 12° | 15° | 20° | 30° | 40° |
+|---|---|---|---|---|---|---|---|---|
+| 0.5 | 2.55/56/2.85 | | −/44/2.38 | | | −/18/0.87 | −/28/0.68 | −/28/0.68 |
+| 1 | 1.00/67/1.77 | | 0.93/101/2.10 | | | −/14/0.53 | −/129/0.45 | −/129/0.45 |
+| 1.2 | 0.92/76/1.48 | 0.85/78/1.55 | | | | | | |
+| **1.4 (kept)** | **0.85/95/1.37** | 0.78/77/1.38 | | | | | | |
+| 1.5 | 0.82/99/1.32 | 0.75/77/1.35 | | −/20/0.42 | −/19/0.42 | | | |
+| 2 | 0.73/113/1.20 | 0.67/79/1.15 | −/25/0.40 | −/26/0.37 | −/25/0.38 | −/23/0.40 | −/147/0.33 | −/140/0.33 |
+| 2.5 | 0.68/98/1.13 | −/29/0.37 | | −/32/0.33 | −/29/0.35 | | | |
+| 3 | −/33/0.35 | −/34/0.33 | | −/37/0.32 | −/33/0.33 | | | |
+| 3.5 | −/38/0.33 | | −/41/0.30 | | | −/45/0.35 | −/127/0.45 | −/132/0.30 |
+| 5 | −/49/0.30 | | −/53/0.27 | | | −/60/0.33 | −/106/0.48 | −/149/0.25 |
+
+**Compress:**
+
+| lean \ cap | 5° | 8° | 10° | 12° | 15° | 20° | 30° | 40° |
+|---|---|---|---|---|---|---|---|---|
+| 0.5 | −/41/2.98 | | −/47/2.30 | | 1.90/76/2.88 | −/10/0.95 | −/13/0.95 | |
+| 1 | 1.48/53/2.42 | | −/60/1.93 | | 0.97/144/1.95 | −/11/0.55 | −/52/0.57 | |
+| 1.2 | 1.27/73/2.47 | −/56/2.07 | | | | | | |
+| **1.4 (kept)** | **0.97/61/2.23** | 1.07/52/1.90 | | | | | | |
+| 1.5 | 0.90/59/1.98 | 0.97/53/1.88 | | 0.88/50/1.80 | 0.80/76/1.90 | | | |
+| 2 | 0.80/57/1.70 | 0.85/52/1.80 | −/58/1.73 | 0.77/81/2.17 | 0.67/64/1.35 | −/21/0.42 | −/32/0.38 | −/58/0.43 |
+| 2.5 | 0.77/59/1.73 | 0.87/77/2.40 | | 0.65/50/1.52 | 0.58/75/1.32 | | | |
+| 3 | 0.75/59/1.87 | 0.77/54/2.22 | | 0.60/60/1.62 | −/30/0.35 | | | |
+| 3.5 | 0.73/59/1.90 | | 0.68/82/2.27 | | −/35/0.32 | −/80/0.32 | −/210/0.88 | |
+| 5 | 0.68/64/1.80 | | 0.60/55/1.75 | | −/45/0.28 | −/88/0.28 | 0.45/74/0.45 | |
+
+**What the grid says** [M, I]:
+
+- **29p's suspicion is confirmed, and the other way round.** The two were never swept together, and the interaction is
+  real — but it is **the cap that is the hard wall, not the lean rate.** Standing, *every* cap over 8° fails at *every*
+  lean rate: the board never reaches a 30° rail and the rider is down in 0.3–0.5 s. That is 3.2f's sign change showing
+  up in the ride: past about 15° of rail the hull stops righting the board, so a schedule read further out is holding it
+  with gains for a plant that no longer exists.
+- **The region where both stances turn is cap 5–8° with lean 1–2.5.** Outside it one stance or the other is gone. The
+  kept cell is inside it.
+- **Faster is not better past about 2 rad/s.** At lean 3 and above the standing stance collapses at every cap, and
+  Compress stops improving (0.73–0.75 s at cap 5, against 0.80 at lean 2 and 0.97 at lean 1.4) while falling sooner.
+  **So the old rider's 5 rad/s is not reachable by this controller** — at lean 5 the standing rider is down in 0.30 s.
+  The honest statement 29p asked for is therefore: *the controller cannot hold the old rider's rail-set rate, but it
+  does not need to* — 1.4 rad/s already restores the turn the owner was missing, and the sourced human rate is 1.4.
+- **There is one genuinely better corner for Compress alone, and I refused it.** Cap 12 with lean 2 gives Compress
+  81 °/s, a 30° rail in 0.77 s, a 5.6 m radius **and the 90° change at 2.03 s with 0.95 of its speed** — the only cell
+  in the grid that completes 90°, and the closest thing to the old rider's Compress row. **It falls the standing stance
+  at 0.37 s.** A rider who can only turn in one stance is not playable, so cap 5 stays. The trade is in the table and
+  it is the advisor's to overturn if they disagree.
+
+## 4. What was kept, and what it cost
+
+**`LEAN_IN_RATE` 0.5 → 1.4 rad/s** (`AttachedRider.ts`), and `SCHEDULE_RAIL_CAP` stays 5°. 1.4 is not a number I
+invented: it is the sourced upper end already written in that constant's own comment — a bottom turn comes round 99° in
+0.96 s (Forsyth et al. 2024), and setting the rail over the first half of it is about 0.7 rad in 0.5 s [S]. The grid
+says faster does not turn better, so there is no reason to go outside the source.
+
+| | Old rider | 3.2j (lean 0.5) | **3.2L (lean 1.4)** |
+|---|---|---|---|
+| To a 30° rail, standing / Compress | 0.60 / 0.58 s | 2.55 s / **never** | **0.85 / 0.97 s** |
+| Peak turn rate, standing / Compress | 76.4 / 79.8 °/s | 56.3 / 40.5 | **94.7 / 60.8** |
+| Turn radius, standing / Compress | 6.5 / 6.1 m | 8.4 / 11.3 | **4.3 / 7.3 m** |
+| Peak bank in a held Compress carve | — | 23.4° | **42.8°** |
+| 90° of direction change | 1.50 / 1.67 s | never | **never** |
+| Held full stick: when it falls | 1.93 s / never | 2.85 / 2.98 s | **1.37 / 2.23 s** |
+
+So: **the rail time is 2.6–3× the old rider's instead of 4× or never; the turn rate is 124 % of it standing and 76 %
+in Compress; the radius is tighter standing and 20 % wider in Compress.** The 90° change is the one number still out of
+reach, and section 1 says why it is not this constant's fault.
+
+## 4b. The turn pair — what the owner actually asked for (revised orders)
+
+The owner: *"the canyon wave was not rideable because the surfer was too slow to turn and position himself on the
+proper section on the wave, the surfer can almost only go in front."* The turn-pair probe
+(`docs/research/turn-pair-2026-11-10`, set B: the pair on the face, Compress held, leg drive off, 8 runs) measures
+exactly that — can he link a bottom turn to a top turn and move up and down the face. **This is the only thing that
+decides the step.** `results/turnpair-32L.jsonl` [M]:
+
+| | Top turns begun | One pair linked | Two pairs | When it fell |
+|---|---|---|---|---|
+| **Old rider** | **8 of 8** | **7 of 8** | **6 of 8** | 2 of 8, at 5.6–11.5 s |
+| new, lean 0.5 / cap 5 (3.2j) | 0 of 8 | 0 | 0 | 8 of 8, at 1.2–1.7 s |
+| new, lean 1.4 / cap 5 (**kept**) | 0 of 8 | 0 | 0 | 8 of 8, at 0.7–1.2 s |
+| new, lean 1.4 / cap 12 | 0 of 8 | 0 | 0 | 8 of 8, at 0.7–2.6 s |
+| new, lean 1.4 / cap 20 | 0 of 8 | 0 | 0 | 8 of 8, at 0.5–2.3 s |
+
+**No corner gets him round the wave.** He now *starts* the turn (§4) and then goes down in the bottom turn or the first
+climb within a second or two, at every lean rate and every cap tried.
+
+**And it is not the speed `CARVE_CARRY` used to give** [M]. Taking the first runs of each set: the new rider drops into
+the bottom turn at **7.4 m/s** against the old rider's 7.5, comes out of the stick-up at **8.5** against 8.8, and
+climbs to the **same height on the face** (frac 0.05 against 0.03). The entry is the old rider's; what fails is the
+**balance in the climb**, which is the across-axis fall steps 3.2h to 3.2j traced and which ruling 29o's model work
+owns. I am saying this rather than re-adding a carry, as ruling 29q item 5 requires.
+
+**Is the probe unsuitable for a fast-turning rider?** No — it is the right probe and it is reading a real failure. Its
+one weakness is that it holds the stick through the whole pair, so a rider that falls early never reaches the second
+half; a version that eased the stick when the rider's balance margin collapsed would separate "cannot turn" from
+"cannot hold the turn". But that would be measuring a different, kinder input than the owner's, and the result here is
+not marginal: 0 of 8 against 8 of 8.
+
+## 5. The old bars, as information only (revised orders: no gating)
+
+`results/bars-new-32L.jsonl` against `bars-new-32j.jsonl`, the same 30 rows, **reported and not tuned to**. Two rows
+differ, and they are both the carve ruling 29p demoted [M]:
+
+| | 3.2j | 3.2L | |
+|---|---|---|---|
+| **Saved shove, tall / crouch / Compress** | 138 / 155 / 170 N·s | **138 / 155 / 170** | yes, to the digit |
+| **Chop glides** | 8 of 12 | **8 of 12**, cell for cell | yes |
+| **Mode B**: the bank's envelope, and the kick's rows | passes | **identical rows** | yes |
+| Mode A not seen | 0.000–0.009 | identical | yes |
+| Reaction 0.08–0.12 s | 0.105 | 0.105 | yes |
+| Plane glides | 4 of 4 | 4 of 4 | yes |
+| 20 cm rise at 1 / 2 / 4 m/s | holds / holds / falls 0.63 s | identical | yes |
+| N1: legs under ~2 kW | 1.52 kW | identical | yes |
+| **N0: `rider=old`** | byte-identical | **3.1's `bars-old` byte-identical** | yes |
+| (report) held carve, tall / Compress | 2.85 / 2.98 s | **1.37 / 2.23 s** | demoted (29p) |
+
+**Why the guards are untouched, and it is structural rather than lucky** [R, I]: `leanPace` is read in one place, inside
+`if (this.predictive)`, and only where the lean the player asks for is eased toward the stick. **The push bar, Mode B,
+the glides and the rise all ask for no lean at all**, so the constant cannot reach them; and the old rider never enters
+that branch, which is why N0 holds without anything being gated. The chop holding at 8 of 12 cell for cell is the one
+that could have gone either way, and it did not.
+
+## 6. The travel speed (29q's band)
+
+`turn.probe.ts` PART=travel: from a planing steady start on a fixed face slope, let run 8 s and read the speed it
+settles at. A board placed *slow* on a face does not plane and the rider falls before it can accelerate, which is why
+the measure starts planing [M].
+
+| Face slope | Old rider | 3.2j | 3.2L | In 29q's 27–42 km/h? |
+|---|---|---|---|---|
+| 8° | stalls, falls | stalls, falls | stalls, falls | no — does not plane |
+| 10° | 8.8 km/h | 8.4 | 8.4 | no — does not plane |
+| **12°** | **34.2 km/h** | **34.8** | **34.8** | **yes** |
+| 14° | 46.5 km/h | 46.2 | 46.2 | no — too fast |
+
+**The rider does not set the travel speed; the face does, and the two riders agree to within 2 %.** The old rider's
+"45 km/h, gigantic-waves speed" is a 14° face and the owner's 27–42 band is about a 12° one. With `CARVE_CARRY` gone
+neither rider adds any speed of its own, so this bar cannot distinguish them: it is a statement about the wave the
+owner is riding. **It becomes a real bar on the rider only once pumping exists** — then a rider should be able to hold
+the band on a face that would otherwise be too slow, which is the whole point of pumping. Recorded, not claimed as
+passed or failed by this step. [M, I]
+
+## 7. What I am unsure of, and what was not run
+
+- **Snap is not measured.** The owner said "even in compress **and snap**". The turn probe drives the crouch and
+  Compress inputs; Snap is a separate input with its own depth, rail range and recentre, and I did not build a row for
+  it in the time this step had. The Compress fix should carry most of it, since Snap's lean comes through the same
+  `leanAsked` path, but **that is an inference and the owner's ride is the test.**
+- **The grid is one run per cell on one input** — full stick slammed and held, at one speed, on one face. It is the
+  owner's own input and the right one for "too stiff", but near the fall the plant is chaotic and neighbouring cells
+  differ by more than I would like (compare lean 1.2 and 1.4 in Compress: 73 against 61 °/s). **The choice between 1.2,
+  1.4 and 2 rad/s is within that noise**; I took 1.4 because it is the sourced bound, not because the grid resolved it.
+- **The 90° number needs pumping**, and until then no corner of the grid reaches it without losing a stance.
+- **Not run:** the turn pair / wave navigation (still blocked on pumping), the pitch loop (held), the hip (refuted).
+  No Basilisk case.
+
+## 8. How it rides, and what to feel for (for the owner)
+
+**You said it barely turns, and you were right. Here is what was wrong and what I changed.**
+
+The rider had a setting for how fast it leans onto its rail. It was set to 0.5 — at that rate a 45° rail takes
+**1.6 seconds**. Measured properly: standing it took **2.55 s to get onto a 30° rail**, and in Compress **it never got
+there at all** in four seconds of you holding the stick. The old rider does it in about **0.6 s**. So "too stiff,
+barely turns in compress" was not a feeling, it was the number.
+
+**Why it was set that way, and it was my side's mistake, not a physics finding.** I measured how long the rider could
+*hold* a carve and picked the setting that held longest. But a rider that leans slowly spends longer leaning, so that
+test rewarded exactly the thing you were complaining about. That bar is now a report, not a target.
+
+**What it does now:**
+- Onto a 30° rail in **0.85 s standing and 0.97 s in Compress** — about a second, instead of two and a half or never.
+- The board comes round at **95 °/s standing and 61 °/s in Compress**; the old rider did 76 and 80. So standing it now
+  turns *harder* than the old rider, and in Compress about three quarters as hard.
+- In a held Compress carve the board now goes onto **43° of rail where it managed 23°**. That is the difference you
+  should feel most.
+
+**What it costs, and I want you to know before you ride it:** **it falls sooner.** If you hold a full stick, it goes
+down after about 1.4 s standing and 2.2 s in Compress, where before it hung on for about 3 s doing almost nothing. That
+is the deal — a turn you can use, and more falls. If that trade feels wrong, say so and I will move the setting back
+toward the middle; the whole grid of options is measured and written down.
+
+**What is still missing, and it is one thing, not many:**
+- **The rider cannot gain speed in a turn.** The old rider came *out* of a 90° turn going 32 % faster than it went in —
+  that was a push with nothing pushing back, and it was removed on purpose. Nothing has replaced it yet. So the new
+  rider slows through a hard turn and runs out before it can link a second one. **That is pumping, and it is next.**
+- Travel speed is set by how steep the face is, not by the rider: on a 12° face both riders ride at about 35 km/h,
+  which is inside the 27–42 band from your clip; on a 14° face both do 46 km/h, which is the "gigantic waves" speed you
+  did not want. Once pumping exists the rider will be able to hold the band on a face that is otherwise too slow.
+
+**And I have to be straight with you about the main thing: this does not fix what you described.** You said he cannot
+position himself on the wave and can almost only go forward. There is a test that measures exactly that — link a bottom
+turn into a top turn and move up and down the face. **The old rider does it 8 times out of 8. This one does it 0 times
+out of 8** — and 0 at every setting I tried, fast lean or slow, wide rail or narrow. He now *starts* the turn properly,
+and then falls over about a second into it.
+
+**It is not that he is too slow any more.** I checked: he drops into the turn at the same speed as the old rider
+(7.4 against 7.5 m/s), comes out of it at the same speed (8.5 against 8.8), and gets to the same height on the face.
+He then loses his balance sideways in the climb. So the missing piece is not speed and not the turn rate — it is that
+he cannot hold himself up through a turn once he is in one.
+
+**What to feel for:**
+1. **Does the stick bite now?** Slam it in Compress. It should go onto its rail in about a second, not hang. That part
+   I am confident about.
+2. **Can you get up the face at all**, or does he drop you as soon as you commit? I expect the second, and I would like
+   to know whether it feels like the fall you would have made.
+3. **Snap**, which I could not measure this round: does it turn now too, or is it still stiff?
+4. If the turn itself now feels about right in speed — you said the old one was "closer to reality and enjoyable" —
+   then the setting is where it should be and the next job is keeping him on his feet through the turn, not making the
+   turn faster.
+5. If the turn feels too loose or the falls too cheap, **tell me and I will move it**: it is now a dial with a measured
+   table behind it, and the number came out of the body's own strength rather than out of my taste.
+
+## Files (3.2L)
+
+- `src/physics/AttachedRider.ts`: `LEAN_IN_RATE` 0.5 → 1.4, with the account of why 0.5 was wrong and where 1.4 comes
+  from; `SCHEDULE_RAIL_CAP` keeps 5° with the grid's reason added (every cap over 8° loses the standing stance).
+- `docs/research/new-rider/3.2/turn.probe.ts` (new): PART=turn (the four turn numbers, both stances, full stick from
+  the bars' own steady start) and PART=travel (the speed a planing board settles at on a fixed face slope, km/h).
+  `BALANCE='{"leanRate":L,"railCap":C}'` is how the grid was swept; no game code is touched to sweep it.
+- `results/`: `turn-old-32L.jsonl` (the bars), `turn-new-32L.jsonl` (the kept cell), `turn-grid-32L.jsonl` (all 90 grid
+  rows), `travel-old-32L.jsonl` and `travel-new-32j.jsonl`, `bars-new-32L.jsonl` (all 30 guard rows),
+  `suite-32L.txt`, `canyon-byte-32L.txt`, `fps-32L.txt`.
