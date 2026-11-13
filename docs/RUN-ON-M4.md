@@ -189,3 +189,74 @@ Then tell Claude it is pushed.
 - The run was tried on the M1 at a coarse level (it works from start to report). The full run was not tried.
   If it fails, send Claude the error text and the file `tools/basilisk/runs/t5/pool/logs/latest/pool_far_big.log`.
 - The long version: `tools/basilisk/README.md`, section "The T5 run".
+
+---
+
+## 4. The library wave's lip: one case at Bo 4000 (2026-11-13)
+
+**What it is.** Section 1's run worked: at the same moment of the throw, its lip is 20 to 45 % thinner than the old
+one, thrown further, with a bigger hole. (The first reading said "thicker". That was the measuring tool, not the wave;
+`plunge_measure.py`'s `lip_m` compares two runs at different instants and must not be used that way. The full reading
+is `docs/research/pool-lip-and-flow-2026-11-13.md`.)
+
+**Why one more.** The game's wave now comes from nine library cases, and those are still the old, stickier water. The
+thickest of them is `pool_c2_b2_a2`. This runs that one case with the new water, so its new lip can be measured against
+its own twin before you spend one to two days on all nine.
+
+**A single new case cannot go in the game on its own.** Neighbouring strips of the wave blend neighbouring cases, so
+one case made of different water would put a step back in the lip. This run is a measurement that decides the rest.
+
+**How long:** about 13 hours. The Mac is kept awake. You can use it meanwhile.
+
+### Step 1. Get the latest code
+
+```bash
+git pull
+```
+
+### Step 2. Start the run
+
+One line. Copy all of it.
+
+```bash
+RUNS="$PWD/tools/basilisk/runs/c2bo4k" BO=4000 LEVEL2=14 POOL_PREFIX=pool_c2 POOL_CASES="pool_c2_b2_a2" CANYON_OUT=docs/research/pool-c2-bo4k npm run barrels:pool
+```
+
+### Step 3. See how far it is (any time)
+
+```bash
+RUNS="$PWD/tools/basilisk/runs/c2bo4k" LEVEL2=14 POOL_PREFIX=pool_c2 POOL_CASES="pool_c2_b2_a2" npm run barrels:pool -- status
+```
+
+### To stop it and go on later
+
+```bash
+RUNS="$PWD/tools/basilisk/runs/c2bo4k" POOL_PREFIX=pool_c2 npm run barrels:pool -- stop
+```
+
+Go on: run step 2's line again. It saves every 10 minutes.
+
+### Step 4. When it has finished, send the result
+
+```bash
+git add docs/research/pool-c2-bo4k
+```
+
+```bash
+git commit -m "data(c2): the library case b2_a2 at Bo 4000, level 14"
+```
+
+```bash
+git push
+```
+
+Then tell Claude it is pushed.
+
+### Good to know
+
+- It writes to its own folders (`tools/basilisk/runs/c2bo4k`, `docs/research/pool-c2-bo4k`). The committed nine-case
+  library is not touched.
+- Level 14 is needed, not a choice: at Bo 4000 the water's sticky length is about 8 cm, and level 14 gives about 4
+  cells across it. Coarser and the lip tears instead of thinning.
+- Nothing goes into the game's files. After step 4, `git status` should show nothing in `src` or `public`.
+- `OMP=1 ` at the start of step 2's line uses all the fast cores, if `brew install libomp` was run once.
