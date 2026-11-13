@@ -3,3 +3,6 @@
 {"speed":9,"attached":true,"trimDeg":[9.56,4.53,4.51],"copM":[-0.188,0.158,0.162],"loadBW":1,"pitchStiffness":2839,"dragN":140.3,"dragSlope":4.6}
 {"speed":7,"frequencyHz":3.69,"damping":0.14,"impliedInertia":3.46,"impliedDamping":23,"attached":true}
 {"speed":9,"frequencyHz":1.78,"damping":0.202,"impliedInertia":21.72,"impliedDamping":100,"attached":true}
+{"speed":5,"held":true,"attached":true,"frequencyHz":6.35,"damping":0.176,"legLength":0.846,"pairStiffness":591,"hullDamping":5,"pairInertia":0.4,"boardPitchInertia":-51.9}
+{"speed":7,"held":true,"attached":true,"frequencyHz":1.75,"damping":0.088,"legLength":0.848,"pairStiffness":1289,"hullDamping":21,"pairInertia":10.6,"boardPitchInertia":-41.9}
+{"speed":9,"held":true,"attached":true,"frequencyHz":2.15,"damping":0.095,"legLength":0.848,"pairStiffness":2231,"hullDamping":31,"pairInertia":12.2,"boardPitchInertia":-40.4}

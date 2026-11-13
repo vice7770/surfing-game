@@ -223,6 +223,7 @@ it('Modes A and B: the roll after a kick riding straight, and the roll riding st
       if (sign !== 0) lastSign = sign;
     }
     const peakRoll = rolls.reduce((a, b) => Math.max(a, Math.abs(b)), 0);
-    emit({ bar: 'Modes straight', rider: RIDER, speed, on: r(t, 2), attached: rig.rider!.attached, yawFlips: flips, peakRollRate: r(peakRoll, 3), ...bands(rolls) });
+    // Riding straight the run is symmetric and the roll is nothing but round-off (3.1c): no share of nothing.
+    emit({ bar: 'Modes straight', rider: RIDER, speed, on: r(t, 2), attached: rig.rider!.attached, yawFlips: flips, peakRollRate: peakRoll, ...(peakRoll > 1e-6 ? bands(rolls) : { modeB: null, modeA: null }) });
   }
 });

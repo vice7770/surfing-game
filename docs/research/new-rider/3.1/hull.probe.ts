@@ -3,7 +3,9 @@
 // the feet's pressure along the board moves, and the board trims to it. The hull's pitch stiffness about the load is the
 // load times the pressure's move over the trim's. The drag's slope with speed: the board's drag at speeds 0.5 m/s apart.
 import { it } from 'vitest';
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
+import { AttachedRider } from '../../../../src/physics/AttachedRider';
+import { BoardBody } from '../../../../src/physics/BoardBody';
 import { dampedMode } from '../../../../src/dev/carveMetrics';
 import { towAlongHeading } from '../../../../src/dev/heldRider';
 import { STEP, Slope, emit, place, r } from '../../board-in-water/lab';
@@ -65,5 +67,49 @@ it('hull: pitch ringing after a kick', () => {
     const omega = (2 * Math.PI * mode.frequency) / Math.sqrt(Math.max(1e-6, 1 - mode.damping ** 2));
     const inertia = stiffness / (omega * omega);
     emit({ speed, frequencyHz: r(mode.frequency, 2), damping: r(mode.damping, 3), impliedInertia: r(inertia, 2), impliedDamping: r(2 * mode.damping * Math.sqrt(stiffness * inertia), 0), attached: rig.rider!.attached });
+  }
+});
+
+// 3.1c (ruling 29b): the hull's pitch damping, measured with the rider held in pitch. The new surfer (`rider: 'new'`)
+// with its ninth row replaced by a hold: the body turns with the deck about the feet (its pitch rate on the deck held at
+// nothing), so no ankle or loop of its own acts in pitch. Towed at a steady speed, the board kicked 0.3 rad/s nose-down;
+// the pair's pitch rings at ω with damping ζ. Its stiffness is the hull's about the load less the held body's toppling,
+// K = K_hull − m g L, so the hull's damping is C = 2 ζ K / ω_n (no inertia needed), and the pair's inertia K / ω_n².
+class HeldPitch extends AttachedRider {
+  override coupleStanding(system: Float64Array, rhs: Float64Array, h: number): void {
+    super.coupleStanding(system, rhs, h);
+    if (!this.freeBody) return;
+    const N = 9;
+    const self = this as unknown as { standingBody: { speed: number }; drive: Vector3; forward: Vector3 };
+    for (let j = 0; j < N; j += 1) system[8 * N + j] = 0;
+    system[8 * N + 8] = 1;
+    // After the solve the body's speed along its forward axis is the drive's alone: no pitch rate on the deck.
+    rhs[8] = -(self.standingBody.speed + self.drive.dot(self.forward));
+  }
+}
+
+it('hull: pitch damping with the rider held in pitch', () => {
+  for (const [speed, hull] of [[5, 1197], [7, 1896], [9, 2839]] as const) {
+    const flat = new Slope(0);
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+    const rider = new HeldPitch(board.shape, { phase: 'standing', rider: 'new' });
+    board.attach(rider);
+    const rates: number[] = [];
+    for (let i = 0; i < Math.round(5 / STEP); i += 1) {
+      towAlongHeading(board, rider, speed);
+      if (i === Math.round(2.5 / STEP)) board.angularVelocity.addScaledVector(new Vector3(1, 0, 0).applyQuaternion(board.orientation), 0.3);
+      board.step(STEP, flat);
+      if (i >= Math.round(2.5 / STEP)) rates.push(board.angularVelocity.dot(new Vector3(1, 0, 0).applyQuaternion(board.orientation)));
+    }
+    const mode = dampedMode(rates, STEP);
+    const length = Math.max(0.4, rider.leg.height + rider.leg.extension);
+    const stiffness = hull - rider.mass * G * length;
+    if (!mode) { emit({ speed, held: true, mode: null, attached: rider.attached }); continue; }
+    const omega = (2 * Math.PI * mode.frequency) / Math.sqrt(Math.max(1e-6, 1 - mode.damping ** 2));
+    emit({
+      speed, held: true, attached: rider.attached, frequencyHz: r(mode.frequency, 2), damping: r(mode.damping, 3), legLength: r(length, 3), pairStiffness: r(stiffness, 0),
+      hullDamping: r((2 * mode.damping * stiffness) / omega, 0), pairInertia: r(stiffness / (omega * omega), 1), boardPitchInertia: r(stiffness / (omega * omega) - rider.mass * length * length, 1),
+    });
   }
 });

@@ -77,5 +77,5 @@
 {"bar":"Mode B kick","rider":"old","speed":5,"attached":true,"frequencyHz":1.92,"damping":-0.015,"modeB":0.059,"modeA":0}
 {"bar":"Mode B kick","rider":"old","speed":7,"attached":true,"frequencyHz":5.38,"damping":0.053,"modeB":0.011,"modeA":0}
 {"bar":"Mode B kick","rider":"old","speed":9,"attached":true,"frequencyHz":7.05,"damping":0.063,"modeB":0,"modeA":0.001}
-{"bar":"Modes straight","rider":"old","speed":6,"on":5,"attached":true,"yawFlips":0,"peakRollRate":0,"modeB":0.12,"modeA":0.018}
-{"bar":"Modes straight","rider":"old","speed":8,"on":5,"attached":true,"yawFlips":0,"peakRollRate":0,"modeB":0.031,"modeA":0.053}
+{"bar":"Modes straight","rider":"old","speed":6,"on":5,"attached":true,"yawFlips":0,"peakRollRate":3.2667513494471823e-15,"modeB":null,"modeA":null}
+{"bar":"Modes straight","rider":"old","speed":8,"on":5,"attached":true,"yawFlips":0,"peakRollRate":6.267202201129205e-14,"modeB":null,"modeA":null}

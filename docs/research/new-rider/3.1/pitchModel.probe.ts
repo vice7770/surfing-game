@@ -67,6 +67,9 @@ it('pitch model: the felt source, the gains and their margins', () => {
   // 3. Over the uncertain numbers.
   emit({ table: 'corners', chosen: r(least(corners(), CHOSEN), 3), leanZero: r(least(corners(), { lean: 0, rate: 0.1 }), 3) });
   for (const hullDamping of [30, 100, 300]) emit({ table: 'corners by hull damping', hullDamping, chosen: r(least(corners().filter((p) => p.hullDamping === hullDamping), CHOSEN), 3) });
+  // 3.1c: the hull's pitch damping as the kicks measured it (about 20–30 N·m·s/rad, not cleanly; hull.probe.ts), at
+  // each speed's measured stiffness and drag, the board's pitch inertia 0.43 to 6.
+  for (const hullDamping of [20, 25]) for (const boardInertia of [0.43, 3, 6]) emit({ table: 'measured hull damping', hullDamping, boardInertia, chosen: r(least(envelope({ hullDamping, boardInertia }), CHOSEN), 3) });
   // 4. Margins at the measured plant: the factor on both gains, and the delay, that keep every mode damped.
   const holds = (f: number, delay: number) => least(envelope({ delay }), { lean: CHOSEN.lean * f, rate: CHOSEN.rate * f }) > 0;
   let up = 1; while (up < 20 && holds(up * 1.05, 0.1)) up *= 1.05;

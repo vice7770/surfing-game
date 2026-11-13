@@ -25,6 +25,12 @@
 {"table":"corners by hull damping","hullDamping":30,"chosen":-0.025}
 {"table":"corners by hull damping","hullDamping":100,"chosen":0.044}
 {"table":"corners by hull damping","hullDamping":300,"chosen":0.097}
+{"table":"measured hull damping","hullDamping":20,"boardInertia":0.43,"chosen":0.062}
+{"table":"measured hull damping","hullDamping":20,"boardInertia":3,"chosen":0.037}
+{"table":"measured hull damping","hullDamping":20,"boardInertia":6,"chosen":0.015}
+{"table":"measured hull damping","hullDamping":25,"boardInertia":0.43,"chosen":0.075}
+{"table":"measured hull damping","hullDamping":25,"boardInertia":3,"chosen":0.052}
+{"table":"measured hull damping","hullDamping":25,"boardInertia":6,"chosen":0.03}
 {"table":"margins","gainUp":1.8,"gainDown":0.34,"delayUpToS":0.195}
 {"table":"no stiffening","speed":5,"load":1,"damping":0.293}
 {"table":"no stiffening","speed":5,"load":1.2,"damping":0.189}

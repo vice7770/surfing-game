@@ -8,8 +8,111 @@ Tags: [M] measured by a probe here; [R] read in the code; [I] my inference.
 All numbers come from probes on analytic water: flat water, planar faces, a face that tilts in, a rising surface. No
 ride session, no catch report, no autopilot ride, no game page.
 
-This page has two parts: **3.1b** (the second round, ruling 29a, sections 10–14) first, then **3.1** (the first build,
-sections 1–9), kept as it was handed back.
+This page has three parts, newest first: **3.1c** (ruling 29b, sections 15–19), **3.1b** (ruling 29a, sections 10–14),
+**3.1** (the first build, sections 1–9). The older parts are kept as they were handed back.
+
+# Part 3: step 3.1c (ruling 29b)
+
+## 15. Short answer (3.1c)
+
+- **Built:** the hip in pitch (a trunk rotor, after the ankle, as the design's order asks). Measured: the roll's 3 Hz
+  share (traced), and the hull's pitch damping (twice, neither cleanly).
+- **The roll's 3 Hz share is not a frame mismatch, and not a wobble** (section 16). After a roll kick the new rider's
+  roll rings at about 4 Hz where the old rider's rings at 5 Hz, and it dies faster (about 0.45 of its size a cycle,
+  against 0.7). The band share counts the mode's frequency, not its growth. I tried the roll about the body's pitched
+  axis (no better) and kept the bank law's geometry as it was.
+- **The "riding straight" share in 3.1 and 3.1b was noise:** riding straight the run is symmetric and the roll rate is
+  exactly zero. The probe now prints no share there.
+- **The hip helps a little:** N2 is better (+4.0 m/s, trim 7.6–8.0°), and the 12 m/s glide lasts 0.58 s. It is not
+  enough. It acts 0.1 s after the need (its delay and lag), from a start where the body already sits two-thirds of the
+  way to the toe (section 17).
+- **The bars still miss** (section 18): N3 at 2 m/s; the 12 m/s glide (a hard bar); the standing carve (2.13 s against
+  2.28); one placed row at 5.9 g; Mode B. So, by the stop rule, I hand back. No merge checks, no merge branch.
+- **What I think is the real lever** (not built, outside this round's list): the body's **steady forward offset**. In a
+  plain glide the body sits about 13° ahead on its ankle with the feet's pressure at +0.25 m (the toe is +0.375). The
+  loop, delay-limited to small gains, never brings the pressure back to its target. The design's "the CoP is only a slow
+  trim" would be the physical fix: a slow loop that brings the pressure to the trim's target.
+
+## 16. The roll's 3 Hz share (traced)
+
+The probe's roll kick (0.5 rad/s, straight down the 15° face at 7 m/s), the board's roll rate frame by frame:
+
+- **The old rider:** it rings at about 5 Hz (peaks 0.2 s apart). The size of each peak: 0.15, 0.16, 0.11, 0.09, 0.07,
+  0.05 rad/s. That is a ratio of about 0.7 a cycle.
+- **The new rider:** it rings at about 4 Hz (0.25 s apart). The peaks: 0.30, 0.22, 0.10, 0.06, 0.06, 0.02 rad/s. That
+  is about 0.45 a cycle.
+
+So the new rider's roll mode sits lower, inside the 2.5–4.5 Hz band, and is better damped. The share rises because
+the mode moved, not because it grows.
+
+What I tested, with the roll's share after the kick (5 / 7 / 9 m/s):
+
+| Variant | Share | Note |
+|---|---|---|
+| Old rider | 0.06 / 0.01 / 0.00 | rings at 5–7 Hz |
+| New rider, the bank law about the level heading (kept) | 0.16 / 0.48 / 0.34 | rings at 2.1–3.3 Hz in yaw |
+| New rider, the bank law about the body's pitched axis | 0.41 / 0.65 / 0.31 | the roll's angle, rate, couples and upright drive, all pitched |
+| Knees 15 / 25 / 44 kN/m | 0.44–0.38 / 0.70–0.56 / 0.29–0.36 | the knee is not it |
+
+Riding straight (no kick) the new board shows something else: its pitch, not its roll, swings at about 1.7 Hz
+(±0.3 rad/s, about ±1.6°). That is the pitch loop's own mode, which the model also finds lightly damped near 1–2 Hz.
+
+## 17. The hip in pitch, and why the falls remain
+
+- **Built** (`standingBody.ts`, `hipStep`; constants `HIP_PITCH_*`, `hipRange`):
+  - the trunk, head and arms as a rotor of 8 kg·m², up to 200 N·m;
+  - the range from the stance (1.2 / 0.8 / 0.4 / 0.3 rad tall / crouch / Compress / tuck);
+  - it takes the ankle loop's torque past 80 % of the feet's reach to the toe or heel, through the same 0.10 s delay
+    and 0.05 s lag;
+  - its reaction pushes the body back, and the pair takes the opposite couple; its work is in the power ledger.
+  - Not drawn yet (the rig does not show the trunk's pitch).
+- **The 2 m/s rise, step by step** (`results/trace31c-rise2.jsonl`):
+  - before the rise, the plain glide has the body 13° ahead on its ankle, the pressure at +0.25 m;
+  - the water rises, the board sinks deeper and slows (6.3 → 5.1 m/s);
+  - the pressure reaches the toe at 0.65 s, and the hip comes in at 0.62–0.78 s (5 → 200 N·m);
+  - by then the body pivots over its toes; the leg would have to pull, the feet unload, and after 0.4 s the old flight
+    rule separates the rider.
+- **The 12 m/s glide** (`trace31c-glide12.jsonl`) and **the standing carve** (`trace31c-carve.jsonl`) fall the same
+  way, tipping over the nose.
+
+## 18. The bars, 3.1c (old / 3.1b / 3.1c)
+
+Results: `results/bars-new-31c.jsonl`; old `results/bars-old.jsonl`; 3.1b `results/bars-new-31b.jsonl`.
+
+| Bar | Old | 3.1b | 3.1c | Pass? |
+|---|---|---|---|---|
+| N0, `rider=old` byte-identical (20 files) | — | yes | yes | yes |
+| N1, per frame < ~2 kW; ≤ 1.46 kW over 0.5 s | to 30.9 kW | 0.46 / 0.08 kW | 0.72 / 0.08 kW | yes |
+| N2, gain ≥ 3.5 m/s, trim 5–9.5° | +1.7, 15.6° | +3.6, 9.1° | +4.0, 7.6–8.0° | yes |
+| N3, 2 m/s: no fall | holds | falls 0.40 s | falls 0.40 s | no |
+| N3, 4 m/s (report) | falls 0.27 s | falls 0.35 s | falls 0.35 s, 2.93 BW, knees 2.6 cm | — |
+| N4, placed: hold 0.5 s | 2 of 12 | 12 of 12 | 12 of 12 | yes |
+| N4, placed: the board under 5 g | to 16.8 g | one row 5.9 g | one row 5.9 g: placed up 25°, with 204 W of positive leg power (not a zero-power water slam) | no, one row |
+| The 45° line, placed | 3 of 6 | 6 of 6 | 6 of 6 | yes |
+| N5, glides at 5 / 7 / 9 / 12 m/s hold 3 s | yes | 12 m/s falls | 5, 7, 9 hold; 12 m/s falls at 0.58 s | no |
+| N5, the glides' draft (report) | 20.8 / 10.8 / 5.7 / 1.7 cm | 19.4 / 9.0 / 4.9 / — | 19.4 / 8.8 / 5.4 / — | — |
+| N5, held carve standing ≥ 2.28 s | 2.28 | 2.13 | 2.13 | no |
+| N5, held carve Compress ≥ 2.30 s | 3.0 (2.30 no carry) | 3.0 | 3.0 | yes |
+| Mode A not seen | — | yes | yes | yes |
+| Mode B, damping after the kick > 0 | −0.015 / +0.05 / +0.06 | +0.02 / +0.09 / +0.14 | 0.00 / +0.10 / +0.18 | no at 5 m/s |
+| Mode B, roll share ≤ old + 0.1 | 0.06 / 0.01 / 0.00 | 0.18 / 0.46 / 0.40 | 0.16 / 0.48 / 0.34 | no (section 16) |
+
+## 19. The hull's pitch damping, the margins again, what was not run
+
+- **Measured twice, neither cleanly** (`hull.probe.ts`, `results/hull.jsonl`):
+  - 3.1b's kick with the old rider towed at 7 m/s: about 23 N·m·s/rad;
+  - 3.1c's kick with the new rider held in pitch, towed at 5 / 7 / 9 m/s: 5 / 21 / 31 N·m·s/rad. The fit is not clean:
+    the pair's inertia it implies (0.4–12 kg·m²) is below the body's own m L² (about 52), so the ringing it catches
+    is not the pair's rigid pitch.
+  Both point to a low hull pitch damping, about 20–30 at 7–9 m/s. A clean measure needs the hull's pitch moment read
+  directly (a forced pitch at a known rate); `BoardBody` does not expose its moment today.
+- **The model at 20–25 N·m·s/rad** (`results/pitch-model.jsonl`, each speed's measured stiffness and drag, the board's
+  pitch inertia 0.43–6): the least damping is +0.015 to +0.075. Positive, but thin. With the drag's slope halved as
+  well, it goes to −0.025.
+- **Step time standing** (median of 5, under load): flat glide 2.60 → 3.20 ms (the five spread 2.59–4.90; the fastest
+  2.54 against 2.59), 20° face 2.47 → 2.65 ms.
+- **Not run:** the merge checks (the suite, the Canyon hashes, the fps trace), since the bars miss. Run: `tsc` (app and
+  server), the four `standingBody` tests. No ride, no game page.
 
 # Part 2: step 3.1b (ruling 29a)
 
