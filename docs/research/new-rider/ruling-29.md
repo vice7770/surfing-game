@@ -68,3 +68,29 @@ Advisor: this session. Read: `3.2/README.md` and its traces. The code is held on
 - Compare with planing-hull and surfboard sources, and name the term that over-responds.
 - If the hull over-responds, fixing it is a water-force fix, measured the same way.
 - Then 3.2 comes back with the same controller.
+
+---
+
+# Ruling 29f: the roll–yaw plant, after the diagnosis (2026-11-13)
+
+Advisor: this session. Read: `roll-plant/README.md` and its results.
+
+**The water is fine; no water-force change.**
+- With a rigid rider, the board turns at 0.83–0.93 of a coordinated turn per degree of rail, linear from 0.5° to 5°.
+- The water's roll damping (12–20 N·m·s/rad) checks against strip theory.
+- 3.2's own delayed model is damped on this measured plant: +0.175 at 0.79 Hz.
+
+**The over-response is in the coupling through the feet, and the cause is a missing inertia.**
+- The feet carry the hull's drag (about 0.2 g, about 150 N at 7 m/s) at a centre of pressure off the stringer. That yaws the board: about 1.5 N·m per cm of offset, so 1 cm of offset turns it about as hard as 1° of rail.
+- That steering is real; surfers steer with their feet. What is wrong is how fast the board answers.
+  - Only the fins resist its yaw, and its yaw inertia is the board's own 0.45 kg·m².
+  - The rider is a point mass whose spin is not modelled (`AttachedRider.ts` 1301).
+  - So the board's yaw time constant is about 0.035 s. With a human's yaw inertia coupled through planted feet (about 1.5–2.5 kg·m²) it would be about 0.15–0.2 s.
+
+**Decision (surfer track, under `rider=new`; the old rider unchanged): step 3.2b.**
+1. **Add the rider's yaw inertia to the board's yaw** through the feet, in the coupled solve.
+   - Take a sourced whole-body moment of inertia about the vertical axis, for a standing 73 kg person by posture (anthropometric tables such as de Leva 1996 or Zatsiorsky–Seluyanov).
+   - Couple it rigidly at first. The twist and hip rotors stay as the body's internal yaw.
+2. **Extend 3.2's delayed model with the yaw state, sway and centre-of-pressure steering,** and choose the gains on it before building.
+3. **Rebuild on `claude/rider-new-32`'s controller, and re-run 3.2's bars.**
+- The hull's cross-flow yaw damping is the reserve lever. It has no source, so use it only if the inertia is not enough, behind its own switch.
