@@ -98,7 +98,7 @@ describe('the new surfer standing (rider: new, step 3.1)', () => {
 });
 
 describe('the new surfer\'s yaw inertia (rider: new, step 3.2b)', () => {
-  it('turns its own yaw inertia with the board through the feet, slowing the board\'s answer to a couple; the old rider has none', () => {
+  it('turns its own yaw inertia with the board through the feet (the lower share; the upper on the twist), slowing the board\'s answer to a couple; the old rider has none', () => {
     const answer = (options: AttachedRiderOptions) => {
       const { board, rider, water } = onFace(11, 'standing', options, 7);
       for (let n = 0; n < 60; n += 1) board.step(STEP, water);
@@ -120,13 +120,15 @@ describe('the new surfer\'s yaw inertia (rider: new, step 3.2b)', () => {
     };
     const free = answer({ rider: 'new' });
     const point = answer({ rider: 'new', yawInertiaScale: 0 });
-    // Tall to Compress (the balance lowers the knees for a while after a placed start), the arms in the riding pose.
-    expect(free.inertia).toBeGreaterThanOrEqual(2.81);
-    expect(free.inertia).toBeLessThanOrEqual(3.2);
+    // Step 3.2e: what the board meets in a substep is the rider's lower share, rigid with it (1.24-1.37 kg·m², tall to
+    // Compress), and a small share of the upper body's through the legs' twist; the upper body turns on the twist.
+    expect(free.inertia).toBeGreaterThanOrEqual(1.24);
+    expect(free.inertia).toBeLessThanOrEqual(1.5);
     expect(point.inertia).toBe(0);
     // A 2 N·m couple for one frame: about 2/60 over the inertia the board meets (its own and the water's, plus the rider's).
     expect(free.gain).toBeGreaterThan(0);
-    expect(point.gain / free.gain).toBeGreaterThan(2.5);
+    // (3.2b's whole body made it 2.5 times; the lower share alone, about 2.)
+    expect(point.gain / free.gain).toBeGreaterThan(1.8);
     expect(answer({}).inertia).toBe(0);
   });
 });
