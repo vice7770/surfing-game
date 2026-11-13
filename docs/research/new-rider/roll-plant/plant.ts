@@ -65,6 +65,13 @@ export interface Hold {
   /** A roll rate imposed each substep (rad/s), about the board's long axis through `rollAxis` (a board-frame point; default the centre of mass). */
   rollRate?: number;
   rollAxis?: { x: number; y: number; z: number };
+  /** Step 3.2g, the pitch plant: the board's pitch (nose up +, rad) and its rate held at 0 while held. */
+  pitch?: number;
+  /** The centre of mass's height, m (world y), and its vertical speed held at 0; or the vertical speed alone, m/s (+ up). */
+  height?: number;
+  heaveRate?: number;
+  /** A pitch rate imposed each substep (rad/s, nose up +), about the board's lateral axis through its centre of mass. */
+  pitchRate?: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,14 +165,15 @@ export class Lab {
     const w = board.angularVelocity;
     const v = board.velocity;
     const e = euler(q);
-    if (hold.roll !== undefined) {
-      q.copy(fromEuler(e.heading, e.pitch, hold.roll));
+    if (hold.roll !== undefined || hold.pitch !== undefined) {
+      q.copy(fromEuler(e.heading, hold.pitch ?? e.pitch, hold.roll ?? e.roll));
       (board as Any).updateRotation();
     }
     const rates = eulerRates(q, w);
     if (hold.roll !== undefined) rates.c = 0;
+    if (hold.pitch !== undefined) rates.b = 0;
     if (hold.yawRate !== undefined) rates.a = hold.yawRate;
-    if (hold.roll !== undefined || hold.yawRate !== undefined) {
+    if (hold.roll !== undefined || hold.pitch !== undefined || hold.yawRate !== undefined) {
       w.set(0, 0, 0).addScaledVector(new Vector3(0, 1, 0), rates.a).addScaledVector(rates.e1, rates.b).addScaledVector(rates.f, rates.c);
     }
     const heading = euler(q).heading;
@@ -194,6 +202,19 @@ export class Lab {
         v.add(term);
         this.rollRateLift = term.y;
       }
+    }
+    // Step 3.2g: the pitch plant's heave. The height is the centre of mass's own (the board is moved by the difference),
+    // with its vertical speed held; `heaveRate` holds the speed alone.
+    if (hold.height !== undefined) {
+      // The centre of mass is the board's own state; `position` is derived from it by `syncPosition` below.
+      board.centerOfMass.y = hold.height;
+      v.y = 0;
+    }
+    if (hold.heaveRate !== undefined) v.y = hold.heaveRate;
+    if (hold.pitchRate !== undefined) {
+      // Nose up is a rotation about −left (the right-hand rule about the board's left axis takes the nose down).
+      const left = new Vector3(1, 0, 0).applyQuaternion(q);
+      w.addScaledVector(left, -hold.pitchRate);
     }
     (board as Any).syncPosition();
     if (hold.push) {
