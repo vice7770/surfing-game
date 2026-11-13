@@ -19,6 +19,9 @@
  *   --a0: its H0/h0, the key cases blend by, where its own A0 is something else: a periodic train's is its wave height,
  *     so give its crest at the slope's foot over h0 (the advisor's plunge_measure.py runs; their metrics are read in
  *     that form too).
+ *
+ * --format brl3 (C2 step 1b) packs C2's case files into BRL3 instead (scripts/brl3.ts, its own options); --format brl2,
+ * the default, is the above, byte for byte as before.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -27,6 +30,7 @@ import { caseFromLibrary, libraryJson, refitTip, sustainedOverturn } from '../sr
 import type { BarrelCase } from '../src/wave/barrel/ProfileLibrary';
 import { decodeCase, encodeCase } from '../src/wave/barrel/profileFormat';
 import type { BarrelCaseEntry } from '../src/wave/barrel/barrelLibrary';
+import { packBrl3 } from './brl3';
 
 const options = (name: string): string[] =>
   process.argv.flatMap((arg, i) => (arg === `--${name}` && i + 1 < process.argv.length ? [process.argv[i + 1]] : []));
@@ -41,6 +45,15 @@ const perCase = (name: string) => {
   }
   return (key: string) => pairs.get(key) ?? fallback;
 };
+const format = options('format')[0] ?? 'brl2';
+if (format !== 'brl2' && format !== 'brl3') {
+  console.error(`--format ${format}: brl2 (the default) or brl3`);
+  process.exit(1);
+}
+if (format === 'brl3') {
+  packBrl3(options);
+  process.exit(0);
+}
 const runs = options('run');
 const keeps = options('keep');
 const runsDir = options('runs')[0] ?? 'tools/basilisk/runs';
