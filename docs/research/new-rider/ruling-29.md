@@ -160,3 +160,81 @@ unchanged)
 
 **Effort: xhigh.** A new body degree of freedom in the coupled solve, its sourced numbers, and the model's search
 before any build.
+
+---
+
+# Ruling 29h: step 3.2c held; balance by prediction (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 3 and its results. Model code only, held on `claude/rider-new-32c`
+(31576f97, pushed). Nothing was built in the game.
+
+**What 3.2c showed (accepted)**
+- The split (de Leva 1996): with the board 1.37 / 1.37 / 1.24 kg·m², on the twist 1.44 / 1.68 / 1.96 (tall / crouch /
+  Compress).
+- The twist's numbers are sourced where a source exists:
+  - the trunk 7.4–37 N·m/rad standing;
+  - a bent knee 47.5 passive, 9 relaxed to 146 braced;
+  - the hip rotators about 100 N·m with both legs;
+  - the pelvis against the feet about 50°.
+  - No hip stiffness from living people was found.
+- The passive twist alone takes most of the weave's growth away at 7 and 9 m/s (7 m/s: −0.266 → −0.034). The upper body
+  works like a tuned absorber on the board's yaw.
+- With full state and no delay, the ankle and the twist damp the weave well: +0.69 / +0.76 / +0.78 at 5 / 7 / 9 m/s,
+  with only 11–13 N·m of twist.
+- With the 0.1 s delay, searched laws each hold one speed and stance. They sit in separate basins, and no law or table
+  of laws holds 5–9 m/s.
+
+**A correction to 29g.** With full state, the ankle alone damps 3.2b's rigid case undelayed (+0.45 to +0.71). So 3.2b's
+limit was what its loop read (the bank and its rate only), not a missing channel. "A locked handlebar" was too strong.
+The twist stays: it is the body as it is, and it gives the most authority for the least torque.
+
+**Reading** [I unless tagged]
+- The plant can be controlled with room to spare. What fails is fixed gains on delayed senses, found by search on a rough
+  landscape.
+- The literature does not model human balance that way. Its standard models predict the body's state over the nervous
+  system's own delay with an internal model, and act on the prediction [S, recalled]:
+  - an optimal estimator with feedback on the estimate (Kuo 2005, J Neural Eng 2:S235);
+  - intermittent predictive control (Gawthrop, Loram, Lakie and Gollee 2011, Biol Cybern 104:31; Loram et al. 2011,
+    J Physiol 589:307);
+  - the cerebellum as a Smith predictor (Miall, Weir, Wolpert and Stein 1993, J Mot Behav 25:203).
+- 3.2's "predictor" extrapolated the sensed state in a straight line. A model-based predictor is different: it runs the
+  body's own model forward over the delay, with the commands already sent.
+- With a true model, prediction gives the delayed loop the undelayed loop's modes. A surprise, such as a shove, is still
+  answered 0.1 s late, so reactions stay human.
+- LQR gains change smoothly with speed and stance, so a schedule of them is connected by construction. Bicycle riders'
+  gains also rise with speed (Moore 2012, read by 3.2c's helper).
+- The risk is the model's error against the game. In 3.2b's check its weave ran about a quarter low in frequency, and
+  its 5 m/s plant is the least trusted. So robustness is the gate.
+
+**Decision: step 3.2d, predictive balance on the twist body, model first** (surfer track, under `rider=new`; the old
+rider unchanged)
+1. Keep 3.2c's split, numbers and `TwistPlant`.
+2. **The senses:**
+   - the body's bank and its rate (the vestibular organs);
+   - the head's yaw rate (the canals);
+   - the twist's angle and rate;
+   - the ankle's own angle and rate (the legs' own sense; with the bank it gives the board's roll).
+   - Not the slip.
+3. **The controller:**
+   - an estimator of the whole state from those senses, the slip included;
+   - a predictor that runs the linear plant at the current speed and stance over the 0.1 s delay, with the stored
+     commands;
+   - LQR gains on the predicted state, on both channels, within the efforts' limits (the ankle 72 N·m; the twist
+     100 N·m and 0.87 rad);
+   - the player's commands enter as the reference (the lean asked for), as in 3.2;
+   - gains and model by speed (4–12 m/s, every 0.5) and stance (tall, crouch, Compress), interpolated. Show that the
+     schedule is smooth.
+4. **The robustness gate, model only.** The least damping must be at least +0.05 with the nominal plant at every point.
+   It must stay at least 0 when:
+   - the true delay is 0.15 s (the predictor assumes 0.1 s);
+   - each measured derivative is scaled ×0.7 and ×1.3 on its own, and in 200 random sets together;
+   - the twist's passive stiffness is 5 to 60 N·m/rad (the model assumes 20);
+   - the board's roll inertia is 0.03 to 0.3 kg·m².
+   Report the worst case and what drives it.
+5. **Build in the game only if 4 passes.** Then run 3.2's bars from steady starts. The twist shows in the pose, and the
+   yaw step is a report. The predictor costs a few small matrix products a step.
+6. **Stop rule.** If no LQR weights pass 4 in one round, hand back. Then only the plant is left, and the water's
+   small-rail yaw (levers 1 and 2) reopens.
+7. 3.2c's searched laws are not built.
+
+**Effort: xhigh.** It continues 3.2c's agent, which holds the model and the LQR code.

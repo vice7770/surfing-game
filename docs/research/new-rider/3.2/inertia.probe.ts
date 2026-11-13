@@ -133,6 +133,62 @@ function verticalInertia(parts: Part[]) {
   return { mass: m, com: c, total, arms, legs };
 }
 
+/**
+ * Step 3.2c (ruling 29g, item 1): the yaw inertia split by where it sits. Two yaw coordinates: the board's turn ψ_b (the
+ * feet, the shanks and the knees go with it, planted) and the upper body's twist θ_t about the vertical through the
+ * pelvis (the pelvis, trunk, arms and head turn rigidly with it). The thighs run from the hip (on the pelvis) to the knee
+ * (with the board), so their lateral speed in a twist falls linearly from the hip's to nothing: their share of the twist
+ * is m [(1 − c)² + r_t²] d_hip² (c the centre's place from the hip, r_t the transverse radius over the length, d_hip the
+ * hip joint's distance from the twist's axis). The kinetic energy is ½ [ψ̇_b θ̇_t] M [ψ̇_b θ̇_t]ᵀ, M from the segments:
+ * M_bb the whole body's (as `verticalInertia`), M_tt the twist's with the board held, M_bt their coupling. The lumped
+ * split: the twist rotor I_U = M_tt, the board's share I_L = M_bb − M_tt (exact when M_bt = M_tt); what the board meets
+ * with the upper body free, M_bb − M_bt² / M_tt, is reported as the check.
+ */
+function yawSplit(parts: Part[], pivot: [number, number] | 'com') {
+  const upper: Seg[] = ['trunk', 'head', 'upperArm', 'forearm', 'hand'];
+  let m = 0;
+  let c: P = [0, 0, 0];
+  for (const p of parts) {
+    const [fm, at] = SEG[p.seg];
+    m += fm * MASS;
+    c = add(c, mul(add(p.a, mul(sub(p.b, p.a), at)), fm * MASS));
+  }
+  c = mul(c, 1 / m);
+  const axis: [number, number] = pivot === 'com' ? [c[0], c[1]] : pivot;
+  let bb = 0; let tt = 0; let bt = 0; let thighShare = 0;
+  for (const p of parts) {
+    const [fm, at, rs, rt, rl, l] = SEG[p.seg];
+    const mass = fm * MASS;
+    const cm = add(p.a, mul(sub(p.b, p.a), at));
+    const u = unit(sub(p.b, p.a));
+    const cos2 = u[2] * u[2];
+    const own = mass * l * l * (rl * rl * cos2 + ((rs * rs + rt * rt) / 2) * (1 - cos2));
+    const toC = (cm[0] - c[0]) ** 2 + (cm[1] - c[1]) ** 2;
+    bb += own + mass * toC;
+    if (upper.includes(p.seg)) {
+      // Turns rigidly with the twist about the pelvis's vertical: ω_b about the centre, θ̇_t about the axis.
+      const toAxis = (cm[0] - axis[0]) ** 2 + (cm[1] - axis[1]) ** 2;
+      const dot = (cm[0] - c[0]) * (cm[0] - axis[0]) + (cm[1] - c[1]) * (cm[1] - axis[1]);
+      tt += own + mass * toAxis;
+      bt += own + mass * dot;
+    } else if (p.seg === 'thigh') {
+      // The hip end (p.a) moves with the twist, the knee end (p.b) with the board; the speed is linear along the thigh.
+      const hip: [number, number] = [p.a[0] - axis[0], p.a[1] - axis[1]];
+      const dHip2 = hip[0] ** 2 + hip[1] ** 2;
+      const weight = (1 - at) ** 2 + ((rs * rs + rt * rt) / 2);
+      tt += mass * weight * dHip2;
+      thighShare += mass * weight * dHip2;
+      // Coupling: ∫ (1 − s) (r(s) − c) · (hip − axis) dm, r(s) along the thigh: the mean (1 − s)-weighted place.
+      // (1 − s) r(s) integrated: r(s) = a + s (b − a); ∫ (1 − s) dm = m (1 − c); ∫ (1 − s) s dm = m (c − c² − r_t²).
+      const w0 = 1 - at;
+      const w1 = at - at * at - ((rs * rs + rt * rt) / 2);
+      const place: P = add(mul(p.a, w0), mul(sub(p.b, p.a), w1));
+      bt += mass * ((place[0] - w0 * c[0]) * hip[0] + (place[1] - w0 * c[1]) * hip[1]);
+    }
+  }
+  return { bb, tt, bt, thighShare, lower: bb - tt, boardMeetsFree: bb - (bt * bt) / tt };
+}
+
 it('the rider yaw inertia by posture (de Leva 1996)', () => {
   // The anatomical check: standing straight, the feet together, the arms at the sides.
   const anatomical: Part[] = [];
@@ -169,5 +225,12 @@ it('the rider yaw inertia by posture (de Leva 1996)', () => {
   for (const [name, hip, back, lean] of stances) for (const arms of ['in', 'pose', 'out'] as const) {
     const v = verticalInertia(posture(hip, back, lean, [0.3, 1, 0], arms));
     emit({ posture: name, arms, comHeight: r(v.com[2], 3), comAcross: r(v.com[1], 3), inertia: r(v.total, 3), arms_: r(v.arms, 3), legs: r(v.legs, 3) });
+    // Step 3.2c: the split between the board (feet, shanks, the thighs' share that stays) and the twist (pelvis, trunk, arms, head).
+    // The twist about the vertical through the body's centre of mass (used: the game's rider spins about its leg line
+    // through it, as 3.2b's whole inertia did), and about the vertical through the pelvis (the check).
+    for (const pivot of ['com', [0, -back]] as const) {
+      const s = yawSplit(posture(hip, back, lean, [0.3, 1, 0], arms), pivot as 'com' | [number, number]);
+      emit({ part: 'split', posture: name, arms, pivot: pivot === 'com' ? 'centre of mass' : 'pelvis', whole: r(s.bb, 3), twist: r(s.tt, 3), withBoard: r(s.lower, 3), coupling: r(s.bt, 3), thighsOnTwist: r(s.thighShare, 3), boardMeetsUpperFree: r(s.boardMeetsFree, 3) });
+    }
   }
 });
