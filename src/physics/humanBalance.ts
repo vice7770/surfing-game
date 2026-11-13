@@ -210,6 +210,7 @@ export class DelayLine {
 const BANK = 0;
 const BANK_RATE = 1;
 const CAPTURE_OUT = 2;
+const CAPTURE_ACROSS = 3;
 
 /** The capture point against the feet, from `HumanBalance.capture`. */
 export interface CaptureState {
@@ -218,6 +219,8 @@ export interface CaptureState {
   along: number;
   /** How far past the feet's edge it is, m (0 inside). */
   past: number;
+  /** How far past the feet's edge it is **across**, m, signed with the side it is past (board +x); 0 while inside (step 3.2i). */
+  pastAcross: number;
   /** The centre of mass itself past the feet's edge (projected along the felt vertical). */
   weightPast: boolean;
   /** What the room still left can catch past the edge, m (the way it is past), and whether it is past by more. */
@@ -236,7 +239,7 @@ export interface CaptureState {
 
 /** The new surfer's human balance: the delay line, the roll loop's rest, the order of the moves, the capture point and the reserve. */
 export class HumanBalance {
-  private readonly line = new DelayLine(3, BALANCE_DELAY + 0.02);
+  private readonly line = new DelayLine(4, BALANCE_DELAY + 0.02);
   private clock = 0;
   /** The roll's lagged ankle rest, rad; the body's bank the latest substep (NaN before the first), rad. */
   rollRest = Number.NaN;
@@ -251,7 +254,7 @@ export class HumanBalance {
   /** Why the knees are going down now: the hip near its range, or the capture point off the feet. */
   kneeCause: 'none' | 'hip' | 'capture' = 'none';
   /** The latest capture point (`capture`). */
-  readonly state: CaptureState = { across: 0, along: 0, past: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0 };
+  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0 };
   /** The time the capture point last left the feet (NaN while inside), on the balance's clock, s. */
   leftFeetAt = Number.NaN;
   /** Whether `capture` is holding its last state because the feet are light (CAPTURE_LOAD): the validity condition, step 3.2h. */
@@ -280,6 +283,7 @@ export class HumanBalance {
     this.lightLongest = 0;
     this.state.margin = 1;
     this.state.past = 0;
+    this.state.pastAcross = 0;
     this.state.weightPast = false;
     this.state.beyond = false;
   }
@@ -293,7 +297,7 @@ export class HumanBalance {
     this.clock += h;
     this.bankRate = Number.isNaN(this.lastBank) ? 0 : (bank - this.lastBank) / h;
     this.lastBank = bank;
-    this.line.push(this.clock, bank, this.bankRate, this.state.past);
+    this.line.push(this.clock, bank, this.bankRate, this.state.past, this.state.pastAcross);
     return this.bankRate;
   }
 
@@ -316,6 +320,16 @@ export class HumanBalance {
   /** How far past the feet's edge the capture point was BALANCE_DELAY ago, m (0 inside). */
   get sensedCapturePast(): number {
     return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_OUT);
+  }
+
+  /**
+   * How far past the feet's edge **across** the capture point was BALANCE_DELAY ago, m, signed with the side it is past
+   * (0 inside). Built in step 3.2i for the hip to answer, as the knees and the arms already answer `sensedCapturePast`;
+   * the hip is not wired to it today, because driving the swing rotor from it was measured and it fails
+   * (`3.2/README.md` Part 9 §2). Nothing reads it in the game yet; the probes do.
+   */
+  get sensedCaptureAcross(): number {
+    return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_ACROSS);
   }
 
   /**
@@ -387,6 +401,8 @@ export class HumanBalance {
     const pastX = Math.max(0, Math.abs(s.across) - halfAcross);
     const pastZ = Math.max(0, s.along - alongFront, -s.along - alongBack);
     s.past = Math.max(pastX, pastZ);
+    // Across, with the side it is past (step 3.2i; `sensedCaptureAcross`).
+    s.pastAcross = pastX > 0 ? Math.sign(s.across) * pastX : 0;
     // Unrecoverable once past the edge by more than the reach that way.
     s.beyond = pastX > reachAcross || pastZ > reachAlong;
     s.reach = pastX >= pastZ ? reachAcross : reachAlong;
@@ -415,4 +431,24 @@ export class HumanBalance {
  */
 export function rotorImpulse(inertia: number, torque: number, left: number): number {
   return Math.sqrt(2 * inertia * torque * Math.max(0, left));
+}
+
+/**
+ * What the same rotor can deliver **inside a horizon** of `horizon` s (step 3.2i, ruling 29m): driven at `torque` it
+ * gives τ t, so over the horizon at most τ · horizon, and it can never give more than `rotorImpulse` allows before it
+ * reaches its range. The angular impulse is the smaller of the two, N·m·s.
+ *
+ * `rotorImpulse` alone credits the rotor's whole remaining range as if it could be spent at once: at the hip's 10 kg·m²
+ * and 200 N·m, 1.2 rad of range is √(2 · 10 · 200 · 1.2) = 69 N·m·s, which would take √(2 I left / τ) = 0.35 s, against
+ * the capture point's own horizon of 1/ω₀ ≈ 0.3 s. So the fall test believed in a save the body could not make in the
+ * time it had, and the horizon is the honest bound on it.
+ *
+ * **It is not wired into the fall test today** (step 3.2i, measured): with the arms in, the hip's inertia is 6 kg·m²
+ * and the cap does not bind, so it buys nothing on the chop; under a shove it binds hard and costs the push bar 44 % of
+ * its saved shove, because ω₀ is read from a felt gravity the impulse itself inflates to 13–19 m/s². The formula is
+ * right and the horizon it is given is not, so it waits for a horizon that does not come from the felt gravity
+ * (`3.2/README.md` Part 9 §3).
+ */
+export function rotorReach(inertia: number, torque: number, left: number, horizon: number): number {
+  return Math.min(torque * Math.max(0, horizon), rotorImpulse(inertia, torque, left));
 }
