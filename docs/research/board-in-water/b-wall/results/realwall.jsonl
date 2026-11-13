@@ -1,0 +1,9 @@
+{"config":{"poolSize":"ref","wallBody":"stream","follow":true}}
+{"label":"t 40.0 s, from x 81 z -196.5 heading +x","rule":"path","wallFrames":61,"spike":0.54,"peakWallPush":0.98,"peakLoad":3.42,"fell":"balance","fellAfter":1.35}
+{"label":"t 40.0 s, from x 81 z -196.5 heading +x","rule":"follow","wallFrames":62,"spike":0.5,"peakWallPush":0.57,"peakLoad":4,"fell":"lost board","fellAfter":1.37}
+{"label":"t 40.0 s, from x 105 z -197 heading -x","rule":"path","wallFrames":12,"spike":-0.38,"peakWallPush":0.01,"peakLoad":0.72,"fell":"balance","fellAfter":0.73}
+{"label":"t 40.0 s, from x 105 z -197 heading -x","rule":"follow","wallFrames":11,"spike":-0.38,"peakWallPush":0,"peakLoad":0.74,"fell":"balance","fellAfter":0.73}
+{"label":"t 44.0 s, from x 58 z -185.3 heading +x","rule":"path","wallFrames":20,"spike":0.02,"peakWallPush":0.16,"peakLoad":1.53,"fell":"","fellAfter":null}
+{"label":"t 44.0 s, from x 58 z -185.3 heading +x","rule":"follow","wallFrames":20,"spike":0.01,"peakWallPush":0.07,"peakLoad":1.52,"fell":"","fellAfter":null}
+{"label":"t 44.0 s, from x 82 z -183 heading -x","rule":"path","wallFrames":0,"spike":null,"peakWallPush":0,"peakLoad":0,"fell":"","fellAfter":null}
+{"label":"t 44.0 s, from x 82 z -183 heading -x","rule":"follow","wallFrames":0,"spike":null,"peakWallPush":0,"peakLoad":0,"fell":"","fellAfter":null}

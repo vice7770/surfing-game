@@ -90,15 +90,15 @@ export class Rising implements SurfWater {
 export interface Rig { board: BoardBody; rider?: AttachedRider }
 
 /** A board on the surface at (0, z), heading `heading`° (from +z toward +x) in the surface plane, at `speed` through the water (the water's own velocity there added, so on a moving face it starts moving with the surface). */
-export function place(water: SurfWater, z: number, heading: number, speed: number, phase?: 'prone' | 'standing' | 'none', options: ConstructorParameters<typeof BoardBody>[0] = {}): Rig {
-  const s = water.sampleAt(0, 10, z, createWaterSample());
+export function place(water: SurfWater, z: number, heading: number, speed: number, phase?: 'prone' | 'standing' | 'none', options: ConstructorParameters<typeof BoardBody>[0] = {}, x = 0): Rig {
+  const s = water.sampleAt(x, 10, z, createWaterSample());
   const normal = new Vector3(s.normalX, s.normalY, s.normalZ).normalize();
   const h = heading / DEG;
   const level = new Vector3(Math.sin(h), 0, Math.cos(h));
   const forward = level.addScaledVector(normal, -level.dot(normal)).normalize();
   const left = new Vector3().crossVectors(normal, forward).normalize();
   const board = new BoardBody(options);
-  board.place(new Vector3(0, s.surfaceY, z).addScaledVector(normal, board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)), forward.clone().multiplyScalar(speed).add(new Vector3(s.flowX, s.flowY, s.flowZ)));
+  board.place(new Vector3(x, s.surfaceY, z).addScaledVector(normal, board.shape.centerOfMass.y), new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)), forward.clone().multiplyScalar(speed).add(new Vector3(s.flowX, s.flowY, s.flowZ)));
   if (phase === 'none' || phase === undefined) return { board };
   // LEG_POWER=cap runs the probes with ruling 27's A-lite on (`legPower: 'cap'`, a-lite/README.md).
   const rider = new AttachedRider(board.shape, { phase, ...(process.env.LEG_POWER === 'cap' ? { legPower: 'cap' as const } : {}) });
