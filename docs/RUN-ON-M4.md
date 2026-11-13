@@ -89,18 +89,34 @@ Start the game:
 npm run dev
 ```
 
-Open the address it prints (usually `http://localhost:5173/`) and add this to the end:
+Open the address it prints (usually `http://localhost:5173/`). **In the menu pick Wave Pool, then Waves: Barrel** —
+the address does not choose the spot. Then add this to the end of the address:
 
 ```
-?spot=pool&waves=barrel&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&tubeForm=early&poolReach=long&loftMesh=arc&wallFoot=dug
+?poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library
 ```
+
+**This is the one to use** (2026-11-13). `&wave=library` is the new wave: its shape and now its water both come from
+the simulated breaking wave, not from the live sea. At the crest just before the lip throws, the water runs about
+5 m/s along the wave where the live sea gave 2 m/s.
 
 What to look at:
 
-1. The join between the two parts of the wave, from the side and from the front. Does it read as one wave?
-2. The wall under the lip: you now ride on the pre-made shape's own lower face. Does the board feel right there?
-3. The lip: its thickness and colour as it falls.
-4. The speed of the break along the reef: can you keep up?
+1. **The push.** Does the wave carry you? Does the face pull you down into it when you drop in?
+2. **The join.** Riding up the line, from live sea into the made wave: does anything jolt or step?
+3. **The shoulder in front**, from the side and from the front: does it read as one wave?
+4. **The speed of the break along the reef:** can you keep up?
+
+Known and not worth reporting yet: small steps along the lip's white edge, the falling lip looking like a flat sheet
+from inside the tube, and no foam. Those are the next piece of work.
+
+About the switches: `poolSize=ref` is needed (the library is built only on the 2 m pool). `tubeLook=merge` and
+`lipLook=fray` still shape how the lip looks. `afterTube=roller` draws the water behind the tube. `wallBody=stream`
+and `poolReach=long` now only shape the sea underneath. The old `tubeForm`, `loftMesh`, `wallFoot` and `crestLine`
+belong to the older hand-placed tube, which `wave=library` replaces, so they are gone from this address.
+
+To ride the older hand-placed tube instead, drop `&wave=library` and add
+`&tubeForm=early&loftMesh=arc&wallFoot=dug`.
 
 To compare with Canyon (it must feel as before):
 
