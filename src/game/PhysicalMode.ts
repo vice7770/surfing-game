@@ -1399,6 +1399,8 @@ export class PhysicalMode {
     // `?turnTrunk=lean`, `?turnLead=on`, `?cutbackHand=back`, or `?turnBody=on` for all three: the turning body (drawn only;
     // every rider this page draws, another player's without the stick's lead: their stick is not on the wire).
     Object.assign(RIG_SWITCHES, { turnTrunk: undefined, turnLead: undefined, cutbackHand: undefined }, turnBodySwitches(globalThis.location?.search ?? '', DEV_TOOLS));
+    // `?rider=new` (step 3.2e): the new surfer's twist turns the hips by all of it (`RIG_SWITCHES.twistHips`).
+    RIG_SWITCHES.twistHips = riderSwitch().rider === 'new' ? 'whole' : undefined;
     this.scene = scene;
     scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.edgeWhitewater.group, this.board, this.surfer.group, this.leash.object, this.curtains.mesh, this.fan.group);
     this.leash.object.visible = false;

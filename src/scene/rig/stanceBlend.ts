@@ -28,8 +28,10 @@ export const RIG_SWITCHES: RigSwitches = {};
  * - `cutbackHand: 'back'` (`?cutbackHand=back`): in a frontside cutback the back hand reaches for the water, the front arm
  *   points where the board goes.
  * `?turnBody=on` sets all three (`turnBodySwitches`).
+ * - `twistHips: 'whole'` (set with `?rider=new`, the new surfer's step 3.2e): the hips turn against the board by the whole
+ *   twist, as the chest does: the physics' twist is the pelvis, trunk, arms and head turning as one on the legs.
  */
-export interface RigSwitches { snapArms?: 'old'; turnTrunk?: 'lean'; turnLead?: 'on'; cutbackHand?: 'back' }
+export interface RigSwitches { snapArms?: 'old'; turnTrunk?: 'lean'; turnLead?: 'on'; cutbackHand?: 'back'; twistHips?: 'whole' }
 
 /** The turning body's switches from a page's address (`RIG_SWITCHES`); `enabled` false (the dev tools off), none. */
 export function turnBodySwitches(search: string, enabled = true): Pick<RigSwitches, 'turnTrunk' | 'turnLead' | 'cutbackHand'> {

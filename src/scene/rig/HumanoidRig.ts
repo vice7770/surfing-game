@@ -989,7 +989,9 @@ export class HumanoidRig {
       const blend = state.standingBlend;
       const toNose = (this.blend.stance === 'regular' ? 1 : -1) * (180 / Math.PI);
       const chestTurn = Math.max(-most, Math.min(most, toNose * blend * (cascade.chest * state.yawRate + state.twist)));
-      const hipsTurn = Math.max(-most, Math.min(most, toNose * blend * (cascade.hips * state.yawRate + cascade.hipsTwist * state.twist)));
+      // The new surfer (`RIG_SWITCHES.twistHips`): its twist is the pelvis's too, so the hips turn by all of it.
+      const hipsTwist = RIG_SWITCHES.twistHips === 'whole' ? 1 : cascade.hipsTwist;
+      const hipsTurn = Math.max(-most, Math.min(most, toNose * blend * (cascade.hips * state.yawRate + hipsTwist * state.twist)));
       chest += chestTurn;
       hips += hipsTurn;
       // The neck's reach from where the chest is turning to, followed as the gaze is (its yaw-rate lead carries what

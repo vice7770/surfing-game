@@ -10,8 +10,9 @@ import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
-import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
+import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, stanceAt, type DesignWeights } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -480,6 +481,25 @@ const TWIST_RANGE = (45 * Math.PI) / 180;
 const TWIST_FREQUENCY = 7;
 const TWIST_TORQUE = 120;
 const TWIST_GRIP_RADIUS = 0.15;
+/**
+ * The new surfer's twist as a body degree of freedom (step 3.2e, the advisor's ruling 29i; the split and the numbers are
+ * step 3.2c's, docs/research/new-rider/3.2 Part 3). The board's share of the rider's yaw inertia (the feet, shanks and
+ * knees; `stanceAt`'s `lower`, de Leva 1996) turns rigidly with the board through the planted feet. The upper body's
+ * share (pelvis, trunk, arms and head; `upper`, and TWIST_BODY_ARMS more with the arms out) turns on the legs' twist:
+ * their stiffness and damping (TWIST_STIFFNESS, TWIST_DAMPING: the trunk's axial stiffness, Kosmopoulos et al. 2012)
+ * and the active torque the balance sends, through the muscles' lag. The torque turns the board through the feet and
+ * the upper body the other way: a limb's force with its reaction. The active torque is at most TWIST_BODY_TORQUE, N·m
+ * (the hips' rotation, about 50 N·m a leg: McNabb et al. 2024) and what the feet's grip holds (FOOT_FRICTION times the
+ * leg's load at TWIST_GRIP_SPAN, m, half the feet's spacing); the twist's range is TWIST_BODY_RANGE, rad (the hips about
+ * 30° and the bent knees about 20°: Simoneau et al. 1998, Lorenz et al. 2015), past which the joints stop it
+ * (TWIST_STOP, N·m/rad, and TWIST_STOP_DAMPING: an end stop, not sourced).
+ */
+const TWIST_BODY_TORQUE = 100;
+const TWIST_BODY_RANGE = 0.87;
+const TWIST_BODY_ARMS = 0.87;
+const TWIST_GRIP_SPAN = 0.315;
+const TWIST_STOP = 2000;
+const TWIST_STOP_DAMPING = 50;
 /**
  * The compressed turn's assist (the movement-flow spec's Q4 and Q16, a
  * gameplay rule, not physics). Compress is the sharp turn's stance, and a real
@@ -1162,6 +1182,14 @@ export interface AttachedRiderOptions {
   yawInertiaScale?: number;
   /** The new surfer standing free: the roll balance's gains in place of HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN and HUMAN_BANK_FORWARD (for the probes' sweeps only). */
   humanGains?: { bank?: number; bankRate?: number; forward?: number };
+  /**
+   * The new surfer's balance by prediction (step 3.2e), for the probes' rounds only: the design's weights (over
+   * DEFAULT_WEIGHTS), the lean asked's pace (rad/s; REFERENCE_RATE by default), the reference's steady turn ('linear' by
+   * default, or 'tan'), and the bank rate's sense ('canal' by default: the body's own angular rate; or 'difference': the
+   * bank's change over a substep, 3.2's), and the legs' passive twist in the game (TWIST_STIFFNESS, TWIST_DAMPING: braced or
+   * relaxed for the yaw step's report; the internal model keeps its own).
+   */
+  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number } };
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1540,6 +1568,8 @@ export class AttachedRider {
   private readonly scratch = new Vector3();
   private readonly scratch2 = new Vector3();
   private readonly localScratch = new Vector3();
+  /** The new surfer's senses for its balance (step 3.2e), the model's order and signs. */
+  private readonly senseScratch = new Array<number>(7).fill(0);
   private readonly spin = new Quaternion();
   private readonly heading = new Quaternion();
   private flex = 0;
@@ -1636,6 +1666,36 @@ export class AttachedRider {
   private yawSpin = 0;
   yawInertia = 0;
   private yawCoupled = false;
+  /**
+   * The new surfer standing free (step 3.2e): the twist as a body degree of freedom (`coupleYaw`, `finish`). `angle` the
+   * upper body's yaw less the board's, rad, and `rate` its rate, rad/s (about `up`, + to the board's left, as `twist`);
+   * `upper` the upper body's own spin, rad/s (world, about `up`); `active` the twist's active torque through the muscles'
+   * lag and `torque` the legs' whole torque on the board the latest substep, N·m (+ turns the board to its left; the
+   * upper body takes the other); the rest is the substep's implicit coupling, kept for `finish`.
+   */
+  readonly twistBody = { angle: 0, rate: 0, upper: 0, active: 0, torque: 0, coupled: false, inertia: 0, alpha: 0, beta: 0, gain: 0, spring: 0, turn: 0 };
+  /** The twist asked for (the pad's rotation or Snap's aim), rad: the balance's reference for the twist (step 3.2e). */
+  private twistAsked = 0;
+  /** The lean the player asks for (the steer and the hand), eased as `bankReference`, rad: the new surfer's balance's reference (step 3.2e). */
+  private leanAsked = 0;
+  /**
+   * The new surfer standing free (step 3.2e): balance by prediction (`PredictiveController`, `predictor`), on its own
+   * clock of simulated time (`controlDue`, s to its next tick), the commands held between its ticks (this file's signs):
+   * the ankle's command before the feet's reach (the hip takes the rest; the predictor is fed the reach's) and the twist's torque.
+   * Off with `humanGains` (3.2's delayed law, the probes' comparisons): the twist then is passive.
+   */
+  private readonly predictive: boolean;
+  readonly predictor: PredictiveController;
+  private readonly leanPace: number;
+  private readonly rateSense: 'canal' | 'difference';
+  /** The legs' passive twist, N·m/rad and N·m·s/rad (TWIST_STIFFNESS, TWIST_DAMPING unless a probe braces or relaxes it). */
+  private readonly twistStiffness: number;
+  private readonly twistDamping: number;
+  private controlDue = 0;
+  private heldAnkleRaw = 0;
+  private heldTwist = 0;
+  /** The latest substep, s (`coupleYaw` has no step of its own). */
+  private substep = 0;
   private readonly windowed: boolean;
   /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
   readonly standingBody = new StandingBody();
@@ -1792,6 +1852,12 @@ export class AttachedRider {
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
     this.bankRateGain = options.humanGains?.bankRate ?? HUMAN_BANK_RATE_GAIN;
     this.bankForward = options.humanGains?.forward ?? HUMAN_BANK_FORWARD;
+    this.predictive = this.newRider && options.humanGains === undefined;
+    this.predictor = new PredictiveController(options.balance?.weights ? { ...DEFAULT_WEIGHTS, ...options.balance.weights } : undefined, options.balance?.turn ?? 'linear');
+    this.leanPace = options.balance?.leanRate ?? REFERENCE_RATE;
+    this.rateSense = options.balance?.rateSense ?? 'canal';
+    this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
+    this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -2076,6 +2142,7 @@ export class AttachedRider {
       this.standingBody.reset();
       this.human.reset();
       this.yawCoupled = false;
+      this.resetBalance();
       this.pairFresh = true;
       this.swingLagged = 0;
       this.heldDepth = 0;
@@ -2494,6 +2561,7 @@ export class AttachedRider {
 
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
+    this.substep = h;
     this.advancePhase(h, board, water);
     this.duckStep(h);
     this.planingStep(board, water);
@@ -2566,6 +2634,7 @@ export class AttachedRider {
         this.standingBody.idle();
         this.human.reset();
         this.swingLagged = 0;
+        this.resetBalance();
       }
       this.twistStep(h);
       if (this.agile) this.legsStep(h, board);
@@ -2650,6 +2719,14 @@ export class AttachedRider {
     const asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+    if (this.predictive) {
+      // The new surfer's balance by prediction (step 3.2e): the lean the player asks (the steer, the hand) is its
+      // reference, eased as the bank's. The line held on its own (`holdLine`, a heading loop of the old rider's) is left
+      // out: as a reference it rang with the board's yaw and grew (docs/research/new-rider/3.2 Part 5).
+      const own = Math.max(-most, Math.min(most, this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK));
+      const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
+      this.leanAsked += Math.max(-this.leanPace * h, Math.min(this.leanPace * h, towardOwn));
+    }
     if (this.freeBody) {
       this.humanBank(h, roll, rail, rollRate);
       return;
@@ -2689,6 +2766,10 @@ export class AttachedRider {
    * form; with no gain on the bank's angle it never acts.
    */
   private humanBank(h: number, roll: number, rail: number, rollRate: number): void {
+    if (this.predictive) {
+      this.predictiveBank(h, roll, rail, rollRate);
+      return;
+    }
     const human = this.human;
     const relative = this.bankSpeed / this.legLength;
     human.sense(h, this.bank.angle);
@@ -2709,6 +2790,63 @@ export class AttachedRider {
     this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean);
     this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
+  }
+
+  /**
+   * The new surfer standing free (step 3.2e, the advisor's ruling 29i): balance by prediction (`PredictiveController`,
+   * 3.2d's design). On its own clock (CONTROL_STEP of simulated time, whatever the frame or the substeps), the controller
+   * takes the senses (the body's own bank and its rate, the head's yaw rate, the twist and its rate, the ankle's own angle
+   * and rate; they reach it BALANCE_DELAY late, never the slip), the board's speed through the water and the leg's depth,
+   * and the bank and twist asked for, and sends two commands held until its next tick: the ankle's rest and the twist's
+   * torque. Its signs are the model's (x forward, y right): every angle and moment here is the other way.
+   * - The ankle as 3.2's: the rest within the feet's reach and the rail's bite, through the motor lag; the passive spring
+   *   and damper implicit in the solve. The hip across takes what the command asks past HIP_SHARE of the reach.
+   * - The twist's torque through the motor lag (`twistBody.active`), within the hips' strength and the feet's grip.
+   */
+  private predictiveBank(h: number, roll: number, rail: number, rollRate: number): void {
+    const human = this.human;
+    const relative = this.bankSpeed / this.legLength;
+    human.sense(h, this.bank.angle);
+    this.bank.rate = human.bankRate;
+    const tb = this.twistBody;
+    if (this.controlDue <= 1e-9) {
+      this.controlDue += CONTROL_STEP;
+      const turn = this.up.dot(this.boardSpin);
+      const upper = tb.coupled ? tb.upper : turn + tb.rate;
+      const sense = this.senseScratch;
+      sense[0] = -this.bank.angle;
+      // The bank's rate as the canals sense it: the body's own angular rate (its rate on the board and the board's roll rate).
+      sense[1] = this.rateSense === 'difference' ? -this.bank.rate : -(relative + rollRate);
+      sense[2] = -upper;
+      sense[3] = -tb.angle;
+      sense[4] = -(upper - turn);
+      sense[5] = -(this.bank.angle - roll);
+      sense[6] = -relative;
+      const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
+      const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
+      const grip = FOOT_FRICTION * Math.max(0, this.legLoad) * TWIST_GRIP_SPAN;
+      // The ankle's command is let past the feet's reach (the hip takes the rest); the predictor is fed what the ankle sent.
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: ANKLE_REST_RANGE, twist: Math.min(TWIST_BODY_TORQUE, grip) });
+      this.heldAnkleRaw = -this.predictor.raw[0];
+      this.heldTwist = -u[1];
+    }
+    this.controlDue -= h;
+    const wanted = this.heldAnkleRaw;
+    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    const lean = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const leanSide = Math.sign(this.bankReference);
+    this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
+    // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
+    const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
+    this.ankleRest = human.lagRest(h, lean);
+    this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
+    tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));
+  }
+
+  /** The new surfer's leg depth below the riding stance, m, as the posture holds it (the yaw inertia's split and the balance's schedule). */
+  private get yawDepth(): number {
+    return Math.max(0, -this.leg.rest);
   }
 
   /**
@@ -2788,6 +2926,13 @@ export class AttachedRider {
     if (!(snap > 0)) this.snapHeld = false;
     const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE
       : snap > 0 ? snap * this.snapAim() : 0;
+    // The new surfer standing free (step 3.2e): the twist is a body degree of freedom balanced by prediction; what is
+    // asked for is its reference (`predictiveBank`), and the old rotor rests.
+    if (this.freeBody) {
+      this.twistAsked = Math.max(-TWIST_BODY_RANGE, Math.min(TWIST_BODY_RANGE, asked));
+      this.twistTorque = 0;
+      return;
+    }
     const most = Math.min(TWIST_TORQUE, FOOT_FRICTION * this.legLoad * TWIST_GRIP_RADIUS);
     // Snap held, the shoulders turn as fast as the hips and the feet's grip take them (SNAP_TWIST_FREQUENCY).
     const frequency = this.quick && snap > 0 ? TWIST_FREQUENCY + snap * (SNAP_TWIST_FREQUENCY - TWIST_FREQUENCY) : TWIST_FREQUENCY;
@@ -2839,6 +2984,8 @@ export class AttachedRider {
     this.assistForce.set(0, 0, 0);
     this.carryForce.set(0, 0, 0);
     this.leanOutForce.set(0, 0, 0);
+    // The new surfer (ruling 29, item 3): none of the three; they act on the body with no reaction on the board.
+    if (this.newRider) return;
     // Compress keeps its pumping-stance activation; a deeper manual tuck does not disable a pressed turn control.
     const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouchAsked));
     const compress = Math.max(0, Math.min(1, this.compressAsked));
@@ -2911,6 +3058,7 @@ export class AttachedRider {
     this.twist.angle = 0;
     this.twist.rate = 0;
     this.twistTorque = 0;
+    this.resetTwistBody();
     this.hip.angle = 0;
     this.hip.rate = 0;
     this.trunk.angle = 0;
@@ -2921,6 +3069,28 @@ export class AttachedRider {
     this.limbTorque.set(0, 0, 0);
     this.limbs.length = 0;
   }
+  /** The new surfer's twist body (step 3.2e): back square with the board, at rest. */
+  private resetTwistBody(): void {
+    const tb = this.twistBody;
+    tb.angle = 0;
+    tb.rate = 0;
+    tb.upper = 0;
+    tb.active = 0;
+    tb.torque = 0;
+    tb.coupled = false;
+  }
+
+  /** The new surfer's balance by prediction (step 3.2e): nothing sensed, nothing sent, the clock to tick at once. */
+  private resetBalance(): void {
+    this.predictor.reset();
+    this.controlDue = 0;
+    this.heldAnkleRaw = 0;
+    this.heldTwist = 0;
+    this.twistAsked = 0;
+    this.leanAsked = 0;
+    this.resetTwistBody();
+  }
+
 
   /** Agile, a launch running (`stampStep`'s clock): 1 while the tail is thrown, 0 in the recovery and otherwise. */
   private get launching(): number {
@@ -3453,36 +3623,60 @@ export class AttachedRider {
   }
 
   /**
-   * The new surfer standing free (step 3.2b, the advisor's ruling 29f): the body's own yaw inertia turns with the board
-   * through the planted feet. The point mass carries the body's translation; its spin about its long axis (`up`, the
-   * leg line) has the whole body's inertia (`riderYawInertia`: the stance's depth and the arms out), held rigid to the
-   * board's turn about that axis while the feet are on the deck. In the board's 6 × 6 rows (so the standing solve and the
-   * solves apart both carry it): I_r n nᵀ on the rotation, and on the right-hand side the body's own spin's momentum,
-   * −I_r n (n·ω − Ω). An inertia only, no force: it changes how fast the board answers a moment (the feet's centre of
-   * pressure steering it), not where it goes. The twist and hip rotors stay the body's internal yaw (as before, the
-   * trunk's share overlaps the twist rotor's, provisional). In flight the body keeps its spin; back on the deck the
-   * coupling starts from the board's own turn (no impulse).
+   * The new surfer standing free: the rider's own yaw inertia turns with the board through the planted feet (step 3.2b,
+   * the advisor's ruling 29f), now split (step 3.2e, ruling 29i). The point mass carries the body's translation; about its
+   * long axis (`up`, the leg line):
+   * - the board's share (`stanceAt`'s `lower`: the feet, shanks and knees) is held rigid to the board's turn while the feet
+   *   are on the deck: I_L n nᵀ on the rotation and its own spin's momentum on the right-hand side, as 3.2b's whole was;
+   * - the upper body's share (`upper`, and TWIST_BODY_ARMS with the arms out) turns on the legs' twist θ_t (the upper body's
+   *   yaw less the board's), which puts τ_b = τ_a + k θ_t + c θ̇_t on the board and −τ_b on the upper body (TWIST_STIFFNESS,
+   *   TWIST_DAMPING, the active torque τ_a; an end stop past TWIST_BODY_RANGE). Backward Euler over the substep, the upper
+   *   body's spin eliminated: with α = h (k h + c), the board meets β n nᵀ, β = I_U α / (I_U + α), and on the right-hand
+   *   side n [β (ω_u − Ω) + I_U / (I_U + α) h (τ_a + k θ_t)], Ω its own turn now. `finish` moves the twist on.
+   * So the standing solve and the solves apart all carry it; no force but the legs' with its reaction. In flight the
+   * lower body keeps its spin and the twist its angle and rate; back on the deck the coupling starts from the board's own
+   * turn (no impulse).
    */
   coupleYaw(system: Float64Array, rhs: Float64Array, board: BoardBody): void {
     const active = this.freeBody && this.inContact && this.yawScale > 0;
+    const tb = this.twistBody;
     if (!active) {
       this.yawCoupled = false;
       this.yawInertia = 0;
+      tb.coupled = false;
       return;
     }
     const n = this.up;
     const w = board.angularVelocity;
     const turn = n.x * w.x + n.y * w.y + n.z * w.z;
     if (!this.yawCoupled) this.yawSpin = turn;
-    const depth = Math.max(0, -this.leg.rest);
-    const inertia = this.yawScale * riderYawInertia(depth, this.human.arms);
+    const stance = stanceAt(this.yawDepth);
+    const lower = this.yawScale * stance.lower;
+    const upper = this.yawScale * (stance.upper + TWIST_BODY_ARMS * Math.max(0, Math.min(1, this.human.arms)));
+    if (!tb.coupled) tb.upper = turn + tb.rate;
+    const h = this.substep;
+    const over = Math.abs(tb.angle) - TWIST_BODY_RANGE;
+    const stiffness = this.twistStiffness + (over > 0 ? TWIST_STOP : 0);
+    const damping = this.twistDamping + (over > 0 ? TWIST_STOP_DAMPING : 0);
+    const alpha = h * (stiffness * h + damping);
+    const beta = (upper * alpha) / (upper + alpha);
+    const gain = upper / (upper + alpha);
+    tb.inertia = upper;
+    tb.alpha = alpha;
+    tb.beta = beta;
+    tb.gain = gain;
+    tb.turn = turn;
+    tb.spring = tb.active + this.twistStiffness * tb.angle + (over > 0 ? TWIST_STOP * Math.sign(tb.angle) * over : 0);
+    const inertia = lower + beta;
     this.yawInertia = inertia;
+    const kick = lower * (this.yawSpin - turn) + beta * (tb.upper - turn) + gain * h * tb.spring;
     const nv = [n.x, n.y, n.z];
     for (let i = 0; i < 3; i += 1) {
       for (let j = 0; j < 3; j += 1) system[(3 + i) * 6 + 3 + j] += inertia * nv[i] * nv[j];
-      rhs[3 + i] -= inertia * nv[i] * (turn - this.yawSpin);
+      rhs[3 + i] += kick * nv[i];
     }
     this.yawCoupled = true;
+    tb.coupled = true;
   }
 
   /**
@@ -3702,6 +3896,12 @@ export class AttachedRider {
     const sz = ws.z + x[5] / 2;
     if (this.swingTorque !== 0) work -= h * this.swingTorque * (this.rollAxis.x * sx + this.rollAxis.y * sy + this.rollAxis.z * sz);
     if (this.twistTorque !== 0) work -= h * this.twistTorque * (this.up.x * sx + this.up.y * sy + this.up.z * sz);
+    // The new surfer's twist (step 3.2e): the legs' twist impulse on the board this substep, against the twist's rate.
+    const tb = this.twistBody;
+    if (tb.coupled && tb.inertia > 0) {
+      const impulse = tb.beta * (tb.upper - tb.turn - (this.up.x * x[3] + this.up.y * x[4] + this.up.z * x[5])) + tb.gain * h * tb.spring;
+      work += impulse * (this.up.x * sx + this.up.y * sy + this.up.z * sz - (tb.upper - impulse / (2 * tb.inertia)));
+    }
     // The new surfer's hip in pitch: its couple on the pair, about the pitch axis.
     const hip = this.freeBody ? this.standingBody.hip.torque : 0;
     if (hip !== 0) work -= h * hip * (this.across.x * sx + this.across.y * sy + this.across.z * sz);
@@ -3791,6 +3991,21 @@ export class AttachedRider {
   finish(h: number, board: BoardBody): void {
     // The new surfer standing free (`coupleYaw`): the body's spin turned with the board through the feet this substep.
     if (this.yawCoupled) this.yawSpin = this.up.dot(board.angularVelocity);
+    // The new surfer standing free (step 3.2e): the twist moved on with the board's turn after the solve (`coupleYaw`).
+    const tb = this.twistBody;
+    let twistWork = 0;
+    if (tb.coupled && tb.inertia > 0) {
+      const turned = this.up.dot(board.angularVelocity);
+      const before = tb.upper;
+      tb.upper = (tb.inertia * tb.upper - h * tb.spring + tb.alpha * turned) / (tb.inertia + tb.alpha);
+      tb.rate = tb.upper - turned;
+      tb.angle += h * tb.rate;
+      tb.torque = (tb.inertia * (before - tb.upper)) / h;
+      // The legs' twist work: on the board at its mean turn, on the upper body the other way at its mean spin.
+      twistWork = h * tb.torque * ((tb.turn + turned) / 2 - (before + tb.upper) / 2);
+      this.twist.angle = tb.angle;
+      this.twist.rate = tb.rate;
+    }
     // `legPower: 'cap'`: the contact's net work this substep, the leg drive's board share left out (`recordPower`).
     const ledger = this.windowed ? board.work.rider + this.work.contact : 0;
     let driveShare = 0;
@@ -3877,6 +4092,7 @@ export class AttachedRider {
     }
     this.work.contact += contact.dot(mean);
     board.work.rider -= contact.dot(boardBefore.add(boardAfter).multiplyScalar(0.5));
+    if (twistWork !== 0) this.work.contact += twistWork;
     if (this.windowed) this.recordPower(h, board.work.rider + this.work.contact - ledger - driveShare);
     this.stepImpulse.add(contact);
     // The new surfer: the body's own push through the feet (the soles' sense), for the pitch reference's slow trim.
