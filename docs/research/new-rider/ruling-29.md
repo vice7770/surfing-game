@@ -745,3 +745,78 @@ is worth finishing before it is used again.
    with the saved shove as the guard.
 5. Stop rule: two rounds. A model that still cannot predict the game is itself the finding, and the advisor takes it
    from there.
+
+---
+
+# Ruling 29p: the owner rode it, and the carve bar was the wrong bar (2026-11-13)
+
+Advisor: this session. The owner rode `?rider=new` in Canyon and reported:
+
+> "one point the surfer is much slower in everything, the surfer is no longer able to turn sharply. Even in compress and
+> snap the surfer barely turn and falls out of balance. Before the compress was able to turn sharply (not super sharply)
+> but enough to go thro the wave navigation. Now its too stiff barely turn in compress."
+
+## The advisor optimised a measure and lost the thing it stood for
+
+**`LEAN_IN_RATE` is 0.5 rad/s.** A 45° rail then takes **1.6 seconds**. The old rider sets the same rail at 5 rad/s,
+in **0.16 s**. The new rider is **ten times slower to start a turn**, and that is the whole of "too stiff, barely
+turns".
+
+Ruling 29j adopted 0.5 rad/s from a ladder: 0.5 gave held carves of 2.83 / 2.98 s, 1.0 gave 1.43 / 1.60, 1.4 failed,
+and the old rider's 5 gave 0.30 / 0.68. **The advisor read that as "0.5 is the rate the carve needs." It is not. It is
+the rate at which the held-carve bar is easiest to pass**, because a rider who leans slowly spends longer leaning. The
+bar measures how long a lean is held; the owner wants to know how fast the board comes round. Those are different
+things, and the rebuild has no bar for the second one at all.
+
+**So the carve numbers in ruling 29k are true and meaningless.** 2.85 s against the old rider's 1.93 s was bought by
+making the turn ten times slower to start.
+
+## The three complaints, each with its cause
+
+1. **"Barely turns, too stiff"** — `LEAN_IN_RATE` 0.5 rad/s, above.
+2. **"Falls out of balance" in Compress and Snap** — `SCHEDULE_RAIL_CAP` is **5°**. The balance's gains are designed
+   per rail angle, and the schedule is read no further than 5°. A real carve is 20–45°, so in every hard turn the
+   controller is using flat-water gains. 3.2f measured the plant out to 40° and found it changes sign past about 15°;
+   the rider is then being held by gains designed for a plant that no longer exists.
+3. **"Much slower in everything"** — `CARVE_CARRY` is off for the new rider, correctly, because it was a force with no
+   reaction. **Nothing replaced it.** The spec's manual pumping (step 3.5) is the replacement and has not been built.
+   Ruling 29k suspended the turn-pair bar for exactly this reason, and the owner has now felt the same thing from the
+   inside: the suspended bar was the owner's "wave navigation".
+
+## A gap in the sweeps, and it is cheap to close
+
+The lean-rate ladder was run at a rail cap of 5°. The rail-cap screen was run at a lean rate of 0.5 rad/s. **The two
+were never swept together.** A faster lean-in may fail only because the controller is blind past 5° of rail — which is
+exactly the condition a faster lean-in creates sooner. This is the first thing to try.
+
+## Decisions
+
+1. **The held-carve bar is demoted to a report.** It cannot be the carve's bar, because it rewards leaning slowly.
+2. **New bars, taken from the old rider, because the owner named it as the reference** ("before, Compress was able to
+   turn sharply enough"):
+   - the board's peak turn rate in Compress, and in the standing stance;
+   - the time from full stick to a 30° rail;
+   - the turn's radius at riding speed;
+   - the speed kept through a 90° direction change.
+   **Measure the old rider on all four first. Those numbers are the bars**, and the new rider must reach them, not a
+   number the advisor invents.
+3. **The turn-pair bar comes back**, renamed for what it is: the owner's wave navigation. It stays blocked on pumping,
+   and that blockage is now a priority rather than a note.
+4. **Priority changes.** Ruling 29o's step 3.2k (make the model predict the game) is held. **The owner rode it and
+   cannot turn; that comes first.**
+
+## Decision: step 3.2L, the turn (the same agent continues; effort xhigh)
+
+1. **Measure the old rider's four turn numbers.** They are the bars.
+2. **Sweep `LEAN_IN_RATE` against `SCHEDULE_RAIL_CAP` together**, as a grid, against those bars. Report the whole grid,
+   not the best corner.
+3. **Keep the guards:** the saved shove 138 / 155 / 170 N·s, Mode B on its bank bar, the chop no worse than 8 of 12,
+   N0 byte-identical.
+4. **If no corner of the grid reaches the old rider's turn rate without losing a guard**, that is the answer: the
+   controller cannot hold a fast rail set, and ruling 29o's model step becomes the blocker after all. Say so and hand
+   back rather than settling for a slower turn.
+5. **Then pumping** (the spec's step 3.5), which is the other half of what the owner felt.
+
+**And a standing instruction for every bar from here on:** a bar is a stand-in for something the owner wants. Before a
+number is adopted, say in one line what the owner would feel if that number improved. If the answer is "nothing", it is
+not a bar.
