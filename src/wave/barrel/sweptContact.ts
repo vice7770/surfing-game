@@ -37,6 +37,8 @@ const ORDINARY_QUERY_NORMALS = Symbol('ordinary query normals');
 const FACE_QUERY_ROWS = Symbol('face query rows');
 /** C2 step 3's contact (`SweptContact.forLoft`): over a loft built elsewhere (`LibraryLoft`), no library of its own. */
 const PROVIDED_LOFT = Symbol('provided loft');
+/** C2 step 3b: the seam mask a provided loft's crossing needs to answer (`SweptContact.maskRule`): whole. */
+export const MASK_ON = 0.999;
 
 /**
  * The contact's constants (the Padang Padang spec, Part B, PR 4):
@@ -250,6 +252,11 @@ export class SweptContact {
   private readonly nearest: boolean;
   /** Its rows' heights and normals are found as its queries need them (`forFaceWorker`, `forOrdinaryWorker`). */
   readonly rowsOnDemand: boolean;
+  /**
+   * C2 step 3b (`forLoft`): the loft answers only where its crossing's own seam mask is on (by its triangle's weights,
+   * at least `MASK_ON`); elsewhere the water's nodes answer, as they are drawn there. Off for the probes' drawn floor.
+   */
+  maskRule: boolean;
 
   constructor(
     library: ProfileLibrary | undefined, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS | typeof FACE_QUERY_ROWS | typeof PROVIDED_LOFT,
@@ -267,6 +274,7 @@ export class SweptContact {
     this.boundedC = library?.options.geometry === 'bounded-C';
     this.nearest = options.face?.contact === true;
     this.rowsOnDemand = internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS;
+    this.maskRule = internal === PROVIDED_LOFT;
   }
 
   /**
@@ -577,6 +585,22 @@ export class SweptContact {
     return this.strip(x, z) < 0 ? Number.NaN : this.ys[0];
   }
 
+  /** The loft's floor at (x, z) whatever its seam mask (a probe's drawn loft; `maskRule` set aside). */
+  floorAtUnmasked(x: number, z: number): number {
+    const rule = this.maskRule;
+    this.maskRule = false;
+    const floor = this.floorAt(x, z);
+    this.maskRule = rule;
+    return floor;
+  }
+
+  /** The seam mask at the lowest crossing, by its triangle's weights (`maskRule`). */
+  private floorMask(loft: LoftResult): number {
+    let mask = 0;
+    for (let m = 0; m < 3; m += 1) mask += this.weights[m] * loft.mask[this.at[m]];
+    return mask;
+  }
+
   /**
    * Answers-only ordinary guide: the nearest geometrically reachable mature mouth, preserving a preferred front
    * while one remains usable. The private loft never escapes; returned points/scalars belong to this generation.
@@ -714,6 +738,7 @@ export class SweptContact {
       // triangles' ties may take them: step a nanometre into the strip, along its tangent, so its own triangles do.
       const nudge = sideA === 0 ? NUDGE : 0;
       if (this.crossings(loft, s, x + nudge * loft.sliceRayZ[s], z - nudge * loft.sliceRayX[s]) > 0) {
+        if (this.maskRule && this.floorMask(loft) < MASK_ON) continue;
         this.sideA = sideA;
         this.sideB = sideB;
         this.found = k;

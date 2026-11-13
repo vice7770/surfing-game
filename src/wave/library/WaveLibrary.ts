@@ -147,8 +147,20 @@ function matchTable(p: CasePath): MatchTable {
  * The state matching alone, on the cases' paths (`CasePath`): which cases a slice blends, by how much, from which τ, and
  * at what scale. `WaveLibrary` holds one; a coverage study can build one from paths without frames.
  */
+/**
+ * C2 step 3b: the A0 polyline's segments share the weights where their gaps differ by less than this share of their
+ * length (`StateMatcher.match`); 0 keeps the nearest segment alone (step 3's rule).
+ */
+export const A0_SWITCH = 0.25;
+const smooth = (u: number) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+
 export class StateMatcher {
   readonly paths: readonly CasePath[];
+  /** The segments' shared band (`A0_SWITCH`; a probe may set 0 for step 3's nearest segment alone). */
+  a0Switch: number = A0_SWITCH;
+  private segU = new Float64Array(8);
+  private segGap = new Float64Array(8);
+  private segLength = new Float64Array(8);
   /** Per slope level (ascending), per reef depth (ascending), the cases' indices by A0 (ascending). */
   private readonly slopes: number[];
   private readonly reefs: number[][];
@@ -302,6 +314,13 @@ export class StateMatcher {
         let lo = 0;
         let w = 0;
         let wRaw = 0;
+        // Each segment's projection (its share u along it, its gap to the slice's point, its length).
+        const segments = Math.max(0, points.length - 1);
+        if (this.segU.length < segments) {
+          this.segU = new Float64Array(2 * segments);
+          this.segGap = new Float64Array(2 * segments);
+          this.segLength = new Float64Array(2 * segments);
+        }
         if (points.length === 1) {
           a0 = 'one';
         } else {
@@ -314,6 +333,9 @@ export class StateMatcher {
             const u = Math.min(1, Math.max(0, raw));
             const gx = ax + u * ex - hd, gy = ay + u * ey - yq;
             const gap = gx * gx + gy * gy;
+            this.segU[k] = u;
+            this.segGap[k] = Math.sqrt(gap);
+            this.segLength[k] = Math.sqrt(len);
             if (gap < best) {
               best = gap;
               lo = k;
@@ -330,6 +352,28 @@ export class StateMatcher {
         if (a0 === 'low') a0Low += ws * wr;
         if (a0 === 'high') a0High += ws * wr;
         const picks: Array<[number, number]> = points.length === 1 ? [[0, 1]] : [[lo, 1 - w], [lo + 1, w]];
+        if (points.length > 2 && this.a0Switch > 0) {
+          // C2 step 3b (ruling 32, point 2): the nearest segment alone can switch between neighbouring slices off the
+          // polyline (inside a bend both segments' projections are near), and the weights then jump. Every segment
+          // within `A0_SWITCH` of its length of the nearest one's gap shares in, by a smoothstep on the gap's excess, so
+          // the weights are continuous across the switch (the nearest alone wherever no other is that near).
+          picks.length = 0;
+          let total = 0;
+          const gapLo = this.segGap[lo];
+          for (let k = 0; k < segments; k += 1) {
+            const span = this.a0Switch * Math.min(this.segLength[k], this.segLength[lo]);
+            const b = k === lo ? 1 : span > 0 ? 1 - smooth((this.segGap[k] - gapLo) / span) : 0;
+            if (!(b > 0)) continue;
+            total += b;
+            picks.push([k, -b], [k + 1, -b]);
+          }
+          for (let m = 0; m < picks.length; m += 2) {
+            const k = picks[m][0];
+            const b = -picks[m][1] / total;
+            picks[m][1] = b * (1 - this.segU[k]);
+            picks[m + 1][1] = b * this.segU[k];
+          }
+        }
         for (const [k, wa] of picks) {
           const weight = ws * wr * wa;
           if (!(weight > 0)) continue;

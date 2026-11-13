@@ -27,12 +27,21 @@ export const LIFT = {
   margin: 2,
   ramp: 1,
   /**
-   * The seam mask stays whole `pad` m past the lift's ease (one node of the mask's grid: its texture reaches a node past
-   * the triangles that set it), then fades over `band` m, so wherever either mask is partial the loft lies on the water.
+   * The seam mask stays whole `pad` m past the lift's ease (step 3b, ruling 32 point 6: two nodes of the mask's grid, as
+   * its texture reaches a node past the triangles that set it), then fades over `band` m, so wherever either mask is
+   * partial the loft lies on the water.
    */
-  pad: 1,
+  pad: 2,
   band: 1,
-  /** A thrown tube's collapse for the lip's foam, s (the old loft's √(2W/g) scale; drawing only, provisional). */
+  /**
+   * Step 3b (ruling 32, point 4): along the crest a run's lift tapers to 0 over this many metres from each of its ends and
+   * from any lane in it with no lift (as the old loft's `endBlend` does; a few metres, not one lane; provisional).
+   */
+  taper: 3,
+  /**
+   * A thrown tube's collapse, s (the old loft's √(2W/g) scale, provisional): the lip's foam draws over it, and from step
+   * 3b (ruling 32, point 7) the loft lets go of the tube over it after touchdown; the bore is then the nodes'.
+   */
   collapse: 0.6,
 } as const;
 
@@ -84,6 +93,31 @@ export function maskAlong(s: number, from: number, to: number): number {
   const off = s < from - reach ? from - reach - s : s > to + reach ? s - to - reach : 0;
   return 1 - smoothstep(off / LIFT.band);
 }
+
+/**
+ * A pad record's source (`LibraryLoft.build`): the nearest record of its run (`CURVE.wave`) within `PAD_SOURCE` lanes
+ * that lifts; −1 with none. The zone writes a run's records in lane order, so they lie next to it.
+ */
+function padSource(curves: Float32Array, count: number, c: number): number {
+  const o = c * CURVE_STRIDE;
+  const wave = curves[o + CURVE.wave];
+  const lane = curves[o + CURVE.lane];
+  let best = -1;
+  let gap = Infinity;
+  for (let d = 1; d <= 2 * PAD_SOURCE; d += 1) {
+    for (const k of [c - d, c + d]) {
+      if (k < 0 || k >= count) continue;
+      const r = k * CURVE_STRIDE;
+      if (curves[r + CURVE.wave] !== wave || !(curves[r + CURVE.lift] > 0)) continue;
+      const g = Math.abs(curves[r + CURVE.lane] - lane);
+      if (g <= PAD_SOURCE && g < gap) { gap = g; best = k; }
+    }
+  }
+  return best;
+}
+
+/** How far a pad looks for its run's lifted lane, lanes (the zone's `PAD_LANES`). */
+const PAD_SOURCE = 3;
 
 /** Builds the overturn's loft from the zone's curves over the water at `heightAt`; `drawing` adds the lip's sheet and the throat. */
 export class LibraryLoft {
@@ -139,9 +173,17 @@ export class LibraryLoft {
           lipThickness /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
         }
       }
+      // Step 3b: a pad (no lift) takes its places along its lane from its run's nearest lifted lane, across the rays, so
+      // its quads to that lane stay square: its own points stand at its own clock, metres apart along the lane from the
+      // lifted neighbour's where the two stand in other phases, and flat triangles between them leave the water.
+      const source = lift > 0 ? -1 : padSource(curves, count, c);
+      const q = source < 0 ? p : source * CURVE_STRIDE + CURVE.points;
+      const qo = source < 0 ? o : source * CURVE_STRIDE;
+      const qbx = curves[qo + CURVE.baseX], qbz = curves[qo + CURVE.baseZ], qrx = curves[qo + CURVE.rayX], qrz = curves[qo + CURVE.rayZ];
       for (let j = 0; j < S; j += 1) {
         const i = j - E;
-        const s = i < 0 ? curves[p] + i * EXTENSION_STEP : i >= PROFILE_POINTS ? curves[p + 2 * (PROFILE_POINTS - 1)] + (i - PROFILE_POINTS + 1) * EXTENSION_STEP : curves[p + 2 * i];
+        const own = i < 0 ? curves[q] + i * EXTENSION_STEP : i >= PROFILE_POINTS ? curves[q + 2 * (PROFILE_POINTS - 1)] + (i - PROFILE_POINTS + 1) * EXTENSION_STEP : curves[q + 2 * i];
+        const s = source < 0 ? own : (qbx + own * qrx - bx) * rx + (qbz + own * qrz - bz) * rz;
         const x = bx + s * rx;
         const z = bz + s * rz;
         const water = heightAt(x, z);

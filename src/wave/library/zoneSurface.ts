@@ -35,15 +35,38 @@ export const FOAM_HOLD = 0.5;
 export const RUN_GAP = 0.25;
 
 /**
- * A lifted run of the loft goes on this many lanes past its last lifted one, unlifted (on the water): the first keeps the
- * seam mask whole, the last fades it, so where the mask is partial the loft lies on the water (`LIFT.pad`'s rule across).
+ * A lifted run of the loft goes on this many lanes past its last lifted one, unlifted (on the water): all but the last
+ * keep the seam mask whole, the last fades it, so where the mask is partial the loft lies on the water (`LIFT.pad`'s
+ * rule across). Step 3b (ruling 32, point 6): two whole lanes before the fading one (step 3 had one); the mask's texture
+ * reaches a node (1 m) past the triangles that set it, and the lanes are 0.5–1 m apart.
  */
-export const PAD_LANES = 2;
+export const PAD_LANES = 3;
 
 /** The sea's crest is looked for where it was, carried on at this pace, m/s (a crest's on the pool's face). */
 const SEA_CREST_PACE = 6;
 
 const smoothstep = (u: number) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+
+/** One shown slice this step: its composite's offset, its course to the loft's lift, its run and its lane's span. */
+interface Picked {
+  slice: FieldSlice;
+  at: number;
+  /** The steepest segment, °, and whether the curve folds over. */
+  steepest: number;
+  overturned: boolean;
+  /** Its tube's collapse after touchdown, 0–1 (`LIFT.collapse`): the loft lets go of it, the nodes bridge it. */
+  collapse: number;
+  /** Its raw lift (course × the field's end × the collapse's), its run, its taper along the run, and the loft's lift. */
+  raw: number;
+  chain: number;
+  taper: number;
+  lift: number;
+  /** The bridge's weight in the nodes (`ZoneSurface.lane`): the lift, and 1 once the tube has collapsed. */
+  bridge: number;
+  /** The lifted span along its lane, m (from the lane's pass). */
+  from: number;
+  to: number;
+}
 
 /** The render grid the nodes are on (the snapshot's): its first node, spacing and counts. */
 export interface NodeGrid { xMin: number; zMin: number; spacing: number; nx: number; nz: number }
@@ -78,11 +101,12 @@ export class ZoneSurface {
   private readonly sea: Float64Array;
   /** Per live slice this step, its composite (lane order kept), and what its loft needs. */
   private composites: Float64Array;
-  private readonly picked: { slice: FieldSlice; at: number; lift: number; from: number; to: number; overturned: boolean }[] = [];
+  private readonly picked: Picked[] = [];
   /** Scratch for one slice's stations: how often reached, whether steep, and the heights. */
   private hits = new Uint8Array(256);
   private steep = new Uint8Array(256);
   private heights = new Float64Array(256);
+  private lows = new Float64Array(256);
   /** A step's diagnostics (the bars' probe reads them). */
   readonly stats = { slices: 0, shown: 0, lofted: 0, bridged: 0, nodes: 0, seaMissed: 0, steepest: 0 };
 
@@ -249,15 +273,106 @@ export class ZoneSurface {
       }
       const at = 2 * WAVE_POINTS * index;
       this.composite(slice, time, a, sea, at);
-      const shape = this.lane(slice, time, at);
+      const shape = this.shape(at);
       if (!shape) continue;
-      stats.shown += 1;
-      if (shape.lift > 0) stats.lofted += 1;
-      this.picked.push({ slice, at, ...shape });
+      // Step 3b (ruling 32, point 7): the loft lifts the tube only, to its touchdown and over its collapse after.
+      const collapse = smoothstep((time - slice.throwAt - slice.touchdown) / LIFT.collapse);
+      const raw = smoothstep((shape.steepest - LIFT.on) / (LIFT.full - LIFT.on)) * slice.end * (1 - collapse);
+      this.picked.push({ slice, at, ...shape, collapse, raw, chain: 0, taper: 0, lift: 0, bridge: 0, from: 0, to: 0 });
       index += 1;
+    }
+    this.chainRuns();
+    for (const p of this.picked) {
+      const span = this.lane(p.slice, time, p.at, p.bridge);
+      p.from = span.from;
+      p.to = span.to;
+      stats.shown += 1;
+      if (p.lift > 0) stats.lofted += 1;
     }
     this.writeNodes();
     this.writeCurves(time);
+  }
+
+  /** A slice's composite's steepest segment, °, and whether it folds over; nothing where it spans too few stations. */
+  private shape(at: number): { steepest: number; overturned: boolean } | undefined {
+    const c = this.composites;
+    const back = c[at];
+    const front = c[at + 2 * (WAVE_POINTS - 1)];
+    if (!(front > back)) return undefined;
+    const j0 = Math.max(0, Math.ceil(back / LANE.step));
+    const j1 = Math.min(this.lanes.stations - 1, Math.floor(front / LANE.step));
+    if (j1 - j0 < 4) return undefined;
+    let steepest = 0;
+    let overturned = false;
+    for (let i = 0; i + 1 < WAVE_POINTS; i += 1) {
+      const run = c[at + 2 * i + 2] - c[at + 2 * i];
+      const rise = Math.abs(c[at + 2 * i + 3] - c[at + 2 * i + 1]);
+      const folded = run < -1e-4;
+      if (folded) overturned = true;
+      if (!(folded || Math.sqrt(run * run + rise * rise) > 0.02)) continue;
+      const angle = folded ? 90 : run > 1e-6 ? (Math.atan(rise / run) * 180) / Math.PI : rise > 1e-4 ? 90 : 0;
+      if (angle > steepest) steepest = angle;
+    }
+    if (steepest > this.stats.steepest) this.stats.steepest = steepest;
+    return { steepest, overturned };
+  }
+
+  /**
+   * The loft's runs and each slice's lift. Slices are chained lane to lane by their hand-over times (the next lane's
+   * nearest within `RUN_GAP` of a period), and a chain is one run of the loft. Step 3b (ruling 32, point 4): along a run
+   * the lift tapers to 0 over `LIFT.taper` m of crest from each lane with no raw lift and from the run's two ends (the old
+   * loft's `endBlend`), not over one lane. Point 3: the nodes take the bridge under the curve by the same lift, and
+   * wholly once the tube has collapsed (the bore's small folds bridged, drawn and felt by the nodes).
+   */
+  private chainRuns(): void {
+    const picked = this.picked;
+    const n = picked.length;
+    const period = this.field.period;
+    const { sigma } = this.lanes;
+    const order = picked.map((_, i) => i).sort((a, b) => picked[a].slice.lane - picked[b].slice.lane || picked[a].slice.tH - picked[b].slice.tH);
+    const linked = new Uint8Array(n);
+    const byLane = new Map<number, number[]>();
+    let chains = 0;
+    for (const i of order) {
+      const p = picked[i].slice;
+      let best = -1;
+      let gap = RUN_GAP * period;
+      for (const q of byLane.get(p.lane - 1) ?? []) {
+        if (linked[q]) continue;
+        const d = Math.abs(picked[q].slice.tH - p.tH);
+        if (d < gap) { gap = d; best = q; }
+      }
+      if (best >= 0) {
+        picked[i].chain = picked[best].chain;
+        linked[best] = 1;
+      } else picked[i].chain = chains++;
+      const list = byLane.get(p.lane) ?? [];
+      list.push(i);
+      byLane.set(p.lane, list);
+    }
+    order.sort((a, b) => picked[a].chain - picked[b].chain || picked[a].slice.lane - picked[b].slice.lane);
+    for (let a = 0; a < order.length;) {
+      let b = a;
+      while (b + 1 < order.length && picked[order[b + 1]].chain === picked[order[a]].chain) b += 1;
+      // The run's bounds: its pads' lanes at each end (`PAD_LANES` of its own lanes stay on the water, so it always ends on
+      // its pads), and every lane in it with no raw lift.
+      const before = sigma[picked[order[Math.min(b, a + PAD_LANES - 1)]].slice.lane];
+      const after = sigma[picked[order[Math.max(a, b - PAD_LANES + 1)]].slice.lane];
+      for (let m = a; m <= b; m += 1) {
+        const p = picked[order[m]];
+        if (!(p.raw > 0)) { p.taper = 0; continue; }
+        const at = sigma[p.slice.lane];
+        let d = Math.min(at - before, after - at);
+        for (let q = m - 1; q >= a && at - sigma[picked[order[q]].slice.lane] < d; q -= 1) if (!(picked[order[q]].raw > 0)) { d = at - sigma[picked[order[q]].slice.lane]; break; }
+        for (let q = m + 1; q <= b && sigma[picked[order[q]].slice.lane] - at < d; q += 1) if (!(picked[order[q]].raw > 0)) { d = sigma[picked[order[q]].slice.lane] - at; break; }
+        p.taper = smoothstep(d / LIFT.taper);
+      }
+      a = b + 1;
+    }
+    for (const p of picked) {
+      p.lift = p.raw * p.taper;
+      p.bridge = p.lift + p.collapse * (1 - p.lift);
+    }
   }
 
   /** One slice's blended curve at `time` s into `composites` from `at`: (s along its lane, y over still water) per point. */
@@ -355,7 +470,7 @@ export class ZoneSurface {
    * steeper than `LIFT.bridge`), its weight, its foam hold. Returns what its loft needs (the lift's course and its span
    * along the lane), or nothing.
    */
-  private lane(slice: FieldSlice, time: number, at: number): { lift: number; from: number; to: number; overturned: boolean } | undefined {
+  private lane(slice: FieldSlice, time: number, at: number, bridgeWeight: number): { from: number; to: number } {
     const { lanes } = this;
     const k = slice.lane;
     const c = this.composites;
@@ -363,29 +478,28 @@ export class ZoneSurface {
     const ds = LANE.step;
     const back = c[at];
     const front = c[at + 2 * (WAVE_POINTS - 1)];
-    if (!(front > back)) return undefined;
     const j0 = Math.max(0, Math.ceil(back / ds));
     const j1 = Math.min(st - 1, Math.floor(front / ds));
-    if (j1 - j0 < 4) return undefined;
     const count = j1 - j0 + 1;
     if (this.hits.length < count) {
       this.hits = new Uint8Array(2 * count);
       this.steep = new Uint8Array(2 * count);
       this.heights = new Float64Array(2 * count);
+      this.lows = new Float64Array(2 * count);
     }
     const hits = this.hits;
     const steep = this.steep;
     const hs = this.heights;
+    const lows = this.lows;
     hits.fill(0, 0, count);
     steep.fill(0, 0, count);
+    lows.fill(Infinity, 0, count);
     // Steepness and folds, segment by segment; each monotone segment's height on its stations (a station reached
     // twice is under a fold).
     const tanOn = Math.tan((LIFT.on * Math.PI) / 180);
     const tanBridge = Math.tan((LIFT.bridge * Math.PI) / 180);
-    let steepest = 0;
     let liftFrom = Infinity;
     let liftTo = -Infinity;
-    let overturned = false;
     for (let i = 0; i + 1 < WAVE_POINTS; i += 1) {
       const s0 = c[at + 2 * i];
       const s1 = c[at + 2 * i + 2];
@@ -394,15 +508,17 @@ export class ZoneSurface {
       const run = s1 - s0;
       const rise = Math.abs(y1 - y0);
       const folded = run < -1e-4;
-      if (folded) overturned = true;
       const long = Math.sqrt(run * run + rise * rise) > 0.02;
       const slope = folded ? Infinity : run > 1e-6 ? rise / run : rise > 1e-4 ? Infinity : 0;
-      if (long || folded) {
-        const angle = slope === Infinity ? 90 : (Math.atan(slope) * 180) / Math.PI;
-        if (angle > steepest) steepest = angle;
-      }
       const lo = Math.min(s0, s1);
       const hi = Math.max(s0, s1);
+      // The curve's lowest crossing over each station (folded segments too): the nodes' own curve where the lift is small.
+      if (hi - lo > 1e-9) {
+        for (let j = Math.max(j0, Math.ceil(lo / ds)); j <= Math.min(j1, Math.floor(hi / ds)); j += 1) {
+          const y = y0 + ((j * ds - s0) / (s1 - s0)) * (y1 - y0);
+          if (y < lows[j - j0]) lows[j - j0] = y;
+        }
+      }
       if ((long || folded) && slope > tanOn) {
         liftFrom = Math.min(liftFrom, lo);
         liftTo = Math.max(liftTo, hi);
@@ -419,7 +535,6 @@ export class ZoneSurface {
         if (hits[j - j0] < 2) hits[j - j0] += 1;
       }
     }
-    if (steepest > this.stats.steepest) this.stats.steepest = steepest;
     // The bridges: every run of stations under a fold, unreached, or steep, widened to gentler ground (`LIFT.gentle`,
     // at most `LIFT.reach` m each side), a cubic Hermite from the heights and slopes at its two ends. At a frame's end
     // the run holds the end's height.
@@ -460,8 +575,17 @@ export class ZoneSurface {
       liftTo = Math.max(liftTo, Math.min(j1, jb) * ds);
       j = rb;
     }
-    if (bridged) this.stats.bridged += 1;
-    const lift = smoothstep((steepest - LIFT.on) / (LIFT.full - LIFT.on)) * slice.end;
+    if (bridged) {
+      this.stats.bridged += 1;
+      // Step 3b (ruling 32, point 3): the bridge comes in by its weight (the loft's lift, then the collapse), so a slice
+      // with a small lift keeps its nodes on its own curve (its lowest crossing), and the loft over them with it.
+      if (bridgeWeight < 1) {
+        for (let j = j0; j <= j1; j += 1) {
+          const low = lows[j - j0];
+          if (low < Infinity) hs[j - j0] = bridgeWeight * hs[j - j0] + (1 - bridgeWeight) * low;
+        }
+      }
+    }
     // Weight: the frame's ends and the field's ends; the foam's hold until the touchdown.
     const o = k * st;
     const touchdownAt = slice.throwAt + slice.touchdown;
@@ -488,8 +612,8 @@ export class ZoneSurface {
       this.laneLo[k] = Math.min(this.laneLo[k], j0);
       this.laneHi[k] = Math.max(this.laneHi[k], j1);
     }
-    if (!(lift > 0) || !(liftTo >= liftFrom)) return { lift: 0, from: 0, to: 0, overturned };
-    return { lift, from: liftFrom - LIFT.margin, to: liftTo + LIFT.margin, overturned };
+    if (!(liftTo >= liftFrom)) return { from: 0, to: 0 };
+    return { from: liftFrom - LIFT.margin, to: liftTo + LIFT.margin };
   }
 
   /** Each footprint node from its two lanes: A, B and the foam hold. */
@@ -555,29 +679,8 @@ export class ZoneSurface {
   private writeCurves(time: number): void {
     const picked = this.picked;
     const n = picked.length;
-    const period = this.field.period;
-    const order = picked.map((_, i) => i).sort((a, b) => picked[a].slice.lane - picked[b].slice.lane || picked[a].slice.tH - picked[b].slice.tH);
-    const chain = new Int32Array(n);
-    const linked = new Uint8Array(n);
-    const byLane = new Map<number, number[]>();
-    let chains = 0;
-    for (const i of order) {
-      const p = picked[i].slice;
-      let best = -1;
-      let gap = RUN_GAP * period;
-      for (const q of byLane.get(p.lane - 1) ?? []) {
-        if (linked[q]) continue;
-        const d = Math.abs(picked[q].slice.tH - p.tH);
-        if (d < gap) { gap = d; best = q; }
-      }
-      if (best >= 0) {
-        chain[i] = chain[best];
-        linked[best] = 1;
-      } else chain[i] = chains++;
-      const list = byLane.get(p.lane) ?? [];
-      list.push(i);
-      byLane.set(p.lane, list);
-    }
+    const order = picked.map((_, i) => i);
+    const chain = picked.map((p) => p.chain);
     // Each run's lifted lanes and their spans: a lifted slice's neighbours (the pads) take the span of the lifted ones beside.
     const lifted = new Map<string, { from: number; to: number }>();
     for (let i = 0; i < n; i += 1) if (picked[i].lift > 0) lifted.set(`${chain[i]}:${picked[i].slice.lane}`, { from: picked[i].from, to: picked[i].to });

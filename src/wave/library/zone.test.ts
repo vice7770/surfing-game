@@ -5,7 +5,7 @@ import { LOFT_SAMPLES } from '../barrel/sweptLoft';
 import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
 import { decodeSurfZoneState, encodeSurfZoneState, type SurfZoneState } from '../surfZoneState';
 import { PATH, PATH_COLUMNS, WAVE_POINTS, gameCase, type WaveCase, type WaveCaseHeader } from './caseFormat';
-import { buildLanes, fitLine, laneSlope, LANE, type RawHandover } from './Handover';
+import { buildLanes, fitLine, laneSlope, LANE, outlierRaws, type RawHandover } from './Handover';
 import { CURVE, CURVE_STRIDE, LibraryLoft } from './libraryLoft';
 import { MeanLevel } from './meanLevel';
 import { SliceField } from './SliceField';
@@ -81,6 +81,19 @@ describe('the hand-over (ruling 31)', () => {
     const t = fitLine(raws, lanes, 8, LANE.clockRadius, (r) => r.t);
     expect(t).toBeLessThanOrEqual(10.6 + 1e-12);
     expect(t).toBeGreaterThanOrEqual(10);
+  });
+
+  it('drops a raw far off its wave (a small bump ahead of the crest), and keeps the rest (step 3b)', () => {
+    const lanes = buildLanes(reefDepth, 0, -50, -10, 10, 5);
+    const raws: RawHandover[] = [];
+    for (let k = 4; k < 30; k += 1) raws.push({ lane: k, t: 10 + 0.1 * k, past: 1, height: 0.8, H: 1.2 + 0.01 * k, sinceToe: 0, atToe: true });
+    // Lanes 14–16 took a bump 5 m ahead, a quarter of the height; lane 20's crest stands 4 m off its neighbours' line.
+    for (const k of [14, 15, 16]) Object.assign(raws[k - 4], { past: 6, H: 0.3 });
+    raws[20 - 4].past = 5;
+    const off = outlierRaws(raws, lanes, () => true);
+    expect([...off].map((r) => r.lane).sort((a, b) => a - b)).toEqual([14, 15, 16, 20]);
+    // A raw with too few neighbours yet is not judged.
+    expect(outlierRaws(raws.slice(10, 13), lanes, () => true).size).toBe(0);
   });
 
   it('lays straight lanes over a straight reef: along its slope, never crossing, its toe and throw on the contours', () => {
@@ -177,6 +190,36 @@ describe("the overturn's loft (LibraryLoft)", () => {
     expect(hit.surfaceY).toBeCloseTo(1, 6);
     expect(contact.floorAt(5.2, 6)).toBeCloseTo(1, 6);
     expect(contact.query(5.2, 0.5, 40, hit)).toBe(false);
+  });
+
+  it('answers only where its seam mask is whole; the water answers elsewhere (step 3b)', () => {
+    const curves = new Float32Array(3 * CURVE_STRIDE);
+    record(curves, 0, 10, () => 1, 1, 0, 12.7);
+    record(curves, 1, 11, () => 1, 1, 0, 12.7);
+    record(curves, 2, 12, () => 1, 0, 0, 12.7);
+    const loft = new LibraryLoft(10);
+    loft.build(curves, 3, () => 0);
+    const contact = SweptContact.forLoft(() => loft.result);
+    contact.update(new Float32Array(0), 0, 0, () => 0);
+    // Between the two whole lanes: the loft. Between the whole and the fading lane: the water (nothing).
+    expect(contact.floorAt(5.2, 6)).toBeCloseTo(1, 6);
+    expect(contact.floorAt(5.7, 6)).toBeNaN();
+    expect(contact.query(5.7, 0.5, 6, createContactHit())).toBe(false);
+    // The drawn loft there (a probe's): its strip from the lifted lane down to the water, 0.4 of the way across.
+    expect(contact.floorAtUnmasked(5.7, 6)).toBeCloseTo(0.6, 6);
+  });
+
+  it("lays a pad's points across the rays from its run's lifted lane, not at its own clock (step 3b)", () => {
+    const curves = new Float32Array(2 * CURVE_STRIDE);
+    record(curves, 0, 10, () => 1, 1);
+    record(curves, 1, 11, () => 1, 0);
+    // The pad's own points stand 3 m further along (another phase).
+    for (let i = 0; i < WAVE_POINTS; i += 1) curves[CURVE_STRIDE + CURVE.points + 2 * i] += 3;
+    const loft = new LibraryLoft(10).build(curves, 2, () => 0.25);
+    for (const j of [0, 40, LOFT_SAMPLES - 1]) {
+      expect(loft.positions[3 * (LOFT_SAMPLES + j) + 2]).toBeCloseTo(loft.positions[3 * j + 2], 5);
+      expect(loft.positions[3 * (LOFT_SAMPLES + j) + 1]).toBe(0.25);
+    }
   });
 });
 

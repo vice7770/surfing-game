@@ -285,6 +285,15 @@ export interface FittedHandover {
   state: HandoverState;
 }
 
+/**
+ * C2 step 3b (ruling 32, point 1): raw hand-overs far off their wave's local line are dropped before the fit. The crest
+ * finder sometimes takes a small bump ahead of the wave's crest (one wave in step 3: lanes at H/d 0.11 between
+ * neighbours at 0.27–0.37, their crests 5 m ahead). Among a raw's neighbours of the same wave within `radius` m along
+ * the crest (at least `least` of them), it goes when its H is outside `low`–`high` times their weighted median, or its
+ * place past the toe is more than `past` m off their local line (the clock's biweight line, `fitLine`).
+ */
+export const OUTLIER = { radius: 16, least: 4, low: 0.6, high: 1.6, past: 2.5 } as const;
+
 /** The face distance over which the clock moves from the toe's to the H/d match's, m (the step 3 build's, provisional). */
 export const TOE_COURSE = 10;
 
@@ -299,7 +308,7 @@ export class HandoverTracker {
   private readonly lastFitted: Float64Array;
   private readonly eta: Float64Array;
   /** Raw moments read so far, and lanes fitted without their own (a diagnostic). */
-  readonly stats = { raws: 0, fitted: 0, borrowed: 0, atToe: 0 };
+  readonly stats = { raws: 0, fitted: 0, borrowed: 0, atToe: 0, rejected: 0 };
 
   constructor(readonly lanes: LaneField, readonly period: number) {
     this.tracks = Array.from({ length: lanes.count }, () => []);
@@ -448,6 +457,11 @@ export class HandoverTracker {
     const radius = LANE.clockRadius;
     const keys = LANE.keyRadius;
     const fresh = (r: RawHandover, k: number) => r.t - this.lastFitted[k] > LANE.newWave * period;
+    const off = outlierRaws(this.raws, lanes, (r) => fresh(r, r.lane));
+    if (off.size > 0) {
+      this.raws = this.raws.filter((r) => !off.has(r));
+      this.stats.rejected += off.size;
+    }
     for (let k = 0; k < lanes.count; k += 1) {
       let moment = Number.NaN;
       let own = false;
@@ -553,4 +567,49 @@ export function fitLine(raws: readonly RawHandover[], lanes: LaneField, k: numbe
   if (spread < 0.1) return mean;
   // Clamped to the window's own values: a one-sided window never extrapolates past them.
   return Math.min(high, Math.max(low, (s2 * t0 - s1 * t1) / (s0 * s2 - s1 * s1)));
+}
+
+/**
+ * The raws far off their wave's local line (`OUTLIER`): first by H against their neighbours' weighted median, then by
+ * their place past the toe against the line through the neighbours left. Only raws not yet fitted (`open`) are judged;
+ * one with too few neighbours yet stays (the tracker judges it again at its next fit, until it is fitted).
+ */
+export function outlierRaws(raws: readonly RawHandover[], lanes: LaneField, open: (r: RawHandover) => boolean): Set<RawHandover> {
+  const off = new Set<RawHandover>();
+  if (raws.length < OUTLIER.least + 1) return off;
+  const near = (r: RawHandover, list: readonly RawHandover[]) => list.filter((o) => o !== r && o.lane !== r.lane
+    && Math.abs(o.t - r.t) < LANE.sameWave && Math.abs(lanes.sigma[o.lane] - lanes.sigma[r.lane]) < OUTLIER.radius);
+  for (const r of raws) {
+    if (!open(r)) continue;
+    const others = near(r, raws);
+    if (others.length < OUTLIER.least) continue;
+    const median = weightedMedian(others.map((o) => {
+      const u = (lanes.sigma[o.lane] - lanes.sigma[r.lane]) / OUTLIER.radius;
+      return { v: o.H, w: (1 - u * u) * (1 - u * u) };
+    }));
+    if (r.H < OUTLIER.low * median || r.H > OUTLIER.high * median) off.add(r);
+  }
+  const kept = off.size > 0 ? raws.filter((r) => !off.has(r)) : raws;
+  for (const r of kept) {
+    if (!open(r)) continue;
+    const others = near(r, kept);
+    if (others.length < OUTLIER.least) continue;
+    const line = fitLine(others, lanes, r.lane, LANE.clockRadius, (o) => o.past);
+    if (line === line && Math.abs(r.past - line) > OUTLIER.past) off.add(r);
+  }
+  return off;
+}
+
+/** The weighted median of values (the lower one where the weights split evenly); NaN with none. */
+function weightedMedian(items: Array<{ v: number; w: number }>): number {
+  const list = items.filter((i) => i.w > 0 && i.v === i.v).sort((a, b) => a.v - b.v);
+  let total = 0;
+  for (const i of list) total += i.w;
+  if (!(total > 0)) return Number.NaN;
+  let sum = 0;
+  for (const i of list) {
+    sum += i.w;
+    if (sum >= 0.5 * total) return i.v;
+  }
+  return list[list.length - 1].v;
 }
