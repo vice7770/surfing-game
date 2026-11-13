@@ -1,0 +1,648 @@
+import { LANE, type LaneField, type SeaLevel } from './Handover';
+import { CURVE, CURVE_STRIDE, LIFT } from './libraryLoft';
+import { SLICE_LIFE, type FieldSlice, type SliceField } from './SliceField';
+import { WAVE_LANDMARK, WAVE_POINTS } from './caseFormat';
+
+/**
+ * C2 step 3 (docs/research/wave-strategy-alternatives/c2-plan.md §1, "A hybrid surface"; ruling 28 point 3): the
+ * library's wave as the sea's own render nodes draw and feel it, and the curves its overturn's loft is built from.
+ *
+ * **The blend, in the crest's own frame** (the plan): while a slice comes in (and goes), its curve is
+ * y(ξ) = (1 − a) y_sea(ξ) + a y_case(ξ), ξ from each one's own crest, the crest at (1 − a) x_sea + a x_case, a its
+ * share (`SLICE_LIFE`), so the sea's crest (6.8 m/s) and the case's (6.0) never show as two. The case stands on its
+ * slice's mean level.
+ *
+ * **The hybrid surface.** Where the blended curve is single-valued and not too steep for 1 m nodes (the wall, the trough,
+ * the bore's top), its height is written into the render nodes: lane by lane on the lanes' stations, then onto each
+ * node from the two lanes either side of it, linear across them. A node takes (1 − A) η_sea + B, A the lanes' weight
+ * there (their frames' ends and the field's ends fade it, `EDGE`), B their weighted heights: outside every slice the
+ * sea's own node exactly. The sea's mesh, light and foam draw it and `PhysicalSurfWater` feels the same nodes.
+ * Where the curve overturns or stands steeper than `LIFT.bridge` (the lip and the tube), the nodes take a smooth
+ * bridge under it (hidden), and the loft (`libraryLoft`) draws and is felt from the same curve, lifted off the nodes
+ * from `LIFT.on`° (`CURVE`).
+ *
+ * The sea's drawn foam is held off a slice's water until its touchdown (`FOAM_HOLD`): step 5 gives the library's own.
+ */
+export const EDGE = {
+  /** A slice's frame fades into the sea over this much of its back and its front, m (smoothstep: height and slope continuous). */
+  band: 3,
+} as const;
+
+/** The sea's drawn foam is held off a slice's water until its touchdown, and comes back over this long after it, s. */
+export const FOAM_HOLD = 0.5;
+
+/** Slices on neighbouring lanes are one run of the loft when they handed over within this share of a period. */
+export const RUN_GAP = 0.25;
+
+/**
+ * A lifted run of the loft goes on this many lanes past its last lifted one, unlifted (on the water): the first keeps the
+ * seam mask whole, the last fades it, so where the mask is partial the loft lies on the water (`LIFT.pad`'s rule across).
+ */
+export const PAD_LANES = 2;
+
+/** The sea's crest is looked for where it was, carried on at this pace, m/s (a crest's on the pool's face). */
+const SEA_CREST_PACE = 6;
+
+const smoothstep = (u: number) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+
+/** The render grid the nodes are on (the snapshot's): its first node, spacing and counts. */
+export interface NodeGrid { xMin: number; zMin: number; spacing: number; nx: number; nz: number }
+
+export class ZoneSurface {
+  /** Per lane × station: Σ w H, Σ w, and the foam hold, this step. */
+  private readonly laneWH: Float64Array;
+  private readonly laneW: Float64Array;
+  private readonly laneF: Float64Array;
+  /** Per lane, the stations written this step (lo > hi: none). */
+  private readonly laneLo: Int32Array;
+  private readonly laneHi: Int32Array;
+  /** The footprint's nodes and, per node, its lanes (k and k + 1), the share of k + 1, and its places along both. */
+  private readonly nodes: Int32Array;
+  private readonly nodeLane: Int32Array;
+  private readonly nodeShare: Float64Array;
+  private readonly nodeS0: Float64Array;
+  private readonly nodeS1: Float64Array;
+  /** Per render node: the lanes' weight A, their weighted height B, and the foam hold F (written in the footprint only). */
+  readonly weight: Float64Array;
+  readonly height: Float64Array;
+  readonly hold: Float64Array;
+  /** Footprint nodes written this step (their A, B, F are live; the rest are 0). */
+  private readonly written: Int32Array;
+  private writtenCount = 0;
+  /** The overturn's curves this step (`CURVE`), for the contact here and the page's drawing. */
+  readonly curves: Float32Array;
+  curveCount = 0;
+  /** Scratch: one slice's case curve and composite, and the sea along its lane. */
+  private readonly caseCurve = new Float32Array(2 * WAVE_POINTS);
+  private readonly crestOut = new Float64Array(2);
+  private readonly sea: Float64Array;
+  /** Per live slice this step, its composite (lane order kept), and what its loft needs. */
+  private composites: Float64Array;
+  private readonly picked: { slice: FieldSlice; at: number; lift: number; from: number; to: number; overturned: boolean }[] = [];
+  /** Scratch for one slice's stations: how often reached, whether steep, and the heights. */
+  private hits = new Uint8Array(256);
+  private steep = new Uint8Array(256);
+  private heights = new Float64Array(256);
+  /** A step's diagnostics (the bars' probe reads them). */
+  readonly stats = { slices: 0, shown: 0, lofted: 0, bridged: 0, nodes: 0, seaMissed: 0, steepest: 0 };
+
+  constructor(readonly field: SliceField, readonly lanes: LaneField, readonly grid: NodeGrid, capacity = 300) {
+    const n = lanes.count * lanes.stations;
+    this.laneWH = new Float64Array(n);
+    this.laneW = new Float64Array(n);
+    this.laneF = new Float64Array(n);
+    this.laneLo = new Int32Array(lanes.count).fill(1);
+    this.laneHi = new Int32Array(lanes.count).fill(0);
+    this.sea = new Float64Array(lanes.stations);
+    this.composites = new Float64Array(2 * WAVE_POINTS * 64);
+    this.curves = new Float32Array(capacity * CURVE_STRIDE);
+    const size = grid.nx * grid.nz;
+    this.weight = new Float64Array(size);
+    this.height = new Float64Array(size);
+    this.hold = new Float64Array(size);
+    // The footprint: every node between the first and last lane, within their stations' reach.
+    const found: number[] = [];
+    const lane: number[] = [];
+    const share: number[] = [];
+    const s0: number[] = [];
+    const s1: number[] = [];
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    const length = (lanes.stations - 1) * LANE.step;
+    for (let k = 0; k < lanes.count; k += 1) {
+      for (const s of [0, length]) {
+        const x = lanes.baseX[k] + s * lanes.rayX[k];
+        const z = lanes.baseZ[k] + s * lanes.rayZ[k];
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z);
+      }
+    }
+    const side = (k: number, x: number, z: number) => (x - lanes.baseX[k]) * lanes.rayZ[k] - (z - lanes.baseZ[k]) * lanes.rayX[k];
+    const i0 = Math.max(0, Math.floor((x0 - grid.xMin) / grid.spacing));
+    const i1 = Math.min(grid.nx - 1, Math.ceil((x1 - grid.xMin) / grid.spacing));
+    const j0 = Math.max(0, Math.floor((z0 - grid.zMin) / grid.spacing));
+    const j1 = Math.min(grid.nz - 1, Math.ceil((z1 - grid.zMin) / grid.spacing));
+    for (let j = j0; j <= j1 && lanes.count > 1; j += 1) {
+      const z = grid.zMin + j * grid.spacing;
+      for (let i = i0; i <= i1; i += 1) {
+        const x = grid.xMin + i * grid.spacing;
+        if (side(0, x, z) < 0 || side(lanes.count - 1, x, z) >= 0) continue;
+        // The bracketing lanes: side ≥ 0 of k, < 0 of k + 1 (the fan never crosses in the zone).
+        let lo = 0;
+        let hi = lanes.count - 1;
+        while (hi - lo > 1) {
+          const mid = (lo + hi) >> 1;
+          if (side(mid, x, z) >= 0) lo = mid;
+          else hi = mid;
+        }
+        const a = side(lo, x, z);
+        const b = side(lo + 1, x, z);
+        const sa = (x - lanes.baseX[lo]) * lanes.rayX[lo] + (z - lanes.baseZ[lo]) * lanes.rayZ[lo];
+        const sb = (x - lanes.baseX[lo + 1]) * lanes.rayX[lo + 1] + (z - lanes.baseZ[lo + 1]) * lanes.rayZ[lo + 1];
+        if (sa < 0 && sb < 0) continue;
+        if (sa > length && sb > length) continue;
+        found.push(j * grid.nx + i);
+        lane.push(lo);
+        share.push(a - b > 0 ? a / (a - b) : 0);
+        s0.push(sa);
+        s1.push(sb);
+      }
+    }
+    // By lane pair, then along the lane: a step walks only the nodes within its pair's live stations.
+    const order = found.map((_, n) => n).sort((a, b) => lane[a] - lane[b] || s0[a] - s0[b]);
+    this.nodes = Int32Array.from(order, (n) => found[n]);
+    this.nodeLane = Int32Array.from(order, (n) => lane[n]);
+    this.nodeShare = Float64Array.from(order, (n) => share[n]);
+    this.nodeS0 = Float64Array.from(order, (n) => s0[n]);
+    this.nodeS1 = Float64Array.from(order, (n) => s1[n]);
+    this.pairStart = new Int32Array(lanes.count + 1);
+    for (const n of order) this.pairStart[lane[n] + 1] += 1;
+    for (let k = 0; k < lanes.count; k += 1) this.pairStart[k + 1] += this.pairStart[k];
+    // The most a node's place along lane k + 1 differs from its place along lane k, per pair (their bases differ).
+    this.pairShift = new Float64Array(lanes.count);
+    for (let n = 0; n < order.length; n += 1) {
+      const k = this.nodeLane[n];
+      this.pairShift[k] = Math.max(this.pairShift[k], Math.abs(this.nodeS1[n] - this.nodeS0[n]));
+    }
+    this.written = new Int32Array(found.length);
+  }
+
+  /** Per lane pair (k, k + 1), its first node in the footprint's order; and how far apart its two places along may be, m. */
+  private readonly pairStart: Int32Array;
+  private readonly pairShift: Float64Array;
+
+  /** The footprint's node count (a diagnostic). */
+  get footprint(): number {
+    return this.nodes.length;
+  }
+
+  /** A render node's height: the sea's there, `sea`, and the library's over it. */
+  at(node: number, sea: number): number {
+    const a = this.weight[node];
+    return a > 0 ? (1 - a) * sea + this.height[node] : sea;
+  }
+
+  /** Every node written this step: its weight A, weighted height B and foam hold F. */
+  forEachWritten(visit: (node: number, weight: number, height: number, hold: number) => void): void {
+    for (let n = 0; n < this.writtenCount; n += 1) {
+      const node = this.written[n];
+      visit(node, this.weight[node], this.height[node], this.hold[node]);
+    }
+  }
+
+  /** The lanes' weight A at (x, z), bilinear over the nodes (0 off the zone): how much of the surface there is the library's. */
+  weightAt(x: number, z: number): number {
+    const { grid } = this;
+    const gx = (x - grid.xMin) / grid.spacing;
+    const gz = (z - grid.zMin) / grid.spacing;
+    const i = Math.floor(gx);
+    const j = Math.floor(gz);
+    if (i < 0 || j < 0 || i + 1 >= grid.nx || j + 1 >= grid.nz) return 0;
+    const tx = gx - i;
+    const tz = gz - j;
+    const o = j * grid.nx + i;
+    const w = this.weight;
+    return (w[o] * (1 - tx) + w[o + 1] * tx) * (1 - tz) + (w[o + grid.nx] * (1 - tx) + w[o + grid.nx + 1] * tx) * tz;
+  }
+
+  /** The render node at (x, z) (the grid's own places; −1 off it). */
+  nodeAt(x: number, z: number): number {
+    const { grid } = this;
+    const i = Math.round((x - grid.xMin) / grid.spacing);
+    const j = Math.round((z - grid.zMin) / grid.spacing);
+    if (i < 0 || j < 0 || i >= grid.nx || j >= grid.nz) return -1;
+    return j * grid.nx + i;
+  }
+
+  /** The library's surface at `time` s over the sea (`sea`, η over still water at a point): lanes, nodes and curves. */
+  update(time: number, sea: SeaLevel): void {
+    const { lanes, field } = this;
+    const st = lanes.stations;
+    // Clear last step's lanes and nodes.
+    for (let k = 0; k < lanes.count; k += 1) {
+      if (this.laneLo[k] <= this.laneHi[k]) {
+        const o = k * st;
+        this.laneWH.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+        this.laneW.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+        this.laneF.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+      }
+      this.laneLo[k] = 1;
+      this.laneHi[k] = 0;
+    }
+    for (let n = 0; n < this.writtenCount; n += 1) {
+      const node = this.written[n];
+      this.weight[node] = 0;
+      this.height[node] = 0;
+      this.hold[node] = 0;
+    }
+    this.writtenCount = 0;
+    this.picked.length = 0;
+    const stats = this.stats;
+    stats.slices = 0; stats.shown = 0; stats.lofted = 0; stats.bridged = 0; stats.nodes = 0; stats.seaMissed = 0; stats.steepest = 0;
+    let index = 0;
+    for (const slice of field.slices()) {
+      stats.slices += 1;
+      if (time < slice.blendFrom) continue;
+      const a = smoothstep((time - slice.blendFrom) / SLICE_LIFE.blend) * (1 - smoothstep((time - slice.goFrom) / SLICE_LIFE.blend));
+      if (2 * WAVE_POINTS * (index + 1) > this.composites.length) {
+        const grown = new Float64Array(2 * this.composites.length);
+        grown.set(this.composites);
+        this.composites = grown;
+      }
+      const at = 2 * WAVE_POINTS * index;
+      this.composite(slice, time, a, sea, at);
+      const shape = this.lane(slice, time, at);
+      if (!shape) continue;
+      stats.shown += 1;
+      if (shape.lift > 0) stats.lofted += 1;
+      this.picked.push({ slice, at, ...shape });
+      index += 1;
+    }
+    this.writeNodes();
+    this.writeCurves(time);
+  }
+
+  /** One slice's blended curve at `time` s into `composites` from `at`: (s along its lane, y over still water) per point. */
+  private composite(slice: FieldSlice, time: number, a: number, seaAt: SeaLevel, at: number): void {
+    const { lanes } = this;
+    const k = slice.lane;
+    const library = this.field.library;
+    library.surfaceAt(slice.slice, time, this.caseCurve, this.crestOut);
+    const curve = this.caseCurve;
+    const out = this.composites;
+    const caseCrest = slice.s + curve[2 * WAVE_LANDMARK.crest];
+    if (a >= 1) {
+      for (let i = 0; i < WAVE_POINTS; i += 1) {
+        out[at + 2 * i] = slice.s + curve[2 * i];
+        out[at + 2 * i + 1] = slice.mean + curve[2 * i + 1];
+      }
+      slice.seaS = Number.NaN;
+    } else {
+      // The sea's crest along the lane: the top nearest where it was (or the case's crest), within reach.
+      const bx = lanes.baseX[k];
+      const bz = lanes.baseZ[k];
+      const rx = lanes.rayX[k];
+      const rz = lanes.rayZ[k];
+      // Where it was, carried on at a crest's pace (about 6 m/s here); the case's crest the first time.
+      const want = slice.seaS === slice.seaS ? slice.seaS + (time - slice.seaT) * SEA_CREST_PACE : caseCrest;
+      const seaCrest = this.seaCrest(k, want, seaAt);
+      const sc = seaCrest === seaCrest ? seaCrest : caseCrest;
+      if (!(seaCrest === seaCrest)) this.stats.seaMissed += 1;
+      slice.seaS = sc;
+      slice.seaT = time;
+      const X = (1 - a) * sc + a * caseCrest;
+      const shiftCase = X - caseCrest;
+      const shiftSea = X - sc;
+      for (let i = 0; i < WAVE_POINTS; i += 1) {
+        const s = slice.s + curve[2 * i] + shiftCase;
+        const back = s - shiftSea;
+        const v = seaAt(bx + back * rx, bz + back * rz);
+        const seaY = v === v ? v : slice.mean;
+        out[at + 2 * i] = s;
+        out[at + 2 * i + 1] = a * (slice.mean + curve[2 * i + 1]) + (1 - a) * seaY;
+      }
+    }
+    // The lip tip's speed along the lane and up (the contact's lip water), over this step.
+    const tipS = out[at + 2 * WAVE_LANDMARK.lip];
+    const tipY = out[at + 2 * WAVE_LANDMARK.lip + 1];
+    if (slice.tipT === slice.tipT && time > slice.tipT) {
+      const span = time - slice.tipT;
+      const along = (tipS - slice.tipS) / span;
+      const up = (tipY - slice.tipY) / span;
+      slice.tipAlong = 0.5 * slice.tipAlong + 0.5 * along;
+      slice.tipUp = 0.5 * slice.tipUp + 0.5 * up;
+    }
+    slice.tipS = tipS;
+    slice.tipY = tipY;
+    slice.tipT = time;
+  }
+
+  /** The sea's crest along lane k nearest `want` (m along it), within ±10 m, a top over ±1 m and 0.1 m over its trough ahead. */
+  private seaCrest(k: number, want: number, seaAt: SeaLevel): number {
+    const { lanes } = this;
+    const step = 2 * LANE.step;
+    const from = Math.max(0, want - 10);
+    const to = Math.min((lanes.stations - 1) * LANE.step, want + 10 + 15);
+    const n = Math.floor((to - from) / step) + 1;
+    const eta = this.sea;
+    for (let j = 0; j < n; j += 1) {
+      const s = from + j * step;
+      eta[j] = seaAt(lanes.baseX[k] + s * lanes.rayX[k], lanes.baseZ[k] + s * lanes.rayZ[k]);
+    }
+    let best = Number.NaN;
+    let gap = Infinity;
+    const top = Math.round(1 / step);
+    const trough = Math.round(15 / step);
+    for (let j = top; j + top < n; j += 1) {
+      const v = eta[j];
+      const s = from + j * step;
+      if (!(v === v) || Math.abs(s - want) > 10) continue;
+      let isTop = eta[j - 1] < v;
+      for (let m = j - top; isTop && m <= j + top; m += 1) if (!(eta[m] <= v)) isTop = false;
+      if (!isTop) continue;
+      let low = Infinity;
+      for (let m = j + 1; m < Math.min(n, j + trough); m += 1) if (eta[m] < low) low = eta[m];
+      if (!(v - low >= 0.1)) continue;
+      const a = eta[j - 1];
+      const b = eta[j + 1];
+      const den = a - 2 * v + b;
+      const place = s + (den < 0 ? Math.min(0.5, Math.max(-0.5, (0.5 * (a - b)) / den)) : 0) * step;
+      if (Math.abs(place - want) < gap) { gap = Math.abs(place - want); best = place; }
+    }
+    return best;
+  }
+
+  /**
+   * One slice's composite onto its lane's stations: its single-valued heights (a bridge under every fold and every run
+   * steeper than `LIFT.bridge`), its weight, its foam hold. Returns what its loft needs (the lift's course and its span
+   * along the lane), or nothing.
+   */
+  private lane(slice: FieldSlice, time: number, at: number): { lift: number; from: number; to: number; overturned: boolean } | undefined {
+    const { lanes } = this;
+    const k = slice.lane;
+    const c = this.composites;
+    const st = lanes.stations;
+    const ds = LANE.step;
+    const back = c[at];
+    const front = c[at + 2 * (WAVE_POINTS - 1)];
+    if (!(front > back)) return undefined;
+    const j0 = Math.max(0, Math.ceil(back / ds));
+    const j1 = Math.min(st - 1, Math.floor(front / ds));
+    if (j1 - j0 < 4) return undefined;
+    const count = j1 - j0 + 1;
+    if (this.hits.length < count) {
+      this.hits = new Uint8Array(2 * count);
+      this.steep = new Uint8Array(2 * count);
+      this.heights = new Float64Array(2 * count);
+    }
+    const hits = this.hits;
+    const steep = this.steep;
+    const hs = this.heights;
+    hits.fill(0, 0, count);
+    steep.fill(0, 0, count);
+    // Steepness and folds, segment by segment; each monotone segment's height on its stations (a station reached
+    // twice is under a fold).
+    const tanOn = Math.tan((LIFT.on * Math.PI) / 180);
+    const tanBridge = Math.tan((LIFT.bridge * Math.PI) / 180);
+    let steepest = 0;
+    let liftFrom = Infinity;
+    let liftTo = -Infinity;
+    let overturned = false;
+    for (let i = 0; i + 1 < WAVE_POINTS; i += 1) {
+      const s0 = c[at + 2 * i];
+      const s1 = c[at + 2 * i + 2];
+      const y0 = c[at + 2 * i + 1];
+      const y1 = c[at + 2 * i + 3];
+      const run = s1 - s0;
+      const rise = Math.abs(y1 - y0);
+      const folded = run < -1e-4;
+      if (folded) overturned = true;
+      const long = Math.sqrt(run * run + rise * rise) > 0.02;
+      const slope = folded ? Infinity : run > 1e-6 ? rise / run : rise > 1e-4 ? Infinity : 0;
+      if (long || folded) {
+        const angle = slope === Infinity ? 90 : (Math.atan(slope) * 180) / Math.PI;
+        if (angle > steepest) steepest = angle;
+      }
+      const lo = Math.min(s0, s1);
+      const hi = Math.max(s0, s1);
+      if ((long || folded) && slope > tanOn) {
+        liftFrom = Math.min(liftFrom, lo);
+        liftTo = Math.max(liftTo, hi);
+      }
+      if ((long || folded) && slope > tanBridge) {
+        for (let j = Math.max(j0, Math.floor(lo / ds)); j <= Math.min(j1, Math.ceil(hi / ds)); j += 1) steep[j - j0] = 1;
+      }
+      if (!(run > 0)) continue;
+      const a = Math.max(j0, Math.ceil(s0 / ds));
+      const b = Math.min(j1, Math.ceil(s1 / ds) - 1);
+      for (let j = a; j <= b; j += 1) {
+        const x = j * ds;
+        hs[j - j0] = y0 + ((x - s0) / run) * (y1 - y0);
+        if (hits[j - j0] < 2) hits[j - j0] += 1;
+      }
+    }
+    if (steepest > this.stats.steepest) this.stats.steepest = steepest;
+    // The bridges: every run of stations under a fold, unreached, or steep, widened to gentler ground (`LIFT.gentle`,
+    // at most `LIFT.reach` m each side), a cubic Hermite from the heights and slopes at its two ends. At a frame's end
+    // the run holds the end's height.
+    const gentle = Math.tan((LIFT.gentle * Math.PI) / 180);
+    const most = Math.round(LIFT.reach / ds);
+    const bad = (j: number) => hits[j - j0] !== 1 || steep[j - j0] === 1;
+    let bridged = false;
+    for (let j = j0; j <= j1; j += 1) {
+      if (!bad(j)) continue;
+      let ra = j;
+      let rb = j;
+      while (rb + 1 <= j1 && bad(rb + 1)) rb += 1;
+      let ja = ra - 1;
+      let jb = rb + 1;
+      for (let m = 0; m < most && ja - 1 >= j0 && !bad(ja - 1) && Math.abs(hs[ja - j0] - hs[ja - 1 - j0]) / ds > gentle; m += 1) ja -= 1;
+      for (let m = 0; m < most && jb + 1 <= j1 && !bad(jb + 1) && Math.abs(hs[jb + 1 - j0] - hs[jb - j0]) / ds > gentle; m += 1) jb += 1;
+      if (ja < j0 && jb > j1) {
+        for (let q = j0; q <= j1; q += 1) hs[q - j0] = slice.mean;
+      } else if (ja < j0) {
+        for (let q = j0; q < jb; q += 1) hs[q - j0] = hs[jb - j0];
+      } else if (jb > j1) {
+        for (let q = ja + 1; q <= j1; q += 1) hs[q - j0] = hs[ja - j0];
+      } else {
+        const ya = hs[ja - j0];
+        const yb = hs[jb - j0];
+        const ma = ja - 1 >= j0 && !bad(ja - 1) ? Math.min(tanBridge, Math.max(-tanBridge, (hs[ja - j0] - hs[ja - 1 - j0]) / ds)) : 0;
+        const mb = jb + 1 <= j1 && !bad(jb + 1) ? Math.min(tanBridge, Math.max(-tanBridge, (hs[jb + 1 - j0] - hs[jb - j0]) / ds)) : 0;
+        const L = (jb - ja) * ds;
+        for (let q = ja + 1; q < jb; q += 1) {
+          const u = (q - ja) / (jb - ja);
+          const u2 = u * u;
+          const u3 = u2 * u;
+          hs[q - j0] = (2 * u3 - 3 * u2 + 1) * ya + (u3 - 2 * u2 + u) * L * ma + (-2 * u3 + 3 * u2) * yb + (u3 - u2) * L * mb;
+        }
+      }
+      bridged = true;
+      liftFrom = Math.min(liftFrom, Math.max(j0, ja) * ds);
+      liftTo = Math.max(liftTo, Math.min(j1, jb) * ds);
+      j = rb;
+    }
+    if (bridged) this.stats.bridged += 1;
+    const lift = smoothstep((steepest - LIFT.on) / (LIFT.full - LIFT.on)) * slice.end;
+    // Weight: the frame's ends and the field's ends; the foam's hold until the touchdown.
+    const o = k * st;
+    const touchdownAt = slice.throwAt + slice.touchdown;
+    const holdT = smoothstep((time - slice.blendFrom) / SLICE_LIFE.blend) * (1 - smoothstep((time - touchdownAt) / FOAM_HOLD));
+    for (let j = j0; j <= j1; j += 1) {
+      const x = j * ds;
+      const w = slice.end * smoothstep((x - back) / EDGE.band) * smoothstep((front - x) / EDGE.band);
+      if (!(w > 0)) continue;
+      let sum = this.laneW[o + j] + w;
+      let wh = this.laneWH[o + j] + w * hs[j - j0];
+      // Two waves' frames on one lane meet at most at their ends: past a weight of 1 they share it.
+      if (sum > 1) {
+        wh /= sum;
+        sum = 1;
+      }
+      this.laneWH[o + j] = wh;
+      this.laneW[o + j] = sum;
+      this.laneF[o + j] = Math.max(this.laneF[o + j], w * holdT);
+    }
+    if (this.laneLo[k] > this.laneHi[k]) {
+      this.laneLo[k] = j0;
+      this.laneHi[k] = j1;
+    } else {
+      this.laneLo[k] = Math.min(this.laneLo[k], j0);
+      this.laneHi[k] = Math.max(this.laneHi[k], j1);
+    }
+    if (!(lift > 0) || !(liftTo >= liftFrom)) return { lift: 0, from: 0, to: 0, overturned };
+    return { lift, from: liftFrom - LIFT.margin, to: liftTo + LIFT.margin, overturned };
+  }
+
+  /** Each footprint node from its two lanes: A, B and the foam hold. */
+  private writeNodes(): void {
+    const { lanes } = this;
+    const st = lanes.stations;
+    const ds = LANE.step;
+    const top = (st - 1) * ds;
+    const read = (k: number, s: number, values: Float64Array): number => {
+      if (!(s >= 0 && s <= top)) return 0;
+      const g = s / ds;
+      const j = Math.min(st - 2, Math.floor(g));
+      const u = g - j;
+      if (j + 1 < this.laneLo[k] || j > this.laneHi[k]) return 0;
+      const o = k * st;
+      return values[o + j] + u * (values[o + j + 1] - values[o + j]);
+    };
+    const written = this.written;
+    let count = 0;
+    for (let k = 0; k + 1 < lanes.count; k += 1) {
+      const live0 = this.laneLo[k] <= this.laneHi[k];
+      const live1 = this.laneLo[k + 1] <= this.laneHi[k + 1];
+      if (!live0 && !live1) continue;
+      // The pair's live stretch along lane k (lane k + 1's, shifted by at most the pair's own offset), a station's margin.
+      let lo = Infinity;
+      let hi = -Infinity;
+      if (live0) { lo = (this.laneLo[k] - 1) * ds; hi = (this.laneHi[k] + 1) * ds; }
+      if (live1) {
+        lo = Math.min(lo, (this.laneLo[k + 1] - 1) * ds - this.pairShift[k]);
+        hi = Math.max(hi, (this.laneHi[k + 1] + 1) * ds + this.pairShift[k]);
+      }
+      const first = this.pairStart[k];
+      const last = this.pairStart[k + 1];
+      let a = first;
+      let b = last;
+      while (a < b) {
+        const m = (a + b) >> 1;
+        if (this.nodeS0[m] < lo) a = m + 1;
+        else b = m;
+      }
+      for (let n = a; n < last && this.nodeS0[n] <= hi; n += 1) {
+        const f = this.nodeShare[n];
+        const s0 = this.nodeS0[n];
+        const s1 = this.nodeS1[n];
+        const w = (1 - f) * (live0 ? read(k, s0, this.laneW) : 0) + f * (live1 ? read(k + 1, s1, this.laneW) : 0);
+        if (!(w > 0)) continue;
+        const node = this.nodes[n];
+        this.weight[node] = Math.min(1, w);
+        this.height[node] = (1 - f) * (live0 ? read(k, s0, this.laneWH) : 0) + f * (live1 ? read(k + 1, s1, this.laneWH) : 0);
+        this.hold[node] = Math.min(1, (1 - f) * (live0 ? read(k, s0, this.laneF) : 0) + f * (live1 ? read(k + 1, s1, this.laneF) : 0));
+        written[count++] = node;
+      }
+    }
+    this.writtenCount = count;
+    this.stats.nodes = count;
+  }
+
+  /**
+   * The loft's curves (`CURVE`): every slice that lifts off the nodes, and its neighbours on the lanes either side (lift
+   * 0, so a run of lifted slices ends on the nodes). Slices are chained lane to lane by their hand-over times (the next
+   * lane's nearest within `RUN_GAP` of a period), and a chain is one run of the loft (`CURVE.wave`).
+   */
+  private writeCurves(time: number): void {
+    const picked = this.picked;
+    const n = picked.length;
+    const period = this.field.period;
+    const order = picked.map((_, i) => i).sort((a, b) => picked[a].slice.lane - picked[b].slice.lane || picked[a].slice.tH - picked[b].slice.tH);
+    const chain = new Int32Array(n);
+    const linked = new Uint8Array(n);
+    const byLane = new Map<number, number[]>();
+    let chains = 0;
+    for (const i of order) {
+      const p = picked[i].slice;
+      let best = -1;
+      let gap = RUN_GAP * period;
+      for (const q of byLane.get(p.lane - 1) ?? []) {
+        if (linked[q]) continue;
+        const d = Math.abs(picked[q].slice.tH - p.tH);
+        if (d < gap) { gap = d; best = q; }
+      }
+      if (best >= 0) {
+        chain[i] = chain[best];
+        linked[best] = 1;
+      } else chain[i] = chains++;
+      const list = byLane.get(p.lane) ?? [];
+      list.push(i);
+      byLane.set(p.lane, list);
+    }
+    // Each run's lifted lanes and their spans: a lifted slice's neighbours (the pads) take the span of the lifted ones beside.
+    const lifted = new Map<string, { from: number; to: number }>();
+    for (let i = 0; i < n; i += 1) if (picked[i].lift > 0) lifted.set(`${chain[i]}:${picked[i].slice.lane}`, { from: picked[i].from, to: picked[i].to });
+    const capacity = this.curves.length / CURVE_STRIDE;
+    let count = 0;
+    order.sort((a, b) => chain[a] - chain[b] || picked[a].slice.lane - picked[b].slice.lane);
+    for (const i of order) {
+      const p = picked[i];
+      const { slice } = p;
+      // Lifted, a lane beside a lifted one (the seam mask still whole), or two beside (its mask's fade): `PAD_LANES`.
+      let span: { from: number; to: number } | undefined = p.lift > 0 ? { from: p.from, to: p.to } : undefined;
+      let reach = p.lift > 0 ? 0 : Infinity;
+      for (let d = 1; d <= PAD_LANES && !span; d += 1) {
+        for (const k of [slice.lane - d, slice.lane + d]) {
+          const near = lifted.get(`${chain[i]}:${k}`);
+          if (near) {
+            span = span ? { from: Math.min(span.from, near.from), to: Math.max(span.to, near.to) } : { ...near };
+            reach = d;
+          }
+        }
+      }
+      if (!span || count >= capacity) continue;
+      const o = count * CURVE_STRIDE;
+      const out = this.curves;
+      const tau = time - slice.throwAt;
+      out[o + CURVE.lane] = slice.lane;
+      out[o + CURVE.wave] = chain[i];
+      out[o + CURVE.lift] = p.lift;
+      out[o + CURVE.mask] = reach < PAD_LANES ? 1 : 0;
+      out[o + CURVE.from] = span.from;
+      out[o + CURVE.to] = span.to;
+      out[o + CURVE.tau] = tau;
+      out[o + CURVE.touchdown] = slice.touchdown;
+      out[o + CURVE.h0] = slice.slice.h0;
+      out[o + CURVE.tipAlong] = slice.tipAlong;
+      out[o + CURVE.tipUp] = slice.tipUp;
+      out[o + CURVE.overturned] = p.overturned ? 1 : 0;
+      out[o + CURVE.baseX] = this.lanes.baseX[slice.lane];
+      out[o + CURVE.baseZ] = this.lanes.baseZ[slice.lane];
+      out[o + CURVE.rayX] = this.lanes.rayX[slice.lane];
+      out[o + CURVE.rayZ] = this.lanes.rayZ[slice.lane];
+      out[o + CURVE.sigma] = this.lanes.sigma[slice.lane];
+      const c = this.composites;
+      for (let j = 0; j < 2 * WAVE_POINTS; j += 1) out[o + CURVE.points + j] = c[p.at + j];
+      count += 1;
+    }
+    this.curveCount = count;
+    this.stats.lofted = count;
+  }
+
+  /** The probes' view of this step's shown slices: each one's slice, composite (s, y per point), lift and its run. */
+  shown(): Array<{ slice: FieldSlice; curve: Float64Array; lift: number }> {
+    return this.picked.map((p) => ({ slice: p.slice, curve: this.composites.subarray(p.at, p.at + 2 * WAVE_POINTS), lift: p.lift }));
+  }
+
+  /** Lane k's library surface at s m along it this step: its weight and weighted height there (a probe's). */
+  laneAt(k: number, s: number): { weight: number; height: number } {
+    const st = this.lanes.stations;
+    const g = s / LANE.step;
+    if (!(g >= 0 && g <= st - 1) || this.laneLo[k] > this.laneHi[k]) return { weight: 0, height: 0 };
+    const j = Math.min(st - 2, Math.floor(g));
+    const u = g - j;
+    const o = k * st;
+    const w = this.laneW[o + j] + u * (this.laneW[o + j + 1] - this.laneW[o + j]);
+    const wh = this.laneWH[o + j] + u * (this.laneWH[o + j + 1] - this.laneWH[o + j]);
+    return { weight: w, height: wh };
+  }
+}

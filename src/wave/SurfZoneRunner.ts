@@ -21,6 +21,9 @@ import { BOARD_SHEETS, BOARD_SHEET_STRIDE, SheetHistory, createBoardSpraySheet, 
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
+import { decodeWaveCase } from './library/caseFormat';
+import { CURVE_STRIDE } from './library/libraryLoft';
+import { WaveLibrary } from './library/WaveLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE } from './barrel/frontRecords';
 import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
 import { cloneTubeApproachObservation, createTubeApproachObservation,
@@ -130,6 +133,11 @@ export interface SurfZoneRunnerOptions {
   barrelCases?: readonly Uint8Array[];
   /** Build the swept contact with no board or rider of the runner's own (reports whose bots ride `water`). */
   contact?: boolean;
+  /**
+   * C2 step 3 (`SurfZoneConfig.wave` 'library'): the wave library's BRL3 case files (public/library). With them the 2 m
+   * pool's breaking wave is the library's, drawn and felt (`WaveZone`); without them, the sea's, as before.
+   */
+  waveCases?: readonly Uint8Array[];
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -345,6 +353,12 @@ export interface SurfZoneBuffers {
    */
   curl: Float32Array;
   curlCount: number;
+  /**
+   * C2 step 3 (`?wave=library`): the library's overturn curves (`CURVE`, `CURVE_STRIDE` floats each, `zoneCount` of them),
+   * lofted on the page over the very nodes the surface carries; empty without the library zone.
+   */
+  zone: Float32Array;
+  zoneCount: number;
 }
 
 /**
@@ -390,6 +404,8 @@ export class SurfZoneRunner {
   /** The contact's last update, ms. */
   contactMs = 0;
   private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
+  /** C2 step 3: the bodies' places the library's contact lofts near (x, z pairs). */
+  private readonly nearBodies = new Float64Array(4);
   private rideResets = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
@@ -445,7 +461,9 @@ export class SurfZoneRunner {
     // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
     const slope = BARREL_SLOPE[config.spot];
     const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases, config.tubeShape, config.spot, config.heldRule) : undefined;
-    this.simulation = new SurfZoneSimulation(config, start, library);
+    const waveLibrary = options.waveCases && config.wave === 'library' && options.waveCases.length > 0
+      ? new WaveLibrary(options.waveCases.map(decodeWaveCase)) : undefined;
+    this.simulation = new SurfZoneSimulation(config, start, library, waveLibrary);
     this.workerOwned = internal === WORKER_CONTACT_OWNER;
     const requestedGrid = this.simulation.renderGrid(options.renderSpacing ?? 1);
     // The broad Padang tank otherwise copies over 400,000 render nodes every 1/60 s.
@@ -462,7 +480,12 @@ export class SurfZoneRunner {
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    if (library && (options.rider || options.board || options.contact) && this.simulation.front) {
+    const zone = this.simulation.waveZone;
+    if (zone && (options.rider || options.board || options.contact)) {
+      // C2 step 3: the library's overturn is the contact, built over the felt nodes each step (`updateContact`).
+      this.contact = SweptContact.forLoft(() => zone.loft.result);
+      this.contactQueries = this.contact;
+    } else if (library && (options.rider || options.board || options.contact) && this.simulation.front) {
       if (internal === WORKER_CONTACT_OWNER && config.spot === 'padang' && this.simulation.solver instanceof BoussinesqSolver) {
         this.ordinaryContactOwner = SweptContact.forOrdinaryWorker(library, slope!);
         this.contactQueries = this.ordinaryContactOwner.queries;
@@ -680,6 +703,20 @@ export class SurfZoneRunner {
    */
   private updateContact(): void {
     const { contact, simulation, contactQueries, ordinaryContactOwner } = this;
+    const zone = simulation.waveZone;
+    if (zone && contact) {
+      // C2 step 3: the overturn's loft over the nodes as felt, then its contact over it.
+      const start = performance.now();
+      // Only near the bodies: the board, and the fallen surfer's.
+      const near = this.nearBodies;
+      let count = 0;
+      if (this.board) { near[count++] = this.board.position.x; near[count++] = this.board.position.z; }
+      if (this.session?.surfer.active) { const pelvis = this.session.surfer.nodes[0].position; near[count++] = pelvis.x; near[count++] = pelvis.z; }
+      this.water.withSurfaceNodeCache(() => zone.contactLoft((x, z) => this.water.plainSurfaceAt(x, z), near.subarray(0, count)));
+      contact.update(this.contactRecords, 0, this.config.tide, () => this.config.tide);
+      this.contactMs = performance.now() - start;
+      return;
+    }
     if (!contactQueries || !simulation.front) return;
     const start = performance.now();
     // Only the points whose waves plunge a tube (the spot's tube regime, `tubeFootMax`): the rest are not felt as one.
@@ -976,6 +1013,8 @@ export class SurfZoneRunner {
       rollerLook: new Float32Array(this.simulation.curl ? this.simulation.rollerColumns * ROLLER_SLOTS * BAND_LOOK_STRIDE : 0),
       curl: new Float32Array(this.simulation.curl ? CURL_CAPACITY * CURL_STRIDE : 0),
       curlCount: 0,
+      zone: new Float32Array(this.simulation.waveZone ? this.simulation.waveZone.surface.curves.length : 0),
+      zoneCount: 0,
     };
   }
 
@@ -1029,6 +1068,13 @@ export class SurfZoneRunner {
     this.measureRoar(buffers.roar);
     // The drawn tubes: as the contact's, only the points whose waves plunge one (`tubeFootMax`).
     buffers.frontCount = simulation.writeTubeRecords(buffers.front);
+    // C2 step 3: the library's overturn curves, which the page lofts over the same nodes (`LibraryZone`).
+    const zone = simulation.waveZone?.surface;
+    if (zone && buffers.zone.length > 0) {
+      const count = Math.min(zone.curveCount, Math.floor(buffers.zone.length / CURVE_STRIDE));
+      buffers.zone.set(zone.curves.subarray(0, count * CURVE_STRIDE));
+      buffers.zoneCount = count;
+    } else buffers.zoneCount = 0;
     this.fillMs = performance.now() - start;
   }
 

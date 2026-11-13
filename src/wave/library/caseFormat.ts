@@ -217,6 +217,27 @@ export function encodeWaveCase(c: WaveCase): Uint8Array {
   return out;
 }
 
+/**
+ * C2 step 3's game file (`scripts/barrel-library.ts --format brl3 --game`): the case as the game reads it so far, its
+ * frames, uses and path to `keepAfter` τ past its touchdown (the slices hand the bore back to the sea by then,
+ * `SLICE_LIFE`), without the velocity (step 4) or QOUT and the bore (step 5). The same frames, bit for bit.
+ */
+export function gameCase(c: WaveCase, keepAfter: number): WaveCase {
+  const h = c.header;
+  const touchdown = h.touchdown ?? Number.NaN;
+  const last = touchdown === touchdown ? Math.min(h.frames, Math.floor((touchdown + keepAfter - h.tauStart) / h.tauStep) + 2) : h.frames;
+  const frames = Math.max(2, last);
+  const { sections: _sections, ...meta } = h;
+  let own = 0;
+  for (let k = 0; k < frames; k += 1) if (c.use[k] === 1) own += 1;
+  const header: WaveCaseHeader = { ...meta, frames, velocityDepths: [], velocityLabels: [], uses: { own, refill: frames - own }, q: null, sections: [] };
+  return {
+    header, frames: c.frames.slice(0, frames * h.points * 2), use: c.use.slice(0, frames), path: c.path.slice(0, frames * PATH_COLUMNS),
+    velocity: new Float32Array(0), qTime: new Float32Array(0), qFlow: new Float32Array(0), qTop: new Float32Array(0), qAir: new Float32Array(0),
+    bore: new Float32Array(0), boreTop: new Float32Array(0), boreAir: new Float32Array(0),
+  };
+}
+
 export function isWaveCase(bytes: Uint8Array): boolean {
   return bytes.byteLength >= 8 && new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0, true) === WAVE_CASE_MAGIC;
 }

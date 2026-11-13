@@ -35,6 +35,8 @@ export interface OrdinaryContactOwner {
 const ORDINARY_QUERY_NORMALS = Symbol('ordinary query normals');
 /** The worker's face-ruling contact (`SweptContact.forFaceWorker`): its rows' heights and normals found on demand. */
 const FACE_QUERY_ROWS = Symbol('face query rows');
+/** C2 step 3's contact (`SweptContact.forLoft`): over a loft built elsewhere (`LibraryLoft`), no library of its own. */
+const PROVIDED_LOFT = Symbol('provided loft');
 
 /**
  * The contact's constants (the Padang Padang spec, Part B, PR 4):
@@ -249,15 +251,20 @@ export class SweptContact {
   /** Its rows' heights and normals are found as its queries need them (`forFaceWorker`, `forOrdinaryWorker`). */
   readonly rowsOnDemand: boolean;
 
-  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS | typeof FACE_QUERY_ROWS) {
-    if (internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS) {
+  constructor(
+    library: ProfileLibrary | undefined, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS | typeof FACE_QUERY_ROWS | typeof PROVIDED_LOFT,
+    provided?: Pick<SweptLoft, 'build'>,
+  ) {
+    if (internal === PROVIDED_LOFT) this.loft = provided!;
+    else if (!library) throw new Error('SweptContact: no library');
+    else if (internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS) {
       const queryLoft = SweptLoft.forContactQueries(library, slope, internal === FACE_QUERY_ROWS ? options.face : undefined);
       this.loft = queryLoft;
       this.prepareRow = queryLoft.prepareRow;
       this.prepareNormal = queryLoft.prepareNormal;
     } else this.loft = new SweptLoft(library, slope, { contact: true, ...(options.face ? { face: options.face } : {}) });
     this.bucket = options.bucket ?? CONTACT.bucket;
-    this.boundedC = library.options.geometry === 'bounded-C';
+    this.boundedC = library?.options.geometry === 'bounded-C';
     this.nearest = options.face?.contact === true;
     this.rowsOnDemand = internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS;
   }
@@ -275,6 +282,14 @@ export class SweptContact {
    */
   static forFaceWorker(library: ProfileLibrary, slope: number, face: TubeFace): SweptContact {
     return new SweptContact(library, slope, { face }, FACE_QUERY_ROWS);
+  }
+
+  /**
+   * C2 step 3 (`?wave=library`): the contact over the library zone's overturn, a loft built elsewhere each step
+   * (`LibraryLoft`) that `build` hands over; `update`'s records and heights are not read. The same crossings and answers.
+   */
+  static forLoft(build: () => LoftResult): SweptContact {
+    return new SweptContact(undefined, 0, {}, PROVIDED_LOFT, { build });
   }
 
   /** Internal worker construction, never a posted option or public lazy-output mode. */

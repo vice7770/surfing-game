@@ -16,7 +16,7 @@ import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type Tub
 import { SeaState } from './SeaState';
 import {
   POOL, POOL_BARREL, POOL_REF, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefLine, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
-  poolStraightAt, poolStraightDirection, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolReefSwitch, type PoolSizeSwitch, type PoolWaves,
+  poolStraightAt, poolStraightDirection, poolStraightFrame, poolStraightPlatformZ, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolReefSwitch, type PoolSizeSwitch, type PoolWaves,
 } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -44,6 +44,8 @@ import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
 import { frayBand } from './drawnEdges';
 import { BAND_LOOK_STRIDE, SpillingCurl } from './SpillingCurl';
+import { WaveZone } from './library/WaveZone';
+import type { WaveLibrary } from './library/WaveLibrary';
 
 /** No drawn splashes (`drawnImpacts` without a spilling lip). */
 const NO_IMPACTS: readonly LipImpact[] = [];
@@ -579,6 +581,15 @@ export interface SurfZoneConfig {
    */
   afterTube?: 'roller';
   /**
+   * C2 step 3 (docs/research/wave-strategy-alternatives/c2-step3.md), opt-in: 'library' (`?wave=library`), the breaking
+   * wave from the Basilisk library in the 2 m pool (`poolSize` 'ref', the straight Barrel): each lane of the reef hands
+   * its crest over from the sea (ruling 31's rule), the library's heights are written into the render nodes the sea's
+   * mesh draws and the rider feels, and its overturn is a loft over them (`WaveZone`). The sea runs on underneath,
+   * unchanged. Needs the library's cases (the constructor's `waveLibrary`); anywhere else, or without them, nothing.
+   * Online rooms pin it absent.
+   */
+  wave?: 'library';
+  /**
    * The water light (ruling 25e, `src/scene/water/waterLight.ts`): Rich body gain 1 and display exposure 1.6. 'on'
    * (`?waterLight=on`) at any spot, 'off' (`?waterLight=off`) in the 2 m pool, where it is on by default. Drawn only:
    * the solver never reads it. Absent: the spot's default (on only with `poolSize` 'ref'). Online rooms pin it absent.
@@ -625,6 +636,12 @@ export interface SurfZoneConfig {
  *   on the 70° arm, so jets would fire on the gentle fan too. The spilling lip draws its overturn (`SpillingCurl`) until
  *   the swept barrel is measured for it.
  */
+/**
+ * C2 step 3's lanes (`WaveZone`): traced from a row on the 2 m pool's platform across this span of x, m (wrapped into the
+ * window); the lanes that never reach the throw contour within a face's reach are dropped.
+ */
+export const WAVE_ZONE_ROW = { from: 40, to: 200 } as const;
+
 export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
 
 /**
@@ -1494,6 +1511,9 @@ export class SurfZoneSimulation {
   /** The Canyon's readout per peak with its beach peaks, built when first asked: each peak's take-off x and breaker there. */
   private peakBreakers?: { x: number; breaker: { value: number; type: BreakerType }; bowl?: { value: number; type: BreakerType } }[];
   lastStepMs = 0;
+  /** C2 step 3's library zone (`SurfZoneConfig.wave` 'library'), and its last step's cost, ms. */
+  readonly waveZone?: WaveZone;
+  libraryMs = 0;
   /** Latest step's wall time by stage, including the device readback wait in `water`. */
   readonly stepCosts = { water: 0, breaking: 0, roller: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
   /** Most offshore breaking cell per column last step (Infinity when none). */
@@ -1537,7 +1557,7 @@ export class SurfZoneSimulation {
   private readonly spinUpSeconds: number;
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
-  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
+  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary, waveLibrary?: WaveLibrary) {
     this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config), poolReef: config.poolReef });
     const tank = tankLayout(config);
     this.tank = tank;
@@ -1779,6 +1799,21 @@ export class SurfZoneSimulation {
         this.drawnWhitewater = new Float64Array(this.solver.h.length);
       }
     }
+    // C2 step 3's library zone (`?wave=library`): in the 2 m pool's straight Barrel, with the library's cases.
+    if (config.wave === 'library' && waveLibrary && config.spot === 'pool' && poolRefOn(config) && poolFloorOf(config) === 'straight') {
+      let main = this.sea.components[0];
+      for (const c of this.sea.components) if (c.amplitude > main.amplitude) main = c;
+      this.waveZone = new WaveZone(this.solver, waveLibrary, {
+        direction: main.direction, platformDepth: POOL_REF.platformDepth + config.tide, baseZ: poolStraightPlatformZ() + 2,
+        fromX: WAVE_ZONE_ROW.from, toX: WAVE_ZONE_ROW.to, period: config.peakPeriod,
+        // The reef's lanes: their throw point on its face (seaward of its top's back edge) and along its length.
+        keep: (_tx, _tz, px, pz) => {
+          const line = poolRefLine(config.poolReef);
+          const { s, n } = poolStraightFrame(px, pz, line.startX);
+          return s >= 0 && s <= line.crestProfile[line.crestProfile.length - 1][0] && n >= -POOL_REF.flatWidth;
+        },
+      }, this.renderGrid(1));
+    }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
     if (start === 'spun-up') {
@@ -1852,6 +1887,7 @@ export class SurfZoneSimulation {
       lip: this.lip.exportState(),
       ...(this.front ? { front: this.front.exportState() } : {}),
       ...(this.spilling ? { spilling: { front: this.spilling.exportState(), ...(this.roller ? { roller: this.roller.exportState() } : {}) } } : {}),
+      ...(this.waveZone ? { library: this.waveZone.exportState() } : {}),
     };
   }
 
@@ -1898,6 +1934,8 @@ export class SurfZoneSimulation {
       this.curl.update(solver.time, 0, this.spilling!, this.roller, this.breaking.strength, this.tubeColumns());
     }
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
+    // The library's slices come over exactly; a donor without them leaves this zone as it stands (fresh lanes).
+    if (state.library) this.waveZone?.importState(state.library);
   }
 
   get seaTime(): number {
@@ -2029,6 +2067,13 @@ export class SurfZoneSimulation {
     end = performance.now();
     this.stepCosts.front = end - phase;
     phase = end;
+    // The library's zone reads the sea as it now stands and writes nothing back (C2 step 3: one-way).
+    if (this.waveZone) {
+      this.waveZone.step();
+      end = performance.now();
+      this.libraryMs = end - phase;
+      phase = end;
+    }
     this.lip.step(dt);
     end = performance.now();
     this.stepCosts.lip = end - phase;
@@ -2662,6 +2707,7 @@ export class SurfZoneSimulation {
    */
   writeUniformSurface(data: Float32Array, grid: RenderGrid, carve = true): void {
     this.writeUniformFields(grid, data);
+    this.waveZone?.applySnapshot(data, undefined, grid);
     if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
   }
 
@@ -2756,6 +2802,7 @@ export class SurfZoneSimulation {
       }
     }
     this.writeLensTops(surface, grid);
+    this.waveZone?.applySnapshot(surface, aeration, grid);
   }
 
   /**

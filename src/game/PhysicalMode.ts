@@ -46,6 +46,8 @@ import { particleBudget, type ParticleLevel } from '../wave/particleBudget';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { SEA_COMPONENTS, alongShoreOf, solverStage, surfZoneSea, sweptBarrelOn, sweptCrashOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SweptBarrel } from '../scene/barrel/SweptBarrel';
+import { LibraryZone } from '../scene/library/LibraryZone';
+import { loadWaveCaseBytes } from '../wave/library/libraryCases';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
 import { DEV_TOOLS, devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
@@ -382,6 +384,8 @@ export type SurfZoneHostFactory = (config: SurfZoneConfig, extra?: HostExtras) =
 /** What a start hands its surf zone beyond the config: the barrel case files at a swept spot (Part B, PR 4). */
 export interface HostExtras {
   barrelCases?: readonly Uint8Array[];
+  /** C2 step 3 (`?wave=library`): the wave library's case files (public/library). */
+  waveCases?: readonly Uint8Array[];
 }
 
 /**
@@ -490,6 +494,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?tubeGuard=on`. Ruling 3's: `?tubeInertia=old`, `?tubeRetire=old` (both old: main before it), and the opt-in
     // `?tubeTrack=on`, `?tubeBuoy=on`, `?tubeDrop=on`.
     ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? tubeFaceSwitches() : {}),
+    // `?wave=library`: C2 step 3, the 2 m pool's breaking wave from the Basilisk library (with `?poolSize=ref`), opt-in.
+    ...(settings.spot === 'pool' && settings.poolWaves === 'barrel' ? waveSwitch() : {}),
     // `?onset=old`: every spot's breaking onset as before step 3b of the all-spots survey (the Point's flat 0.65), for A/Bs.
     ...onsetSwitch(),
     // `?stroke=old`: the paddler's hands broadside to water outrunning them, as before canyon-catch, for A/Bs.
@@ -779,6 +785,16 @@ export function tubeFaceSwitches(search?: string): Pick<SurfZoneConfig, 'tubeFac
 export function poolTubeCaseSwitch(search?: string): { poolTubeCase?: PoolTubeCase } {
   const value = devParam('poolTubeCase', search)?.trim().toLowerCase();
   return value === 'pool' || value === 'a38' ? { poolTubeCase: value } : {};
+}
+
+/**
+ * The `?wave=library` dev switch (`SurfZoneConfig.wave`; C2 step 3, docs/research/wave-strategy-alternatives/c2-step3.md):
+ * the 2 m pool's breaking wave from the Basilisk library, handed over from the sea lane by lane, written into the water's
+ * own render nodes and lofted where it overturns. Read with `?poolSize=ref` alone (the surf zone builds it only there).
+ * Anything else: off. Online rooms pin it off.
+ */
+export function waveSwitch(search?: string): { wave?: 'library' } {
+  return devParam('wave', search)?.trim().toLowerCase() === 'library' ? { wave: 'library' } : {};
 }
 
 /**
@@ -1194,6 +1210,19 @@ export function barrelCaseBytes(spot: SpotName, poolTubeCase?: PoolTubeCase): Pr
 /** Forget the fetched files (tests). */
 export function resetBarrelCaseBytes(): void {
   barrelBytes.clear();
+  waveBytes = undefined;
+}
+
+let waveBytes: Promise<Uint8Array[] | undefined> | undefined;
+
+/** The wave library's case files (C2 step 3, `?wave=library`), fetched once; a failed fetch leaves it off and is tried again. */
+export function waveCaseBytes(): Promise<Uint8Array[] | undefined> {
+  waveBytes ??= loadWaveCaseBytes().catch((error: unknown) => {
+    console.warn('The wave library did not load; the sea draws the wave.', error);
+    waveBytes = undefined;
+    return undefined;
+  });
+  return waveBytes;
 }
 
 /** No front points: the swept barrel draws nothing. */
@@ -1305,6 +1334,9 @@ export class PhysicalMode {
   private shown = true;
   /** The swept barrel (the Padang Padang spec, Part B, PR 3): built with the water on the first start, on at a swept spot. */
   private sweptBarrel?: SweptBarrel;
+  /** C2 step 3's overturn (`?wave=library`), drawn in the old tube's place, and whether this start runs it. */
+  private libraryZone?: LibraryZone;
+  private libraryOn = false;
   private swept = false;
   /** Whether the swept spot's jets land on its clock (`sweptCrashOn`): off at the Canyon, which keeps its own white. */
   private sweptCrash = false;
@@ -1421,8 +1453,10 @@ export class PhysicalMode {
     if (start !== this.starts) return false;
     // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
     const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot, config.poolTubeCase) : undefined;
+    const waveCases = config.wave === 'library' ? await waveCaseBytes() : undefined;
     if (start !== this.starts) return false;
-    const host = createHost(config, barrelCases ? { barrelCases } : undefined);
+    const extras = { ...(barrelCases ? { barrelCases } : {}), ...(waveCases ? { waveCases } : {}) };
+    const host = createHost(config, Object.keys(extras).length ? extras : undefined);
     // A superseded spin-up is let go at once, so its worker stops competing with the next one.
     this.dropPending?.();
     const dropped = new Promise<'dropped'>((resolve) => {
@@ -1471,6 +1505,15 @@ export class PhysicalMode {
     // The surfable tube's (the advisor's step 3 ruling) drawn as the surf zone feels it, switches and all.
     const face = this.swept && this.config.tubeShape !== 'bounded-C' ? tubeFaceOf(BARREL_SPOTS[config.spot]?.faceAnchor !== undefined, config) : undefined;
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept, face);
+    this.libraryOn = config.wave === 'library' && waveCases !== undefined;
+    if (this.libraryOn) {
+      // The library draws the wave: the old tube draws nothing (and leaves the water's seam mask to the library's).
+      this.sweptBarrel.draw(NO_FRONT, 0, 0);
+      if (!this.libraryZone) {
+        this.libraryZone = new LibraryZone(water);
+        this.scene.add(this.libraryZone.mesh.mesh);
+      }
+    } else this.libraryZone?.draw(NO_FRONT, 0);
     if (!this.spillingCurl) {
       this.spillingCurl = { mesh: new SpillingCurlMesh(water.materialUniforms), water };
       this.spillingCurl.mesh.rockBed = () => water.rockBed;
@@ -1771,6 +1814,10 @@ export class PhysicalMode {
   drawBarrel(): void {
     const { host, sweptBarrel } = this;
     if (!sweptBarrel) return;
+    if (this.libraryOn && this.libraryZone && host) {
+      this.libraryZone.draw(host.snapshot.zone, this.shown ? host.snapshot.zoneCount : 0);
+      return;
+    }
     if (!host || !this.swept || !this.shown) {
       sweptBarrel.draw(NO_FRONT, 0, 0, host?.snapshot.status);
       return;
@@ -1839,7 +1886,12 @@ export class PhysicalMode {
 
   /** The swept barrel's loft as last drawn, at a swept spot (the water sheet's curl shots). */
   get barrelLoft(): LoftResult | undefined {
-    return this.sweptBarrel?.lastLoft;
+    return this.libraryOn && this.libraryZone ? this.libraryZone.lastLoft : this.sweptBarrel?.lastLoft;
+  }
+
+  /** C2 step 3's overturn on the page (`?wave=library`): its last build's cost, ms (the fps trace's). */
+  get libraryDrawMs(): number {
+    return this.libraryZone?.lastMs ?? 0;
   }
 
   /** The swept barrel's mesh, once a swept spot has made it (the water sheet's views and before-and-after). */
@@ -1874,7 +1926,8 @@ export class PhysicalMode {
 
   cameraBelowSurface(margin = 0.1, position = this.camera.camera.position): boolean {
     if (!this.host) return false;
-    const drawn = this.sweptBarrel?.waterAt(position.x, position.y, position.z, margin);
+    const drawn = this.libraryOn && this.libraryZone
+      ? this.libraryZone.waterAt(position.x, position.y, position.z, margin) : this.sweptBarrel?.waterAt(position.x, position.y, position.z, margin);
     if (drawn !== undefined) return drawn;
     return position.y < this.host.heightAt(position.x, position.z) - margin;
   }

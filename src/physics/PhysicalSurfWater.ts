@@ -209,6 +209,12 @@ export interface PhysicalSurfWaterOptions {
    */
   roller?: RollerLens;
   /**
+   * C2 step 3's library zone (`?wave=library`, `ZoneSurface`): its heights over the sea's at the render nodes, the very
+   * nodes the snapshot draws (drawn = felt). Within it the sea's rise through the bodies' step is weighed out (the
+   * library's surface is held through the step, as the swept contact's is). Absent: the sea's nodes, as before.
+   */
+  zone?: ZoneNodes;
+  /**
    * 'old': the surface held still through the bodies' step, as before popup-moving-face (2026-10-29; the
    * `?surfaceMotion=old` dev switch, for A/Bs). By default it moves at its rise rate to each substep's time
    * (`setSampleTime`).
@@ -226,6 +232,13 @@ export interface PhysicalSurfWaterOptions {
    * the `?froth=old` dev switch, for A/Bs).
    */
   froth?: 'old';
+}
+
+/** The library zone's nodes as the plain surface reads them (`ZoneSurface`). */
+export interface ZoneNodes {
+  at(node: number, sea: number): number;
+  nodeAt(x: number, z: number): number;
+  weightAt(x: number, z: number): number;
 }
 
 /** Only numeric state read by the existing plain-height sampler; no complete solver facade. */
@@ -262,7 +275,7 @@ class PlainHeightSurface {
   private readonly gathered = { gx: 0, gz: 0 };
 
   constructor(private readonly heightState: PlainHeightState, protected readonly spacing: number,
-    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve' | 'roller' | 'plainHeight'> = {}, owned = false) {
+    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve' | 'roller' | 'plainHeight' | 'zone'> = {}, owned = false) {
     this.surfaceCacheActive = owned;
     this.fastHeights = heightOptions.plainHeight !== 'old';
   }
@@ -339,7 +352,11 @@ class PlainHeightSurface {
     const depth = solver.sampleCentered(solver.h, x, z);
     const bottom = solver.sampleCentered(solver.bed, x, z);
     const height = depth > WET ? (roller ? depth + bottom + roller.riseAt(x, z) : depth + bottom) : bottom - 0.05;
-    return this.heightOptions.carve ? this.heightOptions.carve(x, z, height) : height;
+    const carved = this.heightOptions.carve ? this.heightOptions.carve(x, z, height) : height;
+    const { zone } = this.heightOptions;
+    if (!zone) return carved;
+    const node = zone.nodeAt(x, z);
+    return node >= 0 ? zone.at(node, carved) : carved;
   }
 
   /** Fill the 4 × 4 node stencil around (x, z); returns the node-space coordinates. */
@@ -501,6 +518,19 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
    */
   static forSimulation(simulation: SurfZoneSimulation, swept?: SweptSurfaceQueries, nodeSpacing = 1): PhysicalSurfWater {
     const { lip, roller } = simulation;
+    // C2 step 3's library zone: its nodes, and its overturn's contact (`swept`) answers plainly, without the old tube's rules.
+    const zone = simulation.waveZone?.surface;
+    if (zone) {
+      return new PhysicalSurfWater(simulation.solver, {
+        peakPeriod: simulation.config.peakPeriod, breaking: simulation.feltBreaking, nodeSpacing, zone,
+        ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
+        aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
+        ...(roller ? { roller } : {}),
+        ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
+        ...(simulation.config.plainHeight ? { plainHeight: simulation.config.plainHeight } : {}),
+        ...(simulation.config.froth ? { froth: simulation.config.froth } : {}),
+      });
+    }
     return new PhysicalSurfWater(simulation.solver, {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.feltBreaking, nodeSpacing,
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
@@ -545,8 +575,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
    * whether the update or a body's query first needs it.
    */
   createCachedPlainSurface(): { invalidate(): void; heightAt(x: number, z: number): number; bedAt(x: number, z: number): number } {
-    const { carve, roller, plainHeight } = this.options;
-    const surface = new PlainHeightSurface(this.solver, this.spacing, { ...(carve ? { carve } : {}), ...(roller ? { roller } : {}), ...(plainHeight ? { plainHeight } : {}) }, true);
+    const { carve, roller, plainHeight, zone } = this.options;
+    const surface = new PlainHeightSurface(this.solver, this.spacing, { ...(carve ? { carve } : {}), ...(roller ? { roller } : {}), ...(plainHeight ? { plainHeight } : {}), ...(zone ? { zone } : {}) }, true);
     // `bedAt`: the solver's bed under it (ruling 22's bed rule on the dug foot, `dugCap`); read only where the foot is dug.
     const { solver } = this;
     return Object.freeze({
@@ -611,7 +641,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     } else if (contact) this.fromContact(y, out);
     else if (this.sampleTime !== 0 && out.wet) {
       rise = 0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'));
-      out.surfaceY += rise * this.sampleTime;
+      out.surfaceY += rise * this.sampleTime * this.seaShare(x, z);
     }
     out.voidFraction = this.airAt(y, out.surfaceY);
     out.turbulence = this.turbulenceAt(y, out.surfaceY, this.blend(bed));
@@ -692,7 +722,13 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
     this.cellWeights(x, z);
     if (!(this.blend(this.solver.h) > WET)) return surface;
     const { qx, qz } = this.solver;
-    return surface + (0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'))) * this.sampleTime;
+    return surface + (0 - (this.gradient(qx, x, z, 'x') + this.gradient(qz, x, z, 'z'))) * this.sampleTime * this.seaShare(x, z);
+  }
+
+  /** How much of the surface at (x, z) is the sea's own (1 outside a library zone, `zone`): its rise moves only that share. */
+  private seaShare(x: number, z: number): number {
+    const { zone } = this.options;
+    return zone ? 1 - zone.weightAt(x, z) : 1;
   }
 
   addReaction(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void {

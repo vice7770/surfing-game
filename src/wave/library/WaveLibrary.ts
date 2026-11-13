@@ -60,6 +60,15 @@ export interface HandoverState {
   /** d_h, m, and the hand-over's time t_h, s. */
   depth: number;
   time: number;
+  /**
+   * Ruling 31 (C2 step 3): the clock from the reef's toe. On the flat platform H/d does not change, so it cannot place a
+   * clock: a slice handed over where its crest crossed the toe takes each case's clock from where that case's own crest
+   * crosses its toe (`StateMatcher.toeTau`), plus `since`, the time since the slice's crest crossed it, in √(d_toe/g)
+   * (0 at the toe itself), and that case's H/d there places it on the A0 axis. `share` (0–1) is how much of the clock
+   * is the toe's: 1 at the toe, falling to 0 a little way up the face, where H/d matching takes over, so neighbouring
+   * slices handed over by the two rules never step apart (the step 3 build's choice). Absent: H/d alone, as before.
+   */
+  toe?: { since: number; share: number };
 }
 
 /** How a key fell among the cases: inside them, below or above them, or only one value there (not a key yet). */
@@ -110,6 +119,12 @@ function bracket(values: readonly number[], q: number): Bracket {
 /** One case's matching table: its path's H/d, smoothed and made monotone (a running maximum) up to the throw. */
 interface MatchTable { last: number; envelope: Float64Array }
 
+/**
+ * Where a case's crest leaves its flat platform (ruling 31): the still depth under it first falls this far under the
+ * platform's, h0. The cases' platform is h0 deep; the knee is sharp in their beds, so 0.002 h0 (1 cm at 5 m) is its toe.
+ */
+export const TOE_DEPTH = 0.002;
+
 function matchTable(p: CasePath): MatchTable {
   let last = -1;
   for (let k = 0; k < p.tau.length; k += 1) if (p.tau[k] <= 0) last = k;
@@ -141,6 +156,12 @@ export class StateMatcher {
   private readonly tables: MatchTable[];
   /** The period the depth axis is scaled by: the cases' mean period, √(h0/g). */
   readonly periodRef: number;
+  /**
+   * Per case, τ where its crest crosses its toe (ruling 31; `TOE_DEPTH`), linear between frames; its first frame's τ
+   * where its crest is already past it there (`toeClamp` −1), its throw's where it never leaves the platform before it.
+   */
+  readonly toeTau: Float64Array;
+  private readonly toeClamp: Int8Array;
 
   constructor(paths: readonly CasePath[]) {
     if (paths.length === 0) throw new Error('StateMatcher: no case');
@@ -161,6 +182,44 @@ export class StateMatcher {
     let sum = 0;
     for (const p of paths) sum += p.period;
     this.periodRef = sum / paths.length;
+    this.toeTau = new Float64Array(paths.length);
+    this.toeClamp = new Int8Array(paths.length);
+    paths.forEach((p, i) => {
+      const { last } = this.tables[i];
+      const floor = 1 - TOE_DEPTH;
+      if (!(p.d[0] > floor)) {
+        this.toeTau[i] = p.tau[0];
+        this.toeClamp[i] = -1;
+        return;
+      }
+      let k = 1;
+      while (k <= last && p.d[k] > floor) k += 1;
+      if (k > last) {
+        this.toeTau[i] = p.tau[last];
+        this.toeClamp[i] = 1;
+        return;
+      }
+      const u = (p.d[k - 1] - floor) / (p.d[k - 1] - p.d[k]);
+      this.toeTau[i] = p.tau[k - 1] + u * (p.tau[k] - p.tau[k - 1]);
+    });
+  }
+
+  /** Case i's clock at its toe (ruling 31): its τ there, the still depth there, and whether it clamped; its H/d there. */
+  matchToe(i: number): { tau: number; depth: number; clamp: -1 | 0 | 1; hd: number } {
+    const tau = this.toeTau[i];
+    return { tau, depth: this.depthAt(i, tau), clamp: this.toeClamp[i] as -1 | 0 | 1, hd: this.envelopeAt(i, tau) };
+  }
+
+  /** Case i's smoothed, monotone H/d at τ (its matching table), linear between frames, held at its ends. */
+  envelopeAt(i: number, tau: number): number {
+    const p = this.paths[i];
+    const { last, envelope } = this.tables[i];
+    if (!(tau > p.tau[0])) return envelope[0];
+    if (!(tau < p.tau[last])) return envelope[last];
+    let k = 0;
+    while (k + 1 < last && p.tau[k + 1] <= tau) k += 1;
+    const u = (tau - p.tau[k]) / (p.tau[k + 1] - p.tau[k]);
+    return envelope[k] + u * (envelope[k + 1] - envelope[k]);
   }
 
   /** τ_h in case i where its smoothed, monotone H/d first reaches `hd`; the depth there; and whether it clamped. */
@@ -223,10 +282,21 @@ export class StateMatcher {
         // Each case's point: its H/d at τ_h (the slice's where it matched, its envelope's end where it clamped) and its
         // depth axis, d̂(τ_h) (T̄/T)².
         const points = members.map((i) => {
-          const m = this.matchCase(i, hd);
           const T = this.paths[i].period;
+          const byHd = this.matchCase(i, hd);
           const { last, envelope } = this.tables[i];
-          return { i, m, x: m.clamp === 0 ? hd : m.clamp < 0 ? envelope[0] : envelope[last], y: (m.depth * ref * ref) / (T * T) };
+          const hdX = byHd.clamp === 0 ? hd : byHd.clamp < 0 ? envelope[0] : envelope[last];
+          const share = state.toe ? Math.min(1, Math.max(0, state.toe.share)) : 0;
+          if (!(share > 0)) return { i, m: byHd, x: hdX, y: (byHd.depth * ref * ref) / (T * T) };
+          // Ruling 31: the clock from the case's own toe, the time since the slice's crest crossed it added; its H/d
+          // there on the A0 axis. Within the share's course, blended with the H/d match.
+          const toe = this.matchToe(i);
+          const p = this.paths[i];
+          const tauToe = Math.min(p.tau[last], Math.max(p.tau[0], toe.tau + state.toe!.since));
+          const tau = tauToe + (1 - share) * (byHd.tau - tauToe);
+          const clamp = share >= 0.5 ? (toe.clamp !== 0 ? toe.clamp : tauToe <= p.tau[0] ? -1 : tauToe >= p.tau[last] ? 1 : 0) : byHd.clamp;
+          const m = { tau, depth: this.depthAt(i, tau), clamp };
+          return { i, m, x: this.envelopeAt(i, tauToe) + (1 - share) * (hdX - this.envelopeAt(i, tauToe)), y: (m.depth * ref * ref) / (T * T) };
         });
         let a0: KeyClamp = 'in';
         let lo = 0;
