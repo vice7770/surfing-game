@@ -870,3 +870,43 @@ unphysical comes back — but if the choice is between a bar and a ride, the rid
 2. Pumping, for the speed — and with it the speed band above, since pumping is how a rider earns speed rather than
    being given it.
 3. Then, if the falls are still wrong, ruling 29o's model work.
+
+---
+
+# Ruling 29r: how this work runs from now on (2026-11-13)
+
+The owner, after riding:
+
+> "simple dont test anything because the tests are not usefull, the canyon wave was not rideable because the surfer was
+> too slow to turn and position himself on the proper section on the wave, the surfer can almost only go in front. ten
+> rounds of automated tests should not miss something so simple"
+>
+> "I would say to let me test more instead of overtesting, because it is cleary not working"
+
+## The tests did not miss it. The advisor overrode it.
+
+The turn-pair probe measures exactly what the owner is describing: can the rider link turns and move around the wave.
+**It read 0 of 16 from 3.2e through 3.2j — six rounds.** Ruling 29k suspended that bar because it was failing on speed
+while speed was blocked on pumping.
+
+That was managing a schedule, not judging the game. **The one probe that measured what the owner rides is the one that
+got switched off**, and then ten rounds of other numbers were reported as progress. The failure is not the probes. It
+is the advisor choosing which probe to believe.
+
+## How the work runs now
+
+1. **Short cycles. One change, merge, the owner rides, repeat.** Not ten probe rounds between rides.
+2. **No merge is gated on probe bars.** They are reported as information, in a plain table, with no judgement attached.
+3. **Keep the seatbelts, which are not bars:** `tsc` clean, the suite passing, the default game byte-identical, and no
+   unpaired rule forces or hidden motors. They protect what already works and what the owner's standing rule forbids,
+   and they cost nothing.
+4. **A probe that measures something the owner actually does on a wave is never suspended.** If it fails, it is
+   reported as failing for as long as it fails.
+5. **Before any number is adopted as a bar, say in one line what the owner would feel if it improved.** If the answer
+   is "nothing", it is not a bar. (29p, restated because it is the same mistake.)
+
+## The thing to fix, in the owner's words
+
+**"Too slow to turn and position himself on the proper section of the wave — he can almost only go in front."**
+
+That is the target for step 3.2L and for whatever follows it. Not a number.
