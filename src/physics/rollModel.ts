@@ -230,6 +230,8 @@ export interface HumanRollGains {
   bank: number;
   bankRate: number;
   integral?: number;
+  /** Step 3.2c's model only: rad of ankle rest per rad/s of the head's yaw rate (the canals), in `humanTwistLoop`. */
+  yawRate?: number;
 }
 
 /** e^{−s d} ≈ N(s) / D(s), Padé (n, n), in controllable canonical form (A, B, C, D). */
@@ -441,8 +443,12 @@ export interface YawPlant {
   hip?: number;
 }
 
-/** The rows of [φ, φ̇, θ, θ̇, r, β] for `YawPlant` before the balance, as linear functions of the n-state. */
-function yawRows(y: YawPlant, load: number, n: number): number[][] {
+/**
+ * The rows of [φ, φ̇, θ, θ̇, r, β] for `YawPlant` before the balance, as linear functions of the n-state. `yawExtra`, a
+ * further yaw moment on the board (N·m, as a row over the n-state: step 3.2c's twist), enters before the feet's
+ * acceleration, so the body feels it.
+ */
+function yawRows(y: YawPlant, load: number, n: number, yawExtra?: readonly number[]): number[][] {
   const g = load * GRAVITY;
   const m = y.mass;
   const hh = y.height;
@@ -469,6 +475,7 @@ function yawRows(y: YawPlant, load: number, n: number): number[][] {
   const c2 = flow ? (flow.c * (flow.to * flow.to - flow.from * flow.from)) / 2 : 0;
   const c3 = flow ? (flow.c * (flow.to ** 3 - flow.from ** 3)) / 3 : 0;
   const yawMoment = water(y.heelYaw, y.slipYaw - c2 * v, y.yawDamping - c3, y.rollRateYaw);
+  if (yawExtra) for (let j = 0; j < n; j += 1) yawMoment[j] += yawExtra[j];
   const side = water(y.heelSide, y.slipSide - c1 * v, y.yawSide - c2, y.rollRateSide);
   // The hip's push across (a share of the lagged rest), and the centre of pressure it moves with it.
   const hip = y.hip ?? 0;
@@ -565,6 +572,150 @@ export function humanYawKick(y: YawPlant, h: HumanRoll, g: HumanRollGains, kick 
   for (let i = 0; i + 2 < peaks.length && ratios.length < 3; i += 1) if (Math.sign(peaks[i]) === Math.sign(peaks[i + 2])) ratios.push(Math.abs(peaks[i + 2] / peaks[i]));
   const decay = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 0;
   return { decay, peakBank, yawRates, rollRates };
+}
+
+/**
+ * Step 3.2c (the advisor's ruling 29g; docs/research/new-rider/3.2, Part 3): the rider's twist as a second channel. The
+ * rider's yaw inertia is split by where it sits: the feet, the shanks and the thighs' share that stays with them turn
+ * with the board (`YawPlant.riderYawInertia`, now that share), and the pelvis, trunk, arms and head turn as one upper
+ * body of `inertia`, kg·m², about the same vertical. Between them the legs (and the trunk) twist:
+ * - the twist θ_t = ψ_u − ψ_b, the upper body's yaw less the board's (+ as r, nose right), its rate θ̇_t = ω_u − r;
+ * - the legs' torque on the board τ_b = τ_a + k_t θ_t + c_t θ̇_t (+ nose right): the active twist τ_a and the legs'
+ *   own (undelayed) stiffness and damping, `stiffness` and `damping`; the upper body takes −τ_b. A limb's force and its
+ *   reaction: the two feet push across the board in opposite directions (the feet's couple), and the hips turn the
+ *   upper body the other way.
+ * - (I_z + I_L) ṙ = … + τ_b (in `yawRows`, so the feet's acceleration and the body's bank feel it); I_U ω̇_u = −τ_b.
+ * The human loop gets a second command, the twist torque, delayed and lagged as the ankle's:
+ * u_t = K_b θ + K_br θ̇ + K_r ω_u + K_t θ_t + K_tr θ̇_t, on the body's bank and its rate (the vestibular sense), the
+ * head's yaw rate ω_u (the canals: the head turns with the upper body) and the twist and its rate (the legs' own sense).
+ *
+ * State: [φ, φ̇, θ, θ̇, r, β, δ, ι, θ_t, ω_u, τ_a, padé (ankle)…, padé (twist)…].
+ */
+export interface TwistPlant {
+  /** The upper body's yaw inertia (pelvis, trunk, arms, head, the thighs' turning share), kg·m². */
+  inertia: number;
+  /** The legs' and trunk's own axial stiffness and damping between the upper body and the board, N·m/rad, N·m·s/rad. */
+  stiffness: number;
+  damping: number;
+}
+/** The twist command's gains, N·m on the board (+ nose right): per rad and rad/s of the bank, of the head's yaw rate, of the twist and its rate. */
+export interface TwistGains {
+  bank: number;
+  bankRate: number;
+  yawRate: number;
+  twist: number;
+  twistRate: number;
+}
+/** The plant's rows for the first 11 states ([φ, φ̇, θ, θ̇, r, β, δ, ι, θ_t, ω_u, τ_a]); rows 6, 7 and 10 (the commands' lags and the integral) are left empty. */
+export function twistRows(y: YawPlant, t: TwistPlant, load: number, n: number): number[][] {
+  const extra = new Array<number>(n).fill(0);
+  extra[8] = t.stiffness;
+  extra[9] = t.damping;
+  extra[4] = -t.damping;
+  extra[10] = 1;
+  const rows = yawRows(y, load, n, extra);
+  const twist = new Array<number>(n).fill(0);
+  twist[9] = 1;
+  twist[4] = -1;
+  const upper = extra.map((e) => -e / t.inertia);
+  const empty = () => new Array<number>(n).fill(0);
+  return [...rows, empty(), empty(), twist, upper, empty()];
+}
+/** The twist command as a row over the state (before its delay). */
+function twistCommand(gt: TwistGains, n: number): number[] {
+  const u = new Array<number>(n).fill(0);
+  u[2] = gt.bank;
+  u[3] = gt.bankRate;
+  u[9] = gt.yawRate + gt.twistRate;
+  u[4] = -gt.twistRate;
+  u[8] = gt.twist;
+  return u;
+}
+/** The closed loop of `YawPlant` with the twist and the human balance on both channels: ẋ = M x. */
+export function humanTwistLoop(y: YawPlant, t: TwistPlant, h: HumanRoll, g: HumanRollGains, gt: TwistGains, order = 5): number[][] {
+  const pd = padeDelay(order, h.delay);
+  const n = 11 + 2 * order;
+  const m = twistRows(y, t, h.load ?? 1, n);
+  while (m.length < n) m.push(new Array<number>(n).fill(0));
+  const ua = new Array<number>(n).fill(0);
+  ua[2] = -g.bank;
+  ua[3] = -g.bankRate;
+  ua[9] = -(g.yawRate ?? 0);
+  ua[7] = 1;
+  m[7][2] = -(g.integral ?? 0);
+  const ut = twistCommand(gt, n);
+  for (const [u, at, lagRow] of [[ua, 11, 6], [ut, 11 + order, 10]] as const) {
+    for (let i = 0; i < order; i += 1) {
+      for (let k = 0; k < order; k += 1) m[at + i][at + k] = pd.a[i][k];
+      for (let j = 0; j < n; j += 1) m[at + i][j] += pd.b[i] * u[j];
+    }
+    for (let j = 0; j < n; j += 1) m[lagRow][j] = (pd.d * u[j]) / h.motorLag;
+    for (let k = 0; k < order; k += 1) m[lagRow][at + k] += pd.c[k] / h.motorLag;
+    m[lagRow][lagRow] -= 1 / h.motorLag;
+  }
+  return m;
+}
+/** Every mode of `humanTwistLoop`, least damped first (the Padé poles and the idle integral's left out, as `humanYawModes`). */
+export function humanTwistModes(y: YawPlant, t: TwistPlant, h: HumanRoll, g: HumanRollGains, gt: TwistGains): { frequency: number; damping: number }[] {
+  return eigenvalues(humanTwistLoop(y, t, h, g, gt))
+    .filter((v) => v.im >= 0 && Math.hypot(v.re, v.im) > 1e-9)
+    .map((v) => {
+      const size = Math.hypot(v.re, v.im);
+      return { frequency: Math.abs(v.im) / (2 * Math.PI), damping: size > 0 ? -v.re / size : 1 };
+    })
+    .filter((mode) => !(mode.damping > 0.5 && mode.frequency > 3.5))
+    .sort((a, b) => a.damping - b.damping);
+}
+/**
+ * `humanTwistLoop` in time with the delay exact (as `humanYawKick`): the board's roll rate kicked by `kick`, rad/s.
+ * Returns the roll rate's decay per cycle, the body's largest bank and twist, rad, and the largest torques, N·m: the
+ * ankle's (k (θ − φ − δ) + c (θ̇ − φ̇)) and the legs' twist on the board (τ_b).
+ */
+export function humanTwistKick(y: YawPlant, t: TwistPlant, h: HumanRoll, g: HumanRollGains, gt: TwistGains, kick = 0.5, seconds = 3, step = 1 / 1920, every = 32): { decay: number; peakBank: number; peakTwist: number; peakAnkle: number; peakTwistTorque: number; rollRates: number[]; yawRates: number[]; twists: number[] } {
+  const n = 11;
+  const rows = twistRows(y, t, h.load ?? 1, n);
+  const ut = twistCommand(gt, n);
+  const x = new Array<number>(n).fill(0);
+  x[1] = kick;
+  const ba: number[] = [];
+  const bt: number[] = [];
+  const lag = Math.max(1, Math.round(h.delay / step));
+  const rollRates: number[] = [];
+  const yawRates: number[] = [];
+  const twists: number[] = [];
+  let peakBank = 0;
+  let peakTwist = 0;
+  let peakAnkle = 0;
+  let peakTwistTorque = 0;
+  for (let i = 0; i < Math.round(seconds / step); i += 1) {
+    ba.push(-g.bank * x[2] - g.bankRate * x[3] - (g.yawRate ?? 0) * x[9] + x[7]);
+    bt.push(ut.reduce((s, v, j) => s + v * x[j], 0));
+    const da = ba.length > lag ? ba.shift()! : 0;
+    const dt = bt.length > lag ? bt.shift()! : 0;
+    const dx = rows.map((r) => r.reduce((s, v, j) => s + v * x[j], 0));
+    dx[6] = (da - x[6]) / h.motorLag;
+    dx[7] = -(g.integral ?? 0) * x[2];
+    dx[10] = (dt - x[10]) / h.motorLag;
+    for (let k = 0; k < n; k += 1) x[k] += step * dx[k];
+    if (i % every === 0) {
+      rollRates.push(x[1]);
+      yawRates.push(x[4]);
+      twists.push(x[8]);
+    }
+    peakBank = Math.max(peakBank, Math.abs(x[2]));
+    peakTwist = Math.max(peakTwist, Math.abs(x[8]));
+    peakAnkle = Math.max(peakAnkle, Math.abs(y.ankleStiffness * (x[2] - x[0] - x[6]) + y.ankleDamping * (x[3] - x[1])));
+    peakTwistTorque = Math.max(peakTwistTorque, Math.abs(x[10] + t.stiffness * x[8] + t.damping * (x[9] - x[4])));
+  }
+  const peaks: number[] = [];
+  for (let i = 1; i < rollRates.length - 1; i += 1) {
+    const a = Math.abs(rollRates[i]);
+    if (a >= Math.abs(rollRates[i - 1]) && a > Math.abs(rollRates[i + 1]) && a > 1e-4) peaks.push(rollRates[i]);
+  }
+  const ratios: number[] = [];
+  for (let i = 0; i + 2 < peaks.length && ratios.length < 3; i += 1) if (Math.sign(peaks[i]) === Math.sign(peaks[i + 2])) ratios.push(Math.abs(peaks[i + 2] / peaks[i]));
+  const decay = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 0;
+  return { decay, peakBank, peakTwist, peakAnkle, peakTwistTorque, rollRates, yawRates, twists };
 }
 
 /**

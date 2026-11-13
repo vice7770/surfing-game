@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE_DELAY, DelayLine, HumanBalance, RIDER_YAW_ARMS_OUT, SWING_INERTIA_ARMS, SWING_INERTIA_SET, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
-import { boardDerivatives, humanReferenceGain, humanRollKick, humanRollModes, humanYawModes, type RollParams, type YawPlant } from './rollModel';
+import { boardDerivatives, humanReferenceGain, humanRollKick, humanRollModes, humanTwistKick, humanTwistModes, humanYawModes, twistRows, type RollParams, type TwistGains, type YawPlant } from './rollModel';
 
 // The new surfer's step 3.2 (`rider: 'new'`; docs/research/new-rider/3.2): the human balance's parts.
 
@@ -157,5 +157,43 @@ describe('the yaw model (rollModel humanYawLoop, step 3.2b)', () => {
     const withInertia = humanYawModes(plant(2.81), delay, gains)[0];
     expect(withInertia.frequency).toBeLessThan(without.frequency);
     expect(withInertia.damping).toBeLessThan(0);
+  });
+});
+
+describe('the twist model (rollModel humanTwistLoop, step 3.2c)', () => {
+  const lab = { roll: [-104.9, -412.5, -285.3], slip: [-296.2, 1398.0, -530.6], yaw: [-13.1, 63.0, -34.5], rate: [2.65, -19.5, -1.5] };
+  const plant = (rider: number): YawPlant => ({
+    speed: 7, boardRollInertia: 0.1, boardYawInertia: 0.449, riderYawInertia: rider, boardMass: 2.54, mass: 73, height: 0.84,
+    ankleStiffness: 800, ankleDamping: 80, ...boardDerivatives(lab, 7, 0.236), feetForward: 150, feetStation: -0.244, deckHeight: 0.031,
+  });
+  const delay = { delay: 0.1, motorLag: 0.05 };
+  const gains = { bank: 0, bankRate: 0.1 };
+  const none: TwistGains = { bank: 0, bankRate: 0, yawRate: 0, twist: 0, twistRate: 0 };
+
+  it('is 3.2b\'s rigid coupling when the twist is stiff: the board\'s share and the upper body\'s add up', () => {
+    const rigid = humanYawModes(plant(2.81), delay, gains)[0];
+    const stiff = humanTwistModes(plant(1.37), { inertia: 1.44, stiffness: 1e4, damping: 300 }, delay, gains, none)[0];
+    expect(stiff.damping).toBeCloseTo(rigid.damping, 2);
+    expect(stiff.frequency).toBeCloseTo(rigid.frequency, 2);
+  });
+
+  it('turns the board and the upper body by opposite equal moments: the twist keeps the yaw momentum', () => {
+    const rows = twistRows(plant(1.37), { inertia: 1.44, stiffness: 20, damping: 3 }, 1, 11);
+    // The twist torque's column (10): the board's yaw (row 4) against the upper body's (row 9).
+    expect((0.449 + 1.37) * rows[4][10] + 1.44 * rows[9][10]).toBeCloseTo(0, 9);
+    // The twist's own spring and damper likewise (columns 8 and 9).
+    expect((0.449 + 1.37) * rows[4][8] + 1.44 * rows[9][8]).toBeCloseTo(0, 9);
+  });
+
+  it('agrees in time, with the delay exact, with the modes on the delay\'s Padé', () => {
+    const twist = { inertia: 1.44, stiffness: 10.3, damping: 5 };
+    const law: TwistGains = { bank: 23.4, bankRate: 7.5, yawRate: -5, twist: 0, twistRate: 6.4 };
+    const ankle = { bank: -0.023, bankRate: 0.019, yawRate: -0.016 };
+    const m = humanTwistModes(plant(1.37), twist, delay, ankle, law)[0];
+    const kick = humanTwistKick(plant(1.37), twist, delay, ankle, law);
+    expect(m.damping).toBeGreaterThan(0);
+    expect(kick.decay).toBeLessThan(1);
+    const passive = humanTwistKick(plant(1.37), twist, delay, gains, none);
+    expect(passive.peakBank).toBeGreaterThan(kick.peakBank);
   });
 });
