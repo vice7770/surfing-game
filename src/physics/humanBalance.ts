@@ -15,7 +15,8 @@
  * - **the stance room** (the design's table, `stanceRoom`): how much each stance leaves for those moves;
  * - **the capture point** (Hof, Gazendam and Sinke 2005): the centre of mass plus its velocity over ω₀ = √(g_eff / h),
  *   both relative to the feet and across the felt vertical. Past the feet's edge by more than the room still left can
- *   catch, and with the centre of mass itself past the edge, the weight has passed the feet: a fall, by physics;
+ *   catch, and with the centre of mass itself past the edge, the weight has passed the feet: a fall, by physics. It is
+ *   read only where the theorem holds, which is while the feet carry the body: see CAPTURE_LOAD (step 3.2h);
  * - **the reserve** (design §6): the least of the capture point's margin, the grip left and the knees' strength left.
  *
  * Its roll gains came from `rollModel.ts` (`humanRollModes`, docs/research/new-rider/3.2/model.probe.ts). Work in
@@ -90,6 +91,27 @@ export const ARMS_TIME = 0.15;
 export const KNEE_RETURN_TIME = 0.6;
 /** The knees go all the way down (the stance's travel) once the capture point is this far past the feet's edge, m; less, in proportion. */
 export const KNEE_PAST_FULL = 0.15;
+/**
+ * **The capture point's validity condition** (step 3.2h, ruling 29l): the feet's own load, in body weights, under
+ * which `capture` holds its last state instead of reading a new one.
+ *
+ * The capture point is a theorem about a body on a **fixed support under gravity** (Hof, Gazendam and Sinke 2005): the
+ * body topples about the support's edge at ω₀ = √(g / h), so a centre of mass at x with velocity v just reaches upright
+ * from the edge when x + v/ω₀ is at it. A board dropping away into the trough of a chop is neither fixed nor under a
+ * constant g, and the test then says a fall has happened when nothing has: as the felt gravity goes to zero ω₀ falls to
+ * its floor, and a drift of 0.5 m/s alone puts the capture point 0.67 m along the deck — twice the feet's reach — with
+ * the rider perfectly balanced (step 3.2g's trace, `3.2/README.md` Part 7 §3).
+ *
+ * The condition is the load, because the test is a statement about the feet and **the feet's authority is bounded by
+ * the load they carry**. The ankle can move the centre of pressure only inside a foot that bears weight, so the whole
+ * foot's moment is at most the load times its half-length (about 0.1 m): at 0.2 body weights that is 0.2 × 716 N ×
+ * 0.1 m ≈ 14 N·m, against the body's toppling stiffness m g h ≈ 645 N·m/rad — a correction of 1.3°. Below this load
+ * the capture point is asking where the feet must be while the feet can do nothing, so it is read as the last valid
+ * answer and not a new one; the posture backstops (the leg past its travel, the lean past its range, the flight time)
+ * carry the window instead. The value is the same idea as the old rider's `BALANCE_LOAD` (0.1 body weights, below which
+ * the centre of pressure "says nothing"), set a little higher because the chop's trough reaches 0.10 exactly.
+ */
+export const CAPTURE_LOAD = 0.2;
 
 /** What a stance leaves the balance (design §2): the knees' travel left, m; the hip's range, rad; the arms free (1) or committed (0). */
 export interface StanceRoom {
@@ -232,6 +254,11 @@ export class HumanBalance {
   readonly state: CaptureState = { across: 0, along: 0, past: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0 };
   /** The time the capture point last left the feet (NaN while inside), on the balance's clock, s. */
   leftFeetAt = Number.NaN;
+  /** Whether `capture` is holding its last state because the feet are light (CAPTURE_LOAD): the validity condition, step 3.2h. */
+  frozen = false;
+  /** How long the feet have been light without a break, s, and the longest such window since the mount (a report). */
+  lightFor = 0;
+  lightLongest = 0;
   /** The balance's own clock, s. */
   get time(): number {
     return this.clock;
@@ -248,6 +275,9 @@ export class HumanBalance {
     this.arms = 0;
     this.kneeCause = 'none';
     this.leftFeetAt = Number.NaN;
+    this.frozen = false;
+    this.lightFor = 0;
+    this.lightLongest = 0;
     this.state.margin = 1;
     this.state.past = 0;
     this.state.weightPast = false;
@@ -315,10 +345,26 @@ export class HumanBalance {
    * `felt` the felt vertical there (the feet's specific force, m/s², board frame); `halfAcross` the feet's half-width
    * across, and `alongFront` / `alongBack` their reach from the middle toward the nose and the tail, m; `reachAcross`
    * and `reachAlong` what the room left can still catch past the edge each way, m.
+   *
+   * `load` is the feet's own load this substep, in body weights, and `h` the substep, s: **the validity condition**
+   * (CAPTURE_LOAD, step 3.2h). Under it the state is held exactly as it was — the margin, how far past the feet the
+   * point is, whether it is beyond the room, and the time it left the feet — so the test can neither call a fall nor
+   * clear one while the feet carry nothing. Nothing is remembered about the light window: on the way back into load the
+   * test resumes at once, from the state the body is then in, which is as it should be, since a rider that goes light
+   * and comes down with its weight off its feet does fall, and that is the first loaded substep's own reading. What the
+   * freeze costs is only a fall called *during* the light window, where the feet could neither have caused it nor
+   * saved it; the posture backstops and the flight time still carry that window.
    */
   capture(offset: { x: number; y: number; z: number }, velocity: { x: number; y: number; z: number }, felt: { x: number; y: number; z: number },
-    halfAcross: number, alongFront: number, alongBack: number, reachAcross: number, reachAlong: number): CaptureState {
+    halfAcross: number, alongFront: number, alongBack: number, reachAcross: number, reachAlong: number, load = 1, h = 0): CaptureState {
     const s = this.state;
+    this.frozen = load < CAPTURE_LOAD;
+    if (this.frozen) {
+      this.lightFor += h;
+      this.lightLongest = Math.max(this.lightLongest, this.lightFor);
+      return s;
+    }
+    this.lightFor = 0;
     const g = Math.hypot(felt.x, felt.y, felt.z);
     const nx = g > 1e-6 ? felt.x / g : 0;
     const ny = g > 1e-6 ? felt.y / g : 1;
