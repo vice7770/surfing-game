@@ -1621,6 +1621,8 @@ export class AttachedRider {
   private readonly leanRate = new Vector3();
   private stepImpulse = new Vector3();
   private stepLoad = 0;
+  /** The new surfer: the feet's load the latest substep, in body weights (the capture point's validity condition, step 3.2h). */
+  captureLoad = 0;
   /** The parts' centres (world) as the latest step began, for swept lip contact, and the parcels that have struck. */
   private readonly previousParts = new Float64Array(RIDER_PARTS.length * 3);
   private readonly struckBy = new Set<number>();
@@ -3326,7 +3328,13 @@ export class AttachedRider {
     // Feet on a deck only push: compressing, the legs fold no faster than the body falls onto them, so a board
     // dropping or rolling away from under the rider unloads the feet rather than being pulled up by them.
     const slack = this.leg.extension - this.legLoad / this.legStiffness;
-    if (compressing && this.leg.rest < slack) {
+    // The new surfer's balance lowers the knees too (`human.knees`, the capture point off the feet or the hip near its
+    // range), and the rule is the same for that drop: a foot on a deck has nothing to pull against, so the leg cannot
+    // drag the body down onto a board that is falling away from under it. Without this the balance's knee drop in a
+    // chop's trough left the rest 0.18 m under the body and the spring pulled it down with 3.6 kN — 5 body weights,
+    // on a rider the water was carrying nothing of — and the body went 0.26 m off its posture and was separated by
+    // RECOVERABLE_ERROR. (Step 3.2h; the trace is `3.2/README.md` Part 8 §3.)
+    if ((compressing || (this.freeBody && this.human.knees > 0)) && this.leg.rest < slack) {
       this.leg.rest = Math.min(0, slack);
       this.restRate = Math.max(this.restRate, this.leg.rate);
     }
@@ -4134,7 +4142,11 @@ export class AttachedRider {
     // The new surfer: the body's own push through the feet (the soles' sense), for the pitch reference's slow trim.
     if (this.newRider && this.upright) this.bodyPush.addScaledVector(this.scratch2.copy(contact).divideScalar(h).sub(this.bodyPush), 1 - Math.exp(-h / SPECIFIC_FORCE_TIME));
     this.up.set(0, 1, 0).applyQuaternion(board.orientation);
-    this.stepLoad = Math.max(this.stepLoad, contact.dot(this.up) / (h * this.mass * WATER.gravity));
+    const substepLoad = contact.dot(this.up) / (h * this.mass * WATER.gravity);
+    this.stepLoad = Math.max(this.stepLoad, substepLoad);
+    // The new surfer: the feet's own load this substep, in body weights, for the capture point's validity condition
+    // (`humanBalance.ts` CAPTURE_LOAD, step 3.2h). A read-out for the probes as well.
+    if (free) this.captureLoad = substepLoad;
     this.position.addScaledVector(this.velocity, h);
     this.frame(board);
     if (this.inContact) {
@@ -4158,8 +4170,10 @@ export class AttachedRider {
       this.limitTime[limit] = this.limitTime[limit] * decay + (this.limit === limit ? h : 0);
     }
     // The new surfer standing (step 3.2): the capture point against the feet (`HumanBalance`), which replaces the sway's
-    // RECOVERABLE_ERROR as the balance's fall test.
-    if (free) this.captureStep(h, board);
+    // RECOVERABLE_ERROR as the balance's fall test. Step 3.2h gives it its validity condition: it is read only while the
+    // feet carry the body (CAPTURE_LOAD), and while they do not, `RECOVERABLE_ERROR` below (the leg past its travel, the
+    // lean past MAX_BANK or MAX_PITCH) and MAX_FLIGHT carry the window.
+    if (free) this.captureStep(h, board, substepLoad);
     else this.pairFresh = true;
     // Pushed too far off the posture, swayed past recovery, or airborne too long: the rider lets go of the board.
     if (this.flightTime > MAX_FLIGHT) this.separate('lost board');
@@ -4173,9 +4187,11 @@ export class AttachedRider {
    * frame: the centre of mass from the feet's middle, its velocity relative to the feet there, the felt vertical (the
    * feet's specific force, low-passed SPECIFIC_FORCE_TIME), the feet's extent (the support), and what the room left can
    * still catch past the edge: the rotor's angular impulse to its range (`rotorImpulse`) as a capture-point distance,
-   * the hip across (the swing) across and the hip in pitch along.
+   * the hip across (the swing) across and the hip in pitch along. `load` is the feet's own load this substep, in body
+   * weights: the test's validity condition (step 3.2h, `humanBalance.ts` CAPTURE_LOAD). The felt vertical's low pass
+   * keeps running through a light window, so the test resumes on a current reading.
    */
-  private captureStep(h: number, board: BoardBody): void {
+  private captureStep(h: number, board: BoardBody, load: number): void {
     const support = this.support;
     const midX = (support.xMin + support.xMax) / 2;
     const midZ = (support.zMin + support.zMax) / 2;
@@ -4208,7 +4224,7 @@ export class AttachedRider {
     const room = stanceRoom(this.stanceDepth);
     const across = rotorImpulse(this.human.swingInertia, SWING_TORQUE, room.hipRange - Math.abs(this.swing.angle)) / (this.mass * height * omega);
     const along = rotorImpulse(HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, room.hipRange - Math.abs(this.standingBody.hip.angle)) / (this.mass * height * omega);
-    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, across, along);
+    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, across, along, load, h);
   }
 
   /** The limit that bound the contact most in the recent past. */
