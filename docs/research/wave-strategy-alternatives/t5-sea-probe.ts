@@ -19,6 +19,11 @@
  *   (docs/research/pool-tube-runs/data/periodic_pool_straight_big_L13_scout_track.json: τ from its own vertical, the
  *   crest, the trough within 3 h0 ahead, the face angle, as t5_case_side.py), and, where the game's library has frames
  *   (τ >= its first frame), from the library's own profile (`profileAt`) as a check.
+ * Options added for C2's step 1 (2026-11-13; c2-step1.md): `--deltas 2,3,4,4.5,5,5.4` (the look-back times, s; default
+ * 1 to 4); `--case-bin FILE` (the "lib" columns from that case file, e.g. T5's level-13 library, and its own Froude scale
+ * for the case side, in place of the game's library); `--keys` (the pool's library keys at each Δ: the still depth under
+ * the sea's crest, the bed's slope along the ray from there to the throw place, the reef crest's depth along the ray, the
+ * foot crest over the foot depth; printed after the table). Without them the probe runs and prints as before.
  * Run from the repository's root (the case files are read from public/):
  *   npx rolldown docs/research/wave-strategy-alternatives/t5-sea-probe.ts -o <scratch>/t5-sea-probe.mjs --format esm --platform node
  *   node <scratch>/t5-sea-probe.mjs --ref --until 300 --extra "&wallBody=stream&tubeForm=early&poolReach=long&loftMesh=arc&wallFoot=dug"
@@ -41,6 +46,9 @@ const FROM = Number(option('from') ?? 60);
 const TO = Number(option('to') ?? 270);
 const TRACK = option('track') ?? 'docs/research/pool-tube-runs/data/periodic_pool_straight_big_L13_scout_track.json';
 if (option('reach-to')) (POOL_REF_FRONT_REACH as unknown as { to: number }).to = Number(option('reach-to'));
+const DELTA_ARG = option('deltas');
+const CASE_BIN = option('case-bin');
+const KEYS = process.argv.includes('--keys');
 const extra = [option('case') ? `&poolTubeCase=${option('case')}` : '', option('extra') ?? ''].join('');
 if (ref) (globalThis as unknown as { location: { search: string } }).location = { search: `?poolSize=ref${extra}` };
 const settings = physicalSettingsFor('pool', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday', waves: 'barrel' } as never, { stage: 2, compute: 'cpu' });
@@ -49,6 +57,8 @@ const slope = BARREL_SLOPE[config.spot];
 const caseBytes = sweptBarrelOn(config) && slope !== undefined ? readBarrelCases(config.spot, undefined, config.poolTubeCase) : undefined;
 const library = caseBytes ? libraryFromBytes(caseBytes, config.tubeShape, config.spot, config.heldRule) : undefined;
 if (!library || slope === undefined) throw new Error('no library: the probe needs the swept barrel (--ref)');
+const caseLib = CASE_BIN ? libraryFromBytes([new Uint8Array(readFileSync(CASE_BIN))], config.tubeShape, config.spot, config.heldRule) : library;
+const caseSlope = CASE_BIN ? caseLib.cases[0].slope : slope;
 const sim = new SurfZoneSimulation(config, 'spun-up', library);
 const front = sim.front;
 if (!front) throw new Error('no front');
@@ -73,8 +83,10 @@ function trackAt(t: number): TrackRow | undefined {
   return undefined;
 }
 
-// ---- The ring buffer: η every 0.1 s, the last 5 s.
-const STEP = 1 / 30; const EVERY = 3; const KEEP = 52;
+// ---- The measure's look-back times (s): 1 and 1.5 s are a check only (there the game's library has frames).
+const DELTAS = DELTA_ARG ? DELTA_ARG.split(',').map(Number) : [1, 1.5, 2, 2.5, 3, 3.5, 4];
+// ---- The ring buffer: η every 0.1 s, the last 5 s (or the largest Δ + 1.2 s).
+const STEP = 1 / 30; const EVERY = 3; const KEEP = Math.max(52, Math.ceil((Math.max(...DELTAS) + 1.2) / 0.1));
 const ring: Float32Array[] = []; const ringT: number[] = [];
 for (let k = 0; k < KEEP; k += 1) { ring.push(new Float32Array(nx * nz)); ringT.push(Number.NaN); }
 let ringHead = -1;
@@ -108,9 +120,11 @@ function etaAt(t: number, x: number, z: number): number {
   return a + w * (bilinear(ring[hi], x, z) - a);
 }
 
+// ---- The still depth (static): for the keys.
+const still = new Float32Array(nx * nz);
+for (let i = 0; i < still.length; i += 1) still[i] = solver.restLevel - solver.bed[i];
+
 // ---- The measure.
-/** 1 and 1.5 s: a check only (there the game's library has frames, so the track and the library can be read side by side). */
-const DELTAS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
 const DS = 0.25; const BACK = 80; const AHEAD = 20;
 interface Sample {
   ratio: number; rise: number; seaH: number; caseH: number; seaUp: number; caseUp: number; seaDist: number; caseDist: number;
@@ -120,14 +134,17 @@ const samples = new Map<number, Sample[]>(DELTAS.map((d) => [d, []]));
 const misses = new Map<number, Record<string, number>>(DELTAS.map((d) => [d, {}]));
 const miss = (d: number, why: string) => { const m = misses.get(d)!; m[why] = (m[why] ?? 0) + 1; };
 const done = new Set<number>();
+interface KeyRow { dH: number; S: number; HS: number; deep: number; dP: number; cosA: number; Hd: number; a0: number; footH: number; footD: number; crestUp: number; s: number; front: number }
+const keyRows = new Map<number, KeyRow[]>(DELTAS.map((d) => [d, []]));
 const profile = new Float32Array(2 * 128);
 let throws = 0; const throwTimes: number[] = [];
 const scales: number[] = []; const rayOff: number[] = [];
 
 function caseFromLibrary(footHeight: number, footDepth: number, seconds: number, scale: number): { H: number; slope: number; dist: number } | undefined {
-  const times = library!.profileTimes({ slope: slope!, footHeight, footDepth });
+  const lib = caseLib; const sl = caseSlope!;
+  const times = lib.profileTimes({ slope: sl, footHeight, footDepth });
   if (seconds < times.startSeconds - 1e-6) return undefined;
-  library!.profileAt({ slope: slope!, footHeight, footDepth, seconds }, profile);
+  lib.profileAt({ slope: sl, footHeight, footDepth, seconds }, profile);
   const cx = profile[64]; const cy = profile[65];
   let trough = Infinity;
   for (let k = 32; k < 128; k += 1) if (profile[2 * k] >= cx && profile[2 * k] <= cx + 3 * scale) trough = Math.min(trough, profile[2 * k + 1]);
@@ -137,12 +154,12 @@ function caseFromLibrary(footHeight: number, footDepth: number, seconds: number,
     if (Math.hypot(dx, dy) >= 0.05 * scale) { steep = Math.max(steep, (Math.atan2(Math.abs(dy), Math.abs(dx)) * 180) / Math.PI); break; }
   }
   // The crest's place before its throw place: the frame's crest x against the τ = 0 frame's (the library's x is the case's own).
-  library!.profileAt({ slope: slope!, footHeight, footDepth, seconds: 0 }, profile);
+  lib.profileAt({ slope: sl, footHeight, footDepth, seconds: 0 }, profile);
   return { H: cy - trough, slope: steep, dist: profile[64] - cx };
 }
 
 function measure(p: (typeof front.points)[number], tThrow: number, rayX: number, rayZ: number): void {
-  const blend = library!.caseBlend({ slope: slope!, footHeight: p.footHeight, footDepth: p.footDepth });
+  const blend = caseLib.caseBlend({ slope: caseSlope!, footHeight: p.footHeight, footDepth: p.footDepth });
   const h0 = blend.scale; const unit = Math.sqrt(h0 / GRAVITY);
   scales.push(h0);
   const xv = trackFile.x_vertical; const tv = trackFile.t_vertical;
@@ -179,6 +196,20 @@ function measure(p: (typeof front.points)[number], tThrow: number, rayX: number,
     const gx = (etaAt(t, qx + 0.5, qz) - etaAt(t, qx - 0.5, qz)); const gz = (etaAt(t, qx, qz + 0.5) - etaAt(t, qx, qz - 0.5));
     const skew = (Math.acos(Math.min(1, Math.abs(gx * rayX + gz * rayZ) / Math.max(1e-9, Math.hypot(gx, gz)))) * 180) / Math.PI;
     const seaH = e[bestK] - low;
+    if (KEYS) {
+      // The still depth along the ray: under the sea's crest (d_h), the bed's slope from there to the throw place (a fit),
+      // the reef crest's depth (the shallowest within 60 m shoreward of P) and the throw place's own depth.
+      const depthAt = (back: number) => bilinear(still, p.x - rayX * back, p.z - rayZ * back);
+      const backC = bestK * DS - AHEAD;
+      const dH = depthAt(backC);
+      let sx = 0; let sy = 0; let sxx = 0; let sxy = 0; let m = 0;
+      for (let b = 0; b <= backC + 1e-9; b += 0.5) { const v = depthAt(b); if (v === v) { sx += b; sy += v; sxx += b * b; sxy += b * v; m += 1; } }
+      const S = m > 2 ? (m * sxy - sx * sy) / (m * sxx - sx * sx) : Number.NaN;
+      let HS = Infinity; for (let b = 0; b >= -60; b -= 0.5) { const v = depthAt(b); if (v === v) HS = Math.min(HS, v); }
+      let deep = 0; for (let b = 0; b <= 120; b += 1) { const v = depthAt(b); if (v === v) deep = Math.max(deep, v); }
+      const phi = (40 * Math.PI) / 180; const cosA = Math.abs(rayX * Math.sin(phi) + rayZ * Math.cos(phi));
+      keyRows.get(d)!.push({ dH, S, HS, deep, dP: depthAt(0), cosA, Hd: seaH / dH, a0: p.footHeight / p.footDepth, footH: p.footHeight, footD: p.footDepth, crestUp: e[bestK], s: frameOf(p.x, p.z).s, front: p.front });
+    }
     const lib = caseFromLibrary(p.footHeight, p.footDepth, -d, h0);
     samples.get(d)!.push({
       ratio: seaH / caseH, rise: caseUp - e[bestK], seaH, caseH, seaUp: e[bestK], caseUp, seaDist: bestK * DS - AHEAD, caseDist,
@@ -218,7 +249,7 @@ const t0 = Date.now();
 for (let n = 1; solver.time < until - 1e-9; n += 1) {
   sim.step(STEP);
   const time = solver.time;
-  if (time < FROM - 5.5) continue;
+  if (time < FROM - Math.max(5.5, Math.max(...DELTAS) + 1.5)) continue;
   if (n % EVERY === 0) pushFrame(time);
   onThrows(time);
 }
@@ -228,7 +259,8 @@ const q = (v: number[], p: number) => { const a = v.filter(Number.isFinite).sort
 const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : '—');
 const r = (v: number[], d = 2) => `${f(q(v, 0.5), d)} (${f(q(v, 0.1), d)}–${f(q(v, 0.9), d)})`;
 /** A wave = one front (its id), as the game's front carries one breaking crest line. */
-const waves = [...new Set(samples.get(2)!.map((x) => x.front))];
+const SHOW = DELTAS.filter((d) => [2, 3, 4].includes(d)).length ? DELTAS.filter((d) => [2, 3, 4].includes(d)) : DELTAS.slice(0, 3);
+const waves = [...new Set(samples.get(SHOW[0])!.map((x) => x.front))];
 console.log(`t5 sea side: pool, ${ref ? `?poolSize=ref${extra}` : 'big (no --ref)'}; to ${until} s (${((Date.now() - t0) / 1000).toFixed(0)} s wall); throws ${FROM}–${TO} s`);
 console.log(`library: ${library.cases.map((c) => `${c.id} (A0 ${c.nonlinearity.toFixed(4)}, slope ${c.slope.toFixed(4)})`).join(', ')}; the spot's slope ${slope.toFixed(4)}; case track ${TRACK} (level ${trackFile.level}, vertical t ${trackFile.t_vertical.toFixed(3)}, x ${trackFile.x_vertical.toFixed(3)} h0)`);
 console.log(`thrown points measured: ${throws} on ${waves.length} fronts (one front = one wave's breaking crest line); the game's h0 for them ${r(scales)} m (Froude: lengths x h0/4.5, times x sqrt(h0/4.5) from the 4.5 m case); the ray off the sea's feed direction ${r(rayOff, 0)} deg`);
@@ -248,12 +280,29 @@ for (const d of DELTAS) {
   console.log(`Δ ${d.toFixed(1)} s: ${per.length} fronts with 5+ points, ratio ${r(per.map((l) => q(l.map((x) => x.ratio), 0.5)))}; each front's first throw at ${per.map((l) => Math.min(...l.map((x) => x.t)).toFixed(0)).join(', ')} s`);
 }
 // Along the reef: s thirds.
-console.log('\nalong the reef (s at the throw), ratio at Δ 2 / 3 / 4 s');
-const all = samples.get(2)!.map((x) => x.s);
+console.log(`\nalong the reef (s at the throw), ratio at Δ ${SHOW.join(' / ')} s`);
+const all = samples.get(SHOW[0])!.map((x) => x.s);
 const cuts = [q(all, 0), q(all, 1 / 3), q(all, 2 / 3), q(all, 1) + 1e-6];
 for (let k = 0; k < 3; k += 1) {
   const part = (d: number) => samples.get(d)!.filter((x) => x.s >= cuts[k] && x.s < cuts[k + 1]).map((x) => x.ratio);
-  console.log(`s ${f(cuts[k], 0)}–${f(cuts[k + 1], 0)} m: ${[2, 3, 4].map((d) => `${r(part(d))} (${part(d).length})`).join(' / ')}`);
+  console.log(`s ${f(cuts[k], 0)}–${f(cuts[k + 1], 0)} m: ${SHOW.map((d) => `${r(part(d))} (${part(d).length})`).join(' / ')}`);
 }
-const pass = [2, 3, 4].every((d) => { const m = q(samples.get(d)!.map((x) => x.ratio), 0.5); return m >= 0.9 && m <= 1.1; });
+if (CASE_BIN) {
+  console.log(`\nthe case side from ${CASE_BIN}: ratio sea H / library H where the library has frames, per Δ`);
+  for (const d of DELTAS) { const v = samples.get(d)!.filter((x) => Number.isFinite(x.libH)); console.log(`Δ ${d.toFixed(1)} s: n ${v.length} | ratio ${r(v.map((x) => x.seaH / x.libH))} | sea H ${r(v.map((x) => x.seaH))} lib H ${r(v.map((x) => x.libH))} | rise (lib crest place gap) dist sea ${r(v.map((x) => x.seaDist), 1)} lib ${r(v.map((x) => x.libDist), 1)} | slope sea ${r(v.map((x) => x.seaSlope), 0)} lib ${r(v.map((x) => x.libSlope), 0)}`); }
+}
+if (KEYS) {
+  console.log('\nthe pool library keys per Δ (median, 10–90 %; 1–99 % in brackets): d_h = still depth under the sea\'s crest (m); S = the bed\'s slope along the ray from there to the throw place; HS = the reef crest\'s depth along the ray (m, shallowest within 60 m shoreward of the throw); deep = the deepest still water within 120 m seaward along the ray (m, the platform); dP = the throw place\'s depth (m); cos α = the ray against the reef\'s normal; H/d_h the sea\'s; A0 = foot crest / foot depth (the game\'s); HS/deep');
+  const r2 = (v: number[], dd = 3) => `${r(v, dd)} [${f(q(v, 0.01), dd)}–${f(q(v, 0.99), dd)}]`;
+  for (const d of DELTAS) {
+    const v = keyRows.get(d)!; const pick = (k: keyof KeyRow) => v.map((x) => x[k]);
+    console.log(`Δ ${d.toFixed(1)} s: n ${v.length} | d_h ${r2(pick('dH'), 2)} | S ${r2(pick('S'), 4)} | HS ${r2(pick('HS'), 2)} | deep ${r2(pick('deep'), 2)} | dP ${r2(pick('dP'), 2)} | cos α ${r2(pick('cosA'), 3)} | H/d_h ${r2(pick('Hd'), 3)} | A0 ${r2(pick('a0'), 3)} (foot ${r(pick('footH'))} m over ${r(pick('footD'))} m) | HS/deep ${r2(v.map((x) => x.HS / x.deep), 3)} | d_h/deep ${r2(v.map((x) => x.dH / x.deep), 3)}`);
+    const sAll = pick('s'); const c3 = [q(sAll, 0), q(sAll, 1 / 3), q(sAll, 2 / 3), q(sAll, 1) + 1e-6];
+    for (let k = 0; k < 3; k += 1) {
+      const part = v.filter((x) => x.s >= c3[k] && x.s < c3[k + 1]); const pp = (key: keyof KeyRow) => part.map((x) => x[key]);
+      console.log(`   s ${f(c3[k], 0)}–${f(c3[k + 1], 0)} m (${part.length}): d_h ${r(pp('dH'))} S ${r(pp('S'), 4)} HS ${r(pp('HS'))} HS/deep ${r(part.map((x) => x.HS / x.deep), 3)} H/d_h ${r(pp('Hd'), 3)} A0 ${r(pp('a0'), 3)}`);
+    }
+  }
+}
+const pass = [2, 3, 4].every((d) => { if (!samples.has(d)) return false; const m = q(samples.get(d)!.map((x) => x.ratio), 0.5); return m >= 0.9 && m <= 1.1; });
 console.log(`\nbar (median ratio 0.90–1.10 at 2, 3 and 4 s): ${pass ? 'PASS' : 'FAIL'}`);

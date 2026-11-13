@@ -55,6 +55,9 @@
 # them), SCOUT_LEVEL (10), SCOUT_DTOUT (0.1), SCOUT_TMAX (the scout's end; default the case's end + SCOUT_EXTRA, 10).
 # VELOUT=1 builds phase 2 with periodic.c's VELOUT: each fine frame also writes vel/v<t>.dat, the water's velocity under
 # the surface (run_velocity.sh drives it, in a runs folder of its own). A phase 2 already compiled keeps its build.
+# QOUT=1 builds phase 2 with periodic.c's QOUT: each fine frame also writes q/q<t>.dat, the water column per x bin (volume,
+# flux, top, air under the top; C2's library, docs/research/wave-strategy-alternatives/c2-step1.md). As VELOUT, phase 2
+# only, and a phase 2 already compiled keeps its build.
 # BO and RE: the Bond and Reynolds numbers on h0 the builds compile with (periodic.c's own 1000 and 40000 when unset;
 # the lip-look ruling's rank 3 reruns the pool's cases at BO=4000: docs/research/lip-look-2026-11-11/README.md). A build
 # already compiled keeps its own, so give such a run a RUNS folder of its own. Each build's params.txt records them.
@@ -109,6 +112,14 @@ CASES_ALL="$CASES_ALL pool_kneeface_small:4.5:0.23:10:0.0535:0.2:64:28.5:39:34:4
 # or resumes another run of pool_straight_big (the Bo 4000 run's). The switch and window here are provisional, from the
 # M4's level-10 scout of pool_straight_big (vertical at t 28.49): run_pool.sh scouts it and places them 10 before vertical.
 CASES_ALL="$CASES_ALL pool_far_big:4.5:0.437:10:0.0463:0.2:64:18:34:25:47"
+# C2's pool library (2026-11-13; docs/research/wave-strategy-alternatives/c2-step1.md): 9 cases, pool_c2_<bed>_<a0>, at the
+# reference pool's 10.5 s on its 5 m platform (h0), A0 at 3 values (a1 < a2 < a3, by H/h0) x 3 beds (b1, b2, b3) on one line
+# of (the slope along the ray, HS/h0), each with the reef top along the ray and the back slope down to h0 (the reference
+# floor's flatWidth / cos α and backSlope × cos α). The keys bracket the pool's slices at the hand-over (measured in
+# c2-step1.md). The switch, end and window here are provisional: run_pool.sh scouts each case and places them 10 before
+# vertical, to touchdown + 8, the window to 20 past the vertical place (canyon_pipeline.py's EARLY).
+C2_LINES="pool_c2_b1_a1:5:0.22:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a1:5:0.22:10.5:0.068:0.235:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a1:5:0.22:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1 pool_c2_b1_a2:5:0.33:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a2:5:0.33:10.5:0.068:0.235:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a2:5:0.33:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1 pool_c2_b1_a3:5:0.44:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a3:5:0.44:10.5:0.068:0.235:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a3:5:0.44:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1"
+CASES_ALL="$CASES_ALL $C2_LINES"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.
@@ -214,6 +225,7 @@ prepare() {  # the trains, the flags and both phases' builds (each compiled once
   omp="$(omp_flags)"
   common="$(bed_flags) -DXTOE=$xtoe -DDOMAIN=$domain -DTRAIN_C=$c -DDTOUT=0.025$(fluid_flags)"
   if [ "${VELOUT:-0}" = 1 ]; then velo=" -DVELOUT"; mkdir -p "$P2/vel"; fi
+  if [ "${QOUT:-0}" = 1 ]; then velo="$velo -DQOUT"; mkdir -p "$P2/q"; fi
   if [ ! -x "$P1/periodic_${name}_p1" ]; then
     # shellcheck disable=SC2086
     (cd "$P1" && cp "$HERE/periodic.c" . && \
@@ -304,6 +316,7 @@ flags() {  # the qcc command lines, computed in a scratch folder (nothing is com
   local omp; omp="$(omp_flags)"
   echo "$name p1: qcc -O2 ${omp:+$omp }-DLEVEL=$LEVEL1 $common -DTMAX=$tsw -DTOUT0=$tsw periodic.c -o periodic_${name}_p1 -lm"
   local velo=""; if [ "${VELOUT:-0}" = 1 ]; then velo=" -DVELOUT"; fi
+  if [ "${QOUT:-0}" = 1 ]; then velo="$velo -DQOUT"; fi
   echo "$name p2: qcc -O2 ${omp:+$omp }-DLEVEL=$LEVEL2 $common$velo -DTMAX=$tmax -DTOUT0=$tsw -DXWIN0=$w0 -DXWIN1=$w1 periodic.c -o periodic_${name}_p2 -lm"
   rm -rf "$tmp"
 }

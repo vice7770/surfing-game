@@ -8,9 +8,12 @@ face angle is metrics.face_angle's (90 = vertical), with the water level the low
 (the local trough), as plunge_measure.py takes it; touchdown is the first frame past vertical with an enclosed air loop
 near the lip, as there.
 
-usage: python3 crest_track.py RUN_DIR [--init T X] [--lead L] [--lib-lead B] [--out FILE]
+usage: python3 crest_track.py RUN_DIR [--init T X] [--lead L] [--lib-lead B] [--after A] [--ahead W] [--out FILE]
 --lead and --lib-lead move the switch and the library's first frame earlier (defaults LEAD 5 and LIB_LEAD 3, as always):
-the T5 run (pool_far_big) takes 10 and 8, so its fine frames start twice as far out.
+the T5 run (pool_far_big) takes 10 and 8, so its fine frames start twice as far out. --after and --ahead make the fine
+phase longer and its window wider (defaults AFTER 3 and AHEAD 8, as always): the end is touchdown + AFTER (and at least
+vertical + 5), the window reaches at least AHEAD past the vertical place. C2's library cases (pool_c2_*, 2026-11-13) take
+8 and 20: the bore for 8 sqrt(h0/g) after touchdown, the window to about 58 h0.
 RUN_DIR holds the build's params.txt (run_periodic.sh writes it), train.json and facets/.
 writes FILE (default RUN_DIR/track.json) and prints a summary.
 """
@@ -29,6 +32,7 @@ TAIL = 6.5        # the end after vertical when no touchdown is seen; else touch
 BACK = 3.0        # the window starts this far behind the crest at vertical - 3 (the profile's back reaches 2 h0 behind it)
 AHEAD = 8.0       # and ends at least this far ahead of the crest at vertical (the lip, the splash-up and the bore)
 LIB_LEAD = 3.0    # the library's first frame, this long before vertical (the window's back is placed from it)
+AFTER = 3.0       # the end, this long after touchdown
 
 
 def read_params(run):
@@ -120,7 +124,7 @@ def interp(rows, key, t):
     return float(np.interp(t, ts, [r[key] for r in rows]))
 
 
-def summarise(p, tr, dx, rows, lead=LEAD, lib_lead=LIB_LEAD):
+def summarise(p, tr, dx, rows, lead=LEAD, lib_lead=LIB_LEAD, after=AFTER, ahead=AHEAD):
     out = {"level": int(p["level"]), "dx_h0": dx, "frames": len(rows), "xtoe": p["xtoe"], "h0_m": p["h0"]}
     if not rows:
         out["error"] = "no frame held the second crest"
@@ -161,10 +165,10 @@ def summarise(p, tr, dx, rows, lead=LEAD, lib_lead=LIB_LEAD):
     out["depth_vertical_m"] = out["depth_vertical_h0"] * p["h0"]
     # a finer phase's switch, end and window, from this run's break
     tsw = max(0.5, math.floor(2.0 * (tv - lead) + 1e-6) / 2.0)
-    tmax = math.ceil(2.0 * (max(tv + 5.0, td + 3.0) if td is not None else tv + TAIL)) / 2.0
+    tmax = math.ceil(2.0 * (max(tv + 5.0, td + after) if td is not None else tv + TAIL + (after - AFTER))) / 2.0
     t3 = max(rows[0]["t"], tv - lib_lead)
     w0 = max(0.0, math.floor(min(interp(rows, "x", max(tsw, rows[0]["t"])) - 1.0, interp(rows, "x", t3) - BACK)))
-    w1 = min(p["domain"], math.ceil(xv + max(AHEAD, tmax - tv + 3.0)))
+    w1 = min(p["domain"], math.ceil(xv + max(ahead, tmax - tv + 3.0)))
     out["suggest"] = {"tswitch": tsw, "tmax": tmax, "xwin0": w0, "xwin1": w1}
     # the analysis's times and crest searches (plunge_measure.py, periodic_library.py), from this run's own track
     t_from, tmin = tv - 1.0, tv - lib_lead
@@ -179,10 +183,12 @@ def main():
     ap.add_argument("--init", nargs=2, type=float, metavar=("T", "X"))
     ap.add_argument("--lead", type=float, default=LEAD)
     ap.add_argument("--lib-lead", type=float, default=LIB_LEAD)
+    ap.add_argument("--after", type=float, default=AFTER)
+    ap.add_argument("--ahead", type=float, default=AHEAD)
     ap.add_argument("--out")
     a = ap.parse_args()
     p, tr, dx, rows = track(a.run, tuple(a.init) if a.init else None)
-    out = summarise(p, tr, dx, rows, a.lead, a.lib_lead)
+    out = summarise(p, tr, dx, rows, a.lead, a.lib_lead, a.after, a.ahead)
     out["run"] = os.path.abspath(a.run)
     out["track"] = rows
     path = a.out or os.path.join(a.run, "track.json")

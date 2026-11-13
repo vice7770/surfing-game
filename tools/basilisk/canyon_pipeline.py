@@ -38,6 +38,11 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 ANALYSIS = os.path.join(HERE, "analysis")
 # Each set of tube runs: its cases (the costliest first), what each sources, its runs' folder, its report's folder, its
 # spot, the script that starts it, and its report's words. TUBE_SET picks one (default: the Canyon's, as before).
+# C2's pool library (run_periodic.sh's pool_c2_<bed>_<a0> lines): its beds (what each stands for) and its cases, which
+# build phase 2 with VELOUT and QOUT and get c2_library.py's file.
+C2_BEDS = {"b1": "the reef's middle (deep end of the bed line: the gentlest slope, the shallowest crest)",
+           "b2": "the bed line's middle", "b3": "the reef's near end (the steepest slope, the deepest crest)"}
+C2_CASES = [f"pool_c2_{b}_{a}" for a in ("a3", "a2", "a1") for b in ("b3", "b2", "b1")]
 SETS = {
     "canyon": {
         "cases": ["canyon23_a49", "canyon23_a38", "canyon23_a29"],
@@ -75,6 +80,7 @@ SETS = {
             "pool_kneeface_small": ("today's knee face, 1:18.7, at the ledge's 2D face (the decision rule's comparator)", "about 1.62 m 2D faces"),
             "pool_kneeface_big": ("today's knee face, 1:21.6, at the ledge's 2D face (the decision rule's comparator)", "about 1.86 m 2D faces"),
             "pool_far_big": ("pool_straight_big's ray, its fine frames from twice as far out (T5)", "the 2 m pool's wave, 2-5 s before the throw"),
+            **{n: (C2_BEDS[n.split("_")[2]], f"C2 library, A0 row {n.split('_')[3]}") for n in C2_CASES},
         },
         "state": "pool", "out": "pool-tube-runs", "spot": "pool", "script": "run_pool.sh", "smoke": "pool_straight_small",
         "title": "The Wave Pool's Barrel tube runs", "label": "Wave Pool Barrel",
@@ -111,6 +117,24 @@ SETS = {
         # The T5 run (2026-11-12; docs/research/wave-strategy-alternatives/t5-run.md): pool_straight_big again, the same
         # bed, wave, Bond and Reynolds numbers and level, its phase 2 switched on and its library started earlier (EARLY
         # below). A test of the C2 route, not a game case: its report goes in its own folder and its case file beside it.
+        # C2's pool library (2026-11-13; docs/research/wave-strategy-alternatives/c2-step1.md): 9 cases, A0 at 3 values
+        # x 3 beds on one line of (slope along the ray, HS/h0), at the reference pool's 10.5 s and 5 m platform; the fine
+        # phase from 10 before vertical to touchdown + 8, the window to about 58 h0, with VELOUT and QOUT; each case also
+        # gets c2_library.py's file. A library for C2, not the game's cases: its report and files go in its own folder.
+        "c2": {
+            "cases": C2_CASES,
+            "out": "pool-c2-library",
+            "title": "C2's pool library: the whole breaking wave from the Basilisk cases",
+            "bed_detail": "Bed: h0 = the reference pool's platform depth (5 m), one planar face along the ray (S1) to the "
+                          "reef crest (HS), the reef top along the ray, then the back slope down to h0 and flat to the "
+                          "closed right wall (periodic.c's REEFTOP and SBACK). Phase 2 starts 10 sqrt(h0/g) before the face "
+                          "goes vertical, runs to touchdown + 8 in a window to about 58 h0, with VELOUT and QOUT.",
+            "wiring": [
+                "- C2's library, not the game's cases: the `.bin` files (today's format) are in `barrels/` here, not in "
+                "`public/barrels`; the C2 files are `data/periodic_<case>_L<level>_c2.json.gz` (`c2_library.py`).",
+                "- Keys and their measured ranges: docs/research/wave-strategy-alternatives/c2-step1.md.",
+            ],
+        },
         "far": {
             "cases": ["pool_far_big"],
             "out": "pool-tube-runs-t5",
@@ -131,7 +155,10 @@ SETS = {
 }
 # Cases whose fine frames start earlier than the set's (the T5 run): the switch LEAD and the library's first frame LIB, in
 # sqrt(h0/g) before the face goes vertical (crest_track.py's --lead and --lib-lead). Every other case keeps 5 and 3.
-EARLY = {"pool_far_big": {"lead": 10.0, "lib": 8.0}}
+# C2's cases also run longer and wider: AFTER touchdown (crest_track.py's --after; 3 for every other case) and the window
+# at least AHEAD past the vertical place (--ahead; 8).
+EARLY = {"pool_far_big": {"lead": 10.0, "lib": 8.0},
+         **{n: {"lead": 10.0, "lib": 8.0, "after": 8.0, "ahead": 20.0} for n in C2_CASES}}
 LIB_LEAD = 3.0  # the library's first frame for every other case, as always
 SET_NAME = os.environ.get("TUBE_SET", "canyon")
 if SET_NAME not in SETS:
@@ -158,7 +185,8 @@ class Config:
         self.cases = env.get(CASES_ENV, SET["smoke"] if smoke else " ".join(CASES)).split()
         self.state = os.path.join(self.runs, SET["state"])
         # a batch (the bigger-tube batch, or the T5 run) when any of its cases is named: its report goes in its own folder
-        batch = next((b for b in (SET.get("batch"), SET.get("far")) if b and any(n in b["cases"] for n in self.cases)), None)
+        batch = next((b for b in (SET.get("batch"), SET.get("far"), SET.get("c2")) if b and any(n in b["cases"] for n in self.cases)),
+                     None)
         self.batch = batch is not None
         self.words = dict(SET, **{k: batch[k] for k in ("title", "bed_detail", "wiring")}) if self.batch else SET
         own = os.path.join(REPO, "docs", "research", SET["out"])
@@ -349,7 +377,10 @@ class Pipeline:
         self.log("stopped; rerun to resume (each phase resumes from its last 10-minute checkpoint)")
 
     def periodic(self, case, *args):
-        return self.sh(case, ["bash", os.path.join(HERE, "run_periodic.sh"), *args])
+        env = None
+        if case in C2_CASES and args and args[0] == "fg":  # C2's phase 2 builds with the velocity and the columns
+            env = dict(self.cfg.env(), VELOUT="1", QOUT="1")
+        return self.sh(case, ["bash", os.path.join(HERE, "run_periodic.sh"), *args], env=env)
 
     def py(self, case, script, *args):
         return self.sh(case, [self.cfg.python, os.path.join(ANALYSIS, script), *map(str, args)], cwd=ANALYSIS)
@@ -427,6 +458,8 @@ class Pipeline:
                         raise RuntimeError("the scout failed")
                     early = EARLY.get(name)
                     leads = ["--lead", f"{early['lead']:g}", "--lib-lead", f"{early['lib']:g}"] if early else []
+                    if early and "after" in early:
+                        leads += ["--after", f"{early['after']:g}", "--ahead", f"{early['ahead']:g}"]
                     self.py(name, "crest_track.py", d["scout"], *leads, "--out", os.path.join(d["scout"], "track.json"))
                 self.place_window(name)
                 self.stage[name] = "phases"
@@ -540,6 +573,15 @@ class Pipeline:
         else:
             self.log("no tube to build a case from: " + ("the face never went vertical" if plunge.get("t_vertical") is None
                      else "the lip never enclosed air before the end"), name)
+        if name in C2_CASES and plunge.get("t_vertical") is not None:
+            # C2's file for every case whose face went vertical, a tube or not (a spilling case is a library case too)
+            tmin = max(t_first, plunge["t_vertical"] - EARLY[name]["lib"])
+            rows = [r for r in frames if r["t"] >= tmin - 1e-9]
+            xlib = (rows[0]["x"] - 0.5) if rows else xmin
+            info["c2"] = self.py(name, "c2_library.py", p2, cfg.level2, f"{L0:g}", f"{par['S1']:g}", f"{a0:.4f}", f"{h0:g}",
+                                 f"{tmin:.3f}", f"{xlib:.3f}") and os.path.exists(p2 + "_c2.json.gz")
+        elif name in C2_CASES:
+            self.log("no C2 file: the face never went vertical", name)
         if self.has_matplotlib() and frames and os.path.exists(os.path.join(p2, "bed.dat")):
             tv = plunge.get("t_vertical") or t2.get("t_vertical") or t_first
             times = sorted({round(t_first, 3), round(max(t_first, tv - 1.0), 3), round(tv, 3),
@@ -566,7 +608,8 @@ class Pipeline:
                  (os.path.join(p2, "track.json"), f"{run}_track.json"),
                  (os.path.join(d["p1"], "track.json"), f"{run}_p1_track.json"),
                  (os.path.join(d["scout"], "track.json"), f"{run}_scout_track.json"),
-                 (os.path.join(p2, "params.txt"), f"{run}_params.txt"), (os.path.join(d["p1"], "train.json"), f"{run}_train.json")]
+                 (os.path.join(p2, "params.txt"), f"{run}_params.txt"), (os.path.join(d["p1"], "train.json"), f"{run}_train.json"),
+                 (p2 + "_c2.json.gz", f"{run}_c2.json.gz")]
         for src, dst in pairs:
             if os.path.exists(src):
                 shutil.copy(src, os.path.join(data, dst))
