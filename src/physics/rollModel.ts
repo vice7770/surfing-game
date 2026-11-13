@@ -751,9 +751,35 @@ export function boardDerivatives(lab: { roll: number[]; slip: number[]; yaw: num
  * elimination, then the shifted QR iteration (Numerical Recipes' elmhes and
  * hqr, 1-based as there).
  */
-export function eigenvalues(matrix: readonly (readonly number[])[]): { re: number; im: number }[] {
+export function eigenvalues(matrix: readonly (readonly number[])[], opts: { balance?: boolean; maxIterations?: number } = {}): { re: number; im: number }[] {
   const n = matrix.length;
   const a: number[][] = Array.from({ length: n + 1 }, (_, i) => Array.from({ length: n + 1 }, (_, j) => (i > 0 && j > 0 ? matrix[i - 1][j - 1] : 0)));
+  const maxIterations = opts.maxIterations ?? 60;
+  if (opts.balance) {
+    // Balancing (Numerical Recipes' balanc): a similarity by powers of 2 that evens the rows' and columns' norms (step
+    // 3.2d's large closed loops with their delay lines).
+    let done = false;
+    while (!done) {
+      done = true;
+      for (let i = 1; i <= n; i += 1) {
+        let c = 0;
+        let r = 0;
+        for (let j = 1; j <= n; j += 1) if (j !== i) { c += Math.abs(a[j][i]); r += Math.abs(a[i][j]); }
+        if (c === 0 || r === 0) continue;
+        let g = r / 2;
+        let f = 1;
+        const sum = c + r;
+        while (c < g) { f *= 2; c *= 4; }
+        g = r * 2;
+        while (c > g) { f /= 2; c /= 4; }
+        if ((c + r) / f < 0.95 * sum) {
+          done = false;
+          for (let j = 1; j <= n; j += 1) a[i][j] /= f;
+          for (let j = 1; j <= n; j += 1) a[j][i] *= f;
+        }
+      }
+    }
+  }
   // Hessenberg form.
   for (let m = 2; m < n; m += 1) {
     let x = 0;
@@ -826,7 +852,7 @@ export function eigenvalues(matrix: readonly (readonly number[])[]): { re: numbe
           }
           nn -= 2;
         } else {
-          if (its === 60) throw new Error('eigenvalues: no convergence');
+          if (its === maxIterations) throw new Error('eigenvalues: no convergence');
           if (its === 10 || its === 20) {
             t += x;
             for (let i = 1; i <= nn; i += 1) a[i][i] -= x;
