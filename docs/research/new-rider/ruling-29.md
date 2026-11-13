@@ -1016,3 +1016,60 @@ work were not doomed. The advisor wrote 29s from one agent's table without askin
 5. **The owner's sinking physics is still implicated, and more precisely than before.** The mechanism is literally the
    board sinking; two-way coupling changes the lift-loss and sink chain that produces it. But it is no longer the
    blocker, and it does not come before the free fix.
+
+---
+
+# Ruling 29u: the owner's second ride — three faults, all in Compress (2026-11-13)
+
+> 1. the turning is still not fast enough.
+> 2. the body ajusts as the turn happens compensating to the opposite side.
+> 3. the balance is too soft, the surfer should not fall so much when lowered.
+>
+> "this was tried while the surfer was compressed"
+
+What landed: **"the arms and body responsive looks much better and human like."** That is the free body and the
+predictive balance doing their job, and nothing in the next rounds may cost it.
+
+## 2. The counter-steer is visible, and it is wrong for a board
+
+The carve traces have shown it since 3.2f — "the counter-steer starts the lean: the rest asks 4°, and the board rolls
+1° onto the other rail". The advisor read it as a technicality. It is not: the owner can see it.
+
+**A bicycle must counter-steer** because the rider's only input is a handlebar, so a lean has to be bought by first
+steering away. **A surfer has no handlebar.** The board is under their feet and they weight the rail directly. If the
+controller counter-steers, it has found a bicycle solution on a vehicle that does not need one.
+
+Where it comes from must be established before it is removed: the **reference** (does solving for the steady turn that
+balances the asked lean imply an opposite rail first?) or the **LQR's response** to that reference step. A direct
+weighting of the rail toward the lean may be the honest form instead.
+
+**It is also a likely cause of fault 1:** a turn that begins by going the wrong way begins late.
+
+## 3. The inversion, and it is the most serious of the three
+
+Ruling 29o measured this and the advisor wrote it down as physics: the lower stances carry their mass lower, fall faster
+(ω₀ 4.2 against 3.4), and the fixed 0.1 s delay is a larger share of their own time constant — so they collapse when
+the ankle gain rises.
+
+**That is a statement about our controller, not about surfing.** In real surfing a lower stance is *more* stable: the
+weight sits closer to the feet, so the same lean is less far out, and the bent legs absorb. 29o reported the measured
+behaviour correctly and then let it stand as if it were a fact about surfing.
+
+**Our game punishes crouching. That inverts the player's instinct and makes the game unlearnable** — the owner reached
+for the stance that should have saved him and it dropped him. A fault that teaches the player the wrong thing is worse
+than one that merely loses a bar.
+
+The question to answer before changing anything: **does the schedule design per stance, or design once and interpolate
+a shape that does not suit a low ω₀?** A stance whose delay is a larger share of its time constant needs *less* gain
+and more damping, not the same shape scaled.
+
+## Decisions
+
+1. **Priority: 3, then 2, then 1.** A rider who falls when he crouches cannot be ridden at all. A counter-steer looks
+   wrong but is survivable. The turn rate is partly waiting on the rail cap anyway.
+2. **"The arms and body look human" is now a guard**, not a bar. Nothing may cost it.
+3. **A standing test from this ride:** when a stance, a strategy or an input is the one a real surfer would reach for,
+   the game must reward it. If the measurement says otherwise, that is a fault in the model, not a fact about surfing,
+   until a source says so.
+4. The three may be one fault. If fixing the stance design also fixes the counter-steer or the turn rate, that is
+   expected — all three are the same controller meeting the same stance.
