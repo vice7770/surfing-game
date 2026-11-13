@@ -15,6 +15,7 @@ Advisor: this session (Opus 5.5, max effort), 2026-11-13. Read: `design.md`. No 
 
 ## For the owner
 
+- **ANSWERED 2026-11-13: keep what the physics gives.** The owner's words, in `../owner-decisions-2026-11-13.md` §2: the order must stay right (tall < crouch < Compress) and the spread is whatever the body's numbers give. Step 3.3 does not widen it by pushing the human numbers to the ends of their ranges; its bar is the order, and it reports the spread that comes out. The original question follows.
 - **The limits' ratio.** Physics may give a smaller spread than the spec's 0.6 / 1 / 1.7 g, for example 0.8 / 1.0 / 1.4 g, because a lower body's advantages shrink with height. If 3.3's sweep gives that, does the owner accept physics-ordered limits (tall < crouch < Compress, within ±25 %)? Or should the model's human numbers be pushed to the ends of their sourced ranges to widen the spread?
 
 ## Efforts
