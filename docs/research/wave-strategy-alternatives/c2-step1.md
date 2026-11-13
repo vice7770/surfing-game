@@ -183,6 +183,13 @@ commit. The runs themselves are in `c2runs/tools/basilisk/runs/c2`; the report a
   more after it. About 800 frames a case: 0.5–0.9 GB a case, **5–8 GB for the nine**. 21 GB were free at the start,
   so 13–16 GB stay free (the bar is 8 GB). Not tight, unless other work fills the disk.
 
+**The first case done** (`pool_c2_b3_a3`, 04:03) [M]: A0 0.358, face vertical at t 24.08, touchdown 25.35, a tube;
+phase 2 2h56. Its C2 file: 778 frames (700 "own", 78 "refill"), τ −8 to +11.4, velocity on every frame, 1.2 MB.
+**QOUT mass at level 12: drift under 0.0004 % over 860 frames** (largest 3.3e-6, largest step 1.6e-7). d falls
+monotonically before the throw; H/d steps the wrong way in 15 % of the smoothed steps, all at τ −8 to −7.5 and under
+0.0004 (the wave on the flat platform: H/d is flat there). The bore front is followed for 102 frames, at 0.93 √(gh0).
+Its run folder is 523 MB. So nine cases make about 5 GB of runs and about 11 MB of C2 files.
+
 Commands (all safe to rerun):
 
 ```
