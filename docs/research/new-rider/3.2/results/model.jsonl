@@ -1,0 +1,11 @@
+{"table":"roll: passive","carveLab":{"damping":-0.192,"frequencyHz":0.34,"at":"K 1650, h 0.79, Ib 0.3, turn 1.3, 1.4 g"},"turn3":{"damping":-0.202,"frequencyHz":0.84,"at":"K 1650, h 0.79, Ib 0.3, turn 3, 1.4 g"}}
+{"table":"roll: best gains","turnGains":[1.3,1.6],"loads":[1,1.4],"best":{"bank":0,"bankRate":0.1,"damping":0.037}}
+{"table":"roll: best gains","turnGains":[3],"loads":[1,1.4],"best":{"bank":-0.75,"bankRate":0,"damping":0.15}}
+{"table":"roll: best gains","turnGains":[1.3,1.6],"loads":[1.8],"best":{"bank":0,"bankRate":0.1,"damping":-0.059}}
+{"table":"roll: best gains","turnGains":[3],"loads":[1.8],"best":{"bank":-0.75,"bankRate":0,"damping":0.05}}
+{"table":"roll: chosen","chosen":{"bank":0,"bankRate":0.1},"carveLab":{"damping":0.037,"frequencyHz":0.89,"at":"K 860, h 0.5, Ib 0.3, turn 1.6, 1.4 g"},"carveLab18g":{"damping":-0.059,"frequencyHz":0.96,"at":"K 860, h 0.5, Ib 0.3, turn 1.6, 1.8 g"},"turn3":{"damping":-0.189,"frequencyHz":1.29,"at":"K 860, h 0.5, Ib 0.3, turn 3, 1.4 g"},"bands":{"modeA":"none","modeB":"none"},"gainUp":1.41,"gainDown":0.82,"delayUpToS":0.115,"kick":{"decayPerCycle":0,"settled":false},"referenceGainAt7":0.221}
+{"table":"roll: old law undelayed","carveLab":{"damping":-0.163,"frequencyHz":2.32,"at":"K 860, h 0.79, Ib 0.3, turn 1.6, 1.4 g"}}
+{"table":"pitch: 3.1c (damping time 0.1 s, gains 0.25 and 0.1 s)","worst":{"damping":0.015,"frequencyHz":1.83}}
+{"table":"pitch: 3.1c gains, damping time 0.3 s","worst":{"damping":0.183,"frequencyHz":2.01}}
+{"table":"pitch: 3.2 (damping time and gains as built)","dampingTime":0.3,"lean":0.25,"rate":0.05,"worst":{"damping":0.28,"frequencyHz":0.4}}
+{"table":"pitch: 3.2 gain margins","gainUp":3.73,"gainDown":0.02}

@@ -42,3 +42,29 @@ Advisor: this session. Read: `3.1/README.md` Parts 1 to 3. Part 4 (3.1d) is on t
     - the knees-lower strategy and arms;
     - the `rollModel.ts` delay analysis first;
     - braced (co-contracted) ankle stiffness, sourced, as a lever.
+
+---
+
+# Ruling 29e: step 3.2 held; the roll–yaw plant comes first (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` and its traces. The code is held on `claude/rider-new-32` (f894d23d), not merged.
+
+**What 3.2 showed**
+- Without the old roll drive, the free roll has a slow roll–yaw mode at 1.1–1.9 Hz.
+- With a human's 0.08–0.15 s delay, no control law damps it. The agent tried rate, angle, integral, a predictor, acceleration, the hip, a braced ankle and a stiff pitch. Even at 40 ms it is only neutral.
+- The board turns hard on a tiny rail: under 1° of roll gave 0.55 rad/s within 0.25 s. The growing mode matches a turn's pull of about 3 times the rail, while the carve lab measured 1.3–1.6.
+- So nearly every riding bar regressed: chop, carves, turn pairs, and push recovery, whose order also reversed.
+
+**Reading**
+- Humans balance bikes and boards with delays like these. A plant no delayed human can hold is more likely wrong than the human. A bicycle's weave is the analogue: the rider steers into the fall, and that only works if the steering response is not too strong or too fast.
+- **The suspects are the board's hydrodynamics at small rail angles:**
+  - how much yaw a degree of rail makes, and how fast;
+  - the hull's roll damping from the water;
+  - the wetted-share ramp at the rail;
+  - the fins' side force at small slip.
+
+**Next: a diagnosis, not more controller tuning**
+- Board-only tests: towed, with a rigid rider. Small roll steps of 0.5°, 1°, 2° and 5° at 5, 7 and 9 m/s. Measure the yaw rate's gain and time constant, and the roll damping from free decay.
+- Compare with planing-hull and surfboard sources, and name the term that over-responds.
+- If the hull over-responds, fixing it is a water-force fix, measured the same way.
+- Then 3.2 comes back with the same controller.
