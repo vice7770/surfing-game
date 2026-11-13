@@ -1989,3 +1989,298 @@ of you to ride yet: on flat water and in a carve it is good, but a choppy wave f
   `trace-chop2-32h-legs.jsonl` (the 3.6 kN pull, taken with the freeze in and the legs' rule still out),
   `glide-stance-32h.jsonl` (the stance sweep), `glide-knee-32h.jsonl` (the stiffness sweep),
   `push-gate010-32h.jsonl` and `push-gate040-32h.jsonl` (the gate's sensitivity).
+
+---
+
+# Part 9: step 3.2i, the hip in time — built, measured, refuted (ruling 29m)
+
+Written 2026-11-13 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32i` (from
+`claude/rider-new-32h`, rebased on main a17f5e1d). The contract: `../ruling-29.md` 29m.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **Miss. The chop stays at 4 of 12, and both of the ruling's two changes are built, measured and refuted.** Neither is
+  kept, so the game behaves exactly as 3.2h does and the bars are 3.2h's to the digit. What the step delivers is three
+  measurements and the real cause.
+- **The hip triggered from the capture point is pumped, not late** [M]. On a **plane**, with a pure shove and no chop at
+  all, the capture point rings in and out of the feet at about **2 Hz**; `BALANCE_DELAY` is a fifth of that period, and
+  any demand over 0.1 × SWING_TORQUE switches off `humanSwingStep`'s own centring (its `back` term). So the swing rotor
+  ratchets — **0 → −55° of its ±69° range in 1.3 s** — and the board rolls with it, because the swing's reaction is a
+  couple on the board through the feet. The tall push bar's largest saved shove fell **1.887 → 0.615 m/s** asking the
+  hip at the knees' own scale, and **→ 1.061 m/s** asking it only for the moment the capture point needs. The chop went
+  4 → 3 → 4 of 12.
+- **The reach's horizon cap buys nothing on the chop and costs the push bar 44 %** [M]. With the arms in, the hip's
+  inertia is 6 kg·m² and the cap does not bind at all (τ/ω₀ = 58 N·m·s against √(2 I τ left) = 53.7), so the twelve chop
+  cells come out **identical to 3.2h's, cell for cell**. Under a shove it binds hard, because ω₀ is read from a felt
+  gravity the impulse itself inflates to 13–19 m/s², and the saved shove falls 1.887 → 1.061 m/s with the tall carve
+  2.85 → 2.75 s.
+- **So my own Part 8 claim was wrong, and the ruling repeated it.** Part 8 said making `reach` honest "would make the
+  chop worse"; that was an [I], not an [M], and ruling 29m took it as measured and used it to bundle the two changes.
+  **Measured, it makes no difference to the chop whatever.** The bundling was not needed.
+- **The real cause, measured, and it is not the hip's trigger** [M]: **the roll loop asks the ankle for its whole range
+  only at about 40° of body bank, while the ankle's authority ends at 11°.** In the chop 1 / 5 m/s fall the bank crosses
+  11° at 1.2 s and the loop's ankle command reaches `ANKLE_REST_RANGE` only at **1.88 s** — 0.68 s in which three
+  quarters of the ankle's range sat unused while the capture point was 0.06–0.20 m outside the feet. The hip was never
+  the thing that was late. **The ankle was not being asked.**
+- **The chop by speed and seed** [M]: 5 m/s is **0 of 3**, and all three fail *during the 2.5 s settle*, before the test
+  begins. 7, 9 and 12 m/s are 2 of 3 each. The numbers are in §4; the ruling asked for them and not for my opinion.
+
+## 2. The hip from the capture point (item 1)
+
+### What was built
+
+`HumanBalance` gained the signal: `CaptureState.pastAcross`, how far past the feet's edge the capture point is
+**across**, signed with the side it is past and zero inside, carried on a fourth delay-line channel and read back as
+`sensedCaptureAcross` — the same shape as `sensedCapturePast`, which the knees and the arms already answer. That part is
+kept (§7). On top of it the hip's demand gained a term, in two forms, both measured:
+
+- **(a) the knees' own scale:** the hip's whole torque once the point is KNEE_PAST_FULL (0.15 m) past the edge, in
+  proportion under that. This is the literal reading of "as the knees and the arms already are".
+- **(b) the need:** `rotorImpulse`'s conversion read backwards. The test turns an angular impulse L into a
+  capture-point distance L / (m h ω₀), so bringing the point back from `past` needs L = past · m h ω₀, and delivering
+  that inside the point's own horizon of 1/ω₀ s needs **past · m h ω₀²** — 29 N·m at 0.05 m out, 86 N·m at 0.15 m,
+  against the hip's 200 N·m. No free gain, and the action and the test are then the same arithmetic in both directions.
+
+The sign was taken from the loop, not guessed: in the chop 1 / 5 m/s trace the capture point out at +x goes with the
+loop's own ankle command negative, so the capture term carries the same sign the existing hip path already gives that
+lean [M, R]. The trace confirms it does the right thing at first — at 1.35–1.62 s the swing goes to −11.6° and **the
+board's roll comes down from 19.4° to 11.6° and the capture point from 0.187 m to 0.024 m.** The hip saves it once.
+
+### Why it fails, and it is not the trigger
+
+`results/trace-shove-tall-hipfull-32i.jsonl` [M]: form (a), tall, a 0.7 m/s shove, on a **plane** — no chop:
+
+| t (s) | capture point across (m) | past the feet (m) | swing (°) | board roll (°) |
+|---|---|---|---|---|
+| 2.52 | +0.258 | 0.128 | 0 | −0.3 |
+| 2.77 | −0.124 | 0 | −4.5 | −10.6 |
+| 3.02 | +0.110 | 0 | −10.5 | −10.1 |
+| 3.27 | −0.031 | 0 | −15.4 | +3.5 |
+| 3.52 | +0.307 | 0.177 | −37.5 | −2.9 |
+| 3.77 | −0.547 | 0.417 | **−54.1** | −1.0 |
+
+- The capture point **crosses the feet's middle five times in 1.27 s — about 2 Hz** — and is outside the feet in 40 of
+  77 frames, by a median of 0.106 m. That is the balance loop's own ringing on smooth water, and the rider survives
+  shoves of 1.887 m/s through it in 3.2h: these excursions are normal, not a loss of balance. [M]
+- **The swing never comes back.** It ratchets one way through every cycle, to −54° of its ±69°. Two things make it
+  ratchet, and both are in the code already [R]: `humanSwingStep`'s centring spring is scaled by
+  `back = max(0, 1 − |demand| / (0.1 · SWING_TORQUE))`, so **any demand over 20 N·m switches the centring off** (the
+  design's own way of saying "the body still needs the swing, do not give it back"); and the demand is read
+  BALANCE_DELAY late, which at 2 Hz is a fifth of a period of phase lag on a signal that is already oscillating.
+- **And a thrown hip rolls the board.** The swing's reaction is a couple on the board through the feet, and the board's
+  roll stiffness at 7 m/s is −285 N·m/rad (3.2f's plant), so 200 N·m of hip is 0.7 rad of equivalent roll. The hip
+  strategy is not free on a surfboard: windmilling tips the board. `reach` does not know this — it counts only the
+  capture-point shift the rotor buys and not the roll it pays. [M, I]
+
+The consequence is a regression on the bar the ruling told me to guard, and it is not the fall test getting easier —
+it is the rider genuinely falling sooner [M]:
+
+| | 3.2h | (a) the knees' scale | (b) the need |
+|---|---|---|---|
+| Largest shove saved, **tall** | **1.887** | **0.615** | **1.061** |
+| crouch | 2.127 | 2.209 | 2.162 |
+| Compress | 2.326 | 2.408 | 2.361 |
+| Held carve tall / Compress | 2.85 / 2.98 | 2.90 / 2.98 | — |
+| Mode B (5 / 7 / 9 m/s) | 0.030 / 0.018 / 0.058 | identical | — |
+| Chop glides | 4 of 12 | 3 of 12 | 4 of 12 |
+
+The stance ordering is the tell: the crouch and Compress get slightly **better**, and only the tall stance collapses.
+Their hip ranges are ±0.8 and ±0.4 rad against the tall stance's ±1.2 (`stanceRoom`), so the more range the rider has
+to throw, the more harm a pumped hip does. [M, I]
+
+**Not kept.** It regresses the push bar's saved shove, which ruling 29m lists as must-not-regress, and I could not fix
+it without either changing `humanSwingStep`'s centring rule or putting a damping gain on the new term — the first is the
+swing's own design and the second is the tuning the stop rule forbids. The signal is kept; the demand is not.
+
+## 3. The reach's horizon (item 2)
+
+`rotorReach(inertia, torque, left, horizon) = min(τ · horizon, √(2 I τ left))`: the rotor driven at τ gives τ t, so
+inside a horizon it can give at most τ · horizon, and never more than its remaining range allows. The horizon is the
+capture point's own, 1/ω₀. The formula is in `humanBalance.ts` with its derivation; **it is not wired**, and these are
+the measurements that say why [M] (`results/bars-reachonly-32i.jsonl`, with the hip's term off):
+
+| | 3.2h | with the horizon cap |
+|---|---|---|
+| Chop glides, cell for cell | 4 of 12 | **identical, every cell** (chop 1 at 12 m/s 1.78 s, chop 2 at 7 m/s 1.65 s, chop 3 at 7 m/s 2.70 s …) |
+| Largest shove saved, tall | 1.887 | **1.061** |
+| Held carve tall | 2.85 s | 2.75 s |
+
+- **It does not bind where the chop fails.** The hip's inertia is `SWING_INERTIA_SET` 6 kg·m² with the arms in, so
+  √(2 · 6 · 200 · 1.2) = **53.7 N·m·s** while τ/ω₀ at ω₀ ≈ 3.4 is **58 N·m·s**: the range runs out before the horizon
+  does, and the cap is inert. That is why the twelve chop cells do not move by a frame. [M, I]
+- **It binds in the two places the arms go out**, because `strategies` puts the arms out with the knees whenever the
+  capture point leaves the feet, and that raises the rotor's inertia to `SWING_INERTIA_ARMS` 10 kg·m², so the uncapped
+  reach becomes 69 N·m·s and the horizon does bind. In a carve that costs 0.1 s (2.85 → 2.75). Under a shove it binds
+  doubly: the pair's felt gravity is 13–19 m/s² (Part 8 §5), so ω₀ reaches 6.6 and the horizon 1/ω₀ falls to 0.15 s,
+  halving τ · horizon to 30 N·m·s. **The cap is therefore harshest exactly where ω₀ is an artefact of how the shove is
+  applied.** [M, I]
+- **So the formula is right and the horizon it was given is not.** It waits for a horizon that does not come from the
+  felt gravity — the plain √(h/g) would give 0.26 s everywhere and make the cap inert, which is no use either. That is
+  a real open question and I did not invent an answer to it.
+
+And the correction I owe: **Part 8's claim that an honest reach would make the chop worse was an inference, not a
+measurement**, and ruling 29m took it as measured and bundled the two changes on it. Measured, the chop does not move
+at all. The bundling cost nothing, but it was not founded.
+
+## 4. The chop by speed and by seed (item 3)
+
+The bars' own twelve glides: a steady start on the terminal plane under each seeded chop, 2.5 s to settle, then 3 s.
+`*` marks a fall **during the settle**, before the test begins. Cells are old rider / 3.2h / 3.2i. [M]
+(`results/bars-old.jsonl`, `bars-new-32h.jsonl`, `bars-new-32i.jsonl`.)
+
+| Seed | 5 m/s | 7 m/s | 9 m/s | 12 m/s |
+|---|---|---|---|---|
+| chop 1 | hold / **0 \*** / 0 \* | hold / hold / hold | hold / hold / hold | hold / 1.78 s / 1.78 s |
+| chop 2 | hold / **0 \*** / 0 \* | hold / 1.65 s / 1.65 s | hold / **0 \*** / 0 \* | 0 \* / 0 \* / 0 \* |
+| chop 3 | hold / **0 \*** / 0 \* | hold / 2.70 s / 2.70 s | hold / hold / hold | hold / hold / hold |
+
+By speed, the new rider holds **0 of 3 at 5 m/s, 2 of 3 at 7, 2 of 3 at 9, 2 of 3 at 12**; the old rider holds 12 of 12
+except chop 2 at 12 m/s. By seed it is 2 of 4 (chop 1), 0 of 4 (chop 2), 2 of 4 (chop 3).
+
+What the grid says, without my opinion on it [M]:
+
+- **The whole 5 m/s column fails, and all three fail during the settle** — at 1.07, 1.58 and 1.98 s of the 2.5 s, so
+  none of the three reaches the test at all.
+- The hull there is at a 19.3° trim with 21.5 cm of draft, and its roll stiffness is the weakest of any speed measured
+  (3.2f's plant: K per roll −285 N·m/rad at 7 m/s; 3.2g's pitch plant at 5 m/s has the draft and trim above). The old
+  rider holds all three, so it is not impossible water; it is water the free body cannot hold with the authority it has.
+- **Chop 2 fails at every speed**, including the one speed where the old rider also fails (12 m/s). It is the harshest
+  of the three seeds for both riders.
+- Nothing in the 3.2i grid moved from 3.2h: the two changes are not in the kept build.
+
+## 5. The fall at the moment the ankle saturates (the stop rule's trace)
+
+`results/trace-chop1-5-hipfull-32i.jsonl` and 3.2h's `trace-chop1-5-32h.jsonl`, chop 1 at 5 m/s [M]:
+
+| t (s) | board roll (°) | body bank (°) | the loop's ankle command (°) | the ankle's rest (°) | hip (°) | capture point past the feet (m) |
+|---|---|---|---|---|---|---|
+| 0.68 | 8.1 | −6.8 | 2.9 | 2.6 | 0 | 0 |
+| 1.18 | 12.1 | **−11.3** | 3.8 | 2.9 | 0 | 0 |
+| 1.22 | 13.5 | −12.4 | 4.3 | 3.6 | 0 | 0.057 |
+| 1.62 | 21.7 | −24.6 | 0.9 | −2.0 | 0 | 0.113 |
+| 1.75 | 31.6 | −32.7 | 9.0 | 4.8 | 0 | 0.167 |
+| **1.88** | **49.6** | −42.6 | **14.32 (saturated)** | 7.1 | −1.1 | 0.221 |
+| 1.98 | 63.1 | −53.8 | 14.32 | 1.0 | −6.8 | 0.440 → fall |
+
+- **The body's bank crosses 11° — the whole of the ankle's authority across — at 1.18 s.** The ankle's moment there is
+  m g h sin(11°) = 93 N·m, which is exactly the load times the feet's 0.13 m half-width: past it the ankle has nothing
+  left to give, whatever rest it is asked for. [M, I]
+- **The loop's ankle command reaches `ANKLE_REST_RANGE` only at 1.88 s**, by which time the board is at 50° of roll.
+  For the 0.7 s in between it asks for 0.9–9.0° of a 14.32° range — **three quarters of the ankle unused** — while the
+  capture point sits 0.06–0.22 m outside the feet.
+- The ratio is steady and it is the number to take away: the loop asks about **0.35–0.41 rad of ankle rest per rad of
+  bank**, so it asks for the ankle's whole range at a bank of **about 40°**, nearly four times the 11° where the ankle's
+  authority ends. [M]
+- **So the hip did not arrive late because of its trigger. It arrived late because the thing ahead of it in the order
+  was never asked for.** The predictive loop's state is the board's roll and rate, the body's bank and rate, the twist,
+  the yaw and the slip (`predictiveBalance.ts`); **there is no term in it for where the body's weight is over the feet**,
+  so nothing in the loop knows the ankle is out of authority at 11°, and the gains were designed for stability margins
+  rather than against a saturation limit. That is the roll loop, which ruling 29l and 29m both hold. [R, I]
+
+## 6. The bars (item 4; steady starts, 16 substeps)
+
+`results/bars-new-32i.jsonl` is **identical to `bars-new-32h.jsonl` row for row, all 30 rows**, and
+`bars-old-32i.jsonl` likewise, because the kept build changes nothing the game does. The table is here so the advisor has one place to read it [M]:
+
+| Bar | Old | 3.2h | 3.2i | Pass? |
+|---|---|---|---|---|
+| N0: `rider=old` unchanged | — | 3.1's `bars-old` byte-identical | 3.2's `bars-old` identical row for row, 3.1's byte-identical | yes |
+| Held carve standing ≥ 2.28 s | 1.93 | 2.85 | **2.85** | yes |
+| Held carve Compress ≥ 2.30 s | 3.0 | 2.98 | **2.98** | yes |
+| Glides on the plane | 4 of 4 | 4 of 4 | 4 of 4 | yes |
+| **Glides on chop (3 seeds), bar 11 of 12** | 11 of 12 | 4 of 12 | **4 of 12** | **no** |
+| 20 cm rise at 2 m/s: no fall | falls 0.32 s | holds | **holds** | yes |
+| **Save window, the asymptote, ordered and within 20 % of √(h/g_eff)** | — | 0.187 / 0.165 / 0.144 | **the same** | **yes** |
+| Push recovery: largest shove saved (tall / crouch / Compress) | 192 / 188 / 191 N·s | 138 / 155 / 170 | **138 / 155 / 170** | yes (unchanged, the guard holds) |
+| Push recovery ordered tall > crouch > Compress | yes | no (reversed) | no (reversed) | no |
+| Reaction 0.08–0.12 s | 0.001 | 0.105 | 0.105 | yes |
+| Mode B: the bank's envelope halves within two cycles | — | yes | yes (the kick's rows identical) | yes |
+| Mode A not seen | 0.000–0.007 | 0.000–0.009 | 0.000–0.009 | yes |
+| N1: legs < ~2 kW per frame | to 30.9 kW | 1.52 kW | **1.52 kW** | yes |
+| Turn pair, N2 | 14 of 16, +1.7 | suspended (29k) | suspended | — |
+
+**The save window now passes** on 29m's restated measure: the asymptote is 0.187 / 0.165 / 0.144 s, ordered
+tall > crouch > Compress, and √(h/g_eff) at the test's own felt gravity (h = 0.68 m, g_eff 13–19 m/s²) is 0.19–0.23 s,
+so the tall row is inside 20 % and the lower stances are shorter for the reason the spec wants. **The chop is the only
+bar of the step still missing**, with the push ordering (29's own, long-standing) beside it.
+
+## 7. What is in the tree, and what is not
+
+**Kept** (no change to what the game does):
+- `CaptureState.pastAcross`, the fourth delay-line channel and `HumanBalance.sensedCaptureAcross`: the signal the hip
+  would answer, sensed BALANCE_DELAY late like everything else. Written only inside `capture`; nothing in the game
+  reads it, the probes do. It is here because the next step needs it and it costs nothing.
+- `rotorReach`, with its derivation and with the measurements above recorded against it in its own comment. Not wired.
+- The notes in `captureStep` and in `rotorReach` saying what was measured and why neither is wired, so the next agent
+  does not spend a round rediscovering it.
+
+**Not kept:** the hip's demand from the capture point, in either form, and the horizon cap in `reach`. Both regress the
+push bar's largest saved shove, which ruling 29m lists as must-not-regress, and the stop rule's two rounds went on
+measuring them honestly rather than on finding a third form that scrapes past.
+
+## 8. What I am unsure of, and what was not run
+
+- **Whether the hip is salvageable at all on a board.** Two of the three obstacles are structural, not gains: the swing
+  rotor's centring is switched off by any demand over 20 N·m, and the rotor's reaction rolls the board. A form that
+  damped the demand by the swing's own rate would probably stop the ratchet, but it is a new gain and the stop rule
+  forbids it; I would want it designed on the roll model (as 3.2d designed the rest) rather than hand-set.
+- **Whether `reach` should be capped at all.** The formula is right. Its horizon is the one quantity in the test that
+  comes from the felt gravity, and the felt gravity is exactly what 3.2h found untrustworthy under an impulse. I have no
+  honest horizon to offer.
+- **The 2 Hz ring.** I measured it on a plane under one shove in one stance. I did not check whether it is the balance
+  loop's design frequency or an artefact of the probe's instantaneous shove, and that matters for how seriously to take
+  it.
+- **The 5 m/s question.** The grid is in §4; the reading is the advisor's, as the ruling says.
+- **Not run:** the merge checks (the chop still misses, so nothing merges), the turn pair and N2 (suspended, 29k), the
+  pitch loop (held, 29l). No ride, no game page, no Basilisk case.
+
+## 9. How it rides, and what is still missing (for the owner)
+
+Plain words, as the ruling asks. **Nothing changed in how it rides this time.** I tried two things, measured both, and
+took both out because they made it worse. So it rides exactly as the last step left it.
+
+**What I tried, in plain words:**
+- When you stand on a board your ankles can only hold you to about 11 degrees of lean. That is simple geometry: your
+  feet are about 13 cm wide side to side and your weight sits 68 cm above them. Past 11 degrees your ankles have
+  nothing left, and your hips have to take over.
+- The rider's hips were waiting too long. So I made the hips start as soon as the rider's weight goes outside its feet.
+- **It did not work, and I can say exactly why.** When you ride, your weight wobbles in and out over your feet about
+  twice a second. If the hips answer every one of those wobbles, they swing a little further each time and never come
+  back — after a second they are all the way over and the rider goes down. And on a surfboard swinging your hips also
+  rolls the board, so a rider throwing its hips tips its own board over. A shove the rider used to survive at
+  1.9 m/s now took it down at 0.6 m/s. So the hips came out again.
+
+**What I found instead, and this is the real problem:**
+- The rider's balance brain does not ask its ankles for enough. It asks for the ankles' full effort only at about
+  40 degrees of lean — but the ankles stop working at 11 degrees. So for most of a fall the rider has three quarters of
+  its ankle strength sitting unused, and by the time it does ask, the board is already 50 degrees over and nothing can
+  save it.
+- The reason is that the balance brain does not know where the rider's weight is over its feet. It watches the board
+  and the body's angle, not the weight. That is the piece to fix, and it is a bigger job than one rule.
+
+**Where the rider stands today:**
+- Flat water, any speed: fine.
+- A hard carve: 2.9 seconds standing, 3.0 crouched. Better than the old rider.
+- A shove: it saves about 1.9 m/s standing, and it answers in a tenth of a second like a person.
+- A surface rising fast under the board: fine now, the knees soak it up.
+- **Choppy water: it falls.** It holds 4 of 12 chop tests against the old rider's 11. At the slowest speed (5 m/s) it
+  falls all three times, and so quickly that it never even finishes settling.
+- No pumping yet, so it still cannot gain speed and link two turns.
+
+**My honest view:** I would not ask you to ride this yet, and I would not want you to spend a session on it until the
+balance brain is taught about the rider's weight over its feet. On a flat, clean wave face it would feel good; on
+anything bumpy the first chop would drop you. The carving is genuinely better than the old rider and that part is
+worth keeping.
+
+## Files (3.2i)
+
+- `src/physics/humanBalance.ts`: `CaptureState.pastAcross`, the fourth delay-line channel, `sensedCaptureAcross`, and
+  `rotorReach` with its derivation and with the measurement that says why it is not wired.
+- `src/physics/humanBalance.test.ts`: one test for `rotorReach` (including the inert case with the arms in).
+- `src/physics/AttachedRider.ts`: the note in `captureStep` recording what the horizon cap cost.
+- `results/`: `bars-new-32i.jsonl`, `bars-old-32i.jsonl` (N0); `glide-hipfull-32i.jsonl` and `bars-hipfull-32i.jsonl`
+  (the hip at the knees' scale); `bars-hipneed-32i.jsonl` (the hip at the need); `bars-reachonly-32i.jsonl` (the
+  horizon cap alone); `trace-chop1-5-hipfull-32i.jsonl` and `trace-shove-tall-hipfull-32i.jsonl` (the ratchet).
+- No change to what the game does.

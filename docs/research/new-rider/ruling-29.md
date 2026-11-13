@@ -582,3 +582,90 @@ Everything else passes. This is the last cause.
 5. **Stop rule:** two rounds. If the hip in time does not carry the chop, trace one fall at the moment the ankle
    saturates and hand back.
 6. **If they pass:** the merge checks, and then the whole rebuild merges as one and the owner rides it.
+
+---
+
+# Ruling 29n: step 3.2i; the loop regulates the wrong thing (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 9 and its traces. Code held on `claude/rider-new-32i` (9b9269ac).
+Nothing from this step is kept, so the game behaves exactly as 3.2h does.
+
+## Ruling 29m's premise was wrong, and the advisor should have caught it
+
+Part 8 said an honest `reach` would make the chop worse. **That was tagged [I], an inference, and the advisor read it
+as [M] and bundled two changes together on it.** Measured on its own, with the hip's term off, **the twelve chop cells
+are identical to 3.2h's, every cell, to the frame.** The cap never binds where the arms are in, because
+√(2·6·200·1.2) = 53.7 N·m·s against τ/ω₀ = 58. It binds only with the arms out, and there it costs a carve 0.1 s and
+halves the saved shove, because ω₀ comes from a felt gravity an impulsive shove inflates to 13–19 m/s².
+
+The lesson is the advisor's: **read the tags.** An inference in a build agent's write-up is not a measurement, and
+bundling two changes on one of them cost a round.
+
+## Both of 29m's changes are refuted, and correctly not kept
+
+- **The hip from the capture point is pumped, not late.** It does save once — the board's roll comes down 19.4° → 11.6°
+  and the capture point 0.187 → 0.024 m. Then it ratchets: on a plane under a pure shove the capture point crosses the
+  feet's middle five times in 1.27 s, about 2 Hz, and the swing runs 0 → −54° of its ±69° one way every cycle. Three
+  causes, and two are structural:
+  - `humanSwingStep`'s centring is scaled by `max(0, 1 − |demand|/(0.1·SWING_TORQUE))`, so **any demand over 20 N·m
+    switches the centring off**;
+  - the demand is read a delay late, a fifth of a period at 2 Hz;
+  - **a thrown hip rolls the board.** The swing's reaction is a couple through the feet, and against a roll stiffness of
+    −285 N·m/rad, 200 N·m is 0.7 rad of equivalent roll. `reach` counts the capture-point shift the rotor buys and not
+    the roll it pays.
+  - The saved shove for a tall rider falls 1.887 → 0.615 or 1.061. **The guard bar did its job**, which is why that
+    bar exists.
+- **`reach`'s horizon** is inert where the chop happens, and harmful where it is not. The formula is right and the
+  horizon it was given is not. Kept in the file, unwired, with its measurement beside it. The advisor does not ask for
+  an invented horizon.
+
+## The cause, from the stop rule's trace
+
+**The roll loop asks the ankle for its whole range only at about 40° of body bank, while the ankle's authority ends at
+11°.**
+
+| t | board roll | body bank | the loop's ankle command | capture point past the feet |
+|---|---|---|---|---|
+| 1.18 s | 12° | **−11.3°** | 3.8° of 14.32° | 0 |
+| 1.62 s | 22° | −24.6° | 0.9° | 0.113 m |
+| **1.88 s** | **50°** | −42.6° | **saturated** | 0.221 m |
+| 1.98 s | 63° | −53.8° | saturated | 0.440 m → fall |
+
+The bank crosses 11° at 1.18 s, where m g h sin(11°) = 93 N·m is exactly the load times the feet's 0.13 m half-width.
+**For 0.7 s after that, three quarters of the ankle is never asked for** while the capture point sits 0.06–0.22 m
+outside the feet.
+
+**Why: `predictiveBalance`'s state is roll, roll rate, bank, bank rate, twist, yaw and slip — and none of them is where
+the body's weight sits over its feet.** So nothing in the loop knows the ankle has run out at 11°, and the gains were
+designed for stability margins, not against a bound. The hip was never late; **the thing ahead of it in the order was
+never asked for.**
+
+## Decisions
+
+1. **The roll loop opens.** 29l and 29m both held it; the hold is lifted, with the reason named above. This is not
+   tuning: it is a wrong regulated variable.
+2. **The 5 m/s chop cells are a probe fault until shown otherwise.** All three fall at 1.07–1.98 s of a 2.5 s settle,
+   before the run proper begins. A rider that has not finished being placed is not riding. The probe settles properly
+   first, and then the bar is read; a fall during a settle is reported and explained, never ignored.
+3. **The hip's three obstacles are recorded for whoever returns to it:** the centring rule that switches off above
+   20 N·m, the delayed demand, and the roll a thrown hip pays for the shift it buys. If the hip comes back, it is
+   designed on the roll model as 3.2d designed the rest, never hand-set.
+4. **The save window passes** on 29m's restated measure (0.187 / 0.165 / 0.144 s, ordered, against √(h/g_eff) of
+   0.19–0.23 s at the test's own felt gravity). That bar is settled.
+
+## Decision: step 3.2j, give the loop the variable it is missing (the same agent continues; effort xhigh)
+
+1. **Add the body's weight over its feet to the controller's state** — the capture point across, or equivalently the
+   lean against its 11° bound. It is the quantity the whole design is about, and it is the one quantity the loop cannot
+   see.
+2. **Design the gains against the ankle's bound, not only against stability margins.** The ankle's authority is
+   load × the feet's half-width; the loop must spend it early, while it still exists, instead of discovering it at 40°
+   of bank. Design on the model first, as 3.2d did, and say what the new state buys before building it.
+3. **Then the chop**, after a proper settle, reported by speed and seed as before.
+4. **Bars:** the chop must reach 11 of 12. Nothing may regress: the carves (2.85 / 2.98), Mode B on its bank bar, the
+   rise, **the saved shove 138 / 155 / 170 N·s — this is the guard, and it is what caught 29m's hip**, N0
+   byte-identical, N1 under about 2 kW.
+5. **Stop rule:** two rounds, then hand back. If adding the state does not carry the chop, the next question is whether
+   a rider this tall on feet this narrow can hold that chop at all — which is a question about the stance, not the
+   controller, and the advisor will take it.
+6. **If they pass:** the merge checks, then the whole rebuild merges as one and the owner rides it.
