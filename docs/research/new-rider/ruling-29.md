@@ -365,3 +365,76 @@ advisor adopts both:**
 
 3.2e stays on its branch. Merging it would replace 3.1c under `?rider=new` with a rider that cannot carve, and the owner
 rides that switch. 3.2f is merged when the carves and the turn pair pass, or when the owner asks to feel it as it is.
+
+---
+
+# Ruling 29k: step 3.2f; the carve is won, and the turn pair is now a speed problem (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 6 and its results. The code is held on `claude/rider-new-32f`
+(f318ae78, pushed), not merged.
+
+## What 3.2f won
+
+- **Both held carves pass, for the first time in the rebuild:** 2.83 s standing and 2.98 s in Compress, against bars of
+  2.28 and 2.30. The old rider managed 1.93 and 3.0, and it had `CARVE_CARRY` helping it.
+- The reference is corrected, as 29j asked: the steady turn that balances the lean, and the rail set over at 0.5 rad/s.
+- The plant is measured at rails of 0, 10, 20, 30 and 40° at 5, 7 and 9 m/s. Rail 0 reproduces the roll-plant study to
+  the last digit, which is the method's check.
+
+## A real finding, worth keeping outside this step
+
+**The board's behaviour is not linear in rail. Three of the twelve derivatives change sign between 10° and 20°, at
+every speed.**
+
+- **The hull stops righting the board.** Beyond about 15° of rail the water no longer rolls the board back up under the
+  rider; it rolls it further in (K per roll at 7 m/s: −285, −180, **+250**, +286, +435 at 0, 10, 20, 30, 40°). That is
+  the physics behind a committed carve feeling locked in, and behind the point of no return past it.
+- **A slide feeds itself.** The side force per degree of sideslip changes sign the same way (+1398 → **−1387** →
+  −4143), which is the spin-out. At 7 m/s and 40° the board cannot be stabilised by any controller.
+- **At 5 m/s the board holds no turn at 30 or 40°**: it spins out to 71° of sideslip and sinks. The schedule clamps
+  5 m/s to 20°, which is honest.
+
+This belongs in the wave and board notes too, not only the rider's: it is the first measured account of why hard turns
+behave differently in kind, not only in degree.
+
+## Two faults found in the lab's harness (accepted)
+
+The roll-rate hold added its axis term to the velocity every substep, so the vertical part compounded (22 m/s inside a
+frame at a rolled board). And the sideslip being held was read in the board's frame, not the level plane: at 30° of
+rail the two differ by 5.6°, and holding the wrong one sank the board to the tank floor. Rail 0 is unaffected, so the
+earlier roll-plant study stands.
+
+## Decisions
+
+1. **Keep `SCHEDULE_RAIL_CAP` at 5°.** The cap of 10° moves every turn-pair fall out of the bottom turn and into the
+   climb, which looks better, but it costs the Compress carve its margin and does not pass the pair either. Revisit it
+   when the pair is unblocked.
+2. **Mode B's bar is restated, and then it passes.** The agent's trace shows the fitted yaw-rate "mode" is a wander of
+   under 2°/s whose largest peak comes third or fourth, not a weave. The meaningful measure is the body's bank, and the
+   kick dies there within about two cycles at 5, 7 and 9 m/s. **The bar becomes: the bank's envelope falls by half
+   within two cycles.** The advisor wrote the old bar; this corrects it rather than excusing a miss.
+3. **The turn pair's bar is suspended, and the reason is named.** The pair now fails on speed, not on balance: at a cap
+   of 10° the rider survives the bottom turn and falls in the climb having slowed to 3.0–5.7 m/s. The old rider passed
+   this bar at 14 of 16 with `CARVE_CARRY` on — a hidden speed source that ruling 29 removed. **So the bar was
+   measured against a rider that was being pushed.** It returns when the spec's manual pumping exists (step 3.5), and
+   no balance step chases it before then. N2's miss (+3.25 against 3.5) is read the same way.
+4. **The 0.5 rad/s lean-in stays a named constant.** No source gives a rider's roll rate for setting a rail. The agent
+   measured the ladder honestly (0.5 passes, 1.0 gives 1.43/1.60, 1.4 fails) and did not dress the turn rate from
+   Forsyth et al. 2024 up as a roll rate. Correct.
+5. **The open question is recorded, not closed:** the measured big-rail plant makes the game's carve worse while the
+   model says it should be better. The agent's reading is that the lab's trim is a forced steady turn under a rigid
+   rider sitting 4–6 cm deeper, while a carve is a transient under a free body. So the rail plant may be right for
+   holding a turn and wrong for entering one. That is a question for a later step, and it is why the cap is empirical.
+
+## Decision: step 3.2g, the pitch loop (the same agent continues; effort xhigh)
+
+The balance side is done except for one subsystem. Everything still missing is front-to-back, not side-to-side:
+the chop (4 of 12), the save window (too long), and the 20 cm rise at 2 m/s.
+
+1. The pitch loop is still 3.1c's active ankle with 3.2's bracing. Bring it under the same treatment that worked
+   sideways: the predicted state, and gains designed on the measured plant rather than hand-set.
+2. Measure the pitch plant as the roll plant was measured, over the speeds that matter, and say whether it too bends.
+3. Re-run the bars. The ones that must move are the chop, the save window and the rise. The carves and Mode B must not
+   regress.
+4. **Then merge the whole rebuild as one.** Nothing is merged until a rider is worth the owner's time: main's
+   `?rider=new` stays 3.1c until then, and the owner has said they will ride and feed back as the work goes.

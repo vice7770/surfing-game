@@ -273,6 +273,22 @@ it('step 3.2d: balance by prediction', () => {
       emit({ part: 'inertia', speed, stance: STANCE(depth), roll: ri, yaw: yi, design32dOnGame: [r(onTrue.damping, 3), r(onTrue.frequency, 2)], designOnGame: [r(own.damping, 3), r(own.frequency, 2)], delay083: r(early.damping, 3), delay117: r(late.damping, 3), ...gains(fresh) });
     }
   }
+  if (PARTS.includes('railmodel')) {
+    // Step 3.2f: the controller designed on the plant at each measured rail, checked on that same plant: the nominal
+    // loop, a frame of timing error, and the gains. RAILS in degrees.
+    for (const depth of DEPTHS) for (const speed of [5, 7, 9]) for (const deg of (process.env.RAILS ?? '0,10,20,30,40').split(',').map(Number)) {
+      const rail = (deg * Math.PI) / 180;
+      const { y, t } = plantAt(speed, depth, { rail });
+      const d = design(y, t, WEIGHTS);
+      const own = check(d, speed, depth, { rail });
+      const early = check(d, speed, depth, { rail }, 5 * CONTROL_STEP);
+      const late = check(d, speed, depth, { rail }, 7 * CONTROL_STEP);
+      // The straight design (rail 0) on the plant at this rail: what 3.2e did in a carve.
+      const flat = at(speed, depth);
+      const wrong = check(flat, speed, depth, { rail });
+      emit({ part: 'railmodel', speed, stance: STANCE(depth), rail: deg, nominal: [r(own.damping, 3), r(own.frequency, 2)], timing: [r(early.damping, 3), r(late.damping, 3)], straightDesign: [r(wrong.damping, 3), r(wrong.frequency, 2)], ...gains(d) });
+    }
+  }
   if (PARTS.includes('timing')) {
     // Step 3.2e (ruling 29i item 1a), the only model gate: a frame of timing error. The true delay 5 and 7 frames
     // (0.083 and 0.117 s) against the predictor's 6 (0.1 s), 5-12 m/s, the three stances; least damping >= 0.

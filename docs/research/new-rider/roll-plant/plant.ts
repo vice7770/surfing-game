@@ -119,6 +119,8 @@ export class Lab {
   private w0 = new Vector3();
   private c0 = new Vector3();
   private du = new Float64Array(6);
+  /** The vertical velocity the `rollRate` hold injected last substep (step 3.2f), m/s. */
+  private rollRateLift = 0;
   private readonly fin = createFinForce();
   private readonly pf = createPatchForce();
   private readonly fs = createWaterSample();
@@ -175,6 +177,12 @@ export class Lab {
       v.x = speed * Math.sin(dir);
       v.z = speed * Math.cos(dir);
     }
+    // The vertical part of the axis point's term is a set, not an addition (step 3.2f). The level parts are harmless:
+    // the speed and slip hold writes v.x and v.z each substep. The vertical is not written, so adding iteach substep
+    // compounded: at a rolled board (where the term is no longer level) it threw the board out of the water within a
+    // frame. Subtracting what was injected last substep restores the board's own heave.
+    v.y -= this.rollRateLift;
+    this.rollRateLift = 0;
     if (hold.rollRate !== undefined) {
       const f = new Vector3(0, 0, 1).applyQuaternion(q);
       const spin = f.clone().multiplyScalar(hold.rollRate);
@@ -182,7 +190,9 @@ export class Lab {
       if (hold.rollAxis) {
         const axis = board.toWorld(hold.rollAxis, new Vector3());
         // Rotating about the axis point: the centre of mass moves at spin × (c − P).
-        v.add(spin.clone().cross(board.centerOfMass.clone().sub(axis)));
+        const term = spin.clone().cross(board.centerOfMass.clone().sub(axis));
+        v.add(term);
+        this.rollRateLift = term.y;
       }
     }
     (board as Any).syncPosition();
