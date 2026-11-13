@@ -276,3 +276,261 @@ owner wants to feel it anyway (straight glides and drops):
 - The turn pair: `../../turn-pair-2026-11-10/run.sh.txt` set B with `OPTS='{"rider":"new"}' CLIMBS=hold DRIVES=off`.
 - `results/`: `bars-old.jsonl`, `bars-new.jsonl`, `bars31-new.jsonl`, `model.jsonl`, `turnpair-B-new.txt`,
   `trace-*.jsonl`.
+
+---
+
+# Part 2: step 3.2b, the rider's yaw inertia (ruling 29f)
+
+Written 2026-11-13 by the build agent (Opus 5.5, effort xhigh), on branch `claude/rider-new-32b` (from
+`claude/rider-new-32`, rebased on main 733f0377). The contract: `../ruling-29.md` 29f, `../roll-plant/README.md`.
+
+Tags as above: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **Built, behind `?rider=new` only:** the rider's own yaw inertia turns with the board through the planted feet, in
+  the board's solve. It is an inertia, not a force. The old rider is unchanged (N0: byte-identical).
+- **Sourced:** 2.81 kg·m² standing tall, 3.05 crouched, 3.20 in Compress (de Leva 1996, posed in the game's stance).
+- **It does what ruling 29f asked of the board:** a 1 cm centre-of-pressure step at 7 m/s now yaws the board with a time
+  constant of 0.122 s (3.2: 0.049 s). The bar is 0.12–0.25 s: a pass, at its low edge.
+- **It does not make the delayed balance work. It makes the roll worse.** The slow mode moves from 1.07 to 0.78 Hz at
+  7 m/s and grows faster (damping ratio −0.075 → −0.237). Chop falls more, and the shoves saved shrink.
+- **The model with yaw predicted this before the game showed it.** With the inertia, no balance gains damp the mode
+  in the model, and none did in the game (two rounds). So I hand back, as the brief says.
+- **The main finding:** the growing mode is not the feet steering the board. It is the board and the body leaning
+  together, a bicycle-like weave. The rail's turn is what rights that lean. A slower yaw makes the turn come later, so
+  the weave grows. The roll-plant lab already showed this for a rigid rider with a human's inertia (0.38 Hz, ζ −0.15).
+- **The feet's steering is real too, but it is the carve's problem.** In the tall carve the centre of pressure moves
+  7 cm toward the lean and turns the board away at 0.44 rad/s (3.2: 0.56). The inertia delays this by about 0.1 s.
+  It does not remove it.
+
+## 2. The inertia and its source
+
+**Source** [S]: de Leva, P. 1996, "Adjustments to Zatsiorsky-Seluyanov's segment inertia parameters", J Biomech
+29(9):1223–1230. The male sample is 73.0 kg, the game's rider. I used its segment masses, centre-of-mass places and radii
+of gyration, as tabulated in Duarte's BMC notebook
+(https://raw.githubusercontent.com/demotu/BMC/master/notebooks/BodySegmentParameters.ipynb). The segment lengths are
+the male means of de Leva's Table 1, recalled, not read: the paper's scan did not decode. The trunk's three parts sum to
+its whole (170.7 + 215.5 + 145.7 = 531.9 mm), as they should.
+
+**Posture** [R, I]: the game's standing pose (`riderPosture.ts`): the feet 0.63 m apart along the board, the hips 0.78 m
+over the deck, the hands about 0.45 m out along the board. The crouch ladder lowers the hips by 0.195 m (the pumping
+crouch) and 0.30 m (Compress). The joints between are this probe's choice (`inertia.probe.ts`).
+
+**Whole body about the vertical through its centre of mass, kg·m²** [M, from the source]
+(`results/inertia.jsonl`):
+
+| Posture | Arms in at the sides | Arms in the riding pose (used) | Arms out wide |
+|---|---|---|---|
+| Tall | 2.15 | **2.81** | 3.65 |
+| Pumping crouch | 2.48 | **3.05** | 3.97 |
+| Compress | 2.62 | **3.20** | 4.12 |
+
+- Most of it is the legs spread along the board (1.5–1.6) and the arms (0.9 in the pose).
+- **The method's check:** standing straight, the feet together, the arms at the sides, it gives 0.93. With the arms
+  out level it gives 2.44, 2.6 times as much. A sports-biomechanics text says a skater "can more than double" it this
+  way (Masaryk University, https://www.fsps.muni.cz/emuni/data/reader/book-2/31.html).
+- **Not read:** the measured whole-body values (Santschi, DuBois and Omoto 1963, AMRL-TDR-63-36; Griffiths, Watkins and
+  Sharpe 2005, Am J Phys 73:85). DTIC returned 403 and the journal is paywalled.
+- These are larger than ruling 29f's estimate (1.5–2.5). The difference is the feet spread 0.63 m apart.
+
+**How it is coupled** [R] (`AttachedRider.coupleYaw`, `humanBalance.ts` `riderYawInertia`):
+- The point mass carries the body's translation, as before. Its spin about its long axis (the leg line) gets the whole
+  body's inertia, by the leg's depth below the riding stance and the balance's arms-out share (+0.85 at full).
+- While the feet are on the deck, that spin is held rigid to the board's turn about the same axis. In the board's 6 × 6
+  rows: I n nᵀ on the rotation, and the body's own spin's momentum on the right-hand side. So the standing solve and the
+  solves apart both carry it.
+- In flight the body keeps its spin. Back on the deck the coupling starts from the board's own turn, with no impulse.
+- The twist and hip rotors stay the body's internal yaw. The trunk's share overlaps the twist rotor's 1.5 kg·m²; this
+  was already marked provisional there.
+- A probe option, `yawInertiaScale` (`YAW_SCALE` in `lab.ts`), scales it; 0 is 3.2's point mass. With 0 the kick trace
+  is 3.2's byte for byte.
+
+## 3. The model with yaw
+
+**What changed** (`rollModel.ts`: `YawPlant`, `humanYawLoop`, `humanYawModes`, `humanYawKick`, `boardDerivatives`):
+- The board is a body of its own: roll, sway and yaw about its own centre of mass. The body is a point mass on its leg
+  over the feet. The balance is 3.2's: delay, motor lag, gains on the body's own bank and bank rate.
+- The water is the lab's 12 captive derivatives with the rigid point rider: yaw moment, side force and roll moment per
+  roll, slip, yaw rate and roll rate (`../roll-plant/results/plant-point.jsonl`). They replace 3.2's lumped hull.
+- The lab measured them about the composite centre of mass, over the feet. I moved them to the board's own centre of
+  mass, 0.236 m further forward. About the board's own centre, the heel's yaw moment nearly cancels (105 → 7.5 N·m/rad at
+  7 m/s), and the fins' weathercock and damping grow (296 → 626, −13 → −49).
+- The feet: their forward force (the drag the body carries, 1.5 N·m per cm at 7 m/s, scaled with speed by the terminal
+  planes) at the centre of pressure; the body's push across, at the feet's station 0.244 m behind the board's centre of
+  mass; the rider's yaw inertia added to the board's.
+
+**First check: the water against the lab** [M] (`yaw.probe.ts` PART=rigid). The lab's free roll decay with the rigid
+point rider:
+
+| Speed | Lab | Model |
+|---|---|---|
+| 5 m/s | grows, capsizes at 1.6 s | grows, ζ −0.32 at 1.14 Hz |
+| 7 m/s | 0.945 Hz, ζ −0.021 | 1.27 Hz, ζ +0.013 |
+| 9 m/s | 0.882 Hz, ζ +0.081 | 1.53 Hz, ζ +0.062 |
+
+The damping matches at every speed; the frequency is 35–70 % high. Without the roll moments from slip and yaw rate the
+model grows at all three speeds, so they matter.
+
+**Second check: 3.2's mode without the inertia** [M]. 3.2's gains (bank 0, rate 0.1 s), the tall body:
+
+| Speed | Game (3.2) | Model |
+|---|---|---|
+| 5 m/s | ζ −0.109 at 1.18 Hz | diverges (−0.69 at 0.73 Hz) |
+| 7 m/s | ζ −0.075 at 1.07 Hz | ζ −0.245 at 1.09 Hz |
+| 9 m/s | ζ −0.131 at 1.43 Hz | ζ −0.224 at 1.27 Hz |
+
+It reproduces the growing mode and its frequency at 7 and 9 m/s. It grows 2–3 times faster than the game, and it is
+too pessimistic at 5 m/s.
+
+**With the inertia** [M] (3.2's gains, 7 m/s, tall): 1.0 kg·m² → ζ −0.251 at 0.82 Hz; 2.15 → −0.259 at 0.65 Hz; 2.81 →
+−0.266 at 0.59 Hz; 3.65 → −0.279 at 0.52 Hz. The inertia slows the mode and does not damp it. The game then showed the
+same: 0.78 Hz, ζ −0.237 (section 4).
+
+**The gains and their margins** [M] (the grid bank −2 to 4, rate −0.3 to 0.8 s; over the stance heights and the board's
+roll inertia 0.03–0.3 kg·m²):
+
+| Rider's yaw inertia | Speed | Best gains (bank, rate s) | Least damping |
+|---|---|---|---|
+| none | 7 m/s | 0, 0 (passive) | −0.062 |
+| none | 9 m/s | 0, 0 (passive) | +0.100 |
+| 2.15–3.2 | 5 m/s | 0.25, 0 | −0.703 |
+| 2.15–3.2 | 7 m/s | 0, 0.55 | −0.220 |
+| 2.15–3.2 | 9 m/s | 0, 0.05 | −0.201 |
+
+- **There are no margins to give:** with the inertia no gain pair damps the mode at any speed.
+- **A random search over the physical box** (1,500 samples at 7 and 9 m/s: ankle 420–1,600 N·m/rad and 40–320
+  N·m·s/rad, delay 0.08–0.15 s, motor lag 0.03–0.05 s, the inertia 2.15–3.65, the gains). The best is ζ −0.254 with
+  the inertia and −0.028 without.
+- **The delay:** at 10 ms of delay and 10 ms of lag the best is +0.059 (rate 0.7 s, gains ×0.4–1.22). At 50 ms it is
+  −0.051. So the ankle can barely damp this mode even undelayed.
+- **Two levers, in the model only:**
+  - The reserve lever, a hull cross-flow damping over the board's back half (unsourced; 50, 150 and 400 N·s/m per m).
+    It helps at 5 m/s (−0.30, +0.004, +0.035) and not at 7 m/s (−0.215, −0.238, −0.214) or 9 m/s (−0.32, −0.28, −0.27).
+  - The hip taking a share of the rest (±200 N·m/rad): no.
+- **The model is sensitive** (PART=sens): scaling single derivatives by 0 or 2 often turns the mode into a static
+  divergence. Trust it for trends, not for gains.
+
+## 4. What the game shows
+
+**The yaw step** [M] (`yawstep.probe.ts`, `results/yawstep-32b.jsonl`). From a steady glide, a step couple of the feet's
+forward force times 1 cm is added to the board's solve. The time to 63 % of the yaw rate's first peak:
+
+| Speed | Old rider | 3.2 (no inertia) | 3.2b | Inertia the board meets (3.2 → 3.2b) |
+|---|---|---|---|---|
+| 5 m/s | 0.023 s | 0.061 s | 0.145 s | 0.81 → 3.60 kg·m² |
+| 7 m/s | 0.019 s | 0.049 s | **0.122 s** | 0.86 → 3.63 |
+| 9 m/s | 0.016 s | 0.039 s | 0.095 s | 0.93 → 3.66 |
+
+**The kick at 7 m/s** [M] (`results/trace-kick7-32b.jsonl`; 3.2's is `trace-kick7.jsonl`):
+- The growing mode is the board and the body leaning together. The ankle barely deflects and the centre of pressure
+  stays within 1.5 cm. The yaw rate follows the lean a little late.
+- This is the rigid rider's weave from the roll-plant lab, which was neutral at 7 m/s with a point rider and grew with
+  a human's inertia.
+- The bank's peaks: 3.2 (no inertia) ±0.6°, slowly growing; 3.2b ±2–3° within 2 s.
+
+**The tall carve** [M] (`results/trace-carve-tall-32b.jsonl`; the same run without the inertia, `-y0`):
+- The counter-steer starts the lean: the rest asks 4°, and the board rolls 1° onto the other rail.
+- As the body falls toward the lean, the ankle catches it. The centre of pressure moves 1 → 7.6 cm toward the lean.
+  The feet's forward force there turns the board away at up to 0.44 rad/s (3.2: 0.56 rad/s, 0.1 s sooner).
+- The feet run out from under the body: the fall comes at 0.48 s (3.2: 0.40 s).
+
+## 5. The bars (steady starts, 16 substeps; `RIDER=new` against the old rider)
+
+Results: `results/bars-new-32b.jsonl`, `bars31-new-32b.jsonl`, `yawstep-32b.jsonl`, `kicks-32b.txt`,
+`turnpair-B-new-32b.txt`. The old rider's rows are `bars-old.jsonl` (unchanged).
+
+| Bar | Old | 3.2 | 3.2b | Pass? |
+|---|---|---|---|---|
+| N0: `rider=old` byte-identical | — | — | 3.2's `bars-old` and 3.1's `bars-old` the same bytes | yes |
+| Board yaw time constant, 1 cm CoP step at 7 m/s: 0.12–0.25 s | 0.019 s | 0.049 s | 0.122 s | yes |
+| Mode B: roll decay per cycle ≤ the old's (5 / 7 / 9 m/s) | 1.42 / 0.35 / 0.46 | 2.89 / 17.9 / 2.66 | 4.90 / 3.46 / 18.1 | no |
+| Mode B: damping ratio ≥ 0.05 (5 / 7 / 9 m/s) | −0.015 / +0.079 / +0.103 | −0.109 / −0.075 / −0.131 | −0.166 / −0.237 / −0.194 at 0.93 / 0.78 / 0.98 Hz | no |
+| Mode A not seen (12–17 Hz share) | 0.000–0.007 | 0.000–0.004 | 0.000 | yes |
+| Push recovery, 7 m/s: tall > crouch > Compress | 192 / 188 / 191 N·s | 81 / 114 / 131 | 21 / 11 / 5 | no: ordered right, but tiny |
+| Reaction 0.08–0.12 s | 0.001 s | 0.107–0.109 | 0.107–0.110 | yes |
+| Save window: tall 0.25–0.35 s, Compress 0.15–0.25 s | — | 0.70–0.80 / 0.25–1.12 | tall 1.47–1.53, Compress 0.69–0.71 | no (too long) |
+| Glides on the plane, 5 / 7 / 9 / 12 m/s, 3 s | 4 of 4 | 4 of 4 | 4 of 4 | yes |
+| Glides on chop, 3 seeds, 3 s: at least 11 of 12 | 11 of 12 | 4 of 12 | 0 of 12 | no |
+| 20 cm rise at 2 m/s (report) | falls 0.32 s | falls 0.42 s | falls 0.42 s | — |
+| Held carve standing ≥ 2.28 s | 1.93 s | 0.40 s | 0.48 s | no |
+| Held carve Compress ≥ 2.30 s | 3.0 s | 1.22 s | 1.27 s | no |
+| Turn pair set B: one pair in ≥ 12 of 16 | 14 of 16 | 0 of 16 | 0 of 16 | no |
+| N1 (3.1): legs per frame < ~2 kW; ≤ 1.46 kW over 0.5 s | to 30.9 kW | 0.55 / 0.31 kW | 0.55 / 0.27 kW | yes |
+| N2 (3.1): 20° from 4 m/s, gain ≥ 3.5 m/s | +1.7 | +3.25 | +3.25 | no |
+
+Notes:
+- **The save window's fall:** the capture point past the feet's edge by more than the room's reach, and the centre of
+  mass itself past the edge (3.2's test, unchanged). The window is from the capture point first leaving the feet to
+  that fall. With the inertia the weight drifts out even more slowly.
+- **The push bar:** the largest shove across the body saved on a 7 m/s glide, by bisection (3.2's). The lower stances
+  now save less, as they should, but every save is small: the shove wakes the weave.
+- **3.1's probe (placed starts):**
+  - N4, placed straight down and up at 25–50°: 12 of 12 hold 0.5 s, the board at most 1.8 g, as in 3.2.
+  - The 45° line: 4 of 6 hold (3.2: 5 of 6). Of all 30 placed rows, 4 put the board over 5 g (3.2: 1); the
+    oblique ones changed most. N3 as in 3.2.
+  - Its kick: 5 m/s +0.106, 7 m/s −0.084, 9 m/s −0.139 (3.2: +0.056, −0.062, −0.095).
+
+## 6. The two rounds
+
+Each row: the kick at 5 / 7 / 9 m/s, damping ratio (F: a fall within 3 s). All in `results/kicks-32b.txt`.
+
+| Round | Inertia | Gains (bank, rate s, lean fed forward) | Kick | Result |
+|---|---|---|---|---|
+| 1 | 2.81 (sourced) | 3.2's (0, 0.1, 0.1) | −0.17 / −0.24 / −0.19 | grows |
+| 1 | 2.81 | rate 0, 0.05, 0.2, 0.3, 0.5 | falls, or −0.04 to −0.36 | grows or falls |
+| 1 | 2.81 | bank +0.5, +1 | falls at 5 and 7 m/s | falls |
+| 1 | 2.81 | bank −0.5, rate 0.1 | −0.10 F / −0.05 F / −0.11 | falls |
+| 2 | 2.15 (the arms in) | (−0.25, 0.05) | −0.04 F / **+0.14** / +0.03 | 5 m/s falls |
+| 2 | 2.15 | (−0.2, 0.04) | −0.04 F / +0.04 / +0.08 | 5 m/s falls |
+| 2 | 2.15 and 1.4 | the other 18 runs around those | falls at 5 m/s, or grows | no pass |
+| 2 | 2.81 | (−0.15, 0.05) | −0.06 F / +0.20 / −0.07 | 5 m/s falls |
+
+- The landscape is rough: neighbouring gains flip between ζ +0.14 and a fall.
+- A small negative gain on the bank (as 3.2's model chose for a strong turn) helps 7 m/s and throws 5 m/s every time.
+- I did not build the reserve lever (the hull's cross-flow damping) in the game. It has no source, it reaches every
+  rider, and the model says it does not help at 7 or 9 m/s. That is the orchestrator's call.
+
+## 7. What it means [I]
+
+- Ruling 29f's premise was that a slower board yaw would let a delayed human damp the roll. In this plant it does the
+  opposite, in both the model and the game.
+- **The slow mode is a weave of board and body together.** It is damped by how fast and how strongly the rail turns
+  the board, not by how slowly the feet steer it. A human's yaw inertia, which is real, slows the rail's turn too.
+- **The feet's steering through the centre of pressure is a separate problem**, the carve's. It acts at once, while the
+  rail's turn builds behind the roll: an early wrong-way turn that a 0.1 s loop cannot handle.
+- About the board's own centre of mass, the rail turns the board very little (7.5 N·m/rad). The lab's 105 N·m/rad was
+  about the rider, where a rigid rider pinned the board.
+- **A question for the water track [I]:** in steady planing the hull's pressure and its drag sit under the load. If the
+  drag's line followed the feet's centre of pressure across faster, the feet's steering couple would mostly cancel. The
+  game's drag line follows only through the roll (about 1 cm per degree), and the roll lags. I did not test this; it
+  is a water-force question, which ruling 29f closed.
+- Levers for the advisor, in order [I]:
+  1. the rail's turn per degree about the board's own centre (the heel side force's station, the hull's share);
+  2. how fast the drag line follows the load across;
+  3. the reserve lever (it helps only at 5 m/s in the model);
+  4. a compliant coupling of the upper body's yaw (the brief's "rigid at first"), untested.
+
+## 8. What was not run
+
+- **The merge checks** (the full suite, the Canyon byte check, the headless fps trace, the step time): the bars do not
+  pass. Run: `tsc` (app and server), `humanBalance.test.ts`, `standingBody.test.ts`, `rollModel.test.ts`.
+- **B-wall's long run** on the pool's case water.
+- **In the game:** the reserve lever and the compliant yaw coupling.
+- No ride, no game page, no Basilisk case.
+
+## 9. How the owner rides it
+
+It is not ready to judge. It falls on chop and in turns, as 3.2 did, and it wobbles more slowly and more widely when
+gliding. To feel it anyway, use 3.2's addresses (section 10 above, with `&rider=new`). There is no switch to turn the
+inertia off in the game; that is probe-only (`yawInertiaScale`).
+
+## Files (3.2b)
+
+- `inertia.probe.ts`: the yaw inertia by posture from de Leva's table (`results/inertia.jsonl`).
+- `yaw.probe.ts`: the model (`PART=rigid,check,inertia,gains,sens,box`; env in the file's header;
+  `results/yaw-model.jsonl`).
+- `yawstep.probe.ts`: the board's yaw step in the game (`RIDER=new`, `YAW_SCALE`; `results/yawstep-32b.jsonl`).
+- `bars.probe.ts` and `trace.probe.ts` as before, with `YAW_SCALE=k` and `GAINS=bank,rate,forward` (`lab.ts`).
+- `results/`: `bars-new-32b.jsonl`, `bars31-new-32b.jsonl`, `kicks-32b.txt`, `trace-kick7-32b.jsonl`,
+  `trace-carve-tall-32b.jsonl` (and `-y0`, without the inertia), `turnpair-B-new-32b.txt`.
