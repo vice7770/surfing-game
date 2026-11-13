@@ -36,7 +36,16 @@ export const LIP_FRAY_THROUGH = 0.5;
  *   them are a few centimetres: the edge reads torn, not ruled, and nothing of it is an unbroken white band;
  * - `gap`: how much of a cell's noise is a gap, as the thresholds on it [provisional, by eye].
  */
-export const LIP_FRINGE = { albedo: 0.45, ligament: 0.03, strand: 0.12, gap: [0.35, 0.65] } as const;
+export const LIP_FRINGE = { albedo: 0.45, ligament: 0.03, strand: 0.12, gap: [0.35, 0.65], mean: 0.5 } as const;
+
+/**
+ * The torn edge of the curl's white (ruling 36's bar: the white edge is torn, not ruled). A foam line's edge breaks into
+ * patches, not ligaments, so this is a coarser noise than the fringe's: `patch` m across, moving the cover by `tear`
+ * where it is halfway between water and white, and nothing where it is all one or the other. [Provisional, by eye: the
+ * patch size is the decimetre scale a foam line's fingers have, well above a pixel at the stills' range, where the
+ * ligaments are not.]
+ */
+export const CURL_TEAR = { patch: 0.25, tear: 0.8 } as const;
 
 /**
  * The curl's white, by what the stuff is and not by one flat colour (ruling 36; the consult's §3 and §5 point 6). The
@@ -79,8 +88,7 @@ varying float vSweptWhiteAge;
 float sweptSprayHash( vec3 cell ) {
   return fract( sin( dot( mod( cell, 64.0 ), vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
 }
-float sweptLigaments( vec3 world ) {
-  vec3 p = world / vec3( ${LIP_FRINGE.ligament.toFixed(3)}, ${LIP_FRINGE.strand.toFixed(3)}, ${LIP_FRINGE.ligament.toFixed(3)} );
+float sweptSprayNoise( vec3 p ) {
   vec3 base = floor( p );
   vec3 f = p - base;
   f = f * f * ( 3.0 - 2.0 * f );
@@ -94,6 +102,23 @@ float sweptLigaments( vec3 world ) {
     }
   }
   return value;
+}
+// How much of a pattern this many metres across a fragment can still show: nothing under a pixel, all over two.
+float sweptDetail( float cell ) {
+  float footprint = max( max( fwidth( vWaterWorld.x ), fwidth( vWaterWorld.y ) ), fwidth( vWaterWorld.z ) );
+  return 1.0 - smoothstep( 0.5 * cell, 2.0 * cell, footprint );
+}
+// The ligaments: strands LIP_FRINGE.ligament across and .strand tall, faded to their mean where they fall under a pixel.
+float sweptLigaments( vec3 world ) {
+  float pattern = smoothstep( ${LIP_FRINGE.gap[0].toFixed(2)}, ${LIP_FRINGE.gap[1].toFixed(2)},
+    sweptSprayNoise( world / vec3( ${LIP_FRINGE.ligament.toFixed(3)}, ${LIP_FRINGE.strand.toFixed(3)}, ${LIP_FRINGE.ligament.toFixed(3)} ) ) );
+  return mix( ${LIP_FRINGE.mean.toFixed(2)}, pattern, sweptDetail( ${LIP_FRINGE.ligament.toFixed(3)} ) );
+}
+// The white's torn edge: patches CURL_TEAR.patch across, as a move on the cover, strongest halfway between water and white.
+float sweptTornCover( float cover ) {
+  float patches = sweptSprayNoise( vWaterWorld / ${CURL_TEAR.patch.toFixed(3)} ) - 0.5;
+  float edge = 4.0 * cover * ( 1.0 - cover );
+  return clamp( cover + ${CURL_TEAR.tear.toFixed(2)} * patches * edge * sweptDetail( ${CURL_TEAR.patch.toFixed(3)} ), 0.0, 1.0 );
 }`;
 
 /**
@@ -111,7 +136,7 @@ float sweptLigaments( vec3 world ) {
 export const LIP_FRAY_VOLUME = /* glsl */ `
     float sweptFray = vSweptSheetWeight * clamp( vSweptSpray, 0.0, 1.0 );
     if ( sweptFray > 0.002 ) {
-      sweptFray *= smoothstep( ${LIP_FRINGE.gap[0].toFixed(2)}, ${LIP_FRINGE.gap[1].toFixed(2)}, sweptLigaments( vWaterWorld ) );
+      sweptFray *= sweptLigaments( vWaterWorld );
       float sweptFraySun = dot( waterN, waterSunDirection );
       float sweptFrayNear = max( 0.0, ( sweptFraySun + ${ROLLER_LOOK.wrap.toFixed(3)} ) / ${(1 + ROLLER_LOOK.wrap).toFixed(3)} );
       float sweptFrayFar = max( 0.0, ( ${ROLLER_LOOK.wrap.toFixed(3)} - sweptFraySun ) / ${(1 + ROLLER_LOOK.wrap).toFixed(3)} );
@@ -125,12 +150,14 @@ const CURL_BODY_LINE = 'diffuseColor.rgb = mix( waterBody * waterBodyGain, water
 /**
  * The curl's own foam composition under `?lipLook=fray` (ruling 36, the consult's §3): three materials where there was
  * one white. What a fragment's cover says is only aerated is milky turquoise, what it says is dense is opaque white, and
- * the landing's white carries its age (`whiteAge`, `CURL_WHITE`). Nothing here builds a white shell: the white is a
- * colour on the surface the loft already drew, so no white layer stands anywhere.
+ * the landing's white carries its age (`whiteAge`, `CURL_WHITE`). Its edge is torn into patches (`sweptTornCover`), as
+ * a foam line's edge is, and not ruled. Nothing here builds a white shell: the white is a colour on the surface the loft
+ * already drew, so no white layer stands anywhere.
  */
 export function curlWhiteFoam(foam: string): string {
   if (foam.split(CURL_BODY_LINE).length !== 2) throw new Error('The curl foam composition needs the body-and-foam line once');
-  return foam.replace(CURL_BODY_LINE, /* glsl */ `vec3 sweptCurlWhite = waterFoamColor * vSweptWhiteAge;
+  return foam.replace(CURL_BODY_LINE, /* glsl */ `waterCover = sweptTornCover( waterCover );
+  vec3 sweptCurlWhite = waterFoamColor * vSweptWhiteAge;
   vec3 sweptCurlAerated = sweptCurlWhite * exp( -waterDiffuseAttenuation * ${CURL_WHITE.path.toFixed(1)} );
   diffuseColor.rgb = mix( waterBody * waterBodyGain,
     mix( sweptCurlAerated, sweptCurlWhite, smoothstep( ${CURL_WHITE.aerated.toFixed(2)}, ${CURL_WHITE.dense.toFixed(2)}, waterCover ) ), waterCover );`);

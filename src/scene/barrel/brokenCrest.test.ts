@@ -9,7 +9,7 @@ import {
   BROKEN_CREST, BrokenCrests, LIP_FOAM, LIP_WHITE, brokenWeight, fallProgress, lipFoamAt, lipSprayAt, whiteAge,
 } from './brokenCrest';
 import {
-  CURL_WHITE, LIP_AGE_MAX, LIP_FRAY_THROUGH, LIP_FRAY_VOLUME, LIP_FRINGE, LIP_LOOK_FRAY, LIP_SPRAY_STEPS,
+  CURL_TEAR, CURL_WHITE, LIP_AGE_MAX, LIP_FRAY_THROUGH, LIP_FRAY_VOLUME, LIP_FRINGE, LIP_LOOK_FRAY, LIP_SPRAY_STEPS,
   curlWhiteFoam, lipLookFray,
 } from './lipLook';
 import { ROLLER_LOOK } from '../water/rollerLook';
@@ -305,7 +305,7 @@ describe('the lip\u2019s white, keyed on the time (?lipLook=fray, ruling 36)', (
     }
     // The share is the sheet's weight by its torn water, broken into ligaments, at torn water's own albedo.
     expect(LIP_FRAY_VOLUME).toContain('vSweptSheetWeight * clamp( vSweptSpray, 0.0, 1.0 )');
-    expect(LIP_FRAY_VOLUME).toContain('sweptLigaments( vWaterWorld )');
+    expect(LIP_FRAY_VOLUME).toContain('sweptFray *= sweptLigaments( vWaterWorld );');
     expect(LIP_FRAY_VOLUME).toContain(`${LIP_FRINGE.albedo.toFixed(3)} * RECIPROCAL_PI`);
     expect(LIP_FRAY_VOLUME).toContain(`${LIP_FRAY_THROUGH.toFixed(3)} * sweptBack`);
     expect(LIP_FRINGE.albedo).toBeGreaterThanOrEqual(0.36);
@@ -400,5 +400,8 @@ describe('the lip\u2019s white, keyed on the time (?lipLook=fray, ruling 36)', (
     expect(CURL_WHITE.dense).toBe(0.7);
     expect(CURL_WHITE.aerated).toBe(0.4);
     expect(() => curlWhiteFoam('nothing to swap')).toThrow();
+    // Its edge is torn into patches, not ruled, and both patterns fade out where they fall under a pixel.
+    expect(composed).toContain('waterCover = sweptTornCover( waterCover );');
+    expect(CURL_TEAR.patch).toBeGreaterThan(LIP_FRINGE.ligament);
   });
 });

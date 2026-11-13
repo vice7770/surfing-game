@@ -132,6 +132,7 @@ describe('the swept barrel’s mesh', () => {
       expect(vertex).toContain('attribute float sweptSpray;');
       expect(vertex).toContain('vSweptWhiteAge = ( sweptSpray - sweptSpraySteps )');
       expect(fragment).toContain('float sweptLigaments( vec3 world )');
+      expect(fragment).toContain('float sweptTornCover( float cover )');
       expect(fragment).toContain('vec3 sweptCurlWhite = waterFoamColor * vSweptWhiteAge;');
       // The torn water only adds light; it writes no cover, so the curtain stays see-through.
       expect(fragment).toContain('totalEmissiveRadiance += sweptFray *');
