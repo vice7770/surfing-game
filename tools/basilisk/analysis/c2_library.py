@@ -43,7 +43,8 @@ import numpy as np
 import metrics
 from crest_track import bed_depth, read_params
 from interface import IDX, N_PTS, arclen, resample_piece
-from periodic_library import build
+from crest_track import crop
+from periodic_library import build, local_landmarks
 from profile_velocity import read_rows
 
 WET = 0.5
@@ -158,11 +159,23 @@ def main():
         flags = fr["flags"]
         pre = fr["tau"] < 0
         prof = None
+        if pre and trows and abs(mainc[lm["crest"], 0] - path_at(t, "x")) > 1.0:
+            # the crest mark is on another wave (the first crest's bore ahead, in the window at the earliest frames):
+            # find the landmarks again on the surface near the tracked crest only
+            xt = path_at(t, "x")
+            sub = crop(mainc, xt - 4.0, xt + 8.0)
+            try:
+                lm2, _ = local_landmarks(sub, xt - 1.0)
+                mainc, lm = sub, lm2
+                flags = flags + ["crest_refound"]
+            except (ValueError, IndexError, TypeError):
+                flags = flags + ["crest_off_track"]
         try:
             prof = arc_profile(mainc, lm, lip_share, throat_share) if pre else (np.array(fr["profile"]) if fr["profile"] else None)
         except Exception:  # noqa: BLE001
             flags = flags + ["arc_failed"]
-        use = "own" if (not flags or (pre and set(flags) == {"jump_lip"})) and prof is not None else "refill"
+        use = "own" if (not flags or (pre and set(flags) <= {"jump_lip", "jump_crest", "crest_refound"} and "crest_refound" in flags)
+                        or (pre and set(flags) == {"jump_lip"})) and prof is not None else "refill"
         kinds[use] += 1
         if trows:
             x, y, trough, face = (path_at(t, k) for k in ("x", "y", "trough", "angle"))
