@@ -78,8 +78,8 @@ describe('the new surfer standing (rider: new, step 3.1)', () => {
         continue;
       }
       expect(fellAt).toBe(Infinity);
-      // The most net work over any 0.5 s (32 substeps a frame), within A-lite's held power.
-      const per = Math.round(LEG_POWER_WINDOW / (STEP / 32));
+      // The most net work over any 0.5 s (the new surfer's standing substeps a frame, step 3.2), within A-lite's held power.
+      const per = Math.round(LEG_POWER_WINDOW / (STEP / (rider.standingSubsteps ?? 32)));
       let most = 0;
       for (let k = 0; k + per <= works.length; k += 1) most = Math.max(most, works.slice(k, k + per).reduce((a, b) => a + b, 0));
       expect(most).toBeLessThanOrEqual(LEG_POWER_HELD * rider.mass * LEG_POWER_WINDOW + 1);
