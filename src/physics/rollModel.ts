@@ -441,7 +441,54 @@ export interface YawPlant {
   crossFlow?: { c: number; from: number; to: number };
   /** The hip across taking a share of the ankle's lagged rest: τ_h = −`hip` δ, N·m/rad (pushes the body across, no load moment on the board). */
   hip?: number;
+  /**
+   * The board's heave and pitch as two more pairs of states (ruling 29t item 2), optional. Omitted, the plant is as it
+   * was: ten states, with the water's answer to the board's own sinking and pitching folded into the twelve
+   * derivatives as a quasi-static correction.
+   *
+   * **Why it is worth carrying.** The derivatives measured with the pitch and the heave free are not the water's answer
+   * to a slide; they are the water's answer plus the board's whole re-trim. The re-trim takes one to two seconds and
+   * rings (`docs/research/new-rider/rail-dig/README.md` §5.1), so a quarter-second reading of it is an overshoot, and
+   * a controller acting inside that second meets a different plant. Worse, the free derivative is the small residual
+   * of two forces of about 1,800 N — the fins' grip and the lift a slide costs the heeled bottom — so eliminating the
+   * heave quasi-statically is ill-conditioned: the measured residual and the one the elimination predicts differ by
+   * hundreds of newtons. Carried as states, both forces appear at their own size and the cancellation happens in the
+   * dynamics rather than in a subtraction.
+   *
+   * `perHeave`, `perHeaveRate`, `perPitch` and `perPitchRate` are the water's [N, Y, K, M, Z] per metre of heave
+   * (+ up), per m/s of heave rate, per rad of pitch (nose up +) and per rad/s of pitch rate, **in this model's axes**
+   * (`boardDerivatives` turns the lab's into these). `pitchVert` is the M and Z the model's existing four
+   * perturbations make: per rad of roll, per rad of slip, per rad/s of yaw rate, per rad/s of roll rate. All of them
+   * are the **captive** values, with the trim held: the free ones would double-count the re-trim this block models.
+   */
+  heave?: HeavePlant;
 }
+
+/**
+ * The water's answer to the board's heave and pitch, and the inertia it meets (`YawPlant.heave`).
+ *
+ * The board and the rider heave and pitch together — this model gives the rider no vertical or pitching freedom of its
+ * own — so `mass` is the pair's and `pitchInertia` the pair's about the deck under the rider, where the model already
+ * takes its roll and pitch moments.
+ */
+export interface HeavePlant {
+  mass: number;
+  pitchInertia: number;
+  /** [N, Y, K, M, Z] per metre of heave (+ up), per m/s of heave rate, per rad of pitch (nose up +), per rad/s of pitch rate. */
+  perHeave: number[];
+  perHeaveRate: number[];
+  perPitch: number[];
+  perPitchRate: number[];
+  /** The [M, Z] the four states the model already has make: per rad of roll, per rad of slip, per rad/s of yaw, per rad/s of roll rate. */
+  pitchVert: { roll: number[]; slip: number[]; yaw: number[]; rate: number[] };
+}
+
+/**
+ * Where the heave and pitch states sit when `YawPlant.heave` is given: h, ḣ, θ_b, θ̇_b at `HEAVE_AT` and on, after the
+ * states every form of this plant already has. `yawRows` and `twistRows` leave them alone without the block.
+ */
+export const HEAVE_AT = 11;
+export const N_HEAVE = 4;
 
 /**
  * The rows of [φ, φ̇, θ, θ̇, r, β] for `YawPlant` before the balance, as linear functions of the n-state. `yawExtra`, a
@@ -462,27 +509,37 @@ function yawRows(y: YawPlant, load: number, n: number, yawExtra?: readonly numbe
   torque[6] = -y.ankleStiffness;
   const push = torque.map((t) => t / hh);
   push[2] -= m * g;
-  const water = (phi: number, slip: number, yaw: number, rate: number) => {
+  // `which` picks the component of the generalised force the row is for (0 N, 1 Y, 2 K, 3 M, 4 Z): with the heave
+  // block given, each row also carries the water's answer to the board's own height, sinking speed, pitch and pitch
+  // rate, in the four states at HEAVE_AT.
+  const heave = n > HEAVE_AT + N_HEAVE - 1 ? y.heave : undefined;
+  const water = (phi: number, slip: number, yaw: number, rate: number, which = 0) => {
     const w = row();
     w[0] = phi;
     w[5] = slip;
     w[4] = yaw;
     w[1] = rate;
+    if (heave) {
+      w[HEAVE_AT] = heave.perHeave[which];
+      w[HEAVE_AT + 1] = heave.perHeaveRate[which];
+      w[HEAVE_AT + 2] = heave.perPitch[which];
+      w[HEAVE_AT + 3] = heave.perPitchRate[which];
+    }
     return w;
   };
   const flow = y.crossFlow;
   const c1 = flow ? flow.c * (flow.to - flow.from) : 0;
   const c2 = flow ? (flow.c * (flow.to * flow.to - flow.from * flow.from)) / 2 : 0;
   const c3 = flow ? (flow.c * (flow.to ** 3 - flow.from ** 3)) / 3 : 0;
-  const yawMoment = water(y.heelYaw, y.slipYaw - c2 * v, y.yawDamping - c3, y.rollRateYaw);
+  const yawMoment = water(y.heelYaw, y.slipYaw - c2 * v, y.yawDamping - c3, y.rollRateYaw, 0);
   if (yawExtra) for (let j = 0; j < n; j += 1) yawMoment[j] += yawExtra[j];
-  const side = water(y.heelSide, y.slipSide - c1 * v, y.yawSide - c2, y.rollRateSide);
+  const side = water(y.heelSide, y.slipSide - c1 * v, y.yawSide - c2, y.rollRateSide, 1);
   // The hip's push across (a share of the lagged rest), and the centre of pressure it moves with it.
   const hip = y.hip ?? 0;
   push[6] += -hip / hh;
   const cop = torque.slice();
   cop[6] += -hip;
-  const roll = water(y.heelRoll, y.slipRoll, y.yawRoll, y.rollDamping);
+  const roll = water(y.heelRoll, y.slipRoll, y.yawRoll, y.rollDamping, 2);
   const iz = y.boardYawInertia + y.riderYawInertia;
   const yawAcc = yawMoment.map((w, j) => (w - (y.feetForward * cop[j]) / (m * g) + y.feetStation * push[j]) / iz);
   const slipAcc = side.map((w, j) => (w + push[j]) / (y.boardMass * v));
@@ -495,6 +552,35 @@ function yawRows(y: YawPlant, load: number, n: number, yawExtra?: readonly numbe
   const rows = [row(), rollAcc, row(), bankAcc, yawAcc, slipAcc];
   rows[0][1] = 1;
   rows[2][3] = 1;
+  return rows;
+}
+
+/**
+ * The four rows the heave and pitch states add (`YawPlant.heave`), for the state at `HEAVE_AT` and on:
+ * ḣ = w, m ẇ = Z, θ̇_b = q, I_yy q̇ = M. Z and M are the water's own, linear in the whole state: the four
+ * perturbations the model already carries (`pitchVert`) and the four this block adds.
+ * Returns four empty rows when the plant has no block, so the caller can place them unconditionally.
+ */
+export function heaveRows(y: YawPlant, n: number): number[][] {
+  const rows = Array.from({ length: N_HEAVE }, () => new Array<number>(n).fill(0));
+  const h = y.heave;
+  if (!h) return rows;
+  // ḣ = w and θ̇_b = q.
+  rows[0][HEAVE_AT + 1] = 1;
+  rows[2][HEAVE_AT + 3] = 1;
+  const put = (into: number[], which: 3 | 4, divide: number) => {
+    const k = which - 3;
+    into[0] = h.pitchVert.roll[k] / divide;
+    into[1] = h.pitchVert.rate[k] / divide;
+    into[4] = h.pitchVert.yaw[k] / divide;
+    into[5] = h.pitchVert.slip[k] / divide;
+    into[HEAVE_AT] = h.perHeave[which] / divide;
+    into[HEAVE_AT + 1] = h.perHeaveRate[which] / divide;
+    into[HEAVE_AT + 2] = h.perPitch[which] / divide;
+    into[HEAVE_AT + 3] = h.perPitchRate[which] / divide;
+  };
+  put(rows[1], 4, h.mass);
+  put(rows[3], 3, h.pitchInertia);
   return rows;
 }
 
@@ -619,7 +705,16 @@ export function twistRows(y: YawPlant, t: TwistPlant, load: number, n: number): 
   twist[4] = -1;
   const upper = extra.map((e) => -e / t.inertia);
   const empty = () => new Array<number>(n).fill(0);
-  return [...rows, empty(), empty(), twist, upper, empty()];
+  const out = [...rows, empty(), empty(), twist, upper, empty()];
+  // With the heave block, four more rows at HEAVE_AT (ruling 29t item 2); without it, nothing is appended and every
+  // index is where it always was.
+  if (y.heave && n > HEAVE_AT + N_HEAVE - 1) out.push(...heaveRows(y, n));
+  return out;
+}
+
+/** How many states this plant's fixed block holds: 11, or 15 with the heave and pitch pair. */
+export function twistStateCount(y: YawPlant): number {
+  return HEAVE_AT + (y.heave ? N_HEAVE : 0);
 }
 /** The twist command as a row over the state (before its delay). */
 function twistCommand(gt: TwistGains, n: number): number[] {
@@ -634,7 +729,8 @@ function twistCommand(gt: TwistGains, n: number): number[] {
 /** The closed loop of `YawPlant` with the twist and the human balance on both channels: ẋ = M x. */
 export function humanTwistLoop(y: YawPlant, t: TwistPlant, h: HumanRoll, g: HumanRollGains, gt: TwistGains, order = 5): number[][] {
   const pd = padeDelay(order, h.delay);
-  const n = 11 + 2 * order;
+  const fixed = twistStateCount(y);
+  const n = fixed + 2 * order;
   const m = twistRows(y, t, h.load ?? 1, n);
   while (m.length < n) m.push(new Array<number>(n).fill(0));
   const ua = new Array<number>(n).fill(0);
@@ -644,7 +740,7 @@ export function humanTwistLoop(y: YawPlant, t: TwistPlant, h: HumanRoll, g: Huma
   ua[7] = 1;
   m[7][2] = -(g.integral ?? 0);
   const ut = twistCommand(gt, n);
-  for (const [u, at, lagRow] of [[ua, 11, 6], [ut, 11 + order, 10]] as const) {
+  for (const [u, at, lagRow] of [[ua, fixed, 6], [ut, fixed + order, 10]] as const) {
     for (let i = 0; i < order; i += 1) {
       for (let k = 0; k < order; k += 1) m[at + i][at + k] = pd.a[i][k];
       for (let j = 0; j < n; j += 1) m[at + i][j] += pd.b[i] * u[j];
@@ -672,7 +768,7 @@ export function humanTwistModes(y: YawPlant, t: TwistPlant, h: HumanRoll, g: Hum
  * ankle's (k (θ − φ − δ) + c (θ̇ − φ̇)) and the legs' twist on the board (τ_b).
  */
 export function humanTwistKick(y: YawPlant, t: TwistPlant, h: HumanRoll, g: HumanRollGains, gt: TwistGains, kick = 0.5, seconds = 3, step = 1 / 1920, every = 32): { decay: number; peakBank: number; peakTwist: number; peakAnkle: number; peakTwistTorque: number; rollRates: number[]; yawRates: number[]; twists: number[] } {
-  const n = 11;
+  const n = twistStateCount(y);
   const rows = twistRows(y, t, h.load ?? 1, n);
   const ut = twistCommand(gt, n);
   const x = new Array<number>(n).fill(0);

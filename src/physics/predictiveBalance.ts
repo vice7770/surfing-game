@@ -18,7 +18,7 @@
  * the board's yaw rate, its slip, the twist and the upper body's yaw rate, the ankle's lagged rest and the twist's
  * lagged torque); commands [u_a, u_t].
  */
-import { boardDerivatives, twistRows, type TwistPlant, type YawPlant } from './rollModel';
+import { HEAVE_AT, boardDerivatives, twistRows, twistStateCount, type HeavePlant, type TwistPlant, type YawPlant } from './rollModel';
 
 export type Mat = number[][];
 export const zeros = (r: number, c: number): Mat => Array.from({ length: r }, () => new Array<number>(c).fill(0));
@@ -129,8 +129,8 @@ export const PREDICT_DELAY = 0.1;
 export const PREDICT_LAG = 0.05;
 
 /** The senses as rows over the state: the bank, its rate, the head's yaw rate, the twist, its rate, the ankle's angle (θ − φ) and rate. */
-export function senseMatrix(): Mat {
-  const c = zeros(N_SENSE, N_STATE);
+export function senseMatrix(n = N_STATE): Mat {
+  const c = zeros(N_SENSE, n);
   c[0][2] = 1;
   c[1][3] = 1;
   c[2][7] = 1;
@@ -141,16 +141,29 @@ export function senseMatrix(): Mat {
   return c;
 }
 
-/** The continuous plant (A, B) in this file's state order, from `YawPlant` and `TwistPlant`, with the muscles' lag. */
+/**
+ * The continuous plant (A, B) in this file's state order, from `YawPlant` and `TwistPlant`, with the muscles' lag.
+ *
+ * Ten states as before, or **fourteen** when the plant carries the board's heave and pitch (`YawPlant.heave`, ruling
+ * 29t item 2): the four new states go on the end, so every index the game's controller uses stays where it was and a
+ * plant without the block is byte-for-byte the plant it always was.
+ */
 export function continuousPlant(y: YawPlant, t: TwistPlant, lag = PREDICT_LAG, load = 1): { a: Mat; b: Mat } {
-  const rows = twistRows(y, t, load, 11);
-  // twistRows' order: [φ, φ̇, θ, θ̇, r, β, δ, ι, θ_t, ω_u, τ_a]; here [φ, φ̇, θ, θ̇, r, β, θ_t, ω_u, δ, τ_a].
-  const map = [0, 1, 2, 3, 4, 5, 8, 9, 6, 10];
-  const a = zeros(N_STATE, N_STATE);
-  for (let i = 0; i < 8; i += 1) for (let j = 0; j < N_STATE; j += 1) a[i][j] = rows[map[i]][map[j]];
+  const fixed = twistStateCount(y);
+  const rows = twistRows(y, t, load, fixed);
+  // twistRows' order: [φ, φ̇, θ, θ̇, r, β, δ, ι, θ_t, ω_u, τ_a, (h, ḣ, θ_b, θ̇_b)];
+  // here [φ, φ̇, θ, θ̇, r, β, θ_t, ω_u, δ, τ_a, (h, ḣ, θ_b, θ̇_b)].
+  const map = fixed > HEAVE_AT ? [0, 1, 2, 3, 4, 5, 8, 9, 6, 10, 11, 12, 13, 14] : [0, 1, 2, 3, 4, 5, 8, 9, 6, 10];
+  const n = map.length;
+  const a = zeros(n, n);
+  // Every row but the two muscle lags (8 and 9), which are the commands' own.
+  for (let i = 0; i < n; i += 1) {
+    if (i === 8 || i === 9) continue;
+    for (let j = 0; j < n; j += 1) a[i][j] = rows[map[i]][map[j]];
+  }
   a[8][8] = -1 / lag;
   a[9][9] = -1 / lag;
-  const b = zeros(N_STATE, N_COMMAND);
+  const b = zeros(n, N_COMMAND);
   b[8][0] = 1 / lag;
   b[9][1] = 1 / lag;
   return { a, b };
@@ -186,36 +199,68 @@ export const PLANT_SPEEDS: Record<string, LabPlant> = {
 };
 
 /**
- * Step 3.2f (the advisor's ruling 29j): the water's derivatives at a HELD RAIL, measured the same way at 5, 7 and 9 m/s
- * and rails of 0, 10, 20, 30 and 40° (`../../docs/research/new-rider/roll-plant/plant.probe.ts` PART=rail). At each
- * point the board is first held at that roll with its yaw and its sideslip free, so it settles into the turn that rail
- * makes (`trimYaw`, rad/s; `trimSlipDeg`, the path's angle in the level plane; `pull`, the turn's pull over what the
- * rail's own lean would balance). The twelve derivatives are then central differences about that trim, held.
+ * The water's derivatives at a HELD RAIL, **every hold shown settled** (ruling 29t item 1; step 3.2m). At 5, 7 and
+ * 9 m/s and rails of 0, 10, 15, 20, 30 and 40°
+ * (`../../docs/research/new-rider/rail-dig/settled.probe.ts` PART=free, `results/settled-long.jsonl`). At each point the
+ * board is first held at that roll with its yaw and its sideslip free, so it settles into the turn that rail makes
+ * (`trimYaw`, rad/s; `trimSlipDeg`, the path's angle in the level plane; `pull`, the turn's pull over what the rail's
+ * own lean would balance). The twelve derivatives are then central differences about that trim, held.
+ *
+ * **This table replaces step 3.2f's, and the numbers are three to nine times smaller.** 3.2f held each perturbation
+ * 0.6 s and averaged its last quarter-second. At a rail that lands on the overshoot of the board's own heave: a slide
+ * at heel costs the flat bottom its lift, the board drops, and the drop takes one to two seconds and rings
+ * (`docs/research/new-rider/rail-dig/README.md` §5.1, ruling 29t). Held until it stops moving, the side force per
+ * radian of sideslip at 7 m/s runs +1409, +936, +406, −188, −800, −559 over 0 to 40° of rail, where 3.2f read +1398,
+ * +825, —, −1387, −2610, −4143.
+ *
+ * What survives and what does not:
+ * - **The sign change survives.** The side force per sideslip still crosses zero, at about 18° of rail at 7 and
+ *   9 m/s. **At 5 m/s it does not cross at all** up to 20°, where 3.2f read −378.
+ * - **"The plant past 15° cannot be stabilised by any controller" does not survive.** On this table a controller
+ *   designed at the rail is positively damped at every point measured, 7 m/s at 40° included, where 3.2f's numbers
+ *   gave −1 (`3.2/results/predict-railmodel-32m.jsonl`). That was the whole argument for ruling 29s, and for keeping
+ *   `SCHEDULE_RAIL_CAP` at 5°.
+ * - **The righting moment about the feet still turns over past about 18°, but by a twentieth of what was read**
+ *   (K per roll at 7 m/s: −283, −121, −45, +40, +54, +70, against 3.2f's −285, −180, +250, +286, +435), and at 5 m/s
+ *   it stays righting at every rail.
+ *
+ * **The standing rule this table is kept under (ruling 29t): a captive hold's number is not used until the hold is
+ * shown settled.** Each number here is a whole second's mean at the end of a ten-second hold, and the probe prints a
+ * ladder against how long the hold has run beside every one, so a reader can see it settled rather than be told. The
+ * few cells that were still moving after ten seconds carry a comment saying so; they are the 30° and 40° rows whose
+ * trim 3.2f had already flagged as the least steady.
+ *
  * - **Measured:** every point here. 5 m/s at 30° and 40° is missing: the board does not hold a turn there (at 30° the
  *   run goes non-finite, at 40° it spins out to 71° of sideslip and sinks). At 5 m/s the rail is clamped to 20°.
- * - The 0° rows are this method's, and they match `PLANT_SPEEDS` (the roll-plant study's) to the last digit except the
- *   roll rate's, which is a central difference here and the mean of 0.2 and 0.5 rad/s there.
+ * - The 0° rows are **this method's own**, not `PLANT_SPEEDS`'. `railCorrection` adds the difference from the 0° row to
+ *   `PLANT_SPEEDS`, so straight running is untouched and the rail's effect is internally consistent. Rail 0 reproduces
+ *   `PLANT_SPEEDS` within 1 % on eleven of the twelve; the twelfth, the side force per yaw rate, differs because
+ *   `PLANT_SPEEDS` takes it one-sided (46 against 63 at 7 m/s) and this is a central difference. That derivative is
+ *   noticeably non-linear in the yaw rate even at no rail.
  * - A symmetric hull's derivatives are even in the rail (the mirror flips the state and the moments together), so the
  *   table is read at |rail|.
  */
 export interface RailPlant { roll: number[]; slip: number[]; yaw: number[]; rate: number[]; trimYaw: number; trimSlipDeg: number; pull: number | null }
 export const RAIL_PLANT: Record<string, RailPlant> = {
-  '5|0': { roll: [-98,-361,-310], slip: [-28.6,704.7,-272.7], yaw: [-3.3,37,-30], rate: [-1.4,-14,-0.7], trimYaw: 0, trimSlipDeg: 0, pull: null },
-  '5|10': { roll: [-45.3,-573,-37.2], slip: [-125.2,320.9,-79.6], yaw: [-6,34,-27], rate: [-1.9,-14.3,-3.1], trimYaw: -0.2925, trimSlipDeg: -3.513, pull: 0.845 },
-  '5|20': { roll: [-137.2,-816.5,15.2], slip: [-361,-378.2,260.7], yaw: [-13,26.5,-26.4], rate: [-6.3,-23.3,-4.4], trimYaw: -0.5903, trimSlipDeg: -7.222, pull: 0.827 },
-  '7|0': { roll: [-104.9,-412.5,-285.3], slip: [-296.2,1398,-530.6], yaw: [-13.1,63,-34.5], rate: [2.8,-19.5,-1.4], trimYaw: 0, trimSlipDeg: 0, pull: null },
-  '7|10': { roll: [-104,-541.4,-179.6], slip: [-343.8,825.1,-90], yaw: [-17.3,46,-23.1], rate: [-1.1,-46.3,10.3], trimYaw: -0.2164, trimSlipDeg: -1.503, pull: 0.876 },
-  '7|20': { roll: [-150.4,-1297.7,249.5], slip: [-662.9,-1386.6,885.8], yaw: [-31.1,-73,28.8], rate: [6.4,-62.7,10.9], trimYaw: -0.4309, trimSlipDeg: -3.314, pull: 0.845 },
-  '7|30': { roll: [-512.5,-2085.6,285.6], slip: [-1060.3,-2609.8,959.1], yaw: [-67.2,-72,-4.7], rate: [-4.9,-83.5,2.9], trimYaw: -0.6778, trimSlipDeg: -5.636, pull: 0.838 },
-  '7|40': { roll: [-341.8,-3400.5,435.2], slip: [-876.6,-4142.5,1039.9], yaw: [-49.3,-206,8], rate: [21.3,-259,22.4], trimYaw: -0.9685, trimSlipDeg: -9.088, pull: 0.824 },
-  '9|0': { roll: [-125.2,-418.3,-295.9], slip: [-605,2271.8,-850.8], yaw: [-24.1,87,-42.2], rate: [5.8,-24.8,-2.3], trimYaw: 0, trimSlipDeg: 0, pull: null },
-  '9|10': { roll: [-90.5,-386.7,-152.7], slip: [-671.5,1572.8,-126.3], yaw: [-29.2,62.5,-21.4], rate: [9.1,-21,-7.5], trimYaw: -0.1663, trimSlipDeg: -0.895, pull: 0.865 },
-  '9|20': { roll: [-139.8,-547.2,46.7], slip: [-688.4,-358.1,942.5], yaw: [-37.9,16.5,4.6], rate: [23.8,-42.7,1], trimYaw: -0.3194, trimSlipDeg: -2.325, pull: 0.805 },
-  '9|30': { roll: [-244.1,-1217.5,162.7], slip: [-741.1,-418.3,666.6], yaw: [-41.9,23.5,-2], rate: [29.9,-58.8,-4.5], trimYaw: -0.4878, trimSlipDeg: -4.737, pull: 0.775 },
-  '9|40': { roll: [-27.8,-968.3,116.9], slip: [-709.3,-530,448.3], yaw: [-46.8,70.5,-1.3], rate: [50.1,-256.5,-6.8], trimYaw: -0.6924, trimSlipDeg: -7.919, pull: 0.757 },
+  '5|0': { roll: [-97.9,-360.7,-312.6], slip: [-28.5,712,-278.7], yaw: [-3.3,9.3,-7.7], rate: [-1.5,-14.1,-0.6], trimYaw: 0, trimSlipDeg: 0, pull: null },
+  '5|10': { roll: [-31.8,-454.8,-80.6], slip: [-119.4,521,-167], yaw: [-5.5,9.8,-7.7], rate: [-0.8,-8.9,-3.3], trimYaw: -0.2925, trimSlipDeg: -3.513, pull: 0.845 },
+  '5|15': { roll: [-105.9,-553,-67.8], slip: [-216.8,250.1,43.9], yaw: [-8.7,7.8,-7.4], rate: [3.1,-2.2,-3], trimYaw: -0.4527, trimSlipDeg: -5.286, pull: 0.861 },
+  '5|20': { roll: [-171.3,-633.3,-81.8], slip: [-308,107.1,76], yaw: [-12.6,8.4,-8.4], rate: [0.9,1.9,-1.8], trimYaw: -0.5903, trimSlipDeg: -7.222, pull: 0.827 },
+  '7|0': { roll: [-103.6,-408.8,-282.5], slip: [-296.2,1408.7,-539.5], yaw: [-13.1,46.1,-21], rate: [2.8,-19.8,-1.3], trimYaw: 0, trimSlipDeg: 0, pull: null },
+  '7|10': { roll: [-86.2,-455.1,-134.1], slip: [-406.8,936.4,-212.5], yaw: [-17.7,28.3,-8.6], rate: [3.7,-12.8,-4.3], trimYaw: -0.2164, trimSlipDeg: -1.503, pull: 0.876 }, // held 10 s and still moving: roll, rate
+  '7|15': { roll: [-105.5,-587.5,-44.9], slip: [-514.3,404.9,131], yaw: [-24.7,15.2,-7.2], rate: [5.5,-5.5,-6.2], trimYaw: -0.3213, trimSlipDeg: -2.286, pull: 0.856 },
+  '7|20': { roll: [-173.5,-758.8,40.5], slip: [-647.1,-187.6,486.9], yaw: [-25.9,-11.3,12.9], rate: [9.8,-1.4,-4.9], trimYaw: -0.4309, trimSlipDeg: -3.314, pull: 0.845 },
+  '7|30': { roll: [-312.9,-988.3,39.6], slip: [-888.6,-794.7,532.8], yaw: [-42.8,-7.8,-4.2], rate: [11.9,4.4,-3.6], trimYaw: -0.6778, trimSlipDeg: -5.636, pull: 0.838 },
+  '7|40': { roll: [-223.4,-1151.2,60.3], slip: [-368.4,-576.1,422.5], yaw: [-38.9,-3.4,-5.6], rate: [5.3,6.2,-4.2], trimYaw: -0.9685, trimSlipDeg: -9.088, pull: 0.824 },
+  '9|0': { roll: [-121.3,-417.2,-284.5], slip: [-600.3,2274.4,-833.6], yaw: [-23.5,71.5,-29.4], rate: [5.4,-24.6,-2.4], trimYaw: 0, trimSlipDeg: 0, pull: null }, // held 10 s and still moving: roll
+  '9|10': { roll: [-94.5,-405.7,-146.3], slip: [-717.9,1581.8,-127.8], yaw: [-29.7,45.8,-9.7], rate: [6.7,-16.9,-6.6], trimYaw: -0.1663, trimSlipDeg: -0.895, pull: 0.865 }, // held 10 s and still moving: slip
+  '9|15': { roll: [-151.4,-489.2,-84.6], slip: [-766.3,589.4,629.2], yaw: [-34,17.3,9.6], rate: [10.1,-10.4,-7.2], trimYaw: -0.2422, trimSlipDeg: -1.52, pull: 0.829 },
+  '9|20': { roll: [-225.1,-656.8,20.7], slip: [-896,-151.6,740.5], yaw: [-39,-5.6,13.2], rate: [16.3,-5.4,-6.8], trimYaw: -0.3194, trimSlipDeg: -2.325, pull: 0.805 },
+  '9|30': { roll: [-422.5,-985.3,76.6], slip: [-891.4,-547.5,525.8], yaw: [-46.4,-17.8,5.7], rate: [34.6,6.8,-6.2], trimYaw: -0.4878, trimSlipDeg: -4.737, pull: 0.775 }, // held 10 s and still moving: slip
+  '9|40': { roll: [-488.9,-1247.6,47.4], slip: [-766,-537.2,314.5], yaw: [-52.5,-22.4,1.8], rate: [44.8,13.7,-4.8], trimYaw: -0.6924, trimSlipDeg: -7.919, pull: 0.757 },
 };
 export const RAIL_SPEEDS = [5, 7, 9];
-export const RAIL_ANGLES = [0, 10, 20, 30, 40];
+export const RAIL_ANGLES = [0, 10, 15, 20, 30, 40];
 /** The largest rail the table has at a speed, rad (5 m/s stalls above 20°). */
 export function railLimit(speed: number): number {
   const most = speed < 6 ? 20 + ((speed - 5) / 1) * 20 : 40;
@@ -338,7 +383,7 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number } = {}): { y: YawPlant; t: TwistPlant } {
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant } = {}): { y: YawPlant; t: TwistPlant } {
   const lab = labAt(speed);
   const s = opts.scales ?? new Array<number>(12).fill(1);
   // Step 3.2f: the rail's own correction (`railCorrection`), so the schedule covers carving as it covers speed and stance.
@@ -350,6 +395,9 @@ export function plantAt(speed: number, depth: number, opts: { rollInertia?: numb
     speed, boardRollInertia: opts.rollInertia ?? board.roll, boardYawInertia: opts.yawInertia ?? board.yaw, riderYawInertia: st.lower, boardMass: 2.54,
     mass: 73, height: st.height, ankleStiffness: 800, ankleDamping: 80, ...boardDerivatives(scaled, speed, 0.236),
     feetForward: ((opts.feetScale ?? 1) * FEET_FORWARD_AT_7 * lab.drag) / DRAG_AT_7, feetStation: -0.244, deckHeight: 0.031,
+    // The board's heave and pitch as states (ruling 29t item 2), when the caller supplies the water's answer to them.
+    // Nothing in the game does yet, so the shipped controller is the ten-state one it always was.
+    ...(opts.heave ? { heave: opts.heave } : {}),
   };
   return { y, t: { inertia: st.upper, stiffness: opts.twistStiffness ?? TWIST_STIFFNESS, damping: opts.twistDamping ?? TWIST_DAMPING } };
 }
@@ -380,6 +428,14 @@ export interface DesignWeights {
    * over. Weighting ξ² adds it, as a rank-one term.
    */
   captureScale?: number;
+  /**
+   * The largest acceptable heave, heave rate, pitch and pitch rate (m, m/s, rad, rad/s), used only when the plant
+   * carries them as states (`YawPlant.heave`, ruling 29t item 2). Loose by default: the design stays the one the
+   * eight original states ask for, and the new states are carried so their dynamics are right, not steered.
+   */
+  heaveScale?: number[];
+  /** The process noise on the heave rate and the pitch rate per √s; the slip's by default. */
+  heaveNoise?: number;
 }
 export const DEFAULT_WEIGHTS: DesignWeights = {
   stateScale: [0.05, 0.5, 0.05, 0.25, 0.2, 0.02, 0.5, 1],
@@ -436,8 +492,8 @@ export interface Design {
  * and ω₀ = √(g/L) (Hof, Gazendam and Sinke 2005, on this plant's point-mass body). The feet can bring it back while it
  * is inside their half-width; past that the ankle has no authority left, whatever rest it is asked for.
  */
-export function captureRow(y: YawPlant, gravity = 9.81): number[] {
-  const row = new Array<number>(N_STATE).fill(0);
+export function captureRow(y: YawPlant, gravity = 9.81, n = N_STATE): number[] {
+  const row = new Array<number>(n).fill(0);
   row[2] = y.height;
   row[3] = y.height / Math.sqrt(gravity / y.height);
   return row;
@@ -445,42 +501,52 @@ export function captureRow(y: YawPlant, gravity = 9.81): number[] {
 export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WEIGHTS, delay = PREDICT_DELAY, step = CONTROL_STEP): Design {
   const { a, b } = continuousPlant(y, t);
   const { phi, gamma } = discretise(a, b, step);
-  const q = zeros(N_STATE, N_STATE);
+  // The state's size is the plant's, not this file's constant: ten as before, fourteen with the heave and pitch pair.
+  const nState = a.length;
+  const q = zeros(nState, nState);
   for (let i = 0; i < 8; i += 1) q[i][i] = 1 / (w.stateScale[i] * w.stateScale[i]);
+  // The heave and pitch states' own cost, when they are carried (`heaveScale`; a metre, a m/s, a rad, a rad/s by
+  // default, which is loose enough to leave the design to the eight states that were always there).
+  if (nState > N_STATE) {
+    const hs = w.heaveScale ?? [1, 1, 1, 1];
+    for (let i = 0; i < nState - N_STATE; i += 1) q[N_STATE + i][N_STATE + i] = 1 / (hs[i] * hs[i]);
+  }
   // The capture point's cost (step 3.2j): a rank-one term on ξ = L (θ + θ̇/ω₀), which is where the cross term between
   // the bank and its rate comes from. A diagonal Q cannot express it.
   if (w.captureScale) {
-    const row = captureRow(y);
+    const row = captureRow(y, 9.81, nState);
     const weight = 1 / (w.captureScale * w.captureScale);
-    for (let i = 0; i < N_STATE; i += 1) for (let j = 0; j < N_STATE; j += 1) q[i][j] += weight * row[i] * row[j];
+    for (let i = 0; i < nState; i += 1) for (let j = 0; j < nState; j += 1) q[i][j] += weight * row[i] * row[j];
   }
   // The weights per step (the continuous cost sampled): Q T, R T.
   const qd = scale(q, step);
   const rd = [[(w.rho * step) / (w.commandScale[0] ** 2), 0], [0, (w.rho * step) / (w.commandScale[1] ** 2)]];
   const k = dlqr(phi, gamma, qd, rd);
-  const c = senseMatrix();
+  const c = senseMatrix(nState);
   const bias = w.bias.length === 2;
-  const ne = bias ? N_STATE + 2 : N_STATE;
+  const ne = bias ? nState + 2 : nState;
   // The estimate's model: the bias enters as the commands do, and stays.
   const phiE = zeros(ne, ne);
   const gammaE = zeros(ne, N_COMMAND);
-  for (let i = 0; i < N_STATE; i += 1) {
-    for (let j = 0; j < N_STATE; j += 1) phiE[i][j] = phi[i][j];
-    for (let j = 0; j < N_COMMAND; j += 1) { gammaE[i][j] = gamma[i][j]; if (bias) phiE[i][N_STATE + j] = gamma[i][j]; }
+  for (let i = 0; i < nState; i += 1) {
+    for (let j = 0; j < nState; j += 1) phiE[i][j] = phi[i][j];
+    for (let j = 0; j < N_COMMAND; j += 1) { gammaE[i][j] = gamma[i][j]; if (bias) phiE[i][nState + j] = gamma[i][j]; }
   }
-  if (bias) { phiE[N_STATE][N_STATE] = 1; phiE[N_STATE + 1][N_STATE + 1] = 1; }
-  const cE = c.map((row) => [...row, ...new Array<number>(ne - N_STATE).fill(0)]);
+  if (bias) { phiE[nState][nState] = 1; phiE[nState + 1][nState + 1] = 1; }
+  const cE = c.map((row) => [...row, ...new Array<number>(ne - nState).fill(0)]);
   // The process noise enters the rates (φ̇, θ̇, r, β, ω_u), over a step; the bias as a random walk; the senses' noise as given.
   const g = zeros(ne, ne);
   const at = [1, 3, 4, 5, 7];
   for (let i = 0; i < at.length; i += 1) g[at[i]][at[i]] = w.processNoise[i] ** 2 * step;
-  if (bias) { g[N_STATE][N_STATE] = w.bias[0] ** 2 * step; g[N_STATE + 1][N_STATE + 1] = w.bias[1] ** 2 * step; }
+  // The heave rate and the pitch rate take the same noise as the slip, so the filter does not trust them absolutely.
+  if (nState > N_STATE) for (const i of [N_STATE + 1, N_STATE + 3]) g[i][i] = (w.heaveNoise ?? w.processNoise[3]) ** 2 * step;
+  if (bias) { g[nState][nState] = w.bias[0] ** 2 * step; g[nState + 1][nState + 1] = w.bias[1] ** 2 * step; }
   for (let i = 0; i < ne; i += 1) g[i][i] += 1e-10;
   const v = zeros(N_SENSE, N_SENSE);
   for (let i = 0; i < N_SENSE; i += 1) v[i][i] = w.senseNoise[i] ** 2;
   const l = kalman(phiE, cE, g, v);
   const steps = Math.round(delay / step);
-  let power = eye(N_STATE);
+  let power = eye(nState);
   const pred: Mat[] = new Array<Mat>(steps);
   for (let j = steps - 1; j >= 0; j -= 1) {
     pred[j] = mul(power, gamma);
@@ -498,7 +564,7 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
  * - the command: u = −K x̂ − b̂.
  */
 export function closedLoop(truePhi: Mat, trueGamma: Mat, trueSteps: number, d: Design): Mat {
-  const n = N_STATE; const p = N_SENSE; const m = N_COMMAND;
+  const n = truePhi.length; const p = d.c.length; const m = N_COMMAND;
   const ne = d.phiE.length;
   const N = d.steps;
   const ox = 0; const os = n; const oe = n + p * trueSteps; const ou = oe + ne;
