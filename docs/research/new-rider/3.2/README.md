@@ -1584,3 +1584,408 @@ piece of work. It is worth a ride once the chop rule is in; riding it today, the
   the centre of mass's). `plant.probe.ts`: PART=pitch.
 - `results/trace-chop2-32g.jsonl`, `trace-chop2-old-32g.jsonl`; `../roll-plant/results/plant-pitch.jsonl`.
 - No change to `src/`.
+
+---
+
+# Part 8: step 3.2h, the fall test and the legs (ruling 29l)
+
+Written 2026-11-13 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32h` (from
+`claude/rider-new-32f`, rebased on main 6897a18f). The contract: `../ruling-29.md` 29l.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **The chop still misses at 4 of 12, and I stopped where the stop rule says to stop.** Both things the ruling asked
+  for are built and both did what they were meant to do, but neither is what the remaining eight falls are.
+- **The fall test has its validity condition** (`CAPTURE_LOAD` 0.2 body weights): while the feet carry less than that,
+  `capture` holds its last state, so the test can neither call a fall nor clear one. **The push bar did not get
+  easier** — the largest shove saved is identical to the digit in all six rows, and the window's asymptote moved by
+  0.006 s [M].
+- **The legs' fault was a rule, not the stiffness** [M, R]. "Feet on a deck only push" was gated on the *stance's* own
+  compressing, so the **balance's** own knee drop was exempt. In a chop's trough it drove the leg's rest 0.18 m under
+  the body and the spring pulled the body **down with 3.6 kN — five body weights — on a rider the water was carrying
+  nothing of.** With the rule extended to the balance's drop, the knees' travel on the 20 cm rise goes from 2.8 cm to
+  **25 cm**, and that bar passes for the first time.
+- **The 20 cm rise at 2 m/s passes** (old rider: falls at 0.32 s; 3.2f: 0.42 s; now: holds 1.7 s) [M]. Ruling 29l
+  demoted it to a report on the grounds that the board does not plane at 2 m/s — but **the 2 m/s is the surface's rise
+  rate, not the board's speed**: the board glides at 7.4 m/s throughout (`bars.probe.ts`, the `rise` part). The
+  demotion rested on a misreading, and the bar should come back [M, R].
+- **Softening the knee spring makes the chop worse, not better** [M]: at 20 / 12 / 8 / 5 / 3 kN/m the chop is 4 / 3 /
+  3 / 3 / 3 of 12. So does meeting the chop in a crouch or in Compress: 4 of 12 in all three stances. The 20 kN/m
+  stays, and I say why below.
+- **The eight remaining chop falls are side-to-side, not front-to-back, and the roll is the rider's own** [M]. On the
+  same water the old rider's board stays inside ±11° of roll; the new rider's reaches 35–63°, with the body banked
+  30–54° and going over with it. That is the opposite of 3.2g's pitch finding, where the swing was the chop's and the
+  same under both riders. **Ruling 29k's "everything still missing is front-to-back" is refuted** [M].
+- **The save-window bar was read at a singular point** [M]. The time to fall diverges as the shove approaches the
+  largest savable one (1.02× → 1.20 s, 1.1× → 0.87, 1.2× → 0.47, 1.5× → 0.195, and flat beyond), and the bar reads the
+  1.1× row. The design's save window is the body's own tipping time √(h/g_eff), which is the ladder's **asymptote**:
+  tall 0.187, crouch 0.165, Compress 0.144 s, ordered as the spec wants, against bars of 0.25–0.35 and 0.15–0.25.
+  Both are short, not long, and the shortfall is explained.
+
+## 2. The fall test's validity condition (item 1)
+
+`src/physics/humanBalance.ts`: `CAPTURE_LOAD` and the gate at the head of `capture`; `AttachedRider.captureStep` now
+passes the feet's own load for the substep (the contact impulse along the board's up over h·m·g) and the substep.
+
+**The condition, and why the load is the right one** [I, R]. The capture point is a theorem about a body on a fixed
+support under gravity. The reason to condition it on the **load** rather than on anything else is that the test is a
+statement about the feet, and the feet's authority is bounded by the load they carry: the centre of pressure can only
+move inside a foot that bears weight, so the whole foot's moment is at most the load times its half-length (about
+0.1 m). At 0.2 body weights that is 0.2 × 716 N × 0.1 m ≈ 14 N·m against the body's toppling stiffness m g h of about
+645 N·m/rad — a correction of 1.3°. Below that the test asks where the feet must be while the feet can do nothing.
+
+**Why 0.2** [M, I]:
+- 3.2g's chop trough reaches **0.10** body weights, so a gate at 0.10 would not engage at the moment that started this
+  step. 0.2 clears it with room.
+- The code already holds the same idea at the same place: the old rider's `BALANCE_LOAD` is 0.1 body weights, "below
+  this load the centre of pressure says nothing and the rider does not rebalance" [R].
+- Above, the gate must not reach a shove. In the push bar the feet never go below **0.50** body weights under a shove
+  just past the savable one, and **0.16–0.23** under a hard one [M]. So 0.2 sits in the gap: under the trough's floor,
+  over nothing a savable shove reaches.
+
+**The freeze, exactly** [R]: under the gate `capture` returns the state untouched — the point, how far past the feet it
+is, whether it is beyond the room, the margin, and the time it left the feet. Three consequences, all wanted: the fall
+test cannot fire (its two conditions are frozen); a fall **already** called stands through the light window (the freeze
+never clears one, and there is a test for that); and `strategies` keeps reading the frozen `past` through the delay
+line, so the knees and arms hold the demand they had rather than lurching. The felt vertical's own 0.1 s low pass keeps
+running inside `captureStep`, so nothing is stale when the test resumes.
+
+**On the way back into load** [I]: the test resumes at once, on the state the body is then in. No grace period and no
+memory of the light window. That is deliberate: a rider who goes light and comes down with its weight off its feet does
+fall, and the first loaded substep's own reading is exactly that judgement. The only thing the freeze costs is a fall
+that would have been called *during* the light window — where, by the paragraph above, the feet could neither have
+caused it nor saved it. No hysteresis band is needed because freezing only skips an update: a load that crosses the gate
+back and forth leaves the state current whenever the feet carry anything.
+
+**Did the push bar get easier? No** [M] (`results/bars-new-32h.jsonl`):
+
+| | 3.2f | 3.2h |
+|---|---|---|
+| Largest shove saved, tall / crouch / Compress (m/s) | 1.887 / 2.127 / 2.326 (2.391 the other way) | **the same to the digit** |
+| The reaction, first active rest move (s) | 0.105 / 0.104 / 0.103 | 0.105 / 0.104 / 0.103 |
+| The window at a decisive shove (1.5×, s) | 0.199 / 0.165 / 0.143 | 0.193 / 0.164 / 0.143 |
+
+The lowest load the feet see under the bar's own shoves is 0.50–0.68 (just past the margin) and 0.16–0.23 (hard), so
+the gate touches only the hard rows and takes 0.006 s off the tall one. The test did not become a test that never
+fires.
+
+**The gate's sensitivity, measured** [M] (`results/push-gate010-32h.jsonl`, `push-gate040-32h.jsonl`): the push bar at
+a gate of 0.1, 0.2 and 0.4 body weights.
+
+| `CAPTURE_LOAD` | Largest shove saved (tall / crouch / Compress) | The window at 1.5× |
+|---|---|---|
+| 0.1 | 1.887 / 2.127 / 2.326 | 0.193 / 0.164 / 0.143 |
+| **0.2 (kept)** | 1.887 / 2.127 / 2.326 | 0.193 / 0.164 / 0.143 |
+| 0.4 | 1.887 / 2.127 / 2.326 | **0.214 / 0.265 / 0.265** |
+
+Nothing at all changes between 0.1 and 0.2 — the savable shove never takes the feet that light. By **0.4 the gate
+begins to shelter a hard shove**: the window grows by a tenth in the tall stance and by two thirds in the crouch and in
+Compress, which is the test firing later than it should. So the choice is bounded from below by the chop's trough (0.10)
+and from above by the shove (somewhere under 0.4), and 0.2 sits in the middle of that window with the push bar's own
+numbers unchanged. [M, I]
+
+## 3. The legs (item 2)
+
+### What the chop's trough was really doing to them
+
+`e32.probe.ts` PART=trace, chop 2 at 7 m/s from the bars' own start, with the leg's state added to the trace
+(`results/trace-chop2-32h-legs.jsonl`) [M]:
+
+| | At the trough |
+|---|---|
+| The feet's load | 1.43 → **0.10 → 0** body weights |
+| The pair's felt gravity | 13.2 → **1.1** m/s² |
+| The balance's knee drop | the rest driven to **−0.26 m** (the capture point was 0.33 m past the feet, over KNEE_PAST_FULL, so the knees are asked all the way down) |
+| The leg's force | **−3624 N**, pulling the body **down** |
+| The body off its posture | 0 → **0.26 m**, and separated by `RECOVERABLE_ERROR` |
+
+The rule that should have stopped it is already in `prepareLeg` and already written in the right words — *"Feet on a
+deck only push: compressing, the legs fold no faster than the body falls onto them, so a board dropping or rolling away
+from under the rider unloads the feet rather than being pulled up by them"* — but its condition is `compressing`, which
+is the **stance's** own compress, Snap or carve flex. The new surfer's balance lowers the knees through a different
+path (`human.knees` × the stance's travel, `HumanBalance.strategies`), and that path was exempt. So the one place in the
+rider where a board falls away from under the feet by design was the one place the rule did not cover [R, I].
+
+**The change:** the rule now also holds while the balance's own knee drop is under way. One condition, no new constant.
+
+### What it bought, and what it did not
+
+| | Old rider | 3.2f | 3.2h |
+|---|---|---|---|
+| 20 cm rise at 1 m/s: knee travel / fall | 1.0 cm / holds | 24 cm / holds | 20.9 cm / holds |
+| **20 cm rise at 2 m/s** (the bar) | 1.8 cm / **falls 0.32 s** | 2.8 cm / **falls 0.42 s** | **25 cm / holds** |
+| 20 cm rise at 4 m/s (no bar) | 6.3 cm / falls 0.22 s | 8.9 cm / falls 0.40 s | 8.9 cm / falls 0.63 s |
+
+Three centimetres of knee travel over a 0.2 m stroke was not the spring's doing: it was the spring being asked to pull
+against its own rest. With the rule in, the same spring spends **25 cm** — the stance's whole travel — and the rise
+bar passes [M].
+
+### The knee stiffness: measured, and kept
+
+The ruling's reading was that 20,000 N/m puts a 2.6 Hz mode on the board's swing and should come down. I measured it
+rather than assuming, over the chop bar [M]:
+
+| Knee spring | 20 kN/m (kept) | 12 | 8 | 5 | 3 |
+|---|---|---|---|---|---|
+| Plane glides | 4 of 4 | 4 of 4 | 4 of 4 | 4 of 4 | 4 of 4 |
+| Chop glides | **4 of 12** | 3 of 12 | 3 of 12 | 3 of 12 | 3 of 12 |
+
+Softer is worse, monotonically in the held times (chop 3 at 9 m/s, for instance, goes from holding 3 s to falling at
+1.22, 0.70, 0.23 and 0.17 s). So I did **not** change it, and I would not change it on the sources either without a
+reason the bars can see.
+
+**What the sources say, for the record** [S]:
+- The 20 kN/m comes from Matsumoto and Griffin 1998 (*J Sound Vib* 212(1):85–107), whose legs-bent standing posture
+  resonates near 2.75 Hz, i.e. about 22 kN/m against 73 kg. That is a **small-amplitude apparent mass**, measured at
+  0.125–2.0 m/s² r.m.s.
+- The same paper is the source for softening with amplitude: in the normal standing posture the resonance falls from
+  about 6.75 Hz to 5.25 Hz as the input rises from 0.125 to 2.0 m/s² r.m.s., and it is lower again with the knees bent
+  (https://eprints.soton.ac.uk/429461). The chop here drives the board at about 13 m/s² peak, well outside that range,
+  so the measured 22 kN/m is read beyond its own conditions — the same kind of error as the fall test's [I].
+- A leg deliberately absorbing a large stroke is an order of magnitude softer. A biplane-fluoroscopy drop-landing study
+  reports a "soft" landing (about 117° of knee flexion against 77° for a stiff one) peaking at **1.63 ± 0.73 body
+  weights** against 2.60 ± 1.32 (https://read.qxmd.com/read/21602566, read from the abstract only). With the 0.3–0.4 m
+  of centre-of-mass travel such a landing uses, that is an effective vertical stiffness of **1.2–3.9 kN/m** — my
+  arithmetic on their numbers, not theirs [I].
+- So the honest sourced band for "a rider's legs absorbing a 0.2 m chop" is a few kN/m, and 20 kN/m is the
+  standing-still number. **The band and the bars disagree**, and I report that rather than resolving it: the sources say
+  softer, the measurement says softer is worse. My reading is that the leg is not the chop's limit at all (section 4),
+  so the band has nothing to act on yet; when the across axis holds, this is worth re-measuring, and 3–5 kN/m is where
+  a source would put it.
+
+## 4. What the chop's eight remaining falls are (the stop rule's trace)
+
+`e32.probe.ts` PART=chopfall runs the bars' own twelve chop glides and keeps the last eight frames before each fall
+(`results/chopfall-32h.jsonl`; the old rider's `chopfall-old-32h.jsonl`) [M]. The state at the fall:
+
+| Case | Fell at | The board's roll | The body's bank | The hip used | Feet's load | The test | What it is |
+|---|---|---|---|---|---|---|---|
+| chop 1, 5 m/s | 1.98 s (settling) | **63°** | −54° | 6.8° of 69° | 0.45 | valid, past 0.44 > reach 0.438 | topples across |
+| chop 2, 5 m/s | 1.58 s (settling) | −46° | +44° | 1.1° | 0.78 | valid, 0.458 > 0.457 | topples across |
+| chop 3, 5 m/s | 1.07 s (settling) | −35° | +29° | 1.3° | 0.56 | valid, 0.386 > 0.384 | topples across |
+| chop 2, 7 m/s | 1.65 s | 40° (pitch 24°) | −34° | 15.1° | 0.59 | valid, 0.323 > 0.322 | topples across |
+| chop 1, 12 m/s | 1.78 s | −4° | +7° | 0.8° | 0.95 | valid, 0.545 > 0.366 | thrown across |
+| chop 2, 9 m/s | 0.83 s (settling) | −5° | +2° | 0 | **0** (frozen 0.30 s) | frozen; `RECOVERABLE_ERROR` | the board dives away |
+| chop 2, 12 m/s | 0.65 s (settling) | −3° | +3° | 0 | **0** (frozen 0.27 s) | frozen; `RECOVERABLE_ERROR` | the board dives away |
+| chop 3, 7 m/s | 2.70 s | 28° | **−70° (MAX_BANK)** | **68.8° of 69°** | 0.01 | frozen; `RECOVERABLE_ERROR` | the room is spent |
+
+So, by cause [M, I]:
+
+- **Five are a real topple across, with the test inside its conditions and the room fully credited.** The feet carry
+  0.45–1.03 body weights, so the freeze is not involved; and `past` passes `reach` only just, which means the test has
+  already granted the rider the whole hip's angular impulse before calling it. These are falls, not readings.
+- **Two are the board diving nose-down out from under the feet.** The feet carry nothing, the freeze holds the capture
+  point for 0.27–0.30 s as it should, and the posture backstop separates the rider when the body is 0.25 m off its
+  stance — which is what ruling 29l item 1 asked those backstops to do. The leg has 0.1 m of extension and the board
+  goes further than that.
+- **One is the room genuinely spent:** the hip at 68.8° of its 69° range, the bank at MAX_BANK, and the posture
+  backstop. Nothing is left to try.
+
+### The roll is the rider's own, and this is the opposite of 3.2g's pitch finding
+
+The same twelve runs with the old rider [M]:
+
+| | The old rider | The new rider |
+|---|---|---|
+| The board's roll at the end of each chop run | **−10.7° to +10.8°** | **−46° to +63°** on the five that topple |
+| The body's bank | −2° to +0.2° on the eleven it holds | −54° to +44° |
+| Chop glides held | 11 of 12 | 4 of 12 |
+
+3.2g's trace showed the board's **pitch** swinging ±12° under both riders, and concluded correctly that no pitch
+controller could have held it flatter: the swing was the chop's. **The roll is not like that.** It is 6 times larger
+under the new rider, so it is the free body's own, and a controller could in principle hold it. [M, I]
+
+### Why the ankle cannot hold it, in one number
+
+The feet's half-width across is 0.13 m and the centre of mass sits 0.68 m over them, so the ankle runs out of moment
+at asin(0.13/0.68) = **11° of body lean**: the toppling moment m g h sin(11°) = 93 N·m is exactly the load times the
+half-width. Past 11° only the hip, the arms and the twist are left — and a human cannot step on a surfboard. [I]
+
+The trace of chop 1 at 5 m/s shows that playing out (`results/trace-chop1-5-32h.jsonl`) [M]: the bank crosses 11° at
+about 1.2 s, and the controller's commands **saturate only at 1.88 s** (the ankle at `ANKLE_REST_RANGE` 14.32°, the
+twist at its grip cap of 100 N·m), with the board already at 50° of roll. The hip then has 0.1 s and reaches 6.8° of
+its 69°. Three readings from that [I]:
+
+- The loop's ankle command is small while the bank grows from 4° to 25°, and only saturates once it is hopeless. That
+  is a gain question in the roll schedule at its lowest speed, not a fall-test question.
+- **The hip is triggered by the ankle's command, not by the capture point.** `strategies` already drops the knees and
+  puts the arms out when the capture point leaves the feet, but the hip across waits for the ankle's command to pass
+  HIP_SHARE of its reach. So steps 3 and 4 of the design's order answer the capture point and step 2 does not.
+- **The fall test credits a hip impulse the rider never asks for.** `reach` is `rotorImpulse` to the hip's remaining
+  range — the whole of it, as if spent instantly — while the rotor needs about 0.5 s to do it and the capture point's
+  own horizon is 1/ω₀ ≈ 0.3 s. Making `reach` honest would make the test stricter and the chop worse, so I did not
+  touch it; it is recorded because it is a real over-credit in the test I was asked to condition.
+
+All three are the roll loop and the order of the moves. Ruling 29l item 4 says to hand back rather than start that, and
+that is what I am doing.
+
+## 5. The save window (item 3)
+
+The bar is tall 0.25–0.35 s and Compress 0.15–0.25 s, and the design says where it comes from: *"the save window is the
+body's own tipping time, τ = √(h/g_eff)"*, which it works out as 0.29 / 0.26 / 0.24 s upright and 0.27 / 0.21 / 0.17 s
+at each stance's limit (`design.md` §6). It is a property of the body, not of a particular shove.
+
+**What the probe measures instead** [R]: the time from the capture point's first touch outside the feet to the
+separation, at a shove 1.1× the largest savable one. The capture point leaves the feet at the first substep of any
+shove (0.001 s), so the measure is really "how long the rider survives this shove" — and **that diverges as the shove
+approaches the margin**. The ladder (`LADDER=1`, `results/bars-new-32h.jsonl`, rows `bar: "ladder"`) [M]:
+
+| Shove, × the largest saved | 1.02 | 1.05 | 1.1 (the bar's row) | 1.2 | 1.5 | 2 | 3 |
+|---|---|---|---|---|---|---|---|
+| Tall: time to fall, s | 1.200 | 1.135 | **0.872** | 0.472 | 0.195 | 0.187 | 0.187 |
+| Crouch | 0.942 | 0.710 | 0.540 | 0.336 | 0.165 | 0.165 | 0.165 |
+| Compress | 0.986 | 0.647 | 0.328 | 0.254 | 0.144 | 0.144 | 0.144 |
+
+The bar is read on the steep part of a divergence, two rows from the singularity. **The body's tipping time is the
+asymptote**: tall 0.187, crouch 0.165, Compress 0.144 s, flat from 1.5× on and ordered tall > crouch > Compress as the
+spec wants [M].
+
+**Against the bars that is still a miss, and now from the other side**: tall 0.187 against 0.25–0.35, Compress 0.144
+against 0.15–0.25 — both a little short. The shortfall has a cause I can name [M, I]: τ = √(h/g_eff), and under the
+probe's shove the pair's felt gravity is **13–19 m/s²**, not 9.81, because a 150 N·s impulse through a 0.1 s low pass
+is a 20 m/s² step. With h = 0.68 m that gives τ = 0.19–0.23 s, which is what the asymptote measures. At 9.81 m/s² the
+same body gives 0.26 s, inside the tall bar. So the asymptote is the design's own number evaluated at the felt gravity
+the test itself creates, and the remaining gap is the shove's shape, not the rider's.
+
+**What I did not do:** change the measure in `bars.probe.ts`. The old column stays, the ladder is beside it, and the
+advisor can decide whether the bar reads the asymptote. Moving the measure myself and then reporting a pass would be
+marking my own homework.
+
+## 6. The bars (item 3; steady starts, 16 substeps)
+
+Results: `results/bars-new-32h.jsonl` (with the ladder), `bars-old-32h.jsonl`, `bars31-new-32h.jsonl`,
+`e32-kicktrace-32h.jsonl`, `chopfall-32h.jsonl`, `chopfall-old-32h.jsonl`.
+
+| Bar | Old | 3.2f | 3.2h | Pass? |
+|---|---|---|---|---|
+| N0: `rider=old` unchanged | — | yes | 3.1's `bars-old` byte-identical; 3.2's identical on every key the step did not add | yes |
+| Held carve standing ≥ 2.28 s | 1.93 | 2.83 | **2.85** | yes |
+| Held carve Compress ≥ 2.30 s | 3.0 | 2.98 | **2.98** | yes |
+| Glides on the plane, 5 / 7 / 9 / 12 m/s | 4 of 4 | 4 of 4 | 4 of 4 | yes |
+| **Glides on chop (3 seeds)** | 11 of 12 | 4 of 12 | **4 of 12** | **no** |
+| **20 cm rise at 2 m/s: no fall** | falls 0.32 s | falls 0.42 s | **holds** | **yes** |
+| **Save window**, the probe's measure at 1.1× (tall / Compress) | — | 0.85 / 0.28–0.33 | 0.87 / 0.33 | no |
+| **Save window**, the ladder's asymptote (tall / crouch / Compress) | — | — | **0.187 / 0.165 / 0.144** | no (short) |
+| Push recovery, 7 m/s: tall > crouch > Compress | 192 / 188 / 191 N·s | 138 / 155 / 170 | **138 / 155 / 170** | no: the order is still reversed |
+| Reaction 0.08–0.12 s | 0.001 | 0.105 | 0.105 | yes |
+| Mode B: damping ≥ 0.05 (5 / 7 / 9 m/s) | −0.015 / +0.079 / +0.103 | +0.030 / +0.018 / +0.058 | the same | no (superseded below) |
+| **Mode B restated (29k): the bank's envelope halves within two cycles** | — | yes | **yes, the kick's trace identical to 3.2f's** | yes |
+| Mode A not seen | 0.000–0.007 | 0.000–0.009 | 0.000–0.009 | yes |
+| Turn pair set B ≥ 12 of 16 | 14 of 16 | 0 of 16 | suspended (ruling 29k) | — |
+| N1: legs < ~2 kW per frame; ≤ 1.46 kW over 0.5 s | to 30.9 kW | 0.55 / 0.26 kW | **1.52 / 0.20 kW** | yes (but see below) |
+| N2: 20° from 4 m/s, gain ≥ 3.5 m/s | +1.7 | +3.25 | suspended (ruling 29k) | — |
+| (report) 3.1's N5 held carves, tall / Compress | — | 1.42 / 1.27 s | 1.43 / 1.27 s | — |
+| (report) N4 placed straight down and up, the board under 5 g | 2 of 12, to 16.8 g | 12 of 12, to 1.8 g | 12 of 12, to 4.5 g | — |
+| (report) the 45° line placed | 3 of 6 | 4 of 6 | **3 of 6** | — |
+| (report) 20 cm rise at 1 / 4 m/s | holds / falls 0.22 s | holds / falls 0.40 s | **holds / falls 0.63 s** | — |
+| (report) the knees' travel on the 20 cm rise, 1 / 2 / 4 m/s | 1.0 / 1.8 / 6.3 cm | 24 / 2.8 / 8.9 cm | **20.9 / 25 / 8.9 cm** | — |
+
+**Three things moved on 3.1's own probe (placed starts) that are worth naming** [M]
+(`results/bars31-new-32h.jsonl`):
+
+- **N1's peak per-frame leg power goes 0.55 → 1.52 kW**, against a bar of about 2 kW, and the 0.5 s window *falls*
+  from 0.26 to 0.20 kW. The peak is one row — the tilted 30° face, placed straight down — which now survives to
+  **1.90 s** instead of 0.82 s and so reaches much harder water before it goes. (The row beside it, tilted 20° at 30°,
+  goes 1.18 → 1.93 s.) So the extra power comes with surviving longer, not from the rule putting energy in on smooth
+  water: on a plane glide neither change is active at all. It is still worth watching, because a leg spring whose rest
+  is allowed to follow the body can do work in the frame it catches up.
+- **The 45° placed line goes 4 of 6 to 3 of 6** (a report, never a bar; the old rider gets 3 of 6).
+- 3.1's own placed rise at 4 m/s improves the same way as 3.2's: a fall at 0.30 s becomes one at 0.63 s.
+
+- **Everything the rider does on smooth water is 3.2f's**, and the carves are within 0.02 s. The two changes act only
+  where the feet go light or the balance's own knee drop is under way, and on a plane glide neither happens. [M, I]
+- The chop's *held times* did move even though the count did not: chop 2 at 7 m/s from falling in the settle to 1.65 s
+  into the test, chop 3 at 7 m/s from 2.25 to 2.70 s, chop 1 at 12 m/s from 1.50 to 1.78 s. Two more (chop 2 at 9 and
+  12 m/s) changed cause, from the capture point to the posture backstop. [M]
+
+## 7. The rounds, and what I am unsure of
+
+Two rounds, as the stop rule allows [M]:
+
+1. The fall test's validity condition, measured on the chop and the push bar. It removed the invalid fall (3.2g's
+   0.10-body-weight case now survives the settle and falls 1.65 s into the test, with the board at 40° of roll), and it
+   moved two more falls later, but the count stayed at 4 of 12. Then the legs' "only push" rule, which carried the 20 cm
+   rise bar and left the chop count where it was.
+2. The knee stiffness over 12, 8, 5 and 3 kN/m, and the chop ridden in the crouch and in Compress. Both negative, both
+   reported above. I stopped there, as ruling 29l item 4 says to.
+
+What I am unsure of:
+
+- **The 0.2 body weights is reasoned, not measured.** The reasoning (the foot's moment is bounded by the load) gives an
+  order, not a value; the trough's 0.10 and the shove's 0.50 bracket it, and anything in 0.15–0.35 would behave the
+  same on today's bars. If a later step finds the gate mattering, that is the number to question first.
+- **I cannot reconcile the sources on the knee spring with the measurement.** The sources put a leg absorbing a 0.2 m
+  stroke at a few kN/m; every value I tried under 20 kN/m made the chop worse. My reading is that the leg is not the
+  binding constraint while the across axis is losing, so the softer spring only gives the body more freedom to go the
+  way it was already going. That is a guess.
+- **The two "board dives away" falls may not be falls.** A board that drops 0.16 m out from under a surfer's feet is a
+  moment they ride out; the game separates the rider when the body is 0.25 m off its stance. The backstop is doing what
+  the ruling asked, but whether `RECOVERABLE_ERROR` of 0.25 m is the right number for a *free* body (it was set for a
+  rigid one) is a question I did not open.
+- **The chop at 5 m/s may not be a fair bar.** The hull there sits at a 19° trim with 21 cm of draft (3.2g's plant), so
+  it is a barely-planing board with the weakest roll plant of any speed measured — the same objection that moved the
+  2 m/s rise to a report, one step up. All three seeds fail there and all three fail *during the settle*, before the
+  test begins. I report the objection; I did not act on it.
+
+## 8. What was not run
+
+- **The merge checks** (the full suite, the Canyon byte check, the fps trace): the chop and the save window still miss,
+  so by ruling 29j's rule nothing merges. Run here: `tsc` (app and server, both clean); the four model and rider test
+  files (`humanBalance.test.ts`, `predictiveBalance.test.ts`, `standingBody.test.ts`, `rollModel.test.ts`), 37 tests
+  passing with the new one for the freeze; and `src/game/PhysicalMode.test.ts` (92 tests), which carries the
+  `?rider=new` switch. Those four files and `PhysicalMode` are the only tests in the tree that build a `rider: 'new'`
+  rider at all, and both changes are inside `freeBody`, so nothing else can see them (`src/physics` as a whole was left
+  for the merge run).
+- The turn pair and N2 (suspended, ruling 29k), and the pitch loop (held, ruling 29l).
+- No ride, no game page, no Basilisk case.
+
+## 9. How it rides, and what is still missing (for the owner)
+
+Plain words, as the ruling asks.
+
+**What changed in this step:**
+- The game no longer calls a fall when the board drops away under the rider. Before, a small bump could make the rider
+  weightless for a moment, and the game read that as a fall even though nothing was wrong. Now it waits until the feet
+  carry weight again before it judges.
+- The rider's legs now bend properly. Before, the knees gave about 3 cm on a bump. Now they give up to 25 cm, like a
+  real rider soaking it up. A surface rising fast under the board used to throw the rider off; now it does not.
+- Carving is unchanged: still 2.9 seconds standing and 3.0 in a crouch, the best the rebuild has done.
+
+**What is still wrong:**
+- **On choppy water the rider still falls over sideways.** This is the real problem now, and it is not the same one as
+  before. I measured it: the old rider's board stays almost flat on this water, within 11 degrees. The new rider's
+  board rolls over to 35, 50, even 63 degrees, and the rider goes with it. So the board is not being tipped by the
+  water — the rider is tipping it.
+- The reason is simple. Standing on a board, your feet are only about 13 cm wide side to side, and your weight is 68 cm
+  above them. That gives you about 11 degrees of lean before your ankles run out of strength. After that only your hips
+  and arms can help, and they are slow. On land you would take a step. On a board you cannot.
+- The rider's hips are also late. They only start to help once the ankles are already at their limit, which by then is
+  too late.
+- Still no pumping, so the two-turn test still fails on speed, not balance.
+
+**My honest view:** the two things this step was asked to fix are fixed, and they were real faults. But they were not
+what the chop bar is failing on. The chop is a side-to-side problem in the rider's own steering of the board at slow
+speed, and it needs the roll loop opened again — which the ruling told me not to start. I would not put this in front
+of you to ride yet: on flat water and in a carve it is good, but a choppy wave face would still drop you.
+
+## Files (3.2h)
+
+- `src/physics/humanBalance.ts`: `CAPTURE_LOAD` with its reasoning, the gate at the head of `capture` (a new `load` and
+  `h`, both defaulted so the existing callers and tests read as before), `frozen`, `lightFor` and `lightLongest`, and
+  the reset.
+- `src/physics/AttachedRider.ts`: `captureLoad` (the feet's load this substep, in body weights) and its pass into
+  `captureStep` → `capture`; the "feet on a deck only push" rule extended to the balance's own knee drop in
+  `prepareLeg`.
+- `src/physics/humanBalance.test.ts`: one test for the freeze (it holds the state, calls no fall, does not clear one,
+  and reads again on the way back into load).
+- `docs/research/new-rider/3.2/bars.probe.ts`: `STANCE` on the glide part; `beyondAfter`, `lostWindowS` and `loadMin`
+  on the push rows; `LADDER=1` for the window against the shove's size.
+- `docs/research/new-rider/3.2/e32.probe.ts`: PART=chopfall (the twelve chop glides with the last eight frames before
+  each fall); `SHOVE` on the trace's shove, and the capture state, the leg and the posture error in the trace's rows.
+- `results/`: `bars-new-32h.jsonl`, `bars-old-32h.jsonl`, `bars31-new-32h.jsonl`, `e32-kicktrace-32h.jsonl`,
+  `chopfall-32h.jsonl`, `chopfall-old-32h.jsonl`, `trace-chop1-5-32h.jsonl`, `trace-chop2-32h.jsonl`,
+  `trace-chop2-32h-legs.jsonl` (the 3.6 kN pull, taken with the freeze in and the legs' rule still out),
+  `glide-stance-32h.jsonl` (the stance sweep), `glide-knee-32h.jsonl` (the stiffness sweep),
+  `push-gate010-32h.jsonl` and `push-gate040-32h.jsonl` (the gate's sensitivity).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BALANCE_DELAY, DelayLine, HumanBalance, RIDER_YAW_ARMS_OUT, SWING_INERTIA_ARMS, SWING_INERTIA_SET, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
+import { BALANCE_DELAY, CAPTURE_LOAD, DelayLine, HumanBalance, RIDER_YAW_ARMS_OUT, SWING_INERTIA_ARMS, SWING_INERTIA_SET, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
 import { boardDerivatives, humanReferenceGain, humanRollKick, humanRollModes, humanTwistKick, humanTwistModes, humanYawModes, twistRows, type RollParams, type TwistGains, type YawPlant } from './rollModel';
 
 // The new surfer's step 3.2 (`rider: 'new'`; docs/research/new-rider/3.2): the human balance's parts.
@@ -76,6 +76,34 @@ describe('HumanBalance', () => {
     expect(s.weightPast).toBe(true);
     expect(balance.fallen).toBe(true);
     expect(s.margin).toBe(0);
+  });
+
+  it('holds the capture point while the feet are light, and reads it again on the way back into load (step 3.2h)', () => {
+    const balance = new HumanBalance();
+    const up = { x: 0, y: 9.81, z: 0 };
+    // Balanced and loaded: the point is in the middle and nothing is frozen.
+    balance.capture({ x: 0, y: 0.8, z: 0 }, { x: 0, y: 0, z: 0 }, up, 0.13, 0.375, 0.375, 0.2, 0.2, 1, 0.001);
+    expect(balance.frozen).toBe(false);
+    expect(balance.state.past).toBe(0);
+    // The board falls away: the felt gravity goes toward zero, ω₀ sits on its floor and a drift alone would put the
+    // capture point far past the feet. Under CAPTURE_LOAD the state does not move and no fall is called.
+    const light = { x: 0, y: 0.4, z: 0 };
+    for (let i = 0; i < 100; i += 1) balance.capture({ x: 0, y: 0.8, z: 0 }, { x: 0.5, y: 0, z: 0 }, light, 0.13, 0.375, 0.375, 0.2, 0.2, CAPTURE_LOAD - 0.01, 0.001);
+    expect(balance.frozen).toBe(true);
+    expect(balance.state.past).toBe(0);
+    expect(balance.state.margin).toBeCloseTo(1, 9);
+    expect(balance.fallen).toBe(false);
+    expect(balance.lightLongest).toBeCloseTo(0.1, 9);
+    // The same reading with the feet loaded is a long way out: it is the condition, not the numbers, that differ.
+    const loaded = balance.capture({ x: 0, y: 0.8, z: 0 }, { x: 0.5, y: 0, z: 0 }, light, 0.13, 0.375, 0.375, 0.2, 0.2, CAPTURE_LOAD + 0.01, 0.001);
+    expect(balance.frozen).toBe(false);
+    expect(loaded.past).toBeGreaterThan(0.3);
+    // And a fall already called before the light window stands through it: the freeze never clears one.
+    balance.capture({ x: 0.2, y: 0.78, z: 0 }, { x: 1.5, y: 0, z: 0 }, up, 0.13, 0.375, 0.375, 0.2, 0.2, 1, 0.001);
+    expect(balance.fallen).toBe(true);
+    balance.capture({ x: 0, y: 0.8, z: 0 }, { x: 0, y: 0, z: 0 }, up, 0.13, 0.375, 0.375, 0.2, 0.2, 0, 0.001);
+    expect(balance.frozen).toBe(true);
+    expect(balance.fallen).toBe(true);
   });
 
   it('lowers the knees and puts the arms out once the hip nears its range, in proportion, and comes back', () => {
