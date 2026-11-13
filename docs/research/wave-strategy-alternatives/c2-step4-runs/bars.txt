@@ -3,3 +3,43 @@ cases 9, stored depths 2 (0.0234, 0.1000 h0)
 ## A. The library against VELOUT (relative, at the stored points)
   median 0.00017, 90 % 0.00034, 99 % 0.00044, most 0.00046 (62160); over 2 %: 0.0 %; samples 62160, cases without a source file 0
   absolute, sqrt(g h0): median 0.000019, 90 % 0.000096, 99 % 0.000238, most 0.000484 (62160)
+
+## B. Under a board at the hand-over (1615 seats, 278655 steps)
+  the felt flow's change over 0.1 s, m/s: median 0.115, 90 % 0.206, 99 % 0.293, most 1.678 (270580); over 0.3: 0.8 %
+  the sea's own change there over 0.1 s (the control): median 0.116, 90 % 0.207, 99 % 0.302, most 0.519 (270580); over 0.3: 1.1 %
+  the hand-over's own part, (felt − sea)'s change over 0.1 s: median 0.000, 90 % 0.061, 99 % 0.149, most 1.631 (270580); over 0.3: 0.1 %
+  the felt flow's change in one step (1/60 s), m/s: median 0.019, 90 % 0.035, 99 % 0.051, most 1.396 (278655)
+  the library's share's change in one step: median 0.0000, 90 % 0.0103, 99 % 0.0481, most 0.4270 (278655)
+  of the 303 windows over 0.3, 16 went with a share step over 0.1 (the share's own step there: median 0.051, 90 % 0.061, 99 % 0.731, most 0.738 (303))
+
+## E. The push at a slice's crest near its throw (the library whole)
+  along the ray, m/s: library median 5.06, 90 % 5.52, 99 % 5.73, most 5.98 (27006)
+                      sea     median 2.04, 90 % 3.03, 99 % 3.36, most 3.54 (27006)
+  the library over the sea: median 2.53, 90 % 3.41, 99 % 5.85, most 9.08 (27006)
+
+## D. The push, the share and the acceleration
+  |Du/Dt| where the library has a share, m/s²: median 0.32, 90 % 1.07, 99 % 1.63, most 15.52 (132831)
+  |the flow's share − the slice's own blend share| (one slice on the lane): median 0.0000, 90 % 0.2735, 99 % 0.9465, most 1.0000 (132789)
+  where the library is whole, the flow along the ray, m/s: library median 0.92, 90 % 1.12, 99 % 1.29, most 1.70 (4861)
+                                                         sea     median 0.94, 90 % 1.22, 99 % 1.37, most 1.48 (4861)
+
+## C. The crest water over the slice's own steady crest speed
+  (the measured pool small: 0.59 at −0.7 s, 0.70 at −0.34, 0.75 at −0.17, 0.80 at the throw, 0.83, 0.86)
+  -0.70 s: crest point median 0.544, 90 % 0.613, 99 % 0.617, most 0.618 (1274)
+         fastest    median 0.571, 90 % 0.633, 99 % 0.642, most 0.646 (1274)
+  -0.34 s: crest point median 0.638, 90 % 0.711, 99 % 0.721, most 0.722 (1274)
+         fastest    median 0.689, 90 % 0.769, 99 % 0.772, most 0.776 (1274)
+  -0.17 s: crest point median 0.701, 90 % 0.779, 99 % 0.788, most 0.793 (1274)
+         fastest    median 0.778, 90 % 0.882, 99 % 0.892, most 0.893 (1274)
+  0.00 s: crest point median 0.766, 90 % 0.873, 99 % 0.885, most 0.891 (1274)
+         fastest    median 0.894, 90 % 1.003, 99 % 1.042, most 1.043 (1274)
+  0.17 s: crest point median 0.784, 90 % 0.840, 99 % 0.847, most 0.851 (1274)
+         fastest    median 1.052, 90 % 1.120, 99 % 1.143, most 1.144 (1274)
+  0.34 s: crest point median 0.767, 90 % 0.834, 99 % 0.845, most 0.859 (1274)
+         fastest    median 1.117, 90 % 1.154, 99 % 1.171, most 1.173 (1274)
+
+## The cost, ms a step
+  the hand-over and slices: 0.848 / 1.294
+  the zone's surface (the flow filled with it): 3.017 / 3.488
+  one flow sample under a board, ms: 0.0163 / 0.0238
+  slices 130, shown 129, lofted 33, nodes 1674

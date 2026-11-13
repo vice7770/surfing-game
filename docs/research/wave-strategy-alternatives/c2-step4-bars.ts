@@ -138,6 +138,10 @@ const seats: Seat[] = [];
 const B = { step: [] as number[], window: [] as number[], gapWindow: [] as number[], seaWindow: [] as number[], shareStep: [] as number[] };
 const D = { accel: [] as number[], shareOff: [] as number[], libAlong: [] as number[], seaAlong: [] as number[], ratio: [] as number[] };
 const C: Record<string, number[]> = {};
+/** E: near a slice's throw, the water at its crest: the library's along the ray, and the sea's own at the same place. */
+const E = { lib: [] as number[], sea: [] as number[], ratio: [] as number[] };
+/** B's worst windows (over 0.3 m/s of the library's own part): how many went with a step in the share. */
+const WHY = { windows: 0, withShareStep: 0, shareStep: [] as number[] };
 const CMAX: Record<string, number[]> = {};
 const COST = { field: [] as number[], surface: [] as number[], flow: [] as number[] };
 const seen = new Set<number>();
@@ -201,6 +205,24 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
       }
     }
   }
+  // E: near a slice's throw, the push at its crest against the sea's own there.
+  for (const shown of zone.surface.shown()) {
+    const s = shown.slice;
+    if (!(Math.abs(t - s.throwAt) < 0.17) || !shown.flow || shown.share < 0.99) continue;
+    const at = shown.curve[2 * WAVE_LANDMARK.crest];
+    const y = shown.curve[2 * WAVE_LANDMARK.crest + 1];
+    const x = lanes.baseX[s.lane] + at * lanes.rayX[s.lane];
+    const z = lanes.baseZ[s.lane] + at * lanes.rayZ[s.lane];
+    const rx = lanes.rayX[s.lane];
+    const rz = lanes.rayZ[s.lane];
+    felt.sampleAt(x, y - DRAFT, z, sample);
+    sea.sampleAt(x, sea.surfaceAt(x, z) - DRAFT, z, seaSample);
+    const lib = sample.flowX * rx + sample.flowZ * rz;
+    const own = seaSample.flowX * rx + seaSample.flowZ * rz;
+    E.lib.push(lib);
+    E.sea.push(own);
+    if (Math.abs(own) > 0.2) E.ratio.push(lib / own);
+  }
   // B: each live seat's felt flow just under the surface, and the sea's own there (the control).
   const start = performance.now();
   let samples = 0;
@@ -249,6 +271,12 @@ for (const seat of seats) {
     B.window.push(d(seat.flow));
     B.gapWindow.push(d(seat.gap));
     B.seaWindow.push(d(seat.sea));
+    if (d(seat.gap) > 0.3) {
+      WHY.windows += 1;
+      const step = Math.abs(seat.shares[i] - seat.shares[i - WINDOW]);
+      WHY.shareStep.push(step);
+      if (step > 0.1) WHY.withShareStep += 1;
+    }
   }
 }
 
@@ -258,6 +286,13 @@ console.log(`  the sea's own change there over 0.1 s (the control): ${line(B.sea
 console.log(`  the hand-over's own part, (felt − sea)'s change over 0.1 s: ${line(B.gapWindow)}; over 0.3: ${over(B.gapWindow, 0.3)}`);
 console.log(`  the felt flow's change in one step (1/60 s), m/s: ${line(B.step)}`);
 console.log(`  the library's share's change in one step: ${line(B.shareStep, 4)}`);
+
+console.log(`  of the ${WHY.windows} windows over 0.3, ${WHY.withShareStep} went with a share step over 0.1 (the share's own step there: ${line(WHY.shareStep, 3)})`);
+
+console.log('\n## E. The push at a slice\'s crest near its throw (the library whole)');
+console.log(`  along the ray, m/s: library ${line(E.lib, 2)}`);
+console.log(`                      sea     ${line(E.sea, 2)}`);
+console.log(`  the library over the sea: ${line(E.ratio, 2)}`);
 
 console.log('\n## D. The push, the share and the acceleration');
 console.log(`  |Du/Dt| where the library has a share, m/s²: ${line(D.accel, 2)}`);

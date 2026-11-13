@@ -1,0 +1,31 @@
+
+ RUN  v5.0.1 /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/wave-track/wt
+
+ ❯ src/wave/barrel/poolBarrelPerf.test.ts (8 tests | 1 failed) 80748ms
+   ❯ pool-barrel-perf: the drawing's camera water and faces-out loop (2)
+     × answers the camera's water and air in typed arrays as with objects (`?cameraWater=old`) 76652ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/poolBarrelPerf.test.ts > pool-barrel-perf: the drawing's camera water and faces-out loop > answers the camera's water and air in typed arrays as with objects (`?cameraWater=old`)
+Error: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/wave/barrel/poolBarrelPerf.test.ts:177:3
+    175|   const lofts = [-0.3, 0.25, 0.6].map((tau, k) => new SweptLoft(librar…
+    176|     .build(records(25, tau, 0.02), 25, STILL, wavy(k)));
+    177|   it('answers the camera\'s water and air in typed arrays as with obje…
+       |   ^
+    178|     let answered = 0;
+    179|     for (const source of lofts) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 349 passed | 37 skipped (387)
+      Tests  1 failed | 3396 passed | 23 expected fail | 43 skipped (3463)
+   Start at  11:31:10
+   Duration  1286.31s (tests 97%, import 3%, transform 1%)
+
+    Isolate  387 workers spawned · ~175ms startup each (spawn + environment, per file)
+             at least ~22.42s faster with isolate: false — reuses workers across files instead of one per file
+
