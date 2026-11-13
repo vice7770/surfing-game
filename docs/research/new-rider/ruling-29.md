@@ -669,3 +669,79 @@ never asked for.**
    a rider this tall on feet this narrow can hold that chop at all — which is a question about the stance, not the
    controller, and the advisor will take it.
 6. **If they pass:** the merge checks, then the whole rebuild merges as one and the owner rides it.
+
+---
+
+# Ruling 29o: step 3.2j; the model is the thing to fix next (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 10. Code on `claude/rider-new-32j` (fb7a1568).
+
+## Two corrections to ruling 29n, both the agent's and both sharper than the ruling
+
+1. **The capture point is not a missing state.** On this plant the body is a point mass on its leg, so
+   ξ = L(θ + θ̇/ω₀): a linear functional of two states the loop already carries. Adding it would have been a duplicate.
+   **What was missing is the cost.** A diagonal Q penalises θ² and θ̇² separately and can never express the cross term
+   2θθ̇/ω₀ — which is the whole difference between a bank coming back and a bank going over. 29n asked for the right
+   thing in the wrong place.
+2. **And there was a plain bug underneath it.** `commandScale[0]` is 0.09 rad against an ankle bound of 0.25 — **36 %
+   of what the ankle has.** Bryson's rule is that a command's scale is the largest *acceptable* command, so the design
+   was told the ankle may give a third of its range. **That, not the state vector, is the direct reason it asks 3.8° at
+   11° of bank.**
+
+## The understated scale was load-bearing, which is the real finding
+
+Correcting the scale **on its own** collapses the saved shove for the lower stances: crouch 2.127 → 0.791, Compress
+2.326 → 0.580, while tall barely moves. Every variant that raises the ankle's gain does the same.
+
+**Why, and this answers the stance question 29n left with the advisor.** Crouch and Compress carry their mass at 0.65
+and 0.55 m against tall's 0.85, so they fall faster (ω₀ = √(g/h): 3.4 /s tall, 4.2 /s in Compress) and the rider's
+fixed 0.1 s delay is a larger share of their own time constant. **A lower stance is more stable to a body that reacts
+instantly and less stable to one that reacts late.** So the gain that helps a tall rider eats the phase margin of a low
+one. The bug was accidentally sheltering the stances it would have hurt.
+
+The model did warn (delayed-sense damping at 5 m/s −0.128 → −0.241) and the agent says it underweighted that. Noted,
+and the guard bar caught it anyway — which is twice now that the saved-shove guard has stopped a plausible change.
+
+## Explicit constraint handling is also refuted, so 29n's open question is closed
+
+A reference governor driving the ankle to its bound while the predicted ξ is outside the feet — the textbook
+capture-point law — **costs 55–60 % of the disturbance margin**. Same mechanism as 3.2i's hip: bang-bang on a signal
+that is routinely and briefly outside. Only MPC is left untried, and it is a different controller, not a weight.
+
+## What is kept
+
+- **The settle fix, and only it.** With the rider byte-for-byte as 3.2h left it, the chop goes **4 → 8 of 12**, and
+  **the old rider scores 11 of 12 on both settles, cell for cell**. That control is what makes the gain believable
+  rather than suspicious, and it is the model of how to change a probe.
+- The controller change is not kept.
+- The agent's own correction on the ring is accepted: 0.50–1.77 Hz with no pattern is wander, not a mode, and 3.2i's
+  "about 2 Hz" was one case at the top of a spread. The two structural causes of the hip's failure stand; the phase-lag
+  one is withdrawn.
+
+## Decision: merge 3.2j as opt-in work in progress
+
+Main's `?rider=new` is still 3.1c. 3.2j beats it on the carves (2.85 / 2.98 against 2.13), Mode B, the 20 cm rise and
+honest physics, and loses to it in chop. **The owner said they would ride and feed back as the work goes, and their
+read on how it feels is the one thing no probe produces.** Ten steps without them touching it is too many. The default
+rider is untouched; the trade is stated plainly in the owner's section.
+
+## Decision: step 3.2k, make the model trustworthy before designing on it again
+
+The agent's §8 outranks the chop, and the advisor agrees: **the model and the game disagreed by a factor of four on the
+same change.** Five steps of gains have been chosen on a model that had neither input saturation nor a fall test. The
+agent has now added both, and with them the model reproduces the fault exactly — so the tool is better than it was and
+is worth finishing before it is used again.
+
+1. **Make the model predict the disagreement.** It must reproduce the crouch-and-Compress collapse under a raised ankle
+   gain, in the same direction and within a factor of about two. That is the specific place it failed, so it is the
+   specific test.
+2. **Then re-examine the robustness gate.** Ruling 29i already ruled that independent ±30 % builds plants the game
+   cannot have, so report the gate under errors that move by contributor, as 29i asked, and say what fraction fails
+   then. "15 % of random plants" under the old test is not the alarm it sounds like.
+3. **Only then design:** the cross-term cost, the corrected command scale, and MPC if the model says a receding horizon
+   beats a fixed gain against the bound and the delay together. **If the model says the plant will not take it, that is
+   an answer and the chop bar goes to the stance instead.**
+4. **Bars:** the model's prediction against the game on the one change above; then, if a design follows, the usual set
+   with the saved shove as the guard.
+5. Stop rule: two rounds. A model that still cannot predict the game is itself the finding, and the advisor takes it
+   from there.
