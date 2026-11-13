@@ -670,13 +670,17 @@ export class SweptBarrelMesh {
         // `?lipLook=fray`: the torn water grows on the slice's own clock, and its landing white ages (ruling 36).
         const life = fray ? loft.sliceLife[s] : 0;
         const age = fray ? whiteAge(after) : 1;
+        // The fringe is largest at the tip and the feather at the crest, so with neither the slice carries none at all
+        // and its whole run takes one value.
+        const dry = fray && lipSprayAt(LANDMARK.lip, life, after) === 0 && lipSprayAt(LANDMARK.crest, life, after) === 0;
+        if (dry) spray.fill(packSweptSpray(0, age), s * LOFT_SAMPLES, Math.min(vertices, (s + 1) * LOFT_SAMPLES));
         for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
           const v = s * LOFT_SAMPLES + j;
           const point = j - LOFT.extensionSamples;
           const inProfile = point >= 0 && point < PROFILE_POINTS;
           const foam = inProfile ? lipFoamAt(point, outer, face, stretch, loft.sheetWeight[v], after, collapse) : 0;
           lift[v] = packSweptLift(loft.lift[v], foam);
-          if (fray) spray[v] = packSweptSpray(inProfile ? lipSprayAt(point, life, after) : 0, age);
+          if (fray && !dry) spray[v] = packSweptSpray(inProfile ? lipSprayAt(point, life, after) : 0, age);
         }
       }
     } else if (kept && this.brokenFoam) {
