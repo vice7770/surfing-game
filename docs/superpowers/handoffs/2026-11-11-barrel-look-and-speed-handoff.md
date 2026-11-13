@@ -2,6 +2,46 @@
 
 Written at 81 % of the weekly Fable usage (86 % at the lip-fray PR, 92 % at the after-tube PR, 95 % at the inside-floor PR: stop at 99 %) (resets 2026-11-17 14:00 UTC; the usage card shows extra usage off). Main was at 437da029 before this PR.
 
+## START HERE — the state on 2026-11-13 (this supersedes the 11-11 lines below)
+
+**The owner is riding and giving feedback in short cycles. That changed how this work runs.** Read
+`docs/research/new-rider/ruling-29.md` rulings **29p to 29v** before anything else; they are the owner's own words and
+they outrank every probe number in this repo.
+
+**Three rules, from the owner:**
+
+1. **Ship small, ship often.** One change, merge, the owner rides, repeat. **No merge is gated on probe bars** — report
+   them as a plain information table. Keep only the seatbelts: `tsc`, the suite, the default game byte-identical, and
+   no unpaired rule forces.
+2. **When a stance, a strategy or an input is the one a real surfer would reach for, the game must reward it.** If a
+   measurement says otherwise, that is a fault in the model, not a fact about surfing, until a source says so.
+3. **A fall must be explainable as one a surfer would have made.** Legitimate: high speed, and cutting the wave.
+   **Never:** a compressed turn across the wave. So the fall rate must **rise** with speed.
+
+**The acceptance test, in the owner's words:** a compressed turn to take the wave on the side must never fall. Measured
+on the Canyon face, not on flat water — a plane has no line to hold, and a flat-water version failed the **old** rider
+4 of 20. Old rider **12 of 12**; new rider **0 of 12** as of 3.2m.
+
+**The surfer track** (`?rider=new`, opt-in, default rider byte-identical): the whole balance rebuild 3.2–3.2m is on
+main. He turns now (90° for the first time in both stances) and **he still cannot get round the wave**. The cause as of
+3.2m: **he leans too far, not too slowly** — he rolls to 60–66° of rail where `RAIL_BITE` is 48°, so the board stops
+carving. Step 3.2n is building the named fix: a limit on the rail the balance may *set*, referenced to the water's
+surface. **"Turn faster" is refuted** — lean 1.4 to 5 against caps 5–30 is flat 0 of 12 in twenty cells.
+
+**The wave track** (`?wave=library`, opt-in): steps 1–5a are on main and **the 2 m pool wave is rideable** — shape,
+water speed and the lip's look all come from the Basilisk library. Ride address in `docs/RUN-ON-M4.md` §2. Next is
+step 5b (the hand-back, the set-up and the bore's foam), then the owner's bigger-swell step. Ruling 31's ten extra runs
+have landed, so the hand-over's height bar can be read again with the clamps gone.
+
+**Two traps that have each cost a round. Do not repeat them:**
+
+- **A captive hold's number is not used until the hold is shown settled.** Three faults have been found in that lab's
+  holds, and 3.2f's big-rail table turned out to be a transient — its numbers were 5 to 9 times too large, and a whole
+  ruling was written on them.
+- **The sparse-checkout worktree recipe cannot run a seatbelt.** It has no `public/` pattern, so the `surfer*.glb`
+  assets go missing and about 47 test files fail in 5–13 ms, looking like a real regression. It is fine for probes.
+  **Run the suite from a full checkout**, or `git sparse-checkout disable` first.
+
 ## Where the owner stands (2026-11-11)
 
 The owner rode the Wave Pool Barrel with every switch and reported:
