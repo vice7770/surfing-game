@@ -1,0 +1,36 @@
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.45,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.08,"load":1.1,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.467,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.06,"load":1.08,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.483,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.05,"load":1.07,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.5,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.03,"load":1.05,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.517,"flowY":2,"level":0.033,"meanAccY":29.22,"addedMassKg":130,"wallPushBW":5.12,"vertical":2.67,"load":3.47,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.533,"flowY":2,"level":0.067,"meanAccY":20.9,"addedMassKg":130,"wallPushBW":3.67,"vertical":3.78,"load":3.98,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.55,"flowY":2,"level":0.1,"meanAccY":14.95,"addedMassKg":130,"wallPushBW":2.62,"vertical":3.84,"load":3.98,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.567,"flowY":2,"level":0.133,"meanAccY":10.69,"addedMassKg":131,"wallPushBW":1.89,"vertical":3.42,"load":3.74,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.583,"flowY":2,"level":0.167,"meanAccY":7.65,"addedMassKg":132,"wallPushBW":1.36,"vertical":2.8,"load":3.18,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.6,"flowY":0,"level":0.2,"meanAccY":5.47,"addedMassKg":132,"wallPushBW":0.98,"vertical":2.18,"load":2.52,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.617,"flowY":0,"level":0.2,"meanAccY":-25,"addedMassKg":118,"wallPushBW":-3.98,"vertical":0.53,"load":1.79,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.633,"flowY":0,"level":0.2,"meanAccY":-17.88,"addedMassKg":106,"wallPushBW":-2.56,"vertical":0.01,"load":0.21,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.65,"flowY":0,"level":0.2,"meanAccY":-12.79,"addedMassKg":101,"wallPushBW":-1.75,"vertical":0,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.667,"flowY":0,"level":0.2,"meanAccY":-9.15,"addedMassKg":92,"wallPushBW":-1.14,"vertical":0.01,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.683,"flowY":0,"level":0.2,"meanAccY":-6.54,"addedMassKg":87,"wallPushBW":-0.77,"vertical":0.02,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.7,"flowY":0,"level":0.2,"meanAccY":-4.68,"addedMassKg":85,"wallPushBW":-0.54,"vertical":0.03,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.717,"flowY":0,"level":0.2,"meanAccY":-3.35,"addedMassKg":83,"wallPushBW":-0.37,"vertical":0.03,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"path","t":0.733,"flowY":0,"level":0.2,"meanAccY":-2.39,"addedMassKg":81,"wallPushBW":-0.26,"vertical":0.03,"load":0,"fell":"lost board"}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.45,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.08,"load":1.1,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.467,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.06,"load":1.08,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.483,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.05,"load":1.07,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.5,"flowY":0,"level":0,"meanAccY":0,"addedMassKg":107,"wallPushBW":0,"vertical":1.03,"load":1.05,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.517,"flowY":2,"level":0.033,"meanAccY":29.22,"addedMassKg":130,"wallPushBW":5.12,"vertical":2.67,"load":3.47,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.533,"flowY":2,"level":0.067,"meanAccY":20.9,"addedMassKg":130,"wallPushBW":3.67,"vertical":3.78,"load":3.98,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.55,"flowY":2,"level":0.1,"meanAccY":14.95,"addedMassKg":130,"wallPushBW":2.62,"vertical":3.84,"load":3.98,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.567,"flowY":2,"level":0.133,"meanAccY":10.69,"addedMassKg":131,"wallPushBW":1.89,"vertical":3.42,"load":3.74,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.583,"flowY":2,"level":0.167,"meanAccY":7.65,"addedMassKg":132,"wallPushBW":1.36,"vertical":2.8,"load":3.18,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.6,"flowY":0,"level":0.2,"meanAccY":5.47,"addedMassKg":132,"wallPushBW":0.98,"vertical":2.18,"load":2.52,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.617,"flowY":0,"level":0.2,"meanAccY":-25,"addedMassKg":118,"wallPushBW":-3.98,"vertical":0.53,"load":1.79,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.633,"flowY":0,"level":0.2,"meanAccY":-17.88,"addedMassKg":106,"wallPushBW":-2.56,"vertical":0.01,"load":0.21,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.65,"flowY":0,"level":0.2,"meanAccY":-12.79,"addedMassKg":101,"wallPushBW":-1.75,"vertical":0,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.667,"flowY":0,"level":0.2,"meanAccY":-9.15,"addedMassKg":92,"wallPushBW":-1.14,"vertical":0.01,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.683,"flowY":0,"level":0.2,"meanAccY":-6.54,"addedMassKg":87,"wallPushBW":-0.77,"vertical":0.02,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.7,"flowY":0,"level":0.2,"meanAccY":-4.68,"addedMassKg":85,"wallPushBW":-0.54,"vertical":0.03,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.717,"flowY":0,"level":0.2,"meanAccY":-3.35,"addedMassKg":83,"wallPushBW":-0.37,"vertical":0.03,"load":0,"fell":""}
+{"trace":"rises 20 cm at 2 m/s","rule":"follow","t":0.733,"flowY":0,"level":0.2,"meanAccY":-2.39,"addedMassKg":81,"wallPushBW":-0.26,"vertical":0.03,"load":0,"fell":"lost board"}
