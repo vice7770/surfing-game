@@ -23,12 +23,14 @@
  * 1 to 4); `--case-bin FILE` (the "lib" columns from that case file, e.g. T5's level-13 library, and its own Froude scale
  * for the case side, in place of the game's library); `--keys` (the pool's library keys at each Δ: the still depth under
  * the sea's crest, the bed's slope along the ray from there to the throw place, the reef crest's depth along the ray, the
- * foot crest over the foot depth; printed after the table). Without them the probe runs and prints as before.
+ * foot crest over the foot depth; printed after the table); `--keys-out FILE` (step 1b: every key row as JSON, for the
+ * library's coverage, with H also over the lowest water within `--key-trough` m, default 15, the cases' 3 h0 at 5 m).
+ * Without them the probe runs and prints as before.
  * Run from the repository's root (the case files are read from public/):
  *   npx rolldown docs/research/wave-strategy-alternatives/t5-sea-probe.ts -o <scratch>/t5-sea-probe.mjs --format esm --platform node
  *   node <scratch>/t5-sea-probe.mjs --ref --until 300 --extra "&wallBody=stream&tubeForm=early&poolReach=long&loftMesh=arc&wallFoot=dug"
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
 import { physicalSettingsFor } from '../../../src/game/SurfConditions';
 import { POOL_REF_FRONT_REACH } from '../../../src/wave/barrel/barrelSpots';
@@ -49,6 +51,10 @@ if (option('reach-to')) (POOL_REF_FRONT_REACH as unknown as { to: number }).to =
 const DELTA_ARG = option('deltas');
 const CASE_BIN = option('case-bin');
 const KEYS = process.argv.includes('--keys');
+/** `--keys-out FILE` (step 1b, 2026-11-13; with `--keys`): every key row, per Δ, and the sea's components, as JSON. */
+const KEYS_OUT = option('keys-out');
+/** `--key-trough M`: the keys' H also over the lowest water within M m shoreward (default 15: the cases' 3 h0 at 5 m). */
+const KEY_TROUGH = Number(option('key-trough') ?? 15);
 const extra = [option('case') ? `&poolTubeCase=${option('case')}` : '', option('extra') ?? ''].join('');
 if (ref) (globalThis as unknown as { location: { search: string } }).location = { search: `?poolSize=ref${extra}` };
 const settings = physicalSettingsFor('pool', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday', waves: 'barrel' } as never, { stage: 2, compute: 'cpu' });
@@ -134,7 +140,7 @@ const samples = new Map<number, Sample[]>(DELTAS.map((d) => [d, []]));
 const misses = new Map<number, Record<string, number>>(DELTAS.map((d) => [d, {}]));
 const miss = (d: number, why: string) => { const m = misses.get(d)!; m[why] = (m[why] ?? 0) + 1; };
 const done = new Set<number>();
-interface KeyRow { dH: number; S: number; HS: number; deep: number; dP: number; cosA: number; Hd: number; a0: number; footH: number; footD: number; crestUp: number; s: number; front: number }
+interface KeyRow { dH: number; S: number; HS: number; deep: number; dP: number; cosA: number; Hd: number; a0: number; footH: number; footD: number; crestUp: number; s: number; front: number; t: number; seaH: number; seaH15: number; Hd15: number }
 const keyRows = new Map<number, KeyRow[]>(DELTAS.map((d) => [d, []]));
 const profile = new Float32Array(2 * 128);
 let throws = 0; const throwTimes: number[] = [];
@@ -208,7 +214,11 @@ function measure(p: (typeof front.points)[number], tThrow: number, rayX: number,
       let HS = Infinity; for (let b = 0; b >= -60; b -= 0.5) { const v = depthAt(b); if (v === v) HS = Math.min(HS, v); }
       let deep = 0; for (let b = 0; b <= 120; b += 1) { const v = depthAt(b); if (v === v) deep = Math.max(deep, v); }
       const phi = (40 * Math.PI) / 180; const cosA = Math.abs(rayX * Math.sin(phi) + rayZ * Math.cos(phi));
-      keyRows.get(d)!.push({ dH, S, HS, deep, dP: depthAt(0), cosA, Hd: seaH / dH, a0: p.footHeight / p.footDepth, footH: p.footHeight, footD: p.footDepth, crestUp: e[bestK], s: frameOf(p.x, p.z).s, front: p.front });
+      // The crest over the lowest water within KEY_TROUGH m shoreward (the cases' 3 h0 at their 5 m: 15 m), for the keys.
+      let low15 = Infinity;
+      for (let j = Math.max(0, bestK - Math.round(KEY_TROUGH / DS)); j < bestK; j += 1) if (e[j] === e[j]) low15 = Math.min(low15, e[j]);
+      const seaH15 = e[bestK] - low15;
+      keyRows.get(d)!.push({ dH, S, HS, deep, dP: depthAt(0), cosA, Hd: seaH / dH, a0: p.footHeight / p.footDepth, footH: p.footHeight, footD: p.footDepth, crestUp: e[bestK], s: frameOf(p.x, p.z).s, front: p.front, t: tThrow, seaH, seaH15, Hd15: seaH15 / dH });
     }
     const lib = caseFromLibrary(p.footHeight, p.footDepth, -d, h0);
     samples.get(d)!.push({
@@ -303,6 +313,12 @@ if (KEYS) {
       console.log(`   s ${f(c3[k], 0)}–${f(c3[k + 1], 0)} m (${part.length}): d_h ${r(pp('dH'))} S ${r(pp('S'), 4)} HS ${r(pp('HS'))} HS/deep ${r(part.map((x) => x.HS / x.deep), 3)} H/d_h ${r(pp('Hd'), 3)} A0 ${r(pp('a0'), 3)}`);
     }
   }
+}
+if (KEYS && KEYS_OUT) {
+  const rows = Object.fromEntries(DELTAS.map((d) => [String(d), keyRows.get(d)!]));
+  const components = sim.sea.components.map((c) => ({ amplitude: c.amplitude, period: (2 * Math.PI) / c.omega, direction: c.direction }));
+  writeFileSync(KEYS_OUT, JSON.stringify({ config: `?poolSize=ref${extra}`, until, from: FROM, to: TO, components, rows }));
+  console.log(`\nkey rows written to ${KEYS_OUT}`);
 }
 const pass = [2, 3, 4].every((d) => { if (!samples.has(d)) return false; const m = q(samples.get(d)!.map((x) => x.ratio), 0.5); return m >= 0.9 && m <= 1.1; });
 console.log(`\nbar (median ratio 0.90–1.10 at 2, 3 and 4 s): ${pass ? 'PASS' : 'FAIL'}`);

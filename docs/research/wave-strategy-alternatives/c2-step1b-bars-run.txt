@@ -1,0 +1,80 @@
+# c2-step1b-bars.ts, 2026-11-13 06:02, on main 9c132e3d + step 1b; machine load: 5.20 7.67 7.34
+cases: periodic-pool-c2-b1-a3-l12 (A0 0.355, S 0.036, HS 0.19, 727 frames); periodic-pool-c2-b2-a3-l12 (A0 0.359, S 0.068, HS 0.205, 707 frames); periodic-pool-c2-b3-a3-l12 (A0 0.358, S 0.105, HS 0.3, 778 frames); periodic-pool-far-big-l13 (A0 0.355, S 0.0463, HS 0.2, 553 frames)
+
+## L1: each stored "own" frame reproduced (m at the case's own h0)
+periodic-pool-c2-b1-a3-l12: against c2_library.py's file 0.002 mm; through a slice matched at τ -7.00 (τ_h -6.983, h0 5.0000 m), 528 own frames at their times: 0.004 mm; bar 5 mm: PASS; 158 refill frames rebuilt, 16556 of 372224 velocity values filled
+periodic-pool-c2-b2-a3-l12: against c2_library.py's file 0.004 mm; through a slice matched at τ -7.00 (τ_h -7.029, h0 5.0000 m), 568 own frames at their times: 0.007 mm; bar 5 mm: PASS; 106 refill frames rebuilt, 16448 of 361984 velocity values filled
+periodic-pool-c2-b3-a3-l12: against c2_library.py's file 0.005 mm; through a slice matched at τ -7.00 (τ_h -8.000, h0 5.0000 m), 700 own frames at their times: 0.008 mm; bar 5 mm: PASS; 78 refill frames rebuilt, 17748 of 398336 velocity values filled
+periodic-pool-far-big-l13: against c2_library.py's file 0.002 mm; through a slice matched at τ -7.00 (τ_h -7.009, h0 4.5000 m), 478 own frames at their times: 0.004 mm; bar 5 mm: PASS; 37 refill frames rebuilt, 283136 of 283136 velocity values filled
+
+## L3: the path near the break (smoothed ±0.25 as c2_library.py; share of steps the wrong way)
+periodic-pool-c2-b1-a3-l12: τ −8..0: d 0.0 % (largest 0.00000), H/d 1.3 % (largest 0.00003); τ −4..0: d 0.0 % (largest 0.00000), H/d 2.5 % (largest 0.00003)
+periodic-pool-c2-b2-a3-l12: τ −8..0: d 0.0 % (largest 0.00000), H/d 0.0 % (largest 0.00000); τ −4..0: d 0.0 % (largest 0.00000), H/d 0.0 % (largest 0.00000)
+periodic-pool-c2-b3-a3-l12: τ −8..0: d 0.0 % (largest 0.00000), H/d 15.4 % (largest 0.00040); τ −4..0: d 0.0 % (largest 0.00000), H/d 0.0 % (largest 0.00000)
+periodic-pool-far-big-l13: τ −8..0: d 0.0 % (largest 0.00000), H/d 0.0 % (largest 0.00000); τ −4..0: d 0.0 % (largest 0.00000), H/d 0.0 % (largest 0.00000)
+
+## L4: T5 through the new library against periodic-pool-straight-big-l13.bin through today's (BRL2 + ProfileLibrary), at 4.5 m
+τ −7.375 to −1.4: 65 frames; H differs by 0.46 % median, at most -0.73 % (τ -1.500); crest place by 0.492 m median, at most -0.527 m (τ -2.350); frames over 2 % in H 0, over 0.5 m in place 11 (by the path's crest 11)
+τ −1.4 to 0 (the last 0.95 s): 56 frames; H differs by 1.15 % median, at most -2.20 % (τ -0.125); crest place by 0.167 m median, at most -0.281 m (τ -1.375); frames over 2 % in H 13, over 0.5 m in place 0 (by the path's crest 0)
+the throw to touchdown: 58 frames; H differs by 2.04 % median, at most -2.41 % (τ 0.775); crest place by 0.036 m median, at most -0.106 m (τ 0.525); frames over 2 % in H 37, over 0.5 m in place 0 (by the path's crest 0)
+
+## L4: T5 through the new library against periodic-pool-far-big-l13.bin through today's (BRL2 + ProfileLibrary), at 4.5 m
+τ −8 to −7.4 (BRL2's crest on the wave ahead): 25 frames; H differs by 13.26 % median, at most 17.55 % (τ -7.475); crest place by 69.187 m median, at most -69.328 m (τ -7.925); frames over 2 % in H 24, over 0.5 m in place 25 (by the path's crest 25)
+τ −7.375 to −1.4: 239 frames; H differs by 0.01 % median, at most 1.27 % (τ -6.375); crest place by 0.000 m median, at most -0.123 m (τ -6.125); frames over 2 % in H 0, over 0.5 m in place 0 (by the path's crest 0)
+τ −1.4 to 0 (the last 0.95 s): 56 frames; H differs by 0.01 % median, at most -0.02 % (τ -0.100); crest place by 0.000 m median, at most -0.070 m (τ -1.375); frames over 2 % in H 0, over 0.5 m in place 0 (by the path's crest 0)
+the throw to touchdown: 58 frames; H differs by 0.01 % median, at most -0.01 % (τ 1.025); crest place by 0.000 m median, at most 0.000 m (τ 1.375); frames over 2 % in H 0, over 0.5 m in place 0 (by the path's crest 0)
+
+## L2: leave one out (each held-out case predicted from the rest, from its own state at the hand-over)
+slope, row a3: periodic-pool-c2-b2-a3-l12 from τ -7 (H/d 0.433, d 0.989 h0): periodic-pool-c2-b1-a3-l12 0.536 from τ -8.00 + periodic-pool-c2-b3-a3-l12 0.464 from τ -5.41; h0 5.172 m, throw 4.94 s vs its own 5.00 s
+   same time: pre p90 31.1 cm (≤ 2 cm: 18.2 %), open p90 85.7 cm (≤ 2 cm: 4.7 %), after p90 95.7 cm (≤ 2 cm: 7.3 %); to touchdown p90 50.1 cm, bar MISS; crest place gap p90 2.05 m; H gap p90 10.5 %
+   on the throw, crest on crest: pre p90 17.5 cm (≤ 2 cm: 19.0 %), open p90 40.9 cm (≤ 2 cm: 5.9 %), after p90 88.0 cm (≤ 2 cm: 3.8 %)
+   baseline, periodic-pool-c2-b1-a3-l12 alone: same time: pre p90 54.2 cm (≤ 2 cm: 5.8 %), open p90 187.2 cm (≤ 2 cm: 2.1 %), after p90 185.0 cm (≤ 2 cm: 4.2 %); to touchdown p90 94.4 cm, bar MISS; crest place gap p90 2.40 m; H gap p90 26.4 %
+   baseline, periodic-pool-c2-b3-a3-l12 alone: same time: pre p90 45.6 cm (≤ 2 cm: 5.5 %), open p90 79.3 cm (≤ 2 cm: 1.8 %), after p90 81.9 cm (≤ 2 cm: 3.6 %); to touchdown p90 53.5 cm, bar MISS; crest place gap p90 2.13 m; H gap p90 19.0 %
+slope, row a3: periodic-pool-c2-b2-a3-l12 from τ -4 (H/d 0.677, d 0.771 h0): periodic-pool-c2-b1-a3-l12 0.536 from τ -3.92 + periodic-pool-c2-b3-a3-l12 0.464 from τ -2.98; h0 4.964 m, throw 2.48 s vs its own 2.86 s
+   same time: pre p90 22.7 cm (≤ 2 cm: 6.9 %), open p90 69.7 cm (≤ 2 cm: 5.9 %), after p90 77.8 cm (≤ 2 cm: 5.9 %); to touchdown p90 27.2 cm, bar MISS; crest place gap p90 2.16 m; H gap p90 12.6 %
+   on the throw, crest on crest: pre p90 24.7 cm (≤ 2 cm: 11.3 %), open p90 36.9 cm (≤ 2 cm: 7.6 %), after p90 82.7 cm (≤ 2 cm: 3.9 %)
+   baseline, periodic-pool-c2-b1-a3-l12 alone: same time: pre p90 37.4 cm (≤ 2 cm: 9.3 %), open p90 73.5 cm (≤ 2 cm: 6.6 %), after p90 91.7 cm (≤ 2 cm: 4.4 %); to touchdown p90 46.2 cm, bar MISS; crest place gap p90 2.53 m; H gap p90 12.3 %
+   baseline, periodic-pool-c2-b3-a3-l12 alone: same time: pre p90 41.2 cm (≤ 2 cm: 7.3 %), open p90 60.5 cm (≤ 2 cm: 1.3 %), after p90 90.7 cm (≤ 2 cm: 3.9 %); to touchdown p90 49.2 cm, bar MISS; crest place gap p90 1.93 m; H gap p90 18.4 %
+A0, bed 0.036/0.19: 1 case(s) finished, no pair to test
+A0, bed 0.068/0.205: 1 case(s) finished, no pair to test
+A0, bed 0.105/0.3: 1 case(s) finished, no pair to test
+
+## L6: determinism
+2000 surfaces and velocities over 200 slices, twice: a228396e / a228396e PASS; every file re-encodes byte for byte: PASS
+
+## Cost: 600 slices, each a blend of 4 cases (2 slopes × 2 A0)
+4-case slices alone: a surface 2.50 µs a slice, 1.50 ms a step for 600
+252 of 600 slices blend 4 cases; the match at the hand-over 6.7 µs a slice (once); a surface (128 points) 1.94 µs a slice, so 1.17 ms a step for 600; one velocity sample 0.151 µs
+
+## Coverage: the pool's slices (docs/research/wave-strategy-alternatives/c2-step1b-keys-rows.json.gz); T 10.50 s (1 components, the largest's), HS/h0 over the 5 m platform; H/d_h as Hd15
+
+the finished level-12 cases' paths (periodic-pool-c2-b1-a3-l12, periodic-pool-c2-b2-a3-l12, periodic-pool-c2-b3-a3-l12)
+Δ 4 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.358 median (0.357–0.359; 1 % 0.355); under 0.15 0.0 %, under 0.12 0.0 %, under 0.10 0.0 % | s 30–63 m: A0 low 0.0 %, A0 0.358; s 63–101 m: A0 low 0.0 %, A0 0.358; s 101–151 m: A0 low 0.0 %, A0 0.358
+Δ 4 s: n 1776 | slope low 1.0 %, high 10.6 % | HS off its bed 100.0 % (by 0.010 h0 median, 0.051 p90) | A0 low 0.0 % (any weight 0.0 %, weight share 0.0 %), high 0.0 % | τ clamped 82.8 % (weight share 69.2 %) | crest still on the platform 13.4 % | h0 4.10 (3.54–5.00) m | hand-over to throw 4.98 (4.26–5.71) s
+Δ 5 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.358 median (0.357–0.359; 1 % 0.355); under 0.15 0.0 %, under 0.12 0.0 %, under 0.10 0.0 % | s 30–63 m: A0 low 0.0 %, A0 0.358; s 63–101 m: A0 low 0.0 %, A0 0.358; s 101–151 m: A0 low 0.0 %, A0 0.358
+Δ 5 s: n 1776 | slope low 0.8 %, high 0.3 % | HS off its bed 100.0 % (by 0.013 h0 median, 0.052 p90) | A0 low 0.0 % (any weight 0.0 %, weight share 0.0 %), high 0.0 % | τ clamped 97.2 % (weight share 93.2 %) | crest still on the platform 26.0 % | h0 4.58 (3.93–5.00) m | hand-over to throw 5.46 (4.98–5.71) s
+Δ 4.5 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.358 median (0.357–0.359; 1 % 0.355); under 0.15 0.0 %, under 0.12 0.0 %, under 0.10 0.0 % | s 30–63 m: A0 low 0.0 %, A0 0.358; s 63–101 m: A0 low 0.0 %, A0 0.358; s 101–151 m: A0 low 0.0 %, A0 0.358
+Δ 4.5 s: n 1776 | slope low 0.8 %, high 5.1 % | HS off its bed 100.0 % (by 0.011 h0 median, 0.054 p90) | A0 low 0.0 % (any weight 0.0 %, weight share 0.0 %), high 0.0 % | τ clamped 92.6 % (weight share 84.7 %) | crest still on the platform 19.0 % | h0 4.31 (3.73–5.00) m | hand-over to throw 5.26 (4.70–5.71) s
+Δ 5.4 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.358 median (0.357–0.359; 1 % 0.355); under 0.15 0.0 %, under 0.12 0.0 %, under 0.10 0.0 % | s 30–63 m: A0 low 0.0 %, A0 0.358; s 63–101 m: A0 low 0.0 %, A0 0.358; s 101–151 m: A0 low 0.0 %, A0 0.358
+Δ 5.4 s: n 1776 | slope low 0.7 %, high 0.0 % | HS off its bed 100.0 % (by 0.013 h0 median, 0.049 p90) | A0 low 0.0 % (any weight 0.0 %, weight share 0.0 %), high 0.0 % | τ clamped 98.6 % (weight share 96.5 %) | crest still on the platform 35.8 % | h0 4.79 (4.09–5.00) m | hand-over to throw 5.59 (5.14–5.71) s
+
+scout paths c2-step1b-scout-paths.json (b1_a1 A0 0.151, b2_a1 A0 0.152, b3_a1 A0 0.154, b1_a2 A0 0.250, b2_a2 A0 0.252, b3_a2 A0 0.253, b1_a3 A0 0.355, b2_a3 A0 0.359, b3_a3 A0 0.358)
+Δ 4 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.230 median (0.144–0.276; 1 % 0.083); under 0.15 12.0 %, under 0.12 4.8 %, under 0.10 2.4 % | s 30–63 m: A0 low 0.0 %, A0 0.253; s 63–101 m: A0 low 0.0 %, A0 0.232; s 101–151 m: A0 low 41.4 %, A0 0.166
+Δ 4 s: n 1776 | slope low 1.0 %, high 10.6 % | HS off its bed 100.0 % (by 0.010 h0 median, 0.051 p90) | A0 low 13.8 % (any weight 13.8 %, weight share 12.0 %), high 0.0 % | τ clamped 31.4 % (weight share 8.2 %) | crest still on the platform 13.4 % | h0 5.00 (4.86–5.01) m | hand-over to throw 5.12 (4.35–6.33) s
+Δ 5 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.248 median (0.176–0.290; 1 % 0.132); under 0.15 3.1 %, under 0.12 0.6 %, under 0.10 0.3 % | s 30–63 m: A0 low 0.0 %, A0 0.261; s 63–101 m: A0 low 0.0 %, A0 0.245; s 101–151 m: A0 low 16.7 %, A0 0.198
+Δ 5 s: n 1776 | slope low 0.8 %, high 0.3 % | HS off its bed 100.0 % (by 0.013 h0 median, 0.052 p90) | A0 low 5.6 % (any weight 5.6 %, weight share 4.0 %), high 0.0 % | τ clamped 70.3 % (weight share 19.2 %) | crest still on the platform 26.0 % | h0 5.00 (5.00–5.12) m | hand-over to throw 6.07 (5.14–7.45) s
+Δ 4.5 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.240 median (0.157–0.286; 1 % 0.096); under 0.15 7.4 %, under 0.12 1.7 %, under 0.10 1.0 % | s 30–63 m: A0 low 0.0 %, A0 0.258; s 63–101 m: A0 low 0.0 %, A0 0.239; s 101–151 m: A0 low 30.9 %, A0 0.179
+Δ 4.5 s: n 1776 | slope low 0.8 %, high 5.1 % | HS off its bed 100.0 % (by 0.011 h0 median, 0.054 p90) | A0 low 10.3 % (any weight 10.3 %, weight share 8.1 %), high 0.0 % | τ clamped 51.5 % (weight share 13.7 %) | crest still on the platform 19.0 % | h0 5.00 (5.00–5.06) m | hand-over to throw 5.59 (4.78–6.88) s
+Δ 5.4 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.252 median (0.190–0.288; 1 % 0.144); under 0.15 1.8 %, under 0.12 0.1 %, under 0.10 0.1 % | s 30–63 m: A0 low 0.0 %, A0 0.261; s 63–101 m: A0 low 0.0 %, A0 0.254; s 101–151 m: A0 low 9.8 %, A0 0.211
+Δ 5.4 s: n 1776 | slope low 0.7 %, high 0.0 % | HS off its bed 100.0 % (by 0.013 h0 median, 0.049 p90) | A0 low 3.3 % (any weight 3.3 %, weight share 2.1 %), high 0.0 % | τ clamped 80.1 % (weight share 21.6 %) | crest still on the platform 35.8 % | h0 5.01 (5.00–5.16) m | hand-over to throw 6.32 (5.49–7.52) s
+
+# the coverage again with the sea's H over 3 x the game's h0 (the probe's first window): --hd Hd
+scout paths c2-step1b-scout-paths.json (b1_a1 A0 0.151, b2_a1 A0 0.152, b3_a1 A0 0.154, b1_a2 A0 0.250, b2_a2 A0 0.252, b3_a2 A0 0.253, b1_a3 A0 0.355, b2_a3 A0 0.359, b3_a3 A0 0.358)
+Δ 4 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.206 median (0.124–0.248; 1 % 0.055); under 0.15 18.2 %, under 0.12 9.0 %, under 0.10 4.8 % | s 30–63 m: A0 low 0.0 %, A0 0.229; s 63–101 m: A0 low 1.0 %, A0 0.214; s 101–151 m: A0 low 61.7 %, A0 0.147
+Δ 4 s: n 1776 | slope low 1.0 %, high 10.6 % | HS off its bed 100.0 % (by 0.010 h0 median, 0.051 p90) | A0 low 20.9 % (any weight 20.9 %, weight share 18.5 %), high 0.0 % | τ clamped 38.7 % (weight share 16.5 %) | crest still on the platform 13.4 % | h0 5.00 (4.46–5.05) m | hand-over to throw 5.55 (4.78–7.78) s
+Δ 5 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.214 median (0.147–0.249; 1 % 0.083); under 0.15 10.9 %, under 0.12 4.0 %, under 0.10 2.1 % | s 30–63 m: A0 low 0.0 %, A0 0.238; s 63–101 m: A0 low 0.7 %, A0 0.215; s 101–151 m: A0 low 41.9 %, A0 0.168
+Δ 5 s: n 1776 | slope low 0.8 %, high 0.3 % | HS off its bed 100.0 % (by 0.013 h0 median, 0.052 p90) | A0 low 14.2 % (any weight 14.2 %, weight share 11.2 %), high 0.0 % | τ clamped 79.4 % (weight share 34.2 %) | crest still on the platform 26.0 % | h0 5.00 (4.90–5.10) m | hand-over to throw 6.80 (5.89–8.29) s
+Δ 4.5 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.205 median (0.133–0.249; 1 % 0.071); under 0.15 14.1 %, under 0.12 6.3 %, under 0.10 3.7 % | s 30–63 m: A0 low 0.0 %, A0 0.234; s 63–101 m: A0 low 0.7 %, A0 0.211; s 101–151 m: A0 low 49.3 %, A0 0.158
+Δ 4.5 s: n 1776 | slope low 0.8 %, high 5.1 % | HS off its bed 100.0 % (by 0.011 h0 median, 0.054 p90) | A0 low 16.7 % (any weight 16.7 %, weight share 14.1 %), high 0.0 % | τ clamped 58.1 % (weight share 22.9 %) | crest still on the platform 19.0 % | h0 5.00 (4.71–5.09) m | hand-over to throw 6.10 (5.37–8.07) s
+Δ 5.4 s: the slices' A0 read off the cases (extrapolated past the smallest) 0.224 median (0.155–0.251; 1 % 0.100); under 0.15 7.6 %, under 0.12 2.8 %, under 0.10 1.0 % | s 30–63 m: A0 low 0.0 %, A0 0.244; s 63–101 m: A0 low 0.0 %, A0 0.222; s 101–151 m: A0 low 33.6 %, A0 0.178
+Δ 5.4 s: n 1776 | slope low 0.7 %, high 0.0 % | HS off its bed 100.0 % (by 0.013 h0 median, 0.049 p90) | A0 low 11.2 % (any weight 11.2 %, weight share 8.4 %), high 0.0 % | τ clamped 90.5 % (weight share 48.4 %) | crest still on the platform 35.8 % | h0 5.01 (5.00–5.09) m | hand-over to throw 7.36 (6.34–8.43) s
