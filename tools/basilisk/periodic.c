@@ -300,9 +300,10 @@ static void output_surface_velocity (FILE * fp) {
     x the bin's centre; bed the bed's elevation there (bedProfile); h the water's volume per unit width (h0), the
     integral over y of the water's fraction (f less the bed's); q the integral of u.x over the water (h0 sqrt(g h0)),
     f-weighted as h is; top the highest water in the bin (a cell's water stacked at its bottom: y - Delta/2 + w Delta,
-    over cells with w > 0.5, else the bin's highest wet cell; -1 - yOffset_ where the bin holds no water); air the air's
-    volume per unit width below top (the tube's void, bubbles, the bore's froth; the bed is water-filled, so it adds
-    none). The air share under the top surface is air / (air + h), as the analysis reads it (c2_library.py). Each
+    over cells with w > 0.5, then raised by a part-filled cell resting on it, within half a cell; else the bin's highest
+    wet cell; -1 - yOffset_ where the bin holds no water); air the air's
+    volume per unit width below the top (the tube's void, bubbles, the bore's froth; the bed is water-filled, so it adds
+    none), each finest column (L0/2^LEVEL) below its own top, so a sloping surface inside a bin adds none. The air share under the top surface is air / (air + h), as the analysis reads it (c2_library.py). Each
     leaf cell is shared out to the bins it overlaps by length, so a coarse cell outside the window spans several bins
     and a fine one adds to one. Units as the run's: h0 = 1, g = 1. */
 #ifndef QDX
@@ -311,24 +312,39 @@ static void output_surface_velocity (FILE * fp) {
 static void output_columns (FILE * fp) {
   int nb = (int) ceil (L0/QDX - 1e-9);
   double bw = L0/nb;
-  double * ctop = malloc (nb*sizeof(double)), * cwet = malloc (nb*sizeof(double));
+  /* the tops on the finest columns (L0/2^LEVEL), so the air under a sloping surface is not counted up to a bin's highest
+     point; then summed into the bins */
+  int nf = 1 << LEVEL;
+  double fw = L0/nf;
+  double * ftop = malloc (nf*sizeof(double)), * fwet = malloc (nf*sizeof(double));
   double * ch = calloc (nb, sizeof(double)), * cq = calloc (nb, sizeof(double)), * cair = calloc (nb, sizeof(double));
-  for (int b = 0; b < nb; b++) ctop[b] = cwet[b] = -HUGE;
-  /* first the tops: the highest water in each bin */
+  for (int k = 0; k < nf; k++) ftop[k] = fwet[k] = -HUGE;
+  /* first the tops: the highest water (w > 0.5) in each fine column */
   foreach (serial) {
     double w = f[] - beach[];
     if (w > 1e-6) {
       double surf = y - Delta/2. + min (w, 1.)*Delta;
-      int b0 = max (0, (int) floor ((x - Delta/2. - X0)/bw + 1e-9));
-      int b1 = min (nb - 1, (int) floor ((x + Delta/2. - X0)/bw - 1e-9));
-      for (int b = b0; b <= b1; b++) {
-        if (w > 0.5 && surf > ctop[b]) ctop[b] = surf;
-        if (surf > cwet[b]) cwet[b] = surf;
+      int k0 = max (0, (int) floor ((x - Delta/2. - X0)/fw + 1e-9));
+      int k1 = min (nf - 1, (int) floor ((x + Delta/2. - X0)/fw - 1e-9));
+      for (int k = k0; k <= k1; k++) {
+        if (w > 0.5 && surf > ftop[k]) ftop[k] = surf;
+        if (surf > fwet[k]) fwet[k] = surf;
       }
     }
   }
-  for (int b = 0; b < nb; b++) if (ctop[b] == -HUGE) ctop[b] = cwet[b];
-  /* then the sums: the water, its flux, and the air under the top */
+  for (int k = 0; k < nf; k++) if (ftop[k] == -HUGE) ftop[k] = fwet[k];
+  /* a part-filled cell resting on the top (its bottom within half a cell of it) raises it to its own water's top */
+  foreach (serial) {
+    double w = f[] - beach[];
+    if (w > 1e-6 && w <= 0.5) {
+      double ylo = y - Delta/2., surf = ylo + w*Delta;
+      int k0 = max (0, (int) floor ((x - Delta/2. - X0)/fw + 1e-9));
+      int k1 = min (nf - 1, (int) floor ((x + Delta/2. - X0)/fw - 1e-9));
+      for (int k = k0; k <= k1; k++)
+        if (ftop[k] > -HUGE && fabs (ylo - ftop[k]) <= 0.5*Delta && surf > ftop[k]) ftop[k] = surf;
+    }
+  }
+  /* then the sums: the water and its flux per bin; the air under each fine column's top */
   foreach (serial) {
     double w = f[] - beach[];
     double x0 = x - Delta/2., x1 = x + Delta/2., ylo = y - Delta/2.;
@@ -339,17 +355,28 @@ static void output_columns (FILE * fp) {
       if (len > 0.) {
         ch[b] += w*Delta*len;
         cq[b] += w*u.x[]*Delta*len;
-        if (ctop[b] > -HUGE && ylo < ctop[b])   /* the bed's part of a cell is water-filled (f = 1 there) */
-          cair[b] += clamp (1. - f[], 0., 1.)*clamp ((ctop[b] - ylo)/Delta, 0., 1.)*Delta*len;
+      }
+    }
+    int k0 = max (0, (int) floor ((x0 - X0)/fw + 1e-9));
+    int k1 = min (nf - 1, (int) floor ((x1 - X0)/fw - 1e-9));
+    for (int k = k0; k <= k1; k++) {
+      double len = min (x1, X0 + (k + 1)*fw) - max (x0, X0 + k*fw);
+      /* the cell's water (with the bed's part, which is water-filled: f = 1 there) stacked at its bottom, its air above
+         it up to the top */
+      if (len > 0. && ftop[k] > -HUGE && ylo < ftop[k]) {
+        int b = min (nb - 1, (int) floor ((X0 + (k + 0.5)*fw - X0)/bw));
+        cair[b] += max (0., min (ftop[k] - ylo, Delta) - clamp (f[], 0., 1.)*Delta)*len;
       }
     }
   }
   for (int b = 0; b < nb; b++) {
-    double xc = X0 + (b + 0.5)*bw;
+    double xc = X0 + (b + 0.5)*bw, top = -HUGE;
+    for (int k = (int) floor (b*bw/fw + 1e-9); k < nf && X0 + (k + 0.5)*fw < X0 + (b + 1)*bw; k++)
+      if (ftop[k] > top) top = ftop[k];
     fprintf (fp, "%.6g %.6g %.7g %.7g %.6g %.6g\n", xc, bedProfile (xc), ch[b]/bw, cq[b]/bw,
-	     ctop[b] > -HUGE ? ctop[b] : -1. - yOffset_, cair[b]/bw);
+	     top > -HUGE ? top : -1. - yOffset_, cair[b]/bw);
   }
-  free (ctop); free (cwet); free (ch); free (cq); free (cair);
+  free (ftop); free (fwet); free (ch); free (cq); free (cair);
 }
 #endif
 
