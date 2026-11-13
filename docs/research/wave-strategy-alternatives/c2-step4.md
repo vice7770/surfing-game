@@ -195,8 +195,10 @@ step 3 measured with half the bytes, so the bigger files are not what that is.
    cap is what holds it. I did not measure it against a finer source.
 3. **The flow's share is evaluated at the point; the surface's is written on the 1 m render nodes and read back from
    them** [R]. The two agree in the limit and both are continuous, but they are not the same arithmetic, so a sample
-   can read a share a little different from the one its height took. I did not measure that difference (the measure I
-   first wrote compared the flow's share with the node weight A = Σ w, which is a different quantity).
+   can read a share a little different from the one its height took. I did not measure that difference. The run file's
+   line "the flow's share − the slice's own blend share" (90 % 0.27) is **not** that measure and should not be read as
+   one: it compares the share with one slice's blend share alone, so it also carries the frame weight at the seats near
+   a curve's ends and the lane pair's split between two lanes, which are both part of the surface's weight too.
 4. **The acceleration fades by the share** [R]. The sea does not report its own Du/Dt, so through the hand-over the
    board reads the library's times the share, not a blend of two accelerations.
 5. **A small kink in du/dt at a slice's throw** [P]. Before the throw each case runs at its own rate so that they throw
