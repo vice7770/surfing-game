@@ -2682,10 +2682,15 @@ Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a s
   rail the plant's sideslip mode has changed sign, and gains designed there are designed on a plant that cannot be
   stabilised by any controller. **Reading the schedule further is only correct where the plant is stabilisable.** That
   is a finding against my own instruction to lead with it, and it is in §3's grid.
-- **Seatbelts, all held:** `tsc` clean on both projects; the suite **352 files and 3,426 tests passing, zero failures**;
-  the Canyon hashes unchanged; 3.1's old-rider bars byte-identical; and **no new force of any kind** — the step changes
-  one constant that is a rate limit on a reference, so there is nothing for the owner's "no hidden motors" rule to
-  catch.
+- **Seatbelts, all held** [M] (`results/suite-32L.txt`, `canyon-byte-32L.txt`, `fps-32L.txt`): `tsc` clean on both
+  projects; the suite **352 files and 3,426 tests passing, zero failures** (23 expected fail, 43 skipped — even the
+  `poolBarrelPerf` flake passed this time); **all four Canyon hashes the same as main** (Canyon B
+  `a367d938f15fa934` / `9e5831f80e38abd9`, the default `ea3d57a4d49f4b48` / `a1a2555739210f96`, both from fresh
+  spin-ups); 3.1's old-rider bars byte-identical; and **no new force of any kind** — the step changes one constant that
+  is a rate limit on a reference, so there is nothing for the owner's "no hidden motors" rule to catch. The fps trace
+  is noisy and I am not smoothing it: two 60 s ride traces back to back gave 36.1 and 46.4 fps mean from 20 s on
+  (lowest second 30 and 29), and they disagree by 10 fps where 3.2j's agreed to 0.6, because three Basilisk runs **and**
+  the byte check's own 3600 steps were running throughout. Read it as with-against-without.
 - **Hand-set numbers that will need re-checking when two-way coupling lands**, as 29q asks: `SCHEDULE_RAIL_CAP` (5°,
   the plant it reads is a non-digging rail's), `KNEE_STIFFNESS` (20 kN/m, step 3.2h's sources disagree with its bars),
   `CAPTURE_LOAD` (0.2 body weights, reasoned not measured), `RECOVERABLE_ERROR` (0.25 m, set for a rigid rider), and
