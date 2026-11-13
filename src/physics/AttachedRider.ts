@@ -9,7 +9,8 @@ import { MinimumJerkTrack } from './MinimumJerkTrack';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
-import { ANKLE_HEIGHT, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
+import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
+import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
@@ -41,6 +42,8 @@ export const LEG_POWER_HELD = 20;
 export const LEG_POWER_WINDOW = 0.5;
 export const MAX_FLIGHT = 0.4;
 export const RECOVERABLE_ERROR = 0.25;
+/** The new surfer standing free (step 3.2): the board's substeps per frame (`standingSubsteps`); env override for the probes only. */
+export const NEW_STANDING_SUBSTEPS = 16;
 /** Share of the posture error closed per substep, and the fastest correction, m/s. */
 const CORRECTION = 0.2;
 const MAX_CORRECTION = 0.5;
@@ -1029,6 +1032,13 @@ const ARM_LENGTH = 0.7;
 const ARM_ANGLE = (25 * Math.PI) / 180;
 const STANDING_HAND_DRAG = 1.1 * 0.013;
 /**
+ * The new surfer (step 3.2): the flat hand skimming the face is also a weak support, a plate's lift out of the water
+ * along the surface's normal: C_L HAND_LIFT on HAND_AREA, m² (a flat plate at 20–40° of attack: C_L about 0.8–1.2;
+ * Hoerner and Borst 1985, Fluid-Dynamic Lift, recalled), its share wet, with the drag at most HAND_FORCE_LIMIT.
+ */
+const HAND_LIFT = 1;
+const HAND_AREA = 0.013;
+/**
  * Compressing into a lean, the inside hand reaches for the water (de Sousa 2022:
  * the body leans into the curve until the inside hand nears the water): from
  * REACH_FROM of Compress and REACH_LEAN of bank, on the side the body leans
@@ -1138,10 +1148,13 @@ export interface AttachedRiderOptions {
    * The new surfer (docs/research/new-rider/design.md, the advisor's ruling 29), opt-in: 'new' builds its steps behind
    * the `?rider=new` dev switch. Step 3.1: standing, the body is free along the board as well (`StandingBody`, a ninth
    * unknown in the board's solve), leaning with the face on its pitch ankle; the knees are softer, with a strength cap
-   * in place of MAX_LOAD; and the contact's power is A-lite's window (LEG_POWER_PEAK, LEG_POWER_HELD). Every other phase
-   * as before. By default the old rider.
+   * in place of MAX_LOAD; and the contact's power is A-lite's window (LEG_POWER_PEAK, LEG_POWER_HELD). Step 3.2: free
+   * across as well, with no drive left, balanced by a human's delayed moves (`HumanBalance`). Every other phase as
+   * before. By default the old rider.
    */
   rider?: 'new';
+  /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
+  standingSubsteps?: number;
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1604,12 +1617,36 @@ export class AttachedRider {
   readonly capsLegs: boolean;
   /** The new surfer (`rider: 'new'`); and the power window kept, with `legPower: 'cap'` or the new surfer. */
   private readonly newRider: boolean;
+  private readonly newSubsteps: number;
   private readonly windowed: boolean;
   /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
   readonly standingBody = new StandingBody();
   private readonly forward = new Vector3(0, 0, 1);
   /** The new surfer: the body's own push through the feet, low-passed over SPECIFIC_FORCE_TIME, N (world): the pitch reference's slow trim. */
   private readonly bodyPush = new Vector3(0, 1, 0);
+  /**
+   * The new surfer standing, step 3.2 (`HumanBalance`): the delayed balance across (the roll's rest, the hip across, the
+   * knees and arms), the capture point and the reserve; the friction and the knees' strength used, 0–1, the latest contact.
+   */
+  readonly human = new HumanBalance();
+  /** The new surfer: the hip across's lagged demand, N·m, and the leg depth the player's stance holds, m (`stanceDepth`). */
+  private swingLagged = 0;
+  private heldDepth = 0;
+  private frictionUsed = 0;
+  private kneeUsed = 0;
+  /** The new surfer: the capture point's scratch (`captureStep`). */
+  private readonly captureFeet = new Vector3();
+  private readonly captureOffset = new Vector3();
+  private readonly captureVelocity = new Vector3();
+  private readonly captureFelt = new Vector3();
+  private readonly captureScratch = new Vector3();
+  /** The pair's momentum the latest substep, kg·m/s, and its specific force low-passed, m/s² (world); fresh until the first. */
+  private readonly pairMomentum = new Vector3();
+  private readonly pairFelt = new Vector3(0, WATER.gravity, 0);
+  private pairFresh = true;
+  /** The new surfer standing, the hand in the water: the water's support on it along its surface's normal, N (world), the latest substep. */
+  readonly handSupport = new Vector3();
+  private supporting = false;
   /** The contact's net work this substep may still do, J (`legPower: 'cap'`), and the substeps' net works over the last LEG_POWER_WINDOW: their end times on the rider's clock, s, and works, J, a ring. */
   private powerBudget = Infinity;
   private powerClock = 0;
@@ -1732,6 +1769,7 @@ export class AttachedRider {
     this.snapCrosses = options.snapCross === 'on';
     this.capsLegs = options.legPower === 'cap';
     this.newRider = options.rider === 'new';
+    this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -1772,10 +1810,20 @@ export class AttachedRider {
 
   /**
    * The new surfer standing (`rider: 'new'`, step 3.1): the body is free along the board too, its speed along its
-   * forward axis the ninth unknown of the board's solve (`StandingBody`). Landing and every other phase as before.
+   * forward axis the ninth unknown of the board's solve (`StandingBody`). Step 3.2: free across as well with no drive
+   * left (no roll drive, shifts or sway), balanced by `HumanBalance`. Landing and every other phase as before.
    */
   get freeBody(): boolean {
     return this.newRider && this.upright && this.phase === 'standing';
+  }
+
+  /**
+   * The board's substeps while this rider stands (`BoardBody.step`): the old rider's 32 (`STANDING_SUBSTEPS`, for its
+   * upright drive's one-substep lag, P4e's Mode A); the new surfer standing free, NEW_STANDING_SUBSTEPS (step 3.2: no
+   * drive is left, so the fewest that pass its bars).
+   */
+  get standingSubsteps(): number | undefined {
+    return this.freeBody ? this.newSubsteps : undefined;
   }
 
   /** The standing contact's power is capped: A-lite (`legPower: 'cap'`), or the new surfer standing (its window only; rule 1 is its own). */
@@ -2004,6 +2052,12 @@ export class AttachedRider {
     // face's normal. Square in pitch alone, plumb across (step 3.1), a start across a face had its bank run uphill.
     if (this.newRider) {
       this.standingBody.reset();
+      this.human.reset();
+      this.pairFresh = true;
+      this.swingLagged = 0;
+      this.heldDepth = 0;
+      this.frictionUsed = 0;
+      this.kneeUsed = 0;
       if (this.upright && this.phase === 'standing' && board.velocity.length() > PLANING_SPEED) {
         this.planing = true;
         this.banked = true;
@@ -2069,6 +2123,8 @@ export class AttachedRider {
    * threshold in `endStep`.
    */
   get balanceReserve(): number {
+    // The new surfer standing (step 3.2, design §6): the least of the capture point's margin, the grip left and the knees' strength left.
+    if (this.freeBody) return Math.max(0, Math.min(this.human.state.margin, 1 - this.frictionUsed, 1 - this.kneeUsed));
     if (this.upright) return this.balanceMargin;
     return Math.max(0, 1 - this.postureError / RECOVERABLE_ERROR);
   }
@@ -2357,8 +2413,9 @@ export class AttachedRider {
       const impulse = normal.multiplyScalar(strike);
       const before = this.scratch.copy(this.velocity);
       this.velocity.addScaledVector(impulse, 1 / this.mass);
-      if (this.upright) {
-        // Along the deck the push sways the body off its feet; into the deck the legs take it.
+      if (this.upright && !this.freeBody) {
+        // Along the deck the push sways the body off its feet; into the deck the legs take it (the new surfer standing:
+        // the push is already in the free body's velocity).
         const local = this.sweepEnd.copy(impulse).applyQuaternion(this.spin.copy(board.orientation).invert());
         this.swayRate.x += local.x / this.mass;
         this.swayRate.z += local.z / this.mass;
@@ -2456,11 +2513,13 @@ export class AttachedRider {
     // Drive: keeping the body's bank as the board rolls and pitches under the feet, the knees' flex, and a
     // bounded correction toward the posture.
     this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
-    // The balance shift moves the centre of mass across the board.
-    const shifted = this.shiftedShare();
-    this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x + this.armsGiveRate) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
-    // A push's sway carries the centre of mass off its feet.
-    if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
+    // The balance shift moves the centre of mass across the board. A push's sway carries the centre of mass off its feet.
+    // The new surfer standing (step 3.2): neither; the body is a free centre of mass, moved only by forces.
+    if (!free) {
+      const shifted = this.shiftedShare();
+      this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x + this.armsGiveRate) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
+      if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
+    }
     // The posture's own motion (a pop-up) carries the centre of mass with it.
     this.drive.add(this.scratch.copy(this.postureRate).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
     const error = this.scratch.subVectors(this.target, this.position);
@@ -2480,7 +2539,11 @@ export class AttachedRider {
     if (this.upright) {
       this.prepareLeg(h, board, water);
       if (free) this.preparePitch(h);
-      else if (this.newRider) this.standingBody.idle();
+      else if (this.newRider) {
+        this.standingBody.idle();
+        this.human.reset();
+        this.swingLagged = 0;
+      }
       this.twistStep(h);
       if (this.agile) this.legsStep(h, board);
       if (this.banking) {
@@ -2527,6 +2590,8 @@ export class AttachedRider {
     if (this.planing ? speed < PLANING_DROP : speed > PLANING_SPEED) this.planing = !this.planing;
     if (this.planing) this.banked = true;
     else if (Math.abs(this.bank.angle) < UPRIGHT_BANK && Math.abs(this.bank.rate) < UPRIGHT_RATE) this.banked = false;
+    // The new surfer standing (step 3.2): the body is free across whatever the board's speed; nothing carries it upright.
+    if (this.freeBody) this.banked = true;
   }
 
   /**
@@ -2562,6 +2627,10 @@ export class AttachedRider {
     const asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+    if (this.freeBody) {
+      this.humanBank(h, roll, rail, rollRate);
+      return;
+    }
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
     // Past the rail's bite the feet no longer roll the board further onto it.
@@ -2580,6 +2649,74 @@ export class AttachedRider {
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
     this.ankleTorque = ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate);
+  }
+
+  /**
+   * The new surfer standing (step 3.2, `HumanBalance`): the bank's ankle and the hip across as a human's.
+   * - The ankle: `bankSpeed` is the body's speed across relative to the board under it (no drive carries it), so the
+   *   passive spring and damper (HUMAN_ANKLE_STIFFNESS, HUMAN_ANKLE_DAMPING) act on the ankle's own angle and rate,
+   *   implicitly in the solve, at once and with no lag (P4e's Mode A came from the old drive's one-substep lag).
+   * - Its rest: the bank law's form, δ = K_ref θ_ref − G θ − G_r θ̇, but on the body's own bank and bank rate as sensed
+   *   BALANCE_DELAY ago (the vestibular sense), the lean asked for not delayed (the rider's own), all through MOTOR_LAG;
+   *   within the feet's reach and the rail's bite as before. The gains (HUMAN_BANK_*) are the roll model's
+   *   (`rollModel.ts`, `humanRollModes`): any feedback on the bank's angle rings through the delay.
+   * - The hip across (the swing rotor) takes what the rest asks past HIP_SHARE of the feet's reach, within the
+   *   stance's hip range and with the arms' inertia (`HumanBalance.swingInertia`), through the same delay and lag.
+   * The old's "lagging" rule (the feet never counter-steer into a lean the body lags; the swing throws it) is kept in
+   * form; with no gain on the bank's angle it never acts.
+   */
+  private humanBank(h: number, roll: number, rail: number, rollRate: number): void {
+    const human = this.human;
+    const relative = this.bankSpeed / this.legLength;
+    human.sense(h, this.bank.angle);
+    this.bank.rate = human.bankRate;
+    const bank = human.sensedBank();
+    const wanted = HUMAN_BANK_FORWARD * this.bankReference - HUMAN_BANK_GAIN * bank - HUMAN_BANK_RATE_GAIN * human.sensedBankRate();
+    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    const reachRest = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const leanSide = Math.sign(this.bankReference);
+    this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
+    const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
+    const lagging = HUMAN_BANK_GAIN > 0 && Math.abs(this.bankReference - bank) > ANKLE_REST_RANGE / HUMAN_BANK_GAIN;
+    const projecting = this.extending && this.planing && Math.abs(this.steer) <= STEER_DEADBAND && !this.hand
+      && Math.abs(this.bank.angle) > UPRIGHT_BANK;
+    const lean = projecting ? 0 : reachRest * asking > 0 && lagging ? 0 : reachRest;
+    // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
+    const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
+    this.ankleRest = human.lagRest(h, lean);
+    this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
+  }
+
+  /**
+   * The new surfer's leg depth below the riding stance the player holds (the crouch, Compress, Snap or tuck asked), m:
+   * the stance room's key (`stanceRoom`). The balance's own knee drop is not counted: it spends the stance's travel.
+   */
+  private get stanceDepth(): number {
+    return Math.max(0, this.heldDepth);
+  }
+
+  /**
+   * The new surfer's hip across (step 3.2): the swing rotor of `inertia` (the arms in or out), driven by `demand`, N·m
+   * (the hip's delayed share), through the motor lag, within ±`range`; pushed only while it can still be braked inside
+   * its range (a rotor holds no steady torque), and brought back upright once nothing is asked. As `swingStep`, its
+   * reaction turns the body on its feet and the board feels only the push at the feet.
+   */
+  private humanSwingStep(h: number, demand: number, range: number, inertia: number): void {
+    this.swingLagged += (demand - this.swingLagged) * (1 - Math.exp(-h / MOTOR_LAG));
+    let burst = Math.max(-SWING_TORQUE, Math.min(SWING_TORQUE, this.swingLagged));
+    // The upper body turns the other way to the body (its acceleration is −burst / inertia).
+    const outward = -burst * (this.swing.angle !== 0 ? Math.sign(this.swing.angle) : -Math.sign(burst)) > 0;
+    const braking = (this.swing.rate * Math.abs(this.swing.rate) * inertia) / (2 * SWING_TORQUE);
+    if (outward && Math.abs(this.swing.angle + braking) >= range) burst = 0;
+    const back = Math.max(0, 1 - Math.abs(this.swingLagged) / (0.1 * SWING_TORQUE));
+    this.swingTorque = burst + inertia * SWING_FREQUENCY * (back * SWING_FREQUENCY * this.swing.angle + 2 * this.swing.rate);
+    this.swing.rate -= (h * this.swingTorque) / inertia;
+    this.swing.angle += h * this.swing.rate;
+    if (Math.abs(this.swing.angle) > range) {
+      this.swing.angle = Math.sign(this.swing.angle) * range;
+      if (this.swing.rate * this.swing.angle > 0) this.swing.rate = 0;
+    }
   }
 
   /**
@@ -2702,7 +2839,8 @@ export class AttachedRider {
     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
     // With the leg drive the legs make this push (`legDriveStep`), never both.
     const side = Math.sign(this.steer);
-    if (!this.legDrive && -this.bank.angle * side > UPRIGHT_BANK) {
+    // The new surfer (ruling 29): none, it has no reaction on the board (the "no hidden motors" rule).
+    if (!this.legDrive && !this.newRider && -this.bank.angle * side > UPRIGHT_BANK) {
       this.leanOutForce.crossVectors(Y, along)
         .multiplyScalar(side * Math.min(1, Math.abs(this.steer)) * speedFade * compress * LEAN_OUT_PULL * this.mass * WATER.gravity);
     }
@@ -2908,7 +3046,16 @@ export class AttachedRider {
     const flexing = flex > held;
     if (flexing) this.fromFlex = true;
     else if (held > 0) this.fromFlex = false;
-    const asked = -(flexing ? flex : held) * CROUCH_DEPTH;
+    let asked = -(flexing ? flex : held) * CROUCH_DEPTH;
+    // The new surfer standing (step 3.2): the stance held keys the balance's room; the balance's own knee drop
+    // (`HumanBalance.strategies`) lowers the leg's rest within that stance's travel, at the crouch's pace.
+    if (this.freeBody) {
+      this.heldDepth = -asked;
+      const room = stanceRoom(this.heldDepth);
+      // The hip near its range: across (the swing) or in pitch (`StandingBody`'s hip), whichever is nearer.
+      this.human.strategies(h, Math.max(Math.abs(this.swing.angle), Math.abs(this.standingBody.hip.angle)), room);
+      asked = Math.min(asked, -(this.heldDepth + this.human.knees * room.kneeTravel));
+    }
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
     if (compress > 0 || snap > 0) this.fromCompress = true;
@@ -3049,7 +3196,11 @@ export class AttachedRider {
     this.partWorld.copy(hand);
     this.partVelocity.copy(cross(this.angularVelocity, this.localScratch.subVectors(hand, this.position), this.scratch)).add(this.velocity);
     const moment = this.waterMoment.y;
+    // The new surfer standing (step 3.2, ruling 29 item 4): the hand also leans on the water it skims (HAND_LIFT).
+    this.supporting = this.freeBody;
+    this.handSupport.set(0, 0, 0);
     this.applyWater(RIDER_PARTS.length + (this.handSide > 0 ? 0 : 1), water, HAND_RADIUS, 0, STANDING_HAND_DRAG, h, 1);
+    this.supporting = false;
     this.handYaw = this.waterMoment.y - moment;
   }
 
@@ -3171,6 +3322,13 @@ export class AttachedRider {
       // A plate's drag acts along its normal: the arm broadside to the stroke pushes only along the board.
       const normal = relative.dot(this.bodyAxis);
       force.addScaledVector(this.bodyAxis, 0.5 * mixture * this.bladeArea * wet * normal * Math.abs(normal));
+    }
+    if (this.supporting && slot >= RIDER_PARTS.length) {
+      // The flat hand skimming the face leans on it: a plate's lift, ½ ρ C_L A v², out of the water along its surface's
+      // normal, capped with the drag at HAND_FORCE_LIMIT below.
+      const lift = 0.5 * mixture * HAND_LIFT * HAND_AREA * wet * relative.lengthSq();
+      this.handSupport.set(sample.normalX, sample.normalY, sample.normalZ).multiplyScalar(lift);
+      force.add(this.handSupport);
     }
     if (slot >= RIDER_PARTS.length) {
       const prone = this.phase === 'prone' ? this.paddleSprintShare : 0;
@@ -3330,7 +3488,10 @@ export class AttachedRider {
     system[6 * N + 6] += m + h * this.legDamping + h * h * this.legStiffness;
     const length = this.legLength;
     // Landing, the bank's unknown is held at nothing: the body is carried upright.
-    system[7 * N + 7] += this.banking ? m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length) : 1;
+    // The new surfer standing: its own ankle across (`humanBank`).
+    const ankleK = free ? HUMAN_ANKLE_STIFFNESS : ANKLE_STIFFNESS;
+    const ankleC = free ? HUMAN_ANKLE_DAMPING : ANKLE_DAMPING;
+    system[7 * N + 7] += this.banking ? m + (h * (ankleK * h + ankleC)) / (length * length) : 1;
     // The momentum the constraint must supply: v_rider' = v' + w' x carried + drive + up s'' + across u'.
     const mismatch = cross(this.boardSpin, b, this.scratch).add(this.boardVelocity).add(this.drive)
       .addScaledVector(n, this.leg.rate).addScaledVector(t, this.bankSpeed);
@@ -3588,6 +3749,8 @@ export class AttachedRider {
       contact.copy(this.velocity).sub(before).multiplyScalar(this.mass).addScaledVector(this.external, -h);
       if (this.upright) {
         this.angularVelocity.set(0, board.angularVelocity.y, 0).addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
+        // The new surfer (step 3.2): the bank's speed is the body's relative to the board, so its own bank rate adds the board's roll.
+        if (free) this.angularVelocity.addScaledVector(this.rollAxis, board.angularVelocity.dot(this.rollAxis));
         if (free) {
           // The body pitching on its ankle: its rate on the deck after the solve, plus the board's own about the same axis.
           const pitched = (this.standingBody.speedAfter + this.drive.dot(this.forward)) / this.legLength + board.angularVelocity.dot(this.across);
@@ -3684,10 +3847,58 @@ export class AttachedRider {
     for (const limit of Object.keys(this.limitTime) as (keyof typeof this.limitTime)[]) {
       this.limitTime[limit] = this.limitTime[limit] * decay + (this.limit === limit ? h : 0);
     }
+    // The new surfer standing (step 3.2): the capture point against the feet (`HumanBalance`), which replaces the sway's
+    // RECOVERABLE_ERROR as the balance's fall test.
+    if (free) this.captureStep(h, board);
+    else this.pairFresh = true;
     // Pushed too far off the posture, swayed past recovery, or airborne too long: the rider lets go of the board.
     if (this.flightTime > MAX_FLIGHT) this.separate('lost board');
+    else if (free && this.human.fallen) this.separate(this.limit === 'slip' ? 'foot slip' : 'balance');
     else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) this.separate('balance');
     else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') this.separate(SEPARATION[this.dominantLimit()]);
+  }
+
+  /**
+   * The new surfer standing (step 3.2): the capture point against the feet (`HumanBalance.capture`), in the board's
+   * frame: the centre of mass from the feet's middle, its velocity relative to the feet there, the felt vertical (the
+   * feet's specific force, low-passed SPECIFIC_FORCE_TIME), the feet's extent (the support), and what the room left can
+   * still catch past the edge: the rotor's angular impulse to its range (`rotorImpulse`) as a capture-point distance,
+   * the hip across (the swing) across and the hip in pitch along.
+   */
+  private captureStep(h: number, board: BoardBody): void {
+    const support = this.support;
+    const midX = (support.xMin + support.xMax) / 2;
+    const midZ = (support.zMin + support.zMax) / 2;
+    const feet = board.toWorld(this.localScratch.set(midX, deckHeight(this.shape, midZ), midZ), this.captureFeet);
+    const inverse = this.spin.copy(board.orientation).invert();
+    const offset = this.captureOffset.subVectors(this.position, feet).applyQuaternion(inverse);
+    const velocity = this.captureVelocity.subVectors(this.velocity, board.velocityAt(feet, this.scratch)).applyQuaternion(inverse);
+    // The felt vertical: the pair's (board and body together) specific force, low-passed SPECIFIC_FORCE_TIME. Only the
+    // water and gravity move the pair's centre of mass, so the feet's own pushes on the light board (the balance's moves)
+    // do not tilt it; the turn's pull and the drag do. (The feet's own specific force swung by a g and more as the body
+    // pushed the 2.5 kg board, and the capture point read a fall in 0.07 s of a lean begun: the don't-retry list.)
+    const momentum = this.captureScratch.copy(board.velocity).multiplyScalar(board.mass).addScaledVector(this.velocity, this.mass);
+    const total = board.mass + this.mass;
+    if (this.pairFresh) {
+      this.pairFelt.set(0, WATER.gravity, 0);
+      this.pairFresh = false;
+    } else {
+      const ax = (momentum.x - this.pairMomentum.x) / (h * total);
+      const ay = (momentum.y - this.pairMomentum.y) / (h * total) + WATER.gravity;
+      const az = (momentum.z - this.pairMomentum.z) / (h * total);
+      const blend = 1 - Math.exp(-h / SPECIFIC_FORCE_TIME);
+      this.pairFelt.x += (ax - this.pairFelt.x) * blend;
+      this.pairFelt.y += (ay - this.pairFelt.y) * blend;
+      this.pairFelt.z += (az - this.pairFelt.z) * blend;
+    }
+    this.pairMomentum.copy(momentum);
+    const felt = this.captureFelt.copy(this.pairFelt).applyQuaternion(inverse);
+    const height = Math.max(0.2, offset.length());
+    const omega = Math.sqrt(Math.max(0.5, this.pairFelt.length()) / height);
+    const room = stanceRoom(this.stanceDepth);
+    const across = rotorImpulse(this.human.swingInertia, SWING_TORQUE, room.hipRange - Math.abs(this.swing.angle)) / (this.mass * height * omega);
+    const along = rotorImpulse(HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, room.hipRange - Math.abs(this.standingBody.hip.angle)) / (this.mass * height * omega);
+    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, across, along);
   }
 
   /** The limit that bound the contact most in the recent past. */
@@ -3783,12 +3994,8 @@ export class AttachedRider {
   private uprightVelocity(board: BoardBody, out: Vector3): Vector3 {
     if (!this.upright) return out;
     const offset = this.scratch2.addVectors(this.carried, board.centerOfMass).sub(this.baseWorld);
-    if (this.freeBody) {
-      // The new surfer: the roll half only (the bank law's); in pitch the body is its own (`StandingBody`).
-      const roll = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
-      roll.multiplyScalar(-board.angularVelocity.dot(roll));
-      return out.add(cross(roll, offset, this.localScratch));
-    }
+    // The new surfer standing (step 3.2): none; the body keeps its bank by its own inertia and the ankle's forces.
+    if (this.freeBody) return out;
     const w = this.scratch.set(-board.angularVelocity.x, 0, -board.angularVelocity.z);
     return out.add(cross(w, offset, this.localScratch));
   }
@@ -3820,6 +4027,8 @@ export class AttachedRider {
     const height = local.y - deckHeight(this.shape, local.z);
     if (!this.upright) return this.projectHold(j, h, local, out.set(0, 0, 0), q);
     if (!(j.y > 0) || !(height > 0)) {
+      this.frictionUsed = 0;
+      this.kneeUsed = 0;
       this.contact.centreOfPressure.set(local.x, local.y - height, local.z);
       this.rawMargin = 0;
       this.limit = 'flight';
@@ -3846,6 +4055,8 @@ export class AttachedRider {
     let tz = ((local.z - copZ) * normal) / height;
     const friction = FOOT_FRICTION * normal;
     const tangential = Math.hypot(tx, tz);
+    this.frictionUsed = friction > 0 ? Math.min(1, tangential / friction) : 1;
+    this.kneeUsed = Math.min(1, j.y / cap);
     if (tangential > friction) {
       tx *= friction / tangential;
       tz *= friction / tangential;
