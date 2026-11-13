@@ -14,10 +14,13 @@ export interface WaveCaseEntry {
 }
 
 export const WAVE_CASES: readonly WaveCaseEntry[] = [
+  { id: 'periodic-pool-c2-b1-a1-l12', a0: 0.1506, slope: 0.036, reefDepth: 0.19, asset: 'library/periodic-pool-c2-b1-a1-l12.bin' },
   { id: 'periodic-pool-c2-b1-a2-l12', a0: 0.2503, slope: 0.036, reefDepth: 0.19, asset: 'library/periodic-pool-c2-b1-a2-l12.bin' },
   { id: 'periodic-pool-c2-b1-a3-l12', a0: 0.3553, slope: 0.036, reefDepth: 0.19, asset: 'library/periodic-pool-c2-b1-a3-l12.bin' },
+  { id: 'periodic-pool-c2-b2-a1-l12', a0: 0.1519, slope: 0.068, reefDepth: 0.205, asset: 'library/periodic-pool-c2-b2-a1-l12.bin' },
   { id: 'periodic-pool-c2-b2-a2-l12', a0: 0.252, slope: 0.068, reefDepth: 0.205, asset: 'library/periodic-pool-c2-b2-a2-l12.bin' },
   { id: 'periodic-pool-c2-b2-a3-l12', a0: 0.3586, slope: 0.068, reefDepth: 0.205, asset: 'library/periodic-pool-c2-b2-a3-l12.bin' },
+  { id: 'periodic-pool-c2-b3-a1-l12', a0: 0.1535, slope: 0.105, reefDepth: 0.3, asset: 'library/periodic-pool-c2-b3-a1-l12.bin' },
   { id: 'periodic-pool-c2-b3-a2-l12', a0: 0.2526, slope: 0.105, reefDepth: 0.3, asset: 'library/periodic-pool-c2-b3-a2-l12.bin' },
   { id: 'periodic-pool-c2-b3-a3-l12', a0: 0.3577, slope: 0.105, reefDepth: 0.3, asset: 'library/periodic-pool-c2-b3-a3-l12.bin' },
 ];

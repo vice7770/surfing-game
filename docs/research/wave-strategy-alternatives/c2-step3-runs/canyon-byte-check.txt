@@ -1,0 +1,12 @@
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 57.0 s; kept in <scratch>/c2s3/canyon-b-fresh.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.73/2.52, roller 0.95/1.49, front 0.00/0.00, lip 0.03/0.05, foam 3.72/6.81, airSources 0.09/0.14, aeration 2.01/2.87, contact 0.00/0.00, board 0.84/1.73, bubbles 0.21/0.29, spray 0.36/0.71, sounds 0.00/0.00, snapshotFields 5.59/11.03, snapshot 6.29/12.41, summary 0.55/0.76
+  CPU stages per step (step − water + snapshot + summary): 17.45/37.04; water (CPU solver, not timed on the device) 111.0
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== the default Canyon
+spun up on the CPU in 82.4 s; kept in <scratch>/c2s3/canyon-c-fresh.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.98/2.26, roller 0.61/0.85, front 0.00/0.00, lip 0.04/0.04, foam 6.03/6.65, airSources 0.08/0.14, aeration 3.01/3.37, contact 0.00/0.00, board 0.89/1.27, bubbles 0.25/0.29, spray 0.26/0.41, sounds 0.00/0.00, snapshotFields 6.44/7.34, snapshot 7.13/8.15, summary 0.60/0.68
+  CPU stages per step (step − water + snapshot + summary): 21.33/24.13; water (CPU solver, not timed on the device) 123.7
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96

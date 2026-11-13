@@ -1,0 +1,26 @@
+off-mask points over 5 cm: 25
+gap 0.079 m: felt -0.548 (contact strip yes, floor -0.548) cubic -0.628 page floor -0.548 mask 0.01; lane 59 s−crest -7.0 τ 4.52 lift 1.00 end 1.00
+gap -0.945 m: felt -0.221 (contact strip yes, floor -0.221) cubic 0.724 page floor -0.221 mask 0.00; lane 53 s−crest -1.8 τ 5.08 lift 1.00 end 1.00
+gap -0.154 m: felt 0.449 (contact strip yes, floor 0.449) cubic 0.603 page floor 0.449 mask 0.00; lane 53 s−crest -3.0 τ 5.08 lift 1.00 end 1.00
+gap -0.700 m: felt -0.224 (contact strip yes, floor -0.224) cubic 0.476 page floor -0.224 mask 0.00; lane 53 s−crest -4.0 τ 5.08 lift 1.00 end 1.00
+gap 0.591 m: felt 0.473 (contact strip yes, floor 0.473) cubic -0.118 page floor 0.473 mask 0.03; lane 53 s−crest 6.0 τ 5.08 lift 1.00 end 1.00
+gap -0.239 m: felt 0.142 (contact strip yes, floor 0.142) cubic 0.381 page floor 0.142 mask 0.00; lane 43 s−crest -7.3 τ 4.56 lift 1.00 end 1.00
+gap 0.059 m: felt -0.444 (contact strip yes, floor -0.444) cubic -0.503 page floor -0.444 mask 0.02; lane 31 s−crest 8.1 τ -1.84 lift 0.00 end 1.00
+gap -0.404 m: felt 0.761 (contact strip yes, floor 0.761) cubic 1.165 page floor 0.761 mask 0.00; lane 31 s−crest 0.0 τ -1.84 lift 0.00 end 1.00
+gap -0.188 m: felt 0.450 (contact strip yes, floor 0.450) cubic 0.639 page floor 0.450 mask 0.00; lane 31 s−crest -4.3 τ -1.84 lift 0.00 end 1.00
+gap -0.146 m: felt 0.157 (contact strip yes, floor 0.157) cubic 0.304 page floor 0.157 mask 0.00; lane 43 s−crest -9.5 τ 4.56 lift 1.00 end 1.00
+gap 0.201 m: felt 0.642 (contact strip yes, floor 0.642) cubic 0.440 page floor 0.642 mask 0.02; lane 42 s−crest -6.7 τ 4.24 lift 1.00 end 1.00
+gap -0.298 m: felt 0.233 (contact strip yes, floor 0.233) cubic 0.531 page floor 0.233 mask 0.00; lane 43 s−crest -5.0 τ 4.56 lift 1.00 end 1.00
+gap -0.091 m: felt 0.387 (contact strip yes, floor 0.387) cubic 0.478 page floor 0.387 mask 0.00; lane 43 s−crest -7.2 τ 4.56 lift 1.00 end 1.00
+gap 0.072 m: felt -0.421 (contact strip yes, floor -0.421) cubic -0.493 page floor -0.421 mask 0.05; lane 113 s−crest 12.7 τ 4.23 lift 1.00 end 1.00
+gap -0.095 m: felt -0.010 (contact strip yes, floor -0.010) cubic 0.085 page floor -0.010 mask 0.00; lane 31 s−crest -9.3 τ 0.16 lift 1.00 end 1.00
+gap 0.092 m: felt -0.372 (contact strip yes, floor -0.372) cubic -0.465 page floor -0.372 mask 0.04; lane 113 s−crest 14.9 τ 4.23 lift 1.00 end 1.00
+gap -0.072 m: felt 0.572 (contact strip yes, floor 0.572) cubic 0.645 page floor 0.572 mask 0.00; lane 4 s−crest 3.4 τ 5.34 lift 1.00 end 1.00
+gap -0.051 m: felt 0.403 (contact strip yes, floor 0.403) cubic 0.454 page floor 0.403 mask 0.00; lane 12 s−crest -6.3 τ 4.61 lift 1.00 end 1.00
+gap 0.277 m: felt -0.333 (contact strip yes, floor -0.333) cubic -0.610 page floor -0.333 mask 0.00; lane 62 s−crest 6.6 τ 5.24 lift 0.00 end 1.00
+gap -0.552 m: felt -0.350 (contact strip yes, floor -0.350) cubic 0.202 page floor -0.350 mask 0.03; lane 62 s−crest 1.3 τ 5.24 lift 0.00 end 1.00
+gap 0.173 m: felt -0.296 (contact strip yes, floor -0.296) cubic -0.470 page floor -0.296 mask 0.00; lane 116 s−crest 14.2 τ 4.24 lift 1.00 end 1.00
+gap 0.482 m: felt -0.230 (contact strip yes, floor -0.230) cubic -0.712 page floor -0.230 mask 0.03; lane 112 s−crest 12.5 τ 3.18 lift 1.00 end 1.00
+gap -0.105 m: felt -0.622 (contact strip yes, floor -0.622) cubic -0.517 page floor -0.622 mask 0.00; lane 130 s−crest 16.1 τ 4.28 lift 1.00 end 1.00
+gap -0.078 m: felt -0.431 (contact strip yes, floor -0.431) cubic -0.353 page floor -0.431 mask 0.00; lane 126 s−crest 19.4 τ 4.19 lift 1.00 end 1.00
+gap 0.117 m: felt -0.508 (contact strip yes, floor -0.508) cubic -0.625 page floor -0.508 mask 0.00; lane 130 s−crest 11.9 τ 4.28 lift 1.00 end 1.00
