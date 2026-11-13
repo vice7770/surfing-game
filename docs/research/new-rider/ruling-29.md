@@ -820,3 +820,53 @@ exactly the condition a faster lean-in creates sooner. This is the first thing t
 **And a standing instruction for every bar from here on:** a bar is a stand-in for something the owner wants. Before a
 number is adopted, say in one line what the owner would feel if that number improved. If the answer is "nothing", it is
 not a bar.
+
+---
+
+# Ruling 29q: the owner's calibration — neither rider is right (2026-11-13)
+
+The owner, asked to compare:
+
+> "Its less realistic as before was too fast but the turning was closer to what i wanted. Now its to slow and far from
+> any realism or playable"
+
+## What this settles
+
+**The old rider is not the target.** Ruling 29p said to take the old rider's four turn numbers as the bars. That is
+right for the **turn** and wrong for the **speed**.
+
+| | Old rider | `?rider=new` | The target |
+|---|---|---|---|
+| Travel speed | too fast | too slow | between them, and real |
+| Turn | "closer to what I wanted" | far too slow | about the old rider's |
+| Playable | yes | **no** | yes |
+
+The owner's own reference for travel speed is the clip they filmed: a surfer riding at **27–42 km/h** (7.5–11.7 m/s).
+The old rider reaches about 45 km/h, which they called "gigantic waves type of speed". So the speed band is the clip's,
+not the old rider's.
+
+## Playable comes before correct
+
+"Far from any realism **or playable**" is two separate failures, and the second one is worse. **A rider nobody can ride
+produces no feedback, and feedback is the only thing that tells us whether the physics is right.** Ten steps of probes
+did not catch what one ride caught in a minute.
+
+**So: restore a playable turn first, and accept that it will fall more.** A rider that turns and falls can be ridden,
+reported on, and fixed. A rider that cannot turn cannot be judged at all. The guards still hold — nothing silently
+unphysical comes back — but if the choice is between a bar and a ride, the ride wins until the owner says otherwise.
+
+## The bars, corrected
+
+1. **Turn rate, time to a 30° rail, and turn radius: about the old rider's**, measured, as 29p says.
+2. **Travel speed on a ridden wave: inside 27–42 km/h**, not the old rider's 45. This is a bar on the new rider too —
+   it is not only about restoring what was lost.
+3. **Playability is the gate on this step**, and the owner judges it. The step is not finished on numbers; it is
+   finished when they ride it and can turn.
+4. Everything else stays a guard: the saved shove, Mode B, N0 byte-identical, and the chop no worse than it is now.
+
+## The order
+
+1. The turn (step 3.2L, already decided in 29p, now with these bars).
+2. Pumping, for the speed — and with it the speed band above, since pumping is how a rider earns speed rather than
+   being given it.
+3. Then, if the falls are still wrong, ruling 29o's model work.
