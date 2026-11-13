@@ -32,6 +32,7 @@ for (const [label, band] of [['step 3 (nearest segment alone)', 0], [`step 3b (A
   matcher.a0Switch = band;
   const weights = rows.map((r) => weightsOf(r.state));
   const switched: number[] = [];
+  const big: string[] = [];
   const same: number[] = [];
   let pairs = 0;
   for (let i = 0; i < rows.length; i += 1) {
@@ -51,9 +52,15 @@ for (const [label, band] of [['step 3 (nearest segment alone)', 0], [`step 3b (A
         }
       }
       (swap ? switched : same).push(step);
+      if (step > 0.5 && band === A0_SWITCH) {
+        const a = rows[i].state, b = rows[j].state;
+        const show = (w: Float64Array) => [...w].map((v, c) => (v > 0.005 ? `${ids[c].replace('periodic-pool-c2-', '').replace('-l12', '')} ${v.toFixed(2)}` : '')).filter(Boolean).join(' ');
+        big.push(`   lanes ${rows[i].lane}/${rows[j].lane} t_h ${rows[i].tH.toFixed(2)}/${rows[j].tH.toFixed(2)}: H/d ${a.heightOverDepth.toFixed(3)}/${b.heightOverDepth.toFixed(3)}, slope ${a.slope.toFixed(4)}/${b.slope.toFixed(4)}, toe share ${(a.toe?.share ?? 0).toFixed(2)}/${(b.toe?.share ?? 0).toFixed(2)}; [${show(weights[i])}] → [${show(weights[j])}]`);
+      }
     }
   }
   console.log(`${label}: ${rows.length} slices, ${pairs} neighbouring pairs of one wave; on another segment ${switched.length} (${f((100 * switched.length) / Math.max(1, pairs))} %)`);
   console.log(`   the weights' step Σ|Δw| where the segment moved: ${line(switched)}`);
   console.log(`   … where it did not: ${line(same)}`);
+  if (big.length) console.log(`   the pairs stepping over 0.5 (${big.length}):\n${big.slice(0, 8).join('\n')}`);
 }
