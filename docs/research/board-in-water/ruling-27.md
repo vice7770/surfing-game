@@ -47,3 +47,17 @@ Tags: [M] measured by the study's probes; [S] sourced; [R] reasoned; [P] provisi
 ## Correction
 
 The speeds quoted to the owner (mean top speed 33.4 km/h, highest 45 km/h) are from Farley, Harris and Kilding 2012 (J Strength Cond Res 26(7):1887–96, PMID 21986691). PMID 29912078 is the 2018 follow-up (24.8 km/h at one point break).
+
+---
+
+# Ruling 27a: A-lite reviewed (2026-11-13)
+
+Advisor: this session. Read: `a-lite/README.md` and its bars.
+
+- **Merge it, opt-in (`?legPower=cap`).**
+- **L1 passes:** the legs stay within the cap (per substep at most 4.38 kW; over any 0.5 s at most 390 W). Off, they reached 31 to 66 kW.
+- **L2 passes its intent:** the contact no longer throws the board. The thrown rows drop from 17–79 g to 1.4–4 g. The rows still over 5 g are water slams or hard stops, with zero positive leg power, and several are the same with the switch off. The contact does not make them.
+- **L3's remaining falls are the plumb body tipping off a steep deck** on the placed starts. Neither cap retune (40 or 80 W/kg) moves them, because Rule 1 binds there, not the power cap. The fix is the spec's step 3.1 (the body leans with the face), not a stronger cap. On the fair tilted-in starts, 35° down now holds (it fell at 1.47 s), and 40° down falls with 0.7 kW instead of 12.7 kW.
+- **L4 and L5 pass:** normal riding prints identical numbers, and with the switch off everything is byte-identical. Canyon hashes equal main's; fps is equal.
+- **Rule 1 as built is accepted:** the feet may resist as hard as the push asks while that makes no energy, and only positive work is limited. Holding or absorbing costs a muscle no positive work. The literal brief (limit the whole push to the leg's force) made a normal 20° stall fall early, which is wrong.
+- **Next on the surfer track: B, the wall's added mass from the water's own acceleration.** Use Du/Dt = ∂u/∂t + (u·∇)u at the board's place. Today's rule takes the change along the board's own path, ∂u/∂t + (v_board·∇)u, which is spurious when a fast board crosses a flow step.
