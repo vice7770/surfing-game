@@ -41,8 +41,15 @@ ANALYSIS = os.path.join(HERE, "analysis")
 # C2's pool library (run_periodic.sh's pool_c2_<bed>_<a0> lines): its beds (what each stands for) and its cases, which
 # build phase 2 with VELOUT and QOUT and get c2_library.py's file.
 C2_BEDS = {"b1": "the reef's middle (deep end of the bed line: the gentlest slope, the shallowest crest)",
-           "b2": "the bed line's middle", "b3": "the reef's near end (the steepest slope, the deepest crest)"}
+           "b2": "the bed line's middle", "b3": "the reef's near end (the steepest slope, the deepest crest)",
+           # Ruling 31's (2026-11-13): two slopes between them on the bed line, and the steep end at the pool's own reef depth.
+           "b15": "the bed line between b1 and b2 (slope 0.055)", "b25": "the bed line between b2 and b3 (slope 0.085)",
+           "b3s": "the steep end (slope 0.105) at the pool's own reef depth, HS/h0 0.20"}
 C2_CASES = [f"pool_c2_{b}_{a}" for a in ("a3", "a2", "a1") for b in ("b3", "b2", "b1")]
+# Ruling 31's ten more (point 8): the A0 0.12 row (a0), slopes 0.055 and 0.085, and slope 0.105 at HS/h0 0.20. The costliest
+# row first, as the first set's.
+C2_CASES += ["pool_c2_b15_a3", "pool_c2_b25_a3", "pool_c2_b3s_a3", "pool_c2_b15_a2", "pool_c2_b25_a2", "pool_c2_b3s_a2",
+             "pool_c2_b3s_a1", "pool_c2_b3_a0", "pool_c2_b2_a0", "pool_c2_b1_a0"]
 SETS = {
     "canyon": {
         "cases": ["canyon23_a49", "canyon23_a38", "canyon23_a29"],

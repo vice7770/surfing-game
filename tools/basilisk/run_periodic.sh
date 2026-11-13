@@ -120,6 +120,15 @@ CASES_ALL="$CASES_ALL pool_far_big:4.5:0.437:10:0.0463:0.2:64:18:34:25:47"
 # vertical, to touchdown + 8, the window to 20 past the vertical place (canyon_pipeline.py's EARLY).
 C2_LINES="pool_c2_b1_a1:5:0.22:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a1:5:0.22:10.5:0.068:0.205:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a1:5:0.22:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1 pool_c2_b1_a2:5:0.33:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a2:5:0.33:10.5:0.068:0.205:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a2:5:0.33:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1 pool_c2_b1_a3:5:0.44:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a3:5:0.44:10.5:0.068:0.205:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a3:5:0.44:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1"
 CASES_ALL="$CASES_ALL $C2_LINES"
+# Ruling 31's ten more (2026-11-13; docs/research/wave-strategy-alternatives/ruling-31-c2-step1b.md point 8, c2-step3.md):
+# - the A0 0.12 row (H/h0 0.19 by step 1's H/h0 → A0 rule) on the three beds: pool_c2_b1_a0, _b2_a0, _b3_a0;
+# - slopes 0.055 and 0.085 on the bed line (HS/h0 0.199 and 0.249, between b1–b2 and b2–b3) at the A0 0.25 and 0.355
+#   rows: pool_c2_b15_a2, _b15_a3, _b25_a2, _b25_a3;
+# - slope 0.105 at HS/h0 0.20 (ruling 30 point 6: a second reef depth at the steep end) at the three rows:
+#   pool_c2_b3s_a1, _b3s_a2, _b3s_a3.
+# Each bed as step 1's: a ray crossing the 1:9.5 reef at cos α = S / 0.1053, its top 1.34 / cos α h0, its back slope 0.1 cos α.
+C2_MORE="pool_c2_b1_a0:5:0.19:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a0:5:0.19:10.5:0.068:0.205:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a0:5:0.19:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1 pool_c2_b15_a2:5:0.33:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b15_a3:5:0.44:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b25_a2:5:0.33:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807 pool_c2_b25_a3:5:0.44:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807 pool_c2_b3s_a1:5:0.22:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1 pool_c2_b3s_a2:5:0.33:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1 pool_c2_b3s_a3:5:0.44:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1"
+CASES_ALL="$CASES_ALL $C2_MORE"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.
