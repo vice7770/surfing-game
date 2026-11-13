@@ -373,6 +373,229 @@ export function humanReferenceGain(p: RollParams, h: HumanRoll, g: HumanRollGain
 }
 
 /**
+ * Step 3.2b (the advisor's ruling 29f; docs/research/new-rider/3.2, Part 2): the human roll loop on the board's own
+ * lateral motion (roll, sway and yaw) with the feet's centre-of-pressure steering and the rider's yaw inertia. 3.2's
+ * model has no yaw: the turn's pull is a lag behind the rail, and the hull rights the board about the body's load line.
+ * The roll-plant diagnosis (docs/research/new-rider/roll-plant) found the over-response in the feet's coupling: the
+ * along-board force the feet carry (the hull's drag, carried by the body) acts at their centre of pressure off the
+ * stringer and yaws a board whose yaw only its fins resist. Here the board is a body of its own on the water's measured
+ * captive derivatives, the body a point mass on its leg over the feet, and the pull is the feet's own acceleration.
+ *
+ * Axes as an aircraft's (x forward, y right, z down): the board's roll φ and the body's bank θ are + toward the right
+ * (the right rail down), the yaw rate r + turns the nose right, the slip β (the board's sway speed over V at its centre
+ * of mass) + slides right. Small motions about riding straight at V; the felt gravity g_e = `load` g, the body N = m g_e
+ * on its feet. About the board's own centre of mass:
+ * - the ankle: τ = k (θ − φ − δ) + c (θ̇ − φ̇); the centre of pressure across y_c = τ / N;
+ * - the body's push on the board across, at the feet (a point mass on its leg, the ankle pushing it back): F = −N θ + τ / h;
+ * - roll: I_x φ̈ = K_φ φ + K_β β + K_r r + K_p φ̇ + τ + z_d F (the water's roll moment, the feet's load at y_c, the push
+ *   at the deck z_d over the centre of mass);
+ * - sway: m_b V (β̇ + r) = Y_φ φ + Y_β β + Y_r r + Y_p φ̇ + F;
+ * - yaw, the rider's own yaw inertia I_r turning with the board through the planted feet (rigid):
+ *   (I_z + I_r) ṙ = N_φ φ + N_β β + N_r r + N_p φ̇ − F_x y_c + x_f F,
+ *   F_x the along-board force the feet carry forward, x_f their station from the board's centre of mass (+ forward);
+ * - the body, an inverted pendulum on the feet: m h² θ̈ = m g_e h θ − τ − m h a_f, a_f = V (β̇ + r) + x_f ṙ the feet's
+ *   lateral acceleration (the turn's pull).
+ * The balance as `humanRollLoop`: δ̇ = (u(t − d) − δ) / T_m, u = −G θ − G_r θ̇ + ι, on the body's own bank and rate.
+ *
+ * State: [φ, φ̇, θ, θ̇, r, β, δ, ι, padé…].
+ */
+export interface YawPlant {
+  /** The board's speed, m/s. */
+  speed: number;
+  /** The board's roll inertia with the water's, its own yaw inertia and the rider's coupled through the feet (0: 3.2's point mass), kg·m²; its mass, kg. */
+  boardRollInertia: number;
+  boardYawInertia: number;
+  riderYawInertia: number;
+  boardMass: number;
+  /** The rider: mass, kg; its centre of mass over the feet, m; the ankle across, N·m/rad and N·m·s/rad. */
+  mass: number;
+  height: number;
+  ankleStiffness: number;
+  ankleDamping: number;
+  /** The water's derivatives about the board's centre of mass, these axes: per rad of roll, the yaw moment, side force and roll moment (N·m, N, N·m). */
+  heelYaw: number;
+  heelSide: number;
+  heelRoll: number;
+  /** Per rad of slip. */
+  slipYaw: number;
+  slipSide: number;
+  slipRoll: number;
+  /** Per rad/s of yaw rate. */
+  yawDamping: number;
+  yawSide: number;
+  yawRoll: number;
+  /** Per rad/s of roll rate. */
+  rollRateYaw: number;
+  rollRateSide: number;
+  rollDamping: number;
+  /** The along-board force the feet carry forward, N; their station along from the board's centre of mass, m (+ forward); the deck over the centre of mass, m. */
+  feetForward: number;
+  feetStation: number;
+  deckHeight: number;
+  /**
+   * A hull cross-flow damping (ruling 29f's reserve lever, unsourced): each metre of the wetted hull from `from` to `to`
+   * (m along from the board's centre of mass, + forward) resists its own lateral speed with `c`, N·s/m per m.
+   */
+  crossFlow?: { c: number; from: number; to: number };
+  /** The hip across taking a share of the ankle's lagged rest: τ_h = −`hip` δ, N·m/rad (pushes the body across, no load moment on the board). */
+  hip?: number;
+}
+
+/** The rows of [φ, φ̇, θ, θ̇, r, β] for `YawPlant` before the balance, as linear functions of the n-state. */
+function yawRows(y: YawPlant, load: number, n: number): number[][] {
+  const g = load * GRAVITY;
+  const m = y.mass;
+  const hh = y.height;
+  const v = y.speed;
+  const row = () => new Array<number>(n).fill(0);
+  const torque = row();
+  torque[0] = -y.ankleStiffness;
+  torque[1] = -y.ankleDamping;
+  torque[2] = y.ankleStiffness;
+  torque[3] = y.ankleDamping;
+  torque[6] = -y.ankleStiffness;
+  const push = torque.map((t) => t / hh);
+  push[2] -= m * g;
+  const water = (phi: number, slip: number, yaw: number, rate: number) => {
+    const w = row();
+    w[0] = phi;
+    w[5] = slip;
+    w[4] = yaw;
+    w[1] = rate;
+    return w;
+  };
+  const flow = y.crossFlow;
+  const c1 = flow ? flow.c * (flow.to - flow.from) : 0;
+  const c2 = flow ? (flow.c * (flow.to * flow.to - flow.from * flow.from)) / 2 : 0;
+  const c3 = flow ? (flow.c * (flow.to ** 3 - flow.from ** 3)) / 3 : 0;
+  const yawMoment = water(y.heelYaw, y.slipYaw - c2 * v, y.yawDamping - c3, y.rollRateYaw);
+  const side = water(y.heelSide, y.slipSide - c1 * v, y.yawSide - c2, y.rollRateSide);
+  // The hip's push across (a share of the lagged rest), and the centre of pressure it moves with it.
+  const hip = y.hip ?? 0;
+  push[6] += -hip / hh;
+  const cop = torque.slice();
+  cop[6] += -hip;
+  const roll = water(y.heelRoll, y.slipRoll, y.yawRoll, y.rollDamping);
+  const iz = y.boardYawInertia + y.riderYawInertia;
+  const yawAcc = yawMoment.map((w, j) => (w - (y.feetForward * cop[j]) / (m * g) + y.feetStation * push[j]) / iz);
+  const slipAcc = side.map((w, j) => (w + push[j]) / (y.boardMass * v));
+  slipAcc[4] -= 1;
+  const feet = slipAcc.map((s, j) => v * s + y.feetStation * yawAcc[j]);
+  feet[4] += v;
+  const bankAcc = cop.map((t, j) => (-t - m * hh * feet[j]) / (m * hh * hh));
+  bankAcc[2] += g / hh;
+  const rollAcc = roll.map((w, j) => (w + torque[j] + y.deckHeight * push[j]) / y.boardRollInertia);
+  const rows = [row(), rollAcc, row(), bankAcc, yawAcc, slipAcc];
+  rows[0][1] = 1;
+  rows[2][3] = 1;
+  return rows;
+}
+
+/** The closed loop of `YawPlant` with the human balance: ẋ = M x (the reference held at nothing). */
+export function humanYawLoop(y: YawPlant, h: HumanRoll, g: HumanRollGains, order = 5): number[][] {
+  const pd = padeDelay(order, h.delay);
+  const n = 8 + order;
+  const rows = yawRows(y, h.load ?? 1, n);
+  const m = Array.from({ length: n }, () => new Array<number>(n).fill(0));
+  for (let i = 0; i < 6; i += 1) m[i] = rows[i];
+  const u = new Array<number>(n).fill(0);
+  u[2] = -g.bank;
+  u[3] = -g.bankRate;
+  u[7] = 1;
+  m[7][2] = -(g.integral ?? 0);
+  for (let i = 0; i < order; i += 1) {
+    for (let k = 0; k < order; k += 1) m[8 + i][8 + k] = pd.a[i][k];
+    for (let j = 0; j < n; j += 1) m[8 + i][j] += pd.b[i] * u[j];
+  }
+  for (let j = 0; j < n; j += 1) m[6][j] = (pd.d * u[j]) / h.motorLag;
+  for (let k = 0; k < order; k += 1) m[6][8 + k] += pd.c[k] / h.motorLag;
+  m[6][6] -= 1 / h.motorLag;
+  return m;
+}
+
+/**
+ * Every mode of `humanYawLoop`: frequency, Hz, and damping ratio, least damped first. The Padé approximant's own poles
+ * (well damped, above 3.5 Hz) and the integral's pole at the origin when it is off are left out.
+ */
+export function humanYawModes(y: YawPlant, h: HumanRoll, g: HumanRollGains): { frequency: number; damping: number }[] {
+  return eigenvalues(humanYawLoop(y, h, g))
+    .filter((v) => v.im >= 0 && Math.hypot(v.re, v.im) > 1e-9)
+    .map((v) => {
+      const size = Math.hypot(v.re, v.im);
+      return { frequency: Math.abs(v.im) / (2 * Math.PI), damping: size > 0 ? -v.re / size : 1 };
+    })
+    .filter((mode) => !(mode.damping > 0.5 && mode.frequency > 3.5))
+    .sort((a, b) => a.damping - b.damping);
+}
+
+/**
+ * `YawPlant` in time with the delay exact (a buffer at `step`): the board's roll rate kicked by `kick`, rad/s, for
+ * `seconds`, as the bars probe's Mode B kick. Returns the roll rate's decay per cycle (as `humanRollKick`), the body's
+ * largest bank, rad, and the roll and yaw rates every `every` steps.
+ */
+export function humanYawKick(y: YawPlant, h: HumanRoll, g: HumanRollGains, kick = 0.5, seconds = 3, step = 1 / 1920, every = 32): { decay: number; peakBank: number; yawRates: number[]; rollRates: number[] } {
+  const n = 8;
+  const rows = yawRows(y, h.load ?? 1, n);
+  const x = new Array<number>(n).fill(0);
+  x[1] = kick;
+  const buffer: number[] = [];
+  const lag = Math.max(1, Math.round(h.delay / step));
+  const rollRates: number[] = [];
+  const yawRates: number[] = [];
+  let peakBank = 0;
+  for (let i = 0; i < Math.round(seconds / step); i += 1) {
+    buffer.push(-g.bank * x[2] - g.bankRate * x[3] + x[7]);
+    const delayed = buffer.length > lag ? buffer.shift()! : 0;
+    const dx = rows.map((r) => r.reduce((s, v, j) => s + v * x[j], 0));
+    dx.push((delayed - x[6]) / h.motorLag);
+    dx.push(-(g.integral ?? 0) * x[2]);
+    for (let k = 0; k < n; k += 1) x[k] += step * dx[k];
+    if (i % every === 0) {
+      rollRates.push(x[1]);
+      yawRates.push(x[4]);
+    }
+    peakBank = Math.max(peakBank, Math.abs(x[2]));
+  }
+  const peaks: number[] = [];
+  for (let i = 1; i < rollRates.length - 1; i += 1) {
+    const a = Math.abs(rollRates[i]);
+    if (a >= Math.abs(rollRates[i - 1]) && a > Math.abs(rollRates[i + 1]) && a > 1e-4) peaks.push(rollRates[i]);
+  }
+  const ratios: number[] = [];
+  for (let i = 0; i + 2 < peaks.length && ratios.length < 3; i += 1) if (Math.sign(peaks[i]) === Math.sign(peaks[i + 2])) ratios.push(Math.abs(peaks[i + 2] / peaks[i]));
+  const decay = ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 0;
+  return { decay, peakBank, yawRates, rollRates };
+}
+
+/**
+ * The water's captive derivatives of the board with the rigid point rider (docs/research/new-rider/roll-plant README
+ * 3.2 and results/plant-point.jsonl; the lab's axes: + toward the board's left, yaw + to the left, roll + the left
+ * rail up, slip + sliding right), turned into `YawPlant`'s axes and moved to the board's own centre of mass `ahead` m
+ * ahead of the lab's (the composite's, over the feet). The yaw moments and side forces were about the composite centre
+ * of mass, the roll moments about the deck under the rider: N_B = N_C − ahead · Y, β_C = β_B − ahead · r / V.
+ */
+export function boardDerivatives(lab: { roll: number[]; slip: number[]; yaw: number[]; rate: number[] }, speed: number, ahead: number):
+  Pick<YawPlant, 'heelYaw' | 'heelSide' | 'heelRoll' | 'slipYaw' | 'slipSide' | 'slipRoll' | 'yawDamping' | 'yawSide' | 'yawRoll' | 'rollRateYaw' | 'rollRateSide' | 'rollDamping'> {
+  // These axes: N and Y flip, K keeps; per yaw rate the variable flips as well.
+  const at = { N: -lab.roll[0], Y: -lab.roll[1], K: lab.roll[2] };
+  const sl = { N: -lab.slip[0], Y: -lab.slip[1], K: lab.slip[2] };
+  const yw = { N: lab.yaw[0], Y: lab.yaw[1], K: -lab.yaw[2] };
+  const rr = { N: -lab.rate[0], Y: -lab.rate[1], K: lab.rate[2] };
+  // The slip at the composite is the board's less the yaw's sweep over `ahead`.
+  const shift = (d: { N: number; Y: number; K: number }, slip = 0) => ({ N: d.N - (ahead * sl.N * slip) / speed, Y: d.Y - (ahead * sl.Y * slip) / speed, K: d.K - (ahead * sl.K * slip) / speed });
+  const yawB = shift(yw, 1);
+  const move = (d: { N: number; Y: number; K: number }) => ({ N: d.N - ahead * d.Y, Y: d.Y, K: d.K });
+  const a = move(at);
+  const s = move(sl);
+  const w = move(yawB);
+  const q = move(rr);
+  return {
+    heelYaw: a.N, heelSide: a.Y, heelRoll: a.K, slipYaw: s.N, slipSide: s.Y, slipRoll: s.K,
+    yawDamping: w.N, yawSide: w.Y, yawRoll: w.K, rollRateYaw: q.N, rollRateSide: q.Y, rollDamping: q.K,
+  };
+}
+
+/**
  * The eigenvalues of a real square matrix: reduction to Hessenberg form by
  * elimination, then the shifted QR iteration (Numerical Recipes' elmhes and
  * hqr, 1-based as there).

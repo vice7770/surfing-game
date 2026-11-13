@@ -176,6 +176,10 @@ export function place(water: SurfWater, z: number, heading: number, speed: numbe
     phase, ...(process.env.LEG_POWER === 'cap' ? { legPower: 'cap' as const } : {}), ...(process.env.RIDER === 'new' ? { rider: 'new' as const } : {}),
     // SUBSTEPS=n: the new surfer's standing substeps (step 3.2's trials).
     ...(process.env.SUBSTEPS ? { standingSubsteps: Number(process.env.SUBSTEPS) } : {}),
+    // YAW_SCALE=k: a scale on the new surfer's own yaw inertia (step 3.2b; 0 is 3.2's point mass).
+    ...(process.env.YAW_SCALE ? { yawInertiaScale: Number(process.env.YAW_SCALE) } : {}),
+    // GAINS=bank,rate,forward: the new surfer's roll balance gains (step 3.2b's sweeps).
+    ...(process.env.GAINS ? { humanGains: (([bank, bankRate, forward]) => ({ bank, bankRate, forward }))(process.env.GAINS.split(',').map(Number)) } : {}),
   });
   board.attach(rider);
   return { board, rider };

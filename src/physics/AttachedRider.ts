@@ -10,7 +10,7 @@ import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
-import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
+import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, riderYawInertia, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
@@ -1155,6 +1155,13 @@ export interface AttachedRiderOptions {
   rider?: 'new';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
+  /**
+   * The new surfer standing free (step 3.2b): a scale on the rider's own yaw inertia (`riderYawInertia`), which turns
+   * with the board through the planted feet. 1 by default; 0 is 3.2's point mass (for the probes' comparisons only).
+   */
+  yawInertiaScale?: number;
+  /** The new surfer standing free: the roll balance's gains in place of HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN and HUMAN_BANK_FORWARD (for the probes' sweeps only). */
+  humanGains?: { bank?: number; bankRate?: number; forward?: number };
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1618,6 +1625,17 @@ export class AttachedRider {
   /** The new surfer (`rider: 'new'`); and the power window kept, with `legPower: 'cap'` or the new surfer. */
   private readonly newRider: boolean;
   private readonly newSubsteps: number;
+  private readonly yawScale: number;
+  private readonly bankGain: number;
+  private readonly bankRateGain: number;
+  private readonly bankForward: number;
+  /**
+   * The new surfer standing free (step 3.2b, `coupleYaw`): the body's own spin about its long axis, rad/s (world, about
+   * `up`), the inertia it turns with, kg·m², and whether it was coupled to the board's yaw through the feet this substep.
+   */
+  private yawSpin = 0;
+  yawInertia = 0;
+  private yawCoupled = false;
   private readonly windowed: boolean;
   /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
   readonly standingBody = new StandingBody();
@@ -1770,6 +1788,10 @@ export class AttachedRider {
     this.capsLegs = options.legPower === 'cap';
     this.newRider = options.rider === 'new';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
+    this.yawScale = options.yawInertiaScale ?? 1;
+    this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
+    this.bankRateGain = options.humanGains?.bankRate ?? HUMAN_BANK_RATE_GAIN;
+    this.bankForward = options.humanGains?.forward ?? HUMAN_BANK_FORWARD;
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -2053,6 +2075,7 @@ export class AttachedRider {
     if (this.newRider) {
       this.standingBody.reset();
       this.human.reset();
+      this.yawCoupled = false;
       this.pairFresh = true;
       this.swingLagged = 0;
       this.heldDepth = 0;
@@ -2671,13 +2694,13 @@ export class AttachedRider {
     human.sense(h, this.bank.angle);
     this.bank.rate = human.bankRate;
     const bank = human.sensedBank();
-    const wanted = HUMAN_BANK_FORWARD * this.bankReference - HUMAN_BANK_GAIN * bank - HUMAN_BANK_RATE_GAIN * human.sensedBankRate();
+    const wanted = this.bankForward * this.bankReference - this.bankGain * bank - this.bankRateGain * human.sensedBankRate();
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
     const reachRest = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
     const leanSide = Math.sign(this.bankReference);
     this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
-    const lagging = HUMAN_BANK_GAIN > 0 && Math.abs(this.bankReference - bank) > ANKLE_REST_RANGE / HUMAN_BANK_GAIN;
+    const lagging = this.bankGain > 0 && Math.abs(this.bankReference - bank) > ANKLE_REST_RANGE / this.bankGain;
     const projecting = this.extending && this.planing && Math.abs(this.steer) <= STEER_DEADBAND && !this.hand
       && Math.abs(this.bank.angle) > UPRIGHT_BANK;
     const lean = projecting ? 0 : reachRest * asking > 0 && lagging ? 0 : reachRest;
@@ -3430,6 +3453,39 @@ export class AttachedRider {
   }
 
   /**
+   * The new surfer standing free (step 3.2b, the advisor's ruling 29f): the body's own yaw inertia turns with the board
+   * through the planted feet. The point mass carries the body's translation; its spin about its long axis (`up`, the
+   * leg line) has the whole body's inertia (`riderYawInertia`: the stance's depth and the arms out), held rigid to the
+   * board's turn about that axis while the feet are on the deck. In the board's 6 × 6 rows (so the standing solve and the
+   * solves apart both carry it): I_r n nᵀ on the rotation, and on the right-hand side the body's own spin's momentum,
+   * −I_r n (n·ω − Ω). An inertia only, no force: it changes how fast the board answers a moment (the feet's centre of
+   * pressure steering it), not where it goes. The twist and hip rotors stay the body's internal yaw (as before, the
+   * trunk's share overlaps the twist rotor's, provisional). In flight the body keeps its spin; back on the deck the
+   * coupling starts from the board's own turn (no impulse).
+   */
+  coupleYaw(system: Float64Array, rhs: Float64Array, board: BoardBody): void {
+    const active = this.freeBody && this.inContact && this.yawScale > 0;
+    if (!active) {
+      this.yawCoupled = false;
+      this.yawInertia = 0;
+      return;
+    }
+    const n = this.up;
+    const w = board.angularVelocity;
+    const turn = n.x * w.x + n.y * w.y + n.z * w.z;
+    if (!this.yawCoupled) this.yawSpin = turn;
+    const depth = Math.max(0, -this.leg.rest);
+    const inertia = this.yawScale * riderYawInertia(depth, this.human.arms);
+    this.yawInertia = inertia;
+    const nv = [n.x, n.y, n.z];
+    for (let i = 0; i < 3; i += 1) {
+      for (let j = 0; j < 3; j += 1) system[(3 + i) * 6 + 3 + j] += inertia * nv[i] * nv[j];
+      rhs[3 + i] -= inertia * nv[i] * (turn - this.yawSpin);
+    }
+    this.yawCoupled = true;
+  }
+
+  /**
    * Standing: `couple` on an 8 x 8 system over (v, w, s', u'), the seventh unknown
    * the leg's rate and the eighth the bank's, the body's speed across the leg.
    * The rider moves at v + w x carried + drive + up s' + across u' and pushes
@@ -3733,6 +3789,8 @@ export class AttachedRider {
 
   /** After the board has moved: the rider's own motion and ledgers. */
   finish(h: number, board: BoardBody): void {
+    // The new surfer standing free (`coupleYaw`): the body's spin turned with the board through the feet this substep.
+    if (this.yawCoupled) this.yawSpin = this.up.dot(board.angularVelocity);
     // `legPower: 'cap'`: the contact's net work this substep, the leg drive's board share left out (`recordPower`).
     const ledger = this.windowed ? board.work.rider + this.work.contact : 0;
     let driveShare = 0;
