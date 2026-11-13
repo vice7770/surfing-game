@@ -96,3 +96,38 @@ describe('the new surfer standing (rider: new, step 3.1)', () => {
     expect(board.velocity.length() - 4).toBeGreaterThan(3);
   });
 });
+
+describe('the new surfer\'s yaw inertia (rider: new, step 3.2b)', () => {
+  it('turns its own yaw inertia with the board through the feet, slowing the board\'s answer to a couple; the old rider has none', () => {
+    const answer = (options: AttachedRiderOptions) => {
+      const { board, rider, water } = onFace(11, 'standing', options, 7);
+      for (let n = 0; n < 60; n += 1) board.step(STEP, water);
+      expect(rider.attached).toBe(true);
+      const inner = rider as unknown as { coupleYaw: (s: Float64Array, r: Float64Array, b: BoardBody) => void; prepare: (h: number, b: BoardBody, w: unknown) => void };
+      let h = 0;
+      const prepare = inner.prepare.bind(rider);
+      inner.prepare = (step, b, w) => { h = step; prepare(step, b, w); };
+      const couple = inner.coupleYaw.bind(rider);
+      const up = new Vector3();
+      inner.coupleYaw = (s, r, b) => {
+        couple(s, r, b);
+        up.set(0, 1, 0).applyQuaternion(b.orientation);
+        r[3] += h * 2 * up.x; r[4] += h * 2 * up.y; r[5] += h * 2 * up.z;
+      };
+      const before = board.angularVelocity.dot(up.set(0, 1, 0).applyQuaternion(board.orientation));
+      board.step(STEP, water);
+      return { gain: board.angularVelocity.dot(up.set(0, 1, 0).applyQuaternion(board.orientation)) - before, inertia: rider.yawInertia };
+    };
+    const free = answer({ rider: 'new' });
+    const point = answer({ rider: 'new', yawInertiaScale: 0 });
+    // Tall to Compress (the balance lowers the knees for a while after a placed start), the arms in the riding pose.
+    expect(free.inertia).toBeGreaterThanOrEqual(2.81);
+    expect(free.inertia).toBeLessThanOrEqual(3.2);
+    expect(point.inertia).toBe(0);
+    // A 2 N·m couple for one frame: about 2/60 over the inertia the board meets (its own and the water's, plus the rider's).
+    expect(free.gain).toBeGreaterThan(0);
+    expect(point.gain / free.gain).toBeGreaterThan(2.5);
+    expect(answer({}).inertia).toBe(0);
+  });
+});
+

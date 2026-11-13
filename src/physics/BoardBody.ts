@@ -1232,6 +1232,8 @@ export class BoardBody implements BoardContactBody {
     // impulse that needs, the two are solved apart with the impulse it can give.
     const { rider } = this;
     if (rider?.attached) rider.prepare(h, this, water);
+    // The new surfer standing free: its own yaw inertia turns with the board through the feet (step 3.2b; nothing otherwise).
+    if (rider?.attached) rider.coupleYaw(system, rhs, this);
     if (rider?.attached && rider.upright) {
       // Standing, the leg's rate is a seventh unknown and the bank's an eighth; the new surfer standing
       // (`rider: 'new'`), the body's speed along its forward axis a ninth (`StandingBody`).

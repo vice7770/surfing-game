@@ -55,6 +55,35 @@ export const KNEE_SHARE = 0.7;
 /** The hip rotor's inertia across, kg·m²: the trunk and head with the arms in (6), and with the arms out (10) [design, I]. */
 export const SWING_INERTIA_SET = 6;
 export const SWING_INERTIA_ARMS = 10;
+/**
+ * The rider's own yaw inertia (step 3.2b, the advisor's ruling 29f): the whole body about the vertical through its
+ * centre of mass, kg·m², turning with the board through the planted feet (`AttachedRider.coupleYaw`), by the leg's depth
+ * below the riding stance (tall 0, the pumping crouch 0.195, Compress 0.30 m), with the arms in the riding pose (the
+ * hands about 0.45 m out along the board, `riderPosture.ts`). From de Leva's (1996) segment table for the male sample
+ * (73.0 kg; J Biomech 29(9):1223–1230) posed in the game's stance, the feet 0.63 m apart
+ * (docs/research/new-rider/3.2/inertia.probe.ts): tall 2.81, crouched 3.05, Compress 3.20. The arms out wide add up to
+ * RIDER_YAW_ARMS_OUT (3.65 / 3.97 / 4.12); the arms in at the sides would give 2.15 / 2.48 / 2.62. Most of it is the
+ * legs spread along the board (1.5–1.6) and the arms (0.9 in the pose). The method's check: standing straight with the
+ * arms at the sides it gives 0.93, and 2.44 with them out level (×2.6; a skater "can more than double" it).
+ */
+export const RIDER_YAW_INERTIA: readonly (readonly [number, number])[] = [[0, 2.81], [0.195, 3.05], [0.3, 3.2]];
+export const RIDER_YAW_ARMS_OUT = 0.85;
+
+/** The rider's yaw inertia, kg·m², at a leg depth, m, below the riding stance, with the arms out by `arms` (0–1, `HumanBalance.arms`). */
+export function riderYawInertia(depth: number, arms = 0): number {
+  const table = RIDER_YAW_INERTIA;
+  const d = Math.max(0, depth);
+  let base = table[table.length - 1][1];
+  for (let i = 1; i < table.length; i += 1) {
+    if (d <= table[i][0]) {
+      const [d0, i0] = table[i - 1];
+      const [d1, i1] = table[i];
+      base = i0 + ((i1 - i0) * (d - d0)) / (d1 - d0);
+      break;
+    }
+  }
+  return base + Math.max(0, Math.min(1, arms)) * RIDER_YAW_ARMS_OUT;
+}
 /** How fast the arms go out and come back, s (with the knees: the crouch's pace). */
 export const ARMS_TIME = 0.15;
 /** Once the trigger is gone, the knees come back up over this, s. */
