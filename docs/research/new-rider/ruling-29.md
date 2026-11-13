@@ -961,3 +961,58 @@ work.
    becomes a bar when pumping exists.
 5. The hand-set numbers are listed in Part 11 for re-check when coupling lands. `SCHEDULE_RAIL_CAP` leads that list,
    because the plant it reads is a non-digging rail's.
+
+---
+
+# Ruling 29t: ruling 29s is withdrawn — the carve is not unstabilisable (2026-11-13)
+
+Advisor: this session. Read: `rail-dig/README.md` and its results. **Both the advisor's hypothesis and the rival it was
+tested against are wrong, and the finding is better than either.**
+
+## What actually happens
+
+**On its rail, a slide costs the flat bottom its lift, the board drops, and on a heeled board dropping is sideways.**
+
+- The flip is **hull pressure alone**. The fins never flip: they fall exactly as cos²(heel) — geometry, nothing more —
+  and stay the largest resisting contributor at every rail. **The rival is ruled out.**
+- **With the heave and pitch held still, nothing flips at any rail.** Side force per slide goes +1398 → +2257 across
+  0–40°, growing. The flip exists only when the board is free to sink.
+- The chain at 7 m/s: a slide costs 50–70 N of lift per degree, the board sinks 1.5–1.8 cm per degree, and sinking on a
+  heeled board makes 1.8–4.2 kN of side force per metre. **Two forces of about 1,800 N nearly cancel and the flip is
+  the leftover.** That is why six rounds never found it: nothing here is wrong by 4,000 N.
+- The rail **is** a razor — its faces are 3–5 mm tall and the bottom has zero deadrise — so the advisor's "it does not
+  bury" was true. **It is not the cause.**
+
+## A third fault in that lab, and a standing rule from it
+
+**The 0.6 s captive hold lands on the heave's overshoot.** Held 3–4 s, the settled numbers are a fifth to a ninth of
+the published ones (7 m/s: +1409, +937, +407, −186, −739, −476 against +1398, +825, —, −1387, −2610, −4143). The flip
+is real and crosses at about **18°**, but it is far smaller, stops growing past 30°, and **the published 30° and 40°
+rows are not reproducible at all**.
+
+This is the third harness fault in the same lab (after the roll-rate hold's vertical term and the sideslip frame).
+**Standing rule: a captive hold's number is not used until the hold is shown settled.** Every table in this folder gets
+that check before it is quoted again.
+
+## Ruling 29s is withdrawn
+
+29s said a committed carve cannot be stabilised by any controller on this plant, and sent the work to two-way coupling.
+**That rested on a plant number that was 5–9× too large, and on condensing away the heave.** The plant the controller
+actually meets in the first second of a carve — before the heave settles — **never flips**. Six rounds of controller
+work were not doomed. The advisor wrote 29s from one agent's table without asking whether the hold had settled.
+
+## Decisions
+
+1. **The balance model gains a heave state, and a pitch state.** `rollModel32.ts` has neither, so it condenses exactly
+   the degree of freedom the flip lives in. This is free, it needs no `src/` change to the game, and it is the first
+   thing to try.
+2. **The big-rail plant is re-measured properly first** — 0 to 40° at 5, 7 and 9 m/s, with the hold shown settled —
+   and 3.2f's table is replaced. Nothing is designed on the old one.
+3. **The rail cap question reopens.** 3.2L kept it at 5° because the plant past 15° looked unstabilisable. On the
+   corrected plant that reasoning may not hold. Ask it again, on the new numbers, and do not assume either answer.
+4. **The rail and the flat bottom are recorded and not built.** A rail that holds needs about 6× its area — a face
+   2–3 cm tall over 1.2–1.5 m, with immersed volume and a sharp edge. The zero-deadrise bottom is the root of the lift
+   collapse and would touch every patch normal. Both wait until 1–3 have been tried.
+5. **The owner's sinking physics is still implicated, and more precisely than before.** The mechanism is literally the
+   board sinking; two-way coupling changes the lift-loss and sink chain that produces it. But it is no longer the
+   blocker, and it does not come before the free fix.
