@@ -29,6 +29,15 @@ const PRONE_FRICTION = 0.7;
  */
 const PRONE_GRIP = 0.6;
 const MAX_LOAD = 4;
+/**
+ * The legs' power limit (A-lite, the advisor's ruling 27, `legPower: 'cap'`; docs/research/board-in-water/a-lite): the
+ * standing contact's net positive power on the board and body together, W per kg of the rider, at any instant
+ * (LEG_POWER_PEAK, near a strong human's jump peak, about 4.4 kW at 73 kg) and over any LEG_POWER_WINDOW s
+ * (LEG_POWER_HELD, about 1.5 kW). Absorbing energy (negative power) is not limited [provisional].
+ */
+export const LEG_POWER_PEAK = 60;
+export const LEG_POWER_HELD = 20;
+export const LEG_POWER_WINDOW = 0.5;
 export const MAX_FLIGHT = 0.4;
 export const RECOVERABLE_ERROR = 0.25;
 /** Share of the posture error closed per substep, and the fastest correction, m/s. */
@@ -1116,6 +1125,14 @@ export interface AttachedRiderOptions {
    * (the `?snapCross=on` dev switch, to ride). By default Snap puts the weight on the tail at once, as before.
    */
   snapCross?: 'on';
+  /**
+   * The legs' power limit (A-lite, the advisor's ruling 27; docs/research/board-in-water/a-lite), opt-in: 'cap' stops
+   * the standing contact making energy on steep water. When feet on a deck cannot give the push the coupled solve
+   * needs, the board takes no more than the legs transmit (the leg's own force along its line, not the pair's push),
+   * and the contact's net positive power stays within LEG_POWER_PEAK at any instant and LEG_POWER_HELD over any
+   * LEG_POWER_WINDOW (the `?legPower=cap` dev switch, to ride). By default as before.
+   */
+  legPower?: 'cap';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1574,6 +1591,18 @@ export class AttachedRider {
   /** The side the Snap's stick asks (+1 the board's left; 0 before it says), and whether the body has come over to it. */
   private crossSide = 0;
   private crossed = true;
+  /** The legs' power limit (LEG_POWER_PEAK, LEG_POWER_HELD); only with `legPower: 'cap'`. */
+  readonly capsLegs: boolean;
+  /** The contact's net work this substep may still do, J (`legPower: 'cap'`), and the substeps' net works over the last LEG_POWER_WINDOW: their end times on the rider's clock, s, and works, J, a ring. */
+  private powerBudget = Infinity;
+  private powerClock = 0;
+  private powerEnds = new Float64Array(1024);
+  private powerWorks = new Float64Array(1024);
+  private powerHead = 0;
+  private powerCount = 0;
+  private powerSum = 0;
+  private readonly powerScratch = new Vector3();
+  private readonly powerScratch2 = new Vector3();
   /** The back foot's push at a rail change: the leg drive, or Snap's rail change under Snap. */
   private get drives(): boolean {
     return this.legDrive || (this.snapCrosses && this.snapping > 0);
@@ -1684,6 +1713,7 @@ export class AttachedRider {
     this.carveFlexes = options.carveFlex === 'on';
     this.snapDrives = options.snapLegs === 'drive';
     this.snapCrosses = options.snapCross === 'on';
+    this.capsLegs = options.legPower === 'cap';
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
@@ -1956,6 +1986,7 @@ export class AttachedRider {
     this.work.carry = 0;
     this.work.leanOut = 0;
     this.work.legDrive = 0;
+    if (this.capsLegs) this.resetPower();
     this.driveUsed = 0;
     this.driveSide = 0;
     this.driveForce.set(0, 0, 0);
@@ -2414,6 +2445,7 @@ export class AttachedRider {
         this.swing.rate = 0;
       }
     }
+    if (this.capsLegs) this.preparePower(h);
   }
 
   /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
@@ -3293,6 +3325,152 @@ export class AttachedRider {
     if (this.drives && this.upright) this.pushDrive(rhs);
   }
 
+  /** The leg drive's reaction on the board alone, as `pushBoard` adds it (`legPower: 'cap'`: the board under no push from the feet). */
+  pushDrives(rhs: Float64Array): void {
+    if (this.drives && this.upright) this.pushDrive(rhs);
+  }
+
+  /** `legPower: 'cap'`: an empty power window (a new mount). */
+  private resetPower(): void {
+    this.powerBudget = Infinity;
+    this.powerClock = 0;
+    this.powerHead = 0;
+    this.powerCount = 0;
+    this.powerSum = 0;
+  }
+
+  /**
+   * `legPower: 'cap'`, before the solve: the net work the contact may still do over the substep of `h`, the least of
+   * LEG_POWER_PEAK over it and LEG_POWER_HELD over the LEG_POWER_WINDOW it closes (the works of the substeps still in
+   * it counted whole, absorbing ones too); standing only.
+   */
+  private preparePower(h: number): void {
+    const end = this.powerClock + h;
+    const capacity = this.powerEnds.length;
+    while (this.powerCount > 0 && this.powerEnds[this.powerHead] <= end - LEG_POWER_WINDOW) {
+      this.powerSum -= this.powerWorks[this.powerHead];
+      this.powerHead = (this.powerHead + 1) % capacity;
+      this.powerCount -= 1;
+    }
+    if (this.powerCount === 0) this.powerSum = 0;
+    this.powerBudget = this.upright
+      ? Math.max(0, Math.min(LEG_POWER_PEAK * this.mass * h, LEG_POWER_HELD * this.mass * LEG_POWER_WINDOW - this.powerSum)) : Infinity;
+  }
+
+  /** `legPower: 'cap'`, after the substep of `h`: its net contact work, J, into the power window (nothing while not standing). */
+  private recordPower(h: number, work: number): void {
+    this.powerClock += h;
+    let capacity = this.powerEnds.length;
+    if (this.powerCount === capacity) {
+      const ends = new Float64Array(capacity * 2);
+      const works = new Float64Array(capacity * 2);
+      for (let i = 0; i < capacity; i += 1) {
+        ends[i] = this.powerEnds[(this.powerHead + i) % capacity];
+        works[i] = this.powerWorks[(this.powerHead + i) % capacity];
+      }
+      this.powerEnds = ends;
+      this.powerWorks = works;
+      this.powerHead = 0;
+      capacity *= 2;
+    }
+    const at = (this.powerHead + this.powerCount) % capacity;
+    this.powerEnds[at] = this.powerClock;
+    this.powerWorks[at] = this.upright ? work : 0;
+    this.powerSum += this.powerWorks[at];
+    this.powerCount += 1;
+  }
+
+  /**
+   * `legPower: 'cap'`, standing, after the coupled solve met the contact (`settleStanding`, `x` its solution): whether
+   * the contact's net work in it, on the body and the board together (the push along the line of force, and the swing's,
+   * the twist's and the agile legs' couples, as `finish` books them), is more than the legs may do this substep. If so,
+   * the two are solved apart (`pushCapped`) from the impulse the solve asked for.
+   */
+  overPower(x: Float64Array, h: number): boolean {
+    if (!this.upright) return false;
+    const m = this.mass;
+    const a = this.arm;
+    const j = this.impulse;
+    const ws = this.boardSpin;
+    // The body's mean velocity over the substep less the board's at the line of force.
+    const change = cross(this.powerScratch.set(x[3], x[4], x[5]), a, this.powerScratch);
+    const board = cross(ws, a, this.powerScratch2).add(this.boardVelocity);
+    let work = j.x * (this.velocity.x + (j.x + this.external.x * h) / (2 * m) - board.x - (x[0] + change.x) / 2)
+      + j.y * (this.velocity.y + (j.y + this.external.y * h) / (2 * m) - board.y - (x[1] + change.y) / 2)
+      + j.z * (this.velocity.z + (j.z + this.external.z * h) / (2 * m) - board.z - (x[2] + change.z) / 2);
+    // The couples' work on the board at its mean spin, as `finish` books them.
+    const sx = ws.x + x[3] / 2;
+    const sy = ws.y + x[4] / 2;
+    const sz = ws.z + x[5] / 2;
+    if (this.swingTorque !== 0) work -= h * this.swingTorque * (this.rollAxis.x * sx + this.rollAxis.y * sy + this.rollAxis.z * sz);
+    if (this.twistTorque !== 0) work -= h * this.twistTorque * (this.up.x * sx + this.up.y * sy + this.up.z * sz);
+    if (this.agile && (this.hipTorque !== 0 || this.trunkTorque !== 0)) work += h * (this.limbTorque.x * sx + this.limbTorque.y * sy + this.limbTorque.z * sz);
+    if (!(work > this.powerBudget)) return false;
+    this.feasible = false;
+    this.projected.copy(this.impulse);
+    return true;
+  }
+
+  /**
+   * `legPower: 'cap'`, the two solved apart: the body's velocity at its mean over the substep with no push from the
+   * feet, less the board's at the line of force with its velocity change `x` (6), into `out`. The contact's net work
+   * with the projected impulse j scaled by s is then W(s) = a s + b s², a = j·rel(base), b = j·j / 2m + j·rel(full) − a.
+   */
+  private apartRelative(x: Float64Array, h: number, out: Vector3): Vector3 {
+    const m = this.mass;
+    const change = cross(this.powerScratch.set(x[3], x[4], x[5]), this.arm, this.powerScratch);
+    const board = cross(this.boardSpin, this.arm, out).add(this.boardVelocity);
+    return out.set(
+      this.velocity.x + (this.external.x * h) / (2 * m) - board.x - (x[0] + change.x) / 2,
+      this.velocity.y + (this.external.y * h) / (2 * m) - board.y - (x[1] + change.y) / 2,
+      this.velocity.z + (this.external.z * h) / (2 * m) - board.z - (x[2] + change.z) / 2,
+    );
+  }
+
+  /** `legPower: 'cap'`, standing, the share of the projected push the leg's own force gives along the leg (its load, spring and damper, `prepareLeg`; feet only push). */
+  private legShare(h: number): number {
+    const along = this.projected.dot(this.up);
+    const most = h * Math.max(0, this.leg.force);
+    return along > most ? most / along : 1;
+  }
+
+  /**
+   * `legPower: 'cap'`, the two solved apart, `full` the board's velocity change under the whole projected push: whether
+   * it stands as it is, making no energy (W(1) ≤ 0), or within both the leg's force and the legs' power.
+   */
+  pushKept(full: Float64Array, h: number): boolean {
+    if (!this.upright) return true;
+    const j = this.projected;
+    const work = j.dot(this.apartRelative(full, h, this.powerScratch2)) + j.lengthSq() / (2 * this.mass);
+    return !(work > 0) || (this.legShare(h) >= 1 && !(work > this.powerBudget));
+  }
+
+  /**
+   * `legPower: 'cap'`, standing, the two solved apart (ruling 27's A-lite), from the board's velocity change with none
+   * of the projected push (`base`) and with all of it (`full`; the solve is linear in the push). Rule 1: the feet resist
+   * as hard as the push asks while that makes no energy (the share s₀ with W(s₀) ≤ 0: holding and absorbing cost the
+   * legs nothing), and push beyond it only with the leg's own force, not the push the coupled solve sized for board and
+   * body together. Rule 2: no more of that than keeps the net work within what the legs may still do this substep
+   * (LEG_POWER_PEAK, LEG_POWER_HELD). The impulse keeps its line, so its centre of pressure and friction cone hold. Scales
+   * the projected impulse and returns the share.
+   */
+  limitPush(base: Float64Array, full: Float64Array, h: number): number {
+    const j = this.projected;
+    const a = j.dot(this.apartRelative(base, h, this.powerScratch2));
+    const b = j.lengthSq() / (2 * this.mass) + j.dot(this.apartRelative(full, h, this.powerScratch2)) - a;
+    const free = a < 0 ? (b > 0 ? Math.min(1, -a / b) : 1) : 0;
+    let s = Math.max(free, this.legShare(h));
+    const budget = Math.max(0, this.powerBudget);
+    if (a * s + b * s * s > budget) {
+      // W(free) ≤ 0 ≤ budget, so the root lies past `free` (W convex for b > 0; linear or concave otherwise).
+      if (b > 1e-12) s = (-a + Math.sqrt(Math.max(0, a * a + 4 * b * budget))) / (2 * b);
+      else s = a > 0 ? budget / a : s;
+      s = Math.max(free, Math.min(1, s));
+    }
+    this.projected.multiplyScalar(s);
+    return s;
+  }
+
   /** The leg drive's reaction on the board: the opposite push at the back foot, so the pair is nothing on the two together. */
   private pushDrive(rhs: Float64Array): void {
     const h = this.driveStep;
@@ -3308,6 +3486,9 @@ export class AttachedRider {
 
   /** After the board has moved: the rider's own motion and ledgers. */
   finish(h: number, board: BoardBody): void {
+    // `legPower: 'cap'`: the contact's net work this substep, the leg drive's board share left out (`recordPower`).
+    const ledger = this.capsLegs ? board.work.rider + this.work.contact : 0;
+    let driveShare = 0;
     const before = this.scratch.copy(this.velocity);
     // Power of the contact on the board is the same at any point of its line; use the centre of mass.
     const boardBefore = cross(this.boardSpin, this.arm, this.localScratch).add(this.boardVelocity);
@@ -3353,6 +3534,7 @@ export class AttachedRider {
       const footBefore = cross(this.boardSpin, this.driveFoot, this.scratch2).add(this.boardVelocity);
       const footAfter = cross(board.angularVelocity, this.driveFoot, this.localScratch).add(board.velocity);
       board.work.rider -= (h * this.driveForce.dot(footBefore.add(footAfter))) / 2;
+      if (this.capsLegs) driveShare = -(h * this.driveForce.dot(footBefore)) / 2;
     }
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
@@ -3377,6 +3559,7 @@ export class AttachedRider {
     }
     this.work.contact += contact.dot(mean);
     board.work.rider -= contact.dot(boardBefore.add(boardAfter).multiplyScalar(0.5));
+    if (this.capsLegs) this.recordPower(h, board.work.rider + this.work.contact - ledger - driveShare);
     this.stepImpulse.add(contact);
     this.up.set(0, 1, 0).applyQuaternion(board.orientation);
     this.stepLoad = Math.max(this.stepLoad, contact.dot(this.up) / (h * this.mass * WATER.gravity));

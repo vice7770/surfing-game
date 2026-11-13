@@ -150,6 +150,8 @@ export interface RideSessionOptions {
   snapLegs?: 'drive';
   /** Snap's rail change (snap-cross, 2026-11-10; `AttachedRiderOptions.snapCross`): 'on' (the `?snapCross=on` dev switch); by default as before. */
   snapCross?: 'on';
+  /** The legs' power limit (ruling 27's A-lite, 2026-11-12; `AttachedRiderOptions.legPower`): 'cap' (the `?legPower=cap` dev switch); by default as before. */
+  legPower?: 'cap';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
   deckHollow?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
@@ -241,6 +243,7 @@ export class RideSession {
       ...(options.carveFlex ? { carveFlex: options.carveFlex } : {}),
       ...(options.snapLegs ? { snapLegs: options.snapLegs } : {}),
       ...(options.snapCross ? { snapCross: options.snapCross } : {}),
+      ...(options.legPower ? { legPower: options.legPower } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

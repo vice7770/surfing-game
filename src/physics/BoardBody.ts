@@ -1217,8 +1217,12 @@ export class BoardBody implements BoardContactBody {
       }
       rider.coupleStanding(s8, r8, h);
       solveLinear(s8, r8, 8);
-      if (rider.settleStanding(r8, h, this)) {
+      // `legPower: 'cap'` (ruling 27's A-lite): a met contact over the legs' power is solved apart too, and apart the
+      // board takes only what the legs transmit, within their power (`pushCapped`).
+      if (rider.settleStanding(r8, h, this) && !(rider.capsLegs && rider.overPower(r8, h))) {
         for (let i = 0; i < 6; i += 1) rhs[i] = r8[i];
+      } else if (rider.capsLegs) {
+        this.pushCapped(system, rhs, rider, h);
       } else {
         rider.pushBoard(rhs);
         solve6(system, rhs);
@@ -1337,6 +1341,26 @@ export class BoardBody implements BoardContactBody {
     this.updateRotation();
     this.syncPosition();
     if (rider?.attached) rider.finish(h, this);
+  }
+
+  /**
+   * `legPower: 'cap'` (ruling 27's A-lite), the standing rider and the board solved apart: the board keeps its own water
+   * forces and takes from the feet only what the legs give, resisting freely but pushing only with the leg's own force
+   * and within the legs' power (`AttachedRider.limitPush`). The solve is linear in the push, so the board's response to a
+   * share of it is the same share between its responses to none of it and to all of it.
+   */
+  private pushCapped(system: Float64Array, rhs: Float64Array, rider: AttachedRider, h: number): void {
+    this.systemCopy.set(system);
+    this.rhsCopy.set(rhs);
+    rider.pushBoard(rhs);
+    solve6(system, rhs);
+    if (rider.pushKept(rhs, h)) return;
+    const base = this.rhsCopy;
+    system.set(this.systemCopy);
+    rider.pushDrives(base);
+    solve6(system, base);
+    const share = rider.limitPush(base, rhs, h);
+    for (let i = 0; i < 6; i += 1) rhs[i] = base[i] + share * (rhs[i] - base[i]);
   }
 
   /**

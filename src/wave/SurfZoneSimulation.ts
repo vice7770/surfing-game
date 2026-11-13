@@ -253,6 +253,13 @@ export interface SurfZoneConfig {
    */
   snapCross?: 'on';
   /**
+   * 'cap': the riders' standing contact makes no energy on steep water: when the feet cannot give the push the coupled
+   * solve needs, the board takes only what the legs give, and the contact's net power stays within a human's (ruling 27's
+   * A-lite, 2026-11-12; `RideSessionOptions.legPower`). Every spot. The `?legPower=cap` dev switch, opt-in, to ride;
+   * online rooms run the default.
+   */
+  legPower?: 'cap';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.
