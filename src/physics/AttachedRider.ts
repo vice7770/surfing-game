@@ -1608,6 +1608,8 @@ export class AttachedRider {
   /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
   readonly standingBody = new StandingBody();
   private readonly forward = new Vector3(0, 0, 1);
+  /** The new surfer: the body's own push through the feet, low-passed over SPECIFIC_FORCE_TIME, N (world): the pitch reference's slow trim. */
+  private readonly bodyPush = new Vector3(0, 1, 0);
   /** The contact's net work this substep may still do, J (`legPower: 'cap'`), and the substeps' net works over the last LEG_POWER_WINDOW: their end times on the rider's clock, s, and works, J, a ring. */
   private powerBudget = Infinity;
   private powerClock = 0;
@@ -1997,8 +1999,16 @@ export class AttachedRider {
     this.swing.angle = 0;
     this.swing.rate = 0;
     this.resetTwist();
-    // The new surfer: nothing felt yet, and (standing) the body square to the deck in pitch (`frame`).
-    if (this.newRider) this.standingBody.reset();
+    // The new surfer: nothing felt yet, and (standing) the body square to the deck (`frame`), in pitch and, on a planing
+    // board, across too: as a body balances on a board sliding freely down its face, where the felt vertical is the
+    // face's normal. Square in pitch alone, plumb across (step 3.1), a start across a face had its bank run uphill.
+    if (this.newRider) {
+      this.standingBody.reset();
+      if (this.upright && this.phase === 'standing' && board.velocity.length() > PLANING_SPEED) {
+        this.planing = true;
+        this.banked = true;
+      }
+    }
     this.frame(board, false);
     this.position.copy(this.target);
     this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.target, this.scratch2));
@@ -2498,7 +2508,7 @@ export class AttachedRider {
     const rigid = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity);
     const relative = this.localScratch.subVectors(this.velocity, rigid).dot(this.forward);
     this.standingBody.speed = relative - this.drive.dot(this.forward);
-    this.standingBody.prepare(h, this.mass, this.legLength, this.legLoad, this.copTarget.z, relative / this.legLength, this.heading, this.waterUp, this.specificForce);
+    this.standingBody.prepare(h, this.mass, this.legLength, this.legLoad, this.copTarget.z, relative / this.legLength, this.heading, this.waterUp, this.bodyPush);
   }
 
   /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
@@ -2871,6 +2881,7 @@ export class AttachedRider {
       this.specificForce.set(0, floating ? WATER.gravity : 0, 0);
       // The new surfer: as a board sliding on its face feels it, along the face's normal (the pitch's reference).
       if (floating && this.freeBody) this.specificForce.copy(this.waterUp).multiplyScalar(WATER.gravity * this.waterUp.y);
+      if (this.newRider) this.bodyPush.copy(this.specificForce).multiplyScalar(this.mass);
     }
     const blend = 1 - Math.exp(-h / SPECIFIC_FORCE_TIME);
     this.specificForce.x += ((stance.x - this.stanceVelocity.x) / h - this.specificForce.x) * blend;
@@ -3637,6 +3648,8 @@ export class AttachedRider {
     board.work.rider -= contact.dot(boardBefore.add(boardAfter).multiplyScalar(0.5));
     if (this.windowed) this.recordPower(h, board.work.rider + this.work.contact - ledger - driveShare);
     this.stepImpulse.add(contact);
+    // The new surfer: the body's own push through the feet (the soles' sense), for the pitch reference's slow trim.
+    if (this.newRider && this.upright) this.bodyPush.addScaledVector(this.scratch2.copy(contact).divideScalar(h).sub(this.bodyPush), 1 - Math.exp(-h / SPECIFIC_FORCE_TIME));
     this.up.set(0, 1, 0).applyQuaternion(board.orientation);
     this.stepLoad = Math.max(this.stepLoad, contact.dot(this.up) / (h * this.mass * WATER.gravity));
     this.position.addScaledVector(this.velocity, h);
@@ -3715,6 +3728,8 @@ export class AttachedRider {
         }
       } else {
         this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy));
+        // A new mount on a planing board: square to the deck across as well (`mount`).
+        if (this.banking) this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, this.standingBody.bankOf(this.heading, boardUp) - Math.atan2(cx, Math.hypot(cy, cz))));
       }
       if (!this.banking) {
         this.bank.angle = 0;

@@ -2,18 +2,19 @@ import { Quaternion, Vector3 } from 'three';
 import { WATER } from './hullForces';
 
 /**
- * The new surfer's standing body, step 3.1 (`AttachedRiderOptions.rider` 'new', the `?rider=new` dev switch;
- * docs/research/new-rider/design.md §1 and §7, the advisor's ruling 29; docs/research/new-rider/3.1).
+ * The new surfer's standing body, steps 3.1 and 3.1b (`AttachedRiderOptions.rider` 'new', the `?rider=new` dev switch;
+ * docs/research/new-rider/design.md §1 and §7, the advisor's rulings 29 and 29a; docs/research/new-rider/3.1).
  *
  * Standing, the old rider's centre of mass is carried along the board: kinematic drives keep it plumb in pitch while
  * the board pitches under it, and pull it back to its posture along the board. Here the body is free along the board
  * too: its speed along its own forward axis is a ninth unknown in the board's solve (with the leg's rate along its up
  * and the bank's across it). Nothing moves it there but forces with a reaction on the board at the feet:
- * - **the pitch ankle,** a passive spring and damper between the leg line and the deck's normal, about a rest. The
- *   rest is where the body balances with the feet's pressure at the trim's target (`copTarget`, W/S and Snap): the
- *   reference lean is the board's specific force at the feet, low-passed (what the body feels as "down"), with the
- *   face's normal under the board as its feed-forward (what the rider sees ahead), and the rest adds the ankle's own
- *   stretch that holds the body's weight off that line when the pressure is asked away from the middle;
+ * - **the pitch ankle:** a passive spring and damper on the ankle's own angle (the leg line against the deck's normal),
+ *   acting at once, stiffening with the leg's load; about a rest that an active loop sets after a delay and a motor
+ *   lag (ruling 29a). The loop's command: the ankle's angle that puts the body on its reference lean (with the stretch
+ *   that holds its weight there when the feet's pressure is asked off their middle: W/S, Snap), and feedback on the
+ *   body's own lean off that reference and its lean rate. The reference: the face's normal under the board (what the
+ *   rider sees ahead), trimmed slowly toward the body's own push through the feet (what the soles feel);
  * - **gravity,** which tips the body off its feet as an inverted pendulum (explicit, through the leg's line).
  * The body's frame is the heading, then the leg line's pitch, then its bank, so the body leans with the face.
  *
@@ -21,8 +22,9 @@ import { WATER } from './hullForces';
  * push along the leg of at most 2 τ / d, d the knee's offset from the hip–ankle line of two BONE_LENGTH bones. Past it
  * the knees yield and spend their travel.
  *
- * The values are the design's, provisional. The rest of the standing rider (the bank law and its roll drive, the leg's
- * load and rest, the swing, the twist, 32 substeps) is the old one's (`AttachedRider`).
+ * The values are the design's and the pitch model's (`docs/research/new-rider/3.1/pitchModel.ts`), provisional. The
+ * rest of the standing rider (the bank law and its roll drive, the leg's load and rest, the swing, the twist, 32
+ * substeps) is the old one's (`AttachedRider`).
  */
 
 /** The knees' spring along the leg, N/m: inside the design's 15–25 kN/m for bent knees (Matsumoto & Griffin 1998's legs-bent 22 kN/m; today 44). Its damping ratio stays `RIDER_LEG`'s 0.35. */
@@ -34,21 +36,44 @@ export const BONE_LENGTH = 0.45;
 /** The ankle's height over the deck, m: the hip–ankle line of the riding stance (pelvis 0.78 m) is 0.705 m, the design's d of 0.28 m. */
 export const ANKLE_HEIGHT = 0.075;
 /**
- * The pitch ankle's passive stiffness, in m g L (L the leg's length: the centre of mass over the feet): the top of the
- * design's sourced 0.7–1.2. Below 1 the body topples without an active loop (3.2 brings one); at 1.2 it stands on
- * its own, softly: the body and the board are joined along it by only (k − m g L) / L², about 180 N/m, and under a
- * load over 1.2 g (a carve's, a bump's) the body topples in pitch (docs/research/new-rider/3.1, measured).
+ * The pitch ankle's passive stiffness, in m g L (L the leg's length: the centre of mass over the feet), at a load of
+ * one body weight: the top of the design's sourced 0.7–1.2. Passive, it acts at once on the ankle's angle. Alone (step
+ * 3.1) it was too soft: the body and the board were joined along it by only (k − m g L) / L², about 180 N/m.
  */
 export const PITCH_ANKLE = 1.2;
 /** The pitch ankle's damping over its stiffness, s: the bank ankle's ratio (80 over 800 N·m/rad). */
 export const PITCH_DAMPING_TIME = 0.1;
 /**
- * How long the felt lean's difference from the face's normal is smoothed, s, on top of the specific force's own
- * SPECIFIC_FORCE_TIME: the reference's slow part; the face's normal gives the fast part. The one tuning round
- * (docs/research/new-rider/3.1): 0.5 s lagged the felt lean, and the soft passive ankle let the body sit ahead of it
- * by about five times the lag (it fell on a 20° drop from 4 m/s); 0.2 s and 0.1 s hold the drop, 0.1 s the better.
+ * The reference's slow trim, s: the face's normal under the board gives the reference, and its difference from the body's
+ * own push through the feet (low-passed over SPECIFIC_FORCE_TIME, the line from the centre of pressure to the centre of
+ * mass) is smoothed over this. Step 3.1 read the board's specific force at the feet here (0.1 s). With the active loop the
+ * pitch model finds no gains that hold the body with that: the body's own push on the 2.5 kg board tilts the board's felt
+ * vertical, and the reference follows it (the don't-retry list's felt-force loop, in pitch); below about 1 s every gain
+ * pair rings or grows. The body's own push is smooth (73 kg), and 0.5 s keeps the loop damped (docs/research/new-rider/3.1,
+ * section 10).
  */
-export const PITCH_REFERENCE_TIME = 0.1;
+export const PITCH_REFERENCE_TIME = 0.5;
+/**
+ * The active pitch ankle (ruling 29a; the human ankle's own stiffness is below the toppling stiffness, so posture is
+ * held by an active, delayed loop: Loram and Lakie 2002, Morasso and Sanguineti 2002, recalled): the rest's command
+ * reads the body's own lean off its reference and its lean rate, and arrives PITCH_DELAY, s, later (leg postural
+ * responses start at about 90–100 ms; Nashner 1977), through a motor lag of PITCH_MOTOR_LAG, s. PITCH_LEAN_GAIN, rad of
+ * rest per rad of lean off the reference, and PITCH_RATE_GAIN, s: chosen on the pitch model for damping at load factors
+ * 1.0 to 1.8 g at the hull's measured pitch stiffness and drag (`hull.probe.ts`). Larger gains ring: with the delay, the
+ * board slides from under a leaning body faster than the loop answers (section 10).
+ */
+export const PITCH_DELAY = 0.1;
+export const PITCH_MOTOR_LAG = 0.05;
+export const PITCH_LEAN_GAIN = 0.25;
+export const PITCH_RATE_GAIN = 0.1;
+/**
+ * The ankle stiffening with activation (ruling 29a's step 2: muscles stiffen as they activate): its passive stiffness
+ * grows with the leg's load, low-passed over PITCH_ACTIVATION_TIME, s, from one body weight up, to at most
+ * PITCH_ACTIVATION_MAX of its base. Without it, above about 1.2 g the felt gravity outgrows the passive ankle, and the
+ * board slides from under the body faster than the delayed loop can answer (the pitch model; the held carves toppled).
+ */
+export const PITCH_ACTIVATION_TIME = 0.2;
+export const PITCH_ACTIVATION_MAX = 2;
 /** The furthest the leg line leans off the deck's normal before the body is off its posture, rad. */
 export const MAX_PITCH = (45 * Math.PI) / 180;
 
@@ -96,6 +121,19 @@ export class StandingBody {
     return this.deviation;
   }
 
+  /** The active rest's commands over the last PITCH_DELAY, a ring of (time on the body's clock, s; command, rad); the lagged rest it gives, rad. */
+  private clock = 0;
+  private times = new Float64Array(512);
+  private commands = new Float64Array(512);
+  private head = 0;
+  private count = 0;
+  private lagged = Number.NaN;
+  /** The leg line's lean from the vertical the latest substep, rad (NaN before the first), and the leg's load low-passed, N. */
+  private lastLean = Number.NaN;
+  private activation = Number.NaN;
+  /** The active part of the rest now (the lagged command less its feed-forward), rad, for probes. */
+  active = 0;
+
   private readonly inverse = new Quaternion();
   private readonly scratch = new Vector3();
   private readonly turn = new Quaternion();
@@ -112,6 +150,17 @@ export class StandingBody {
     this.speed = 0;
     this.speedAfter = 0;
     this.deviation = Number.NaN;
+    this.forget();
+  }
+
+  /** The loop's memory: the delay line, the lag, the lean's last value and the load's smoothing. */
+  private forget(): void {
+    this.count = 0;
+    this.head = 0;
+    this.lagged = Number.NaN;
+    this.lastLean = Number.NaN;
+    this.activation = Number.NaN;
+    this.active = 0;
   }
 
   /** Not standing free (landing, lying): the felt lean starts again when the body next stands free. */
@@ -120,6 +169,7 @@ export class StandingBody {
     this.torque = 0;
     this.speed = 0;
     this.speedAfter = 0;
+    this.forget();
   }
 
   /**
@@ -153,8 +203,8 @@ export class StandingBody {
   /**
    * Before the solve: the pitch ankle's rest and torque. `rate` is the leg line's pitch rate relative to the board
    * (rad/s), `length` the leg's (m), `load` the leg's (N), `cop` the trim's target for the feet's pressure along the
-   * board from their middle (m), `waterUp` the face's normal under the board and `felt` the low-passed specific force at
-   * the feet (gravity less their acceleration), both world.
+   * board from their middle (m), `waterUp` the face's normal under the board and `felt` the body's own push through the
+   * feet, low-passed (N), both world.
    */
   prepare(h: number, mass: number, length: number, load: number, cop: number, rate: number, heading: Quaternion, waterUp: Vector3, felt: Vector3): void {
     this.inverse.copy(heading).invert();
@@ -166,14 +216,75 @@ export class StandingBody {
     // The lean that puts the feet's pressure at the trim's target: off the felt vertical by asin(cop / L).
     const offset = Math.asin(Math.max(-0.9, Math.min(0.9, cop / length)));
     this.reference = face + this.deviation + offset;
-    this.stiffness = PITCH_ANKLE * mass * WATER.gravity * length;
+    // The ankle stiffens with activation (PITCH_ACTIVATION_MAX; 1: its base).
+    const weight = mass * WATER.gravity;
+    if (Number.isNaN(this.activation)) this.activation = load;
+    else this.activation += (load - this.activation) * (1 - Math.exp(-h / PITCH_ACTIVATION_TIME));
+    const stiffening = Math.max(1, Math.min(PITCH_ACTIVATION_MAX, this.activation / weight));
+    this.stiffness = PITCH_ANKLE * weight * length * stiffening;
     const damping = PITCH_DAMPING_TIME * this.stiffness;
-    // There the ankle holds the body's weight off the felt vertical: L × load × tan of the offset.
-    this.rest = this.reference - this.deckPitch - (length * load * Math.tan(offset)) / this.stiffness;
+    // The body's own lean from the vertical and its rate (the vestibular sense).
+    const lean = this.deckPitch + this.pitch.angle;
+    const leanRate = Number.isNaN(this.lastLean) ? rate : (lean - this.lastLean) / h;
+    this.lastLean = lean;
+    // The command: the ankle's angle that puts the body on its reference, with the stretch that holds its weight off
+    // the felt vertical there (the trim's target), and the balance's own feedback on the lean and its rate.
+    const forward = this.reference - this.deckPitch - (length * load * Math.tan(offset)) / this.stiffness;
+    const feedback = PITCH_LEAN_GAIN * (this.reference - lean) - PITCH_RATE_GAIN * leanRate;
+    const command = forward + feedback;
+    // Delayed PITCH_DELAY and lagged PITCH_MOTOR_LAG; a fresh loop starts on its command.
+    this.clock += h;
+    this.push(this.clock, command);
+    const delayed = this.at(this.clock - PITCH_DELAY);
+    if (Number.isNaN(this.lagged)) this.lagged = delayed;
+    else this.lagged += (delayed - this.lagged) * (1 - Math.exp(-h / PITCH_MOTOR_LAG));
+    this.rest = this.lagged;
+    this.active = this.lagged - forward;
     this.pitch.rate = rate;
     // Backward Euler on the ankle, as the bank's: over the substep the lean moves at its rate after the solve.
     this.implicit = this.stiffness * h + damping;
     this.torque = this.stiffness * (this.pitch.angle - this.rest) + this.implicit * rate;
+  }
+
+  /** Records a command at time `t` and drops those older than the delay needs (keeping one before it). */
+  private push(t: number, value: number): void {
+    let capacity = this.times.length;
+    while (this.count >= 2 && this.times[(this.head + 1) % capacity] <= t - PITCH_DELAY) {
+      this.head = (this.head + 1) % capacity;
+      this.count -= 1;
+    }
+    if (this.count === capacity) {
+      const times = new Float64Array(capacity * 2);
+      const commands = new Float64Array(capacity * 2);
+      for (let i = 0; i < capacity; i += 1) {
+        times[i] = this.times[(this.head + i) % capacity];
+        commands[i] = this.commands[(this.head + i) % capacity];
+      }
+      this.times = times;
+      this.commands = commands;
+      this.head = 0;
+      capacity *= 2;
+    }
+    const at = (this.head + this.count) % capacity;
+    this.times[at] = t;
+    this.commands[at] = value;
+    this.count += 1;
+  }
+
+  /** The command at time `t`, interpolated; before the first, the first. */
+  private at(t: number): number {
+    const capacity = this.times.length;
+    const first = this.head;
+    if (t <= this.times[first]) return this.commands[first];
+    for (let i = 1; i < this.count; i += 1) {
+      const b = (first + i) % capacity;
+      if (this.times[b] >= t) {
+        const a = (first + i - 1) % capacity;
+        const span = this.times[b] - this.times[a];
+        return span > 0 ? this.commands[a] + ((t - this.times[a]) / span) * (this.commands[b] - this.commands[a]) : this.commands[b];
+      }
+    }
+    return this.commands[(first + this.count - 1) % capacity];
   }
 
   /**
