@@ -1,0 +1,20 @@
+{"name":"flat, straight, 5 m/s","speed":4.62,"gravity":0.056,"hullPressure":-0.174,"hullFriction":-0.042,"fins":-0.006,"rails":0,"riderWater":0,"legs":-0.015,"rules":0,"carry":0,"sum":-0.181,"dKE":-0.181}
+{"name":"flat, straight, 7 m/s","speed":6.4,"gravity":0.008,"hullPressure":-0.165,"hullFriction":-0.065,"fins":-0.011,"rails":0,"riderWater":0,"legs":-0.004,"rules":0,"carry":0,"sum":-0.237,"dKE":-0.237}
+{"name":"flat, straight, 9 m/s","speed":8.26,"gravity":-0.012,"hullPressure":-0.127,"hullFriction":-0.085,"fins":-0.019,"rails":0,"riderWater":0,"legs":0.003,"rules":0,"carry":0,"sum":-0.24,"dKE":-0.24}
+{"name":"flat, straight, 12 m/s","speed":11.17,"gravity":-0.004,"hullPressure":-0.054,"hullFriction":-0.096,"fins":-0.034,"rails":0,"riderWater":0,"legs":0.003,"rules":0,"carry":0,"sum":-0.185,"dKE":-0.185}
+{"name":"20° face, 45° off the fall line, 5 m/s","speed":5.29,"gravity":0.254,"hullPressure":-0.292,"hullFriction":-0.038,"fins":-0.008,"rails":0,"riderWater":0,"legs":0.004,"rules":0,"carry":0,"sum":-0.08,"dKE":-0.08}
+{"name":"20° face, 45° off the fall line, 7 m/s","speed":7.19,"gravity":0.227,"hullPressure":-0.182,"hullFriction":-0.054,"fins":-0.014,"rails":0,"riderWater":0,"legs":0.004,"rules":0,"carry":0,"sum":-0.018,"dKE":-0.018}
+{"name":"20° face, 45° off the fall line, 9 m/s","speed":9.21,"gravity":0.235,"hullPressure":-0.09,"hullFriction":-0.06,"fins":-0.023,"rails":0,"riderWater":0,"legs":0,"rules":0,"carry":0,"sum":0.062,"dKE":0.062}
+{"name":"20° face, 45° off the fall line, 12 m/s","speed":12.18,"gravity":0.242,"hullPressure":-0.067,"hullFriction":-0.072,"fins":-0.039,"rails":0,"riderWater":0,"legs":-0.001,"rules":0,"carry":0,"sum":0.062,"dKE":0.062}
+{"name":"flat, held carve with Compress, stick 1, from 5 m/s (0.5–0.9 s)","speed":4.87,"gravity":0.144,"hullPressure":-0.168,"hullFriction":-0.044,"fins":-0.007,"rails":-0.004,"riderWater":-0.034,"legs":-0.099,"rules":0.097,"carry":0.107,"sum":-0.115,"dKE":-0.115}
+{"name":"flat, held carve with Compress, stick 1, from 7 m/s (0.5–0.9 s)","speed":7.14,"gravity":0.112,"hullPressure":-0.122,"hullFriction":-0.07,"fins":-0.015,"rails":-0.004,"riderWater":-0.003,"legs":-0.063,"rules":0.177,"carry":0.178,"sum":0.014,"dKE":0.014}
+{"name":"flat, held carve with Compress, stick 1, from 9 m/s (0.5–0.9 s)","speed":8.82,"gravity":0.086,"hullPressure":-0.129,"hullFriction":-0.077,"fins":-0.021,"rails":-0.001,"riderWater":0,"legs":-0.06,"rules":0.195,"carry":0.195,"sum":-0.007,"dKE":-0.007}
+{"name":"flat, held carve standing, stick 1, from 5 m/s (0.5–0.9 s)","speed":4.29,"gravity":0.051,"hullPressure":-0.203,"hullFriction":-0.036,"fins":-0.005,"rails":-0.001,"riderWater":0,"legs":-0.002,"rules":0,"carry":0,"sum":-0.197,"dKE":-0.197}
+{"name":"flat, held carve standing, stick 1, from 7 m/s (0.5–0.9 s)","speed":6.3,"gravity":0.046,"hullPressure":-0.115,"hullFriction":-0.058,"fins":-0.012,"rails":-0.001,"riderWater":0,"legs":0.003,"rules":0,"carry":0,"sum":-0.137,"dKE":-0.137}
+{"name":"flat, held carve standing, stick 1, from 9 m/s (0.5–0.9 s)","speed":8.2,"gravity":0.049,"hullPressure":-0.103,"hullFriction":-0.067,"fins":-0.018,"rails":-0.001,"riderWater":0,"legs":-0.001,"rules":0,"carry":0,"sum":-0.141,"dKE":-0.141}
+{"name":"10° face, 45° off the fall line, from 6 m/s","speedEachSecond":[5.3,4.3,3,1.5],"fell":"balance","t":4.42}
+{"name":"10° face, 60° off the fall line, from 6 m/s","speedEachSecond":[4.9,3.6,2,1.1],"fell":"balance","t":4.63}
+{"name":"16° face, 45° off the fall line, from 6 m/s","speedEachSecond":[5.9,5.7,5.5,5.2,4.8,4.2,3.3,2],"fell":"balance","t":8.77}
+{"name":"16° face, 60° off the fall line, from 6 m/s","speedEachSecond":[5.4,4.6,3.5,2.3],"fell":"balance","t":4.77}
+{"name":"20° face, 45° off the fall line, from 6 m/s","speedEachSecond":[6.3,6.6,7,7.5,8.1,8.8,9.6,10.4,11.3,12.2],"fell":"","t":10}
+{"name":"20° face, 60° off the fall line, from 6 m/s","speedEachSecond":[5.3,4.7,3.8,2.7,1.6],"fell":"balance","t":5.97}
