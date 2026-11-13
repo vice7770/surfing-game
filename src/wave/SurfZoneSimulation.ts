@@ -260,6 +260,13 @@ export interface SurfZoneConfig {
    */
   legPower?: 'cap';
   /**
+   * 'new': the riders are the new surfer (docs/research/new-rider/design.md, ruling 29; `RideSessionOptions.rider`). Step
+   * 3.1: standing, the body free along the board too, leaning with the face; softer knees with a strength cap; the
+   * contact's power within A-lite's window. Every spot. The `?rider=new` dev switch, opt-in, to ride; online rooms run
+   * the default.
+   */
+  rider?: 'new';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

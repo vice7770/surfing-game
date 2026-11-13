@@ -400,6 +400,9 @@ export class BoardBody implements BoardContactBody {
   /** A standing rider joins with its leg's rate as a seventh unknown (spec P9) and its bank's as an eighth (the turn redesign). */
   private readonly system8 = new Float64Array(64);
   private readonly rhs8 = new Float64Array(8);
+  /** The new surfer standing (`AttachedRider.freeBody`): the 9 × 9 system and its right-hand side. */
+  private readonly system9 = new Float64Array(81);
+  private readonly rhs9 = new Float64Array(9);
   private readonly lastPosition = new Vector3();
   private readonly patch: WorldPatch = { position: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 0, z: 0 }, area: 0, thickness: 0 };
   private readonly force = createPatchForce();
@@ -1222,20 +1225,22 @@ export class BoardBody implements BoardContactBody {
     const { rider } = this;
     if (rider?.attached) rider.prepare(h, this, water);
     if (rider?.attached && rider.upright) {
-      // Standing, the leg's rate is a seventh unknown and the bank's an eighth.
-      const s8 = this.system8.fill(0);
-      const r8 = this.rhs8.fill(0);
+      // Standing, the leg's rate is a seventh unknown and the bank's an eighth; the new surfer standing
+      // (`rider: 'new'`), the body's speed along its forward axis a ninth (`StandingBody`).
+      const n = rider.freeBody ? 9 : 8;
+      const s8 = (n === 9 ? this.system9 : this.system8).fill(0);
+      const r8 = (n === 9 ? this.rhs9 : this.rhs8).fill(0);
       for (let i = 0; i < 6; i += 1) {
-        for (let j = 0; j < 6; j += 1) s8[i * 8 + j] = system[i * 6 + j];
+        for (let j = 0; j < 6; j += 1) s8[i * n + j] = system[i * 6 + j];
         r8[i] = rhs[i];
       }
       rider.coupleStanding(s8, r8, h);
-      solveLinear(s8, r8, 8);
-      // `legPower: 'cap'` (ruling 27's A-lite): a met contact over the legs' power is solved apart too, and apart the
-      // board takes only what the legs transmit, within their power (`pushCapped`).
-      if (rider.settleStanding(r8, h, this) && !(rider.capsLegs && rider.overPower(r8, h))) {
+      solveLinear(s8, r8, n);
+      // `legPower: 'cap'` (ruling 27's A-lite), or the new surfer standing (its power window): a met contact over the
+      // legs' power is solved apart too, and apart the board takes only what the legs transmit, within their power (`pushCapped`).
+      if (rider.settleStanding(r8, h, this) && !(rider.powerCapped && rider.overPower(r8, h))) {
         for (let i = 0; i < 6; i += 1) rhs[i] = r8[i];
-      } else if (rider.capsLegs) {
+      } else if (rider.powerCapped) {
         this.pushCapped(system, rhs, rider, h);
       } else {
         rider.pushBoard(rhs);

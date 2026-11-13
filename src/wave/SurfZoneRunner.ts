@@ -493,7 +493,7 @@ export class SurfZoneRunner {
         ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
         ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
         ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
-        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
+        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.rider ? { rider: config.rider } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
         ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
       });
       this.board = this.session.board;

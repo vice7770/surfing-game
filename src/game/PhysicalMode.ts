@@ -539,6 +539,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...snapCrossSwitch(),
     // `?legPower=cap`: the standing contact makes no energy on steep water, the board taking only what the legs give and the legs' power capped (ruling 27's A-lite), opt-in, to ride.
     ...legPowerSwitch(),
+    // `?rider=new`: the new surfer (docs/research/new-rider): step 3.1, standing, the body free along the board too, leaning with the face, softer knees with a strength cap, opt-in, to ride.
+    ...riderSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -994,6 +996,16 @@ export function snapCrossSwitch(search?: string): { snapCross?: 'on' } {
  */
 export function legPowerSwitch(search?: string): { legPower?: 'cap' } {
   return devParam('legPower', search)?.trim().toLowerCase() === 'cap' ? { legPower: 'cap' } : {};
+}
+
+/**
+ * The `?rider=new` dev switch (`SurfZoneConfig.rider`, the new surfer's steps, docs/research/new-rider/design.md and the
+ * advisor's ruling 29): opt-in, every spot's rider is the new surfer. Step 3.1: standing, the body is free along the board
+ * as well (a ninth unknown in the board's solve), leaning with the face on its pitch ankle; the knees are softer, with a
+ * strength cap; the contact's power is A-lite's window (docs/research/new-rider/3.1). Anything else, the old rider.
+ */
+export function riderSwitch(search?: string): { rider?: 'new' } {
+  return devParam('rider', search)?.trim().toLowerCase() === 'new' ? { rider: 'new' } : {};
 }
 
 /**
