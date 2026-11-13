@@ -736,3 +736,165 @@ and 0.87 rad. The worst over tall and Compress and the board's roll inertia 0.03
 - `lqr.ts`: a small dense LQR (the Riccati equation by the matrix sign function) for the probe.
 - `results/`: `twist-check.jsonl`, `twist-lqr.jsonl`, `twist-search.jsonl`, `twist-schedule.jsonl`, `twist-kick.jsonl`,
   `twist-sens.txt`.
+
+---
+
+# Part 4: step 3.2d, balance by prediction (ruling 29h)
+
+Written 2026-11-13 by the build agent (Opus 5.5, effort xhigh), on branch `claude/rider-new-32d` (from
+`claude/rider-new-32c`, rebased on main 3b6d5ae9). The contract: `../ruling-29.md` 29h.
+
+Tags as above: [M] measured by a probe here (on the model); [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **Miss at the robustness gate (item 4). Nothing was built in the game**, as the stop rule says.
+- **Nominally it works well** [M]: at all 51 points (4–12 m/s every 0.5, tall, crouch and Compress) the least
+  damping is at least +0.62. At 7 m/s tall a 20 N·s shove peaks at 3.1° of bank, with 8.6° of twist and 11 N·m of
+  twist torque, and dies away. The schedule is smooth above 6 m/s, and the controller read between its points holds
+  (+0.16 at worst).
+- **It is not robust enough** [M]:
+  - with the true delay at 0.15 s, it fails at 4–8 m/s (5 m/s: −0.09; 7 m/s: −0.01);
+  - with all twelve derivatives scaled together by ±30 %, 1–20 % of the 200 sets drift away at 6–12 m/s, and more
+    at 4.5–5.5 m/s;
+  - at 4 m/s the board does not plane, and nearly every test fails.
+- **Where it holds** [M]: each derivative ±30 % alone at 6–12 m/s (except 7.5 m/s Compress); all twelve together
+  within **±15 %** (0 of 200 fail at 5–12 m/s, tall and Compress); the twist's own stiffness 5–60 N·m/rad at 6–12 m/s;
+  the board's roll inertia 0.03–0.3 everywhere above 4 m/s.
+
+## 2. The plants by speed (all measured)
+
+- The roll-plant lab (`../roll-plant/plant.ts`, part `captive`, the rigid point rider) measured the twelve
+  derivatives at every speed of the table: 5, 7 and 9 m/s from the roll-plant study; 4, 4.5, 5.5, 6, 6.5, 7.5, 8,
+  8.5, 9.5, 10, 10.5, 11, 11.5 and 12 m/s for this step (`results/plant-speeds.jsonl`, about 17 s each) [M]. Nothing is
+  extrapolated; between the table's speeds the plant is linear.
+- **Below 5 m/s the board does not plane** [M]: it trims 26° at 4.5 m/s and 46° at 4 m/s, and the fins'
+  weathercock turns over (N per slip +41 and +144 against −29 at 5 m/s).
+- **The trims are noisy at 7.5–12 m/s** [M]: 8.8° at 7.5 between 9.2° (7) and 5.6° (8). The derivatives move with
+  them (K per roll at 7.5 m/s is half its neighbours'). I kept the measurements as they are.
+- The feet's forward force uses the terminal planes' drag (5, 7, 9, 12 m/s; linear between, held below 5) [I].
+
+## 3. The controller (`src/physics/predictiveBalance.ts`)
+
+- **The plant** [R]: 3.2c's `twistRows` (split, twist numbers, `TwistPlant` kept), with the muscles' 0.05 s lag on both
+  commands. State [φ, φ̇, θ, θ̇, r, β, θ_t, ω_u, δ, τ_a].
+- **The senses**, all 0.1 s late: the body's bank and its rate; the head's yaw rate; the twist and its rate; the
+  ankle's own angle (θ − φ) and rate. Not the slip.
+- **Every frame (1/60 s), with the commands held:**
+  1. a steady Kalman filter estimates the whole state as it was 0.1 s ago, the slip included, and a slow bias on each
+     command (the muscles' offset; offset-free control);
+  2. a predictor runs the internal model forward over the 0.1 s with the commands already sent, to now;
+  3. LQR gains act on the prediction, both channels; the estimated bias is cancelled.
+  A surprise is still answered 0.1 s late.
+- **The analysis is exact for the delay** [R]: the loop is discrete (the plant held over each frame, exactly), with
+  the senses' delay line, the estimate and the commands' line as states. No Padé. `humanTwistKick`-style runs in
+  continuous time check the worst cases (section 6).
+- **The design** [R]: Bryson's scales (the state as in 3.2c; the ankle's rest 0.09 rad, the twist 30 N·m), ρ = 10;
+  the filter's noises from human thresholds (recalled: about 1° and 0.5°/s for the vestibular sense, 1° for the
+  legs' joints); the bias as a slow random walk (0.01 rad and 5 N·m per √s). These are the weights the round chose.
+- **The player's lean asked for** would enter as a reference, as in 3.2. It is not built, because the gate missed.
+- Tests: `predictiveBalance.test.ts` (an exact discretisation; the nominal loop keeps the gains' own modes, the
+  separation principle with the predictor exact).
+
+## 4. The schedule (`results/predict-design.jsonl`, PART=between)
+
+The gains on the predicted state, tall / Compress [M]:
+
+| Speed | Ankle per bank | Twist per bank (N·m/rad) | Twist per bank rate | Twist per board yaw rate | Twist per twist |
+|---|---|---|---|---|---|
+| 4 m/s | −3.9 / −3.7 | +72 / −344 | 158 / 95 | −147 / −178 | −60 / −74 |
+| 5 m/s | −2.0 / −1.9 | +335 / +53 | 84 / 47 | −92 / −100 | −42 / −54 |
+| 6 m/s | −0.90 / −1.33 | +478 / +322 | 78 / 44 | −66 / −56 | −27 / −19 |
+| 7 m/s | −0.96 / −1.13 | +456 / +344 | 66 / 39 | −66 / −54 | −27 / −19 |
+| 9 m/s | −0.89 / −0.89 | +430 / +337 | 56 / 33 | −61 / −50 | −26 / −18 |
+| 12 m/s | −0.85 / −0.66 | +391 / +302 | 47 / 28 | −55 / −47 | −24 / −18 |
+
+- The law is the bicycle rider's: the twist steers into the fall (on the bank and its rate), damps the board's
+  yaw, and lets the twist go a little (a negative twist gain softens the twist's own 20 N·m/rad).
+- Above 6 m/s every gain changes smoothly with speed and stance. Below 5.5 m/s the gains change fast, and the
+  Compress twist gain changes sign, because the plant stops planing.
+- **Read between its points** (the four nearest designs blended, on the plant at the point; 4–12 m/s every 0.25,
+  five depths): the least damping is +0.163 at worst (4.25 m/s, Compress) [M]. So the schedule is connected.
+
+## 5. The gate (`results/predict-gate.jsonl`; 51 points)
+
+| Test | Passes | Worst | What drives it |
+|---|---|---|---|
+| Nominal ≥ +0.05 | 51 of 51 | +0.62 | the least damped modes are the discrete ones near 30 Hz |
+| True delay 0.15 s (model 0.1) | 27 of 51 | −0.55 (4 m/s Compress); 5 m/s −0.09; 7 m/s −0.01 | a 6.7–7.3 Hz ringing of the fast loop at 4–8 m/s; holds at 8.5–12 |
+| Each derivative ×0.7 and ×1.3 alone | 41 of 51 | −1 | 4–5.5 m/s (K per roll, N per roll) and 7.5 m/s Compress (Y per roll ×0.7) |
+| 200 random sets, ±30 % together | 0 of 51 | −1 | 2–41 sets of 200 at 6–12 m/s; 21–67 at 4.5–5.5; 123–194 at 4 |
+| The twist's own stiffness 5–60 | 44 of 51 | −1 | 4–5.5 m/s, at 40–60 N·m/rad |
+| The board's roll inertia 0.03–0.3 | 50 of 51 | −0.04 | 4 m/s |
+
+- **The random sets** [M]: the sets that fail drift slowly (growth 0.15–0.86 per second at 7 m/s tall). Against the
+  passing sets, they have the rail's forces weaker together (N, Y and K per roll about ×0.82–0.87), the fins' side
+  force per slip weaker (×0.80) and their yaw per slip stronger (×1.16): the board turns less per degree of rail and
+  slips more. The same gains on the true state hold these plants; so does the filter with one frame of delay. They
+  fail when the internal model predicts over 3 frames or more (ρ 100) or 6 or more (ρ 1). It is the wrong model's
+  prediction over the delay, not the gains.
+- **The spread** (`results/predict-spread.jsonl`, 5–12 m/s, tall and Compress): ±10 % and ±15 % together, 0 of 200
+  fail (worst +0.03 at 12 m/s tall); ±20 %, 0–4 of 200 fail.
+
+## 6. In time, the delay exact (`results/predict-time.jsonl`; a 0.5 rad/s kick, a 20 N·s shove, 4 s)
+
+| Case | Modes | Kick | Shove |
+|---|---|---|---|
+| 7 m/s tall, nominal | +0.64 | dies (end/start 0.006) | bank 3.1°, twist 8.6°, 11 N·m; dies |
+| 7 m/s tall, true delay 0.15 s | −0.009 at 6.7 Hz | dies (0.66) | bank 4.0°, twist 13°, 28 N·m; dies (0.38) |
+| 5 m/s tall, true delay 0.15 s | −0.092 | grows (bank 30°) | falls at 2.8 s |
+| 7 m/s tall, worst random set | −1 | slow drift (1.004) | twist 58° (past the 50° range), grows |
+| 9 m/s tall, the same set | −1 | grows | falls at 3.9 s |
+| 12 m/s Compress, the same set | −1 | grows | bank 24°, the ankle 84 N·m (past 72) |
+| 5.5 m/s tall, twist stiffness 60 | −0.13 | grows | bank 11.5°, grows |
+
+The time runs agree with the modes: the passes and misses are real, not the analysis's.
+
+## 7. The weights' round (`results/predict-weights.jsonl`)
+
+| Tried | Effect |
+|---|---|
+| ρ 0.3 to 10⁴ | higher gains hold the random sets better and the 0.15 s delay worse; no ρ passes both |
+| the bank's weight ×1 to ×100 | helps the heel pair a little at ρ 10; not the gate |
+| the filter's process noise ×0.3 to ×10, per state | no effect on the random sets |
+| the commands' bias (none to 0.3 rad and 50 N·m per √s) | fixes the twist stiffness test at 12 m/s; worsens the delay |
+| the ankle's penalty ×1 to ×81 | no help |
+| the twist's penalty 100 to 3 N·m | 30 N·m and ρ 10–100 hold the 0.15 s delay at 7 m/s (+0.10 at ρ 100); the random sets still fail |
+
+## 8. What it means [I]
+
+- **Prediction works as the literature says, on a true model.** The nominal loop has the undelayed loop's modes,
+  small efforts, human reactions and a smooth schedule.
+- **Its weakness is the model.** A predictor on an unstable plant (the body's lean grows at about 4 per second on its
+  own) multiplies the model's error over the delay. A fixed internal model holds ±15 % errors in all derivatives
+  together, but not ±30 %. The weakest point is the rail's turn per degree, as in 3.2b: about the board's own centre
+  the heel's yaw moment is a small difference of two large numbers (105 − 97 N·m/rad at 7 m/s). Its sign changes in
+  40 % of the random sets.
+- **The 0.15 s delay error** is a fast ringing that softer twist gains remove. The softer gains then hold the model
+  errors less well. This round did not find a design that holds both.
+- **Below 5 m/s the board does not plane.** The ±30 % tests there are tests of a different hull state.
+- **Options for the advisor**, in my order:
+  1. The plant: levers 1 and 2 (the rail's yaw and side force about the board's centre, the drag line), as item 6
+     says. Pinning those numbers is what would narrow the error the controller must carry.
+  2. Rule whether the gate's ±30 % joint error is the right test for a measured plant. At ±15 % it passes at
+     5–12 m/s, and the 0.15 s delay would then be the last miss (fails at ≤ 8 m/s).
+  3. An internal model that adapts slowly, as humans' do (recalled: Shadmehr and Mussa-Ivaldi 1994; Wolpert,
+     Ghahramani and Jordan 1995). That is a new step, not a weight.
+  4. Treat 4–4.5 m/s (not planing) apart, or drop it from the gate.
+
+## 9. What was not run
+
+- **No game build**, so none of 3.2's bars, no yaw step, no pose, no merge checks (the stop rule).
+- `tsc` (app and server) and the model tests (`rollModel`, `humanBalance`, `predictiveBalance`: 29) pass.
+- The reference input (the lean asked for) was not built.
+- No ride, no game page, no Basilisk case.
+
+## Files (3.2d)
+
+- `src/physics/predictiveBalance.ts`: the measured plant table, `plantAt`, the controller's design (`design`: ZOH,
+  DLQR and Kalman by doubling, the predictor's terms), the exact closed loop (`closedLoop`) and `leastDamping`.
+  `rollModel.ts`: `eigenvalues` takes `{ balance, maxIterations }` (defaults as before).
+- `predict.probe.ts`: parts `design`, `gate`, `between`, `time`, and the round's `tune`, `pair`, `horizon`, `diag`
+  (the file's header has the command and the env).
+- `results/`: `plant-speeds.jsonl` (the lab at 14 more speeds), `predict-design.jsonl`, `predict-gate.jsonl`,
+  `predict-spread.jsonl`, `predict-time.jsonl`, `predict-weights.jsonl`.

@@ -238,3 +238,69 @@ rider unchanged)
 7. 3.2c's searched laws are not built.
 
 **Effort: xhigh.** It continues 3.2c's agent, which holds the model and the LQR code.
+
+---
+
+# Ruling 29i: step 3.2d's model held; the gate corrected; build it in the game (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 4 and its results. Model code only, held on `claude/rider-new-32d`
+(ceb3391f, pushed).
+
+**What 3.2d showed (accepted)**
+- All seventeen speeds of the plant are now measured (4–12 m/s), none interpolated.
+- Below 5 m/s the board does not plane. It trims 26° at 4.5 m/s and 46° at 4 m/s, and the fins' weathercock turns over.
+- On a true model, prediction works as the literature says:
+  - at all 51 points the least damping is at least +0.62;
+  - a 20 N·s shove at 7 m/s peaks at 3.1° of bank, with 11 N·m of twist, and dies away;
+  - a surprise is still answered 0.1 s late.
+- The schedule is the bicycle rider's law: the twist steers into the fall and damps the board's yaw. It is smooth above
+  6 m/s, and read between its points it holds (+0.16 at worst).
+- It holds with all twelve derivatives wrong together by ±15 % at 5–12 m/s: 0 of 200 sets fail, worst +0.03. At ±20 %,
+  0–4 of 200 fail.
+
+**The gate is corrected.** It is the advisor's own gate (29h item 4), and it was stricter than the game needs, in two
+ways:
+- **±30 % on each derivative independently makes plants the game cannot have.**
+  - The derivatives were measured about the rider. About the board's own centre, the rail's yaw is a small difference
+    of two large numbers (105 − 97 N·m/rad at 7 m/s), so independent errors flip its sign in 40 % of the sets.
+  - In a measured plant the errors come by contributor (the hull's pressure, the fins), so they move together.
+- **A 0.15 s true delay against a 0.1 s predictor is not the game's case.** The game's rider has one fixed delay, and
+  its internal model knows it, as a trained human's does. What the game can have is a timing error of about a frame.
+
+Three tests become reports or leave the gate:
+- The twist's stiffness and the board's roll inertia are the game's own values, which the internal model uses. So they
+  are reports, not mismatch tests.
+- Below 5 m/s the board does not plane, so that range leaves the balance gate. The game's bars judge the slow cases:
+  the 2 m/s rise and the 5 m/s glide.
+
+This relaxes the advisor's own gate. The honest risk is that the game's free rider sits further than ±15 % from the
+rigid-rider lab. The game's bars find that out.
+
+**Decision: step 3.2e, build predictive balance in the game** (surfer track, under `rider=new`; the old rider
+unchanged). A fresh agent, effort xhigh, because 3.2d's agent already holds a large context.
+1. **Model checks first, in the same round:**
+   - **A frame of timing error:** the true delay at 0.083 and 0.117 s with the 0.1 s predictor, at 5–12 m/s. The least
+     damping must be at least 0. This is the only model gate.
+   - **Errors by contributor:** the hull's pressure, the fins, the friction and the feet's force, each ×0.7 and ×1.3,
+     alone and together, from the roll-plant ledger at 5, 7 and 9 m/s. Report only.
+2. **In the game:**
+   - **The twist as a body degree of freedom in the standing solve.** The board's share of the yaw inertia is rigid with
+     the board. The upper body's share rides on the twist, with the legs' stiffness and damping and the active twist
+     torque, and the torque's reaction acts on the upper body. This replaces 3.2b's rigid coupling and the provisional
+     `TWIST_INERTIA`.
+   - **The controller of `predictiveBalance.ts`:** the estimator, the predictor over the 0.1 s delay and the LQR
+     schedule by speed and stance. It runs on a fixed 1/60 s clock of simulated time, with the commands held between,
+     as designed, whatever the frame rate.
+   - **The lean asked for enters as a reference:** the plant's own steady turn for that lean, with the LQR acting on the
+     error.
+   - **The twist shows in the pose:** the hips and shoulders turn against the board.
+3. **Check the model against the game (report).** Run the 20 N·s shove at 7 m/s tall, and the kick at 5, 7 and 9 m/s,
+   in the game. Compare bank, twist, torque and damping with the model's prediction.
+4. **Bars:** 3.2's, from steady starts. They are N0, Mode B, Mode A, push recovery, reaction, the save window, glides
+   on the plane and on chop, the held carves, the turn pairs, N1 and N2.
+5. **Stop rule.** At most two tuning rounds, within the human ranges (the LQR weights, the filter's noises).
+   - If the game drifts the way the model's failing sets did, identify the game's own plant in closed loop at 5, 7 and
+     9 m/s: add a small probing input and fit the twelve derivatives. Compare them with the lab's, and hand back.
+   - The next step is then whichever the comparison names: an internal model from the game's own plant (what a rider
+     learns by practice), or the rail's yaw about the board's centre (lever 1).
+6. **If the bars pass:** run the merge checks, push the branch, and draft the PR body.
