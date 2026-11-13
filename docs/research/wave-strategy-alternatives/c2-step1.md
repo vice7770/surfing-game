@@ -163,11 +163,61 @@ pool_c2_b3_a3:5:0.44:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1
 
 ## 5. The runs (level 12, on the M1)
 
-@RUNS@
+Folder: `/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs`
+(called `c2runs` below), a `git archive` of this branch with `node_modules` linked; its `EXPORTED_FROM` says which
+commit. The runs themselves are in `c2runs/tools/basilisk/runs/c2`; the report and the C2 files will be written to
+`c2runs/docs/research/pool-c2-library/`. Copy that folder into the repository when the set is done.
+
+- **Started:** 00:37, stopped in the scouts to fix bed b2, restarted at **00:45** (2026-11-13). Detached: `nohup`,
+  `caffeinate -ims`, `nice 10` (so T5 and the surfer track's tests come first), the usual supervisor
+  (`canyon_pipeline.py run -j 3`).
+- **At most 3 at once** (one core each, about 210 MB of memory each at level 12). The costliest row (A0 0.355) first.
+- **Levels:** scout 10, phase 1 10, phase 2 12: cells of 64/4096 h0 = 7.8 cm at 5 m in the window.
+- **The scouts placed** [M]: b3_a3 vertical t 24.39 (2.0 m deep), switch 14, end 35.5, window 21–54;
+  b2_a3 t 26.71 (2.3 m), 16.5, 36, 24–57; b1_a3 t 29.90 (3.0 m), 19.5, 39.5, 27–60.
+- **Speed** [M]: the first round's phase 2s (A0 0.355, 20–21 √(h0/g) each) took about 3 to 3.5 hours each, with
+  T5 still running beside them until 03:24.
+- **Expected finish: about 10:30 on 2026-11-13** (three rounds of three, about 3.3 hours a round, plus the analysis;
+  it could be 09:00–13:00: the smaller waves may cost a little less, the shared machine more).
+- **Disk** [M]: at level 12 a frame is about 0.54 MB before the break (facets 0.12, velocity 0.37, columns 0.06);
+  more after it. About 800 frames a case: 0.5–0.9 GB a case, **5–8 GB for the nine**. 21 GB were free at the start,
+  so 13–16 GB stay free (the bar is 8 GB). Not tight, unless other work fills the disk.
+
+Commands (all safe to rerun):
+
+```
+bash /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs/c2.sh status   # where each case is, with an ETA
+bash /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs/c2.sh log      # the supervisor's log
+bash /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs/c2.sh stop     # stop these runs only (prefix pool_c2)
+bash /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs/c2.sh start    # start, or resume after a stop, a failure or a reboot
+```
+
+`c2.sh` sets `TUBE_SET=pool`, `RUNS`, `LEVEL2=12`, `POOL_PREFIX=pool_c2`, the nine `POOL_CASES` and
+`CANYON_OUT=docs/research/pool-c2-library`. (`status` needs `LEVEL2=12`: without it, it looks for level-13 folders.)
+
+**If a run fails:** the supervisor writes `runs/c2/pool/<case>.failed` and goes on with the others. `c2.sh start`
+again resumes every unfinished case from its last 10-minute checkpoint (scout, phase 1 or phase 2), and redoes only
+the analysis of finished ones. A phase that ends before its own touchdown is carried on by 4 once, by itself
+(`late()`).
+
+When the set is done: `c2runs/docs/research/pool-c2-library/` holds `report.md`, `summary.json`, `data/` (per case the
+analysis files and `_c2.json.gz`) and `barrels/` (today's `.bin` format, for comparison only).
 
 ## 6. T5's level-13 read
 
-@T5@
+T5 landed at 03:24 (level 13 on the M1, 6h18). Its outputs are committed in `docs/research/pool-tube-runs-t5/`. The
+full read is in `t5-sea-side.md`, "The level-13 read". In short [M]:
+
+| Δ (s) | 2 | 3 | 4 | 4.5 | 5 | 5.4 |
+|---|---|---|---|---|---|---|
+| median ratio sea H / case H | 0.83 | 0.82 | 0.87 | 0.87 | **0.85** | 0.85 |
+
+- Under 0.90 at 5 s: **ruling 26's branch 3**, state matching from the sea's own wave at the hand-over.
+- The gap is the trough ahead, not the crest (the crests agree within 0.02–0.10 m at 4–5.4 s).
+- T5 against today's library: H within 1 % to τ −1 s, crest place within 0.53 m; the same throw time.
+- A finding for the library: T5's first 22 frames (τ −8 to −7.5) have their crest mark on the wave ahead.
+  `c2_library.py` now fixes such frames (`crest_refound`); on T5's run it then gives 516 "own" frames of 553 and a
+  monotone path table (d and H/d) over τ −8 to 0 [M].
 
 ## 7. Not done, and unsure
 

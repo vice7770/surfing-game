@@ -97,3 +97,51 @@ Rerun (from the repository's root; about 13 minutes on the M1):
 npx rolldown docs/research/wave-strategy-alternatives/t5-sea-probe.ts -o <scratch>/t5-sea-probe.mjs --format esm --platform node
 node <scratch>/t5-sea-probe.mjs --ref --until 300 --extra "&wallBody=stream&tubeForm=early&poolReach=long&loftMesh=arc&wallFoot=dug"
 ```
+
+## The level-13 read (2026-11-13, C2 step 1)
+
+T5's level-13 run landed at 03:24 on the M1 (6h18; vertical t 28.20, touchdown 29.63, A0 0.355, a tube, lip 11.5 cells
+across). Its outputs are in `docs/research/pool-tube-runs-t5/`. The same probe, the same sea and config, 300 s,
+1776 thrown points, with the case side from **T5's level-13 run**: its phase-2 crest track
+(`data/periodic_pool_far_big_L13_track.json`, every 0.025 from τ −10.2) for H, place and face, scaled per point by
+T5's own case file (`barrels/periodic-pool-far-big-l13.bin`, A0 0.355: h0 3.45 m median). Output:
+`t5-sea-side-l13-run.txt`. Rerun (about 20 minutes on the M1):
+
+```
+node <scratch>/t5-sea-probe.mjs --ref --until 300 --deltas 2,3,4,4.5,5,5.4 \
+  --track docs/research/pool-tube-runs-t5/data/periodic_pool_far_big_L13_track.json \
+  --case-bin docs/research/pool-tube-runs-t5/barrels/periodic-pool-far-big-l13.bin \
+  --extra "&wallBody=stream&tubeForm=early&poolReach=long&loftMesh=arc&wallFoot=dug"
+```
+
+| Δ (s) | ratio sea / case H | sea H (m) | case H (m) | crest rise, case − sea (m) | crest before the throw: sea / case (m) | face: sea / case (deg) |
+|---|---|---|---|---|---|---|
+| 2.0 | 0.83 (0.55–1.05) | 1.61 | 1.82 | 0.14 | 12.5 / 12.5 | 14 / 19 |
+| 3.0 | 0.82 (0.62–1.03) | 1.52 | 1.73 | 0.10 | 19.3 / 18.9 | 12 / 18 |
+| 4.0 | 0.87 (0.67–1.06) | 1.38 | 1.53 | 0.10 | 26.0 / 24.7 | 11 / 16 |
+| 4.5 | 0.87 (0.70–1.04) | 1.32 | 1.48 | 0.08 | 29.5 / 27.8 | 10 / 15 |
+| **5.0** | **0.85 (0.72–1.00)** | 1.27 | 1.45 | 0.05 | 33.0 / 31.0 | 9 / 14 |
+| 5.4 | 0.85 (0.75–1.01) | 1.25 | 1.43 | 0.02 | 36.0 / 33.3 | 9 / 13 |
+
+(Median, 10–90 %. At 5.4 s, 27 points fall before the track's start.)
+
+- **The gap does not close further out.** The median ratio is 0.85 at 5 s, under 0.90. So **ruling 26's branch 3**:
+  each slice's case is picked from the sea's own wave at the hand-over (state matching, which ruling 28 already chose),
+  not from the foot crest; the hand-over is not moved to 5 s for a better fit.
+- At 4–5.4 s the crests' heights over still water nearly agree (rise 0.02–0.10 m). The gap is the trough ahead: the
+  sea's is 0.06–0.17 m below still water, the case's 0.22–0.26 m.
+- The far third of the reef (s 101–151 m) is still the lowest (0.62–0.78 at 2–4 s), as at level 10.
+- Level 13 against the level-10 scout: the same within 0.01–0.05 in the ratio (0.83/0.82/0.87 against 0.83/0.82/0.84
+  at 2/3/4 s). The scout's read stands.
+- **The case file's own frames are wrong at its start.** T5's first 22 library frames (τ −8.0 to −7.5) carry the
+  crest mark on the first crest's bore, 15 h0 ahead, and are flagged clean. At the game's scale that is 4.4–4.7 s
+  before the throw, so the probe's "lib" columns at 4.5–5.4 s are not usable (they show negative distances). The
+  ratio above is from the crest track, which is right there. `c2_library.py` now finds those frames' landmarks
+  again near the tracked crest (`crest_refound`). Today's game library (from τ −3) is not touched by this.
+
+**T5 against today's library** (`t5_case_side.py`, at 4.5 m; output `t5-l13-case-side.txt`) [M]: before the throw
+the H gap is 0.004–0.015 m (under 1 %) to τ −1 s and 0.05 m (2 %) at −0.5 and 0; the crest place gap is 0.14–0.53 m
+from −2.5 to −0.5 s (the bar was 0.5 m: −2.5 s misses by 3 cm, one frame). Both throw at the same time (vertical t 28.20 and
+28.18, touchdown 29.63 and 29.63). From 2 s after the throw the two part (0.9–2 m point gap): the splash-up and the
+bore differ; T5 has the first crest's bore in its wider window. The advisor's answer 3 in `t5-run.md`: T5 is the truer
+case.
