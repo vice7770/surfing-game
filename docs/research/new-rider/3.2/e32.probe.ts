@@ -67,7 +67,7 @@ function gameRun(speed: number, stance: Stance, start: 'kick' | 'shove' | 'none'
   out.bank0 = -q.bank.angle; out.twist0 = -q.twistBody.angle; out.torque0 = -q.twistBody.torque; out.yaw0 = -rig.board.angularVelocity.dot(q.up);
   if (start === 'kick') rig.board.angularVelocity.addScaledVector(forwardOf(rig), 0.5);
   // The model's shove: the body's bank rate 20 N·s / (m h) toward its right (here −x).
-  else if (start === 'shove') rig.rider!.velocity.addScaledVector(sideOf(rig), -20 / 73);
+  else if (start === 'shove') rig.rider!.velocity.addScaledVector(sideOf(rig), -(process.env.SHOVE ? Number(process.env.SHOVE) : 20 / 73));
   // STEER=s: the stick held from the start (the held carve's, 1).
   if (process.env.STEER) rig.rider!.steer = Number(process.env.STEER);
   for (let i = 0; i < Math.round(seconds / STEP); i += 1) {
@@ -157,6 +157,9 @@ it('step 3.2e: the game against the model', () => {
       const c = q.human?.state ?? {};
       emit({
         pitch: r(state(rig, flat, t).pitch, 1), pAnk: r(q.standingBody.pitch.angle * DEG, 1), capX: r(c.across, 3), capZ: r(c.along, 3), past: r(c.past, 3), load: r(q.contact.load, 2), legExt: r(q.leg.extension, 3),
+        dOff: [r(q.position.x - q.target.x, 3), r(q.position.y - q.target.y, 3), r(q.position.z - q.target.z, 3)], legF: r(q.leg.force, 0), legRate: r(q.leg.rate, 2), legRest: r(q.leg.rest, 3), lLoad: r(q.legLoad, 0),
+        sway: r(Math.hypot(q.sway.x, q.sway.z), 3), pErr: r(q.postureError, 3), flight: r(q.flightTime, 3), fallen: q.human?.fallen ? 1 : 0,
+        reach: r(c.reach, 3), beyond: c.beyond ? 1 : 0, wPast: c.weightPast ? 1 : 0, margin: r(c.margin, 3), om: r(c.omega, 3), feltG: r(q.pairFelt ? Math.hypot(q.pairFelt.x, q.pairFelt.y, q.pairFelt.z) : 0, 2), frozen: q.human?.frozen ? 1 : 0, pX: r(c.pointAcross, 3), vX: r(c.speedAcross, 3),
         t: r(t, 3), v: r(rig.board.velocity.length(), 2), bank: r(-q.bank.angle * DEG, 2), roll: r(-state(rig, new Slope(0), t).roll, 2),
         yaw: r(-rig.board.angularVelocity.dot(q.up), 3), twist: r(-q.twistBody.angle * DEG, 2), tT: r(-q.twistBody.torque, 1), tA: r(-q.twistBody.active, 1),
         rest: r(-q.ankleRest * DEG, 2), aT: r(-q.ankleTorque, 1), swing: r(q.swing.angle * DEG, 1),
@@ -165,6 +168,42 @@ it('step 3.2e: the game against the model', () => {
       });
     }, Number(process.env.CHOP ?? 0), process.env.TRACE_SETTLE === '1');
     emit({ end: true, fell: run.fell });
+  }
+  if (PARTS.includes('chopfall')) {
+    // Step 3.2h: where each chop glide ends, and what the state was at the fall (the stop rule's trace). The bars' own
+    // run: a steady start on the terminal plane under a seeded chop, SETTLE s, then 3 s.
+    for (const chop of [1, 2, 3]) for (const speed of [5, 7, 9, 12]) {
+      const ring: Record<string, unknown>[] = [];
+      let fell = '';
+      let at = Number.NaN;
+      let frozenFor = 0;
+      let lightLongest = 0;
+      const st = steady(speed, 'tall', chop, (rig, q, t) => {
+        const c = q.human?.state ?? {};
+        if (q.human?.frozen) frozenFor += STEP;
+        lightLongest = Math.max(lightLongest, q.human?.lightLongest ?? 0);
+        ring.push({ t: r(t, 3), roll: r(-state(rig, new Slope(0), t).roll, 1), pitch: r(state(rig, new Slope(0), t).pitch, 1), bank: r(-q.bank.angle * DEG, 1), swing: r(q.swing.angle * DEG, 1), capX: r(c.across, 3), capZ: r(c.along, 3), past: r(c.past, 3), reach: r(c.reach, 3), by: c.beyond ? 1 : 0, wp: c.weightPast ? 1 : 0, frz: q.human?.frozen ? 1 : 0, load: r(q.captureLoad, 2), om: r(c.omega, 2), pErr: r(q.postureError, 3), flight: r(q.flightTime, 2), legExt: r(q.leg.extension, 3), legF: r(q.leg.force, 0) });
+        if (ring.length > 8) ring.shift();
+      });
+      const { rig, water } = st;
+      let t = st.t;
+      fell = st.fell ? `settling: ${st.fell}` : '';
+      if (fell) at = t;
+      const q = rig.rider as unknown as Inner;
+      if (!fell) for (let i = 0; i < Math.round(3 / STEP); i += 1) {
+        t = st.t + (i + 1) * STEP;
+        (water as { advance?: (dt: number) => void }).advance?.(STEP);
+        rig.board.step(STEP, water);
+        const c = q.human?.state ?? {};
+        if (q.human?.frozen) frozenFor += STEP;
+        lightLongest = Math.max(lightLongest, q.human?.lightLongest ?? 0);
+        ring.push({ t: r(t - st.t, 3), roll: r(-state(rig, new Slope(0), t).roll, 1), pitch: r(state(rig, new Slope(0), t).pitch, 1), bank: r(-q.bank.angle * DEG, 1), swing: r(q.swing.angle * DEG, 1), capX: r(c.across, 3), capZ: r(c.along, 3), past: r(c.past, 3), reach: r(c.reach, 3), by: c.beyond ? 1 : 0, wp: c.weightPast ? 1 : 0, frz: q.human?.frozen ? 1 : 0, load: r(q.captureLoad, 2), om: r(c.omega, 2), pErr: r(q.postureError, 3), flight: r(q.flightTime, 2), legExt: r(q.leg.extension, 3), legF: r(q.leg.force, 0) });
+        if (ring.length > 8) ring.shift();
+        const sN = state(rig, water, t);
+        if (sN.fell) { fell = sN.fell; at = t - st.t; break; }
+      }
+      emit({ part: 'chopfall', chop, speed, fell, at: r(at, 2), frozenS: r(frozenFor, 3), lightLongestS: r(lightLongest, 3), tail: ring });
+    }
   }
   if (PARTS.includes('inertia')) {
     // The inertia the board meets in its own solve (its own and the water's implicit share: the added mass, the implicit

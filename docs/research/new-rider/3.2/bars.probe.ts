@@ -87,9 +87,10 @@ it('glides at 5, 7, 9 and 12 m/s, flat and on chop: hold 3 s from a steady glide
     { name: 'plane', make: (v) => new Slope(terminalAngle(v)) },
     ...[1, 2, 3].map((seed) => ({ name: `chop ${seed}`, make: (v: number) => new OnFace(terminalAngle(v), new Chop(seed)) })),
   ];
-  for (const w of waters) for (const v of [5, 7, 9, 12]) {
+  // STANCE=tall,crouch,compress (step 3.2h: the stance the glide is ridden in; the bar is tall).
+  for (const stance of (process.env.STANCE ?? 'tall').split(',') as Stance[]) for (const w of waters) for (const v of [5, 7, 9, 12]) {
     const water = w.make(v);
-    const start = steady(water, v);
+    const start = steady(water, v, stance);
     const { rig } = start;
     let t = start.t; let fell = start.fell ? `settling: ${start.fell}` : ''; let minReserve = 1; let peakShare = -Infinity; let lowShare = Infinity; let s = state(rig, water, t);
     const from = t;
@@ -103,7 +104,7 @@ it('glides at 5, 7, 9 and 12 m/s, flat and on chop: hold 3 s from a steady glide
         peakShare = Math.max(peakShare, share); lowShare = Math.min(lowShare, share);
       }
     }
-    emit({ bar: 'glide', rider: RIDER, water: w.name, faceDeg: r(terminalAngle(v), 1), v, fell, heldS: r(t - from, 2), speedEnd: r(s.speed, 2), draftCm: r(s.draft * 100, 1), minReserve: r(minReserve, 2), pressureShare: [r(lowShare, 2), r(peakShare, 2)] });
+    emit({ bar: 'glide', rider: RIDER, ...(process.env.STANCE ? { stance } : {}), water: w.name, faceDeg: r(terminalAngle(v), 1), v, fell, heldS: r(t - from, 2), speedEnd: r(s.speed, 2), draftCm: r(s.draft * 100, 1), minReserve: r(minReserve, 2), pressureShare: [r(lowShare, 2), r(peakShare, 2)] });
   }
 }));
 
@@ -157,12 +158,12 @@ function shove(stance: Stance, dv: number, dir: number) {
   const water = new Slope(terminalAngle(7));
   const start = steady(water, 7, stance);
   const { rig } = start;
-  if (start.fell) return { fell: `settling: ${start.fell}`, fellAfter: Number.NaN, leftAfter: Number.NaN, activeAfter: Number.NaN, pressureAfter: Number.NaN };
+  if (start.fell) return { fell: `settling: ${start.fell}`, fellAfter: Number.NaN, leftAfter: Number.NaN, beyondAfter: Number.NaN, activeAfter: Number.NaN, pressureAfter: Number.NaN, loadMin: Number.NaN };
   const q = inner(rig);
   const restBefore = RIDER === 'new' ? q.human.rollRest : q.ankleRest;
   const copBefore = rig.rider!.contact.centreOfPressure.x;
   rig.rider!.velocity.addScaledVector(side(rig), dir * dv);
-  let fell = ''; let fellAfter = Number.NaN; let leftAfter = Number.NaN; let activeAfter = Number.NaN; let pressureAfter = Number.NaN;
+  let fell = ''; let fellAfter = Number.NaN; let leftAfter = Number.NaN; let beyondAfter = Number.NaN; let activeAfter = Number.NaN; let pressureAfter = Number.NaN; let loadMin = Infinity;
   // The step is 1/60 s; the substeps inside it carry the timing: read the rest and the pressure at each substep.
   const original = q.finish.bind(q);
   let clock = 0;
@@ -173,12 +174,14 @@ function shove(stance: Stance, dv: number, dir: number) {
     if (Number.isNaN(activeAfter) && Math.abs(rest - restBefore) > 0.005) activeAfter = clock;
     if (Number.isNaN(pressureAfter) && Math.abs(rig.rider!.contact.centreOfPressure.x - copBefore) > 0.01) pressureAfter = clock;
     if (RIDER === 'new' && Number.isNaN(leftAfter) && q.human.state.past > 0) leftAfter = clock;
+    if (RIDER === 'new' && Number.isNaN(beyondAfter) && q.human.state.beyond) beyondAfter = clock;
+    if (RIDER === 'new') loadMin = Math.min(loadMin, q.captureLoad ?? Infinity);
   };
   for (let i = 0; i < Math.round(2 / STEP); i += 1) {
     const s = frame(rig, water, start.t + (i + 1) * STEP);
     if (s.fell) { fell = s.fell; fellAfter = clock; break; }
   }
-  return { fell, fellAfter, leftAfter, activeAfter, pressureAfter };
+  return { fell, fellAfter, leftAfter, beyondAfter, activeAfter, pressureAfter, loadMin };
 }
 
 it('push recovery, reaction and the save window on a 7 m/s glide', () => each(() => {
@@ -192,12 +195,22 @@ it('push recovery, reaction and the save window on a 7 m/s glide', () => each(()
     const past = shove(stance, Math.min(3, lo * 1.1 + 0.02), dir);
     const hard = shove(stance, Math.min(3, lo * 1.5 + 0.05), dir);
     const window = (x: ReturnType<typeof shove>) => (x.fell && !Number.isNaN(x.leftAfter) ? r(x.fellAfter - x.leftAfter, 3) : null);
+    // Step 3.2h: the design's save window is the body's own tipping time, from the loss of balance (the capture point
+    // past the feet by MORE than the room's reach) to the separation; `window` above measures it from the capture
+    // point's first touch outside the feet, which a savable shove crosses at once.
+    const lost = (x: ReturnType<typeof shove>) => (x.fell && !Number.isNaN(x.beyondAfter) ? r(x.fellAfter - x.beyondAfter, 3) : null);
     emit({
       bar: 'push', rider: RIDER, stance, dir, savedDv: r(lo, 3), savedImpulseNs: r(lo * 73, 0),
       reaction: { activeRestS: r(small.activeAfter, 3), pressureS: r(small.pressureAfter, 3), fell: small.fell },
-      justPast: { dv: r(lo * 1.1 + 0.02, 3), fell: past.fell, fellAfterS: r(past.fellAfter, 3), leftFeetAfterS: r(past.leftAfter, 3), saveWindowS: window(past) },
-      hard: { dv: r(lo * 1.5 + 0.05, 3), fell: hard.fell, fellAfterS: r(hard.fellAfter, 3), leftFeetAfterS: r(hard.leftAfter, 3), saveWindowS: window(hard) },
+      justPast: { dv: r(lo * 1.1 + 0.02, 3), fell: past.fell, fellAfterS: r(past.fellAfter, 3), leftFeetAfterS: r(past.leftAfter, 3), beyondAfterS: r(past.beyondAfter, 3), saveWindowS: window(past), lostWindowS: lost(past), loadMin: r(past.loadMin, 2) },
+      hard: { dv: r(lo * 1.5 + 0.05, 3), fell: hard.fell, fellAfterS: r(hard.fellAfter, 3), leftFeetAfterS: r(hard.leftAfter, 3), beyondAfterS: r(hard.beyondAfter, 3), saveWindowS: window(hard), lostWindowS: lost(hard), loadMin: r(hard.loadMin, 2) },
     });
+    // The window against the shove's size (step 3.2h): the time to fall diverges as the shove approaches the savable one,
+    // so a window read at 1.1x the margin is read at a singular point.
+    if (process.env.LADDER === '1') for (const k of [1.02, 1.05, 1.1, 1.2, 1.5, 2, 3]) {
+      const x = shove(stance, Math.min(3, lo * k + 0.02), dir);
+      emit({ bar: 'ladder', rider: RIDER, stance, dir, k, dv: r(Math.min(3, lo * k + 0.02), 3), fell: x.fell, fellAfterS: r(x.fellAfter, 3), leftFeetAfterS: r(x.leftAfter, 3), beyondAfterS: r(x.beyondAfter, 3), saveWindowS: window(x), lostWindowS: lost(x), loadMin: r(x.loadMin, 2) });
+    }
   }
 }));
 

@@ -504,3 +504,81 @@ The 3.2g agent is nearly out of context, and Part 7 §4 is written as this brief
    Mode B passes on its restated bank bar, N0 stays byte-identical.
 4. **If they pass, run the merge checks and hand back with a PR body.** Then the whole rebuild merges as one and the
    owner rides it.
+
+---
+
+# Ruling 29m: step 3.2h; the chop is side-to-side, and the ankle runs out at 11° (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 8 and its traces. Code held on `claude/rider-new-32h` (66464822).
+
+## Two of the advisor's own calls were wrong, and the agent proved both
+
+1. **"Everything still missing is front-to-back" (ruling 29k) is refuted.** The chop's remaining falls are side-to-side.
+   The old rider's board stays within ±11° of roll on the same water; the new rider's reaches 35–63°, with the body
+   banked 30–54°. 3.2g's pitch finding was true of the fall it traced and false as a general claim, and the advisor
+   generalised it.
+2. **Demoting the 20 cm rise at 2 m/s (ruling 29l) was wrong.** The 2 m/s is the **surface's rise rate**, not the
+   board's speed — the board glides at 7.4 m/s throughout. The advisor misread it. **The bar is restored, and 3.2h
+   passes it** (the old rider falls at 0.32 s, 3.2f at 0.42 s, 3.2h holds).
+
+## What 3.2h built, and both pieces work
+
+- **The fall test's validity condition**, at 0.2 body weights, with the capture point frozen below it. The threshold is
+  reasoned from the feet's own authority: at 0.2 BW a foot's whole moment is about 14 N·m against m g h ≈ 645 N·m/rad,
+  which is 1.3° of correction. **The push bar did not get easier** — the largest shove saved is identical to the digit
+  at gates of 0.1 and 0.2, and only at 0.4 does the gate start sheltering falls. That check was the condition on this
+  work and it was done properly.
+- **The legs. The fault was a rule, not the stiffness.** `prepareLeg`'s "feet on a deck only push" was gated on the
+  *stance's* compressing, so the *balance's* own knee drop was exempt. In a chop trough the knee spring pulled the body
+  **down with 3,624 N — five body weights — while the feet carried nothing.** Knee travel over the rise went from 2.8 cm
+  to 25 cm. Accepted.
+- **The knee stiffness stays at 20 kN/m, measured.** Softer is worse in chop (20/12/8/5/3 kN/m give 4/3/3/3/3 of 12).
+  The agent reports that this disagrees with the soft-landing end of its own sources rather than resolving it, which is
+  the right thing to do with a disagreement.
+
+## The cause of the chop, named at last
+
+**The ankle runs out at 11° of lean.** The feet are 0.13 m half-width under a centre of mass at 0.68 m, so the ankle's
+whole authority is asin(0.13 / 0.68) = 11°. Past that it has nothing, and the next strategy has to carry the rider.
+
+It does not arrive in time, for two reasons the agent found and correctly did not act on:
+
+- **The hip is triggered by the ankle's command, not by the capture point** — while the knees and the arms are
+  triggered by the capture point. So the hip waits for the ankle to saturate, which happens at 1.88 s with the board
+  already at 50° of roll. The hip then has 0.1 s.
+- **`reach` credits the hip's whole remaining range as if it could be spent instantly**, while the rotor needs about
+  0.5 s against a 0.3 s horizon. So the fall test believes in a save the body cannot make. **Making `reach` honest on
+  its own would make the chop worse**, which is why the two must be done together.
+
+Of the eight remaining falls: five are a real topple across with the test valid and the hip's whole reach already
+credited; two are the board diving away with the feet at zero, where the freeze held for 0.27–0.30 s and the posture
+backstop separated at 0.25 m; one is the room genuinely spent.
+
+## Decisions
+
+1. **The save window's measure is wrong, not the rider.** The probe reads the time to fall at a shove just past the
+   savable one, where that time diverges (1.02× gives 1.200 s, 1.5× gives 0.195 s). The design's own window is
+   √(h/g_eff), the asymptote: tall 0.187, crouch 0.165, Compress 0.144, **correctly ordered**. They look short only
+   because an impulsive shove's felt gravity is 13–19 m/s²; at 9.81 the same body gives 0.26 s, inside the old bar.
+   **The bar becomes: the asymptote, ordered tall > crouch > Compress, and within 20 % of √(h/g_eff) at the test's own
+   felt gravity.** The advisor wrote the old bar against an implied 1 g; this states what it meant.
+2. **The 20 cm rise at 2 m/s is a bar again**, and it passes.
+3. **The knee stiffness disagreement is recorded, not resolved.** It is revisited only if a later step gives a reason.
+4. **The 5 m/s chop objection is not accepted yet.** Three of the eight falls are there, during the settle, on a
+   19°-trim hull. The next step reports the chop by speed so the question can be settled on numbers.
+
+## Decision: step 3.2i, the hip in time (the same agent continues; effort xhigh)
+
+Everything else passes. This is the last cause.
+
+1. **Trigger the hip from the capture point**, as the knees and the arms already are, so it does not wait for the ankle
+   to saturate at 11°.
+2. **Make `reach` honest** about what a rotor can deliver inside the horizon, instead of crediting its whole remaining
+   range. Do 1 and 2 together: the agent measured that 2 alone makes the chop worse.
+3. **Report the chop by speed and by seed**, so the 5 m/s question is settled on numbers rather than on an objection.
+4. **Bars:** the chop (4 of 12, must reach 11 of 12) and the save window on its restated measure. Nothing may regress:
+   the carves at 2.83–2.85 and 2.98, Mode B on its bank bar, the rise, the push bar's saved shove, N0 byte-identical,
+   N1 under about 2 kW (it is now 1.52).
+5. **Stop rule:** two rounds. If the hip in time does not carry the chop, trace one fall at the moment the ankle
+   saturates and hand back.
+6. **If they pass:** the merge checks, and then the whole rebuild merges as one and the owner rides it.
