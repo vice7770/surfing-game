@@ -185,6 +185,97 @@ export const PLANT_SPEEDS: Record<string, LabPlant> = {
   '12': { roll: [-161.0, -395.3, -448.6], slip: [-1115.5, 3741.4, -1006.1], yaw: [-34.4, 117.0, -43.3], rate: [8.01, -30.1, -6.15], drag: 0.1925 }, // trim 2.9°, draft 0.017 m
 };
 
+/**
+ * Step 3.2f (the advisor's ruling 29j): the water's derivatives at a HELD RAIL, measured the same way at 5, 7 and 9 m/s
+ * and rails of 0, 10, 20, 30 and 40° (`../../docs/research/new-rider/roll-plant/plant.probe.ts` PART=rail). At each
+ * point the board is first held at that roll with its yaw and its sideslip free, so it settles into the turn that rail
+ * makes (`trimYaw`, rad/s; `trimSlipDeg`, the path's angle in the level plane; `pull`, the turn's pull over what the
+ * rail's own lean would balance). The twelve derivatives are then central differences about that trim, held.
+ * - **Measured:** every point here. 5 m/s at 30° and 40° is missing: the board does not hold a turn there (at 30° the
+ *   run goes non-finite, at 40° it spins out to 71° of sideslip and sinks). At 5 m/s the rail is clamped to 20°.
+ * - The 0° rows are this method's, and they match `PLANT_SPEEDS` (the roll-plant study's) to the last digit except the
+ *   roll rate's, which is a central difference here and the mean of 0.2 and 0.5 rad/s there.
+ * - A symmetric hull's derivatives are even in the rail (the mirror flips the state and the moments together), so the
+ *   table is read at |rail|.
+ */
+export interface RailPlant { roll: number[]; slip: number[]; yaw: number[]; rate: number[]; trimYaw: number; trimSlipDeg: number; pull: number | null }
+export const RAIL_PLANT: Record<string, RailPlant> = {
+  '5|0': { roll: [-98,-361,-310], slip: [-28.6,704.7,-272.7], yaw: [-3.3,37,-30], rate: [-1.4,-14,-0.7], trimYaw: 0, trimSlipDeg: 0, pull: null },
+  '5|10': { roll: [-45.3,-573,-37.2], slip: [-125.2,320.9,-79.6], yaw: [-6,34,-27], rate: [-1.9,-14.3,-3.1], trimYaw: -0.2925, trimSlipDeg: -3.513, pull: 0.845 },
+  '5|20': { roll: [-137.2,-816.5,15.2], slip: [-361,-378.2,260.7], yaw: [-13,26.5,-26.4], rate: [-6.3,-23.3,-4.4], trimYaw: -0.5903, trimSlipDeg: -7.222, pull: 0.827 },
+  '7|0': { roll: [-104.9,-412.5,-285.3], slip: [-296.2,1398,-530.6], yaw: [-13.1,63,-34.5], rate: [2.8,-19.5,-1.4], trimYaw: 0, trimSlipDeg: 0, pull: null },
+  '7|10': { roll: [-104,-541.4,-179.6], slip: [-343.8,825.1,-90], yaw: [-17.3,46,-23.1], rate: [-1.1,-46.3,10.3], trimYaw: -0.2164, trimSlipDeg: -1.503, pull: 0.876 },
+  '7|20': { roll: [-150.4,-1297.7,249.5], slip: [-662.9,-1386.6,885.8], yaw: [-31.1,-73,28.8], rate: [6.4,-62.7,10.9], trimYaw: -0.4309, trimSlipDeg: -3.314, pull: 0.845 },
+  '7|30': { roll: [-512.5,-2085.6,285.6], slip: [-1060.3,-2609.8,959.1], yaw: [-67.2,-72,-4.7], rate: [-4.9,-83.5,2.9], trimYaw: -0.6778, trimSlipDeg: -5.636, pull: 0.838 },
+  '7|40': { roll: [-341.8,-3400.5,435.2], slip: [-876.6,-4142.5,1039.9], yaw: [-49.3,-206,8], rate: [21.3,-259,22.4], trimYaw: -0.9685, trimSlipDeg: -9.088, pull: 0.824 },
+  '9|0': { roll: [-125.2,-418.3,-295.9], slip: [-605,2271.8,-850.8], yaw: [-24.1,87,-42.2], rate: [5.8,-24.8,-2.3], trimYaw: 0, trimSlipDeg: 0, pull: null },
+  '9|10': { roll: [-90.5,-386.7,-152.7], slip: [-671.5,1572.8,-126.3], yaw: [-29.2,62.5,-21.4], rate: [9.1,-21,-7.5], trimYaw: -0.1663, trimSlipDeg: -0.895, pull: 0.865 },
+  '9|20': { roll: [-139.8,-547.2,46.7], slip: [-688.4,-358.1,942.5], yaw: [-37.9,16.5,4.6], rate: [23.8,-42.7,1], trimYaw: -0.3194, trimSlipDeg: -2.325, pull: 0.805 },
+  '9|30': { roll: [-244.1,-1217.5,162.7], slip: [-741.1,-418.3,666.6], yaw: [-41.9,23.5,-2], rate: [29.9,-58.8,-4.5], trimYaw: -0.4878, trimSlipDeg: -4.737, pull: 0.775 },
+  '9|40': { roll: [-27.8,-968.3,116.9], slip: [-709.3,-530,448.3], yaw: [-46.8,70.5,-1.3], rate: [50.1,-256.5,-6.8], trimYaw: -0.6924, trimSlipDeg: -7.919, pull: 0.757 },
+};
+export const RAIL_SPEEDS = [5, 7, 9];
+export const RAIL_ANGLES = [0, 10, 20, 30, 40];
+/** The largest rail the table has at a speed, rad (5 m/s stalls above 20°). */
+export function railLimit(speed: number): number {
+  const most = speed < 6 ? 20 + ((speed - 5) / 1) * 20 : 40;
+  return (Math.min(40, Math.max(10, most)) * Math.PI) / 180;
+}
+/**
+ * The rail's correction to the twelve derivatives at a speed, as differences from the same method's 0° row: the straight
+ * table (`PLANT_SPEEDS`, all 17 speeds) is left exactly as it was, and the rail only adds. Linear in the rail between
+ * the table's angles and in the speed between 5, 7 and 9 m/s, held outside.
+ */
+export function railCorrection(speed: number, rail: number): { roll: number[]; slip: number[]; yaw: number[]; rate: number[] } {
+  const deg = (Math.min(railLimit(speed), Math.abs(rail)) * 180) / Math.PI;
+  const zero = { roll: [0, 0, 0], slip: [0, 0, 0], yaw: [0, 0, 0], rate: [0, 0, 0] };
+  if (deg <= 0) return zero;
+  const v = Math.max(RAIL_SPEEDS[0], Math.min(RAIL_SPEEDS[RAIL_SPEEDS.length - 1], speed));
+  let i = 0;
+  while (i < RAIL_SPEEDS.length - 2 && v > RAIL_SPEEDS[i + 1]) i += 1;
+  const fv = (v - RAIL_SPEEDS[i]) / (RAIL_SPEEDS[i + 1] - RAIL_SPEEDS[i]);
+  let j = 0;
+  while (j < RAIL_ANGLES.length - 2 && deg > RAIL_ANGLES[j + 1]) j += 1;
+  const fa = (deg - RAIL_ANGLES[j]) / (RAIL_ANGLES[j + 1] - RAIL_ANGLES[j]);
+  // At a speed whose row is missing (5 m/s above 20°), that speed's largest measured angle stands in.
+  const pick = (sp: number, angle: number): RailPlant | undefined => {
+    let a = angle;
+    while (a > 0 && !RAIL_PLANT[`${sp}|${a}`]) a -= 10;
+    return RAIL_PLANT[`${sp}|${a}`] ?? RAIL_PLANT[`${sp}|0`];
+  };
+  const at = (sp: number) => {
+    const lo = pick(sp, RAIL_ANGLES[j])!;
+    const hi = pick(sp, RAIL_ANGLES[j + 1])!;
+    const base = RAIL_PLANT[`${sp}|0`];
+    const mix = (k: 'roll' | 'slip' | 'yaw' | 'rate') => lo[k].map((x, q) => x + fa * (hi[k][q] - x) - base[k][q]);
+    return { roll: mix('roll'), slip: mix('slip'), yaw: mix('yaw'), rate: mix('rate') };
+  };
+  const a = at(RAIL_SPEEDS[i]);
+  const b = at(RAIL_SPEEDS[i + 1]);
+  const mix = (k: 'roll' | 'slip' | 'yaw' | 'rate') => a[k].map((x, q) => x + fv * (b[k][q] - x));
+  return { roll: mix('roll'), slip: mix('slip'), yaw: mix('yaw'), rate: mix('rate') };
+}
+/** The turn's pull over what the rail's own lean would balance (`pull`), at a speed and rail: 1 at no rail. */
+export function railPull(speed: number, rail: number): number {
+  const deg = (Math.min(railLimit(speed), Math.abs(rail)) * 180) / Math.PI;
+  if (deg <= 0) return 1;
+  const v = Math.max(RAIL_SPEEDS[0], Math.min(RAIL_SPEEDS[RAIL_SPEEDS.length - 1], speed));
+  let i = 0;
+  while (i < RAIL_SPEEDS.length - 2 && v > RAIL_SPEEDS[i + 1]) i += 1;
+  const fv = (v - RAIL_SPEEDS[i]) / (RAIL_SPEEDS[i + 1] - RAIL_SPEEDS[i]);
+  let j = 0;
+  while (j < RAIL_ANGLES.length - 2 && deg > RAIL_ANGLES[j + 1]) j += 1;
+  const fa = (deg - RAIL_ANGLES[j]) / (RAIL_ANGLES[j + 1] - RAIL_ANGLES[j]);
+  const one = (sp: number, angle: number): number => {
+    let a = Math.max(10, angle);
+    while (a > 10 && !RAIL_PLANT[`${sp}|${a}`]) a -= 10;
+    return RAIL_PLANT[`${sp}|${a}`]?.pull ?? 0.85;
+  };
+  const a = one(RAIL_SPEEDS[i], RAIL_ANGLES[j]) + fa * (one(RAIL_SPEEDS[i], RAIL_ANGLES[j + 1]) - one(RAIL_SPEEDS[i], RAIL_ANGLES[j]));
+  const b = one(RAIL_SPEEDS[i + 1], RAIL_ANGLES[j]) + fa * (one(RAIL_SPEEDS[i + 1], RAIL_ANGLES[j + 1]) - one(RAIL_SPEEDS[i + 1], RAIL_ANGLES[j]));
+  return a + fv * (b - a);
+}
+
 /** The stances (3.2c's split; the body over its feet as 3.2b's model read the traces): by the leg's depth, m. */
 export const STANCE_TABLE = [
   { depth: 0, height: 0.84, lower: 1.37, upper: 1.44 },
@@ -247,10 +338,12 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number } = {}): { y: YawPlant; t: TwistPlant } {
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number } = {}): { y: YawPlant; t: TwistPlant } {
   const lab = labAt(speed);
   const s = opts.scales ?? new Array<number>(12).fill(1);
-  const scaled = { roll: lab.roll.map((x, k) => x * s[k]), slip: lab.slip.map((x, k) => x * s[3 + k]), yaw: lab.yaw.map((x, k) => x * s[6 + k]), rate: lab.rate.map((x, k) => x * s[9 + k]) };
+  // Step 3.2f: the rail's own correction (`railCorrection`), so the schedule covers carving as it covers speed and stance.
+  const c = railCorrection(speed, opts.rail ?? 0);
+  const scaled = { roll: lab.roll.map((x, k) => (x + c.roll[k]) * s[k]), slip: lab.slip.map((x, k) => (x + c.slip[k]) * s[3 + k]), yaw: lab.yaw.map((x, k) => (x + c.yaw[k]) * s[6 + k]), rate: lab.rate.map((x, k) => (x + c.rate[k]) * s[9 + k]) };
   const st = stanceAt(depth);
   const board = boardInertiaAt(speed);
   const y: YawPlant = {
@@ -425,18 +518,21 @@ export function leastDamping(values: readonly { re: number; im: number }[], step
  */
 export const SCHEDULE_SPEEDS = Array.from({ length: 17 }, (_, i) => 4 + 0.5 * i);
 export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
+/** Step 3.2f: the schedule's rails, rad (the measured table's angles). */
+export const SCHEDULE_RAILS = RAIL_ANGLES.map((a) => (a * Math.PI) / 180);
 const designCache = new Map<string, Design>();
 /** The design at a table point (cached for the page; the default weights unless given). */
-export function scheduledDesign(speed: number, depth: number, weights?: DesignWeights): Design {
-  const key = `${speed}|${depth}|${weights ? JSON.stringify(weights) : ''}`;
+export function scheduledDesign(speed: number, depth: number, rail = 0, weights?: DesignWeights): Design {
+  const key = `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}`;
   let d = designCache.get(key);
   if (!d) {
-    const { y, t } = plantAt(speed, depth);
+    const { y, t } = plantAt(speed, depth, { rail });
     d = design(y, t, weights ?? DEFAULT_WEIGHTS);
     designCache.set(key, d);
   }
   return d;
 }
+const r3 = (x: number) => Math.round(x * 1000) / 1000;
 
 /** Solves the small dense system a x = b in place (Gaussian elimination with partial pivoting); returns x. */
 function solveSmall(a: number[][], b: number[]): number[] {
@@ -514,10 +610,14 @@ export class PredictiveController {
   /** Ticks run since the reset. */
   ticks = 0;
 
-  /** The reference's steady turn: the linear model's for the lean asked ('linear', ruling 29i), or the turn that balances it ('tan'; probes only). */
+  /**
+   * The reference's steady turn: the turn that balances the lean asked ('tan', the default since step 3.2f and ruling
+   * 29j's correction: a rider's lean is held by a coordinated turn, and the linearised plant's steady turn is only its
+   * small-angle shadow), or the linearised plant's own ('linear', 3.2e's; probes only).
+   */
   private readonly turn: 'linear' | 'tan';
 
-  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'linear') {
+  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan') {
     this.weights = weights;
     this.turn = turn;
   }
@@ -532,8 +632,8 @@ export class PredictiveController {
     this.bias[0] = 0; this.bias[1] = 0;
   }
 
-  /** The four nearest designs blended at a speed and depth (clamped to the table). */
-  private blend(speed: number, depth: number): Design {
+  /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
+  private blend(speed: number, depth: number, rail: number): Design {
     const v = Math.max(SCHEDULE_SPEEDS[0], Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 1], speed));
     const v0 = Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 2], Math.floor(v * 2) / 2);
     const fv = (v - v0) / 0.5;
@@ -541,8 +641,19 @@ export class PredictiveController {
     const i0 = dp <= SCHEDULE_DEPTHS[1] ? SCHEDULE_DEPTHS[0] : SCHEDULE_DEPTHS[1];
     const i1 = dp <= SCHEDULE_DEPTHS[1] ? SCHEDULE_DEPTHS[1] : SCHEDULE_DEPTHS[2];
     const fd = (dp - i0) / (i1 - i0);
-    const ds = [scheduledDesign(v0, i0, this.weights), scheduledDesign(v0 + 0.5, i0, this.weights), scheduledDesign(v0, i1, this.weights), scheduledDesign(v0 + 0.5, i1, this.weights)];
-    const ws = [(1 - fv) * (1 - fd), fv * (1 - fd), (1 - fv) * fd, fv * fd];
+    const rails = SCHEDULE_RAILS;
+    const a = Math.max(0, Math.min(railLimit(v), Math.abs(rail)));
+    let k = 0;
+    while (k < rails.length - 2 && a > rails[k + 1]) k += 1;
+    const fr = Math.max(0, Math.min(1, (a - rails[k]) / (rails[k + 1] - rails[k])));
+    const r0 = rails[k];
+    const r1 = rails[k + 1];
+    const ds = [
+      scheduledDesign(v0, i0, r0, this.weights), scheduledDesign(v0 + 0.5, i0, r0, this.weights), scheduledDesign(v0, i1, r0, this.weights), scheduledDesign(v0 + 0.5, i1, r0, this.weights),
+      scheduledDesign(v0, i0, r1, this.weights), scheduledDesign(v0 + 0.5, i0, r1, this.weights), scheduledDesign(v0, i1, r1, this.weights), scheduledDesign(v0 + 0.5, i1, r1, this.weights),
+    ];
+    const ws = [(1 - fv) * (1 - fd) * (1 - fr), fv * (1 - fd) * (1 - fr), (1 - fv) * fd * (1 - fr), fv * fd * (1 - fr),
+      (1 - fv) * (1 - fd) * fr, fv * (1 - fd) * fr, (1 - fv) * fd * fr, fv * fd * fr];
     const first = ds[0];
     let out = this.blendedDesign;
     if (!out) {
@@ -551,9 +662,10 @@ export class PredictiveController {
       this.blendedDesign = out;
     }
     const mix = (target: Mat, get: (d: Design) => Mat) => {
+      const ms = ds.map(get);
       for (let i = 0; i < target.length; i += 1) {
         const row = target[i];
-        for (let j = 0; j < row.length; j += 1) row[j] = ws[0] * get(ds[0])[i][j] + ws[1] * get(ds[1])[i][j] + ws[2] * get(ds[2])[i][j] + ws[3] * get(ds[3])[i][j];
+        for (let j = 0; j < row.length; j += 1) { let v2 = 0; for (let q = 0; q < ms.length; q += 1) v2 += ws[q] * ms[q][i][j]; row[j] = v2; }
       }
     };
     mix(out.phi, (d) => d.phi); mix(out.gamma, (d) => d.gamma); mix(out.k, (d) => d.k);
@@ -567,8 +679,8 @@ export class PredictiveController {
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits): readonly number[] {
-    const d = this.blend(speed, depth);
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0): readonly number[] {
+    const d = this.blend(speed, depth, rail);
     const n = N_STATE;
     const N = d.steps;
     const ne = d.phiE.length;

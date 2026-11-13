@@ -1,10 +1,10 @@
 // The board's roll–yaw plant (ruling 29e): the board with a rigid rider, towed on flat water at 5, 7 and 9 m/s.
-// PART=captive,step,decay,kick picks parts (default all); RIDER=point|human (default point, the game's riders' yaw
+// PART=captive,step,decay,kick,rail picks parts (default all but rail; RAILS for it); RIDER=point|human (default point, the game's riders' yaw
 // inertia); SPEEDS=5,7,9. One JSON line per row ($OUT). Analytic water only: no ride session, no game page.
 import { appendFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { Vector3 } from 'three';
-import { DEG, Flat, G, GROUPS, Lab, PARTS, STEP, r, sum, type Hold, type Ledger, type RiderKind } from './plant';
+import { DEG, Flat, G, GROUPS, Lab, PARTS, STEP, euler, r, sum, type Hold, type Ledger, type RiderKind } from './plant';
 
 const PART = (process.env.PART ?? 'captive,step,decay,kick').split(',');
 const RIDER = (process.env.RIDER ?? 'point') as RiderKind;
@@ -102,6 +102,90 @@ it('captive: roll, slip and yaw rate held, the water\'s yaw moment, side force a
       const c = captive(v, { roll: 0, yawRate: -rate, slip: 0 });
       emit({ part: 'captive', rider: RIDER, v, case: 'yawRate', rate: -rate, read: c.read, parts: c.parts });
     }
+  }
+});
+
+/**
+ * Step 3.2f (ruling 29j): the plant at a big rail. At each speed and each held rail, the board is first held at that
+ * roll with the yaw and the slip FREE for TRIM s, so it settles into the turn that rail makes (the trim: its yaw rate
+ * r0, slip b0, pitch and draft; the last 2 s averaged, and its spread reported, since some rails never settle). Then
+ * the twelve derivatives are measured about that trim by central differences: the trim triple is held, and one of roll
+ * (±1°), slip (±1°), the yaw rate (±0.1 rad/s) and the roll rate about the deck (±0.2 rad/s) is perturbed. Each
+ * perturbation runs on from the one before (the same lab, no fresh settle), HOLD s, the last TAIL s averaged, because
+ * jumping from straight running to a big rail takes about 2 s of pitch and heave to settle. The base is measured at the
+ * start and again at the end, so the drift over the point is on the record. RAILS=0,10,20,30,40.
+ */
+it('the plant at a held rail: the trim of the turn it makes, and the derivatives about it', () => {
+  if (!PART.includes('rail')) return;
+  const RAILS = (process.env.RAILS ?? '0,10,20,30,40').split(',').map(Number);
+  const TRIM = Number(process.env.TRIM ?? 8);
+  const HOLD = Number(process.env.HOLD ?? 0.6);
+  const TAIL = Number(process.env.TAIL ?? 0.25);
+  const DECK_AT = { x: 0, y: 0.07, z: -0.30 };
+  for (const v of SPEEDS) for (const rail of RAILS) {
+    const lab = settled(v);
+    lab.hold = { speed: v, roll: rail / DEG };
+    const reads: ReturnType<Lab['read']>[] = [];
+    const levels: number[] = [];
+    const books: Ledger[] = [];
+    const n = Math.round(TRIM / STEP);
+    for (let i = 0; i < n; i += 1) {
+      const b = lab.frame();
+      if (i >= n - Math.round(2 / STEP)) {
+        books.push(b); reads.push(lab.read());
+        // Wrapped into (−π, π]: the board turns, so both angles pass ±π and their difference must not jump.
+        const d = euler(lab.board.orientation).heading - Math.atan2(lab.board.velocity.x, lab.board.velocity.z);
+        levels.push(d - 2 * Math.PI * Math.round(d / (2 * Math.PI)));
+      }
+    }
+    const mean = (pick: (x: ReturnType<Lab['read']>) => number) => reads.reduce((a, x) => a + pick(x), 0) / reads.length;
+    const spread = (pick: (x: ReturnType<Lab['read']>) => number) => Math.max(...reads.map(pick)) - Math.min(...reads.map(pick));
+    const r0 = mean((x) => x.yawRate);
+    // The slip the hold takes is the path's angle in the LEVEL plane (its `dir = heading − slip`), which is what a
+    // turn's sideslip means. `read().slip` is the body-frame one: at a rolled board it mixes in the heave, and is near
+    // zero where the level slip is −3.3° (rail 20) or −5.6° (rail 30). Holding `read().slip` at a big rail put the
+    // board far off its trim (at 30° it sank to the tank's floor within a second); holding the level slip holds it
+    // exactly (pitch, draft and the forces steady to the last digit over 3 s).
+    const b0 = levels.reduce((a, x) => a + x, 0) / levels.length;
+    const trim = {
+      roll: rail, yawRate: r(r0, 4), slipDeg: r(b0 * DEG, 3), bodySlipDeg: r(mean((x) => x.slip), 3), pitch: r(mean((x) => x.pitch), 2), draft: r(mean((x) => x.draft), 3),
+      yawSpread: r(spread((x) => x.yawRate), 4), slipSpread: r(spread((x) => x.slip), 3), pitchSpread: r(spread((x) => x.pitch), 2),
+      // The turn's pull over what the rail's lean would balance (the lab's G): V r0 / (g tan rail).
+      pull: rail > 0 ? r(Math.abs(v * r0) / (G * Math.tan(rail / DEG)), 3) : null,
+    };
+    const stalled = !Number.isFinite(r0) || !Number.isFinite(b0) || Math.abs(b0 * DEG) > 20 || Math.abs(mean((x) => x.slip)) > 20;
+    emit({ part: 'rail', rider: RIDER, v, rail, case: 'trim', trim, stalled, parts: stalled ? {} : split(lab, meanBook(books)) });
+    // A board that spun out or stalled has no plant about a turn: its derivatives are not measured.
+    if (stalled) { emit({ part: 'rail', rider: RIDER, v, rail, case: 'derivatives', trim, stalled: true }); continue; }
+    // On from the trim: the trim held BACK s to settle again, then the triple HOLD s, the last TAIL s averaged. A roll
+    // rate is held for RATE_HOLD s only (it is a rate: the roll itself drifts while it acts).
+    const hold = (h: Hold, seconds = HOLD, tail = TAIL) => {
+      lab.hold = { speed: v, roll: rail / DEG, yawRate: r0, slip: b0 };
+      for (let i = 0; i < Math.round(Number(process.env.BACK ?? 0.8) / STEP); i += 1) lab.frame();
+      lab.hold = { speed: v, roll: rail / DEG, yawRate: r0, slip: b0, ...h };
+      const bs: Ledger[] = [];
+      const m = Math.round(seconds / STEP);
+      for (let i = 0; i < m; i += 1) { const b = lab.frame(); if (i >= m - Math.round(tail / STEP)) bs.push(b); }
+      const p = split(lab, meanBook(bs));
+      return { N: p.all.N, Y: p.all.Y, K: p.all.Kdeck };
+    };
+    const RATE_HOLD = Number(process.env.RATE_HOLD ?? 0.25);
+    const centre = (lo: { N: number; Y: number; K: number }, hi: { N: number; Y: number; K: number }, d: number) => [r((hi.N - lo.N) / d, 1), r((hi.Y - lo.Y) / d, 1), r((hi.K - lo.K) / d, 1)];
+    const base = hold({});
+    const rollLo = hold({ roll: (rail - 1) / DEG });
+    const rollHi = hold({ roll: (rail + 1) / DEG });
+    const slipLo = hold({ slip: b0 - 1 / DEG });
+    const slipHi = hold({ slip: b0 + 1 / DEG });
+    const yawLo = hold({ yawRate: r0 - 0.1 });
+    const yawHi = hold({ yawRate: r0 + 0.1 });
+    const rateLo = hold({ rollRate: -0.2, rollAxis: DECK_AT }, RATE_HOLD, 0.1);
+    const rateHi = hold({ rollRate: 0.2, rollAxis: DECK_AT }, RATE_HOLD, 0.1);
+    const again = hold({});
+    emit({
+      part: 'rail', rider: RIDER, v, rail, case: 'derivatives', trim,
+      base: [r(base.N, 1), r(base.Y, 1), r(base.K, 1)], drift: [r(again.N - base.N, 1), r(again.Y - base.Y, 1), r(again.K - base.K, 1)],
+      roll: centre(rollLo, rollHi, 2 / DEG), slip: centre(slipLo, slipHi, 2 / DEG), yaw: centre(yawLo, yawHi, 0.2), rate: centre(rateLo, rateHi, 0.4),
+    });
   }
 });
 

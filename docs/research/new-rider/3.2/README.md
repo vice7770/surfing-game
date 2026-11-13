@@ -1168,3 +1168,252 @@ Each candidate on the kicks, the carves, the push and the glides [M]:
 - `results/`: `predict-timing-32e.jsonl`, `predict-contrib-32e.jsonl`, `predict-inertia-32e.jsonl`,
   `e32-inertia-32e.jsonl`, `e32-compare-32e.jsonl`, `bars-new-32e.jsonl`, `bars31-new-32e.jsonl`, `yawstep-32e.jsonl`,
   `turnpair-B-new-32e.txt`, `rounds-32e.txt`.
+
+---
+
+# Part 6: step 3.2f, the carve (ruling 29j)
+
+Written 2026-11-13 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32f` (from
+`claude/rider-new-32e`, rebased on main 5d1a8c13). The contract: `../ruling-29.md` 29j.
+
+Tags as above: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **The held carves pass, for the first time** [M]: standing **2.83 s** and Compress **2.98 s** (the bars are 2.28 and
+  2.30; 3.2e was 0.30 and 0.68). The rest of the bars are 3.2e's. **The turn pair still fails, 0 of 16**, so this is a
+  miss overall and no merge checks were run.
+- **Both reference corrections are adopted** [R]: the steady turn that balances the lean (`turn: 'tan'`, now the
+  default) and a lean-in rate of **0.5 rad/s** (`LEAN_IN_RATE`, in place of the old rider's 5).
+- **The plant is measured at big rails** [M] and keyed by rail in `plantAt`: 13 of 15 points (0, 10, 20, 30, 40° at 5,
+  7 and 9 m/s); at 5 m/s the board holds no turn at 30° or 40°.
+- **It is not linear in the rail, and three of the twelve derivatives change sign between 10° and 20°** [M], including
+  the hull's righting moment about the feet. That is why 3.2e's carve failed, and the model now says so in numbers: the
+  straight-running design on a big-rail plant is unstable at nearly every point (−0.26 to −1).
+- **But scheduling the controller on the rail does not help the game** [M]. Read to 5° the carves are longest
+  (2.83 / 2.98 s); read to 10° the turn pair gets furthest (its falls move out of the bottom turn); read to 20° or more
+  the carve is worse than 3.2e's. So `SCHEDULE_RAIL_CAP` is 5°, and the measured table sits behind an option.
+- **Two faults in the lab's harness were found and fixed** (they are the reason the first measurements were nonsense):
+  the roll-rate hold injected a vertical velocity that compounded, and the sideslip to hold is the path's angle in the
+  level plane, not the body-frame reading. Rail 0 is unaffected: it reproduces the roll-plant study's table exactly.
+
+## 2. The reference (item 1)
+
+**The turn that balances the lean** [R]. `PredictiveController`'s `turn` is `'tan'` by default now. The reference is the
+steady turn for `tan` of the lean asked, with the angles brought back to the lean. The linearised plant's own steady
+turn is the small-angle shadow of it: at 49° of lean it asks 0.78 rad/s where the lean needs about 1.5.
+
+**The lean-in rate** [R, S, M]. `LEAN_IN_RATE` is 0.5 rad/s. There is no measured roll rate for a rider setting a rail.
+What is sourced is the turn: a real bottom turn comes round 99° in 0.96 s (Forsyth et al. 2024, as `COMPRESS_PULL`
+cites it). The roll-plant lab's 1.9 rad/s is a **yaw** rate on a 42° rail, not a roll rate, so it is not taken as one.
+If the rail is set over about the first half of such a turn, 0.7 rad in 0.5 s is about 1.4 rad/s, which is the sourced
+upper end. Measured here (`results/rounds-32f.txt`), with the schedule at the kept cap:
+
+| Lean-in rate | Held carve, tall / Compress |
+|---|---|
+| 0.5 rad/s (kept) | 2.83 / 2.98 s |
+| 1 rad/s | 1.43 / 1.60 s |
+| 1.4 rad/s | fails (0.75 / 0.45 s, uncapped schedule) |
+| 5 rad/s (3.2e, the old rider's) | 0.30 / 0.68 s |
+
+So 0.5 rad/s is **the rate the carve needs**, not a measured human rate. A rider reaching 40° of rail takes 1.4 s at
+it, where a whole bottom turn takes about 1 s: it is at the slow end of human. [I]
+
+## 3. The plant at a big rail (item 2)
+
+`../roll-plant/plant.probe.ts` PART=rail, `../roll-plant/results/plant-rail.jsonl`. At each speed and rail the board is
+held at that roll with its **yaw and sideslip free** until it settles into the turn that rail makes (the trim); the
+twelve derivatives are then central differences about that trim, held (roll ±1°, slip ±1°, yaw rate ±0.1 rad/s, roll
+rate about the deck ±0.2 rad/s).
+
+**The trims** [M]:
+
+| Speed | Rail | Yaw rate | Sideslip (level) | Pitch | Turn's pull over the lean's |
+|---|---|---|---|---|---|
+| 5 m/s | 10° | −0.29 rad/s | −3.5° | 18.6° | 0.845 |
+| 5 m/s | 20° | −0.59 | −7.2° | 18.6° | 0.827 |
+| 7 m/s | 10 / 20 / 30 / 40° | −0.22 / −0.43 / −0.68 / −0.97 | −1.5 / −3.3 / −5.6 / −9.1° | 8.8–10.6° | 0.876 / 0.845 / 0.838 / 0.824 |
+| 9 m/s | 10 / 20 / 30 / 40° | −0.17 / −0.32 / −0.49 / −0.69 | −0.9 / −2.3 / −4.7 / −7.9° | 5.7–8.5° | 0.865 / 0.805 / 0.775 / 0.757 |
+
+- **Measured:** every row above, and the 0° rows. **Not measured:** 5 m/s at 30° and 40°. There the board holds no
+  turn: at 30° the run goes non-finite, and at 40° it spins out to 71° of sideslip and sinks to the tank's floor. The
+  model clamps the rail to 20° at 5 m/s. Between the table's points everything is linear (speed and rail both).
+- The turn's pull is 0.76–0.88 of what that rail's own lean would balance, and it **falls** as the rail grows and as the
+  speed grows. So the rail a lean needs is more than the lean, by 6–15 % in the tangent (`railPull`).
+- A board at 40° of rail is sliding 8–9°. The sideslip is not small at a big rail.
+
+**The derivatives against the rail** (7 m/s; N·m, N and N·m per rad) [M]:
+
+| Per | 0° | 10° | 20° | 30° | 40° |
+|---|---|---|---|---|---|
+| N per roll | −105 | −104 | −150 | −513 | −342 |
+| Y per roll | −413 | −541 | −1298 | −2086 | −3401 |
+| **K per roll (the deck)** | **−285** | **−180** | **+250** | **+286** | **+435** |
+| N per slip | −296 | −344 | −663 | −1060 | −877 |
+| **Y per slip** | **+1398** | **+825** | **−1387** | **−2610** | **−4143** |
+| **K per slip** | **−531** | **−90** | **+886** | **+959** | **+1040** |
+| N per yaw rate | −13 | −17 | −31 | −67 | −49 |
+| Y per yaw rate | +63 | +46 | −73 | −72 | −206 |
+| Y per roll rate | −20 | −46 | −63 | −84 | −259 |
+
+- **It is not linear in the rail.** Three of the twelve change sign between 10° and 20°, at every speed:
+  - **the hull's righting moment about the feet** (K per roll: −310 → −37 → +15 at 5 m/s; −285 → −180 → +250 at 7;
+    −296 → −153 → +47 at 9). Beyond about 15° of rail **the water no longer rights the board under the rider: it rolls
+    it further in.**
+  - **the side force per degree of sideslip** (Y per slip: +705 → +321 → −378 at 5 m/s; +1398 → +825 → −1387 at 7;
+    +2272 → +1573 → −358 at 9). Beyond about 15° a slide feeds itself. That is the lab's spin-out.
+  - the roll moment per sideslip, the same way.
+- The magnitudes grow 2 to 8 times by 40° (Y per roll, Y per roll rate most).
+- **The 30° and 40° rows are the least steady** (the trim's yaw spread 0.07–0.92 rad/s against 0.00–0.06 at 10–20°), and
+  several derivatives are not monotone there (N per roll at 7 m/s: −513 then −342). I kept them as measured. [M, I]
+
+**Two faults in the lab's harness, found and fixed** [R, M] (`../roll-plant/plant.ts`, `plant.probe.ts`):
+1. The `rollRate` hold adds the axis point's velocity term to the board each substep. Its level part is harmless (the
+   speed hold rewrites v.x and v.z), but **the vertical part compounded**: at a rolled board it reached 22 m/s within a
+   frame and threw the board out of the water, which is why the first big-rail derivatives came out in the thousands.
+   It is now a set, not an addition. At rail 0 the term is level, so nothing there changes.
+2. **The sideslip to hold is the path's angle in the level plane**, which is what the hold means by it. `read().slip` is
+   the body-frame one, and at a rolled board it mixes in the heave: at 30° of rail it reads 0.06° where the level slip
+   is −5.6°. Held at the body-frame value the board **sank to the tank's floor within a second**; held at the level
+   value its pitch, draft and forces are steady to the last digit over 3 s.
+
+**What the model says with it** (`predict.probe.ts` PART=railmodel, `results/predict-railmodel-32f.jsonl`) [M]:
+
+| Speed, rail | A design made on that rail's plant | With a frame of timing error | **3.2e's straight design on it** |
+|---|---|---|---|
+| 7 m/s, 0° | +0.68 | +0.14 | +0.68 |
+| 7 m/s, 10° | +0.68 | +0.20 | +0.15 |
+| 7 m/s, 20° | +0.48 | −0.12 | **−0.31** |
+| 7 m/s, 30° | +0.37 | −1 | **−1** |
+| 7 m/s, 40° | **−1** | −1 | **−1** |
+| 9 m/s, 20 / 30 / 40° | +0.66 / +0.65 / +0.65 | +0.19 / +0.11 / +0.06 | **−1 / −0.36 / −0.40** |
+| 5 m/s, 10 / 20° | +0.60 / +0.55 | +0.08 / −0.09 | **−1 / −0.26** |
+
+- **Ruling 29j's diagnosis is confirmed in numbers:** the straight-running design is unstable on the plant of a carve at
+  nearly every rail, which is what 3.2e's rider was doing.
+- A design made on the rail's own plant is sound to 20–40°, except 7 m/s at 40°, where the plant is not stabilisable at
+  all: with the side force per sideslip reversed, a slide feeds itself and neither the ankle nor the twist can reach it.
+- Above 20° at 7 m/s the design fails a frame of timing error. ρ from 30 to 1000 does not fix it (5 points still fail).
+
+## 4. In the game: the rail in the schedule, and its cap (items 2 and 3)
+
+The controller now blends **eight** designs (two speeds × two stances × two rails) instead of four, and the rail it
+reads is the rail that holds the lean asked (`railPull` inverted, two passes), capped at `SCHEDULE_RAIL_CAP` [R].
+
+The cap's screen (`results/rounds-32f.txt`; the held carves, and the turn pair's first fall at drop 20) [M]:
+
+| Cap | Held carve, tall / Compress | The turn pair's first fall |
+|---|---|---|
+| 0° (3.2e's plant) | 2.38 / 2.58 s | 0.73–1.03 s, in the bottom turn |
+| **5° (kept)** | **2.83 / 2.98 s** | 1.18–2.02 s, 12 of 16 in the climb |
+| 10° | 2.38 / 2.30 s | **2.42–3.68 s, every one in the climb** |
+| 12° | 2.07 / 2.72 s | — |
+| 15° | 1.38 / 2.87 s | 1.52–2.58 s, in the climb |
+| 20° | 1.30 / 2.88 s | — |
+| 30° / 40° | 0.68 / 0.95 s | — |
+
+- **The measured big-rail plant makes the carve worse, not better, once the schedule reads past about 10°.** I did not
+  expect that, and I cannot explain it from the model: the model says the straight design on a big-rail plant diverges,
+  yet in the game it holds the carve 2.4 s. My reading [I]: the lab's trim is a *forced* steady turn of a rigid rider
+  (and the hull sits deeper there: draft 13–15 cm against 9 cm straight), while the game's carve is a transient with a
+  free body on its leg. The rail-keyed plant is the right plant for a *held* turn, not for entering one.
+- **5° is kept** because both carve bars pass with margin there. **10° is the better choice if the turn pair is what
+  matters:** its falls move out of the bottom turn entirely, at the cost of the Compress carve sitting exactly on its
+  bar (2.30). It is one constant (`SCHEDULE_RAIL_CAP`), and that is the advisor's call.
+- The landscape is rough: 2.38, 2.83, 2.38, 2.07, 1.38, 1.30 over caps 0, 5, 10, 12, 15, 20. Neighbouring caps differ
+  by half a second. [M]
+
+## 5. The bars (item 3; steady starts, 16 substeps)
+
+Results: `results/bars-new-32f.jsonl`, `bars31-new-32f.jsonl`, `yawstep-32f.jsonl`, `e32-kicktrace-32f.jsonl`,
+`e32-compare-32f.jsonl`. The old rider's rows are `bars-old.jsonl` (unchanged).
+
+| Bar | Old | 3.2e | 3.2f | Pass? |
+|---|---|---|---|---|
+| N0: `rider=old` byte-identical | — | yes | 3.2's and 3.1's `bars-old` the same bytes | yes |
+| **Held carve standing ≥ 2.28 s** | 1.93 | 0.30 | **2.83** | **yes** |
+| **Held carve Compress ≥ 2.30 s** | 3.0 | 0.68 | **2.98** | **yes** |
+| Turn pair set B ≥ 12 of 16 | 14 of 16 | 0 of 16 | 0 of 16 (falls 1.18–2.02 s) | no |
+| Mode B: damping ≥ 0.05 (5 / 7 / 9 m/s) | −0.015 / +0.079 / +0.103 | +0.030 / +0.018 / +0.058 | +0.030 / +0.018 / +0.058 | no (near) |
+| Mode B: roll decay per cycle ≤ the old's | 1.42 / 0.35 / 0.46 | 0.54 / 1.62 / 0.55 | 0.54 / 1.62 / 0.55 | no (5 and 9 m/s yes) |
+| Mode A not seen | 0.000–0.007 | 0.000–0.009 | 0.000–0.009 | yes |
+| Push recovery, 7 m/s: tall > crouch > Compress | 192 / 188 / 191 N·s | 138 / 155 / 170 | 138 / 155 / 170 | no: the order is reversed |
+| Reaction 0.08–0.12 s | 0.001 | 0.105 | 0.105 | yes |
+| Glides on the plane | 4 of 4 | 4 of 4 | 4 of 4 | yes |
+| N1: legs < ~2 kW per frame; ≤ 1.46 kW over 0.5 s | to 30.9 kW | 0.55 / 0.26 kW | 0.55 / 0.26 kW | yes |
+| N2: 20° from 4 m/s, gain ≥ 3.5 m/s | +1.7 | +3.25 | +3.25 | no |
+| Save window, chop, the 2 m/s rise | — | — | unchanged (0.85 s; 4 of 12; falls 0.42 s) | step 3.2g |
+| (report) 3.1's N5 held carves, tall / Compress | — | 0.52 / 0.53 s | 1.42 / 1.27 s | — |
+| (report) N4 placed straight down and up | 2 of 12 | 12 of 12 | 12 of 12, the board to 1.8 g | — |
+| (report) the 45° line placed | 3 of 6 | 4 of 6 | 4 of 6 | — |
+
+- Only the carves moved. Everything the controller does while riding straight is 3.2e's, to the digit: the reference's
+  corrections act only when a lean is asked for, and the schedule's rail is 0 when it is not. [M, I]
+- 3.1's own held carves (flat water, its placed start) also more than doubled, 0.52 → 1.42 s and 0.53 → 1.27 s, without
+  reaching their 2.28 / 2.30 bars there. [M]
+
+**The yaw step (report;** `results/yawstep-32f.jsonl`) [M]: the time to 63 % of the first peak is 0.064 / 0.061 /
+0.057 s at 5 / 7 / 9 m/s, and the first peak comes at 0.133–0.137 s, when the balance answers. The same as 3.2e: the
+twist body and the inertia it meets (2.2 kg·m² in the first 10 ms) did not change in this step.
+
+**The turn pair, where it falls** [M] (`results/rounds-32f.txt`). Nobody begins the top turn, at any cap, so **there is
+no second rail change to trace.** What the record shows:
+- At the kept cap (5°) the first fall is at 1.18–2.02 s: 4 of 16 in the bottom turn, 12 of 16 in the climb, at the
+  bottom of the face (`frac` 0–0.03) with 61° of bank asked and the board still at 8.5 m/s.
+- At 10° every fall is in the climb, at 2.42–3.68 s, and the board has **slowed to 3.0–5.7 m/s** at the base of the
+  face. So the bottom turn is survived and the rider then runs out of speed before it can climb. Pumping and the climb
+  are not this step's work, and `CARVE_CARRY` is off for the new rider (ruling 29), which is where the old rider's
+  Compress carve got its speed. [I]
+
+## 6. Mode B, the trace beside the fit (item 4)
+
+`e32.probe.ts` PART=kicktrace, `results/e32-kicktrace-32f.jsonl`. The kick is the bar's: the board's roll rate +0.5
+rad/s from a steady glide. The peaks, in order [M]:
+
+| Speed | Fitted (Hz, damping) | The body's bank, peak by peak | The yaw rate, peak by peak (rad/s) | Yaw envelope over two cycles |
+|---|---|---|---|---|
+| 5 m/s | 3.64, +0.030 | 0.20°, 0.16°, 0.13°, 0.03° | 0.003, 0.011, 0.008, 0.032, 0.007, 0.012 | 2.24 |
+| 7 m/s | 2.54, +0.018 | 0.29°, 0.29°, −0.07°, −0.03° | 0.015, 0.007, 0.033, 0.020, 0.017, 0.004 | 1.13 |
+| 9 m/s | 1.49, +0.058 | 0.14°, −0.11°, 0.05°, −0.03° | 0.012, 0.006, 0.018, 0.003, 0.005, 0.003 | 0.41 |
+
+- **The kick dies in the body's bank within about two cycles at all three speeds** (the bank's peaks fall to a sixth or
+  less by the fourth). The rider's lean, which is what a rider feels, settles.
+- **The yaw rate does not read as a clean mode.** Its peaks are 0.003–0.033 rad/s (0.2–1.9 °/s) and they wander: the
+  largest comes third or fourth, not first, and at 5 m/s the envelope over two cycles is 2.24. The bar fits a damped
+  mode to this signal, so **its +0.018 at 7 m/s is a fit to a wander of under 2 °/s, not to a weave.** [M, I]
+- My reading [I]: the bar as written cannot tell a dying weave from the board's small wandering on its own fins. The
+  owner's ride is the test the ruling already named. A bar on the bank's envelope (say, under a fifth within two
+  cycles) would say what Mode B was meant to say.
+
+## 7. The rounds (item 6) and what I am unsure of
+
+Two rounds, as the stop rule allows [M]: (1) the rail in the schedule, uncapped, with the lean-in rate at 1, 0.5 and
+1.4 rad/s; (2) the cap, over 0, 5, 10, 12, 15, 20, 30 and 40°, with the lean-in rate at 0.5 and 1. The weights are
+3.2d's throughout, untouched. I stopped there, as the ruling says.
+
+- **I cannot explain why the measured big-rail plant makes the carve worse.** The model says the opposite. Until that
+  is understood, the rail table is a measurement the game barely uses.
+- The 30° and 40° trims are the least steady rows, and 5 m/s above 20° has no row at all.
+- The lab's harness faults mean every big-rail number in this part is new. Rail 0 reproducing the roll-plant study
+  exactly is the only check I have on the method.
+- The turn pair's falls in the climb look like lost speed, not lost balance, and that is a different step's work.
+
+## 8. What was not run
+
+- **The merge checks** (the suite, the Canyon byte check, the fps trace): the turn pair, Mode B, the push order and N2
+  still miss. Run here: `tsc` (app and server), and `predictiveBalance.test.ts`, `humanBalance.test.ts`,
+  `standingBody.test.ts`, `rollModel.test.ts` (36 tests).
+- The chop, the save window and the 2 m/s rise, which ruling 29j puts in step 3.2g. Nothing in this step touched the
+  pitch loop.
+- No ride, no game page, no Basilisk case.
+
+## Files (3.2f)
+
+- `src/physics/predictiveBalance.ts`: `RAIL_PLANT` (the measured table), `railCorrection`, `railPull`, `railLimit`,
+  `plantAt`'s `rail`, `scheduledDesign`'s rail, the eight-design blend, `turn: 'tan'` by default.
+- `src/physics/AttachedRider.ts`: `LEAN_IN_RATE`, `SCHEDULE_RAIL_CAP`, the schedule's rail from the lean asked, and the
+  probe-only `balance.railCap`.
+- `../roll-plant/plant.ts`: the `rollRate` hold's vertical term is a set (the fault above). `plant.probe.ts`: PART=rail.
+- `predict.probe.ts`: PART=railmodel. `e32.probe.ts`: PART=kicktrace.
+- `results/`: `bars-new-32f.jsonl`, `bars31-new-32f.jsonl`, `yawstep-32f.jsonl`, `e32-kicktrace-32f.jsonl`,
+  `e32-compare-32f.jsonl`, `predict-railmodel-32f.jsonl`, `rounds-32f.txt`; `../roll-plant/results/plant-rail.jsonl`.

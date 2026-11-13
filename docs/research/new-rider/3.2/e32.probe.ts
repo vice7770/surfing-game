@@ -7,6 +7,7 @@
 //   state with it. Env: SPEED (7), DEPTH stance (tall|crouch|compress), START (kick|shove|none), DUR (3 s; zsh owns SECONDS), CHOP (seed), STEER, TRACE_SETTLE.
 // - compare: the 20 N·s shove at 7 m/s tall and the kick at 5, 7 and 9 m/s, in the game and in the model (3.2d's time
 //   run, the delay exact): the bank's peak, the twist's peak, the twist's torque peak, the decay and the yaw rate's mode.
+// - kicktrace: the Mode B kick's peaks at 5, 7 and 9 m/s (ruling 29j item 4), beside the fitted damping.
 // - inertia: the roll and yaw inertia the board meets in its own solve (its own and the water's implicit share), by speed
 //   and stance (STANCES), from a steady glide: the internal model's BOARD_INERTIA.
 import { it } from 'vitest';
@@ -185,6 +186,32 @@ it('step 3.2e: the game against the model', () => {
       };
       st.rig.board.step(STEP, st.water);
       emit({ part: 'inertia', speed: v, stance, roll: r(roll / count, 3), yaw: r(yaw / count, 3), ownRoll: r(own / count, 3), substeps: count });
+    }
+  }
+  if (PARTS.includes('kicktrace')) {
+    // Step 3.2f (ruling 29j item 4): the kick's trace beside the fitted damping. The Mode B bar fits a damped mode to
+    // the yaw rate; this reports the peaks themselves, so the reader can see whether the kick dies within two cycles.
+    for (const speed of [5, 7, 9]) {
+      const g = gameRun(speed, 'tall', 'kick', 3);
+      const peaks = (xs: number[], base = 0) => {
+        const out: { t: number; v: number }[] = [];
+        for (let i = 1; i < xs.length - 1; i += 1) {
+          const a = xs[i] - base;
+          if (Math.abs(a) >= Math.abs(xs[i - 1] - base) && Math.abs(a) > Math.abs(xs[i + 1] - base) && Math.abs(a) > 1e-5) out.push({ t: r(i * STEP, 3)!, v: r(a, 4)! });
+        }
+        return out;
+      };
+      const yawPeaks = peaks(g.yaw, g.yaw0);
+      const bankPeaks = peaks(g.bank, g.bank0);
+      const first = Math.abs(yawPeaks[0]?.v ?? 0);
+      // Two cycles of the fitted mode: four peaks on. The envelope then, over the first.
+      const after = Math.abs(yawPeaks[4]?.v ?? 0);
+      emit({
+        part: 'kicktrace', speed, fell: g.fell,
+        yawPeaks: yawPeaks.slice(0, 10).map((x) => [x.t, x.v]), bankPeaksDeg: bankPeaks.slice(0, 8).map((x) => [x.t, r((x.v * 180) / Math.PI, 3)]),
+        twistPeaksDeg: peaks(g.twist, g.twist0).slice(0, 6).map((x) => [x.t, r((x.v * 180) / Math.PI, 2)]),
+        overTwoCycles: r(after / Math.max(first, 1e-9), 3), ...summary(g, { bank: g.bank0, twist: g.twist0, torque: g.torque0 }),
+      });
     }
   }
   if (PARTS.includes('compare')) {

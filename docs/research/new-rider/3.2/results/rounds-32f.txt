@@ -1,0 +1,23 @@
+# Step 3.2f: the schedule's rail cap and the lean-in rate (bars.probe PART=carve, RIDER=new, BALANCE as given)
+# carve: the held carve's seconds, tall/Compress (the bars: 2.28 and 2.30)
+## the lean-in rate, with the schedule reading the rail UNCAPPED (the first round; base = 1 rad/s, p05 = 0.5, p14 = 1.4)
+base       kick 0.03/0.538 0.018/1.615 0.058/0.549 | carve 0.45/0.57
+p05        kick 0.03/0.538 0.018/1.615 0.058/0.549 | carve 0.68/0.95
+p14        kick 0.03/0.538 0.018/1.615 0.058/0.549 | carve 0.75/0.45
+## the schedule's rail cap, at leanRate 0.5 (p05) and 1 (p1)
+c0p05      carve 2.38/2.58
+c0p1       carve 1.43/1.6
+c10p05     carve 2.38/2.3
+c10p1      carve 2.07/1.93
+c20p05     carve 1.3/2.88
+c20p1      carve 0.55/1.95
+c30p05     carve 0.68/0.95
+c40p05     carve 0.68/0.95
+c12        carve 2.07/2.72
+c15        carve 1.38/2.87
+c5         carve 2.83/2.98
+## the turn pair by cap (set B, drop 20: when and where the first fall comes)
+cap 0: [(0.73, 'down'), (1.03, 'down')]
+cap 5: [(1.18, 'down'), (1.63, 'up'), (1.67, 'up')]
+cap 10: [(2.42, 'up'), (3.13, 'up'), (3.35, 'up'), (3.68, 'up')]
+cap 15: [(1.52, 'up'), (1.55, 'up'), (2.03, 'up'), (2.58, 'up')]
