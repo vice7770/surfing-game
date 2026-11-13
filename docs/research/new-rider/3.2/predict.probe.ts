@@ -4,8 +4,10 @@
 // Parts: design (each table point: the nominal loop and the gains, for the schedule's smoothness), gate (item 4's
 // robustness gate at each point), between (the interpolated controller on the interpolated plant at the quarter
 // points), time (the worst cases in continuous time with the delay exact), and the weights' round: tune, pair, horizon,
-// diag. Env: SPEEDS (default 4..12 by 0.5), DEPTHS (0,0.195,0.3), RHO, RANDOM (200), WEIGHTS (JSON of DesignWeights
+// diag; and step 3.2e's model checks: timing (the true delay a frame off), contrib (errors by contributor from the
+// roll-plant ledger), inertia (the board's inertia as the game meets it). Env: SPEEDS (default 4..12 by 0.5), DEPTHS (0,0.195,0.3), RHO, RANDOM (200), WEIGHTS (JSON of DesignWeights
 // fields), WORST (a JSON list of cases for time), TUNE_POINTS, RHOS, PNS, QBANK, POINT, SET, PAIR.
+import { readFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { eigenvalues } from '../../../../src/physics/rollModel';
 import {
@@ -251,6 +253,98 @@ it('step 3.2d: balance by prediction', () => {
       const opts = { ...(c.opts ?? {}), ...(c.set !== undefined ? { scales: RANDOM_SETS[c.set] } : {}) };
       const m = check(d, c.speed, c.depth, opts, c.delay ?? 0.1);
       emit({ part: 'time', ...c, modes: [r(m.damping, 3), r(m.frequency, 2)], kick: timeRun(d, c.speed, c.depth, opts, c.delay ?? 0.1, 'kick'), shove: timeRun(d, c.speed, c.depth, opts, c.delay ?? 0.1, 'shove') });
+    }
+  }
+  if (PARTS.includes('inertia')) {
+    // Step 3.2e: the board's roll and yaw inertia as the game's solve meets them (the water's added share; e32.probe
+    // PART=inertia, tall; now plantAt's default, BOARD_INERTIA), against the 3.2d model's 0.1 and 0.449: the 3.2d design
+    // on the game's plant, and a design on it.
+    const MEASURED: Record<number, [number, number]> = { 5: [1.071, 0.559], 7: [0.933, 0.552], 9: [0.766, 0.562], 12: [0.552, 0.596] };
+    for (const depth of DEPTHS) for (const speed of [5, 7, 9, 12]) {
+      const [ri, yi] = MEASURED[speed];
+      const p32d = plantAt(speed, depth, { rollInertia: 0.1, yawInertia: 0.449 });
+      const old = design(p32d.y, p32d.t, WEIGHTS);
+      const onTrue = check(old, speed, depth, { rollInertia: ri, yawInertia: yi });
+      const { y, t } = plantAt(speed, depth, { rollInertia: ri, yawInertia: yi });
+      const fresh = design(y, t, WEIGHTS);
+      const own = check(fresh, speed, depth, { rollInertia: ri, yawInertia: yi });
+      const early = check(fresh, speed, depth, { rollInertia: ri, yawInertia: yi }, 5 * CONTROL_STEP);
+      const late = check(fresh, speed, depth, { rollInertia: ri, yawInertia: yi }, 7 * CONTROL_STEP);
+      emit({ part: 'inertia', speed, stance: STANCE(depth), roll: ri, yaw: yi, design32dOnGame: [r(onTrue.damping, 3), r(onTrue.frequency, 2)], designOnGame: [r(own.damping, 3), r(own.frequency, 2)], delay083: r(early.damping, 3), delay117: r(late.damping, 3), ...gains(fresh) });
+    }
+  }
+  if (PARTS.includes('timing')) {
+    // Step 3.2e (ruling 29i item 1a), the only model gate: a frame of timing error. The true delay 5 and 7 frames
+    // (0.083 and 0.117 s) against the predictor's 6 (0.1 s), 5-12 m/s, the three stances; least damping >= 0.
+    let worst = { damping: Infinity, at: '' };
+    for (const depth of DEPTHS) for (const speed of SPEEDS.filter((v) => v >= 5)) {
+      const d = at(speed, depth);
+      const nominal = check(d, speed, depth);
+      const early = check(d, speed, depth, {}, 5 * CONTROL_STEP);
+      const late = check(d, speed, depth, {}, 7 * CONTROL_STEP);
+      emit({ part: 'timing', speed, stance: STANCE(depth), nominal: [r(nominal.damping, 3), r(nominal.frequency, 2)], delay083: [r(early.damping, 3), r(early.frequency, 2)], delay117: [r(late.damping, 3), r(late.frequency, 2)], pass: Math.min(early.damping, late.damping) >= 0 });
+      for (const [m, which] of [[early, '0.083'], [late, '0.117']] as const) if (m.damping < worst.damping) worst = { damping: m.damping, at: `${speed} m/s ${STANCE(depth)} delay ${which} (${r(m.frequency, 2)} Hz)` };
+    }
+    emit({ part: 'timing', worst: r(worst.damping, 3), at: worst.at, pass: worst.damping >= 0 });
+  }
+  if (PARTS.includes('contrib')) {
+    // Step 3.2e (ruling 29i item 1b), a report: the errors by contributor. The roll-plant ledger (results/plant-point.jsonl,
+    // the captive rows: roll 1 deg, slip 1 deg, yaw rate -0.1 rad/s, the roll rate about the deck the mean of 0.2 and
+    // 0.5 rad/s, as the table) splits each of the twelve derivatives by contributor; the hull's pressure, the fins and
+    // the friction are each scaled x0.7 and x1.3 (the rest of the derivative unchanged), and the feet's forward force
+    // (plantAt's feetScale); alone, and all sixteen together (each contributor at x0.7 or x1.3).
+    const ledger = readFileSync(new URL('../roll-plant/results/plant-point.jsonl', import.meta.url), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).filter((x) => x.part === 'captive');
+    const keys = ['N', 'Y', 'Kdeck'];
+    const groups = ['pressure', 'fins', 'friction'];
+    for (const speed of [5, 7, 9]) {
+      const rows = ledger.filter((x) => x.v === speed);
+      const straight = rows.find((x) => x.case === 'straight').parts;
+      const share = (g: string, c: string, amt: number, pick: (x: { deg?: number; rate?: number }) => boolean) => {
+        const sel = rows.filter((x) => x.case === c && pick(x));
+        return keys.map((k) => sel.reduce((s2, x) => s2 + (x.parts[g][k] - straight[g][k]) / amt, 0) / sel.length);
+      };
+      // Each contributor's share of each derivative, over the whole (the order of plantAt's scales).
+      // The roll rate's rows are per their own rate: each row over its rate, then the mean.
+      const rateShare = (g: string) => { const sel = rows.filter((x) => x.case === 'rollRate-deck'); return keys.map((k) => sel.reduce((s2, x) => s2 + (x.parts[g][k] - straight[g][k]) / x.rate, 0) / sel.length); };
+      const parts = (g: string) => [
+        ...share(g, 'roll', Math.PI / 180, (x) => x.deg === 1), ...share(g, 'slip', Math.PI / 180, (x) => x.deg === 1),
+        ...share(g, 'yawRate', -0.1, (x) => x.rate === -0.1), ...rateShare(g),
+      ];
+      const whole = parts('all');
+      const of = (g: string) => parts(g).map((v, k) => (Math.abs(whole[k]) > 1e-9 ? v / whole[k] : 0));
+      const shares = Object.fromEntries(groups.map((g) => [g, of(g)]));
+      emit({ part: 'contrib', speed, whole: whole.map((v) => r(v, 1)), shares: Object.fromEntries(groups.map((g) => [g, shares[g].map((v) => r(v, 2))])) });
+      for (const depth of [0, 0.3]) {
+        const d = at(speed, depth);
+        const test = (f: Record<string, number>) => {
+          const scales = new Array<number>(12).fill(1).map((_, k) => 1 + groups.reduce((s2, g) => s2 + ((f[g] ?? 1) - 1) * shares[g][k], 0));
+          return check(d, speed, depth, { scales, feetScale: f.feet ?? 1 });
+        };
+        const alone: Record<string, unknown> = {};
+        for (const g of [...groups, 'feet']) for (const f of [0.7, 1.3]) {
+          const m = test({ [g]: f });
+          alone[`${g} x${f}`] = [r(m.damping, 3), r(m.frequency, 2)];
+          // Where a contributor's change fails, which of its derivatives does it alone (the change on that one only).
+          if (m.damping < 0 && g !== 'feet') {
+            const which: string[] = [];
+            for (let k = 0; k < 12; k += 1) {
+              const scales = new Array<number>(12).fill(1); scales[k] = 1 + (f - 1) * shares[g][k];
+              const mk = check(d, speed, depth, { scales });
+              if (mk.damping < 0) which.push(`${NAMES[k]} x${r(scales[k], 2)} (${r(mk.damping, 3)})`);
+            }
+            alone[`${g} x${f} by derivative`] = which;
+          }
+        }
+        let together = { damping: Infinity, frequency: 0, set: '' }; let failing = 0;
+        for (let mask = 0; mask < 16; mask += 1) {
+          const f: Record<string, number> = {}; const names: string[] = [];
+          [...groups, 'feet'].forEach((g, i) => { f[g] = mask & (1 << i) ? 1.3 : 0.7; names.push(`${g}x${f[g]}`); });
+          const m = test(f);
+          if (m.damping < 0) failing += 1;
+          if (m.damping < together.damping) together = { damping: m.damping, frequency: m.frequency, set: names.join(' ') };
+        }
+        emit({ part: 'contrib', speed, stance: STANCE(depth), nominal: r(check(d, speed, depth).damping, 3), alone, together: [r(together.damping, 3), r(together.frequency, 2), together.set], togetherFailing: `${failing} of 16` });
+      }
     }
   }
 });
