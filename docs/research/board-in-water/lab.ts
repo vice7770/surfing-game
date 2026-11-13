@@ -5,6 +5,7 @@ import { Matrix4, Quaternion, Vector3 } from 'three';
 import { AttachedRider } from '../../../src/physics/AttachedRider';
 import { BoardBody } from '../../../src/physics/BoardBody';
 import { createWaterSample, type SurfWater, type WaterSample } from '../../../src/physics/SurfWater';
+import { SwellWater } from '../../../src/physics/SwellWater';
 import { WET_RAMP } from '../../../src/physics/hullForces';
 
 export const STEP = 1 / 60;
@@ -87,6 +88,75 @@ export class Rising implements SurfWater {
   addReaction(): void {}
 }
 
+/**
+ * A small wind chop (the new surfer's step 3.2): `trains` linear wave trains (`SwellWater`, 6 m deep) with periods
+ * 1.4–2.6 s, each `height` × 0.5–1 m high, running within ±100° of +z, from phases drawn by `seed` (a Park–Miller
+ * generator, so the sea is the same every run), summed. At the default 0.1 m a train the sea is about 0.2 m significant
+ * height, its surface sloped a few degrees: small random bumps under a glide, not waves to ride. Each train's flow is
+ * read at its depth under the summed surface (as `src/physics/testing/ChopWater.ts`, which is a larger sea). It takes
+ * no reactions, and samples at the board's substep times (`setSampleTime`).
+ */
+export class Chop implements SurfWater {
+  private readonly trains: SwellWater[] = [];
+  private readonly scratch = createWaterSample();
+  private offset = 0;
+  constructor(readonly seed = 1, readonly height = 0.1, count = 6) {
+    let state = seed * 7919 + 13;
+    const random = () => { state = (state * 16807) % 2147483647; return state / 2147483647; };
+    for (let i = 0; i < count; i += 1) {
+      const train = new SwellWater({ height: height * (0.5 + 0.5 * random()), period: 1.4 + 1.2 * random(), direction: (random() - 0.5) * (200 / DEG), depth: 6 });
+      train.time = random() * 10;
+      this.trains.push(train);
+    }
+  }
+  advance(dt: number): void { for (const train of this.trains) train.advance(dt); }
+  setSampleTime(offset: number): void { this.offset = offset; }
+  private shifted<T>(f: () => T): T {
+    if (this.offset !== 0) for (const train of this.trains) train.time += this.offset;
+    try { return f(); } finally { if (this.offset !== 0) for (const train of this.trains) train.time -= this.offset; }
+  }
+  surfaceAt(x: number, z: number): number { return this.shifted(() => this.trains.reduce((s, t) => s + t.surfaceAt(x, z), 0)); }
+  sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
+    return this.shifted(() => {
+      const surface = this.trains.reduce((s, t) => s + t.surfaceAt(x, z), 0);
+      let slopeX = 0; let slopeZ = 0; let flowX = 0; let flowY = 0; let flowZ = 0;
+      for (const train of this.trains) {
+        const own = train.surfaceAt(x, z);
+        const sample = train.sampleAt(x, Math.min(y, surface) - surface + own, z, this.scratch);
+        slopeX += sample.slopeX; slopeZ += sample.slopeZ; flowX += sample.flowX; flowY += sample.flowY; flowZ += sample.flowZ;
+      }
+      this.trains[0].sampleAt(x, y, z, out);
+      const norm = Math.hypot(slopeX, 1, slopeZ);
+      Object.assign(out, { surfaceY: surface, slopeX, slopeZ, normalX: -slopeX / norm, normalY: 1 / norm, normalZ: -slopeZ / norm, flowX, flowY, flowZ });
+      return out;
+    });
+  }
+  addReaction(): void {}
+}
+
+/**
+ * Any of these waters laid on a planar face falling toward +z at `angle`° (the new surfer's step 3.2: the steady glide
+ * runs down the face whose slope balances the board's drag at its speed, so the start is a terminal glide, not a placed
+ * board settling or a decelerating one). Heights, slopes and normals add; the inner water's flow is kept.
+ */
+export class OnFace implements SurfWater {
+  private readonly s: number;
+  constructor(readonly angle: number, readonly inner: SurfWater) { this.s = -Math.tan(angle / DEG); }
+  advance(dt: number): void { (this.inner as { advance?: (dt: number) => void }).advance?.(dt); }
+  setSampleTime(offset: number): void { (this.inner as { setSampleTime?: (o: number) => void }).setSampleTime?.(offset); }
+  surfaceAt(x: number, z: number): number { return this.inner.surfaceAt(x, z - 0) + this.s * z; }
+  sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
+    const base = this.s * z;
+    this.inner.sampleAt(x, y - base, z, out);
+    const slopeX = out.slopeX;
+    const slopeZ = out.slopeZ + this.s;
+    const norm = Math.hypot(slopeX, 1, slopeZ);
+    Object.assign(out, { surfaceY: out.surfaceY + base, bedY: out.bedY + base, slopeZ, normalX: -slopeX / norm, normalY: 1 / norm, normalZ: -slopeZ / norm });
+    return out;
+  }
+  addReaction(): void {}
+}
+
 export interface Rig { board: BoardBody; rider?: AttachedRider }
 
 /** A board on the surface at (0, z), heading `heading`° (from +z toward +x) in the surface plane, at `speed` through the water (the water's own velocity there added, so on a moving face it starts moving with the surface). */
@@ -104,6 +174,8 @@ export function place(water: SurfWater, z: number, heading: number, speed: numbe
   // new surfer (`rider: 'new'`, docs/research/new-rider/3.1).
   const rider = new AttachedRider(board.shape, {
     phase, ...(process.env.LEG_POWER === 'cap' ? { legPower: 'cap' as const } : {}), ...(process.env.RIDER === 'new' ? { rider: 'new' as const } : {}),
+    // SUBSTEPS=n: the new surfer's standing substeps (step 3.2's trials).
+    ...(process.env.SUBSTEPS ? { standingSubsteps: Number(process.env.SUBSTEPS) } : {}),
   });
   board.attach(rider);
   return { board, rider };
