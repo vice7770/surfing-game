@@ -72,7 +72,7 @@ weights. Results: `results/bars.jsonl`, `results/trace.jsonl`.
 - **B5: pass.** The six study probes (`../*.probe.ts`) print the same bytes as `../results/*.jsonl`, and A-lite's
   `normal.probe.ts` the same as `../a-lite/results/normal-off.jsonl` and, with `LEG_POWER=cap`, `normal-on.jsonl`.
   Glide, carve, paddling and pop-up never touch wall water.
-- **B6: pass, in part.** `../bumps.probe.ts`'s wall rows (the path rule, no `wallFollow`) print the same bytes as
+- **B6: pass.** `../bumps.probe.ts`'s wall rows (the path rule, no `wallFollow`) print the same bytes as
   before. The switch test: with `?tubeInertia=path`, the tube face equals today's under `wallBody=stream`
   (`tubeTrack.test.ts`, `wallBody.test.ts`), so no sample is marked. Canyon hashes equal main's (section 4).
 
