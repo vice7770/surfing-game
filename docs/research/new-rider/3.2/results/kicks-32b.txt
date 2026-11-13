@@ -1,0 +1,35 @@
+# Step 3.2b: Mode B kicks (bars.probe.ts PART=modes, RIDER=new) by the rider's yaw inertia scale (YAW_SCALE: 1 = 2.81 kg·m² tall, 0.765 = the arms in, 2.15) and the roll gains (GAINS=bank,rate s,forward).
+# Each speed: frequency Hz / damping ratio of the yaw rate's ringing / the roll's decay per cycle; F: a fall within the 3 s.
+# Round 1 (the sourced inertia, 3.2's gains and the gains re-chosen):
+scale 1 gains 0,0.1,0.1: 5:0.93/-0.166/4.902 7:0.78/-0.237/3.464 9:0.98/-0.194/18.092
+scale 1 gains 0,0,0.1: 5:None/None/15.692 F:balance 7:None/None/5.037 F:balance 9:0.64/-0.303/1.342
+scale 1 gains 0,0.05,0.1: 5:1.87/0.03/2.522 F:balance 7:0.69/-0.035/1.939 9:0.86/-0.216/4.114
+scale 1 gains 0,0.2,0.1: 5:0.81/-0.211/6.212 7:1.02/-0.237/5.605 9:1.1/-0.234/9.513 F:balance
+scale 1 gains 0,0.3,0.1: 5:0.88/-0.284/6.786 7:1.03/-0.296/9.191 F:balance 9:1.21/-0.295/10.01 F:balance
+scale 1 gains 0,0.5,0.1: 5:1.21/-0.241/6.541 F:balance 7:1.3/-0.288/8.773 F:balance 9:1.44/-0.362/11.279 F:balance
+scale 1 gains 0.5,0.1,0.1: 5:None/None/8.24 F:balance 7:None/None/10.313 F:balance 9:1/-0.329/26.048 F:balance
+scale 1 gains 1,0.2,0.1: 5:None/None/14.584 F:balance 7:None/None/8.074 F:balance 9:1.22/-0.351/14.853 F:balance
+scale 1 gains -0.5,0.1,0.1: 5:1.63/-0.104/1.182 F:balance 7:1.27/-0.046/11.587 F:balance 9:1.13/-0.11/2.884
+# Round 2 (the inertia's low end, the arms in; and half of it; gains around the best):
+scale 0.765 gains 0,0.1,0.1: 5:0.67/-0.267/5.371 7:0.79/-0.225/4.387 9:1.07/-0.187/22.933
+scale 0.765 gains 0,0.05,0.1: 5:1.88/0.032/2.062 F:balance 7:0.72/0.049/2.638 9:0.91/-0.201/3.278
+scale 0.765 gains -0.5,0.1,0.1: 5:2.11/-0.021/6.15 F:balance 7:1.21/-0.095/4.709 F:balance 9:1.16/-0.11/2.77
+scale 0.765 gains -0.25,0.05,0.1: 5:2.14/-0.04/14.89 F:balance 7:0.87/0.142/None 9:1.03/0.034/0.704
+scale 0.765 gains 0,0.15,0.1: 5:0.82/-0.1/8.01 7:0.95/-0.221/4.882 9:1.12/-0.185/10.885
+scale 0.765 gains -0.25,0.03,0.1: 5:2.11/-0.046/5.475 F:balance 7:1.33/-0.097/25.043 F:balance 9:0.81/-0.023/2.984
+scale 0.765 gains -0.35,0.05,0.1: 5:2.1/-0.038/6.05 F:balance 7:1.26/-0.08/4.953 F:balance 9:0.94/-0.046/3.766
+scale 0.765 gains -0.15,0.05,0.1: 5:1.8/-0.052/13.212 F:balance 7:None/None/1.079 9:0.96/-0.044/1.103
+scale 0.765 gains -0.25,0.08,0.1: 5:1.78/-0.041/14.816 F:balance 7:0.82/-0.06/2.25 9:1.11/-0.087/1.616
+scale 0.765 gains -0.2,0.04,0.1: 5:2.15/-0.044/14.067 F:balance 7:0.61/0.037/1.602 9:0.96/0.083/0.734
+scale 0.5 gains 0,0.1,0.1: 5:0.97/-0.004/9.785 7:0.86/-0.141/4.049 9:1.12/-0.167/3.669
+scale 0.5 gains 0,0.05,0.1: 5:1.64/-0.073/10.587 F:balance 7:0.72/-0.04/3.365 9:0.97/-0.157/2.831
+scale 0.5 gains -0.5,0.1,0.1: 5:2.21/-0.017/4.937 F:balance 7:1.4/-0.067/4.753 F:balance 9:1.72/0.005/1.727
+scale 0.5 gains -0.25,0.05,0.1: 5:2.24/-0.028/17.081 F:balance 7:0.99/-0.09/6.983 9:1.14/0.05/0.649
+scale 0.5 gains 0,0.15,0.1: 5:0.87/-0.179/10.974 7:1.01/-0.179/5.622 9:1.24/-0.182/12.339 F:balance
+scale 0.5 gains -0.25,0.03,0.1: 5:2.26/-0.031/None F:balance 7:1.53/-0.074/6.266 9:0.79/-0.009/2.008
+scale 0.5 gains -0.35,0.05,0.1: 5:2.24/-0.025/11.525 F:balance 7:1.67/-0.1/7.588 F:balance 9:0.94/-0.06/4.224
+scale 0.5 gains -0.15,0.05,0.1: 5:2.23/-0.031/14.845 F:balance 7:None/None/5.064 9:1.04/-0.004/0.896
+scale 0.5 gains -0.25,0.08,0.1: 5:2.19/-0.024/13.478 F:balance 7:1.17/-0.01/2.537 9:1.2/-0.071/1.497
+scale 0.5 gains -0.2,0.04,0.1: 5:2.25/-0.03/17.209 F:balance 7:0.98/-0.055/6.395 9:1.06/0.104/0.389
+scale 1 gains -0.15,0.05,0.1: 5:1.76/-0.057/3.259 F:balance 7:0.79/0.201/2.022 9:0.89/-0.065/1.259
+scale 1 gains -0.2,0.04,0.1: 5:2.07/-0.046/18.718 F:balance 7:0.58/-0.203/1.369 9:0.89/0.031/0.876

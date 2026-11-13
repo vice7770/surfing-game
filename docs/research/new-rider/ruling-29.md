@@ -94,3 +94,69 @@ Advisor: this session. Read: `roll-plant/README.md` and its results.
 2. **Extend 3.2's delayed model with the yaw state, sway and centre-of-pressure steering,** and choose the gains on it before building.
 3. **Rebuild on `claude/rider-new-32`'s controller, and re-run 3.2's bars.**
 - The hull's cross-flow yaw damping is the reserve lever. It has no source, so use it only if the inertia is not enough, behind its own switch.
+
+---
+
+# Ruling 29g: step 3.2b held; the locked yaw took away the rider's steering (2026-11-13)
+
+Advisor: this session. Read: `3.2/README.md` Part 2 and its results. The code is held on `claude/rider-new-32b`
+(1c3dd7cb, pushed), not merged. Its probes (`inertia`, `yaw`, `yawstep`) run on that branch.
+
+**What 3.2b showed (accepted)**
+- The yaw inertia is sourced (de Leva 1996, posed in the game's stance: 2.81 / 3.05 / 3.20 kg·m²). It does what 29f
+  asked: a 1 cm centre-of-pressure step yaws the board with a time constant of 0.122 s at 7 m/s.
+- The weave grows faster: damping −0.17 to −0.24 at 0.8–1.0 Hz. No gains damp it, in the model (1,500 samples over the
+  physical box) or in the game (two rounds).
+- **The limit is not the delay.** At 10 ms of delay the best is +0.06. A loop on the body's bank and bank rate, through
+  the ankle, cannot damp this mode even undelayed.
+
+**Reading** [I unless tagged]
+- The mode is the board and the body leaning together, righted only by the turn. With the whole body's yaw locked to
+  the board, the rider can steer only by rolling the board: the rail, and the feet's centre of pressure, which turns
+  it the other way. That is close to a bicycle with its handlebar locked: the only steering left comes through the
+  lean, and no rider can balance one.
+- A real rider's yaw is not locked. The feet are planted, but the hips, the bent knees and the spine let the pelvis
+  and the upper body turn against the board. The two feet, 0.63 m apart, can push across the board in opposite
+  directions; that couple is the legs' twist (the feet's free moment [S, recalled: Holden and Cavanagh 1991, J Biomech
+  24:887]). Surfers turn by leading with the head, shoulders and hips, and the board follows the feet [S: coaching,
+  general]. The twist is the rider's handlebar: the legs turn the board against the upper body's inertia, and the
+  upper body turns the other way.
+- The game cannot do this today. One equivalent leg cannot push the two feet opposite ways, and 3.2b's rigid coupling
+  makes any twist an internal force that cancels.
+- So 29f's "rigid at first" was the wrong first step. Its inertia is right; locking it removed the steering. The
+  agent's lever 4 (a compliant coupling) comes first.
+- The other levers wait. The water's small-rail yaw and the drag line (levers 1 and 2) are water forces, closed since
+  29f. The reserve lever has no source and does not help at 7 or 9 m/s in the model.
+
+**Decision: step 3.2c, the twist as the rider's steering, model first** (surfer track, under `rider=new`; the old rider
+unchanged)
+1. **Split the yaw inertia by where it sits** (de Leva, posed as in `inertia.probe.ts`). With the board: the feet and
+   shanks, and the share of the thighs that cannot turn with the pelvis. On the twist: the pelvis, trunk, arms and
+   head. The twist rotor (1.5 kg·m², provisional) becomes this share, so nothing is counted twice.
+2. **Couple the twist through the legs.** Use a sourced passive stiffness and damping of the legs' and trunk's axial
+   rotation, a sourced strength (the hip rotators, both legs), and the joints' range. The twist's torque acts on the
+   board through the feet, and on the upper body the other way. It is a limb's force with its reaction, not a motor.
+3. **Add the twist to the delayed model** (`YawPlant`). The human loop gets the twist torque as a second channel.
+   - Senses: the body's bank and bank rate (as now), the yaw rate (the canals), and the twist's angle and rate (the
+     legs' own sense).
+   - Delay 0.1 s and motor lag 0.05 s on every channel.
+4. **First the upper bound, model only.** Full-state feedback (LQR), no delay: (a) through the ankle alone, (b) through
+   the ankle and the twist. Report the best least damping at 5, 7 and 9 m/s for each. This says which channel has the
+   authority.
+5. **Then a human law on the model,** with margins: gains ×0.75–1.33, delay up to 0.15 s, tall and Compress, at 5, 7
+   and 9 m/s.
+   - Search laws a human could use. One is steer into the fall: the twist on the bank's rate and angle, as bicycle
+     riders do [S, recalled: Schwab, Meijaard and Kooijman 2012, Vehicle Syst Dyn 50:1209; Moore 2012, PhD thesis, UC
+     Davis]. Another is the yaw rate's damping.
+   - The gate to build: a least damping of at least 0 everywhere, with the margins. The model ran 2–3 times too
+     pessimistic against the game in 3.2b's check, so the game's bars judge the rest.
+6. **Build in the game only if 5 passes.** Rebuild on `claude/rider-new-32b`, and run 3.2's bars.
+   - The twist must show in the pose (the hips and shoulders turn), since motion comes only from visible limbs.
+   - The yaw step becomes a report, braced and relaxed: with a sourced twist the board's quick answer is the legs'.
+     The carves and the turn pairs check the feet's wrong-way steering.
+7. **Stop rule.** Hand back before building if 4(b) shows that the twist cannot damp it either (under +0.05
+   undelayed), or if 5 finds no law in one round. Then the water's small-rail yaw (levers 1 and 2) reopens, as a
+   water-track question.
+
+**Effort: xhigh.** A new body degree of freedom in the coupled solve, its sourced numbers, and the model's search
+before any build.

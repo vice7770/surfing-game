@@ -1,0 +1,8 @@
+
+hold / leg drive off: n 16; top turn begun 0; 1 pair 0; 2 pairs 0; high 0.15 to 0.16
+  first-pair failures: {'other fall in down': 4, 'sudden fall in down': 6, 'sudden fall in up': 4, 'other fall in up': 2}
+  later ends: {}
+  bottom turn (stick up -> UP deg): 0.02 to 0.92 s, ends 0.90 to 1.10 face lengths ahead of the crest; v at bottom -
+  bottom->top - s; at the top: frac -, heading -, v -
+  top turn: - s, swing - deg, peak - deg/s, highest -
+  pair 1 - s (v at 2nd bottom -); pair 2 - s; 2nd bottom->top - s

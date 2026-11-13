@@ -1,0 +1,11 @@
+{"posture":"anatomical (feet together, arms at the sides)","comHeight":1.006,"inertia":0.928,"arms":0.264,"legs":0.316}
+{"posture":"anatomical, arms out level","inertia":2.442,"arms":1.778,"ratio":2.63}
+{"posture":"tall","arms":"in","comHeight":0.871,"comAcross":0.036,"inertia":2.149,"arms_":0.276,"legs":1.471}
+{"posture":"tall","arms":"pose","comHeight":0.889,"comAcross":0.029,"inertia":2.808,"arms_":0.932,"legs":1.485}
+{"posture":"tall","arms":"out","comHeight":0.901,"comAcross":0.036,"inertia":3.651,"arms_":1.778,"legs":1.472}
+{"posture":"crouch","arms":"in","comHeight":0.702,"comAcross":0.062,"inertia":2.475,"arms_":0.29,"legs":1.647}
+{"posture":"crouch","arms":"pose","comHeight":0.716,"comAcross":0.066,"inertia":3.051,"arms_":0.862,"legs":1.643}
+{"posture":"crouch","arms":"out","comHeight":0.731,"comAcross":0.062,"inertia":3.974,"arms_":1.79,"legs":1.648}
+{"posture":"compress","arms":"in","comHeight":0.604,"comAcross":0.08,"inertia":2.622,"arms_":0.321,"legs":1.615}
+{"posture":"compress","arms":"pose","comHeight":0.618,"comAcross":0.08,"inertia":3.199,"arms_":0.9,"legs":1.615}
+{"posture":"compress","arms":"out","comHeight":0.634,"comAcross":0.08,"inertia":4.118,"arms_":1.819,"legs":1.615}
