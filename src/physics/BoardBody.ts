@@ -703,7 +703,8 @@ export class BoardBody implements BoardContactBody {
   step(dt: number, water: SurfWater): void {
     // A contact solver may have moved the board between steps.
     this.centerOfMass.add(this.scratch.subVectors(this.position, this.lastPosition));
-    const substeps = this.rider?.attached && this.rider.upright ? Math.max(this.substeps, STANDING_SUBSTEPS) : this.substeps;
+    // The new surfer standing free (step 3.2) asks for its own count (`AttachedRider.standingSubsteps`).
+    const substeps = this.rider?.attached && this.rider.upright ? Math.max(this.substeps, this.rider.standingSubsteps ?? STANDING_SUBSTEPS) : this.substeps;
     const h = dt / substeps;
     this.reaction.fill(0);
     this.meanPosition.fill(0);
