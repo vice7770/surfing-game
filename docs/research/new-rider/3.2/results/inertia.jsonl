@@ -1,11 +1,29 @@
 {"posture":"anatomical (feet together, arms at the sides)","comHeight":1.006,"inertia":0.928,"arms":0.264,"legs":0.316}
 {"posture":"anatomical, arms out level","inertia":2.442,"arms":1.778,"ratio":2.63}
 {"posture":"tall","arms":"in","comHeight":0.871,"comAcross":0.036,"inertia":2.149,"arms_":0.276,"legs":1.471}
+{"part":"split","posture":"tall","arms":"in","pivot":"centre of mass","whole":2.149,"twist":0.801,"withBoard":1.348,"coupling":0.828,"thighsOnTwist":0.123,"boardMeetsUpperFree":1.293}
+{"part":"split","posture":"tall","arms":"in","pivot":"pelvis","whole":2.149,"twist":0.872,"withBoard":1.276,"coupling":0.741,"thighsOnTwist":0.068,"boardMeetsUpperFree":1.52}
 {"posture":"tall","arms":"pose","comHeight":0.889,"comAcross":0.029,"inertia":2.808,"arms_":0.932,"legs":1.485}
+{"part":"split","posture":"tall","arms":"pose","pivot":"centre of mass","whole":2.808,"twist":1.435,"withBoard":1.373,"coupling":1.464,"thighsOnTwist":0.113,"boardMeetsUpperFree":1.315}
+{"part":"split","posture":"tall","arms":"pose","pivot":"pelvis","whole":2.808,"twist":1.451,"withBoard":1.357,"coupling":1.377,"thighsOnTwist":0.068,"boardMeetsUpperFree":1.502}
 {"posture":"tall","arms":"out","comHeight":0.901,"comAcross":0.036,"inertia":3.651,"arms_":1.778,"legs":1.472}
+{"part":"split","posture":"tall","arms":"out","pivot":"centre of mass","whole":3.651,"twist":2.302,"withBoard":1.349,"coupling":2.329,"thighsOnTwist":0.122,"boardMeetsUpperFree":1.295}
+{"part":"split","posture":"tall","arms":"out","pivot":"pelvis","whole":3.651,"twist":2.369,"withBoard":1.282,"coupling":2.241,"thighsOnTwist":0.068,"boardMeetsUpperFree":1.53}
 {"posture":"crouch","arms":"in","comHeight":0.702,"comAcross":0.062,"inertia":2.475,"arms_":0.29,"legs":1.647}
+{"part":"split","posture":"crouch","arms":"in","pivot":"centre of mass","whole":2.475,"twist":1.087,"withBoard":1.388,"coupling":1.067,"thighsOnTwist":0.259,"boardMeetsUpperFree":1.428}
+{"part":"split","posture":"crouch","arms":"in","pivot":"pelvis","whole":2.475,"twist":1.625,"withBoard":0.849,"coupling":0.877,"thighsOnTwist":0.068,"boardMeetsUpperFree":2.001}
 {"posture":"crouch","arms":"pose","comHeight":0.716,"comAcross":0.066,"inertia":3.051,"arms_":0.862,"legs":1.643}
+{"part":"split","posture":"crouch","arms":"pose","pivot":"centre of mass","whole":3.051,"twist":1.679,"withBoard":1.372,"coupling":1.658,"thighsOnTwist":0.271,"boardMeetsUpperFree":1.413}
+{"part":"split","posture":"crouch","arms":"pose","pivot":"pelvis","whole":3.051,"twist":2.292,"withBoard":0.759,"coupling":1.473,"thighsOnTwist":0.068,"boardMeetsUpperFree":2.104}
 {"posture":"crouch","arms":"out","comHeight":0.731,"comAcross":0.062,"inertia":3.974,"arms_":1.79,"legs":1.648}
+{"part":"split","posture":"crouch","arms":"out","pivot":"centre of mass","whole":3.974,"twist":2.584,"withBoard":1.39,"coupling":2.564,"thighsOnTwist":0.257,"boardMeetsUpperFree":1.43}
+{"part":"split","posture":"crouch","arms":"out","pivot":"pelvis","whole":3.974,"twist":3.114,"withBoard":0.861,"coupling":2.374,"thighsOnTwist":0.068,"boardMeetsUpperFree":2.164}
 {"posture":"compress","arms":"in","comHeight":0.604,"comAcross":0.08,"inertia":2.622,"arms_":0.321,"legs":1.615}
+{"part":"split","posture":"compress","arms":"in","pivot":"centre of mass","whole":2.622,"twist":1.382,"withBoard":1.239,"coupling":1.337,"thighsOnTwist":0.375,"boardMeetsUpperFree":1.328}
+{"part":"split","posture":"compress","arms":"in","pivot":"pelvis","whole":2.622,"twist":2.509,"withBoard":0.112,"coupling":1.133,"thighsOnTwist":0.068,"boardMeetsUpperFree":2.11}
 {"posture":"compress","arms":"pose","comHeight":0.618,"comAcross":0.08,"inertia":3.199,"arms_":0.9,"legs":1.615}
+{"part":"split","posture":"compress","arms":"pose","pivot":"centre of mass","whole":3.199,"twist":1.958,"withBoard":1.241,"coupling":1.913,"thighsOnTwist":0.374,"boardMeetsUpperFree":1.33}
+{"part":"split","posture":"compress","arms":"pose","pivot":"pelvis","whole":3.199,"twist":3.073,"withBoard":0.127,"coupling":1.708,"thighsOnTwist":0.068,"boardMeetsUpperFree":2.25}
 {"posture":"compress","arms":"out","comHeight":0.634,"comAcross":0.08,"inertia":4.118,"arms_":1.819,"legs":1.615}
+{"part":"split","posture":"compress","arms":"out","pivot":"centre of mass","whole":4.118,"twist":2.877,"withBoard":1.241,"coupling":2.832,"thighsOnTwist":0.374,"boardMeetsUpperFree":1.33}
+{"part":"split","posture":"compress","arms":"out","pivot":"pelvis","whole":4.118,"twist":3.992,"withBoard":0.127,"coupling":2.627,"thighsOnTwist":0.068,"boardMeetsUpperFree":2.389}

@@ -1,0 +1,43 @@
+{"part":"check","speed":5,"note":"3.2's ankle gains (0, 0.1 s), no twist law, tall, Ib 0.1","rigid32b":[-0.733,0.33],"stiffTwist":[-0.732,0.33],"passiveTwist":[-0.677,0.37],"upperFree":[-0.695,0.44],"noRiderInertia32":[-0.69,0.73]}
+{"part":"check","speed":7,"note":"3.2's ankle gains (0, 0.1 s), no twist law, tall, Ib 0.1","rigid32b":[-0.266,0.59],"stiffTwist":[-0.266,0.59],"passiveTwist":[-0.034,0.52],"upperFree":[-0.253,0.76],"noRiderInertia32":[-0.245,1.09]}
+{"part":"check","speed":9,"note":"3.2's ankle gains (0, 0.1 s), no twist law, tall, Ib 0.1","rigid32b":[-0.228,0.8],"stiffTwist":[-0.227,0.8],"passiveTwist":[-0.09,1],"upperFree":[-0.231,0.97],"noRiderInertia32":[-0.224,1.27]}
+{"part":"passive","k":0,"c":0,"damping":-0.253,"hz":0.76}
+{"part":"passive","k":0,"c":2,"damping":-0.187,"hz":0.74}
+{"part":"passive","k":0,"c":5,"damping":-0.151,"hz":0.68}
+{"part":"passive","k":0,"c":10,"damping":-0.176,"hz":0.63}
+{"part":"passive","k":0,"c":20,"damping":-0.214,"hz":0.61}
+{"part":"passive","k":5,"c":0,"damping":-0.229,"hz":0.79}
+{"part":"passive","k":5,"c":2,"damping":-0.15,"hz":0.76}
+{"part":"passive","k":5,"c":5,"damping":-0.12,"hz":0.68}
+{"part":"passive","k":5,"c":10,"damping":-0.169,"hz":0.63}
+{"part":"passive","k":5,"c":20,"damping":-0.213,"hz":0.6}
+{"part":"passive","k":10,"c":0,"damping":-0.2,"hz":0.83}
+{"part":"passive","k":10,"c":2,"damping":-0.104,"hz":0.79}
+{"part":"passive","k":10,"c":5,"damping":-0.081,"hz":0.67}
+{"part":"passive","k":10,"c":10,"damping":-0.164,"hz":0.62}
+{"part":"passive","k":10,"c":20,"damping":-0.213,"hz":0.6}
+{"part":"passive","k":20,"c":0,"damping":-0.142,"hz":0.93}
+{"part":"passive","k":20,"c":2,"damping":-0.063,"hz":0.5}
+{"part":"passive","k":20,"c":5,"damping":-0.06,"hz":0.59}
+{"part":"passive","k":20,"c":10,"damping":-0.163,"hz":0.6}
+{"part":"passive","k":20,"c":20,"damping":-0.213,"hz":0.6}
+{"part":"passive","k":40,"c":0,"damping":-0.201,"hz":0.53}
+{"part":"passive","k":40,"c":2,"damping":-0.185,"hz":0.54}
+{"part":"passive","k":40,"c":5,"damping":-0.176,"hz":0.56}
+{"part":"passive","k":40,"c":10,"damping":-0.189,"hz":0.58}
+{"part":"passive","k":40,"c":20,"damping":-0.218,"hz":0.59}
+{"part":"passive","k":80,"c":0,"damping":-0.237,"hz":0.56}
+{"part":"passive","k":80,"c":2,"damping":-0.233,"hz":0.56}
+{"part":"passive","k":80,"c":5,"damping":-0.229,"hz":0.57}
+{"part":"passive","k":80,"c":10,"damping":-0.227,"hz":0.57}
+{"part":"passive","k":80,"c":20,"damping":-0.231,"hz":0.58}
+{"part":"passive","k":150,"c":0,"damping":-0.252,"hz":0.57}
+{"part":"passive","k":150,"c":2,"damping":-0.251,"hz":0.57}
+{"part":"passive","k":150,"c":5,"damping":-0.249,"hz":0.57}
+{"part":"passive","k":150,"c":10,"damping":-0.248,"hz":0.58}
+{"part":"passive","k":150,"c":20,"damping":-0.247,"hz":0.58}
+{"part":"passive","k":400,"c":0,"damping":-0.261,"hz":0.58}
+{"part":"passive","k":400,"c":2,"damping":-0.261,"hz":0.58}
+{"part":"passive","k":400,"c":5,"damping":-0.261,"hz":0.58}
+{"part":"passive","k":400,"c":10,"damping":-0.26,"hz":0.58}
+{"part":"passive","k":400,"c":20,"damping":-0.26,"hz":0.58}
