@@ -189,6 +189,8 @@ it('where the board yaw comes from, on the owner\'s acceptance test', () => {
           rider: RIDER, assist: ASSIST, stance: st, extra, steer, t: r(t, 3), phase,
           fromFall: r(ff, 2), yawRate: r(yawRate, 2), pathRate: r(pathRate, 2), roll: r(s.roll, 2), slip: r(s.slip, 2),
           speed: r(s.speed, 2), bank: r(s.bank, 2), load: r(s.load, 2),
+          // The lean hold's own cap this frame, degrees (step 3.2q; `Infinity` with it off).
+          leanHeldDeg: r((rig.rider as unknown as { leanHeld: number }).leanHeld * DEG, 1),
           yaw: Object.fromEntries(Object.entries(board.yaw).map(([k, v]) => [k, r(v as number, 2)])),
         })}\n`);
       }

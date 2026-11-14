@@ -4234,8 +4234,10 @@ One change, in `prepareBank` under the new rider's own reference [R]:
 It is a change to what the rider *intends*, not a force, so nothing is added without a reaction, and it introduces
 **no new constant**: both terms are already in the file. It bootstraps rather than locking him upright — the ankles
 roll the board onto its rail, the turn comes, the felt vertical tilts, the cap opens, and the lean follows the turn
-instead of leading it off the board. In the traced run the cap opens from 14.3° at the start to 38° by 0.7 s and past
-50° by about a second, as the turn builds.
+instead of leading it off the board. The cap is recorded frame by frame in
+`results/yaw-trace-ship-32q.jsonl`: **15.4° at the start, 29.8° by 0.72 s, 50.6° by 1.42 s, 58° by 1.72 s**, which is
+the turn building. The bank follows it and then **overshoots it by up to 11°** (69.0° against a 58.0° cap at 1.72 s) —
+the cap does what it can about the lean the rider *asks* for, and the balance's own tracking error is still there.
 
 On the owner's acceptance test, twelve runs, against 3.2p's behaviour in the same session
 (`balance: { leanHold: 'off' }`) [M]:
@@ -4386,5 +4388,6 @@ measured number to aim at.
 - Results: `results/yaw-old-32q.jsonl` and `yaw-new-32q.jsonl` (the two shipped columns, with the whole ledger),
   `yaw-old-off-32q.jsonl`, `yaw-old-nopull-32q.jsonl`, `yaw-old-nocarry-32q.jsonl`, `yaw-new-on-32q.jsonl` (the
   ablations), `yaw-new-off-32q.jsonl` (3.2p's behaviour, the same session) and `yaw-new-felt-32q.jsonl` (the angle
-  form), `yaw-trace-old-32q.jsonl`, `yaw-trace-new-32q.jsonl` and `yaw-trace-topple-32q.jsonl` (the traces §5 reads),
+  form), `yaw-trace-old-32q.jsonl`, `yaw-trace-new-32q.jsonl` and `yaw-trace-topple-32q.jsonl` (the traces §5 reads) with
+  `yaw-trace-ship-32q.jsonl` (the same run with the lean hold on, the cap recorded),
   `bars-new-32q.jsonl` against `bars-new-off-32q.jsonl`, `suite-32q.txt`, `canyon-byte-32q.txt`.
