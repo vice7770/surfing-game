@@ -1,0 +1,1 @@
+cases 19, stored depths 2; lanes 153; from 40 to 115 s; parts A

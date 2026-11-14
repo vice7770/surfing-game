@@ -1,0 +1,39 @@
+cases 19, stored depths 2; lanes 153; from 40 to 130 s; parts AFCDE
+
+## F. The hand-over's height bar, with 19 cases (1274 slices, 8 with no sea crest within 3 m)
+  the case's H over the sea's (bar 0.95–1.05): median 1.046, 90 % 1.355, 99 % 2.210, most 5.886 (1266); outside the bar 54.8 %
+  on the field's whole lanes: median 1.050, 90 % 1.359, 99 % 2.215, most 5.886 (1175), outside 56.0 %
+  with no τ clamp over 5 % of the weight: median 0.996, 90 % 1.075, 99 % 1.154, most 1.299 (471), outside 34.2 %
+  with no clamp at all: median 0.978, 90 % 1.028, 99 % 1.039, most 1.039 (57), outside 12.3 %
+  the crest's place against the sea's, m (bar 0.25): median 0.044, 90 % 0.195, 99 % 0.389, most 0.443 (1266); over 0.25 8.8 %
+  clamped: τ 814, slope 337, A0 717, HS/h0 336 of 1274
+  per case (slices that blend it; τ clamped low/high; the low clamp's share of its weight): b1-a0 58: low 38 (0.70), high 0; b1-a1 571: low 483 (0.85), high 0; b1-a2 559: low 549 (0.97), high 0; b15-a2 821: low 386 (0.49), high 0; b15-a3 149: low 148 (1.00), high 0; b2-a1 122: low 4 (0.00), high 0; b2-a2 322: low 117 (0.31), high 0; b2-a3 210: low 25 (0.02), high 0; b25-a2 116: low 0 (0.00), high 0; b25-a3 116: low 0 (0.00), high 0; b3-a1 31: low 0 (0.00), high 0; b3-a2 336: low 0 (0.00), high 0; b3-a3 305: low 0 (0.00), high 0
+
+## A. The hand-back (395 bores followed, 76556 windows)
+  the bore's place, the hand-back's own part over 0.1 s, m (bar 0.3): median 0.194, 90 % 1.190, 99 % 3.478, most 28.978 (76556); over 0.3 39.9 %
+  its height, the same, m (bar 0.05): median 0.0211, 90 % 0.0995, 99 % 0.4729, most 1.1328 (76556); over 0.05 24.5 %
+  raw over 0.1 s: place median 0.644, 90 % 1.487, 99 % 3.548, most 21.988 (76556); height median 0.0293, 90 % 0.1025, 99 % 0.4676, most 1.1361 (76556)
+  the sea's own over 0.1 s (the control): place median 0.574, 90 % 0.684, 99 % 0.942, most 27.014 (76556); height median 0.0166, 90 % 0.0437, 99 % 0.1094, most 1.0232 (76556)
+  in one step (1/60 s): place median 0.1112, 90 % 0.4639, 99 % 2.3405, most 14.5600 (78526); height median 0.00772, 90 % 0.03681, 99 % 0.24412, most 0.92040 (78526)
+  the gap the blend-out pays back, m: median 1.21, 90 % 3.51, 99 % 20.95, most 23.02 (394); the height gap then, m: median 0.165, 90 % 0.435, 99 % 0.829, most 1.060 (394)
+
+## C. Ruling 35 item 2: the surface's share and the flow's at one seat
+  |the nodes' share − the point's| (bar 0.02): median 0.0000, 90 % 0.0000, 99 % 0.0491, most 0.0601 (102929); over 0.02 4.3 %
+  in the field's middle (its lane's end weight 1): median 0.0000, 90 % 0.0000, 99 % 0.0000, most 0.0000 (93490); over 0.02 0.0 %
+  at its σ ends (the end taper): median 0.0153, 90 % 0.0495, 99 % 0.0537, most 0.0601 (9439); over 0.02 46.4 %
+  the nodes' share median 1.000, 90 % 1.000, 99 % 1.000, most 1.000 (102929)
+  the point's share median 1.000, 90 % 1.000, 99 % 1.000, most 1.000 (102929)
+
+## D. Ruling 35 item 1: the flow below the deeper stored depth
+  0.20 m under the surface: the share median 1.000, 90 % 1.000, 99 % 1.000, most 1.000 (103083); |library − sea| along the ray median 0.471, 90 % 2.466, 99 % 3.656, most 5.326 (97890) m/s; what a body there feels over the sea's median 0.462, 90 % 2.434, 99 % 3.652, most 5.326 (97890) m/s
+  0.45 m under the surface: the share median 1.000, 90 % 1.000, 99 % 1.000, most 1.000 (103083); |library − sea| along the ray median 0.452, 90 % 2.144, 99 % 3.649, most 5.170 (97890) m/s; what a body there feels over the sea's median 0.441, 90 % 2.099, 99 % 3.633, most 5.147 (97890) m/s
+  0.80 m under the surface: the share median 0.764, 90 % 0.864, 99 % 1.000, most 1.000 (103083); |library − sea| along the ray median 0.429, 90 % 2.061, 99 % 3.663, most 5.214 (97890) m/s; what a body there feels over the sea's median 0.314, 90 % 1.608, 99 % 3.115, most 4.486 (97890) m/s
+  1.50 m under the surface: the share median 0.000, 90 % 0.041, 99 % 0.847, most 1.000 (103083); |library − sea| along the ray median 0.430, 90 % 2.274, 99 % 4.104, most 5.462 (43798) m/s; what a body there feels over the sea's median 0.001, 90 % 0.371, 99 % 1.697, most 3.830 (43798) m/s
+
+## E. Ruling 35 item 3: the clock's step at a slice's throw
+  Σ w |rate − 1| at the throw: median 0.0249, 90 % 0.0810, 99 % 0.1012, most 0.1064 (1326); the cases blended median 3.0, 90 % 4.0, 99 % 4.0, most 5.0 (1326)
+  |the step in the library's own du/dt across the throw|, m/s²: median 13.556, 90 % 25.740, 99 % 27.481, most 53.925 (1326)
+
+the sea's crest lost on a step, over the whole run: 0
+
+ran 661 s wall; slices made 1517 (slope clamped 414, A0 clamped 825, some τ clamped 958, at the toe 567); tracker {"raws":1867,"fitted":1517,"borrowed":10,"atToe":712,"rejected":33}

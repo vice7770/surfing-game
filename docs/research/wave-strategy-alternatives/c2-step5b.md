@@ -66,6 +66,31 @@ Two different things then get measured, and the plan's bar is the first of them:
 Both are reported as the **hand-back's own part** — the library's reading less the sea's own at the same moment — so
 the water's own motion is out of the number. The sea's own reading is given beside them as the control.
 
+### 1.5 The readings
+
+**The jump across the hand-back passes, and it is not close** (316 hand-backs on every third lane, 40–115 s of the
+pool) [M, `c2-step5b-runs/round3-a.txt`]:
+
+| at the hand-back itself, the library's reading less the sea's | median | 90 % | 99 % | worst | bar | over it |
+|---|---|---|---|---|---|---|
+| the bore's place | 0.004 m | 0.013 | 0.045 | **0.277** | 0.30 | **0.0 %** |
+| the bore's height | 0.002 m | 0.009 | 0.020 | **0.044** | 0.05 | **0.0 %** |
+
+Every one of the 316 is inside both bars, worst included. The sea's crest was lost on **0** steps.
+
+**The drift over the whole blend-out is not small, and it is the gap being paid back.** Over a rolling 0.1 s window
+through the 2.4 s, the library's reading less the sea's moves by a median of **0.193 m** in place (39.7 % of windows
+over 0.3 m) and 0.021 m in height (23.7 % over 0.05). The sea's own place moves 0.571 m median over the same window,
+which is the bore running at about 5.7 m/s, so the drift is about a third of the water's own motion.
+
+Its cause is measured, and it is not the overlap of two slices on one lane: with two live the drift is the same size
+(29.1 % over 0.3 against 39.8 % with one), and two-slice windows are 602 of 61 747. It is **the gap**: when the
+blend-out starts, the case's crest stands a median of **1.27 m** from the sea's, 90 % 3.79 m and 99 % 19.75 m, and the
+blend walks the shown wave over that gap in 2.4 s. The bore's height has to move a median of 0.151 m over the same
+2.4 s.
+
+**This is reported, not fixed.** §7 says what would fix it and why it was left.
+
 ## 2. The bore's foam
 
 ### 2.1 Why it goes on the render nodes and not on a mesh
@@ -110,7 +135,46 @@ so the two never add up to more than the slice's share and there is no flash and
 spray burst inside 0.4 s of impact is the same order, so the existing 0.5 s was kept rather than a new constant added
 [S, R].
 
+## 5. The hand-over's height bar, re-read with ruling 31's ten cases
+
+The bar (step 3): the case's H at the hand-over should be 0.95–1.05 of the sea's. Step 3b read **median 1.07** with
+63.1 % outside the bar, and said the reason was that 962 of 1 264 slices clamped a key. Ruling 31's ten runs are now in
+the library (19 cases): they fill the A0 0.12 row on the three beds, put slopes 0.055 and 0.085 between them, and give
+slope 0.105 a second reef depth, so HS/h0 is a real key for the first time.
+
+**Better, and still a miss** (1 266 slices, the same 90 s window as step 3b) [M, `c2-step5b-runs/round2-bars.txt`]:
+
+| the case's H over the sea's | step 3b, 9 cases | step 5b, 19 cases |
+|---|---|---|
+| all slices | median 1.065, outside 63.1 % | **median 1.046, outside 54.8 %** |
+| with no τ clamp over 5 % of the weight | median 0.973, outside 26.7 % (240) | **median 0.996, outside 34.2 % (471)** |
+| with no clamp at all | median 1.121, outside 80.0 % (**10** slices) | **median 0.978, 90 % 1.028, outside 12.3 % (57** slices) |
+
+**The shape is right where the keys cover it.** The population with no clamp at all has grown from 10 slices to 57 and
+its median has moved from 1.12 to 0.978, with the 90th at 1.028 — inside the bar. What is left outside is clamps.
+
+**The clamp that is left is τ, and ten more cases cannot fix it.** 814 of 1 274 slices still clamp τ, and every one of
+them clamps **low** — the slice's H/d at the hand-over is under what the case reads at its own first stored frame. The
+cases that clamp are the gentle beds: b1-a2 clamps on 0.97 of its weight, b15-a3 on 1.00, b1-a1 on 0.85, b1-a0 on 0.70,
+b15-a2 on 0.49; the steeper beds (b25, b3) clamp on none of theirs. **That is a lead, not a key:** those runs do not
+start early enough for the pool's own waves, and the fix is longer leads on the gentle beds, not more cases [M, R].
+
+**One thing got worse, and it is worth the advisor's eye.** The A0 clamp went from 277 slices to **717**. The matcher
+brackets the slope first and then runs the A0 polyline *within the chosen bed*, and the two new intermediate beds
+(slopes 0.055 and 0.085) carry only **two** A0 rows each, 0.25 and 0.355. A slice at those slopes used to interpolate
+between b1's four rows and b2's three; now it falls on a two-point polyline that starts at 0.25 and clamps below it.
+**A sparse new bed is worse than no bed**, and the cure is the A0 0.12 and 0.15 rows on b15 and b25 [M, R].
+
 ## 4. Ruling 35's four carried items
+
+### 2.4 Does it reach the page, and does it read?
+
+**It reaches the page.** Stepping the pool's library sea and writing the snapshot the page draws, about **108 render
+nodes a wave** carry the library's own foam at any instant, **93 of them over half cover**; the whitest reads **0.85**,
+the void fraction runs **0.129–0.349** — inside the consult's 0.13–0.4 band — and the plume stands at the full 2.00 m
+[M, `c2-step5b-runs/foam.txt`].
+
+**It does not read in the water sheet's pool shots, and the honest answer is in §6.**
 
 ### 4.1 Item 1: the flow below the deeper stored depth
 
@@ -196,7 +260,7 @@ multi-valued by construction — it never unfolds, however long the bore runs. T
    ruling 25e's job and it must move for the whole scene at once, not for the bore alone [R, step 5a §5].
 4. **`DEEP.fade` = 2** is provisional. Nothing measured says where the library's water should stop; 2 is the first
    scale-free choice that puts a board on the library's water and a submerged body on the sea's.
-5. The library's files grow from 11.81 MB to **23.6 MB** for 19 cases, over the plan's step-2 bar of 15 MB. They are
+5. The library's files grow from 11.81 MB to **24.9 MB** for 19 cases, over the plan's step-2 bar of 15 MB. They are
    fetched only under the switch, and the ten new ones are what the height bar needed, but the bar is missed and is the
    advisor's to accept [M].
 6. I did **not** ride it, and no rider session was run (the brief's rule). The owner rides and judges the foam.

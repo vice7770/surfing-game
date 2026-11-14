@@ -1,0 +1,3 @@
+t 50.02 s: 108 nodes carry the library's foam, 93 of them over half cover; the whitest 0.852; the void fraction 0.134–0.344; the deepest plume 2.00 m; mean cover 0.585
+t 51.43 s: 107 nodes carry the library's foam, 94 of them over half cover; the whitest 0.867; the void fraction 0.129–0.349; the deepest plume 2.00 m; mean cover 0.592
+t 52.85 s: 154 nodes carry the library's foam, 142 of them over half cover; the whitest 0.895; the void fraction 0.121–0.351; the deepest plume 2.00 m; mean cover 0.629
