@@ -176,17 +176,30 @@ start where the mask ends, is a shape question and belongs to the advisor and to
   `ScreenStack.test.ts`, does so in a comment). Everything else the branch adds is a probe, a script, stills and this
   document. The measurement's own edit to `WaveZone.ts` was reverted before the commit and is not in the branch
   (`git diff` against main shows `src/dev/waterSheet.ts` and docs, nothing else).
-- **The suite had not finished when this round handed back, and `c2-step5d-runs/suite.txt` says exactly where it
-  stood.** It is detached and still writing. Seven files were failing at hand-back — step 5c's six plus
-  `BoussinesqSolver` and `sharedUpperRoot` — with per-test durations of 53 s to 1 979 s, which on a machine at load
-  20–24 carrying five Basilisk cases on three cores can only be hangs. **None of the seven imports
-  `src/dev/waterSheet.ts`, which is the only TypeScript this branch changes**, so the construction argument above
-  covers them whatever the final tally says.
+- **The suite finished after the round handed back, and not one assertion failed** (`c2-step5d-runs/suite.txt`,
+  3 h 41 on a machine at load 20–24 carrying five Basilisk cases on three cores):
+
+  | | |
+  | --- | --- |
+  | Test Files | 8 failed, 353 passed, 37 skipped (398) |
+  | Tests | **14 failed, 3 584 passed**, 23 expected fail, 45 skipped (3 666) |
+  | the fourteen | **9 timeouts** (900 s ×2, 180 s ×2, 30 s ×2, 1 800 s, 60 s, and one hook at 120 s) and **5 ENOENT**. **Zero assertion failures.** |
+
+  **The five ENOENT are the run outliving its worktree, not a missing asset and not a regression.** Four want
+  `public/barrels/pad19-a20-l12.bin` and one a water-physics data JSON; both are **tracked in main**
+  (`git cat-file -e origin/main:public/barrels/pad19-a20-l12.bin` succeeds) and both were in the worktree when the run
+  started. `SurfZoneSimulation.test.ts` alone took 13 241 s, so the run was still inside that one file long after the
+  round handed back, the branch was merged and the worktree was cleaned up underneath it — and all five failures are
+  in that file, at its end.
+
+  **None of the eight failing files imports `src/dev/waterSheet.ts`**, which is the only TypeScript this branch
+  changed, so the construction argument above covers them either way.
 - **Two things about the command, both worth writing down.** `--exclude "src/wave/SurfZoneRunner.test.ts"` **does not
   take**: `npx vitest list` with the same flag still lists six of that file's tests, so the run carries the file that
-  is outside the merge suite and that main itself fails until PR #204 lands, and that file is what the run spent its
-  last three quarters of an hour on. (The config's own `docs/**` exclusion **is** honoured alongside the flag — the
-  same `vitest list` collects 0 docs tests and 3 434 in all.) And raising `--testTimeout` **and `--hookTimeout`** to
+  is outside the merge suite and that main itself fails until PR #204 lands. (It passed here, as it happens; the file
+  the run spent its last three hours on was `SurfZoneSimulation.test.ts`, at 13 241 s.) The config's own `docs/**`
+  exclusion **is** honoured alongside the flag — the
+  same `vitest list` collects 0 docs tests and 3 434 in all. And raising `--testTimeout` **and `--hookTimeout`** to
   300 s makes a slow test run to completion rather than fail at 60 s, which is why this run is hours rather than step
   5c's 29 minutes. A shorter global and a glob (`**/SurfZoneRunner.test.ts`) are what the next round wants.
 
