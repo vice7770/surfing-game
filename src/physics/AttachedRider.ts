@@ -1632,8 +1632,22 @@ export class AttachedRider {
   private readonly scratch = new Vector3();
   private readonly scratch2 = new Vector3();
   private readonly localScratch = new Vector3();
-  /** The new surfer's senses for its balance (step 3.2e), the model's order and signs. */
-  private readonly senseScratch = new Array<number>(7).fill(0);
+  /**
+   * The new surfer's senses for its balance (step 3.2e), the model's order and signs. Nine since step 3.2p: the last
+   * two are the load through the feet and the board's nose-up pitch rate, read only by a design that carries the
+   * board's heave and pitch (`DesignWeights.heaveSense`).
+   */
+  private readonly senseScratch = new Array<number>(9).fill(0);
+  /**
+   * The slow part of the load through the feet, m/s² (step 3.2p): what the soles have adapted to. The sense the
+   * balance is given is the load **less** this, so it is zero in any steady trim and in any steady turn, whatever the
+   * bank, the face's slope or the apparent gravity — which is what the model's heave states are deviations from, and
+   * what a surfer actually feels. A real pressure sense adapts; this is that adaptation, one pole at LOAD_ADAPT.
+   */
+  private loadSlow = 0;
+  /** The load sense the balance was last given, m/s², and the board's pitch rate, rad/s (for the probes). */
+  loadSense = 0;
+  pitchRateSense = 0;
   private readonly spin = new Quaternion();
   private readonly heading = new Quaternion();
   private flex = 0;

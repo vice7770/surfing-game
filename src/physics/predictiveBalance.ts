@@ -18,7 +18,7 @@
  * the board's yaw rate, its slip, the twist and the upper body's yaw rate, the ankle's lagged rest and the twist's
  * lagged torque); commands [u_a, u_t].
  */
-import { HEAVE_AT, boardDerivatives, twistRows, twistStateCount, type HeavePlant, type TwistPlant, type YawPlant } from './rollModel';
+import { HEAVE_AT, N_HEAVE, boardDerivatives, twistRows, twistStateCount, type HeavePlant, type TwistPlant, type YawPlant } from './rollModel';
 
 export type Mat = number[][];
 export const zeros = (r: number, c: number): Mat => Array.from({ length: r }, () => new Array<number>(c).fill(0));
@@ -128,9 +128,25 @@ export const CONTROL_STEP = 1 / 60;
 export const PREDICT_DELAY = 0.1;
 export const PREDICT_LAG = 0.05;
 
-/** The senses as rows over the state: the bank, its rate, the head's yaw rate, the twist, its rate, the ankle's angle (θ − φ) and rate. */
-export function senseMatrix(n = N_STATE): Mat {
-  const c = zeros(N_SENSE, n);
+/**
+ * The senses as rows over the state: the bank, its rate, the head's yaw rate, the twist, its rate, the ankle's angle
+ * (θ − φ) and rate.
+ *
+ * **With the board's heave and pitch carried as states, two more (step 3.2p, ruling 29w item 1).** 3.2m found the
+ * least damped mode of the whole loop is then the board's own 0.33–0.74 Hz heave and pitch, and that the balance runs
+ * it **open-loop** because nothing in this matrix touches those states. A real rider has both senses:
+ * - **the load through the feet**, which is the vertical specific force at the deck, m/s², + up. On this plant that is
+ *   the heave's own acceleration row of A, so the caller passes it in (`load`); it carries h, the pitch, their rates
+ *   and the four states the ten-state model already had, each at its measured weight. The soles and the Golgi organs
+ *   sense force, not position, and this is the force they sense.
+ * - **the board's nose-up pitch rate**, rad/s, which the canals sense directly as they sense the head's yaw rate, and
+ *   which the legs feel as the deck's angle changing under the feet.
+ * Neither is a new measurement in the game: `rider.contact.load` and the board's own spin are both already there. Both
+ * arrive through the same 0.1 s sensing line as every other channel.
+ */
+export function senseMatrix(n = N_STATE, load?: readonly number[]): Mat {
+  const rows = load && n > N_STATE ? N_SENSE + 2 : N_SENSE;
+  const c = zeros(rows, n);
   c[0][2] = 1;
   c[1][3] = 1;
   c[2][7] = 1;
@@ -138,6 +154,12 @@ export function senseMatrix(n = N_STATE): Mat {
   c[4][7] = 1; c[4][4] = -1;
   c[5][2] = 1; c[5][0] = -1;
   c[6][3] = 1; c[6][1] = -1;
+  if (rows > N_SENSE) {
+    // The load through the feet: ẇ, the second heave row of A (h at N_STATE, ḣ at N_STATE + 1).
+    for (let j = 0; j < n; j += 1) c[N_SENSE][j] = load![j];
+    // The board's pitch rate, θ̇_b at N_STATE + 3.
+    c[N_SENSE + 1][N_STATE + 3] = 1;
+  }
   return c;
 }
 
@@ -272,6 +294,16 @@ export function railLimit(speed: number): number {
  * the table's angles and in the speed between 5, 7 and 9 m/s, held outside.
  */
 export function railCorrection(speed: number, rail: number): { roll: number[]; slip: number[]; yaw: number[]; rate: number[] } {
+  return correctionIn(RAIL_PLANT, speed, rail);
+}
+/** The twelve derivatives a rail table carries, in the lab's axes (`railCorrection`'s and `frozenCorrection`'s shape). */
+type Twelve = { roll: number[]; slip: number[]; yaw: number[]; rate: number[] };
+/**
+ * `railCorrection`'s own body, over whichever table is given: the free one (`RAIL_PLANT`, the shipped ten-state plant)
+ * or the held one (`FROZEN_PLANT`, the plant a controller that carries heave and pitch must read). The arithmetic is
+ * unchanged, so the free path is bit-for-bit what it was.
+ */
+function correctionIn<T extends Twelve>(table: Record<string, T>, speed: number, rail: number): Twelve {
   const deg = (Math.min(railLimit(speed), Math.abs(rail)) * 180) / Math.PI;
   const zero = { roll: [0, 0, 0], slip: [0, 0, 0], yaw: [0, 0, 0], rate: [0, 0, 0] };
   if (deg <= 0) return zero;
@@ -283,15 +315,15 @@ export function railCorrection(speed: number, rail: number): { roll: number[]; s
   while (j < RAIL_ANGLES.length - 2 && deg > RAIL_ANGLES[j + 1]) j += 1;
   const fa = (deg - RAIL_ANGLES[j]) / (RAIL_ANGLES[j + 1] - RAIL_ANGLES[j]);
   // At a speed whose row is missing (5 m/s above 20°), that speed's largest measured angle stands in.
-  const pick = (sp: number, angle: number): RailPlant | undefined => {
+  const pick = (sp: number, angle: number): T | undefined => {
     let a = angle;
-    while (a > 0 && !RAIL_PLANT[`${sp}|${a}`]) a -= 10;
-    return RAIL_PLANT[`${sp}|${a}`] ?? RAIL_PLANT[`${sp}|0`];
+    while (a > 0 && !table[`${sp}|${a}`]) a -= 10;
+    return table[`${sp}|${a}`] ?? table[`${sp}|0`];
   };
   const at = (sp: number) => {
     const lo = pick(sp, RAIL_ANGLES[j])!;
     const hi = pick(sp, RAIL_ANGLES[j + 1])!;
-    const base = RAIL_PLANT[`${sp}|0`];
+    const base = table[`${sp}|0`];
     const mix = (k: 'roll' | 'slip' | 'yaw' | 'rate') => lo[k].map((x, q) => x + fa * (hi[k][q] - x) - base[k][q]);
     return { roll: mix('roll'), slip: mix('slip'), yaw: mix('yaw'), rate: mix('rate') };
   };
@@ -319,6 +351,203 @@ export function railPull(speed: number, rail: number): number {
   const a = one(RAIL_SPEEDS[i], RAIL_ANGLES[j]) + fa * (one(RAIL_SPEEDS[i], RAIL_ANGLES[j + 1]) - one(RAIL_SPEEDS[i], RAIL_ANGLES[j]));
   const b = one(RAIL_SPEEDS[i + 1], RAIL_ANGLES[j]) + fa * (one(RAIL_SPEEDS[i + 1], RAIL_ANGLES[j + 1]) - one(RAIL_SPEEDS[i + 1], RAIL_ANGLES[j]));
   return a + fv * (b - a);
+}
+
+/**
+ * **The water's derivatives with the board's heave and pitch HELD TOO** (step 3.2p; the `frozen` set of
+ * `../../docs/research/new-rider/rail-dig/settled.probe.ts`, `results/settled.jsonl`, measured for step 3.2m).
+ *
+ * Same lab, same trim, same axes and the same settling rule as `RAIL_PLANT` above, with two more constraints: the
+ * board's pitch and the centre of mass's height are held at the trim as well. That leaves the board no free degree of
+ * freedom at all, so the water's force is a function of the state with no transient to wait for — **every number here
+ * is constant to the digit from 0.35 s of hold to 4 s**, which is why the settling rule is trivially met (3.2m §2.3).
+ *
+ * **This is the table a controller that carries heave and pitch as states must read, and `RAIL_PLANT` is not.**
+ * `RAIL_PLANT`'s numbers are the water's answer *plus* the board's whole re-trim, folded in as if it arrived at once;
+ * carrying the states and reading the free table would count the re-trim twice. `HEAVE_PLANT` is the other half of the
+ * same measurement — what the water does per metre of heave and per radian of pitch — which is what the folding threw
+ * away, and 3.2m showed the folding is ill conditioned anyway (the free derivative is the residual of terms ten to
+ * eighteen times its own size).
+ *
+ * As with `RAIL_PLANT`, 5 m/s has no 30° or 40° row: the board does not hold a turn there.
+ * `pitchTrim` is the board's nose-up trim at that point, degrees — a read-out, nothing reads it.
+ */
+export const FROZEN_PLANT: Record<string, Twelve & { pitchTrim: number }> = {
+  '5|0': { roll: [-101.8, -354.6, -328.1], slip: [-28.7, 712, -278.8], yaw: [-3.3, 9.3, -7.7], rate: [-1.5, -14.1, -0.6], pitchTrim: 19.33 },
+  '5|10': { roll: [3.8, -367.4, -86.7], slip: [-29.1, 767.6, -175.3], yaw: [-4.7, 12.2, -7.2], rate: [-1.6, -10, -2.8], pitchTrim: 18.57 },
+  '5|15': { roll: [47.7, -309.9, -86], slip: [-16.2, 827.2, -120.5], yaw: [-6.3, 13.5, -6.7], rate: [-2.1, -4.4, -4], pitchTrim: 18.77 },
+  '5|20': { roll: [118.9, -110.7, -114.8], slip: [-8.2, 884.3, -51.7], yaw: [-8.4, 16.3, -6.1], rate: [-2.8, 0.4, -3], pitchTrim: 18.64 },
+  '7|0': { roll: [-105.6, -404.3, -294.5], slip: [-296.4, 1408.9, -540], yaw: [-13.1, 46.1, -21], rate: [2.8, -19.8, -1.3], pitchTrim: 9.19 },
+  '7|10': { roll: [-7.5, -104.3, -354.9], slip: [-279.8, 1542.4, -276.9], yaw: [-15.7, 45.3, -12.6], rate: [3.5, -12.9, -4.5], pitchTrim: 8.84 },
+  '7|15': { roll: [118.7, -55.2, -125.6], slip: [-252.9, 1684.9, -107.2], yaw: [-18, 44.2, -7.8], rate: [4.2, -4.6, -6], pitchTrim: 8.84 },
+  '7|20': { roll: [239.4, 386, -275.6], slip: [-220.4, 1816.1, 58.8], yaw: [-19, 43.1, -3.4], rate: [4.7, 4, -6.6], pitchTrim: 9.29 },
+  '7|30': { roll: [243.1, 574.9, -37.5], slip: [-146.9, 2081.3, 201], yaw: [-24.1, 43.2, -2.1], rate: [4.5, 21.5, -5.7], pitchTrim: 9.97 },
+  '7|40': { roll: [563.5, 1701.2, 15.3], slip: [-47.1, 2229.1, 253.5], yaw: [-31.3, 43.5, -3.2], rate: [2.9, 35.3, -4], pitchTrim: 10.55 },
+  '9|0': { roll: [-89.8, -439.5, -169.7], slip: [-598.9, 2290.3, -871.5], yaw: [-23.5, 71.2, -30.4], rate: [5.4, -24.8, -1.9], pitchTrim: 5.84 },
+  '9|10': { roll: [13.3, -9.4, -300.9], slip: [-565.2, 2469.3, -315.4], yaw: [-26.5, 67.8, -13.3], rate: [6.4, -16.3, -6.2], pitchTrim: 5.65 },
+  '9|15': { roll: [108.8, 345.6, -255.8], slip: [-512.4, 2637.2, 95.9], yaw: [-27.6, 63.6, -2], rate: [7.1, -9, -8], pitchTrim: 6.03 },
+  '9|20': { roll: [60.6, 800.6, -155], slip: [-439.3, 2699.8, 400.7], yaw: [-27.2, 57.6, 4.5], rate: [7.6, -3, -8], pitchTrim: 6.59 },
+  '9|30': { roll: [276.9, 1695.7, 16.4], slip: [-289.8, 2723.2, 543.1], yaw: [-24.8, 47.5, 5.6], rate: [9, 2.9, -5.3], pitchTrim: 7.83 },
+  '9|40': { roll: [34.5, 2888, 186.6], slip: [-167.6, 2699.2, 483.7], yaw: [-27.2, 44.3, 2.4], rate: [5.7, 18.3, -2.8], pitchTrim: 8.5 },
+};
+/**
+ * **What the water does to the board's heave and pitch** (the same `frozen` rows): [N, Y, K, M, Z] per metre of heave
+ * (+ up), per m/s of heave rate, per rad of pitch (nose up +) and per rad/s of pitch rate, in the **lab's** axes; and
+ * `vert`, the [M, Z] the four states the ten-state model already carries make (per rad of roll, per rad of slip, per
+ * rad/s of yaw rate, per rad/s of roll rate). `heavePlantAt` turns them into the model's axes.
+ *
+ * The two numbers that matter most, and they are why this block exists:
+ * - **Z per metre of heave** is −701 / −3910 / −9065 N/m at 5 / 7 / 9 m/s: with the pair's 75.5 kg that is a heave
+ *   stiffness of 9 / 52 / 120 s⁻², and Z per m/s of heave rate (−364 / −539 / −703) damps it at about half critical.
+ * - **M per rad of pitch** is −1770 / −953 / −498 N·m/rad against a pitch inertia of about 52 kg·m², so the board's
+ *   pitch is a 0.9 / 0.68 / 0.49 Hz pendulum — and **M per rad/s of pitch rate is only −8 to −48 N·m·s/rad**, a damping
+ *   ratio of two to five per cent. That lightly damped pitch is the 0.33–0.74 Hz mode 3.2m found the loop running
+ *   open, and it is the mode this step gives the rider a sense of.
+ * - At no rail the cross terms are zero by the hull's own symmetry (a roll or a slide makes no net M or Z), as measured.
+ */
+export interface HeaveRow { heave: number[]; heaveRate: number[]; pitch: number[]; pitchRate: number[]; vert: { roll: number[]; slip: number[]; yaw: number[]; rate: number[] } }
+export const HEAVE_PLANT: Record<string, HeaveRow> = {
+  '5|0': {
+    heave: [0, 0, 0, -1648.2, -701.2], heaveRate: [0, 0, 0, 7.4, -364.4],
+    pitch: [0, 0, 0, -1769.7, 319.3], pitchRate: [0, 0, 0, -7.7, 72.8],
+    vert: { roll: [0, 0], slip: [0, 0], yaw: [0, 0], rate: [0, 0] },
+  },
+  '5|10': {
+    heave: [153.6, 386.2, -161.6, -1104.8, -582.5], heaveRate: [1.7, 39.3, 7.5, -6.6, -334.3],
+    pitch: [42, 47.2, -40, -283.7, 556.9], pitchRate: [4.5, -19.1, 2.5, -11.9, 82.5],
+    vert: { roll: [155.1, -628.1], slip: [407.4, -1516.7], yaw: [7.9, -26.4], rate: [-10.6, -1] },
+  },
+  '5|15': {
+    heave: [339.7, 724.5, -196.3, -1371.1, -750.7], heaveRate: [0.9, 56.7, 6.6, -12.1, -294.9],
+    pitch: [227.2, 192.9, 1.1, -593.8, 478.9], pitchRate: [6.8, -28.9, 2.2, -14.6, 96.4],
+    vert: { roll: [34.5, -713.7], slip: [439.9, -1731.2], yaw: [9.2, -33], rate: [-13, -11.4] },
+  },
+  '5|20': {
+    heave: [430.8, 861.4, -176.1, -1280.5, -815.6], heaveRate: [2.8, 70.1, 11.3, -18.5, -269.2],
+    pitch: [258, 248.5, 0.7, -542.9, 308.5], pitchRate: [10.5, -37.8, 3.2, -19.9, 99.1],
+    vert: { roll: [-164.2, -930.1], slip: [443.8, -1784.9], yaw: [13.4, -38.7], rate: [-11.9, -23.9] },
+  },
+  '7|0': {
+    heave: [0, 0, 0, -1566.6, -3910.4], heaveRate: [0, 0, 0, -23.3, -538.5],
+    pitch: [0, 0, 0, -953, -357.2], pitchRate: [0, 0, 0, -11.2, 17.3],
+    vert: { roll: [0, 0], slip: [0, 0], yaw: [0, 0], rate: [0, 0] },
+  },
+  '7|10': {
+    heave: [418, 1009.8, -302.8, -2108.7, -3478.6], heaveRate: [13.2, 70.2, 6.1, -31.8, -462.1],
+    pitch: [53.4, 37.2, -183.2, -631.2, 900.7], pitchRate: [7, -10.1, 3.7, -16.2, 33.3],
+    vert: { roll: [-323.4, -1042], slip: [750.7, -3038.4], yaw: [30.3, -86], rate: [-14.3, 0.5] },
+  },
+  '7|15': {
+    heave: [465.7, 1370.4, -579.8, -1826.6, -1998.3], heaveRate: [17.1, 98.2, 7.9, -37.4, -410.2],
+    pitch: [277.8, 67.8, -77, -907.9, 973.6], pitchRate: [11.1, -16.2, 4.5, -20.3, 45.1],
+    vert: { roll: [-383.5, -1297.9], slip: [815.4, -3843.2], yaw: [35.3, -104.4], rate: [-17.2, -8.8] },
+  },
+  '7|20': {
+    heave: [625.3, 1676.1, -466.9, -1822.3, -2157], heaveRate: [19.2, 116, 8.1, -38.5, -356.3],
+    pitch: [304.8, 82.3, -78.8, -850.4, 814.2], pitchRate: [15.4, -23.6, 3.9, -25.6, 60.5],
+    vert: { roll: [-628.8, -1656.5], slip: [808.7, -3986.6], yaw: [37.3, -101.3], rate: [-18.2, -22.7] },
+  },
+  '7|30': {
+    heave: [915.7, 3008.6, -351.8, -1934.9, -3472.6], heaveRate: [20.5, 136.5, 9.6, -42.9, -271.6],
+    pitch: [253.8, -321.3, -1.4, -495.3, 1043.4], pitchRate: [26, -39.6, 4.3, -37.5, 73],
+    vert: { roll: [-385.3, -2008.4], slip: [640.5, -3577.5], yaw: [40.3, -81.1], rate: [-19.5, -44.5] },
+  },
+  '7|40': {
+    heave: [357.6, 3989.4, -287.2, -816.8, -4030.8], heaveRate: [18.6, 142.9, 10.3, -41.4, -204.8],
+    pitch: [614, 284.9, 39.9, -918.8, 253.5], pitchRate: [36.5, -53.8, 3.9, -48.3, 72.6],
+    vert: { roll: [-795.9, -2903.3], slip: [417.9, -2866.6], yaw: [45.1, -61.3], rate: [-19.3, -52.6] },
+  },
+  '9|0': {
+    heave: [0, 0, 0, -3535.9, -9064.7], heaveRate: [0, 0, 0, -33.5, -702.5],
+    pitch: [0, 0, 0, -498.1, 2122.5], pitchRate: [0, 0, 0, -16.3, -4.7],
+    vert: { roll: [0, 0], slip: [0, 0], yaw: [0, 0], rate: [0, 0] },
+  },
+  '9|10': {
+    heave: [532.6, 1781.2, -625.7, -2848.3, -6540.9], heaveRate: [19.4, 92.2, 6.1, -36.1, -588.1],
+    pitch: [168.8, -115.4, -55.7, -962.3, 1862.4], pitchRate: [9.2, -5.6, 5.7, -21.7, 13.8],
+    vert: { roll: [-398.7, -1501.3], slip: [1090.8, -4470.6], yaw: [42, -113.9], rate: [-14.1, -6.5] },
+  },
+  '9|15': {
+    heave: [541.6, 2525.4, -694.9, -2272.2, -6012.9], heaveRate: [23.5, 116.4, 11.3, -36.2, -506.4],
+    pitch: [262.3, -171.5, -23.1, -1031.9, 1758.5], pitchRate: [14.5, -11.7, 6.7, -28.4, 29.8],
+    vert: { roll: [-502.7, -2194.6], slip: [1266.6, -5825.6], yaw: [50.1, -140.2], rate: [-16.3, -11.9] },
+  },
+  '9|20': {
+    heave: [553.9, 3289.9, -440, -1820.8, -6593.6], heaveRate: [24.5, 125.9, 16.2, -34.7, -424.2],
+    pitch: [258.6, -607.9, 63.8, -827.9, 2155.7], pitchRate: [18.7, -18.6, 5.7, -33.8, 45.2],
+    vert: { roll: [-272.1, -3045], slip: [1172.2, -6024.8], yaw: [49.1, -133], rate: [-16.8, -18.4] },
+  },
+  '9|30': {
+    heave: [532.4, 4127.8, -59.9, -1203.5, -6264.6], heaveRate: [23.3, 117.9, 18.2, -34.6, -267.5],
+    pitch: [684.5, -282.4, 66.8, -1386.3, 1225], pitchRate: [20.3, -31, 0.5, -30.9, 58.4],
+    vert: { roll: [-523.7, -3899.9], slip: [887.5, -4962.8], yaw: [41.1, -92.2], rate: [-20.1, -20.1] },
+  },
+  '9|40': {
+    heave: [683.7, 5509.2, 275.7, -1143.1, -6455.6], heaveRate: [16.5, 122.9, 16.1, -27.5, -194.7],
+    pitch: [936.9, -258.4, -3.7, -1502.3, 1022.8], pitchRate: [27.3, -47, -0.6, -37.3, 64.1],
+    vert: { roll: [-51.9, -4791.6], slip: [584.4, -3668.6], yaw: [39.8, -63.7], rate: [-16.1, -35.7] },
+  },
+};
+/**
+ * The held table's rail correction, in exactly the form `railCorrection` uses: the straight table (`PLANT_SPEEDS`) is
+ * the anchor at no rail and the rail only adds, so straight running is untouched whichever table is read. At no rail
+ * the two tables agree to within 2 % on every one of the twelve (the biggest gap at 7 m/s is the roll moment per rad of
+ * roll, −294.5 against −282.5), which is what makes one anchor legitimate for both.
+ */
+export function frozenCorrection(speed: number, rail: number): Twelve {
+  return correctionIn(FROZEN_PLANT, speed, rail);
+}
+/** The reference rider and board the heave block's inertia is built from: 73 kg on a 2.54 kg board, 0.60 kg·m² in pitch. */
+const RIDER_MASS = 73;
+const BOARD_MASS = 2.54;
+const BOARD_PITCH_INERTIA = 0.6;
+/**
+ * The water's answer to the board's heave and pitch at a speed, rail and stance (`HEAVE_PLANT`), in the model's axes:
+ * N and Y flip as every other N and Y does, K, M and Z keep, and the yaw rate's own variable flips so the [M, Z] it
+ * makes flips with it (`boardDerivatives`' mapping, which is a half turn about the board's long axis). Linear in the
+ * rail between the table's angles and in the speed between 5, 7 and 9 m/s, held outside, as the rail table is read.
+ *
+ * `mass` and `pitchInertia` are the **pair's**, about the deck under the rider: this model gives the rider no heave or
+ * pitch freedom of its own, so the rider and the board move as one (step 3.2m's `heaveOf`, reproduced here).
+ */
+export function heavePlantAt(speed: number, rail: number, height: number): HeavePlant {
+  const deg = (Math.min(railLimit(speed), Math.abs(rail)) * 180) / Math.PI;
+  const v = Math.max(RAIL_SPEEDS[0], Math.min(RAIL_SPEEDS[RAIL_SPEEDS.length - 1], speed));
+  let i = 0;
+  while (i < RAIL_SPEEDS.length - 2 && v > RAIL_SPEEDS[i + 1]) i += 1;
+  const fv = (v - RAIL_SPEEDS[i]) / (RAIL_SPEEDS[i + 1] - RAIL_SPEEDS[i]);
+  let j = 0;
+  while (j < RAIL_ANGLES.length - 2 && deg > RAIL_ANGLES[j + 1]) j += 1;
+  const fa = (deg - RAIL_ANGLES[j]) / (RAIL_ANGLES[j + 1] - RAIL_ANGLES[j]);
+  const pick = (sp: number, angle: number): HeaveRow => {
+    let a = angle;
+    while (a > 0 && !HEAVE_PLANT[`${sp}|${a}`]) a -= 10;
+    return HEAVE_PLANT[`${sp}|${a}`] ?? HEAVE_PLANT[`${sp}|0`];
+  };
+  const at = (sp: number) => {
+    const lo = pick(sp, RAIL_ANGLES[j]);
+    const hi = pick(sp, RAIL_ANGLES[j + 1]);
+    const five = (k: 'heave' | 'heaveRate' | 'pitch' | 'pitchRate') => lo[k].map((x, q) => x + fa * (hi[k][q] - x));
+    const two = (k: 'roll' | 'slip' | 'yaw' | 'rate') => lo.vert[k].map((x, q) => x + fa * (hi.vert[k][q] - x));
+    return {
+      heave: five('heave'), heaveRate: five('heaveRate'), pitch: five('pitch'), pitchRate: five('pitchRate'),
+      vert: { roll: two('roll'), slip: two('slip'), yaw: two('yaw'), rate: two('rate') },
+    };
+  };
+  const a = at(RAIL_SPEEDS[i]);
+  const b = at(RAIL_SPEEDS[i + 1]);
+  const five = (k: 'heave' | 'heaveRate' | 'pitch' | 'pitchRate') => a[k].map((x, q) => x + fv * (b[k][q] - x));
+  const two = (k: 'roll' | 'slip' | 'yaw' | 'rate') => a.vert[k].map((x, q) => x + fv * (b.vert[k][q] - x));
+  // The model's axes: N and Y flip, K, M and Z keep.
+  const flip = (d: number[]) => [-d[0], -d[1], d[2], d[3], d[4]];
+  const yaw = two('yaw');
+  return {
+    mass: RIDER_MASS + BOARD_MASS,
+    pitchInertia: RIDER_MASS * height * height + BOARD_PITCH_INERTIA + BOARD_MASS * 0.08 * 0.08,
+    perHeave: flip(five('heave')), perHeaveRate: flip(five('heaveRate')),
+    perPitch: flip(five('pitch')), perPitchRate: flip(five('pitchRate')),
+    pitchVert: { roll: two('roll'), slip: two('slip'), yaw: [-yaw[0], -yaw[1]], rate: two('rate') },
+  };
 }
 
 /** The stances (3.2c's split; the body over its feet as 3.2b's model read the traces): by the leg's depth, m. */
@@ -383,21 +612,24 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant } = {}): { y: YawPlant; t: TwistPlant } {
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean } = {}): { y: YawPlant; t: TwistPlant } {
   const lab = labAt(speed);
   const s = opts.scales ?? new Array<number>(12).fill(1);
   // Step 3.2f: the rail's own correction (`railCorrection`), so the schedule covers carving as it covers speed and stance.
-  const c = railCorrection(speed, opts.rail ?? 0);
+  // Step 3.2p: `sink` reads the HELD table instead (`frozenCorrection`) and carries the board's heave and pitch as four
+  // more states, which is the only consistent pair: the free table has the re-trim folded in already.
+  const c = opts.sink ? frozenCorrection(speed, opts.rail ?? 0) : railCorrection(speed, opts.rail ?? 0);
   const scaled = { roll: lab.roll.map((x, k) => (x + c.roll[k]) * s[k]), slip: lab.slip.map((x, k) => (x + c.slip[k]) * s[3 + k]), yaw: lab.yaw.map((x, k) => (x + c.yaw[k]) * s[6 + k]), rate: lab.rate.map((x, k) => (x + c.rate[k]) * s[9 + k]) };
   const st = stanceAt(depth);
+  const heave = opts.heave ?? (opts.sink ? heavePlantAt(speed, opts.rail ?? 0, st.height) : undefined);
   const board = boardInertiaAt(speed);
   const y: YawPlant = {
     speed, boardRollInertia: opts.rollInertia ?? board.roll, boardYawInertia: opts.yawInertia ?? board.yaw, riderYawInertia: st.lower, boardMass: 2.54,
     mass: 73, height: st.height, ankleStiffness: 800, ankleDamping: 80, ...boardDerivatives(scaled, speed, 0.236),
     feetForward: ((opts.feetScale ?? 1) * FEET_FORWARD_AT_7 * lab.drag) / DRAG_AT_7, feetStation: -0.244, deckHeight: 0.031,
-    // The board's heave and pitch as states (ruling 29t item 2), when the caller supplies the water's answer to them.
-    // Nothing in the game does yet, so the shipped controller is the ten-state one it always was.
-    ...(opts.heave ? { heave: opts.heave } : {}),
+    // The board's heave and pitch as states (ruling 29t item 2), when the caller supplies the water's answer to them or
+    // asks for the measured one (`sink`, step 3.2p). Without either, the plant is the ten-state one it always was.
+    ...(heave ? { heave } : {}),
   };
   return { y, t: { inertia: st.upper, stiffness: opts.twistStiffness ?? TWIST_STIFFNESS, damping: opts.twistDamping ?? TWIST_DAMPING } };
 }
@@ -454,7 +686,33 @@ export interface DesignWeights {
   heaveScale?: number[];
   /** The process noise on the heave rate and the pitch rate per √s; the slip's by default. */
   heaveNoise?: number;
+  /**
+   * **The board's heave and pitch sensed** (step 3.2p, ruling 29w item 1). With this set, the plant carries the
+   * board's heave and pitch as four more states (the held table, `plantAt`'s `sink`) **and the rider feels two of
+   * them**: the load through the feet and the board's pitch rate (`senseMatrix`). Without it the four states are
+   * carried but unsensed, which is what 3.2m measured and found worse than the ten-state loop — the loop runs the
+   * board's own least damped mode open, and a frame of timing error takes it negative at almost every rail.
+   *
+   * It is not a switch over a tuning: with it the whole design changes, because the plant it is designed on changes.
+   */
+  heaveSense?: boolean;
+  /**
+   * The two new senses' noise: the load through the feet, m/s², and the board's pitch rate, rad/s.
+   * `HEAVE_SENSE_NOISE` by default.
+   */
+  heaveSenseNoise?: number[];
 }
+/**
+ * The two new senses' noise (step 3.2p):
+ * - **the load, 1.1 m/s²** — measured, not chosen: the spread of the washed-out load the game hands the controller over
+ *   a steady glide and a turn (`sink.probe.ts` PART=noise). The feet are a good force sense and a noisy one, because
+ *   the hull's own patch sampling moves the load from substep to substep.
+ * - **the pitch rate, 0.017 rad/s** — the same as the head's yaw rate already in `senseNoise`, because it is the same
+ *   organ. (Benson, Hutt and Brown 1989 put the canals' threshold for an angular acceleration ramp at about 0.5–2 °/s²;
+ *   this is the value the balance already uses for yaw and it is not re-derived here.)
+ * Both are on the re-check list for two-way coupling.
+ */
+export const HEAVE_SENSE_NOISE = [1.1, 0.017];
 export const DEFAULT_WEIGHTS: DesignWeights = {
   stateScale: [0.05, 0.5, 0.05, 0.25, 0.2, 0.02, 0.5, 1],
   // Step 3.2j (ruling 29n): the ankle's scale is its **actual range**, ANKLE_REST_RANGE 0.25 rad. It was 0.09 — 36 % of
@@ -562,7 +820,10 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   const qd = scale(q, step);
   const rd = [[(w.rho * step) / (w.commandScale[0] ** 2), 0], [0, (w.rho * step) / (w.commandScale[1] ** 2)]];
   const k = dlqr(phi, gamma, qd, rd);
-  const c = senseMatrix(nState);
+  // The senses: seven, or nine when the plant carries the board's heave and pitch and the rider is given a sense of
+  // them (step 3.2p). The load's row is the plant's own ẇ row, which is what the feet feel.
+  const c = senseMatrix(nState, w.heaveSense && nState > N_STATE ? a[N_STATE + 1] : undefined);
+  const nSense = c.length;
   const bias = w.bias.length === 2;
   const ne = bias ? nState + 2 : nState;
   // The estimate's model: the bias enters as the commands do, and stays.
@@ -582,8 +843,9 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   if (nState > N_STATE) for (const i of [N_STATE + 1, N_STATE + 3]) g[i][i] = (w.heaveNoise ?? w.processNoise[3]) ** 2 * step;
   if (bias) { g[nState][nState] = w.bias[0] ** 2 * step; g[nState + 1][nState + 1] = w.bias[1] ** 2 * step; }
   for (let i = 0; i < ne; i += 1) g[i][i] += 1e-10;
-  const v = zeros(N_SENSE, N_SENSE);
-  for (let i = 0; i < N_SENSE; i += 1) v[i][i] = w.senseNoise[i] ** 2;
+  const v = zeros(nSense, nSense);
+  const heaveNoise = w.heaveSenseNoise ?? HEAVE_SENSE_NOISE;
+  for (let i = 0; i < nSense; i += 1) v[i][i] = (i < N_SENSE ? w.senseNoise[i] : heaveNoise[i - N_SENSE]) ** 2;
   const l = kalman(phiE, cE, g, v);
   const steps = Math.round(delay / step);
   let power = eye(nState);
@@ -681,8 +943,11 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
   const key = `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}`;
   let d = designCache.get(key);
   if (!d) {
-    const { y, t } = plantAt(speed, depth, { rail });
-    d = design(y, t, weights ?? DEFAULT_WEIGHTS);
+    const w = weights ?? DEFAULT_WEIGHTS;
+    // Step 3.2p: with the heave and pitch sensed, the plant that is designed on is the held table with those four
+    // states carried. The two go together — the sense is of a state, so the state has to be there.
+    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense });
+    d = design(y, t, w);
     designCache.set(key, d);
   }
   return d;
@@ -719,11 +984,15 @@ function solveSmall(a: number[][], b: number[]): number[] {
  * nothing: (Φ − I) x + Γ u = 0 solved for the rest of x and u, by least squares (the ten rows are consistent).
  */
 export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number): { x: number[]; u: number[] } {
-  const free = [0, 4, 5, 7, 8, 9];
+  const n = phi.length;
+  // With the board's heave and pitch carried (step 3.2p), the steady turn's own draft and trim are free as well: in a
+  // banked turn the board sits at a different height and a different pitch, and the loop must not be made to fight it.
+  // Their rates stay at nothing, as the roll's and the bank's do, because this is an equilibrium.
+  const free = n > N_STATE ? [0, 4, 5, 7, 8, 9, N_STATE, N_STATE + 2] : [0, 4, 5, 7, 8, 9];
   const cols = free.length + N_COMMAND;
-  const m = zeros(N_STATE, cols);
-  const rhs = new Array<number>(N_STATE).fill(0);
-  for (let i = 0; i < N_STATE; i += 1) {
+  const m = zeros(n, cols);
+  const rhs = new Array<number>(n).fill(0);
+  for (let i = 0; i < n; i += 1) {
     free.forEach((j, c) => { m[i][c] = phi[i][j] - (i === j ? 1 : 0); });
     for (let q = 0; q < N_COMMAND; q += 1) m[i][free.length + q] = gamma[i][q];
     rhs[i] = -((phi[i][2] - (i === 2 ? 1 : 0)) * bank + (phi[i][6] - (i === 6 ? 1 : 0)) * twist);
@@ -731,11 +1000,11 @@ export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number): {
   const ata = zeros(cols, cols);
   const atb = new Array<number>(cols).fill(0);
   for (let a = 0; a < cols; a += 1) {
-    for (let b = 0; b < cols; b += 1) { let s = 0; for (let i = 0; i < N_STATE; i += 1) s += m[i][a] * m[i][b]; ata[a][b] = s; }
-    let s = 0; for (let i = 0; i < N_STATE; i += 1) s += m[i][a] * rhs[i]; atb[a] = s;
+    for (let b = 0; b < cols; b += 1) { let s = 0; for (let i = 0; i < n; i += 1) s += m[i][a] * m[i][b]; ata[a][b] = s; }
+    let s = 0; for (let i = 0; i < n; i += 1) s += m[i][a] * rhs[i]; atb[a] = s;
   }
   const z = solveSmall(ata, atb);
-  const x = new Array<number>(N_STATE).fill(0);
+  const x = new Array<number>(n).fill(0);
   free.forEach((j, c) => { x[j] = z[c]; });
   x[2] = bank;
   x[6] = twist;
@@ -754,9 +1023,12 @@ export class PredictiveController {
   private estimate: number[] = [];
   /** The blended design (scratch, refilled each tick). */
   private blendedDesign?: Design;
-  /** The latest prediction of the state now, the reference and the command sent (this file's signs; for probes). */
-  readonly predicted = new Array<number>(N_STATE).fill(0);
-  readonly reference = { x: new Array<number>(N_STATE).fill(0), u: [0, 0] };
+  /**
+   * The latest prediction of the state now, the reference and the command sent (this file's signs; for probes). Held at
+   * the largest the plant can be (fourteen with the board's heave and pitch, step 3.2p); only the first `n` are used.
+   */
+  readonly predicted = new Array<number>(N_STATE + N_HEAVE).fill(0);
+  readonly reference = { x: new Array<number>(N_STATE + N_HEAVE).fill(0), u: [0, 0] };
   readonly sent = [0, 0];
   /** The command before the clamps (the hip takes what the ankle cannot). */
   readonly raw = [0, 0];
@@ -836,7 +1108,9 @@ export class PredictiveController {
    */
   tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0): readonly number[] {
     const d = this.blend(speed, depth, rail);
-    const n = N_STATE;
+    // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
+    const n = d.phi.length;
+    const p = d.c.length;
     const N = d.steps;
     const ne = d.phiE.length;
     if (this.estimate.length !== ne) this.estimate = new Array<number>(ne).fill(0);
@@ -853,8 +1127,8 @@ export class PredictiveController {
         for (let j = 0; j < ne; j += 1) s += row[j] * e[j];
         pred[i] = s;
       }
-      const innov = new Array<number>(N_SENSE);
-      for (let i = 0; i < N_SENSE; i += 1) {
+      const innov = new Array<number>(p);
+      for (let i = 0; i < p; i += 1) {
         let s = yk[i];
         const row = d.cE[i];
         for (let j = 0; j < ne; j += 1) s -= row[j] * pred[j];
@@ -863,7 +1137,7 @@ export class PredictiveController {
       for (let i = 0; i < ne; i += 1) {
         let s = pred[i];
         const row = d.l[i];
-        for (let j = 0; j < N_SENSE; j += 1) s += row[j] * innov[j];
+        for (let j = 0; j < p; j += 1) s += row[j] * innov[j];
         e[i] = s;
       }
     }
