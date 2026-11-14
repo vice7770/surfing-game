@@ -648,11 +648,11 @@ export class ZoneSurface {
    * axes into `out`, m/s and m/s². Returns the share of the water there that is the library's, 0 to 1 (0: none, and
    * `out` untouched).
    *
-   * **The share is the surface's own, read where the surface's is read** (C2 step 5b, ruling 35 item 2): the lanes'
-   * weight resampled on the 1 m render nodes (`weightAt`), which is the share the node heights took and so the share a
-   * board's surface took. Step 4 summed the slices' frame weights at the point instead, and the two differ wherever the
-   * weight has structure finer than a node — most of all at the field's own σ ends, where the end taper runs out: a
-   * point on the last lane reads 0 at the point and a tenth from the nodes. One share now, by construction.
+   * **The share is the surface's own, read where the surface's is read** (C2 step 5b, ruling 35 item 2): Σ w a on the
+   * lanes, resampled on the 1 m render nodes (`shareAt`) — the frame's weight times the slice's blend share, which is
+   * exactly how much of a node's height is the case's and not the sea's. Step 4 summed the same product at the point
+   * instead, and the two differ wherever it has structure finer than a node, most of all at the field's own σ ends,
+   * where the end taper runs out. One share now, by construction.
    *
    * Below the deeper stored depth the share also eases to 0 over `DEEP.fade` times that depth (step 5b, ruling 35
    * item 1): there is no velocity data under it, and holding the deepest stored value stood 1.2–1.3 m/s from the sea's

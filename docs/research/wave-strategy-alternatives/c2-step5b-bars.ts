@@ -106,16 +106,26 @@ if (part('K')) {
     if (!(c.touchdown === c.touchdown)) { rows.push(`${c.id}: no touchdown`); continue; }
     let folds = Number.NaN;
     let steep = Number.NaN;
-    for (let tau = c.touchdown; tau <= c.tauStart + (c.count - 1) * c.tauStep; tau += 0.02) {
+    const last = c.tauStart + (c.count - 1) * c.tauStep;
+    // The fold must go and stay gone for 0.3 tau: a single frame reading unfolded is the join's own noise.
+    for (let tau = c.touchdown; tau <= last; tau += 0.02) {
       library.caseFrameAt(i, tau, curve);
-      const s = steepest(curve);
-      if (!(folds === folds) && !s.folded) folds = tau - c.touchdown;
-      if (!(steep === steep) && s.angle < LIFT.bridge) steep = tau - c.touchdown;
-      if (folds === folds && steep === steep) break;
+      const here = steepest(curve);
+      if (!(steep === steep) && here.angle < LIFT.bridge) steep = tau - c.touchdown;
+      if (folds === folds || here.folded) continue;
+      let held = true;
+      for (let on = tau; on <= Math.min(last, tau + 0.3); on += 0.02) {
+        library.caseFrameAt(i, on, curve);
+        if (steepest(curve).folded) { held = false; break; }
+      }
+      if (held) folds = tau - c.touchdown;
     }
-    // In seconds at the slice's own scale: the pool's h0 is about 2.4 m (the slices' median), √(h0/g).
     const unit = Math.sqrt(2.4 / 9.81);
-    rows.push(`${c.id.replace('periodic-pool-c2-', '').replace('-l12', '')}: unfolds ${f(folds, 2)} τ (${f(folds * unit, 2)} s), under ${LIFT.bridge}° ${f(steep, 2)} τ (${f(steep * unit, 2)} s)`);
+    const at = (d: number) => {
+      library.caseFrameAt(i, Math.min(last, c.touchdown + d), curve);
+      return steepest(curve).angle;
+    };
+    rows.push(`${c.id.replace('periodic-pool-c2-', '').replace('-l12', '')}: the fold goes for good ${f(folds, 2)} τ (${f(folds * unit, 2)} s), under ${LIFT.bridge}° ${f(steep, 2)} τ (${f(steep * unit, 2)} s); steepest at +0.3/+1/+3 τ ${f(at(0.3), 0)}/${f(at(1), 0)}/${f(at(3), 0)}°`);
     if (folds === folds) unfold.push(folds * unit);
     if (steep === steep) unsteep.push(steep * unit);
   }
@@ -296,10 +306,14 @@ function seaCrestAt(k: number, want: number, reach: number): { s: number; y: num
 }
 
 // ---- A. The hand-back: each slice's bore followed through its blend-out.
-interface Back { slice: FieldSlice; from: number; until: number; place: number[]; height: number[]; seaPlace: number[]; seaHeight: number[]; times: number[]; want: number; seaWant: number; gap: number }
+interface Back { slice: FieldSlice; from: number; until: number; place: number[]; height: number[]; seaPlace: number[]; seaHeight: number[]; times: number[]; live: number[]; shares: number[]; want: number; seaWant: number; gap: number }
 const backs: Back[] = [];
 const allBacks: Back[] = [];
-const A = { stepPlace: [] as number[], stepHeight: [] as number[], winPlace: [] as number[], winHeight: [] as number[], ownPlace: [] as number[], ownHeight: [] as number[], seaWinPlace: [] as number[], seaWinHeight: [] as number[], gap: [] as number[], heightGap: [] as number[] };
+const A = { stepPlace: [] as number[], stepHeight: [] as number[], winPlace: [] as number[], winHeight: [] as number[], ownPlace: [] as number[], ownHeight: [] as number[], seaWinPlace: [] as number[], seaWinHeight: [] as number[], gap: [] as number[], heightGap: [] as number[],
+  /** The jump across the hand-back itself: the step the slice is dropped on (`goneAt`), place and height. */
+  dropPlace: [] as number[], dropHeight: [] as number[],
+  /** The drift, split by whether one slice or two were live on the lane at the time. */
+  onePlace: [] as number[], twoPlace: [] as number[], oneHeight: [] as number[], twoHeight: [] as number[] };
 
 // ---- C, D, E.
 const C = { gap: [] as number[], nodes: [] as number[], point: [] as number[], inside: [] as number[], edge: [] as number[], was: [] as number[] };
@@ -355,7 +369,7 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
     }
     // A: follow this slice's bore through its blend-out (every 3rd lane keeps the cost down).
     if (part('A') && s.lane % 3 === 0 && s.goFrom < UNTIL - 1) {
-      const back: Back = { slice: s, from: s.goFrom - 0.5, until: s.goneAt + 0.5, place: [], height: [], seaPlace: [], seaHeight: [], times: [], want: Number.NaN, seaWant: Number.NaN, gap: Number.NaN };
+      const back: Back = { slice: s, from: s.goFrom - 0.5, until: s.goneAt + 0.5, place: [], height: [], seaPlace: [], seaHeight: [], times: [], live: [], shares: [], want: Number.NaN, seaWant: Number.NaN, gap: Number.NaN };
       backs.push(back);
       allBacks.push(back);
     }
@@ -382,6 +396,8 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
       b.seaPlace.push(seaTop.s);
       b.seaHeight.push(seaTop.y);
       b.times.push(t);
+      b.live.push(zone.field.byLane[k].filter((o) => t >= o.blendFrom && t <= o.goneAt).length);
+      b.shares.push(share(b.slice, t));
       // The gap the blend-out pays back, read once as it starts: the code's own two places, the case's crest and the
       // sea's crest as the slice has been following it (`FieldSlice.seaS`).
       if (!(b.gap === b.gap) && t >= b.slice.goFrom) {
@@ -490,8 +506,20 @@ if (part('A')) {
       A.stepPlace.push(Math.abs(b.place[i] - b.place[i - 1]));
       A.stepHeight.push(Math.abs(b.height[i] - b.height[i - 1]));
     }
+    // The jump across the hand-back itself: the one step the slice is dropped on.
+    for (let i = 1; i < b.place.length; i += 1) {
+      if (b.times[i - 1] <= b.slice.goneAt && b.times[i] > b.slice.goneAt && b.times[i] - b.times[i - 1] < 1.5 * STEP) {
+        A.dropPlace.push(Math.abs((b.place[i] - b.seaPlace[i]) - (b.place[i - 1] - b.seaPlace[i - 1])));
+        A.dropHeight.push(Math.abs((b.height[i] - b.seaHeight[i]) - (b.height[i - 1] - b.seaHeight[i - 1])));
+      }
+    }
     for (let i = WINDOW; i < b.place.length; i += 1) {
       if (b.times[i] - b.times[i - WINDOW] > 1.5 * 0.1) continue;
+      const own = Math.abs((b.place[i] - b.seaPlace[i]) - (b.place[i - WINDOW] - b.seaPlace[i - WINDOW]));
+      const ownY = Math.abs((b.height[i] - b.seaHeight[i]) - (b.height[i - WINDOW] - b.seaHeight[i - WINDOW]));
+      const two = Math.max(b.live[i], b.live[i - WINDOW]) > 1;
+      (two ? A.twoPlace : A.onePlace).push(own);
+      (two ? A.twoHeight : A.oneHeight).push(ownY);
       A.winPlace.push(Math.abs(b.place[i] - b.place[i - WINDOW]));
       A.winHeight.push(Math.abs(b.height[i] - b.height[i - WINDOW]));
       A.seaWinPlace.push(Math.abs(b.seaPlace[i] - b.seaPlace[i - WINDOW]));
@@ -507,6 +535,10 @@ if (part('A')) {
   console.log(`  the sea's own over 0.1 s (the control): place ${line(A.seaWinPlace)}; height ${line(A.seaWinHeight, 4)}`);
   console.log(`  in one step (1/60 s): place ${line(A.stepPlace, 4)}; height ${line(A.stepHeight, 5)}`);
   console.log(`  the gap the blend-out pays back, m: ${line(A.gap, 2)}; the height gap then, m: ${line(A.heightGap, 3)}`);
+  console.log(`  THE JUMP across the hand-back itself (the one step the slice is dropped on): place ${line(A.dropPlace, 4)} m (bar 0.3); over 0.3 ${over(A.dropPlace, 0.3)}`);
+  console.log(`                                                                              height ${line(A.dropHeight, 5)} m (bar 0.05); over 0.05 ${over(A.dropHeight, 0.05)}`);
+  console.log(`  the drift with one slice live on the lane: place ${line(A.onePlace)}, over 0.3 ${over(A.onePlace, 0.3)}; height ${line(A.oneHeight, 4)}, over 0.05 ${over(A.oneHeight, 0.05)}`);
+  console.log(`  the drift with two:                        place ${line(A.twoPlace)}, over 0.3 ${over(A.twoPlace, 0.3)}; height ${line(A.twoHeight, 4)}, over 0.05 ${over(A.twoHeight, 0.05)}`);
 }
 
 if (part('C')) {
