@@ -4978,3 +4978,326 @@ so it is your call and not mine.** Nothing shipped this round but the measuremen
 
 One thing I can rule out for you: **the new surfer's problem is not here.** Wherever he spends his time on the wave, the
 water carries him exactly as it carries the old one, to within a few per cent. His falling is something else.
+
+# Part 18 — the lean hold taken out, and the compressed turn's pull paid for honestly
+
+Written 2026-11-14 by the build agent (Opus 5, effort xhigh) on branch `claude/rider-new-32t`, cut from `origin/main`
+and rebased onto **009a9c51** (C2 step 5f's merge), so Part 17 above and step 5f are both its base.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The round was re-aimed twice while it ran, by the coordinator, on the owner's own words.** It began as "measure a
+bottom turn on the library face, then shape the hull". It ended as: take out 3.2q's lean hold, which the owner had just
+ridden and disliked; then build the compressed turn's hidden pull as an honest force pair and score it against the old
+rider on Canyon. Both of those are done. The library-face read was already finished when it was cancelled, so §4
+reports it rather than throwing it away, and the hull's cross-section is **not** built — §5 says what the advisor
+handed over and why the next round should not simply build it.
+
+## 1. The three sentences the round is for
+
+1. **3.2q's lean hold rang, and the ring is measured.** In Compress the lean the body asks for **turns around 1.51
+   times a second** with the hold and **0.00 times** without it, and it reaches **33.7°** of the 50° the stick asks for
+   with it against the full **50°** without [M, 6 runs a cell]. Tall it rings 0.62/s against 0.35/s — **2.4× harder in
+   Compress than tall**, which is what 3.2q's §9 said would happen and what the owner felt: *"the compress is still to
+   slow and barely turns now"*. The hold is removed, not repaired.
+2. **The compressed turn's pull cannot be paid for by the legs, and the reason is the reaction, not the strength.**
+   `?legDrive=turn` makes COMPRESS_PULL's inward pull an honest leg pair — the legs push the body in, the board takes
+   the opposite at the back foot. The old rider's compressed gate goes **6 of 6 → 0 of 6** [M]. Three bounds on the
+   push were built and measured; the decisive one is the third: **capped at COMPRESS_PULL's own magnitude**, so the
+   only difference from the unpaired pull is the board's half, it is still 0 of 6 and still falls at full stick in
+   **0.65–0.73 s**. So the old rider's 6 of 6 rests on the force being *unpaired*, and no bound on an internal pair
+   recovers it.
+3. **The acceptance test never puts the board on the steep part of any face.** Placed where the owner's test places him
+   — 0.75 of the face's own run onshore of the crest — the water under the board reads **1.9–2.8° of slope and 0.0 % of
+   frames over 30°** through the whole turn, on a `?wave=library` face whose own steepest is **31.3°** [M, 12 runs].
+   On the 16° `FaceWater` the same column reads **0.0–13.0°**. Every "16° face" and "31° face" in this thread is the
+   face's *steepest point*; it is not the water the board is on. §4.
+
+## 2. Job 0 — the lean hold, measured and removed
+
+3.2q wrote its own falsification test and it is worth quoting again, because this is the round that ran it:
+
+> *"The one real risk: the cap closes a new loop (lean → rail → turn → felt vertical → lean) through a 0.1 s low-pass.
+> It does not ring tall and it does in Compress (Mode B 0.022 → 0.46). **If the owner finds Compress worse than 3.2p,
+> that is the cause**; the ways out are to rate-limit the cap's opening, or to feed it the turn the internal model
+> predicts from the rail."*
+
+The owner rode `?physical&canyonWaves=true&turnBody=on&snapLegs=drive&snapCross=on&rider=new` on 2026-11-14 and
+reported *"The compress is still to slow and barely turns now, if turn a bit falls immediately"* and *"produced the
+same stuck moviment and balance"*. So the antecedent held.
+
+**The ring, measured** (`libturn.ts` part F, the Canyon-matched face — 1.4 m, 2.6 m deep, 16°, 5.7 m/s, the wave
+`MATCH=canyon` fits; the owner's own movement; 6 runs a cell = 3 entry speeds × 2 stick positions). `ring` counts the
+sign changes of the lean the body asks for, per second of the turn; `lean asked` is its peak against the 50° the stick
+asks for; `round at 1 s` is how far off the fall line the board has come, which is "barely turns" as a number.
+
+| | gate: across | **ring /s** | **lean asked** | round at 1 s | rail median | rail peak | up, mean |
+|---|---|---|---|---|---|---|---|
+| **old rider**, Compress | **6 of 6** | — | — | 17.7° | 10.9° | 40.4° | 6.00 s |
+| new rider, hold **on**, Compress | 0 of 6 | **1.51** | **33.7°** | 22.3° | 15.1° | 59.5° | 3.18 s |
+| new rider, hold **off**, Compress | 0 of 6 | **0.00** | **50.0°** | 20.7° | 16.4° | 60.7° | 2.38 s |
+| **old rider**, tall | **6 of 6** | — | — | 32.5° | 42.3° | 69.9° | 3.87 s |
+| new rider, hold **on**, tall | 1 of 6 | 0.62 | 35.8° | 27.0° | 23.6° | 77.9° | 2.94 s |
+| new rider, hold **off**, tall | 0 of 6 | 0.35 | 50.0° | 25.4° | 24.4° | 74.0° | 2.34 s |
+
+All [M]. The old rider's ring columns are empty because `leanAsked` is the predictive balance's own reference and the
+old rider has none [R].
+
+Read it in three lines:
+
+- **The hold's cost is exactly what the owner described.** It holds the asked lean to two thirds of the stick and
+  chatters at about 1.5 Hz while doing it. "Barely turns" is 33.7° of lean asked where 50° was asked for.
+- **It rings in Compress and not tall**, 1.51/s against 0.62/s, as 3.2q predicted. Tall was never the problem and is
+  reported separately throughout for that reason.
+- **Removing it costs the small thing it bought**, and the cost is stated rather than hidden: mean time up 3.18 → 2.38 s
+  in Compress and 2.94 → 2.34 s tall, and tall's gate 1 of 6 → 0 of 6. The hold is one round old and has never earned a
+  ride, so it is removed rather than rate-limited — the coordinator's call, and the measurement does not argue with it.
+
+**Why not the second way out** (feed the cap the turn the internal model predicts from the rail). It would keep a cap
+whose only demonstrated effect on a ride is the one the owner disliked, and it would do it through the same `railPull`
+inversion the predictor already runs twice a substep [R]. Nothing in this round's numbers says a cap is wanted at all:
+without it the lean reaches the full 50° and the rail reaches *more*, not less (16.4° median against 15.1°). I did not
+build it and I am not holding it in reserve.
+
+## 3. Job 1 — the compressed turn's pull, made honest
+
+`COMPRESS_PULL` is the larger of the old rider's two hidden supports: about 0.19 g of sideways force on the body with
+nothing pushing back, applied at its centre of mass [R]. Its own comment says what the body is really doing — *"leaning
+in first means pushing the feet out"* — so the honest version is the pair the legs already make at a rail change
+(`legDriveStep`, leg-drive 2026-11-10): **the legs push the body toward the lean it is being asked for while the body is
+behind that lean, and the board takes the equal and opposite push at the back foot.** Same three limb bounds as the
+rail change's push: the back leg's sideways strength (LEG_SIDE_STRENGTH, by the steer), the back foot's grip
+(FOOT_FRICTION times its own load), and the legs' sideways reach at this pelvis height. No new constant. Opt-in as
+`?legDrive=turn`, so `?legDrive=on` and the default ride are untouched.
+
+**I wrote the prediction into the constant's note before measuring it**, and it is the thing to score me on: *an
+internal pair is net zero on board and rider together, so it cannot supply COMPRESS_PULL's 0.19 g to the system — it
+can only move the body in and the board out, sooner.*
+
+**The scores** (old rider, the same Canyon-matched face and the same 6-run cells; `legWork` is the legs' own work on
+the body through the turn, which is the seatbelt — a drive that is switched on and never fires would otherwise measure
+exactly like one that is off).
+
+| Compress | gate: across | rail median | rail peak | path rate | up, mean | legWork |
+|---|---|---|---|---|---|---|
+| **COMPRESS_PULL** (today, unpaired) | **6 of 6** | 10.9° | 40.4° | 34.2 °/s | 6.00 s | 0 J |
+| `?legDrive=on` (control: the rail change's pair only) | **6 of 6** | 11.7° | 40.6° | 34.2 °/s | 6.06 s | 0.1 J |
+| `?legDrive=turn`, the three limb bounds | **0 of 6** | 13.9° | 19.8° | 30.9 °/s | 3.98 s | 128.6 J |
+| …eased by how far behind the lean the body is | 0 of 6 | 11.3° | 19.6° | 30.8 °/s | — | 116.8 J |
+| …**capped at COMPRESS_PULL's own magnitude** | **0 of 6** | 11.5° | 21.8° | 27.6 °/s | — | 126.8 J |
+
+| tall | gate | rail median | rail peak | path rate | up, mean | legWork |
+|---|---|---|---|---|---|---|
+| all three columns, identical | **6 of 6** | 42.3° | 69.9° | 54.6 °/s | 3.87 s | 0 J |
+
+All [M]. Tall being identical in every column is the control that says the change touches Compress and nothing else:
+Compress's own gate never opens tall, so neither the pull nor the legs' lead-in fires there [R].
+
+**The run-by-run split is where the answer is**, and the cell medians hide it. With the honest pair, by stick position:
+
+| stick | reaches, of the 85° the gate asks | still up for | rail peak |
+|---|---|---|---|
+| **half** (0.5) | **76.7–82.4°** | **6.4–7.8 s** | 19.6–21.8° |
+| **full** (1.0) | 46.3–53.3° | **0.65–0.78 s** | 15.5–30.1° |
+
+So at half stick the honest pair comes within **3–8°** of the gate and keeps the rider up **longer than the unpaired
+pull does** (6.4–7.8 s against 6.00 s). At full stick it throws him off in two thirds of a second, every time, in all
+three variants.
+
+**And the third variant settles the cause.** Capped at COMPRESS_PULL's own magnitude, the paired push is the *same
+force on the body* as today's cheat; the only difference left is the equal and opposite on the board. It still falls at
+0.65–0.73 s and still scores 0 of 6. **So the 6 of 6 rests on the missing reaction, not on the force's size.** The
+board's half pushes the board sideways out from under a rider whose rail has not yet engaged (rail peak 15.5–21.8°
+against the pull's 40.4°), and he loses balance before the turn can be bought from the water.
+
+What that means for the route the coordinator chose, stated plainly because it is the decision this feeds: **paying for
+the old rider's cheats from above is not a matter of finding the right bound.** The two bounds I tried are the obvious
+ones and both are inert. The honest pair's half-stick behaviour (up longer, 3–8° short) says the lean it produces is
+usable; what is missing is the *system's* sideways force, which can only come from the water — the rail, at a rail angle
+the pair itself prevents the board from reaching. That is a hull question, which is §5.
+
+Two bounds measured and **not** shipped, so nobody rebuilds them: easing the push in proportion to how far behind its
+lean the body still is is **inert**, because early in a turn the body is always more than the feet's own reach (14.3°)
+behind it; and the COMPRESS_PULL cap is the diagnostic above, not an improvement. The code carries the simplest form —
+strength, grip, reach — and its note carries both negatives.
+
+## 4. The library face, measured before the job was cancelled
+
+This was the round's first job and was cancelled mid-round as answering a different question than the owner's. It had
+already run, so here it is, and it should be read as a side measurement.
+
+**First, the harness check, which is the reason any of it can be believed.** The same probe, same movement, on the
+Canyon-matched `FaceWater`, reproduces 3.2r's published references: old rider **n(up) 1.085** against the reference
+1.09 and the gate **12 of 12**; new rider **1.043** against 1.05 and **1 of 12** [M, 12 runs each]. And this probe's
+copy of step 5e's `faceOf` reproduces step 5e's own τ rows on the same sea: **35.6°** at τ −1.5…−0.75 against 5e's
+35.9°, and **47.5°** at τ −0.75…−0.25 against its 47.3° [M, 1,121 faces over 40 frames here against 5e's 80,253 over
+600].
+
+**The owner's acceptance test on `?wave=library`** (the address in the brief, the sim stepped under the rider frame by
+frame from step 5e's own spun-up cache, each run from the same imported state; 12 runs a cell).
+
+| where | the face there | old rider: across | n(up) | new rider: across | n(up) | slope **under the board** | frames over 30° |
+|---|---|---|---|---|---|---|---|
+| τ −1.01, lane 32, placed 0.75 of the run onshore (the owner's test) | turn 31.3°, H 1.69 m, pace 5.65 m/s | **6 of 12** | 1.091 | 0 of 12 | 1.039 | **1.9°** med, 17.2° most | **0.0 %** |
+| τ −1.01, lane 32, placed 0.45 of the run (mid-face) | the same | **7 of 12** | 1.064 | 0 of 12 | 0.000 | 2.8° med, 9.9° most | 0.0 % |
+| τ −0.31, lane 105, placed 0.45 of the run | turn **51.0°**, H 2.41 m, pace 5.92 m/s | 1 of 12 | 0.196 | 0 of 12 | −0.117 | old 5.4°, **new 35.0°** med | old 0 %, **new 100 %** |
+| the Canyon-matched `FaceWater` (the reference) | turn 16°, H 1.4 m | 12 of 12 | 1.085 | 1 of 12 | 1.043 | 0.0–13.0° | 0.0 % |
+
+All [M]. Four things in it, and the third is the one that matters:
+
+1. **The steep face does not raise the load factor on this movement.** At τ −1.01 the old rider's n(up) is **1.091**
+   against **1.085** on the 16° reference — the same number. The brief's premise was that the missing g could only come
+   from the wave; on the wave that has it, this movement does not collect it.
+2. **The gate gets *worse*, not better, as the face steepens**: old rider 12 of 12 on the 16° plane, 6–7 of 12 at
+   31.3°, **1 of 12** at 51.0°, where n collapses to 0.196 and the new rider's goes **negative** (−0.117 — the water's
+   resultant is below the board's own up at 80.3° of φ_F). A 51° face at these speeds is not a face this rider turns
+   on; it drops him.
+3. **The test's own geometry keeps the board off the steep water, and that invalidates the framing more than any of the
+   numbers.** Placed where the owner's test places him, the slope under the board is **1.9° median and 0.0 % of frames
+   over 30°** on a 31.3° face. The face's "16°" and "31°" are its *steepest point*, halfway up; 0.75 of the run onshore
+   of the crest is near the trough, where the profile is gentle by construction. Only the one cell that is both high on
+   the face and late in τ gets the board onto 35° water — and that is the cell that scores 1 of 12.
+4. **The one cell on steep water is the one where the turn stops being a turn.** Note which rider gets there: the old
+   rider's board stays on 5.4° water even here, the new rider's sits on 35.0° for every frame — they go to different
+   places on the same wave, so that row is not a paired comparison and I am not reading it as one.: path rate 380 °/s median with peaks in
+   the thousands, rail 4.5°, up for well under a second. The board is being dropped down a 35° wall, not carving it.
+
+So: the brief's premise — *"the steep face now exists in the game and no rider has been put on it"* — is true, and the
+read refutes the hope attached to it. **The missing load factor does not come from the steeper face on this movement**,
+and I am saying so in the paragraph the brief asked me to say it in. What a 35–47° face would need is a rider placed
+*on* it and a movement that climbs, which this test is not.
+
+## 5. The hull's cross-section — consulted, designed, **not built**, and why the next round should pause
+
+The owner approved the section explicitly and it was this round's job 2. It is not built: jobs 0 and 1 filled the round,
+and the advisor's own answer is a reason to pause rather than to hurry. Its consult is logged in
+`../../water-physics/consult-log.md` with six new sources in `../../water-physics/sources.md` (Aguiar Ferreira et al.
+2025 on ventilation inception, the USNA planing-hull tow tests via Fu et al. 2012, three surfboard CFD papers, BoardCAD's
+own rail read-out). The headline it handed back, which the next round needs before it writes any geometry:
+
+- **The section alone buys a vertical-load multiplier of ×1.05–1.09 at 40–50° of roll** and ×1.44–1.75 at 80–90°, which
+  takes Part 17's 0.889 W to 0.93–0.97 W and its 0.026 W to 0.037–0.046 W [I, the advisor's facet integral at Part 17's
+  own measured immersions]. In its words: *if you ship the section alone, I expect the ride to measure the same, exactly
+  as 3.2r did.*
+- **The owner's actual bar needs two more things, and one of them is structurally absent.** "Set in the water, and lets
+  go when the rail ventilates" needs **suction on the buried rail band** and a **ventilation latch** to release it — and
+  `hullForces.ts:160` makes no suction at all, by construction [R, confirmed by me]. Its ruling: *build the suction with
+  the section, or build neither.*
+- **The resolution is not more patches.** 4 across is 0.116 m and 8 is 0.058 m; a 12–25 mm rail band gets less than one
+  facet either way. The advisor's route is a per-station analytic section integral with 12–36 water samples instead of
+  48, precomputed over (roll, immersion) — which it argues is **cheaper than today** [I, from reading the code, not
+  profiled].
+- **Shuford's own cut-off is 50° of effective dead rise** [S, TN 3939]; past it the planing law must hand over to the
+  water-entry branch, and the advisor could not open a tabulated steep-wedge coefficient, which it flagged as a real gap.
+- **Its falsifiable prediction, to score it the way Part 17 scored its last one:** the band's share of the hull's
+  vertical at 40–50° of roll will be **9–14 %**, and `pressure.y / |pressure|` must stop equalling cos(roll) — exceeding
+  it by +0.02–0.06 at 40–60°. If the ratio still equals cos(roll) to within 0.01, the band is not wetted or not
+  resolved: a build bug, not physics.
+- **Three traps it found in the code, each of which would silently eat the change** [R, its reading]:
+  `hullForces.ts:182` derives the deck point along the patch normal, so a near-horizontal band facet collapses its deck
+  onto its bottom; `BoardBody.ts:486` computes each station's beam from patch area over length, so tilted facet areas
+  inflate the beam and drift `planingScales`, `addedMassPerArea` and `radiationPerArea`; and `BoardBody.ts:545` feeds
+  `shape.taper` to `buildFoils`, so changing the taper **moves the fins**.
+- **Its own caveat, unsoftened:** every millimetre of its proposed section is [I] — it found no measured shortboard
+  cross-section in the open literature. Its ten-minute replacement for all of it is a straightedge and a ruler on the
+  owner's own board.
+
+## 6. Seatbelts
+
+- **The deletions column, checked before the push, as the brief requires.** The first check caught the exact failure it
+  was written for: branched at 9678ca94, `git diff --stat origin/main` showed **437 deletions** across step 5f's
+  document, five library `.bin` cases, `libraryCases.ts` and `tools/basilisk` — the wave track's work, merged while this
+  round ran. Rebased onto **009a9c51**; the diff is now **8 files, 186 insertions, 53 deletions, all of them mine** (the
+  lean hold's own lines and the lines they replaced). `git merge-base --is-ancestor` would not have caught it.
+- `npx tsc --noEmit -p .`: **exit 0**, on its own line, in a worktree whose `node_modules` is linked to the main
+  checkout's, so `tsc` really ran. `npx tsc -p server/tsconfig.json --noEmit`: **exit 0** [M].
+- The files that cover the rider and the board, run alone — `AttachedRider`, `predictiveBalance`, `standingBody`,
+  `humanBalance`, `BoardBody` (`src/physics/`), `PhysicalMode` (**`src/game/`**), plus `legDrive`, `snapCross` and
+  `legPower`, which are the ones this change touches: **296 passed, 8 expected fail, 0 failures**, exit 0, and
+  `grep -E "Error:|AssertionError"` over the log is **empty**. `results/suite-rider-32t.txt`.
+- **Six new tests** for `legDrive: 'turn'`: the default and `'on'` unchanged (COMPRESS_PULL still the body's own, the
+  legs still leading nothing); the pull replaced and never both; the push level, toward the lean asked for, within
+  LEG_SIDE_STRENGTH, and only while the body is behind that lean; nothing riding straight and nothing out of Compress;
+  and **the pair summing to nothing on rider plus board** with its moment equal to the two forces' couple, which is the
+  "no hidden motors" rule as an assertion. Plus `?legDrive=turn` in `PhysicalMode.test.ts`'s switch case.
+- **No unpaired force is added.** The one force this round adds is a pair by construction and the test above asserts it.
+  The one force it removes (3.2q's cap) was never a force — it was a limit on an intention.
+- **The Canyon bench, shown rather than claimed**: `results/canyon-bytes-32t.txt`, the same command and the same
+  reference as step 5f's `canyon-bytes.txt`, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups. Both
+  changes are opt-in (`?rider=new`, `?legDrive=turn`), so the hashes are **expected not to move**; what the bench says
+  is in that file.
+- A wave-track agent shared the machine throughout; nothing of theirs was stopped.
+
+## 7. What I am unsure of
+
+- **The ring is measured on a `FaceWater`, not on Canyon's own water.** `MATCH=canyon`'s 1.4 m / 16° / 5.7 m/s fit is
+  the wave the surfer track has always probed against, and the owner rides the real Canyon. The hold's 1.51/s ring and
+  the 33.7°-of-50° lean are robust to that (they are properties of a feedback loop through a 0.1 s low-pass, not of the
+  face), but the gate counts and the times up are the plane's.
+- **"Barely turns" is 33.7° of lean asked, and I am inferring the link.** The owner feels a turn; I measure a lean
+  reference and a ring. The chain between them is 3.2q's own and I did not re-derive it.
+- **The honest pair's half-stick result is six runs.** 76.7–82.4° of 85° in three runs and up for 6.4–7.8 s in three is
+  a thin population to hang "within reach" on, and I would not defend the 3–8° figure to a degree.
+- **I did not re-measure the 6-of-6 → 0-of-6 ablation of COMPRESS_PULL itself** (the pull removed with nothing in its
+  place). That number is the balance-redesign notes' [S], quoted, not reproduced here; what I measured is the pull
+  against the pair.
+- **The library-face read's crest pace is coarse.** The crest's station moves in `LANE.step` = 0.25 m, so a pace
+  differenced over 0.1 s is quantized to 2.5 m/s; I interpolate the crest parabolically and difference over 1 s, which
+  gives 5.65 and 5.92 m/s, but the entry speed each run is placed at inherits whatever that estimate's error is.
+- **One lane, one instant, per library cell.** Each of those cells is twelve runs on the *same* slice at the *same*
+  start instant, so they share whatever that slice happens to be doing. Step 5e's own population is 80,253 faces; mine
+  is one of them, twelve times.
+- **Whether a cap on the lean is wanted at all.** I removed 3.2q's and argued against rebuilding it from the measured
+  rail going *up* without it. That is an argument from six runs a cell on a plane, not a proof.
+
+## 8. Files (3.2t)
+
+- `libturn.ts` (new): the owner's acceptance test on **any** water — a `FaceWater` of any height and slope (part F) or
+  the **live `?wave=library` sea** (part T), with part S the scout that finds a steep slice and its lane. It reports
+  everything `load.probe.ts` reports plus three things this round needed: the **slope of the water actually under the
+  board** every frame, the **ring** of the lean the body asks for, and the **legs' own work**, so a leg drive that is
+  switched on and never fires cannot pass for one that is off. Its header carries the commands.
+- Results: `results/suite-rider-32t.txt`, `results/canyon-bytes-32t.txt`, and under `results/32t/` the job-0 ring runs,
+  the job-1 pull-against-pair runs with both rejected bounds, and the library-face cells.
+- `src/physics/AttachedRider.ts`: 3.2q's lean hold removed (its note kept as the reason); `legTurn` and the
+  lead-in in `legDriveStep`; `legDrive?: 'on' | 'turn'`.
+- `src/game/PhysicalMode.ts`, `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`: `?legDrive=turn` through
+  the config.
+- `src/physics/legDrive.test.ts`, `src/game/PhysicalMode.test.ts`: the six new tests and the switch case.
+- `../../water-physics/consult-log.md`, `../../water-physics/sources.md`: the cross-section consult and its six sources.
+
+## 9. For the owner, in plain words
+
+**Two things you felt have been found and one of them is fixed.**
+
+You said the compressed turn got slower and barely turns, and that it felt stuck. The first half of that was a real bug
+and it is out. Last round's change had the surfer refuse to lean further than the turn he already had would carry — a
+sensible-sounding rule that turned into a stutter: he asked for a lean, got a bit of turn, allowed himself a bit more
+lean, and so on, wobbling about one and a half times a second and never getting past two thirds of the lean your stick
+was asking for. That is gone. He now leans as far as you ask again. **It is honest to say that this does not make him
+good** — he still falls more than the old surfer on the same wave — but the specific thing you felt is no longer there.
+
+The second half, the stuck feeling, is the deeper one, and this round tested the planned cure and **it did not work.**
+The old surfer — the one you like — cheats: when you compress into a turn, the game simply shoves his body into the turn
+with a force that nothing pushes back against. Real surfers make that force by shoving their feet out against the board.
+So I built that: the legs push the body in, and the board gets pushed the other way, exactly as it would in life. The
+result is clear and a bit disappointing. With a gentle stick he actually rides *longer* than the cheating version and
+comes almost all the way round. With a full stick he is on his back in two thirds of a second, every time — his own legs
+shove the board out from under him before the board's rail has bitten into the water hard enough to hold him. I then
+tried making the honest push exactly as weak as the cheat, so the only difference left was the board getting pushed
+back, and it still failed the same way. **So the old surfer's turn depends on that force being free. There is no setting
+that makes it honest.**
+
+What that points at is the board, not the surfer: the push has to be bought from the water by the rail digging in, and
+our board's rail cannot dig in — which is what last round measured and what you approved shaping. I did not get to the
+shaping this round. I did get a specialist's full design for it, and one warning worth passing on: **the shaped edge on
+its own will probably change nothing you can feel.** The reason the rail does not hold is that our board can only ever
+*push* on the water, never *grip* it — there is no suck on the buried edge at all in the model. Shaping the edge without
+adding that grip would be a nicely shaped edge that behaves exactly like today's. So the next round should do both
+together, or neither.
+
+One smaller thing you may want to know, because it quietly undermines a number this thread has repeated for weeks: we
+have been saying your waves give the surfer a 16° face. That is the steepest point of the face, halfway up it. During
+the turn your surfer actually does, the water under his board is sloped **about two degrees**. Even on the new steep
+wave, with a 31° face, the water under the board during the turn is two to three degrees. He is turning in the flat
+bottom of the wave, not on its wall. Whatever we fix next, that is worth fixing too.
