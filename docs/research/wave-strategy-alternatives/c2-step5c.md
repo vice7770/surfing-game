@@ -203,7 +203,7 @@ theirs. It cannot be driven from the probe — `drawPhysical` re-renders and re-
 Seven shots, the owner's own ride address, the look forced Rich, at t 72 s: `curl-ride`, `curl-front`, `curl-channel`,
 `curl-inside`, `curl-close`, `curl-behind` at midday and `curl-front` at sunset. Two legs — the branch as it stands,
 and the same with the bore's foam switched off in the code (`NOFOAM`, not merged). Kept in `c2-step5c-stills/`, with
-three crops at 2–3× in `crops/`.
+four crops at 2–3× in `crops/`.
 
 ### What they show
 
@@ -213,7 +213,12 @@ three crops at 2–3× in `crops/`.
    Looking out from inside the tube (`curl-inside`) there are **two** foam-dominated pixels in the whole frame.
 3. **Where the pile should be, the frame shows a grey-brown smear.** In `curl-ride`, down the line, the broad region
    behind the breaking crest is a streaky desaturated grey-brown, not white. It is the single ugliest thing in these
-   shots and it sits exactly where the owner's reference photo has its white pile.
+   shots and it sits exactly where the owner's reference photo has its white pile. The same grey-brown veils appear
+   again, separately, inside the tube (`curl-inside` crop) as translucent diagonal sheets over otherwise clean dark
+   blue water. **A lead, not a finding:** that is what ruling 37's fray lip is built to be — "dark translucent water
+   with a pale rim" — and from down the line many of those sheets stack along the crest at once. If so the smear is
+   the lip and curtain sheets summing, not the foam, which fits its surviving the foam being switched off. It is
+   worth one measured look before anyone repaints anything.
 4. **The lane terraces** (ruling 33's polish item, logged again by ruling 38) are plain on the face in `curl-ride` and
    `curl-channel` — horizontal ledges stepping down the wall, clearest from down the line.
 5. **The dither stipple** is much worse at 3× than it looks at full size: regular Bayer-like dot grids in patches
@@ -297,7 +302,7 @@ bore changed into each camera's frustum — a read, not a build.
     --probe=docs/research/wave-strategy-alternatives/c2-step5c-probe.js --advance=40 --first=skip
   ```
 - `c2-step5c-stills/`: the seven shots of the foam-on leg, `curl-behind` of the foam-off leg (the only one that
-  differs), and the three crops in `crops/`. JPEGs, as step 5b's.
+  differs), and the four crops in `crops/`. JPEGs, as step 5b's.
 - `c2-step5c-runs/`: both legs' probe output, the byte check and the suite.
 - Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look's stills; a caustics
   A/B (it wants a hook, §3).
