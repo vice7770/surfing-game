@@ -107,15 +107,83 @@ move the aeration tint into a shader that cannot use it. **Ruling 38's branch 2 
 
 ---
 
-## 3. The measurement: the water against the foam
+## 3. The measurement: the water against the foam — **the water is not too bright**
 
-(filled in below)
+Ruling 38 named the measurement to take if the look turned out to be Rich all along: "the water's own luminance
+against the foam's in the rendered frame". Here it is, and it does not say what ruling 38 expected.
+
+`waterSheetFoamAgainstWater` (§5), three passes from each shot's own camera in the same held sea at t 72 s: as drawn,
+with the foam colour set magenta, and with the sea's surface mesh hidden. A pixel is **water** where hiding the mesh
+changed it; its foam share is how far the magenta pass pulled its green down. **foam** is a pull of 120 or more (the
+foam colour dominates the pixel), **clear** is under 10 (no foam in it at all), and the band between is in neither, so
+neither figure is diluted by the other. Linear relative luminance.
+
+| shot | foam px (share of frame) | foam p50 | clear water px | clear p50 | clear p90 | **foam p50 / clear p90** |
+| --- | --- | --- | --- | --- | --- | --- |
+| `curl-ride` | 6 893 (0.75 %) | 0.787 | 15 425 | 0.443 | 0.486 | **1.62** |
+| `curl-front` | 108 286 (11.8 %) | 0.772 | 1 974 | 0.361 | 0.473 | **1.63** |
+| `curl-channel` | 4 813 (0.52 %) | 0.814 | 155 036 | 0.349 | 0.465 | **1.75** |
+| `curl-inside` | 2 (0.00 %) | 0.863 | 125 489 | 0.166 | 0.516 | **1.67** |
+| `curl-close` | 7 491 (0.81 %) | 0.802 | 15 535 | 0.443 | 0.486 | **1.65** |
+| `curl-behind` | 22 584 (2.45 %) | 0.833 | 371 147 | 0.495 | 0.527 | **1.58** |
+
+**The foam's median stands 1.58–1.75× above the clear water's 90th percentile, in every view.** The game's own target
+for a white that reads, written into `waterSheetLipContrast` for the Canyon lip, is **1.5–2×**. The foam is inside it
+everywhere. Nothing is blown out either (`blown` 0 in all six).
+
+The colours say the same: the foam's mean is (0.61, 0.83, 0.84), a cyan-white close to the foam colour itself
+(0.687, 0.888, 0.815), against clear water at (0.17, 0.50, 0.78), a blue. The foam is not being swallowed.
+
+> **So the five rounds were not spent drawing white on white.** The white that gets drawn reads as white. There is
+> just **almost none of it**: half a per cent to one per cent of the frame in four of the six views, and two pixels in
+> `curl-inside`. The owner's reference photo has a white pile, a torn edge, streaks and lines over a large part of the
+> wave; this wave has thin hard-edged lines.
+
+This reopens what ruling 38 closed. "Stop drawing foam until the water is right" rested on the water being wrong, and
+it is not. **Extent and placement are the fault, not contrast**, and that is a different next step from repainting.
+
+### What the ruling read as a bright water sheet
+
+Ruling 38 read `before-front-midday` as "a bright near-white turquoise with heavy caustics ... brighter than any foam
+drawn on it could be". The caustics part is right and the conclusion is not. In `curl-front` only **1 974 pixels of
+the frame are water with no foam in them at all** (0.2 %), against 277 570 water pixels in all — the pale foreground
+is mostly already carrying foam colour, so reading it as bare water and calling it brighter than foam compares foam
+with foam. Where there is real bare water to compare against — `curl-channel` with 155 036 clear pixels, `curl-behind`
+with 371 147 — it sits at p90 0.465 and 0.527 against foam at 0.814 and 0.833.
+
+What **is** true is that the frame's bright top decile is the caustic lattice, and the caustics are not something #282
+touched: it cut the Rich body gain and raised the display exposure, which lifts the caustics and the foam by the same
+factor and changes neither's standing against the other. A caustics A/B would settle how much of the pale look is
+theirs. It cannot be driven from the probe — `drawPhysical` re-renders and re-enables the map on every `renderView`
+(`main.ts:1069`) — so it wants a hook, and it is a lead for the next ruling, not this round's work.
 
 ---
 
 ## 4. The stills
 
-(filled in below)
+Seven shots, the owner's own ride address, the look forced Rich, at t 72 s: `curl-ride`, `curl-front`, `curl-channel`,
+`curl-inside`, `curl-close`, `curl-behind` at midday and `curl-front` at sunset. Two legs — the branch as it stands,
+and the same with the bore's foam switched off in the code (`NOFOAM`, not merged). Kept in `c2-step5c-stills/`, with
+three crops at 2–3× in `crops/`.
+
+### What they show
+
+1. **The white that is there reads as white.** In the `curl-ride` crop a hard white line runs along the trough and
+   stands out cleanly against the face beside it. The measurement in §3 is what the eye sees.
+2. **There is very little of it, and the wave's own face has none.** Both the face and the back of the wave are bare.
+   Looking out from inside the tube (`curl-inside`) there are **two** foam-dominated pixels in the whole frame.
+3. **Where the pile should be, the frame shows a grey-brown smear.** In `curl-ride`, down the line, the broad region
+   behind the breaking crest is a streaky desaturated grey-brown, not white. It is the single ugliest thing in these
+   shots and it sits exactly where the owner's reference photo has its white pile.
+4. **The lane terraces** (ruling 33's polish item, logged again by ruling 38) are plain on the face in `curl-ride` and
+   `curl-channel` — horizontal ledges stepping down the wall, clearest from down the line.
+5. **The dither stipple** is much worse at 3× than it looks at full size: regular Bayer-like dot grids in patches
+   along the edges of the drawn sheets (the `curl-front` crop). That is the signature of screen-door transparency on a
+   sheet fading in or out, not of the water. Ruling 38 logged it as "cause unknown" and present with the foam off;
+   that is confirmed here, and the pattern names the mechanism to look at.
+6. **The tube's mouth is a flat white blob** in `curl-front`, with no structure in it.
+
+Items 3, 5 and 6 are new and none is this round's to fix.
 
 ---
 
