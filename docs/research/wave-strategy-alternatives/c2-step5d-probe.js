@@ -30,6 +30,23 @@ const shots = w.waterSheetShots.map((s) => ({
 // The held curl's own slices, so the cameras can be read against the wave they were placed on.
 const curl = w.waterSheetCurl ? w.waterSheetCurl() : undefined;
 
+// The drawn loft's landed slices: where the bore foam is written, and how old each one's white is. The bore cameras
+// are placed from these, so a still that misses can be read against the numbers without another run.
+const loft = w.waterSheetMode ? w.waterSheetMode.barrelLoft : undefined;
+const landed = [];
+if (loft) {
+  for (let s = 0; s < loft.sliceCount; s += 1) {
+    if (loft.slicePhase[s] !== 2) continue;
+    // `landmark()`'s arithmetic: LOFT_SAMPLES = PROFILE_POINTS + 2 × extensionSamples, then the crest landmark.
+    const v = 3 * (s * (128 + 2 * 3) + 3 + 32);
+    landed.push({
+      slice: s, front: loft.sliceFront[s], sigma: +loft.sliceSigma[s].toFixed(2), after: +loft.sliceAfter[s].toFixed(3),
+      weight: +loft.sliceWeight[s].toFixed(3),
+      crest: [+loft.positions[v].toFixed(2), +loft.positions[v + 1].toFixed(2), +loft.positions[v + 2].toFixed(2)],
+    });
+  }
+}
+
 const out = {
   search: w.location.search,
   seconds: w.waterSheetSeconds,
@@ -38,6 +55,7 @@ const out = {
   camera: { fov: 55, width: 1280, height: 720, near: 0.1, far: 3000 },
   shots,
   curl: curl ? { length: curl.length, first: curl.first, last: curl.last, middle: curl.middle } : null,
+  landed: { count: landed.length, slices: landed },
   surface: pack(water.surfaceData),
   aeration: water.aerationData ? pack(water.aerationData) : null,
   bed: water.bedData ? pack(water.bedData) : null,

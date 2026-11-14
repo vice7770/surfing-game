@@ -22,6 +22,7 @@ import { CURL_FIELD, CURL_STRIDE, impactTime } from '../wave/SpillingCurl';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import { LANDMARK } from '../wave/barrel/ProfileLibrary';
 import { LOFT, LOFT_SAMPLES } from '../wave/barrel/sweptLoft';
+import { LIFT } from '../wave/library/libraryLoft';
 import { TUBE_STRIDE } from '../wave/tubeTable';
 import { advance, breathe } from './devStepping';
 
@@ -204,6 +205,55 @@ function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
   ];
 }
 
+/**
+ * C2 step 5d: the already-landed bore behind the held curl — a slice of the drawn loft past its own touchdown, which is
+ * where a broken wave's whitewater is and where the library writes its bore foam (`boreFoam.ts`). The curl shots all
+ * sit within 20 m of the open mouth and look into it; the bore runs on shoreward from where each slice landed, so by
+ * the time its white is a second old it is tens of metres away down the peel and no curl camera covers it (ruling 39's
+ * question, settled in `c2-step5d.md`).
+ *
+ * The slice wanted is the one whose white is `BORE_AGE` s old: fresh enough to be at its brightest (Koepke's ageing
+ * starts at 1 and is down to 0.75 by a second), old enough that the loft has let go of the tube over it
+ * (`LIFT.collapse`, 0.6 s) and the bore is the render nodes' own.
+ */
+const BORE_AGE = 1.5;
+
+/** The drawn loft's slice whose touchdown is nearest `BORE_AGE` s ago; undefined with no landed slice. */
+function boreSlice(mode: PhysicalMode): number | undefined {
+  const loft = mode.barrelLoft;
+  if (!loft) return undefined;
+  let best: { slice: number; off: number } | undefined;
+  for (let s = 0; s < loft.sliceCount; s += 1) {
+    if (loft.slicePhase[s] !== 2) continue;
+    const after = loft.sliceAfter[s];
+    if (!(after > LIFT.collapse)) continue;
+    const off = Math.abs(after - BORE_AGE);
+    if (!best || off < best.off) best = { slice: s, off };
+  }
+  return best?.slice;
+}
+
+/**
+ * Shots of that bore: square on from the water ahead of the pile, down the line along the broken crest with the pile
+ * across the frame, and from above and behind it. The pile runs from the slice's crest landmark to its toe, which is
+ * the stretch the bore foam covers.
+ */
+function boreShots(mode: PhysicalMode, slice: number): Shot[] {
+  const loft = mode.barrelLoft!;
+  const [rx, rz] = [loft.sliceRayX[slice], loft.sliceRayZ[slice]];
+  // Along the crest: the lane's ray turned a right angle (either way shows the bore; +1 is the peel's own hand).
+  const [sx, sz] = [rz, -rx];
+  const crest = landmark(mode, slice, LANDMARK.crest);
+  const toe = landmark(mode, slice, LANDMARK.toe);
+  const pile = crest.clone().add(toe).multiplyScalar(0.5);
+  const top = Math.max(crest.y, toe.y);
+  return [
+    { name: 'bore-face', eye: new Vector3(pile.x + rx * 10, top + 2.5, pile.z + rz * 10), target: pile.clone() },
+    { name: 'bore-line', eye: new Vector3(crest.x + sx * 12 + rx * 7, top + 1.6, crest.z + sz * 12 + rz * 7), target: pile.clone() },
+    { name: 'bore-above', eye: new Vector3(pile.x - rx * 8 + sx * 4, top + 8, pile.z - rz * 8 + sz * 4), target: pile.clone() },
+  ];
+}
+
 /** The most open flying tube in the snapshot: its row and how far its void reaches ahead of the crest, m. */
 function openTube(mode: PhysicalMode): { row: number; reach: number } | undefined {
   const snapshot = mode.host?.snapshot;
@@ -352,7 +402,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       if (shot.name === 'face') {
         // Padang Padang's swept curl, when one is open at the hold (beside the whitewater's, with `&whitewater`).
         const curlOnes = curl ? curlShots(hooks.mode, curl) : [];
-        return [...(ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : curl ? [] : [shot]), ...curlOnes];
+        // C2 step 5d: the landed bore behind the curl, which no curl camera covers.
+        const bore = curl ? boreSlice(hooks.mode) : undefined;
+        const boreOnes = bore !== undefined ? boreShots(hooks.mode, bore) : [];
+        return [...(ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : curl ? [] : [shot]), ...curlOnes, ...boreOnes];
       }
       return (tube || ball || curl) && shot.name === 'bore' ? [] : [shot];
     });
