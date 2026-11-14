@@ -116,6 +116,15 @@ it('where the board yaw comes from, on the owner\'s acceptance test', () => {
     let fellAt = Number.NaN;
     let acrossAt = Number.NaN;
     let maxFromFall = fromFall();
+    let minFromFall = maxFromFall;
+    // The heading the board really rotates: signed from the start, and the whole swing whichever way it went.
+    // `maxFromFall` cannot see this, because the angle from the fall line is unsigned and a bottom turn passes
+    // *through* the fall line: a board that has swung 120 degrees reads 30 if it stops 30 past the line.
+    let netTurn = 0;
+    let swung = 0;
+    let fellSpeed = Number.NaN;
+    let fellRoll = Number.NaN;
+    let fellBank = Number.NaN;
     let lastAz = azimuth();
     let lastPath = pathAzimuth();
     // Collected over the turn phase only (the stick over), and only while the board is on a rail worth the name.
@@ -142,10 +151,13 @@ it('where the board yaw comes from, on the owner\'s acceptance test', () => {
       const s = state(rig, water, t);
       const ff = fromFall();
       maxFromFall = Math.max(maxFromFall, ff);
+      minFromFall = Math.min(minFromFall, ff);
       const az = azimuth();
       const path = pathAzimuth();
       const wrap = (d: number) => ((d + 540) % 360) - 180;
       const yawRate = wrap(az - lastAz) / STEP;
+      netTurn += wrap(az - lastAz);
+      swung += Math.abs(wrap(az - lastAz));
       const pathRate = wrap(path - lastPath) / STEP;
       lastAz = az;
       lastPath = path;
@@ -185,11 +197,13 @@ it('where the board yaw comes from, on the owner\'s acceptance test', () => {
         acrossAt = t;
         rig.rider!.steer = 0;
       }
-      if (s.fell) { fell = s.fell; fellAt = t; break; }
+      if (s.fell) { fell = s.fell; fellAt = t; fellSpeed = s.speed; fellRoll = s.roll; fellBank = s.bank; break; }
     }
     emit({
       bar: 'yawsource', rider: RIDER, assist: ASSIST, stance: st, extra, steer,
       reachedAcross: maxFromFall >= ACROSS, turnedDeg: r(maxFromFall - 45, 1),
+      netTurnDeg: r(netTurn, 1), swungDeg: r(swung, 1), minFromFallDeg: r(minFromFall, 1), maxFromFallDeg: r(maxFromFall, 1),
+      fellSpeedMs: r(fellSpeed, 2), fellRollDeg: r(fellRoll, 1), fellBankDeg: r(fellBank, 1),
       held: !fell, fell, fellAtS: r(fellAt, 2), acrossAtS: r(acrossAt, 2),
       // In the turn phase: the rail the board actually carried, and the turn it made per degree of it.
       railMeanDeg: r(mean(rails.map(Math.abs)), 1), railMedianDeg: r(median(rails.map(Math.abs)), 1), railPeakDeg: r(Math.max(...rails.map(Math.abs)), 1),
