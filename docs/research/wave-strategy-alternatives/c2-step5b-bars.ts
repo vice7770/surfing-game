@@ -302,7 +302,7 @@ const allBacks: Back[] = [];
 const A = { stepPlace: [] as number[], stepHeight: [] as number[], winPlace: [] as number[], winHeight: [] as number[], ownPlace: [] as number[], ownHeight: [] as number[], seaWinPlace: [] as number[], seaWinHeight: [] as number[], gap: [] as number[], heightGap: [] as number[] };
 
 // ---- C, D, E.
-const C = { gap: [] as number[], nodes: [] as number[], point: [] as number[], inside: [] as number[], edge: [] as number[] };
+const C = { gap: [] as number[], nodes: [] as number[], point: [] as number[], inside: [] as number[], edge: [] as number[], was: [] as number[] };
 /** C and D read one seat a lane each step (every 7th lane). */
 const seats = new Set<number>();
 const D: Record<string, { gap: number[]; share: number[]; felt: number[] }> = {};
@@ -406,14 +406,27 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
       const surface = felt.surfaceAt(x, z);
       if (!(surface === surface)) continue;
       if (part('C')) {
-        const nodes = zone.surface.weightAt(x, z);
-        const point = zone.surface.flowAt(x, surface - 0.05, z, flowOut);
-        if (nodes > 0 || point > 0) {
+        // The surface's own share of the library at this seat: Σ w a on the lanes, resampled on the 1 m render nodes,
+        // exactly as the node heights are (`ZoneSurface.shareAt`).
+        const nodes = zone.surface.shareAt(x, z);
+        const flow = zone.surface.flowAt(x, surface - 0.05, z, flowOut);
+        // What step 4 used instead: the same Σ w a evaluated at the point, from the slices on the seat's own lane.
+        let at = 0;
+        for (const other of zone.surface.shown()) {
+          if (other.slice.lane !== s.lane || !(other.share > 0)) continue;
+          const back = other.curve[0];
+          const front = other.curve[2 * (WAVE_POINTS - 1)];
+          const sAt = (x - lanes.baseX[s.lane]) * lanes.rayX[s.lane] + (z - lanes.baseZ[s.lane]) * lanes.rayZ[s.lane];
+          at += other.slice.end * smoothstep((sAt - back) / 3) * smoothstep((front - sAt) / 3) * other.share;
+        }
+        at = Math.min(1, at);
+        if (nodes > 0 || flow > 0) {
           C.nodes.push(nodes);
-          C.point.push(point);
-          C.gap.push(Math.abs(nodes - point));
+          C.point.push(flow);
+          C.gap.push(Math.abs(nodes - flow));
+          C.was.push(Math.abs(nodes - at));
           // The field's own σ ends, where the end taper runs out, against its middle.
-          (s.end >= 0.99 ? C.inside : C.edge).push(Math.abs(nodes - point));
+          (s.end >= 0.99 ? C.inside : C.edge).push(Math.abs(nodes - flow));
         }
       }
       if (part('D')) {
@@ -503,6 +516,7 @@ if (part('C')) {
   console.log(`  at its σ ends (the end taper): ${line(C.edge, 4)}; over 0.02 ${over(C.edge, 0.02)}`);
   console.log(`  the nodes' share ${line(C.nodes, 3)}`);
   console.log(`  the point's share ${line(C.point, 3)}`);
+  console.log(`  |the nodes' share − the same sum evaluated at the point| (what step 4 gave the flow): ${line(C.was, 4)}; over 0.02 ${over(C.was, 0.02)}`);
 }
 
 if (part('D')) {

@@ -10,6 +10,7 @@ import { CURVE, CURVE_STRIDE, LibraryLoft } from './libraryLoft';
 import { MeanLevel } from './meanLevel';
 import { SLICE_LIFE, SliceField } from './SliceField';
 import { WaveLibrary } from './WaveLibrary';
+import { BORE_FOAM, boreAir, boreShape, boreWhite } from './boreFoam';
 import { ZoneSurface } from './zoneSurface';
 
 const FLOATS = 2 * WAVE_POINTS;
@@ -286,12 +287,20 @@ describe('the zone surface (ZoneSurface) and its slices (SliceField)', () => {
     const k = Math.floor(lanes.count / 2);
     const state = { heightOverDepth: 0.3, period: 14.7, slope: 0.068, reefDepth: 0.2, depth: 4.8, time: 0 };
     const slice = library.slice(state);
+    // C2 step 5b (ruling 35 item 2): the flow's share is the surface's own, resampled on the 1 m render nodes, so a
+    // seat only reads the whole share where the nodes round it are whole too. One lane's slice alone never does, as
+    // its own node heights never do either: the run is five lanes wide, and the seat is its middle one.
     const made = {
       id: 0, wave: 0, lane: k, tH: 0, s: lanes.toe[k] + 5, H: 1.5, height: 1, mean: 0, slice, state, end: 1, blendFrom: -10, throwAt: 10,
       touchdown: 1, goFrom: 100, goneAt: 101, seaS: Number.NaN, seaT: Number.NaN, tipS: Number.NaN, tipY: Number.NaN, tipT: Number.NaN,
       tipAlong: 0, tipUp: 0, toeShare: 1, own: true,
     };
     field.byLane[k].push(made);
+    for (const d of [-2, -1, 1, 2]) {
+      const kk = k + d;
+      if (kk < 0 || kk >= lanes.count) continue;
+      field.byLane[kk].push({ ...made, id: 10 + d, lane: kk, s: lanes.toe[kk] + 5, slice: library.slice(state) });
+    }
     return { lanes, library, field, surface, lane: k, slice, made };
   }
 
@@ -312,9 +321,11 @@ describe('the zone surface (ZoneSurface) and its slices (SliceField)', () => {
     expect(out[2] / speed).toBeCloseTo(0.8, 2);
     expect(Math.abs(out[0])).toBeLessThan(1e-9);
     // Deeper: the deeper depth's 0.7, and held past it.
-    surface.flowAt(x, crest[1] - 0.1 * slice.h0, z, out);
+    expect(surface.flowAt(x, crest[1] - 0.1 * slice.h0, z, out)).toBeGreaterThan(0.9);
     expect(out[2] / speed).toBeCloseTo(0.7, 2);
-    surface.flowAt(x, crest[1] - 3, z, out);
+    // C2 step 5b (ruling 35 item 1): well below the deeper stored depth the library's share is gone, so the sea's own
+    // water is what a body feels there; the held value is still what the library would have said.
+    expect(surface.flowAt(x, crest[1] - 3, z, out)).toBe(0);
     expect(out[2] / speed).toBeCloseTo(0.7, 2);
     // Far behind the slice's frame, and off the lanes: no share at all.
     expect(surface.flowAt(x, 0, z - 40, out)).toBe(0);
@@ -322,8 +333,10 @@ describe('the zone surface (ZoneSurface) and its slices (SliceField)', () => {
   });
 
   it("brings the water in with the surface's own share, without a step, and says nothing before it (step 4)", () => {
-    const { lanes, library, surface, lane, slice, made } = flowZone();
-    made.blendFrom = 1;
+    const { lanes, library, surface, lane, slice, field } = flowZone();
+    // The whole run hands over together, as a wave's lanes do: the share a seat reads is the nodes' own (step 5b), so
+    // a run whose middle lane alone starts late would read its neighbours' water, which is what the nodes draw there.
+    for (const list of field.byLane) for (const s of list) s.blendFrom = 1;
     const crest = new Float64Array(2);
     const out = new Float64Array(6);
     let last = Number.NaN;
@@ -346,6 +359,49 @@ describe('the zone surface (ZoneSurface) and its slices (SliceField)', () => {
     expect(biggest).toBeLessThan(0.02);
   });
 
+  it("gives the flow the share the surface took at the same seat, within 0.02 (step 5b, ruling 35 item 2)", () => {
+    const { lanes, library, surface, lane, slice, field } = flowZone();
+    for (const list of field.byLane) for (const s of list) s.blendFrom = 1;
+    const crest = new Float64Array(2);
+    const out = new Float64Array(6);
+    let worst = 0;
+    for (let t = 0.5; t <= 1 + SLICE_LIFE.blend + 0.5; t += 1 / 60) {
+      surface.update(t, () => 0);
+      library.crestAt(slice, t, crest);
+      const s = lanes.toe[lane] + 5 + crest[0];
+      const x = lanes.baseX[lane] + s * lanes.rayX[lane];
+      const z = lanes.baseZ[lane] + s * lanes.rayZ[lane];
+      const flow = surface.flowAt(x, crest[1] - 0.05, z, out);
+      if (flow > 0) worst = Math.max(worst, Math.abs(flow - surface.shareAt(x, z)));
+    }
+    expect(worst).toBeLessThan(0.02);
+  });
+
+  it("whitens its bore from its own touchdown, ageing on Koepke's ratios, and nothing before it (step 5b)", () => {
+    const { lanes, library, surface, lane, slice, field } = flowZone();
+    for (const list of field.byLane) for (const s of list) { s.throwAt = 0; s.touchdown = 1; s.goFrom = 100; s.goneAt = 101; }
+    const crest = new Float64Array(2);
+    const at = (t: number) => {
+      surface.update(t, () => 0);
+      library.crestAt(slice, t, crest);
+      const s = lanes.toe[lane] + 5 + crest[0] + 0.5;
+      const node = surface.nodeAt(Math.round(lanes.baseX[lane] + s * lanes.rayX[lane]), Math.round(lanes.baseZ[lane] + s * lanes.rayZ[lane]));
+      return { cover: surface.cover[node], air: surface.air[node], aired: surface.aired[node] };
+    };
+    // Before its touchdown the bore carries no library foam at all: the curtain stays clear water (step 5a).
+    expect(at(0.5).aired).toBe(0);
+    // Half a second after it the white is in, fresh, with the aerated water under it.
+    const fresh = at(1.5);
+    expect(fresh.aired).toBeGreaterThan(0.9);
+    expect(fresh.cover).toBeGreaterThan(0.5);
+    expect(fresh.air).toBeGreaterThan(BORE_FOAM.air[0]);
+    // Two seconds on it has aged, and never gets brighter again.
+    const old = at(3.5);
+    expect(old.cover).toBeLessThan(fresh.cover);
+    expect(old.air).toBeLessThan(fresh.air);
+    expect(old.air).toBeGreaterThan(BORE_FOAM.air[0] - 1e-9);
+  });
+
   it('carries its slices through a state round trip', () => {
     const { lanes, field, library } = zone();
     const k = 3;
@@ -364,6 +420,33 @@ describe('the zone surface (ZoneSurface) and its slices (SliceField)', () => {
     expect(restored.id).toBe(7);
     expect(restored.slice.tauH[0]).toBe(field.byLane[k][0].slice.tauH[0]);
     expect(Number.isNaN(restored.seaS)).toBe(true);
+  });
+});
+
+describe("the bore's foam (boreFoam, step 5b)", () => {
+  it("ages on Koepke's ratios, keeps the void fraction inside the consult's band, and covers only the broken stretch", () => {
+    // Koepke 1984 as ratios: 1 fresh, 0.41/0.55 after a second, 0.16/0.55 after ten.
+    expect(boreWhite(0)).toBe(1);
+    expect(boreWhite(1)).toBeCloseTo(0.41 / 0.55, 2);
+    expect(boreWhite(10)).toBeCloseTo(0.16 / 0.55, 2);
+    expect(boreWhite(100)).toBeCloseTo(0.16 / 0.55, 2);
+    for (let a = 0; a < 12; a += 0.1) expect(boreWhite(a + 0.1)).toBeLessThanOrEqual(boreWhite(a) + 1e-12);
+    // The void fraction runs the consult's 0.13 to 0.4 and never leaves it.
+    expect(boreAir(0)).toBeCloseTo(BORE_FOAM.air[1], 6);
+    expect(boreAir(10)).toBeCloseTo(BORE_FOAM.air[0], 6);
+    for (let a = 0; a < 12; a += 0.1) {
+      expect(boreAir(a)).toBeGreaterThanOrEqual(BORE_FOAM.air[0] - 1e-9);
+      expect(boreAir(a)).toBeLessThanOrEqual(BORE_FOAM.air[1] + 1e-9);
+    }
+    // The stretch: nothing ahead of the roller's toe or behind the crest's own flank, whole between them.
+    expect(boreShape(0, 10, 20)).toBe(0);
+    expect(boreShape(10, 10, 20)).toBe(1);
+    expect(boreShape(15, 10, 20)).toBe(1);
+    expect(boreShape(20, 10, 20)).toBe(1);
+    expect(boreShape(20 + BORE_FOAM.ahead, 10, 20)).toBe(0);
+    expect(boreShape(10 - BORE_FOAM.back, 10, 20)).toBe(0);
+    // Either way round the two landmarks are given.
+    expect(boreShape(15, 20, 10)).toBe(1);
   });
 });
 

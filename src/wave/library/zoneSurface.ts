@@ -114,6 +114,12 @@ export class ZoneSurface {
   private readonly laneWH: Float64Array;
   private readonly laneW: Float64Array;
   private readonly laneF: Float64Array;
+  /**
+   * C2 step 5b, per lane × station: Σ w a, the share of the water there that is the library's own (the frame's weight
+   * times the slice's blend share). The nodes' own weight `laneW` is the frame's alone, because the blend with the sea
+   * is already inside the composite's heights, so it is not the share the flow must take (ruling 35 item 2).
+   */
+  private readonly laneB: Float64Array;
   /** C2 step 5b, per lane × station: Σ w × the bore's cover, Σ w × its void fraction, and Σ w where its foam is live. */
   private readonly laneC: Float64Array;
   private readonly laneA: Float64Array;
@@ -131,6 +137,8 @@ export class ZoneSurface {
   readonly weight: Float64Array;
   readonly height: Float64Array;
   readonly hold: Float64Array;
+  /** C2 step 5b, per render node: the share of the water that is the library's own (`laneB`, the flow's share). */
+  readonly libShare: Float64Array;
   /** C2 step 5b, per render node: the bore's foam cover, its void fraction, and the weight those two came with. */
   readonly cover: Float64Array;
   readonly air: Float64Array;
@@ -177,6 +185,7 @@ export class ZoneSurface {
     this.laneWH = new Float64Array(n);
     this.laneW = new Float64Array(n);
     this.laneF = new Float64Array(n);
+    this.laneB = new Float64Array(n);
     this.laneC = new Float64Array(n);
     this.laneA = new Float64Array(n);
     this.laneCW = new Float64Array(n);
@@ -195,6 +204,7 @@ export class ZoneSurface {
     this.weight = new Float64Array(size);
     this.height = new Float64Array(size);
     this.hold = new Float64Array(size);
+    this.libShare = new Float64Array(size);
     this.cover = new Float64Array(size);
     this.air = new Float64Array(size);
     this.aired = new Float64Array(size);
@@ -304,6 +314,26 @@ export class ZoneSurface {
     return (w[o] * (1 - tx) + w[o + 1] * tx) * (1 - tz) + (w[o + grid.nx] * (1 - tx) + w[o + grid.nx + 1] * tx) * tz;
   }
 
+  /**
+   * C2 step 5b: the share of the water at (x, z) that is the library's own, bilinear over the nodes (0 off the zone):
+   * the frame's weight times the slice's blend share, resampled exactly as the node heights are. `weightAt` is the
+   * frame's weight alone, which is how much of the node's height came from the lanes' composite — and that composite
+   * already has the sea blended into it, so it is not the share the flow takes (ruling 35 item 2).
+   */
+  shareAt(x: number, z: number): number {
+    const { grid } = this;
+    const gx = (x - grid.xMin) / grid.spacing;
+    const gz = (z - grid.zMin) / grid.spacing;
+    const i = Math.floor(gx);
+    const j = Math.floor(gz);
+    if (i < 0 || j < 0 || i + 1 >= grid.nx || j + 1 >= grid.nz) return 0;
+    const tx = gx - i;
+    const tz = gz - j;
+    const o = j * grid.nx + i;
+    const w = this.libShare;
+    return (w[o] * (1 - tx) + w[o + 1] * tx) * (1 - tz) + (w[o + grid.nx] * (1 - tx) + w[o + grid.nx + 1] * tx) * tz;
+  }
+
   /** The render node at (x, z) (the grid's own places; −1 off it). */
   nodeAt(x: number, z: number): number {
     const { grid } = this;
@@ -324,6 +354,7 @@ export class ZoneSurface {
         this.laneWH.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneW.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneF.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+        this.laneB.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneC.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneA.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneCW.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
@@ -336,6 +367,7 @@ export class ZoneSurface {
       this.weight[node] = 0;
       this.height[node] = 0;
       this.hold[node] = 0;
+      this.libShare[node] = 0;
       this.cover[node] = 0;
       this.air[node] = 0;
       this.aired[node] = 0;
@@ -380,7 +412,7 @@ export class ZoneSurface {
     }
     this.chainRuns();
     for (const p of this.picked) {
-      const span = this.lane(p.slice, time, p.at, p.bridge);
+      const span = this.lane(p.slice, time, p.at, p.bridge, p.share);
       p.from = span.from;
       p.to = span.to;
       stats.shown += 1;
@@ -681,9 +713,11 @@ export class ZoneSurface {
       faded += across * Math.min(1, laneShare) * (laneFaded / laneShare);
     }
     if (!(share > 1e-9)) return 0;
+    // The flow is the average over whichever side of the pair had water, as before.
     for (let d = 0; d < 6; d += 1) out[d] /= share;
-    // The surface's own share at this point (the nodes'), eased out below the deeper stored depth.
-    return Math.min(1, this.weightAt(x, z) * (faded / share));
+    // The share is the surface's own at this point, read the way the surface's is read (the 1 m nodes), and eased out
+    // below the deeper stored depth.
+    return Math.min(1, this.shareAt(x, z) * (faded / share));
   }
 
   /** `flowAt`'s scratch: the water at the matched place on one curve, (u along the ray, v up, Du/Dt along, Dv/Dt up). */
@@ -811,7 +845,7 @@ export class ZoneSurface {
    * steeper than `LIFT.bridge`), its weight, its foam hold. Returns what its loft needs (the lift's course and its span
    * along the lane), or nothing.
    */
-  private lane(slice: FieldSlice, time: number, at: number, bridgeWeight: number): { from: number; to: number } {
+  private lane(slice: FieldSlice, time: number, at: number, bridgeWeight: number, share: number): { from: number; to: number } {
     const { lanes } = this;
     const k = slice.lane;
     const c = this.composites;
@@ -952,6 +986,7 @@ export class ZoneSurface {
       }
       this.laneWH[o + j] = wh;
       this.laneW[o + j] = sum;
+      this.laneB[o + j] = Math.min(1, this.laneB[o + j] + w * share);
       this.laneF[o + j] = Math.max(this.laneF[o + j], w * holdT);
       if (!(white > 0)) continue;
       const shape = boreShape(x, pileFrom, pileTo);
@@ -1028,6 +1063,7 @@ export class ZoneSurface {
         this.weight[node] = Math.min(1, w);
         this.height[node] = (1 - f) * (live0 ? read(k, s0, this.laneWH) : 0) + f * (live1 ? read(k + 1, s1, this.laneWH) : 0);
         this.hold[node] = Math.min(1, (1 - f) * (live0 ? read(k, s0, this.laneF) : 0) + f * (live1 ? read(k + 1, s1, this.laneF) : 0));
+        this.libShare[node] = Math.min(1, (1 - f) * (live0 ? read(k, s0, this.laneB) : 0) + f * (live1 ? read(k + 1, s1, this.laneB) : 0));
         const aired = (1 - f) * (live0 ? read(k, s0, this.laneCW) : 0) + f * (live1 ? read(k + 1, s1, this.laneCW) : 0);
         if (aired > 0) {
           this.aired[node] = Math.min(1, aired);
