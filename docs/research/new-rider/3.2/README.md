@@ -3935,10 +3935,12 @@ own concurrent probe did. The clean re-run uses `--maxWorkers=3`, which is the l
 **The clean re-run never finished: it was killed, and I am not going to describe it as passing.** It ran about 1 h 45 m
 with nothing else on the machine and then **exited on a SIGTERM (code 143)** when this session's environment was reset
 under it, without printing a summary. Up to that point **the only failures it had reported were the 4 known
-`SurfZoneRunner.test.ts` ones** — PR #204's stale tests, which fail on pristine main and sit in a file outside the
+`SurfZoneRunner.test.ts` ones** — PR #204's stale tests, which failed on pristine main and sit in a file outside the
 merge suite, exactly as 3.2m and 3.2n recorded. `results/suite-32p.txt` is that partial log, and it is a partial log:
 it is not evidence that the rest passed, only that nothing else had failed yet. **It wants re-running on a quiet
-machine before this work is relied on.**
+machine before this work is relied on** — and that re-run should now come back **completely clean**, because PR #204
+landed on main as `58553e21` while this was being written. Those four are fixed, and the standing note that main fails
+them is out of date from that commit on.
 
 **What stands in for it, and why I think the residual risk is small** [M]: `tsc` clean on both projects;
 `predictiveBalance.test.ts` 6 of 6 including the runtime loop on both plant sizes; the shipped design byte-identical on
