@@ -48,8 +48,10 @@ analysed and nothing was running). Three jobs at a time, the latest-breaking fir
 
 **Disk.** Ruling 38's estimate was low: a finished case is about **450 MB**, not 0.4 GB of headroom each — ruling 31's
 ten take 4.7 GB. Five is ~2.3 GB. Free space at the start was 7.0 GB (not 10), and 5.8 GB after the worktree
-checkout; it has since risen to 11 GB. **It is enough, with little to spare.** `node_modules` is symlinked from the
-main checkout rather than installed, to keep it that way.
+checkout; the coordinator then freed three merged worktrees and it rose to 11 GB. It has drifted between 7 and 11 GB
+through the round as the runs and the seatbelts wrote. **It is enough, with little to spare, and it wants watching
+while phase 2 runs** — five phase-2 directories are about 2.3 GB and the free figure was 7.0 GB when the first one
+started. `node_modules` is symlinked from the main checkout rather than installed, to keep it that way.
 
 **They are much longer than ruling 38's estimate, and will not land this round.** Ruling 38 budgeted "about an hour
 of one core each". The scouts took 23 minutes apiece and the pipeline's own estimate for phase 2 is **about 3 hours a
