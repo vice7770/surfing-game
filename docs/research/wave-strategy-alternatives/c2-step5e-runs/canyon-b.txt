@@ -1,0 +1,12 @@
+
+## C. Canyon B, the arm (?canyonWaves=true; 60–120 s, 600 frames, columns -112 -102 -92 -82 -72 -62)
+  every frame and column, node spacing 1 m
+    H 0.72 (0.37–1.59, most 1.72; n 3356) m · run 14.5 (5.3–26.7, most 30.3; n 3356) m · steepest at 0.58 (0.32–0.72, most 0.99; n 3356) of H
+    local 5.4 (2.3–17.7, most 20.7; n 3356)° · upper80 4.2 (1.1–14.1, most 16.5; n 3356)° · chord2 5.3 (2.3–16.8, most 19.2; n 3356)° · turn 5.0 (1.1–16.7, most 20.6; n 3356)°
+    over 30°, arc 0.00 (0.00–0.00, most 0.00; n 3356) m · share of faces whose local reaches 30° 0.0 %
+    profile up the face: 5 % 1.8° · 15 % 3.3° · 30 % 4.5° · 50 % 5.0° · 70 % 5.2° · 85 % 4.4° · 95 % 2.8°
+  every frame and column, node spacing 0.5 m
+    H 0.72 (0.37–1.59, most 1.73; n 3361) m · run 14.2 (5.4–26.8, most 30.8; n 3361) m · steepest at 0.58 (0.31–0.75, most 0.98; n 3361) of H
+    local 5.5 (2.4–18.1, most 21.2; n 3361)° · upper80 4.2 (1.1–14.3, most 17.4; n 3361)° · chord2 5.4 (2.3–17.1, most 19.8; n 3361)° · turn 5.1 (1.1–17.0, most 21.1; n 3361)°
+    over 30°, arc 0.00 (0.00–0.00, most 0.00; n 3361) m · share of faces whose local reaches 30° 0.0 %
+    profile up the face: 5 % 1.8° · 15 % 3.3° · 30 % 4.5° · 50 % 5.0° · 70 % 5.2° · 85 % 4.4° · 95 % 2.9°
