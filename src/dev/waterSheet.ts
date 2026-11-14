@@ -859,6 +859,88 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     };
   };
   /**
+   * The foam's light against the water's own, in one view, under one sun (C2 step 5c, ruling 38's branch 2:
+   * `docs/research/wave-strategy-alternatives/c2-step5c.md`). `waterSheetFoamLight` gives the foam's pixels alone; this
+   * one gives the water beside them in the same frame, which is the comparison that says whether white can read at all.
+   *
+   * Three passes from the view's own camera: as drawn, with the foam colour set magenta, and with the water mesh hidden.
+   * A pixel is water where hiding the mesh changed it; its foam share is how far the magenta pass pulled its green down.
+   * `foam` is a pull of 120 or more (the foam colour dominates the pixel) and `clear` is under 10 (no foam in it at
+   * all) — the band between is in neither, so neither figure is diluted by the other. The foam colour also tints the
+   * underwater plume (`richWaterGlsl.ts`), which is why the strong band, not any pull at all, is the foam's figure.
+   *
+   * The ratio that matters is `foamOverClearP90`: the foam's median over the clear water's 90th percentile. White reads
+   * as white only where it stands above the brightest water around it, and the lip-contrast tool's own target for a
+   * white that reads is 1.5–2×.
+   */
+  const waterSheetFoamAgainstWater = async (name: string | View, look: WaterLook, time: TimeOfDay) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !gl) return undefined;
+    fit();
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height } = hooks.canvas;
+    const count = width * height;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(count * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const drawn = frame();
+    const colour = hooks.water.materialUniforms.waterFoamColor.value as Color;
+    const was = colour.clone();
+    colour.setRGB(1, 0, 1);
+    const magenta = frame();
+    colour.copy(was);
+    hooks.water.mesh.visible = false;
+    const dry = frame();
+    hooks.water.mesh.visible = true;
+    hooks.renderView(camera);
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const pull = (p: number) => drawn[4 * p + 1] - magenta[4 * p + 1];
+    const isWater = (p: number) => {
+      const k = 4 * p;
+      return drawn[k] !== dry[k] || drawn[k + 1] !== dry[k + 1] || drawn[k + 2] !== dry[k + 2];
+    };
+    const stats = (keep: (p: number) => boolean) => {
+      const lumas: number[] = [];
+      const sum = [0, 0, 0];
+      for (let p = 0; p < count; p += 1) {
+        if (!keep(p)) continue;
+        const k = 4 * p;
+        const [r, g, b] = [linear(drawn[k]), linear(drawn[k + 1]), linear(drawn[k + 2])];
+        lumas.push(0.2126 * r + 0.7152 * g + 0.0722 * b);
+        sum[0] += r;
+        sum[1] += g;
+        sum[2] += b;
+      }
+      if (!lumas.length) return { pixels: 0 };
+      lumas.sort((a, b) => a - b);
+      const at = (q: number) => +lumas[Math.floor(q * (lumas.length - 1))].toFixed(4);
+      return {
+        pixels: lumas.length, share: +(lumas.length / count).toFixed(4),
+        p10: at(0.1), p50: at(0.5), p90: at(0.9), p99: at(0.99),
+        rgb: sum.map((c) => +(c / lumas.length).toFixed(4)),
+      };
+    };
+    const foam = stats((p) => pull(p) >= 120);
+    const clear = stats((p) => isWater(p) && pull(p) < 10);
+    const ratio = (a?: number, b?: number) => (a !== undefined && b ? +(a / b).toFixed(3) : null);
+    return {
+      shot: shot.name, look, time,
+      frame: stats(() => true), waterAll: stats(isWater), foam, foamAny: stats((p) => pull(p) >= 40), clear,
+      foamOverClearP90: ratio(foam.p50, clear.p90), foamOverClearP50: ratio(foam.p50, clear.p50),
+    };
+  };
+  /**
    * The spilling lip's contrast for distance (the Canyon lip, round 5; the advisor's targets of 2026-10-20), on screen from
    * one view, as drawn (the page's own sea only, `&compute=cpu`):
    * - `band`: the band under the lip (the pixels the curl's darkening changes: its underside and the veil on the face under
@@ -1179,7 +1261,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     hooks.render(0);
     return done;
   };
-  Object.assign(window, { waterSheetTubeShape, waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetTubeShape, waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetFoamAgainstWater, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
