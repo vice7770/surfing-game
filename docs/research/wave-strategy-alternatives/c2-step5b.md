@@ -9,7 +9,10 @@ The brief is ruling 37's "next"; the carried items are ruling 35's four. The con
 sea's own **to the bit**, not within 30 %; the hand-back no longer has to find the sea's crest again after the drift,
 and the jump across it is small; and the bore now carries **its own foam** — opaque white behind the open curl ageing
 on Koepke's ratios, milky turquoise on the flanks and in the roller — written as three numbers on the render nodes the
-sea already draws, so no white layer is built anywhere and the page's shaders are untouched.
+sea already draws, so no white layer is built anywhere and the page's shaders are untouched. **The foam is measured
+and not seen:** it changes the foam channel by +0.45 of cover on 200 render nodes a wave, and it changes the stills
+almost not at all, because the water sheet's cameras sit on the tube and the pool's water is too bright for white to
+read on it (ruling 25e). The owner has not been shown the thing they asked for, and that is this step's main miss.
 
 ---
 
@@ -165,6 +168,26 @@ brackets the slope first and then runs the A0 polyline *within the chosen bed*, 
 between b1's four rows and b2's three; now it falls on a two-point polyline that starts at 0.25 and clamps below it.
 **A sparse new bed is worse than no bed**, and the cure is the A0 0.12 and 0.15 rows on b15 and b25 [M, R].
 
+## 6. The stills
+
+Same shots and the same command as step 5a, on the 2 m pool at Big with the owner's switches and `&wave=library`,
+**three legs**:
+
+- **before** — main's `src` checked out in this worktree (so nine cases, no bore foam);
+- **after** — this branch;
+- **nofoam** — this branch with the bore's foam switched off in the code, so the foam's own contribution can be told
+  from the ten new cases'.
+
+Plus `after-ride-*` and `after-close-*`, which are new shots (the water sheet's pool view has no `bore` shot; `ride`
+looks along the broken wave from the toe, which is the nearest thing to looking back at the bore).
+
+| Pair | What changed |
+|---|---|
+| `before-*` against `after-*` | the whole step: 13.5 % of pixels in `front-midday` and 26.1 % in `channel-midday` differ by more than 2 of 255. **Almost all of that is the ten new cases**, which change the slices' shapes, not the foam |
+| `nofoam-*` against `after-*` | the foam alone: **0 pixels** in `front-midday`, `channel-midday`, `channel-sunset`, `ride-midday`, `ride-sunset` and `close-midday`; 543 (0.06 %) in `behind-midday`; 5 743 (0.18 %) in the overview sheet |
+
+JPEGs in `c2-step5b-stills/`.
+
 ## 4. Ruling 35's four carried items
 
 ### 2.4 Does it reach the page, and does it read?
@@ -179,11 +202,21 @@ the void fraction runs **0.129–0.349** — inside the consult's 0.13–0.4 ban
 more), and the library writes a mean of **0.59–0.63** over it. The bore's white is the library's own, not the sea's
 showing through [M, `c2-step5b-runs/foam.txt`].
 
-**The water sheet's standard curl shots do not look at it.** With the foam written and with it switched off in the
-code, and everything else the same build, `front-midday`, `channel-midday` and `channel-sunset` come out **identical to
-the pixel** (0 of 921 600 differ by more than 2 of 255), and `behind-midday` differs in 543 pixels, 0.06 % of the
-frame, in one patch at its right edge [M]. Those shots frame the tube and the water right around it; the stretch the
-library's foam owns is down the line, where the wave broke earlier. The shot that does look at it is `*-ride-*`.
+**But the water sheet's shots barely show it, and I could not make one that does.** With the foam written and with it
+switched off in the code, everything else the same build, the close-ups come out **identical to the pixel**:
+`front-midday`, `channel-midday`, `channel-sunset`, `ride-midday`, `ride-sunset` and `close-midday` all read 0 of
+921 600 pixels differing by more than 2 of 255; `behind-midday` differs in 543 pixels, 0.06 % of the frame. Only the
+overview sheet shows it, as a thin band: **5 743 pixels, 0.18 %**, in the same y band of all six of its panels [M].
+
+Those cameras sit on the tube, and the stretch the library's foam owns is down the line, where the wave broke earlier
+and where a slice is still inside its 5.4 s of life after touchdown. **So the honest position is that the foam is
+built and measured and the owner has not been shown it.** The `*-ride-*` stills are the nearest thing — they look
+along the broken wave, and the pale misty band with the lacy pattern on its face is where the bore is — but the
+foam-off leg proves that band is the sea's own, not the library's.
+
+A third thing is in the way of seeing it, and it is ruling 25e's: **the pool's water is so bright that nothing drawn
+on it reads as white**. Step 5a said the same of the lip. Until the water's light is fixed, "does the bore look like
+broken water" cannot be answered from a still of this spot [R].
 
 ### 4.1 Item 1: the flow below the deeper stored depth
 
