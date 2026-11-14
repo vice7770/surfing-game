@@ -221,21 +221,43 @@ const shownOn = (k: number, s: number) => {
   const v = seaOn(k, s);
   return (1 - weight) * (v === v ? v : 0) + height;
 };
-/** The top of a line within ±`reach` m of `want`, read every 0.05 m; a parabola through the three around it. */
-function topOf(at: (s: number) => number, want: number, reach: number): { s: number; y: number } | undefined {
+/**
+ * A bore's place and height along a lane, within ±`reach` m of `want`.
+ *
+ * The place is **the bore's front**, not its top: a bore's top is nearly flat, so the highest station hops metres from
+ * step to step and measures nothing (round 1 did this and read a median place change of 0.3 m where the arithmetic
+ * says 0.08). The front is the shoreward place where the surface falls through the half-height between the bore's top
+ * and the water ahead of it — a steep, single crossing, read to centimetres. The height is the bore's own: its top
+ * over the water ahead.
+ */
+function boreOf(at: (s: number) => number, want: number, reach: number): { s: number; y: number; top: number } | undefined {
   const ds = 0.05;
-  let best = Number.NaN;
-  let bestY = -Infinity;
+  let top = Number.NaN;
+  let topY = -Infinity;
   for (let s = want - reach; s <= want + reach + 1e-9; s += ds) {
     const y = at(s);
-    if (y === y && y > bestY) { bestY = y; best = s; }
+    if (y === y && y > topY) { topY = y; top = s; }
   }
-  if (!(best === best)) return undefined;
-  const a = at(best - ds);
-  const b = at(best + ds);
-  const den = a - 2 * bestY + b;
-  const shift = a === a && b === b && den < 0 ? Math.min(0.5, Math.max(-0.5, (0.5 * (a - b)) / den)) : 0;
-  return { s: best + shift * ds, y: bestY - 0.125 * (a - b) * shift };
+  if (!(top === top)) return undefined;
+  let low = Infinity;
+  for (let s = top; s <= top + 15; s += ds) {
+    const y = at(s);
+    if (y === y && y < low) low = y;
+  }
+  if (!(low < topY)) return undefined;
+  const half = 0.5 * (topY + low);
+  // The first shoreward crossing of the half-height, interpolated between its two stations.
+  let prev = topY;
+  for (let s = top + ds; s <= top + 15; s += ds) {
+    const y = at(s);
+    if (!(y === y)) break;
+    if (y <= half && prev > half) {
+      const u = (prev - half) / (prev - y);
+      return { s: s - ds + u * ds, y: topY - low, top };
+    }
+    prev = y;
+  }
+  return undefined;
 }
 
 // ---- F. The hand-over's height bar, re-read.
@@ -280,8 +302,10 @@ const allBacks: Back[] = [];
 const A = { stepPlace: [] as number[], stepHeight: [] as number[], winPlace: [] as number[], winHeight: [] as number[], ownPlace: [] as number[], ownHeight: [] as number[], seaWinPlace: [] as number[], seaWinHeight: [] as number[], gap: [] as number[], heightGap: [] as number[] };
 
 // ---- C, D, E.
-const C = { gap: [] as number[], nodes: [] as number[], point: [] as number[] };
-const D: Record<string, { gap: number[]; share: number[] }> = {};
+const C = { gap: [] as number[], nodes: [] as number[], point: [] as number[], inside: [] as number[], edge: [] as number[] };
+/** C and D read one seat a lane each step (every 7th lane). */
+const seats = new Set<number>();
+const D: Record<string, { gap: number[]; share: number[]; felt: number[] }> = {};
 const E = { rate: [] as number[], jump: [] as number[], cases: [] as number[] };
 const flowOut = new Float64Array(6);
 const sample = createWaterSample();
@@ -348,21 +372,22 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
         b.want = b.slice.s + caseCurve[2 * WAVE_LANDMARK.crest];
         b.seaWant = b.want;
       }
-      const top = topOf((s) => shownOn(k, s), b.want, 4);
-      const seaTop = topOf((s) => seaOn(k, s), b.seaWant, 6);
+      const top = boreOf((s) => shownOn(k, s), b.want, 4);
+      const seaTop = boreOf((s) => seaOn(k, s), b.seaWant, 4);
       if (!top || !seaTop) continue;
-      b.want = top.s;
-      b.seaWant = seaTop.s;
+      b.want = top.top;
+      b.seaWant = seaTop.top;
       b.place.push(top.s);
       b.height.push(top.y);
       b.seaPlace.push(seaTop.s);
       b.seaHeight.push(seaTop.y);
       b.times.push(t);
-      // The gap the blend-out pays back, read once as it starts.
+      // The gap the blend-out pays back, read once as it starts: the code's own two places, the case's crest and the
+      // sea's crest as the slice has been following it (`FieldSlice.seaS`).
       if (!(b.gap === b.gap) && t >= b.slice.goFrom) {
         library.surfaceAt(b.slice.slice, t, caseCurve);
         const caseCrest = b.slice.s + caseCurve[2 * WAVE_LANDMARK.crest];
-        b.gap = caseCrest - seaTop.s;
+        b.gap = b.slice.seaS - caseCrest;
         A.gap.push(Math.abs(b.gap));
         A.heightGap.push(Math.abs(top.y - seaTop.y));
       }
@@ -373,6 +398,8 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
     for (const shown of zone.surface.shown()) {
       const s = shown.slice;
       if (!(shown.share > 0.02) || s.lane % 7 !== 0) continue;
+      if (seats.has(s.lane)) continue;
+      seats.add(s.lane);
       const at = shown.curve[2 * WAVE_LANDMARK.crest] - 2;
       const x = lanes.baseX[s.lane] + at * lanes.rayX[s.lane];
       const z = lanes.baseZ[s.lane] + at * lanes.rayZ[s.lane];
@@ -385,24 +412,28 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
           C.nodes.push(nodes);
           C.point.push(point);
           C.gap.push(Math.abs(nodes - point));
+          // The field's own σ ends, where the end taper runs out, against its middle.
+          (s.end >= 0.99 ? C.inside : C.edge).push(Math.abs(nodes - point));
         }
       }
       if (part('D')) {
         const rx = lanes.rayX[s.lane];
         const rz = lanes.rayZ[s.lane];
         for (const d of DEPTHS) {
-          const row = (D[d.toFixed(2)] ??= { gap: [], share: [] });
+          const row = (D[d.toFixed(2)] ??= { gap: [], share: [], felt: [] });
           const share = zone.surface.flowAt(x, surface - d, z, flowOut);
-          if (!(share > 0.99)) continue;
+          if (!(share > 0)) { row.share.push(0); continue; }
           sea.sampleAt(x, sea.surfaceAt(x, z) - d, z, seaSample);
           const lib = flowOut[0] * rx + flowOut[2] * rz;
           const own = seaSample.flowX * rx + seaSample.flowZ * rz;
           row.gap.push(Math.abs(lib - own));
           row.share.push(share);
+          // What a body there feels: the sea's own flow with the library's share of the library's over it.
+          row.felt.push(Math.abs(own + share * (lib - own) - own));
         }
       }
-      break;
     }
+    seats.clear();
   }
   // E: the clock's step at a slice's throw.
   if (part('E')) {
@@ -468,6 +499,8 @@ if (part('A')) {
 if (part('C')) {
   console.log('\n## C. Ruling 35 item 2: the surface\'s share and the flow\'s at one seat');
   console.log(`  |the nodes' share − the point's| (bar 0.02): ${line(C.gap, 4)}; over 0.02 ${over(C.gap, 0.02)}`);
+  console.log(`  in the field's middle (its lane's end weight 1): ${line(C.inside, 4)}; over 0.02 ${over(C.inside, 0.02)}`);
+  console.log(`  at its σ ends (the end taper): ${line(C.edge, 4)}; over 0.02 ${over(C.edge, 0.02)}`);
   console.log(`  the nodes' share ${line(C.nodes, 3)}`);
   console.log(`  the point's share ${line(C.point, 3)}`);
 }
@@ -477,7 +510,7 @@ if (part('D')) {
   for (const d of DEPTHS) {
     const row = D[d.toFixed(2)];
     if (!row) continue;
-    console.log(`  ${d.toFixed(2)} m under the surface: |library − sea| along the ray ${line(row.gap, 3)} m/s; the share ${line(row.share, 3)}`);
+    console.log(`  ${d.toFixed(2)} m under the surface: the share ${line(row.share, 3)}; |library − sea| along the ray ${line(row.gap, 3)} m/s; what a body there feels over the sea's ${line(row.felt, 3)} m/s`);
   }
 }
 
@@ -487,4 +520,5 @@ if (part('E')) {
   console.log(`  |the step in the library's own du/dt across the throw|, m/s²: ${line(E.jump, 3)}`);
 }
 
+console.log(`\nthe sea's crest lost on a step, over the whole run: ${zone.surface.stats.seaMissed}`);
 console.log(`\nran ${f((Date.now() - t0) / 1000, 0)} s wall; slices made ${zone.field.stats.made} (slope clamped ${zone.field.stats.slopeOut}, A0 clamped ${zone.field.stats.a0Out}, some τ clamped ${zone.field.stats.tauOut}, at the toe ${zone.field.stats.toeHandovers}); tracker ${JSON.stringify(zone.field.tracker.stats)}`);

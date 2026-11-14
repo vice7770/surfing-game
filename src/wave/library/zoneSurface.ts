@@ -58,6 +58,22 @@ const SEA_CREST_PACE = 6;
  */
 export const FLOW = { reach: 4, cap: 5 * 9.81 } as const;
 
+/**
+ * C2 step 5b (ruling 35 item 1): below the deeper stored depth the cases hold no velocity at all, and step 4 held the
+ * deepest stored value on down. Measured at one seat on the pool, that held value stood 1.26 m/s from the sea's own
+ * flow at 0.8 m and 1.18 m/s at 1.5 m (c2-step5b.md §D), so a body under the wave felt water the library never ran.
+ * The library's share of the flow now eases to 0 from the deeper stored depth over `fade` times that depth, and the
+ * sea's own water takes over under it. `fade` is provisional: 2 puts the whole of a rider's board and the first metre
+ * under it on the library's water, and a duck-diving body back on the sea's.
+ */
+export const DEEP = { fade: 2 } as const;
+
+/** How much of the library's flow survives `depth` m under the surface, given its deeper stored depth (`DEEP`). */
+export function deepFade(depth: number, stored: number): number {
+  if (!(stored > 0) || depth <= stored) return 1;
+  return 1 - smoothstep((depth - stored) / (DEEP.fade * stored));
+}
+
 /** What `ZoneSurface.flowAt` writes: the library's own flow (x, y, z) and its material acceleration (x, y, z), m/s and m/s². */
 export const FLOW_OUT = 6;
 
@@ -465,25 +481,27 @@ export class ZoneSurface {
     const curve = this.caseCurve;
     const out = this.composites;
     const caseCrest = slice.s + curve[2 * WAVE_LANDMARK.crest];
+    // C2 step 5b: the sea's crest is followed every step of a slice's life, not only while it blends. Step 3 dropped
+    // the track while the slice was whole, so the hand-back had to find the sea's crest again from the case's own
+    // place, metres away after the whole phase's drift — and where it found a different crest, or none, the bore's
+    // place moved by that much as the blend-out took hold. Followed all along, the hand-back starts on the crest the
+    // slice has been following, and a crest lost for a step is carried on at a crest's pace instead of being re-found.
+    const want = slice.seaS === slice.seaS ? slice.seaS + (time - slice.seaT) * SEA_CREST_PACE : caseCrest;
+    const found = this.seaCrest(k, want, seaAt);
+    if (!(found === found)) this.stats.seaMissed += 1;
+    const sc = found === found ? found : want;
+    slice.seaS = sc;
+    slice.seaT = time;
     if (a >= 1) {
       for (let i = 0; i < WAVE_POINTS; i += 1) {
         out[at + 2 * i] = slice.s + curve[2 * i];
         out[at + 2 * i + 1] = slice.mean + curve[2 * i + 1];
       }
-      slice.seaS = Number.NaN;
     } else {
-      // The sea's crest along the lane: the top nearest where it was (or the case's crest), within reach.
       const bx = lanes.baseX[k];
       const bz = lanes.baseZ[k];
       const rx = lanes.rayX[k];
       const rz = lanes.rayZ[k];
-      // Where it was, carried on at a crest's pace (about 6 m/s here); the case's crest the first time.
-      const want = slice.seaS === slice.seaS ? slice.seaS + (time - slice.seaT) * SEA_CREST_PACE : caseCrest;
-      const seaCrest = this.seaCrest(k, want, seaAt);
-      const sc = seaCrest === seaCrest ? seaCrest : caseCrest;
-      if (!(seaCrest === seaCrest)) this.stats.seaMissed += 1;
-      slice.seaS = sc;
-      slice.seaT = time;
       const X = (1 - a) * sc + a * caseCrest;
       const shiftCase = X - caseCrest;
       const shiftSea = X - sc;
@@ -598,10 +616,18 @@ export class ZoneSurface {
    * axes into `out`, m/s and m/s². Returns the share of the water there that is the library's, 0 to 1 (0: none, and
    * `out` untouched).
    *
-   * The share is the one the surface took: each slice's frame weight along its lane (`EDGE`, its lane's end weight)
-   * times its blend share, summed over the slices on a lane and capped at 1 as the lane's heights are, then across the
-   * lane pair by the same weights the nodes use. So a board crossing the hand-over feels the sea's flow give way to the
-   * library's exactly as the surface gives way (`PhysicalSurfWater` blends with the sea).
+   * **The share is the surface's own, read where the surface's is read** (C2 step 5b, ruling 35 item 2): the lanes'
+   * weight resampled on the 1 m render nodes (`weightAt`), which is the share the node heights took and so the share a
+   * board's surface took. Step 4 summed the slices' frame weights at the point instead, and the two differ wherever the
+   * weight has structure finer than a node — most of all at the field's own σ ends, where the end taper runs out: a
+   * point on the last lane reads 0 at the point and a tenth from the nodes. One share now, by construction.
+   *
+   * Below the deeper stored depth the share also eases to 0 over `DEEP.fade` times that depth (step 5b, ruling 35
+   * item 1): there is no velocity data under it, and holding the deepest stored value stood 1.2–1.3 m/s from the sea's
+   * own flow at 0.8–1.5 m. A body under the wave now feels the sea's water, as it did before step 4.
+   *
+   * The slices' own frame weights still *average* the flow among the slices on a lane and across the lane pair, as
+   * before, so the flow itself is unchanged where one slice owns the water.
    *
    * On a lane, the point is matched to the slice's own curve: **the nearest place on the curve to the point itself**,
    * which is the surface the body is on, overturned or not (the swept contact's own rule for a body's surface). Its
@@ -614,6 +640,7 @@ export class ZoneSurface {
     const found = this.locateLanes(x, z);
     if (!found) return 0;
     let share = 0;
+    let faded = 0;
     for (let d = 0; d < 6; d += 1) out[d] = 0;
     for (let side = 0; side < 2; side += 1) {
       const k = found.lane + side;
@@ -625,6 +652,7 @@ export class ZoneSurface {
       const lane = this.laneFlow;
       lane.fill(0);
       let laneShare = 0;
+      let laneFaded = 0;
       for (let p = this.laneFirst[k]; p >= 0; p = this.laneNext[p]) {
         const picked = this.picked[p];
         if (picked.flow === -1 || !(picked.share > 0)) continue;
@@ -636,6 +664,7 @@ export class ZoneSurface {
         if (!(w > 0)) continue;
         if (picked.flow === -2) this.fillFlow(picked);
         if (!this.onCurve(picked, s, y)) continue;
+        laneFaded += w * deepFade(this.curveDepth, picked.depth1);
         laneShare += w;
         lane[0] += w * this.curveFlow[0] * rx;
         lane[1] += w * this.curveFlow[1];
@@ -649,14 +678,18 @@ export class ZoneSurface {
       const keep = Math.min(1, laneShare) / laneShare;
       for (let d = 0; d < 6; d += 1) out[d] += across * keep * lane[d];
       share += across * Math.min(1, laneShare);
+      faded += across * Math.min(1, laneShare) * (laneFaded / laneShare);
     }
     if (!(share > 1e-9)) return 0;
     for (let d = 0; d < 6; d += 1) out[d] /= share;
-    return Math.min(1, share);
+    // The surface's own share at this point (the nodes'), eased out below the deeper stored depth.
+    return Math.min(1, this.weightAt(x, z) * (faded / share));
   }
 
   /** `flowAt`'s scratch: the water at the matched place on one curve, (u along the ray, v up, Du/Dt along, Dv/Dt up). */
   private readonly curveFlow = new Float64Array(4);
+  /** `flowAt`'s scratch: how deep under the matched place on the curve the point stood, m (`onCurve`). */
+  private curveDepth = 0;
   /** `flowAt`'s scratch: one lane's weighted sum (flow and acceleration, world axes). */
   private readonly laneFlow = new Float64Array(6);
 
@@ -702,6 +735,7 @@ export class ZoneSurface {
     const px = ax + bestU * ex;
     const py = ay + bestU * ey;
     const depth = Math.max(0, (px - s) * nxv + (py - y) * nyv);
+    this.curveDepth = depth;
     const nd = this.depthCount;
     const zs = nd > 1 && picked.depth1 > picked.depth0 ? Math.min(1, Math.max(0, (depth - picked.depth0) / (picked.depth1 - picked.depth0))) : 0;
     const flows = this.flows;
