@@ -1,0 +1,33 @@
+# C2 step 5d, the suite. Started 12:35 on 2026-11-14, on a machine carrying five Basilisk cases on three
+# cores (load average 20-24 throughout). Command:
+#   npx vitest run --exclude "src/wave/SurfZoneRunner.test.ts" --testTimeout=300000 --hookTimeout=300000
+#
+# TWO THINGS TO KNOW BEFORE READING IT.
+# 1. The exclusion DID NOT TAKE. `npx vitest list --exclude "src/wave/SurfZoneRunner.test.ts"` still lists six of
+#    that file's tests, so the run includes the file that is outside the merge suite and that main itself fails
+#    until PR #204 lands. A CLI --exclude of an exact relative path does not drop it; the config's own exclude
+#    (docs/**) IS still honoured, which the same `vitest list` confirms (0 docs tests collected, 3434 in all).
+# 2. Raising --testTimeout and --hookTimeout to 300 s means a slow test now runs to completion rather than
+#    failing at 60 s, so this run is far longer than step 5c's 29 minutes. It had not finished when the round
+#    handed back; it is detached and still writing to
+#    .../scratchpad/s5d/suite.txt
+#
+# The failing files at hand-back, all seven of them in the set this machine's load produces (step 5c's six, plus
+# BoussinesqSolver and the inner-sheet sampling test), with durations that can only be hangs:
+
+ ❯ src/wave/surfZoneState.test.ts (7 tests | 2 skipped) 530368ms
+ ❯ src/dev/stanceTargets.test.ts (1 test | 1 failed) 1979472ms
+     × meets every target of medium or high confidence, on all four surfers, but the known misses: the drawn pose's and the physics' (phase 5) 1979469ms
+ ❯ src/wave/BoussinesqSolver.test.ts (34 tests | 1 failed) 2095440ms
+     × breaks an oblique shoaling wave at 20° where its height reaches 0.6–1.0 of the depth 905735ms
+ ❯ src/wave/uniformSnapshot.test.ts (2 tests | 2 failed) 2181725ms
+     × match main's bytes at the Canyon (with its curl) 1984926ms
+     × match main's bytes at the Beach 196779ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (6 tests | 1 failed) 90070ms
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 53279ms
+ ❯ src/wave/barrel/sharedUpperRoot.test.ts (4 tests | 1 failed) 111319ms
+     × keeps asset frames and adjacent parameter blends finite, ordered and free of new proper crossings 37588ms
+ ❯ src/wave/SeaStateBoundary.test.ts (2 tests | 1 failed) 72137ms
+     × generates the linear sea state inside a flat channel 72096ms
+
+# None of these files imports src/dev/waterSheet.ts, which is the only TypeScript this branch changes.
