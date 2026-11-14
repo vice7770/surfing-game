@@ -54,9 +54,10 @@ while phase 2 runs** — five phase-2 directories are about 2.3 GB and the free 
 started. `node_modules` is symlinked from the main checkout rather than installed, to keep it that way.
 
 **They are much longer than ruling 38's estimate, and will not land this round.** Ruling 38 budgeted "about an hour
-of one core each". The scouts took 23 minutes apiece and the pipeline's own estimate for phase 2 is **about 3 hours a
-case** on a quiet machine (it read 8 h while the browser was also running). With three at a time that is roughly
-**7 hours for the five**, which matches ruling 31's ten taking about 8 hours. The supervisor is `nohup`/`caffeinate`d
+of one core each". The scouts took **23 minutes** apiece, and the pipeline's own estimate for phase 2 moved between
+**3 and 4.5 hours a case** depending on what else was on the machine (it read 8 h with the browser running, 3 h in
+the quietest moment, 4.5 h alongside the seatbelts). With three at a time that is roughly **7 to 10 hours for the
+five**, in the same country as ruling 31's ten taking about 8 hours. The supervisor is `nohup`/`caffeinate`d
 and resumes after a stop or a reboot, so they carry on past this round: `bash …/scratchpad/c2runs2/c2c.sh status`.
 
 The scouts have placed all three of the first wave, and one of them is worth flagging now: **`pool_c2_b3s_a0` saw no
