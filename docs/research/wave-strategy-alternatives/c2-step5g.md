@@ -486,6 +486,10 @@ in the main checkout still has it as a local modification and can be dropped onc
 
 ## 9. Files, and how to run them again
 
+- **The sourced numbers are in `docs/research/whitewater-sources.md`**, with the rest of the whitewater's: the two
+  regions' shares and angles, the speed law and its tail, the size spectrum and its integral to optical area, the
+  delay from impact to the first droplets, and one row that is a gap rather than a value — the air field nobody has
+  measured. Nothing in the code parses that table, so `report:whitewater` is unaffected.
 - The switch: `?lipVeil=on`. `LIP_VEIL` and `VEIL_AIR` in `src/wave/SprayCloud.ts` carry the sources and the
   provisional marks in their own comments; `lipVeilSwitch()` in `src/game/PhysicalMode.ts`;
   `SurfZoneConfig.lipVeil` in `src/wave/SurfZoneSimulation.ts`; six tests in `src/wave/SprayCloud.test.ts`.
