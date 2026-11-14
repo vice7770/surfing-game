@@ -1,0 +1,48 @@
+
+=== /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/g5-fon/probe-at72s.json
+address ?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&lipVeil=on&compute=gpu&receiver=http://localhost:5338
+held at 72 s, compute gpu
+spray: 2115 live — 562 spray, 1486 mist, 52 foam ball, 0 tube spray, 15 tube mist
+sea lip landings in the step: 0
+library slices: 68 drawn, 11 landed (phase 2)
+particle height over datum, m: min -0.11, median 0.98, 90 % 1.47, max 3.61
+distance to the nearest landed library crest, m: median 9.4, 10 % 1.9, 90 % 30.6
+
+| shot | eye | in front | inside | nearest, m | covered px (upper bound) | % of frame |
+| --- | --- | --- | --- | --- | --- | --- |
+| `lineup` | (93.6876, 1.2309, -222.5) | 170 | **0** | — | 0 | 0.00 % |
+| `curl-channel` | (88.7986, 0.8367, -196.8707) | 172 | **122** | 11.8 | 3553 | 0.39 % |  <!-- 112 spray, 10 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-close` | (96.2403, 1.0367, -195.252) | 172 | **122** | 4.2 | 12672 | 1.38 % |  <!-- 112 spray, 10 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-front` | (96.86, 0.8367, -187.5052) | 122 | **122** | 8.1 | 8749 | 0.95 % |  <!-- 112 spray, 10 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-behind` | (106.6028, 4.3367, -206.3487) | 2115 | **2112** | 9.4 | 73129 | 7.93 % |  <!-- 560 spray, 1485 mist, 52 foam ball, 0 tube spray, 15 tube mist -->
+| `curl-inside` | (103.5892, -0.0987, -193.5029) | 1960 | **14** | 1.8 | 8686 | 0.94 % |  <!-- 14 spray, 0 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-ride` | (95.04, 1.0807, -195.2906) | 172 | **122** | 5.5 | 9572 | 1.04 % |  <!-- 112 spray, 10 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `bore-face` | (-20.5777, 3.0775, -94.6776) | 2035 | **1979** | 10.2 | 32872 | 3.57 % |  <!-- 456 spray, 1456 mist, 52 foam ball, 0 tube spray, 15 tube mist -->
+| `bore-line` | (-7.8829, 2.1775, -93.8394) | 1845 | **11** | 6.8 | 1758 | 0.19 % |  <!-- 10 spray, 1 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `bore-above` | (-9.8155, 8.5775, -109.65) | 110 | **11** | 7.4 | 1403 | 0.15 % |  <!-- 10 spray, 1 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `horizon` | (93.6876, 14, -197.5) | 5 | **0** | — | 0 | 0.00 % |
+| `below` | (93.6876, -1.5691, -222.5) | 0 | **0** | — | 0 | 0.00 % |
+
+=== /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/g5-foff/probe-at72s.json
+address ?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&compute=gpu&receiver=http://localhost:5339
+held at 72 s, compute gpu
+spray: 1390 live — 1134 spray, 185 mist, 52 foam ball, 0 tube spray, 19 tube mist
+sea lip landings in the step: 0
+library slices: 68 drawn, 11 landed (phase 2)
+particle height over datum, m: min 0.09, median 0.97, 90 % 1.48, max 2.27
+distance to the nearest landed library crest, m: median 19.8, 10 % 3.3, 90 % 168.5
+
+| shot | eye | in front | inside | nearest, m | covered px (upper bound) | % of frame |
+| --- | --- | --- | --- | --- | --- | --- |
+| `lineup` | (93.6876, 1.2309, -222.5) | 332 | **0** | — | 0 | 0.00 % |
+| `curl-channel` | (88.7986, 0.8367, -196.8707) | 338 | **174** | 12.2 | 7089 | 0.77 % |  <!-- 158 spray, 16 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-close` | (96.2403, 1.0367, -195.252) | 338 | **174** | 4.5 | 28717 | 3.12 % |  <!-- 158 spray, 16 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-front` | (96.86, 0.8367, -187.5052) | 174 | **174** | 8.7 | 16383 | 1.78 % |  <!-- 158 spray, 16 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-behind` | (106.6028, 4.3367, -206.3487) | 1390 | **1385** | 9.3 | 18198 | 1.97 % |  <!-- 1129 spray, 185 mist, 52 foam ball, 0 tube spray, 19 tube mist -->
+| `curl-inside` | (103.5892, -0.0987, -193.5029) | 1061 | **14** | 1.8 | 38314 | 4.16 % |  <!-- 12 spray, 2 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `curl-ride` | (95.04, 1.0807, -195.2906) | 338 | **174** | 5.8 | 20813 | 2.26 % |  <!-- 158 spray, 16 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `bore-face` | (-20.5777, 3.0775, -94.6776) | 1124 | **842** | 9.9 | 11772 | 1.28 % |  <!-- 677 spray, 94 mist, 52 foam ball, 0 tube spray, 19 tube mist -->
+| `bore-line` | (-7.8829, 2.1775, -93.8394) | 776 | **18** | 6.0 | 2213 | 0.24 % |  <!-- 17 spray, 1 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `bore-above` | (-9.8155, 8.5775, -109.65) | 435 | **18** | 7.8 | 1749 | 0.19 % |  <!-- 17 spray, 1 mist, 0 foam ball, 0 tube spray, 0 tube mist -->
+| `horizon` | (93.6876, 14, -197.5) | 10 | **0** | — | 0 | 0.00 % |
+| `below` | (93.6876, -1.5691, -222.5) | 0 | **0** | — | 0 | 0.00 % |

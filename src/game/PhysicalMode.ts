@@ -551,6 +551,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
     ...boardSpraySwitch(),
+    // `?lipVeil=on`: a plunging lip throws Erinin's veil and the breaker's air carries it (C2 step 5g), opt-in, to look at.
+    ...lipVeilSwitch(),
     // `?spraySheet=off`: the boards' spray leaving the hull as drops, without the curtain, as before spray-sheet.
     ...spraySheetSwitch(),
     // `?snapFan=old`: the boards' spray as before snap-fan (a steep jet's exit; other players' spin is the page's), for A/Bs.
@@ -1054,6 +1056,16 @@ export function boardSpraySwitch(search?: string): { boardSpray?: 'off' | 'old' 
   const value = devParam('boardSpray', search)?.trim().toLowerCase();
   // `?boardSpray=old` (spray-rework): #171's spray, its drops the worker's round sprites and its curtain clear glass.
   return value === 'off' ? { boardSpray: 'off' } : value === 'old' ? { boardSpray: 'old' } : {};
+}
+
+/**
+ * The `?lipVeil=on` dev switch (`SurfZoneConfig.lipVeil`, C2 step 5g 2026-11-14, opt-in): a plunging lip throws the
+ * veil the owner's Abu Dhabi reference shows — Erinin 2023's two post-impact droplet regions, their measured speed
+ * law and three size classes, carried up by the air the breaker drives (`SprayCloud`). Visual only; off, every
+ * landing throws the splash-up's drops exactly as it did and no air blows.
+ */
+export function lipVeilSwitch(search?: string): { lipVeil?: 'on' } {
+  return devParam('lipVeil', search)?.trim().toLowerCase() === 'on' ? { lipVeil: 'on' } : {};
 }
 
 /**

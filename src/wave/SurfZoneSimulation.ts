@@ -287,6 +287,12 @@ export interface SurfZoneConfig {
    */
   boardSpray?: 'off' | 'old';
   /**
+   * 'on' (C2 step 5g, `?lipVeil=on`, dev, opt-in): a plunging lip throws the veil the owner's Abu Dhabi reference
+   * shows — Erinin 2023's two post-impact droplet regions in three size classes, carried up by the air the breaker
+   * drives (`SprayCloud`, `LIP_VEIL` and `VEIL_AIR`). Visual only, and off by default, so the game is as it was.
+   */
+  lipVeil?: 'on';
+  /**
    * 'old': the boards' spray as before snap-fan (2026-11-05): a jet steeper than 45° off its path leaves where its run
    * through a negative tan(2α) put it, not at the high rail of its own station (`HullSprayState.exits`), and other players'
    * hulls throw at their board's velocity alone, not with their spin (`RemoteSpray`, on the page). Visual only. The
@@ -1673,10 +1679,15 @@ export class SurfZoneSimulation {
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
-      // A swept barrel's pour lands under the solver's hump, where the drawn lip comes down: its spray rises from there (PR 5).
-      this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0, ...(flight?.swept ? { y: flight.y } : {}) });
       // Its impact's energy drives air down in proportion to how far it fell (G9).
       const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
+      // A swept barrel's pour lands under the solver's hump, where the drawn lip comes down: its spray rises from there (PR 5).
+      this.lipImpacts.push({
+        x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0,
+        // C2 step 5g: the veil's ruler is the wave the parcel fell from, with its fall as the fallback the plunge hold uses.
+        height: flight && flight.waveHeight > 0 ? flight.waveHeight : drop,
+        ...(flight?.swept ? { y: flight.y } : {}),
+      });
       this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
       // Where it lands the water is an impact, not a dispersive wave: its wave's young roller is shallow water for a
       // while (a splash-up's short fall's zone lies inside its jet's), never back past where it left the crest.

@@ -472,6 +472,8 @@ export class SurfZoneRunner {
       ?? (config.spot === 'padang' && requestedGrid.nx * requestedGrid.nz >= 200_000 ? 2 : 1);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY, BOARD_SPRAY_CAPACITY);
+    // `?lipVeil=on` (C2 step 5g): a plunging lip throws the veil, and the air it drives carries it. Off by default.
+    this.spray.veil = config.lipVeil === 'on';
     this.boardSprays = config.boardSpray !== 'off';
     this.curtains = config.spraySheet !== 'off';
     this.grid = requestedGrid.spacing === renderSpacing ? requestedGrid : this.simulation.renderGrid(renderSpacing);

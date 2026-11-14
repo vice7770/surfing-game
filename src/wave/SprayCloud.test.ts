@@ -435,6 +435,138 @@ describe('a swept barrel’s landing spray (Padang Padang, Part B, PR 5)', () =>
   });
 });
 
+describe('a plunging lip’s veil (C2 step 5g, `?lipVeil=on`)', () => {
+  /** A jet landing from a 2 m wave: 6.3 m/s down and 4 m/s on, as a 2 m lip's parcel lands. */
+  const jet = (): LipImpact => ({ x: 5, z: 14, volume: 0.4, vx: 0, vy: -6.3, vz: 4, kind: 0, height: 2 });
+  /** The drops' launch directions, read as the step they take over a tiny dt after they are spawned. */
+  function launches(cloud: SprayCloud, scene: SprayScene): { elevation: number }[] {
+    const before: number[] = [];
+    for (let k = 0; k < cloud.count; k += 1) before.push(cloud.particles[k * SPRAY_STRIDE], cloud.particles[k * SPRAY_STRIDE + 1], cloud.particles[k * SPRAY_STRIDE + 2]);
+    const count = cloud.count;
+    const dt = 1 / 2000;
+    cloud.update({ ...scene, lipImpacts: [] }, dt);
+    const out: { elevation: number }[] = [];
+    for (let k = 0; k < Math.min(count, cloud.count); k += 1) {
+      const dx = cloud.particles[k * SPRAY_STRIDE] - before[k * 3];
+      const dy = cloud.particles[k * SPRAY_STRIDE + 1] - before[k * 3 + 1];
+      const dz = cloud.particles[k * SPRAY_STRIDE + 2] - before[k * 3 + 2];
+      out.push({ elevation: Math.atan2(dy, Math.hypot(dx, dz)) });
+    }
+    return out;
+  }
+
+  it('is off until it is asked for, and leaves every landing as it was', () => {
+    expect(new SprayCloud(1).veil).toBe(false);
+    const plain = new SprayCloud(9);
+    plain.update(flatScene(0, [jet()]), 1 / 60);
+    const same = new SprayCloud(9);
+    same.update(flatScene(0, [{ ...jet(), height: undefined }]), 1 / 60);
+    // The wave height a landing now carries is read by nothing but the veil.
+    expect(same.count).toBe(plain.count);
+    for (let k = 0; k < plain.count * SPRAY_STRIDE; k += 1) expect(same.particles[k]).toBe(plain.particles[k]);
+  });
+
+  it('throws Erinin’s two regions, at the curl near 81° and over the turbulent zone near 56°', () => {
+    const cloud = new SprayCloud(11);
+    cloud.veil = true;
+    const scene = flatScene(0, [jet()]);
+    cloud.update(scene, 1 / 60);
+    expect(cloud.count).toBeGreaterThan(100);
+    const elevations = launches(cloud, scene).map((l) => (l.elevation * 180) / Math.PI);
+    const mean = elevations.reduce((a, b) => a + b, 0) / elevations.length;
+    // Between the two means, and both regions represented (the spread is ±15° about each).
+    expect(mean).toBeGreaterThan(56);
+    expect(mean).toBeLessThan(81);
+    expect(elevations.filter((e) => e > 73).length / elevations.length).toBeGreaterThan(0.2);
+    expect(elevations.filter((e) => e < 64).length / elevations.length).toBeGreaterThan(0.2);
+  });
+
+  it('throws them at the measured mean of the impact speed, with a tail past twice it', () => {
+    const cloud = new SprayCloud(12);
+    cloud.veil = true;
+    // A long run of landings, so the exponential's tail has a population to show itself in.
+    const scene = flatScene(0, []);
+    const speeds: number[] = [];
+    for (let n = 0; n < 60; n += 1) {
+      const one = new SprayCloud(100 + n);
+      one.veil = true;
+      const impacts = [jet()];
+      one.update({ ...scene, lipImpacts: impacts }, 1 / 60);
+      const dt = 1 / 2000;
+      const before: number[] = [];
+      for (let k = 0; k < one.count; k += 1) before.push(one.particles[k * SPRAY_STRIDE], one.particles[k * SPRAY_STRIDE + 1], one.particles[k * SPRAY_STRIDE + 2]);
+      const count = one.count;
+      one.update({ ...scene, lipImpacts: [] }, dt);
+      for (let k = 0; k < Math.min(count, one.count); k += 1) {
+        const dx = one.particles[k * SPRAY_STRIDE] - before[k * 3];
+        const dy = one.particles[k * SPRAY_STRIDE + 1] - before[k * 3 + 1];
+        const dz = one.particles[k * SPRAY_STRIDE + 2] - before[k * 3 + 2];
+        speeds.push(Math.hypot(dx, dy, dz) / dt);
+      }
+    }
+    const impactSpeed = Math.hypot(6.3, 4);
+    const ratios = speeds.map((v) => v / impactSpeed);
+    const mean = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+    // The exponential's own mean is 0.38; gravity over the step and the floor move it a little.
+    expect(mean).toBeGreaterThan(0.3);
+    expect(mean).toBeLessThan(0.46);
+    expect(Math.max(...ratios)).toBeGreaterThan(2);
+    expect(Math.max(...ratios)).toBeLessThanOrEqual(2.2);
+  });
+
+  it('throws nothing over water the lip has not hit: every drop leaves at or behind the landing', () => {
+    const cloud = new SprayCloud(13);
+    cloud.veil = true;
+    const landing = jet();
+    cloud.update(flatScene(0, [landing]), 1 / 60);
+    const run = Math.hypot(landing.vx, landing.vz);
+    for (let k = 0; k < cloud.count; k += 1) {
+      const along = ((cloud.particles[k * SPRAY_STRIDE] - landing.x) * landing.vx + (cloud.particles[k * SPRAY_STRIDE + 2] - landing.z) * landing.vz) / run;
+      expect(along).toBeLessThanOrEqual(1e-9);
+    }
+  });
+
+  it('lets the breaker’s air carry the light drops over the lip, where thrown drops cannot reach', () => {
+    const highest = (veil: boolean) => {
+      const cloud = new SprayCloud(14);
+      cloud.veil = veil;
+      const scene = flatScene(0, [jet()]);
+      cloud.update(scene, 1 / 60);
+      let top = -Infinity;
+      for (let step = 0; step < 150; step += 1) {
+        cloud.update({ ...scene, lipImpacts: [] }, 1 / 60);
+        for (let k = 0; k < cloud.count; k += 1) top = Math.max(top, cloud.particles[k * SPRAY_STRIDE + 1]);
+      }
+      return top;
+    };
+    const lofted = highest(true);
+    const thrown = highest(false);
+    // One landing on still water lifts its own drops to 2.39 m against the 1.42 m they are thrown to. In the pool,
+    // where a peeling crest seeds patch after patch along it, the top measures 3.61 m (c2-step5g.md §5).
+    expect(thrown).toBeLessThan(1.6);
+    expect(lofted).toBeGreaterThan(2.2);
+  });
+
+  it('does not blow before the air has had time to form, so the barrel’s mouth stays clear', () => {
+    const topAt = (seconds: number) => {
+      const cloud = new SprayCloud(15);
+      cloud.veil = true;
+      const scene = flatScene(0, [jet()]);
+      cloud.update(scene, 1 / 60);
+      let top = -Infinity;
+      for (let step = 0; step < Math.round(seconds * 60); step += 1) {
+        cloud.update({ ...scene, lipImpacts: [] }, 1 / 60);
+        for (let k = 0; k < cloud.count; k += 1) top = Math.max(top, cloud.particles[k * SPRAY_STRIDE + 1]);
+      }
+      return top;
+    };
+    // Up to the onset nothing is lifted, so the drops are only as high as they were thrown.
+    const before = topAt(0.24);
+    const after = topAt(1.4);
+    expect(after).toBeGreaterThan(before + 1);
+  });
+});
+
 describe('indexed sources and presentation packing', () => {
   it('replays the full-grid traversal exactly in both looks and every budget, including full pools', () => {
     for (const look of ['rich', 'classic'] as const) {
