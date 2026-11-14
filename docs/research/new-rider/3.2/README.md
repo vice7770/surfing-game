@@ -3465,3 +3465,156 @@ wants a probe of its own.
   `turn-new-32m.jsonl` (the kept cell), `turn-capgrid-32m.jsonl` (the whole cap grid), `turnpair-32m.jsonl` (the gate,
   every cap, with the old rider's row), `bars-new-32m.jsonl` (all 30 guard rows), `suite-32m.txt`,
   `canyon-byte-32m.txt`.
+
+# Part 13: step 3.2n, the bite lever refuted, and the stance's units built but not switched on (ruling 29w)
+
+Written 2026-11-13 by the rail-dig agent (Opus 5, effort xhigh), on branch `claude/rider-new-32n` (from
+`claude/rider-new-32m`, rebased on main d937b8d8). The contract: `../ruling-29.md` 29w.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **The lever I named last round does not exist, and the mistake was mine.** 3.2m said the old rider stops at 41–48° of
+  rail and the new one blows through to 60–66°, with `RAIL_BITE` at 48°. **I compared the world-referenced column to a
+  constant that is defined against the water.** Measured properly, the **old rider is past the bite in 12 of 12 runs**,
+  for 0.23 to 1.12 s, reaching **54 to 94°** of water-referenced rail — and it still passes the owner's test 12 of 12.
+  So a limit at the bite would clamp the good rider harder than the bad one. **I did not build it.** [M]
+- **The real discriminator is heading turned per rail used, and the new rider's rail does not hold.** Both riders put
+  the board on a big rail. The old rider turns **86–137°** of heading; the new rider turns **2–32°**. A trace shows why:
+  the new rider's rail peaks and then **unwinds** (water-referenced rail +24° at 0.9 s, back to +4° at 1.8 s) while its
+  body's bank stalls at **25°** against the 50° asked, where the old rider's bank reaches **49°** and its rail holds
+  −41° for 1.2 s. The ankle never saturates (±1–5° of a ±14.3° range). **It reaches a rail and cannot keep it.** [M]
+- **The stance's units are a real bug and it is now fixed in the code, in two forms, both measured — and neither is
+  switched on.** The bank's cost was one 2.9° limit for all three stances where the physical limit is 8.9 / 11.5 /
+  13.5°. Both forms improve the model's margin against a frame of timing error at **every one of the 18 table points**,
+  most for Compress, and both **cost the standing stance its quarter-circle turn in the game**. The owner's acceptance
+  test does not move (0 of 12, or 1 of 12 with the blunter form). **`feetReach` is an available weight, absent from
+  `DEFAULT_WEIGHTS`, and the switch is the advisor's call** — §4 has the trade in numbers.
+- **What the units fix does buy, measured:** the turn pair's two falls-while-waiting-in-Compress disappear (0 of 8
+  against 2 of 8), which is exactly the owner's "the surfer should not fall so much when lowered". What it costs: the
+  standing stance's 90° turn (1.73 s → never, and its fall at 2.13 s → 1.10 s). [M]
+- **The shipped behaviour of this step is identical to 3.2m**, proven: all **54** `railmodel` rows reproduce byte for
+  byte, gains included. So **this round gives the owner nothing new to ride, and I am not going to present it as a
+  ship.** It is a refutation plus a built, measured, documented fix awaiting a ruling. [M]
+- **The gate: the owner's acceptance test is 0 of 12 against the old rider's 12 of 12.** Unchanged. [M]
+
+## 2. The bite lever, refuted
+
+`hold.probe.ts` now reads the rail **the way `AttachedRider.prepareBank` reads it for `RAIL_BITE`** — the board's roll
+about its heading taken from the water's surface normal under the board, not the world's level [R, M]:
+
+| | World rail | **Water rail** (what the 48° bite is of) | Past the bite | Heading turned | Reaches across |
+|---|---|---|---|---|---|
+| **Old rider** | 37–84° | **54–94°** | **12 of 12**, 0.23–1.12 s | **86–137°** | **12 of 12** |
+| **New rider** | 24–83° | **25–90°** | 10 of 12, 0.02–0.70 s | 2–32° | 0 of 12 |
+
+3.2m's "old 41–48°, new 60–66°" were both **world** figures. Against the water the old rider is the one that goes
+furthest past the bite. The bite is not what separates them, and clamping it would hurt the rider that works.
+
+**`RAIL_BITE` stays on the re-check list for two-way coupling** (the owner's standing instruction): it is a hand-set
+48° and a digging rail may bite past it. That is unchanged by this round, and it is now also recorded that the riders
+spend a quarter to a whole second past it in normal use, so it is not a wall either rider respects.
+
+## 3. What the trace says instead
+
+`results/hold-trace-new-32n.jsonl` and `hold-trace-old-32n.jsonl`, Compress, the wave's own pace, full stick [M]:
+
+| | 0.3 s | 0.5 s | 0.9 s | 1.3 s | 1.8 s | 2.5 s |
+|---|---|---|---|---|---|---|
+| **Old** heading off the fall line | 49.7° | 37.6° | 9.7° | 18.6° | 48.9° | **85.1°** |
+| **Old** world roll / bank | −2 / 13 | −16 / 25 | −35 / 39 | −41 / **45** | −42 / **48** | −40 / **49** |
+| **New** heading off the fall line | 46.0° | 43.6° | 27.4° | 13.9° | 0.4° | fell 2.2 s |
+| **New** world roll / bank | −4 / 12 | −8 / 17 | −23 / **25** | −22 / **24** | **−4** / 10 | — |
+
+Both drop down the face first, as a bottom turn should. The old rider's rail and bank then **hold** (−41°/48° for over a
+second) and the heading comes round. The new rider's **unwind** at 1.8 s — the rail falls back to −4° and the bank to
+10° — and it falls. Its lean asked was pinned at 50° throughout and its ankle rest sat between −4° and +7°, nowhere near
+its ±14.3°. **Nothing is saturating and nothing is being asked for too slowly; the balance simply does not hold the
+lean it has.** [M, I]
+
+## 4. The stance's units (item 2): built, measured, not switched on
+
+`DesignWeights.feetReach` (`predictiveBalance.ts`): when set, the bank's cost stops being one angle for every stance.
+Two forms were built and measured.
+
+**Form A, the physical limits outright** (`bankLimit = feetReach / L`: 8.9 / 11.5 / 13.5°): gains fall most for the
+lowest stance (Compress −22 to −25 % against tall's −10 %), timing margin up at all 18 points (Compress at 5 m/s, no
+rail: 0.036 → 0.052). **Gate 1 of 12.** Cost: the held carve standing 2.13 s → 1.12 s, 90° no longer reached.
+
+**Form B, the ranking only** (`bankLimit = stateScale[2] × L_tall / L`, so the tall value is untouched and the ratio is
+the physics'): the **tall design is byte-identical at all six of its points**; Compress −13 % of gain and timing margin
+up everywhere (5 m/s, no rail: 0.036 → 0.046). **Gate 0 of 12.** Cost: the standing turn still goes.
+
+**Why form B still costs the tall turn, which I did not expect:** the schedule reads the **instantaneous leg depth**
+(`yawDepth`, the leg's own rest), not the stance the player chose. A rider nominally standing tall compresses as it
+balances, so it blends into the crouch and Compress designs continuously. **The stances are never isolated**, so there
+is no form of this fix that changes the low stances and leaves the tall ride alone. That is worth knowing on its own. [M, R]
+
+**The trade, measured both ways on the same machine in the same session** (`results/turnpair-32n.jsonl`,
+`turn-new-32n.jsonl`, `turn-off.jsonl`) [M]:
+
+| | feetReach off (= what ships) | feetReach on (form B) |
+|---|---|---|
+| Turn pair, where the 8 falls are | **2 while waiting**, 6 in the climb | **0 while waiting**, 8 in the climb |
+| Turn probe, standing | 90° in **1.73 s**, falls 2.13 s | **never reaches 90°**, falls **1.10 s** |
+| Turn probe, Compress | 90° in 2.02 s, falls 2.17 s | 90° in 2.05 s, falls 2.15 s |
+| The owner's acceptance test | 0 of 12 | 0 of 12 |
+| Model: margin on a frame of timing error | — | **up at all 18 points** |
+
+**I did not switch it on.** The gate does not move, and it costs the standing stance the quarter-circle turn whose loss
+the owner complained about in so many words two rounds ago ("the surfer is no longer able to turn sharply"). The
+benefit it buys is on a probe ruling 29r says to report rather than gate. `feetReach` is in the code with its full
+account, reachable as `BALANCE='{"weights":{"feetReach":0.13}}'`, and **the switch is the advisor's ruling to make** —
+the numbers above are the whole input to it.
+
+## 5. The gate, and the reports (items 3 and 4)
+
+**The owner's acceptance test** (`hold.probe.ts`, the Canyon-matched face; a compressed turn to take the wave on the
+side) [M]:
+
+| | Reaches the wave on the side | Heading turned | Water rail used |
+|---|---|---|---|
+| **Old rider** | **12 of 12** | 86–137° | 54–94° |
+| **New rider, 3.2n (what ships)** | **0 of 12** | 2–32° | 25–90° |
+
+**The turn pair** (ruling 29r's gate, set B, 8 runs): **0 of 8**, falls 1.13–3.72 s, 2 while waiting and 6 in the climb
+— **the same as 3.2m**, since nothing shipped changed. The old rider is 8 of 8 with 7 of 8 linking a pair.
+
+**The chop by speed, and the old bars:** unchanged from 3.2m by construction (the 54-row design check). 3.2m's reading
+stands: the chop grid is 2 / 3 / 2 / 1 of 3 at 5 / 7 / 9 / 12 m/s, and 28 of its 30 bar rows matched 3.2L.
+
+**The fall shape the owner asked for** (rising with speed) is still not there and I have not addressed it this round.
+
+## 6. What I am not sure about
+
+- **Why the new rider's rail unwinds** is the question I would take next, and it is the same place 3.2m pointed: the
+  least-damped mode is the board's own 0.33–0.74 Hz heave and pitch, which the balance has no sense of. I was told not
+  to start on that this round and I have not.
+- **Form A against form B** is a judgement I have left open rather than resolved: A is the physics and costs more; B is
+  the ranking and costs less. Both fail the gate.
+- **The acceptance test's hold phase cannot be passed by anyone** on a uniform `FaceWater` (no pocket, nothing to hold a
+  trim line), so the gate is "reaches across", not "reaches across and then holds for five seconds". The old rider's
+  12 of 12 is what calibrates it.
+
+## 7. Seatbelts
+
+| | Result |
+|---|---|
+| `tsc` clean (app and tests) | **yes** |
+| The shipped design unchanged | **yes** — all **54** `railmodel` rows byte-identical to 3.2m, gains included; `feetReach` is absent from `DEFAULT_WEIGHTS` and every use of it is behind `if (w.feetReach)` |
+| The full suite | **pass: 361 passed, 37 skipped, 1 failed** (`src/wave/SurfZoneRunner.test.ts`, 4 tests) - **exactly 3.2m's result**, and those 4 are PR #204's known stale tests that fail on pristine main in a file outside the merge suite |
+| The default game byte-identical | **not run - stopped at the usage limit.** It cannot differ: the shipped design is byte-identical (the 54-row check above) and `feetReach` is absent from the defaults, so the default rider's path is untouched. Run it before any merge |
+| No unpaired rule forces or hidden motors | **yes, by construction**: no force is added; the only `src/` change is an optional LQR weight |
+
+Run from a **full checkout** this time, not the sparse one that voided 3.2m's first suite run.
+
+## 8. Files (3.2n)
+
+- `src/physics/predictiveBalance.ts`: `DesignWeights.feetReach` (optional, absent by default) and the bank's
+  stance-ranked cost behind it, with both forms' measurements in the note.
+- `docs/research/new-rider/3.2/hold.probe.ts`: the acceptance test now also reads the **water-referenced** rail, the
+  time spent past `RAIL_BITE`, and a per-frame trace (`TRACE=1`).
+- `results/`: `hold-32n.jsonl`, `hold-old-32n.jsonl`, `hold-trace-new-32n.jsonl`, `hold-trace-old-32n.jsonl`,
+  `stance-32n-base.jsonl` / `-ranking` / `-limits`, `turn-new-32n.jsonl`, `turn-off.jsonl`, `turnpair-32n.jsonl`,
+  `suite-32n.txt`, `canyon-byte-32n.txt`.

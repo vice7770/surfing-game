@@ -1,0 +1,16 @@
+{"bar":"holdTrace","rider":"old","t":0.1,"fromFall":45.8,"rollWorld":6,"railAhead":-6,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":28.6,"bank":0.3,"load":0.67,"v":7.49}
+{"bar":"holdTrace","rider":"old","t":0.2,"fromFall":49.4,"rollWorld":5.8,"railAhead":2.3,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":46.8,"bank":5.2,"load":0.95,"v":7.46}
+{"bar":"holdTrace","rider":"old","t":0.3,"fromFall":49.7,"rollWorld":-2,"railAhead":7.1,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":49.6,"bank":13.2,"load":0.86,"v":7.75}
+{"bar":"holdTrace","rider":"old","t":0.4,"fromFall":44,"rollWorld":-8.9,"railAhead":12.8,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":49.9,"bank":19.9,"load":0.84,"v":8.14}
+{"bar":"holdTrace","rider":"old","t":0.5,"fromFall":37.6,"rollWorld":-15.9,"railAhead":20.9,"schedRail":0,"ankleRest":-0.08,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":25.4,"load":0.91,"v":8.49}
+{"bar":"holdTrace","rider":"old","t":0.7,"fromFall":23.7,"rollWorld":-26.8,"railAhead":28.6,"schedRail":0,"ankleRest":-0.02,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":33.6,"load":1.33,"v":9.22}
+{"bar":"holdTrace","rider":"old","t":0.9,"fromFall":9.7,"rollWorld":-34.9,"railAhead":36.5,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":39.1,"load":1.44,"v":9.77}
+{"bar":"holdTrace","rider":"old","t":1.1,"fromFall":6.1,"rollWorld":-39,"railAhead":40.2,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":42.6,"load":1.64,"v":9.87}
+{"bar":"holdTrace","rider":"old","t":1.3,"fromFall":18.6,"rollWorld":-40.5,"railAhead":42,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":45,"load":1.41,"v":9.82}
+{"bar":"holdTrace","rider":"old","t":1.5,"fromFall":30.9,"rollWorld":-41.4,"railAhead":42.1,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":46.6,"load":1.12,"v":10.07}
+{"bar":"holdTrace","rider":"old","t":1.8,"fromFall":48.9,"rollWorld":-41.5,"railAhead":42.3,"schedRail":0,"ankleRest":0,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":48,"load":1.35,"v":10.45}
+{"bar":"holdTrace","rider":"old","t":2.1,"fromFall":64.3,"rollWorld":-37.7,"railAhead":38.2,"schedRail":0,"ankleRest":11.38,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":48.7,"load":1.17,"v":10.81}
+{"bar":"holdTrace","rider":"old","t":2.5,"fromFall":85.1,"rollWorld":-40.1,"railAhead":40.8,"schedRail":0,"ankleRest":13.44,"rawRest":0,"leanAsked":0,"bankRef":50,"bank":49.3,"load":1.18,"v":11.61}
+{"bar":"holdTrace","rider":"old","t":3,"fromFall":102.1,"rollWorld":-23.1,"railAhead":-13.6,"schedRail":0,"ankleRest":12.49,"rawRest":0,"leanAsked":0,"bankRef":-2.7,"bank":21.1,"load":1.6,"v":9.65}
+{"bar":"holdTrace","rider":"old","t":3.5,"fromFall":113.5,"rollWorld":-16.1,"railAhead":-12,"schedRail":0,"ankleRest":4.39,"rawRest":0,"leanAsked":0,"bankRef":-2.9,"bank":5.7,"load":0.62,"v":7.46}
+{"bar":"hold","rider":"old","height":1.4,"stance":"compress","extra":0,"steer":1,"entryMs":7.44,"reachedAcross":true,"maxFromFallDeg":133.8,"acrossAtS":2.5,"speedAcrossMs":11.61,"peakRailDeg":44.3,"peakBankDeg":49.4,"held":false,"fellIn":"hold","fell":"balance","fellAtS":7.5,"lean":1.4,"railCapDeg":12}

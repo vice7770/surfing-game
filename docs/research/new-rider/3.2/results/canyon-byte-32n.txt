@@ -1,0 +1,3 @@
+Canyon byte check, step 3.2n: NOT RUN - stopped at the weekly usage limit before it finished its first spin-up.
+The shipped design is byte-identical to 3.2m (all 54 railmodel rows, gains included) and feetReach is absent from
+DEFAULT_WEIGHTS, so the default rider's path cannot have changed. Run this before any merge.

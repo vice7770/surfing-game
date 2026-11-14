@@ -1,0 +1,82 @@
+
+ RUN  v5.0.1 /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/r32n
+
+ ❯ src/wave/SurfZoneRunner.test.ts (43 tests | 4 failed) 135440ms
+   ❯ SurfZoneRunner (17)
+     × breaks a closing tube’s air into the aeration field, and blows its spits, eruptions and foam balls into the spray (G9) 3546ms
+   ❯ SurfZoneRunner with a rider (14)
+     × snapshots the leash, the duck-dive and the swimmer 1924ms
+     × starts the rider just outside the break line, where catches happen 1263ms
+     × reads each ride from its trace, and reports the finished ride as plain data 1288ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/SurfZoneRunner.test.ts > SurfZoneRunner > breaks a closing tube’s air into the aeration field, and blows its spits, eruptions and foam balls into the spray (G9)
+AssertionError: expected 33792 to be 30720 // Object.is equality
+
+- Expected
++ Received
+
+- 30720
++ 33792
+
+ ❯ src/wave/SurfZoneRunner.test.ts:243:34
+    241|     // The snapshot carries the spray's pool and the tube's whitewater…
+    242|     const buffers = runner.createBuffers();
+    243|     expect(buffers.spray.length).toBe((SPRAY_CAPACITY + WHITEWATER_CAP…
+       |                                  ^
+    244|     expect(runner.spray.capacity).toBe(SPRAY_CAPACITY);
+    245|     expect(runner.spray.whitewaterCapacity).toBe(WHITEWATER_CAPACITY);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/wave/SurfZoneRunner.test.ts > SurfZoneRunner with a rider > snapshots the leash, the duck-dive and the swimmer
+AssertionError: expected 0.31608853453918084 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 0.31608853453918084
+
+ ❯ src/wave/SurfZoneRunner.test.ts:392:48
+    390|     buffers = runner.createBuffers();
+    391|     runner.fill(buffers);
+    392|     expect(buffers.rider[RIDER_SNAPSHOT.duck]).toBe(0);
+       |                                                ^
+    393|     const bits = buffers.rider[RIDER_SNAPSHOT.leash];
+    394|     expect(bits & LEASH_BITS.worn).toBe(LEASH_BITS.worn);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/wave/SurfZoneRunner.test.ts > SurfZoneRunner with a rider > starts the rider just outside the break line, where catches happen
+AssertionError: expected 11 to be close to 6, received difference is 5, but expected 5e-7
+ ❯ src/wave/SurfZoneRunner.test.ts:434:38
+    432|     const runner = new SurfZoneRunner(calm, { rider: true });
+    433|     const board = runner.session!.board.position;
+    434|     expect(runner.focus.z - board.z).toBeCloseTo(6, 6);
+       |                                      ^
+    435|     expect(board.x).toBeCloseTo(runner.focus.x, 6);
+    436|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/wave/SurfZoneRunner.test.ts > SurfZoneRunner with a rider > reads each ride from its trace, and reports the finished ride as plain data
+AssertionError: expected 0.6113519956310125 to be less than 0.5
+ ❯ src/wave/SurfZoneRunner.test.ts:531:76
+    529|     const { rider, board } = runner.session!;
+    530|     const { x, y, z } = board.position;
+    531|     expect(runner.water.sampleAt(x, y, z, createWaterSample()).stillDe…
+       |                                                                            ^
+    532|     const stand = () => {
+    533|       // A pop-up's last two phases, as the analyzer reads them: landi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 361 passed | 37 skipped (399)
+      Tests  4 failed | 3634 passed | 23 expected fail | 43 skipped (3704)
+   Start at  23:11:35
+   Duration  7173.36s (tests 99%, import 1%)
+
+exit=1
