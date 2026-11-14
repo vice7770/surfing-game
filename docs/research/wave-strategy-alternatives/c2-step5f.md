@@ -15,7 +15,7 @@ five files cost **6.43 MB**, taking the library from 24.93 to **31.37 MB**, all 
 
 | Passes | Misses |
 |---|---|
-| the A0 clamp **717 → 62 of 1274** (112 of 1517 slices made, below the nine-case library's own 277 of 1518); the hand-over's crest place, median 0.044 → **0.003 m**, over its 0.25 m bar 8.8 → 7.4 %; the ratio's tails, 90 % 1.356 → 1.246, 99 % 2.210 → 1.983, worst 5.885 → 5.175; every listed case loads with its own keys (24 of 24, 0 mismatches); `tsc -b` clean on exit 0; the library tests 37 of 37; the default game untouched by construction | **the height bar still misses**, median 1.043 against 0.95–1.05 and 53.8 % outside, 0.7 points better than with nineteen cases; **the τ clamp does not move** (814 of 1274, every one low) — the complete column was not its cause; **the unclamped population's bar goes backwards**, 12.3 → 43.5 % outside on 161 slices against 57, so ruling 38's "the shape is right wherever the keys reach" **does not hold** at three times the sample; the files 24.93 → **31.37 MB**, further over the plan's 15 MB |
+| the A0 clamp **717 → 62 of 1274** (112 of 1517 slices made, below the nine-case library's own 277 of 1518); the hand-over's crest place, median 0.044 → **0.003 m**, over its 0.25 m bar 8.8 → 7.4 %; the ratio's tails, 90 % 1.356 → 1.246, 99 % 2.210 → 1.983, worst 5.885 → 5.175; every listed case loads with its own keys (24 of 24, 0 mismatches); `tsc -b` clean on exit 0; the library tests 37 of 37; **both Canyon spin-ups byte for byte main's own** | **the height bar still misses**, median 1.043 against 0.95–1.05 and 53.8 % outside, 0.7 points better than with nineteen cases; **the τ clamp does not move** (814 of 1274, every one low) — the complete column was not its cause; **the unclamped population's bar goes backwards**, 12.3 → 43.5 % outside on 161 slices against 57, so ruling 38's "the shape is right wherever the keys reach" **does not hold** at three times the sample; the files 24.93 → **31.37 MB**, further over the plan's 15 MB |
 
 ---
 
@@ -227,7 +227,7 @@ nothing fetches unless the switch is on, a comment in `tools/basilisk/run_period
 | every listed case loads and its keys are its file's | 24 listed, 24 decoded, **0 mismatches** [M] |
 | no test reads `public/library` or `libraryCases` | searched; none does, so the data cannot move the suite [C] |
 | **Canyon B** (`?canyonWaves=true`, the rider's test spot), fresh spin-up, medium, 3 600 steps | snapshots **`a367d938f15fa934`**, state **`9e5831f80e38abd9`** — **main's own**, the same as steps 3b, 4, 5a and 5b [M, `c2-step5f-runs/canyon-bytes.txt`] |
-| the default Canyon, the same | its leg was **still stepping at the hand-back** and is not reported. Expected `ea3d57a4d49f4b48` / `a1a2555739210f96`; the construction argument above is the seatbelt, and the command to finish it is in §6 |
+| the default Canyon, the same | snapshots **`ea3d57a4d49f4b48`**, state **`a1a2555739210f96`** — **main's own** too [M, same file] |
 
 ## 6. For the next round, and for the pipeline
 
