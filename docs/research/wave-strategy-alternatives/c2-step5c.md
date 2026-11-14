@@ -125,7 +125,7 @@ move the aeration tint into a shader that cannot use it. **Ruling 38's branch 2 
 Ruling 38 named the measurement to take if the look turned out to be Rich all along: "the water's own luminance
 against the foam's in the rendered frame". Here it is, and it does not say what ruling 38 expected.
 
-`waterSheetFoamAgainstWater` (§5), three passes from each shot's own camera in the same held sea at t 72 s: as drawn,
+`waterSheetFoamAgainstWater` (§7), three passes from each shot's own camera in the same held sea at t 72 s: as drawn,
 with the foam colour set magenta, and with the sea's surface mesh hidden. A pixel is **water** where hiding the mesh
 changed it; its foam share is how far the magenta pass pulled its green down. **foam** is a pull of 120 or more (the
 foam colour dominates the pixel), **clear** is under 10 (no foam in it at all), and the band between is in neither, so
@@ -242,8 +242,7 @@ than assumed:
 
 **Six of seven stills are identical to the byte, and the seventh differs by 57 pixels of 22 584 — 0.25 %.** The leg
 carries its own control: `curl-behind` and the water sheet *did* change, so the edit was live and the run was not
-silently shooting the same build twice. So every
-one of the foam figures in §3 is the **sea's own** foam, not the library's. The bore foam that step 5b measured in the
+silently shooting the same build twice. So every one of the foam figures in §3 is the **sea's own** foam, not the library's. The bore foam that step 5b measured in the
 field (+0.45 of cover on about 200 nodes a wave) reaches at most 57 pixels of one of seven camera views.
 
 That is the sharpened version of step 5b's own honest headline, and it narrows the question from "why does the foam
@@ -255,7 +254,7 @@ bore changed into each camera's frustum — a read, not a build.
 
 ---
 
-## 6. What I am unsure of
+## 5. What I am unsure of
 
 - **The `foam` class is a threshold, not a ground truth.** It is pixels the magenta pass pulled at least 120 levels of
   green out of. That is deliberately the foam-dominated end, so "the white that is drawn reads at 1.6× the water" is
@@ -266,13 +265,14 @@ bore changed into each camera's frustum — a read, not a build.
   comparison for "the water beside the foam", but it means `waterAll` is not the whole wave.
 - **`curl-front`'s 1 974 clear pixels** is a small sample to read a p90 off, and it is the one view where I would not
   lean on the ratio alone. The other five have 15 000 to 371 000.
-- **The grey-brown smear** (§4 item 3) is an eye reading of one crop. I have not measured it and I do not know its
-  cause; it survives the foam being switched off, so it is not the bore foam.
+- **The grey-brown smear** (§4 item 3) is an eye reading of two crops, not a measurement. The lip-and-curtain reading
+  is a lead I did not test; all I know for certain is that it survives the foam being switched off, so it is not the
+  bore foam.
 - **Whether the five runs change the A0 clamp as ruling 38 expects.** They had not finished.
 
 ---
 
-## 7. Next, in order
+## 6. Next, in order
 
 1. **The five runs land** (§1), then wire them into `libraryCases.ts` and read the A0 clamp and the height bar again.
    No reasoning needed.
@@ -287,7 +287,7 @@ bore changed into each camera's frustum — a read, not a build.
 
 ---
 
-## 5. Files, and how to run them again
+## 7. Files, and how to run them again
 
 - The five runs: `bash …/scratchpad/c2runs2/c2c.sh start|status|stop|log`. Definitions in
   `tools/basilisk/run_periodic.sh` (`C2_FILL`) and `tools/basilisk/canyon_pipeline.py` (`C2_CASES`).
