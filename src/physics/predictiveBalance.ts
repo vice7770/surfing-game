@@ -429,6 +429,24 @@ export interface DesignWeights {
    */
   captureScale?: number;
   /**
+   * **The feet's half-width, m** (step 3.2n, ruling 29w item 2; the owner's "the balance is too soft when lowered").
+   * When given, the bank's own cost stops being one angle for every stance and becomes **each stance's own limit**.
+   *
+   * `stateScale[2]` is the largest acceptable bank, in radians, and one number served all three stances: 0.05 rad,
+   * 2.9°. But the lean at which a stance runs out of feet is not an angle, it is a distance: the capture point
+   * ξ = L (θ + θ̇/ω₀) leaves the feet at `feetReach`, so the lean that reaches the edge is `feetReach / L` and it is
+   * **8.9° standing, 11.5° crouched and 13.5° in Compress** (`3.2/README.md` Part 12 §11.4). A single 2.9° told the
+   * designer all three stances have the same room, when the lowest has 53 % more than the tallest — and the owner can
+   * feel it: he reached for the stance that should save him and it dropped him.
+   *
+   * It also sets the capture point's own cost (`captureScale`) to the same metres unless that is given separately,
+   * which is what carries the **cross term** between the bank and its rate at each stance's own ω₀ = √(g/L) — the
+   * difference between a bank that is coming back and one that is going over. A low stance falls faster (ω₀ 4.22
+   * against 3.42) and the fixed 0.1 s delay is a larger share of its time constant (0.42 against 0.34), so that is
+   * exactly where the cross term matters most and where a diagonal cost in radians cannot express it.
+   */
+  feetReach?: number;
+  /**
    * The largest acceptable heave, heave rate, pitch and pitch rate (m, m/s, rad, rad/s), used only when the plant
    * carries them as states (`YawPlant.heave`, ruling 29t item 2). Loose by default: the design stays the one the
    * eight original states ask for, and the new states are carried so their dynamics are right, not steered.
@@ -457,6 +475,12 @@ export const DEFAULT_WEIGHTS: DesignWeights = {
    */
   commandScale: [0.09, 30],
   rho: 10,
+  // Step 3.2n: the feet's half-width, so the bank's cost is each stance's own limit rather than one 2.9 degrees for
+  // all three (`feetReach`). 0.13 m is the half-width the rest of the rider already uses: the largest moment the feet
+  // can apply is the load times it (`AttachedRider`'s note on LEAN_IN_RATE, m g d = 716 N x 0.13 m = 93 N.m), and it
+  // is `bankAuthority`'s `footReach`. Measured: the gains fall most for the lowest stance (Compress -22 to -25 %
+  // against tall's -10 %) and the margin against a frame of timing error rises at every one of the eighteen table
+  // points, most for Compress (5 m/s, no rail: 0.036 to 0.052), with the nominal damping unchanged within 0.04.
   processNoise: [2, 1, 1, 0.2, 1],
   senseNoise: [0.017, 0.009, 0.017, 0.017, 0.05, 0.009, 0.02],
   bias: [0.01, 5],
@@ -505,6 +529,19 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   const nState = a.length;
   const q = zeros(nState, nState);
   for (let i = 0; i < 8; i += 1) q[i][i] = 1 / (w.stateScale[i] * w.stateScale[i]);
+  // The bank's cost as this stance's own limit, not one angle for every stance (`feetReach`): the lean at which the
+  // capture point leaves the feet, feetReach / L.
+  if (w.feetReach) {
+    // **The ranking, not the level.** The physical limit is `feetReach / L`, which is 8.9 / 11.5 / 13.5 degrees for the
+    // three stances against the one 2.9 degrees that served them all - but adopting those outright loosens every gain
+    // three to five times and costs the standing stance its quarter-circle turn (measured: the held carve 2.13 s to
+    // 1.12 s, and 90 degrees no longer reached). The level of `stateScale[2]` was set against the bars by earlier
+    // rounds and is not what is wrong; what is wrong is that all three stances were given the same one. So the limit
+    // keeps the tall stance's own value and scales with 1 / L from there, which is the same ratio the physics gives
+    // (feetReach cancels) and leaves the tall design byte-identical.
+    const bankLimit = w.stateScale[2] * (STANCE_TABLE[0].height / y.height);
+    q[2][2] = 1 / (bankLimit * bankLimit);
+  }
   // The heave and pitch states' own cost, when they are carried (`heaveScale`; a metre, a m/s, a rad, a rad/s by
   // default, which is loose enough to leave the design to the eight states that were always there).
   if (nState > N_STATE) {
@@ -513,9 +550,12 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   }
   // The capture point's cost (step 3.2j): a rank-one term on ξ = L (θ + θ̇/ω₀), which is where the cross term between
   // the bank and its rate comes from. A diagonal Q cannot express it.
-  if (w.captureScale) {
+  // The capture point's cost, only when asked for outright: `feetReach` sets the bank's ranking and nothing else, so
+  // that the tall stance's design does not move (step 3.2n).
+  const capture = w.captureScale;
+  if (capture) {
     const row = captureRow(y, 9.81, nState);
-    const weight = 1 / (w.captureScale * w.captureScale);
+    const weight = 1 / (capture * capture);
     for (let i = 0; i < nState; i += 1) for (let j = 0; j < nState; j += 1) q[i][j] += weight * row[i] * row[j];
   }
   // The weights per step (the continuous cost sampled): Q T, R T.

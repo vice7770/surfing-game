@@ -78,6 +78,21 @@ it("the owner's acceptance test: a compressed turn to take the wave on the side 
     let peakBank = 0;
     let speedAcross = Number.NaN;
     let maxFromFall = fromFall();
+    // The rail the bite is read against (`AttachedRider.prepareBank`): the board's roll about its heading, taken from
+    // the WATER's surface under the board rather than the world's level. RAIL_BITE is 48 degrees of this.
+    const side = new Vector3();
+    const boardUp = new Vector3();
+    const waterUp = new Vector3();
+    const railNow = () => {
+      const f = new Vector3(0, 0, 1).applyQuaternion(rig.board.orientation).setY(0).normalize();
+      side.set(-f.z, 0, f.x);
+      boardUp.set(0, 1, 0).applyQuaternion(rig.board.orientation);
+      const w = water.sampleAt(rig.board.position.x, rig.board.position.y, rig.board.position.z, sample);
+      waterUp.set(w.normalX, w.normalY, w.normalZ).normalize();
+      return Math.atan2(boardUp.dot(side), boardUp.y) - Math.atan2(waterUp.dot(side), waterUp.y);
+    };
+    let peakRailWater = 0;
+    let pastBiteFor = 0;
     rig.rider!.steer = steer;
     for (let i = 0; i < Math.round((TURN_LIMIT + HOLD) / STEP); i += 1) {
       const t = (i + 1) * STEP;
@@ -85,6 +100,9 @@ it("the owner's acceptance test: a compressed turn to take the wave on the side 
       rig.board.step(STEP, water);
       const s = state(rig, water, t);
       peakRail = Math.max(peakRail, Math.abs(s.roll));
+      const rw = Math.abs(railNow()) * DEG;
+      peakRailWater = Math.max(peakRailWater, rw);
+      if (rw > 48) pastBiteFor += STEP;
       peakBank = Math.max(peakBank, Math.abs(rig.rider!.bank.angle * DEG));
       const ff = fromFall();
       maxFromFall = Math.max(maxFromFall, ff);
@@ -94,13 +112,28 @@ it("the owner's acceptance test: a compressed turn to take the wave on the side 
         speedAcross = s.speed;
         rig.rider!.steer = 0;
       }
+      if (process.env.TRACE === '1' && h === HEIGHTS[0] && st === STANCES[0] && extra === EXTRAS[0] && steer === STEERS[0]
+        && [0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.8, 2.1, 2.5, 3, 3.5].some((mk) => Math.abs(t - mk) < STEP / 2)) {
+        // The rail the bite is read against, the rest the balance sent, and what the reference asked for.
+        const q = rig.rider as unknown as {
+          railAhead: number; schedRail: number; ankleRest: number; heldAnkleRaw: number; leanAsked: number;
+          bankReference: number; bank: { angle: number }; contact: { load: number };
+        };
+        emit({
+          bar: 'holdTrace', rider: RIDER, t: r(t, 3), fromFall: r(ff, 1), rollWorld: r(s.roll, 1),
+          railAhead: r(q.railAhead * DEG, 1), schedRail: r(q.schedRail * DEG, 1),
+          ankleRest: r(q.ankleRest * DEG, 2), rawRest: r((q.heldAnkleRaw ?? 0) * DEG, 2),
+          leanAsked: r(q.leanAsked * DEG, 1), bankRef: r(q.bankReference * DEG, 1), bank: r(q.bank.angle * DEG, 1),
+          load: r(q.contact.load, 2), v: r(s.speed, 2),
+        });
+      }
       if (s.fell) { fell = s.fell; fellAt = t; break; }
     }
     emit({
       bar: 'hold', rider: RIDER, height: h, stance: st, extra, steer,
       entryMs: r(entry, 2), reachedAcross: maxFromFall >= ACROSS, maxFromFallDeg: r(maxFromFall, 1),
       acrossAtS: r(acrossAt, 2), speedAcrossMs: r(speedAcross, 2),
-      peakRailDeg: r(peakRail, 1), peakBankDeg: r(peakBank, 1),
+      peakRailDeg: r(peakRail, 1), peakRailWaterDeg: r(peakRailWater, 1), pastBiteS: r(pastBiteFor, 2), peakBankDeg: r(peakBank, 1),
       held: !fell, fellIn: fell ? phase : '', fell, fellAtS: r(fellAt, 2),
       lean: r((rig.rider as unknown as { leanPace?: number }).leanPace ?? 0, 2),
       railCapDeg: r(((rig.rider as unknown as { railCap?: number }).railCap ?? 0) * DEG, 1),
