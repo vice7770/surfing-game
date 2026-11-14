@@ -319,6 +319,24 @@ looks along the broken wave from the toe, which is the nearest thing to looking 
 
 JPEGs in `c2-step5b-stills/`.
 
+## 7. What I am unsure of
+
+1. **The pay-back's course.** The blend-out walks the shown wave back onto the sea's crest over 2.4 s. A longer course
+   (starting at touchdown, over 5–6 s) would cut the drift by about 2.5× and change no shape, only the slice's place —
+   towards the sea's crest, which is where the wave belongs. I did not build it: it moves the place every lane's slice
+   stands at, so it needs step 3b's whole set re-measured, and the bar as written (the jump at the hand-back) does not
+   need it. **Recommended as the next step's first item** [R].
+2. **The aerated tint's 2 m**, and the flanks' widths (0.5 m behind the crest, 1.5 m past the toe), are by eye, as step
+   5a's feather was [P].
+3. **The drawn white's absolute** is still the sea's foam colour, about 1.6× Koepke's densest fresh foam. That is
+   ruling 25e's job and it must move for the whole scene at once, not for the bore alone [R, step 5a §5].
+4. **`DEEP.fade` = 2** is provisional. Nothing measured says where the library's water should stop; 2 is the first
+   scale-free choice that puts a board on the library's water and a submerged body on the sea's.
+5. The library's files grow from 11.81 MB to **24.9 MB** for 19 cases, over the plan's step-2 bar of 15 MB. They are
+   fetched only under the switch, and the ten new ones are what the height bar needed, but the bar is missed and is the
+   advisor's to accept [M].
+6. I did **not** ride it, and no rider session was run (the brief's rule). The owner rides and judges the foam.
+
 ## 8. The cost, and off unchanged
 
 **The page's draw.** The headless fps trace of a ride (Chrome, WebGPU, 70 s, this branch and main's `src` back to back
@@ -361,22 +379,3 @@ should be read again on a quiet machine [M, P].
   fps traces.
 - Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look's stills; the 600 s
   set-up run.
-
-## 7. What I am unsure of
-
-1. **The pay-back's course.** The blend-out walks the shown wave back onto the sea's crest over 2.4 s. A longer course
-   (starting at touchdown, over 5–6 s) would cut the drift by about 2.5× and change no shape, only the slice's place —
-   towards the sea's crest, which is where the wave belongs. I did not build it: it moves the place every lane's slice
-   stands at, so it needs step 3b's whole set re-measured, and the bar as written (the jump at the hand-back) does not
-   need it. **Recommended as the next step's first item** [R].
-2. **The aerated tint's 2 m**, and the flanks' widths (0.5 m behind the crest, 1.5 m past the toe), are by eye, as step
-   5a's feather was [P].
-3. **The drawn white's absolute** is still the sea's foam colour, about 1.6× Koepke's densest fresh foam. That is
-   ruling 25e's job and it must move for the whole scene at once, not for the bore alone [R, step 5a §5].
-4. **`DEEP.fade` = 2** is provisional. Nothing measured says where the library's water should stop; 2 is the first
-   scale-free choice that puts a board on the library's water and a submerged body on the sea's.
-5. The library's files grow from 11.81 MB to **24.9 MB** for 19 cases, over the plan's step-2 bar of 15 MB. They are
-   fetched only under the switch, and the ten new ones are what the height bar needed, but the bar is missed and is the
-   advisor's to accept [M].
-6. I did **not** ride it, and no rider session was run (the brief's rule). The owner rides and judges the foam.
-
