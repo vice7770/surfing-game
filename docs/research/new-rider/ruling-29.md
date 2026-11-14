@@ -1123,3 +1123,56 @@ With 29u's test, this gives two rules that outrank any probe number:
 1. When a stance, a strategy or an input is the one a real surfer would reach for, the game must reward it.
 2. A fall must be explainable as one a surfer would have made. Falls belong at high speed and in hard reversals, not in
    the basic turn across the wave.
+
+---
+
+# Ruling 29w: the rail-bite limit is refuted, and 3.2m's headline with it (2026-11-14)
+
+Step 3.2n, held on `claude/rider-new-32n` (b8c280d8). Written at 97 % of the weekly budget, so this is short.
+
+## The correction, and it is the advisor's to carry
+
+3.2m read "he leans too far": the new rider rolling to 60–66° of rail against a `RAIL_BITE` of 48°. The advisor took
+that as the cause and told the owner so.
+
+**It is wrong, and the build agent found its own error.** The old rider is **past the 48° bite in 12 of 12 runs**
+(54–94°, water-referenced) and still passes 12 of 12. 3.2m had compared a **world-referenced** rail column against a
+constant **defined against the water**. A limit at the bite would clamp the good rider harder than the bad one.
+
+So the rail-bite limit is **not built, deliberately**, and 29t's and 3.2m's "he leans too far" is withdrawn. Going past
+the bite is what a working turn does.
+
+**That an agent went looking for its own previous round's mistake, on a branch it had already been praised for, is the
+behaviour this track runs on.**
+
+## What the trace actually shows, and it is the next step
+
+**The rider reaches a rail and cannot keep it.** The rail peaks at +24° and unwinds to +4° while the bank stalls at 25°
+against the 50° asked — **with nothing saturating.** Nothing is at a limit; the turn simply leaks away.
+
+That is the unsensed **0.33–0.74 Hz board heave-and-pitch mode** 3.2m located. The balance is given no sense of it. The
+game already measures `rider.contact.load` and the board's pitch, so the sense exists and is not wired.
+
+## The stance-units fix: built, measured, and left off
+
+`DesignWeights.feetReach` replaces the single 2.9° bank cost with each stance's own limit. Built in two forms — the
+physical limits outright, and the ranking only.
+
+- Both lift the model's margin against a frame of timing error at all 18 points, most for Compress.
+- Both **remove the turn pair's two falls while waiting in Compress**, which is the owner's point 3.
+- Both **cost the standing stance its 90° turn** (1.73 s → never; its fall 2.13 s → 1.10 s), *including* the form meant
+  to spare it.
+- The acceptance test does not move (0 of 12; 1 of 12 with the blunter form).
+
+**Decision: it stays off by default, and the real fault is named instead.** The schedule reads the **instantaneous leg
+depth**, so a nominally tall rider blends continuously into the lower designs — **the stances are never isolated**.
+That is why a fix aimed at Compress cannot avoid taxing tall. Isolating the stances comes first; then this fix should
+land without the trade.
+
+## Order when work resumes
+
+1. **Give the balance a sense of the board's heave and pitch.** The measurements exist in the game already.
+2. **Isolate the stances in the schedule**, then land `feetReach`.
+3. Run the Canyon byte check before any merge of 3.2n — it was stopped unfinished at the limit. While `feetReach` is
+   off the shipped design is byte-identical to 3.2m, all 54 `railmodel` rows including gains, so it cannot differ, but
+   it is unverified and must not be merged on that reasoning alone.
