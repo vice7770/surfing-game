@@ -5534,11 +5534,19 @@ advisor's own leading one is refuted by its own named test.**
   −54.7 rad/s² at 40 / 50 / 60° against the flat board's −17.3 / −22.6 / −30.8), so the section is if anything *harder*
   to hold over, not easier. **The caveat that keeps this from being conclusive: the bench carries no rider**, and in the
   ride the roll is driven through a 73 kg rider's contact, so this measures the hull's own spring and not the system's.
+- **The band's normals do make a seed the flat bottom cannot have, and that part is measured.** At **zero roll**, where
+  the two hulls are otherwise the same board, the flat hull's pressure makes **exactly 0.0 N** of lateral force at
+  **every** drift — it cannot make any, because every one of its normals has `x = 0` — while the section makes
+  **10.3 N at 3° of drift, 27.0 N at 10° and 41.2 N at 20°**, toward the rail the board is slipping away from, with a
+  roll moment **0.02 to 0.12 N·m** above the flat board's in the direction of going over onto it [M]. So the section
+  gives a small drift something to bite, from flat, which the flat sheet is structurally incapable of. **What I have not
+  measured is that this seed is what grows to 31° of lean** through the rider's balance loop; the seed's existence is a
+  measurement and the growth is [I].
 - **What is left**, unseparated: the thickness redistribution (taper 0.925 → 0.568, which moves buoyancy and roll
   inertia outboard, 0.0262 → 0.0283 kg·m²; the advisor puts its buoyancy-lever channel at about 1 N·m), the dropped
   rail side faces (the bench puts them at −11 to −16 N inward and ≤ 3.8 N·m of roll), and the band's own normals, which
   are the only thing in the model that can make a **rolling** moment from a small drift at zero roll, because every
-  other patch normal has `x = 0`. I think the third is the mechanism [I] and **I have not measured it.** Two flags would
+  other patch normal has `x = 0`. I think the third is the mechanism, for the reason in the bullet above, and the step from its seed to 31° is [I]. Two flags would
   settle it and neither needs a fourth hull: the squared taper on the same patch layout, and the side-face foils
   re-enabled. What I can say without them is that the advisor's own arithmetic bounds the first two well under what
   would be needed — about 1 N·m for the buoyancy lever and ≤ 3.8 N·m for the side faces, against a board that goes from
@@ -5606,10 +5614,12 @@ both, and the right change is to add the face cell beside it, not to move it.
 
 ## 8. What I am unsure of
 
-- **§5 is open and it is the most interesting number in the round.** I can say the section makes the rider lean 31°
-  where he leant 0.6°, that the lateral force is tan(lean) and not a new force, and that it is not the patch count. I
-  cannot say which part of the section does it. Anyone reading §4 line 3 as "the band's normals buy the turn" is
-  reading my inference, not my measurement.
+- **§5 is half open and it is the most interesting number in the round.** Measured: the section makes the rider lean
+  31° where he leant 0.6°; the lateral force is tan(lean) and not a new force; it is not the patch count; and the band's
+  normals make a lateral force and a roll moment at **zero** roll that the flat sheet is structurally incapable of.
+  **Not measured: that the second of those causes the first.** The chain from a 0.02–0.12 N·m seed to 31° of body lean
+  runs through the rider's balance loop and I did not trace it, so anyone reading §4 line 3 as "the band's normals buy
+  the turn" is reading my inference for that step.
 - **Six runs a cell.** 6-of-6 against 0-of-6 is solid; 6-of-6 against 4-of-6 is not a difference, and §4 line 6 says so
   rather than ranking the hulls on it.
 - **The band's millimetres are all [I] and now so is the taper's exponent.** The advisor found no measured shortboard
