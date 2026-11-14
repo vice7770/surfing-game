@@ -3908,9 +3908,17 @@ turned beside the count, as 3.2m's table showed they must be** [M]:
 the board's own states into this loop costs the rider half the time he currently survives, and the rail he reaches
 collapses with it. The senses-off row is the proof that it is the plant: the loss is there before any new sense is read.
 
-**The shipped row is 3.2n's row** — the design is byte-identical — re-run here from this worktree. The two runs differ
-in the third significant figure on the chaotic columns (the heading turned reads 1.9–31.9° here against 1.9–32°), which
-is this probe's own sensitivity and not a change.
+**The shipped row is 3.2n's row** — the design is byte-identical — and it is verified twice over. Within this session
+it reproduces **exactly**: a baseline run made in this worktree *before* any `src/` change and the shipped run made
+*after* are identical on every recorded column in all 12 runs (`results/hold-base-32p.jsonl` against
+`results/ask-ten-32p.jsonl`).
+
+**Against 3.2n's stored file, though, several cells differ a long way** — the heading turned in one Compress run reads
+28.6° there and 7.3° here, and in one tall run 31.9° there and 2.6° here — while the headline (0 of 12, every run
+falling) is the same. I cannot account for that: the design is byte-identical and the probe is deterministic within a
+session. **So this probe's absolute per-run numbers should be compared only inside one session's results**, and the
+ranges across the twelve are what should be quoted across parts. That is a caveat on every hold-probe number in Parts
+12 to 14, including mine.
 
 ## 5b. The owner's own words after riding 3.2n, and the number he can feel
 
@@ -4018,6 +4026,10 @@ own concurrent probe did. The clean re-run uses `--maxWorkers=3`, which is the l
   The most likely candidate is that the derivatives were taken about the deck under the rider while the pair's pitch
   inertia is computed about the same point with the rider as a point mass at 0.84 m — a 52 kg·m² lever arm that a real
   crouching body does not have rigidly.
+- **The hold probe does not reproduce across sessions** (§5), and I do not know why. Everything I conclude is from
+  runs made inside this session against each other, which is the comparison that is sound; but it means 3.2m's and
+  3.2n's per-run cells and mine are not directly comparable, and that is worth an advisor's look since this probe is
+  now the gate.
 - **I did not try the one combination that might still work**: the free twelve derivatives with a heave block whose
   own stiffness has been reduced to remove the double count. That is a derivation, not a measurement, and it belongs
   in a ruling.
