@@ -111,12 +111,60 @@ export function submergedShare(depth: number): number {
   return x * x * (3 - 2 * x);
 }
 
+/**
+ * The buried rail's suction (step 3.2u; the water-physics advisor's design of 2026-11-14, logged in
+ * `docs/research/water-physics/consult-log.md`). Until the rail band existed `patchForce` could only ever **push** —
+ * its own note said "never suction" — so a rolled board had nothing to grip the water with, and the advisor's ruling on
+ * the section was *build the suction with it, or build neither*.
+ *
+ * On the band's **leeward** facets — the ones the flow has turned past, `v_rel · n < 0` — the flow separates and the
+ * whole separated region sits at one base pressure, so there is no fall-off with turn angle: the turn angle decides
+ * membership and direction, not size (the advisor). Its coefficient is referenced to the **cross-plane** dynamic
+ * pressure, the part of the flow that has to turn around the band, and it is the same bluff-body coefficient already in
+ * this file: Hoerner's C_D90 ≈ 1.18 (`SUBMERGED.normalDrag`, Hoerner 1965 *Fluid-Dynamic Drag* 3-16), which for a bluff
+ * body is its base-pressure coefficient to within a tenth [S for the coefficient, I for using it on a rail band].
+ *
+ * **The ceiling is a measured line, and it is this model's best-sourced number.** Breslin & Skalak (1959, NASA Memo
+ * 2-23-59W) faired the ventilation boundary of a surface-piercing strut to C_s·F_h² = 5 with F_h = U/√(gh) — which is
+ * area- and speed-free: a sustainable loading of **2.5 ρ g h** at depth h. Their chords put h at 0.032–0.152 m and our
+ * buried rail runs 0.17–0.26 m under (Part 17 §3), so for once the datum brackets us instead of being extrapolated to.
+ * Using a span-mean bound as a local per-facet cap is the advisor's extension [I].
+ *
+ * Cut off rather than extrapolated: the cross-plane speed at `crossCap` of the flow (past that nothing is measured),
+ * the depth at `depthCap` (the law is positive feedback on depth — deeper pulls harder pulls deeper — and the cap is
+ * the net under it), and nothing at all where the band's own sweep never reaches the separation angle, which is why the
+ * tail's hard 30° tucked edge makes no suction and the round forward rail does. Cavitation does **not** bind: σ = 3.0–3.2
+ * at 8 m/s and 0.2 m under, against a demanded |C_p| of 0.07–0.15, twenty times away.
+ */
+export const RAIL_SUCTION = {
+  /** Base-pressure coefficient on the cross-plane dynamic pressure. */
+  coefficient: 1.15,
+  /** The cap, in ρ g h (Breslin & Skalak's C_s F_h² = 5). */
+  cap: 2.5,
+  /** The cross-plane speed, as a share of the flow past the patch, past which nothing is measured. */
+  crossCap: 0.35,
+  /** Depth, m, past which the cap stops growing. */
+  depthCap: 0.35,
+  /** The window of `v_rel · n`, m/s, the pressure–suction switch is blended over, instead of flipping sign at zero. */
+  blend: 0.2,
+} as const;
+
 /** A hull patch placed in the world: bottom centre, outward (downward) normal, planform area and thickness. */
 export interface WorldPatch {
   position: Vec;
   normal: Vec;
+  /** **Planform** area, m²: the station beam, the added mass, the radiation, `planingScales` and λ all hang off it. */
   area: number;
   thickness: number;
+  /**
+   * A rail-band facet (`BoardShape`'s `HullPatch.band`), absent on the flat bottom:
+   * - `faceArea`, the facet's true area, m², which the pressure, the friction and the suction are taken over;
+   * - `up`, the station's own deck direction, because a near-vertical facet's deck is not along its own normal;
+   * - `tangent`, the rail's own direction (the board's long axis), which fixes the cross-plane the suction turns in;
+   * - `gate`, 0 to 1: the band's own gates — the leeward arc wide enough to separate, an air path, Taylor's condition,
+   *   and 1 − the ventilated share (`BoardBody.bandGate`). 0 makes no suction at all.
+   */
+  band?: { faceArea: number; up: Vec; tangent: Vec; gate: number };
 }
 
 export interface PatchForce {
@@ -125,6 +173,16 @@ export interface PatchForce {
   buoyancyPoint: Vec;
   /** Planing and impact pressure on the wetted face meeting the flow, N, acting at the patch. */
   pressure: Vec;
+  /**
+   * The buried rail band's suction, N, acting at the patch along **+normal** — into the water, which on a buried rail is
+   * down and toward the turn's centre (`RAIL_SUCTION`). Its own accumulator, so Part 17's `pressure.y / |pressure|`
+   * identity still reads the pressure alone. 0 on a flat bottom and on every patch that is not a band facet.
+   */
+  suction: Vec;
+  /** The suction's pressure and the cap that bounds it, Pa, and 1 if the cap is what is binding: the round's score card. */
+  suctionPressure: number;
+  suctionCap: number;
+  suctionCapped: number;
   /**
    * −∂(pressure · n)/∂(v · n), N·s/m: how fast the pressure grows with the speed
    * into the water, for an implicit integrator.
@@ -142,6 +200,7 @@ export interface PatchForce {
 export function createPatchForce(): PatchForce {
   return {
     buoyancy: { x: 0, y: 0, z: 0 }, buoyancyPoint: { x: 0, y: 0, z: 0 }, pressure: { x: 0, y: 0, z: 0 },
+    suction: { x: 0, y: 0, z: 0 }, suctionPressure: 0, suctionCap: 0, suctionCapped: 0,
     pressureDamping: 0, friction: { x: 0, y: 0, z: 0 }, wettedArea: 0, deckWettedArea: 0, submerged: 0,
   };
 }
@@ -157,7 +216,9 @@ function zero(v: Vec): void {
  * - buoyancy from the part of the slab under the surface, pushed by the
  *   hydrostatic pressure gradient ρg(−∂η/∂x, 1, −∂η/∂z), so down a sloping face;
  * - pressure where a wetted face meets the flow (the bottom, or the deck of a
- *   capsized board), never suction;
+ *   capsized board) — and, on a rail-band facet the flow has turned past, the band's
+ *   own suction in its place (`RAIL_SUCTION`, step 3.2u). On a flat bottom, as
+ *   before, this law never makes suction at all;
  * - ITTC skin friction on the tangential flow over both wetted faces.
  * `relative` is the patch's velocity minus the water's; `wettedLength` sets the
  * Reynolds number, and `pressureScale` places the patch in the pressure
@@ -169,17 +230,24 @@ export function patchForce(
 ): PatchForce {
   zero(out.buoyancy);
   zero(out.pressure);
+  zero(out.suction);
   zero(out.friction);
+  out.suctionPressure = 0;
+  out.suctionCap = 0;
+  out.suctionCapped = 0;
   out.pressureDamping = 0;
   out.wettedArea = 0;
   out.deckWettedArea = 0;
   out.submerged = 0;
-  const { position, normal, thickness, area } = patch;
+  const { position, normal, thickness, area, band } = patch;
+  // The band's facets carry their true area; everything keyed on the beam keeps the planform (the advisor's trap 2).
+  const faceArea = band ? band.faceArea : area;
   out.buoyancyPoint.x = position.x;
   out.buoyancyPoint.y = position.y;
   out.buoyancyPoint.z = position.z;
   if (!water.wet || water.outsideDomain) return out;
-  const deckY = position.y - normal.y * thickness;
+  // A near-vertical band facet's deck is not along its own normal (the advisor's trap 1): the station's own up instead.
+  const deckY = band ? position.y + band.up.y * thickness : position.y - normal.y * thickness;
   const bottom = wettedShare(water.surfaceY - position.y);
   // `deckWet`: the deck's wet share where it lies under the surface line in a planing board's open hollow (`hollowWetShare`).
   const deck = wettedShare(water.surfaceY - deckY) * deckWet;
@@ -208,9 +276,12 @@ export function patchForce(
   }
   // Halfway up the immersed part, measured from the bottom face toward the deck.
   const centroid = bottomLow ? (thickness * submerged) / 2 : thickness * (1 - submerged / 2);
-  out.buoyancyPoint.x = position.x - normal.x * centroid;
-  out.buoyancyPoint.y = position.y - normal.y * centroid;
-  out.buoyancyPoint.z = position.z - normal.z * centroid;
+  const upX = band ? band.up.x : -normal.x;
+  const upY = band ? band.up.y : -normal.y;
+  const upZ = band ? band.up.z : -normal.z;
+  out.buoyancyPoint.x = position.x + upX * centroid;
+  out.buoyancyPoint.y = position.y + upY * centroid;
+  out.buoyancyPoint.z = position.z + upZ * centroid;
 
   out.wettedArea = area * bottom;
   out.deckWettedArea = area * deck;
@@ -224,12 +295,20 @@ export function patchForce(
   const tangential = Math.hypot(tx, ty, tz);
   // Submerged, both faces wet: the plate's cross-flow drag on top of the planing law, by its share under (`SUBMERGED`).
   const deep = bottom >= 1 && deck >= 1 ? submergedShareHere : 0;
+  /**
+   * The band's leeward share: 1 where the flow has turned past this facet, 0 where it still meets it, blended over
+   * `RAIL_SUCTION.blend` of `v_rel · n` rather than flipping at zero — a real convex surface goes sub-ambient slightly
+   * before the geometric crossing [I], and the switch is a sign change, not a ramp from nothing.
+   */
+  const leeward = band ? Math.min(1, Math.max(0, 0.5 - normalSpeed / RAIL_SUCTION.blend)) : 0;
   if (normalSpeed !== 0 && face > 0) {
-    const k = 0.5 * density * PRESSURE_COEFFICIENT * pressureScale * face * area;
+    // Leeward, the suction **replaces** the deck's own pressure on that facet rather than being added to it: both act
+    // along +n and counting both would double the leeward load (the advisor's fourth trap, `face = … : deck`).
+    const k = 0.5 * density * PRESSURE_COEFFICIENT * pressureScale * face * faceArea * (normalSpeed < 0 ? 1 - leeward : 1);
     let pressure = k * speed * normalSpeed;
     let damping = k * (speed + (normalSpeed * normalSpeed) / speed);
     if (deep > 0) {
-      const kd = 0.5 * density * area * deep * (SUBMERGED.normalDrag - PRESSURE_COEFFICIENT);
+      const kd = 0.5 * density * faceArea * deep * (SUBMERGED.normalDrag - PRESSURE_COEFFICIENT);
       pressure += kd * Math.abs(normalSpeed) * normalSpeed;
       damping += 2 * kd * Math.abs(normalSpeed);
     }
@@ -238,8 +317,25 @@ export function patchForce(
     out.pressure.z = -pressure * normal.z;
     out.pressureDamping = damping;
   }
+  if (band !== undefined && band.gate > 0 && leeward > 0 && bottom > 0) {
+    // The cross-plane speed: only the part of the flow that has to turn around the band (`RAIL_SUCTION`).
+    const along = relative.x * band.tangent.x + relative.y * band.tangent.y + relative.z * band.tangent.z;
+    const cross = Math.min(Math.hypot(relative.x - along * band.tangent.x, relative.y - along * band.tangent.y, relative.z - along * band.tangent.z), RAIL_SUCTION.crossCap * speed);
+    const curved = 0.5 * density * RAIL_SUCTION.coefficient * cross * cross;
+    const cap = RAIL_SUCTION.cap * density * WATER.gravity * Math.min(RAIL_SUCTION.depthCap, Math.max(0, water.surfaceY - position.y));
+    const dp = band.gate * leeward * bottom * Math.min(curved, cap);
+    out.suctionPressure = Math.min(curved, cap);
+    out.suctionCap = cap;
+    out.suctionCapped = curved > cap ? 1 : 0;
+    // Along +n: into the water, which on a buried rail is downward and inward. It does not depend on `v_rel · n`, so it
+    // adds nothing to `pressureDamping` — an explicit force, bounded by the cap whatever the depth does.
+    const push = dp * faceArea;
+    out.suction.x = push * normal.x;
+    out.suction.y = push * normal.y;
+    out.suction.z = push * normal.z;
+  }
   if (tangential > 0) {
-    const friction = 0.5 * density * ittcFriction((speed * wettedLength) / WATER.viscosity) * tangential * (bottom + deck) * area;
+    const friction = 0.5 * density * ittcFriction((speed * wettedLength) / WATER.viscosity) * tangential * (bottom + deck) * faceArea;
     out.friction.x = -friction * tx;
     out.friction.y = -friction * ty;
     out.friction.z = -friction * tz;

@@ -537,6 +537,10 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...agileSwitch(),
     // `?legDrive=on`: at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in the lean-out pull's place (leg-drive), opt-in, to ride. `?legDrive=turn` adds the compressed turn's lead-in, in COMPRESS_PULL's place (step 3.2t).
     ...legDriveSwitch(),
+    // `?hull=rail` (step 3.2u): the board gets a real rail band — its own normals, the buried rail's suction and its
+    // ventilation latch — in place of the flat sheet with a knife edge. `?railSuction=off` keeps the section and drops
+    // the grip; `?compressPull=off` deletes the old rider's unpaired compressed-turn pull. Opt-in, to ride.
+    ...hullSwitch(),
     // `?carveFlex=on`: on a standing, stick-only carve the riders' legs flex with the turn's load, low at the bottom and taller as it ends (carve-flex), opt-in, to ride.
     ...carveFlexSwitch(),
     // `?snapLegs=drive`: under Snap the riders' legs load and then extend as the board comes round, in place of holding the full depth (snap-legs), opt-in, to ride.
@@ -982,6 +986,29 @@ export function agileSwitch(search?: string): { agile?: 'on' } {
 export function legDriveSwitch(search?: string): { legDrive?: 'on' | 'turn' } {
   const value = devParam('legDrive', search)?.trim().toLowerCase();
   return value === 'on' ? { legDrive: 'on' } : value === 'turn' ? { legDrive: 'turn' } : {};
+}
+
+/**
+ * The `?hull=rail`, `?railSuction=off` and `?compressPull=off` dev switches (step 3.2u; `SurfZoneConfig.hull`,
+ * `.railSuction`, `.compressPull`).
+ *
+ * `?hull=rail` gives the board a cross-section: a flat bottom out to the rail, then a circular band with its own
+ * normals, and on the buried rail's leeward facets the band's **suction** with a ventilation latch
+ * (`BoardShape`'s `RAIL_BAND`, `hullForces`' `RAIL_SUCTION`, `BoardBody`'s `RAIL_LATCH`). Until this every bottom patch
+ * carried one flat-bottom normal, so rolled on its rail the board had no surface left pointing down and the hull could
+ * only push, never grip. `?railSuction=off` builds the section and makes no suction, which tells the geometry's own
+ * effect from the grip's. `?compressPull=off` deletes COMPRESS_PULL, the old rider's unpaired sideways force in a
+ * compressed turn, with nothing in its place. All three opt-in, to ride; online rooms run the default.
+ */
+export function hullSwitch(search?: string): { hull?: 'rail'; railSuction?: 'off'; compressPull?: 'off' } {
+  const hull = devParam('hull', search)?.trim().toLowerCase();
+  const suction = devParam('railSuction', search)?.trim().toLowerCase();
+  const pull = devParam('compressPull', search)?.trim().toLowerCase();
+  return {
+    ...(hull === 'rail' ? { hull: 'rail' as const } : {}),
+    ...(suction === 'off' ? { railSuction: 'off' as const } : {}),
+    ...(pull === 'off' ? { compressPull: 'off' as const } : {}),
+  };
 }
 
 /**

@@ -144,6 +144,12 @@ export interface RideSessionOptions {
   agile?: 'on';
   /** The leg drive (leg-drive, 2026-11-10; `AttachedRiderOptions.legDrive`): 'on' (the `?legDrive=on` dev switch), or 'turn', which adds the compressed turn's lead-in (step 3.2t, `?legDrive=turn`); by default as before. */
   legDrive?: 'on' | 'turn';
+  /** The hull's cross-section (step 3.2u; `BoardBodyOptions.hull`): 'rail' gives the board a real rail band and its suction (the `?hull=rail` dev switch). */
+  hull?: 'rail';
+  /** The band's suction alone, off (step 3.2u; `BoardBodyOptions.railSuction`): the section's geometry without the grip (`?railSuction=off`). */
+  railSuction?: 'off';
+  /** COMPRESS_PULL deleted (step 3.2u; `AttachedRiderOptions.compressPull`): the compressed turn's unpaired pull, gone, with nothing in its place (`?compressPull=off`). */
+  compressPull?: 'off';
   /** The carve's flexing legs (carve-flex, 2026-11-10; `AttachedRiderOptions.carveFlex`): 'on' (the `?carveFlex=on` dev switch); by default as before. */
   carveFlex?: 'on';
   /** Snap's driving legs (snap-legs, 2026-11-10; `AttachedRiderOptions.snapLegs`): 'drive' (the `?snapLegs=drive` dev switch); by default as before. */
@@ -232,7 +238,11 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
-    this.board = new BoardBody({ ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}), ...(options.deckHollow ? { deckHollow: options.deckHollow } : {}) });
+    this.board = new BoardBody({
+      ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}),
+      ...(options.deckHollow ? { deckHollow: options.deckHollow } : {}),
+      ...(options.hull ? { hull: options.hull } : {}), ...(options.railSuction ? { railSuction: options.railSuction } : {}),
+    });
     this.duckOld = options.duckBody === 'old';
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
@@ -242,6 +252,7 @@ export class RideSession {
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),
       ...(options.agile ? { agile: options.agile } : {}),
       ...(options.legDrive ? { legDrive: options.legDrive } : {}),
+      ...(options.compressPull ? { compressPull: options.compressPull } : {}),
       ...(options.carveFlex ? { carveFlex: options.carveFlex } : {}),
       ...(options.snapLegs ? { snapLegs: options.snapLegs } : {}),
       ...(options.snapCross ? { snapCross: options.snapCross } : {}),

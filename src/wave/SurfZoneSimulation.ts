@@ -238,6 +238,17 @@ export interface SurfZoneConfig {
    */
   legDrive?: 'on' | 'turn';
   /**
+   * The hull's cross-section (step 3.2u; `RideSessionOptions.hull`): **'rail'** gives the board a real rail band — its
+   * own normals, with the buried rail's suction and its ventilation latch — in place of the single flat-bottom normal
+   * every patch has carried until now. `railSuction: 'off'` builds the section and makes no suction, which tells the
+   * geometry's effect from the grip's. `compressPull: 'off'` deletes the old rider's unpaired compressed-turn pull.
+   * Every spot. The `?hull=rail`, `?railSuction=off` and `?compressPull=off` dev switches, opt-in; online rooms run the
+   * default.
+   */
+  hull?: 'rail';
+  railSuction?: 'off';
+  compressPull?: 'off';
+  /**
    * 'on': on a standing, stick-only carve the riders' legs flex with the turn's load, to a moderate crouch at most
    * (carve-flex, 2026-11-10; `RideSessionOptions.carveFlex`). Every spot. The `?carveFlex=on` dev switch, opt-in, to
    * ride; online rooms run the default.

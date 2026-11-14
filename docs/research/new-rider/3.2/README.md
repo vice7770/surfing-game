@@ -5304,3 +5304,374 @@ have been saying your waves give the surfer a 16° face. That is the steepest po
 the turn your surfer actually does, the water under his board is sloped **about two degrees**. Even on the new steep
 wave, with a 31° face, the water under the board during the turn is two to three degrees. He is turning in the flat
 bottom of the wave, not on its wall. Whatever we fix next, that is worth fixing too.
+
+# Part 19 — the hull given a real rail, and the premise it refutes
+
+Written 2026-11-14 by the build agent (Opus 5, effort xhigh) on branch `claude/rider-new-32u`, cut from `origin/main`
+at **691cac46** (step 3.2t's merge), so Part 18 above is its base.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The brief's premise is wrong, and this is the paragraph it asked me to say so in.** The brief, and 3.2t's own
+conclusion, was: *"the sideways force the system is missing cannot come from inside the rider. It must come from the
+water, through the rail."* Measured at a fixed pose, fixed immersion and the same foils, **the flat board the game has
+already makes 221–840 N of force toward the buried rail at 20–60° of roll, against the 141 N `COMPRESS_PULL` fakes —
+and the shaped rail makes LESS of it at every one of the twenty cells, by 0.4 to 20 %** [M, 120 bench cells]. The system was never short of
+sideways force. So the round's one question — *can a shaped hull with suction on the buried rail supply the sideways
+force the cheat fakes?* — has a cleaner answer than "no, not enough": **the hull does not need to supply it, and the
+old rider's compressed turn still scores 0 of 6 with the cheat deleted on every hull I built.**
+
+## 1. The four sentences the round is for
+
+1. **The section and the suction are built, opt-in as `?hull=rail` (and `?railSuction=off`, `?compressPull=off`), and
+   the build is sound.** The advisor's own build check — `max |normal.x|` over the wetted patches, **identically 0** on
+   the flat board because `BoardShape.ts` gives every patch `normal: { x: 0, … }` — reads **0.913–1.000** at the bench
+   and **0.93–0.97** through the ride
+   [M]. Part 17's identity breaks exactly where the advisor first predicted it would: `pressure.y / |pressure|` leaves
+   cos(roll) by **+0.034 at 40° and +0.043 at 50°** (and +0.064 at 60°, +0.113 at 70°) against its prediction of
+   +0.02–0.06 at 40–60°, where Part 17 measured the identity holding to 0.008–0.077 in all eighteen bins [M].
+2. **The suction is real, correct in direction, and worth nothing in this ride, for a reason that is geometry and not a
+   coefficient.** With the flow along the rail, `v_rel · n` is the same on every facet of a station whatever its turn
+   angle — turning a normal about the axis the flow runs along does not change `v·n` — so **no facet is leeward and the
+   band makes no suction at all by construction**. It is driven entirely by the board's sideways slip. The slip the ride
+   measures is **0.8–3.3° median**; the slip the law needs for the advisor's 2–3 kPa is **15–18°**. Median suction
+   through the ride: **0.0 N**. Peak in any frame: **6.5–8.3 N** [M].
+3. **The win condition is not met, and not nearly.** Old rider, compressed, the owner's acceptance test, 6 runs a cell:
+   the cheat's own score is **6 of 6, rail 10.0° median, path rate 33.9 °/s, 6.00 s up** (Part 18's row, reproduced to
+   the first decimal). With `COMPRESS_PULL` deleted: flat **0 of 6**, the section **0 of 6**, the section with its
+   suction **0 of 6** [M].
+4. **But the section is not inert, and what it does is the round's real finding.** With the cheat deleted it takes the
+   compressed turn's **body lean from 0.60° to 31.1°** and the system's lateral load factor toward the buried rail from
+   **0.005 g to 0.418 g** — more than twice the 0.19 g the cheat fakes — and he still scores 0 of 6, reaching 49–79° of
+   the 85° the gate asks for. At full stick the turn ends in a **spin-out**: drift 18–24°, path rate peaks 307–426 °/s,
+   the rail ventilated 32–39 %, down at 2.2–3.5 s [M]. **So the owner's bar on feel is met and the gate is not**, and
+   what is missing is no longer a force.
+
+## 2. What was built
+
+**The section** (`BoardShape.ts`, `RAIL_BAND`). A flat bottom out to the band's start, then a circular band tangent to
+it, **four facets a rail spaced by equal turn angle** — the advisor's requirement, because four patches across the whole
+beam cannot see a 12 mm band at all. 48 patches become **144**. The band takes the **outer** part of each station's own
+half-beam, so:
+
+| | flat (today) | the section |
+|---|---|---|
+| patches | 48 | **144** (96 of them band facets) |
+| planform area | 0.620623 m² | **0.620623 m²**, and every station beam identical to 12 decimal places [M] |
+| maximum width | 0.464 m | **0.464 m** |
+| volume | 25.750 L | **25.750 L** (closes to 0.002 %) |
+| `max |normal.x|` | **0.000** | **0.981** (patch) / 0.91–1.00 (wetted, in the ride) |
+| taper a | 0.924649, on u² | **0.567984, on |u|** |
+| rail thickness at u = 1, mid | **5.0 mm** | **28.8 mm** |
+| band radius | — | **6.7 mm at the tail → 12.6 mm mid → 11.1 mm in the nose third**; apex 0.9 → 12.6 mm; sweep 30° → 90° |
+| roll inertia (board alone) | 0.0262 kg·m² | 0.0283 |
+| centre of mass | y 0.038756, z −0.056038 | y 0.037603, z −0.057400 |
+
+All [M]. **The band forced one change the advisor did not foresee and it is the interesting part of the geometry.** Its
+section asked for a 12/18/25 mm radius. A band of radius R turns the bottom over to an apex R above it, so a coherent
+section needs the local rail at least 2R thick — and today's thickness across the beam, `t(1 − a u²)` with a solved at
+**0.925** to hold 25.75 L, leaves the rail **5 mm**. That is the same number Part 17 §3 item 2 measured from the other
+end (the buried rail's deck edge sitting 1–3 mm above its bottom edge: *"the board has no rail band"*). 18 mm of radius
+in a 5 mm rail puts the bottom through the deck.
+
+The exponent is nobody's measurement. With the taper **linear** across the beam the **same section-area coefficient**
+gives a = 0.568 and a **29 mm rail**, which carries a 12.6 mm band. Same volume, same maximum thickness, same beam, same
+planform, same coefficient (0.711 on this 4-across grid, identical for both hulls [M]; 0.692 is the continuum
+parabola's own value, which is the figure the advisor quoted). So `'rail'` is **a linear taper plus the band**, and
+`RAIL_BAND.power` is the one number in the section that is a modelling choice rather than a measurement [I].
+
+**The advisor's three code traps, each handled and each verified by me** [R]:
+`hullForces.ts:182` derived the deck along the patch normal, which collapses for a near-horizontal band facet — band
+facets now carry the **station's own up** and the flat path is untouched (for a flat patch, `up` is `−normal` exactly).
+`BoardBody.ts:486` reads each station's beam as Σ area/length — `area` stays the **planform** and a new `faceArea`
+carries the facet's true area for the pressure, the friction and the suction, so the beam, `addedMassPerArea`,
+`radiationPerArea` and `planingScales` do not move (the table above is the check). `BoardBody.ts:545` feeds
+`shape.taper` to `buildFoils` — and the **rail side-face foils go with the band**, because they were a bluff stand-in
+for exactly the surface the band now carries and keeping both would count the rail twice; so `shape.taper` no longer
+reaches anything that can move, and the fins never used it. A fourth trap the advisor found while this ran:
+`hullForces.ts:220`'s `face = normalSpeed > 0 ? bottom : deck` already applies a force along **+n** on a leeward facet,
+so on a band facet the suction **replaces** that deck pressure rather than adding to it.
+
+**The suction** (`hullForces.ts`, `RAIL_SUCTION`). On the band's leeward facets only, a base pressure
+`C_S · ½ρ u_c²` along +n, with `u_c` the **cross-plane** speed (the part of the flow that has to turn around the band),
+`C_S = 1.15` — Hoerner's bluff-body C_D90, which is already in the file as `SUBMERGED.normalDrag = 1.18` [S] — capped
+at **2.5 ρ g h**, Breslin & Skalak's own faired ventilation boundary `C_s F_h² = 5` re-read as a loading, which is for
+once a datum that **brackets** our rail depth (their 0.032–0.152 m against our 0.17–0.26 m) instead of being
+extrapolated to [S]. Cut off at 0.35 V of cross-plane speed and 0.35 m of depth; the pressure↔suction switch blended
+over 0.2 m/s of `v·n`. No cavitation clamp: σ = 3.0–3.2 against a demanded |C_p| of 0.07–0.15, twenty times away [S].
+
+**The ventilation latch** (`BoardBody.ts`, `RAIL_LATCH`, `placeBand`). Per station and per rail: the gate opens over
+15–20° of **wetted leeward arc** (a hard 30° tucked edge never reaches it, which is why this section's tail third makes
+no suction and the round forward rail does); the rail ventilates when the suction the flow asks for passes Breslin's
+line **with** the arc past 24° of inception, an air path (this rail buried and the other rail's band out of the water)
+and Taylor's condition `u > √(g c)`; it re-wets when the asked pressure falls back under; both through a first-order lag
+of 0.15 s, one convective time, because the suction's roll moment increases the roll and an instant switch rings at four
+substeps [S, Aguiar Ferreira et al. 2026 measure 3.5 c/u to establish a cavity, 0.47–0.65 s at our lengths].
+
+## 3. The bench: the sideways force, at a frame that can be stated
+
+Still water, no flow, V 7.5 m/s, τ 6° nose up, rolled by φ about the board's own long axis (which buries the −x rail),
+immersed so the hull's deepest point sits at **Part 17 §3's own measured buried-rail depth for that roll bin**, drift =
+the path's angle off the nose **toward the high rail** (the way a carving board slips, outward). No rider. One substep.
+φ is unsigned roll from horizontal; "inward" is the world horizontal component **toward the buried rail**. `railbench.ts`.
+
+**Drift 3°, which is the ride's own** [M]:
+
+| roll | flat, inward (N) | **section, inward (N)** | flat `p.y/|p|` vs cos φ | section `p.y/|p|` (departure) | band's share of the hull's vertical | suction (N) |
+|---|---|---|---|---|---|---|
+| 10° | 135.5 | **123.5** | 0.974 / 0.985 | 0.976 (−0.009) | 6.2 % | 0.7 |
+| 20° | 269.4 | **237.8** | 0.922 / 0.940 | 0.935 (−0.005) | 7.7 % | **0.0** |
+| 30° | 321.6 | **283.0** | 0.852 / 0.866 | 0.877 (**+0.011**) | 9.1 % | **0.0** |
+| 40° | **328.2** | **273.0** | 0.753 / 0.766 | 0.800 (**+0.034**) | 13.3 % | **0.0** |
+| 50° | **346.3** | **319.6** | 0.628 / 0.643 | 0.686 (**+0.043**) | 16.9 % | **0.0** |
+| 60° | 318.1 | 293.9 | 0.487 / 0.500 | 0.564 (**+0.064**) | 24.5 % | 0.0 |
+| 70° | 244.9 | 195.2 | 0.330 / 0.342 | 0.455 (**+0.113**) | 45.1 % | 0.0 |
+| 80° | 121.0 | 76.3 | 0.163 / 0.174 | 0.445 (**+0.271**) | 87.5 % | 0.0 |
+
+Five things in it:
+
+1. **The premise, refuted.** `COMPRESS_PULL` is 141 N. The **flat** hull's pressure already points 221–346 N inward at
+   every roll from 20° to 60° at the ride's own 3° of drift, and 563–840 N at 20° of drift. There is no sideways-force shortage to fix.
+2. **And the section makes it worse, not better, which is the advisor's own prediction landing:** *"lateral force falls
+   1–8 %: a round rail does not add bite."* Measured, it falls at **every one of the twenty cells**, by **0.4 to 20 %** (ratio 0.798–0.996), because the band's planform is
+   turned away from horizontal and the force it makes points further from the horizontal with it.
+3. **The vertical is where the section pays, and it pays what the advisor said it would.** `pressureUp` in system
+   weights, flat → section: 40° 0.533 → 0.517, 50° 0.397 → **0.430**, 60° 0.253 → **0.288**, 70° 0.126 → **0.148**,
+   80° 0.034 → **0.066**, 90° −0.002 → **0.038**. That is ×0.97–1.09 at 40–50° (its ×1.05–1.09) and ×1.2–1.9 past 70°
+   (its ×1.44–1.75 at 80–90°). **Its own summary of that was the right one: "if you ship the section alone, I expect
+   the ride to measure the same."**
+4. **Part 17's identity breaks, by the margin the advisor first predicted and then withdrew.** It replaced +0.02–0.06
+   with +0.005–0.02 on the reasoning that the leeward band would carry no pressure; with the ride's drift there is no
+   leeward band, so the whole band carries pressure and the first prediction was right. Its own note on that, in its
+   words: *"I revised a correct prediction using a flow condition I had not checked against the ride."* Its original
+   **9–14 %** band share was also the better of its two: measured 13.3 % at 40° and 16.9 % at 50°, against its revised
+   3–10 %.
+5. **At 3° of drift the suction is 0.0 N at every roll from 20° to 80°.** Not small — zero, because no facet is leeward.
+
+**The drift sweep, which is the suction's whole story** [M, 40–50° of roll]:
+
+| drift | suction (N) | its downward part | its inward part | Δp (Pa) | the cap 2.5ρgh (Pa) | at the cap |
+|---|---|---|---|---|---|---|
+| 0° | 0.1–0.7 | 0.1–0.3 | −0.1 to −0.6 | 257–308 | 257–787 | 27–100 % |
+| **3°** (the ride's) | **0.0** | **0.0** | **0.0** | 0 | 0 | — |
+| 10° | 0.0–2.4 | 1.9 | 1.4 | 1 374 | 4 749 | 0 |
+| 20° | **16.9–18.0** | **14.7–14.9** | **8.0–10.3** | 3 714–4 061 | 4 142–5 825 | 0–29 % |
+
+So at 20° of drift the suction reaches 18 N, of which **14.7 N is downward and 10.3 N inward** — the advisor's revised
+prediction of 16–90 N, at its bottom end, and its direction (90 % down, 37 % inward) close to right. **Its own
+refutation test 1 — "the suction's median downward component at 40–50° of roll is below 20 N" — is met**, and met with
+room: 0.0 N through the ride.
+
+## 4. The ride: the gate, old rider against old rider, on the owner's own yardstick
+
+The owner's acceptance test, the Canyon-matched `FaceWater` (1.4 m, 2.6 m deep, 16°, 5.7 m/s — the wave the surfer
+track has always probed against), old rider, 6 runs a stance-cell (3 entry speeds × 2 stick positions). `libturn.ts`
+part F. **Compressed, which is the yardstick:**
+
+| hull | `COMPRESS_PULL` | **gate: across** | body bank | board rail | rail peak | path rate | lateral g | up, mean | reached |
+|---|---|---|---|---|---|---|---|---|---|
+| flat (today) | **on** | **6 of 6** | 12.5° | 10.0° | 42.6° | 33.9 °/s | **0.167** | **6.00 s** | 101–137° |
+| flat | **off** | **0 of 6** | 0.6° | 0.6° | 30.0° | 3.0 °/s | 0.005 | 5.59 s | 50–59° |
+| flat, **12 across** | off | **0 of 6** | 1.0° | 0.9° | 38.3° | 3.5 °/s | 0.006 | 5.82 s | 50–58° |
+| **section**, no suction | on | 4 of 6 | 33.8° | 31.5° | 56.6° | 42.0 °/s | 0.460 | 5.77 s | 48–142° |
+| **section + suction** | on | 5 of 6 | 33.8° | 31.3° | 56.0° | 41.9 °/s | 0.459 | 6.69 s | 48–140° |
+| **section**, no suction | **off** | **0 of 6** | 31.1° | 26.5° | 57.4° | 28.2 °/s | **0.416** | 4.73 s | 49–78° |
+| **section + suction** | **off** | **0 of 6** | 31.1° | 26.5° | 57.4° | 28.1 °/s | **0.418** | 4.71 s | 49–79° |
+
+**Tall, the control** (Compress's gate never opens tall, so the cheat never fires there and the `off` rows are the `on`
+rows exactly) [M]: flat **6 of 6**, bank 33.9°, rail 32.9°, lateral 0.601 g, 3.87 s up; the section **3 of 6**, bank 33.5°, rail 35.5°,
+lateral 0.540 g, 3.45–3.46 s up.
+
+The water under the board, every cell, as the brief requires: **slope 0.0–1.6° median, 12.3–13.0° at most, 0.0 % of
+frames over 30°** — unchanged from 3.2t, and the same answer. Every fall in all 84 runs is `balance` or `lost board`;
+none is a bed strike or a lip.
+
+Read it in six lines:
+
+1. **The win condition fails on every hull.** 0 of 6 with the cheat off, with the section, with the suction, and with
+   both. The brief asked me to say this plainly and early and §1 does.
+2. **The ablation is reproduced for the first time.** 3.2t quoted the balance-redesign notes' 6-of-6 → 0-of-6 without
+   running it; here it is, 0 of 6, body bank 0.60°, path rate 3.0 °/s. Without the cheat the old rider **does not lean
+   at all**, so he does not turn.
+3. **The section restores the lean — and that is the whole of the lateral force.** Bank 0.60° → 31.1°; and the lateral
+   load factor is just tan(bank): tan 31.1° = 0.604 against 0.418 measured at the board's 26.5° of roll (tan 26.5° =
+   0.499), where tan 0.6° = 0.010 against 0.005 measured. **It is Part 16's identity again, not a new force.** So the
+   section's effect is to make the rider lean, and the water then supplies 0.42 g — more than twice the cheat's 0.19 g
+   — off the rolled hull, exactly as the bench says it would.
+4. **More than twice the force and still 0 of 6.** He reaches 49–79° of the 85° the gate asks, against 101–142° with
+   the cheat. So the shortage is not the lateral force: with 2.5× the cheat's lateral g the turn still stops at 60–90 %
+   of the way round. **Whatever stops it is in the roll path and the rider's balance, not in the hull law.**
+5. **The suction's only visible effect in the whole ride is the spin-out, and it is a good one.** The section with the
+   suction and the section without differ by 0.002 g of lateral and 0 of 6 against 0 of 6 — the advisor's refutation
+   test 2, met. What differs is the end of the turn: at full stick, drift peaks **18.1–23.9°**, the rail ventilates
+   **32–39 %**, the path rate peaks **307–426 °/s** and he is down at **2.18–2.40 s**. That is a rail letting go, with a
+   measured cause, which is the second half of the owner's bar. Its refutation test 5 ("roll rate up and time up below
+   3 s") is met too — so the mechanism is real and it ends the turn **earlier**, not later.
+6. **It costs rides on the path the owner would ride, so it should not be default.** With the cheat on, compressed goes
+   6 of 6 → 4 of 6 (section) and → 5 of 6 (section + suction); tall goes 6 of 6 → 3 of 6; mean time up tall 3.87 →
+   3.45 s. The advisor's own caveat binds here and I am taking it: **six runs a cell makes 6-of-6 against 0-of-6 solid
+   and 6-of-6 against 4-of-6 not a difference**, so the honest statement is that the section is at best neutral and at
+   worst a cost with the cheat in place, and nobody should rank hulls on these rows.
+
+## 5. Why the section makes him lean — the one thing I measured and could not attribute
+
+This is the round's loose end and I am naming it rather than guessing at it. Three candidates were on the table; **the
+advisor's own leading one is refuted by its own named test.**
+
+- **Patch resolution: refuted.** Its hypothesis was `WET_RAMP` keyed on the patch *centre*: with 4 across, the
+  outermost high-side centre sits 0.176 m out and dries by about 1.6° of roll, switching a quarter of the station's
+  lift off at a long lever inside three degrees — a wall at the toe that pins the flat board at 0.55°. Its test was the
+  **flat** board at the section's own across-count, which `buildBoardShape` has always taken as a parameter. Ridden with
+  the cheat off, 12 across gives **bank 0.95°, rail 0.90°, path rate 3.5 °/s, lateral 0.006 g, 0 of 6** — against 4 across's 0.60°,
+  0.55°, 3.0 °/s, 0.005 g and 0 of 6, and 6 of 6 either way with the cheat on
+  [M, 6 runs]. **It is not resolution.**
+- **The hull's own roll stiffness: not it either.** Swept 0→30° in 1° steps at a fixed 0.055 m immersion, τ 6°, drift
+  3°, the water's net roll torque on the riderless board is **smooth on both hulls with no step anywhere** and crosses
+  zero at 21–22° for both: the flat board 0.12 → 0.27 → 0.08 N·m over 0/15/20° with its sign change at **22°**, the section 0.14 → 0.27 → 0.02 with
+  its sign change at **21°**, the flat board at 12 across 0.12 → 0.20 → −0.01 at **20°**; the biggest one-degree step
+  anywhere in any of the three sweeps is 0.29 N·m and it is at 26–30°, not at the toe [M, 93 cells]. The predicted
+  cliff is not there. Past 40° the section's **righting** is the stronger of the two (at 3° of drift: −21.0 / −29.9 /
+  −54.7 rad/s² at 40 / 50 / 60° against the flat board's −17.3 / −22.6 / −30.8), so the section is if anything *harder*
+  to hold over, not easier. **The caveat that keeps this from being conclusive: the bench carries no rider**, and in the
+  ride the roll is driven through a 73 kg rider's contact, so this measures the hull's own spring and not the system's.
+- **What is left**, unseparated: the thickness redistribution (taper 0.925 → 0.568, which moves buoyancy and roll
+  inertia outboard, 0.0262 → 0.0283 kg·m²; the advisor puts its buoyancy-lever channel at about 1 N·m), the dropped
+  rail side faces (the bench puts them at −11 to −16 N inward and ≤ 3.8 N·m of roll), and the band's own normals, which
+  are the only thing in the model that can make a **rolling** moment from a small drift at zero roll, because every
+  other patch normal has `x = 0`. I think the third is the mechanism [I] and **I have not measured it.** Two flags would
+  settle it and neither needs a fourth hull: the squared taper on the same patch layout, and the side-face foils
+  re-enabled. Both are an hour's work and I did not spend the round's last hour guessing instead.
+
+## 6. Should the acceptance test start the rider on the face? — the one sentence the brief asked for
+
+**Yes, it should gain a cell on the face and keep the trough cell as the one with history**: every run in this round
+reads **0.0–1.6° of slope under the board with 0.0 % of frames over 30°**, so the test as it stands cannot see anything
+a steep face does — but 3.2t already measured that the one cell that *is* on 35° water scores 1 of 12 and drops the
+rider, so moving the test onto the face would replace a yardstick that discriminates the two riders with one that fails
+both, and the right change is to add the face cell beside it, not to move it.
+
+## 7. Seatbelts
+
+- **The deletions column, checked before the push, as the brief requires.** `git diff --stat origin/main HEAD`:
+  **DIFFSTAT**. Nothing of the wave track's work is touched; the five branches that carried a silent revert this week
+  would have shown it here.
+- `npx tsc --noEmit -p .`: **exit 0**, on its own line, in a worktree whose `node_modules` is linked to the main
+  checkout's. **And the check is proved able to fail**: with one line of `const x: number = 'not a number'` injected
+  into `hullForces.ts` it exits **2** [M]. `npx tsc -p server/tsconfig.json --noEmit`: **exit 0**.
+- The files that cover the rider and the board, run alone — `AttachedRider`, `AttachedRider.deepCrouch`,
+  `predictiveBalance`, `standingBody`, `humanBalance`, `BoardBody`, `boardShape`, `hullForces`, `railSection`,
+  `legDrive`, `snapCross`, `legPower`, `compressTurn`, `cutback`, `leanOut`, `carveFlex`, `RideSession`, `duckTwoBody`,
+  `deckHollow`, `finForces` (`src/physics/`) and `PhysicalMode` (**`src/game/`**): **SUITE**. `results/suite-rider-32u.txt`.
+- **Eleven new tests** (`src/physics/railSection.test.ts`): the flat board unchanged, with its 48 patches, its 0.925
+  taper and `max |normal.x|` **exactly 0**; the planform, every station beam, the width and the volume held; the band's
+  four facets a rail at equal turn angle, every normal a unit vector pointing down or outward and never up, every true
+  area at least its planform, and the deck direction the station's own; the rail thick enough for the band that turns it
+  over, with the same section-area coefficient as the flat board; the suction acting **only along +n**, only on a
+  leeward facet, nothing without a band, a gate or water; **never above 2.5 ρ g h**, and its cap not growing past
+  `depthCap`; nothing at all when the flow runs along the rail; and the board reporting the band's ledger with nothing
+  on the flat board. Plus `?hull=rail`, `?railSuction=off` and `?compressPull=off` in `PhysicalMode.test.ts`'s switch
+  case, and `compressPull: 'off'` removing the assist while leaving CARVE_CARRY alone.
+- **No unpaired force is added, and nothing was added from inside the rider at all.** Every force this round adds is
+  the water's on the hull — external by construction, appearing in the board's own `forces.suction` and `work.suction`
+  ledgers and in the per-patch reaction the water takes back (`addReaction`). The one force it *removes*
+  (`COMPRESS_PULL`, behind `?compressPull=off`) is the unpaired one.
+- **The Canyon bench, shown rather than claimed**: `results/canyon-bytes-32u.txt`, the same command and the same
+  reference as step 5f's and 3.2t's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups. **CANYON**
+  Every change this round is opt-in (`?hull=rail`, `?railSuction=off`, `?compressPull=off`), so that is the expected
+  result. **What making it default would cost is in §4 line 6 and it is not nothing**, which is why it is not default.
+- A wave-track agent shared the machine throughout; nothing of theirs was stopped, and its two uncommitted files in the
+  main checkout were left alone (this round ran in a worktree).
+
+## 8. What I am unsure of
+
+- **§5 is open and it is the most interesting number in the round.** I can say the section makes the rider lean 31°
+  where he leant 0.6°, that the lateral force is tan(lean) and not a new force, and that it is not the patch count. I
+  cannot say which part of the section does it. Anyone reading §4 line 3 as "the band's normals buy the turn" is
+  reading my inference, not my measurement.
+- **Six runs a cell.** 6-of-6 against 0-of-6 is solid; 6-of-6 against 4-of-6 is not a difference, and §4 line 6 says so
+  rather than ranking the hulls on it.
+- **The band's millimetres are all [I] and now so is the taper's exponent.** The advisor found no measured shortboard
+  cross-section in the open literature and said its own ten-minute replacement for the whole section is a straightedge
+  and a ruler on the owner's own board. The linear taper is mine, chosen because the squared one cannot hold a rail at
+  the measured volume; I did not measure a real board's thickness across the beam either.
+- **The cross-plane speed in the model is the free stream's, and a real rolled planing hull also has a chine
+  squeeze-out** running down the dead rise toward the deepest chine (TN 4187's "high-velocity flow across the keel",
+  which that report *conjectures* and does not measure). The advisor flagged this as the one free parameter that could
+  be several times larger. If it is, the suction's numbers here are low — but the ride's drift being 0.8–3.3° is a
+  measurement, not an assumption, and the geometry argument in §1 line 2 does not depend on the magnitude.
+- **The bench has no rider on the board.** Its forces are the water's on a free hull at a placed pose; the ride's roll
+  is driven through a 73 kg contact. That is why §5's roll-torque sweep cannot close §5.
+- **`?hull=rail` has never been ridden by a person.** Everything here is a probe. The section is a visible change to
+  every board in the game and the owner approved the work, not this geometry.
+- **The 20° drift row is a bench cell, not a ride.** The ride reaches 18–24° of drift only in the full-stick spin-out
+  frames, which are the frames the rider is already losing.
+
+## 9. Files (3.2u)
+
+- `src/physics/BoardShape.ts`: `BoardSection`, `RAIL_BAND`, `HullPatch.band`, `BoardShape.section`; the band built at
+  equal turn angle inside the station's own half-beam, and the taper solved for either exponent in one line.
+- `src/physics/hullForces.ts`: `RAIL_SUCTION`; `WorldPatch.band` (`faceArea`, `up`, `tangent`, `gate`);
+  `PatchForce.suction` and its pressure/cap columns; the band's true area on the pressure and the friction; the
+  station's own up for the deck point; the leeward blend, and the suction replacing the leeward deck pressure.
+- `src/physics/BoardBody.ts`: `BoardBodyOptions.hull` and `.railSuction`; `RAIL_LATCH` and `placeBand`; the suction in
+  the solve's right-hand side, in `forces.suction`, `work.suction` and `yaw.suction`, and in the per-patch reaction;
+  `bandLedger` for the probes; the rail side-face foils dropped with the section.
+- `src/physics/AttachedRider.ts`: `AttachedRiderOptions.compressPull`, and the one gate that deletes `COMPRESS_PULL`.
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`, `src/game/PhysicalMode.ts`
+  (`hullSwitch`), `src/main.ts`: `?hull=rail`, `?railSuction=off`, `?compressPull=off` through the config.
+- `src/physics/railSection.test.ts` (new), `src/game/PhysicalMode.test.ts`: the eleven tests and the switch case.
+- `docs/research/new-rider/3.2/railbench.ts` (new): the hull's force at a stated roll, trim, speed, drift and immersion,
+  with no rider and no wave — the advisor's score card, the build check and the drift sweep. Its header carries the
+  commands.
+- `docs/research/new-rider/3.2/libturn.ts`: `HULL`, `RAIL_SUCTION`, `PULL` and `ACROSS_N`, and the band's columns every
+  frame — the drift, the suction and its direction, the band's share, `max |normal.x|`, the ventilated share, and the
+  lateral load factor toward the buried rail.
+- Results: `results/suite-rider-32u.txt`, `results/canyon-bytes-32u.txt`, and under `results/32u/` the six-cell grid,
+  the 12-across control, the bench and the roll-torque sweep.
+- `docs/research/water-physics/consult-log.md`: this round's two consults, with the advisor's own corrections.
+
+## 10. For the owner, in plain words
+
+**You approved shaping the board's rail, and it is shaped. The short answer is that it did not buy back the turn you
+like, and along the way it showed that the thing we thought was missing was never missing.**
+
+What I built is a real cross-section for the first time: until today the board in the game was a flat sheet with a 5 mm
+edge, and every square inch of its bottom pointed the same way. It now has a proper rail — a 7–13 mm roll from the
+bottom round to the edge, and an edge **29 mm thick instead of 5**, which it had to be, because you cannot put a 13 mm
+curve on a 5 mm edge. It has the suck on the buried rail you were told it lacked, and it lets go — ventilates — when
+the rail is loaded past what water at that depth can hold, which is the thing you asked for: *at full rail the board is
+set in the water, and the turn ends with a spin-out instead of just running out.*
+
+**Three findings, and the first one is the one that matters.**
+
+**One. The board was never short of sideways push.** We have been saying for weeks that the surfer falls because the
+water cannot push him sideways hard enough. Measured properly — same board position, same depth, same fins — the flat
+board already pushes **244 to 840 newtons** toward the inside of the turn, where the cheat we are trying to replace
+supplies **141**. More than twice over. And shaping the rail makes that push slightly *smaller*, not bigger, because a
+rounded rail points its force further sideways. So the specialist's warning was right in the end but for a different
+reason than it thought: the grip was never the shortage.
+
+**Two. The suck on the rail is real and worth nothing, for a reason that will not change with tuning.** Water only
+sucks on a rail if it has to wrap *around* it — which means the board has to be sliding sideways. The law needs about
+15–18 degrees of sideways slide. Your surfer's board slides about **1 to 3 degrees** through a bottom turn. So for
+nearly every frame of nearly every turn, there is nothing for the rail to grip with. The one place it does fire is
+exactly where it should: at full stick the board breaks loose, slides 18–24 degrees, spins at 300–400 degrees a second
+and he is down in two seconds. **That is a spin-out, with a cause, and it is yours to keep.** It is just not a force.
+
+**Three. The shaped rail does make him lean — a lot — and he still does not make it round.** With the cheat deleted the
+old surfer on the flat board barely leans at all (half a degree) and barely turns. With the shaped rail he leans **31
+degrees**, the board goes over onto its edge, and the water gives him **0.42 g** of turn — two and a half times what
+the cheat was giving him. **And he still fails: he gets 49 to 79 degrees round where the cheat gets him 101 to 142.** So
+the thing that is stopping the turn is not the water and not the board. It is somewhere in how the surfer's balance
+handles being three-quarters of the way through a turn. That is where the next round should go, and it is a different
+kind of problem from the one we have been chasing.
+
+**What I am not asking you to ride yet.** The shaped board is behind a switch (`?hull=rail`) and it is **not** the
+default, because with the cheat still in place it costs rides: the compressed turn goes from 6 out of 6 across the wave
+to 4 or 5 out of 6, and standing tall from 6 out of 6 to 3. Those are small samples and I would not swear to them, but
+they point the wrong way and the honest thing is to leave the default alone until we know why. If you want to feel the
+spin-out, `?physical&canyonWaves=true&hull=rail` will give it to you.
+
+**And one correction to something this thread told you.** You were told the board has no rail to bite with and that
+giving it one is what the turn needs. The first half was true — 5 mm is not a rail. The second half is now measured and
+it is false.

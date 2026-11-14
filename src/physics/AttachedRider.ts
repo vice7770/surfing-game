@@ -1221,6 +1221,15 @@ export interface AttachedRiderOptions {
    */
   legDrive?: 'on' | 'turn';
   /**
+   * **The compressed turn's cheat, deleted** (step 3.2u, `?compressPull=off`, opt-in): `'off'` removes COMPRESS_PULL,
+   * the unpaired 0.19 g of sideways force on the body that the old rider's compressed turn rests on, and puts nothing
+   * in its place. It is the ablation the balance-redesign notes quote at 6 of 6 → 0 of 6 and step 3.2t did not
+   * reproduce; it is here so the shaped hull's grip (`BoardBody`'s `hull: 'rail'`) can be scored against the cheat's
+   * own score with the cheat actually gone, which is the only question step 3.2u is for. CARVE_CARRY and LEAN_OUT_PULL
+   * are untouched: this switch removes one force, not the gameplay rules around it.
+   */
+  compressPull?: 'off';
+  /**
    * The carve's flexing legs (carve-flex, 2026-11-10; CARVE_FLEX), opt-in: 'on' lets a standing rider's legs yield to a
    * steered turn's load, the knees sinking as it comes on and extending as it ends, to a moderate crouch at most (the
    * `?carveFlex=on` dev switch, to ride). By default the stick alone never bends the legs, as before.
@@ -1933,6 +1942,8 @@ export class AttachedRider {
   private hollowY = 0;
   /** The leg drive; with `legDrive: 'on'` or `'turn'`. */
   private readonly legDrive: boolean;
+  /** COMPRESS_PULL deleted with nothing in its place (`compressPull: 'off'`, step 3.2u). */
+  private readonly compressPullOff: boolean;
 /**
  * **The compressed turn's lead-in, made honest** (step 3.2t, `legDrive: 'turn'`, the `?legDrive=turn` dev switch;
  * opt-in, so the default ride cannot move).
@@ -1978,6 +1989,7 @@ export class AttachedRider {
     this.recentres = options.snapRecentre !== 'old';
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
     this.agile = options.agile === 'on';
+    this.compressPullOff = options.compressPull === 'off';
     this.legDrive = options.legDrive === 'on' || options.legDrive === 'turn';
     this.legTurn = options.legDrive === 'turn';
     this.carveFlexes = options.carveFlex === 'on';
@@ -3178,7 +3190,8 @@ export class AttachedRider {
     const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
     const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
     // `legDrive: 'turn'` (step 3.2t): the legs make this lead-in as a pair instead (`legDriveStep`), never both.
-    if (!this.legTurn) {
+    // `compressPull: 'off'` (step 3.2u): nothing makes it, which is the ablation the hull's grip is scored against.
+    if (!this.legTurn && !this.compressPullOff) {
       this.assistForce.crossVectors(Y, along)
         .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
           * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));

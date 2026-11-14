@@ -1,10 +1,10 @@
 import { Quaternion, Vector3 } from 'three';
 import type { AttachedRider } from './AttachedRider';
 import type { BoardContactBody } from './DetachedSurfer';
-import { buildBoardShape, type BoardShape } from './boardShape';
+import { RAIL_BAND, buildBoardShape, type BoardShape } from './boardShape';
 import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
 import { hollowWetShare, railDepth } from './deckHollow';
-import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
+import { RAIL_SUCTION, WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
 import type { BoardSpraySheet } from '../wave/SprayCloud';
@@ -35,6 +35,8 @@ export interface BoardWork {
   rails: number;
   /** Done by a roller's froth on the hull (the Canyon roller lens, S3): a stand-in for its turbulence; 0 elsewhere. */
   froth: number;
+  /** Done by the buried rail band's suction (`hull: 'rail'`, step 3.2u); 0 on a flat-bottomed board. */
+  suction: number;
 }
 
 /**
@@ -74,6 +76,18 @@ export interface BoardBodyOptions {
    * (the `?deckHollow=on` dev switch, to ride). By default as before: wet wherever the sampled surface is above them.
    */
   deckHollow?: 'on';
+  /**
+   * The hull's cross-section (step 3.2u, `?hull=rail`), opt-in: `'rail'` gives the board a real rail band with its own
+   * normals and the band's suction (`BoardShape`'s `RAIL_BAND`, `hullForces`' `RAIL_SUCTION`), in place of the single
+   * flat-bottom normal every patch has carried until now. By default as before: a flat sheet with a knife edge.
+   */
+  hull?: 'rail';
+  /**
+   * The band's suction, separately from its geometry, so the round can tell the section's own effect from the grip's
+   * (the advisor's ruling was to build both, and its own prediction was that the section alone measures the same):
+   * `'off'` builds the section and makes no suction. Ignored without `hull: 'rail'`.
+   */
+  railSuction?: 'off';
 }
 
 /**
@@ -82,6 +96,30 @@ export interface BoardBodyOptions {
  * choice. It wets over its own height.
  */
 const RAIL_PRESSURE = 1;
+
+/**
+ * When a buried rail ventilates and lets go (step 3.2u; the water-physics advisor's latch of 2026-11-14, from Breslin &
+ * Skalak 1959 and Aguiar Ferreira et al. 2026). The owner's bar for the shaped rail was that **the turn should end when
+ * the rail ventilates — a spin-out — rather than when the force law runs out of surface**, so this is the part of the
+ * round that is for the feel rather than for the force.
+ *
+ * - `arcMin`/`arcFull`: the band's **wetted leeward arc** — how far past separation the flow has turned on this rail —
+ *   below which it sheds instead of wrapping, so there is no suction. A hard 30° tucked edge never reaches it, which is
+ *   why the tail third of this section makes no suction and the round forward rail does [I, the advisor].
+ * - `inception`: the leeward turn past which ventilation can start at all, read as a strut's incidence. Breslin
+ *   measured spontaneous inception over 22–26° for the rounded NACA 4412 and 15–18° for the sharp-edged arc; Aguiar
+ *   Ferreira et al. agree, 15° at Fr 0.5 rising past 25° by Fr 1.0–1.5 [M]. Ours is the round one. Mapping a rail
+ *   band's wrap onto a strut's chord incidence is [I].
+ * - It is the **enabling** condition, not the trigger: our leeward arc is past inception from the first frame, so an
+ *   angle-only latch would ventilate permanently. What triggers it is the loading passing Breslin's own measured line
+ *   (`RAIL_SUCTION.cap`, 2.5 ρ g h): **the rail lets go when it comes shallow or the cross-flow spikes, and the rider
+ *   gets it back by unloading**, which is the owner's bar from a measured line rather than from a feel.
+ * - `lag`: one convective time, so the cavity takes about 3.5 of them to establish (Aguiar Ferreira et al. measure
+ *   3.5 c/u for the nose type, which is 0.47–0.65 s at our wetted lengths and speeds) [M]. Not a hard switch: the
+ *   suction's roll moment increases the roll, and switched instantly against the board's small roll inertia it rings at
+ *   four substeps. Re-wetting with the same lag is [I] — no source for an asymmetry.
+ */
+const RAIL_LATCH = { arcMin: (15 * Math.PI) / 180, arcFull: (20 * Math.PI) / 180, inception: (24 * Math.PI) / 180, lag: 0.15 } as const;
 
 /** A fin or a rail face in the board frame, relative to the centre of mass. */
 interface Foil {
@@ -276,13 +314,13 @@ export class BoardBody implements BoardContactBody {
   readonly velocity = new Vector3();
   /** World frame, rad/s. */
   readonly angularVelocity = new Vector3();
-  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0, froth: 0 };
+  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0, froth: 0, suction: 0 };
   /** The rider standing or lying on the board, coupled through its contacts. */
   rider?: AttachedRider;
   /** Mean forces over the latest step, N. */
   readonly forces = {
     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
-    fins: new Vector3(), rails: new Vector3(), froth: new Vector3(),
+    fins: new Vector3(), rails: new Vector3(), froth: new Vector3(), suction: new Vector3(),
   };
   /**
    * The yaw ledger (step 3.2q, a measurement tool and not part of the sim): who twisted the board about the world's up
@@ -293,7 +331,7 @@ export class BoardBody implements BoardContactBody {
    */
   static yawLedger = false;
   readonly yaw = {
-    buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, gyro: 0, rider: 0, total: 0,
+    buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, suction: 0, gyro: 0, rider: 0, total: 0,
   };
   /** Hull volume under water and wetted bottom area at the latest substep. */
   submergedVolume = 0;
@@ -313,6 +351,35 @@ export class BoardBody implements BoardContactBody {
   private hollowEntry = 0;
   private hollowSpeed = 0;
   private readonly hollowVent: Uint8Array;
+  /**
+   * The rail band (`hull: 'rail'`, step 3.2u). `bandTurn` is each patch's own turn angle around the band (rad, unsigned,
+   * datum the flat bottom's tangent; 0 on a flat patch), `bandSide` its rail (+1 the board's +x, −1 the other, 0 off the
+   * band), `bandFace` its true area and `localUp` its station's deck direction in the board frame. `bandGate` is the
+   * suction's own gate this substep, 0 to 1 (`placeBand`), and `vented` the ventilated share per station, latched and
+   * lagged. `bandStation` lists each station's band patches.
+   */
+  private readonly band: boolean;
+  private readonly suctionOn: boolean;
+  private readonly bandTurn: Float64Array;
+  private readonly bandSide: Int8Array;
+  private readonly bandFace: Float64Array;
+  private readonly bandSweep: Float64Array;
+  private readonly localUp: Float64Array;
+  private readonly bandGate: Float64Array;
+  private readonly vented: Float64Array;
+  private readonly ventLatched: Uint8Array;
+  private readonly bandStation: Int32Array[];
+  private readonly bandPatch: { faceArea: number; up: Vec; tangent: Vec; gate: number } = { faceArea: 0, up: { x: 0, y: 0, z: 0 }, tangent: { x: 0, y: 0, z: 1 }, gate: 0 };
+  /**
+   * The band's own ledger at the latest substep, for the probes (`hull.probe.ts`, `libturn.ts`): the band's suction and
+   * pressure as world vectors (N), its wetted facets and wetted **planform** area, the largest |normal.x| over wetted
+   * patches (0 on a flat board, by construction — the advisor's build check), the share of band facets sitting at the
+   * suction's cap, the mean suction pressure and cap (Pa), and the ventilated share over the stations with a buried rail.
+   */
+  readonly bandLedger = {
+    suction: new Vector3(), pressure: new Vector3(), wetFacets: 0, wetArea: 0, maxNormalX: 0,
+    cappedShare: 0, pressurePa: 0, capPa: 0, ventedShare: 0, rollMoment: 0,
+  };
   /** The wetted patches' mean flow along the board, m/s (positive: the water meets the nose first). */
   private alongFlow = 0;
   private readonly substeps: number;
@@ -427,12 +494,13 @@ export class BoardBody implements BoardContactBody {
   private readonly scratch = new Vector3();
   private readonly armScratch = new Vector3();
   private readonly normalScratch = new Vector3();
+  private readonly upScratch = new Vector3();
   private readonly relative = { x: 0, y: 0, z: 0 };
   private readonly direction = new Float64Array(6);
   private readonly tensorScratch = new Array<number>(9).fill(0);
 
   constructor(options: BoardBodyOptions = {}) {
-    const shape = options.shape ?? buildBoardShape();
+    const shape = options.shape ?? buildBoardShape(undefined, undefined, undefined, options.hull === 'rail' ? 'rail' : 'flat');
     const payloads = options.payloads ?? [];
     this.shape = shape;
     this.substeps = options.substeps ?? 4;
@@ -480,6 +548,22 @@ export class BoardBody implements BoardContactBody {
       this.thickness[k] = patch.thickness;
       this.alongBoard[k] = patch.position.z;
     });
+    this.band = shape.section === 'rail';
+    this.suctionOn = this.band && options.railSuction !== 'off';
+    this.bandTurn = new Float64Array(count);
+    this.bandSide = new Int8Array(count);
+    this.bandFace = Float64Array.from(shape.patches, (patch) => patch.band?.faceArea ?? patch.area);
+    this.bandSweep = new Float64Array(count);
+    this.localUp = new Float64Array(count * 3);
+    this.bandGate = new Float64Array(count);
+    shape.patches.forEach((patch, k) => {
+      const up = patch.band ? patch.band.up : { x: -patch.normal.x, y: -patch.normal.y, z: -patch.normal.z };
+      this.localUp.set([up.x, up.y, up.z], k * 3);
+      if (!patch.band) return;
+      this.bandTurn[k] = patch.band.turn;
+      this.bandSide[k] = patch.band.side;
+      this.bandSweep[k] = patch.band.sweep;
+    });
     this.stationLength = shape.patches[0].length;
     // Each station's beam: its patches' planform over the station length.
     const beam = new Map<number, number>();
@@ -513,6 +597,9 @@ export class BoardBody implements BoardContactBody {
       for (let d = 0; d < 3; d += 1) this.stationLocal[i * 3 + d] /= weight || 1;
     });
     this.hollowVent = new Uint8Array(stationZs.length);
+    this.vented = new Float64Array(stationZs.length * 2);
+    this.ventLatched = new Uint8Array(stationZs.length * 2);
+    this.bandStation = stationZs.map((z) => Int32Array.from(shape.patches.flatMap((patch, k) => (patch.position.z === z && patch.band ? [k] : []))));
     this.stationHeave = new Float64Array(stationZs.length);
     this.stationArm = new Float64Array(stationZs.length * 3);
     this.entrained = new Float64Array(count);
@@ -552,7 +639,12 @@ export class BoardBody implements BoardContactBody {
     this.place(new Vector3());
   }
 
-  /** Fins at their roots on the bottom, and a side face at each station of each rail. */
+  /**
+   * Fins at their roots on the bottom, and a side face at each station of each rail — **except** with the rail section
+   * (step 3.2u), where the band's own facets carry that surface and the bluff side faces would count the rail twice.
+   * Dropping them also means `shape.taper` no longer reaches anything that moves (the advisor's trap 3: it feeds this
+   * function, and only the rail faces' height used it; the fins never did).
+   */
   private buildFoils(fins: readonly FinSpec[], center: Vec, railTaper: number): Foil[] {
     const { shape } = this;
     const foils: Foil[] = [];
@@ -563,7 +655,7 @@ export class BoardBody implements BoardContactBody {
       const x = fin.side === 0 ? 0 : fin.side * (half - fin.fromRail);
       foils.push({ kind: 'fin', local: { x: x - center.x, y: shape.curves.rocker(s(z)) - center.y, z: z - center.z }, normal: { x: 1, y: 0, z: 0 }, fin, area: fin.area, height: fin.depth });
     }
-    const stations = [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
+    const stations = shape.section === 'rail' ? [] : [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
     for (const z of stations) {
       const half = shape.curves.width(s(z)) / 2;
       const height = shape.curves.thickness(s(z)) * (1 - railTaper);
@@ -984,6 +1076,7 @@ export class BoardBody implements BoardContactBody {
     const wettedLength = wetMax >= wetMin ? wetMax - wetMin + this.stationLength : this.stationLength;
     this.placePressure();
     if (this.hollow) this.placeHollow();
+    this.placeBand(h, wettedLength);
     // With the rigid rider on it (lying, climbing on, standing) the board keeps the hull law the rider was calibrated on:
     // a rigid body perched on a deep board is no physical pair (it is top-heavy; a real one moves), and its climb back
     // on leaned on that law's damping. The plate is the free board's, and the ducking board's under the two-body dive.
@@ -994,7 +1087,14 @@ export class BoardBody implements BoardContactBody {
     // Forces, torques about the centre of mass, and the implicit pressure matrix.
     const { system, rhs, force, patch } = this;
     system.fill(0);
-    const totals = { bx: 0, by: 0, bz: 0, btx: 0, bty: 0, btz: 0, px: 0, py: 0, pz: 0, ptx: 0, pty: 0, ptz: 0, fx: 0, fy: 0, fz: 0, ftx: 0, fty: 0, ftz: 0 };
+    const totals = { bx: 0, by: 0, bz: 0, btx: 0, bty: 0, btz: 0, px: 0, py: 0, pz: 0, ptx: 0, pty: 0, ptz: 0, fx: 0, fy: 0, fz: 0, ftx: 0, fty: 0, ftz: 0, sx: 0, sy: 0, sz: 0, stx: 0, sty: 0, stz: 0 };
+    // The band's own ledger this substep (`bandLedger`), so the round can read the suction and the band's share apart.
+    const ledger = this.bandLedger;
+    ledger.suction.set(0, 0, 0);
+    ledger.pressure.set(0, 0, 0);
+    ledger.wetFacets = 0;
+    ledger.wetArea = 0;
+    ledger.rollMoment = 0;
     // A roller's froth on the hull (below): its own ledger, 0 outside a lens.
     let frothX = 0;
     let frothZ = 0;
@@ -1026,6 +1126,19 @@ export class BoardBody implements BoardContactBody {
       patch.normal.z = nz;
       patch.area = this.area[k];
       patch.thickness = this.thickness[k];
+      if (this.bandSide[k] !== 0) {
+        const up = this.rotateArray(this.localUp, k, this.upScratch);
+        const band = this.bandPatch;
+        band.faceArea = this.bandFace[k];
+        band.up.x = up.x;
+        band.up.y = up.y;
+        band.up.z = up.z;
+        band.tangent.x = this.rotation[2];
+        band.tangent.y = this.rotation[5];
+        band.tangent.z = this.rotation[8];
+        band.gate = this.bandGate[k];
+        patch.band = band;
+      } else patch.band = undefined;
       const { relative } = this;
       relative.x = v.x + w.y * rz - w.z * ry - sample.flowX;
       relative.y = v.y + w.z * rx - w.x * rz - sample.flowY;
@@ -1055,6 +1168,27 @@ export class BoardBody implements BoardContactBody {
       totals.ptx += ry * p.z - rz * p.y;
       totals.pty += rz * p.x - rx * p.z;
       totals.ptz += rx * p.y - ry * p.x;
+      const q = force.suction;
+      if (q.x !== 0 || q.y !== 0 || q.z !== 0) {
+        totals.sx += q.x;
+        totals.sy += q.y;
+        totals.sz += q.z;
+        totals.stx += ry * q.z - rz * q.y;
+        totals.sty += rz * q.x - rx * q.z;
+        totals.stz += rx * q.y - ry * q.x;
+        ledger.suction.x += q.x;
+        ledger.suction.y += q.y;
+        ledger.suction.z += q.z;
+        // Positive meaning the suction is taking the board further over onto the buried rail, about the board's own axis.
+        ledger.rollMoment += (ry * q.z - rz * q.y) * this.rotation[2] + (rz * q.x - rx * q.z) * this.rotation[5] + (rx * q.y - ry * q.x) * this.rotation[8];
+      }
+      if (this.bandSide[k] !== 0 && force.wettedArea > 0) {
+        ledger.wetFacets += 1;
+        ledger.wetArea += force.wettedArea;
+        ledger.pressure.x += p.x;
+        ledger.pressure.y += p.y;
+        ledger.pressure.z += p.z;
+      }
       const f = force.friction;
       totals.fx += f.x;
       totals.fy += f.y;
@@ -1062,9 +1196,9 @@ export class BoardBody implements BoardContactBody {
       totals.ftx += ry * f.z - rz * f.y;
       totals.fty += rz * f.x - rx * f.z;
       totals.ftz += rx * f.y - ry * f.x;
-      this.reaction[k * 3] += (b.x + p.x + f.x) * h;
-      this.reaction[k * 3 + 1] += (b.y + p.y + f.y) * h;
-      this.reaction[k * 3 + 2] += (b.z + p.z + f.z) * h;
+      this.reaction[k * 3] += (b.x + p.x + f.x + q.x) * h;
+      this.reaction[k * 3 + 1] += (b.y + p.y + f.y + q.y) * h;
+      this.reaction[k * 3 + 2] += (b.z + p.z + f.z + q.z) * h;
       // Froth drag, its own ledger (`forces.froth`, `work.froth`): in a roller lens's footprint only (the Canyon roller
       // lens, S3; the owner's decision of 2026-10-07, option B; provisional). A stand-in for the turbulence the thin lens
       // cannot represent: a board in whitewater is surrounded by turbulent, aerated water travelling with the bore, and
@@ -1233,12 +1367,12 @@ export class BoardBody implements BoardContactBody {
     const Iw = [I[0] * w.x + I[1] * w.y + I[2] * w.z, I[3] * w.x + I[4] * w.y + I[5] * w.z, I[6] * w.x + I[7] * w.y + I[8] * w.z];
     const gyro = [w.y * Iw[2] - w.z * Iw[1], w.z * Iw[0] - w.x * Iw[2], w.x * Iw[1] - w.y * Iw[0]];
     const weight = -this.mass * WATER.gravity;
-    rhs[0] = h * (totals.bx + totals.px + totals.fx + ft[0] + ft[6]) + waterX;
-    rhs[1] = h * (weight + totals.by + totals.py + totals.fy + ft[1] + ft[7]) + waterY;
-    rhs[2] = h * (totals.bz + totals.pz + totals.fz + ft[2] + ft[8]) + waterZ;
-    rhs[3] = h * (totals.btx + totals.ptx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
-    rhs[4] = h * (totals.bty + totals.pty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
-    rhs[5] = h * (totals.btz + totals.ptz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
+    rhs[0] = h * (totals.bx + totals.px + totals.sx + totals.fx + ft[0] + ft[6]) + waterX;
+    rhs[1] = h * (weight + totals.by + totals.py + totals.sy + totals.fy + ft[1] + ft[7]) + waterY;
+    rhs[2] = h * (totals.bz + totals.pz + totals.sz + totals.fz + ft[2] + ft[8]) + waterZ;
+    rhs[3] = h * (totals.btx + totals.ptx + totals.stx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
+    rhs[4] = h * (totals.bty + totals.pty + totals.sty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
+    rhs[5] = h * (totals.btz + totals.ptz + totals.stz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
     if (frothX !== 0 || frothZ !== 0) {
       rhs[0] += h * frothX;
       rhs[2] += h * frothZ;
@@ -1387,6 +1521,13 @@ export class BoardBody implements BoardContactBody {
     this.forces.friction.x += h * totals.fx;
     this.forces.friction.y += h * totals.fy;
     this.forces.friction.z += h * totals.fz;
+    if (totals.sx !== 0 || totals.sy !== 0 || totals.sz !== 0) {
+      this.work.suction += h * (totals.sx * avx + totals.sy * avy + totals.sz * avz + totals.stx * awx + totals.sty * awy + totals.stz * awz);
+      this.forces.suction.x += h * totals.sx;
+      this.forces.suction.y += h * totals.sy;
+      this.forces.suction.z += h * totals.sz;
+      if (BoardBody.yawLedger) this.yaw.suction += totals.sty;
+    }
     if (frothX !== 0 || frothZ !== 0) {
       this.work.froth += h * (frothX * avx + frothZ * avz + frothTx * awx + frothTy * awy + frothTz * awz);
       this.forces.froth.x += h * frothX;
@@ -1472,6 +1613,118 @@ export class BoardBody implements BoardContactBody {
       planingScales(this.stripShares, this.stationLength, this.stripBeams, along * along, this.stripScales);
       for (let i = 0; i < n; i += 1) this.pressureScale[strip[noseFirst ? n - 1 - i : i]] = this.stripScales[i];
     }
+  }
+
+  /**
+   * The rail band's suction gate this substep, per station and per rail (step 3.2u; `RAIL_SUCTION` and `RAIL_LATCH`).
+   * Walking each station's band facets:
+   * - a facet is **leeward** where the flow has turned past it, `v_rel · n < 0`; the station's wetted leeward arc is
+   *   the sweep's share those facets hold, and the gate opens over `arcMin`…`arcFull` of it;
+   * - the **air path** is this rail buried while the other one's band is out of the water — the same test
+   *   `placeHollow` makes for the deck, taken on the band itself so it does not need `deckHollow: 'on'`;
+   * - **Taylor's condition**, that the body-driven downward acceleration u²/c beat g, which for our wetted lengths is
+   *   satisfied above about 3 m/s: it gates a slow drift, not surfing;
+   * - the **latch**: the rail ventilates when the suction the flow asks for passes Breslin's sustainable line
+   *   (`RAIL_SUCTION.cap`) with the arc past inception and an air path, and re-wets when it falls back under, both
+   *   through a first-order lag of `RAIL_LATCH.lag`.
+   * `bandLedger.maxNormalX` is filled whether or not the suction is on: it is 0 on a flat board by construction, so it
+   * is the advisor's own build check — below 0.5 the band is not wetted or not resolved, which is a bug and not physics.
+   */
+  private placeBand(h: number, wettedLength: number): void {
+    const L = this.bandLedger;
+    L.maxNormalX = 0;
+    L.wetFacets = 0;
+    L.wetArea = 0;
+    L.cappedShare = 0;
+    L.pressurePa = 0;
+    L.capPa = 0;
+    L.ventedShare = 0;
+    if (!this.band) return;
+    const { samples, point, arm, normal, velocity: v, angularVelocity: w, rotation: r } = this;
+    for (let k = 0; k < this.count; k += 1) {
+      const sample = samples[k];
+      if (!sample.wet || sample.outsideDomain) continue;
+      if (wettedShare(sample.surfaceY - point[k * 3 + 1]) > 0) L.maxNormalX = Math.max(L.maxNormalX, Math.abs(normal[k * 3]));
+    }
+    this.bandGate.fill(0);
+    if (!this.suctionOn) return;
+    // The board's long axis, the rotation's third column: the rail's own direction, which fixes the cross-plane.
+    const tx = r[2];
+    const ty = r[5];
+    const tz = r[8];
+    const taylor = Math.sqrt(WATER.gravity * Math.max(0.2, wettedLength));
+    const gate = [0, 0];
+    let sides = 0;
+    let ventedSum = 0;
+    let capped = 0;
+    let facets = 0;
+    let pressureSum = 0;
+    let capSum = 0;
+    for (let st = 0; st < this.bandStation.length; st += 1) {
+      const list = this.bandStation[st];
+      if (list.length === 0) continue;
+      const wet = [0, 0];
+      const lee = [0, 0];
+      const dry = [0, 0];
+      const asked = [0, 0];
+      const limit = [0, 0];
+      const fastest = [0, 0];
+      let sweep = 0;
+      for (const k of list) {
+        const side = this.bandSide[k] > 0 ? 1 : 0;
+        sweep = this.bandSweep[k];
+        const sample = samples[k];
+        const depth = sample.wet && !sample.outsideDomain ? sample.surfaceY - point[k * 3 + 1] : -Infinity;
+        if (!(wettedShare(depth) > 0)) {
+          dry[side] += 1;
+          continue;
+        }
+        wet[side] += 1;
+        const rx = arm[k * 3];
+        const ry = arm[k * 3 + 1];
+        const rz = arm[k * 3 + 2];
+        const ux = v.x + w.y * rz - w.z * ry - sample.flowX;
+        const uy = v.y + w.z * rx - w.x * rz - sample.flowY;
+        const uz = v.z + w.x * ry - w.y * rx - sample.flowZ;
+        if (ux * normal[k * 3] + uy * normal[k * 3 + 1] + uz * normal[k * 3 + 2] >= 0) continue;
+        lee[side] += 1;
+        const speed = Math.hypot(ux, uy, uz);
+        const along = ux * tx + uy * ty + uz * tz;
+        const cross = Math.min(Math.hypot(ux - along * tx, uy - along * ty, uz - along * tz), RAIL_SUCTION.crossCap * speed);
+        asked[side] = Math.max(asked[side], 0.5 * WATER.density * RAIL_SUCTION.coefficient * cross * cross);
+        limit[side] = Math.max(limit[side], RAIL_SUCTION.cap * WATER.density * WATER.gravity * Math.min(RAIL_SUCTION.depthCap, depth));
+        fastest[side] = Math.max(fastest[side], speed);
+      }
+      for (let side = 0; side < 2; side += 1) {
+        const arc = (sweep * lee[side]) / RAIL_BAND.facets;
+        const open = Math.min(1, Math.max(0, (arc - RAIL_LATCH.arcMin) / (RAIL_LATCH.arcFull - RAIL_LATCH.arcMin)));
+        const i = st * 2 + side;
+        const path = dry[1 - side] > 0;
+        if (this.ventLatched[i]) {
+          if (!(asked[side] > limit[side])) this.ventLatched[i] = 0;
+        } else if (asked[side] > limit[side] && arc > RAIL_LATCH.inception && path && fastest[side] > taylor) {
+          this.ventLatched[i] = 1;
+        }
+        const target = this.ventLatched[i] ? 1 : 0;
+        this.vented[i] += (target - this.vented[i]) * (1 - Math.exp(-h / RAIL_LATCH.lag));
+        gate[side] = open * (1 - this.vented[i]);
+        if (wet[side] > 0) {
+          sides += 1;
+          ventedSum += this.vented[i];
+        }
+        if (lee[side] > 0) {
+          facets += lee[side];
+          pressureSum += lee[side] * Math.min(asked[side], limit[side]);
+          capSum += lee[side] * limit[side];
+          if (asked[side] > limit[side]) capped += lee[side];
+        }
+      }
+      for (const k of list) this.bandGate[k] = gate[this.bandSide[k] > 0 ? 1 : 0];
+    }
+    L.ventedShare = sides > 0 ? ventedSum / sides : 0;
+    L.cappedShare = facets > 0 ? capped / facets : 0;
+    L.pressurePa = facets > 0 ? pressureSum / facets : 0;
+    L.capPa = facets > 0 ? capSum / facets : 0;
   }
 
   /**

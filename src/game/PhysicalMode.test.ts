@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1029,6 +1029,35 @@ describe('PhysicalMode', () => {
       }
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?hull=rail` dev switch (step 3.2u): opt-in, the board's real rail band with the buried rail's suction, in
+  // place of the flat sheet every patch's single normal came from; `?railSuction=off` keeps the section and drops the
+  // grip, `?compressPull=off` deletes the old rider's unpaired compressed-turn pull. Anything else leaves the default.
+  it('shapes the hull with `?hull=rail` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(hullSwitch('?hull=rail')).toEqual({ hull: 'rail' });
+    expect(hullSwitch('?hull=RAIL')).toEqual({ hull: 'rail' });
+    expect(hullSwitch('?hull=rail&railSuction=off')).toEqual({ hull: 'rail', railSuction: 'off' });
+    expect(hullSwitch('?compressPull=off')).toEqual({ compressPull: 'off' });
+    expect(hullSwitch('?hull=rail&railSuction=off&compressPull=off')).toEqual({ hull: 'rail', railSuction: 'off', compressPull: 'off' });
+    for (const search of ['', '?hull', '?hull=', '?hull=flat', '?hull=on', '?railSuction=on', '?compressPull=on', '?legDrive=on']) expect(hullSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?hull=rail&compressPull=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        const config = surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false);
+        expect(config.hull, spot).toBe('rail');
+        expect(config.compressPull, spot).toBe('off');
+        expect(config.railSuction, spot).toBeUndefined();
+      }
+      vi.stubGlobal('location', { search: '' });
+      const plain = surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false);
+      expect(plain.hull).toBeUndefined();
+      expect(plain.railSuction).toBeUndefined();
+      expect(plain.compressPull).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

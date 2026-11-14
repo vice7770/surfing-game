@@ -46,6 +46,7 @@ import { surfZoneConfigFor } from '../../../../src/game/PhysicalMode';
 import { physicalSettingsFor } from '../../../../src/game/SurfConditions';
 import { AttachedRider } from '../../../../src/physics/AttachedRider';
 import { BoardBody } from '../../../../src/physics/BoardBody';
+import { buildBoardShape } from '../../../../src/physics/BoardShape';
 import { PhysicalSurfWater } from '../../../../src/physics/PhysicalSurfWater';
 import { createWaterSample, type SurfWater, type WaterSample } from '../../../../src/physics/SurfWater';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
@@ -344,7 +345,17 @@ function oneRun(spot: Spot, st: Stance, extra: number, steer: number): Record<st
   const level = new Vector3(Math.sin(h), 0, Math.cos(h));
   const forward = level.addScaledVector(normal, -level.dot(normal)).normalize();
   const left = new Vector3().crossVectors(normal, forward).normalize();
-  const board = new BoardBody({});
+  // HULL=rail (step 3.2u): the board gets its rail band and the buried rail's suction; RAIL_SUCTION=off keeps the
+  // section and drops the grip, which is the cell that tells the geometry's own effect from the grip's.
+  // ACROSS_N (step 3.2u): the patches across a station, which `buildBoardShape` has always taken — the **flat** board
+  // at 12 across is the control that tells resolution from shape, because `WET_RAMP` is keyed on each patch's centre
+  // and with 4 across the outermost centre sits 58 mm inboard of the rail (Part 17 §3 item 3).
+  const across = Number(process.env.ACROSS_N ?? 4);
+  const board = new BoardBody({
+    ...(process.env.HULL === 'rail' ? { hull: 'rail' as const } : {}),
+    ...(process.env.RAIL_SUCTION === 'off' ? { railSuction: 'off' as const } : {}),
+    ...(across === 4 ? {} : { shape: buildBoardShape(undefined, 12, across, process.env.HULL === 'rail' ? 'rail' : 'flat') }),
+  });
   board.place(
     new Vector3(px, here.surfaceY, pz).addScaledVector(normal, board.shape.centerOfMass.y),
     new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)),
@@ -356,6 +367,8 @@ function oneRun(spot: Spot, st: Stance, extra: number, steer: number): Record<st
     // LEG_DRIVE=on|turn (step 3.2t): the rail change's leg pair, and with `turn` the compressed turn's lead-in too,
     // in COMPRESS_PULL's place. `turn` is the thing this round is measuring against the old rider's own pull.
     ...(process.env.LEG_DRIVE === 'on' || process.env.LEG_DRIVE === 'turn' ? { legDrive: process.env.LEG_DRIVE as 'on' | 'turn' } : {}),
+    // PULL=off (step 3.2u): COMPRESS_PULL deleted with nothing in its place — the ablation the hull's grip is scored against.
+    ...(process.env.PULL === 'off' ? { compressPull: 'off' as const } : {}),
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(process.env.SUBSTEPS ? { standingSubsteps: Number(process.env.SUBSTEPS) } : {}),
     ...(process.env.BALANCE ? { balance: JSON.parse(process.env.BALANCE) } : {}),
@@ -393,6 +406,16 @@ function oneRun(spot: Spot, st: Stance, extra: number, steer: number): Record<st
   const pathRates: number[] = []; const lawRates: number[] = []; const incid: number[] = []; const areas: number[] = [];
   /** The water under the board, every frame: its own slope (the face it presents here), its froth, its void. */
   const slopeUnder: number[] = []; const breaking: number[] = []; const voids: number[] = [];
+  /**
+   * Step 3.2u, the rail band every frame of the turn. `drift` is the angle between the board's path through the water
+   * and its own nose, **unsigned, in the horizontal plane** — the sideways slip, which is the whole of the suction's
+   * driving term (see `railbench.ts`: with the flow along the rail no facet is leeward and the band makes nothing).
+   * `maxNormalX` is 0 on the flat board by construction, so it is the build check. The lateral load factor is the
+   * system's own horizontal acceleration **toward the buried rail**, in g — the column `COMPRESS_PULL` moves.
+   */
+  const drift: number[] = []; const suctionN: number[] = []; const suctionDownN: number[] = []; const suctionInN: number[] = [];
+  const bandShare: number[] = []; const maxNx: number[] = []; const vented: number[] = []; const capped: number[] = [];
+  const lateralG: number[] = []; const bandFacets: number[] = [];
   /**
    * Where on the face the board is: the water's surface height under it, m over still water. The face runs from the
    * trough (low) up to the crest (high), so a rise means the board has climbed it (or the crest has reached it — the
@@ -467,6 +490,31 @@ function oneRun(spot: Spot, st: Stance, extra: number, steer: number): Record<st
       voids.push(cen.voidFraction ?? 0);
       areas.push(board.wettedArea);
       if (sp > 0.05) incid.push(Math.abs(Math.asin(Math.max(-1, Math.min(1, -vRel.dot(up) / sp))) * DEG));
+      // The sideways slip: the path's angle off the nose, in the horizontal plane.
+      {
+        const px2 = vRel.x;
+        const pz2 = vRel.z;
+        const flat = Math.hypot(px2, pz2);
+        fwd.set(0, 0, 1).applyQuaternion(board.orientation).setY(0).normalize();
+        if (flat > 0.05) drift.push(Math.abs(Math.atan2(px2 * fwd.z - pz2 * fwd.x, (px2 * fwd.x + pz2 * fwd.z)) * DEG));
+        const L = board.bandLedger;
+        maxNx.push(L.maxNormalX);
+        bandFacets.push(L.wetFacets);
+        bandShare.push(board.wettedArea > 0 ? L.wetArea / board.wettedArea : 0);
+        vented.push(L.ventedShare);
+        capped.push(L.cappedShare);
+        const q = board.forces.suction;
+        suctionN.push(Math.hypot(q.x, q.y, q.z));
+        suctionDownN.push(-q.y);
+        // Toward the buried rail: the board's own −x·sign(roll) side, projected on the horizontal.
+        const side = Math.sign(roll) || 1;
+        leftB.set(-side, 0, 0).applyQuaternion(board.orientation).setY(0);
+        if (leftB.lengthSq() > 1e-9) {
+          leftB.normalize();
+          suctionInN.push(q.x * leftB.x + q.z * leftB.z);
+          lateralG.push((total.x * leftB.x + total.z * leftB.z) / weight);
+        }
+      }
       if (Number.isFinite(pathRate)) {
         pathRates.push(Math.abs(pathRate));
         lawRates.push(sp > 0.3 ? ((perp.length() / weight) * G * Math.sin(phiF)) / sp * DEG : Number.NaN);
@@ -493,6 +541,16 @@ function oneRun(spot: Spot, st: Stance, extra: number, steer: number): Record<st
     bankMedianDeg: r(median(banks), 1), railMedianDeg: r(median(rails), 1), railPeakDeg: r(peak(rails), 1),
     pathRateMedian: r(median(pathRates), 2), pathRatePeak: r(peak(pathRates), 2), lawRateMedian: r(median(lawRates), 2),
     incidenceMedianDeg: r(median(incid), 1), wetAreaMedian: r(median(areas), 4),
+    // Step 3.2u, the rail band and the lateral load factor.
+    hull: process.env.HULL === 'rail' ? (process.env.RAIL_SUCTION === 'off' ? 'rail-nosuction' : 'rail') : 'flat',
+    across,
+    pull: process.env.PULL === 'off' ? 'off' : 'on',
+    driftMedianDeg: r(median(drift), 1), driftPeakDeg: r(peak(drift), 1),
+    maxNormalX: r(peak(maxNx), 3), bandFacetsMedian: r(median(bandFacets), 1), bandAreaShareMedian: r(median(bandShare), 4),
+    suctionMedianN: r(median(suctionN), 1), suctionPeakN: r(peak(suctionN), 1),
+    suctionDownMedianN: r(median(suctionDownN), 1), suctionInMedianN: r(median(suctionInN), 1),
+    ventedMedian: r(median(vented), 3), ventedPeak: r(peak(vented), 3), cappedMedian: r(median(capped), 3),
+    lateralGMedian: r(median(lateralG), 3), lateralGPeak: r(peak(lateralG), 3),
     speedStartMs: r(speed0, 3), speedMedianMs: r(median(speeds), 3), speedAt1: r(at['1'], 3), speedAt2: r(at['2'], 3),
     slopeUnderMedianDeg: r(median(slopeUnder), 1), slopeUnderPeakDeg: r(peak(slopeUnder), 1),
     shareOver30: r(slopeUnder.filter((v) => v >= 30).length / Math.max(1, slopeUnder.length), 3),
@@ -526,6 +584,9 @@ function sweep(spot: Spot): void {
   console.log(`    n: nUp ${f(median(num('nUpMedian')), 3)} median of medians (${f(qt(num('nUpMedian'), 0.05), 3)}–${f(qt(num('nUpMedian'), 0.95), 3)}) · nPerp ${f(median(num('nPerpMedian')), 3)} · n(total) ${f(median(num('nMedian')), 3)} · peak n ${f(peak(num('nPeak')), 3)}`);
   console.log(`    φ_F ${f(median(num('phiFMedianDeg')))}° · liftShare (1 + a_com/g) ${f(median(num('liftShareMedian')), 3)} · ceiling 1/cos φ_F ${f(median(num('ceilingMedian')), 3)}`);
   console.log(`    the turn: path rate ${f(median(num('pathRateMedian')))} °/s median, ${f(peak(num('pathRatePeak')))} °/s most · the law's rate from the measured n ${f(median(num('lawRateMedian')))} °/s · rail ${f(median(num('railMedianDeg')))}° median, ${f(peak(num('railPeakDeg')))}° most`);
+  console.log(`    the band (step 3.2u): max |normal.x| ${f(peak(num('maxNormalX')))} · wetted facets ${f(median(num('bandFacetsMedian')))} · of the wetted hull ${f(100 * median(num('bandAreaShareMedian')))} % · drift ${f(median(num('driftMedianDeg')))}° median, ${f(peak(num('driftPeakDeg')))}° most`);
+  console.log(`    the suction: ${f(median(num('suctionMedianN')))} N median, ${f(peak(num('suctionPeakN')))} N most · down ${f(median(num('suctionDownMedianN')))} N · toward the buried rail ${f(median(num('suctionInMedianN')))} N · at the cap ${f(100 * median(num('cappedMedian')))} % · ventilated ${f(100 * median(num('ventedMedian')))} % median, ${f(100 * peak(num('ventedPeak')))} % most`);
+  console.log(`    the lateral load factor toward the buried rail: ${f(median(num('lateralGMedian')))} g median, ${f(peak(num('lateralGPeak')))} g most`);
   console.log(`    the water under the board: slope ${f(median(num('slopeUnderMedianDeg')))}° median, ${f(peak(num('slopeUnderPeakDeg')))}° most · frames over 30° ${f(100 * median(num('shareOver30')))} % · over 20° ${f(100 * median(num('shareOver20')))} %`);
   console.log(`    speed ${f(median(num('speedStartMs')), 2)} m/s at the start, ${f(median(num('speedMedianMs')), 2)} through the turn · froth ${f(median(num('breakingMedian')), 3)} · void most ${f(peak(num('voidPeak')), 3)}`);
   console.log(`    where on the face: placed ${f(AHEAD, 2)} of the run onshore of the crest; the water under the board ${f(median(num('yUnderStart')), 2)} m over still water at the start, ${f(median(num('yUnderPeak')), 2)} m at most (a climb of ${f(median(num('climbM')), 2)} m)`);
