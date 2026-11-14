@@ -3282,53 +3282,6 @@ and two of the eight runs now finish the bottom turn, climb, and stand there wai
 has moved from *"he goes down in the bottom turn"* to *"he gets up the face and loses it in the climb or while
 waiting"*. §3.2 names what is most likely under that: the 0.33–0.74 Hz board mode the rider has no sense of.
 
-## 5b. The owner's own words after riding 3.2n, and the number he can feel
-
-The coordinator asked him whether the surfer never starts the turn or starts it and loses it. He answered:
-
-> "starts turning just not fast enough and doesn't have the balance expected for a surfer, movement is not enough
-> responsive to surf the wave"
-
-The coordinator read that together with 3.2n's trace ("the bank stalls at 25° against the 50° asked") as one
-observation from two seats, made **the lean asked against the lean reached** the headline number, and named a
-candidate: the balance's bank cost is a **2.9° limit for every stance** where the capture point actually leaves the
-feet at 8.9 / 11.5 / 13.5°, so a balance that believes it is falling at 2.9° would resist a 50° lean the whole way.
-
-**I measured the pair before building anything, and the premise does not survive it.** `hold.probe.ts` now records the
-lean asked, the bank reached and the share, per run (all twelve, 50° asked throughout) [M]:
-
-| | Bank reached, 12 runs | Share of the ask | Water rail used | **Heading turned** | Reaches across |
-|---|---|---|---|---|---|
-| **Old rider** (passes) | **24.2–70.0°** | — | 54–94° | **40.6–91.6°** | **12 of 12** |
-| **New rider (ships)** | **25.5–70.0°** | **0.51–2.80** | 24.6–89.6° | **1.9–31.9°** | 0 of 12 |
-| new + `feetReach` | 26.2–70.0° | 0.69–2.80 | 26.1–89.9° | 1.9–29.3° | 0 of 12 |
-
-**The lean is not short.** The two riders' banks span the same range, 24–70°, and in eight of the twelve runs the new
-rider's body banks **past** the 50° asked (shares of 1.4 to 2.8). "The bank stalls at 25° against the 50° asked" is
-**one run of twelve** — Compress, the wave's own pace, full stick — and the old rider has runs down to 24.2° of bank
-and passes them. A fix aimed at the lean is aimed at something that is not missing.
-
-**`feetReach` was re-measured on top of the sense anyway, as asked, and it confirms it** [M]. It does exactly what the
-coordinator predicted to the short run — the worst bank goes 25.5° → 34.6°, its share 0.51 → 0.69 — and **the heading
-that run turns goes 2.7° → 2.6°. Nothing.** Across the twelve, the falls are 1.13–3.32 s against 1.10–3.43 s and the
-heading turned 1.9–29.3° against 1.9–31.9°. So on the owner's own test `feetReach` costs nothing (3.2n's "it costs the
-standing stance its 90° turn" was measured on the flat-water turn probe, and that cost does not appear here) **and it
-buys nothing either.** It is still not landed: the gate does not move, and the contract's third "do not" stands.
-
-**Where the gap actually is, and it is one line:** both riders put the board on a big rail — 54–94° against 24.6–89.6°,
-overlapping — and the old rider's heading comes round 40.6–91.6° while the new rider's comes round 1.9–31.9°.
-**The lean arrives, the rail arrives, and the turn does not follow.** Same stick, same body angle, same rail, a
-twentieth of the heading. The responsiveness the owner is describing is the **board's** response to the rail, not the
-body's response to the stick.
-
-3.2n reached the same place from a single trace ("the real discriminator is heading turned per rail used") and I have
-now measured it across twelve runs, with the old rider's bank beside it to remove the lean as a candidate. **The next
-measurement this wants is the yaw the board makes per degree of rail, old rider against new, at the same rail and
-speed — and, if they differ, where the old rider's yaw moment comes from.** Its `holdLine` heading loop was dropped
-for the new rider in 3.2e, and `COMPRESS_PULL` and `CARVE_CARRY` were switched off for it in the same step; if the old
-rider's turn is coming from those rather than from its rail, that is the owner's no-hidden-motors rule and not a
-controller question at all. That is a measurement, not a build, and it is the one I would spend the next round on.
-
 ## 6. The old bars, as information only (revised orders: no gating)
 
 `results/bars-new-32m.jsonl` against `bars-new-32L.jsonl`, the same 30 rows, **reported and not tuned to**.
@@ -3933,25 +3886,45 @@ candidate: the balance's bank cost is a **2.9° limit for every stance** where t
 feet at 8.9 / 11.5 / 13.5°, so a balance that believes it is falling at 2.9° would resist a 50° lean the whole way.
 
 **I measured the pair before building anything, and the premise does not survive it.** `hold.probe.ts` now records the
-lean asked, the bank reached and the share, per run (all twelve, 50° asked throughout) [M]:
+lean asked, the bank at the moment the ask arrives, the best bank reached at all, and the share [M].
 
-| | Bank reached, 12 runs | Share of the ask | Water rail used | **Heading turned** | Reaches across |
-|---|---|---|---|---|---|
-| **Old rider** (passes) | **24.2–70.0°** | — | 54–94° | **40.6–91.6°** | **12 of 12** |
-| **New rider (ships)** | **25.5–70.0°** | **0.51–2.80** | 24.6–89.6° | **1.9–31.9°** | 0 of 12 |
-| new + `feetReach` | 26.2–70.0° | 0.69–2.80 | 26.1–89.9° | 1.9–29.3° | 0 of 12 |
+**First, two corrections to my own first reading of this table, because I nearly reported it wrong.** The stick asks
+**25° at half and 50° at full**, not 50° throughout; and the bank to quote is the one **at the moment the ask arrives**,
+not the peak over the run, because the peak includes the fall and a falling body banks to `MAX_BANK` (70°). Per run,
+what ships:
 
-**The lean is not short.** The two riders' banks span the same range, 24–70°, and in eight of the twelve runs the new
-rider's body banks **past** the 50° asked (shares of 1.4 to 2.8). "The bank stalls at 25° against the 50° asked" is
-**one run of twelve** — Compress, the wave's own pace, full stick — and the old rider has runs down to 24.2° of bank
-and passes them. A fix aimed at the lean is aimed at something that is not missing.
+| Case | asked | **bank at the ask** | best bank | falls at |
+|---|---|---|---|---|
+| Compress, wave's pace, full stick | **50°** | **11.3°** | 25.5° | 2.17 s |
+| Compress, +1.5 m/s, full | 50° | **68.8°** | 68.8° | 1.10 s |
+| Compress, +3 m/s, full | 50° | **70.0°** | 70.0° | 1.28 s |
+| tall, wave's pace, full | 50° | **48.3°** | 50.2° | 2.22 s |
+| tall, +1.5 m/s, full | 50° | **70.0°** | 70.0° | 1.20 s |
+| tall, +3 m/s, full | 50° | **70.0°** | 70.0° | 1.42 s |
+| the six half-stick runs | **25°** | 8.5 / 10.7 / 11.1 / 11.2 / 17.5 / 24.6° | 26.3–70.0° | 2.90–3.43 s |
 
-**`feetReach` was re-measured on top of the sense anyway, as asked, and it confirms it** [M]. It does exactly what the
-coordinator predicted to the short run — the worst bank goes 25.5° → 34.6°, its share 0.51 → 0.69 — and **the heading
-that run turns goes 2.7° → 2.6°. Nothing.** Across the twelve, the falls are 1.13–3.32 s against 1.10–3.43 s and the
-heading turned 1.9–29.3° against 1.9–31.9°. So on the owner's own test `feetReach` costs nothing (3.2n's "it costs the
-standing stance its 90° turn" was measured on the flat-water turn probe, and that cost does not appear here) **and it
-buys nothing either.** It is still not landed: the gate does not move, and the contract's third "do not" stands.
+**At the big ask the lean is not short — it is delivered to the body's own limit.** Of the six runs that ask 50°, one
+reaches 11.3°, one 48.3°, and **four reach 68.8–70.0°, which is `MAX_BANK` itself**. Those four are the earliest falls
+in the whole set (1.10–1.42 s): the body leans as far as it is allowed to and goes over. At the small ask the bank
+arrives at a third to all of it, and those runs survive longest (2.90–3.43 s).
+
+| | Best bank, 12 runs | Water rail used | **Heading turned** | Reaches across |
+|---|---|---|---|---|
+| **Old rider** (passes) | **24.2–70.0°** | 54–94° | **40.6–91.6°** | **12 of 12** |
+| **New rider (ships)** | **25.5–70.0°** | 24.6–89.6° | **1.9–31.9°** | 0 of 12 |
+| new + `feetReach` | 26.2–70.0° | 26.1–89.9° | 1.9–29.3° | 0 of 12 |
+
+So **"the bank stalls at 25° against the 50° asked" is one run of twelve** — Compress, the wave's own pace, full stick
+— and the old rider, which passes, reaches the same 24–70° range of bank. (Its bank-at-the-ask cannot be read:
+`leanAsked` is the new rider's own field.) A fix aimed at the lean is aimed at something missing in one case of twelve.
+
+**`feetReach` was re-measured on top of the sense, as asked, and it does not do what was hoped** [M]. On that one short
+run its bank **at the ask** goes **11.3° → 9.9°** — slightly *worse* — and only its later peak rises, 25.5° → 34.6°.
+**The heading that run turns goes 2.7° → 2.6°. Nothing.** Across the twelve, the falls are 1.13–3.32 s against
+1.10–3.43 s and the heading turned 1.9–29.3° against 1.9–31.9°. So on the owner's own test `feetReach` costs nothing
+(3.2n's "it costs the standing stance its 90° turn" was measured on the flat-water turn probe, and that cost does not
+appear here) **and it buys nothing either.** It is still not landed: the gate does not move, and the contract's third
+"do not" stands.
 
 **Where the gap actually is, and it is one line:** both riders put the board on a big rail — 54–94° against 24.6–89.6°,
 overlapping — and the old rider's heading comes round 40.6–91.6° while the new rider's comes round 1.9–31.9°.
