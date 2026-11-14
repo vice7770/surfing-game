@@ -279,6 +279,9 @@ bore changed into each camera's frustum — a read, not a build.
   "about 20 s alone, it timed out at 60 s under other agents' load (2026-10-29, 10-31)". So it is a load timeout of a
   kind the raised global cannot help, and raising it further means editing that line, not the flag. A byte-matching
   test failing is the most alarming-looking thing a loaded suite can produce, and this one is the known case.
+- The other failure the suite reached is `poolBarrelPerf.test.ts`'s camera-water test at **344 s** — ruling 35's
+  recorded flake, again a timeout and not an assertion. Both failures are on the list of files that time out under
+  load, and neither reports an assertion.
 
 ---
 
