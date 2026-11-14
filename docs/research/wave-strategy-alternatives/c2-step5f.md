@@ -226,7 +226,8 @@ nothing fetches unless the switch is on, a comment in `tools/basilisk/run_period
 | `src/wave/library` tests (`WaveLibrary`, `caseFormat`, `zone`) | 3 files, **37 of 37** passed [M] |
 | every listed case loads and its keys are its file's | 24 listed, 24 decoded, **0 mismatches** [M] |
 | no test reads `public/library` or `libraryCases` | searched; none does, so the data cannot move the suite [C] |
-| the Canyon's bytes | running when this was written; `c2-step5f-runs/canyon-bytes.txt` if it landed before the hand-back, otherwise **not run** — the construction argument above is the seatbelt, and the two spin-ups' expected hashes are step 5b's `a367d938f15fa934` / `9e5831f80e38abd9` (Canyon B) and `ea3d57a4d49f4b48` / `a1a2555739210f96` (the default Canyon) |
+| **Canyon B** (`?canyonWaves=true`, the rider's test spot), fresh spin-up, medium, 3 600 steps | snapshots **`a367d938f15fa934`**, state **`9e5831f80e38abd9`** — **main's own**, the same as steps 3b, 4, 5a and 5b [M, `c2-step5f-runs/canyon-bytes.txt`] |
+| the default Canyon, the same | its leg was **still stepping at the hand-back** and is not reported. Expected `ea3d57a4d49f4b48` / `a1a2555739210f96`; the construction argument above is the seatbelt, and the command to finish it is in §6 |
 
 ## 6. For the next round, and for the pipeline
 
@@ -258,6 +259,10 @@ node <scratch>/s5f.mjs --parts F --cases public/library --cache <scratch>/sea.bi
 
 # the part A control this round did not finish: the same, --parts A, against a 19-case folder
 node <scratch>/s5f.mjs --parts A --cases <nineteen-case folder> --cache <scratch>/sea.bin --from 40 --until 130
+
+# the Canyon byte check (Canyon B needs location.search set; a two-line .mjs that sets it then imports the bundle)
+npx rolldown scripts/m1-cpu-bench.ts -o <scratch>/bench.mjs --format esm --platform node
+node <scratch>/bench.mjs --spot canyon --size medium --steps 3600 --state <scratch>/canyon-c.sea
 ```
 
 `--cache` writes a spun-up sea on the first run and reads it afterwards, so the control and the branch see the same
