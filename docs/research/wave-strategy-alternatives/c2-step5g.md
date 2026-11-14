@@ -23,7 +23,7 @@ on our wave is 2.2–2.4 m. Our spray never gets above the lip at all.
 | **Built** | `?lipVeil=on` (§4), opt-in: Erinin's two post-impact droplet regions at their measured shares, angles and speed law, a third size class for the 0.2–1 mm band that carries most of the veil's optical area, and the breaker's own updraft, which is the part that is provisional and calibrated |
 | **Moved** | the veil's **body** from 1.58 m to **2.40 m**, into the 2.2–2.4 m band the reference's own ratio asks of our 1.41 m crest; its **tail** overshoots at 3.5–4.7 m; and the cloud moved onto the break, its median distance to a landed slice 19.8 → 9.4 m (§5) |
 | **Shown** | §6: stills, veil on against veil off, on the same held frame — and the plain reading that the height and the place are right and **the material is not** |
-| **Default** | **unchanged.** The switch is off by default and nothing outside it moved; the Canyon byte check is in §6 |
+| **Default** | **unchanged.** The switch is off by default and nothing outside it moved; the Canyon byte check is in §7 |
 
 ---
 
