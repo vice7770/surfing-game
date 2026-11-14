@@ -1267,7 +1267,7 @@ export interface AttachedRiderOptions {
    * bank's change over a substep, 3.2's), and the legs' passive twist in the game (TWIST_STIFFNESS, TWIST_DAMPING: braced or
    * relaxed for the yaw step's report; the internal model keeps its own).
    */
-  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number };
+  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number; leanHold?: 'on' | 'off' };
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1789,6 +1789,12 @@ export class AttachedRider {
   private readonly twistDamping: number;
   /** How far onto its rail the balance's schedule is trusted, rad (SCHEDULE_RAIL_CAP). */
   private readonly railCap: number;
+  /**
+   * The lean hold (step 3.2q, `balance: { leanHold }`): whether the lean the rider asks for is held to the lean the
+   * turn he has will carry, and the lean that cap allows, rad (`Infinity`: off). For the probes.
+   */
+  private readonly leanHold: boolean;
+  leanHeld = Infinity;
   private controlDue = 0;
   private heldAnkleRaw = 0;
   /** The rail the balance's schedule is reading, rad (step 3.2f; for the probes). */
@@ -1959,6 +1965,9 @@ export class AttachedRider {
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
     this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
+    // The lean hold is on for the new surfer (step 3.2q), which is itself opt-in behind `?rider=new`, so the default
+    // game cannot move; `balance: { leanHold: 'off' }` is the probes' way back to 3.2p's behaviour.
+    this.leanHold = (options.balance?.leanHold ?? (this.newRider ? 'on' : 'off')) === 'on';
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -2824,7 +2833,32 @@ export class AttachedRider {
       // The new surfer's balance by prediction (step 3.2e): the lean the player asks (the steer, the hand) is its
       // reference, eased as the bank's. The line held on its own (`holdLine`, a heading loop of the old rider's) is left
       // out: as a reference it rang with the board's yaw and grew (docs/research/new-rider/3.2 Part 5).
-      const own = Math.max(-most, Math.min(most, this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK));
+      let own = Math.max(-most, Math.min(most, this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK));
+      // The lean hold (step 3.2q, `leanHold`): a body may not ask for more lean than the turn it already has will
+      // carry. A lean of θ asks for tan θ of sideways force; the turn supplies the felt vertical's own tilt; the
+      // difference is an unbalanced pull inward that nothing in the water answers, so the body keeps going over. On
+      // the owner's acceptance test at full stick the lean ran past its own 50° reference to MAX_BANK (70°) and the
+      // rider toppled inward in 1.10–1.42 s.
+      //
+      // So the lean asked for is held where the force adds up: the tilt of the felt vertical (`pairFelt`, the pair's
+      // own specific force, already low-passed over SPECIFIC_FORCE_TIME, which is this balance's sense delay) plus
+      // what the ankles hold with no help from the turn (ANKLE_REST_RANGE, the feet's own reach, 14.3°, as a force —
+      // `tan` of it). Composing the two as forces rather than as angles is both the honest reading and the better
+      // measurement: as angles it buys half as much (3.2/README.md Part 15 §6).
+      //
+      // The cap bootstraps rather than locking him upright: the ankles roll the board onto its rail, the turn comes,
+      // the felt vertical tilts, the cap opens, and the lean follows the turn instead of leading it off the board.
+      // Nothing here is a force, so nothing is added without a reaction — it is what the rider *intends* — and
+      // nothing here is a new constant: both terms are the ones this file already uses.
+      //
+      // To re-check when two-way coupling lands: the cap reads the pair's specific force, which is exactly what a
+      // sinking board changes. A board that digs in and pulls harder opens the cap on its own, which is the behaviour
+      // wanted, but the ankle's 14.3° was measured on a board that does not sink.
+      this.leanHeld = Infinity;
+      if (this.leanHold && this.pairFelt.y > 0) {
+        this.leanHeld = Math.atan(Math.abs(this.pairFelt.dot(side)) / this.pairFelt.y + Math.tan(ANKLE_REST_RANGE));
+        own = Math.max(-this.leanHeld, Math.min(this.leanHeld, own));
+      }
       const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
       this.leanAsked += Math.max(-this.leanPace * h, Math.min(this.leanPace * h, towardOwn));
     }
