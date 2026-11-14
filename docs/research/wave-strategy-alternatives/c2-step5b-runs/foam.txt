@@ -1,3 +1,7 @@
-t 50.02 s: 108 nodes carry the library's foam, 93 of them over half cover; the whitest 0.852; the void fraction 0.134–0.344; the deepest plume 2.00 m; mean cover 0.585
-t 51.43 s: 107 nodes carry the library's foam, 94 of them over half cover; the whitest 0.867; the void fraction 0.129–0.349; the deepest plume 2.00 m; mean cover 0.592
-t 52.85 s: 154 nodes carry the library's foam, 142 of them over half cover; the whitest 0.895; the void fraction 0.121–0.351; the deepest plume 2.00 m; mean cover 0.629
+t 50.02 s: 108 nodes carry the library's foam, 93 of them over half cover; the whitest 0.852; the void fraction 0.134–0.344; the deepest plume 2.00 m; mean library cover 0.585; the SEA's own cover at those nodes: mean 0.124, most 1.000
+t 51.43 s: 107 nodes carry the library's foam, 94 of them over half cover; the whitest 0.867; the void fraction 0.129–0.349; the deepest plume 2.00 m; mean library cover 0.592; the SEA's own cover at those nodes: mean 0.107, most 0.868
+t 52.85 s: 154 nodes carry the library's foam, 142 of them over half cover; the whitest 0.895; the void fraction 0.121–0.351; the deepest plume 2.00 m; mean library cover 0.629; the SEA's own cover at those nodes: mean 0.204, most 1.000
+t 54.27 s: 199 nodes carry the library's foam, 186 of them over half cover; the whitest 0.887; the void fraction 0.122–0.348; the deepest plume 2.00 m; mean library cover 0.609; the SEA's own cover at those nodes: mean 0.197, most 1.000
+t 55.68 s: 223 nodes carry the library's foam, 201 of them over half cover; the whitest 0.872; the void fraction 0.120–0.351; the deepest plume 2.00 m; mean library cover 0.573; the SEA's own cover at those nodes: mean 0.156, most 1.000
+t 57.10 s: 143 nodes carry the library's foam, 134 of them over half cover; the whitest 0.850; the void fraction 0.130–0.343; the deepest plume 2.00 m; mean library cover 0.582; the SEA's own cover at those nodes: mean 0.160, most 1.000
+done at t 72.02 s

@@ -174,7 +174,16 @@ nodes a wave** carry the library's own foam at any instant, **93 of them over ha
 the void fraction runs **0.129–0.349** — inside the consult's 0.13–0.4 band — and the plume stands at the full 2.00 m
 [M, `c2-step5b-runs/foam.txt`].
 
-**It does not read in the water sheet's pool shots, and the honest answer is in §6.**
+**And it is a large change to the foam channel where it lands.** At those same nodes the sea's own cover was a mean of
+**0.11–0.20** (its whitewater is somewhere else, because its wave and the library's have drifted apart by a metre or
+more), and the library writes a mean of **0.59–0.63** over it. The bore's white is the library's own, not the sea's
+showing through [M, `c2-step5b-runs/foam.txt`].
+
+**The water sheet's standard curl shots do not look at it.** With the foam written and with it switched off in the
+code, and everything else the same build, `front-midday`, `channel-midday` and `channel-sunset` come out **identical to
+the pixel** (0 of 921 600 differ by more than 2 of 255), and `behind-midday` differs in 543 pixels, 0.06 % of the
+frame, in one patch at its right edge [M]. Those shots frame the tube and the water right around it; the stretch the
+library's foam owns is down the line, where the wave broke earlier. The shot that does look at it is `*-ride-*`.
 
 ### 4.1 Item 1: the flow below the deeper stored depth
 

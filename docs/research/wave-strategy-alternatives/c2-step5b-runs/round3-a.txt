@@ -1,1 +1,17 @@
 cases 19, stored depths 2; lanes 153; from 40 to 115 s; parts A
+
+## A. The hand-back (317 bores followed, 61747 windows)
+  the bore's place, the hand-back's own part over 0.1 s, m (bar 0.3): median 0.193, 90 % 1.142, 99 % 3.308, most 28.978 (61747); over 0.3 39.7 %
+  its height, the same, m (bar 0.05): median 0.0206, 90 % 0.0946, 99 % 0.4124, most 1.0878 (61747); over 0.05 23.7 %
+  raw over 0.1 s: place median 0.647, 90 % 1.453, 99 % 3.382, most 21.988 (61747); height median 0.0288, 90 % 0.0986, 99 % 0.4055, most 1.1244 (61747)
+  the sea's own over 0.1 s (the control): place median 0.571, 90 % 0.685, 99 % 0.931, most 27.014 (61747); height median 0.0165, 90 % 0.0429, 99 % 0.1059, most 0.9767 (61747)
+  in one step (1/60 s): place median 0.1118, 90 % 0.4519, 99 % 2.3179, most 14.5600 (63329); height median 0.00764, 90 % 0.03557, 99 % 0.22418, most 0.92040 (63329)
+  the gap the blend-out pays back, m: median 1.27, 90 % 3.79, 99 % 19.75, most 23.02 (316); the height gap then, m: median 0.151, 90 % 0.389, 99 % 0.771, most 1.060 (316)
+  THE JUMP across the hand-back itself (the one step the slice is dropped on): place median 0.0042, 90 % 0.0133, 99 % 0.0450, most 0.2766 (312) m (bar 0.3); over 0.3 0.0 %
+                                                                              height median 0.00236, 90 % 0.00896, 99 % 0.01999, most 0.04388 (312) m (bar 0.05); over 0.05 0.0 %
+  the drift with one slice live on the lane: place median 0.195, 90 % 1.134, 99 % 3.290, most 28.978 (61145), over 0.3 39.8 %; height median 0.0207, 90 % 0.0945, 99 % 0.4138, most 1.0878 (61145), over 0.05 23.8 %
+  the drift with two:                        place median 0.000, 90 % 1.762, 99 % 7.054, most 9.201 (602), over 0.3 29.1 %; height median 0.0000, 90 % 0.0963, 99 % 0.1716, most 0.1922 (602), over 0.05 22.1 %
+
+the sea's crest lost on a step, over the whole run: 0
+
+ran 874 s wall; slices made 1328 (slope clamped 373, A0 clamped 717, some τ clamped 817, at the toe 509); tracker {"raws":1615,"fitted":1328,"borrowed":7,"atToe":618,"rejected":20}

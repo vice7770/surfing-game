@@ -138,6 +138,24 @@ export class WaveZone {
   }
 
   /**
+   * C2 step 5b: the aeration alone, for the in-page path that asks for the three fields separately
+   * (`SurfZoneSimulation.writeUniformAeration`); `applySnapshot` does the same where it is given an aeration buffer.
+   */
+  applyAeration(aeration: Float32Array, grid: NodeGrid): void {
+    const zone = this.surface;
+    const own = zone.grid;
+    if (grid.nx !== own.nx || grid.nz !== own.nz || grid.spacing !== own.spacing || grid.xMin !== own.xMin || grid.zMin !== own.zMin) return;
+    zone.forEachWritten((node, _weight, _height, hold, aired, _cover, air) => {
+      const o = 2 * node;
+      if (hold > 0) aeration[o] *= 1 - hold;
+      if (aired > 0) {
+        aeration[o] = (1 - aired) * aeration[o] + air;
+        aeration[o + 1] = (1 - aired) * aeration[o + 1] + aired * BORE_FOAM.plume;
+      }
+    });
+  }
+
+  /**
    * The contact's loft over the felt nodes (`heightAt`: the water's render-node surface); with `near`, only the slices
    * whose crest stands within `NEAR_BODIES` m of one of those points (x, z pairs): the bodies' (the step's cost).
    */

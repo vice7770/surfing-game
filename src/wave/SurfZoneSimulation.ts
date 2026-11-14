@@ -2864,9 +2864,16 @@ export class SurfZoneSimulation {
     }
   }
 
-  /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
+  /**
+   * G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes.
+   *
+   * C2 step 5b: the library's bore carries its own aerated water, so its void fraction and plume go in here too. The
+   * worker's own snapshot gets them from `writeUniformSnapshot`; this is the in-page path (`PhysicalSurfaceSource`),
+   * which asks for the three fields separately, and without this its bore kept the sea's air under the library's white.
+   */
   writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
     this.writeUniformFields(grid, undefined, undefined, data);
+    this.waveZone?.applyAeration(data, grid);
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */
