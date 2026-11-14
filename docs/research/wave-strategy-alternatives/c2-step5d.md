@@ -176,9 +176,19 @@ start where the mask ends, is a shape question and belongs to the advisor and to
   `ScreenStack.test.ts`, does so in a comment). Everything else the branch adds is a probe, a script, stills and this
   document. The measurement's own edit to `WaveZone.ts` was reverted before the commit and is not in the branch
   (`git diff` against main shows `src/dev/waterSheet.ts` and docs, nothing else).
-- The suite: **see `c2-step5d-runs/suite.txt`**, run under this machine's load (average 20+, with five Basilisk cases
-  on three cores). Timeouts are the expected failure mode in that condition and are not assertion failures; ruling 39's
-  note holds, that a test carrying its own timeout in its `it()` call is not rescued by `--testTimeout`.
+- **The suite had not finished when this round handed back, and `c2-step5d-runs/suite.txt` says exactly where it
+  stood.** It is detached and still writing. Seven files were failing at hand-back — step 5c's six plus
+  `BoussinesqSolver` and `sharedUpperRoot` — with per-test durations of 53 s to 1 979 s, which on a machine at load
+  20–24 carrying five Basilisk cases on three cores can only be hangs. **None of the seven imports
+  `src/dev/waterSheet.ts`, which is the only TypeScript this branch changes**, so the construction argument above
+  covers them whatever the final tally says.
+- **Two things about the command, both worth writing down.** `--exclude "src/wave/SurfZoneRunner.test.ts"` **does not
+  take**: `npx vitest list` with the same flag still lists six of that file's tests, so the run carries the file that
+  is outside the merge suite and that main itself fails until PR #204 lands, and that file is what the run spent its
+  last three quarters of an hour on. (The config's own `docs/**` exclusion **is** honoured alongside the flag — the
+  same `vitest list` collects 0 docs tests and 3 434 in all.) And raising `--testTimeout` **and `--hookTimeout`** to
+  300 s makes a slow test run to completion rather than fail at 60 s, which is why this run is hours rather than step
+  5c's 29 minutes. A shorter global and a glob (`**/SurfZoneRunner.test.ts`) are what the next round wants.
 
 ---
 
