@@ -572,9 +572,10 @@ const SCHEDULE_RAIL_CAP = 12;
  * hand's; recalled, and not re-derived here).
  *
  * 2 s is chosen against the mode this sense is for, not tuned: a one-pole adaptation at 2 s passes 0.33 Hz at 0.97 of
- * its size with 14° of phase lead and 0.74 Hz at 0.99 with 6°, so the 0.33–0.74 Hz board mode arrives essentially
- * whole, and anything slower than about 0.08 Hz is gone. **A hand-set number, for the re-check when two-way coupling
- * lands.**
+ * its size with 14° of phase lead, and the board's own mode — **measured in the game at about 1 to 1.5 Hz**
+ * (`boardmode.probe.ts`, step 3.2p; 3.2m's 0.33–0.74 Hz was the model's figure and is 30–60 % low) — at better than
+ * 0.99 with under 6°. So the mode arrives essentially whole and anything slower than about 0.08 Hz is gone.
+ * **A hand-set number, for the re-check when two-way coupling lands.**
  */
 const LOAD_ADAPT = 2;
 /**
@@ -2917,7 +2918,7 @@ export class AttachedRider {
     //   states are zero. A pressure sense that did not adapt would read a banked turn's own load as a sinking board.
     // - The board's nose-up pitch rate, about the heading's forward crossed with the world's up. Absolute, not
     //   relative to the water, because that is what the canals sense; the water's slope turns far slower than the
-    //   0.33-0.74 Hz mode this is for.
+    //   board's own mode, measured in the game at about 1 to 1.5 Hz (`boardmode.probe.ts`).
     // Both go into the same sense line as the other seven, so both arrive BALANCE_DELAY late, as a rider's do.
     const felt = (this.captureLoad - 1) * WATER.gravity;
     if (!this.loadReady) {
