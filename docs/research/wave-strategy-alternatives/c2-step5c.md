@@ -235,7 +235,9 @@ than assumed:
 | `curl-ride`, `curl-front`, `curl-channel`, `curl-inside`, `curl-close`, `curl-front` sunset | — | **byte-identical** |
 | `curl-behind`, foam-dominated pixels | 22 584 | 22 527 |
 
-**Six of seven stills are identical to the byte, and the seventh differs by 57 pixels of 22 584 — 0.25 %.** So every
+**Six of seven stills are identical to the byte, and the seventh differs by 57 pixels of 22 584 — 0.25 %.** The leg
+carries its own control: `curl-behind` and the water sheet *did* change, so the edit was live and the run was not
+silently shooting the same build twice. So every
 one of the foam figures in §3 is the **sea's own** foam, not the library's. The bore foam that step 5b measured in the
 field (+0.45 of cover on about 200 nodes a wave) reaches at most 57 pixels of one of seven camera views.
 
