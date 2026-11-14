@@ -48,6 +48,16 @@ the hull will run at the incidences where this law was measured and the present 
 the default path, the ten tests above are the old law's behaviour and should be re-baselined with the owner, and the
 pressure-centre law (ours 0.667 fixed, measured 0.69-0.80 varying) comes right as a consequence rather than a tune.
 
+READ THIS FIRST, ADDED BY STEP 3.2s. The "30-46 % low" above is a ZERO-ROLL result and does not transfer to a carve.
+The advisor's 3.2s consult [S, Shuford's deadrise factor with TN 4187's measured rolled-plate/wedge spray-root
+equivalence] puts the slender-body term at 23 % of its flat value at 50 degrees of roll, 13 % at 60 and 3 % at 75, so
+on the ROLL axis the bare 0.4575 sin(a) this patch replaces is 2-8 times too GENEROUS, not low. Whoever takes the patch
+off the shelf for a steep face is correcting the incidence axis only, and a carve runs at 42-83 degrees of roll.
+And a second gate, which this patch does NOT open and which 3.2s measured the consequence of: `BoardBody.ts` sets the
+plate share to -Infinity whenever a rider is attached, so `submergedShareHere` is 0 in EVERY carve, so the `deep`
+branch at the bottom of patchForce never fires with a rider on the board, at any roll. Opening that is a separate,
+default-path change and the owner's call; Part 17 has the measurement.
+
 diff --git a/src/physics/hullForces.ts b/src/physics/hullForces.ts
 index 36c0a91a..4c364d82 100644
 --- a/src/physics/hullForces.ts

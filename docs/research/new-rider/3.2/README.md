@@ -4684,3 +4684,297 @@ keeps **93 to 132 per cent**. Our carve was never eating the speed.
   `results/suite-rider-32r.txt`.
 - `../../water-physics/sources.md`: NACA TN 3939 added, and the Forsyth speed-ratio provenance corrected.
 - `../../water-physics/consult-log.md`: this round's consult.
+
+# Part 17 — who carries the weight against roll, and how deep the buried rail is
+
+Written 2026-11-14 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32s`, cut from
+`origin/main` at **8708dd15** (Part 16's merge), so Part 16 above is its base. The contract: the water-physics
+advisor's rank 1, stated at the end of Part 16 §6 — **book the vertical load by source through a carve as the roll goes
+from flat to its stop, with the buried rail's immersion beside it, and say whether the standing contact is holding the
+board out of the water.**
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. The one sentence the round was for
+
+**No — the contact is not holding the board out of the water, and nothing else is either: the rider's contact presses
+*down* on the board in every frame of all 24 runs (never once upward), the buried rail goes *deeper* as the roll goes
+over — 0.055 m under at flat to 0.26 m at the stop, 2.4–4.1× the board's own thickness, its deck edge under water
+throughout — and the hull wets **0.69–0.91** of what flat-plate geometry says it should (0.74–0.91 above 30° of
+roll), at every roll rate from 3 to 173 °/s** [M, 2,423 old-rider and 2,197 new-rider turn frames over 12 runs each].
+
+So the advisor's hypothesis is refuted, and its own prior (§3 case C of its consult) is what the ledger shows: **nothing
+holds the board up at high rail because the hull genuinely cannot carry weight there, and the system falls.** But the
+reason is not the one anybody in this thread had in mind, and it is not a coefficient:
+
+> **The vertical collapse is the `cos φ` projection, not the force law. `pressure.y / |pressure|` equals cos(roll) to
+> within 0.008–0.077 in all eighteen bins, both riders, while the pressure's own *magnitude* RISES to 1.21–1.24 W at
+> 40–50° of roll and is still 0.38–0.51 W at 80–90°** [M]. The force is there. It is pointing sideways.
+
+And it can only point sideways, because **the board has exactly one surface and its patch normals have no x-component
+at all** — `BoardShape.ts:114` builds every bottom patch with `normal: { x: 0, y: −1/norm, z: slope/norm }` [R]. Rolled
+83°, that single normal is 83° off vertical and there is no other surface in the model. **No coefficient, on any patch,
+can make vertical force there.** The only force law that would not be pinned to that normal — the cross-flow term — is
+gated off in every carve (§5).
+
+## 2. The ledger, binned by roll
+
+Population: the owner's acceptance test, twelve runs per rider (two stances × three entry speeds × two stick
+positions) on the Canyon-matched face (1.4 m, 16°, 5.7 m/s) — the same movement and the same runs as `load.probe.ts`,
+and the gate reproduces exactly: **old rider reaches the wave on the side 12 of 12, new rider 1 of 12** [M]. Every
+figure [M], in **system weights** (board 2.54 kg + rider 73 kg) and on the **world vertical**. Medians per bin, with
+the min and max over the pooled frames where they matter. `waterUp` is the water's whole force on the vertical, which
+is `1 + a_com/g` exactly; `contactUp` is the rider's contact on the board, **positive meaning the contact lifts it**.
+
+**Old rider.** Bins beyond 60° hold 5–16 frames from 2–3 runs; that thinness is the advisor's own warning and it binds.
+
+| \|roll\| | frames (runs) | speed | **waterUp** = 1 + a_com/g | **contactUp** | buoyancy | pressure | addedMass | radiation | friction | fins | rails |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0–10° | 924 (12) | 8.50 | **0.975** [0.16, 1.44] | **−0.941** [−1.40, −0.15] | 0.115 | **0.786** | 0.037 | 0.032 | −0.003 | −0.002 | 0.000 |
+| 10–20° | 457 (12) | 8.22 | **0.998** [0.66, 1.48] | **−0.964** [−1.45, −0.63] | 0.149 | **0.839** | 0.005 | 0.027 | −0.005 | −0.004 | 0.002 |
+| 20–30° | 482 (12) | 7.00 | **1.004** [0.79, 1.71] | **−0.971** [−1.66, −0.76] | 0.178 | **0.821** | 0.004 | 0.026 | −0.007 | −0.011 | 0.003 |
+| 30–40° | 231 (9) | 8.49 | **0.996** [0.87, 1.50] | **−0.964** [−1.46, −0.86] | 0.159 | **0.764** | 0.022 | 0.047 | −0.007 | −0.015 | 0.005 |
+| 40–50° | 185 (8) | 8.97 | **1.038** [0.85, 1.21] | **−1.005** [−1.17, −0.82] | 0.135 | **0.889** | −0.005 | 0.009 | −0.007 | −0.015 | 0.007 |
+| 50–60° | 111 (3) | 7.04 | **0.946** [0.39, 1.10] | **−0.911** [−1.06, −0.35] | 0.213 | **0.716** | −0.021 | 0.041 | −0.007 | −0.020 | 0.010 |
+| 60–70° | 16 (3) | 6.05 | **0.359** [0.28, 0.44] | **−0.321** [−0.39, −0.24] | 0.186 | 0.400 | −0.116 | −0.082 | −0.007 | −0.041 | 0.006 |
+| 70–80° | 12 (2) | 5.85 | **0.170** [0.09, 0.28] | **−0.133** [−0.24, −0.05] | 0.128 | 0.120 | −0.025 | −0.048 | −0.005 | −0.005 | 0.006 |
+| 80–90° | 5 (2) | 5.09 | **0.057** [0.04, 0.08] | **−0.023** [−0.04, −0.01] | **0.080** | 0.026 | 0.001 | −0.015 | −0.003 | −0.031 | 0.002 |
+
+**New rider.** Same structure, and — this is the second finding of the round — **near-identical numbers wherever it
+spends its time.**
+
+| \|roll\| | frames (runs) | speed | **waterUp** | **contactUp** | buoyancy | pressure | addedMass | radiation | fins | rails |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0–10° | 770 (12) | 7.53 | **0.948** | **−0.915** | 0.138 | **0.677** | 0.082 | 0.048 | 0.000 | 0.000 |
+| 10–20° | 587 (12) | 7.92 | **1.031** | **−0.997** | 0.169 | **0.842** | −0.002 | 0.033 | −0.006 | 0.001 |
+| 20–30° | 387 (12) | 8.79 | **0.999** | **−0.965** | 0.171 | **0.821** | −0.034 | 0.028 | −0.010 | 0.002 |
+| 30–40° | 241 (11) | 7.95 | **1.013** | **−0.973** | 0.171 | **0.841** | 0.009 | 0.025 | −0.015 | 0.004 |
+| 40–50° | 108 (10) | 7.59 | **0.979** | **−0.944** | 0.165 | **0.855** | 0.068 | 0.041 | −0.019 | 0.008 |
+| 50–60° | 71 (8) | 5.31 | **0.821** | **−0.792** | 0.173 | 0.460 | 0.059 | 0.052 | 0.001 | 0.011 |
+| 60–70° | 19 (5) | 5.71 | **0.708** | **−0.678** | 0.166 | 0.380 | 0.069 | 0.039 | −0.010 | 0.017 |
+| 70–80° | 11 (3) | 7.54 | **0.515** | **−0.486** | 0.160 | 0.208 | 0.044 | 0.004 | 0.074 | 0.028 |
+| 80–90° | 3 (2) | 4.83 | **0.263** | **−0.191** | **0.217** | 0.081 | −0.029 | 0.013 | −0.002 | 0.018 |
+
+Read it in five lines:
+
+1. **Hull planing pressure carries the weight, at every roll angle the board actually turns on.** 0.72–1.09 W of the
+   0.95–1.04 W total from 0° to 60°, with **buoyancy a steady 0.12–0.22 W** beside it. Everything else — added mass,
+   radiation, friction, fins, froth, bed — is within ±0.12 W of nothing, and all of it together never reaches 0.15 W.
+2. **The rail side faces carry 0.000 to 0.030 W at any roll — at most 3 % of the weight** [M]. The advisor's own
+   ceiling for them was 0.046 W and we do not even reach it. **3.2q's ruling stands: build nothing on the rail.**
+   (3.2q measured the rails at 1.3–6.1 % of the *yaw*; this is the same answer on the vertical.)
+3. **`contactUp` is negative in every bin and in every one of the 24 runs**, the per-run worst running −1.04 to
+   −1.66 W and the least-negative value anywhere in the data being **−0.007 W** [M]. The rider presses down, always.
+   What it does at high rail is **press less**, falling from −1.005 W at 40–50° to −0.023 W at 80–90° — because the
+   water's lift and the rider's weight-on-the-board go to zero *together*. That is not support; that is the rider
+   leaving with the board.
+4. **The fall is twice a real cutback's.** The advisor predicted `1 + a_y/g` = 0.45–0.55 in the 75–85° bin, from
+   Forsyth's own means (a real 75° cutback is a controlled drop at −0.45 g). We measure **0.057** (old) and **0.263**
+   (new) — the system falls at −0.94 g and −0.74 g. So "a hull that stops carrying weight at big rail is correct
+   physics" is right in kind and wrong in degree by about 2×.
+5. **The new rider's 1-of-12 is not a lift problem.** Over 0–50° of roll, which holds 2,093 of its 2,197 turn frames,
+   its vertical ledger is within a few per cent of the old rider's in every row (40–50°: waterUp 0.979 against 1.038,
+   pressure 0.855 against 0.889, buoyancy 0.165 against 0.135). **The water carries the new rider exactly as it
+   carries the old one.** Whatever makes it fall is not here, and the next round should not look here for it.
+
+## 3. The buried rail, measured
+
+| \|roll\| | buried rail, **bottom edge** under the surface (m) | its **deck edge** | the **high** rail's bottom edge | wetted area (m²) | share on the buried side | wetted beam | beam the geometry asks for, `d/sin φ` | ratio |
+|---|---|---|---|---|---|---|---|---|
+| 0–10° | **0.055** [0.003, 0.115] | 0.052 | +0.031 | 0.331 | 0.57 | 0.319 | (0.464, saturated) | — |
+| 10–20° | **0.109** [0.039, 0.167] | 0.106 | +0.048 | 0.347 | 0.62 | 0.293 | (0.445, saturated) | — |
+| 20–30° | **0.172** [0.071, 0.291] | 0.169 | +0.057 | 0.362 | 0.65 | 0.282 | 0.409 | 0.69 |
+| 30–40° | **0.177** [0.100, 0.383] | 0.174 | +0.013 | 0.332 | 0.74 | 0.237 | 0.300 | **0.79** |
+| 40–50° | **0.173** [0.110, 0.419] | 0.170 | −0.026 | 0.279 | 0.86 | 0.203 | 0.244 | **0.83** |
+| 50–60° | **0.254** [0.206, 0.311] | 0.252 | +0.033 | 0.388 | 0.70 | 0.262 | 0.322 | **0.81** |
+| 60–70° | **0.260** [0.239, 0.310] | 0.258 | +0.014 | 0.336 | 0.76 | 0.230 | 0.292 | **0.79** |
+| 70–80° | **0.207** [0.173, 0.233] | 0.206 | −0.061 | 0.234 | 0.91 | 0.175 | 0.213 | **0.82** |
+| 80–90° | **0.150** [0.139, 0.162] | 0.150 | −0.128 | 0.165 | 1.00 | 0.139 | 0.152 | **0.91** |
+
+Four things in it:
+
+1. **The board sinks, and it sinks about as much as a real one.** The buried rail's bottom edge goes **0.055 → 0.26 m**
+   under as the roll goes over, against the advisor's sourced expectation of **0.10–0.19 m at 42–75° of rail** [S, its
+   `w = d / sin φ` on the area a real carve needs]. Ours is at the top of that band or slightly past it. The deepest
+   value reached inside a single turn, over the 24 runs, is **0.18–0.57 m** [M]. **This is the first measurement of
+   #285's question at a rail angle** — #285 found the board's planing realistic but never tested it rolled — and the
+   answer is that the sinking is not the fault.
+2. **The deck edge is under water the whole time, and that fact is nearly empty**, because the buried rail's deck edge
+   sits **0.001–0.003 m above its bottom edge** [M]: the board has no rail band. The advisor traced it to the volume
+   taper solving to a ≈ 0.925, which leaves a 2–5 mm knife edge [S/R]. So "the rail bites" has nothing in our geometry
+   to bite with.
+3. **The hull wets 0.69–0.91 of what a rolled flat plate would** (0.74–0.91 above 30°), and the ratio *rises* with roll
+   rather than falling.
+   It is **not** a board held out of the water. The missing fifth is where the advisor said it would be: 4 patches
+   across at 0.116 m, keyed on each patch's *centre*, cannot resolve a wetted beam of 0.14–0.26 m, and the outermost
+   centre sits 0.058 m inboard of the rail [R]. The two saturated rows are the formula's own degeneracy — `d/sin φ`
+   exceeds the beam below ~20° of roll — not a measurement.
+4. **Buoyancy is the last thing holding the board up, and it is small.** At 80–90° it is 0.080 W (old) and 0.217 W
+   (new) of a 0.057 W and 0.263 W total — more than all the rest put together. The advisor flagged that `patchForce`
+   gives the full ρg·V whether or not the deck is in the hollow's air cavity (`hullForces.ts:195`; `deckWet` scales
+   deck pressure, friction and wetted area, not buoyancy) and that a ventilated board would not have it, with a
+   ceiling of 0.350 W [S]. **Measured, that mechanism is worth at most 0.08–0.22 W, and removing it would deepen the
+   fall rather than fix anything.** Recorded, not pursued.
+
+## 4. The two causes, told apart
+
+The advisor's discriminator, run as asked.
+
+- **"Held out by the standing contact": refuted by §2 line 3.** `contactUp` never once goes to zero or positive in
+  4,620 turn frames. There is nothing to ablate, so I did **not** run its ballast-payload ablation — a riderless board
+  cannot be made to carve, and the column it was meant to settle is already unambiguous.
+- **"The roll outran the sinking": refuted by a rate sweep.** Old rider, stick at 0.25, 0.5 and 1.0, binned by roll
+  [M]:
+
+  | stick | 30–40° | 40–50° | 50–60° | 60–70° | 70–80° |
+  |---|---|---|---|---|---|
+  | 0.25 — roll rate (°/s) | 99 | 128 | 156 | 173 | 121 |
+  | 0.25 — wetted beam / geometric | 0.76 | 0.82 | 0.84 | 0.81 | 0.81 |
+  | 1.0 — roll rate (°/s) | 28 | 9 | 3 | 115 | 107 |
+  | 1.0 — wetted beam / geometric | 0.83 | 0.82 | 0.81 | 0.79 | 0.82 |
+
+  **The deficit is 0.76–0.84 at 3 °/s and 0.76–0.84 at 173 °/s** — a 58-fold range of roll rate and no trend. It is a
+  constant, and §3 item 3 says what it is: patch quantization, not a lag.
+- **"Nothing holds it up; the hull cannot carry weight there": confirmed, with a mechanism the advisor's case C did
+  not name.** The hull *can* still make force — 0.38–0.51 W of it at 80–90° — it just cannot point any of it up.
+
+**The fall, traced.** Old rider, tall, full stick, entry +1.5 m/s, the run that reaches 82° (`results/lift-32s-trace-old-tall-full.jsonl`).
+Everything happens in **0.39 s**, between t = 2.08 s and t = 2.47 s [M]:
+
+| t (s) | roll | speed | waterUp | contactUp | buoyancy↑ | pressure↑ | buried rail (m) | wetted area |
+|---|---|---|---|---|---|---|---|---|
+| 1.40 | 49° | 8.40 | 1.001 | −0.975 | 0.163 | 0.807 | 0.208 | 0.316 |
+| 2.08 | 52° | 6.43 | 0.796 | −0.759 | 0.223 | 0.631 | **0.276** | **0.388** |
+| 2.27 | 66° | 6.04 | 0.362 | −0.327 | 0.173 | 0.313 | 0.253 | 0.316 |
+| 2.40 | 80° | 5.29 | 0.092 | −0.053 | 0.106 | 0.054 | 0.176 | 0.205 |
+| 2.47 | 83° | 4.38 | **0.034** | **−0.001** | 0.057 | **0.011** | 0.127 | 0.126 |
+
+The vertical pressure goes **0.631 → 0.011 W, 98 % of it gone**, and the rider's press on the board goes
+**−0.759 → −0.001 W**. At the last frame the contact transmits nothing: the rider is in free fall beside the board.
+One thing I measured and cannot attribute: the rail **un-buries** over that window, 0.276 → 0.127 m. The system's
+centre of mass is accelerating downward at ~0.97 g throughout, so this is the board rotating and the face moving, not
+anything lifting it; the window coincides with the board's speed falling through the wave's own 5.7 m/s, which is the
+mechanism #93/#96 already named for falls high on the face, but **I did not isolate it and I am not claiming it** [I].
+
+## 5. The gap the round found, and why I am not building in it
+
+Two gates, both read in the code and both verified by me, not taken on the advisor's word [R]:
+
+- `src/physics/hullForces.ts:226` — `const deep = bottom >= 1 && deck >= 1 ? submergedShareHere : 0;` — the cross-flow
+  term needs a patch fully submerged **and** a non-zero board-wide plate share.
+- `src/physics/BoardBody.ts:990` — `const plateDepth = this.plate && this.plateAllowed && !this.rider?.attached ? this.plateDepth() : -Infinity;` —
+  the plate law is off **whenever a rider is attached**, which is always in a carve, so `plateShareNow` is
+  `submergedShare(−Infinity)` = 0 and `deep` is **identically zero in every carve at every roll**. (And `plateDepth()`
+  takes the *shallowest* face over all 48 patches, so one dry high-rail patch would zero it anyway.)
+
+So from about 45° to 85° of roll the board runs on the bare small-trim coefficient along a single flat-bottom normal,
+and §1 is the consequence. **Three reasons I am shipping the read and no code:**
+
+1. **It is a structure problem, and every structural fix is a default-path hull-law change.** Giving the section a
+   deadrise, a bilge or a real rail band, or opening either gate, changes the law `BoardBody.ts:987` says in its own
+   comment every rider was calibrated on. 3.2r already built one such change, measured it, and parked it for the same
+   reason; a second one, bigger, is the owner's call and not a round's.
+2. **It would not fix the ride.** A real bottom turn is **42° of rail** [S, Forsyth's mean], and at 40–50° we already
+   make **0.89–1.04 W** of vertical and the old rider passes the gate **12 of 12**. The 80–90° bin is somewhere our
+   rider only arrives *because the turn has already failed* — it is reached in 5 frames of 2 runs, both of them
+   tall-full-stick runs that roll past 70° and fall. **Fixing 83° of roll would make the failure prettier, not rarer.**
+3. **The advisor's own arithmetic says the payoff is lateral, not vertical**, and the identity from Part 16 still
+   forbids the vertical one: `n = (1 + a_y/g)/cos φ`, so no board change raises steady load factor on this face. Our
+   |water| at 40–60° is already **1.55–1.59 W** against Forsyth's 2.11 — the *magnitude* is not far off. What a correct
+   high-roll law would buy is a rail that keeps biting sideways as it buries (ours 0.03 W against a real cutback's
+   2.05 W of lateral) and a release with a cause. **In the owner's terms: at full rail the board would feel set in the
+   water instead of letting go, and the turn would end when the rail ventilates — a spin-out — rather than when the
+   force law runs out of surface.** That is worth a round. It is not worth this round's remaining hour, and it needs
+   the owner's yes on the default path first.
+
+What I did ship beside the probe: the record. `crossflow-32r.patch.txt` now carries the correction that **3.2r's
+"30–46 % low" is a zero-roll result** — on the roll axis the law it replaces is 2–8× too *generous* [S, the advisor's
+Shuford deadrise factor with TN 4187's rolled-plate equivalence] — so nobody takes that patch off the shelf for a
+steep face believing it also fixes the carve.
+
+## 6. The advisor (consulted this round)
+
+Logged in `../../water-physics/consult-log.md`; it opened **Breslin & Skalak 1959, NASA Memo 2-23-59W** (ventilation of
+surface-piercing struts), now in `../../water-physics/sources.md`. It did something worth saying plainly: **it predicted
+its own hypothesis would half-fail, and named the one mechanism that could have saved it** (full ρg·V on a deck that
+should be in air). Both calls were right — the hypothesis failed, and buoyancy was indeed the last row standing, just
+too small to matter. It also supplied every bar in §5 item 3, the `w = d / sin φ` geometry §3 is read against, the
+0.55 W prediction §2 line 4 scores, and both gates in §5.
+
+Its caveats, passed on unsoftened: our board at 7 m/s is at **speed coefficient 3.3**, below TN 3939's 9–18 and
+TN 4187's 7–18; everything past **34° of incidence, 40° of deadrise and ±15° of roll** is extrapolation, and a carve is
+42–83° of roll, so the roll→deadrise mapping it reasons with is [I] on TN 4187's measured *spray-root* equivalence and
+unproven below 40°. **n = 2.1 and the 1.57/0.55 vertical split remain its arithmetic on two published means, not a
+measured load.** And it flagged one thing it would not choose: whether buoyancy should follow the deck hollow is a
+default-path change and the owner's.
+
+## 7. Seatbelts
+
+- **No file under `src/` is changed.** `git diff --stat` against `origin/main` shows only `docs/`, so the default path
+  cannot move, the suite cannot be affected and the Canyon byte hashes cannot move. I did not run the Canyon bench for
+  that reason and say so rather than quote a pass.
+- `npx tsc --noEmit -p .`: **clean, exit 0** on its own line. `npx tsc -p server/tsconfig.json --noEmit`: **clean, exit
+  0** [M]. Run in a worktree whose `node_modules` is linked to the main checkout's, so `tsc` really ran.
+- The six files that cover the rider and the board — `AttachedRider`, `predictiveBalance`, `standingBody`,
+  `humanBalance`, `BoardBody` (`src/physics/`) and `PhysicalMode` (**`src/game/`**, not `src/physics/` — Part 16's
+  command silently matched five files, not six) — run **alone**: **276 passed, 8 expected fail, 0 failures**, and
+  `grep -E "Error:|AssertionError"` over both logs is empty. See `results/suite-rider-32s.txt`.
+- **The probe's own seatbelt, and it is the reason any of §2 can be believed**: on a **riderless** board the same
+  vertical balance closes with a residual of **exactly 0** — median and peak, over 240 frames, in board weights [M]
+  (`results/lift-32s-closure.jsonl`). The water ledger plus gravity accounts for the board's vertical momentum
+  completely, so the residual with a rider on it *is* the contact and nothing else.
+- **No force is added, paired or unpaired.** Nothing in the sim changed at all; `board.forces` was already a
+  per-source ledger, which is why this round needed no `src/` change where 3.2q needed a `yawLedger`.
+- A wave-track agent and five Basilisk runs shared the machine throughout; none of it was stopped.
+
+## 8. What I am unsure of
+
+- **The high-roll bins are thin.** 3–19 frames from 2–5 runs above 60°. Every number there is a handful of frames from
+  the two or three tall-full-stick runs that get that far, and I would not defend the third digit of any of them. The
+  claims that carry the round — the sign of `contactUp`, the `cos φ` identity, the rail going deeper — are all also
+  true in the fat bins, which is why I rest on them and not on the 80–90° row.
+- **The `cos φ` identity is tested against roll measured to the *water surface*, not the world vertical.** On a 16°
+  face those differ by up to the face slope, which is why the ratio sits 0.008–0.077 *below* cos(roll) rather than on
+  it. I read that residual as the face slope's own tilt; I did not prove it is only that.
+- **Why the rail un-buries in the last 0.39 s** (§4). I have a plausible mechanism and no isolation.
+- **Whether a sectioned hull would actually buy the lateral bite.** §5 item 3's payoff is the advisor's arithmetic and
+  my inference from it, not a measurement. Nobody has built it, and 3.2r's experience says a sourced correction can
+  measure to nothing.
+- **Whether `beam/beamGeo` ≈ 0.8 is really patch quantization.** The rate sweep rules out a lag and the arithmetic
+  fits, but I did not test it by refining the patch grid, which would settle it in one run.
+
+## 9. Files (3.2s)
+
+- `lift.probe.ts`: the vertical-load ledger — every water source on the world vertical in system weights, the rider's
+  contact as the residual of the board's own vertical momentum balance, each rail's bottom and deck edge immersion
+  separately, the wetted bottom split across the stringer and the beam against the rolled-plate geometry, the attitude,
+  the roll and immersion rates and the along-path share, all binned by \|roll\|; `PART=closure` is the riderless check.
+- Results: `results/lift-32s-old.jsonl` and `lift-32s-new.jsonl` (the nine bins and the twelve runs, per rider),
+  `lift-32s-rollrate.jsonl` (the stick sweep §4 reads), `lift-32s-closure.jsonl` (the seatbelt),
+  `lift-32s-trace-old-tall-full.jsonl` (the frame-by-frame fall §4 traces), `results/suite-rider-32s.txt`.
+- `crossflow-32r.patch.txt`: the zero-roll correction added to its shelf note, and the second gate named.
+- `../../water-physics/sources.md`: NASA Memo 2-23-59W added. `../../water-physics/consult-log.md`: this round's consult.
+
+## 10. For the owner, in plain words
+
+You have said for weeks that the game feels like a floor and that real boards sink. **This round measured the sinking at
+a rail angle for the first time, and the board sinks properly**: rolled over in a carve, its buried rail goes a quarter
+of a metre under — about four times the board's own thickness, and as deep as the real thing. That is not what is wrong.
+
+What is wrong is narrower and stranger. **Our board is a flat sheet.** It has a bottom and nothing else — no curve into
+the rail, no edge with any thickness to it (the rail in the model is two to five millimetres). While the board is fairly
+flat, the bottom faces downward and holds you up. Rolled right over on its edge, that same bottom now faces *sideways*,
+and there is simply no part of the board left pointing down. The water is still pushing just as hard — we measured it,
+and the push is nearly as strong as a real surfer's — but almost none of it is holding you up any more. So past about
+sixty degrees of rail you fall, and you fall about twice as fast as a real surfer would.
+
+The honest news is that **this is not where your rides are going wrong.** A real bottom turn sits at about forty-two
+degrees of rail, and there our board holds you up fine — the surfer makes it across the wave twelve times out of twelve.
+The sixty-plus degrees is somewhere he only ends up when the turn has already gone bad. Giving the board a proper edge
+would make that moment *feel* right — the rail would keep gripping as it buries, and the turn would end with the board
+breaking loose and sliding out, the way a real one does, instead of the board quietly running out of something to push
+against. **That is a real improvement and I think it is worth doing, but it changes how every board in the game behaves,
+so it is your call and not mine.** Nothing shipped this round but the measurement.
+
+One thing I can rule out for you: **the new surfer's problem is not here.** Wherever he spends his time on the wave, the
+water carries him exactly as it carries the old one, to within a few per cent. His falling is something else.
