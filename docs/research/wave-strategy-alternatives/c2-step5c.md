@@ -257,6 +257,21 @@ bore changed into each camera's frustum — a read, not a build.
 
 ---
 
+## 4b. Seatbelts
+
+- `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: **clean**.
+- **The default game is untouched by construction.** The only TypeScript file this branch changes is
+  `src/dev/waterSheet.ts`, which `main.ts:1323` loads through a dynamic `import()` behind `devFlag('waterSheet')`. It
+  is never in the default game's graph, and **no test imports it** (the one test that names it,
+  `ScreenStack.test.ts`, does so in a comment). Everything else the branch touches is a `.mjs` dev tool, two Basilisk
+  files and docs — none of them in the suite's graph or the solver's.
+- The three spin-up hashes and the full suite: `c2-step5c-runs/`. Both were started with the five Basilisk runs
+  already loading the machine, which is exactly the condition the coordinator warned produces timeout-only failures;
+  the suite ran with `--testTimeout=300000` for that reason. **Read a failure there as a timeout before reading it as
+  a regression**, and note the argument above: nothing in the suite's import graph changed.
+
+---
+
 ## 5. What I am unsure of
 
 - **The `foam` class is a threshold, not a ground truth.** It is pixels the magenta pass pulled at least 120 levels of
