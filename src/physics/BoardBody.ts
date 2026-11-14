@@ -284,6 +284,17 @@ export class BoardBody implements BoardContactBody {
     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
     fins: new Vector3(), rails: new Vector3(), froth: new Vector3(),
   };
+  /**
+   * The yaw ledger (step 3.2q, a measurement tool and not part of the sim): who twisted the board about the world's up
+   * over the latest step. Each entry is a mean torque, N·m, positive turning the nose toward the board's left; `total`
+   * is the board's own I·Δω about that axis, and `rider` the residual — everything the rider's coupling carries,
+   * its own yaw inertia resisting the turn as well as what its feet push. Only filled while `yawLedger` is on, so the
+   * default game pays one branch per substep and nothing else.
+   */
+  static yawLedger = false;
+  readonly yaw = {
+    buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, gyro: 0, rider: 0, total: 0,
+  };
   /** Hull volume under water and wetted bottom area at the latest substep. */
   submergedVolume = 0;
   wettedArea = 0;
@@ -711,6 +722,7 @@ export class BoardBody implements BoardContactBody {
     this.foilReaction.fill(0);
     this.foilMean.fill(0);
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
+    if (BoardBody.yawLedger) for (const key of Object.keys(this.yaw) as (keyof BoardBody['yaw'])[]) this.yaw[key] = 0;
     this.rider?.beginStep();
     this.substepsTaken = 0;
     this.stepSpan = dt;
@@ -720,6 +732,11 @@ export class BoardBody implements BoardContactBody {
     water.setSampleTime?.(0);
     const inverseDt = 1 / dt;
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
+    if (BoardBody.yawLedger) {
+      const y = this.yaw;
+      y.rider = y.total - (y.buoyancy + y.pressure + y.addedMass + y.radiation + y.friction + y.bed + y.fins + y.rails + y.froth + y.gyro);
+      for (const key of Object.keys(y) as (keyof BoardBody['yaw'])[]) y[key] *= inverseDt;
+    }
     this.rider?.endStep(dt, water, this);
     for (let k = 0; k < this.count; k += 1) {
       const jx = this.reaction[k * 3];
@@ -864,6 +881,7 @@ export class BoardBody implements BoardContactBody {
       force.x += h * ft[b];
       force.y += h * ft[b + 1];
       force.z += h * ft[b + 2];
+      // The explicit yaw is booked with the rest of the right-hand side, in `substep`.
       if (kind === 0) this.work.fins += work;
       else this.work.rails += work;
     }
@@ -889,6 +907,10 @@ export class BoardBody implements BoardContactBody {
       force.x += impulse * nx;
       force.y += impulse * ny;
       force.z += impulse * nz;
+      if (BoardBody.yawLedger) {
+        if (fin) this.yaw.fins += impulse * cy;
+        else this.yaw.rails += impulse * cy;
+      }
       this.foilReaction[k * 3] += impulse * nx;
       this.foilReaction[k * 3 + 1] += impulse * ny;
       this.foilReaction[k * 3 + 2] += impulse * nz;
@@ -1224,6 +1246,17 @@ export class BoardBody implements BoardContactBody {
       rhs[4] += h * frothTy;
       rhs[5] += h * frothTz;
     }
+    if (BoardBody.yawLedger) {
+      const y = this.yaw;
+      y.buoyancy += h * totals.bty;
+      y.pressure += h * totals.pty;
+      y.friction += h * totals.fty;
+      y.fins += h * ft[4];
+      y.rails += h * ft[10];
+      y.addedMass += waterTy;
+      y.froth += h * frothTy;
+      y.gyro -= h * gyro[1];
+    }
     for (let i = 0; i < 3; i += 1) {
       system[i * 6 + i] += this.mass;
       for (let j = 0; j < 3; j += 1) system[(i + 3) * 6 + j + 3] += I[i * 3 + j];
@@ -1329,6 +1362,11 @@ export class BoardBody implements BoardContactBody {
       this.forces.addedMass.x += inertia * ux;
       this.forces.addedMass.y += inertia * uy;
       this.forces.addedMass.z += inertia * uz;
+      if (BoardBody.yawLedger) {
+        this.yaw.pressure += pressure * cy;
+        this.yaw.radiation += radiated * sy;
+        this.yaw.addedMass += inertia * sy;
+      }
       this.reaction[k * 3] += pressure * nx + water * ux;
       this.reaction[k * 3 + 1] += pressure * ny + water * uy;
       this.reaction[k * 3 + 2] += pressure * nz + water * uz;
@@ -1354,6 +1392,7 @@ export class BoardBody implements BoardContactBody {
       this.forces.froth.x += h * frothX;
       this.forces.froth.z += h * frothZ;
     }
+    if (BoardBody.yawLedger) this.yaw.total += I[3] * dwx + I[4] * dwy + I[5] * dwz;
     v.x += dvx;
     v.y += dvy;
     v.z += dvz;
@@ -1584,6 +1623,12 @@ export class BoardBody implements BoardContactBody {
     this.forces.bed.x += ix;
     this.forces.bed.y += iy;
     this.forces.bed.z += iz;
+    // A bed impulse is applied outside the solve, and `impulseAt` turns it into exactly I⁻¹ (r × J), so its angular
+    // impulse goes into the total as well as into its own entry.
+    if (BoardBody.yawLedger) {
+      this.yaw.bed += rz * ix - rx * iz;
+      this.yaw.total += rz * ix - rx * iz;
+    }
   }
 
   private impulseAt(rx: number, ry: number, rz: number, ix: number, iy: number, iz: number): void {
@@ -1789,6 +1834,7 @@ export class BoardBody implements BoardContactBody {
       this.forces.addedMass.x += inertia * nx;
       this.forces.addedMass.y += inertia * ny;
       this.forces.addedMass.z += inertia * nz;
+      if (BoardBody.yawLedger) this.yaw.addedMass += inertia * cy;
       // The water takes the heave's impulse back, shared by the station's patches.
       const list = stationPatches[i];
       for (const k of list) {
