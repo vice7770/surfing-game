@@ -1,3 +1,4 @@
+import { boreAir, boreShape, boreWhite } from './boreFoam';
 import { LANE, type LaneField, type SeaLevel } from './Handover';
 import { CURVE, CURVE_STRIDE, LIFT } from './libraryLoft';
 import { SLICE_LIFE, type FieldSlice, type SliceField } from './SliceField';
@@ -22,7 +23,9 @@ import { FLOW_VALUES } from './WaveLibrary';
  * bridge under it (hidden), and the loft (`libraryLoft`) draws and is felt from the same curve, lifted off the nodes
  * from `LIFT.on`° (`CURVE`).
  *
- * The sea's drawn foam is held off a slice's water until its touchdown (`FOAM_HOLD`): step 5 gives the library's own.
+ * The sea's drawn foam is held off a slice's water until its touchdown (`FOAM_HOLD`), and from its touchdown the
+ * library's own bore foam comes in exactly as that hold goes out, so the two never add up to more than the slice's own
+ * share (C2 step 5b, `boreFoam.ts`).
  */
 export const EDGE = {
   /** A slice's frame fades into the sea over this much of its back and its front, m (smoothstep: height and slope continuous). */
@@ -95,6 +98,10 @@ export class ZoneSurface {
   private readonly laneWH: Float64Array;
   private readonly laneW: Float64Array;
   private readonly laneF: Float64Array;
+  /** C2 step 5b, per lane × station: Σ w × the bore's cover, Σ w × its void fraction, and Σ w where its foam is live. */
+  private readonly laneC: Float64Array;
+  private readonly laneA: Float64Array;
+  private readonly laneCW: Float64Array;
   /** Per lane, the stations written this step (lo > hi: none). */
   private readonly laneLo: Int32Array;
   private readonly laneHi: Int32Array;
@@ -108,6 +115,10 @@ export class ZoneSurface {
   readonly weight: Float64Array;
   readonly height: Float64Array;
   readonly hold: Float64Array;
+  /** C2 step 5b, per render node: the bore's foam cover, its void fraction, and the weight those two came with. */
+  readonly cover: Float64Array;
+  readonly air: Float64Array;
+  readonly aired: Float64Array;
   /** Footprint nodes written this step (their A, B, F are live; the rest are 0). */
   private readonly written: Int32Array;
   private writtenCount = 0;
@@ -150,6 +161,9 @@ export class ZoneSurface {
     this.laneWH = new Float64Array(n);
     this.laneW = new Float64Array(n);
     this.laneF = new Float64Array(n);
+    this.laneC = new Float64Array(n);
+    this.laneA = new Float64Array(n);
+    this.laneCW = new Float64Array(n);
     this.laneLo = new Int32Array(lanes.count).fill(1);
     this.laneHi = new Int32Array(lanes.count).fill(0);
     this.sea = new Float64Array(lanes.stations);
@@ -165,6 +179,9 @@ export class ZoneSurface {
     this.weight = new Float64Array(size);
     this.height = new Float64Array(size);
     this.hold = new Float64Array(size);
+    this.cover = new Float64Array(size);
+    this.air = new Float64Array(size);
+    this.aired = new Float64Array(size);
     // The footprint: every node between the first and last lane, within their stations' reach.
     const found: number[] = [];
     const lane: number[] = [];
@@ -245,11 +262,14 @@ export class ZoneSurface {
     return a > 0 ? (1 - a) * sea + this.height[node] : sea;
   }
 
-  /** Every node written this step: its weight A, weighted height B and foam hold F. */
-  forEachWritten(visit: (node: number, weight: number, height: number, hold: number) => void): void {
+  /**
+   * Every node written this step: its weight A, weighted height B, foam hold F, and (C2 step 5b) the bore's foam —
+   * its weight, its weighted cover and its weighted void fraction.
+   */
+  forEachWritten(visit: (node: number, weight: number, height: number, hold: number, aired: number, cover: number, air: number) => void): void {
     for (let n = 0; n < this.writtenCount; n += 1) {
       const node = this.written[n];
-      visit(node, this.weight[node], this.height[node], this.hold[node]);
+      visit(node, this.weight[node], this.height[node], this.hold[node], this.aired[node], this.cover[node], this.air[node]);
     }
   }
 
@@ -288,6 +308,9 @@ export class ZoneSurface {
         this.laneWH.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneW.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
         this.laneF.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+        this.laneC.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+        this.laneA.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
+        this.laneCW.fill(0, o + this.laneLo[k], o + this.laneHi[k] + 1);
       }
       this.laneLo[k] = 1;
       this.laneHi[k] = 0;
@@ -297,6 +320,9 @@ export class ZoneSurface {
       this.weight[node] = 0;
       this.height[node] = 0;
       this.hold[node] = 0;
+      this.cover[node] = 0;
+      this.air[node] = 0;
+      this.aired[node] = 0;
     }
     this.writtenCount = 0;
     this.picked.length = 0;
@@ -870,7 +896,15 @@ export class ZoneSurface {
     // Weight: the frame's ends and the field's ends; the foam's hold until the touchdown.
     const o = k * st;
     const touchdownAt = slice.throwAt + slice.touchdown;
-    const holdT = smoothstep((time - slice.blendFrom) / SLICE_LIFE.blend) * (1 - smoothstep((time - touchdownAt) / FOAM_HOLD));
+    const released = smoothstep((time - touchdownAt) / FOAM_HOLD);
+    const holdT = smoothstep((time - slice.blendFrom) / SLICE_LIFE.blend) * (1 - released);
+    // C2 step 5b: the bore's own foam comes in exactly as the sea's hold goes out (`released`), so the two never add up
+    // to more than the slice's share. Its cover is Koepke's ageing from the slice's own touchdown; its stretch is the
+    // slice's own crest to its own toe (`boreFoam.ts`).
+    const white = released > 0 ? released * boreWhite(time - touchdownAt) : 0;
+    const air = released > 0 ? boreAir(time - touchdownAt) : 0;
+    const pileFrom = c[at + 2 * WAVE_LANDMARK.crest];
+    const pileTo = c[at + 2 * WAVE_LANDMARK.toe];
     for (let j = j0; j <= j1; j += 1) {
       const x = j * ds;
       const w = slice.end * smoothstep((x - back) / EDGE.band) * smoothstep((front - x) / EDGE.band);
@@ -885,6 +919,21 @@ export class ZoneSurface {
       this.laneWH[o + j] = wh;
       this.laneW[o + j] = sum;
       this.laneF[o + j] = Math.max(this.laneF[o + j], w * holdT);
+      if (!(white > 0)) continue;
+      const shape = boreShape(x, pileFrom, pileTo);
+      if (!(shape > 0)) continue;
+      const cw = w * shape * released;
+      let cwSum = this.laneCW[o + j] + cw;
+      let cover = this.laneC[o + j] + w * shape * white;
+      let void_ = this.laneA[o + j] + cw * air;
+      if (cwSum > 1) {
+        cover /= cwSum;
+        void_ /= cwSum;
+        cwSum = 1;
+      }
+      this.laneC[o + j] = cover;
+      this.laneA[o + j] = void_;
+      this.laneCW[o + j] = cwSum;
     }
     if (this.laneLo[k] > this.laneHi[k]) {
       this.laneLo[k] = j0;
@@ -945,6 +994,12 @@ export class ZoneSurface {
         this.weight[node] = Math.min(1, w);
         this.height[node] = (1 - f) * (live0 ? read(k, s0, this.laneWH) : 0) + f * (live1 ? read(k + 1, s1, this.laneWH) : 0);
         this.hold[node] = Math.min(1, (1 - f) * (live0 ? read(k, s0, this.laneF) : 0) + f * (live1 ? read(k + 1, s1, this.laneF) : 0));
+        const aired = (1 - f) * (live0 ? read(k, s0, this.laneCW) : 0) + f * (live1 ? read(k + 1, s1, this.laneCW) : 0);
+        if (aired > 0) {
+          this.aired[node] = Math.min(1, aired);
+          this.cover[node] = Math.min(1, (1 - f) * (live0 ? read(k, s0, this.laneC) : 0) + f * (live1 ? read(k + 1, s1, this.laneC) : 0));
+          this.air[node] = Math.min(1, (1 - f) * (live0 ? read(k, s0, this.laneA) : 0) + f * (live1 ? read(k + 1, s1, this.laneA) : 0));
+        }
         written[count++] = node;
       }
     }

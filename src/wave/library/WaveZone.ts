@@ -1,4 +1,5 @@
 import type { ShallowWaterSolver } from '../ShallowWaterSolver';
+import { BORE_FOAM } from './boreFoam';
 import { buildLanes, LANE, type LaneField } from './Handover';
 import { CURVE, LibraryLoft } from './libraryLoft';
 import { WAVE_LANDMARK } from './caseFormat';
@@ -109,17 +110,29 @@ export class WaveZone {
   /**
    * The snapshot's render nodes (`SurfZoneSimulation.writeUniformSnapshot`): the library's heights over the sea's, and
    * the sea's drawn foam and air held off its water until its touchdown (`FOAM_HOLD`). The same nodes the rider feels.
+   *
+   * C2 step 5b: from a slice's touchdown its own bore foam takes the place of the sea's, by the same weight the height
+   * takes and in the same form ((1 − A) the sea's + the library's weighted own), so the bore hands back to the sea's
+   * own whitewater without a seam. Its plume is as deep as the consult's white-through-water tint asks wherever its
+   * foam is live (`BORE_FOAM.plume`); the look caps that at the water's own depth.
    */
   applySnapshot(surface: Float32Array, aeration: Float32Array | undefined, grid: NodeGrid): void {
     const zone = this.surface;
     const own = zone.grid;
     if (grid.nx !== own.nx || grid.nz !== own.nz || grid.spacing !== own.spacing || grid.xMin !== own.xMin || grid.zMin !== own.zMin) return;
-    zone.forEachWritten((node, weight, height, hold) => {
+    zone.forEachWritten((node, weight, height, hold, aired, cover, air) => {
       const o = 2 * node;
       surface[o] = (1 - weight) * surface[o] + height;
       if (hold > 0) {
         surface[o + 1] *= 1 - hold;
         if (aeration) aeration[o] *= 1 - hold;
+      }
+      if (aired > 0) {
+        surface[o + 1] = (1 - aired) * surface[o + 1] + cover;
+        if (aeration) {
+          aeration[o] = (1 - aired) * aeration[o] + air;
+          aeration[o + 1] = (1 - aired) * aeration[o + 1] + aired * BORE_FOAM.plume;
+        }
       }
     });
   }
