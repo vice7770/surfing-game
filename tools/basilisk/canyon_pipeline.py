@@ -50,6 +50,9 @@ C2_CASES = [f"pool_c2_{b}_{a}" for a in ("a3", "a2", "a1") for b in ("b3", "b2",
 # row first, as the first set's.
 C2_CASES += ["pool_c2_b15_a3", "pool_c2_b25_a3", "pool_c2_b3s_a3", "pool_c2_b15_a2", "pool_c2_b25_a2", "pool_c2_b3s_a2",
              "pool_c2_b3s_a1", "pool_c2_b3_a0", "pool_c2_b2_a0", "pool_c2_b1_a0"]
+# Ruling 38's five (2026-11-14): the A0 rows the new beds were missing, so b15, b25 and b3s each carry the whole column and
+# the matcher cannot clamp a slice up to a row that bed happens to have. The costliest (the latest-breaking) first.
+C2_CASES += ["pool_c2_b15_a0", "pool_c2_b25_a0", "pool_c2_b3s_a0", "pool_c2_b15_a1", "pool_c2_b25_a1"]
 SETS = {
     "canyon": {
         "cases": ["canyon23_a49", "canyon23_a38", "canyon23_a29"],

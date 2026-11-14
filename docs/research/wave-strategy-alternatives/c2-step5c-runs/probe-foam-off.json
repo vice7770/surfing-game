@@ -1,0 +1,624 @@
+{
+  "search": "?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&compute=gpu&receiver=http://localhost:5303",
+  "seconds": 72,
+  "shots": [
+    "lineup",
+    "curl-channel",
+    "curl-close",
+    "curl-front",
+    "curl-behind",
+    "curl-inside",
+    "curl-ride",
+    "horizon",
+    "below"
+  ],
+  "config": {
+    "poolSize": "ref",
+    "wave": "library",
+    "spot": "pool",
+    "afterTube": "roller",
+    "poolReach": "long"
+  },
+  "views": {
+    "curl-ride": {
+      "state": {
+        "look": "rich",
+        "writtenLook": "rich",
+        "sourceCubic": true,
+        "sourceWritesAeration": true,
+        "waterBodyGain": 1,
+        "foamPattern": 1,
+        "foamColour": [
+          0.6867,
+          0.8879,
+          0.8148
+        ]
+      },
+      "against": {
+        "shot": "curl-ride",
+        "look": "rich",
+        "time": "midday",
+        "frame": {
+          "pixels": 921600,
+          "share": 1,
+          "p10": 0.1185,
+          "p50": 0.2488,
+          "p90": 0.6539,
+          "p99": 0.7417,
+          "rgb": [
+            0.183,
+            0.3523,
+            0.4859
+          ]
+        },
+        "waterAll": {
+          "pixels": 43551,
+          "share": 0.0473,
+          "p10": 0.4318,
+          "p50": 0.567,
+          "p90": 0.7119,
+          "p99": 0.8104,
+          "rgb": [
+            0.2974,
+            0.6261,
+            0.8
+          ]
+        },
+        "foam": {
+          "pixels": 6893,
+          "share": 0.0075,
+          "p10": 0.687,
+          "p50": 0.7871,
+          "p90": 0.8777,
+          "p99": 0.8869,
+          "rgb": [
+            0.6067,
+            0.8298,
+            0.8428
+          ]
+        },
+        "foamAny": {
+          "pixels": 36571,
+          "share": 0.0397,
+          "p10": 0.6027,
+          "p50": 0.6923,
+          "p90": 0.8209,
+          "p99": 0.8836,
+          "rgb": [
+            0.4204,
+            0.7621,
+            0.8516
+          ]
+        },
+        "clear": {
+          "pixels": 15425,
+          "share": 0.0167,
+          "p10": 0.4118,
+          "p50": 0.4425,
+          "p90": 0.4856,
+          "p99": 0.5157,
+          "rgb": [
+            0.1653,
+            0.4954,
+            0.7753
+          ]
+        },
+        "foamOverClearP90": 1.621,
+        "foamOverClearP50": 1.779
+      },
+      "foamLight": {
+        "pixels": 36571,
+        "p10": 0.6027,
+        "p50": 0.6923,
+        "p90": 0.8209,
+        "spread": 1.362,
+        "rgb": [
+          0.4204,
+          0.7621,
+          0.8516
+        ],
+        "redOverBlue": 0.494
+      }
+    },
+    "curl-front": {
+      "state": {
+        "look": "rich",
+        "writtenLook": "rich",
+        "sourceCubic": true,
+        "sourceWritesAeration": true,
+        "waterBodyGain": 1,
+        "foamPattern": 1,
+        "foamColour": [
+          0.6867,
+          0.8879,
+          0.8148
+        ]
+      },
+      "against": {
+        "shot": "curl-front",
+        "look": "rich",
+        "time": "midday",
+        "frame": {
+          "pixels": 921600,
+          "share": 1,
+          "p10": 0.1914,
+          "p50": 0.4776,
+          "p90": 0.7639,
+          "p99": 0.8508,
+          "rgb": [
+            0.3007,
+            0.5096,
+            0.6354
+          ]
+        },
+        "waterAll": {
+          "pixels": 277570,
+          "share": 0.3012,
+          "p10": 0.6369,
+          "p50": 0.715,
+          "p90": 0.8064,
+          "p99": 0.8523,
+          "rgb": [
+            0.4348,
+            0.7799,
+            0.8616
+          ]
+        },
+        "foam": {
+          "pixels": 108286,
+          "share": 0.1175,
+          "p10": 0.7321,
+          "p50": 0.7715,
+          "p90": 0.8442,
+          "p99": 0.8793,
+          "rgb": [
+            0.5488,
+            0.8359,
+            0.8721
+          ]
+        },
+        "foamAny": {
+          "pixels": 302112,
+          "share": 0.3278,
+          "p10": 0.6367,
+          "p50": 0.7166,
+          "p90": 0.8127,
+          "p99": 0.8604,
+          "rgb": [
+            0.4367,
+            0.7837,
+            0.8638
+          ]
+        },
+        "clear": {
+          "pixels": 1974,
+          "share": 0.0021,
+          "p10": 0.2799,
+          "p50": 0.3614,
+          "p90": 0.4731,
+          "p99": 0.5094,
+          "rgb": [
+            0.1204,
+            0.3931,
+            0.6484
+          ]
+        },
+        "foamOverClearP90": 1.631,
+        "foamOverClearP50": 2.135
+      },
+      "foamLight": {
+        "pixels": 302112,
+        "p10": 0.6367,
+        "p50": 0.7166,
+        "p90": 0.8127,
+        "spread": 1.276,
+        "rgb": [
+          0.4367,
+          0.7837,
+          0.8638
+        ],
+        "redOverBlue": 0.506
+      }
+    },
+    "curl-channel": {
+      "state": {
+        "look": "rich",
+        "writtenLook": "rich",
+        "sourceCubic": true,
+        "sourceWritesAeration": true,
+        "waterBodyGain": 1,
+        "foamPattern": 1,
+        "foamColour": [
+          0.6867,
+          0.8879,
+          0.8148
+        ]
+      },
+      "against": {
+        "shot": "curl-channel",
+        "look": "rich",
+        "time": "midday",
+        "frame": {
+          "pixels": 921600,
+          "share": 1,
+          "p10": 0.1671,
+          "p50": 0.3192,
+          "p90": 0.6516,
+          "p99": 0.7658,
+          "rgb": [
+            0.1916,
+            0.4003,
+            0.5558
+          ]
+        },
+        "waterAll": {
+          "pixels": 188705,
+          "share": 0.2048,
+          "p10": 0.2602,
+          "p50": 0.3724,
+          "p90": 0.7043,
+          "p99": 0.7924,
+          "rgb": [
+            0.1217,
+            0.4767,
+            0.6889
+          ]
+        },
+        "foam": {
+          "pixels": 4813,
+          "share": 0.0052,
+          "p10": 0.7014,
+          "p50": 0.8137,
+          "p90": 0.8744,
+          "p99": 0.8879,
+          "rgb": [
+            0.605,
+            0.8548,
+            0.867
+          ]
+        },
+        "foamAny": {
+          "pixels": 41988,
+          "share": 0.0456,
+          "p10": 0.6603,
+          "p50": 0.719,
+          "p90": 0.8015,
+          "p99": 0.878,
+          "rgb": [
+            0.4452,
+            0.7922,
+            0.8668
+          ]
+        },
+        "clear": {
+          "pixels": 155036,
+          "share": 0.1682,
+          "p10": 0.2524,
+          "p50": 0.3494,
+          "p90": 0.4649,
+          "p99": 0.5196,
+          "rgb": [
+            0.0541,
+            0.4137,
+            0.6546
+          ]
+        },
+        "foamOverClearP90": 1.75,
+        "foamOverClearP50": 2.329
+      },
+      "foamLight": {
+        "pixels": 41988,
+        "p10": 0.6603,
+        "p50": 0.719,
+        "p90": 0.8015,
+        "spread": 1.214,
+        "rgb": [
+          0.4452,
+          0.7922,
+          0.8668
+        ],
+        "redOverBlue": 0.514
+      }
+    },
+    "curl-inside": {
+      "state": {
+        "look": "rich",
+        "writtenLook": "rich",
+        "sourceCubic": true,
+        "sourceWritesAeration": true,
+        "waterBodyGain": 1,
+        "foamPattern": 1,
+        "foamColour": [
+          0.6867,
+          0.8879,
+          0.8148
+        ]
+      },
+      "against": {
+        "shot": "curl-inside",
+        "look": "rich",
+        "time": "midday",
+        "frame": {
+          "pixels": 921600,
+          "share": 1,
+          "p10": 0.058,
+          "p50": 0.1181,
+          "p90": 0.4744,
+          "p99": 0.6646,
+          "rgb": [
+            0.0755,
+            0.2062,
+            0.3192
+          ]
+        },
+        "waterAll": {
+          "pixels": 126184,
+          "share": 0.1369,
+          "p10": 0.121,
+          "p50": 0.1656,
+          "p90": 0.5307,
+          "p99": 0.6638,
+          "rgb": [
+            0.0563,
+            0.2416,
+            0.3994
+          ]
+        },
+        "foam": {
+          "pixels": 2,
+          "share": 0,
+          "p10": 0.8633,
+          "p50": 0.8633,
+          "p90": 0.8633,
+          "p99": 0.8633,
+          "rgb": [
+            0.6479,
+            0.9216,
+            0.9301
+          ]
+        },
+        "foamAny": {
+          "pixels": 225,
+          "share": 0.0002,
+          "p10": 0.6899,
+          "p50": 0.7122,
+          "p90": 0.8005,
+          "p99": 0.8468,
+          "rgb": [
+            0.3858,
+            0.8067,
+            0.9112
+          ]
+        },
+        "clear": {
+          "pixels": 125489,
+          "share": 0.1362,
+          "p10": 0.121,
+          "p50": 0.1656,
+          "p90": 0.5163,
+          "p99": 0.6505,
+          "rgb": [
+            0.0544,
+            0.2388,
+            0.3967
+          ]
+        },
+        "foamOverClearP90": 1.672,
+        "foamOverClearP50": 5.213
+      },
+      "foamLight": {
+        "pixels": 225,
+        "p10": 0.6899,
+        "p50": 0.7122,
+        "p90": 0.8005,
+        "spread": 1.16,
+        "rgb": [
+          0.3858,
+          0.8067,
+          0.9112
+        ],
+        "redOverBlue": 0.423
+      }
+    },
+    "curl-close": {
+      "state": {
+        "look": "rich",
+        "writtenLook": "rich",
+        "sourceCubic": true,
+        "sourceWritesAeration": true,
+        "waterBodyGain": 1,
+        "foamPattern": 1,
+        "foamColour": [
+          0.6867,
+          0.8879,
+          0.8148
+        ]
+      },
+      "against": {
+        "shot": "curl-close",
+        "look": "rich",
+        "time": "midday",
+        "frame": {
+          "pixels": 921600,
+          "share": 1,
+          "p10": 0.1148,
+          "p50": 0.2414,
+          "p90": 0.6487,
+          "p99": 0.7472,
+          "rgb": [
+            0.1779,
+            0.3452,
+            0.4776
+          ]
+        },
+        "waterAll": {
+          "pixels": 44845,
+          "share": 0.0487,
+          "p10": 0.4333,
+          "p50": 0.5679,
+          "p90": 0.7113,
+          "p99": 0.8052,
+          "rgb": [
+            0.2981,
+            0.626,
+            0.7988
+          ]
+        },
+        "foam": {
+          "pixels": 7491,
+          "share": 0.0081,
+          "p10": 0.69,
+          "p50": 0.8015,
+          "p90": 0.8787,
+          "p99": 0.8869,
+          "rgb": [
+            0.6119,
+            0.8365,
+            0.8488
+          ]
+        },
+        "foamAny": {
+          "pixels": 38969,
+          "share": 0.0423,
+          "p10": 0.6001,
+          "p50": 0.6921,
+          "p90": 0.8212,
+          "p99": 0.8845,
+          "rgb": [
+            0.4204,
+            0.7617,
+            0.8512
+          ]
+        },
+        "clear": {
+          "pixels": 15535,
+          "share": 0.0169,
+          "p10": 0.4121,
+          "p50": 0.4429,
+          "p90": 0.4855,
+          "p99": 0.5144,
+          "rgb": [
+            0.1652,
+            0.4958,
+            0.7751
+          ]
+        },
+        "foamOverClearP90": 1.651,
+        "foamOverClearP50": 1.81
+      },
+      "foamLight": {
+        "pixels": 38969,
+        "p10": 0.6001,
+        "p50": 0.6921,
+        "p90": 0.8212,
+        "spread": 1.368,
+        "rgb": [
+          0.4204,
+          0.7617,
+          0.8512
+        ],
+        "redOverBlue": 0.494
+      }
+    },
+    "curl-behind": {
+      "state": {
+        "look": "rich",
+        "writtenLook": "rich",
+        "sourceCubic": true,
+        "sourceWritesAeration": true,
+        "waterBodyGain": 1,
+        "foamPattern": 1,
+        "foamColour": [
+          0.6867,
+          0.8879,
+          0.8148
+        ]
+      },
+      "against": {
+        "shot": "curl-behind",
+        "look": "rich",
+        "time": "midday",
+        "frame": {
+          "pixels": 921600,
+          "share": 1,
+          "p10": 0.2551,
+          "p50": 0.4934,
+          "p90": 0.7215,
+          "p99": 0.8506,
+          "rgb": [
+            0.1984,
+            0.5388,
+            0.7389
+          ]
+        },
+        "waterAll": {
+          "pixels": 541395,
+          "share": 0.5875,
+          "p10": 0.4372,
+          "p50": 0.5078,
+          "p90": 0.7627,
+          "p99": 0.8469,
+          "rgb": [
+            0.1817,
+            0.6274,
+            0.8661
+          ]
+        },
+        "foam": {
+          "pixels": 22527,
+          "share": 0.0244,
+          "p10": 0.7884,
+          "p50": 0.8332,
+          "p90": 0.8802,
+          "p99": 0.8894,
+          "rgb": [
+            0.6335,
+            0.8896,
+            0.8942
+          ]
+        },
+        "foamAny": {
+          "pixels": 135148,
+          "share": 0.1466,
+          "p10": 0.6235,
+          "p50": 0.7526,
+          "p90": 0.8311,
+          "p99": 0.8879,
+          "rgb": [
+            0.4668,
+            0.8048,
+            0.8846
+          ]
+        },
+        "clear": {
+          "pixels": 371189,
+          "share": 0.4028,
+          "p10": 0.4184,
+          "p50": 0.4952,
+          "p90": 0.5271,
+          "p99": 0.6152,
+          "rgb": [
+            0.0853,
+            0.5694,
+            0.862
+          ]
+        },
+        "foamOverClearP90": 1.581,
+        "foamOverClearP50": 1.683
+      },
+      "foamLight": {
+        "pixels": 135148,
+        "p10": 0.6235,
+        "p50": 0.7526,
+        "p90": 0.8311,
+        "spread": 1.333,
+        "rgb": [
+          0.4668,
+          0.8048,
+          0.8846
+        ],
+        "redOverBlue": 0.528
+      }
+    }
+  }
+}

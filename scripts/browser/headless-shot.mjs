@@ -3,6 +3,9 @@
 //   node scripts/browser/headless-shot.mjs sheet --serve=<worktree> --port=<vitePort> --out=<dir> [--spot=padang|reef|beach|point]
 //        [--whitewater] [--compute=cpu|gpu|auto] [--shots=name:look:time,...] [--cdp=9420] [--recv=5290]
 //        [--advance=<s>,<s>...] steps the sea on after the first hold and shoots again (<name>-<look>-<time>-at<N>s.png); --first=skip drops the first hold's shots
+//        [--probe=<file.js>] after each round's shots, evaluates that file in the page (its last expression's value, a
+//        promise awaited) and writes it to <out>/probe[-at<N>s].json. For reading what the still actually drew — the
+//        look in effect, the water light, the foam's own pixels — in the very frame the shots came from.
 //     Runs the water sheet dev view (?inpage&waterSheet), saves water-sheet.png (3 times x 2 looks x N shots),
 //     prints the available shot names, then saves each requested close-up as <name>-<look>-<time>.png (1280x720).
 //     Shot names come from the page (e.g. lineup, tube-beside, tube-shoulder, tube-inside, horizon, below,
@@ -19,7 +22,7 @@
 // omit it and pass --url=http://localhost:<port>/ to use a server that is already running.
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -151,6 +154,13 @@ async function sheet() {
       const png = await shot;
       if (k === 1) { const file = join(out, `${name.replace(/[^a-z0-9-]+/gi, '_')}-${look}-${time}${suffix}.png`); writeFileSync(file, png); log(`saved ${file}`); }
     }
+  }
+  if (args.probe) {
+    const source = readFileSync(args.probe, 'utf8');
+    const value = await page.eval(`(async () => { ${source} })()`, 1800000);
+    const file = join(out, `probe${suffix}.json`);
+    writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+    log(`probe -> ${file}`);
   }
   }
   server.close();
