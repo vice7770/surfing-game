@@ -58,6 +58,8 @@ const f = (v: number, d = 3) => (Number.isFinite(v) ? v.toFixed(d) : '–');
 const line = (v: number[], d = 3) => `median ${f(q(v, 0.5), d)}, 90 % ${f(q(v, 0.9), d)}, 99 % ${f(q(v, 0.99), d)}, most ${f(q(v, 1), d)} (${v.filter(Number.isFinite).length})`;
 const over = (v: number[], bar: number) => `${f((100 * v.filter((x) => x > bar).length) / Math.max(1, v.filter(Number.isFinite).length), 1)} %`;
 const smoothstep = (u: number) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+/** A slice's blend share at `t` s (`SLICE_LIFE`): in over `blend`, out over `blend` from `goFrom`. */
+const shareOf = (s: FieldSlice, t: number) => smoothstep((t - s.blendFrom) / SLICE_LIFE.blend) * (1 - smoothstep((t - s.goFrom) / SLICE_LIFE.blend));
 
 (globalThis as unknown as { location: { search: string } }).location = { search: SEARCH };
 const settings = physicalSettingsFor('pool', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday', waves: 'barrel' } as never, { stage: 2, compute: 'cpu' });
@@ -397,7 +399,7 @@ for (let t = FROM; t <= UNTIL; t += STEP) {
       b.seaHeight.push(seaTop.y);
       b.times.push(t);
       b.live.push(zone.field.byLane[k].filter((o) => t >= o.blendFrom && t <= o.goneAt).length);
-      b.shares.push(share(b.slice, t));
+      b.shares.push(shareOf(b.slice, t));
       // The gap the blend-out pays back, read once as it starts: the code's own two places, the case's crest and the
       // sea's crest as the slice has been following it (`FieldSlice.seaS`).
       if (!(b.gap === b.gap) && t >= b.slice.goFrom) {
