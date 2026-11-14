@@ -418,9 +418,9 @@ It is not. `m1-cpu-bench.ts` takes **two different paths**: with no cache it spi
 therefore start from different water and their hashes are not comparable at all — the protocol only compares legs
 that took the same path. Step 5f's figures are from a fresh spin-up, and so is the branch leg that matches them, so
 **the byte check above is sound**; my second leg simply compared two different things. The paired control, both legs
-reading the same cache, is leg D of `c2-step5g-runs/canyon-bytes.txt` — **it had not finished at hand-back either**,
-and §7.2's third row predicts what it must say: snapshots `a8ac71b70eac2add` and state `6319ed883e54b32e`, the main
-leg's exactly, since the veil is off in it.
+reading the same cache, has since landed and **passes**: snapshots `a8ac71b70eac2add`, state `6319ed883e54b32e` —
+the main leg's exactly (leg D of `c2-step5g-runs/canyon-bytes.txt`). So the default Canyon is unchanged on **both**
+protocols, independently.
 
 ### 7.2 And a stronger proof, from the leg that was only meant to cost it
 
@@ -430,8 +430,9 @@ veil's worker-side work. It priced it — and it also said something the byte ch
 | leg | snapshots | state | `spray` stage, ms p50/p95 |
 | --- | --- | --- | --- |
 | main, veil **off**, cache read | `a8ac71b70eac2add` | **`6319ed883e54b32e`** | 0.24 / 0.44 |
+| branch, veil **off**, cache read | `a8ac71b70eac2add` (= main's) | **`6319ed883e54b32e`** | — |
 | branch, **`?lipVeil=on`**, cache read | `d742e2abf5514cd3` | **`6319ed883e54b32e`** | 0.27 / 0.51 |
-| branch, veil off, fresh spin-up | `ea3d57a4d49f4b48` (= main's) | `a1a2555739210f96` | 0.21 / 0.47 |
+| branch, veil off, fresh spin-up | `ea3d57a4d49f4b48` (= step 5f's main) | `a1a2555739210f96` | 0.21 / 0.47 |
 
 **With the veil on, the snapshot hash moves and the simulation's state hash does not** [M]. That is the design read
 straight off the bytes: the veil is drawn and nothing else — it touches no water, no foam, no air and nothing a rider
