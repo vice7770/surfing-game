@@ -14,6 +14,11 @@ and not seen:** it changes the foam channel by +0.45 of cover on 200 render node
 almost not at all, because the water sheet's cameras sit on the tube and the pool's water is too bright for white to
 read on it (ruling 25e). The owner has not been shown the thing they asked for, and that is this step's main miss.
 
+
+| Passes | Misses |
+|---|---|
+| the jump at the hand-back, place and height, on every one of 316 (0.0 % over either bar); the set-up and the rips, exactly (the same solver bytes, a ratio of 1.0000, a correlation of 1.000000); ruling 35's item 1 and item 2 (the two shares 0.0 % over the bar inside the field, 0.5 % counting its σ ends, against 8.0 % before); the page's draw (+0.23 ms, bar 1 ms); the Canyon off byte for byte; both `tsc`; the suite but for the known `poolBarrelPerf` flake, which passes alone | **the foam is measured and not seen** — six of seven stills are identical with it switched off, because the cameras sit on the tube and the pool's water is too bright for white (ruling 25e); **the hand-over's height bar**, better (median 1.065 → 1.046, the unclamped population 10 slices at 1.121 → 57 at 0.978) but still 54.8 % outside, and the A0 clamp got worse because the two new beds carry only two A0 rows each; **the mean level's drift**, which the sea alone misses by the same 0.0285 m to the fifth decimal while the pool is still filling; **the drift over the blend-out** (39.7 % of 0.1 s windows over 0.3 m), reported with its cause; the library's files 11.8 → 24.9 MB, over the plan's 15 MB |
+
 ---
 
 ## 1. The hand-back
@@ -138,58 +143,6 @@ so the two never add up to more than the slice's share and there is no flash and
 spray burst inside 0.4 s of impact is the same order, so the existing 0.5 s was kept rather than a new constant added
 [S, R].
 
-## 5. The hand-over's height bar, re-read with ruling 31's ten cases
-
-The bar (step 3): the case's H at the hand-over should be 0.95–1.05 of the sea's. Step 3b read **median 1.07** with
-63.1 % outside the bar, and said the reason was that 962 of 1 264 slices clamped a key. Ruling 31's ten runs are now in
-the library (19 cases): they fill the A0 0.12 row on the three beds, put slopes 0.055 and 0.085 between them, and give
-slope 0.105 a second reef depth, so HS/h0 is a real key for the first time.
-
-**Better, and still a miss** (1 266 slices, the same 90 s window as step 3b) [M, `c2-step5b-runs/round2-bars.txt`]:
-
-| the case's H over the sea's | step 3b, 9 cases | step 5b, 19 cases |
-|---|---|---|
-| all slices | median 1.065, outside 63.1 % | **median 1.046, outside 54.8 %** |
-| with no τ clamp over 5 % of the weight | median 0.973, outside 26.7 % (240) | **median 0.996, outside 34.2 % (471)** |
-| with no clamp at all | median 1.121, outside 80.0 % (**10** slices) | **median 0.978, 90 % 1.028, outside 12.3 % (57** slices) |
-
-**The shape is right where the keys cover it.** The population with no clamp at all has grown from 10 slices to 57 and
-its median has moved from 1.12 to 0.978, with the 90th at 1.028 — inside the bar. What is left outside is clamps.
-
-**The clamp that is left is τ, and ten more cases cannot fix it.** 814 of 1 274 slices still clamp τ, and every one of
-them clamps **low** — the slice's H/d at the hand-over is under what the case reads at its own first stored frame. The
-cases that clamp are the gentle beds: b1-a2 clamps on 0.97 of its weight, b15-a3 on 1.00, b1-a1 on 0.85, b1-a0 on 0.70,
-b15-a2 on 0.49; the steeper beds (b25, b3) clamp on none of theirs. **That is a lead, not a key:** those runs do not
-start early enough for the pool's own waves, and the fix is longer leads on the gentle beds, not more cases [M, R].
-
-**One thing got worse, and it is worth the advisor's eye.** The A0 clamp went from 277 slices to **717**. The matcher
-brackets the slope first and then runs the A0 polyline *within the chosen bed*, and the two new intermediate beds
-(slopes 0.055 and 0.085) carry only **two** A0 rows each, 0.25 and 0.355. A slice at those slopes used to interpolate
-between b1's four rows and b2's three; now it falls on a two-point polyline that starts at 0.25 and clamps below it.
-**A sparse new bed is worse than no bed**, and the cure is the A0 0.12 and 0.15 rows on b15 and b25 [M, R].
-
-## 6. The stills
-
-Same shots and the same command as step 5a, on the 2 m pool at Big with the owner's switches and `&wave=library`,
-**three legs**:
-
-- **before** — main's `src` checked out in this worktree (so nine cases, no bore foam);
-- **after** — this branch;
-- **nofoam** — this branch with the bore's foam switched off in the code, so the foam's own contribution can be told
-  from the ten new cases'.
-
-Plus `after-ride-*` and `after-close-*`, which are new shots (the water sheet's pool view has no `bore` shot; `ride`
-looks along the broken wave from the toe, which is the nearest thing to looking back at the bore).
-
-| Pair | What changed |
-|---|---|
-| `before-*` against `after-*` | the whole step: 13.5 % of pixels in `front-midday` and 26.1 % in `channel-midday` differ by more than 2 of 255. **Almost all of that is the ten new cases**, which change the slices' shapes, not the foam |
-| `nofoam-*` against `after-*` | the foam alone: **0 pixels** in `front-midday`, `channel-midday`, `channel-sunset`, `ride-midday`, `ride-sunset` and `close-midday`; 543 (0.06 %) in `behind-midday`; 5 743 (0.18 %) in the overview sheet |
-
-JPEGs in `c2-step5b-stills/`.
-
-## 4. Ruling 35's four carried items
-
 ### 2.4 Does it reach the page, and does it read?
 
 **It reaches the page.** Stepping the pool's library sea and writing the snapshot the page draws, about **108 render
@@ -217,6 +170,33 @@ foam-off leg proves that band is the sea's own, not the library's.
 A third thing is in the way of seeing it, and it is ruling 25e's: **the pool's water is so bright that nothing drawn
 on it reads as white**. Step 5a said the same of the lip. Until the water's light is fixed, "does the bore look like
 broken water" cannot be answered from a still of this spot [R].
+
+## 3. The set-up, the mean level and the rips
+
+Measured by running the same sea twice from the same state, once with `?wave=library` and once without, stepping both
+on the same clock and comparing the solver's own arrays. **This is the strongest form of the three bars the plan asked
+for: not "within 30 %" and "a correlation of at least 0.8", but the same numbers.**
+
+Over 120 s of the 2 m pool, stepping both on the same 1/60 s clock [M, `c2-step5b-runs/setup.txt`]:
+
+| | with `?wave=library` | without it | bar |
+|---|---|---|---|
+| the solver's state (h, qx, qz, every 97th cell) | `d043cee1` | `d043cee1` | — |
+| the water piled against the beach (the 12 shallowest rows) | 0.90325 m | 0.90325 m | within 30 % |
+| the mean currents cell by cell, 232 628 components over 60 s | correlation **1.000000** | | at least 0.8 |
+| the mean level's drift | 0.02847 m | **0.02847 m** | 0.01 m |
+
+**The set-up bar and the rip bar are met exactly**: the same bytes, a ratio of 1.0000 and a correlation of 1.000000.
+That is what a one-way overlay gives, and it is why the forcing pass is not wanted.
+
+**The mean level's drift bar is missed, and it is missed by the sea, not by the library** — the two runs drift by the
+same 0.0285 m to the fifth decimal. The pool is still filling over this window: the sea is built at 21 s and its own
+set-up is still rising, so the tank's mean level climbs 2.8 cm in the first two minutes whatever the library does.
+**This branch cannot change that number by one bit**, which is the only claim about it this step can make. A 600 s run
+of the same probe was started and did not finish inside the time this step had, on a machine running two agents; the
+command is in §8 and it costs about two hours of one core [P].
+
+## 4. Ruling 35's four carried items
 
 ### 4.1 Item 1: the flow below the deeper stored depth
 
@@ -289,6 +269,95 @@ multi-valued by construction — it never unfolds, however long the bore runs. T
 
 **Not changed.** Moving it would move the drawn tube's collapse, which is a look change this step was not asked for.
 
+## 5. The hand-over's height bar, re-read with ruling 31's ten cases
+
+The bar (step 3): the case's H at the hand-over should be 0.95–1.05 of the sea's. Step 3b read **median 1.07** with
+63.1 % outside the bar, and said the reason was that 962 of 1 264 slices clamped a key. Ruling 31's ten runs are now in
+the library (19 cases): they fill the A0 0.12 row on the three beds, put slopes 0.055 and 0.085 between them, and give
+slope 0.105 a second reef depth, so HS/h0 is a real key for the first time.
+
+**Better, and still a miss** (1 266 slices, the same 90 s window as step 3b) [M, `c2-step5b-runs/round2-bars.txt`]:
+
+| the case's H over the sea's | step 3b, 9 cases | step 5b, 19 cases |
+|---|---|---|
+| all slices | median 1.065, outside 63.1 % | **median 1.046, outside 54.8 %** |
+| with no τ clamp over 5 % of the weight | median 0.973, outside 26.7 % (240) | **median 0.996, outside 34.2 % (471)** |
+| with no clamp at all | median 1.121, outside 80.0 % (**10** slices) | **median 0.978, 90 % 1.028, outside 12.3 % (57** slices) |
+
+**The shape is right where the keys cover it.** The population with no clamp at all has grown from 10 slices to 57 and
+its median has moved from 1.12 to 0.978, with the 90th at 1.028 — inside the bar. What is left outside is clamps.
+
+**The clamp that is left is τ, and ten more cases cannot fix it.** 814 of 1 274 slices still clamp τ, and every one of
+them clamps **low** — the slice's H/d at the hand-over is under what the case reads at its own first stored frame. The
+cases that clamp are the gentle beds: b1-a2 clamps on 0.97 of its weight, b15-a3 on 1.00, b1-a1 on 0.85, b1-a0 on 0.70,
+b15-a2 on 0.49; the steeper beds (b25, b3) clamp on none of theirs. **That is a lead, not a key:** those runs do not
+start early enough for the pool's own waves, and the fix is longer leads on the gentle beds, not more cases [M, R].
+
+**One thing got worse, and it is worth the advisor's eye.** The A0 clamp went from 277 slices to **717**. The matcher
+brackets the slope first and then runs the A0 polyline *within the chosen bed*, and the two new intermediate beds
+(slopes 0.055 and 0.085) carry only **two** A0 rows each, 0.25 and 0.355. A slice at those slopes used to interpolate
+between b1's four rows and b2's three; now it falls on a two-point polyline that starts at 0.25 and clamps below it.
+**A sparse new bed is worse than no bed**, and the cure is the A0 0.12 and 0.15 rows on b15 and b25 [M, R].
+
+## 6. The stills
+
+Same shots and the same command as step 5a, on the 2 m pool at Big with the owner's switches and `&wave=library`,
+**three legs**:
+
+- **before** — main's `src` checked out in this worktree (so nine cases, no bore foam);
+- **after** — this branch;
+- **nofoam** — this branch with the bore's foam switched off in the code, so the foam's own contribution can be told
+  from the ten new cases'.
+
+Plus `after-ride-*` and `after-close-*`, which are new shots (the water sheet's pool view has no `bore` shot; `ride`
+looks along the broken wave from the toe, which is the nearest thing to looking back at the bore).
+
+| Pair | What changed |
+|---|---|
+| `before-*` against `after-*` | the whole step: 13.5 % of pixels in `front-midday` and 26.1 % in `channel-midday` differ by more than 2 of 255. **Almost all of that is the ten new cases**, which change the slices' shapes, not the foam |
+| `nofoam-*` against `after-*` | the foam alone: **0 pixels** in `front-midday`, `channel-midday`, `channel-sunset`, `ride-midday`, `ride-sunset` and `close-midday`; 543 (0.06 %) in `behind-midday`; 5 743 (0.18 %) in the overview sheet |
+
+JPEGs in `c2-step5b-stills/`.
+
+## 8. The cost, and off unchanged
+
+**The page's draw.** The headless fps trace of a ride (Chrome, WebGPU, 70 s, this branch and main's `src` back to back
+on the same vite, through the menu into the ride, `c2-step5b-runs/fps-*.txt`): the library's draw is **5.61 ms a frame
+on this branch against 5.38 on main, +0.23 ms** against a 1 ms bar, and both legs hold **60.3 fps** [M]. Nothing in
+the diff touches a shader: the foam is three numbers on nodes the water already reads.
+
+**The worker.** Its whole pipeline reads 52.2 ms a frame against 50.0 on the same two legs, +2.2 ms, on a machine
+running two agents and a test suite. Most of that is the ten new cases, which make every slice's blend wider, not the
+foam, whose cost is a handful of writes per node. **That belongs to step 7's budget bar, not this step's**, and it
+should be read again on a quiet machine [M, P].
+
+**Off is unchanged.**
+
+- The Canyon byte check (`scripts/m1-cpu-bench.ts`, medium, 3 600 steps, fresh spin-ups, `c2-step5b-runs/canyon-byte-check.txt`):
+  Canyon B (`?canyonWaves=true`) snapshots **a367d938f15fa934**, state **9e5831f80e38abd9** — the same as main and as
+  steps 3b, 4 and 5a.
+- `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
+- The suite (`--exclude SurfZoneSimulation/SurfZoneRunner`, on this loaded machine): **3 490 passed, 1 failed** —
+  `poolBarrelPerf.test.ts` timed out at 60 s, the known flake; alone with `--testTimeout=300000` its **8 tests pass**
+  [M, `c2-step5b-runs/suite.txt`].
+
+## 9. Files, and how to run them again
+
+- `c2-step5b-bars.ts`: the probe. `--parts` picks the letters; `A` is the hand-back, `F` the height bar, `C` and `D`
+  ruling 35's items 1 and 2, `E` item 3, `K` item 4 (no simulation needed), `S` the set-up.
+  ```
+  npx rolldown docs/research/wave-strategy-alternatives/c2-step5b-bars.ts -o <scratch>/s5b.mjs --format esm --platform node
+  node <scratch>/s5b.mjs --parts AFCDEK --cases public/library --cache <scratch>/sea21.bin --from 40 --until 130
+  node <scratch>/s5b.mjs --parts S --cache <scratch>/sea21.bin --from 21 --until 621     # about two hours of one core
+  ```
+- The stills: step 5a's command with `--shots=curl-front:rich:midday,curl-channel:rich:midday,curl-inside:rich:midday,curl-behind:rich:midday,curl-front:rich:sunset,curl-channel:rich:sunset`
+  and a second pass for `curl-ride` and `curl-close`. **The pool view has no `bore` shot**, which is why `ride` stands
+  in for it.
+- `c2-step5b-runs/`: the three probe rounds, the set-up run, the foam's reach into the snapshot, the suite and the
+  fps traces.
+- Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look's stills; the 600 s
+  set-up run.
+
 ## 7. What I am unsure of
 
 1. **The pay-back's course.** The blend-out walks the shown wave back onto the sea's crest over 2.4 s. A longer course
@@ -306,3 +375,4 @@ multi-valued by construction — it never unfolds, however long the bore runs. T
    fetched only under the switch, and the ten new ones are what the height bar needed, but the bar is missed and is the
    advisor's to accept [M].
 6. I did **not** ride it, and no rider session was run (the brief's rule). The owner rides and judges the foam.
+
