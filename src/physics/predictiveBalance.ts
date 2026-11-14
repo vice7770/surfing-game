@@ -680,8 +680,10 @@ export interface DesignWeights {
   feetReach?: number;
   /**
    * The largest acceptable heave, heave rate, pitch and pitch rate (m, m/s, rad, rad/s), used only when the plant
-   * carries them as states (`YawPlant.heave`, ruling 29t item 2). Loose by default: the design stays the one the
-   * eight original states ask for, and the new states are carried so their dynamics are right, not steered.
+   * carries them as states (`YawPlant.heave`, ruling 29t item 2). **Omitted, and omitted by default, they carry no
+   * cost at all** — the states are carried so their dynamics are right, and not steered, because this balance has no
+   * command that reaches them (`design`, step 3.2p: a cost on them asks for a gain that cannot exist, and at no rail
+   * at 5 and 9 m/s the Riccati equation answers with a non-finite one).
    */
   heaveScale?: number[];
   /** The process noise on the heave rate and the pitch rate per √s; the slip's by default. */
@@ -701,6 +703,23 @@ export interface DesignWeights {
    * `HEAVE_SENSE_NOISE` by default.
    */
   heaveSenseNoise?: number[];
+  /**
+   * **Which plant the LQR's gains are designed on** when the board's heave and pitch are carried (step 3.2p):
+   * - `'free'` (the default): the **free** ten-state plant, which is the design that ships — `RAIL_PLANT`, the same
+   *   numbers and the same gains 3.2m measured and the owner has ridden, padded with no gain on the four board states.
+   * - `'held'`: the held fourteen-state plant the rest of the controller runs on.
+   *
+   * It is a split, and it is a measured one. The free derivatives are the water's answer **including** the board's own
+   * re-trim; the held ones are its answer before the re-trim arrives. The re-trim is not slow compared with a turn:
+   * the board's own heave-and-pitch mode is measured in the game at **1.0–1.4 Hz**, a period of 0.7–1.0 s, so by the
+   * time a turn has developed it has happened. The gains act over that second; the predictor and the filter act over
+   * the 0.1 s of the sensing delay, which is inside it. So each is designed on the plant it actually meets.
+   *
+   * Measured on the owner's test, which is why it is the default: designing the gains on the held plant makes the
+   * rider fall at **0.55–0.93 s** (and 0.50–0.72 s with the senses on), against **1.10–3.43 s** for the gains that
+   * ship. The difference is the plant, not the sense: it is the same either way with the senses switched off.
+   */
+  heaveGains?: 'free' | 'held';
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -742,6 +761,24 @@ export const DEFAULT_WEIGHTS: DesignWeights = {
   processNoise: [2, 1, 1, 0.2, 1],
   senseNoise: [0.017, 0.009, 0.017, 0.017, 0.05, 0.009, 0.02],
   bias: [0.01, 5],
+  // Step 3.2p (ruling 29w item 1): the board's heave and pitch sensed - **built, measured, and OFF, because the plant
+  // it needs is the wrong plant for this loop.** `heaveSense` is reachable as
+  // BALANCE='{"weights":{"heaveSense":true}}'.
+  //
+  // What it buys, in the model: the four board states go from unobservable at no rail (rank 10 of 14, not
+  // reconstructable at all) to rank 14 of 14 at every table point; the filter's error on the board's pitch falls from
+  // 1.1-2.8 degrees to 0.18-0.35 and on its pitch rate from 5.7-11.4 deg/s to 1.7-1.9; and at the rails the schedule's
+  // cap allows, a frame of timing error turns a growing mode into a decaying one (7 m/s, rail 10: -0.104 / -0.160 to
+  // +0.016 / +0.058 tall). The pitch rate carries nearly all of that; the load alone barely helps.
+  //
+  // Why it is off: a sense is of a state, so the states have to be carried, and carrying them means reading the HELD
+  // table (`FROZEN_PLANT`) - the free one has the re-trim folded in already. In the game the held table is worse in
+  // every role it can take, measured on the owner's acceptance test: gains designed on it fall at 0.55-0.93 s, with
+  // the senses 0.50-0.72 s, and with the shipped gains and the held plant only in the predictor and the filter
+  // 0.47-1.68 s - against **1.10-3.43 s** for what ships. The cause is in the same measurement: the board's own
+  // heave-and-pitch mode runs at **1.0-1.4 Hz in the game**, a period of 0.7-1.0 s, so a loop acting over a turn meets
+  // the water's answer with the re-trim already in it, which is the free table. `3.2/README.md` Part 14.
+  heaveSense: false,
   // The capture point's own cost is **off** (step 3.2j): 0.013 m is the tightest value at which the loop reaches the
   // ankle's bound at 5 m/s before the capture point leaves the feet, and the peak of the model's disturbance margin in
   // all three stances (tall 47.7 → 78.7 rad/s², crouch 48.2 → 78.9, Compress 48.4 → 73.1). In the game it costs the
@@ -800,10 +837,25 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
     const bankLimit = w.stateScale[2] * (STANCE_TABLE[0].height / y.height);
     q[2][2] = 1 / (bankLimit * bankLimit);
   }
-  // The heave and pitch states' own cost, when they are carried (`heaveScale`; a metre, a m/s, a rad, a rad/s by
-  // default, which is loose enough to leave the design to the eight states that were always there).
-  if (nState > N_STATE) {
-    const hs = w.heaveScale ?? [1, 1, 1, 1];
+  // The heave and pitch states' own cost, when they are carried: **none by default, and that is not a loose weight,
+  // it is the only weight the plant admits** (step 3.2p).
+  //
+  // This balance has two commands, the ankle across and the twist's torque. Neither can heave or pitch the board: in
+  // the game the board's trim is held by a different loop, the pitch ankle (`StandingBody`), which is not part of
+  // this controller. In the plant that shows up exactly: at no rail the hull's own symmetry makes a roll, a slide or a
+  // yaw rate produce no net vertical force and no net pitching moment (measured, `HEAVE_PLANT`'s zero cross terms), so
+  // **the four board states are uncontrollable there.** And the board's own heave-and-pitch pair is lightly unstable
+  // at 5 m/s - measured in the game, 1.41 Hz growing at a damping ratio of −0.084, and the block agrees - so an
+  // unstable mode no command reaches is not stabilisable. A cost on it asks the Riccati equation for a gain that
+  // cannot exist, and it answers with a non-finite one: 3.2m's weight of 1 is why its own table reads `null` at 5 and
+  // 9 m/s at no rail, and why the first build of this step dropped the rider in 0.2 s in straight running.
+  //
+  // With no cost on them the states are still carried, which is the whole point: the internal model predicts the
+  // board sinking and pitching over the sensing delay, and the roll moment it feeds back depends on the heave at
+  // −300 to −700 N·m per metre at a rail. The rider feels and anticipates the board; it does not pretend to steer it.
+  // `heaveScale` remains for the sweep that measured this (`3.2/README.md` Part 14).
+  if (nState > N_STATE && w.heaveScale) {
+    const hs = w.heaveScale;
     for (let i = 0; i < nState - N_STATE; i += 1) q[N_STATE + i][N_STATE + i] = 1 / (hs[i] * hs[i]);
   }
   // The capture point's cost (step 3.2j): a rank-one term on ξ = L (θ + θ̇/ω₀), which is where the cross term between
@@ -944,10 +996,19 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
   let d = designCache.get(key);
   if (!d) {
     const w = weights ?? DEFAULT_WEIGHTS;
-    // Step 3.2p: with the heave and pitch sensed, the plant that is designed on is the held table with those four
-    // states carried. The two go together — the sense is of a state, so the state has to be there.
+    // Step 3.2p: with the heave and pitch sensed, the plant the internal model, the filter and the predictor run on is
+    // the held table with those four states carried. The two go together — the sense is of a state, so the state has
+    // to be there.
     const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense });
     d = design(y, t, w);
+    if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
+      // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
+      // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
+      const ten = plantAt(speed, depth, { rail });
+      const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
+      const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
+      d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };
+    }
     designCache.set(key, d);
   }
   return d;
