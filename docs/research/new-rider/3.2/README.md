@@ -4321,9 +4321,25 @@ arithmetic on published means.
 
 - `npx tsc --noEmit -p .`: **clean**. `npx tsc -p server/tsconfig.json --noEmit`: **clean** [M].
 - The suite (`--exclude SurfZoneSimulation.test.ts --exclude SurfZoneRunner.test.ts`, as the owner's rule says, with
-  `--testTimeout=300000` because another session's run was on the same cores): SUITE_RESULT
+  `--testTimeout=300000`): **3,483 passed, 23 expected-fail, 8 failed — and every one of the 8 is a timeout.** Nine
+  `Test timed out` / `Hook timed out` messages and **zero assertion failures anywhere in the run**
+  (`results/suite-32q.txt`). The seven failing files are all wave code plus `src/dev/stanceTargets.test.ts`, each with
+  its own per-test timeout below my override, and the run was made with **another session's suite on the same cores**:
+  22 vitest workers for 12 cores, which shows in the durations — `stanceTargets` took **1,765 s** and
+  `BoussinesqSolver` **2,224 s** for files that normally take seconds. This is the pattern C2 step 5c recorded on the
+  same machine the same day, and it is not a signal about this branch. **It is also not a pass, and I am not calling it
+  one.**
+- **What I can say instead, and it is the check that bears on this change**: the six files that touch the rider and the
+  board — `AttachedRider`, `predictiveBalance`, `standingBody`, `humanBalance`, `BoardBody` and `PhysicalMode` — were
+  run **alone**: **6 files, 276 passed, 8 expected-fail, 0 failed** (`results/suite-rider-32q.txt`).
 - The Canyon byte check (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, fresh spin-ups, Canyon B through a
-  `globalThis.location` wrapper): CANYON_RESULT
+  `globalThis.location` wrapper): **started and not finished, and I am not calling it a pass.** Both spin-ups
+  completed and both runs were stepping when the round ended; the other session's suite had 22 vitest workers on 12
+  cores for the whole round and the bench was getting 15–29 % of one core.
+  `results/canyon-byte-32q.txt` has the two commands, the expected hashes, and — in place of them — what *is*
+  established about the default path: the ledger writes only behind a static false, the lean hold is inside the new
+  surfer's own branch, **the old rider's twelve runs on this very test are byte-identical to 3.2m's stored file**, the
+  six rider-and-board test files pass alone, and the suite's own Canyon byte test timed out rather than failing.
 - **No unpaired force is added.** The ledger is bookkeeping behind a flag; the lean hold changes a reference, not a
   force, and is on only under `rider: 'new'`.
 
@@ -4390,4 +4406,5 @@ measured number to aim at.
   ablations), `yaw-new-off-32q.jsonl` (3.2p's behaviour, the same session) and `yaw-new-felt-32q.jsonl` (the angle
   form), `yaw-trace-old-32q.jsonl`, `yaw-trace-new-32q.jsonl` and `yaw-trace-topple-32q.jsonl` (the traces §5 reads) with
   `yaw-trace-ship-32q.jsonl` (the same run with the lean hold on, the cap recorded),
-  `bars-new-32q.jsonl` against `bars-new-off-32q.jsonl`, `suite-32q.txt`, `canyon-byte-32q.txt`.
+  `bars-new-32q.jsonl` against `bars-new-off-32q.jsonl`, `suite-32q.txt`, `suite-rider-32q.txt`,
+  `canyon-byte-32q.txt`.
