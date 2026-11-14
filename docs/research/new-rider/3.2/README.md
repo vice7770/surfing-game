@@ -4410,3 +4410,277 @@ measured number to aim at.
   `yaw-trace-ship-32q.jsonl` (the same run with the lean hold on, the cap recorded),
   `bars-new-32q.jsonl` against `bars-new-off-32q.jsonl`, `suite-32q.txt`, `suite-rider-32q.txt`,
   `canyon-byte-32q.txt`.
+
+# Part 16 — the carve's load factor: the premise, measured, and where the 2.1 actually lives
+
+Written 2026-11-14 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32r`, cut from
+`claude/rider-new-32q` (PR #330), so Part 15 above is its base. The contract: Part 15 §9's first item and the
+water-physics advisor's ranked first step — **log the hull's normal force through the carve and report the load factor
+n we actually reach, against the real 2.1** — and then settle whether letting the board arrest a drop fixes both the
+speed loss and the turn rate.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer: half the premise is wrong, and the half that is right is not ours to fix
+
+**The brief's premise has three parts. One is wrong, one is right, and the cure it proposes is unavailable on the
+surfer's side.**
+
+1. **"Our carve sheds 60 % of its speed in 2 seconds where real bottom turns keep 88–95 %" is wrong twice over.**
+   Measured over a real bottom turn's own duration (Forsyth: 0.96 s), the old rider keeps **93–132 %** of the speed it
+   started the turn with (median 105 %) and the new rider **90–110 %** (median 102 %) [M]. Over 2 s — twice a real
+   bottom turn — it is **73–143 %** (median 82 %) and **63–92 %** (median 71 %). The "60 % in 2 s" figure is what you
+   get by reading the speed at the *fall*, which on the old rider comes at **2.4–7.5 s** after riding the turn out
+   until the board stopped. And the bar it was measured against does not exist: **Forsyth's 0.92 is the cutback's speed
+   over the bottom turn's speed — a ratio between two turns, not within one** [S, the advisor, primary text]. The paper
+   publishes no within-turn speed ratio. I have corrected the record in `../../water-physics/sources.md`.
+2. **"Our load factor is far below the real 2.1" is right, and now has a population.** n (the water's whole force on
+   the board over the system's weight) is **1.02–1.28 per-run median, peak 1.17–2.01** on the old rider and
+   **1.01–1.26, peak 1.12–1.78** on the new, over twelve runs each [M].
+3. **"Does letting the board arrest a drop fix both?" — there is no drop to arrest, and nothing in `BoardBody` can
+   make one.** n is **1/cos φ identically**, because n cos φ = 1 + a_com/g is vertical equilibrium and our system's
+   vertical acceleration is **zero to within 4 %** (1 + a_com/g measures **0.96–1.05**, median 0.98–0.99, over all 24
+   runs) [M]. **The only thing that can raise n is real vertical acceleration**, and I tried all three routes to it:
+   - **a run-up down the fall line**: 0.8–1.2 s of straight-down-the-face before the stick, on faces up to 2.2 m / 30°,
+     buys **0.44–0.94 m/s** of descent and moves n **not at all** (1.20 → 1.16 median, peak 1.55 → 1.26) [M];
+   - **the hull's own lift law**, corrected: a sourced **+64 % at 18° of incidence** moves the carve by **nothing**,
+     and costs the old rider a run (§5) [M];
+   - **the leg stroke**, which does give **+0.41 to +0.51 g** of genuine upward acceleration — but for about 0.3 s, so
+     the turn rate moves 52.8 → 51.7 °/s [M].
+
+   **The advisor's reduction splits the problem at 61.6° of rail** [S, its arithmetic on Forsyth's means]: n = 2.1 at
+   a_y = 0 means cos φ = 1/2.1. **Below ~62° of rail n = 2.1 needs the wave** — +0.57 g for 0.96 s, 5.4 m/s of vertical
+   turn-around, which on a 16° face needs the board closing on the wave at **9.4 m/s over a 50 m run** where the face
+   offers **7.6 m**, short by about **7×**. **Above ~62° it costs the wave nothing**, and there it is a board problem.
+   **A Forsyth-class bottom turn needs a 30–45° face over about 2 m.** That is the wave track's number, and it is the
+   owner's "steep faces for tricks" ruling with arithmetic attached.
+
+**So the honest restatement of the bar: on the face we have, n ≈ 1.25–1.33/cos φ is the ceiling, not 2.1** [S, the
+advisor] — worth about 90–96 °/s against the measured 109 and our 70. The load-factor gap is 2×; the **path-rate gap is
+only 1.2–1.5×**.
+
+**Does this round touch the default path? No.** No file under `src/` is changed, so the Canyon byte hashes cannot move
+and **the owner types nothing**. What shipped is the probe, the corrected record, and the one build this round made —
+measured, and parked with its patch and its numbers (§5), because it is right and premature.
+
+## 2. The headline asked for
+
+Population: the owner's acceptance test, twelve runs per rider (two stances × three entry speeds × two stick
+positions), the Canyon-matched face (1.4 m, 16°, 5.7 m/s). Every figure [M], ranges then medians.
+
+| | **speed kept through the carve** | **load factor reached** | **reaches the wave on the side** |
+|---|---|---|---|
+| **old rider** | at 1 s **93–132 %** (med 105) · at 2 s 73–143 % (82) | **median 1.02–1.28** (1.09) · peak 1.17–2.01 (1.54) | **12 of 12** |
+| **new rider** | at 1 s **90–110 %** (med 102) · at 2 s 63–92 % (71) | **median 1.01–1.26** (1.05) · peak 1.12–1.78 (1.44) | **1 of 12** |
+
+The brief's reference points for the gate are reproduced exactly: old rider as shipped 12 of 12, new rider 1 of 12
+(Part 15's lean hold). "Real 88–95 %" is struck — see §1 item 1. "Real 2.1" stands as the advisor's arithmetic on
+Forsyth's published means, and §1 item 3 says where it is reachable.
+
+## 3. What the measurement actually says, and the identity behind it
+
+`load.probe.ts` books, frame by frame through the turn, the water's whole force on the board — hull pressure,
+buoyancy, added mass, radiation, friction, the foils, froth and the bed — three ways, in units of the system's weight
+(board 2.54 kg + rider 73 kg):
+
+- `n` = |F| / W, the load factor, with **φ_F = the tilt of that resultant from the world vertical**;
+- `liftShare` = F_y / W. Gravity is the only other external force on the system, so **F_y / W = 1 + a_com/g exactly**,
+  and no rider velocity is needed to get it;
+- and so `n cos φ_F = liftShare` **by construction** — which is the point. It says in one line that **n can exceed
+  1/cos φ only by accelerating the system upward.**
+
+| | n, per-run median | n, peak | **1 + a_com/g**, median | 1 + a_com/g, peak | φ_F median | incidence on the wetted bottom | wetted area |
+|---|---|---|---|---|---|---|---|
+| **old rider** | 1.023–1.280 (**1.085**) | 1.171–2.013 (1.540) | 0.959–1.005 (**0.993**) | 1.119–1.705 (1.220) | 12.7–42.6° (19.1) | 5.2–8.1° (**6.5**) | 0.224–0.389 m² (0.349) |
+| **new rider** | 1.012–1.255 (**1.047**) | 1.115–1.779 (1.435) | 0.955–1.050 (**0.981**) | 1.071–1.370 (1.268) | 14.6–29.6° (19.4) | 3.2–9.3° (**6.2**) | 0.316–0.376 m² (0.350) |
+
+Read it this way:
+
+1. **The system is in vertical equilibrium through the whole carve.** 1 + a_com/g is 0.98–0.99 in the median and never
+   leaves 0.96–1.05. So n = 1/cos φ_F is not a coincidence and not a model fault — **it is Newton**, and it is why the
+   measurement could not have come out any other way. **In steady trim a hull force law sets the draft and the trim,
+   not the force; the force is set by the weight.**
+2. **Two definitions in my own first pass were wrong, and the advisor caught both.** I had taken φ from the rider's
+   bank (on a 16° face a board sitting flat already has its hull force 16° off vertical, so the bank understates φ by
+   up to the face slope) and the vertical acceleration from the *board's* y when the rider is 73 of the 75.5 kg. Every
+   number above is after the fix. This is Part 15's lesson again: **check what a probe column means before quoting it.**
+3. **ω = n g sin φ / v describes our board.** With the corrected φ_F the law's median rate is 15.0–57.5 °/s against the
+   path's own 15.9–69.8 (old) and 19.7–37.8 against 21.9–42.5 (new) [M] — the law under-reads by about 10–30 %, the
+   residual being the fins' and friction's own share of the turn and the face's gravity. The mechanism is sound; the
+   lever is n, and n is pinned.
+4. **Our carve runs at 6° of incidence on 0.35 m².** A real 2.1-g turn runs **11–13° on 0.4–0.5 m²** [S, the advisor's
+   arithmetic on Forsyth at 6.7 m/s]. Ours is at *less* incidence than a real one — which is the same fact once more:
+   the incidence is whatever carries the weight, and the weight is all it is carrying.
+5. **At big rail the hull unloads, and that is how all 24 runs end** [M]. The traced old-rider tall full-stick run: at
+   50° of roll n_up is 1.57 on 0.356 m² of wetted bottom; by 67° it is 0.94; by 81–83° it is 0.51 then **0.19** on
+   0.231 m², with the speed down from 7.9 to 3.0 m/s, and the rider is dropped. The advisor sized it: **6.9× in
+   dynamic pressure and 2.7× in area, 19× together**, against which a coefficient is worth at most 1.9×. **The unload
+   is the speed and area collapsing, not the lift law** — and at 3.0 m/s nothing can make 2.1 g.
+
+## 4. The drop, and the leg stroke: the two routes to a_com, measured
+
+**The run-up.** `DELAY` holds the stick at zero while the board goes down the fall line, then turns — the order a real
+bottom turn happens in. Old rider, tall, full stick, one run each [M]:
+
+| face | run-up | descent it bought | descent in the turn | n median (perp to path) | n peak |
+|---|---|---|---|---|---|
+| 1.4 m / 16°, across the face (the test) | none | — | 0.49 m/s | 1.200 | 1.545 |
+| 1.4 m / 16°, 10° off the fall line | 0.8 s | 0.44 m/s | 0.16 m/s | 1.192 | 1.364 |
+| 1.4 m / 16°, straight down | 1.2 s | 0.46 m/s | 0.19 m/s | 1.205 | 1.313 |
+| 2.2 m / 30°, straight down | 1.2 s | **0.94 m/s** | 0.20 m/s | 1.157 | 1.263 |
+| 3.0 m / 45°, straight down | 1.2 s | 7.34 m/s | — | — | fell at 0.05 s |
+
+The advisor's formula says why, and it is the useful part: **descent is the closing speed on the wave times the face
+slope, w = u_rel · tan θ — not the ground speed times the slope** [S]. The probe matches its entry speed to the wave
+(`load.probe.ts:87`), so u_rel is −1.0 to +1.1 m/s and the geometry allows at most 0.32 m/s; we measure 0.44–0.49.
+**The board is already taking everything the face offers. The missing descent is not a board failure.** (The 45° row is
+the test water blowing up, not a result.)
+
+**The leg stroke** is the one source of a_com a gentle face leaves, and it is legal under no-hidden-motors: it is
+visible limbs and its reaction is on the board through the feet. `STROKE` enters the turn compressed and lets the legs
+extend as the stick goes over (`release`, the projection), or enters tall and compresses under the turn (`load`). Old
+rider, tall, six runs, with a 1 s run-up [M]:
+
+| | gate | **1 + a_com/g, peak** | n peak | path rate, median | speed kept at 1 s | falls at |
+|---|---|---|---|---|---|---|
+| `off` | 6 of 6 | 1.026–1.173 (**1.079**) | 1.133–1.398 (1.321) | 34.7–71.3 (52.8) | 0.802–0.880 (0.838) | 3.00–5.60 (3.60) |
+| `release` | 6 of 6 | 1.405–1.509 (**1.413**) | 1.412–1.527 (1.426) | 35.4–65.3 (51.7) | 0.805–0.918 (0.839) | 2.98–5.58 (3.60) |
+| `load` | 6 of 6 | 1.277–1.366 (1.329) | 1.360–1.747 (1.493) | **40.5–72.2 (56.4)** | **0.891–1.021 (0.943)** | **3.73–7.23 (5.51)** |
+
+- **The extension works, and it is worth +0.33 to +0.43 g of real upward acceleration** (peak 1.413 against 1.079).
+  That is the advisor's own budget (a 0.26 m leg extension gives about +0.57 g for ~0.3 s) landing where it said it
+  would. **But the turn rate does not move**, because ω answers to n over the whole turn and the stroke lasts a third
+  of one. A leg drive cannot be the source of a 0.96 s turn at 2.1 g; only the wave can.
+- **The one thing in this round the owner can use today**: `load` — Compress taken **as the turn loads up** rather than
+  held from the start — keeps more speed and stays up far longer, and it does so in **12 of 12** runs across both the
+  run-up set (speed kept at 1 s median 0.838 → 0.943, falls 3.60 → 5.51 s) and the plain set (1.035 → 1.067, falls
+  3.58 → 5.92 s), gate 6 of 6 either way [M]. Part 15 measured Compress *held from the start* as **worse** (its held
+  carve 2.17 → 1.62 s). **The difference is timing, not the stance**, which is also what a surfer does — compress under
+  the load, once the rail is set. It does not help the new rider (1 of 6 → 0 of 6).
+- `carveFlex` (`?carveFlex=on`, built 2026-11-10) is the small version of this and was already measured to change turns
+  "within a few percent" with 7 of 45 falls against 5 — so this is not a case for flipping that default [R].
+
+## 5. What was built, measured and parked: Shuford's cross-flow term
+
+The advisor's ranked build, and the one place a hull law is genuinely wrong. `hullForces.patchForce` gives a wetted face
+Savitsky's **small-trim** coefficient (0.4575, his own validity 2–15° of trim) at *every* incidence, and adds the
+cross-flow term only when the board is a **fully submerged** plate — so a planing hull banked over in a carve has never
+had it [R]. Against NACA TN 3939's Langley-tank table at λ = 3 that is **30–46 % low at 12–30° of incidence** [S].
+
+I built Shuford's eq. (23) in its place: `C_N = CROSS_FLOW_LINEAR·sin α + (4/3)·sin²α·cos α`, with the linear
+coefficient **derived, not tuned** — whatever is left of this file's existing anchor once the cross-flow term is taken
+out of it at the same τ = 4°, λ = 3 — so ordinary trim is unchanged to the last digit and both coefficients ramp back to
+`SUBMERGED`'s own law by `submergedShare`, leaving the duck-dive force byte-identical. Verified against the measured
+table: **−30 % → −3 % at 12°, −37 % → +4 % at 18°, −44 % → +5 % at 24°, −46 % → +11 % at 30°**; exactly neutral at 4°,
++20 % at 8° [M].
+
+**It is parked, with its patch and all of its numbers, in `crossflow-32r.patch.txt`.** Two measured reasons:
+
+1. **It moves the carve by nothing**, because **our median incidence is 6°**, where the law is neutral by construction.
+   Old rider: gate 12 of 12 → **11 of 12**, n median 1.085 → 1.083, path rate 33.99 → 32.04 °/s, speed kept at 1 s
+   1.052 → 1.046. New rider: gate 1 of 12 → 1 of 12, path rate 32.63 → 32.03 [M]. The correction lives at 12–30° of
+   incidence, which our board only reaches once the face is steep enough to give a real bottom turn — §1's 30–45°.
+2. **It is not free.** Run alone, **ten default-path assertions fail** in `AttachedRider.test.ts` — all real
+   `AssertionError`s, no timeouts — nine of them the banked-turn tests, including "makes a deep U at the bottom of the
+   face" (expected > 30, got **9.04**). The cause is the advisor's own warning: the cross-flow force is along the patch
+   normal, so at a big incidence a large part of it points **backwards along the path**. It is drag in proportion to
+   sin α as well as lift.
+
+**I am not shipping a measured regression on the path the owner rides, and I am not adding a switch to hide one.** The
+patch file says exactly when to take it off the shelf, and what comes free with it when the time is right: the
+pressure-centre law (ours 0.667 fixed, measured 0.69–0.80 varying) falls out of Shuford's own cp split as a consequence
+rather than a tune.
+
+## 6. The advisor (consulted this round)
+
+Logged in `../../water-physics/consult-log.md`; it opened **NACA TN 3939** (Shuford 1957) and Forsyth's Table 2 in the
+primary text, both now in `../../water-physics/sources.md`. It agreed my reading of n, found the two probe bugs §3
+names, corrected my cutback speed (**6.7 m/s, not 3.0 — 3.0 is the rad/s**, and `sources.md` was already right; the
+error was mine alone), struck the "88–95 % kept" bar's provenance, and gave the 61.6° split, the `w = u_rel tan θ`
+budget and the 30–45° face. Its caveats, passed on unsoftened: our board at 7 m/s is at **speed coefficient 3.3**,
+below TN 3939's 9–18 and TN 4187's 7–18; **everything above 34° of incidence and ±15° of roll is extrapolation**, and a
+carve is 42–75° of roll; Shuford's law is for pure planing with buoyancy excluded by his own criterion, where ours adds
+buoyancy separately; Forsyth's angular velocity is a resultant from a board-mounted device; and **the whole n = 2.1
+target is the advisor's arithmetic on published means, not a measured load**.
+
+Its rank 1, which I did not finish: book, against roll, **who carries the weight** — hull pressure against buoyancy
+against the rider's contact — and the buried rail's immersion. Its hypothesis is that the board is **held out of the
+water at high rail**, by the standing contact or by the roll outrunning the sinking. §3 item 5's area collapse
+(0.356 → 0.231 m²) is consistent with it and does not prove it.
+
+## 7. Seatbelts
+
+- `npx tsc --noEmit -p .`: **clean**. `npx tsc -p server/tsconfig.json --noEmit`: **clean** [M].
+- **No file under `src/` is changed** (`git diff --stat` against main shows only `docs/`), so the suite cannot be
+  affected, the default path cannot move, and the Canyon byte hashes cannot move. I did not run the Canyon bench for
+  that reason and say so plainly rather than quote a pass.
+- The six files that cover the rider and the board — `AttachedRider`, `predictiveBalance`, `standingBody`,
+  `humanBalance`, `BoardBody`, `PhysicalMode` — run **alone**: see `results/suite-rider-32r.txt`.
+- **No unpaired force is added.** Nothing in the sim changed at all.
+- Five Basilisk runs and a wave-track agent shared the machine for the whole round; none of it was stopped.
+
+## 8. What I am unsure of
+
+- **Whether the 61.6° split survives a measured load.** Everything about n = 2.1 traces back to one reduction of
+  Forsyth's published means. If their 1.9 rad/s resultant is not mostly yaw, the whole bar moves.
+- **Whether the cross-flow correction would help once the face is steep.** I measured that it does nothing at 6° of
+  incidence and that it costs ten tests; I did **not** measure it on a 30–45° face, because we have none. That is the
+  experiment that settles it, and it needs the wave track first.
+- **The ten failing tests might be the old law's behaviour rather than a regression.** I did not investigate which, and
+  I would not re-baseline ten default-path turn tests without the owner.
+- **Whether `load`'s 2 s of extra time is a technique or an artifact of a statically-set stance.** The probe flips
+  Compress on in one frame; a player's thumb is slower, and the leg model paces the depth but not the intent.
+- **The advisor's rank 1 is the live hypothesis and I leave it open**: at 81° of roll the board may be held out of the
+  water by its own contact, which would be the owner's "board sinks into water" thread at a rail angle study #285
+  never tested.
+
+## 9. For the owner, in plain words
+
+The surfer's turn is too slow, and this round found out why with a number. A real bottom turn pulls about **2.1 times
+the surfer's weight** through the water. Ours pulls **1.0 to 1.3** — and it turns out it *cannot* pull more, for a
+reason that is arithmetic rather than a bug: a board only presses on the water as hard as it needs to hold the surfer
+up. Press harder and you go up. A real surfer gets to 2.1 by **dropping down the face and then turning the drop
+around** — all that extra pressure is them stopping a fall. On our test wave the surfer never falls: it measures under
+half a metre a second of descent, and I gave it a run-up straight down the steepest face we have and it still would
+not.
+
+**So the thing standing between you and a fast turn is the wave, not the board.** The research advisor put the number
+on it: a turn like the ones measured on real surfers needs a face of **30 to 45 degrees over about two metres**. Ours
+is 16 degrees over 1.4 m. That is your own "steep faces for tricks" note, now with arithmetic. The good news inside it
+is that the *turn rate* gap is much smaller than the force gap — about 1.2 to 1.5 times, not 2 — so a steeper face
+should buy most of it.
+
+Two other things worth your time:
+
+1. **I built the one real fault I could find in the board's own physics and then shelved it.** Our board's lift law is
+   a small-angle formula being used at big angles, and against 1957 towing-tank measurements it is 30 to 46 per cent
+   low once the board is leaned over hard. The fix is sourced and I verified it to within a few per cent. But measured
+   on your own test it changes your turn by *nothing* — because our board never actually gets to the angles where the
+   old law is wrong — and it breaks ten turn tests, including making the deep bottom turn much worse. So it is sitting
+   in the folder with the patch and the numbers, ready for the day the waves get steep enough to need it. I would
+   rather hand you that than a change you would feel as a step backwards.
+2. **One thing to try with your hands.** Compressing **as the turn loads up** is much better than compressing before
+   it: in twelve of twelve test turns the surfer keeps more speed and stays up about two seconds longer. Holding
+   Compress from the start, which is what the earlier round measured, is worse. Shot list: on Canyon with
+   `?canyonWaves=true`, take the turn standing tall, then squash down just as the board bites, and compare it against
+   squashing down first.
+
+And one correction I owe you. The figure that started this round — "a real bottom turn keeps 88 to 95 per cent of its
+speed, ours keeps 40" — is not in the paper it was credited to. The paper's 92 per cent is the speed of a *cutback*
+compared with the speed of a *bottom turn*, two different turns. Measured over the length of a real bottom turn, ours
+keeps **93 to 132 per cent**. Our carve was never eating the speed.
+
+## 10. Files (3.2r)
+
+- `load.probe.ts`: the load factor through the carve on the owner's acceptance test — n and its own tilt, 1 + a_com/g,
+  the incidence and area the force is made from, the speed kept at fixed times into the turn, and `DELAY`/`HEADING`/
+  `FACE` for the run-up and `STROKE` for the leg stroke.
+- `crossflow-32r.patch.txt`: Shuford's cross-flow term, built, verified against NACA TN 3939, measured on the
+  acceptance test, and parked — with the ten failing tests named and the condition for taking it off the shelf.
+- Results: `results/n-old-32r.jsonl` and `n-new-32r.jsonl` (the two twelve-run columns), `n-trace-old-32r.jsonl` and
+  `n-trace-new-32r.jsonl` (the frame-by-frame traces §3 item 5 reads), `n-drop-32r.jsonl` (the run-up sweep),
+  `n-stroke-32r.jsonl` and `n-stroke2-32r.jsonl` (the leg stroke, without and with a run-up),
+  `n-old-cross-32r.jsonl` and `n-new-cross-32r.jsonl` (the parked patch's twelve runs each),
+  `results/suite-rider-32r.txt`.
+- `../../water-physics/sources.md`: NACA TN 3939 added, and the Forsyth speed-ratio provenance corrected.
+- `../../water-physics/consult-log.md`: this round's consult.
