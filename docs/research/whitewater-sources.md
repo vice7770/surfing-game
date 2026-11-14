@@ -17,6 +17,13 @@ The values Part B's whitewater physics uses, with their sources, measured ranges
 | Fastest spit | v_max | √(ρ_w/ρ_a)·√(gW/2), about 50 m/s for a 0.6 m void | The roof falls on the air at about √(gW/2), so the air's pressure rises no higher than the roof's dynamic pressure; air the mouth cannot pass that fast bursts up through the lip | Provisional (a mechanism, not a measurement) |
 | Rendered spray and mist per m³ of escaping air | s_a | 40 | A render density, as G6's spray per joule | Provisional (render) |
 | Breaking roller cross-section, per H² | κ_r | 0.9 | The roller is a volume of water moving with the wave, its area proportional to H² (Svendsen 1984; 0.9 H² is the value commonly carried from it) | Sourced |
+| **The lip's veil** (C2 step 5g, `?lipVeil=on`; `LIP_VEIL` and `VEIL_AIR` in `src/wave/SprayCloud.ts`) | | | | |
+| Droplet count shares and mean directions of the two post-impact regions | — | I-A **32 %** at **81°** from horizontal, I-B **46 %** at **56°**, both leaning downstream | Every droplet d ≥ 100 µm crossing a plane over the crest of three laboratory plungers, λ₀ = 1.18 m, H ≈ 0.09 m, still air (Erinin et al. 2023). Their region II, the foam wake's bursting bubbles (15–28 %), travels "no more than a few centimetres" vertically and is `boreSpray`, not the veil | Sourced |
+| Droplet speed over the jet's impact speed | — | mean **0.32–0.44**, tail to **2×** | As above; Mostert et al. 2022 agree in DNS (most at one phase speed, fastest three or four) and fit a skewed law. `SPLASH_UP.vertical` = 0.6 ± 20 % is about 1.5× the mean with no tail | Sourced |
+| Droplet size spectrum | — | N ∝ d^−1.9…−2.4 below d_i, d^−5.4…−6.1 above; d_i = **0.82–1.48 mm** | As above, weak to strong breakers | Sourced |
+| …integrated to **optical area**, which is what a drawn sprite stands for | — | **8 %** under 0.2 mm, **57 %** in 0.2–1 mm, **35 %** over 1 mm | Reasoned from the spectrum above at α −2.1, β −5.8, d_i 1.14 mm over 0.1–3 mm. The middle band is the veil and had no class before C2 step 5g | Reasoned on a sourced spectrum |
+| Delay from the jet's impact to the first droplets | — | **0.19–0.52 s** on a 2 m wave | 110.8 ms after impact, generated 25–70 ms earlier (Erinin et al. 2023), Froude-scaled. Also the guard that keeps the veil behind the curl's tip | Sourced (scaled) |
+| **The air over a breaking crest that carries the veil** | w_air | 0.9 √(gH) at the water, to nothing 1.6 × the wave height above it | **Nobody has measured this field.** Thrown drops cannot reach the veil's measured top, and Erinin's own still-air back-tracking put 40 % of their droplets on water ahead of the breaker, which they call nonphysical and an "indication of the need for including the temporally evolving breaker-generated air flow field". The value here is fitted to the owner's Abu Dhabi photograph (`docs/research/tube-spray-reference-2026-11-14/`), measured in `docs/research/wave-strategy-alternatives/c2-step5g.md` §2 | **Provisional — calibrated, and the gap is real.** Our Basilisk runs are two-phase and already carry the gas velocity; a rerun saving it would make the number ours |
 
 ## Changes from the plan's defaults
 
@@ -28,6 +35,8 @@ The values Part B's whitewater physics uses, with their sources, measured ranges
 
 - Blenkinsopp, C. E. & Chaplin, J. R. (2007). Void fraction measurements in breaking waves. *Proc. R. Soc. A* 463, 3151–3170.
 - Clift, R., Grace, J. R. & Weber, M. E. (1978). *Bubbles, Drops, and Particles.* Academic Press.
+- Erinin, M. A., Liu, C., Wang, S. D., Liu, X. & Duncan, J. H. (2023). Plunging breakers. Part 2. Droplet generation. *J. Fluid Mech.* 967, A36. (And Part 1, 967 A35.)
+- Mostert, W., Popinet, S. & Deike, L. (2022). High-resolution direct simulation of deep water breaking waves: transition to turbulence, bubbles and droplets production. *J. Fluid Mech.* 942, A27.
 - Deane, G. B. & Stokes, M. D. (2002). Scale dependence of bubble creation mechanisms in breaking waves. *Nature* 418, 839–844.
 - Kiger, K. T. & Duncan, J. H. (2012). Air-entrainment mechanisms in plunging jets and breaking waves. *Annu. Rev. Fluid Mech.* 44, 563–596.
 - Lamarre, E. & Melville, W. K. (1991). Air entrainment and dissipation in breaking waves. *Nature* 351, 469–472.
