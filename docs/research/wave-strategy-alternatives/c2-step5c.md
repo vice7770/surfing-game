@@ -269,19 +269,30 @@ bore changed into each camera's frustum — a read, not a build.
   is never in the default game's graph, and **no test imports it** (the one test that names it,
   `ScreenStack.test.ts`, does so in a comment). Everything else the branch touches is a `.mjs` dev tool, two Basilisk
   files and docs — none of them in the suite's graph or the solver's.
-- The three spin-up hashes and the suite: `c2-step5c-runs/`. Both were started with the five Basilisk runs already
-  loading the machine, which is exactly the condition that produces timeout-only failures; the suite ran with
-  `--testTimeout=300000` for that reason. **Read a failure there as a timeout before reading it as a regression**, and
-  note the argument above: nothing in the suite's import graph changed.
-- **And `--testTimeout` does not rescue every file, which is worth knowing before the next round trusts it.**
-  `uniformSnapshot.test.ts`'s "match main's bytes at the Canyon" failed here at 486 s. It carries its **own** 180 s
-  timeout in the `it()` call, which overrides the command line, and its own comment already records the history:
-  "about 20 s alone, it timed out at 60 s under other agents' load (2026-10-29, 10-31)". So it is a load timeout of a
-  kind the raised global cannot help, and raising it further means editing that line, not the flag. A byte-matching
-  test failing is the most alarming-looking thing a loaded suite can produce, and this one is the known case.
-- The other failure the suite reached is `poolBarrelPerf.test.ts`'s camera-water test at **344 s** — ruling 35's
-  recorded flake, again a timeout and not an assertion. Both failures are on the list of files that time out under
-  load, and neither reports an assertion.
+- **The suite: `3 484 passed, 6 files failed, and every one of the six is a timeout. Not one assertion failed.**
+  29 minutes, run with `--testTimeout=300000` alongside the five Basilisk runs — the condition that produces
+  timeout-only failures. Full output in `c2-step5c-runs/suite.txt`.
+
+  | file | the failure |
+  | --- | --- |
+  | `surfZoneState.test.ts` | `Hook timed out in 120000ms` (its `beforeAll`) |
+  | `stanceTargets.test.ts` | `Test timed out in 900000ms` |
+  | `SeaStateBoundary.test.ts` | `Test timed out in 60000ms` |
+  | `uniformSnapshot.test.ts` | `Test timed out in 180000ms` |
+  | `boundedCConsumers.test.ts` | `Test timed out in 30000ms` |
+  | `poolBarrelPerf.test.ts` | `Test timed out in 300000ms` (ruling 35's recorded flake) |
+
+- **Five of those six timeouts `--testTimeout` could not have prevented, and that is worth knowing before the next
+  round trusts the flag.** Only `poolBarrelPerf` used the raised global (300 s). The other four tests carry their
+  **own** timeout in the `it()` call, which overrides the command line — 900 s, 60 s, 180 s and 30 s — and
+  `surfZoneState`'s is a *hook* timeout, which `--testTimeout` does not govern at all (that is `hookTimeout`).
+  Raising those means editing those lines, not the flag.
+- The most alarming-looking of the six is `uniformSnapshot`'s **"match main's bytes at the Canyon"**, which is exactly
+  the kind of test whose failure reads as a regression. It is not: it timed out at its own 180 s, and its own comment
+  already records the history — "about 20 s alone, it timed out at 60 s under other agents' load (2026-10-29, 10-31)".
+- The three spin-up hashes: `c2-step5c-runs/`, started under the same load. **They had not finished when this round
+  handed back**; the job is detached and its output is `…/scratchpad/s5c/byte.txt`. The argument above stands on its
+  own either way: nothing in the default game's import graph changed.
 
 ---
 
