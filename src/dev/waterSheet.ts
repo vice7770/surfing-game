@@ -1009,8 +1009,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   const waterSheetVeil = async (name: string | View, look: WaterLook, time: TimeOfDay, options: { sat?: number; low?: number; high?: number } = {}) => {
     const shot = viewOf(name);
     const gl = hooks.canvas.getContext('webgl2');
-    const barrel = hooks.mode.barrelMesh;
-    if (!shot || !gl || !barrel) return undefined;
+    // Under `?wave=library` the drawn loft is the library's zone mesh, not the swept barrel's: `drawBarrel` routes to
+    // `libraryZone.draw` and never touches `sweptBarrel`, so hiding the swept one alone changes no pixel at all.
+    const zone = (hooks.mode as unknown as { libraryZone?: { mesh: { mesh: { visible: boolean } } } }).libraryZone;
+    const drawnMesh = zone ? zone.mesh.mesh : hooks.mode.barrelMesh?.mesh;
+    if (!shot || !gl || !drawnMesh) return undefined;
     const sat = options.sat ?? 0.18;
     const [low, high] = [options.low ?? 0.3, options.high ?? 0.82];
     fit();
@@ -1028,9 +1031,9 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       return pixels;
     };
     const drawn = frame();
-    barrel.mesh.visible = false;
+    drawnMesh.visible = false;
     const without = frame();
-    barrel.mesh.visible = true;
+    drawnMesh.visible = true;
     hooks.renderView(camera);
     const isBarrel = (p: number) => {
       const k = 4 * p;
@@ -1059,7 +1062,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     const grey = stats(isGrey);
     const greyBarrel = stats((p) => isGrey(p) && isBarrel(p));
     return {
-      shot: shot.name, look, time, sat, band: [low, high],
+      shot: shot.name, look, time, sat, band: [low, high], mesh: zone ? 'library zone' : 'swept barrel',
       grey, greyOnBarrel: grey.pixels ? +(greyBarrel.pixels / grey.pixels).toFixed(3) : null, greyBarrel,
       barrel: stats(isBarrel), water: stats((p) => !isBarrel(p)), frame: stats(() => true),
     };

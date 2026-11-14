@@ -194,8 +194,13 @@ start where the mask ends, is a shape question and belongs to the advisor and to
   landed slices at this frame, the oldest 1.38 s past touchdown, so the shots cannot reach a bore older than that even
   though the foam's own life runs to ten seconds. A shot that follows the white rather than the loft would see more of
   it.
-- **The grey veils of §3 item 4 are an eye reading**, as they were in ruling 39. Nothing here measures them. What this
-  round changes is that there is now a camera 8 m from them.
+- **The grey veils of §3 item 4 are still an eye reading**, as they were in ruling 39. What this round changes is that
+  there is now a camera 8 m from them and a tool to measure them with (`waterSheetVeil`), and that the tool's first
+  run found a trap worth writing down: under `?wave=library` the drawn loft is the **library's zone mesh**, not the
+  swept barrel's — `PhysicalMode.drawBarrel` routes to `libraryZone.draw` and never touches `sweptBarrel` — so hiding
+  `mode.barrelMesh` (which is what the water sheet exposes) changes **not one pixel** and the A/B silently measures
+  nothing. The tool now hides the library's zone mesh where there is one. **The measurement itself has not been run**,
+  and is item 2 of §7.
 - **Whether the mask overlap of §4 matters to the owner's eye.** 24 nodes is 16 % of the patch and the brightest of it,
   but the shots still read as white, so the loss is not what was hiding the foam.
 
@@ -206,7 +211,9 @@ start where the mask ends, is a shape question and belongs to the advisor and to
 1. **Show the owner `foam-on-bore-face.jpg` and `foam-on-bore-line.jpg`.** They asked for foam, they have been promised
    it twice, and this is the first time it can be looked at.
 2. **Measure the grey veils** (ruling 39's lead 1) from `bore-above`, which is 8 m from them, against ruling 37's fray
-   lip. One measured look before anyone repaints, as the ruling said.
+   lip. One measured look before anyone repaints, as the ruling said. The tool is built and committed
+   (`waterSheetVeil`, `c2-step5d-veil-probe.js`) and wants one run of the probe; §6 says what its first attempt got
+   wrong and why its answer of "0 pixels" was not an answer.
 3. **The seam mask over the bore** (§4) — the advisor's call on the shape, then a build.
 4. The lace's holes at close range (§3 item 2), and the seam dither's hard rectangle (§3 item 3), which now has both a
    named mechanism and a picture.
