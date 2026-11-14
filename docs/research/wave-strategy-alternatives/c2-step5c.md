@@ -13,7 +13,7 @@ white that reads. What is wrong is that there is almost no foam — and none of 
 | --- | --- |
 | **Shipped** | the five runs defined, checked against the script and started; the still tool can now report what it drew (`--probe`) |
 | **Settled** | Medium draws Rich, and no code path drops the look at runtime; the step 5b stills drew Rich with the water light on, gain 1; ruling 38's "Classic draws no foam of any kind" is **mistaken** |
-| **Measured** | the foam's luminance against the pool's own clear water, per shot (§3): **1.58–1.75×**, inside the game's own 1.5–2× target for a white that reads. The water is **not** too bright |
+| **Measured** | the foam's luminance against the pool's own clear water, per shot (§3): **1.58–1.75×**, inside the game's own 1.5–2× target for a white that reads. Against *all* water it is only 0.96–1.16, which is what ruling 38 saw — but that water is itself foam-coloured, so the frame is white on a thin wash of the same white, not white on bright water |
 | **Found** | there is almost no foam to read — half a per cent of the frame in most views, two pixels from inside the tube — and with the bore's foam switched off, six of seven stills are byte-identical (§4) |
 | **Not shipped** | anything the owner can see. This round is a diagnosis, and ruling 38 reserved the next look change for its own ruling. Said plainly, per the owner's rule 3 — the owner should not be asked to ride this |
 
@@ -164,7 +164,33 @@ is mostly already carrying foam colour, so reading it as bare water and calling 
 with foam. Where there is real bare water to compare against — `curl-channel` with 155 036 clear pixels, `curl-behind`
 with 371 147 — it sits at p90 0.465 and 0.527 against foam at 0.814 and 0.833.
 
-What **is** true is that the frame's bright top decile is the caustic lattice, and the caustics are not something #282
+### Both readings are true at once, and the difference is the whole point
+
+It is worth being exact here, because the ratio depends on what is counted as "the water", and ruling 38's reading is
+not wrong about what it saw:
+
+| shot | foam p50 ÷ **clear** water p90 | foam p50 ÷ **all** water p90 | clear share of the water |
+| --- | --- | --- | --- |
+| `curl-ride` | 1.62 | 1.11 | 35 % |
+| `curl-front` | 1.63 | 0.96 | 0.7 % |
+| `curl-channel` | 1.75 | 1.16 | 82 % |
+| `curl-inside` | 1.67 | 1.63 | 99 % |
+| `curl-close` | 1.65 | 1.13 | 35 % |
+| `curl-behind` | 1.58 | 1.09 | 69 % |
+
+Against **all** water the foam barely stands out at all — 0.96 to 1.16 in five of six — which is exactly what ruling
+38 saw in the stills and called water that out-shines its own foam. But the water it is losing to is **not bare
+water**: those are the pixels the magenta pass pulled between 10 and 120 levels of green out of, so they carry foam
+colour themselves. Against water with no foam in it the same white stands at 1.58–1.75×.
+
+So the picture is not "white on white". It is **white against a wide thin wash of the same white**, and the wash is
+what flattens the frame. One honest limit: the magenta test cannot separate low-cover surface foam from the
+underwater plume tint, because `waterFoamColor` colours both (`richWaterGlsl.ts:114–115`). Either way the wash is
+foam-coloured and, by the foam-off leg in §4, it is the **sea's** own, not the library's.
+
+### The caustics
+
+What **is** also true is that the frame's bright top decile is the caustic lattice, and the caustics are not something #282
 touched: it cut the Rich body gain and raised the display exposure, which lifts the caustics and the foam by the same
 factor and changes neither's standing against the other. A caustics A/B would settle how much of the pale look is
 theirs. It cannot be driven from the probe — `drawPhysical` re-renders and re-enables the map on every `renderView`
