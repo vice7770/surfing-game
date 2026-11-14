@@ -479,5 +479,13 @@ in the main checkout still has it as a local modification and can be dropped onc
     --probe=docs/research/wave-strategy-alternatives/c2-step5g-probe.js --advance=40 --first=skip
   ```
   The off leg is the same address without `&lipVeil=on`.
-- Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look; the A0 clamp and
-  the hand-over bars, which this branch does not touch.
+- The Canyon byte check and the veil's own cost, from the repository's root (step 5f's recipe; the veil leg needs
+  `location.search` set, so a two-line `.mjs` sets it and then imports the bundle):
+  ```
+  npx rolldown scripts/m1-cpu-bench.ts -o <scratch>/bench.mjs --format esm --platform node
+  node <scratch>/bench.mjs --spot canyon --size medium --steps 3600 --state <scratch>/canyon.sea
+  ```
+  **Compare only legs that took the same path** — a fresh spin-up against a fresh spin-up, or a cache read against a
+  cache read (§7.1).
+- Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look; the other spots;
+  the worker path (§4.3); and the A0 clamp and the hand-over bars, which this branch does not touch.
