@@ -404,7 +404,7 @@ lip impact carrying the height of the wave it fell from, which nothing but the v
 | `src/wave/SprayCloud.test.ts` | **39 of 39**, six of them new: the switch is off until asked for and leaves every landing's bytes as they were; the two regions' angles; the speed law's mean and its tail; **nothing thrown over water the lip has not hit**; the air carrying the light drops over the lip where thrown drops cannot reach; and the air not blowing before its onset |
 | `src/wave/PlungingLip.test.ts` | 71 of 71 |
 | `src/game/PhysicalMode.test.ts` | 92 of 92 |
-| `src/wave/SurfZoneSimulation.test.ts` | **still running when this was handed back** — 106 tests, started on its own as the brief asks, with three CPU benches beside it. The branch touches two lines of that file's subject (the `lipVeil` field on the config type, and the wave height a landing now carries), and its result is in `c2-step5g-runs/suite.txt` when it lands. **Read it before merging** |
+| `src/wave/SurfZoneSimulation.test.ts` | **not finished — it was still running at hand-back** and its result is *not* in `c2-step5g-runs/suite.txt`, which carries the three files above. 106 tests, started on its own as the brief asks, with three CPU benches competing for the machine. **Run it before merging**: `npx vitest run src/wave/SurfZoneSimulation.test.ts`. What this branch does to that file's subject is two lines — the `lipVeil` field on `SurfZoneConfig`, and the wave height a landing now carries — and the config-type line cannot run, but that is a reason to expect a pass, not a reason to skip it |
 | **the deletion check** | `git diff --stat origin/main HEAD` first read **1581 deletions**, every one of them `docs/research/new-rider/3.2/`, `AttachedRider.ts` and `legDrive.test.ts` — not a revert but `origin/main` moving to 691cac46 under a branch cut from 009a9c51. **Rebased onto it**; the branch's deletions against `origin/main` are now **7**, and the seven are lines of my own that I replaced |
 
 ### 7.1 A control that was not a control
@@ -418,7 +418,9 @@ It is not. `m1-cpu-bench.ts` takes **two different paths**: with no cache it spi
 therefore start from different water and their hashes are not comparable at all — the protocol only compares legs
 that took the same path. Step 5f's figures are from a fresh spin-up, and so is the branch leg that matches them, so
 **the byte check above is sound**; my second leg simply compared two different things. The paired control, both legs
-reading the same cache, is in `c2-step5g-runs/canyon-bytes.txt`.
+reading the same cache, is leg D of `c2-step5g-runs/canyon-bytes.txt` — **it had not finished at hand-back either**,
+and §7.2's third row predicts what it must say: snapshots `a8ac71b70eac2add` and state `6319ed883e54b32e`, the main
+leg's exactly, since the veil is off in it.
 
 ### 7.2 And a stronger proof, from the leg that was only meant to cost it
 
