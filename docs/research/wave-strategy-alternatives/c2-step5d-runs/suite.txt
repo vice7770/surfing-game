@@ -1,33 +1,87 @@
-# C2 step 5d, the suite. Started 12:35 on 2026-11-14, on a machine carrying five Basilisk cases on three
-# cores (load average 20-24 throughout). Command:
+# C2 step 5d, the suite. Started 12:34:41 on 2026-11-14, FINISHED 16:15 (duration 13 261.94 s, 3 h 41), on a
+# machine carrying five Basilisk cases on three cores (load average 20-24 throughout). Command:
 #   npx vitest run --exclude "src/wave/SurfZoneRunner.test.ts" --testTimeout=300000 --hookTimeout=300000
+
+#   Test Files  8 failed | 353 passed | 37 skipped (398)
+#        Tests  14 failed | 3584 passed | 23 expected fail | 45 skipped (3666)
+
+# NOT ONE ASSERTION FAILED. All fourteen are a timeout or a missing file:
+#   9 timeouts   - 900000ms x2, 180000ms x2, 30000ms x2, 1800000ms, 60000ms, and one Hook timed out in 120000ms
+#   5 ENOENT     - 4 on public/barrels/pad19-a20-l12.bin, 1 on
+#                  docs/research/water-physics/notes/round6-tube-profiles/data/periodic_reef42_L12_plunge.json
 #
-# TWO THINGS TO KNOW BEFORE READING IT.
-# 1. The exclusion DID NOT TAKE. `npx vitest list --exclude "src/wave/SurfZoneRunner.test.ts"` still lists six of
-#    that file's tests, so the run includes the file that is outside the merge suite and that main itself fails
-#    until PR #204 lands. A CLI --exclude of an exact relative path does not drop it; the config's own exclude
-#    (docs/**) IS still honoured, which the same `vitest list` confirms (0 docs tests collected, 3434 in all).
-# 2. Raising --testTimeout and --hookTimeout to 300 s means a slow test now runs to completion rather than
-#    failing at 60 s, so this run is far longer than step 5c's 29 minutes. It had not finished when the round
-#    handed back; it is detached and still writing to
-#    .../scratchpad/s5d/suite.txt
+# The five ENOENT are an artefact of the run outliving its worktree, not a missing asset and not a regression:
+# both files ARE tracked in main (`git cat-file -e origin/main:public/barrels/pad19-a20-l12.bin` succeeds) and both
+# were in the worktree when the run started. SurfZoneSimulation.test.ts alone took 13 241 s - the run was still in
+# that file long after the round handed back, the branch was merged and the worktree was cleaned up underneath it.
+# All five failures are in that one file, at its end.
 #
-# The failing files at hand-back, all seven of them in the set this machine's load produces (step 5c's six, plus
-# BoussinesqSolver and the inner-sheet sampling test), with durations that can only be hangs:
+# Two things about the command, worth not rediscovering:
+#  1. --exclude "src/wave/SurfZoneRunner.test.ts" DOES NOT TAKE. `npx vitest list` with the same flag still lists
+#     six of that file's tests. A glob (**/SurfZoneRunner.test.ts) is what it wants. The config's own docs/**
+#     exclusion IS honoured alongside the flag (0 docs tests collected, 3434 in all).
+#  2. Raising --hookTimeout as well as --testTimeout to 300 s makes a slow test run to completion rather than fail
+#     at 60 s, which is why this run is 3 h 41 against step 5c's 29 minutes.
+#
+# None of the eight failing files imports src/dev/waterSheet.ts, which is the only TypeScript this branch changed.
+
+# The eight, as the reporter listed them:
 
  ❯ src/wave/surfZoneState.test.ts (7 tests | 2 skipped) 530368ms
  ❯ src/dev/stanceTargets.test.ts (1 test | 1 failed) 1979472ms
-     × meets every target of medium or high confidence, on all four surfers, but the known misses: the drawn pose's and the physics' (phase 5) 1979469ms
  ❯ src/wave/BoussinesqSolver.test.ts (34 tests | 1 failed) 2095440ms
-     × breaks an oblique shoaling wave at 20° where its height reaches 0.6–1.0 of the depth 905735ms
  ❯ src/wave/uniformSnapshot.test.ts (2 tests | 2 failed) 2181725ms
-     × match main's bytes at the Canyon (with its curl) 1984926ms
-     × match main's bytes at the Beach 196779ms
  ❯ src/wave/barrel/boundedCConsumers.test.ts (6 tests | 1 failed) 90070ms
-     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 53279ms
  ❯ src/wave/barrel/sharedUpperRoot.test.ts (4 tests | 1 failed) 111319ms
-     × keeps asset frames and adjacent parameter blends finite, ordered and free of new proper crossings 37588ms
  ❯ src/wave/SeaStateBoundary.test.ts (2 tests | 1 failed) 72137ms
-     × generates the linear sea state inside a flat channel 72096ms
+ ❯ src/wave/SurfZoneSimulation.test.ts (107 tests | 7 failed) 13241045ms
+ ❯ src/wave/surfZoneState.test.ts:146:3
+ ❯ src/dev/stanceTargets.test.ts:66:3
+ ❯ src/wave/BoussinesqSolver.test.ts:512:5
+ ❯ src/wave/SeaStateBoundary.test.ts:50:3
+ ❯ src/wave/SurfZoneSimulation.test.ts:445:3
+ ❯ src/wave/SurfZoneSimulation.test.ts:752:3
+ ❯ src/wave/barrel/nodeBarrelCases.ts:13:47
+ ❯ src/wave/SurfZoneSimulation.test.ts:1686:46
+ ❯ src/wave/barrel/nodeBarrelCases.ts:13:47
+ ❯ src/wave/SurfZoneSimulation.test.ts:1722:46
+ ❯ src/wave/barrel/nodeBarrelCases.ts:13:47
+ ❯ src/wave/SurfZoneSimulation.test.ts:1795:38
+ ❯ src/wave/barrel/nodeBarrelCases.ts:13:47
+ ❯ src/wave/SurfZoneSimulation.test.ts:1838:96
+ ❯ src/wave/SurfZoneSimulation.test.ts:1991:26
+ ❯ src/wave/uniformSnapshot.test.ts:81:5
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:105:3
+ ❯ src/wave/barrel/sharedUpperRoot.test.ts:44:3
 
-# None of these files imports src/dev/waterSheet.ts, which is the only TypeScript this branch changes.
+# Every failed test with its error:
+
+# FAIL  src/wave/surfZoneState.test.ts > the Canyon's spilling front and roller lenses in the handover (the roller lens, S3, §5)
+# Error: Hook timed out in 120000ms.
+# FAIL  src/dev/stanceTargets.test.ts > the stance map's targets, on the drawn body (the stance poses, step 3; the animation-realism plan, phases 1 to 3) > meets every target of medium or high confidence, on all four surfers, but the known misses: the drawn pose's and the physics' (phase 5)
+# Error: Test timed out in 900000ms.
+# FAIL  src/wave/BoussinesqSolver.test.ts > Boussinesq breaking > breaks an oblique shoaling wave at 20° where its height reaches 0.6–1.0 of the depth
+# Error: Test timed out in 900000ms.
+# FAIL  src/wave/SeaStateBoundary.test.ts > SeaStateBoundary > generates the linear sea state inside a flat channel
+# Error: Test timed out in 60000ms.
+# FAIL  src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spins up the menu's first Reef on the GPU tier's sea without blowing up
+# Error: Test timed out in 180000ms.
+# FAIL  src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spills at the Canyon at every size: no lip, no tube, and its foam follows the spilling front
+# Error: Test timed out in 1800000ms.
+# FAIL  src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > remeasures each front after the crash finalizes paced crest positions, including its serialized geometry
+# Error: ENOENT: no such file or directory, open 'public/barrels/pad19-a20-l12.bin'
+# FAIL  src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > starts a surviving crest at zero when the crash removes a front head, without carrying arc length across fronts
+# Error: ENOENT: no such file or directory, open 'public/barrels/pad19-a20-l12.bin'
+# FAIL  src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > throws no Kennedy lip at a swept spot with the library, pours the barrel’s jets from its crash curve with the water balanced, and hands the held jets over exactly
+# Error: ENOENT: no such file or directory, open 'public/barrels/pad19-a20-l12.bin'
+# FAIL  src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > keeps Kennedy’s lip without the library or with the crash off, and gives the foam the solver’s own breaking there
+# Error: ENOENT: no such file or directory, open 'public/barrels/pad19-a20-l12.bin'
+# FAIL  src/wave/SurfZoneSimulation.test.ts > the lip jet per spot (the Reef's periodic Basilisk runs) > takes the Reef's jet from the median of the two periodic runs of its ledge, within the owner's 0.55–0.6 H²
+# Error: ENOENT: no such file or directory, open 'docs/research/water-physics/notes/round6-tube-profiles/data/periodic_reef42_L12_plunge.json'
+# FAIL  src/wave/uniformSnapshot.test.ts > the worker snapshot's fields > match main's bytes at the Canyon (with its curl)
+# FAIL  src/wave/uniformSnapshot.test.ts > the worker snapshot's fields > match main's bytes at the Beach
+# Error: Test timed out in 180000ms.
+# FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+# Error: Test timed out in 30000ms.
+# FAIL  src/wave/barrel/sharedUpperRoot.test.ts > shared inner-sheet sampling > keeps asset frames and adjacent parameter blends finite, ordered and free of new proper crossings
+# Error: Test timed out in 30000ms.
