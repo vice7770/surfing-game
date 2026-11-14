@@ -18,9 +18,10 @@ nothing because what it wanted was 72–207 m behind.
 ## What to look for, and what not to claim
 
 **Right:** the spray leaves the lip and goes **up and back**, over the broken water and over the wall behind it. In
-the off leg nothing crosses the lip line at all — it is a knot of white sitting on the foam. The highest particle
-goes from 1.62 m to 3.51 m on the median frame, the clean face stays clean, and the tube's mouth is clearer than it
-was, not foggier.
+the off leg nothing crosses the lip line at all — it is a knot of white sitting on the foam. The veil's body (the
+height 95 % of its drawn area sits below) goes from 1.58 m to 2.40 m, which is the band the photograph's own ratio
+asks of our 1.41 m crest; the clean face stays clean; and the tube's mouth is clearer than it was, not foggier. The
+few stray dots high in the frame are the tail overshooting, and `../c2-step5g.md` §8 item 2 owns them.
 
 **Not right:** at this density it reads as **a scatter of separate round blobs**, not as a veil. The owner's
 photograph is a continuous translucent wash that lifts its background's luminance by about +90 of 255 *while leaving

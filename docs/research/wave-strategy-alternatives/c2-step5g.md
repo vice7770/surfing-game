@@ -11,9 +11,9 @@ coarse and too opaque, because nothing in the game lifts a drop after it is thro
 Over 600 frames (20 s) of the 2 m pool Barrel, the sea's own `PlungingLip` reported **1234 landings in 517 of them**,
 and the cloud carried a median of **1525 live particles**, of which **1385 of 1390** were inside `curl-behind`'s
 frustum in the frame step 5d used [M]. What it does not do is rise: the **highest spray or mist particle in any of
-those 600 frames was 2.05 m, median 1.62 m**, on a wave whose crest stands about 1.3 m over the flat water [M]. The
-owner's reference puts the veil's top **0.55–0.70 of a wave height above the crest** [M, re-measured below]. Our spray
-never gets above the lip at all.
+those 600 frames was 2.05 m, median 1.62 m**, on a wave whose crest stands **1.41 m** over the still water [M]. The
+owner's reference puts the veil's top **0.55–0.70 of a crest height above the crest** [M, re-measured below], which
+on our wave is 2.2–2.4 m. Our spray never gets above the lip at all.
 
 | | |
 | --- | --- |
@@ -21,7 +21,8 @@ never gets above the lip at all.
 | **Re-measured** | the owner's photograph, from the pixels (§2). The coordinator's `[I]` reading is corrected: the wave is **274 px**, not 230, so the veil's **0.8 H becomes 0.55–0.70 H**; and the translucency now has a number — the veil lifts the pier's mean luminance 41 → 131 of 255 while **leaving its absolute variation intact** (sd 23.5 → 29.4) |
 | **Asked** | the water-physics advisor, who opened Erinin et al. 2023 and Mostert et al. 2022 and answered: **the veil is not ballistic** — no measured launch speed can throw a drop that can hang there (§3). Logged in `docs/research/water-physics/consult-log.md` |
 | **Built** | `?lipVeil=on` (§4), opt-in: Erinin's two post-impact droplet regions at their measured shares, angles and speed law, a third size class for the 0.2–1 mm band that carries most of the veil's optical area, and the breaker's own updraft, which is the part that is provisional and calibrated |
-| **Shown** | §5: stills, veil on against veil off, on the same held frame |
+| **Moved** | the veil's **body** from 1.58 m to **2.40 m**, into the 2.2–2.4 m band the reference's own ratio asks of our 1.41 m crest; its **tail** overshoots at 3.5–4.7 m; and the cloud moved onto the break, its median distance to a landed slice 19.8 → 9.4 m (§5) |
+| **Shown** | §6: stills, veil on against veil off, on the same held frame — and the plain reading that the height and the place are right and **the material is not** |
 | **Default** | **unchanged.** The switch is off by default and nothing outside it moved; the Canyon byte check is in §6 |
 
 ---
@@ -78,7 +79,9 @@ Step 5d's answer for the bore foam was "the cameras miss it". **For the spray it
 cameras hold the cloud, one of them nearly all of it, and the cloud still paints at most 1–4 % of a frame. The
 question this round had to answer was therefore never "does it reach the screen" but "why does what reaches it not
 look like the photograph", and the answer is in the one number that is not about counting: **the median top is
-1.62 m, and the reference wants 3.2–3.4 m.**
+1.62 m on a wave whose crest stands 1.41 m, where the reference's own ratio asks for 2.2–2.4 m** (§5.1 sets that
+ruler out properly — it is a ratio to the crest, and reading it as metres off the photograph is the frame error this
+round came closest to publishing).
 
 ---
 
@@ -259,20 +262,35 @@ nothing else.
 
 ### 5.1 The height, which is what the round is about
 
-Over 600 frames (20 s), the highest spray or mist particle in each:
+**First, the ruler, because this is where the round nearly published a right number in a wrong frame.** §2's veil
+height is a **ratio** to the reference wave's crest-over-still-water, and it is only a ratio — the metres in it come
+from assigning the pool's advertised 2 m to that face. **Our pool Barrel's crest is not 2 m.** Read off the library's
+own drawn slices in the held frame, the nineteen that have thrown but not yet landed stand at **1.33–1.58 m, median
+1.41 m**, over a still water the landing spray spawns on at y ≈ 0 [M]. So the reference's own rule, applied to the
+wave we actually draw, asks for a veil top at **(1 + 0.55–0.70) × 1.41 m = 2.2–2.4 m** over the still water, not the
+3.2 m a careless reading of §2's metres gives. Everything below is against that.
 
-| | veil off | **`?lipVeil=on`** | the reference |
+| | veil off | **`?lipVeil=on`** | what the reference's ratio asks of *our* wave |
 | --- | --- | --- | --- |
-| median per frame | 1.62 m | **3.51 m** | — |
-| 90 % of frames below | 1.81 m | **4.37 m** | — |
-| the highest in 600 frames | 2.04 m | **4.72 m** | — |
-| **the height 95 % of its drawn optical area sits below**, High | 1.58 m | **2.40 m** | ≈ 3.2 m |
+| highest particle, median frame | 1.62 m | **3.51 m** | — |
+| the same, 90 % of frames below | 1.81 m | **4.37 m** | — |
+| the same, highest in 600 frames | 2.04 m | **4.72 m** | — |
+| **the height 95 % of its drawn optical area sits below**, High, median of 60 frames | 1.58 m | **2.40 m** | **2.2–2.4 m** |
 
-The last row is the honest one, and it is where the round stops short. One highest particle out of two thousand is an
-extreme value, not a veil; a photograph's "visible top" is where there is enough optical density to beat the
-background, which is a high quantile of the **area**, not of the count. By that measure the veil's **body** rises from
-1.58 m to **2.40 m** — a real 0.8 m lift, about 1.2 H over the flat water — where §2's reading of the reference wants
-about **1.6 H, 3.2 m** [M]. **The top overshoots and the body falls short**, and §7 says why and what fixes it.
+The last row is the one to read. One highest particle out of two thousand is an extreme value, not a veil; a
+photograph's visible top is where there is enough optical density to beat the background, which is a high quantile of
+the **area** and not of the count. By that measure the veil's **body** rises from 1.58 m to **2.40 m** and lands on
+the band the reference asks for, where before it sat half a metre under it.
+
+**What overshoots is the tail.** The highest particle goes to 3.51 m on the median frame and 4.72 m at worst, which
+is 2.5–3.3 crest heights and higher than anything in the photograph. Those are the millimetre drops on the
+exponential's tail, thrown rather than carried, and they are few — which is why they move the extreme and not the
+95 % — but they are visible as the stray dots high in `veil-on-side.jpg`. §8 item 2 has the fix.
+
+**And one caution on the target itself.** §2's 0.55–0.70 H is measured in a projection where the crest and the
+foreground water line sit at different distances from the camera, so the 274 px over-reads the crest a little and the
+ratio under-reads the veil. The band above is therefore a **floor**, not a centre: 2.2–2.4 m is the least the
+reference asks for.
 
 ### 5.2 It is now over the break, and no longer over the whole pool
 
@@ -395,10 +413,13 @@ in the main checkout still has it as a local modification and can be dropped onc
    intact**, i.e. transmission ≳ 0.9 and τ ≈ 0.1–0.25 along the ray. A sprite's alpha should follow the water it
    stands for, not sit at a constant, and the same reading says the spray class's 0.8 on a 6–14 cm disc is the one
    that reads as a dot. This is the change that turns §6's blobs into a veil, and it is small.
-2. **The body, not the top** (§5.1). The air lifts a tail to 3.75 m and leaves 95 % of the drawn area below 2.40 m,
-   where the reference wants about 3.2 m. The mechanism is visible in the geometry: a patch is a **disc at a landing**
-   with a 2 H radius, and a drop launched at 2–3 m/s horizontally leaves it in under a second. The fix is to make the
-   air a **band along the crest that travels with the peel** rather than a disc that stands still — which is also
+2. **The tail, now that the body is right** (§5.1). The body lands in the band; the highest particles go half as
+   high again as the photograph ever shows. They are the millimetre drops on the exponential's tail, and Erinin caps
+   that tail at twice the impact speed on a laboratory breaker — our cap is 2.2, so it is not obviously too generous,
+   and the honest next move is to read the tail's **share** against their spectrum rather than to trim the cap by eye.
+   While that is open, the air's own geometry is worth the same look: a patch is a **disc at a landing** with a 2 H
+   radius, and a drop launched at 2–3 m/s horizontally leaves it inside a second, so the air is doing less for the
+   body than its numbers suggest. Making it a **band along the crest that travels with the peel** is both the fix and
    what the physics says it is, since the pump is the peel.
 3. **The swept veil band** (the advisor's item 5), a participating medium on the barrel loft we already build, with
    τ(height over the crest, distance behind the curl, slice age) — zero ahead of the tip, top at 0.55–0.70 H, falling
@@ -407,8 +428,11 @@ in the main checkout still has it as a local modification and can be dropped onc
 4. **Measure the air instead of fitting it** — the owner's call. Our Basilisk runs are two-phase and already carry
    the gas velocity; a rerun that saves it would turn `VEIL_AIR`'s [P] into our own [M]. Nobody in the literature has
    this number, so it would be ours.
-5. **Classic.** The veil draws in both looks as written (it is the mist sprite, which Classic already draws). It has
-   only been looked at in Rich. One pair of stills would settle it.
+5. **The other spots, and Classic.** Everything above is **the 2 m pool Barrel and nothing else** [M]. The veil
+   draws in both looks as written (it is the mist sprite, which Classic already draws) and it fires at every spot the
+   switch is on at, including the Canyon's drawn spilling touchdowns — which carry no wave height, so they fall back
+   to a 1 m ruler and would throw a 1 m veil. Neither has been looked at. One pair of stills each would settle them,
+   and the Canyon's fallback height is the one line that may want changing when they are.
 6. **The pool** (§5.4). The veil fills it at every level. Item 3 is the real answer — a band draws the body in a
    shader and hands the pool back — but if it slips, the cheap half-measure is a pool of its own for the veil, as the
    boards' spray and a tube's whitewater already have, so a full veil cannot squeeze the bore haze at all.
