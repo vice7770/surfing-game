@@ -418,9 +418,28 @@ It is not. `m1-cpu-bench.ts` takes **two different paths**: with no cache it spi
 therefore start from different water and their hashes are not comparable at all — the protocol only compares legs
 that took the same path. Step 5f's figures are from a fresh spin-up, and so is the branch leg that matches them, so
 **the byte check above is sound**; my second leg simply compared two different things. The paired control, both legs
-reading the same cache, **was still running when this was handed back**, as was a `?lipVeil=on` Canyon run for the
-veil's own worker-side cost (the default Canyon's `spray` stage is 0.21/0.47 ms p50/p95 with the veil off, which is
-the baseline it will be read against). Neither changes the check above.
+reading the same cache, is in `c2-step5g-runs/canyon-bytes.txt`.
+
+### 7.2 And a stronger proof, from the leg that was only meant to cost it
+
+A third leg ran the **branch with `?lipVeil=on`** on the Canyon, reading the same cache as the main leg, to price the
+veil's worker-side work. It priced it — and it also said something the byte check cannot:
+
+| leg | snapshots | state | `spray` stage, ms p50/p95 |
+| --- | --- | --- | --- |
+| main, veil **off**, cache read | `a8ac71b70eac2add` | **`6319ed883e54b32e`** | 0.24 / 0.44 |
+| branch, **`?lipVeil=on`**, cache read | `d742e2abf5514cd3` | **`6319ed883e54b32e`** | 0.27 / 0.51 |
+| branch, veil off, fresh spin-up | `ea3d57a4d49f4b48` (= main's) | `a1a2555739210f96` | 0.21 / 0.47 |
+
+**With the veil on, the snapshot hash moves and the simulation's state hash does not** [M]. That is the design read
+straight off the bytes: the veil is drawn and nothing else — it touches no water, no foam, no air and nothing a rider
+feels. It is a better guarantee than "visual only" in a comment.
+
+**On the cost, the honest answer is that it is not separable here.** The veil's `spray` stage is 0.27 ms p50 against
+0.21 and 0.24 for the two veil-off legs — which differ from each other by 0.03 — and the three ran under different
+machine load (their whole-step figures are 22.6, 18.6 and 17.8 ms). So: **a few hundredths of a millisecond on a
+~20 ms step, below what this sample can resolve**, and the pools cap it in any case (§5.4). A number to be read as a
+bound, not a measurement.
 
 It is the round's own small instance of its rule: a hash is not a fact until you can say what water it was taken on.
 
