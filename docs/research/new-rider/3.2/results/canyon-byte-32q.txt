@@ -1,0 +1,35 @@
+Canyon byte check, step 3.2q: STARTED AND NOT FINISHED. Not a pass, and not called one.
+
+  rolldown scripts/m1-cpu-bench.ts -o dist/scripts/m1-cpu-bench.mjs --format esm --platform node
+  node dist/scripts/m1-cpu-bench.mjs --spot canyon --size medium --steps 3600 --state <fresh>.sea
+  node <wrapper>.mjs            --spot canyon --size medium --steps 3600 --state <fresh>.sea
+
+where <wrapper>.mjs sets globalThis.location before importing the built bench, for Canyon B:
+
+  const search = '?canyonWaves=true';
+  globalThis.location = { search, href: `http://localhost/${search}`, hash: '', pathname: '/' };
+  await import('<abs path>/dist/scripts/m1-cpu-bench.mjs');
+
+Expected (3.2L, 3.2m, 3.2p):
+  Canyon B        snapshots a367d938f15fa934, state 9e5831f80e38abd9
+  default Canyon  snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+Why it did not finish: both spin-ups completed (the sea states were written) and both runs were stepping when the
+round ended. Another session was running the full suite on the same machine throughout - 22 vitest workers on 12
+cores - and the bench was getting 15-29 % of one core, against the 57-88 s spin-ups 3.2p measured on a free machine.
+Rerunning it on a quiet machine is the two commands above and about four minutes.
+
+What IS established about the default game, in place of the hashes:
+- By construction: `BoardBody`'s yaw ledger writes only inside `if (BoardBody.yawLedger)`, a static that defaults to
+  false and is set by one probe; nothing the sim reads is touched. The lean hold lives inside `prepareBank`'s
+  `if (this.predictive)` block, which only the new surfer enters, and `leanHold` is 'off' unless `rider: 'new'`.
+- Measured: the OLD rider's twelve runs on the owner's acceptance test are byte-identical on every recorded column
+  to 3.2m's stored `hold-old-32m.jsonl` (the same twelve fall times to 2 dp) and identical before and against after
+  this branch's change - a nine-second ride with the stick hard over, which exercises the hull, the fins, the rails
+  and the contact.
+- Measured: the six test files that touch the rider and the board (AttachedRider, predictiveBalance, standingBody,
+  humanBalance, BoardBody, PhysicalMode) run alone: 6 files, 276 passed, 8 expected-fail, 0 failed
+  (`suite-rider-32q.txt`).
+- Measured: the whole suite, 3,483 passed, 23 expected-fail, 8 failed, and all 8 are timeouts with zero assertion
+  failures anywhere (`suite-32q.txt`). `src/wave/uniformSnapshot.test.ts`'s own "match main's bytes at the Canyon"
+  timed out at 657 s rather than failing its assertion.
