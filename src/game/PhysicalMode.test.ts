@@ -1012,7 +1012,10 @@ describe('PhysicalMode', () => {
   it('uses the leg drive with `?legDrive=on` (an opt-in dev switch), and rides as before otherwise', () => {
     expect(legDriveSwitch('?legDrive=on')).toEqual({ legDrive: 'on' });
     expect(legDriveSwitch('?legDrive=ON')).toEqual({ legDrive: 'on' });
-    for (const search of ['', '?legDrive', '?legDrive=', '?legDrive=off', '?agile=on']) expect(legDriveSwitch(search), search).toEqual({});
+    // `?legDrive=turn` (step 3.2t): 'on' and the compressed turn's lead-in too, in COMPRESS_PULL's place.
+    expect(legDriveSwitch('?legDrive=turn')).toEqual({ legDrive: 'turn' });
+    expect(legDriveSwitch('?legDrive=TURN')).toEqual({ legDrive: 'turn' });
+    for (const search of ['', '?legDrive', '?legDrive=', '?legDrive=off', '?legDrive=yes', '?agile=on']) expect(legDriveSwitch(search), search).toEqual({});
     const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
     try {
       vi.stubGlobal('location', { search: '?legDrive=on' });
@@ -1020,6 +1023,10 @@ describe('PhysicalMode', () => {
         expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive, spot).toBe('on');
       }
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { legDrive: undefined }).legDrive).toBeUndefined();
+      vi.stubGlobal('location', { search: '?legDrive=turn' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive, spot).toBe('turn');
+      }
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive).toBeUndefined();
     } finally {

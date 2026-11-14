@@ -1214,8 +1214,12 @@ export interface AttachedRiderOptions {
    * The leg drive (leg-drive, 2026-11-10; LEAN_OUT_PULL's note), opt-in: 'on' makes the rail change's righting push a
    * pair through the legs, on the body toward the new rail and the opposite on the board at the back foot, in
    * LEAN_OUT_PULL's place and without Compress's gate (the `?legDrive=on` dev switch, to ride). By default as before.
+   *
+   * **'turn'** (step 3.2t, `?legDrive=turn`) is 'on' and one thing more: the same leg pair also **leads the lean into a
+   * compressed turn**, in COMPRESS_PULL's place, so the compressed turn's inward pull is paired too. See
+   * `legTurn`'s note for what that costs and why it cannot buy what COMPRESS_PULL bought.
    */
-  legDrive?: 'on';
+  legDrive?: 'on' | 'turn';
   /**
    * The carve's flexing legs (carve-flex, 2026-11-10; CARVE_FLEX), opt-in: 'on' lets a standing rider's legs yield to a
    * steered turn's load, the knees sinking as it comes on and extending as it ends, to a moderate crouch at most (the
@@ -1267,7 +1271,7 @@ export interface AttachedRiderOptions {
    * bank's change over a substep, 3.2's), and the legs' passive twist in the game (TWIST_STIFFNESS, TWIST_DAMPING: braced or
    * relaxed for the yaw step's report; the internal model keeps its own).
    */
-  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number; leanHold?: 'on' | 'off' };
+  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number };
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1790,11 +1794,15 @@ export class AttachedRider {
   /** How far onto its rail the balance's schedule is trusted, rad (SCHEDULE_RAIL_CAP). */
   private readonly railCap: number;
   /**
-   * The lean hold (step 3.2q, `balance: { leanHold }`): whether the lean the rider asks for is held to the lean the
-   * turn he has will carry, and the lean that cap allows, rad (`Infinity`: off). For the probes.
+   * Step 3.2q's lean hold stood here and is **gone** (step 3.2t). It capped the lean the rider asks for at the lean his
+   * felt vertical would carry, which closed a loop — lean → rail → turn → felt vertical → lean — through `pairFelt`'s
+   * 0.1 s low-pass. 3.2q's own §9 named that as the one real risk and said what would confirm it: *"If the owner finds
+   * Compress worse than 3.2p, that is the cause."* The owner rode `?rider=new` twice on 2026-11-14 and found exactly
+   * that — *"the compress is still to slow and barely turns now, if turn a bit falls immediately"* — so the hold is
+   * removed rather than repaired. It is kept here only as the reason, so nobody rebuilds it from the README.
+   * `leanHeld` stays as a read-out at `Infinity` for the probes that print it (`yawsource.probe.ts`).
    */
-  private readonly leanHold: boolean;
-  leanHeld = Infinity;
+  readonly leanHeld = Infinity;
   private controlDue = 0;
   private heldAnkleRaw = 0;
   /** The rail the balance's schedule is reading, rad (step 3.2f; for the probes). */
@@ -1923,8 +1931,31 @@ export class AttachedRider {
   private hollowBoard?: BoardBody;
   private hollowZ = 0;
   private hollowY = 0;
-  /** The leg drive; only with `legDrive: 'on'`. */
+  /** The leg drive; with `legDrive: 'on'` or `'turn'`. */
   private readonly legDrive: boolean;
+/**
+ * **The compressed turn's lead-in, made honest** (step 3.2t, `legDrive: 'turn'`, the `?legDrive=turn` dev switch;
+ * opt-in, so the default ride cannot move).
+ *
+ * COMPRESS_PULL is the old rider's larger hidden support: about 0.19 g of sideways force on the body with nothing
+ * pushing back, and it is load-bearing — without it the compressed old rider goes 6 of 6 across to 0 of 6 and its rail
+ * collapses from 7–39° to 0.1–3.3° [M, the balance-redesign notes]. Its own comment says what the body is really doing:
+ * *"leaning in first means pushing the feet out"*. So the honest version is the pair the legs already make at a rail
+ * change (`legDriveStep`): the legs push the body **toward the lean it is being asked for** while the body is still
+ * behind that lean, and the board takes the equal and opposite push at the back foot.
+ *
+ * **What it cannot do, stated before it is measured.** An internal pair is net zero on board and rider together, so it
+ * cannot supply COMPRESS_PULL's 0.19 g to the system — it can only move the body in and the board out, sooner. The
+ * system's turn still has to be bought from the water by the rail. The honest drive should therefore restore the
+ * **lean** (and with it the rail, and the rail's own side force) and not the free centripetal force; whether that is
+ * enough for the owner's test is the measurement, not an assumption [I].
+ *
+ * Bounded by the same three limbs bounds as the rail change's drive — the back leg's sideways strength
+ * (LEG_SIDE_STRENGTH, by the steer), the back foot's grip (FOOT_FRICTION times its own load), and the legs' sideways
+ * reach at this pelvis height — so it leads the lean in and then hands over to the hull, which is the order
+ * COMPRESS_PULL's own note describes. Nothing here is a new constant.
+ */
+  private readonly legTurn: boolean;
   /** The leg drive on the body, N (world); the board takes the opposite at the back foot, `driveFoot` from its centre (world). */
   private readonly driveForce = new Vector3();
   private readonly driveFoot = new Vector3();
@@ -1947,7 +1978,8 @@ export class AttachedRider {
     this.recentres = options.snapRecentre !== 'old';
     this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
     this.agile = options.agile === 'on';
-    this.legDrive = options.legDrive === 'on';
+    this.legDrive = options.legDrive === 'on' || options.legDrive === 'turn';
+    this.legTurn = options.legDrive === 'turn';
     this.carveFlexes = options.carveFlex === 'on';
     this.snapDrives = options.snapLegs === 'drive';
     this.snapCrosses = options.snapCross === 'on';
@@ -1965,9 +1997,6 @@ export class AttachedRider {
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
     this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
-    // The lean hold is on for the new surfer (step 3.2q), which is itself opt-in behind `?rider=new`, so the default
-    // game cannot move; `balance: { leanHold: 'off' }` is the probes' way back to 3.2p's behaviour.
-    this.leanHold = (options.balance?.leanHold ?? (this.newRider ? 'on' : 'off')) === 'on';
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -2833,32 +2862,9 @@ export class AttachedRider {
       // The new surfer's balance by prediction (step 3.2e): the lean the player asks (the steer, the hand) is its
       // reference, eased as the bank's. The line held on its own (`holdLine`, a heading loop of the old rider's) is left
       // out: as a reference it rang with the board's yaw and grew (docs/research/new-rider/3.2 Part 5).
-      let own = Math.max(-most, Math.min(most, this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK));
-      // The lean hold (step 3.2q, `leanHold`): a body may not ask for more lean than the turn it already has will
-      // carry. A lean of θ asks for tan θ of sideways force; the turn supplies the felt vertical's own tilt; the
-      // difference is an unbalanced pull inward that nothing in the water answers, so the body keeps going over. On
-      // the owner's acceptance test at full stick the lean ran past its own 50° reference to MAX_BANK (70°) and the
-      // rider toppled inward in 1.10–1.42 s.
-      //
-      // So the lean asked for is held where the force adds up: the tilt of the felt vertical (`pairFelt`, the pair's
-      // own specific force, already low-passed over SPECIFIC_FORCE_TIME, which is this balance's sense delay) plus
-      // what the ankles hold with no help from the turn (ANKLE_REST_RANGE, the feet's own reach, 14.3°, as a force —
-      // `tan` of it). Composing the two as forces rather than as angles is both the honest reading and the better
-      // measurement: as angles it buys half as much (3.2/README.md Part 15 §6).
-      //
-      // The cap bootstraps rather than locking him upright: the ankles roll the board onto its rail, the turn comes,
-      // the felt vertical tilts, the cap opens, and the lean follows the turn instead of leading it off the board.
-      // Nothing here is a force, so nothing is added without a reaction — it is what the rider *intends* — and
-      // nothing here is a new constant: both terms are the ones this file already uses.
-      //
-      // To re-check when two-way coupling lands: the cap reads the pair's specific force, which is exactly what a
-      // sinking board changes. A board that digs in and pulls harder opens the cap on its own, which is the behaviour
-      // wanted, but the ankle's 14.3° was measured on a board that does not sink.
-      this.leanHeld = Infinity;
-      if (this.leanHold && this.pairFelt.y > 0) {
-        this.leanHeld = Math.atan(Math.abs(this.pairFelt.dot(side)) / this.pairFelt.y + Math.tan(ANKLE_REST_RANGE));
-        own = Math.max(-this.leanHeld, Math.min(this.leanHeld, own));
-      }
+      const own = Math.max(-most, Math.min(most, this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK));
+      // Step 3.2q's lean hold was applied here and is gone (see `leanHeld`'s note): the lean the player asks for is
+      // again the steer's own, eased at `leanPace`, as it was in 3.2p.
       const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
       this.leanAsked += Math.max(-this.leanPace * h, Math.min(this.leanPace * h, towardOwn));
     }
@@ -3171,9 +3177,12 @@ export class AttachedRider {
     const speedFade = Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
     const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
     const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
-    this.assistForce.crossVectors(Y, along)
-      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
-        * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
+    // `legDrive: 'turn'` (step 3.2t): the legs make this lead-in as a pair instead (`legDriveStep`), never both.
+    if (!this.legTurn) {
+      this.assistForce.crossVectors(Y, along)
+        .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
+          * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
+    }
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
     this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
@@ -3191,16 +3200,34 @@ export class AttachedRider {
     this.driveForce.set(0, 0, 0);
     if (!this.drives) return;
     const side = Math.sign(this.steer);
-    const open = this.upright && this.banking && this.planing && Math.abs(this.steer) > STEER_DEADBAND && -this.bank.angle * side > UPRIGHT_BANK;
-    if (!open || side !== this.driveSide) {
+    const steering = this.upright && this.banking && this.planing && Math.abs(this.steer) > STEER_DEADBAND;
+    // The rail change: the body still leans the old way, so the legs bring it over to the new rail.
+    const righting = steering && -this.bank.angle * side > UPRIGHT_BANK;
+    /**
+     * The compressed turn's lead-in (`legTurn`, `legDrive: 'turn'`): the body is **behind the lean it is being
+     * asked for** and compressing, so the legs push it the rest of the way in while the board takes the opposite.
+     * Compress's own gate, as COMPRESS_PULL has it (the stance deeper than the crouch), and the lean's own side rather
+     * than the steer's, because it is the lean that is being led — they agree except in the moment the stick crosses,
+     * where the rail change above already owns the push.
+     */
+    const crouchShare = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouchAsked));
+    const compressNow = Math.max(0, Math.min(1, this.compressAsked));
+    const leanSide = Math.sign(this.bankReference);
+    const behind = leanSide * (this.bankReference - this.bank.angle);
+    const leading = this.legTurn && steering && compressNow > crouchShare && leanSide !== 0
+      && Math.abs(this.bankReference) > UPRIGHT_BANK && behind > UPRIGHT_BANK;
+    const open = righting || leading;
+    // The push's side: the rail change's is the steer's, the lead-in's is the lean's; they are the same in a turn.
+    const pushSide = righting ? side : leanSide;
+    if (!open || pushSide !== this.driveSide) {
       this.driveUsed = 0;
-      this.driveSide = open ? side : 0;
+      this.driveSide = open ? pushSide : 0;
     }
     if (!open) return;
     const along = this.scratch.set(board.velocity.x - this.waterFlow.x, 0, board.velocity.z - this.waterFlow.z);
     if (along.lengthSq() < 1e-6) return;
     along.normalize();
-    const direction = this.driveDirection.crossVectors(Y, along).multiplyScalar(side);
+    const direction = this.driveDirection.crossVectors(Y, along).multiplyScalar(pushSide);
     const stance = this.parts[1] - this.base.y;
     const pelvis = stance + this.scratch2.subVectors(this.position, this.target).dot(this.up);
     const straight = stance + LEG_EXTENSION;
@@ -3212,6 +3239,14 @@ export class AttachedRider {
     const share = Number.isFinite(this.contact.frontShare) ? this.contact.frontShare : 0.5;
     const strength = LEG_SIDE_STRENGTH * this.mass * WATER.gravity * Math.min(1, Math.abs(this.steer));
     const grip = FOOT_FRICTION * this.legLoad * (1 - share);
+    /**
+     * The same three limb bounds as the rail change's righting push, and **nothing else**: two tighter bounds were
+     * built and measured this round and neither helped, so neither shipped (Part 18 §3). Easing the push off in
+     * proportion to how far behind its lean the body still is is inert, because early in a turn the body is always more
+     * than the feet's own reach behind it. And capping it at COMPRESS_PULL's own magnitude — so the *only* difference
+     * from the unpaired pull is the reaction on the board — still falls at full stick in **0.65–0.73 s** and still
+     * scores **0 of 6**. The strength is not what COMPRESS_PULL's 6 of 6 rests on; the missing reaction is.
+     */
     this.driveForce.copy(direction).multiplyScalar(Math.min(strength, grip));
   }
 

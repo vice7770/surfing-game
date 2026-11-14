@@ -8,7 +8,7 @@ const STEP = 1 / 60;
 const G = 9.81;
 
 /** Standing on a still plane face (`slope`°, falling toward +z) heading down its fall line at `speed` (as leanOut.test). */
-function onFace(slope: number, speed: number, legDrive?: 'on') {
+function onFace(slope: number, speed: number, legDrive?: 'on' | 'turn') {
   const tilt = (slope * Math.PI) / 180;
   const normal = new Vector3(0, 1, Math.tan(tilt)).normalize();
   const fall = new Vector3(0, -Math.sin(tilt), Math.cos(tilt));
@@ -23,7 +23,7 @@ function onFace(slope: number, speed: number, legDrive?: 'on') {
 }
 
 /** A turn one way for 0.6 s, then the steer the other way for `frames`; `each` after every step of the second. */
-function railChange(compress: number, legDrive: 'on' | undefined, frames: number, each?: (rider: AttachedRider, board: BoardBody) => void) {
+function railChange(compress: number, legDrive: 'on' | 'turn' | undefined, frames: number, each?: (rider: AttachedRider, board: BoardBody) => void) {
   const { board, rider, water } = onFace(5, 8, legDrive);
   Object.assign(rider, { steer: -1, compress });
   for (let i = 0; i < 36; i += 1) board.step(STEP, water);
@@ -122,5 +122,88 @@ describe('the leg drive (opt-in)', () => {
     board.step(1 / 240, new PlaneWater({ slopeZ: -Math.tan((5 * Math.PI) / 180) }));
     expect(rider.bank.angle).toBeLessThan(-0.05);
     expect(rider.legPush.force.length()).toBe(0);
+  });
+});
+
+// Step 3.2t, `legDrive: 'turn'` (the `?legDrive=turn` dev switch, opt-in): the same leg pair also leads the lean into a
+// compressed turn, in COMPRESS_PULL's place, so the compressed turn's inward pull on the body is paired too. The owner's
+// rule it exists for: no force without its reaction. `AttachedRider`'s `legTurn` note carries what it costs.
+describe("the leg drive leading a compressed turn (`legDrive: 'turn'`, opt-in)", () => {
+  /** A compressed turn one way, held: the movement COMPRESS_PULL leads the lean into. */
+  function turnIn(legDrive: 'on' | 'turn' | undefined, frames = 60, each?: (rider: AttachedRider, board: BoardBody) => void) {
+    const { board, rider, water } = onFace(5, 8, legDrive);
+    Object.assign(rider, { steer: 1, compress: 1 });
+    for (let i = 0; i < frames && rider.attached; i += 1) {
+      board.step(STEP, water);
+      each?.(rider, board);
+    }
+    return { board, rider };
+  }
+
+  it("leaves 'on' and the default alone: the compressed pull is still the body's own, and the legs lead nothing", () => {
+    for (const drive of [undefined, 'on' as const]) {
+      const { rider } = turnIn(drive);
+      // COMPRESS_PULL's inward pull on the body, with no reaction on the board: unchanged by this step.
+      expect((rider as unknown as { assistForce: Vector3 }).assistForce.length()).toBeGreaterThan(0);
+      expect(rider.work.legDrive).toBe(0);
+    }
+  });
+
+  it("replaces the compressed pull with the legs' own push, never both", () => {
+    let pushed = 0;
+    const { rider } = turnIn('turn', 60, (r) => { if (r.legPush.force.lengthSq() > 0) pushed += 1; });
+    expect((rider as unknown as { assistForce: Vector3 }).assistForce.length()).toBe(0);
+    expect(pushed).toBeGreaterThan(5);
+    expect(rider.work.legDrive).not.toBe(0);
+  });
+
+  it('pushes the body toward the lean it is asked for, within the leg\'s strength, and only while the body is behind that lean', () => {
+    let pushed = 0;
+    turnIn('turn', 90, (rider, board) => {
+      const { force } = rider.legPush;
+      if (force.lengthSq() === 0) return;
+      pushed += 1;
+      // Level, toward the lean's side of the board's path, no more than LEG_SIDE_STRENGTH of the body's weight.
+      expect(Math.abs(force.y)).toBe(0);
+      const leanSide = Math.sign((rider as unknown as { bankReference: number }).bankReference);
+      expect(leanSide * force.dot(new Vector3().crossVectors(new Vector3(0, 1, 0), board.velocity))).toBeGreaterThan(0);
+      expect(force.length()).toBeLessThanOrEqual(0.35 * rider.mass * G + 1e-9);
+      // Behind the lean asked for: the pair never carries the body past it (COMPRESS_PULL's own PULL_OVERLEAN rule).
+      const inner = rider as unknown as { bankReference: number };
+      expect(leanSide * (inner.bankReference - rider.bank.angle)).toBeGreaterThan(0);
+    });
+    expect(pushed).toBeGreaterThan(5);
+  });
+
+  it('pushes nothing riding straight, and nothing out of Compress', () => {
+    const { board, rider, water } = onFace(5, 8, 'turn');
+    rider.steer = 0;
+    for (let i = 0; i < 60 && rider.attached; i += 1) board.step(STEP, water);
+    expect(rider.work.legDrive).toBe(0);
+    // Steering, but standing tall: Compress's gate never opens, so neither the pull nor the legs' lead-in fires.
+    const tall = onFace(5, 8, 'turn');
+    Object.assign(tall.rider, { steer: 1, compress: 0 });
+    for (let i = 0; i < 60 && tall.rider.attached; i += 1) tall.board.step(STEP, tall.water);
+    expect(tall.rider.work.legDrive).toBe(0);
+    expect((tall.rider as unknown as { assistForce: Vector3 }).assistForce.length()).toBe(0);
+  });
+
+  it("sums to nothing on rider plus board: the lead-in is a pair like the rail change's", () => {
+    const { rider } = turnIn('turn', 10);
+    const inner = rider as unknown as { external: Vector3; driveForce: Vector3; arm: Vector3; up: Vector3; across: Vector3 };
+    const force = rider.legPush.force.clone();
+    expect(force.length()).toBeGreaterThan(0.1 * rider.mass * G);
+    const h = 1 / 240;
+    const withPush = new Float64Array(8);
+    rider.coupleStanding(new Float64Array(64), withPush, h);
+    inner.external.sub(force);
+    inner.driveForce.set(0, 0, 0);
+    const without = new Float64Array(8);
+    rider.coupleStanding(new Float64Array(64), without, h);
+    const by = Array.from(withPush, (value, i) => value - without[i]);
+    const scale = h * force.length();
+    for (let i = 0; i < 3; i += 1) expect(Math.abs(by[i]) / scale).toBeLessThan(1e-9);
+    const couple = new Vector3().subVectors(inner.arm, rider.legPush.foot).cross(force).multiplyScalar(h);
+    expect(new Vector3(by[3], by[4], by[5]).distanceTo(couple) / scale).toBeLessThan(1e-9);
   });
 });

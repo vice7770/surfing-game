@@ -535,7 +535,7 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...snapStampSwitch(),
     // `?agile=on`: the riders' two legs act apart; a full steer under Snap launches the tail with the feet's couple (rider-agile), opt-in, to ride.
     ...agileSwitch(),
-    // `?legDrive=on`: at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in the lean-out pull's place (leg-drive), opt-in, to ride.
+    // `?legDrive=on`: at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in the lean-out pull's place (leg-drive), opt-in, to ride. `?legDrive=turn` adds the compressed turn's lead-in, in COMPRESS_PULL's place (step 3.2t).
     ...legDriveSwitch(),
     // `?carveFlex=on`: on a standing, stick-only carve the riders' legs flex with the turn's load, low at the bottom and taller as it ends (carve-flex), opt-in, to ride.
     ...carveFlexSwitch(),
@@ -973,9 +973,13 @@ export function agileSwitch(search?: string): { agile?: 'on' } {
  * The `?legDrive=on` dev switch (`SurfZoneConfig.legDrive`, leg-drive 2026-11-10, "no force without its reaction"):
  * opt-in, every spot's rider rights itself at a rail change by its legs, a push on the body toward the new rail with its
  * equal and opposite on the board at the back foot, in the place of the lean-out pull on the body alone.
+ *
+ * **`?legDrive=turn`** (step 3.2t) is that and one thing more: the same leg pair leads the lean into a compressed turn,
+ * in COMPRESS_PULL's place, so the compressed turn's inward pull on the body is paired too (`AttachedRider`'s `legTurn` note).
  */
-export function legDriveSwitch(search?: string): { legDrive?: 'on' } {
-  return devParam('legDrive', search)?.trim().toLowerCase() === 'on' ? { legDrive: 'on' } : {};
+export function legDriveSwitch(search?: string): { legDrive?: 'on' | 'turn' } {
+  const value = devParam('legDrive', search)?.trim().toLowerCase();
+  return value === 'on' ? { legDrive: 'on' } : value === 'turn' ? { legDrive: 'turn' } : {};
 }
 
 /**

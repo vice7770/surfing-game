@@ -232,10 +232,11 @@ export interface SurfZoneConfig {
   agile?: 'on';
   /**
    * 'on': at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in
-   * the lean-out pull's place (leg-drive, 2026-11-10; `RideSessionOptions.legDrive`). Every spot. The `?legDrive=on` dev
-   * switch, opt-in, to ride; online rooms run the default.
+   * the lean-out pull's place (leg-drive, 2026-11-10; `RideSessionOptions.legDrive`). **'turn'** is that and the
+   * compressed turn's lean led in by the same pair, in COMPRESS_PULL's place (step 3.2t; `AttachedRider`'s `legTurn` note).
+   * Every spot. The `?legDrive=on` and `?legDrive=turn` dev switches, opt-in, to ride; online rooms run the default.
    */
-  legDrive?: 'on';
+  legDrive?: 'on' | 'turn';
   /**
    * 'on': on a standing, stick-only carve the riders' legs flex with the turn's load, to a moderate crouch at most
    * (carve-flex, 2026-11-10; `RideSessionOptions.carveFlex`). Every spot. The `?carveFlex=on` dev switch, opt-in, to

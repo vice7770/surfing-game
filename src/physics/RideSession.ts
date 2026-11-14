@@ -142,8 +142,8 @@ export interface RideSessionOptions {
   snapStamp?: 'on';
   /** The agile legs (rider-agile, 2026-11-09; `AttachedRiderOptions.agile`): 'on' (the `?agile=on` dev switch); by default as before. */
   agile?: 'on';
-  /** The leg drive (leg-drive, 2026-11-10; `AttachedRiderOptions.legDrive`): 'on' (the `?legDrive=on` dev switch); by default as before. */
-  legDrive?: 'on';
+  /** The leg drive (leg-drive, 2026-11-10; `AttachedRiderOptions.legDrive`): 'on' (the `?legDrive=on` dev switch), or 'turn', which adds the compressed turn's lead-in (step 3.2t, `?legDrive=turn`); by default as before. */
+  legDrive?: 'on' | 'turn';
   /** The carve's flexing legs (carve-flex, 2026-11-10; `AttachedRiderOptions.carveFlex`): 'on' (the `?carveFlex=on` dev switch); by default as before. */
   carveFlex?: 'on';
   /** Snap's driving legs (snap-legs, 2026-11-10; `AttachedRiderOptions.snapLegs`): 'drive' (the `?snapLegs=drive` dev switch); by default as before. */
