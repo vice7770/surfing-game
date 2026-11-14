@@ -565,6 +565,19 @@ const LEAN_IN_RATE = 1.4;
  */
 const SCHEDULE_RAIL_CAP = 12;
 /**
+ * **How fast the soles adapt to a steady load, s** (step 3.2p, ruling 29w item 1). The load sense the balance is given
+ * is the feet's own load less its own slow part, so a steady trim and a steady turn both read zero however hard the
+ * feet are pressed — which is where the model's heave states are zero, and which is also what the receptors do: skin
+ * pressure and muscle force senses adapt to a held load and report its changes (Johansson and Flanagan 2009 on the
+ * hand's; recalled, and not re-derived here).
+ *
+ * 2 s is chosen against the mode this sense is for, not tuned: a one-pole adaptation at 2 s passes 0.33 Hz at 0.97 of
+ * its size with 14° of phase lead and 0.74 Hz at 0.99 with 6°, so the 0.33–0.74 Hz board mode arrives essentially
+ * whole, and anything slower than about 0.08 Hz is gone. **A hand-set number, for the re-check when two-way coupling
+ * lands.**
+ */
+const LOAD_ADAPT = 2;
+/**
  * The compressed turn's assist (the movement-flow spec's Q4 and Q16, a
  * gameplay rule, not physics). Compress is the sharp turn's stance, and a real
  * bottom turn comes round 99° in 0.96 s (Forsyth et al. 2024). Here every
@@ -1645,6 +1658,8 @@ export class AttachedRider {
    * what a surfer actually feels. A real pressure sense adapts; this is that adaptation, one pole at LOAD_ADAPT.
    */
   private loadSlow = 0;
+  /** Whether the soles have felt anything yet (the adaptation starts from the first reading, not from nothing). */
+  private loadReady = false;
   /** The load sense the balance was last given, m/s², and the board's pitch rate, rad/s (for the probes). */
   loadSense = 0;
   pitchRateSense = 0;
@@ -2893,6 +2908,30 @@ export class AttachedRider {
     const relative = this.bankSpeed / this.legLength;
     human.sense(h, this.bank.angle);
     this.bank.rate = human.bankRate;
+    // Step 3.2p (ruling 29w item 1): the board's own heave and pitch, sensed the way a rider senses them. Both were
+    // already measured in the game and neither was connected to the balance.
+    // - The load through the feet: `captureLoad` is the water's push on the rider through the feet along the board's
+    //   up this substep, in body weights, straight off the contact ledger. In m/s² and less the slow part the soles
+    //   have adapted to, it is the deck's own vertical acceleration and it is zero in any steady trim and in any
+    //   steady turn, whatever the bank, the face's slope or the apparent gravity - which is where the model's heave
+    //   states are zero. A pressure sense that did not adapt would read a banked turn's own load as a sinking board.
+    // - The board's nose-up pitch rate, about the heading's forward crossed with the world's up. Absolute, not
+    //   relative to the water, because that is what the canals sense; the water's slope turns far slower than the
+    //   0.33-0.74 Hz mode this is for.
+    // Both go into the same sense line as the other seven, so both arrive BALANCE_DELAY late, as a rider's do.
+    const felt = (this.captureLoad - 1) * WATER.gravity;
+    if (!this.loadReady) {
+      // The soles adapt from what they first feel, not from nothing. Without this the first frame of a placed start
+      // hands the filter a −9.8 m/s² step (`captureLoad` is zero until the contact ledger has run once), the filter
+      // reads it as the board dropping away, and the rider is down in 0.22 s. Measured: it was.
+      this.loadSlow = felt;
+      this.loadReady = true;
+    } else {
+      this.loadSlow += (felt - this.loadSlow) * (1 - Math.exp(-h / LOAD_ADAPT));
+    }
+    // Unloaded feet sense no change in load, which is the same condition the capture point is read under (CAPTURE_LOAD).
+    this.loadSense = this.captureLoad > 0 ? felt - this.loadSlow : 0;
+    this.pitchRateSense = this.boardSpin.dot(this.scratch.set(-1, 0, 0).applyQuaternion(this.heading));
     const tb = this.twistBody;
     if (this.controlDue <= 1e-9) {
       this.controlDue += CONTROL_STEP;
@@ -2907,6 +2946,10 @@ export class AttachedRider {
       sense[4] = -(upper - turn);
       sense[5] = -(this.bank.angle - roll);
       sense[6] = -relative;
+      // Step 3.2p: the load and the board's pitch rate. Both are + up and + nose up in the model's own sense, which is
+      // a physical direction and not an axis, so neither turns over as the angles across do.
+      sense[7] = this.loadSense;
+      sense[8] = this.pitchRateSense;
       const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
       const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
       const grip = FOOT_FRICTION * Math.max(0, this.legLoad) * TWIST_GRIP_SPAN;
@@ -3178,6 +3221,12 @@ export class AttachedRider {
     this.controlDue = 0;
     this.heldAnkleRaw = 0;
     this.heldTwist = 0;
+    // Step 3.2p: the soles start adapted to one body weight, which is what a trimmed board gives them, so a steady
+    // start reads zero from its first frame and there is no transient of this sense's own making.
+    this.loadSlow = 0;
+    this.loadReady = false;
+    this.loadSense = 0;
+    this.pitchRateSense = 0;
     this.twistAsked = 0;
     this.leanAsked = 0;
     this.resetTwistBody();
