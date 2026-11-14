@@ -129,6 +129,14 @@ CASES_ALL="$CASES_ALL $C2_LINES"
 # Each bed as step 1's: a ray crossing the 1:9.5 reef at cos α = S / 0.1053, its top 1.34 / cos α h0, its back slope 0.1 cos α.
 C2_MORE="pool_c2_b1_a0:5:0.19:10.5:0.036:0.19:64:18:44:25:58:::3.92:0.0342 pool_c2_b2_a0:5:0.19:10.5:0.068:0.205:64:18:44:25:58:::2.07:0.0646 pool_c2_b3_a0:5:0.19:10.5:0.105:0.3:64:18:44:25:58:::1.34:0.1 pool_c2_b15_a2:5:0.33:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b15_a3:5:0.44:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b25_a2:5:0.33:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807 pool_c2_b25_a3:5:0.44:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807 pool_c2_b3s_a1:5:0.22:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1 pool_c2_b3s_a2:5:0.33:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1 pool_c2_b3s_a3:5:0.44:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1"
 CASES_ALL="$CASES_ALL $C2_MORE"
+# Ruling 38's five (2026-11-14; docs/research/wave-strategy-alternatives/ruling-38-c2-step5b.md, c2-step5c.md): the A0 rows
+# ruling 31's new beds were missing. A bed the matcher can pick must carry the whole A0 column, or a slice inside it clamps
+# to the nearest row it does have: b15 and b25 arrived with a2 and a3 only, so a slice at A0 0.13 on slope 0.06 landed in
+# b15 and clamped up to 0.251 — which is why the ten cases made the A0 clamp worse (277 → 717 mm), not better. These
+# complete the columns: a0 (H/h0 0.19) and a1 (0.22) on b15 and b25, and a0 on b3s. Each line is that bed's existing row
+# with the H/h0 field changed and nothing else.
+C2_FILL="pool_c2_b15_a0:5:0.19:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b25_a0:5:0.19:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807 pool_c2_b3s_a0:5:0.19:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1 pool_c2_b15_a1:5:0.22:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b25_a1:5:0.22:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807"
+CASES_ALL="$CASES_ALL $C2_FILL"
 
 if [ -n "${CASES_FILE:-}" ] && [ -f "$CASES_FILE" ]; then
   # Definitions in the file replace the built-in ones of the same name; new names are added.
