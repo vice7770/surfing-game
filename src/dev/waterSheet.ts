@@ -994,6 +994,77 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     };
   };
   /**
+   * C2 step 5d (ruling 39's lead 1, "one measured look before anyone repaints"): the grey-brown veils that lie over the
+   * broken water where the owner's reference photo has a white pile. Which surface draws them — the water, or the loft
+   * and the lip sheets it carries?
+   *
+   * Two passes from the view's own camera, as drawn and with the swept barrel's mesh hidden. A pixel is the **barrel's**
+   * where hiding that mesh changed it. A pixel is **grey** where what is drawn has little colour in it: saturation under
+   * `GREY_SAT` with its brightest channel in the mid band, which is what a desaturated veil over white or over blue
+   * water looks like and what neither clean water (blue) nor foam (near-white) is.
+   *
+   * The figure that matters is `greyOnBarrel`: the share of the grey pixels that the barrel's own mesh draws. Near 1
+   * the veils are the loft and its sheets; near 0 they are the water's own.
+   */
+  const waterSheetVeil = async (name: string | View, look: WaterLook, time: TimeOfDay, options: { sat?: number; low?: number; high?: number } = {}) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    const barrel = hooks.mode.barrelMesh;
+    if (!shot || !gl || !barrel) return undefined;
+    const sat = options.sat ?? 0.18;
+    const [low, high] = [options.low ?? 0.3, options.high ?? 0.82];
+    fit();
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height } = hooks.canvas;
+    const count = width * height;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(count * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const drawn = frame();
+    barrel.mesh.visible = false;
+    const without = frame();
+    barrel.mesh.visible = true;
+    hooks.renderView(camera);
+    const isBarrel = (p: number) => {
+      const k = 4 * p;
+      return drawn[k] !== without[k] || drawn[k + 1] !== without[k + 1] || drawn[k + 2] !== without[k + 2];
+    };
+    const isGrey = (p: number) => {
+      const k = 4 * p;
+      const [r, g, b] = [drawn[k] / 255, drawn[k + 1] / 255, drawn[k + 2] / 255];
+      const top = Math.max(r, g, b);
+      const bottom = Math.min(r, g, b);
+      return top >= low && top <= high && top > 0 && (top - bottom) / top < sat;
+    };
+    const stats = (keep: (p: number) => boolean) => {
+      const sum = [0, 0, 0];
+      let n = 0;
+      for (let p = 0; p < count; p += 1) {
+        if (!keep(p)) continue;
+        const k = 4 * p;
+        sum[0] += drawn[k];
+        sum[1] += drawn[k + 1];
+        sum[2] += drawn[k + 2];
+        n += 1;
+      }
+      return { pixels: n, share: +(n / count).toFixed(4), rgb: n ? sum.map((c) => Math.round(c / n)) : [0, 0, 0] };
+    };
+    const grey = stats(isGrey);
+    const greyBarrel = stats((p) => isGrey(p) && isBarrel(p));
+    return {
+      shot: shot.name, look, time, sat, band: [low, high],
+      grey, greyOnBarrel: grey.pixels ? +(greyBarrel.pixels / grey.pixels).toFixed(3) : null, greyBarrel,
+      barrel: stats(isBarrel), water: stats((p) => !isBarrel(p)), frame: stats(() => true),
+    };
+  };
+  /**
    * The spilling lip's contrast for distance (the Canyon lip, round 5; the advisor's targets of 2026-10-20), on screen from
    * one view, as drawn (the page's own sea only, `&compute=cpu`):
    * - `band`: the band under the lip (the pixels the curl's darkening changes: its underside and the veil on the face under
@@ -1314,7 +1385,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     hooks.render(0);
     return done;
   };
-  Object.assign(window, { waterSheetTubeShape, waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetFoamAgainstWater, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  Object.assign(window, { waterSheetVeil, waterSheetTubeShape, waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetFoamAgainstWater, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
