@@ -132,9 +132,14 @@ CASES_ALL="$CASES_ALL $C2_MORE"
 # Ruling 38's five (2026-11-14; docs/research/wave-strategy-alternatives/ruling-38-c2-step5b.md, c2-step5c.md): the A0 rows
 # ruling 31's new beds were missing. A bed the matcher can pick must carry the whole A0 column, or a slice inside it clamps
 # to the nearest row it does have: b15 and b25 arrived with a2 and a3 only, so a slice at A0 0.13 on slope 0.06 landed in
-# b15 and clamped up to 0.251 — which is why the ten cases made the A0 clamp worse (277 → 717 mm), not better. These
-# complete the columns: a0 (H/h0 0.19) and a1 (0.22) on b15 and b25, and a0 on b3s. Each line is that bed's existing row
-# with the H/h0 field changed and nothing else.
+# b15 and clamped up to 0.251 — which is why the ten cases made the A0 clamp worse, not better: at the hand-over the A0
+# clamp went 211 → 717 slices of about 1,274, and among slices made 277 of 1,518 → 966 of 1,833. (Ruling 38's headline
+# "277 → 717" put the two frames' numbers side by side; C2 step 5f measured both.) These complete the columns: a0
+# (H/h0 0.19) and a1 (0.22) on b15 and b25, and a0 on b3s. Each line is that bed's existing row with the H/h0 field
+# changed and nothing else.
+# They all landed on 2026-11-14 and all five produced a tube (C2 step 5f). pool_c2_b3s_a0's scout had no touchdown and
+# ruling 39 expected it to come back without one; it did not. **A scout with no touchdown says nothing about whether
+# the fine phase will overturn** — do not drop or discount a row on that evidence.
 C2_FILL="pool_c2_b15_a0:5:0.19:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b25_a0:5:0.19:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807 pool_c2_b3s_a0:5:0.19:10.5:0.105:0.2:64:18:44:25:58:::1.34:0.1 pool_c2_b15_a1:5:0.22:10.5:0.055:0.199:64:18:44:25:58:::2.566:0.0522 pool_c2_b25_a1:5:0.22:10.5:0.085:0.249:64:18:44:25:58:::1.66:0.0807"
 CASES_ALL="$CASES_ALL $C2_FILL"
 

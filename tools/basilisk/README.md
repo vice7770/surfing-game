@@ -77,6 +77,24 @@ The owner asked for them (2026-09-30) to source the Reef's lip and tube, which a
 - **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib. For a supervisor: `fg` (both phases in the foreground), `scout` (the whole case at `SCOUT_LEVEL`, 10, every frame written, which `analysis/crest_track.py` reads to place the switch, end and window), `compile`, `cases` and `flags` (the qcc command lines). `CASES_FILE` replaces or adds case definitions by name; `RUNS` moves the runs' folder; `OMP=1` builds with OpenMP.
 - **Overview figure:** `analysis/train_overview.py` draws a run's surface along the whole domain at chosen times.
 
+## Where a report lands: `CANYON_OUT` is relative to the checkout the script lives in
+
+`canyon_pipeline.py` resolves `CANYON_OUT` (and `CANYON_ASSETS`) against `REPO`, and `REPO` is two directories above the
+script — **the checkout the pipeline was started from, not the main one.** So a relative `CANYON_OUT` run from a git
+worktree or a scratchpad copy writes the report inside *that* copy, where `git status` in the main checkout never sees
+it and a worktree cleanup deletes it. C2 step 5f's five A0 cases were nearly lost that way on 2026-11-14: seven to ten
+hours of runs sat in a session scratchpad that was being emptied for disk space, and were rescued by hand.
+
+**Run the pipeline from the main checkout**, or if you must run it from a worktree, give `CANYON_OUT` as an **absolute**
+path into the main checkout:
+
+```
+CANYON_OUT=/Users/you/path/to/surfing-game/docs/research/<report-folder> …
+```
+
+Either way, `git status` in the main checkout is the check: if the report folder is not there as untracked files when
+the batch ends, it was written somewhere else. Commit it before any worktree is removed.
+
 ## The Canyon's tube runs
 
 The swept barrel for the Canyon needs its own Navier–Stokes cases on the reef bed of 2026-10-22 (`docs/research/canyon-reef-bed-2026-10-22/README.md`, "What the swept-barrel step will need"), on canyon-long-wave's planar arm (`docs/research/canyon-long-wave-2026-10-22/README.md`, "The tube runs": the take-off 8 m downcoast of the peak, now x −9, on one 1:23 face). `tools/basilisk/run_canyon.sh` runs all three on the M4 Pro and turns them into the barrel library's files, in one command.
