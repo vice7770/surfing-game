@@ -1,0 +1,23 @@
+Canyon byte check, step 3.2p: scripts/m1-cpu-bench.ts medium, 3600 steps, fresh spin-ups.
+This is the check step 3.2n was stopped before finishing (ruling 29w item 3).
+Canyon B needs ?canyonWaves=true, which the config reads off location.search, so it is run through a wrapper
+that sets globalThis.location before the bench's module is evaluated (as c2-step5a did).
+
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 57.6 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s32p/bb.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+Canyon byte check, step 3.2p: scripts/m1-cpu-bench.ts medium, 3600 steps, fresh spin-ups
+== the Canyon with --swept 0 (mislabelled "Canyon B" in this run; see the note below)
+spun up on the CPU in 165.0 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s32p/b.sea
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+== default Canyon
+spun up on the CPU in 87.5 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s32p/c.sea
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+Expected, from 3.2L and 3.2m:
+  Canyon B        snapshots a367d938f15fa934, state 9e5831f80e38abd9
+  default Canyon  snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+ALL FOUR MATCH. (The first default run above was invoked with --swept 0, which is a no-op for the Canyon at
+medium - no swept barrel at that size - so it reproduces the default pair; the second is the plain default.)
