@@ -1,0 +1,59 @@
+
+## R. The rider's surface under ?wave=library, and D. the same water with the switch off (40–62 s, 220 frames, ds 0.05 m; LIFT on/bridge/gentle 35/50/30°)
+  the slices' own scale h0: 4.95 (4.43–5.03, most 5.11; n 29061) m
+  τ ≤ −2.5, node spacing 1 m
+    H 1.70 (1.11–2.07, most 2.27; n 7884) m · run 12.1 (7.4–15.1, most 15.6; n 7884) m · steepest at 0.56 (0.41–0.70, most 0.92; n 7884) of H
+    local 13.7 (8.5–23.3, most 37.6; n 7884)° · upper80 10.8 (6.9–17.6, most 22.9; n 7884)° · chord2 13.2 (8.2–21.2, most 24.5; n 7884)° · chord1 13.5 (8.4–22.4, most 32.6; n 7884)° · turn 13.7 (6.7–23.3, most 38.0; n 7884)°
+    over 30°, arc 0.00 (0.00–0.00, most 0.85; n 7884) m · share of faces whose local reaches 30° 0.2 %
+    profile up the face: 5 % 4.5° · 15 % 8.0° · 30 % 11.2° · 50 % 13.1° · 70 % 12.3° · 85 % 9.8° · 95 % 6.4°
+    the water along the face, m/s (onshore +): crest 2.12 (1.57–2.60, most 2.85; n 7884) · steepest 1.64 (0.86–2.59, most 3.99; n 7884) · trough -0.25 (-0.83–0.66, most 2.99; n 7884)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 7884)
+  τ −2.5 … −1.5, node spacing 1 m
+    H 1.96 (1.59–2.24, most 2.30; n 2126) m · run 8.0 (6.1–11.9, most 15.1; n 2126) m · steepest at 0.64 (0.29–0.78, most 0.93; n 2126) of H
+    local 26.9 (16.1–32.3, most 36.8; n 2126)° · upper80 20.8 (11.0–25.3, most 27.1; n 2126)° · chord2 24.3 (14.7–28.0, most 29.8; n 2126)° · chord1 25.7 (15.6–30.5, most 33.8; n 2126)° · turn 27.0 (16.1–32.3, most 36.6; n 2126)°
+    over 30°, arc 0.00 (0.00–0.76, most 1.23; n 2126) m · share of faces whose local reaches 30° 19.0 %
+    profile up the face: 5 % 6.6° · 15 % 12.2° · 30 % 18.9° · 50 % 24.2° · 70 % 25.4° · 85 % 21.2° · 95 % 12.3°
+    the water along the face, m/s (onshore +): crest 2.76 (2.33–3.31, most 3.58; n 2126) · steepest 2.77 (1.86–3.35, most 3.60; n 2126) · trough 0.66 (-0.20–1.45, most 2.72; n 2126)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 2126)
+  τ −1.5 … −0.75, node spacing 1 m
+    H 2.08 (1.71–2.29, most 2.44; n 1666) m · run 6.5 (5.2–8.3, most 15.1; n 1666) m · steepest at 0.62 (0.33–0.78, most 0.89; n 1666) of H
+    local 35.8 (26.2–44.4, most 49.4; n 1666)° · upper80 27.1 (15.7–34.8, most 38.5; n 1666)° · chord2 30.7 (23.5–36.1, most 39.2; n 1666)° · chord1 33.8 (25.1–41.2, most 45.6; n 1666)° · turn 35.8 (26.2–44.3, most 49.5; n 1666)°
+    over 30°, arc 1.31 (0.00–2.15, most 2.99; n 1666) m · share of faces whose local reaches 30° 84.2 %
+    profile up the face: 5 % 8.2° · 15 % 15.3° · 30 % 24.6° · 50 % 31.7° · 70 % 32.7° · 85 % 28.6° · 95 % 18.2°
+    the water along the face, m/s (onshore +): crest 3.48 (2.71–4.03, most 4.21; n 1666) · steepest 3.51 (2.48–4.04, most 4.21; n 1666) · trough 1.63 (0.36–2.70, most 3.70; n 1666)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 1666)
+  τ −0.75 … −0.25, node spacing 1 m
+    H 2.12 (1.82–2.42, most 2.50; n 1158) m · run 5.3 (4.5–6.5, most 15.8; n 1158) m · steepest at 0.60 (0.38–0.74, most 0.91; n 1158) of H
+    local 47.2 (37.2–53.6, most 57.9; n 1158)° · upper80 35.9 (17.4–42.7, most 48.0; n 1158)° · chord2 38.0 (30.3–42.6, most 45.9; n 1158)° · chord1 44.1 (34.1–50.2, most 54.1; n 1158)° · turn 47.4 (37.2–53.7, most 57.9; n 1158)°
+    over 30°, arc 2.05 (1.17–2.60, most 3.08; n 1158) m · share of faces whose local reaches 30° 98.4 %
+    profile up the face: 5 % 9.5° · 15 % 18.3° · 30 % 33.8° · 50 % 44.1° · 70 % 44.0° · 85 % 36.8° · 95 % 23.4°
+    the water along the face, m/s (onshore +): crest 4.17 (2.98–4.82, most 5.05; n 1158) · steepest 4.17 (2.94–4.84, most 5.05; n 1158) · trough 2.88 (1.42–4.75, most 5.42; n 1158)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 1158)
+  τ −0.25 … +0.25, node spacing 1 m
+    H 2.09 (1.80–2.45, most 2.56; n 1127) m · run 4.5 (3.7–5.4, most 16.0; n 1127) m · steepest at 0.58 (0.43–0.71, most 0.87; n 1127) of H
+    local 53.8 (41.5–60.8, most 66.1; n 1127)° · upper80 40.7 (18.5–51.0, most 57.5; n 1127)° · chord2 42.6 (32.5–48.4, most 55.1; n 1127)° · chord1 50.1 (37.9–57.0, most 62.2; n 1127)° · turn 53.8 (41.5–60.9, most 65.9; n 1127)°
+    over 30°, arc 2.24 (1.39–2.63, most 3.01; n 1127) m · share of faces whose local reaches 30° 98.8 %
+    profile up the face: 5 % 9.9° · 15 % 22.0° · 30 % 42.1° · 50 % 52.2° · 70 % 51.7° · 85 % 43.0° · 95 % 27.2°
+    the water along the face, m/s (onshore +): crest 5.00 (3.13–5.59, most 5.80; n 1127) · steepest 5.02 (3.13–5.62, most 5.85; n 1127) · trough 4.70 (2.21–5.96, most 7.00; n 1127)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 1127)
+  τ > +0.25, node spacing 1 m
+    H 1.39 (0.36–2.11, most 2.52; n 14846) m · run 4.4 (1.7–13.3, most 17.1; n 14846) m · steepest at 0.53 (0.25–0.81, most 1.00; n 14846) of H
+    local 29.2 (14.2–56.7, most 68.2; n 14846)° · upper80 18.4 (7.0–47.0, most 63.1; n 14846)° · chord2 22.1 (10.6–45.4, most 60.7; n 14846)° · chord1 25.8 (12.2–52.6, most 62.1; n 14846)° · turn 29.1 (13.9–56.7, most 68.2; n 14846)°
+    over 30°, arc 0.00 (0.00–2.42, most 3.05; n 14846) m · share of faces whose local reaches 30° 48.0 %
+    profile up the face: 5 % 10.3° · 15 % 17.9° · 30 % 23.2° · 50 % 25.1° · 70 % 23.8° · 85 % 20.9° · 95 % 14.6°
+    the water along the face, m/s (onshore +): crest 3.91 (1.96–5.48, most 6.44; n 14846) · steepest 4.05 (1.76–5.54, most 7.01; n 14846) · trough 3.67 (-0.59–5.81, most 11.00; n 14846)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 14846)
+  R, every slice and frame, node spacing 1 m
+    H 1.67 (0.58–2.21, most 2.56; n 28807) m · run 6.8 (2.3–14.8, most 17.1; n 28807) m · steepest at 0.56 (0.30–0.78, most 1.00; n 28807) of H
+    local 25.4 (10.9–55.5, most 68.2; n 28807)° · upper80 16.0 (7.4–44.9, most 63.1; n 28807)° · chord2 20.4 (9.9–44.1, most 60.7; n 28807)° · chord1 23.1 (10.5–51.6, most 62.2; n 28807)° · turn 25.4 (10.7–55.5, most 68.2; n 28807)°
+    over 30°, arc 0.00 (0.00–2.36, most 3.08; n 28807) m · share of faces whose local reaches 30° 38.9 %
+    profile up the face: 5 % 7.0° · 15 % 12.7° · 30 % 18.5° · 50 % 21.8° · 70 % 20.5° · 85 % 17.0° · 95 % 11.0°
+    the water along the face, m/s (onshore +): crest 3.10 (1.75–5.38, most 6.44; n 28807) · steepest 3.16 (1.06–5.44, most 7.01; n 28807) · trough 0.91 (-0.70–5.67, most 11.00; n 28807)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 28807)
+  D, the sea's own surface at the same windows and instants (the switch off)
+    H 1.47 (0.88–1.91, most 2.07; n 28325) m · run 11.1 (5.8–15.6, most 18.0; n 28325) m · steepest at 0.56 (0.32–0.74, most 1.00; n 28325) of H
+    local 16.6 (6.4–27.9, most 32.8; n 28325)° · upper80 11.8 (4.5–20.1, most 28.2; n 28325)° · chord2 15.7 (6.2–25.1, most 28.6; n 28325)° · chord1 16.2 (6.3–27.1, most 31.3; n 28325)° · turn 16.4 (3.4–27.9, most 32.7; n 28325)°
+    over 30°, arc 0.00 (0.00–0.00, most 0.94; n 28325) m · share of faces whose local reaches 30° 1.2 %
+    profile up the face: 5 % 4.7° · 15 % 9.2° · 30 % 13.5° · 50 % 15.9° · 70 % 14.9° · 85 % 11.5° · 95 % 6.9°
+    the water along the face, m/s (onshore +): crest 2.26 (1.39–4.00, most 5.20; n 28325) · steepest 1.45 (0.43–3.20, most 4.49; n 28325) · trough -0.48 (-0.94–0.42, most 2.67; n 28325)
+    the share of the face under the loft's ceiling: 0.000 (0.000–0.000, most 0.000; n 28325)

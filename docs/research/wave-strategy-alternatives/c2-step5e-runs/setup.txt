@@ -1,0 +1,19 @@
+C2 step 5e: the commands that produced the files beside this one.
+
+  npx rolldown docs/research/wave-strategy-alternatives/c2-step5e-face.ts -o <scratch>/s5e.mjs --format esm --platform node
+
+asset-n.txt              node <scratch>/s5e.mjs --parts N --h0 4.9
+pool-library-and-sea.txt node <scratch>/s5e.mjs --parts RD --cache <scratch>/sea5e.bin --from 40 --until 100
+pool-flow-and-cover.txt  node <scratch>/s5e.mjs --parts RD --cache <scratch>/sea5e.bin --from 40 --until 62
+canyon-b.txt             node <scratch>/s5e.mjs --parts C --from 60 --until 120 --spacing 1,0.5
+
+The two pool files are independent windows of the same sea (40-100 s and 40-62 s); the shorter one also carries the
+water speeds along the face and the share of the face under the loft's ceiling, which the probe gained after the
+longer run had started. Their angles agree to 0.2 degrees, which is the replication.
+
+The sea cache (<scratch>/sea5e.bin) is the spun-up 2 m pool at ?poolSize=ref with the owner's ride switches; it is not
+checked in (12 MB). Delete it to rebuild, which takes about 25 minutes on the CPU.
+
+Verified before anything was quoted: `--dump` prints a face point by point. The first pass of this round windowed on
+FieldSlice.s (the crest's place at the hand-over, tens of metres behind the wave) and read 2.3-degree faces off the
+flat platform; the dump is why that did not reach the write-up.
