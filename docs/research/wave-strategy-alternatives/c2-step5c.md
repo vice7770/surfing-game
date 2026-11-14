@@ -4,16 +4,18 @@ Ruling 38 set this round. Two jobs: start the five Basilisk runs that complete t
 by reading the page, not the code — whether five rounds of invisible white were a render gate rather than a foam
 problem.
 
-**The short answer: the gate hypothesis is refuted on both of its limbs, and the water really is the cause.** The
-measurement ruling 38 asked for is in §3, and it is worse than "too bright": in the ride shot the pool's own clear
-water is *brighter at its 90th percentile than the foam is at its median*, so there is no headroom for white at all.
+**The short answer: the gate hypothesis is refuted on both of its limbs — and so is the diagnosis behind it.** The
+stills were Rich all along with the water light on, and the measurement ruling 38 asked for says the pool's water is
+**not** too bright: the foam stands 1.58–1.75× above the clear water beside it, inside the game's own target for a
+white that reads. What is wrong is that there is almost no foam — and none of what there is comes from the library.
 
 | | |
 | --- | --- |
 | **Shipped** | the five runs defined, checked against the script and started; the still tool can now report what it drew (`--probe`) |
 | **Settled** | Medium draws Rich, and no code path drops the look at runtime; the step 5b stills drew Rich with the water light on, gain 1; ruling 38's "Classic draws no foam of any kind" is **mistaken** |
-| **Measured** | the foam's luminance against the pool's own clear water, per shot (§3) |
-| **Not shipped** | anything the owner can see. This round is a diagnosis, and ruling 38 reserved the repaint for its own ruling. Said plainly, per the owner's rule 3 |
+| **Measured** | the foam's luminance against the pool's own clear water, per shot (§3): **1.58–1.75×**, inside the game's own 1.5–2× target for a white that reads. The water is **not** too bright |
+| **Found** | there is almost no foam to read — half a per cent of the frame in most views, two pixels from inside the tube — and with the bore's foam switched off, six of seven stills are byte-identical (§4) |
+| **Not shipped** | anything the owner can see. This round is a diagnosis, and ruling 38 reserved the next look change for its own ruling. Said plainly, per the owner's rule 3 — the owner should not be asked to ride this |
 
 ---
 
@@ -49,8 +51,19 @@ ten take 4.7 GB. Five is ~2.3 GB. Free space at the start was 7.0 GB (not 10), a
 checkout; it has since risen to 11 GB. **It is enough, with little to spare.** `node_modules` is symlinked from the
 main checkout rather than installed, to keep it that way.
 
-**Not done this round:** wiring them into `libraryCases.ts` and re-reading the A0 clamp. They had not landed when the
-round ended. That is the next round's first item and needs no reasoning.
+**They are much longer than ruling 38's estimate, and will not land this round.** Ruling 38 budgeted "about an hour
+of one core each". The scouts took 23 minutes apiece and the pipeline's own estimate for phase 2 is **about 3 hours a
+case** on a quiet machine (it read 8 h while the browser was also running). With three at a time that is roughly
+**7 hours for the five**, which matches ruling 31's ten taking about 8 hours. The supervisor is `nohup`/`caffeinate`d
+and resumes after a stop or a reboot, so they carry on past this round: `bash …/scratchpad/c2runs2/c2c.sh status`.
+
+The scouts have placed all three of the first wave, and one of them is worth flagging now: **`pool_c2_b3s_a0` saw no
+touchdown** ("face vertical at t 28.75, x 34.72 h0, no touchdown seen"). The two cases in ruling 31's set that scouted
+that way — `pool_c2_b1_a0` and `pool_c2_b3s_a3` — both came back **no tube**. So b3s_a0 will probably be a no-tube
+row. That is data about where the tube region ends, not a failed run, and the A0 column is still complete with it in.
+
+**Not done this round:** wiring them into `libraryCases.ts` and re-reading the A0 clamp. That is the next round's
+first item and needs no reasoning.
 
 ---
 
@@ -185,6 +198,60 @@ three crops at 2–3× in `crops/`.
 
 Items 3, 5 and 6 are new and none is this round's to fix.
 
+### The foam-off leg: almost none of this white is the library's
+
+The same seven shots with the bore's foam switched off in the code (`NOFOAM` in `WaveZone.ts`, reverted before the
+commit, so it is not in the branch). This is step 5b's experiment repeated with the look now **proven** Rich rather
+than assumed:
+
+| | foam on | foam off |
+| --- | --- | --- |
+| `curl-ride`, `curl-front`, `curl-channel`, `curl-inside`, `curl-close`, `curl-front` sunset | — | **byte-identical** |
+| `curl-behind`, foam-dominated pixels | 22 584 | 22 527 |
+
+**Six of seven stills are identical to the byte, and the seventh differs by 57 pixels of 22 584 — 0.25 %.** So every
+one of the foam figures in §3 is the **sea's own** foam, not the library's. The bore foam that step 5b measured in the
+field (+0.45 of cover on about 200 nodes a wave) reaches at most 57 pixels of one of seven camera views.
+
+That is the sharpened version of step 5b's own honest headline, and it narrows the question from "why does the foam
+not read" to **"why does a field that is demonstrably different not reach the screen"**. Two answers fit and this
+round does not separate them: the ~200 nodes a wave are a small patch and every camera may simply miss them (step
+5b's own reading), or something between the field and the draw is dropping them (step 5b found and fixed one such bug
+in `writeUniformAeration` already). The next round can separate them cheaply by projecting the nodes whose cover the
+bore changed into each camera's frustum — a read, not a build.
+
+---
+
+## 6. What I am unsure of
+
+- **The `foam` class is a threshold, not a ground truth.** It is pixels the magenta pass pulled at least 120 levels of
+  green out of. That is deliberately the foam-dominated end, so "the white that is drawn reads at 1.6× the water" is
+  about real white and not about faint tint. A different threshold would move the pixel counts, though not the
+  conclusion: at any threshold the foam's luminance sits well above the clear water's.
+- **`clear` is the sea surface's own foam-free pixels.** The tube loft, the lip sheet and the roller are separate
+  meshes, so hiding the sea's mesh does not hide them and they fall outside both classes. That is the right
+  comparison for "the water beside the foam", but it means `waterAll` is not the whole wave.
+- **`curl-front`'s 1 974 clear pixels** is a small sample to read a p90 off, and it is the one view where I would not
+  lean on the ratio alone. The other five have 15 000 to 371 000.
+- **The grey-brown smear** (§4 item 3) is an eye reading of one crop. I have not measured it and I do not know its
+  cause; it survives the foam being switched off, so it is not the bore foam.
+- **Whether the five runs change the A0 clamp as ruling 38 expects.** They had not finished.
+
+---
+
+## 7. Next, in order
+
+1. **The five runs land** (§1), then wire them into `libraryCases.ts` and read the A0 clamp and the height bar again.
+   No reasoning needed.
+2. **Where does the bore foam go?** Project the nodes whose cover it changes into each camera's frustum. A read.
+   This is the question that five rounds have been circling, and §3 says it is the right one.
+3. **Then, and only then, more foam.** The owner's reference photo wants streaks, a torn edge, a pile and face lines.
+   §3 removes the reason ruling 38 gave for not drawing them.
+4. The grey-brown smear where the pile should be (§4 item 3), and the dither stipple (§4 item 5) — the stipple's
+   pattern names screen-door transparency as the thing to look at.
+5. Ruling 38's carried items, unchanged: the pay-back's course, the τ clamp, the mean level re-aimed, the lane
+   terraces.
+
 ---
 
 ## 5. Files, and how to run them again
@@ -201,4 +268,8 @@ Items 3, 5 and 6 are new and none is this round's to fix.
     --shots=curl-ride:rich:midday,curl-front:rich:midday,curl-channel:rich:midday,curl-inside:rich:midday,curl-close:rich:midday,curl-behind:rich:midday,curl-front:rich:sunset \
     --probe=docs/research/wave-strategy-alternatives/c2-step5c-probe.js --advance=40 --first=skip
   ```
-- Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look's stills.
+- `c2-step5c-stills/`: the seven shots of the foam-on leg, `curl-behind` of the foam-off leg (the only one that
+  differs), and the three crops in `crops/`. JPEGs, as step 5b's.
+- `c2-step5c-runs/`: both legs' probe output, the byte check and the suite.
+- Not run: rider sessions, catch reports and autopilot rides (the brief's rule); the Classic look's stills; a caustics
+  A/B (it wants a hook, §3).
