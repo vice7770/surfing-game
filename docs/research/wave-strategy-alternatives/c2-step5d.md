@@ -15,7 +15,7 @@ the draw.
 | **Shipped** | three shots of the landed bore in the water sheet (`bore-face`, `bore-line`, `bore-above`), placed from the drawn loft's own landed slices (§2) |
 | **Shown** | **the first picture of the owner's foam** (§3): with the bore foam switched off, those three shots change by **11.2 %, 17.1 % and 24.1 % of the frame**, against 0.06 % in the best shot there was before. The stills are in `c2-step5d-stills/`, foam-on and foam-off, side by side |
 | **Found besides** | 24 of the 149 nodes — and the **four brightest** of them — are written where the swept barrel's seam mask fully covers the water, so the water's own fragment is discarded there and that foam cannot reach a pixel by any camera (§4) |
-| **Not done** | the grey smear (ruling 39's lead 1) is not measured. It is now plainly visible in a shot that can measure it, which is the step that was missing, but a measured look is still owed (§6) |
+| **Not done** | the grey smear (ruling 39's lead 1) is **not** measured, and the attempt failed twice: `renderView` redraws the loft every frame, so hiding it from the page changes nothing, and a colourless-pixel classifier mostly counts sky. Both failures are written down with what they cost to fix (§6) |
 
 ---
 
@@ -194,13 +194,23 @@ start where the mask ends, is a shape question and belongs to the advisor and to
   landed slices at this frame, the oldest 1.38 s past touchdown, so the shots cannot reach a bore older than that even
   though the foam's own life runs to ten seconds. A shot that follows the white rather than the loft would see more of
   it.
-- **The grey veils of §3 item 4 are still an eye reading**, as they were in ruling 39. What this round changes is that
-  there is now a camera 8 m from them and a tool to measure them with (`waterSheetVeil`), and that the tool's first
-  run found a trap worth writing down: under `?wave=library` the drawn loft is the **library's zone mesh**, not the
-  swept barrel's — `PhysicalMode.drawBarrel` routes to `libraryZone.draw` and never touches `sweptBarrel` — so hiding
-  `mode.barrelMesh` (which is what the water sheet exposes) changes **not one pixel** and the A/B silently measures
-  nothing. The tool now hides the library's zone mesh where there is one. **The measurement itself has not been run**,
-  and is item 2 of §7.
+- **The grey veils of §3 item 4 are still an eye reading**, as they were in ruling 39, and the attempt to measure them
+  here **failed twice over**. Both failures are worth writing down, because they are the obstacle the next round has
+  to get past:
+  1. Under `?wave=library` the drawn loft is the **library's zone mesh**, not the swept barrel's —
+     `PhysicalMode.drawBarrel` routes to `libraryZone.draw` and never touches `sweptBarrel` — so hiding
+     `mode.barrelMesh`, which is the handle the water sheet exposes, changes **not one pixel** and the A/B returns a
+     confident zero that means nothing. `waterSheetVeil` now hides the library's own mesh where there is one.
+  2. **That does not help either, and for the reason step 5c already found for the caustics:** `renderView` runs the
+     whole of `drawPhysical`, which calls `drawBarrel` and puts the mesh back before the frame is drawn. Hiding
+     either mesh from the page gives 0 changed pixels in all four views. **An A/B of the loft wants a hook that
+     survives `renderView`** — drawing it with a zero count, or a flag `drawBarrel` itself reads — exactly as the
+     caustics A/B does.
+  The one number the run does give is the extent of colourless mid-tone pixels (saturation under 0.18, brightest
+  channel 0.30–0.82): `curl-ride` 18.4 % of the frame, `bore-face` 14.7 %, `bore-line` 9.6 %, `bore-above` **0.2 %**.
+  Since `bore-above` looks down and has almost no sky in it while the other three are full of cloud, **most of what
+  that classifier counts is sky, not veil** — so the classifier wants re-aiming too, probably on the water's own
+  pixels alone. Taken together: the measurement is owed, and §7 item 2 now knows what it costs.
 - **Whether the mask overlap of §4 matters to the owner's eye.** 24 nodes is 16 % of the patch and the brightest of it,
   but the shots still read as white, so the loss is not what was hiding the foam.
 
@@ -212,8 +222,9 @@ start where the mask ends, is a shape question and belongs to the advisor and to
    it twice, and this is the first time it can be looked at.
 2. **Measure the grey veils** (ruling 39's lead 1) from `bore-above`, which is 8 m from them, against ruling 37's fray
    lip. One measured look before anyone repaints, as the ruling said. The tool is built and committed
-   (`waterSheetVeil`, `c2-step5d-veil-probe.js`) and wants one run of the probe; §6 says what its first attempt got
-   wrong and why its answer of "0 pixels" was not an answer.
+   (`waterSheetVeil`, `c2-step5d-veil-probe.js`) but **it cannot answer yet**: §6 says why — `renderView` redraws the
+   loft on every frame, so hiding it from the page measures nothing, and the grey classifier as written mostly counts
+   sky. The hook and the re-aimed classifier are the work, and they are small.
 3. **The seam mask over the bore** (§4) — the advisor's call on the shape, then a build.
 4. The lace's holes at close range (§3 item 2), and the seam dither's hard rectangle (§3 item 3), which now has both a
    named mechanism and a picture.
