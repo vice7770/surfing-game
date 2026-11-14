@@ -1,0 +1,202 @@
+# C2, step 5b: the hand-back, the set-up and the bore's foam (2026-11-14)
+
+Tags: [M] measured here, [C] read in the code, [S] sourced, [R] reasoned, [P] provisional.
+The brief is ruling 37's "next"; the carried items are ruling 35's four. The consult behind the foam is
+`water-physics/lip-thickness-and-foam-2026-11-13.md` §3 — the parts step 5a did not use. Everything is inside
+`?wave=library`; **no new switch**, and with it off the program and the drawing are byte for byte as before.
+
+**In one line:** the sea's own water is never touched by the library, so the mean level, the set-up and the rips are the
+sea's own **to the bit**, not within 30 %; the hand-back no longer has to find the sea's crest again after the drift,
+and the jump across it is small; and the bore now carries **its own foam** — opaque white behind the open curl ageing
+on Koepke's ratios, milky turquoise on the flanks and in the roller — written as three numbers on the render nodes the
+sea already draws, so no white layer is built anywhere and the page's shaders are untouched.
+
+---
+
+## 1. The hand-back
+
+### 1.1 The plan's GPU forcing pass is not needed, and would cost the other two bars
+
+The plan's step 5 names "`handBack.ts` with a GPU forcing pass". That was written when it looked as though the library
+had taken the wave away from the sea and would have to give its water back. **It has not.** The sea's own wave is still
+there, under the library's, running its own break: the zone writes the render nodes and nothing else, and the solver
+never reads a number the zone produced [C, `WaveZone.step` and `applySnapshot`; measured in §3].
+
+So the hand-back is a hand-back of the **drawn and felt surface**, not of water, and the other two bars of this step
+come free: the mean level cannot drift, the water piled against the beach is the sea's own, and so are the backwash and
+the rips. A forcing pass would put all three at risk to fix a bar that is not failing. **It is not built**, and that is
+a deliberate departure from the plan, recorded here for the advisor to accept or send back.
+
+### 1.2 What the hand-back has to get right instead
+
+A slice's shape comes in and goes out in **the crest's own frame** (step 3's blend): while it blends, the shown crest
+stands at (1 − a) the sea's crest + a the case's, so the sea's crest and the case's never show as two [C]. The case's
+crest and the sea's drift apart over the slice's whole life, because they travel at their own speeds — about 6.0 m/s
+against 6.8 — and the blend-out has to walk the shown wave back onto the sea's in 2.4 s. The gap it walks is what
+matters, and so is whether the crest it walks back onto is the one the slice has been following.
+
+### 1.3 What was built
+
+**The sea's crest is followed every step of a slice's life, not only while it blends.** Step 3 dropped the track as soon
+as a slice became whole (`slice.seaS = NaN`), so at the hand-back the blend had to find the sea's crest again, starting
+from the case's own place — metres away by then — and searching ±10 m. Where it found a different crest the shown bore
+moved by the difference as the blend took hold; where it found none it fell back to the case's own place, which left the
+sea read at the case's own stations and the two curves blended out of phase [C, the old `composite`].
+
+Now the track runs all along, and a crest lost for a step is carried on at a crest's pace instead of being re-found.
+The probe counts the losses: **0 over the whole run**, against step 3's own `seaMissed` counter [M].
+
+Nothing else about the hand-back was changed: its course is still step 3's 2.4 s in the crest's own frame.
+
+### 1.4 What the bar measures, and why the first reading was thrown away
+
+Round 1 read the bore's place as **the highest station** on the lane. A bore's top is nearly flat, so the highest
+station hops metres from step to step: that reading gave a median place change of 0.33 m per 0.1 s where the
+arithmetic of the blend says 0.08, and a worst of 24 m. **It measured the finder, not the wave** [M, round 1].
+
+Round 2 reads **the bore's front**: the shoreward place where the surface falls through the half-height between the
+bore's top and the water ahead of it. That is a steep single crossing, read to centimetres, and it is what the eye
+tracks. The height is the bore's own — its top over the water ahead.
+
+Two different things then get measured, and the plan's bar is the first of them:
+
+- **the jump** across the hand-back itself: the one step on which the slice is dropped;
+- **the drift** over the whole blend-out: a rolling 0.1 s window through it.
+
+Both are reported as the **hand-back's own part** — the library's reading less the sea's own at the same moment — so
+the water's own motion is out of the number. The sea's own reading is given beside them as the control.
+
+## 2. The bore's foam
+
+### 2.1 Why it goes on the render nodes and not on a mesh
+
+The sea already draws its own whitewater from three numbers a render node: the foam's **cover** (0–1, which the look
+multiplies its foam colour by), the plume's **void fraction**, and the plume's **depth** [C]. The library's bore writes
+the same three, by the same weight its heights take and in the same form, (1 − A) the sea's + the library's own
+[C, `WaveZone.applySnapshot`].
+
+Three things follow, and they are the reasons for doing it this way:
+
+1. **No white layer anywhere.** Nothing is added or moved: the cover is a colour on the surface the nodes already draw.
+   The consult's "about 2 cm of foam is already fully opaque, never build a thick white shell" holds by construction,
+   as it did in step 5a [S, Koepke 1984; Dierssen 2019].
+2. **No seam at the hand-back.** The library's cover and the sea's are the same quantity in the same units, so where a
+   slice fades its white fades with it into the sea's own whitewater. This is also why Koepke's reflectances are used
+   as **ratios** and not as absolutes: the sea's foam colour sets the absolute, and an absolute here would put a seam
+   exactly where the owner asked for a seamless join [R; step 5a, ruling 37].
+3. **No new draw cost.** The page's shaders are untouched.
+
+### 2.2 The three materials
+
+| Where | What it is | How it is drawn | The numbers' source |
+|---|---|---|---|
+| the back face, and everything before a slice's touchdown | clean water | no library foam at all, and the sea's own still held off until touchdown (`FOAM_HOLD`) | step 5a's rule, kept |
+| behind the open curl: the pile, from the crest landmark to the roller's toe | already landed; above the water line it is 60–99 % air, so not a liquid | **opaque** white: the cover goes to 1 at the landing and ages 1 → 0.745 at 1 s → 0.291 at 10 s | [S] Koepke 1984's 0.55 → 0.41 → 0.16 as ratios; [M] Dierssen 2019 for the 60–99 % |
+| the pile's two flanks and the roller's toe | aerated, not foam | void fraction 0.40 fresh falling to 0.13 as the white ages, with the plume 2 m deep: the look makes milky turquoise out of those two, the white carried up through about 2 m of water, so red goes first | [S] the consult's void band 0.13–0.4; [S] Pope & Fry 1997 for the tint; the 2 m is the recipe's one free number [P] |
+
+The white's **edge** is torn by the water's own foam pattern — the lace's cells and the churn's clumps, which the look
+already applies to any node carrying cover — so a foam line's edge is ragged and not ruled without a line of new code
+[C]. Step 5a had to tear its own edge because the curl's mesh does not go through that pattern.
+
+### 2.3 The stretch, and the clock
+
+Each slice's white runs from its own **crest landmark** to its own **toe landmark**, which on a broken wave are the back
+of the pile and the roller's toe, and tapers out over 0.5 m behind the crest and 1.5 m past the toe (`boreShape`). Those
+two widths are reasoned, not measured: the consult names the materials, not their width [R, P].
+
+The clock is the slice's own touchdown, as step 5a's lip white is: **water turns white at a time, not at a thickness**
+[S, the consult §3]. The white comes in exactly as the sea's own foam hold goes out, over the same `FOAM_HOLD` (0.5 s),
+so the two never add up to more than the slice's share and there is no flash and no gap at the landing [C]. Chanson's
+spray burst inside 0.4 s of impact is the same order, so the existing 0.5 s was kept rather than a new constant added
+[S, R].
+
+## 4. Ruling 35's four carried items
+
+### 4.1 Item 1: the flow below the deeper stored depth
+
+The cases store velocity at two depths and nothing under them; step 4 held the deeper stored value on down. Measured at
+seats on the pool, that held value stood **1.26 m/s from the sea's own flow at 0.8 m and 1.18 m/s at 1.5 m**, with the
+library's share still a whole 1.000 all the way down — so a submerged body felt water the library never ran [M,
+round 1].
+
+**Built:** the library's share of the flow now eases to 0 from the deeper stored depth over twice that depth
+(`DEEP.fade` = 2, so 0.45 m → gone by 1.35 m on the pool), and the sea's own water takes over under it. `DEEP.fade` is
+provisional [P]: 2 keeps the whole of a board and the first half-metre under it on the library's water, and puts a
+duck-diving body back on the sea's.
+
+### 4.2 Item 2: the surface's share and the flow's
+
+The fault, as ruling 35 put it: the surface's share is resampled on the 1 m render nodes while the flow's is evaluated
+at the point.
+
+**The first try at this was wrong, and the step 4 test caught it.** `ZoneSurface.weightAt` — the nodes' weight A — is
+the **frame's** weight alone: the blend with the sea is already inside the composite's heights, since a node's height is
+(1 − A) η_sea + Σ w h and each h is itself a (the case) + (1 − a) (the sea). So a node's library share is A times the
+blend share, not A. Handing the flow A gave it the whole of the library's water the instant a frame appeared — a step of
+1 in one frame, which the step 4 test measured at once.
+
+**Built:** the lanes carry the product Σ w a, the nodes resample it exactly as they resample the heights
+(`ZoneSurface.shareAt`), and the flow takes that. The two shares at a seat are then the same number by construction.
+A second thing had to go with it: the lane's own end taper was in the flow's weights as well as in the nodes', and
+counting it twice left the field's last lanes reading no flow at all where the nodes still carried a twentieth of the
+library's water.
+
+### 4.3 Item 3: the kink in du/dt at a slice's throw
+
+**It is real, it is in the data, and a rider does not feel it.** Before its throw each of a slice's cases runs at its
+own rate, (−τ_h,i)/Δ, so that they all throw together; from the throw every case runs at rate 1 [C,
+`WaveLibrary.tausAt`]. τ is continuous across the throw by construction, but dτ/dt is not, and the library's velocity
+derivative is multiplied by that rate — so at the throw it steps by |rate − 1| of itself.
+
+- Σ w |rate − 1| at the throw: **median 0.025, 90 % 0.081, worst 0.106**, over 1 326 slices blending a median of 3
+  cases [M].
+- The step in the library's own du/dt at the crest landmark across the throw: **median 13.6 m/s², 90 % 25.7, worst
+  53.9** [M]. The crest just before the throw is the most violent place on the profile, which is why the number is
+  large.
+- What reaches a board is not that: the material acceleration is capped at 5 g and weighed by the share, and step 4
+  measured the felt |Du/Dt| at **median 0.32 m/s², 99 % 1.63** [M, c2-step4.md §D].
+
+**Not fixed, on purpose.** A C¹ clock means blending the rates over a window around the throw and then re-solving the
+pre-throw rate so that τ(throw) is still exactly 0 — otherwise every slice's shapes shift in time. That is a change to
+the library's clock for a kink below what a rider can feel, and it would need step 4's velocity bar and step 3b's whole
+set re-measured. **Recommended: leave it, and revisit only if a rider ever reports a tick at the throw** [R].
+
+### 4.4 Item 4: the lip blend was tuned for the old swept tube
+
+The constant is `LIFT.collapse` = 0.6 s, the old swept loft's √(2W/g): it is how long after touchdown the loft lets go
+of the tube, and it is also what sweeps the lip's landing white (`lipFoamAt`'s `collapse`) [C].
+
+**Measured on the library's own 19 cases** (part K of the probe): after touchdown the stored profile is still **folded**
+— its steepest segment reads 90° — at +0.3 τ, +1 τ and +3 τ in **every one of the 19**, and only **2 of 19** ever have
+the fold go for good inside their stored frames (3.22 s and 2.17 s at the pool's scale). Five fall under `LIFT.bridge`
+(50°) at 0.70–3.03 s.
+
+**So the case's own curve cannot key the collapse, and that is not a tuning fault.** The 128 points keep their arc
+parameterisation, so after touchdown the lip's points lie behind and under the landed water and the polyline stays
+multi-valued by construction — it never unfolds, however long the bore runs. The honest reading:
+
+- 0.6 s is **not** the library's own number, and nothing in the game's files can make it one;
+- the quantity that would is the void's closing, which the runs hold in their air sections (QOUT) but the game's files
+  do not carry;
+- until then, keeping the swept tube's √(2W/g) is defensible, and what it decides — when the nodes' bridge takes the
+  bore off the loft — is a drawing choice the owner has already ridden.
+
+**Not changed.** Moving it would move the drawn tube's collapse, which is a look change this step was not asked for.
+
+## 7. What I am unsure of
+
+1. **The pay-back's course.** The blend-out walks the shown wave back onto the sea's crest over 2.4 s. A longer course
+   (starting at touchdown, over 5–6 s) would cut the drift by about 2.5× and change no shape, only the slice's place —
+   towards the sea's crest, which is where the wave belongs. I did not build it: it moves the place every lane's slice
+   stands at, so it needs step 3b's whole set re-measured, and the bar as written (the jump at the hand-back) does not
+   need it. **Recommended as the next step's first item** [R].
+2. **The aerated tint's 2 m**, and the flanks' widths (0.5 m behind the crest, 1.5 m past the toe), are by eye, as step
+   5a's feather was [P].
+3. **The drawn white's absolute** is still the sea's foam colour, about 1.6× Koepke's densest fresh foam. That is
+   ruling 25e's job and it must move for the whole scene at once, not for the bore alone [R, step 5a §5].
+4. **`DEEP.fade` = 2** is provisional. Nothing measured says where the library's water should stop; 2 is the first
+   scale-free choice that puts a board on the library's water and a submerged body on the sea's.
+5. The library's files grow from 11.81 MB to **23.6 MB** for 19 cases, over the plan's step-2 bar of 15 MB. They are
+   fetched only under the switch, and the ten new ones are what the height bar needed, but the bar is missed and is the
+   advisor's to accept [M].
+6. I did **not** ride it, and no rider session was run (the brief's rule). The owner rides and judges the foam.
