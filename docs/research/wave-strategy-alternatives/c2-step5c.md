@@ -110,7 +110,10 @@ channel, and `applySnapshot` writes it (`surface[o + 1]`) with no look gate anyw
 The `waterAeration` texture is a different thing: it appears only in `richWaterGlsl.ts`, and it carries the air
 fraction and the **plume depth** — the milky tint of white seen *through* water. So the Rich gate at
 `WaterSurface.ts:543` is correct by construction: Classic has no shader that could read it. Classic loses the
-underwater tint, not the foam.
+underwater tint, not the foam. The Classic branch of the material (`WaterSurface.ts:439–448`, the `else` of the Rich
+one) splices in `waterVertexPars`, `waterBeginNormal` — which is the line that sets `vWaterFoam` — and
+`waterFragmentPars`, and its body goes through `classicRollerFoam(CLASSIC_FOAM)`. There is a Classic foam path and it
+is named as one.
 
 This does not rescue the hypothesis — the stills were Rich — but it means Low-preset players are not missing the
 ocean's whitewater, and no fix is owed there.
