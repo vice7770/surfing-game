@@ -265,10 +265,16 @@ bore changed into each camera's frustum — a read, not a build.
   is never in the default game's graph, and **no test imports it** (the one test that names it,
   `ScreenStack.test.ts`, does so in a comment). Everything else the branch touches is a `.mjs` dev tool, two Basilisk
   files and docs — none of them in the suite's graph or the solver's.
-- The three spin-up hashes and the full suite: `c2-step5c-runs/`. Both were started with the five Basilisk runs
-  already loading the machine, which is exactly the condition the coordinator warned produces timeout-only failures;
-  the suite ran with `--testTimeout=300000` for that reason. **Read a failure there as a timeout before reading it as
-  a regression**, and note the argument above: nothing in the suite's import graph changed.
+- The three spin-up hashes and the suite: `c2-step5c-runs/`. Both were started with the five Basilisk runs already
+  loading the machine, which is exactly the condition that produces timeout-only failures; the suite ran with
+  `--testTimeout=300000` for that reason. **Read a failure there as a timeout before reading it as a regression**, and
+  note the argument above: nothing in the suite's import graph changed.
+- **And `--testTimeout` does not rescue every file, which is worth knowing before the next round trusts it.**
+  `uniformSnapshot.test.ts`'s "match main's bytes at the Canyon" failed here at 486 s. It carries its **own** 180 s
+  timeout in the `it()` call, which overrides the command line, and its own comment already records the history:
+  "about 20 s alone, it timed out at 60 s under other agents' load (2026-10-29, 10-31)". So it is a load timeout of a
+  kind the raised global cannot help, and raising it further means editing that line, not the flag. A byte-matching
+  test failing is the most alarming-looking thing a loaded suite can produce, and this one is the known case.
 
 ---
 
