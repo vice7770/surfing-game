@@ -142,7 +142,8 @@ neither figure is diluted by the other. Linear relative luminance.
 
 **The foam's median stands 1.58–1.75× above the clear water's 90th percentile, in every view.** The game's own target
 for a white that reads, written into `waterSheetLipContrast` for the Canyon lip, is **1.5–2×**. The foam is inside it
-everywhere. Nothing is blown out either (`blown` 0 in all six).
+everywhere. Nothing is clipped to white either: an earlier pass of the same shots with `waterSheetLuma` put the
+share of pixels at 250 or more in every channel at **0** in all of them, so the pale look is not a blown exposure.
 
 The colours say the same: the foam's mean is (0.61, 0.83, 0.84), a cyan-white close to the foam colour itself
 (0.687, 0.888, 0.815), against clear water at (0.17, 0.50, 0.78), a blue. The foam is not being swallowed.
