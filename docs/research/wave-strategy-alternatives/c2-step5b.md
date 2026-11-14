@@ -17,7 +17,7 @@ read on it (ruling 25e). The owner has not been shown the thing they asked for, 
 
 | Passes | Misses |
 |---|---|
-| the jump at the hand-back, place and height, on every one of 316 (0.0 % over either bar); the set-up and the rips, exactly (the same solver bytes, a ratio of 1.0000, a correlation of 1.000000); ruling 35's item 1 and item 2 (the two shares 0.0 % over the bar inside the field, 0.5 % counting its σ ends, against 8.0 % before); the page's draw (+0.23 ms, bar 1 ms); the Canyon off byte for byte; both `tsc`; the suite but for the known `poolBarrelPerf` flake, which passes alone | **the foam is measured and not seen** — six of seven stills are identical with it switched off, because the cameras sit on the tube and the pool's water is too bright for white (ruling 25e); **the hand-over's height bar**, better (median 1.065 → 1.046, the unclamped population 10 slices at 1.121 → 57 at 0.978) but still 54.8 % outside, and the A0 clamp got worse because the two new beds carry only two A0 rows each; **the mean level's drift**, which the sea alone misses by the same 0.0285 m to the fifth decimal while the pool is still filling; **the drift over the blend-out** (39.7 % of 0.1 s windows over 0.3 m), reported with its cause; the library's files 11.8 → 24.9 MB, over the plan's 15 MB |
+| the jump at the hand-back, place and height, on every one of 316 (0.0 % over either bar); the set-up and the rips, exactly (the same solver bytes, a ratio of 1.0000, a correlation of 1.000000); ruling 35's item 1 and item 2 (the two shares 0.0 % over the bar inside the field, 0.5 % counting its σ ends, against 8.0 % before); the page's draw (+0.23 ms, bar 1 ms); the Canyon and the pool off byte for byte; both `tsc`; the suite but for the known `poolBarrelPerf` flake, which passes alone | **the foam is measured and not seen** — six of seven stills are identical with it switched off, because the cameras sit on the tube and the pool's water is too bright for white (ruling 25e); **the hand-over's height bar**, better (median 1.065 → 1.046, the unclamped population 10 slices at 1.121 → 57 at 0.978) but still 54.8 % outside, and the A0 clamp got worse because the two new beds carry only two A0 rows each; **the mean level's drift**, which the sea alone misses by the same 0.0285 m to the fifth decimal while the pool is still filling; **the drift over the blend-out** (39.7 % of 0.1 s windows over 0.3 m), reported with its cause; the library's files 11.8 → 24.9 MB, over the plan's 15 MB |
 
 ---
 
@@ -334,8 +334,12 @@ should be read again on a quiet machine [M, P].
 **Off is unchanged.**
 
 - The Canyon byte check (`scripts/m1-cpu-bench.ts`, medium, 3 600 steps, fresh spin-ups, `c2-step5b-runs/canyon-byte-check.txt`):
-  Canyon B (`?canyonWaves=true`) snapshots **a367d938f15fa934**, state **9e5831f80e38abd9** — the same as main and as
-  steps 3b, 4 and 5a.
+  - Canyon B (`?canyonWaves=true`): snapshots **a367d938f15fa934**, state **9e5831f80e38abd9**;
+  - the default Canyon: snapshots **ea3d57a4d49f4b48**, state **a1a2555739210f96**.
+
+  Both the same as main and as steps 3b, 4 and 5a.
+- The 2 m pool with `wave` unset (`c2-step3-runs/pool-off-hash.ts`, 900 steps from step 3's `sea21.bin`): hash
+  **0545d279d79bafe7**, lip jets **278** — the same as main and as steps 3b, 4 and 5a.
 - `npx tsc --noEmit -p .` and `npx tsc -p server/tsconfig.json --noEmit`: clean.
 - The suite (`--exclude SurfZoneSimulation/SurfZoneRunner`, on this loaded machine): **3 490 passed, 1 failed** —
   `poolBarrelPerf.test.ts` timed out at 60 s, the known flake; alone with `--testTimeout=300000` its **8 tests pass**
