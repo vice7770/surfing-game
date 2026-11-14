@@ -3618,3 +3618,276 @@ Run from a **full checkout** this time, not the sparse one that voided 3.2m's fi
 - `results/`: `hold-32n.jsonl`, `hold-old-32n.jsonl`, `hold-trace-new-32n.jsonl`, `hold-trace-old-32n.jsonl`,
   `stance-32n-base.jsonl` / `-ranking` / `-limits`, `turn-new-32n.jsonl`, `turn-off.jsonl`, `turnpair-32n.jsonl`,
   `suite-32n.txt`, `canyon-byte-32n.txt`.
+
+# Part 14: step 3.2p, the board's heave and pitch sensed — and the plant that carries them refuted (ruling 29w item 1)
+
+Written 2026-11-14 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32p` (from
+`claude/rider-new-32n`, rebased on main d7f121a3). The contract: `../ruling-29.md` 29w item 1.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+- **The two senses are built and wired, exactly as asked** [R]: the load through the feet (`rider.contact.load`'s own
+  substep value, less the slow part the soles have adapted to) and the board's nose-up pitch rate. Both go into the
+  same sense line as the other seven, so both arrive **0.1 s late**, and the commands keep the **0.05 s** motor lag.
+- **It is off by default, and the reason is not the sense. It is the plant the sense requires** [M]. A sense is of a
+  state, so the four board states have to be carried, and carrying them means reading the **held** table — the free one
+  has the board's re-trim folded in already, and adding the block on top would count it twice. In the game the held
+  table is worse in **every** role it can take, on the owner's own test: gains designed on it fall at **0.55–0.93 s**,
+  with the senses on **0.50–0.72 s**, and with the shipped gains and the held plant only in the predictor and the
+  filter **0.47–1.68 s** — against **1.10–3.43 s** for what ships. The same loss appears with the senses switched off,
+  so **it is the plant and not the sense**.
+- **The cause is in this round's own measurement.** `boardmode.probe.ts` measures the board's heave-and-pitch mode in
+  the game for the first time: **1.41 / 1.01 / 1.33 / 1.41 Hz** at 5 / 7 / 9 / 12 m/s. A period of 0.7–1.0 s. A loop
+  acting over a turn therefore meets the water's answer **with the re-trim already in it**, which is the free table.
+  3.2m's finding that the elimination is ill conditioned says the free numbers cannot be *derived* from the captive
+  ones; it does not say the captive ones are what the loop meets.
+- **3.2m's `null` cells are not an eigensolver failure: the design has no solution there** [M]. At no rail the hull's
+  own symmetry makes a roll, a slide or a yaw rate produce no net vertical force and no net pitching moment — measured,
+  `HEAVE_PLANT`'s cross terms are zero at rail 0 — so the four board states are **uncontrollable**; and the block's own
+  pair is **unstable** at 5 and 9 m/s. A cost on an unstabilisable mode asks for a gain that cannot exist. Fixed by
+  giving those states **no cost at all**, which is the only honest weight: this balance's two commands are the ankle
+  across and the twist, and neither can pitch the board. That is the pitch ankle's loop (`StandingBody`), not this one.
+- **At 5 m/s the board's own pitch mode is unstable in the game** — damping **−0.084**, growing 1.7× per two cycles
+  [M]. This is new, it is nothing to do with the balance controller, and it is a candidate cause for the low-speed
+  falls ruling 29v says are the strongest signal we have.
+- **What the sense buys, in the model** [M]: the four states go from **unobservable at no rail (rank 10 of 14)** to
+  rank 14 of 14 at every table point; the filter's error on the board's pitch falls from **1.1–2.8° to 0.18–0.35°** and
+  on its pitch rate from 5.7–11.4 °/s to 1.7–1.9; and at the rails the schedule's cap allows, a frame of timing error
+  turns a growing mode into a decaying one. **The pitch rate carries nearly all of it.**
+- **What it does not buy, and this is worth saying plainly:** the nominal damping does not move at all. A sense cannot
+  change an LQR gain. 3.2m's hope that the unsensed mode was the wall is only half right — the mode is real and the
+  rider was running it blind, but seeing it is not the same as being able to act on it.
+- **The gate: the owner's acceptance test is 0 of 12, unchanged, against the old rider's 12 of 12** [M].
+- **Seatbelts held** [M]: `tsc` clean on both projects, the suite as 3.2n's, the shipped design byte-identical to
+  3.2m (all 54 `railmodel` rows, gains included), and the Canyon byte check — 3.2n's unfinished one — run and clean.
+
+## 2. What was wired, and how (item 1)
+
+`AttachedRider.predictiveBank`, under `rider: 'new'` as everything in this part is [R]:
+
+**The load through the feet.** `captureLoad` is the water's push on the rider through the feet along the board's up
+this substep, in body weights, straight off the contact ledger — the same number the capture point's validity
+condition already reads (`CAPTURE_LOAD`, step 3.2h). In m/s² and less the slow part the soles have adapted to
+(`LOAD_ADAPT`, 2 s), it is the deck's own vertical acceleration, and it is **zero in any steady trim and in any steady
+turn**, whatever the bank, the face's slope or the apparent gravity — which is exactly where the model's heave states
+are zero. A pressure sense that did not adapt would read a banked turn's own extra load as a board sinking for ever.
+The adaptation is also what the receptors do: skin pressure and muscle force senses adapt to a held load and report
+its changes [S, recalled].
+
+**The board's pitch rate.** The board's spin about the heading's forward crossed with the world's up — nose up
+positive. Absolute, not relative to the water, because that is what the canals sense, and the water's slope turns far
+slower than the mode this is for.
+
+**Both are already measured in the game and neither was connected**, which is what ruling 29w said. In the model they
+are two more rows of `senseMatrix`: the load's row is the plant's **own ẇ row**, so it carries the heave, the pitch,
+their rates and the four older states each at its measured weight; the pitch rate's is a unit row.
+
+**Sizes.** `design`, `steadyTurn`, `closedLoop` and the runtime controller take their sizes from the matrices. The
+runtime test proves the class still runs the analysis's loop to 1e-9 over 120 ticks **on both sizes**.
+
+## 3. The model first, before the game (item 2)
+
+`sink.probe.ts`, model only. Each number is at 7 m/s; the whole 18-point table is in the results file.
+
+### 3.1 The reproduction check
+
+`heavePlantAt` reproduces the block 3.2m built by hand **to the last digit** at all 16 measured points, and the
+fourteen-state damping it gives matches 3.2m's own `heave` column (7 m/s tall: 0.105, 0.370, 0.278, 0.260, 0.201,
+0.301) [M]. Building the twelve as a correction on `PLANT_SPEEDS` rather than replacing them outright moves the damping
+by at most 0.02, so the game's own construction and 3.2m's agree.
+
+### 3.2 What the rider can know about the board (`PART=obs`) [M]
+
+The square root of the filter's own steady error covariance — "how well the rider knows this state". 7 m/s, tall:
+
+| Rail | | observability | the board's heave | its pitch | its pitch rate | the body's bank |
+|---|---|---|---|---|---|---|
+| 0° | seven senses | **rank 10 of 14** | 8.8 mm | **2.80°** | 11.2 °/s | 0.244° |
+| 0° | nine senses | **14 of 14** | 4.0 mm | **0.23°** | 1.7 °/s | 0.244° |
+| 10° | seven senses | 14 of 14 | 6.9 mm | 1.99° | 7.7 °/s | 0.251° |
+| 10° | nine senses | 14 of 14 | 5.6 mm | **0.28°** | 1.8 °/s | 0.222° |
+| 20° | seven senses | 14 of 14 | 10.8 mm | 2.40° | 7.6 °/s | 0.265° |
+| 20° | nine senses | 14 of 14 | 6.0 mm | **0.28°** | 1.7 °/s | 0.224° |
+| 40° | seven senses | 14 of 14 | 12.3 mm | 1.44° | 5.7 °/s | 0.273° |
+| 40° | nine senses | 14 of 14 | 6.5 mm | **0.27°** | 1.7 °/s | 0.246° |
+
+**At no rail the four board states are not reconstructable at all.** Elsewhere they are formally observable through
+the rail's coupling and the estimate is poor. With the two senses the pitch is known to about a third of a degree
+everywhere, and the bank's own estimate improves a little as well. **The pitch rate alone does nearly all of this**;
+the load alone leaves the pitch at 1.0–2.7°.
+
+### 3.3 The damping, and where the sense pays (`PART=modes`) [M]
+
+Least damping of the closed loop: nominal / with the true delay a frame early / a frame late. 7 m/s:
+
+| | rail 0 | 10° | 15° | 20° | 30° | 40° |
+|---|---|---|---|---|---|---|
+| **tall, seven senses** | 0.105 / 0.105 / 0.105 | 0.377 / **−0.104** / **−0.160** | 0.280 / −0.233 / −0.242 | 0.260 / −0.309 / −0.362 | 0.201 / −0.352 / −0.420 | 0.306 / −0.332 / −0.420 |
+| **tall, nine senses** | 0.105 / 0.105 / 0.105 | 0.377 / **+0.016** / **+0.058** | 0.280 / −0.166 / −0.159 | 0.260 / −0.259 / −0.290 | 0.201 / −0.320 / −0.373 | 0.306 / −0.311 / −0.386 |
+| the pitch rate alone | — | 0.377 / −0.022 / +0.036 | 0.280 / −0.175 / −0.173 | 0.260 / −0.262 / −0.294 | — | — |
+| the load alone | 0.090 / … | 0.377 / −0.069 / −0.156 | 0.280 / −0.218 / −0.250 | 0.260 / −0.294 / −0.348 | — | — |
+| **Compress, seven senses** | 0.153 / 0.153 / 0.145 | 0.372 / **−0.059** / **−0.107** | 0.351 / −0.201 / −0.183 | 0.315 / −0.266 / −0.298 | 0.306 / −0.338 / −0.401 | 0.352 / −0.328 / −0.420 |
+| **Compress, nine senses** | 0.153 / 0.153 / 0.145 | 0.372 / **+0.051** / **+0.014** | **0.505** / −0.118 / −0.120 | **0.406** / −0.206 / −0.223 | 0.306 / −0.290 / −0.314 | 0.352 / −0.313 / −0.386 |
+
+- **The nominal damping does not move**, except in two Compress cells where the limiting nominal mode *was* an observer
+  mode (rail 15 and 20: 0.351 → 0.505 and 0.315 → 0.406). A sense changes the estimator, not the regulator.
+- **Where it pays is a frame of timing error, and at a rail of 10° it changes the sign** in both stances — from a mode
+  that grows to one that decays. That is the rail the shipped cap (12°) actually lets the schedule read.
+- Past 15° it improves everywhere and stays negative. **The sense does not make a committed carve robust.**
+- A cost on the board's states (`heaveScale`) raises the nominal damping a long way (rail 10, tall: 0.377 → 0.55) and
+  does **nothing** for the timing error, and with seven senses it makes the timing case worse. It is not kept.
+
+### 3.4 A lean put over and held (`PART=time`) [M]
+
+The model's first reproduction of 3.2n's trace. 7 m/s tall, the reference brought in at `LEAN_IN_RATE`, the board's
+roll at 0.3 / 0.5 / 0.9 / 1.3 / 1.8 / 2.5 s:
+
+| | asks | and reaches |
+|---|---|---|
+| **the ten-state design on the free plant** (what ships), rail 10 | 49.8° of rail | 2.2 / 12 / 34.6 / 40.4 / **40.8 / 40.8** — it holds |
+| **the fourteen-state design on the held plant**, rail 10 | 38.2° | 2.7 / 9 / 11.3 / 12.4 / **4.9 / 7.6** — it peaks at 14° and unwinds |
+
+**That is 3.2n's game trace** ("the rail peaks at +24° and unwinds to +4°, with nothing saturating") **in the model.**
+The two models of the same water disagree about whether the rail holds, and the game behaved like the fourteen-state
+one — which is why I went on to measure the board in the game rather than believe either.
+
+**A caveat I am putting on the record rather than burying:** past 15° of rail those runs drive the board 8–24 cm in
+heave and 20–35° in pitch, far outside the ±2 cm and ±1° the derivatives were measured over. The big-rail collapse in
+this table is an extrapolation and I do not quote it as physics. The rail-10 row reaches −76 mm, which is still four
+times the measurement window.
+
+## 4. The board's own mode, measured in the game (`boardmode.probe.ts`)
+
+This probe exists because of this folder's standing rule: **a captive hold's number is not used until it is checked.**
+The block says the board, with its rider, porpoises in straight running at 5, 9 and 12 m/s. The glide bars say it holds
+a steady glide at all four speeds. So: a steady glide, the board's pitch kicked 0.5 rad/s, and watch it come back [M]:
+
+| Speed | **the game** | the block, rigid pair | the block, board alone |
+|---|---|---|---|
+| 5 m/s | **1.41 Hz, damping −0.084** (grows 1.7× per 2 cycles) | +0.386 /s, 0.95 Hz — grows | −2.35 /s — decays |
+| 7 m/s | **1.01 Hz, damping +0.102** (decays to 0.53) | −0.418 /s, 0.63 Hz → damping **+0.104** | −6.09 /s |
+| 9 m/s | **1.33 Hz, damping +0.26** (decays to 0.19) | +0.569 /s, 0.80 Hz — grows | −4.66 /s |
+| 12 m/s | **1.41 Hz, damping +0.23** | (the table is held at 9 m/s) | — |
+
+Four things come out of this, and they are the most useful numbers in the round [M, I]:
+
+1. **The rigid pair is the right modelling choice, not the fault I suspected.** Its damping at 7 m/s is 0.104 against
+   the game's 0.102. Treating the board alone (2.54 kg) puts the mode at 6.3 Hz, nowhere near.
+2. **3.2m's "0.33–0.74 Hz" is the model's frequency, and it is 30–60 % low.** The game's board mode is at 1.0–1.4 Hz.
+3. **At 5 m/s the board's own pitch mode is unstable in the game.** Not the balance's — the board's, with the shipped
+   ten-state controller and no stick input. It grows slowly (a damping ratio of −0.084), so a glide survives, but any
+   disturbance leaves a ring that gets bigger. Ruling 29v says low speed is where a surfer is most solid and where a
+   fall is the strongest signal we have. **This is a mechanism for that, and it is not in the balance at all.**
+4. **The block is wrong at 9 m/s**, where it predicts a flutter the game damps at 0.26.
+
+The load sense's own spread over these runs, which is where `HEAVE_SENSE_NOISE`'s first number comes from: rms
+0.34 / 0.20 / 0.17 / 0.14 m/s² at 5 / 7 / 9 / 12, peaks 1.2–1.7 [M]. 1.1 m/s² is between the rms and the peak and is a
+hand-set number.
+
+## 5. The gate — the owner's acceptance test (item 3)
+
+`hold.probe.ts`, the Canyon-matched face, a compressed turn to take the wave on the side. **Rail used and heading
+turned beside the count, as 3.2m's table showed they must be** [M]:
+
+| | Reaches the wave on the side | Heading turned | Water rail used | Falls at |
+|---|---|---|---|---|
+| **Old rider** (29w's calibration) | **12 of 12** | 86–137° | 54–94° | — |
+| **New rider, 3.2p (what ships)** | **0 of 12** | 1.9–31.9° | 24.6–89.6° | 1.10–3.43 s |
+| new, the board carried, gains on the held plant | 0 of 12 | 1.6–10.6° | 3.8–11.3° | 0.50–0.72 s |
+| new, the board carried, senses off | 0 of 12 | 2.0–2.5° | 8.5–23.6° | 0.55–0.93 s |
+| new, the board carried, the shipped gains | 0 of 12 | 1.8–5.5° | 4.5–43.4° | 0.47–1.68 s |
+
+**The gate does not move, and the three rows below the ship line are why `heaveSense` is off.** Every way of putting
+the board's own states into this loop costs the rider half the time he currently survives, and the rail he reaches
+collapses with it. The senses-off row is the proof that it is the plant: the loss is there before any new sense is read.
+
+**The shipped row is 3.2n's row** — the design is byte-identical — re-run here from this worktree. The two runs differ
+in the third significant figure on the chaotic columns (the heading turned reads 1.9–31.9° here against 1.9–32°), which
+is this probe's own sensitivity and not a change.
+
+## 6. The old bars, as information only (revised orders: no gating)
+
+Reported with no judgement attached, as ruling 29r requires. **The shipped design is byte-identical to 3.2m's**, so
+every row is 3.2m's row; the table is in `results/bars-new-32p.jsonl` for the record.
+
+## 7. Seatbelts
+
+| | Result |
+|---|---|
+| `tsc` clean (app and server) | **yes**, nothing reported |
+| The shipped design unchanged | **yes** — all **54** `railmodel` rows byte-identical to 3.2m, gains included; `heaveSense` is `false` in `DEFAULT_WEIGHTS` and every use of the block is behind it |
+| `predictiveBalance.test.ts` | **6 passed** — the runtime class runs the analysis's loop to 1e-9 on **both** plant sizes |
+| Every schedule point finite | **yes**, all 306 (17 speeds × 3 stances × 6 rails), worst gain 1.15e4, 6.4 ms a design — the same cost as the ten-state one |
+| The full suite | see §7.1 |
+| The default game byte-identical (Canyon byte check) | see §7.1 — **this is 3.2n's unfinished check, now run** |
+| No unpaired rule forces or hidden motors | **yes, by construction**: this step applies no force at all. The two senses are read-outs of numbers the contact ledger and the board's own spin already carry, and the only `src/` additions are a sense row, a table of measured water derivatives and an optional LQR weight |
+
+## 8. What I am unsure of
+
+- **Whether the sense is worth anything on a plant the loop can use.** Everything in §3 is measured on the held plant,
+  which §5 then refutes for this loop. The sense's value (§3.2) is a property of the fourteen-state model, and there is
+  no fourteen-state model built on the free table that is not double counting. **That is the open question this round
+  leaves**, and it is a modelling question, not a tuning one.
+- **The 5 m/s instability is measured on one kick, at one stance, on the terminal plane.** It reproduces across the
+  sense being on and off (identical to the digit), but it is one condition. It wants a seed and stance sweep before
+  anything is built on it.
+- **`LOAD_ADAPT` (2 s) and `HEAVE_SENSE_NOISE` (1.1 m/s², 0.017 rad/s) are hand-set**, and on the re-check list for
+  two-way coupling. The adaptation is chosen against the mode, not tuned; the load's noise is between the measured rms
+  and peak; the pitch rate's is the head yaw rate's own value, because it is the same organ.
+- **The block's frequency is 30–60 % low against the game's** even where its damping is right. I have not chased why.
+  The most likely candidate is that the derivatives were taken about the deck under the rider while the pair's pitch
+  inertia is computed about the same point with the rider as a point mass at 0.84 m — a 52 kg·m² lever arm that a real
+  crouching body does not have rigidly.
+- **I did not try the one combination that might still work**: the free twelve derivatives with a heave block whose
+  own stiffness has been reduced to remove the double count. That is a derivation, not a measurement, and it belongs
+  in a ruling.
+
+## 9. Files (3.2p)
+
+- `src/physics/predictiveBalance.ts`: `FROZEN_PLANT` (the held twelve derivatives, 16 points), `HEAVE_PLANT` (the
+  water's answer per metre of heave and radian of pitch, with the two numbers that set the mode), `frozenCorrection`,
+  `heavePlantAt`, `plantAt`'s `sink`, `senseMatrix`'s two new rows, `DesignWeights.heaveSense` / `heaveSenseNoise` /
+  `heaveGains`, `HEAVE_SENSE_NOISE`, the heave states' zero cost with the account of why a cost cannot exist, a
+  size-agnostic `steadyTurn` and `design`, and `scheduledDesign`'s gain split.
+- `src/physics/AttachedRider.ts`: the two senses, `LOAD_ADAPT`, the soles' adaptation and its first-reading start.
+- `src/physics/predictiveBalance.test.ts`: the runtime checks run on both plant sizes.
+- `docs/research/new-rider/3.2/sink.probe.ts` (new): the model step — the reproduction check, the observability and the
+  filter's error, the damping with each sense and each cost, and a lean put over and held.
+- `docs/research/new-rider/3.2/boardmode.probe.ts` (new): **the board's own heave-and-pitch mode in the game**, against
+  the captive block's, with the load sense's own spread.
+- `results/`: `sink-repro-32p.jsonl`, `sink-obstime-32p.jsonl`, `sink-modes-32p.jsonl`, `boardmode-32p.jsonl`,
+  `boardmode-ten-32p.jsonl`, `hold-32p-32p.jsonl` (the board carried and sensed), `hold-blind-32p.jsonl`,
+  `hold-free-32p.jsonl`, `hold-ten-32p.jsonl` (what ships), `hold-base-32p.jsonl`, `bars-new-32p.jsonl`,
+  `suite-32p.txt`, `canyon-byte-32p.txt`.
+
+## 10. For the owner, in plain words
+
+**Nothing changes in the game this round.** The surfer rides exactly as he did when you last rode him. I am not
+presenting this as a ship.
+
+What I was asked to do was give the surfer a **feel for the board under his feet** — the pressure through his soles
+when the board sinks, and the board tipping nose-up and nose-down. The game already measures both; nobody had connected
+them to his balance. I connected them, both arriving a tenth of a second late, like a real person's.
+
+**It made him worse, and I found out why.** To feel the board moving, his internal picture of the board has to include
+that movement. The only measurements we have of that are from a test where the board was **clamped** — and a clamped
+board is not what a surfer's feet meet during a turn. I measured how fast the board really bobs and tips: about one
+cycle a second. A turn takes about a second. So by the time the turn has happened, the board has already finished
+bobbing, and the clamped numbers describe a moment that is already over. Riding on them, he fell in half a second
+instead of two or three. So the feel is built and switched **off**, with the measurements written down.
+
+**Two things I found that are worth more than the thing I was sent to build:**
+
+1. **At slow speed the board itself is unsteady.** Give it a small nudge nose-up at 5 m/s and the nodding grows instead
+   of dying away. That is the board and the water, not the surfer's balance. You have said several times that a surfer
+   is at his most solid at low speed — and our board is at its least. This is a real cause, and it is in a different
+   place from where we have been looking.
+2. **Last round's headline number was wrong, and I can now say what it should be.** The previous round said the
+   troublesome wobble was at a third to three quarters of a cycle a second. In the game it is one to one and a half.
+   The wobble is real; the number came from the model, not the game.
+
+**What I would do next**, for your call: look at the slow-speed nodding, because it is measured, it is in the right
+place to explain the falls you dislike most, and it has nothing to do with the balance work that has absorbed the last
+ten rounds.
