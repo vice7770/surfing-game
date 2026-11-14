@@ -1,0 +1,129 @@
+Step 3.2r: Shuford's cross-flow term for a planing face, built, measured and PARKED.
+
+Apply with:  git apply docs/research/new-rider/3.2/crossflow-32r.patch.txt
+
+WHAT IT IS. `hullForces.patchForce` gives a wetted hull face Savitsky's small-trim planing coefficient
+(PRESSURE_COEFFICIENT = 0.4575, his fit's own validity being 2-15 degrees of trim) at every incidence, and adds the
+cross-flow term only when the board is a FULLY SUBMERGED plate (`deep`, the duck-dive branch). Against NACA TN 3939's
+Table I at lambda = 3 that is 30-46 % low at 12-30 degrees of incidence. This patch gives a planing face Shuford's
+eq. (23) instead: C_N = CROSS_FLOW_LINEAR * sin(a) + (4/3) * sin^2(a) * cos(a), with CROSS_FLOW_LINEAR derived (not
+tuned) as whatever is left of this file's existing anchor once the cross-flow term is taken out of it at the same
+tau = 4 degrees, lambda = 3, so ordinary trim is unchanged to the last digit. Both coefficients ramp back to
+`SUBMERGED`'s own law by `submergedShare`, so the duck-dive force is byte-identical. The cos factor is held at its
+35-degree value past 35 degrees (eq. 23's outer cos tau sends C_N to zero at 90, which is untested and unphysical).
+
+VERIFIED. C_L on the wetted area against TN 3939's measurements at lambda = 3: 12 deg -30 % -> -3 %, 18 deg -37 % ->
++4 %, 24 deg -44 % -> +5 %, 30 deg -46 % -> +11 %. Exactly neutral at 4 degrees by construction; +20 % at 8.
+
+WHY IT IS PARKED, measured on the owner's acceptance test (24 runs, `n-old-cross-32r.jsonl`, `n-new-cross-32r.jsonl`
+against `n-old-32r.jsonl`, `n-new-32r.jsonl`):
+
+  old rider: gate 12 of 12 -> 11 of 12; n median 1.085 -> 1.083; path rate 33.99 -> 32.04 deg/s; kept at 1 s
+             1.052 -> 1.046; kept at 2 s 0.818 -> 0.837
+  new rider: gate 1 of 12 -> 1 of 12; n median 1.047 -> 1.056; path rate 32.63 -> 32.03 deg/s; kept at 1 s
+             1.023 -> 1.018
+
+It changes the carve by nothing, because OUR MEDIAN INCIDENCE IS 6 DEGREES (5.2-8.1 old, 3.2-9.3 new) and the law is
+neutral at 4 and +20 % at 8. The correction lives at 12-30 degrees, which our board only reaches once the face is
+steep enough to give a real bottom turn. And it is not free: run alone, these ten default-path assertions fail in
+`src/physics/AttachedRider.test.ts` -
+
+  rider coupled to the board > lets go once it tips beyond recovery, and stops loading the board
+  lean, trim, crouch and heading hold > tucks deeper than Compress under a tube's curl and stands back up
+  the banked body (turn redesign) > holds a crouched full-steer turn on flat water at 8 m/s
+  the banked body (turn redesign) > holds Compress taken mid-turn on flat water at 7 m/s
+  the banked body (turn redesign) > holds Compress taken mid-turn on flat water at 11 m/s
+  the banked body (turn redesign) > holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan
+  the banked body (turn redesign) > makes a deep U at the bottom of the face      (expected > 30, got 9.04)
+  the banked body (turn redesign) > keeps standing and turns through ninety degrees after a deep manual tuck
+  the banked body (turn redesign) > changes rail from a carve at 6 m/s
+  the balance margin > falls below 0.3 ... and recovers                           (expected < 0.3, got 0.3007)
+
+all ten real AssertionErrors, no timeouts. The deep-U one is a large regression, and the advisor's own warning is the
+cause: the cross-flow force is along the patch normal, so at a big incidence a large part of it is backwards along
+the path - it is drag in proportion to sin(a) as well as lift.
+
+WHEN TO TAKE IT OFF THE SHELF. When the wave track gives a face of 30-45 degrees over about 2 m (Part 16 section 3),
+the hull will run at the incidences where this law was measured and the present one is 30-46 % low. Then it is worth
+the default path, the ten tests above are the old law's behaviour and should be re-baselined with the owner, and the
+pressure-centre law (ours 0.667 fixed, measured 0.69-0.80 varying) comes right as a consequence rather than a tune.
+
+diff --git a/src/physics/hullForces.ts b/src/physics/hullForces.ts
+index 36c0a91a..4c364d82 100644
+--- a/src/physics/hullForces.ts
++++ b/src/physics/hullForces.ts
+@@ -37,6 +37,47 @@ export const PRESSURE_COEFFICIENT = (() => {
+   return savitskyLift(4, 3, 5).dynamic / (3 * Math.sin(trim) * Math.cos(trim));
+ })();
+ 
++/** The anchor `PRESSURE_COEFFICIENT` and `CROSS_FLOW_LINEAR` share: Savitsky's fit, at τ = 4°, λ = 3. */
++const ANCHOR_TRIM = (4 * Math.PI) / 180;
++
++/**
++ * **A planing face's cross-flow term** (step 3.2r, the water-physics advisor's consult of 2026-11-14).
++ *
++ * A single fixed `PRESSURE_COEFFICIENT` is Savitsky's *small-trim* fit — his own validity is 2° ≤ τ ≤ 15° — read as
++ * though it held at any incidence. Measured against the Langley tank, it does not: on NACA TN 3939's Table I
++ * (Shuford 1957, *A theoretical and experimental study of planing surfaces including effects of cross section and plan
++ * form*, = NACA Report 1355; a 4-inch-beam flat plate, trims 12–34°, C_V 9–18, λ_m 0.8–8.2, wetted areas from
++ * underwater photographs), interpolated to λ_m = 3, the lift coefficient on the wetted area is 0.133 at 12°, 0.214 at
++ * 18°, 0.303 at 24° and 0.369 at 30°, where `PRESSURE_COEFFICIENT · sin τ cos τ` gives 0.094, 0.135, 0.171 and 0.199 —
++ * **30 to 46 % low** [S]. The deficit is the cross-flow term Savitsky's fit has no room for, and which this file
++ * already knows about: `SUBMERGED` adds it, but only once the board is a *fully submerged* plate (both faces wet and
++ * 0.15 m under), so a planing hull banked over in a carve has never had it. A carve runs the wetted bottom at tens of
++ * degrees of incidence, which is exactly where the fit is worst.
++ *
++ * Shuford's eq. (20)/(23) splits a planing surface's normal force into a slender-body linear term and a cross-flow
++ * term, C_N = (½πA/(1+A))·τ·cos²τ·(1 − sin β_e) + C_D,c·sin²τ·cos τ, and measures **C_D,c = 4/3** on the principal
++ * wetted area — "two-thirds the value given for a two-dimensional flat-plate airfoil" — finding it independent of
++ * trim, of length-beam ratio and of deadrise. So, planing:
++ *
++ *     C_N = CROSS_FLOW_LINEAR · sin α + CROSS_FLOW · sin²α · cos α
++ *
++ * with α the flow's incidence on the wetted face. **No new calibration**: `CROSS_FLOW_LINEAR` is whatever is left of
++ * this file's existing anchor once the cross-flow term is taken out of it at that same τ = 4°, λ = 3, so a board at
++ * ordinary trim carries exactly the lift it carried before, and the correction is all at the high incidences where the
++ * fit was measured to fail. Against the same table the two-term law reads −3 % at 12° to +11 % at 30°, against
++ * −30 to −46 %.
++ *
++ * `CROSS_FLOW_COS_FLOOR` holds the term from decaying past the data: eq. (23)'s outer cos τ sends the normal force to
++ * zero at 90°, which is unphysical and untested — TN 3939 stops at 34° of trim — so past 35° of incidence the cos
++ * factor is held at its value there rather than falling away.
++ *
++ * Submerged, the deep plate's own law is kept exactly as `SUBMERGED` set it: both coefficients ramp back by
++ * `submergedShare`, so the duck-dive force at full incidence is unchanged.
++ */
++export const CROSS_FLOW = 4 / 3;
++export const CROSS_FLOW_LINEAR = PRESSURE_COEFFICIENT - CROSS_FLOW * Math.sin(ANCHOR_TRIM) * Math.cos(ANCHOR_TRIM);
++export const CROSS_FLOW_COS_FLOOR = Math.cos((35 * Math.PI) / 180);
++
+ /**
+  * Planing pressure concentrates behind the spray root. Taking p ∝ 1/√x at a
+  * distance x behind it gives lift ∝ √λ, as in Savitsky's dynamic term, and a
+@@ -225,13 +266,21 @@ export function patchForce(
+   // Submerged, both faces wet: the plate's cross-flow drag on top of the planing law, by its share under (`SUBMERGED`).
+   const deep = bottom >= 1 && deck >= 1 ? submergedShareHere : 0;
+   if (normalSpeed !== 0 && face > 0) {
+-    const k = 0.5 * density * PRESSURE_COEFFICIENT * pressureScale * face * area;
++    // The two coefficients of `CROSS_FLOW`'s law, ramped back to `SUBMERGED`'s deep plate by its share under, so a
++    // fully submerged face carries exactly the law it carried before and a planing one carries Shuford's.
++    const cosIncidence = Math.max(tangential / speed, CROSS_FLOW_COS_FLOOR);
++    const linear = CROSS_FLOW_LINEAR + deep * (PRESSURE_COEFFICIENT - CROSS_FLOW_LINEAR);
++    const crossOneSided = CROSS_FLOW * cosIncidence;
++    const cross = crossOneSided + deep * (SUBMERGED.normalDrag - PRESSURE_COEFFICIENT - crossOneSided);
++    // The linear term keeps the spray-root distribution (`planingScales`); the cross-flow term is spread evenly, its
++    // own centre of pressure being the wetted length's middle (Shuford's eq. 25).
++    const k = 0.5 * density * linear * pressureScale * face * area;
+     let pressure = k * speed * normalSpeed;
+     let damping = k * (speed + (normalSpeed * normalSpeed) / speed);
+-    if (deep > 0) {
+-      const kd = 0.5 * density * area * deep * (SUBMERGED.normalDrag - PRESSURE_COEFFICIENT);
+-      pressure += kd * Math.abs(normalSpeed) * normalSpeed;
+-      damping += 2 * kd * Math.abs(normalSpeed);
++    if (cross !== 0) {
++      const kc = 0.5 * density * cross * face * area;
++      pressure += kc * Math.abs(normalSpeed) * normalSpeed;
++      damping += 2 * kc * Math.abs(normalSpeed);
+     }
+     out.pressure.x = -pressure * normal.x;
+     out.pressure.y = -pressure * normal.y;
