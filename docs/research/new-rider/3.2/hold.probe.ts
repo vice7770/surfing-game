@@ -93,6 +93,13 @@ it("the owner's acceptance test: a compressed turn to take the wave on the side 
     };
     let peakRailWater = 0;
     let pastBiteFor = 0;
+    // Step 3.2p, the owner's own words after riding 3.2n: "starts turning just not fast enough ... movement is not
+    // responsive enough to surf the wave". From the player's hands that is **the lean he asks for against the lean he
+    // gets**, which is the pair this probe was not reporting. `leanAsked` is the reference the balance is given (the
+    // stick, eased at LEAN_IN_RATE); `bank.angle` is what the body actually reaches. The headline is the ratio.
+    let peakAsked = 0;
+    let bankAtPeakAsk = 0;
+    const asking = rig.rider as unknown as { leanAsked?: number; bank: { angle: number } };
     rig.rider!.steer = steer;
     for (let i = 0; i < Math.round((TURN_LIMIT + HOLD) / STEP); i += 1) {
       const t = (i + 1) * STEP;
@@ -104,6 +111,8 @@ it("the owner's acceptance test: a compressed turn to take the wave on the side 
       peakRailWater = Math.max(peakRailWater, rw);
       if (rw > 48) pastBiteFor += STEP;
       peakBank = Math.max(peakBank, Math.abs(rig.rider!.bank.angle * DEG));
+      const askedNow = Math.abs((asking.leanAsked ?? 0) * DEG);
+      if (askedNow > peakAsked) { peakAsked = askedNow; bankAtPeakAsk = Math.abs(asking.bank.angle * DEG); }
       const ff = fromFall();
       maxFromFall = Math.max(maxFromFall, ff);
       if (phase === 'turn' && (ff >= ACROSS || t >= TURN_LIMIT)) {
@@ -134,6 +143,9 @@ it("the owner's acceptance test: a compressed turn to take the wave on the side 
       entryMs: r(entry, 2), reachedAcross: maxFromFall >= ACROSS, maxFromFallDeg: r(maxFromFall, 1),
       acrossAtS: r(acrossAt, 2), speedAcrossMs: r(speedAcross, 2),
       peakRailDeg: r(peakRail, 1), peakRailWaterDeg: r(peakRailWater, 1), pastBiteS: r(pastBiteFor, 2), peakBankDeg: r(peakBank, 1),
+      // The owner's headline: the lean asked for, the bank reached at that moment, the best bank reached at all, and
+      // the share of the ask that arrived.
+      leanAskedDeg: r(peakAsked, 1), bankAtAskDeg: r(bankAtPeakAsk, 1), reachedShare: r(peakBank / Math.max(peakAsked, 1e-6), 3),
       held: !fell, fellIn: fell ? phase : '', fell, fellAtS: r(fellAt, 2),
       lean: r((rig.rider as unknown as { leanPace?: number }).leanPace ?? 0, 2),
       railCapDeg: r(((rig.rider as unknown as { railCap?: number }).railCap ?? 0) * DEG, 1),

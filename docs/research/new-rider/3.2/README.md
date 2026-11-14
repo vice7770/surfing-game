@@ -3232,6 +3232,53 @@ and two of the eight runs now finish the bottom turn, climb, and stand there wai
 has moved from *"he goes down in the bottom turn"* to *"he gets up the face and loses it in the climb or while
 waiting"*. §3.2 names what is most likely under that: the 0.33–0.74 Hz board mode the rider has no sense of.
 
+## 5b. The owner's own words after riding 3.2n, and the number he can feel
+
+The coordinator asked him whether the surfer never starts the turn or starts it and loses it. He answered:
+
+> "starts turning just not fast enough and doesn't have the balance expected for a surfer, movement is not enough
+> responsive to surf the wave"
+
+The coordinator read that together with 3.2n's trace ("the bank stalls at 25° against the 50° asked") as one
+observation from two seats, made **the lean asked against the lean reached** the headline number, and named a
+candidate: the balance's bank cost is a **2.9° limit for every stance** where the capture point actually leaves the
+feet at 8.9 / 11.5 / 13.5°, so a balance that believes it is falling at 2.9° would resist a 50° lean the whole way.
+
+**I measured the pair before building anything, and the premise does not survive it.** `hold.probe.ts` now records the
+lean asked, the bank reached and the share, per run (all twelve, 50° asked throughout) [M]:
+
+| | Bank reached, 12 runs | Share of the ask | Water rail used | **Heading turned** | Reaches across |
+|---|---|---|---|---|---|
+| **Old rider** (passes) | **24.2–70.0°** | — | 54–94° | **40.6–91.6°** | **12 of 12** |
+| **New rider (ships)** | **25.5–70.0°** | **0.51–2.80** | 24.6–89.6° | **1.9–31.9°** | 0 of 12 |
+| new + `feetReach` | 26.2–70.0° | 0.69–2.80 | 26.1–89.9° | 1.9–29.3° | 0 of 12 |
+
+**The lean is not short.** The two riders' banks span the same range, 24–70°, and in eight of the twelve runs the new
+rider's body banks **past** the 50° asked (shares of 1.4 to 2.8). "The bank stalls at 25° against the 50° asked" is
+**one run of twelve** — Compress, the wave's own pace, full stick — and the old rider has runs down to 24.2° of bank
+and passes them. A fix aimed at the lean is aimed at something that is not missing.
+
+**`feetReach` was re-measured on top of the sense anyway, as asked, and it confirms it** [M]. It does exactly what the
+coordinator predicted to the short run — the worst bank goes 25.5° → 34.6°, its share 0.51 → 0.69 — and **the heading
+that run turns goes 2.7° → 2.6°. Nothing.** Across the twelve, the falls are 1.13–3.32 s against 1.10–3.43 s and the
+heading turned 1.9–29.3° against 1.9–31.9°. So on the owner's own test `feetReach` costs nothing (3.2n's "it costs the
+standing stance its 90° turn" was measured on the flat-water turn probe, and that cost does not appear here) **and it
+buys nothing either.** It is still not landed: the gate does not move, and the contract's third "do not" stands.
+
+**Where the gap actually is, and it is one line:** both riders put the board on a big rail — 54–94° against 24.6–89.6°,
+overlapping — and the old rider's heading comes round 40.6–91.6° while the new rider's comes round 1.9–31.9°.
+**The lean arrives, the rail arrives, and the turn does not follow.** Same stick, same body angle, same rail, a
+twentieth of the heading. The responsiveness the owner is describing is the **board's** response to the rail, not the
+body's response to the stick.
+
+3.2n reached the same place from a single trace ("the real discriminator is heading turned per rail used") and I have
+now measured it across twelve runs, with the old rider's bank beside it to remove the lean as a candidate. **The next
+measurement this wants is the yaw the board makes per degree of rail, old rider against new, at the same rail and
+speed — and, if they differ, where the old rider's yaw moment comes from.** Its `holdLine` heading loop was dropped
+for the new rider in 3.2e, and `COMPRESS_PULL` and `CARVE_CARRY` were switched off for it in the same step; if the old
+rider's turn is coming from those rather than from its rail, that is the owner's no-hidden-motors rule and not a
+controller question at all. That is a measurement, not a build, and it is the one I would spend the next round on.
+
 ## 6. The old bars, as information only (revised orders: no gating)
 
 `results/bars-new-32m.jsonl` against `bars-new-32L.jsonl`, the same 30 rows, **reported and not tuned to**.
@@ -3814,6 +3861,53 @@ collapses with it. The senses-off row is the proof that it is the plant: the los
 **The shipped row is 3.2n's row** — the design is byte-identical — re-run here from this worktree. The two runs differ
 in the third significant figure on the chaotic columns (the heading turned reads 1.9–31.9° here against 1.9–32°), which
 is this probe's own sensitivity and not a change.
+
+## 5b. The owner's own words after riding 3.2n, and the number he can feel
+
+The coordinator asked him whether the surfer never starts the turn or starts it and loses it. He answered:
+
+> "starts turning just not fast enough and doesn't have the balance expected for a surfer, movement is not enough
+> responsive to surf the wave"
+
+The coordinator read that together with 3.2n's trace ("the bank stalls at 25° against the 50° asked") as one
+observation from two seats, made **the lean asked against the lean reached** the headline number, and named a
+candidate: the balance's bank cost is a **2.9° limit for every stance** where the capture point actually leaves the
+feet at 8.9 / 11.5 / 13.5°, so a balance that believes it is falling at 2.9° would resist a 50° lean the whole way.
+
+**I measured the pair before building anything, and the premise does not survive it.** `hold.probe.ts` now records the
+lean asked, the bank reached and the share, per run (all twelve, 50° asked throughout) [M]:
+
+| | Bank reached, 12 runs | Share of the ask | Water rail used | **Heading turned** | Reaches across |
+|---|---|---|---|---|---|
+| **Old rider** (passes) | **24.2–70.0°** | — | 54–94° | **40.6–91.6°** | **12 of 12** |
+| **New rider (ships)** | **25.5–70.0°** | **0.51–2.80** | 24.6–89.6° | **1.9–31.9°** | 0 of 12 |
+| new + `feetReach` | 26.2–70.0° | 0.69–2.80 | 26.1–89.9° | 1.9–29.3° | 0 of 12 |
+
+**The lean is not short.** The two riders' banks span the same range, 24–70°, and in eight of the twelve runs the new
+rider's body banks **past** the 50° asked (shares of 1.4 to 2.8). "The bank stalls at 25° against the 50° asked" is
+**one run of twelve** — Compress, the wave's own pace, full stick — and the old rider has runs down to 24.2° of bank
+and passes them. A fix aimed at the lean is aimed at something that is not missing.
+
+**`feetReach` was re-measured on top of the sense anyway, as asked, and it confirms it** [M]. It does exactly what the
+coordinator predicted to the short run — the worst bank goes 25.5° → 34.6°, its share 0.51 → 0.69 — and **the heading
+that run turns goes 2.7° → 2.6°. Nothing.** Across the twelve, the falls are 1.13–3.32 s against 1.10–3.43 s and the
+heading turned 1.9–29.3° against 1.9–31.9°. So on the owner's own test `feetReach` costs nothing (3.2n's "it costs the
+standing stance its 90° turn" was measured on the flat-water turn probe, and that cost does not appear here) **and it
+buys nothing either.** It is still not landed: the gate does not move, and the contract's third "do not" stands.
+
+**Where the gap actually is, and it is one line:** both riders put the board on a big rail — 54–94° against 24.6–89.6°,
+overlapping — and the old rider's heading comes round 40.6–91.6° while the new rider's comes round 1.9–31.9°.
+**The lean arrives, the rail arrives, and the turn does not follow.** Same stick, same body angle, same rail, a
+twentieth of the heading. The responsiveness the owner is describing is the **board's** response to the rail, not the
+body's response to the stick.
+
+3.2n reached the same place from a single trace ("the real discriminator is heading turned per rail used") and I have
+now measured it across twelve runs, with the old rider's bank beside it to remove the lean as a candidate. **The next
+measurement this wants is the yaw the board makes per degree of rail, old rider against new, at the same rail and
+speed — and, if they differ, where the old rider's yaw moment comes from.** Its `holdLine` heading loop was dropped
+for the new rider in 3.2e, and `COMPRESS_PULL` and `CARVE_CARRY` were switched off for it in the same step; if the old
+rider's turn is coming from those rather than from its rail, that is the owner's no-hidden-motors rule and not a
+controller question at all. That is a measurement, not a build, and it is the one I would spend the next round on.
 
 ## 6. The old bars, as information only (revised orders: no gating)
 
