@@ -8,3 +8,8 @@
      × snapshots the leash, the duck-dive and the swimmer 3545ms
      × starts the rider just outside the break line, where catches happen 2445ms
      × reads each ride from its trace, and reports the finished ride as plain data 2446ms
+
+[This log is PARTIAL: the run exited on a SIGTERM (code 143) at about 1 h 45 m when the session environment was
+reset, without printing a summary. The four SurfZoneRunner failures above are PR #204's known stale tests, which
+fail on pristine main in a file outside the merge suite. Nothing else had failed when it was killed, which is not the
+same as the rest having passed.]
