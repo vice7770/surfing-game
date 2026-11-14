@@ -4157,15 +4157,15 @@ line, so wrapping it is exactly switching a rule off. Reaches the wave on the si
 | | gate | heading turned | what changes |
 |---|---|---|---|
 | **old rider, as shipped** | **12 of 12** | net 72–179° | — |
-| old rider, `CARVE_CARRY` off | **12 of 12** | *(net not recorded)* | **the gate not at all.** The 6 tall runs are identical to the line above; the 6 compressed all still get across, their `maxFromFall` moving −12 to +28° (114.0–132.9°), and they **fall 0.6–4.9 s sooner** (2.57–5.63 s against 5.15–7.50) |
-| old rider, `COMPRESS_PULL` off | **6 of 12** | *(net not recorded)* | **0 of 6 compressed runs get across** (the 6 tall are untouched): the compressed rail collapses to 0.1–3.3° and their `maxFromFall` to 49.8–59.4°, and they ride on to 5.32–5.97 s without ever turning |
+| old rider, `CARVE_CARRY` off | **12 of 12** | net 72.1–179.2° | **the gate not at all.** The 6 tall runs are identical to the line above; the 6 compressed all still get across, their `maxFromFall` moving −12 to +28° (114.0–132.9°), and they **fall 0.6–4.9 s sooner** (2.57–5.63 s against 5.15–7.50) |
+| old rider, `COMPRESS_PULL` off | **6 of 12** | net 2.1–151.3° (compressed 2.1–69.9°) | **0 of 6 compressed runs get across** (the 6 tall are untouched): the compressed rail collapses to 0.1–3.3° and their net heading to 2.1–69.9°, and they ride on to 5.32–5.97 s without ever getting round |
 | old rider, all three off | **7 of 12** | net 2.8–162° | the 6 tall runs identical; 1 of 6 compressed survives |
 | **new rider, as shipped (3.2p)** | **0 of 12** | net 10–123° | — |
 | new rider, lent all three | **1 of 12** | net 10–133° | four falls inside 1 s, at 9.6–11.5 m/s |
 
-(The two middle rows were run before the probe recorded the signed heading, and I did not spend the machine on
-re-running them while the suite was on the cores: their gate and their `maxFromFall` are what I have, and both
-conclusions below rest on comparisons inside one metric.)
+(All six rows are from the rebased tree. The old rider's own twelve runs are byte-identical before and after the
+rebase, and each ablation's six **tall** rows are byte-identical to the shipped old rider's, which is the check that
+the ablation only touches what it says it touches.)
 
 Read it this way:
 
