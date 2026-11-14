@@ -57,7 +57,9 @@ started. `node_modules` is symlinked from the main checkout rather than installe
 of one core each". The scouts took **23 minutes** apiece, and the pipeline's own estimate for phase 2 moved between
 **3 and 4.5 hours a case** depending on what else was on the machine (it read 8 h with the browser running, 3 h in
 the quietest moment, 4.5 h alongside the seatbelts). With three at a time that is roughly **7 to 10 hours for the
-five**, in the same country as ruling 31's ten taking about 8 hours. The supervisor is `nohup`/`caffeinate`d
+five**, in the same country as ruling 31's ten taking about 8 hours. Once the suite finished and the machine freed
+up, the three running cases re-estimated to **about 1h50 each** for the rest of their phase 2, so the real total is
+likely nearer **4 to 5 hours** than 10 — the spread is load, not the cases. The supervisor is `nohup`/`caffeinate`d
 and resumes after a stop or a reboot, so they carry on past this round: `bash …/scratchpad/c2runs2/c2c.sh status`.
 
 The scouts have placed all three of the first wave, and one of them is worth flagging now: **`pool_c2_b3s_a0` saw no
