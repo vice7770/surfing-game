@@ -482,9 +482,7 @@ describe('a plunging lip’s veil (C2 step 5g, `?lipVeil=on`)', () => {
   });
 
   it('throws them at the measured mean of the impact speed, with a tail past twice it', () => {
-    const cloud = new SprayCloud(12);
-    cloud.veil = true;
-    // A long run of landings, so the exponential's tail has a population to show itself in.
+    // Sixty landings on their own seeds, so the exponential's tail has a population to show itself in.
     const scene = flatScene(0, []);
     const speeds: number[] = [];
     for (let n = 0; n < 60; n += 1) {
