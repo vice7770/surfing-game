@@ -17,7 +17,9 @@ Expected (3.2L, 3.2m, 3.2p):
 Why it did not finish: both spin-ups completed (the sea states were written) and both runs were stepping when the
 round ended. Another session was running the full suite on the same machine throughout - 22 vitest workers on 12
 cores - and the bench was getting 15-29 % of one core, against the 57-88 s spin-ups 3.2p measured on a free machine.
-Rerunning it on a quiet machine is the two commands above and about four minutes.
+Rerunning it is the two commands above. Budget more than 3.2p's spin-up times suggest: with the machine mostly free
+at the end of this round the two 3600-step runs had each burned 11-14 minutes of CPU and still had not finished, so
+the stepping phase - not the spin-up - is the expensive part. Give it half an hour on a quiet machine.
 
 What IS established about the default game, in place of the hashes:
 - By construction: `BoardBody`'s yaw ledger writes only inside `if (BoardBody.yawLedger)`, a static that defaults to

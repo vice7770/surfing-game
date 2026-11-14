@@ -4340,6 +4340,8 @@ arithmetic on published means.
   established about the default path: the ledger writes only behind a static false, the lean hold is inside the new
   surfer's own branch, **the old rider's twelve runs on this very test are byte-identical to 3.2m's stored file**, the
   six rider-and-board test files pass alone, and the suite's own Canyon byte test timed out rather than failing.
+  Budget half an hour for the rerun, not the four minutes 3.2p's spin-up times imply: the 3600-step phase is what
+  costs, and each run had burned 11–14 minutes of CPU here without finishing.
 - **No unpaired force is added.** The ledger is bookkeeping behind a flag; the lean hold changes a reference, not a
   force, and is on only under `rider: 'new'`.
 
