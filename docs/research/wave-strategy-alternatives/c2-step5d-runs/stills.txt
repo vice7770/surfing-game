@@ -1,0 +1,19 @@
+# C2 step 5d: the foam-on leg against the foam-off leg, the same four shots, pixel by pixel (tolerance 2 of 255).
+# 'brighterInA' is how many of the differing pixels are brighter with the bore foam on.
+
+{'a': 'bore-face-rich-midday-at72s.png', 'b': 'bore-face-rich-midday-at72s.png', 'pixels': 921600, 'differing': 157438, 'share': 0.17083, 'meanDelta': 38.6, 'worst': 160, 'brighterInA': 143277, 'box': [195, 181, 1275, 519]}
+{'a': 'bore-line-rich-midday-at72s.png', 'b': 'bore-line-rich-midday-at72s.png', 'pixels': 921600, 'differing': 102808, 'share': 0.11155, 'meanDelta': 23.8, 'worst': 156, 'brighterInA': 85032, 'box': [429, 284, 1279, 554]}
+{'a': 'bore-above-rich-midday-at72s.png', 'b': 'bore-above-rich-midday-at72s.png', 'pixels': 921600, 'differing': 222421, 'share': 0.24134, 'meanDelta': 37.1, 'worst': 149, 'brighterInA': 195016, 'box': [0, 214, 902, 719]}
+{'a': 'curl-behind-rich-midday-at72s.png', 'b': 'curl-behind-rich-midday-at72s.png', 'pixels': 921600, 'differing': 542, 'share': 0.00059, 'meanDelta': 24.0, 'worst': 127, 'brighterInA': 502, 'box': [1097, 178, 1261, 208]}
+
+# The clusters the bore foam's nodes fall in, 10 m cells (x, z) -> nodes:
+(-50, -60) 17
+(-50, -50) 10
+(-20, -110) 6
+(-20, -100) 30
+(-10, -110) 2
+(-10, -100) 27
+(40, -160) 1
+(40, -150) 42
+(50, -150) 14
+the held curl is at (103.7, -193.7)
