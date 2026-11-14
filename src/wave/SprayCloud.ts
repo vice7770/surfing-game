@@ -310,9 +310,11 @@ export const VEIL_AIR = {
   /** How long it blows, s, counted from the landing (so it lofts for `life − onset`). */
   life: 1.4,
   /**
-   * How far over the landing's own water it still blows, in wave heights: it falls linearly to nothing there, so a
-   * drop stops where the air no longer beats its fall speed and no class can climb a chimney. 1.6 H over the flat
-   * water is the photograph's own measured top (0.55–0.70 H over a crest that stands about 1 H over it).
+   * How far over the landing's own water it still blows, in **the breaking wave's own height** (`waveHeight`, what
+   * the lip reports, not the crest's stand over still water): it falls linearly to nothing there, so a drop stops
+   * where the air no longer beats its fall speed and no class can climb a chimney. The figure is a ceiling, not the
+   * veil's top — the drops stop well under it — and it was set to put the veil's body in the band the reference's
+   * ratio asks for, which c2-step5g.md §5.1 measures it doing (2.40 m against 2.2–2.4 m).
    */
   lift: 1.6,
   /** A landing within this share of a patch's radius refreshes it instead of adding one, and this many are kept. */

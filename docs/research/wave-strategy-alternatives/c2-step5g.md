@@ -231,13 +231,14 @@ kept and the oldest goes first.
 | radius | **2 H**, Gaussian, cut at twice it | the advisor's "1–2 m band" on a 2 m wave |
 | onset | **0.25 s** after the landing | Erinin's first droplets, Froude-scaled; and it is the guard that keeps the veil **1–4 m behind the curl's tip** at a 7 m/s peel, so it never fogs the barrel's mouth |
 | life | 1.4 s from the landing | so it lofts for about a second |
-| ceiling | falls linearly to nothing **1.6 H** over the water it was seeded on | **§2's own measured top**: 0.55–0.70 H over a crest that stands about 1 H over the flat water |
+| ceiling | falls linearly to nothing **1.6 × the breaking wave's own height** over the water it was seeded on | a ceiling, not a top — the drops stop well under it, where the air stops beating their fall. Set to put the veil's **body** in the band §2's ratio asks for, which §5.1 measures it doing. Note the unit is `waveHeight` as the lip reports it, **not** the crest's stand over still water |
 
 In `fly()` the patch's updraft joins the wind in the quadratic drag, exactly as the wind already does along z: the
 relative velocity is taken against the air, damped, and the air's own velocity added back. **Nothing says "big drops
 stay ballistic" — the drag says it.** A drop rises until the air no longer beats its fall speed, so with a 4.0 m/s
-updraft falling off to nothing at 3.2 m: a 0.2 mm mist drop climbs to about 1.4 H, a 0.45 mm veil drop to about 1 H,
-and a millimetre-plus drop, whose terminal speed is 3–7 m/s, is barely moved at all. The linear falloff is also what
+updraft falling off to nothing at 3.2 m on a 2 m wave: a 0.2 mm mist drop climbs most of the way to that ceiling, a
+0.45 mm veil drop about two thirds of it, and a millimetre-plus drop, whose terminal speed is 3–7 m/s, is barely
+moved at all. The linear falloff is also what
 makes a chimney impossible: there is a height at which every class stops.
 
 ### 4.3 Where it is wired
