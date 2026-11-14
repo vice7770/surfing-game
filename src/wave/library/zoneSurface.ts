@@ -691,7 +691,10 @@ export class ZoneSurface {
         const at = picked.at;
         const back = this.composites[at];
         const front = this.composites[at + 2 * (WAVE_POINTS - 1)];
-        const frame = picked.slice.end * smoothstep((s - back) / EDGE.band) * smoothstep((front - s) / EDGE.band);
+        // The lane's own end taper is not in here: it is already in the share the nodes carry, and counting it twice
+        // left the field's last lanes reading no flow at all where the nodes still carried a twentieth of the
+        // library's water (step 5b). These weights only average the flow among the slices that reach the point.
+        const frame = smoothstep((s - back) / EDGE.band) * smoothstep((front - s) / EDGE.band);
         const w = frame * picked.share;
         if (!(w > 0)) continue;
         if (picked.flow === -2) this.fillFlow(picked);
