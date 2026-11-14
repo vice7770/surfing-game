@@ -5,7 +5,7 @@
  *   node docs/research/wave-strategy-alternatives/c2-step5g-project.mjs <probe-at<N>s.json> [more probes...]
  *
  * The frustum test uses the stills' own cameras (`waterSheetShots`, fov 55, 1280x720, three's lookAt with up +y) --
- * the same arithmetic as step 5d's `c2-step5g-project.mjs`, which was checked against the stills it explained.
+ * the same arithmetic as step 5d's `c2-step5d-project.mjs`, which was checked against the stills it explained.
  *
  * The covered-area column is the sum of each particle's projected disc, pi r^2, over the frame's 921 600 px, with
  * **no allowance for overlap**, so it is an upper bound on what the spray can paint. A sprite sized `size` m at
