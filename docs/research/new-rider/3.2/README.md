@@ -5223,9 +5223,12 @@ own rail read-out). The headline it handed back, which the next round needs befo
 - **No unpaired force is added.** The one force this round adds is a pair by construction and the test above asserts it.
   The one force it removes (3.2q's cap) was never a force — it was a limit on an intention.
 - **The Canyon bench, shown rather than claimed**: `results/canyon-bytes-32t.txt`, the same command and the same
-  reference as step 5f's `canyon-bytes.txt`, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups. Both
-  changes are opt-in (`?rider=new`, `?legDrive=turn`), so the hashes are **expected not to move**; what the bench says
-  is in that file.
+  reference as step 5f's `canyon-bytes.txt`, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups.
+  **Both are byte for byte step 5f's** [M]: Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, default Canyon
+  `ea3d57a4d49f4b48` / `a1a2555739210f96`, all four identical. Both of this round's changes are opt-in (`?rider=new`,
+  `?legDrive=turn`), so that is the expected result and not a surprise. The per-step times are *faster* than 5f's
+  (11.79/13.03 ms against 14.04/16.24 for the default Canyon) because the machine was less loaded, not because anything
+  here is quicker — the hashes are the claim, the milliseconds are not.
 - A wave-track agent shared the machine throughout; nothing of theirs was stopped.
 
 ## 7. What I am unsure of

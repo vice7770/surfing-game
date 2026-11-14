@@ -1,0 +1,21 @@
+Canyon byte check, step 3.2t (claude/rider-new-32t on origin/main 009a9c51): the same command and the same reference as C2 step 5f's
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 44.2 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon-b32t.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.17/1.29, roller 0.64/0.75, front 0.00/0.00, lip 0.03/0.03, foam 2.50/2.80, airSources 0.05/0.07, aeration 1.33/1.43, contact 0.00/0.00, board 0.62/0.83, bubbles 0.15/0.18, spray 0.25/0.36, sounds 0.00/0.00, snapshotFields 3.92/4.22, snapshot 4.42/4.75, summary 0.40/0.43
+  CPU stages per step (step − water + snapshot + summary): 11.79/13.03; water (CPU solver, not timed on the device) 78.6
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 60.0 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon-c32t.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.30/1.58, roller 0.42/0.63, front 0.00/0.00, lip 0.03/0.03, foam 3.69/4.58, airSources 0.05/0.08, aeration 1.94/2.42, contact 0.00/0.00, board 0.64/0.89, bubbles 0.17/0.22, spray 0.17/0.26, sounds 0.00/0.00, snapshotFields 4.41/5.47, snapshot 4.90/6.09, summary 0.43/0.52
+  CPU stages per step (step − water + snapshot + summary): 14.09/17.72; water (CPU solver, not timed on the device) 84.6
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+BYTEDONE
+
+Against C2 step 5f's reference (c2-step5f-runs/canyon-bytes.txt), same command, same machine:
+  Canyon B        snapshots a367d938f15fa934 == a367d938f15fa934, state 9e5831f80e38abd9 == 9e5831f80e38abd9  IDENTICAL
+  default Canyon  snapshots ea3d57a4d49f4b48 == ea3d57a4d49f4b48, state a1a2555739210f96 == a1a2555739210f96  IDENTICAL
+Both of this round's changes are opt-in (?rider=new for the lean hold's removal, ?legDrive=turn for the leg pair), so
+this is the expected result and not a surprise. The per-step times are faster than 5f's (11.79/13.03 ms against
+14.04/16.24 for the default Canyon) because the machine was less loaded, not because anything here is quicker.
