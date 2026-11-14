@@ -399,13 +399,28 @@ lip impact carrying the height of the wave it fell from, which nothing but the v
 
 | | |
 | --- | --- |
-| **the Canyon byte check** | the default Canyon, medium, 3600 steps on a shared spun-up sea: **snapshots `ea3d57a4d49f4b48`, state `a1a2555739210f96`** — byte for byte the figures step 5f published for main, and 691cac46 ("step 3.2t's Canyon byte check") says those are still main's own [M]. The spray is in the snapshot hash, so a drop out of place would have moved it |
+| **the Canyon byte check** | the default Canyon, medium, 3600 steps, **fresh spin-up** — step 5f's own protocol: **snapshots `ea3d57a4d49f4b48`, state `a1a2555739210f96`**, byte for byte the figures step 5f published for main from a fresh spin-up, which 691cac46 ("step 3.2t's Canyon byte check") says are still main's own [M]. The spray is in the snapshot hash, so a drop out of place would have moved it. **A second control is in §7.1**, because the first one I ran was not comparable and it is worth writing down why |
 | `npx tsc --noEmit -p .` | clean, **exit 0** — and the check was proved able to fail: a deliberate `const __proof: number = 'not a number'` in `SprayCloud.ts` gave `error TS2322` and a non-zero exit, and the file was restored (the brief's worktree trap) |
 | `src/wave/SprayCloud.test.ts` | **39 of 39**, six of them new: the switch is off until asked for and leaves every landing's bytes as they were; the two regions' angles; the speed law's mean and its tail; **nothing thrown over water the lip has not hit**; the air carrying the light drops over the lip where thrown drops cannot reach; and the air not blowing before its onset |
 | `src/wave/PlungingLip.test.ts` | 71 of 71 |
 | `src/game/PhysicalMode.test.ts` | 92 of 92 |
 | `src/wave/SurfZoneSimulation.test.ts` | run on its own, as the brief asks (the full suite under load returns timeouts only) |
-| **the deletion check** | `git diff --stat origin/main HEAD` first read **1581 deletions**, every one of them `docs/research/new-rider/3.2/`, `AttachedRider.ts` and `legDrive.test.ts` — not a revert but `origin/main` moving to 691cac46 under a branch cut from 009a9c51. **Rebased onto it**; the branch is now **+1429 / −7**, and the seven are lines of my own that I replaced |
+| **the deletion check** | `git diff --stat origin/main HEAD` first read **1581 deletions**, every one of them `docs/research/new-rider/3.2/`, `AttachedRider.ts` and `legDrive.test.ts` — not a revert but `origin/main` moving to 691cac46 under a branch cut from 009a9c51. **Rebased onto it**; the branch's deletions against `origin/main` are now **7**, and the seven are lines of my own that I replaced |
+
+### 7.1 A control that was not a control
+
+Beside the fresh spin-up I ran a second leg: a **main** build of the same bench, reading the spun-up sea the branch
+leg had just written. It came back **`a8ac71b70eac2add` / `6319ed883e54b32e`** — different from both the branch and
+from step 5f's published figures, which for a few minutes looked like the branch moving the default Canyon.
+
+It is not. `m1-cpu-bench.ts` takes **two different paths**: with no cache it spins up, saves, re-imports the saved
+32-bit sea and steps; with a cache it imports **and then spins up again** [C]. A spin-up leg and a cache-reading leg
+therefore start from different water and their hashes are not comparable at all — the protocol only compares legs
+that took the same path. Step 5f's figures are from a fresh spin-up, and so is the branch leg that matches them, so
+**the byte check above is sound**; my second leg simply compared two different things. The paired control, both legs
+reading the same cache, is in `c2-step5g-runs/canyon-bytes.txt`.
+
+It is the round's own small instance of its rule: a hash is not a fact until you can say what water it was taken on.
 
 The one thing outside this branch: the advisor wrote its consult row into the **main checkout's** working tree, which
 already had another session's uncommitted files in it. The row is carried here as a commit; `docs/research/water-physics/consult-log.md`
