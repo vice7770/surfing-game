@@ -251,6 +251,11 @@ One change reaches outside the switch: a lip impact now carries the **height of 
 (`LipImpact.height`, from the flight's own `waveHeight`, with its fall as the fallback the plunge hold already uses).
 Nothing but the veil reads it.
 
+**Where it was and was not exercised.** Everything measured here ran the water sheet's **in-page** path (`?inpage`).
+The worker path was not measured and is sound by reading, not by test: `WorkerSurfZone` posts the config object
+**whole** to the worker (`port.postMessage({ type: 'start', config, … })`) with no allow-list, and it is the same
+`SurfZoneRunner` constructor that reads `config.lipVeil` at the other end [C].
+
 ---
 
 ## 5. What it does, measured
