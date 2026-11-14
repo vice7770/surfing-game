@@ -5360,7 +5360,7 @@ half-beam, so:
 | planform area | 0.620623 m² | **0.620623 m²**, and every station beam identical to 12 decimal places [M] |
 | maximum width | 0.464 m | **0.464 m** |
 | volume | 25.750 L | **25.750 L** (closes to 0.002 %) |
-| `max |normal.x|` | **0.000** | **0.981** (patch) / 0.91–1.00 (wetted, in the ride) |
+| `max \|normal.x\|` | **0.000** | **0.981** (patch) / 0.93–0.97 (wetted, in the ride) |
 | taper a | 0.924649, on u² | **0.567984, on |u|** |
 | rail thickness at u = 1, mid | **5.0 mm** | **28.8 mm** |
 | band radius | — | **6.7 mm at the tail → 12.6 mm mid → 11.1 mm in the nose third**; apex 0.9 → 12.6 mm; sweep 30° → 90° |
@@ -5417,7 +5417,7 @@ the path's angle off the nose **toward the high rail** (the way a carving board 
 
 **Drift 3°, which is the ride's own** [M]:
 
-| roll | flat, inward (N) | **section, inward (N)** | flat `p.y/|p|` vs cos φ | section `p.y/|p|` (departure) | band's share of the hull's vertical | suction (N) |
+| roll | flat, inward (N) | **section, inward (N)** | flat `p.y/\|p\|` vs cos φ | section `p.y/\|p\|` (departure) | band's share of the hull's vertical | suction (N) |
 |---|---|---|---|---|---|---|
 | 10° | 135.5 | **123.5** | 0.974 / 0.985 | 0.976 (−0.009) | 6.2 % | 0.7 |
 | 20° | 269.4 | **237.8** | 0.922 / 0.940 | 0.935 (−0.005) | 7.7 % | **0.0** |
@@ -5540,7 +5540,11 @@ advisor's own leading one is refuted by its own named test.**
   are the only thing in the model that can make a **rolling** moment from a small drift at zero roll, because every
   other patch normal has `x = 0`. I think the third is the mechanism [I] and **I have not measured it.** Two flags would
   settle it and neither needs a fourth hull: the squared taper on the same patch layout, and the side-face foils
-  re-enabled. Both are an hour's work and I did not spend the round's last hour guessing instead.
+  re-enabled. What I can say without them is that the advisor's own arithmetic bounds the first two well under what
+  would be needed — about 1 N·m for the buoyancy lever and ≤ 3.8 N·m for the side faces, against a board that goes from
+  0.55° of roll to 26.5° — and that my roll-torque sweep puts the two hulls' own springs within 0.07 N·m of each other
+  over the first fifteen degrees. Both flags are an hour's work and I did not spend the round's last hour guessing
+  instead.
 
 ## 6. Should the acceptance test start the rider on the face? — the one sentence the brief asked for
 
@@ -5553,15 +5557,29 @@ both, and the right change is to add the face cell beside it, not to move it.
 ## 7. Seatbelts
 
 - **The deletions column, checked before the push, as the brief requires.** `git diff --stat origin/main HEAD`:
-  **DIFFSTAT**. Nothing of the wave track's work is touched; the five branches that carried a silent revert this week
-  would have shown it here.
+  **35 files, 3 084 insertions, 61 deletions, and every one of the 61 is a line of mine that another line of mine
+  replaced** (28 in `boardShape.ts`, 18 in `BoardBody.ts`, 9 in `hullForces.ts` and 5 single-line replacements) [M].
+  **And the check earned its place again.** Branched at 691cac46, the wave track pushed **ebd79d76** while this round
+  ran; against that new `origin/main` the same command showed **15 deletions across `c2-step5b-runs/setup.txt` and
+  `setup-120s.txt`** — its work, which my branch would have reverted by being behind it. Rebased onto ebd79d76; the
+  column is now 61 and all mine. `git merge-base --is-ancestor` would not have caught it, and neither would reading the
+  insertions.
 - `npx tsc --noEmit -p .`: **exit 0**, on its own line, in a worktree whose `node_modules` is linked to the main
   checkout's. **And the check is proved able to fail**: with one line of `const x: number = 'not a number'` injected
   into `hullForces.ts` it exits **2** [M]. `npx tsc -p server/tsconfig.json --noEmit`: **exit 0**.
 - The files that cover the rider and the board, run alone — `AttachedRider`, `AttachedRider.deepCrouch`,
   `predictiveBalance`, `standingBody`, `humanBalance`, `BoardBody`, `boardShape`, `hullForces`, `railSection`,
   `legDrive`, `snapCross`, `legPower`, `compressTurn`, `cutback`, `leanOut`, `carveFlex`, `RideSession`, `duckTwoBody`,
-  `deckHollow`, `finForces` (`src/physics/`) and `PhysicalMode` (**`src/game/`**): **SUITE**. `results/suite-rider-32u.txt`.
+  `deckHollow`, `finForces`, `BoardRecovery`, `duckDive` (`src/physics/`) and `PhysicalMode` (**`src/game/`**):
+  **23 files passed, 429 passed, 13 expected fail, 0 failures**, exit 0, and
+  `grep -E "Error:|AssertionError"` over the log is **empty** [M]. `results/suite-rider-32u.txt`.
+- **One red test earned its keep and it is worth recording why.** The first run of that suite failed `duckTwoBody`'s
+  3 s dive — and it was right to. Writing the taper's solve to take either exponent had changed
+  `area * stringer * u * u` into `area * stringer * (|u| ** power)`, which is the same number in arithmetic and **not
+  the same double**, so the flat board's taper drifted in its last bits and a chaotic dive flipped a boolean. The flat
+  path now takes the old expressions verbatim (`BoardShape.ts`'s `squared` branch) and the test is green. Nothing else
+  in the round moved by more than its last bits, but it is exactly the kind of drift that would have shown up later as
+  a Canyon hash nobody could explain.
 - **Eleven new tests** (`src/physics/railSection.test.ts`): the flat board unchanged, with its 48 patches, its 0.925
   taper and `max |normal.x|` **exactly 0**; the planform, every station beam, the width and the volume held; the band's
   four facets a rail at equal turn angle, every normal a unit vector pointing down or outward and never up, every true
@@ -5575,6 +5593,10 @@ both, and the right change is to add the face cell beside it, not to move it.
   the water's on the hull — external by construction, appearing in the board's own `forces.suction` and `work.suction`
   ledgers and in the per-patch reaction the water takes back (`addReaction`). The one force it *removes*
   (`COMPRESS_PULL`, behind `?compressPull=off`) is the unpaired one.
+- **The default flat board is main's own, every double.** Beyond the Canyon hash: both checkouts' `buildBoardShape()`
+  printed as raw IEEE bit patterns — the taper, the volume, the planform, the width, the centre of mass, all nine
+  inertia terms and all ten fields of all 48 patches — **diff clean** [M]. That is the check that would have found the
+  drift in the paragraph above in one second instead of one red test, and it is the one I would run first next time.
 - **The Canyon bench, shown rather than claimed**: `results/canyon-bytes-32u.txt`, the same command and the same
   reference as step 5f's and 3.2t's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups. **CANYON**
   Every change this round is opt-in (`?hull=rail`, `?railSuction=off`, `?compressPull=off`), so that is the expected
