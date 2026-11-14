@@ -4090,3 +4090,370 @@ instead of two or three. So the feel is built and switched **off**, with the mea
 **What I would do next**, for your call: look at the slow-speed nodding, because it is measured, it is in the right
 place to explain the falls you dislike most, and it has nothing to do with the balance work that has absorbed the last
 ten rounds.
+
+# Part 15: step 3.2q, where the board's yaw comes from — and the metric that hid the answer
+
+Written 2026-11-14 by the build agent (Opus 5, effort xhigh), on branch `claude/rider-new-32q`, rebased on main
+b4604833 (which carries 3.2n and 3.2p, so Parts 13 and 14 above are its base). The contract: Part 14 §5's closing
+paragraph — decompose the board's yaw by source, old rider against new,
+and settle whether the old rider's turn is honest or `CARVE_CARRY`.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+## 1. Short answer
+
+**Heading turned on the owner's acceptance test: 10–123° (old rider 72–179°).** With this round's change shipped,
+12.5–144.5°.
+
+Both riders' boards come round. Part 14's "new 1.9–31.9° against old 40.6–91.6°" is an artefact of the metric, and
+every number built on it — including the brief I was given, which I wrote this part to correct — goes with it.
+
+- **The metric.** `hold.probe.ts` reports `maxFromFallDeg`, the largest *unsigned* angle between the heading and the
+  fall line. **A compressed bottom turn passes through the fall line**: in **24 of 24 runs**, both riders, the heading
+  swings to within 1.5° of straight down the face and comes out the other side [M]. A board that has rotated 120°
+  therefore reads 30 if it stops 30° past the line. Measured properly — the signed heading integrated frame by frame —
+  the new rider turns **10–123°** against the old rider's **72–179°**, and swings **51–134°** against **148–256°**.
+  A factor of about **1.7**, not a factor of 20.
+- **The yaw decomposition** (§3, a new ledger in `BoardBody`): of the water's yaw torque that drives the turn,
+  **hull pressure is 10–86 %, the fins 5–68 %, the rail side faces 1.3–6.1 %** — the rails are nothing, in both riders
+  [M]. The rider's coupling **resists** the turn by nearly the whole of what the water gives (its own yaw inertia
+  dragged round through the feet), and the board's net yaw torque is **0.07–0.61 N·m**: a quasi-steady turn.
+- **Yaw per degree of rail: old rider 1.50–2.80 °/s per degree, new rider 1.60–2.08** [M]. They overlap, and both sit
+  at or above the roll-plant lab's towed hull (1.0–1.6 °/s per degree, `../roll-plant/README.md` §3.1).
+  **The board carves, and it carves the same for both riders.** The brief's hypothesis — that the board has no honest
+  way to curve its path — is refuted by the board's own plant, which this folder had already measured.
+- **Question 2, in plain words: the old rider's turn is NOT `CARVE_CARRY`.** Ablated on its own the gate does not move,
+  12 of 12 either way [M] — what it costs is time: the compressed runs then fall 0.6–4.9 s sooner, which is the speed
+  it was written to give back, not the turn. And **all three gameplay pulls are gated on `compress > crouch`** [R, :3070], so in
+  the **tall** stance none of them has ever been running — and the tall old rider still reaches the wave on the side
+  **6 of 6** against the new rider's **0 of 6**, with no unpaired force anywhere. The honest old rider (all three off,
+  all twelve runs) scores **7 of 12**.
+- **But `COMPRESS_PULL` is load-bearing in Compress, and that half of the old rider's pass is a hidden motor** [M]:
+  switch it off and the compressed old rider goes from 6 of 6 to **0 of 6**, its rail collapsing from 7–39° to
+  0.1–3.3° (with all three off, 1 of 6 survives).
+  The owner compresses because the game rewards it, and what rewards it is a force with no reaction.
+- **Lending the new rider those same pulls makes it worse: 1 of 12, with four falls inside a second at 9.6–11.5 m/s**
+  [M]. `COMPRESS_PULL` leads a lean that a *driven* bank then holds; a free body given the same shove just goes over.
+  **A kinematically driven lean is itself a hidden support, and that — not `CARVE_CARRY` — is what the old rider has
+  and the new rider does not.** There is nothing to copy here in either direction.
+- **What actually fails** (§5): the new rider's twelve falls are two families. At **full stick** the lean runs past its
+  own 50° reference to `MAX_BANK` (70°) and he topples inward in **1.10–1.42 s**; at **half stick** he survives
+  2.9–3.4 s and stalls at 1.9–5.4 m/s with the turn still running. The first family is a **timing** fault: the stick
+  asks 50° and `LEAN_IN_RATE` delivers it in 0.6 s, while the turn that must balance it needs about a second to build,
+  and the trace shows the lean ahead of the turn by up to **0.24 g** for half a second [M].
+- **What shipped** (§6): the **lean hold**, on for `?rider=new`. A body may not ask for more lean than the turn it
+  already has will carry: the lean asked for is held where the force adds up, the tilt of the felt vertical (`pairFelt`,
+  which this balance already computes and already low-passes over its own 0.1 s sense delay) plus what the ankles hold
+  unaided (`ANKLE_REST_RANGE`, as a force). **No force, no new constant.** On the owner's test he **stays up longer in
+  11 of 12 runs** (mean 2.36 → **3.06 s**; the three earliest falls 1.10 / 1.20 / 1.28 → **1.58 / 1.77 / 3.80 s**),
+  turns **more heading in 10 of 12** (+20 % in all), and **the gate moves off zero for the first time in this step:
+  0 of 12 → 1 of 12**. Nineteen of the twenty-one step-3.2 bars are byte-identical; the two that move are the held
+  carves (tall 2.13 → 2.85 s held, Compress 2.17 → 1.62 s).
+- **The water-physics advisor was consulted** and its answer is in `docs/research/water-physics/consult-log.md`. It got
+  NACA TN 4187 open — the source two earlier agents failed on — and its ruling is blunt: **the carve is the heeled
+  bottom, the rail is a detail, do not build on it.** A real carve runs at a **load factor of 2.1**, where a board
+  turning at constant height can only reach 1/cos φ: `ω = n g sin φ / v`, so **a real bottom turn is 1.8× faster than
+  any level-flight board at the same rail, because it is simultaneously arresting a drop.** §7 has the whole of it and
+  it is the strongest lead for the next round.
+
+## 2. The probe, and why its numbers can be trusted against Part 14's
+
+`yawsource.probe.ts` is `hold.probe.ts`'s movement frame for frame, with the ledger on and the heading recorded in
+time. Part 14 flagged that the hold probe does not reproduce across sessions. **It reproduces here exactly**: the old
+rider's twelve fall times are 5.15, 7.50, 5.72, 5.32, 6.18, 6.13, 4.55, 2.45, 4.98, 2.47, 6.17 and 2.60 s, the same to
+the last digit as `results/hold-old-32m.jsonl` [M]. So the extra sampling does not perturb the sim, and this round's
+old-rider column is 3.2m's column. (I cannot explain why 3.2p's session differed; I can only report that mine does
+not.)
+
+One correction to the record while I am here: **the old rider does not "hold" this test either.** It reaches the wave
+on the side 12 of 12 and then falls, in **12 of 12**, at 2.45–7.50 s, mostly at 0.6–1.2 m/s, having ridden the turn out
+until the board stopped. The gate Parts 12–14 report as "12 of 12" is `reachedAcross`, not `held`.
+
+## 3. The yaw ledger (question 1)
+
+`BoardBody.yaw` (new; `BoardBody.yawLedger` switches it on, so the default game pays one branch per substep and nothing
+else): the mean torque about the world's up over the step, by source, positive turning the nose toward the board's
+left. It books the explicit right-hand side, the implicit per-patch pressure, radiation and added mass, the foils'
+implicit sideways impulses and the bed, and takes the board's own **I·Δω** as the total, so the parts sum to the turn
+the board actually made and `rider` is the residual — everything the rider's coupling carries.
+
+Means over the turn phase, with the turn's own sign taken out (+ drives the turn the stick asked for), N·m [M]:
+
+| | hull pressure | fins | **rails** | friction | buoyancy | added mass | radiation | **rider** | total |
+|---|---|---|---|---|---|---|---|---|---|
+| **old**, tall, full stick, wave's pace | −56.0 | −6.0 | **−0.8** | +0.6 | −0.8 | −1.5 | −0.3 | **+65.0** | +0.23 |
+| **new**, the same run | −29.4 | −10.8 | **−1.1** | +0.4 | −1.5 | −2.6 | −0.8 | **+46.0** | +0.11 |
+| **old**, Compress, full stick, wave's pace | −46.2 | −2.7 | **−0.9** | +2.1 | −0.9 | −3.0 | −0.5 | **+52.2** | +0.17 |
+| **new**, the same run | −6.8 | −6.7 | **−0.6** | +0.8 | −2.0 | −3.6 | −1.1 | **+20.1** | +0.07 |
+
+Over all twelve runs each:
+
+| | hull pressure | fins | **rails** | yaw per degree of rail |
+|---|---|---|---|---|
+| **old rider** | 10–86 % of the water's drive | 5–68 % | **1.3–5.7 %** | **1.50–2.80 °/s per degree** |
+| **new rider** | 32–74 % | 13–54 % | **1.9–6.1 %** | **1.60–2.08** |
+
+- **The rails do nothing.** 1.3–6.1 % of the driving torque, and most of that is the fore/aft asymmetry of their
+  wetting rather than a turning force: every rail face's normal is the board's own ±x [R, `buildFoils` :561], so its
+  force is purely lateral and its yaw is −Σ z·F over the stations — zero for symmetric wetting and *stabilising* when
+  the wetted centroid is aft, which on a trimmed board it is. The advisor's independent reading of the same code, and
+  of TN 4187's measurements on a real planing surface, agrees (§7).
+- **The rider resists.** Its entry is positive in every run of both riders — the yaw inertia the feet must drag round,
+  plus whatever the feet push — and it nearly cancels the water. The roll-plant lab's "the feet steer the board through
+  their centre of pressure" was measured on a *towed* board on flat water; in a developed turn on a wave the feet are a
+  brake on the yaw, not its source.
+- **The total is 0.07–0.61 N·m** against driving torques of 5–66, so the turn is quasi-steady almost from the start,
+  as the lab's 0.12 s settling says it should be.
+- **The board yaws per rail the same for both riders**, and both are at or above the towed plant. Whatever the new
+  rider's problem is, it is not that its board will not carve.
+
+The turn's force budget across the path, in system weights, over the same frames [M] — what the turn needs (m v ω),
+what the lean asks for (tan of the bank), what the water gives, and what the gameplay pulls give with no reaction.
+These are medians, so they are not an instantaneous balance, and §5 says why that matters:
+
+| | needs | lean asks | water gives | the pulls give |
+|---|---|---|---|---|
+| old, tall, full stick, wave's pace | 0.89 | 0.95 | 0.65 | 0 |
+| old, Compress, full stick, wave's pace | 1.01 | 0.99 | 0.63 | **+0.19** |
+| new, tall, full stick, wave's pace | 0.58 | 0.75 | 0.53 | 0 |
+| new, Compress, full stick, wave's pace | 0.40 | 0.33 | 0.20 | 0 |
+
+## 4. Question 2, measured: the ablation
+
+`ASSIST` wraps `compressAssist`, which writes the three pulls into the rider's own vectors and is read on the next
+line, so wrapping it is exactly switching a rule off. Reaches the wave on the side, out of 12 [M]:
+
+| | gate | heading turned | what changes |
+|---|---|---|---|
+| **old rider, as shipped** | **12 of 12** | net 72–179° | — |
+| old rider, `CARVE_CARRY` off | **12 of 12** | *(net not recorded)* | **the gate not at all.** The 6 tall runs are identical to the line above; the 6 compressed all still get across, their `maxFromFall` moving −12 to +28° (114.0–132.9°), and they **fall 0.6–4.9 s sooner** (2.57–5.63 s against 5.15–7.50) |
+| old rider, `COMPRESS_PULL` off | **6 of 12** | *(net not recorded)* | **0 of 6 compressed runs get across** (the 6 tall are untouched): the compressed rail collapses to 0.1–3.3° and their `maxFromFall` to 49.8–59.4°, and they ride on to 5.32–5.97 s without ever turning |
+| old rider, all three off | **7 of 12** | net 2.8–162° | the 6 tall runs identical; 1 of 6 compressed survives |
+| **new rider, as shipped (3.2p)** | **0 of 12** | net 10–123° | — |
+| new rider, lent all three | **1 of 12** | net 10–133° | four falls inside 1 s, at 9.6–11.5 m/s |
+
+(The two middle rows were run before the probe recorded the signed heading, and I did not spend the machine on
+re-running them while the suite was on the cores: their gate and their `maxFromFall` are what I have, and both
+conclusions below rest on comparisons inside one metric.)
+
+Read it this way:
+
+1. **The tall rows never had an assist**, so the tall old rider's 6 of 6 is honest, and it is the row that answers the
+   brief. Its turn comes from the hull and the fins, exactly as the ledger says.
+2. **`CARVE_CARRY` is not the turn.** It is a thrust **along** the path (`carryForce.copy(along)`, :3086), not across
+   it — so the coordinator's arithmetic, that `m g tan θ` is the banked turn's own force, lands on `COMPRESS_PULL`
+   (across the path, 0.5 of `tan`, capped at `TURN_PULL_LIMIT`) and not on the carry. Ablated, the gate does not move
+   and the tall runs do not change by a bit; what it costs is **time** — the compressed runs fall 0.6–4.9 s sooner,
+   which is exactly the carry's stated job (giving back the speed the carve sheds) and exactly the fault §9 says is
+   next. So it is a hidden motor too, and it is propping up the wrong thing honestly.
+3. **`COMPRESS_PULL` is load-bearing in Compress, and it is a hidden motor.** Half of the old rider's pass is bought
+   with an unpaired sideways force worth about +0.19 g of the turn, and without it the compressed old rider cannot even
+   get the board on a rail. By the owner's standing rule that half is a result to replace, not a target to copy.
+4. **There is nothing to copy anyway**, because the pull only works on a driven bank. §6's change is therefore not a
+   replacement for `COMPRESS_PULL`; it is on the other side of the same problem.
+
+## 5. What actually fails, and it is a timing fault
+
+The new rider's twelve falls, as 3.2p shipped them [M]:
+
+| | falls at | speed then | bank then | rail (median, turn phase) |
+|---|---|---|---|---|
+| **full stick** (6 runs) | **1.10–2.22 s** | 3.0–8.7 m/s | 25–70°, **four at `MAX_BANK`** | 14–34° |
+| **half stick** (6 runs) | 2.90–3.43 s | 1.9–5.4 m/s | −3 to 70° | 11–24° |
+
+The traced toppling run (tall, +1.5 m/s, full stick, falls at 1.20 s), against what the lean asks and what the turn
+gives at the same instant, in system weights [M]:
+
+| t, s | rail | bank | **turn gives** | **lean asks** | gap |
+|---|---|---|---|---|---|
+| 0.42 | −7.8° | 16.3° | 0.11 | 0.29 | **−0.19** |
+| 0.55 | −12.8° | 21.2° | 0.15 | 0.39 | **−0.24** |
+| 0.68 | −20.9° | 28.3° | 0.63 | 0.54 | +0.09 |
+| 0.88 | −35.4° | 42.4° | 0.69 | 0.91 | **−0.22** |
+| 1.02 | −50.8° | 56.7° | 1.54 | 1.52 | +0.02 |
+| 1.15 | −69.3° | **70.0° = `MAX_BANK`** | 2.33 | 2.75 | **−0.42** |
+
+The bank climbs monotonically from 8.7° to the stop in 1.15 s and he is gone at 1.20 s. The lean is ahead of the turn
+by 0.19–0.24 g through the lean-in, which is the half-second the body spends leaning on nothing, and it never recovers
+the margin.
+
+**Three readings of this round that go against me:**
+
+- I came in expecting to find that the rail could not steer. **It steers**, and the per-degree number was already in
+  this folder, measured on a towed board. I should have compared the two before building anything.
+- **The two fall families are different animals, and the half-stick one is not this round's.** Those runs stall: the
+  carve sheds 60 % of its speed in 2 s where Forsyth et al. measure a real bottom turn keeping 88–95 % [S]. The traced
+  tall-at-the-wave's-pace run is one of them — its lean and its turn track each other within 10 % the whole way and it
+  still fell, at 3.0 m/s. `CARVE_CARRY` exists because of exactly that, and the honest version of it is not in this
+  part.
+- **The force budget in §3 is medians, and medians mislead here**: at the peak of a new-rider turn the water gives
+  **1.94 g**, more than the lean asks. The shortfall is in **when**, not in **how much**.
+
+## 6. What shipped: the lean hold (on for `?rider=new`)
+
+One change, in `prepareBank` under the new rider's own reference [R]:
+
+> A body may not ask for more lean than the turn it already has will carry. A lean of θ asks for `tan θ` of sideways
+> force; the turn supplies the felt vertical's own tilt; the difference is an unbalanced pull inward that nothing in the
+> water answers. So the lean asked for is held at **(the felt vertical's tilt) + tan(`ANKLE_REST_RANGE`)**, composed as
+> forces — `pairFelt` being the pair's own specific force, which this balance already computes for the capture point
+> and already low-passes over `SPECIFIC_FORCE_TIME` (0.1 s, this rider's own sense delay), and `ANKLE_REST_RANGE`
+> (14.3°) being what the ankles hold with no help from the turn.
+
+It is a change to what the rider *intends*, not a force, so nothing is added without a reaction, and it introduces
+**no new constant**: both terms are already in the file. It bootstraps rather than locking him upright — the ankles
+roll the board onto its rail, the turn comes, the felt vertical tilts, the cap opens, and the lean follows the turn
+instead of leading it off the board. In the traced run the cap opens from 14.3° at the start to 38° by 0.7 s and past
+50° by about a second, as the turn builds.
+
+On the owner's acceptance test, twelve runs, against 3.2p's behaviour in the same session
+(`balance: { leanHold: 'off' }`) [M]:
+
+| | 3.2p | **shipped** |
+|---|---|---|
+| Reaches the wave on the side | 0 of 12 | **1 of 12** |
+| Falls at | 1.10–3.43 s | **1.58–3.80 s** |
+| Mean time up | 2.36 s | **3.06 s** (+30 %) |
+| Stays up longer | — | **11 of 12** (the twelfth is −0.01 s) |
+| The three runs that fell earliest | 1.10, 1.20, 1.28 s | **1.58, 1.77, 3.80 s** |
+| Heading turned (net) | 10–123° | **12.5–144.5°**, more in **10 of 12**, +20 % in all |
+
+**The composition matters and was measured, not chosen.** Adding the ankle's margin as an *angle*
+(`atan(tilt) + ANKLE_REST_RANGE`) rather than as a force gives half the gain — mean time up 2.74 s against 3.06, total
+heading +12 % against +20 %, and the gate stays at 0 of 12 — because at a big lean 14° of extra angle is a much larger
+extra force demand than 14° is at a small one. The force form is both the honest reading and the better number, and it
+is what ships. (`results/yaw-new-felt-32q.jsonl` has the angle form's twelve runs for the record.)
+
+**The step-3.2 bars, same comparison** [M]: **19 of the 21 rows are byte-identical** — all sixteen glides (a plane and
+three chop seeds at 5, 7, 9 and 12 m/s) and all three rises. The cap cannot bind in a straight line, because the lean
+asked for there is about zero and the cap is never below 14.3°. The two that move are the held carves:
+
+- **tall: 2.13 s → the whole 3 s with no fall at all** (`fell` goes from `balance` to empty), and it ends at 4.21 m/s
+  against 1.82. That bar has missed since 3.2f.
+- **Compress: 2.17 → 1.62 s**, and its Mode B share rises 0.022 → 0.46.
+
+So the change wins the tall carve outright and costs the compressed one half a second, which is the same split the
+gate shows. I am not tuning that away: §9 says what I think it is.
+
+**Why it ships although the gate is 1 of 12 and not 12.** Ruling 29r: a merge is gated on seatbelts, not on a probe
+bar. It is on for `?rider=new` only, which is itself opt-in, so the default game cannot move; `leanHold: 'off'` is one
+word back. It moves the owner's own number in the right direction in 11 of 12 runs with no straight-line regression,
+and the part that needs his hands is the part a probe cannot tell me: whether a lean that follows the turn *feels*
+like surfing or like a rider who will not commit.
+
+**What the owner would feel if this improved, in one line:** putting the stick hard over no longer drops him in a
+second — the surfer holds the compressed turn half again as long and comes round further before he goes.
+
+**To re-check when two-way coupling lands:** the cap reads the pair's specific force, which is exactly what a sinking
+board changes. A board that digs in and pulls harder opens the cap on its own, which is the behaviour wanted, but the
+ankle's 14.3° was measured on a board that does not sink.
+
+## 7. The water-physics advisor (consulted this round)
+
+Logged in `docs/research/water-physics/consult-log.md`. It opened **NACA TN 4187** (Savitsky, Prowse & Lueders 1958) —
+a flat plate rolled ±15° and yawed 0–20° at trims 6–30°, with side force, yawing and rolling moments, centre of
+pressure and chine-edge forces — which two earlier agents could not get open. Trimmed to what bears on this part [S]:
+
+- **A flat side face cannot curve the path, and our rails are flat side faces.** TN 4187 measures the body-axis side
+  force on a planing flat plate as "nearly zero" and its yaw moment as viscous and "very small": there is almost no
+  cross-flow across a planing bottom for a side plate to catch. Our ledger's 1.3–6.1 % is the same answer from the
+  other end.
+- **What a real engaged rail adds is edge suction on the buried chine**, which TN 4187 sees switching on suddenly past
+  a critical roll and off again past a yaw angle, and whose magnitude it does **not** publish. The exposed leading
+  chine's coefficient is 1.0–1.3 of full dynamic pressure, acting at 0.65 of the immersed length. If a rail force is
+  ever built, that is its form — immersion through the **wetted length**, speed as **V²**, the flow angle through an
+  **onset boundary** — and the advisor's own warning is that it is still a weathercock and **will not make the board
+  come round**.
+- **Rail-line curvature is not a force.** Water holds no groove, and the arithmetic kills it anyway: our rocker fits
+  R = 6.5 m and our planform is *convex* (the opposite of a ski's sidecut), so the heeled rail's own arc is 9.7 m at
+  42° — 0.52 g and 41 °/s — against a measured bottom turn's 3.84 m, 1.41 g and 109 °/s.
+- **The calibration we have been missing.** Forsyth et al. 2024 (214 waves, 10 competitive surfers): a bottom turn at
+  **42° of rail, 7.3 m/s, 1.9 rad/s, 99° in 0.96 s**; a cutback at 75° of rail, 3.0 rad/s, 152°. The advisor's
+  reduction is the useful part: **G scatters 0.55–1.57 but the load factor is 2.1 in both**, so **ω = n g sin φ / v**
+  and **G = n cos φ**. A board turning at constant height can only reach n = 1/cos φ, which at 42° is **64 °/s against
+  the real 109** — *a real bottom turn is 1.8× faster than any level-flight board at the same rail, because the board
+  is simultaneously arresting a drop.* Our medians sit at n ≈ 1.0–1.3.
+- **A real carve does need a slip angle**, so the weathercock structure we have is right in kind, and the fix belongs
+  in neither the fins' slip response nor the rail.
+- Its ranked suggestion: **log the hull's normal force through the carve and aim at n = 2.1**, with `ω = n g sin φ / v`
+  as the bar; then the pressure-centre law (ours 0.667 against a measured 0.69–0.80, roll- and yaw-independent); then
+  rail-dig's Y_β sign change past ~18° of rail; deadrise last.
+
+Its caveats, passed on unsoftened: TN 4187 ran at speed coefficients 7–18 and our board at 7 m/s is 3.3, below the
+range; its roll went to ±15°, so everything about 42–94° of rail is extrapolation; Forsyth's angular velocity is a
+resultant from a board-mounted device, not a pure yaw rate; and the load-factor reduction is the advisor's own
+arithmetic on published means.
+
+## 8. Seatbelts
+
+- `npx tsc --noEmit -p .`: **clean**. `npx tsc -p server/tsconfig.json --noEmit`: **clean** [M].
+- The suite (`--exclude SurfZoneSimulation.test.ts --exclude SurfZoneRunner.test.ts`, as the owner's rule says, with
+  `--testTimeout=300000` because another session's run was on the same cores): SUITE_RESULT
+- The Canyon byte check (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, fresh spin-ups, Canyon B through a
+  `globalThis.location` wrapper): CANYON_RESULT
+- **No unpaired force is added.** The ledger is bookkeeping behind a flag; the lean hold changes a reference, not a
+  force, and is on only under `rider: 'new'`.
+
+## 9. What I am unsure of, and what I would do next
+
+- **The half-stick stall family is the next round, and the advisor has handed it a number.** Those falls are the carve
+  eating the speed until the board drops off the plane and a leaning rider with no lift goes over. `ω = n g sin φ / v`
+  with n = 2.1 is a bar with a sourced value, and "log the hull's normal force through the carve" is a measurement, not
+  a build. That is where `CARVE_CARRY`'s honest replacement lives.
+- **Whether the lean hold should also hold the *rail*.** It holds the lean, and the schedule derives its rail from the
+  lean, so the rail follows — but the ankle's own command is the predictor's and can still roll the board past what the
+  cap implies. In the traced run the bank still reaches `MAX_BANK`, 0.4 s later than before. A rail that leads the lean
+  is the next thing I would look at inside the balance.
+- **Compress loses 0.55 s of its held carve, and it rings.** Its Mode B share goes 0.022 → 0.46. **The cap closes a
+  new loop** — the lean sets the rail, the rail makes the turn, the turn tilts the felt vertical, the felt vertical
+  caps the lean — through a 0.1 s low-pass, and a loop like that can oscillate. It does not in the tall stance (Mode B
+  0.153 → 0.140) and it does in Compress. **This is the one real risk in what I shipped**, and if the owner finds
+  Compress worse than 3.2p that is the cause. The two ways out I would try, in order: rate-limit how fast the cap
+  *opens* (it already cannot close faster than `leanPace`), or feed it the turn the internal model **predicts** from
+  the rail rather than the turn the body feels, which takes the low-pass out of the loop. It may also be the thing
+  ruling 29w named — the schedule reads the instantaneous leg depth, so the stances are never isolated.
+- **The `rider` entry in the ledger lumps the rider's yaw inertia with its feet's push**, because it is a residual.
+  The sign (a brake, in a developed turn) is the useful part; splitting it needs the contact impulse booked separately,
+  which is another half-day in `BoardBody`.
+- **Whether 0.7 s of extra time on a probe earns the owner's attention.** I think it does, because the falls that move
+  most are the ones he is describing, and one run now finishes the turn. But he is the judge.
+
+## 10. For the owner, in plain words
+
+The surfer's board was never the problem. It turns, and it turns at the same rate per degree of rail as the old
+surfer's — about 1.5 to 2.8 degrees of heading a second for every degree the board is on its rail, which is what the
+towed measurement says the hull gives. What was wrong was the number we were reading. A bottom turn swings *through*
+straight-down-the-face, and our measure counted only how far past that line you end, so a turn of 120 degrees was
+reported as 30. The new surfer was never failing to come round by a factor of twenty; it was about a factor of one and
+a half.
+
+I also checked whether the old surfer's turn was coming from the hidden push we took out of the new one. It was not:
+in the upright stance that push has never been switched on at all, and the old surfer still gets round. But in the
+compressed stance it *is* doing half the work — so the thing you reach for most, compressing into the turn, is the one
+place the old game was cheating. Lending that push to the new surfer makes him fall faster, not slower, so there is
+nothing to copy.
+
+What actually drops him is timing. The stick asks for 50 degrees of lean and his body gets there in six tenths of a
+second, while the turn that has to hold that lean up needs about a second to build. In between he is leaning on
+nothing. So from this round he will not ask for more lean than the turn he has got will carry, plus what his ankles can
+hold on their own — which is how leaning into a turn on a board actually works. He stays up longer in eleven of the
+twelve test turns, the three worst falls go from about one second to one and three quarters, and one of the twelve now
+finishes the turn with the wave on his side, which none did before.
+
+He still falls at the end of the hardest turns, and the reason is the one thing left that is clearly wrong against the
+real world: **our carve eats too much speed.** A measured bottom turn keeps 88–95 % of its speed; ours keeps about 40.
+The old surfer had a hidden push along the board that gave some of it back, which is part of why it felt better and why
+we took it out. Putting that right honestly is the next round, and thanks to the research advisor we now have a
+measured number to aim at.
+
+## 11. Files (3.2q)
+
+- `src/physics/BoardBody.ts`: the yaw ledger (`yaw`, `yawLedger`), off by default.
+- `src/physics/AttachedRider.ts`: `balance: { leanHold }`, `leanHeld`, and the cap in `prepareBank`.
+- `docs/research/new-rider/3.2/yawsource.probe.ts`: the owner's test with the ledger on, the heading in time, the
+  turn's force budget, and `ASSIST` for the ablation.
+- Results: `results/yaw-old-32q.jsonl` and `yaw-new-32q.jsonl` (the two shipped columns, with the whole ledger),
+  `yaw-old-off-32q.jsonl`, `yaw-old-nopull-32q.jsonl`, `yaw-old-nocarry-32q.jsonl`, `yaw-new-on-32q.jsonl` (the
+  ablations), `yaw-new-off-32q.jsonl` (3.2p's behaviour, the same session) and `yaw-new-felt-32q.jsonl` (the angle
+  form), `yaw-trace-old-32q.jsonl`, `yaw-trace-new-32q.jsonl` and `yaw-trace-topple-32q.jsonl` (the traces §5 reads),
+  `bars-new-32q.jsonl` against `bars-new-off-32q.jsonl`, `suite-32q.txt`, `canyon-byte-32q.txt`.
