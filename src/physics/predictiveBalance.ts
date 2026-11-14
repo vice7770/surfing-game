@@ -844,9 +844,9 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   // the game the board's trim is held by a different loop, the pitch ankle (`StandingBody`), which is not part of
   // this controller. In the plant that shows up exactly: at no rail the hull's own symmetry makes a roll, a slide or a
   // yaw rate produce no net vertical force and no net pitching moment (measured, `HEAVE_PLANT`'s zero cross terms), so
-  // **the four board states are uncontrollable there.** And the board's own heave-and-pitch pair is lightly unstable
-  // at 5 m/s - measured in the game, 1.41 Hz growing at a damping ratio of −0.084, and the block agrees - so an
-  // unstable mode no command reaches is not stabilisable. A cost on it asks the Riccati equation for a gain that
+  // **the four board states are uncontrollable there.** And the block's own pair is unstable at 5 and 9 m/s - the
+  // game's board pitch barely damps at 5 m/s too (+0.03 to -0.08 across kick sizes), so the block is not simply wrong
+  // there - and an unstable mode no command reaches is not stabilisable. A cost on it asks the Riccati equation for a gain that
   // cannot exist, and it answers with a non-finite one: 3.2m's weight of 1 is why its own table reads `null` at 5 and
   // 9 m/s at no rail, and why the first build of this step dropped the rider in 0.2 s in straight running.
   //

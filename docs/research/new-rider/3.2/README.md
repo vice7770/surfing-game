@@ -3649,9 +3649,9 @@ Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a s
   pair is **unstable** at 5 and 9 m/s. A cost on an unstabilisable mode asks for a gain that cannot exist. Fixed by
   giving those states **no cost at all**, which is the only honest weight: this balance's two commands are the ankle
   across and the twist, and neither can pitch the board. That is the pitch ankle's loop (`StandingBody`), not this one.
-- **At 5 m/s the board's own pitch mode is unstable in the game** — damping **−0.084**, growing 1.7× per two cycles
-  [M]. This is new, it is nothing to do with the balance controller, and it is a candidate cause for the low-speed
-  falls ruling 29v says are the strongest signal we have.
+- **At 5 m/s the board's own pitch barely damps** — a damping ratio of **+0.03 to −0.08** across kick sizes, against
+  **+0.10 to +0.29** at 7 and 9 m/s [M]. This is new, it is nothing to do with the balance controller, and it is a
+  candidate cause for the low-speed falls ruling 29v says are the strongest signal we have.
 - **What the sense buys, in the model** [M]: the four states go from **unobservable at no rail (rank 10 of 14)** to
   rank 14 of 14 at every table point; the filter's error on the board's pitch falls from **1.1–2.8° to 0.18–0.35°** and
   on its pitch rate from 5.7–11.4 °/s to 1.7–1.9; and at the rails the schedule's cap allows, a frame of timing error
@@ -3764,22 +3764,30 @@ This probe exists because of this folder's standing rule: **a captive hold's num
 The block says the board, with its rider, porpoises in straight running at 5, 9 and 12 m/s. The glide bars say it holds
 a steady glide at all four speeds. So: a steady glide, the board's pitch kicked 0.5 rad/s, and watch it come back [M]:
 
-| Speed | **the game** | the block, rigid pair | the block, board alone |
-|---|---|---|---|
-| 5 m/s | **1.41 Hz, damping −0.084** (grows 1.7× per 2 cycles) | +0.386 /s, 0.95 Hz — grows | −2.35 /s — decays |
-| 7 m/s | **1.01 Hz, damping +0.102** (decays to 0.53) | −0.418 /s, 0.63 Hz → damping **+0.104** | −6.09 /s |
-| 9 m/s | **1.33 Hz, damping +0.26** (decays to 0.19) | +0.569 /s, 0.80 Hz — grows | −4.66 /s |
-| 12 m/s | **1.41 Hz, damping +0.23** | (the table is held at 9 m/s) | — |
+| Speed | **the game**, a 0.5 rad/s kick | **across kicks of 0.2, 0.5 and 1 rad/s** | the block, rigid pair | the block, board alone |
+|---|---|---|---|---|
+| 5 m/s | 1.41 Hz, damping **−0.084** | 1.16–1.41 Hz, damping **+0.029 / −0.084 / −0.078** | +0.386 /s, 0.95 Hz — grows | −2.35 /s — decays |
+| 7 m/s | 1.01 Hz, damping **+0.102** | 0.94–1.60 Hz, damping **+0.173 / +0.102 / +0.290** | −0.418 /s, 0.63 Hz → damping **+0.104** | −6.09 /s |
+| 9 m/s | 1.33 Hz, damping **+0.26** | 1.33–1.75 Hz, damping **+0.191 / +0.260 / +0.190** | +0.569 /s, 0.80 Hz — grows | −4.66 /s |
+| 12 m/s | 1.41 Hz, damping **+0.23** | — | (the table is held at 9 m/s) | — |
+
+**The kick sweep is the one that should be quoted, and it tightens my own claim.** The frequency carries real scatter
+(0.94–1.75 Hz: this is a fit to a short ring in a nonlinear system, not a clean modal test), so "1.0–1.4 Hz" is better
+read as **about 1 to 1.5 Hz**. What is robust is the **ordering and the sign**: at 5 m/s the mode is **neutral to
+slightly growing (+0.03 to −0.08)** at every kick size, while at 7 and 9 m/s it is solidly damped (+0.10 to +0.29).
+So "unstable at 5 m/s" overstates it; **"the board's pitch barely damps at 5 m/s and damps well at 7 and 9"** is what
+the measurement supports, and it carries the same consequence.
 
 Four things come out of this, and they are the most useful numbers in the round [M, I]:
 
 1. **The rigid pair is the right modelling choice, not the fault I suspected.** Its damping at 7 m/s is 0.104 against
    the game's 0.102. Treating the board alone (2.54 kg) puts the mode at 6.3 Hz, nowhere near.
 2. **3.2m's "0.33–0.74 Hz" is the model's frequency, and it is 30–60 % low.** The game's board mode is at 1.0–1.4 Hz.
-3. **At 5 m/s the board's own pitch mode is unstable in the game.** Not the balance's — the board's, with the shipped
-   ten-state controller and no stick input. It grows slowly (a damping ratio of −0.084), so a glide survives, but any
-   disturbance leaves a ring that gets bigger. Ruling 29v says low speed is where a surfer is most solid and where a
-   fall is the strongest signal we have. **This is a mechanism for that, and it is not in the balance at all.**
+3. **At 5 m/s the board's own pitch barely damps at all.** Not the balance's — the board's, with the shipped
+   ten-state controller and no stick input: a damping ratio of +0.03 to −0.08 across kick sizes, against +0.10 to
+   +0.29 at 7 and 9 m/s. A glide survives, but a disturbance leaves a ring that does not die. Ruling 29v says low speed
+   is where a surfer is most solid and where a fall is the strongest signal we have. **This is a mechanism for that,
+   and it is not in the balance at all.**
 4. **The block is wrong at 9 m/s**, where it predicts a flutter the game damps at 0.26.
 
 The load sense's own spread over these runs, which is where `HEAVE_SENSE_NOISE`'s first number comes from: rms
@@ -3830,9 +3838,10 @@ every row is 3.2m's row; the table is in `results/bars-new-32p.jsonl` for the re
   which §5 then refutes for this loop. The sense's value (§3.2) is a property of the fourteen-state model, and there is
   no fourteen-state model built on the free table that is not double counting. **That is the open question this round
   leaves**, and it is a modelling question, not a tuning one.
-- **The 5 m/s instability is measured on one kick, at one stance, on the terminal plane.** It reproduces across the
-  sense being on and off (identical to the digit), but it is one condition. It wants a seed and stance sweep before
-  anything is built on it.
+- **The 5 m/s result is measured at one stance, on the terminal plane, with no chop.** It reproduces across three kick
+  sizes and across the sense being on and off (identical to the digit at a 0.5 rad/s kick), so it is not an artefact
+  of one disturbance. It still wants a stance and a seed sweep, and a chop, before anything is built on it. The
+  frequency fits carry 0.94–1.75 Hz of scatter, so only the damping's ordering and sign should be quoted.
 - **`LOAD_ADAPT` (2 s) and `HEAVE_SENSE_NOISE` (1.1 m/s², 0.017 rad/s) are hand-set**, and on the re-check list for
   two-way coupling. The adaptation is chosen against the mode, not tuned; the load's noise is between the measured rms
   and peak; the pitch rate's is the head yaw rate's own value, because it is the same organ.
@@ -3880,10 +3889,10 @@ instead of two or three. So the feel is built and switched **off**, with the mea
 
 **Two things I found that are worth more than the thing I was sent to build:**
 
-1. **At slow speed the board itself is unsteady.** Give it a small nudge nose-up at 5 m/s and the nodding grows instead
-   of dying away. That is the board and the water, not the surfer's balance. You have said several times that a surfer
-   is at his most solid at low speed — and our board is at its least. This is a real cause, and it is in a different
-   place from where we have been looking.
+1. **At slow speed the board itself barely settles.** Give it a small nudge nose-up at 5 m/s and the nodding keeps
+   going, or grows a little; at 7 and 9 m/s it dies away in a cycle or two. That is the board and the water, not the
+   surfer's balance. You have said several times that a surfer is at his most solid at low speed — and our board is at
+   its least. This is a real cause, and it is in a different place from where we have been looking.
 2. **Last round's headline number was wrong, and I can now say what it should be.** The previous round said the
    troublesome wobble was at a third to three quarters of a cycle a second. In the game it is one to one and a half.
    The wobble is real; the number came from the model, not the game.
