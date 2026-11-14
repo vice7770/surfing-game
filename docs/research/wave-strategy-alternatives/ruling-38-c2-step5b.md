@@ -135,3 +135,31 @@ lands in `b15` and clamps up to 0.251 — nearly double its own amplitude — wh
 
 The owner rides after step 1, not before: the foam will not be visible to them until the water is fixed, and a ride
 spent on an invisible change is a ride wasted.
+
+---
+
+## Amendment, 2026-11-14: the 600 s set-up run landed, and it strengthens both calls
+
+The run the step 5b agent could not finish inside its round completed about forty minutes after it handed back
+(`c2-step5b-runs/setup-600s.txt`, 600 s of the 2 m pool, `?wave=library` on against off, both on the same 1/60 s
+clock). It confirms this ruling's two decisions at the length the plan asked for:
+
+| | on | off | bar |
+|---|---|---|---|
+| solver state (h, qx, qz, every 97th cell) | `f368a4bf` | `f368a4bf` | — |
+| water piled against the beach (12 shallowest rows) | 0.93171 m | 0.93171 m | within 30 % |
+| mean currents, 232,628 components over 540 s | correlation 1.000000 | | at least 0.8 |
+| mean level, first to last | 0.03422 → 0.06037 m, drift 0.02614 | 0.03422 → 0.06037, drift 0.02614 | 0.01 m |
+
+1. **Cancelling the GPU forcing pass stands, now over nine minutes rather than two.** The same solver bytes, a ratio
+   of 1.0000 and a correlation of 1.000000 over the full window. Two windows agreeing to the fifth decimal is a
+   stronger statement than either alone.
+2. **Striking the mean-level bar stands, and the reason is better than the one given above.** This ruling said the bar
+   measured "the pool still filling". It does not: the level's whole band over the nine minutes is 0.03422 to 0.07791
+   m, and the 600 s figure (**2.61 cm**) is *smaller* than the 120 s one (2.85 cm), so **the tank rises and falls — it
+   is the pool's own slosh after the spin-up at 21 s, not a drift.** Either way it is identical with and without the
+   library to the fifth decimal, so it is a question for the sea and no C2 step can move it.
+
+Carried item 3 ("run the set-up comparison from a filled pool, not a filling one, or drop it") is **re-aimed**: there
+is nothing to fill. If the bar is kept at all, it belongs to the sea's own spin-up, measured over a whole number of
+slosh periods.

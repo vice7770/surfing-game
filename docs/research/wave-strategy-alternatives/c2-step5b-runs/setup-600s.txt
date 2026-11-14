@@ -1,0 +1,8 @@
+cases 19, stored depths 2; lanes 153; from 21 to 621 s; parts S
+
+## S. The set-up, the mean level and the rips over 600 s
+  the solver's state (h, qx, qz every 97th cell), the switch on / off: f368a4bf / f368a4bf
+  the mean level, m over still water: first 0.03422, last 0.06037, drift 0.02614 (bar 0.01); its band 0.03422 to 0.07791
+  the sea alone's: first 0.03422, last 0.06037, drift 0.02614
+  the water piled against the beach (the 12 shallowest rows), on / off: 0.93171 / 0.93171 m; on over off 1.0000 (bar 0.7–1.3)
+  the mean currents cell by cell (232628 components over 540 s), on against off: correlation 1.000000 (bar 0.8); dx 1.00 m
