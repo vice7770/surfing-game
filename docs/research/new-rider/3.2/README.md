@@ -2220,43 +2220,6 @@ bar of the step still missing**, with the push ordering (29's own, long-standing
 push bar's largest saved shove, which ruling 29m lists as must-not-regress, and the stop rule's two rounds went on
 measuring them honestly rather than on finding a third form that scrapes past.
 
-## 7.1 The two seatbelts that needed care, and one of them was my own mistake
-
-**The Canyon byte check (3.2n's leftover) passes on all four hashes** [M]: Canyon B `a367d938f15fa934` /
-`9e5831f80e38abd9`, the default `ea3d57a4d49f4b48` / `a1a2555739210f96`, medium, 3,600 steps, fresh spin-ups.
-Expected, since `heaveSense` is off and every use of the block is behind it — but unverified until now, and ruling 29w
-said it must not be merged on that reasoning alone.
-
-**Canyon B is `?canyonWaves=true`, and the bench has no flag for it.** The config reads the switch off
-`location.search`, so it is run through a three-line wrapper that sets `globalThis.location` before the bench's module
-is evaluated (as `wave-strategy-alternatives/c2-step5a` did). The grid it builds confirms the config is the right one:
-**400 × 451 = 180,400 cells**, exactly the recorded Canyon B's, against the default's 400 × 507. My first attempt used
-`--swept 0`, which is a **no-op for the Canyon at medium** (no swept barrel at that size) and reproduces the *default*
-pair — worth recording so the next agent does not repeat it.
-
-**My first suite run was void, and the fault was mine, not the change** [M]. I ran the full suite **while** the Canyon
-byte check was stepping 3,600 frames, and two long files failed:
-`src/wave/uniformSnapshot.test.ts` (one test, 226.9 s) and `src/wave/barrel/poolBarrelPerf.test.ts` (one test, 88.0 s),
-both far past the 60 s `testTimeout`. **Neither file touches a rider** — one compares the worker's snapshot fields
-against a reference implementation, the other the camera's water in typed arrays — so neither can see this branch's
-diff. **Run alone the two files pass, 10 tests in 66.0 s.** `poolBarrelPerf` is a documented flake of exactly this
-kind: 3.2j recorded it running "77.5 s past its 60 s timeout under this load" and passing alone.
-
-**This is 3.2m §7b's lesson a second time**, in a new form: that time a sparse checkout voided a suite run, this time my
-own concurrent probe did. The clean re-run uses `--maxWorkers=3`, which is the load control 3.2j used.
-
-**The clean re-run did not finish inside this round, and I am not going to describe it as passing.** At the point I
-handed back it had been running about 1 h 40 m with nothing else on the machine, and **the only failures it had
-reported were the 4 known `SurfZoneRunner.test.ts` ones** — PR #204's stale tests, which fail on pristine main and sit
-in a file outside the merge suite, exactly as 3.2m and 3.2n recorded. `results/suite-32p.txt` is the partial log.
-
-**What stands in for it, and why I think the residual risk is small** [M]: `tsc` clean on both projects;
-`predictiveBalance.test.ts` 6 of 6 including the runtime loop on both plant sizes; the shipped design byte-identical on
-all 54 `railmodel` rows; **all 30 old bar rows byte-identical to 3.2m**; the owner's test identical on every recorded
-column across all 12 runs against a baseline taken in this worktree before any `src/` change; and all four Canyon
-hashes. The whole change is behind `DEFAULT_WEIGHTS.heaveSense`, which is `false`. **The advisor should still see a
-finished suite before merging**, and it needs a machine with nothing else on it.
-
 ## 8. What I am unsure of, and what was not run
 
 - **Whether the hip is salvageable at all on a board.** Two of the three obstacles are structural, not gains: the swing
@@ -2578,43 +2541,6 @@ trigger.
 
 **Not kept:** `commandScale[0] = 0.25` and `captureScale = 0.013` as defaults, and the governor. All three are measured
 and all three cost the guard bar or the model's own margin.
-
-## 7.1 The two seatbelts that needed care, and one of them was my own mistake
-
-**The Canyon byte check (3.2n's leftover) passes on all four hashes** [M]: Canyon B `a367d938f15fa934` /
-`9e5831f80e38abd9`, the default `ea3d57a4d49f4b48` / `a1a2555739210f96`, medium, 3,600 steps, fresh spin-ups.
-Expected, since `heaveSense` is off and every use of the block is behind it — but unverified until now, and ruling 29w
-said it must not be merged on that reasoning alone.
-
-**Canyon B is `?canyonWaves=true`, and the bench has no flag for it.** The config reads the switch off
-`location.search`, so it is run through a three-line wrapper that sets `globalThis.location` before the bench's module
-is evaluated (as `wave-strategy-alternatives/c2-step5a` did). The grid it builds confirms the config is the right one:
-**400 × 451 = 180,400 cells**, exactly the recorded Canyon B's, against the default's 400 × 507. My first attempt used
-`--swept 0`, which is a **no-op for the Canyon at medium** (no swept barrel at that size) and reproduces the *default*
-pair — worth recording so the next agent does not repeat it.
-
-**My first suite run was void, and the fault was mine, not the change** [M]. I ran the full suite **while** the Canyon
-byte check was stepping 3,600 frames, and two long files failed:
-`src/wave/uniformSnapshot.test.ts` (one test, 226.9 s) and `src/wave/barrel/poolBarrelPerf.test.ts` (one test, 88.0 s),
-both far past the 60 s `testTimeout`. **Neither file touches a rider** — one compares the worker's snapshot fields
-against a reference implementation, the other the camera's water in typed arrays — so neither can see this branch's
-diff. **Run alone the two files pass, 10 tests in 66.0 s.** `poolBarrelPerf` is a documented flake of exactly this
-kind: 3.2j recorded it running "77.5 s past its 60 s timeout under this load" and passing alone.
-
-**This is 3.2m §7b's lesson a second time**, in a new form: that time a sparse checkout voided a suite run, this time my
-own concurrent probe did. The clean re-run uses `--maxWorkers=3`, which is the load control 3.2j used.
-
-**The clean re-run did not finish inside this round, and I am not going to describe it as passing.** At the point I
-handed back it had been running about 1 h 40 m with nothing else on the machine, and **the only failures it had
-reported were the 4 known `SurfZoneRunner.test.ts` ones** — PR #204's stale tests, which fail on pristine main and sit
-in a file outside the merge suite, exactly as 3.2m and 3.2n recorded. `results/suite-32p.txt` is the partial log.
-
-**What stands in for it, and why I think the residual risk is small** [M]: `tsc` clean on both projects;
-`predictiveBalance.test.ts` 6 of 6 including the runtime loop on both plant sizes; the shipped design byte-identical on
-all 54 `railmodel` rows; **all 30 old bar rows byte-identical to 3.2m**; the owner's test identical on every recorded
-column across all 12 runs against a baseline taken in this worktree before any `src/` change; and all four Canyon
-hashes. The whole change is behind `DEFAULT_WEIGHTS.heaveSense`, which is `false`. **The advisor should still see a
-finished suite before merging**, and it needs a machine with nothing else on it.
 
 ## 8. What I am unsure of, and what was not run
 
@@ -3977,7 +3903,7 @@ every row is 3.2m's row; the table is in `results/bars-new-32p.jsonl` for the re
 | The shipped design unchanged | **yes** — all **54** `railmodel` rows byte-identical to 3.2m, gains included; `heaveSense` is `false` in `DEFAULT_WEIGHTS` and every use of the block is behind it |
 | `predictiveBalance.test.ts` | **6 passed** — the runtime class runs the analysis's loop to 1e-9 on **both** plant sizes |
 | Every schedule point finite | **yes**, all 306 (17 speeds × 3 stances × 6 rails), worst gain 1.15e4, **6.4 ms a point** — and that was measured with the sense **on**, which designs twice per point (the fourteen-state model and the ten-state gains), so it is the worst case and it is still the ten-state design's own 7 ms. The default, with the sense off, designs once |
-| The full suite | **not finished inside this round** — see §7.1. What has run is clean apart from the 4 known pre-existing `SurfZoneRunner.test.ts` failures |
+| The full suite | **killed before it finished** (SIGTERM at about 1 h 45 m) — see §7.1. Up to that point the only failures were the 4 known pre-existing `SurfZoneRunner.test.ts` ones. **It needs re-running on a quiet machine before this work is relied on.** |
 | The default game byte-identical (Canyon byte check) | **yes, all four hashes** — **this is 3.2n's unfinished check, now run**: Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, the default `ea3d57a4d49f4b48` / `a1a2555739210f96`, both from fresh spin-ups (`results/canyon-byte-32p.txt`) |
 | No unpaired rule forces or hidden motors | **yes, by construction**: this step applies no force at all. The two senses are read-outs of numbers the contact ledger and the board's own spin already carry, and the only `src/` additions are a sense row, a table of measured water derivatives and an optional LQR weight |
 
@@ -4006,10 +3932,13 @@ kind: 3.2j recorded it running "77.5 s past its 60 s timeout under this load" an
 **This is 3.2m §7b's lesson a second time**, in a new form: that time a sparse checkout voided a suite run, this time my
 own concurrent probe did. The clean re-run uses `--maxWorkers=3`, which is the load control 3.2j used.
 
-**The clean re-run did not finish inside this round, and I am not going to describe it as passing.** At the point I
-handed back it had been running about 1 h 40 m with nothing else on the machine, and **the only failures it had
-reported were the 4 known `SurfZoneRunner.test.ts` ones** — PR #204's stale tests, which fail on pristine main and sit
-in a file outside the merge suite, exactly as 3.2m and 3.2n recorded. `results/suite-32p.txt` is the partial log.
+**The clean re-run never finished: it was killed, and I am not going to describe it as passing.** It ran about 1 h 45 m
+with nothing else on the machine and then **exited on a SIGTERM (code 143)** when this session's environment was reset
+under it, without printing a summary. Up to that point **the only failures it had reported were the 4 known
+`SurfZoneRunner.test.ts` ones** — PR #204's stale tests, which fail on pristine main and sit in a file outside the
+merge suite, exactly as 3.2m and 3.2n recorded. `results/suite-32p.txt` is that partial log, and it is a partial log:
+it is not evidence that the rest passed, only that nothing else had failed yet. **It wants re-running on a quiet
+machine before this work is relied on.**
 
 **What stands in for it, and why I think the residual risk is small** [M]: `tsc` clean on both projects;
 `predictiveBalance.test.ts` 6 of 6 including the runtime loop on both plant sizes; the shipped design byte-identical on
