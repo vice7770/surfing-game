@@ -365,6 +365,27 @@ locally τ → ∞ and reads as dots"* — and this round fixed the first two fa
 not the third. **It would be wrong to tell the owner this is their photograph. It is the spray arriving in the right
 place at the right height, in the wrong material.**
 
+
+---
+
+## 7. Seatbelts
+
+**The default game does not change.** `?lipVeil=on` is off by default, and the only line that runs without it is a
+lip impact carrying the height of the wave it fell from, which nothing but the veil reads.
+
+| | |
+| --- | --- |
+| **the Canyon byte check** | the default Canyon, medium, 3600 steps on a shared spun-up sea: **snapshots `ea3d57a4d49f4b48`, state `a1a2555739210f96`** — byte for byte the figures step 5f published for main, and 691cac46 ("step 3.2t's Canyon byte check") says those are still main's own [M]. The spray is in the snapshot hash, so a drop out of place would have moved it |
+| `npx tsc --noEmit -p .` | clean, **exit 0** — and the check was proved able to fail: a deliberate `const __proof: number = 'not a number'` in `SprayCloud.ts` gave `error TS2322` and a non-zero exit, and the file was restored (the brief's worktree trap) |
+| `src/wave/SprayCloud.test.ts` | **39 of 39**, six of them new: the switch is off until asked for and leaves every landing's bytes as they were; the two regions' angles; the speed law's mean and its tail; **nothing thrown over water the lip has not hit**; the air carrying the light drops over the lip where thrown drops cannot reach; and the air not blowing before its onset |
+| `src/wave/PlungingLip.test.ts` | 71 of 71 |
+| `src/game/PhysicalMode.test.ts` | 92 of 92 |
+| `src/wave/SurfZoneSimulation.test.ts` | run on its own, as the brief asks (the full suite under load returns timeouts only) |
+| **the deletion check** | `git diff --stat origin/main HEAD` first read **1581 deletions**, every one of them `docs/research/new-rider/3.2/`, `AttachedRider.ts` and `legDrive.test.ts` — not a revert but `origin/main` moving to 691cac46 under a branch cut from 009a9c51. **Rebased onto it**; the branch is now **+1429 / −7**, and the seven are lines of my own that I replaced |
+
+The one thing outside this branch: the advisor wrote its consult row into the **main checkout's** working tree, which
+already had another session's uncommitted files in it. The row is carried here as a commit; `docs/research/water-physics/consult-log.md`
+in the main checkout still has it as a local modification and can be dropped once this merges.
 ---
 
 ## 8. Next, in order
