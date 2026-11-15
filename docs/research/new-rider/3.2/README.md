@@ -6496,9 +6496,9 @@ middle, m, and the feet's half-width across is **0.130 m**.
 1. **The hip's trigger was missing, wiring it to the capture point works as a control, and the rider still falls 12 of
    12.** The hip is now driven at HIP_CAPTURE_GAIN N·m per metre of `sensedCaptureHip` — the capture point past
    HIP_SHARE × the feet's half-width (0.8 × 0.130 = 0.104 m), delayed BALANCE_DELAY as every other sense is. On the
-   16° trim cell it fires in every run, delivering **35–264 N·m and up to 68.8° of swing** against the shipped 0–8 N·m
-   and 0.0–0.3°, and it takes the roll down: at 20° of face slope the board's rail peak falls from **13.8–34.4° to
-   5.9–24.4°**, 12 runs a cell [M]. The sign is confirmed against its own reverse: at −2,000 N·m/m the rider falls
+   16° trim cell it fires in every run of every gain: **35–179 N·m and 0.7–68.8° of swing at 2,000 N·m/m, 112–264 N·m
+   at 8,000**, against the shipped **0–8 N·m and 0.0–0.3°** — and it takes the roll down: at 20° of face slope the
+   board's rail peak falls from **13.8–34.4° to 5.9–24.4°** at 2,000 N·m/m, 12 runs a cell [M]. The sign is confirmed against its own reverse: at −2,000 N·m/m the rider falls
    **sooner** (0.60–1.25 s against 0.77–1.70) and the capture point runs further out [M]. And **12 of 12 fall at every
    gain from 500 to 8,000 N·m/m** [M].
 2. **Paired run for run across five face slopes it makes the fall come sooner, not later.** 60 runs a gain, each one
@@ -6507,8 +6507,9 @@ middle, m, and the feet's half-width across is **0.130 m**.
    the roll adds across speed, and the capture point counts across speed at 1/ω₀, which over these 636 runs is
    **0.22–0.32 m per m/s**. **The fix is not a limb and it is not a gain.**
 3. **The 16° acceptance cell is the one cell that flatters the trigger, and it is also the only cell where 3.2w's
-   premise holds.** At 16° the trigger is 11 later / 1 same / 0 sooner at 2,000 N·m/m — its four neighbours are 1/2/9,
-   1/0/11, 1/1/10 and 6/0/6 [M]. And **the shipped hip, with none of this round's wiring, already delivers 15–270 N·m
+   premise holds.** At 16° the trigger is 11 later / 1 same / 0 sooner at 2,000 N·m/m; **at the same gain its four
+   neighbouring slopes are 1/2/9 (4°), 1/0/11 (8°), 1/1/10 (12°) and 6/0/6 (20°)**, and at 16° its own neighbouring
+   gains are 6/0/6 (1,750) and 4/0/8 (2,250) [M]. And **the shipped hip, with none of this round's wiring, already delivers 15–270 N·m
    and 1.8–68.8° of swing at 4, 8, 12 and 20° of face slope**, through the old ankle-overflow path, opening 0.08–1.87 s
    in — and falls 48 of 48 anyway [M]. 3.2w's "the hip never moves" is true of the 16° cell and of no other cell
    measured. **So the hip firing was never the missing piece: the rider already falls with the hip at 270 N·m.**
