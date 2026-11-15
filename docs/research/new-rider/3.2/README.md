@@ -6653,6 +6653,16 @@ which is exactly the design's order, and §3 is what the hip can do about a 60°
   summary line. It has caught a silent revert on five consecutive rounds.
 - No force was added or removed. The hip's swing rotor is the limb it always was, with its reaction on the board and
   in the work ledger; nothing restores without a source.
+- **The rebase, and why nothing was inherited across it.** The deletions column earned its place for the fifth round
+  running. With the work committed, `git diff --stat origin/main HEAD` showed **1,178 deletions across 35 files** of
+  the wave track's — `c2-step5i.md`, its runs and stills, and **`src/scene/water/foamAlbedo.ts` (−159) and its test
+  (−165)**: the wave track had merged C2 step 5i (`origin/main` **b73b8eb6**) while this round ran, and the branch,
+  being behind, would have reverted it. Rebased onto b73b8eb6; no conflict, and the column is back to **10 files,
+  1,607 insertions and 16 deletions, every one of them a line this round replaced** (checked line by line:
+  `git diff --cached -- src/ | grep '^-'`). 5i moves `src/scene/WaterSurface.ts` and `src/scene/FarFieldOcean.ts`, and
+  **both are inside `m1-cpu-bench.ts`'s own bundle**, so the Canyon run already going was killed by process group and
+  re-run from fresh spin-ups on the rebased tree; both `tsc` runs, the probe's type-check, the suite and the
+  default-identity check were all re-run there too, and the numbers above are that tree's.
 
 ## 8. Files (3.2x)
 
