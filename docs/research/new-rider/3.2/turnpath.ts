@@ -43,8 +43,23 @@
  *   RIDER=old PULL=off HULL=rail RAIL_SUCTION=off RAIL_POWER=2 OUT=<scratch>/sec-sq.jsonl   node <scratch>/tp.mjs
  *   RIDER=old PULL=off HULL=rail RAIL_SUCTION=off RAIL_FACES=on OUT=<scratch>/sec-faces.jsonl node <scratch>/tp.mjs
  *
- * Env: RIDER=new|old, STANCES, EXTRAS, STEERS, ACROSS, TURN_LIMIT, HOLD, SIDE, AHEAD, HULL=rail, RAIL_SUCTION=off,
- * RAIL_POWER, RAIL_FACES=on, PULL=off, LEG_DRIVE, SUBSTEPS, OUT (one JSON line a run), TRACE (one JSON line a frame).
+ *   # the no-stick control, which is the round's own finding: the new rider against the old, riding straight
+ *   RIDER=new STEERS=0 STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 OUT=<scratch>/trim-new.jsonl node <scratch>/tp.mjs
+ *   RIDER=old STEERS=0 STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 OUT=<scratch>/trim-old.jsonl node <scratch>/tp.mjs
+ *
+ *   # the turn window, the one flag that tells a rate limit from a duration limit
+ *   RIDER=old PULL=off HULL=rail RAIL_SUCTION=off TURN_LIMIT=8 OUT=<scratch>/tl8.jsonl node <scratch>/tp.mjs
+ *
+ * Env: RIDER=new|old, STANCES, EXTRAS (m/s added to the entry speed), STEERS (0 rides straight), ACROSS (the gate's
+ * own degrees), TURN_LIMIT, HOLD, SIDE, AHEAD, FACE=h,slope,speed, DEPTH, HULL=rail, RAIL_SUCTION=off, RAIL_POWER,
+ * RAIL_FACES=on, ACROSS_N (patches across a station), PULL=off, LEG_DRIVE, SUBSTEPS, SLIDE (the degrees of drift that
+ * count as sliding, 8), MARGIN_FROM (the reserve a collapse is timed from, 0.5), OUT (one JSON line a run), TRACE (one
+ * JSON line a frame).
+ *
+ * **One line of the harness matters more than it looks**: `water.advance(STEP)` moves the wave under the rider, as
+ * `libturn.ts` part F does. Without it the flat/cheat-on cell reads 110–156° instead of Part 19's 101–137° and the
+ * flat/cheat-off gate reads 2 of 6 instead of 0 of 6, because a standing wave never catches up and never takes the
+ * face away.
  */
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { Matrix4, Quaternion, Vector3 } from 'three';
