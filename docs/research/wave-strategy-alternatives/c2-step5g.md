@@ -404,7 +404,7 @@ lip impact carrying the height of the wave it fell from, which nothing but the v
 | `src/wave/SprayCloud.test.ts` | **39 of 39**, six of them new: the switch is off until asked for and leaves every landing's bytes as they were; the two regions' angles; the speed law's mean and its tail; **nothing thrown over water the lip has not hit**; the air carrying the light drops over the lip where thrown drops cannot reach; and the air not blowing before its onset |
 | `src/wave/PlungingLip.test.ts` | 71 of 71 |
 | `src/game/PhysicalMode.test.ts` | 92 of 92 |
-| `src/wave/SurfZoneSimulation.test.ts` | **not finished — it was still running at hand-back** and its result is *not* in `c2-step5g-runs/suite.txt`, which carries the three files above. 106 tests, started on its own as the brief asks, with three CPU benches competing for the machine. **Run it before merging**: `npx vitest run src/wave/SurfZoneSimulation.test.ts`. What this branch does to that file's subject is two lines — the `lipVeil` field on `SurfZoneConfig`, and the wave height a landing now carries — and the config-type line cannot run, but that is a reason to expect a pass, not a reason to skip it |
+| `src/wave/SurfZoneSimulation.test.ts` | **did not finish** — 106 tests, started on its own as the brief asks, killed twice by the machine with three CPU benches on it, and its result is *not* in `c2-step5g-runs/suite.txt`, which carries the three files above. **So it was closed by reading instead** (§7.3), which is cheaper than a third 35-minute run and answers the same question. Run it anyway when the machine is free: `npx vitest run src/wave/SurfZoneSimulation.test.ts` |
 | **the deletion check** | `git diff --stat origin/main HEAD` first read **1581 deletions**, every one of them `docs/research/new-rider/3.2/`, `AttachedRider.ts` and `legDrive.test.ts` — not a revert but `origin/main` moving to 691cac46 under a branch cut from 009a9c51. **Rebased onto it**; the branch's deletions against `origin/main` are now **7**, and the seven are lines of my own that I replaced |
 
 ### 7.1 A control that was not a control
@@ -421,6 +421,21 @@ that took the same path. Step 5f's figures are from a fresh spin-up, and so is t
 reading the same cache, has since landed and **passes**: snapshots `a8ac71b70eac2add`, state `6319ed883e54b32e` —
 the main leg's exactly (leg D of `c2-step5g-runs/canyon-bytes.txt`). So the default Canyon is unchanged on **both**
 protocols, independently.
+
+### 7.3 The one test file that did not run, closed by reading
+
+This branch does exactly two things to that file's subject: it adds `lipVeil` to `SurfZoneConfig` (a type, with no
+runtime), and it puts a **`height`** property on the object a landing pushes into `lipImpacts`. The second is the only
+one that can reach a test, and only if a test pins a lip impact's keys. Three places touch them, and none does [C]:
+
+| | |
+| --- | --- |
+| `SurfZoneSimulation.test.ts:473` | `expect(a.lipImpacts).toEqual(b.lipImpacts)` — **two live simulations against each other**, so both sides carry the new key and `toEqual` still holds |
+| `SurfZoneSimulation.test.ts:2182` | `expect(on.lipImpacts).toEqual(off.lipImpacts)` — the same shape, one switch either way |
+| `SurfZoneRunner.test.ts:256` | `toMatchObject({ volume, whole, kind })`, which **tolerates extra keys** by definition. That file is run by hand, and this branch touches its subject, so run it too |
+
+Neither `toEqual` is against a literal, which is the only form the new key could break. That is a reason to expect a
+pass — it is not the pass itself, and the row above says so.
 
 ### 7.2 And a stronger proof, from the leg that was only meant to cost it
 
