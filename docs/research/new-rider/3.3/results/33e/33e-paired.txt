@@ -1,0 +1,77 @@
+=== the default rider (RIDER=old): the depth ladder PAIRED run by run, tall / crouch / Compress ===
+cell (entry extra m/s, stick) | hips over the deck, m | roll peak ° | rail peak ° | yaw peak °/s | to 85°, s
+(0, 0.5)
+  tall      0.82    56.7    67.4    98.6  2.97
+  crouch    0.60    57.4    69.4   116.7  3.87
+  compress  0.48    48.0    60.3    77.5  2.93
+  snap      0.52    84.1    96.9   207.1  7.42
+  snapdeep  0.37    81.5    95.0   187.7  1.80
+(0, 1)
+  tall      0.79    81.2    94.3    90.7  1.70
+  crouch    0.60    63.9    79.5   130.7  1.90
+  compress  0.48    46.2    56.1    89.2  2.30
+  snap      0.54    80.1    96.0   152.6  2.88
+  snapdeep  -0.05    47.8    48.6   108.4   -   
+(1.5, 0.5)
+  tall      0.80    56.6    66.7    96.2  3.00
+  crouch    0.59    59.0    68.7    98.5  4.63
+  compress  0.48    63.5    78.7    78.3  3.17
+  snap      0.49    68.8    73.4   136.0  4.55
+  snapdeep  0.33    33.8    34.1   108.4   -   
+(1.5, 1)
+  tall      0.79    87.0    87.0   107.1  1.82
+  crouch    0.60    90.3    90.3   113.4   -   
+  compress  0.48    68.6    81.7    85.0  2.75
+  snap      0.59    72.8    81.2   129.5  3.58
+  snapdeep  0.36    86.6    96.8   147.7   -   
+(3, 0.5)
+  tall      0.78    52.2    63.2   139.9  3.60
+  crouch    0.58    38.7    48.2   132.5   -   
+  compress  0.48    63.6    77.6    99.8  3.53
+  snap      0.25    19.5    24.9    79.5   -   
+  snapdeep  0.28    42.6    48.2    90.4   -   
+(3, 1)
+  tall      0.79    87.2    87.2    96.7  1.95
+  crouch    0.59    73.7    76.1    72.7   -   
+  compress  0.48    69.3    81.4    80.5  3.32
+  snap      0.51   180.0   184.4   121.0  4.72
+  snapdeep  0.36   179.8   184.0   123.1   -   
+
+=== the new rider (RIDER=new, the owner's ?rider=new): the depth ladder PAIRED run by run, tall / crouch / Compress ===
+cell (entry extra m/s, stick) | hips over the deck, m | roll peak ° | rail peak ° | yaw peak °/s | to 85°, s
+(0, 0.5)
+  tall      0.50    83.4    83.4   138.5  3.23
+  crouch    0.50    78.2    78.2   140.7  3.18
+  compress  0.47    63.4    63.4   132.3  3.17
+  snap      0.46    28.4    27.4   178.0   -   
+  snapdeep  0.34    94.0    96.3   149.8   -   
+(0, 1)
+  tall      0.67    57.9    64.4   160.5  1.67
+  crouch    0.50    50.6    50.6    82.2   -   
+  compress  0.48    30.8    30.8    82.2   -   
+  snap      0.48    24.5    19.4    93.3   -   
+  snapdeep  0.34    31.7    29.0   105.8   -   
+(1.5, 0.5)
+  tall      0.73    60.2    64.0    85.8  2.55
+  crouch    0.47    40.1    40.1   155.6  2.95
+  compress  0.48    51.7    59.7   110.9  2.97
+  snap      0.46    25.7    25.1   112.8   -   
+  snapdeep  0.36    55.6    62.6   226.3   -   
+(1.5, 1)
+  tall      0.48    72.8    72.8   194.8   -   
+  crouch    0.47    89.8    89.8   210.3  1.65
+  compress  0.44    64.4    64.4   163.2   -   
+  snap      0.49    77.2    77.2   212.4  1.33
+  snapdeep  0.34    60.5    66.1   159.8  1.50
+(3, 0.5)
+  tall      0.57    25.8    25.8   110.3   -   
+  crouch    0.46    91.1    91.1   143.1  3.45
+  compress  0.45    49.6    49.6    89.5   -   
+  snap      0.45    25.8    25.8   150.3   -   
+  snapdeep  0.35    68.4    68.4   146.9   -   
+(3, 1)
+  tall      0.50    89.2    89.2   227.8  1.57
+  crouch    0.45    89.5    89.5   105.3   -   
+  compress  0.46    66.2    66.2   100.8   -   
+  snap      0.48    50.0    50.0   100.7  1.67
+  snapdeep  0.34    35.5    35.5   191.0   -   
