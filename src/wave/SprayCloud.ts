@@ -270,12 +270,114 @@ export const LIP_VEIL = {
   speedMax: 2.2,
   /** How far back over the water the jet has just hit region I-B is spread, in wave heights. */
   wakeReach: 0.5,
-  /** The classes by their share of the droplets' optical area: over 1 mm, under 0.2 mm, and the 0.2–1 mm veil between. */
-  sprayShare: 0.35,
-  mistShare: 0.1,
+  /**
+   * The classes by their share of the droplets' optical **area** — how many sprites each band is drawn with, since a
+   * sprite stands for a patch of veil: over 1 mm, under 0.2 mm, and the 0.2–1 mm veil between.
+   *
+   * C2 step 5h, the advisor's correction: 5g's 35 / 10 / 55 came from integrating a **mixed** triple (the moderate
+   * breaker's exponents with the strong breaker's d_max). Each of Erinin's three breakers integrated on its own
+   * consistent (α, β, d_i, d_max) gives area shares of 6 / 17 / 77 % (weak), 31 / 9 / 60 % (moderate) and
+   * **54 / 5 / 42 % (strong)**. A 2 m pool plunger is the strong column. The over-1 mm band is the least certain
+   * quantity in the chain — it rests on d_max, inside the dashed part of Erinin's own fit.
+   */
+  sprayShare: 0.535,
+  mistShare: 0.046,
   /** The veil class: 0.2–1 mm drops fall at these terminal speeds (Gunn & Kinzer 1949), drawn this wide, m. */
   veilFall: { min: 0.8, max: 2.5 },
   veilSize: { min: 0.3, max: 0.55 },
+  /**
+   * **Fallout** (C2 step 5h, the advisor's §3.4): how long an over-1 mm sprite is drawn, s. At the Gunn & Kinzer
+   * terminal speed of a d₃₂ = 1.5 mm drop — 4.9 m/s — that band clears the veil's own 1.2 m depth in about a
+   * quarter of a second, where the two lighter bands are held by the air for seconds. The water is gone from the
+   * veil long before the sprite would have finished its three seconds, and the sprite should go with it.
+   *
+   * It matters more with the corrected area shares than it did at 5g's, because the over-1 mm band went from 35 %
+   * of the sprites to 54 % of them: at 5g's three-second life those are the drops on the speed law's tail that
+   * 5g §5.1 measured overshooting to 3.5–4.7 m, half as high again as anything in the owner's photograph. They
+   * taper out rather than vanish (`VEIL_OPTICS.taper`).
+   */
+  sprayLife: { min: 0.25, max: 0.45 },
+} as const;
+
+/**
+ * The veil's **opacity, from an optical depth** (C2 step 5h, `?lipVeil=on`; the water-physics advisor, 2026-11-15).
+ *
+ * Before this, a sprite's alpha was a constant per kind — 0.8 for a drop cluster, 0.25 for mist — so a 6–14 cm disc
+ * carrying a thimble of water painted as hard as a metre of cloud, and the veil read as a scatter of dots with sky
+ * between them (c2-step5g.md §6). Here a sprite carries the **water it stands for** and its alpha follows it:
+ *
+ * - a sprite's drops have a total geometric cross-section **A_x = 1.5 w / d₃₂**, exact when d₃₂ is the **Sauter mean**
+ *   Σd³/Σd² of its band — which is also, identically, the cross-section-weighted mean. The count-mean is 45 % smaller
+ *   in the 0.2–1 mm band and would lose that much area.
+ * - its optical depth across its own drawn disc is **τ = Q·A_x / (πD²/4)**, and its alpha is **1 − e^(−τ)**. Alpha
+ *   blending then composites correctly: Π(1 − αᵢ) = e^(−Στᵢ), so sprites that overlap add optical depth, which is
+ *   what makes a veil out of them rather than a pile of discs.
+ * - **A_x is conserved** as the sprite spreads, so a mist or veil patch that grows thins as 1/D². That is the fade,
+ *   and it is dilution rather than a curve. The over-1 mm class does not spread, so conserving its A_x is right for
+ *   it too (the advisor's caution about fallout applies to a spreading patch).
+ *
+ * **Q, and why it is not 2.** Mie extinction for drops this size is Q_ext = 2.00 flat (size parameter 570–5700, the
+ * extinction paradox) — but exactly half of it is forward diffraction into a cone of half-angle 1.22λ/d, which at
+ * 0.5–1 mm is **0.8–1.6 px** of a 1280-px, 55° frame. Against an *extended* background that light is not removed from
+ * the image, it is replaced by light from the neighbouring direction, which is similarity (δ-) scaling:
+ * dτ̃ = (1 − ω₀f)dτ with f the unresolved forward share (Stephens AT721 §8.1.1; Joseph, Wiscombe & Weinman 1976).
+ * With ω₀ = 1 (water drops are non-absorbing in the visible) and f = 0.5, **Q_eff = 1** for the two larger classes.
+ * The under-0.2 mm class's cone spans 4–8 px and does leave the pixel, so it keeps **Q_eff ≈ 1.5**.
+ */
+export const VEIL_OPTICS = {
+  /**
+   * **φ, the share of the splash-up's water that leaves as airborne droplets. Provisional and calibrated** — the one
+   * knob in this chain, and the only one with an order of licence.
+   *
+   * Nobody has published a droplet **volume** for a breaking wave at any scale: Erinin et al. 2023 and Mostert et al.
+   * 2022 both report counts only. Integrating Erinin's measured spectrum against their measured counts gives
+   * 13.1 / 44.3 / 142.9 mm³ per metre of crest per event for their weak / moderate / strong plungers, which against a
+   * splash-up of σ = 0.3 of the jet is **φ_sourced ≈ 3 × 10⁻⁴, good to one order and no better** (the volume lives in
+   * the large-diameter tail, which is where their own fit is drawn dashed). `airborneSourced` carries that figure.
+   *
+   * The value actually drawn is **40 times it**, and it is a fit, not a measurement: it puts the veil's standing
+   * airborne water near the 2 × 10⁻⁴ m³ per metre of breaking crest that the owner's photograph's own optical depth
+   * asks for at d₃₂ = 590 µm (c2-step5h.md §2). So the shape of this law is sourced and its level is not. If the veil
+   * comes out thin or thick on a ride, **this is the number to move**, and the gap to `airborneSourced` is the honest
+   * measure of how far the only published droplet measurement is from the photograph.
+   */
+  airborne: 0.012,
+  airborneSourced: 3e-4,
+  /**
+   * The Sauter mean diameter d₃₂ of each class, m, from Erinin's spectrum integrated band by band on the strong
+   * plunger's own triple: under 0.2 mm (±5 µm — the flattest number in the chain), 0.2–1 mm (±15 %), over 1 mm
+   * (±40 %, set by d_max alone). Count-means, which must **not** be used here, are 139 / 411 / 1388 µm.
+   */
+  sauter: { mist: 150e-6, veil: 590e-6, spray: 1500e-6 },
+  /**
+   * Each class's share of the airborne **water** (the strong plunger's column; weak and moderate are 4.9 / 81.6 /
+   * 13.6 % and 1.7 / 45.9 / 52.4 %). Note this is the water, where `LIP_VEIL`'s shares are the optical area: a sprite
+   * of a class carries that class's water divided by that class's own sprite count, so the class's total
+   * cross-section comes out independent of how many sprites were chosen to draw it.
+   */
+  water: { mist: 0.006, veil: 0.231, spray: 0.763 },
+  /** Q_eff per class, from the similarity scaling above: 1 against an extended background, 1.5 for the finest class. */
+  extinction: { mist: 1.5, veil: 1, spray: 1 },
+  /**
+   * The last share of a sprite's life over which its drawn alpha tapers to nothing. A drop does not vanish; `life` is
+   * a render cap, so this is render hygiene and not physics — without it a sprite whose disc never grows would pop.
+   */
+  taper: 0.25,
+} as const;
+
+/**
+ * Per class, the effective extinction cross-section a sprite carries for each m³ of airborne droplet water the
+ * landing divided among its sprites, 1/m: **Q_eff · 1.5 · (that class's share of the water) / (d₃₂ · that class's
+ * share of the sprites)**. The two shares are different quantities — `VEIL_OPTICS.water` is the water, `LIP_VEIL`'s
+ * are the optical area — and dividing by the sprite share is what makes a class's **total** cross-section come out
+ * independent of how many sprites were drawn for it. The three land within 2 % of each other at the shipped shares,
+ * which is not an accident: the area shares are the water shares divided by d₃₂, to within the rounding.
+ */
+export const VEIL_CROSS = {
+  spray: (VEIL_OPTICS.extinction.spray * 1.5 * VEIL_OPTICS.water.spray) / (VEIL_OPTICS.sauter.spray * LIP_VEIL.sprayShare),
+  mist: (VEIL_OPTICS.extinction.mist * 1.5 * VEIL_OPTICS.water.mist) / (VEIL_OPTICS.sauter.mist * LIP_VEIL.mistShare),
+  veil: (VEIL_OPTICS.extinction.veil * 1.5 * VEIL_OPTICS.water.veil)
+    / (VEIL_OPTICS.sauter.veil * (1 - LIP_VEIL.sprayShare - LIP_VEIL.mistShare)),
 } as const;
 
 /**
@@ -396,6 +498,13 @@ export class SprayCloud {
   /** g / v_t², 1/m: the quadratic drag giving each particle its terminal speed. */
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
+  /**
+   * The veil's own: the sprite's **effective extinction cross-section**, m² — Q_eff × the total geometric
+   * cross-section of the drops it stands for (`VEIL_OPTICS`). Conserved over its life, so its alpha follows its own
+   * dilution. Zero on every particle the veil did not throw, which is every particle with the switch off, and those
+   * keep the constant alphas they always had.
+   */
+  private readonly cross: Float64Array;
   private readonly kind: Uint8Array;
   /** Whether a particle is a board's spray (its own pool). */
   private readonly fromBoard: Uint8Array;
@@ -434,7 +543,7 @@ export class SprayCloud {
     const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
     this.vx = make(); this.vy = make(); this.vz = make();
-    this.age = make(); this.life = make(); this.drag = make(); this.size = make();
+    this.age = make(); this.life = make(); this.drag = make(); this.size = make(); this.cross = make();
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
     this.fromBoard = new Uint8Array(total);
@@ -661,6 +770,12 @@ export class SprayCloud {
     const runX = run > 0 ? impact.vx / run : 0;
     const runZ = run > 0 ? impact.vz / run : 0;
     const height = impact.height && impact.height > 0 ? impact.height : 1;
+    // C2 step 5h: the airborne droplet water this landing throws, m³ — φ of the splash-up, which is σ of the jet's
+    // whole water (`SPLASH_UP.share`; `volume` is only the part that stays). Divided by the sprites it is drawn with,
+    // so each carries the water it stands for. The divisor is the number the count law asked for, not the number the
+    // pool had room for: a full pool therefore draws a thinner veil rather than the same veil in fewer, denser discs.
+    const airborne = VEIL_OPTICS.airborne * SPLASH_UP.share * (impact.whole ?? impact.volume);
+    const perSprite = spawns > 0 ? airborne / spawns : 0;
     for (; spawns > 0 && this.room(false); spawns -= 1) {
       const curl = this.random() < LIP_VEIL.curlShare;
       const angle = (curl ? LIP_VEIL.curlAngle : LIP_VEIL.wakeAngle) + (this.random() - 0.5) * LIP_VEIL.spread;
@@ -681,11 +796,16 @@ export class SprayCloud {
       );
       // The 0.2–1 mm band, which carries most of the veil's optical area and which the game had no class for: drawn
       // as mist is, since that is the soft translucent sprite, but falling at its own drops' speed.
-      if (pick >= LIP_VEIL.sprayShare + LIP_VEIL.mistShare) {
+      const veilClass = pick >= LIP_VEIL.sprayShare + LIP_VEIL.mistShare;
+      if (veilClass) {
         const fall = this.between(LIP_VEIL.veilFall);
         this.drag[k] = GRAVITY / (fall * fall);
         this.size[k] = this.between(LIP_VEIL.veilSize);
+      } else if (pick < LIP_VEIL.sprayShare) {
+        // The over-1 mm band falls out of the veil in a quarter of a second (`LIP_VEIL.sprayLife`).
+        this.life[k] = this.between(LIP_VEIL.sprayLife);
       }
+      this.cross[k] = perSprite * (veilClass ? VEIL_CROSS.veil : pick < LIP_VEIL.sprayShare ? VEIL_CROSS.spray : VEIL_CROSS.mist);
     }
   }
 
@@ -1005,6 +1125,7 @@ export class SprayCloud {
     this.age[k] = 0;
     this.kind[k] = kind;
     this.fromBoard[k] = 0;
+    this.cross[k] = 0;
     this.count += 1;
     if (isWhitewater(kind)) this.whitewaterCount += 1;
     if (kind === FOAM_BALL) {
@@ -1035,6 +1156,7 @@ export class SprayCloud {
     this.life[k] = this.life[last];
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
+    this.cross[k] = this.cross[last];
     this.kind[k] = this.kind[last];
     this.fromBoard[k] = this.fromBoard[last];
     this.owner[k] = this.owner[last];
@@ -1050,14 +1172,20 @@ export class SprayCloud {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
       const mist = isMist(this.kind[k]);
+      const width = this.size[k] * (mist ? (1 + t) * mistSize : 1);
       particles[o] = this.x[k];
       particles[o + 1] = this.y[k];
       particles[o + 2] = this.z[k];
-      particles[o + 3] = this.size[k] * (mist ? (1 + t) * mistSize : 1);
-      // A foam ball holds until its roller is gone, then fades over the time it lingers.
-      particles[o + 4] = this.kind[k] === FOAM_BALL
-        ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
-        : (mist ? 0.25 : 0.8) * (1 - t * t);
+      particles[o + 3] = width;
+      // The veil's drops (C2 step 5h): alpha from the optical depth across the sprite's own disc, τ = Q·A_x/(πD²/4),
+      // with A_x conserved — so a patch that spreads thins as 1/D², which is the fade, and sprites that overlap add
+      // optical depth. Everything else keeps the constant alpha per kind it always had; a foam ball holds until its
+      // roller is gone, then fades over the time it lingers.
+      particles[o + 4] = this.cross[k] > 0
+        ? (1 - Math.exp(-(4 * this.cross[k]) / (Math.PI * width * width))) * Math.min(1, (1 - t) / VEIL_OPTICS.taper)
+        : this.kind[k] === FOAM_BALL
+          ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
+          : (mist ? 0.25 : 0.8) * (1 - t * t);
       particles[o + 5] = this.kind[k];
     }
   }
