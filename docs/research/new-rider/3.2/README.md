@@ -6996,10 +6996,10 @@ arithmetic says it is.
 - **The default board**: `boardShape.ts` is untouched and no source file changed, so the default board and the default
   rider's path are unchanged by construction.
 - **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the summary
-  line — **8 files, 1,286 insertions, 0 deletions**, every file new or appended. It has caught a silent revert on six
-  consecutive rounds, and `merge-base --is-ancestor` has caught none of them. (The byte-check commit's own message
-  quotes 9 files and 1,272 insertions: that was counted before this bullet's own edit landed, and 8 / 1,286 / 0 is the
-  number. The commit is on the remote and is left as it is rather than rewritten.)
+  line — **8 files and 0 deletions**, every file either new or appended to, and `src/` not among them. The insertion
+  count is the half that moves with every edit to this very bullet, so it is left to the PR's own summary line rather
+  than frozen here in a number that goes stale; **0 deletions is the half that is a seatbelt**. It has caught a silent
+  revert on six consecutive rounds, and `merge-base --is-ancestor` has caught none of them.
 - No force was added or removed anywhere. The captive roll hold is an instrument in the probe, of the kind ruling 29t
   established for the roll plant, and the probe's own §2 says what it holds and what it leaves free.
 - A wave-track agent shared the machine throughout; nothing of theirs was stopped.
