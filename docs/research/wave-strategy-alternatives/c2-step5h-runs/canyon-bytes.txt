@@ -1,0 +1,48 @@
+C2 step 5h: the Canyon byte check, all legs on the tree as rebased onto origin/main.
+branch 13252a77, origin/main b3ed7397
+
+The bench takes two paths (m1-cpu-bench.ts): with no cache it spins up, saves, re-imports the saved
+32-bit sea and steps; with a cache it imports and then spins up again. Compare only legs that took the
+same path (c2-step5g.md 7.1).
+main's own published figures, unchanged from step 5f through 5g, 3.2u and 3.2v:
+  fresh spin-up  snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+  cache read     snapshots a8ac71b70eac2add  state 6319ed883e54b32e
+
+== leg D: branch, veil off, cache read ==
+ms p50/p95 over 3600 steps: breaking 1.30/1.49, roller 0.43/0.53, front 0.00/0.00, lip 0.03/0.05, foam 3.72/4.43, airSources 0.05/0.07, aeration 1.98/2.29, contact 0.00/0.00, board 0.69/0.85, bubbles 0.18/0.20, spray 0.17/0.26, sounds 0.00/0.00, snapshotFields 4.50/5.13, snapshot 5.00/5.69, summary 0.42/0.52
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+EXIT 0
+
+== leg C: branch, lipVeil=on, cache read ==
+ms p50/p95 over 3600 steps: breaking 1.31/1.62, roller 0.43/0.60, front 0.00/0.00, lip 0.03/0.05, foam 3.75/4.76, airSources 0.05/0.07, aeration 1.98/2.39, contact 0.00/0.00, board 0.66/0.90, bubbles 0.18/0.21, spray 0.18/0.27, sounds 0.00/0.00, snapshotFields 4.44/5.44, snapshot 4.96/6.09, summary 0.43/0.57
+  hashes: snapshots 71ead11cd03382d3, state 6319ed883e54b32e
+EXIT 0
+
+== leg A: branch, veil off, FRESH spin-up ==
+ms p50/p95 over 3600 steps: breaking 1.59/2.33, roller 0.50/0.93, front 0.00/0.00, lip 0.03/0.05, foam 4.80/8.70, airSources 0.06/0.12, aeration 2.45/3.77, contact 0.00/0.00, board 0.81/1.37, bubbles 0.22/0.31, spray 0.22/0.41, sounds 0.00/0.00, snapshotFields 5.56/9.78, snapshot 6.18/11.15, summary 0.54/0.74
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+EXIT 0
+
+BYTES-DONE
+
+So, on both protocols independently:
+
+  protocol 1, fresh spin-up : leg A  ea3d57a4d49f4b48 / a1a2555739210f96  = main's, byte for byte
+  protocol 2, cache read    : leg D  a8ac71b70eac2add / 6319ed883e54b32e  = main's, byte for byte
+  and with the veil on      : leg C  71ead11cd03382d3 / 6319ed883e54b32e  snapshot MOVES, STATE DOES NOT
+
+The default Canyon is unchanged, and with ?lipVeil=on only the drawn snapshot moves: the veil touches no
+water, no foam, no air and nothing a rider feels. That is step 5g's leg C property, kept, and it is a
+better guarantee than "visual only" in a comment.
+
+Leg C's snapshot hash is 71ead11cd03382d3 where step 5g's was d742e2abf5514cd3. The two differ because
+the alpha in the snapshot changed, which is this round's whole subject -- so that difference is itself a
+confirmation that the opacity reaches the drawn bytes and nothing else does.
+
+On cost: the spray stage is 0.17 ms p50 veil off and 0.18 on, a hundredth of a millisecond on a ~17 ms
+step. These three legs ran under much lighter machine load than step 5g's did (compare the whole-step
+figures), so the numbers are not comparable with 5g's -- but within this run the two legs are, and the
+veil's own work is below what this sample can resolve. A bound, not a measurement.
+
+These legs were re-run from scratch on the tree as rebased onto origin/main b3ed7397. An earlier set, on
+a bundle of the pre-rebase tree, is in canyon-bytes-prerebase.txt and gave the same three answers.
