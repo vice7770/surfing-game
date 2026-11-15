@@ -5846,28 +5846,46 @@ The paradox in the brief, sharpened: at half stick and entry +0 the section with
 lateral load against the cheat's **0.234 g** — 1.46× more — and it needs **1.44× longer** to get round (5.43 s against
 3.77 s) [M]. More sideways force, slower turn.
 
-The yaw ledger, integrated over the turn — angular impulse about the **world vertical**, positive the turn's way, from
-`BoardBody.yawLedger` (step 3.2q's tool), medians of 6 runs [M]:
+The yaw ledger, integrated over the turn — angular impulse, **N·m·s, about the world vertical**, **positive the way the
+heading actually goes** (the ledger's own convention is "the nose toward the board's left", and in this movement that is
+the turn's direction: the signed heading rises from −45° to +87°). From `BoardBody.yawLedger`, step 3.2q's tool, with
+its suction entry fixed below [M]:
 
-| | flat, the cheat | new rider, in the turn | new rider, in trim |
+| | flat, the cheat, **6 runs** | new rider, in the turn, **18 runs** | new rider, in trim, **12 runs** |
 |---|---|---|---|
-| hull pressure | **+32.9** | −20.5 | −2.0 |
-| fins | **+14.9** | −18.4 | −2.4 |
-| rails' side faces | +2.4 | −1.6 | −0.2 |
-| added mass | +2.9 | **−15.8** | **−22.7** |
-| friction | −2.7 | +2.3 | +0.7 |
-| **`rider`** (the residual the contact carries) | **−52.5** | **+58.6** | **+38.8** |
-| `total` (the board's own I·Δω) | +0.44 | +0.26 | +0.22 |
+| hull pressure | **−43.6** | −20.5 | −2.0 |
+| fins | −9.0 | **−18.4** | −2.4 |
+| rails' side faces | −2.1 | −1.6 | −0.2 |
+| added mass | −15.2 | −15.8 | **−22.7** |
+| friction | +3.7 | +2.3 | +0.7 |
+| **the water, summed** | **−66.2** | **−54.0** | **−26.6** |
+| **`rider`** (the residual that closes the ledger) | **+72.2** | **+58.6** | **+38.8** |
+| `total` (the **board's** own I·Δω) | +0.49 | +0.26 | +0.22 |
 
-**What I will claim from this and what I will not.** `total` is the *board's* own change of yaw momentum and `rider` is
-a **residual** — `total` less every water term — so it carries the rider's own yaw inertia and the contact's constraint
-torque together, and its magnitude is **not** "a torque the feet apply". I will not read it as one. What is safe is the
-comparison: the water's yaw torque and the contact's residual are within about 6 % of cancelling in every cell, and the
-board's own net yaw momentum change over a 130° turn is **0.2–0.4 N·m·s** out of a ~50 N·m·s traffic. **So the heading
-rate is not set by the size of the yaw torque available; it is set by what the whole system's yaw inertia will accept.**
-That is consistent with the force measurement (2.5× the lateral and 0.7× the rate) and it is as far as this ledger can
-honestly take it. Separating the rider's inertia from the contact's constraint needs a term the ledger does not have,
-and naming that is this section's loose end.
+**I had these signs backwards in this document's first draft and the corrected table is above.** The draft quoted the
+probe's first run, which was both before the `water.advance` line went in and read with the turn's sign inverted; the
+numbers above are from the runs every other number in this part comes from. It is the second sign error this thread has
+made on an angular quantity.
+
+**What I will claim from this, and what I will not.** `total` is the **board's** own change of yaw momentum, so `rider`
+is a **residual** — `total` less every water term — and it carries the rider's own yaw inertia and the contact's
+constraint torque together. Its magnitude is **not** "a torque the feet apply" and I will not read it as one; the books
+do not close on the rider's side in the naive way, which is the honest statement of the ledger's limit.
+
+Two things in it are safe, because they are the water's own columns and nothing else:
+
+1. **The water's net yaw torque is against the turn in all three cells** — summed, −66.2, −54.0 and −26.6 N·m·s — and
+   the hull's pressure and the fins are both on the resisting side. **So the water is not what brings the nose round
+   here; it is what the nose is brought round against.** That is the resolution of the paradox at the top of this
+   section: the section's extra 1.46× of lateral load comes with more water resistance to the heading, not less, which
+   is why 2.5× the cheat's lateral g buys 0.7× its rate.
+2. **The board's own net yaw momentum change over a ~130° turn is +0.2 to +0.5 N·m·s against a ~66 N·m·s traffic** —
+   three parts in a thousand. Almost nothing in this ledger is going into turning the board; it is a near-balance
+   between the water and the contact.
+
+Separating the rider's inertia from the contact's constraint needs a term the ledger does not have, and naming that is
+this section's loose end. A `rider` column split into the two would be a ten-line change to the tool and is the first
+thing I would add next round.
 
 **One bug fixed in the ledger while reading it** [R, mine]: `BoardBody.ts:1529` accumulated `this.yaw.suction += totals.sty`
 where all twelve other entries accumulate `h × τ`, so the ledger's `/ dt` left that one entry a factor `substeps`
