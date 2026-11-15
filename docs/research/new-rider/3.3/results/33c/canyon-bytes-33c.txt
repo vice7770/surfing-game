@@ -1,0 +1,103 @@
+Canyon byte check, step 3.3c (claude/rider-new-33c, cut from main c3ae0147). The same command and the same reference
+as 3.3a's, 3.3b's, C2 step 5f's and 3.2t-3.2z's -- plus TWO CONTROL LEGS this round had to add, and a FIRST ATTEMPT
+that was thrown away. Read the warning below before trusting any later round's hashes.
+
+  rolldown scripts/m1-cpu-bench.ts -o <out>/wt-bench.mjs   --format esm --platform node   # the tree that merges
+  rolldown scripts/m1-cpu-bench.ts -o <out>/main-bench.mjs --format esm --platform node   # pristine main, c3ae0147
+  node <out>/wt-cb.mjs     --spot canyon --size medium --steps 3600 --state <fresh>.sea   # Canyon B, merging tree
+  node <out>/wt-bench.mjs  --spot canyon --size medium --steps 3600 --state <fresh>.sea   # default, merging tree
+  node <out>/main-cb.mjs   --spot canyon --size medium --steps 3600 --state <fresh>.sea   # Canyon B, pristine main
+  node <out>/main-bench.mjs --spot canyon --size medium --steps 3600 --state <fresh>.sea  # default, pristine main
+
+THE WRAPPER, WRITTEN OUT (3.3a Part 25 §5.5: the shorthand in 3.2y's and 3.2z's notes is WRONG and cost 3.3a a leg).
+`wt-cb.mjs` is, in full (`main-cb.mjs` is the same with the other import):
+
+    // `?canyonWaves=true` reaches the game through `devTools.ts`'s `currentSearch()`, which reads
+    // `globalThis.location?.search` -- so `location` must be an OBJECT with a `search`, not the string itself.
+    globalThis.location = { search: '?canyonWaves=true' };
+    await import('./wt-bench.mjs');
+
+A bare STRING has no `.search`, so `currentSearch()` reads `undefined ?? ''` and the bench silently runs the DEFAULT
+Canyon while the operator believes it is running B -- no error, and a plausible pair of hashes at the end. THE GRID IS
+READ FIRST, BEFORE THE HASHES: Canyon B is 400 x 451 = 180400 cells, the default Canyon 400 x 507 = 202800.
+
+EXPECTED (main's published figures, unchanged from step 5f through 3.3b):
+  Canyon B       snapshots a367d938f15fa934  state 9e5831f80e38abd9
+  default Canyon snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+
+=====================================================================================================================
+THE FIRST ATTEMPT WAS THROWN AWAY, AND WHY -- A NEW TRAP, WORTH THE NEXT ROUND'S TIME
+=====================================================================================================================
+
+The first Canyon B leg of this round printed:
+
+  hashes: snapshots d236d12d682dc4f6, state ab2156bcafecc1c0        <-- NOT the reference
+
+and it printed NO "spun up on the CPU in ... s" line. That is the tell. `scripts/m1-cpu-bench.ts` lines 49-57:
+
+    if (existsSync(statePath)) {
+      runner.simulation.importState(decodeSurfZoneState(...readFileSync(statePath)));    // <-- reuse
+    } else {
+      ... build the sea ...
+      writeFileSync(statePath, encodeSurfZoneState(runner.simulation.exportState()));
+      runner.simulation.importState(decodeSurfZoneState(...readFileSync(statePath)));
+      console.log(`spun up on the CPU in ...`);                                          // <-- fresh
+    }
+
+`b1.sea` and `c1.sea` were still on disk in this project's scratchpad from step 3.3b's own run (the scratchpad path is
+per PROJECT, not per session, and 3.3b's canyon-bytes file names the same directory). So the leg REUSED 3.3b's kept
+state instead of spinning up, and the hashes came out different.
+
+**A kept `.sea` does NOT reproduce the reference hashes, even from byte-identical code.** A spun-up run and a run that
+cold-imports that same spin-up's exported state are not the same starting point: `exportState()` carries the arrays
+the hash covers, but the solver keeps internals it does not export, so the in-memory sea after a build-then-import is
+not the sea after an import alone. The reference is a FRESH-SPIN-UP reference and nothing else.
+
+**So: never pass a `--state` path that already exists, and read the "spun up on the CPU" line before the hashes.** The
+grid check catches the wrapper trap; this one needs its own check, and a round that skips it can read a clean tree as
+a byte-check failure. This round did, for about twenty minutes.
+
+=====================================================================================================================
+THE RUN THAT COUNTS: four FRESH spin-ups, two on the tree that merges and two on pristine main as controls
+=====================================================================================================================
+
+== leg 1: Canyon B (?canyonWaves=true) on the TREE THAT MERGES, a FRESH spin-up (no pre-existing .sea).
+   GRID READ FIRST: Canyon B is 400 x 451 = 180400 cells.
+spun up on the CPU in 45.8 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bench2/wt-b.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.17/1.76, roller 0.65/1.04, front 0.00/0.00, lip 0.03/0.04, foam 2.49/3.58, airSources 0.05/0.09, aeration 1.35/1.95, contact 0.00/0.00, board 0.63/1.14, bubbles 0.15/0.22, spray 0.26/0.46, sounds 0.00/0.00, snapshotFields 3.90/5.85, snapshot 4.41/6.60, summary 0.40/0.58
+  CPU stages per step (step − water + snapshot + summary): 11.77/18.33; water (CPU solver, not timed on the device) 76.0
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+leg 1 exit
+0
+
+== leg 2: default Canyon (no wrapper) on the TREE THAT MERGES, a FRESH spin-up.
+   GRID READ FIRST: the default Canyon is 400 x 507 = 202800 cells.
+spun up on the CPU in 60.8 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bench2/wt-c.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.32/2.14, roller 0.45/0.65, front 0.00/0.00, lip 0.03/0.04, foam 3.73/6.93, airSources 0.06/0.10, aeration 1.96/3.05, contact 0.00/0.00, board 0.66/1.26, bubbles 0.18/0.24, spray 0.19/0.33, sounds 0.00/0.00, snapshotFields 4.71/8.42, snapshot 5.22/9.46, summary 0.43/0.64
+  CPU stages per step (step − water + snapshot + summary): 14.54/28.66; water (CPU solver, not timed on the device) 85.7
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+leg 2 exit
+0
+
+=====================================================================================================================
+THE CONTROL LEGS: queued, then CANCELLED, and why that is honest
+=====================================================================================================================
+
+Legs 3 and 4 would have run the same two spots on PRISTINE main (c3ae0147, no changes) as a control on the thrown-away
+first attempt. They were cancelled after legs 1 and 2 landed, because by then they could add nothing: the two legs on
+the TREE THAT MERGES both printed the reference hashes exactly, so the code on this branch is cleared whatever main
+prints, and the stale-.sea explanation above is the only one left standing (same bundle, two state origins, two hash
+sets). Said here rather than quietly dropped, because the run.sh in the scratchpad lists four legs and only two ran.
+
+RESULT: all four hashes IDENTICAL to the reference, unchanged from C2 step 5f through 3.3b.
+  Canyon B       snapshots a367d938f15fa934  state 9e5831f80e38abd9   <- reference, matched
+  default Canyon snapshots ea3d57a4d49f4b48  state a1a2555739210f96   <- reference, matched
+
+The step TIMES above carry the load of the probe cells and three tsc runs overlapping on the machine, so they are not
+comparable with 3.3a's or 3.3b's; the HASHES are the invariant and are unaffected by it.
+
+This round changed six source files, every behavioural line gated on a switch that is OFF by default, so matching
+hashes is the only possible result -- and it is run anyway, because that is what a seatbelt is for, and this round is
+the one that shows a seatbelt can also go wrong in a new way.

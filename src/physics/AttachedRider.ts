@@ -1313,6 +1313,27 @@ export interface AttachedRiderOptions {
    * before. By default the old rider.
    */
   rider?: 'new';
+  /**
+   * The felt vertical's low-pass **frame** (step 3.3c, the wave-shape advisor's second ruling of 2026-11-15), opt-in:
+   * 'deck' keeps the filter's state on the **deck's own axes** — `dG/dt = (A − G)/T` in the board's frame, which is what
+   * a body-fixed sensor does — in place of low-passing the pair's specific force in the **world** and only then
+   * projecting it onto the deck's current axes.
+   *
+   * By default (the world frame) a force locked exactly to the deck normal still reads an across component of order
+   * `Ω · T` the moment the deck rolls, so the felt vertical the balance stands on carries a rate-proportional tilt that
+   * is the instrument's and not the water's: measured at **0.084–0.132 ° of tilt per ° of roll in all seven cells** of
+   * step 3.3b, and `0.1 s × 130 °/s = 13°` one frame before a traced fall, where the real in-plane water force gives
+   * −6.5° and the test reads −15.5° (`docs/research/new-rider/3.3/README.md` Part 26 §1.4). It is not only a readout:
+   * `humanBalance`'s `px = offset.x − height · nx` puts the same filtered vertical into the capture point, so it moves
+   * the fall margin itself.
+   *
+   * The advisor's ruling is that the 0.1 s is defensible and its frame is not — the otolith is a body-fixed sensor and
+   * the brain's gravity estimate is built in egocentric coordinates (Laurens 2022, Front. Syst. Neurosci. 16:886284) — so
+   * in body coordinates the same lag costs `T · d(tilt)/dt` ≈ 0.65° on this trajectory against the world frame's 13°, a
+   * factor of twenty for the same time constant. The smoothing the filter exists for is kept; only its frame changes,
+   * and nothing in the water is touched. The `?feltFrame=deck` dev switch, to ride. By default as before.
+   */
+  feltFrame?: 'deck';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -1819,6 +1840,8 @@ export class AttachedRider {
   readonly capsLegs: boolean;
   /** The new surfer (`rider: 'new'`); and the power window kept, with `legPower: 'cap'` or the new surfer. */
   private readonly newRider: boolean;
+  /** The felt vertical's low pass held on the deck's own axes (`feltFrame: 'deck'`, step 3.3c) rather than in the world. */
+  private readonly deckFelt: boolean;
   private readonly newSubsteps: number;
   private readonly yawScale: number;
   private readonly bankGain: number;
@@ -1901,9 +1924,14 @@ export class AttachedRider {
   private readonly captureVelocity = new Vector3();
   private readonly captureFelt = new Vector3();
   private readonly captureScratch = new Vector3();
-  /** The pair's momentum the latest substep, kg·m/s, and its specific force low-passed, m/s² (world); fresh until the first. */
+  /**
+   * The pair's momentum the latest substep, kg·m/s, and its specific force low-passed, m/s²; fresh until the first.
+   * `pairFelt` is held in the **world** by default and on the **deck's own axes** with `feltFrame: 'deck'` (step 3.3c) —
+   * the one field whose frame the switch changes, and `pairScratch` is where the reading is rotated into them.
+   */
   private readonly pairMomentum = new Vector3();
   private readonly pairFelt = new Vector3(0, WATER.gravity, 0);
+  private readonly pairScratch = new Vector3();
   private pairFresh = true;
   /** The new surfer standing, the hand in the water: the water's support on it along its surface's normal, N (world), the latest substep. */
   readonly handSupport = new Vector3();
@@ -2057,6 +2085,7 @@ export class AttachedRider {
     this.snapCrosses = options.snapCross === 'on';
     this.capsLegs = options.legPower === 'cap';
     this.newRider = options.rider === 'new';
+    this.deckFelt = options.feltFrame === 'deck';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -4503,20 +4532,31 @@ export class AttachedRider {
     // pushed the 2.5 kg board, and the capture point read a fall in 0.07 s of a lean begun: the don't-retry list.)
     const momentum = this.captureScratch.copy(board.velocity).multiplyScalar(board.mass).addScaledVector(this.velocity, this.mass);
     const total = board.mass + this.mass;
+    // `feltFrame: 'deck'` (step 3.3c): the filter's own state is kept on the DECK's axes, which is what a body-fixed
+    // sensor does — `dG/dt = (A − G)/T` in the board's frame — so the 0.1 s costs `T · d(tilt)/dt` and not `Ω · T`. The
+    // time constant, the reading and the smoothing are the same; only the frame the state is held in changes, and
+    // nothing in the water is touched. Step 3.3b measured the world frame's rate-proportional cost at 0.084–0.132° of
+    // tilt per degree of roll in all seven of its cells, over roll rates of 65–330 °/s.
     if (this.pairFresh) {
       this.pairFelt.set(0, WATER.gravity, 0);
+      // The mount's reading is the same vector either way: the world vertical, rotated into the deck's axes when that is
+      // where the state lives, so the switch changes nothing on the first loaded substep.
+      if (this.deckFelt) this.pairFelt.applyQuaternion(inverse);
       this.pairFresh = false;
     } else {
       const ax = (momentum.x - this.pairMomentum.x) / (h * total);
       const ay = (momentum.y - this.pairMomentum.y) / (h * total) + WATER.gravity;
       const az = (momentum.z - this.pairMomentum.z) / (h * total);
       const blend = 1 - Math.exp(-h / SPECIFIC_FORCE_TIME);
-      this.pairFelt.x += (ax - this.pairFelt.x) * blend;
-      this.pairFelt.y += (ay - this.pairFelt.y) * blend;
-      this.pairFelt.z += (az - this.pairFelt.z) * blend;
+      // The reading on the state's own axes. `inverse` is the board's orientation inverted, built above.
+      const a = this.deckFelt ? this.pairScratch.set(ax, ay, az).applyQuaternion(inverse) : this.pairScratch.set(ax, ay, az);
+      this.pairFelt.x += (a.x - this.pairFelt.x) * blend;
+      this.pairFelt.y += (a.y - this.pairFelt.y) * blend;
+      this.pairFelt.z += (a.z - this.pairFelt.z) * blend;
     }
     this.pairMomentum.copy(momentum);
-    const felt = this.captureFelt.copy(this.pairFelt).applyQuaternion(inverse);
+    // Already on the deck's axes with `feltFrame: 'deck'`; otherwise rotated into them here, as before.
+    const felt = this.deckFelt ? this.captureFelt.copy(this.pairFelt) : this.captureFelt.copy(this.pairFelt).applyQuaternion(inverse);
     const height = Math.max(0.2, offset.length());
     const omega = Math.sqrt(Math.max(0.5, this.pairFelt.length()) / height);
     const room = stanceRoom(this.stanceDepth);

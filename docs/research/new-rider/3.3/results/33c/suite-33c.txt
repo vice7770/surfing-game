@@ -1,0 +1,23 @@
+Rider/board/HUD/runner suite, step 3.3c, on the tree that merges (claude/rider-new-33c, cut from main c3ae0147).
+
+  npx vitest run src/physics/ src/game/PhysicalMode.test.ts src/ui/RideHud.test.ts src/wave/SurfZoneRunner.test.ts \
+    src/wave/SprayCloud.test.ts
+
+vitest exit: 0 (read from vitest's own exit status, on its own line, never through a pipe).
+SurfZoneRunner.test.ts is OUTSIDE the merge suite, so a red there is news: it is green.
+src/wave/SurfZoneSimulation.test.ts is deliberately not in it (c2-step5g.md 7.4), closed by reading.
+
+58 files, 784 passed, 21 expected fail (805) -- ONE MORE PASSING TEST than 3.3a's and 3.3b's 783/804, and it is this
+round's own: PhysicalMode.test.ts gains a case for the `?feltFrame=deck` switch, in the shape riderSwitch's and
+legPowerSwitch's cases already use (the switch's parsing, every spot's config through surfZoneConfigFor, and the
+online-room pin read out of main.ts so that removing it fails here). The file count is unchanged.
+
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/surfing-game-wt/rider-new-33c
+
+
+ Test Files  58 passed (58)
+      Tests  784 passed | 21 expected fail (805)
+   Start at  10:17:04
+   Duration  118.58s (tests 97%, transform 2%, import 1%)
+

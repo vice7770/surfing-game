@@ -551,6 +551,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...legPowerSwitch(),
     // `?rider=new`: the new surfer (docs/research/new-rider): step 3.1, standing, the body free along the board too, leaning with the face, softer knees with a strength cap, opt-in, to ride.
     ...riderSwitch(),
+    // `?feltFrame=deck`: the standing riders' felt vertical is low-passed on the deck's own axes, as a body-fixed sensor does, instead of in the world (step 3.3c), opt-in, to ride.
+    ...feltFrameSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1055,6 +1057,17 @@ export function legPowerSwitch(search?: string): { legPower?: 'cap' } {
  */
 export function riderSwitch(search?: string): { rider?: 'new' } {
   return devParam('rider', search)?.trim().toLowerCase() === 'new' ? { rider: 'new' } : {};
+}
+
+/**
+ * The `?feltFrame=deck` dev switch (`SurfZoneConfig.feltFrame`, step 3.3c, the wave-shape advisor's second ruling of
+ * 2026-11-15): opt-in, every spot's standing rider keeps the felt vertical's 0.1 s low pass on the **deck's own axes**,
+ * which is what a body-fixed sensor does, instead of low-passing it in the world and only then reading it against a
+ * deck that has rolled under it. The time constant and the smoothing are unchanged; no force, no hull law and no spot's
+ * drive is touched (docs/research/new-rider/3.3 Part 27). Anything else, the world frame as before.
+ */
+export function feltFrameSwitch(search?: string): { feltFrame?: 'deck' } {
+  return devParam('feltFrame', search)?.trim().toLowerCase() === 'deck' ? { feltFrame: 'deck' } : {};
 }
 
 /**

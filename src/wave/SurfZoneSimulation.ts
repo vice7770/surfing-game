@@ -281,6 +281,14 @@ export interface SurfZoneConfig {
    */
   rider?: 'new';
   /**
+   * 'deck': the standing riders' felt vertical is low-passed on the **deck's own axes** rather than in the world (step
+   * 3.3c, the wave-shape advisor's second ruling of 2026-11-15; `RideSessionOptions.feltFrame`) — what a body-fixed
+   * sensor does, so the same 0.1 s costs `T · d(tilt)/dt` instead of `Ω · T` against a rolling deck. No force, no hull
+   * law and no spot's drive changes. Every spot. The `?feltFrame=deck` dev switch, opt-in, to ride; online rooms run the
+   * default.
+   */
+  feltFrame?: 'deck';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

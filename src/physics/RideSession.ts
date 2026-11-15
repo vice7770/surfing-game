@@ -160,6 +160,8 @@ export interface RideSessionOptions {
   legPower?: 'cap';
   /** The new surfer (docs/research/new-rider; `AttachedRiderOptions.rider`): 'new' (the `?rider=new` dev switch); by default the old rider. */
   rider?: 'new';
+  /** The felt vertical's low-pass frame (step 3.3c; `AttachedRiderOptions.feltFrame`): 'deck' (the `?feltFrame=deck` dev switch); by default the world. */
+  feltFrame?: 'deck';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
   deckHollow?: 'on';
   /** The board's shape (the reference board by default; tests dive bigger boards). */
@@ -258,6 +260,7 @@ export class RideSession {
       ...(options.snapCross ? { snapCross: options.snapCross } : {}),
       ...(options.legPower ? { legPower: options.legPower } : {}),
       ...(options.rider ? { rider: options.rider } : {}),
+      ...(options.feltFrame ? { feltFrame: options.feltFrame } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';
