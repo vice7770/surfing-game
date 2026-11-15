@@ -25,3 +25,12 @@ The default board was also checked bit for bit against main as raw IEEE patterns
 the board path than the hash: results/32v/shapebits-32v.txt, diff clean.
 A wave-track agent ran its own three-leg Canyon bench alongside this one throughout, so the per-step
 milliseconds here are a loaded machine's. The hashes are the claim; the milliseconds are not.
+
+Against the baseline the coordinator measured on merged main (30b2accb), and C2 step 5f's, 3.2t's and 3.2u's
+own runs -- same command, same machine:
+  Canyon B        got a367d938f15fa934 9e5831f80e38abd9   want a367d938f15fa934 9e5831f80e38abd9
+  default Canyon  got ea3d57a4d49f4b48 a1a2555739210f96   want ea3d57a4d49f4b48 a1a2555739210f96
+  ALL FOUR IDENTICAL.
+Every change this round is a readout, a measurement tool, a probe-only diagnostic or a fix to a tool whose
+switch (BoardBody.yawLedger) is off in the game, so this is the expected result and not a surprise. The
+default board was also checked bit for bit against main as raw IEEE patterns (results/32v/shapebits-32v.txt).
