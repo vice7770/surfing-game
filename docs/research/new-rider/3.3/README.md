@@ -1260,3 +1260,450 @@ re-aimed. It gets **two to three times stronger**, because a rolled board's bott
 than the water's surface does. So re-aiming it is still a change you would have to re-feel every spot for — but it is
 not a change that takes the wave's push away. If that is what you were worried about losing, you were worried about
 the wrong sign.
+
+# Part 28 — the hydrostatic support on the hull's own normal, built behind a switch; and the gate that withdraws it exactly where the fall is
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33d`, cut from `main` at
+**2d37193a** (step 3.3c's merge), so Part 27 is its base. **This round ships one change to the game, opt-in and off by
+default** — `?buoyFrame=hull`, **135 inserted and 5 replaced lines over six source files plus 107 and 1 in two test
+files**, every behavioural line gated on the switch — plus one probe, **thirty-six** cells of twelve runs (**432 runs**),
+a paired instrument on one trajectory and a frame-level population of **13,422 frames** over 108 runs.
+
+## 0. What was built, in one line of physics
+
+`hullForces.patchForce` resolves each wet patch's hydrostatic support along the **water-surface** normal,
+`ρg(−∂η/∂x, 1, −∂η/∂z)·V` [R, `hullForces.ts:264`]. `buoyFrame: 'hull'` turns that resultant onto the **hull's** own
+normal — `−patch.normal`, or the station's `band.up` on a band facet — **at the same magnitude**, by a blend
+`(1 − deck) · F_d²/(1 + F_d²)` of the patch's own **dry-deck share** and a local **planing** share on the Froude
+number of its immersion depth. **Nothing was added or removed: one existing force is rotated.** Its reaction on the
+water is as implicit as it already was (the coupling is one-way, ruling 27's open item), the force still acts at the
+same `buoyancyPoint`, so its moment turns with it, as a bottom-pressure resultant's must, and no gain, clip, threshold
+or other hull term is touched.
+
+Its warrant is the wave-shape advisor's **item 2** (`docs/research/water-physics/consult-log.md`, 2026-11-15): in
+Savitsky's own method the whole load, the buoyant term included, is the bottom-pressure resultant **normal to the
+bottom** — that is what makes his pressure drag `Δ tan τ` — because hydrostatic pressure on a bottom wetted on one side
+under a **dry deck** has no wetted side walls to turn it vertical [S]. The shipped law does the closed-body thing, and
+for a **closed** immersed volume that is correct and not a bug: by the divergence theorem the pressure on the wetted
+hull alone integrates to Archimedes' vertical `ρgV`, because the waterplane that closes it carries `p = 0` and the
+horizontal part is carried by the side walls — which the default flat section does not have as patches at all.
+
+**The owner's terms, and they are met.** They were given step 3.3c's measured numbers and said: *"Yes, behind a
+switch — build it opt-in and off by default, measure it, and show me an A/B on one wave. Nothing changes for me until I
+say so."* So the switch is off unless typed, pinned off for online rooms (`main.ts`, asserted in
+`PhysicalMode.test.ts`), and §10 proves the shipped rider unchanged against Part 27's published figures rather than
+asserting it.
+
+## 1. The five sentences the round is for
+
+1. **It does not fix the fall.** **12 of 12 fell in every one of the thirty-six cells.** What it buys is time: the
+   median fall goes **1.58 → 1.73 s** with the shipped filter and **1.76 → 2.10 s** with `?feltFrame=deck`, over 108
+   runs a configuration, and the rider rolls **no shallower** (peaks 11.0–90.8 → 12.3–91.6° in the world frame,
+   11.0–119.2 → 12.6–134.8° on the deck). **Later and deeper, not absent** — the same sentence Part 27 had to write.
+2. **The blend is not a constant, and one of its two factors is.** Over **13,422 frames** of 108 runs the **planing**
+   share is **0.9921 at the median** (min 0.6769; only **204 frames of 13,422** below 0.9) — a constant 1 for 98.5 % of
+   the ride — while the **dry-deck** share runs the whole range, **0.000 to 1.000, median 0.464**. **The deck's dry
+   share is the blend, and nothing else is.** 2,781 frames of 13,422 sit at 0.9 or above and 4 at exactly 0.
+3. **And the gate withdraws the correction exactly as the thing it corrects grows.** The blend falls through the roll
+   bands — **0.55 at 0–20°, 0.33 at 20–30°, 0.13 at 50–60°, 0.03 past 70°** (not quite monotone: 0.552 then 0.565 in
+   the first two) — while the across force rises through them (§4's ladder): the switch removes **49–54 %** of
+   buoyancy's in-plane across force below 20° of roll and **6–13 %** past 50°, where these falls happen. An
+   **unconditional** re-pointing removes **100 %** in every band. **The fix and the fault are anti-correlated, by the
+   geometry of the gate.**
+4. **So the payoff is a quarter of Part 27's prediction — and so is the cost the owner objected to.** Paired on one
+   trajectory, of a real in-plane residual of **0.72–17.09°** by roll band the switch removes **0.14–0.94°** (pooled
+   0.331° of 1.57°, 21 %) where the unconditional one would remove **0.35–9.53°** (pooled 0.839°, 53 %). On the drive,
+   the along-board component falls **5–33 %** (switch-on-shipped slope **0.666–0.954** over eighteen cells) against the
+   unconditional's **45–77 %** (slope 0.182), and the world-horizontal push down the slope moves **1.6–15.8 →
+   1.8–17.1 N** against the unconditional's **1.8–20.0**. **Item 2, built as physics rather than unconditionally, is a
+   much smaller change than either its payoff or its cost was quoted as.**
+5. **The deficit does not fall, and `buoyancy` is still the largest named in-plane term on the shipped board.** Its
+   in-plane share is **0.089–0.147 °/°** over the nine world cells (against 0.111–0.181 off) and **0.061–0.119** over
+   the nine deck cells (against 0.067–0.120) — the same order, and the largest named term in all **thirty-two**
+   default-hull cells. (It is **not** the largest in three of the four `hull:'rail'` cells, which refutes a sentence of
+   Part 27's: §7.) The measured gain deficit **rises** in 7 of 9 world cells (0.234–0.499 → 0.249–0.498) and falls in
+   5 of 9 deck cells (0.141–0.291 → 0.155–0.389) — on two populations with different falls, which is why §3 is labelled
+   as one and §4 is the claim.
+
+## 2. The blend, and why this one
+
+The advisor's spec is *"while the deck is dry and the board planes, blending to the surface normal as it floats or
+submerges"*, and the brief's instruction was to **measure what fraction of the ride each regime covers before choosing
+the criterion**, because our draft is **0.085 m on a 0.0667 m board** (`predictiveBalance.ts:211`, 7.5 m/s) against
+Savitsky's 0.056 m, which puts the undisturbed waterline over the deck.
+
+Two factors, both local to the patch, both measurable, neither fitted:
+
+- **the dry-deck share, `1 − deck`.** `patchForce` already computes `deck = wettedShare(surfaceY − deckY) · deckWet`.
+  Where the deck is under the surface line the slab is closed above and the vertical answer is the right one. This is
+  also what stops a **capsized** board being driven under by its own buoyancy: inverted, its bottom face is clear of
+  the water and its deck face is beneath, so `deck → 1`, the blend → 0, and the hull normal — which points **down** —
+  is never followed. `hullForces.test.ts` asserts exactly that case.
+- **the planing share, `F_d²/(1 + F_d²)` on `F_d = |v_rel|/√(g·d)`** at the patch's own immersion depth `d`. 0 at rest,
+  so a board floating heeled on flat water keeps Archimedes and does not acquire a sideways push; ≈0.985 at 7.5 m/s and
+  0.085 m. There is no constant in it to tune: it is the dimensionless group of Savitsky's own buoyant term
+  (`0.0055 λ^2.5/C_V²`) with the beam replaced by the local depth.
+
+**Measured, over 13,422 frames of 108 runs on the nine shipped-trajectory cells:**
+
+| factor | median | min | max | frames below 0.9 |
+|---|---|---|---|---|
+| planing `F_d²/(1+F_d²)` | **0.9921** | 0.6769 | ≈1 | **204 of 13,422** |
+| dry-deck `1 − deck` | **0.464** | 0.000 | 1.000 | 8,935 |
+| the blend | **0.461** | 0.000 | 1.000 | 8,936 (and **2,781 at ≥0.9**) |
+
+**So the planing factor is a constant and is reported as one**, as the brief required: it is 1 for the whole ride and
+only dips in the capsize's last frames. It still earns its place in the law, because it is what makes the switch right
+at rest and in a wipeout, and because the sensitivity it exposes is the walk's own seatbelt (§10). **The dry-deck share
+is the design, and it is the thing the model gets least well**: the draft that sets it is 1.5× Savitsky's.
+
+**The hack is not shipped and is named as one.** The brief's narrow variant — keep `buoyancy`'s magnitude and its
+along-face thrust and resolve *only* its across component on the hull normal — is a hack, the advisor called it one,
+and there is nothing in it to measure: its across component is 0 and its along component is the shipped one, **both by
+construction**, which the `bh` and `bn` columns below already print. The switch's behaviour is the physical version.
+
+## 3. The thirty-six cells — a population comparison, labelled as one
+
+Part 27's nine cells (the Canyon-matched `FaceWater` 1.4 m / 16° / 5.7 m/s, two stances × six entry speeds, 9 s a run,
+twelve runs a cell), run at both filter frames **and** both hull laws, because the brief's instruction was to measure
+with the filter both ways: they are the two halves of one deficit, and the owner will want to know whether they add.
+
+| configuration | fell | median fall | fall range | roll peak | ends past the feet |
+|---|---|---|---|---|---|
+| world filter, shipped hull | 108/108 | 1.58 s | 0.50–5.33 s | 11.0–90.8° | 0.091–0.750 m |
+| world filter, **hull buoyancy** | 108/108 | **1.73** | 0.52–**6.65** | 12.3–91.6° | 0.105–0.706 m |
+| deck filter, shipped hull | 108/108 | 1.76 | 0.83–5.65 | 11.0–119.2° | 0.115–1.251 m |
+| deck filter, **hull buoyancy** | 108/108 | **2.10** | 0.87–**7.93** | 12.6–134.8° | 0.000–1.054 m |
+
+**They add.** The filter alone buys 0.18 s of median fall, the hull law alone 0.15 s, and the two together **0.52 s** —
+more than the sum, on a population comparison and not a paired one. The per-cell medians rise in **8 of 9** cells with
+the hull law on at either filter frame. **No fall was prevented in any of the thirty-six cells.**
+
+And three things in this table are **not** results:
+
+- **the speed at the fall falls** (6.21 → 5.82 m/s in the world, 5.56 → 5.15 on the deck) and that is not lost drive:
+  the falls come later, so the board has had longer to decelerate, and §4's own drive columns say the opposite about the
+  force. Two populations.
+- **the drift peak reaches 93.6° and 123.8°** with the switch on. Those are in and after the capsize, as Part 27's
+  0.8–69.3° were, and they are not a controlled slide.
+- **the gain deficit** (world 0.234–0.499 → 0.249–0.498; deck 0.141–0.291 → 0.155–0.389) is a regression over a
+  different trajectory with deeper rolls. §4 is the paired measurement and §4 is the claim.
+
+## 4. The paired instrument: what the switch does to the force, on one trajectory
+
+Step 3.3c's technique, because the switch changes the ride. After every step the probe re-walks the board's patches off
+the live instance's own **last-substep** arrays and calls **`hullForces.patchForce` itself** on them three times: with
+`hullBuoyancy = 0` (**shipped**), with `hullBuoyancy = 1` (**the switch**, so the blend is read out of the shipped law
+and not re-derived) and once re-pointed **unconditionally** on the hull normal at the same magnitude (Part 27's own
+convention, so this round reproduces its table). The difference between the first two is the switch's own change, with
+no trajectory confound at all.
+
+**The roll ladder, 13,422 frames of 108 runs, the nine cells on the shipped trajectory.** `buoyancy`'s across force in
+the plane of the deck, median |N| by roll band:
+
+| roll | frames | the blend | shipped | **the switch** | unconditional | removed by the switch | by the unconditional |
+|---|---|---|---|---|---|---|---|
+| 0–10° | 6683 | 0.552 | 4.4 N | **2.3** | 0.02 | **49 %** | 100 % |
+| 10–20° | 4103 | 0.565 | 13.3 | **6.1** | 0.03 | **54 %** | 100 % |
+| 20–30° | 1339 | 0.329 | 39.9 | **27.0** | 0.06 | **32 %** | 100 % |
+| 30–40° | 637 | 0.254 | 54.5 | **40.4** | 0.09 | **26 %** | 100 % |
+| 40–50° | 299 | 0.185 | 72.2 | **58.4** | 0.13 | **19 %** | 100 % |
+| 50–60° | 220 | 0.127 | 87.1 | **75.6** | 0.12 | **13 %** | 100 % |
+| 60–70° | 114 | 0.087 | 102.8 | **94.2** | 0.16 | **8 %** | 100 % |
+| 70–140° | 27 | 0.034 | 115.9 | **109.3** | 0.31 | **6 %** | 100 % |
+
+The blend's own regression on `|roll|` is **−0.0096 per degree at R² 0.149** — low, and quoted as low: roll is not the
+only thing setting the immersion, so the **band medians are the statement and the line is not**. What the bands say is
+not in doubt: the blend is 0.55 at trim and 0.03 past 70°, and the force it is meant to remove is 26× larger there.
+
+**And the same thing in the units the body feels.** The real in-plane residual `atan(F_s/F_n)` off the **total** water
+force, and what each re-pointing takes off it, median by band over the same 13,422 frames:
+
+| roll | the residual, ° | **the switch removes** | the unconditional would remove | the switch, m/s² on 75.54 kg |
+|---|---|---|---|---|
+| 0–10° | 0.72 | **0.14** | 0.35 | 0.023 |
+| 10–20° | 1.89 | **0.39** | 0.99 | 0.070 |
+| 20–30° | 4.81 | **0.85** | 2.89 | 0.153 |
+| 30–40° | 5.80 | **0.94** | 3.94 | 0.171 |
+| 40–50° | 8.56 | **0.88** | 5.09 | 0.163 |
+| 50–60° | 10.28 | **0.68** | 5.49 | 0.138 |
+| 60–70° | 11.92 | **0.60** | 6.79 | 0.120 |
+| 70–140° | 17.09 | **0.29** | 9.53 | 0.036 |
+
+Pooled over all 13,422 frames: the residual **1.57°**, the switch takes **0.331°** (21 %) and the unconditional
+**0.839°** (53 %). **The switch's correction peaks at 0.94° around 30–40° of roll and then falls away**, while the
+residual keeps climbing to 17.09°.
+
+**There is a negative feedback in the gate by construction, and I could not measure it.** Turning the support onto the
+hull normal moves part of it out of the vertical, so the board should sit a little deeper, wet more deck and re-point
+less — a self-limiting law. On the shipped cell the blend's per-run median goes **0.402–0.998** on the shipped
+trajectory to **0.272–0.998** on its own, which is the predicted direction; but over the nine cells the low end of that
+range **falls in five and rises in four** (0.259 → 0.282, 0.317 → 0.333, 0.380 → 0.401, 0.863 → 0.870). **So the
+feedback is in the law and is not in the measurement**, on two populations whose falls differ, and I will not claim it
+either way.
+
+**The positive control that makes the gate the mechanism and not a guess.** With the deadrise band on (`hull:'rail'`,
+not the shipped board) the deck's dry share is **0.868–1.000** per-run median instead of 0.10–1.00, and there the
+switch removes **96 %** of the across force — pooled |median| **1.17 → 0.05 N**, switch-on-shipped slope **0.601**,
+against 0.748–0.886 on the eight default-hull cells. **Where the deck is dry the switch is the unconditional
+re-pointing. Where it is not, it is a fraction of it.**
+
+Per-run medians, the shipped trajectory, nine cells (the shipped and unconditional columns reproduce Part 27 §5 to the
+digit):
+
+| cell | across: shipped → **switch** → unconditional, N | at the fall | along-board: shipped → **switch** → uncond. | switch slope |
+|---|---|---|---|---|
+| 0 (shipped) | −25.5–0.2 → **−15.0–0.0** → −0.1–0.0 | −94.0–−4.6 → **−83.6–0.0** → −0.2–0.1 | 1.3–9.9 → **1.1–6.8** → 1.1–2.5 | 0.748 |
+| +0.25 into | −33.9–−0.4 → **−21.3–0.0** → 0.0–0.0 | −78.4–65.4 → **−69.6–62.5** → −0.9–0.7 | 0.7–17.5 → **0.6–12.5** → 0.6–3.9 | 0.821 |
+| +0.5 into | −45.9–−1.1 → **−31.2–0.0** → −0.1–0.0 | −150.5–−8.2 → **−150.3–−6.8** → −0.1–0.4 | 2.4–16.0 → **1.9–10.9** → 1.0–3.5 | 0.886 |
+| +1 into | −43.0–−0.5 → **−29.9–0.0** → −0.1–0.0 | −194.0–−12.0 → **−188.5–−9.0** → −0.2–0.3 | 2.1–12.4 → **1.6–8.4** → 1.2–3.0 | 0.879 |
+| −0.25 against | −8.6–12.0 → **−3.2–6.6** → 0.0–0.0 | −45.6–184.2 → **−36.7–177.7** → −0.2–0.8 | 3.9–15.7 → **2.7–10.8** → 1.7–4.0 | 0.834 |
+| −0.5 against | −6.7–22.1 → **−2.0–12.5** → 0.0–0.0 | −15.4–146.5 → **−10.6–133.1** → −0.5–0.3 | 3.9–14.1 → **2.6–9.5** → 1.4–3.9 | 0.807 |
+| −1 against | 0.2–18.0 → **0.0–10.5** → 0.0–0.0 | 22.5–200.9 → **18.7–186.5** → −0.3–0.4 | 4.9–13.2 → **3.7–9.0** → 1.2–3.5 | 0.796 |
+| particle | −35.7–3.6 → **−23.9–2.7** → −0.1–0.0 | −116.6–6.5 → **−108.9–6.4** → −0.6–0.4 | 6.5–56.4 → **4.0–50.7** → 1.9–4.1 | 0.808 |
+| `hull:'rail'` | −5.6–0.3 → **−0.5–0.0** → 0.0–0.0 | −48.1–−1.8 → **−36.9–0.0** → −0.2–0.0 | 0.1–4.3 → **0.1–2.9** → 0.1–2.8 | 0.601 |
+
+## 5. The drive — the owner's own objection, sized for the switch rather than for the unconditional version
+
+Part 27 found that an **unconditional** re-pointing does not weaken the wave's push: as a world-horizontal force
+`buoyancy` **strengthens**, 2.9–15.8 → 11.0–39.3 N per-run median, and its down-slope component with it. **The switch
+does the same thing about a third as hard**, measured on the shipped cell with the deck filter — the same twelve runs
+Part 27 §5 published that row from — as per-run medians:
+
+| | shipped | **the switch** | unconditional |
+|---|---|---|---|
+| world-horizontal magnitude | 2.9–15.8 N | **7.4–19.1** | 11.0–39.3 |
+| down the water's own slope | 1.6–15.8 | **1.8–17.1** | 1.8–20.0 |
+| the same at the fall | 0.0–9.1 | **0.0–10.8** | 0.0–23.9 |
+| along-board (the push down the line) | 2.0–10.1 | **1.7–7.4** | 0.9–2.1 |
+| the deck normal's own load | 20.2–87.8 | **21.4–91.8** | 26.2–100.6 |
+
+So the recalibration the owner objected to in 3.2s is real but small: the along-board component falls **5–33 %**
+(slope 0.666–0.954 over the eighteen world and deck cells) where the unconditional version cut it **45–77 %**
+(slope 0.182), and the horizontal push grows at the low end rather than shrinking — by **3.3 N** at the top of the
+per-run median range where the unconditional version grows it by **23.5 N**. **On this measurement the switch redirects
+a few newtons out of about a hundred; it does not take the wave's push away, and it does not take a third of it
+either.**
+
+## 6. `F_s` in newtons and `F_s/F_n` in degrees, un-lagged — the advisor's instructed columns
+
+The bank gain stays retired. These carry no 0.1 s in them; the pool is the whole cell, 46–339 frames a run.
+
+| cell | `F_s/F_n` °, \|median\|: world off → **on** | deck off → **on** | `F_s` per unit sin(**rail**), N: world off → **on** |
+|---|---|---|---|
+| 0 (shipped) | 0.78 → **0.93** | 1.46 → **1.31** | −79.7 → **−115.6** |
+| +0.25 into | 1.28 → **0.90** | 1.46 → **1.04** | −228.2 → **−244.5** |
+| +0.5 into | 2.01 → **1.53** | 2.40 → **1.86** | −189.4 → **−171.5** |
+| +1 into | 2.39 → **2.00** | 3.01 → **2.52** | −117.4 → **−128.4** |
+| −0.25 against | 1.40 → **1.27** | 1.61 → **1.37** | −199.3 → **−196.4** |
+| −0.5 against | 1.77 → **1.70** | 2.06 → **1.77** | −191.8 → **−186.7** |
+| −1 against | 2.77 → **2.64** | 2.90 → **2.85** | −171.5 → **−179.4** |
+| particle | 0.87 → **0.78** | 1.33 → **1.08** | −100.6 → **−119.9** |
+| `hull:'rail'` | 0.79 → **0.85** | 2.08 → **2.28** | −263.5 → **−235.8** |
+
+`F_s/F_n` falls in **7 of 9** world cells and **8 of 9** deck cells, by **0.03–0.54°** — a tenth to a third of the
+residual, and the same size §4's paired ladder gives. **`F_s` per unit `sin(rail)` does not move in one direction**
+(−79.7…−263.5 → −115.6…−244.5): it is a pooled slope on a changed trajectory and it is printed here because the
+advisor's instruction was to keep the column in newtons so it is never chained to a pooled `sin(roll)` slope again, not
+because it is a result.
+
+## 7. What I refuted
+
+- **Part 27's own payoff figure, as a statement about a shippable change.** 3.3c measured the across force going
+  **−45.9…+22.1 N → −0.1…0.0 N** and called it "item 2's whole payoff". That is true of an **unconditional**
+  re-pointing and this round reproduces it to the digit — but the unconditional version is not physics: it drives a
+  capsized board under by its own buoyancy and pushes a heeled board sideways at rest. The physical version removes
+  **49–54 %** of that force below 20° of roll and **6–13 %** past 50°. **The payoff I inherited was measured on a
+  version that cannot ship.**
+- **The advisor's own predicted outcome for item 2** — "predicted gain 0.95–1.00, residual tilt 0.4–1.3° instead of
+  5.4–16.4°, the body's forcing 1.26–2.69 → ~0.1–0.3 m/s²". Built, the residual is **0.72–17.09°** by roll band and the
+  switch takes **0.14–0.94°** off it. The residual past 40° of roll is **8.6–17.1°**.
+- **The brief's own worry that the blend would be a constant at one end.** It is not: **median 0.461, 0.000 to 1.000**,
+  2,781 frames of 13,422 at ≥0.9. But **one of its two factors is** — the planing share is **0.9921** at the median
+  with 204 frames of 13,422 below 0.9 — so *"while the board planes"* is not a condition on this ride at all, and the
+  whole gate is *"while the deck is dry"*.
+- **That buoyancy would stop being the in-plane term that matters.** With the switch on it is still the **largest named
+  in-plane term in all thirty-two default-hull cells** (0.089–0.147 °/° in the world frame, 0.061–0.119 on the deck).
+- **And a sentence of Part 27's own, which this round's probe refutes off the same instrument that reproduces Part 27's
+  table to the digit.** Part 27 §3 wrote that `buoyancy` "is still the largest named in-plane term in every cell of
+  both frames". It is not, in the `hull:'rail'` cell: at `BUOY=off` on the deck frame `fins` reads **0.123 °/°**
+  against buoyancy's **0.070**, and in the world frame with the switch on `pressure` reads **0.150** against **0.099**.
+  That is consistent rather than surprising — a deadrise section has a real in-plane `pressure` share, Part 26's own
+  positive control measured it at 0.149 — but the claim should have carried "on the shipped board", and now does.
+- **The feared direction of the cost, again, and now for the shipped switch.** The world-horizontal push **rises**
+  (2.9–15.8 → 7.4–19.1 N) and the down-slope component rises with it (1.6–15.8 → 1.8–17.1). **Re-pointing does not
+  remove the drive at either strength.**
+- **My own first instinct about where to put the planing test.** A per-board planing fraction off `savitskyLift` would
+  have been a single number for the whole hull; the gate that matters is **per patch**, because the rockered board's
+  nose patches are dry-decked while its mid patches are not, and a board-level number cannot see that. The measured
+  dry-deck share runs 0.000–1.000 **within a single run**.
+
+## 8. What I will not claim
+
+- **I will not claim this fixes the fall.** 12 of 12 fell in all **thirty-six** cells. It buys **0.15–0.34 s** of
+  median fall and rolls no shallower.
+- **I will not claim the hull cells' deficits against the shipped cells' as a paired result.** They are two populations
+  with different falls, rolls and roll rates; §3 says so and §4 is the only paired measurement in the round.
+- **I will not claim the roll ladder's linear slope.** `hullShare` on `|roll|` is −0.0096 per degree at **R² 0.149**.
+  The band medians are the result; the line is not one.
+- **I will not claim the walk's blend is the engine's to the last digit.** `patchForce` needs the patch's relative
+  velocity, and the engine's own per-patch scratch does not survive the step, so the walk rebuilds it from the board's
+  **post-step** velocity: one substep of acceleration, 1/(60·32) s. The sensitivity is printed —
+  `d(planing)/d(ln v) = 2·planing·(1 − planing)` is **0.0046–0.023** at the median and **0.104** at its worst frame, so
+  a 1 % velocity error is a hundredth of that in the share. The *engine's* own blend, in the `BUOY=hull` cells, carries
+  none of this.
+- **I will not claim the walk's buoyancy is the ledger's.** It is the **last substep's** and the ledger is a 32-substep
+  mean: **10.6–48.7 %** per run, exactly as Part 27 measured and demonstrated by driving the substep count to 1.
+- **I will not claim this is the right draft.** The gate is the deck's dry share and the draft that sets it is
+  **0.085 m on a 0.0667 m board** against Savitsky's 0.056 m and Oggiano 2017's 0.182 m² immersed where ours runs
+  0.35 m². **The switch's reach is set by a number the model over-predicts by about half**, and a board that floated at
+  Savitsky's draft would re-point more of its support. That is the next thing to question, not this law.
+- **I will not claim the band facet's direction is derived.** On a rail-band facet the law takes the station's own
+  `band.up`, which is step 3.3c's convention and keeps this round's figures comparable with Part 27's — but a
+  near-vertical band facet is the one surface on this hull that genuinely *is* a wetted side wall closing the immersed
+  volume, so its own normal may be the better answer. **It is a choice, it is named in the code, and nothing on the
+  shipped board turns on it**: the default flat section has **0 band facets** in all eight default-hull cells against
+  43–53 with `hull: 'rail'`, which is off in the game.
+- **I will not claim the deadrise cell as the shipped board.** `hull:'rail'` is off in the game and TN 4187 predicts
+  what 3.3a measured about it. It is in the round as the **positive control** on the gate and as nothing else.
+- **I will not claim the two switches' 0.52 s as additive physics.** 0.18 + 0.15 = 0.33 against a measured 0.52, on
+  three population comparisons and no paired one.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed and not paddled in, the first ~0.17 s of
+  every run carries a contact transient, and every span above is a whole population — twelve runs a cell, two stances
+  × six entry speeds, one face slope — and **not** a confidence interval. **Do not assume the measured fall is the
+  owner's fall**, and do not quote Part 27's corrected caveat the other way either: the drift peak over all 108 runs a
+  configuration reaches **0.7–123.8°**, not "inside 5°".
+
+## 9. Where the authority is, unchanged
+
+Late in a capsize none of this is the authority. The ankle's ceiling is `F_n × 0.130 m` and `F_n` is the same quantity
+whose collapse inflates the demand; with the switch on `F_n` at the fall still runs down to **7.3 N** in the deck cells
+and the deepest rolls reach **134.8°**. **The hip is the authority there, and a re-pointed buoyancy changes only how
+early it is needed** — by the 0.14–0.94° §4 measures, which is between a seventh and a twentieth of the residual the
+body is standing on when it goes.
+
+## 10. Seatbelts
+
+- **The new behaviour ships off, and the shipped rider is proved unchanged rather than asserted.** Every behavioural
+  line is gated on `hullBuoyancy > 0`, which `BoardBody` sets to 0 without the option, and `patchForce`'s own test
+  asserts the default is bit-for-bit identical. **At `BUOY=off` the probe reproduces Part 27's whole table to the
+  digit, in both filter frames**: the falls **0.77–1.70 / 1.05–5.08 / 0.97–3.23 / 0.93–2.42 / 1.53–4.63 / 1.48–5.33 /
+  1.55–3.92 / 0.87–3.30 / 0.50–1.00 s** in the world and **1.10–1.93 / 1.17–4.98 / 1.22–3.48 / 1.18–2.85 / 1.58–4.85 /
+  1.63–5.65 / 1.57–4.02 / 1.25–3.47 / 0.83–1.27** on the deck; the measured deficit **0.234 / 0.442 / 0.337 / 0.243 /
+  0.334 / 0.347 / 0.326 / 0.237 / 0.499** and **0.141 / 0.244 / 0.226 / 0.184 / 0.234 / 0.291 / 0.274 / 0.224 /
+  0.164**; the force's own share **0.111 / 0.345 / 0.239 / 0.158 / 0.232 / 0.217 / 0.194 / 0.167 / 0.478** and
+  **0.458 / 0.317 / 0.266 / 0.236 / 0.369 / 0.399 / 0.245 / 0.362 / 0.445**; `buoyancy`'s own in-plane share
+  **0.165 / 0.132 / 0.140 / 0.150 / 0.133 / 0.116 / 0.111 / 0.181 / 0.153** and **0.067 / 0.111 / 0.117 / 0.100 /
+  0.120 / 0.097 / 0.110 / 0.119 / 0.070**; `F_s` pooled median **−7.2 / −11.1 / −23.2 / −33.3 / +2.4 / +6.1 / +9.3 /
+  −8.6 / −7.2 N** and **−17.9 / −11.2 / −28.5 / −40.3 / +2.8 / +9.4 / +14.1 / −15.0 / −20.1**; `F_s/F_n` |median|
+  **0.78 / 1.28 / 2.01 / 2.39 / 1.40 / 1.77 / 2.77 / 0.87 / 0.79°** and **1.46 / 1.46 / 2.40 / 3.01 / 1.61 / 2.06 /
+  2.90 / 1.33 / 2.08**; Part 24's and 25's shared columns (bank peak **20.7–65.7°**, roll peak **20.9–63.0°**, rail
+  peak **10.9–62.9°**, drift peak **1.9–4.9°**, `latPair` mean **1.58–3.47**); and Part 27 §5's own unconditional
+  columns, including the world-horizontal **2.9–15.8 → 11.0–39.3 N** and down-slope **1.6–15.8 → 1.8–20.0** (0.0–9.1 →
+  0.0–23.9 at the fall).
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**, read from `tsc`'s own exit status on its own line, never through
+  a pipe. `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**. (The worktree's `node_modules` is a
+  symlink to the main checkout's, because `npx tsc` in a tree without one prints an install banner and has exited **0**
+  on this project before.) The probe was type-checked separately on a throwaway project extending the root's options
+  with `types: ["node"]` and an absolute `typeRoots`: **exit 0**, and `--listFiles` confirmed `buoy.ts`,
+  `hullForces.ts` and `BoardBody.ts` were all in it rather than trusting a bare pass.
+- The rider, board, HUD and runner test files, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`), `SurfZoneRunner`
+  and `SprayCloud` (`src/wave/`) included — `SurfZoneRunner` is outside the merge suite, so a red there is news:
+  **58 files passed, 790 tests passed and 21 expected fail (811), vitest exit 0**, 94 s. That is **six more passing
+  tests** than 3.3c's 784/805 and they are this round's own: five cases in `hullForces.test.ts` (the default
+  bit-for-bit, the hull-normal limit at the same magnitude, the floating case, the **capsized** case, and the blend's
+  magnitude on the way) and one in `PhysicalMode.test.ts` for `?buoyFrame=hull` — the parsing, every spot's config
+  through `surfZoneConfigFor`, and **the online-room pin read out of `main.ts`, so removing that pin fails here**.
+  `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it (`c2-step5g.md` §7.4), closed by reading.
+  `results/33d/suite-33d.txt`.
+- **The Canyon byte check, all four hashes, fresh spin-ups on the tree that merges**, with Part 25 §5.5's wrapper
+  written out, the grid read before the hashes and Part 27's kept-`.sea` trap checked by reading the "spun up on the
+  CPU in … s" line: `results/33d/canyon-bytes-33d.txt`.
+- **The deletions column, checked before the push**: `git diff --numstat origin/main HEAD`, deletions read off per
+  file — **6 in all, 5 of them in shipped source**, and every one a line replaced in place: `hullForces.ts` **1** (the
+  `patchForce` signature line, extended), `BoardBody.ts` **1** (the `patchForce` call line, extended), `main.ts` **2**
+  (the online-room override line and its comment line), `SurfZoneRunner.ts` **1** (the spread line),
+  `PhysicalMode.test.ts` **1** (the import line, extended). `PhysicalMode.ts`, `RideSession.ts`,
+  `SurfZoneSimulation.ts` and `hullForces.test.ts` are **+14 / +3 / +9 / +78 with 0 deletions**, and the whole diff is
+  **+242 / −6** over nine files in `src/`. No file and no block removed. It has caught a silent revert on ten consecutive rounds and `merge-base --is-ancestor` has caught none.
+- No force was added or removed; one existing force's **direction** is rotated behind a switch that is off by default.
+  No gain, clip or threshold changed; no other hull term touched; nothing the online rooms share moves, because
+  `main.ts` pins `buoyFrame: undefined` for them as it does every other dev switch.
+
+## 11. Files (3.3d)
+
+- `src/physics/hullForces.ts`: `HULL_BUOYANCY` and its note (the derivation above), `PatchForce.hullShare` (a
+  diagnostic, always 0 without the switch), `patchForce`'s ninth parameter `hullBuoyancy = 0`, and the one gated block
+  that turns the support.
+- `src/physics/BoardBody.ts`: `BoardBodyOptions.buoyFrame?: 'hull'`, the `buoyHull` flag and the call that passes it.
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts` (`buoyFrameSwitch`), `src/main.ts`: the switch's wiring, in the shape every other opt-in
+  uses, including the online-room override.
+- `src/physics/hullForces.test.ts`, `src/game/PhysicalMode.test.ts`: the six new cases.
+- `docs/research/new-rider/3.3/buoy.ts` (new): step 3.3c's `felt.ts` with `BUOY`, the walk's **third** resolution
+  through `patchForce` itself, the regime columns (`hullShare`, `dryShare`, `planeShare`, `hullShareHigh`,
+  `planeSens`), and §8's report. Its header carries the commands.
+- `docs/research/new-rider/3.3/results/33d/`: `cell-*-{world,deck}-{off,hull}.txt` (the thirty-six cells' full output),
+  their thirty-six `*.jsonl` (**432 rows**), `frames-world-off.jsonl` (**13,422 frames**, §2's and §4's population —
+  trimmed to the eleven columns those two tables are computed from, because the full record is 42 MB; every number in
+  §2 and §4 was re-derived from the trimmed file and is unchanged, and `ladder-table-33d.txt` carries the command that
+  rebuilds the full one),
+  `trace-tall-0-world-{off,hull}.jsonl` (§4's traced run frame by frame), `ladder-table-33d.txt`, `suite-33d.txt`,
+  `canyon-bytes-33d.txt`.
+
+## 12. For the owner, in plain words — and the shot list
+
+**You said: build it behind a switch, measure it, show me an A/B on one wave, and nothing changes until I say so. That
+is what this is.** `?buoyFrame=hull`. Off unless you type it, and off for everybody in an online room.
+
+**What it does.** Your board's float — the push the water gives it for being in the water — currently points *straight
+up the way the water's surface is tilted*. The advisor's point was that under a planing board whose deck is out of the
+water, that push really points **square out of the bottom of the board**, like everything else the bottom feels. That
+is Savitsky's own convention and it is almost certainly right. **But it is only right while the deck is dry** — once
+water closes over the deck the old answer is the right one again, and if we ignored that, a board that flipped over
+would be pushed *down* by its own float. So the switch fades between the two.
+
+**And here is the finding, which is not the one I expected.** The fade is the whole story. Measured over thirteen
+thousand frames: while your board sits near flat, about **half** of its float gets re-aimed. By the time it is leaned
+over past fifty degrees — which is where your surfer actually falls — only **a tenth** of it does, because by then the
+deck is under water. **The correction backs off exactly as the thing it is correcting grows.** Last round's number for
+this fix — "it removes essentially all of the sideways force" — was measured on a version that re-aims the float *all
+the time*, and that version is not physics: it would push a flipped board under.
+
+So the honest size, in your terms: of the sideways slope the surfer is standing on, which runs from under a degree when
+he is flat to about **seventeen degrees** when he is going over, this switch takes off **a seventh to a twentieth**. It
+peaks at about **one degree** of correction around thirty to forty degrees of lean and then falls away.
+
+**Does he stay on? No.** Twelve of twelve fell in all thirty-six conditions I ran. What he gets is time — about
+**a sixth of a second** on its own, and **half a second** together with last round's inner-ear fix, which do add. He
+does not lean any less far before he goes.
+
+**And the thing you were worried about is small.** You objected that this same float is how the wave shoves the board
+down the line, so re-aiming it changes how every spot rides. It does change it, but by much less than the version last
+round measured: the push along the board drops by **5 to 33 %** instead of **45 to 77 %**, and the horizontal push down
+the face gets slightly *bigger*, not smaller. A few newtons out of about a hundred.
+
+**What I think is actually wrong, now that this is built.** The switch is gated on whether the deck is dry, and our
+board floats about **half again as deep as it should** — eight and a half centimetres of draft on a six-and-a-half
+centimetre board, where the textbook says five and a half. That is why the deck goes under as soon as he leans. **The
+draft is the next thing to question, not this law.**
+
+### The shot list for your A/B
+
+One wave, Canyon, `?canyonWaves=true` and `?rider=new` as usual. Same wave, same entry, four runs:
+
+1. `?rider=new` — your baseline.
+2. `?rider=new&buoyFrame=hull` — this round. **Look for: does the board feel like it holds a rail better going into a
+   bottom turn, before the lean gets deep?** That is where the correction is biggest (half the float re-aimed under
+   twenty degrees of lean).
+3. `?rider=new&feltFrame=deck` — last round, on its own.
+4. `?rider=new&feltFrame=deck&buoyFrame=hull` — both. **This is the one with the longest measured ride.** Look for
+   whether the extra half-second reads as "he fought it" or "he fell anyway, later".
+
+And two things to feel for that the probe cannot judge:
+
+- **the drive.** Trim along the face in 1 and 2 and tell me whether the board runs the same. The numbers say it
+  should, very nearly; a few newtons is what the switch moves, and the one who can feel a few newtons is you.
+- **the flip.** Take a wipeout on purpose in 2 and watch the board once it is upside down in the water. The switch is
+  built so that a flipped board is never pushed under by its own float, and there is a test that holds that — but a
+  test is not a wipeout.

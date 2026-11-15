@@ -83,6 +83,13 @@ export interface BoardBodyOptions {
    */
   hull?: 'rail';
   /**
+   * Where the hydrostatic support points (step 3.3d, `?buoyFrame=hull`), opt-in: `'hull'` resolves it along the **hull**
+   * normal where the deck is dry and the patch planes, blending back to the water-surface normal as it floats or
+   * submerges (`hullForces`' `HULL_BUOYANCY`, the wave-shape advisor's item 2, logged in
+   * `docs/research/water-physics/consult-log.md`). By default as before: along the water-surface normal everywhere.
+   */
+  buoyFrame?: 'hull';
+  /**
    * The band's suction, separately from its geometry, so the round can tell the section's own effect from the grip's
    * (the advisor's ruling was to build both, and its own prediction was that the section alone measures the same):
    * `'off'` builds the section and makes no suction. Ignored without `hull: 'rail'`.
@@ -433,6 +440,11 @@ export class BoardBody implements BoardContactBody {
   private readonly plate: boolean;
   private readonly plateShare: Float64Array;
   /**
+   * Step 3.3d (`BoardBodyOptions.buoyFrame`): 1 to resolve the hydrostatic support along the hull normal where the deck
+   * is dry and the patch planes, 0 — the default — to leave it on the water-surface normal everywhere, as before.
+   */
+  private readonly buoyHull: number;
+  /**
    * Whether it may meet the water as a submerged plate now (duck-two-body): its owner's say. A board a swimmer holds keeps
    * the hull law the hold and the climb were calibrated on, as one with the rigid rider on it does.
    */
@@ -514,6 +526,7 @@ export class BoardBody implements BoardContactBody {
     this.substeps = options.substeps ?? 4;
     this.plate = options.submerged !== 'old';
     this.hollow = options.deckHollow === 'on';
+    this.buoyHull = options.buoyFrame === 'hull' ? 1 : 0;
     this.mass = shape.mass + payloads.reduce((sum, payload) => sum + payload.mass, 0);
     this.inverseMass = 1 / this.mass;
     const maxThickness = Math.max(...shape.patches.map((patch) => patch.thickness));
@@ -1156,7 +1169,7 @@ export class BoardBody implements BoardContactBody {
       const share = this.plateShareNow;
       this.plateShare[k] = share;
       const deckWet = this.hollowOpen ? this.hollowWetAt(this.alongBoard[k], sample.surfaceY - (patch.position.y - ny * patch.thickness), sample) : 1;
-      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k], share, deckWet);
+      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k], share, deckWet, this.buoyHull);
       submerged += force.submerged * patch.area * patch.thickness;
       wetted += force.wettedArea;
       const b = force.buoyancy;

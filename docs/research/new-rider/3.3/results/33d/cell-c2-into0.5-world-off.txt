@@ -1,0 +1,93 @@
+## buoy (3.3d) — rider new, steer 0.5 (roll, from 0.3 s) · FaceWater vertical 'surface' · FELT FRAME 'world' (the shipped filter) · BUOY FRAME 'off' (the shipped hull law)
+   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.97–3.23 s
+   CHECK vs Part 24's twelve: bank peak 24.9–70.0° · roll peak 24.0–84.4° · rail peak 22.9–84.4° · drift peak 2.0–14.0°
+   §1 the base's across acceleration, m/s² (+ toward the board's level-left):
+      the PAIR's own (momentum): mean 1.73–5.64 · median 1.73–4.75 · |median| 1.73–4.75 · peak 2.27–16.94
+      the same off the water force ledger: mean 1.73–5.47 · |median| 1.72–4.74 · SEATBELT |difference| median 0.000–0.000 peak 0.000–4.273
+      and WHAT the residual is: the water's support on the RIDER'S HAND, which is not in BoardBody.forces — in 0–15 frames a run, across force peak 0.0–0.7 N (|support| peak 0.0–20.3 N) · |residual × mass − handLat| median 0.000–0.000 N, peak 0.000–323.429 N
+      the frames the two routes part company at all (> 0.01 m/s², which pushCapped's shared push makes by construction): 0–19 of 58–194 a run, from 1.217–3.017 s
+      3.2z's feetAccel: |median| 1.21–4.71 · peak 5.98–20.13 · MEAN SIGNED 0.82–3.87 · the body's |median| 1.64–3.87 mean 1.85–3.78
+      Part 24's "net across rate" (|feetAcross|/t, a frame-relative VELOCITY over a time): base 0.01–1.08 · body 0.04–1.10 · the same base velocity RAW (no felt removal): peak 0.377–1.085 m/s, rate 0.07–0.56
+   §2 where it has already gone: pairFelt's tilt from the WORLD vertical 9.5–21.7° median, 16.3–60.3° peak, -6.7–60.3° at the fall
+      against the deck's roll 4.9–84.4° at the fall, leaving the test's tilt -37.1–-10.2° (median -10.3–-0.2°) · identity residual 0.175–3.156°
+      pairFelt at the fall: lateral -1.16–15.52 · vertical 5.66–10.33 (median over the run 8.65–10.09) · length 6.67–19.62 m/s²
+      THE BANK GAIN, °/°: the felt vertical's tilt per degree of the deck's roll 0.334–0.831 (R² 0.657–0.987) — 1.000 is a turn that holds its own lean
+      the across forcing that leaves the body, g·sin(tilt): 1.74–5.92 m/s² at the fall (median 0.34–1.75)
+      THE DEFICIT the base has to close (the body's mean signed across acceleration less the base's): -0.09–1.33 m/s²
+      the hull's own slope: latPair per rad of RAIL 0.7–9.7 m/s²/rad (R² 0.148–0.973) · per rad of ROLL 0.8–11.2 (R² 0.169–0.973)
+   §3 the turn: heading rate 9.4–40.9°/s median, 22.3–158.1 peak · v·ω 0.97–6.58 m/s² median, 2.51–23.48 peak
+      the steer's own rise, m/s² into the steer: +0.1 s 1.58–1.86 · +0.2 1.59–2.85 · +0.3 1.55–3.81 · +0.5 1.71–4.87 · first past 1.3: 0.000–0.000 s (in 12 of 12)
+   THE POOL, all 1376 frames of the 12 runs together:
+      latPair per unit sin(rail) 9.29 m/s² (R² 0.786, n 1364) · per unit sin(roll) 10.36 (R² 0.775) · g is 9.81
+      the BANK GAIN pooled: pfLat per g·tan(roll) 0.283 (R² 0.564) · feltWorld per ° of roll 0.664 (R² 0.877) · the probe's OWN un-lagged felt per ° of roll 0.739 (R² 0.933) · per-run spread -1.382–0.818 at the fall
+      latPair at absolute 0.4 / 0.5 / 0.6 / 0.8 s: 1.58–1.86 · 1.59–2.85 · 1.55–3.81 · 1.71–4.87 m/s² · the deck's roll at 0.8 s 15.2–34.8°
+      THE LATERAL FORCE BY SOURCE, N on the same axis (median signed over the pool · peak absolute): buoyancy 6.0 · 22.6 | pressure 116.0 · 1067.3 | addedMass 1.0 · 80.4 | radiation 2.7 · 25.5 | friction -0.1 · 3.2 | bed 0.0 · 0.0 | fins 4.2 · 86.8 | rails -2.7 · 12.6 | froth 0.0 · 0.0 | suction 0.0 · 0.0
+   §4 THE DECK'S OWN AXES (3.3b/c) — n̂ the deck normal, ŝ the across axis IN THE PLANE OF THE DECK, all 1376 frames pooled:
+      SEATBELT the two routes to the same deck-frame tilt: |ledger − momentum| median 0.000–0.000° peak 0.000–49.863° · |ledger − the test's own (0.1 s lag)| median 0.853–3.886°
+      the water force on the deck's axes, N: F_n median 743.4 (per run 613.8–879.8) · F_s median -23.2 (per run -71.6–-6.3) · F_s peak 109.3–343.3 · W is 741.0 N on 75.54 kg
+      tilt = atan(F_s/F_n): from the ledger -3.70–-0.51° median, -24.19–17.93° at the fall · from the momentum route -5.06–-0.61° / -41.51–-3.10° · the test's own -10.3–-0.2° / -37.1–-10.2°
+      PER SOURCE, N (median signed over the pool): on the deck NORMAL n̂  buoyancy 97.9 | pressure 537.4 | addedMass 41.1 | radiation 35.5 | friction 1.1 | bed 0.0 | fins 0.0 | rails -0.0 | froth 0.0 | suction 0.0
+      PER SOURCE, N (median signed over the pool): IN THE DECK'S PLANE ŝ  buoyancy -16.07 | pressure -0.96 | addedMass -1.69 | radiation -2.30 | friction -0.44 | bed 0.00 | fins 4.42 | rails -2.79 | froth 0.00 | suction 0.00
+      PER SOURCE, N (peak absolute over the pool): IN THE DECK'S PLANE ŝ  buoyancy 148.29 | pressure 21.22 | addedMass 172.52 | radiation 46.56 | friction 4.23 | bed 0.00 | fins 98.84 | rails 22.50 | froth 0.00 | suction 0.00
+      THE FALSIFICATION: pressure's in-plane share of F_s is 4.1 % (-0.96 of -23.2 N) — the advisor predicts ~0 for a flat athwartships bottom and calls any share here a refutation
+      the three named suspects' share of F_s: buoyancy 69.3 % · addedMass 7.3 % · radiation 9.9 % · together 86.5 %
+      the datum correction: latPair per unit sin(ROLL) 10.36 m/s² = 782 N per unit sine (R² 0.775), against the sourced bar W = 741 N rising as 1/cos φ · 3.3a's sin(RAIL) slope 9.29 = 702 N
+      the same against the load MEASURED on the deck normal: F_n median 743.4 N = 9.84 m/s², so the sin(roll) slope is 105.3 % of what a force locked to the deck normal of that size would give · latPair per g·tan(roll) 0.307 (1.000 = the deck-normal ideal at vertical equilibrium)
+      THE CONSISTENCY CHECK, run by run at the fall: (1 − gain) × roll 11.59–36.90° against the measured |tilt| 10.19–37.11° · per-run |difference| 0.15–3.15°
+      THE FELT SPLIT (each entry low-passed over 0.1 s in the world, then projected): F_n at the fall 417.6–1017.6 N · F_s at the fall -388.6–-134.1 N
+      SEATBELT its tilt against the test's own tiltAcross: |difference| median 0.006–0.087° · at the fall 0.020–2.281° (its own tilt -36.49–-10.73° against the test's -37.1–-10.2°)
+      THE ATTRIBUTION AT THE FALL, N in the deck's plane: buoyancy -132.0–-8.1 | pressure -168.9–-21.6 | addedMass -96.8–38.6 | radiation -42.2–1.2 | friction -3.4–4.2 | bed 0.0–0.0 | fins -48.7–36.5 | rails -18.7–0.6 | froth 0.0–0.0 | suction 0.0–0.0
+   §5 WHERE THE RESIDUAL TILT COMES FROM — the deck-frame tilt regressed on the deck's roll, °/° over the pool:
+      the REAL in-plane force (instantaneous ledger) -0.239 (R² 0.612) · the momentum route -0.272 (R² 0.658)
+      the FELT tilt (the same force low-passed 0.1 s in the world, then projected) -0.358 (R² 0.704) · the test's own tiltAcross -0.337 (R² 0.658)
+      so the gain deficit splits: the force's own share 0.239 and the FILTER's lag 0.099 of the measured 0.337
+      THE LAG'S OWN LAW: the test's tilt per °/s of ROLL RATE -0.1288° (R² 0.677) against −T = -0.1000 · roll rate -24.8–203.2°/s at the fall (peak 96.4–253.9) · −T·Ω predicts -20.32–2.48° against the measured tilt -37.1–-10.2°
+      and pressure's own in-plane residue per °/s of roll rate -0.089 N (R² 0.845) against the ledger's own within-step rotation F_n,pressure · h/2 = 0.078 N per °/s
+      THE MARGINAL ATTRIBUTION of the REAL in-plane force, ° of tilt per ° of roll (d(F_s)/d(roll) over F_n = 743.4 N):
+         buoyancy   0.140  (-1.82 N per ° of roll, R² 0.860)
+         pressure   0.012  (-0.16 N per ° of roll, R² 0.381)
+         addedMass  0.036  (-0.47 N per ° of roll, R² 0.067)
+         radiation  0.028  (-0.37 N per ° of roll, R² 0.325)
+         friction   0.003  (-0.03 N per ° of roll, R² 0.322)
+         fins       0.017  (-0.22 N per ° of roll, R² 0.027)
+         rails      0.017  (-0.22 N per ° of roll, R² 0.665)
+         SUM 0.254 against the instantaneous ledger's own fitted 0.239 and the measured deficit 0.337
+      the same on the LOW-PASSED force in the world frame (the lag folded in, so NOT an attribution of forces):
+         buoyancy   0.137  (-1.77 N per ° of roll, R² 0.866)
+         pressure   0.140  (-1.80 N per ° of roll, R² 0.584)
+         addedMass  0.048  (-0.62 N per ° of roll, R² 0.154)
+         radiation  0.032  (-0.41 N per ° of roll, R² 0.401)
+         friction   -0.002  (0.03 N per ° of roll, R² 0.129)
+         fins       0.011  (-0.15 N per ° of roll, R² 0.021)
+         rails      0.015  (-0.19 N per ° of roll, R² 0.715)
+         SUM 0.381 against the felt tilt's own fitted 0.358
+      the pooled fit's own INTERCEPT, which the test says should be small: feltWorld on roll 0.664° per ° with intercept 1.968° · un-lagged 0.739 with intercept 1.955°
+   §5b THE PAIRED COMPARISON — two shadow filters on the SAME 1376 frames, no trajectory confound:
+      SEATBELT the WORLD shadow against the test's own tiltAcross (it is the shipped order): |difference| median 0.006–0.027° · at the fall 0.019–3.247°
+      each shadow's own tilt per °/s of ROLL RATE: world -0.1276° (R² 0.658) · DECK -0.0585° (R² 0.381) · against −T = -0.1000
+      each shadow's own tilt per ° of ROLL: world -0.335 (R² 0.642) · DECK -0.198 (R² 0.614) · the un-lagged truth atan(F_s/F_n) -0.239
+      how much tilt each ADDS over the un-lagged truth, °: world |median| 0.853–4.067 · DECK |median| 0.419–2.530 · at the fall world -41.57–-4.03 · DECK -33.82–2.29
+   §6 UN-LAGGED, the advisor's instructed columns (no 0.1 s anywhere in them), all 1376 frames of the 12 runs:
+      F_s in NEWTONS: pooled median -23.2 · |median| 28.9 · per run |median| 9.0–71.6 · at the fall -216.0–39.6 against F_n 111.5–825.7
+      F_s per unit sin(RAIL), N: pooled -189.4 (R² 0.643, intercept 8.1 N) · per run -301.8–-128.9 (R² 0.428–0.966) · per unit sin(ROLL) -227.5 (R² 0.733)
+      F_s/F_n in DEGREES, un-lagged: pooled median -1.66° · |median| 2.01° · per run at the fall -24.19–17.93° · the TEST's own (0.1 s, frame 'world') -37.10–-10.20°
+      THE FILTER'S OWN COST in this frame: the test's tilt per °/s of roll rate -0.1288° (R² 0.677) against −T = -0.1000 · |ledger − the test| median 0.853–3.886°
+   §7 THE ADVISOR'S ALONG-BOARD CLAIM — buoyancy re-pointed from the water normal to the HULL normal, N on the board's own axes:
+      SEATBELT the walk against the ledger's own forces.buoyancy (a last substep against a 32-substep mean): |difference| median 0.56–35.53 N of 68.8–124.7 N = 0.54–47.30 % (peak 30.98–46.29 N) · wet patches 19–26 of which band facets 0–0 · buoyancyNormal branch 0–0 frames · hollow open 0–0 frames
+      ALONG-BOARD (the wave's push down the line): as shipped 2.4–16.0 N median, 1.9–38.2 at the fall · on the HULL normal, same magnitude 1.0–3.5 / -0.8–4.4 · same VERTICAL 1.5–3.7 / -5.1–4.6
+      ACROSS, in the plane of the deck: as shipped -45.9–-1.1 N median, -150.5–-8.2 at the fall · on the hull normal -0.1–0.0 / -0.1–0.4 · on the deck NORMAL 42.0–106.3 → 43.9–120.2
+      and as a WORLD-HORIZONTAL force: magnitude as shipped 0.0–19.8 N median · on the hull normal 12.7–53.7 · the component DOWN THE WATER'S SLOPE (where the shipped term points) 0.0–19.8 → 0.0–19.3 N median, 0.0–18.6 → -69.1–31.3 at the fall
+      THE MISALIGNMENT the claim rests on — the WATER's normal against the DECK's, on the deck's own axes: the ROLL part (about the long axis, what the claim says it all is) -24.64–-1.28° median, peak 22.87–84.34° · the TRIM part (about the across axis, which moves the ALONG component) 2.37–6.65° median, peak 4.18–45.44°
+      pooled over all 1376 frames: the along-board component median 8.7 N as shipped → 2.4 N on the hull normal; the per-frame |difference| median 6.00 N, peak 33.83 N, as a share of |buoyancy| 6.1 % · hull-on-shipped slope 0.121 (R² 0.499)
+   §8 STEP 3.3d — the hydrostatic support on the HULL's normal. THE ENGINE'S OWN SWITCH IS OFF (the shipped law); the columns below are the read-only walk, paired on one trajectory.
+      THE REGIME, support-weighted over every wet patch, all 1376 frames: the blend's own share hullShare = (1 − deck)·planing median 0.316–0.986 (min 0.000–0.305, max 0.999–1.000) · at the fall 0.003–0.305
+         its two factors: the DECK's DRY share 0.317–0.990 median, 0.003–0.306 at the fall · the PLANING share 0.9884–0.9958 median (min 0.9162–0.9916)
+         the support past half way over 0.329–1.000 median, 0.000–0.303 at the fall · frames with NO re-pointing at all 0–1 of 58–194 · frames past 0.9 15–33
+         SEATBELT on the walk's rebuilt velocity: d(planing)/d(ln v) = 0.00830–0.02291 median, peak 0.01668–0.15027 — a 1 % velocity error is a hundredth of that in the share
+      ACROSS, in the plane of the deck (item 2's whole payoff), N: shipped -45.9–-1.1 median → the SWITCH -31.2–0.0 → unconditional -0.1–0.0 · at the fall -150.5–-8.2 → -150.3–-6.8 → -0.1–0.4
+         pooled: median -13.72 → -7.46 → -0.02 N · |median| 14.40 → 8.14 → 0.04 · switch-on-shipped slope 0.886 (R² 0.975)
+      ALONG-BOARD (the wave's push down the line), N: shipped 2.4–16.0 median → the SWITCH 1.9–10.9 → unconditional 1.0–3.5 · switch-on-shipped slope 0.816 (R² 0.977)
+      as a WORLD-HORIZONTAL force, N: magnitude shipped 0.0–19.8 → the SWITCH 7.9–21.4 → unconditional 12.7–53.7 · DOWN THE SLOPE 0.0–19.8 → 0.0–18.0 → 0.0–19.3 median, 0.0–18.6 → 0.0–22.0 → -69.1–31.3 at the fall
+      the DECK NORMAL's own load, N (the denominator of every tilt): shipped 42.0–106.3 → the SWITCH 42.8–108.2 → unconditional 43.9–120.2
+   the fall: margin 0.000–0.000 · past 0.091–0.414 m · relative across-speed 0.438–1.300 m/s = body -0.415–1.275 − feet -1.573–0.328 · its mean rate 0.16–1.13 m/s² · reconstructs to 0.0000–0.0000

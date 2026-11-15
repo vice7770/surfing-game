@@ -289,6 +289,15 @@ export interface SurfZoneConfig {
    */
   feltFrame?: 'deck';
   /**
+   * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
+   * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
+   * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is
+   * rotated, not added — but it is a **hull law**, so it changes how every spot drives the board and the owner asked
+   * for it behind a switch, measured, with nothing changing until they say so. Every spot. The `?buoyFrame=hull` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  buoyFrame?: 'hull';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

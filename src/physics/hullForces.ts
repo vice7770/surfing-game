@@ -195,6 +195,14 @@ export interface PatchForce {
   deckWettedArea: number;
   /** Share of the patch's volume under water. */
   submerged: number;
+  /**
+   * Step 3.3d, a **diagnostic only**: the share of this patch's hydrostatic support that `buoyFrame: 'hull'` resolved
+   * along the **hull** normal rather than the water-surface normal — `HULL_BUOYANCY`'s own blend, 0 to 1. Always 0
+   * without the switch, and nothing reads it in the game: it exists so a probe can report which regime the ride is in
+   * instead of re-deriving the blend from the same inputs (the frame errors of the last fortnight were all
+   * re-derivations).
+   */
+  hullShare: number;
 }
 
 export function createPatchForce(): PatchForce {
@@ -202,8 +210,53 @@ export function createPatchForce(): PatchForce {
     buoyancy: { x: 0, y: 0, z: 0 }, buoyancyPoint: { x: 0, y: 0, z: 0 }, pressure: { x: 0, y: 0, z: 0 },
     suction: { x: 0, y: 0, z: 0 }, suctionPressure: 0, suctionCap: 0, suctionCapped: 0,
     pressureDamping: 0, friction: { x: 0, y: 0, z: 0 }, wettedArea: 0, deckWettedArea: 0, submerged: 0,
+    hullShare: 0,
   };
 }
+
+/**
+ * **Step 3.3d, opt-in and off by default** (`BoardBodyOptions.buoyFrame: 'hull'`, the `?buoyFrame=hull` dev switch):
+ * where the hydrostatic support points.
+ *
+ * Shipped, it points along the **water-surface** normal, `ρg(−∂η/∂x, 1, −∂η/∂z)·V` — the closed-body answer, and the
+ * right one for a floating body whose immersed volume is closed above by the free surface: by the divergence theorem
+ * the pressure on the wetted hull alone then integrates to Archimedes' vertical `ρgV`, because the waterplane that
+ * closes it carries `p = 0`, and the horizontal part comes from the wetted **side walls** the default flat section does
+ * not have as patches at all (it lumps them into the bottom facets by making the resultant vertical).
+ *
+ * Under a planing bottom with a **dry deck** that closure does not exist. The free surface separates at the chines, the
+ * bottom is a surface wetted on one side, and `∮ p n dA` over it is `(∫p dA) n̂` — **normal to the bottom**, with no
+ * side walls to turn it. That is the convention of Savitsky's own method, where the whole load, the buoyant term
+ * `0.0055 λ^2.5/C_V²` included, is the bottom-pressure resultant normal to the bottom; it is what makes his pressure
+ * drag `Δ tan τ` (NACA TN 4187 / Savitsky 1964, read for the consult logged in
+ * `docs/research/water-physics/consult-log.md`, 2026-11-15, and quoted there).
+ *
+ * So the switch blends between the two by the two things that decide which regime a patch is in, and **both** matter:
+ * - `1 − deck`, the patch's own **dry-deck share**. Where the deck is under the surface line the slab is closed above
+ *   and the vertical answer is the right one, so the blend goes to 0 there — which also means it goes to 0 on a
+ *   capsized board, whose hull normal points down and which would otherwise be pushed under by its own buoyancy.
+ *   `deck` carries `deckWet`, so `deckHollow: 'on'` — which keeps a banked deck dry inside the hollow — widens this
+ *   gate, consistently and by the same geometry.
+ * - the local **planing share** `F_d²/(1 + F_d²)` on the Froude number of the patch's own immersion depth,
+ *   `F_d = |v_rel|/√(g·d)` — 0 at rest, so a board floating heeled on flat water keeps the vertical answer and does not
+ *   acquire a sideways push, and ≈0.98 at 7.5 m/s and 0.085 m of immersion. There is no fitted constant in it: it is
+ *   the dimensionless group of Savitsky's own buoyant term with the beam replaced by the local depth.
+ *
+ * The **magnitude is preserved** and only the direction turns — the convention step 3.3c measured the geometry in
+ * (`README.md` Part 27 §5), so its figures are the prediction this is tested against. Nothing is added: this is one
+ * existing force rotated, its reaction on the water as implicit as it already was.
+ *
+ * **One convention, named because it is a choice and not a derivation.** On a rail-band facet the direction taken is
+ * the station's own `band.up`, not the facet's own normal, which is step 3.3c's convention and keeps this law's figures
+ * comparable with Part 27's. A near-vertical band facet is the one surface on this hull that genuinely *is* a wetted
+ * side wall closing the immersed volume, so its own normal may be the better answer; nothing on the **shipped** board
+ * is affected either way, because the default flat section has no band facets at all (Part 27 §5 found 0 in all eight
+ * default-hull cells, against 43–53 with `hull: 'rail'`, which is off in the game).
+ */
+export const HULL_BUOYANCY = {
+  /** The smallest blended direction length that is safe to normalise; below it the shipped direction is kept. */
+  floor: 1e-6,
+} as const;
 
 function zero(v: Vec): void {
   v.x = 0;
@@ -224,9 +277,12 @@ function zero(v: Vec): void {
  * Reynolds number, and `pressureScale` places the patch in the pressure
  * distribution (`planingScales`). `deckWet` (1 by default) scales the deck's wetting: its skin friction, its
  * pressure and its share of the wetted area; buoyancy stays the slab's own volume under the surface line.
+ * `hullBuoyancy` (0 by default, 1 with `buoyFrame: 'hull'`) resolves the hydrostatic support along the **hull** normal
+ * where the deck is dry and the patch planes, blending back to the surface normal as it floats or submerges —
+ * `HULL_BUOYANCY`, step 3.3d, opt-in. At 0 nothing below it runs and the force is bit-for-bit the shipped one.
  */
 export function patchForce(
-  patch: WorldPatch, water: WaterSample, relative: Vec, wettedLength: number, out: PatchForce, pressureScale = 1, submergedShareHere = 0, deckWet = 1,
+  patch: WorldPatch, water: WaterSample, relative: Vec, wettedLength: number, out: PatchForce, pressureScale = 1, submergedShareHere = 0, deckWet = 1, hullBuoyancy = 0,
 ): PatchForce {
   zero(out.buoyancy);
   zero(out.pressure);
@@ -239,6 +295,7 @@ export function patchForce(
   out.wettedArea = 0;
   out.deckWettedArea = 0;
   out.submerged = 0;
+  out.hullShare = 0;
   const { position, normal, thickness, area, band } = patch;
   // The band's facets carry their true area; everything keyed on the beam keeps the planform (the advisor's trap 2).
   const faceArea = band ? band.faceArea : area;
@@ -282,6 +339,40 @@ export function patchForce(
   out.buoyancyPoint.x = position.x + upX * centroid;
   out.buoyancyPoint.y = position.y + upY * centroid;
   out.buoyancyPoint.z = position.z + upZ * centroid;
+  // Step 3.3d, opt-in (`HULL_BUOYANCY`): the support turned onto the HULL's normal where the deck is dry and the patch
+  // planes. Direction only — the magnitude above is kept, which is step 3.3c's own convention — and the whole block is
+  // dead at `hullBuoyancy = 0`, so the default force is the shipped one line for line.
+  if (hullBuoyancy > 0 && support > 0) {
+    const depth = water.surfaceY - position.y;
+    const vsq = relative.x * relative.x + relative.y * relative.y + relative.z * relative.z;
+    // `F_d²/(1 + F_d²)` on the patch's own immersion depth: 0 at rest, ≈1 planing. `depth ≤ 0` cannot reach here with
+    // `support > 0` on a wet bottom, but a deck-wetted patch can, and there the dry share is 0 anyway.
+    const head = WATER.gravity * Math.max(depth, 0);
+    const planing = vsq > 0 ? vsq / (vsq + head) : 0;
+    const share = hullBuoyancy * (1 - deck) * planing;
+    out.hullShare = share;
+    if (share > 0) {
+      const hullLen = Math.hypot(upX, upY, upZ);
+      const mag = Math.hypot(out.buoyancy.x, out.buoyancy.y, out.buoyancy.z);
+      if (hullLen > 0 && mag > 0) {
+        const hx = upX / hullLen;
+        const hy = upY / hullLen;
+        const hz = upZ / hullLen;
+        const sx = out.buoyancy.x / mag;
+        const sy = out.buoyancy.y / mag;
+        const sz = out.buoyancy.z / mag;
+        const bx = sx + share * (hx - sx);
+        const by = sy + share * (hy - sy);
+        const bz = sz + share * (hz - sz);
+        const len = Math.hypot(bx, by, bz);
+        if (len > HULL_BUOYANCY.floor) {
+          out.buoyancy.x = (mag * bx) / len;
+          out.buoyancy.y = (mag * by) / len;
+          out.buoyancy.z = (mag * bz) / len;
+        }
+      }
+    }
+  }
 
   out.wettedArea = area * bottom;
   out.deckWettedArea = area * deck;

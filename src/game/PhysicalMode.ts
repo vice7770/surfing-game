@@ -553,6 +553,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...riderSwitch(),
     // `?feltFrame=deck`: the standing riders' felt vertical is low-passed on the deck's own axes, as a body-fixed sensor does, instead of in the world (step 3.3c), opt-in, to ride.
     ...feltFrameSwitch(),
+    // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
+    ...buoyFrameSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1068,6 +1070,18 @@ export function riderSwitch(search?: string): { rider?: 'new' } {
  */
 export function feltFrameSwitch(search?: string): { feltFrame?: 'deck' } {
   return devParam('feltFrame', search)?.trim().toLowerCase() === 'deck' ? { feltFrame: 'deck' } : {};
+}
+
+/**
+ * The `?buoyFrame=hull` dev switch (`SurfZoneConfig.buoyFrame`, step 3.3d, the wave-shape advisor's item 2): opt-in,
+ * every spot's board resolves the water's hydrostatic support along the **hull** normal where the deck is dry and the
+ * patch planes — Savitsky's own convention for a bottom wetted on one side — blending back to the water-surface normal
+ * as it floats or submerges (`hullForces`' `HULL_BUOYANCY`, docs/research/new-rider/3.3 Part 28). One existing force is
+ * rotated, not added, but it **is** a hull law and it changes every spot's drive, which is why the owner asked for it
+ * behind a switch with an A/B. Anything else, the water-surface normal as before.
+ */
+export function buoyFrameSwitch(search?: string): { buoyFrame?: 'hull' } {
+  return devParam('buoyFrame', search)?.trim().toLowerCase() === 'hull' ? { buoyFrame: 'hull' } : {};
 }
 
 /**

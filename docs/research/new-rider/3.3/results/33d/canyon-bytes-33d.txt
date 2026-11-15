@@ -1,0 +1,49 @@
+Canyon byte check, step 3.3d (claude/rider-new-33d, cut from main 2d37193a). The same command and the same reference as
+3.3a's, 3.3b's, 3.3c's, C2 step 5f's and 3.2t-3.2z's. Four legs: Canyon B and the default Canyon, on the tree that
+merges and on pristine main as the control.
+
+  ./node_modules/.bin/rolldown scripts/m1-cpu-bench.ts -o <out>/wt-bench.mjs   --format esm --platform node  # merging tree
+  ./node_modules/.bin/rolldown scripts/m1-cpu-bench.ts -o <out>/main-bench.mjs --format esm --platform node  # main, 2d37193a
+  node <out>/wt-cb.mjs      --spot canyon --size medium --steps 3600 --state <FRESH>/b1.sea   # Canyon B, merging tree
+  node <out>/wt-bench.mjs   --spot canyon --size medium --steps 3600 --state <FRESH>/d1.sea   # default,  merging tree
+  node <out>/main-cb.mjs    --spot canyon --size medium --steps 3600 --state <FRESH>/b2.sea   # Canyon B, pristine main
+  node <out>/main-bench.mjs --spot canyon --size medium --steps 3600 --state <FRESH>/d2.sea   # default,  pristine main
+
+THE WRAPPER, WRITTEN OUT (Part 25 5.5: the shorthand in 3.2y's and 3.2z's notes is WRONG and cost 3.3a a leg).
+`wt-cb.mjs` is, in full (`main-cb.mjs` is the same with the other import):
+
+    globalThis.location = { search: '?canyonWaves=true' };
+    await import('./wt-bench.mjs');
+
+A bare STRING has no `.search`, so `devTools.ts`'s `currentSearch()` reads `undefined ?? ''` and the bench silently
+runs the DEFAULT Canyon while the operator believes it is running B.
+
+THREE CHECKS BEFORE THE HASHES, ALL THREE DONE AND READ:
+  1. the wrapper is an OBJECT with a `search` -- written out above;
+  2. THE GRID, read first: Canyon B is 400 x 451 = 180400 cells, the default Canyon 400 x 507 = 202800;
+  3. THE "spun up on the CPU in ... s" LINE, read before the hashes (Part 27's trap: `m1-cpu-bench.ts` IMPORTS an
+     existing `--state` instead of spinning up, and the scratchpad path is per PROJECT, so a previous round's `.sea`
+     survives -- and a kept `.sea` does NOT reproduce the reference. Its absence is the tell. Every `--state` path
+     below was fresh; `canyon33d/` was removed before the run.)
+
+EXPECTED (main's published figures, unchanged from C2 step 5f through 3.3c):
+  Canyon B       snapshots a367d938f15fa934  state 9e5831f80e38abd9
+  Default Canyon snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+
+MEASURED
+========
+-- Canyon B, MERGING TREE
+spun up on the CPU in 45.0 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon33d/b1.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+-- default Canyon, MERGING TREE
+spun up on the CPU in 63.0 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon33d/d1.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+-- Canyon B, pristine main (control)
+spun up on the CPU in 49.4 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon33d/b2.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+-- default Canyon, pristine main (control)
+spun up on the CPU in 55.9 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon33d/d2.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
