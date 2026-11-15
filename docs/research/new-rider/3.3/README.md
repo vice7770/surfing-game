@@ -491,3 +491,327 @@ water pushes on a tilted board**, which is the wave-and-hull side of the project
 first lead in five rounds that isn't another limb and isn't another dial.
 
 **Nothing in this round changes the game.** There is nothing new to ride, and the game is byte-for-byte what you have.
+
+---
+
+# Part 26 — the water force on the deck's own axes: the advisor's diagnosis half confirmed, and the half that is not a force
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33b`, cut from `main` at
+**e2dc402c** (the advisor's bank-gain consult), so Part 25 and that consult are its base. **This round ships no change
+to the game and no change to any source file**: one probe, nine cells of twelve runs (**108 runs**), and an
+attribution.
+
+**The round was built to break its own brief.** The wave-shape advisor's ruling on Part 25
+(`docs/research/water-physics/consult-log.md`, top row) is that a bank gain below one is **our artefact and a
+direction, not a size**: on the deck's own axes `tilt = atan(F_s / F_n)`, so a force locked to the deck normal gives a
+gain of exactly **1.000** at any magnitude, and the whole 0.17–0.37° residual must be the water force's **in-plane**
+across part. It named three suspects, all pointed along the **water-surface** normal — `buoyancy`
+(`hullForces.ts:264`) and `radiation` + `addedMass` (`BoardBody.ts:1501–1506`) — and it named its own falsification:
+*"if `pressure` shows up in the in-plane column, the hull geometry is the suspect and I am wrong."*
+
+## 0. The identity, and why it is checkable rather than assumed
+
+`humanBalance.ts:435` takes `tiltAcross = atan2(felt.x, felt.y)` on `AttachedRider.captureFelt`, which is
+`pairFelt` rotated into the **board's** frame [R]; `pairFelt` is the pair's specific force, which is the water force
+over the pair's mass because gravity cancels inside the pair. So with `n̂` the board's local **+y** in the world and
+`ŝ` its local **+x** — the across axis **in the plane of the deck**, which Part 25's `side` is only the horizontal
+*projection* of — the identity `tilt = atan(F_s/F_n)` is not an assumption, it is this code read forward, and the
+probe prints it three ways and makes them agree.
+
+**Two seatbelts say the attribution is exact and is of the right quantity.**
+
+- **The ledger against the momentum route.** `atan(F_s/F_n)` summed off `BoardBody.forces`' ten water entries, against
+  the same tilt from the pair's own differenced momentum: they agree to a per-run median of **0.000–0.050°** in every
+  cell, and on the
+  traced run the residual is **1 × 10⁻¹³ °** on every frame **except the separation frame** — the one frame where the
+  rider's velocity has already been re-set (3.2z's own effect), which is what the 0.0–57.4° "peak" column is, start to
+  finish. **So no at-the-fall number is quoted off the instantaneous routes**, and nothing else in the pool is
+  affected [M, `results/33b/trace-tall-0-33b.jsonl`].
+- **The felt split against the test itself.** Each entry low-passed over `SPECIFIC_FORCE_TIME` = 0.1 s **in the world**
+  and only then projected — the order `pairFelt` itself uses — reproduces the test's own `tiltAcross` to a median
+  **0.003–0.983°** per run across the nine cells [M] (0.003–0.468 over the eight on the default hull). The
+  decomposition is of the angle the body actually stands on.
+
+## 1. The four sentences the round is for
+
+1. **`pressure` does not show up in the in-plane column, so the advisor's falsification does not fire.** Over the
+   seven shipped-hull cells, `pressure`'s marginal contribution to the residual tilt is **0.003–0.022 degrees of tilt
+   per degree of roll** against a measured deficit of **0.234–0.442**, i.e. **0.7–9.4 %**; in newtons it is **−0.04 to
+   −0.28 N per degree of roll** against its own deck-normal **393 N** [M, 780–2317 frames a cell]. The code says why,
+   and it is one line: for the default `'flat'` section every bottom patch normal is `{x: 0, y: −1/norm, z: slope/norm}`
+   [R, `boardShape.ts:190`], and the only normals in the model with any `x` at all are the rail band's, built solely
+   when `bandWidth > 0` [R, `boardShape.ts:208–211`, which says so in its own comment]. **The advisor's named
+   prediction holds.** And the small residue that is there is not a force either: it goes as the **roll rate**, at
+   **−0.077 to −0.106 N per °/s** with R² **0.795–0.934** over the seven cells, against the crudest estimate of the
+   ledger's own within-step rotation, `F_n,pressure · h/2` = **0.057–0.085 N per °/s** — the same order and the sign of
+   a lag, because the ten entries are accumulated over the step's substeps at each substep's own rotation and read
+   against the end-of-step orientation. Exactly `h/2` is not claimed; that the residue is a rotation and not a
+   geometry is.
+2. **And the instrument can see in-plane pressure where the geometry has it — the positive control.** Turn the
+   athwartships shape on (`HULL=rail`, step 3.2u's band, opt-in and off in the game) and `pressure`'s marginal
+   contribution jumps to **0.149 °/°** and **−1.81 N per degree of roll**, a factor of **6.5** on the same twelve runs,
+   while the whole deficit goes to **0.499** and the gain to **0.444–0.496** — which is what Part 25 measured and what
+   TN 4187 predicts for a deadrise surface [M, 532 frames]. **A null result with a positive control is worth more than
+   either alone**, and this is the one the round can offer.
+3. **But only one of the advisor's three suspects carries weight, and it does not carry the whole deficit.**
+   `buoyancy` is the largest named in-plane term in **every** cell, **0.111–0.181 °/°**; `radiation` is **−0.004 to
+   0.059** and `addedMass` **−0.094 to 0.051** over the seven, and both change sign between cells. The three together
+   are **0.067–0.233** against a measured deficit of **0.234–0.442**, i.e. **29–75 %** of what is to be explained. So
+   the mechanism is real, it is **buoyancy's**, and it is between under a third and three quarters of the deficit —
+   not all of it.
+4. **The rest is not a force at all, and nobody had named it: the felt vertical's own 0.1 s lag against a rolling
+   deck.** `pairFelt` is low-passed in the **world** and then projected on the deck's **current** axes, so a force
+   locked exactly to the deck normal still reads an across component of order `Ω · T` the moment the deck rolls. Its
+   share of the deficit is **0.084–0.132 °/° in all seven shipped-hull cells** — remarkably steady where everything
+   else moves — and its law is measured: the test's tilt per degree-per-second of **roll rate** is **−0.047 to −0.133°**
+   against the filter's own **−T = −0.100**, over roll-rate peaks of **65–330 °/s** [M]. On the traced run, one
+   frame before the fall: the real in-plane force gives **−6.5°** of tilt and the test reads **−15.5°**, at a roll rate
+   of 130 °/s — the missing 9° is the filter, and `0.1 s × 130 °/s = 13°` [M].
+
+## 2. The attribution, in newtons and in degrees per degree
+
+The water force on the deck's axes, the shipped cell, medians signed over the pool of 780 frames, N:
+
+| source | on the deck normal `n̂` | in the deck's plane `ŝ` | `ŝ` peak absolute |
+|---|---|---|---|
+| **pressure** | **393.1** | **−1.04** | 18.30 |
+| addedMass | 153.4 | −0.35 | 226.85 |
+| buoyancy | 93.7 | −4.86 | 95.20 |
+| radiation | 63.4 | −1.83 | 27.86 |
+| fins | 0.0 | 5.60 | 92.11 |
+| rails | −0.0 | −2.35 | 19.19 |
+| friction | 0.9 | −0.40 | 2.85 |
+| bed · froth · suction | 0.0 | 0.00 | 0.00 |
+| **total** | **722.6** | **−7.2** | — |
+
+`pressure` carries **54 %** of the deck-normal load and **0.26 %** of its own magnitude in the deck's plane. The
+fins' 5.60 N is the largest single in-plane median in the ledger and is still worth only **0.4°** of tilt — and their
+**0.0** on the deck normal is not a measurement but a construction: every foil's normal is the board's local ±x
+[R, `BoardBody.ts:664, 674`], so the fins and the rail foils are the two entries whose force is **entirely** `F_s`,
+which is why they appear in this column at all and why they cannot be the bank gain.
+
+**Two cautions on that table, said before it is used.** The in-plane **medians** are a poor instrument on their own:
+`F_s` is only −7.2 N at the median because the median of a 9 s run is dominated by the early frames where the roll,
+and so the tilt, is still nothing, while at the fall the same quantity is **−210 to −67 N** on the low-passed force.
+And the raw step-mean entries swing by tens of newtons a frame (`addedMass` peaks at **227 N** in-plane against a
+153 N normal median), so the *marginal* slope over the pool is the number to quote, not any single frame's.
+
+The marginal attribution — degrees of tilt per degree of roll, each a pooled least-squares slope of that entry's
+in-plane force on the deck's roll divided by the measured `F_n`, so the columns add — is
+`results/33b/ladder-table-33b.txt` in full:
+
+| cell | frames | measured | the force's share | the FILTER's lag | buoyancy | **pressure** | addedMass | radiation | fins | rails |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 (shipped) | 780 | 0.234 | 0.111 | 0.124 | 0.165 | **0.022** | −0.094 | −0.004 | 0.031 | 0.010 |
+| +0.25 into | 2045 | 0.442 | 0.345 | 0.098 | 0.132 | **0.003** | 0.042 | 0.059 | 0.045 | 0.026 |
+| +0.5 into | 1376 | 0.337 | 0.239 | 0.099 | 0.140 | **0.012** | 0.036 | 0.028 | 0.017 | 0.017 |
+| +1 into | 1013 | 0.243 | 0.158 | 0.084 | 0.150 | **0.015** | 0.005 | 0.028 | −0.033 | 0.011 |
+| −0.25 against | 2289 | 0.334 | 0.232 | 0.102 | 0.133 | **0.006** | 0.044 | 0.051 | −0.019 | 0.017 |
+| −0.5 against | 2317 | 0.347 | 0.217 | 0.129 | 0.116 | **0.010** | 0.051 | 0.038 | −0.012 | 0.017 |
+| −1 against | 2022 | 0.326 | 0.194 | 0.132 | 0.111 | **0.008** | 0.040 | 0.036 | −0.012 | 0.019 |
+| `vertical:'particle'`, stick 0 | 1048 | 0.237 | 0.167 | 0.070 | 0.181 | **0.013** | −0.036 | −0.009 | 0.001 | 0.011 |
+| `hull:'rail'`, stick 0 | 532 | **0.499** | 0.478 | 0.020 | 0.153 | **0.149** | −0.011 | 0.072 | 0.063 | 0.000 |
+
+The per-source columns sum to **0.131–0.427** against the instantaneous ledger's own fitted **0.111–0.478** in the
+same cell — the linearisation's error, and it is smaller than the spread between cells. `rails` reads 0.000 on the
+`hull:'rail'` row because the band replaces the side-face foils rather than adding to them [R, `boardShape.ts:124–126`].
+
+**`measured` here is the gain deficit taken on the DECK-frame tilt**, which is not numerically Part 25's
+`1 − 0.768 = 0.232` taken on the world-frame `feltWorld`; both are published, the two differ by the horizontal
+projection, and on the shipped cell they happen to agree to 0.002. **They are not the same quantity and neither is
+quoted as the other.**
+
+## 3. The datum correction: 547 N was the wrong datum, and on the right one the hull is not low
+
+The advisor's own note was that Part 25's **547 N per unit sine** was regressed on `sin(rail)`, while the force's
+*direction* is set by the deck's **roll** — the pressure is normal to the hull — and only its *magnitude* by the rail.
+`across.ts` computed the `sin(roll)` slope and printed it in its pool line; Part 25 did not publish it. **Published:**
+
+| cell | per unit sin(**roll**), m/s² | the same in N on 75.54 kg | R² | per unit sin(rail), N |
+|---|---|---|---|---|
+| 0 (shipped) | **9.38** | **709** | 0.844 | 547 |
+| +0.25 / +0.5 / +1 | 7.37 / 10.36 / 12.38 | 557 / 782 / 935 | 0.650 / 0.775 / 0.715 | 522 / 702 / 769 |
+| −0.25 / −0.5 / −1 | 8.00 / 8.32 / 9.36 | 604 / 628 / 707 | 0.873 / 0.904 / 0.837 | 592 / 622 / 706 |
+| `particle` | 8.70 | 657 | 0.813 | 516 |
+| `hull:'rail'` | 4.13 | 312 | 0.396 | 243 |
+
+**Against the advisor's bar of 741 N** (`W` on 75.54 kg, rising as `1/cos φ`): the shipped cell is **709 N, 4 % low**,
+and the seven cells span **557–935 N**, i.e. the bar sits inside the population. **The sourced 26 % shortfall was the
+rail datum, exactly as the advisor suspected; it is not a shortfall on the roll datum.**
+
+And one correction *to* the bar, because the identity does not need the equilibrium the bar assumes: a force locked to
+the deck normal of **measured** magnitude `F_n` gives `a_lat = (F_n/m) sin φ` whatever the board is doing vertically.
+Measured `F_n` is **722.6 N = 9.57 m/s²** in the shipped cell, so the `sin(roll)` slope is **98.1 %** of what a
+deck-normal force of the size actually present would give (74–128 % over the seven cells; **44.8 %** with the deadrise
+band on). `W/cos φ` is the right bar only where the vertical closes, and over 0–63° of roll it runs 741 → 1632 N, so
+no single slope can be read against it at one number.
+
+## 4. The consistency check the advisor offered as its own test: it holds
+
+`(1 − gain) × roll` against the measured absolute tilt, run by run at the fall, on the shipped twelve:
+**6.59–16.10°** against **7.37–15.92°**, per-run difference **0.06–1.59°** [M]. And the pooled fit's **intercept**,
+which Part 25 did not compute at all: **0.008°** lagged and **0.995°** un-lagged on the shipped cell. **So essentially
+none of the tilt hides behind an intercept — the gain deficit is the tilt**, which is what the advisor said it should
+be. In the **steered** cells the per-run check is worth much less (differences to 16.94°) for Part 25 §4's own reason:
+a run whose roll passes through zero has no ratio, so the pooled slope is the instrument there and the per-run ratio
+is not.
+
+## 5. The advisor's caveat, answered: `'particle'` does not flatter the gain
+
+The advisor noted that Part 25 ran `FaceWater`'s default `vertical:'surface'`, which over-reads the upwelling by ~26 %
+against the kinematic `'particle'` (1.63 against 1.29 m/s), so the measured gain would if anything be flattered.
+**Re-run with `VERTICAL=particle`**: the deficit is **0.237** against `'surface'`'s **0.234**, the lagged gain
+**0.762** against **0.768**, the un-lagged **0.817** against **0.832**, and `pressure`'s in-plane share **0.013**
+against **0.022** [M, 12 runs, 1048 frames]. The sea is kinder — the falls move out to **0.87–3.30 s** from
+0.77–1.70 — but **the gain is the same number**, so the vertical law is not where this lives.
+
+## 6. What the fix would be worth, as an inference and not a measurement
+
+The advisor's item 2 — resolving the hydrostatic support along the **hull** normal while the deck is dry and the board
+planes — is the owner's call and this round did not build it. What the measurement adds is a **size**: removing
+`buoyancy`'s in-plane term from the fitted decomposition leaves **0.069–0.310** of deficit across the seven cells,
+i.e. a predicted gain of **0.69–0.93** rather than the advisor's **0.95–1.00**, because the filter's lag
+(**0.084–0.132**) survives any change to a force and `radiation`, `addedMass`, `fins` and `rails` carry
+**−0.094 to 0.059** each. **This is arithmetic on a decomposition, not a run** [I]: re-pointing the force changes the
+trajectory, so the real figure needs the change built. The point is only that **the fix is worth 30–71 % of the
+deficit cell by cell, not all of it**, and the owner should decide knowing that.
+
+## 7. What I refuted, plainly
+
+- **The advisor's own falsification criterion, in its favour**: `pressure` is **not** in the in-plane column
+  (0.003–0.022 °/° over seven cells, 0.26 % of its own magnitude), and `boardShape.ts:190` says why. The hull geometry
+  is **not** the suspect on the default board — and the positive control shows the instrument would have seen it.
+- **"The whole 0.17–0.37° residual is the water force's in-plane across part, and nothing else can contribute."**
+  The identity is exact, but the *instrument* contributes: `pairFelt` is low-passed in the world and read on the
+  deck's current axes, so **0.084–0.132 °/° of the deficit is the 0.1 s filter against a deck rolling at 65–330 °/s**,
+  in all seven cells, and no change to any force removes it.
+- **"Two rounds, two probes, one mechanism" — the vertical-ledger prediction of 0.79–0.88 from `B/(P+B)` = 0.12–0.21.**
+  That ratio predicts the gain only if the whole of `buoyancy` is in-plane and nothing else is. Measured on the deck's
+  axes, `buoyancy`'s in-plane share of the deficit is 0.111–0.181 of 0.234–0.442, `addedMass` works the **other way** in
+  the shipped cell (−0.094) and with `'particle'` (−0.036), and the filter is a term the ratio has no room for. **Right suspect, right order, wrong accounting.**
+- **Part 25's 547 N per unit sine as a statement about the hull.** On the roll datum it is **709 N** (557–935 over the
+  seven cells) against the sourced 741, and **98.1 %** of what the measured deck-normal load would give. The hull's
+  across force was never 26 % low.
+- **My own first instrument.** The run-median of the in-plane force (−7.2 N, −0.6° of tilt) looked like a refutation of
+  the whole diagnosis until the low-passed split showed the same quantity at **−210 to −67 N at the fall**: a median
+  over a run whose roll starts at zero is not the quantity the fall is made of. Said here because the first draft of
+  this part had it the other way round.
+- **And a trap worth the next round's time**: the low-passed per-source split attributes **0.193 °/°** to `pressure`
+  on the shipped cell — nine times its real in-plane share — purely because low-passing a deck-normal force in the
+  world and projecting it on a rolled deck manufactures an across component. Both columns are printed, the lagged one
+  labelled **not an attribution of forces**. Another frame error of the same family as the nine of the last fortnight,
+  caught only by having two instruments rather than one.
+
+## 8. What I will not claim
+
+- **I will not claim the lag is the owner's fall, or that it is a bug.** It is the instrument the balance was designed
+  with: a real inner ear low-passes too, and `SPECIFIC_FORCE_TIME` has a reason (3.2i's shove). What I measured is
+  that **it accounts for a quarter to a half of the gain deficit at these roll rates**, so a gain of 1.000 is not
+  reachable by re-pointing forces alone.
+- **I will not claim the lag's share to better than its own arithmetic.** It is a **residual** — the measured slope
+  less the instantaneous ledger's — so it carries both fits' error, and the instantaneous fit is the weaker of the two
+  (R² 0.168–0.652). What is measured about the lag *directly* is its own law: the test's tilt per °/s of roll rate,
+  **−0.047 to −0.133°** over seven cells with R² 0.178–0.677, against the filter's own **−T = −0.100** — and that is
+  what I would defend, together with the traced frame where the force gives −6.5° and the test reads −15.5°.
+- **I will not claim a per-source attribution outside this cell.** The ledger says what makes the in-plane force at
+  drift angles of 1.9–4.9° in the trim the fall happens in; the fins' 5.60 N and the rails' −2.35 N are *that*
+  condition's, and a board actually sliding would read differently.
+- **I will not claim the gain deficit to three digits.** The deck-frame deficit is 0.234–0.442 over seven cells with
+  R² 0.481–0.713; the claim I will defend is **buoyancy first, pressure negligible, the filter a steady tenth, and the
+  three never summing to the whole**.
+- **I will not claim this round measured the fix.** §6 is arithmetic on a decomposition [I]. Nothing was re-pointed.
+- **I will not claim this is the owner's fall.** They rode Canyon and reported falls that slide out sideways; these
+  twelve drift 1.9–4.9°. Their balance HUD is the instrument for what they rode.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed and not paddled in, the first ~0.17 s of
+  every run carries a contact transient, and every span above is a whole population — twelve runs a cell, two stances
+  × six entry speeds, one face slope — and not a confidence interval.
+
+## 9. Seatbelts
+
+- **No source file changed at all.** `git diff --stat origin/main HEAD -- src/` is empty; everything shipped is under
+  `docs/research/new-rider/3.3/`. **Nothing new ships on**: `VERTICAL` and `HULL` are the probe's own environment,
+  `STEER=0` with neither set is the game's own configuration, and `hull: 'rail'` is already opt-in and off in
+  `BoardBody` [R]. There is no switch to leave on by mistake because there is no switch in `src/`.
+- **The shipped rider unchanged, proved against Part 24's and Part 25's published figures and not asserted.** At
+  `STEER=0` the probe reproduces **every** shared column **to the digit**: fell 12 of 12 at **0.77–1.70 s**, bank peak
+  **20.7–65.7°**, roll peak **20.9–63.0°**, rail peak **10.9–62.9°**, drift peak **1.9–4.9°**, `latPair` mean
+  **1.58–3.47** / median 1.64–3.34 / peak 1.79–8.82, the `latPair − latWater` residual **0.000 median / 0.011 peak**,
+  `feetAccel` **1.17–3.00** with peak **6.93–25.55** and mean signed **0.48–2.89**, `baseMeanAccel` **0.00–0.38**
+  against the body's **0.42–1.41**, the felt tilt at the fall **−15.9 to −7.4°**, the identity residual
+  **0.181–1.591°**, the across-speed **0.754–1.406 m/s** = body 0.715–1.272 − feet −0.302–0.401, the pooled
+  `sin(rail)` slope **7.24 m/s² (R² 0.862)** and the bank gain **0.768 lagged / 0.832 un-lagged (R² 0.929 / 0.918)**.
+  The probe reads off the live instance and sets only `rider.steer`, the player's own stick.
+- `npx tsc --noEmit -p .`: **exit 0**, read from `tsc`'s own exit status on its own line, never through a pipe.
+  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**. The root project includes only `src`, so `deck.ts` was
+  type-checked separately on a throwaway project extending the root's options (with `types: ["node"]` and an absolute
+  `typeRoots`, because a tsconfig outside the tree resolves `@types` from its own folder): **exit 0**.
+- The rider, board, HUD and runner test files, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`), `SurfZoneRunner`
+  and `SprayCloud` (`src/wave/`) included — `SurfZoneRunner` is outside the merge suite, so a red there is news:
+  **58 files passed, 783 tests passed and 21 expected fail (804), vitest exit 0**, 101 s — the same counts as 3.3a's.
+  `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it (`c2-step5g.md` §7.4), closed by reading.
+  `results/33b/suite-33b.txt`.
+- **The Canyon bench, all four hashes, fresh spin-ups on the tree that merges**, with Part 25 §5.5's wrapper written
+  out and **the grid read before the hashes** (Canyon B **400 × 451 = 180400**, the default **400 × 507 = 202800**):
+  Canyon B **`a367d938f15fa934`** / **`9e5831f80e38abd9`**, default Canyon **`ea3d57a4d49f4b48`** /
+  **`a1a2555739210f96`** — **all four identical** to the reference unchanged from C2 step 5f through 3.3a. The two legs
+  overlapped on the machine, so the step times carry that load and are not comparable with 3.3a's; the hashes are the
+  invariant. `results/33b/canyon-bytes-33b.txt` has both legs in full.
+- **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the
+  summary line — **0 deletions**, every file new, and `src/` not among them; the insertion count moves with every edit
+  to this bullet, so it is left to the PR's summary line. It has caught a silent revert on eight consecutive rounds and
+  `merge-base --is-ancestor` has caught none of them.
+- No force was added or removed anywhere, and no gain, clip or threshold was changed. The round adds instrument and
+  prose.
+
+## 10. Files (3.3b)
+
+- `docs/research/new-rider/3.3/deck.ts` (new): step 3.3a's `across.ts` with the deck-axis measurement added and
+  nothing taken away — every water entry projected on the deck's normal `n̂` and its in-plane across axis `ŝ`, both raw
+  and low-passed over `SPECIFIC_FORCE_TIME` in the world the way `pairFelt` is; the deck-frame tilt from the ledger,
+  from the momentum route and from the test, with their residuals; the per-source attribution in newtons and as a
+  marginal slope in degrees of tilt per degree of roll; the deck's own roll rate and the lag's law; the `sin(roll)`
+  slope in newtons against `W` and against the measured `F_n`; the fits' intercepts; and `VERTICAL=particle` for
+  `FaceWater`'s kinematic vertical. Its header carries the commands.
+- `docs/research/new-rider/3.3/results/33b/`: `cell-*.txt` (the nine cells' full output), the nine `*.jsonl` cells
+  (**108 rows**), `trace-tall-0-33b.jsonl` (one run frame by frame, which is where the seatbelt's peak was pinned to
+  the separation frame), `ladder-table-33b.txt` (§2's table), `suite-33b.txt`, `canyon-bytes-33b.txt`.
+- No source file.
+
+## 11. For the owner, in plain words
+
+**Last round found that your surfer's board only swings "down" about three quarters of the way when he leans, and
+that the missing quarter is the slope that slides him off his feet. The water-physics advisor read that and said it
+was our bug, in one line of code: the floating part of the water's push is aimed at the water's surface instead of at
+the bottom of the board. It also said exactly what would prove it wrong. I went and did that test.**
+
+**It is half right, and the half that is wrong is more interesting than the half that is right.**
+
+The advisor's test was: if the board's *planing* push — the big one, the one that holds him up — turns out to be
+pushing sideways along the deck, then the shape of the board's bottom is the culprit and the advisor is wrong. It
+isn't. It is pushing **0.26 %** sideways, which is nothing, and the reason is written in our own board file: our
+default board's bottom is flat across, so its push can only go straight up through the deck. To be sure the test could
+even detect a sideways push, I turned on the shaped-rail board we built months ago and never shipped — and there the
+same measurement lights up seven times brighter. **So the instrument works, and the answer is no.**
+
+The advisor's own suspect, the floating push, **is** the biggest sideways culprit, in every one of the nine conditions
+I ran. But it is only **a third to seven tenths** of the missing quarter, depending on the condition. And the rest is
+not a force at all.
+
+**Here is what it is.** Our surfer's sense of "which way is down" is deliberately slow — it averages the last tenth of
+a second, the way a real inner ear does. When he is capsizing, the board is rolling at **65 to 330 degrees a second**.
+A tenth of a second at 130 degrees a second is **13 degrees** — so his sense of down is pointing where the deck
+*was*, not where it is, and that lag alone is a slope he is standing on. Measured, it is a steady tenth of a degree
+per degree in all seven conditions, and no change to any force in the water will remove it.
+
+**What that means for the decision in front of you.** The advisor asked for one change — aim the floating push at the
+bottom of the board instead of at the water's surface — and said it would take the turn-for-lean ratio from 0.75 up to
+0.95–1.00. On my numbers it would take it to about **0.7 to 0.9**, because the slow sense of down survives it. That is
+still the single biggest fix available, and it is still your call, because that same push is how the wave shoves the
+board down the line, so re-aiming it changes how every spot rides. I did not build it. I measured what it is worth.
+
+**Also worth knowing**: "the hull's sideways bite is 26 % weaker than the textbook" was last round's number measured
+against the wrong reference — the advisor spotted that itself and asked for the right one. Measured against the right
+reference, the bite is **709 newtons where the textbook says 741** — four per cent, not twenty-six, and 98 % of what
+the push actually on the board could give. **The board's bite is fine.**
+
+**Nothing in this round changes the game.** There is nothing new to ride, and the game is byte-for-byte what you have.
