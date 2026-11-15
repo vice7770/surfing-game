@@ -23,11 +23,15 @@ own. The file count is unchanged.
     online-room pin read out of main.ts so that removing that pin fails here.
 
 
+Run twice: once on the source change, and again after 1b.4's probe-only additions (no `src/` file changed
+between them -- `git diff --numstat <first commit> -- src/` is empty). Identical counts both times; the second
+run's output follows.
+
  RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/wt-33d
 
 
  Test Files  58 passed (58)
       Tests  790 passed | 21 expected fail (811)
-   Start at  21:17:59
-   Duration  93.55s (tests 97%, import 2%, transform 2%)
+   Start at  21:53:03
+   Duration  110.41s (tests 97%, import 2%, transform 2%)
 

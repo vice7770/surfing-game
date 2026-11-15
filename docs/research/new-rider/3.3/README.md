@@ -1325,6 +1325,71 @@ asserting it.
    5 of 9 deck cells (0.141–0.291 → 0.155–0.389) — on two populations with different falls, which is why §3 is labelled
    as one and §4 is the claim.
 
+## 1b. Against the owner's own three causes, from their ride of 2026-11-15
+
+**Primary evidence, and it outranks every number above.** While this round was building, the owner rode
+`?physical&canyonWaves=true&rider=new&feltFrame=deck` on Canyon's spilling waves and wrote: *"has some improvement in
+both turning and balance. But its not playable… in Compress the surfer is not down enough, or in Snap. So the surfer
+doesn't turn fast enough and its balance is fixed mid turn resulting in the same problem as before. Its improved but
+the root cause is still there."* Their three causes, in their words: **slow turn / low balance / correction balance
+while turning, which is incorrect.** (Their *"some improvement, still not playable"* is the ride-side of Part 27's own
+**later and deeper, not absent**, which is worth recording as a confirmed prediction.)
+
+**1. The turn, which they rank first: this change does not touch it.** `vOmega` — speed × heading rate, the
+acceleration a turn actually delivers — over the six **steered** cells, 72 runs a configuration: the median goes
+**1.080 → 1.015 m/s²** with the shipped filter and **1.135 → 1.135** with `?feltFrame=deck`; the per-run peak median
+**10.71 → 10.68** and **13.48 → 13.38**. Cell by cell it moves **both ways** (−14 % to +27 %) with no sign. **If the
+owner's first-ranked complaint is that the turn is slow, this is not the change that answers it, and I will not let
+§4's force numbers imply otherwise.**
+
+**2. Low balance, which is this change's target — and §4 is the size of it.** 0.14–0.94° off a 0.72–17.09° residual: a
+fifth of it at trim, a twentieth to a sixtieth at the rolls they go over at. **Real, small, and smallest exactly where
+they feel it.**
+
+**3. "In Compress the surfer is not down enough": crouching still buys almost nothing.** Step 3.2x measured Compress
+carrying the centre of mass **25–30 % lower** than tall with the two falling at the **same** rate (318 of 318 each,
+median 1.02 s against 1.00) — in the sport, getting low is the main thing a surfer does to hold a turn, and in this
+model it bought nothing. The coordinator asked for this prominently if the re-pointed buoyancy changed it. **It does
+not.** 54 runs a stance a configuration, and **54 of 54 fall in every one of the eight**:
+
+| configuration | Compress median fall | tall median fall | the gap | Compress roll peak | tall roll peak |
+|---|---|---|---|---|---|
+| world filter, shipped hull | 1.60 s | 1.54 s | **+0.06** | 11.0–70.3° | 11.0–90.8° |
+| world filter, **hull buoyancy** | 1.77 | 1.64 | **+0.13** | 13.2–71.5° | 12.3–91.6° |
+| deck filter, shipped hull | 1.83 | 1.69 | **+0.15** | 11.0–95.6° | 11.0–119.2° |
+| deck filter, **hull buoyancy** | 2.11 | 1.98 | **+0.13** | 15.1–134.8° | 12.6–92.5° |
+
+The gap roughly doubles in the world frame (+0.06 → +0.13 s) and **does not move** on the deck frame (+0.15 → +0.13),
+on 54 runs each. **Two frames disagreeing on a 0.07 s difference is not the model starting to behave like the sport**,
+and I will not report it as one. What *does* separate the stances, and did before this change, is how far they go: tall
+rolls to **90.8–119.2°** where Compress stops at **70.3–95.6°**.
+
+**4. Correction while turning — the column the coordinator asked for, and the two readings of it that do not hold.**
+`AttachedRider.predictor.sent` and `.raw` are public "for probes", so the ankle command is free to read (`buoy.ts` §9).
+What it supports:
+
+- **the command is driven in a commanded turn and idle in an uncommanded roll.** Its slope on the deck's roll is
+  **−0.00035 rad/° at R² 0.007** in the unsteered cell and **+0.00188 to +0.00517 at R² 0.158–0.543** in the six
+  steered ones. It reaches its clamp (0.250 rad) and the clamp binds in **0–28 frames of 58–194** a run.
+
+What it does **not** support, and both of these are mine to own:
+
+- **"the command carries no information about the lean the player asked for."** Its R² on `leanAsked` is 0.000–0.084
+  against 0.158–0.543 on the roll, which looks decisive and is not: `leanAsked` **ramps for about 0.55 s and then sits
+  flat for the rest of the run** (0 → 25.00° by 0.85 s, then 25.00 for 2.3 s), so it is a near-constant regressor and
+  most of that R² gap is the regressor. **Withdrawn.**
+- **"the rail never reaches the lean the steer asked, and falls back while the ask is still on."** That is what one
+  traced run shows between 1.0 and 2.0 s (rail 15.4 → 5.6° while the ask is pinned at 25°) and **the population
+  refutes it**: over 72 runs a configuration the rail **peak** is **1.7–3.1× the ask** at the median and **60–71 of
+  72** runs pass 90 % of it. The peak is in the capsize, so "peak" is the wrong statistic for "does it hold the turn".
+  **Withdrawn, and it was a window promoted to a run.**
+
+**So what the next round needs is a specified measurement this round cannot give**: the rail against the ask in a
+**window** — after the steer's 0.55 s ramp and before the capsize — plus the predictor's command over that window with
+the output pinned to zero as its control, which is 3.2w's own comparison (it found the shipped predictor does no better
+than zero, 0.63–3.08 s against 0.77–1.70). Two instruments that look like they answer it do not, and that is the most
+useful thing I can hand over about it.
+
 ## 2. The blend, and why this one
 
 The advisor's spec is *"while the deck is dry and the board planes, blending to the surface normal as it floats or
@@ -1650,14 +1715,17 @@ a sixtieth of it at the rolls the body goes over at.
 - `src/physics/hullForces.test.ts`, `src/game/PhysicalMode.test.ts`: the six new cases.
 - `docs/research/new-rider/3.3/buoy.ts` (new): step 3.3c's `felt.ts` with `BUOY`, the walk's **third** resolution
   through `patchForce` itself, the regime columns (`hullShare`, `dryShare`, `planeShare`, `hullShareHigh`,
-  `planeSens`), and §8's report. Its header carries the commands.
+  `planeSens`), the predictor's own command (§1b.4, with the two readings of it that do not hold written into the field's
+  own doc comment), and §8–§9's report. Its header carries the commands.
 - `docs/research/new-rider/3.3/results/33d/`: `cell-*-{world,deck}-{off,hull}.txt` (the thirty-six cells' full output),
   their thirty-six `*.jsonl` (**432 rows**), `frames-world-off.jsonl` (**13,422 frames**, §2's and §4's population —
   trimmed to the eleven columns those two tables are computed from, because the full record is 42 MB; every number in
   §2 and §4 was re-derived from the trimmed file and is unchanged, and `ladder-table-33d.txt` carries the command that
   rebuilds the full one),
-  `trace-tall-0-world-{off,hull}.jsonl` (§4's traced run frame by frame), `ladder-table-33d.txt`, `suite-33d.txt`,
-  `canyon-bytes-33d.txt`.
+  `trace-tall-0-world-{off,hull}.jsonl` (§4's traced run frame by frame),
+  `trace-steered-05-world-off.jsonl` (§1b.4's steered run, 191 frames, with `leanAsked`, `rail` and the predictor's
+  command — the file that both refutes its own first reading and shows why), `ladder-table-33d.txt` (§1b's tables too),
+  `suite-33d.txt`, `canyon-bytes-33d.txt`.
 
 ## 12. For the owner, in plain words — and the shot list
 
@@ -1686,6 +1754,24 @@ about **one degree** around thirty to forty degrees of lean and then falls away.
 **Does he stay on? No.** Twelve of twelve fell in all thirty-six conditions I ran. What he gets is time — about
 **a sixth of a second** on its own, and **half a second** together with last round's inner-ear fix, which do add. He
 does not lean any less far before he goes.
+
+**And against the three things you named after your last ride** (*slow turn, low balance, correction while turning*),
+measured rather than guessed — §1b has it in full:
+
+- **the turn: this does nothing for it.** The turn's own acceleration over the six steered conditions is 1.08 → 1.02
+  and 1.14 → 1.14, and cell by cell it moves both ways. **You ranked the slow turn first and this is not the change
+  that answers it.** Say the word and the turn is the next round rather than the draft.
+- **low balance: this is that, and it is small.** A fifth of the sideways slope at trim, a twentieth to a sixtieth
+  where you actually go over.
+- **"in Compress the surfer is not down enough": still true.** Crouching carries him 25–30 % lower and still buys him
+  **0.06 to 0.15 s** — the same before and after this change, 54 runs each way. In the sport getting low is *the*
+  thing you do to hold a turn. **In the game it is still nearly free of consequence**, and that gap is bigger than
+  anything this switch moves.
+- **"its balance is fixed mid turn": I could not measure it, and I tried twice.** Both readings that looked like they
+  showed it fell over when I checked them against all the runs instead of one — the write-up says exactly how, so the
+  next round does not spend the same hour. What I can say is that the balance controller is **idle when the board
+  rolls on its own and busy when you ask for a lean**, and that it runs into its own limit on 0–28 frames of a run.
+  That smells like what you are feeling. It needs the measurement I have specified, not another guess.
 
 **And the thing you were worried about is small.** You objected that this same float is how the wave shoves the board
 down the line, so re-aiming it changes how every spot rides. It does change it, but by much less than the version last

@@ -1,5 +1,5 @@
 ## buoy (3.3d) — rider new, steer -0.25 (roll, from 0.3 s) · FaceWater vertical 'surface' · FELT FRAME 'world' (the shipped filter) · BUOY FRAME 'off' (the shipped hull law)
-   12 runs, 3 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   12 runs, 4 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
    fell: 12 of 12 at 1.53–4.63 s
    CHECK vs Part 24's twelve: bank peak 11.5–66.1° · roll peak 11.0–70.0° · rail peak 7.1–79.4° · drift peak 5.9–60.0°
    §1 the base's across acceleration, m/s² (+ toward the board's level-left):
@@ -90,4 +90,9 @@
       ALONG-BOARD (the wave's push down the line), N: shipped 3.9–15.7 median → the SWITCH 2.7–10.8 → unconditional 1.7–4.0 · switch-on-shipped slope 0.903 (R² 0.989)
       as a WORLD-HORIZONTAL force, N: magnitude shipped 0.0–17.6 → the SWITCH 5.7–18.7 → unconditional 10.4–22.9 · DOWN THE SLOPE 0.0–17.6 → 0.0–18.4 → -1.3–18.5 median, 4.6–43.2 → -1.1–37.9 → -173.7–5.6 at the fall
       the DECK NORMAL's own load, N (the denominator of every tilt): shipped 46.8–112.1 → the SWITCH 49.6–112.7 → unconditional 52.0–115.1
+   §9 THE PREDICTOR'S OWN COMMAND (a diagnostic for the next round, NOT a result of this one; regressed, never read as a sign):
+      the ankle command on the deck's ROLL: pooled 0.00393 rad/° (R² 0.297) · per run 0.00148–0.00697 (R² 0.021–0.772)
+      the same command on the lean the steer ASKED — NOT USABLE, a near-constant regressor (it ramps for ~0.55 s then sits flat): pooled -0.00020 rad/° (R² 0.000) · per run -0.00958–0.01082 (R² 0.000–0.352) · lean asked peak 12.5–12.5°
+      and the RAIL against that ask, which refutes reading a mid-run dip off one trace: rail peak 7.1–79.4° against the ask 12.5–12.5° — the peak OVERSHOOTS, because the peak is in the capsize. A windowed statistic is what the next round needs.
+      the command's own size, rad: |median| 0.01851–0.11382 · peak 0.25000–0.25000 · frames the clamp bound it 3–32 of 92–278
    the fall: margin 0.000–0.000 · past 0.223–0.613 m · relative across-speed -2.351–-0.740 m/s = body -1.467–0.998 − feet -0.127–2.279 · its mean rate 0.20–1.52 m/s² · reconstructs to 0.0000–0.0000

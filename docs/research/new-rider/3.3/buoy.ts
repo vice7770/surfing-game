@@ -428,6 +428,26 @@ interface Frame {
   hullShareHigh: number;
   /** `d(planing)/d(ln v)` = `2·planing·(1 − planing)`, support-weighted: how much the walk's rebuilt velocity can cost. */
   planeSens: number;
+  /**
+   * **The one column the coordinator asked for on the owner's behalf, and it is a diagnostic for the NEXT round, not a
+   * finding of this one.** `AttachedRider.predictor.sent` and `.raw` are public "for probes" [R,
+   * `predictiveBalance.ts:1091`]: the ankle command the predictor sends, rad, after and before its clamps. The owner
+   * has now named "correction while turning" from three separate rides, and 3.2w measured that the shipped predictor
+   * does no better than pinning its output to zero. The question is whether its command treats a **commanded** lean
+   * the same way it treats an unwanted roll — if the slope of this command on the deck's roll is the same sign and
+   * size in a steered cell as in the unsteered one, then it does not distinguish them.
+   * **Regressed, never read as a sign**: `predictiveBalance`'s own sign convention is not this probe's, so only a
+   * comparison of two slopes taken by the same instrument is quoted.
+   *
+   * **And `cmdOnLeanSlope`/`cmdOnLeanR2` are printed but are NOT usable, which is why this is said here and in the
+   * report.** `leanAsked` ramps 0 → the steer's ask over about 0.55 s and then sits **flat** for the rest of the run
+   * (0 → 25.00° by 0.85 s, then 25.00 for 2.3 s on the traced run), so it is a near-constant regressor and its low R²
+   * (0.000–0.084 over the six steered cells, against 0.158–0.543 for the same command on the roll) is mostly that, not
+   * a statement about the controller. Do not read it as "the command carries no information about the ask".
+   */
+  cmdAnkle: number;
+  cmdAnkleRaw: number;
+  cmdHip: number;
 }
 
 /**
@@ -940,6 +960,10 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
       planeShare: wSum > 0 ? wPlane / wSum : 0,
       hullShareHigh: wSum > 0 ? wHigh / wSum : 0,
       planeSens: wSum > 0 ? wSens / wSum : 0,
+      // The predictor's own command, read off its public probe fields. Nothing is written; the rider does not see this.
+      cmdAnkle: rider.predictor.sent[0],
+      cmdAnkleRaw: rider.predictor.raw[0],
+      cmdHip: rider.predictor.sent[1],
     };
     frames.push(frame);
     pool.push(frame);
@@ -1171,6 +1195,17 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     /** The frames the blend never left the shipped end (`hullShare` = 0) and the frames it was past 0.9, of the run. */
     hullShareZeroFrames: col('hullShare').filter((x) => x <= 0).length,
     hullShareFullFrames: col('hullShare').filter((x) => x >= 0.9).length,
+    /**
+     * The predictor's ankle command against the deck's ROLL and against the lean the steer ASKED, per run. The point of
+     * the pair is the comparison: if the slope on roll is the same in a steered cell as in the unsteered one, the
+     * predictor does not distinguish a commanded lean from an unwanted one.
+     */
+    cmdOnRollSlope: r(fit(col('roll'), col('cmdAnkle')).slope, 5),
+    cmdOnRollR2: r(fit(col('roll'), col('cmdAnkle')).r2, 3),
+    cmdOnLeanSlope: r(fit(col('leanAsked'), col('cmdAnkle')).slope, 5),
+    cmdOnLeanR2: r(fit(col('leanAsked'), col('cmdAnkle')).r2, 3),
+    cmdAnkleAbsMedian: r(median(abs('cmdAnkle')), 5), cmdAnklePeak: r(peak(abs('cmdAnkle')), 5),
+    cmdClampedFrames: frames.filter((x) => Math.abs(x.cmdAnkleRaw - x.cmdAnkle) > 1e-9).length,
   };
 }
 
@@ -1352,4 +1387,11 @@ console.log(`         pooled: median ${f(median(pool.map((x) => x.bnS)), 2)} →
 console.log(`      ALONG-BOARD (the wave's push down the line), N: shipped ${span(nf('bnAMedian'), 1)} median → the SWITCH ${span(nf('bbAMedian'), 1)} → unconditional ${span(nf('bhAMedian'), 1)} · switch-on-shipped slope ${f(alongSwitch.slope, 3)} (R² ${f(alongSwitch.r2, 3)})`);
 console.log(`      as a WORLD-HORIZONTAL force, N: magnitude shipped ${span(nf('bnHorizMedian'), 1)} → the SWITCH ${span(nf('bbHorizMedian'), 1)} → unconditional ${span(nf('bhHorizMedian'), 1)} · DOWN THE SLOPE ${span(nf('bnDownMedian'), 1)} → ${span(nf('bbDownMedian'), 1)} → ${span(nf('bhDownMedian'), 1)} median, ${span(nf('bnDownAtFall'), 1)} → ${span(nf('bbDownAtFall'), 1)} → ${span(nf('bhDownAtFall'), 1)} at the fall`);
 console.log(`      the DECK NORMAL's own load, N (the denominator of every tilt): shipped ${span(nf('bnNMedian'), 1)} → the SWITCH ${span(nf('bbNMedian'), 1)} → unconditional ${span(nf('bhNMedian'), 1)}`);
+const cmdRollPool = fit(pool.map((x) => x.roll), pool.map((x) => x.cmdAnkle));
+const cmdLeanPool = fit(pool.map((x) => x.leanAsked), pool.map((x) => x.cmdAnkle));
+console.log(`   §9 THE PREDICTOR'S OWN COMMAND (a diagnostic for the next round, NOT a result of this one; regressed, never read as a sign):`);
+console.log(`      the ankle command on the deck's ROLL: pooled ${f(cmdRollPool.slope, 5)} rad/° (R² ${f(cmdRollPool.r2, 3)}) · per run ${span(nfSome('cmdOnRollSlope'), 5)} (R² ${span(nfSome('cmdOnRollR2'), 3)})`);
+console.log(`      the same command on the lean the steer ASKED — NOT USABLE, a near-constant regressor (it ramps for ~0.55 s then sits flat): pooled ${f(cmdLeanPool.slope, 5)} rad/° (R² ${f(cmdLeanPool.r2, 3)}) · per run ${span(nfSome('cmdOnLeanSlope'), 5)} (R² ${span(nfSome('cmdOnLeanR2'), 3)}) · lean asked peak ${span(nf('leanAskedPeakDeg'), 1)}°`);
+console.log(`      and the RAIL against that ask, which refutes reading a mid-run dip off one trace: rail peak ${span(nf('railPeakDeg'), 1)}° against the ask ${span(nf('leanAskedPeakDeg'), 1)}° — the peak OVERSHOOTS, because the peak is in the capsize. A windowed statistic is what the next round needs.`);
+console.log(`      the command's own size, rad: |median| ${span(nf('cmdAnkleAbsMedian'), 5)} · peak ${span(nf('cmdAnklePeak'), 5)} · frames the clamp bound it ${span(nf('cmdClampedFrames'), 0)} of ${span(nf('frames'), 0)}`);
 console.log(`   the fall: margin ${span(nf('marginAtFall'), 3)} · past ${span(nf('pastAtFall'), 3)} m · relative across-speed ${span(nfSome('relAcrossAtFall'), 3)} m/s = body ${span(nfSome('bodyAcrossAtFall'), 3)} − feet ${span(nfSome('feetAcrossAtFall'), 3)} · its mean rate ${span(nfSome('relAcrossMeanRate'), 2)} m/s² · reconstructs to ${span(nfSome('checkAtFall'), 4)}`);

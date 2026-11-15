@@ -40,3 +40,51 @@ the full record:
   for each of the nine cells' world-off legs (STEER=0 | STEER=+-0.25/0.5/1 STEER_SIGN=roll STEER_FROM=0.3 |
     VERTICAL=particle | HULL=rail), with RIDER=new STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 and
     TRACE=<one file> pointed at the SAME file (TRACE appends).
+
+=== 1b: AGAINST THE OWNER'S THREE CAUSES (their ride of 2026-11-15) ===
+THE TURN, the six steered cells, 72 runs a configuration: vOmega = speed x heading rate, m/s2
+  world-off   median 1.080 | peak median 10.71 | peak range 2.4-30.3
+  world-hull  median 1.015 | peak median 10.68 | peak range 2.6-34.4
+  deck-off    median 1.135 | peak median 13.48 | peak range 4.6-37.9
+  deck-hull   median 1.135 | peak median 13.38 | peak range 5.9-41.4
+  per cell, vOmega peak median off -> hull: world | deck
+    c1-into0.25      12.12 -> 12.09  |  12.13 -> 12.96
+    c2-into0.5       10.79 -> 9.33  |  13.20 -> 14.41
+    c3-into1         12.52 -> 15.91  |  18.86 -> 19.23
+    c4-against0.25   11.01 -> 10.20  |  13.48 -> 10.04
+    c5-against0.5    9.09 -> 10.71  |  13.12 -> 12.96
+    c6-against1      10.37 -> 10.27  |  13.59 -> 13.04
+
+DOES CROUCHING MATTER? 54 runs a stance a configuration, all nine cells
+  config      | stance   | fell  | median fall | range      | roll peak
+  world-off   | compress | 54/54 |        1.60 | 0.50-5.33  | 11.0-70.3
+  world-off   | tall     | 54/54 |        1.54 | 0.65-5.08  | 11.0-90.8
+     -> the Compress-minus-tall gap: +0.06 s
+  world-hull  | compress | 54/54 |        1.77 | 0.52-6.65  | 13.2-71.5
+  world-hull  | tall     | 54/54 |        1.64 | 0.70-5.03  | 12.3-91.6
+     -> the Compress-minus-tall gap: +0.13 s
+  deck-off    | compress | 54/54 |        1.83 | 0.87-5.65  | 11.0-95.6
+  deck-off    | tall     | 54/54 |        1.69 | 0.83-5.40  | 11.0-119.2
+     -> the Compress-minus-tall gap: +0.15 s
+  deck-hull   | compress | 54/54 |        2.11 | 0.88-7.93  | 15.1-134.8
+  deck-hull   | tall     | 54/54 |        1.98 | 0.87-4.93  | 12.6-92.5
+     -> the Compress-minus-tall gap: +0.13 s
+
+THE PREDICTOR'S ANKLE COMMAND on the deck's ROLL (pooled per cell, rad per degree):
+  c0-shipped       world-off -0.00035 (R2 0.007)    world-hull 0.00219 (R2 0.160)
+  c1-into0.25      world-off 0.00456 (R2 0.193)     world-hull 0.00517 (R2 0.168)
+  c2-into0.5       world-off 0.00397 (R2 0.543)     world-hull 0.00432 (R2 0.364)
+  c3-into1         world-off 0.00188 (R2 0.158)     world-hull 0.00324 (R2 0.362)
+  c4-against0.25   world-off 0.00393 (R2 0.297)     world-hull 0.00412 (R2 0.260)
+  c5-against0.5    world-off 0.00351 (R2 0.471)     world-hull 0.00353 (R2 0.436)
+  c6-against1      world-off 0.00295 (R2 0.309)     world-hull 0.00301 (R2 0.289)
+  c7-particle      world-off 0.00141 (R2 0.037)     world-hull 0.00245 (R2 0.074)
+  c8-hullrail      world-off 0.00511 (R2 0.527)     world-hull 0.00500 (R2 0.506)
+  NOTE: the regression on `leanAsked` is printed by the probe and is NOT usable -- it ramps for ~0.55 s then
+  sits flat, so it is a near-constant regressor. And the rail PEAK overshoots the ask (1.7-3.1x the median,
+  60-71 of 72 runs past 90 % of it) because the peak is in the capsize: a WINDOWED statistic is what is needed.
+RAIL PEAK against the ASK, the six steered cells, 72 runs a configuration:
+  world-off   ask 12.5-50.0 deg | rail peak 7.1-100.6 | ratio median 1.92 | past 90 % of the ask 60 of 72
+  world-hull  ask 12.5-50.0 deg | rail peak 12.0-106.1 | ratio median 1.66 | past 90 % of the ask 64 of 72
+  deck-off    ask 12.5-50.0 deg | rail peak 7.1-130.3 | ratio median 3.09 | past 90 % of the ask 69 of 72
+  deck-hull   ask 12.5-50.0 deg | rail peak 12.0-104.2 | ratio median 2.78 | past 90 % of the ask 71 of 72

@@ -90,4 +90,9 @@
       ALONG-BOARD (the wave's push down the line), N: shipped 3.7–14.1 median → the SWITCH 2.6–9.6 → unconditional 1.2–3.5 · switch-on-shipped slope 0.881 (R² 0.980)
       as a WORLD-HORIZONTAL force, N: magnitude shipped 1.2–19.0 → the SWITCH 5.1–12.9 → unconditional 6.3–41.6 · DOWN THE SLOPE 0.0–19.0 → 0.0–11.7 → -3.4–4.3 median, 3.7–49.8 → -9.5–53.9 → -136.6–158.7 at the fall
       the DECK NORMAL's own load, N (the denominator of every tilt): shipped 35.9–109.5 → the SWITCH 36.7–110.4 → unconditional 37.7–116.6
+   §9 THE PREDICTOR'S OWN COMMAND (a diagnostic for the next round, NOT a result of this one; regressed, never read as a sign):
+      the ankle command on the deck's ROLL: pooled 0.00328 rad/° (R² 0.414) · per run 0.00282–0.00396 (R² 0.103–0.597)
+      the same command on the lean the steer ASKED — NOT USABLE, a near-constant regressor (it ramps for ~0.55 s then sits flat): pooled 0.00019 rad/° (R² 0.001) · per run -0.00085–0.00487 (R² 0.000–0.461) · lean asked peak 38.2–50.0°
+      and the RAIL against that ask, which refutes reading a mid-run dip off one trace: rail peak 41.4–104.2° against the ask 38.2–50.0° — the peak OVERSHOOTS, because the peak is in the capsize. A windowed statistic is what the next round needs.
+      the command's own size, rad: |median| 0.03496–0.10586 · peak 0.25000–0.25000 · frames the clamp bound it 2–44 of 96–476
    the fall: margin 0.000–0.232 · past 0.116–0.555 m · relative across-speed -2.251–1.859 m/s = body -1.318–2.056 − feet 0.197–2.897 · its mean rate 0.11–1.02 m/s² · reconstructs to 0.0000–0.0000

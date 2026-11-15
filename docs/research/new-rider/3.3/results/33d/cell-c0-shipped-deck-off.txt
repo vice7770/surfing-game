@@ -1,5 +1,5 @@
 ## buoy (3.3d) — rider new, steer 0 · FaceWater vertical 'surface' · FELT FRAME 'deck' (feltFrame: deck, step 3.3c, OPT-IN) · BUOY FRAME 'off' (the shipped hull law)
-   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
    fell: 12 of 12 at 1.10–1.93 s
    CHECK vs Part 24's twelve: bank peak 28.4–70.0° · roll peak 27.5–95.6° · rail peak 17.7–87.6° · drift peak 2.1–11.2°
    §1 the base's across acceleration, m/s² (+ toward the board's level-left):
@@ -90,4 +90,9 @@
       ALONG-BOARD (the wave's push down the line), N: shipped 2.0–10.1 median → the SWITCH 1.7–7.4 → unconditional 0.9–2.1 · switch-on-shipped slope 0.754 (R² 0.969)
       as a WORLD-HORIZONTAL force, N: magnitude shipped 2.9–15.8 → the SWITCH 7.4–19.1 → unconditional 11.0–39.3 · DOWN THE SLOPE 1.6–15.8 → 1.8–17.1 → 1.8–20.0 median, 0.0–9.1 → 0.0–10.8 → 0.0–23.9 at the fall
       the DECK NORMAL's own load, N (the denominator of every tilt): shipped 20.2–87.8 → the SWITCH 21.4–91.8 → unconditional 26.2–100.6
+   §9 THE PREDICTOR'S OWN COMMAND (a diagnostic for the next round, NOT a result of this one; regressed, never read as a sign):
+      the ankle command on the deck's ROLL: pooled 0.00054 rad/° (R² 0.018) · per run -0.00278–0.00462 (R² 0.020–0.588)
+      the same command on the lean the steer ASKED — NOT USABLE, a near-constant regressor (it ramps for ~0.55 s then sits flat): pooled – rad/° (R² –) · per run – (R² –) · lean asked peak 0.0–0.0°
+      and the RAIL against that ask, which refutes reading a mid-run dip off one trace: rail peak 17.7–87.6° against the ask 0.0–0.0° — the peak OVERSHOOTS, because the peak is in the capsize. A windowed statistic is what the next round needs.
+      the command's own size, rad: |median| 0.00731–0.03658 · peak 0.14266–0.25000 · frames the clamp bound it 0–33 of 66–116
    the fall: margin 0.000–0.000 · past 0.239–1.044 m · relative across-speed 1.010–2.805 m/s = body -0.300–2.526 − feet -3.105–0.500 · its mean rate 0.87–2.21 m/s² · reconstructs to 0.0000–0.0051
