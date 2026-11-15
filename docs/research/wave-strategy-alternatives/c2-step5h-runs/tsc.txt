@@ -1,0 +1,11 @@
+tsc -p .        EXIT 0
+tsc -p server   EXIT 0
+
+And the check was proved able to fail (the brief's worktree trap: npx tsc in a tree with no node_modules
+prints an install hint and exits 0). A deliberate `const __proof: number = 'not a number'` appended to
+src/wave/SprayCloud.ts gave:
+
+  src/wave/SprayCloud.ts(1204,7): error TS2322: Type 'string' is not assignable to type 'number'.
+  PROOF EXIT 2
+
+and the file was restored (git diff --stat clean, tsc exit 0 again).

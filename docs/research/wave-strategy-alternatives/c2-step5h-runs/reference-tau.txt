@@ -1,0 +1,28 @@
+rows 200-300.  Populations: each band is 100 rows x its own width of pixels.
+
+band                      sRGB mn sRGB sd lin mean    lin sd period px  amp(lin)
+clear A 1150-1210            45.0    24.2   0.0348    0.0392      20.0   0.02851
+clear B 1210-1270            37.5    22.1   0.0259    0.0309      20.0   0.01681
+clear whole 1150-1270        41.2    23.5   0.0303    0.0356      20.0   0.02385
+veil edge 900-1050           73.2    28.5   0.0802    0.0618      30.0   0.04665
+under the veil 600-900      131.2    29.4   0.2443    0.1146      25.0   0.02603
+thickest 420-600            153.5    23.2   0.3325    0.1087      16.4   0.01398
+
+the method's own noise floor: the clear pier's two halves give amplitudes 0.02851 and 0.01681,
+a ratio of 0.59 between two pieces of the SAME clear pier -- so a transmission read this way
+carries a factor of about 1.7 of its own before the veil is reached.
+
+  veil edge 900-1050       T = 1.956   tau = -ln T = -0.67
+  under the veil 600-900   T = 1.092   tau = -ln T = -0.09
+  thickest 420-600         T = 0.586   tau = -ln T = 0.53
+
+And the sd argument, which is what 5g read the veil's thinness from:
+  sRGB sd  23.5 -> 29.4 : "the absolute variation is intact", so the cloud is thin.
+  LINEAR sd 0.0356 -> 0.1146 : a factor 3.2 UP.  Attenuation cannot raise a background's
+  variation. The variance under the veil is the veil's own patchiness, so the sd bounds nothing.
+
+The radiance balance (linear light), under the veil at I = 0.2443 against a clear pier at I_bg = 0.0303:
+  L_veil = 0.333 (the thickest veil's own reading                           ) T = 0.292  tau = 1.23
+  L_veil = 0.543 (the photograph's broken foam                              ) T = 0.583  tau = 0.54
+  L_veil = 0.750 (the photograph's glassy foreground, its brightest extended surface) T = 0.703  tau = 0.35
+  L_veil = 1.000 (a clipped white                                           ) T = 0.779  tau = 0.25
