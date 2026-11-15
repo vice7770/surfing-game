@@ -404,7 +404,7 @@ lip impact carrying the height of the wave it fell from, which nothing but the v
 | `src/wave/SprayCloud.test.ts` | **39 of 39**, six of them new: the switch is off until asked for and leaves every landing's bytes as they were; the two regions' angles; the speed law's mean and its tail; **nothing thrown over water the lip has not hit**; the air carrying the light drops over the lip where thrown drops cannot reach; and the air not blowing before its onset |
 | `src/wave/PlungingLip.test.ts` | 71 of 71 |
 | `src/game/PhysicalMode.test.ts` | 92 of 92 |
-| `src/wave/SurfZoneSimulation.test.ts` | **did not finish** — 106 tests, started on its own as the brief asks, killed twice by the machine with three CPU benches on it, and its result is *not* in `c2-step5g-runs/suite.txt`, which carries the three files above. **So it was closed by reading instead** (§7.3), which is cheaper than a third 35-minute run and answers the same question. Run it anyway when the machine is free: `npx vitest run src/wave/SurfZoneSimulation.test.ts` |
+| `src/wave/SurfZoneSimulation.test.ts` | **did not finish, and could not have** — see §7.4: the file's own declared timeout budget is **644.5 minutes**. Its result is *not* in `c2-step5g-runs/suite.txt`, which carries the three files above. **It was closed by reading instead** (§7.3), and that is the only form of closing it a round can afford |
 | **the deletion check** | `git diff --stat origin/main HEAD` first read **1581 deletions**, every one of them `docs/research/new-rider/3.2/`, `AttachedRider.ts` and `legDrive.test.ts` — not a revert but `origin/main` moving to 691cac46 under a branch cut from 009a9c51. **Rebased onto it**; the branch's deletions against `origin/main` are now **7**, and the seven are lines of my own that I replaced |
 
 ### 7.1 A control that was not a control
@@ -435,7 +435,39 @@ one that can reach a test, and only if a test pins a lip impact's keys. Three pl
 | `SurfZoneRunner.test.ts:256` | `toMatchObject({ volume, whole, kind })`, which **tolerates extra keys** by definition. That file is run by hand, and this branch touches its subject, so run it too |
 
 Neither `toEqual` is against a literal, which is the only form the new key could break. That is a reason to expect a
-pass — it is not the pass itself, and the row above says so.
+pass — it is not the pass itself, and the row above says so. The coordinator checked these three sites independently
+before taking this reading onto main, and §7.4 is why reading them was not the second-best option but the only one.
+
+### 7.4 Why that file did not finish, and why it is not a merge gate
+
+Added after the round, from the coordinator's measurement and a check of my own. I had blamed the machine — three CPU
+benches beside one test file — and written "run it before merging". **Both were wrong, and the second is a trap.**
+
+`src/wave/SurfZoneSimulation.test.ts` declares **29 per-test timeouts totalling 38 670 000 ms = 644.5 minutes**, very
+nearly eleven hours [M, counted on `origin/main`]. It was never going to finish beside anything, and no round can be
+asked to wait for it.
+
+The coordinator read that budget as "three tests at 30 minutes each". It is worse than that, and the shape matters:
+
+| budget | tests | |
+| --- | --- | --- |
+| **240 min** | 1 | `:1433` "stays finite with the most oblique swells across the open side edges" |
+| **120 min** | 1 | `:1424` "stays finite under the Big swell, plunges, and peels left toward the channel" |
+| 60 min | 1 | `:1832` the library's swept-spot jets |
+| 30 min | 3 | `:773`, `:824` the Canyon's spilling and its tube draw; `:1791` the crest hand-over |
+| under 30 min | 23 | the rest |
+
+**Two tests hold 360 of the 644.5 minutes between them**, and one of those two is allowed four hours on its own. A run
+of the coordinator's went 5 h 27 m without printing a result line and was killed as stuck; against `:1433`'s budget it
+may simply have been running. So:
+
+- **this file cannot be a merge gate.** It is run deliberately, alone, on a quiet machine, with `--reporter=verbose`
+  so there is something to watch;
+- a round that changes something it covers closes it the way §7.3 does — by naming what the change can reach and
+  reading those sites — and says that is what it did;
+- and when a test like this is killed, **kill the process group** (`kill -- -<pgid>`). Killing vitest's parent
+  reparents its worker to `init`, where it burns a core invisibly; that cost this machine 3 h 27 m of one core in a
+  single night.
 
 ### 7.2 And a stronger proof, from the leg that was only meant to cost it
 
