@@ -7058,3 +7058,483 @@ real person is faster, then your surfer needs something to stand on that isn't a
 means a wider base than one ankle.
 
 **Nothing in this round changes the game.** There is nothing new to ride, and the game is byte-for-byte what you have.
+
+# Part 24 — the across-speed against a human's, from the literature; and the one mechanism the balance cannot reach
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-32z`, cut from `main` at
+**726473a0** (step 3.2y's merge), so Part 23 above is its base, and **rebased onto f141b9bf** (the wave track's C2
+step 5j) before the push — see §8, where the deletions column is what caught the move.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The round had one job**, in the coordinator's words: *is 1.21 m/s of weight crossing the base of support inside or
+outside what a standing human actually does when they catch themselves? Answer it from the literature first.* And then
+one of two branches: if inside, the fall test is mis-scaled; if outside, *"the rider needs support that is not a
+correction — which on this plant means more than one contact across."*
+
+**The answer is "outside", and both branches are wrong.** The test is not mis-scaled — measured against the human
+literature its allowance is *larger* than a feet-in-place human's, for a reason that is the right reason. And the fix
+is not another contact: a human stands on a ridge **a few millimetres wide** for minutes with the centre of mass
+outside it. This round ships **no change to the game and no change to any source file** — one probe column set, one
+table, the literature, and a diagnosis that names a mechanism nobody here has measured yet.
+
+## 0. The datum, and the quantity, stated once
+
+Every across-speed in this part is **`CaptureState.speedAcross`**: the body's velocity relative to the feet, in the
+board's frame, on the board's +x axis, after the component along the **felt vertical** has been removed — which is
+exactly the quantity `HumanBalance.capture` builds the capture point's velocity term from, `speedAcross / ω₀`
+[R, `humanBalance.ts`]. Across the board is the surfer's own **toes-to-heels** direction, because the surfer stands
+side-on; the half-width is **0.130 m**, half a foot's length. Along the board is the surfer's mediolateral direction,
+with the feet about 0.63 m apart.
+
+**That geometry is the round's first correction to its own brief.** The brief asks for sources "measured on a narrow
+lateral base, because that is our geometry". Our narrow direction is not a human's lateral one. It is the human's
+**anteroposterior** direction with an ordinary foot-length base — the single best-studied case in the whole balance
+literature — and the human's lateral direction is the one our stance makes unusually *wide*. Everything cited below is
+therefore sagittal/AP, which is the right literature and a much richer one than the brief expected.
+
+## 1. The six sentences the round is for
+
+1. **At the edge of the base, a human's recoverable velocity is zero, by two independent routes** [S]. Hof, Gazendam
+   and Sinke's condition — the one this file's own header cites and the game implements — is `x + v/ω₀` inside the
+   base, so the velocity a human can carry is `ω₀ ×` (the distance from the centre of mass to the edge), and at the
+   edge that is nothing. Pai and Patton's feasible stability region reaches the same place from an optimisation over a
+   pendulum-plus-foot model, with no analytic condition in it: its upper boundary runs from about **1.1 s⁻¹**
+   (normalised to body height) at 2.4 foot lengths behind the heel, through **0.45 s⁻¹ with the centre of mass over
+   the heel**, **to zero over the toe** (J Biomech 30(4):347–354, 1997; validated by Patton, Pai and Lee 1999 against
+   **2367 trials from 10 subjects**, 99.8 % of them inside the state boundaries). For a 1.75 m human the 0.45 s⁻¹ is
+   **0.79 m/s** [I, my arithmetic on their normalised figure] — and that is with the whole foot still ahead of the
+   weight. The two agree in **shape** (linear in the distance still left to the edge), in **endpoint** (zero at the
+   toe) and, at the heel, in size: `ω₀ ×` a foot length is **0.79–0.92 m/s** over the 2.96–3.47 1/s that published
+   equivalent pendulum lengths give a standing adult [I, my arithmetic]. **It is the endpoint that decides this
+   round**, and it is the one both routes give without any arithmetic of mine.
+2. **So the measured across-speed is outside a human's, and the game's own test is nevertheless the more generous of
+   the two.** The shipped rider's twelve trim falls cross at **0.754–1.406 m/s, median 0.968** [M], against a quiet
+   stander's centre-of-mass velocity of **2.6 mm/s** r.m.s. — some 370 times less. But the test's own across-speed
+   allowance, `reachAcross × ω₀`, measures **0.788–1.733 m/s, median 0.855** [M], and the measured speed sits at a
+   median **0.99 of it**. Where the feet-in-place literature allows zero at the edge, the game allows most of a metre
+   a second, because it credits the hip rotor's angular impulse as reach past the edge. **That credit is the right
+   structure, not a bug** — it is the angular-momentum mechanism the literature names alongside the centre of
+   pressure, and the one §1.3's ridge runs on — and it means there is nothing here to loosen. 3.2x's "the test's
+   verdict looks right" stands, and now has a source under it instead of an intuition.
+3. **"More than one contact across" is refuted outright** [S]. Otten's subjects stand **on one foot on a ridge a few
+   millimetres wide for a few minutes**, with the centre of mass swaying **beyond the surface of support**; he states
+   the inverted-pendulum model does not explain it, and that balance is recovered by **stance-leg hip moments varying
+   the horizontal ground reaction force** to bring the weight back over the support, with swing-leg hip, shoulder and
+   neck moments holding the head-arms-trunk's angular acceleration down (Phil Trans R Soc Lond B 354(1385):869–875,
+   1999). A base some **forty times** narrower than our 0.130 m, with the weight outside it, held for minutes — on one
+   foot, where ours has two, though in the across direction both of ours contribute the same single foot length.
+   **Width is not the missing thing**, and the mechanism Otten names is the one the game already credits and 3.2w,
+   3.2x and 3.2y have each measured and found insufficient.
+4. **The across-speed is the body's, not the base's — measured, and the brief was right about this one.** Split on the
+   test's own frame, at the test's own feet point, against the test's own felt vertical, and reconstructing
+   `speedAcross` **exactly** (0.0000 m/s of residual in all twelve): the **body** half is 0.715–1.272 m/s (median
+   1.068) and the **feet** half is **−0.302 to +0.401 m/s (median −0.022)** [M]. The body carries a median **83.5 %**
+   of it, and in **7 of 12** runs the base moves the *opposite* way to the body and so adds to the relative speed
+   rather than taking it away. The weight really is crossing the base; the base is not sliding out from under it.
+5. **And the one mechanism nobody here has measured is the base's own aim.** The base's across-acceleration is busy
+   and directionless: a median absolute **1.17–3.00 m/s²** with peaks of **6.93–25.55**, but a **net** rate of only
+   **0.00–0.38 m/s²** against the body's net **0.42–1.41** [M]. Meanwhile the felt vertical stays **7.4–15.9° across
+   the deck** right through to the fall [M], so the body is sliding down a tilt that never closes — and a tilt closes
+   when the board banks into a turn, which is a steer. **Nothing in the balance writes `steer`** [R]:
+   `HumanBalance` commands an ankle rest, a hip rotor and the knees, and `predictiveBalance.ts` says it in words —
+   *"The rider feels and anticipates the board; it does not pretend to steer it."* Forsyth et al.'s instrumented
+   boards put a real surfer's bottom turn at **7.3 ± 0.2 m/s and 1.9 ± 0.1 rad/s** and a cutback at **6.7 ± 0.1 and
+   3.0 ± 0.1** (Sci Rep 14:8734, 2024; n = 6, **835 turns over 227 waves**), which is a lateral acceleration of
+   **13.9 and 20.1 m/s²** [I, v·ω, a steady-turn identity on their two measured columns and not a measured
+   acceleration] — ten times the net drift the body needs matched.
+6. **And three rounds of "it lowered the roll and did not move the fall" now have a mechanism, in two halves** [M,
+   96 runs]. Read both sides of the gate — the across-speed the rider achieves *and* the allowance the test gives it —
+   and the two authorities fail differently. Over the hip's ladder (0 → 2000 N·m/m) the across-speed comes down
+   **23 %** and the allowance comes down **78 %**, because `reachAcross` is credited on the hip's *remaining* range
+   and the correction is what spends it: **the correction and the reserve are the same budget**, and the ratio never
+   leaves 0.83–1.08. Over the ankle's ladder the allowance **holds** and the across-speed does **not** come down —
+   the body's bank peak halves (32.8 → 17.8°) while the across-speed rises 3 %. So **flattening the body and slowing
+   the weight across the feet are separable, and the ankle ladder separates them.** §3a.
+
+## 2. The literature, with its populations and its conditions
+
+Every entry says whether I read the primary myself. **Nothing in §1's or §5's verdict rests on an entry I could not
+open**: the verdict is S1's formula (which `humanBalance.ts` already cites), S2's boundary, S4/S5, S7 and S10, and I
+read the last four myself. S6's 2.6 mm/s appears in §1.2 only as a scale comparison and S3, S8 and S9 only as
+corroboration; strike all four and §1 and §5 stand unchanged.
+
+| # | Claim | Number | Population and condition | Source | Read |
+|---|---|---|---|---|---|
+| S1 | The condition the game implements | stable iff `x + v/ω₀` inside the BoS; `ω₀ = √(g/l)` | an inverted pendulum on a **fixed support under gravity** | Hof, Gazendam & Sinke 2005, J Biomech 38:1–8 | formula is the game's own citation [R, `humanBalance.ts`]; the PDF's **Table 1 I could not re-extract** (see §7) |
+| S2 | Feasible-region upper boundary, AP | **1.1 s⁻¹** at 2.4 foot lengths behind the heel → **0.45 s⁻¹** over the heel → **0** over the toe; lower boundary 0.9 s⁻¹ at −2.7 FL → 0 at the heel | a **model** (inverted pendulum + foot segment + optimisation), no human sample; sagittal, movement termination, stationary BoS. Friction binds only below 0.82; strength only past −51 % dorsiflexion or −35 % plantar flexion | Pai & Patton 1997, J Biomech 30(4):347–354 | abstract, **two independent fetches**; full text and Figure 3 not opened |
+| S3 | S2 validated on people | torque boundaries encompassed **100 %**, state boundaries **99.8 %** of trials | **2367 trials, 10 subjects**, voluntary handle pulls, feet-flat instruction | Patton, Pai & Lee 1999, Gait & Posture 9:38–49 | via the delegated search's abstract read; not re-verified by me |
+| S4 | Where the AP limit actually bites | centre of mass only **16.1 ± 8.2 %** (acceleration-based) to **30.8 ± 8.6 %** (velocity-based) of the way from ankle to toe at minimum time-to-contact | **n = 10, 5 M / 5 F, 27 ± 2.7 y, 71.0 ± 14.3 kg, 1.72 ± 0.10 m**; a 15 kg pendulum struck a backboard at 78 % of standing height, subject strapped so motion was sagittal rotation about the ankle, release angle raised 2.5–5° a trial **until the subject stepped** | Hasson, Van Emmerik & Caldwell 2008, J Biomech 41(10):2121–2129 | **primary, read by me** (PMC author manuscript) |
+| S5 | The same paper's velocity row, and why it is not a threshold | **251 ± 45 / 324 ± 68 / 321 ± 75 mm/s** — but the row is labelled **"CoM Velocity Range"**: each subject's max minus min **across challenge levels**, not the velocity at the boundary | as S4 | as S4 | **primary, read by me**; the absolute velocity lives in Figure 2 and **is not published**, so §1 quotes no threshold from it |
+| S6 | Quiet standing, for scale | centre-of-mass velocity **2.6 ± 1 mm/s** r.m.s. two feet eyes open; 5.1 one foot; 17.7 one foot on tiptoe. The caption defines these as the **resultant** √(mean(x²+y²)), not AP alone | **n = 10, 5 M / 5 F, 23.3 ± 1.3 y, 74.1 ± 12.4 kg**, 30 s trials | Hof et al. 2005 Table 1 | **read by the delegated agent from the primary PDF; I could not re-extract it here** (§7) |
+| S7 | A narrow base is not what makes a human fall | one foot on a ridge **a few millimetres wide**, held **a few minutes**, with the centre of mass **beyond the surface of support**; the inverted-pendulum model does not explain it; recovery is by **stance-leg hip moments varying the horizontal ground reaction force** | human experiments plus inverse-dynamic simulation; **n not stated in the abstract** | Otten 1999, Phil Trans R Soc Lond B 354(1385):869–875 | **abstract read by me** (PMC); the body, with the moment magnitudes, not opened |
+| S8 | Counter-rotation dominates on a moving or narrow support | sagittal: the centre-of-pressure mechanism gives **95–108 %** of the centre of mass's acceleration and counter-rotation **19–31 %** on a rigid floor, and counter-rotation **exceeds 100 %** on an unstable surface; **all 23 balance losses were on the boards, none on the rigid floor** | **16 children 8.2 ± 1.1 y, 17 adults 21.9 ± 1.6 y, 8 older 71.8 ± 4.6 y**; quiet standing on a rigid floor and on three uniaxial balance boards | van den Bogaart et al. 2022, Hum Mov Sci 82:102930 / bioRxiv | via the delegated search; not re-verified by me |
+| S9 | On a narrow compliant support the base moves faster than the weight | stance-foot sideways acceleration **1.70 / 1.44 / 1.26 m/s²** (beginners / sportive / professionals) against centre-of-mass acceleration **0.34 / 0.29 / 0.28**; foot-to-CoM correlation r = 0.83 → 0.64 | **n = 20, 18–32 y** (6 professional slackliners, 14 beginners), one-leg standing and walking a **3 m × 5 cm** slackline 31 cm up, 8-camera 150 Hz, >300 trials | Stein & Mombaur 2022, Front Sports Act Living 4:831362 | via the delegated search; not re-verified by me |
+| S10 | What a real surfer's base does | bottom turn **7.3 ± 0.2 m/s** at **1.9 ± 0.1 rad/s**, rail **42 ± 3°**; cutback **6.7 ± 0.1 m/s** at **3.0 ± 0.1 rad/s**, rail **75 ± 3°**; both **0.96 s**; top speed 9.7 ± 0.1, average 6.4 ± 0.1 m/s. **Means ± 95 % CI, not SD** | **n = 6 accomplished male surfers**, 31 ± 6 y, 180 ± 9 cm, 76 ± 11 kg, **22 ± 5 y experience**; Macaronis, Mentawai Islands; TraceUp GPS 10 Hz + IMU 200 Hz flush in each board; **227 waves / 835 turns tracked, 214 waves analysed** | Forsyth et al. 2024, Sci Rep 14:8734 | **primary, read by me** (PMC) |
+
+**And one derived number, labelled as mine.** A board turning at S10's rates carries a lateral acceleration of
+`v · ω` = **13.9 m/s² in a bottom turn and 20.1 m/s² in a cutback** [I]. That is the kinematic identity for a steady
+turn of that speed and rate, not an acceleration anybody measured, and Forsyth's boards did not report one.
+
+## 3. What the test actually asks, measured on the plant
+
+`human.fallen` is `beyond && weightPast` [R]: the centre of mass itself past the feet's edge across, **and** the
+capture point past that edge by more than `reachAcross`, the hip rotor's angular impulse to its remaining range
+expressed as a capture-point distance. Twelve runs — the shipped new rider, two stances × six entry speeds, the
+Canyon-matched `FaceWater` (1.4 m, 16°, 5.7 m/s), the stick at zero, 9 s each, falls at 0.77–1.70 s, `balance` in all
+twelve. `results/32z/split-32z.txt` in full; quartiles in `results/32z/quartiles-32z.txt`.
+
+| column | min | Q1 | median | Q3 | max |
+|---|---|---|---|---|---|
+| **across-speed at the fall, m/s** | 0.754 | 0.910 | **0.968** | 1.075 | 1.406 |
+| — the **body**'s half, m/s | 0.715 | 0.828 | **1.068** | 1.167 | 1.272 |
+| — the **feet**'s half, m/s | −0.302 | −0.160 | **−0.022** | 0.142 | 0.401 |
+| **the test's own tolerance `reachAcross × ω₀`, m/s** | 0.788 | 0.815 | **0.855** | 1.137 | 1.733 |
+| across-speed ÷ that tolerance | 0.75 | 0.89 | **0.99** | 1.14 | 1.26 |
+| the across reach itself, m | 0.175 | 0.188 | 0.232 | 0.357 | 0.396 |
+| the centre of mass across at the fall, m (half-width **0.130**) | 0.121 | 0.128 | **0.135** | 0.153 | 0.200 |
+| the velocity term `v/ω₀` alone, m | 0.164 | — | **0.260** | — | 0.344 |
+| the velocity term's share of the overshoot past the edge | 0.81 | — | **0.99** | — | 1.03 |
+| the base's \|across-acceleration\|, median over the run, m/s² | 1.17 | 1.39 | 1.42 | 1.74 | 3.00 |
+| the base's \|across-acceleration\|, peak, m/s² | 6.93 | 10.66 | 12.54 | 20.81 | 25.55 |
+| the base's **net** across rate, m/s² | 0.00 | 0.05 | 0.15 | 0.28 | 0.38 |
+| the body's **net** across rate, m/s² | 0.42 | 0.85 | 1.04 | 1.23 | 1.41 |
+| the felt vertical's tilt across at the fall, ° | −15.9 | −12.9 | −10.8 | −9.6 | −7.4 |
+
+Four readings of that table.
+
+- **The fall test, as it fires on this rider, is a velocity test.** The centre of mass is at the edge and barely past
+  it (0.121–0.200 m against 0.130), and the velocity term carries **81–103 % of the whole overshoot, median 99 %**. So
+  3.2x's reading of the 636 was right about which term binds, and this is the same result on the shipped cell alone.
+- **The measured speed sits on the test's own allowance.** Median ratio **0.99**; **6 of 12** runs are above it and 6
+  below, the rest of the gate being carried by the lean. **§3a is why that ratio stays near 1 whatever you do to the
+  rider**, and it is the round's second result.
+- **Compress's allowance is half of tall's, and the two fall alike.** `reachAcross × ω₀` is **0.788–0.832 m/s** in the
+  six Compress runs and **0.877–1.733** in the six tall ones [M], because `stanceRoom` gives Compress a hip range of
+  0.4 rad against tall's 1.2. The lower stance is held to half the velocity allowance and still falls at the same
+  times — which is Part 22's "the two fall identically" seen from the test's side.
+- **The base is busy and unaimed.** Its across-acceleration is of the same order as the body's (median absolutes 1.42
+  against 1.90 m/s²) and peaks higher (12.5 against 4.3), but its **net** contribution is a sixth of the body's. It is
+  oscillating about zero while the body drifts one way.
+
+**And the body's drift is gravity's own, down a tilt that never closes.** `g · sin(7.4–15.9°)` is **1.26–2.69 m/s²**
+[I, the arithmetic; the tilt is measured], which brackets the body's net across rate of 0.42–1.41 from above — so the
+body sheds roughly half to two-thirds of gravity's across component and keeps the rest, for the whole run. A surfer in
+a banked turn has that tilt near zero by construction: that is what banking *is*. This rider never banks, because the
+stick is at zero and the balance has no way to move it.
+
+## 3a. The two ladders, read through the test's own allowance — and why three rounds found nothing
+
+The ratio in §3 is not a coincidence of one cell. Run the two authorities this track has already built and read
+**both** sides of the gate — the across-speed the rider achieves *and* the allowance the test gives it — and the two
+authorities fail in **two different ways, neither of which anyone has had the columns to see**. Twelve runs a cell,
+eight cells, **96 runs**; `results/32z/ladders-32z.txt` in full.
+
+**The hip** (`balance.hipCapture`, N·m/m — 3.2x's own trigger, shipped at 0):
+
+| gain | fell | across-speed, median | the test's allowance, median | ratio | swing angle peak, median |
+|---|---|---|---|---|---|
+| 0 (shipped) | 12/12, 0.77–1.70 s | **0.968** | **0.855** | 0.99 | 0.0° |
+| 250 | 12/12, 0.77–1.88 s | 0.891 | 0.843 | 0.97 | 6.5° |
+| 500 | 12/12, 0.77–2.12 s | 0.869 | 0.772 | 0.96 | 10.6° |
+| 1000 | 12/12, 0.82–2.25 s | 0.857 | 0.597 | 1.08 | 17.6° |
+| 2000 | 12/12, 0.95–2.45 s | **0.747** | **0.191** | 0.83 | 22.9° |
+
+**The hip works, and it pays for the work out of the test's own allowance** [M]. Over the ladder the across-speed
+comes down **23 %** — the hip really does slow the weight — and the allowance comes down **78 %**, because
+`reachAcross` is credited on the hip's **remaining** range (`rotorImpulse(I, 200, hipRange − |swing.angle|)`) and the
+correction is what spends it. And at the top gain it is not merely spent, it is **exhausted**: the swing angle peak
+reaches **22.9°** — which is 0.4 rad, a Compress stance's *entire* hip range — in **4 of the 6 Compress runs**, and
+**68.8°**, tall's entire 1.2 rad, in **3 of the 6 tall runs**. In all **7** of those the test's allowance is
+**exactly 0.000 m/s**, because `hipRange − |swing.angle|` is zero and `rotorImpulse` of zero remaining range is zero
+[M]. The median 0.191 m/s in the table is what that looks like averaged with the runs that had something left. **A
+rider who has used the whole hip to slow his weight is credited with no reserve to catch it, which is correct and is
+the trap.** The ratio never leaves **0.83–1.08** across the whole ladder. This is 3.2x's "every correction buys position by
+spending velocity" with the currency named: **the hip's correction and the test's reserve are the same budget**, and
+the test is being honest about it rather than wrong.
+
+**The ankle** (`balance.anklePlumb`, 3.2x's plumb-hold on the ankle's rest, shipped at 0) fails in the opposite shape:
+
+| plumb | fell | across-speed, median | the test's allowance, median | ratio | the body's bank peak, median |
+|---|---|---|---|---|---|
+| 0 (shipped) | 12/12, 0.77–1.70 s | 0.968 | 0.855 | 0.99 | 32.8° |
+| 0.5 | 12/12, 1.00–6.73 s | 0.865 | 0.987 | 0.87 | 35.5° |
+| 1 | 12/12, 0.53–4.32 s | **0.999** | 0.784 | 1.26 | **17.8°** |
+
+**And the ladder reproduces Part 22 §5's own rows to the digit** — 1.00–6.73 s at plumb 0.5 and 0.53–4.32 s at
+plumb 1, which is exactly what 3.2x published — so the harness is running 3.2x's experiment and only the two new
+columns are new.
+
+**The ankle keeps the allowance and cannot slow the weight at all** [M]. It does not touch the swing's range, so the
+allowance holds (0.855 → 0.987 → 0.784); it halves the body's bank peak (**32.8 → 17.8°**, a 46 % cut, with the ankle
+torque peak up from 49 to 107 N·m); and the across-speed **goes up 3 %** (0.968 → 0.999). Twelve of twelve still fall.
+
+**So the two together are the answer to three rounds of "it lowered the roll and did not move the fall".** Lowering
+the body's bank and slowing the weight across the feet are **separable, and the ankle ladder separates them**: bank
+peak down 46 %, across-speed up 3 %. And the one authority that *does* slow the weight cannot do it without
+surrendering the reserve that would have caught it. Neither of those is a tuning failure and neither is fixed by a
+gain — which is why 3.2w's ten gains, 3.2x's twelve and 3.2y's counter-roll all read the same.
+
+**What I will not conclude from it.** This is the shipped stance pair on one face, two switches of the several these
+rounds built, and both switches ship off. It does **not** say the hip and the ankle are useless — the hip buys
+**0.75 s** of extra time at its top gain (0.95–2.45 s against 0.77–1.70) and the plumb ladder's best cell stands one run to
+**6.73 s**. It says neither closes the gate, and now it says why each one doesn't.
+
+## 4. The method, and the five things it had to get right
+
+The probe is `trimbank.ts`'s own cell with new columns added, in the probe and not in `src/`. **Each of the five
+corrections below was a wrong number this round printed first and then fixed**, and each is recorded because the next
+round will meet the same traps.
+
+1. **The split must be taken the way the test takes it, or it is a different quantity.** `capture` removes the
+   component along the felt vertical before taking the across component. The removal is linear in the velocity, so
+   applying it to each half separately gives two numbers that add back to `speedAcross` exactly; taking the raw
+   board-frame x of each half instead **disagreed with the test by up to 0.38 m/s**, because the felt vertical is
+   tilted 7–16° across and the velocity along it is several m/s. The probe now reads the test's own feet point
+   (`captureFeet`) and the test's own board-frame felt vertical (`captureFelt`) off the instance, and prints the
+   residual: **0.0000 m/s in all twelve** [M].
+2. **Not on the separation frame.** The halves are read after `board.step` returns, and on the frame the rider
+   separates its velocity and feet point have already been re-set, so the reconstruction breaks on **exactly that one
+   frame** (the trace run: residual 0.0000 on all 97 earlier frames, −0.223 on the last). The split is read on the
+   last frame where the halves still reconstruct the test's number, one frame before the end in every fall, and the
+   probe prints which frame that was.
+3. **`CaptureState.reach` is not always the across reach.** `capture` sets it to whichever direction is further past —
+   `pastX >= pastZ ? reachAcross : reachAlong` — so on a frame where the board's long axis binds, `reach × ω₀` is a
+   tolerance for the wrong axis. The probe now rebuilds `reachAcross` from `captureStep`'s own expression off the live
+   instance and checks it against `s.reach` wherever across binds: **worst disagreement 0.014 m** over the twelve,
+   which is the one-substep staleness of reading the swing angle after the frame. As it happens **across bound on all
+   780 frames** of the twelve, so the two routes agree and nothing turned on it — but the first table printed a
+   tolerance of 1.689 m/s before the check existed, and that is how a wrong number gets quoted.
+4. **The old rider has no split, and the unguarded columns lied spectacularly.** `endStep` runs `captureStep` only for
+   the free body [R], so on the old rider `captureFeet` and `captureFelt` keep their constructed zeros, and
+   `board.velocityAt(the world origin)` on a board tens of metres away and turning reads hundreds of m/s. The first
+   run on `RIDER=old` printed a feet across-speed peak of **277 m/s** and a base acceleration of **4750 m/s²**. The
+   columns are now gated on `cap.omega > 0` and read as dashes for the old rider. **The old rider has no capture
+   point, so it has no across-speed, and none is quoted.**
+
+5. **An across-acceleration is not the derivative of an across-velocity column**, because the axis turns. The board's
+   across axis rolls up to 63° over a run at up to 98 °/s, so `d(feetAcross)/dt` carries a `v · daxis/dt` term worth
+   **15 m/s² on its own** at these speeds, and the probe's first printing of it read a base acceleration peak of
+   **24.85 m/s²** against a median of 1.42. Differencing the world velocity **vector** and projecting after leaves
+   only the point's own acceleration — 6.93–25.55 m/s² of peak, which is a different quantity that happens to span
+   similarly. It is still resolved on a turning axis, which is the frame the capture test works in, and it is **not**
+   claimed as a body-fixed component of a world acceleration.
+
+And a sixth that cost nothing but is worth knowing: `Math.max(...)` over a column with one NaN in it returns NaN,
+which `r` turns into null and `nf` into **zero**, so the split's peaks first printed as `0.00` beside medians of
+`3.00` — their first frame is NaN by construction. Every peak over a column that can hold a NaN now goes through a
+`peak` helper that drops them.
+
+## 5. What I refuted, plainly
+
+- **The brief's branch 2, "more than one contact across".** Otten's millimetre ridge (S7) is one contact, some forty
+  times narrower than ours, with the weight outside it, held for minutes. Width is not the lever, and the
+  mechanism that does the work there — hip moments varying the horizontal ground reaction force — is the one the game
+  already credits as `reachAcross` and the one 3.2w, 3.2x and 3.2y each measured and found insufficient.
+- **The brief's branch 1, "then the fall test is mis-scaled".** It is not. Against the feet-in-place literature the
+  game's allowance at the edge (0.788–1.733 m/s) is *larger* than a human's (zero, by S1 and S2), and larger for the
+  right reason: it credits a counter-rotation reach the feet-in-place theorem gives none of. **There is nothing to
+  loosen**, and I am not recommending a number be changed.
+- **The brief's framing of our geometry as a "narrow lateral base".** It is the human's **anteroposterior** direction
+  with an ordinary foot-length base; our *lateral* direction is unusually wide (feet 0.63 m apart). The literature
+  that applies is the AP literature, which is the best-populated there is.
+- **The headline number itself, mildly.** 1.21 m/s is the median over 3.2x's **636 falls across 53 cells**, which
+  include twelve hip-gain settings that do not ship and that raise the across-speed. The **shipped** rider's own
+  twelve cross at a median **0.968 m/s** (0.754–1.406) [M]. Both are the same quantity; the populations are not the
+  same, and the shipped one is the one to design against.
+- **"The authorities lower the roll, so the roll is what they change."** Half right. The ankle's does exactly that
+  and slows the weight not at all; the hip's slows the weight and surrenders the reserve to do it. Three rounds read
+  one side of the gate; §3a reads both, over 96 runs.
+- **A heading I renamed in the wrong Part.** Editing §1's title from "five sentences" to "six" with a
+  first-occurrence replace renamed **Part 21's** heading instead of Part 24's, four hundred lines up. It showed as the
+  single deletion in `git diff origin/main HEAD` and nowhere else. Restored, and recorded because a docs-only round
+  with 0 deletions is the only reason it was visible at all.
+- **My own first five numbers**, each in §4: a split that disagreed with the test by 0.38 m/s, a split read on a frame
+  where the rider had already separated, a tolerance taken from the wrong axis's reach, and a 277 m/s feet speed on a
+  rider that has no capture point at all.
+
+## 6. What follows, and what I did not measure
+
+Three roll authorities are spent (3.2w, 3.2x, 3.2y), the hull is in the right physical band (3.2y), the test is not
+too strict (here), and the body-side mechanism the literature names for a narrow base is the one already in and
+already at its ceiling. What is left is the **base's own aim**, and it is left because nothing has pointed at it:
+
+- the base already carries across-acceleration of the body's own order (median absolute 1.42 against 1.90 m/s²) with
+  peaks three times higher (median peak 12.54 against 4.26), and spends it on nothing — a net 0.15 m/s² against the
+  body's 1.04, both medians over the twelve [M];
+- the body's whole demand is small: **0.42–1.41 m/s² of net across drift**, which is what `g · sin(the felt tilt)`
+  leaves after the body resists part of it [M, the drift and the tilt; I, the comparison];
+- a real surfer's turn carries **13.9–20.1 m/s²** of lateral acceleration [I on S10's measured columns] — ten times
+  the largest of those demands and thirty times the smallest;
+- and **the balance cannot ask for any of it**: `steer` is the player's stick, `HumanBalance` writes an ankle rest, a
+  hip rotor and the knees, and the code says the rider "does not pretend to steer it" [R].
+
+**One honest complication, raised here rather than left for the next round to find.** The balance is not *entirely*
+without a lateral channel: it rolls the board through the ankle, and a rolled hull makes a side force — 3.2y measured
+**−384 N/rad** of roll at 7.5 m/s [M, 3.2y]. On the pair's ~75.5 kg the 20–63° of roll these runs reach would be
+**1.8–5.6 m/s²** of lateral acceleration [I, the arithmetic], which is well above the body's 0.42–1.41 m/s² demand and
+nothing like the 0.00–0.38 m/s² of net base drift actually measured. **I am not resolving that gap.** It could be the
+sign (a roll that tips with the body may push the base the wrong way), the sideslip the side force needs and the trim
+runs do not have (drift peaks at 1.9–4.9°), or the roll arriving far too late in a 0.77–1.70 s fall. It is a real
+discrepancy between two measured numbers of mine and 3.2y's, it is the first thing the next round should chase, and
+the distinction that survives it is the one that matters: **rolling a board is not aiming it**, and only the second
+moves the base somewhere chosen.
+
+**So the next measurement is the board's own across authority under this rider** — what lateral acceleration a steer
+actually produces at 5–9 m/s on this hull, against the 0.42–1.41 m/s² the body's drift asks for. **I did not measure
+it and I am not claiming the board can deliver it.** `rollspring.ts`'s captive harness and `PLANT_SPEEDS`' side-force
+rows are where it would come from, and 3.2y's own side-force check (−384 N/rad of roll at 7.5 m/s, 11 % from the
+table's −429.7) is the one number in that direction anybody here has measured.
+
+## 7. What I will not claim
+
+- **I will not claim Hof's Table 1 from my own reading.** This machine has no `pdftoppm` and the hosted PDF uses
+  subset fonts that defeat a raw stream extraction, so S6's quiet-standing velocities and the margin-of-stability
+  values come from the delegated agent that did extract them, and are marked so. **Nothing in §1 or §5 rests on
+  them**: the verdict rests on S1's formula (which the game's own source file cites), S2, S4/S5, S7 and S10, and I
+  read the last four myself.
+- **I will not quote a measured human CoM velocity threshold from Hasson 2008.** Its velocity row is a **range across
+  challenge levels**, by the paper's own label, and the absolute value at the boundary is in a figure and unpublished.
+  What S4 gives and I do use is that the limit bites with the weight only **16–31 %** of the way from ankle to toe.
+- **I will not claim 13.9 m/s² is a measured surfboard acceleration.** It is `v · ω` on Forsyth's two measured
+  columns, a steady-turn identity, and their boards reported no acceleration.
+- **I will not claim the board can be steered hard enough to catch this body.** §6 is a direction with a number
+  attached to the *demand* and no number attached to the *supply*.
+- **I will not claim this is the owner's fall.** Nothing measured here slides out sideways; the board's drift peaks at
+  1.9–4.9° in all twelve. The balance HUD is still the instrument for what they rode.
+- **I will not claim the 0.968 median replaces the 1.21.** They are the same quantity over different populations, and
+  both are whole populations and not confidence intervals: twelve runs here, 636 falls over 53 cells there.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed and not paddled in, and the first ~0.17 s of
+  every run carries a contact transient.
+- **One stance pair, one face.** Every span in §3 is two stances × six entry speeds on one face slope. 3.2x's five
+  slopes are not re-run here.
+
+## 8. Seatbelts
+
+- **No source file changed at all.** Everything shipped is under `docs/research/new-rider/3.2/`. The new columns are
+  read off the live instance inside the probe, so there is no switch to ship off and nothing to leave on by mistake,
+  and the shipped rider's behaviour is unchanged by construction. §3a's two ladders are driven through `HIP_GAIN` and
+  `PLUMB`, which the probe passes into `AttachedRiderOptions.balance`; both ship at **0** in `AttachedRider.ts`
+  (`HIP_CAPTURE_GAIN`, `anklePlumb`) and this round did not touch either default, so §3a's every row above the first
+  is a configuration the game does not run.
+- `npx tsc --noEmit -p .`: **exit 0**, read from `tsc`'s own exit status on its own line, never through a pipe.
+  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**. The root project includes only `src`, so the probe was
+  type-checked separately on a throwaway project extending the root's options: **exit 0**.
+- **The shipped rider unchanged on every shared probe column, proved against `main`'s own probe and not asserted.**
+  `trimbank.ts` as it stands at **726473a0** was taken out of git, built and run on the same twelve, and its rows
+  diffed against this round's key by key: **49 shared columns × 12 rows, 0 differences**, with 27 columns present
+  only in 3.2z's build. So the twelve falls (0.77–1.70 s, bound `margin` in all twelve), the body's bank peak
+  20.7–65.7°, the rail peak 10.9–62.9° and every other shared number are `main`'s, byte for byte through the probe.
+  It also agrees with 3.2y's independent `rollspring.ts` cell on the three columns those two probes share (12 of 12 at
+  0.77–1.70 s, rail peak 10.9–62.9°, bank peak 20.7–65.7°).
+- The rider, board, HUD and runner test files, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`), `SurfZoneRunner`
+  and `SprayCloud` (`src/wave/`) included — `SurfZoneRunner` is outside the merge suite, so a red there is news:
+  **98 files passed, 1158 tests passed and 21 expected fail (1179), vitest exit 0**, 171 s. The whole of `src/physics`
+  is in it, which is a superset of 3.2y's set. `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it
+  (`c2-step5g.md` §7.4), closed by reading. `results/32z/suite-rider-32z.txt`.
+- **The Canyon bench, all four hashes, fresh spin-ups on the tree that merges**: Canyon B **`a367d938f15fa934`** /
+  **`9e5831f80e38abd9`**, default Canyon **`ea3d57a4d49f4b48`** / **`a1a2555739210f96`** — the same command and the
+  same reference as step 5f's and 3.2t–3.2y's. **All four identical**, and Canyon B twice over from two independent
+  spin-ups. `results/32z/canyon-bytes-32z.txt` has all three legs in full. The per-stage times are well above 3.2y's
+  (water 119 ms/step against its 81) because a wave-track agent and this round's own suite shared the cores; the
+  hashes are the invariant and they are unaffected. With no source file touched this is the only possible result, and
+  it is run anyway because that is what a seatbelt is for.
+- **A rebase WAS needed, and the deletions column is what found it.** `origin/main` was **726473a0** when the round
+  started; by the time the work was done the wave track had merged **f141b9bf** (C2 step 5j), and
+  `git diff --stat origin/main HEAD` came back **1702 deletions over 31 files** — every one of them the wave track's,
+  shown as deleted because my branch predated them. `merge-base --is-ancestor` would have said nothing. Rebased onto
+  f141b9bf, it reads **0 deletions over 10 files** again. **That is the eighth consecutive round the deletions column
+  has caught something and `merge-base` has caught none of them.**
+- **And because the rebase moved source files, the seatbelts were re-run on the rebased tree, not inherited.**
+  f141b9bf touches `src/scene/water/foamAlbedo.ts` and `src/scene/WaterSurface.ts`, both of which are **inside
+  `m1-cpu-bench.ts`'s bundle** (checked: the rebuilt bundle is byte-different from the pre-rebase one), so the Canyon
+  hashes were re-run from **fresh spin-ups on the rebased tree** and the pre-rebase run was discarded. The three
+  type-checks and the suite were re-run too, and `trimbank.ts`'s twelve were re-run and are **identical to the
+  pre-rebase run on every column** — the wave track's change is render-side and does not reach the rider.
+- **The default board and the default rider's path** are unchanged by construction: `boardShape.ts` is untouched and
+  no source file changed.
+- **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the
+  summary line — **0 deletions**, every file either new or appended to, and `src/` not among them. The insertion count
+  is the half that moves with every edit to this very bullet, so it is left to the PR's own summary line rather than
+  frozen here in a number that goes stale; **0 deletions is the half that is a seatbelt.** It has caught a silent
+  revert on seven consecutive rounds, and `merge-base --is-ancestor` has caught none of them.
+- No force was added or removed anywhere, and no gain, clip or threshold was changed. The round adds instrument and
+  prose.
+- A wave-track agent shared the machine throughout; nothing of theirs was stopped.
+
+## 9. Files (3.2z)
+
+- `docs/research/new-rider/3.2/trimbank.ts` (appended to): the across-speed's split taken the test's own way
+  (`bodyAcross`, `feetAcross`, `relAcross`, with the residual against `speedAcross` printed), the across
+  accelerations from the differenced world velocity vectors, the test's own across-speed tolerance
+  (`velTol = reachAcross × ω₀`) with `reachAcross` rebuilt from `captureStep`'s expression and checked against
+  `s.reach`, `pastAcross` so the binding direction is visible, the split frame's own capture terms, a `peak` helper
+  that ignores NaNs, and the `cap.omega > 0` guard that keeps the old rider out of columns it has no state for.
+- `docs/research/new-rider/3.2/results/32z/`: `split-32z.txt` (both riders' twelve, in full), `quartiles-32z.txt`
+  (§3's table), `ladders-32z.txt` and `ladders-32z.jsonl` (§3a's eight cells, 96 runs), `new-32z.jsonl` and
+  `old-32z.jsonl` (24 rows), `suite-rider-32z.txt`, `canyon-bytes-32z.txt`.
+- No source file.
+
+## 10. For the owner, in plain words
+
+**Three rounds told you your surfer's board tips him over, his limbs can't stop it, and the board is as stiff as a
+real surfboard. This round went and looked up what a real person's balance can actually do, and the answer changes
+what we should be building.**
+
+**The question was simple.** The game decides your surfer has fallen partly on *how fast* his weight is moving across
+his feet. On the twelve rides I measured it crosses at about **one metre a second** — a brisk walking pace, and about
+370 times faster than the sway of someone standing still. So: is that something a real person catches, or not?
+
+**It is not.** The balance literature is clear and two independent methods agree: once your weight is at the edge of
+your feet, the speed you can still recover from with your feet planted is **zero**. Back at your heel, with the whole
+foot ahead of you, it is about **0.8 metres a second** and no more. A metre a second with the weight already at the
+edge is a fall for anybody.
+
+**So the game's fall test is not too strict — it is already kinder than a real person.** It lets him carry 0.8 to 1.7
+metres a second there, because it gives him credit for throwing his hips and arms, which is exactly the extra trick
+real people use. **There is nothing to loosen, and I am not asking to change a number.**
+
+**But the obvious conclusion from that was wrong too.** The brief said if a metre a second is beyond a human, then the
+surfer needs a wider footing — more than one point of contact across the board. He doesn't. There is a published
+experiment in which people stand **on one foot, on a ridge a few millimetres wide, for minutes at a time**, with their
+weight swaying right off the edge of it. A few millimetres. They stay up by swinging their hips to push themselves
+back over the ridge — which is the very trick the game already gives your surfer, and which we have now measured three
+separate ways and found isn't enough on its own. **So "give him a wider stance" is off the table, like "stiffen the
+board" was last round.**
+
+**Here is what I think is actually missing, and it is not a limb.** I split that metre a second into two halves: how
+fast his *body* is moving, and how fast the *board under his feet* is moving. His body carries about **five sixths**
+of it — and in seven of the twelve rides the board is drifting the *opposite* way, making it worse. The board is not
+sitting still being crossed; it is wandering about. It even has the power to move: it swings sideways as hard as his
+body does, and in bursts three times harder. It just never goes anywhere on purpose.
+
+**And it can't, because the part of him that keeps his balance has no steering wheel.** His balance can tense an
+ankle, swing a hip and bend his knees. It cannot turn the board. Turning the board is the stick in your hand, and the
+code even says so in as many words. So for the whole ride the deck stays tilted seven to sixteen degrees under him and
+he simply slides down that tilt — and a surfer's answer to sliding down a tilt is to *bank into a turn*, which closes
+the tilt. He has never once banked.
+
+**One more thing I found on the way, and it explains the last three rounds.** The game decides he has fallen partly
+on how fast his weight crosses his feet — but it also gives him credit for the hip-swing he has *left in reserve* to
+catch himself with. So I turned his hip correction up step by step and watched both numbers. His weight does cross
+slower — about a quarter slower at the strongest setting. But the reserve the game credits him with drops by
+**three quarters**, because swinging the hip to catch yourself is exactly what uses the hip up. **The save and the
+safety margin come out of the same pocket.** And his ankles are the mirror image: turning them up halves how far his
+body leans over, and his weight still crosses his feet just as fast. So "he leans less" and "his weight crosses
+slower" are two different things, and the ankle proves it by doing the first and not the second. Neither of those is
+a setting anyone tuned wrong. That is why four rounds of adjusting his limbs have all come back the same.
+
+**How much would the steering be worth?** Researchers put trackers in six good surfers' boards and recorded 835
+turns in the Mentawais. A bottom turn there swings the board sideways at about **1.4 g**; a cutback at **2 g**. What
+your surfer's body needs to stop drifting is about **a tenth of a g**. So the thing he's missing is roughly ten times
+bigger than the thing he needs — if the board can actually be turned that hard on our water, which **I did not test
+and am not claiming.** That is the next measurement, and it is the first one in four rounds that isn't another limb.
+
+**And one loose end I am handing over rather than tidying away.** Tilting the board does already make the water push
+it sideways — last round measured how much — and on paper the tilts these rides reach should be shoving the board
+sideways several times harder than it actually moves. Two of our own measurements disagree, and I have not worked out
+which is wrong. It may be the direction of the push, or that the board has to be sliding sideways for the push to
+exist and in these rides it barely is. Either way the distinction that survives it is the one above: **tilting a board
+is not aiming it**, and only aiming puts his feet back under him.
+
+**Nothing in this round changes the game.** There is nothing new to ride, and the game is byte-for-byte what you have.

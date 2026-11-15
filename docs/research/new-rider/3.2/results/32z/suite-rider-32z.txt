@@ -1,0 +1,10 @@
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/rider-new-32z
+
+
+ Test Files  98 passed (98)
+      Tests  1158 passed | 21 expected fail (1179)
+   Start at  06:12:38
+   Duration  153.38s (tests 96%, import 2%, transform 1%)
+
+vitest exit 0

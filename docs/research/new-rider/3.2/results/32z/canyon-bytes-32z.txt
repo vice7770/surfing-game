@@ -1,0 +1,51 @@
+Canyon byte check, step 3.2z (claude/rider-new-32z). The same command and the same reference as C2 step 5f's and
+3.2t-3.2y's. FRESH spin-ups, on the tree that merges.
+
+  rolldown scripts/m1-cpu-bench.ts -o <out>/m1-cpu-bench.mjs --format esm --platform node
+  node <wrapper>.mjs            --spot canyon --size medium --steps 3600 --state <fresh-b>.sea   # Canyon B, globalThis.location = '?canyonWaves=true'
+  node <out>/m1-cpu-bench.mjs   --spot canyon --size medium --steps 3600 --state <fresh-c>.sea   # default Canyon
+
+WHY THIS WAS RUN TWICE, AND WHY ONLY THE SECOND RUN COUNTS.
+The round was cut from main at 726473a0. While it was being written the wave track merged f141b9bf (C2 step 5j),
+which the DELETIONS COLUMN caught: `git diff --stat origin/main HEAD` came back 1702 deletions over 31 files, all of
+them the wave track's, shown as deleted only because this branch predated them. f141b9bf touches
+`src/scene/water/foamAlbedo.ts` and `src/scene/WaterSurface.ts`, and BOTH are inside `m1-cpu-bench.ts`'s bundle --
+checked, not assumed: the bundle rebuilt after the rebase is byte-different from the one built before it. So the
+branch was rebased onto f141b9bf and all three legs were re-run from fresh spin-ups on the rebased tree. The figures
+below are that second run. The pre-rebase run is discarded; for the record it produced the same four hashes.
+
+The step times are well above 3.2y's (water 119-130 ms/step against its 81) because the pre-rebase bench was still
+finishing on the same cores, a wave-track agent shared the machine, and this round's own vitest suite ran during it.
+The HASHES are the invariant and are unaffected by load.
+
+EXPECTED (main's published figures, unchanged from step 5f through 3.2y):
+  Canyon B       snapshots a367d938f15fa934  state 9e5831f80e38abd9
+  default Canyon snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+
+RESULT: all four identical, and Canyon B twice over from two independent fresh spin-ups.
+With no source file of this round's touched, this is the only possible result, and it is run anyway because that is
+what a seatbelt is for.
+
+== Canyon B (?canyonWaves=true), run 1
+spun up on the CPU in 98.3 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/32z/out2/cb1.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.21/1.82, roller 0.69/0.95, front 0.00/0.00, lip 0.03/0.04, foam 2.48/4.03, airSources 0.06/0.08, aeration 1.38/2.23, contact 0.00/0.00, board 0.65/1.31, bubbles 0.15/0.27, spray 0.27/0.39, sounds 0.00/0.00, snapshotFields 4.29/6.73, snapshot 4.80/7.50, summary 0.41/0.62
+  CPU stages per step (step − water + snapshot + summary): 12.36/19.79; water (CPU solver, not timed on the device) 78.9
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+exit 0
+
+== Canyon B (?canyonWaves=true), run 2: a SECOND independent fresh spin-up
+spun up on the CPU in 44.0 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/32z/out2/cb2.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.17/1.24, roller 0.64/0.75, front 0.00/0.00, lip 0.03/0.03, foam 2.46/2.55, airSources 0.05/0.07, aeration 1.33/1.40, contact 0.00/0.00, board 0.62/0.81, bubbles 0.15/0.17, spray 0.25/0.35, sounds 0.00/0.00, snapshotFields 3.91/4.09, snapshot 4.40/4.64, summary 0.40/0.42
+  CPU stages per step (step − water + snapshot + summary): 11.72/12.46; water (CPU solver, not timed on the device) 78.3
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+exit 0
+
+== default Canyon
+spun up on the CPU in 54.7 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/32z/out2/cc.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.26/1.35, roller 0.37/0.52, front 0.00/0.00, lip 0.03/0.03, foam 3.64/3.75, airSources 0.04/0.07, aeration 1.90/1.97, contact 0.00/0.00, board 0.62/0.80, bubbles 0.17/0.19, spray 0.16/0.25, sounds 0.00/0.00, snapshotFields 4.16/4.56, snapshot 4.64/5.09, summary 0.42/0.44
+  CPU stages per step (step − water + snapshot + summary): 13.49/14.50; water (CPU solver, not timed on the device) 83.7
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+exit 0
