@@ -326,10 +326,14 @@ export class HumanBalance {
    * The muscles' lag on the roll's command: `command` followed through MOTOR_LAG, from its first value. Returns the
    * rest, rad.
    *
-   * `rate` is the most the rest can travel, rad/s: the ankle's own slew bound (step 3.2x, default Infinity — no
-   * bound, which is what step 3.2w measured the shipped model to have). A rest is a position command through an
-   * 800 N·m/rad spring, so a rest that slews freely is a hidden winch: 3.2w's gain-3 cell ran it 0.29 rad in 0.2 s
-   * (1.45 rad/s) and threw the centre of mass across at 1.44 m/s (`3.2/README.md` Part 21 §4).
+   * `rate` is the most the rest can travel, rad/s: the ankle's own slew bound (step 3.2x). **It defaults to Infinity —
+   * no bound — which is what the shipped model has, and 3.2x measured a bound and did not keep it.** Nothing unpaired
+   * is at stake either way: the rest is a set-point and the torque it produces is still the ankle's own spring, with
+   * its reaction on the board. What is at stake is speed. A rest is a position command through an 800 N·m/rad spring,
+   * so an unbounded rest moves as fast as the command does: 3.2w's gain-3 cell ran it 0.29 rad in 0.2 s (1.45 rad/s)
+   * and threw the centre of mass across at 1.44 m/s, which a human ankle would not. Bounding it at 1.5 rad/s halves
+   * that cell's peak ankle torque and leaves its falls where they were, so the bound is honest and buys nothing
+   * measured: see ANKLE_REST_RATE in `AttachedRider.ts` and `3.2/README.md` Part 22 §4.
    */
   lagRest(h: number, command: number, rate = Number.POSITIVE_INFINITY): number {
     if (Number.isNaN(this.rollRest)) this.rollRest = command;
