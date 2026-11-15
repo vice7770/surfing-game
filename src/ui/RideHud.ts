@@ -15,6 +15,39 @@ export function showsBalanceMeter(setting: GameplaySettings['balanceMeter'], swe
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
 }
 
+/**
+ * **Which of the balance's three limits to name under the meter** (step 3.2v). `ride.balance` has always been the
+ * minimum of the capture point's margin, the feet's grip left and the knees' strength left, so the meter could say how
+ * close the rider was to going down and nothing at all about why. This names it: while standing, the limit that is
+ * nearest; off the board, the one that let go and the speed it let go at, held until the rider is back up.
+ *
+ * It is worth naming rather than only metering because the three are three different falls, and the owner's own fall
+ * taxonomy turns on telling them apart: the weight going off the side is a washout, the feet losing grip is a slide,
+ * the knees giving is a landing. Measured over 30 runs on the Canyon-matched face, `margin` bound in every one and the
+ * weight left the feet **across** the board in every one, with the feet still holding 86–91 % of their grip
+ * (`docs/research/new-rider/3.2/README.md` Part 20) — so these are not the same fall, and the HUD could not say so.
+ *
+ * Returns the empty string when there is nothing to say, which hides the line.
+ */
+export function balanceLimitLabel(
+  ride: { phase: string; balanceLimit?: { limit: BalanceLimitName }; broke?: { limit: BalanceLimitName; across: boolean; speed: number } } | undefined,
+  units: Units,
+): string {
+  const standing = ride?.phase === 'standing' || ride?.phase === 'recover';
+  if (!standing && ride?.broke) {
+    const { value, unit } = speedParts(ride.broke.speed, units);
+    return t(ride.broke.across ? 'hud.balance.brokeAcross' : 'hud.balance.broke', {
+      limit: t(`hud.balance.${ride.broke.limit}`),
+      speed: `${value}${unit}`,
+    });
+  }
+  if (standing && ride?.balanceLimit) return t(`hud.balance.${ride.balanceLimit.limit}`);
+  return '';
+}
+
+/** The three limits `balanceReserve` takes the least of, plus the single number the old rider and a prone one have. */
+export type BalanceLimitName = 'margin' | 'grip' | 'knee' | 'posture';
+
 /** Whether the breath meter shows after a wipeout (the wipeout spec, Part B): by the balance meter's rule. */
 export function showsBreathMeter(setting: GameplaySettings['breathMeter'], swell: SurfConditions['swell']): boolean {
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
@@ -94,6 +127,14 @@ export class RideHud {
   private readonly speedUnit = el('small');
   private readonly balance = el('div', { class: 'hud-balance', attrs: { role: 'meter', 'aria-label': t('hud.balance'), 'aria-valuemin': '0', 'aria-valuemax': '100' } });
   private readonly balanceFill = el('div', { class: 'hud-balance-fill' });
+  /**
+   * Step 3.2v: **which** of the balance's three limits is nearest, under the meter, and on a fall the one that let go
+   * with the speed it let go at. The meter has always drawn only the minimum of the three, so it could say how close
+   * the rider was and nothing about why; this makes every wave the owner rides a labelled data point. Behind the same
+   * `balanceMeter` setting as the meter — no new switch.
+   */
+  private readonly balanceLimit = el('small', { class: 'hud-balance-limit' });
+  private balanceLimitText = '';
   private readonly hints = el('div', { class: 'hud-hints' });
   private hintKeys = '';
   /** A brief callout of each manoeuvre (P9), and the one shown last. */
@@ -132,7 +173,7 @@ export class RideHud {
       this.callout,
       this.coach,
       el('div', { class: 'hud-readout' },
-        this.balance,
+        el('div', { class: 'hud-balance-group' }, this.balance, this.balanceLimit),
         this.breath,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit),
         this.stance),
@@ -209,6 +250,15 @@ export class RideHud {
       this.balance.classList.toggle('is-low', reserve < LOW_BALANCE);
       this.balance.setAttribute('aria-valuenow', Math.round(reserve * 100).toString());
     }
+    // Step 3.2v: the limit's name under the meter while standing, and the one that let go for as long as the rider is
+    // off the board. Written only when it changes, as the rest of the HUD is.
+    const limitText = showBalance ? balanceLimitLabel(ride, units) : '';
+    this.balanceLimit.hidden = limitText === '';
+    if (limitText !== this.balanceLimitText) {
+      this.balanceLimitText = limitText;
+      this.balanceLimit.textContent = limitText;
+    }
+    this.balanceLimit.classList.toggle('is-broken', !standing && !!ride?.broke);
     const breath = ride?.breath ?? 1;
     this.breath.hidden = !showBreath || ride?.phase !== 'fallen' || breath >= 0.999;
     if (!this.breath.hidden) {

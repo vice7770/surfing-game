@@ -1,0 +1,31 @@
+
+## turnpath — flat, cheat on, rider new, window 4.0 s + 5.0 s hold, gate 85°, start 45° off the fall line
+   12 runs, 5 s wall · the face 1.40 m / 16° / 5.70 m/s, depth 2.6 m
+   the gate: 0 of 12 · why each run stopped: gate 0 · window 0 · fell 12
+   heading: reached 46.3–46.8° off the fall line · came round 6.2–49.3° from the start · in the window 2.8–49.3° · the unsigned metric's fold 0.0–0.0°
+   the heading's own rate: 12.32 °/s median, 114.5 °/s peak · over the window's last half second 5.6–51.4 °/s
+   the roll path: lean asked -2.8° (peak 1.1°) → body 13.8° (peak 65.7°) → board roll -3.3° (peak 1.0°) → heading 8.8°
+   drift 0.64° median, 3.2° peak · lateral 0.191 g median, 0.875 g peak · nUp 0.963
+   the cheat's work on the body: assist 0.0 J · carry 0.0 J · lean-out 0.0 J
+   job 1a — the falls: 12 of 12 went down · by cause balance 12
+     which of the three bound at the fall: margin 12 · grip 0 · knee 0 · the contact's own limit there: none 12
+     the three over the half second before, loaded frames: margin 0.454 · grip left 0.913 · knee left 0.532
+     the feet's grip saturated on the way down (limit 'slip'), frames of the last 0.5 s: 0.0–0.0 of 30.0–31.0 · tipping 0.0–5.0
+     which way the weight left the feet: across 12 · along 0 · none 0 · past the edge by 0.2–0.4 m
+     the capture point across at the fall, 0.397 m median = the body leaning out 0.137 m + the body's own speed across 0.266 m (spans 0.1–0.2 and 0.2–0.3)
+   job 1b — the slide: 0 of 12 falls were sliding over 8° at some point · for – s before going down · drift at the fall -2.3–3.2° at 5.2–9.2 m/s
+     and the window **any** recovery would have: the margin fell from over 0.50 to the fall in 0.1–0.6 s (median 0.29)
+   the yaw ledger over the turn, N·m·s about the world vertical (positive the turn's way):
+     fins          -2.402 median  (-7.9–0.6)
+     rails         -0.164 median  (-0.8–0.2)
+     pressure      -2.006 median  (-23.2–15.0)
+     friction       0.727 median  (-0.0–3.1)
+     addedMass    -22.684 median  (-46.8–-10.4)
+     radiation     -3.463 median  (-6.3–-1.4)
+     buoyancy      -3.843 median  (-6.3–-2.1)
+     froth          0.000 median  (0.0–0.0)
+     suction        0.000 median  (0.0–0.0)
+     bed            0.000 median  (0.0–0.0)
+     gyro          -0.034 median  (-0.1–0.0)
+     rider         38.843 median  (1.9–61.6)
+     total          0.222 median  (-0.1–0.7)

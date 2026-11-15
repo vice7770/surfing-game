@@ -147,7 +147,15 @@ export interface BoardDimensions {
   readonly mass: number;
 }
 
-export function buildBoardShape(reference: BoardDimensions = REFERENCE_BOARD, stations = 12, across = 4, section: BoardSection = 'flat'): BoardShape {
+/**
+ * `power` is the taper's exponent across the beam for the **rail** section only, `RAIL_BAND.power` (1, linear) by
+ * default. It exists because that exponent is the one number in the section that is a modelling choice and not a
+ * measurement, and because Part 19 §5 named `power = 2` — the squared taper on the section's own patch layout, band
+ * kept and the thickness redistribution undone — as one of the two flags that settle why the section makes the rider
+ * lean at all. It reaches no switch and the flat board ignores it: `section !== 'rail'` keeps the squared expressions
+ * **bit for bit**, which is what the `squared` branch below is for.
+ */
+export function buildBoardShape(reference: BoardDimensions = REFERENCE_BOARD, stations = 12, across = 4, section: BoardSection = 'flat', power: number = RAIL_BAND.power): BoardShape {
   const outline = monotoneCurve(OUTLINE.map(([s, w]) => [s, w * reference.width] as const));
   const rocker = monotoneCurve(ROCKER);
   const thickness = monotoneCurve(THICKNESS.map(([s, t]) => [s, t * reference.thickness] as const));
@@ -227,14 +235,14 @@ export function buildBoardShape(reference: BoardDimensions = REFERENCE_BOARD, st
    */
   const slabOf = (stringer: number, u: number, taper: number, drop: number) => (squared
     ? stringer * (1 - taper * u * u)
-    : stringer * (1 - taper * Math.abs(u) ** RAIL_BAND.power) - drop);
+    : stringer * (1 - taper * Math.abs(u) ** power) - drop);
   const solve = (draft: readonly Draft[]): number => {
     let plain = 0;
     let tapered = 0;
     let dropped = 0;
     for (const patch of draft) {
       plain += patch.area * patch.stringer;
-      tapered += squared ? patch.area * patch.stringer * patch.u * patch.u : patch.area * patch.stringer * Math.abs(patch.u) ** RAIL_BAND.power;
+      tapered += squared ? patch.area * patch.stringer * patch.u * patch.u : patch.area * patch.stringer * Math.abs(patch.u) ** power;
       dropped += patch.area * patch.drop;
     }
     return squared ? (plain - reference.volume) / tapered : (plain - dropped - reference.volume) / tapered;

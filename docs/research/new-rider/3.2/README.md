@@ -5720,3 +5720,432 @@ spin-out, `?physical&canyonWaves=true&hull=rail` will give it to you.
 **And one correction to something this thread told you.** You were told the board has no rail to bite with and that
 giving it one is what the turn needs. The first half was true — 5 mm is not a rail. The second half is now measured and
 it is false.
+
+# Part 20 — the falls, named; and the missing turn, found
+
+Written 2026-11-15 by the build agent (Opus 5, effort xhigh) on branch `claude/rider-new-32v`, cut from `origin/main`
+at **30b2accb** (step 3.2u's merge), so Part 19 above is its base.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The round was re-aimed four times while it ran**, by the coordinator, on the owner's own ride and then on the owner's
+own corrections of the coordinator. It began as *"where does the rest of the turn go?"*; the owner then rode
+`?rider=new` and said *"the balance is not good enough. The surfer falls too much"*, which made the falls job 1 and the
+turn job 2; then a design for a balance cycle arrived, and then most of it was withdrawn. **Nothing of the withdrawn
+design was built.** What this round ships is the measurement both halves needed, one readout the owner can see, and one
+bug fix in a measurement tool.
+
+## 1. The five sentences the round is for
+
+1. **The missing turn is two different bugs, three runs each, and neither is a force shortage.** Section, cheat
+   deleted, the owner's acceptance test, 6 runs: **3 fall before the turn window closes** (2.18–3.52 s, heading still
+   climbing) and **3 run the window out at 4.00 s still short** — and those three do not fall for another 1.3–3.8 s, so
+   a fall is not what stopped them [M]. Part 19's "49–79° of 85°" is a median over those two failures mixed.
+2. **For the runs the window stopped, the limit is time, and the proof is one flag.** Open the window from 4 s to 8 s
+   and nothing else, and the gate goes **0 of 6 → 2 of 6**: the two half-stick runs that lean reach 85° at **5.43 s and
+   5.83 s** and go on to 112° and 115°, against the cheat's 3.77–4.00 s [M]. The honest hull gets to the same place,
+   **1.4–1.8 s later**. The three full-stick runs are unchanged by the window; they fall.
+3. **Part 19 §5's open `[I]` is closed by elimination: both flags it named come back null.** The squared taper on the
+   section's own layout (`RAIL_POWER=2`) and the rail side-face foils re-enabled (`RAIL_FACES=on`) each leave the lean,
+   the roll and the reach where the section put them [M, 6 runs a cell]. With the patch count already refuted by its
+   own named test, the band's own normals are what is left.
+4. **Job 1a, answered with a population: the capture point's margin binds, and the weight leaves the feet *across* the
+   board.** New rider, flat board, 30 runs (18 in the owner's acceptance turn, 12 in trim with the stick untouched):
+   **margin bound in 30 of 30, across in 30 of 30**, past the feet's edge by **0.1–0.8 m**, with the feet still holding
+   **86–91 %** of their grip and the contact's own limit never once `'slip'` [M].
+5. **Job 1b: the slide is not what precedes these falls, and there is no window to catch one in.** The board slid more
+   than 8° before only 12 of the 18 turn falls and **0 of the 12 trim falls**, and where it slid at all it slid for
+   **0.0–0.3 s** before he went [M]. **And the new rider falls 12 of 12 in trim with the stick never touched, on water
+   the old rider rides without falling** — no move, no slide, the board tracking inside 3.2°, the body banking to
+   **65.7°** where the stick asked for **1.1°** [M]. So a recovery from a slide would have had nothing to catch in the
+   runs I can measure, and I did not build one.
+
+## 2. Job 2 — the missing turn, told apart
+
+The owner's acceptance test, the Canyon-matched `FaceWater` (1.4 m, 2.6 m deep, 16°, 5.7 m/s), old rider, Compress,
+6 runs a cell (3 entry speeds × 2 stick positions). `turnpath.ts`. **Every number in this section is Compress only**;
+Part 19's own tables are too, and the probes' printed summaries are **not** — `libturn.ts`'s `sweep` prints one line
+over all twelve runs of both stances, which is a trap for anyone reading the `.txt` files rather than the `.jsonl`.
+
+**First, the harness reproduces Part 19 exactly**, which is why any of the rest can be believed: flat with the cheat
+**6 of 6, reached 100.8–136.6°** against Part 19's 101–137°; flat with it deleted **0 of 6, 49.8–59.4°** against its
+50–59°; the section with it deleted **0 of 6, 48.7–78.2°** against its 49–78° [M].
+
+**One line of the harness is worth stating because leaving it out moved every number.** `libturn.ts` steps the wave
+under the rider (`water.advance`). This probe's first run did not, and on a standing wave the flat/cheat-on cell read
+110–156° instead of 101–137° and the flat/cheat-off gate read **2 of 6** instead of 0 of 6. A wave that never catches
+up never takes the face away. The numbers below are all with it in.
+
+### The three bugs, separated
+
+The movement centres the stick when the gate's metric reaches 85° **or** when `TURN_LIMIT` (4 s) runs out, whichever
+comes first, and then holds for 5 s. So each run stops for exactly one of three reasons, and `acrossAt` says which:
+
+| section, cheat deleted | stick | reached | why it stopped | fell at | rail | bank | lateral g |
+|---|---|---|---|---|---|---|---|
+| entry +0 | half | 72.5° | **window**, 4.00 s | 7.13 s | 20.4° | 21.0° | 0.287 |
+| entry +1.5 | half | 49.4° | **window**, 4.00 s | 7.80 s | 18.4° | 21.2° | 0.248 |
+| entry +3 | half | 48.7° | **window**, 4.00 s | 5.33 s | **0.1°** | **0.1°** | **0.001** |
+| entry +0 | full | 78.2° | **fell**, 3.52 s | 3.52 s | 42.4° | 47.9° | 0.703 |
+| entry +1.5 | full | 52.1° | **fell**, 2.40 s | 2.40 s | 36.9° | 42.7° | 0.579 |
+| entry +3 | full | 51.1° | **fell**, 2.18 s | 2.18 s | 32.5° | 40.8° | 0.546 |
+
+All [M]. Three things in it:
+
+1. **At full stick the fall arrives first.** Down at 2.18–3.52 s, inside the 4 s window, with the heading still
+   advancing. More window buys these nothing (§2's ladder below).
+2. **At half stick the window closes first and the fall is not involved.** Those three are still up when the stick
+   centres and stay up for another **1.3–3.8 s** afterwards. Calling their 48.7–72.5° a fall would be wrong.
+3. **And one of the six never leans at all.** At the highest entry speed and half stick the section's bank is **0.1°**
+   and its lateral **0.001 g** — the flat board's own numbers. So Part 19's "body lean 0.60° → 31.1°" and
+   "0.005 g → 0.418 g" are **medians of a bimodal population**: five runs at 18–48° of rail and 0.25–0.70 g, and one at
+   0.1° and 0.001 g. The medians are arithmetically right (I reproduced all four to the third decimal) and they are not
+   a description of any run.
+
+### The window ladder: the half-stick limit is time
+
+`TURN_LIMIT` swept and **nothing else changed**, 6 runs a cell [M]:
+
+| | window 4 s | window 8 s | window 12 s |
+|---|---|---|---|
+| **section, cheat deleted** | **0 of 6** | **2 of 6** | **2 of 6** |
+| …reached | 48.7–78.2° | 48.7–115.0° | 48.7–115.0° |
+| …when the two that pass get there | — | **5.43 s, 5.83 s** | 5.43 s, 5.83 s |
+| **flat, the cheat** | **6 of 6** | 6 of 6 | 6 of 6 |
+| …when the half-stick runs get there | **3.77, 3.98, 4.00 s** | 3.77, 3.98, 4.32 s | identical |
+
+So: **the honest hull reaches the same 85° the cheat does, 1.4–1.8 s later** — 5.43 and 5.83 s against 3.77 and 3.98 s,
+a factor 1.44–1.47. The 12 s column is identical to the 8 s one, so it is not a longer tail: it is a turn that takes
+about 5.5 s where the gate allows 4.
+
+**And the cheat's own 6 of 6 is a knife edge, which is worth knowing before anyone ranks a hull on it.** Its three
+half-stick runs reach 85° at 3.77, 3.98 and 4.00 s of a 4.00 s window — by **0.00 to 0.23 s** — and the third of them
+only gets there *after* the stick has been centred, during the coast. Three of its six passes are comfortable (full
+stick, 2.50–3.95 s) and three are not.
+
+### Two things about the gate itself, since the brief asked
+
+**The gate's 85° is about 130° of heading rotation, not 40°, and its metric is not monotonic.** The board is placed 45°
+round from the fall line and the stick turns it **toward and straight through** the fall line: the signed heading runs
+−45° → 0° → +87°, so the gate's own `acos(fwd · fall)` reads **45° → 0.5° at 1.45 s → 85.4°** [M, trace]. I had started
+to write that the gate asks for only 40° of turn; it does not, and I am recording the correction rather than the claim.
+The metric does **not** fold in any of the 84 runs here (the unfolded heading and the `acos` agree to 0.0° in every
+one), so 3.2q's artefact is present in the shape of the metric and does not bite at these angles.
+
+**Is 85° the wrong target? No — but the 4 s is generous and both riders need nearly all of it.** The source
+`COMPRESS_PULL` itself cites for a bottom turn is **99° in 0.96 s** (Forsyth et al. 2024, quoted in
+`AttachedRider.ts:508`) [S]. Our gate asks for less rotation than that and allows **four times** the time, and the
+cheat's half-stick runs still finish with 0.00–0.23 s to spare while the honest hull wants 5.5 s. So the target angle is
+not the problem and I am not recommending it be moved; what the numbers say is that **both riders turn three to five
+times slower than the sourced turn**, and the gate is only the place that shows it.
+
+### Where the heading comes from, and why more force did not buy more of it
+
+The paradox in the brief, sharpened: at half stick and entry +0 the section with the cheat deleted has **0.342 g** of
+lateral load against the cheat's **0.234 g** — 1.46× more — and it needs **1.44× longer** to get round (5.43 s against
+3.77 s) [M]. More sideways force, slower turn.
+
+The yaw ledger, integrated over the turn — angular impulse about the **world vertical**, positive the turn's way, from
+`BoardBody.yawLedger` (step 3.2q's tool), medians of 6 runs [M]:
+
+| | flat, the cheat | new rider, in the turn | new rider, in trim |
+|---|---|---|---|
+| hull pressure | **+32.9** | −20.5 | −2.0 |
+| fins | **+14.9** | −18.4 | −2.4 |
+| rails' side faces | +2.4 | −1.6 | −0.2 |
+| added mass | +2.9 | **−15.8** | **−22.7** |
+| friction | −2.7 | +2.3 | +0.7 |
+| **`rider`** (the residual the contact carries) | **−52.5** | **+58.6** | **+38.8** |
+| `total` (the board's own I·Δω) | +0.44 | +0.26 | +0.22 |
+
+**What I will claim from this and what I will not.** `total` is the *board's* own change of yaw momentum and `rider` is
+a **residual** — `total` less every water term — so it carries the rider's own yaw inertia and the contact's constraint
+torque together, and its magnitude is **not** "a torque the feet apply". I will not read it as one. What is safe is the
+comparison: the water's yaw torque and the contact's residual are within about 6 % of cancelling in every cell, and the
+board's own net yaw momentum change over a 130° turn is **0.2–0.4 N·m·s** out of a ~50 N·m·s traffic. **So the heading
+rate is not set by the size of the yaw torque available; it is set by what the whole system's yaw inertia will accept.**
+That is consistent with the force measurement (2.5× the lateral and 0.7× the rate) and it is as far as this ledger can
+honestly take it. Separating the rider's inertia from the contact's constraint needs a term the ledger does not have,
+and naming that is this section's loose end.
+
+**One bug fixed in the ledger while reading it** [R, mine]: `BoardBody.ts:1529` accumulated `this.yaw.suction += totals.sty`
+where all twelve other entries accumulate `h × τ`, so the ledger's `/ dt` left that one entry a factor `substeps`
+(about 1 920) too large. It is a measurement tool only (`yawLedger` is off in the game) and it never showed because the
+suction measures 0.0 N through every ride Part 19 ran. It would have corrupted every `?hull=rail` row of this section.
+Fixed, with a test that bounds the entry by the force times the board's own length.
+
+### Part 19 §5's open `[I]`, closed by elimination
+
+Part 19 could not say why the section makes the rider lean (0.55° of roll flat, 26.5° with the section) and named two
+flags that settle it without a fourth hull. Both run, 6 runs a cell, cheat deleted [M]:
+
+| | bank, median | board roll | lateral g | reached | gate |
+|---|---|---|---|---|---|
+| flat | 0.3° | 0.2° | 0.005 | 49.8–59.4° | 0 of 6 |
+| **the section** | 21.1° | 19.4° | 0.248 | 48.7–78.2° | 0 of 6 |
+| the section, **squared taper** (`RAIL_POWER=2`) | 25.3° | 22.9° | 0.257 | 49.6–76.8° | 0 of 6 |
+| the section, **side faces back** (`RAIL_FACES=on`) | 22.1° | 23.5° | 0.286 | 48.3–72.9° | 0 of 6 |
+
+**Both flags are null.** The squared taper undoes the thickness redistribution — taper 0.568 → **0.916**, the same
+layout, the same band, the same planform and beam to twelve decimals — and the lean, the roll and the reach all stay
+where the section put them. Re-enabling the side-face foils beside the band (which deliberately counts the rail twice)
+does the same. With the advisor's patch-centre-quantization hypothesis already refuted by its own named test (12 across:
+bank 0.95° against 4-across's 0.60°), **the band's own normals are the only candidate left**, which is what Part 19
+inferred and now has three refuted alternatives behind it. It is still [I]: elimination over a named list is not a
+positive measurement of the mechanism, and the list was Part 19's, not an exhaustive one.
+
+A side measurement the squared-taper flag produced, which is the reason `'rail'` is linear, now measured from the other
+end: the squared taper's rail is thin enough that `RAIL_BAND.minSlab`'s 2 mm floor begins to bind, and the volume stops
+closing — **0.002 % with the linear taper against 0.04 % with the squared one**, twenty-five times worse [M].
+
+## 3. Job 1a — which of the three limits binds when he goes down
+
+`balanceReserve` is `min(capture-point margin, 1 − frictionUsed, 1 − kneeUsed)` for the new rider
+(`AttachedRider.ts:2366`), and the game computed which one it was and threw it away. Here it is, new rider, flat board,
+the Canyon-matched face [M]:
+
+| | the owner's acceptance turn, 18 runs | trim, the stick never touched, 12 runs |
+|---|---|---|
+| fell | **18 of 18** | **12 of 12** |
+| the cause the game names | `balance` 18 | `balance` 12 |
+| **which of the three bound at the fall** | **margin 18**, grip 0, knee 0 | **margin 12**, grip 0, knee 0 |
+| the three over the last loaded half second | margin **0.480**, grip left **0.858**, knee left **0.542** | margin 0.454, grip left **0.913**, knee left 0.532 |
+| the contact's own limit at the fall | tip 8, none 10, **slip 0** | none 12, **slip 0** |
+| frames of the last 0.5 s with the grip saturated | **0 of 30–31** | **0 of 30–31** |
+| **which way the weight left the feet** | **across 18**, along 0 | **across 12**, along 0 |
+| past the feet's edge by | **0.1–0.8 m** | 0.2–0.4 m |
+
+**Read it in four lines, and the first is a caveat against over-reading the headline.**
+
+1. **"Margin 18 of 18" is partly by construction and I am saying so first.** The fall test standing free is
+   `human.fallen`, which is `beyond && weightPast` — **the capture point alone** (`AttachedRider.ts:4366`,
+   `humanBalance.ts:423`) [R]. `frictionUsed` and `kneeUsed` narrow the meter and re-label the separation; **neither can
+   trip a fall.** So the margin was always going to be at zero when he goes.
+2. **What is not by construction is how much of the other two is left, and it is a lot.** The feet hold **86–91 %** of
+   their grip over the half second he goes down in, and the contact's limit is `'slip'` in **0 of 60 frames** across
+   both populations. **These are not the feet losing grip.** The knees are the nearer of the two at 0.504–0.542 and
+   still never bind.
+3. **And it is *across*, in every one of the 30.** The weight leaves the feet rail-to-rail, not over the nose or the
+   tail, by 0.1–0.8 m past an edge the feet's own half-width puts at about 0.13 m. 0.8 m past 0.13 m is not a near
+   miss.
+4. **The old rider, in the identical harness, sits somewhere else entirely**: over the same 18 turn runs the grip term
+   is the smallest at the fall in **13 of 18** and its capture point's `past` is **0.000 m in all 18** [M]. That is not
+   a paired comparison of fall causes — the old rider's fall test is a different one (`sway > RECOVERABLE_ERROR`), so
+   its `balanceReserve` is not the min-of-three at all — but it does say the two riders operate in different places.
+
+**What the capture point is made of, since the two terms are two different bugs.** It is
+`pointAcross + speedAcross / ω`: where the body's own weight line meets the deck (the body **leaning out**, a position)
+plus how fast the body is moving across relative to the feet over the pendulum's rate (the body **being left behind**, a
+velocity). At the fall, medians [M]: in the turn **0.382 m = 0.131 + 0.225**, in trim **0.397 m = 0.137 + 0.266**. So
+**about two thirds of it is the velocity term in both**. He is not mostly out of place; he is mostly moving.
+
+## 4. Job 1b — is a slide terminal? And the one measurement that re-frames the round
+
+### Read first: there is no path from sliding back to riding, and nothing senses a slide
+
+[R, and I checked each]: nothing in `AttachedRider` reads the board's sideways slip at all — a slide reaches the
+balance only indirectly, as the felt vertical tilting and the body being left behind. The only authority past the feet's
+own edge is `reachAcross` = `rotorImpulse(swingInertia, SWING_TORQUE, hipRange − |swing.angle|) / (m · height · ω)`
+(`AttachedRider.ts:4414`) — **the hip swing, and nothing else.** There is no unweighting, no shift back toward the tail,
+no re-plant of the feet. `RiderPhase`'s `'recover'` is the paddling recovery and `BoardRecovery` is getting the board
+back after a fall; neither is this. So **the coordinator's candidate is right that the mechanism is missing.**
+
+### And measured, it would not have helped in these runs
+
+- The board slid more than 8° before **12 of the 18** turn falls and **0 of the 12** trim falls [M].
+- Where it slid at all, it slid for **0.02–0.32 s** before he went. The drift at the fall is 0.1–8.6° in most runs and
+  only −36 to −62° in three of thirty.
+- The margin's **whole** collapse, from over half-reserve to the fall, takes **0.1–1.1 s, median 0.21 s** in the turn
+  and median 0.50 s in trim [M].
+
+**So the washout and the fall are the same event, not a sequence.** The owner's 0.5 s instinct for the window is well
+calibrated — median 0.50 s in trim is almost exactly it — but in the turn population there is a median 0.21 s, and a
+recovery that gets a fifth of a second to arrest a body already 0.4 m past its feet and moving would delay the fall, not
+prevent it. **I did not build the slide recovery, on these numbers.**
+
+### The measurement that re-frames it: he falls in trim with the stick untouched
+
+This is the round's most important number and it was a control, not the plan. Same harness, same water, same placement,
+same stances; `STEERS=0`, so the stick is never touched; 12 runs each (2 stances × 6 entry speeds, −3 to +3 m/s) [M]:
+
+| | new rider | old rider |
+|---|---|---|
+| fell inside the 4 s window | **12 of 12** | **0 of 12** |
+| fell at all in 9 s | 12 of 12, at **0.77–1.70 s** | 3 of 12 |
+| which of the three bound | **margin 12** | grip 3 (of the 3 that fell) |
+| the weight left the feet across | **12 of 12**, by 0.2–0.4 m | 0 of 12 (`past` 0.000 m) |
+| the board slid over 8° first | **0 of 12** | 3 of 3 (at 0.6–1.0 m/s — the board has stopped and spun) |
+| the lean the stick asked for | **1.1° peak** | 2.9° peak |
+| the bank the body reached | **65.7° peak**, 13.8° median | −2.3° median, 1.9° peak |
+
+**The body banks to 65.7° where the stick asked for 1.1°, the board tracks inside 3.2° of straight, the feet keep 91 %
+of their grip, and he is down in 0.77–1.70 s — on water the old rider rides out.** One trace, tall, entry +0: the margin
+holds 0.78–0.84 for the first 0.7 s with the capture point *shrinking* to 0.012 m, then from 0.8 s the bank runs
+8.8 → 13.5 → 19.1 → 25.7 → 38.5 → 47.7 → **60.7°** monotonically, the roll follows to −57.7°, and the contact's limit
+reads `'none'` the whole way down. That is a divergence of the balance loop, not the cost of a move and not a slide.
+
+**What it means for the three briefs this round received.** The owner's model is *player makes a move → balance changes
+→ the surfer's own system fixes it*. In 12 of 12 runs there is **no move** and he falls anyway. So a recovery phase has
+nothing to catch here, and a target that follows the player's input changes nothing here either — and the worry that the
+controller "manufactures error by fighting the input" does not apply, because **there is no input to fight.** By the
+owner's own rule that small wobbles should be caught automatically and only a real slide should need the player, this
+fall is squarely in the "caught automatically" class: the player did nothing, and standing still is exactly the stance a
+real surfer would reach for. **My judgement, which is what the coordinator asked for: neither half of the model first.
+The one change is whatever lets the new rider stand up going straight, and it is upstream of both halves.** Build the
+model after that, so its window and its recovery are measured against a disturbance the player caused.
+
+### Does a postural settle exist today? No
+
+The coordinator asked this directly, and the movement already answers it: it centres the stick mid-run and then holds
+for 5 s, so a settle is in every run that gets that far [M].
+
+| | runs reaching the centring | reserve at it | +0.5 s | +1 s | +2 s | best gain, median | runs whose reserve rose at all |
+|---|---|---|---|---|---|---|---|
+| old rider, after a turn | 17 of 18 | 0.755 | 0.693 | 0.413 | **0.000** | **0.000** (−0.3 to +0.7) | 8 of 17 |
+| old rider, in trim | 12 of 12 | 0.821 | 0.851 | 0.788 | 0.802 | **0.002** (−0.1 to +0.6) | 6 of 12 |
+| **new rider, either** | **0 of 30** | — | — | — | — | — | — |
+
+**The reserve is a derived readout and nothing drives it back**, which is what the coordinator suspected and what the
+numbers say: it holds roughly level while the physics is steady (0.821 → 0.802 over 2 s in trim) and it keeps falling
+while the physics is diverging (0.755 → 0.000 over 2 s after a turn). The median gain is 0.000–0.002 and only about half
+the runs show any rise, which is the wobble of a reflected quantity, not a mechanism. **And the new rider never reaches
+the release at all in any of the thirty runs**, so for the rider the owner is actually riding the question cannot yet be
+posed.
+
+**A plane-water version of the trim test, and why it is not in the headline.** I ran the new rider standing on bare
+`PlaneWater` with no wave, and it diverges there too — but **so does the old rider** (both down in 1.5–4.6 s at 0, 4
+and 8 m/s), so a board on a flat plane is not a configuration either rider holds and the test discriminates nothing. It
+is recorded here because it is the kind of single result I would otherwise have promoted.
+
+## 5. Job 1d — the limit, named on screen
+
+`showsBalanceMeter` already gates a meter on the Practice swell, and `RideHud` drew only the minimum of the three. Now
+it names **which**: `Weight`, `Grip` or `Knees` under the meter while standing, and on a fall the one that let go plus
+the speed — *"Weight off the side — 29km/h"* — held until the rider is back on the board. Behind the same
+`balanceMeter` setting; **no new URL switch and no new setting.**
+
+- `AttachedRider.balanceLimits` returns the three, which of them is least, whether the weight left the feet **across**
+  the board, and how far past the edge it is. It agrees with `balanceReserve` to twelve decimals by test. The old rider
+  and a prone one have one number with no three terms behind it, so theirs reads `'posture'`.
+- `SurfZoneRunner`'s ride status carries it, plus `broke` — the limit at the moment of the latest fall and the speed
+  there, taken on the first snapshot after the rider comes off (nothing calls `project` once he is off, so the values
+  are the fall's) and cleared when he is back up.
+- `balanceLimitLabel` in `RideHud.ts` is the pure function the tests cover.
+
+**Why this is worth more than another probe of mine**, in the coordinator's words and I agree: it turns every wave the
+owner rides into a labelled data point. The label carries real information rather than restating the bar — over these 30
+runs the margin bound in every one and the weight went off the **side** in every one with the feet still holding 86–91 %
+of their grip, and the meter could not say any of that.
+
+## 6. Seatbelts
+
+- **The deletions column, checked before the push.** `git diff --stat origin/main HEAD`: see §8; every deletion is a
+  line of mine that another line of mine replaced, and the wave track's work on `main` is untouched.
+- `npx tsc --noEmit -p .`: **exit 0**, on its own line, read from `tsc`'s own exit status and not through a pipe.
+  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**.
+- The rider and board files run alone, including `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`) and
+  `SurfZoneRunner` (`src/wave/`), which are the three this round's readout touches. `results/suite-rider-32v.txt`.
+- **Five new tests**: the squared taper on the section's layout (band kept, the flat board bit-identical whatever
+  exponent is passed, and the volume closing twenty-five times worse, which is why `'rail'` is linear); the side-face
+  foils back beside the band and only when asked; the suction's yaw entry bounded by force × the board's length, which
+  is the ledger bug; `balanceLimits` agreeing with `balanceReserve` to twelve decimals and naming the argument of its
+  own minimum; and the old rider's single number reading `'posture'`. Plus four on `balanceLimitLabel`.
+- **No force was added or removed.** Everything this round ships is a readout, a measurement tool, two probe-only
+  diagnostics and one fix to a measurement tool. `RAIL_FACES=on` deliberately double-counts the rail and therefore
+  reaches no switch and no default.
+- **The default board is bit for bit `main`'s**, checked the way Part 19 said it would check first next time: both
+  checkouts' `buildBoardShape()` printed as raw IEEE bit patterns — the taper, the volume, the planform, the width, the
+  centre of mass, all nine inertia terms and all ten fields of all 48 patches — **diff clean** [M].
+  `results/32v/shapebits-32v.txt`.
+- **The Canyon bench**: `results/canyon-bytes-32v.txt`, the same command and the same reference as step 5f's, 3.2t's and
+  3.2u's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups, run **last, on the tree that merges**.
+- A wave-track agent shared the machine throughout; nothing of theirs was stopped.
+
+## 7. What I am unsure of
+
+- **The acceptance test's `FaceWater` is a fit to Canyon, and the owner rides Canyon.** `MATCH=canyon`'s 1.4 m / 16° /
+  5.7 m/s is the wave this track has always probed against and it is what makes these numbers comparable to Part 19's;
+  it is not the water the owner's ride happened on. The trim result's 12 of 12 against 0 of 12 is a comparison *within*
+  that harness, which is its strength and its whole claim.
+- **The rider is placed, not paddled in.** In the trim runs he is dropped onto the face at a chosen speed and
+  orientation. The first 0.7 s of the trace are stable and the divergence then takes 0.8 s, which argues against a
+  placement transient, but it does not rule one out, and 0.77–1.70 s is a short life to draw a wave's worth of
+  conclusion from.
+- **Thirty runs, and six a cell in job 2.** 18-of-18 and 12-of-12 against 0-of-12 are solid; 0 of 6 against 2 of 6 in
+  the window ladder is two runs and I would not defend the 1.44–1.47 factor to a decimal.
+- **The yaw ledger's `rider` is a residual** that carries the rider's own yaw inertia and the contact's constraint
+  torque together. §2's last paragraph says what I will not claim from it, and separating the two needs a term the
+  ledger does not have.
+- **Part 19 §5 is closed by elimination over its own list**, which is not a positive measurement of the band's normals
+  and not an exhaustive list.
+- **`past` of 0.1–0.8 m is a large number against a 0.13 m support and I do not fully understand it.** The capture point
+  is a predicted landing place, not a position, so it can run far past the feet while the body is still over the board;
+  how far past is "a lot" is a question about `reachAcross`, which I measured the use of but not the calibration.
+- **Nothing here has been ridden by a person.** Every number is a probe, and the owner's ride is the evidence that
+  started the round.
+
+## 8. Files (3.2v)
+
+- `docs/research/new-rider/3.2/turnpath.ts` (new): the owner's acceptance movement on the Canyon-matched face with the
+  heading signed and unwrapped beside the gate's own unsigned metric, the roll path link by link, the yaw ledger by
+  source, the three bugs told apart per run, the balance's three limits every frame with which one binds and which way
+  the weight left the feet, the capture point split into its position and velocity terms, and the settle after the
+  stick is centred. Its header carries the commands and the two flags.
+- `src/physics/AttachedRider.ts`: `balanceLimits` — the three, which binds, `across` and `past`.
+- `src/physics/BoardBody.ts`: the yaw ledger's suction entry scaled like the other twelve; `BoardBodyOptions.railFaces`.
+- `src/physics/BoardShape.ts`: `buildBoardShape`'s fifth parameter, the rail section's taper exponent (the flat path
+  unchanged, bit for bit).
+- `src/wave/SurfZoneRunner.ts`: `ride.balanceLimit` and `ride.broke` in the status.
+- `src/ui/RideHud.ts`, `src/ui/strings.ts`, `src/ui/ui.css`: `balanceLimitLabel`, the line under the meter, its strings
+  and its style.
+- `src/physics/railSection.test.ts`, `src/ui/RideHud.test.ts`: the nine new tests.
+- Results under `results/32v/`: the window ladder (`*-tl4/8/12`), the six job-2 cells and the two flags (`m5-*`), the
+  no-stick control (`m9-*`), the settle (`m10-*`), and the default board's bits.
+
+## 9. For the owner, in plain words
+
+**You said the surfer falls too much and that he slides out sideways. I went looking for which of the three things that
+hold him up gives way, and found something I did not expect: he falls when you are not doing anything at all.**
+
+**What gives way, every time.** The balance meter you can see is the smallest of three numbers: how far your weight is
+from going past your feet, how much grip your feet have left, and how much strength your knees have left. Over thirty
+rides I measured, **it is always the weight going past your feet, and it always goes past them sideways — off the rail,
+not over the nose.** The feet are never the problem: they still have **86 to 91 per cent** of their grip when he goes
+down, and the game never once registers them slipping. So the thing you see as a slide-out is really your weight leaving
+your feet off the side of the board.
+
+**And the board isn't what slides.** I expected to find the tail breaking loose and dumping him. It does not. In the
+rides where the board slides sideways at all it only does so for **a fifth of a second** before he is already going —
+the slide and the fall are the same moment, not one then the other. In the rides where he is just going straight, the
+board never slides at all and he still falls.
+
+**That last one is the finding.** I ran twelve rides where **the stick is never touched** — he is just riding along the
+face. The new surfer fell in **all twelve**, within one to one and three-quarter seconds. The old surfer, same wave,
+same place, same speed, fell in **none** of them. And here is the part that says what is wrong: during those rides the
+stick is asking him to lean about **one degree**, and his body leans over to **sixty-five**. The board is pointing
+straight. Nothing pushed him. He just slowly falls over, faster and faster, and goes in.
+
+**So about the balance cycle you described** — you make a move, it costs balance, then the surfer fixes it. I think the
+model is right, and I think it cannot be tested yet, for a simple reason: **in the rides I can measure there is no move
+and he falls anyway.** A system that fixes things up after a move has nothing to fix here, and giving him half a second
+to save a slide does not help when there is no slide. I also checked whether anything fixes his balance back up today,
+the way you describe: **nothing does.** The bar just reflects what his body is doing — it holds steady when he is
+steady and it keeps falling when he is falling, and no part of the game pushes it back toward the middle. So your
+instinct that something is missing there is correct.
+
+**My recommendation, and it is one change.** Before building the balance cycle, fix the thing that makes him fall over
+standing still. Everything else is measured against it: if he is already tipping over for free, then whatever a move
+"costs" and whatever the recovery "saves" is mixed up with a fall that was coming anyway, and your next ride would be
+impossible to read.
+
+**One thing you can now see for yourself.** The balance bar used to tell you how close you were and nothing about why.
+It now says which of the three is nearest — **Weight**, **Grip** or **Knees** — and when you go down it names the one
+that let go and how fast you were going: *"Weight off the side — 29km/h"*. It is on wherever your balance meter is on,
+with no new setting. Every wave you ride is now a labelled data point, and if it ever says **Grip** or **Knees** on a
+fall, that is news and worth telling me.
+
+**And one honest note on the turn we were chasing last round.** It is two different problems, not one. At full stick he
+falls before the turn finishes. At half stick he does not fall at all — he just runs out of time: the test gives him
+four seconds and the honest board needs about five and a half. Give it eight seconds and two of the six get all the way
+round. So the shaped board's turn is not weak, it is **slow** — about one and a half times slower than the version with
+the cheat in it. That is a smaller and more specific problem than "the turn is missing", and it waits behind the falls.

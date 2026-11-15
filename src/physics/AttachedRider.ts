@@ -2370,6 +2370,39 @@ export class AttachedRider {
     return Math.max(0, 1 - this.postureError / RECOVERABLE_ERROR);
   }
 
+  /**
+   * **Which of the reserve's three limits is nearest, and the three themselves** (step 3.2v). `balanceReserve` above
+   * returns their minimum and the game then throws away which one it was — so the balance meter can say how close the
+   * rider is to going down and nothing at all about *why*, and neither the owner nor a probe could see it.
+   *
+   * - `margin` — the capture point's own margin: the weight's line past the feet, over the edge plus whatever the hip
+   *   swing can still catch. **`limit: 'margin'` is the only one of the three that can actually end a ride**: the fall
+   *   test standing free is `human.fallen`, which is the capture point alone (`endStep`). The other two narrow the
+   *   meter and re-label the separation; they never trip it.
+   * - `grip` — 1 − the feet's grip used against the push across the deck (`FOOT_FRICTION` times their load).
+   * - `knee` — 1 − the knees' strength used under the load (`kneeStrength` at this leg length).
+   *
+   * `across` says the weight left the feet **across** the board rather than along it, and `past` how far past the
+   * edge the capture point is, m, so a fall can be named by the shape the rider sees. Measured over 12 runs in trim
+   * with the stick untouched and 18 in the owner's acceptance turn, `margin` bound in **every** one and `across` was
+   * true in every one, with the grip 0.86–0.91 left (`../../docs/research/new-rider/3.2/README.md` Part 20).
+   *
+   * Lying down and for the old rider the reserve is a single number with no three terms behind it, so `limit` is
+   * `'posture'` and the three read the reserve itself.
+   */
+  get balanceLimits(): { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number } {
+    if (!this.freeBody) {
+      const reserve = this.balanceReserve;
+      return { limit: 'posture', margin: reserve, grip: reserve, knee: reserve, across: false, past: 0 };
+    }
+    const state = this.human.state;
+    const margin = Math.max(0, state.margin);
+    const grip = Math.max(0, 1 - this.frictionUsed);
+    const knee = Math.max(0, 1 - this.kneeUsed);
+    const limit = margin <= grip && margin <= knee ? 'margin' : grip <= knee ? 'grip' : 'knee';
+    return { limit, margin, grip, knee, across: state.past > 0 && Math.abs(state.pastAcross) >= state.past, past: state.past };
+  }
+
   kineticEnergy(): number {
     const linear = 0.5 * this.mass * this.velocity.lengthSq();
     if (this.upright) return linear;

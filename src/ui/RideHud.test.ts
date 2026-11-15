@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver } from '../game/rideAnalysis';
-import { breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, showsSprintBar, stanceReadout } from './RideHud';
+import { balanceLimitLabel, breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, showsSprintBar, stanceReadout } from './RideHud';
 
 // P9: on by default in Practice, off in natural seas (the spec).
 describe('showsBalanceMeter', () => {
@@ -88,5 +88,45 @@ describe('showsSprintBar', () => {
     expect(showsSprintBar(sprint(1, true))).toBe(false);
     expect(showsSprintBar(sprint(0.6, false))).toBe(false);
     expect(showsSprintBar(undefined)).toBe(false);
+  });
+});
+
+/**
+ * Step 3.2v: **which** of the balance's three limits the meter names. The meter has always drawn only their minimum,
+ * so it said how close the rider was and nothing about why — and the three are three different falls, which is what
+ * the owner's own fall taxonomy turns on. Measured over 30 runs, the capture point's margin bound in every one and the
+ * weight left the feet across the board in every one, with the feet still holding 86-91 % of their grip, so the label
+ * carries real information rather than restating the bar.
+ */
+describe('balanceLimitLabel', () => {
+  it('names the nearest limit while standing', () => {
+    const ride = (limit: 'margin' | 'grip' | 'knee' | 'posture') => ({ phase: 'standing', balanceLimit: { limit } });
+    expect(balanceLimitLabel(ride('margin'), 'metric')).toBe('Weight');
+    expect(balanceLimitLabel(ride('grip'), 'metric')).toBe('Grip');
+    expect(balanceLimitLabel(ride('knee'), 'metric')).toBe('Knees');
+    // The old rider and a prone one have one number with no three terms behind it.
+    expect(balanceLimitLabel(ride('posture'), 'metric')).toBe('Balance');
+  });
+
+  it('names the limit that let go, and the speed, once the rider is off the board', () => {
+    const fallen = { phase: 'fallen' as const, broke: { limit: 'margin' as const, across: true, speed: 8 } };
+    expect(balanceLimitLabel(fallen, 'metric')).toBe('Weight off the side — 29km/h');
+    // Not across: the same limit without the side.
+    expect(balanceLimitLabel({ ...fallen, broke: { ...fallen.broke, across: false } }, 'metric')).toBe('Weight — 29km/h');
+    // A grip failure off the board is a different fall and says so.
+    expect(balanceLimitLabel({ ...fallen, broke: { limit: 'grip', across: true, speed: 8 } }, 'metric')).toBe('Grip off the side — 29km/h');
+  });
+
+  it('says nothing when there is nothing to say, which hides the line', () => {
+    expect(balanceLimitLabel(undefined, 'metric')).toBe('');
+    // Paddling, before any fall.
+    expect(balanceLimitLabel({ phase: 'prone' }, 'metric')).toBe('');
+    // Standing on a status that carries no limits (the dev fixtures, and any older snapshot).
+    expect(balanceLimitLabel({ phase: 'standing' }, 'metric')).toBe('');
+  });
+
+  it('prefers standing over the last fall, so a new ride is not labelled by the old one', () => {
+    const ride = { phase: 'standing' as const, balanceLimit: { limit: 'knee' as const }, broke: { limit: 'margin' as const, across: true, speed: 8 } };
+    expect(balanceLimitLabel(ride, 'metric')).toBe('Knees');
   });
 });
