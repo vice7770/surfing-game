@@ -95,6 +95,9 @@ three that fall, which is the same span).
    [M, 72 runs]. Against the capsize's **τ 0.245 s** (Part 21 §1.2) that is a correction arriving after the event. And
    the rows for stick 0.25, 0.5 and 1 are **identical to the digit for the first 0.3 s**, because the lean is bounded
    by `leanPace = LEAN_IN_RATE = 1.4 rad/s` and `REFERENCE_RATE = 5 rad/s` [R] — **a bigger stick buys nothing early.**
+   Put as the one number the brief asked for: **the chain's dead time is about 0.25 s and its rise to 1.6 m/s² takes
+   0.5 s**, so a whole capsize time constant is spent before the board does anything a steer asked for, and two before
+   it does enough.
 6. **And the gain cannot reach one, which is the result.** The felt vertical's own tilt per **extra** degree of the
    deck's roll — **the bank gain**, a least-squares slope with a fitted intercept, so it is the *marginal* return on
    rolling further and not the absolute tilt (which `tilt` measures directly); 1.000 being a turn that pays back every
@@ -149,12 +152,16 @@ Four readings.
 The lateral force by source, every entry of `BoardBody.forces` projected on the same horizontal across axis, pooled
 over the shipped twelve's 780 frames — median signed, then peak absolute, N:
 
-| source | median | peak | | source | median | peak |
-|---|---|---|---|---|---|---|
-| **pressure** (the planing hull) | **81.6** | **674.3** | | friction | −0.2 | 1.6 |
-| added mass | 23.9 | 80.4 | | rails (the side-face foils) | −2.2 | 14.6 |
-| buoyancy | 10.7 | 22.6 | | bed · froth · suction | 0.0 | 0.0 |
-| radiation | 9.5 | 25.3 | | **fins** | **5.5** | **72.4** |
+| source | median signed, N | peak absolute, N |
+|---|---|---|
+| **pressure** (the planing hull's own) | **81.6** | **674.3** |
+| added mass | 23.9 | 80.4 |
+| buoyancy | 10.7 | 22.6 |
+| radiation | 9.5 | 25.3 |
+| **fins** | **5.5** | **72.4** |
+| rails (the side-face foils) | −2.2 | 14.6 |
+| friction | −0.2 | 1.6 |
+| bed · froth · suction | 0.0 | 0.0 |
 
 - **The rail makes the side force, through the planing pressure, and almost nothing else does.** The hull's pressure
   carries **81.6 N** of the median against the fins' **5.5** — a factor of **15** — and the rails' own side faces
@@ -174,7 +181,9 @@ over the shipped twelve's 780 frames — median signed, then peak absolute, N:
   default board's section is a flat sheet with a knife edge; `hull: 'rail'` (step 3.2u's band, `?hull=rail`, opt-in and
   off) is the one existing switch that moves where the lateral force comes from. Measured on the same twelve: the bank
   gain is **0.444–0.713 pooled** against the flat sheet's 0.625–0.832, the slope per unit sin(rail) is **3.22 m/s²**
-  at zero stick against 7.24, and the rider falls **sooner — 0.50–1.00 s against 0.77–1.70** [M, 36 runs].
+  at zero stick against 7.24, the pair's mean lateral acceleration is **1.33–2.08 m/s²** against 1.58–3.47 and so the
+  deficit the base owes the body goes **up**, to **1.05–1.85 m/s²** from 0.23–1.45, and the rider falls **sooner —
+  0.50–1.00 s against 0.77–1.70** [M, 36 runs].
   The band's suction never fires (median −0.0 N, peak 0.4) because there is no sideslip to bury a rail with.
   **I am not recommending the band**, and this is why.
 
@@ -185,20 +194,22 @@ specific force `a + g ŷ` [R, `AttachedRider.captureStep`] — so **the tilt the
 It is the deck's roll less whatever the board's own lateral acceleration has already rotated the felt vertical by.**
 That split, on the shipped twelve:
 
-| | min | median over the twelve | max |
-|---|---|---|---|
-| the deck's roll at the fall, ° | 20.9 | — | 63.0 |
-| **`pairFelt`'s tilt from the WORLD vertical at the fall, °** | **11.1** | — | **46.8** |
-| the test's own tilt (felt against the deck), ° | −15.9 | — | −7.4 |
-| the identity `roll − feltWorld + tilt`, ° | 0.181 | — | 1.591 |
-| `pairFelt`'s lateral part at the fall, m/s² | 1.44 | — | 7.98 |
-| `pairFelt`'s vertical part at the fall, m/s² | 7.15 | — | 9.04 |
-| the bank gain run by run at the fall, °/° | 0.446 | — | 0.836 |
+| | the span over the twelve |
+|---|---|
+| the deck's roll at the fall, ° | 20.9–63.0 |
+| **`pairFelt`'s tilt from the WORLD vertical at the fall, °** | **11.1–46.8** |
+| the test's own tilt (felt against the deck), ° | −15.9 to −7.4 |
+| the identity `roll − feltWorld + tilt`, ° | 0.181–1.591 |
+| `pairFelt`'s lateral part at the fall, m/s² | 1.44–7.98 |
+| `pairFelt`'s vertical part at the fall, m/s² | 7.15–9.04 (median over the run 8.87–9.67) |
+| the bank gain run by run at the fall, °/° | 0.446–0.836 |
+
+Every row is the whole population — twelve runs, min to max, not a confidence interval.
 
 **The felt vertical has already swung 11.1–46.8° off the world's.** That is not a small-denominator artefact: the
 vertical part of `pairFelt` is **7.15–9.04 m/s²** at the fall and a median **8.87–9.67** over the run, so `g` is still
-most of it and the tilt is genuine lateral acceleration. **The board has already done three quarters of the banking**
-and the residual 7.4–15.9° is all that is left.
+most of it and the tilt is genuine lateral acceleration. **The board has already done 45–84 % of the banking its own
+lean asks for** and the residual 7.4–15.9° of tilt is all that is left.
 
 And the gain is below one in every cell, measured two ways — `pairFelt`'s own tilt (which carries
 `SPECIFIC_FORCE_TIME`'s 0.1 s lag) and the probe's own un-lagged `atan2(latPair, g + pairAy)`. **It is a marginal
@@ -254,12 +265,16 @@ Each of these was a wrong number this probe printed first.
 2. **The tilt's sense is opposite to the roll's, and the identity is how you find out.** `tiltAcross` is taken on the
    board's +x in the board's frame and `roll`/`feltWorld` on the horizontal projection of that axis. With a minus the
    identity residual read **32.029°**; with a plus it reads **0.181–1.591°** over the twelve. Printed every frame, so
-   the datums are pinned by a number and not by a sentence. **This is the ninth frame error this project has found in
-   three weeks and the second one in a `tilt` column.**
+   the datums are pinned by a number and not by a sentence. **3.2y's §0 counted eight frame errors in two weeks; this
+   is another, and the reason it was caught in minutes rather than published is that the identity was printed from the
+   first run.**
 3. **A side force read two ways, because one way can be wrong quietly.** `latPair` comes from differencing the pair's
    momentum; `latWater` from summing `BoardBody.forces`' ten water entries. They are the same Newton's-third-law
    quantity from opposite ends and they agree to a median **0.000** and a peak **0.011 m/s²**. Had the rider's
-   coupling been leaking momentum, or had a force entry been double-booked, this column would have said so.
+   coupling been leaking momentum, or had a force entry been double-booked, this column would have said so — **and it
+   has the resolution to**: dropping the smallest entry that is not already zero (`friction`, a median 0.2 N) would
+   move it by 0.003 m/s², and dropping `addedMass` (23.9 N) by **0.32**, both against an observed peak of 0.011. The
+   agreement is a test, not an identity I arranged.
 4. **A pooled slope, because the per-run ones are not numbers.** The per-run regression of `latPair` on the rail
    returns **−1.4 to 7.7 m/s²/rad with R² 0.001 to 0.961** on the shipped twelve — because a run that never leaves
    20° of roll has no slope in it. The quoted slopes are over the **pool** of every frame of every run in the cell,
@@ -305,8 +320,9 @@ And one that cost nothing: `Math.max(...)` over a column holding a NaN returns N
   and `PLANT_SPEEDS`' −429.7 from above. The side force was real, the 0.00–0.38 was real, and only the comparison was
   wrong.
 - **My own candidate, the shaped rail.** `hull: 'rail'` lowers the bank gain (0.444 against 0.832), lowers the slope
-  (3.22 against 7.24 m/s² per unit sine) and brings the fall **forward** to 0.50–1.00 s. Raised and refuted inside one
-  round, on 36 runs.
+  (3.22 against 7.24 m/s² per unit sine), lowers the lateral acceleration (mean 1.33–2.08 against 1.58–3.47), **raises**
+  the deficit (1.05–1.85 against 0.23–1.45) and brings the fall **forward** to 0.50–1.00 s. Raised and refuted inside
+  one round, on 36 runs.
 - **The idea that a bigger stick would arrive faster.** Sticks 0.25, 0.5 and 1 give **identical** increments for the
   first 0.3 s, to the digit, because `leanPace` and `REFERENCE_RATE` bound the lean. The limit is a slew.
 - **Three of my own, each in §5**: a tilt identity off by 32°, a feet acceleration of 0.00 m/s² on a rider that has no
@@ -317,9 +333,10 @@ And one that cost nothing: `Math.max(...)` over a column holding a NaN returns N
 The brief's instruction was: *"If the measurement says the board can deliver it, say what the smallest honest
 controller would be and stop."* The measurement splits, so both halves are owed.
 
-**On magnitude the board can deliver**, by three to twenty times (§1.4). **On aim and on time it cannot**, and the
-second of those is structural: the only channel is the roll, the roll's gain into the felt vertical is 0.63–0.83, and
-the lean that commands it slews at 1.4 rad/s against a capsize of τ 0.245 s.
+**On magnitude the board can deliver**, by three to twenty times (§1.4). **On aim and on time it cannot**: the chain's
+dead time is about **0.25 s**, which is one whole capsize time constant, and its gain into the felt vertical is
+**0.63–0.83**, which is below the one a bank needs. The second of those is the structural half — the only channel is
+the roll, and the lean that commands it slews at 1.4 rad/s.
 
 **The smallest honest controller, if one is built anyway**, is a term the balance adds to the **lean reference** and
 nothing else: `leanAsked += k × (the capture point's across excursion)`, clipped inside `most` so it never asks for
@@ -393,6 +410,10 @@ did not take and a claim I am not making**; what I measured is our side of it.
   the string-versus-object trap in §5.5 made this round's first leg measure the default Canyon while believing it was
   measuring B. With no source file touched this is the only possible result, and it is run anyway because that is what
   a seatbelt is for.
+- **No rebase was needed.** `origin/main` was **50f43025** when the round started and still 50f43025 at the push,
+  checked twice with a fresh `git fetch`, so nothing of the wave track's was inherited or reverted across one — and
+  the deletions column below is the check that says so rather than `merge-base --is-ancestor`, which has caught none
+  of the eight.
 - **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the
   summary line — **0 deletions**, every file new, and `src/` not among them. The insertion count is the half that moves
   with every edit to this very bullet, so it is left to the PR's own summary line rather than frozen here in a number
@@ -440,7 +461,9 @@ roll the board, the water pushes on the tilted bottom. That is all honest; there
 held the stick over at six different settings, both into the fall and against it, twelve rides each — **seventy-two
 steered rides, plus the twelve with the stick at rest, and he falls on every single one of the eighty-four.** Steering
 does buy him time — the best setting keeps him up three times as long, five seconds instead of one and a half — but it
-never saves him.
+never saves him. Part of why is simple: **from the moment the stick goes over, about a quarter of a second passes
+before the board does anything at all**, because the stick has to move his body first and a body takes that long to
+lean. A quarter of a second is exactly how long the capsize takes to double. So the help arrives one doubling late.
 
 **Third, here is why, and it is one sentence.** When a surfer leans into a turn, the turn's own push swings "down"
 around until it points through his feet again — that is what banking *is*, and it is why a leaning surfer isn't
