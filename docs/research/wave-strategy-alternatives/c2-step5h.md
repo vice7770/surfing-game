@@ -357,10 +357,50 @@ and not mine.
 | `npx tsc --noEmit -p .` and `npx tsc --noEmit -p server/tsconfig.json` | **exit 0 each**, checked on their own line on the finished tree (`c2-step5h-runs/tsc.txt`) |
 | `src/wave/SprayCloud.test.ts` | **43 of 43**, four of them new: the alpha is no longer a constant (365 distinct values against the off leg's two) and the 0.2–1 mm band draws under 0.1; a sprite's cross-section is conserved as it spreads and its τ falls exactly as 1/D²; the drawn optical depth is the same at Low as at High; and the veil scales with the landing's own water, with φ's sourced floor asserted beside it |
 | `src/wave/PlungingLip.test.ts` and `src/game/PhysicalMode.test.ts` | 71 of 71 and 93 of 93 — **207 of 207** across the three files on the rebased tree (`c2-step5h-runs/suite.txt`) |
-| **the rebase** | the branch was cut from `main` at 47ac8719 and `origin/main` moved to **30b2accb** (the surfer track's step 3.2u) while it ran. Rebased onto it, and **everything above was re-run on the rebased tree** — including the Canyon byte check and the slow suite, both of which had to be restarted because the rebase changed files under them. `git diff --numstat origin/main HEAD` totals **17 deletions**, and all seventeen are lines of my own that I replaced |
-| `src/wave/SurfZoneSimulation.test.ts` | see `c2-step5h-runs/surfzone.txt` — started on its own early, as the brief asks, and run once on the committed tree |
+| **the deletions column, twice** | the branch was cut from `main` at 47ac8719 and `origin/main` moved **twice** under it — to 30b2accb (step 3.2u) and then to **b3ed7397** (step 3.2v, on the wave track's 89af1077). The second move was caught by the coordinator's own rule: `git diff --stat origin/main HEAD` read **2 092 deletions**, which would have reverted 3.2v, 89af1077 and the §7.4 the coordinator had just added to `c2-step5g.md`. `merge-base --is-ancestor` would not have shown it. Rebased again; the column now reads **17 deletions**, all seventeen lines of my own that I replaced, and `git diff --name-only origin/main HEAD -- src/` lists **`SprayCloud.ts` and its test, and nothing else**. Everything above was re-run on the rebased tree |
+| `src/wave/SurfZoneSimulation.test.ts` | **not run, and it is not a seatbelt.** The coordinator withdrew it mid-round: that file declares 29 per-test timeouts totalling 644.5 minutes, two tests holding 360 of them, so it cannot gate anything. My run of it was stopped and checked for orphaned workers (there were none). **Closed by reading instead — §6.1** |
 | **the Canyon byte check, on both protocols, with 5g's leg C** | `c2-step5h-runs/canyon-bytes.txt` |
 | **the default game** | unchanged. Every particle outside the veil's path keeps the constant alpha it had; `cross` is zero on all of them and the packing branch is `cross > 0` |
+
+### 6.1 `SurfZoneSimulation.test.ts`, closed by reading
+
+The coordinator withdrew this file as a seatbelt mid-round, with the measurement: **29 per-test timeouts totalling
+644.5 minutes, and two tests holding 360 of them between them.** It cannot gate a merge. Step 5g closed it the same
+way in its §7.3, so this follows that: name exactly what the change can reach, find every assertion that touches it,
+and read those sites.
+
+**What this change can reach.** The branch changes **one production file**: `src/wave/SprayCloud.ts`
+(`git diff --name-only origin/main HEAD -- src/` lists it and its test, and nothing else) [M]. Inside it:
+
+1. `LIP_VEIL.sprayShare`, `.mistShare` and the new `.sprayLife` — read **only** inside `veilSplash`.
+2. `VEIL_OPTICS` and `VEIL_CROSS` — new exported constants, read only inside `veilSplash` and `pack`.
+3. a new private `cross` array — zeroed in `spawn`, copied in `remove`, written **only** in `veilSplash`.
+4. `pack`: `particles[o + 4]` becomes `cross > 0 ? <new> : <the old expression, unchanged>`; `particles[o + 3]`
+   is the same arithmetic hoisted into a local.
+
+`splash()` calls `veilSplash` **only when `this.veil` is true**, and `this.veil` is set from `SurfZoneConfig.lipVeil`,
+which this branch does not touch (5g added it). So with the switch off, `cross` is zero on every particle, `pack`
+takes the old branch, and **every packed float is the value it was before** [C]. Nothing else in the simulation is
+reachable at all: no solver field, no foam, no air, no `LipImpact` key — 5g added `height` to that interface; **this
+round adds nothing to it.**
+
+**Every assertion in the file that touches any of it.** Grepped for `lipVeil`, `veil`, `LIP_VEIL`, `VEIL_`,
+`SprayCloud`, `spray`, `particles` and `SPRAY`:
+
+- `lipVeil` / `veil` / `LIP_VEIL` / `VEIL_` — **no hits at all**.
+- `SprayCloud` / `particles` / `SPRAY` — **no hits**; the file never imports the spray and never reads a packed
+  particle.
+- `spray` — **one hit, a comment**, at `:2181`: *"The lip impacts the water, the foam's air and the sound take are
+  the same; its splashes go to the drawn spray alone."* I read the assertions it introduces. They are
+  `expect(on.lipImpacts).toEqual(off.lipImpacts)` — a `toEqual` between two **live** `LipImpact[]` from two
+  simulations in the same run, so any key one carries the other carries, and this round adds no key anyway — and
+  `expect(off.drawnImpacts).toHaveLength(0)` with `splashes += on.drawnImpacts.length`, which **counts** drawn
+  impacts and never inspects one.
+- `hash` — one hit, and it is a comment, not an assertion.
+
+**So the change cannot reach a single assertion in that file**, and the reason is structural rather than lucky: the
+file tests the simulation, and everything here is downstream of it in a class the file never imports. The Canyon byte
+check below is the harder version of the same claim, taken from the bytes instead of from a reading.
 
 ---
 
@@ -424,5 +464,6 @@ and not mine.
   ```
   The off leg is the same address without `&lipVeil=on`. **The probe's own output is `<out>/probe-at72s.json` and
   its particles are under `spray.particles`, not at the top level** — one of this round's ten wasted minutes.
-- Not run: rider sessions, catch reports and autopilot rides (the brief's rule); Classic; the other spots; the worker
-  path; and anything in §5, which is diagnosed and not built.
+- Not run: `SurfZoneSimulation.test.ts`, withdrawn as a seatbelt mid-round and closed by reading instead (§6.1);
+  rider sessions, catch reports and autopilot rides (the brief's rule); Classic; the other spots; the worker path;
+  and anything in §5, which is diagnosed and not built.

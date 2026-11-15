@@ -1,7 +1,7 @@
 tsc --noEmit -p .                    EXIT 0
 tsc --noEmit -p server/tsconfig.json EXIT 0
 
-Both on the tree as rebased onto origin/main 30b2accb.
+Both on the tree as rebased onto origin/main b3ed7397 (step 3.2v).
 
 And the check was proved able to fail -- the brief's worktree trap is that `npx tsc` in a tree with no
 node_modules prints an install hint and exits 0. A deliberate `const __proof: number = 'not a number'`
