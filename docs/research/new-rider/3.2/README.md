@@ -6082,8 +6082,19 @@ of their grip, and the meter could not say any of that.
   checkouts' `buildBoardShape()` printed as raw IEEE bit patterns — the taper, the volume, the planform, the width, the
   centre of mass, all nine inertia terms and all ten fields of all 48 patches — **diff clean** [M].
   `results/32v/shapebits-32v.txt`.
-- **The Canyon bench**: `results/canyon-bytes-32v.txt`, the same command and the same reference as step 5f's, 3.2t's and
-  3.2u's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups, run **last, on the tree that merges**.
+- **The Canyon bench, all four hashes identical**: `results/canyon-bytes-32v.txt`, the same command and the same
+  reference as step 5f's, 3.2t's and 3.2u's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups, run
+  **last**. Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, default Canyon `ea3d57a4d49f4b48` / `a1a2555739210f96`
+  [M]. Every change this round is a readout, a measurement tool, a probe-only diagnostic or a fix to a tool whose own
+  switch is off in the game, so that is the expected result and not a surprise.
+- **The deletions check earned its place for the third round running, and this time it needs no caveat.** After the
+  hashes were measured, the column showed **16 deletions in `docs/research/wave-strategy-alternatives/c2-step5g.md`** —
+  the wave track had merged **89af1077** while this round ran, and the branch, being behind, would have reverted it.
+  Rebased onto 89af1077; no conflict, and the column is back to **9 deletions, every one mine**. 3.2u had to state an
+  unverified caveat at exactly this point; this round does not, and the reason is checkable rather than argued:
+  `git show --stat 89af1077` is **one documentation file, +16/−1, and no source file at all**, so the solver, the board,
+  the rider and every switch are byte-identical across the rebase and the four hashes are the rebased tree's own. Both
+  `tsc` runs and the 25-file suite were re-run on the rebased tree.
 - A wave-track agent shared the machine throughout; nothing of theirs was stopped.
 
 ## 7. What I am unsure of
