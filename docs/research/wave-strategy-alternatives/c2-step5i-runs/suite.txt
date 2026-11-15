@@ -1,0 +1,13 @@
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/surfing-game-wt/c2-step5i
+
+
+ Test Files  13 passed (13)
+      Tests  353 passed (353)
+   Start at  03:19:32
+   Duration  7.60s (tests 49%, transform 31%, import 20%)
+
+  Transform  transforming modules took 7.09s · 31% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

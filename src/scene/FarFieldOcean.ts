@@ -13,6 +13,7 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
+import { foamAlbedoColour } from './water/foamAlbedo';
 import { RICH_FAR_FOAM, RICH_REFLECTION, RICH_WATER, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
 import { richBodyGain } from './water/waterLight';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
@@ -219,7 +220,8 @@ export class FarFieldOcean {
       farFade: { value: new Vector2(1000, 1450) },
       // The mesh's open edges (x either side, offshore z), for the Rich horizon's share (`farHorizonShare`).
       farBounds: { value: new Vector3(-1500, 1500, -1500) },
-      waterFoamColor: { value: new Color('#d8f2e9') },
+      // The far whitecaps take step 5i's cap from the same source as the tank's (`foamAlbedo.ts`); no age out here.
+      waterFoamColor: { value: foamAlbedoColour() },
       waterFoamTile: { value: foamTileTexture() },
       waterFoamPattern: { value: 1 },
       waterTime: { value: 0 },

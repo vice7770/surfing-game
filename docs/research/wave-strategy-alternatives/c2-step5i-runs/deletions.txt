@@ -1,0 +1,31 @@
+C2 step 5i: the deletions column, read before the push.
+branch a08a3f4d, origin/main 9b3bb346
+
+$ git diff --stat origin/main HEAD | tail -2
+ src/scene/water/foamAlbedo.ts                      | 159 ++++++++
+ 24 files changed, 1128 insertions(+), 5 deletions(-)
+
+$ git diff --name-only origin/main HEAD -- src/
+src/scene/FarFieldOcean.ts
+src/scene/WaterSurface.ts
+src/scene/water/foamAlbedo.test.ts
+src/scene/water/foamAlbedo.ts
+
+Every deleted line, so the count is not taken on trust:
+-      waterFoamColor: { value: new Color('#d8f2e9') },
+-      waterFoamColor: { value: new Color('#d8f2e9') },
+-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${this.barrelEnabled ? waterNoCarvePars : waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}` : ''}${rockBedProgramKey(this.rockBedEnabled)}`;
+
+-- **Neither has touched item 4**, which 5h measured and recommends over both of them.
+
+(the fifth is a markdown bullet, so it reads '--' in the diff)
+
+Five deletions, and all five are lines of my own that I replaced: the two
+waterFoamColor uniform literals, two lines of the WaterSurface fragment and cache-key
+expressions, and the one line of the reference README's 'where the rounds have got to'.
+
+main moved under the branch while this round ran, f7f08766 -> 9b3bb346 (the surfer track's
+step 3.2w). 'git diff --name-only f7f08766 origin/main -- src/ scripts/ server/' is empty:
+(nothing above this line) -- all three of its commits are under docs/, which is why the
+Canyon legs did not have to be re-run after the rebase.

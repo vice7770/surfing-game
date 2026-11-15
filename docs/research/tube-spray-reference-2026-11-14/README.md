@@ -72,4 +72,11 @@ The coordinator guessed from this that **"the question is not 'build a particle 
 
 - **5g** (`../wave-strategy-alternatives/c2-step5g.md`) fixed the **height and the place**: `?lipVeil=on`, opt-in, put 95 % of the veil's drawn optical area below 2.40 m against the 2.2–2.4 m this file's ratio asks of our 1.41 m crest, and moved the cloud onto the break. It left the **material** wrong — a scatter of opaque dots.
 - **5h** (`../wave-strategy-alternatives/c2-step5h.md`) fixed the **material**: each sprite's alpha now comes from the water it stands for, so sprites that overlap add optical depth instead of stacking discs. Measured against a perfect control (the same frame with and without the switch), the veil now **attenuates** its background where 5g's **added structure to it** — sd ratio 0.77–0.92 against 1.01–1.04, and 1.31 against 2.03 over the pool wall. It also says plainly what is still wrong: **the veil's body standing over the crest is about ten times too thin to read**, and no constant fixes that, because translucency and sprite count pull against each other.
-- **Neither has touched item 4**, which 5h measured and recommends over both of them.
+- **5i** (`../wave-strategy-alternatives/c2-step5i.md`) took **item 4**, which 5h measured and recommended over both
+  of them: `?foamAlbedo=on`, opt-in, levels the foam's albedo to the sourced **0.50** of an active whitecap and ages
+  it to **0.18**. On this frame's own geometry the near-white share of the broken region falls from **83.5 % to
+  18.7 %** against this photograph's **14.6 %**, and the within-frame ratio from **1.310 to 1.102** against its
+  **0.748** [M]. Item 4's relief partly follows: the local variation over 8 px tiles goes 2.98 → **4.93** against
+  **5.05** here, while the region's large-scale contrast is still about half. **Item 5 is still open**, and 5i
+  refutes half of 5h's reading of it — our flat water does carry a grazing Fresnel sky (`skyReflection.ts`); it is
+  0.80× this photograph's for some other reason, untested.

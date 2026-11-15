@@ -1,0 +1,28 @@
+ENCODING: sRGB inverse EOTF per channel, Rec. 709 luminance, mean over pixels. Ratios are within one frame.
+
+the owner's photograph (1280 x 720)
+  broken foam   n 101760  linear mean 0.5672  sd 0.1408
+  glassy water  n  60000  linear mean 0.7582  sd 0.0984
+  clean face    n  50000  linear mean 0.2227  sd 0.0428
+  WITHIN-FRAME RATIO broken / glassy water = 0.748   (broken / clean face = 2.547)
+
+== side ==
+  off broken n  63800 mean 0.7975 sd 0.0739 | flat n  50000 mean 0.6089 sd 0.0244 | RATIO 1.310  (broken / clean face 3.622)
+  on  broken n  63800 mean 0.6627 sd 0.0857 | flat n  50000 mean 0.6012 sd 0.0212 | RATIO 1.102  (broken / clean face 3.009)
+  footprint (the pixels the switch moves): n 232564 (25.23 % of the frame)  OFF mean 0.6919  ON mean 0.5839  ON/OFF 0.844
+
+== front ==
+  off broken n  33750 mean 0.8705 sd 0.0323 | flat n  23400 mean 0.4677 sd 0.0829 | RATIO 1.861
+  on  broken n  33750 mean 0.7697 sd 0.0674 | flat n  23400 mean 0.4575 sd 0.0825 | RATIO 1.682
+  footprint (the pixels the switch moves): n 429392 (46.59 % of the frame)  OFF mean 0.7786  ON mean 0.6977  ON/OFF 0.896
+
+== above ==
+  off broken n  41400 mean 0.8529 sd 0.0409 | flat n  39600 mean 0.5277 sd 0.0260 | RATIO 1.616
+  on  broken n  41400 mean 0.6943 sd 0.0733 | flat n  39600 mean 0.5277 sd 0.0260 | RATIO 1.316
+  footprint (the pixels the switch moves): n 453855 (49.25 % of the frame)  OFF mean 0.7662  ON mean 0.6664  ON/OFF 0.870
+
+== bore-face ==
+  off broken n 108000 mean 0.7817 sd 0.0605 | flat n  40000 mean 0.5755 sd 0.0712 | RATIO 1.358
+  on  broken n 108000 mean 0.5747 sd 0.0897 | flat n  40000 mean 0.5629 sd 0.0556 | RATIO 1.021
+  footprint (the pixels the switch moves): n 505127 (54.81 % of the frame)  OFF mean 0.7152  ON mean 0.5843  ON/OFF 0.817
+
