@@ -1,9 +1,11 @@
-tsc -p .        EXIT 0
-tsc -p server   EXIT 0
+tsc --noEmit -p .                    EXIT 0
+tsc --noEmit -p server/tsconfig.json EXIT 0
 
-And the check was proved able to fail (the brief's worktree trap: npx tsc in a tree with no node_modules
-prints an install hint and exits 0). A deliberate `const __proof: number = 'not a number'` appended to
-src/wave/SprayCloud.ts gave:
+Both on the tree as rebased onto origin/main 30b2accb.
+
+And the check was proved able to fail -- the brief's worktree trap is that `npx tsc` in a tree with no
+node_modules prints an install hint and exits 0. A deliberate `const __proof: number = 'not a number'`
+appended to src/wave/SprayCloud.ts gave:
 
   src/wave/SprayCloud.ts(1204,7): error TS2322: Type 'string' is not assignable to type 'number'.
   PROOF EXIT 2
