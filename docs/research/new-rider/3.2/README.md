@@ -5565,13 +5565,16 @@ both, and the right change is to add the face cell beside it, not to move it.
 ## 7. Seatbelts
 
 - **The deletions column, checked before the push, as the brief requires.** `git diff --stat origin/main HEAD`:
-  **35 files, 3 084 insertions, 61 deletions, and every one of the 61 is a line of mine that another line of mine
+  **37 files, 3 594 insertions, 61 deletions, and every one of the 61 is a line of mine that another line of mine
   replaced** (28 in `boardShape.ts`, 18 in `BoardBody.ts`, 9 in `hullForces.ts` and 5 single-line replacements) [M].
-  **And the check earned its place again.** Branched at 691cac46, the wave track pushed **ebd79d76** while this round
-  ran; against that new `origin/main` the same command showed **15 deletions across `c2-step5b-runs/setup.txt` and
-  `setup-120s.txt`** — its work, which my branch would have reverted by being behind it. Rebased onto ebd79d76; the
-  column is now 61 and all mine. `git merge-base --is-ancestor` would not have caught it, and neither would reading the
-  insertions.
+  **And the check earned its place twice in one round.** Branched at 691cac46. The first run showed **15 deletions**
+  across `c2-step5b-runs/setup.txt` and `setup-120s.txt` — the wave track had pushed **ebd79d76** while this ran, and my
+  branch would have reverted it by being behind. Rebased. The second run, three hours later while the Canyon bench
+  crawled, showed **1 676 deletions** across `c2-step5g.md`, **`src/wave/SprayCloud.ts` (244)**,
+  `SprayCloud.test.ts` (130) and eleven `c2-step5g-*` files — step 5g, merged in the meantime. Rebased onto
+  **47ac8719** (one conflict, `src/main.ts`'s switch list, resolved as the union of its `lipVeil` and my three), and the
+  column is 61 and all mine. `git merge-base --is-ancestor` would not have caught either one, and neither would reading
+  the insertions.
 - `npx tsc --noEmit -p .`: **exit 0**, on its own line, in a worktree whose `node_modules` is linked to the main
   checkout's. **And the check is proved able to fail**: with one line of `const x: number = 'not a number'` injected
   into `hullForces.ts` it exits **2** [M]. `npx tsc -p server/tsconfig.json --noEmit`: **exit 0**.
@@ -5579,7 +5582,8 @@ both, and the right change is to add the face cell beside it, not to move it.
   `predictiveBalance`, `standingBody`, `humanBalance`, `BoardBody`, `boardShape`, `hullForces`, `railSection`,
   `legDrive`, `snapCross`, `legPower`, `compressTurn`, `cutback`, `leanOut`, `carveFlex`, `RideSession`, `duckTwoBody`,
   `deckHollow`, `finForces`, `BoardRecovery`, `duckDive` (`src/physics/`) and `PhysicalMode` (**`src/game/`**):
-  **23 files passed, 429 passed, 13 expected fail, 0 failures**, exit 0, and
+  plus `SprayCloud` (`src/wave/`, step 5g's, so the rebase is covered too):
+  **24 files passed, 468 passed, 13 expected fail, 0 failures**, exit 0, and
   `grep -E "Error:|AssertionError"` over the log is **empty** [M]. `results/suite-rider-32u.txt`.
 - **One red test earned its keep and it is worth recording why.** The first run of that suite failed `duckTwoBody`'s
   3 s dive — and it was right to. Writing the taper's solve to take either exponent had changed
@@ -5612,7 +5616,12 @@ both, and the right change is to add the face cell beside it, not to move it.
   `?railSuction=off`, `?compressPull=off`), so that is the expected result and not a surprise. The per-step times are
   *slower* than 3.2t's (18.17/28.16 ms against 11.79/13.03 for Canyon B) because a wave-track agent held two cores at
   about 92 % throughout — the run took three hours of wall clock for eighteen minutes of CPU. **The hashes are the
-  claim; the milliseconds are not.** **What making it default would cost is in §4 line 6 and it is not nothing**, which is why it is not default.
+  claim; the milliseconds are not.** One honest caveat on the chain: those hashes were measured on this branch **before**
+  the rebase onto step 5g, and I did not spend another three hours re-running them afterwards. The chain holds because
+  **5g's own leg A — the default Canyon on its merged code — reports `ea3d57a4d49f4b48` / `a1a2555739210f96` too**
+  (`c2-step5g-runs/canyon-bytes.txt`), so 5g did not move the default path either [M, its measurement, not mine]. The
+  rebase's one code conflict was a switch list in `src/main.ts`, and `tsc` and the 24-file suite were both re-run on the
+  rebased tree. **What making it default would cost is in §4 line 6 and it is not nothing**, which is why it is not default.
 - A wave-track agent shared the machine throughout; nothing of theirs was stopped, and its two uncommitted files in the
   main checkout were left alone (this round ran in a worktree).
 
