@@ -289,6 +289,15 @@ export interface SurfZoneConfig {
    */
   feltFrame?: 'deck';
   /**
+   * 'achieved': the new surfer's balance reads the **knees' travel left** at the depth its leg has actually reached
+   * rather than at the depth the player commands, so its own knee drop spends the travel it is using instead of
+   * reaching `CROUCH_DEPTH` on a standing stance and leaving Compress nothing to add (step 3.3f;
+   * `RideSessionOptions.kneeRoom`, `humanBalance`'s `stanceRoom`). The new surfer (`?rider=new`) only; nothing on the
+   * default rider, no force and no hull law is touched. Every spot. The `?kneeRoom=achieved` dev switch, opt-in, to
+   * ride; online rooms run the default.
+   */
+  kneeRoom?: 'achieved';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

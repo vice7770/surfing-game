@@ -1802,3 +1802,435 @@ And two things to feel for that the probe cannot judge:
 - **the flip.** Take a wipeout on purpose in 2 and watch the board once it is upside down in the water. The switch is
   built so that a flipped board is never pushed under by its own float, and there is a test that holds that — but a
   test is not a wipeout.
+
+---
+
+# Part 29 — the probe that could not see a fall, the turn we already have, and the knees' travel priced where the leg is
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33f`, cut from `main` at
+**058588b9** (step 3.3e's merge), so Part 28 and `3.3/stance-depth.md` are its base. **This round ships one change to
+the game, opt-in and off by default** — `?kneeRoom=achieved` — plus one read-only probe getter, one new probe
+(`3.3/turn.ts`), a corrected citation in `AttachedRider`, and **96 runs** over twelve cells, four stances and two
+riders, with a 48-run A/B of the switch on top.
+
+Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
+inference from a stated model.
+
+## 0. The five sentences the round is for
+
+1. **Step 3.3e's probe could not see a fall, and 96 of 96 runs in this round fall.** `AttachedRider.separate` sets
+   `attached = false` and leaves `phase` and `upright` exactly as they were [R], so a **balance separation while
+   standing** moves neither; 3.3e's fall test was `!upright || phase !== 'standing'`, which **never fires for one**.
+   Its *"84 of 84 runs stood"* is the test, not the rides. On the identical cell and movement, **48 of 48 runs fall on
+   `?rider=new` at 1.08–4.15 s and 48 of 48 on the default rider at 1.55–7.07 s** [M]. Once the rider is off, `prepare`
+   is no longer called at all, so every rider column **freezes at its last value** while the probe keeps reading the
+   heading of a riderless board — and **22.7–92.7 % of 3.3e's own 0.5–9 s window is those dead frames** [M]. Every
+   other probe in this folder (`across.ts`, `deck.ts`, `felt.ts`, `buoy.ts`, `3.2/turnpath.ts`) tests `!attached`;
+   **`3.3/stance.ts` is the only one that does not**, so the trap is step 3.3e's alone.
+2. **So the brief's build half is refuted at the measured level, and resized rather than deleted.** Paired tall →
+   Compress over twelve cells, the hips drop **0.067–0.299 m in 12 of 12 on `?rider=new`** against **0.296–0.300 m in
+   12 of 12** on the default rider [M] — **22–100 % of the button's designed 0.30 m, not the 0.03–0.12 m (a tenth to a
+   third) 3.3e reported.** The loss is real and it tracks the balance's knees cell by cell (0.285–0.299 m where
+   `knees` ≤ 0.04, 0.067–0.168 m where it is ≥ 0.6), and its cause is one line of the design table: **`stanceRoom(0)`
+   leaves the knees 0.30 m, which *is* `CROUCH_DEPTH`**, so a saturated correction reaches the button's own depth while
+   still being granted the tall stance's hip range and free arms.
+3. **And the brief's measure half is refuted the other way: we already have the turn, on the rider the owner rides.**
+   On `?rider=new` at a **full stick**, pooled over four stances, the heading rate runs at a median of **57.7 °/s** in
+   a **median arc of 1.00** — one monotone turn, no wag — and the 18 runs of 48 whose arc is ≥ 0.99 put **37.2–88.1° on
+   the board in 0.87–2.33 s** [M]. The best is **87.5° in 1.117 s**, against Forsyth et al. 2024's **99 ± 4° in
+   0.96 ± 0.04 s** on 835 turns [S]. **Our turn is within about 15 % of a measured professional bottom turn's clock.**
+   3.3e's 2.30–3.53 s is the **default** rider's, which the owner does not ride, and its 2.97–3.17 s for the new rider
+   was read off a board the rider had already left.
+4. **What we do not have is a rider who survives it, and the trade is monotone in the stick.** Over 48 new-rider runs,
+   as the stick goes 0.25 → 0.5 → 0.75 → 1 the median rate goes **14.2 → 22.8 → 41.3 → 57.7 °/s**, the median arc
+   **0.54 → 0.61 → 0.99 → 1.00**, and the median time on the board **3.07 → 2.76 → 1.71 → 1.43 s** [M]. Of the 18
+   monotone arcs, the rider comes off **0.22–0.73 s after the turn ends** in every one. **The rate and the arc are
+   bought with the ride**, and that is the owner's own third cause — *"its balance is fixed mid turn"* — arriving as a
+   number.
+5. **The brief's named mechanism is refuted, and its named candidate switch does nothing.** The lean cap — `most =
+   planing ? min(MAX_BANK, atan(v²/(g·TURN_RADIUS))) : 0`, which falls as the square of the speed and is **exactly
+   zero off the plane** [R] — binds in **0.00–0.01** of commanded frames in the default rider's tall and Compress runs
+   and **0.00–0.13** in the new rider's, with the board off the plane in **0.00–0.10**; the board's forward speed
+   through the water holds at **7.0–10.4 m/s** at the median, so **the turn does not scrub itself out of its own
+   ceiling on this cell** [M]. (It *is* live in Snap: off the plane in up to **0.19** of frames, cap binding in up to
+   **0.23**, the speed through the water reaching 0 — §5.) And `snapLegs: 'drive'`, measured against a plain `snap`
+   control this round added for the purpose, is **indistinguishable from it on every column** [M]: §6.
+
+## 1. The instrument, and the trace that found it
+
+The round began by reproducing 3.3e's table byte-for-byte on the rebuilt probe (tall hips **0.48–0.73 m**, Compress
+**0.44–0.48**, tall asking 0.09–0.30 m of crouch and getting 0.05–0.29) [M]. The new probe then traced one Compress
+run frame by frame, and at **t = 2.217 s** four unrelated quantities froze at once and stayed frozen for 6.8 s: the
+speed through the water at 6.450 m/s, the lean cap at 43.528°, the lean asked at 43.238°, the balance's knees at 0.505,
+the leg's rest at 0.304 m (`results/33f/33f-dead-frames-trace.tsv`). A board decelerating from 5.75 to 2.61 m/s cannot
+hold a constant forward speed through the water, so `prepareBank` was not running. `upright` was `true`, `phase` was
+`'standing'`, `freeBody` was `1`, the sample under the board was wet and inside the domain — and `attached` was
+**false**, with `separation` reading **`'balance'`** [M].
+
+```
+  prepare()      →  if (this.attached)  …   (BoardBody.substep)
+  separate(cause) →  this.attached = false;  // phase and upright untouched
+  banking         →  this.upright && this.phase === 'standing' && this.banked
+```
+
+**That is the whole of it.** A balance fall takes the rider off the board and leaves the two fields 3.3e tested
+untouched, so its loop ran on to 9 s every time. The consequences, in order of how much they cost:
+
+- **`stance.ts`'s stance medians are dominated by dead frames.** The dead share of its 0.5–9 s window is
+  **0.571–0.918 (median 0.709)** for the new rider's tall runs and **0.590–0.927 (median 0.790)** for its Compress
+  runs; on the default rider **0.367–0.769** and **0.227–0.418** [M]. In those frames the leg's rest holds whatever the
+  correction had it at when the rider let go — on a tall run, a deep balance crouch — for the rest of the window, which
+  is why 3.3e's tall column reads 0.48–0.73 m where the same runs' **live** frames read 0.518–0.780 (§3).
+- **Its "to 85°" column is not a turn time wherever the fall came first.** Reached **before** the fall: default rider
+  12 of 12 in Compress and 11 of 12 tall (3.3e's clock for that rider **survives**, and that is said as plainly as the
+  rest); new rider **2 of 12 in Compress, 3 of 12 tall** [M].
+- **Its 84 of 84 is not a fall population and its peak-rate pool is not one rider's.** §5.
+
+**What this does not touch.** The game itself checks both (`this.phase !== 'standing' || !this.attached`, and
+`const standing = this.phase === 'standing' && this.attached` [R]), so this is a probe trap and not a bug in the
+shipped rider. And it does **not** reach back into Parts 25–28: their probes test `!attached`.
+
+## 2. What was built, in one line of physics
+
+`stanceRoom(depth)` is the design's table of **what a stance leaves the balance** — the knees' travel left, the hip's
+range, the arms free or committed — and `prepareLeg` reads it at the depth **the player commands**, with its own
+comment stating the consequence: *"The balance's own knee drop is not counted: it spends the stance's travel"* [R].
+`kneeRoom: 'achieved'` reads the **knees' entry only** at `max(commanded, the leg's own depth)` instead. **No force is
+added, removed or re-pointed; no hull law, no spot's drive and nothing the online rooms share is touched**, and the
+hip's range and the arms are deliberately left on the commanded stance so the switch moves exactly one quantity.
+
+**Why that is the honest key and not a knob.** The table's rows are a body's own geometry: a body whose knees are
+already bent 0.30 m has the room of a body bent 0.30 m, whoever bent them. Read at the commanded depth, a **standing**
+rider at `knees` = 1 rests its leg at `0 + 1 × stanceRoom(0).kneeTravel` = **0.30 m = `CROUCH_DEPTH`** — the button's
+whole depth, reached by the correction, at none of the button's price (`stanceRoom(0)` still grants ±1.2 rad of hip and
+free arms). Read where the leg is, the drop has a **fixed point**: `d = kneeTravel(d)` iterates to **0.1696 m** [I],
+so the correction keeps **57 %** of its travel and stops short of the stance. **Nothing is deleted.** `kneeRoom.test.ts`
+asserts the two table values, the fixed point, that the default rider is byte-identical with the switch on, and that
+the new rider is byte-identical wherever `knees` never leaves 0.
+
+**What the knee drop is for, since the brief asked and 3.3e's §1.4 bears on it.** In *our* model it is not a static
+balance term — 3.3e's arithmetic is right that `h` is absent from `m·g·(d − x)` — but it is a **dynamic margin** term
+twice over: `humanBalance`'s capture point is `px = offset.x − height · nx` and its `ω₀ = √(g/h)` [R], so a shorter leg
+both shortens the lever on the filtered vertical and pulls the capture point in. That is 3.3e's own rows 2 and 3
+(lateral tolerance ∝ 1/h, velocity tolerance ∝ 1/√h), and it is why this round prices the drop rather than removing it.
+
+## 3. The contrast, paired, twelve cells — and the figure that was an artefact
+
+The water and the movement are 3.3e's, so the columns are comparable: the **Canyon-matched** `FaceWater` (1.4 m, 2.6 m
+deep, 16°, 5.7 m/s, PR #223's fit to Canyon B's arm — **a fit to Canyon, not Canyon**), the board placed 0.75 face
+lengths onshore of the crest 45° off the fall line, the stance held and the stick over from the first frame until the
+board is 85° round, then centred. **Twelve cells** (3 entry speeds × 4 sticks) a stance a rider, 9 s each, the stance
+columns from 0.5 s — `stance.ts`'s own window, so that the **only** difference left is the fall test.
+
+| cell (entry, stick) | `knees` tall | hips tall, m | hips Compress, m | **Δ, m** | hips tall with **`kneeRoom=achieved`** | **Δ with it** |
+|---|---|---|---|---|---|---|
+| 0, 0.25 | 0.000 | 0.780 | 0.481 | **0.299** | 0.780 | 0.299 |
+| 0, 0.5 | 0.009 | 0.777 | 0.480 | 0.297 | 0.777 | 0.297 |
+| 0, 0.75 | 0.612 | 0.647 | 0.479 | **0.168** | 0.686 | **0.207** |
+| 0, 1 | 0.630 | 0.620 | 0.479 | **0.141** | 0.668 | **0.189** |
+| 1.5, 0.25 | 0.016 | 0.776 | 0.480 | 0.296 | 0.776 | 0.296 |
+| 1.5, 0.5 | 0.180 | 0.731 | 0.470 | 0.261 | 0.737 | 0.266 |
+| 1.5, 0.75 | 0.978 | 0.518 | 0.451 | **0.067** | 0.618 | **0.162** |
+| 1.5, 1 | 0.997 | 0.575 | 0.454 | **0.121** | 0.615 | **0.156** |
+| 3, 0.25 | 0.039 | 0.765 | 0.480 | 0.285 | 0.766 | 0.286 |
+| 3, 0.5 | 0.317 | 0.692 | 0.476 | 0.216 | 0.708 | 0.232 |
+| 3, 0.75 | 0.654 | 0.613 | 0.462 | **0.151** | 0.660 | **0.195** |
+| 3, 1 | 0.960 | 0.518 | 0.451 | **0.067** | 0.621 | **0.166** |
+
+**Read it three ways.**
+
+1. **The defect is real and it has a law.** Where the balance's knees are effectively down at nothing the button
+   delivers its full travel (0.285–0.299 m in the four cells with `knees` ≤ 0.04, against the default rider's
+   0.296–0.300 m in 12 of 12). Where they saturate it delivers **0.067–0.168 m**. The relation is monotone in `knees`
+   across the twelve cells [M], and the mechanism is read in the code, not inferred: `stanceRoom(0).kneeTravel` **is**
+   `CROUCH_DEPTH`.
+2. **But it is half the size 3.3e reported, and the difference is the dead frames.** 3.3e's figure — *"Compress adds
+   only 0.03–0.12 m in 4 of 6 paired runs"*, which its own §0.4 calls *"the one actionable defect of the round"* — is
+   **0.067–0.299 m in 12 of 12** when the frames after the rider has come off are dropped. Nothing else changed: same
+   water, same movement, same inputs, same 0.5 s window, the same probe reproducing 3.3e's published table to the digit
+   before the test was corrected. **57–92 % of 3.3e's tall sample is a frozen leg on a riderless board.**
+3. **The switch does what it was built to do, and only that.** The contrast **grows in 9 of 12 cells and is unchanged
+   in the 3 where `knees` ≈ 0** — which is the right shape for a change that prices a correction — and the span goes
+   **0.067–0.299 → 0.156–0.299 m**: the floor goes from **22 % to 52 %** of the designed 0.30 m. **Compress itself is
+   untouched** (0.451–0.481 m either way, every cell within 0.005 m): what moves is the **standing** stance, which
+   comes back up from 0.518 to 0.615–0.621 m in the saturated cells — so the surfer also stops looking permanently
+   crouched when nothing is pressed. And the measured standing depth at `knees` = 1, **0.159–0.165 m**, lands within
+   0.01 m of the fixed point predicted from the table alone (0.1696 m), which is the mechanism confirming itself.
+
+**And the cost, stated where it would be.** The correction loses 43 % of its travel, so the obvious price is falling
+sooner. Over the same 24 runs the fall is **1.117–4.15 s with the switch off and 1.067–4.15 s with it on**, medians
+**2.63 and 2.59 s**, later in 6 of 24 and earlier in 10 [M]. **I will not call that a cost and I will not call it
+free**: it is a 0.04 s difference in a median over 24 runs that already fall 24 of 24, which is inside this cell's own
+spread. The turn columns do not move either (Compress's mean rate 7.9–55.9 → 7.9–53.3 °/s, the arc's span identical,
+85° reached by the same 2 of 12 at the same 2.967 and 3.167 s). **The switch restores a contrast. It does not fix the
+turn and it does not fix the fall, and nothing here should be read as claiming either.**
+
+## 4. The turn, measured as a shape — and the arc we already have
+
+3.3e's handover was *"we have the rate in spikes, not in an arc"*. The probe measures that directly: **`arc`** is the
+net heading change over the total absolute heading travel through the **commanded** turn (1 is one monotone turn, 0 a
+wag), and **`mean`** is the net heading over that turn's own duration — the rate a turn actually delivers, which is the
+quantity Forsyth's 99° in 0.96 s is. Both are restricted to the frames where the stick is still asking, because pooling
+the drift after the stick centres deflates the arc and fills a spike census with spikes that ended because the turn was
+over.
+
+| | to 85° | `mean` rate | 0.25 s peak | peak/mean | `arc` | against the turn |
+|---|---|---|---|---|---|---|
+| **[S] Forsyth 2024, bottom turn** (n = 6, 835 turns) | **99 ± 4° in 0.96 ± 0.04 s** | **103 °/s** (1.80 rad/s) | 109 °/s (1.9 ± 0.1) | **1.06** | — | — |
+| **[M] default rider, Compress** (12) | 1.72–4.85 s, **12 of 12** | 18.6–59.3 | 45.8–81.9 | 1.13–2.59 | **0.92–1.00** | 0.00–0.11 |
+| **[M] default rider, tall** (12) | 1.70–4.43 s, 11 of 12 | 1.9–62.6 | 46.7–88.6 | 1.42–24.63 | 0.19–1.00 | 0.00–0.39 |
+| **[M] new rider, Compress** (12) | 2.97–3.17 s, **2 of 12** | 7.9–55.9 | 45.7–142.4 | 1.70–12.74 | 0.20–1.00 | 0.00–0.33 |
+| **[M] new rider, tall** (12) | 1.67–3.13 s, 3 of 12 | 4.7–65.7 | 61.4–199.7 | 1.67–21.38 | 0.12–1.00 | 0.00–0.29 |
+| **[M] default rider, Snap** (12) | 2.88–4.55 s, 4 of 12 | 1.9–45.9 | 36.2–186.7 | 3.11–31.61 | **0.10–0.71** | 0.25–0.46 |
+
+**Four things come out of that table, and the fourth is the round's answer.**
+
+1. **"Spikes, not an arc" is false for the stances the owner turns in and true for Snap.** The default rider's Compress
+   runs are **0.92–1.00** on the arc with **0.00–0.11** of their frames turning the wrong way: one clean monotone turn,
+   twelve times. Snap is **0.10–0.71** with **a quarter to nearly half** of its frames turning against the turn — and
+   that is where 3.3e's spiky picture lives.
+2. **The one-frame peak was not the artefact I expected.** Smoothed to 0.10 s and 0.25 s — what a board IMU would
+   report — the peak holds at 70–95 % of the single-frame figure in every stance [M], so 3.3e's peak rate is not frame
+   noise. **The pooling is the problem instead**: 3.3e's 72.7–228.6 °/s pools Snap, `snapdeep` and both riders.
+   **Taken apart, 0 of 24 default-rider runs in tall or Compress reach Forsyth's 109 °/s peak, and 0 of 12 Compress
+   runs reach even its 103 °/s *mean*.** On that rider we have neither the peak nor the mean, and 3.3e's *"our peak
+   rate is not the problem"* does not hold for it.
+3. **The arc's shape is the right way to say what is slow about the default rider.** A real bottom turn runs at
+   essentially its own peak for the whole 0.96 s (peak/mean **1.06**); ours in Compress runs at **1.13–2.59**, i.e. the
+   arc spends most of itself at 40–90 % of a peak that is already 0.42–0.75 of the measured one. Its mean rate is
+   **0.32–1.03 rad/s** against 1.80.
+4. **And on the rider the owner actually rides, the turn is already there.** Pooled over the four stances, 12 runs a
+   stick:
+
+| stick | median `mean` rate | median `arc` | median time on the board | net heading, span |
+|---|---|---|---|---|
+| 0.25 | 14.2 °/s | 0.54 | **3.07 s** | 7.5–89.3° |
+| 0.5 | 22.8 | 0.61 | **2.76 s** | 3.7–87.3° |
+| 0.75 | 41.3 | 0.99 | **1.71 s** | 4.4–87.3° |
+| **1** | **57.7** | **1.00** | **1.43 s** | 37.2–88.1° |
+
+   **The rate quadruples and the arc closes to monotone exactly as the time on the board falls by half.** Of the 48
+   runs, **18 have an arc ≥ 0.99**, and they put **37.2–88.1° on the board in 0.87–2.33 s** — the fastest **87.5° in
+   1.117 s**, which is Forsyth's clock within about 15 % and the owner's own *"around two seconds turning"* with room
+   to spare. **In every one of the 18 the rider comes off the board 0.22–0.73 s after the turn ends.** On the default
+   rider the same ladder is nearly flat (median rate 19.5 → 32.7 °/s, median fall 5.33 → 3.87 s): it turns slowly and
+   stays on. **The two riders fail in opposite ways, and the one the owner rides does not fail on the turn's clock.**
+
+**The caveat this rests on, said before anyone quotes the number.** `mean` is measured over the commanded turn, which
+ends at the fall, so a run that falls early shows only its opening and a correlation between "fast" and "falls soon"
+could be that selection. Two things answer it and neither is a defence of the correlation: the ladder above is on the
+**stick**, which is an input and not an outcome, and the 18 monotone runs reached **37–88° of net heading**, which is a
+turn and not an opening. **I claim the dose-response on the stick. I do not claim a per-run correlation.**
+
+## 5. What ends a spike, and the candidate that is refuted
+
+The census: a spike is a maximal run of frames whose 0.10 s rate is over half that run's own peak, at least 0.05 s
+long, inside the commanded turn; at the frame each one ends on, five named terminators are read. **The brief's named
+candidate was the lean cap**, and it is the one thing here that is cleanly refuted.
+
+`prepareBank` caps the lean at `most = planing ? min(MAX_BANK, atan(v²/(g·TURN_RADIUS))) : 0`, `TURN_RADIUS` = 4.5 m
+[R]. It falls as the square of the speed (36° at 5.7 m/s, 20° at 4, 11° at 3) and is **exactly zero off the plane**,
+which latches off under `PLANING_DROP` = 3 m/s and back on over 4 — so a turn that scrubs itself under 3 m/s is
+allowed no lean at all. On this cell it does not happen. Over the commanded turns:
+
+| | board off the plane | cap under the ask | cap under the rail | speed through the water, least |
+|---|---|---|---|---|
+| **[M]** default rider, tall / Compress | 0.00 / 0.00 | 0.00–0.01 / 0.00 | 0.00–0.10 / 0.00 | 3.25 / 4.08 m/s |
+| **[M]** new rider, tall / Compress | 0.00–0.10 / 0.00 | 0.00–0.11 / 0.00–0.13 | 0.00–0.17 / 0.00–0.12 | 0.70 / 3.01 m/s |
+| **[M]** default rider, Snap / `snapdrive` | 0.00–0.19 / 0.00–0.17 | 0.00–0.23 / 0.00–0.11 | 0.00–0.19 / 0.00–0.18 | 1.33 / −0.01 m/s |
+
+**The board does not slow out of its own ceiling on this cell**: the forward speed through the water holds at
+7.0–10.4 m/s at the median in tall and Compress, the cap sits at 48–68°, and the ask (12.5–50°) is under it in all but
+a few per cent of frames. **The cap is live in Snap** — off the plane in up to 19 % of frames there, with the speed
+through the water reaching 0 — which is worth carrying forward, but Snap is not the stance the owner's bottom turn is
+in. **I will not claim the cap is harmless in general**; on this cell, in these stances, it is not what takes the turn
+away.
+
+**What the census does show is unsatisfying and is reported as such.** Of the default rider's **23** Compress spikes
+(median duration 0.62–1.43 s, median gap 0.47–2.50 s), **none** ends on any of the five: not the plane, not the cap
+under the rail, not the rail past `RAIL_BITE`, not the stick centring, not the knees. With the arc at 0.92–1.00 that is
+the honest reading — **there is no "between the spikes" on that rider**; the rate simply rises and falls inside one
+smooth arc, and a 50 %-of-peak threshold cuts a bell into pieces. **The spike census answers its question by
+dissolving it**, and §4's peak/mean is what replaces it.
+
+**One column that does separate the stances, offered as a measurement and not yet a mechanism.** `unwind` counts
+commanded frames where the rail is coming **down** at 2 °/s or more while the stick is still asking for 5° more lean
+**and** the cap is above the rail — so neither the player nor the ceiling can be what took it. Default rider, paired
+over twelve cells: tall **0.03–0.22** with a rail median of 4.3–41.5° and a rail/ask of 1.02–5.78; Compress
+**0.10–0.37** with a rail median of **2.7–27.8°** and a rail/ask of **0.61–1.45** [M]. **Compress carries a lower rail
+in 12 of 12 and unwinds more often in 10 of 12.** That is a candidate for 3.3e's unfound mechanism for why the crouch
+costs rate — 3.3e looked at the roll and rail **peaks** and got 4 of 6, which it rightly refused to call a finding; the
+rail **held**, and the unwind, separate the stances. **It is one round's column on one cell, nothing in the code is
+named as its cause, and Part 28 §1b already withdrew a neighbouring claim ("the rail falls back while the ask is on")
+for being one trace. I am not promoting this one either. It is the next thing to measure.**
+
+## 6. `snapLegs: 'drive'`, against a control: nothing
+
+3.3e named the owner's *"crouching, not compressing"* as mapping onto the ski and skate finding — crouch into the arc,
+extend through it — which is what `snapLegs: 'drive'` was built for, and asked for it in the ladder. It is in, **and so
+is a plain `snap` control this round added for the purpose**, because `snapdrive` also turns Snap on (which changes the
+turn radius to `SNAP_RADIUS` = 2.2 m and the rail range) and comparing it with Compress would have confounded the drive
+with Snap itself.
+
+| | `arc` | `mean` rate | 0.25 s peak | to 85° | hips, m |
+|---|---|---|---|---|---|
+| **[M]** default rider, `snap` (12) | 0.10–0.71 | 1.9–45.9 | 36.2–186.7 | 2.88–4.55 s, 4 of 12 | 0.48–0.49 |
+| **[M]** default rider, `snapLegs: 'drive'` (12) | 0.17–0.72 | 3.2–43.7 | 45.9–199.3 | 3.00–4.18 s, 4 of 12 | 0.49–0.58 |
+| **[M]** new rider, `snap` (12) | 0.05–1.00 | 1.9–77.8 | 63.8–195.9 | 1.33–3.02 s, 2 of 12 | 0.46–0.48 |
+| **[M]** new rider, `snapLegs: 'drive'` (12) | 0.06–1.00 | 0.4–75.2 | 62.6–197.8 | 1.35–3.03 s, 4 of 12 | 0.49–0.53 |
+
+**On every column the two overlap, and the drive's mean rate is higher in 5 of 12 cells on the default rider and 7 of
+12 on the new one — which is a coin.** The one thing it reliably does is what it is built to do: the hips sit 0.01–0.10 m
+higher through the turn, because the legs extend. **So the ski/skate sequence, as this switch implements it, buys
+nothing measurable in the turn on this cell.** That is not a refutation of the ski finding; it is a refutation of this
+switch as a way of getting it, and the difference matters because the real version of "extend through the arc" would
+have to be paired against something — a reaction — and `SNAP_DRIVE_DEPTH` only lets the rest length out.
+
+## 7. What I will not claim
+
+- **I will not claim the turn is fast enough.** §4's 87.5° in 1.117 s is **one run of 48**, and the stance-by-stance
+  medians at a full stick (57.7 °/s) are still about **half** Forsyth's mean. What I claim is the **ladder** — the rate
+  and the arc rising monotonically with the stick while the time on the board halves — and that the *gap on the clock*
+  is smaller than 3.3e's 2.3–3.5 s made it look, because that figure is the other rider's.
+- **I will not claim the switch improves the ride, or that the owner will feel it.** It restores **0.035–0.099 m** of contrast in the
+  nine cells where the balance's knees fire, and the worst cell's 0.067 m becomes 0.166 m. The turn and the fall do not move. Whether a stance that changes by 16 cm instead of
+  7 reads as *"down enough"* is the owner's to say and nobody else's, and **no bot ride is offered as evidence of feel
+  anywhere in this document.**
+- **I will not claim the knee drop's balance payoff is now priced correctly, only that it is priced in one currency.**
+  The hip's range and the arms are still granted at the commanded stance while the leg is deeper than it, which is the
+  same inconsistency this switch fixes for the knees. Extending it to the whole room is a bigger change with a
+  feedback through `strategies`' own `hip` term, and it is deliberately not in this round.
+- **I will not claim the fall population moved.** 24 runs, 24 falls either way, medians 2.63 and 2.59 s. That is not a
+  measurement of a cost; it is a measurement that says this cell cannot see one.
+- **I will not claim the cap is harmless.** §5 refutes it **on this cell, in tall and Compress**. In Snap the board is
+  off the plane in up to 19 % of commanded frames and the speed through the water reaches 0.
+- **I will not claim the unwind is a mechanism** (§5), and I will not re-promote Part 28's withdrawn rail claim.
+- **I will not re-open 3.3e's depth conclusions.** Its Seixas conversion, its stance-gauge cross-check and its finding
+  that our Compress is deeper than every measured surfing posture bar an elite aerial landing are **not** touched by
+  the instrument error: those are depths read in frames the leg was being driven in, and the Compress column barely
+  moves when the dead frames are dropped (0.44–0.48 → 0.451–0.481 m). **It is the *tall* column and the fall
+  population that the test cost it.**
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed rather than paddled in, and every span above
+  is **the whole population of twelve runs**, not a confidence interval.
+
+## 8. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- The probe type-checked separately on a throwaway project extending the root's options with `types: ["node"]` and an
+  **absolute** `typeRoots`:
+  **exit 0**, and `--listFiles` confirmed it covered `docs/research/new-rider/3.3/turn.ts`,
+  `src/physics/AttachedRider.ts` and `@types/node`.
+- The worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and the exit codes above
+  are `tsc`'s own, read on their own line and never through a pipe.
+- `vitest run src/physics`: **55 files, 600 passed, 21 expected fail** — the new `kneeRoom.test.ts` (5) included.
+  `vitest run src/game src/scene/rig`: **70 files, 729 passed**, `PhysicalMode.test.ts` 96 of 96 with the switch's own
+  test. `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts` (the HUD among them): **56 files, 482
+  passed, 2 expected fail**. `vitest run src/wave/SurfZoneRunner.test.ts`, which is outside the merge suite and was run
+  by hand: **43 of 43** — so a red there would be news, as `runner-test-file-excluded` has it. `src/wave/SurfZoneSimulation.test.ts` is closed by reading, as `c2-step5g.md` §7.4 requires: this round
+  touches no solver, no wave and no spot file.
+- **The shipped rider proved unchanged, against a published baseline rather than by assertion.** `3.3/stance.ts` —
+  3.3e's own probe, untouched by this round — was rebuilt and re-run on this branch for **both** riders and **all
+  seven** stances with the shipped defaults, and **every number it prints reproduces `stance-depth.md`'s published
+  table**: new rider tall hips **0.48–0.73** and Compress **0.44–0.48**, `snapdeep` **0.34–0.36**; default rider tall
+  **0.78–0.82**, Compress **0.48** with 85° in **2.30–3.53 s, 6 of 6**, `snapdeep` **−0.05–0.37**; and the pooled yaw
+  peak **72.7–228.6 °/s** to the digit, whose two ends are the default rider's *crouch* (72.7) and the new rider's
+  `snapdrive` (228.6) — which is §4.2's point about the pooling, arriving from 3.3e's own instrument. So the gated line
+  and the read-only `leanProbe` change nothing on the shipped path, and `kneeRoom.test.ts` holds that for the default
+  rider and for the new rider wherever `knees` never leaves 0.
+- **The Canyon byte check** (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, **fresh** spin-ups into new state paths),
+  with the brief's three checks read rather than assumed — the wrapper sets `globalThis.location = { search:
+  '?canyonWaves=true' }` (a prepended line on the bundle, because a dynamic import makes rolldown split the chunk), the
+  grid line read, and the "spun up on the CPU in … s" line read so that no kept `.sea` was imported:
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180,400 cells**, spun up on the CPU in **44.3 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202,800 cells**, spun up on the CPU in **54.4 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match, which they must: this round touches no solver, no wave, no spot file and no hull law, and the two
+  rider lines it does touch are gated or read-only. The raw output is `results/33f/33f-canyon-byte-check.txt`.
+- **The deletions column**, read before the push and after the rebase check (`git diff --stat origin/main HEAD`):
+  **16 files, 1,382 insertions and 9 deletions** — and **all nine deletions read, one by one**: four are the
+  `CARVE_FLEX` comment lines §10 rewrites, one is `prepareLeg`'s own `asked = Math.min(…)` line replaced by the gated
+  version, and four are long single-line lists (`PhysicalMode.test.ts`'s import, `main.ts`'s comment and its room
+  overrides, `SurfZoneRunner.ts`'s rider-options spread) replaced in place with the switch added. **Nothing was
+  inherited and nothing was reverted**: `origin/main` is still **058588b9**, the branch's own base, so unlike 3.3e
+  there was no mid-round merge to rebase onto — and the column was read rather than that being assumed.
+
+## 9. Files (3.3f)
+
+- `docs/research/new-rider/3.3/turn.ts` — the probe. Read-only: it drives the shipped inputs and reads public fields.
+- `docs/research/new-rider/3.3/results/33f/` — `33f-new-shipped.jsonl`, `33f-old-shipped.jsonl`,
+  `33f-new-kneeroom.jsonl` (48 rows each), `33f-tables.txt`, and `33f-dead-frames-trace.tsv`, the trace of §1 where
+  the rider's columns freeze at 2.217 s.
+- `src/physics/AttachedRider.ts` — the `kneeRoom` option and its one behavioural line in `prepareLeg`; the read-only
+  `leanProbe`; and the `CARVE_FLEX` citation correction (§10).
+- `src/physics/kneeRoom.test.ts` — the switch's own test (5).
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts`, `src/main.ts`, `src/game/PhysicalMode.test.ts` — the switch's wiring, pinned off for
+  online rooms and asserted there.
+
+## 10. The citation correction, as the brief instructed
+
+`CARVE_FLEX`'s comment justified its 0.12 m as *"the deep end of the surf stance's half-squat (knees flexed 30–80°,
+Borgonovo-Santos et al. 2021; de Sousa 2022's preparation, knees 90–110°)"*. **Both attributions were wrong in
+different ways and the comment now says what the number actually rests on.** The 30–80° is **Everline 2007**
+(*Strength Cond J* 29(3):32–40), *quoted* by Borgonovo-Santos as their reference — a practitioner review whose own
+title calls it a qualitative assessment, with no population, protocol or datum, which step 3.3e could not obtain.
+Borgonovo-Santos measured a **laboratory pop-up landing** (n = 23) and **no riding stance at all**, and their own knee
+figures carry no stated datum. de Sousa 2022 is a **master's thesis observation tool validated by seven coaches with no
+surfers measured** — a coaches' consensus, cited as if it were a measurement, and that clause is removed. The Weiß
+et al. 2025 citation in the same comment **is** correct and now carries its population. **So a number load-bearing in
+our physics traces to an unsourced practitioner claim plus our own stance map**, and the comment says so.
+
+## 11. For the owner, in plain words
+
+**Two things, and the first one is good news.**
+
+**You already have the turn.** On your rider (`?rider=new`), with the stick all the way over, I measured the board
+putting **87 degrees of heading on in 1.1 seconds, in one clean sweep** — that is your "around two seconds", and it is
+within about 15 % of what instrumented professionals do on a real bottom turn. The "2.3 to 3.5 seconds" from last
+round was measured on the **old** rider, which you do not play, and the new rider's number from last round was read off
+a board **you had already fallen off**, which brings me to the second thing.
+
+**Last round's probe could not see you fall.** When our surfer loses his balance the code takes him off the board but
+leaves two flags saying "standing, upright", and last round's test looked at exactly those two flags. So it reported
+"84 of 84 runs stood" when in truth every run falls, and it kept measuring the board drifting along with nobody on it —
+**between 57 % and 93 % of what it averaged was dead time.** I fixed that and re-ran everything: **96 runs out of 96
+fall.** On your rider, between **1.1 and 4.2 seconds** in.
+
+**And that is the real problem, in one line: the harder you turn, the sooner you come off.** Quarter stick: slow turn,
+3.1 seconds on the board. Full stick: four times the turn rate, a perfectly clean arc — and **1.4 seconds** on the
+board. In every one of the eighteen clean turns I measured, he fell **within 0.2 to 0.7 seconds of finishing it**. So
+it is not that he turns too slowly. It is that he cannot survive the turn he already does. That is your own words — *"its
+balance is fixed mid turn"* — arriving as a number, and it is the thing I would go after next.
+
+**On "not down enough", you were right and I had the size wrong.** His standing stance really was sinking on its own,
+because his balance system is allowed to bend his knees by **exactly** the amount the Compress button is for — so
+pressing it added almost nothing. Last round put that at 3 to 12 cm; measured without the dead frames it is **7 to
+30 cm** against the old rider's steady 30. I built a switch, **`?kneeRoom=achieved`**, that makes his balance pay for
+its own knee bend out of the room it is using, so it stops reaching all the way down to the Compress depth by itself.
+With it on, the button's worst case goes from **7 cm to 17 cm**, Compress itself is unchanged, and his **standing**
+stance stands back up (from 52 cm to 62 cm over the board) — so he should also stop looking permanently crouched when
+you are not pressing anything.
+
+**It is off until you type it, and it does not fix the turn or the falling.** I measured that too, and I would rather
+tell you than let you find out: the turn's numbers do not move, and the falls come at the same times (median 2.63
+seconds without, 2.59 with, on 24 runs that all fall either way).
+
+**Your shot list**, on Canyon with `?canyonWaves=true`:
+
+1. `?physical&canyonWaves=true&rider=new&feltFrame=deck` — **unchanged from what you rode last time.** Ride it once so
+   the next three have a baseline in your hands and not just in mine.
+2. Add `&kneeRoom=achieved`. **Press and release Compress in trim, before you turn at all.** The question is only
+   whether the stance *changes* visibly now. Ignore the turn for this one.
+3. Same, and watch him **standing with nothing pressed** while he gets bounced about. He should stand taller than
+   before. If he looks stiff or starts falling in places he did not, that is the switch's cost and I want to hear it.
+4. Then turn hard with it on, full stick. **I expect no difference in the turn and no difference in the falling.** If
+   you feel one, my 24-run A/B missed it and that is worth more than the A/B.
+
+**One warning about what I did not do.** I did not go after the falling, because the brief for this round was the
+stance and the turn's clock, and because I would rather hand you a measured diagnosis than a second change I could not
+attribute. The falling is now the whole of the problem, and it is a bigger job than a switch.

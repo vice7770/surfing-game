@@ -553,6 +553,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...riderSwitch(),
     // `?feltFrame=deck`: the standing riders' felt vertical is low-passed on the deck's own axes, as a body-fixed sensor does, instead of in the world (step 3.3c), opt-in, to ride.
     ...feltFrameSwitch(),
+    // `?kneeRoom=achieved`: the new surfer's balance reads the knees' travel left at the depth its leg has reached, not the one commanded, so its own knee drop no longer spends the whole of Compress's travel on a standing stance (step 3.3f), opt-in, to ride.
+    ...kneeRoomSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
@@ -1070,6 +1072,18 @@ export function riderSwitch(search?: string): { rider?: 'new' } {
  */
 export function feltFrameSwitch(search?: string): { feltFrame?: 'deck' } {
   return devParam('feltFrame', search)?.trim().toLowerCase() === 'deck' ? { feltFrame: 'deck' } : {};
+}
+
+/**
+ * The `?kneeRoom=achieved` dev switch (`SurfZoneConfig.kneeRoom`, step 3.3f): opt-in, the new surfer's balance reads
+ * the **knees' travel left** (`humanBalance`'s `stanceRoom`) at the depth its leg has actually reached rather than at
+ * the depth the player commands. By default a standing rider whose balance has its knees down rests the leg at
+ * `CROUCH_DEPTH` itself, so pressing Compress adds only 0.05 m of the 0.30 m it is for — measured as 0.067–0.299 m of
+ * contrast over twelve cells against the default rider's 0.296–0.300 (docs/research/new-rider/3.3 Part 29). Nothing on
+ * the default rider, no force and no hull law. Anything else, the commanded depth as before.
+ */
+export function kneeRoomSwitch(search?: string): { kneeRoom?: 'achieved' } {
+  return devParam('kneeRoom', search)?.trim().toLowerCase() === 'achieved' ? { kneeRoom: 'achieved' } : {};
 }
 
 /**

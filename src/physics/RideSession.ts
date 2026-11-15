@@ -162,6 +162,8 @@ export interface RideSessionOptions {
   rider?: 'new';
   /** The felt vertical's low-pass frame (step 3.3c; `AttachedRiderOptions.feltFrame`): 'deck' (the `?feltFrame=deck` dev switch); by default the world. */
   feltFrame?: 'deck';
+  /** Which depth the knees' travel is read at (step 3.3f; `AttachedRiderOptions.kneeRoom`): 'achieved' (the `?kneeRoom=achieved` dev switch); by default the depth commanded. */
+  kneeRoom?: 'achieved';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -264,6 +266,7 @@ export class RideSession {
       ...(options.legPower ? { legPower: options.legPower } : {}),
       ...(options.rider ? { rider: options.rider } : {}),
       ...(options.feltFrame ? { feltFrame: options.feltFrame } : {}),
+      ...(options.kneeRoom ? { kneeRoom: options.kneeRoom } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

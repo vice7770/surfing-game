@@ -1120,10 +1120,22 @@ export const EXTENSION_TALL = 0.04;
  * leg's spring at the feet: the board is unloaded while the body sinks and pressed while the legs push it back up.
  * It drops as Compress does (no faster than the body falls onto the legs, the feet only pushing).
  *
- * CARVE_FLEX 0.4 is 0.12 m: the deep end of the surf stance's half-squat (knees flexed 30–80°, Borgonovo-Santos et al.
- * 2021; de Sousa 2022's preparation, knees 90–110°), which the stance map reads at the pumping crouch's 0.117 m (knees
- * 102–104° drawn). River-wave turns peak at 45–51° of knee flexion (Weiss et al. 2025), inside it. Compress (0.3 m)
- * and the crouch stay the player's deeper stances: the deeper of them and the flex is the one the legs take.
+ * CARVE_FLEX 0.4 is 0.12 m: the deep end of the surf stance's half-squat (knees flexed 30–80°), which the stance map
+ * reads at the pumping crouch's 0.117 m (knees 102–104° drawn). River-wave turns peak at 45–51° of knee flexion
+ * (Weiß et al. 2025, n = 7, 233 surf cycles on a standing river wave, IMUs + video; correct as cited), inside it.
+ * Compress (0.3 m) and the crouch stay the player's deeper stances: the deeper of them and the flex is the one the
+ * legs take.
+ *
+ * **The 30–80° is not Borgonovo-Santos et al. 2021, which this comment attributed it to until step 3.3f, and it has no
+ * population behind it.** The figure is **Everline 2007** (*Strength Cond J* 29(3):32–40), *quoted* by Borgonovo-Santos
+ * as their reference; Borgonovo-Santos measured a **pop-up landing** in a laboratory (n = 23) and **no riding stance at
+ * all**, and their own knee figures (front 99 ± 20°, rear 101 ± 14°) carry **no stated datum**, so they cannot be read
+ * as a depth either way. Everline is a practitioner review — its own title calls it a qualitative assessment — with no
+ * population, no protocol and no datum stated, and step 3.3e could not obtain it. de Sousa 2022's preparation phase
+ * (knees 90–110° included) is a **master's thesis observation tool validated by seven coaches with no surfers
+ * measured**, so it is a coaches' consensus and not a measurement; it was cited here as if it were one and that
+ * clause is removed. **So this constant's depth rests on an unsourced practitioner claim plus our own stance map, and
+ * the only measured surfing numbers near it are Weiß's.** See `docs/research/new-rider/3.3/stance-depth.md` §1.1.
  */
 const CARVE_FLEX = 0.4;
 /**
@@ -1334,6 +1346,35 @@ export interface AttachedRiderOptions {
    * and nothing in the water is touched. The `?feltFrame=deck` dev switch, to ride. By default as before.
    */
   feltFrame?: 'deck';
+  /**
+   * **Which depth the knees' own travel is read at** (step 3.3f; `'achieved'`, opt-in, off by default), the new surfer
+   * standing only.
+   *
+   * The design's stance-room table (`stanceRoom`) says what a stance leaves the balance, and the knees' entry is the
+   * travel they have left: **0.30 m at the riding stance, 0.05 m in Compress** [R]. By default that table is read at
+   * the depth **the player commands** (`heldDepth`), and `prepareLeg`'s own comment states the consequence — *"the
+   * balance's own knee drop is not counted: it spends the stance's travel."* So a **standing** rider whose balance has
+   * its knees all the way down (`HumanBalance.knees` = 1) rests its leg at `0 + 1 × 0.30` = **0.30 m**, which is
+   * `CROUCH_DEPTH` — *exactly* what Compress commands — while still being granted the tall stance's own room (±1.2 rad
+   * of hip, the arms free). The balance's correction therefore has the same authority as the player's button and pays
+   * none of its price, and pressing Compress on top of a saturated correction adds only
+   * `knees × stanceRoom(0.30).kneeTravel` = **0.05 m**.
+   *
+   * Measured on the Canyon-matched cell, paired tall → Compress over twelve cells, the hips drop **0.067–0.299 m** on
+   * `?rider=new` against **0.296–0.300 m in 12 of 12** on the default rider, and the loss tracks `knees` cell by cell:
+   * 0.285–0.299 m where `knees` ≤ 0.04, 0.067–0.168 m where it is ≥ 0.6 (step 3.3f §3). That is the owner's *"in
+   * Compress the surfer is not down enough"* — not a shallow stance (ours is already 0.48 m over the deck, a 114°
+   * knee, deeper than every measured surfing posture bar an elite pro's aerial landing, step 3.3e) but a stance that
+   * barely **changes** when the button is pressed.
+   *
+   * `'achieved'` reads the knees' travel at `max(heldDepth, the leg's own depth)` instead — the room a body has is the
+   * room its knees are actually in, whoever bent them — so the balance's drop pays for itself in the same currency
+   * every stance pays, and self-limits: with `knees` = 1 and nothing commanded the leg settles where
+   * `d = kneeTravel(d)`, about 0.17 m, instead of 0.30. **Nothing is deleted**: the drop stays, with 57 % of its
+   * travel, and Compress's own 0.30 m is on top of it as before. The hip's range and the arms are left on the
+   * commanded stance, so this switch moves exactly one quantity.
+   */
+  kneeRoom?: 'achieved';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -1842,6 +1883,8 @@ export class AttachedRider {
   private readonly newRider: boolean;
   /** The felt vertical's low pass held on the deck's own axes (`feltFrame: 'deck'`, step 3.3c) rather than in the world. */
   private readonly deckFelt: boolean;
+  /** The knees' travel read at the depth the leg has reached rather than the one commanded (`kneeRoom: 'achieved'`, step 3.3f). */
+  private readonly kneeRoomAchieved: boolean;
   private readonly newSubsteps: number;
   private readonly yawScale: number;
   private readonly bankGain: number;
@@ -1987,6 +2030,15 @@ export class AttachedRider {
   readonly swing = { angle: 0, rate: 0 };
   /** Standing, the upper body's twist about the leg (TWIST_RANGE), rad, positive toward the board's +x (its left), and its rate. */
   readonly twist = { angle: 0, rate: 0 };
+  /**
+   * **Read-only, for probes** (step 3.3f): what `prepareBank` computed for the lean this frame — `cap` the lean a turn of
+   * TURN_RADIUS (or SNAP_RADIUS) can hold at the board's speed through the water, rad; `ask` the lean the steer asked
+   * for after that cap (`leanAsked`, the new rider's reference); `speedThrough` the board's forward speed through the
+   * water the cap is built on, m/s; `planing` 1 while the board planes, and the cap is **0 off the plane**. Nothing in
+   * the game reads these; they exist because the cap and its speed are the two quantities step 3.3f's turn census is
+   * about and reconstructing them outside the class would re-derive `planing`'s own latch.
+   */
+  readonly leanProbe = { cap: 0, ask: 0, speedThrough: 0, planing: 0 };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
   private readonly swingTurn = new Quaternion();
@@ -2086,6 +2138,7 @@ export class AttachedRider {
     this.capsLegs = options.legPower === 'cap';
     this.newRider = options.rider === 'new';
     this.deckFelt = options.feltFrame === 'deck';
+    this.kneeRoomAchieved = options.kneeRoom === 'achieved';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -3005,6 +3058,11 @@ export class AttachedRider {
       const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
       this.leanAsked += Math.max(-this.leanPace * h, Math.min(this.leanPace * h, towardOwn));
     }
+    // Read-only, for probes (step 3.3f): the cap, the lean asked after it, the speed it is built on and the plane.
+    this.leanProbe.cap = most;
+    this.leanProbe.ask = this.predictive ? this.leanAsked : this.bankReference;
+    this.leanProbe.speedThrough = speed;
+    this.leanProbe.planing = this.planing ? 1 : 0;
     if (this.freeBody) {
       this.humanBank(h, roll, rail, rollRate);
       return;
@@ -3612,7 +3670,13 @@ export class AttachedRider {
       const room = stanceRoom(this.heldDepth);
       // The hip near its range: across (the swing) or in pitch (`StandingBody`'s hip), whichever is nearer.
       this.human.strategies(h, Math.max(Math.abs(this.swing.angle), Math.abs(this.standingBody.hip.angle)), room);
-      asked = Math.min(asked, -(this.heldDepth + this.human.knees * room.kneeTravel));
+      // `kneeRoom: 'achieved'` (step 3.3f, opt-in): the knees' travel left is read at the depth the leg has actually
+      // reached, not at the one the player commands, so the balance's own drop spends the travel it is using and the
+      // drop self-limits at about 0.17 m instead of reaching CROUCH_DEPTH itself. The hip's range and the arms above
+      // are deliberately left on the commanded stance, so the switch moves one quantity. See `kneeRoom`'s note.
+      const travel = this.kneeRoomAchieved
+        ? stanceRoom(Math.max(this.heldDepth, this.yawDepth)).kneeTravel : room.kneeTravel;
+      asked = Math.min(asked, -(this.heldDepth + this.human.knees * travel));
     }
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
