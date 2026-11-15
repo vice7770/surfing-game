@@ -6710,3 +6710,344 @@ measurement against my own conclusion**: I compared his crouched stance, which c
 against his tall one over all 636 rides, and they fall at exactly the same rate. So it is not simply "he is too tall
 for the board" — it is the board's own tendency to roll, which is the next round and the one thing last round left on
 the table.
+
+# Part 23 — the hull's roll spring, measured; and the old rider's 0-of-12, explained
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-32y`, cut from `main` at
+**9c1acb9f** (step 3.2x's merge), so Part 22 above is its base.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The round had one job**, in the coordinator's words: *3.2w quoted the rider at 597 N·m/rad against −143 to −227 of
+hull, and that second number was read from `PLANT_SPEEDS`, not measured under this rider. Measure it, state its datum
+and its population, and then say what follows.* It also offered one free question: **the old rider stands on this same
+water, on this same hull, and does not capsize — what is different about how he is coupled to it?**
+
+**Both are answered, and the free question turned out to be worth more than the measurement.** This round ships **no
+change to the game and no change to any source file** — one probe, four ladders and a diagnosis.
+
+## 0. The datum, stated once, because this project has had eight frame errors in two weeks
+
+Every angle in this part is **the deck's roll about the heading from the world's level, positive when the board's
+level-left side goes down** — `trimbank.ts`'s `roll` column, the angle the ankle spans. `rail` is that roll less the
+water's own normal. `rollAccel` is in the same sense as `roll`, so a positive `rollAccel` at a positive `roll` is
+divergent. Every **moment** is about the **deck under the rider's feet**, `{x: 0, y: 0.07, z: −0.30}` in the board's
+frame, which is the point `PLANT_SPEEDS`' own roll row is carried about (`roll-plant/plant.probe.ts` returns
+`Kdeck`) — so the comparison in §1.1 is at one reference point, not two.
+
+**And a sign error found in the probe this track has been using.** `trimbank.ts`'s `roll` and its `rollRate` are in
+**opposite** senses: `roll` is `atan2(up · levelLeft, up.y)` and `rollRate` is `ω · forward`, and frame by frame
+`d(roll)/dt` tracks **minus** `rollRate` (checked over a whole run: at 1.433 s the roll climbs at +98.36 °/s while the
+column reads −98.22) [M]. Parts 21 and 22 quote only absolute peaks from those columns, so **nothing in them turns on
+it**; it is recorded here so the next round does not trip over it.
+
+## 1. The four sentences the round is for
+
+1. **The hull's roll restoring under this rider is measured, and 3.2w's read number was close.** Towed on flat still
+   water with the rider's 73 kg carried **at the deck**, so that the hold's own reference point is the feet, settled,
+   the moment per radian of roll at 7.5 m/s is **348 N·m/rad at 1° of roll, 297 at 2°, 164 at 5°, 140 at 10°, 119 at
+   20°, 99 at 30° and 81 at 60°** — five payload spreads a point, eight held rolls, R² ≥ 0.994 on every cell quoted
+   [M]. Over 5 to 10.5 m/s it runs **212–355 N·m/rad at 1° of roll, 82–318 at 5° and 50–218 at 20°** [M]. Against the
+   rider's own m g h = 597 N·m/rad about his feet, that is **1.7 times short at 1° of roll and 3.6 to 5.0 times short
+   at the 5–20° and ~7.6 m/s the capsize actually spends its time in**, and 7.3 times at 5 m/s. So 3.2w's "two to four
+   times too top-heavy for its hull" was **right in direction and a little optimistic in size**, and its −143 to −227
+   was the right reference point.
+2. **The old rider's 0-of-12 is an artefact of his construction, and one line proves it.**
+   `AttachedRider.uprightVelocity` adds a drive velocity of **(−ω_x, 0, −ω_z) × offset** to the old rider's carried
+   point — the board's roll and pitch rates reversed — so his centre of mass is held where it is in the world while
+   the deck rolls under it. The new rider returns from that same function before it (`if (this.freeBody) return out`)
+   [R]. Take it away from the old rider and change nothing else, and he falls **12 of 12 at 0.63–0.75 s**, his body's
+   bank at the MAX_BANK clip of **70.0° in all twelve** and the rail peaking at a median **47.0°** (26.4–67.1), against
+   **3 of 12 at 7.78–8.87 s** and a bank peak whose median is **2.95°** with it on [M]. Same hull, same water, same
+   stances, same twelve entry speeds. **He is not standing on this water; he is being held plumb on it.**
+3. **And the converse fails, which is this round's own result against this round's own story.** Give the **new** rider
+   that same drive — the identical expression, applied to his instance — and he does **not** stand up: **12 of 12 at
+   0.75–1.58 s** against the shipped 0.77–1.70, with the body's bank peak median down from **32.8 to 28.7°**, the rail
+   peak median from **25.8 to 21.6°** and the board's roll per degree of body bank from **0.943 to 0.830** [M]. That is
+   now **three** roll authorities — the ankle (3.2w), the hip (3.2x) and a kinematic counter-roll of the whole body —
+   each of which **lowers the roll and does not stand him up**. The counter-roll is necessary for the old rider and not
+   sufficient for the new one.
+4. **The number that nearly made this round wrong is the water's own added roll inertia.** `ω̇ × I_dry` is not a
+   moment: the hull's added inertia is implicit inside the solve, and about the feet it measures **0.58–0.81 kg·m²** at
+   the cells whose drafts agree across spreads (0.28–1.02 over all of them) against the dry board-and-payload's exact
+   **0.0285 kg·m²** — **twenty to twenty-eight times the dry body** [M]. Read the first way, this round's answer was
+   5–14 N·m/rad, twenty-five times too small, and it was on its way to being a headline. §2 is the method that fixed
+   it and §3 is the five checks it had to pass.
+
+## 2. The method: a captive roll hold, and how a moment comes out of it
+
+The harness is `trimbank.ts`'s cell with one instrument added, in the probe and not in `src/`: `board.substep` is
+wrapped (private to TypeScript, present at run time, exactly as `roll-plant/plant.ts`'s `Lab` wraps it) and before
+each substep the board's orientation is rewritten to the held roll about its own long axis through the composite
+centre of mass, and the Euler roll rate is set to zero. Heading, pitch, all three translations, the rider's bank and
+its leg stay free. Zeroing the rate is what makes it a **spring** measurement and not a spring-and-damper one. After
+the substep the Euler roll rate is read back: `ω̇ = φ̇_after / h`.
+
+**`ω̇` on its own is not a moment, and this is the part worth carrying forward.** `ω̇ = M / (I_dry + I_water)`, and
+`I_water` — the water the hull has to set rolling with it — is applied implicitly **inside** the solve, so no impulse
+applied before a substep can measure it (an impulse changes `ω` through the dry tensor and the solve then answers it).
+The way out is to change `I_dry` by a known amount **without changing anything the water sees**: the 73 kg rigid
+payload is split into two halves at x = ±s, which leaves the mass, the centre of mass and so the whole attitude, draft
+and velocity identical and raises the dry roll inertia by 2 × (m/2) s². Then
+
+> 1 / ω̇ = (I_dry + I_water) / M
+
+is a straight line in `I_dry` whose slope is 1/M and whose intercept is I_water/M. Five spreads (0, 0.1, 0.2, 0.35 and
+0.5 m, dry inertia 0.0285 → 18.28 kg·m², a span of 640×) fit it with **R² = 1.00000 at 1° and 2°, 0.99995 at 5° and
+≥ 0.994 everywhere quoted**, and the probe prints the five drafts beside every row so a reader can see that the
+condition did not move (0.084–0.086 m across all five at 1–5° of roll) rather than be told [M].
+
+**Why the measurement is on flat still water and not on the face.** On the `FaceWater` the hold does not settle: the
+board leaves the condition inside a second — at a held roll of 1° the rail reached runs **−9.97° to −0.92°** across
+three entry speeds, because the board has drifted to a different part of the face, and by 2.5 s the −20° cell has
+stalled to 2.25 m/s and 0.60 m of draft. Two of its twelve cells fit a **negative** added inertia, which is
+unphysical, so the validity check throws them out. **I do not quote a stiffness from the face cell.** What the face
+adds over flat water is a steady across-gravity offset — at a held roll of 1° the rail sits near −10° and the moment
+carries 22.5 N·m of it — not a different hull law. The number quoted is therefore the hull's own spring at the speed
+and rail the capsize passes through, and the face's constant is the thing Parts 21 and 22 already see as the capsize
+always going the same way.
+
+## 3. The five checks the method had to pass
+
+`results/32y/checks-32y.txt` in full.
+
+1. **The zero check, clear of the water** (`AIR=30`, nothing wet, so the only roll moment is the push's own, and
+   `I = ΔM/Δω̇` must come back as the body's exact effective roll inertia `1/(f · I⁻¹ · f)`): with the payload at the
+   deck, **0.029 against the exact 0.0285** at both 50 and 200 N of push. With the payload at the roll-plant study's
+   own 0.915 m, **1.674–1.678 against 1.4649** — 14 % high, which is the off-diagonal coupling of an impulse applied
+   away from the long axis, and the reason every quoted number is taken at the deck [M].
+2. **Substeps.** `ω̇` at 1° of roll runs **−7.712, −8.164, −8.280, −8.309, −8.317 rad/s²** at 4, 16, 64, 256 and 1024
+   substeps a frame — a 7 % move in all, converged by 256 [M]. Every quoted cell is at 64.
+3. **The side force, against the table.** Per radian of roll at 7.5 m/s the probe reads **−384 N/rad** against
+   `PLANT_SPEEDS`' **−429.7**, 11 % apart [M] — so the probe and the captive table agree on the hull's *force*, which
+   is what made the moment's disagreement worth chasing rather than shrugging at.
+4. **Against the table itself, row by row.** At the table's own perturbation size (±1° of roll) the probe reads
+   **287 N·m/rad at 6.5 m/s, 348 at 7.5, 389 at 8 (draft-matched) and 232 at 9** [M], against `PLANT_SPEEDS`'
+   **−285.3 at 7, −143.2 at 7.5, −227.5 at 8 and −326.6 at 9** [R]. So the measurement **brackets the table's 7, 8 and
+   9 m/s rows** and is **2.4 times its 7.5 row** — and the 7.5 row is the table's own local minimum, sitting between a
+   −285 and a −227. **It is also the row 3.2w quoted**, which is why 3.2w's lower bound was the optimistic one. I am
+   not claiming the table's 7.5 row is wrong, only that the quantity does not have a dip there in this probe's reading
+   of it, and that a comparison should not rest on a single row of it.
+5. **The derivative the table takes against the one the board actually has.** `roll-plant/plant.probe.ts` holds the
+   yaw rate and the sideslip at the trim while it perturbs the roll; under a rider nothing holds them, and the rolled
+   board is free to slide and turn instead of righting. That was the first explanation I reached for and **it is not
+   the explanation**: held against free the same cell reads **−6.468 against −7.573 rad/s²** at 7 m/s, 15 % apart [M].
+   The disagreement was the added inertia of §1.4, not the derivative. (Check 4 above is in
+   `checks-32y.txt` §A/§B/§C and the table's own rows; checks 1, 2, 3 and 5 are its §1, §2, §4 and §3.)
+
+## 4. The ladders
+
+`results/32y/hull-32y.txt` in full. The moment `M` is the hull's own roll moment about the feet at that held roll, and
+`K = M / roll` is its secant stiffness there; `I_water` is the same fit's intercept.
+
+| held roll | rail reached | M, N·m | K, N·m/rad | I_water, kg·m² | R² | 597 / K |
+|---|---|---|---|---|---|---|
+| 1° | 1.01° | 6.13 | **348** | 0.708 | 1.00000 | 1.7 |
+| 2° | 2.02° | 10.49 | 297 | 0.718 | 1.00000 | 2.0 |
+| 5° | 5.05° | 14.47 | **164** | 0.774 | 0.99995 | 3.6 |
+| 10° | 10.12° | 24.79 | 140 | 0.585 | 0.99999 | 4.3 |
+| 20° | 20.58° | 42.88 | **119** | 0.687 | 0.99936 | 5.0 |
+| 30° | 30.92° | 53.46 | 99 | 0.375 | 0.99988 | 6.0 |
+| 45° | 45.00° | 75.70 | 96 | 0.675 | 0.99459 | 6.2 |
+| 60° | 62.09° | 87.64 | 81 | 0.283 | 0.99783 | 7.4 |
+
+Two readings of that table, and a caution.
+
+- **The restoring moment never turns over** — it climbs from 6.1 to 87.6 N·m over 1 to 60° of roll — but the
+  **stiffness falls by a factor of four**, so the further the board goes the less each further degree buys. At 5° of
+  roll the 14.5 N·m is the whole 740 N of lift acting **2.0 cm** across the centreline, on a hull whose wetted beam at
+  that draft is of order 0.3–0.5 m [I, the arithmetic; the moment is measured]. That is a physically ordinary number
+  for a planing board, which is the point: **the hull is not broken, it is a surfboard.**
+- **The 30, 45 and 60° rows are the weakest.** Their drafts no longer agree across the spreads (the 60° row runs
+  0.530, 0.182, 0.195, 0.205, 0.208 m), so the condition did move and their `I_water` scatters to 0.28–0.68. The 1–20°
+  rows are the ones I would defend, and they are the rows the capsize's first half-second lives in.
+
+And against the tow's speed, at three rolls (the capsize's own runs sit at 4.9–10.4 m/s, median 7.6):
+
+| tow | K at 1° | K at 5° | K at 20° |
+|---|---|---|---|
+| 5 m/s | 212 | 82 | 50 |
+| 6.5 | 287 | 115 | 93 |
+| 7.5 | **348** | **164** | **119** |
+| 8 | 389 | 182 | 130 |
+| 9 | 232 | 217 | 165 |
+| 10.5 | 355 | 318 | 218 |
+
+**One caveat on the payload's height, measured and not waved away.** Carrying the 73 kg at the deck is what puts the
+hold's reference point on the feet, but it also changes the board's **pitch** equilibrium (the vertical arm from the
+centre of mass to the hull's drag line), so at 7.5 m/s the low-carry cell trims to **0.085 m** of draft where the
+rider's own 0.915 m carry trims to **0.077**. The 8 m/s row above is the low carry at a **draft-matched 0.074 m**, and
+it reads **389 / 182 / 130 N·m/rad** — about **10 % above** the 7.5 m/s row, not a different number. So the quoted
+stiffnesses are good to roughly ±10 % on this account, which is inside the spread the roll angle itself covers.
+
+## 5. The old rider's coupling, read and then measured
+
+**Read [R].** `AttachedRider.uprightVelocity`, in full:
+
+> `const offset = carried + board.centerOfMass − baseWorld;` · `if (this.freeBody) return out;` ·
+> `const w = (−board.angularVelocity.x, 0, −board.angularVelocity.z);` · `return out.add(w × offset)`
+
+It is a **prescribed velocity**, not a force. It enters `coupleStanding`'s `mismatch` with the rest of the constraint
+(`mismatch = ω × carried + v + drive + up · leg.rate + across · bankSpeed`), so the impulse that realises it is booked
+symmetrically on the board in rows 0–5 and momentum is conserved — it is **not** a momentum-violating hidden motor.
+What it is, is a kinematic prescription: the old rider's centre of mass is **told** to counter the board's roll and
+pitch rates exactly, every substep, for whatever force that takes, and that force is neither his ankle's nor his hip's
+but the constraint's. It is why his body holds 0.8–3.3° of the world vertical at every slope 3.2w measured, why his
+ankle is permanently open by the face's angle, and why his weight never leaves his feet.
+
+**Measured [M].** `UPRIGHT=off` replaces that function on the instance with the new rider's own early return —
+nothing else changed, no source file touched — and runs the same twelve:
+
+| | old, drive on (shipped) | old, drive off | new (shipped) | new, drive forced on |
+|---|---|---|---|---|
+| fell inside 9 s | **3 of 12**, 7.78–8.87 s | **12 of 12**, 0.63–0.75 s | 12 of 12, 0.77–1.70 s | 12 of 12, 0.75–1.58 s |
+| the body's bank peak, median | 2.95° | **70.0°** (the clip, all twelve) | 32.8° | 28.7° |
+| the rail peak, median | 17.0° | 47.0° | 25.8° | 21.6° |
+| the board's roll per ° of bank, median | 0.443 | 0.238 | **0.943** | 0.830 |
+
+MAX_BANK is 70° [R]. The separations: `balance` in all twelve of both new-rider columns and all three of the old
+rider's shipped falls, and **9 `balance` with 3 `lost board`** when his drive is off — which is a harder fall than any
+of the others, the board gone as well as the body [M]. **The last row's two old-rider figures are noise and I would
+not read them**: a least-squares
+slope needs the body's bank to move, and with the drive on its peak median is 2.95° while with it off it is pinned at
+the clip. The new rider's two are the ones §6 uses.
+
+**So the old rider's 0-of-12 belongs to one line of his construction, not to the water.** Part 21's asterisk on that
+comparison was right to be there, and this is what was behind it. Removed, he capsizes **faster** than the new rider
+does, and his body goes to its bank clip in every run.
+
+**And the forced-on column is the refutation of the obvious next move.** Handing the new rider the old rider's
+counter-roll does what the ankle and the hip did: it takes the roll down (the rail peak's median by 16 %, the bank
+peak's by 12 %, the board's following of the body from 0.94 to 0.83) and **leaves the twelve falls where they were.**
+
+## 6. What I will not claim
+
+- **I will not claim the one-line series model to a decimal, though I built it and it is the reason the numbers
+  cohere.** The ankle is a spring of **800 N·m/rad** [R, `HUMAN_ANKLE_STIFFNESS`] between the body and a board whose
+  only resistance is the hull, so quasi-statically the board rolls to `k_a / (k_a + K)` of the body's bank and the body
+  keeps only the **series** stiffness `k_a K / (k_a + K)`, which for K ≪ 800 is K itself. At the measured K of 119–164
+  that predicts a board-roll-per-body-bank of **0.83–0.87**; the twelve runs measure **0.708–1.054, median 0.943**
+  [M], and inverting the median gives an effective hull stiffness of **48 N·m/rad**, a third of the captive number.
+  Right order, not a tight test: the captive hold is a settled, flat-water, zero-roll-rate condition and the capsize is
+  none of those. I quote both and pick neither.
+- **I will not quote the free-trajectory regressions, which I built and measured.** With the board's roll tracking the
+  body's bank at 0.943 the two regressors are collinear, so a fit of the roll's acceleration on the roll alone absorbs
+  the ankle's own term: it returns **A 149–1788 1/s²** with a rate coefficient of **+676 to +918 1/s**, which is not a
+  damping [M]. The body's own fit is no better (**A −38 to −3 1/s²** where the bare inverted pendulum's own g/h is
+  +14). Two coupled angles, a commanded rest and a 0.17 s contact transient are not identifiable from one trajectory,
+  and one weak number is not improved by replacing it with another.
+- **I will not claim a stiffness from the face cell** — §2's last paragraph is why, and the negative added inertias
+  are the check that caught it.
+- **I will not build on the flat-water rider cells, and they are interesting.** Towed on flat still water at 7.5 m/s
+  with the board never leaving **0.000° of roll**, the tall new rider still falls at **0.87 s** (separation `balance`)
+  while Compress stands the whole 6 s [M]. That is a fall with no capsize in it at all — but the flat placement
+  **porpoises** (the draft runs 0.03 to 0.21 m and the leg shortens from 0.845 to 0.654 m over the same second), so it
+  is not a clean cell and one cell is not a mechanism.
+- **I will not claim the fall test is wrong**, and 3.2x's position is unchanged: at the fall the weight is at the edge
+  of the feet and crossing it, and the verdict looks right.
+- **I will not claim this is the owner's fall.** Nothing measured here slides out sideways.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed and not paddled in, and every span above is
+  the whole population — twelve runs a rider cell (two stances × six entry speeds), five spreads a hull point — not a
+  confidence interval.
+
+## 7. What follows
+
+The hull's spring is **real, measured, and short of the body by 1.7 to 7.4 times across the band the capsize covers**.
+It is also, at 2 cm of lift shift per 5° of roll, about what a planing surfboard physically is — so **"stiffen the
+hull" is not a change this plant can take**, and the round does not recommend it.
+
+**That is a refusal of Part 22 §6's own closing line**, which said *"what the plant's round has to change is the
+hull's own roll restoring, not the rider's height"*. Measured, the hull's restoring is in the right physical band
+already, and raising it to 600 N·m/rad would make the board something no surfboard is. 3.2x was right that the rider's
+height is the wrong thing to tune; it was wrong that the hull is the right one.
+
+What the round does settle is the shape of what is left. Three roll authorities are now measured — the ankle's command
+(3.2w, ten gains), the hip's capture-point trigger (3.2x, twelve gains across five slopes, 636 falls) and a kinematic
+counter-roll of the whole body (here) — and **all three lower the roll and none of them moves the fall.** The common
+term is 3.2x's: the capture point counts across-speed at 0.22–0.32 m per m/s, and every authority must move the weight
+to use it. So the next measurement is not a fourth authority. It is **the fall test's velocity term against a human's
+own**: 3.2x's 636 falls cross the feet's edge at a median **1.21 m/s**, and nobody has checked whether a standing
+person catching themselves crosses their own feet slower or faster than that [S needed]. If slower, the test is
+mis-scaled and the plant is survivable; if not, the rider needs support that is not a correction — which on this plant
+means more than one contact across, because a single ankle hinge in series with 119–164 N·m/rad of hull is what §6's
+arithmetic says it is.
+
+## 8. Seatbelts
+
+- **No source file changed at all.** `git diff --stat origin/main HEAD -- src/` is empty; everything shipped is under
+  `docs/research/new-rider/3.2/`. The old rider's counter-roll switch and the new rider's forced one are both patches
+  applied to the **instance inside the probe**, so there is no switch to ship off and nothing to leave on by mistake.
+- `npx tsc --noEmit -p .`: **exit 0**, read from `tsc`'s own exit status on its own line, never through a pipe.
+  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**. The root project includes only `src`, so the probe was
+  type-checked separately on a throwaway project extending the root's options: **exit 0**.
+- The rider, board, HUD and runner test files run alone, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`),
+  `SurfZoneRunner` and `SprayCloud` (`src/wave/`) included — `SurfZoneRunner` is outside the merge suite, so a red
+  there is news: **58 files passed, 783 tests passed and 21 expected fail, vitest exit 0**, 105 s.
+  `results/32y/suite-rider-32y.txt`. `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it
+  (`c2-step5g.md` §7.4).
+- **The Canyon bench, all four hashes, on the tree that merges**: `results/32y/canyon-bytes-32y.txt`, the same command
+  and the same reference as step 5f's and 3.2t–3.2x's. With no source file touched this is the only possible result,
+  and it is run anyway because that is what a seatbelt is for.
+- **The default board**: `boardShape.ts` is untouched and no source file changed, so the default board and the default
+  rider's path are unchanged by construction.
+- **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the summary
+  line. It has caught a silent revert on six consecutive rounds, and `merge-base --is-ancestor` has caught none of
+  them.
+- No force was added or removed anywhere. The captive roll hold is an instrument in the probe, of the kind ruling 29t
+  established for the roll plant, and the probe's own §2 says what it holds and what it leaves free.
+- A wave-track agent shared the machine throughout; nothing of theirs was stopped.
+
+## 9. Files (3.2y)
+
+- `docs/research/new-rider/3.2/rollspring.ts` (new): the captive roll hold on `trimbank.ts`'s cell, four modes
+  (`hold`, `moment`, `inertia`, `free`), the four rider configurations (`new`, `old`, `none`, `rigid` with a splittable
+  payload), the counter-roll switch (`UPRIGHT=on|off|force`), the flat-water tow (`WATER=flat`, `TOW`), the yaw and
+  slip holds, and the side-force and body-bank columns. Its header carries the commands.
+- `docs/research/new-rider/3.2/results/32y/`: `hull-32y.txt` (the moment ladder and the speed ladder),
+  `riders-32y.txt` (the four rider cells, twelve runs each), `checks-32y.txt` (the method's checks),
+  `rows-32y.jsonl` (48 rows), `suite-rider-32y.txt`, `canyon-bytes-32y.txt`.
+- No source file.
+
+## 10. For the owner, in plain words
+
+**Two rounds ago we learned your surfer's board tips over and takes him with it. Last round we learned his limbs can't
+stop it. This round measured how much the board actually gives him to stand on, and found out why the old surfer never
+falls.**
+
+**The board.** A surfboard planing along resists being tipped, and I measured by how much: at one degree of tilt it
+pushes back with about 350 newton-metres per radian, and by five to twenty degrees — where your surfer's capsize
+actually lives — it is down to 120–165. His own body, standing that high over his feet, is trying to tip over with
+about 600. So **the board gives him between a seventh and six tenths of what he needs**, and the further it goes the
+worse the ratio gets. The previous round had guessed "two to four times short" from a table; measured, it is **1.7
+times short at the very start of the roll and 7.4 times short by the end of it**. The guess was about right in the
+middle.
+
+**And this is not a bug in the board.** At five degrees of tilt that resistance is the whole of his weight pushing up
+two centimetres off the centreline. That is what a real surfboard does. Standing on one really is like standing on a
+broom handle, and no amount of making the board stiffer is honest. **So last round's suggestion — that the next thing
+to change is the board's own stiffness — is off the table, by its own measurement.**
+
+**Now the part I think matters most.** I looked at why the old surfer stands up on the same wave on the same board.
+**He isn't standing on it. He's being held upright by a line of code.** There is one instruction in the old surfer that
+takes whatever roll the board is doing and cancels it out of his body's motion, so that however far the deck tips, his
+weight stays exactly where it was. Delete that one instruction and change nothing else and **the old surfer falls on
+all twelve rides in under three quarters of a second** — faster than the new one — with his body thrown over to its
+maximum lean every single time. So the "old surfer doesn't fall" result we have been measuring against for three rounds
+was never evidence that this board is stand-on-able. It was evidence that a body held upright by decree doesn't tip
+over.
+
+**I then tried the obvious thing: give the new surfer that same help.** It does flatten the board — about fifteen per
+cent less roll — and **he still falls all twelve times, at the same moments.** That is now three different ways of
+fighting the roll (his ankles, his hips, and holding his whole body upright) and all three do the same thing: less
+roll, same falls.
+
+**So here is where I think this stands.** The board is genuinely hard to stand on, as a real one is, and the surfer's
+limbs genuinely cannot save him — but the thing that keeps defeating every fix is not the board at all, it is that the
+game calls a fall partly on **how fast** his weight is moving, and every correction has to move his weight. Before
+anyone builds another correction, somebody should check that number against a real person: when you catch your balance
+on a tilting floor, how fast does your weight actually cross your feet? The game currently calls a fall at about one
+and a quarter metres a second. If a real person is slower than that, the test is too strict and the rest follows. If a
+real person is faster, then your surfer needs something to stand on that isn't a correction — and on this board that
+means a wider base than one ankle.
+
+**Nothing in this round changes the game.** There is nothing new to ride, and the game is byte-for-byte what you have.

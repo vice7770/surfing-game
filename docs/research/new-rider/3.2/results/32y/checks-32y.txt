@@ -1,0 +1,30 @@
+# Step 3.2y — the method's own checks
+
+## 1. The zero check: the board clear of the water (AIR=30), where the only roll moment is the push's own.
+##    I = dM/d(omega-dot) must come back as the body's exact effective roll inertia, 1/(f.Iinv.f).
+### the 73 kg payload at the deck (y = 0.07): exact 0.0285 kg.m2
+   the effective roll inertia, I = ΔM / Δω̇ against the push-0 cell at the same hold:
+      0.0° push    50 N → ΔM 46.5–46.5 N·m · Δω̇ 1632.012–1632.012 rad/s² · I 0.029–0.029 kg·m² (the board's own effective 0.0285)
+      0.0° push   200 N → ΔM 186.2–186.2 N·m · Δω̇ 6526.737–6526.737 rad/s² · I 0.029–0.029 kg·m² (the board's own effective 0.0285)
+### the payload at y = 0.915 (the roll-plant study's own RIDER_POINT): exact 1.4649 kg.m2
+   the effective roll inertia, I = ΔM / Δω̇ against the push-0 cell at the same hold:
+      0.0° push    50 N → ΔM -40.8–-40.8 N·m · Δω̇ -24.361–-24.361 rad/s² · I 1.674–1.674 kg·m² (the board's own effective 1.4649)
+      0.0° push   200 N → ΔM -163.1–-163.1 N·m · Δω̇ -97.204–-97.204 rad/s² · I 1.678–1.678 kg·m² (the board's own effective 1.4649)
+
+## 2. Substeps: the hold's omega-dot against the board's substep count, 1 and 5 degrees of roll, 7.5 m/s.
+   substeps=4     1 deg: omega-dot   -7.7120 rad/s2 | 5 deg: omega-dot  -16.8540 rad/s2
+   substeps=16    1 deg: omega-dot   -8.1640 rad/s2 | 5 deg: omega-dot  -17.0300 rad/s2
+   substeps=64    1 deg: omega-dot   -8.2800 rad/s2 | 5 deg: omega-dot  -17.0610 rad/s2
+   substeps=256   1 deg: omega-dot   -8.3090 rad/s2 | 5 deg: omega-dot  -17.0830 rad/s2
+   substeps=1024  1 deg: omega-dot   -8.3170 rad/s2 | 5 deg: omega-dot  -17.0890 rad/s2
+
+## 3. The yaw rate and the sideslip, held (as roll-plant/plant.probe.ts's captive derivatives hold them)
+##    against FREE (what the board does under a rider). 7 m/s, the payload at the deck.
+   free  -1 deg:    7.573 | 0 deg:    0.000 | 1 deg:   -7.573
+   held  -1 deg:    6.468 | 0 deg:    0.000 | 1 deg:   -6.468
+
+## 4. The side force per radian of roll, slip free, early window, against PLANT_SPEEDS' -429.7 N/rad at 7.5 m/s.
+      -1 deg: side force      6.7 N  (per rad:    -383.9)  draft 0.06
+       0 deg: side force      0.0 N  (per rad:       0.0)  draft 0.059
+       1 deg: side force     -6.7 N  (per rad:    -383.9)  draft 0.06
+       5 deg: side force     -9.3 N  (per rad:    -106.6)  draft 0.071
