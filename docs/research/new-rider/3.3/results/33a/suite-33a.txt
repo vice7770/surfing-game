@@ -1,0 +1,18 @@
+Rider/board/HUD/runner suite, step 3.3a, on the tree that merges (claude/rider-new-33a, cut from main 50f43025).
+
+  npx vitest run src/physics/ src/game/PhysicalMode.test.ts src/ui/RideHud.test.ts src/wave/SurfZoneRunner.test.ts \
+    src/wave/SprayCloud.test.ts
+
+vitest exit: 0 (read from vitest's own exit status, on its own line, never through a pipe).
+SurfZoneRunner.test.ts is OUTSIDE the merge suite, so a red there is news: it is green.
+src/wave/SurfZoneSimulation.test.ts is deliberately not in it (c2-step5g.md 7.4), closed by reading.
+
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/wt-rider-33a
+
+
+ Test Files  58 passed (58)
+      Tests  783 passed | 21 expected fail (804)
+   Start at  06:55:56
+   Duration  90.02s (tests 97%, import 2%, transform 2%)
+

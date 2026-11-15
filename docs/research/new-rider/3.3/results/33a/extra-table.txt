@@ -1,0 +1,7 @@
+new_0      feltOwnMed 9.7–15.7 | feltOverRoll@fall 0.446–0.836 | relAcross@fall 0.754–1.406 | relRate 0.54–1.43 | latAbs800 1.57–5.02 | leanAsked peak 0.0–0.0
+new_1      feltOwnMed 10.6–24.2 | feltOverRoll@fall 0.482–0.859 | relAcross@fall 0.671–1.432 | relRate 0.34–1.07 | latAbs800 1.66–4.74 | leanAsked peak 35.7–50.0
+new_-0.5   feltOwnMed -4.8–11.4 | feltOverRoll@fall 0.113–1.780 | relAcross@fall -1.361–-0.424 | relRate 0.14–0.72 | latAbs800 0.39–1.97 | leanAsked peak 25.0–25.0
+rail_0     feltOwnMed 8.4–10.8 | feltOverRoll@fall 0.451–0.620 | relAcross@fall 0.830–1.089 | relRate 1.02–1.73 | latAbs800 1.81–3.28 | leanAsked peak 0.0–0.0
+rail_1     feltOwnMed 8.6–21.5 | feltOverRoll@fall 0.430–0.795 | relAcross@fall 0.709–1.525 | relRate 0.66–1.73 | latAbs800 1.43–3.71 | leanAsked peak 19.3–50.0
+old_0      feltOwnMed 0.3–2.1 | feltOverRoll@fall 0.000–0.000 | relAcross@fall – | relRate – | latAbs800 -0.07–0.68 | leanAsked peak 0.0–0.0
+old_1      feltOwnMed -21.0–42.2 | feltOverRoll@fall 0.000–0.000 | relAcross@fall – | relRate – | latAbs800 -5.01–7.14 | leanAsked peak 0.0–0.0
