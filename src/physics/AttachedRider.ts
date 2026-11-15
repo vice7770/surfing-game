@@ -405,6 +405,55 @@ const BANK_GAIN = 7.4;
 const BANK_RATE_GAIN = 3.6;
 const BALANCE_LAG = 0.01;
 const ANKLE_REST_RANGE = 0.25;
+/**
+ * **The hip's trigger** (step 3.2x): the gain the hip's swing rotor is driven at on `HumanBalance.sensedCaptureHip` —
+ * the capture point past HIP_SHARE of the feet's half-width across, m, delayed BALANCE_DELAY — in N·m/m.
+ *
+ * **It is 0: measured, and not kept.** Step 3.2w measured the new rider falling **12 of 12 riding in trim with the
+ * stick never touched**, with the hip delivering 0-8 N·m and 0.3 degrees of swing, because it was fed only what the
+ * ankle's own command asked past HIP_SHARE x ANKLE_REST_RANGE (11.5 degrees of a rest the predictor asks 2.6-14.4 of)
+ * instead of the quantity this design names - "the hip once the feet's pressure passes HIP_SHARE of their reach".
+ * Step 3.2x wired it to that quantity and measured the ladder (`3.2/README.md` Part 22):
+ * - the trigger works. The hip now opens 0.22-1.17 s into every run and delivers **35-264 N.m and up to 68.8
+ *   degrees of swing**, and the board's rail peak falls - at 20 degrees of face slope from 13.8-34.4 to 5.9-24.4
+ *   degrees, 12 runs a cell. The sign is confirmed against its own reverse, which falls sooner;
+ * - and it does not stand him up. **12 of 12 fall at every gain from 500 to 8,000 N.m/m**, and across five face
+ *   slopes, 60 runs a gain paired run for run against the hip off: 2,000 N.m/m falls **sooner in 36 of 60**, 1,000 in
+ *   32 of 60, 500 in 18 of 60 and later in 33. The 16-degree acceptance cell is the one cell that flatters it
+ *   (11 later, 0 sooner at 2,000); its four neighbours do not, so that cell is not the population.
+ * This is step 3.2w's own ankle trade, measured again on the other limb: **whatever limb holds the roll adds across
+ * speed, and the capture point counts across speed at 1/omega0 ~ 0.29 m per m/s.** So the hip is wired and left off,
+ * and the signal and this switch are the apparatus the plant's own round needs; it is not a gain to be tuned.
+ */
+const HIP_CAPTURE_GAIN = 0;
+/**
+ * **The ankle rest's slew bound**, rad/s (step 3.2x, `HumanBalance.lagRest`): the most the commanded rest can travel
+ * per second.
+ *
+ * **It is Infinity - no bound: measured, and not kept.** Step 3.2w named the unbounded rest as the mechanism behind
+ * its gain-3 cell's 0.38-0.43 s falls (the rest slewed 0.29 rad in 0.2 s and threw the centre of mass across at
+ * 1.44 m/s). Step 3.2x bounded it and **that attribution does not survive**: on 3.2w's own gain-3 law, 12 runs a
+ * cell, a bound of 1.5 rad/s cuts the ankle's peak torque from 181-290 to **59-162 N.m** - into a human's own band,
+ * which is worth having on its own terms - and holds the rail to 3.5-8.0 degrees, and **the falls are unchanged at
+ * 0.38-0.45 s against 0.38-0.43**. On the shipped predictor it changes nothing at all (0.77-1.70 s at 0.5, 1.5, 4 and
+ * Infinity rad/s, the same twelve runs). At 0.5 rad/s with the hip on it is worse. A human ankle does have a bound and
+ * this is where it would go; it is off because nothing measured here turns on it (`3.2/README.md` Part 22 Section 4).
+ */
+const ANKLE_REST_RATE = Number.POSITIVE_INFINITY;
+/**
+ * **The deck's roll in the ankle's rest**, 0-1 (step 3.2x): the share of the board's own roll about the heading the
+ * ankle's rest carries, which is how a person stands plumb on a slope - the ankle opens by the slope's angle and the
+ * body stays over the middle of its feet.
+ *
+ * **It is 0: measured, and not kept.** Step 3.2w measured the new rider's ankle span at 0.3-1.6 degrees median on a
+ * deck rolled 8.8 degrees and climbing, against the old rider, whose body holds 0.8-3.3 degrees of the world vertical
+ * while the deck sits at the face's own tilt - so the new rider stands square to a capsizing deck. At 1 this does
+ * open the ankle (span median 3.8-7.8 degrees, peak 10.2-22.3) and does bring the body's bank peak down from
+ * 20.7-65.7 to **12.1-34.6 degrees**, 12 runs - and **12 of 12 still fall**, at 0.53-4.32 s, and with the hip's
+ * trigger at 2,000 N.m/m as well it is worse (0.48-1.68 s). It cannot carry a deck past ANKLE_REST_RANGE's own
+ * 14.3 degrees, which is where the capsize goes (`3.2/README.md` Part 22 Section 5).
+ */
+const ANKLE_PLUMB = 0;
 const RAIL_RANGE = (50 * Math.PI) / 180;
 const REFERENCE_TIME = 0.05;
 const REFERENCE_RATE = 5;
@@ -1280,7 +1329,14 @@ export interface AttachedRiderOptions {
    * bank's change over a substep, 3.2's), and the legs' passive twist in the game (TWIST_STIFFNESS, TWIST_DAMPING: braced or
    * relaxed for the yaw step's report; the internal model keeps its own).
    */
-  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number };
+  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number;
+    /** Step 3.2x: the hip's gain on the capture point past HIP_SHARE of the feet's half-width, N·m/m (HIP_CAPTURE_GAIN, 0, by default: measured and not kept). */
+    hipCapture?: number;
+    /** Step 3.2x: the ankle rest's slew bound, rad/s (ANKLE_REST_RATE, Infinity, by default: measured and not kept). */
+    ankleRestRate?: number;
+    /** Step 3.2x: the share of the deck's own roll the ankle's rest carries, 0–1 (ANKLE_PLUMB, 0, by default: measured and not kept). */
+    anklePlumb?: number;
+  };
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1802,6 +1858,10 @@ export class AttachedRider {
   private readonly twistDamping: number;
   /** How far onto its rail the balance's schedule is trusted, rad (SCHEDULE_RAIL_CAP). */
   private readonly railCap: number;
+  /** Step 3.2x: the hip's gain on its trigger, N·m/m, and the ankle rest's slew bound, rad/s. */
+  private readonly hipCapture: number;
+  private readonly ankleRestRate: number;
+  private readonly anklePlumb: number;
   /**
    * Step 3.2q's lean hold stood here and is **gone** (step 3.2t). It capped the lean the rider asks for at the lean his
    * felt vertical would carry, which closed a loop — lean → rail → turn → felt vertical → lean — through `pairFelt`'s
@@ -2009,6 +2069,9 @@ export class AttachedRider {
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
     this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
+    this.hipCapture = options.balance?.hipCapture ?? HIP_CAPTURE_GAIN;
+    this.ankleRestRate = options.balance?.ankleRestRate ?? ANKLE_REST_RATE;
+    this.anklePlumb = options.balance?.anklePlumb ?? ANKLE_PLUMB;
     this.windowed = this.capsLegs || this.newRider;
     this.stamps = options.snapStamp === 'on' && !this.agile;
     this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
@@ -2961,7 +3024,7 @@ export class AttachedRider {
     human.sense(h, this.bank.angle);
     this.bank.rate = human.bankRate;
     const bank = human.sensedBank();
-    const wanted = this.bankForward * this.bankReference - this.bankGain * bank - this.bankRateGain * human.sensedBankRate();
+    const wanted = this.bankForward * this.bankReference - this.bankGain * bank - this.bankRateGain * human.sensedBankRate() - this.anklePlumb * roll;
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
     const reachRest = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
     const leanSide = Math.sign(this.bankReference);
@@ -2973,9 +3036,25 @@ export class AttachedRider {
     const lean = projecting ? 0 : reachRest * asking > 0 && lagging ? 0 : reachRest;
     // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
-    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
-    this.ankleRest = human.lagRest(h, lean);
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
+    this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
     this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
+  }
+
+  /**
+   * **The hip's trigger** (step 3.2x): the swing rotor's demand from the capture point, N·m — HIP_CAPTURE_GAIN times
+   * how far past HIP_SHARE of the feet's half-width across the capture point was BALANCE_DELAY ago
+   * (`HumanBalance.sensedCaptureHip`, signed board +x).
+   *
+   * Its sign. A positive `swingTorque` turns the upper body toward +x about the heading and, by its own reaction
+   * through the feet, pushes the body's centre of mass toward −x (`solveStep`: `rhs[7] -= h × swingTorque / length`,
+   * row 7 being the body's across rate on the leg, and `rhs[3..5] -= h × swingTorque × rollAxis`, the board's share of
+   * the same couple). So a capture point gone to +x is answered by a positive torque. Nothing here is a new force:
+   * this is the rotor the hip already drove from the ankle's overflow, given the signal the design always named, and
+   * its reaction is booked on the board and in the work ledger exactly as before.
+   */
+  private hipDrive(human: HumanBalance): number {
+    return this.hipCapture !== 0 ? this.hipCapture * human.sensedCaptureHip : 0;
   }
 
   /**
@@ -3052,15 +3131,15 @@ export class AttachedRider {
       this.heldTwist = -u[1];
     }
     this.controlDue -= h;
-    const wanted = this.heldAnkleRaw;
+    const wanted = this.heldAnkleRaw - this.anklePlumb * roll;
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
     const lean = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
     const leanSide = Math.sign(this.bankReference);
     this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
-    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
-    this.ankleRest = human.lagRest(h, lean);
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
+    this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
     this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
     tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));
   }

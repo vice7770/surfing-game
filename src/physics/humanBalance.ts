@@ -211,6 +211,7 @@ const BANK = 0;
 const BANK_RATE = 1;
 const CAPTURE_OUT = 2;
 const CAPTURE_ACROSS = 3;
+const CAPTURE_HIP = 4;
 
 /** The capture point against the feet, from `HumanBalance.capture`. */
 export interface CaptureState {
@@ -221,6 +222,16 @@ export interface CaptureState {
   past: number;
   /** How far past the feet's edge it is **across**, m, signed with the side it is past (board +x); 0 while inside (step 3.2i). */
   pastAcross: number;
+  /**
+   * How far past **HIP_SHARE of the feet's half-width across** it is, m, signed with that side (board +x); 0 inside
+   * (step 3.2x). This is the hip's own trigger: the design's order of the moves is "the ankle first, within the feet;
+   * **the hip once the feet's pressure passes HIP_SHARE of their reach**" (Horak and Nashner 1986, this file's header),
+   * and the capture point against the feet's half-width is that pressure demand — where the feet would have to push
+   * from to stop the body. Measured in step 3.2w: the hip was instead fed the ankle's own *command angle* past
+   * HIP_SHARE of ANKLE_REST_RANGE, a different quantity, which the predictor never reached, so the hip delivered
+   * 0–8 N·m in twelve trim falls (`3.2/README.md` Part 21 §2).
+   */
+  hipPast: number;
   /** The centre of mass itself past the feet's edge (projected along the felt vertical). */
   weightPast: boolean;
   /** What the room still left can catch past the edge, m (the way it is past), and whether it is past by more. */
@@ -239,7 +250,7 @@ export interface CaptureState {
 
 /** The new surfer's human balance: the delay line, the roll loop's rest, the order of the moves, the capture point and the reserve. */
 export class HumanBalance {
-  private readonly line = new DelayLine(4, BALANCE_DELAY + 0.02);
+  private readonly line = new DelayLine(5, BALANCE_DELAY + 0.02);
   private clock = 0;
   /** The roll's lagged ankle rest, rad; the body's bank the latest substep (NaN before the first), rad. */
   rollRest = Number.NaN;
@@ -254,7 +265,7 @@ export class HumanBalance {
   /** Why the knees are going down now: the hip near its range, or the capture point off the feet. */
   kneeCause: 'none' | 'hip' | 'capture' = 'none';
   /** The latest capture point (`capture`). */
-  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0 };
+  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, hipPast: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0 };
   /** The time the capture point last left the feet (NaN while inside), on the balance's clock, s. */
   leftFeetAt = Number.NaN;
   /** Whether `capture` is holding its last state because the feet are light (CAPTURE_LOAD): the validity condition, step 3.2h. */
@@ -284,6 +295,7 @@ export class HumanBalance {
     this.state.margin = 1;
     this.state.past = 0;
     this.state.pastAcross = 0;
+    this.state.hipPast = 0;
     this.state.weightPast = false;
     this.state.beyond = false;
   }
@@ -297,7 +309,7 @@ export class HumanBalance {
     this.clock += h;
     this.bankRate = Number.isNaN(this.lastBank) ? 0 : (bank - this.lastBank) / h;
     this.lastBank = bank;
-    this.line.push(this.clock, bank, this.bankRate, this.state.past, this.state.pastAcross);
+    this.line.push(this.clock, bank, this.bankRate, this.state.past, this.state.pastAcross, this.state.hipPast);
     return this.bankRate;
   }
 
@@ -310,10 +322,22 @@ export class HumanBalance {
     return this.line.at(this.clock - BALANCE_DELAY, BANK_RATE);
   }
 
-  /** The muscles' lag on the roll's command: `command` followed through MOTOR_LAG, from its first value. Returns the rest, rad. */
-  lagRest(h: number, command: number): number {
+  /**
+   * The muscles' lag on the roll's command: `command` followed through MOTOR_LAG, from its first value. Returns the
+   * rest, rad.
+   *
+   * `rate` is the most the rest can travel, rad/s: the ankle's own slew bound (step 3.2x, default Infinity — no
+   * bound, which is what step 3.2w measured the shipped model to have). A rest is a position command through an
+   * 800 N·m/rad spring, so a rest that slews freely is a hidden winch: 3.2w's gain-3 cell ran it 0.29 rad in 0.2 s
+   * (1.45 rad/s) and threw the centre of mass across at 1.44 m/s (`3.2/README.md` Part 21 §4).
+   */
+  lagRest(h: number, command: number, rate = Number.POSITIVE_INFINITY): number {
     if (Number.isNaN(this.rollRest)) this.rollRest = command;
-    else this.rollRest += (command - this.rollRest) * (1 - Math.exp(-h / MOTOR_LAG));
+    else {
+      const step = (command - this.rollRest) * (1 - Math.exp(-h / MOTOR_LAG));
+      const most = rate * h;
+      this.rollRest += Math.max(-most, Math.min(most, step));
+    }
     return this.rollRest;
   }
 
@@ -325,11 +349,21 @@ export class HumanBalance {
   /**
    * How far past the feet's edge **across** the capture point was BALANCE_DELAY ago, m, signed with the side it is past
    * (0 inside). Built in step 3.2i for the hip to answer, as the knees and the arms already answer `sensedCapturePast`;
-   * the hip is not wired to it today, because driving the swing rotor from it was measured and it fails
-   * (`3.2/README.md` Part 9 §2). Nothing reads it in the game yet; the probes do.
+   * the hip is not wired to **this** signal, because driving the swing rotor from the point past the feet's own edge
+   * was measured in 3.2i and it fails (`3.2/README.md` Part 9 §2): by the edge it is already late. Step 3.2x wires the
+   * hip to `sensedCaptureHip` instead, which fires at HIP_SHARE of the half-width — inside the feet, which is where
+   * the design's order of the moves puts it. Nothing in the game reads this one; the probes do.
    */
   get sensedCaptureAcross(): number {
     return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_ACROSS);
+  }
+
+  /**
+   * **The hip's own trigger** (step 3.2x): how far past HIP_SHARE of the feet's half-width across the capture point
+   * was BALANCE_DELAY ago, m, signed with that side (board +x; 0 inside). See `CaptureState.hipPast`.
+   */
+  get sensedCaptureHip(): number {
+    return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_HIP);
   }
 
   /**
@@ -403,6 +437,9 @@ export class HumanBalance {
     s.past = Math.max(pastX, pastZ);
     // Across, with the side it is past (step 3.2i; `sensedCaptureAcross`).
     s.pastAcross = pastX > 0 ? Math.sign(s.across) * pastX : 0;
+    // The hip's trigger: past HIP_SHARE of the half-width, which is inside the feet (step 3.2x; `sensedCaptureHip`).
+    const hipEdge = HIP_SHARE * halfAcross;
+    s.hipPast = Math.abs(s.across) > hipEdge ? Math.sign(s.across) * (Math.abs(s.across) - hipEdge) : 0;
     // Unrecoverable once past the edge by more than the reach that way.
     s.beyond = pastX > reachAcross || pastZ > reachAlong;
     s.reach = pastX >= pastZ ? reachAcross : reachAlong;

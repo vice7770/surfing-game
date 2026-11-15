@@ -32,6 +32,11 @@
  *   law (`humanBank`) with those gains. `GAINS=0,0.1,0.1` is HUMAN_BANK_*' own values. This is the one knob that tells
  *   a predictor bug from a plant bug: if the body diverges under both laws it is not the controller.
  * - `RATE_SENSE=difference` feeds the controller the bank's change over a substep instead of the canals' absolute rate.
+ * - **step 3.2x**: `HIP_GAIN` is `balance.hipCapture`, N·m/m — the hip's gain on the capture point past HIP_SHARE of
+ *   the feet's half-width (`HumanBalance.sensedCaptureHip`). `HIP_GAIN=0` is 3.2w's rider, the hip untriggered;
+ *   a negative one is the sign check. `ANKLE_RATE` is `balance.ankleRestRate`, rad/s, the rest's slew bound
+ *   (`ANKLE_RATE=inf` for 3.2w's unbounded rest). The probe adds the hip's own columns: the trigger signal `capHip`,
+ *   the swing's angle and torque (already traced), and the first time the swing torque passes 20 N·m.
  * - `SUBSTEPS`, `YAW_INERTIA`, `FACE`, `DEPTH`, `SIDE`, `AHEAD`, `SECONDS` as the other probes.
  * - `FROZEN=1` holds the stick at zero **and** the wave still (no `water.advance`), to separate the face moving under
  *   the rider from the rider's own loop.
@@ -64,6 +69,12 @@ const FACE = (process.env.FACE ?? '1.4,16,5.7').split(',').map(Number);
 const DEPTH = num('DEPTH', 2.6);
 const FROZEN = process.env.FROZEN === '1';
 const GAINS = process.env.GAINS ? process.env.GAINS.split(',').map(Number) : undefined;
+/** Step 3.2x: the hip's gain, N·m/m, and the ankle rest's slew bound, rad/s ('inf' for none). Unset leaves the code's own. */
+const HIP_GAIN = process.env.HIP_GAIN === undefined ? undefined : Number(process.env.HIP_GAIN);
+const ANKLE_RATE = process.env.ANKLE_RATE === undefined ? undefined
+  : /^inf/i.test(process.env.ANKLE_RATE) ? Number.POSITIVE_INFINITY : Number(process.env.ANKLE_RATE);
+/** Step 3.2x: the share of the deck's own roll the ankle's rest carries, 0-1 (0 is 3.2w's rider, square to the deck). */
+const PLUMB = process.env.PLUMB === undefined ? undefined : Number(process.env.PLUMB);
 const OUT = process.env.OUT;
 const TRACE = process.env.TRACE;
 
@@ -122,6 +133,8 @@ interface Frame {
   capAcross: number;
   capPoint: number;
   capSpeedTerm: number;
+  /** Step 3.2x: the hip's trigger signal, m — the capture point past HIP_SHARE of the feet's half-width, signed board +x. */
+  capHip: number;
   /** The capture point's own terms: ω₀ (1/s), the CoM's height over the feet (m), the felt vertical's tilt across (°),
    * the room the hip can still catch past the edge (m), and the two booleans the fall test is the `&&` of. */
   omega: number;
@@ -187,12 +200,15 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     phase: 'standing',
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(GAINS ? { humanGains: { bank: GAINS[0], bankRate: GAINS[1], forward: GAINS[2] } } : {}),
-    ...(process.env.RATE_SENSE || process.env.WEIGHTS || process.env.RAIL_CAP
+    ...(process.env.RATE_SENSE || process.env.WEIGHTS || process.env.RAIL_CAP || HIP_GAIN !== undefined || ANKLE_RATE !== undefined || PLUMB !== undefined
       ? {
         balance: {
           ...(process.env.RATE_SENSE ? { rateSense: process.env.RATE_SENSE as 'canal' | 'difference' } : {}),
           ...(process.env.WEIGHTS ? { weights: JSON.parse(process.env.WEIGHTS) } : {}),
           ...(process.env.RAIL_CAP ? { railCap: Number(process.env.RAIL_CAP) } : {}),
+          ...(HIP_GAIN !== undefined ? { hipCapture: HIP_GAIN } : {}),
+          ...(ANKLE_RATE !== undefined ? { ankleRestRate: ANKLE_RATE } : {}),
+          ...(PLUMB !== undefined ? { anklePlumb: PLUMB } : {}),
         },
       }
       : {}),
@@ -259,6 +275,7 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
       capAcross: cap.across,
       capPoint: cap.pointAcross,
       capSpeedTerm: cap.omega > 0 ? cap.speedAcross / cap.omega : Number.NaN,
+      capHip: cap.hipPast,
       omega: cap.omega,
       comHeight: cap.height,
       tilt: cap.tiltAcross * DEG,
@@ -292,6 +309,10 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     ankleRestPeakDeg: r(Math.max(...abs('ankleRest')), 2), ankleRawPeakDeg: r(Math.max(...abs('ankleRaw')), 2),
     ankleTorquePeak: r(Math.max(...abs('ankleTorque')), 0), ankleTorqueMedian: r(median(abs('ankleTorque')), 0),
     swingTorquePeak: r(Math.max(...abs('swingTorque')), 0), swingAnglePeakDeg: r(Math.max(...abs('swingAngle')), 1),
+    /** Step 3.2x: the hip's trigger — its peak signal, m, the first time it opened, s, and the first time the swing passed 20 N·m, s. */
+    capHipPeak: r(Math.max(...abs('capHip')), 3),
+    hipOpenedAtS: r(frames.find((x) => Math.abs(x.capHip) > 0)?.t ?? Number.NaN, 2),
+    hipFiredAtS: r(frames.find((x) => Math.abs(x.swingTorque) > 20)?.t ?? Number.NaN, 2),
     loadSensePeak: r(Math.max(...abs('loadSense')), 2), pitchSensePeak: r(Math.max(...abs('pitchRateSense')), 2),
     captureLoadMedian: r(median(col('captureLoad')), 2),
     marginAtFall: r(last?.margin ?? Number.NaN, 3), bindsAtFall: last?.binds ?? '–', limitAtFall: last?.limit ?? '–',
@@ -325,6 +346,7 @@ console.log(`   the body's bank peak ${span(nf('bankPeakDeg'))}° · the board's
 console.log(`   the ankle's own span: peak ${span(nf('ankleSpanPeakDeg'))}° · median ${span(nf('ankleSpanMedianDeg'))}° (a human ankle has about ±29°)`);
 console.log(`   the commands: rest peak ${span(nf('ankleRestPeakDeg'), 2)}° · raw peak ${span(nf('ankleRawPeakDeg'), 2)}° · ankle torque peak ${span(nf('ankleTorquePeak'), 0)} N·m (median ${span(nf('ankleTorqueMedian'), 0)})`);
 console.log(`   the hip: swing torque peak ${span(nf('swingTorquePeak'), 0)} N·m · swing angle peak ${span(nf('swingAnglePeakDeg'))}°`);
+console.log(`   the hip's trigger (3.2x): signal peak ${span(nf('capHipPeak'), 3)} m · opened at ${span(nf('hipOpenedAtS'), 2)} s · swing passed 20 N·m at ${span(nf('hipFiredAtS'), 2)} s`);
 console.log(`   the senses: load ${span(nf('loadSensePeak'), 2)} m/s² · pitch rate ${span(nf('pitchSensePeak'), 2)} rad/s · feet's load median ${span(nf('captureLoadMedian'), 2)} body weights`);
 console.log(`   at the fall: margin ${span(nf('marginAtFall'), 3)} · past ${span(nf('pastAtFall'), 3)} m · capture ${span(nf('capAtFall'), 3)} m = lean ${span(nf('capPointAtFall'), 3)} + speed ${span(nf('capSpeedAtFall'), 3)}`);
 console.log(`   the capture point's own terms: ω₀ median ${span(nf('omegaMedian'), 2)} 1/s · CoM height ${span(nf('comHeightMedian'), 3)} m · the hip's reach past the edge ${span(nf('reachMedian'), 3)} m (feet's half-width 0.13) · felt tilt peak ${span(nf('tiltPeakDeg'))}°`);
