@@ -12,7 +12,8 @@ file, it is large, and I did not build it.**
 | | |
 | --- | --- |
 | **Built** | the veil's alpha now comes from the water each sprite stands for (§3): a conserved extinction cross-section **A_x = Q·1.5·w/d₃₂**, drawn at **α = 1 − e^(−τ)**, τ = A_x/(πD²/4). Still `?lipVeil=on`; **no new parameter**, and the default is byte-identical |
-| **Measured** | the same held sea, the same frame, with and without the switch — an exact control the photograph could never give. Over the veil's own footprint the drawn veil now has **τ = 0.26–0.40** across four cameras, and it **lifts its background while attenuating it** (sd ratio 0.77–0.92). 5g's constant alpha over the **same particles** painted 2.4 times the ink and three times the near-opaque pixels (§4) |
+| **Measured** | the same held sea, the same frame, with and without the switch — an exact control the photograph could never give. Over the veil's own footprint the drawn veil now has **τ = 0.26–0.40** across four cameras, and it **lifts its background while attenuating it** (sd ratio 0.77–0.92) where 5g's **added structure to it** (1.01–1.04, and 2.03 over the pool wall against this round's 1.31). 5g's constant alpha over the **same particles** paints 2.4 times the ink and three times the near-opaque pixels (§4.1, §4.3) |
+| **Kept, and checked because it was at risk** | 5g's height. Over 60 frames the body (95 % of drawn optical area) sits at **2.43 m** against 5g's 2.40, with the off leg reproducing 5g's 1.58 m to the centimetre — and **5g §8 item 2's tail is gone**, the highest particle falling from 3.51 to 2.67 m on the median frame (§4.2) |
 | **Refuted — in my own brief, and twice over** | the brief's target, "transmission ≳ 0.9, τ ≈ 0.1–0.25", **does not follow from the measurement it was drawn from** (§2). 5g read the veil as thin because the pier's sd survived it; in **linear** light that sd *rises* **3.2×**, which attenuation cannot do. The photograph does not pin τ at all; the honest bracket is **0.35–1.2** |
 | **Corrected** | three of the inputs 5g built on, all from the advisor (§3.1): the drop diameters must be **Sauter means** 150 / 590 / 1500 µm; the class shares were integrated from a **mixed** spectrum triple and are **54 / 5 / 42**, not 35 / 10 / 55; and **Q_eff is 1, not 2**, for a camera against an extended background |
 | **Job 2 — measured and NOT built** | the flat white mass is **not** the veil and **not** the constant-alpha fault: the switch moves it by **0.2 of 255**. It is the water surface's own foam shading, and its fault is a number: `waterFoamColor` is a diffuse albedo of **0.840** against a sourced ceiling of **0.50–0.55** for the whitest foam ever measured (§5). In linear light our broken water is **1.31×** the flat water beside it where the photograph's is **0.75×** — a **1.75× sign flip, within each frame**, so it is not an exposure difference |
@@ -183,7 +184,33 @@ a flat dark background:
 added structure** [M, 8 784 and 12 390 px]. The 5g figures are from its published JPEGs, which carry compression
 noise the PNG legs do not; the effect is tens of times larger than that noise, but it is why the 5g rows are marked.
 
-### 4.2 The same cloud, drawn two ways
+### 4.2 5g's height result survives, and its tail is gone
+
+The probe carries 5g's own height measure — 60 frames per Particles level, after an 8 s settle, with the height
+**95 % of the drawn optical area sits below**. So this round's legs can be put straight beside 5g's figures:
+
+| High, median of 60 frames | veil off | **`?lipVeil=on`** | 5g's own figures |
+| --- | --- | --- | --- |
+| **95 % of drawn optical area below** | **1.58 m** | **2.43 m** | 1.58 m off, **2.40 m** on |
+| highest particle, median frame | 1.81 m | **2.67 m** | 3.51 m on |
+| the same, 90 % of frames below | 2.02 m | **3.28 m** | 4.37 m on |
+| the same, highest in the 60 | 2.03 m | **3.57 m** | 4.72 m on |
+| drawn optical area, Σ size²·α | 44.6 | **104.9** | — |
+
+**The off leg reproduces 5g's 1.58 m to the centimetre, and the on leg's body is 2.43 m against 5g's 2.40** [M] —
+so **the opacity change did not cost 5g's height**, which was the thing most at risk from making every sprite fainter
+and from retiring the heavy class early. The band the reference's own ratio asks of our 1.41 m crest is 2.2–2.4 m.
+
+**And the tail that 5g §8 item 2 left open is gone**: the highest particle falls from 3.51 to **2.67 m** on the
+median frame and from 4.72 to **3.57 m** at worst — about 1.2 m off every quantile, for the physical reason in §3.3.
+The stray dots high in 5g's sky were the millimetre drops, and they now leave the veil when their own fall speed says
+they do.
+
+**One trap avoided, and it is worth naming.** The single *held* frame — the one the stills are taken from — gives a
+body of 1.63 m on the on leg, which read as a collapse of 5g's result. It is not: the held frame is not the settled
+state the 60-frame sample measures, and one frame is not a population. The table above is 60 frames per cell.
+
+### 4.3 The same cloud, drawn two ways
 
 The probe carries every sprite, so both alpha rules can be run over the **identical** particles and nothing else can
 differ. Rasterised into `curl-behind`, 5g's own headline camera (`c2-step5h-optics.mjs`; per-pixel τ summed as
@@ -199,7 +226,7 @@ differ. Rasterised into `curl-behind`, 5g's own headline camera (`c2-step5h-opti
 median 0.093) where the constant rule gives **two** [M]. The p75 of 0.795 is the bore spray, which is outside the
 veil and keeps the alpha it always had.
 
-### 4.3 Where it is thick, and where it runs out
+### 4.4 Where it is thick, and where it runs out
 
 Splitting each footprint at its own median row:
 
@@ -216,12 +243,12 @@ needs many sprites overlapping along the ray, and the pool is already **pinned a
 sprite route cannot carry an optically-thin veil 1.3 m deep.** That is 5g §8 item 3's whole argument, now with a
 measurement under it rather than an opinion.
 
-### 4.4 The honest look
+### 4.5 The honest look
 
 `c2-step5h-stills/` has both legs at the four cameras 5g used, and its README says what to look at. The stray dots
 high in 5g's sky are gone; what is left reads as a burst of spray at the lip with a wash behind it rather than a
 polka-dot field. **It is also fainter than 5g's**, and its footprint is 28 % smaller — the fallout of §3.3 plus the
-corrected class shares. If the owner's reaction is "I can barely see it", that reaction is correct and §4.3 is why.
+corrected class shares. If the owner's reaction is "I can barely see it", that reaction is correct and §4.4 is why.
 
 ---
 
@@ -334,9 +361,9 @@ and not mine.
 
 ## 7. What I will not claim
 
-- **That this is the photograph.** It is not. §4.3 says the veil's body over the crest is ten times too thin to read,
-  and §4.4 says the stills are fainter than 5g's.
-- **That τ is pinned anywhere** — not in the photograph (§2) and not as a target. Every τ in §4 is a footprint
+- **That this is the photograph.** It is not. §4.4 says the veil's body over the crest is too thin to read where it matters,
+  and §4.5 says the stills are fainter than 5g's.
+- **That τ is pinned anywhere** — not in the photograph (§2) and not as a target. Every τ in §4.1 and §4.4 is a footprint
   average from a slope fit, which is a real quantity, but it is not the same quantity as "the veil's optical depth"
   and it should not be compared with the photograph's bracket to two figures.
 - **That φ is measured.** It is a fit at 40× its own sourced floor, and the floor itself is good to one order.
@@ -357,7 +384,7 @@ and not mine.
 
 1. **The broken section (§5).** Items 1 and 2 of §5.4 together, measured by the within-frame ratio, nothing else
    moving. This is the recommendation.
-2. **The swept veil band** (5g §8 item 3), now with §4.3 as its argument rather than a guess: the sprite route is
+2. **The swept veil band** (5g §8 item 3), now with §4.4 as its argument rather than a guess: the sprite route is
    measured to be unable to carry the veil's body, because translucency and sprite count pull against each other and
    the pool is pinned. A participating medium on the barrel loft would draw the body in a shader and hand the pool
    back.
@@ -373,10 +400,13 @@ and not mine.
 
 ## 9. Files, and how to run them again
 
-- The switch: `?lipVeil=on`, extended, **no new parameter**. `VEIL_OPTICS` and `VEIL_CROSS` in
+- The switch: **`?lipVeil=on`, unchanged — no new parameter and no new mode on the old one.** The brief allowed
+  extending `?lipVeil` if a second leg were needed; none was, because the probe carries every sprite's alpha, so
+  5g's constant rule can be run over the **identical** particles offline (§4.3). A switch would have given a worse
+  comparison than that, since the two legs would then be different runs. `VEIL_OPTICS` and `VEIL_CROSS` in
   `src/wave/SprayCloud.ts` carry the sources and the provisional marks; the alpha is written in `pack()`.
 - The stills and their README: `c2-step5h-stills/`, both legs at the four cameras 5g used.
-- The measurements, all in `c2-step5h-runs/`: `footprint.py` (the on/off footprint test — the headline),
+- The measurements, all in `c2-step5h-runs/`: `footprint.py` (the on/off footprint test — the headline), `height-and-levels.txt` (5g’s own height measure, 60 frames per Particles level, both legs),
   `transmission2.py` (the reference's τ, three ways), `foam-relief.py` + `boxes.py` (the broken section),
   `colour.py`, `scan.py`, `wall.py`, and `png.py`, step 5d's pure-Python PNG reader that all of them use.
   `c2-step5h-optics.mjs` beside this file rasterises the probe's own particles into the shot cameras.

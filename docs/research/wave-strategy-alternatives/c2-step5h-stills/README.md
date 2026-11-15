@@ -31,15 +31,22 @@ light for 31 % of that added structure, and attenuates rather than adding on all
 ## What to look for, and what not to claim
 
 **Right:** the alpha follows the water now, so the veil is translucent where it is thin and the background reads
-through it; the stray white dots high in 5g's sky are gone, because the millimetre drops fall out of the veil in a
-quarter of a second as they do in the water; and near the lip the optical depth is 0.38–0.49, which is inside the
-bracket the owner's photograph supports.
+through it; near the lip the optical depth is 0.38–0.49, inside the bracket the owner's photograph supports; and the
+stray white dots high in 5g's sky are gone, because the millimetre drops now fall out of the veil in a quarter of a
+second as they do in the water — the highest particle drops from 3.51 m to 2.67 m on the median of 60 frames.
+
+**Kept, and it was the thing most at risk:** making every sprite fainter and retiring the heavy class early could
+easily have cost 5g's height, and it did not. Over the same 60 frames the veil's body — the height 95 % of its drawn
+optical area sits below — is **2.43 m against 5g's 2.40**, with the off leg reproducing 5g's 1.58 m to the
+centimetre. (The single *held* frame these stills come from reads 1.63 m, which is the settling state and not the
+result; one frame is not a population.)
 
 **Not right, and it is the honest half:** **it is fainter than 5g's and its footprint is 28 % smaller.** The veil's
-body standing over the crest measures τ 0.03–0.17, about a tenth of what it should be, and no value of φ fixes that —
-translucency means each sprite is faint, so the body needs many sprites overlapping, and the pool is already pinned at
-every Particles level. `../c2-step5h.md` §4.3 measures it and §8 item 2 says what does fix it. **If the first
-reaction is "I can barely see it", that reaction is right.**
+body standing over the crest, read as optical depth rather than as height, measures τ 0.03–0.17 in the upper half of
+each frame — too thin to read — and no value of φ fixes that, because translucency means each sprite is faint, so the
+body needs many sprites overlapping, and the pool is already pinned at every Particles level. `../c2-step5h.md` §4.4
+measures it and §8 item 2 says what does fix it. **If the first reaction is "I can barely see it", that reaction is
+right.**
 
 And the loudest thing in `veil-on-side.jpg` is not the veil at all: the broken section right of the curl is a flat
 white mass that the switch moves by 0.2 of 255. `../c2-step5h.md` §5 measures it and recommends it over this.
