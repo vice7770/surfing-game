@@ -5606,9 +5606,13 @@ both, and the right change is to add the face cell beside it, not to move it.
   inertia terms and all ten fields of all 48 patches — **diff clean** [M]. That is the check that would have found the
   drift in the paragraph above in one second instead of one red test, and it is the one I would run first next time.
 - **The Canyon bench, shown rather than claimed**: `results/canyon-bytes-32u.txt`, the same command and the same
-  reference as step 5f's and 3.2t's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups. **CANYON**
-  Every change this round is opt-in (`?hull=rail`, `?railSuction=off`, `?compressPull=off`), so that is the expected
-  result. **What making it default would cost is in §4 line 6 and it is not nothing**, which is why it is not default.
+  reference as step 5f's and 3.2t's, Canyon B and the default Canyon, 3600 steps each from fresh spin-ups.
+  **All four hashes are byte for byte step 5f's and 3.2t's** [M]: Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`,
+  default Canyon `ea3d57a4d49f4b48` / `a1a2555739210f96`. Every change this round is opt-in (`?hull=rail`,
+  `?railSuction=off`, `?compressPull=off`), so that is the expected result and not a surprise. The per-step times are
+  *slower* than 3.2t's (18.17/28.16 ms against 11.79/13.03 for Canyon B) because a wave-track agent held two cores at
+  about 92 % throughout — the run took three hours of wall clock for eighteen minutes of CPU. **The hashes are the
+  claim; the milliseconds are not.** **What making it default would cost is in §4 line 6 and it is not nothing**, which is why it is not default.
 - A wave-track agent shared the machine throughout; nothing of theirs was stopped, and its two uncommitted files in the
   main checkout were left alone (this round ran in a worktree).
 
