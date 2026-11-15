@@ -356,7 +356,7 @@ and not mine.
 | --- | --- |
 | `npx tsc --noEmit -p .` and `npx tsc --noEmit -p server/tsconfig.json` | **exit 0 each**, checked on their own line on the finished tree (`c2-step5h-runs/tsc.txt`) |
 | `src/wave/SprayCloud.test.ts` | **43 of 43**, four of them new: the alpha is no longer a constant (365 distinct values against the off leg's two) and the 0.2–1 mm band draws under 0.1; a sprite's cross-section is conserved as it spreads and its τ falls exactly as 1/D²; the drawn optical depth is the same at Low as at High; and the veil scales with the landing's own water, with φ's sourced floor asserted beside it |
-| `src/wave/PlungingLip.test.ts` and `src/game/PhysicalMode.test.ts` | **207 of 207** across the three files on the rebased tree (`c2-step5h-runs/suite.txt`) |
+| `src/wave/PlungingLip.test.ts` and `src/game/PhysicalMode.test.ts` | 71 of 71 and 93 of 93 — **207 of 207** across the three files on the rebased tree (`c2-step5h-runs/suite.txt`) |
 | **the rebase** | the branch was cut from `main` at 47ac8719 and `origin/main` moved to **30b2accb** (the surfer track's step 3.2u) while it ran. Rebased onto it, and **everything above was re-run on the rebased tree** — including the Canyon byte check and the slow suite, both of which had to be restarted because the rebase changed files under them. `git diff --numstat origin/main HEAD` totals **17 deletions**, and all seventeen are lines of my own that I replaced |
 | `src/wave/SurfZoneSimulation.test.ts` | see `c2-step5h-runs/surfzone.txt` — started on its own early, as the brief asks, and run once on the committed tree |
 | **the Canyon byte check, on both protocols, with 5g's leg C** | `c2-step5h-runs/canyon-bytes.txt` |
