@@ -6504,8 +6504,8 @@ middle, m, and the feet's half-width across is **0.130 m**.
 2. **Paired run for run across five face slopes it makes the fall come sooner, not later.** 60 runs a gain, each one
    set against the same run with the trigger off: at 2,000 N·m/m **20 later, 4 the same, 36 sooner**; at 1,000, 24 / 4
    / 32; at 500, 33 / 9 / 18 [M]. This is step 3.2w's own ankle trade measured on the other limb — whatever limb holds
-   the roll adds across speed, and the capture point counts across speed at 1/ω₀ ≈ **0.29 m per m/s**. **The fix is not
-   a limb and it is not a gain.**
+   the roll adds across speed, and the capture point counts across speed at 1/ω₀, which over these 636 runs is
+   **0.22–0.32 m per m/s**. **The fix is not a limb and it is not a gain.**
 3. **The 16° acceptance cell is the one cell that flatters the trigger, and it is also the only cell where 3.2w's
    premise holds.** At 16° the trigger is 11 later / 1 same / 0 sooner at 2,000 N·m/m — its four neighbours are 1/2/9,
    1/0/11, 1/1/10 and 6/0/6 [M]. And **the shipped hip, with none of this round's wiring, already delivers 15–270 N·m
@@ -6538,7 +6538,8 @@ of the solve (`rhs[7] -= h × swingTorque / length`), so a capture point gone to
 which pushes the body's centre of mass toward −x. The sign check in §1.1 is the measurement that confirms it.
 
 **When it opens.** On the 16° cell the trigger opens at **0.22–1.02 s** of runs that fall at 0.77–1.70 s, so it has
-0.23–0.90 s to work in, which is 1 to 3.7 times the plant's own τ of 0.245 s [M]. It is not late. It is not enough.
+0.23–0.90 s to work in, which is about one to four times Part 21's single-trace τ of 0.245 s [M, the window; the τ is
+Part 21's and stays a single trace]. It is not late. It is not enough.
 
 ## 3. The gain ladder, and the cell that flattered it
 
@@ -6607,14 +6608,22 @@ which is exactly the design's order, and §3 is what the hip can do about a 60°
 - **I will not claim the hip's trigger is wrong, only that it does not pay.** It is the signal this design named, it
   fires when it should, its sign is verified and it lowers the roll in every cell. What it does not do is stand the
   rider up, and on 36 of 60 paired runs it costs time. Both halves are measured.
-- **I will not claim the fall test is wrong.** At the fall the centre of mass is at the feet's edge moving across at
-  about 0.9 m/s [M, derived from `capSpeed` × ω₀ in the 16° cell]; a surfer whose weight is off the edge of his feet
-  at nearly a metre a second is going down. The test's verdict looks right; what is wrong is upstream of it.
+- **I will not claim the fall test is wrong.** At the fall the centre of mass is at the edge of the feet and moving
+  across it at a median of **1.21 m/s over all 636 falls** (0.19–3.13 m/s; `capSpeed` × ω₀ run by run, which is the
+  across speed the capture point was built from) [M]. A surfer whose weight is off the edge of his feet at better than
+  a metre a second is going down. The test's verdict looks right; what is wrong is upstream of it.
 - **I will not claim a toppling rate on a population.** I built a log-linear fit of the rail's growth into the probe
   to give Part 21 §1.2's one-trace 4.07 /s a population, and **took it out again**: windowed from the start it reads
   8.15 /s on the new rider and **9.05 /s on the old rider, who stands for the whole nine seconds**, so it was fitting
   the mount's contact transient and not the capsize. One weak number is not improved by replacing it with another.
   Part 21's 4.07 /s remains a single trace, and is still the only fit there is.
+- **I will not claim that top-heaviness alone predicts the fall, which is a caution on my own §1.4.** Over the 636
+  runs, Compress carries the centre of mass **0.502–0.784 m** over the feet and tall **0.597–0.848 m** — 25–30 % less
+  m g h in the lower stance — and the two fall identically: **318 of 318 each, median 1.02 s against 1.00 s** [M]. So
+  "the plant is two to four times too top-heavy for its hull" is the right ratio to quote and the wrong thing to tune:
+  taking a quarter of the height out changes nothing measurable here. What the plant's round has to change is the
+  hull's own roll restoring, not the rider's height, and the number it needs is a *measured* hull roll spring under
+  this rider, which neither 3.2w (read from `PLANT_SPEEDS`) nor this round has.
 - **I will not claim the two riders' falls are comparable**, and Part 21's asterisk stands untouched: the new rider's
   twelve are the capture point's, the old rider's three are grip-bound, and `postureError` reads 0.000 m for both.
 - **I will not claim this is the owner's fall.** Every drift peak measured this round is inside 5°; nothing here
@@ -6683,6 +6692,9 @@ over — a real improvement — and he still falls every time, because his ankle
 of tilt and the board goes to sixty.
 
 **So: nothing to ride this round, and the game is byte-for-byte what you have.** What is now settled is that the
-surfer's limbs are not the problem. The board is. It gives him two to four times less to stand on than his own weight
-needs, and no amount of ankle or hip can hold a board that unstable for more than a second. That is the next round,
-and it is the one thing last round left on the table.
+surfer's limbs are not the problem — I have now tried both of them, hard, and both make it worse. The board is: it
+gives him two to four times less to stand on than his own weight needs. **One caution on that, and it is my own
+measurement against my own conclusion**: I compared his crouched stance, which carries his weight a quarter lower,
+against his tall one over all 636 rides, and they fall at exactly the same rate. So it is not simply "he is too tall
+for the board" — it is the board's own tendency to roll, which is the next round and the one thing last round left on
+the table.

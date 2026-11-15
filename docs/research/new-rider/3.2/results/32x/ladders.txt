@@ -76,3 +76,15 @@ face slope | fell | swing angle peak deg | swing torque peak N.m | trigger opene
 12 | 12/12 | 1.8-68.8 | 15-180 | 0.12-0.33 | 10.1-69.9
 16 | 12/12 | 0.0-0.3 | 0-8 | 0.22-1.02 | 10.9-62.9
 20 | 12/12 | 4.3-68.8 | 21-177 | 0.08-0.10 | 13.8-34.4
+
+## G. The across speed at the fall, every new-rider fall this round (53 cells, 636 falls)
+# capSpeed x omega0 run by run: the centre of mass's speed across the felt vertical, m/s, which is the quantity
+# the capture point's velocity term was built from (it enters as capSpeed = vx / omega0).
+falls 636 | min 0.19 p25 0.92 median 1.21 p75 1.70 max 3.13 m/s
+omega0 per run 3.13 - 4.62 1/s  => the capture point counts across speed at 0.22 - 0.32 m per m/s
+
+## H. Top-heaviness against the fall: the two stances over all 636 new-rider runs
+stance | runs | fell | fall s min/median/max | CoM height over the feet, m
+compress | 318 | 318 | 0.38/1.02/7.02 | 0.502-0.784
+tall | 318 | 318 | 0.37/1.00/4.40 | 0.597-0.848
+25-30 percent less m g h in the lower stance, and the same fall rate: top-heaviness alone does not predict it.
