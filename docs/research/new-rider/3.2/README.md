@@ -6100,7 +6100,7 @@ of their grip, and the meter could not say any of that.
   stick is centred. Its header carries the commands and the two flags.
 - `src/physics/AttachedRider.ts`: `balanceLimits` — the three, which binds, `across` and `past`.
 - `src/physics/BoardBody.ts`: the yaw ledger's suction entry scaled like the other twelve; `BoardBodyOptions.railFaces`.
-- `src/physics/BoardShape.ts`: `buildBoardShape`'s fifth parameter, the rail section's taper exponent (the flat path
+- `src/physics/boardShape.ts`: `buildBoardShape`'s fifth parameter, the rail section's taper exponent (the flat path
   unchanged, bit for bit).
 - `src/wave/SurfZoneRunner.ts`: `ride.balanceLimit` and `ride.broke` in the status.
 - `src/ui/RideHud.ts`, `src/ui/strings.ts`, `src/ui/ui.css`: `balanceLimitLabel`, the line under the meter, its strings
